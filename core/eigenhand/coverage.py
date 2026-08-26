@@ -18,6 +18,7 @@ frequency helps, but never drowns the rare tail.
 
 from __future__ import annotations
 
+import re
 from collections import Counter
 
 from core.eigenhand.plan import shaping_form_of
@@ -133,3 +134,29 @@ def target_for_weight(weight: float, max_weight: float) -> int:
         return TARGET_FLOOR
     scaled = TARGET_FLOOR + (TARGET_CEIL - TARGET_FLOOR) * (weight / max_weight) ** 0.5
     return max(TARGET_FLOOR, min(TARGET_CEIL, round(scaled)))
+
+
+def soll_from_weights(weights: dict[str, float]) -> tuple[dict[str, float], dict[str, int]]:
+    """The Soll model `(weights, targets)` over a COMPLETE Übergangsraum table.
+
+    The ONE derivation of the two-tier targets, shared by the local chain
+    (`tools/eigenhand/pool.py::soll_model`, after its pool union) and the
+    server (the stored `eigenhand_uebergangsraum` row, which already holds the
+    union). "Complete" matters: every target is scaled against the table's own
+    maximum, so a filtered or partial table would rescale every Soll at once.
+    """
+    table = dict(weights)
+    max_weight = max(table.values(), default=1.0) or 1.0
+    return table, {item: target_for_weight(w, max_weight) for item, w in table.items()}
+
+
+_ITEM_KEY = re.compile(r"^[A-Za-z0-9-]+(?:>[A-Za-z0-9-]+|@(?:initial|medial|final))$")
+
+
+def is_item_key(item: str) -> bool:
+    """Whether a string is spelled like a coverage item (`l>e` or `e@medial`).
+
+    A syntax check, not a vocabulary check: the server validates a pushed
+    table with it, and the glyph-key registry lives in `core/shaping.py`.
+    """
+    return bool(_ITEM_KEY.match(item))

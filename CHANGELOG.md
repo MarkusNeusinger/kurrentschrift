@@ -28,7 +28,50 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   by a test that pushes a server-printed Bogen back with every key reordered
   and with a stale column value.
 
+### Added
+
+- **The Übergangsraum weight table lives in the shared DB — the Werkbank shows
+  the Erstbeleg- and Ausbau-Quote and prints the weighted queue, like the
+  terminal.** Author's decision of 2026-08-25: the DERIVED table (coverage
+  item → summed corpus weight) may leave the machine that built it; the
+  consult-only corpus bytes stay gitignored and out of the DB. Migration
+  `0026` adds `eigenhand_uebergangsraum` — ONE hand-independent row holding
+  the complete Soll universe (corpus items ∪ the curated pool's items at 0,
+  exactly the set `pool.soll_model` computes locally, so the server needs no
+  pool) plus provenance (list checksums, `en_weight`, filter constants,
+  `pool_sha256`). `tools.eigenhand.universe --push` (or `--push-only`,
+  `--dry-run`) sends it to `PUT /eigenhand/uebergangsraum`, idempotent on a
+  content hash; a different build replaces the row whole — the one eigenhand
+  write that overwrites, because the table is one indivisible build and the
+  previous one is derivable and archived (`tools.dbsnapshot.fetch` now
+  carries it as `eigenhand/uebergangsraum.json`). `GET
+  /eigenhand/uebergangsraum` serves it with provenance; `GET
+  /eigenhand/bestand/{hand}` and `POST /eigenhand/sheets` read the same row,
+  so the displayed queue and the printed Bogen agree. Targets come from the
+  one derivation on both surfaces, `coverage.soll_from_weights`. Doctrine
+  rewritten in `eigenhand-erfassung.md` §4/§7.1/§8.1/§11, the glossary, the
+  tool reference and — as the author asked — an addendum in the corpus
+  `SOURCE.md` (repo ≠ storage location; the aggregate is admin-gated, never
+  public, excluded from any open-data release).
+
 ### Changed
+
+- **The `d` exit: the hand shortens it, the chain's cut does not — §12's last
+  open limit is closed.** The `pairlab` counter-check that the autopsy asked for,
+  over all 14 `d` occurrences of the frozen Abb.-19 words plus the eight
+  Abb.-20 `d` drills of the same hand. The decisive reading has no
+  letter/connector cut at all: the chart row placed RIGIDLY at its best
+  bounded translation and read as distance to the nearest ink over the last
+  0.40 xh of arc — joined `d` 0.166 xh (words) / 0.160 (drills) vs word-final
+  0.025, 18 of 18 above 0.084 and 4 of 4 below 0.052 (p = 0.00014), while
+  the letter body does not separate (0.073 vs 0.088). Pure truncation, not
+  rotation; the real connecting stroke leaves the `d` at y = 0.82–1.12 xh
+  (median 0.96, invariant over eleven followers) against the chart tip at
+  1.36. The deformable fit alone cannot separate the readings (a window
+  sweep drives the exit anchors to +114 %), which is said plainly. The model
+  decision (a) variant split vs (b) exit in the transition generator stays
+  the author's; the evidence leans (b). `qualitaetsmetrik.md` §12 „Nachtrag
+  aug26".
 
 - **Bogen printing: a job always starts at the front of the plan, and a stack
   is ONE PDF.** Author's decision 2026-08-26: the queue is the plan order

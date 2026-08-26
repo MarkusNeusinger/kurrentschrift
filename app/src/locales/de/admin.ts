@@ -828,7 +828,7 @@ export const admin = {
     joinsEmpty: 'Alle Übergänge des Plans sind belegt.',
     quotenTitle: 'Quoten',
     quotenNone:
-      'Erstbeleg- und Ausbau-Quote brauchen die Übergangsraum-Gewichte; die liegen nur lokal (aus Konsult-Korpora abgeleitet). Terminal: uv run python -m tools.eigenhand.report --hand {{hand}}',
+      'Erstbeleg- und Ausbau-Quote brauchen die Übergangsraum-Gewichte; die liegen noch nicht in der Datenbank. Vom Rechner mit den Konsult-Korpora: uv run python -m tools.eigenhand.universe --push',
     queueTitle: 'Nächste Streifen',
     printTitle: 'Bogen drucken',
     printIntro:

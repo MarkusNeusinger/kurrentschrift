@@ -14,9 +14,11 @@ aus `.env` (seit 2026-08-25) — kein `set -a; . .env` mehr davor. Eine im
 Terminal gesetzte Variable gewinnt weiterhin.
 
 ```bash
-# einmalig: Konsultationskorpora holen und den Übergangsraum bauen
+# einmalig: Konsultationskorpora holen und den Übergangsraum bauen —
+# --push schiebt ihn danach in die geteilte DB (vorher tools.dbsnapshot.fetch),
+# damit die Werkbank Quoten und die gewichtete Warteschlange zeigt
 uv run python data/corpora/frequencywords-2018/fetch_frequencywords.py
-uv run python -m tools.eigenhand.universe
+uv run python -m tools.eigenhand.universe --push
 
 # einmalig je Hand, VOR der ersten Sitzung: das stehende Setup erklären.
 # Danach liest ingest Feder/Tinte/Papier von hier; Fassungen, die davor

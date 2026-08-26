@@ -803,3 +803,53 @@ class EigenhandStrip(Base):
     sha256: Mapped[str] = mapped_column(String(64), nullable=False)
     bytes: Mapped[int] = mapped_column(Integer, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+UEBERGANGSRAUM_NAME = "uebergangsraum"
+
+
+class EigenhandUebergangsraum(Base):
+    """The Übergangsraum — the weighted Soll universe of the own-hand capture.
+
+    ONE row holding the whole table (`items`: coverage item → summed corpus
+    weight, pool-only items at 0.0), because the table is one indivisible
+    build: every consumer normalises against the table's own maximum, so a
+    partial state would silently rescale every Soll. Hand-independent — the
+    universe is the same for every writer — and keyed by `name` only so a
+    second corpus mix could sit beside it one day without a migration.
+
+    The author's decision of 2026-08-25 put it here: the table is a DERIVED
+    aggregate of consult-only frequency lists (~1 300 numbers), not the lists
+    themselves — the corpus bytes stay gitignored and out of the DB, and this
+    row never leaves the admin-gated `/eigenhand/*` surface. Its provenance
+    travels with it (`corpora` = the pinned list checksums, `en_weight`, the
+    filter constants, `pool_sha256` = the curated pool the union was built
+    over), so the row says out of itself which build it is; `sha256` over the
+    canonical content is what makes the push idempotent.
+
+    What it buys: the Werkbank shows the Erstbeleg- and Ausbau-Quote the
+    terminal report shows, and the server ranks repetition candidates by
+    weighted Soll gain instead of by fewest Fassungen — one Soll on both
+    surfaces (proposal §7.1).
+    """
+
+    __tablename__ = "eigenhand_uebergangsraum"
+    __table_args__ = (UniqueConstraint("name", name="uq_eigenhand_uebergangsraum"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(32), nullable=False, default=UEBERGANGSRAUM_NAME)
+    format: Mapped[int] = mapped_column(Integer, nullable=False)
+    en_weight: Mapped[float] = mapped_column(Float, nullable=False)
+    min_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    min_word_len: Mapped[int] = mapped_column(Integer, nullable=False)
+    corpora: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False)
+    words_used: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False)
+    corpus_items: Mapped[int] = mapped_column(Integer, nullable=False)
+    pool_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    item_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    items: Mapped[dict] = mapped_column(PORTABLE_JSON, nullable=False)
+    sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )

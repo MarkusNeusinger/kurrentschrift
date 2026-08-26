@@ -245,6 +245,12 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
 - **`universe`** — baut den lokalen Übergangsraum (Soll-Gewichte) aus den
   Konsultationskorpora unter `data/corpora/frequencywords-2018/` (vorher
   deren `fetch_frequencywords.py` laufen lassen; Bytes bleiben gitignored).
+  **`--push`** schiebt die Tabelle danach als vollständiges Soll-Universum
+  (∪ Pool-Items zu 0, mit Provenienz) über `PUT /eigenhand/uebergangsraum`
+  in die geteilte DB (Proposal §7.1; `--push-only` schiebt die vorhandene
+  lokale Datei ohne Neubau, `--dry-run` zeigt nur die Kennzahlen);
+  idempotent per Prüfsumme, ein anderer Bau ersetzt die Zeile — deshalb
+  vorher `tools.dbsnapshot.fetch`. Braucht `ADMIN_TOKEN`.
 - **`pool`** — baut/erweitert den committeten Streifenplan
   (`core/eigenhand/streifen.json`), deterministisch und append-never;
   **`gaps`** listet unerreichbare Übergänge samt echter
@@ -275,8 +281,9 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   `--api` zeigt auf eine andere Instanz.
   **`sync --from <Archiv-Snapshot>`** ist der Wiederherstellungsweg: dieselbe
   Push-Logik, nur aus dem Archiv statt aus der Arbeitskopie — damit bringt
-  Repo + Archiv die vier `eigenhand_*`-Tabellen samt Bildern zurück (Rezept
-  und Drill: Proposal §8.1). Genannt wird IRGENDEIN Schnappschuss der Hand;
+  Repo + Archiv die vier hand-gebundenen `eigenhand_*`-Tabellen samt Bildern
+  zurück (Rezept und Drill: Proposal §8.1); die fünfte, das Soll-Universum,
+  kommt aus ihrer eigenen Quelle (`universe --push`). Genannt wird IRGENDEIN Schnappschuss der Hand;
   seine Geschwister im selben Verzeichnis kommen automatisch dazu (neuester
   gewinnt), weil `snapshot.py` inkrementell ablegt und nur der erste
   Schnappschuss vollständig ist. Das stehende Setup wird dabei nur gesetzt,
