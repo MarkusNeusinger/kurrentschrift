@@ -370,7 +370,12 @@ async def import_sheet(
     # below turn on, so a client could otherwise declare two different layouts
     # identical (or one layout different from itself).
     digest = bogen.layout_digest(body.layout)
-    if digest != body.layout_sha256:
+    # A Kartei written before the digest became canonical still declares the
+    # old spelling's hash (insertion order, the way `layout.json` was written
+    # then). The body carries that order, so the legacy digest is reproducible
+    # here — accept both, so a rollout never strands a local Kartei.
+    legacy = hashlib.sha256((json.dumps(body.layout, ensure_ascii=False, indent=1) + "\n").encode()).hexdigest()
+    if body.layout_sha256 not in (digest, legacy):
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
             detail=f"layout_sha256 {body.layout_sha256[:10]}… does not match the layout ({digest[:10]}…)",

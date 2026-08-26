@@ -18,6 +18,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import io
+import json
 from urllib.parse import quote
 
 import pytest
@@ -470,6 +471,19 @@ class TestLocalPrints:
             "PUT", f"/eigenhand/sheets/{HAND}/B0001", json_body=body, headers=api.admin_headers()
         )
         assert legacy.status == 201 and legacy.json()["imported"] is False, legacy.body
+
+        # A Kartei written before the change declares the OLD spelling's hash
+        # (insertion order of its layout.json). Accepted too — a rollout must
+        # not strand a local Kartei on a 400.
+        old_spelling = hashlib.sha256((json.dumps(layout, ensure_ascii=False, indent=1) + "\n").encode()).hexdigest()
+        assert old_spelling != body["layout_sha256"]
+        older = await api.client.request(
+            "PUT",
+            f"/eigenhand/sheets/{HAND}/B0001",
+            json_body=body | {"layout_sha256": old_spelling},
+            headers=api.admin_headers(),
+        )
+        assert older.status == 201 and older.json()["imported"] is False, older.body
 
     @pytest.mark.asyncio
     async def test_a_layout_naming_another_bogen_is_refused(self, api: Harness):
