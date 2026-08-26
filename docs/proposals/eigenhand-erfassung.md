@@ -546,7 +546,14 @@ mit demselben `sync` hoch: beide Seiten münzen ihre IDs aus derselben
 Kartei-Sicht, und ein registrierter Bogen nimmt seine ID aus dem
 Verkehr. Ein bereits registriertes Layout wird nie überschrieben — ein
 abweichendes unter derselben ID ist ein Konflikt (409), weil ein Scan
-dagegen registriert sein kann.
+dagegen registriert sein kann. „Abweichend" heißt: andere Geometrie,
+verglichen über die KANONISCHE Form (`bogen.layout_digest`, Schlüssel
+sortiert) des gespeicherten wie des hochgeschobenen Layouts — nicht über
+die Reihenfolge der Schlüssel, die JSONB beim Zurückgeben ohnehin
+umsortiert. Genau daran scheiterte der erste echte Durchlauf am
+2026-08-26: `pull` holte das Server-Layout, `sync` hashte es in der
+zurückgegebenen Reihenfolge, und der Server hielt denselben Bogen für
+einen anderen.
 
 **Was die Schnittstelle nachrechnet, statt es zu glauben** (Copilot-Review
 zu PR #407, beides echte Lücken): Ein hochgeschobenes Layout muss DIESEN

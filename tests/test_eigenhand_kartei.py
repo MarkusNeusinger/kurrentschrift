@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 
 import pytest
 from PIL import Image
 
+from core.eigenhand.bogen import layout_digest
 from core.eigenhand.ids import RETIRED, STATUSES
 from tools.eigenhand import apply as apply_mod
 from tools.eigenhand import page as page_mod
@@ -183,7 +183,8 @@ class TestApply:
         layout_text = (hand_dir(HAND) / "blaetter" / "B0001" / "layout.json").read_text(encoding="utf-8")
         assert record["printed"] == "2026-08-22"
         assert record["strips"] == ["S0001", "S0002"]
-        assert record["layout_sha256"] == hashlib.sha256(layout_text.encode()).hexdigest()
+        # The canonical digest of the geometry — not a hash of the file's bytes.
+        assert record["layout_sha256"] == layout_digest(json.loads(layout_text))
         assert record["scans"] == ["scan.jpg"]
 
     def test_a_payload_for_another_hand_is_refused(self, dataroot):

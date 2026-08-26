@@ -440,8 +440,21 @@ def render_stack_pdf(layouts: list[dict]) -> bytes:
 
 
 def layout_text(layout: dict) -> str:
-    """The layout as it is stored — one spelling, so its SHA256 means one thing."""
-    return json.dumps(layout, ensure_ascii=False, indent=1) + "\n"
+    """The layout in ONE canonical spelling, so its SHA256 means one thing.
+
+    Keys sorted: the digest must not depend on key order, because the stored
+    row comes back from JSONB with its keys REORDERED. Without the sort, a
+    Bogen printed on the server, pulled, and pushed back by `sync` hashed
+    differently from the digest recorded at print time and was refused as "a
+    different layout" — the documented Admin-Druck → `pull` → `ingest` →
+    `sync` loop could never close (found on the first real photo, 2026-08-26).
+    """
+    return json.dumps(layout, ensure_ascii=False, indent=1, sort_keys=True) + "\n"
+
+
+def layout_digest(layout: dict) -> str:
+    """SHA256 of the canonical layout text — the one identity of a Bogen's geometry."""
+    return hashlib.sha256(layout_text(layout).encode()).hexdigest()
 
 
 def compose_sheet(
@@ -546,7 +559,7 @@ def compose_stack(
                 "layout": layout,
                 "pdf": render_pdf(layout),
                 "strips": strip_rows,
-                "layout_sha256": hashlib.sha256(layout_text(layout).encode()).hexdigest(),
+                "layout_sha256": layout_digest(layout),
             }
         )
     return {"sheets": composed, "pdf": render_stack_pdf([entry["layout"] for entry in composed])}
