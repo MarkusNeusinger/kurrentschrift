@@ -38,10 +38,10 @@ from tools.eigenhand.universe import load_universe
 def local_soll() -> tuple[dict[str, float], dict[str, int]] | None:
     """The Übergangsraum-weighted Soll where this machine has the weight table.
 
-    Only the local chain has it (derived from consult-only corpora, never
-    committed, never uploaded), so this is also what the server does without:
-    the print queue then ranks repetitions by fewest Fassungen instead of by
-    weighted Soll gain.
+    The local file (derived from consult-only corpora, never committed); the
+    server reads the same table from the row `universe --push` stored. Without
+    either, the print queue ranks repetitions by fewest Fassungen instead of
+    by weighted Soll gain.
     """
     return soll_model(load_universe()["items"]) if universe_path().exists() else None
 

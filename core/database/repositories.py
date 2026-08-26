@@ -21,6 +21,7 @@ from core.database.models import (
     EigenhandHand,
     EigenhandSheet,
     EigenhandStrip,
+    EigenhandUebergangsraum,
     GlyphPair,
     Hand,
     Instance,
@@ -880,3 +881,29 @@ class EigenhandRepository:
             )
         )
         return result.scalar_one_or_none()
+
+    # ---- the Soll universe: one hand-independent row ------------------------
+
+    async def uebergangsraum(self, name: str = "uebergangsraum") -> EigenhandUebergangsraum | None:
+        """The stored Übergangsraum (weights ∪ pool items, provenance), or None before the first push."""
+        result = await self.session.execute(select(EigenhandUebergangsraum).where(EigenhandUebergangsraum.name == name))
+        return result.scalar_one_or_none()
+
+    async def store_uebergangsraum(self, *, name: str, items: dict, **values: Any) -> EigenhandUebergangsraum:
+        """Store the table WHOLE — a new row, or the existing one taken over by a different build.
+
+        Replace rather than merge on purpose: every target is scaled against
+        the table's own maximum, so a row-wise merge of two builds would be a
+        table nobody computed. The caller has already compared `sha256` and
+        only arrives here with a build that differs.
+        """
+        row = await self.uebergangsraum(name)
+        fields = {**values, "items": dict(items), "item_count": len(items)}
+        if row is None:
+            row = EigenhandUebergangsraum(name=name, **fields)
+            self.session.add(row)
+        else:
+            for key, value in fields.items():
+                setattr(row, key, value)
+        await self.session.flush()
+        return row

@@ -135,8 +135,87 @@ class TestBestand:
             assert len(layer["keys"]) == layer["possible"]
         assert data["glyphs"]["ziffer"]["possible"] == 10
         assert data["joins"]["possible"] > 100 and data["joins"]["covered"] == 0
-        # No Übergangsraum table on the server — no weighted Quoten, and it says so.
+        # No Übergangsraum row pushed yet — no weighted Quoten, and it says so.
         assert data["quoten"] is None
+
+
+def _universe(items: dict[str, float] | None = None, **overrides) -> dict:
+    """A tiny Soll universe in the shape `tools.eigenhand.universe --push` sends."""
+    return {
+        "format": 1,
+        "en_weight": 0.25,
+        "min_count": 100,
+        "min_word_len": 2,
+        "corpora": {"de_50k.txt": "a" * 64, "en_50k.txt": "b" * 64},
+        "words_used": {"de": 3, "en": 2},
+        "corpus_items": 2,
+        "pool_sha256": "c" * 64,
+        "items": items if items is not None else {"e@medial": 100.0, "l>e": 40.0, "Z@initial": 0.0},
+    } | overrides
+
+
+async def _put_universe(api: Harness, body: dict) -> object:
+    return await api.client.request("PUT", "/eigenhand/uebergangsraum", json_body=body, headers=api.admin_headers())
+
+
+class TestUebergangsraum:
+    """The Soll universe in the DB (author's decision 2026-08-25): one row, whole, idempotent."""
+
+    @pytest.mark.asyncio
+    async def test_the_table_is_stored_served_back_and_idempotent(self, api: Harness):
+        first = await _put_universe(api, _universe())
+        assert first.status == 200, first.body
+        assert first.json()["stored"] is True and first.json()["replaced"] is False
+        again = await _put_universe(api, _universe())
+        assert again.json() == {**first.json(), "stored": False}  # same build → no-op, same hash
+        res = await api.client.request("GET", "/eigenhand/uebergangsraum", headers=api.admin_headers())
+        assert res.status == 200
+        data = res.json()
+        assert data["items"] == _universe()["items"] and data["item_count"] == 3
+        assert data["corpora"]["de_50k.txt"] == "a" * 64 and data["sha256"] == first.json()["sha256"]
+
+    @pytest.mark.asyncio
+    async def test_a_different_build_replaces_the_row_whole(self, api: Harness):
+        await _put_universe(api, _universe())
+        res = await _put_universe(api, _universe({"e@medial": 200.0}, corpus_items=1))
+        assert res.json()["stored"] is True and res.json()["replaced"] is True
+        data = (await api.client.request("GET", "/eigenhand/uebergangsraum", headers=api.admin_headers())).json()
+        # Whole, not merged: the old items are gone, the new provenance stands.
+        assert data["items"] == {"e@medial": 200.0} and data["corpus_items"] == 1
+
+    @pytest.mark.asyncio
+    async def test_before_the_first_push_the_row_is_a_404_with_the_command(self, api: Harness):
+        res = await api.client.request("GET", "/eigenhand/uebergangsraum", headers=api.admin_headers())
+        assert res.status == 404 and "universe --push" in res.json()["detail"]
+
+    @pytest.mark.asyncio
+    async def test_a_malformed_item_key_or_an_empty_table_is_refused(self, api: Harness):
+        bad = await _put_universe(api, _universe({"e medial": 1.0}))
+        assert bad.status == 400 and "coverage item key" in bad.json()["detail"]
+        empty = await _put_universe(api, _universe({}))
+        assert empty.status == 422
+        # One universe only: a row under another name would be unreachable.
+        other = await _put_universe(api, _universe(name="other"))
+        assert other.status == 422
+
+    @pytest.mark.asyncio
+    async def test_the_stored_weights_light_up_the_quoten_and_weight_the_queue(self, api: Harness):
+        # The same derivation the terminal uses: with the row present, the
+        # Bestand carries the Quoten over the stored item set, and the print
+        # queue's repetition tier ranks by weighted Soll gain.
+        assert (await _bestand(api))["quoten"] is None
+        await _put_universe(api, _universe({"e@medial": 100.0, "l>e": 40.0, "Z@initial": 0.0}))
+        data = await _bestand(api)
+        quoten = data["quoten"]
+        assert quoten is not None and quoten["items"] == 3
+        assert quoten["erstbeleg"] == 0 and quoten["erstbeleg_weighted"] == 0.0
+        assert quoten["soll_belege"] >= 3 * 3  # every item at least the floor target
+        printed = await _print(api, sheets=1, date="2026-08-26")
+        sheet, rows = printed["sheets"][0]["sheet"], printed["sheets"][0]["strips"]
+        await _record(api, [_accepted(sid, sheet, index) for index, sid in enumerate(rows)])
+        after = await _bestand(api)
+        assert after["quoten"]["erstbeleg"] >= 1, "an accepted row with an e moves e@medial"
+        assert 0.0 < after["quoten"]["erstbeleg_weighted"] <= 1.0
 
     @pytest.mark.asyncio
     async def test_an_accepted_fassung_moves_exactly_its_own_strips_items(self, api: Harness):
@@ -641,6 +720,8 @@ class TestAdminGate:
             ("GET", f"/eigenhand/strips/{HAND}"),
             ("GET", f"/eigenhand/strips/{HAND}/S0001/F01"),
             ("PUT", f"/eigenhand/strips/{HAND}/S0001/F01"),
+            ("GET", "/eigenhand/uebergangsraum"),
+            ("PUT", "/eigenhand/uebergangsraum"),
         ],
     )
     async def test_every_route_needs_the_admin_header(self, api: Harness, method: str, path: str):

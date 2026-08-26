@@ -61,20 +61,30 @@ def _planned_word_uses(plan: dict) -> Counter[str]:
     return Counter(word for strip in plan["strips"].values() for word in strip["words"])
 
 
-def soll_model(universe_items: dict[str, float]) -> tuple[dict[str, float], dict[str, int]]:
-    """(weights, two-tier targets) over the Übergangsraum ∪ pool items.
+def soll_weights(universe_items: dict[str, float]) -> dict[str, float]:
+    """The Übergangsraum ∪ pool items — the complete weight table.
 
-    Shared by the wave builder and the Bestandsbericht so Soll always means
-    the same thing. Pool-only items (capitals, historic vocabulary the
-    lowercased corpus cannot carry) enter at weight 0 → floor target.
+    Pool-only items (capitals, historic vocabulary the lowercased corpus
+    cannot carry) enter at weight 0 → floor target. This union is what gets
+    pushed to the server (`universe --push`): the server holds the COMPLETE
+    table and never needs the pool, which lives in `tools/` where the API
+    cannot import it.
     """
     weights = dict(universe_items)
     for entry in pool_entries():
         for item in coverage.word_items(shaping_form(entry)):
             weights.setdefault(item, 0.0)
-    max_weight = max(weights.values(), default=1.0) or 1.0
-    targets = {item: coverage.target_for_weight(w, max_weight) for item, w in weights.items()}
-    return weights, targets
+    return weights
+
+
+def soll_model(universe_items: dict[str, float]) -> tuple[dict[str, float], dict[str, int]]:
+    """(weights, two-tier targets) over the Übergangsraum ∪ pool items.
+
+    Shared by the wave builder, the Bestandsbericht and — through the stored
+    table — the server, so Soll always means the same thing: the targets come
+    from `coverage.soll_from_weights`, the one derivation on both surfaces.
+    """
+    return coverage.soll_from_weights(soll_weights(universe_items))
 
 
 def build_wave(plan: dict, target_strips: int, universe_items: dict[str, float]) -> tuple[dict, dict]:

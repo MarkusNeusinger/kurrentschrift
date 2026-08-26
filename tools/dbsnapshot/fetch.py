@@ -88,7 +88,7 @@ GLOBAL_READS: tuple[tuple[str, str, bool], ...] = (
 # It earns its place as the CHECK: `strip_hashes` in the manifest is what a
 # restore compares the archive's files against, and a divergence between the
 # two trees becomes visible here instead of on the day someone needs it.
-EIGENHAND_TABLES = ("eigenhand_sheets", "eigenhand_fassungen", "eigenhand_strips")
+EIGENHAND_TABLES = ("eigenhand_sheets", "eigenhand_fassungen", "eigenhand_strips", "eigenhand_uebergangsraum")
 
 
 def _git(*args: str, cwd: Path, required: bool = False) -> str:
@@ -220,6 +220,10 @@ def collect(client: ApiClient) -> tuple[dict[str, Any], dict[str, int]]:
     payload["ambiguous_styles"] = sorted(style for style, n in per_style.items() if n > 1)
 
     payload["eigenhand"], payload["strip_hashes"] = collect_eigenhand(client, counts)
+    # The Soll universe is one hand-independent row; before the first push the
+    # route answers 404, which is an empty table, not an error.
+    payload["uebergangsraum"] = client.get("/eigenhand/uebergangsraum", admin=True, allow_404=True)
+    counts["eigenhand_uebergangsraum"] = 1 if payload["uebergangsraum"] else 0
     return payload, counts
 
 
@@ -301,6 +305,11 @@ def write_snapshot(out: Path, payload: dict[str, Any], manifest: dict[str, Any])
         per = out / "eigenhand" / hand
         per.mkdir(parents=True)
         (per / "archive.json").write_text(json.dumps(archive, indent=1, ensure_ascii=False) + "\n")
+    if payload.get("uebergangsraum"):
+        (out / "eigenhand").mkdir(parents=True, exist_ok=True)
+        (out / "eigenhand" / "uebergangsraum.json").write_text(
+            json.dumps(payload["uebergangsraum"], indent=1, ensure_ascii=False) + "\n"
+        )
 
 
 def file_into_archive(snapshot: Path, archive: Path, stamp: str, counts: dict[str, int], *, push: bool) -> str:

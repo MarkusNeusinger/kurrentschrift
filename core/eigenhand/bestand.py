@@ -9,11 +9,12 @@ never disagree about the same hand:
 * **Möglich** — the items the COMMITTED strip plan carries. That is the honest
   denominator for "how many are there in total": what this hand will hold once
   every planned strip is written, capitals · digits · signs included.
-* **Soll** — the two-tier target model, weighted by the Übergangsraum. Only the
-  machine that built the weight table has it (derived from consult-only
-  corpora, never committed, never uploaded), so ``quoten`` is optional: without
-  it the Bestand still answers how much of the plan is written, just not how
-  much of real German that is.
+* **Soll** — the two-tier target model, weighted by the Übergangsraum. The
+  weight table is derived from consult-only corpora and never committed; the
+  local chain reads its file, the server the row `tools.eigenhand.universe
+  --push` stored (author's decision 2026-08-25). So ``quoten`` is optional:
+  without a table the Bestand still answers how much of the plan is written,
+  just not how much of real German that is.
 
 Pure: a plan and a Kartei-shaped dict in, JSON-ready data out. Where the
 Kartei comes from — ``kartei.json`` locally, the ``eigenhand_*`` tables on the

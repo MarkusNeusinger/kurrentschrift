@@ -2063,13 +2063,20 @@ Nie committet, nie von Hand editiert. *Technisch:*
 **Übergangsraum** — die Soll-Grundgesamtheit der Eigenhand-Erfassung:
 alle GEFORMTEN glyph_key-Übergänge und Glyph-Positionen, die in echtem
 Wortschatz vorkommen, korpusfrequenz-gewichtet; berechnet aus
-Konsultationskorpora (Klasse 2), die Gewichtstabelle bleibt lokal
-(Frequenzlisten-Doktrin, quiz-wortbank.md §4). Item-Notation `l>e`
+Konsultationskorpora (Klasse 2). Die Gewichtstabelle wird nie
+committet (Frequenzlisten-Doktrin, quiz-wortbank.md §4); seit dem
+Autor-Entscheid 2026-08-25 liegt sie neben der lokalen Kopie als EINE
+Zeile in der privaten, geteilten DB (`eigenhand_uebergangsraum`,
+Migration `0026`, Push `tools.eigenhand.universe --push`) — als
+vollständiges Soll-Universum (Korpus-Items ∪ Pool-Items zu 0) samt
+Provenienz, damit Werkbank und Terminal dieselben Quoten und dieselbe
+gewichtete Druck-Warteschlange rechnen. Item-Notation `l>e`
 (Übergang) und `e@medial` (Glyph-Position). Bewusst nicht „Abdeckung“
 genannt — der Begriff gehört der Humanbench-Abdeckungsmatrix (§4).
 *Technisch:* `tools/eigenhand/universe.py`,
-`core/eigenhand/coverage.py`.
-→ proposals/eigenhand-erfassung.md §4
+`core/eigenhand/coverage.py` (`soll_from_weights` = die eine
+Ziel-Ableitung beider Seiten), `GET|PUT /eigenhand/uebergangsraum`.
+→ proposals/eigenhand-erfassung.md §4, §7.1
 
 **Mindestbelegung (Eigenhand)** — die harte Untergrenze des
 Streifenplans: JEDE Glyphe — Buchstabe, Ligatur, Ziffer, Zeichen — wird
@@ -2101,7 +2108,9 @@ treibt Phase A des Streifenplans) und das Aufbauziel
 Untergrenze 3 — es misst die Ausbau-Quote).
 *Technisch:* `core/eigenhand/bestand.py` (die Rechnung),
 `tools/eigenhand/report.py` (Terminal), `GET /eigenhand/bestand/{hand}`
-+ `/admin/eigenhand` (Werkbank), `tools/eigenhand/pool.py::soll_model`.
++ `/admin/eigenhand` (Werkbank — mit Quoten, sobald die Gewichte per
+`universe --push` in der DB liegen), `tools/eigenhand/pool.py::soll_model`
+über `coverage.soll_from_weights`.
 → proposals/eigenhand-erfassung.md §7
 
 **Eigenhand-Buchführung** — die Hälfte der Streifenkartei, die in der
@@ -2115,7 +2124,11 @@ geschriebenen Streifen zeigen kann wie einen Tafel-Crop: eigene Tabelle,
 PNG-Spalte überall deferred, admin-gesichert, `private, no-store`, nie im
 Repository — der Master bleibt das private Archiv. Nahtstelle ist die
 Kartei-FORM: lokal `kartei.json`, serverseitig
-`EigenhandRepository.kartei` — dahinter rechnet dieselbe Schicht.
+`EigenhandRepository.kartei` — dahinter rechnet dieselbe Schicht. Seit
+`0026` liegt auch das Soll daneben: die Übergangsraum-Gewichte als EINE
+hand-unabhängige Zeile (`eigenhand_uebergangsraum`, Autor 2026-08-25,
+Push `universe --push`), damit Quoten und gewichtete Warteschlange auf
+beiden Seiten dieselben sind.
 *Technisch:* `core/database/models.py`, `api/routers/eigenhand.py`,
 hoch/runter mit `tools/eigenhand/sync.py` ↔ `pull.py`
 (Bilder nur auf `--mit-streifen`).

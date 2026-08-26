@@ -29,6 +29,9 @@ count what a hand already covers.
 * ``GET /eigenhand/archive/{hand}`` — the hand's bookkeeping as rows, for the
   archive run and the restore check (strip hashes, never strip bytes).
 * ``GET|PUT /eigenhand/setups[/{hand}]`` — the hand's standing nib/ink/paper.
+* ``GET|PUT /eigenhand/uebergangsraum`` — the Soll universe (weights ∪ pool
+  items, with provenance), one hand-independent row; pushed whole by
+  ``tools.eigenhand.universe --push``, idempotent on a content hash.
 * ``GET|PUT /eigenhand/strips/…`` — the written strip itself, and any single
   word cut out of it.
 
@@ -40,10 +43,13 @@ what makes „repo + archive restores everything" a check rather than a hope.
 
 Compute is shared with the terminal chain (``core/eigenhand``), so the admin
 view and ``python -m tools.eigenhand.report`` cannot disagree about one hand.
-One difference is honest and deliberate: the Übergangsraum weight table is
-derived from consult-only corpora and stays on the machine that built it, so
-the server reports no Quoten and ranks repetition candidates by fewest
-Fassungen rather than by weighted Soll gain.
+Since the author's decision of 2026-08-25 that includes the Soll: the
+Übergangsraum weight table — a DERIVED aggregate of consult-only corpora,
+never the corpora themselves — is pushed up by ``tools.eigenhand.universe
+--push`` (``PUT /eigenhand/uebergangsraum``), and with it the server shows the
+Erstbeleg- and Ausbau-Quote and ranks repetition candidates by weighted Soll
+gain, exactly like the terminal. Without the row (a fresh DB) it still answers
+everything but the Quoten, and says so.
 
 Uploading scans is deliberately NOT here (owner, 2026-08-23): ingest needs the
 file on disk, and the Siebung is already a local HTML review page.
@@ -58,6 +64,7 @@ import base64
 import binascii
 import hashlib
 import io
+import json
 import unicodedata
 from datetime import date as date_cls
 from urllib.parse import quote
@@ -83,9 +90,12 @@ from api.schemas import (
     EigenhandStripOut,
     EigenhandSyncIn,
     EigenhandSyncOut,
+    EigenhandUebergangsraumIn,
+    EigenhandUebergangsraumOut,
+    EigenhandUebergangsraumStoreOut,
 )
 from core.database import EigenhandRepository
-from core.eigenhand import bogen, crop, geometry
+from core.eigenhand import bogen, coverage, crop, geometry
 from core.eigenhand.bestand import bestand as build_bestand
 from core.eigenhand.ids import STYLE_IDS, is_fassung_id, is_hand_id, is_sheet_id, is_strip_id, style_of_hand
 from core.eigenhand.plan import load_plan, words_of
@@ -148,7 +158,97 @@ async def read_bestand(hand: str, queue: int = 9, db: AsyncSession = Depends(req
     _checked_hand(hand)
     repo = EigenhandRepository(db)
     kartei = await repo.kartei(hand, style_of_hand(hand) or "")
-    return EigenhandBestandOut.model_validate(_guard(build_bestand, load_plan(), kartei, max(1, min(queue, 50))))
+    soll = await _stored_soll(repo)
+    return EigenhandBestandOut.model_validate(_guard(build_bestand, load_plan(), kartei, max(1, min(queue, 50)), soll))
+
+
+async def _stored_soll(repo: EigenhandRepository) -> tuple[dict[str, float], dict[str, int]] | None:
+    """The Soll model from the stored Übergangsraum row, or None before the first push.
+
+    One derivation on both surfaces: the row holds the COMPLETE table (corpus
+    weights ∪ pool items at 0), so `coverage.soll_from_weights` yields the
+    same targets `tools.eigenhand.pool.soll_model` yields locally.
+    """
+    row = await repo.uebergangsraum()
+    return coverage.soll_from_weights(row.items) if row is not None else None
+
+
+def _uebergangsraum_sha256(body: EigenhandUebergangsraumIn) -> str:
+    """The content hash the push is idempotent on — canonical JSON, provenance included."""
+    content = body.model_dump(mode="json")
+    return hashlib.sha256(json.dumps(content, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def _uebergangsraum_out(row) -> EigenhandUebergangsraumOut:
+    return EigenhandUebergangsraumOut(
+        name=row.name,
+        format=row.format,
+        en_weight=row.en_weight,
+        min_count=row.min_count,
+        min_word_len=row.min_word_len,
+        corpora=dict(row.corpora),
+        words_used=dict(row.words_used),
+        corpus_items=row.corpus_items,
+        pool_sha256=row.pool_sha256,
+        item_count=row.item_count,
+        items=dict(row.items),
+        sha256=row.sha256,
+        updated_at=row.updated_at.isoformat() if row.updated_at else None,
+    )
+
+
+@router.get("/uebergangsraum", response_model=EigenhandUebergangsraumOut)
+async def read_uebergangsraum(db: AsyncSession = Depends(require_db)) -> EigenhandUebergangsraumOut:
+    """The stored Soll universe with its provenance — 404 before the first push.
+
+    Served whole (items included): the archive run needs every number, and the
+    Werkbank reads the provenance off the same answer.
+    """
+    row = await EigenhandRepository(db).uebergangsraum()
+    if row is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail="no Übergangsraum stored yet — push it: uv run python -m tools.eigenhand.universe --push",
+        )
+    return _uebergangsraum_out(row)
+
+
+@router.put("/uebergangsraum", response_model=EigenhandUebergangsraumStoreOut)
+async def put_uebergangsraum(
+    body: EigenhandUebergangsraumIn, db: AsyncSession = Depends(require_db)
+) -> EigenhandUebergangsraumStoreOut:
+    """Store the Soll universe — whole, idempotent, replaced only by a different build.
+
+    The table is one indivisible build (every target is scaled against its own
+    maximum), so this is the one eigenhand write that REPLACES rather than
+    appends: the same content again is a no-op, a different build takes the
+    row over — the previous build is derivable from corpus + pool and sits in
+    the archive snapshot the operating recipe takes before a push. Never a
+    partial update: a filtered table would silently rescale every Soll.
+    """
+    for item in body.items:
+        if not coverage.is_item_key(item):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=f"{item!r} is not a coverage item key")
+    digest = _uebergangsraum_sha256(body)
+    repo = EigenhandRepository(db)
+    existing = await repo.uebergangsraum(body.name)
+    if existing is not None and existing.sha256 == digest:
+        return EigenhandUebergangsraumStoreOut(name=body.name, stored=False, replaced=False, sha256=digest)
+    await repo.store_uebergangsraum(
+        name=body.name,
+        format=body.format,
+        en_weight=body.en_weight,
+        min_count=body.min_count,
+        min_word_len=body.min_word_len,
+        corpora=body.corpora,
+        words_used=body.words_used,
+        corpus_items=body.corpus_items,
+        pool_sha256=body.pool_sha256,
+        items=body.items,
+        sha256=digest,
+    )
+    await db.commit()
+    return EigenhandUebergangsraumStoreOut(name=body.name, stored=True, replaced=existing is not None, sha256=digest)
 
 
 @router.post("/sheets", response_model=EigenhandSheetsOut, status_code=status.HTTP_201_CREATED)
@@ -175,7 +275,10 @@ async def print_sheets(body: EigenhandSheetIn, db: AsyncSession = Depends(requir
     repo = EigenhandRepository(db)
     # One Kartei read, one selection for the whole stack: the pages continue
     # the queue among themselves, and the job starts at the queue's front.
+    # The same Soll the Bestand's queue shows: the printed Bogen and the
+    # displayed queue must never disagree about which strip comes next.
     kartei = await repo.kartei(hand, style)
+    soll = await _stored_soll(repo)
     stack = _guard(
         bogen.compose_stack,
         plan=plan,
@@ -188,6 +291,7 @@ async def print_sheets(body: EigenhandSheetIn, db: AsyncSession = Depends(requir
         repeat=body.repeat,
         strips=body.strips,
         hints=body.hints,
+        soll=soll,
     )
     printed = []
     for composed in stack["sheets"]:

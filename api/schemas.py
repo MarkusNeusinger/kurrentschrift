@@ -1040,6 +1040,45 @@ class EigenhandSyncOut(BaseModel):
     skipped: int
 
 
+class EigenhandUebergangsraumIn(BaseModel):
+    """The Soll universe as `tools.eigenhand.universe --push` sends it — whole.
+
+    `items` is the COMPLETE table (corpus items ∪ the curated pool's items at
+    0.0), because every target is scaled against the table's own maximum and
+    the server has no pool to union in. The rest is provenance: which corpus
+    bytes (`corpora` checksums), which damping and filters, and which pool
+    (`pool_sha256`) this build stands on.
+
+    `name` is pinned: the API knows ONE universe. The column exists so a
+    second corpus mix could sit beside it one day — that day brings its own
+    routes; until then a different name would be a row nothing can read.
+    """
+
+    name: Literal["uebergangsraum"] = "uebergangsraum"
+    format: Annotated[int, Field(ge=1)]
+    en_weight: Annotated[float, Field(ge=0.0, le=1.0)]
+    min_count: Annotated[int, Field(ge=0)]
+    min_word_len: Annotated[int, Field(ge=1)]
+    corpora: dict[str, str]
+    words_used: dict[str, int]
+    corpus_items: Annotated[int, Field(ge=0)]
+    pool_sha256: Annotated[str, Field(min_length=64, max_length=64)]
+    items: Annotated[dict[str, Annotated[float, Field(ge=0.0)]], Field(min_length=1)]
+
+
+class EigenhandUebergangsraumOut(EigenhandUebergangsraumIn):
+    item_count: int
+    sha256: str
+    updated_at: str | None = None
+
+
+class EigenhandUebergangsraumStoreOut(BaseModel):
+    name: str
+    stored: bool  # False = the same build was already there (no-op)
+    replaced: bool  # True = a different build was overwritten
+    sha256: str
+
+
 class EigenhandSetupIn(BaseModel):
     """A hand's STANDING setup — typed once, read back by every import.
 

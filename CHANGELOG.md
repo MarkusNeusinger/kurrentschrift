@@ -12,6 +12,32 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **The Übergangsraum weight table lives in the shared DB — the Werkbank shows
+  the Erstbeleg- and Ausbau-Quote and prints the weighted queue, like the
+  terminal.** Author's decision of 2026-08-25: the DERIVED table (coverage
+  item → summed corpus weight) may leave the machine that built it; the
+  consult-only corpus bytes stay gitignored and out of the DB. Migration
+  `0026` adds `eigenhand_uebergangsraum` — ONE hand-independent row holding
+  the complete Soll universe (corpus items ∪ the curated pool's items at 0,
+  exactly the set `pool.soll_model` computes locally, so the server needs no
+  pool) plus provenance (list checksums, `en_weight`, filter constants,
+  `pool_sha256`). `tools.eigenhand.universe --push` (or `--push-only`,
+  `--dry-run`) sends it to `PUT /eigenhand/uebergangsraum`, idempotent on a
+  content hash; a different build replaces the row whole — the one eigenhand
+  write that overwrites, because the table is one indivisible build and the
+  previous one is derivable and archived (`tools.dbsnapshot.fetch` now
+  carries it as `eigenhand/uebergangsraum.json`). `GET
+  /eigenhand/uebergangsraum` serves it with provenance; `GET
+  /eigenhand/bestand/{hand}` and `POST /eigenhand/sheets` read the same row,
+  so the displayed queue and the printed Bogen agree. Targets come from the
+  one derivation on both surfaces, `coverage.soll_from_weights`. Doctrine
+  rewritten in `eigenhand-erfassung.md` §4/§7.1/§8.1/§11, the glossary, the
+  tool reference and — as the author asked — an addendum in the corpus
+  `SOURCE.md` (repo ≠ storage location; the aggregate is admin-gated, never
+  public, excluded from any open-data release).
+
 ### Changed
 
 - **Bogen printing: a job always starts at the front of the plan, and a stack
