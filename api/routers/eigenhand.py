@@ -14,11 +14,15 @@ count what a hand already covers.
 * ``GET /eigenhand/bestand/{hand}`` — strips, Fassungen, Bögen, which glyphs
   and joins are written out of how many the plan can produce (capitals, digits
   and signs included), and the print queue.
-* ``POST /eigenhand/sheets`` — print the next Bogen or a stack; each is
-  recorded before the next selects, so no strip lands on two sheets.
+* ``POST /eigenhand/sheets`` — print the next Bogen or a stack: ONE selection
+  for the whole job (the pages continue the queue, no strip on two sheets),
+  every Bogen recorded as its own row. A job always starts at the front of the
+  queue — a printed-but-unwritten Bogen holds nothing back (owner, 2026-08-26).
 * ``GET /eigenhand/sheets/{hand}/{sheet}/pdf`` — the Bogen, re-rendered from
   its stored layout (the bytes follow from the geometry, not the other way
   round).
+* ``GET /eigenhand/stacks/{hand}/pdf?sheets=B0007,B0008`` — several recorded
+  Bögen as ONE PDF, one page each, re-rendered the same way.
 * ``GET /eigenhand/sheets/{hand}/{sheet}/layout`` — that layout, for the local
   ingest run that registers a scan against it.
 * ``POST /eigenhand/fassungen`` — the local Siebung pushing its verdicts up.
@@ -149,7 +153,12 @@ async def read_bestand(hand: str, queue: int = 9, db: AsyncSession = Depends(req
 
 @router.post("/sheets", response_model=EigenhandSheetsOut, status_code=status.HTTP_201_CREATED)
 async def print_sheets(body: EigenhandSheetIn, db: AsyncSession = Depends(require_db)) -> EigenhandSheetsOut:
-    """Compose the next Bogen (or a stack) and record each one before the next selects."""
+    """Compose the next Bogen or a whole stack in ONE selection, then record every Bogen as its own row.
+
+    The queue is walked once for the job (`compose_stack`): the pages continue
+    it among themselves, ids are minted consecutively, and the job starts at
+    the queue's front — a printed-but-unwritten Bogen holds nothing back.
+    """
     hand = _checked_hand(body.hand)
     style = body.style or style_of_hand(hand)
     if style not in geometry.PRESETS:
@@ -164,23 +173,24 @@ async def print_sheets(body: EigenhandSheetIn, db: AsyncSession = Depends(requir
 
     plan = load_plan()
     repo = EigenhandRepository(db)
+    # One Kartei read, one selection for the whole stack: the pages continue
+    # the queue among themselves, and the job starts at the queue's front.
+    kartei = await repo.kartei(hand, style)
+    stack = _guard(
+        bogen.compose_stack,
+        plan=plan,
+        kartei=kartei,
+        hand=hand,
+        style=style,
+        date=body.date or date_cls.today().isoformat(),
+        sheets=body.sheets,
+        rows=body.rows,
+        repeat=body.repeat,
+        strips=body.strips,
+        hints=body.hints,
+    )
     printed = []
-    for _ in range(body.sheets):
-        # Re-read the Kartei each round: the previous Bogen is already a row,
-        # so the queue moves on and no strip is printed twice in one stack.
-        kartei = await repo.kartei(hand, style)
-        composed = _guard(
-            bogen.compose_sheet,
-            plan=plan,
-            kartei=kartei,
-            hand=hand,
-            style=style,
-            date=body.date or date_cls.today().isoformat(),
-            rows=body.rows,
-            repeat=body.repeat,
-            strips=body.strips,
-            hints=body.hints,
-        )
+    for composed in stack["sheets"]:
         await repo.add_sheet(
             hand=hand,
             style=style,
@@ -193,6 +203,29 @@ async def print_sheets(body: EigenhandSheetIn, db: AsyncSession = Depends(requir
         printed.append({"sheet": composed["sheet"], "strips": composed["strips"], "bytes": len(composed["pdf"])})
     await db.commit()
     return EigenhandSheetsOut(hand=hand, style=style, sheets=printed)
+
+
+@router.get("/stacks/{hand}/pdf")
+async def read_stack_pdf(hand: str, sheets: str, db: AsyncSession = Depends(require_db)) -> Response:
+    """Several recorded Bögen as ONE PDF — one page each, re-rendered from their layouts.
+
+    `sheets` is a comma-separated list of ids in page order (the order the
+    print job returned them). Every id must be recorded for this hand; a
+    missing one is a 404 for the whole request, not a shorter document.
+    """
+    ids = [part.strip() for part in sheets.split(",") if part.strip()]
+    if not ids:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="`sheets` names at least one Bogen")
+    if len(ids) > 20:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="a stack holds at most 20 Bögen")
+    layouts = [(await _sheet_row(hand, sheet, db)).layout for sheet in ids]
+    pdf = _guard(bogen.render_stack_pdf, layouts)
+    name = ids[0] if len(ids) == 1 else f"{ids[0]}-{ids[-1]}"
+    return Response(
+        pdf,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="{hand}-{name}.pdf"', "Cache-Control": "no-store"},
+    )
 
 
 @router.put("/sheets/{hand}/{sheet}", status_code=status.HTTP_201_CREATED)

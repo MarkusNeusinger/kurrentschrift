@@ -31,6 +31,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   the author's; the evidence leans (b). `qualitaetsmetrik.md` §12 „Nachtrag
   aug26".
 
+- **Bogen printing: a job always starts at the front of the plan, and a stack
+  is ONE PDF.** Author's decision 2026-08-26: the queue is the plan order
+  minus the strips that are already belegt — a Bogen that was printed but
+  never written holds nothing back (a new print is asked for because the old
+  sheet is gone), so `unterwegs` becomes a display state and stops being a
+  queue criterion. A stack of N Bögen is one selection for the whole job
+  (`core/eigenhand/bogen.py::compose_stack`: the pages continue the queue, no
+  strip on two sheets, attempt groups stay on one page, ids minted
+  consecutively against a working copy of the Kartei) and comes out as one
+  multi-page document (`pdfgen.build_pdf_pages`; the single-page file stays
+  byte-identical). `POST /eigenhand/sheets` composes the stack in one go and
+  still records every Bogen as its own row; new `GET
+  /eigenhand/stacks/{hand}/pdf?sheets=B0007,B0008` re-renders several recorded
+  Bögen into one PDF; the Werkbank opens the job as one document (per-Bogen
+  buttons stay for reprinting a page); `tools.eigenhand.sheet --sheets N`
+  writes `stapel-<first>-<last>.pdf` beside the per-Bogen folders. Doctrine:
+  `eigenhand-erfassung.md` §7.
+
 - **Laufform LF3b-W: the write map re-derived and measured as it would be
   written — the 14-row map fails one gate by one crossing, the 13-row map
   without p passes every gate and now waits for the author's go.** The
