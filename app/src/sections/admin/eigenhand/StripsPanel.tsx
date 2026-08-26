@@ -39,7 +39,8 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { RefObject } from 'react';
 
 import { fetchEigenhandStrip, getEigenhandStrips } from '@/lib/api';
 import type { EigenhandStrip, EigenhandStripBox, EigenhandStripFilter } from '@/lib/api';
@@ -104,6 +105,37 @@ function useStripImage(hand: string, strip: string, fassung: string, box: number
   }, [hand, strip, fassung, box, enabled]);
 
   return { url, loading, error };
+}
+
+/**
+ * Whether an element has come within reach of the viewport — once true, it
+ * stays true. The gallery fetches a crop only then: a page of 24 tiles would
+ * otherwise fire 24 cuts at the server the moment a cell is clicked, most of
+ * them for rows below the fold. Without IntersectionObserver (old browsers,
+ * some test runners) everything counts as in view.
+ */
+function useNearViewport(ref: RefObject<HTMLElement | null>): boolean {
+  const [near, setNear] = useState(false);
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || near) return undefined;
+    if (typeof IntersectionObserver === 'undefined') {
+      setNear(true);
+      return undefined;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setNear(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '300px 0px' },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [ref, near]);
+  return near;
 }
 
 interface LupeTarget {
@@ -226,7 +258,7 @@ function StripTile({
   );
 }
 
-/** One written word that holds the filter — fetched as soon as it is on the page. */
+/** One written word that holds the filter — fetched once it comes near the viewport. */
 function CropTile({
   hand,
   row,
@@ -241,10 +273,15 @@ function CropTile({
   onLupe: (target: LupeTarget) => void;
 }) {
   const t = de.admin.eigenhand;
-  const { url, loading, error } = useStripImage(hand, row.strip, row.fassung, box.index, true);
+  const ref = useRef<HTMLDivElement | null>(null);
+  const near = useNearViewport(ref);
+  const { url, loading, error } = useStripImage(hand, row.strip, row.fassung, box.index, near);
   const title = `${row.strip} · ${row.fassung} · ${box.word}`;
   return (
-    <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 1, p: 1, maxWidth: '100%' }}>
+    <Box
+      ref={ref}
+      sx={{ border: 1, borderColor: 'divider', borderRadius: 1, p: 1, maxWidth: '100%', minHeight: '4rem' }}
+    >
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 0.5 }}>
         <Typography variant="caption" sx={{ color: paper.ink, fontWeight: 600 }}>
           {box.word}
@@ -254,7 +291,15 @@ function CropTile({
         </Typography>
         {loading && <CircularProgress size={12} />}
       </Stack>
-      {url && <StripImage url={url} alt={title} heightPx={row.height_px} zoom={zoom} onLupe={onLupe} />}
+      {url ? (
+        <StripImage url={url} alt={title} heightPx={row.height_px} zoom={zoom} onLupe={onLupe} />
+      ) : (
+        // The strip's height is known before a byte arrives, so the tile takes
+        // its final height at once: tiles below the fold then really ARE below
+        // the fold, and the observer above decides on the true layout instead
+        // of on a row of collapsed captions.
+        <Box sx={{ height: `${row.height_px * zoom}px`, minWidth: '8rem', bgcolor: paper.hi, borderRadius: 1 }} />
+      )}
       {error && (
         <Typography variant="caption" sx={{ color: 'warning.main' }}>
           {t.stripImagesError} {error}

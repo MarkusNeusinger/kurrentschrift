@@ -141,24 +141,19 @@ function BucketGrid({
               row.belege ? t.keyTooltipShow : ''
             }`}
           >
+            {/* A written key is a real <button> (native keyboard + semantics);
+                an unwritten one has nothing to show and stays a plain cell. */}
             <Box
-              role={row.belege ? 'button' : undefined}
-              tabIndex={row.belege ? 0 : undefined}
+              component={row.belege ? 'button' : 'div'}
+              type={row.belege ? 'button' : undefined}
               onClick={row.belege ? () => onSelect(row.key) : undefined}
-              onKeyDown={
-                row.belege
-                  ? (e) => {
-                      if (e.key !== 'Enter' && e.key !== ' ') return;
-                      e.preventDefault(); // Space would scroll the page as well
-                      onSelect(row.key);
-                    }
-                  : undefined
-              }
               sx={{
                 minWidth: '2.1rem',
                 px: 0.5,
                 py: 0.25,
                 textAlign: 'center',
+                font: 'inherit',
+                appearance: 'none',
                 border: 1,
                 borderRadius: 1,
                 borderColor: row.belege ? paper.sepia : 'divider',
@@ -200,7 +195,10 @@ export function EigenhandView() {
   const stripsRef = useRef<HTMLDivElement | null>(null);
   const showBelege = useCallback((item: string) => {
     setStripFilter((current) => ({ ...current, item }));
-    stripsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // An instant jump, not a smooth scroll: the grid sits below the panel, so
+    // a smooth scroll would sweep the viewport across the whole gallery on its
+    // way up and every crop tile would count as seen — and load at once.
+    stripsRef.current?.scrollIntoView({ block: 'start' });
   }, []);
 
   useEffect(() => {
