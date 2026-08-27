@@ -268,7 +268,12 @@ function HeroWord({
             fontStyle: 'italic',
             fontSize: '0.9rem',
             color: paper.sepia,
-            ...riseIn(3),
+            opacity: 0,
+            animation: `${rise} .8s cubic-bezier(.2,.7,.2,1) 3s both`,
+            // reduced motion keeps the 3 s delay but snaps visible (0 s
+            // duration) instead of rising — riseIn's reduce branch would show
+            // the line IMMEDIATELY and flash it on every fast resolve.
+            [reduce]: { animation: `${rise} 0s linear 3s both` },
           }}
         >
           {t.waiting}
