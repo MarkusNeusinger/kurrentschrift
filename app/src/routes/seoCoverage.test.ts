@@ -55,9 +55,12 @@ describe('seo coverage', () => {
     const txt = pub('llms.txt');
     // '/' is the document's own subject (header line), not a list entry.
     // Word-boundary match, not substring: a line linking /schriftkunde.md
-    // must not count as the link to the /schriftkunde page.
+    // must not count as the link to the /schriftkunde page. The literal parts
+    // are regex-escaped — the dots in the origin would otherwise match any
+    // character and quietly weaken the guard.
+    const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     for (const p of publicPaths.filter((v) => v !== '/')) {
-      expect(txt, `llms.txt fehlt ${p}`).toMatch(new RegExp(`${ORIGIN}${p}(?![\\w.-])`));
+      expect(txt, `llms.txt fehlt ${p}`).toMatch(new RegExp(`${escapeRe(ORIGIN + p)}(?![\\w.-])`));
     }
   });
 
