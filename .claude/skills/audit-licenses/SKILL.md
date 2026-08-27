@@ -66,7 +66,7 @@ copies still match their package source byte-for-byte:
 
 ```bash
 for f in $(git ls-files 'app/public/fonts/*.woff2' 'app/public/fonts/*.ttf'); do b=$(basename "$f"); grep -qE "(fonts/|files/)?$b|@fontsource" app/THIRD_PARTY_NOTICES.md && echo "OK covered: $b" || echo "MISSING from notices: $b"; done
-cd app && npm run fonts:sync && git diff --exit-code public/fonts/ && echo "OK: copies byte-identical to @fontsource v$(node -p "require('./node_modules/@fontsource/eb-garamond/package.json').version")"
+cd app && npm run fonts:sync && git diff --exit-code public/fonts/ && node -p '"OK: copies byte-identical to @fontsource v" + require("./node_modules/@fontsource/eb-garamond/package.json").version'
 ```
 
 **No protected work as a file** (prose mentions are bibliographic
