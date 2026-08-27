@@ -17,8 +17,9 @@ Diese Datei katalogisiert Regeln, die später vom geplanten
 Text→Template-Mapping-Modul `core/orthography.py` (M4+, siehe
 [`mvp-roadmap.md`](../concepts/mvp-roadmap.md)) konsumiert werden. Sie
 sind **kein** Bestandteil des Glyph-Schemas und ändern die
-Lehrtafel-Templates (`(glyph, position, variant)` aus
-[`architektur.md`](../concepts/architektur.md) §3) **nicht**.
+Lehrtafel-Templates (`(style, glyph, variant)` aus
+[`architektur.md`](../concepts/architektur.md) §3; die Position ist seit
+Redesign R2 Render-Kontext, kein Schlüssel) **nicht**.
 
 Quellenhinweis: die Regeln sind seit Generationen in deutschen
 Schreiblehrbüchern und Lese-Hilfen codifiziert (z. B. Süß, *Deutsche
