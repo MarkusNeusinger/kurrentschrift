@@ -345,6 +345,33 @@ Funktionsweise identisch.
   es nicht.** Jeder Schreibvorgang aus einem Dev-Lauf trifft also die
   geteilten Echtdaten.
 
+### Markdown-Spiegel der Schriftkunde (seit 2026-08-27)
+
+- `app/public/schriftkunde.md` ist die Textfassung von `/schriftkunde`
+  für Clients ohne JavaScript — generiert von
+  `app/scripts/build-schriftkunde-md.mjs` (läuft als `prebuild`
+  automatisch vor jedem `vite build`; die Datei ist trotzdem
+  EINGECHECKT, damit Dev-Server und PR-Review sie sehen). Der Renderer
+  `app/src/lib/seo/schriftkundeMarkdown.ts` spiegelt den Locale-Katalog
+  in der DOM-Reihenfolge der Seite; drei Vitest-Wächter
+  (`schriftkundeMarkdown.test.ts`) erzwingen Vollständigkeit
+  (jedes Locale-Blatt oder ein benannter SKIP), Byte-Gleichheit der
+  eingecheckten Datei und die Zitierfähigkeit des Kopfs (Canonical ·
+  Stand · `ai-train=no`-Vorbehalt in-band).
+- Das Stand-Datum kommt aus dem `<lastmod>` der Sitemap für
+  `/schriftkunde` — deterministisch statt `new Date()`; ein Bump dieses
+  Datums rötet den Drift-Test, bis `npm run schriftkunde:md` neu
+  generiert (gewollt, kein Bug).
+- Bewusst NICHT in `sitemap.xml`: der Spiegel ist eine alternative
+  Repräsentation, keine kanonische Seite — sein Canonical liegt als
+  HTTP-`Link`-Header an (nginx, samt `text/markdown; charset=utf-8`,
+  ohne das die Sonderzeichen ſ, n̄, ₰, ℳ bei Latin-1-ratenden Clients
+  zerbrechen). Kein `X-Robots-Tag: noindex` — die KI-Suchagenten, für
+  die die Datei existiert, sollen sie indexieren dürfen.
+- Der Dockerfile-Builder läuft dafür auf `node:22-alpine` — das
+  prebuild-Skript importiert den `.ts`-Renderer über Nodes natives
+  Type-Stripping (≥ 22.18 ohne Flag).
+
 ### Schrift-Auslieferung (seit 2026-08-27)
 
 - Alle `@font-face`-Regeln stehen früh in `app/index.html`; die Dateien

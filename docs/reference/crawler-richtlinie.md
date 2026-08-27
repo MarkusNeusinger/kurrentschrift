@@ -1,6 +1,6 @@
 # Crawler-Richtlinie — Suchmaschinen und KI-Agenten
 
-> **Status (2026-08-03): lebend.** Politik-Quelle zu `app/public/robots.txt`
+> **Status (2026-08-27): lebend.** Politik-Quelle zu `app/public/robots.txt`
 > (die Datei verweist im Kopf hierher) und `llms.txt`; jede Änderung an diesen
 > Dateien oder an der Cloudflare-Durchsetzung zieht hier nach — §2/§3 am
 > 2026-08-03 gegen `robots.txt` geprüft, deckungsgleich.
@@ -111,9 +111,15 @@ ist hier wichtiger als bei einer üblichen Seite: Die SPA liefert ohne
 JavaScript nur eine ~5,8 KB große Hülle mit Titel und Description
 (kein Prerendering, anders als beim Schwesterprojekt anyplot). Agenten,
 die kein JS ausführen, sehen also die Hülle **plus** `llms.txt` — und
-nichts sonst. Wenn KI-Sichtbarkeit später mehr wert sein soll als heute,
-ist ein Prerender-Pfad (Bot-UA → serverseitig gerendertes HTML) der
-nächste Schritt, nicht eine weitere robots.txt-Zeile.
+seit 2026-08-27 den **Markdown-Spiegel der Schriftkunde**
+(`/schriftkunde.md`, generiert zur Build-Zeit aus dem Locale-Katalog,
+aus `llms.txt` verlinkt; Canonical auf die HTML-Seite als
+HTTP-`Link`-Header, Rechtevorbehalt `ai-train=no` in-band im Dateikopf,
+weil die rohe Datei ohne robots.txt-Kontext zirkuliert). Der Spiegel
+zieht den Prerender-Gedanken nur für die eine Inhaltsseite vor und
+erledigt ihn NICHT: Wenn KI-Sichtbarkeit später mehr wert sein soll als
+heute, bleibt ein Prerender-Pfad (Bot-UA → serverseitig gerendertes
+HTML) der nächste Schritt, nicht eine weitere robots.txt-Zeile.
 
 ## 4 · Was in Cloudflare zu tun ist
 

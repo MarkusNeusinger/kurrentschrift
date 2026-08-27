@@ -33,6 +33,7 @@ import { WrittenWord } from '@/components/WrittenWord';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
 import { paths } from '@/routes/paths';
+import { TRY_TARGETS } from '@/sections/schriftkunde/tryTargets';
 import { display, garamond, paper, script, suetterlin } from '@/styles/paper';
 
 const t = de.schriftkunde;
@@ -55,16 +56,6 @@ const proseLink = {
 
 type SourceRef = { label: string; href: string };
 type TermItem = { term: string; desc: string };
-
-// Route targets for the closing "Jetzt ausprobieren" cards (copy in the locale,
-// URLs from the central route constants — same split as the hub pages). Keyed
-// by the locale's literal card ids, so adding/renaming a card without its
-// route (or vice versa) fails to compile.
-const TRY_TARGETS: Record<(typeof de.schriftkunde.tryCards)[number]['id'], string> = {
-  quiz: paths.quiz,
-  tafel: paths.tafel,
-  federprobe: paths.scribe,
-};
 
 // A "Quellen: a · b" line — the per-section / per-card citation row. `sx` is the
 // proper MUI SxProps and merged via the array form, so callers may pass any

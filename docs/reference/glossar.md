@@ -48,7 +48,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — k0-Protokoll §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
-- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Mindestbelegung (Eigenhand) §5
+- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Markdown-Spiegel (Schriftkunde) §2 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
@@ -467,6 +467,19 @@ Vorkommens-Statistik (= der DB-Inhalt) sind außerhalb der Lizenz
 reserviert. Technisch durchgesetzt: Bench-Fixtures gitignored,
 Ernte-Artefakte nie committet, der rohe Einzel-Template-Read und die ganze
 Statistik-Schicht admin-gegatet. → quellen-und-rechte.md §5
+
+**Markdown-Spiegel (Schriftkunde)** — die zur Build-Zeit generierte
+Textfassung der `/schriftkunde`-Seite als statische Datei
+`/schriftkunde.md`, für Crawler und KI-Agenten ohne JavaScript (die SPA
+liefert ihnen sonst nur die leere Hülle). Gespiegelt wird der
+Locale-Katalog in der DOM-Reihenfolge der Seite; der Kopf trägt
+Canonical, Stand (aus dem Sitemap-`lastmod`) und den
+`ai-train=no`-Rechtevorbehalt in-band. *Technisch:*
+`app/src/lib/seo/schriftkundeMarkdown.ts` (Renderer) +
+`app/scripts/build-schriftkunde-md.mjs` (prebuild); drei
+Vitest-Wächter erzwingen Vollständigkeit, Byte-Gleichheit der
+eingecheckten Datei und den Kopf. → frontend-stack.md §6,
+crawler-richtlinie.md §3
 
 ---
 

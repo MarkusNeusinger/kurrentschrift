@@ -12,6 +12,31 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **The Schriftkunde gets a Markdown mirror for clients without
+  JavaScript.** `/schriftkunde.md` is the full, citable text of the
+  page as a static file — generated at build time
+  (`npm run schriftkunde:md`, wired as `prebuild`) from the same locale
+  catalogue the page renders, in the page's DOM order; images and the
+  live-written specimens appear as per-script description lines with
+  the Koch plate's public-domain source linked. The head carries the
+  canonical link, a deterministic Stand date (the sitemap's `lastmod`
+  for `/schriftkunde` — no `new Date()`) and the `ai-train=no`
+  reservation in-band, since a raw file circulates without its
+  robots.txt context. Three Vitest guards pin it: every locale string
+  leaf must be mirrored or named in `SKIP_PATHS`, the committed file
+  must byte-match a fresh render, and the head must keep canonical +
+  Stand + reservation. nginx serves it as `text/markdown;
+  charset=utf-8` with a `Link: rel="canonical"` header (deliberately
+  no noindex, and deliberately NOT in sitemap.xml — it is an alternate
+  representation, not a page); `llms.txt` links it in both sections,
+  and the seoCoverage route check is hardened to word-boundary matches
+  so the `.md` line cannot stand in for the page link. The Dockerfile
+  builder moves to `node:22-alpine` (the prebuild imports the `.ts`
+  renderer via Node's native type stripping; Node 20 is EOL and
+  `engines` demanded ≥ 22 anyway).
+
 ### Changed
 
 - **Fonts ship ahead of the JS bundle.** Every `@font-face` is now
