@@ -63,7 +63,7 @@ Kern (siehe `architektur.md` §1).
   Glyph-Daten unter zitierfähiger Lizenz bleiben das Ziel (Ziel 7); bis
   zu dieser bewussten Veröffentlichung bleibt der *gelernte* Datensatz
   vorbehalten — siehe die Status-Notiz in Ziel 7 und
-  `quellen-und-rechte.md` §5.
+  [`quellen-und-rechte.md`](../reference/quellen-und-rechte.md) §5.
 - **Drei Schriftfamilien zum Start.** Die drei für den Start
   relevantesten Familien sind **Kurrent** (die ältere Norm, Projekt-
   Baseline), **Sütterlin** (aufrecht, gleichmäßige Strichstärke) und die
