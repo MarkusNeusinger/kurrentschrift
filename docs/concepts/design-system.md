@@ -73,6 +73,19 @@ Theme-Default), `display` (Playfair Display, Display-Überschriften), `script`
 (GL-GermanCursive/„GLKurrent", Kurrent-Specimen), `suetterlin` (HJZ-Sütterlin-Font,
 Specimen-Fallback), `letterpress` (ein `textShadow`-String für Tiefdruck-Anmutung).
 
+**Schrift-Auslieferung (seit 2026-08-27):** Alle `@font-face`-Regeln stehen früh
+in `app/index.html` gegen selbst gehostete Dateien unter `app/public/fonts/`
+(wörtliche Kopien der @fontsource-v5.3.0-Builds, Subsets latin + latin-ext),
+NICHT im Bundle — zwei Above-the-fold-Schnitte (Playfair 600 und Garamond 400,
+jeweils latin) sind per `<link rel="preload">` vorgeladen, damit sie nicht auf
+den Entry-Chunk warten (mehr Preloads verlieren den Fast-3G-A/B). latin-ext trägt seine `unicode-range` und lädt
+erst, wenn ein ſ o. Ä. auftaucht. Ausgeliefert werden nur latin/latin-ext: ein
+Zeichen außerhalb beider Ranges (z. B. `↻`, `→`, künftig Griechisch/Kyrillisch)
+fällt auf die Serif-Fallbacks zurück — bewusster Zuschnitt für eine
+deutschsprachige Seite. Ein neuer Schnitt braucht eine Datei in `public/fonts/`
+plus eine Regel in `index.html`; ein `@fontsource`-Import bringt ihn nicht mehr
+mit (Mechanik und Update-Pfad: `frontend-stack.md` §6 „Schrift-Auslieferung").
+
 ---
 
 ## 3. Typo-Skala
