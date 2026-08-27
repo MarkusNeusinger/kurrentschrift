@@ -41,7 +41,7 @@ User-agent: OAI-SearchBot
 User-agent: ChatGPT-User
 User-agent: PerplexityBot
 User-agent: Perplexity-User
-Content-Signal: search=yes,ai-input=yes,ai-train=no,use=reference
+Content-Signal: search=yes,ai-input=yes,ai-train=no
 Disallow: /admin
 Allow: /
 
@@ -54,19 +54,19 @@ User-agent: CCBot
 User-agent: Bytespider
 User-agent: Amazonbot
 User-agent: meta-externalagent
-Content-Signal: search=yes,ai-input=yes,ai-train=no,use=reference
+Content-Signal: search=yes,ai-input=yes,ai-train=no
 Disallow: /
 
 # Opt-out tokens for vendors that crawl under a different user agent
 # (Googlebot / Applebot fetch for search and stay allowed).
 User-agent: Google-Extended
 User-agent: Applebot-Extended
-Content-Signal: search=yes,ai-input=yes,ai-train=no,use=reference
+Content-Signal: search=yes,ai-input=yes,ai-train=no
 Disallow: /
 
 # Everyone else: search engines, link previews, feed readers.
 User-agent: *
-Content-Signal: search=yes,ai-input=yes,ai-train=no,use=reference
+Content-Signal: search=yes,ai-input=yes,ai-train=no
 Disallow: /admin
 Allow: /
 

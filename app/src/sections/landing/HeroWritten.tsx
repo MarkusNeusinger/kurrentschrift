@@ -4,16 +4,19 @@
 // viridian flourish underlines it; a Playfair headline, a short lead and the
 // two area CTAs follow. Deliberately minimalist — no eyebrow.
 //
-// Engine-first with an honest fallback (same pattern as the Schriftkunde
-// specimen): while the composition is in flight the word area holds its space;
-// if the backend is cold (FALLBACK_MS), errors, or reports missing glyphs, the
-// GL-GermanCursive show-font wipes in behind a travelling pen nib instead — and
-// the caption switches with the mode, so the page never claims a live synthesis
-// over a static font. prefers-reduced-motion shows the finished word at rest in
-// both modes. index.html preloads the composition on `/`, so the engine path
-// usually resolves before the fallback timer can fire.
+// Engine-first, and the engine gets as long as it needs (owner decision
+// 2026-08-27, replacing the earlier 2.5 s cold-start timer): a WRITTEN word is
+// the whole point of the hero, so a slow backend means waiting — the reserved
+// word area holds its space, and after a short moment a quiet patience line
+// appears under the spinner. Only a genuine failure falls back to the
+// GL-GermanCursive show-font wipe with the travelling nib: a fetch error after
+// the cold-start retries, or a composition with missing glyphs. The caption
+// switches with the mode, so the page never claims a live synthesis over a
+// static font. prefers-reduced-motion shows the finished word at rest in both
+// modes. index.html preloads the composition on `/`, so the wait is rare and
+// short in production.
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { keyframes } from '@mui/system';
 import { Link as RouterLink } from 'react-router-dom';
@@ -32,10 +35,6 @@ const reduce = '@media (prefers-reduced-motion: reduce)';
 // How long the fallback pen takes to wipe the whole word (the engine mode gets
 // its timing from the composition itself via onResolved.writeEndMs).
 const WRITE_MS = 3200;
-// How long the hero waits for the engine before the show-font writes instead.
-// A warm/CDN-cached composition answers in well under a second; anything slower
-// means a cold backend, and the hero must not sit empty through a cold start.
-const FALLBACK_MS = 2500;
 // Width/height ratio of the composed brand word (bounds of
 // /write/word?text=Kurrentſchrift incl. the renderer's padding, checked
 // 2026-08-27) — reserves the word area BEFORE the payload arrives so neither
@@ -254,6 +253,33 @@ function HeroWord({
         )
       )}
 
+      {/* the engine gets as long as it needs — after a short moment the wait
+          says so quietly instead of swapping in a static font (owner decision
+          2026-08-27). Pure CSS delay: no timer to clean up, and the line never
+          shows on the fast path. */}
+      {phase === 'pending' && (
+        <Typography
+          sx={{
+            position: 'absolute',
+            bottom: '6%',
+            width: '100%',
+            textAlign: 'center',
+            fontFamily: garamond,
+            fontStyle: 'italic',
+            fontSize: '0.9rem',
+            color: paper.sepia,
+            opacity: 0,
+            animation: `${rise} .8s cubic-bezier(.2,.7,.2,1) 3s both`,
+            // reduced motion keeps the 3 s delay but snaps visible (0 s
+            // duration) instead of rising — riseIn's reduce branch would show
+            // the line IMMEDIATELY and flash it on every fast resolve.
+            [reduce]: { animation: `${rise} 0s linear 3s both` },
+          }}
+        >
+          {t.waiting}
+        </Typography>
+      )}
+
       {flourishDelayMs != null && <Flourish key={`f-${runKey}`} delayMs={flourishDelayMs} />}
     </Box>
   );
@@ -264,15 +290,6 @@ export function HeroWritten() {
   const [phase, setPhase] = useState<HeroPhase>('pending');
   const [engineEndMs, setEngineEndMs] = useState(0);
   const reduced = usePrefersReducedMotion();
-
-  // Cold-start guard: a hero must never sit empty. Once the fallback has
-  // committed, a late-arriving composition no longer switches modes mid-wipe —
-  // the engine gets its turn on the next visit (the payload is then cached).
-  useEffect(() => {
-    if (phase !== 'pending') return;
-    const timer = window.setTimeout(() => setPhase((p) => (p === 'pending' ? 'font' : p)), FALLBACK_MS);
-    return () => window.clearTimeout(timer);
-  }, [phase]);
 
   const onResolved = useCallback(({ missing, rendered, writeEndMs }: { missing: string[]; rendered: number; writeEndMs: number }) => {
     setEngineEndMs(writeEndMs);

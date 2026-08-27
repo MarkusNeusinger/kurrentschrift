@@ -279,7 +279,7 @@ eigenen drei Bereichen (Buchstaben · Übergänge · Wörter) — §7 `HeaderBar
 | `InfoHint` | grünes Kurrent-„(i)" + Popover („Mehr dazu") | app-weit, Detail eine Geste entfernt |
 | `PaperCardLink` | DIE Papier-Karte, die ein Link ist: Hover/Fokus heben sie an, Rand wird viridian | `to`, `sx`; Geschwister-Export `PaperCardCta` (Haarlinie wischt bei Karten-Hover/-Fokus ein) — genutzt von Landing, Hubs, `/schriftkunde` |
 | `HubView` | Hub-Layout (Titel + Lead + Karten-Grid) | `title`, `lead`, `cards[{title,body,cta,to}]` |
-| `HeroWritten` | einspaltiger Landing-Hero: Markenwort wird von der Engine geschrieben | Engine-first (`WrittenWord`, seit 2026-08-27); GLKurrent-Wort (Specimen) mit Wisch + Federspitze als Cold-Start-/Lücken-Fallback, Caption wechselt mit dem Modus |
+| `HeroWritten` | einspaltiger Landing-Hero: Markenwort wird von der Engine geschrieben | Engine-first (`WrittenWord`, seit 2026-08-27); die Engine bekommt beliebig lange (Geduld-Zeile nach ~3 s, Autor-Entscheid 2026-08-27) — GLKurrent-Wort (Specimen) mit Wisch + Federspitze nur bei echtem Scheitern (Fetch-Fehler, fehlende Glyphen), Caption wechselt mit dem Modus |
 | `WrittenGlyph` | ein Glyph „wie geschrieben" (Ductus-Playback) | weiße Arbeitsfläche |
 | `WrittenWord` | ganzes Wort/Zeile aus Per-Glyph-Diagnostik + Übergängen | Engine-Pfad; Font-Specimen ist Fallback |
 | `BootStatus` | Vollseiten-Boot-/Cold-Start-Zustand | Quiz, Admin |
@@ -295,10 +295,13 @@ Knapp und sinnstiftend (Style-Guide §6, Detailalgorithmen
   Ductus in Schreibrichtung (Tafel, Quiz, Federprobe).
 - **Schreib-Reveal (Hero):** das Markenwort schreibt die Synthese-Engine Zug um
   Zug (`WrittenWord`), danach zieht sich ein Viridian-Flourish, dessen Einsatz
-  am tatsächlichen Schreibende hängt (`onResolved.writeEndMs`). Fallback bei
-  kaltem Backend oder fehlenden Glyphen: das GLKurrent-Markenwort per
-  `clip-path`-Wisch links→rechts, eine wandernde Federspitze (SVG) auf der
-  Kante — `HeroWritten`; `index.html` wärmt die Komposition auf `/` vor.
+  am tatsächlichen Schreibende hängt (`onResolved.writeEndMs`). Ein kaltes
+  Backend heißt WARTEN, nicht ausweichen (Autor-Entscheid 2026-08-27): die
+  reservierte Wortfläche bleibt stehen, nach ~3 s erscheint eine leise
+  Geduld-Zeile. Nur echtes Scheitern (Fetch-Fehler nach den Retries, fehlende
+  Glyphen) fällt auf das GLKurrent-Markenwort zurück — `clip-path`-Wisch
+  links→rechts, wandernde Federspitze (SVG) auf der Kante — `HeroWritten`;
+  `index.html` wärmt die Komposition auf `/` vor.
 - **Ink-Settle:** der gezeichnete Strich „setzt sich" (Eisengallus-Anmutung) leicht nach.
 - **Hover:** Haarlinien-Unterstrich zieht sich in Viridian; Karten heben sich 2 px mit
   weichem Schatten; Übergänge 0.25–0.3 s.
