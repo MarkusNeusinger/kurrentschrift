@@ -64,6 +64,9 @@ export const common = {
   },
   // Marker for staged/disabled features ("coming soon").
   soon: 'bald',
+  // Accessible name of the small spinner while a written glyph/word is being
+  // composed (WrittenGlyph/WrittenWord) — a progressbar needs a name (WCAG).
+  writing: 'wird geschrieben …',
   // Shared footer (PublicFooter) — one warm sign-off on every public page,
   // echoing the impressum's "private Liebhaberei" voice; the Impressum link
   // itself uses de.impressum.footerLink.

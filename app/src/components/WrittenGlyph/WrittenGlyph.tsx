@@ -234,7 +234,7 @@ export function WrittenGlyph({ glyphKey, sourceId = CONFIG.sourceId, durationMs 
     return <Alert severity="error" sx={{ width: '100%' }}>{error}</Alert>;
   }
   if (!data || !geom) {
-    return <CircularProgress size={28} />;
+    return <CircularProgress size={28} aria-label={de.common.writing} />;
   }
 
   const { tpl, minX, vbW, vbY, vbH, strokePaths, polygons, centerlines, maskWidth, writeEndMs } = geom;

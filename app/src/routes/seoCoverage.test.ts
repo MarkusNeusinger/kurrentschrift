@@ -1,0 +1,65 @@
+// Drift guard for the SEO/LLM surface: the public route set in paths.ts, the
+// per-route copy in locales/de/seo.ts, and the static files public/sitemap.xml,
+// public/llms.txt and public/robots.txt must describe the SAME site. Every one
+// of these has drifted silently before (stale lastmod, routes missing from
+// llms.txt) because nothing coupled them — this test is that coupling. On a new
+// public route: add the seo entry, the sitemap <url> and (for content pages)
+// the llms.txt link, and this test goes green again.
+
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+
+import { seo } from '@/locales/de/seo';
+import { paths } from './paths';
+
+const ORIGIN = 'https://kurrentschrift.ink';
+const pub = (rel: string) => readFileSync(fileURLToPath(new URL(`../../public/${rel}`, import.meta.url)), 'utf8');
+
+// The public routes are the top-level string values of paths (the admin lives
+// in nested objects and is deliberately absent from every SEO surface).
+const publicPaths = Object.values(paths).filter((v): v is string => typeof v === 'string');
+
+describe('seo coverage', () => {
+  it('has one seo entry per public route plus the 404', () => {
+    // Not name-matched (path keys and seo keys legitimately differ: scribe →
+    // federprobe); the count plus the uniqueness checks below pin the set.
+    expect(Object.keys(seo)).toHaveLength(publicPaths.length + 1);
+  });
+
+  it('has unique, plausibly sized titles and descriptions', () => {
+    const entries = Object.values(seo);
+    const titles = entries.map((e) => e.title);
+    const descriptions = entries.map((e) => e.description);
+    expect(new Set(titles).size).toBe(titles.length);
+    expect(new Set(descriptions).size).toBe(descriptions.length);
+    for (const t of titles) expect(t.length, t).toBeGreaterThanOrEqual(10);
+    for (const t of titles) expect(t.length, t).toBeLessThanOrEqual(80);
+    for (const d of descriptions) expect(d.length, d).toBeGreaterThanOrEqual(40);
+    for (const d of descriptions) expect(d.length, d).toBeLessThanOrEqual(200);
+  });
+
+  it('sitemap lists exactly the public routes', () => {
+    const xml = pub('sitemap.xml');
+    const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+    const expected = publicPaths.map((p) => (p === '/' ? `${ORIGIN}/` : `${ORIGIN}${p}`));
+    expect(new Set(locs)).toEqual(new Set(expected));
+    // every entry carries a real ISO date — an empty/malformed lastmod is how
+    // the whole file gets ignored by crawlers
+    const lastmods = [...xml.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((m) => m[1]);
+    expect(lastmods).toHaveLength(locs.length);
+    for (const d of lastmods) expect(d).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it('llms.txt links every public content route', () => {
+    const txt = pub('llms.txt');
+    // '/' is the document's own subject (header line), not a list entry.
+    for (const p of publicPaths.filter((v) => v !== '/')) {
+      expect(txt, `llms.txt fehlt ${p}`).toContain(`${ORIGIN}${p}`);
+    }
+  });
+
+  it('robots.txt announces the sitemap', () => {
+    expect(pub('robots.txt')).toContain(`Sitemap: ${ORIGIN}/sitemap.xml`);
+  });
+});

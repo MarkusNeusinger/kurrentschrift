@@ -6,7 +6,7 @@ Die nachgebildeten Schriftzüge sind sorgfältige Synthesen aus gemeinfreien his
 
 ## Bereiche
 
-- [Schriftkunde](https://kurrentschrift.ink/schriftkunde): Belegter Überblick über die deutschen Schreibschriften — Grundbegriffe, die drei Ausgangsschriften, Federn, Tinte & Papier, Buchstaben-Besonderheiten, Zahlen & Zeichen, Chronologie
+- [Schriftkunde](https://kurrentschrift.ink/schriftkunde): Belegter Überblick über die deutschen Schreibschriften — Grundbegriffe, die drei Ausgangsschriften, Federn, Tinte & Papier, Buchstaben-Besonderheiten, Zahlen & Zeichen, Chronologie, eine Schritt-für-Schritt-Anleitung „Einen alten Brief entziffern" und das Kapitel zum Normalschrifterlass 1941 („Warum wir heute nicht mehr so schreiben")
 - [Lesen](https://kurrentschrift.ink/lesen): Übersicht der Lese-Übungen
 - [Buchstaben-Quiz](https://kurrentschrift.ink/quiz): Sütterlin-Buchstaben und -Wörter erkennen, mit Auswertung
 - [Schreibtafel](https://kurrentschrift.ink/tafel): Die drei Grundtafeln; das Sütterlin-Alphabet schreibt sich Zug um Zug selbst
@@ -19,3 +19,4 @@ Die nachgebildeten Schriftzüge sind sorgfältige Synthesen aus gemeinfreien his
 
 - [Quellcode auf GitHub](https://github.com/MarkusNeusinger/kurrentschrift): MIT-Lizenz; die kuratierten Schriftdaten (Duktus, Vorlagen, Statistik) sind gesondert vorbehalten
 - [Offene Lese-API](https://api.kurrentschrift.ink/docs): OpenAPI-Dokumentation der öffentlichen Endpunkte (Quellen, Glyphen, serverseitig komponierte Wörter)
+- [OpenAPI-Spezifikation](https://api.kurrentschrift.ink/openapi.json): dieselbe API maschinenlesbar als JSON — für Agenten ohne JavaScript der direkte Weg (die /docs-Seite ist Swagger-UI)

@@ -5,13 +5,19 @@
 
 export const landing = {
   hero: {
-    // The brand word the hero writes live with the pen. Rendered in the
-    // GL-GermanCursive show-script (a marked specimen, per the legibility rule);
-    // `wordAria` is the plain-text label for screen readers and the title attr.
+    // The brand word the hero writes live with the pen. Engine-first: the
+    // synthesis engine writes it stroke by stroke (WrittenWord); on a cold or
+    // incomplete backend the GL-GermanCursive show-font wipes in instead (a
+    // marked specimen, per the legibility rule). `wordCaption` belongs to the
+    // fallback, `wordCaptionEngine` to the live engine — the caption switches
+    // with the mode so the page never claims a live synthesis over a static
+    // font. `wordAria` is the plain-text label for screen readers/title attr.
     // Long-s (ſ) at the syllable start of "-ſchrift" per the Kurrent rule.
     word: 'Kurrentſchrift',
     wordAria: 'Kurrentschrift',
     wordCaption: '— ein deutsches Wort im Schriftbild von vor hundert Jahren.',
+    wordCaptionEngine:
+      '— eben live geschrieben von der Synthese-Engine: heute in Sütterlin, laufend verfeinert — Kurrent und Offenbacher folgen.',
     title: 'Alte Briefe wieder lesen — und selbst zur Feder greifen.',
     leadBeforeBold:
       'Kurrent, Sütterlin und Offenbacher: die Schriften, in denen unsere Vorfahren ihre Briefe und Urkunden niederschrieben — und die heute',
@@ -26,18 +32,20 @@ export const landing = {
   // whole family of German cursive hands; these three make good starters
   // because each is written with a *different* pen. Each card LINKS to its own
   // Grundtafel (paths.tafel#<styleId>) like the tool cards do; the honest state
-  // rides the link text itself (`cta`): Sütterlin is already written by the
-  // engine (viridian, `written`), Kurrent/Offenbacher are only the historical
+  // rides the link text (`cta`) AND an explicit `status` line on the card:
+  // Sütterlin is already written by the engine and being optimised (viridian,
+  // `written`), Kurrent/Offenbacher are not started — only the historical
   // Vorlage to look at (muted) — neither is in the quiz yet, so no "lesen" claim.
   scriptsHeading: 'Drei Schriften, drei Federn',
   scriptsIntro:
-    '„Kurrentschrift“ fasst eine ganze Familie deutscher Schreibschriften zusammen. Drei davon zum Anfangen — jede mit ihrer eigenen Feder. Das Ziel: keine als Font, sondern Zug um Zug nachgebildet — die Sütterlin schreibt hier schon.',
+    '„Kurrentschrift“ fasst eine ganze Familie deutscher Schreibschriften zusammen. Drei davon zum Anfangen — jede mit ihrer eigenen Feder. Das Ziel: keine als Font, sondern Zug um Zug nachgebildet — die Sütterlin schreibt hier schon und wird laufend verfeinert; Kurrent und Offenbacher sind noch nicht begonnen.',
   scripts: [
     {
       name: 'Kurrent',
       styleId: 'kurrent',
       feder: 'Spitzfeder',
       cta: 'Historische Vorlage ansehen →',
+      status: 'noch nicht begonnen',
       written: false,
       desc: 'Die alte Alltagsschrift, ohne einheitliche Norm. Aus dem Druck der Spitzfeder wächst der Schwellzug — fein im Aufstrich, breit im Abstrich.',
     },
@@ -46,6 +54,7 @@ export const landing = {
       styleId: 'suetterlin',
       feder: 'Gleichzugfeder',
       cta: 'Schon geschrieben — ansehen →',
+      status: 'in aktiver Optimierung',
       written: true,
       desc: 'Aufrecht und gleichmäßig, ohne Schwellung — 1911 entworfen, ab 1915 Schulschrift. Sie wird hier schon lebendig geschrieben.',
     },
@@ -54,6 +63,7 @@ export const landing = {
       styleId: 'offenbacher',
       feder: 'Breitfeder',
       cta: 'Historische Vorlage ansehen →',
+      status: 'noch nicht begonnen',
       written: false,
       desc: 'Der Strichkontrast kommt aus dem Winkel der Breitfeder, nicht aus dem Druck. Nie weit verbreitet — aber ein schöner Einstieg in die Breitfeder-Kalligrafie.',
     },
@@ -93,7 +103,7 @@ export const landing = {
   // the quiz) — those live under "Schon zur Hand". Badge: common.soon.
   roadmapHeading: 'Noch im Werden',
   roadmapNote:
-    'Ein junges Werk: Das Schreiben-Lassen kann bisher nur Sütterlin — und noch nicht fehlerfrei. Vieles, was kommen soll, ist erst Plan:',
+    'Ein junges Werk: Das Schreiben-Lassen kann bisher nur Sütterlin — sie steht in laufender Optimierung und schreibt noch nicht fehlerfrei. Kurrent und Offenbacher sind noch nicht begonnen. Vieles, was kommen soll, ist erst Plan:',
   roadmap: [
     { title: 'Mehr Hände schreiben', desc: 'Auch Kurrent und Offenbacher Zug um Zug geschrieben, nicht nur gelesen — und sauberer als heute.' },
     { title: 'Animierte Tafel', desc: 'Strichfolge, Ansatzpunkte und Schwellzug — der Feder bei der Arbeit zugesehen.' },

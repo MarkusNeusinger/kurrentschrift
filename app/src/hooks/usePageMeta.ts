@@ -22,6 +22,10 @@ function upsertMeta(attr: 'name' | 'property', key: string, content: string) {
   el.setAttribute('content', content);
 }
 
+function removeMeta(attr: 'name' | 'property', key: string) {
+  document.head.querySelector(`meta[${attr}="${key}"]`)?.remove();
+}
+
 function upsertCanonical(href: string) {
   let el = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
   if (!el) {
@@ -35,18 +39,33 @@ function upsertCanonical(href: string) {
 export interface PageMeta {
   title: string;
   description: string;
+  // The 404 sets this: nginx answers every unknown URL with 200 + the shell, so
+  // without it each mistyped link would be an indexable soft-404 that even
+  // declares itself canonical. `noindex` swaps the canonical for a robots
+  // noindex; every indexable page clears that again (each route runs this hook,
+  // so the swap can't stick across a client-side navigation).
+  noindex?: boolean;
 }
 
-export function usePageMeta({ title, description }: PageMeta) {
+export function usePageMeta({ title, description, noindex = false }: PageMeta) {
   useEffect(() => {
-    const url = SITE_ORIGIN + window.location.pathname;
+    // nginx and the router serve /quiz/ exactly like /quiz — canonicalize to
+    // the slashless form so the SPA never mints trailing-slash duplicates.
+    const path = window.location.pathname.replace(/\/+$/, '') || '/';
+    const url = SITE_ORIGIN + path;
     document.title = title;
     upsertMeta('name', 'description', description);
-    upsertCanonical(url);
+    if (noindex) {
+      upsertMeta('name', 'robots', 'noindex,follow');
+      document.head.querySelector('link[rel="canonical"]')?.remove();
+    } else {
+      removeMeta('name', 'robots');
+      upsertCanonical(url);
+    }
     upsertMeta('property', 'og:title', title);
     upsertMeta('property', 'og:description', description);
     upsertMeta('property', 'og:url', url);
     upsertMeta('name', 'twitter:title', title);
     upsertMeta('name', 'twitter:description', description);
-  }, [title, description]);
+  }, [title, description, noindex]);
 }

@@ -1,21 +1,26 @@
-// HeroWritten — the single-column landing hero. A large brand word
-// ("Kurrentſchrift") is written left-to-right by a travelling pen nib (a
-// clip-path reveal synced to the nib), then a viridian flourish underlines it;
-// a Playfair headline, a short lead and the two area CTAs follow. Deliberately
-// minimalist — no eyebrow. prefers-reduced-motion shows the finished word at rest.
+// HeroWritten — the single-column landing hero. The brand word
+// ("Kurrentſchrift") is written live by the synthesis engine (<WrittenWord>,
+// GET /write/word — the same Sütterlin ductus that writes /federprobe), then a
+// viridian flourish underlines it; a Playfair headline, a short lead and the
+// two area CTAs follow. Deliberately minimalist — no eyebrow.
 //
-// The word is rendered in the GL-GermanCursive show-script (`script`) as a
-// MARKED specimen (legibility rule: historic forms only as specimen, never as
-// reading text). It is kept behind <HeroWord> so a later switch to the live
-// WrittenWord engine is a one-component change — decision: font first, engine
-// once the Sütterlin synthesis is good enough for a 14-glyph word.
+// Engine-first with an honest fallback (same pattern as the Schriftkunde
+// specimen): while the composition is in flight the word area holds its space;
+// if the backend is cold (FALLBACK_MS), errors, or reports missing glyphs, the
+// GL-GermanCursive show-font wipes in behind a travelling pen nib instead — and
+// the caption switches with the mode, so the page never claims a live synthesis
+// over a static font. prefers-reduced-motion shows the finished word at rest in
+// both modes. index.html preloads the composition on `/`, so the engine path
+// usually resolves before the fallback timer can fire.
 
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Box, Typography } from '@mui/material';
 import { keyframes } from '@mui/system';
 import { Link as RouterLink } from 'react-router-dom';
 
 import { PageContainer } from '@/components/PageContainer';
+import { WrittenWord } from '@/components/WrittenWord';
+import { useElementSize } from '@/hooks/useElementSize';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { de } from '@/locales';
 import { paths } from '@/routes/paths';
@@ -24,10 +29,29 @@ import { display, garamond, letterpress, paper, script } from '@/styles/paper';
 const t = de.landing.hero;
 const reduce = '@media (prefers-reduced-motion: reduce)';
 
-// How long the pen takes to write the whole word.
+// How long the fallback pen takes to wipe the whole word (the engine mode gets
+// its timing from the composition itself via onResolved.writeEndMs).
 const WRITE_MS = 3200;
+// How long the hero waits for the engine before the show-font writes instead.
+// A warm/CDN-cached composition answers in well under a second; anything slower
+// means a cold backend, and the hero must not sit empty through a cold start.
+const FALLBACK_MS = 2500;
+// Width/height ratio of the composed brand word (bounds of
+// /write/word?text=Kurrentſchrift incl. the renderer's padding, checked
+// 2026-08-27) — reserves the word area BEFORE the payload arrives so neither
+// the engine nor the fallback shifts the copy below (CLS). Drift after a
+// re-authoring is harmless: the svg centres in the reserved box either way.
+const HERO_WORD_ASPECT = 5.4;
+// Cap the engine word so it matches the fallback's presence (9rem show-font)
+// instead of bleeding across the full `wide` container on desktop.
+const HERO_MAX_W = 880;
+// The flourish starts this long before the word finishes — the underline swash
+// begins while the last letter is still completing, like a real signature.
+const FLOURISH_LEAD_MS = 350;
 
-// The word reveals left→right (the right inset shrinks from full to none).
+type HeroPhase = 'pending' | 'engine' | 'font';
+
+// The fallback word reveals left→right (the right inset shrinks from full to none).
 const reveal = keyframes`from { clip-path: inset(-8% 100% -20% -4%); } to { clip-path: inset(-8% -4% -20% -4%); }`;
 // The nib rides the reveal edge, fading in at the first stroke and out at the last.
 const nibTravel = keyframes`
@@ -79,26 +103,61 @@ function NibSvg() {
   );
 }
 
-// The written brand word + nib + flourish. Remounted (via `runKey`) to replay.
-// This is the engine-swap seam: today it renders the GLKurrent font; later it
-// can render the live WrittenWord engine without touching the rest of the hero.
-function HeroWord({ runKey }: { runKey: number }) {
+// The viridian underline swash, drawn just as the word finishes. Positioned in
+// % of the word box so it serves both modes (the em-based fallback and the
+// px-sized engine svg alike).
+function Flourish({ delayMs }: { delayMs: number }) {
   return (
     <Box
-      key={runKey}
+      component="svg"
+      aria-hidden
+      viewBox="0 0 1000 60"
+      preserveAspectRatio="none"
+      sx={{
+        position: 'absolute',
+        left: '-1%',
+        width: '102%',
+        // Low enough that the swash only grazes the deepest descenders (ſ, f)
+        // instead of striking through them — tuned against screenshots of the
+        // composed word at 1440 and 390.
+        bottom: '-8%',
+        height: '14%',
+        overflow: 'visible',
+        pointerEvents: 'none',
+      }}
+    >
+      <Box
+        component="path"
+        d="M8 42 C220 8 520 10 742 30 C840 38 922 36 992 20"
+        sx={{
+          fill: 'none',
+          stroke: paper.viridian,
+          strokeWidth: 7,
+          strokeLinecap: 'round',
+          strokeDasharray: 1200,
+          strokeDashoffset: 1200,
+          animation: `${flourishDraw} 900ms cubic-bezier(.6,.02,.2,1) ${delayMs}ms forwards`,
+          [reduce]: { strokeDashoffset: 0, animation: 'none' },
+        }}
+      />
+    </Box>
+  );
+}
+
+// The show-font fallback: the GLKurrent specimen wiped in left→right by the
+// travelling nib (the pre-engine hero, kept verbatim as the cold-start path).
+function FontWord() {
+  return (
+    <Box
       sx={{
         position: 'relative',
         display: 'inline-block',
-        // The font-size drives the whole composition (word + nib + flourish).
-        // On small screens the long show-word ("Kurrentſchrift") still occupies
-        // only ~60% of the column at the old 2.8rem floor, so it read as too
-        // timid next to the Playfair headline. A steeper vw term (≈15.5vw) lets
-        // it grow into the available width — measured to stay within the column
-        // down to 320px — restoring its dominance on phones; the 9rem cap keeps
-        // desktop unchanged, the 3rem floor protects the very narrowest screens.
+        // The font-size drives word + nib together. A steep vw term lets the
+        // word grow into the column on phones (measured to stay within it down
+        // to 320px); the 9rem cap keeps desktop calm, the 3rem floor protects
+        // the very narrowest screens.
         fontSize: 'clamp(3rem, 15.5vw, 9rem)',
         lineHeight: 1,
-        mx: 'auto',
       }}
     >
       <Box
@@ -109,7 +168,10 @@ function HeroWord({ runKey }: { runKey: number }) {
         sx={{
           fontFamily: script,
           color: paper.ink,
-          display: 'inline-block',
+          // block, not inline-block: an inline-block child adds the wrapper's
+          // baseline strut below it (~0.26em), which silently stretched the
+          // reserved hero box past its aspect ratio in fallback mode.
+          display: 'block',
           px: '0.06em',
           textShadow: letterpress,
           clipPath: 'inset(-8% 100% -20% -4%)',
@@ -134,37 +196,98 @@ function HeroWord({ runKey }: { runKey: number }) {
       >
         <NibSvg />
       </Box>
+    </Box>
+  );
+}
 
-      {/* viridian flourish swash, drawn just as the word finishes */}
-      <Box
-        component="svg"
-        aria-hidden
-        viewBox="0 0 1000 60"
-        preserveAspectRatio="none"
-        sx={{ position: 'absolute', left: '-3%', width: '106%', bottom: '-0.18em', height: '0.36em', overflow: 'visible' }}
-      >
-        <Box
-          component="path"
-          d="M8 42 C220 8 520 10 742 30 C840 38 922 36 992 20"
-          sx={{
-            fill: 'none',
-            stroke: paper.viridian,
-            strokeWidth: 7,
-            strokeLinecap: 'round',
-            strokeDasharray: 1200,
-            strokeDashoffset: 1200,
-            animation: `${flourishDraw} 900ms cubic-bezier(.6,.02,.2,1) ${WRITE_MS - 350}ms forwards`,
-            [reduce]: { strokeDashoffset: 0, animation: 'none' },
-          }}
-        />
-      </Box>
+// The written brand word + flourish. Remounted (via `runKey`) to replay. The
+// box reserves the word's aspect before any payload arrives; the engine svg is
+// sized to fill it exactly (height from the measured width), the fallback
+// centres its em-sized word in the same space.
+function HeroWord({
+  runKey,
+  phase,
+  flourishDelayMs,
+  onResolved,
+  onError,
+}: {
+  runKey: number;
+  phase: HeroPhase;
+  flourishDelayMs: number | null;
+  onResolved: (info: { missing: string[]; rendered: number; writeEndMs: number }) => void;
+  onError: () => void;
+}) {
+  const [box, setBox] = useState<HTMLElement | null>(null);
+  const { w } = useElementSize(box);
+  const height = w > 0 ? Math.round(w / HERO_WORD_ASPECT) : 0;
+
+  return (
+    <Box
+      ref={setBox}
+      sx={{
+        position: 'relative',
+        width: '100%',
+        maxWidth: HERO_MAX_W,
+        mx: 'auto',
+        aspectRatio: `${HERO_WORD_ASPECT}`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      {phase === 'font' ? (
+        <FontWord key={runKey} />
+      ) : (
+        // Mounted during `pending` too — the mount is what starts the fetch
+        // (answered by the render cache / the index.html preload).
+        height > 0 && (
+          <WrittenWord
+            key={runKey}
+            text={t.word}
+            height={height}
+            maxWidth={w}
+            showLineature={false}
+            ariaLabel={t.wordAria}
+            onResolved={onResolved}
+            onError={onError}
+          />
+        )
+      )}
+
+      {flourishDelayMs != null && <Flourish key={`f-${runKey}`} delayMs={flourishDelayMs} />}
     </Box>
   );
 }
 
 export function HeroWritten() {
   const [runKey, setRunKey] = useState(0);
+  const [phase, setPhase] = useState<HeroPhase>('pending');
+  const [engineEndMs, setEngineEndMs] = useState(0);
   const reduced = usePrefersReducedMotion();
+
+  // Cold-start guard: a hero must never sit empty. Once the fallback has
+  // committed, a late-arriving composition no longer switches modes mid-wipe —
+  // the engine gets its turn on the next visit (the payload is then cached).
+  useEffect(() => {
+    if (phase !== 'pending') return;
+    const timer = window.setTimeout(() => setPhase((p) => (p === 'pending' ? 'font' : p)), FALLBACK_MS);
+    return () => window.clearTimeout(timer);
+  }, [phase]);
+
+  const onResolved = useCallback(({ missing, rendered, writeEndMs }: { missing: string[]; rendered: number; writeEndMs: number }) => {
+    setEngineEndMs(writeEndMs);
+    // A brand word with letters missing must not appear half-written — any
+    // gap falls back to the complete show-font specimen.
+    setPhase((p) => (p === 'font' ? p : missing.length || !rendered ? 'font' : 'engine'));
+  }, []);
+  const onError = useCallback(() => setPhase((p) => (p === 'pending' ? 'font' : p)), []);
+
+  const flourishDelayMs =
+    phase === 'font'
+      ? WRITE_MS - FLOURISH_LEAD_MS
+      : phase === 'engine' && engineEndMs > 0
+        ? Math.max(0, engineEndMs - FLOURISH_LEAD_MS)
+        : null;
 
   return (
     <PageContainer
@@ -172,7 +295,13 @@ export function HeroWritten() {
       component="section"
       sx={{ textAlign: 'center', pt: { xs: 5, md: 8 }, pb: { xs: 4, md: 6 } }}
     >
-      <HeroWord runKey={runKey} />
+      <HeroWord
+        runKey={runKey}
+        phase={phase}
+        flourishDelayMs={flourishDelayMs}
+        onResolved={onResolved}
+        onError={onError}
+      />
 
       <Typography
         sx={{
@@ -184,7 +313,10 @@ export function HeroWritten() {
           ...riseIn(0.2),
         }}
       >
-        {t.wordCaption}
+        {/* the caption is honest about the mode: the engine claim appears only
+            once the engine actually writes (pending/fallback show the generic
+            specimen line). */}
+        {phase === 'engine' ? t.wordCaptionEngine : t.wordCaption}
       </Typography>
 
       <Typography

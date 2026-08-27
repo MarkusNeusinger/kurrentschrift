@@ -52,5 +52,7 @@ export const seo = {
   notFound: {
     title: 'Seite nicht gefunden · kurrentschrift.ink',
     description: 'Unter dieser Adresse liegt nichts — der Link ist veraltet oder vertippt.',
+    // Soft-404 (nginx answers 200): keep it out of the index, see usePageMeta.
+    noindex: true,
   },
 } as const;
