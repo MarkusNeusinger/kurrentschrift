@@ -1,6 +1,6 @@
 # Frontend-Stack
 
-> **Status (2026-08-03): lebend.** Ist-Stand von Stack, Routen, i18n-Soll,
+> **Status (2026-08-27): lebend.** Ist-Stand von Stack, Routen, i18n-Soll,
 > Deploy und Admin-Gate; jede Änderung an `app/package.json`,
 > `app/src/routes/paths.ts`, den Cloudbuild-/nginx-Dateien oder `api/auth.py`
 > zieht hier nach.
@@ -344,6 +344,27 @@ Funktionsweise identisch.
   Entwicklung schreibt DIESELBE Cloud-SQL-DB; eine separate lokale DB gibt
   es nicht.** Jeder Schreibvorgang aus einem Dev-Lauf trifft also die
   geteilten Echtdaten.
+
+### Schrift-Auslieferung (seit 2026-08-27)
+
+- Alle `@font-face`-Regeln stehen früh in `app/index.html`; die Dateien
+  liegen selbst gehostet unter `app/public/fonts/` (16 wörtliche
+  woff2-Kopien aus `@fontsource/{eb-garamond,playfair-display}` v5.3.0,
+  Subsets latin + latin-ext, plus die beiden Show-Fonts GLKurrent/
+  Suetterlin-TTF). Die `@fontsource`-Pakete sind devDependencies —
+  Bezugsquelle und Update-Kanal, kein Laufzeitpfad; `npm run fonts:sync`
+  kopiert nach einem `npm update` neu und prüft Byte-Identität
+  (Lizenzbedingung: verbatim, nie re-subsetten — `app/THIRD_PARTY_NOTICES.md`).
+- Zwei Above-the-fold-Schnitte sind per `<link rel="preload" as="font">`
+  vorgeladen (Playfair 600 + Garamond 400, latin) — das einzige
+  layoutunabhängige Startsignal, weil `#root` bis zum Entry-Chunk leer
+  ist; `crossorigin` ist auch same-origin Pflicht. Die Zahl ist gemessen,
+  nicht gesetzt: im Fast-3G-A/B kostete jeder weitere Preload den
+  Entry-Chunk mehr, als er brachte.
+- Die `/fonts/`-URLs sind UNGEHASHT: nginx cached sie 30 Tage (nicht
+  `immutable`); wird je eine Datei wirklich getauscht, muss der DATEINAME
+  mitversioniert werden und `index.html` mitziehen. Die gehashten
+  `/assets/`-Bundles cachen `immutable`/1 Jahr (`app/nginx.conf`).
 
 ### Reverse-Proxy / Routing
 

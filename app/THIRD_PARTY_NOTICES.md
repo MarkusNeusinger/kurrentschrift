@@ -16,13 +16,19 @@ not affecting the MIT license of the source code.
 - **License:** SIL Open Font License, Version 1.1 (`OFL-1.1`).
 - **Full license text:** [`public/fonts/EBGaramond-OFL.txt`](public/fonts/EBGaramond-OFL.txt),
   served in production at `/fonts/EBGaramond-OFL.txt`.
-- **Packaged via:** [`@fontsource/eb-garamond`](https://www.npmjs.com/package/@fontsource/eb-garamond)
-  (weights `400`, `400-italic`, `600` imported).
+- **Packaged as:** self-hosted WOFF2 files in `public/fonts/` (served at
+  `/fonts/`), verbatim copies from
+  [`@fontsource/eb-garamond`](https://www.npmjs.com/package/@fontsource/eb-garamond)
+  v5.3.0 (weights `400`, `400-italic`, `600`; subsets `latin` + `latin-ext`),
+  declared via `@font-face` in `index.html`. The package stays a devDependency
+  as source and update channel; `npm run fonts:sync` re-copies and verifies
+  byte identity.
 
 The OFL permits self-hosting, embedding and redistribution (including
-commercial use). The font is unmodified; the copyright and license notice
-above, plus the bundled license text, accompany the font as the license
-requires.
+commercial use). The font files are byte-identical, unmodified copies of the
+Google-Fonts builds the package ships; the copyright and license notice
+above, plus the license text in the same served directory, accompany the font
+as the license requires.
 
 ### GL-GermanCursive
 
@@ -33,9 +39,9 @@ requires.
 - **License:** free — "Unlimited permission is granted to use, copy, distribute
   and modify it, with or without modification, commercially and noncommercially.
   THIS FONT IS PROVIDED 'AS IS' WITHOUT WARRANTY."
-- **Packaged as:** a self-hosted WOFF2 (24 KB), bundled at
-  `src/assets/fonts/gl-germancursive.woff2` and declared via `@font-face` in
-  `PaperBackground.tsx`.
+- **Packaged as:** a self-hosted WOFF2 (24 KB) at
+  `public/fonts/gl-germancursive.woff2` (served at `/fonts/`), declared via
+  `@font-face` in `index.html`.
 
 The font is a placeholder showpiece, not the project's ductus renderer; it is
 self-hosted and redistributed under the permissive grant above, unmodified.
@@ -63,10 +69,11 @@ self-hosted and redistributed under the permissive grant above, unmodified.
 - **License decision:** this redistribution-only, no-modification freeware grant
   is weaker than the OFL fonts above and was reviewed and accepted by the
   maintainer for use as this bundled cold-start showpiece.
-- **Packaged as:** the original, **unmodified** TrueType file (80 KB), bundled at
-  `src/assets/fonts/suetterlin-hjz-1911.ttf` and declared via `@font-face` in
-  `PaperBackground.tsx`. It is deliberately *not* re-packed to WOFF2, because the
-  grant covers redistribution but not modification — the TTF ships verbatim.
+- **Packaged as:** the original, **unmodified** TrueType file (80 KB) at
+  `public/fonts/suetterlin-hjz-1911.ttf` (served at `/fonts/`), declared via
+  `@font-face` in `index.html`. It is deliberately *not* re-packed to WOFF2,
+  because the grant covers redistribution but not modification — the TTF ships
+  verbatim.
 
 The font is a placeholder showpiece, not the project's ductus renderer. Note its
 character map: the plain `s` already is the long ſ and the round End-s sits on
@@ -83,8 +90,15 @@ must use plain ASCII rather than U+017F.
 - **License:** SIL Open Font License, Version 1.1 (`OFL-1.1`).
 - **Full license text:** [`public/fonts/PlayfairDisplay-OFL.txt`](public/fonts/PlayfairDisplay-OFL.txt),
   served in production at `/fonts/PlayfairDisplay-OFL.txt`.
-- **Packaged via:** [`@fontsource/playfair-display`](https://www.npmjs.com/package/@fontsource/playfair-display)
-  (weights `400`, `500`, `500-italic`, `600`, `600-italic` imported).
+- **Packaged as:** self-hosted WOFF2 files in `public/fonts/` (served at
+  `/fonts/`), verbatim copies from
+  [`@fontsource/playfair-display`](https://www.npmjs.com/package/@fontsource/playfair-display)
+  v5.3.0 (weights `400`, `500`, `500-italic`, `600`, `600-italic`; subsets
+  `latin` + `latin-ext`), declared via `@font-face` in `index.html`. The
+  package stays a devDependency as source and update channel;
+  `npm run fonts:sync` re-copies and verifies byte identity.
 
 The OFL permits self-hosting, embedding and redistribution (including commercial
-use); the font is unmodified.
+use); the font files are byte-identical, unmodified copies — deliberately never
+re-subset or re-packed, which would create a Modified Version subject to the
+Reserved Font Name.

@@ -57,12 +57,16 @@ comm -23 <(git rev-list --objects --all | awk '{print $2}' | grep -iE '\.(png|jp
 git log --diff-filter=D --name-only --pretty=format: | sort -u
 ```
 
-**Bundled fonts vs. notices** — npm-delivered fonts (`@fontsource/*`)
-never appear in `git ls-files`, so check the imports against
-`app/THIRD_PARTY_NOTICES.md` directly:
+**Bundled fonts vs. notices** — since 2026-08-27 the Garamond/Playfair
+subsets are self-hosted as TRACKED verbatim copies in `app/public/fonts/`
+(the `@fontsource/*` packages remain devDependencies as source and update
+channel; nothing in `app/src` imports them anymore). Check both directions:
+every tracked font file is covered by `app/THIRD_PARTY_NOTICES.md`, and the
+copies still match their package source byte-for-byte:
 
 ```bash
-for pkg in $(grep -roh '@fontsource/[a-z-]*' app/src app/package.json | sort -u); do grep -q "$pkg" app/THIRD_PARTY_NOTICES.md && echo "OK in notices: $pkg" || echo "MISSING from notices: $pkg"; done
+for f in $(git ls-files 'app/public/fonts/*.woff2' 'app/public/fonts/*.ttf'); do b=$(basename "$f"); grep -qE "(fonts/|files/)?$b|@fontsource" app/THIRD_PARTY_NOTICES.md && echo "OK covered: $b" || echo "MISSING from notices: $b"; done
+cd app && npm run fonts:sync && git diff --exit-code public/fonts/ && echo "OK: copies byte-identical to @fontsource v$(node -p "require('./node_modules/@fontsource/eb-garamond/package.json').version")"
 ```
 
 **No protected work as a file** (prose mentions are bibliographic
@@ -138,8 +142,14 @@ SOURCE.md and grow this list — re-run the sweep, don't trust the
 count. History is
 clean (the comm check is empty; deleted paths are own code plus
 `mvp/canonical/*.json`, author-traced geometry over the PD chart).
-Both `@fontsource` packages are in the notices. All other checks
-print only OK lines.
+Both `@fontsource` packages are in the notices. Since 2026-08-27 the
+sweep additionally finds 18 tracked font binaries under
+`app/public/fonts/`: 16 verbatim @fontsource v5.3.0 woff2 subsets
+(EB Garamond + Playfair Display, latin/latin-ext — byte-identity is the
+license condition, verified by `npm run fonts:sync`) plus the two show
+fonts moved there from `app/src/assets/fonts/`
+(`gl-germancursive.woff2`, `suetterlin-hjz-1911.ttf`) — all covered by
+the notices. All other checks print only OK lines.
 
 ## Gotchas
 

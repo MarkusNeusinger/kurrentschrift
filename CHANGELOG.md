@@ -14,6 +14,32 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **Fonts ship ahead of the JS bundle.** Every `@font-face` is now
+  declared early in `index.html` against self-hosted files in
+  `public/fonts/` — 16 verbatim woff2 copies from `@fontsource` v5.3.0
+  (EB Garamond 400/400i/600, Playfair Display 400/500/500i/600/600i;
+  subsets latin + latin-ext with their unicode-ranges carried over
+  literally) plus the two show fonts moved out of `src/assets/fonts/`.
+  Two faces are preloaded (Playfair 600 + Garamond 400, latin) — the
+  one layout-independent start signal, since `#root` stays empty until
+  the entry chunk has run and `@font-face` alone fetches nothing before
+  first layout; the count is measured, not guessed (a Fast-3G A/B showed
+  each further preload costs the entry chunk more than it buys).
+  Measured effect: the critical faces start at ~175 ms instead of
+  ~1.9 s (after the bundle), throttled CLS halves (0.0046 → 0.0018) and
+  the render-blocking CSS file disappears entirely (the remaining
+  non-font CSS falls under Vite's inline threshold). The eight
+  `@fontsource` imports leave `main.tsx` (the packages become
+  devDependencies as source + update channel; `npm run fonts:sync`
+  re-copies and verifies byte identity — an OFL/RFN condition), the
+  `GlobalStyles` font block leaves `PaperBackground`, and the build
+  stops shipping 41 legacy .woff files plus 25 never-fetched
+  cyrillic/greek/vietnamese subsets (~1.06 MB image dead freight).
+  nginx gains cache headers: `immutable`/1 year for hashed `/assets/`,
+  30 days for the unhashed `/fonts/` (a real font update versions the
+  filename). Notices, `audit-licenses` skill baseline,
+  `design-system.md` and `frontend-stack.md` §6 updated.
+
 - **The hero waits for the written word instead of swapping in a font**
   (owner decision 2026-08-27, replacing the 2.5 s cold-start timer from
   the engine-hero change). A written brand word is the hero's whole

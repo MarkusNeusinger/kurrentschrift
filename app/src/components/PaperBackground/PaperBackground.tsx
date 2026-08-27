@@ -1,20 +1,21 @@
 // PaperBackground — the shared "aged paper" atmosphere: a warm radial gradient,
-// fine SVG grain (multiplied), an inset vignette, plus the GLKurrent @font-face.
+// fine SVG grain (multiplied), an inset vignette.
 // Extracted from LandingPage so every page wears the same identity site-wide
 // (style-guide §8). The three overlays are fixed, non-interactive and sit at
-// z-index 0; children render in a z-index-1 layer above them.
+// z-index 0; children render in a z-index-1 layer above them. The show-script
+// @font-face rules (GLKurrent, Suetterlin) moved to index.html so they are
+// declared before React mounts — do not re-add them here: a later, JS-injected
+// duplicate with a hashed URL would win the cascade and double-download.
 //
 // Work surfaces that need a neutral ground (the A4 worksheet preview, the letter
 // crops, the chart scan / wizard canvas) opt out simply by painting their own
 // solid background on top of this layer.
 
-import { Box, GlobalStyles } from '@mui/material';
+import { Box } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { ReactNode } from 'react';
 
 import grainTile from '@/assets/paper-grain.png';
-import kurrentWoff2 from '@/assets/fonts/gl-germancursive.woff2';
-import suetterlinTtf from '@/assets/fonts/suetterlin-hjz-1911.ttf';
 import { garamond, paper } from '@/styles/paper';
 
 // Faint paper grain. Pre-baked 128px PNG tile (deterministic noise, ~9 KB)
@@ -82,27 +83,6 @@ export function PaperBackground({ children, minHeight = '100dvh', sx }: PaperBac
         ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
       ]}
     >
-      {/* Two @font-face rules emitted as a plain CSS string: a single
-          GlobalStyles object literal can't carry two '@font-face' keys, and the
-          Emotion array form collapsed them into one rule here (silently dropping
-          GLKurrent → everything fell back to the generic `cursive`). The string
-          form is unambiguous. Suetterlin is the bundled Zinken HJZ 1911 TTF
-          (freeware allows redistribution but not modification → shipped as-is,
-          not re-packed to woff2; see app/THIRD_PARTY_NOTICES.md). */}
-      <GlobalStyles
-        styles={`
-          @font-face {
-            font-family: 'GLKurrent';
-            src: url(${kurrentWoff2}) format('woff2');
-            font-display: swap;
-          }
-          @font-face {
-            font-family: 'Suetterlin';
-            src: url(${suetterlinTtf}) format('truetype');
-            font-display: swap;
-          }
-        `}
-      />
       {/* content layer above the fixed overlays */}
       <Box sx={{ position: 'relative', zIndex: 1 }}>{children}</Box>
     </Box>
