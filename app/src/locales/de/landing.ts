@@ -27,6 +27,10 @@ export const landing = {
     ctaWrite: 'Schreiben',
     ctaRead: 'Lesen',
     replay: '↻ noch einmal schreiben',
+    // Shown after ~3 s while a cold backend still composes the word — the
+    // hero waits for the WRITTEN word instead of swapping in a static font
+    // (owner decision 2026-08-27).
+    waiting: 'die Feder setzt an — einen Moment …',
   },
   // Section 1: the scripts. "Kurrent(schrift)" is really an umbrella over a
   // whole family of German cursive hands; these three make good starters

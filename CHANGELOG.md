@@ -12,6 +12,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **The hero waits for the written word instead of swapping in a font**
+  (owner decision 2026-08-27, replacing the 2.5 s cold-start timer from
+  the engine-hero change). A written brand word is the hero's whole
+  point: on a cold backend the reserved word area now simply waits —
+  after ~3 s a quiet patience line („die Feder setzt an — einen Moment
+  …", pure CSS delay) appears under the spinner — and the composition
+  writes whenever it arrives. The GLKurrent show-font wipe remains only
+  for genuine failure: a fetch error after the cold-start retries, or a
+  composition with missing glyphs. Doctrine updated in
+  `docs/concepts/design-system.md`.
+
 ### Fixed
 
 - **`robots.txt` drops the invalid `use=reference` token from every
