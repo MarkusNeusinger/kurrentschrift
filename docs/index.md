@@ -23,7 +23,9 @@ laufen, die öffentliche Seite schreibt serverseitig komponierte Wörter
 (Federprobe, Tafel, Quiz inkl. Wort-Modus, Schriftkunde, Übungsblätter);
 Per-Vorkommen-Fit und die Statistik je Hand sind gebaut (Handmodell H0–H2,
 Release v0.22.0) — offen ist H3, die Ablösung der Composer-Konstanten durch
-gemessene Hand-Parameter.
+gemessene Hand-Parameter; der H5-Erfassungsweg (eigene Hand) ist vorgezogen
+und liest bereits echte Bögen ein
+([Eigenhand-Erfassung](proposals/eigenhand-erfassung.md), Phasen 1–4f).
 
 ---
 
@@ -376,7 +378,8 @@ auseinanderfallen.
   H0 Bench-Anschluss der Laufformen, H1 `instances`/`hands`
   persistieren, H2 Paar-Statistik, H3 Konstanten → Hand-Parameter
   (Vereinfachungs-Gate), H4 zweite historische Hand, H5 eigene Hand —
-  *Status: teil-umgesetzt (H0–H2 in v0.22.0 ausgeliefert, H3–H5 offen)*
+  *Status: teil-umgesetzt (H0–H2 in v0.22.0 ausgeliefert, H3–H5 offen;
+  der H5-Erfassungsweg läuft vorgezogen über die Eigenhand-Erfassung)*
 - **[Eigenhand-Erfassung](proposals/eigenhand-erfassung.md)** — Vorschlag
   2026-08-22 (H5-Erfassungsweg): die eigene Hand als Trainingsdaten mit
   echter Feder — kuratierter **Wortvorrat** (nur echte Wörter, alt +
@@ -388,7 +391,7 @@ auseinanderfallen.
   **Fassungen** in der lokalen **Streifenkartei**, Soll/Ist im
   **Bestandsbericht** (Übergangsraum-gewichtet), Sicherung ins private
   Archiv (create-only, inkrementell); Werkzeuge `tools/eigenhand/` —
-  *Status: teil-umgesetzt (Phasen 1–4 gebaut, Phase 5 Ernte-Anschluss
+  *Status: teil-umgesetzt (Phasen 1–4f gebaut, Phase 5 Ernte-Anschluss
   offen)*
 - **[Tintenfolger](proposals/tintenfolger.md)** — Plan 2026-08-14 zum
   §6-Nachtrag des Bildsynthese-Journals: das automatische Nachfahren der

@@ -1,6 +1,6 @@
 # MVP-Roadmap
 
-> **Status (2026-08-22): teil-umgesetzt.** M0 · M-Admin · M3 · M4 sind
+> **Status (2026-08-27): teil-umgesetzt.** M0 · M-Admin · M3 · M4 sind
 > umgesetzt, M7 ist als `WrittenGlyph` ausgeliefert (Gate-4-Abnahme weiterhin
 > offen); M1/M2 haben nie stattgefunden, M5/M6 laufen stattdessen über die
 > gleichhändigen PD-Wortproben und das Handmodell H1/H2 (PR #250 · #259 ·
@@ -18,6 +18,10 @@
 > `/mvp/`-Pfadnennung im Text liest sich als damaliger Plan; der aktuelle
 > Plan steht in
 > [`../proposals/handmodell-stufenplan.md`](../proposals/handmodell-stufenplan.md).
+> Die Meilenstein-Texte unterhalb sind der damalige Plan (2026-05) und
+> werden nicht mehr fortgeschrieben; wo ein Abschnitt der heutigen Praxis
+> widerspricht, steht seit 2026-08-27 eine datierte Notiz direkt an der
+> Stelle.
 
 Operative Zerlegung des MVP aus [`architektur.md`](architektur.md) §8 in
 ausführbare Meilensteine. Sprache: Deutsch (Prosa) / Englisch (Code,
@@ -53,7 +57,10 @@ gegen das FastAPI-Backend (`/api/`) und Postgres (`/core/database/` +
 bleiben inhaltlich gültig (Scope, Glyphen, Wortset, vier Validierungs-Gates
 inkl. abgespeckter Animation in M7), nur das *wie* wechselt: ein neuer Trace
 startet als Stylus-Strich im Editor und endet als Row in der Datenbank, nicht
-als JSON-Diff.
+als JSON-Diff. *(Nachtrag 2026-08-27: „bleiben inhaltlich gültig" ist vom
+Kopf-Status überholt — M1/M2 haben nie stattgefunden, die
+Positions-Schlüsselung ist seit R2 abgelöst; gültig geblieben sind Scope,
+Wortset und die vier Gates.)*
 
 Der MVP validiert den Render-Kern (Falsifikations-Test aus §7). Die
 Endnutzer-Website mit ihren sieben Zielen in drei Clustern (Schreiben:
@@ -158,7 +165,10 @@ Schlusssatz: „in Tagen statt Monaten geklärt").
    konstante Breite. Voller Schwellzug-Aufbau ist Post-MVP (siehe
    [`architektur.md`](architektur.md) §11). Implementiert in M7.
 
-Aufwand: ein bis zwei Wochenenden — bewusst klein gehalten.
+Aufwand: ein bis zwei Wochenenden — bewusst klein gehalten. *(Schätzung
+von 2026-05; real trägt der Kern seit Juni 2026 eine monatelange Mess-
+und Optimierungskampagne — Verlauf in `../reference/qualitaetsmetrik.md`
+§14.)*
 
 ---
 
@@ -258,6 +268,15 @@ M3 Phase B — wird stattdessen *als* Phase B durchgeführt.
 
 ### M1 — Eigenhandvorlagen schreiben & einscannen
 
+> **Überholt (Notiz 2026-08-27):** Dieser Erfassungsweg hat nie
+> stattgefunden; er ist durch
+> [`../proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md)
+> ersetzt, und die Eigenhand-Scans bleiben entgegen dem „Fertig wenn"
+> unten **gitignored** — das private Archiv ist ihr Master
+> (Owner-Entscheid 2026-08-22, `../reference/datenablage.md` §1). Der
+> Text unten ist der damalige Plan; weiter gültig sind ≥300 DPI und die
+> Soll-Zählung je Glyph-Position.
+
 Das Wortset ist mit §9 fixiert. Hier nur noch ausführen:
 Wiederholungszahlen so wählen, dass die §9-Kernglyphen-Targets
 erreicht werden.
@@ -297,6 +316,13 @@ committable, [`quellen-und-rechte.md`](../reference/quellen-und-rechte.md)
 
 ### M2 — Glyph-Segmentierung der eigenen Hand
 
+> **Überholt (Notiz 2026-08-27):** Nie durchgeführt; das Croppen läuft
+> heute als Siebung der Eigenhand-Erfassung. Die Positions-Tags des
+> Dateischemas unten sind seit R2 (PR #214, Migration `0017`) keine
+> Bibliotheks-Schlüssel mehr — die Position weist `core/shaping.py` je
+> Wort-Slot als Render-Kontext zu. Weiter gültig ist die Sieb-Disziplin
+> unten; sie ist in die Eigenhand-Siebung übernommen.
+
 **Was:** Manuelle Crops jeder Glyph-Instanz aus den M1-Scans, mit
 Positions-Tag (`initial`/`medial`/`final`) und Kontext-Tag (umgebende
 Glyphen — für Übergangstest in M6).
@@ -333,6 +359,13 @@ Skelettbruch; `instances.json` validiert.
 ---
 
 ### M3 — Canonical-Duktus-Templates (11 Templates, handmodelliert)
+
+> **Schlüsselung überholt (Notiz 2026-08-27):** Die 11er-Tabelle unten
+> führt die Position als Template-Schlüssel; seit R2 (PR #214, Migration
+> `0017`) gibt es EINE authored Form je Glyph (bare glyph_keys), die
+> Position ist Render-Kontext aus `core/shaping.py`. Unverändert gültig:
+> der Duktus als eigene Autorenleistung über der PD-Geometrie und die
+> Arbeitsteilung Phase A/B.
 
 **Was:** `canonical`-Einträge nach Schema [`architektur.md`](architektur.md)
 §3 — handmodelliert, nicht aus Loth abgelesen. Loth-SVG nur geometrische
@@ -581,6 +614,12 @@ der P1-Ausbau.
 
 ## Kritischer Pfad & Parallelisierung
 
+> **Historisch (Notiz 2026-08-27):** Reihenfolge des Plans von 2026-05.
+> Real liefen M5/M6 über die gleichhändigen PD-Wortproben und das
+> Handmodell H1/H2, und der M1/M2-Ersatz (Eigenhand-Erfassung) läuft
+> seit 2026-08 parallel dazu — siehe Kopf-Status und
+> [`../proposals/handmodell-stufenplan.md`](../proposals/handmodell-stufenplan.md).
+
 ```
 M0 ──┬──► M2 ──► M4 ──► M5 ──► M6
 M1 ──┘                    ▲
@@ -628,6 +667,13 @@ Code lebt in `/core` + `/api` + `/app`, die Canonicals als Rows in der
 ---
 
 ## Verifikation
+
+> **Historisch (Notiz 2026-08-27):** Die Zeilen M1/M2/M5 prüfen
+> Artefakte des damaligen `/mvp/`-Wegs (`instances.json`,
+> `mvp/personal/`), die es so nie gab — die heutigen Gegenstücke sind
+> Rows in `instances` bzw. `aggregates`; der Loth-Vergleich (M3) ist
+> seit dem Sütterlin-Pivot geparkt. Offen im Sinne dieser Tabelle
+> bleiben die vier Gate-Nachweise der Gesamtverifikation.
 
 | Schritt | Was geprüft wird | Wie |
 |---|---|---|

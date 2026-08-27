@@ -1,9 +1,12 @@
 # Eigenhand-Erfassung: Wortvorrat, Streifen, Bögen
 
-> **Status (2026-08-23): teil-umgesetzt.** Die Werkzeugkette der Phasen 1–4
+> **Status (2026-08-27): teil-umgesetzt.** Die Werkzeugkette der Phasen 1–4
 > (`tools/eigenhand/`: Wortvorrat + Streifenplan · Bogen-Druck · Einlesen +
 > Siebung · Kartei/Bericht/Archiv) ist mit diesem Proposal im selben PR
-> gebaut und getestet (`tests/test_eigenhand_*.py`); Welle 0 und Welle 1
+> gebaut und getestet (`tests/test_eigenhand_*.py`); die Ausbaustufen
+> 4a–4f (DB-Buchführung · Streifen in der DB · Sitzungs-Blocker ·
+> Übergangsraum-Gewichte · Beleg-Galerie · Farb-Streifen, §11) sind bis
+> 2026-08-27 nachgezogen. Welle 0 und Welle 1
 > des Streifenplans sind committet (Streifen 1–120: Buchstaben, Ziffern,
 > Zeichen, Mindestbelegung ≥3 je Glyphe). Zukunft ist Phase 5 (§9:
 > Anschluss an Fit/Ernte) sowie die ersten echten Schreibsitzungen samt
@@ -845,7 +848,7 @@ die menschliche Kopf-Bestätigung je fehleranfällig wird.
 
 ## 11 Phasen und Umsetzungsstand
 
-| Phase | Inhalt | Stand 2026-08-23 |
+| Phase | Inhalt | Stand 2026-08-27 |
 |---|---|---|
 | 1 | Wortvorrat, Übergangsraum, Streifenplan (`corpus` · `coverage` · `universe` · `gaps` · `pool`) | umgesetzt; Wave 0+1 committet, Plan-Format 2 |
 | 2 | Blattgenerator (`geometry` · `pdfgen` · `bogen` · `sheet` · `rasterize`) | umgesetzt; Beispiel-Bogen erzeugt |
@@ -856,6 +859,7 @@ die menschliche Kopf-Bestätigung je fehleranfällig wird.
 | 4c | Die drei Blocker der ersten echten Sitzung (`apiclient`-Kennung · `.env` · `core`↛`tools`) + der bedruckbare Bereich (§5) | umgesetzt 2026-08-25 (siehe unten) |
 | 4d | Übergangsraum-Gewichte in der DB (`0026` · `GET|PUT /eigenhand/uebergangsraum` · `universe --push`): Quoten und gewichtete Warteschlange auf beiden Seiten (§7.1) | umgesetzt 2026-08-26 (Autor-Entscheid 2026-08-25) |
 | 4e | Vom Bestand zum Beleg: Wortsuche, Tafel-Zellen und Übergangs-Chips als Einstieg in die Wort-Crop-Galerie, Vergrößerung + Lupe (`strips?wort=&item=`, `coverage.matches_item`) | umgesetzt 2026-08-26 (§7.2) |
+| 4f | Farb-Streifen: RGB-Ablage bei Farb-Scans (`scan.mode: rgb`), blaue Arbeitsebene für Passmarken/QC, `?lineatur=ohne` als abgeleitete Ansicht | umgesetzt 2026-08-27 (Autor-Entscheid 2026-08-27, §6/§7.2) |
 | 5 | Ernte-Anschluss, Kurrent/Offenbacher-Betrieb, optionaler Bogen-Code | aufgeschoben (§9) |
 
 Dazu je Schreibsitzung wiederkehrend: Kalibrier-Schleife der

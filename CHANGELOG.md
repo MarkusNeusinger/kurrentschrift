@@ -12,6 +12,29 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The concept docs no longer contradict the shipped reality** (doc
+  audit 2026-08-27). `mvp-roadmap.md`: the milestone bodies stay as the
+  recorded 2026-05 plan, but every spot that read as a wrong instruction
+  now carries a dated in-place note — M1's "commit the scans" (they stay
+  gitignored, the private archive is master), M2's position-tagged file
+  schema and M3's 11-template position keying (both superseded by R2,
+  migration `0017`), the critical path and verification table (M5/M6 ran
+  over the same-hand PD word samples instead), the "one to two weekends"
+  estimate, and the 2026-06-10 status block's "milestones remain valid"
+  sentence. `vision.md`: the BINDING scripts principle claimed the MVP
+  validates the kernel "an Kurrent allein" — aligned to the recorded
+  Sütterlin-first pivot of 2026-06-12; the open-data principle now
+  carries the Ziel-7 open-core reservation itself; Ziel 3 names the
+  actually trained hand; Ziel 6 names the Eigenhand capture chain as the
+  first real feeder. `eigenhand-erfassung.md`: status header and §11
+  phase table caught up (4a–4f, new 4f row for the 2026-08-27 colour
+  decision). `docs/index.md`: head paragraph and status tags note the
+  pulled-forward H5 capture path. `orthographie-regeln.md`: cites the
+  post-R2 `(style, glyph, variant)` key instead of the retired
+  position-keyed triple.
+
 ### Added
 
 - **The landing hero is written by the engine.** The brand word

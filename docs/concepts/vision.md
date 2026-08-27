@@ -1,8 +1,12 @@
 # Vision der Website
 
-> **Status (2026-08-03): bindend.** Ziele, Leitprinzipien und Nicht-Ziele
+> **Status (2026-08-27): bindend.** Ziele, Leitprinzipien und Nicht-Ziele
 > stehen fest; die eingebettete Open-Core-Notiz zu Ziel 7 gilt unverändert
-> (technisch verschärft mit PR #254).
+> (technisch verschärft mit PR #254). Am 2026-08-27 ohne neue Entscheidung
+> nachgezogen: das Schriftfamilien-Leitprinzip spiegelt jetzt den
+> Sütterlin-first-Pivot vom 2026-06-12 (`mvp-roadmap.md`), das
+> Offene-Daten-Leitprinzip trägt den Ziel-7-Vorbehalt selbst, und Ziel 6
+> nennt die Eigenhand-Erfassung als ersten realen Zubringer.
 > Der Umsetzungsstand gehört nicht hierher — Reihenfolge in
 > [`architektur.md`](architektur.md) §10, Stand in
 > [`mvp-roadmap.md`](mvp-roadmap.md).
@@ -55,18 +59,24 @@ Kern (siehe `architektur.md` §1).
 - **Synthese statt Font.** Schwellzug, Schreibreihenfolge und
   Allographen sind Erstklassen-Bürger, nicht eine Glyphe pro
   Codepoint (siehe `architektur.md` §2/§5).
-- **Offene Daten.** Kanonische Glyph-Daten unter zitierfähiger Lizenz
-  (`quellen-und-rechte.md`).
+- **Offene Daten — als Ziel, unter Open-Core-Vorbehalt.** Kanonische
+  Glyph-Daten unter zitierfähiger Lizenz bleiben das Ziel (Ziel 7); bis
+  zu dieser bewussten Veröffentlichung bleibt der *gelernte* Datensatz
+  vorbehalten — siehe die Status-Notiz in Ziel 7 und
+  [`quellen-und-rechte.md`](../reference/quellen-und-rechte.md) §5.
 - **Drei Schriftfamilien zum Start.** Die drei für den Start
   relevantesten Familien sind **Kurrent** (die ältere Norm, Projekt-
   Baseline), **Sütterlin** (aufrecht, gleichmäßige Strichstärke) und die
   **Offenbacher Schrift** (Breitfeder, winkelabhängiger Strichkontrast). Sie
   teilen denselben Render-Kern und Kanon — eine Familie ist im Kern ein
   Varianten-Auswahlvektor + Width-Profile-Resolver über demselben
-  Apparat (`architektur.md` §5/§10), kein eigenes Modell. Der MVP
-  validiert den Kern an Kurrent allein; Sütterlin und Offenbacher sind
-  die ersten Erweiterungen danach (Scope-Herleitung:
-  `naming-und-setup.md` §1).
+  Apparat (`architektur.md` §5/§10), kein eigenes Modell. Validiert wird
+  der Kern seit dem Sütterlin-first-Pivot (Status 2026-06-12 in
+  [`mvp-roadmap.md`](mvp-roadmap.md)) zuerst an der Sütterlin-Vorlage
+  von 1922 — Gleichzug und aufrechte Formen vereinfachen
+  Kreuzungsauflösung und Renderpfad; Kurrent (Loth 1866, weiterhin die
+  geometrische Projekt-Baseline) ist bis dahin geparkt, die Offenbacher
+  folgt danach (Scope-Herleitung: `naming-und-setup.md` §1).
 - **Zweisprachig.** Deutscher Kern zuerst (`sprachregelung.md` §1),
   englische Erweiterung folgt — die Genealogie-Zielgruppe ist
   überwiegend englischsprachig (`naming-und-setup.md` §1).
@@ -96,8 +106,9 @@ Kern (siehe `architektur.md` §1).
 
 3. **Buchstaben in Aktion (animierte Tafel).** Jeder Buchstabe lässt
    sich animiert abspielen — Schreibreihenfolge, Ansatzpunkte,
-   Schwellzug-Aufbau live, für jede trainierte Hand (Loth 1866, eigene
-   Probe, historische Quellen). Direkter Effekt des Duktus-Priors
+   Schwellzug-Aufbau live, für jede trainierte Hand (heute die
+   Sütterlin-Vorlage von 1922; dazu künftig Loth 1866, die eigene Probe,
+   weitere historische Quellen). Direkter Effekt des Duktus-Priors
    (`architektur.md` §2): Synthese liefert nicht nur das fertige Bild,
    sondern auch *wie es entsteht*. Ligaturen (`ch`, `ck`, `ſt`, `tz`,
    `qu`, `ß`) als eigene Animationen.
@@ -135,7 +146,12 @@ Kern (siehe `architektur.md` §1).
 
 6. **Eigene Schrift analysieren.** Handschriftliche Probe hochladen,
    Statistik zurückbekommen: Glyphen-Verteilung, Übergangswinkel,
-   Schräglagen-Verteilung, Schwellzug-Profile. Drei Anschluss-Pfade:
+   Schräglagen-Verteilung, Schwellzug-Profile. Der erste reale Zubringer
+   zu dieser Statistik ist die interne Eigenhand-Erfassung des Autors
+   (gedruckte Bögen, Streifen, Siebung —
+   [`../proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md));
+   der offene Upload-Weg für Nutzende bleibt das Ziel dieses Punkts.
+   Drei Anschluss-Pfade:
    - **Optimieren** — wo weicht die eigene Hand stark von der Norm ab?
      Wo ist sie inkonsistent? Konkretes statt allgemeines Feedback.
    - **Neuer Stil als Basis** — aus genug eigenen Proben einen
