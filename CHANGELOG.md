@@ -14,6 +14,14 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **`robots.txt` drops the invalid `use=reference` token from every
+  `Content-Signal` line.** Verified against the Content Signals
+  specification's own site (contentsignals.org, checked 2026-08-27): the
+  vocabulary is exactly `search`, `ai-input`, `ai-train` with yes/no
+  values — `use` is not a signal, and a strict parser could discard the
+  whole line and with it the legally load-bearing `ai-train=no`
+  reservation (`crawler-richtlinie.md`; the doc itself never mentioned
+  the token, it existed only in `robots.txt`).
 - **The concept docs no longer contradict the shipped reality** (doc
   audit 2026-08-27). `mvp-roadmap.md`: the milestone bodies stay as the
   recorded 2026-05 plan, but every spot that read as a wrong instruction
