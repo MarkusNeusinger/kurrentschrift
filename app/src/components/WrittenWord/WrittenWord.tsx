@@ -19,6 +19,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 
 import { CONFIG } from '@/global-config';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+import { de } from '@/locales';
 import { useStrokeReveal } from '@/hooks/useStrokeReveal';
 import { fetchRenderWord, type ComposedWordOut } from '@/lib/api';
 import {
@@ -61,9 +62,11 @@ interface Props {
   // Show the replay button (bottom-right).
   showReplay?: boolean;
   // After the composed word arrives: the glyph_keys that had no canonical
-  // (empty = all rendered) and how many strokes were placed. Lets callers flag
-  // the letters or fall back.
-  onResolved?: (info: { missing: string[]; rendered: number }) => void;
+  // (empty = all rendered), how many strokes were placed, and when the write-in
+  // ends (ms from reveal start, pen-lift pauses included; 0 when nothing
+  // renders). Lets callers flag the letters, fall back, or time follow-up
+  // decoration to the last stroke (the landing hero's flourish).
+  onResolved?: (info: { missing: string[]; rendered: number; writeEndMs: number }) => void;
   // A fetch error (e.g. cold-start retries exhausted).
   onError?: (e: unknown) => void;
   // Accessible name of the rendered SVG. Defaults to the written text; the quiz
@@ -122,13 +125,6 @@ export function WrittenWord({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [normalized, sourceId, bust]);
 
-  useEffect(() => {
-    if (composed) onResolved?.({ missing: composed.missing, rendered: composed.items.length });
-    // onResolved intentionally omitted: report only when the composition changes,
-    // not when a parent passes a fresh callback identity.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [composed]);
-
   const geom = useMemo(() => {
     if (!composed || !composed.items.length) return null;
     const { bounds, guides, items } = composed;
@@ -156,6 +152,16 @@ export function WrittenWord({
     return { minX, vbW, vbY, vbH, items, guides, timing, writeEndMs };
   }, [composed, showLineature, durationMs]);
 
+  useEffect(() => {
+    // `geom` is derived from `composed` in this same render, so reading it here
+    // without listing it keeps "fires once per composition" semantics intact.
+    if (composed)
+      onResolved?.({ missing: composed.missing, rendered: composed.items.length, writeEndMs: geom?.writeEndMs ?? 0 });
+    // onResolved intentionally omitted: report only when the composition changes,
+    // not when a parent passes a fresh callback identity.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [composed]);
+
   const replay = useCallback(() => setRun((r) => r + 1), []);
 
   const animate = animateProp && !reducedMotion;
@@ -167,7 +173,7 @@ export function WrittenWord({
   if (!composed || !geom) {
     return (
       <Box sx={{ display: 'inline-flex', minHeight: height, alignItems: 'center', justifyContent: 'center' }}>
-        {composed && !composed.items.length ? null : <CircularProgress size={26} />}
+        {composed && !composed.items.length ? null : <CircularProgress size={26} aria-label={de.common.writing} />}
       </Box>
     );
   }

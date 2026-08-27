@@ -14,6 +14,48 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The landing hero is written by the engine.** The brand word
+  „Kurrentſchrift" is no longer a font specimen: `HeroWritten` renders it via
+  `WrittenWord` (GET `/write/word`, the same Sütterlin ductus as `/federprobe`),
+  closing the engine-swap seam the design system had documented as „Font jetzt,
+  Engine später". Honest fallback per the Schriftkunde pattern: a cold backend
+  (2.5 s), a fetch error or any missing glyph brings back the GLKurrent
+  show-font with the travelling nib, and the caption switches with the mode so
+  the page never claims a live synthesis over a static font. The word area
+  reserves its aspect ratio before the payload arrives (no layout shift either
+  way — an inline-block baseline strut that silently stretched the fallback box
+  is fixed alongside), the viridian flourish now starts at the actual write end
+  (`onResolved.writeEndMs`, a new additive field), and `index.html` warms the
+  composition via a landing-only, production-only fetch preload. Verified in
+  the browser against a mock of the deployed payload: engine, error, missing
+  and slow paths, desktop + mobile, reduced motion.
+- **The three scripts state their status outright.** Hero caption (engine
+  mode), scripts intro, a status tag on each card („in aktiver Optimierung" ·
+  „noch nicht begonnen") and the roadmap note now say plainly that Sütterlin is
+  written and under active optimization while Kurrent and Offenbacher have not
+  started yet.
+- **A drift guard couples the SEO surfaces.** `app/src/routes/seoCoverage.test.ts`
+  pins paths.ts ↔ `seo.ts` ↔ `sitemap.xml` ↔ `llms.txt` ↔ `robots.txt`: one seo
+  entry per public route (+404), unique titles/descriptions, sitemap locs equal
+  to the route set with well-formed `lastmod`, every content route linked from
+  `llms.txt`, robots announcing the sitemap.
+
+### Changed
+
+- **SEO/LLM sweep of the public site** (audit 2026-08-27): the 404 is now a
+  real `noindex,follow` without a self-canonical (nginx serves unknown URLs as
+  200, so every stale link was an indexable soft-404); canonicals strip
+  trailing slashes; `/lehrbuch` gets a real nginx 301 beside the client-side
+  redirect; `sitemap.xml` `lastmod` reflect the actual content dates again;
+  `llms.txt` names the Schriftkunde's decipher guide and the 1941
+  Normalschrifterlass chapter and points agents at `openapi.json` (Swagger-UI
+  is JS-only); `index.html` declares `color-scheme: light` (forced-dark
+  browsers no longer invert form fields against the paper) and preconnects to
+  the open API subdomain; the compose spinners in `WrittenGlyph`/`WrittenWord`
+  carry an accessible name.
+
+### Added
+
 - **Own-hand strips keep their colour; the rulings are dropped on request.**
   Author's decision 2026-08-27 after the first phone capture showed the
   blue-plane trick alone does not hold (rulings at 0.72 against 0.90 paper in

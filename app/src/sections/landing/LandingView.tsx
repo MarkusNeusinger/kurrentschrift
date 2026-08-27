@@ -69,17 +69,37 @@ export function LandingView() {
                 <Typography variant="body2" sx={{ color: paper.inkSoft, lineHeight: 1.55, flexGrow: 1 }}>
                   {s.desc}
                 </Typography>
-                {/* the honest state rides the link text itself: viridian + active
-                    for the script the engine already writes (Sütterlin), muted
-                    "historische Vorlage" for the two that are only a scan today.
-                    A hairline sets the CTA off from the description. */}
-                <Box sx={{ mt: 2, pt: 1.5, borderTop: `1px solid ${paper.line}` }}>
+                {/* the honest state rides the link text AND an explicit status
+                    tag: viridian + „in aktiver Optimierung" for the script the
+                    engine already writes (Sütterlin), muted „noch nicht
+                    begonnen" for the two that are only a scan today. A hairline
+                    sets the row off from the description; on narrow cards the
+                    tag wraps under the CTA. */}
+                <Box
+                  sx={{
+                    mt: 2,
+                    pt: 1.5,
+                    borderTop: `1px solid ${paper.line}`,
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    alignItems: 'baseline',
+                    justifyContent: 'space-between',
+                    columnGap: 1.5,
+                    rowGap: 0.25,
+                  }}
+                >
                   <Typography
                     variant="body2"
                     sx={{ fontWeight: 500, color: s.written ? paper.viridianText : paper.sepia }}
                   >
                     {s.cta}
                   </Typography>
+                  <Box
+                    component="span"
+                    sx={{ fontStyle: 'italic', fontSize: '.85rem', color: s.written ? paper.viridianText : paper.sepia, whiteSpace: 'nowrap' }}
+                  >
+                    {s.status}
+                  </Box>
                 </Box>
               </PaperCardLink>
             </Reveal>

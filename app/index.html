@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#e7dabf" />
+    <!-- The paper identity is a deliberate single light scheme; without this
+         declaration, forced-dark browsers invert form fields and scrollbars
+         against it. -->
+    <meta name="color-scheme" content="light" />
+    <!-- The public data pages (Tafel, Quiz, Federprobe, Schriftkunde) and the
+         landing hero all fetch from the open api. subdomain in production —
+         warming DNS+TLS here saves that handshake from the critical path. -->
+    <link rel="preconnect" href="https://api.kurrentschrift.ink" crossorigin="use-credentials" />
     <meta name="description" content="Alte deutsche Schreibschrift lesen und schreiben lernen — Kurrent, Sütterlin, Offenbacher: mit Quiz, Schreibtafel, Übungsblatt und einer Feder, die live schreibt." />
     <title>kurrentschrift.ink — deutsche Kurrent &amp; Sütterlin lesen und schreiben</title>
 
@@ -60,6 +68,25 @@
       html, body { margin: 0; padding: 0; height: 100%; }
       body { touch-action: manipulation; }
     </style>
+
+    <!-- Warm the landing hero's composition in parallel with the JS bundle:
+         the hero word is engine-written (GET /write/word) and would otherwise
+         wait a full network round trip after hydration — long enough for the
+         hero's cold-start fallback to fire on slow connections. Landing route
+         + production hostname only (mirrors the Plausible gate below), so deep
+         links and dev builds don't fetch a payload they never use. URL and
+         credentials mode mirror lib/api (apiFetch sends credentials, so the
+         preload must too, or the browser refuses to match them up). -->
+    <script>
+      if (location.pathname === '/' && location.hostname === 'kurrentschrift.ink') {
+        var hw = document.createElement('link');
+        hw.rel = 'preload';
+        hw.as = 'fetch';
+        hw.crossOrigin = 'use-credentials';
+        hw.href = 'https://api.kurrentschrift.ink/sources/suetterlin-1922/write/word?text=Kurrent%C5%BFchrift';
+        document.head.appendChild(hw);
+      }
+    </script>
 
     <!-- Privacy-friendly analytics by Plausible (production only). The script
          and event endpoint are both proxied through a Cloudflare Worker on
