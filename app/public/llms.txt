@@ -17,6 +17,20 @@ Jede Seite liefert Crawlern und KI-Agenten, die kein JavaScript ausführen, unte
 - [Federprobe](https://kurrentschrift.ink/federprobe): Beliebigen Text eingeben — die Feder schreibt ihn live mit generierten Übergängen
 - [Impressum & Datenschutz](https://kurrentschrift.ink/impressum): Betreiber, Datenschutz, Quellen & Lizenzen
 
+## Buchstaben abrufen (ohne JavaScript, für jeden Client)
+
+Die geschriebenen Buchstaben und ihre gemeinfreie Vorlage sind beide je Quelle abrufbar. Die Pfade unten zeigen `suetterlin-1922` (Sütterlin-Ausgangsschrift 1922), mit der auch die Seite schreibt; für eine andere Quelle den Namen aus der Quellenliste einsetzen. Vollständig geschrieben ist heute nur die Sütterlin; `loth-1866` (Kurrent) und `koch-1928` (Offenbacher) haben erst einzelne Buchstaben — das Inventar der Quelle sagt mit `has_data`, welche. `{glyph_key}` ist der Schlüssel aus dem Inventar (a … z, Großbuchstaben, `longs` = langes ſ, `sz` = ß, Ligaturen wie `ch`, `ck`, `tz`).
+
+- Quellen: https://api.kurrentschrift.ink/sources — JSON, alle Vorlagen mit Schrift (`style_id`), Lizenz und Herkunft
+- Inventar: https://api.kurrentschrift.ink/sources/suetterlin-1922/templates — JSON, ein Eintrag je glyph_key mit `has_data`
+- Vorlage (Original-Ausschnitt der gemeinfreien Tafel): https://api.kurrentschrift.ink/sources/suetterlin-1922/bboxes/{glyph_key}/crop — PNG
+- Geschriebene Form: https://api.kurrentschrift.ink/sources/suetterlin-1922/write/glyphs/{glyph_key}.svg — SVG auf der Lineatur (Grundlinie, Mittellinie)
+- Geometrie: https://api.kurrentschrift.ink/sources/suetterlin-1922/write/glyphs?keys=a,n — JSON (Umriss-Ringe, Mittellinie, Anschlüsse)
+- Ganzes Wort: https://api.kurrentschrift.ink/sources/suetterlin-1922/write/word?text=lesen — JSON, serverseitig komponiert
+- Beispiel: https://api.kurrentschrift.ink/sources/suetterlin-1922/write/glyphs/e.svg (das Sütterlin-e, geschrieben) · https://api.kurrentschrift.ink/sources/suetterlin-1922/bboxes/e/crop (seine Vorlage)
+
+Die Kennwerte der drei Schriften (Schräglage, Lineatur, Feder, Strich) stehen auf https://kurrentschrift.ink/schriftkunde als JSON-Block und als JSON-LD; Winkel dort in Grad zur Grundlinie (90 = senkrecht).
+
 ## Ressourcen
 
 - [Quellcode auf GitHub](https://github.com/MarkusNeusinger/kurrentschrift): MIT-Lizenz. Die Seite selbst darf gelesen, zitiert und als Trainingsmaterial genutzt werden (robots.txt: ai-train=yes); die kuratierten Schriftdaten (Duktus, Vorlagen, Vorkommen, Statistik) sind gesondert vorbehalten und nur mit Admin-Zugang aus der API lesbar

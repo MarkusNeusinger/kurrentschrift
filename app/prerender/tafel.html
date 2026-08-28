@@ -27,7 +27,7 @@
 <meta name="twitter:image" content="https://kurrentschrift.ink/og.png">
 <meta name="twitter:image:alt" content="Kurrentschrift — die alte deutsche Schreibschrift lesen und schreiben lernen">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Startseite","item":"https://kurrentschrift.ink/"},{"@type":"ListItem","position":2,"name":"Lesen","item":"https://kurrentschrift.ink/lesen"},{"@type":"ListItem","position":3,"name":"Schreibtafel","item":"https://kurrentschrift.ink/tafel"}]}</script>
-<style>body{max-width:42rem;margin:2rem auto;padding:0 1rem;font-family:Georgia,"Times New Roman",serif;line-height:1.5;color:#2b2419;background:#f5efe1}a{color:#2c6e5b}nav a{margin-right:.75rem}.sources,.eyebrow,footer{font-size:.9rem;color:#6b5f4c}</style>
+<style>body{max-width:42rem;margin:2rem auto;padding:0 1rem;font-family:Georgia,"Times New Roman",serif;line-height:1.5;color:#2b2419;background:#f5efe1}a{color:#2c6e5b}nav a{margin-right:.75rem}.sources,.eyebrow,footer{font-size:.9rem;color:#6b5f4c}pre{overflow-x:auto;font-size:.85rem}</style>
 </head>
 <body>
 <header><a href="https://kurrentschrift.ink/">kurrentschrift.ink</a></header>
@@ -37,6 +37,18 @@
 <p>Die gemeinfreien Vorlagen liefern die Formen; die nachgeschriebene Bewegung — der Zug der Feder — ist die eigene Rekonstruktion dieses Projekts. Tippe einen geschriebenen Buchstaben an, um ihm noch einmal zuzusehen.</p>
 <ul><li><strong>Kurrent</strong> — Spitzfeder · noch nicht nachgeschrieben</li><li><strong>Sütterlin</strong> — Gleichzugfeder · nachgeschrieben</li><li><strong>Offenbacher</strong> — Breitfeder · noch nicht nachgeschrieben</li></ul>
 <p><em>Dieses Werkzeug läuft im Browser mit JavaScript — unter derselben Adresse.</em></p>
+<h2>Buchstaben für Maschinen</h2>
+<p>Die geschriebenen Buchstaben und ihre gemeinfreie Vorlage sind ohne JavaScript abrufbar — beides je Quelle. Die Pfade unten zeigen „suetterlin-1922“ (Sütterlin-Ausgangsschrift 1922), mit der auch die Seite schreibt; für eine andere Quelle den Namen aus der Quellenliste einsetzen. Vollständig geschrieben ist heute nur die Sütterlin; loth-1866 (Kurrent) und koch-1928 (Offenbacher) haben erst einzelne Buchstaben — das Inventar der Quelle sagt mit has_data, welche. {glyph_key} ist der Schlüssel aus dem Inventar (a … z, Großbuchstaben, longs = langes ſ, sz = ß, Ligaturen wie ch, ck, tz).</p>
+<ul>
+<li><strong>Quellen:</strong> <a href="https://api.kurrentschrift.ink/sources">https://api.kurrentschrift.ink/sources</a> — JSON, alle Vorlagen mit Schrift (style_id), Lizenz und Herkunft</li>
+<li><strong>Inventar:</strong> <a href="https://api.kurrentschrift.ink/sources/suetterlin-1922/templates">https://api.kurrentschrift.ink/sources/suetterlin-1922/templates</a> — JSON, ein Eintrag je glyph_key mit has_data</li>
+<li><strong>Vorlage (Original-Ausschnitt):</strong> <a href="https://api.kurrentschrift.ink/sources/suetterlin-1922/bboxes/{glyph_key}/crop">https://api.kurrentschrift.ink/sources/suetterlin-1922/bboxes/{glyph_key}/crop</a> — PNG, gemeinfreie Tafel von 1922</li>
+<li><strong>Geschriebene Form:</strong> <a href="https://api.kurrentschrift.ink/sources/suetterlin-1922/write/glyphs/{glyph_key}.svg">https://api.kurrentschrift.ink/sources/suetterlin-1922/write/glyphs/{glyph_key}.svg</a> — SVG auf der Lineatur (Grundlinie, Mittellinie)</li>
+<li><strong>Geometrie:</strong> <a href="https://api.kurrentschrift.ink/sources/suetterlin-1922/write/glyphs?keys=a,n">https://api.kurrentschrift.ink/sources/suetterlin-1922/write/glyphs?keys=a,n</a> — JSON: Umriss-Ringe, Mittellinie, Anschlüsse</li>
+<li><strong>Ganzes Wort:</strong> <a href="https://api.kurrentschrift.ink/sources/suetterlin-1922/write/word?text=lesen">https://api.kurrentschrift.ink/sources/suetterlin-1922/write/word?text=lesen</a> — JSON, serverseitig komponiert</li>
+<li><strong>Beispiel:</strong> <a href="https://api.kurrentschrift.ink/sources/suetterlin-1922/write/glyphs/e.svg">das Sütterlin-e, geschrieben</a> · <a href="https://api.kurrentschrift.ink/sources/suetterlin-1922/bboxes/e/crop">seine Vorlage</a></li>
+</ul>
+<p><em>Die komponierten Züge sind aus dem vorbehaltenen Bestand abgeleitet — abrufen und zitieren ja, Trainingsmaterial nein (api.kurrentschrift.ink/robots.txt). Die Vorlagen-Ausschnitte sind gemeinfrei.</em></p>
 </main>
 <nav aria-label="Bereiche"><a href="https://kurrentschrift.ink/schriftkunde">Schriftkunde</a>
 <a href="https://kurrentschrift.ink/lesen">Lesen</a>

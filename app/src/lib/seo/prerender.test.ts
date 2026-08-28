@@ -15,8 +15,24 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
+import { CONFIG } from '../../global-config.ts';
+import { schriftkunde } from '../../locales/de/schriftkunde.ts';
+import { worksheet } from '../../locales/de/worksheet.ts';
 import { paths } from '../../routes/paths.ts';
-import { COMPLETENESS, escapeHtml, ORIGIN, PAGES, PRERENDER_MARKER, renderAll } from './prerender.ts';
+import {
+  COMPLETENESS,
+  escapeHtml,
+  KENNWERTE_LEGEND,
+  kennwerte,
+  ORIGIN,
+  PAGES,
+  PRERENDER_MARKER,
+  PUBLIC_API,
+  PUBLIC_SOURCE_ID,
+  renderAll,
+  UNIT_PEN_ANGLE,
+  UNIT_SLANT,
+} from './prerender.ts';
 
 const appDir = fileURLToPath(new URL('../../../', import.meta.url));
 const sitemap = readFileSync(join(appDir, 'public/sitemap.xml'), 'utf8');
@@ -95,6 +111,80 @@ describe('crawler prerender', () => {
       expect(html).toContain('gesondert vorbehalten');
       expect(html).toContain('<html lang="de">');
     }
+  });
+
+  it('restates the API host and public source the SPA uses', () => {
+    // prerender.ts cannot import global-config (import.meta.env) under Node.
+    expect(PUBLIC_API).toBe(CONFIG.publicApiBase);
+    expect(PUBLIC_SOURCE_ID).toBe(CONFIG.sourceId);
+  });
+
+  it('holds the Kennwerte and the prose facts together, with every angle naming its reference', () => {
+    // A model reading one script's card alone must find the convention on
+    // the card, and must never take a pen-edge angle for a slant.
+    for (const v of schriftkunde.variants) {
+      const fact = (k: string) => v.facts.find((f) => f.k === k)?.v ?? '';
+      const slant = fact('Schräglage') || fact('Schriftlage');
+      expect(slant, v.id).toContain('zur Grundlinie');
+      for (const n of v.data.slantDeg) expect(slant, v.id).toContain(String(n));
+      if ('slantAround1900Deg' in v.data) for (const n of v.data.slantAround1900Deg) expect(slant).toContain(String(n));
+      expect(fact('Lineatur'), v.id).toContain(v.data.lineature.join(':'));
+      if ('lineatureAlt' in v.data) expect(fact('Lineatur')).toContain(v.data.lineatureAlt.join(':'));
+      expect(fact('Feder'), v.id).toContain(v.data.pen);
+      if ('penAngleDeg' in v.data) {
+        for (const n of v.data.penAngleDeg) expect(fact('Feder')).toContain(String(n));
+        expect(fact('Feder')).toContain('Federkante');
+      }
+      expect(fact('Strich'), v.id).toContain(v.data.stroke);
+    }
+    expect(kennwerte().map((k) => k.id)).toEqual(schriftkunde.variants.map((v) => v.id));
+    // The worksheet presets carry the same two angles and must name the same
+    // references — a preset line is read on its own, like a card.
+    for (const preset of Object.values(worksheet.presets)) {
+      if (/Schräglage \d/.test(preset.note)) expect(preset.note).toContain('zur Grundlinie');
+      if (/Federkante|Federwinkel/.test(preset.note)) expect(preset.note).toContain('zur Schreiblinie');
+    }
+  });
+
+  it('renders the Kennwerte as a visible JSON block and as JSON-LD on the Schriftkunde page', () => {
+    const html = rendered.get('schriftkunde.html')!;
+    expect(html).toContain('<pre><code class="language-json">');
+    expect(html).toContain('&quot;slantDeg&quot;'.replace(/&quot;/g, '"')); // quotes stay quotes in the block
+    expect(html).toContain(escapeHtml(KENNWERTE_LEGEND));
+    expect(html).toContain('"@type":"ItemList"');
+    // Two angle units, never one: the slant to the baseline, the pen angle to
+    // the writing line — the JSON-LD must say which is which per property.
+    const ld = JSON.parse(html.match(/<script type="application\/ld\+json">(\{"@context":"https:\/\/schema.org","@type":"ItemList"[\s\S]*?)<\/script>/)![1]);
+    const units = new Map<string, string>();
+    for (const item of ld.itemListElement) {
+      for (const prop of item.item.additionalProperty) if (prop.unitText) units.set(prop.name, prop.unitText);
+    }
+    expect(units.get('slantDeg')).toBe(UNIT_SLANT);
+    expect(units.get('slantAround1900Deg')).toBe(UNIT_SLANT);
+    expect(units.get('penAngleDeg')).toBe(UNIT_PEN_ANGLE);
+    expect(UNIT_PEN_ANGLE).not.toBe(UNIT_SLANT);
+    // The block parses back to the locale's data.
+    const block = html.match(/<pre><code class="language-json">([\s\S]*?)<\/code><\/pre>/)![1];
+    const parsed = JSON.parse(block.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'));
+    expect(parsed.map((k: { id: string }) => k.id)).toEqual(['kurrent', 'suetterlin', 'offenbacher']);
+  });
+
+  it('gives machines the letter recipes on the Tafel page and in llms.txt', () => {
+    const html = rendered.get('tafel.html')!;
+    const src = `${PUBLIC_API}/sources/${PUBLIC_SOURCE_ID}`;
+    for (const url of [
+      `${PUBLIC_API}/sources`,
+      `${src}/templates`,
+      `${src}/bboxes/{glyph_key}/crop`,
+      `${src}/write/glyphs/{glyph_key}.svg`,
+      `${src}/write/glyphs?keys=a,n`,
+      `${src}/write/word?text=lesen`,
+    ]) {
+      expect(html, url).toContain(escapeHtml(url));
+    }
+    const llms = readFileSync(join(appDir, 'public/llms.txt'), 'utf8');
+    expect(llms).toContain(`${src}/write/glyphs/{glyph_key}.svg`);
+    expect(llms).toContain(`${src}/bboxes/{glyph_key}/crop`);
   });
 
   it('never leaves an unescaped angle bracket from the locale in the body', () => {

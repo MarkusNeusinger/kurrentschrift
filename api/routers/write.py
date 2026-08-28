@@ -17,6 +17,7 @@ from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import require_db, require_source
+from api.glyph_svg import glyph_svg
 from api.http import CACHE_CONTROL
 from api.rendering import render_payload_cached, resolve_render_context
 from core.compose import compose_word
@@ -210,16 +211,40 @@ async def get_write_word(
     return _geometry_response({"text": normalized, **composed})
 
 
-@router.get("/glyphs/{glyph_key}")
-async def get_write_glyph(
-    glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
-):
-    """Render payload for one glyph — 404 when no canonical is traced yet."""
+async def _single_glyph_payload(glyph_key: str, source: Source, db: AsyncSession) -> dict:
+    """The memoised render payload of ONE glyph — 404 when no canonical is
+    traced yet. Shared across requests: callers copy before annotating."""
     template = await TemplateRepository(db).get(source.style_id, glyph_key, render_only=True)
     if template is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no canonical for {glyph_key!r}")
     ctx = await resolve_render_context(source, db)
     entry = _template_render_entry(template)
-    payload = await run_in_threadpool(_cached_payload, entry, glyph_key, ctx)
+    return await run_in_threadpool(_cached_payload, entry, glyph_key, ctx)
+
+
+# Declared BEFORE the plain single-glyph route: a `{glyph_key}` segment would
+# otherwise swallow `e.svg` as the key "e.svg" and answer 404.
+@router.get("/glyphs/{glyph_key}.svg")
+async def get_write_glyph_svg(
+    glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+):
+    """The written form of one glyph as an SVG image — the same silhouettes
+    the JSON payload carries, drawn on the script's ruling (api/glyph_svg.py).
+
+    For clients that cannot run the SPA: an assistant asked what a letter
+    looks like can fetch this and show it, where the JSON is a number list.
+    404 when no canonical is traced yet, like the JSON read.
+    """
+    payload = await _single_glyph_payload(glyph_key, source, db)
+    svg = await run_in_threadpool(glyph_svg, payload, name=f"{glyph_key} — {source.title}")
+    return Response(content=svg, media_type="image/svg+xml", headers={"Cache-Control": CACHE_CONTROL})
+
+
+@router.get("/glyphs/{glyph_key}")
+async def get_write_glyph(
+    glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+):
+    """Render payload for one glyph — 404 when no canonical is traced yet."""
+    payload = await _single_glyph_payload(glyph_key, source, db)
     # Shallow copy before annotating — the memoised payload is shared.
     return _geometry_response({**payload, "glyph_key": glyph_key})

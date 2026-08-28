@@ -14,6 +14,35 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The Schriftkunde speaks to machines: key figures as data, and the
+  letters themselves as images.** An assistant that fetched the
+  prerendered pages rated them well and named what was missing — the
+  angle convention lived only under Grundbegriffe (a chunk of the
+  Offenbacher card alone read "75–80°" next to "Kante 15–20°" and could
+  take one for the other), no machine-readable figures, and no way to
+  see a letter. Three answers. (1) Every angle in the script cards and
+  the worksheet presets now names its reference itself ("75–80° zur
+  Grundlinie (90° = senkrecht)", "Federkante 15–20° zur Schreiblinie —
+  der Federwinkel, nicht die Schräglage"). (2) Each script carries a
+  typed `data` block in the locale (`slantDeg`, `lineature`, `pen`,
+  `stroke`, `penAngleDeg`, `lineatureAlt`), rendered on the Schriftkunde
+  prerender as JSON-LD (`ItemList` of `DefinedTerm`s with
+  `PropertyValue`s carrying two distinct units — slants in "Grad zur
+  Grundlinie (90 = senkrecht)", the pen angle in "Grad zur Schreiblinie
+  (Federkante, nicht die Schräglage)") AND as a visible
+  JSON code block — HTML→Markdown converters drop `<script>` and keep
+  `<pre>`, which is why the head alone was invisible to the reviewer;
+  a test holds numbers and prose together and requires "zur Grundlinie"
+  on every slant. (3) New `GET /sources/{id}/write/glyphs/{glyph_key}.svg`
+  draws the written form of one letter server-side from the same
+  silhouette rings the JSON carries, on the script's ruling (baseline
+  solid, midband dashed), as `image/svg+xml` with the public cache class
+  (`api/glyph_svg.py`; declared before the JSON route so `e.svg` is not
+  swallowed as a key). The Tafel prerender and `llms.txt` carry the
+  retrieval recipes — inventory, public-domain chart crop (PNG), written
+  form (SVG), geometry and whole word (JSON) — with the `e` as the
+  worked example. `write-api.md` documents the route.
+
 - **Crawler page reads are counted on a second Plausible site,
   `bots.kurrentschrift.ink` — never on the visitor site.** The
   prerender path is the one place a crawler's read is visible (no

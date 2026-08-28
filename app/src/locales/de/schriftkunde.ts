@@ -111,12 +111,27 @@ export const schriftkunde = {
       period: 'frühes 16. Jh. – 1941',
       essence:
         'Über Jahrhunderte die allgemeine Gebrauchsschrift — ohne einheitlichen Duktus, sondern mit regional und zeitlich verschiedenen Schulvorschriften.',
+      // Every angle names its reference itself ("zur Grundlinie, 90° =
+      // senkrecht"): a reader — or a model — that lands on this card alone
+      // must not have to find the convention under Grundbegriffe, and must
+      // never take a pen-edge angle for a slant.
       facts: [
-        { k: 'Schräglage', v: '~45–75°; um 1900: 60–70°' },
+        { k: 'Schräglage', v: '~45–75° zur Grundlinie (90° = senkrecht); um 1900: 60–70°' },
         { k: 'Lineatur', v: '2:1:2 (große Ober-/Unterlängen)' },
         { k: 'Feder', v: 'ab dem 19. Jh. Spitzfeder' },
         { k: 'Strich', v: 'Schwellzug (druckabhängig)' },
       ],
+      // Machine-readable key figures (crawler prerender: JSON-LD + the visible
+      // Kennwert block). Angles in degrees TO THE BASELINE, 90 = upright;
+      // `lineature` = ascender : x-height : descender. prerender.test.ts holds
+      // these numbers and the prose facts above together.
+      data: {
+        slantDeg: [45, 75],
+        slantAround1900Deg: [60, 70],
+        lineature: [2, 1, 2],
+        pen: 'Spitzfeder',
+        stroke: 'Schwellzug',
+      },
       note: 'Der Wert 60–70° um 1900 nach Süß (2002).',
       sources: [SRC.kurrent, SRC.ottweiler],
     },
@@ -127,11 +142,17 @@ export const schriftkunde = {
       essence:
         'Ludwig Sütterlins bewusst aufrechte, vereinfachte Ausgangsschrift für den Schreibunterricht. Heute heißt umgangssprachlich fast jede Kurrent „Sütterlin“ — gemeint ist aber nur diese eine, späte Variante.',
       facts: [
-        { k: 'Schriftlage', v: 'senkrecht (90°)' },
+        { k: 'Schriftlage', v: 'senkrecht (90° zur Grundlinie)' },
         { k: 'Lineatur', v: '1:1:1' },
         { k: 'Feder', v: 'Gleichzugfeder (Kugelspitz-/Redisfeder)' },
         { k: 'Strich', v: 'Gleichzug (kein Druckwechsel)' },
       ],
+      data: {
+        slantDeg: [90, 90],
+        lineature: [1, 1, 1],
+        pen: 'Gleichzugfeder',
+        stroke: 'Gleichzug',
+      },
       sources: [SRC.suetterlin],
     },
     {
@@ -141,11 +162,19 @@ export const schriftkunde = {
       essence:
         'Ein künstlerischer Gegenentwurf zur pädagogisch gedachten Sütterlin. Als allgemeine Schulschrift setzte sie sich nicht durch.',
       facts: [
-        { k: 'Schräglage', v: '75–80°' },
+        { k: 'Schräglage', v: '75–80° zur Grundlinie (90° = senkrecht)' },
         { k: 'Lineatur', v: '2:3:2 (auch 3:4:3), mittenbetont' },
-        { k: 'Feder', v: 'Band-/Breitfeder, Kante 15–20°' },
+        { k: 'Feder', v: 'Band-/Breitfeder, Federkante 15–20° zur Schreiblinie (der Federwinkel — nicht die Schräglage)' },
         { k: 'Strich', v: 'richtungsabhängiger Bandzug' },
       ],
+      data: {
+        slantDeg: [75, 80],
+        lineature: [2, 3, 2],
+        lineatureAlt: [3, 4, 3],
+        pen: 'Breitfeder',
+        penAngleDeg: [15, 20],
+        stroke: 'Bandzug',
+      },
       sources: [SRC.offenbacher, SRC.klingspor, SRC.koch1928],
     },
   ],
