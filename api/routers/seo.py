@@ -27,7 +27,7 @@ from pathlib import Path
 from fastapi import APIRouter, Response
 from fastapi.responses import HTMLResponse
 
-from api.http import CACHE_CONTROL
+from api.http import CACHE_CONTROL, NO_STORE
 from core.config import settings
 
 
@@ -102,7 +102,7 @@ def _not_found() -> HTMLResponse:
         # status.
         logger.warning("prerender directory has no 404 page: %s", settings.prerender_dir)
         body = _FALLBACK_404
-    return HTMLResponse(body, status_code=404, headers={"Cache-Control": CACHE_CONTROL})
+    return HTMLResponse(body, status_code=404, headers={"Cache-Control": NO_STORE})
 
 
 @router.get("/seo-proxy/", include_in_schema=False)
@@ -119,4 +119,9 @@ async def seo_proxy(route: str = "") -> HTMLResponse:
     body = _page(raw or _INDEX)
     if body is None:
         return _not_found()
-    return HTMLResponse(body, headers={"Cache-Control": CACHE_CONTROL})
+    # Never edge-cached: Cloudflare caches this host's responses by rule, and
+    # a cached page never reaches the middleware that counts the read
+    # (api/analytics.py) — verified 2026-08-28: `cf-cache-status: HIT` and a
+    # single bot_fetch for twenty crawler requests. The page is an 8 KB file
+    # lookup; a crawler paying the API round trip is the price of the count.
+    return HTMLResponse(body, headers={"Cache-Control": NO_STORE})

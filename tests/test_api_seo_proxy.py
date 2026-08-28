@@ -47,13 +47,15 @@ async def test_serves_the_page_of_a_route(api: Harness, prerender_dir: Path):
         res = await _get(api, path)
         assert res.status == 200, path
         assert res.headers["content-type"].startswith("text/html")
-        assert "public" in res.headers["cache-control"]
+        # Never edge-cached: a cached page never reaches the read counter.
+        assert res.headers["cache-control"] == "private, no-store"
         assert f"<title>{title}</title>" in res.body.decode()
 
 
 async def test_unknown_route_gets_the_prerendered_404_with_status_404(api: Harness, prerender_dir: Path):
     res = await _get(api, "/seo-proxy/gibt-es-nicht")
     assert res.status == 404
+    assert res.headers["cache-control"] == "private, no-store"
     assert "noindex" in res.body.decode()
 
 
