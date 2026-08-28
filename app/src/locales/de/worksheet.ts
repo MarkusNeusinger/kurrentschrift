@@ -19,7 +19,7 @@ export const worksheet = {
     // angle) so the two never get read as one figure.
     kurrent: { label: 'Kurrent', note: '2 : 1 : 2 · Schräglage 60–70° zur Grundlinie (um 1900) · Spitzfeder, Schwellzug im Abstrich' },
     suetterlin: { label: 'Sütterlin', note: '1 : 1 : 1 · senkrecht (90° zur Grundlinie) · Gleichzugfeder (gleichmäßiger Strich)' },
-    offenbacher: { label: 'Offenbacher', note: '2 : 3 : 2 · Schräglage 75–80° zur Grundlinie · Breitfeder, Federwinkel 15–20°' },
+    offenbacher: { label: 'Offenbacher', note: '2 : 3 : 2 · Schräglage 75–80° zur Grundlinie · Breitfeder, Federkante 15–20° zur Schreiblinie' },
   },
   config: {
     presetHeading: 'Ausgangsschrift',

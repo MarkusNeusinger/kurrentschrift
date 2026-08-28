@@ -17,6 +17,7 @@ import { describe, expect, it } from 'vitest';
 
 import { CONFIG } from '../../global-config.ts';
 import { schriftkunde } from '../../locales/de/schriftkunde.ts';
+import { worksheet } from '../../locales/de/worksheet.ts';
 import { paths } from '../../routes/paths.ts';
 import {
   COMPLETENESS,
@@ -137,6 +138,12 @@ describe('crawler prerender', () => {
       expect(fact('Strich'), v.id).toContain(v.data.stroke);
     }
     expect(kennwerte().map((k) => k.id)).toEqual(schriftkunde.variants.map((v) => v.id));
+    // The worksheet presets carry the same two angles and must name the same
+    // references — a preset line is read on its own, like a card.
+    for (const preset of Object.values(worksheet.presets)) {
+      if (/Schräglage \d/.test(preset.note)) expect(preset.note).toContain('zur Grundlinie');
+      if (/Federkante|Federwinkel/.test(preset.note)) expect(preset.note).toContain('zur Schreiblinie');
+    }
   });
 
   it('renders the Kennwerte as a visible JSON block and as JSON-LD on the Schriftkunde page', () => {

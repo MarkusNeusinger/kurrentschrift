@@ -66,10 +66,13 @@ def glyph_svg(payload: dict, *, name: str, height_px: int = 160) -> str:
 
     dash = {"baseline": "", "midband": ' stroke-dasharray="0.08 0.05"', "ascender": ' stroke-dasharray="0.02 0.05"'}
     dash["descender"] = dash["ascender"]
+    # Fixed emission order (bottom to top), independent of the payload dict's
+    # order, so two renders of one glyph are byte-identical.
     lines = "".join(
-        f'<line x1="{_fmt(min_x)}" x2="{_fmt(max_x)}" y1="{_fmt(-float(y))}" y2="{_fmt(-float(y))}" '
+        f'<line x1="{_fmt(min_x)}" x2="{_fmt(max_x)}" y1="{_fmt(-float(guides[key]))}" y2="{_fmt(-float(guides[key]))}" '
         f'stroke="{GUIDE}" stroke-width="{_fmt(GUIDE_STROKE)}"{dash.get(key, "")}/>'
-        for key, y in guides.items()
+        for key in ("descender", "baseline", "midband", "ascender")
+        if key in guides
     )
     stroke_ds = [d for d in (rings_to_path_d(stroke) for stroke in strokes) if d]
     paths = "".join(f'<path d="{d}" fill="{INK}" fill-rule="evenodd" stroke="none"/>' for d in stroke_ds)
