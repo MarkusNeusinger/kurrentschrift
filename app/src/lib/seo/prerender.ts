@@ -186,11 +186,15 @@ function letterRecipes(): string {
   return [
     h2('Buchstaben für Maschinen'),
     p(
-      `Die geschriebenen Buchstaben und ihre gemeinfreie Vorlage sind ohne JavaScript abrufbar — aus der Quelle ` +
-        `„${PUBLIC_SOURCE_ID}“ (Sütterlin-Ausgangsschrift 1922), mit der auch die Seite schreibt. {glyph_key} ist der ` +
-        `Schlüssel aus dem Inventar (a … z, Großbuchstaben, longs = langes ſ, Ligaturen wie ch, ck, tz).`,
+      `Die geschriebenen Buchstaben und ihre gemeinfreie Vorlage sind ohne JavaScript abrufbar — beides je Quelle. ` +
+        `Die Pfade unten zeigen „${PUBLIC_SOURCE_ID}“ (Sütterlin-Ausgangsschrift 1922), mit der auch die Seite ` +
+        `schreibt; für eine andere Quelle den Namen aus der Quellenliste einsetzen. Vollständig geschrieben ist heute ` +
+        `nur die Sütterlin; loth-1866 (Kurrent) und koch-1928 (Offenbacher) haben erst einzelne Buchstaben — das ` +
+        `Inventar der Quelle sagt mit has_data, welche. {glyph_key} ist der Schlüssel aus dem Inventar (a … z, ` +
+        `Großbuchstaben, longs = langes ſ, sz = ß, Ligaturen wie ch, ck, tz).`,
     ),
     '<ul>',
+    row('Quellen', `${PUBLIC_API}/sources`, 'JSON, alle Vorlagen mit Schrift (style_id), Lizenz und Herkunft'),
     row('Inventar', `${src}/templates`, 'JSON, ein Eintrag je glyph_key mit has_data'),
     row('Vorlage (Original-Ausschnitt)', `${src}/bboxes/{glyph_key}/crop`, 'PNG, gemeinfreie Tafel von 1922'),
     row('Geschriebene Form', `${src}/write/glyphs/{glyph_key}.svg`, 'SVG auf der Lineatur (Grundlinie, Mittellinie)'),

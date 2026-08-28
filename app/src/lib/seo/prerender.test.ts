@@ -166,6 +166,7 @@ describe('crawler prerender', () => {
     const html = rendered.get('tafel.html')!;
     const src = `${PUBLIC_API}/sources/${PUBLIC_SOURCE_ID}`;
     for (const url of [
+      `${PUBLIC_API}/sources`,
       `${src}/templates`,
       `${src}/bboxes/{glyph_key}/crop`,
       `${src}/write/glyphs/{glyph_key}.svg`,

@@ -19,8 +19,9 @@ Jede Seite liefert Crawlern und KI-Agenten, die kein JavaScript ausführen, unte
 
 ## Buchstaben abrufen (ohne JavaScript, für jeden Client)
 
-Die geschriebenen Buchstaben und ihre gemeinfreie Vorlage stammen aus der Quelle `suetterlin-1922` (Sütterlin-Ausgangsschrift 1922), mit der auch die Seite schreibt. `{glyph_key}` ist der Schlüssel aus dem Inventar (a … z, Großbuchstaben, `longs` = langes ſ, Ligaturen wie `ch`, `ck`, `tz`).
+Die geschriebenen Buchstaben und ihre gemeinfreie Vorlage sind beide je Quelle abrufbar. Die Pfade unten zeigen `suetterlin-1922` (Sütterlin-Ausgangsschrift 1922), mit der auch die Seite schreibt; für eine andere Quelle den Namen aus der Quellenliste einsetzen. Vollständig geschrieben ist heute nur die Sütterlin; `loth-1866` (Kurrent) und `koch-1928` (Offenbacher) haben erst einzelne Buchstaben — das Inventar der Quelle sagt mit `has_data`, welche. `{glyph_key}` ist der Schlüssel aus dem Inventar (a … z, Großbuchstaben, `longs` = langes ſ, `sz` = ß, Ligaturen wie `ch`, `ck`, `tz`).
 
+- Quellen: https://api.kurrentschrift.ink/sources — JSON, alle Vorlagen mit Schrift (`style_id`), Lizenz und Herkunft
 - Inventar: https://api.kurrentschrift.ink/sources/suetterlin-1922/templates — JSON, ein Eintrag je glyph_key mit `has_data`
 - Vorlage (Original-Ausschnitt der gemeinfreien Tafel): https://api.kurrentschrift.ink/sources/suetterlin-1922/bboxes/{glyph_key}/crop — PNG
 - Geschriebene Form: https://api.kurrentschrift.ink/sources/suetterlin-1922/write/glyphs/{glyph_key}.svg — SVG auf der Lineatur (Grundlinie, Mittellinie)
