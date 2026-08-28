@@ -14,6 +14,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The SPA shell speaks to unmapped agents, and guessed llms.txt paths
+  resolve.** A second assistant protocol (Grok, 2026-08-28) showed the
+  remaining discoverability gap: an agent whose user agent is not in the
+  nginx `$is_bot` map gets the empty app shell ("insufficient relevant
+  content"), so even the prerendered full text stays invisible to it.
+  Now the shell itself (`app/index.html`) carries, on every route, a
+  `<link rel="alternate" type="text/plain" href="/llms.txt">` in the
+  head and a `<noscript>` block with the full llms.txt URL, the complete
+  word-render example URL (`text` free, ≤ 160 characters) and the API
+  doc links — invisible in the rendered app. Guessed paths redirect to
+  the canonical file instead of 404: `/.well-known/llms.txt` on the site
+  (nginx, 302) and `/llms.txt` on the API host (`api/routers/seo.py`,
+  302, classified public). `robots.txt` additionally names llms.txt and
+  the OpenAPI spec in two terse lines at the very top. Doctrine:
+  `crawler-richtlinie.md` §3 "Auffindbarkeit"; pinned by
+  `seoCoverage.test.ts` (shell), `test_api_http.py` and
+  `test_api_public_surface.py` (redirect).
+
 - **The Write API is now findable from the site itself.** A session
   protocol of an external assistant (2026-08-28) showed the render
   endpoints failing on discoverability, not on technique: no fetched

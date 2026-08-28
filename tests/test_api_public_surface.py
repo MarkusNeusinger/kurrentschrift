@@ -35,6 +35,7 @@ PUBLIC = {
     "/",
     "/health",
     "/robots.txt",
+    "/llms.txt",
     "/seo-proxy/",
     "/seo-proxy/{route:path}",
     "/styles",

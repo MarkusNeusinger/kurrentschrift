@@ -69,6 +69,15 @@
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
+    <!-- Machine-facing fallback in the SHELL itself: agents whose user agent
+         is not in the nginx $is_bot map get this file on every route, and most
+         of them read the raw HTML without executing JS (Grok's "insufficient
+         relevant content", 2026-08-28). This link and the <noscript> block in
+         the body put the machine guide and one complete, callable example URL
+         into every first response — invisible in the rendered app. Doctrine:
+         docs/reference/crawler-richtlinie.md §3 "Auffindbarkeit". -->
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt — Wegweiser für Maschinen" />
+
     <!-- Static SEO defaults (home / no-JS crawlers). usePageMeta overrides
          title, description, canonical and the og/twitter title+description+url
          per route at runtime. og:image stays absolute and route-independent so
@@ -155,6 +164,24 @@
     </script>
   </head>
   <body>
+    <!-- For clients without JavaScript — humans with JS off AND the many
+         agents that fetch raw HTML. Absolute URLs on purpose: assistants' fetch
+         tools allow only URLs that already appeared in fetched content, so the
+         full callable example must stand here verbatim (crawler-richtlinie.md
+         §3). Keep in step with llms.txt and prerender.ts::apiExampleLine. -->
+    <noscript>
+      <p>
+        Diese Seite ist eine JavaScript-Anwendung. Ohne JavaScript: Der Wegweiser für Maschinen mit allen
+        Abrufwegen ist <a href="https://kurrentschrift.ink/llms.txt">https://kurrentschrift.ink/llms.txt</a>.
+        Die offene Lese-API schreibt jedes Wort als SVG-Bild, z.&nbsp;B.
+        <a href="https://api.kurrentschrift.ink/sources/suetterlin-1922/write/word.svg?text=lesen">https://api.kurrentschrift.ink/sources/suetterlin-1922/write/word.svg?text=lesen</a>
+        — der text-Parameter ist frei (bis 160 Zeichen). API-Dokumentation:
+        <a href="https://api.kurrentschrift.ink/docs">api.kurrentschrift.ink/docs</a> ·
+        <a href="https://api.kurrentschrift.ink/openapi.json">openapi.json</a>.
+        Crawler und Assistenten mit bekannten User-Agents erhalten unter derselben Adresse eine
+        vorgerenderte Volltext-Fassung jeder Seite.
+      </p>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

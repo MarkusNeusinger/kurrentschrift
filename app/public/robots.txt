@@ -1,3 +1,6 @@
+# llms.txt (machine guide): https://kurrentschrift.ink/llms.txt
+# OpenAPI: https://api.kurrentschrift.ink/openapi.json
+#
 # Crawler policy — open. Search engines, AI assistants and their crawlers may
 # index, retrieve, cite and train on the public pages of this site: the code
 # is MIT and the site text is published to be read. What stays reserved is the
