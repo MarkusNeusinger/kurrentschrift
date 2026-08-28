@@ -613,9 +613,12 @@ export function renderPage(spec: PageSpec, { stand }: { stand: string }): string
     .filter(Boolean)
     .join('\n');
   const nav = `<nav aria-label="Bereiche">${NAV.map((n) => a(abs(n.route), n.label)).join('\n')}</nav>`;
+  // The llms.txt link exists ONLY in this crawler-facing footer, never in the
+  // SPA's PublicFooter (owner decision 2026-08-28): the machine guide is for
+  // agents, and only mapped crawler user agents ever see these pages.
   const footer =
     `<footer><p>${e(common.footer.tagline)}${e(common.footer.taglineRest)} ${a(common.footer.githubUrl, common.footer.github)}` +
-    ` · ${a(abs(common.footer.llmsPath), common.footer.llms)}` +
+    ` · ${a(`${ORIGIN}/llms.txt`, 'llms.txt')}` +
     ` · ${a(abs(paths.impressum), `${impressum.footerLink}${impressum.footerLinkRest}`)}</p>` +
     `<p>Stand: ${e(stand)}${url ? ` · Kanonische Fassung: ${a(url, url)}` : ''}</p>` +
     `<p>${e(RIGHTS_NOTE)}</p></footer>`;

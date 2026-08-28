@@ -175,9 +175,13 @@ vollständige Beispiel-URL des Wort-Renders
 (`…/write/word.svg?text=lesen`, samt dem Hinweis, dass `text` frei ist)
 ausgeschrieben im Prerender-Text von `/federprobe` und `/schriftkunde`
 (`apiExampleLine` in `prerender.ts`; `/tafel` trägt die vollständige
-Rezeptliste), `llms.txt` ist per Voll-URL aus dem Footer jeder Seite
-(SPA und Prerender) verlinkt, und beide `robots.txt` (Site und API-Host)
-nennen sie neben der `Sitemap:`-Zeile. Festgehalten von
+Rezeptliste), `llms.txt` ist per Voll-URL aus dem Footer jeder
+**Prerender**-Seite verlinkt, und beide `robots.txt` (Site und API-Host)
+nennen sie neben der `Sitemap:`-Zeile. Im SPA-Footer, den Menschen
+sehen, steht der Link bewusst **nicht** (Entscheid 2026-08-28): Die
+Datei ist für Agenten, nicht für Besucher — und die erreichen sie
+vollständig über den Prerender-Pfad, denn genau die gemappten Agenten
+sind ihr Publikum. Festgehalten von
 `prerender.test.ts`, `seoCoverage.test.ts` und `test_api_http.py`; ob
 die Prüfung der Werkzeuge auf die exakte URL oder auf Host+Pfad geht,
 ist offen — darum steht der Frei-Parameter-Hinweis direkt neben dem

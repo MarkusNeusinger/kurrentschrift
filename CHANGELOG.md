@@ -25,9 +25,10 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   free parameter (≤ 160 characters) — stands in the prerendered prose
   of `/federprobe` and `/schriftkunde` (`apiExampleLine` in
   `prerender.ts`), the Tafel recipes and `llms.txt` say `text` is free,
-  `llms.txt` is linked by full URL from every page's footer (SPA and
-  prerender, between GitHub and Impressum), and both `robots.txt`
-  files (site and API host) point to it beside the `Sitemap:` line.
+  `llms.txt` is linked by full URL from every prerendered page's footer
+  (crawler-facing only — deliberately not in the SPA footer humans see),
+  and both `robots.txt` files (site and API host) point to it beside
+  the `Sitemap:` line.
   Doctrine: `crawler-richtlinie.md` §3 "Auffindbarkeit"; pinned by
   `prerender.test.ts`, `seoCoverage.test.ts` and `test_api_http.py`.
 

@@ -75,15 +75,12 @@ export const common = {
   footer: {
     tagline: 'Eine private Liebhaberei',
     taglineRest: ' — quelloffen.',
-    // Right-hand link row: the public repository, then the machine guide,
-    // rendered before the Impressum link (de.impressum.footerLink).
+    // Right-hand link row: the public repository, rendered before the
+    // Impressum link (de.impressum.footerLink). The machine guide llms.txt
+    // is NOT linked here — agents get it via the prerender footer and
+    // robots.txt (crawler-richtlinie.md §3).
     github: 'GitHub',
     githubUrl: 'https://github.com/MarkusNeusinger/kurrentschrift',
-    // The machine guide for AI assistants — linked visibly because the
-    // /llms.txt convention is otherwise only findable by guessing it
-    // (docs/reference/crawler-richtlinie.md §3).
-    llms: 'llms.txt',
-    llmsPath: '/llms.txt',
   },
   // The one recognizable (i) affordance (InfoHint) used across public + admin:
   // surfaces stay minimal, the detail sits a tap away.
