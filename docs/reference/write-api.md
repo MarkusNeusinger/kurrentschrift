@@ -25,11 +25,18 @@ deshalb schnell genug für Cache-Control + gzip.
 | `GET /sources/{id}/write/word?text=…` | Ein ganzes Wort/eine Zeile, serverseitig komponiert |
 | `GET /sources/{id}/write/word.svg?text=…` | Dasselbe Wort als **SVG-Bild** (seit 2026-08-28): die Draw-Items der Komposition — Buchstaben-Silhouetten gefüllt (`evenodd`), generierte Übergänge als gestrichene Mittellinie mit ihrer konstanten Breite und runden Kappen, genau wie `WrittenWord` im Browser — auf der Lineatur der Schrift; `bounds`/`guides` aus der Komposition. Gleicher Eingabevertrag wie `/word` (`_normalized_text`: NFC, trim, ≤ 160 Zeichen → 422). Buchstaben ohne Canonical bleiben Lücken; ein Text, aus dem sich NICHTS schreiben lässt, antwortet **404** mit den fehlenden Keys statt eines leeren Bildes. `api/glyph_svg.py::word_svg` |
 
-Alle fünf sind **öffentliche Reads** (kein Admin-Gate) und tragen den
-geteilten Cache-Header (`api/http.py`; Browser ≈ 5 min, Edge
-`s-maxage` = 1 Tag — Template-Geometrie ändert sich nur durch einen
-Admin-Re-Trace, dann gilt das dokumentierte Stale-Fenster von bis zu
-einem Tag am CDN). Der Admin behält den ungecachten `/diagnostic`.
+Alle fünf sind **öffentliche Reads** (kein Admin-Gate). Die drei
+JSON-Reads tragen den geteilten Cache-Header (`api/http.py`
+`CACHE_CONTROL`; Browser ≈ 5 min, Edge `s-maxage` = 1 Tag —
+Template-Geometrie ändert sich nur durch einen Admin-Re-Trace, dann gilt
+das dokumentierte Stale-Fenster von bis zu einem Tag am CDN). Die beiden
+**SVG-Reads** tragen `BROWSER_ONLY_CACHE` (`private, max-age=300`) —
+Browser ja, Edge nein: Cloudflare cacht diesen Host per Regel, und ein
+Edge-HIT erreicht die zählende Middleware (`asset_fetch`,
+[`frontend-stack.md`](frontend-stack.md) §6) nie; am 2026-08-28 waren
+drei von vier Assistenten-Abrufen genau solche HITs. Die SPA fragt die
+SVGs nie an, also verliert nichts Menschliches den Edge-Cache. Der Admin
+behält den ungecachten `/diagnostic`.
 
 ## Pipeline
 

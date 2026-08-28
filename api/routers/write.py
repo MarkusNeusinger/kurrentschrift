@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import require_db, require_source
 from api.glyph_svg import glyph_svg, word_svg
-from api.http import CACHE_CONTROL
+from api.http import BROWSER_ONLY_CACHE, CACHE_CONTROL
 from api.rendering import render_payload_cached, resolve_render_context
 from core.compose import compose_word
 from core.database import (
@@ -238,7 +238,7 @@ async def get_write_word_svg(
             detail=f"nothing to write for {normalized!r}: no canonical for {', '.join(composed.get('missing') or [])}",
         )
     svg = await run_in_threadpool(word_svg, composed, name=f"{normalized} — {source.title}")
-    return Response(content=svg, media_type="image/svg+xml", headers={"Cache-Control": CACHE_CONTROL})
+    return Response(content=svg, media_type="image/svg+xml", headers={"Cache-Control": BROWSER_ONLY_CACHE})
 
 
 async def _single_glyph_payload(glyph_key: str, source: Source, db: AsyncSession) -> dict:
@@ -267,7 +267,7 @@ async def get_write_glyph_svg(
     """
     payload = await _single_glyph_payload(glyph_key, source, db)
     svg = await run_in_threadpool(glyph_svg, payload, name=f"{glyph_key} — {source.title}")
-    return Response(content=svg, media_type="image/svg+xml", headers={"Cache-Control": CACHE_CONTROL})
+    return Response(content=svg, media_type="image/svg+xml", headers={"Cache-Control": BROWSER_ONLY_CACHE})
 
 
 @router.get("/glyphs/{glyph_key}")
