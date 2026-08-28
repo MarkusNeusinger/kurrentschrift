@@ -272,6 +272,17 @@ def test_classify_asset_caps_the_word_text() -> None:
     assert key == "x" * 80
 
 
+def test_classify_asset_normalises_the_word_text_like_the_route() -> None:
+    """A decomposed and a composed umlaut are one word to /word (NFC) — and
+    one dashboard key. The first literal below carries `u` + U+0308 (combining
+    diaeresis), invisibly different from the precomposed `ü` in the second."""
+    decomposed = classify_asset("/sources/s/write/word.svg", "Glück")
+    composed = classify_asset("/sources/s/write/word.svg", "Glück")
+    assert decomposed == composed == ("word_svg", "s", "Glück")
+    # The NFC form has five code points; the decomposed input above had six.
+    assert len(decomposed[2]) == 5
+
+
 async def test_asset_fetch_carries_what_who_and_why() -> None:
     request = _request("Mozilla/5.0 (compatible; Claude-User/1.0)")
     request.url.path = "/sources/suetterlin-1922/write/glyphs/e.svg"

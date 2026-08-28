@@ -17,6 +17,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+import unicodedata
 
 import httpx
 from fastapi import Request
@@ -200,13 +201,18 @@ def classify_asset(path: str, text: str | None = None) -> tuple[str, str, str] |
     """(asset, source, key) for a public asset path, else None.
 
     `key` is the glyph_key for a letter read or the crop, and the requested
-    text (trimmed, capped) for a word read — `text` is the query parameter
-    the caller hands in for the word routes."""
+    text for a word read — `text` is the query parameter the caller hands in
+    for the word routes, normalised the way `/word` normalises its input (NFC,
+    whitespace collapsed) so the dashboard key is the text the API actually
+    wrote, and a decomposed and a composed umlaut land in one bucket."""
     for pattern, asset in _ASSET_ROUTES:
         m = pattern.match(path)
         if m is None:
             continue
-        key = m.group(2) if m.lastindex and m.lastindex >= 2 else " ".join((text or "").split())[:_KEY_MAX]
+        if m.lastindex and m.lastindex >= 2:
+            key = m.group(2)
+        else:
+            key = " ".join(unicodedata.normalize("NFC", text or "").split())[:_KEY_MAX]
         return asset, m.group(1), key
     return None
 
