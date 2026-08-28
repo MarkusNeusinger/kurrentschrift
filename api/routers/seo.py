@@ -109,10 +109,14 @@ def _not_found() -> HTMLResponse:
 @router.get("/seo-proxy/{route:path}", include_in_schema=False)
 async def seo_proxy(route: str = "") -> HTMLResponse:
     """The prerendered page of a public route, or the prerendered 404."""
-    name = route.strip("/") or _INDEX
-    if name != _INDEX and not _ROUTE_RE.match(name):
+    raw = route.strip("/")
+    # Only the EMPTY route is the home page. The two file names that are not
+    # routes (`index`, `404`) must not become pages of their own — a 200 on
+    # /seo-proxy/index would be a duplicate of the home page, a 200 on
+    # /seo-proxy/404 an indexable copy of the error page.
+    if raw in (_INDEX, _NOT_FOUND) or (raw and not _ROUTE_RE.match(raw)):
         return _not_found()
-    body = _page(name)
+    body = _page(raw or _INDEX)
     if body is None:
         return _not_found()
     return HTMLResponse(body, headers={"Cache-Control": CACHE_CONTROL})

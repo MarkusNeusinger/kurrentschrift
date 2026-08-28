@@ -66,13 +66,20 @@ async def test_unknown_route_gets_the_prerendered_404_with_status_404(api: Harne
         "schreiben/../index",
         "%2e%2e/index",
         "index.html",
+        # The two file names that are not routes: only the EMPTY route is the
+        # home page, and the error page is never a 200 page of its own.
+        "index",
+        "404",
+        "404/",
     ],
 )
 async def test_nothing_but_a_route_name_reaches_the_disk(api: Harness, prerender_dir: Path, route: str):
     (prerender_dir.parent / "secret.html").write_text("<title>leak</title>", encoding="utf-8")
     res = await _get(api, f"/seo-proxy/{route}")
     assert res.status == 404
-    assert "leak" not in res.body.decode()
+    body = res.body.decode()
+    assert "leak" not in body
+    assert "<title>Start</title>" not in body  # never the home page under another name
 
 
 async def test_missing_prerender_directory_still_answers_a_noindex_404(api: Harness, tmp_path: Path, monkeypatch):
