@@ -31,6 +31,18 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   already that short); the rule lives in this file's header, `CLAUDE.md`
   and `.github/copilot-instructions.md`.
 
+### Fixed
+
+- **A bare `Grok` or `xAI-Bot` user agent is counted on the bot site,
+  not only prerendered.** The nginx `$is_bot` map has served `~*grok`
+  and `~*xai` since the prerender path landed, but `AI_AGENTS` — the
+  taxonomy behind `bot_fetch` and `asset_fetch` — knew only
+  `grok-deepsearch`, `grokbot` and `xai-grok`, so xAI's fetcher sending
+  plain `Grok/1.0` (seen on anyplot, 2026-08-19) or `xAI-Bot` (seen here,
+  2026-08-28) got the page and left no event. Two bare entries close the
+  gap, last among the xAI patterns so the specific ones keep winning;
+  mirrored verbatim from anyplot #10808, as the shared taxonomy requires.
+
 ## [0.27.0] — 2026-08-28 — Lotse + chain v5 in the tracing duel, the Eigenhand capture chain, the site opened to machines
 
 ### Added

@@ -73,6 +73,14 @@ AI_AGENTS: tuple[tuple[str, str, str], ...] = (
     ("grok-deepsearch", "grok", "user_directed"),
     ("grokbot", "grok", "user_directed"),
     ("xai-grok", "grok", "user_directed"),
+    # The bare tokens the nginx map already serves (`~*grok`, `~*xai`): xAI's
+    # fetcher was seen sending plain "Grok" (anyplot's AI-access audit,
+    # 2026-08-19) and "xAI-Bot" without the grok substring (here, 2026-08-28).
+    # Both got the prerendered page but were never counted, because nothing
+    # above matched them. Last among the xAI patterns so the specific ones
+    # keep winning. Mirrored from anyplot #10808 — the taxonomy stays verbatim.
+    ("grok", "grok", "user_directed"),
+    ("xai", "grok", "user_directed"),
     ("youbot", "you", "index"),
     ("cohere-ai", "cohere", "user_directed"),
     # Classic search crawlers. Worth recording for the same reason the AI ones
