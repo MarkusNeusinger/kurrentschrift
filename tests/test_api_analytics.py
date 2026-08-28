@@ -13,7 +13,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from api import main as api_main
-from api.analytics import AI_AGENTS, BOT_SENDER_UA, detect_ai_agent, track_bot_fetch
+from api.analytics import AI_AGENTS, BOT_SENDER_UA, classify_asset, detect_ai_agent, track_asset_fetch, track_bot_fetch
 from api.request_context import visitor_ip
 from core.config import settings
 from tests.api_harness import Harness
@@ -234,8 +234,99 @@ async def test_middleware_reports_the_public_path_and_the_status(api: Harness, t
 
 async def test_middleware_ignores_machine_files_and_api_reads(api: Harness) -> None:
     ua = {"User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1)"}
-    with patch.object(api_main, "track_bot_fetch") as track:
+    with patch.object(api_main, "track_bot_fetch") as track, patch.object(api_main, "track_asset_fetch") as assets:
         await api.client.request("GET", "/robots.txt", headers=ua)
         await api.client.request("GET", "/styles", headers=ua)
         await api.client.request("GET", "/health", headers=ua)
     track.assert_not_called()
+    assets.assert_not_called()
+
+
+# ------------------------------------------------------------------ asset fetches
+
+
+@pytest.mark.parametrize(
+    ("path", "text", "expected"),
+    [
+        ("/sources/suetterlin-1922/write/glyphs/e.svg", None, ("glyph_svg", "suetterlin-1922", "e")),
+        ("/sources/suetterlin-1922/write/glyphs/longs", None, ("glyph_json", "suetterlin-1922", "longs")),
+        ("/sources/loth-1866/write/word.svg", "  Glück  ", ("word_svg", "loth-1866", "Glück")),
+        (
+            "/sources/suetterlin-1922/write/word",
+            "lesen und schreiben",
+            ("word_json", "suetterlin-1922", "lesen und schreiben"),
+        ),
+        ("/sources/suetterlin-1922/bboxes/e/crop", None, ("crop", "suetterlin-1922", "e")),
+        ("/sources/suetterlin-1922/write/glyphs", None, None),  # the batch read
+        ("/sources/suetterlin-1922/templates", None, None),  # the inventory
+        ("/sources/suetterlin-1922/bboxes/status", None, None),
+        ("/seo-proxy/schriftkunde", None, None),
+    ],
+)
+def test_classify_asset(path: str, text: str | None, expected) -> None:
+    assert classify_asset(path, text) == expected
+
+
+def test_classify_asset_caps_the_word_text() -> None:
+    _, _, key = classify_asset("/sources/s/write/word.svg", "x" * 200)
+    assert key == "x" * 80
+
+
+def test_classify_asset_normalises_the_word_text_like_the_route() -> None:
+    """A decomposed and a composed umlaut are one word to /word (NFC) — and
+    one dashboard key. The first literal below carries `u` + U+0308 (combining
+    diaeresis), invisibly different from the precomposed `ü` in the second."""
+    decomposed = classify_asset("/sources/s/write/word.svg", "Glück")
+    composed = classify_asset("/sources/s/write/word.svg", "Glück")
+    assert decomposed == composed == ("word_svg", "s", "Glück")
+    # The NFC form has five code points; the decomposed input above had six.
+    assert len(decomposed[2]) == 5
+
+
+async def test_asset_fetch_carries_what_who_and_why() -> None:
+    request = _request("Mozilla/5.0 (compatible; Claude-User/1.0)")
+    request.url.path = "/sources/suetterlin-1922/write/glyphs/e.svg"
+    with patch("api.analytics.httpx.AsyncClient") as mock_client_class:
+        mock_client = AsyncMock()
+        mock_client_class.return_value.__aenter__.return_value = mock_client
+
+        track_asset_fetch(request, asset="glyph_svg", source="suetterlin-1922", key="e", status=200)
+        await asyncio.sleep(0)
+
+        call = mock_client.post.call_args[1]
+        assert call["headers"]["User-Agent"] == BOT_SENDER_UA
+        payload = call["json"]
+        assert payload["name"] == "asset_fetch"
+        assert payload["domain"] == settings.plausible_bots_domain
+        assert payload["url"] == "https://api.kurrentschrift.ink/sources/suetterlin-1922/write/glyphs/e.svg"
+        assert payload["props"] == {
+            "asset": "glyph_svg",
+            "source": "suetterlin-1922",
+            "key": "e",
+            "assistant": "claude",
+            "kind": "user_directed",
+            "status": "200",
+        }
+
+
+async def test_asset_fetch_ignores_the_spa_and_curl() -> None:
+    with patch("api.analytics.httpx.AsyncClient") as mock_client_class:
+        mock_client = AsyncMock()
+        mock_client_class.return_value.__aenter__.return_value = mock_client
+        for ua in ("Mozilla/5.0 (X11; Linux) Chrome/126.0 Safari/537.36", "curl/8.5.0"):
+            track_asset_fetch(_request(ua), asset="crop", source="suetterlin-1922", key="e", status=200)
+        await asyncio.sleep(0)
+        mock_client.post.assert_not_called()
+
+
+async def test_middleware_reports_asset_fetches_with_key_and_status(api: Harness) -> None:
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    ua = {"User-Agent": "Mozilla/5.0 (compatible; Claude-User/1.0)"}
+    with patch.object(api_main, "track_asset_fetch") as assets:
+        await api.client.request("GET", f"/sources/{source_id}/write/glyphs/n.svg", headers=ua)
+        await api.client.request("GET", f"/sources/{source_id}/write/word.svg", params={"text": "nn"}, headers=ua)
+        await api.client.request("GET", f"/sources/{source_id}/write/glyphs/zz", headers=ua)
+        await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": "n"}, headers=ua)
+    calls = [(c.kwargs["asset"], c.kwargs["key"], c.kwargs["status"]) for c in assets.call_args_list]
+    assert calls == [("glyph_svg", "n", 200), ("word_svg", "nn", 200), ("glyph_json", "zz", 404)]

@@ -51,6 +51,7 @@ PUBLIC = {
     "/sources/{source_id}/write/glyphs/{glyph_key}",
     "/sources/{source_id}/write/glyphs/{glyph_key}.svg",
     "/sources/{source_id}/write/word",
+    "/sources/{source_id}/write/word.svg",
     "/quiz-words",
 }
 
@@ -106,7 +107,11 @@ _PARAMS = {
 }
 # The renders 422 without their query — a 422 is not a gate, but a real
 # request is the more honest probe.
-_QUERY = {"/sources/{source_id}/write/glyphs": {"keys": "n"}, "/sources/{source_id}/write/word": {"text": "n"}}
+_QUERY = {
+    "/sources/{source_id}/write/glyphs": {"keys": "n"},
+    "/sources/{source_id}/write/word": {"text": "n"},
+    "/sources/{source_id}/write/word.svg": {"text": "n"},
+}
 _GATE_STATUSES = {401, 403}
 
 

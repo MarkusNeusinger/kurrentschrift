@@ -200,6 +200,7 @@ function letterRecipes(): string {
     row('Geschriebene Form', `${src}/write/glyphs/{glyph_key}.svg`, 'SVG auf der Lineatur (Grundlinie, Mittellinie)'),
     row('Geometrie', `${src}/write/glyphs?keys=a,n`, 'JSON: Umriss-Ringe, Mittellinie, Anschlüsse'),
     row('Ganzes Wort', `${src}/write/word?text=lesen`, 'JSON, serverseitig komponiert'),
+    row('Ganzes Wort als Bild', `${src}/write/word.svg?text=lesen`, 'SVG auf der Lineatur, mit den generierten Übergängen'),
     `<li><strong>Beispiel:</strong> ${a(`${src}/write/glyphs/e.svg`, 'das Sütterlin-e, geschrieben')} · ${a(`${src}/bboxes/e/crop`, 'seine Vorlage')}</li>`,
     '</ul>',
     em(

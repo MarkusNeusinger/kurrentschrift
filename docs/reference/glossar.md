@@ -502,7 +502,11 @@ chatgpt, gemini, google …), `kind` (**warum** abgerufen wurde —
 zu öffnen, also ein Leser; `index`, `search`, `training`, `inspection` =
 Maschinen bauen einen Korpus), `path` und `status` (der Abruf wird
 aufgezeichnet, nicht der erfolgreiche Lesevorgang — eine 404 ist ein
-Signal, kein Seitenaufruf). Drei Fallen, die die Events schweigend
+Signal, kein Seitenaufruf). Dazu seit 2026-08-28 das Event
+`asset_fetch` für die Einzel-Abrufe der API — Buchstabe oder Wort als
+SVG/JSON, Tafel-Ausschnitt — mit `asset`, `source` und `key`
+(glyph_key bzw. angefragter Text): welche Buchstaben und Wörter
+Assistenten zeigen wollten. Drei Fallen, die die Events schweigend
 verschwinden lassen: ein Bot-User-Agent (→ Events laufen unter dem
 neutralen `kurrentschrift-server/1.0`, die Identität steckt in den
 Props), eine Hosting-IP als Besucher — Plausible verwirft

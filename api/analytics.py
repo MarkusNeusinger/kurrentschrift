@@ -16,6 +16,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
+import unicodedata
 
 import httpx
 from fastapi import Request
@@ -163,10 +165,72 @@ def track_bot_fetch(request: Request, path: str, status: int) -> None:
     assistant, kind = detected
 
     props = {"assistant": assistant, "kind": kind, "path": path, "status": str(status)}
-    url = f"{SITE_ORIGIN}{path}"
-    task = asyncio.create_task(
-        _send_plausible_event(visitor_ip(request), "bot_fetch", url, props, settings.plausible_bots_domain)
-    )
+    _fire(visitor_ip(request), "bot_fetch", f"{SITE_ORIGIN}{path}", props)
+
+
+def _fire(client_ip: str, name: str, url: str, props: dict[str, str]) -> None:
+    """Send one event to the bot site as a fire-and-forget task."""
+    task = asyncio.create_task(_send_plausible_event(client_ip, name, url, props, settings.plausible_bots_domain))
     _BACKGROUND_TASKS.add(task)
     task.add_done_callback(_BACKGROUND_TASKS.discard)
     task.add_done_callback(_handle_task_exception)
+
+
+# ---------------------------------------------------------------- asset fetches
+
+API_ORIGIN = "https://api.kurrentschrift.ink"
+
+# The public API assets an assistant fetches to SHOW something — a letter or a
+# word as an image, its geometry, the public-domain chart crop — recorded as
+# `asset_fetch` with WHAT was fetched (`asset`, `source`, `key`) beside who
+# and why. Only the single-asset routes: the batch reads (`/write/glyphs?keys`)
+# and the inventory are the SPA's business, and a browser never gets here
+# anyway (detect_ai_agent). Order matters: the `.svg` pattern must precede
+# the bare single-glyph one.
+_ASSET_ROUTES: tuple[tuple[re.Pattern[str], str], ...] = (
+    (re.compile(r"^/sources/([^/]+)/write/glyphs/([^/]+)\.svg$"), "glyph_svg"),
+    (re.compile(r"^/sources/([^/]+)/write/glyphs/([^/]+)$"), "glyph_json"),
+    (re.compile(r"^/sources/([^/]+)/write/word\.svg$"), "word_svg"),
+    (re.compile(r"^/sources/([^/]+)/write/word$"), "word_json"),
+    (re.compile(r"^/sources/([^/]+)/bboxes/([^/]+)/crop$"), "crop"),
+)
+_KEY_MAX = 80
+
+
+def classify_asset(path: str, text: str | None = None) -> tuple[str, str, str] | None:
+    """(asset, source, key) for a public asset path, else None.
+
+    `key` is the glyph_key for a letter read or the crop, and the requested
+    text for a word read — `text` is the query parameter the caller hands in
+    for the word routes, normalised the way `/word` normalises its input (NFC,
+    whitespace collapsed) so the dashboard key is the text the API actually
+    wrote, and a decomposed and a composed umlaut land in one bucket."""
+    for pattern, asset in _ASSET_ROUTES:
+        m = pattern.match(path)
+        if m is None:
+            continue
+        if m.lastindex and m.lastindex >= 2:
+            key = m.group(2)
+        else:
+            key = " ".join(unicodedata.normalize("NFC", text or "").split())[:_KEY_MAX]
+        return asset, m.group(1), key
+    return None
+
+
+def track_asset_fetch(request: Request, *, asset: str, source: str, key: str, status: int) -> None:
+    """Record an AI or search agent fetching one public asset (fire-and-forget).
+
+    Same site, same gate and same audience rule as `track_bot_fetch`: humans
+    and unclassified clients cost nothing beyond a substring scan. The props
+    answer "which letters and words do assistants ask for": `asset`
+    (glyph_svg · glyph_json · word_svg · word_json · crop), `source` (the
+    chart source id) and `key` (glyph_key or the requested text).
+    """
+    if not settings.bot_analytics_enabled:
+        return
+    detected = detect_ai_agent(request.headers.get("user-agent", ""))
+    if detected is None:
+        return
+    assistant, kind = detected
+    props = {"asset": asset, "source": source, "key": key, "assistant": assistant, "kind": kind, "status": str(status)}
+    _fire(visitor_ip(request), "asset_fetch", f"{API_ORIGIN}{request.url.path}", props)

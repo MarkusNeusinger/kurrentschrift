@@ -17,7 +17,7 @@ from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.dependencies import require_db, require_source
-from api.glyph_svg import glyph_svg
+from api.glyph_svg import glyph_svg, word_svg
 from api.http import CACHE_CONTROL
 from api.rendering import render_payload_cached, resolve_render_context
 from core.compose import compose_word
@@ -197,6 +197,13 @@ async def get_write_word(
     into its letters server-side, mirroring the old client fallback; whatever
     still has no template lands in ``missing`` and composes as a gap.
     """
+    normalized = _normalized_text(text)
+    composed = await compose_word_payload(normalized, source, db)
+    return _geometry_response({"text": normalized, **composed})
+
+
+def _normalized_text(text: str) -> str:
+    """The `/word` input contract, shared by the JSON and the SVG read."""
     normalized = unicodedata.normalize("NFC", text).strip()
     if not normalized:
         raise HTTPException(
@@ -206,9 +213,32 @@ async def get_write_word(
         raise HTTPException(
             status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"text is limited to {MAX_TEXT_LEN} characters"
         )
+    return normalized
 
+
+@router.get("/word.svg")
+async def get_write_word_svg(
+    text: str = Query(..., description="the word or line to write (NFC-normalised, trimmed, ≤160 chars)"),
+    source: Source = Depends(require_source),
+    db: AsyncSession = Depends(require_db),
+):
+    """The composed word as an SVG image — the same draw items `/word`
+    returns, drawn on the script's ruling (api/glyph_svg.py::word_svg).
+
+    For clients that cannot run the SPA: an assistant asked to show a word in
+    Sütterlin fetches this. Letters without a canonical compose as gaps and are
+    named in the JSON's `missing`; a text with nothing to draw at all is a 404
+    that lists them, not an empty picture.
+    """
+    normalized = _normalized_text(text)
     composed = await compose_word_payload(normalized, source, db)
-    return _geometry_response({"text": normalized, **composed})
+    if not composed.get("items"):
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail=f"nothing to write for {normalized!r}: no canonical for {', '.join(composed.get('missing') or [])}",
+        )
+    svg = await run_in_threadpool(word_svg, composed, name=f"{normalized} — {source.title}")
+    return Response(content=svg, media_type="image/svg+xml", headers={"Cache-Control": CACHE_CONTROL})
 
 
 async def _single_glyph_payload(glyph_key: str, source: Source, db: AsyncSession) -> dict:
