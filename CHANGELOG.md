@@ -14,6 +14,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The Write API is now findable from the site itself.** A session
+  protocol of an external assistant (2026-08-28) showed the render
+  endpoints failing on discoverability, not on technique: no fetched
+  page named the API host, and assistants' fetch tools typically allow
+  only URLs that already appeared in a fetched page — so a URL read
+  from source code, an elided path in the README, or the bare
+  `/llms.txt` convention never cleared the gate. Now the full example
+  URL `…/write/word.svg?text=lesen` — with the note that `text` is a
+  free parameter (≤ 160 characters) — stands in the prerendered prose
+  of `/federprobe` and `/schriftkunde` (`apiExampleLine` in
+  `prerender.ts`), the Tafel recipes and `llms.txt` say `text` is free,
+  `llms.txt` is linked by full URL from every page's footer (SPA and
+  prerender, between GitHub and Impressum), and both `robots.txt`
+  files (site and API host) point to it beside the `Sitemap:` line.
+  Doctrine: `crawler-richtlinie.md` §3 "Auffindbarkeit"; pinned by
+  `prerender.test.ts`, `seoCoverage.test.ts` and `test_api_http.py`.
+
 - **A whole word as an image, and a count of what assistants fetch.**
   `GET /sources/{id}/write/word.svg?text=…` draws the composed word the
   way `WrittenWord` does in the browser — letter silhouettes filled,

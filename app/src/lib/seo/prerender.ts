@@ -102,6 +102,28 @@ const sourceLine = (sources: readonly SourceRef[]) =>
 // The interactive tools exist only in the SPA; a crawler is told so plainly.
 const NEEDS_JS = 'Dieses Werkzeug läuft im Browser mit JavaScript — unter derselben Adresse.';
 
+// The no-JS pointer to the render API, as ONE sentence with the FULL example
+// URL spelled out. Assistants' fetch tools commonly allow only URLs that
+// already appeared in a fetched page or search result — a route pattern with
+// placeholders, an elided path in the README, or the llms.txt convention
+// alone does not clear that gate (assistant protocol, 2026-08-28: the session
+// found the API only via a repo tarball and then could not call it). So the
+// complete URL, plus the fact that `text` is a free parameter, must stand in
+// the prose of the pages an assistant reads for this task: Federprobe (the
+// tool it is the fallback for) and Schriftkunde (where the letters are
+// discussed). The Tafel page carries the full recipe list (letterRecipes),
+// llms.txt the complete index — both are linked by full URL here too.
+function apiExampleLine(): string {
+  const wordSvg = `${PUBLIC_API}/sources/${PUBLIC_SOURCE_ID}/write/word.svg?text=lesen`;
+  const llms = `${ORIGIN}/llms.txt`;
+  return (
+    `<p>Ohne JavaScript, für jeden Client: Die offene Lese-API schreibt jedes Wort als SVG-Bild auf der Lineatur — ` +
+    `${a(wordSvg, wordSvg)} — der Wert von <code>text</code> ist frei (bis 160 Zeichen), statt „lesen“ also jedes ` +
+    `andere Wort. Alle Abrufwege (Quellen, Buchstaben einzeln, Geometrie, Original-Ausschnitte): ${a(llms, llms)} ` +
+    `und ${a(abs(paths.tafel), 'Buchstaben für Maschinen')}.</p>`
+  );
+}
+
 // ---------------------------------------------------------------- pages
 
 export interface PageSpec {
@@ -199,8 +221,8 @@ function letterRecipes(): string {
     row('Vorlage (Original-Ausschnitt)', `${src}/bboxes/{glyph_key}/crop`, 'PNG, gemeinfreie Tafel von 1922'),
     row('Geschriebene Form', `${src}/write/glyphs/{glyph_key}.svg`, 'SVG auf der Lineatur (Grundlinie, Mittellinie)'),
     row('Geometrie', `${src}/write/glyphs?keys=a,n`, 'JSON: Umriss-Ringe, Mittellinie, Anschlüsse'),
-    row('Ganzes Wort', `${src}/write/word?text=lesen`, 'JSON, serverseitig komponiert'),
-    row('Ganzes Wort als Bild', `${src}/write/word.svg?text=lesen`, 'SVG auf der Lineatur, mit den generierten Übergängen'),
+    row('Ganzes Wort', `${src}/write/word?text=lesen`, 'JSON, serverseitig komponiert; text ist frei (bis 160 Zeichen)'),
+    row('Ganzes Wort als Bild', `${src}/write/word.svg?text=lesen`, 'SVG auf der Lineatur, mit den generierten Übergängen; text ist frei'),
     `<li><strong>Beispiel:</strong> ${a(`${src}/write/glyphs/e.svg`, 'das Sütterlin-e, geschrieben')} · ${a(`${src}/bboxes/e/crop`, 'seine Vorlage')}</li>`,
     '</ul>',
     em(
@@ -310,7 +332,7 @@ const schriftkundeBody = () => {
   push(h2(t.endHeading), ...t.endParagraphs.map(p), sourceLine(t.endSources));
   push(h2(t.federnHeading), p(t.federnLead), triplet(t.federn), sourceLine(t.federnSources));
   push(h2(t.materialHeading), p(t.materialLead), rows(t.material), sourceLine(t.materialSources));
-  push(h2(t.lettersHeading), p(t.lettersLead), rows(t.letters), sourceLine(t.lettersSources));
+  push(h2(t.lettersHeading), p(t.lettersLead), rows(t.letters), sourceLine(t.lettersSources), apiExampleLine());
   // Method only — no source line, like the page; the in-prose Tafel pointer
   // gets an absolute route.
   push(
@@ -419,6 +441,7 @@ const scribeBody = () => {
     p(`${t.examplesLabel} ${t.examples.join(', ')}`),
     p(t.disclaimer),
     em(NEEDS_JS),
+    apiExampleLine(),
   ].join('\n');
 };
 
@@ -592,6 +615,7 @@ export function renderPage(spec: PageSpec, { stand }: { stand: string }): string
   const nav = `<nav aria-label="Bereiche">${NAV.map((n) => a(abs(n.route), n.label)).join('\n')}</nav>`;
   const footer =
     `<footer><p>${e(common.footer.tagline)}${e(common.footer.taglineRest)} ${a(common.footer.githubUrl, common.footer.github)}` +
+    ` · ${a(abs(common.footer.llmsPath), common.footer.llms)}` +
     ` · ${a(abs(paths.impressum), `${impressum.footerLink}${impressum.footerLinkRest}`)}</p>` +
     `<p>Stand: ${e(stand)}${url ? ` · Kanonische Fassung: ${a(url, url)}` : ''}</p>` +
     `<p>${e(RIGHTS_NOTE)}</p></footer>`;

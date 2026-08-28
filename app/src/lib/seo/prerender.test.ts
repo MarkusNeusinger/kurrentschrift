@@ -188,6 +188,25 @@ describe('crawler prerender', () => {
     expect(llms).toContain(`${src}/bboxes/{glyph_key}/crop`);
   });
 
+  it('spells the full word-render URL out on the pages an assistant reads for it', () => {
+    // Assistants' fetch tools commonly allow only URLs that already appeared
+    // in a fetched page — a placeholder pattern or the llms.txt convention
+    // alone does not clear that gate (assistant protocol, 2026-08-28). So the
+    // COMPLETE example URL and the note that `text` is free must stand in the
+    // prose of Federprobe and Schriftkunde, and llms.txt must be linked by
+    // full URL there and from every page's footer.
+    const wordSvg = `${PUBLIC_API}/sources/${PUBLIC_SOURCE_ID}/write/word.svg?text=lesen`;
+    for (const file of ['federprobe.html', 'schriftkunde.html']) {
+      const html = rendered.get(file)!;
+      expect(html, file).toContain(escapeHtml(wordSvg));
+      expect(html, file).toContain('<code>text</code>');
+      expect(html, file).toContain(`${ORIGIN}/llms.txt`);
+    }
+    for (const spec of PAGES) {
+      expect(rendered.get(spec.file)!, `${spec.file} footer lacks llms.txt`).toContain(`href="${ORIGIN}/llms.txt"`);
+    }
+  });
+
   it('never leaves an unescaped angle bracket from the locale in the body', () => {
     // A locale string with "<" would break the document; escapeHtml is the
     // only path from locale to HTML, so a leak means a helper bypassed it.

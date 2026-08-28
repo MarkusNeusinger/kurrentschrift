@@ -26,8 +26,8 @@ Die geschriebenen Buchstaben und ihre gemeinfreie Vorlage sind beide je Quelle a
 - Vorlage (Original-Ausschnitt der gemeinfreien Tafel): https://api.kurrentschrift.ink/sources/suetterlin-1922/bboxes/{glyph_key}/crop — PNG
 - Geschriebene Form: https://api.kurrentschrift.ink/sources/suetterlin-1922/write/glyphs/{glyph_key}.svg — SVG auf der Lineatur (Grundlinie, Mittellinie)
 - Geometrie: https://api.kurrentschrift.ink/sources/suetterlin-1922/write/glyphs?keys=a,n — JSON (Umriss-Ringe, Mittellinie, Anschlüsse)
-- Ganzes Wort: https://api.kurrentschrift.ink/sources/suetterlin-1922/write/word?text=lesen — JSON, serverseitig komponiert
-- Ganzes Wort als Bild: https://api.kurrentschrift.ink/sources/suetterlin-1922/write/word.svg?text=lesen — SVG auf der Lineatur, mit den generierten Übergängen
+- Ganzes Wort: https://api.kurrentschrift.ink/sources/suetterlin-1922/write/word?text=lesen — JSON, serverseitig komponiert; der `text`-Parameter ist frei (bis 160 Zeichen)
+- Ganzes Wort als Bild: https://api.kurrentschrift.ink/sources/suetterlin-1922/write/word.svg?text=lesen — SVG auf der Lineatur, mit den generierten Übergängen; `text` ist frei
 - Beispiel: https://api.kurrentschrift.ink/sources/suetterlin-1922/write/glyphs/e.svg (das Sütterlin-e, geschrieben) · https://api.kurrentschrift.ink/sources/suetterlin-1922/bboxes/e/crop (seine Vorlage)
 
 Die Kennwerte der drei Schriften (Schräglage, Lineatur, Feder, Strich) stehen auf https://kurrentschrift.ink/schriftkunde als JSON-Block und als JSON-LD; Winkel dort in Grad zur Grundlinie (90 = senkrecht).

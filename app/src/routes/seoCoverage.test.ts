@@ -74,7 +74,10 @@ describe('seo coverage', () => {
     expect(txt).toContain('app/src/locales/de/');
   });
 
-  it('robots.txt announces the sitemap', () => {
+  it('robots.txt announces the sitemap and the machine guide', () => {
     expect(pub('robots.txt')).toContain(`Sitemap: ${ORIGIN}/sitemap.xml`);
+    // llms.txt is only findable by guessing the convention unless the files a
+    // client actually fetches point to it (crawler-richtlinie.md §3).
+    expect(pub('robots.txt')).toContain(`${ORIGIN}/llms.txt`);
   });
 });

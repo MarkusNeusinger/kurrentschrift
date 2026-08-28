@@ -1,7 +1,7 @@
 // Shared footer for every public page: a hairline, a warm one-line sign-off
 // (the "private Liebhaberei" voice from the impressum) on the left, and a
-// small link row on the right — the public GitHub repository and
-// Impressum/Datenschutz. Rendered by <PublicLayout> after the page content
+// small link row on the right — the public GitHub repository, the machine
+// guide llms.txt and Impressum/Datenschutz. Rendered by <PublicLayout> after the page content
 // (inside <PaperBackground>), so it's identical everywhere.
 //
 // The footer OWNS the bottom gap (its `mt`) — the single source of the distance
@@ -68,6 +68,12 @@ export function PublicFooter() {
             sx={footerLink}
           >
             {de.common.footer.github}
+          </Link>
+          <Dot />
+          {/* Static file, not a route — a plain anchor, so the browser fetches
+              the text file instead of the SPA router swallowing the path. */}
+          <Link href={de.common.footer.llmsPath} variant="body2" sx={footerLink}>
+            {de.common.footer.llms}
           </Link>
           <Dot />
           <Link component={RouterLink} to={paths.impressum} variant="body2" sx={footerLink}>
