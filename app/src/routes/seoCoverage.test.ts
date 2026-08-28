@@ -80,4 +80,17 @@ describe('seo coverage', () => {
     // client actually fetches point to it (crawler-richtlinie.md §3).
     expect(pub('robots.txt')).toContain(`${ORIGIN}/llms.txt`);
   });
+
+  it('the SPA shell itself carries the machine fallback', () => {
+    // Agents NOT in the nginx $is_bot map get the shell on every route, and
+    // most read raw HTML without executing JS. The shell must therefore name
+    // the machine guide and one complete, callable example URL — in the head
+    // link and the <noscript> block (crawler-richtlinie.md §3).
+    const shell = readFileSync(fileURLToPath(new URL('../../index.html', import.meta.url)), 'utf8');
+    expect(shell).toContain('rel="alternate" type="text/plain" href="/llms.txt"');
+    expect(shell).toContain('<noscript>');
+    expect(shell).toContain(`${ORIGIN}/llms.txt`);
+    expect(shell).toContain('https://api.kurrentschrift.ink/sources/suetterlin-1922/write/word.svg?text=lesen');
+    expect(shell).toContain('text-Parameter ist frei');
+  });
 });

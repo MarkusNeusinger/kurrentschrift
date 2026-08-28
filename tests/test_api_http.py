@@ -167,6 +167,14 @@ async def test_api_robots_txt_opens_the_host_and_reserves_training(api: Harness)
     assert "https://kurrentschrift.ink/llms.txt" in body
 
 
+async def test_api_llms_txt_redirects_to_the_site_guide(api: Harness):
+    """Agents that guess /llms.txt on this host (both robots.txt name it) get
+    the canonical file on the site host, not a 404."""
+    res = await api.client.request("GET", "/llms.txt")
+    assert res.status == 302
+    assert res.headers["location"] == "https://kurrentschrift.ink/llms.txt"
+
+
 async def test_hands_reads_are_gated_and_never_cacheable(api: Harness):
     """The writer registry indexes the reserved dataset: 401 without the
     token, and the admin's answer must not land in a shared cache."""

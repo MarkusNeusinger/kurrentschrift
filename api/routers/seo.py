@@ -25,7 +25,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from fastapi import APIRouter, Response
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 
 from api.http import CACHE_CONTROL, NO_STORE
 from core.config import settings
@@ -63,6 +63,19 @@ ROBOTS_TXT = (
 async def get_robots() -> Response:
     return Response(
         content=ROBOTS_TXT, media_type="text/plain; charset=utf-8", headers={"Cache-Control": CACHE_CONTROL}
+    )
+
+
+@router.get("/llms.txt", include_in_schema=False)
+async def get_llms_txt() -> Response:
+    """Redirect to the site's machine guide.
+
+    The guide lives on the site host (app/public/llms.txt, one source of
+    truth), but agents that land on this host — the README and both robots.txt
+    name it — guess /llms.txt here too. A redirect beats a 404 and beats a
+    served copy that would drift."""
+    return RedirectResponse(
+        "https://kurrentschrift.ink/llms.txt", status_code=302, headers={"Cache-Control": CACHE_CONTROL}
     )
 
 

@@ -187,6 +187,30 @@ die Prüfung der Werkzeuge auf die exakte URL oder auf Host+Pfad geht,
 ist offen — darum steht der Frei-Parameter-Hinweis direkt neben dem
 Beispiel.
 
+Ein zweites Protokoll (Grok, ebenfalls 2026-08-28) hat die verbleibende
+Stufe gezeigt: Ein Agent, dessen User-Agent **nicht in der
+`$is_bot`-Map** steht, bekommt die leere App-Hülle („insufficient
+relevant content") — und damit war auch die beste Prerender-Fassung
+unsichtbar. Antwort darauf, in Wirkungsreihenfolge: (1) Die **Hülle
+selbst** (`app/index.html`) trägt jetzt auf jeder Route einen
+`<link rel="alternate" type="text/plain" href="/llms.txt">` im Head und
+einen `<noscript>`-Block mit der Voll-URL der llms.txt, der
+ausgeschriebenen Beispiel-URL des Wort-Renders samt
+Frei-Parameter-Hinweis und den API-Doku-Links — unsichtbar in der
+gerenderten App, aber im ersten Response jedes Clients (versteckter
+indexierbarer Text jenseits von `<noscript>` wurde verworfen:
+Cloaking-Risiko). (2) Geratene Pfade antworten statt 404 mit
+Weiterleitung auf die kanonische Datei: `/.well-known/llms.txt` auf der
+Site (nginx, 302) und `/llms.txt` auf dem API-Host
+(`api/routers/seo.py`, 302). (3) `robots.txt` nennt llms.txt und
+OpenAPI zusätzlich in zwei knappen Zeilen **ganz oben**, für Leser, die
+nur den Dateianfang ernst nehmen. Die UA-Map hatte `~*grok` zu diesem
+Zeitpunkt bereits; ein Sitemap-Eintrag für llms.txt wurde verworfen
+(die Sitemap listet exakt die öffentlichen Seiten, von
+`seoCoverage.test.ts` festgehalten). Gepinnt von `seoCoverage.test.ts`
+(Hülle) und `test_api_http.py`/`test_api_public_surface.py`
+(API-Redirect).
+
 Und weil die Abrufe dort sichtbar sind, werden sie dort gezählt: Jeder
 `/seo-proxy`-Abruf eines bekannten Agenten landet als Event `bot_fetch`
 auf der **zweiten Plausible-Site `bots.kurrentschrift.ink`** — nie auf
