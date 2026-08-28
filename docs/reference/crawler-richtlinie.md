@@ -1,25 +1,29 @@
 # Crawler-Richtlinie — Suchmaschinen und KI-Agenten
 
-> **Status (2026-08-27): lebend.** Politik-Quelle zu `app/public/robots.txt`
-> (die Datei verweist im Kopf hierher) und `llms.txt`; jede Änderung an diesen
-> Dateien oder an der Cloudflare-Durchsetzung zieht hier nach — §2/§3 am
-> 2026-08-03 gegen `robots.txt` geprüft, deckungsgleich.
-> Zwei Teile altern anders: §1 ist eine Messung vom 2026-07-25, §4 beschreibt
-> Dashboard-Schritte, deren Vollzug im Repo nicht nachprüfbar ist; die
-> Verworfen-Liste bleibt geschlossen.
+> **Status (2026-08-28): lebend.** Politik-Quelle zu `app/public/robots.txt`
+> (die Datei verweist im Kopf hierher), `llms.txt` und der `robots.txt`
+> des API-Hosts (`api/routers/seo.py`); jede Änderung an diesen Dateien
+> oder an der Cloudflare-Durchsetzung zieht hier nach. Am 2026-08-28 ist
+> die Politik von „Abruf ja, Training nein" auf **offen** umgestellt
+> worden — Entscheid und Begründung in [§2](#2--entscheidung), die alte
+> Politik steht unter [Verworfen](#verworfen) mit ihrer Rückkehrbedingung.
+> Zwei Teile altern anders: §1 ist eine Messung vom 2026-07-25, §4
+> beschreibt Dashboard-Schritte, deren Vollzug im Repo nicht nachprüfbar
+> ist.
 
-Die Richtung ist entschieden (2026-07-25). Die Repo-Seite ist umgesetzt; das
-Durchsetzen liegt in der Cloudflare-Zone `kurrentschrift.ink` und ist
-eine Dashboard-Handlung (siehe [§4](#4--was-in-cloudflare-zu-tun-ist)).
+**Kurzfassung:** Die Seite ist für **alle** offen — Suchmaschinen,
+KI-Abruf, Zitat **und** Training (`Content-Signal:
+search=yes,ai-input=yes,ai-train=yes`). Einzige Ausnahme ist `Bytespider`,
+aus Bandbreiten-, nicht aus Prinzipgründen. Der Open-Core-Vorbehalt gilt
+unverändert — er liegt aber nicht in der `robots.txt`, sondern am
+Auth-Gate der API: Was reserviert ist (Duktus-Templates, Vorkommen,
+Bboxen, Paar-Overrides, Hände, Eigenhand-Streifen), gibt die API ohne
+Admin-Zugang nicht heraus ([§3](#3--was-im-repo-steht)).
 
-**Kurzfassung:** KI-Agenten, die **abrufen und zitieren**, sind
-willkommen; Sammler, die **nur für das Training** einsammeln, sind
-abgelehnt. Der Nutzungsvorbehalt für das Training bleibt ausdrücklich
-erklärt (`Content-Signal: ai-train=no`).
+## 1 · Befund (2026-07-25)
 
-## 1 · Befund
-
-Gemessen am 2026-07-25 gegen die Live-Zone:
+Die Messung, aus der die erste Politik hervorging — gemessen gegen die
+Live-Zone:
 
 | Anfrage | Ergebnis |
 |---|---|
@@ -49,62 +53,97 @@ meta-externalagent) **und** beantwortet dieselben UAs an der Kante mit
 
 ## 2 · Entscheidung
 
+**Entscheid (2026-08-28, ersetzt den vom 2026-07-25):** alles offen.
+Abruf, Zitat, Suchindexierung und Modelltraining sind jedem Betreiber
+erlaubt.
+
 | Gruppe | Agenten | Politik |
 |---|---|---|
-| Abruf · Zitat · nutzergesteuert | `ClaudeBot`, `Claude-User`, `Claude-SearchBot`, `OAI-SearchBot`, `ChatGPT-User`, `PerplexityBot`, `Perplexity-User` | **erlaubt** |
-| Trainings-Sammler | `GPTBot`, `CCBot`, `Bytespider`, `Amazonbot`, `meta-externalagent` | abgelehnt |
-| Opt-out-Token (Anbieter crawlt unter anderem UA) | `Google-Extended`, `Applebot-Extended` | abgelehnt |
+| Alles | Suchmaschinen, KI-Assistenten, ihre Index- und Trainings-Crawler, Social- und Link-Vorschauen | **erlaubt** |
+| Bandbreiten-Ausnahme | `Bytespider` | abgelehnt |
+| App-Interna | `/admin` für alle Agenten | abgelehnt |
 
 Begründung:
 
-- **Auffindbarkeit.** Das Publikum dieser Seite — Familienforschung,
-  Schulunterricht, Archivarbeit — fragt seine Frage zunehmend einem
-  Assistenten („wie lese ich Sütterlin?“). Wer dort nicht zitiert werden
-  kann, existiert für diesen Kanal nicht. Für eine deutschsprachige
-  Nische ist das der wachsende Entdeckungsweg, nicht ein Randfall.
-- **Der Vorbehalt bleibt bestehen.** `ai-train=no` ist der rechtlich
-  tragende Teil (ausdrücklicher Nutzungsvorbehalt nach Art. 4
-  DSM-Richtlinie 2019/790 bzw. §44b UrhG) und gilt unabhängig davon, ob
-  zusätzlich ein 403 ausgeliefert wird.
-- **Die geschützten Daten liegen nicht im HTML.** Die kuratierten
-  Schriftdaten (Duktus, Vorlagen, Statistik) kommen aus der API und sind
-  gesondert vorbehalten (`README`, `/llms.txt`,
-  [`quellen-und-rechte.md`](quellen-und-rechte.md)); die öffentlichen
-  Seiten tragen erklärenden Text, dessen Zitierbarkeit erwünscht ist.
+- **Der Moat ist die Datenbank, nicht die Webseite.** Was das README
+  vorbehält — die autorierten Duktus-Templates, Laufformen, Vorkommen,
+  Bboxen, Paar-Overrides, Hände, die Eigenhand-Streifen — liegt in der DB
+  und ist über die API nur mit Admin-Zugang lesbar; seit 2026-08-28
+  lückenlos, denn `tests/test_api_public_surface.py` klassifiziert jede
+  GET-Route als öffentlich oder reserviert und erzwingt für reservierte
+  den 401 ([`quellen-und-rechte.md`](quellen-und-rechte.md) §5). Der
+  Seitentext (Schriftkunde, Hubs, Impressum) und der MIT-Code sind zum
+  Gelesen- und Weiterverwendetwerden da; ein Trainings-Verbot auf
+  HTML-Text schützte nichts, was das Auth-Gate nicht ohnehin schützt —
+  kostete aber Reichweite.
+- **`Google-Extended` ist ein Alles-oder-nichts-Token.** Es steuert
+  Gemini-*Grounding und Training zusammen* (gegen Googles
+  Crawler-Dokumentation geprüft, es gibt keine feinere Stellschraube).
+  Es abzulehnen hielt kurrentschrift.ink aus Gemini-Antworten komplett
+  heraus — das Gegenteil dessen, was eine Seite will, deren Publikum
+  (Familienforschung, Unterricht, Archivarbeit) seine Frage zunehmend
+  einem Assistenten stellt. `Applebot-Extended` ist ein reines
+  Trainings-Token (Abruf und Siri-Antworten laufen über `Applebot`) und
+  fällt mit der Öffnung ebenfalls.
+- **Gleichlauf mit anyplot.** Das Schwesterprojekt hat denselben Schritt
+  am 2026-08-18 gemacht (dort `docs/reference/seo.md`, „AI crawler
+  policy"). Politik und Dateiform sind bewusst deckungsgleich, damit eine
+  Änderung auf der einen Seite 1:1 auf die andere kopiert werden kann —
+  dasselbe gilt für die Crawler-Liste, sobald der Prerender-Pfad (§3)
+  steht.
 
-`GPTBot` ist der bewusste Grenzfall: Es ist OpenAIs **Trainings**-Crawler
-und steht deshalb bei den abgelehnten Gruppen, während ChatGPTs
-Abruf-Pfad (`OAI-SearchBot`, `ChatGPT-User`) offen bleibt. Die Rollen der
-Anbieter-UAs verschieben sich — vor einer Änderung die aktuelle
-Kategorisierung in Cloudflares AI Crawl Control prüfen; diese Liste ist
-eine Momentaufnahme, keine dauerhaft gültige Wahrheit.
+`Bytespider` ist die eine Ausnahme und operativ, nicht prinzipiell
+begründet: dokumentiert als robots.txt-ignorierend und weit aggressiver,
+als eine kleine Seite sinnvoll bedienen kann. Die Gruppe nennt die
+Absicht; Cloudflare setzt sie durch. Ändert sich das Verhalten, kann die
+Gruppe fallen.
+
+**Die eine abweichende Zeile liegt auf dem API-Host.**
+`api.kurrentschrift.ink/robots.txt` (`api/routers/seo.py`) erlaubt alles
+— `Allow: /`, keine `Disallow`-Zeile, denn reservierte Daten sind durch
+Auth gesperrt, nicht durch robots; eine robots-Sperre hielte nur die
+spec-treuen Assistenten von `/docs` und `/openapi.json` fern (die
+Lehre aus anyplots AI-Access-Audit vom 2026-08-19) — trägt aber
+`ai-train=no`: Die komponierte Geometrie der öffentlichen
+`/write`-Endpunkte ist aus dem vorbehaltenen Bestand abgeleitet,
+Produkt-Oberfläche zum Abrufen und Zitieren, kein Trainingsmaterial.
 
 ## 3 · Was im Repo steht
 
 `app/public/robots.txt` trägt die Richtlinie **vollständig selbst**:
-Content-Signals, die willkommene Gruppe, die abgelehnten Sammler. Das ist
+Content-Signals, die eine abgelehnte Gruppe, die `*`-Gruppe. Das ist
 Absicht — so gilt sie auch dann, wenn Cloudflares verwalteter Block
-abgeschaltet wird (mit ihm verschwindet sonst auch die Content-Signal-Zeile).
-Die Datei ist damit die Quelle der Wahrheit, das Dashboard nur die
-Durchsetzung.
+abgeschaltet wird (mit ihm verschwindet sonst auch die
+Content-Signal-Zeile). Die Datei ist damit die Quelle der Wahrheit, das
+Dashboard nur die Durchsetzung.
 
-Zwei Details der Datei sind Absicht und sollten beim Bearbeiten nicht
+Drei Details der Datei sind Absicht und sollten beim Bearbeiten nicht
 „aufgeräumt“ werden:
 
-- Die `Content-Signal`-Zeile steht in **jeder** Gruppe, auch in den
+- Die `Content-Signal`-Zeile steht in **jeder** Gruppe, auch in der
   ablehnenden. Ein Crawler liest nur die Gruppe, die auf ihn passt — ein
-  einmal unter `User-agent: *` erklärter Vorbehalt erreichte keinen
-  namentlich genannten Agenten, am wenigsten die Trainings-Sammler, an die
-  er sich richtet.
-- Die **namentlichen Gruppen stehen vor** der `*`-Gruppe. Ein
+  einmal unter `User-agent: *` erklärtes Signal erreichte keinen
+  namentlich genannten Agenten.
+- Die **namentliche Gruppe steht vor** der `*`-Gruppe. Ein
   spezifikationstreuer Crawler wählt unabhängig von der Reihenfolge die
   spezifischste Gruppe; einfachere Parser nehmen die erste passende — mit
-  dem Wildcard oben läsen die `Allow: /` und kämen bei den ablehnenden
-  Gruppen nie an.
+  dem Wildcard oben läsen sie `Allow: /` und kämen bei der ablehnenden
+  Gruppe nie an.
 - Innerhalb einer Gruppe steht **`Disallow:` vor `Allow: /`**. Dieselbe
   Logik: Bei umgekehrter Reihenfolge lässt ein First-Match-Parser `/admin`
   durch (nachgestellt mit Pythons `urllib.robotparser`, der genau so
   arbeitet), während ein Longest-Match-Parser richtig sperrt.
+
+Die Content-Signal-Zeile kennt genau drei Token — `search`, `ai-input`,
+`ai-train` (je `yes`/`no`); ein weiteres Token wie das früher mitgeführte
+`use=reference` ist ungültig und kann einen strengen Parser die ganze
+Zeile verwerfen lassen (gegen contentsignals.org geprüft, 2026-08-27).
+
+`api/routers/seo.py` liefert die `robots.txt` des API-Hosts (§2, letzter
+Absatz). Der technische Vorbehalt selbst — welche Reads öffentlich sind
+und welche den Admin-Zugang verlangen — steht mit vollständiger Liste in
+[`quellen-und-rechte.md`](quellen-und-rechte.md) §5 und wird durch
+`tests/test_api_public_surface.py` festgehalten.
 
 `app/public/llms.txt` bleibt die inhaltliche Oberfläche für Agenten. Das
 ist hier wichtiger als bei einer üblichen Seite: Die SPA liefert ohne
@@ -114,52 +153,79 @@ die kein JS ausführen, sehen also die Hülle **plus** `llms.txt` — und
 seit 2026-08-27 den **Markdown-Spiegel der Schriftkunde**
 (`/schriftkunde.md`, generiert zur Build-Zeit aus dem Locale-Katalog,
 aus `llms.txt` verlinkt; Canonical auf die HTML-Seite als
-HTTP-`Link`-Header, Rechtevorbehalt `ai-train=no` in-band im Dateikopf,
-weil die rohe Datei ohne robots.txt-Kontext zirkuliert). Der Spiegel
-zieht den Prerender-Gedanken nur für die eine Inhaltsseite vor und
-erledigt ihn NICHT: Wenn KI-Sichtbarkeit später mehr wert sein soll als
-heute, bleibt ein Prerender-Pfad (Bot-UA → serverseitig gerendertes
-HTML) der nächste Schritt, nicht eine weitere robots.txt-Zeile.
+HTTP-`Link`-Header, Rechtehinweis in-band im Dateikopf — die offene
+Politik plus der Vorbehalt der kuratierten Schriftdaten —, weil die rohe
+Datei ohne robots.txt-Kontext zirkuliert). Der Spiegel zieht den
+Prerender-Gedanken nur für die eine Inhaltsseite vor und erledigt ihn
+NICHT: Der nächste Schritt ist der Prerender-Pfad nach anyplots Muster
+(Bot-UA → serverseitig gerendertes HTML je Route, dieselbe Crawler-Liste
+in `nginx.conf` wie dort), nicht eine weitere robots.txt-Zeile.
 
 ## 4 · Was in Cloudflare zu tun ist
 
 Zone `kurrentschrift.ink` → **AI Crawl Control** (bei älteren Konten:
-Security → Bots → „AI Scrapers and Crawlers“):
+Security → Bots → „AI Scrapers and Crawlers“). Ziel ist der Stand, den
+anyplot am 2026-08-18 für seine Zone verifiziert hat:
 
-1. Den pauschalen Block **aufheben** und stattdessen pro Kategorie
-   setzen: *AI Search* und *AI Assistant* → **Allow**, *AI Crawler*
-   (Training) → **Block**. Wo nur eine Ein/Aus-Option existiert:
-   ausschalten und die Erklärung über `robots.txt` (§3) tragen lassen.
-2. Verwaltete `robots.txt` **abschalten** — die Repo-Datei enthält die
+1. **Alle Kategorien auf Allow** — *AI Search*, *AI Assistant* **und**
+   *AI Crawler* (Training). Der pauschale Block wird aufgehoben. Wo nur
+   eine Ein/Aus-Option existiert: ausschalten.
+2. **An der Kante blockiert bleiben nur:** `Bytespider`, `TikTok Spider`
+   (beide ByteDance — der erste dokumentiert robots.txt-ignorierend, der
+   zweite teilt den Betreiber), `Anchor Browser`, `Novellum AI Crawl`,
+   `Timpibot` (für die drei letzten existiert keine Herstellerdoku ihres
+   Crawl-Verhaltens; Regeltreue ist unverifiziert, nicht widerlegt —
+   neu bewerten, wenn sich das ändert).
+3. **Verwaltete `robots.txt` abschalten** — die Repo-Datei enthält die
    Content-Signals bereits, und zwei Quellen für dieselbe Aussage
-   driften garantiert auseinander. (Alternative: anlassen und
-   akzeptieren, dass die Live-Datei strenger ist als die im Repo.)
-3. Prüfen, dass `api.kurrentschrift.ink` mit erfasst ist: Die Regel
+   driften garantiert auseinander. Die Live-Datei muss byte-identisch
+   mit der Repo-Datei sein.
+4. Prüfen, dass `api.kurrentschrift.ink` mit erfasst ist: Die Regel
    greift zonenweit; die öffentliche Lese-API soll für die erlaubten
-   Agenten erreichbar sein (Schreibpfade sind ohnehin durch
+   Agenten erreichbar sein (alles Reservierte ist ohnehin durch
    `require_admin` geschützt).
+
+Die Kante kann strenger sein als die Datei und beantwortet blockierte
+Agenten mit 403, egal was in `robots.txt` steht — **eine in der
+`robots.txt` erteilte Erlaubnis, die das Dashboard weiter blockt, ist
+eine veröffentlichte Unwahrheit.** Beides in Deckung halten.
 
 Danach prüfen:
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' \
+  -A "Mozilla/5.0 (compatible; GPTBot/1.4; +https://openai.com/gptbot)" \
+  https://kurrentschrift.ink/                               # erwartet 200
+curl -s -o /dev/null -w '%{http_code}\n' \
   -A "Mozilla/5.0 (compatible; ClaudeBot/1.0; +claudebot@anthropic.com)" \
   https://kurrentschrift.ink/llms.txt                       # erwartet 200
 curl -s -o /dev/null -w '%{http_code}\n' \
-  -A "Mozilla/5.0 (compatible; CCBot/2.0; +https://commoncrawl.org/faq/)" \
+  -A "Mozilla/5.0 (compatible; Bytespider)" \
   https://kurrentschrift.ink/                               # erwartet 403
-curl -s https://kurrentschrift.ink/robots.txt | head -25    # ohne verwalteten Block: die Repo-Datei
+curl -s https://kurrentschrift.ink/robots.txt | diff - app/public/robots.txt   # ohne verwalteten Block: leer
+curl -s https://api.kurrentschrift.ink/robots.txt          # Allow: / + ai-train=no
 ```
 
 ## Verworfen
 
-- **Alles blocken (Status quo).** Kostet die Auffindbarkeit im
-  wachsenden Antwort-Kanal und trifft nutzergesteuerte Abrufe eigener
-  Besucher, ohne den Trainingsvorbehalt stärker zu machen, als
-  `ai-train=no` es ohnehin tut.
-- **Alles freigeben, inklusive Trainings-Sammler.** Widerspräche dem
-  Datenvorbehalt für die kuratierten Schriftdaten; `CCBot` &Co. liefern
-  keinen Rückverweis, also keinen Gegenwert.
+- **Alles blocken (Status quo bis 2026-07-25).** Kostet die
+  Auffindbarkeit im wachsenden Antwort-Kanal und trifft nutzergesteuerte
+  Abrufe eigener Besucher.
+- **Abruf ja, Training nein (Politik vom 2026-07-25 bis 2026-08-28).**
+  Namentliche Erlaubnisgruppe (ClaudeBot, Claude-User, Claude-SearchBot,
+  OAI-SearchBot, ChatGPT-User, PerplexityBot, Perplexity-User), abgelehnte
+  Trainings-Sammler (GPTBot, CCBot, Bytespider, Amazonbot,
+  meta-externalagent) und Opt-out-Token (Google-Extended,
+  Applebot-Extended), überall `ai-train=no` als ausdrücklicher
+  Nutzungsvorbehalt nach Art. 4 DSM-Richtlinie 2019/790 bzw. § 44b UrhG.
+  Verworfen am 2026-08-28 aus den Gründen in §2: Der Vorbehalt schützte
+  auf HTML-Text nichts, was das Auth-Gate der API nicht ohnehin schützt,
+  und das Alles-oder-nichts-Token `Google-Extended` hielt die Seite aus
+  Gemini-Antworten heraus. **Rückkehrbedingung:** Sollte je Seitentext
+  selbst zum reservierten Bestand werden (etwa ein eigenes Lehrwerk auf
+  der Seite), kommt die Gruppe samt der Vorbehaltsformel zurück — dann
+  aber mit `Google-Extended` weiterhin erlaubt, weil sein Preis (kein
+  Gemini-Grounding) den Nutzen des Trainings-Vorbehalts übersteigt.
 - **Nur `robots.txt` im Repo pflegen und den verwalteten Block anlassen.**
   Wurde genau deshalb aufgegeben: Die ausgelieferte Datei sagte das
   Gegenteil der Repo-Datei, und der 403 hätte ohnehin gewonnen.
@@ -168,3 +234,9 @@ curl -s https://kurrentschrift.ink/robots.txt | head -25    # ohne verwalteten B
   Ergebnis hängt an der Merge-Regel des jeweiligen Crawlers. Die
   Richtlinie wird stattdessen an einer Stelle erklärt (§3) und an einer
   Stelle durchgesetzt (§4).
+- **Die API per robots.txt sperren, um den Bestand zu schützen.** Eine
+  robots-Zeile hält nur die spec-treuen Assistenten fern — genau die
+  Clients, die `llms.txt` zu `/docs` und `/openapi.json` einlädt — und
+  keinen Sammler, der den Bestand wollte. Der Schutz ist das Auth-Gate;
+  robots.txt auf dem API-Host erklärt nur den Trainings-Vorbehalt für die
+  `/write`-Renders.

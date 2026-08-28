@@ -3,7 +3,9 @@
 Same in-memory aiosqlite stack as the other HTTP suites (`tests/api_harness.py`
 via the `api` fixture). Proves the admin gate, the hand get-or-create, the
 upsert-vs-replace semantics on the occurrence identity, the registry-key
-validation, and that reads are public.
+validation. Reads carry the admin token too — since 2026-08-28 the occurrence
+reads are gated (reserved dataset, quellen-und-rechte.md §5); the public/
+reserved split itself is pinned in `test_api_public_surface.py`.
 """
 
 from __future__ import annotations
@@ -66,8 +68,10 @@ async def test_put_instances_stores_rows_creates_hand_and_links_template(api: Ha
     out = res.json()
     assert out == {"hand_id": "test-hand", "stored": 2, "deleted": 0, "skipped": 0}
 
-    # Public read, fresh rows, measurements intact.
-    res = await api.client.request("GET", f"/sources/{source_id}/instances", params={"glyph_key": "n"})
+    # Admin read, fresh rows, measurements intact.
+    res = await api.client.request(
+        "GET", f"/sources/{source_id}/instances", params={"glyph_key": "n"}, headers=api.admin_headers()
+    )
     assert res.status == 200
     rows = res.json()
     assert len(rows) == 2
@@ -77,7 +81,7 @@ async def test_put_instances_stores_rows_creates_hand_and_links_template(api: Ha
 
     # The hand row was get-or-created under the source's style, and the
     # occurrence links its canonical (base-variant) template.
-    res = await api.client.request("GET", "/hands")
+    res = await api.client.request("GET", "/hands", headers=api.admin_headers())
     assert any(h["id"] == "test-hand" for h in res.json())
     async with api.session_maker() as session:
         stored = (await session.execute(select(Instance))).scalars().all()
@@ -93,7 +97,7 @@ async def test_put_instances_upserts_on_identity_and_replace_wipes(api: Harness)
         "PUT", f"/sources/{source_id}/instances", json_body=body, headers=api.admin_headers()
     )
     assert res.status == 200 and res.json()["stored"] == 2
-    res = await api.client.request("GET", f"/sources/{source_id}/instances")
+    res = await api.client.request("GET", f"/sources/{source_id}/instances", headers=api.admin_headers())
     assert len(res.json()) == 2
 
     # replace=true is a full re-harvest: old rows go, the batch remains.
@@ -104,7 +108,7 @@ async def test_put_instances_upserts_on_identity_and_replace_wipes(api: Harness)
         headers=api.admin_headers(),
     )
     assert res.json() == {"hand_id": "test-hand", "stored": 1, "deleted": 2, "skipped": 0}
-    res = await api.client.request("GET", f"/sources/{source_id}/instances")
+    res = await api.client.request("GET", f"/sources/{source_id}/instances", headers=api.admin_headers())
     assert [r["x0"] for r in res.json()] == [300]
 
 
@@ -161,7 +165,9 @@ async def test_put_pair_instances_stores_occurrences_per_identity(api: Harness):
     assert res.status == 200
     assert res.json() == {"hand_id": "test-hand", "stored": 2, "deleted": 0, "skipped": 0}
 
-    res = await api.client.request("GET", f"/sources/{source_id}/pair-instances", params={"left_key": "n"})
+    res = await api.client.request(
+        "GET", f"/sources/{source_id}/pair-instances", params={"left_key": "n"}, headers=api.admin_headers()
+    )
     rows = res.json()
     assert len(rows) == 1
     assert rows[0]["kind"] == "word" and rows[0]["slot"] == 2
@@ -176,7 +182,7 @@ async def test_put_pair_instances_stores_occurrences_per_identity(api: Harness):
         headers=api.admin_headers(),
     )
     assert res.json()["stored"] == 1
-    res = await api.client.request("GET", f"/sources/{source_id}/pair-instances")
+    res = await api.client.request("GET", f"/sources/{source_id}/pair-instances", headers=api.admin_headers())
     assert len(res.json()) == 3
 
 
@@ -247,7 +253,9 @@ async def test_put_word_instances_roundtrip_and_authored_protection(api: Harness
     )
     assert res.json() == {"hand_id": "test-hand", "stored": 1, "deleted": 0, "skipped": 1}
 
-    res = await api.client.request("GET", f"/sources/{source_id}/word-instances", params={"specimen_id": "wenn"})
+    res = await api.client.request(
+        "GET", f"/sources/{source_id}/word-instances", params={"specimen_id": "wenn"}, headers=api.admin_headers()
+    )
     rows = res.json()
     assert len(rows) == 1
     assert rows[0]["provenance"] == "authored"
@@ -261,7 +269,9 @@ async def test_put_word_instances_roundtrip_and_authored_protection(api: Harness
         json_body=_batch([_word_item(specimen_id="wenn-2")]),
         headers=api.admin_headers(),
     )
-    res = await api.client.request("GET", f"/sources/{source_id}/word-instances", params={"word": "wenn"})
+    res = await api.client.request(
+        "GET", f"/sources/{source_id}/word-instances", params={"word": "wenn"}, headers=api.admin_headers()
+    )
     assert {r["specimen_id"] for r in res.json()} == {"wenn", "wenn-2"}
 
     # DELETE protects authored work unless explicitly included.
@@ -289,7 +299,9 @@ async def test_word_editor_single_item_write_keeps_the_other_rows(api: Harness):
         headers=api.admin_headers(),
     )
 
-    res = await api.client.request("GET", f"/sources/{source_id}/word-instances", params={"specimen_id": "wenn"})
+    res = await api.client.request(
+        "GET", f"/sources/{source_id}/word-instances", params={"specimen_id": "wenn"}, headers=api.admin_headers()
+    )
     row = res.json()[0]
     assert row["hand_id"] == "test-hand"
 
@@ -316,7 +328,7 @@ async def test_word_editor_single_item_write_keeps_the_other_rows(api: Harness):
     )
     assert res.json() == {"hand_id": "test-hand", "stored": 1, "deleted": 0, "skipped": 0}
 
-    res = await api.client.request("GET", f"/sources/{source_id}/word-instances")
+    res = await api.client.request("GET", f"/sources/{source_id}/word-instances", headers=api.admin_headers())
     rows = {r["specimen_id"]: r for r in res.json()}
     assert set(rows) == {"wenn", "zu"}
     assert rows["wenn"]["provenance"] == "authored"

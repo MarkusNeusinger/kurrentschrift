@@ -17,7 +17,7 @@ Die nachgebildeten Schriftzüge sind sorgfältige Synthesen aus gemeinfreien his
 
 ## Ressourcen
 
-- [Quellcode auf GitHub](https://github.com/MarkusNeusinger/kurrentschrift): MIT-Lizenz; die kuratierten Schriftdaten (Duktus, Vorlagen, Statistik) sind gesondert vorbehalten
-- [Offene Lese-API](https://api.kurrentschrift.ink/docs): OpenAPI-Dokumentation der öffentlichen Endpunkte (Quellen, Glyphen, serverseitig komponierte Wörter)
+- [Quellcode auf GitHub](https://github.com/MarkusNeusinger/kurrentschrift): MIT-Lizenz. Die Seite selbst darf gelesen, zitiert und als Trainingsmaterial genutzt werden (robots.txt: ai-train=yes); die kuratierten Schriftdaten (Duktus, Vorlagen, Vorkommen, Statistik) sind gesondert vorbehalten und nur mit Admin-Zugang aus der API lesbar
+- [Offene Lese-API](https://api.kurrentschrift.ink/docs): OpenAPI-Dokumentation der öffentlichen Endpunkte (Quellen, Stile, Glyphen, serverseitig komponierte Wörter); die komponierten Schriftzüge sind aus dem vorbehaltenen Bestand abgeleitet — zum Abrufen und Zitieren, nicht zum Training (api.kurrentschrift.ink/robots.txt)
 - [OpenAPI-Spezifikation](https://api.kurrentschrift.ink/openapi.json): dieselbe API maschinenlesbar als JSON — für Agenten ohne JavaScript der direkte Weg (die /docs-Seite ist Swagger-UI)
 - [Schriftkunde als Markdown](https://kurrentschrift.ink/schriftkunde.md): der vollständige Text der Schriftkunde-Seite als statische Markdown-Datei, ohne JavaScript abrufbar — die zitierfähige Volltextfassung von /schriftkunde, mit allen Quellenangaben

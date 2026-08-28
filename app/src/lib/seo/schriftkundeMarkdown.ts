@@ -72,17 +72,17 @@ const rows = (items: readonly TermItem[]) => items.map((it) => `- **${e(it.term)
 const triplet = (items: readonly TermItem[]) => items.flatMap((it) => [`### ${e(it.term)}`, '', e(it.desc), '']);
 
 // The in-band rights note. A raw .md circulates without its robots.txt
-// context, so the express ai-train=no reservation (Art. 4 (EU) 2019/790,
-// crawler-richtlinie.md) must travel inside the file. Wording derived from
-// robots.txt + README ("License") + the Impressum — no new grant is invented,
-// deliberately no CC license.
+// context, so the site's policy (open — ai-train=yes, crawler-richtlinie.md)
+// and the reservation of the curated script data behind the API must travel
+// inside the file. Wording derived from robots.txt + README ("License") + the
+// Impressum — no new grant is invented, deliberately no CC license.
 const RIGHTS_NOTE =
   'Text und Zusammenstellung © Markus Neusinger, kurrentschrift.ink. Abruf, Zitat mit ' +
-  'Quellenangabe und Verlinkung sind ausdrücklich erwünscht; die Nutzung zum Training von ' +
-  'KI-Modellen ist untersagt (ai-train=no — ausdrücklicher Rechtevorbehalt nach Art. 4 der ' +
-  'Richtlinie (EU) 2019/790). Der Quellcode des Projekts steht unter MIT-Lizenz; die ' +
-  'kuratierten Schriftdaten sind gesondert vorbehalten. Zitierfähige Fassung: ' +
-  `${ORIGIN}/schriftkunde`;
+  'Quellenangabe und Verlinkung sind ausdrücklich erwünscht; die Seite ist auch als ' +
+  'Trainingsmaterial für KI-Modelle freigegeben (ai-train=yes, siehe robots.txt). Der ' +
+  'Quellcode des Projekts steht unter MIT-Lizenz; die kuratierten Schriftdaten hinter der API ' +
+  '(Duktus, Vorlagen, Statistik) sind gesondert vorbehalten und nur mit Admin-Zugang lesbar. ' +
+  `Zitierfähige Fassung: ${ORIGIN}/schriftkunde`;
 
 export function renderSchriftkundeMarkdown({ stand }: { stand: string }): string {
   const out: string[] = [];

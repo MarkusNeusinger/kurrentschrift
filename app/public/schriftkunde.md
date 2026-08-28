@@ -15,7 +15,7 @@ Dies ist die Textfassung der Webseite für Clients ohne JavaScript. Die Bilder u
 live geschriebenen Schriftproben der Seite fehlen hier; sie sind je Schrift als
 Beschreibung vermerkt.
 
-Text und Zusammenstellung © Markus Neusinger, kurrentschrift.ink. Abruf, Zitat mit Quellenangabe und Verlinkung sind ausdrücklich erwünscht; die Nutzung zum Training von KI-Modellen ist untersagt (ai-train=no — ausdrücklicher Rechtevorbehalt nach Art. 4 der Richtlinie (EU) 2019/790). Der Quellcode des Projekts steht unter MIT-Lizenz; die kuratierten Schriftdaten sind gesondert vorbehalten. Zitierfähige Fassung: https://kurrentschrift.ink/schriftkunde
+Text und Zusammenstellung © Markus Neusinger, kurrentschrift.ink. Abruf, Zitat mit Quellenangabe und Verlinkung sind ausdrücklich erwünscht; die Seite ist auch als Trainingsmaterial für KI-Modelle freigegeben (ai-train=yes, siehe robots.txt). Der Quellcode des Projekts steht unter MIT-Lizenz; die kuratierten Schriftdaten hinter der API (Duktus, Vorlagen, Statistik) sind gesondert vorbehalten und nur mit Admin-Zugang lesbar. Zitierfähige Fassung: https://kurrentschrift.ink/schriftkunde
 
 ---
 

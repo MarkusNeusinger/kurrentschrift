@@ -290,6 +290,10 @@ async def test_put_bbox_rejects_degenerate_geometry(api: Harness):
 
 
 async def test_get_by_id_404s(api: Harness):
-    for path in ("/styles/does-not-exist", "/sources/does-not-exist", "/hands/999999"):
+    for path in ("/styles/does-not-exist", "/sources/does-not-exist"):
         res = await api.client.request("GET", path)
         assert res.status == 404, path
+    # The hands read sits behind the admin gate (reserved dataset) — the 404
+    # is only reachable with the credential.
+    res = await api.client.request("GET", "/hands/999999", headers=api.admin_headers())
+    assert res.status == 404

@@ -6,7 +6,8 @@
 //     byte for byte ("npm run schriftkunde:md" regenerates it). CI runs tests
 //     before the build, so it checks the committed file — exactly right.
 // (c) CITABILITY: the head must carry canonical, Stand and the in-band
-//     ai-train=no reservation.
+//     rights note (the open ai-train=yes policy plus the reservation of the
+//     curated data behind the API).
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -52,11 +53,11 @@ describe('schriftkunde markdown mirror', () => {
     expect(pub('schriftkunde.md'), 'app/public/schriftkunde.md ist veraltet — `npm run schriftkunde:md` ausführen').toBe(rendered);
   });
 
-  it('carries canonical, Stand and the rights reservation in the head', () => {
+  it('carries canonical, Stand and the rights note in the head', () => {
     const head = rendered.slice(0, 2000);
     expect(head).toContain('https://kurrentschrift.ink/schriftkunde');
     expect(head).toContain(`- Stand: ${stand}`);
-    expect(head).toContain('ai-train=no');
-    expect(head).toContain('Art. 4');
+    expect(head).toContain('ai-train=yes');
+    expect(head).toContain('gesondert vorbehalten');
   });
 });

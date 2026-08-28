@@ -176,20 +176,36 @@ losschreiben" kann, gilt technisch:
   `tools/wordbench/fixtures/` — sie enthalten die autorierten Templates;
   Regeneration braucht DB-Zugang). Ernte-Artefakte
   (`laufform_*.json`, Harvest-Reports) werden nie committet.
-- **Rohdaten-Reads der API sind admin-gegatet:** `GET
-  /sources/{id}/templates/{glyph_key}` (vollständiges Template inkl.
-  Roh-Stylus-Pfad) verlangt `require_admin`; die öffentliche Liste
-  liefert nur Summaries ohne Geometrie. Ebenso admin-gegatet ist der
-  ungecachte Stapel-Read `GET /sources/{id}/templates/quality` →
-  `list[TemplateQualityOut]` (glyph_key + variant + quality): er liefert
-  den **gespeicherten** Score direkt aus `templates.trace_meta["quality"]`
-  über `TemplateRepository.list_quality`, das die Spalte per JSON-Index
-  abfragt statt die dichten `pixel_anchors`/`half_widths_px` zu laden —
-  das ganze Alphabet in einer Anfrage (0,145 s für 80 Zeilen gegenüber
-  0,44 s für EINE Glyphe über das nachrechnende `/{glyph_key}/quality`).
-  Die occurrence-Reads
-  (`/instances` …) liefern Fit-Ergebnisse über PD-Vorlagen, keine
-  autorierten Templates.
+- **Jeder API-Read, der den Bestand trägt, ist admin-gegatet — und die
+  Trennlinie ist getestet.** `tests/test_api_public_surface.py`
+  klassifiziert JEDE GET-Route der API als öffentlich oder reserviert
+  (eine Route in keiner der beiden Listen lässt den Test fallen), fordert
+  für jede öffentliche eine Antwort ohne Berechtigung und für jede
+  reservierte den 401 — seit 2026-08-28 ist das der eine Mechanismus,
+  auf dem der Vorbehalt technisch ruht, denn die Crawler-Politik der
+  Seite ist offen ([`crawler-richtlinie.md`](crawler-richtlinie.md) §2).
+  Reserviert: `GET /sources/{id}/templates/{glyph_key}` (vollständiges
+  Template inkl. Roh-Stylus-Pfad) und der ungecachte Stapel-Read
+  `GET /sources/{id}/templates/quality` → `list[TemplateQualityOut]`
+  (der **gespeicherte** Score direkt aus `templates.trace_meta["quality"]`
+  über `TemplateRepository.list_quality`, per JSON-Index statt der dichten
+  `pixel_anchors`/`half_widths_px` — das ganze Alphabet in einer Anfrage,
+  0,145 s für 80 Zeilen gegenüber 0,44 s für EINE Glyphe über das
+  nachrechnende `/{glyph_key}/quality`); seit 2026-08-28 zusätzlich die
+  Vorkommen (`/instances`, `/pair-instances`, `/word-instances` — gemessene
+  Fits über den autorierten Templates, der Referenzsatz der
+  Tintenfolger-Kampagne), die Bbox-Zeilen (`/bboxes`, `/bboxes/{key}` —
+  die Crop-Arbeit des Wizards, die keine Neuberechnung zurückbringt), die
+  Paar-Overrides (`/pairs`, `/pairs/{l}/{r}` — autorierte
+  Verbindungsgeometrie) und das Schreiberregister (`/hands`,
+  `/hands/{id}`). Gegatete Reads tragen `Cache-Control: private,
+  no-store`, wo sie vorher cachebar waren. Öffentlich bleibt, was die
+  öffentlichen Seiten brauchen: die Template-Summaries ohne Geometrie
+  (`/templates`), die Verfügbarkeits-Flags (`/bboxes/status`), die
+  PD-Tafel und ihre Crops (`/chart`, `/bboxes/{key}/crop`), die
+  Wort-Specimens, deren Sidecar ohnehin im öffentlichen Repo liegt
+  (`/word-samples`), die aus dem Repo geseedete Quiz-Wortbank und die
+  `/write`-Renders.
 - **Die Statistik-Schicht liest ausschließlich admin-gegatet:**
   `GET /hands/{hand_id}/aggregates` und
   `GET /hands/{hand_id}/pair-aggregates` (samt ihren
@@ -208,9 +224,14 @@ losschreiben" kann, gilt technisch:
   ([eigenhand-erfassung.md §7.2, §8.1](../proposals/eigenhand-erfassung.md)).
 - **Öffentliche `/write`-Payloads sind bewusste Produkt-Oberfläche**
   (die SPA rendert clientseitig): gerenderte Geometrie, unter dem
-  README-Nutzungsvorbehalt + [`crawler-richtlinie.md`](crawler-richtlinie.md)
-  (`ai-train=no`) + Cloudflare-Schutz. Wer massenhaft abgreift, verletzt
-  den Vorbehalt — das ist die rechtliche, nicht die technische Grenze.
+  README-Nutzungsvorbehalt + Cloudflare-Schutz. Die Seite selbst ist seit
+  2026-08-28 offen (`ai-train=yes`); die eine abweichende Zeile liegt auf
+  dem API-Host: `api.kurrentschrift.ink/robots.txt` (`api/routers/seo.py`)
+  erlaubt alles, trägt aber `ai-train=no`, weil die komponierten Züge aus
+  dem vorbehaltenen Bestand abgeleitet sind — abrufen und zitieren ja,
+  Trainingsmaterial nein ([`crawler-richtlinie.md`](crawler-richtlinie.md)
+  §2). Wer massenhaft abgreift, verletzt den Vorbehalt — das ist die
+  rechtliche, nicht die technische Grenze.
 - **Bekannte, akzeptierte Ausnahme:** `tests/fixtures/compose_golden.json.gz`
   pinnt die Composer-Parität mit 11 gerenderten Wörtern (keine
   Templates, nicht generalisierbar). Folgeaufgabe: das Golden auf

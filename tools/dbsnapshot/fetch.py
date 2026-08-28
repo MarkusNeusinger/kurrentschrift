@@ -65,17 +65,20 @@ PRIMARY_TABLES = ("bboxes", "templates")
 # rides along. `quiz_words` is deliberately absent: it is seeded from
 # tools/quizgen through a migration and lives in the public repo already.
 PER_SOURCE_READS: tuple[tuple[str, str, bool], ...] = (
-    # (table name, path suffix, admin)
-    ("bboxes", "/bboxes", False),
-    ("pairs", "/pairs", False),
-    ("instances", "/instances", False),
-    ("pair_instances", "/pair-instances", False),
-    ("word_instances", "/word-instances", False),
+    # (table name, path suffix, admin). Every per-source table here is
+    # reserved dataset and reads behind the admin gate since 2026-08-28
+    # (quellen-und-rechte.md §5); only the catalogue descriptors below are
+    # public reads.
+    ("bboxes", "/bboxes", True),
+    ("pairs", "/pairs", True),
+    ("instances", "/instances", True),
+    ("pair_instances", "/pair-instances", True),
+    ("word_instances", "/word-instances", True),
 )
 GLOBAL_READS: tuple[tuple[str, str, bool], ...] = (
     ("sources", "/sources", False),
     ("styles", "/styles", False),
-    ("hands", "/hands", False),
+    ("hands", "/hands", True),
     ("work_items", "/work-items", True),
 )
 
