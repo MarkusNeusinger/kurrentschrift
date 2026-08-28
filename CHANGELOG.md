@@ -7,10 +7,29 @@ All notable changes to this project are documented here. The format is based on
 Every PR adds its entries under `[Unreleased]`; a release moves that section under a new
 version heading AND bumps `CITATION.cff` (`version` + `date-released`) and
 `pyproject.toml` (`project.version` — `/docs` reads it at runtime) in the same commit.
+After the merge the tag goes on the merge commit and the GitHub release is created from
+the section — condensed, never copied (rule of 2026-08-28): an intro line with the merge
+count, the PR range and a link to this file; the section's own headings; one bullet per
+NOTABLE entry — chores, dependency bumps and small fixes are left out, and there is no
+fixed count — at most two lines each: its bold title, one clause with the essence or the
+headline number, its PR reference; a compare link at the end. The full text lives only
+here; the release page is the index into it.
 Code changes are covered here — data-only commits (chart sources,
 authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
+
+### Changed
+
+- **GitHub releases are the CHANGELOG section condensed, never copied.**
+  A release body keeps the section's headings and one bullet per NOTABLE
+  entry (chores, dependency bumps and small fixes are left out; no fixed
+  count), each at most two lines — bold title, one clause, PR reference —
+  under an intro line (merge count, PR range, link to this file) and over
+  a compare link; the full text stays in this file. The existing releases
+  v0.13.0–v0.26.0 were rewritten to that shape (the earlier ones were
+  already that short); the rule lives in this file's header, `CLAUDE.md`
+  and `.github/copilot-instructions.md`.
 
 ## [0.27.0] — 2026-08-28 — Lotse + chain v5 in the tracing duel, the Eigenhand capture chain, the site opened to machines
 
