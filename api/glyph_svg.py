@@ -71,11 +71,8 @@ def glyph_svg(payload: dict, *, name: str, height_px: int = 160) -> str:
         f'stroke="{GUIDE}" stroke-width="{_fmt(GUIDE_STROKE)}"{dash.get(key, "")}/>'
         for key, y in guides.items()
     )
-    paths = "".join(
-        f'<path d="{rings_to_path_d(stroke)}" fill="{INK}" fill-rule="evenodd" stroke="none"/>'
-        for stroke in strokes
-        if rings_to_path_d(stroke)
-    )
+    stroke_ds = [d for d in (rings_to_path_d(stroke) for stroke in strokes) if d]
+    paths = "".join(f'<path d="{d}" fill="{INK}" fill-rule="evenodd" stroke="none"/>' for d in stroke_ds)
     label = html.escape(name, quote=True)
     return (
         '<?xml version="1.0" encoding="UTF-8"?>\n'

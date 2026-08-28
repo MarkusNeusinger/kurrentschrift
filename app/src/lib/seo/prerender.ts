@@ -137,6 +137,14 @@ export function kennwerte() {
   }));
 }
 
+// Two angle units — the whole point of the Kennwerte: a slant is measured to
+// the baseline, the pen angle to the writing line (the nib's edge). Naming
+// them differently in the structured data is what keeps a consumer from
+// merging "75–80°" and "15–20°" into one figure.
+export const UNIT_SLANT = 'Grad zur Grundlinie (90 = senkrecht)';
+export const UNIT_PEN_ANGLE = 'Grad zur Schreiblinie (Federkante, nicht die Schräglage)';
+const unitFor = (key: string) => (key === 'penAngleDeg' ? UNIT_PEN_ANGLE : UNIT_SLANT);
+
 function kennwerteLd(): object {
   return {
     '@context': 'https://schema.org',
@@ -157,7 +165,7 @@ function kennwerteLd(): object {
             '@type': 'PropertyValue',
             name: key,
             value: Array.isArray(value) ? value.join(key === 'lineature' || key === 'lineatureAlt' ? ':' : '–') : value,
-            ...(key.endsWith('Deg') ? { unitText: 'Grad zur Grundlinie' } : {}),
+            ...(key.endsWith('Deg') ? { unitText: unitFor(key) } : {}),
           })),
         sameAs: k.sources,
       },

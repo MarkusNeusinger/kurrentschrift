@@ -29,6 +29,8 @@ import {
   PUBLIC_API,
   PUBLIC_SOURCE_ID,
   renderAll,
+  UNIT_PEN_ANGLE,
+  UNIT_SLANT,
 } from './prerender.ts';
 
 const appDir = fileURLToPath(new URL('../../../', import.meta.url));
@@ -143,7 +145,17 @@ describe('crawler prerender', () => {
     expect(html).toContain('&quot;slantDeg&quot;'.replace(/&quot;/g, '"')); // quotes stay quotes in the block
     expect(html).toContain(escapeHtml(KENNWERTE_LEGEND));
     expect(html).toContain('"@type":"ItemList"');
-    expect(html).toContain('"unitText":"Grad zur Grundlinie"');
+    // Two angle units, never one: the slant to the baseline, the pen angle to
+    // the writing line — the JSON-LD must say which is which per property.
+    const ld = JSON.parse(html.match(/<script type="application\/ld\+json">(\{"@context":"https:\/\/schema.org","@type":"ItemList"[\s\S]*?)<\/script>/)![1]);
+    const units = new Map<string, string>();
+    for (const item of ld.itemListElement) {
+      for (const prop of item.item.additionalProperty) if (prop.unitText) units.set(prop.name, prop.unitText);
+    }
+    expect(units.get('slantDeg')).toBe(UNIT_SLANT);
+    expect(units.get('slantAround1900Deg')).toBe(UNIT_SLANT);
+    expect(units.get('penAngleDeg')).toBe(UNIT_PEN_ANGLE);
+    expect(UNIT_PEN_ANGLE).not.toBe(UNIT_SLANT);
     // The block parses back to the locale's data.
     const block = html.match(/<pre><code class="language-json">([\s\S]*?)<\/code><\/pre>/)![1];
     const parsed = JSON.parse(block.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'));

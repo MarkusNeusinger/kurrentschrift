@@ -27,7 +27,9 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   typed `data` block in the locale (`slantDeg`, `lineature`, `pen`,
   `stroke`, `penAngleDeg`, `lineatureAlt`), rendered on the Schriftkunde
   prerender as JSON-LD (`ItemList` of `DefinedTerm`s with
-  `PropertyValue`s, `unitText: "Grad zur Grundlinie"`) AND as a visible
+  `PropertyValue`s carrying two distinct units — slants in "Grad zur
+  Grundlinie (90 = senkrecht)", the pen angle in "Grad zur Schreiblinie
+  (Federkante, nicht die Schräglage)") AND as a visible
   JSON code block — HTML→Markdown converters drop `<script>` and keep
   `<pre>`, which is why the head alone was invisible to the reviewer;
   a test holds numbers and prose together and requires "zur Grundlinie"
