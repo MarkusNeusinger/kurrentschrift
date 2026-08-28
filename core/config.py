@@ -46,6 +46,20 @@ class Settings(BaseSettings):
     # `PRERENDER_DIR` overrides it (tests point it at a temp dir).
     prerender_dir: Path = REPO_ROOT / "app" / "prerender"
 
+    # ------------------------------------------------------------------ Bot analytics
+    # Crawler page reads (the /seo-proxy path) are reported server-side to a
+    # SECOND Plausible site, never the human one (api/analytics.py). On by
+    # default only in production — a dev run must not write to the live bot
+    # site; `BOT_ANALYTICS=true|false` overrides either way.
+    plausible_bots_domain: str = "bots.kurrentschrift.ink"
+    bot_analytics: bool | None = None
+
+    @property
+    def bot_analytics_enabled(self) -> bool:
+        if self.bot_analytics is not None:
+            return self.bot_analytics
+        return self.environment == "production"
+
     # ------------------------------------------------------------------ CORS
     # Explicit env override wins; otherwise the effective regex is picked per
     # environment (see `cors_allow_origin_regex`) so the localhost/LAN dev

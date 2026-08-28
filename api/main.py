@@ -13,10 +13,11 @@ import tomllib  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 from pathlib import Path  # noqa: E402
 
-from fastapi import FastAPI  # noqa: E402
+from fastapi import FastAPI, Request, Response  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.middleware.gzip import GZipMiddleware  # noqa: E402
 
+from api.analytics import track_bot_fetch  # noqa: E402
 from api.routers import (  # noqa: E402
     aggregates_router,
     bboxes_router,
@@ -100,6 +101,28 @@ app.add_middleware(
 # JSON win.
 # Level 6 over the default 9: large geometry JSON compresses ~2-3x faster for ~1-2% more bytes.
 app.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=6)
+
+
+# Record which AI or search agent requested which page. A middleware rather
+# than a router dependency: a dependency runs BEFORE the handler and cannot
+# see the response, so every 404 would be recorded as a successful read. The
+# status matters — an assistant asking for a URL that does not exist is a
+# signal worth keeping, it just is not a page view.
+@app.middleware("http")
+async def record_bot_fetch(request: Request, call_next):
+    """Report crawler page requests on the /seo-proxy path to the bot site.
+
+    Requests, not reads: the status is recorded rather than filtered on. The
+    machine files (/robots.txt) and every API read are not pages and are not
+    recorded.
+    """
+    response: Response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/seo-proxy"):
+        # The public URL, never this router's internal prefix.
+        track_bot_fetch(request, path.removeprefix("/seo-proxy").rstrip("/") or "/", response.status_code)
+    return response
+
 
 app.include_router(health_router)
 app.include_router(seo_router)

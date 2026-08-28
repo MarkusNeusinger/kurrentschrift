@@ -14,6 +14,31 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Crawler page reads are counted on a second Plausible site,
+  `bots.kurrentschrift.ink` — never on the visitor site.** The
+  prerender path is the one place a crawler's read is visible (no
+  JavaScript, no Plausible script), so a middleware in `api/main.py`
+  reports every `/seo-proxy` request to `api/analytics.py`, which holds
+  the user agent against anyplot's `AI_AGENTS` taxonomy (kept identical
+  by decision) and sends a `bot_fetch` event with `assistant`, `kind`
+  (`user_directed` = a person asked their assistant to open the page, a
+  reader; `index`/`search`/`training`/`inspection` = corpus building),
+  `path` and `status` to Plausible's Events API — fire-and-forget, never
+  in the response path, a middleware rather than a dependency so a 404
+  is recorded as a 404. Two traps anyplot found by watching events
+  vanish are built in: events travel under the neutral
+  `kurrentschrift-server/1.0` (Plausible drops every crawler UA) and
+  carry the FIRST valid forwarded address (`api/request_context.py`,
+  `visitor_ip` — Plausible drops events carrying the server's own IP).
+  Active only in production (`BOT_ANALYTICS` overrides), so a dev run
+  never writes to the live bot site. Twenty tests pin taxonomy order,
+  payload, sender agent, visitor IP, status, the disabled state and the
+  middleware's public-path mapping. `httpx` joins the runtime
+  dependencies. The Plausible site itself (goal `bot_fetch`, properties
+  `assistant`/`kind`/`path`/`status`) and Cloudflare's AI Crawl Control
+  are dashboard steps — documented in `frontend-stack.md` §6 and
+  `crawler-richtlinie.md` §3/§4.
+
 - **Crawlers get prerendered pages — every public route, the anyplot
   way.** Search engines, AI assistants and their user-directed fetchers,
   link previews: none execute JavaScript, and the SPA handed each of
