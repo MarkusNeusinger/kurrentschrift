@@ -90,8 +90,11 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   overrides (`…/pairs`, `…/pairs/{l}/{r}` — authored join geometry; the
   approved-only public view and the conditional `?all=true` gate are
   gone, the read is simply admin) and the writer registry (`/hands`,
-  `/hands/{id}`). All nine require `require_admin` now and answer
-  `Cache-Control: private, no-store` where they used to be cacheable.
+  `/hands/{id}`). All nine require `require_admin` now — and the gate
+  itself stamps `Cache-Control: private, no-store` on every admin-gated
+  response, so no reserved read (the ~30 gated GETs across templates,
+  aggregates, work items, eigenhand and these nine) can be cached by an
+  intermediary, and no route can forget the header.
   No public page ever consumed them (verified against every non-admin
   call site); the readers are the workbench, the harvests and the
   fixture/snapshot tools, which carry the token already —

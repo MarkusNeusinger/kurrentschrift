@@ -199,8 +199,9 @@ async def test_word_sample_score_success_with_segments(api, tmp_path):
     for comp in ("transition", "coverage", "width"):
         assert 0.0 <= body[comp] <= 1.0
     assert body["registration"]["xh_px"] == 30.0
-    # Scores must not be cached — they move with every template/pair write.
-    assert "cache-control" not in res.headers
+    # Scores must not be cached — they move with every template/pair write;
+    # the admin gate stamps the no-store header on every gated response.
+    assert res.headers["cache-control"] == "private, no-store"
 
     segments = body["segments"]
     kinds = [s["kind"] for s in segments]

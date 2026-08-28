@@ -153,3 +153,20 @@ async def test_reserved_reads_are_401_without_credentials(api: Harness):
     for path in sorted(RESERVED):
         res = await api.client.request("GET", _fill(path, source_id))
         assert res.status == 401, f"{path} answered {res.status} without the admin credential"
+
+
+async def test_reserved_reads_are_never_cacheable(api: Harness):
+    """With the credential, every reserved read that answers with a body must
+    say `no-store` — the gate stamps it (api.auth.require_admin), so this pins
+    that no route bypasses the gate's response. Placeholder ids make many
+    reads 404 here; those carry no rows and are not the concern."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    answered = 0
+    for path in sorted(RESERVED):
+        res = await api.client.request("GET", _fill(path, source_id), headers=api.admin_headers())
+        if res.status >= 300:
+            continue
+        answered += 1
+        assert "no-store" in res.headers.get("cache-control", ""), f"{path} is cacheable: {res.headers}"
+    assert answered >= 8, f"only {answered} reserved reads answered 2xx — the probe lost its teeth"

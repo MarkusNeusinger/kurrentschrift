@@ -198,8 +198,10 @@ losschreiben" kann, gilt technisch:
   die Crop-Arbeit des Wizards, die keine Neuberechnung zurückbringt), die
   Paar-Overrides (`/pairs`, `/pairs/{l}/{r}` — autorierte
   Verbindungsgeometrie) und das Schreiberregister (`/hands`,
-  `/hands/{id}`). Gegatete Reads tragen `Cache-Control: private,
-  no-store`, wo sie vorher cachebar waren. Öffentlich bleibt, was die
+  `/hands/{id}`). Das Gate selbst (`api.auth.require_admin`) stempelt
+  jede gegatete Antwort mit `Cache-Control: private, no-store` — kein
+  reservierter Read kann in einem geteilten Cache landen, und keine Route
+  kann den Header vergessen. Öffentlich bleibt, was die
   öffentlichen Seiten brauchen: die Template-Summaries ohne Geometrie
   (`/templates`), die Verfügbarkeits-Flags (`/bboxes/status`), die
   PD-Tafel und ihre Crops (`/chart`, `/bboxes/{key}/crop`), die
