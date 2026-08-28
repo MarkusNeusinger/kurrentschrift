@@ -40,6 +40,11 @@ class Settings(BaseSettings):
 
     # ------------------------------------------------------------------ Paths
     repo_root: Path = REPO_ROOT
+    # The crawler pages the app build renders (app/src/lib/seo/prerender.ts →
+    # app/prerender/, committed). api/Dockerfile copies the directory under the
+    # same relative path, so the default holds in the image and in a checkout;
+    # `PRERENDER_DIR` overrides it (tests point it at a temp dir).
+    prerender_dir: Path = REPO_ROOT / "app" / "prerender"
 
     # ------------------------------------------------------------------ CORS
     # Explicit env override wins; otherwise the effective regex is picked per

@@ -35,6 +35,8 @@ PUBLIC = {
     "/",
     "/health",
     "/robots.txt",
+    "/seo-proxy/",
+    "/seo-proxy/{route:path}",
     "/styles",
     "/styles/{style_id}",
     "/sources",
@@ -137,7 +139,8 @@ def test_every_get_route_is_classified():
 
 
 def _fill(path: str, source_id: str) -> str:
-    return path.format(source_id=source_id, **_PARAMS)
+    # `{route:path}` is a Starlette converter, not a format spec.
+    return path.replace("{route:path}", "{route}").format(source_id=source_id, route="schriftkunde", **_PARAMS)
 
 
 async def test_public_reads_answer_without_credentials(api: Harness):

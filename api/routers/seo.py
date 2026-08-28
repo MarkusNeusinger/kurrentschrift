@@ -1,16 +1,37 @@
-"""Machine-facing files of the API host: `robots.txt`.
+"""Machine-facing surface of the API host: `robots.txt` and the crawler pages.
 
-Same slot as `api/routers/seo.py` in the sister project anyplot (which also
-serves its crawler pages from here). The SITE's crawler policy is the static
-`app/public/robots.txt` with its doctrine in docs/reference/crawler-richtlinie.md;
-this file states the policy of `api.kurrentschrift.ink`, the host llms.txt
-advertises as the machine interface (/docs, /openapi.json, the /write renders).
+Same slot as `api/routers/seo.py` in the sister project anyplot. The SITE's
+crawler policy is the static `app/public/robots.txt` with its doctrine in
+docs/reference/crawler-richtlinie.md; this module states the policy of
+`api.kurrentschrift.ink` (the host llms.txt advertises as the machine
+interface: /docs, /openapi.json, the /write renders) and serves the pages a
+mapped crawler gets instead of the SPA shell.
+
+`/seo-proxy/{route}` — the prerendered page of a public route. The site's
+nginx (app/nginx.conf, `$is_bot` map shared verbatim with anyplot) proxies a
+crawler user agent here; the files were rendered at BUILD time from the locale
+catalogue (app/src/lib/seo/prerender.ts → app/prerender/, committed and
+shipped in this image by api/Dockerfile), so this handler is a file lookup,
+never a render: no DB, no template engine, nothing a crawler can make
+expensive. Unknown routes get the prerendered 404 (noindex) with status 404 —
+a soft-404 with status 200 is exactly what the SPA shell used to hand out.
 """
 
+from __future__ import annotations
+
+import logging
+import re
+from functools import lru_cache
+from pathlib import Path
+
 from fastapi import APIRouter, Response
+from fastapi.responses import HTMLResponse
 
 from api.http import CACHE_CONTROL
+from core.config import settings
 
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["seo"])
 
@@ -41,3 +62,57 @@ async def get_robots() -> Response:
     return Response(
         content=ROBOTS_TXT, media_type="text/plain; charset=utf-8", headers={"Cache-Control": CACHE_CONTROL}
     )
+
+
+# ---------------------------------------------------------------- crawler pages
+
+# A public route is lowercase path segments — nothing else reaches the disk.
+# Dots are excluded deliberately: no `..`, and no `/schriftkunde.html` alias
+# of a page that would be a self-made duplicate URL.
+_ROUTE_RE = re.compile(r"^[a-z0-9-]+(/[a-z0-9-]+)*$")
+_INDEX = "index"
+_NOT_FOUND = "404"
+
+_FALLBACK_404 = (
+    '<!DOCTYPE html><html lang="de"><head><meta charset="utf-8">'
+    '<meta name="robots" content="noindex,follow"><title>Seite nicht gefunden</title></head>'
+    "<body><h1>Seite nicht gefunden</h1></body></html>"
+)
+
+
+@lru_cache(maxsize=64)
+def _page(name: str) -> str | None:
+    """The prerendered file for a route name, read once per process.
+
+    The files change only with a deploy (a new image, a new process), so a
+    cache without invalidation is exactly right; the bound keeps a scan of
+    invented routes from growing it (each miss caches a None)."""
+    path: Path = settings.prerender_dir / f"{name}.html"
+    if not path.is_file():
+        return None
+    return path.read_text(encoding="utf-8")
+
+
+def _not_found() -> HTMLResponse:
+    body = _page(_NOT_FOUND)
+    if body is None:
+        # The prerender directory is missing altogether (a dev checkout before
+        # `npm run prerender`, or a broken image) — say so once per process,
+        # answer a minimal noindex 404 so the crawler still gets the right
+        # status.
+        logger.warning("prerender directory has no 404 page: %s", settings.prerender_dir)
+        body = _FALLBACK_404
+    return HTMLResponse(body, status_code=404, headers={"Cache-Control": CACHE_CONTROL})
+
+
+@router.get("/seo-proxy/", include_in_schema=False)
+@router.get("/seo-proxy/{route:path}", include_in_schema=False)
+async def seo_proxy(route: str = "") -> HTMLResponse:
+    """The prerendered page of a public route, or the prerendered 404."""
+    name = route.strip("/") or _INDEX
+    if name != _INDEX and not _ROUTE_RE.match(name):
+        return _not_found()
+    body = _page(name)
+    if body is None:
+        return _not_found()
+    return HTMLResponse(body, headers={"Cache-Control": CACHE_CONTROL})

@@ -1,9 +1,9 @@
 # Frontend-Stack
 
-> **Status (2026-08-27): lebend.** Ist-Stand von Stack, Routen, i18n-Soll,
-> Deploy und Admin-Gate; jede Änderung an `app/package.json`,
-> `app/src/routes/paths.ts`, den Cloudbuild-/nginx-Dateien oder `api/auth.py`
-> zieht hier nach.
+> **Status (2026-08-28): lebend.** Ist-Stand von Stack, Routen, i18n-Soll,
+> Deploy, Admin-Gate und Crawler-Prerender; jede Änderung an
+> `app/package.json`, `app/src/routes/paths.ts`, den Cloudbuild-/nginx-Dateien,
+> `api/auth.py` oder `app/src/lib/seo/prerender.ts` zieht hier nach.
 > Am 2026-08-03 gegen den Code geprüft und deckungsgleich (Admin-Routen nach
 > dem Redesign „aus einem Guss": `/admin` Vorlagen-Auswahl + die drei
 > Ansichten Buchstaben · Übergänge · Wörter; Admin-Token-Regeln, PR #263).
@@ -345,33 +345,67 @@ Funktionsweise identisch.
   es nicht.** Jeder Schreibvorgang aus einem Dev-Lauf trifft also die
   geteilten Echtdaten.
 
-### Markdown-Spiegel der Schriftkunde (seit 2026-08-27)
+### Prerender für Crawler (seit 2026-08-28)
 
-- `app/public/schriftkunde.md` ist die Textfassung von `/schriftkunde`
-  für Clients ohne JavaScript — generiert von
-  `app/scripts/build-schriftkunde-md.mjs` (läuft als `prebuild`
-  automatisch vor jedem `vite build`; die Datei ist trotzdem
-  EINGECHECKT, damit Dev-Server und PR-Review sie sehen). Der Renderer
-  `app/src/lib/seo/schriftkundeMarkdown.ts` spiegelt den Locale-Katalog
-  in der DOM-Reihenfolge der Seite; drei Vitest-Wächter
-  (`schriftkundeMarkdown.test.ts`) erzwingen Vollständigkeit
-  (jedes Locale-Blatt oder ein benannter SKIP), Byte-Gleichheit der
-  eingecheckten Datei und die Zitierfähigkeit des Kopfs (Canonical ·
-  Stand · Rechtehinweis in-band: die offene Politik `ai-train=yes` plus
-  der Vorbehalt der kuratierten Schriftdaten hinter der API).
-- Das Stand-Datum kommt aus dem `<lastmod>` der Sitemap für
-  `/schriftkunde` — deterministisch statt `new Date()`; ein Bump dieses
-  Datums rötet den Drift-Test, bis `npm run schriftkunde:md` neu
-  generiert (gewollt, kein Bug).
-- Bewusst NICHT in `sitemap.xml`: der Spiegel ist eine alternative
-  Repräsentation, keine kanonische Seite — sein Canonical liegt als
-  HTTP-`Link`-Header an (nginx, samt `text/markdown; charset=utf-8`,
-  ohne das die Sonderzeichen ſ, n̄, ₰, ℳ bei Latin-1-ratenden Clients
-  zerbrechen). Kein `X-Robots-Tag: noindex` — die KI-Suchagenten, für
-  die die Datei existiert, sollen sie indexieren dürfen.
-- Der Dockerfile-Builder läuft dafür auf `node:22-alpine` — das
-  prebuild-Skript importiert den `.ts`-Renderer über Nodes natives
-  Type-Stripping (≥ 22.18 ohne Flag).
+Crawler und KI-Agenten führen kein JavaScript aus; die SPA gäbe ihnen
+auf jeder URL die leere Hülle mit dem Startseiten-Titel. Seit 2026-08-28
+bekommen sie stattdessen **je Route eine vorgerenderte HTML-Seite** —
+nach dem Muster von anyplot, mit derselben Crawler-Liste (Entscheid
+des Autors: „identisch halten"). Der Markdown-Spiegel der Schriftkunde
+(2026-08-27, `/schriftkunde.md`) war der Vorläufer für eine Seite und
+ist in diesem Pfad aufgegangen.
+
+- **Erkennung** in `app/nginx.conf`: die `map $http_user_agent $is_bot`
+  ist WORTGLEICH mit `~/projects/anyplot/app/nginx.conf` (Suchmaschinen,
+  KI-Crawler, nutzergesteuerte Fetcher, Social-/Messenger-Vorschauen);
+  eine Änderung wird in beiden Dateien im selben Zug gemacht. Ein
+  gemappter UA landet über `error_page 418 = @seo_proxy` beim API-Host
+  (`https://api.kurrentschrift.ink/seo-proxy$request_uri`, TLS-Prüftiefe
+  4 — anyplots Vier-Wochen-502 wiederholt sich hier nicht), Menschen
+  bekommen `index.html`. `robots.txt`, `llms.txt`, `sitemap.xml` und
+  alle statischen Dateien (`og.png`, Favicon …) werden auch für Bots
+  DIREKT bedient (`location =` bzw. die Regex-Location auf
+  Dateiendungen) — sonst ginge das `og:image` einer Link-Vorschau an den
+  Proxy. Trailing Slashes werden relativ auf die kanonische Form
+  umgeleitet (`absolute_redirect off`).
+- **Inhalt**: `app/src/lib/seo/prerender.ts` rendert aus dem
+  Locale-Katalog je öffentliche Route ein vollständiges Dokument — Head
+  (Title/Description aus `seo.ts`, Canonical, OG/Twitter, JSON-LD:
+  `WebSite` auf der Startseite, `BreadcrumbList` darunter), Body in der
+  DOM-Reihenfolge der Seite (eine Regel je View-Komponente; Schriftkunde
+  komplett, Landing samt Schriftstatus, Hubs, Impressum; die Werkzeuge
+  Quiz/Tafel/Übungsblatt/Federprobe als beschriebene Auswahl mit dem
+  Hinweis, dass das Werkzeug selbst im Browser läuft), Site-Nav auf
+  jeder Seite, Footer mit Stand (aus dem Sitemap-`lastmod` der Route —
+  deterministisch statt `new Date()`) und dem Rechtehinweis in-band
+  (offene Politik `ai-train=yes` + Vorbehalt der Schriftdaten). Dazu die
+  404-Seite mit `noindex`. Erste Zeile jeder Datei ist der Marker
+  `<!-- kurrentschrift.ink prerender -->`, an dem der Bot-Serving-Check
+  eine vorgerenderte Seite von der Hülle unterscheidet.
+- **Erzeugung**: `npm run prerender` (läuft als `prebuild` vor jedem
+  `vite build`; `--experimental-strip-types`, damit auch Node 22.15 den
+  `.ts`-Renderer laden kann) schreibt `app/prerender/*.html` — die
+  Dateien sind EINGECHECKT, denn das **API-Image** liefert sie aus
+  (`api/Dockerfile` kopiert `app/prerender/`, `api/routers/seo.py`
+  bedient `/seo-proxy/{route}` als reine Datei-Suche: keine DB, kein
+  Template, nichts, das ein Crawler teuer machen kann; Unbekanntes
+  bekommt die 404-Seite mit Status 404 — die Hülle antwortete 200).
+- **Wächter**: `prerender.test.ts` — jede öffentliche Route hat eine
+  Seite; die Inhaltsseiten (Landing, Schriftkunde, Hubs, Impressum)
+  spiegeln jedes Locale-Blatt oder benennen es im SKIP; die
+  eingecheckten Dateien sind byte-gleich mit einem frischen Render und
+  nichts anderes liegt im Verzeichnis; Head, Marker, Nav und
+  Rechtehinweis auf jeder Seite. `tests/test_api_seo_proxy.py` pinnt die
+  API-Seite (Route → Datei, 404, keine Pfadtricks). Und weil der Pfad
+  für Menschen unsichtbar ist: `.github/workflows/bot-serving-check.yml`
+  ruft täglich den Cloud-Run-Origin mit Crawler-UAs an (Prerender je
+  Route, Bypass der Maschinendateien, `og.png`, Trailing Slash, 404,
+  SPA-Kontrolle) — anyplots Alarm, der dort vier stille Wochen beendet
+  hat.
+- Bewusst NICHT in `sitemap.xml` und ohne eigene URL: die Prerender-
+  Seite IST die Route (gleiche URL, gleicher Canonical) — Google
+  billigt das ausdrücklich, solange der Inhalt dem entspricht, was
+  Menschen sehen.
 
 ### Schrift-Auslieferung (seit 2026-08-27)
 

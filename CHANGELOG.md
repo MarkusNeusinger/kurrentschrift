@@ -14,6 +14,43 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Crawlers get prerendered pages — every public route, the anyplot
+  way.** Search engines, AI assistants and their user-directed fetchers,
+  link previews: none execute JavaScript, and the SPA handed each of
+  them the empty shell with the home title on every URL. Now
+  `app/nginx.conf` carries anyplot's `$is_bot` map VERBATIM (owner
+  decision 2026-08-28 — one list for both sites, changed in the same
+  breath) and proxies a mapped user agent to the API's
+  `/seo-proxy/{route}`, which serves the page
+  `app/src/lib/seo/prerender.ts` rendered at build time from the locale
+  catalogue: head (title/description from `seo.ts`, canonical, OG/Twitter,
+  JSON-LD — `WebSite` on the home page, `BreadcrumbList` below), the
+  body in the page's DOM order (Schriftkunde in full, the landing with
+  the honest per-script status, both hubs, the Impressum; the four tools
+  as a described selection plus a note that the tool itself runs in the
+  browser), a site nav on every page, a footer with the Stand date (the
+  sitemap's `lastmod` for the route) and the in-band rights note, and a
+  `noindex` 404 that answers with status 404 (the shell answered 200 —
+  a soft-404). The files are committed under `app/prerender/` and
+  shipped in the API image, so serving is a file lookup — no DB, no
+  template, nothing a crawler can make expensive. Humans keep the SPA at
+  the same URL. Guards: `prerender.test.ts` (every route has a page; the
+  content pages mirror every locale leaf or name it in a SKIP; the
+  committed files byte-match a fresh render with nothing extra; head,
+  marker, nav and rights note on each page), `tests/test_api_seo_proxy.py`
+  (route → file, 404, no path tricks reach the disk), and — because the
+  path is invisible to humans — a daily `bot-serving-check` workflow
+  against the Cloud Run origin (prerender per route for Googlebot, a
+  preview bot, ClaudeBot/ChatGPT-User and twelve user-directed fetchers;
+  the machine files and `og.png` served directly; the trailing-slash
+  redirect relative and clean; the 404 status; the SPA control), adopted
+  from anyplot where it ended four silent weeks of 502s for every
+  crawler. nginx also gains `charset utf-8`, exact-match bypasses for
+  `robots.txt`/`llms.txt`/`sitemap.xml`, a static-file regex location
+  (the site card must be the file for a preview bot, never the proxy),
+  the trailing-slash rewrite with `absolute_redirect off`, and the
+  upstream TLS verify depth that caused anyplot's incident.
+
 - **The Schriftkunde gets a Markdown mirror for clients without
   JavaScript.** `/schriftkunde.md` is the full, citable text of the
   page as a static file — generated at build time
@@ -146,13 +183,28 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   composition with missing glyphs. Doctrine updated in
   `docs/concepts/design-system.md`.
 
+### Removed
+
+- **The Schriftkunde Markdown mirror (`/schriftkunde.md`, added above
+  on 2026-08-27) is gone — superseded by the prerendered pages before it
+  ever shipped in a release.** It covered one page as a second, raw
+  representation with its own nginx location, `Link` canonical header
+  and rights note; the prerender covers every route as the page itself.
+  The renderer's locale walk, the completeness/drift/head guards and the
+  Stand-from-sitemap rule live on in `prerender.ts`; `llms.txt` no
+  longer links a `.md` and instead tells unmapped clients where the text
+  lives (the locale sources in the public repo). The post-deploy
+  header check filed for the mirror is replaced by a manual first run
+  of the bot-serving workflow.
+
 ### Fixed
 
-- **`npm run schriftkunde:md` runs on every Node 22.** The prebuild
+- **The crawler-page prebuild runs on every Node 22.** The prebuild
   imports the `.ts` renderer through Node's type stripping, which is
   unflagged only from 22.18 — on 22.15 (`ERR_UNKNOWN_FILE_EXTENSION`)
-  the build died before Vite started. The script now passes
-  `--experimental-strip-types`, a no-op where the feature is already on.
+  the build died before Vite started. The script (`npm run prerender`,
+  formerly `schriftkunde:md`) now passes `--experimental-strip-types`,
+  a no-op where the feature is already on.
 - **`robots.txt` drops the invalid `use=reference` token from every
   `Content-Signal` line.** Verified against the Content Signals
   specification's own site (contentsignals.org, checked 2026-08-27): the
