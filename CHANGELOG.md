@@ -7,10 +7,31 @@ All notable changes to this project are documented here. The format is based on
 Every PR adds its entries under `[Unreleased]`; a release moves that section under a new
 version heading AND bumps `CITATION.cff` (`version` + `date-released`) and
 `pyproject.toml` (`project.version` — `/docs` reads it at runtime) in the same commit.
+After the merge the tag goes on the merge commit and the GitHub release is created from
+the section — condensed, never copied (rule of 2026-08-28): an intro line with the merge
+count, the PR range and a link to this file; the section's own headings; one bullet per
+NOTABLE entry — chores, dependency bumps and small fixes are left out, and there is no
+fixed count — at most two lines each: its bold title, one clause with the essence or the
+headline number, its PR reference; a compare link at the end. The full text lives only
+here; the release page is the index into it.
 Code changes are covered here — data-only commits (chart sources,
 authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
+
+### Changed
+
+- **GitHub releases are the CHANGELOG section condensed, never copied.**
+  A release body keeps the section's headings and one bullet per NOTABLE
+  entry (chores, dependency bumps and small fixes are left out; no fixed
+  count), each at most two lines — bold title, one clause, PR reference —
+  under an intro line (merge count, PR range, link to this file) and over
+  a compare link; the full text stays in this file. The existing releases
+  v0.13.0–v0.26.0 were rewritten to that shape (the earlier ones were
+  already that short); the rule lives in this file's header, `CLAUDE.md`
+  and `.github/copilot-instructions.md`.
+
+## [0.27.0] — 2026-08-28 — Lotse + chain v5 in the tracing duel, the Eigenhand capture chain, the site opened to machines
 
 ### Added
 
@@ -30,7 +51,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   the OpenAPI spec in two terse lines at the very top. Doctrine:
   `crawler-richtlinie.md` §3 "Auffindbarkeit"; pinned by
   `seoCoverage.test.ts` (shell), `test_api_http.py` and
-  `test_api_public_surface.py` (redirect).
+  `test_api_public_surface.py` (redirect) (#440).
 
 - **The Write API is now findable from the site itself.** A session
   protocol of an external assistant (2026-08-28) showed the render
@@ -48,7 +69,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   and both `robots.txt` files (site and API host) point to it beside
   the `Sitemap:` line.
   Doctrine: `crawler-richtlinie.md` §3 "Auffindbarkeit"; pinned by
-  `prerender.test.ts`, `seoCoverage.test.ts` and `test_api_http.py`.
+  `prerender.test.ts`, `seoCoverage.test.ts` and `test_api_http.py` (#439).
 
 - **A whole word as an image, and a count of what assistants fetch.**
   `GET /sources/{id}/write/word.svg?text=…` draws the composed word the
@@ -70,7 +91,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   registered (dashboard step, Todoist). Tests: word.svg (glyphs +
   connector, 404, 422, the pure renderer), the route classifier table,
   the event payload, the SPA/curl exclusion, the middleware mapping
-  including a 404 read.
+  including a 404 read (#437).
 
 - **The Schriftkunde speaks to machines: key figures as data, and the
   letters themselves as images.** An assistant that fetched the
@@ -99,7 +120,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   swallowed as a key). The Tafel prerender and `llms.txt` carry the
   retrieval recipes — inventory, public-domain chart crop (PNG), written
   form (SVG), geometry and whole word (JSON) — with the `e` as the
-  worked example. `write-api.md` documents the route.
+  worked example. `write-api.md` documents the route (#436).
 
 - **Crawler page reads are counted on a second Plausible site,
   `bots.kurrentschrift.ink` — never on the visitor site.** The
@@ -124,7 +145,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   dependencies. The Plausible site itself (goal `bot_fetch`, properties
   `assistant`/`kind`/`path`/`status`) and Cloudflare's AI Crawl Control
   are dashboard steps — documented in `frontend-stack.md` §6 and
-  `crawler-richtlinie.md` §3/§4.
+  `crawler-richtlinie.md` §3/§4 (#434).
 
 - **Crawlers get prerendered pages — every public route, the anyplot
   way.** Search engines, AI assistants and their user-directed fetchers,
@@ -161,7 +182,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `robots.txt`/`llms.txt`/`sitemap.xml`, a static-file regex location
   (the site card must be the file for a preview bot, never the proxy),
   the trailing-slash rewrite with `absolute_redirect off`, and the
-  upstream TLS verify depth that caused anyplot's incident.
+  upstream TLS verify depth that caused anyplot's incident (#433).
 
 - **The Schriftkunde gets a Markdown mirror for clients without
   JavaScript.** `/schriftkunde.md` is the full, citable text of the
@@ -184,202 +205,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   so the `.md` line cannot stand in for the page link. The Dockerfile
   builder moves to `node:22-alpine` (the prebuild imports the `.ts`
   renderer via Node's native type stripping; Node 20 is EOL and
-  `engines` demanded ≥ 22 anyway).
-
-### Changed
-
-- **An eslint guard pins the public/admin locale split, and the
-  Schriftkunde namespace goes route-local.** The split itself has
-  shipped since 2026-08-16, but nothing failed when a public file
-  imported the admin barrel — the app renders identically, only every
-  visitor pays ~66 kB of admin/wizard source (~23 kB gzipped) in the
-  eager bundle. A `no-restricted-imports` rule now rejects
-  `@/locales/admin` (and the relative `de/admin`/`de/wizard` bypasses)
-  outside the admin directories, with the size cost in the message;
-  the stale "~24 kB" comment in `locales/index.ts` is corrected to the
-  measured numbers. The `schriftkunde` namespace also leaves the
-  public barrel: its only consumer is the lazy Schriftkunde route
-  chunk, which now imports it directly — a measured 7.1 kB gzip off
-  the eager `locales` chunk (44.6 → 37.5 kB) for every public route,
-  verified in the built output (the locale's strings appear only in
-  the `SchriftkundePage` chunk).
-
-- **The crawler policy opens: search, AI retrieval, citation AND model
-  training are permitted for every operator** (owner decision
-  2026-08-28, replacing the retrieval-yes / training-no split of
-  2026-07-25). The reasoning, recorded in
-  `docs/reference/crawler-richtlinie.md` §2: the open-core moat is the
-  database, not the website — the reserved dataset is unreachable
-  without the admin credential (see the next entry), so a training
-  reservation on HTML text protected nothing the auth gate does not
-  already protect, while costing reach: Google's single `Google-Extended`
-  token governs Gemini grounding and training together, and declining it
-  kept the site out of Gemini's answers entirely. `app/public/robots.txt`
-  now has the same shape as anyplot's (one `Bytespider` group declined on
-  bandwidth grounds, then `User-agent: *` with `Disallow: /admin`,
-  `Content-Signal: search=yes,ai-input=yes,ai-train=yes` in every group)
-  so a change on one site copies to the other verbatim. The API host
-  gains its own `robots.txt` (`api/routers/seo.py`): nothing disallowed —
-  reserved data is gated by authentication, and a robots line would only
-  keep compliant assistants away from `/docs` and `/openapi.json` — but
-  `ai-train=no`, because the composed `/write` renders derive from the
-  reserved dataset. The Markdown mirror's in-band rights note, `llms.txt`,
-  the README "License" paragraph, `CLAUDE.md`/`copilot-instructions.md`
-  and the docs index follow the new wording; the former policy stays
-  recorded under the doc's *Verworfen* with its own rescue condition.
-  Cloudflare's AI Crawl Control has to be brought in line by hand (steps
-  in §4; filed as a Todoist task).
-
-- **Every API read that carries the reserved dataset is now admin-gated,
-  and the public/reserved split is pinned by a test.** Nine reads used to
-  answer without credentials: the bbox rows (`GET /sources/{id}/bboxes`,
-  `…/bboxes/{glyph_key}` — the wizard's crop work), the occurrences
-  (`…/instances`, `…/pair-instances`, `…/word-instances` — measured fits
-  over the authored templates, the Tintenfolger reference set), the pair
-  overrides (`…/pairs`, `…/pairs/{l}/{r}` — authored join geometry; the
-  approved-only public view and the conditional `?all=true` gate are
-  gone, the read is simply admin) and the writer registry (`/hands`,
-  `/hands/{id}`). All nine require `require_admin` now — and the gate
-  itself stamps `Cache-Control: private, no-store` on every admin-gated
-  response, so no reserved read (the ~30 gated GETs across templates,
-  aggregates, work items, eigenhand and these nine) can be cached by an
-  intermediary, and no route can forget the header.
-  No public page ever consumed them (verified against every non-admin
-  call site); the readers are the workbench, the harvests and the
-  fixture/snapshot tools, which carry the token already —
-  `tools/dbsnapshot` and `tools/wordbench/fetch_fixtures` flip their
-  admin flags accordingly. What the public pages need stays open, by
-  name: styles, sources, the template summaries, `/bboxes/status`, the
-  PD chart and its crops, the word specimens (sidecar in the public
-  repo), the quiz bank and the `/write` renders. New
-  `tests/test_api_public_surface.py` classifies EVERY GET route of the
-  app as PUBLIC or RESERVED — a route in neither set fails the test —
-  and asserts the reserved ones answer 401 without the credential, so
-  the split can never drift silently. `quellen-und-rechte.md` §5 lists
-  the gate in full.
-
-- **Fonts ship ahead of the JS bundle.** Every `@font-face` is now
-  declared early in `index.html` against self-hosted files in
-  `public/fonts/` — 16 verbatim woff2 copies from `@fontsource` v5.3.0
-  (EB Garamond 400/400i/600, Playfair Display 400/500/500i/600/600i;
-  subsets latin + latin-ext with their unicode-ranges carried over
-  literally) plus the two show fonts moved out of `src/assets/fonts/`.
-  Two faces are preloaded (Playfair 600 + Garamond 400, latin) — the
-  one layout-independent start signal, since `#root` stays empty until
-  the entry chunk has run and `@font-face` alone fetches nothing before
-  first layout; the count is measured, not guessed (a Fast-3G A/B showed
-  each further preload costs the entry chunk more than it buys).
-  Measured effect: the critical faces start at ~175 ms instead of
-  ~1.9 s (after the bundle), throttled CLS halves (0.0046 → 0.0018) and
-  the render-blocking CSS file disappears entirely (the remaining
-  non-font CSS falls under Vite's inline threshold). The eight
-  `@fontsource` imports leave `main.tsx` (the packages become
-  devDependencies as source + update channel; `npm run fonts:sync`
-  re-copies and verifies byte identity — an OFL/RFN condition), the
-  `GlobalStyles` font block leaves `PaperBackground`, and the build
-  stops shipping 41 legacy .woff files plus 25 never-fetched
-  cyrillic/greek/vietnamese subsets (~1.06 MB image dead freight).
-  nginx gains cache headers: `immutable`/1 year for hashed `/assets/`,
-  30 days for the unhashed `/fonts/` (a real font update versions the
-  filename). Notices, `audit-licenses` skill baseline,
-  `design-system.md` and `frontend-stack.md` §6 updated.
-
-- **The hero waits for the written word instead of swapping in a font**
-  (owner decision 2026-08-27, replacing the 2.5 s cold-start timer from
-  the engine-hero change). A written brand word is the hero's whole
-  point: on a cold backend the reserved word area now simply waits —
-  after ~3 s a quiet patience line („die Feder setzt an — einen Moment
-  …", pure CSS delay) appears under the spinner — and the composition
-  writes whenever it arrives. The GLKurrent show-font wipe remains only
-  for genuine failure: a fetch error after the cold-start retries, or a
-  composition with missing glyphs. Doctrine updated in
-  `docs/concepts/design-system.md`.
-
-### Removed
-
-- **The Schriftkunde Markdown mirror (`/schriftkunde.md`, added above
-  on 2026-08-27) is gone — superseded by the prerendered pages before it
-  ever shipped in a release.** It covered one page as a second, raw
-  representation with its own nginx location, `Link` canonical header
-  and rights note; the prerender covers every route as the page itself.
-  The renderer's locale walk, the completeness/drift/head guards and the
-  Stand-from-sitemap rule live on in `prerender.ts`; `llms.txt` no
-  longer links a `.md` and instead tells unmapped clients where the text
-  lives (the locale sources in the public repo). The post-deploy
-  header check filed for the mirror is replaced by a manual first run
-  of the bot-serving workflow.
-
-### Fixed
-
-- **Assistant fetches of the SVG assets are counted every time, not
-  only on a cache miss.** Verified live after #437: three of four
-  Claude-User fetches (`e.svg`, `word.svg?text=Glück`, the crop) were
-  Cloudflare edge HITs — the URLs had been requested minutes earlier —
-  and never reached the `asset_fetch` middleware; only the fresh
-  `x.svg` counted. The two SVG routes now answer `private, max-age=300`
-  (`api/http.py` `BROWSER_ONLY_CACHE`): browser cache, no edge cache.
-  Nothing human-facing loses the edge cache — the SPA never requests
-  the SVGs. The JSON reads and the crop keep `CACHE_CONTROL` on purpose
-  (the Tafel, the hero word and the quiz ride on the edge), so their
-  assistant counts are cache misses, first fetch per asset per edge
-  TTL — documented in `write-api.md` and `frontend-stack.md` §6.
-
-- **Crawler reads actually reach the bot site — two silent drops found
-  by probing the live pipeline (2026-08-28).** Of twenty crawler
-  requests through the deployed path, one `bot_fetch` arrived. First:
-  Plausible discards events whose forwarded IP is a hosting-provider
-  address — probe events with Google Cloud addresses (`34.90.1.1`,
-  `35.204.1.1`) never appeared, the same events with a home or GitHub
-  IP did — and on the crawler path (Cloud Run app → Cloudflare → API)
-  `cf-connecting-ip` is exactly the app container's Google egress. nginx
-  now forwards the crawler in `X-Forwarded-For`
-  (`$proxy_add_x_forwarded_for` in `@seo_proxy`) and
-  `api/request_context.py::visitor_ip` takes the first valid forwarded
-  address BEFORE `cf-connecting-ip` (the reverse of anyplot's order; for
-  a direct client behind Cloudflare both are the same address). Second:
-  Cloudflare caches the API host's responses by rule, and `/seo-proxy`
-  answered `s-maxage=86400` — `cf-cache-status: HIT`, so a cached page
-  never reached the counting middleware. `/seo-proxy` (and its 404) now
-  answer `private, no-store`; the page is an 8 KB file lookup, and a
-  crawler paying the round trip is the price of the count. Findings and
-  the probe method recorded in `frontend-stack.md` §6 and the glossary.
-
-- **The crawler-page prebuild runs on every Node 22.** The prebuild
-  imports the `.ts` renderer through Node's type stripping, which is
-  unflagged only from 22.18 — on 22.15 (`ERR_UNKNOWN_FILE_EXTENSION`)
-  the build died before Vite started. The script (`npm run prerender`,
-  formerly `schriftkunde:md`) now passes `--experimental-strip-types`,
-  a no-op where the feature is already on.
-- **`robots.txt` drops the invalid `use=reference` token from every
-  `Content-Signal` line.** Verified against the Content Signals
-  specification's own site (contentsignals.org, checked 2026-08-27): the
-  vocabulary is exactly `search`, `ai-input`, `ai-train` with yes/no
-  values — `use` is not a signal, and a strict parser could discard the
-  whole line and with it the legally load-bearing `ai-train=no`
-  reservation (`docs/reference/crawler-richtlinie.md`; the doc itself
-  never mentioned the token, it existed only in `robots.txt`).
-- **The concept docs no longer contradict the shipped reality** (doc
-  audit 2026-08-27). `mvp-roadmap.md`: the milestone bodies stay as the
-  recorded 2026-05 plan, but every spot that read as a wrong instruction
-  now carries a dated in-place note — M1's "commit the scans" (they stay
-  gitignored, the private archive is master), M2's position-tagged file
-  schema and M3's 11-template position keying (both superseded by R2,
-  migration `0017`), the critical path and verification table (M5/M6 ran
-  over the same-hand PD word samples instead), the "one to two weekends"
-  estimate, and the 2026-06-10 status block's "milestones remain valid"
-  sentence. `vision.md`: the BINDING scripts principle claimed the MVP
-  validates the kernel "an Kurrent allein" — aligned to the recorded
-  Sütterlin-first pivot of 2026-06-12; the open-data principle now
-  carries the Ziel-7 open-core reservation itself; Ziel 3 names the
-  actually trained hand; Ziel 6 names the Eigenhand capture chain as the
-  first real feeder. `eigenhand-erfassung.md`: status header and §11
-  phase table caught up (4a–4f, new 4f row for the 2026-08-27 colour
-  decision). `docs/index.md`: head paragraph and status tags note the
-  pulled-forward H5 capture path. `orthographie-regeln.md`: cites the
-  post-R2 `(style, glyph, variant)` key instead of the retired
-  position-keyed triple.
-
-### Added
+  `engines` demanded ≥ 22 anyway) (#430).
 
 - **The landing hero is written by the engine.** The brand word
   „Kurrentſchrift" is no longer a font specimen: `HeroWritten` renders it via
@@ -395,33 +221,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   (`onResolved.writeEndMs`, a new additive field), and `index.html` warms the
   composition via a landing-only, production-only fetch preload. Verified in
   the browser against a mock of the deployed payload: engine, error, missing
-  and slow paths, desktop + mobile, reduced motion.
+  and slow paths, desktop + mobile, reduced motion (#426).
+
 - **The three scripts state their status outright.** Hero caption (engine
   mode), scripts intro, a status tag on each card („in aktiver Optimierung" ·
   „noch nicht begonnen") and the roadmap note now say plainly that Sütterlin is
   written and under active optimization while Kurrent and Offenbacher have not
-  started yet.
+  started yet (#426).
+
 - **A drift guard couples the SEO surfaces.** `app/src/routes/seoCoverage.test.ts`
   pins paths.ts ↔ `seo.ts` ↔ `sitemap.xml` ↔ `llms.txt` ↔ `robots.txt`: one seo
   entry per public route (+404), unique titles/descriptions, sitemap locs equal
   to the route set with well-formed `lastmod`, every content route linked from
-  `llms.txt`, robots announcing the sitemap.
-
-### Changed
-
-- **SEO/LLM sweep of the public site** (audit 2026-08-27): the 404 is now a
-  real `noindex,follow` without a self-canonical (nginx serves unknown URLs as
-  200, so every stale link was an indexable soft-404); canonicals strip
-  trailing slashes; `/lehrbuch` gets a real nginx 301 beside the client-side
-  redirect; `sitemap.xml` `lastmod` reflect the actual content dates again;
-  `llms.txt` names the Schriftkunde's decipher guide and the 1941
-  Normalschrifterlass chapter and points agents at `openapi.json` (Swagger-UI
-  is JS-only); `index.html` declares `color-scheme: light` (forced-dark
-  browsers no longer invert form fields against the paper) and preconnects to
-  the open API subdomain; the compose spinners in `WrittenGlyph`/`WrittenWord`
-  carry an accessible name.
-
-### Added
+  `llms.txt`, robots announcing the sitemap (#426).
 
 - **Own-hand strips keep their colour; the rulings are dropped on request.**
   Author's decision 2026-08-27 after the first phone capture showed the
@@ -435,7 +247,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   every still-cyan pixel lifted to paper), computed on request; greyscale
   strips come back unchanged. The Eigenhand view shows that view by default
   („Lineatur ausblenden", switchable). Stored bytes are never touched.
-  Doctrine in `eigenhand-erfassung.md` §6/§7.2.
+  Doctrine in `eigenhand-erfassung.md` §6/§7.2 (#425).
+
 - **Eigenhand view: from the Bestand to the evidence.** Author's request
   2026-08-26 after the first strips went online: the strip panel gets a
   word search (substring, case-insensitive), and the coverage grid becomes
@@ -448,25 +261,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   stands for every position (`coverage.matches_item`, `is_item_filter`).
   Every image takes a shared zoom (¼ · ½ · 1:1 · 2× per stored pixel) and
   opens in a Lupe with a free scale on click. Doctrine in
-  `eigenhand-erfassung.md` §7.2, phase 4e in §11.
-
-### Fixed
-
-- **A Bogen printed in the Werkbank, pulled and pushed back by `sync` was
-  refused as „a different layout" — the documented Admin-Druck → `pull` →
-  `ingest` → `sync` loop could not close.** Found on the first real photo
-  (2026-08-26, B0006): the layout digest ran over the JSON text in insertion
-  order, and JSONB hands the stored layout back with its keys reordered, so
-  `pull` hashed the same geometry to a different SHA256 and `PUT
-  /eigenhand/sheets/{hand}/{sheet}` answered 409. `bogen.layout_text` is now
-  canonical (sorted keys; `bogen.layout_digest` is the one identity of a
-  Bogen's geometry), and the import compares against the digest of the
-  STORED layout re-serialised the same way — not against the
-  `layout_sha256` column, which older rows carry in the old spelling. Pinned
-  by a test that pushes a server-printed Bogen back with every key reordered
-  and with a stale column value.
-
-### Added
+  `eigenhand-erfassung.md` §7.2, phase 4e in §11 (#424).
 
 - **The Übergangsraum weight table lives in the shared DB — the Werkbank shows
   the Erstbeleg- and Ausbau-Quote and prints the weighted queue, like the
@@ -490,154 +285,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   rewritten in `eigenhand-erfassung.md` §4/§7.1/§8.1/§11, the glossary, the
   tool reference and — as the author asked — an addendum in the corpus
   `SOURCE.md` (repo ≠ storage location; the aggregate is admin-gated, never
-  public, excluded from any open-data release).
-
-### Changed
-
-- **The Haken rule: a tick accepts a row, an empty box says nothing.** Author's
-  decision 2026-08-26 after the first real photo: `ingest` reads only ticks
-  (an empty box is no verdict — the row stays unjudged and its strip returns
-  to the queue, whether it was skipped, spoiled or forgotten), the Siebung
-  page pre-fills only ticks, and `apply --haken` files the ticks straight
-  from the import without a Siebung result — the page remains for an
-  explicit `verworfen` with a reason or a note — the page now names
-  `--haken` as the normal path and the result file as the exception. A
-  payload from the older `ingest` (empty box = `verworfen`) is normalised
-  on load, so the retired value never reaches a filed `meta.json`. The
-  sheet's printed rule now reads „ohne Haken zählt sie nicht" (golden PDF
-  re-baselined for the text), doctrine in `eigenhand-erfassung.md` §5/§6,
-  glossary „Stiftmarke", the own-hand README.
-
-- **The `d` exit: the hand shortens it, the chain's cut does not — §12's last
-  open limit is closed.** The `pairlab` counter-check that the autopsy asked for,
-  over all 14 `d` occurrences of the frozen Abb.-19 words plus the eight
-  Abb.-20 `d` drills of the same hand. The decisive reading has no
-  letter/connector cut at all: the chart row placed RIGIDLY at its best
-  bounded translation and read as distance to the nearest ink over the last
-  0.40 xh of arc — joined `d` 0.166 xh (words) / 0.160 (drills) vs word-final
-  0.025, 18 of 18 above 0.084 and 4 of 4 below 0.052 (p = 0.00014), while
-  the letter body does not separate (0.073 vs 0.088). Pure truncation, not
-  rotation; the real connecting stroke leaves the `d` at y = 0.82–1.12 xh
-  (median 0.96, invariant over eleven followers) against the chart tip at
-  1.36. The deformable fit alone cannot separate the readings (a window
-  sweep drives the exit anchors to +114 %), which is said plainly. The model
-  decision (a) variant split vs (b) exit in the transition generator stays
-  the author's; the evidence leans (b). `qualitaetsmetrik.md` §12 „Nachtrag
-  aug26".
-
-- **Bogen printing: a job always starts at the front of the plan, and a stack
-  is ONE PDF.** Author's decision 2026-08-26: the queue is the plan order
-  minus the strips that are already belegt — a Bogen that was printed but
-  never written holds nothing back (a new print is asked for because the old
-  sheet is gone), so `unterwegs` becomes a display state and stops being a
-  queue criterion. A stack of N Bögen is one selection for the whole job
-  (`core/eigenhand/bogen.py::compose_stack`: the pages continue the queue, no
-  strip on two sheets, attempt groups stay on one page, ids minted
-  consecutively against a working copy of the Kartei) and comes out as one
-  multi-page document (`pdfgen.build_pdf_pages`; the single-page file stays
-  byte-identical). `POST /eigenhand/sheets` composes the stack in one go and
-  still records every Bogen as its own row; new `GET
-  /eigenhand/stacks/{hand}/pdf?sheets=B0007,B0008` re-renders several recorded
-  Bögen into one PDF; the Werkbank opens the job as one document (per-Bogen
-  buttons stay for reprinting a page); `tools.eigenhand.sheet --sheets N`
-  writes `stapel-<first>-<last>.pdf` beside the per-Bogen folders. Doctrine:
-  `eigenhand-erfassung.md` §7.
-
-- **Laufform LF3b-W: the write map re-derived and measured as it would be
-  written — the 14-row map fails one gate by one crossing, the 13-row map
-  without p passes every gate and now waits for the author's go.** The
-  aug19 candidate map was gone from disk and its build script never
-  committed; the recipe was reconstructed from the session log and rerun
-  under the current harvest (ink-evidence mask) and ruler (cap 1.5). All
-  seven repair parameters reproduce aug19 to three decimals (p t=0.578).
-  Gates re-anchored to fresh bases in one pinned environment: wordbench
-  0.108091 → 0.105607 (pair byte-identical, 16 words better / 5 worse, only
-  write-glyph words move), Galoppieren's composition soll 6 → 8 = hand,
-  Lotse aiou 0.7398 → 0.7484 with spurious 5 → 4 and no losing word — but
-  the Kette v5 route loses ONE hand crossing in Galoppieren (missing 13 →
-  14) while gaining aiou +0.071 there. The autopsy (with a second opinion)
-  puts it in the fit/init layer and the counter's ring rule, not in the
-  map: the composition prescribes the lost crossing identically on both
-  roots, the chain init draws it at the same place, and the v2.1 ring rule
-  drops it on the write root by partner hits (2/11 vs the base's 2/1) —
-  and the base for that word is the guard's reverted init. The gate stands
-  as pre-registered: no write of the 14-row map. The pre-registered
-  rescue — the author's glyph selection — was measured in the same round:
-  the 13-row map (E F K P S Z ae b f k s ue v) passes (a)–(d) with the
-  Kette stroke-identical to its base; p goes to its own arm with three
-  named rescue paths (init guard against the composition soll, stem
-  release at the bowl return, ring-rule sensor). `k0eval` gains
-  `--fixtures` so a candidate solved on a patched root is scored against
-  that root's own soll. **Written on the author's go of 2026-08-26:** archive
-  snapshot `2026-08-26T11-13-38Z` first, DB base checked anchor-equal to
-  the frozen root, then the 13 rows via `PUT …/templates/{key}/laufform`
-  and verified by GET — the Sütterlin-1922 Laufform gap shrinks from 15 to
-  2 glyphs (G unrepairable, W excluded); the frozen fixture root stays
-  frozen. Details: `qualitaetsmetrik.md` §14 „Laufform LF3b-W",
-  `tintenfolger.md` §7.9, glossary „Schreib-Karte".
-
-- **Kette v5: the K0-S stack — composition soll, ratchet, zone 0.55 — is the
-  follower's default.** Author's go of 2026-08-25, measured against the
-  pre-registered Soll-Stack base in one pinned environment: 63-word soll
-  distance 86 → 79 (7 better, 0 worse), aiou over the 31 moved words min
-  −0.0004 / median +0.073, zero losers; on the dev-19 ruler dtw median 0.0453
-  → 0.0446, p90 0.0896 → 0.0861, aiou 0.7468 → 0.7608, worst per-word dtw
-  delta +0.0016. Every K0-S gate holds. The mechanism is visible per word for
-  the first time: the round-atomic soll guard reverts 26 of the 31 moved words
-  to the chain init in round 1 — they were never followed — and the zonal
-  re-solve rescues exactly those. A run with no flags is now the Kette;
-  `--no-structure-guard-ratchet --structure-guard-zone 0 --soll-source init`
-  reproduces the old Soll-Stack base stroke-identically and
-  `--no-structure-guard` the unguarded follower, which is a diagnostic arm and
-  never the duel candidate. Thirteen words v5 still reverts to the init are
-  named with their rescue paths — preventive terms in the descent, never
-  acceptance rules; "fall back to the unguarded result" was examined and
-  rejected as the abolition of the guard. Details: `qualitaetsmetrik.md` §14
-  „Kette v5".
-
-- **`k0eval` refuses to let a base and an arm from different stacks pass as a
-  pair unnoticed.** The first v5 measurement paired the arm against the
-  follower WITHOUT the structure guard and read three gates as violated — 36
-  aiou losers that were the base's own structure destruction (init 86 → free
-  125 soll points), not the arm's cost; the L-U "Kette" row of the day before
-  carried the same base. `k0eval` now reads the follower flags off both files,
-  prints both stacks before the first number, warns loudly with the differing
-  flags, and names each word's guard outcome (`clean / halved / zonal /
-  revert-r1 / revert-init`) so the tier autopsy that took an hour by hand is
-  one column. The L-U row is corrected in place; its finding is unchanged.
-
-- **The frozen ruler's arc cap moves 0.8 → 1.5 xh: the u-Bogen is a mark
-  (L-U, measured, adopted).** All six pre-registered gates hold. Identity: the
-  pre-change code and the new one at the default produce all 19 dev rows
-  byte-identical. Class: exactly the enumerated strokes change — 9 on the
-  reference, 5 on the candidate side, every one a u-Bogen. Defect: the
-  defective `Zaum` arc (1.966 xh) stays in the body and is still paid for.
-  `marks_uncertain` falls 8 → 0 on every route, `marks_ambiguous` and
-  `marks_missing` stay 0, and 16 columns that read the full stroke list are
-  byte-identical between the two caps — so `aiou`, both chamfer halves,
-  crossings, retraces, touch/overlap and the soll columns keep their standing
-  numbers comparable.
-
-  The win lands on exactly one route, and the entry says so: **Kette** (the
-  duel stack, `--structure-guard-soll`) drops its p90 from 0.2355 to 0.0896
-  and its worst word from `unter` 0.4503 to `muß` 0.1108 — `unter` alone goes
-  0.4503 → 0.0877, confirming the hand-computed 0.084 of the `aug20` autopsy.
-  (The entry's first version measured this row on the follower WITHOUT the
-  structure guard; corrected on `aug26`, the finding is unchanged, and the
-  unguarded follower stays in the table as a diagnostic arm.) On Lotse, the
-  raw chain fit and the Nullprobe
-  the change costs a little instead, because only the Kette ever had the
-  ordering fault: the others emit diacritics last, drive the skeleton directly,
-  or have no stroke order at all, so pulling the u-Bogen out only removes a
-  stroke that was aligning fine. What those routes gain is not a better number
-  but an honest one — `mark_pos_err_xh` now reports 0.015–0.134 xh that stood
-  in no column before. `--mark-arc-cap` reproduces any earlier value, and the
-  cap was raised rather than dropped precisely so a defective arc cannot escape
-  the primary measure into the mark column. **InkSight is not re-measured** —
-  its inference needs an isolated Python-3.11 TF venv — so its numbers stay
-  valid, archived and not comparable until that run is caught up.
-
-### Added
+  public, excluded from any open-data release) (#420).
 
 - **A cut strip says which hand, which sheet and which day it is from.**
   `S0001` alone did not identify one: a single plan serves all three scripts,
@@ -650,143 +298,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   stays clear of an overshooting ascender; and it costs the import nothing,
   because `_printed_mask` already blanks everything above the ascender line,
   which is where the line sits. Tests pin that both ends stay inside the cut
-  band, never overlap even for a long hand id, and stay in the masked zone.
-
-### Changed
-
-- **Pre-registered: the u-Bogen becomes a mark in the frozen ruler (L-U).**
-  The `aug20` chain autopsy found that 81 % of the `unter` distance is pure
-  stroke ORDER — the hand writes the u-Bogen last, the chain in the middle —
-  and that the ruler forces it into the body DTW because its arc (1.10 xh)
-  exceeds `MARK_MAX_ARC_UNITS` = 0.8. It left the consequence to the author,
-  who decided on 2026-08-25 to change the ruler, and after the class census
-  refined that to raising the cap rather than dropping it. A descriptive census
-  over the frozen root, taken before any route number: exactly nine reference
-  strokes change class, all of them u-Bögen, one per word — no capital
-  ornament, no ascender loop, no umlaut. The current cap sits INSIDE the mark
-  population rather than between mark and body, and on the candidate side it
-  misses misclassifying a real umlaut by eleven thousandths (`Sprünge`,
-  0.789 xh). The measure raises it to 1.5 xh, derived from the width model — a
-  standard lowercase is one x-height wide, so a floating stroke longer than one
-  and a half letter widths is no accent — rather than from the observed
-  distribution, which keeps a defective candidate arc (`Zaum`, 1.966 xh) in the
-  body where it is paid for instead of letting it escape into the mark column.
-  Written and committed BEFORE the first number, with six gates, the kill
-  criteria, the expected pen-lift side effect and the circularity antidote (the
-  ruler's own expectation table has said `"u": 1` all along). Details:
-  `docs/reference/qualitaetsmetrik.md` §14 „Lineal L-U".
-
-### Fixed
-
-- **The sheet's legend printed a "?" where the long s belonged.** It read
-  "rundes s statt langem ſ" and came off the printer as "statt langem ?":
-  WinAnsi has no ſ, and the note saying exactly that sat four lines above the
-  legend in the same file, written about the word labels and never applied to
-  the legend added later. The one character the sentence exists to explain was
-  the one the font cannot draw. Reworded so it needs no special glyph, and the
-  substitution can no longer reach paper: the writer still maps an
-  unencodable character to "?" — right for a general PDF writer — but
-  `render_pdf` now refuses the page instead, checked over the composed sheet so
-  it covers the strip ids and word labels from the plan as well as the
-  constants. Both halves of the legend are imperative now; the "|" half was a
-  gloss that never said the mark is not to be written.
-
-- **The `cfg` stamp is a geometry fingerprint again, not a promise.** It hashed
-  a hand-kept list of constants under a comment claiming it covered "EVERY
-  constant that moves a printed box" — and it failed the way such lists always
-  do: the printable-area pass moved all four Passmarken by 3 mm, pushed every
-  row down and shifted the verdict column, and the printed stamp stayed
-  `aa9f6a5566` throughout. Two sheets whose registration frame differs by 3 mm
-  were indistinguishable by the mark that exists to distinguish them. It now
-  hashes the layout minus its provenance block: the layout already carries the
-  fiducial centres, every `cut_mm`, `band_mm` and `mark_mm` and every box edge,
-  so it can forget nothing — and it no longer reacts to things the sheet does
-  not print, such as an advance for a glyph that is not on it.
-
-- **The Bogen prints the rules that cannot be undone, and its own ruler
-  check.** Ink colour, colour scan, scan-before-cut and the verdict-box rule
-  lived only in `data/samples/own-hand/README.md` — a file nobody has open when
-  the pen goes into the ink, and each of them costs a sheet that cannot be
-  reprinted. They are two lines above the legend now. The ruler check
-  ("Markenmitten 190,0 × 277,0 mm — ohne Skalierung drucken", derived from
-  `FIDUCIAL_CENTERS` rather than spelled out) took the place of the machine id,
-  which stood in the footer as a second verbatim copy of the header and was
-  read by nobody: `ingest` crops the top 14 mm for the misfiling guard, never
-  the foot. The footer also stops printing "no-commit" — every sheet printed
-  through the deployed API said that, since `.git` is in `.dockerignore` and
-  the image has no `git`.
-
-- **The Bogen now fits the printer it is printed on.** Its Passmarken sat
-  3 mm from the page edge — closer than any office laser can print: HP
-  LaserJets refuse the outer 4.23 mm, consumer devices run 3.4 to 5. The
-  cost would not have been an error but a silent skew, because a clipped
-  mark is still square and still solid and passes every shape test the
-  detector has; only its centroid moves inward. On an HP the four 8 mm
-  squares come out at 6.77 mm, each centroid pulled 0.615 mm toward the
-  page centre, and the rectification — which maps exactly those centroids
-  onto their nominal millimetres — then stretches the sheet by +0.63 % in x
-  and +0.44 % in y. Anisotropic, systematic and campaign-wide. The sheet now
-  declares the printable area it needs (`PRINT_SAFE_MM` = 6.0) and nothing
-  is drawn closer, checked on the composed sheet for all three scripts
-  rather than on the constants. The marks go as far out as that allows
-  (centres at 10 mm, spans 190 × 277 instead of 196 × 283) because a larger
-  registered quad means less angular error per pixel of centroid noise; the
-  header, footer and legend move to their own `META_MARGIN_MM` so they keep
-  the 4 mm they had off the marks; `TOP_MARGIN_MM` follows the marks down by
-  the same 3 mm so the top cut ticks keep their 6.4 mm; and the verdict box
-  moves into the right cut-tick lane, which it never meets because the ticks
-  mark the Schnittband's corners and it sits in the middle of the row. Seven
-  rows still fit, the writing width is still 180 mm, and the golden PDF is
-  re-baselined. No sheet had been printed yet, so nothing splits into
-  cohorts — and a per-sheet layout means an already-printed one would keep
-  its own geometry anyway, which is now pinned by a test.
-
-- **A clipped print is reported instead of quietly absorbed.** Mark size and
-  mark spacing come off the same printer, so their ratio is fixed by the
-  layout and survives any uniform scaling: `fiducial.check_mark_size` reads
-  the size the measured spacing implies and `ingest` names every mark that
-  falls materially short. The other failure — a driver's "fit to printable
-  area" — is invisible to any measurement taken from the scan, since marks
-  and spacing shrink together; that one is a ruler on the paper, and both
-  the proposal and the operating README now say so instead of implying the
-  import would catch it.
-
-- **The three blockers between the eigenhand chain and the first real
-  Bogen.** All of them were invisible to the synthetic smoke test, because
-  that test neither crosses Cloudflare nor runs inside the deploy image.
-  (1) `tools/eigenhand/apiclient.py` sent no `User-Agent`, so Cloudflare
-  answered urllib's default with a 403 (error 1010) in front of the API
-  and `setup`, `sync` and `pull` could not reach production at all —
-  measured as 403 against 401 with nothing changed but the header; the
-  archive client has carried a name since it was written. (2) Neither
-  `tools/eigenhand` nor `tools/dbsnapshot` read `.env`, so the archive
-  snapshot refused with "no archive" and every admin call with "no admin
-  token" unless the environment had been sourced by hand (author,
-  2026-08-25: the tools should take it from `.env`, that is where it is);
-  both packages now load it on import, and an already-set variable still
-  wins. (3) `core/eigenhand/geometry.py` imported the fugen-form table
-  from `tools`, which the API image does not ship — every Bogen printed
-  from `/admin/eigenhand` ended in a `ModuleNotFoundError` 500, since
-  `_guard` only catches `SystemExit`. The table already lives in the
-  committed plan's `forms` block, put there for exactly this reason, so it
-  is passed in from the caller now; boxes stay byte-identical across all
-  120 strips, 13 of which carry a fugen word. `tests/test_imports.py`
-  keeps `core/`, `api/` and `alembic/` free of `tools` imports from here
-  on, deferred ones included.
-
-- **`redo --retire` no longer bricks a hand's `sync`.** It wrote the
-  status as `zurückgezogen` while `core/eigenhand/ids.py`, the Bestand
-  count and the API's `Literal` all use ASCII `zurueckgezogen`. Since
-  `sync` posts every Fassung of a hand in one request, a single retired
-  Fassung turned each later run into a 422 abort — and the Kartei is not
-  meant to be edited by hand. The three status values are named constants
-  now, the test that pinned the German spelling pins the ASCII one, and
-  the glossary and the proposal agree with the code. Also documented, in
-  both places a reader looks: `--retire` only touches ACCEPTED Fassungen,
-  so a row rejected by mistake cannot be accepted later — that strip has
-  to be printed and written again.
-
-### Added
+  band, never overlap even for a long hand id, and stay in the masked zone (#413).
 
 - **The written strips themselves, in the DB and in the workbench.** The
   bookkeeping made the admin view possible; this makes it show the actual
@@ -805,7 +317,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   crop.py` cuts it out on demand (full strip height, on purpose — the
   ascenders and descenders are the point). `/admin/eigenhand` gained the
   standing setup and a Streifen panel that loads a Fassung on click and
-  any word of it with one more.
+  any word of it with one more (#410).
 
 - **Repo plus archive restore the own-hand tables — as a check, not a
   hope.** The owner's requirement (2026-08-24) after the strips moved into
@@ -831,7 +343,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   working copy deleted in between (1 Bogen, 3 Fassungen, 3 strips back;
   hashes identical; a word crop cut from a restored strip; the second run
   wrote nothing), and pinned as a test that runs the whole chain against
-  the real API.
+  the real API (#410).
 
 - **`tools.eigenhand.setup` — the standing nib/ink/paper, typed once.**
   Ink, paper and nib are photometric parameters of a whole campaign, not
@@ -841,7 +353,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   so `ingest` defaults to it at a desk with a scanner and no reason to be
   online, and only a deviation has to be typed. Every Fassung still
   records the effective values it was written with — a real change should
-  be a visible break in the data, not something to reconstruct.
+  be a visible break in the data, not something to reconstruct (#410).
 
 - **The own-hand Bestand in the workbench, and the Bogen printer with
   it.** The capture chain's bookkeeping moves into the shared DB (owner,
@@ -865,7 +377,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   derived rather than believed, and every verdict must name a row that was
   actually printed. A Fassung is a Beleg: without that last check a
   verdict for a Bogen nobody printed would have inflated the counts
-  (Copilot review).
+  (Copilot review) (#407).
 
 - **One compute layer for the capture chain, two persistences.** The pure
   half moved from `tools/eigenhand` to `core/eigenhand` — the frozen strip
@@ -882,7 +394,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   readable without the curation source. Two new local tools close the
   loop: `sync` pushes the counts up over the admin API (never a DB
   connection, never an image), `pull` fetches a Bogen printed in the
-  workbench down to disk so `ingest` can register a scan against it.
+  workbench down to disk so `ingest` can register a scan against it (#407).
 
 - **One guarded helper for every Bogen path, and guards that mean what
   they say.** `--sheet` reaches four Eigenhand CLIs and is interpolated
@@ -893,7 +405,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `fullmatch` rather than `match`, because `$` also matches BEFORE a
   trailing newline: `mn-suetterlin\n` passed the hand-id guard until now.
   The sheet id spells its digits `[0-9]` instead of `\d`, which takes
-  non-ASCII digits (Copilot review, PR #407).
+  non-ASCII digits (Copilot review, PR #407) (#407).
 
 - **Cyan rulings that a colour scan can drop, and more air for the flat
   scripts.** The guide lines print in pale cyan instead of grey: cyan's
@@ -909,7 +421,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   between two strips is the same for every script. The printed strip id
   and word label moved further from the writing band without the strip
   growing: the three vertical zones were shifted against each other, their
-  sum unchanged.
+  sum unchanged (#406).
 
 - **Buffer in every box, faint rulings, a printed legend, and stacks of
   sheets.** Five corrections from writing practice (owner, 2026-08-23):
@@ -927,7 +439,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   below the last); the verdict caption moved above the first cut line
   instead of sitting level with the first strip; the label hints `|` and
   `*` are spelled out in a footer legend; and `sheet.py --sheets N` prints
-  a whole session's stack in one call, with no strip on two sheets.
+  a whole session's stack in one call, with no strip on two sheets (#406).
 
 - **A cut format for the strips: wider row gaps plus cut marks in the
   margins ("Schnittband" · "Schnittmarken").** Every row now carries a cut
@@ -944,7 +456,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   starts at y = 22 mm. The strip id moved into the cut rectangle's top pad
   so a cut strip stays attributable on its own, while the verdict box stays
   outside it. `ingest` crops exactly at the cut rectangle, so the paper
-  strip and the filed `streifen.png` are the same object.
+  strip and the filed `streifen.png` are the same object (#406).
 
 - **A per-row verdict box on the sheet ("Stiftmarke"), read back at
   import.** Every printed row now carries one 5 mm box in the right
@@ -962,7 +474,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   towards re-writing the strip rather than filing an unreviewed row. This
   is the only input allowed to pre-fill a verdict — it is a human
   judgement, unlike the QC flags, which stay warnings. The mark rides
-  along in each Fassung's `meta.json` for the audit trail.
+  along in each Fassung's `meta.json` for the audit trail (#406).
 
 - **Eigenhand coverage progression, a digits-and-punctuation pool layer,
   and strip-plan wave 1.** `tools/eigenhand/progression.py` answers "after
@@ -984,7 +496,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   least three planned recordings (666 distinct joins, 99.5 % weighted
   Erstbeleg quota). The PDF writer's
   literal-string escape is now WinAnsi-aware so German quotes, dashes and
-  the typographic apostrophe survive onto printed labels.
+  the typographic apostrophe survive onto printed labels (#406).
 
 - **Eigenhand-Erfassung: the complete tool chain for collecting the
   author's own hand as training data** (`tools/eigenhand/`, proposal
@@ -1024,37 +536,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   of git by owner decision (open-core reservation) — documented in
   `data/samples/own-hand/SOURCE.md` and reconciled across
   `datenablage.md`, `mvp-roadmap.md` (M1/M2 superseded) and
-  `handmodell-stufenplan.md` §H5.
-
-### Fixed
-
-- **`k0eval` refuses an empty scoring set instead of quietly reporting
-  0 words.** When `ductus_soll` yields no targets (missing wordlab
-  deps, broken fixture cases), the run would have continued into a
-  meaningless evaluation — the soll distance is the core metric. The
-  guard `scoring_ids` now fails fast with a clear error, pinned by a
-  unit test.
-
-### Changed
-
-- **Four durable working rules lifted from the 2026-08-21 campaign
-  session's friction into the agent instructions and the PR skill**
-  (`CLAUDE.md` + the `.github/copilot-instructions.md` mirror where the
-  rule is shared, `.claude/skills/open-pr/SKILL.md`): the recipe for
-  restarting a mandated branch after its squash-merge when force-push is
-  blocked by the cloud classifier (content-neutral merge of the stale
-  remote tip, every conflicted file resolved with `--ours`, marker grep
-  and an EMPTY diff against the pre-merge head required before the
-  commit — `git add -A` during an unresolved merge committed conflict
-  markers once); the heredoc ban now names appending with `>>`
-  explicitly (a §14 entry slipped in via `cat >>`); the cloud
-  fixture-rebuild note gains the `uv sync --all-extras` prerequisite
-  (the verify path imports matplotlib from the `viz` extra and fails on
-  a fresh cloud venv); and the open-pr skill documents that a cancelled
-  Copilot review run may never deliver — one re-request, then green plus
-  zero threads counts as review-clean by absence.
-
-### Added
+  `handmodell-stufenplan.md` §H5 (#406).
 
 - **The campaign's measurement liturgy becomes documentation and a
   standing tool: werkzeuge.md learns the tracebench/follow loop, and
@@ -1076,7 +558,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   classification factored into a pure `pair_rows` and pinned by unit
   tests over a `tmp_path` fixture tree. Glossary: the `aug20`-coined
   „k0-Protokoll“ finally gets its entry (themed section +
-  Schnellindex).
+  Schnellindex) (#404).
 
 - **Chain K-D, the ink corridor: closed as objectless after v4 by its
   own pre-registered object test — no implementation, a positive
@@ -1096,7 +578,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   no DB, no solve), and the revival trigger (a future inventory or arm
   showing a new paper-needle class → the barrier with a fresh
   pre-registration and the author's named unter lock-in risk) is
-  registered in §7.9.
+  registered in §7.9 (#402).
 
 - **Chain K0-S: the soll-source autopsy vindicates the metric, ONE
   soll pipeline is built, and the K0-Z-R resubmission passes every
@@ -1131,7 +613,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   dropping since.** Both aug20 tears are thereby measured as
   resolved, not waived; adoption of the winning rung as the Kette v5
   stack awaits the author's go (everything stays declared-off until
-  then). Ledger row on the Verfahrensseite, §7.9 rows updated.
+  then). Ledger row on the Verfahrensseite, §7.9 rows updated (#401).
 
 - **Chain K-E, per-stroke ink assignment stage 1 (the mark-claim
   separation): implemented, pre-registered, and measured to two honest
@@ -1172,7 +654,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   `tintenfolger.md` §7.9 (the pre-registered humanbench tie-breaker
   case in pure form · a distance-field-only claim · bow-claim
   sharpening). Glossary: „Tinten-Zuweisung per Strecke",
-  „Marken-Claim-Trennung"; ledger rows on the Verfahrensseite.
+  „Marken-Claim-Trennung"; ledger rows on the Verfahrensseite (#400).
 
 - **Chain K-C: the ink-evidence mask — pre-registered from the author's
   "Flecken" find and measured to a pass on all six gates** (§14 `aug20`
@@ -1205,7 +687,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   „Fremdtinte", „Tinten-Evidenz-Maske"; plan rows A7/K-C and the
   author's corridor idea A8/K-D in `tintenfolger.md` §7.3. The zwei
   fixture's hand trace was refilled (`--only word-instances`) after the
-  author added the forgotten i-dot.
+  author added the forgotten i-dot (#398).
+
 - **Chain K0-Z and K0-Z-R: the zonal rejection and the ratchet budget,
   measured to two honest negatives that carry the route's strongest
   numbers — and a two-soll-sources find** (§14 `aug20` night,
@@ -1229,7 +712,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   autopsy, then re-submission with ONE pipeline for budget, guard soll,
   round counts and metric. The evaluation also re-hit the documented
   aug19 gotcha (follow rows carry registration at top level) — caught
-  and corrected before any verdict.
+  and corrected before any verdict (#397).
 
 - **The operating-point smoothing candidate falls to the window fine
   ladder — the map/sampling family is exhausted** (§14 `aug20` night,
@@ -1244,7 +727,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   would be fishing. Day verdict closed: the route sits in a sensitive
   optimum at its operating point, and the remaining campaign arms move
   to other layers (chain K0 zonal rejection, InkSight, the zone stage's
-  p-osculation mechanics).
+  p-osculation mechanics) (#396).
 
 - **The smoothing probes close the resolution family: the final coupling
   is the Viterbi's decision granularity** (§14 `aug20` night). The
@@ -1263,7 +746,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   large effects (mit aiou +0.0967 and dtw −0.0275, muß-2's retrace
   defects heal, unter's t-stem X appears · Wer +0.0309 dtw, Galoppieren
   trades one crossing) — its own pre-registration with a window ladder
-  if taken up. §7.9 row updated.
+  if taken up. §7.9 row updated (#395).
 
 - **Lotse v0.19: the ride economy becomes step-invariant (proven
   byte-neutral), and the resolution ladder's second rejection names the
@@ -1282,7 +765,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   crossing the documented resolution limit. Standing rescue: smooth the
   map at counter scale BEFORE fine sampling (an along-path smoother
   keeps pass offsets like the 0.06-xh t double but eats intra-pass
-  wiggle); §7.9 row updated.
+  wiggle); §7.9 row updated (#394).
 
 - **The t-stem ride autopsy dissolves the completeness gap into a
   RESOLUTION limit, and the v0.18 resolution ladder closes as an honest
@@ -1303,7 +786,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   the 0.12 smoothing silently hid (32 spurious on Galoppieren) — the
   smoothing is part of the filter. Standing rescue: step-invariant
   rescaling of the ride economy, then re-submit the ladder; §7.9 rows
-  updated, the Karten-Soll-Vollständigkeit glossary entry corrected.
+  updated, the Karten-Soll-Vollständigkeit glossary entry corrected (#393).
 
 - **The map-soll autopsy dissolves the placement ceiling into a soll
   COMPLETENESS gap, and Lotse v0.17 adopts the reservation veto** (§14
@@ -1326,7 +809,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   the 0.07-xh offset repass — the K1b finding — while the composed bar
   crosses once) — the common denominator of every remaining blocker,
   converted into the named composer arm "Karten-Soll-Vollständigkeit"
-  (glossary entry; §7.9 row updated).
+  (glossary entry; §7.9 row updated) (#392).
 
 - **The G head ride autopsy resolves the v0.14 tear, and Lotse v0.16
   adopts the "bridges" pin stage with the ruler-soll budget** (§14
@@ -1353,7 +836,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   K1 p placement arm; the 0.8 untwist window stays rejected with
   mechanism (unter loses all three X because the map does not know
   its crossing places — fourth confirmation of the placement
-  ceiling). New glossary entry: Lineal-Soll-Budget.
+  ceiling). New glossary entry: Lineal-Soll-Budget (#391).
 
 - **The Laufform night: all three owner-flagged map-form sites (G, W, p)
   resolve into ONE layer, and the topology repair becomes the first
@@ -1382,7 +865,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   Laufform-Lücke, Laufform-Topologie-Wächter and Topologie-Reparatur;
   werkzeuge.md documents the wordbench `--laufform`/`--no-laufform`
   overlay flags. Any DB write of the candidate rows stays behind
-  dbsnapshot + an explicit owner go.
+  dbsnapshot + an explicit owner go (#390).
 
 - **The v0.14 "all" re-submission on the repaired map refutes the
   map-form hypothesis for that rung** (pre-registered §14 `aug19`,
@@ -1394,7 +877,81 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   G junction complex, not of the map form. Named rescue paths: an
   instrumented G-head ride autopsy under "all", then a selective
   pinning rung (bridges and zone rides separated) as its own
-  pre-registered mechanism.
+  pre-registered mechanism (#390).
+
+- **Lotse v0.15 (soll-budgeted untwisting): built, measured, honest
+  negative — the third independent confirmation of the map-form
+  ceiling** (pre-registered §14 "Lotse v0.15 aug19"). The budget
+  rule (never untwist a neighbourhood below the map's own
+  self-intersection count, fixed 0.55-xh matcher-radius snapshot)
+  inherits exactly the map placement errors v0.14 measured: at
+  unter's displaced e→r map the real pair dies despite the budget,
+  and the radius count lumps will's neighbouring REAL crossing into
+  the weave's neighbourhood and falsely vetoes its healed fix. Both
+  rungs rejected by their gates; v0.13 (geometry-only, 0.5) stays
+  the adopted state, the declared knob and its unit test remain.
+  The remaining three duplicates and the "all" rung now explicitly
+  wait for the map-form author steps, after which v0.14 and a
+  position-matched soll guidance are to be re-measured together (#389).
+
+- **Lotse v0.13 "Entdrillung" adopted; v0.14 (the "all" rung)
+  measured with the round's strongest visual proof and rejected by
+  its gate** (pre-registered §14 "Lotse v0.13/v0.14 aug19", owner go
+  "weiter mit lotse neben ink"). The duplicate autopsy shows every
+  duplicate site is a WEAVE (3/5/6 raw intersection events where the
+  hand crosses 1/1/0 times), so removal must be pairwise — the
+  untwist mirrors the wiggle arc (larger chord deviation; precision
+  pinned by a unit test) across the pair's chord, direction
+  preserved. Adopted at 0.5: net crossing defects 7 → 6, will's
+  duplicate heals; 0.8 killed by its own gate — geometry alone
+  cannot tell a weave from a genuinely close REAL pair (mit's t
+  double at 0.07 xh), naming the soll-budgeted discriminator as the
+  next mechanism. v0.14 (zones and bridges pinned, plus untwist)
+  delivers the ink gains (aiou +0.012, 8:1 words better, the
+  capital G ridden almost hand-like for the first time — the air
+  boxes gone) but flips structure in exactly the two worst map-form
+  regions (the G head crossing dies on the form-alien composed G,
+  the p invents one): rejected as pre-registered, to be re-measured
+  after the map-form author steps, which now pay double. New
+  glossary term: Entdrillung (#389).
+
+- **Werkbank word cards: an Abstandsprofil under each word — where the
+  composition sits beside the author's line**
+  (`app/src/sections/admin/words/distanceProfile.ts` +
+  `DistanceProfileChart.tsx`, wired into `WordSpineCard`). For every
+  point along the stored trace the curve plots the nearest distance to
+  the engine composition's centerlines, in x-heights over the trace's
+  ink arc — flat near zero reads congruent, a mountain reads
+  off-track, pen lifts appear as dashed markers, and hovering the
+  curve pins a probe onto the matching spot of the specimen face. A
+  display measure by design, not the duel page's DTW residual: trace
+  and composition segment their strokes differently (generated
+  connectors, deferred diacritics), so a writing-order pairing would
+  report segmentation as error — the caption says so outright, and
+  the extra-engine-ink direction stays the overlay's job. Pure
+  computation module with vitest coverage; new term "Abstandsprofil
+  (Werkbank)" added to the glossary (#388).
+
+- **Duel page: a residual profile per word — where the headline number
+  comes from** (`tools/tracebench/view.py`). Below each word's numbers
+  table the page now plots, per candidate method, the distance to the
+  hand re-tracing along the hand's body arc (in x-heights) — flat near
+  zero reads clean, a mountain reads off-track. The profile follows
+  the optimal DTW pairing the headline `dtw_xh` averages over — never
+  a same-point-count subtraction, which would turn everything after
+  the first extra loop into a phantom error — so the curve's mean over
+  the pairing IS `dtw_xh` and the chart can never disagree with the
+  number it explains. Pen lifts of the hand appear as dashed markers,
+  marks stay held out exactly as in the headline, the legend
+  checkboxes toggle curve and trace together, display decimation
+  keeps each window's WORST sample so a spike cannot be smoothed
+  away, and hovering the chart pins an orange probe onto the
+  matching spot of the hand's trace in the word image. To feed the
+  chart, `metric.DtwResult` now also carries the optimal warping
+  path (`pairs`) — display-grade access to the alignment in the
+  `classified_pass_points` tradition; every measured value is
+  untouched (pinned by the existing metric tests). New term
+  "Residualprofil" added to the glossary (#388).
 
 - **Lotse v0.10/v0.11: junction-anchored pinning of the map runs —
   v0.11 "windows" adopted, the k curl is finally traced** (pre-registered
@@ -1419,7 +976,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   6, named next mechanism). The "all" rung (zone rides + bridges
   pinned too) failed its gate by exactly one duplicate X and stays a
   named rescue path. New glossary terms: Plateau-Anker,
-  Doppel-X-Duplikat.
+  Doppel-X-Duplikat (#387).
 
 - **Lotse v0.12 "Plateau-Sehne" measured and rejected — the wiggle WAS
   the crossing** (pre-registered §14 `aug19`, arm L1f). Replacing each
@@ -1429,7 +986,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   closures both passes run tangentially and their chords are parallel —
   only the map's wiggle carries the transversality. Both rungs rejected
   by their own kill criterion; rescue paths (untwisting the smaller
-  wiggle arc, asymmetric chord) named in the standing §7.9 table.
+  wiggle arc, asymmetric chord) named in the standing §7.9 table (#387).
 
 - **A1 mark refit re-measured on the 19-row dev set: mark position
   error −73 %** (§7.7 recalibration protocol; no new knob, the same
@@ -1437,43 +994,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   mark-carrying dev words improve, body and structure byte-neutral —
   the wave-1 win (−55 % on 10 words) generalizes to the 9 new
   tracings. Adoption into the stored chain stays gated on the
-  confirmation set, now with 6 instead of 4 paired words.
-
-- **Lotse v0.15 (soll-budgeted untwisting): built, measured, honest
-  negative — the third independent confirmation of the map-form
-  ceiling** (pre-registered §14 "Lotse v0.15 aug19"). The budget
-  rule (never untwist a neighbourhood below the map's own
-  self-intersection count, fixed 0.55-xh matcher-radius snapshot)
-  inherits exactly the map placement errors v0.14 measured: at
-  unter's displaced e→r map the real pair dies despite the budget,
-  and the radius count lumps will's neighbouring REAL crossing into
-  the weave's neighbourhood and falsely vetoes its healed fix. Both
-  rungs rejected by their gates; v0.13 (geometry-only, 0.5) stays
-  the adopted state, the declared knob and its unit test remain.
-  The remaining three duplicates and the "all" rung now explicitly
-  wait for the map-form author steps, after which v0.14 and a
-  position-matched soll guidance are to be re-measured together.
-
-- **Lotse v0.13 "Entdrillung" adopted; v0.14 (the "all" rung)
-  measured with the round's strongest visual proof and rejected by
-  its gate** (pre-registered §14 "Lotse v0.13/v0.14 aug19", owner go
-  "weiter mit lotse neben ink"). The duplicate autopsy shows every
-  duplicate site is a WEAVE (3/5/6 raw intersection events where the
-  hand crosses 1/1/0 times), so removal must be pairwise — the
-  untwist mirrors the wiggle arc (larger chord deviation; precision
-  pinned by a unit test) across the pair's chord, direction
-  preserved. Adopted at 0.5: net crossing defects 7 → 6, will's
-  duplicate heals; 0.8 killed by its own gate — geometry alone
-  cannot tell a weave from a genuinely close REAL pair (mit's t
-  double at 0.07 xh), naming the soll-budgeted discriminator as the
-  next mechanism. v0.14 (zones and bridges pinned, plus untwist)
-  delivers the ink gains (aiou +0.012, 8:1 words better, the
-  capital G ridden almost hand-like for the first time — the air
-  boxes gone) but flips structure in exactly the two worst map-form
-  regions (the G head crossing dies on the form-alien composed G,
-  the p invents one): rejected as pre-registered, to be re-measured
-  after the map-form author steps, which now pay double. New
-  glossary term: Entdrillung.
+  confirmation set, now with 6 instead of 4 paired words (#387).
 
 - **Kette v3: the trace-level spike repair, adopted with a dated
   re-baseline** (pre-registered §14 "Kette K-B aug19"). The §11
@@ -1493,7 +1014,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   worst muß 0.110, marks 0 — after two pure candidate-layer fixes
   the chain leads the Lotse on median and p90 without a single
   solver parameter moving; the old needle-and-all inspection view
-  stays reachable via `trace_repair=False`.
+  stays reachable via `trace_repair=False` (#387).
 
 - **Kette v2: the marks-last assembly, adopted with a dated
   re-baseline** (pre-registered §14 "Kette K-A aug19", owner go
@@ -1510,7 +1031,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   chain leads on p90, the Lotse keeps structure, marks, aiou and
   crossing position. The production re-harvest of the stored traced
   rows stays behind owner go + dbsnapshot. New glossary term:
-  Marken-endständige Assembly.
+  Marken-endständige Assembly (#387).
 
 - **The chain's collapse class (unter 0.450, muß ×3 ~0.22) is an
   ORDER artifact of the candidate assembly — proven by permutation**
@@ -1526,7 +1047,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   marks-last assembly (own pre-registration; changes the frozen
   baseline, hence a declared re-baseline — the Lotse's wins on
   those words partly beat this artifact). The references are clean;
-  the earlier "re-trace muß" decision task is withdrawn.
+  the earlier "re-trace muß" decision task is withdrawn (#387).
 
 - **The soll-aware K0 guard (`--structure-guard-soll`): built,
   pre-registered and measured over all 63 words** — the named rescue
@@ -1545,7 +1066,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   not adopted; as a production candidate it dominates the two-sided
   guard on every measured axis. Named next mechanism: zonal
   rejection (freeze only the violating zone's anchors), own
-  pre-registration.
+  pre-registration (#387).
 
 - **Duel view: a "Feinschliff (nur Anzeige)" toggle** smooths the
   CANDIDATE traces for the eye ((1, 2, 1)/4, endpoints fixed, three
@@ -1553,45 +1074,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   ruler never sees the pixel zigzag, so smoothing belongs to the
   consumer, never into the measured candidate). The hand reference,
   the mark dots and every number stay raw; the toggle is off by
-  default and the page bytes stay deterministic.
-
-- **Werkbank word cards: an Abstandsprofil under each word — where the
-  composition sits beside the author's line**
-  (`app/src/sections/admin/words/distanceProfile.ts` +
-  `DistanceProfileChart.tsx`, wired into `WordSpineCard`). For every
-  point along the stored trace the curve plots the nearest distance to
-  the engine composition's centerlines, in x-heights over the trace's
-  ink arc — flat near zero reads congruent, a mountain reads
-  off-track, pen lifts appear as dashed markers, and hovering the
-  curve pins a probe onto the matching spot of the specimen face. A
-  display measure by design, not the duel page's DTW residual: trace
-  and composition segment their strokes differently (generated
-  connectors, deferred diacritics), so a writing-order pairing would
-  report segmentation as error — the caption says so outright, and
-  the extra-engine-ink direction stays the overlay's job. Pure
-  computation module with vitest coverage; new term "Abstandsprofil
-  (Werkbank)" added to the glossary.
-
-- **Duel page: a residual profile per word — where the headline number
-  comes from** (`tools/tracebench/view.py`). Below each word's numbers
-  table the page now plots, per candidate method, the distance to the
-  hand re-tracing along the hand's body arc (in x-heights) — flat near
-  zero reads clean, a mountain reads off-track. The profile follows
-  the optimal DTW pairing the headline `dtw_xh` averages over — never
-  a same-point-count subtraction, which would turn everything after
-  the first extra loop into a phantom error — so the curve's mean over
-  the pairing IS `dtw_xh` and the chart can never disagree with the
-  number it explains. Pen lifts of the hand appear as dashed markers,
-  marks stay held out exactly as in the headline, the legend
-  checkboxes toggle curve and trace together, display decimation
-  keeps each window's WORST sample so a spike cannot be smoothed
-  away, and hovering the chart pins an orange probe onto the
-  matching spot of the hand's trace in the word image. To feed the
-  chart, `metric.DtwResult` now also carries the optimal warping
-  path (`pairs`) — display-grade access to the alignment in the
-  `classified_pass_points` tradition; every measured value is
-  untouched (pinned by the existing metric tests). New term
-  "Residualprofil" added to the glossary.
+  default and the page bytes stay deterministic (#387).
 
 - **English style anchored: the Google developer documentation style
   guide becomes the reference fallback for the repository's English
@@ -1609,7 +1092,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   1,174 spaced dashes and 28 Latin abbreviations in the English
   artifacts alone), and the changelog history is never rewritten.
   Anchored in the `/write-docs` and `/open-pr` skills, in `CLAUDE.md`
-  and in `.github/copilot-instructions.md`.
+  and in `.github/copilot-instructions.md` (#386).
 
 - **Method pages: one register page per tracing-duel route, with a
   shared versioning convention** (`docs/reference/verfahren.md` plus
@@ -1628,7 +1111,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   (tree, quick links, Dokument-Status trigger), new glossary entry
   "Verfahrensseite", pointer in tintenfolger.md §7.8; the stale
   `tintenfolger.md` line missing from the index tree was added along
-  the way.
+  the way (#385).
+
 - **The 19-row dev split is live, with a dated re-baseline of every
   standing route** (tintenfolger.md §2.5 activation addendum, owner go
   2026-08-17). The author traced the complete dev assignment (all 19
@@ -1643,7 +1127,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   (0.108091 / 0.146602), so the ruler change is purely the split
   extension. Findings and the measure plan: tintenfolger.md §7.10;
   the p-descender question (the plate crosses where the template
-  retraces) went to the author as a Todoist task.
+  retraces) went to the author as a Todoist task (#384).
+
 - **Lotse v0.7 and v0.9 adopted, v0.8 honestly rejected — the
   junction-pinch campaign** (`tools/inkpilot/pilot.py`, all three §14
   pre-registered before their first numbers). v0.7 widens the adopted
@@ -1664,7 +1149,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   crossing defects down to 7, and those 7 are mapped to soll-vs-hand
   disagreements rather than ride failures. The confirmation sets
   remain the keystone before any adoption beyond route constants.
-  New glossary entry: Junction-Pinch.
+  New glossary entry: Junction-Pinch (#384).
 
 - **The dev/confirmation split re-draw, pre-registered before any number
   exists** (`docs/proposals/tintenfolger.md` §2.5, owner decision
@@ -1686,7 +1171,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   traced or benched: 18 open (for pre-registered word/drill diagnoses
   and future drill tuning) and 15 sealed, keyed by the left letter's
   exit class; the glossary entry "Referenzsatz" carries the revised
-  invariant.
+  invariant (#379).
 
 - **The word editor gets an adjust mode, and the Wörter view a review
   stack of the hand-authored traces** (Werkbank W3). „Anpassen" — the
@@ -1712,9 +1197,450 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   of the save echoing the stale frame back forever. Gesture handling
   is hardened against mid-drag mode flips (a stray toolbar graze can
   no longer weld pen samples onto a stored stroke — the move handler
-  branches on the live gesture, never on the mode).
+  branches on the live gesture, never on the mode) (#378).
+
+- **Durable working rules lifted from machine-local session memory into
+  the repo instructions** (`CLAUDE.md` guardrails + the
+  `.github/copilot-instructions.md` mirror), so cloud/web sessions — which never
+  see the local memory directory — inherit them: the rescue-path duty for
+  rejected measures, the squash-merge race recovery (fresh branch +
+  cherry-pick, wait for "green and review-clean"), Opus for delegated
+  agents (Claude-side only), BLAS thread pinning for solver measurement
+  runs, no AI-development disclosure on the public site, and legibility
+  over period authenticity in UI (#376).
+
+- **The O2-trim jitter, pre-registered with both outcomes valid — and
+  the bug turns out to be an accidental class rule** (`core/compose.py`
+  `ENTRY_FLANK_DIP_TOL`, kept at 0.0; §14 „O2-Trim-Jitter"). The K3
+  side find made testable: a tolerance of 0.02 xh on the rising-flank
+  walk restores the intended 0.78 trim for arcade heads whose spline
+  lead-ins jitter in the first step. Measured: word_loss +4e−6 (a
+  wash), pair_loss byte-identical, and exactly THREE words move —
+  splitting precisely along K3's arrival ladder: von (o→n) −0.0126
+  (the restored trim is a clear win there), Zorn/Sporn (o→r) +0.0112
+  and +0.0017 (o→r wants to arrive lower, as K3 measured). Today's
+  strict guard accidentally implements exactly that class split
+  (n lead-ins jitter, r lead-ins do not), and the frozen ruler prefers
+  it by micrometres — so per the pre-registered criterion the bug
+  stays, documented instead of silent, and the real finding is that
+  the UNIFORM O2 target height for arcade heads is wrong: a proper
+  class rule (n high, r lower) goes on the table as its own
+  pre-registration once the confirmation set exists (#374).
+
+- **Lotse v0.5 adopted: map geometry in ride-side double zones — the
+  first crossings return, and the fusion ceiling gets its number**
+  (`tools/inkpilot`, §14 „Route Lotse v0.5"). The combination of the
+  two parked arms — A5's detection (which rail pixels does the word
+  ride twice) with v0.4's geometry (ride the composed map there, it
+  carries the crossing): the first pass keeps the ink's mid-line,
+  every later pass takes the map. All pre-registered gates pass: dev
+  dtw median 0.101 → 0.085, `und` 0.087 → 0.043 (now beating the
+  chain there), 5 of 23 missing crossings return (+1 spurious, within
+  bounds), retrace arc ratio 2.48 → 1.66, aiou −0.002. Route standing
+  0.085 vs the chain's 0.062 (gap 1.4×) with sharp complementarity —
+  the Lotse wins exactly the structure-heavy words (unter −0.387,
+  muß −0.129), the chain the smooth ones. The per-word oracle fusion
+  („Vier Augen" ceiling, not a result) now measures 0.056 — better
+  than either route alone; the honest reference-free selector remains
+  the open question, with B1's order-blind-ranker lesson applying
+  verbatim (#372).
+
+- **Lotse arms round two: the rail run-out (owner find) adopted, three
+  others honestly parked** (`tools/inkpilot`, §14 arms). The owner's
+  review find — "the d line stops at the crossing" — turned into the
+  pre-registered rail run-out: a ride ending on a rail that runs
+  unbranched into a degree-1 skeleton endpoint within 1 xh continues
+  to the rail's end (the composed map undershoots inked tips via the
+  loop-exit trim and the +7–10% reach gap; the ink does not). Adopted
+  at 1.0: dev dtw median 0.119 → 0.101, the `und` outlier 0.343 →
+  0.087, aiou up, spurious marks halved, structure untouched by
+  construction. The junction chord (v0.3) and the map right-of-way
+  (v0.4) measured and rejected by their own gates — the missing
+  crossings live on LONG shared rails the skeleton merges over the
+  whole overlap, which neither node surgery nor map-side retrace
+  zones reach; named successors: sub-stroke separation from width
+  evidence, and map geometry in ride-side double zones. Route
+  standing: dev dtw 0.101 vs the chain's 0.062 (gap 2.0× → 1.6×),
+  aiou clearly above the chain (#371).
+
+- **The Lotse route (owner idea): ride the skeleton mid-ink, ask the
+  ductus like a map — built, pre-registered, first honest numbers**
+  (`tools/inkpilot` + §14 „Route Lotse" + a pinned viewer colour).
+  Geometry comes entirely from the measured skeleton (the routeg
+  graph), order and every junction decision from the composed word
+  acting as the map: a global Viterbi assignment of map samples to
+  ridge points (graph ride cost + map deviation + a bridge state),
+  connected by shortest pixel-chain walks; leading/trailing bridges
+  over blank paper are trimmed. ~0.1 s per word, six unit tests on a
+  synthetic cross. First measurement (dev split): the gate is missed
+  (dtw median 0.119 vs the chain's 0.062; hand crossings collapse to
+  zero because double passes share the same skeleton rails through a
+  junction and never intersect transversally) — but `unter`, the
+  chain's catastrophe word, falls 0.450 → 0.064 and aiou rises almost
+  everywhere. Named rescue paths: the width-evidence offset double
+  pass (plan measure A5, the fixture's `width_map`), the smoothing
+  stage, and the `und` autopsy; the route stays open (#370).
+
+- **The guarded chain measured as the production trace — pre-registered
+  over all 63 words, with a two-sided guard built as the executed
+  rescue path** (`tools/pairlab/follow.py` `--structure-guard-two-sided`
+  + `qualitaetsmetrik.md` §14 „Wächter als Produktions-Kette"). The
+  released one-sided guard passes three gates outright (never worse on
+  the 10 authored references and better on three of them, ink coverage
+  never falls, marks byte-identical) but loses one soll-required
+  crossing on three words — it caps structure INVENTIONS while the ink
+  pull may collapse a small loop unpunished. The two-sided guard
+  (init counts binding in BOTH directions per the K0 invariant) then
+  measured as a clean Pareto picture: structure frozen at the chain's
+  level on all 63 words, dtw never worse and better on two, aiou up to
+  +0.12 — formally NOT auto-adopted because a both-ways veto can never
+  satisfy the „strictly better somewhere" leg; the adoption is now an
+  owner decision, with the soll-aware K0 guard named as the next
+  rescue path. Two standing findings en route: the chain solve is not
+  bit-reproducible across BLAS thread environments (solve comparisons
+  and any production wiring must pin `OPENBLAS_NUM_THREADS`), and
+  pinning the threads collapsed the runtime gate entirely (raw chain
+  63 words: 87 min → 2.7 min; two-sided guard: ≈17 s/word) (#369).
+
+- **The rescue-path register: every honest negative names its way back
+  into the game** (owner directive 2026-08-16, after the P3 0/3 round):
+  `docs/proposals/tintenfolger.md` §7.9 collects, per rejected measure, the finding or
+  measured ceiling, the named conversion path and its trigger (B1's
+  proven −0.0124 oracle → the order-aware „Chor" selector; K1's real
+  +126° arrival error → the connector-FORM hypothesis; K3's jitter
+  side-find → the O2-trim bugfix candidate; arm 9 → the „Lotse" route;
+  the cross-cutting one: kills decided by net deltas the ruler barely
+  registers get a pre-registered humanbench word round as tie-breaker).
+  Standing rule recorded there and in the new glossary entry
+  „Rettungsweg": every rejected §14 entry closes with its rescue paths
+  (or an explicit „none named"), and a rescue path is always a NEW
+  mechanism, new evidence or new sensor with a fresh pre-registration —
+  never the same knob re-run with softer gates (#368).
+
+- **Wave 2, P3: head coarticulation as entry class rules — all three
+  measured, all three honest negatives** (`core/compose.py` +
+  `qualitaetsmetrik.md` §14 „Welle 2 · P3"; owner priority). The
+  pre-study (248 dissected occurrences, Laufform-relative) proved the
+  asymmetry — tails are per-class constants, heads are real
+  coarticulation after high exits (p < 0.0001) — and three
+  pre-registered entry rules mapped it into the composer: K1 the low
+  bar→round couple (`BAR_ENTRY_COUPLE_Y`, shared placement/connector
+  index), K3 the unified cover-bow→arcade couple lift
+  (`COVER_ARCADE_ENTRY_LIFT`, replacing today's inconsistent
+  foot-vs-0.78 coupling), K2 the rotated d→round departure on the
+  rescued chord (`LOOP_ROUND_EXIT_ROT_DEG`, never the twice-rejected
+  stub trim). Every ladder was measured and killed by its own
+  pre-registered gate: K1's class words vote in opposite directions,
+  K3 wins the words but loses the drills of the SAME joins (von
+  −0.009 vs. drill `on` +0.017 — the word/drill split is the find),
+  K2 loses both rulers monotonically. All three knobs ship
+  DECLARED-BUT-NEUTRAL for the confirmation-set re-calibration;
+  rendering stays byte-identical. Side find: a 0.0004-xh spline
+  resampling jitter silently disables the generic 0.78 entry trim
+  for arcade heads (own bugfix candidate) (#366).
 
 ### Changed
+
+- **The crawler policy opens: search, AI retrieval, citation AND model
+  training are permitted for every operator** (owner decision
+  2026-08-28, replacing the retrieval-yes / training-no split of
+  2026-07-25). The reasoning, recorded in
+  `docs/reference/crawler-richtlinie.md` §2: the open-core moat is the
+  database, not the website — the reserved dataset is unreachable
+  without the admin credential (see the next entry), so a training
+  reservation on HTML text protected nothing the auth gate does not
+  already protect, while costing reach: Google's single `Google-Extended`
+  token governs Gemini grounding and training together, and declining it
+  kept the site out of Gemini's answers entirely. `app/public/robots.txt`
+  now has the same shape as anyplot's (one `Bytespider` group declined on
+  bandwidth grounds, then `User-agent: *` with `Disallow: /admin`,
+  `Content-Signal: search=yes,ai-input=yes,ai-train=yes` in every group)
+  so a change on one site copies to the other verbatim. The API host
+  gains its own `robots.txt` (`api/routers/seo.py`): nothing disallowed —
+  reserved data is gated by authentication, and a robots line would only
+  keep compliant assistants away from `/docs` and `/openapi.json` — but
+  `ai-train=no`, because the composed `/write` renders derive from the
+  reserved dataset. The Markdown mirror's in-band rights note, `llms.txt`,
+  the README "License" paragraph, `CLAUDE.md`/`copilot-instructions.md`
+  and the docs index follow the new wording; the former policy stays
+  recorded under the doc's *Verworfen* with its own rescue condition.
+  Cloudflare's AI Crawl Control has to be brought in line by hand (steps
+  in §4; filed as a Todoist task) (#432).
+
+- **Every API read that carries the reserved dataset is now admin-gated,
+  and the public/reserved split is pinned by a test.** Nine reads used to
+  answer without credentials: the bbox rows (`GET /sources/{id}/bboxes`,
+  `…/bboxes/{glyph_key}` — the wizard's crop work), the occurrences
+  (`…/instances`, `…/pair-instances`, `…/word-instances` — measured fits
+  over the authored templates, the Tintenfolger reference set), the pair
+  overrides (`…/pairs`, `…/pairs/{l}/{r}` — authored join geometry; the
+  approved-only public view and the conditional `?all=true` gate are
+  gone, the read is simply admin) and the writer registry (`/hands`,
+  `/hands/{id}`). All nine require `require_admin` now — and the gate
+  itself stamps `Cache-Control: private, no-store` on every admin-gated
+  response, so no reserved read (the ~30 gated GETs across templates,
+  aggregates, work items, eigenhand and these nine) can be cached by an
+  intermediary, and no route can forget the header.
+  No public page ever consumed them (verified against every non-admin
+  call site); the readers are the workbench, the harvests and the
+  fixture/snapshot tools, which carry the token already —
+  `tools/dbsnapshot` and `tools/wordbench/fetch_fixtures` flip their
+  admin flags accordingly. What the public pages need stays open, by
+  name: styles, sources, the template summaries, `/bboxes/status`, the
+  PD chart and its crops, the word specimens (sidecar in the public
+  repo), the quiz bank and the `/write` renders. New
+  `tests/test_api_public_surface.py` classifies EVERY GET route of the
+  app as PUBLIC or RESERVED — a route in neither set fails the test —
+  and asserts the reserved ones answer 401 without the credential, so
+  the split can never drift silently. `quellen-und-rechte.md` §5 lists
+  the gate in full (#432).
+
+- **An eslint guard pins the public/admin locale split, and the
+  Schriftkunde namespace goes route-local.** The split itself has
+  shipped since 2026-08-16, but nothing failed when a public file
+  imported the admin barrel — the app renders identically, only every
+  visitor pays ~66 kB of admin/wizard source (~23 kB gzipped) in the
+  eager bundle. A `no-restricted-imports` rule now rejects
+  `@/locales/admin` (and the relative `de/admin`/`de/wizard` bypasses)
+  outside the admin directories, with the size cost in the message;
+  the stale "~24 kB" comment in `locales/index.ts` is corrected to the
+  measured numbers. The `schriftkunde` namespace also leaves the
+  public barrel: its only consumer is the lazy Schriftkunde route
+  chunk, which now imports it directly — a measured 7.1 kB gzip off
+  the eager `locales` chunk (44.6 → 37.5 kB) for every public route,
+  verified in the built output (the locale's strings appear only in
+  the `SchriftkundePage` chunk) (#431).
+
+- **Fonts ship ahead of the JS bundle.** Every `@font-face` is now
+  declared early in `index.html` against self-hosted files in
+  `public/fonts/` — 16 verbatim woff2 copies from `@fontsource` v5.3.0
+  (EB Garamond 400/400i/600, Playfair Display 400/500/500i/600/600i;
+  subsets latin + latin-ext with their unicode-ranges carried over
+  literally) plus the two show fonts moved out of `src/assets/fonts/`.
+  Two faces are preloaded (Playfair 600 + Garamond 400, latin) — the
+  one layout-independent start signal, since `#root` stays empty until
+  the entry chunk has run and `@font-face` alone fetches nothing before
+  first layout; the count is measured, not guessed (a Fast-3G A/B showed
+  each further preload costs the entry chunk more than it buys).
+  Measured effect: the critical faces start at ~175 ms instead of
+  ~1.9 s (after the bundle), throttled CLS halves (0.0046 → 0.0018) and
+  the render-blocking CSS file disappears entirely (the remaining
+  non-font CSS falls under Vite's inline threshold). The eight
+  `@fontsource` imports leave `main.tsx` (the packages become
+  devDependencies as source + update channel; `npm run fonts:sync`
+  re-copies and verifies byte identity — an OFL/RFN condition), the
+  `GlobalStyles` font block leaves `PaperBackground`, and the build
+  stops shipping 41 legacy .woff files plus 25 never-fetched
+  cyrillic/greek/vietnamese subsets (~1.06 MB image dead freight).
+  nginx gains cache headers: `immutable`/1 year for hashed `/assets/`,
+  30 days for the unhashed `/fonts/` (a real font update versions the
+  filename). Notices, `audit-licenses` skill baseline,
+  `design-system.md` and `frontend-stack.md` §6 updated (#429).
+
+- **The hero waits for the written word instead of swapping in a font**
+  (owner decision 2026-08-27, replacing the 2.5 s cold-start timer from
+  the engine-hero change). A written brand word is the hero's whole
+  point: on a cold backend the reserved word area now simply waits —
+  after ~3 s a quiet patience line („die Feder setzt an — einen Moment
+  …", pure CSS delay) appears under the spinner — and the composition
+  writes whenever it arrives. The GLKurrent show-font wipe remains only
+  for genuine failure: a fetch error after the cold-start retries, or a
+  composition with missing glyphs. Doctrine updated in
+  `docs/concepts/design-system.md` (#428).
+
+- **SEO/LLM sweep of the public site** (audit 2026-08-27): the 404 is now a
+  real `noindex,follow` without a self-canonical (nginx serves unknown URLs as
+  200, so every stale link was an indexable soft-404); canonicals strip
+  trailing slashes; `/lehrbuch` gets a real nginx 301 beside the client-side
+  redirect; `sitemap.xml` `lastmod` reflect the actual content dates again;
+  `llms.txt` names the Schriftkunde's decipher guide and the 1941
+  Normalschrifterlass chapter and points agents at `openapi.json` (Swagger-UI
+  is JS-only); `index.html` declares `color-scheme: light` (forced-dark
+  browsers no longer invert form fields against the paper) and preconnects to
+  the open API subdomain; the compose spinners in `WrittenGlyph`/`WrittenWord`
+  carry an accessible name (#426).
+
+- **The Haken rule: a tick accepts a row, an empty box says nothing.** Author's
+  decision 2026-08-26 after the first real photo: `ingest` reads only ticks
+  (an empty box is no verdict — the row stays unjudged and its strip returns
+  to the queue, whether it was skipped, spoiled or forgotten), the Siebung
+  page pre-fills only ticks, and `apply --haken` files the ticks straight
+  from the import without a Siebung result — the page remains for an
+  explicit `verworfen` with a reason or a note — the page now names
+  `--haken` as the normal path and the result file as the exception. A
+  payload from the older `ingest` (empty box = `verworfen`) is normalised
+  on load, so the retired value never reaches a filed `meta.json`. The
+  sheet's printed rule now reads „ohne Haken zählt sie nicht" (golden PDF
+  re-baselined for the text), doctrine in `eigenhand-erfassung.md` §5/§6,
+  glossary „Stiftmarke", the own-hand README (#423).
+
+- **The `d` exit: the hand shortens it, the chain's cut does not — §12's last
+  open limit is closed.** The `pairlab` counter-check that the autopsy asked for,
+  over all 14 `d` occurrences of the frozen Abb.-19 words plus the eight
+  Abb.-20 `d` drills of the same hand. The decisive reading has no
+  letter/connector cut at all: the chart row placed RIGIDLY at its best
+  bounded translation and read as distance to the nearest ink over the last
+  0.40 xh of arc — joined `d` 0.166 xh (words) / 0.160 (drills) vs word-final
+  0.025, 18 of 18 above 0.084 and 4 of 4 below 0.052 (p = 0.00014), while
+  the letter body does not separate (0.073 vs 0.088). Pure truncation, not
+  rotation; the real connecting stroke leaves the `d` at y = 0.82–1.12 xh
+  (median 0.96, invariant over eleven followers) against the chart tip at
+  1.36. The deformable fit alone cannot separate the readings (a window
+  sweep drives the exit anchors to +114 %), which is said plainly. The model
+  decision (a) variant split vs (b) exit in the transition generator stays
+  the author's; the evidence leans (b). `qualitaetsmetrik.md` §12 „Nachtrag
+  aug26" (#421).
+
+- **Bogen printing: a job always starts at the front of the plan, and a stack
+  is ONE PDF.** Author's decision 2026-08-26: the queue is the plan order
+  minus the strips that are already belegt — a Bogen that was printed but
+  never written holds nothing back (a new print is asked for because the old
+  sheet is gone), so `unterwegs` becomes a display state and stops being a
+  queue criterion. A stack of N Bögen is one selection for the whole job
+  (`core/eigenhand/bogen.py::compose_stack`: the pages continue the queue, no
+  strip on two sheets, attempt groups stay on one page, ids minted
+  consecutively against a working copy of the Kartei) and comes out as one
+  multi-page document (`pdfgen.build_pdf_pages`; the single-page file stays
+  byte-identical). `POST /eigenhand/sheets` composes the stack in one go and
+  still records every Bogen as its own row; new `GET
+  /eigenhand/stacks/{hand}/pdf?sheets=B0007,B0008` re-renders several recorded
+  Bögen into one PDF; the Werkbank opens the job as one document (per-Bogen
+  buttons stay for reprinting a page); `tools.eigenhand.sheet --sheets N`
+  writes `stapel-<first>-<last>.pdf` beside the per-Bogen folders. Doctrine:
+  `eigenhand-erfassung.md` §7 (#419).
+
+- **Laufform LF3b-W: the write map re-derived and measured as it would be
+  written — the 14-row map fails one gate by one crossing, the 13-row map
+  without p passes every gate and now waits for the author's go.** The
+  aug19 candidate map was gone from disk and its build script never
+  committed; the recipe was reconstructed from the session log and rerun
+  under the current harvest (ink-evidence mask) and ruler (cap 1.5). All
+  seven repair parameters reproduce aug19 to three decimals (p t=0.578).
+  Gates re-anchored to fresh bases in one pinned environment: wordbench
+  0.108091 → 0.105607 (pair byte-identical, 16 words better / 5 worse, only
+  write-glyph words move), Galoppieren's composition soll 6 → 8 = hand,
+  Lotse aiou 0.7398 → 0.7484 with spurious 5 → 4 and no losing word — but
+  the Kette v5 route loses ONE hand crossing in Galoppieren (missing 13 →
+  14) while gaining aiou +0.071 there. The autopsy (with a second opinion)
+  puts it in the fit/init layer and the counter's ring rule, not in the
+  map: the composition prescribes the lost crossing identically on both
+  roots, the chain init draws it at the same place, and the v2.1 ring rule
+  drops it on the write root by partner hits (2/11 vs the base's 2/1) —
+  and the base for that word is the guard's reverted init. The gate stands
+  as pre-registered: no write of the 14-row map. The pre-registered
+  rescue — the author's glyph selection — was measured in the same round:
+  the 13-row map (E F K P S Z ae b f k s ue v) passes (a)–(d) with the
+  Kette stroke-identical to its base; p goes to its own arm with three
+  named rescue paths (init guard against the composition soll, stem
+  release at the bowl return, ring-rule sensor). `k0eval` gains
+  `--fixtures` so a candidate solved on a patched root is scored against
+  that root's own soll. **Written on the author's go of 2026-08-26:** archive
+  snapshot `2026-08-26T11-13-38Z` first, DB base checked anchor-equal to
+  the frozen root, then the 13 rows via `PUT …/templates/{key}/laufform`
+  and verified by GET — the Sütterlin-1922 Laufform gap shrinks from 15 to
+  2 glyphs (G unrepairable, W excluded); the frozen fixture root stays
+  frozen. Details: `qualitaetsmetrik.md` §14 „Laufform LF3b-W",
+  `tintenfolger.md` §7.9, glossary „Schreib-Karte" (#417).
+
+- **Kette v5: the K0-S stack — composition soll, ratchet, zone 0.55 — is the
+  follower's default.** Author's go of 2026-08-25, measured against the
+  pre-registered Soll-Stack base in one pinned environment: 63-word soll
+  distance 86 → 79 (7 better, 0 worse), aiou over the 31 moved words min
+  −0.0004 / median +0.073, zero losers; on the dev-19 ruler dtw median 0.0453
+  → 0.0446, p90 0.0896 → 0.0861, aiou 0.7468 → 0.7608, worst per-word dtw
+  delta +0.0016. Every K0-S gate holds. The mechanism is visible per word for
+  the first time: the round-atomic soll guard reverts 26 of the 31 moved words
+  to the chain init in round 1 — they were never followed — and the zonal
+  re-solve rescues exactly those. A run with no flags is now the Kette;
+  `--no-structure-guard-ratchet --structure-guard-zone 0 --soll-source init`
+  reproduces the old Soll-Stack base stroke-identically and
+  `--no-structure-guard` the unguarded follower, which is a diagnostic arm and
+  never the duel candidate. Thirteen words v5 still reverts to the init are
+  named with their rescue paths — preventive terms in the descent, never
+  acceptance rules; "fall back to the unguarded result" was examined and
+  rejected as the abolition of the guard. Details: `qualitaetsmetrik.md` §14
+  „Kette v5" (#416).
+
+- **`k0eval` refuses to let a base and an arm from different stacks pass as a
+  pair unnoticed.** The first v5 measurement paired the arm against the
+  follower WITHOUT the structure guard and read three gates as violated — 36
+  aiou losers that were the base's own structure destruction (init 86 → free
+  125 soll points), not the arm's cost; the L-U "Kette" row of the day before
+  carried the same base. `k0eval` now reads the follower flags off both files,
+  prints both stacks before the first number, warns loudly with the differing
+  flags, and names each word's guard outcome (`clean / halved / zonal /
+  revert-r1 / revert-init`) so the tier autopsy that took an hour by hand is
+  one column. The L-U row is corrected in place; its finding is unchanged (#416).
+
+- **The frozen ruler's arc cap moves 0.8 → 1.5 xh: the u-Bogen is a mark
+  (L-U, measured, adopted).** All six pre-registered gates hold. Identity: the
+  pre-change code and the new one at the default produce all 19 dev rows
+  byte-identical. Class: exactly the enumerated strokes change — 9 on the
+  reference, 5 on the candidate side, every one a u-Bogen. Defect: the
+  defective `Zaum` arc (1.966 xh) stays in the body and is still paid for.
+  `marks_uncertain` falls 8 → 0 on every route, `marks_ambiguous` and
+  `marks_missing` stay 0, and 16 columns that read the full stroke list are
+  byte-identical between the two caps — so `aiou`, both chamfer halves,
+  crossings, retraces, touch/overlap and the soll columns keep their standing
+  numbers comparable.
+
+  The win lands on exactly one route, and the entry says so: **Kette** (the
+  duel stack, `--structure-guard-soll`) drops its p90 from 0.2355 to 0.0896
+  and its worst word from `unter` 0.4503 to `muß` 0.1108 — `unter` alone goes
+  0.4503 → 0.0877, confirming the hand-computed 0.084 of the `aug20` autopsy.
+  (The entry's first version measured this row on the follower WITHOUT the
+  structure guard; corrected on `aug26`, the finding is unchanged, and the
+  unguarded follower stays in the table as a diagnostic arm.) On Lotse, the
+  raw chain fit and the Nullprobe
+  the change costs a little instead, because only the Kette ever had the
+  ordering fault: the others emit diacritics last, drive the skeleton directly,
+  or have no stroke order at all, so pulling the u-Bogen out only removes a
+  stroke that was aligning fine. What those routes gain is not a better number
+  but an honest one — `mark_pos_err_xh` now reports 0.015–0.134 xh that stood
+  in no column before. `--mark-arc-cap` reproduces any earlier value, and the
+  cap was raised rather than dropped precisely so a defective arc cannot escape
+  the primary measure into the mark column. **InkSight is not re-measured** —
+  its inference needs an isolated Python-3.11 TF venv — so its numbers stay
+  valid, archived and not comparable until that run is caught up (#415).
+
+- **Pre-registered: the u-Bogen becomes a mark in the frozen ruler (L-U).**
+  The `aug20` chain autopsy found that 81 % of the `unter` distance is pure
+  stroke ORDER — the hand writes the u-Bogen last, the chain in the middle —
+  and that the ruler forces it into the body DTW because its arc (1.10 xh)
+  exceeds `MARK_MAX_ARC_UNITS` = 0.8. It left the consequence to the author,
+  who decided on 2026-08-25 to change the ruler, and after the class census
+  refined that to raising the cap rather than dropping it. A descriptive census
+  over the frozen root, taken before any route number: exactly nine reference
+  strokes change class, all of them u-Bögen, one per word — no capital
+  ornament, no ascender loop, no umlaut. The current cap sits INSIDE the mark
+  population rather than between mark and body, and on the candidate side it
+  misses misclassifying a real umlaut by eleven thousandths (`Sprünge`,
+  0.789 xh). The measure raises it to 1.5 xh, derived from the width model — a
+  standard lowercase is one x-height wide, so a floating stroke longer than one
+  and a half letter widths is no accent — rather than from the observed
+  distribution, which keeps a defective candidate arc (`Zaum`, 1.966 xh) in the
+  body where it is paid for instead of letting it escape into the mark column.
+  Written and committed BEFORE the first number, with six gates, the kill
+  criteria, the expected pen-lift side effect and the circularity antidote (the
+  ruler's own expectation table has said `"u": 1` all along). Details:
+  `docs/reference/qualitaetsmetrik.md` §14 „Lineal L-U" (#414).
+
+- **Four durable working rules lifted from the 2026-08-21 campaign
+  session's friction into the agent instructions and the PR skill**
+  (`CLAUDE.md` + the `.github/copilot-instructions.md` mirror where the
+  rule is shared, `.claude/skills/open-pr/SKILL.md`): the recipe for
+  restarting a mandated branch after its squash-merge when force-push is
+  blocked by the cloud classifier (content-neutral merge of the stale
+  remote tip, every conflicted file resolved with `--ours`, marker grep
+  and an EMPTY diff against the pre-merge head required before the
+  commit — `git add -A` during an unresolved merge committed conflict
+  markers once); the heredoc ban now names appending with `>>`
+  explicitly (a §14 entry slipped in via `cat >>`); the cloud
+  fixture-rebuild note gains the `uv sync --all-extras` prerequisite
+  (the verify path imports matplotlib from the `viz` extra and fails on
+  a fresh cloud venv); and the open-pr skill documents that a cancelled
+  Copilot review run may never deliver — one re-request, then green plus
+  zero threads counts as review-clean by absence (#403).
 
 - **Chain v4: the ink-evidence mask is now the default on the follower,
   the harvest and the tracebench chain provider — the author's go on the
@@ -1744,7 +1670,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   measurement; the production re-harvest of stored `traced` rows stays
   behind owner-go + dbsnapshot. Docs: §14 entry, verfahren-kette.md
   (v4 + ledger row), glossary „Tinten-Evidenz-Maske" updated,
-  tintenfolger.md §7.3 K-C marked adopted.
+  tintenfolger.md §7.3 K-C marked adopted (#399).
 
 - **The agent instructions went on a diet — details moved into the docs
   they belong to** (`CLAUDE.md` 82 → ~24 KB, `.github/copilot-instructions.md`
@@ -1756,150 +1682,222 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   (`frontend-stack.md`, `glossar.md`, `werkzeuge.md`, `write-api.md`,
   `qualitaetsmetrik.md`, `quellen-und-rechte.md`, `architektur.md`,
   `datenablage.md`) so nothing was dropped — the instructions now say where
-  things live and which rules bind, the docs say what is true.
+  things live and which rules bind, the docs say what is true (#376).
 
-### Added
+### Removed
 
-- **Durable working rules lifted from machine-local session memory into
-  the repo instructions** (`CLAUDE.md` guardrails + the
-  `.github/copilot-instructions.md` mirror), so cloud/web sessions — which never
-  see the local memory directory — inherit them: the rescue-path duty for
-  rejected measures, the squash-merge race recovery (fresh branch +
-  cherry-pick, wait for "green and review-clean"), Opus for delegated
-  agents (Claude-side only), BLAS thread pinning for solver measurement
-  runs, no AI-development disclosure on the public site, and legibility
-  over period authenticity in UI.
-
-- **The O2-trim jitter, pre-registered with both outcomes valid — and
-  the bug turns out to be an accidental class rule** (`core/compose.py`
-  `ENTRY_FLANK_DIP_TOL`, kept at 0.0; §14 „O2-Trim-Jitter"). The K3
-  side find made testable: a tolerance of 0.02 xh on the rising-flank
-  walk restores the intended 0.78 trim for arcade heads whose spline
-  lead-ins jitter in the first step. Measured: word_loss +4e−6 (a
-  wash), pair_loss byte-identical, and exactly THREE words move —
-  splitting precisely along K3's arrival ladder: von (o→n) −0.0126
-  (the restored trim is a clear win there), Zorn/Sporn (o→r) +0.0112
-  and +0.0017 (o→r wants to arrive lower, as K3 measured). Today's
-  strict guard accidentally implements exactly that class split
-  (n lead-ins jitter, r lead-ins do not), and the frozen ruler prefers
-  it by micrometres — so per the pre-registered criterion the bug
-  stays, documented instead of silent, and the real finding is that
-  the UNIFORM O2 target height for arcade heads is wrong: a proper
-  class rule (n high, r lower) goes on the table as its own
-  pre-registration once the confirmation set exists.
-
-- **Lotse v0.5 adopted: map geometry in ride-side double zones — the
-  first crossings return, and the fusion ceiling gets its number**
-  (`tools/inkpilot`, §14 „Route Lotse v0.5"). The combination of the
-  two parked arms — A5's detection (which rail pixels does the word
-  ride twice) with v0.4's geometry (ride the composed map there, it
-  carries the crossing): the first pass keeps the ink's mid-line,
-  every later pass takes the map. All pre-registered gates pass: dev
-  dtw median 0.101 → 0.085, `und` 0.087 → 0.043 (now beating the
-  chain there), 5 of 23 missing crossings return (+1 spurious, within
-  bounds), retrace arc ratio 2.48 → 1.66, aiou −0.002. Route standing
-  0.085 vs the chain's 0.062 (gap 1.4×) with sharp complementarity —
-  the Lotse wins exactly the structure-heavy words (unter −0.387,
-  muß −0.129), the chain the smooth ones. The per-word oracle fusion
-  („Vier Augen" ceiling, not a result) now measures 0.056 — better
-  than either route alone; the honest reference-free selector remains
-  the open question, with B1's order-blind-ranker lesson applying
-  verbatim.
-
-- **Lotse arms round two: the rail run-out (owner find) adopted, three
-  others honestly parked** (`tools/inkpilot`, §14 arms). The owner's
-  review find — "the d line stops at the crossing" — turned into the
-  pre-registered rail run-out: a ride ending on a rail that runs
-  unbranched into a degree-1 skeleton endpoint within 1 xh continues
-  to the rail's end (the composed map undershoots inked tips via the
-  loop-exit trim and the +7–10% reach gap; the ink does not). Adopted
-  at 1.0: dev dtw median 0.119 → 0.101, the `und` outlier 0.343 →
-  0.087, aiou up, spurious marks halved, structure untouched by
-  construction. The junction chord (v0.3) and the map right-of-way
-  (v0.4) measured and rejected by their own gates — the missing
-  crossings live on LONG shared rails the skeleton merges over the
-  whole overlap, which neither node surgery nor map-side retrace
-  zones reach; named successors: sub-stroke separation from width
-  evidence, and map geometry in ride-side double zones. Route
-  standing: dev dtw 0.101 vs the chain's 0.062 (gap 2.0× → 1.6×),
-  aiou clearly above the chain.
-
-- **The Lotse route (owner idea): ride the skeleton mid-ink, ask the
-  ductus like a map — built, pre-registered, first honest numbers**
-  (`tools/inkpilot` + §14 „Route Lotse" + a pinned viewer colour).
-  Geometry comes entirely from the measured skeleton (the routeg
-  graph), order and every junction decision from the composed word
-  acting as the map: a global Viterbi assignment of map samples to
-  ridge points (graph ride cost + map deviation + a bridge state),
-  connected by shortest pixel-chain walks; leading/trailing bridges
-  over blank paper are trimmed. ~0.1 s per word, six unit tests on a
-  synthetic cross. First measurement (dev split): the gate is missed
-  (dtw median 0.119 vs the chain's 0.062; hand crossings collapse to
-  zero because double passes share the same skeleton rails through a
-  junction and never intersect transversally) — but `unter`, the
-  chain's catastrophe word, falls 0.450 → 0.064 and aiou rises almost
-  everywhere. Named rescue paths: the width-evidence offset double
-  pass (plan measure A5, the fixture's `width_map`), the smoothing
-  stage, and the `und` autopsy; the route stays open.
-
-- **The guarded chain measured as the production trace — pre-registered
-  over all 63 words, with a two-sided guard built as the executed
-  rescue path** (`tools/pairlab/follow.py` `--structure-guard-two-sided`
-  + `qualitaetsmetrik.md` §14 „Wächter als Produktions-Kette"). The
-  released one-sided guard passes three gates outright (never worse on
-  the 10 authored references and better on three of them, ink coverage
-  never falls, marks byte-identical) but loses one soll-required
-  crossing on three words — it caps structure INVENTIONS while the ink
-  pull may collapse a small loop unpunished. The two-sided guard
-  (init counts binding in BOTH directions per the K0 invariant) then
-  measured as a clean Pareto picture: structure frozen at the chain's
-  level on all 63 words, dtw never worse and better on two, aiou up to
-  +0.12 — formally NOT auto-adopted because a both-ways veto can never
-  satisfy the „strictly better somewhere" leg; the adoption is now an
-  owner decision, with the soll-aware K0 guard named as the next
-  rescue path. Two standing findings en route: the chain solve is not
-  bit-reproducible across BLAS thread environments (solve comparisons
-  and any production wiring must pin `OPENBLAS_NUM_THREADS`), and
-  pinning the threads collapsed the runtime gate entirely (raw chain
-  63 words: 87 min → 2.7 min; two-sided guard: ≈17 s/word).
-
-- **The rescue-path register: every honest negative names its way back
-  into the game** (owner directive 2026-08-16, after the P3 0/3 round):
-  `docs/proposals/tintenfolger.md` §7.9 collects, per rejected measure, the finding or
-  measured ceiling, the named conversion path and its trigger (B1's
-  proven −0.0124 oracle → the order-aware „Chor" selector; K1's real
-  +126° arrival error → the connector-FORM hypothesis; K3's jitter
-  side-find → the O2-trim bugfix candidate; arm 9 → the „Lotse" route;
-  the cross-cutting one: kills decided by net deltas the ruler barely
-  registers get a pre-registered humanbench word round as tie-breaker).
-  Standing rule recorded there and in the new glossary entry
-  „Rettungsweg": every rejected §14 entry closes with its rescue paths
-  (or an explicit „none named"), and a rescue path is always a NEW
-  mechanism, new evidence or new sensor with a fresh pre-registration —
-  never the same knob re-run with softer gates.
-- **Wave 2, P3: head coarticulation as entry class rules — all three
-  measured, all three honest negatives** (`core/compose.py` +
-  `qualitaetsmetrik.md` §14 „Welle 2 · P3"; owner priority). The
-  pre-study (248 dissected occurrences, Laufform-relative) proved the
-  asymmetry — tails are per-class constants, heads are real
-  coarticulation after high exits (p < 0.0001) — and three
-  pre-registered entry rules mapped it into the composer: K1 the low
-  bar→round couple (`BAR_ENTRY_COUPLE_Y`, shared placement/connector
-  index), K3 the unified cover-bow→arcade couple lift
-  (`COVER_ARCADE_ENTRY_LIFT`, replacing today's inconsistent
-  foot-vs-0.78 coupling), K2 the rotated d→round departure on the
-  rescued chord (`LOOP_ROUND_EXIT_ROT_DEG`, never the twice-rejected
-  stub trim). Every ladder was measured and killed by its own
-  pre-registered gate: K1's class words vote in opposite directions,
-  K3 wins the words but loses the drills of the SAME joins (von
-  −0.009 vs. drill `on` +0.017 — the word/drill split is the find),
-  K2 loses both rulers monotonically. All three knobs ship
-  DECLARED-BUT-NEUTRAL for the confirmation-set re-calibration;
-  rendering stays byte-identical. Side find: a 0.0004-xh spline
-  resampling jitter silently disables the generic 0.78 entry trim
-  for arcade heads (own bugfix candidate) (#366).
+- **The Schriftkunde Markdown mirror (`/schriftkunde.md`, added above
+  on 2026-08-27) is gone — superseded by the prerendered pages before it
+  ever shipped in a release.** It covered one page as a second, raw
+  representation with its own nginx location, `Link` canonical header
+  and rights note; the prerender covers every route as the page itself.
+  The renderer's locale walk, the completeness/drift/head guards and the
+  Stand-from-sitemap rule live on in `prerender.ts`; `llms.txt` no
+  longer links a `.md` and instead tells unmapped clients where the text
+  lives (the locale sources in the public repo). The post-deploy
+  header check filed for the mirror is replaced by a manual first run
+  of the bot-serving workflow (#433).
 
 ### Fixed
+
+- **Assistant fetches of the SVG assets are counted every time, not
+  only on a cache miss.** Verified live after #437: three of four
+  Claude-User fetches (`e.svg`, `word.svg?text=Glück`, the crop) were
+  Cloudflare edge HITs — the URLs had been requested minutes earlier —
+  and never reached the `asset_fetch` middleware; only the fresh
+  `x.svg` counted. The two SVG routes now answer `private, max-age=300`
+  (`api/http.py` `BROWSER_ONLY_CACHE`): browser cache, no edge cache.
+  Nothing human-facing loses the edge cache — the SPA never requests
+  the SVGs. The JSON reads and the crop keep `CACHE_CONTROL` on purpose
+  (the Tafel, the hero word and the quiz ride on the edge), so their
+  assistant counts are cache misses, first fetch per asset per edge
+  TTL — documented in `write-api.md` and `frontend-stack.md` §6 (#438).
+
+- **Crawler reads actually reach the bot site — two silent drops found
+  by probing the live pipeline (2026-08-28).** Of twenty crawler
+  requests through the deployed path, one `bot_fetch` arrived. First:
+  Plausible discards events whose forwarded IP is a hosting-provider
+  address — probe events with Google Cloud addresses (`34.90.1.1`,
+  `35.204.1.1`) never appeared, the same events with a home or GitHub
+  IP did — and on the crawler path (Cloud Run app → Cloudflare → API)
+  `cf-connecting-ip` is exactly the app container's Google egress. nginx
+  now forwards the crawler in `X-Forwarded-For`
+  (`$proxy_add_x_forwarded_for` in `@seo_proxy`) and
+  `api/request_context.py::visitor_ip` takes the first valid forwarded
+  address BEFORE `cf-connecting-ip` (the reverse of anyplot's order; for
+  a direct client behind Cloudflare both are the same address). Second:
+  Cloudflare caches the API host's responses by rule, and `/seo-proxy`
+  answered `s-maxage=86400` — `cf-cache-status: HIT`, so a cached page
+  never reached the counting middleware. `/seo-proxy` (and its 404) now
+  answer `private, no-store`; the page is an 8 KB file lookup, and a
+  crawler paying the round trip is the price of the count. Findings and
+  the probe method recorded in `frontend-stack.md` §6 and the glossary (#435).
+
+- **The crawler-page prebuild runs on every Node 22.** The prebuild
+  imports the `.ts` renderer through Node's type stripping, which is
+  unflagged only from 22.18 — on 22.15 (`ERR_UNKNOWN_FILE_EXTENSION`)
+  the build died before Vite started. The script (`npm run prerender`,
+  formerly `schriftkunde:md`) now passes `--experimental-strip-types`,
+  a no-op where the feature is already on (#433).
+
+- **`robots.txt` drops the invalid `use=reference` token from every
+  `Content-Signal` line.** Verified against the Content Signals
+  specification's own site (contentsignals.org, checked 2026-08-27): the
+  vocabulary is exactly `search`, `ai-input`, `ai-train` with yes/no
+  values — `use` is not a signal, and a strict parser could discard the
+  whole line and with it the legally load-bearing `ai-train=no`
+  reservation (`docs/reference/crawler-richtlinie.md`; the doc itself
+  never mentioned the token, it existed only in `robots.txt`) (#428).
+
+- **The concept docs no longer contradict the shipped reality** (doc
+  audit 2026-08-27). `mvp-roadmap.md`: the milestone bodies stay as the
+  recorded 2026-05 plan, but every spot that read as a wrong instruction
+  now carries a dated in-place note — M1's "commit the scans" (they stay
+  gitignored, the private archive is master), M2's position-tagged file
+  schema and M3's 11-template position keying (both superseded by R2,
+  migration `0017`), the critical path and verification table (M5/M6 ran
+  over the same-hand PD word samples instead), the "one to two weekends"
+  estimate, and the 2026-06-10 status block's "milestones remain valid"
+  sentence. `vision.md`: the BINDING scripts principle claimed the MVP
+  validates the kernel "an Kurrent allein" — aligned to the recorded
+  Sütterlin-first pivot of 2026-06-12; the open-data principle now
+  carries the Ziel-7 open-core reservation itself; Ziel 3 names the
+  actually trained hand; Ziel 6 names the Eigenhand capture chain as the
+  first real feeder. `eigenhand-erfassung.md`: status header and §11
+  phase table caught up (4a–4f, new 4f row for the 2026-08-27 colour
+  decision). `docs/index.md`: head paragraph and status tags note the
+  pulled-forward H5 capture path. `orthographie-regeln.md`: cites the
+  post-R2 `(style, glyph, variant)` key instead of the retired
+  position-keyed triple (#427).
+
+- **A Bogen printed in the Werkbank, pulled and pushed back by `sync` was
+  refused as „a different layout" — the documented Admin-Druck → `pull` →
+  `ingest` → `sync` loop could not close.** Found on the first real photo
+  (2026-08-26, B0006): the layout digest ran over the JSON text in insertion
+  order, and JSONB hands the stored layout back with its keys reordered, so
+  `pull` hashed the same geometry to a different SHA256 and `PUT
+  /eigenhand/sheets/{hand}/{sheet}` answered 409. `bogen.layout_text` is now
+  canonical (sorted keys; `bogen.layout_digest` is the one identity of a
+  Bogen's geometry), and the import compares against the digest of the
+  STORED layout re-serialised the same way — not against the
+  `layout_sha256` column, which older rows carry in the old spelling. Pinned
+  by a test that pushes a server-printed Bogen back with every key reordered
+  and with a stale column value (#422).
+
+- **The sheet's legend printed a "?" where the long s belonged.** It read
+  "rundes s statt langem ſ" and came off the printer as "statt langem ?":
+  WinAnsi has no ſ, and the note saying exactly that sat four lines above the
+  legend in the same file, written about the word labels and never applied to
+  the legend added later. The one character the sentence exists to explain was
+  the one the font cannot draw. Reworded so it needs no special glyph, and the
+  substitution can no longer reach paper: the writer still maps an
+  unencodable character to "?" — right for a general PDF writer — but
+  `render_pdf` now refuses the page instead, checked over the composed sheet so
+  it covers the strip ids and word labels from the plan as well as the
+  constants. Both halves of the legend are imperative now; the "|" half was a
+  gloss that never said the mark is not to be written (#412).
+
+- **The `cfg` stamp is a geometry fingerprint again, not a promise.** It hashed
+  a hand-kept list of constants under a comment claiming it covered "EVERY
+  constant that moves a printed box" — and it failed the way such lists always
+  do: the printable-area pass moved all four Passmarken by 3 mm, pushed every
+  row down and shifted the verdict column, and the printed stamp stayed
+  `aa9f6a5566` throughout. Two sheets whose registration frame differs by 3 mm
+  were indistinguishable by the mark that exists to distinguish them. It now
+  hashes the layout minus its provenance block: the layout already carries the
+  fiducial centres, every `cut_mm`, `band_mm` and `mark_mm` and every box edge,
+  so it can forget nothing — and it no longer reacts to things the sheet does
+  not print, such as an advance for a glyph that is not on it (#412).
+
+- **The Bogen prints the rules that cannot be undone, and its own ruler
+  check.** Ink colour, colour scan, scan-before-cut and the verdict-box rule
+  lived only in `data/samples/own-hand/README.md` — a file nobody has open when
+  the pen goes into the ink, and each of them costs a sheet that cannot be
+  reprinted. They are two lines above the legend now. The ruler check
+  ("Markenmitten 190,0 × 277,0 mm — ohne Skalierung drucken", derived from
+  `FIDUCIAL_CENTERS` rather than spelled out) took the place of the machine id,
+  which stood in the footer as a second verbatim copy of the header and was
+  read by nobody: `ingest` crops the top 14 mm for the misfiling guard, never
+  the foot. The footer also stops printing "no-commit" — every sheet printed
+  through the deployed API said that, since `.git` is in `.dockerignore` and
+  the image has no `git` (#412).
+
+- **The Bogen now fits the printer it is printed on.** Its Passmarken sat
+  3 mm from the page edge — closer than any office laser can print: HP
+  LaserJets refuse the outer 4.23 mm, consumer devices run 3.4 to 5. The
+  cost would not have been an error but a silent skew, because a clipped
+  mark is still square and still solid and passes every shape test the
+  detector has; only its centroid moves inward. On an HP the four 8 mm
+  squares come out at 6.77 mm, each centroid pulled 0.615 mm toward the
+  page centre, and the rectification — which maps exactly those centroids
+  onto their nominal millimetres — then stretches the sheet by +0.63 % in x
+  and +0.44 % in y. Anisotropic, systematic and campaign-wide. The sheet now
+  declares the printable area it needs (`PRINT_SAFE_MM` = 6.0) and nothing
+  is drawn closer, checked on the composed sheet for all three scripts
+  rather than on the constants. The marks go as far out as that allows
+  (centres at 10 mm, spans 190 × 277 instead of 196 × 283) because a larger
+  registered quad means less angular error per pixel of centroid noise; the
+  header, footer and legend move to their own `META_MARGIN_MM` so they keep
+  the 4 mm they had off the marks; `TOP_MARGIN_MM` follows the marks down by
+  the same 3 mm so the top cut ticks keep their 6.4 mm; and the verdict box
+  moves into the right cut-tick lane, which it never meets because the ticks
+  mark the Schnittband's corners and it sits in the middle of the row. Seven
+  rows still fit, the writing width is still 180 mm, and the golden PDF is
+  re-baselined. No sheet had been printed yet, so nothing splits into
+  cohorts — and a per-sheet layout means an already-printed one would keep
+  its own geometry anyway, which is now pinned by a test (#412).
+
+- **A clipped print is reported instead of quietly absorbed.** Mark size and
+  mark spacing come off the same printer, so their ratio is fixed by the
+  layout and survives any uniform scaling: `fiducial.check_mark_size` reads
+  the size the measured spacing implies and `ingest` names every mark that
+  falls materially short. The other failure — a driver's "fit to printable
+  area" — is invisible to any measurement taken from the scan, since marks
+  and spacing shrink together; that one is a ruler on the paper, and both
+  the proposal and the operating README now say so instead of implying the
+  import would catch it (#412).
+
+- **The three blockers between the eigenhand chain and the first real
+  Bogen.** All of them were invisible to the synthetic smoke test, because
+  that test neither crosses Cloudflare nor runs inside the deploy image.
+  (1) `tools/eigenhand/apiclient.py` sent no `User-Agent`, so Cloudflare
+  answered urllib's default with a 403 (error 1010) in front of the API
+  and `setup`, `sync` and `pull` could not reach production at all —
+  measured as 403 against 401 with nothing changed but the header; the
+  archive client has carried a name since it was written. (2) Neither
+  `tools/eigenhand` nor `tools/dbsnapshot` read `.env`, so the archive
+  snapshot refused with "no archive" and every admin call with "no admin
+  token" unless the environment had been sourced by hand (author,
+  2026-08-25: the tools should take it from `.env`, that is where it is);
+  both packages now load it on import, and an already-set variable still
+  wins. (3) `core/eigenhand/geometry.py` imported the fugen-form table
+  from `tools`, which the API image does not ship — every Bogen printed
+  from `/admin/eigenhand` ended in a `ModuleNotFoundError` 500, since
+  `_guard` only catches `SystemExit`. The table already lives in the
+  committed plan's `forms` block, put there for exactly this reason, so it
+  is passed in from the caller now; boxes stay byte-identical across all
+  120 strips, 13 of which carry a fugen word. `tests/test_imports.py`
+  keeps `core/`, `api/` and `alembic/` free of `tools` imports from here
+  on, deferred ones included (#411).
+
+- **`redo --retire` no longer bricks a hand's `sync`.** It wrote the
+  status as `zurückgezogen` while `core/eigenhand/ids.py`, the Bestand
+  count and the API's `Literal` all use ASCII `zurueckgezogen`. Since
+  `sync` posts every Fassung of a hand in one request, a single retired
+  Fassung turned each later run into a 422 abort — and the Kartei is not
+  meant to be edited by hand. The three status values are named constants
+  now, the test that pinned the German spelling pins the ASCII one, and
+  the glossary and the proposal agree with the code. Also documented, in
+  both places a reader looks: `--retire` only touches ACCEPTED Fassungen,
+  so a row rejected by mistake cannot be accepted later — that strip has
+  to be printed and written again (#411).
+
+- **`k0eval` refuses an empty scoring set instead of quietly reporting
+  0 words.** When `ductus_soll` yields no targets (missing wordlab
+  deps, broken fixture cases), the run would have continued into a
+  meaningless evaluation — the soll distance is the core metric. The
+  guard `scoring_ids` now fails fast with a clear error, pinned by a
+  unit test (#405).
 
 - **The fluent body widening is alive on `/write` again — production now
   renders what the bench has been measuring all along** (#289). The
@@ -1918,7 +1916,7 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   instead of stripping `glyph` — its `--verify` therefore needs a
   deployed API at or after this fix. Bench numbers are untouched by
   construction (the fixtures already carried the field); only the
-  served geometry moves, toward what the frozen rulers measured.
+  served geometry moves, toward what the frozen rulers measured (#377).
 
 ## [0.26.0] — 2026-08-15 — Optimization plan + wave 1 + advance round + viewer polish
 

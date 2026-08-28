@@ -56,6 +56,13 @@ agent working in this repo:
   (Keep-a-Changelog categories, English, bold-titled bullets) — a PR
   without its entry is incomplete. Data-only commits (chart sources,
   authored templates) are exempt; their provenance lives in `SOURCE.md`.
+  A GitHub release is that section condensed, never copied (owner rule,
+  2026-08-28): same headings, one bullet per NOTABLE entry (chores,
+  dependency bumps and small fixes are left out; no fixed count), at most
+  two lines each — bold title, one clause, PR reference — under an intro
+  line (merge count, PR range, link to the file) and over a compare link;
+  the full text stays in the CHANGELOG, whose header holds the cut
+  procedure.
 - **New terms coined by a PR get a glossary entry in the same PR.** Any
   new Fachbegriff, metric, named failure mode or repo idiom (`gen_chamfer`,
   „Cusp-Connector“, „like-for-like Gate“) is added to
@@ -609,7 +616,10 @@ impl-generate pipelines. Conventions:
   bullets like the existing entries) — that file is how releases get
   posted; a PR without its entry is incomplete. Data-only commits
   (chart sources, authored templates) are exempt — provenance lives in
-  their `SOURCE.md`.
+  their `SOURCE.md`. A GitHub release is the section condensed, never
+  copied: same headings, one bullet per notable entry (chores and small
+  fixes left out, no fixed count), at most two lines each (bold title,
+  one clause, PR reference), intro line + compare link.
 - **Codecov:** the bot comments the patch coverage on every PR (backend
   only). Treat it like a reviewer, not a hard gate: uncovered NEW logic
   that a unit test can reach cheaply gets a test in the same PR
