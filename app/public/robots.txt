@@ -54,3 +54,7 @@ Disallow: /admin
 Allow: /
 
 Sitemap: https://kurrentschrift.ink/sitemap.xml
+
+# Machine guide for AI assistants — every retrieval path with a full example
+# URL (sources, letters as SVG, server-composed words, the open read API):
+# https://kurrentschrift.ink/llms.txt

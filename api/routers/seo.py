@@ -51,6 +51,8 @@ ROBOTS_TXT = (
     "# api.kurrentschrift.ink — the open read API of kurrentschrift.ink.\n"
     "# Reserved data is gated by authentication, not by this file; the public\n"
     "# /write renders derive from that data and stay out of model training.\n"
+    "# Machine guide with every retrieval path and full example URLs:\n"
+    "# https://kurrentschrift.ink/llms.txt — OpenAPI: /openapi.json\n"
     "User-agent: *\n"
     "Content-Signal: search=yes,ai-input=yes,ai-train=no\n"
     "Allow: /\n"

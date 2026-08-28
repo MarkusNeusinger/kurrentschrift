@@ -161,6 +161,10 @@ async def test_api_robots_txt_opens_the_host_and_reserves_training(api: Harness)
     assert "Disallow:" not in body
     assert "Allow: /" in body
     assert "Content-Signal: search=yes,ai-input=yes,ai-train=no" in body
+    # The pointer that makes the rest of the surface findable from here: an
+    # assistant that lands on this host's robots.txt (the README names it)
+    # must be handed the machine guide with the full retrieval URLs.
+    assert "https://kurrentschrift.ink/llms.txt" in body
 
 
 async def test_hands_reads_are_gated_and_never_cacheable(api: Harness):

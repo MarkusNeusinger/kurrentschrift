@@ -164,6 +164,29 @@ aufgegangen. Weil der Pfad für Menschen unsichtbar ist, prüft ihn
 Cloud-Run-Origin — anyplots Alarm, der dort vier stille Wochen mit 502
 für jeden Crawler beendet hat.
 
+**Auffindbarkeit (2026-08-28):** Ein Sitzungsprotokoll eines Assistenten
+vom selben Tag hat gezeigt, dass die ganze Kette an der ersten Stufe
+scheitern kann: Die Fetch-Werkzeuge der Assistenten erlauben häufig nur
+URLs, die zuvor **im Text einer abgerufenen Seite oder eines
+Suchergebnisses standen** — eine selbst zusammengesetzte URL, ein mit
+`…` abgekürzter Pfad im README oder die bloße `/llms.txt`-Konvention
+genügen nicht, und die API steht in keinem Suchindex. Deshalb steht die
+vollständige Beispiel-URL des Wort-Renders
+(`…/write/word.svg?text=lesen`, samt dem Hinweis, dass `text` frei ist)
+ausgeschrieben im Prerender-Text von `/federprobe` und `/schriftkunde`
+(`apiExampleLine` in `prerender.ts`; `/tafel` trägt die vollständige
+Rezeptliste), `llms.txt` ist per Voll-URL aus dem Footer jeder
+**Prerender**-Seite verlinkt, und beide `robots.txt` (Site und API-Host)
+nennen sie neben der `Sitemap:`-Zeile. Im SPA-Footer, den Menschen
+sehen, steht der Link bewusst **nicht** (Entscheid 2026-08-28): Die
+Datei ist für Agenten, nicht für Besucher — und die erreichen sie
+vollständig über den Prerender-Pfad, denn genau die gemappten Agenten
+sind ihr Publikum. Festgehalten von
+`prerender.test.ts`, `seoCoverage.test.ts` und `test_api_http.py`; ob
+die Prüfung der Werkzeuge auf die exakte URL oder auf Host+Pfad geht,
+ist offen — darum steht der Frei-Parameter-Hinweis direkt neben dem
+Beispiel.
+
 Und weil die Abrufe dort sichtbar sind, werden sie dort gezählt: Jeder
 `/seo-proxy`-Abruf eines bekannten Agenten landet als Event `bot_fetch`
 auf der **zweiten Plausible-Site `bots.kurrentschrift.ink`** — nie auf

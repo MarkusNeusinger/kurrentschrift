@@ -1,7 +1,10 @@
 // Shared footer for every public page: a hairline, a warm one-line sign-off
 // (the "private Liebhaberei" voice from the impressum) on the left, and a
 // small link row on the right — the public GitHub repository and
-// Impressum/Datenschutz. Rendered by <PublicLayout> after the page content
+// Impressum/Datenschutz. The machine guide llms.txt is deliberately NOT
+// linked here (owner decision 2026-08-28): it is for agents, not visitors —
+// the prerendered pages' footer and robots.txt carry that link instead.
+// Rendered by <PublicLayout> after the page content
 // (inside <PaperBackground>), so it's identical everywhere.
 //
 // The footer OWNS the bottom gap (its `mt`) — the single source of the distance

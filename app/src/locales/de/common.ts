@@ -76,7 +76,9 @@ export const common = {
     tagline: 'Eine private Liebhaberei',
     taglineRest: ' — quelloffen.',
     // Right-hand link row: the public repository, rendered before the
-    // Impressum link (de.impressum.footerLink).
+    // Impressum link (de.impressum.footerLink). The machine guide llms.txt
+    // is NOT linked here — agents get it via the prerender footer and
+    // robots.txt (crawler-richtlinie.md §3).
     github: 'GitHub',
     githubUrl: 'https://github.com/MarkusNeusinger/kurrentschrift',
   },
