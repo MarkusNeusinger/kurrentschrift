@@ -39,6 +39,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **An eslint guard pins the public/admin locale split, and the
+  Schriftkunde namespace goes route-local.** The split itself has
+  shipped since 2026-08-16, but nothing failed when a public file
+  imported the admin barrel — the app renders identically, only every
+  visitor pays ~66 kB of admin/wizard source (~23 kB gzipped) in the
+  eager bundle. A `no-restricted-imports` rule now rejects
+  `@/locales/admin` (and the relative `de/admin`/`de/wizard` bypasses)
+  outside the admin directories, with the size cost in the message;
+  the stale "~24 kB" comment in `locales/index.ts` is corrected to the
+  measured numbers. The `schriftkunde` namespace also leaves the
+  public barrel: its only consumer is the lazy Schriftkunde route
+  chunk, which now imports it directly — a measured 7.1 kB gzip off
+  the eager `locales` chunk (44.6 → 37.5 kB) for every public route,
+  verified in the built output (the locale's strings appear only in
+  the `SchriftkundePage` chunk).
+
 - **Fonts ship ahead of the JS bundle.** Every `@font-face` is now
   declared early in `index.html` against self-hosted files in
   `public/fonts/` — 16 verbatim woff2 copies from `@fontsource` v5.3.0

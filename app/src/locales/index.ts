@@ -9,18 +9,23 @@ import { hub } from './de/hub';
 import { impressum } from './de/impressum';
 import { landing } from './de/landing';
 import { quiz } from './de/quiz';
-import { schriftkunde } from './de/schriftkunde';
 import { scribe } from './de/scribe';
 import { seo } from './de/seo';
 import { tafel } from './de/tafel';
 import { worksheet } from './de/worksheet';
 
-// PUBLIC namespaces only. The admin/wizard namespaces (~24 kB of source) are
-// deliberately NOT part of this barrel: it loads with the first public route,
-// and admin strings have no business in a visitor's bundle. Admin code imports
-// the superset `de` from '@/locales/admin' instead (same shape plus
-// `.admin`/`.wizard`), which lands in the lazy /admin chunks.
-export const de = { common, landing, schriftkunde, hub, worksheet, scribe, quiz, tafel, impressum, seo } as const;
+// PUBLIC namespaces only. The admin/wizard namespaces (~66 kB of source,
+// ~23 kB gzipped) are deliberately NOT part of this barrel: it loads with the
+// first public route, and admin strings have no business in a visitor's
+// bundle. Admin code imports the superset `de` from '@/locales/admin' instead
+// (same shape plus `.admin`/`.wizard`), which lands in the lazy /admin
+// chunks. An eslint no-restricted-imports rule (eslint.config.js) keeps
+// public files from importing the admin barrel by accident.
+// `schriftkunde` (~7 kB gzipped in the bundle) is also absent: its only
+// consumer is the lazy Schriftkunde route chunk, which imports
+// './de/schriftkunde' directly — through the barrel it would ship eagerly
+// with every public route.
+export const de = { common, landing, hub, worksheet, scribe, quiz, tafel, impressum, seo } as const;
 
 // Tiny interpolation helper for messages with embedded variables, mirroring
 // i18next's {{name}} placeholder syntax.

@@ -68,4 +68,38 @@ export default tseslint.config(
       ],
     },
   },
+  // The public/admin locale split (locales/index.ts vs locales/admin.ts) only
+  // holds as long as no public file imports the admin barrel: one such import
+  // pulls ~66 kB of admin/wizard strings (~23 kB gzipped) into the eagerly
+  // loaded public bundle, and nothing except this rule would notice — the app
+  // still renders identically. The extra `de/admin` / `de/wizard` patterns
+  // close the relative-path bypass around the barrel, and the trailing `*`
+  // closes the extensioned one (`@/locales/admin.ts` compiles here —
+  // allowImportingTsExtensions — and minimatch treats it as a different
+  // specifier). The `*` deliberately over-matches sibling names like a
+  // hypothetical `adminHelpers`; a false positive fails loudly at lint with
+  // this message, silence is the failure mode this rule exists to prevent.
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: [
+      'src/pages/admin/**',
+      'src/sections/admin/**',
+      'src/layouts/admin/**',
+      'src/locales/admin.ts',
+    ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@/locales/admin*', '**/locales/admin*', '**/de/admin*', '**/de/wizard*'],
+              message:
+                'Admin locale strings (~66 kB source, ~23 kB gz) must stay out of the public bundle. Import { de } from "@/locales" — or move this file under an admin directory if it is admin code.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 );
