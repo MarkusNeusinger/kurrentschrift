@@ -17,7 +17,7 @@ from fastapi import FastAPI, Request, Response  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.middleware.gzip import GZipMiddleware  # noqa: E402
 
-from api.analytics import track_bot_fetch  # noqa: E402
+from api.analytics import classify_asset, track_asset_fetch, track_bot_fetch  # noqa: E402
 from api.routers import (  # noqa: E402
     aggregates_router,
     bboxes_router,
@@ -110,10 +110,11 @@ app.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=6)
 # signal worth keeping, it just is not a page view.
 @app.middleware("http")
 async def record_bot_fetch(request: Request, call_next):
-    """Report crawler page requests on the /seo-proxy path to the bot site.
+    """Report crawler page requests (/seo-proxy) and single-asset fetches (a
+    letter or word as image/JSON, a chart crop) to the bot site.
 
     Requests, not reads: the status is recorded rather than filtered on. The
-    machine files (/robots.txt) and every API read are not pages and are not
+    machine files (/robots.txt), the inventory and the batch reads are not
     recorded.
     """
     response: Response = await call_next(request)
@@ -121,6 +122,11 @@ async def record_bot_fetch(request: Request, call_next):
     if path.startswith("/seo-proxy"):
         # The public URL, never this router's internal prefix.
         track_bot_fetch(request, path.removeprefix("/seo-proxy").rstrip("/") or "/", response.status_code)
+        return response
+    asset = classify_asset(path, request.query_params.get("text"))
+    if asset is not None:
+        kind, source, key = asset
+        track_asset_fetch(request, asset=kind, source=source, key=key, status=response.status_code)
     return response
 
 

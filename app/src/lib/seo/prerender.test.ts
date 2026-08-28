@@ -179,6 +179,7 @@ describe('crawler prerender', () => {
       `${src}/write/glyphs/{glyph_key}.svg`,
       `${src}/write/glyphs?keys=a,n`,
       `${src}/write/word?text=lesen`,
+      `${src}/write/word.svg?text=lesen`,
     ]) {
       expect(html, url).toContain(escapeHtml(url));
     }

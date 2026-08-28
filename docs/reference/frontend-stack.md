@@ -425,7 +425,7 @@ ist in diesem Pfad aufgegangen.
   (`/templates`), Vorlage als PNG (`/bboxes/{glyph_key}/crop`,
   gemeinfrei), geschriebene Form als SVG (`/write/glyphs/{glyph_key}.svg`
   — neu, [`write-api.md`](write-api.md)), Geometrie und ganzes Wort als
-  JSON.
+  JSON, das ganze Wort auch als Bild (`/write/word.svg?text=`).
 
 ### Bot-Traffic auf einer zweiten Plausible-Site (seit 2026-08-28)
 
@@ -471,10 +471,26 @@ Dev-Lauf schreibt nie auf die Live-Bot-Site. Auf der Bot-Site liegen
 außerdem ein paar Events mit `assistant=probe` vom 2026-08-28 — die
 Nachstellung oben; im Dashboard herausfiltern, nicht wundern.
 
-Auf der Plausible-Seite braucht die Site `bots.kurrentschrift.ink` das
-Ziel `bot_fetch` (Custom Event) und die vier registrierten Properties
-`assistant`, `kind`, `path`, `status` — ohne Registrierung kommen die
-Events an, lassen sich aber nicht aufschlüsseln. Die Site hat KEIN
+**Zweites Event `asset_fetch`** (seit 2026-08-28): Was Assistenten
+über die API konkret ABRUFEN — einen Buchstaben als Bild
+(`/write/glyphs/{key}.svg`) oder JSON, ein Wort als Bild
+(`/write/word.svg?text=`) oder JSON, den gemeinfreien Tafel-Ausschnitt
+(`/bboxes/{key}/crop`) — meldet dieselbe Middleware mit `asset`
+(`glyph_svg` · `glyph_json` · `word_svg` · `word_json` · `crop`),
+`source` (Quellen-Id) und `key` (glyph_key bzw. der angefragte Text,
+auf 80 Zeichen gekappt) neben `assistant`, `kind`, `status`
+(`api/analytics.py::classify_asset`, `track_asset_fetch`). Nur die
+Einzel-Routen zählen; Batch-Read und Inventar sind Sache der SPA — und
+ein Browser-UA kommt ohnehin nie bis hierher, sodass die Abrufe der
+eigenen Besucher (Federprobe, Quiz-Crops) die Bot-Zahlen nicht
+verfälschen. Damit lässt sich im Dashboard lesen, welche Buchstaben und
+Wörter Assistenten wie oft zeigen wollten.
+
+Auf der Plausible-Seite braucht die Site `bots.kurrentschrift.ink` die
+Ziele `bot_fetch` und `asset_fetch` (Custom Events) und die
+registrierten Properties `assistant`, `kind`, `path`, `status` sowie
+`asset`, `source`, `key` — ohne Registrierung kommen die Events an,
+lassen sich aber nicht aufschlüsseln. Die Site hat KEIN
 Tracking-Skript und zeigt darum „Setup pending" — erwartet, kein
 Fehler. `kind` ist die Eigenschaft, nach der man filtert:
 `user_directed` ist ein Leser, alles andere ein Korpus-Bau. Erst nach

@@ -23,8 +23,9 @@ deshalb schnell genug für Cache-Control + gzip.
 | `GET /sources/{id}/write/glyphs/{glyph_key}` | Einzel-Read: das Render-Payload EINES Buchstabens; antwortet **404**, wenn noch kein Canonical getraced ist (anders als der Batch, der fehlende Keys in `missing` meldet) |
 | `GET /sources/{id}/write/glyphs/{glyph_key}.svg` | Derselbe Buchstabe als **SVG-Bild** (`image/svg+xml`, seit 2026-08-28): die Silhouetten-Ringe des Payloads als `<path fill-rule="evenodd">` auf der Lineatur der Schrift (Grundlinie durchgezogen, Mittellinie gestrichelt, Ober-/Unterlinie gepunktet), Viewbox in Template-Einheiten (Mittellänge = 1) — jeder Buchstabe einer Schrift steht damit auf derselben Lineatur im selben Maßstab. Für Clients, die die SPA nicht ausführen (ein Assistent, der zeigen soll, wie das Sütterlin-e aussieht): dieselbe Geometrie wie das JSON, dieselbe Cache-Klasse, derselbe Vorbehalt. `api/glyph_svg.py`; in der Router-Reihenfolge VOR dem JSON-Einzel-Read deklariert, weil `{glyph_key}` sonst `e.svg` als Key schluckt. 404 wie das JSON |
 | `GET /sources/{id}/write/word?text=…` | Ein ganzes Wort/eine Zeile, serverseitig komponiert |
+| `GET /sources/{id}/write/word.svg?text=…` | Dasselbe Wort als **SVG-Bild** (seit 2026-08-28): die Draw-Items der Komposition — Buchstaben-Silhouetten gefüllt (`evenodd`), generierte Übergänge als gestrichene Mittellinie mit ihrer konstanten Breite und runden Kappen, genau wie `WrittenWord` im Browser — auf der Lineatur der Schrift; `bounds`/`guides` aus der Komposition. Gleicher Eingabevertrag wie `/word` (`_normalized_text`: NFC, trim, ≤ 160 Zeichen → 422). Buchstaben ohne Canonical bleiben Lücken; ein Text, aus dem sich NICHTS schreiben lässt, antwortet **404** mit den fehlenden Keys statt eines leeren Bildes. `api/glyph_svg.py::word_svg` |
 
-Alle vier sind **öffentliche Reads** (kein Admin-Gate) und tragen den
+Alle fünf sind **öffentliche Reads** (kein Admin-Gate) und tragen den
 geteilten Cache-Header (`api/http.py`; Browser ≈ 5 min, Edge
 `s-maxage` = 1 Tag — Template-Geometrie ändert sich nur durch einen
 Admin-Re-Trace, dann gilt das dokumentierte Stale-Fenster von bis zu

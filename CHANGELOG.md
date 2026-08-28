@@ -14,6 +14,28 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **A whole word as an image, and a count of what assistants fetch.**
+  `GET /sources/{id}/write/word.svg?text=…` draws the composed word the
+  way `WrittenWord` does in the browser — letter silhouettes filled,
+  the generated joins stroked at their width with round caps — on the
+  script's ruling (`api/glyph_svg.py::word_svg`); same input contract as
+  `/word`, letters without a canonical stay gaps, a text with nothing to
+  draw is a 404 that names the missing keys. The Tafel recipes and
+  `llms.txt` list it. And a second bot-site event, `asset_fetch`: the
+  analytics middleware now reports every single-asset read by a
+  recognised assistant or crawler — a letter as SVG or JSON, a word as
+  SVG or JSON, a chart crop — with `asset`, `source` and `key`
+  (glyph_key or the requested text, capped at 80 characters) beside
+  `assistant`, `kind` and `status`, so the dashboard answers which
+  letters and words assistants asked to see. Batch reads and the
+  inventory are not counted, and a browser never is, so the site's own
+  visitors (Federprobe, quiz crops) cannot inflate it. Plausible needs
+  the goal `asset_fetch` and the properties `asset`/`source`/`key`
+  registered (dashboard step, Todoist). Tests: word.svg (glyphs +
+  connector, 404, 422, the pure renderer), the route classifier table,
+  the event payload, the SPA/curl exclusion, the middleware mapping
+  including a 404 read.
+
 - **The Schriftkunde speaks to machines: key figures as data, and the
   letters themselves as images.** An assistant that fetched the
   prerendered pages rated them well and named what was missing — the
