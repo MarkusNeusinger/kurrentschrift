@@ -191,14 +191,20 @@ def test_a_failed_send_never_raises(caplog) -> None:
 @pytest.mark.parametrize(
     ("headers", "expected"),
     [
-        ({"cf-connecting-ip": "198.51.100.4", "x-forwarded-for": "203.0.113.7"}, "198.51.100.4"),
+        # The crawler path: nginx forwards the crawler first, Cloudflare then
+        # appends the container's hop and sets cf-connecting-ip to the
+        # container's Google egress — the one address Plausible drops.
+        ({"cf-connecting-ip": "34.90.1.1", "x-forwarded-for": "203.0.113.7, 172.71.1.1, 34.90.1.1"}, "203.0.113.7"),
+        ({"cf-connecting-ip": "198.51.100.4", "x-forwarded-for": "203.0.113.7"}, "203.0.113.7"),
         ({"x-forwarded-for": "203.0.113.7, 10.0.0.9"}, "203.0.113.7"),
         ({"x-forwarded-for": "unknown, 203.0.113.7"}, "203.0.113.7"),
         ({"cf-connecting-ip": "not-an-ip", "x-forwarded-for": "2001:db8::1"}, "2001:db8::1"),
+        # No usable forwarded entry: Cloudflare's own header, then the peer.
+        ({"cf-connecting-ip": "198.51.100.4", "x-forwarded-for": "unknown"}, "198.51.100.4"),
         ({}, "203.0.113.7"),
     ],
 )
-def test_visitor_ip_takes_the_first_valid_visitor_address(headers: dict[str, str], expected: str) -> None:
+def test_visitor_ip_takes_the_first_valid_forwarded_address(headers: dict[str, str], expected: str) -> None:
     assert visitor_ip(_request("x", **headers)) == expected
 
 

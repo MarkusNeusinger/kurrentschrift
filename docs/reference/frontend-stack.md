@@ -422,15 +422,34 @@ Fire-and-forget, nie im Antwortpfad. Eine Middleware statt einer
 Router-Dependency, weil nur sie den STATUS sieht: Eine 404 wird als 404
 aufgezeichnet, nicht als Seitenaufruf.
 
-Zwei Dinge lässt Plausible schweigend fallen (anyplot hat beide durch
-Probe-Events gefunden): Events mit einem Bot-User-Agent — darum laufen
-sie unter `kurrentschrift-server/1.0`, die Identität steckt in den
-Props — und Events mit der eigenen Server-IP statt der Besucher-IP —
-darum liefert `api/request_context.py::visitor_ip` die ERSTE gültige
-weitergeleitete Adresse (`cf-connecting-ip` zuerst). Aktiv ist die
-Meldung nur in Produktion (`ENVIRONMENT=production`, wie Cloud Run es
-setzt); `BOT_ANALYTICS=true|false` überschreibt — ein Dev-Lauf schreibt
-nie auf die Live-Bot-Site.
+Drei Dinge lassen die Events schweigend verschwinden — alle drei am
+2026-08-28 live nachgestellt:
+
+- **Ein Bot-User-Agent.** Plausible verwirft jedes Event, dessen UA es
+  als Bot erkennt — jeden UA auf diesem Pfad. Darum laufen die Events
+  unter `kurrentschrift-server/1.0`; die Identität steckt in den Props.
+- **Eine Hosting-IP als Besucher.** Probe-Events mit `X-Forwarded-For`
+  aus Google-Cloud-Bereichen (`34.90.1.1`, `35.204.1.1`) kamen nie an,
+  dieselben Events mit einer Heim- oder GitHub-IP sofort. Auf dem
+  Crawler-Pfad (Cloud-Run-App → Cloudflare → API) ist `cf-connecting-ip`
+  aber genau die Google-Egress-IP des App-Containers — von zwanzig
+  Crawler-Abrufen zählte einer. Darum reicht nginx den Crawler in
+  `X-Forwarded-For` durch (`@seo_proxy`, `$proxy_add_x_forwarded_for`),
+  und `api/request_context.py::visitor_ip` nimmt die ERSTE gültige
+  weitergeleitete Adresse VOR `cf-connecting-ip` (anders als anyplot;
+  für direkte Clients hinter Cloudflare sind beide dieselbe Adresse).
+- **Der Edge-Cache.** Cloudflare cacht die Antworten des API-Hosts per
+  Regel; `/seo-proxy` antwortete `s-maxage=86400` und lieferte
+  `cf-cache-status: HIT` — ein gecachter Abruf erreicht die zählende
+  Middleware nie. `/seo-proxy` antwortet deshalb `private, no-store`;
+  der Crawler bezahlt den API-Roundtrip für eine 8-KB-Datei, das ist
+  der Preis der Zählung.
+
+Aktiv ist die Meldung nur in Produktion (`ENVIRONMENT=production`, wie
+Cloud Run es setzt); `BOT_ANALYTICS=true|false` überschreibt — ein
+Dev-Lauf schreibt nie auf die Live-Bot-Site. Auf der Bot-Site liegen
+außerdem ein paar Events mit `assistant=probe` vom 2026-08-28 — die
+Nachstellung oben; im Dashboard herausfiltern, nicht wundern.
 
 Auf der Plausible-Seite braucht die Site `bots.kurrentschrift.ink` das
 Ziel `bot_fetch` (Custom Event) und die vier registrierten Properties

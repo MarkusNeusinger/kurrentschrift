@@ -224,6 +224,26 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **Crawler reads actually reach the bot site — two silent drops found
+  by probing the live pipeline (2026-08-28).** Of twenty crawler
+  requests through the deployed path, one `bot_fetch` arrived. First:
+  Plausible discards events whose forwarded IP is a hosting-provider
+  address — probe events with Google Cloud addresses (`34.90.1.1`,
+  `35.204.1.1`) never appeared, the same events with a home or GitHub
+  IP did — and on the crawler path (Cloud Run app → Cloudflare → API)
+  `cf-connecting-ip` is exactly the app container's Google egress. nginx
+  now forwards the crawler in `X-Forwarded-For`
+  (`$proxy_add_x_forwarded_for` in `@seo_proxy`) and
+  `api/request_context.py::visitor_ip` takes the first valid forwarded
+  address BEFORE `cf-connecting-ip` (the reverse of anyplot's order; for
+  a direct client behind Cloudflare both are the same address). Second:
+  Cloudflare caches the API host's responses by rule, and `/seo-proxy`
+  answered `s-maxage=86400` — `cf-cache-status: HIT`, so a cached page
+  never reached the counting middleware. `/seo-proxy` (and its 404) now
+  answer `private, no-store`; the page is an 8 KB file lookup, and a
+  crawler paying the round trip is the price of the count. Findings and
+  the probe method recorded in `frontend-stack.md` §6 and the glossary.
+
 - **The crawler-page prebuild runs on every Node 22.** The prebuild
   imports the `.ts` renderer through Node's type stripping, which is
   unflagged only from 22.18 — on 22.15 (`ERR_UNKNOWN_FILE_EXTENSION`)

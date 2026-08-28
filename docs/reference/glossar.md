@@ -502,11 +502,15 @@ chatgpt, gemini, google …), `kind` (**warum** abgerufen wurde —
 zu öffnen, also ein Leser; `index`, `search`, `training`, `inspection` =
 Maschinen bauen einen Korpus), `path` und `status` (der Abruf wird
 aufgezeichnet, nicht der erfolgreiche Lesevorgang — eine 404 ist ein
-Signal, kein Seitenaufruf). Zwei Fallen, die Plausible schweigend
-schluckt: ein Bot-User-Agent (→ Events laufen unter dem neutralen
-`kurrentschrift-server/1.0`, die Identität steckt in den Props) und die
-eigene Server-IP statt der Besucher-IP (→ `visitor_ip` nimmt die ERSTE
-gültige weitergeleitete Adresse). Taxonomie `AI_AGENTS` wortgleich mit
+Signal, kein Seitenaufruf). Drei Fallen, die die Events schweigend
+verschwinden lassen: ein Bot-User-Agent (→ Events laufen unter dem
+neutralen `kurrentschrift-server/1.0`, die Identität steckt in den
+Props), eine Hosting-IP als Besucher — Plausible verwirft
+Google-Cloud-Adressen, und genau die ist auf dem Crawler-Pfad
+`cf-connecting-ip` (→ nginx reicht den Crawler in `X-Forwarded-For`
+durch, `visitor_ip` nimmt die ERSTE gültige weitergeleitete Adresse) —
+und der Edge-Cache (→ `/seo-proxy` antwortet `no-store`, sonst zählt
+nur der erste Abruf). Taxonomie `AI_AGENTS` wortgleich mit
 anyplot. *Technisch:* `api/analytics.py`, `api/request_context.py`, die
 Middleware `record_bot_fetch` in `api/main.py`; aktiv nur in Produktion
 (`BOT_ANALYTICS` überschreibt). → frontend-stack.md §6,
