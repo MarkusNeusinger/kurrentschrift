@@ -357,7 +357,8 @@ Funktionsweise identisch.
   (`schriftkundeMarkdown.test.ts`) erzwingen Vollständigkeit
   (jedes Locale-Blatt oder ein benannter SKIP), Byte-Gleichheit der
   eingecheckten Datei und die Zitierfähigkeit des Kopfs (Canonical ·
-  Stand · `ai-train=no`-Vorbehalt in-band).
+  Stand · Rechtehinweis in-band: die offene Politik `ai-train=yes` plus
+  der Vorbehalt der kuratierten Schriftdaten hinter der API).
 - Das Stand-Datum kommt aus dem `<lastmod>` der Sitemap für
   `/schriftkunde` — deterministisch statt `new Date()`; ein Bump dieses
   Datums rötet den Drift-Test, bis `npm run schriftkunde:md` neu

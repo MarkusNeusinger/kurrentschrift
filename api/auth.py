@@ -13,8 +13,9 @@ import secrets
 from functools import lru_cache
 
 import jwt as pyjwt
-from fastapi import Header, HTTPException, status
+from fastapi import Header, HTTPException, Response, status
 
+from api.http import NO_STORE
 from core.config import settings
 
 
@@ -45,14 +46,26 @@ def _verify_cf_access_jwt(token: str) -> str | None:
 
 
 def require_admin(
+    response: Response,
     x_admin_token: str | None = Header(default=None),
     cf_access_jwt: str | None = Header(default=None, alias="Cf-Access-Jwt-Assertion"),
 ) -> None:
-    """Gate write endpoints behind Cloudflare Access OR a shared secret.
+    """Gate admin endpoints — writes and the reserved-dataset reads — behind
+    Cloudflare Access OR a shared secret.
 
     Without `settings.admin_token` AND without working Cloudflare Access config,
     every protected request gets 503 — a misconfigured prod deploy fails closed.
+
+    The gate also stamps every gated response `Cache-Control: private,
+    no-store` (api/http.py). A `public` directive on an authenticated answer is
+    how a shared cache serves the admin's rows to the next anonymous request
+    for the same URL, and a route that forgets the header is the likeliest way
+    to get one — so the header lives in the one dependency every gated route
+    already carries, not in each handler. (FastAPI merges the headers set here
+    into the handler's response; a handler that returns a `Response` object
+    directly bypasses that merge and sets its own — the eigenhand binaries do.)
     """
+    response.headers["Cache-Control"] = NO_STORE
     if cf_access_jwt:
         email = _verify_cf_access_jwt(cf_access_jwt)
         if email and email in settings.admin_allowed_emails:

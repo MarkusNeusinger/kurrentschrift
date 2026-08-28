@@ -55,6 +55,60 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   verified in the built output (the locale's strings appear only in
   the `SchriftkundePage` chunk).
 
+- **The crawler policy opens: search, AI retrieval, citation AND model
+  training are permitted for every operator** (owner decision
+  2026-08-28, replacing the retrieval-yes / training-no split of
+  2026-07-25). The reasoning, recorded in
+  `docs/reference/crawler-richtlinie.md` §2: the open-core moat is the
+  database, not the website — the reserved dataset is unreachable
+  without the admin credential (see the next entry), so a training
+  reservation on HTML text protected nothing the auth gate does not
+  already protect, while costing reach: Google's single `Google-Extended`
+  token governs Gemini grounding and training together, and declining it
+  kept the site out of Gemini's answers entirely. `app/public/robots.txt`
+  now has the same shape as anyplot's (one `Bytespider` group declined on
+  bandwidth grounds, then `User-agent: *` with `Disallow: /admin`,
+  `Content-Signal: search=yes,ai-input=yes,ai-train=yes` in every group)
+  so a change on one site copies to the other verbatim. The API host
+  gains its own `robots.txt` (`api/routers/seo.py`): nothing disallowed —
+  reserved data is gated by authentication, and a robots line would only
+  keep compliant assistants away from `/docs` and `/openapi.json` — but
+  `ai-train=no`, because the composed `/write` renders derive from the
+  reserved dataset. The Markdown mirror's in-band rights note, `llms.txt`,
+  the README "License" paragraph, `CLAUDE.md`/`copilot-instructions.md`
+  and the docs index follow the new wording; the former policy stays
+  recorded under the doc's *Verworfen* with its own rescue condition.
+  Cloudflare's AI Crawl Control has to be brought in line by hand (steps
+  in §4; filed as a Todoist task).
+
+- **Every API read that carries the reserved dataset is now admin-gated,
+  and the public/reserved split is pinned by a test.** Nine reads used to
+  answer without credentials: the bbox rows (`GET /sources/{id}/bboxes`,
+  `…/bboxes/{glyph_key}` — the wizard's crop work), the occurrences
+  (`…/instances`, `…/pair-instances`, `…/word-instances` — measured fits
+  over the authored templates, the Tintenfolger reference set), the pair
+  overrides (`…/pairs`, `…/pairs/{l}/{r}` — authored join geometry; the
+  approved-only public view and the conditional `?all=true` gate are
+  gone, the read is simply admin) and the writer registry (`/hands`,
+  `/hands/{id}`). All nine require `require_admin` now — and the gate
+  itself stamps `Cache-Control: private, no-store` on every admin-gated
+  response, so no reserved read (the ~30 gated GETs across templates,
+  aggregates, work items, eigenhand and these nine) can be cached by an
+  intermediary, and no route can forget the header.
+  No public page ever consumed them (verified against every non-admin
+  call site); the readers are the workbench, the harvests and the
+  fixture/snapshot tools, which carry the token already —
+  `tools/dbsnapshot` and `tools/wordbench/fetch_fixtures` flip their
+  admin flags accordingly. What the public pages need stays open, by
+  name: styles, sources, the template summaries, `/bboxes/status`, the
+  PD chart and its crops, the word specimens (sidecar in the public
+  repo), the quiz bank and the `/write` renders. New
+  `tests/test_api_public_surface.py` classifies EVERY GET route of the
+  app as PUBLIC or RESERVED — a route in neither set fails the test —
+  and asserts the reserved ones answer 401 without the credential, so
+  the split can never drift silently. `quellen-und-rechte.md` §5 lists
+  the gate in full.
+
 - **Fonts ship ahead of the JS bundle.** Every `@font-face` is now
   declared early in `index.html` against self-hosted files in
   `public/fonts/` — 16 verbatim woff2 copies from `@fontsource` v5.3.0
@@ -94,6 +148,11 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **`npm run schriftkunde:md` runs on every Node 22.** The prebuild
+  imports the `.ts` renderer through Node's type stripping, which is
+  unflagged only from 22.18 — on 22.15 (`ERR_UNKNOWN_FILE_EXTENSION`)
+  the build died before Vite started. The script now passes
+  `--experimental-strip-types`, a no-op where the feature is already on.
 - **`robots.txt` drops the invalid `use=reference` token from every
   `Content-Signal` line.** Verified against the Content Signals
   specification's own site (contentsignals.org, checked 2026-08-27): the

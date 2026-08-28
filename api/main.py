@@ -28,6 +28,7 @@ from api.routers import (  # noqa: E402
     pair_aggregates_router,
     pairs_router,
     quiz_words_router,
+    seo_router,
     sources_router,
     styles_router,
     templates_router,
@@ -101,6 +102,7 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware, minimum_size=1024, compresslevel=6)
 
 app.include_router(health_router)
+app.include_router(seo_router)
 app.include_router(styles_router)
 app.include_router(hands_router)
 app.include_router(aggregates_router)

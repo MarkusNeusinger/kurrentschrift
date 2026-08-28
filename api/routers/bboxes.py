@@ -1,4 +1,13 @@
-"""Bbox CRUD per source."""
+"""Bbox CRUD per source.
+
+The bbox rows are the wizard's crop work — the one table no recomputation
+brings back (tools/dbsnapshot) and therefore reserved dataset
+(quellen-und-rechte.md §5). Every read that carries the row itself is
+admin-gated like the writes; the only public read is the slim `/status`
+list of availability flags the quiz and Tafel boot on, plus the PD chart
+crop in chart.py. The public pages never held a bbox row: the admin's
+`getBboxes` was the sole consumer of the full list.
+"""
 
 from typing import TypeVar
 
@@ -42,8 +51,10 @@ def _to_out(bbox: Bbox) -> BboxOut:
     )
 
 
-@router.get("", response_model=list[BboxOut])
+@router.get("", response_model=list[BboxOut], dependencies=[Depends(require_admin)])
 async def list_bboxes(source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
+    """Every bbox row of the source, mask/ink/patch blobs included — the
+    admin's working set (uncached: a save must show up on the next read)."""
     rows = await BboxRepository(db).list(source.id)
     return [_to_out(b) for b in rows]
 
@@ -66,7 +77,7 @@ async def list_bbox_status(
     return [BboxStatusOut(**row) for row in rows]
 
 
-@router.get("/{glyph_key}", response_model=BboxOut)
+@router.get("/{glyph_key}", response_model=BboxOut, dependencies=[Depends(require_admin)])
 async def get_bbox(glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)):
     bbox = await BboxRepository(db).get(source.id, glyph_key)
     if bbox is None:

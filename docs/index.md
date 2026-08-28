@@ -105,7 +105,7 @@ docs/
 │   ├── verfahren-lotse.md        # Lotse: Steckbrief, Stand v0.11, Versions-Ledger v0.1–v0.12 + Schienen-Auslauf, offene Blöcke
 │   ├── verfahren-inksight.md     # InkSight: Steckbrief, Stand T0, Ledger (T0 · B1), stehende Maßnahmen B2–B5
 │   ├── verfahren-nullprobe.md    # Nullprobe: Steckbrief, Kontroll-Doktrin (bewusst unversioniert), Mess-Ledger
-│   ├── crawler-richtlinie.md     # Wer die Seite lesen darf: Suchmaschinen, KI-Abruf vs. KI-Training, robots.txt/llms.txt, Cloudflare
+│   ├── crawler-richtlinie.md     # Wer die Seite lesen darf: offen für Suche, KI-Abruf und KI-Training (der Vorbehalt liegt am API-Gate), robots.txt/llms.txt, Cloudflare
 │   └── frontend-stack.md         # React+Vite+MUI Build, Deploy auf Cloud Run, i18n, Auth-Routen
 ├── schriftkunde/                 # Quellengesicherte Fakten zu den Schriften (wächst inkrementell)
 │   ├── allgemein.md              # Lineatur, Schräglage, Striche, Federtypen, Chronologie, DACH
@@ -308,9 +308,11 @@ Policy- und Technik-Dokumente.
   [Nullprobe](reference/verfahren-nullprobe.md); die Zahlen selbst
   wohnen ausschließlich in der Qualitätsmetrik §14
 - **[Crawler-Richtlinie](reference/crawler-richtlinie.md)** — wer die
-  Seite lesen darf: KI-Abruf/Zitat erlaubt, KI-Training abgelehnt
-  (`ai-train=no` als Nutzungsvorbehalt), `robots.txt` als Quelle der
-  Wahrheit, Cloudflare als Durchsetzung + Verworfen
+  Seite lesen darf: offen — Suche, KI-Abruf/Zitat und KI-Training erlaubt
+  (`ai-train=yes`, Entscheid 2026-08-28; der Open-Core-Vorbehalt liegt am
+  Auth-Gate der API, nicht in der robots.txt), `robots.txt` als Quelle der
+  Wahrheit, Cloudflare als Durchsetzung + Verworfen (darunter die frühere
+  Abruf-ja/Training-nein-Politik)
 
 ---
 

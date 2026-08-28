@@ -465,16 +465,22 @@ Ausschnitt die vollständige „Lern-Schablone“. Tabelle `word_instances`.
 Daten sind es nicht.** Autorisierte Duktus-Templates, Laufformen und
 Vorkommens-Statistik (= der DB-Inhalt) sind außerhalb der Lizenz
 reserviert. Technisch durchgesetzt: Bench-Fixtures gitignored,
-Ernte-Artefakte nie committet, der rohe Einzel-Template-Read und die ganze
-Statistik-Schicht admin-gegatet. → quellen-und-rechte.md §5
+Ernte-Artefakte nie committet, und seit 2026-08-28 JEDER API-Read, der
+den Bestand trägt, admin-gegatet — Templates, Vorkommen, Bboxen,
+Paar-Overrides, Hände, Statistik-Schicht, Eigenhand; die Trennlinie
+öffentlich/reserviert hält `tests/test_api_public_surface.py` für jede
+GET-Route fest. Die Crawler-Politik der Seite ist davon unabhängig offen
+(`ai-train=yes`): Der Moat ist die Datenbank, nicht die Webseite.
+→ quellen-und-rechte.md §5, crawler-richtlinie.md §2
 
 **Markdown-Spiegel (Schriftkunde)** — die zur Build-Zeit generierte
 Textfassung der `/schriftkunde`-Seite als statische Datei
 `/schriftkunde.md`, für Crawler und KI-Agenten ohne JavaScript (die SPA
 liefert ihnen sonst nur die leere Hülle). Gespiegelt wird der
 Locale-Katalog in der DOM-Reihenfolge der Seite; der Kopf trägt
-Canonical, Stand (aus dem Sitemap-`lastmod`) und den
-`ai-train=no`-Rechtevorbehalt in-band. *Technisch:*
+Canonical, Stand (aus dem Sitemap-`lastmod`) und den Rechtehinweis
+in-band (offene Politik `ai-train=yes`, Vorbehalt der kuratierten
+Schriftdaten hinter der API). *Technisch:*
 `app/src/lib/seo/schriftkundeMarkdown.ts` (Renderer) +
 `app/scripts/build-schriftkunde-md.mjs` (prebuild); drei
 Vitest-Wächter erzwingen Vollständigkeit, Byte-Gleichheit der

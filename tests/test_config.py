@@ -9,7 +9,7 @@ answered 401 for every possible token value.
 from __future__ import annotations
 
 import pytest
-from fastapi import HTTPException
+from fastapi import HTTPException, Response
 
 from api.auth import require_admin
 from core.config import Settings, settings
@@ -41,8 +41,11 @@ def test_admin_gate_accepts_header_when_secret_had_a_newline(monkeypatch) -> Non
     """The outage itself: secret stored as "tok\\n", header can only send "tok"."""
     monkeypatch.setattr(settings, "admin_token", Settings(admin_token="tok\n").admin_token)
 
-    require_admin(x_admin_token="tok", cf_access_jwt=None)  # must not raise
+    response = Response()
+    require_admin(response, x_admin_token="tok", cf_access_jwt=None)  # must not raise
+    # The gate stamps the no-store header on the response it lets through.
+    assert response.headers["cache-control"] == "private, no-store"
 
     with pytest.raises(HTTPException) as excinfo:
-        require_admin(x_admin_token="wrong", cf_access_jwt=None)
+        require_admin(Response(), x_admin_token="wrong", cf_access_jwt=None)
     assert excinfo.value.status_code == 401

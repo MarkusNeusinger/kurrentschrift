@@ -35,46 +35,42 @@ async def test_pair_put_get_list_delete_roundtrip(api: Harness):
     assert out["geometry"]["connector"] == GEOMETRY["connector"]
     assert out["provenance_source_id"] == source_id
 
-    res = await api.client.request("GET", f"/sources/{source_id}/pairs/n/e")
+    res = await api.client.request("GET", f"/sources/{source_id}/pairs/n/e", headers=api.admin_headers())
     assert res.status == 200
     assert res.json() == out
 
-    res = await api.client.request("GET", f"/sources/{source_id}/pairs")
+    res = await api.client.request("GET", f"/sources/{source_id}/pairs", headers=api.admin_headers())
     assert [(r["left_key"], r["right_key"]) for r in res.json()] == [("n", "e")]
 
     res = await api.client.request("DELETE", f"/sources/{source_id}/pairs/n/e", headers=api.admin_headers())
     assert res.status == 204
-    res = await api.client.request("GET", f"/sources/{source_id}/pairs/n/e")
+    res = await api.client.request("GET", f"/sources/{source_id}/pairs/n/e", headers=api.admin_headers())
     assert res.status == 404
 
 
-async def test_public_list_hides_unapproved_rows(api: Harness):
-    """Public list = approved only; ?all=true needs the admin gate."""
+async def test_reads_are_gated_and_the_list_hides_unapproved_by_default(api: Harness):
+    """Both reads sit behind the admin gate (an override is reserved join
+    geometry); the list shows approved rows by default — what renders — and
+    the unreviewed rest only on ?all=true."""
     _, source_id = await api.seed_style_and_source()
     await api.client.request(
         "PUT", f"/sources/{source_id}/pairs/n/e", json_body=_pair_body(approved=False), headers=api.admin_headers()
     )
     res = await api.client.request("GET", f"/sources/{source_id}/pairs")
+    assert res.status == 401
+    res = await api.client.request("GET", f"/sources/{source_id}/pairs/n/e")
+    assert res.status == 401
+
+    res = await api.client.request("GET", f"/sources/{source_id}/pairs", headers=api.admin_headers())
     assert res.status == 200
     assert res.json() == []
-    res = await api.client.request("GET", f"/sources/{source_id}/pairs", params={"all": "true"})
-    assert res.status == 401  # unauthenticated ?all=true is gated
     res = await api.client.request(
         "GET", f"/sources/{source_id}/pairs", params={"all": "true"}, headers=api.admin_headers()
     )
     assert res.status == 200
     assert [(r["left_key"], r["right_key"], r["approved"]) for r in res.json()] == [("n", "e", False)]
-
-
-async def test_single_get_hides_unapproved_from_public(api: Harness):
-    """The per-pair GET keeps the same contract as the list: unapproved rows
-    404 publicly (not 401 — existence stays hidden) and resolve for admins."""
-    _, source_id = await api.seed_style_and_source()
-    await api.client.request(
-        "PUT", f"/sources/{source_id}/pairs/n/e", json_body=_pair_body(approved=False), headers=api.admin_headers()
-    )
-    res = await api.client.request("GET", f"/sources/{source_id}/pairs/n/e")
-    assert res.status == 404
+    # The per-pair GET resolves an unapproved row for the admin — it is the
+    # review's own read.
     res = await api.client.request("GET", f"/sources/{source_id}/pairs/n/e", headers=api.admin_headers())
     assert res.status == 200
     assert res.json()["approved"] is False

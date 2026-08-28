@@ -150,24 +150,40 @@ async def test_sources_empty_db_returns_empty_list_with_cache_control(api: Harne
     assert "cache-control" in res.headers, "GET /sources must set Cache-Control"
 
 
-async def test_hands_empty_db_returns_empty_list_with_cache_control(api: Harness):
-    res = await api.client.request("GET", "/hands")
+async def test_api_robots_txt_opens_the_host_and_reserves_training(api: Harness):
+    """The API host's own crawler policy: nothing disallowed (reserved data is
+    gated by auth, not by robots rules), retrieval welcome, the /write renders
+    kept out of model training."""
+    res = await api.client.request("GET", "/robots.txt")
     assert res.status == 200
-    assert res.json() == []
-    assert "cache-control" in res.headers, "GET /hands must set Cache-Control"
+    assert res.headers["content-type"].startswith("text/plain")
+    body = res.body.decode()
+    assert "Disallow:" not in body
+    assert "Allow: /" in body
+    assert "Content-Signal: search=yes,ai-input=yes,ai-train=no" in body
 
 
-async def test_hand_single_read_returns_row_with_cache_control(api: Harness):
+async def test_hands_reads_are_gated_and_never_cacheable(api: Harness):
+    """The writer registry indexes the reserved dataset: 401 without the
+    token, and the admin's answer must not land in a shared cache."""
     from core.database import Hand
 
     style_id, _ = await api.seed_style_and_source()
     async with api.session_maker() as session:
         session.add(Hand(id="hand-test", style_id=style_id, label="Testhand", era="1920er", note=None))
         await session.commit()
-    res = await api.client.request("GET", "/hands/hand-test")
+
+    assert (await api.client.request("GET", "/hands")).status == 401
+    assert (await api.client.request("GET", "/hands/hand-test")).status == 401
+
+    res = await api.client.request("GET", "/hands", headers=api.admin_headers())
+    assert res.status == 200
+    assert [h["id"] for h in res.json()] == ["hand-test"]
+    assert res.headers["cache-control"] == "private, no-store"
+    res = await api.client.request("GET", "/hands/hand-test", headers=api.admin_headers())
     assert res.status == 200
     assert res.json()["label"] == "Testhand"
-    assert "cache-control" in res.headers, "GET /hands/{id} must set Cache-Control"
+    assert res.headers["cache-control"] == "private, no-store"
 
 
 async def test_quiz_words_empty_db_returns_empty_list_with_cache_control(api: Harness):

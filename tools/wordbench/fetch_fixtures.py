@@ -22,8 +22,12 @@ Read map (every call is a GET; nothing here ever writes to DB or API):
                                         (fallback: /hands/{h}/aggregates) ADMIN
     constant_nib_units                  GET /sources/{id}/render-context ADMIN
                                         (fallback: …/write/glyphs)       public
-    pair_instances.json                 GET /sources/{id}/pair-instances public
-    word_instances.json                 GET /sources/{id}/word-instances public
+    pair_instances.json                 GET /sources/{id}/pair-instances ADMIN
+    word_instances.json                 GET /sources/{id}/word-instances ADMIN
+
+The occurrence reads joined the ADMIN column on 2026-08-28 (reserved dataset,
+quellen-und-rechte.md §5) — in practice no change for a fixture rebuild, which
+needed `ADMIN_TOKEN` for the templates all along.
 
 Two artifacts have two provenances; the manifest says which:
 
@@ -510,12 +514,12 @@ def fetch(
         # branch itself is the exporter's, imported so the two paths cannot
         # drift apart.
         pair_rows = (
-            client.get(f"/sources/{quote(source_id, safe='')}/pair-instances")
+            client.get(f"/sources/{quote(source_id, safe='')}/pair-instances", admin=True)
             if only in ("pair-instances", "instances")
             else []
         )
         word_rows = (
-            client.get(f"/sources/{quote(source_id, safe='')}/word-instances")
+            client.get(f"/sources/{quote(source_id, safe='')}/word-instances", admin=True)
             if only in ("word-instances", "instances")
             else []
         )
@@ -523,8 +527,8 @@ def fetch(
         return style_id
 
     style = client.get(f"/styles/{quote(style_id, safe='')}")
-    pair_rows = client.get(f"/sources/{quote(source_id, safe='')}/pair-instances")
-    word_rows = client.get(f"/sources/{quote(source_id, safe='')}/word-instances")
+    pair_rows = client.get(f"/sources/{quote(source_id, safe='')}/pair-instances", admin=True)
+    word_rows = client.get(f"/sources/{quote(source_id, safe='')}/word-instances", admin=True)
 
     summaries = client.get(f"/sources/{quote(source_id, safe='')}/templates")
     have = {row["glyph_key"] for row in summaries if row.get("variant", 0) == 0}

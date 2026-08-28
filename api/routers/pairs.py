@@ -1,13 +1,15 @@
 """Glyph-pair override endpoints (redesign R3, proposal B).
 
-Sparse per-pair overrides over the §4 join generator: reads are public (the
-admin pair matrix badges overridden joins via a plain fetch), writes are
-admin-gated like the template writes. The composer consumes ONLY approved
-rows (see `GlyphPairRepository.approved_for_pairs` in the word endpoint);
-storing an unapproved harvest is safe.
+Sparse per-pair overrides over the §4 join generator. Reads and writes are
+admin-gated (reads since 2026-08-28): an override is authored join geometry
+and therefore reserved dataset (quellen-und-rechte.md §5), and no public
+consumer ever needed the rows — the composer reads the approved ones
+server-side (`GlyphPairRepository.approved_for_pairs` in the word endpoint),
+so `/write/word` is the only public surface an override has. Storing an
+unapproved harvest is safe: it never renders until approved.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
@@ -43,34 +45,22 @@ def _reject_unknown_keys(left_key: str, right_key: str) -> None:
             )
 
 
-@router.get("", response_model=list[GlyphPairOut])
+@router.get("", response_model=list[GlyphPairOut], dependencies=[Depends(require_admin)])
 async def list_pairs(
-    request: Request,
-    all: bool = False,
-    source: Source = Depends(require_source),
-    db: AsyncSession = Depends(require_db),
+    all: bool = False, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
 ):
-    """List pair overrides. Public callers see APPROVED rows only (matching
-    what actually renders); `?all=true` additionally returns unreviewed rows
-    — e.g. a fresh bulk harvest — and is admin-gated so unapproved data never
-    leaks to public consumers or bloats their responses.
+    """List pair overrides — APPROVED rows by default (what actually renders);
+    `?all=true` additionally returns unreviewed rows, e.g. a fresh bulk
+    harvest, so the matrix can badge what still awaits review.
 
     Deliberately uncached like /templates: the admin edits and expects fresh
     rows immediately."""
-    if all:
-        # Conditional gate: the dependency is a plain callable over the two
-        # auth headers — invoked manually because it only applies to ?all=true.
-        require_admin(
-            x_admin_token=request.headers.get("X-Admin-Token"),
-            cf_access_jwt=request.headers.get("Cf-Access-Jwt-Assertion"),
-        )
     rows = await GlyphPairRepository(db).list(source.style_id)
     return [_to_out(r) for r in rows if all or r.approved]
 
 
-@router.get("/{left_key}/{right_key}", response_model=GlyphPairOut)
+@router.get("/{left_key}/{right_key}", response_model=GlyphPairOut, dependencies=[Depends(require_admin)])
 async def get_pair(
-    request: Request,
     left_key: str,
     right_key: str,
     variant: int = 0,
@@ -78,17 +68,6 @@ async def get_pair(
     db: AsyncSession = Depends(require_db),
 ):
     row = await GlyphPairRepository(db).get(source.style_id, left_key, right_key, variant=variant)
-    if row is not None and not row.approved:
-        # Unapproved rows are admin work-in-progress — same contract as the
-        # list endpoint: they never leak to public callers (404, not 401, so
-        # existence isn't revealed either).
-        try:
-            require_admin(
-                x_admin_token=request.headers.get("X-Admin-Token"),
-                cf_access_jwt=request.headers.get("Cf-Access-Jwt-Assertion"),
-            )
-        except HTTPException:
-            row = None
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no pair override for {left_key!r}→{right_key!r}")
     return _to_out(row)

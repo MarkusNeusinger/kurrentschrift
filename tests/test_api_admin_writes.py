@@ -44,7 +44,7 @@ async def test_put_bbox_roundtrips_via_get(api: Harness):
     assert out["n_anchors"] == 42
     assert out["locked"] is True
 
-    res = await api.client.request("GET", f"/sources/{source_id}/bboxes/n")
+    res = await api.client.request("GET", f"/sources/{source_id}/bboxes/n", headers=api.admin_headers())
     assert res.status == 200
     assert res.json() == out
 
@@ -106,7 +106,7 @@ async def test_put_bbox_response_reflects_the_write_not_the_previous_state(api: 
     )
     assert res.status == 200
     assert len(res.json()["mask_strokes"]) == 2
-    stored = await api.client.request("GET", f"/sources/{source_id}/bboxes/n")
+    stored = await api.client.request("GET", f"/sources/{source_id}/bboxes/n", headers=api.admin_headers())
     assert stored.status == 200
     assert len(stored.json()["mask_strokes"]) == 2
 
@@ -144,7 +144,7 @@ async def test_delete_bbox_removes_row(api: Harness):
     )
     res = await api.client.request("DELETE", f"/sources/{source_id}/bboxes/n", headers=api.admin_headers())
     assert res.status == 204
-    res = await api.client.request("GET", f"/sources/{source_id}/bboxes/n")
+    res = await api.client.request("GET", f"/sources/{source_id}/bboxes/n", headers=api.admin_headers())
     assert res.status == 404
 
 
@@ -207,7 +207,7 @@ async def test_trace_happy_path_persists_template(api: Harness, synthetic_chart_
     assert rows[0]["has_data"] is True
 
     # _sync_bbox_anchor_count: the bbox mirrors the count the derivation used.
-    res = await api.client.request("GET", f"/sources/{source_id}/bboxes/n")
+    res = await api.client.request("GET", f"/sources/{source_id}/bboxes/n", headers=api.admin_headers())
     actual = out["trace_meta"].get("n_anchors") or len(out["anchors"])
     assert res.json()["n_anchors"] == actual
 

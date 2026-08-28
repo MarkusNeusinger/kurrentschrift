@@ -3,11 +3,14 @@
 The statistics layer's write path: the laufform harvest stores every clean
 per-occurrence M4 fit (`instances`), the pairlab harvest every dissected
 letter join (`pair_instances`) — occurrences, not just medians, per the
-2026-07-31 decision. Reads are public like the template lists (the data is
-derived from PD specimens); writes are admin-gated batches that get-or-create
-the writer's `hands` row in the same request. Nothing here affects rendering —
-the composer keeps reading templates/laufform variants and approved
-`glyph_pairs` only.
+2026-07-31 decision. Reads AND writes are admin-gated (since 2026-08-28):
+an occurrence is a measured fit over the authored templates — the learned
+dataset the README reserves (quellen-und-rechte.md §5) — and no public page
+ever consumed one; the readers are the workbench, the harvests and the
+fixture/snapshot tools, all of which carry the admin token. The write batches
+get-or-create the writer's `hands` row in the same request. Nothing here
+affects rendering — the composer keeps reading templates/laufform variants
+and approved `glyph_pairs` only.
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -99,7 +102,7 @@ def _instance_out(row: Instance) -> InstanceOut:
     )
 
 
-@router.get("/instances", response_model=list[InstanceOut])
+@router.get("/instances", response_model=list[InstanceOut], dependencies=[Depends(require_admin)])
 async def list_instances(
     glyph_key: str | None = None, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
 ):
@@ -170,7 +173,7 @@ def _pair_instance_out(row: PairInstance) -> PairInstanceOut:
     )
 
 
-@router.get("/pair-instances", response_model=list[PairInstanceOut])
+@router.get("/pair-instances", response_model=list[PairInstanceOut], dependencies=[Depends(require_admin)])
 async def list_pair_instances(
     left_key: str | None = None,
     right_key: str | None = None,
@@ -227,7 +230,7 @@ def _word_instance_out(row: WordInstance) -> WordInstanceOut:
     )
 
 
-@router.get("/word-instances", response_model=list[WordInstanceOut])
+@router.get("/word-instances", response_model=list[WordInstanceOut], dependencies=[Depends(require_admin)])
 async def list_word_instances(
     specimen_id: str | None = None,
     word: str | None = None,

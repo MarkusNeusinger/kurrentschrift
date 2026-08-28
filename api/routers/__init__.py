@@ -10,6 +10,7 @@ from api.routers.health import router as health_router
 from api.routers.instances import router as instances_router
 from api.routers.pairs import router as pairs_router
 from api.routers.quiz_words import router as quiz_words_router
+from api.routers.seo import router as seo_router
 from api.routers.sources import router as sources_router
 from api.routers.styles import router as styles_router
 from api.routers.templates import router as templates_router
@@ -30,6 +31,7 @@ __all__ = [
     "pair_aggregates_router",
     "pairs_router",
     "quiz_words_router",
+    "seo_router",
     "sources_router",
     "styles_router",
     "templates_router",

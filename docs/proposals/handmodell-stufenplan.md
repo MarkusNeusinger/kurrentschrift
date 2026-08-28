@@ -76,8 +76,9 @@ Vorkommen) und `gen_chamfer`-Mittel als Chips, die ausführlichen
 Zahlen (Streuung, Ernte-Abstand, Fit-Rest, Versatz ± MAD,
 Ink-Lücke, Platten-Histogramm) im Tooltip, dazu „Fit unsicher", wenn
 das Vorkommen *dieser* Vorlage keinen sauberen Fit hat. Geladen wird
-einmal je Quelle (öffentliche `pair-instances` + admin-gesicherte
-`pair-aggregates` der aus den Zeilen abgeleiteten Hand), nie je Karte;
+einmal je Quelle (`pair-instances` + `pair-aggregates` der aus den Zeilen
+abgeleiteten Hand — beide admin-gesichert, die Vorkommen seit
+2026-08-28), nie je Karte;
 ohne Admin-Lesezugang bleiben die Vorkommenszahlen stehen. Bewusst nur
 Zahlen: die Median-Skizze bleibt der Werkbank-Linse vorbehalten, eine
 registrierte Überlagerung von gemessenem Connector und komponiertem
