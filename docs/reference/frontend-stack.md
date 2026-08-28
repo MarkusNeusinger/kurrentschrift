@@ -406,6 +406,26 @@ ist in diesem Pfad aufgegangen.
   Seite IST die Route (gleiche URL, gleicher Canonical) — Google
   billigt das ausdrücklich, solange der Inhalt dem entspricht, was
   Menschen sehen.
+- **Für Maschinen lesbar, nicht nur für Crawler erreichbar** (seit
+  2026-08-28, nach dem Befund eines Assistenten, der die Seiten
+  abgerufen hatte): Die drei Schriften tragen ihre **Kennwerte als
+  Daten** — im Locale ein typisiertes `data` je Variante (`slantDeg`,
+  `lineature`, `pen`, `stroke`, bei Bedarf `penAngleDeg`,
+  `lineatureAlt`), im Prerender der Schriftkunde zweimal ausgegeben: als
+  JSON-LD (`ItemList` aus `DefinedTerm`s mit `PropertyValue`s) im Head
+  UND als sichtbarer `<pre><code class="language-json">`-Block im Body,
+  weil die HTML→Markdown-Konverter, mit denen Assistenten Seiten
+  abrufen, `<script>` verwerfen und `<pre>` behalten. Jeder Winkelwert
+  in der Prosa nennt seine Bezugsgröße selbst („75–80° zur Grundlinie
+  (90° = senkrecht)", „Federkante 15–20° zur Schreiblinie — nicht die
+  Schräglage"), damit ein Chunk allein nicht Schräglage und
+  Federwinkel zusammenwirft; `prerender.test.ts` hält Zahlen und Prosa
+  zusammen. Die **Buchstaben selbst** sind über Rezepte abrufbar (Tafel-
+  Seite „Buchstaben für Maschinen" + `llms.txt`): Inventar
+  (`/templates`), Vorlage als PNG (`/bboxes/{glyph_key}/crop`,
+  gemeinfrei), geschriebene Form als SVG (`/write/glyphs/{glyph_key}.svg`
+  — neu, [`write-api.md`](write-api.md)), Geometrie und ganzes Wort als
+  JSON.
 
 ### Bot-Traffic auf einer zweiten Plausible-Site (seit 2026-08-28)
 

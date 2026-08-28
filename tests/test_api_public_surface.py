@@ -49,6 +49,7 @@ PUBLIC = {
     "/sources/{source_id}/word-samples/{sample_id}/crop",
     "/sources/{source_id}/write/glyphs",
     "/sources/{source_id}/write/glyphs/{glyph_key}",
+    "/sources/{source_id}/write/glyphs/{glyph_key}.svg",
     "/sources/{source_id}/write/word",
     "/quiz-words",
 }

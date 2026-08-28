@@ -32,6 +32,12 @@ import { paths } from '../../routes/paths.ts';
 import { TRY_TARGETS } from '../../sections/schriftkunde/tryTargets.ts';
 
 export const ORIGIN = 'https://kurrentschrift.ink';
+// The public API host and the source the public pages write from — the same
+// values as CONFIG in global-config.ts, restated here because that module
+// reads `import.meta.env`, which the Node-run build has no notion of;
+// prerender.test.ts holds the two in step.
+export const PUBLIC_API = 'https://api.kurrentschrift.ink';
+export const PUBLIC_SOURCE_ID = 'suetterlin-1922';
 // The site card index.html declares — route-independent on purpose, so link
 // previews (which never run JS) always get the same image.
 const OG_IMAGE = `${ORIGIN}/og.png`;
@@ -50,6 +56,10 @@ export function escapeHtml(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 const e = escapeHtml;
+// Text inside <pre><code>: only the three characters that would break the
+// document — quotes stay quotes, so an HTML→Markdown converter hands a model
+// the JSON verbatim.
+const escapeCode = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 // `</` inside a <script> would end it early; the escape is plain JSON and
 // parses back to the identical string.
 const jsonLd = (payload: object) =>
@@ -101,7 +111,90 @@ export interface PageSpec {
   readonly description: string;
   readonly noindex?: boolean;
   readonly breadcrumbs?: readonly { readonly route: string; readonly label: string }[];
+  readonly jsonLd?: object; // page-specific structured data, beside the site/breadcrumb node
   readonly body: () => string;
+}
+
+// ---------------------------------------------------------------- Kennwerte
+
+// The three scripts' key figures as data — the locale's typed `data` per
+// variant, plus identity and sources. Rendered twice on the Schriftkunde page:
+// as JSON-LD in the head and as a visible JSON block in the body, because the
+// converters assistants fetch pages with (HTML → Markdown) drop <script> and
+// keep <pre> — the head alone was invisible to the reviewer that asked for
+// this. Numbers and prose are held together by prerender.test.ts.
+export const KENNWERTE_LEGEND =
+  'Winkel in Grad zur Grundlinie (90 = senkrecht); Lineatur = Oberlänge : Mittellänge : Unterlänge; ' +
+  'Federwinkel = Winkel der Federkante zur Schreiblinie, nicht die Schräglage.';
+
+export function kennwerte() {
+  return schriftkunde.variants.map((v) => ({
+    id: v.id,
+    name: v.name,
+    period: v.period,
+    ...v.data,
+    sources: v.sources.map((s) => s.href),
+  }));
+}
+
+function kennwerteLd(): object {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: `${schriftkunde.variantsHeading} — Kennwerte`,
+    description: KENNWERTE_LEGEND,
+    itemListElement: kennwerte().map((k, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      item: {
+        '@type': 'DefinedTerm',
+        name: k.name,
+        description: k.period,
+        url: `${abs(paths.schriftkunde)}#${k.id}`,
+        additionalProperty: Object.entries(k)
+          .filter(([key]) => !['id', 'name', 'period', 'sources'].includes(key))
+          .map(([key, value]) => ({
+            '@type': 'PropertyValue',
+            name: key,
+            value: Array.isArray(value) ? value.join(key === 'lineature' || key === 'lineatureAlt' ? ':' : '–') : value,
+            ...(key.endsWith('Deg') ? { unitText: 'Grad zur Grundlinie' } : {}),
+          })),
+        sameAs: k.sources,
+      },
+    })),
+  };
+}
+
+// ---------------------------------------------------------------- Buchstaben
+
+// Retrieval recipes for the letters themselves — the public API surface a
+// client without JavaScript can read: the inventory, the public-domain chart
+// crop of each letter, its written form as an image, the geometry, a whole
+// word. Rendered on the Tafel page and repeated in llms.txt.
+function letterRecipes(): string {
+  const src = `${PUBLIC_API}/sources/${PUBLIC_SOURCE_ID}`;
+  const row = (label: string, url: string, note: string) =>
+    `<li><strong>${e(label)}:</strong> ${a(url, url)} — ${e(note)}</li>`;
+  return [
+    h2('Buchstaben für Maschinen'),
+    p(
+      `Die geschriebenen Buchstaben und ihre gemeinfreie Vorlage sind ohne JavaScript abrufbar — aus der Quelle ` +
+        `„${PUBLIC_SOURCE_ID}“ (Sütterlin-Ausgangsschrift 1922), mit der auch die Seite schreibt. {glyph_key} ist der ` +
+        `Schlüssel aus dem Inventar (a … z, Großbuchstaben, longs = langes ſ, Ligaturen wie ch, ck, tz).`,
+    ),
+    '<ul>',
+    row('Inventar', `${src}/templates`, 'JSON, ein Eintrag je glyph_key mit has_data'),
+    row('Vorlage (Original-Ausschnitt)', `${src}/bboxes/{glyph_key}/crop`, 'PNG, gemeinfreie Tafel von 1922'),
+    row('Geschriebene Form', `${src}/write/glyphs/{glyph_key}.svg`, 'SVG auf der Lineatur (Grundlinie, Mittellinie)'),
+    row('Geometrie', `${src}/write/glyphs?keys=a,n`, 'JSON: Umriss-Ringe, Mittellinie, Anschlüsse'),
+    row('Ganzes Wort', `${src}/write/word?text=lesen`, 'JSON, serverseitig komponiert'),
+    `<li><strong>Beispiel:</strong> ${a(`${src}/write/glyphs/e.svg`, 'das Sütterlin-e, geschrieben')} · ${a(`${src}/bboxes/e/crop`, 'seine Vorlage')}</li>`,
+    '</ul>',
+    em(
+      'Die komponierten Züge sind aus dem vorbehaltenen Bestand abgeleitet — abrufen und zitieren ja, Trainingsmaterial nein ' +
+        '(api.kurrentschrift.ink/robots.txt). Die Vorlagen-Ausschnitte sind gemeinfrei.',
+    ),
+  ].join('\n');
 }
 
 const crumbHome = { route: '/', label: 'Startseite' };
@@ -185,6 +278,19 @@ const schriftkundeBody = () => {
     if ('note' in v && v.note) push(em(v.note));
     push(sourceLine(v.sources));
   }
+  // The same figures as data — see kennwerte(); the legend states the
+  // conventions once more right next to the numbers.
+  // Pretty-printed, but numeric arrays on one line ("[75, 80]") — a
+  // three-line array per angle would triple the block for nothing.
+  const json = JSON.stringify(kennwerte(), null, 2).replace(/\[\s*((?:-?\d+(?:\.\d+)?,\s*)*-?\d+(?:\.\d+)?)\s*\]/g, (_, nums: string) =>
+    `[${nums.split(/,\s*/).join(', ')}]`,
+  );
+  push(
+    h3('Kennwerte (maschinenlesbar)'),
+    p(KENNWERTE_LEGEND),
+    `<pre><code class="language-json">${escapeCode(json)}</code></pre>`,
+    `<p>${e('Die Buchstaben selbst — geschrieben und als Original-Ausschnitt — sind auf der Tafel-Seite maschinenlesbar verlinkt: ')}${a(abs(paths.tafel), 'Buchstaben für Maschinen')}.</p>`,
+  );
 
   push(h2(t.classifyHeading), p(t.classifyLead), rows(t.classify), sourceLine(t.classifySources));
   push(h2(t.geographyHeading), p(t.geographyLead), rows(t.geography), sourceLine(t.geographySources));
@@ -269,6 +375,7 @@ const tafelBody = () => {
       .map((s) => `<li><strong>${e(s.name)}</strong> — ${e(t.feder[s.styleId] ?? s.feder)} · ${e(state(s.written))}</li>`)
       .join('')}</ul>`,
     em(NEEDS_JS),
+    letterRecipes(),
   ].join('\n');
 };
 
@@ -344,7 +451,14 @@ const notFoundBody = () =>
 
 export const PAGES: readonly PageSpec[] = [
   { route: '/', file: 'index.html', ...seo.home, body: landingBody },
-  { route: paths.schriftkunde, file: 'schriftkunde.html', ...seo.schriftkunde, breadcrumbs: [crumbHome], body: schriftkundeBody },
+  {
+    route: paths.schriftkunde,
+    file: 'schriftkunde.html',
+    ...seo.schriftkunde,
+    breadcrumbs: [crumbHome],
+    jsonLd: kennwerteLd(),
+    body: schriftkundeBody,
+  },
   {
     route: paths.lesen,
     file: 'lesen.html',
@@ -406,7 +520,7 @@ const RIGHTS_NOTE =
 const STYLE =
   'body{max-width:42rem;margin:2rem auto;padding:0 1rem;font-family:Georgia,"Times New Roman",serif;' +
   'line-height:1.5;color:#2b2419;background:#f5efe1}a{color:#2c6e5b}nav a{margin-right:.75rem}' +
-  '.sources,.eyebrow,footer{font-size:.9rem;color:#6b5f4c}';
+  '.sources,.eyebrow,footer{font-size:.9rem;color:#6b5f4c}pre{overflow-x:auto;font-size:.85rem}';
 
 function breadcrumbLd(spec: PageSpec): object | null {
   if (!spec.breadcrumbs || spec.route === null) return null;
@@ -457,6 +571,7 @@ export function renderPage(spec: PageSpec, { stand }: { stand: string }): string
     `<meta name="twitter:image" content="${OG_IMAGE}">`,
     `<meta name="twitter:image:alt" content="${e(OG_IMAGE_ALT)}">`,
     ld ? jsonLd(ld) : '',
+    spec.jsonLd ? jsonLd(spec.jsonLd) : '',
     `<style>${STYLE}</style>`,
   ]
     .filter(Boolean)
