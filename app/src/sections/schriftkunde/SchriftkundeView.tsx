@@ -31,12 +31,16 @@ import { PaperCardCta, PaperCardLink } from '@/components/PaperCardLink';
 import { Prose } from '@/components/Prose';
 import { WrittenWord } from '@/components/WrittenWord';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
-import { de } from '@/locales';
+import { schriftkunde } from '@/locales/de/schriftkunde';
 import { paths } from '@/routes/paths';
 import { TRY_TARGETS } from '@/sections/schriftkunde/tryTargets';
 import { display, garamond, paper, script, suetterlin } from '@/styles/paper';
 
-const t = de.schriftkunde;
+// Imported directly, not via the `de` barrel: this route chunk is the only
+// consumer, and the direct import keeps the namespace (~7 kB gz measured on
+// the eager locales chunk) out of the eager public bundle (see
+// locales/index.ts).
+const t = schriftkunde;
 
 // --- shared text styles (mirrors ImpressumView) -----------------------------
 // Body prose inherits size/family from the theme `body1` variant (19px Garamond);
