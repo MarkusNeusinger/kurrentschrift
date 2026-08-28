@@ -41,7 +41,8 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   plain `Grok/1.0` (seen on anyplot, 2026-08-19) or `xAI-Bot` (seen here,
   2026-08-28) got the page and left no event. Two bare entries close the
   gap, last among the xAI patterns so the specific ones keep winning;
-  mirrored verbatim from anyplot #10808, as the shared taxonomy requires.
+  mirrored verbatim from anyplot #10808, as the shared taxonomy requires
+  (#442).
 
 ## [0.27.0] — 2026-08-28 — Lotse + chain v5 in the tracing duel, the Eigenhand capture chain, the site opened to machines
 
