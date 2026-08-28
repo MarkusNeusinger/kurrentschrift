@@ -145,21 +145,24 @@ und welche den Admin-Zugang verlangen — steht mit vollständiger Liste in
 [`quellen-und-rechte.md`](quellen-und-rechte.md) §5 und wird durch
 `tests/test_api_public_surface.py` festgehalten.
 
-`app/public/llms.txt` bleibt die inhaltliche Oberfläche für Agenten. Das
-ist hier wichtiger als bei einer üblichen Seite: Die SPA liefert ohne
-JavaScript nur eine ~5,8 KB große Hülle mit Titel und Description
-(kein Prerendering, anders als beim Schwesterprojekt anyplot). Agenten,
-die kein JS ausführen, sehen also die Hülle **plus** `llms.txt` — und
-seit 2026-08-27 den **Markdown-Spiegel der Schriftkunde**
-(`/schriftkunde.md`, generiert zur Build-Zeit aus dem Locale-Katalog,
-aus `llms.txt` verlinkt; Canonical auf die HTML-Seite als
-HTTP-`Link`-Header, Rechtehinweis in-band im Dateikopf — die offene
-Politik plus der Vorbehalt der kuratierten Schriftdaten —, weil die rohe
-Datei ohne robots.txt-Kontext zirkuliert). Der Spiegel zieht den
-Prerender-Gedanken nur für die eine Inhaltsseite vor und erledigt ihn
-NICHT: Der nächste Schritt ist der Prerender-Pfad nach anyplots Muster
-(Bot-UA → serverseitig gerendertes HTML je Route, dieselbe Crawler-Liste
-in `nginx.conf` wie dort), nicht eine weitere robots.txt-Zeile.
+`app/public/llms.txt` bleibt die inhaltliche Oberfläche für Agenten —
+der Wegweiser, nicht der Text. Den Text bekommen sie seit 2026-08-28 über
+den **Prerender-Pfad** nach anyplots Muster: Die `$is_bot`-Map in
+`app/nginx.conf` (wortgleich mit anyplot — Suchmaschinen, KI-Crawler,
+nutzergesteuerte Fetcher, Social-/Messenger-Vorschauen; eine Änderung
+wird in beiden Dateien im selben Zug gemacht) schickt einen gemappten UA
+an `api.kurrentschrift.ink/seo-proxy/{route}`, wo die zur Build-Zeit aus
+dem Locale-Katalog gerenderte Seite der Route liegt (`app/prerender/`,
+Details in [`frontend-stack.md`](frontend-stack.md) §6); Menschen
+bekommen unter derselben URL die SPA. Die Map entscheidet nur, WAS ein
+Agent bekommt, nie OB er darf — das bleibt `robots.txt` plus Cloudflare
+(§2, §4); ein nicht gemappter Agent ist damit nicht abgelehnt, er sieht
+nur die Hülle. Der Markdown-Spiegel der Schriftkunde (2026-08-27, eine
+Seite als `/schriftkunde.md`) war der Vorläufer und ist in diesem Pfad
+aufgegangen. Weil der Pfad für Menschen unsichtbar ist, prüft ihn
+`.github/workflows/bot-serving-check.yml` täglich gegen den
+Cloud-Run-Origin — anyplots Alarm, der dort vier stille Wochen mit 502
+für jeden Crawler beendet hat.
 
 ## 4 · Was in Cloudflare zu tun ist
 

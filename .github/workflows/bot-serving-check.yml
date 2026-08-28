@@ -1,0 +1,156 @@
+# Synthetic monitor for the nginx bot -> seo-proxy path.
+#
+# Humans get the SPA shell and never notice when the bot hop breaks: the site
+# looks healthy, Plausible shows normal traffic, CI is green — and every
+# crawler sees an error page. Exactly that happened to the sister project
+# anyplot between 2026-06-12 and 2026-07-09: the @seo_proxy upstream TLS
+# verification failed (default proxy_ssl_verify_depth 1 vs a 4-deep Let's
+# Encrypt chain) and every bot UA received HTTP 502 on every page, undetected
+# for ~4 weeks. This check is the alarm that was missing — adopted here with
+# the prerender path (docs/reference/crawler-richtlinie.md §3).
+#
+# The checks target the Cloud Run ORIGIN, not https://kurrentschrift.ink:
+# Cloudflare's bot management 403s GitHub-runner (datacenter) IPs — including
+# UA-spoofed "Googlebot", which only passes verified-bot checks from real
+# Google IPs. The origin is also exactly the layer that broke in the incident
+# above; Cloudflare-edge issues are out of this monitor's reach by design.
+
+name: Bot Serving Check
+
+on:
+  schedule:
+    - cron: "41 6 * * *" # daily 06:41 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bot-serving:
+    runs-on: ubuntu-latest
+    # ~23 check() calls x (--retry 2 -> up to 3 attempts x --max-time 30) can
+    # reach ~35 min worst-case, plus three non-retried probes (charset,
+    # trailing slash, 404 — 30s each); 40 leaves room to report a clean
+    # failure rather than dying to the job timeout, which reports nothing
+    # useful. Recompute this when adding checks: the ceiling is check() calls
+    # x 90s, plus margin.
+    timeout-minutes: 40
+    steps:
+      - name: Crawler UAs must get the prerendered pages
+        run: |
+          set -uo pipefail
+          # Cloud Run origin of the kurrentschrift-app service (see header
+          # comment for why not https://kurrentschrift.ink).
+          ORIGIN="https://kurrentschrift-app-661695800706.europe-west4.run.app"
+          GOOGLEBOT="Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+          TWITTERBOT="Twitterbot/1.0"
+          CLAUDEBOT="Mozilla/5.0 (compatible; ClaudeBot/1.0; +claudebot@anthropic.com)"
+          CHATGPTUSER="Mozilla/5.0 (compatible; ChatGPT-User/1.0; +https://openai.com/bot)"
+          HUMAN="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
+          # First line of every prerendered file (app/src/lib/seo/prerender.ts
+          # PRERENDER_MARKER) — the one string that separates a prerendered
+          # page from the SPA shell regardless of how the copy changes.
+          MARKER='<!-- kurrentschrift.ink prerender -->'
+          fail=0
+
+          check() {
+            local ua="$1" url="$2" expect="$3" want="${4:-200}"
+            local code
+            # On curl failure REPLACE the code — a failing curl can still have
+            # printed a partial -w code; appending would yield e.g. "200000".
+            code=$(curl -sS --retry 2 --max-time 30 -A "$ua" -o body.html -w '%{http_code}' "$url") || code="000"
+            if [ "$code" != "$want" ]; then
+              echo "::error::$url with UA '$ua' returned HTTP $code (expected $want)"
+              fail=1
+            elif ! grep -qF "$expect" body.html; then
+              echo "::error::$url with UA '$ua' returned $want but the body is missing: $expect"
+              fail=1
+            else
+              echo "OK: $url ($ua)"
+            fi
+          }
+
+          # Bot path: prerendered per-route HTML from the seo-proxy. The
+          # marker proves the prerender; the per-route title proves the ROUTE
+          # (the SPA shell carries the home title on every URL).
+          check "$GOOGLEBOT"  "$ORIGIN/"                       "$MARKER"
+          check "$GOOGLEBOT"  "$ORIGIN/schriftkunde"           "<title>Schriftkunde · kurrentschrift.ink</title>"
+          check "$GOOGLEBOT"  "$ORIGIN/schreiben/uebungsblatt" "<title>Übungsblatt · kurrentschrift.ink</title>"
+          check "$TWITTERBOT" "$ORIGIN/quiz"                   "<title>Lese-Quiz · kurrentschrift.ink</title>"
+
+          # AI assistants take the same prerendered path (nginx $is_bot). These
+          # checks hit the ORIGIN, so they verify the nginx map independently of
+          # whether Cloudflare's AI Crawl Control currently 403s these UAs at
+          # the edge — an edge-level policy change needs no change here.
+          check "$CLAUDEBOT"   "$ORIGIN/schriftkunde" "$MARKER"
+          check "$CHATGPTUSER" "$ORIGIN/schriftkunde" "$MARKER"
+
+          # User-directed fetchers: a human asked their assistant to open the
+          # page. Google documents its own as generally ignoring robots.txt, so
+          # the nginx map is the only control point and the only thing this
+          # guards. The list mirrors anyplot's check (same map, verbatim).
+          for ua in \
+            "Mozilla/5.0 (compatible; Google-GeminiNotebook)" \
+            "Mozilla/5.0 (compatible; Google-NotebookLM)" \
+            "Mozilla/5.0 (compatible; Gemini-Deep-Research)" \
+            "Mozilla/5.0 (compatible; GoogleAgent-Mariner)" \
+            "meta-externalfetcher/1.1" \
+            "Mozilla/5.0 (compatible; Meta-WebIndexer/1.0)" \
+            "Mozilla/5.0 (compatible; MistralAI-User/1.0; +https://docs.mistral.ai/robots)" \
+            "Mozilla/5.0 (compatible; MistralAI-Index/1.0; +https://docs.mistral.ai/robots)" \
+            "DuckAssistBot/1.2; (+http://duckduckgo.com/duckassistbot.html)" \
+            "Mozilla/5.0 (compatible; Amzn-SearchBot/1.0)" \
+            "Mozilla/5.0 (compatible; Amazonbot/0.1; +https://developer.amazon.com/support/amazonbot)" \
+            "Grok/1.0"
+          do
+            check "$ua" "$ORIGIN/schriftkunde" "$MARKER"
+          done
+
+          # A crawler asking for a URL that is no page gets the prerendered 404
+          # WITH status 404 — the SPA shell used to answer 200 (soft-404).
+          check "$GOOGLEBOT" "$ORIGIN/gibt-es-nicht" 'content="noindex,follow"' 404
+
+          # The machine files must be served directly, never proxied to the
+          # seo backend — including for a mapped crawler UA, which is the whole
+          # point of the `location =` bypasses.
+          check "$GOOGLEBOT"   "$ORIGIN/robots.txt" "User-agent: Bytespider"
+          check "$GOOGLEBOT"   "$ORIGIN/llms.txt"   "# kurrentschrift.ink"
+          check "$CHATGPTUSER" "$ORIGIN/llms.txt"   "# kurrentschrift.ink"
+          check "$GOOGLEBOT"   "$ORIGIN/sitemap.xml" "<urlset"
+          # The site card must be the FILE for a preview bot, not the proxy.
+          code=$(curl -sS --max-time 30 -A "$TWITTERBOT" -o /dev/null -w '%{http_code} %{content_type}' "$ORIGIN/og.png") || code="000"
+          case "$code" in
+            "200 image/png"*) echo "OK: og.png served as image to a preview bot" ;;
+            *) echo "::error::og.png for a preview bot: $code (expected 200 image/png)"; fail=1 ;;
+          esac
+
+          # llms.txt carries UTF-8 punctuation; without an explicit charset a
+          # strict client decodes it as Latin-1 mojibake.
+          ct=$(curl -sS --max-time 30 -A "$GOOGLEBOT" -o /dev/null -w '%{content_type}' "$ORIGIN/llms.txt")
+          case "$ct" in
+            *charset=utf-8*) echo "OK: llms.txt content-type: $ct" ;;
+            *)
+              echo "::error::llms.txt served without utf-8 charset: $ct"
+              fail=1 ;;
+          esac
+
+          # A trailing slash must normalise to the canonical URL on THIS host,
+          # relative, never an internal path, plain http or the container port.
+          slash_target=$(curl -sS --max-time 30 -o /dev/null -A "$GOOGLEBOT" \
+            -w '%{redirect_url}' "$ORIGIN/quiz/")
+          case "$slash_target" in
+            "")
+              echo "::error::trailing slash produced no redirect — the rewrite is gone"
+              fail=1 ;;
+            *"/seo-proxy"*|http://*|*:8080/*)
+              echo "::error::trailing-slash redirect leaks or downgrades: $slash_target"
+              fail=1 ;;
+            *) echo "OK: trailing slash -> $slash_target" ;;
+          esac
+
+          # Control: humans must still get the SPA shell — on the home page
+          # and on a deep route.
+          check "$HUMAN" "$ORIGIN/"             '<div id="root">'
+          check "$HUMAN" "$ORIGIN/schriftkunde" '<div id="root">'
+
+          exit $fail

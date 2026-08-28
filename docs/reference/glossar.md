@@ -48,10 +48,10 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — k0-Protokoll §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
-- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Markdown-Spiegel (Schriftkunde) §2 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Mindestbelegung (Eigenhand) §5
+- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
-- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
+- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schreib-Karte §2 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
@@ -473,18 +473,21 @@ GET-Route fest. Die Crawler-Politik der Seite ist davon unabhängig offen
 (`ai-train=yes`): Der Moat ist die Datenbank, nicht die Webseite.
 → quellen-und-rechte.md §5, crawler-richtlinie.md §2
 
-**Markdown-Spiegel (Schriftkunde)** — die zur Build-Zeit generierte
-Textfassung der `/schriftkunde`-Seite als statische Datei
-`/schriftkunde.md`, für Crawler und KI-Agenten ohne JavaScript (die SPA
-liefert ihnen sonst nur die leere Hülle). Gespiegelt wird der
-Locale-Katalog in der DOM-Reihenfolge der Seite; der Kopf trägt
-Canonical, Stand (aus dem Sitemap-`lastmod`) und den Rechtehinweis
-in-band (offene Politik `ai-train=yes`, Vorbehalt der kuratierten
-Schriftdaten hinter der API). *Technisch:*
-`app/src/lib/seo/schriftkundeMarkdown.ts` (Renderer) +
-`app/scripts/build-schriftkunde-md.mjs` (prebuild); drei
-Vitest-Wächter erzwingen Vollständigkeit, Byte-Gleichheit der
-eingecheckten Datei und den Kopf. → frontend-stack.md §6,
+**Prerender-Pfad (Crawler)** — Crawler und KI-Agenten (kein JavaScript)
+bekommen je öffentliche Route eine zur Build-Zeit aus dem Locale-Katalog
+gerenderte HTML-Seite statt der leeren SPA-Hülle; Menschen bekommen
+unter derselben URL die App. Erkannt am User-Agent (`$is_bot`-Map in
+`app/nginx.conf`, wortgleich mit anyplot), bedient vom API-Host
+(`/seo-proxy/{route}` liest `app/prerender/*.html`). Jede Seite trägt
+Head (Canonical, OG, JSON-LD), den Text in DOM-Reihenfolge, die
+Site-Nav, Stand (Sitemap-`lastmod`) und den Rechtehinweis in-band; erste
+Zeile ist der Marker `<!-- kurrentschrift.ink prerender -->`. Löste am
+2026-08-28 den *Markdown-Spiegel* der Schriftkunde (`/schriftkunde.md`,
+2026-08-27, eine Seite) ab. *Technisch:* `app/src/lib/seo/prerender.ts`
+(Renderer) + `app/scripts/build-prerender.mjs` (prebuild) +
+`api/routers/seo.py`; Wächter `prerender.test.ts`,
+`tests/test_api_seo_proxy.py` und täglich
+`.github/workflows/bot-serving-check.yml`. → frontend-stack.md §6,
 crawler-richtlinie.md §3
 
 ---

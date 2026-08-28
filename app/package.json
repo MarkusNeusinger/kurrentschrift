@@ -6,9 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "prebuild": "npm run schriftkunde:md",
+    "prebuild": "npm run prerender",
     "build": "tsc && vite build",
-    "schriftkunde:md": "node --experimental-strip-types scripts/build-schriftkunde-md.mjs",
+    "prerender": "node --experimental-strip-types scripts/build-prerender.mjs",
     "preview": "vite preview --host",
     "type-check": "tsc --noEmit",
     "lint": "eslint .",

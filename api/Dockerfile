@@ -34,6 +34,11 @@ COPY alembic/ ./alembic/
 # Seed data the quiz_words migrations (0010/0011) read at apply time — without
 # it the migrate job dies on FileNotFoundError (seen on the 0011 deploy).
 COPY tools/quizgen/quiz_words.json ./tools/quizgen/quiz_words.json
+# The crawler pages (app/src/lib/seo/prerender.ts renders them at the APP
+# build; the files are committed). `/seo-proxy/{route}` serves them to the
+# mapped crawler UAs the site's nginx proxies here — same relative path as in
+# a checkout, so core.config's default `prerender_dir` needs no override.
+COPY app/prerender/ ./app/prerender/
 
 # Non-root user.
 RUN useradd -m -u 1000 appuser && \
