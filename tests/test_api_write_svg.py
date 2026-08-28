@@ -16,7 +16,8 @@ async def test_word_svg_draws_glyphs_and_connectors(api: Harness):
     res = await api.client.request("GET", f"/sources/{source_id}/write/word.svg", params={"text": " nn "})
     assert res.status == 200, res.body
     assert res.headers["content-type"].startswith("image/svg+xml")
-    assert "public" in res.headers["cache-control"]
+    # Browser cache only — an edge HIT would never reach the fetch counter.
+    assert res.headers["cache-control"] == "private, max-age=300"
     body = res.body.decode()
     assert body.startswith('<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="')
     assert body.count('fill-rule="evenodd"') == 2  # two letters, filled
@@ -65,7 +66,8 @@ async def test_svg_of_a_traced_glyph(api: Harness):
     res = await api.client.request("GET", f"/sources/{source_id}/write/glyphs/n.svg")
     assert res.status == 200
     assert res.headers["content-type"].startswith("image/svg+xml")
-    assert "public" in res.headers["cache-control"]
+    # Browser cache only — an edge HIT would never reach the fetch counter.
+    assert res.headers["cache-control"] == "private, max-age=300"
     body = res.body.decode()
     assert body.startswith('<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="')
     assert 'fill-rule="evenodd"' in body and '<path d="M' in body

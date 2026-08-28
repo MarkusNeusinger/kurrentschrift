@@ -484,7 +484,14 @@ Einzel-Routen zählen; Batch-Read und Inventar sind Sache der SPA — und
 ein Browser-UA kommt ohnehin nie bis hierher, sodass die Abrufe der
 eigenen Besucher (Federprobe, Quiz-Crops) die Bot-Zahlen nicht
 verfälschen. Damit lässt sich im Dashboard lesen, welche Buchstaben und
-Wörter Assistenten wie oft zeigen wollten.
+Wörter Assistenten wie oft zeigen wollten — mit einer Einschränkung: Die
+JSON-Reads und der Crop bleiben am Edge gecacht (die Tafel, das
+Hero-Wort und das Quiz hängen daran), ein Edge-HIT erreicht die
+Middleware nicht, ihre Zahl sind also die Cache-MISSES (erster Abruf je
+Asset und Edge-TTL). Die SVG-Reads, die nur Assistenten anfragen,
+antworten `private, max-age=300` (Browser-Cache, kein Edge) und zählen
+jeden Abruf (`api/http.py` `BROWSER_ONLY_CACHE`, Befund 2026-08-28:
+drei von vier Assistenten-Abrufen waren Edge-HITs und fehlten).
 
 Auf der Plausible-Seite braucht die Site `bots.kurrentschrift.ink` die
 Ziele `bot_fetch` und `asset_fetch` (Custom Events) und die

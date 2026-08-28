@@ -275,6 +275,19 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **Assistant fetches of the SVG assets are counted every time, not
+  only on a cache miss.** Verified live after #437: three of four
+  Claude-User fetches (`e.svg`, `word.svg?text=Glück`, the crop) were
+  Cloudflare edge HITs — the URLs had been requested minutes earlier —
+  and never reached the `asset_fetch` middleware; only the fresh
+  `x.svg` counted. The two SVG routes now answer `private, max-age=300`
+  (`api/http.py` `BROWSER_ONLY_CACHE`): browser cache, no edge cache.
+  Nothing human-facing loses the edge cache — the SPA never requests
+  the SVGs. The JSON reads and the crop keep `CACHE_CONTROL` on purpose
+  (the Tafel, the hero word and the quiz ride on the edge), so their
+  assistant counts are cache misses, first fetch per asset per edge
+  TTL — documented in `write-api.md` and `frontend-stack.md` §6.
+
 - **Crawler reads actually reach the bot site — two silent drops found
   by probing the live pipeline (2026-08-28).** Of twenty crawler
   requests through the deployed path, one `bot_fetch` arrived. First:
