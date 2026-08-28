@@ -37,7 +37,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§6** Extern/Forschung.
 
 - **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4
-- **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bowl-Exit-Tuck §2
+- **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Entdrillung §4 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
@@ -488,6 +488,28 @@ Zeile ist der Marker `<!-- kurrentschrift.ink prerender -->`. Löste am
 `api/routers/seo.py`; Wächter `prerender.test.ts`,
 `tests/test_api_seo_proxy.py` und täglich
 `.github/workflows/bot-serving-check.yml`. → frontend-stack.md §6,
+crawler-richtlinie.md §3
+
+**Bot-Site (`bot_fetch`)** — die zweite Plausible-Site
+`bots.kurrentschrift.ink`, auf der die Seitenabrufe von Crawlern und
+KI-Assistenten landen — nie auf der Besucher-Site, weil jedes
+Plausible-Event einen „Besucher" erzeugt und die menschlichen Zahlen
+sonst aufblähen würde (anyplots Befund: ~40 % zu viel). Ein Event
+`bot_fetch` je Abruf auf dem Prerender-Pfad, serverseitig aus der
+API-Middleware, mit den Eigenschaften `assistant` (Anbieter: claude,
+chatgpt, gemini, google …), `kind` (**warum** abgerufen wurde —
+`user_directed` = ein Mensch hat seinen Assistenten gebeten, die Seite
+zu öffnen, also ein Leser; `index`, `search`, `training`, `inspection` =
+Maschinen bauen einen Korpus), `path` und `status` (der Abruf wird
+aufgezeichnet, nicht der erfolgreiche Lesevorgang — eine 404 ist ein
+Signal, kein Seitenaufruf). Zwei Fallen, die Plausible schweigend
+schluckt: ein Bot-User-Agent (→ Events laufen unter dem neutralen
+`kurrentschrift-server/1.0`, die Identität steckt in den Props) und die
+eigene Server-IP statt der Besucher-IP (→ `visitor_ip` nimmt die ERSTE
+gültige weitergeleitete Adresse). Taxonomie `AI_AGENTS` wortgleich mit
+anyplot. *Technisch:* `api/analytics.py`, `api/request_context.py`, die
+Middleware `record_bot_fetch` in `api/main.py`; aktiv nur in Produktion
+(`BOT_ANALYTICS` überschreibt). → frontend-stack.md §6,
 crawler-richtlinie.md §3
 
 ---

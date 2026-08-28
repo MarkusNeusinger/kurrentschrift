@@ -164,6 +164,16 @@ aufgegangen. Weil der Pfad für Menschen unsichtbar ist, prüft ihn
 Cloud-Run-Origin — anyplots Alarm, der dort vier stille Wochen mit 502
 für jeden Crawler beendet hat.
 
+Und weil die Abrufe dort sichtbar sind, werden sie dort gezählt: Jeder
+`/seo-proxy`-Abruf eines bekannten Agenten landet als Event `bot_fetch`
+auf der **zweiten Plausible-Site `bots.kurrentschrift.ink`** — nie auf
+der Besucher-Site — mit Anbieter (`assistant`), Grund (`kind`:
+`user_directed` ist ein Mensch, der seinen Assistenten bat, die Seite zu
+öffnen; `index`/`search`/`training` sind Korpus-Bau), Pfad und Status
+(Glossar „Bot-Site", [`frontend-stack.md`](frontend-stack.md) §6). Das
+ist die Messung zur Politik: ob die Öffnung (§2) Leser bringt, steht
+in `kind=user_directed`, nicht in der Besucherstatistik.
+
 ## 4 · Was in Cloudflare zu tun ist
 
 Zone `kurrentschrift.ink` → **AI Crawl Control** (bei älteren Konten:

@@ -38,6 +38,7 @@ dependencies = [
     "cloud-sql-python-connector[asyncpg,pg8000]>=1.21.0",
     "shapely>=2.1.2",
     "orjson>=3.11.9",
+    "httpx>=0.28.1",
 ]
 
 [project.optional-dependencies]

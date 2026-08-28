@@ -407,6 +407,40 @@ ist in diesem Pfad aufgegangen.
   billigt das ausdrücklich, solange der Inhalt dem entspricht, was
   Menschen sehen.
 
+### Bot-Traffic auf einer zweiten Plausible-Site (seit 2026-08-28)
+
+Wer die vorgerenderten Seiten liest, sieht die Besucher-Statistik nie —
+kein JavaScript, kein Plausible-Skript. Der Prerender-Pfad ist der eine
+Ort, an dem diese Abrufe sichtbar werden, und dort werden sie gezählt:
+**serverseitig, auf der zweiten Plausible-Site `bots.kurrentschrift.ink`**
+(nach anyplots Vorbild, Glossar „Bot-Site"). Die Middleware
+`record_bot_fetch` (`api/main.py`) meldet jeden `/seo-proxy`-Abruf an
+`api/analytics.py`, das den User-Agent gegen die mit anyplot wortgleiche
+Taxonomie `AI_AGENTS` hält und ein Event `bot_fetch` mit `assistant`,
+`kind`, `path` und `status` an Plausibles Events-API schickt —
+Fire-and-forget, nie im Antwortpfad. Eine Middleware statt einer
+Router-Dependency, weil nur sie den STATUS sieht: Eine 404 wird als 404
+aufgezeichnet, nicht als Seitenaufruf.
+
+Zwei Dinge lässt Plausible schweigend fallen (anyplot hat beide durch
+Probe-Events gefunden): Events mit einem Bot-User-Agent — darum laufen
+sie unter `kurrentschrift-server/1.0`, die Identität steckt in den
+Props — und Events mit der eigenen Server-IP statt der Besucher-IP —
+darum liefert `api/request_context.py::visitor_ip` die ERSTE gültige
+weitergeleitete Adresse (`cf-connecting-ip` zuerst). Aktiv ist die
+Meldung nur in Produktion (`ENVIRONMENT=production`, wie Cloud Run es
+setzt); `BOT_ANALYTICS=true|false` überschreibt — ein Dev-Lauf schreibt
+nie auf die Live-Bot-Site.
+
+Auf der Plausible-Seite braucht die Site `bots.kurrentschrift.ink` das
+Ziel `bot_fetch` (Custom Event) und die vier registrierten Properties
+`assistant`, `kind`, `path`, `status` — ohne Registrierung kommen die
+Events an, lassen sich aber nicht aufschlüsseln. Die Site hat KEIN
+Tracking-Skript und zeigt darum „Setup pending" — erwartet, kein
+Fehler. `kind` ist die Eigenschaft, nach der man filtert:
+`user_directed` ist ein Leser, alles andere ein Korpus-Bau. Erst nach
+`status` filtern, dann lesen.
+
 ### Schrift-Auslieferung (seit 2026-08-27)
 
 - Alle `@font-face`-Regeln stehen früh in `app/index.html`; die Dateien
