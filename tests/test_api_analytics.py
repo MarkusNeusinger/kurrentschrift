@@ -47,6 +47,12 @@ def _request(user_agent: str, **headers: str) -> MagicMock:
         ("Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)", ("google", "search")),
         ("MistralAI-User/1.0", ("mistral", "user_directed")),
         ("Mozilla/5.0 (compatible; Applebot-Extended/1.0)", ("apple", "search")),
+        # The bare xAI tokens the nginx map serves: a plain "Grok" UA, and an
+        # "xAI-Bot" UA that carries no grok substring at all. Both were
+        # prerendered but not counted until these patterns existed — mirrored
+        # from anyplot #10808.
+        ("Grok/1.0", ("grok", "user_directed")),
+        ("Mozilla/5.0 (compatible; xAI-Bot/1.0)", ("grok", "user_directed")),
     ],
 )
 def test_detect_ai_agent_classifies_vendor_and_kind(user_agent: str, expected: tuple[str, str]) -> None:
