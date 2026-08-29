@@ -19,7 +19,7 @@ from api.schemas import LaufformUpsert, ResampleRequest, TemplateOut, TemplateQu
 from core.aggregate import LAUFFORM_MIN_OCCURRENCES
 from core.database import LAUFFORM_VARIANT, BboxRepository, Source, Template, TemplateRepository
 from core.fit import fit_glyph_to_crop
-from core.laufform import LAUFFORM_END_WINDOW, blend_stroke_ends, spike_gate
+from core.laufform import LAUFFORM_END_WINDOW, blend_stroke_ends, head_gate, spike_gate
 from core.pipeline import (
     DEFAULT_N_ANCHORS,
     canonical_from_path,
@@ -313,6 +313,13 @@ async def put_laufform(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"the draft for {glyph_key!r} carries an anchor spike: ratio {spike['ratio']:.2f} over the row gate "
             f'{spike["max"]:.2f} (§14 LF8, „Anker im leeren Papier") — more evidence or the chart fallback, no override',
+        )
+    head = head_gate(base, payload.anchors)
+    if head["exceeded"]:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"the draft for {glyph_key!r} turns its head away from the chart: {head['deviation']:.1f}° over the "
+            f"head gate {head['max']:.0f}° (§14 LF9) — a running form lands where the ductus prior lands, no override",
         )
     canonical = build_laufform_canonical(
         base, payload.anchors, {"derived_from": "specimen-words", "n_occurrences": payload.n_occurrences}

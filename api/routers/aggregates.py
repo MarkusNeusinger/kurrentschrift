@@ -56,7 +56,7 @@ from core.database import (
     Template,
     TemplateRepository,
 )
-from core.laufform import spike_gate
+from core.laufform import head_gate, spike_gate
 
 
 router = APIRouter(prefix="/hands/{hand_id}/aggregates", tags=["aggregates"], dependencies=[Depends(require_admin)])
@@ -365,6 +365,22 @@ async def apply_laufform(
                     reason="anchor_spike",
                     spike_ratio=spike["ratio"],
                     spike_max=spike["max"],
+                )
+            )
+            continue
+        # Head gate (§14 LF9): a median whose head turns away from the chart's
+        # landing direction (the Korb #7 t, 46° off) would change the join
+        # class the grammar decides on it — reported with its angle, never
+        # written, no override.
+        head = head_gate(base, median)
+        if head["exceeded"]:
+            skipped.append(
+                AggregateApplySkip(
+                    glyph_key=row.glyph_key,
+                    variant=row.variant,
+                    reason="head_deviation",
+                    head_deviation=head["deviation"],
+                    head_max=head["max"],
                 )
             )
             continue

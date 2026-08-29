@@ -7,10 +7,13 @@ fixture root and prints, per row, the ROW GATE quantity — the anchor spike
 ratio (`core.laufform.anchor_spike_ratio`, „Anker im leeren Papier", measured
 on the row over the chart's stroke starts; LF8) — beside the report columns of
 LF7 (the geometry-only naturalness of chart and row and their gap Δ) and the
-row's evidence count. The pre-registered gate rule is applied on top:
-τ = the largest spike ratio among the rows with n ≥ LAUFFORM_MIN_OCCURRENCES,
-rounded up to 0.01; every row over τ is listed — those are the rows the author
-decides about.
+row's evidence count, and the HEAD GATE quantity of LF9 — the row's head
+deviation (`core.laufform.head_deviation`: how far the first stroke's landing
+direction turns away from the chart's, in degrees). The pre-registered gate
+rules are applied on top: τ = the largest spike ratio among the rows with
+n ≥ LAUFFORM_MIN_OCCURRENCES, rounded up to 0.01, and the doctrine-derived
+head gate LAUFFORM_HEAD_DEVIATION_MAX; every row over either is listed — those
+are the rows the author decides about.
 
     uv run python -m tools.laufform.inventory [--root DIR] [--json out.json]
     uv run --extra viz python -m tools.laufform.inventory --png inventory.png [--only K,t,E]
@@ -29,7 +32,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from core.aggregate import LAUFFORM_MIN_OCCURRENCES
-from core.laufform import anchor_spike_ratio, naturalness_gap
+from core.laufform import LAUFFORM_HEAD_DEVIATION_MAX, anchor_spike_ratio, head_deviation, naturalness_gap
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -71,6 +74,7 @@ def inventory(root: Path) -> tuple[list[dict], float | None]:
                 "n_occurrences": n,
                 "spike_ratio": round(anchor_spike_ratio(row["anchors"], starts), 4),
                 "chart_spike_ratio": round(anchor_spike_ratio(chart["anchors"], starts), 4),
+                "head_deviation": round(head_deviation(_chart_view(chart), row["anchors"]), 2),
                 "gap": g["gap"],
                 "chart_naturalness": g["chart"]["naturalness"],
                 "row_naturalness": g["candidate"]["naturalness"],
@@ -85,14 +89,20 @@ def inventory(root: Path) -> tuple[list[dict], float | None]:
 
 
 def print_table(rows: list[dict], tau: float | None) -> None:
-    head = f"{'key':6s} {'n':>3s} {'spike':>6s} {'chart':>6s}   {'Δ nat':>7s}  smooth  vert   corner cross   over τ"
+    head_max = LAUFFORM_HEAD_DEVIATION_MAX
+    head = f"{'key':6s} {'n':>3s} {'spike':>6s} {'chart':>6s} {'head°':>6s}   {'Δ nat':>7s}  smooth  vert   corner cross   gates"
     print(head)
     for r in rows:
         cg = r["component_gap"]
-        flag = "" if tau is None else ("  ← über τ" if r["spike_ratio"] > tau else "")
+        flags = []
+        if tau is not None and r["spike_ratio"] > tau:
+            flags.append("über τ")
+        if head_max is not None and r["head_deviation"] > head_max:
+            flags.append("Kopf")
+        flag = f"  ← {' · '.join(flags)}" if flags else ""
         print(
-            f"{r['glyph_key']:6s} {r['n_occurrences']:3d} {r['spike_ratio']:6.2f} {r['chart_spike_ratio']:6.2f}   "
-            f"{r['gap']:+7.4f}  {cg['smoothness']:+.3f} {cg['verticality']:+.3f} "
+            f"{r['glyph_key']:6s} {r['n_occurrences']:3d} {r['spike_ratio']:6.2f} {r['chart_spike_ratio']:6.2f} "
+            f"{r['head_deviation']:6.1f}   {r['gap']:+7.4f}  {cg['smoothness']:+.3f} {cg['verticality']:+.3f} "
             f"{cg['corner']:+.3f} {cg['collinearity']:+.3f}{flag}"
         )
     trusted = [r for r in rows if r["n_occurrences"] >= LAUFFORM_MIN_OCCURRENCES]
@@ -103,6 +113,9 @@ def print_table(rows: list[dict], tau: float | None) -> None:
     if tau is not None:
         over = [r["glyph_key"] for r in rows if r["spike_ratio"] > tau]
         print(f"rows over τ: {', '.join(over) if over else 'none'}")
+    if head_max is not None:
+        turned = [f"{r['glyph_key']} {r['head_deviation']:.1f}°" for r in rows if r["head_deviation"] > head_max]
+        print(f"rows over the head gate ({head_max:.0f}°, LF9): {', '.join(turned) if turned else 'none'}")
 
 
 def draw(root: Path, rows: list[dict], only: set[str] | None, out: Path) -> None:

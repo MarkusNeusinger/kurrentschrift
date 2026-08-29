@@ -127,6 +127,7 @@ export const admin = {
       anchor_count: 'Ankerzahl weicht ab',
       below_min_occurrences: 'zu wenige Vorkommen',
       anchor_spike: 'Ankersprung (Anker im leeren Papier)',
+      head_deviation: 'Kopf dreht ab (Landerichtung gegen die Tafel)',
     },
   },
   // The Übergänge view: the generated join first, the measurement beside it,

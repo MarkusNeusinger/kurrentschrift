@@ -163,9 +163,11 @@ async def test_rebuild_reports_the_laufform_pruefstein(api: Harness):
     assert res.json()["keys"] == [{"glyph_key": "n", "variant": 0, "n_instances": 4, "laufform_dev_xh": 0.0}]
 
     # A Laufform that does NOT match the occurrences shows up as a distance:
-    # one anchor moved by 0.6 over six anchors → mean 0.1.
+    # one anchor moved by 0.6 over six anchors → mean 0.1. A LATE anchor, so
+    # the head the gate of §14 LF9 judges (the rendered spline's start) keeps
+    # the chart's direction — this test is about the distance, not the gate.
     drifted = _shifted(0.04)
-    drifted[2] = [drifted[2][0] + 0.6, drifted[2][1]]
+    drifted[4] = [drifted[4][0] + 0.6, drifted[4][1]]
     res = await api.client.request(
         "PUT",
         f"/sources/{source_id}/templates/n/laufform",
@@ -209,7 +211,7 @@ async def test_list_reports_the_rendered_laufform_and_its_distance(api: Harness)
 
     # A drifted running form reads as the distance the apply step would close.
     drifted = _shifted(0.04)
-    drifted[2] = [drifted[2][0] + 0.6, drifted[2][1]]
+    drifted[4] = [drifted[4][0] + 0.6, drifted[4][1]]
     await api.client.request(
         "PUT",
         f"/sources/{source_id}/templates/n/laufform",
@@ -330,7 +332,7 @@ async def test_apply_laufform_reports_the_pre_write_distance_and_is_idempotent(a
     # A hand-written running form that drifted from the occurrences: one anchor
     # moved by 0.6 over six anchors → mean 0.1.
     drifted = _shifted(0.04)
-    drifted[2] = [drifted[2][0] + 0.6, drifted[2][1]]
+    drifted[4] = [drifted[4][0] + 0.6, drifted[4][1]]
     res = await api.client.request(
         "PUT",
         f"/sources/{source_id}/templates/n/laufform",
@@ -392,6 +394,8 @@ async def test_apply_laufform_skips_and_reports_underivable_keys(api: Harness):
             "n_instances": None,
             "spike_ratio": None,
             "spike_max": None,
+            "head_deviation": None,
+            "head_max": None,
         },
         {
             "glyph_key": "m",
@@ -400,6 +404,8 @@ async def test_apply_laufform_skips_and_reports_underivable_keys(api: Harness):
             "n_instances": None,
             "spike_ratio": None,
             "spike_max": None,
+            "head_deviation": None,
+            "head_max": None,
         },
         {
             "glyph_key": "n",
@@ -408,6 +414,8 @@ async def test_apply_laufform_skips_and_reports_underivable_keys(api: Harness):
             "n_instances": None,
             "spike_ratio": None,
             "spike_max": None,
+            "head_deviation": None,
+            "head_max": None,
         },
         {
             "glyph_key": "n",
@@ -416,6 +424,8 @@ async def test_apply_laufform_skips_and_reports_underivable_keys(api: Harness):
             "n_instances": None,
             "spike_ratio": None,
             "spike_max": None,
+            "head_deviation": None,
+            "head_max": None,
         },
     ]
     assert [r["glyph_key"] for r in await _stored_laufform(api, style_id)] == ["n"]
@@ -493,6 +503,8 @@ async def test_apply_laufform_refuses_a_median_too_thin_to_outvote_an_outlier(ap
             "n_instances": 2,
             "spike_ratio": None,
             "spike_max": None,
+            "head_deviation": None,
+            "head_max": None,
         }
     ]
     assert out["excluded"] == []
@@ -555,6 +567,8 @@ async def test_apply_laufform_floor_never_relabels_an_underivable_key(api: Harne
             "n_instances": None,
             "spike_ratio": None,
             "spike_max": None,
+            "head_deviation": None,
+            "head_max": None,
         },
         {
             "glyph_key": "m",
@@ -563,6 +577,8 @@ async def test_apply_laufform_floor_never_relabels_an_underivable_key(api: Harne
             "n_instances": None,
             "spike_ratio": None,
             "spike_max": None,
+            "head_deviation": None,
+            "head_max": None,
         },
         {
             "glyph_key": "n",
@@ -571,6 +587,8 @@ async def test_apply_laufform_floor_never_relabels_an_underivable_key(api: Harne
             "n_instances": None,
             "spike_ratio": None,
             "spike_max": None,
+            "head_deviation": None,
+            "head_max": None,
         },
         {
             "glyph_key": "n",
@@ -579,6 +597,8 @@ async def test_apply_laufform_floor_never_relabels_an_underivable_key(api: Harne
             "n_instances": None,
             "spike_ratio": None,
             "spike_max": None,
+            "head_deviation": None,
+            "head_max": None,
         },
     ]
 
@@ -649,6 +669,8 @@ async def test_apply_laufform_selection_precedes_the_variant_triage(api: Harness
             "n_instances": None,
             "spike_ratio": None,
             "spike_max": None,
+            "head_deviation": None,
+            "head_max": None,
         }
     ]
     assert out["excluded"] == ["m"]

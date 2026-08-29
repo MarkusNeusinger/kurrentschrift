@@ -315,6 +315,11 @@ export interface AggregateApplySkip {
   // exceeded.
   spike_ratio?: number | null;
   spike_max?: number | null;
+  // Filled for `head_deviation` (the head gate, §14 LF9): how far the row's
+  // first stroke lands from the chart's landing direction, in degrees, and
+  // the gate it exceeded.
+  head_deviation?: number | null;
+  head_max?: number | null;
 }
 
 // Result of POST /hands/{hand_id}/aggregates/apply-laufform — the ONE step that

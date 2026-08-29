@@ -21,6 +21,41 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The Laufform head gate (LF9): a running form must land where its
+  ductus prior lands — and Korb #7's t-hook is located on the row, not
+  in the join grammar.** Two pre-registered join arms for the hook after
+  n were measured on the frozen Sütterlin ruler and rejected: J2 (a
+  straight line high onto the t's Anstrich at the fork arrival, with a
+  solved placement) at +0.0041 with the dissected joins refuting the
+  premise — the hand arrives at foot height, the rule wrote twice the
+  plates' join length — and J3 (the same line to the lowest flank sample,
+  placement untouched) at +0.0001 but with the dissection-shape column
+  rising 7/7 and the ink lens showing the line cutting the corner the
+  plate rounds. The autopsy found the hook itself: the stored t row's
+  first anchor sits right of its second, so the rendered head starts
+  up-left (104° against the chart's 37°) and the join's arrival is read
+  off that flick — a row defect the spike gate cannot see (t 2.11 < 2.95).
+  The third check of the row gate now catches it on BOTH write paths:
+  `head_deviation` (the first stroke's landing direction over the
+  grammar's own `TANGENT_WINDOW_UNITS` window on the RENDERED centerline,
+  row against chart; the anchor polyline misreads the curling capital
+  heads by up to 33° and was rejected by its own kill clause) may not
+  exceed `LAUFFORM_HEAD_DEVIATION_MAX` = 15°, half the grammar's ALIGN
+  band — doctrine-derived, no override (PUT 422 with the angle; apply
+  skips with `reason: head_deviation`, `head_deviation` / `head_max`,
+  shown on the dialog chip). On the 2026-08-29 root exactly one trusted
+  row is over it — the t at 46° — with E 48°, K 41°, f 28°, v 27°, k 17°
+  among the thin rows; `tools/laufform/inventory.py` gained the `head°`
+  column and the gate flag. Report arms (`--laufform` maps, never the
+  headline): t back to its chart form −0.0003, the prod state (K/ue/F/ae/b
+  already deleted) +0.0011, both +0.0008, all head-flagged rows +0.0013;
+  the ink lens shows the hook gone in unter, mit and „Kurrentschrift" with
+  the chart t. On the owner's call the five flagged rows (t, E, f, v, k)
+  were deleted in prod after per-row backups and an archive snapshot; the
+  frozen 2026-08-29 root now carries ten rows prod no longer has, and its
+  re-export is a declared re-baseline (qualitaetsmetrik.md §14 „Übergänge
+  J2"/„J3", „Laufform LF9"; tintenfolger.md §7.9; glossary „Kopf-Gate
+  (Laufform)").
 - **The Laufform row gate: a running-form row must earn its way into the
   writing path.** The Sütterlin K's n = 1 row (Korb #7) entered through
   the manual `PUT …/templates/{key}/laufform`, which checked nothing but

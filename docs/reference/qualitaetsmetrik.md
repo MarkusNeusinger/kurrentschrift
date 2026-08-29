@@ -9222,9 +9222,9 @@ bleibt unverändert, der (a)-Gewinn wird in J2 mitgemessen, damit die
 Adoption über die vorregistrierte Zielstelle läuft und nicht über
 Beifang.
 
-### Übergänge J2 `aug29` — Vorregistrierung (offen): die Anstrich-Verlängerung in den Schaft
+### Übergänge J2 `aug29` — Vorregistrierung: die Anstrich-Verlängerung in den Schaft
 
-Vorregistriert, noch nicht gemessen — der nächste Arm für Korb #7,
+Vorregistriert vor der ersten Zahl — der nächste Arm für Korb #7,
 Punkt 3. **Hypothese.** Ein Sägezahn-Austritt (Tangente 25–55°) vor
 einem Buchstaben, dessen erster Zug ein Anstrich in einen
 Oberlängen-Schaft ist (t, ſ; der Prior sagt es: Chart-Landerichtung
@@ -9244,6 +9244,226 @@ Kompositions-Soll; (c) unter n→t UND „Kurrentschrift" n→t
 geradlinig, Haken weg; Nachweis der Klassenregel an weiteren
 Sägezahn→t/ſ-Wörtern des Sets: fechten, streiten, muß, Seiten). Kill
 wie immer; Rettungsweg dann der Fit-Prior.
+
+**Gemessen `aug29` — (a) rot, Prämisse durch die Dissektionen
+widerlegt: nicht adoptiert, Code nicht im Baum.** (a) wordbench
+0,106720 → **0,110802** (+0,0041 > +0,002), Paare byte-gleich
+(0,146506 — kein Drill trägt die Klasse: `dt` ist ein Schleifen-, `ssi`
+ein Unterlängen-Austritt); 8 Wörter bewegt, 2 : 6 (streiten −0,032,
+macht −0,018 gegen mit +0,131, Soldaten +0,051, Seiten +0,046, unter
++0,037, fechten +0,034, mit-2 +0,007). (c) formal erreicht — alle acht
+Sägezahn→t des Sets (unter n→t, mit/mit-2/Seiten/streiten i→t,
+Soldaten a→t, fechten/macht h→t) koppeln `stem_entry`, geradlinig,
+Haken getrimmt (Index 17, Ankunft 0,935), „Kurrentschrift" n→t auf
+der Root ebenso; muß trägt keine Klasse (u→sz, Ligaturschlüssel), und
+kein Wort des Sets führt einen Sägezahn in ein ſ — der ſ-Teil der
+Klasse bleibt unbelegt. Die Form ist trotzdem falsch, und die
+Dissektionen sagen warum. **Autopsie an den sieben `fit_ok`-
+Dissektionen (+ macht, `fit_ok` false):** gemessener Versatz +0,09 …
++0,36 xh (Mittel 0,23), Sehne 36–61° (Mittel ≈ 48°), Sehnenlänge
+0,20–0,48 xh, Anstieg über den Austritt 0,17–0,31 xh — die Hand kommt
+auf FUSSHÖHE des t an (komponiert 0,55–0,80; der t-Fuß steht bei
+0,64/0,70), nicht hoch auf dem Anstrich. Komponiert ohne Regel:
+Versatz 0,24–0,26, Sehne 33–51°, Länge 0,37–0,45, Ankunft am Fuß
+0,638 (`doff` 0,05–0,16); mit Regel: Versatz 0,45–0,69, Sehne 34–43°,
+Länge 0,81–1,10, Ankunft 0,965 (`doff` 0,29–0,64) — die doppelte
+Plattenlänge. Die Prämisse „wie f→t (FORK-Ankunft 0,92)" gilt für
+den Sägezahn nicht: der Balken-Austritt startet am SCHAFT-Anker links
+der Balkenspitze und steigt bis zum Apex; der Sägezahn-Fuß steht schon
+rechts von As Tinte, und die Hand nimmt den kurzen Weg in den Fuß. Was
+vom Haken bleibt, ist nicht die Kopplungshöhe, sondern der Haken
+selbst: der Laufform-t-Kopf (Anker 0 nach links-oben gezogen, erstes
+Segment 135°) und das `d_in` des Bézier, das daran gemessen wird — die
+Platte schreibt die kurze gerade Linie in die Fußregion. Strikt nach
+Vorregistrierung: (a) ist Gate, J2 wird NICHT adoptiert; `compose.py`
+und der Golden-Pin bleiben unverändert (lesen e→ſ und sitzen i→t
+hätten sich bewegt). Rettungswege: (1) **J3, die tiefe
+Schaft-Kopplung** (unten vorregistriert, in derselben Runde gemessen):
+dieselbe Klassen-Entscheidung am Prior, Platzierung UNANGETASTET (die
+generische Freiheits-Platzierung trifft den gemessenen Versatz schon:
+0,24 gegen 0,23 im Mittel), Verbinder = gerade Linie zur TIEFSTEN
+gerenderten Flankenprobe oberhalb des Hakens, Haken getrimmt; (2) ein
+Kopf-Sensor auf der Zeile — die Richtung des ersten Segments gegen die
+Chart-Landerichtung (t: 135° gegen 40°) als eigenes Zeilen-Gate, das
+die Sprung-Ratio nicht sieht (t 2,11 < τ 2,95), eigene Pre-Reg; (3)
+eine aus den Dissektionen kalibrierte Ankunftshöhe (0,17–0,31 xh über
+dem Austritt) als Ziel statt der Fork-Ankunft — nur falls J3s tiefste
+Flankenprobe die Ankunft verfehlt.
+
+### Übergänge J3 `aug29` — Vorregistrierung: die tiefe Schaft-Kopplung (Korb #7, t nach n, zweiter Arm)
+
+Geschrieben und committet VOR der ersten Zahl; Konversion des
+J2-Negativs. **Hypothese.** Die dissezierten Sägezahn→t-Übergänge
+(n = 8, 7 `fit_ok`) sind kurze steile Geraden, die auf Fußhöhe des t
+ankommen (Anstieg 0,17–0,31 xh, Sehne 36–61°, Länge 0,20–0,48 xh,
+Versatz im Mittel 0,23); die generische Platzierung trifft den Versatz
+bereits (0,24–0,26, `doff` 0,05–0,16). Falsch ist allein die FORM: der
+Bézier misst seine Ankunftsrichtung am Haken des Laufform-Kopfs (86,8°)
+und lässt den Haken stehen. **Mechanismus (ein Klassenpfad,
+`STEM_ENTRY_BASES` = {t, longs}, geschlossene B-Menge):**
+Sägezahn-Austritt (vorwärts, Mittelband unter `HIGH_COUPLE_EXIT_Y`,
+Tangente im Align-Band, kein Balken-Austritt, kein
+Kapitalen-Neustart), B in der Klasse, Prior-Landerichtung (erster Zug
+der CHART-Zeile, J1) im Align-Band, Apex des ersten Zugs über der
+Mittelhöhe → Kopplungsindex = die TIEFSTE gerenderte Flankenprobe
+i ≥ 1, deren Segment i−1→i im Align-Band liegt (die Segmente eines
+Haken-Kopfs zeigen anderswohin und werden übersprungen), mit y ≥
+Austritt + `ALIGN_MIN_RISE` und x ≥ Austritt + `GARLAND_MIN_DX`; der
+Lauf endet, wo die Flanke abwärts kippt; KEINE Höhendecke
+(`ALIGN_MAX_ENTRY_Y` gilt für die Klasse nicht). Der Verbinder ist die
+gerade Linie (`_straight_connector`) vom Austritt auf diese Probe, die
+Proben darunter werden getrimmt (Mittellinie und Silhouette — der
+Haken geht mit dem Stummel). Platzierung UNANGETASTET (das
+Sameslant-Präzedens: Begradigen ohne Zusammenziehen); die Kopplung
+wird als Provenienz-Feld `coupling: "stem_entry"` am Verbinder
+ausgewiesen, die Platzierungsregel bleibt, was sie ist. Chart-t ohne
+Haken: Index 1, die Linie endet eine Probe über dem Fuß — praktisch
+der heutige Verlauf. **EIN Knopf: Klassenpfad an/aus.** Basis
+0,106720 / 0,146506 (dieselbe Root, dieselbe Umgebung, BLAS gepinnt).
+Gates: (a) `word_loss`/`pair_loss` ≤ +0,002, bewegen dürfen sich nur
+die acht Klassenwörter (dazu der Golden-Pin lesen e→ſ / sitzen i→t als
+erklärte Re-Baseline); (b) Kompositions-Soll je Wort (`ductus_soll`)
+ohne Verlust; (c) unter n→t UND „Kurrentschrift" n→t: Kopplung
+`stem_entry`, geradlinig, Haken weg — Klassennachweis an mit, mit-2,
+Seiten, Soldaten, fechten, streiten, macht (muß trägt keine Klasse);
+(d) an den sieben `fit_ok`-Dissektionen steigt `doff` nicht
+(Platzierung unangetastet) und `dconn` fällt (gerade Linie statt
+Haken-Bézier). Erwartung: Wörter flach bis leicht besser (die
+Haken-Tinte fällt weg), Paare byte-gleich. Kill: ein verletztes Gate =
+keine Adoption; Rettungsweg dann der Kopf-Sensor (J2-Rettungsweg 2).
+
+**Gemessen `aug29` — (a) (b) (c) grün, (d) rot: nicht adoptiert, Code
+nicht im Baum — und die Autopsie verlegt den Haken von der Grammatik
+auf die Zeile.** (a) wordbench 0,106720 → **0,106831** (+0,0001), Paare
+byte-gleich; bewegt haben sich GENAU die acht Klassenwörter, 3 : 5 (mit
+−0,0090, Soldaten −0,0009, fechten −0,0002 gegen macht +0,0022, Seiten
++0,0024, streiten +0,0039, mit-2 +0,0041, unter +0,0045). (b)
+`ductus_soll`: Σ-Buchstaben-Zeilen unverändert; in den
+Kompositions-Zeilen bleiben Striche/X/Zonen und `touch` fällt in allen
+acht um 1 (unter, mit, mit-2, Seiten, Soldaten 1 → 0; fechten 3 → 2;
+streiten 2 → 1; macht 3 → 2) — die Komposition rückt an die
+Buchstaben-Summe heran. (c) alle acht `coupling: stem_entry`,
+geradlinig, Trim 5 (Ankunft 0,731 auf der gerenderten Flanke);
+„Kurrentschrift" n→t auf der Root ebenso (Sehne 41,0°). (d) rot:
+`doff` fällt in dreien (unter 0,163 → 0,156, mit 0,080 → 0,072,
+streiten 0,079 → 0,072) und steigt in vieren um +0,007/+0,008 (mit-2,
+Seiten, Soldaten, fechten) — bei BYTE-GLEICHER Platzierung (Versätze
+0,257/0,240/0,240/0,239/0,235/0,239/0,239 unverändert): der Trim
+verschiebt Bs Körperanfang im doff-Rahmen um −0,007, die Spalte misst
+den Trim, nicht die Platzierung (der in `pairmeas.py` erklärte Vorbehalt);
+`dconn` steigt in 7/7 (unter 0,130 → 0,141, mit 0,088 → 0,103, mit-2
+0,051 → 0,134, Seiten 0,032 → 0,113, Soldaten 0,138 → 0,216, fechten
+0,026 → 0,059, streiten 0,074 → 0,116). **Autopsie.** Die dissezierten
+Verbinder sind kurz (0,20–0,48 xh) und enden STEIL (Ankunftsrichtung
+57–85° über die letzten 0,08 xh, Sehne 36–61°) — sie versteilen sich in
+das t hinein; die gerade Linie (Sehne = Ankunft 41–58°, 0,43–0,54 xh
+lang) ist ihnen in der FORM ferner als der bisherige Bézier (Ankunft
+55–73°). Die Tinten-Lupe (wordlab unter/mit) zeigt, warum: die Platte
+läuft FLACH (~35°) in die Fußregion des t, der Anstrich steigt dann mit
+~50° weiter; die J3-Linie zur Probe bei 0,731 schneidet diese Ecke ab
+und verlässt die Tinte (Verbinder-Strafe unter 0,05 → 0,09, Seiten
+0,05 → 0,08, mit 0,03 → 0,04, fechten 0,03 = 0,03). Strikt nach
+Vorregistrierung: (d) ist Gate, J3 wird NICHT adoptiert. **Der Fund,
+der die Arbeit umlenkt:** der Haken ist keine Lücke der Grammatik. In
+der Tinte kommt der Übergang flach am Fuß an, und der komponierte
+Bézier tut dasselbe — was heraussticht, ist die ZEILE: beim Laufform-t
+liegt Anker 0 RECHTS von Anker 1 (x 0,097 gegen 0,077), der Kopf
+startet mit 104° (nach links-oben) gegen die 37° der Chart — der
+Rückwärts-Schlenker, den der Autor sieht, und die 86,8°-Fensterlandung,
+die J1 gemessen hat. Diagnose-Zerlegung über alle 32 Zeilen der Root
+(Fensterlandung des gerenderten ersten Zugs, Zeile gegen Chart): t
+46,3° (n = 4), E 47,8° (n = 1), K 41,2° (n = 1, gelöscht), f 27,5°
+(n = 2), v 27,2° (n = 2), k 17,1° (n = 1), m 14,9° (n = 6), w 14,0°
+(n = 6), alle übrigen ≤ 11,9°. Das t ist die EINZIGE vertraute Zeile
+(n ≥ 3) jenseits von 15°, und drei der „sichtbar verzogenen, aber unter
+τ" behaltenen Zeilen (v, E, k) stehen ebenfalls dort oben; das
+Sprung-Gate (LF8) sieht das nicht (t 2,11 < 2,95) — ein Kopf, der
+abdreht, ist kein Ankersprung. Rettungswege: (1) **LF9 Kopf-Gate**
+(unten vorregistriert, in derselben Runde gemessen): die Kopfrichtung
+der Zeile darf die der Chart nicht um mehr als das halbe Diagonalband
+der Grammatik (15°) verlassen; (2) gezielte Kopf-Reparatur der Zeile
+(Anker 0 aus den Fits neu ableiten, Übergangs-Tinte maskiert) — neuer
+Mechanismus, eigene Pre-Reg; (3) ein flach ankommender J-Pfad ist nach
+dieser Evidenz NICHT nötig: der Bézier kommt schon flach an.
+
+### Laufform LF9 `aug29` — Vorregistrierung: das Kopf-Gate auf der Zeile (Korb #7, der t-Haken)
+
+Mechanik-Festlegung nach gesehener Diagnose — wie bei LF8 gilt: **die
+Zahlen der Zerlegung oben sind vor dieser Pre-Reg gesehen worden**,
+Vorhersage ist nur das Prospektive. **Sensor.**
+`head_deviation(chart_row, anchors)` (`core/laufform.py`) =
+|Fensterrichtung des ersten Zugs der Zeile − Fensterrichtung des ersten
+Zugs der Chart-Zeile| in Grad, gemessen auf den ANKERN über dasselbe
+Bogenfenster, mit dem die Grammatik landet (`TANGENT_WINDOW_UNITS`), an
+den `stroke_starts` der Chart (die Zeile teilt sie). **Gate.**
+`LAUFFORM_HEAD_DEVIATION_MAX` = 15°, aus der Doktrin abgeleitet, nicht
+aus den Daten: das halbe Align-Band (25–55°) — eine Zeile, deren Kopf
+die Chart-Richtung um mehr verlässt, kann die Übergangsklasse ändern,
+die die Grammatik an ihrer Landung entscheidet (der J1-Befund), und
+widerspricht der EINEN Eigenschaft, die die Kanonisierung verspricht
+(„the tangents stay": die Zeile trägt die Eintrittstangente der Chart
+als Metadatum, ihre Geometrie sagt etwas anderes). Angewandt wie das
+Sprung-Gate: PUT 422 mit den Zahlen, `apply-laufform` überspringt mit
+`reason: head_deviation` (`head_deviation`/`head_max`), kein Override;
+Inventar-Spalte + Markierung; BESTEHENDE Zeilen über τ sind die
+Entscheidung des Autors (Prod-Datenaktion), nie automatisch. **EIN
+Knopf: Gate an/aus (τ = 15° oder None).** **Vorhersagen (prospektiv):**
+(i) der Anker-Sensor reproduziert die gerenderte Fensterlandung der
+Zerlegung bis auf wenige Grad — von den 21 vertrauten Zeilen liegt
+GENAU das t über 15°, keine andere; (ii) der nächste Harvest-Draft des
+t reproduziert den Schlenker (die Fits sind seine Quelle) und wird
+abgewiesen; (iii) T0 (t-Zeile zurück zur Tafelform) nimmt den Haken
+aus unter, mit und „Kurrentschrift" (der Bézier kommt flach am
+Chart-Fuß 0,703 an, kein Schlenker) — Sicht-Gate in der Tinten-Lupe.
+Das Wort-Lineal ist hier REPORT-Spalte (Doktrin #444: kein Aufnahme-
+oder Löschkriterium): T0 allein, P0 (der Prod-Stand: K/ue/F/ae/b →
+Tafel), P0+T0 und P0+T0+E/v/f/k werden als eigene Zahlen
+(`--laufform`-Karten) berichtet. **Kill für das Gate:** setzt der
+Anker-Sensor eine weitere vertraute Zeile über 15° oder das t darunter,
+misst er nicht die gerenderte Größe — keine Adoption.
+
+**Gemessen `aug29` — der Anker-Sensor stirbt an seiner eigenen
+Kill-Klausel, der Sensor auf der gerenderten Linie hält die Vorhersage:
+adoptiert (τ = 15°, beide Schreibpfade).** Auf den ANKERN setzt das
+Fenster das m (n = 6) mit 15,5° über die Linie — Kill — und liest die
+dichten, eingerollten Köpfe der Kapitalen und des f bis zu 33° anders
+als die Zerlegung: E 14,6° (gerendert 47,8°), K 25,1° (41,2°), f 14,6°
+(27,5°), P 16,4° (9,8°); t 41,9° (46,3°), v, k, m, w stimmen. Die
+Anker-Polylinie ist also nicht die Größe, an der die Grammatik landet.
+`head_deviation` misst deshalb auf der GERENDERTEN Mittellinie — mit
+dem Sampler des Renderers selbst (`core.template.multi_stroke_centerlines`,
+der Sample-Plan der Chart-Zeile über den jeweiligen Ankern, 240 Proben)
+— und reproduziert die Zerlegung exakt (Inventar `head°`): **t 46,4°
+ist die EINZIGE der 21 vertrauten Zeilen über 15°** (Vorhersage (i)
+erfüllt; die knappste darunter ist das m mit 14,9°, dann w 14,0°); über
+τ stehen sonst nur dünne Zeilen: E 47,8° (n = 1), K 41,2° (n = 1, in
+Prod schon gelöscht), f 27,5° (n = 2), v 27,2° (n = 2), k 17,1° (n = 1)
+— darunter drei der vier „sichtbar verzogenen" Zeilen (v, E, k), die
+das Sprung-Gate durchließ; P (9,8°) nicht. Nebenbefund zur
+Empfindlichkeit: die Fensterrichtung eines gedrehten Kopfs hängt von der
+Probendichte ab (ein synthetischer 40°-Kopf wandert um 4°, wenn ein
+zweiter Zug die 240 Proben teilt; ein um 0,6 xh verschobener DRITTER
+Anker biegt den gerenderten Kopf des Harness-n um 15,9°) — das Gate
+liest den Plan, den der Renderer zeichnet, und urteilt damit über den
+gezeichneten Kopf, nicht über eine Abstraktion davon. (ii) bleibt
+prospektiv (in dieser Runde lief keine Ernte). (iii) erfüllt: mit der
+Tafelform des t (T0) läuft der Übergang in unter, mit und
+„Kurrentschrift" flach in den Chart-Fuß 0,703, kein Schlenker
+(Tinten-Lupe). Report-Arme (eigene Zahlen, nie die Schlagzeile): T0
+0,106720 → 0,106390 (−0,0003); P0 (Prod-Stand K/ue/F/ae/b → Tafel)
+0,107802 (+0,0011); P0+T0 0,107473 (−0,0003 gegen P0); P0+T0+E/v/f/k
+0,107995 (+0,0002 gegen P0) — die Tafelformen kosten das Pixel-Lineal
+insgesamt ein Tausendstel, was nach Doktrin #444 kein Kriterium ist.
+Adoptiert: `LAUFFORM_HEAD_DEVIATION_MAX` = 15°, PUT 422 und
+`apply-laufform`-Skip `head_deviation`, kein Override. **Datenaktion
+`aug29` (Owner-Entscheidung):** alle fünf Zeilen über dem Kopf-Gate —
+t, E, f, v, k — in Prod gelöscht (Backups je Zeile, Archiv-Snapshot
+`2026-08-29T15-09-31Z` davor, `GET ?variant=100` → 404, `/write/word`
+rendert Kurrentschrift/Erfolg/fechten/Pulver/kann ohne Lücke); P (9,8°)
+bleibt. Die eingefrorene Root vom 29.08. (07:05Z) trägt damit zehn
+Zeilen, die Prod nicht mehr hat (K, ue, F, ae, b, t, E, f, v, k) — ihr
+Neuexport ist eine erklärte Re-Baseline (P0+Kopf-Arm oben ist die
+Vorschau: 0,107995).
 
 ### Laufform LF7 `aug29` — Vorregistrierung: das Zeilen-Gate (Aufnahme einer Laufform-Zeile)
 

@@ -1,10 +1,12 @@
-"""The two gates in front of a Laufform write (qualitaetsmetrik.md §14 LF7/LF8).
+"""The gates in front of a Laufform write (qualitaetsmetrik.md §14 LF7/LF8/LF9).
 
 Same aiosqlite HTTP stack as the other API suites. The manual
 `PUT …/templates/{key}/laufform` and `POST …/aggregates/apply-laufform` share
 the evidence floor (`LAUFFORM_MIN_OCCURRENCES`, lowered only by an explicit
-`?min_occurrences`) and the row gate (the anchor spike ratio of the row about
-to be written against `LAUFFORM_SPIKE_RATIO_MAX`, no override).
+`?min_occurrences`), the row gate (the anchor spike ratio of the row about to
+be written against `LAUFFORM_SPIKE_RATIO_MAX`, no override) and the head gate
+(the row's landing direction against the chart's, `LAUFFORM_HEAD_DEVIATION_MAX`,
+no override).
 """
 
 from __future__ import annotations
@@ -12,7 +14,7 @@ from __future__ import annotations
 import pytest
 
 from core.aggregate import LAUFFORM_MIN_OCCURRENCES
-from core.laufform import LAUFFORM_SPIKE_RATIO_MAX, anchor_spike_ratio
+from core.laufform import LAUFFORM_HEAD_DEVIATION_MAX, LAUFFORM_SPIKE_RATIO_MAX, anchor_spike_ratio, head_deviation
 from tests.api_harness import Harness
 
 
@@ -32,10 +34,25 @@ def _spiked() -> list[list[float]]:
     return anchors
 
 
-def test_fixtures_sit_on_the_right_sides_of_the_gate():
-    assert LAUFFORM_SPIKE_RATIO_MAX is not None
+def _turned() -> list[list[float]]:
+    """The Korb #7 head: anchor 0 pulled right of and below anchor 1, so the
+    first stroke lands up-left where the chart rises — no anchor jump."""
+    anchors = [list(a) for a in CHART_ANCHORS]
+    anchors[0] = [0.12, 0.30]
+    return anchors
+
+
+def test_fixtures_sit_on_the_right_sides_of_the_gates():
+    from types import SimpleNamespace
+
+    chart = SimpleNamespace(anchors=CHART_ANCHORS, half_widths=[0.05] * 6, trace_meta={"stroke_starts": [0]})
+    assert LAUFFORM_SPIKE_RATIO_MAX is not None and LAUFFORM_HEAD_DEVIATION_MAX is not None
     assert anchor_spike_ratio(_shifted(0.04), [0]) < LAUFFORM_SPIKE_RATIO_MAX
     assert anchor_spike_ratio(_spiked(), [0]) > LAUFFORM_SPIKE_RATIO_MAX
+    assert head_deviation(chart, _shifted(0.04)) < 0.1
+    # The turned head passes the spike gate and fails the head gate — the two see different defects.
+    assert anchor_spike_ratio(_turned(), [0]) < LAUFFORM_SPIKE_RATIO_MAX
+    assert head_deviation(chart, _turned()) > LAUFFORM_HEAD_DEVIATION_MAX
 
 
 async def _put(api: Harness, source_id: str, anchors, n: int, **params):
@@ -137,3 +154,70 @@ async def test_apply_skips_a_spiked_median_and_says_why(api: Harness):
     assert skip["spike_max"] == LAUFFORM_SPIKE_RATIO_MAX
     assert skip["spike_ratio"] > LAUFFORM_SPIKE_RATIO_MAX
     assert skip["n_instances"] is None
+    assert skip["head_deviation"] is None and skip["head_max"] is None
+
+
+async def test_put_refuses_a_turned_head_without_any_override(api: Harness):
+    """The Korb #7 t: a running form whose head lands away from the chart's
+    direction changes the join class the grammar decides on it (§14 LF9) —
+    refused with its angle, on the PUT path too, no override."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+
+    res = await _put(api, source_id, _turned(), LAUFFORM_MIN_OCCURRENCES)
+    assert res.status == 422
+    detail = res.json()["detail"]
+    assert "head" in detail and "LF9" in detail and "no override" in detail
+    assert f"{LAUFFORM_HEAD_DEVIATION_MAX:.0f}°" in detail
+    # Lowering the floor is no way around it either.
+    res = await _put(api, source_id, _turned(), 1, min_occurrences=1)
+    assert res.status == 422 and "head" in res.json()["detail"]
+
+
+async def test_gate_off_admits_the_turned_head(api: Harness, monkeypatch: pytest.MonkeyPatch):
+    import api.routers.templates as templates_router
+    import core.laufform as laufform_mod
+
+    monkeypatch.setattr(laufform_mod, "LAUFFORM_HEAD_DEVIATION_MAX", None)
+    assert templates_router.head_gate is laufform_mod.head_gate  # the router reads the live module constant
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    res = await _put(api, source_id, _turned(), LAUFFORM_MIN_OCCURRENCES)
+    assert res.status == 200, res.body
+
+
+async def test_apply_skips_a_turned_median_and_says_why(api: Harness):
+    """The aggregate path reports the head gate as a skip with the angle."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    items = [
+        {
+            "glyph_key": "n",
+            "glyph": "n",
+            "position": "medial",
+            "y0": 10,
+            "y1": 40,
+            "x0": 100 + 10 * k,
+            "x1": 130 + 10 * k,
+            "anchors": _turned(),
+            "measurements": {"specimen_id": "wenn", "geo_rmse_px": 1.5, "xh_px": 30.0},
+        }
+        for k in range(LAUFFORM_MIN_OCCURRENCES)
+    ]
+    body = {"hand": {"id": "test-hand", "label": "Test norm hand", "era": "1922"}, "items": items}
+    res = await api.client.request(
+        "PUT", f"/sources/{source_id}/instances", json_body=body, headers=api.admin_headers()
+    )
+    assert res.status == 200, res.body
+    await api.client.request("POST", "/hands/test-hand/aggregates/rebuild", headers=api.admin_headers())
+
+    res = await api.client.request("POST", "/hands/test-hand/aggregates/apply-laufform", headers=api.admin_headers())
+    assert res.status == 200, res.body
+    out = res.json()
+    assert out["applied"] == []
+    assert len(out["skipped"]) == 1
+    skip = out["skipped"][0]
+    assert skip["glyph_key"] == "n" and skip["reason"] == "head_deviation"
+    assert skip["head_max"] == LAUFFORM_HEAD_DEVIATION_MAX
+    assert skip["head_deviation"] > LAUFFORM_HEAD_DEVIATION_MAX
+    assert skip["spike_ratio"] is None and skip["n_instances"] is None
