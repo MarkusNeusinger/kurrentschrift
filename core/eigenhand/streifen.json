@@ -130,6 +130,71 @@
     "S0119",
     "S0120"
    ]
+  },
+  {
+   "wave": 2,
+   "strips": [
+    "S0121",
+    "S0122",
+    "S0123",
+    "S0124",
+    "S0125",
+    "S0126",
+    "S0127",
+    "S0128",
+    "S0129",
+    "S0130",
+    "S0131",
+    "S0132",
+    "S0133",
+    "S0134",
+    "S0135",
+    "S0136",
+    "S0137",
+    "S0138",
+    "S0139",
+    "S0140",
+    "S0141",
+    "S0142",
+    "S0143",
+    "S0144",
+    "S0145",
+    "S0146",
+    "S0147",
+    "S0148",
+    "S0149",
+    "S0150",
+    "S0151",
+    "S0152",
+    "S0153",
+    "S0154",
+    "S0155",
+    "S0156",
+    "S0157",
+    "S0158",
+    "S0159",
+    "S0160",
+    "S0161",
+    "S0162",
+    "S0163",
+    "S0164",
+    "S0165",
+    "S0166",
+    "S0167",
+    "S0168",
+    "S0169",
+    "S0170",
+    "S0171",
+    "S0172",
+    "S0173",
+    "S0174",
+    "S0175",
+    "S0176",
+    "S0177",
+    "S0178",
+    "S0179",
+    "S0180"
+   ]
   }
  ],
  "strips": {
@@ -1131,6 +1196,504 @@
    "words": [
     "also"
    ]
+  },
+  "S0121": {
+   "wave": 2,
+   "words": [
+    "Aquarium",
+    "öffnen",
+    "nötig"
+   ]
+  },
+  "S0122": {
+   "wave": 2,
+   "words": [
+    "Frühstück",
+    "kümmern",
+    "Axt"
+   ]
+  },
+  "S0123": {
+   "wave": 2,
+   "words": [
+    "schützen",
+    "süß",
+    "böse",
+    "Größe"
+   ]
+  },
+  "S0124": {
+   "wave": 2,
+   "words": [
+    "Mädchen",
+    "Ypsilon",
+    "Cäcilie"
+   ]
+  },
+  "S0125": {
+   "wave": 2,
+   "words": [
+    "Haar",
+    "manchmal",
+    "möchte"
+   ]
+  },
+  "S0126": {
+   "wave": 2,
+   "words": [
+    "ändern",
+    "glücklich",
+    "einmal"
+   ]
+  },
+  "S0127": {
+   "wave": 2,
+   "words": [
+    "unbedingt",
+    "Aufgabe",
+    "ständig"
+   ]
+  },
+  "S0128": {
+   "wave": 2,
+   "words": [
+    "Geheimnis",
+    "Anwalt",
+    "wozu"
+   ]
+  },
+  "S0129": {
+   "wave": 2,
+   "words": [
+    "Zukunft",
+    "langsam",
+    "entfernt"
+   ]
+  },
+  "S0130": {
+   "wave": 2,
+   "words": [
+    "abgesehen",
+    "kämpfen",
+    "trägt"
+   ]
+  },
+  "S0131": {
+   "wave": 2,
+   "words": [
+    "bequem",
+    "darfst",
+    "zwölf"
+   ]
+  },
+  "S0132": {
+   "wave": 2,
+   "words": [
+    "Küche",
+    "schätzen",
+    "denkst",
+    "Öl"
+   ]
+  },
+  "S0133": {
+   "wave": 2,
+   "words": [
+    "Schüler",
+    "dürfen",
+    "völlig"
+   ]
+  },
+  "S0134": {
+   "wave": 2,
+   "words": [
+    "aufhören",
+    "Umgebung",
+    "jetzo"
+   ]
+  },
+  "S0135": {
+   "wave": 2,
+   "words": [
+    "Möglichkeit",
+    "Nachbar",
+    "Ehre"
+   ]
+  },
+  "S0136": {
+   "wave": 2,
+   "words": [
+    "Umweg",
+    "Esel",
+    "Füße"
+   ]
+  },
+  "S0137": {
+   "wave": 2,
+   "words": [
+    "Jubel",
+    "Onkel",
+    "Söhne"
+   ]
+  },
+  "S0138": {
+   "wave": 2,
+   "words": [
+    "Vögel",
+    "Xaver",
+    "Äpfel",
+    "year"
+   ]
+  },
+  "S0139": {
+   "wave": 2,
+   "words": [
+    "Ärger",
+    "Eltern",
+    "Exempel"
+   ]
+  },
+  "S0140": {
+   "wave": 2,
+   "words": [
+    "Ordnung",
+    "Urkunde",
+    "Cousin"
+   ]
+  },
+  "S0141": {
+   "wave": 2,
+   "words": [
+    "Zylinder",
+    "Geburtsort",
+    "fassen"
+   ]
+  },
+  "S0142": {
+   "wave": 2,
+   "words": [
+    "Unterricht",
+    "Cousine",
+    "look"
+   ]
+  },
+  "S0143": {
+   "wave": 2,
+   "words": [
+    "should",
+    "du",
+    "subway",
+    "linken"
+   ]
+  },
+  "S0144": {
+   "wave": 2,
+   "words": [
+    "das",
+    "come",
+    "halb",
+    "Kirmes"
+   ]
+  },
+  "S0145": {
+   "wave": 2,
+   "words": [
+    "Heu",
+    "Gefängnis",
+    "was",
+    "once"
+   ]
+  },
+  "S0146": {
+   "wave": 2,
+   "words": [
+    "fortan",
+    "retten",
+    "neu",
+    "only"
+   ]
+  },
+  "S0147": {
+   "wave": 2,
+   "words": [
+    "feelings",
+    "wir",
+    "wissen",
+    "ready"
+   ]
+  },
+  "S0148": {
+   "wave": 2,
+   "words": [
+    "Kontor",
+    "Christoph",
+    "would"
+   ]
+  },
+  "S0149": {
+   "wave": 2,
+   "words": [
+    "Soldaten",
+    "wieder",
+    "fremd"
+   ]
+  },
+  "S0150": {
+   "wave": 2,
+   "words": [
+    "Wittib",
+    "someone",
+    "mir"
+   ]
+  },
+  "S0151": {
+   "wave": 2,
+   "words": [
+    "Frau",
+    "night",
+    "hinfort",
+    "right"
+   ]
+  },
+  "S0152": {
+   "wave": 2,
+   "words": [
+    "fragen",
+    "which",
+    "rufen",
+    "sweet"
+   ]
+  },
+  "S0153": {
+   "wave": 2,
+   "words": [
+    "understand",
+    "Absicht",
+    "since"
+   ]
+  },
+  "S0154": {
+   "wave": 2,
+   "words": [
+    "everybody",
+    "Hoffnung",
+    "Stroh"
+   ]
+  },
+  "S0155": {
+   "wave": 2,
+   "words": [
+    "zum",
+    "Caspar",
+    "wrote",
+    "sitzen"
+   ]
+  },
+  "S0156": {
+   "wave": 2,
+   "words": [
+    "immediately",
+    "Nachlass",
+    "sleep"
+   ]
+  },
+  "S0157": {
+   "wave": 2,
+   "words": [
+    "Augenblick",
+    "Birke",
+    "ewig"
+   ]
+  },
+  "S0158": {
+   "wave": 2,
+   "words": [
+    "Christian",
+    "Knochen",
+    "secret"
+   ]
+  },
+  "S0159": {
+   "wave": 2,
+   "words": [
+    "Wildpark",
+    "Autobus",
+    "this"
+   ]
+  },
+  "S0160": {
+   "wave": 2,
+   "words": [
+    "willst",
+    "town",
+    "noch",
+    "Gasse"
+   ]
+  },
+  "S0161": {
+   "wave": 2,
+   "words": [
+    "nice",
+    "Irrtum",
+    "Anzug",
+    "ihm"
+   ]
+  },
+  "S0162": {
+   "wave": 2,
+   "words": [
+    "knew",
+    "Schuh",
+    "Überfluss"
+   ]
+  },
+  "S0163": {
+   "wave": 2,
+   "words": [
+    "special",
+    "im",
+    "story",
+    "stop"
+   ]
+  },
+  "S0164": {
+   "wave": 2,
+   "words": [
+    "Standesamt",
+    "Kuh",
+    "good"
+   ]
+  },
+  "S0165": {
+   "wave": 2,
+   "words": [
+    "Kantor",
+    "Schmied",
+    "und",
+    "ihn"
+   ]
+  },
+  "S0166": {
+   "wave": 2,
+   "words": [
+    "Unterschrift",
+    "vorpreschen"
+   ]
+  },
+  "S0167": {
+   "wave": 2,
+   "words": [
+    "hurry",
+    "alles",
+    "rhythm",
+    "down"
+   ]
+  },
+  "S0168": {
+   "wave": 2,
+   "words": [
+    "Sprünge",
+    "Rechnung",
+    "Signal"
+   ]
+  },
+  "S0169": {
+   "wave": 2,
+   "words": [
+    "Meister",
+    "Rhythmus",
+    "schaffen"
+   ]
+  },
+  "S0170": {
+   "wave": 2,
+   "words": [
+    "Erdbeere",
+    "größer",
+    "mit",
+    "Not"
+   ]
+  },
+  "S0171": {
+   "wave": 2,
+   "words": [
+    "mich",
+    "Kürschner",
+    "young"
+   ]
+  },
+  "S0172": {
+   "wave": 2,
+   "words": [
+    "new",
+    "check",
+    "children",
+    "bleibt"
+   ]
+  },
+  "S0173": {
+   "wave": 2,
+   "words": [
+    "Quartier",
+    "übrigens",
+    "Brot"
+   ]
+  },
+  "S0174": {
+   "wave": 2,
+   "words": [
+    "alsbald",
+    "verletzt",
+    "job",
+    "says"
+   ]
+  },
+  "S0175": {
+   "wave": 2,
+   "words": [
+    "Feuer",
+    "scared",
+    "guilty",
+    "every"
+   ]
+  },
+  "S0176": {
+   "wave": 2,
+   "words": [
+    "local",
+    "du",
+    "Suppe",
+    "move"
+   ]
+  },
+  "S0177": {
+   "wave": 2,
+   "words": [
+    "Landkarte",
+    "Spaß",
+    "Monat"
+   ]
+  },
+  "S0178": {
+   "wave": 2,
+   "words": [
+    "Sonnabend",
+    "schneiden",
+    "why"
+   ]
+  },
+  "S0179": {
+   "wave": 2,
+   "words": [
+    "when",
+    "where",
+    "vormals"
+   ]
+  },
+  "S0180": {
+   "wave": 2,
+   "words": [
+    "Haupt"
+   ]
   }
  },
  "forms": {
@@ -1140,12 +1703,15 @@
   "Ausgang": "Aus|gang",
   "Aussteuer": "Aus|steuer",
   "Donnerstag": "Donners|tag",
+  "Geburtsort": "Geburts|ort",
   "Gutshof": "Guts|hof",
   "Häusler": "Häus|ler",
   "Liebesbrief": "Liebes|brief",
   "Samstag": "Sams|tag",
+  "Standesamt": "Standes|amt",
   "Volksschule": "Volks|schule",
   "Wirtshaus": "Wirts|haus",
+  "alsbald": "als|bald",
   "alsdann": "als|dann"
  }
 }

@@ -127,7 +127,14 @@ class TestBestand:
     async def test_an_untouched_hand_already_knows_its_denominators(self, api: Harness):
         data = await _bestand(api)
         plan = load_plan()
-        assert data["strips"] == {"total": len(plan["strips"]), "belegt": 0, "unterwegs": 0, "geplant": 120}
+        # Both denominators come from the committed plan — a new wave (append-never)
+        # grows them together; pinning a literal here would break on every wave.
+        assert data["strips"] == {
+            "total": len(plan["strips"]),
+            "belegt": 0,
+            "unterwegs": 0,
+            "geplant": len(plan["strips"]),
+        }
         assert data["fassungen"]["angenommen"] == 0
         # Capitals, digits and signs are part of the answer (owner, 2026-08-22).
         for bucket in ("klein", "gross", "ligatur", "ziffer", "zeichen"):

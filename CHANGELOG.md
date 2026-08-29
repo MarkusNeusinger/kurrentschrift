@@ -40,6 +40,11 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   möchte ↔ mochte, ändern ↔ andern). Migration `0027` inserts
   exactly these rows into an already-seeded database (idempotent) and its
   downgrade removes exactly them (quiz-wortbank.md §1 „Lückenschluss").
+  The Eigenhand Streifenplan got its wave 2 from the reconciled pool in
+  the same breath (`core/eigenhand/streifen.json`, strips 121–180,
+  append-never): 198 words, 189 planned for the first time, 80 of the 146
+  gap-fill words on the strips, every glyph still at or above its floor,
+  743 distinct joins planned (eigenhand-erfassung.md §3).
 - **The reading quiz explains a miss.** A wrong letter pick now shows,
   under „Das ist ein f.", the feature that tells the shown form from the
   guessed letter — „Das lange ſ und das f unterscheidet nur der
