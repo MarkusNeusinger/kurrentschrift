@@ -9222,9 +9222,9 @@ bleibt unverändert, der (a)-Gewinn wird in J2 mitgemessen, damit die
 Adoption über die vorregistrierte Zielstelle läuft und nicht über
 Beifang.
 
-### Übergänge J2 `aug29` — Vorregistrierung (offen): die Anstrich-Verlängerung in den Schaft
+### Übergänge J2 `aug29` — Vorregistrierung: die Anstrich-Verlängerung in den Schaft
 
-Vorregistriert, noch nicht gemessen — der nächste Arm für Korb #7,
+Vorregistriert vor der ersten Zahl — der nächste Arm für Korb #7,
 Punkt 3. **Hypothese.** Ein Sägezahn-Austritt (Tangente 25–55°) vor
 einem Buchstaben, dessen erster Zug ein Anstrich in einen
 Oberlängen-Schaft ist (t, ſ; der Prior sagt es: Chart-Landerichtung
@@ -9244,6 +9244,93 @@ Kompositions-Soll; (c) unter n→t UND „Kurrentschrift" n→t
 geradlinig, Haken weg; Nachweis der Klassenregel an weiteren
 Sägezahn→t/ſ-Wörtern des Sets: fechten, streiten, muß, Seiten). Kill
 wie immer; Rettungsweg dann der Fit-Prior.
+
+**Gemessen `aug29` — (a) rot, Prämisse durch die Dissektionen
+widerlegt: nicht adoptiert, Code nicht im Baum.** (a) wordbench
+0,106720 → **0,110802** (+0,0041 > +0,002), Paare byte-gleich
+(0,146506 — kein Drill trägt die Klasse: `dt` ist ein Schleifen-, `ssi`
+ein Unterlängen-Austritt); 8 Wörter bewegt, 2 : 6 (streiten −0,032,
+macht −0,018 gegen mit +0,131, Soldaten +0,051, Seiten +0,046, unter
++0,037, fechten +0,034, mit-2 +0,007). (c) formal erreicht — alle acht
+Sägezahn→t des Sets (unter n→t, mit/mit-2/Seiten/streiten i→t,
+Soldaten a→t, fechten/macht h→t) koppeln `stem_entry`, geradlinig,
+Haken getrimmt (Index 17, Ankunft 0,935), „Kurrentschrift" n→t auf
+der Root ebenso; muß trägt keine Klasse (u→sz, Ligaturschlüssel), und
+kein Wort des Sets führt einen Sägezahn in ein ſ — der ſ-Teil der
+Klasse bleibt unbelegt. Die Form ist trotzdem falsch, und die
+Dissektionen sagen warum. **Autopsie an den sieben `fit_ok`-
+Dissektionen (+ macht, `fit_ok` false):** gemessener Versatz +0,09 …
++0,36 xh (Mittel 0,23), Sehne 36–61° (Mittel ≈ 48°), Sehnenlänge
+0,20–0,48 xh, Anstieg über den Austritt 0,17–0,31 xh — die Hand kommt
+auf FUSSHÖHE des t an (komponiert 0,55–0,80; der t-Fuß steht bei
+0,64/0,70), nicht hoch auf dem Anstrich. Komponiert ohne Regel:
+Versatz 0,24–0,26, Sehne 33–51°, Länge 0,37–0,45, Ankunft am Fuß
+0,638 (`doff` 0,05–0,16); mit Regel: Versatz 0,45–0,69, Sehne 34–43°,
+Länge 0,81–1,10, Ankunft 0,965 (`doff` 0,29–0,64) — die doppelte
+Plattenlänge. Die Prämisse „wie f→t (FORK-Ankunft 0,92)" gilt für
+den Sägezahn nicht: der Balken-Austritt startet am SCHAFT-Anker links
+der Balkenspitze und steigt bis zum Apex; der Sägezahn-Fuß steht schon
+rechts von As Tinte, und die Hand nimmt den kurzen Weg in den Fuß. Was
+vom Haken bleibt, ist nicht die Kopplungshöhe, sondern der Haken
+selbst: der Laufform-t-Kopf (Anker 0 nach links-oben gezogen, erstes
+Segment 135°) und das `d_in` des Bézier, das daran gemessen wird — die
+Platte schreibt die kurze gerade Linie in die Fußregion. Strikt nach
+Vorregistrierung: (a) ist Gate, J2 wird NICHT adoptiert; `compose.py`
+und der Golden-Pin bleiben unverändert (lesen e→ſ und sitzen i→t
+hätten sich bewegt). Rettungswege: (1) **J3, die tiefe
+Schaft-Kopplung** (unten vorregistriert, in derselben Runde gemessen):
+dieselbe Klassen-Entscheidung am Prior, Platzierung UNANGETASTET (die
+generische Freiheits-Platzierung trifft den gemessenen Versatz schon:
+0,24 gegen 0,23 im Mittel), Verbinder = gerade Linie zur TIEFSTEN
+gerenderten Flankenprobe oberhalb des Hakens, Haken getrimmt; (2) ein
+Kopf-Sensor auf der Zeile — die Richtung des ersten Segments gegen die
+Chart-Landerichtung (t: 135° gegen 40°) als eigenes Zeilen-Gate, das
+die Sprung-Ratio nicht sieht (t 2,11 < τ 2,95), eigene Pre-Reg; (3)
+eine aus den Dissektionen kalibrierte Ankunftshöhe (0,17–0,31 xh über
+dem Austritt) als Ziel statt der Fork-Ankunft — nur falls J3s tiefste
+Flankenprobe die Ankunft verfehlt.
+
+### Übergänge J3 `aug29` — Vorregistrierung: die tiefe Schaft-Kopplung (Korb #7, t nach n, zweiter Arm)
+
+Geschrieben und committet VOR der ersten Zahl; Konversion des
+J2-Negativs. **Hypothese.** Die dissezierten Sägezahn→t-Übergänge
+(n = 8, 7 `fit_ok`) sind kurze steile Geraden, die auf Fußhöhe des t
+ankommen (Anstieg 0,17–0,31 xh, Sehne 36–61°, Länge 0,20–0,48 xh,
+Versatz im Mittel 0,23); die generische Platzierung trifft den Versatz
+bereits (0,24–0,26, `doff` 0,05–0,16). Falsch ist allein die FORM: der
+Bézier misst seine Ankunftsrichtung am Haken des Laufform-Kopfs (86,8°)
+und lässt den Haken stehen. **Mechanismus (ein Klassenpfad,
+`STEM_ENTRY_BASES` = {t, longs}, geschlossene B-Menge):**
+Sägezahn-Austritt (vorwärts, Mittelband unter `HIGH_COUPLE_EXIT_Y`,
+Tangente im Align-Band, kein Balken-Austritt, kein
+Kapitalen-Neustart), B in der Klasse, Prior-Landerichtung (erster Zug
+der CHART-Zeile, J1) im Align-Band, Apex des ersten Zugs über der
+Mittelhöhe → Kopplungsindex = die TIEFSTE gerenderte Flankenprobe
+i ≥ 1, deren Segment i−1→i im Align-Band liegt (die Segmente eines
+Haken-Kopfs zeigen anderswohin und werden übersprungen), mit y ≥
+Austritt + `ALIGN_MIN_RISE` und x ≥ Austritt + `GARLAND_MIN_DX`; der
+Lauf endet, wo die Flanke abwärts kippt; KEINE Höhendecke
+(`ALIGN_MAX_ENTRY_Y` gilt für die Klasse nicht). Der Verbinder ist die
+gerade Linie (`_straight_connector`) vom Austritt auf diese Probe, die
+Proben darunter werden getrimmt (Mittellinie und Silhouette — der
+Haken geht mit dem Stummel). Platzierung UNANGETASTET (das
+Sameslant-Präzedens: Begradigen ohne Zusammenziehen); die Kopplung
+wird als Provenienz-Feld `coupling: "stem_entry"` am Verbinder
+ausgewiesen, die Platzierungsregel bleibt, was sie ist. Chart-t ohne
+Haken: Index 1, die Linie endet eine Probe über dem Fuß — praktisch
+der heutige Verlauf. **EIN Knopf: Klassenpfad an/aus.** Basis
+0,106720 / 0,146506 (dieselbe Root, dieselbe Umgebung, BLAS gepinnt).
+Gates: (a) `word_loss`/`pair_loss` ≤ +0,002, bewegen dürfen sich nur
+die acht Klassenwörter (dazu der Golden-Pin lesen e→ſ / sitzen i→t als
+erklärte Re-Baseline); (b) Kompositions-Soll je Wort (`ductus_soll`)
+ohne Verlust; (c) unter n→t UND „Kurrentschrift" n→t: Kopplung
+`stem_entry`, geradlinig, Haken weg — Klassennachweis an mit, mit-2,
+Seiten, Soldaten, fechten, streiten, macht (muß trägt keine Klasse);
+(d) an den sieben `fit_ok`-Dissektionen steigt `doff` nicht
+(Platzierung unangetastet) und `dconn` fällt (gerade Linie statt
+Haken-Bézier). Erwartung: Wörter flach bis leicht besser (die
+Haken-Tinte fällt weg), Paare byte-gleich. Kill: ein verletztes Gate =
+keine Adoption; Rettungsweg dann der Kopf-Sensor (J2-Rettungsweg 2).
 
 ### Laufform LF7 `aug29` — Vorregistrierung: das Zeilen-Gate (Aufnahme einer Laufform-Zeile)
 
