@@ -574,8 +574,10 @@ it.
 The project runs on **Google Cloud Platform** (own GCP project, same
 pattern as anyplot.ai), live since 2026-05 — authoritative spec:
 `docs/reference/frontend-stack.md` §6. Two Cloud Run services in
-europe-west4 with min instances 0 (cold start acceptable for a learning
-site):
+europe-west4. Since 2026-08-30 the API runs with **min instances 1** (its
+measured cold start is p50 9.4 s, not the ~3 s once assumed, and 60 % of
+hours see no request at all); the app stays at 0 because it boots in
+170 ms:
 
 - `kurrentschrift-api` — FastAPI (`api/Dockerfile`); `api/cloudbuild.yaml`
   runs an Alembic migrate job (`kurrentschrift-migrate`) before rollout,

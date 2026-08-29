@@ -19,6 +19,26 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Changed
+
+- **The API keeps a warm instance, so the first visitor after a quiet hour no
+  longer waits nine seconds.** `_MIN_INSTANCES` 0 → 1, `_MEMORY` 1Gi → 512Mi,
+  `_MAX_INSTANCES` 1 → 3 in `api/cloudbuild.yaml`. The old comment estimated the
+  cold start at ~3 s; measured over 30 days it is **p50 9,447 ms / p95
+  12,245 ms**, and since 60 % of all hours see no request at all, roughly 279 of
+  the 344 container starts were user-facing — about nine visitors a day paid the
+  full wait. 98 % of it is container start plus Python import; the database
+  contributes 0.13 s, because `create_async_engine` is lazy and opens no socket
+  at startup. Halving the memory is what makes it affordable: idle CPU bills at
+  ~10 % of the active rate but idle memory bills at the full rate, and measured
+  use is 15 % mean / 25 % p99 of 1 GiB, so 512Mi keeps 2x headroom over p99 and
+  removes a quarter of the standing cost. Funded by dropping the min-instance on
+  `anyplot-app` (anyplot#10812), which was 99.56 % idle on a service that boots
+  in 0.26 s — net cost of the pair is ~0 €/month. `_MAX_INSTANCES` goes to 3 not
+  for throughput (3 requests hit HTTP 429 in 30 days) but because min=1 with
+  max=1 forces a deploy to replace the only instance rather than warm the new
+  one beside it, which is where the ~73 deploy-rollout cold starts came from.
+
 ### Added
 
 - **„Lesart prüfen" — the reading aid for a person with an old letter on
