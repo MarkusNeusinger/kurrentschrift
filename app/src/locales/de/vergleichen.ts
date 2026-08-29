@@ -50,7 +50,7 @@ export const vergleichen = {
         { key: 'longs', label: 'ſ' },
         { key: 'f', label: 'f' },
       ],
-      desc: 'Nur der Querstrich unterscheidet sie: Das f hat ihn, das lange ſ nicht. Das ſ steht am Silbenanfang und im Silbeninneren, das runde s nur am Silbenende.',
+      desc: 'Das f trägt oben eine Schleife und in der Mitte den Querstrich; das lange ſ läuft oben spitz zu und hat beides nicht. Das ſ steht am Silbenanfang und im Silbeninneren, das runde s nur am Silbenende.',
     },
     {
       term: 'n und u',
