@@ -60,8 +60,36 @@ export const tafel = {
     footer: 'kurrentschrift.ink/tafel',
     longS: 'langes s',
   },
-  // Click/tap a written letter on the sheet to re-write it in place.
-  replayHint: 'antippen zum Nachschreiben',
+  // Click/tap a written letter on the sheet: it re-writes itself in place and
+  // opens the letter detail below (?g=<key>).
+  replayHint: 'antippen: nachschreiben und im Detail ansehen',
+  // The letter detail (LetterDetail.tsx, /tafel?g=<key>): stroke order,
+  // Ansatz/Auslauf, the write-in at two tempi, look-alikes, a jump into the
+  // Federprobe. Vision goal 3 („Buchstaben in Aktion").
+  detail: {
+    heading: 'Buchstabe im Detail',
+    close: 'Detail schließen',
+    animated: 'Zug um Zug',
+    tempoLabel: 'Tempo',
+    tempoNormal: 'normal',
+    tempoSlow: 'langsam',
+    strokeOrder: 'Strichfolge',
+    strokeOrderAria: 'Strichfolge des Buchstabens mit nummerierten Zügen',
+    // Stepper under the stroke-order view (interpolates {{n}} and {{total}}).
+    step: 'Zug {{n}} von {{total}}',
+    stepPrev: 'einen Zug zurück',
+    stepNext: 'einen Zug weiter',
+    stepAll: 'alle Züge',
+    singleStroke: 'ein einziger Zug, ohne Absetzen',
+    // Legend of the markers: numbered starts, the hollow rings at Ansatz/Auslauf.
+    markers: 'Zahlen: Beginn jedes Zugs · Ringe: Ansatz und Auslauf zum Nachbarbuchstaben',
+    lookalikes: 'Verwechsler',
+    // Jump into the Federprobe with a word that contains the letter (interpolates {{word}}).
+    inWord: 'im Wort sehen: „{{word}}“',
+    unavailable: 'Für diesen Buchstaben liegt gerade keine nachgeschriebene Form vor.',
+    // One sentence for the crawler page and the section hint.
+    hint: 'Ein Tipp auf einen nachgeschriebenen Buchstaben öffnet ihn im Detail: die Strichfolge mit nummerierten Zügen, Ansatz und Auslauf, das Schreiben Zug um Zug in zwei Tempi, die Verwechsler daneben — und ein Sprung in die Federprobe, um ihn im Wort zu sehen.',
+  },
   // Tap/click-to-zoom on the original scan (OriginalScan): aria labels only —
   // the zoom-in/grab cursor signals the affordance, no visible hint (minimal).
   zoomIn: 'Tafel vergrößern',

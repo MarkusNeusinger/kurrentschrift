@@ -138,6 +138,10 @@ function glyphGeom(data: GlyphRenderData): GlyphGeom | null {
 interface SheetGlyphProps {
   geom: GlyphGeom;
   glyph: string;
+  glyphKey: string;
+  // The letter opened in the detail panel (?g=<key>): its cell keeps the wash.
+  selected: boolean;
+  onSelect?: (key: string) => void;
   glyphX: number; // where this glyph's left ink edge (minX) lands, template coords
   cellX: number; // left edge of the hover/focus cell, template coords
   cellW: number;
@@ -150,7 +154,7 @@ interface SheetGlyphProps {
 // One written glyph inside the row SVG: the silhouette revealed by a mask swept
 // along its centerlines. Owns a `run` counter — bumping it (a click/tap)
 // remounts the mask + ink so the write-in replays, in place, with no modal.
-function SheetGlyph({ geom, glyph, glyphX, cellX, cellW, vbY, vbH, orderIndex, reducedMotion }: SheetGlyphProps) {
+function SheetGlyph({ geom, glyph, glyphKey, selected, onSelect, glyphX, cellX, cellW, vbY, vbH, orderIndex, reducedMotion }: SheetGlyphProps) {
   const uid = useId();
   const [run, setRun] = useState(0);
   const animate = !reducedMotion;
@@ -193,11 +197,17 @@ function SheetGlyph({ geom, glyph, glyphX, cellX, cellW, vbY, vbH, orderIndex, r
       role="button"
       tabIndex={0}
       aria-label={`${glyph} — ${de.tafel.replayHint}`}
-      onClick={() => setRun((r) => r + 1)}
+      aria-pressed={selected}
+      // A tap re-writes the letter in place AND opens it in the detail panel.
+      onClick={() => {
+        setRun((r) => r + 1);
+        onSelect?.(glyphKey);
+      }}
       onKeyDown={(e: ReactKeyboardEvent<SVGGElement>) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           setRun((r) => r + 1);
+          onSelect?.(glyphKey);
         }
       }}
       sx={{
@@ -205,7 +215,7 @@ function SheetGlyph({ geom, glyph, glyphX, cellX, cellW, vbY, vbH, orderIndex, r
         // no UA focus ring (SVG draws an ugly thick black/white box) — the cellbg
         // wash is the focus affordance instead
         outline: 'none',
-        '& .cellbg': { fill: 'transparent', transition: 'fill 120ms' },
+        '& .cellbg': { fill: selected ? HOVER : 'transparent', transition: 'fill 120ms' },
         '&:hover .cellbg, &:focus-visible .cellbg': { fill: HOVER },
       }}
     >
@@ -252,10 +262,12 @@ interface RowProps {
   guides: GlyphRenderData['template_guides'];
   width: number; // rendered px width (sized exactly so the lines never distort)
   reducedMotion: boolean;
+  selectedKey: string | null;
+  onSelect?: (key: string) => void;
 }
 
 // One ruled row: the four full-width Lineatur lines + the row's written glyphs.
-function SheetRow({ row, rowOffset, rowW, geomByKey, guides, width, reducedMotion }: RowProps) {
+function SheetRow({ row, rowOffset, rowW, geomByKey, guides, width, reducedMotion, selectedKey, onSelect }: RowProps) {
   const vbY = -(guides.ascender + PAD_Y);
   const vbH = guides.ascender - guides.descender + 2 * PAD_Y;
   const lines = [
@@ -329,6 +341,9 @@ function SheetRow({ row, rowOffset, rowW, geomByKey, guides, width, reducedMotio
           key={p.slot.key ?? p.orderIndex}
           geom={p.geom}
           glyph={p.slot.glyph}
+          glyphKey={p.slot.key ?? ''}
+          selected={p.slot.key === selectedKey}
+          onSelect={onSelect}
           glyphX={p.glyphX}
           cellX={p.cellX}
           cellW={p.cellW}
@@ -345,9 +360,12 @@ function SheetRow({ row, rowOffset, rowW, geomByKey, guides, width, reducedMotio
 interface Props {
   rows: MarkedSlot[][]; // chart-row-grouped marked letters (gaps = null key)
   ratio: number[]; // style_ratio (Oberlänge:Mittellänge:Unterlänge)
+  // The letter open in the detail panel (?g=<key>) and the tap that opens one.
+  selectedKey?: string | null;
+  onSelect?: (key: string) => void;
 }
 
-export function WrittenSheet({ rows, ratio }: Props) {
+export function WrittenSheet({ rows, ratio, selectedKey = null, onSelect }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const [dataByKey, setDataByKey] = useState<Map<string, GlyphRenderData | null> | null>(null);
   // Batch fetch failed (after the cold-start retries): keep the empty ruling and
@@ -470,6 +488,8 @@ export function WrittenSheet({ rows, ratio }: Props) {
                   guides={guides}
                   width={containerW}
                   reducedMotion={reducedMotion}
+                  selectedKey={selectedKey}
+                  onSelect={onSelect}
                 />
               ))}
             </Stack>
