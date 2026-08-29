@@ -308,6 +308,10 @@ async def test_apply_laufform_derives_the_variant_100_row_and_closes_the_pruefst
         "derived_from": "hand-aggregate",
         "hand_id": "test-hand",
         "n_occurrences": 4,
+        # The end blend's window and mode are stamped even while the window is
+        # 0 (LF5 rejected, LF6 under measurement — qualitaetsmetrik.md §14).
+        "end_window": 0.0,
+        "end_mode": "transverse",
     }
     assert row["provenance_source_id"] == source_id
 

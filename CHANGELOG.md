@@ -19,8 +19,47 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ## [Unreleased]
 
+### Added
+
+- **The Laufform end blend — measured, rejected, and kept reproducible
+  (Korb #7).** The admin's complaint about „Kurrentschrift" (a wavy K,
+  a steep K→u, a hooked t lead-in after n) traced to the free ends of
+  the fitted running forms: the fit pulls a stroke's first/last anchors
+  toward neighbouring ink (the t's anchor 0 toward its Kringel in all
+  four occurrences, the K's last anchor onto the u's Anstrich), and the
+  join grammar reads its landing/departure tangents exactly there
+  (t: 86.8° instead of the chart's 40.4°, outside the 25–55° coupling
+  window). `core/laufform.py::blend_stroke_ends` fades those ends back to
+  the chart shape over an arc-length window, rigidly attached at the
+  Laufform's placement — in a `full` mode (LF5) and a `transverse`-only
+  mode (LF6). Both rungs of both modes FAILED the frozen word ruler
+  (+0.011/+0.022 and +0.013/+0.029 against 0.106720): for the well
+  attested letters (e n=34, n n=31) the Laufform ends are the hand, not
+  drift. The builder therefore ships with the blend OFF
+  (`LAUFFORM_END_WINDOW` 0, stamped as `trace_meta.laufform.end_window`/
+  `end_mode`), and the arms stay reproducible: `tools/laufform/endblend.py`
+  builds candidate maps from a fixture root (`--window`, `--full-blend`,
+  `--chart-fallback KEY` for the K-on-chart arm), `wordlab` gained
+  `--fixtures`/`--laufform` (the same overlay `wordbench.run --laufform`
+  measures). Pre-registrations, numbers and the localised negatives:
+  `qualitaetsmetrik.md` §14 („Laufform LF5"/„LF6", „Übergänge J1" — the
+  prior landing direction, (a) −0.0010 but the t unreached, not adopted —
+  and the open J2 „Anstrich-Verlängerung in den Schaft"),
+  `tintenfolger.md` §7.9, glossary „Endblende (Laufform)" /
+  „Prior-Landerichtung". Data action of the same round (owner's go, after
+  a staged `dbsnapshot`): the Sütterlin K's n=1 running-form row was
+  deleted, so „Kurrentschrift" writes the K chart-true and takes the u's
+  slant straight from the baseline; the frozen fixture root stays as it
+  is until the next declared re-baseline.
+
 ### Changed
 
+- **The Laufform Prüfstein compares what the apply step WOULD write.** The
+  `list`/`rebuild`/`apply-laufform` distance (`laufform_dev_xh`) now runs
+  the median through `build_laufform_canonical` before comparing it with
+  the stored row, so it reads 0 exactly when the stored row is what this
+  aggregate would produce — with any end blend included — instead of
+  against the raw median (Korb #7 round).
 - **GitHub releases are the CHANGELOG section condensed, never copied.**
   A release body keeps the section's headings and one bullet per NOTABLE
   entry (chores, dependency bumps and small fixes are left out; no fixed

@@ -46,7 +46,18 @@ Konnektor. `--sweep` variiert eine Compose-Konstante spaltenweise.
 
 ```bash
 uv run --extra viz python -m tools.wordlab <id> [--set pairs] [--live] [--sweep core.compose.CONST=v1,v2]
+    [--fixtures DIR] [--laufform KANDIDATEN.json]
 ```
+
+`--fixtures` zeigt auf eine andere (z. B. gepatchte) Fixture-Root,
+`--laufform` legt Kandidaten-Laufformen über die eingefrorenen — DIESELBE
+Datei und dieselbe Ableitung wie `wordbench.run --laufform` (`aug29`), damit
+das Overlay zeigt, was die Bench misst. Die Kandidaten-Karten der
+Endblende-Arme (§14 LF5/LF6, beide verworfen) baut
+`tools/laufform/endblend.py` aus einer Root (`--window`, `--chart-fallback
+KEY`, `--full-blend`); `--window 0` kopiert die gespeicherten Zeilen
+wörtlich, sodass eine reine Chart-Rückfall-Karte (K0-Arm) nichts anderes
+bewegt.
 
 **`tools/pairlab`** — seziert EINEN Buchstaben-Übergang gegen seine echten
 Vorkommen in den Vorlagen, jeder Buchstabe UNABHÄNGIG neu eingepasst:

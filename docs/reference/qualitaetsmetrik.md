@@ -8960,3 +8960,287 @@ bleibt eingefroren** (Wordbench/Tracebench messen weiter gegen den
 Stand VOR dem Write — das ist die Basis jeder laufenden
 Vorregistrierung); ein Neuexport der Root ist eine deklarierte
 Re-Baseline und ein eigener Schritt, nicht die Folge dieses Writes.
+
+### Laufform LF5 `aug29` — Vorregistrierung: die Endblende (Chart-Rückblendung an den freien Strichenden; Korb #7)
+
+Geschrieben und committet VOR der ersten Zahl. Anlass: Korb #7
+(„Kurrentschrift", suetterlin-1922): K-Schluss wellig, K→u steil statt
+in der u-Schräge, t-Aufstrich nach n mit Haken. Reproduziert am
+`/write/word`-Rendering und in den Fixture-Overlays (Kugel K→u, unter
+n→t).
+
+**Befund.** Die freien Enden eines gefitteten Zuges sind seine am
+wenigsten gebundenen Anker: der Fit zieht sie zur Nachbar-Tinte. t:
+Anker 0 liegt in ALLEN vier Vorkommen ~0,10 xh rechts-unten der
+Chart-Position (Richtung Kringel), Anker 1 wieder auf der Chart-Linie —
+der Median (n=4, MAD ≤ 0,021) kann eine systematische Drift nicht
+überstimmen; die gerenderte Landetangente der Laufform ist 86,8° gegen
+40,4° der Tafel, außerhalb des Align-Fensters (25–55°), darum kein
+gerader Anstrich (n→t bleibt Bézier + Haken; nach f, wo die
+Flankenkopplung greift, ist das t sauber). K (n=1, Schreib-Karte
+`aug26`): der letzte Anker springt auf die Grundlinie (0,45/0,04 statt
+0,43/0,29), Austrittstangente −49° statt +42°; die Wellen davor sind der
+Einzelfit am Knoten der Platte. `build_laufform_canonical` setzt
+voraus, dass die End-Abweichungen des Medians sub-nib sind („the
+tangents stay — median deviations are sub-nib") — beim t (0,12 xh gegen
+Nibradius 0,064 xh) und beim K ist das verletzt.
+
+**Mechanismus (Endblende).** In der Kanonisierung
+(`build_laufform_canonical`, die EINE Ableitung für PUT und apply)
+blendet jeder Zug an BEIDEN freien Enden über ein Bogen-Fenster W (xh,
+gemessen auf dem Chart-Zug) linear von der Chart-Geometrie (w = 0 am
+Ende) zur Laufform (w = 1 am Fensterrand). Die Chart-Endstrecke wird
+dabei STARR an den Fensterrand der Laufform angehängt (Versatz T =
+Laufform − Chart am Fensterrand), damit Breite und Lage der Laufform
+erhalten bleiben und nur Form und Richtung des Endes vom Duktus-Prior
+kommen; eine rein verschobene Laufform ist damit ein Fixpunkt (Blende =
+Identität), und die Blende ist idempotent. Entry/Exit/Advance reiten
+wie bisher auf den — jetzt geblendeten — Endankern; Züge kürzer als 2W
+werden ganz zur starr angehängten Chart-Form. Reine Funktion
+`core/laufform.py::blend_stroke_ends`, Stempel
+`trace_meta.laufform.end_window`.
+
+**EIN Knopf: das Fenster W, Leiter {0,25 · 0,5} xh** (0,5 = das
+LF3-Fenster). Wirkmenge: alle 32 gespeicherten Zeilen der Root —
+Kandidaten-Karte trocken über `tools/laufform/endblend.py` (Root →
+Kandidaten-Zeilen durch denselben Builder), Overlay per `wordbench
+--laufform` bzw. `wordlab --laufform`. Ein zweiter, getrennter Arm ohne
+Knopf: **K0 = K auf Chart-Rückfall** (Autor-Aussage 2026-08-29:
+„Laufform vom K deutlich verbessern oder zurück zur Tafelform"),
+gemessen einzeln und kombiniert mit der Endblende — eine
+Daten-Entscheidung, kein Mechanik-Knopf.
+
+**Basis.** Die Root vom 2026-08-29 (`fetch_fixtures --set all
+--verify`, 12/12 bit-exakt), d. h. der DB-Stand NACH dem
+LF3b-W-Write (32 Laufform-Zeilen; K/E/F/P/ae/b/k/s/ue mit n = 1); in
+dieser Umgebung frisch gerechnet, BLAS gepinnt: Wörter **0,106720** ·
+Paare **0,146506** (chart-only 0,125231 / 0,146163). Nicht die stehende
+`aug26`-Basis 0,108091 (Root VOR dem Write) — der Vergleich läuft
+Root-intern.
+
+**Messung (trocken, kein DB-Write).**
+(a) wordbench `--set all --laufform <Karte>`: `word_loss`/`pair_loss`
+≤ +0,002 gegen die Basis; bewegen dürfen sich nur Wörter mit
+Laufform-Glyphen (bei K0 nur Kugel).
+(b) Kompositions-Soll je Wort (`tools.tracebench.soll.ductus_soll`,
+alle 63 Wörter, Kandidaten-Root gegen Basis-Root): kein Wort verliert
+eine Kreuzung; jede Bewegung wird berichtet.
+(c) Die drei Korb-Stellen im Overlay (Kugel K→u, unter n→t,
+„Kurrentschrift" lokal komponiert): n→t muss geradlinig koppeln
+(Platzierungsregel `align`/`flank_*` statt `connect_gap`), der t-Haken
+verschwindet; K-Schluss und K→u werden je Arm beschrieben.
+(d) Lotse/Kette dev-19 (die LF3b-W-Gates c/d) laufen NICHT in dieser
+Runde: sie gehören zum Write-Schritt (Autor-Go + `dbsnapshot`), weil
+sie die Karte messen, DIE GESCHRIEBEN WIRD.
+
+**Kill-Kriterium:** ein verletztes Gate = keine Adoption der Stufe;
+Rettungswege dann: End-Regularisierung im Fit selbst (neuer
+Mechanismus, Kette/M4) oder ein je Glyph gewähltes Fenster — nie
+derselbe Knopf weicher.
+
+**Adoption.** Besteht eine Stufe, wird W ihr Default in
+`core/laufform.py` (jeder künftige PUT/apply blendet), die Korb-Zeile
+#7 schließt auf Stufe `laufform`, und der Write der Kandidaten-Karte
+bleibt ein eigener Schritt hinter Autor-Go (Todoist) → `dbsnapshot` →
+PUT je Glyph → GET-Verify → Re-Export der Root als deklarierte
+Re-Baseline.
+
+**Gemessen `aug29` — BEIDE Stufen verworfen an Gate (a), der Riss ist
+lokalisiert: die Laufform-Enden tragen echte Ausdehnung.** Umgebung wie
+vorregistriert (BLAS gepinnt), Kandidaten-Karten aus
+`tools/laufform/endblend.py` über die Root vom 2026-08-29. Zuerst die
+Mechanik-Prüfung an den Korb-Glyphen: t-Landetangente 86,8° → 37,2°
+(W 0,25) / 39,3° (W 0,5), K-Austritt −49,2° → +39,5° / +44,5° mit
+Schwanzende auf der Chart-Position — die Blende tut, was sie soll. Eine
+Korrektur der Vorregistrierung: die Blende ist NICHT idempotent (nur
+Ende und Fensterrand sind Fixpunkte, im Fenster kontrahiert eine
+Wiederholung weiter zur Chart-Form); sie ist deterministisch aus dem
+Median, was für Prüfstein und Re-Apply genügt — der Prüfstein
+(`list`/`rebuild`/`apply`) vergleicht seit dieser Runde darum den
+Median DURCH den Builder gegen die gespeicherte Zeile. **(a) wordbench:
+W 0,25 → 0,118093 (+0,0114), W 0,5 → 0,128716 (+0,0220); Paare
+0,146459 / 0,146684 (±0,0002).** 57 von 63 Wörtern bewegen sich, bei
+W 0,25 19 besser gegen 38 schlechter. Die Korb-Wörter GEWINNEN (Kugel
+0,0717 → 0,0672, unter 0,0866 → 0,0785, `dconn` unter 0,110 → 0,081,
+`doff` 0,143 → 0,069; schießen −0,083, und-3 −0,049, Soldaten −0,037),
+die Verlierer sind die e/n/i/m-Wörter, und ihre Strafe ist BREITE:
+macht +0,112 (Breite +0,093), Gewehr +0,087, einen +0,075, Zorn +0,070
+(Breite +0,173), Zügel +0,039 (Breite +0,139); die Breiten-Komponente
+gesamt 0,1606 → 0,1885. Die Advance-Bewegung der Karte sagt dasselbe:
+n 1,912 → 1,878, u 1,817 → 1,788, i 0,820 → 0,793, l 0,901 → 0,854 —
+die gefitteten Endstrecken sind LÄNGER als die Chart-Stubs, und diese
+Längs-Ausdehnung ist Breite der Hand, keine Drift; die starre
+Chart-Endstrecke schneidet sie ab. **Der Riss trennt sich also in
+zwei Komponenten der End-Abweichung: längs (Breite, echt) und quer
+(der Zug zur Nachbar-Tinte, der die Tangente kippt).** Kill-Kriterium
+greift: keine Adoption, `LAUFFORM_END_WINDOW` bleibt 0 (der Builder
+kann blenden, tut es per Default nicht). **K0** (K auf Tafel, die
+anderen 31 Zeilen wörtlich): 0,106856 (+0,00014), nur Kugel bewegt
+sich (0,0717 → 0,0813, Übergang +0,020, Breite +0,014) — misst das
+Pixel-Lineal, das den zackigen Einzelfit auf der Tinte liegen sieht;
+die Sichtprüfung (c) und der Autor-Befund (die Wellen sind Teil des K)
+zählen hier gegen die Zahl. Rettungsweg → LF6 unten, §7.9-Zeile im
+selben PR.
+
+**K0 geschrieben `aug29`** (Autor-Go in der Sitzung: „Laufform vom K
+deutlich verbessern oder zurück zur Tafelform" — verbessern ist an
+LF5 und LF6 gescheitert): `dbsnapshot.fetch` (Staging
+`temp/dbsnapshot/2026-08-29T08-12-12Z`, kein Archiv-Klon konfiguriert;
+die K-Zeile zusätzlich als `k-laufform-row-backup-2026-08-29.json`
+daneben) → `DELETE …/sources/suetterlin-1922/templates/K/laufform`
+(204) → GET `?variant=100` 404, `/write/word` „Kurrentschrift": K
+tafelgetreu (Schwanzende 0,43/0,29), K→u als 45°-Diagonale
+0,46/0,32 → 0,72/0,58 (Cap-Retrace + Verbinder). Die Fixture-Root
+bleibt eingefroren (Kugel misst dort weiter mit der n=1-Zeile,
+0,0717); der Neuexport ist die nächste deklarierte Re-Baseline. Die
+Laufform-Lücke der Sütterlin-1922-Root ist damit wieder 3 Glyphen
+(G, W, K) — K wartet auf ≥ 3 Vorkommen (Eigenhand-Ernte oder weitere
+Quellen), nie auf einen weicheren Boden.
+
+### Laufform LF6 `aug29` — Vorregistrierung: die Quer-Endblende (nur der Quer-Anteil der End-Drift geht zurück)
+
+Geschrieben und committet VOR der ersten Zahl. Konversion des
+LF5-Negativs: die End-Abweichung des Medians hat eine Längs-Komponente
+(entlang der Chart-Richtung am Ende = Ausdehnung des Stubs = Breite
+der Hand, vom Lineal bestätigt) und eine Quer-Komponente (der Zug zur
+Nachbar-Tinte: t-Anker 0 rutscht quer zum Anstrich Richtung Kringel,
+der K-Endanker quer zum Schwanz auf die Grundlinie). LF5 nahm beide
+zurück und verlor die Breite; LF6 nimmt nur die Quer-Komponente
+zurück.
+
+**Mechanismus.** Wie LF5 (Fenster W auf dem Chart-Zug, starres
+Anhängen mit Versatz T am Fensterrand, lineares w), aber der Rest
+Δ'ᵢ = Laufformᵢ − (Chartᵢ + T) wird je Anker in seine Komponente
+entlang der Chart-END-RICHTUNG d (Einheitsvektor Fensterrand → Ende
+auf dem Chart-Zug) und den Quer-Rest zerlegt:
+outᵢ = Chartᵢ + T + Δ'∥ᵢ + wᵢ · Δ'⊥ᵢ. Längs bleibt ganz (Breite,
+Stub-Länge), quer blendet auf 0 am Ende. Rein verschobene Laufform
+bleibt Fixpunkt; Züge kürzer als 2W wie in LF5 (Chart-Form am
+mittleren Versatz). Implementiert als Default-Modus von
+`blend_stroke_ends` (`transverse_only=True`; LF5 = `False`, für die
+Reproduktion erhalten), Stempel `trace_meta.laufform.end_window` +
+`end_mode`.
+
+**EIN Knopf: W, Leiter {0,25 · 0,5}**, Wirkmenge/Basis/Gates/Kill
+wie LF5 (a: ≤ +0,002 gegen 0,106720 / 0,146506; b: Kompositions-Soll
+je Wort; c: die drei Korb-Stellen; d: Lotse/Kette im Write-Schritt),
+dazu der K0-Arm kombiniert. Erwartung, explizit: Breite ≈ Basis
+(Längs bleibt), t-Landetangente im Align-Fenster, Korb-Wörter wie bei
+LF5 besser.
+
+**Gemessen `aug29` — BEIDE Stufen verworfen, und die Erwartung ist
+WIDERLEGT: die Längs/Quer-These trägt nicht.** Mechanik-Prüfung wie
+erhofft (t-Landetangente 86,8° → 39,1° / 38,0°, K-Austritt −49,2° →
++36,0° / +44,6°, n-Kopf nur 0,015 xh bewegt, aber 32° → 42°). **(a)
+wordbench: W 0,25 → 0,119897 (+0,0132), W 0,5 → 0,135348 (+0,0286);
+Paare 0,146219 / 0,146480.** 57 von 63 bewegt, 21 : 36 bei W 0,25 —
+dieselben Verlierer wie LF5 (macht +0,085, Gewehr +0,080, einen
++0,079, Zorn +0,073, wenn +0,059), und die Breite steigt GENAUSO
+(0,1606 → 0,1905), dazu der Übergang (0,0881 → 0,0945); unter wird
+diesmal sogar schlechter (0,0866 → 0,0967), nur Kugel gewinnt leicht
+(0,0698). Befund: bei den gut belegten Buchstaben (e n=34, n n=31,
+i n=20) sind die Laufform-Enden keine Drift, in keiner Zerlegung —
+der flachere n-Kopf (32°) IST die Hand, das Lineal will ihn; nur beim
+t (n=4, Kringel-Zug) und beim K (n=1) sind die Enden Rauschen. **Eine
+globale Endregel ist der falsche Ort — die End-Evidenz ist je Glyph
+verschieden.** Kill greift, `LAUFFORM_END_WINDOW` bleibt 0; der
+Blend-Mechanismus bleibt als reproduzierbarer Kandidaten-Pfad
+(`tools/laufform/endblend.py`, Modi `transverse`/`full`) im
+Werkzeugkasten. Rettungswege (§7.9, je eigene Pre-Reg): (1) die
+Grammatik liest die LANDErichtung vom Duktus-Prior (J1 unten,
+Kompositionsseite, Geometrie unangetastet); (2) End-Prior im FIT
+(Kette/M4: Endanker-Regularisierung auf die Chart-Richtung, dann
+Re-Harvest — der tiefe Fix); (3) evidenz-gesteuerte Blende (nur
+Zeilen unter dem Boden n < 3 oder mit End-MAD über Nib) — nie
+derselbe Knopf global weicher.
+
+### Übergänge J1 `aug29` — Vorregistrierung: die Prior-Landerichtung (Korb #7, t nach n)
+
+Geschrieben und committet VOR der ersten Zahl. Konversion der
+LF5/LF6-Negative: die Geometrie der Laufform bleibt, was das Lineal
+will; was den t-Haken erzeugt, ist die GATING-Lesung der Grammatik —
+`entry_land_deg` wird am gerenderten Laufform-Kopf gemessen, und der
+t-Kopf (n=4, Anker 0 zum Kringel gezogen) liefert 86,8° statt der
+40,4° des Chart-Anstrichs, womit die Align-/Flanken-Kopplung
+(25–55°) nie in Frage kommt und der generische Bézier den Haken
+stehen lässt. Nach dem f, wo die Flankenkopplung greift, ist
+dasselbe t sauber (17 Samples getrimmt): die Kopplung IST die
+Reparatur, sie wird nur nicht erreicht.
+
+**Mechanismus.** Wenn ein Slot seine Laufform-Zeile rendert, wird
+`entry_land_deg` (B's Landerichtung, die Klassen-Entscheidung
+Align/Flanke/Sameslant/Ritt und die Steigung der Pass-through-Linie)
+am ERSTEN ZUG DER CHART-ZEILE gemessen — derselben Zeile, deren
+gespeicherte `entry.tangent_deg` die Kanonisierung ohnehin
+unverändert übernimmt („the tangents stay") —, mit demselben
+Bogenfenster; Ascender-Lean wird auf die Prior-Linie ebenso
+angewandt. Alles andere bleibt Laufform: die Kopplungs-Indizes
+werden weiter auf der gerenderten Laufform-Flanke gesucht, die
+Ankunftsrichtung des generischen Bézier (`d_in`) weiter an der
+gekoppelten Laufform-Linie gemessen (kein Saum-Knick), die
+Austrittsseite (`exit_deg`, Startrichtung des Verbinders) bleibt
+unangetastet. Ein Slot ohne Laufform-Zeile verhält sich
+byte-identisch.
+
+**EIN Knopf: Prior-Landerichtung an/aus.** Basis wie LF5
+(0,106720 / 0,146506, dieselbe Root, dieselbe Umgebung). Gates: (a)
+`word_loss`/`pair_loss` ≤ +0,002, bewegen dürfen sich nur Wörter mit
+Laufform-Glyphen; (b) Kompositions-Soll je Wort ohne Verlust; (c) unter
+n→t koppelt geradlinig (Platzierungsregel `align`/`flank_*`, Haken
+weg) und „Kurrentschrift" n→t ebenso; (d) Lotse/Kette dev-19 im
+Adoptions-PR NICHT gefahren — J1 ändert keine Karte, nur die
+Komposition, und die Kette liest ihr Kompositions-Soll aus derselben
+Komposition: die Bewegung des Solls wird unter (b) berichtet.
+Kill: ein verletztes Gate = keine Adoption; Rettungsweg dann der
+Fit-Prior (LF-Rettungsweg 2).
+
+**Gemessen `aug29` — (a) grün, (c) rot: nicht adoptiert, der Riss ist
+eine Stufe tiefer lokalisiert.** (a) wordbench 0,106720 → **0,105757**
+(−0,0010), Paare byte-gleich (0,146506 — die Abb.-20-Drills rendern
+keine Laufform); 32 Wörter bewegt, 18 : 14 (streiten −0,044, scharfen
+−0,023, schießen −0,018 … gegen Zorn +0,018, Zügel +0,011, Gewehr
++0,006); mit K0 kombiniert 0,105908. **(c) unter n→t: unverändert**
+(0,0866 → 0,0859, Platzierungsregel weiter `clearance_floor`, Haken
+steht). Autopsie: die Prior-Landerichtung (40,4°) kommt an, aber die
+Kopplung ERREICHT das t nicht — (1) `ALIGN_MAX_ENTRY_Y` = 0,62 schließt
+jeden Fuß über 0,62 vom Pass-through aus, und der t-Fuß liegt bei 0,64
+(Laufform) bzw. 0,70 (Chart); die Konstante wurde `jul` genau dafür
+gesetzt („tall lead-ins (h 0.69, t 0.70) sweep in long and flat on the
+plates — alignment on their STEEP landing tangent over-pulls") — d. h.
+sie ist der Workaround für die falsche Tangenten-LESUNG, die J1 gerade
+behebt; (2) `_flank_candidates` bricht am ersten Segment des
+Haken-Kopfs ab (135° außerhalb 25–55°) und endet ohnehin an derselben
+Decke, sodass der ganze t-Anstrich (0,64–1,4) nie koppelbar ist; (3)
+der generische Bézier misst seine Ankunftsrichtung `d_in` am
+gekoppelten Laufform-Kopf, also am Haken. Das t nach f ist nur deshalb
+sauber, weil der Bar-Exit-Pfad (`stem_launch`) über den
+FORK-Kopplungsindex (~0,9 xh hoch auf dem Anstrich) geradlinig
+koppelt und den Kopf trimmt — genau die Form, die die Platte für n→t
+zeigt (EINE Diagonale vom n-Fuß in den t-Schaft). Strikt nach
+Vorregistrierung: (c) ist Gate, J1 wird NICHT adoptiert; `compose.py`
+bleibt unverändert, der (a)-Gewinn wird in J2 mitgemessen, damit die
+Adoption über die vorregistrierte Zielstelle läuft und nicht über
+Beifang.
+
+### Übergänge J2 `aug29` — Vorregistrierung (offen): die Anstrich-Verlängerung in den Schaft
+
+Vorregistriert, noch nicht gemessen — der nächste Arm für Korb #7,
+Punkt 3. **Hypothese.** Ein Sägezahn-Austritt (Tangente 25–55°) vor
+einem Buchstaben, dessen erster Zug ein Anstrich in einen
+Oberlängen-Schaft ist (t, ſ; der Prior sagt es: Chart-Landerichtung
+im Align-Fenster, Apex des ersten Zugs über der Mittelhöhe), koppelt
+auf den Platten wie f→t: EINE gerade Linie vom Austritt mittig auf
+den Anstrich, der Vorlauf darunter wird absorbiert. **Mechanismus
+(ein Klassenpfad, `STEM_ENTRY_BASES` = {t, longs}):** J1s
+Prior-Landerichtung für die Klassen-Entscheidung + der
+FORK-Kopplungsindex als Ziel (wie beim Bar-Exit) + die gerade
+Verbindungslinie mit Trim (`_straight_connector`), Platzierung so,
+dass die Linie vom Austritt im Mittel der Tangenten den
+Kopplungspunkt trifft (die `_fused_flank_placement`-Logik, ohne die
+Decke `ALIGN_MAX_ENTRY_Y`, die für diese Klasse nicht gilt), gefloort
+von der höhenbewussten Tinten-Freiheit. **EIN Knopf: Klassenpfad
+an/aus.** Basis, Umgebung, Gates wie J1 ((a) ≤ +0,002; (b)
+Kompositions-Soll; (c) unter n→t UND „Kurrentschrift" n→t
+geradlinig, Haken weg; Nachweis der Klassenregel an weiteren
+Sägezahn→t/ſ-Wörtern des Sets: fechten, streiten, muß, Seiten). Kill
+wie immer; Rettungsweg dann der Fit-Prior.

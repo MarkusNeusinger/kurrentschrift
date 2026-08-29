@@ -34,7 +34,14 @@ from pathlib import Path
 from tools.glyphlab.__main__ import parse_sweep
 from tools.glyphlab.render import save, tile
 
-from .cases import REPO_ROOT, WordCase, fixture_word_case, iter_fixture_word_cases, live_word_case_sync
+from .cases import (
+    DEFAULT_FIXTURES_DIR,
+    REPO_ROOT,
+    WordCase,
+    fixture_word_case,
+    iter_fixture_word_cases,
+    live_word_case_sync,
+)
 from .derive import WordDeriveResult, derive_word
 from .render import word_panel
 
@@ -57,13 +64,26 @@ def _safe_name(name: str) -> str:
 
 
 def _resolve_cases(args: argparse.Namespace) -> list[WordCase]:
+    root = Path(args.fixtures) if args.fixtures else DEFAULT_FIXTURES_DIR
     if args.all:
-        return iter_fixture_word_cases(which=args.which, style=args.style, only=args.ids or None)
-    if not args.ids:
+        cases = iter_fixture_word_cases(which=args.which, style=args.style, only=args.ids or None, fixtures_root=root)
+    elif not args.ids:
         raise SystemExit("give one or more word ids/texts, or --all")
-    if args.live:
+    elif args.live:
+        if args.laufform:
+            raise SystemExit("--laufform overlays a fixture root's Laufform rows; a --live case composes from the DB")
         return [live_word_case_sync(t, args.source) for t in args.ids]
-    return [fixture_word_case(i, which=args.which, style=args.style) for i in args.ids]
+    else:
+        cases = [fixture_word_case(i, which=args.which, style=args.style, fixtures_root=root) for i in args.ids]
+    if args.laufform:
+        # The wordbench's overlay, so the picture shows exactly what
+        # `wordbench.run --laufform` measures (same file, same derivation).
+        from tools.wordbench.run import load_laufform_payload, overlay_laufform_rows  # noqa: PLC0415
+
+        payload = load_laufform_payload(Path(args.laufform))
+        for case in cases:
+            case.laufform = overlay_laufform_rows(case.laufform, payload, case.templates)
+    return cases
 
 
 def _summary(result: WordDeriveResult) -> str:
@@ -144,6 +164,18 @@ def main() -> None:
     p.add_argument("--live", action="store_true", help="compose from the DB (read-only) instead of a fixture")
     p.add_argument("--source", default="suetterlin-1922", help="source id for --live (default: suetterlin-1922)")
     p.add_argument("--style", default="suetterlin", help="fixture style dir (default: suetterlin)")
+    p.add_argument(
+        "--fixtures",
+        default=None,
+        metavar="DIR",
+        help="fixture root (default: tools/wordbench/fixtures) — a patched copy for a candidate experiment",
+    )
+    p.add_argument(
+        "--laufform",
+        default=None,
+        metavar="FILE",
+        help="overlay candidate Laufform rows/drafts on the fixture's frozen ones (same file as wordbench --laufform)",
+    )
     p.add_argument("--no-callouts", action="store_true", help="hide the per-connector penalty callouts")
     p.add_argument("--heatmap", action="store_true", help="colour connectors green→red by penalty")
     p.add_argument("--no-skeleton", action="store_true", help="hide the blue specimen skeleton")

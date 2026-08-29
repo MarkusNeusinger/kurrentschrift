@@ -18,6 +18,7 @@ from api.rendering import invalidate_pooled_style, resolve_render_context, resol
 from api.schemas import LaufformUpsert, ResampleRequest, TemplateOut, TemplateQualityOut, TemplateSummary, TraceRequest
 from core.database import LAUFFORM_VARIANT, BboxRepository, Source, Template, TemplateRepository
 from core.fit import fit_glyph_to_crop
+from core.laufform import LAUFFORM_END_WINDOW, blend_stroke_ends
 from core.pipeline import (
     DEFAULT_N_ANCHORS,
     canonical_from_path,
@@ -187,7 +188,14 @@ async def get_template(
     return _template_to_out(template)
 
 
-def build_laufform_canonical(base: Template, anchors: Sequence[Sequence[float]], laufform_meta: dict) -> dict:
+def build_laufform_canonical(
+    base: Template,
+    anchors: Sequence[Sequence[float]],
+    laufform_meta: dict,
+    *,
+    end_window: float = LAUFFORM_END_WINDOW,
+    transverse_only: bool = True,
+) -> dict:
     """The LAUFFORM_VARIANT canonical for one glyph: median geometry on the
     chart row's ductus.
 
@@ -199,29 +207,52 @@ def build_laufform_canonical(base: Template, anchors: Sequence[Sequence[float]],
     entry/exit/advance shifted by their end anchors' delta. `laufform_meta`
     lands under `trace_meta.laufform` and records where the median came from.
 
+    The stroke ENDS' direction is the ductus prior's too (end blend,
+    `core.laufform.blend_stroke_ends`, §14 LF5/LF6): within `end_window` of arc
+    length from every free stroke end the median's transverse deviation from
+    the chart shape fades to zero (its longitudinal one — the running form's
+    own extent — stays), rigidly attached at the Laufform's placement — the
+    fitted ends drift toward neighbouring ink, and the composer reads its join
+    tangents off exactly those ends. Window and mode are stamped as
+    `trace_meta.laufform.end_window` / `end_mode`; a window of `0` reproduces
+    the pre-blend row (anchors verbatim).
+
     Args:
         base: The variant-0 chart template — the ductus prior.
         anchors: The median anchors, same count as `base.anchors`.
         laufform_meta: Provenance dict for `trace_meta.laufform`.
+        end_window: Arc-length window (x-height units) of the end blend.
+        transverse_only: LF6 (fade the transverse residual only, default) or
+            the LF5 full cross-fade — see `blend_stroke_ends`.
 
     Returns:
         A canonical dict in `TemplateRepository.upsert` shape.
     """
     chart = [tuple(p) for p in base.anchors]
+    stroke_starts = (base.trace_meta or {}).get("stroke_starts") or [0]
+    blended = blend_stroke_ends(chart, anchors, stroke_starts, window=end_window, transverse_only=transverse_only)
     canonical: dict[str, Any] = {
         "glyph": base.glyph,
-        "anchors": [[float(x), float(y)] for x, y in anchors],
+        "anchors": blended,
         "half_widths": base.half_widths,
         # No stylus capture behind a derived variant — an empty path, not
         # NULL, so every raw_path consumer keeps its list contract.
         "raw_path": [],
-        "trace_meta": {**(base.trace_meta or {}), "laufform": laufform_meta},
+        "trace_meta": {
+            **(base.trace_meta or {}),
+            "laufform": {
+                **laufform_meta,
+                "end_window": end_window,
+                "end_mode": "transverse" if transverse_only else "full",
+            },
+        },
     }
-    # Entry/exit/advance ride their end anchors: shift the chart fields by the
-    # respective anchor delta (the tangents stay — median deviations are
-    # sub-nib and the composer re-measures tangents off the centerline).
-    d_in = (anchors[0][0] - chart[0][0], anchors[0][1] - chart[0][1])
-    d_out = (anchors[-1][0] - chart[-1][0], anchors[-1][1] - chart[-1][1])
+    # Entry/exit/advance ride their (blended) end anchors: shift the chart
+    # fields by the respective anchor delta. The tangents stay — after the end
+    # blend the end pieces ARE the chart's, and the composer re-measures
+    # tangents off the rendered centerline anyway.
+    d_in = (blended[0][0] - chart[0][0], blended[0][1] - chart[0][1])
+    d_out = (blended[-1][0] - chart[-1][0], blended[-1][1] - chart[-1][1])
     for field, delta in (("entry", d_in), ("exit_pt", d_out)):
         stored = getattr(base, field) or {}
         if stored.get("xy"):

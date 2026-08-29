@@ -40,7 +40,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
-- **E** — EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Entdrillung §4 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
+- **E** — EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
@@ -51,7 +51,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
-- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
+- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schreib-Karte §2 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
@@ -268,6 +268,33 @@ diagnostizierte Haupt-Anteil der „Karten-Form-Decke" der Lotse-Route
 (G-Kopf, W-Apexe, k-Kringel liegen alle in der Lücke). *Technisch:*
 Glyph ohne `variant=100`-Zeile; Lücken-Schluss-Arm LF1 →
 qualitaetsmetrik.md §14 („Laufform LF1")
+
+**Endblende (Laufform)** — die Chart-Rückblendung an den FREIEN
+STRICHENDEN einer Laufform-Zeile: über ein Bogen-Fenster W vom
+Strichende blendet die Zeile zur Chart-Geometrie zurück, starr am
+Fensterrand angehängt (eine rein verschobene Laufform bleibt
+Fixpunkt). Zwei Modi: `full` (LF5, der ganze Rest) und `transverse`
+(LF6, nur der Quer-Anteil zur Chart-Endrichtung — der Längs-Anteil ist
+die Ausdehnung der Hand). Anlass: die gefitteten Endanker driften zur
+Nachbar-Tinte (t-Anker 0 zum Kringel, K-Endanker auf den Anstrich des
+u), und die Grammatik liest ihre Tangenten genau dort. **Beide Modi
+am Wort-Lineal verworfen (`aug29`):** bei gut belegten Buchstaben sind
+die Laufform-Enden die Hand, nicht Drift. *Technisch:*
+`core/laufform.py::blend_stroke_ends`, Knopf `LAUFFORM_END_WINDOW`
+(0 = aus), Stempel `trace_meta.laufform.end_window`/`end_mode`;
+Kandidaten-Karten: `tools/laufform/endblend.py` → qualitaetsmetrik.md
+§14 („Laufform LF5"/„LF6"), Rettungswege tintenfolger.md §7.9
+
+**Prior-Landerichtung** — die Regel-Idee (Übergänge J1, `aug29`),
+dass die Grammatik B's LANDErichtung (Klassen-Entscheidung
+Align/Flanke/Sameslant/Ritt, Steigung der Pass-through-Linie) am
+ersten Zug der CHART-Zeile misst, wenn ein Slot seine Laufform
+rendert — die Geometrie bleibt Laufform, nur die Richtung kommt vom
+Duktus-Prior. Gemessen (a) grün (−0,0010), aber die Zielstelle (n→t)
+unverändert, weil die Kopplung das t nicht erreicht
+(`ALIGN_MAX_ENTRY_Y`, Haken-Segment im Kandidaten-Scan) — nicht
+adoptiert, wird in J2 („Anstrich-Verlängerung in den Schaft")
+mitgemessen. → qualitaetsmetrik.md §14 („Übergänge J1"/„J2")
 
 **Schreib-Karte** — die Laufform-Kandidaten-Karte in GENAU der
 Gestalt, die ein DB-Write erzeugen würde: die zu schreibenden Zeilen

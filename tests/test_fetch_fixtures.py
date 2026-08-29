@@ -16,6 +16,7 @@ import json
 import pytest
 
 from core.database.models import LAUFFORM_VARIANT
+from core.laufform import LAUFFORM_END_WINDOW
 from tools.wordbench import export_fixtures, fetch_fixtures
 from tools.wordbench.fetch_fixtures import (
     DEFAULT_PLACEMENT_TOL,
@@ -89,7 +90,8 @@ def test_template_row_tolerates_null_coupling_fields():
 
 def test_laufform_row_from_api_payload():
     chart = template_row_from_payload(CHART_PAYLOAD)
-    # Median running form: first anchor 0.1 right / 0.05 up, last 0.2 right.
+    # Median running form: first anchor 0.1 right / 0.05 up, last 0.2 right —
+    # both END anchors drifted, the middle one sits on the chart.
     anchors = [[0.1, 0.55], [0.7, 1.0], [1.7, 0.4]]
 
     row = laufform_row_from_payload(chart, anchors)
@@ -98,6 +100,9 @@ def test_laufform_row_from_api_payload():
     # identical WordCase path.
     assert set(row) == CHART_ROW_KEYS
     assert row["glyph_key"] == "a"
+    # The builder's end blend is OFF by default until a §14 rung adopts a
+    # window (LAUFFORM_END_WINDOW 0): the anchors are the median verbatim.
+    assert LAUFFORM_END_WINDOW == 0.0
     assert row["anchors"] == anchors
     # Everything but the anchors comes from the chart row …
     assert row["half_widths"] == CHART_PAYLOAD["half_widths"]
@@ -107,8 +112,51 @@ def test_laufform_row_from_api_payload():
     assert row["entry"]["tangent_deg"] == 38.3
     assert row["exit_pt"]["xy"] == pytest.approx([1.7, 0.4])
     assert row["advance"] == pytest.approx(1.7)
-    # The derivation is stamped where the write path stamps it.
-    assert row["trace_meta"]["laufform"] == fetch_fixtures.LAUFFORM_META
+    # The derivation is stamped where the write path stamps it, end blend
+    # window and mode included.
+    assert row["trace_meta"]["laufform"] == {
+        **fetch_fixtures.LAUFFORM_META,
+        "end_window": 0.0,
+        "end_mode": "transverse",
+    }
+
+
+def test_laufform_row_with_an_end_window_blends_the_ends():
+    """A candidate map on the §14 ladder: with `end_window` the free ends'
+    TRANSVERSE deviation from the chart fades to zero (LF6, the default mode)
+    while the longitudinal one stays; `transverse_only=False` is the LF5 full
+    cross-fade, kept reachable for reproduction. Entry/exit/advance ride the
+    blended end anchors."""
+    chart = template_row_from_payload(CHART_PAYLOAD)
+    # Both end anchors lifted straight up by 0.1 — purely transverse to
+    # neither end, so a piece of each drift stays (longitudinal) in LF6 and
+    # nothing of it in LF5.
+    anchors = [[0.0, 0.6], [0.7, 1.0], [1.5, 0.5]]
+
+    lf6 = laufform_row_from_payload(chart, anchors, end_window=0.25)
+    lf5 = laufform_row_from_payload(chart, anchors, end_window=0.25, transverse_only=False)
+
+    assert lf5["anchors"] == [[0.0, 0.5], [0.7, 1.0], [1.5, 0.4]]
+    assert lf5["trace_meta"]["laufform"]["end_mode"] == "full"
+    assert lf6["trace_meta"]["laufform"] == {
+        **fetch_fixtures.LAUFFORM_META,
+        "end_window": 0.25,
+        "end_mode": "transverse",
+    }
+    # LF6: each end moved back along the chart line only — it lies on that
+    # line (transverse residual 0) but not at the chart's end point.
+    for end, (cx, cy), (ex, ey) in (
+        (lf6["anchors"][0], (0.0, 0.5), (0.7, 1.0)),
+        (lf6["anchors"][2], (1.5, 0.4), (0.7, 1.0)),
+    ):
+        dx, dy = ex - cx, ey - cy
+        cross = (end[0] - cx) * dy - (end[1] - cy) * dx
+        assert abs(cross) < 1e-3
+        assert end != [cx, cy]
+    assert lf6["anchors"][1] == [0.7, 1.0]
+    assert lf6["entry"]["xy"] == pytest.approx(lf6["anchors"][0])
+    assert lf6["exit_pt"]["xy"] == pytest.approx(lf6["anchors"][2])
+    assert lf6["advance"] == pytest.approx(lf6["anchors"][2][0])
 
 
 def test_laufform_rows_skip_what_cannot_be_derived():
