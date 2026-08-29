@@ -205,6 +205,13 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Fixed
 
+- **The ſ/f reading trap names the right feature.** The Schriftkunde, the
+  „Einen alten Brief entziffern" steps, the quiz's two rule sentences and
+  the glossary said the long ſ and the f differ „nur im Querstrich". They
+  do not: the f carries a loop at the top (and the Querstrich in the
+  middle), the long ſ runs to a point — the loop is what the eye sees
+  first (owner, 2026-08-29). All four places now say so; `mvp-roadmap.md`
+  and the lesefallen catalogue's comment follow.
 - **A bare `Grok` or `xAI-Bot` user agent is counted on the bot site,
   not only prerendered.** The nginx `$is_bot` map has served `~*grok`
   and `~*xai` since the prerender path landed, but `AI_AGENTS` — the

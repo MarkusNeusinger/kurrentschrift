@@ -314,7 +314,7 @@ export const schriftkunde = {
   letters: [
     {
       term: 'Langes ſ und rundes s',
-      desc: 'Das lange ſ steht am Silbenanfang und im Silbeninneren, das runde s nur am Silbenende: leſen, aber das. Vom f unterscheidet es nur der fehlende Querstrich — eine häufige Lesefalle.',
+      desc: 'Das lange ſ steht am Silbenanfang und im Silbeninneren, das runde s nur am Silbenende: leſen, aber das. Vom f unterscheidet es die Oberlänge: Das f trägt oben eine Schleife und in der Mitte den Querstrich, das ſ läuft oben spitz zu — eine häufige Lesefalle.',
       specimens: [
         { key: 'longs', label: 'ſ' },
         { key: 's', label: 's' },
@@ -376,7 +376,7 @@ export const schriftkunde = {
     },
     {
       term: 'Die klassischen Fallen',
-      desc: 'f und langes ſ trennt nur der Querstrich; n und u sind formgleich — das u trägt zur Unterscheidung seinen Bogen; und das Kurrent-e sieht einem n zum Verwechseln ähnlich.',
+      desc: 'f und langes ſ: Das f trägt oben eine Schleife und in der Mitte den Querstrich, das ſ läuft spitz zu; n und u sind formgleich — das u trägt zur Unterscheidung seinen Bogen; und das Kurrent-e sieht einem n zum Verwechseln ähnlich.',
     },
     {
       term: 'Überspringen erlaubt',

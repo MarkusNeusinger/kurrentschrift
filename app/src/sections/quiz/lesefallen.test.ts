@@ -12,7 +12,7 @@ const question = (key: string): LetterQuestion => {
 };
 
 describe('explainMiss', () => {
-  it('names the Querstrich for the ſ/f trap, in both directions', () => {
+  it('names the loop and the Querstrich for the ſ/f trap, in both directions', () => {
     expect(explainMiss(question('longs'), 'f')).toBe(de.quiz.play.rules.longsAsF);
     expect(explainMiss(question('f'), 's')).toBe(de.quiz.play.rules.fAsLongs);
   });

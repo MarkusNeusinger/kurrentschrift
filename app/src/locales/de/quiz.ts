@@ -69,8 +69,8 @@ export const quiz = {
     // card (the correct one), so a pair has one sentence per direction.
     rules: {
       longsAsF:
-        'Das lange ſ und das f unterscheidet nur der Querstrich — hier fehlt er. Das ſ steht am Silbenanfang und im Silbeninneren, das runde s nur am Silbenende.',
-      fAsLongs: 'Der Querstrich macht das f — ohne ihn wäre es ein langes ſ.',
+        'Das lange ſ läuft oben spitz zu und hat keinen Querstrich — das f trägt oben eine Schleife und in der Mitte den Querstrich. Das ſ steht am Silbenanfang und im Silbeninneren, das runde s nur am Silbenende.',
+      fAsLongs: 'Die Schleife oben und der Querstrich in der Mitte machen das f — das lange ſ läuft spitz zu und hat beides nicht.',
       roundS: 'Das runde s steht nur am Silben- und Wortende; im Wortinneren schreibt man das lange ſ.',
       nAsU: 'n und u sind formgleich — nur das u trägt einen kleinen Bogen darüber. Hier fehlt er: ein n.',
       uAsN: 'n und u sind formgleich — das u trägt zur Unterscheidung seinen Bogen. Hier steht er: ein u.',
