@@ -230,6 +230,14 @@ function GrundtafelSection({
   // Original is the default everywhere; the written grid is one toggle away —
   // except when the page opens on a letter (?g=…), which lives on the sheet.
   const [view, setView] = useState<View>(selectedSlot ? 'written' : 'original');
+  // A letter chosen while the section is mounted (an in-app navigation to
+  // /tafel?g=…) also switches to the written view — the initial state above
+  // only covers the first render. Adjusted during render, not in an effect.
+  const [seenKey, setSeenKey] = useState<string | null>(selectedKey);
+  if (selectedKey !== seenKey) {
+    setSeenKey(selectedKey);
+    if (selectedSlot) setView('written');
+  }
   // Bring the detail into view when a letter is chosen (tap or deep link), and
   // keep it there while the sheet above still loads and reflows (a deep link
   // lands before the written rows have their glyphs; the rows re-scale once
@@ -260,7 +268,10 @@ function GrundtafelSection({
         }
       }
       const now = performance.now();
-      if (now - started > 4000 || (el && now - still > 400)) return;
+      if (now - started > 4000 || (el && now - still > 400)) {
+        stop(); // done: the listeners must not outlive the watch
+        return;
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
