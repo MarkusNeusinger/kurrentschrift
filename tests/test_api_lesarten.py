@@ -82,6 +82,19 @@ async def test_load_is_admin_gated_and_validates(api: Harness):
         headers=api.admin_headers(),
     )
     assert stale.status == 409  # nor appended to
+    # Only the generation `begin` hands out (live + 1) is open: a number
+    # skipped ahead is refused for forms and for the commit alike.
+    ahead = await api.client.request(
+        "POST",
+        f"/lesarten/dictionary/generations/{gen + 2}/forms",
+        json_body={"words": [["neu", False]]},
+        headers=api.admin_headers(),
+    )
+    assert ahead.status == 409
+    ahead_commit = await api.client.request(
+        "POST", f"/lesarten/dictionary/generations/{gen + 2}/commit", json_body=BUILD, headers=api.admin_headers()
+    )
+    assert ahead_commit.status == 409
 
 
 async def test_text_is_bounded(api: Harness):

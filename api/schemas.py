@@ -103,7 +103,9 @@ class LesartFormsIn(BaseModel):
     computes every bucket key itself (core.lesarten.lesart_key), so the tool
     and the query can never disagree on the key."""
 
-    words: list[tuple[str, bool]] = Field(max_length=50_000)
+    # The repository's duplicate check binds two parameters per pair and
+    # PostgreSQL stops at 65 535 per statement; 20 000 is the tool's batch.
+    words: list[tuple[str, bool]] = Field(max_length=20_000)
 
 
 class LesartFormsOut(BaseModel):

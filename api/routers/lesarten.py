@@ -40,6 +40,18 @@ router = APIRouter(prefix="/lesarten", tags=["lesarten"])
 _WORD_MAX = 64
 
 
+async def _require_open(repo: LesartRepository, gen: int) -> None:
+    """Only ONE generation is ever open: the one `begin` hands out, live + 1.
+    Anything else — the live one, an older one, a number skipped ahead — is
+    refused, so two loads can never fill the table side by side."""
+    meta = await repo.dictionary()
+    open_gen = (meta.active_gen if meta else 0) + 1
+    if gen != open_gen:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, detail=f"generation {gen} is not the open one ({open_gen}) — begin a new load"
+        )
+
+
 def _dictionary_out(meta: LesartDictionary | None) -> LesartDictionaryOut | None:
     if meta is None:
         return None
@@ -107,11 +119,9 @@ async def begin_generation(body: LesartGenerationIn, db: AsyncSession = Depends(
     "/dictionary/generations/{gen}/forms", response_model=LesartFormsOut, dependencies=[Depends(require_admin)]
 )
 async def add_forms(gen: int, body: LesartFormsIn, db: AsyncSession = Depends(require_db)) -> LesartFormsOut:
-    """Add a batch of words to an open generation (keys computed here)."""
+    """Add a batch of words to the open generation (keys computed here)."""
     repo = LesartRepository(db)
-    meta = await repo.dictionary()
-    if meta is not None and gen <= meta.active_gen:
-        raise HTTPException(status.HTTP_409_CONFLICT, detail=f"generation {gen} is live or older — begin a new one")
+    await _require_open(repo, gen)
     rows: list[tuple[str, str, bool]] = []
     for word, bank in body.words:
         w = word.strip()
@@ -132,8 +142,9 @@ async def add_forms(gen: int, body: LesartFormsIn, db: AsyncSession = Depends(re
 async def commit_generation(
     gen: int, body: LesartGenerationIn, db: AsyncSession = Depends(require_db)
 ) -> LesartDictionaryOut:
-    """Make the generation live and drop every other one."""
+    """Make the open generation live and drop every other one."""
     repo = LesartRepository(db)
+    await _require_open(repo, gen)
     if await repo.count_forms(gen) == 0:
         raise HTTPException(status.HTTP_409_CONFLICT, detail=f"generation {gen} holds no forms — nothing to commit")
     meta = await repo.commit_generation(gen, body.source, body.sha256)

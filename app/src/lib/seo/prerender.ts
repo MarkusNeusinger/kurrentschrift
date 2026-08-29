@@ -497,7 +497,9 @@ const vergleichenBody = () => {
     em(t.writtenCaption),
     h2(t.lesartenHeading),
     p(t.lesartenIntro),
-    p('Verwechsler je Buchstabe — aus jedem entsteht eine Lesart mit genau diesem einen Tausch:'),
+    p(
+      'Die Verwechsler je Buchstabe — der Katalog, nach dem die Wörter bestimmt werden: ein Wort gilt als Lesart, wenn es sich von der Vermutung nur in solchen Paaren unterscheidet.',
+    ),
     `<ul>${lookalikeRows}</ul>`,
     h2(t.pairsHeading),
     p(t.pairsIntro),

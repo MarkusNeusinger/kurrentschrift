@@ -45,7 +45,7 @@ export const vergleichen = {
   noLesarten: 'Kein Wort im Wörterbuch sieht dieser Lesart zum Verwechseln ähnlich — sie ist wohl eindeutig.',
   // Where the words come from (interpolates {{forms}}, the live vocabulary's size).
   dictionaryNote: 'Wortformen aus dem freien deutschen Wörterbuch igerman98 ({{forms}} Formen) und der Wortbank dieser Seite; Namen und alte Wörter, die beide nicht kennen, fehlen hier.',
-  dictionaryMissing: 'Das Wörterbuch ist noch nicht geladen — es kommen nur Wörter der eigenen Wortbank.',
+  dictionaryMissing: 'Das Wörterbuch ist noch nicht geladen — bis dahin kann die Seite keine Wörter nennen.',
 
   // --- Die klassischen Verwechsler ------------------------------------------
   pairsHeading: 'Die klassischen Verwechsler',
