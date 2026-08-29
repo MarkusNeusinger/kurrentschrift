@@ -50,9 +50,12 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   headline): t back to its chart form −0.0003, the prod state (K/ue/F/ae/b
   already deleted) +0.0011, both +0.0008, all head-flagged rows +0.0013;
   the ink lens shows the hook gone in unter, mit and „Kurrentschrift" with
-  the chart t. Deleting the flagged rows in prod is the author's call
-  (qualitaetsmetrik.md §14 „Übergänge J2"/„J3", „Laufform LF9";
-  tintenfolger.md §7.9; glossary „Kopf-Gate (Laufform)").
+  the chart t. On the owner's call the five flagged rows (t, E, f, v, k)
+  were deleted in prod after per-row backups and an archive snapshot; the
+  frozen 2026-08-29 root now carries ten rows prod no longer has, and its
+  re-export is a declared re-baseline (qualitaetsmetrik.md §14 „Übergänge
+  J2"/„J3", „Laufform LF9"; tintenfolger.md §7.9; glossary „Kopf-Gate
+  (Laufform)").
 - **The Laufform row gate: a running-form row must earn its way into the
   writing path.** The Sütterlin K's n = 1 row (Korb #7) entered through
   the manual `PUT …/templates/{key}/laufform`, which checked nothing but

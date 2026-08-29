@@ -312,7 +312,8 @@ der Tafel als Metadatum). Gefunden am Korb-#7-t: Anker 0 der n=4-Zeile
 liegt RECHTS von Anker 1, der Kopf startet mit 104° gegen 37° Tafel —
 der Rückwärts-Schlenker im Wort, den das Sprung-Gate nicht sieht (t
 2,11 < 2,95). Auf der Root vom 29.08.: t 46°, E 48°, K 41°, f 28°, v
-27°, k 17° über τ, m mit 14,9° die knappste vertraute Zeile darunter.
+27°, k 17° über τ (alle am 29.08. in Prod gelöscht), m mit 14,9° die
+knappste vertraute Zeile darunter.
 *Technisch:* `core/laufform.py` (`head_deviation`, `head_gate`),
 Skip-Grund `head_deviation` mit `head_deviation`/`head_max`,
 Inventar-Spalte `head°` → qualitaetsmetrik.md §14 („Laufform LF9")

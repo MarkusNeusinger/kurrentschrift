@@ -9455,9 +9455,15 @@ Tafelform des t (T0) läuft der Übergang in unter, mit und
 0,107995 (+0,0002 gegen P0) — die Tafelformen kosten das Pixel-Lineal
 insgesamt ein Tausendstel, was nach Doktrin #444 kein Kriterium ist.
 Adoptiert: `LAUFFORM_HEAD_DEVIATION_MAX` = 15°, PUT 422 und
-`apply-laufform`-Skip `head_deviation`, kein Override; die
-Prod-Datenaktion (t-Zeile löschen = T0; E/f/v/k) ist die Entscheidung
-des Autors und steht aus.
+`apply-laufform`-Skip `head_deviation`, kein Override. **Datenaktion
+`aug29` (Owner-Entscheidung):** alle fünf Zeilen über dem Kopf-Gate —
+t, E, f, v, k — in Prod gelöscht (Backups je Zeile, Archiv-Snapshot
+`2026-08-29T15-09-31Z` davor, `GET ?variant=100` → 404, `/write/word`
+rendert Kurrentschrift/Erfolg/fechten/Pulver/kann ohne Lücke); P (9,8°)
+bleibt. Die eingefrorene Root vom 29.08. (07:05Z) trägt damit zehn
+Zeilen, die Prod nicht mehr hat (K, ue, F, ae, b, t, E, f, v, k) — ihr
+Neuexport ist eine erklärte Re-Baseline (P0+Kopf-Arm oben ist die
+Vorschau: 0,107995).
 
 ### Laufform LF7 `aug29` — Vorregistrierung: das Zeilen-Gate (Aufnahme einer Laufform-Zeile)
 
