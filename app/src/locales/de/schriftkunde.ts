@@ -314,7 +314,7 @@ export const schriftkunde = {
   letters: [
     {
       term: 'Langes ſ und rundes s',
-      desc: 'Das lange ſ steht am Silbenanfang und im Silbeninneren, das runde s nur am Silbenende: leſen, aber das. Vom f unterscheidet es die Oberlänge: Das f trägt oben eine Schleife und in der Mitte den Querstrich, das ſ läuft oben spitz zu — eine häufige Lesefalle.',
+      desc: 'Das lange ſ steht am Silbenanfang und im Silbeninneren, das runde s nur am Silbenende: leſen, aber das. Vom f unterscheiden es zwei Dinge: Das f trägt oben eine Schleife, das ſ läuft oben spitz zu — und nur das f hat in der Mitte den Querstrich. Eine häufige Lesefalle.',
       specimens: [
         { key: 'longs', label: 'ſ' },
         { key: 's', label: 's' },
