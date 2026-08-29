@@ -13,10 +13,9 @@
 // configurable ratio ascender : x-height : descender (architektur.md §15,
 // vision.md §2): 2:1:2 is the default, with per-script presets below.
 //
-// Note: this is the geometry-only worksheet. The content-aware variant that
-// typesets Kurrent glyphs into the lines (WeasyPrint backend, architektur.md
-// §15 `POST /worksheet`) is a separate, later piece — this tool ships now,
-// fully client-side.
+// This is the geometry only. The content-aware part — a text set into these
+// rows as a Vorschrift — is lib/uebungstext.ts, which reads the `rows` this
+// module reports alongside the segments.
 
 import { de } from '@/locales';
 import { schulheft } from '@/styles/paper';
@@ -45,10 +44,22 @@ export interface TextMark {
   color?: string;
 }
 
-// Everything needed to render one page: line segments plus standalone labels.
+// The four levels of one writing row, mm from the page top — for what is set
+// INTO the ruling (the Übungstext, lib/uebungstext.ts): a composed line sits
+// on `baseline` with its x-height reaching `waist`.
+export interface RowMetrics {
+  top: number; // ascender line
+  waist: number; // x-height top
+  baseline: number;
+  bottom: number; // descender line
+}
+
+// Everything needed to render one page: line segments plus standalone labels,
+// and the rows they were built from.
 export interface Lineature {
   segments: Segment[];
   marks: TextMark[];
+  rows: RowMetrics[];
 }
 
 // How many of the four guide lines are printed per row — the classic learning
@@ -281,7 +292,7 @@ function clipToRect(
 // can guide the hand. Lives entirely in the top margin (never crosses the
 // writing lines). Returns null if disabled, non-finite, or the margin is too
 // tight to show it legibly.
-function penGauge(cfg: LineatureConfig, left: number, top: number): Lineature | null {
+function penGauge(cfg: LineatureConfig, left: number, top: number): Pick<Lineature, 'segments' | 'marks'> | null {
   if (!cfg.showPenAngle || !Number.isFinite(cfg.penAngleDeg)) return null;
   const gap = 1.5; // clearance between the gauge tip and the first line
   const edgeClear = 3; // clearance from the page top edge
@@ -313,7 +324,8 @@ function penGauge(cfg: LineatureConfig, left: number, top: number): Lineature | 
 export function buildLineature(cfg: LineatureConfig): Lineature {
   const segs: Segment[] = [];
   const marks: TextMark[] = [];
-  const empty: Lineature = { segments: segs, marks };
+  const rows: RowMetrics[] = [];
+  const empty: Lineature = { segments: segs, marks, rows };
 
   // Bail out on non-finite input (e.g. a field the user has cleared mid-edit);
   // the preview just goes blank until the value is valid again.
@@ -350,6 +362,7 @@ export function buildLineature(cfg: LineatureConfig): Lineature {
     const yWaist = rowTop + asc;
     const yBase = yWaist + cfg.xHeightMm;
     const yDescBot = yBase + desc;
+    rows.push({ top: yAscTop, waist: yWaist, baseline: yBase, bottom: yDescBot });
 
     // The learning progression draws fewer lines for practised writers; the
     // row metrics stay identical so extenders keep their room.
@@ -404,5 +417,5 @@ export function buildLineature(cfg: LineatureConfig): Lineature {
     marks.push(...gauge.marks);
   }
 
-  return { segments: segs, marks };
+  return { segments: segs, marks, rows };
 }

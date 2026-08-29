@@ -490,7 +490,7 @@ verzahnt mit Frontend-Infrastruktur (§16) als Querschnitt:
 | Phase | Inhalt | Architektur | Vision-Bezug |
 |---|---|---|---|
 | **P1 — Lese-Hilfe** | HTR-Integration über Transkribus-API mit Free-Tier; Lese-Lupe (Wort-Granularität) als didaktische Anwendung. | §13 · §14 | Vision §5 |
-| **P2 — Lineatur & Print** | Inhaltsbewusste Übungsblätter mit konfigurierbarer Lineatur; WeasyPrint im Backend; SVG-Glyph-Embedding. | §15 | Vision §2 |
+| **P2 — Lineatur & Print** | Inhaltsbewusste Übungsblätter mit konfigurierbarer Lineatur; WeasyPrint im Backend; SVG-Glyph-Embedding. (Das Einzelblatt mit Text ist seit 2026-08-30 clientseitig gebaut, §15.) | §15 | Vision §2 |
 | **P3 — Stil-Analyse** | Per-Hand-Aggregation der Per-Instanz-Stats (M5(C) ausbauen); optional Hinge-/Δn-Hinge-Features. „Optimieren"-Pfad der Vision §6. | §12 | Vision §6 |
 | **P4 — Hände vergleichen** | Side-by-Side mehrerer trainierter Hände, Heatmaps für Schräglage/Schwellzug/Glyph-Frequenz; Animation derselben Glyphe in mehreren Händen (Anwendung von §11 + §12). | §11 · §12 | Vision §6 (Hände-Vergleich) |
 | **P5 — Open-Data-Export** | Zenodo + GitHub-Release-Integration, CC-BY 4.0; JSON-Schema des Library-Eintrags primär, TEI-XML optional; HTR-United-Eintrag. | §17 | Vision §7 |
@@ -711,6 +711,17 @@ Glyphen (warum sieht das so aus). Beide bauen auf dem HTR-Adapter aus §13.
 
 Vision §2 verlangt inhaltsbewusste Vorlagenblätter — Text und passende
 Lineatur in einem Schritt, druckbar.
+
+**Stand 2026-08-30 — das Einzelblatt ist clientseitig gebaut.** Das
+Übungsblatt mit Text (`/schreiben/uebungsblatt`) setzt seinen Übungstext im
+Browser: jede Zeile wird wie in der Federprobe über `GET /write/word`
+komponiert, `app/src/lib/uebungstext.ts` legt die Komposition als Vorschrift
+auf die Zeilen der gewählten Lineatur (Mittelband = x-Höhe, Leerzeilen zum
+Nachschreiben darunter), und derselbe PDF-Builder wie die Lesetafel
+(`lib/pdf.ts`) schreibt das Blatt. Der unten beschriebene WeasyPrint-Pfad
+samt `POST /worksheet` wurde dafür nicht gebraucht — er bleibt als Option
+für mehrseitige, HTML-gesetzte Blätter stehen, ist aber nicht mehr der
+geplante Weg für das Einzelblatt.
 
 **Stack:**
 

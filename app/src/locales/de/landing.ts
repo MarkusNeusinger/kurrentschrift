@@ -79,7 +79,7 @@ export const landing = {
     worksheet: {
       title: 'Übungsblatt',
       cta: 'Übungsblatt erstellen →',
-      desc: 'Hilfslinien für die deutsche Schreibschrift auf einem Bogen A4 — das Verhältnis frei gewählt, auf Wunsch mit Schräglinien, druckfertig als PDF.',
+      desc: 'Hilfslinien für die deutsche Schreibschrift auf einem Bogen A4 — das Verhältnis frei gewählt, auf Wunsch mit Schräglinien und deinem Text als Vorschrift in Sütterlin, druckfertig als PDF.',
     },
     scribe: {
       title: 'Federprobe',

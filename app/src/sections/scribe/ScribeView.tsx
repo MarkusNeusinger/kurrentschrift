@@ -13,24 +13,13 @@ import { useSearchParams } from 'react-router-dom';
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 import { WrittenWord } from '@/components/WrittenWord';
-import { knownGlyph } from '@/domain/glyphs';
+import { lettersFromKeys } from '@/domain/glyphs';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de, fmt } from '@/locales';
 import { garamond, paper } from '@/styles/paper';
 
 const MAX_LEN = 48;
 const DEBOUNCE_MS = 450;
-
-// Map an unrenderable glyph_key back to a human letter for the "not curated yet"
-// note (e.g. `longs` → ſ, `qu` → qu).
-function lettersFromKeys(keys: string[]): string {
-  const seen = new Set<string>();
-  for (const k of keys) {
-    const g = knownGlyph(k);
-    if (g) seen.add(g.glyph);
-  }
-  return [...seen].join(' · ');
-}
 
 export function ScribeView() {
   // The page title / SEO meta is set by the route mount (ScribePage → usePageMeta).

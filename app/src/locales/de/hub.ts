@@ -38,11 +38,11 @@ export const hub = {
     heading: 'Kurrent und Sütterlin selbst schreiben',
     lead: 'Selbst zur Feder greifen. Übe die Züge auf dem ausgedruckten Übungsblatt — oder sieh der Feder beim Schreiben zu.',
     about:
-      'Die deutsche Schreibschrift lernt man wie damals: auf der Lineatur, Zug um Zug. Das Übungsblatt druckt die Lineatur der gewählten Ausgangsschrift als PDF — Kurrent (2 : 1 : 2, geneigt), Sütterlin (1 : 1 : 1, aufrecht) oder Offenbacher — mit Schräglinien und Federwinkel nach Wahl. Die Federprobe schreibt jeden getippten Text in Sütterlin vor, mit allen Übergängen zwischen den Buchstaben: zum Abschauen, bevor die eigene Feder ansetzt.',
+      'Die deutsche Schreibschrift lernt man wie damals: auf der Lineatur, Zug um Zug. Das Übungsblatt druckt die Lineatur der gewählten Ausgangsschrift als PDF — Kurrent (2 : 1 : 2, geneigt), Sütterlin (1 : 1 : 1, aufrecht) oder Offenbacher — mit Schräglinien und Federwinkel nach Wahl, auf Wunsch mit deinem Text als Vorschrift in den Zeilen. Die Federprobe schreibt jeden getippten Text in Sütterlin vor, mit allen Übergängen zwischen den Buchstaben: zum Abschauen, bevor die eigene Feder ansetzt.',
     cards: {
       worksheet: {
         title: 'Übungsblatt',
-        body: 'Erzeuge ein Übungsblatt mit Lineatur als PDF — Verhältnis, Schräglinien und Federwinkel frei wählbar, fertig zum Ausdrucken.',
+        body: 'Erzeuge ein Übungsblatt mit Lineatur als PDF — Verhältnis, Schräglinien und Federwinkel frei wählbar, auf Wunsch mit deinem Text als Vorschrift, fertig zum Ausdrucken.',
         cta: 'Blatt erzeugen',
       },
       federprobe: {
