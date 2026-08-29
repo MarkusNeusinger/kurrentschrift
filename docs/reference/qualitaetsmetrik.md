@@ -8960,3 +8960,87 @@ bleibt eingefroren** (Wordbench/Tracebench messen weiter gegen den
 Stand VOR dem Write — das ist die Basis jeder laufenden
 Vorregistrierung); ein Neuexport der Root ist eine deklarierte
 Re-Baseline und ein eigener Schritt, nicht die Folge dieses Writes.
+
+### Laufform LF5 `aug29` — Vorregistrierung: die Endblende (Chart-Rückblendung an den freien Strichenden; Korb #7)
+
+Geschrieben und committet VOR der ersten Zahl. Anlass: Korb #7
+(„Kurrentschrift", suetterlin-1922): K-Schluss wellig, K→u steil statt
+in der u-Schräge, t-Aufstrich nach n mit Haken. Reproduziert am
+`/write/word`-Rendering und in den Fixture-Overlays (Kugel K→u, unter
+n→t).
+
+**Befund.** Die freien Enden eines gefitteten Zuges sind seine am
+wenigsten gebundenen Anker: der Fit zieht sie zur Nachbar-Tinte. t:
+Anker 0 liegt in ALLEN vier Vorkommen ~0,10 xh rechts-unten der
+Chart-Position (Richtung Kringel), Anker 1 wieder auf der Chart-Linie —
+der Median (n=4, MAD ≤ 0,021) kann eine systematische Drift nicht
+überstimmen; die gerenderte Landetangente der Laufform ist 86,8° gegen
+40,4° der Tafel, außerhalb des Align-Fensters (25–55°), darum kein
+gerader Anstrich (n→t bleibt Bézier + Haken; nach f, wo die
+Flankenkopplung greift, ist das t sauber). K (n=1, Schreib-Karte
+`aug26`): der letzte Anker springt auf die Grundlinie (0,45/0,04 statt
+0,43/0,29), Austrittstangente −49° statt +42°; die Wellen davor sind der
+Einzelfit am Knoten der Platte. `build_laufform_canonical` setzt
+voraus, dass die End-Abweichungen des Medians sub-nib sind („the
+tangents stay — median deviations are sub-nib") — beim t (0,12 xh gegen
+Nibradius 0,064 xh) und beim K ist das verletzt.
+
+**Mechanismus (Endblende).** In der Kanonisierung
+(`build_laufform_canonical`, die EINE Ableitung für PUT und apply)
+blendet jeder Zug an BEIDEN freien Enden über ein Bogen-Fenster W (xh,
+gemessen auf dem Chart-Zug) linear von der Chart-Geometrie (w = 0 am
+Ende) zur Laufform (w = 1 am Fensterrand). Die Chart-Endstrecke wird
+dabei STARR an den Fensterrand der Laufform angehängt (Versatz T =
+Laufform − Chart am Fensterrand), damit Breite und Lage der Laufform
+erhalten bleiben und nur Form und Richtung des Endes vom Duktus-Prior
+kommen; eine rein verschobene Laufform ist damit ein Fixpunkt (Blende =
+Identität), und die Blende ist idempotent. Entry/Exit/Advance reiten
+wie bisher auf den — jetzt geblendeten — Endankern; Züge kürzer als 2W
+werden ganz zur starr angehängten Chart-Form. Reine Funktion
+`core/laufform.py::blend_stroke_ends`, Stempel
+`trace_meta.laufform.end_window`.
+
+**EIN Knopf: das Fenster W, Leiter {0,25 · 0,5} xh** (0,5 = das
+LF3-Fenster). Wirkmenge: alle 32 gespeicherten Zeilen der Root —
+Kandidaten-Karte trocken über `tools/laufform/endblend.py` (Root →
+Kandidaten-Zeilen durch denselben Builder), Overlay per `wordbench
+--laufform` bzw. `wordlab --laufform`. Ein zweiter, getrennter Arm ohne
+Knopf: **K0 = K auf Chart-Rückfall** (Autor-Aussage 2026-08-29:
+„Laufform vom K deutlich verbessern oder zurück zur Tafelform"),
+gemessen einzeln und kombiniert mit der Endblende — eine
+Daten-Entscheidung, kein Mechanik-Knopf.
+
+**Basis.** Die Root vom 2026-08-29 (`fetch_fixtures --set all
+--verify`, 12/12 bit-exakt), d. h. der DB-Stand NACH dem
+LF3b-W-Write (32 Laufform-Zeilen; K/E/F/P/ae/b/k/s/ue mit n = 1); in
+dieser Umgebung frisch gerechnet, BLAS gepinnt: Wörter **0,106720** ·
+Paare **0,146506** (chart-only 0,125231 / 0,146163). Nicht die stehende
+`aug26`-Basis 0,108091 (Root VOR dem Write) — der Vergleich läuft
+Root-intern.
+
+**Messung (trocken, kein DB-Write).**
+(a) wordbench `--set all --laufform <Karte>`: `word_loss`/`pair_loss`
+≤ +0,002 gegen die Basis; bewegen dürfen sich nur Wörter mit
+Laufform-Glyphen (bei K0 nur Kugel).
+(b) Kompositions-Soll je Wort (`tools.tracebench.soll.ductus_soll`,
+alle 63 Wörter, Kandidaten-Root gegen Basis-Root): kein Wort verliert
+eine Kreuzung; jede Bewegung wird berichtet.
+(c) Die drei Korb-Stellen im Overlay (Kugel K→u, unter n→t,
+„Kurrentschrift" lokal komponiert): n→t muss geradlinig koppeln
+(Platzierungsregel `align`/`flank_*` statt `connect_gap`), der t-Haken
+verschwindet; K-Schluss und K→u werden je Arm beschrieben.
+(d) Lotse/Kette dev-19 (die LF3b-W-Gates c/d) laufen NICHT in dieser
+Runde: sie gehören zum Write-Schritt (Autor-Go + `dbsnapshot`), weil
+sie die Karte messen, DIE GESCHRIEBEN WIRD.
+
+**Kill-Kriterium:** ein verletztes Gate = keine Adoption der Stufe;
+Rettungswege dann: End-Regularisierung im Fit selbst (neuer
+Mechanismus, Kette/M4) oder ein je Glyph gewähltes Fenster — nie
+derselbe Knopf weicher.
+
+**Adoption.** Besteht eine Stufe, wird W ihr Default in
+`core/laufform.py` (jeder künftige PUT/apply blendet), die Korb-Zeile
+#7 schließt auf Stufe `laufform`, und der Write der Kandidaten-Karte
+bleibt ein eigener Schritt hinter Autor-Go (Todoist) → `dbsnapshot` →
+PUT je Glyph → GET-Verify → Re-Export der Root als deklarierte
+Re-Baseline.
