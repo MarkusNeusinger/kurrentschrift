@@ -133,6 +133,18 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Changed
 
+- **The quiz setup shows only real choices.** Two of three scripts and two
+  of three difficulty levels were greyed-out „bald" chips — with one script
+  and one hand in the DB, most of a learner's first screen was promises. A
+  setup row now renders only when it offers a choice (`offersChoice`: two
+  or more available options) and shows only those options; today that
+  leaves „Buchstaben | Wörter", the summary names the rows on screen, and
+  the intro no longer counts „drei Handgriffe". The script and difficulty
+  rows return by themselves once a second option is flagged available
+  (the `Difficulty` state stays threaded through the quiz for that day).
+  Second of the eight website proposals from the 2026-08-29 audit; the
+  owner's call that letters-or-words is the right amount of setup — no
+  case filter, no word-type axis.
 - **The Laufform Prüfstein compares what the apply step WOULD write.** The
   `list`/`rebuild`/`apply-laufform` distance (`laufform_dev_xh`) now runs
   the median through `build_laufform_canonical` before comparing it with

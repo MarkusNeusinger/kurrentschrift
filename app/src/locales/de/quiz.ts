@@ -16,8 +16,10 @@ export const quiz = {
   },
   setup: {
     // Warm lead, ~1900 Vorwort tone — the second clause sits in a softer ink.
+    // Counts no "Handgriffe": the setup shows only the rows that offer a choice
+    // (today one), so the copy must not promise a number.
     introLead: 'Such dir aus, was du heute üben magst —',
-    introRest: ' drei Handgriffe, dann geht’s los.',
+    introRest: ' dann geht’s los.',
     scriptLabel: 'Schrift',
     scriptHint: 'welche Schreibschrift-Familie',
     // Task selector: single letters or whole words.
@@ -29,7 +31,10 @@ export const quiz = {
     difficultyShortHint: 'wie ordentlich die Handschrift ist',
     difficultyHint:
       'Höhere Stufen zeigen denselben Buchstaben in unsaubereren Handschriften — sobald solche Vorlagen vorliegen.',
-    // Summary line above the start button: "dein Quiz · Kurrent · Buchstaben · Sauber".
+    // Summary line above the start button, followed by the labels of the rows
+    // actually on screen (QuizSetupPanel shows a row only when it offers a
+    // choice) — today "dein Quiz · Buchstaben"; the script is named by
+    // `sourceNote` below.
     summaryPrefix: 'dein Quiz',
     noLetters: 'Für diese Auswahl sind noch keine Buchstaben freigegeben.',
     noLettersOther: 'Buchstaben erscheinen hier, sobald sie fertig nachgeschrieben und freigegeben sind.',

@@ -1,7 +1,13 @@
-// QuizSetupPanel — the pre-session setup: three hairline-separated choice rows
+// QuizSetupPanel — the pre-session setup: hairline-separated choice rows
 // (Schrift · Aufgabe · Schwierigkeit), a one-line summary and the start CTA. No
 // boxed "Kasten" any more — the rows sit straight on the page (design handoff
-// "Tinte & Vergleich"). Purely presentational; state comes from useQuizEngine.
+// "Tinte & Vergleich"). A row renders only when it offers a real choice (two or
+// more available options, `offersChoice`) and shows only those options — a
+// greyed-out „bald" is a promise, not a setting, and with one script and one
+// hand in the DB the first screen would be mostly promises. Today that leaves
+// the Aufgabe row; the script and difficulty rows return by themselves once a
+// second option is flagged available. Purely presentational; state comes from
+// useQuizEngine.
 
 import { Alert, Box, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
@@ -9,7 +15,7 @@ import type { ReactNode } from 'react';
 
 import { InfoHint } from '@/components/InfoHint';
 import { de } from '@/locales';
-import { DIFFICULTIES, MODES, SCRIPTS, type Difficulty } from '@/sections/quiz/quizTypes';
+import { DIFFICULTIES, MODES, offersChoice, SCRIPTS, type Difficulty } from '@/sections/quiz/quizTypes';
 import { InkButton, OptionChip } from '@/sections/quiz/quizUi';
 import { type QuizMode } from '@/sections/quiz/useQuizEngine';
 import { display, garamond, paper } from '@/styles/paper';
@@ -32,68 +38,62 @@ export function QuizSetupPanel(p: SetupProps) {
   const modeLabel = p.mode === 'words' ? de.quiz.setup.modeWords : de.quiz.setup.modeLetters;
   const difficultyLabel = DIFFICULTIES.find((d) => d.id === p.difficulty)?.label ?? p.difficulty;
 
+  const showScript = offersChoice(SCRIPTS);
+  const showMode = offersChoice(MODES);
+  const showDifficulty = offersChoice(DIFFICULTIES);
+  // The summary names what the learner chose — the rows on screen. A hidden
+  // axis is a fact, not a choice (the source line below names the script).
+  const summary = [showScript && scriptLabel, showMode && modeLabel, showDifficulty && difficultyLabel]
+    .filter((s): s is string => typeof s === 'string')
+    .join(' · ');
+
   return (
     <Stack spacing={0}>
-      <Row label={de.quiz.setup.scriptLabel} hint={de.quiz.setup.scriptHint}>
-        {SCRIPTS.map((s) => (
-          <OptionChip
-            key={s.id}
-            selected={p.script === s.id}
-            disabled={!s.available}
-            soon={!s.available}
-            soonLabel={de.common.soon}
-            onClick={() => p.setScript(s.id)}
-          >
-            {s.label}
-          </OptionChip>
-        ))}
-      </Row>
+      {showScript && (
+        <Row label={de.quiz.setup.scriptLabel} hint={de.quiz.setup.scriptHint}>
+          {SCRIPTS.filter((s) => s.available).map((s) => (
+            <OptionChip key={s.id} selected={p.script === s.id} onClick={() => p.setScript(s.id)}>
+              {s.label}
+            </OptionChip>
+          ))}
+        </Row>
+      )}
 
-      <Row label={de.quiz.setup.taskLabel} hint={de.quiz.setup.taskHint}>
-        {MODES.map((m) => (
-          <OptionChip
-            key={m.id}
-            selected={p.mode === m.id}
-            disabled={!m.available}
-            soon={!m.available}
-            soonLabel={de.common.soon}
-            onClick={() => p.setMode(m.id)}
-          >
-            {m.label}
-          </OptionChip>
-        ))}
-      </Row>
+      {showMode && (
+        <Row label={de.quiz.setup.taskLabel} hint={de.quiz.setup.taskHint}>
+          {MODES.filter((m) => m.available).map((m) => (
+            <OptionChip key={m.id} selected={p.mode === m.id} onClick={() => p.setMode(m.id)}>
+              {m.label}
+            </OptionChip>
+          ))}
+        </Row>
+      )}
 
-      <Row
-        label={de.quiz.setup.difficultyLabel}
-        hint={de.quiz.setup.difficultyShortHint}
-        info={
-          <InfoHint title={de.quiz.setup.difficultyLabel}>
-            {DIFFICULTIES.map((d) => (
-              <Box key={d.id} sx={{ mb: 0.75 }}>
-                <Box component="span" sx={{ color: 'text.primary', fontWeight: 600 }}>
-                  {d.label}
+      {showDifficulty && (
+        <Row
+          label={de.quiz.setup.difficultyLabel}
+          hint={de.quiz.setup.difficultyShortHint}
+          info={
+            <InfoHint title={de.quiz.setup.difficultyLabel}>
+              {DIFFICULTIES.filter((d) => d.available).map((d) => (
+                <Box key={d.id} sx={{ mb: 0.75 }}>
+                  <Box component="span" sx={{ color: 'text.primary', fontWeight: 600 }}>
+                    {d.label}
+                  </Box>
+                  {` — ${d.hint}`}
                 </Box>
-                {` — ${d.hint}`}
-              </Box>
-            ))}
-            {de.quiz.setup.difficultyHint}
-          </InfoHint>
-        }
-      >
-        {DIFFICULTIES.map((d) => (
-          <OptionChip
-            key={d.id}
-            selected={p.difficulty === d.id}
-            disabled={!d.available}
-            soon={!d.available}
-            soonLabel={de.common.soon}
-            onClick={() => p.setDifficulty(d.id)}
-          >
-            {d.label}
-          </OptionChip>
-        ))}
-      </Row>
+              ))}
+              {de.quiz.setup.difficultyHint}
+            </InfoHint>
+          }
+        >
+          {DIFFICULTIES.filter((d) => d.available).map((d) => (
+            <OptionChip key={d.id} selected={p.difficulty === d.id} onClick={() => p.setDifficulty(d.id)}>
+              {d.label}
+            </OptionChip>
+          ))}
+        </Row>
+      )}
 
       {/* Summary + start */}
       <Box sx={{ borderTop: `1px solid ${alpha(paper.line, 0.5)}`, pt: { xs: 2.5, sm: 3 }, mt: { xs: 0.5, sm: 1 } }}>
@@ -108,7 +108,7 @@ export function QuizSetupPanel(p: SetupProps) {
             <Typography sx={{ fontFamily: garamond, fontSize: 16, color: paper.sepia }}>
               {de.quiz.setup.summaryPrefix} ·{' '}
               <Box component="span" sx={{ color: paper.ink, fontWeight: 600 }}>
-                {scriptLabel} · {modeLabel} · {difficultyLabel}
+                {summary}
               </Box>
             </Typography>
             <InkButton onClick={p.onStart}>{de.quiz.setup.start} →</InkButton>
