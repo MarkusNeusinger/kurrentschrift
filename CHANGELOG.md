@@ -41,6 +41,21 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The Schreibtafel prints: „Lesetafel als PDF".** One button on `/tafel`
+  builds, in the browser, an A4 sheet per Vorlage to lay beside an old
+  letter — the Schriftkunde's own advice, until now met only by the screen.
+  The written script (Sütterlin) comes as filled letter silhouettes from the
+  same render payloads the page draws, reflowed into rows on a faint
+  ruling with proportional widths (WrittenSheet's rule) and an Antiqua
+  label under each letter (the long ſ by name — WinAnsi has none); Kurrent
+  and Offenbacher come as their public-domain plates, rasterised through a
+  canvas to JPEG and embedded, with the source's attribution in the footer.
+  `lib/pdf.ts` grew from the worksheet's one-page writer into a small
+  document builder (`PdfDocument` + `ContentStream`: lines, even-odd ring
+  fills, Helvetica text, JPEG XObjects, multi-page) that `lineaturePdf`
+  now sits on unchanged in behaviour; `lib/lesetafel.ts` is the pure
+  composer (`lesetafel.test.ts` pins layout, labels, page count and a
+  resolving xref). Website audit 2026-08-29, item 6/8.
 - **„Lesart prüfen" — the reading aid for a person with an old letter on
   the desk (`/lesen/vergleichen`).** Type what you believe a word says and
   the engine writes it in Sütterlin; beside it the readings that would look

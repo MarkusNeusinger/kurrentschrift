@@ -10,7 +10,7 @@
 // Unlike the quiz this page does NOT ride the pinned AdminProvider (one source):
 // useGrundtafeln fetches all chart sources read-only and groups them by style.
 
-import { Box, Chip, Link, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Box, Button, Chip, Link, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -26,6 +26,7 @@ import type { SourceOut } from '@/lib/api';
 import { de } from '@/locales';
 import { garamond, paper } from '@/styles/paper';
 import { useGrundtafeln, type Grundtafel } from '@/sections/tafel/useGrundtafeln';
+import { useLesetafelPdf } from '@/sections/tafel/useLesetafelPdf';
 
 type View = 'original' | 'written';
 
@@ -281,6 +282,7 @@ function GrundtafelSection({ tafel }: { tafel: Grundtafel }) {
 export function TafelView() {
   const { tafeln, loadError, waking } = useGrundtafeln();
   const { hash } = useLocation();
+  const pdf = useLesetafelPdf(tafeln);
 
   // Deep-link from the landing's script cards (/tafel#<styleId>): once the
   // sections exist, scroll the requested one clear of the sticky header (the
@@ -361,6 +363,16 @@ export function TafelView() {
           <Typography sx={{ color: paper.inkSoft }}>{de.tafel.intro}</Typography>
           <Typography sx={{ color: paper.inkSoft, mt: 1.5 }}>{de.tafel.note}</Typography>
         </PageHeader>
+        {/* The printable Lesetafel — built in the browser from the same data
+            the page shows (useLesetafelPdf); the hint says what the file holds. */}
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mt: -1.5, mb: { xs: 4, sm: 5 } }}>
+          <Button variant="outlined" size="small" onClick={pdf.build} disabled={pdf.state === 'building'} sx={{ flexShrink: 0 }}>
+            {pdf.state === 'building' ? de.tafel.pdf.building : de.tafel.pdf.button}
+          </Button>
+          <Typography variant="body2" sx={{ color: pdf.state === 'error' ? 'error.main' : paper.inkSoft, maxWidth: '60ch' }}>
+            {pdf.state === 'error' ? de.tafel.pdf.error : de.tafel.pdf.hint}
+          </Typography>
+        </Box>
         <Stack spacing={{ xs: 5, sm: 7 }}>
           {tafeln.map((t) => (
             <GrundtafelSection key={t.styleId} tafel={t} />
