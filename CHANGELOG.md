@@ -25,6 +25,14 @@ existing lines in passing; the reviewer reads `[Unreleased]` for duplicates.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The landing page's scroll-reveal no longer hides sections in print or in
+  a browser without IntersectionObserver.** `Reveal` shows its content at
+  once where the observer is missing and under `@media print`, so a printed
+  landing page carries every section instead of blank space. Website audit
+  2026-08-29, Kleinkram (5).
+
 ### Changed
 
 - **The changelog merges by union — a sibling merge no longer costs a
@@ -39,6 +47,19 @@ existing lines in passing; the reviewer reads `[Unreleased]` for duplicates.
   is a line changed on both sides (it appears twice), hence the rule in
   the file's header, `CLAUDE.md` and `.github/copilot-instructions.md`:
   add on top of your category, never rewrite existing lines in passing.
+- **Audit leftovers.** `frontend-stack.md` and `animation-rendering.md`
+  describe the hero as it is —
+  engine-first since 2026-08-27 (`WrittenWord`; the GL-GermanCursive wipe
+  only on a genuine failure), no longer font-first; the dead
+  `common.nav.tafel` key is gone; the Federprobe's „noch nicht
+  nachgeschrieben" note is set in body size, and its 48-character cap is
+  explained in place (legibility: the line scales into its frame, and on a
+  phone 48 letters already end near an 8 px x-height — the API's 160 serves
+  the Übungsblatt's lines). Left as they are, on purpose: `tafel.pendingNote`
+  (a data state — a script without a chart source — not dead code) and the
+  mixed path shapes (`/schreiben/uebungsblatt` beside `/tafel` and
+  `/federprobe`), which is a decision for the owner. Website audit
+  2026-08-29, Kleinkram (1)(2)(3)(4)(6).
 - **The API keeps a warm instance, so the first visitor after a quiet hour no
   longer waits nine seconds.** `_MIN_INSTANCES` 0 → 1, `_MEMORY` 1Gi → 512Mi,
   `_MAX_INSTANCES` 1 → 3 in `api/cloudbuild.yaml`. The old comment estimated the

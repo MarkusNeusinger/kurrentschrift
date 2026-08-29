@@ -59,7 +59,6 @@ export const common = {
     schriftkunde: 'Schriftkunde',
     write: 'Schreiben',
     scribe: 'Federprobe',
-    tafel: 'Tafel',
     read: 'Lesen',
   },
   // Marker for staged/disabled features ("coming soon").

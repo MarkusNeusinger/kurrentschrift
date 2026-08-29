@@ -66,7 +66,7 @@ definiert (P1-Arbeit).
 
 | Pfad | Inhalt | Bereich |
 |---|---|---|
-| `/` | Landing (der Hero schreibt das Markenwort font-first: GLKurrent + Clip-Path-Reveal, Engine-Naht offen — §7) | Einstieg |
+| `/` | Landing (der Hero schreibt das Markenwort engine-first: `WrittenWord` über `/write/word`, die Engine bekommt so lange sie braucht — Owner-Entscheidung 2026-08-27; nur ein echter Fehler fällt auf den GLKurrent-Clip-Path-Wisch zurück — §7) | Einstieg |
 | `/schriftkunde` | Überblick der deutschen Schreibschriften (der umbenannte frühere `/lehrbuch`) | Schriftkunde |
 | `/lesen` | Hub → Quiz, Tafel | Lesen |
 | `/quiz` | Lese-Quiz (Buchstaben + ganze Wörter) | Lesen |
@@ -598,8 +598,11 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
 
 - `routes/index.tsx` — Router-Assembly (Suspense-Fallback, errorElement);
   `routes/paths.ts` ist die einzige Quelle der URLs.
-- `sections/landing/` — `LandingView` + `HeroWritten` (GLKurrent-Schreib-
-  Animation, Font-first mit offener Engine-Naht) + `Reveal` (Scroll-Reveal).
+- `sections/landing/` — `LandingView` + `HeroWritten` (das Markenwort
+  engine-first von `WrittenWord` geschrieben, seit 2026-08-27; der
+  GLKurrent-Clip-Path-Wisch ist nur noch der Fallback bei echtem Fehler) +
+  `Reveal` (Scroll-Reveal; ohne IntersectionObserver und im Druck sofort
+  sichtbar).
 - `sections/schriftkunde/` — der `/schriftkunde`-Überblick (Grundbegriffe,
   drei Ausgangsschriften mit Specimen, drei Federn, Tinte & Papier,
   Buchstaben-Besonderheiten, Zahlen & Zeichen, Chronologie). Die drei
