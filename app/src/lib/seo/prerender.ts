@@ -408,17 +408,21 @@ const schriftkundeBody = () => {
 // `routes` is keyed by the hub's OWN card ids, so a card added to the locale
 // without its route fails to compile instead of rendering a broken link (it
 // did once: „kurrentschrift.inkundefined" for the Lesart card).
-const hubBody = <H extends typeof hub.lesen | typeof hub.schreiben>(h: H, routes: Record<keyof H['cards'], string>) => () =>
-  [
-    `<p class="eyebrow">${e(h.title)}</p>`,
-    `<h1>${e(h.heading)}</h1>`,
-    p(h.lead),
-    p(h.about),
-    ...(Object.keys(h.cards) as (keyof H['cards'])[]).map((k) => {
-      const c = h.cards[k] as { title: string; body: string; cta: string };
-      return `${h2(c.title)}${p(c.body)}<p>${a(abs(routes[k]), c.cta)}</p>`;
-    }),
-  ].join('\n');
+type HubCard = { readonly title: string; readonly body: string; readonly cta: string };
+type HubCopy<C> = { readonly title: string; readonly heading: string; readonly lead: string; readonly about: string; readonly cards: C };
+const hubBody =
+  <C extends Record<string, HubCard>>(h: HubCopy<C>, routes: Record<keyof C, string>) =>
+  () =>
+    [
+      `<p class="eyebrow">${e(h.title)}</p>`,
+      `<h1>${e(h.heading)}</h1>`,
+      p(h.lead),
+      p(h.about),
+      ...(Object.keys(h.cards) as (keyof C & string)[]).map((k) => {
+        const c = h.cards[k];
+        return `${h2(c.title)}${p(c.body)}<p>${a(abs(routes[k]), c.cta)}</p>`;
+      }),
+    ].join('\n');
 
 const quizBody = () => {
   const t = quiz;
