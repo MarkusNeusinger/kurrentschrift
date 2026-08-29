@@ -10,9 +10,19 @@ names and old spellings of genealogical documents; quiz-wortbank.md §1
 committed ``quiz_words.json`` into an already-seeded database.
 
 Insert-only, keyed by ``_ADDED``: rows that already exist are left alone, so
-the migration is idempotent, and the downgrade removes exactly these words —
-the pre-existing rows are never touched (unlike the wholesale reseed of 0011,
-whose downgrade could only raise).
+the migration is idempotent, and rows outside ``_ADDED`` are never touched
+(unlike the wholesale reseed of 0011, whose downgrade could only raise).
+
+The downgrade removes the ``_ADDED`` words by name. On a database seeded
+before this revision that is exactly what the upgrade inserted. On a FRESH
+database the picture differs: 0011 seeds from the same moving
+``quiz_words.json`` and therefore already carries these words, the upgrade
+here inserts nothing, and the downgrade still removes them — so after
+``downgrade -1`` a fresh database holds the pre-gap-fill bank, not the
+0011-seeded one. That is the deliberate trade-off: a migration has no memory
+of what it inserted, and the alternative — a no-op downgrade — would leave
+the words on every older database, i.e. not revert at all. Content, not
+measurement; ``upgrade head`` restores them either way.
 
 Revision ID: 0027
 Revises: 0026
