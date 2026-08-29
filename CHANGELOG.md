@@ -21,6 +21,20 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The quiz word bank reaches every letter.** Every traced Sütterlin glyph
+  was quizzable in letters mode, but the frequency-led WORD bank had no
+  word at all with C, Q, X, Y, q, x, y, Ä, Ö, Ü and only 1–6 words with
+  I, J, U, R, O, N, E, j, v, ß, ö. 91 gap-fill entries in
+  `tools/quizgen/corpus.py` (495 → 586 words), reconciled with the
+  Eigenhand Wortvorrat: its rare-join words (Quelle, Hexe, Yacht, Übung,
+  Klavier …) are taken over so one curation serves the reading quiz and
+  the own-hand capture, and the bank flows back into the pool's
+  `quizbank` layer; on top the names and old spellings genealogists meet
+  (Carl, Conrad, Caspar, Xaver, Quirin, Cäcilie — historic, glossed) and
+  pairs whose pinned misread fills the gap itself (Bayern ↔ Bauern,
+  Onkel ↔ Enkel, Jugend ↔ Tugend, Fuß ↔ Fluß). Migration `0027` inserts
+  exactly these rows into an already-seeded database (idempotent) and its
+  downgrade removes exactly them (quiz-wortbank.md §1 „Lückenschluss").
 - **The reading quiz explains a miss.** A wrong letter pick now shows,
   under „Das ist ein f.", the feature that tells the shown form from the
   guessed letter — „Das lange ſ und das f unterscheidet nur der

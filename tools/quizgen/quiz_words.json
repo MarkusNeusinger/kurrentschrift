@@ -3603,5 +3603,656 @@
     "era": "historic",
     "note": "Behörde der Arbeitsvermittlung",
     "fugen": "Arbeits|amt"
+  },
+  {
+    "word": "Carl",
+    "distractors": [
+      "Karl"
+    ],
+    "era": "historic",
+    "note": "alte Schreibung von Karl, bis um 1900 üblich"
+  },
+  {
+    "word": "Conrad",
+    "distractors": [
+      "Konrad"
+    ],
+    "era": "historic",
+    "note": "alte Schreibung von Konrad"
+  },
+  {
+    "word": "Caspar",
+    "distractors": [
+      "Kaspar"
+    ],
+    "era": "historic",
+    "note": "alte Schreibung von Kaspar"
+  },
+  {
+    "word": "Cäcilie",
+    "distractors": [
+      "Cäcilia"
+    ],
+    "era": "historic",
+    "note": "weiblicher Vorname, in Kirchenbüchern häufig (auch Cäcilia)"
+  },
+  {
+    "word": "Christoph",
+    "distractors": [
+      "Christian"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Christian",
+    "distractors": [
+      "Christoph"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Chef",
+    "distractors": [
+      "Chor"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Chor",
+    "distractors": [
+      "Chef"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Cousine",
+    "distractors": [
+      "Cousin"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Cousin",
+    "distractors": [
+      "Cousine"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Quelle",
+    "distractors": [
+      "Qualle"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Qualle",
+    "distractors": [
+      "Quelle"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Quark",
+    "distractors": [
+      "Quarz"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Quarz",
+    "distractors": [
+      "Quark"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Quittung",
+    "distractors": [
+      "Zeitung"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Quartier",
+    "distractors": [
+      "Quartett"
+    ],
+    "era": "historic",
+    "note": "Unterkunft, besonders einquartierter Soldaten"
+  },
+  {
+    "word": "Quirin",
+    "distractors": [
+      "Quirl"
+    ],
+    "era": "historic",
+    "note": "männlicher Vorname, im süddeutschen Raum verbreitet"
+  },
+  {
+    "word": "Aquarium",
+    "distractors": [
+      "Aquarell"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Aquarell",
+    "distractors": [
+      "Aquarium"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "bequem",
+    "distractors": [
+      "bequemer"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Xaver",
+    "distractors": [
+      "Xavier"
+    ],
+    "era": "historic",
+    "note": "männlicher Vorname (Franz Xaver), in alten Kirchenbüchern häufig"
+  },
+  {
+    "word": "Xylophon",
+    "distractors": [
+      "Xylofon"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Hexe",
+    "distractors": [
+      "Hefe"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Hefe",
+    "distractors": [
+      "Hexe"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Taxi",
+    "distractors": [
+      "Taxe"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Taxe",
+    "distractors": [
+      "Taxi"
+    ],
+    "era": "historic",
+    "note": "amtlich festgesetzte Gebühr oder Schätzung"
+  },
+  {
+    "word": "Axt",
+    "distractors": [
+      "Art"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Text",
+    "distractors": [
+      "Test"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Exempel",
+    "distractors": [
+      "Exemplar"
+    ],
+    "era": "historic",
+    "note": "Beispiel („ein Exempel statuieren“)"
+  },
+  {
+    "word": "boxen",
+    "distractors": [
+      "boten"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Yacht",
+    "distractors": [
+      "Jacht"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Ypsilon",
+    "distractors": [
+      "Epsilon"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Physik",
+    "distractors": [
+      "Musik"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Pyjama",
+    "distractors": [
+      "Panama"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Zylinder",
+    "distractors": [
+      "Kalender"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Bayern",
+    "distractors": [
+      "Bauern"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Bauern",
+    "distractors": [
+      "Bayern"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Ähre",
+    "distractors": [
+      "Ehre"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Ehre",
+    "distractors": [
+      "Ähre"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Äpfel",
+    "distractors": [
+      "Apfel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Ärger",
+    "distractors": [
+      "Ärmel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Ärmel",
+    "distractors": [
+      "Ärger"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Öfen",
+    "distractors": [
+      "Ofen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Öl",
+    "distractors": [
+      "Öle"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Übung",
+    "distractors": [
+      "Übel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Übel",
+    "distractors": [
+      "Übung"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Überfluss",
+    "distractors": [
+      "Überschuss"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Irrtum",
+    "distractors": [
+      "Irrsinn"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Inhalt",
+    "distractors": [
+      "Anhalt"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Innung",
+    "distractors": [
+      "Ihnen"
+    ],
+    "era": "historic",
+    "note": "Handwerksvereinigung, Nachfolgerin der Zunft"
+  },
+  {
+    "word": "Jagd",
+    "distractors": [
+      "Magd"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Jubel",
+    "distractors": [
+      "Juwel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Jugend",
+    "distractors": [
+      "Tugend"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Tugend",
+    "distractors": [
+      "Jugend"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Urkunde",
+    "distractors": [
+      "Urkunden"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Umzug",
+    "distractors": [
+      "Umweg"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Umweg",
+    "distractors": [
+      "Umzug"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Unterschrift",
+    "distractors": [
+      "Unterricht"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Unterricht",
+    "distractors": [
+      "Unterschrift"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Rat",
+    "distractors": [
+      "Rad"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Rad",
+    "distractors": [
+      "Rat"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Rechnung",
+    "distractors": [
+      "Rettung"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Reise",
+    "distractors": [
+      "Reihe"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Reihe",
+    "distractors": [
+      "Reise"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Obst",
+    "distractors": [
+      "Ost"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Onkel",
+    "distractors": [
+      "Enkel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Enkel",
+    "distractors": [
+      "Onkel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Ordnung",
+    "distractors": [
+      "Ortung"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Nachbar",
+    "distractors": [
+      "Nachlass"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Nachlass",
+    "distractors": [
+      "Nachbar"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Not",
+    "distractors": [
+      "Nut"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Macht",
+    "distractors": [
+      "Nacht"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Eltern",
+    "distractors": [
+      "Elstern"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Esel",
+    "distractors": [
+      "Ekel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "jetzt",
+    "distractors": [
+      "jetzo"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "jetzo",
+    "distractors": [
+      "jetzt"
+    ],
+    "era": "historic",
+    "note": "altertümlich für jetzt"
+  },
+  {
+    "word": "jemand",
+    "distractors": [
+      "niemand"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "niemand",
+    "distractors": [
+      "jemand"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "jeder",
+    "distractors": [
+      "jedes"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "vier",
+    "distractors": [
+      "viel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Vogt",
+    "distractors": [
+      "Vogel"
+    ],
+    "era": "historic",
+    "note": "Amtmann, Verwalter im Auftrag eines Herrn"
+  },
+  {
+    "word": "Klavier",
+    "distractors": [
+      "Kavalier"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Fuß",
+    "distractors": [
+      "Fluß"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Fluß",
+    "distractors": [
+      "Fuß"
+    ],
+    "era": "historic",
+    "note": "alte Schreibung von Fluss (vor 1996)"
+  },
+  {
+    "word": "Gruß",
+    "distractors": [
+      "Ruß"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Spaß",
+    "distractors": [
+      "Spatz"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Schloß",
+    "distractors": [
+      "Schloss"
+    ],
+    "era": "historic",
+    "note": "alte Schreibung von Schloss (vor 1996)"
+  },
+  {
+    "word": "Möwe",
+    "distractors": [
+      "Löwe"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Löwe",
+    "distractors": [
+      "Möwe"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Söhne",
+    "distractors": [
+      "Sühne"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Sühne",
+    "distractors": [
+      "Söhne"
+    ],
+    "era": "modern"
   }
 ]

@@ -4,18 +4,20 @@
 > Fugen-Marker und Seed-Workflow der Wortbank; jede Änderung an
 > `tools/quizgen/` oder am `similarity`-Zwilling
 > `app/src/sections/quiz/wordBank.ts` zieht hier nach.
-> Zahlen am 2026-08-03 nachgerechnet und korrekt: 495 Wörter,
-> 373 `modern` / 122 `historic`.
+> Zahlen am 2026-08-29 nachgerechnet: 586 Wörter,
+> 450 `modern` / 136 `historic` (vor dem Lückenschluss §1: 495,
+> 373 / 122).
 
 Referenz für die Wortbank des Lese-Quiz (Wörter-Modus): woher die Wörter
 kommen, nach welchen Regeln sie kuratiert werden und wie die
 Antwortoptionen entstehen. Implementiert in `tools/quizgen/` (Generator),
-`quiz_words`-Tabelle (Seed über Alembic 0010/0011, öffentlich unter
-`GET /quiz-words`) und `useQuizEngine.ts` (Runtime-Ziehung); der
-SPA-Fallback ist `app/src/sections/quiz/wordBank.ts`.
+`quiz_words`-Tabelle (Seed über Alembic 0010/0011, Lückenschluss 0027,
+öffentlich unter `GET /quiz-words`) und `useQuizEngine.ts`
+(Runtime-Ziehung); der SPA-Fallback ist
+`app/src/sections/quiz/wordBank.ts`.
 
-Stand 2026-07-16: 495 Wörter, ca. 75 % `modern` / 25 % `historic`
-(373 / 122 — nachgezählt aus `tools/quizgen/quiz_words.json`).
+Stand 2026-08-29: 586 Wörter, ca. 77 % `modern` / 23 % `historic`
+(450 / 136 — nachgezählt aus `tools/quizgen/quiz_words.json`).
 
 ---
 
@@ -40,6 +42,26 @@ Die Bank mischt zwei Hälften, jedes Wort trägt ein `era`-Tag:
   Obrigkeit, Mitgift). **Jedes historische Wort trägt eine `note`** —
   eine deutsche Glosse, die erst in der Auflösung gezeigt wird, damit
   sie die Frage nicht verrät (der Generator erzwingt das).
+
+### Lückenschluss 2026-08-29 — Abgleich mit dem Eigenhand-Pool
+
+Die häufigkeitsgeführte Bank hatte, obwohl inzwischen alle 61 Zeichen
+der Sütterlin-Vorlage nachgeschrieben sind, **kein einziges Wort** mit
+C, Q, X, Y, q, x, y, Ä, Ö, Ü und nur 1–6 Wörter mit I, J, U, R, O, N,
+E, j, v, ß, ö (Buchstaben-Quiz und Wort-Quiz ziehen getrennt: im
+Buchstaben-Quiz kam jedes Zeichen vor, im Wort-Quiz las man ein X oder
+Q nie). Der Eigenhand-Wortvorrat (`tools/eigenhand/corpus.py`) jagt in
+seiner `rare-join`-Schicht genau diese Buchstaben mit echten Wörtern
+(Quelle, Hexe, Yacht, Übung, Klavier …) — die wurden in die Bank
+übernommen, damit EINE Kuration Lese-Quiz und Eigenhand-Erfassung
+bedient; da der Pool die Bank über seine `quizbank`-Schicht mechanisch
+einliest, fließen die Bank-Neuzugänge in die nächste Pool-Welle zurück.
+Dazu die Namen und alten Schreibungen, die Genealog:innen wirklich
+begegnen (Carl, Conrad, Caspar, Xaver, Quirin, Cäcilie — `historic`,
+mit Glosse), und Paare, deren Verwechsler selbst die Lücke füllt
+(Bayern ↔ Bauern, Onkel ↔ Enkel, Jugend ↔ Tugend, Ähre ↔ Ehre,
+jetzt ↔ jetzo, Fuß ↔ Fluß). 91 Einträge, Migration `0027` (einfügend,
+rückbaubar). Stand danach: 586 Wörter.
 
 ### Konsultierte Quellen
 
