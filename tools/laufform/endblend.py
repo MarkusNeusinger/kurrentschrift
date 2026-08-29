@@ -1,4 +1,4 @@
-"""Build an LF5 end-blend candidate map from a frozen wordbench fixture root.
+"""Build an LF5/LF6 end-blend candidate map from a frozen wordbench fixture root.
 
 Measurement layer only (docs/reference/werkzeuge.md): reads `templates.json`
 (chart rows) + `templates_laufform.json` (the stored running forms) of ONE

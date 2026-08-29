@@ -66,10 +66,11 @@ def _written_anchors(base: Template | None, median: list[list[float]]) -> list[l
 
     The Prüfstein (list + rebuild) asks whether the stored running form is what
     this aggregate would write — so the median goes through the same canonical
-    builder the apply step uses, LF5 end blend included; against the raw median
-    every blended row would carry a permanent end-piece residue and 0 would
-    never read again. Without a chart row, or with a deviating anchor count,
-    the apply step skips the key and the raw median is the only comparable.
+    builder the apply step uses, its end blend (when one is enabled) included;
+    against the raw median every blended row would carry a permanent end-piece
+    residue and 0 would never read again. Without a chart row, or with a
+    deviating anchor count, the apply step skips the key and the raw median is
+    the only comparable.
     """
     if base is None or len(base.anchors) != len(median):
         return median
@@ -124,12 +125,14 @@ async def list_aggregates(hand: Hand = Depends(require_hand), db: AsyncSession =
     (issue #270). A plain read answers it now, and 0 means the two agree.
     """
     rows = await AggregateRepository(db).list(hand_id=hand.id)
-    # One query for the whole listing; a hand without a style has no templates
-    # to compare against, so the freshness columns simply stay null.
+    # Two queries for the whole listing (the stored running forms and the
+    # chart rows the Prüfstein's builder needs), over the BASE-variant keys
+    # only — non-base aggregates never get a distance; a hand without a style
+    # has no templates to compare against, so the freshness columns stay null.
     laufform_by_key: dict[str, list[list[float]]] = {}
     chart_by_key: dict[str, Template] = {}
-    if hand.style_id and rows:
-        keys = sorted({r.glyph_key for r in rows})
+    keys = sorted({r.glyph_key for r in rows if r.variant == 0})
+    if hand.style_id and keys:
         repo = TemplateRepository(db)
         laufform_by_key = {
             t.glyph_key: [list(a) for a in t.anchors]
@@ -356,8 +359,9 @@ async def apply_laufform(
             base, median, {"derived_from": "hand-aggregate", "hand_id": hand.id, "n_occurrences": row.n_instances}
         )
         # The pre-write distance compares what is ABOUT TO BE WRITTEN with what
-        # stands — the canonical anchors, end blend included (LF5), not the raw
-        # median: a re-apply of an unchanged aggregate then reads 0 as promised.
+        # stands — the canonical anchors, the builder's end blend (when one is
+        # enabled) included, not the raw median: a re-apply of an unchanged
+        # aggregate then reads 0 as promised.
         written_anchors = [list(a) for a in canonical["anchors"]]
         await repo.upsert(
             hand.style_id,
