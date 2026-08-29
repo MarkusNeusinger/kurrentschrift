@@ -27,6 +27,23 @@ describe('seo coverage', () => {
     expect(Object.keys(seo)).toHaveLength(publicPaths.length + 1);
   });
 
+  it('puts a search term into every indexable title, the brand last', () => {
+    // The title rule of seo.ts (SEO audit 2026-08-29): what a person types —
+    // Sütterlin, Kurrent, alte deutsche Schrift, Schreibschrift — stands in
+    // the title, the brand closes it after the „ · " delimiter; „Lese-Quiz ·
+    // kurrentschrift.ink" is findable by nobody. Two deliberate exceptions:
+    // the home page IS the brand and leads with it (the term follows); the
+    // Impressum and the noindex 404 are exempt (nobody searches for them).
+    const BRAND = 'kurrentschrift.ink';
+    for (const [key, entry] of Object.entries(seo)) {
+      if (key === 'impressum' || ('noindex' in entry && entry.noindex)) continue;
+      expect(entry.title, key).toMatch(/Sütterlin|Kurrent|deutsche Schrift|Schreibschrift/);
+      // Plain string checks — the brand's dot would be a wildcard in a RegExp.
+      if (key === 'home') expect(entry.title.startsWith(`${BRAND} — `), key).toBe(true);
+      else expect(entry.title.endsWith(` · ${BRAND}`), key).toBe(true);
+    }
+  });
+
   it('has unique, plausibly sized titles and descriptions', () => {
     const entries = Object.values(seo);
     const titles = entries.map((e) => e.title);

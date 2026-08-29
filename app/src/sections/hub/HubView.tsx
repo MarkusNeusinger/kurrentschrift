@@ -21,18 +21,27 @@ export interface HubCard {
 }
 
 export interface HubViewProps {
+  /** The area's short name, set as the eyebrow over the H1 (nav/breadcrumb name). */
+  eyebrow: string;
+  /** The H1 — carries the search term (locales/de/hub `heading`). */
   title: string;
   lead: string;
+  /** The one explanatory paragraph under the lead: what the script is, for whom
+   *  the tools are — the hub's substance for a first-time visitor and a crawler. */
+  about: string;
   cards: HubCard[];
 }
 
-export function HubView({ title, lead, cards }: HubViewProps) {
+export function HubView({ eyebrow, title, lead, about, cards }: HubViewProps) {
   return (
     <PublicLayout>
       <PageContainer sx={{ pt: { xs: 4, md: 7 } }}>
-        <PageHeader title={title}>
+        <PageHeader eyebrow={eyebrow} title={title}>
           <Typography variant="body1" sx={{ color: paper.inkSoft }}>
             {lead}
+          </Typography>
+          <Typography variant="body1" sx={{ color: paper.inkSoft, mt: 1.5 }}>
+            {about}
           </Typography>
         </PageHeader>
 

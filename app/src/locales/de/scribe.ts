@@ -2,9 +2,11 @@
 // Pre-i18n message catalog — mirrors a future i18next `scribe` namespace.
 
 export const scribe = {
-  // The page finally says its own name (the nav and every card link call it
-  // "Federprobe"); the former heading line lives on as the lead's opener.
-  heading: 'Federprobe',
+  // The page says its own name (the nav and every card link call it
+  // "Federprobe" — that short name lives in common.nav.scribe) and, since the
+  // SEO audit 2026-08-29, what it does in the words a person searches for;
+  // the former heading line lives on as the lead's opener.
+  heading: 'Federprobe: Text in Sütterlin schreiben lassen',
   lead: 'Beliebige Wörter, live geschrieben: Tippe ein Wort oder einen Satz — der synthetisierte Duktus schreibt es Zug um Zug in Sütterlin, mit den Übergängen zwischen den Buchstaben. Lang-s, Schluss-s und die Ligaturen (ch · ck · tz · ſt · qu · ß) werden automatisch gesetzt.',
   inputLabel: 'Dein Text',
   inputPlaceholder: 'lesen und schreiben',

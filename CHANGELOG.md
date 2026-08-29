@@ -21,6 +21,25 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Page titles and H1s name what people search for; the hubs explain
+  themselves.** Every indexable `<title>` now leads with the search term
+  and ends with the brand („Sütterlin-Quiz: alte deutsche Schrift lesen
+  üben · kurrentschrift.ink", „Übungsblatt Sütterlin & Kurrent als PDF ·
+  …", „Sütterlin-Alphabet und Kurrent-Alphabet: die Schreibtafel · …"),
+  pinned by `seoCoverage.test.ts` (Sütterlin | Kurrent | deutsche Schrift |
+  Schreibschrift in the title, brand present, ≤ 80 chars; Impressum and the
+  noindex 404 exempt). The tool pages' H1s carry the term too via a new
+  `heading` beside the short `title` that nav, cards and breadcrumbs keep
+  (quiz, tafel, scribe); the hubs `/lesen` and `/schreiben` get an H1 with
+  the term, their short name as eyebrow, and one explanatory paragraph each
+  (`hub.*.about`: what Kurrent and Sütterlin are, for whom the tools are —
+  facts from the Schriftkunde), so a first-time visitor and a crawler no
+  longer meet a 140-word page of two cards. The prerender derives the last
+  breadcrumb label from the route's nav label instead of the now-long
+  title. `/seo-proxy` answers HEAD like GET without a body (it answered
+  405, which a link checker reads as a dead page). SEO audit 2026-08-29;
+  the Search Console / Bing registration stays the owner's step, `hreflang`
+  comes with the English reading half (8/8).
 - **The Schriftkunde writes its letter peculiarities and gets a jump list.**
   Each row of „Buchstaben-Besonderheiten" now carries a specimen strip
   beside it — the letters the row talks about (ſ · s · f, u · n, e · n · ä,

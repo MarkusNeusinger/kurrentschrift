@@ -199,6 +199,36 @@ Jede Page-Komponente setzt eigene Meta-Tags:
 </Helmet>
 ```
 
+### Titel und H1 (seit 2026-08-29)
+
+Befund des SEO-Audits vom 2026-08-29: alle Titel waren markenintern
+(„Lese-Quiz · kurrentschrift.ink", „Schreibtafel · …"), die H1s reine
+Projektnamen — kein Titel außer der Startseite trug „Sütterlin",
+„Kurrent" oder „alte deutsche Schrift", und die Seite war bei Bing nicht
+indexiert. Regel seitdem (`app/src/locales/de/seo.ts`, gepinnt von
+`routes/seoCoverage.test.ts`):
+
+- **`<title>`: Suchbegriff vorn, Marke hinten, ≤ 80 Zeichen** — „Sütterlin-
+  Quiz: alte deutsche Schrift lesen üben · kurrentschrift.ink". Jeder
+  indexierbare Titel nennt Sütterlin, Kurrent, „deutsche Schrift" oder
+  „Schreibschrift"; Impressum und die noindex-404 sind ausgenommen.
+- **H1 trägt das Suchwort, das Nav-Label bleibt der Kurzname.** Die
+  Werkzeug-Seiten haben dafür neben `title` (Kurzname für Nav, Karten,
+  Breadcrumbs) ein eigenes `heading` (`quiz.heading`, `tafel.heading`,
+  `scribe.heading`; Hubs: `hub.*.heading`, der Kurzname wird ihr Eyebrow).
+- **Die Hubs `/lesen` und `/schreiben` tragen je einen erklärenden Absatz**
+  (`hub.*.about`: was die Schrift ist, für wen die Werkzeuge sind, Fakten
+  aus der Schriftkunde) — vorher 139 bzw. 141 Wörter, zu dünn für einen
+  Treffer.
+- **`/seo-proxy` beantwortet HEAD** wie GET ohne Body (vorher 405 — für
+  einen Link-Checker eine tote Seite).
+- Der Prerender nimmt die Breadcrumb-Bezeichnung des letzten Glieds aus
+  dem Nav-Label der Route, nicht mehr aus dem (jetzt langen) Titel.
+
+Nicht Teil davon: `hreflang`/Englisch — kommt mit der englischen Lese-Hälfte
+(Website-Audit 8/8). Owner-Schritt daneben: Search Console und Bing
+Webmaster Tools anmelden, Sitemap einreichen.
+
 ### Crawler-Verhalten 2026
 
 - **Google:** rendert JavaScript, indexiert SPAs mit aktualisierten

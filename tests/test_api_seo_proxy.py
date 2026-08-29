@@ -52,6 +52,20 @@ async def test_serves_the_page_of_a_route(api: Harness, prerender_dir: Path):
         assert f"<title>{title}</title>" in res.body.decode()
 
 
+async def test_head_answers_like_get(api: Harness, prerender_dir: Path):
+    """Crawlers and link checkers probe with HEAD first; a 405 would read as a
+    dead page (it did, until 2026-08-29). Status and headers are the GET's —
+    content-length included, so a checker learns the page's size. The body
+    itself is dropped by the server (uvicorn), not by the handler; the
+    in-process harness still carries it, so only the headers are compared."""
+    for path, status in (("/seo-proxy/schriftkunde", 200), ("/seo-proxy/gibt-es-nicht", 404)):
+        get = await _get(api, path)
+        head = await api.client.request("HEAD", path)
+        assert head.status == get.status == status, path
+        for name in ("content-type", "cache-control", "content-length"):
+            assert head.headers[name] == get.headers[name], (path, name)
+
+
 async def test_unknown_route_gets_the_prerendered_404_with_status_404(api: Harness, prerender_dir: Path):
     res = await _get(api, "/seo-proxy/gibt-es-nicht")
     assert res.status == 404

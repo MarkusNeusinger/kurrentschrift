@@ -357,7 +357,7 @@ export function TafelView() {
   return (
     <PublicLayout footer>
       <PageContainer width="text" sx={{ pt: { xs: 4, sm: 6 } }}>
-        <PageHeader eyebrow={de.common.nav.read} title={de.tafel.title}>
+        <PageHeader eyebrow={de.common.nav.read} title={de.tafel.heading}>
           <Typography sx={{ color: paper.inkSoft }}>{de.tafel.intro}</Typography>
           <Typography sx={{ color: paper.inkSoft, mt: 1.5 }}>{de.tafel.note}</Typography>
         </PageHeader>
