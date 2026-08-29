@@ -819,7 +819,7 @@ ENTRIES: list[Entry] = [
     {"word": "Ordnung", "distractors": ["Ortung"], "era": "modern"},
     {"word": "Nachbar", "distractors": ["Nachlass"], "era": "modern"},
     {"word": "Nachlass", "distractors": ["Nachbar"], "era": "modern"},
-    {"word": "Not", "distractors": ["Nut"], "era": "modern"},
+    {"word": "Not", "distractors": ["Mut"], "era": "modern"},
     {"word": "Macht", "distractors": ["Nacht"], "era": "modern"},
     {"word": "Eltern", "distractors": ["Elstern"], "era": "modern"},
     {"word": "Esel", "distractors": ["Ekel"], "era": "modern"},

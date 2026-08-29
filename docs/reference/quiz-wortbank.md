@@ -1,6 +1,6 @@
 # Quiz-Wortbank — Quellen, Kuration, Distraktoren
 
-> **Status (2026-08-03): lebend.** Beschreibt Generator, Distraktor-Modell,
+> **Status (2026-08-29): lebend.** Beschreibt Generator, Distraktor-Modell,
 > Fugen-Marker und Seed-Workflow der Wortbank; jede Änderung an
 > `tools/quizgen/` oder am `similarity`-Zwilling
 > `app/src/sections/quiz/wordBank.ts` zieht hier nach.
