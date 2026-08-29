@@ -75,7 +75,7 @@ export function QuizSetupPanel(p: SetupProps) {
           hint={de.quiz.setup.difficultyShortHint}
           info={
             <InfoHint title={de.quiz.setup.difficultyLabel}>
-              {DIFFICULTIES.map((d) => (
+              {DIFFICULTIES.filter((d) => d.available).map((d) => (
                 <Box key={d.id} sx={{ mb: 0.75 }}>
                   <Box component="span" sx={{ color: 'text.primary', fontWeight: 600 }}>
                     {d.label}
