@@ -38,8 +38,9 @@ describe('seo coverage', () => {
     for (const [key, entry] of Object.entries(seo)) {
       if (key === 'impressum' || ('noindex' in entry && entry.noindex)) continue;
       expect(entry.title, key).toMatch(/Sütterlin|Kurrent|deutsche Schrift|Schreibschrift/);
-      if (key === 'home') expect(entry.title, key).toMatch(new RegExp(`^${BRAND} — `));
-      else expect(entry.title, key).toMatch(new RegExp(` · ${BRAND}$`));
+      // Plain string checks — the brand's dot would be a wildcard in a RegExp.
+      if (key === 'home') expect(entry.title.startsWith(`${BRAND} — `), key).toBe(true);
+      else expect(entry.title.endsWith(` · ${BRAND}`), key).toBe(true);
     }
   });
 
