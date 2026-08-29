@@ -92,8 +92,8 @@ orthographie-regeln.md §1
 Schreibschrift so ähnelt, dass Leseanfänger es regelmäßig vertauschen,
 und das ein benennbares Merkmal trennt — meist ein einziges: n und u
 nur der u-Bogen, e und n die Enge der Züge, i und j die Unterlänge; bei
-ſ und f sind es zwei, die Oberlänge zuerst (das f mit Schleife oben, das
-ſ läuft spitz zu) und dann der Querstrich des f;
+ſ und f sind es zwei: oben die Schleife des f gegen die Spitze des ſ,
+dann der Querstrich, den nur das f hat;
 dazu die Positionsregel des runden s (Silben-/Wortende) und die
 Versalien-Cluster L/K/R, N/M, B/V, für die der Katalog kein einzelnes
 Merkmal nennt. Im Repo: der Katalog `app/src/sections/quiz/lesefallen.ts`
