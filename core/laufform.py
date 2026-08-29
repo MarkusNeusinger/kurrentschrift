@@ -246,7 +246,7 @@ def row_naturalness(
     `gate^0.5 · naturalness`: the gate needs the crop, the naturalness terms
     need only the rendered centerline. A running-form row has no crop of its
     own — it is a median over word occurrences — so this is the part of the
-    metric that CAN be asked of it: smoothness (Zacken), verticality of the
+    metric that CAN be asked of it: smoothness (no jags), verticality of the
     straight downstrokes, crispness of the within-stroke corners and
     collinearity through a straight crossing, weighted like §5 over the
     applicable terms. Retrace fidelity (ink recall) is left out — it needs the
@@ -321,7 +321,9 @@ def naturalness_gap(chart_row: Any, anchors: Sequence[Sequence[float]]) -> dict[
 
 
 def anchor_spike_ratio(anchors: Sequence[Sequence[float]], stroke_starts: Sequence[int] | None) -> float:
-    """The „Anker im leeren Papier" spike ratio of an anchor chain.
+    """The anchor spike ratio of an anchor chain — an anchor that left the
+    stroke for empty paper and came back („Anker im leeren Papier", the
+    glossary term).
 
     The largest step between consecutive anchors, measured against the median
     step OF ITS OWN pen-stroke, maximised over the strokes. Numerator and

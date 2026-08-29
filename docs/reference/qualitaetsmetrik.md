@@ -9389,3 +9389,15 @@ gesehen; was das Gate prospektiv leistet, zeigt der nächste Harvest.
 **Offen für den Autor:** ue, F, ae, b (über τ, in Prod) — Löschen =
 Chart-Rückfall wie beim K; v, E, P, k (unter τ, sichtbar verzogen) —
 Entscheidung nach Bild, Rettungsweg Form-Abstand (§7.9).
+
+**Entschieden und geschrieben `aug29` (Autor-Go in der Sitzung):** ue,
+F, ae, b zurück auf die Tafel — Zeilen-Backups
+`temp/dbsnapshot/{ue,F,ae,b}-laufform-row-backup-2026-08-29.json`,
+Snapshot `temp/dbsnapshot/2026-08-29T11-28-20Z` (Staging, 118
+Templates vor dem Write), je `DELETE …/templates/{key}/laufform` 204,
+GET `?variant=100` 404. v, E, P, k BLEIBEN (Autor: „Form-Abstand-Arm
+abwarten") — sie sind die Referenzfälle, an denen dieser Arm seine
+Trennung zeigen muss. Die Laufform-Lücke der Sütterlin-1922-Root steht
+damit bei 7 Glyphen (G, W, K, ue, F, ae, b); die eingefrorene Root
+bleibt eingefroren, der Neuexport ist die nächste deklarierte
+Re-Baseline.

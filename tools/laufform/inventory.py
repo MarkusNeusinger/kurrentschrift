@@ -1,4 +1,5 @@
-"""Bestandsaufnahme of the stored Laufform rows against their chart forms (LF7/LF8).
+"""Inventory of the stored Laufform rows against their chart forms (LF7/LF8) —
+the „Bestandsaufnahme" of qualitaetsmetrik.md §14.
 
 Measurement layer only (docs/reference/werkzeuge.md): reads `templates.json`
 (chart rows) + `templates_laufform.json` (the stored running forms) of ONE

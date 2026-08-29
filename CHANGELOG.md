@@ -46,7 +46,11 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   row over its chart form). Doctrine sentence in
   `optimierungs-werkbank.md` §6, glossary „Zeilen-Gate (Laufform)",
   pre-registrations and numbers in `qualitaetsmetrik.md` §14 („Laufform
-  LF7"/„LF8").
+  LF7"/„LF8"). Data action of the same round (owner's go, after a staged
+  `dbsnapshot` and per-row backups): the four rows over τ — ue, F, ae, b —
+  were deleted like the K, so those letters write chart-true again; v, E,
+  P, k stay in place as the reference cases for the pre-registered
+  shape-distance arm.
 - **The Laufform end blend — measured, rejected, and kept reproducible
   (Korb #7).** The admin's complaint about „Kurrentschrift" (a wavy K,
   a steep K→u, a hooked t lead-in after n) traced to the free ends of
