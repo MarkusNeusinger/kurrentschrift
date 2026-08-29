@@ -336,6 +336,35 @@ existing lines in passing; the reviewer reads `[Unreleased]` for duplicates.
 
 ### Changed
 
+- **Audit leftovers.** `frontend-stack.md` and `animation-rendering.md`
+  describe the hero as it is — engine-first since 2026-08-27
+  (`WrittenWord`; the GL-GermanCursive wipe only on a genuine failure), no
+  longer font-first; the dead `common.nav.tafel` key is gone; the
+  Federprobe's „noch nicht nachgeschrieben" note is set in body size, and
+  its 48-character cap is explained in place (legibility: the line scales
+  into its frame, and on a phone 48 letters already end near an 8 px
+  x-height — the API's 160 serves the Übungsblatt's lines). Left as they
+  are, on purpose: `tafel.pendingNote` (a data state — a script without a
+  chart source — not dead code) and the mixed path shapes
+  (`/schreiben/uebungsblatt` beside `/tafel` and `/federprobe`), which is a
+  decision for the owner. Website audit 2026-08-29, Kleinkram (1)(2)(3)(4)(6).
+- **The API keeps a warm instance, so the first visitor after a quiet hour no
+  longer waits nine seconds.** `_MIN_INSTANCES` 0 → 1, `_MEMORY` 1Gi → 512Mi,
+  `_MAX_INSTANCES` 1 → 3 in `api/cloudbuild.yaml`. The old comment estimated the
+  cold start at ~3 s; measured over 30 days it is **p50 9,447 ms / p95
+  12,245 ms**, and since 60 % of all hours see no request at all, roughly 279 of
+  the 344 container starts were user-facing — about nine visitors a day paid the
+  full wait. 98 % of it is container start plus Python import; the database
+  contributes 0.13 s, because `create_async_engine` is lazy and opens no socket
+  at startup. Halving the memory is what makes it affordable: idle CPU bills at
+  ~10 % of the active rate but idle memory bills at the full rate, and measured
+  use is 15 % mean / 25 % p99 of 1 GiB, so 512Mi keeps 2x headroom over p99 and
+  removes a quarter of the standing cost. Funded by dropping the min-instance on
+  `anyplot-app` (anyplot#10812), which was 99.56 % idle on a service that boots
+  in 0.26 s — net cost of the pair is ~0 €/month. `_MAX_INSTANCES` goes to 3 not
+  for throughput (3 requests hit HTTP 429 in 30 days) but because min=1 with
+  max=1 forces a deploy to replace the only instance rather than warm the new
+  one beside it, which is where the ~73 deploy-rollout cold starts came from.
 - **The quiz setup shows only real choices.** Two of three scripts and two
   of three difficulty levels were greyed-out „bald" chips — with one script
   and one hand in the DB, most of a learner's first screen was promises. A
@@ -366,6 +395,11 @@ existing lines in passing; the reviewer reads `[Unreleased]` for duplicates.
 
 ### Fixed
 
+- **The landing page's scroll-reveal no longer hides sections in print or in
+  a browser without IntersectionObserver.** `Reveal` shows its content at
+  once where the observer is missing and under `@media print`, so a printed
+  landing page carries every section instead of blank space. Website audit
+  2026-08-29, Kleinkram (5).
 - **The ſ/f reading trap names the right feature.** The Schriftkunde, the
   „Einen alten Brief entziffern" steps, the quiz's two rule sentences and
   the glossary said the long ſ and the f differ „nur im Querstrich". They
