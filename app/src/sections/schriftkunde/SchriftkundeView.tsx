@@ -18,10 +18,17 @@
 //                   "sütterlin" renders its initial long-s without needing U+017F.
 //   · Offenbacher — a marked excerpt from Koch's own public-domain 1928 plate
 //                   (the genuine historical hand, not a synthesised glyph).
+//
+// Navigation: every <section> carries a stable id (sections/schriftkunde/
+// sections.ts) and a jump list under the page header links them — the page
+// has fourteen sections. The Buchstaben-Besonderheiten rows carry a specimen
+// strip each: the letters the row talks about, written live by the engine
+// from the public Sütterlin source (WrittenGlyph), labelled with their Antiqua
+// letter — design-system §9's "marked specimen on its own surface".
 
-import { useCallback, useState, type ReactNode } from 'react';
-import { Box, Link, Typography } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Box, ButtonBase, Link, Typography } from '@mui/material';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
 import type { SxProps, Theme } from '@mui/material/styles';
 import offenbacherSpecimen from '@/assets/specimens/offenbacher-koch-1928-excerpt.jpg';
 import { CategoryHeading } from '@/components/CategoryHeading';
@@ -29,10 +36,16 @@ import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 import { PaperCardCta, PaperCardLink } from '@/components/PaperCardLink';
 import { Prose } from '@/components/Prose';
+import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { WrittenWord } from '@/components/WrittenWord';
+import { CONFIG } from '@/global-config';
+import { useInView } from '@/hooks/useInView';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
+import { fetchRenderGlyphs, type GlyphRenderData } from '@/lib/api';
+import { de } from '@/locales';
 import { schriftkunde } from '@/locales/de/schriftkunde';
 import { paths } from '@/routes/paths';
+import { SCHRIFTKUNDE_SECTIONS, SECTION_IDS, type SectionId } from '@/sections/schriftkunde/sections';
 import { TRY_TARGETS } from '@/sections/schriftkunde/tryTargets';
 import { display, garamond, paper, script, suetterlin } from '@/styles/paper';
 
@@ -60,6 +73,14 @@ const proseLink = {
 
 type SourceRef = { label: string; href: string };
 type TermItem = { term: string; desc: string };
+// A letter row's specimens: the public source's glyph_key + the Antiqua label.
+type Specimen = { readonly key: string; readonly label: string };
+type LetterItem = TermItem & { readonly specimens?: readonly Specimen[] };
+
+// Fragment targets sit under the sticky PublicHeader; the scroll margin keeps
+// a jumped-to heading clear of it (jump list, /schriftkunde#… URLs). Measured
+// header: ~82 px on phones (the nav wraps to a second line), ~67 px from md.
+const anchorSx = { scrollMarginTop: { xs: 100, md: 84 } } as const;
 
 // A "Quellen: a · b" line — the per-section / per-card citation row. `sx` is the
 // proper MUI SxProps and merged via the array form, so callers may pass any
@@ -85,12 +106,42 @@ function SourceLine({ sources, sx }: { sources: readonly SourceRef[]; sx?: SxPro
 }
 
 // A section: CategoryHeading (viridian Kurrent initial) + optional lead line.
-function Section({ heading, lead, children }: { heading: string; lead?: string; children: ReactNode }) {
+// `id` is the fragment target the jump list and the prerender share.
+function Section({ id, heading, lead, children }: { id: SectionId; heading: string; lead?: string; children: ReactNode }) {
   return (
-    <Box component="section" sx={{ mt: { xs: 5, md: 6 } }}>
+    <Box component="section" id={id} sx={{ mt: { xs: 5, md: 6 }, ...anchorSx }}>
       <CategoryHeading>{heading}</CategoryHeading>
       {lead && <Typography sx={{ ...prose, mb: 1.75, maxWidth: '64ch' }}>{lead}</Typography>}
       {children}
+    </Box>
+  );
+}
+
+// "Auf dieser Seite" — the jump list under the page header, one link per
+// section in page order. Plain fragment anchors on purpose (not RouterLink):
+// the browser scrolls and sets the hash itself, the pathname stays, so the
+// router's ScrollToTop does not fire.
+function SectionNav() {
+  return (
+    <Box component="nav" aria-label={t.tocLabel} sx={{ mt: 3, pt: 1.5, borderTop: `1px solid ${paper.line}` }}>
+      <Typography variant="caption" component="p" sx={{ color: paper.sepia, fontStyle: 'italic', mb: 0.5 }}>
+        {t.tocLabel}
+      </Typography>
+      <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexWrap: 'wrap', rowGap: 0.25 }}>
+        {SCHRIFTKUNDE_SECTIONS.map((s, i) => (
+          <Box component="li" key={s.id} sx={{ display: 'inline' }}>
+            <Link href={`#${s.id}`} variant="body2" sx={proseLink}>
+              {s.heading}
+            </Link>
+            {/* trailing separator, so a wrapped line ends on the dot rather than starting with one */}
+            {i < SCHRIFTKUNDE_SECTIONS.length - 1 && (
+              <Box component="span" aria-hidden sx={{ mx: 0.75, color: paper.sepia }}>
+                ·
+              </Box>
+            )}
+          </Box>
+        ))}
+      </Box>
     </Box>
   );
 }
@@ -134,6 +185,123 @@ function DefinitionRows({ items }: { items: readonly TermItem[] }) {
         </Box>
       ))}
     </Box>
+  );
+}
+
+// --- Buchstaben-Besonderheiten with specimen strips -------------------------
+
+const SPECIMEN_H = 84;
+
+// The section's render payloads by glyph_key: `null` while the batch is in
+// flight; a glyph maps to null when the source has no canonical for it, and
+// every key is absent when the engine could not be reached.
+type Payloads = ReadonlyMap<string, GlyphRenderData | null>;
+
+// One written form with its Antiqua label. The payload arrives from the
+// section's batch (WrittenGlyph's `data` — no fetch of its own); a click
+// writes it again (remount; only the reveal restarts).
+function SpecimenCell({ glyphKey, label, data }: { glyphKey: string; label: string; data: GlyphRenderData }) {
+  const [run, setRun] = useState(0);
+  return (
+    <ButtonBase
+      onClick={() => setRun((r) => r + 1)}
+      aria-label={`${label} — ${de.common.writtenGlyph.replay}`}
+      sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, px: 0.5, borderRadius: '3px' }}
+    >
+      <Box sx={{ height: SPECIMEN_H, display: 'flex', alignItems: 'center' }}>
+        <WrittenGlyph key={run} glyphKey={glyphKey} data={data} height={SPECIMEN_H} surfaceBg="transparent" showReplay={false} />
+      </Box>
+      <Typography variant="caption" component="span" aria-hidden sx={{ fontFamily: garamond, fontStyle: 'italic', color: paper.sepia, lineHeight: 1 }}>
+        {label}
+      </Typography>
+    </ButtonBase>
+  );
+}
+
+// The specimen strip of one row on its own hairline surface (design-system
+// §9). Its cells mount only near the viewport, so the write-in plays when the
+// reader arrives rather than at page load below the fold. While the batch is
+// in flight the frame holds the space; once it has answered and none of the
+// row's glyphs can be written (no canonical, engine unreachable) the strip
+// goes entirely — no empty frame, no error box inside public prose.
+function SpecimenStrip({ specimens, payloads }: { specimens: readonly Specimen[]; payloads: Payloads | null }) {
+  const [ref, inView] = useInView<HTMLDivElement>('120px');
+  const forms = specimens.map((s) => ({ ...s, data: payloads?.get(s.key) ?? null }));
+  if (payloads && forms.every((f) => !f.data)) return null;
+  return (
+    <Box
+      ref={ref}
+      sx={{
+        display: 'flex',
+        alignItems: 'flex-end',
+        gap: 1,
+        px: 1.25,
+        py: 0.75,
+        minHeight: SPECIMEN_H + 30,
+        border: `1px solid ${paper.line}`,
+        borderRadius: '3px',
+        bgcolor: paper.hi,
+        flexShrink: 0,
+        alignSelf: { xs: 'flex-start', md: 'center' },
+      }}
+    >
+      {inView &&
+        forms.map((f, i) => f.data && <SpecimenCell key={`${f.key}-${i}`} glyphKey={f.key} label={f.label} data={f.data} />)}
+    </Box>
+  );
+}
+
+// The Buchstaben-Besonderheiten rows: DefinitionRows' layout plus a specimen
+// strip beside the description where the row names one. ONE batch request
+// (renderCache) fetches every specimen of the section as soon as it comes
+// near; the cells render from that payload map. The caption that calls the
+// strips "live geschrieben" stays only while a strip can show something — it
+// never describes what is not on screen.
+function LetterRows({ items }: { items: readonly LetterItem[] }) {
+  const keys = useMemo(() => [...new Set(items.flatMap((it) => (it.specimens ?? []).map((s) => s.key)))], [items]);
+  const [ref, near] = useInView<HTMLDivElement>('400px');
+  const [payloads, setPayloads] = useState<Payloads | null>(null);
+  useEffect(() => {
+    if (!near) return undefined;
+    let cancelled = false;
+    fetchRenderGlyphs(CONFIG.sourceId, keys)
+      .then((m) => {
+        if (!cancelled) setPayloads(m);
+      })
+      .catch(() => {
+        if (!cancelled) setPayloads(new Map()); // unreachable engine: the strips withdraw
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [near, keys]);
+  const showNote = !payloads || items.some((it) => it.specimens?.some((s) => payloads.get(s.key)));
+  return (
+    <>
+      {showNote && (
+        <Typography variant="caption" component="p" sx={{ color: paper.sepia, fontStyle: 'italic', mt: -0.75, mb: 1.5, maxWidth: '64ch' }}>
+          {t.lettersSpecimenNote}
+        </Typography>
+      )}
+      <Box ref={ref} sx={{ borderBottom: `1px solid ${paper.line}` }}>
+        {items.map((it) => (
+          <Box
+            key={it.term}
+            sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 0.25, sm: 2.5 }, py: 1.1, borderTop: `1px solid ${paper.line}` }}
+          >
+            <Typography variant="subtitle2" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, minWidth: { sm: 196 }, flexShrink: 0, pt: { sm: 0.15 } }}>
+              {it.term}
+            </Typography>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: { xs: 1, md: 2.5 }, flexGrow: 1, alignItems: { md: 'center' } }}>
+              <Typography variant="body2" sx={{ ...prose, flexGrow: 1 }}>
+                {it.desc}
+              </Typography>
+              {it.specimens?.length ? <SpecimenStrip specimens={it.specimens} payloads={payloads} /> : null}
+            </Box>
+          </Box>
+        ))}
+      </Box>
+    </>
   );
 }
 
@@ -219,6 +387,15 @@ function SpecimenBlock({ id }: { id: string }) {
 }
 
 export function SchriftkundeView() {
+  // A /schriftkunde#… URL: the router's ScrollToTop has run for the pathname
+  // and the browser's own fragment jump predates this lazy chunk — so scroll
+  // to the section once the page is on screen (and again on a hash change).
+  const { hash } = useLocation();
+  useEffect(() => {
+    const id = hash.slice(1);
+    if (id) document.getElementById(id)?.scrollIntoView();
+  }, [hash]);
+
   return (
     <PublicLayout footer>
       <PageContainer sx={{ pt: { xs: 4, md: 6 } }}>
@@ -228,18 +405,23 @@ export function SchriftkundeView() {
           <Typography sx={{ ...prose, mt: 1.5 }}>{t.lead}</Typography>
         </PageHeader>
 
+        <SectionNav />
+
         {/* --- Grundbegriffe --- */}
-        <Section heading={t.conceptsHeading}>
+        <Section id={SECTION_IDS.concepts} heading={t.conceptsHeading}>
           <TripletGrid items={t.concepts} />
           <SourceLine sources={t.conceptsSources} />
         </Section>
 
         {/* --- the three script variants ("Die drei Schriften") --- */}
-        <Section heading={t.variantsHeading}>
+        <Section id={SECTION_IDS.variants} heading={t.variantsHeading}>
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2.5 }}>
             {t.variants.map((v) => (
+              // id: the Kennwerte JSON-LD in the prerender links each script as
+              // /schriftkunde#<id> — the card is that target.
               <Box
                 key={v.id}
+                id={v.id}
                 sx={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -247,6 +429,7 @@ export function SchriftkundeView() {
                   borderRadius: '3px',
                   bgcolor: paper.hi,
                   p: { xs: 2.25, md: 2.5 },
+                  ...anchorSx,
                 }}
               >
                 <Typography variant="h4" component="h3" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, lineHeight: 1.1 }}>
@@ -287,19 +470,19 @@ export function SchriftkundeView() {
         </Section>
 
         {/* --- classification ("Einordnung & Abgrenzung") --- */}
-        <Section heading={t.classifyHeading} lead={t.classifyLead}>
+        <Section id={SECTION_IDS.classify} heading={t.classifyHeading} lead={t.classifyLead}>
           <DefinitionRows items={t.classify} />
           <SourceLine sources={t.classifySources} />
         </Section>
 
         {/* --- geography ("Wo wurde so geschrieben") --- */}
-        <Section heading={t.geographyHeading} lead={t.geographyLead}>
+        <Section id={SECTION_IDS.geography} heading={t.geographyHeading} lead={t.geographyLead}>
           <DefinitionRows items={t.geography} />
           <SourceLine sources={t.geographySources} />
         </Section>
 
         {/* --- why we no longer write this way ("Warum wir heute nicht mehr so schreiben") --- */}
-        <Section heading={t.endHeading}>
+        <Section id={SECTION_IDS.end} heading={t.endHeading}>
           <Prose align="left">
             {t.endParagraphs.map((p, i) => (
               <Typography key={i} sx={{ ...prose, mt: i === 0 ? 0 : 1.25 }}>
@@ -311,27 +494,27 @@ export function SchriftkundeView() {
         </Section>
 
         {/* --- Federn & Striche --- */}
-        <Section heading={t.federnHeading} lead={t.federnLead}>
+        <Section id={SECTION_IDS.federn} heading={t.federnHeading} lead={t.federnLead}>
           <TripletGrid items={t.federn} />
           <SourceLine sources={t.federnSources} />
         </Section>
 
         {/* --- Tinte & Papier --- */}
-        <Section heading={t.materialHeading} lead={t.materialLead}>
+        <Section id={SECTION_IDS.material} heading={t.materialHeading} lead={t.materialLead}>
           <DefinitionRows items={t.material} />
           <SourceLine sources={t.materialSources} />
         </Section>
 
-        {/* --- Buchstaben-Besonderheiten --- */}
-        <Section heading={t.lettersHeading} lead={t.lettersLead}>
-          <DefinitionRows items={t.letters} />
+        {/* --- Buchstaben-Besonderheiten — rows with live-written specimen strips --- */}
+        <Section id={SECTION_IDS.letters} heading={t.lettersHeading} lead={t.lettersLead}>
+          <LetterRows items={t.letters} />
           <SourceLine sources={t.lettersSources} />
         </Section>
 
         {/* --- Einen alten Brief entziffern ---
             Practical method steps (no historical claims → no SourceLine); the
             closing line points into the project's own Tafel. */}
-        <Section heading={t.decipherHeading} lead={t.decipherLead}>
+        <Section id={SECTION_IDS.decipher} heading={t.decipherHeading} lead={t.decipherLead}>
           <DefinitionRows items={t.decipher} />
           <Typography variant="body2" sx={{ ...prose, mt: 1.5, maxWidth: '62ch' }}>
             {t.decipherTafel.before}
@@ -343,13 +526,13 @@ export function SchriftkundeView() {
         </Section>
 
         {/* --- Zahlen & Zeichen --- */}
-        <Section heading={t.signsHeading} lead={t.signsLead}>
+        <Section id={SECTION_IDS.signs} heading={t.signsHeading} lead={t.signsLead}>
           <DefinitionRows items={t.signs} />
           <SourceLine sources={t.signsSources} />
         </Section>
 
         {/* --- Chronologie --- */}
-        <Section heading={t.timelineHeading}>
+        <Section id={SECTION_IDS.timeline} heading={t.timelineHeading}>
           {t.timeline.map((row) => (
             <Box
               key={row.year}
@@ -368,7 +551,7 @@ export function SchriftkundeView() {
         </Section>
 
         {/* --- Quellen — scholarly/archive sources first, Wikipedia as overview --- */}
-        <Section heading={t.sourcesHeading}>
+        <Section id={SECTION_IDS.sources} heading={t.sourcesHeading}>
           <Typography variant="body2" sx={{ ...prose, maxWidth: '62ch' }}>{t.sourcesIntro}</Typography>
           {[
             { label: t.sourcesScholarlyHeading, items: t.sourcesScholarly as readonly SourceRef[] },
@@ -393,7 +576,7 @@ export function SchriftkundeView() {
         </Section>
 
         {/* --- Weiterlernen (Süß-Empfehlung) --- */}
-        <Section heading={t.recommendation.heading}>
+        <Section id={SECTION_IDS.recommendation} heading={t.recommendation.heading}>
           <Box sx={{ borderLeft: `2px solid ${paper.viridian}`, pl: 2, py: 0.25 }}>
             <Typography sx={{ ...prose, maxWidth: '62ch' }}>
               {t.recommendation.before}
@@ -421,7 +604,7 @@ export function SchriftkundeView() {
             The page must not dead-end in the source list: three cards lead into
             the quiz, the Schreibtafel and the Federprobe — same card pattern as
             the area hubs (sections/hub/HubView). */}
-        <Section heading={t.tryHeading} lead={t.tryLead}>
+        <Section id={SECTION_IDS.try} heading={t.tryHeading} lead={t.tryLead}>
           <Box
             sx={{
               display: 'grid',

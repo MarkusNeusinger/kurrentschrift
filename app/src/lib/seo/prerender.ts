@@ -29,6 +29,7 @@ import { seo } from '../../locales/de/seo.ts';
 import { tafel } from '../../locales/de/tafel.ts';
 import { worksheet } from '../../locales/de/worksheet.ts';
 import { paths } from '../../routes/paths.ts';
+import { SCHRIFTKUNDE_SECTIONS, SECTION_IDS } from '../../sections/schriftkunde/sections.ts';
 import { TRY_TARGETS } from '../../sections/schriftkunde/tryTargets.ts';
 
 export const ORIGIN = 'https://kurrentschrift.ink';
@@ -49,6 +50,7 @@ export const PRERENDER_MARKER = '<!-- kurrentschrift.ink prerender -->';
 
 type SourceRef = { readonly label: string; readonly href: string };
 type TermItem = { readonly term: string; readonly desc: string };
+type LetterItem = TermItem & { readonly specimens?: readonly { readonly key: string; readonly label: string }[] };
 
 // ---------------------------------------------------------------- escaping
 
@@ -91,11 +93,30 @@ export function latestStand(sitemapXml: string): string {
 const abs = (route: string) => `${ORIGIN}${route}`;
 const a = (href: string, label: string) => `<a href="${e(href)}">${e(label)}</a>`;
 const p = (text: string) => `<p>${e(text)}</p>`;
-const h2 = (text: string) => `<h2>${e(text)}</h2>`;
-const h3 = (text: string) => `<h3>${e(text)}</h3>`;
+// `id` makes a heading a fragment target — the Schriftkunde sections carry the
+// same ids as the SPA's <section>s (sections/schriftkunde/sections.ts), so a
+// /schriftkunde#… URL resolves for a person and a bot alike.
+const h2 = (text: string, id?: string) => `<h2${id ? ` id="${e(id)}"` : ''}>${e(text)}</h2>`;
+const h3 = (text: string, id?: string) => `<h3${id ? ` id="${e(id)}"` : ''}>${e(text)}</h3>`;
 const em = (text: string) => `<p><em>${e(text)}</em></p>`;
 const rows = (items: readonly TermItem[]) =>
   `<ul>${items.map((it) => `<li><strong>${e(it.term)}</strong> — ${e(it.desc)}</li>`).join('')}</ul>`;
+// The Buchstaben-Besonderheiten rows: like `rows`, plus the specimen strip the
+// page writes live beside a row — named by its Antiqua labels, never embedded
+// (the same "Schriftprobe auf der Webseite" line as the variant cards).
+const SPECIMEN_LINE = 'Schriftprobe auf der Webseite, live geschrieben:';
+const letterRows = (items: readonly LetterItem[]) =>
+  `<ul>${items
+    .map((it) => {
+      const specimen = it.specimens?.length ? ` <em>(${e(SPECIMEN_LINE)} ${it.specimens.map((s) => e(s.label)).join(' · ')})</em>` : '';
+      return `<li><strong>${e(it.term)}</strong> — ${e(it.desc)}${specimen}</li>`;
+    })
+    .join('')}</ul>`;
+// The "Auf dieser Seite" jump list — the SPA's SectionNav, in the same order.
+const sectionNav = () =>
+  `<nav aria-label="${e(schriftkunde.tocLabel)}"><p><em>${e(schriftkunde.tocLabel)}</em></p><ul>${SCHRIFTKUNDE_SECTIONS.map(
+    (s) => `<li><a href="#${e(s.id)}">${e(s.heading)}</a></li>`,
+  ).join('')}</ul></nav>`;
 const triplet = (items: readonly TermItem[]) => items.map((it) => `${h3(it.term)}${p(it.desc)}`).join('');
 const sourceLine = (sources: readonly SourceRef[]) =>
   `<p class="sources"><em>${e(schriftkunde.sourcesLabel)} ${sources.map((s) => a(s.href, s.label)).join(' · ')}</em></p>`;
@@ -281,15 +302,16 @@ const schriftkundeBody = () => {
   const push = (...parts: string[]) => out.push(...parts);
 
   // --- PageHeader: eyebrow + title + intro + lead ---
-  push(`<p class="eyebrow">${e(t.eyebrow)}</p>`, `<h1>${e(t.title)}</h1>`, p(t.intro), p(t.lead));
+  push(`<p class="eyebrow">${e(t.eyebrow)}</p>`, `<h1>${e(t.title)}</h1>`, p(t.intro), p(t.lead), sectionNav());
 
   // --- Grundbegriffe (TripletGrid) ---
-  push(h2(t.conceptsHeading), triplet(t.concepts), sourceLine(t.conceptsSources));
+  push(h2(t.conceptsHeading, SECTION_IDS.concepts), triplet(t.concepts), sourceLine(t.conceptsSources));
 
   // --- Die drei Schriften (variant cards) ---
-  push(h2(t.variantsHeading));
+  push(h2(t.variantsHeading, SECTION_IDS.variants));
   for (const v of t.variants) {
-    push(h3(v.name), em(v.period));
+    // The card's id doubles as the Kennwerte JSON-LD item URL (#kurrent …).
+    push(h3(v.name, v.id), em(v.period));
     // Specimen: never embed an image — one honest description line per card
     // (mirrors SpecimenBlock's three branches; the Koch plate additionally
     // links its public-domain source).
@@ -327,29 +349,36 @@ const schriftkundeBody = () => {
     `<p>${e('Die Buchstaben selbst — geschrieben und als Original-Ausschnitt — sind auf der Tafel-Seite maschinenlesbar verlinkt: ')}${a(abs(paths.tafel), 'Buchstaben für Maschinen')}.</p>`,
   );
 
-  push(h2(t.classifyHeading), p(t.classifyLead), rows(t.classify), sourceLine(t.classifySources));
-  push(h2(t.geographyHeading), p(t.geographyLead), rows(t.geography), sourceLine(t.geographySources));
-  push(h2(t.endHeading), ...t.endParagraphs.map(p), sourceLine(t.endSources));
-  push(h2(t.federnHeading), p(t.federnLead), triplet(t.federn), sourceLine(t.federnSources));
-  push(h2(t.materialHeading), p(t.materialLead), rows(t.material), sourceLine(t.materialSources));
-  push(h2(t.lettersHeading), p(t.lettersLead), rows(t.letters), sourceLine(t.lettersSources), apiExampleLine());
+  push(h2(t.classifyHeading, SECTION_IDS.classify), p(t.classifyLead), rows(t.classify), sourceLine(t.classifySources));
+  push(h2(t.geographyHeading, SECTION_IDS.geography), p(t.geographyLead), rows(t.geography), sourceLine(t.geographySources));
+  push(h2(t.endHeading, SECTION_IDS.end), ...t.endParagraphs.map(p), sourceLine(t.endSources));
+  push(h2(t.federnHeading, SECTION_IDS.federn), p(t.federnLead), triplet(t.federn), sourceLine(t.federnSources));
+  push(h2(t.materialHeading, SECTION_IDS.material), p(t.materialLead), rows(t.material), sourceLine(t.materialSources));
+  push(
+    h2(t.lettersHeading, SECTION_IDS.letters),
+    p(t.lettersLead),
+    em(t.lettersSpecimenNote),
+    letterRows(t.letters),
+    sourceLine(t.lettersSources),
+    apiExampleLine(),
+  );
   // Method only — no source line, like the page; the in-prose Tafel pointer
   // gets an absolute route.
   push(
-    h2(t.decipherHeading),
+    h2(t.decipherHeading, SECTION_IDS.decipher),
     p(t.decipherLead),
     rows(t.decipher),
     `<p>${e(t.decipherTafel.before)}${a(abs(paths.tafel), t.decipherTafel.linkLabel)}${e(t.decipherTafel.after)}</p>`,
   );
-  push(h2(t.signsHeading), p(t.signsLead), rows(t.signs), sourceLine(t.signsSources));
+  push(h2(t.signsHeading, SECTION_IDS.signs), p(t.signsLead), rows(t.signs), sourceLine(t.signsSources));
   push(
-    h2(t.timelineHeading),
+    h2(t.timelineHeading, SECTION_IDS.timeline),
     `<ul>${t.timeline.map((r) => `<li><strong>${e(r.year)}</strong> — ${e(r.text)}</li>`).join('')}</ul>`,
     em(t.timelineNote),
     sourceLine(t.timelineSources),
   );
   // Quellen (group headings are <p> on the page, so bold — not headings)
-  push(h2(t.sourcesHeading), p(t.sourcesIntro));
+  push(h2(t.sourcesHeading, SECTION_IDS.sources), p(t.sourcesIntro));
   for (const group of [
     { label: t.sourcesScholarlyHeading, items: t.sourcesScholarly as readonly SourceRef[] },
     { label: t.sourcesWikipediaHeading, items: t.sourcesWikipedia as readonly SourceRef[] },
@@ -359,13 +388,13 @@ const schriftkundeBody = () => {
   push(em(t.sourcesRepo));
   // Weiterlernen (the viridian-rule aside becomes a blockquote)
   push(
-    h2(t.recommendation.heading),
+    h2(t.recommendation.heading, SECTION_IDS.recommendation),
     `<blockquote><p>${e(t.recommendation.before)}${a(t.recommendation.href, t.recommendation.linkLabel)}${e(t.recommendation.after)}</p></blockquote>`,
     p(t.recommendation.practiceIntro),
     `<ul>${t.recommendation.practiceLinks.map((s) => `<li>${a(s.href, s.label)}</li>`).join('')}</ul>`,
   );
   // Jetzt ausprobieren (cards → h3 + absolute route links)
-  push(h2(t.tryHeading), p(t.tryLead));
+  push(h2(t.tryHeading, SECTION_IDS.try), p(t.tryLead));
   for (const card of t.tryCards) {
     push(h3(card.title), p(card.body), `<p>${a(abs(TRY_TARGETS[card.id]), `${card.cta} →`)}</p>`);
   }
@@ -687,6 +716,7 @@ export const COMPLETENESS: readonly {
       /^specimen\.suetterlinWordFallback$/,
       /^variants\.\d+\.id$/, // technical keys
       /^tryCards\.\d+\.id$/,
+      /^letters\.\d+\.specimens\.\d+\.key$/, // glyph_keys of the specimen strips (their labels render)
     ],
   },
   { file: 'lesen.html', catalogue: hub.lesen, skip: [] },

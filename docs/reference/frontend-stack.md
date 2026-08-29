@@ -558,7 +558,19 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   Ausgangsschriften stehen bewusst in DREI verschiedenen
   Specimen-Techniken da: Kurrent in der GLKurrent-Schauschrift-Font,
   Sütterlin LIVE von der Engine geschrieben, Offenbacher als
-  PD-Specimen unter Nennung seiner Quelle.
+  PD-Specimen unter Nennung seiner Quelle. Seit 2026-08-29 trägt jeder
+  Abschnitt eine stabile Sprungmarke (`sections.ts`: `#grundbegriffe`,
+  `#buchstaben`, `#entziffern` …, die drei Schrift-Karten `#kurrent` /
+  `#suetterlin` / `#offenbacher` — dieselben Ziele, auf die das
+  Kennwerte-JSON-LD des Prerenders zeigt) und unter dem Seitenkopf steht
+  die Sprungliste „Auf dieser Seite“; die Buchstaben-Besonderheiten
+  schreiben die Buchstaben, von denen die Zeile spricht (ſ · s · f, u · n,
+  e · n · ä, ſ · z · ß), als `WrittenGlyph`-Streifen live daneben —
+  markiertes Specimen auf eigener Fläche mit Antiqua-Beschriftung
+  (design-system.md §9), nachgeladen erst in Sichtweite, ausgeblendet
+  statt Fehlerkasten, wenn die Engine nicht erreichbar ist. Der Prerender
+  setzt dieselben Ids auf seine `<h2>`, dieselbe Liste als `<nav>` und
+  nennt die Schriftproben je Zeile nur beim Antiqua-Namen.
 - `sections/hub/` — `HubView` (die `/lesen`- und `/schreiben`-Bereichs-Hubs).
 - `sections/worksheet/` — `WorksheetView` + `ConfigPanel` + `PreviewSvg`
   (Lineatur-Konfigurator, `/schreiben/uebungsblatt`).
