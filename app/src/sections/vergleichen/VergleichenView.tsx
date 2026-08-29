@@ -82,13 +82,14 @@ export function VergleichenView() {
   const [retryNonce, setRetryNonce] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Debounced: a new text starts a fresh compose, so a stale error from the
-  // last one is cleared with it.
+  // Debounced: a new text starts a fresh compose, so a stale error and the
+  // last word's "missing letters" note are cleared with it.
   useEffect(() => {
     const trimmed = input.trim();
     const id = setTimeout(() => {
       setText(trimmed);
       setComposeError(false);
+      setMissing([]);
     }, DEBOUNCE_MS);
     return () => clearTimeout(id);
   }, [input]);
