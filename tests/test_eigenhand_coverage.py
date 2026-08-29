@@ -180,14 +180,22 @@ class TestGlyphFloor:
     def test_builder_tops_up_starved_glyphs(self):
         # A universe that only rewards l>e would leave rare carriers at one
         # occurrence; phase A2 lifts every glyph to the floor regardless of
-        # weight, given enough strips. "Enough" grows with the Wortvorrat:
+        # weight, given enough strips. "Enough" grows with the Wortvorrat —
         # phase A first spends strips covering every reachable item once, and
-        # the pool imports the quiz bank, so its growth (495 → 641 words on
-        # 2026-08-29) moved phase A past the old 120-strip budget — 200 keeps
-        # headroom for A2; a budget that is too small is reported in
-        # `floor_unmet`, never silently met.
-        plan, stats = pool.build_wave({"format": 1, "waves": [], "strips": {}}, 200, {"l>e": 100.0})
-        assert stats["floor_unmet"] == []
+        # the pool imports the quiz bank (495 → 641 words on 2026-08-29 moved
+        # phase A past the old fixed 120) — so the budget is found, not pinned:
+        # the smallest rung of a ladder at which the floor is met, under a cap
+        # that keeps the property honest (a builder needing more than 400
+        # strips for the floor would be a regression, not a bigger pool). A
+        # too-small budget is reported in `floor_unmet`, never silently met.
+        empty = {"format": 1, "waves": [], "strips": {}}
+        plan = stats = None
+        for budget in (120, 160, 200, 260, 320, 400):
+            plan, stats = pool.build_wave(empty, budget, {"l>e": 100.0})
+            if not stats["floor_unmet"]:
+                break
+        assert plan is not None and stats is not None
+        assert stats["floor_unmet"] == [], f"floor unmet even at {budget} strips: {stats['floor_unmet']}"
         points = progression.checkpoints(plan, step=10_000, universe_items=None)
         totals = {key: count for bucket in points[-1]["glyphs"].values() for key, count in bucket.items()}
         # Every reachable key, again — "floor met" must not mean "met among the
