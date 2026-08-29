@@ -607,8 +607,15 @@ markierte Buchstabe wird sofort quizfähig (das markierbare Set ist dafür
 auf das volle Alphabet inkl. Versalien erweitert). Die Gate-4-Mechanik
 (Abspielen in korrekter Schreibreihenfolge entlang der Centerline)
 existiert damit in der App; ob Gate 4 damit als erfüllt gilt, ist noch
-nicht entschieden. Regel-Erklärung bei Fehlern und ganze Wörter bleiben
-der P1-Ausbau.
+nicht entschieden. Ganze Wörter sind seit dem Wort-Quiz drin
+([`quiz-wortbank.md`](../reference/quiz-wortbank.md)); die
+Regel-Erklärung bei Fehlern seit 2026-08-29: `sections/quiz/lesefallen.ts`
+zeigt unter dem Urteil das Merkmal, das die gezeigte Form vom geratenen
+Buchstaben trennt (ſ/f Querstrich, u-Bogen, e ≈ n, ſ/s-Positionsregel,
+ß = ſʒ, Umlautzeichen, die Versalien-Cluster aus
+[`orthographie-regeln.md`](../schriftkunde/orthographie-regeln.md) §3) —
+nur dokumentierte Merkmale, für andere Paare keine Erklärung statt einer
+erfundenen.
 
 ---
 

@@ -21,6 +21,20 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The reading quiz explains a miss.** A wrong letter pick now shows,
+  under „Das ist ein f.", the feature that tells the shown form from the
+  guessed letter — „Das lange ſ und das f unterscheidet nur der
+  Querstrich — hier fehlt er …" — the sentence vision goal 4 promised
+  and the quiz never said. `sections/quiz/lesefallen.ts` pairs the shown
+  glyph key with the guessed answer and reads the sentences from
+  `locales/de/quiz.ts` (`play.rules`): the ſ/f Querstrich, the u-Bogen,
+  e ≈ n, m/n, i/j, t/l, h/f, f/t, v/w, the round-s position rule, ß as
+  the ſz ligature, the umlaut marks, and the capital confusion clusters
+  of `docs/schriftkunde/orthographie-regeln.md` §3 — direction-aware
+  (the sentence describes the form on the card) and deliberately
+  partial: a pair without a documented feature gets no sentence rather
+  than an invented one. Read out in the same live region as the verdict.
+  First of the eight website proposals from the 2026-08-29 audit.
 - **The Laufform head gate (LF9): a running form must land where its
   ductus prior lands — and Korb #7's t-hook is located on the row, not
   in the join grammar.** Two pre-registered join arms for the hook after

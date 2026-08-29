@@ -8,6 +8,7 @@ import { alpha } from '@mui/material/styles';
 import { useEffect, useRef } from 'react';
 
 import { de, fmt } from '@/locales';
+import { explainMiss } from '@/sections/quiz/lesefallen';
 import { QuestionVisual } from '@/sections/quiz/QuestionVisual';
 import { InkButton, QuietButton } from '@/sections/quiz/quizUi';
 import { type Difficulty } from '@/sections/quiz/quizTypes';
@@ -66,6 +67,11 @@ export function QuizPlayPanel(p: PlayProps) {
 
   const correctValue = current.kind === 'word' ? current.word : current.kg.answer;
 
+  // The Lesefalle behind a wrong letter pick — the rule that tells the shown
+  // form from the guessed one (null when the catalogue has none for the pair).
+  const rule =
+    verdict === 'wrong' && current.kind === 'letter' && p.picked ? explainMiss(current, p.picked.value) : null;
+
   // The verdict / question line under the card.
   let message: React.ReactNode;
   if (verdict === 'correct') {
@@ -112,8 +118,19 @@ export function QuizPlayPanel(p: PlayProps) {
       />
 
       {/* Verdict / question line — live region so screen readers hear the
-          right/wrong verdict without leaving the answer grid */}
-      <Box aria-live="polite" sx={{ minHeight: 34, textAlign: 'center' }}>{message}</Box>
+          right/wrong verdict (and the rule behind a miss) without leaving the
+          answer grid */}
+      <Box aria-live="polite" sx={{ minHeight: 34, textAlign: 'center' }}>
+        {message}
+        {rule && (
+          <Typography
+            variant="body2"
+            sx={{ mt: 0.75, mx: 'auto', maxWidth: 560, fontFamily: garamond, fontStyle: 'italic', color: paper.sepia }}
+          >
+            {rule}
+          </Typography>
+        )}
+      </Box>
 
       {/* Gloss for a dated/rare word, revealed only after the pick so it never
           gives the answer away. */}

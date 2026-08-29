@@ -567,7 +567,10 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
 - `sections/tafel/` — die `/tafel`-Schreibtafel (Vorlage-Zeilen „wie
   geschrieben").
 - `sections/quiz/` — `QuizView` + `useQuizEngine` (gesamte Quiz-Logik ohne
-  JSX) + Setup/Play/Results-Panels + `QuestionVisual`.
+  JSX) + Setup/Play/Results-Panels + `QuestionVisual` + `lesefallen.ts`
+  (die Regel-Erklärung nach einem Fehlgriff: gezeigte Form gegen geratenen
+  Buchstaben, Katalog aus `orthographie-regeln.md`; Sätze in
+  `locales/de/quiz.ts` unter `play.rules`).
 - `sections/impressum/` — Impressum/Datenschutz/Quellen als Dokumentspalte.
 - `sections/admin/chart/` — `ChartView` (Pointer-Routing) + `useChartViewport`
   (Zoom/Pan/Pinch) + `useBboxEditing` (Bbox-Commits, Lock) +
