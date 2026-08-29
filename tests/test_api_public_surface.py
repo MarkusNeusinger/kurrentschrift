@@ -54,6 +54,10 @@ PUBLIC = {
     "/sources/{source_id}/write/word",
     "/sources/{source_id}/write/word.svg",
     "/quiz-words",
+    # The Lesart page's readings: a handful of dictionary words per query,
+    # never the vocabulary (its load is the admin POST/DELETE, not a GET).
+    "/lesarten",
+    "/lesarten/dictionary",
 }
 
 RESERVED = {

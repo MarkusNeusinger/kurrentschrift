@@ -11,7 +11,7 @@
 // locales/de/vergleichen.ts, this file is layout and state only.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Box, Button, ButtonBase, Chip, Link, Paper, Stack, TextField, Typography } from '@mui/material';
+import { Box, Button, ButtonBase, Chip, CircularProgress, Link, Paper, Stack, TextField, Typography } from '@mui/material';
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 
 import { CategoryHeading } from '@/components/CategoryHeading';
@@ -22,7 +22,7 @@ import { WrittenWord } from '@/components/WrittenWord';
 import { knownGlyph } from '@/domain/glyphs';
 import { useInView } from '@/hooks/useInView';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
-import { lesarten } from '@/lib/lesarten';
+import { getLesarten, type LesartDictionaryOut, type LesartenOut, type LesartReadingOut } from '@/lib/api';
 import { de, fmt } from '@/locales';
 import { paths } from '@/routes/paths';
 import { SECTION_IDS } from '@/sections/schriftkunde/sections';
@@ -54,16 +54,20 @@ function lettersFromKeys(keys: string[]): string {
   return [...seen].join(' · ');
 }
 
-// The Antiqua rendering of a reading with its swapped letter marked.
-function MarkedReading({ text, index }: { text: string; index: number }) {
-  const chars = [...text];
+// The Antiqua rendering of a reading with every swapped letter marked.
+function MarkedReading({ text, indices }: { text: string; indices: readonly number[] }) {
+  const marked = new Set(indices);
   return (
     <Typography component="span" sx={{ fontFamily: garamond, fontSize: '1.15rem', color: paper.ink }}>
-      {chars.slice(0, index).join('')}
-      <Box component="span" sx={{ color: paper.viridianText, fontWeight: 700, textDecoration: 'underline', textDecorationColor: paper.viridian }}>
-        {chars[index]}
-      </Box>
-      {chars.slice(index + 1).join('')}
+      {[...text].map((ch, i) =>
+        marked.has(i) ? (
+          <Box key={i} component="span" sx={{ color: paper.viridianText, fontWeight: 700, textDecoration: 'underline', textDecorationColor: paper.viridian }}>
+            {ch}
+          </Box>
+        ) : (
+          ch
+        ),
+      )}
     </Typography>
   );
 }
@@ -81,9 +85,15 @@ export function VergleichenView() {
   const [composeError, setComposeError] = useState(false);
   const [retryNonce, setRetryNonce] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  // The readings come from the API (real words only). The answer is kept
+  // together with the text it answers, so "loading" is simply "no answer for
+  // the current text yet" — no state to reset when the text changes.
+  const [answer, setAnswer] = useState<LesartenOut | null>(null);
+  const [failedText, setFailedText] = useState<string | null>(null);
 
-  // Debounced: a new text starts a fresh compose, so a stale error and the
-  // last word's "missing letters" note are cleared with it.
+  // Debounced: a new text starts a fresh compose and a fresh reading lookup,
+  // so a stale error, the last word's "missing letters" note and its readings
+  // are cleared with it.
   useEffect(() => {
     const trimmed = input.trim();
     const id = setTimeout(() => {
@@ -102,7 +112,23 @@ export function VergleichenView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [text, defaultText]);
 
-  const readings = useMemo(() => lesarten(text), [text]);
+  useEffect(() => {
+    if (!text) return undefined;
+    let cancelled = false;
+    getLesarten(text)
+      .then((out) => {
+        if (!cancelled) setAnswer(out);
+      })
+      .catch(() => {
+        if (!cancelled) setFailedText(text);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [text]);
+  const readings: LesartReadingOut[] | null = answer && answer.text === text ? answer.readings : null;
+  const dictionary: LesartDictionaryOut | null | undefined = answer?.dictionary;
+  const readingsError = failedText === text && readings === null;
   const missingLetters = useMemo(() => lettersFromKeys(missing), [missing]);
 
   // The confusable pairs: one batch for all their glyphs, fetched when the
@@ -207,19 +233,26 @@ export function VergleichenView() {
           </Typography>
         </Box>
 
-        {/* --- Lesarten: the same word with one confusable swapped --- */}
+        {/* --- Lesarten: the real words that differ from the guess by look-alikes only --- */}
         <Box component="section" sx={{ mt: { xs: 5, md: 6 } }}>
           <CategoryHeading>{t.lesartenHeading}</CategoryHeading>
           <Typography sx={{ ...prose, mb: 2, maxWidth: '64ch' }}>{t.lesartenIntro}</Typography>
-          {text && readings.length === 0 ? (
+          {!text ? null : readingsError ? (
+            <Typography sx={{ ...prose, fontStyle: 'italic' }}>{t.lesartenError}</Typography>
+          ) : readings === null ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: paper.inkSoft }}>
+              <CircularProgress size={18} aria-hidden />
+              <Typography sx={prose}>{t.lesartenLoading}</Typography>
+            </Box>
+          ) : readings.length === 0 ? (
             <Typography sx={{ ...prose, fontStyle: 'italic' }}>{t.noLesarten}</Typography>
           ) : (
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 2 }}>
               {readings.map((r) => (
                 <ButtonBase
-                  key={r.text}
-                  onClick={() => takeOver(r.text)}
-                  aria-label={`${r.text} — ${t.takeOver}`}
+                  key={r.word}
+                  onClick={() => takeOver(r.word)}
+                  aria-label={`${r.word} — ${t.takeOver}`}
                   sx={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -234,17 +267,23 @@ export function VergleichenView() {
                   }}
                 >
                   <Box sx={{ display: 'flex', justifyContent: 'center', minHeight: 96 }}>
-                    <WrittenWord text={r.text} height={96} maxWidth={320} animate={false} ariaLabel={r.text} />
+                    <WrittenWord text={r.word} height={96} maxWidth={320} animate={false} ariaLabel={r.word} />
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 1, mt: 0.75 }}>
-                    <MarkedReading text={r.text} index={r.index} />
-                    <Typography variant="caption" sx={{ color: paper.sepia, fontStyle: 'italic', whiteSpace: 'nowrap' }}>
-                      {fmt(t.swapNote, { from: r.from, to: r.to })}
+                    <MarkedReading text={r.word} indices={r.swaps.map((s) => s.index)} />
+                    <Typography variant="caption" sx={{ color: paper.sepia, fontStyle: 'italic', textAlign: 'right' }}>
+                      {r.swaps.map((s) => fmt(t.swapNote, { from: s.from, to: s.to })).join(' · ')}
+                      {r.bank ? ` · ${t.bankMark}` : ''}
                     </Typography>
                   </Box>
                 </ButtonBase>
               ))}
             </Box>
+          )}
+          {dictionary !== undefined && (
+            <Typography variant="caption" component="p" sx={{ color: paper.sepia, fontStyle: 'italic', mt: 1.5, maxWidth: '64ch' }}>
+              {dictionary ? fmt(t.dictionaryNote, { forms: dictionary.forms.toLocaleString('de-DE') }) : t.dictionaryMissing}
+            </Typography>
           )}
         </Box>
 

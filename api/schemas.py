@@ -46,6 +46,72 @@ class QuizWordOut(BaseModel):
     fugen: str | None = None
 
 
+class LesartSwapOut(BaseModel):
+    """One differing letter between the guess and a reading."""
+
+    index: int
+    from_: str = Field(alias="from")
+    to: str
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class LesartReadingOut(BaseModel):
+    """A real word the guess could be read as: same length, every differing
+    letter a documented look-alike. `bank` marks the project's own curated
+    words (quiz bank); `cost` sums the look-alike distances (1 per documented
+    pair)."""
+
+    word: str
+    bank: bool
+    cost: int
+    swaps: list[LesartSwapOut]
+
+
+class LesartDictionaryOut(BaseModel):
+    """Which vocabulary build answers: its source label and size."""
+
+    source: str
+    forms: int
+    sha256: str
+    updated_at: datetime | None = None
+
+
+class LesartenOut(BaseModel):
+    """GET /lesarten?text=… — the readings of one guessed word."""
+
+    text: str
+    readings: list[LesartReadingOut]
+    # None while no vocabulary has been loaded (a dev checkout, a fresh DB).
+    dictionary: LesartDictionaryOut | None = None
+
+
+class LesartGenerationIn(BaseModel):
+    """Open a new vocabulary generation — the source label and the content
+    hash of the build about to be loaded (tools.lesarten.sync)."""
+
+    source: str = Field(min_length=1, max_length=200)
+    sha256: str = Field(min_length=64, max_length=64)
+
+
+class LesartGenerationOut(BaseModel):
+    generation: int
+
+
+class LesartFormsIn(BaseModel):
+    """One batch of words for a generation: [word, bank] pairs. The server
+    computes every bucket key itself (core.lesarten.lesart_key), so the tool
+    and the query can never disagree on the key."""
+
+    words: list[tuple[str, bool]] = Field(max_length=50_000)
+
+
+class LesartFormsOut(BaseModel):
+    generation: int
+    inserted: int
+    total: int
+
+
 class HandOut(BaseModel):
     """One writer."""
 

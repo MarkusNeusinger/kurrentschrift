@@ -71,7 +71,7 @@ definiert (P1-Arbeit).
 | `/lesen` | Hub → Quiz, Tafel | Lesen |
 | `/quiz` | Lese-Quiz (Buchstaben + ganze Wörter) | Lesen |
 | `/tafel` | Schreibtafel (Vorlage); seit 2026-08-29 mit „Lesetafel als PDF" — alle drei Vorlagen auf A4, im Browser gebaut (`lib/lesetafel.ts` auf `lib/pdf.ts`: die nachgeschriebene Schrift als gefüllte Silhouetten auf Lineatur mit Antiqua-Beschriftung, die anderen als ihre gemeinfreie Originaltafel, per Canvas zu JPEG gerastert und als DCTDecode-XObject eingebettet) | Lesen |
-| `/lesen/vergleichen` | Lesart prüfen — eine Vermutung wird geschrieben, daneben die Lesarten mit je einem vertauschten Verwechsler (`lib/lesarten.ts`) und die klassischen Verwechsler-Paare nebeneinander (`?text=` teilbar) | Lesen |
+| `/lesen/vergleichen` | Lesart prüfen — eine Vermutung wird geschrieben, daneben die **echten Wörter**, die sich von ihr nur in Verwechslern unterscheiden (`GET /lesarten?text=…`: Verwechsler-Schlüssel + Rang aus `core/lesarten`, Vokabular `lesart_forms` = igerman98 ∪ Wortbank, geladen über `tools.lesarten.sync`; seit 2026-08-30 — davor Buchstabentausch ohne Wort dahinter), und die klassischen Verwechsler-Paare nebeneinander (`?text=` teilbar) | Lesen |
 | `/schreiben` | Hub → Übungsblatt, Federprobe | Schreiben |
 | `/schreiben/uebungsblatt` | Übungsblatt-Generator (Lineatur-Konfigurator, PDF) | Schreiben |
 | `/federprobe` | Live-Schreiber (Sütterlin-Synthese mit generierten Übergängen) | Schreiben |

@@ -356,6 +356,30 @@ und die abgelegten Streifen sind Teil des reservierten Datensatzes
 (Open-Core): sie liegen lokal, im privaten Archiv und — seit Migration
 `0025` — admin-gesichert in der DB, nie im Repository und nie öffentlich.
 
+## Das Lesart-Wörterbuch (`tools/lesarten`)
+
+Die Wörter, die die Lesart-Seite (`/lesen/vergleichen`) als echte Lesarten
+anbietet, kommen aus der geteilten DB (`lesart_forms`, Migration 0028);
+dieses Werkzeug füllt sie — Muster wie `tools.eigenhand.universe --push`:
+lokal bauen, über die admin-gesicherte API laden, nie direkt in die DB.
+
+- **`expand`** — expandiert das igerman98/frami-Wörterbuch
+  (`data/corpora/igerman98/`, vorher `fetch_igerman98.py`; GPL-Bytes
+  gitignored, `SOURCE.md`) um eine Affix-Schicht: ≈ 720 000
+  Buchstaben-Formen ohne freie Komposita (hunspell setzt Kirchenbuch zur
+  Laufzeit zusammen) — `uv run python -m tools.lesarten.expand` zählt.
+- **`sync`** — vereinigt die Formen mit der Quiz-Wortbank
+  (`tools/quizgen/quiz_words.json`, unique; Bankwörter markiert, sie
+  ranken bei Gleichstand zuerst) und lädt sie generationsweise:
+  `POST /lesarten/dictionary/generations` (öffnet; derselbe Bau = 409,
+  nichts zu tun) → Batches à 20 000 Wörter (der Server berechnet den
+  Verwechsler-Schlüssel selbst, `core.lesarten.lesart_key`) → `commit`
+  schaltet die Generation live und löscht die alte; ein Abbruch löscht
+  die angefangene. `--dry-run` zeigt nur die Zahlen. Braucht `ADMIN_TOKEN`
+  (`ADMIN_TOKEN=… uv run python -m tools.lesarten.sync`). Nach einem
+  Wörterbuch-Update (neuer Pin in `fetch_igerman98.py` + `SOURCE.md`)
+  oder einer Bank-Erweiterung einmal laufen lassen.
+
 ## Benches und Generator (Verweise)
 
 - **`tools/glyphbench`** — bewertet jeden autorisierten Buchstaben gegen

@@ -8,6 +8,7 @@ from api.routers.eigenhand import router as eigenhand_router
 from api.routers.hands import router as hands_router
 from api.routers.health import router as health_router
 from api.routers.instances import router as instances_router
+from api.routers.lesarten import router as lesarten_router
 from api.routers.pairs import router as pairs_router
 from api.routers.quiz_words import router as quiz_words_router
 from api.routers.seo import router as seo_router
@@ -28,6 +29,7 @@ __all__ = [
     "hands_router",
     "health_router",
     "instances_router",
+    "lesarten_router",
     "pair_aggregates_router",
     "pairs_router",
     "quiz_words_router",

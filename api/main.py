@@ -26,6 +26,7 @@ from api.routers import (  # noqa: E402
     hands_router,
     health_router,
     instances_router,
+    lesarten_router,
     pair_aggregates_router,
     pairs_router,
     quiz_words_router,
@@ -150,6 +151,7 @@ app.include_router(work_items_router)
 app.include_router(work_items_session_router)
 app.include_router(write_router)
 app.include_router(quiz_words_router)
+app.include_router(lesarten_router)
 app.include_router(eigenhand_router)
 
 

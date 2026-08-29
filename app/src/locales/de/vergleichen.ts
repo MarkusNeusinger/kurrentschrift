@@ -31,12 +31,21 @@ export const vergleichen = {
   retry: 'Erneut versuchen',
 
   // --- Lesarten -------------------------------------------------------------
-  lesartenHeading: 'Lesarten, die genauso aussehen könnten',
-  lesartenIntro: 'Jede Karte tauscht genau einen Buchstaben gegen seinen Verwechsler. Welche passt zu deinem Original? Ein Klick macht sie zur neuen Lesart.',
+  // Real words only (owner decision 2026-08-30): the API answers with the
+  // dictionary words that differ from the guess by look-alike letters alone.
+  lesartenHeading: 'Wörter, die genauso aussehen könnten',
+  lesartenIntro: 'Echte Wörter, die sich von deiner Lesart nur in Verwechslern unterscheiden — n und u, e und n, f und ſ, die Umlautzeichen. Welches passt zu deinem Original? Ein Klick macht es zur neuen Lesart.',
   // Caption under a reading card (interpolates the swapped letters).
   swapNote: '{{to}} statt {{from}}',
   takeOver: 'als Lesart übernehmen',
-  noLesarten: 'Für die Buchstaben dieser Lesart kennt der Katalog keine Verwechsler — sie ist eindeutig.',
+  // A reading from the project's own curated bank (quiz words) — the historic layer the dictionary lacks.
+  bankMark: 'aus der Wortbank',
+  lesartenLoading: 'Wörter werden gesucht …',
+  lesartenError: 'Die Wörter lassen sich gerade nicht abfragen — der Server ist nicht erreichbar.',
+  noLesarten: 'Kein Wort im Wörterbuch sieht dieser Lesart zum Verwechseln ähnlich — sie ist wohl eindeutig.',
+  // Where the words come from (interpolates {{forms}}, the live vocabulary's size).
+  dictionaryNote: 'Wortformen aus dem freien deutschen Wörterbuch igerman98 ({{forms}} Formen) und der Wortbank dieser Seite; Namen und alte Wörter, die beide nicht kennen, fehlen hier.',
+  dictionaryMissing: 'Das Wörterbuch ist noch nicht geladen — es kommen nur Wörter der eigenen Wortbank.',
 
   // --- Die klassischen Verwechsler ------------------------------------------
   pairsHeading: 'Die klassischen Verwechsler',

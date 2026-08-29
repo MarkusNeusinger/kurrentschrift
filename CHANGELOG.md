@@ -41,6 +41,25 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **Lesarten are real words now — from a dictionary in the shared database.**
+  The Lesart page offered letter swaps („Mnhme") as readings; the owner's
+  verdict: a reading must be an existing word. `GET /lesarten?text=…`
+  answers the vocabulary words that differ from the guess by look-alike
+  letters alone — same length, every differing letter a documented pair
+  (`core/lesarten`: the look-alike table's classes make a bucket key,
+  so a query is one indexed lookup; ranking by summed pair distance, the
+  project's own bank words first on a tie). The vocabulary is the
+  igerman98/frami dictionary's ≈ 720 000 affix forms ∪ the quiz bank,
+  loaded by `tools.lesarten.sync` through the admin API into `lesart_forms`
+  (migration `0028`, generation-switched like the Übergangsraum: a load in
+  progress never shows a half vocabulary; the same build again is a 409).
+  The GPL dictionary bytes stay gitignored (`data/corpora/igerman98/`,
+  `SOURCE.md` with the licence reasoning: use without conditions, duties
+  only on redistribution, which a handful of words per query is not);
+  `quellen-und-rechte.md` §5 and `datenablage.md` §1 record the decision.
+  The page shows the words with every differing letter marked, bank words
+  labelled, the dictionary named; `lib/lesarten.ts` keeps only the
+  look-alike table (pinned to its Python twin by `test_lesarten_core.py`).
 - **The Schreibtafel prints: „Lesetafel als PDF".** One button on `/tafel`
   builds, in the browser, an A4 sheet per Vorlage to lay beside an old
   letter — the Schriftkunde's own advice, until now met only by the screen.

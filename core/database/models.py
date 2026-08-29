@@ -657,6 +657,43 @@ class QuizWord(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+class LesartForm(Base):
+    """One word the Lesart page may offer as a reading, bucketed by its
+    look-alike key (core.lesarten.lesart_key).
+
+    Content, not measurement: the igerman98 dictionary's forms ∪ the quiz
+    bank, loaded whole by `tools.lesarten.sync` through the admin API into a
+    new `gen` and switched over at commit (`LesartDictionary.active_gen`), so
+    a load in progress never shows a half-filled vocabulary. The dictionary
+    bytes stay out of the repo (GPL; data/corpora/igerman98/SOURCE.md) — this
+    table is server data, read only through `GET /lesarten?text=`, which
+    returns a handful of words per query, never the list.
+    """
+
+    __tablename__ = "lesart_forms"
+
+    gen: Mapped[int] = mapped_column(Integer, primary_key=True)
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    word: Mapped[str] = mapped_column(String(64), primary_key=True)
+    # True for the project's own curated words (quiz bank) — ranked first on a tie.
+    bank: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
+
+
+class LesartDictionary(Base):
+    """The one row that says which `lesart_forms` generation is live, and
+    where it came from (source label, form count, content hash — the same
+    build again is a no-op for the sync)."""
+
+    __tablename__ = "lesart_dictionary"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    active_gen: Mapped[int] = mapped_column(Integer, nullable=False)
+    source: Mapped[str] = mapped_column(String(200), nullable=False)
+    forms: Mapped[int] = mapped_column(Integer, nullable=False)
+    sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class EigenhandSheet(Base):
     """One printed Bogen of the own-hand capture chain — bookkeeping, no pixels.
 

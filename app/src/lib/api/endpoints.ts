@@ -33,6 +33,7 @@ import type {
   PairInstanceOut,
   QualityComparison,
   QuizWordOut,
+  LesartenOut,
   SourceOut,
   StyleOut,
   GlyphPairIn,
@@ -73,6 +74,11 @@ export const getStyles = (retry?: RetryOptions): Promise<StyleOut[]> =>
 // The public reading-drill word bank (un-scoped, not source-specific).
 export const getQuizWords = (retry?: RetryOptions): Promise<QuizWordOut[]> =>
   apiFetch(`${apiRoot()}/quiz-words`, {}, retry).then(asJson<QuizWordOut[]>);
+
+// The Lesart page's readings of one guessed word (public, cached like the
+// other reads; the vocabulary itself never leaves the server).
+export const getLesarten = (text: string, retry?: RetryOptions): Promise<LesartenOut> =>
+  apiFetch(`${apiRoot()}/lesarten?text=${encodeURIComponent(text)}`, {}, retry).then(asJson<LesartenOut>);
 
 export const getSources = (retry?: RetryOptions): Promise<SourceOut[]> =>
   apiFetch(`${apiRoot()}/sources`, {}, retry).then(asJson<SourceOut[]>);
