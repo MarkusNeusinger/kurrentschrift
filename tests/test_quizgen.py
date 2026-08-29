@@ -25,6 +25,24 @@ def test_fugen_strips_to_word() -> None:
             assert row["fugen"].replace("|", "") == row["word"]
 
 
+def test_gap_fill_migration_names_bank_words_only() -> None:
+    """Migration 0027 inserts its `_ADDED` words from quiz_words.json — every
+    one of them must be a generator entry, or the apply job dies at deploy."""
+    import importlib.util
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[1] / "alembic" / "versions" / "0027_quiz_words_gaps.py"
+    spec = importlib.util.spec_from_file_location("quiz_words_gaps", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    bank = {row["word"] for row in build()}
+    added = list(module._ADDED)
+    assert len(added) == len(set(added)), "duplicate word in _ADDED"
+    assert set(added) <= bank, sorted(set(added) - bank)
+    assert len(added) == 146
+
+
 def test_similarity_rules() -> None:
     # shares start + end, differences are cursive-plausible → usable
     assert is_plausible_distractor("lesen", "leben")
