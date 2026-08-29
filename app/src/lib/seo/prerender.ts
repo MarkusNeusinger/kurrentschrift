@@ -414,7 +414,10 @@ const hubBody = <H extends typeof hub.lesen | typeof hub.schreiben>(h: H, routes
     `<h1>${e(h.heading)}</h1>`,
     p(h.lead),
     p(h.about),
-    ...Object.entries(h.cards).map(([k, c]) => `${h2(c.title)}${p(c.body)}<p>${a(abs(routes[k]), c.cta)}</p>`),
+    ...(Object.keys(h.cards) as (keyof H['cards'])[]).map((k) => {
+      const c = h.cards[k] as { title: string; body: string; cta: string };
+      return `${h2(c.title)}${p(c.body)}<p>${a(abs(routes[k]), c.cta)}</p>`;
+    }),
   ].join('\n');
 
 const quizBody = () => {

@@ -232,12 +232,13 @@ describe('crawler prerender', () => {
 
   it('never renders a link with an undefined or relative target', () => {
     // A hub card without its route once rendered „kurrentschrift.inkundefined"
-    // (#453). Every href is either absolute to the site/API or a fragment.
+    // (#453). Every href is absolute to the site/API, a fragment, or a mailto
+    // (the Impressum) — never a relative path a crawler would resolve wrong.
     for (const [file, html] of rendered) {
       const body = html.slice(html.indexOf('<main>'), html.indexOf('</main>'));
       for (const m of body.matchAll(/href="([^"]*)"/g)) {
         expect(m[1], `${file}: ${m[1]}`).not.toContain('undefined');
-        expect(m[1], `${file}: ${m[1]}`).toMatch(/^(https?:\/\/|#)/);
+        expect(m[1], `${file}: ${m[1]}`).toMatch(/^(https?:\/\/|#|mailto:)/);
       }
     }
   });
