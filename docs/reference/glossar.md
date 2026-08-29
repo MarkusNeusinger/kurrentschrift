@@ -60,7 +60,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wort-Trace §2 · Wortvorrat §5
 - **X** — x-Höhe (`xh`) §1
-- **Z** — Zelle einsetzen §5 · zirkuläres Kriterium §4 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
+- **Z** — Zeilen-Gate (Laufform) §2 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
 
 ---
 
@@ -295,6 +295,28 @@ unverändert, weil die Kopplung das t nicht erreicht
 (`ALIGN_MAX_ENTRY_Y`, Haken-Segment im Kandidaten-Scan) — nicht
 adoptiert, wird in J2 („Anstrich-Verlängerung in den Schaft")
 mitgemessen. → qualitaetsmetrik.md §14 („Übergänge J1"/„J2")
+
+**Zeilen-Gate (Laufform)** — die beiden Prüfungen, die eine
+Laufform-Zeile bestehen muss, bevor sie in den Schreibweg kommt (§14
+LF7/LF8, `aug29`), auf BEIDEN Schreibpfaden (manueller `PUT
+…/laufform` wie `apply-laufform`): (1) der **Boden**
+`LAUFFORM_MIN_OCCURRENCES` (n ≥ 3), nur durch die ausdrückliche
+Autor-Aussage `?min_occurrences=N` in der Anfrage zu senken; (2) das
+**Sprung-Gate**: die Sprung-Ratio der Zeile (`anchor_spike_ratio`,
+„Anker im leeren Papier" — derselbe Detektor wie am Ernte-Gate, dort
+auf dem Einzelfit) darf `LAUFFORM_SPIKE_RATIO_MAX` = 2,95 nicht
+übersteigen, kein Override. Doktrin-Satz dazu: ein Wort-Gewinn am
+Pixel-Lineal ist KEIN Aufnahmekriterium für eine Zeile — so kam das
+n=1-K in den Schreibweg. Vorher gemessen und verworfen: die
+Natürlichkeits-Lücke N(Chart) − N(Zeile) über die §5-Terme (LF7 — sie
+verfehlt das K, weil der Anker-Median-Jitter der vertrauten Zeilen den
+Glätte-Term stärker trifft als große Wellen); sie bleibt Berichts-Spalte
+der Bestandsaufnahme (`tools/laufform/inventory.py`). τ ist
+datengetrieben: Maximum der vertrauten Zeilen (n ≥ 3) auf der Root,
+aufgerundet — nie von Hand gesetzt. *Technisch:* `core/laufform.py`
+(`anchor_spike_ratio`, `spike_gate`, `row_naturalness`), Skip-Grund
+`anchor_spike` mit `spike_ratio`/`spike_max` → qualitaetsmetrik.md §14
+(„Laufform LF7"/„LF8")
 
 **Schreib-Karte** — die Laufform-Kandidaten-Karte in GENAU der
 Gestalt, die ein DB-Write erzeugen würde: die zu schreibenden Zeilen

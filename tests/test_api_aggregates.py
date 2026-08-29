@@ -385,10 +385,38 @@ async def test_apply_laufform_skips_and_reports_underivable_keys(api: Harness):
     assert [k["glyph_key"] for k in out["applied"]] == ["n"]
     # `n_instances` stays null for every reason no count took part in.
     assert out["skipped"] == [
-        {"glyph_key": "e", "variant": 0, "reason": "anchor_count", "n_instances": None},
-        {"glyph_key": "m", "variant": 0, "reason": "no_base_template", "n_instances": None},
-        {"glyph_key": "n", "variant": 1, "reason": "non_base_variant", "n_instances": None},
-        {"glyph_key": "n", "variant": 100, "reason": "laufform_variant", "n_instances": None},
+        {
+            "glyph_key": "e",
+            "variant": 0,
+            "reason": "anchor_count",
+            "n_instances": None,
+            "spike_ratio": None,
+            "spike_max": None,
+        },
+        {
+            "glyph_key": "m",
+            "variant": 0,
+            "reason": "no_base_template",
+            "n_instances": None,
+            "spike_ratio": None,
+            "spike_max": None,
+        },
+        {
+            "glyph_key": "n",
+            "variant": 1,
+            "reason": "non_base_variant",
+            "n_instances": None,
+            "spike_ratio": None,
+            "spike_max": None,
+        },
+        {
+            "glyph_key": "n",
+            "variant": 100,
+            "reason": "laufform_variant",
+            "n_instances": None,
+            "spike_ratio": None,
+            "spike_max": None,
+        },
     ]
     assert [r["glyph_key"] for r in await _stored_laufform(api, style_id)] == ["n"]
 
@@ -457,7 +485,16 @@ async def test_apply_laufform_refuses_a_median_too_thin_to_outvote_an_outlier(ap
     out = res.json()
     assert [k["glyph_key"] for k in out["applied"]] == ["n"]
     # The count IS the reason, so the report carries it.
-    assert out["skipped"] == [{"glyph_key": "m", "variant": 0, "reason": "below_min_occurrences", "n_instances": 2}]
+    assert out["skipped"] == [
+        {
+            "glyph_key": "m",
+            "variant": 0,
+            "reason": "below_min_occurrences",
+            "n_instances": 2,
+            "spike_ratio": None,
+            "spike_max": None,
+        }
+    ]
     assert out["excluded"] == []
     assert [r["glyph_key"] for r in await _stored_laufform(api, style_id)] == ["n"]
 
@@ -511,10 +548,38 @@ async def test_apply_laufform_floor_never_relabels_an_underivable_key(api: Harne
     out = res.json()
     assert [k["glyph_key"] for k in out["applied"]] == ["n"]
     assert out["skipped"] == [
-        {"glyph_key": "e", "variant": 0, "reason": "anchor_count", "n_instances": None},
-        {"glyph_key": "m", "variant": 0, "reason": "no_base_template", "n_instances": None},
-        {"glyph_key": "n", "variant": 1, "reason": "non_base_variant", "n_instances": None},
-        {"glyph_key": "n", "variant": 100, "reason": "laufform_variant", "n_instances": None},
+        {
+            "glyph_key": "e",
+            "variant": 0,
+            "reason": "anchor_count",
+            "n_instances": None,
+            "spike_ratio": None,
+            "spike_max": None,
+        },
+        {
+            "glyph_key": "m",
+            "variant": 0,
+            "reason": "no_base_template",
+            "n_instances": None,
+            "spike_ratio": None,
+            "spike_max": None,
+        },
+        {
+            "glyph_key": "n",
+            "variant": 1,
+            "reason": "non_base_variant",
+            "n_instances": None,
+            "spike_ratio": None,
+            "spike_max": None,
+        },
+        {
+            "glyph_key": "n",
+            "variant": 100,
+            "reason": "laufform_variant",
+            "n_instances": None,
+            "spike_ratio": None,
+            "spike_max": None,
+        },
     ]
 
 
@@ -576,7 +641,16 @@ async def test_apply_laufform_selection_precedes_the_variant_triage(api: Harness
     assert [k["glyph_key"] for k in out["applied"]] == ["n"]
     # 'n' variant 1 was selected and is reported as underivable; 'm' was not
     # selected at all and is only excluded.
-    assert out["skipped"] == [{"glyph_key": "n", "variant": 1, "reason": "non_base_variant", "n_instances": None}]
+    assert out["skipped"] == [
+        {
+            "glyph_key": "n",
+            "variant": 1,
+            "reason": "non_base_variant",
+            "n_instances": None,
+            "spike_ratio": None,
+            "spike_max": None,
+        }
+    ]
     assert out["excluded"] == ["m"]
 
 

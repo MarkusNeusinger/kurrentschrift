@@ -213,6 +213,17 @@ vom Symptom zur Änderung und zurück.
   zeigt immer genau eine Quelle/Hand.
 - Die Werkbank ersetzt die Alt-Seiten erst, wenn ihre Funktion dort
   vollständig angekommen ist — bis dahin koexistieren sie.
+- **Eine Laufform-Zeile wird nur über das Zeilen-Gate aufgenommen**
+  (qualitaetsmetrik.md §14 LF7/LF8, Glossar „Zeilen-Gate (Laufform)"):
+  Boden n ≥ 3 — oder die ausdrückliche Autor-Aussage
+  `?min_occurrences=N` in der Anfrage — UND Sprung-Ratio unter
+  `LAUFFORM_SPIKE_RATIO_MAX`, auf beiden Schreibpfaden, ohne Override.
+  **Ein Wort-Gewinn am Pixel-Lineal ist KEIN Aufnahmekriterium für eine
+  Zeile** (Autor, 2026-08-29): so kam das n=1-K in den Schreibweg — der
+  Buchstabe war sichtbar schlechter als seine Tafelform, das Wort-Lineal
+  sah nur die Deckung. Was das Gate nicht sieht (Form-Drift ohne
+  Sprung), entscheidet der Autor am Bild der Bestandsaufnahme
+  (`tools/laufform/inventory.py --png`).
 
 ## 7. Umsetzung
 

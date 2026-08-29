@@ -16,9 +16,10 @@ from api.auth import require_admin
 from api.dependencies import require_db, require_source
 from api.rendering import invalidate_pooled_style, resolve_render_context, resolve_style
 from api.schemas import LaufformUpsert, ResampleRequest, TemplateOut, TemplateQualityOut, TemplateSummary, TraceRequest
+from core.aggregate import LAUFFORM_MIN_OCCURRENCES
 from core.database import LAUFFORM_VARIANT, BboxRepository, Source, Template, TemplateRepository
 from core.fit import fit_glyph_to_crop
-from core.laufform import LAUFFORM_END_WINDOW, blend_stroke_ends
+from core.laufform import LAUFFORM_END_WINDOW, blend_stroke_ends, spike_gate
 from core.pipeline import (
     DEFAULT_N_ANCHORS,
     canonical_from_path,
@@ -266,6 +267,11 @@ def build_laufform_canonical(
 async def put_laufform(
     glyph_key: str,
     payload: LaufformUpsert,
+    min_occurrences: int = Query(
+        LAUFFORM_MIN_OCCURRENCES,
+        ge=1,
+        description="evidence floor for THIS write (default: the server floor; lower it only as an explicit author statement)",
+    ),
     source: Source = Depends(require_source),
     db: AsyncSession = Depends(require_db),
 ):
@@ -274,7 +280,18 @@ async def put_laufform(
     match the chart row one-to-one — same count, same stroke topology — so
     stroke starts, corners and crossings carry over unchanged; entry/exit/
     advance shift with their end anchors. `/write/word` picks the row up for
-    glyphs in a flowing run; solo renders stay chart-true."""
+    glyphs in a flowing run; solo renders stay chart-true.
+
+    Two gates stand in front of the write (qualitaetsmetrik.md §14 LF7/LF8),
+    the same two `apply-laufform` applies: the evidence floor
+    `LAUFFORM_MIN_OCCURRENCES` — a thinner draft is refused unless the request
+    lowers the floor itself (`?min_occurrences=1`, the explicit author
+    statement) — and the row gate: a draft whose anchor spike ratio („Anker im
+    leeren Papier", the harvest's own detector measured on the row) exceeds
+    `LAUFFORM_SPIKE_RATIO_MAX` is refused with the ratio in the detail, without
+    an override (it is fit noise, not author knowledge). The Sütterlin K
+    entered the writing path through this very endpoint with n = 1 and a
+    spiked, wavy tail; a word-ruler gain is no admission."""
     base = await TemplateRepository(db).get(source.style_id, glyph_key, variant=0)
     if base is None:
         raise HTTPException(status.HTTP_409_CONFLICT, detail=f"no chart template for {glyph_key!r} — author it first")
@@ -283,6 +300,19 @@ async def put_laufform(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"anchor count {len(payload.anchors)} != chart row's {len(base.anchors)}"
             " — the ductus prior must match",
+        )
+    if payload.n_occurrences < min_occurrences:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"{payload.n_occurrences} occurrence(s) behind the draft for {glyph_key!r} — below the floor of "
+            f"{min_occurrences} (LAUFFORM_MIN_OCCURRENCES); pass ?min_occurrences=1 only as an explicit author statement",
+        )
+    spike = spike_gate(base, payload.anchors)
+    if spike["exceeded"]:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"the draft for {glyph_key!r} carries an anchor spike: ratio {spike['ratio']:.2f} over the row gate "
+            f'{spike["max"]:.2f} (§14 LF8, „Anker im leeren Papier") — more evidence or the chart fallback, no override',
         )
     canonical = build_laufform_canonical(
         base, payload.anchors, {"derived_from": "specimen-words", "n_occurrences": payload.n_occurrences}

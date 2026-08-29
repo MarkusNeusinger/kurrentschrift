@@ -21,6 +21,36 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The Laufform row gate: a running-form row must earn its way into the
+  writing path.** The Sütterlin K's n = 1 row (Korb #7) entered through
+  the manual `PUT …/templates/{key}/laufform`, which checked nothing but
+  the anchor count — the evidence floor `LAUFFORM_MIN_OCCURRENCES` lived
+  only in `apply-laufform` — and its admission argument was a word-ruler
+  gain, which measures ink coverage and cannot see a jagged letter. Both
+  write paths now share two gates: the floor (a thinner draft is refused
+  unless the request lowers it itself with `?min_occurrences=N`, the
+  explicit author statement; `harvest.py --apply` passes
+  `--min-occurrences` through) and the **spike gate** — the row's anchor
+  spike ratio („Anker im leeren Papier", the harvest's own detector
+  `anchor_spike_ratio`, moved into `core/laufform.py` as the ONE
+  detector and now measured on the ROW) may not exceed
+  `LAUFFORM_SPIKE_RATIO_MAX` = 2.95, no override (PUT 422 with the
+  numbers; apply skips with `reason: anchor_spike`, `spike_ratio` /
+  `spike_max`, shown on the dialog chip). τ is data-derived: the worst
+  ratio among the 21 rows the doctrine trusts (n ≥ 3) on the frozen
+  root, rounded up; over it on that root sit exactly the n = 1 rows
+  ue · F · ae · b · K. A naturalness-gap gate (the geometry-only §5
+  terms, chart vs row) was pre-registered first and rejected — it
+  misses the K — and stays a report column of the new inventory tool
+  `tools/laufform/inventory.py` (table, JSON, and the picture of each
+  row over its chart form). Doctrine sentence in
+  `optimierungs-werkbank.md` §6, glossary „Zeilen-Gate (Laufform)",
+  pre-registrations and numbers in `qualitaetsmetrik.md` §14 („Laufform
+  LF7"/„LF8"). Data action of the same round (owner's go, after a staged
+  `dbsnapshot` and per-row backups): the four rows over τ — ue, F, ae, b —
+  were deleted like the K, so those letters write chart-true again; v, E,
+  P, k stay in place as the reference cases for the pre-registered
+  shape-distance arm.
 - **The Laufform end blend — measured, rejected, and kept reproducible
   (Korb #7).** The admin's complaint about „Kurrentschrift" (a wavy K,
   a steep K→u, a hooked t lead-in after n) traced to the free ends of

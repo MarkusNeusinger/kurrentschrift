@@ -430,16 +430,22 @@ class AggregateApplySkip(BaseModel):
     (the chart ductus prior is missing), `anchor_count` (aggregate and chart
     row disagree, so the topology would not carry over) and
     `below_min_occurrences` (fewer occurrences than the median needs to reject
-    a bad anchor — see `core.aggregate.LAUFFORM_MIN_OCCURRENCES`).
+    a bad anchor — see `core.aggregate.LAUFFORM_MIN_OCCURRENCES`) and
+    `anchor_spike` (the row gate, qualitaetsmetrik.md §14 LF8: the median
+    carries an anchor spike — „Anker im leeren Papier", the harvest's own
+    reason code — over `core.laufform.LAUFFORM_SPIKE_RATIO_MAX`).
 
     `n_instances` is filled for `below_min_occurrences`, where the count IS the
-    reason; the other reasons leave it null rather than repeating a number that
-    played no part in the decision."""
+    reason, `spike_ratio` / `spike_max` for `anchor_spike`; the other reasons
+    leave them null rather than repeating a number that played no part in the
+    decision."""
 
     glyph_key: str
     variant: int
     reason: str
     n_instances: int | None = None
+    spike_ratio: float | None = None
+    spike_max: float | None = None
 
 
 class AggregateApplyOut(BaseModel):

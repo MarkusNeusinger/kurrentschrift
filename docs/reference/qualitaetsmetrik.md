@@ -9244,3 +9244,160 @@ Kompositions-Soll; (c) unter n→t UND „Kurrentschrift" n→t
 geradlinig, Haken weg; Nachweis der Klassenregel an weiteren
 Sägezahn→t/ſ-Wörtern des Sets: fechten, streiten, muß, Seiten). Kill
 wie immer; Rettungsweg dann der Fit-Prior.
+
+### Laufform LF7 `aug29` — Vorregistrierung: das Zeilen-Gate (Aufnahme einer Laufform-Zeile)
+
+Geschrieben und committet VOR der ersten Zahl. Anlass (Autor, nach
+Korb #7): das K kam als n=1-Zeile in den Schreibweg, „weil dadurch das
+eine Wort angeblich besser wurde" — der Buchstabe selbst war deutlich
+schlechter als seine Tafelform. Zwei Löcher: (1) der manuelle
+`PUT …/templates/{key}/laufform` (Harvest-/Schreib-Karten-Pfad) prüft
+nur die Ankerzahl — der Boden `LAUFFORM_MIN_OCCURRENCES` = 3 gilt
+allein im `apply-laufform`; genau über den PUT kamen am `aug26` die
+Zeilen E · F · K · P · ae · b · k · s · ue (n = 1) und f · v (n = 2).
+(2) Das Aufnahme-Gate war das WORT-Lineal (Pixeldeckung): ein
+zackiger Einzelfit, der auf der Tinte liegt, gewinnt dort — Zackigkeit
+sieht das Lineal nicht, und die Overlay-Sichtprüfung hat den
+K-Schwanz durchgewinkt. **Doktrin-Satz (neu, bindend):** ein
+Wort-Gewinn am Pixel-Lineal ist KEIN Aufnahmekriterium für eine
+Laufform-Zeile; aufgenommen wird eine Zeile nur über den Boden (n ≥ 3
+oder ausdrückliche Autor-Aussage per `min_occurrences`) UND das
+Zeilen-Gate unten.
+
+**Mechanismus.** (a) **Boden auf beiden Schreibpfaden:** der PUT
+verlangt `n_occurrences ≥ LAUFFORM_MIN_OCCURRENCES`, darunter 422,
+außer die Anfrage sagt es ausdrücklich (`?min_occurrences=1`, wie beim
+apply); `tools/laufform/harvest.py --apply` reicht `--min-occurrences`
+durch. (b) **Zeilen-Gate:** für die zu schreibende Zeile UND ihre
+Chart-Zeile wird die referenzfreie Natürlichkeit der §5-Metrik
+geometrie-seitig gerechnet — Glätte, Vertikalität, Eckenschärfe,
+Kollinearität mit den §5-Gewichten über die anwendbaren Terme; ohne
+Deckungs-Tor und ohne Rückzug (beide brauchen den Scan) — im
+Pixelrahmen der Chart-Zeile (`unit_px`), Strichanfänge/Ecken vom
+Duktus-Prior (`core/laufform.py::row_naturalness`). Gate-Größe ist die
+**Lücke** Δ = N(Chart) − N(Zeile): positiv = die Zeile ist unruhiger
+als ihre eigene Tafelform. Eine Zeile mit Δ > τ wird nicht geschrieben
+(PUT 422 mit Δ und τ im Detail; apply meldet die Zeile als `skipped`
+mit `reason: naturalness` und beiden Zahlen). Kein Override — eine
+Zeile, die objektiv unruhiger ist als ihre Tafelform, ist kein
+Autor-Wissen, sondern Fit-Rauschen; der Weg ist mehr Evidenz oder der
+Chart-Rückfall.
+
+**KEIN Handknopf: τ ist datengetrieben, die Regel steht hier vorher.**
+Population = die gespeicherten Zeilen der Root vom 2026-08-29 mit
+n ≥ 3 (die Gattung, der die Doktrin traut: a c d e g h i l longs m n o
+p r S Z sz t u w z — 21 Zeilen); τ = ihr größtes Δ, auf 0,01
+aufgerundet. Vorhersage, falsifizierbar: (i) die K-Zeile (n = 1, noch
+in der eingefrorenen Root) hat Δ > τ — hat sie das nicht, ist das Gate
+zu weich und der Arm gescheitert (Rettungsweg dann: die Komponenten
+einzeln gaten, Glätte zuerst); (ii) das Wort-Lineal bleibt byte-gleich
+— das Gate ändert keine Komposition, nur den Schreibpfad. Berichtet
+wird die ganze Verteilung (alle 32 Zeilen, Δ je Komponente) als
+**Bestandsaufnahme** (`tools/laufform/inventory.py`, mit Bildern der
+n < 3-Zeilen neben ihrer Tafelform); Zeilen über τ werden namentlich
+dem Autor vorgelegt — Löschen (Chart-Rückfall) ist eine
+Daten-Entscheidung hinter Autor-Go, mit dem Kugel-Muster je Wort
+berichtet, nicht gegatet.
+
+**Adoption.** τ wird `LAUFFORM_NATURALNESS_GAP_MAX` in
+`core/laufform.py`, das Gate greift auf beiden Schreibpfaden; der
+Doktrin-Satz geht in optimierungs-werkbank.md §6 und ins Glossar
+(„Zeilen-Gate (Laufform)").
+
+**Gemessen `aug29` — die Vorhersage (i) ist FALSCH, das
+Natürlichkeits-Gate wird nicht adoptiert.** Bestandsaufnahme
+(`tools/laufform/inventory.py`, Root 2026-08-29, alle 32 Zeilen):
+τ = 0,31 (Maximum der 21 vertrauten Zeilen: ſ +0,305, l +0,289,
+sz +0,280), das K liegt mit **+0,237 darunter**; über τ nur ue +0,460,
+v +0,413, F +0,326. Auch der vorregistrierte Rettungsweg „Glätte
+zuerst" scheitert: τ_Glätte = 0,572 (o, n = 5; c +0,564, i +0,451)
+gegen K +0,265. Autopsie: (1) die Lücke vergleicht Äpfel mit Birnen —
+der Kollinearitäts-Term wird auf der Laufform „anwendbar", auf der
+Chart nicht (ſ +0,914, sz +0,834, l +0,724 nur aus diesem Term); auf
+den GEMEINSAM anwendbaren Termen bleibt die Ordnung dieselbe (K +0,227
+unter ſ +0,305); (2) der Glätte-Term (2. Krümmungsdifferenz) bestraft
+den kleinamplitudigen Anker-Median-Jitter der vertrauten Zeilen (o, c,
+i) STÄRKER als die großen, langsamen K-Wellen — er sieht Rauheit, nicht
+Wellen. Die Bilder der Bestandsaufnahme (`inventory_lown.png`) zeigen
+dagegen, was das Auge sieht: ue, v, E, ae, F, P, K, b, k sind sichtbar
+gebrochen — **nicht nur wellig, sondern mit SPRÜNGEN** (gerade Striche
+quer durch die Glyphe: die Ankerkette hat die Korrespondenz verloren,
+„Anker im leeren Papier"); s, f, t (bis auf den Kopf) folgen der Tafel.
+
+**Diagnose-Zerlegung (nach der Zahl, ehrlich benannt):** derselbe
+Detektor, den die Ernte an ihrem Fit-Gate benutzt —
+`anchor_spike_ratio` (größter Ankerschritt gegen den Median-Schritt
+DESSELBEN Zugs), dort mit `MAX_ANCHOR_SPIKE_RATIO` = 8,0 auf dem
+EINZELFIT des Kettenpfads, nie auf der Zeile — trennt auf der ZEILE:
+vertraute Population max = i 2,94 (n = 20; sein Punkt-Zug), darüber
+ue 5,79 · F 5,53 · ae 4,15 · b 3,55 · **K 3,16** — fünf der neun
+sichtbar gebrochenen Zeilen, keine vertraute; v 2,86 · E 2,62 ·
+k 2,47 · P 2,31 bleiben durch (ihre Fehler sind Form-Drift und flache
+Segmente, keine Sprünge). Eine Wellen-Amplitude (Abstand zur eigenen
+Glättung in Nib-Radien) trennt NICHT (g 1,86, Z 1,71, w 1,68 unter den
+vertrauten so hoch wie K 1,61). Warum das K die Ernte passierte: 3,16
+< 8,0 — die Schwelle ist für Nadeln kalibriert, und ein n=1-Draft IST
+sein Einzelfit; ein Median über ≥ 3 Fits glättet Sprünge, ein
+Einzelfit trägt sie in die Zeile.
+
+### Laufform LF8 `aug29` — Vorregistrierung: das Sprung-Gate auf der Zeile
+
+Mechanik-Festlegung VOR der Adoption; **die Zahlen auf dieser Root sind
+vor dieser Pre-Reg gesehen worden** (Diagnose-Zerlegung oben), darum
+gilt hier nichts als Vorhersage, was die Root betrifft. Vorhersage ist
+das Prospektive: der nächste Harvest-Draft und der nächste
+`apply-laufform` mit Sprung-Ratio > τ werden abgewiesen, und keine der
+21 vertrauten Zeilen wird je abgewiesen (τ ist per Konstruktion ihr
+Maximum).
+
+**Mechanismus.** `anchor_spike_ratio` zieht nach `core/laufform.py`
+(EIN Detektor; die Ernte importiert ihn von dort — `core` importiert
+nie `tools`). Das Zeilen-Gate auf beiden Schreibpfaden (PUT und apply)
+misst die Ratio der zu schreibenden Anker über die Chart-Strichanfänge;
+über τ = `LAUFFORM_SPIKE_RATIO_MAX` wird nicht geschrieben (PUT 422 mit
+Ratio und τ; apply `skipped` mit `reason: anchor_spike` — derselbe
+Reason-Code wie am Ernte-Gate — und beiden Zahlen). Kein Override. Die
+Natürlichkeits-Lücke bleibt als BERICHTS-Spalte der Bestandsaufnahme
+(`row_naturalness`), nicht als Gate. **τ-Regel wie LF7:** Maximum der
+vertrauten Zeilen (n ≥ 3) auf der Root, auf 0,01 aufgerundet — 2,95.
+Der Boden auf dem PUT (`?min_occurrences`, Ernte `--min-occurrences`)
+bleibt wie in LF7 beschrieben.
+
+**Konsequenzen in Prod (Autor-Entscheid, nicht Gate):** über τ stehen
+heute ue, F, ae, b (n = 1; K ist schon zurück auf der Tafel). v, E, P, k
+passieren das Gate und sind trotzdem sichtbar verzogen — sie werden
+dem Autor MIT den Bildern vorgelegt; Rettungsweg für diese Klasse
+(§7.9): ein Form-Abstand zur Tafel je Anker in Nib-Radien, gegen die
+vertraute Population gemessen (eigene Pre-Reg — die Hand DARF von der
+Tafel abweichen, die Schwelle muss das trennen).
+
+**Adoptiert `aug29` (Bestandsaufnahme durch das Werkzeug, Root
+2026-08-29):** τ = **2,95** (`LAUFFORM_SPIKE_RATIO_MAX`; Maximum der
+21 vertrauten Zeilen = i 2,9405, sein Punkt-Zug). Über τ: ue 5,79 ·
+F 5,53 · ae 4,15 · b 3,55 · K 3,16 — ausnahmslos n=1-Zeilen des
+manuellen PUT, keine vertraute Zeile (per Konstruktion); direkt unter
+τ die vertrauten i 2,94 · o 2,85 · ſ 2,84 und das v (n=2) mit 2,86.
+Mechanik im Baum: `anchor_spike_ratio` in `core/laufform.py` (die
+Ernte importiert es), Boden + Sprung-Gate auf PUT
+(`?min_occurrences`, 422 mit Ratio/τ) und apply (`skipped`, `reason:
+anchor_spike`, `spike_ratio`/`spike_max`; SPA-Chip zeigt beide
+Zahlen), Ernte `--min-occurrences`; die Natürlichkeits-Lücke bleibt
+Berichts-Spalte der Bestandsaufnahme. Das Wort-Lineal ist byte-gleich
+(kein Kompositions-Code berührt). Nachtrag zur Vorregistrierung, wie
+angekündigt: die Trennung auf dieser Root war vor der Pre-Reg
+gesehen; was das Gate prospektiv leistet, zeigt der nächste Harvest.
+**Offen für den Autor:** ue, F, ae, b (über τ, in Prod) — Löschen =
+Chart-Rückfall wie beim K; v, E, P, k (unter τ, sichtbar verzogen) —
+Entscheidung nach Bild, Rettungsweg Form-Abstand (§7.9).
+
+**Entschieden und geschrieben `aug29` (Autor-Go in der Sitzung):** ue,
+F, ae, b zurück auf die Tafel — Zeilen-Backups
+`temp/dbsnapshot/{ue,F,ae,b}-laufform-row-backup-2026-08-29.json`,
+Snapshot `temp/dbsnapshot/2026-08-29T11-28-20Z` (Staging, 118
+Templates vor dem Write), je `DELETE …/templates/{key}/laufform` 204,
+GET `?variant=100` 404. v, E, P, k BLEIBEN (Autor: „Form-Abstand-Arm
+abwarten") — sie sind die Referenzfälle, an denen dieser Arm seine
+Trennung zeigen muss. Die Laufform-Lücke der Sütterlin-1922-Root steht
+damit bei 7 Glyphen (G, W, K, ue, F, ae, b); die eingefrorene Root
+bleibt eingefroren, der Neuexport ist die nächste deklarierte
+Re-Baseline.

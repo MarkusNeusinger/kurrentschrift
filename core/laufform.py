@@ -29,9 +29,41 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
+from typing import Any
+
+import numpy as np
+
+from core.quality import QUALITY_N_SAMPLES, _sample_and_rings
+from core.quality_suetterlin import (
+    PROX_FLOOR_UNITS,
+    PROX_NIB_FACTOR,
+    W_CORNER,
+    W_CROSS,
+    W_SMOOTH,
+    W_VERT,
+    centerline_smoothness,
+    corner_crispness,
+    crossing_collinearity,
+    verticality,
+)
 
 
 Point = tuple[float, float]
+
+# Row gate (LF8, qualitaetsmetrik.md §14 `aug29`): the largest anchor spike
+# ratio (`anchor_spike_ratio` — the harvest's own „Anker im leeren Papier"
+# detector, measured on the ROW) a running-form row may carry and still be
+# written. Data-derived, never hand-set: the worst ratio among the rows the
+# doctrine trusts (n ≥ LAUFFORM_MIN_OCCURRENCES) on the Sütterlin-1922 root of
+# 2026-08-29, rounded up to 0.01 — the i at 2.9405 (its dot stroke). Over it on
+# that root: ue 5.79 · F 5.53 · ae 4.15 · b 3.55 · K 3.16, all n = 1 rows that
+# came in through the manual PUT; no trusted row, by construction. None turns
+# the gate off. The naturalness GAP of LF7 was measured first and rejected —
+# it misses the K — and stays a report column (`row_naturalness`).
+LAUFFORM_SPIKE_RATIO_MAX: float | None = 2.95
+# Pixel frame the geometry-only naturalness is measured in when the chart row
+# carries no `unit_px` of its own (the Sütterlin-1922 rows carry 63–64).
+DEFAULT_UNIT_PX = 64.0
 
 # Arc-length window (x-height units, measured on the chart stroke) over which
 # each free stroke end is blended back to the chart geometry — the one knob of
@@ -199,3 +231,145 @@ def blend_stroke_ends(
                     continue
                 out[start + i] = _blend_point(chart_pts[start + i], lauf_pts[start + i], t, w, d)
     return [[round(x, _DECIMALS), round(y, _DECIMALS)] for x, y in out]
+
+
+def row_naturalness(
+    anchors: Sequence[Sequence[float]],
+    half_widths: Sequence[float],
+    stroke_starts: Sequence[int] | None,
+    corner_anchors: Sequence[int] | None,
+    unit_px: float = DEFAULT_UNIT_PX,
+) -> dict[str, Any]:
+    """Geometry-only naturalness of one template row (the §5 terms without the scan).
+
+    The Sütterlin quality metric (`core.quality_suetterlin`) scores a row as
+    `gate^0.5 · naturalness`: the gate needs the crop, the naturalness terms
+    need only the rendered centerline. A running-form row has no crop of its
+    own — it is a median over word occurrences — so this is the part of the
+    metric that CAN be asked of it: smoothness (no jags), verticality of the
+    straight downstrokes, crispness of the within-stroke corners and
+    collinearity through a straight crossing, weighted like §5 over the
+    applicable terms. Retrace fidelity (ink recall) is left out — it needs the
+    mask. Stroke starts and corner anchors come from the chart row (the ductus
+    prior), so a Laufform row and its chart row are sampled with one plan and
+    the two numbers compare.
+
+    Args:
+        anchors: Template-unit anchors (x-height units, y up).
+        half_widths: Per-anchor half-widths in the same units.
+        stroke_starts: The chart's stroke starts (`trace_meta.stroke_starts`).
+        corner_anchors: The chart's corner anchors (`trace_meta.corner_anchors`).
+        unit_px: Pixels per x-height of the measurement frame.
+
+    Returns:
+        `naturalness` (0–1) plus the 0–1 `components` (1 − quality, like §5's
+        `components`) and the per-term applicability counts.
+    """
+    pts = np.asarray([[float(x), float(y)] for x, y in anchors], dtype=float)
+    if len(pts) < 2:
+        raise ValueError("need at least 2 anchors")
+    # Pixel frame: y down like a crop; every term is invariant to the flip.
+    anchors_px = np.column_stack([pts[:, 0] * unit_px, -pts[:, 1] * unit_px])
+    hw = np.asarray([float(h) for h in half_widths], dtype=float) * unit_px
+    if len(hw) != len(pts):
+        hw = np.full(len(pts), float(hw.mean()) if len(hw) else 0.05 * unit_px)
+    sx, sy, _sw, sample_starts, corner_sample_idx, _rings = _sample_and_rings(
+        anchors_px, hw, stroke_starts, QUALITY_N_SAMPLES, corner_anchors
+    )
+    r_px = float(np.median(hw)) if len(hw) else 1.0
+    prox_px = max(PROX_NIB_FACTOR * r_px, PROX_FLOOR_UNITS * unit_px)
+    q_smooth = centerline_smoothness(sx, sy, sample_starts, corner_sample_idx, unit_px)
+    q_vert, n_vert = verticality(sx, sy, sample_starts, unit_px)
+    q_corner, n_corner = corner_crispness(sx, sy, sample_starts, corner_sample_idx, unit_px)
+    q_cross, n_cross = crossing_collinearity(sx, sy, sample_starts, prox_px, unit_px)
+    applicable = [(W_SMOOTH, q_smooth)]
+    if n_vert:
+        applicable.append((W_VERT, q_vert))
+    if n_corner:
+        applicable.append((W_CORNER, q_corner))
+    if n_cross:
+        applicable.append((W_CROSS, q_cross))
+    naturalness = sum(w * q for w, q in applicable) / sum(w for w, _ in applicable)
+    return {
+        "naturalness": round(float(naturalness), 4),
+        "components": {
+            "smoothness": round(1.0 - float(q_smooth), 4),
+            "verticality": round(1.0 - float(q_vert), 4),
+            "corner": round(1.0 - float(q_corner), 4),
+            "collinearity": round(1.0 - float(q_cross), 4),
+        },
+        "applicable": {"vertical_runs": int(n_vert), "corners": int(n_corner), "crossings": int(n_cross)},
+    }
+
+
+def naturalness_gap(chart_row: Any, anchors: Sequence[Sequence[float]]) -> dict[str, Any]:
+    """The row gate's quantity: N(chart) − N(candidate) for one glyph (LF7).
+
+    `chart_row` is the variant-0 template (ORM row or an attribute view with
+    `anchors`, `half_widths`, `trace_meta`); `anchors` the candidate row's
+    anchors, same count. Both are measured in the chart's own pixel frame
+    with the chart's stroke starts and corner anchors. Positive = the
+    candidate is less natural than its own chart form.
+    """
+    meta = getattr(chart_row, "trace_meta", None) or {}
+    unit_px = float(meta.get("unit_px") or DEFAULT_UNIT_PX)
+    starts = meta.get("stroke_starts")
+    corners = meta.get("corner_anchors")
+    chart = row_naturalness(chart_row.anchors, chart_row.half_widths, starts, corners, unit_px)
+    cand = row_naturalness(anchors, chart_row.half_widths, starts, corners, unit_px)
+    return {"gap": round(chart["naturalness"] - cand["naturalness"], 4), "chart": chart, "candidate": cand}
+
+
+def anchor_spike_ratio(anchors: Sequence[Sequence[float]], stroke_starts: Sequence[int] | None) -> float:
+    """The anchor spike ratio of an anchor chain — an anchor that left the
+    stroke for empty paper and came back („Anker im leeren Papier", the
+    glossary term).
+
+    The largest step between consecutive anchors, measured against the median
+    step OF ITS OWN pen-stroke, maximised over the strokes. Numerator and
+    denominator share a stroke and a unit, so the ratio is scale-free and
+    comparable across glyphs — the 120-anchor capitals and the 6-anchor
+    punctuation alike. PER STROKE, not pooled, because strokes differ in scale
+    by ~1.5x (an i's body against its dot): a pooled median is dominated by the
+    long body stroke and understates a spike inside a short one.
+
+    Pen lifts never count: a stroke boundary is the hand setting the pen down
+    somewhere else, not a discontinuity of the line. A two-anchor stroke yields
+    one step (ratio 1.0) and a three-anchor stroke caps near 2 — such strokes
+    are structurally exempt (the shortest stroke today is a ue umlaut dot at 10
+    anchors). Returns 0.0 when there is nothing to judge and `inf` when a
+    stroke's median step is zero while some step in it is not.
+
+    The ONE detector: the harvest's chain gate scores every single fit with it
+    (`tools/laufform/harvest.py`, `MAX_ANCHOR_SPIKE_RATIO` = 8 — calibrated
+    for needles), and the row gate (LF8) scores the ROW that is about to be
+    written with it against `LAUFFORM_SPIKE_RATIO_MAX` — an n = 1 draft IS its
+    single fit and carries every spike straight into the writing path.
+    """
+    pts = np.asarray(anchors, dtype=float).reshape(-1, 2)
+    if len(pts) < 2:
+        return 0.0
+    bounds = sorted({0, *(int(s) for s in (stroke_starts or []) if 0 < int(s) < len(pts)), len(pts)})
+    worst = 0.0
+    for start, end in zip(bounds[:-1], bounds[1:], strict=True):
+        stroke = pts[start:end]
+        if len(stroke) < 2:
+            continue
+        steps = np.hypot(*(stroke[1:] - stroke[:-1]).T)
+        largest, median = float(steps.max()), float(np.median(steps))
+        if median <= 0.0:
+            if largest > 0.0:
+                return float("inf")
+            continue
+        worst = max(worst, largest / median)
+    return worst
+
+
+def spike_gate(chart_row: Any, anchors: Sequence[Sequence[float]]) -> dict[str, Any]:
+    """The row gate (LF8) for one candidate row: its spike ratio over the chart's
+    stroke starts, the gate value and whether it is exceeded (False while the
+    gate is off, `LAUFFORM_SPIKE_RATIO_MAX` None)."""
+    meta = getattr(chart_row, "trace_meta", None) or {}
+    ratio = round(anchor_spike_ratio(anchors, meta.get("stroke_starts")), 4)
+    limit = LAUFFORM_SPIKE_RATIO_MAX
+    return {"ratio": ratio, "max": limit, "exceeded": limit is not None and ratio > limit}

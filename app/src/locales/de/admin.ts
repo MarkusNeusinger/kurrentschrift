@@ -126,6 +126,7 @@ export const admin = {
       no_base_template: 'keine Tafelzeile',
       anchor_count: 'Ankerzahl weicht ab',
       below_min_occurrences: 'zu wenige Vorkommen',
+      anchor_spike: 'Ankersprung (Anker im leeren Papier)',
     },
   },
   // The Übergänge view: the generated join first, the measurement beside it,
