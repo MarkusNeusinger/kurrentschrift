@@ -3,7 +3,7 @@
 // pairs the SHOWN form with the GUESSED letter and names the feature that tells
 // them apart, in the words of docs/schriftkunde/orthographie-regeln.md §1/§3 and
 // the Schriftkunde page's „Buchstaben-Besonderheiten" (the f's top loop and
-// Querstrich against the ſ's pointed top, u-Bogen,
+// crossbar against the ſ's pointed top, the u-Bogen — the bow over the u,
 // e ≈ n, the ſ/s position rule, ß = ſʒ, the umlaut marks). Direction matters:
 // the sentence describes the form on the card, so n→u and u→n read differently.
 // A pair without a documented feature returns null — no explanation is better
