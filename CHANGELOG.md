@@ -46,7 +46,11 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   prior landing direction, (a) −0.0010 but the t unreached, not adopted —
   and the open J2 „Anstrich-Verlängerung in den Schaft"),
   `tintenfolger.md` §7.9, glossary „Endblende (Laufform)" /
-  „Prior-Landerichtung".
+  „Prior-Landerichtung". Data action of the same round (owner's go, after
+  a staged `dbsnapshot`): the Sütterlin K's n=1 running-form row was
+  deleted, so „Kurrentschrift" writes the K chart-true and takes the u's
+  slant straight from the baseline; the frozen fixture root stays as it
+  is until the next declared re-baseline.
 
 ### Changed
 

@@ -9082,6 +9082,21 @@ die Sichtprüfung (c) und der Autor-Befund (die Wellen sind Teil des K)
 zählen hier gegen die Zahl. Rettungsweg → LF6 unten, §7.9-Zeile im
 selben PR.
 
+**K0 geschrieben `aug29`** (Autor-Go in der Sitzung: „Laufform vom K
+deutlich verbessern oder zurück zur Tafelform" — verbessern ist an
+LF5 und LF6 gescheitert): `dbsnapshot.fetch` (Staging
+`temp/dbsnapshot/2026-08-29T08-12-12Z`, kein Archiv-Klon konfiguriert;
+die K-Zeile zusätzlich als `k-laufform-row-backup-2026-08-29.json`
+daneben) → `DELETE …/sources/suetterlin-1922/templates/K/laufform`
+(204) → GET `?variant=100` 404, `/write/word` „Kurrentschrift": K
+tafelgetreu (Schwanzende 0,43/0,29), K→u als 45°-Diagonale
+0,46/0,32 → 0,72/0,58 (Cap-Retrace + Verbinder). Die Fixture-Root
+bleibt eingefroren (Kugel misst dort weiter mit der n=1-Zeile,
+0,0717); der Neuexport ist die nächste deklarierte Re-Baseline. Die
+Laufform-Lücke der Sütterlin-1922-Root ist damit wieder 3 Glyphen
+(G, W, K) — K wartet auf ≥ 3 Vorkommen (Eigenhand-Ernte oder weitere
+Quellen), nie auf einen weicheren Boden.
+
 ### Laufform LF6 `aug29` — Vorregistrierung: die Quer-Endblende (nur der Quer-Anteil der End-Drift geht zurück)
 
 Geschrieben und committet VOR der ersten Zahl. Konversion des
