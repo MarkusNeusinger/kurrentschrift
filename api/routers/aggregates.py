@@ -53,11 +53,29 @@ from core.database import (
     PairAggregate,
     PairAggregateRepository,
     PairInstanceRepository,
+    Template,
     TemplateRepository,
 )
 
 
 router = APIRouter(prefix="/hands/{hand_id}/aggregates", tags=["aggregates"], dependencies=[Depends(require_admin)])
+
+
+def _written_anchors(base: Template | None, median: list[list[float]]) -> list[list[float]]:
+    """The anchors `apply-laufform` WOULD write for this median.
+
+    The Prüfstein (list + rebuild) asks whether the stored running form is what
+    this aggregate would write — so the median goes through the same canonical
+    builder the apply step uses, LF5 end blend included; against the raw median
+    every blended row would carry a permanent end-piece residue and 0 would
+    never read again. Without a chart row, or with a deviating anchor count,
+    the apply step skips the key and the raw median is the only comparable.
+    """
+    if base is None or len(base.anchors) != len(median):
+        return median
+    return build_laufform_canonical(base, median, {})["anchors"]
+
+
 pair_router = APIRouter(
     prefix="/hands/{hand_id}/pair-aggregates", tags=["aggregates"], dependencies=[Depends(require_admin)]
 )
@@ -71,7 +89,9 @@ async def require_hand(hand_id: str, db: AsyncSession = Depends(require_db)) -> 
     return hand
 
 
-def _to_out(row: Aggregate, laufform_anchors: list[list[float]] | None = None) -> AggregateOut:
+def _to_out(
+    row: Aggregate, laufform_anchors: list[list[float]] | None = None, base: Template | None = None
+) -> AggregateOut:
     median = [list(a) for a in row.cluster_center or []]
     return AggregateOut(
         glyph_key=row.glyph_key,
@@ -82,7 +102,11 @@ def _to_out(row: Aggregate, laufform_anchors: list[list[float]] | None = None) -
         mean_stats=dict(row.mean_stats or {}),
         n_instances=row.n_instances,
         laufform_anchors=laufform_anchors,
-        laufform_dev_xh=(laufform_deviation(median, laufform_anchors) if laufform_anchors is not None else None),
+        laufform_dev_xh=(
+            laufform_deviation(_written_anchors(base, median), laufform_anchors)
+            if laufform_anchors is not None
+            else None
+        ),
     )
 
 
@@ -103,17 +127,22 @@ async def list_aggregates(hand: Hand = Depends(require_hand), db: AsyncSession =
     # One query for the whole listing; a hand without a style has no templates
     # to compare against, so the freshness columns simply stay null.
     laufform_by_key: dict[str, list[list[float]]] = {}
+    chart_by_key: dict[str, Template] = {}
     if hand.style_id and rows:
         keys = sorted({r.glyph_key for r in rows})
+        repo = TemplateRepository(db)
         laufform_by_key = {
             t.glyph_key: [list(a) for a in t.anchors]
-            for t in await TemplateRepository(db).get_many(
-                hand.style_id, keys, variant=LAUFFORM_VARIANT, render_only=True
-            )
+            for t in await repo.get_many(hand.style_id, keys, variant=LAUFFORM_VARIANT, render_only=True)
         }
+        # The chart rows feed the Prüfstein's canonical builder (_written_anchors).
+        chart_by_key = {t.glyph_key: t for t in await repo.get_many(hand.style_id, keys, variant=0, render_only=True)}
     # Only a BASE-variant aggregate is a Laufform source (the apply step skips
     # every other one), so only there does a comparison mean anything.
-    return [_to_out(r, laufform_by_key.get(r.glyph_key) if r.variant == 0 else None) for r in rows]
+    return [
+        _to_out(r, laufform_by_key.get(r.glyph_key) if r.variant == 0 else None, chart_by_key.get(r.glyph_key))
+        for r in rows
+    ]
 
 
 @router.post("/rebuild", response_model=AggregateRebuildOut)
@@ -166,14 +195,16 @@ async def rebuild_aggregates(
         ]
     )
 
-    # Prüfstein: compare against the stored running forms of the hand's style.
+    # Prüfstein: compare against the stored running forms of the hand's style
+    # — through the canonical builder, see _written_anchors.
     laufform_by_key: dict[str, list] = {}
+    chart_by_key: dict[str, Template] = {}
     if hand.style_id:
         keys = sorted({glyph_key for glyph_key, _ in aggregates})
-        templates = await TemplateRepository(db).get_many(
-            hand.style_id, keys, variant=LAUFFORM_VARIANT, render_only=True
-        )
+        repo = TemplateRepository(db)
+        templates = await repo.get_many(hand.style_id, keys, variant=LAUFFORM_VARIANT, render_only=True)
         laufform_by_key = {t.glyph_key: t.anchors for t in templates}
+        chart_by_key = {t.glyph_key: t for t in await repo.get_many(hand.style_id, keys, variant=0, render_only=True)}
 
     keys_out = [
         AggregateKeySummary(
@@ -181,7 +212,9 @@ async def rebuild_aggregates(
             variant=variant,
             n_instances=agg["n_instances"],
             laufform_dev_xh=(
-                laufform_deviation(agg["cluster_center"], laufform_by_key[glyph_key])
+                laufform_deviation(
+                    _written_anchors(chart_by_key.get(glyph_key), agg["cluster_center"]), laufform_by_key[glyph_key]
+                )
                 if glyph_key in laufform_by_key
                 else None
             ),
@@ -322,6 +355,10 @@ async def apply_laufform(
         canonical = build_laufform_canonical(
             base, median, {"derived_from": "hand-aggregate", "hand_id": hand.id, "n_occurrences": row.n_instances}
         )
+        # The pre-write distance compares what is ABOUT TO BE WRITTEN with what
+        # stands — the canonical anchors, end blend included (LF5), not the raw
+        # median: a re-apply of an unchanged aggregate then reads 0 as promised.
+        written_anchors = [list(a) for a in canonical["anchors"]]
         await repo.upsert(
             hand.style_id,
             row.glyph_key,
@@ -336,7 +373,9 @@ async def apply_laufform(
                 glyph_key=row.glyph_key,
                 variant=row.variant,
                 n_instances=row.n_instances,
-                laufform_dev_xh=(laufform_deviation(median, prev_anchors) if prev_anchors is not None else None),
+                laufform_dev_xh=(
+                    laufform_deviation(written_anchors, prev_anchors) if prev_anchors is not None else None
+                ),
                 created=prev_anchors is None,
             )
         )

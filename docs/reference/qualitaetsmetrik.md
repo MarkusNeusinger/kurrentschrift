@@ -9178,3 +9178,54 @@ Komposition, und die Kette liest ihr Kompositions-Soll aus derselben
 Komposition: die Bewegung des Solls wird unter (b) berichtet.
 Kill: ein verletztes Gate = keine Adoption; Rettungsweg dann der
 Fit-Prior (LF-Rettungsweg 2).
+
+**Gemessen `aug29` — (a) grün, (c) rot: nicht adoptiert, der Riss ist
+eine Stufe tiefer lokalisiert.** (a) wordbench 0,106720 → **0,105757**
+(−0,0010), Paare byte-gleich (0,146506 — die Abb.-20-Drills rendern
+keine Laufform); 32 Wörter bewegt, 18 : 14 (streiten −0,044, scharfen
+−0,023, schießen −0,018 … gegen Zorn +0,018, Zügel +0,011, Gewehr
++0,006); mit K0 kombiniert 0,105908. **(c) unter n→t: unverändert**
+(0,0866 → 0,0859, Platzierungsregel weiter `clearance_floor`, Haken
+steht). Autopsie: die Prior-Landerichtung (40,4°) kommt an, aber die
+Kopplung ERREICHT das t nicht — (1) `ALIGN_MAX_ENTRY_Y` = 0,62 schließt
+jeden Fuß über 0,62 vom Pass-through aus, und der t-Fuß liegt bei 0,64
+(Laufform) bzw. 0,70 (Chart); die Konstante wurde `jul` genau dafür
+gesetzt („tall lead-ins (h 0.69, t 0.70) sweep in long and flat on the
+plates — alignment on their STEEP landing tangent over-pulls") — d. h.
+sie ist der Workaround für die falsche Tangenten-LESUNG, die J1 gerade
+behebt; (2) `_flank_candidates` bricht am ersten Segment des
+Haken-Kopfs ab (135° außerhalb 25–55°) und endet ohnehin an derselben
+Decke, sodass der ganze t-Anstrich (0,64–1,4) nie koppelbar ist; (3)
+der generische Bézier misst seine Ankunftsrichtung `d_in` am
+gekoppelten Laufform-Kopf, also am Haken. Das t nach f ist nur deshalb
+sauber, weil der Bar-Exit-Pfad (`stem_launch`) über den
+FORK-Kopplungsindex (~0,9 xh hoch auf dem Anstrich) geradlinig
+koppelt und den Kopf trimmt — genau die Form, die die Platte für n→t
+zeigt (EINE Diagonale vom n-Fuß in den t-Schaft). Strikt nach
+Vorregistrierung: (c) ist Gate, J1 wird NICHT adoptiert; `compose.py`
+bleibt unverändert, der (a)-Gewinn wird in J2 mitgemessen, damit die
+Adoption über die vorregistrierte Zielstelle läuft und nicht über
+Beifang.
+
+### Übergänge J2 `aug29` — Vorregistrierung (offen): die Anstrich-Verlängerung in den Schaft
+
+Vorregistriert, noch nicht gemessen — der nächste Arm für Korb #7,
+Punkt 3. **Hypothese.** Ein Sägezahn-Austritt (Tangente 25–55°) vor
+einem Buchstaben, dessen erster Zug ein Anstrich in einen
+Oberlängen-Schaft ist (t, ſ; der Prior sagt es: Chart-Landerichtung
+im Align-Fenster, Apex des ersten Zugs über der Mittelhöhe), koppelt
+auf den Platten wie f→t: EINE gerade Linie vom Austritt mittig auf
+den Anstrich, der Vorlauf darunter wird absorbiert. **Mechanismus
+(ein Klassenpfad, `STEM_ENTRY_BASES` = {t, longs}):** J1s
+Prior-Landerichtung für die Klassen-Entscheidung + der
+FORK-Kopplungsindex als Ziel (wie beim Bar-Exit) + die gerade
+Verbindungslinie mit Trim (`_straight_connector`), Platzierung so,
+dass die Linie vom Austritt im Mittel der Tangenten den
+Kopplungspunkt trifft (die `_fused_flank_placement`-Logik, ohne die
+Decke `ALIGN_MAX_ENTRY_Y`, die für diese Klasse nicht gilt), gefloort
+von der höhenbewussten Tinten-Freiheit. **EIN Knopf: Klassenpfad
+an/aus.** Basis, Umgebung, Gates wie J1 ((a) ≤ +0,002; (b)
+Kompositions-Soll; (c) unter n→t UND „Kurrentschrift" n→t
+geradlinig, Haken weg; Nachweis der Klassenregel an weiteren
+Sägezahn→t/ſ-Wörtern des Sets: fechten, streiten, muß, Seiten). Kill
+wie immer; Rettungsweg dann der Fit-Prior.

@@ -275,14 +275,28 @@ def template_row_from_payload(payload: dict) -> dict:
     }
 
 
-def laufform_row_from_payload(chart_row: dict, anchors: list[list[float]], meta: dict | None = None) -> dict:
+def laufform_row_from_payload(
+    chart_row: dict,
+    anchors: list[list[float]],
+    meta: dict | None = None,
+    *,
+    end_window: float | None = None,
+    transverse_only: bool | None = None,
+) -> dict:
     """Reconstruct one LAUFFORM_VARIANT fixture row from the chart row + median anchors.
 
     Uses `api.routers.templates.build_laufform_canonical` — the same derivation
     `POST …/aggregates/apply-laufform` used to write the stored variant-100 row
     — so widths, stroke topology and the entry/exit/advance shift are identical
-    by construction rather than by re-derivation.
+    by construction rather than by re-derivation. `end_window` / `transverse_only`
+    override the builder's end-blend window and mode (a candidate map on the
+    pre-registered ladder, §14 LF5/LF6); None keeps the builder's defaults.
     """
+    kwargs: dict = {}
+    if end_window is not None:
+        kwargs["end_window"] = end_window
+    if transverse_only is not None:
+        kwargs["transverse_only"] = transverse_only
     view = _ChartTemplateView(
         glyph=chart_row["glyph"],
         anchors=chart_row["anchors"],
@@ -292,7 +306,7 @@ def laufform_row_from_payload(chart_row: dict, anchors: list[list[float]], meta:
         exit_pt=chart_row.get("exit_pt") or {},
         trace_meta=chart_row.get("trace_meta") or {},
     )
-    canonical = build_laufform_canonical(view, anchors, dict(meta or LAUFFORM_META))
+    canonical = build_laufform_canonical(view, anchors, dict(meta or LAUFFORM_META), **kwargs)
     return {
         "glyph_key": chart_row["glyph_key"],
         "glyph": canonical["glyph"],

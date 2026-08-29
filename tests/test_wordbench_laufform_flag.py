@@ -60,7 +60,14 @@ def test_a_draft_is_derived_through_the_shared_builder():
     assert row["advance"] == pytest.approx(1.7)
     # Provenance says this row came from an overlay run, with the draft's own
     # evidence count — the frozen rows carry the apply step's stamp instead.
-    assert row["trace_meta"]["laufform"] == {**LAUFFORM_OVERLAY_META, "n_occurrences": 7}
+    assert row["trace_meta"]["laufform"] == {
+        **LAUFFORM_OVERLAY_META,
+        "n_occurrences": 7,
+        # The builder stamps its end-blend window and mode (§14 LF5/LF6; the
+        # window is 0 — off — until a rung passes its gates).
+        "end_window": 0.0,
+        "end_mode": "transverse",
+    }
 
 
 def test_a_full_row_passes_through_verbatim():
