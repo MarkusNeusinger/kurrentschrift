@@ -46,7 +46,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
-- **K** — k0-Protokoll §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
+- **K** — k0-Protokoll §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
@@ -296,16 +296,39 @@ unverändert, weil die Kopplung das t nicht erreicht
 adoptiert, wird in J2 („Anstrich-Verlängerung in den Schaft")
 mitgemessen. → qualitaetsmetrik.md §14 („Übergänge J1"/„J2")
 
-**Zeilen-Gate (Laufform)** — die beiden Prüfungen, die eine
+**Kopf-Gate (Laufform)** — die dritte Prüfung des Zeilen-Gates (§14
+LF9, `aug29`): der KOPF einer Laufform-Zeile — die Landerichtung ihres
+ersten Zugs über dasselbe Bogenfenster, mit dem die Übergangs-Grammatik
+landet (`TANGENT_WINDOW_UNITS`), gemessen auf der GERENDERTEN
+Mittellinie (die Anker-Polylinie liest die dichten, eingerollten
+Kapitalen-Köpfe bis 33° falsch) — darf die Richtung der Tafelzeile um
+höchstens `LAUFFORM_HEAD_DEVIATION_MAX` = 15° verlassen, kein Override.
+τ ist aus der Doktrin abgeleitet, nicht aus den Daten: das halbe
+Align-Band (25–55°) der Grammatik — ein Kopf, der weiter abdreht,
+ändert die Übergangsklasse, die die Grammatik an der Landung
+entscheidet (J1-Befund), und widerspricht dem, was die Kanonisierung
+verspricht („the tangents stay": die Zeile trägt die Eintrittstangente
+der Tafel als Metadatum). Gefunden am Korb-#7-t: Anker 0 der n=4-Zeile
+liegt RECHTS von Anker 1, der Kopf startet mit 104° gegen 37° Tafel —
+der Rückwärts-Schlenker im Wort, den das Sprung-Gate nicht sieht (t
+2,11 < 2,95). Auf der Root vom 29.08.: t 46°, E 48°, K 41°, f 28°, v
+27°, k 17° über τ, m mit 14,9° die knappste vertraute Zeile darunter.
+*Technisch:* `core/laufform.py` (`head_deviation`, `head_gate`),
+Skip-Grund `head_deviation` mit `head_deviation`/`head_max`,
+Inventar-Spalte `head°` → qualitaetsmetrik.md §14 („Laufform LF9")
+
+**Zeilen-Gate (Laufform)** — die drei Prüfungen, die eine
 Laufform-Zeile bestehen muss, bevor sie in den Schreibweg kommt (§14
-LF7/LF8, `aug29`), auf BEIDEN Schreibpfaden (manueller `PUT
+LF7/LF8/LF9, `aug29`), auf BEIDEN Schreibpfaden (manueller `PUT
 …/laufform` wie `apply-laufform`): (1) der **Boden**
 `LAUFFORM_MIN_OCCURRENCES` (n ≥ 3), nur durch die ausdrückliche
 Autor-Aussage `?min_occurrences=N` in der Anfrage zu senken; (2) das
 **Sprung-Gate**: die Sprung-Ratio der Zeile (`anchor_spike_ratio`,
 „Anker im leeren Papier" — derselbe Detektor wie am Ernte-Gate, dort
 auf dem Einzelfit) darf `LAUFFORM_SPIKE_RATIO_MAX` = 2,95 nicht
-übersteigen, kein Override. Doktrin-Satz dazu: ein Wort-Gewinn am
+übersteigen, kein Override; (3) das **Kopf-Gate** (eigener Eintrag):
+der Kopf der Zeile darf die Landerichtung der Tafel um höchstens 15°
+verlassen. Doktrin-Satz dazu: ein Wort-Gewinn am
 Pixel-Lineal ist KEIN Aufnahmekriterium für eine Zeile — so kam das
 n=1-K in den Schreibweg. Vorher gemessen und verworfen: die
 Natürlichkeits-Lücke N(Chart) − N(Zeile) über die §5-Terme (LF7 — sie

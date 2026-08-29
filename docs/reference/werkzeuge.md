@@ -60,12 +60,15 @@ wörtlich, sodass eine reine Chart-Rückfall-Karte (K0-Arm) nichts anderes
 bewegt.
 
 **`tools/laufform/inventory.py`** — die Bestandsaufnahme der gespeicherten
-Laufform-Zeilen gegen ihre Tafelformen (§14 LF7/LF8): je Zeile n, die
+Laufform-Zeilen gegen ihre Tafelformen (§14 LF7/LF8/LF9): je Zeile n, die
 Sprung-Ratio (`core.laufform.anchor_spike_ratio` auf der ZEILE — das
-Zeilen-Gate) neben der Natürlichkeits-Lücke als Berichts-Spalte, dazu das
-datengetriebene τ (Maximum der Zeilen mit n ≥ 3, aufgerundet) und die
-Zeilen darüber; `--png` zeichnet ausgewählte Zeilen über ihre Tafelform —
-das Bild, das das Wort-Lineal nie ansieht.
+Sprung-Gate) und die Kopf-Abweichung `head°` (`core.laufform.head_deviation`,
+die Landerichtung des ersten Zugs gegen die Tafel — das Kopf-Gate) neben der
+Natürlichkeits-Lücke als Berichts-Spalte, dazu das datengetriebene τ der
+Sprung-Ratio (Maximum der Zeilen mit n ≥ 3, aufgerundet), das
+Doktrin-τ des Kopf-Gates (15°) und die Zeilen über dem einen wie dem
+anderen (Spalte `gates`); `--png` zeichnet ausgewählte Zeilen über ihre
+Tafelform — das Bild, das das Wort-Lineal nie ansieht.
 
 ```bash
 uv run python -m tools.laufform.inventory [--root DIR] [--json out.json]
@@ -75,7 +78,8 @@ uv run --extra viz python -m tools.laufform.inventory --png inventory.png --only
 Die Ernte (`tools/laufform/harvest.py --apply`) läuft seit LF7 gegen den
 Boden des Endpunkts: ein Draft unter `LAUFFORM_MIN_OCCURRENCES` wird
 abgewiesen, außer `--min-occurrences N` senkt ihn ausdrücklich für DIESEN
-Lauf (die LF1-Autor-Aussage); das Sprung-Gate hat keinen Override.
+Lauf (die LF1-Autor-Aussage); Sprung-Gate und Kopf-Gate haben keinen
+Override.
 
 **`tools/pairlab`** — seziert EINEN Buchstaben-Übergang gegen seine echten
 Vorkommen in den Vorlagen, jeder Buchstabe UNABHÄNGIG neu eingepasst:

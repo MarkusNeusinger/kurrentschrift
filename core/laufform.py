@@ -33,6 +33,7 @@ from typing import Any
 
 import numpy as np
 
+from core.geometry import TANGENT_WINDOW_UNITS
 from core.quality import QUALITY_N_SAMPLES, _sample_and_rings
 from core.quality_suetterlin import (
     PROX_FLOOR_UNITS,
@@ -46,6 +47,7 @@ from core.quality_suetterlin import (
     crossing_collinearity,
     verticality,
 )
+from core.template import multi_stroke_centerlines
 
 
 Point = tuple[float, float]
@@ -61,6 +63,20 @@ Point = tuple[float, float]
 # the gate off. The naturalness GAP of LF7 was measured first and rejected —
 # it misses the K — and stays a report column (`row_naturalness`).
 LAUFFORM_SPIKE_RATIO_MAX: float | None = 2.95
+# Head gate (LF9, qualitaetsmetrik.md §14 `aug29`): how far the direction of a
+# running-form row's HEAD — its first stroke's landing over the grammar's own
+# arc window (`head_deviation`) — may leave the chart's before the row is
+# refused. Doctrine-derived, not data-derived: half the ALIGN band (25–55°) of
+# core/compose.py. A head that leaves the chart's direction by more can change
+# the join class the grammar decides on its landing (J1, §14) and contradicts
+# the one property the canonicalisation promises to keep („the tangents stay":
+# the row carries the chart's entry tangent as metadata while its geometry says
+# otherwise). On the Sütterlin-1922 root of 2026-08-29 it flags the t (46°,
+# n = 4 — the Korb #7 hook: anchor 0 sits right of anchor 1, so the head starts
+# at 104° against the chart's 37°) and the E/f/v/k rows; the spike gate cannot
+# see a head that turns, and no other trusted row comes near (m 15°, w 14°).
+# None turns the gate off.
+LAUFFORM_HEAD_DEVIATION_MAX: float | None = 15.0
 # Pixel frame the geometry-only naturalness is measured in when the chart row
 # carries no `unit_px` of its own (the Sütterlin-1922 rows carry 63–64).
 DEFAULT_UNIT_PX = 64.0
@@ -373,3 +389,74 @@ def spike_gate(chart_row: Any, anchors: Sequence[Sequence[float]]) -> dict[str, 
     ratio = round(anchor_spike_ratio(anchors, meta.get("stroke_starts")), 4)
     limit = LAUFFORM_SPIKE_RATIO_MAX
     return {"ratio": ratio, "max": limit, "exceeded": limit is not None and ratio > limit}
+
+
+def _landing_direction_deg(points: np.ndarray, window: float) -> float | None:
+    """Landing direction of a polyline's start, degrees (y up): from its first
+    point to the first point at least ``window`` of arc away — the grammar's
+    own rule (`core.compose._endpoint_tangent`, TANGENT_WINDOW_UNITS), so the
+    gate judges the direction the join will actually be built on — or to the
+    last point of a shorter line. None when nothing to judge (fewer than two
+    distinct points)."""
+    if len(points) < 2:
+        return None
+    acc = 0.0
+    far = points[-1]
+    for i in range(1, len(points)):
+        acc += float(math.hypot(points[i][0] - points[i - 1][0], points[i][1] - points[i - 1][1]))
+        far = points[i]
+        if acc >= window:
+            break
+    dx, dy = float(far[0] - points[0][0]), float(far[1] - points[0][1])
+    if dx == 0.0 and dy == 0.0:
+        return None
+    return math.degrees(math.atan2(dy, dx))
+
+
+def _rendered_first_stroke(chart_row: Any, anchors: Sequence[Sequence[float]]) -> np.ndarray:
+    """The first pen-stroke's centerline as the renderer draws it — the chart's
+    sample plan (stroke starts, corner knots, widths) over the given anchors,
+    the same spline the join grammar reads its landing off. Empty when there
+    is nothing to sample."""
+    pts = np.asarray(anchors, dtype=float).reshape(-1, 2)
+    if len(pts) < 2:
+        return np.zeros((0, 2))
+    meta = getattr(chart_row, "trace_meta", None) or {}
+    half_widths = np.asarray(chart_row.half_widths, dtype=float)
+    if len(half_widths) != len(pts):
+        half_widths = np.full(len(pts), float(half_widths.mean()) if len(half_widths) else 0.05)
+    lines = multi_stroke_centerlines(
+        pts,
+        half_widths,
+        meta.get("stroke_starts"),
+        90.0,
+        n=QUALITY_N_SAMPLES,
+        corner_anchors=meta.get("corner_anchors"),
+    )
+    return np.asarray(lines[0], dtype=float) if lines else np.zeros((0, 2))
+
+
+def head_deviation(chart_row: Any, anchors: Sequence[Sequence[float]]) -> float:
+    """How far a candidate row's HEAD turns away from the chart's, in degrees
+    (0–180): the landing direction of the first pen-stroke — over
+    TANGENT_WINDOW_UNITS of arc, the window the join grammar lands with, on
+    the RENDERED centerline (the chart's sample plan over each anchor set;
+    the anchor polyline itself misreads the dense, curling capital heads by
+    up to 33°, §14 LF9) — of the row against the chart's. The Korb #7 t: the
+    fitted head starts up-left where the chart rises at 37°, the grammar
+    reads a landing of 87° and never couples. 0.0 when either head is
+    degenerate — nothing to judge, never a refusal."""
+    a = _landing_direction_deg(_rendered_first_stroke(chart_row, chart_row.anchors), TANGENT_WINDOW_UNITS)
+    b = _landing_direction_deg(_rendered_first_stroke(chart_row, anchors), TANGENT_WINDOW_UNITS)
+    if a is None or b is None:
+        return 0.0
+    return abs((b - a + 180.0) % 360.0 - 180.0)
+
+
+def head_gate(chart_row: Any, anchors: Sequence[Sequence[float]]) -> dict[str, Any]:
+    """The head gate (LF9) for one candidate row: its head deviation from the
+    chart row, the gate value and whether it is exceeded (False while the gate
+    is off, `LAUFFORM_HEAD_DEVIATION_MAX` None)."""
+    deviation = round(head_deviation(chart_row, anchors), 2)
+    limit = LAUFFORM_HEAD_DEVIATION_MAX
+    return {"deviation": deviation, "max": limit, "exceeded": limit is not None and deviation > limit}

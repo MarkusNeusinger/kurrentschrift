@@ -159,14 +159,19 @@ export function LaufformApplyDialog({
                       // The occurrence count is the whole reason for a
                       // `below_min_occurrences` skip, so it rides along; an
                       // `anchor_spike` skip carries its spike ratio against
-                      // the gate (§14 LF8); the other reasons carry no number
-                      // and print none.
+                      // the gate (§14 LF8), a `head_deviation` skip its angle
+                      // against the head gate (§14 LF9); the other reasons
+                      // carry no number and print none.
                       label={`${skip.glyph_key} · ${
                         t.skipReason[skip.reason as keyof typeof t.skipReason] ?? skip.reason
                       }${skip.n_instances == null ? '' : ` (${skip.n_instances})`}${
                         skip.spike_ratio == null
                           ? ''
                           : ` (${skip.spike_ratio.toFixed(2)} > ${(skip.spike_max ?? 0).toFixed(2)})`
+                      }${
+                        skip.head_deviation == null
+                          ? ''
+                          : ` (${skip.head_deviation.toFixed(1)}° > ${(skip.head_max ?? 0).toFixed(0)}°)`
                       }`}
                     />
                   ))}

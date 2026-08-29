@@ -9422,6 +9422,43 @@ Tafel), P0+T0 und P0+T0+E/v/f/k werden als eigene Zahlen
 Anker-Sensor eine weitere vertraute Zeile über 15° oder das t darunter,
 misst er nicht die gerenderte Größe — keine Adoption.
 
+**Gemessen `aug29` — der Anker-Sensor stirbt an seiner eigenen
+Kill-Klausel, der Sensor auf der gerenderten Linie hält die Vorhersage:
+adoptiert (τ = 15°, beide Schreibpfade).** Auf den ANKERN setzt das
+Fenster das m (n = 6) mit 15,5° über die Linie — Kill — und liest die
+dichten, eingerollten Köpfe der Kapitalen und des f bis zu 33° anders
+als die Zerlegung: E 14,6° (gerendert 47,8°), K 25,1° (41,2°), f 14,6°
+(27,5°), P 16,4° (9,8°); t 41,9° (46,3°), v, k, m, w stimmen. Die
+Anker-Polylinie ist also nicht die Größe, an der die Grammatik landet.
+`head_deviation` misst deshalb auf der GERENDERTEN Mittellinie — mit
+dem Sampler des Renderers selbst (`core.template.multi_stroke_centerlines`,
+der Sample-Plan der Chart-Zeile über den jeweiligen Ankern, 240 Proben)
+— und reproduziert die Zerlegung exakt (Inventar `head°`): **t 46,4°
+ist die EINZIGE der 21 vertrauten Zeilen über 15°** (Vorhersage (i)
+erfüllt; die knappste darunter ist das m mit 14,9°, dann w 14,0°); über
+τ stehen sonst nur dünne Zeilen: E 47,8° (n = 1), K 41,2° (n = 1, in
+Prod schon gelöscht), f 27,5° (n = 2), v 27,2° (n = 2), k 17,1° (n = 1)
+— darunter drei der vier „sichtbar verzogenen" Zeilen (v, E, k), die
+das Sprung-Gate durchließ; P (9,8°) nicht. Nebenbefund zur
+Empfindlichkeit: die Fensterrichtung eines gedrehten Kopfs hängt von der
+Probendichte ab (ein synthetischer 40°-Kopf wandert um 4°, wenn ein
+zweiter Zug die 240 Proben teilt; ein um 0,6 xh verschobener DRITTER
+Anker biegt den gerenderten Kopf des Harness-n um 15,9°) — das Gate
+liest den Plan, den der Renderer zeichnet, und urteilt damit über den
+gezeichneten Kopf, nicht über eine Abstraktion davon. (ii) bleibt
+prospektiv (in dieser Runde lief keine Ernte). (iii) erfüllt: mit der
+Tafelform des t (T0) läuft der Übergang in unter, mit und
+„Kurrentschrift" flach in den Chart-Fuß 0,703, kein Schlenker
+(Tinten-Lupe). Report-Arme (eigene Zahlen, nie die Schlagzeile): T0
+0,106720 → 0,106390 (−0,0003); P0 (Prod-Stand K/ue/F/ae/b → Tafel)
+0,107802 (+0,0011); P0+T0 0,107473 (−0,0003 gegen P0); P0+T0+E/v/f/k
+0,107995 (+0,0002 gegen P0) — die Tafelformen kosten das Pixel-Lineal
+insgesamt ein Tausendstel, was nach Doktrin #444 kein Kriterium ist.
+Adoptiert: `LAUFFORM_HEAD_DEVIATION_MAX` = 15°, PUT 422 und
+`apply-laufform`-Skip `head_deviation`, kein Override; die
+Prod-Datenaktion (t-Zeile löschen = T0; E/f/v/k) ist die Entscheidung
+des Autors und steht aus.
+
 ### Laufform LF7 `aug29` — Vorregistrierung: das Zeilen-Gate (Aufnahme einer Laufform-Zeile)
 
 Geschrieben und committet VOR der ersten Zahl. Anlass (Autor, nach

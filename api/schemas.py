@@ -433,12 +433,15 @@ class AggregateApplySkip(BaseModel):
     a bad anchor — see `core.aggregate.LAUFFORM_MIN_OCCURRENCES`) and
     `anchor_spike` (the row gate, qualitaetsmetrik.md §14 LF8: the median
     carries an anchor spike — „Anker im leeren Papier", the harvest's own
-    reason code — over `core.laufform.LAUFFORM_SPIKE_RATIO_MAX`).
+    reason code — over `core.laufform.LAUFFORM_SPIKE_RATIO_MAX`) and
+    `head_deviation` (the head gate, §14 LF9: the median's first stroke lands
+    more than `core.laufform.LAUFFORM_HEAD_DEVIATION_MAX` degrees away from the
+    chart's landing direction).
 
     `n_instances` is filled for `below_min_occurrences`, where the count IS the
-    reason, `spike_ratio` / `spike_max` for `anchor_spike`; the other reasons
-    leave them null rather than repeating a number that played no part in the
-    decision."""
+    reason, `spike_ratio` / `spike_max` for `anchor_spike`, `head_deviation` /
+    `head_max` for the `head_deviation` reason; the other reasons leave them
+    null rather than repeating a number that played no part in the decision."""
 
     glyph_key: str
     variant: int
@@ -446,6 +449,8 @@ class AggregateApplySkip(BaseModel):
     n_instances: int | None = None
     spike_ratio: float | None = None
     spike_max: float | None = None
+    head_deviation: float | None = None
+    head_max: float | None = None
 
 
 class AggregateApplyOut(BaseModel):
