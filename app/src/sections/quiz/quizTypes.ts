@@ -8,13 +8,21 @@ import { de } from '@/locales';
 import { type QuizMode } from '@/sections/quiz/useQuizEngine';
 
 // Scripts selectable in the quiz. The quiz pool rides on the site-wide public
-// source (CONFIG.sourceId) — currently the Sütterlin 1922 Ausgangsschrift;
-// the others are shown disabled so the menu reflects the planned scope.
+// source (CONFIG.sourceId) — currently the Sütterlin 1922 Ausgangsschrift. The
+// others carry `available: false` for the planned scope; the setup shows a row
+// only when it offers a real choice (see `offersChoice`), so an unavailable
+// option is never a greyed-out promise on the learner's first screen.
 export interface ScriptOption {
   id: string;
   label: string;
   available: boolean;
 }
+
+// A setup row is worth showing only when the learner can actually choose:
+// two or more available options. One available option (today: the script,
+// the difficulty) is a fact, stated in the summary/source line, not a row.
+export const offersChoice = (options: ReadonlyArray<{ available: boolean }>): boolean =>
+  options.filter((o) => o.available).length >= 2;
 
 export const SCRIPTS: ScriptOption[] = [
   { id: 'kurrent', label: de.quiz.scripts.kurrent, available: false },
@@ -38,13 +46,12 @@ export const MODES: ModeOption[] = [
 ];
 
 // Difficulty levels for the quiz. The idea: show each letter in progressively
-// less-clean hands so the learner trains beyond copybook-perfect forms. v1 only
-// has the clean Loth 1866 teaching plate, so the rougher levels are listed but
-// disabled (the UI shows the German "bald" = "soon" marker) until real, messier handwriting sources are added to the DB
-// (a post-MVP data task — see docs/concepts/architektur.md §12). Once those
-// sources exist the quiz picks crops by difficulty instead of always Loth; the
-// `difficulty` state already threads through the quiz so only the crop source
-// has to change here.
+// less-clean hands so the learner trains beyond copybook-perfect forms. Today
+// only the clean Sütterlin 1922 Ausgangsschrift is in the DB, so the rougher
+// levels stay `available: false` — and the row stays hidden (`offersChoice`)
+// until real, messier handwriting sources are added (a post-MVP data task —
+// see docs/concepts/architektur.md §12). The `difficulty` state already threads
+// through the quiz, so only the option flags and the crop source change then.
 export type Difficulty = 'clean' | 'worn' | 'messy';
 
 export interface DifficultyOption {
@@ -62,6 +69,7 @@ export const DIFFICULTIES: DifficultyOption[] = [
 
 // Pick the crop for a question. Difficulty is threaded in already: once messier
 // handwriting sources land in the DB, this is the single place that branches on
-// it to pull a less-clean hand instead of the clean Loth plate. Today every
-// level resolves to the same Loth crop (rough levels are disabled in setup).
+// it to pull a less-clean hand instead of the clean plate. Today every level
+// resolves to the same crop of the public source (rough levels are hidden in
+// the setup).
 export const questionCropUrl = (key: string, _difficulty: Difficulty): string => cropUrl(CONFIG.sourceId, key);

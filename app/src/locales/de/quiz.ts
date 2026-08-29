@@ -16,8 +16,10 @@ export const quiz = {
   },
   setup: {
     // Warm lead, ~1900 Vorwort tone — the second clause sits in a softer ink.
+    // Counts no "Handgriffe": the setup shows only the rows that offer a choice
+    // (today one), so the copy must not promise a number.
     introLead: 'Such dir aus, was du heute üben magst —',
-    introRest: ' drei Handgriffe, dann geht’s los.',
+    introRest: ' dann geht’s los.',
     scriptLabel: 'Schrift',
     scriptHint: 'welche Schreibschrift-Familie',
     // Task selector: single letters or whole words.
