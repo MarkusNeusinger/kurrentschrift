@@ -120,8 +120,11 @@ async def record_bot_fetch(request: Request, call_next):
     response: Response = await call_next(request)
     path = request.url.path
     if path.startswith("/seo-proxy"):
-        # The public URL, never this router's internal prefix.
-        track_bot_fetch(request, path.removeprefix("/seo-proxy").rstrip("/") or "/", response.status_code)
+        # The public URL, never this router's internal prefix. A HEAD probe
+        # (link checkers, crawlers before the GET) is answered but not counted
+        # — it fetches no page, and counting it would double the read.
+        if request.method == "GET":
+            track_bot_fetch(request, path.removeprefix("/seo-proxy").rstrip("/") or "/", response.status_code)
         return response
     asset = classify_asset(path, request.query_params.get("text"))
     if asset is not None:

@@ -3,6 +3,13 @@
 // catalogue stays consistent — the descriptions read for a human in a search
 // result, ~150 characters, German (the site is German, see sprachregelung.md).
 // Keyed by page, mirroring routes/paths.ts.
+//
+// Title rule (SEO audit 2026-08-29, frontend-stack.md §4): the search term a
+// person would type comes FIRST (Sütterlin, Kurrent, alte deutsche Schrift,
+// Übungsblatt PDF …), the brand last, ≤ 80 characters — a title that only says
+// „Lese-Quiz · kurrentschrift.ink" is findable by nobody who does not know the
+// site. Nav labels and breadcrumbs keep the short page names; the H1 of each
+// page carries the search term too (its own `heading` in the page's locale).
 
 export const seo = {
   home: {
@@ -11,37 +18,37 @@ export const seo = {
       'Alte deutsche Schreibschrift lesen und schreiben lernen — Kurrent, Sütterlin, Offenbacher: mit Quiz, Schreibtafel, Übungsblatt und einer Feder, die live schreibt.',
   },
   schriftkunde: {
-    title: 'Schriftkunde · kurrentschrift.ink',
+    title: 'Alte deutsche Schrift: Kurrent, Sütterlin, Offenbacher · kurrentschrift.ink',
     description:
       'Ein quellengestützter Überblick über die deutschen Schreibschriften — Kurrent, Sütterlin und Offenbacher: Lineatur, Federn, Tinte, Buchstaben-Besonderheiten und ihre Geschichte.',
   },
   lesen: {
-    title: 'Lesen · kurrentschrift.ink',
+    title: 'Alte deutsche Schrift lesen lernen · kurrentschrift.ink',
     description:
       'Alte deutsche Handschrift lesen lernen — Schritt für Schritt vom einzelnen Buchstaben bis zum Wort: das Lese-Quiz und die Schreibtafel.',
   },
   quiz: {
-    title: 'Lese-Quiz · kurrentschrift.ink',
+    title: 'Sütterlin-Quiz: alte deutsche Schrift lesen üben · kurrentschrift.ink',
     description:
       'Erkenne Buchstaben und ganze Wörter der alten deutschen Schreibschrift in einem kurzen Quiz — viele davon Zug um Zug von der Feder live geschrieben.',
   },
   tafel: {
-    title: 'Schreibtafel · kurrentschrift.ink',
+    title: 'Sütterlin-Alphabet und Kurrent-Alphabet: die Schreibtafel · kurrentschrift.ink',
     description:
       'Die drei historischen Vorlagen der deutschen Schreibschrift auf einen Blick — die Sütterlin Zug um Zug von der Feder geschrieben, zum Vergleichen und Nachschlagen.',
   },
   schreiben: {
-    title: 'Schreiben · kurrentschrift.ink',
+    title: 'Kurrent und Sütterlin schreiben lernen · kurrentschrift.ink',
     description:
       'Deutsche Schreibschrift selbst üben: ein Übungsblatt als PDF erzeugen oder der Feder beim Schreiben in Sütterlin zusehen.',
   },
   worksheet: {
-    title: 'Übungsblatt · kurrentschrift.ink',
+    title: 'Übungsblatt Sütterlin & Kurrent als PDF · kurrentschrift.ink',
     description:
       'Erzeuge ein Übungsblatt als PDF — Lineatur mit frei wählbarem Verhältnis, Schräglinien und Federwinkel, fertig zum Ausdrucken für die deutsche Schreibschrift.',
   },
   federprobe: {
-    title: 'Federprobe · kurrentschrift.ink',
+    title: 'Text in Sütterlin schreiben lassen: die Federprobe · kurrentschrift.ink',
     description:
       'Tippe einen beliebigen Text — die Feder schreibt ihn dir live in Sütterlin, mit allen Übergängen zwischen den Buchstaben.',
   },

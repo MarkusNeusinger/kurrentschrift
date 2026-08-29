@@ -401,10 +401,14 @@ const schriftkundeBody = () => {
   return out.join('\n');
 };
 
+// Like HubView: the area's short name as eyebrow, the H1 with the search term,
+// lead + the explanatory paragraph, then the tool cards.
 const hubBody = (h: typeof hub.lesen | typeof hub.schreiben, routes: Record<string, string>) => () =>
   [
-    `<h1>${e(h.title)}</h1>`,
+    `<p class="eyebrow">${e(h.title)}</p>`,
+    `<h1>${e(h.heading)}</h1>`,
     p(h.lead),
+    p(h.about),
     ...Object.entries(h.cards).map(([k, c]) => `${h2(c.title)}${p(c.body)}<p>${a(abs(routes[k]), c.cta)}</p>`),
   ].join('\n');
 
@@ -412,7 +416,7 @@ const quizBody = () => {
   const t = quiz;
   const d = t.difficulties;
   return [
-    `<h1>${e(t.title)}</h1>`,
+    `<h1>${e(t.heading)}</h1>`,
     p(seo.quiz.description),
     p(`${t.setup.introLead}${t.setup.introRest}`),
     '<dl>',
@@ -432,7 +436,7 @@ const tafelBody = () => {
   // the one place that states the engine's honest status per script.
   const state = (written: boolean) => (written ? t.state.written : t.state.original);
   return [
-    `<h1>${e(t.title)}</h1>`,
+    `<h1>${e(t.heading)}</h1>`,
     p(t.intro),
     p(t.note),
     `<ul>${landing.scripts
@@ -564,7 +568,7 @@ const NAV: readonly { route: string; label: string }[] = [
   { route: paths.tafel, label: tafel.title },
   { route: paths.schreiben, label: common.nav.write },
   { route: paths.worksheet, label: landing.tools.worksheet.title },
-  { route: paths.scribe, label: scribe.heading },
+  { route: paths.scribe, label: common.nav.scribe },
   { route: paths.impressum, label: impressum.footerLink },
 ];
 
@@ -589,7 +593,11 @@ const STYLE =
 
 function breadcrumbLd(spec: PageSpec): object | null {
   if (!spec.breadcrumbs || spec.route === null) return null;
-  const items = [...spec.breadcrumbs, { route: spec.route, label: spec.title.replace(/ · kurrentschrift\.ink$/, '') }];
+  // The page's own crumb is its short nav name (the <title> leads with the
+  // search term since 2026-08-29 and would make a long, odd crumb); a page
+  // outside the nav (Impressum) falls back to the title minus the brand.
+  const label = NAV.find((n) => n.route === spec.route)?.label ?? spec.title.replace(/ · kurrentschrift\.ink$/, '');
+  const items = [...spec.breadcrumbs, { route: spec.route, label }];
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',

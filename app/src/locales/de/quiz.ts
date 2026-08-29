@@ -2,7 +2,10 @@
 // message catalog — key tree mirrors a future i18next `quiz` namespace.
 
 export const quiz = {
+  // `title` is the short name (nav, cards, breadcrumbs); `heading` the page's
+  // H1 with the search term in it (SEO audit 2026-08-29, locales/de/seo.ts).
   title: 'Lese-Quiz',
+  heading: 'Sütterlin lesen üben: das Lese-Quiz',
   // Quiz option lists (quizTypes.ts) — script + difficulty labels.
   scripts: {
     kurrent: 'Kurrent',

@@ -69,7 +69,7 @@ export function QuizView() {
       <PageContainer width="text" sx={{ pt: { xs: 4, sm: 6 } }}>
         <Box sx={{ maxWidth: 760, mx: onSetup ? 0 : 'auto' }}>
         {onSetup && (
-          <PageHeader eyebrow={de.common.nav.read} title={de.quiz.title}>
+          <PageHeader eyebrow={de.common.nav.read} title={de.quiz.heading}>
             {de.quiz.setup.introLead}
             <Box component="span" sx={{ color: 'text.secondary' }}>
               {de.quiz.setup.introRest}

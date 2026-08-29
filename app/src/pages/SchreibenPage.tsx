@@ -15,8 +15,10 @@ export default function SchreibenPage() {
 
   return (
     <HubView
-      title={t.title}
+      eyebrow={t.title}
+      title={t.heading}
       lead={t.lead}
+      about={t.about}
       cards={[
         { ...t.cards.worksheet, to: paths.worksheet },
         { ...t.cards.federprobe, to: paths.scribe },

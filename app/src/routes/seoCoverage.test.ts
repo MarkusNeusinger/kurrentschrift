@@ -27,6 +27,18 @@ describe('seo coverage', () => {
     expect(Object.keys(seo)).toHaveLength(publicPaths.length + 1);
   });
 
+  it('puts a search term into every indexable title, the brand last', () => {
+    // The title rule of seo.ts (SEO audit 2026-08-29): what a person types —
+    // Sütterlin, Kurrent, alte deutsche Schrift, Schreibschrift — stands in
+    // the title; „Lese-Quiz · kurrentschrift.ink" is findable by nobody.
+    // Impressum and the noindex 404 are exempt (nobody searches for them).
+    for (const [key, entry] of Object.entries(seo)) {
+      if (key === 'impressum' || ('noindex' in entry && entry.noindex)) continue;
+      expect(entry.title, key).toMatch(/Sütterlin|Kurrent|deutsche Schrift|Schreibschrift/);
+      expect(entry.title, key).toContain('kurrentschrift.ink');
+    }
+  });
+
   it('has unique, plausibly sized titles and descriptions', () => {
     const entries = Object.values(seo);
     const titles = entries.map((e) => e.title);

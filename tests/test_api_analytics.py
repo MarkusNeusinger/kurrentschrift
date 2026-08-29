@@ -238,6 +238,25 @@ async def test_middleware_reports_the_public_path_and_the_status(api: Harness, t
     assert calls == [("/schriftkunde", 200), ("/", 200), ("/gibt-es-nicht", 404)]
 
 
+async def test_middleware_answers_a_head_probe_without_counting_it(api: Harness, tmp_path, monkeypatch) -> None:
+    """A link checker or crawler probes with HEAD before the GET: the probe is
+    answered like the GET (status, headers) but fetches no page, so it is not
+    a read — counting it would double every crawl."""
+    monkeypatch.setattr(settings, "prerender_dir", tmp_path)
+    (tmp_path / "schriftkunde.html").write_text("<title>y</title>", encoding="utf-8")
+    (tmp_path / "404.html").write_text("<title>404</title>", encoding="utf-8")
+    from api.routers import seo
+
+    seo._page.cache_clear()
+    ua = {"User-Agent": "Mozilla/5.0 (compatible; Claude-User/1.0)"}
+    with patch.object(api_main, "track_bot_fetch") as track:
+        head = await api.client.request("HEAD", "/seo-proxy/schriftkunde", headers=ua)
+        get = await api.client.request("GET", "/seo-proxy/schriftkunde", headers=ua)
+    seo._page.cache_clear()
+    assert head.status == get.status == 200
+    assert [(c.args[1], c.args[2]) for c in track.call_args_list] == [("/schriftkunde", 200)]
+
+
 async def test_middleware_ignores_machine_files_and_api_reads(api: Harness) -> None:
     ua = {"User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1)"}
     with patch.object(api_main, "track_bot_fetch") as track, patch.object(api_main, "track_asset_fetch") as assets:

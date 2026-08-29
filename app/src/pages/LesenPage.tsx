@@ -15,8 +15,10 @@ export default function LesenPage() {
 
   return (
     <HubView
-      title={t.title}
+      eyebrow={t.title}
+      title={t.heading}
       lead={t.lead}
+      about={t.about}
       cards={[
         { ...t.cards.quiz, to: paths.quiz },
         { ...t.cards.tafel, to: paths.tafel },

@@ -120,8 +120,12 @@ def _not_found() -> HTMLResponse:
     return HTMLResponse(body, status_code=404, headers={"Cache-Control": NO_STORE})
 
 
-@router.get("/seo-proxy/", include_in_schema=False)
-@router.get("/seo-proxy/{route:path}", include_in_schema=False)
+# GET and HEAD: crawlers and link checkers probe a URL with HEAD first, and a
+# 405 there reads as "this page is gone" (SEO audit 2026-08-29 — nginx passes
+# the method through, and FastAPI's `get` does not answer HEAD by itself).
+# Starlette drops the body of a HEAD response; status and headers are the GET's.
+@router.api_route("/seo-proxy/", methods=["GET", "HEAD"], include_in_schema=False)
+@router.api_route("/seo-proxy/{route:path}", methods=["GET", "HEAD"], include_in_schema=False)
 async def seo_proxy(route: str = "") -> HTMLResponse:
     """The prerendered page of a public route, or the prerendered 404."""
     raw = route.strip("/")
