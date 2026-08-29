@@ -70,7 +70,7 @@ definiert (P1-Arbeit).
 | `/schriftkunde` | Überblick der deutschen Schreibschriften (der umbenannte frühere `/lehrbuch`) | Schriftkunde |
 | `/lesen` | Hub → Quiz, Tafel | Lesen |
 | `/quiz` | Lese-Quiz (Buchstaben + ganze Wörter) | Lesen |
-| `/tafel` | Schreibtafel (Vorlage) | Lesen |
+| `/tafel` | Schreibtafel (Vorlage); seit 2026-08-29 mit „Lesetafel als PDF" — alle drei Vorlagen auf A4, im Browser gebaut (`lib/lesetafel.ts` auf `lib/pdf.ts`: die nachgeschriebene Schrift als gefüllte Silhouetten auf Lineatur mit Antiqua-Beschriftung, die anderen als ihre gemeinfreie Originaltafel, per Canvas zu JPEG gerastert und als DCTDecode-XObject eingebettet) | Lesen |
 | `/lesen/vergleichen` | Lesart prüfen — eine Vermutung wird geschrieben, daneben die Lesarten mit je einem vertauschten Verwechsler (`lib/lesarten.ts`) und die klassischen Verwechsler-Paare nebeneinander (`?text=` teilbar) | Lesen |
 | `/schreiben` | Hub → Übungsblatt, Federprobe | Schreiben |
 | `/schreiben/uebungsblatt` | Übungsblatt-Generator (Lineatur-Konfigurator, PDF) | Schreiben |
@@ -625,7 +625,17 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
 - `sections/scribe/` — der `/federprobe`-Live-Schreiber (Text →
   serverseitig komponiertes Wort, `WrittenWord`).
 - `sections/tafel/` — die `/tafel`-Schreibtafel (Vorlage-Zeilen „wie
-  geschrieben").
+  geschrieben") + `useLesetafelPdf` (Browser-Hälfte der druckbaren
+  Lesetafel: Render-Payloads im Batch, Originaltafeln per Canvas → JPEG,
+  Download). `lib/pdf.ts` ist seit 2026-08-29 ein kleiner
+  Dokument-Builder (`PdfDocument` + `ContentStream`: Linien, gefüllte
+  Ringe even-odd, Helvetica-Text, JPEG-XObjects; Latin-1-Body, damit die
+  xref-Offsets Stringlängen bleiben), auf dem `lineaturePdf` (Übungsblatt)
+  und `lib/lesetafel.ts` (Lesetafel: Zeilen-Reflow mit proportionalen
+  Breiten wie `WrittenSheet`, Lineatur je Zeile, Seitenumbruch) sitzen —
+  clientseitig, weil beide Blätter reine Vektor-/Bild-Inhalte sind; der
+  WeasyPrint-Pfad (architektur.md §15) bleibt dem inhaltsbewussten
+  Übungsblatt vorbehalten.
 - `sections/quiz/` — `QuizView` + `useQuizEngine` (gesamte Quiz-Logik ohne
   JSX) + Setup/Play/Results-Panels + `QuestionVisual` + `lesefallen.ts`
   (die Regel-Erklärung nach einem Fehlgriff: gezeigte Form gegen geratenen

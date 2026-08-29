@@ -451,6 +451,7 @@ const tafelBody = () => {
     `<h1>${e(t.heading)}</h1>`,
     p(t.intro),
     p(t.note),
+    p(`${t.pdf.button}: ${t.pdf.hint}`),
     `<ul>${landing.scripts
       .map((s) => `<li><strong>${e(s.name)}</strong> — ${e(t.feder[s.styleId] ?? s.feder)} · ${e(state(s.written))}</li>`)
       .join('')}</ul>`,

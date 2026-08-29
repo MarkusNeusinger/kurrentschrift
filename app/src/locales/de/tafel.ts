@@ -42,6 +42,22 @@ export const tafel = {
     licenseLabel: 'Lizenz',
     originLink: 'Zur Originalquelle',
   },
+  // The printable Lesetafel (lib/lesetafel.ts, useLesetafelPdf): all three
+  // Vorlagen on A4 — the written script as letters on a ruling, the others as
+  // their original plates — to lay beside an old letter while deciphering.
+  pdf: {
+    button: 'Lesetafel als PDF',
+    building: 'PDF wird erstellt …',
+    hint: 'Alle drei Vorlagen auf A4 zum Ausdrucken — die Sütterlin nachgeschrieben Buchstabe für Buchstabe, Kurrent und Offenbacher als Originaltafel. Zum Danebenlegen beim Entziffern.',
+    error: 'Das PDF konnte gerade nicht erstellt werden — der Server ist nicht erreichbar.',
+    filename: 'lesetafel-kurrentschrift.pdf',
+    // Strings printed on the sheet itself (Helvetica, WinAnsi — no ſ).
+    heading: 'Lesetafel',
+    writtenLine: 'nachgeschrieben aus der gemeinfreien Vorlage — Synthese, kein Original',
+    plateLine: 'Originaltafel (gemeinfrei), noch nicht nachgeschrieben',
+    footer: 'kurrentschrift.ink/tafel',
+    longS: 'langes s',
+  },
   // Click/tap a written letter on the sheet to re-write it in place.
   replayHint: 'antippen zum Nachschreiben',
   // Tap/click-to-zoom on the original scan (OriginalScan): aria labels only —
