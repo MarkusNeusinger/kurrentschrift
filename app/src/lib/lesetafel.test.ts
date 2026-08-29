@@ -34,8 +34,15 @@ const square = (w: number): GlyphRenderData => ({
 
 const FAKE_JPEG = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0xff, 0xd9]);
 
+// Byte-preserving decode (one byte → one code unit). Not TextDecoder: its
+// 'latin1' label is windows-1252 on a full-ICU Node (CI) — 0x97 came back as
+// U+2014 there and the em-dash assertion failed — while a small-ICU build
+// happens to keep the bytes.
 async function latin1(blob: Blob): Promise<string> {
-  return new TextDecoder('latin1').decode(await blob.arrayBuffer());
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let s = '';
+  for (let i = 0; i < bytes.length; i += 8192) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192) as unknown as number[]);
+  return s;
 }
 
 describe('lesetafel', () => {

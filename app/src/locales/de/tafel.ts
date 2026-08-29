@@ -48,8 +48,10 @@ export const tafel = {
   pdf: {
     button: 'Lesetafel als PDF',
     building: 'PDF wird erstellt …',
-    hint: 'Alle drei Vorlagen auf A4 zum Ausdrucken — die Sütterlin nachgeschrieben Buchstabe für Buchstabe, Kurrent und Offenbacher als Originaltafel. Zum Danebenlegen beim Entziffern.',
-    error: 'Das PDF konnte gerade nicht erstellt werden — der Server ist nicht erreichbar.',
+    hint: 'Alle drei Vorlagen auf A4 zum Ausdrucken — die Sütterlin Buchstabe für Buchstabe nachgeschrieben, Kurrent und Offenbacher als Originaltafel. Zum Danebenlegen beim Entziffern.',
+    // Generic on purpose: the build can fail at the payload fetch, the plate
+    // raster, the JPEG encoding or the composition — the console has the cause.
+    error: 'Das PDF konnte gerade nicht erstellt werden. Bitte noch einmal versuchen.',
     filename: 'lesetafel-kurrentschrift.pdf',
     // Strings printed on the sheet itself (Helvetica, WinAnsi — no ſ).
     heading: 'Lesetafel',

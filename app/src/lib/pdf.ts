@@ -68,13 +68,16 @@ function latin1Bytes(s: string): Uint8Array {
 }
 
 // Binary stream data (a JPEG) as byte-chars, so it can live in the Latin-1
-// body string like everything else. Chunked: `fromCharCode` takes arguments,
-// and a plate is a few hundred kB.
+// body string like everything else. Chunked: `fromCharCode` takes arguments
+// (a typed-array view passes as the array-like, no copy), and a plate is a
+// few hundred kB. NOT a TextDecoder: the browser's 'latin1' / 'iso-8859-1'
+// labels decode as windows-1252, which maps 0x80–0x9F to other code points
+// (0x80 → U+20AC) and would corrupt the JPEG on the way back to bytes.
 function bytesToLatin1(bytes: Uint8Array): string {
   let s = '';
   const CHUNK = 8192;
   for (let i = 0; i < bytes.length; i += CHUNK) {
-    s += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + CHUNK)));
+    s += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK) as unknown as number[]);
   }
   return s;
 }
