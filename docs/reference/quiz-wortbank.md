@@ -4,8 +4,8 @@
 > Fugen-Marker und Seed-Workflow der Wortbank; jede Änderung an
 > `tools/quizgen/` oder am `similarity`-Zwilling
 > `app/src/sections/quiz/wordBank.ts` zieht hier nach.
-> Zahlen am 2026-08-29 nachgerechnet: 586 Wörter,
-> 450 `modern` / 136 `historic` (vor dem Lückenschluss §1: 495,
+> Zahlen am 2026-08-29 nachgerechnet: 641 Wörter,
+> 505 `modern` / 136 `historic` (vor dem Lückenschluss §1: 495,
 > 373 / 122).
 
 Referenz für die Wortbank des Lese-Quiz (Wörter-Modus): woher die Wörter
@@ -16,8 +16,8 @@ Antwortoptionen entstehen. Implementiert in `tools/quizgen/` (Generator),
 (Runtime-Ziehung); der SPA-Fallback ist
 `app/src/sections/quiz/wordBank.ts`.
 
-Stand 2026-08-29: 586 Wörter, ca. 77 % `modern` / 23 % `historic`
-(450 / 136 — nachgezählt aus `tools/quizgen/quiz_words.json`).
+Stand 2026-08-29: 641 Wörter, ca. 79 % `modern` / 21 % `historic`
+(505 / 136 — nachgezählt aus `tools/quizgen/quiz_words.json`).
 
 ---
 
@@ -60,8 +60,16 @@ Dazu die Namen und alten Schreibungen, die Genealog:innen wirklich
 begegnen (Carl, Conrad, Caspar, Xaver, Quirin, Cäcilie — `historic`,
 mit Glosse), und Paare, deren Verwechsler selbst die Lücke füllt
 (Bayern ↔ Bauern, Onkel ↔ Enkel, Jugend ↔ Tugend, Ähre ↔ Ehre,
-jetzt ↔ jetzo, Fuß ↔ Fluß). 91 Einträge, Migration `0027` (einfügend,
-rückbaubar). Stand danach: 586 Wörter.
+jetzt ↔ jetzo, Fuß ↔ Fluß). Und in der Gegenrichtung: der Lückenbericht
+des Pools (`uv run python -m tools.eigenhand.gaps`, über den lokal
+gebauten Übergangsraum) nennt für jede unerreichte Verbindung die
+häufigsten Trägerwörter — die deutschen darunter, die ins Quiz passen,
+sind ebenfalls Bank geworden (Mädchen, möchte, Küche, Stück, Lösung,
+schützen ↔ schätzen, gewöhnt ↔ gewohnt, öffnen, Geburtsort mit
+Fugen-Marker …), damit die nächste Pool-Welle die Verbindungen m>ä,
+ö>ch, k>ü, ſt>ü, ö>ſ, g>ſ, f>g, n>b … aus echten Alltagswörtern bekommt.
+146 Einträge, Migration `0027` (einfügend, rückbaubar). Stand danach:
+641 Wörter.
 
 ### Konsultierte Quellen
 

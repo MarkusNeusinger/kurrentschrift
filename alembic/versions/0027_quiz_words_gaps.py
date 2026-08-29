@@ -61,6 +61,13 @@ _ADDED: tuple[str, ...] = (
     "Ordnung", "Nachbar", "Nachlass", "Not", "Macht", "Eltern", "Esel",
     "jetzt", "jetzo", "jemand", "niemand", "jeder", "vier", "Vogt", "Klavier",
     "Fuß", "Fluß", "Gruß", "Spaß", "Schloß", "Möwe", "Löwe", "Söhne", "Sühne",
+    # the pool's gap-report carriers (quiz-wortbank.md §1, the other direction)
+    "Mädchen", "Männer", "Paar", "Haar", "Haare", "manchmal", "möchte", "ändern", "nötig", "glücklich",
+    "gehst", "siehst", "einmal", "unbedingt", "Augenblick", "Küche", "kümmern", "Aufgabe", "ständig",
+    "Geheimnis", "Anwalt", "Zukunft", "schützen", "schätzen", "Stück", "Frühstück", "Lösung", "böse",
+    "langsam", "abgesehen", "entfernt", "Büro", "Bücher", "öffnen", "öfter", "Hoffnung", "größer", "Größe",
+    "kämpfen", "süß", "Füße", "wozu", "trägt", "darfst", "zwölf", "gewöhnt", "denkst", "Geburtsort",
+    "Schüler", "dürfen", "völlig", "Vögel", "aufhören", "Umgebung", "Möglichkeit",
 )  # fmt: skip
 
 

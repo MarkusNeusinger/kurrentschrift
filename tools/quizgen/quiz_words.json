@@ -4254,5 +4254,391 @@
       "Söhne"
     ],
     "era": "modern"
+  },
+  {
+    "word": "Mädchen",
+    "distractors": [
+      "Märchen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Männer",
+    "distractors": [
+      "Mütter"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Paar",
+    "distractors": [
+      "Haar"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Haar",
+    "distractors": [
+      "Paar"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Haare",
+    "distractors": [
+      "Paare"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "manchmal",
+    "distractors": [
+      "manches"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "möchte",
+    "distractors": [
+      "mochte"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "ändern",
+    "distractors": [
+      "andern"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "nötig",
+    "distractors": [
+      "mutig"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "glücklich",
+    "distractors": [
+      "gänzlich"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "gehst",
+    "distractors": [
+      "geht"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "siehst",
+    "distractors": [
+      "sieht"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "einmal",
+    "distractors": [
+      "einmalig"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "unbedingt",
+    "distractors": [
+      "unbedacht"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Augenblick",
+    "distractors": [
+      "Augenlicht"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Küche",
+    "distractors": [
+      "Kuchen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "kümmern",
+    "distractors": [
+      "krümmen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Aufgabe",
+    "distractors": [
+      "Abgabe"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "ständig",
+    "distractors": [
+      "sündig"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Geheimnis",
+    "distractors": [
+      "Geheimrat"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Anwalt",
+    "distractors": [
+      "Anhalt"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Zukunft",
+    "distractors": [
+      "Zunft"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "schützen",
+    "distractors": [
+      "schätzen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "schätzen",
+    "distractors": [
+      "schützen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Stück",
+    "distractors": [
+      "Stock"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Frühstück",
+    "distractors": [
+      "Frühling"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Lösung",
+    "distractors": [
+      "Losung"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "böse",
+    "distractors": [
+      "lose"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "langsam",
+    "distractors": [
+      "seltsam"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "abgesehen",
+    "distractors": [
+      "angesehen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "entfernt",
+    "distractors": [
+      "entführt"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Büro",
+    "distractors": [
+      "Bürde"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Bücher",
+    "distractors": [
+      "Bäcker"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "öffnen",
+    "distractors": [
+      "offen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "öfter",
+    "distractors": [
+      "öfters"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Hoffnung",
+    "distractors": [
+      "Haftung"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "größer",
+    "distractors": [
+      "grober"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Größe",
+    "distractors": [
+      "Grüße"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "kämpfen",
+    "distractors": [
+      "kämmen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "süß",
+    "distractors": [
+      "saß"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Füße",
+    "distractors": [
+      "Füßen"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "wozu",
+    "distractors": [
+      "woher"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "trägt",
+    "distractors": [
+      "träge"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "darfst",
+    "distractors": [
+      "darf"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "zwölf",
+    "distractors": [
+      "zwei"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "gewöhnt",
+    "distractors": [
+      "gewohnt"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "denkst",
+    "distractors": [
+      "denkt"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Geburtsort",
+    "distractors": [
+      "Geburtstag"
+    ],
+    "era": "modern",
+    "fugen": "Geburts|ort"
+  },
+  {
+    "word": "Schüler",
+    "distractors": [
+      "Schäfer"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "dürfen",
+    "distractors": [
+      "dürften"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "völlig",
+    "distractors": [
+      "billig"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Vögel",
+    "distractors": [
+      "Vogel"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "aufhören",
+    "distractors": [
+      "aufhalten"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Umgebung",
+    "distractors": [
+      "Umgehung"
+    ],
+    "era": "modern"
+  },
+  {
+    "word": "Möglichkeit",
+    "distractors": [
+      "Müdigkeit"
+    ],
+    "era": "modern"
   }
 ]

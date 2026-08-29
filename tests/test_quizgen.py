@@ -40,7 +40,7 @@ def test_gap_fill_migration_names_bank_words_only() -> None:
     added = list(module._ADDED)
     assert len(added) == len(set(added)), "duplicate word in _ADDED"
     assert set(added) <= bank, sorted(set(added) - bank)
-    assert len(added) == 91
+    assert len(added) == 146
 
 
 def test_similarity_rules() -> None:
