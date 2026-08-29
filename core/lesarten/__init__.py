@@ -134,10 +134,11 @@ class Reading:
 
 
 def rank_readings(guess: str, candidates: Iterable[tuple[str, bool]], limit: int = DEFAULT_LIMIT) -> list[Reading]:
-    """Rank the bucket's words as readings of `guess`: fewest/cheapest swaps
-    first, the curated bank before the dictionary on a tie, then shorter and
-    alphabetical; the guess itself and anything that is not a pure look-alike
-    variant are dropped."""
+    """Rank the bucket's words as readings of `guess`: cheapest first (the
+    summed pair distance), the curated bank before the dictionary on a tie,
+    then fewer differing letters, then alphabetical (every candidate already
+    has the guess's length); the guess itself and anything that is not a pure
+    look-alike variant are dropped."""
     out: list[Reading] = []
     for word, bank in candidates:
         if word == guess or len(word) != len(guess):

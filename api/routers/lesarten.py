@@ -55,9 +55,11 @@ async def get_lesarten(
 ) -> LesartenOut:
     """The readings of one guessed word — real words only, cheapest swaps first."""
     guess = text.strip()
+    if not guess:
+        raise HTTPException(422, detail="text is blank")
     repo = LesartRepository(db)
     meta = await repo.dictionary()
-    readings = rank_readings(guess, await repo.candidates(lesart_key(guess)), limit) if guess else []
+    readings = rank_readings(guess, await repo.candidates(lesart_key(guess)), limit)
     response.headers["Cache-Control"] = CACHE_CONTROL
     return LesartenOut(
         text=guess,

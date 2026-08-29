@@ -87,3 +87,39 @@ async def test_load_is_admin_gated_and_validates(api: Harness):
 async def test_text_is_bounded(api: Harness):
     res = await api.client.request("GET", "/lesarten", params={"text": "x" * 33})
     assert res.status == 422
+    blank = await api.client.request("GET", "/lesarten", params={"text": "   "})
+    assert blank.status == 422
+
+
+async def test_an_abandoned_load_is_dropped_by_the_next_begin(api: Harness):
+    gen = await _load(api)
+    opened = await api.client.request(
+        "POST",
+        "/lesarten/dictionary/generations",
+        json_body={"source": "x", "sha256": "c" * 64},
+        headers=api.admin_headers(),
+    )
+    abandoned = opened.json()["generation"]
+    await api.client.request(
+        "POST",
+        f"/lesarten/dictionary/generations/{abandoned}/forms",
+        json_body={"words": [["Nuhme", False], ["Mühme", False]]},
+        headers=api.admin_headers(),
+    )
+    # No commit — the next begin must sweep the abandoned rows and reuse the number.
+    again = await api.client.request(
+        "POST",
+        "/lesarten/dictionary/generations",
+        json_body={"source": "y", "sha256": "d" * 64},
+        headers=api.admin_headers(),
+    )
+    assert again.json()["generation"] == gen + 1 == abandoned
+    stale = await api.client.request(
+        "POST",
+        f"/lesarten/dictionary/generations/{abandoned}/commit",
+        json_body={"source": "y", "sha256": "d" * 64},
+        headers=api.admin_headers(),
+    )
+    assert stale.status == 409  # swept: nothing to commit
+    live = await api.client.request("GET", "/lesarten", params={"text": "Muhme"})
+    assert [r["word"] for r in live.json()["readings"]] == ["Mühme", "Nuhme"]  # the live generation is untouched

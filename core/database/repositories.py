@@ -96,13 +96,13 @@ class LesartRepository:
         return [(row[0], bool(row[1])) for row in result.all()]
 
     async def begin_generation(self) -> int:
-        """A fresh generation number: above the live one and above any leftover
-        rows of an aborted load (which are dropped here)."""
-        result = await self.session.execute(select(func.coalesce(func.max(LesartForm.gen), 0)))
-        top = int(result.scalar_one())
+        """A fresh generation number, above the live one. Every generation that
+        is not live — the rows of an abandoned load — is dropped first, so a
+        crashed sync never leaves a second vocabulary sitting in the table."""
         meta = await self.dictionary()
-        gen = max(top, meta.active_gen if meta else 0) + 1
-        return gen
+        live = meta.active_gen if meta else 0
+        await self.session.execute(delete(LesartForm).where(LesartForm.gen != live))
+        return live + 1
 
     async def add_forms(self, gen: int, rows: list[tuple[str, str, bool]]) -> int:
         """Insert (key, word, bank) rows into a generation. Rows are deduplicated
