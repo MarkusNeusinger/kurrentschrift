@@ -15,6 +15,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { knownGlyph, quizKeysFromLocked, type KnownGlyph } from '@/domain/glyphs';
 import { glyphKeysOf, shapeText } from '@/domain/shaping';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
+import { confusablesOf } from '@/sections/quiz/lesefallen';
 import { type Difficulty } from '@/sections/quiz/quizTypes';
 import { similarity, WORD_BANK, type WordEntry } from '@/sections/quiz/wordBank';
 import { getQuizWords, type QuizWordOut } from '@/lib/api';
@@ -221,8 +222,11 @@ export function useQuizEngine({ bboxesByKey, glyphsByKey }: Pick<QuizSourceData,
 
   // ——— Choice construction ———
   // Letter distractors prefer real specimens so each can render its own form:
-  // other locked letters of the SAME case, deduped by answer letter. Top up from
-  // the bare alphabet (no form) only when too few letters are locked.
+  // other locked letters of the SAME case, deduped by answer letter — the
+  // documented Lesefallen of the shown form first (lesefallen.ts: the letters
+  // it is confused with, so the trap is on offer and a miss earns its rule),
+  // the rest of the locked letters after them. Top up from the bare alphabet
+  // (no form) only when too few letters are locked.
   const buildLetterChoices = useCallback((item: LetterQuestion, pool: LetterQuestion[]): Choice[] => {
     const correctLetter = item.kg.answer;
     const correct: Choice = { value: correctLetter, label: inCase(correctLetter, item.kg), renderKey: item.key };
@@ -232,7 +236,13 @@ export function useQuizEngine({ bboxesByKey, glyphsByKey }: Pick<QuizSourceData,
       if (i.kg.letterCase !== item.kg.letterCase || i.kg.answer === correctLetter) continue;
       if (!byLetter.has(i.kg.answer)) byLetter.set(i.kg.answer, i);
     }
-    const distractors: Choice[] = shuffle(Array.from(byLetter.values()))
+    const traps = new Set(confusablesOf(item));
+    const candidates = Array.from(byLetter.values());
+    const ordered = [
+      ...shuffle(candidates.filter((i) => traps.has(i.kg.answer))),
+      ...shuffle(candidates.filter((i) => !traps.has(i.kg.answer))),
+    ];
+    const distractors: Choice[] = ordered
       .slice(0, 3)
       .map((i) => ({ value: i.kg.answer, label: inCase(i.kg.answer, item.kg), renderKey: i.key }));
 

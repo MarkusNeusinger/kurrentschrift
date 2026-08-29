@@ -47,7 +47,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — k0-Protokoll §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
-- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Ligatur §1 · Lineatur §1 · loss §4
+- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Lesefalle §1 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
@@ -87,6 +87,20 @@ Beispiel: das lange ſ (im Wortinneren) und das runde s (am Wortende) sind
 mit anderem Anschluss. Im Repo sind Allographe daher getrennte Glyphen
 (`longs` vs. `s`), nicht Varianten. → architektur.md §3 ·
 orthographie-regeln.md §1
+
+**Lesefalle** — ein Buchstabenpaar, das sich in der deutschen
+Schreibschrift so ähnelt, dass Leseanfänger es regelmäßig vertauschen,
+und das EIN benennbares Merkmal trennt: ſ und f nur der Querstrich, n
+und u nur der u-Bogen, e und n die Enge der Züge, i und j die Unterlänge;
+dazu die Positionsregel des runden s (Silben-/Wortende) und die
+Versalien-Cluster L/K/R, N/M, B/V, für die der Katalog kein einzelnes
+Merkmal nennt. Im Repo: der Katalog `app/src/sections/quiz/lesefallen.ts`
+(Sätze in `locales/de/quiz.ts`, `play.rules`), aus dem das Lese-Quiz nach
+einem Fehlgriff die Regel zeigt — gezeigte Form gegen geratenen
+Buchstaben, richtungsbewusst, und für Paare ohne dokumentiertes Merkmal
+bewusst keine Erklärung. Die Schriftkunde-Seite führt dieselben Fallen
+unter „Buchstaben-Besonderheiten“. → orthographie-regeln.md §1/§3 ·
+vision.md Ziel 4
 
 **Ligatur** — eine auf der Lehrtafel *als eigene Einheit gelehrte*
 Buchstabenverbindung. Der geschlossene Satz im Projekt: `ch` · `ck` · `tz`
