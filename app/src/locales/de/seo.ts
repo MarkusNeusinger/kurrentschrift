@@ -6,10 +6,14 @@
 //
 // Title rule (SEO audit 2026-08-29, frontend-stack.md §4): the search term a
 // person would type comes FIRST (Sütterlin, Kurrent, alte deutsche Schrift,
-// Übungsblatt PDF …), the brand last, ≤ 80 characters — a title that only says
-// „Lese-Quiz · kurrentschrift.ink" is findable by nobody who does not know the
-// site. Nav labels and breadcrumbs keep the short page names; the H1 of each
-// page carries the search term too (its own `heading` in the page's locale).
+// Übungsblatt PDF …), the brand last after „ · ", ≤ 80 characters — a title
+// that only says „Lese-Quiz · kurrentschrift.ink" is findable by nobody who
+// does not know the site. The ONE deliberate exception is the home page: it
+// IS the brand, so it leads with the name and the terms follow („kurrent-
+// schrift.ink — deutsche Kurrent & Sütterlin lesen und schreiben"). Nav labels
+// and breadcrumbs keep the short page names; the H1 of each page carries the
+// search term too (its own `heading` in the page's locale). Pinned by
+// routes/seoCoverage.test.ts.
 
 export const seo = {
   home: {
