@@ -702,7 +702,7 @@ ENTRIES: list[Entry] = [
         "era": "historic",
         "note": "Behörde der Arbeitsvermittlung",
     },
-    # --- Gap fill 2026-08-29: the letters the frequency-led bank never reached -
+    # --- Gap fill 2026-08-29: the letters the frequency-led bank never reached ---
     # Every traced glyph is now quizzable (letters mode), but the WORD bank had
     # no word at all with C, Q, X, Y, q, x, y, Ä, Ö, Ü and only 1–6 words with
     # I, J, U, R, O, N, E, j, v, ß, ö (quiz-wortbank.md §1 „Lückenschluss").

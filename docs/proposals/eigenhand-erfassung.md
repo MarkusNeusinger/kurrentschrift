@@ -128,6 +128,14 @@ Welle 0: 60 Streifen, 253 distinkte Wörter, 726/1265 Items mit geplantem
 Erstbeleg. Welle 1 (Streifen 61–120) bringt Ziffern, Zeichen und die
 Mindestbelegung: nach 120 geplanten Streifen trägt JEDE Registerglyphe
 mindestens drei Belege, 666 verschiedene Übergänge sind geplant.
+Welle 2 (Streifen 121–180, 2026-08-29) ist die erste aus dem mit der
+Quiz-Bank abgeglichenen Wortvorrat (quiz-wortbank.md §1
+„Lückenschluss": 146 neue Bankwörter, darunter die rare-join-Wörter des
+Pools und die Trägerwörter des Lückenberichts): 198 Wörter, 189 davon
+erstmals geplant, 80 der 146 Neuzugänge auf den Streifen (Xaver,
+Cäcilie, Quartier, Mädchen, Küche, Stück, schützen/schätzen, Geburtsort
+…), Mindestbelegung weiter erfüllt, 743 verschiedene Übergänge geplant
+(Soll-Universum ∪ Pool jetzt 1325 Items, 896 mit Erstbeleg).
 
 **Format 2: der Plan trägt seine Schreibformen selbst.** Seit die
 Bestands- und Druckrechnung auch serverseitig läuft (§7.1), führt
@@ -850,7 +858,7 @@ die menschliche Kopf-Bestätigung je fehleranfällig wird.
 
 | Phase | Inhalt | Stand 2026-08-27 |
 |---|---|---|
-| 1 | Wortvorrat, Übergangsraum, Streifenplan (`corpus` · `coverage` · `universe` · `gaps` · `pool`) | umgesetzt; Wave 0+1 committet, Plan-Format 2 |
+| 1 | Wortvorrat, Übergangsraum, Streifenplan (`corpus` · `coverage` · `universe` · `gaps` · `pool`) | umgesetzt; Wave 0–2 committet (Welle 2 aus dem mit der Quiz-Bank abgeglichenen Vorrat, 2026-08-29), Plan-Format 2 |
 | 2 | Blattgenerator (`geometry` · `pdfgen` · `bogen` · `sheet` · `rasterize`) | umgesetzt; Beispiel-Bogen erzeugt |
 | 3 | Einlesen + Siebung (`fiducial` · `ingest` · `page` · `apply` · `kartei`) | umgesetzt; synthetischer E2E-Rauchtest grün |
 | 4 | Bericht, Redo, Archiv (`report` · `redo` · `snapshot`) + Ablage-Skelett | umgesetzt |
