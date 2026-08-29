@@ -19,6 +19,7 @@ import { CONFIG } from '../../global-config.ts';
 import { schriftkunde } from '../../locales/de/schriftkunde.ts';
 import { worksheet } from '../../locales/de/worksheet.ts';
 import { paths } from '../../routes/paths.ts';
+import { SCHRIFTKUNDE_SECTIONS } from '../../sections/schriftkunde/sections.ts';
 import {
   COMPLETENESS,
   escapeHtml,
@@ -144,6 +145,28 @@ describe('crawler prerender', () => {
       if (/Schräglage \d/.test(preset.note)) expect(preset.note).toContain('zur Grundlinie');
       if (/Federkante|Federwinkel/.test(preset.note)) expect(preset.note).toContain('zur Schreiblinie');
     }
+  });
+
+  it('gives the Schriftkunde page a jump list whose anchors resolve, in page order', () => {
+    const html = rendered.get('schriftkunde.html')!;
+    const body = html.slice(html.indexOf('<main>'), html.indexOf('</main>'));
+    // The <nav> under the header lists every section once …
+    const nav = body.match(/<nav aria-label="[^"]+">([\s\S]*?)<\/nav>/)![1];
+    const linked = [...nav.matchAll(/<a href="#([^"]+)">/g)].map((m) => m[1]);
+    expect(linked).toEqual(SCHRIFTKUNDE_SECTIONS.map((s) => s.id));
+    // … and each anchor is an <h2 id> further down, in the same order — a
+    // SPA section that moved without its prerender twin shows up here.
+    const headings = [...body.matchAll(/<h2 id="([^"]+)">/g)].map((m) => m[1]);
+    expect(headings).toEqual(linked);
+    // The Kennwerte JSON-LD links #kurrent / #suetterlin / #offenbacher — the
+    // script cards carry those ids (on the page as on the card's <h3> here).
+    for (const k of kennwerte()) expect(body).toContain(`<h3 id="${k.id}">`);
+    // The specimen strips are named by their Antiqua labels, never embedded.
+    for (const row of schriftkunde.letters) {
+      if (!('specimens' in row)) continue;
+      expect(body).toContain(`<em>(Schriftprobe auf der Webseite, live geschrieben: ${row.specimens.map((s) => s.label).join(' · ')})</em>`);
+    }
+    expect(body).toContain(escapeHtml(schriftkunde.lettersSpecimenNote));
   });
 
   it('renders the Kennwerte as a visible JSON block and as JSON-LD on the Schriftkunde page', () => {

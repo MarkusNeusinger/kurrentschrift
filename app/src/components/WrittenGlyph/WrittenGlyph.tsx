@@ -99,9 +99,12 @@ interface Props {
   // Called if the glyph has no canonical yet (404) so the caller can fall back to
   // the static crop. The component itself renders nothing once unavailable.
   onUnavailable?: () => void;
+  // The replay button bottom-right (default on). Off for small specimens whose
+  // caller offers its own replay gesture — the button would cover the letter.
+  showReplay?: boolean;
 }
 
-export function WrittenGlyph({ glyphKey, sourceId = CONFIG.sourceId, durationMs = GLYPH_WRITE_MS, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, variant = 0, onUnavailable, surfaceBg = SURFACE_BG, inkColor, animate: animateProp = true }: Props) {
+export function WrittenGlyph({ glyphKey, sourceId = CONFIG.sourceId, durationMs = GLYPH_WRITE_MS, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, variant = 0, onUnavailable, surfaceBg = SURFACE_BG, inkColor, animate: animateProp = true, showReplay = true }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const uid = useId();
   const [fetched, setFetched] = useState<GlyphRenderData | null>(
@@ -296,7 +299,7 @@ export function WrittenGlyph({ glyphKey, sourceId = CONFIG.sourceId, durationMs 
         </Box>
       </svg>
 
-      {animate && <ReplayButton onClick={replay} />}
+      {animate && showReplay && <ReplayButton onClick={replay} />}
     </Box>
   );
 }

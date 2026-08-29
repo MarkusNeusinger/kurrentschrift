@@ -79,6 +79,10 @@ const SRC = {
 export const schriftkunde = {
   eyebrow: 'Schriftkunde',
   title: 'Die deutsche Schreibschrift',
+  // The jump list under the page header (twelve-plus sections without it); the
+  // entries are the section headings, the ids live in sections/schriftkunde/
+  // sections.ts.
+  tocLabel: 'Auf dieser Seite',
   // Warm opener for newcomers (period tone, second person) — placed above the
   // factual lead so a curious finder of an old letter is met first.
   intro: 'Du hast einen alten Brief, eine Postkarte oder ein Tagebuch gefunden und erkennst kaum einen Buchstaben? Das ist meist die deutsche Kurrentschrift — über vierhundert Jahre lang ganz gewöhnlich, heute für die meisten ein Rätsel. Diese Seite erklärt in Ruhe, was das ist, wie es funktioniert und warum wir heute nicht mehr so schreiben.',
@@ -296,22 +300,52 @@ export const schriftkunde = {
   // --- Buchstaben-Besonderheiten ---------------------------------------------
   lettersHeading: 'Buchstaben-Besonderheiten',
   lettersLead: 'Ein paar Eigenheiten, an denen die deutsche Schreibschrift zu erkennen ist — und über die jeder Leseanfänger stolpert.',
+  // The marked-specimen caption for the strips beside the rows (design-system
+  // §9: historic forms only as a labelled specimen on its own surface). The
+  // view drops it when no strip could render (engine unreachable), so it never
+  // describes something that is not on screen.
+  lettersSpecimenNote:
+    'Die Schriftproben daneben schreibt die Engine live aus der Sütterlin-Vorlage von 1922; der Antiqua-Buchstabe darunter benennt jede Form, ein Klick schreibt sie noch einmal.',
+  // `specimens`: the glyphs written live beside a row, in reading order —
+  // `key` is the public source's glyph_key (base scheme: `longs`, `sz`, `ae`),
+  // `label` the Antiqua letter shown under the written form. A row without a
+  // traceable form (the Reduplikationsstrich is a mark over a letter, not a
+  // glyph of the Vorlage) simply has none.
   letters: [
     {
       term: 'Langes ſ und rundes s',
       desc: 'Das lange ſ steht am Silbenanfang und im Silbeninneren, das runde s nur am Silbenende: leſen, aber das. Vom f unterscheidet es nur der fehlende Querstrich — eine häufige Lesefalle.',
+      specimens: [
+        { key: 'longs', label: 'ſ' },
+        { key: 's', label: 's' },
+        { key: 'f', label: 'f' },
+      ],
     },
     {
       term: 'Der u-Bogen',
       desc: 'Klein-u und Klein-n sind formgleich. Damit man sie auseinanderhält, trägt das u einen kleinen Bogen über sich.',
+      specimens: [
+        { key: 'u', label: 'u' },
+        { key: 'n', label: 'n' },
+      ],
     },
     {
       term: 'Das e und die Umlaute',
       desc: 'Das Kurrent-e hat eine eigene, an ein n erinnernde Form. Aus dem klein übergeschriebenen e sind die heutigen Pünktchen über ä, ö, ü entstanden.',
+      specimens: [
+        { key: 'e', label: 'e' },
+        { key: 'n', label: 'n' },
+        { key: 'ae', label: 'ä' },
+      ],
     },
     {
       term: 'Das ß',
       desc: 'Das Eszett ist historisch eine Ligatur aus langem ſ und z (ſʒ) — die Deutung als ſ+s stammt aus der Antiqua-Tradition.',
+      specimens: [
+        { key: 'longs', label: 'ſ' },
+        { key: 'z', label: 'z' },
+        { key: 'sz', label: 'ß' },
+      ],
     },
     {
       term: 'Reduplikationsstrich',

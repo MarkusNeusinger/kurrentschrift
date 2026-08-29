@@ -21,6 +21,24 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **The Schriftkunde writes its letter peculiarities and gets a jump list.**
+  Each row of „Buchstaben-Besonderheiten" now carries a specimen strip
+  beside it — the letters the row talks about (ſ · s · f, u · n, e · n · ä,
+  ſ · z · ß), written live by the engine from the public Sütterlin source
+  and labelled with their Antiqua letter (design-system §9's marked
+  specimen; a click writes a letter again). The strips load in one batch
+  when the section comes near and withdraw — no error box in prose — when a
+  glyph has no canonical or the engine is unreachable; the caption that
+  calls them "live geschrieben" goes with them. The fourteen sections
+  carry stable ids (`sections/schriftkunde/sections.ts`: `#grundbegriffe`,
+  `#buchstaben`, `#entziffern` …) plus the three script cards (`#kurrent`,
+  `#suetterlin`, `#offenbacher` — the targets the Kennwerte JSON-LD already
+  linked), and „Auf dieser Seite" under the page header jumps to them; a
+  `/schriftkunde#…` URL lands there after the lazy chunk mounts. The crawler
+  prerender carries the same ids on its `<h2>`s, the same list as a `<nav>`
+  and names each row's specimens by their Antiqua labels. `WrittenGlyph`
+  gained `showReplay` for small specimens whose caller offers its own replay
+  gesture. Website audit 2026-08-29, item 3/8.
 - **The quiz word bank reaches every letter.** Every traced Sütterlin glyph
   was quizzable in letters mode, but the frequency-led WORD bank had no
   word at all with C, Q, X, Y, q, x, y, Ä, Ö, Ü and only 1–6 words with
