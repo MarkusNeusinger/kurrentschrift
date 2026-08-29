@@ -82,12 +82,14 @@ export function placeText(lines: readonly TextLine[], rows: readonly RowMetrics[
   let next = 0;
   for (const line of lines) {
     const c = line.composed;
-    if (!c) {
+    if (c) for (const key of c.missing) missing.add(key);
+    if (!c || !c.items.length) {
+      // Pending, failed, or nothing writable (every letter still unwritten):
+      // the line keeps its rows so the sheet does not jump, and the
+      // missing-letter note names what stays blank.
       if (rows[next]) next += step;
       continue;
     }
-    for (const key of c.missing) missing.add(key);
-    if (!c.items.length) continue; // nothing writable in this line
     if ((c.bounds.max_x - c.bounds.min_x) * s > width) {
       out.tooWide.push(line.text);
       continue;

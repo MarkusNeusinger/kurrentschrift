@@ -126,6 +126,21 @@ describe('placeText', () => {
     const fill = placed.shapes[0];
     if (fill.kind !== 'fill') throw new Error('kind');
     expect(fill.rings[0][0][1]).toBe(rows[3].baseline); // row 0 stays with the pending line
+    // A line with nothing writable (every letter missing) keeps its rows too,
+    // and its missing letters are named.
+    const blank = placeText(
+      [
+        { text: '123', composed: { ...composed(1, ['1', '2', '3']), items: [] } },
+        { text: 'ok', composed: composed(1) },
+      ],
+      rows,
+      opts,
+    );
+    expect(blank.placed).toEqual(['ok']);
+    expect(blank.missing).toEqual(['1', '2', '3']);
+    const ok = blank.shapes[0];
+    if (ok.kind !== 'fill') throw new Error('kind');
+    expect(ok.rings[0][0][1]).toBe(rows[3].baseline);
   });
 
   it('reports the lines without a row left and the union of the missing letters', () => {
