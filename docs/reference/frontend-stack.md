@@ -71,6 +71,7 @@ definiert (P1-Arbeit).
 | `/lesen` | Hub → Quiz, Tafel | Lesen |
 | `/quiz` | Lese-Quiz (Buchstaben + ganze Wörter) | Lesen |
 | `/tafel` | Schreibtafel (Vorlage) | Lesen |
+| `/lesen/vergleichen` | Lesart prüfen — eine Vermutung wird geschrieben, daneben die Lesarten mit je einem vertauschten Verwechsler (`lib/lesarten.ts`) und die klassischen Verwechsler-Paare nebeneinander (`?text=` teilbar) | Lesen |
 | `/schreiben` | Hub → Übungsblatt, Federprobe | Schreiben |
 | `/schreiben/uebungsblatt` | Übungsblatt-Generator (Lineatur-Konfigurator, PDF) | Schreiben |
 | `/federprobe` | Live-Schreiber (Sütterlin-Synthese mit generierten Übergängen) | Schreiben |
@@ -601,6 +602,23 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   statt Fehlerkasten, wenn die Engine nicht erreichbar ist. Der Prerender
   setzt dieselben Ids auf seine `<h2>`, dieselbe Liste als `<nav>` und
   nennt die Schriftproben je Zeile nur beim Antiqua-Namen.
+- `sections/vergleichen/` — `VergleichenView`, die Lesart-Seite
+  (`/lesen/vergleichen`, Website-Audit 2026-08-29, 4/8): die getippte
+  Vermutung als `WrittenWord`, darunter die Lesarten aus `lib/lesarten.ts`
+  (je Karte genau EIN Buchstabe gegen seinen dokumentierten Verwechsler
+  getauscht — n/u, e/n, n/m, i/j, t/l, f/h, ſ/f für ein nicht-finales s,
+  Umlaut ↔ Grundbuchstabe, die Versalien-Cluster L/K/R, N/M, B/V —,
+  höchstens acht, Klick übernimmt die Lesart), darunter die klassischen
+  Verwechsler-Paare als `SpecimenStrip` mit dem unterscheidenden Merkmal.
+  Kein HTR: die Person liest, die Engine liefert die Kandidaten
+  (Vision Ziel 5, didaktische Hälfte).
+- `components/SpecimenStrip/` — Buchstaben „wie geschrieben" als
+  markiertes Specimen auf eigener Fläche (design-system.md §9), Antiqua-
+  Beschriftung, Klick schreibt neu; die Seite holt die Payloads aller
+  Streifen in EINEM Batch (`useSpecimenPayloads`), jeder Streifen montiert
+  seine Zellen erst in Sichtweite und zieht sich zurück, wenn nichts
+  schreibbar ist. Genutzt von der Schriftkunde (Buchstaben-Besonderheiten)
+  und der Lesart-Seite.
 - `sections/hub/` — `HubView` (die `/lesen`- und `/schreiben`-Bereichs-Hubs).
 - `sections/worksheet/` — `WorksheetView` + `ConfigPanel` + `PreviewSvg`
   (Lineatur-Konfigurator, `/schreiben/uebungsblatt`).

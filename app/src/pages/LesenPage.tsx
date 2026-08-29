@@ -22,6 +22,7 @@ export default function LesenPage() {
       cards={[
         { ...t.cards.quiz, to: paths.quiz },
         { ...t.cards.tafel, to: paths.tafel },
+        { ...t.cards.vergleichen, to: paths.vergleichen },
       ]}
     />
   );

@@ -11,6 +11,7 @@ const WorksheetPage = lazy(() => import('@/pages/WorksheetPage'));
 const ScribePage = lazy(() => import('@/pages/ScribePage'));
 const TafelPage = lazy(() => import('@/pages/TafelPage'));
 const QuizPage = lazy(() => import('@/pages/QuizPage'));
+const VergleichenPage = lazy(() => import('@/pages/VergleichenPage'));
 const ImpressumPage = lazy(() => import('@/pages/ImpressumPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
 
@@ -40,5 +41,8 @@ export const publicRoutes: RouteObject[] = [
   // longer mounts the AdminProvider, so it stops downloading the full
   // crop-editing bbox payload just to read the locked/split gating flags.
   { path: paths.quiz, element: <QuizPage /> },
+  // The Lesart page writes the guess (WrittenWord) and the confusable pairs
+  // (SpecimenStrip) straight from the site-wide source — no provider.
+  { path: paths.vergleichen, element: <VergleichenPage /> },
   { path: '*', element: <NotFoundPage /> },
 ];

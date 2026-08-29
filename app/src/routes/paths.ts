@@ -16,6 +16,9 @@ export const paths = {
   scribe: '/federprobe',
   tafel: '/tafel',
   quiz: '/quiz',
+  // The reading aid under the Lesen hub: a guessed word written, beside the
+  // readings that would look the same (website audit 2026-08-29, 4/8).
+  vergleichen: '/lesen/vergleichen',
   impressum: '/impressum',
   // The admin is one workbench in three views — Buchstaben · Übergänge ·
   // Wörter — over one chosen Vorlage; /admin itself is the Vorlage picker the

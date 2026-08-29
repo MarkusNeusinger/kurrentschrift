@@ -12,6 +12,7 @@ Jede Seite liefert Crawlern und KI-Agenten, die kein JavaScript ausführen, unte
 - [Lesen](https://kurrentschrift.ink/lesen): Übersicht der Lese-Übungen
 - [Buchstaben-Quiz](https://kurrentschrift.ink/quiz): Sütterlin-Buchstaben und -Wörter erkennen, mit Auswertung
 - [Schreibtafel](https://kurrentschrift.ink/tafel): Die drei Grundtafeln; das Sütterlin-Alphabet schreibt sich Zug um Zug selbst
+- [Lesart prüfen](https://kurrentschrift.ink/lesen/vergleichen): Eine Vermutung eintippen — die Feder schreibt sie in Sütterlin, daneben die Lesarten mit je einem vertauschten Verwechsler (n/u, e/n, f/ſ …); dazu die klassischen Verwechsler-Paare nebeneinander geschrieben
 - [Schreiben](https://kurrentschrift.ink/schreiben): Übersicht der Schreib-Übungen
 - [Übungsblatt](https://kurrentschrift.ink/schreiben/uebungsblatt): Konfigurierbare Lineatur-Vorlagen zum Ausdrucken
 - [Federprobe](https://kurrentschrift.ink/federprobe): Beliebigen Text eingeben — die Feder schreibt ihn live mit generierten Übergängen

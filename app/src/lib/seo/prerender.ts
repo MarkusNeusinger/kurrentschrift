@@ -27,7 +27,9 @@ import { schriftkunde } from '../../locales/de/schriftkunde.ts';
 import { scribe } from '../../locales/de/scribe.ts';
 import { seo } from '../../locales/de/seo.ts';
 import { tafel } from '../../locales/de/tafel.ts';
+import { vergleichen } from '../../locales/de/vergleichen.ts';
 import { worksheet } from '../../locales/de/worksheet.ts';
+import { LOOKALIKES } from '../../lib/lesarten.ts';
 import { paths } from '../../routes/paths.ts';
 import { SCHRIFTKUNDE_SECTIONS, SECTION_IDS } from '../../sections/schriftkunde/sections.ts';
 import { TRY_TARGETS } from '../../sections/schriftkunde/tryTargets.ts';
@@ -403,14 +405,24 @@ const schriftkundeBody = () => {
 
 // Like HubView: the area's short name as eyebrow, the H1 with the search term,
 // lead + the explanatory paragraph, then the tool cards.
-const hubBody = (h: typeof hub.lesen | typeof hub.schreiben, routes: Record<string, string>) => () =>
-  [
-    `<p class="eyebrow">${e(h.title)}</p>`,
-    `<h1>${e(h.heading)}</h1>`,
-    p(h.lead),
-    p(h.about),
-    ...Object.entries(h.cards).map(([k, c]) => `${h2(c.title)}${p(c.body)}<p>${a(abs(routes[k]), c.cta)}</p>`),
-  ].join('\n');
+// `routes` is keyed by the hub's OWN card ids, so a card added to the locale
+// without its route fails to compile instead of rendering a broken link (it
+// did once: „kurrentschrift.inkundefined" for the Lesart card).
+type HubCard = { readonly title: string; readonly body: string; readonly cta: string };
+type HubCopy<C> = { readonly title: string; readonly heading: string; readonly lead: string; readonly about: string; readonly cards: C };
+const hubBody =
+  <C extends Record<string, HubCard>>(h: HubCopy<C>, routes: Record<keyof C, string>) =>
+  () =>
+    [
+      `<p class="eyebrow">${e(h.title)}</p>`,
+      `<h1>${e(h.heading)}</h1>`,
+      p(h.lead),
+      p(h.about),
+      ...(Object.keys(h.cards) as (keyof C & string)[]).map((k) => {
+        const c = h.cards[k];
+        return `${h2(c.title)}${p(c.body)}<p>${a(abs(routes[k]), c.cta)}</p>`;
+      }),
+    ].join('\n');
 
 const quizBody = () => {
   const t = quiz;
@@ -463,6 +475,37 @@ const worksheetBody = () => {
     h2(t.config.rulingHeading),
     p(t.config.rulingNote),
     em(`${NEEDS_JS} ${t.config.download}.`),
+  ].join('\n');
+};
+
+// The Lesart page: what it does, the look-alike table the readings are built
+// from (the one piece of content a machine can use without the SPA), and the
+// confusable pairs with their distinguishing feature.
+const vergleichenBody = () => {
+  const t = vergleichen;
+  const lookalikeRows = Object.entries(LOOKALIKES)
+    .map(([from, tos]) => `<li><strong>${e(from)}</strong> → ${tos.map(e).join(', ')}</li>`)
+    .join('');
+  return [
+    `<p class="eyebrow">${e(common.nav.read)}</p>`,
+    `<h1>${e(t.heading)}</h1>`,
+    p(seo.vergleichen.description),
+    p(t.lead),
+    h2(t.guessHeading),
+    p(`${t.examplesLabel} ${t.examples.join(', ')}`),
+    em(t.writtenCaption),
+    h2(t.lesartenHeading),
+    p(t.lesartenIntro),
+    p('Verwechsler je Buchstabe — aus jedem entsteht eine Lesart mit genau diesem einen Tausch:'),
+    `<ul>${lookalikeRows}</ul>`,
+    h2(t.pairsHeading),
+    p(t.pairsIntro),
+    letterRows(t.pairs),
+    h2(t.moreHeading),
+    `<ul><li>${a(`${abs(paths.schriftkunde)}#${SECTION_IDS.decipher}`, t.moreDecipher)}</li><li>${a(abs(paths.quiz), t.moreQuiz)}</li></ul>`,
+    em(t.disclaimer),
+    em(NEEDS_JS),
+    apiExampleLine(),
   ].join('\n');
 };
 
@@ -533,10 +576,17 @@ export const PAGES: readonly PageSpec[] = [
     file: 'lesen.html',
     ...seo.lesen,
     breadcrumbs: [crumbHome],
-    body: hubBody(hub.lesen, { quiz: paths.quiz, tafel: paths.tafel }),
+    body: hubBody(hub.lesen, { quiz: paths.quiz, tafel: paths.tafel, vergleichen: paths.vergleichen }),
   },
   { route: paths.quiz, file: 'quiz.html', ...seo.quiz, breadcrumbs: [crumbHome, crumbLesen], body: quizBody },
   { route: paths.tafel, file: 'tafel.html', ...seo.tafel, breadcrumbs: [crumbHome, crumbLesen], body: tafelBody },
+  {
+    route: paths.vergleichen,
+    file: 'lesen/vergleichen.html',
+    ...seo.vergleichen,
+    breadcrumbs: [crumbHome, crumbLesen],
+    body: vergleichenBody,
+  },
   {
     route: paths.schreiben,
     file: 'schreiben.html',
@@ -566,6 +616,7 @@ const NAV: readonly { route: string; label: string }[] = [
   { route: paths.lesen, label: common.nav.read },
   { route: paths.quiz, label: quiz.title },
   { route: paths.tafel, label: tafel.title },
+  { route: paths.vergleichen, label: vergleichen.title },
   { route: paths.schreiben, label: common.nav.write },
   { route: paths.worksheet, label: landing.tools.worksheet.title },
   { route: paths.scribe, label: common.nav.scribe },

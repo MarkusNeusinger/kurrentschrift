@@ -21,6 +21,23 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **„Lesart prüfen" — the reading aid for a person with an old letter on
+  the desk (`/lesen/vergleichen`).** Type what you believe a word says and
+  the engine writes it in Sütterlin; beside it the readings that would look
+  the same on the page — `lib/lesarten.ts` swaps exactly one letter per
+  card against its documented look-alike (n/u, e/n, n/m, i/j, t/l, f/h,
+  ſ/f for a non-final s, umlaut ↔ base letter, the capital clusters L/K/R,
+  N/M, B/V; at most eight, a click makes a reading the new guess) — so the
+  eye compares against the original instead of against memory. Below,
+  the classic confusable pairs written side by side with the feature that
+  tells them apart. The guess is shareable (`?text=`), the page has its
+  hub card, sitemap, llms.txt and prerender entries (the look-alike table
+  is in the crawler page as text), and links into the Schriftkunde's
+  „Einen alten Brief entziffern" anchor. Vision goal 5's didactic half,
+  without HTR — the person reads, the engine supplies the candidates.
+  The Schriftkunde's specimen strips moved into the shared
+  `components/SpecimenStrip` (with `useSpecimenPayloads`) that both pages
+  use. Website audit 2026-08-29, item 4/8.
 - **Page titles and H1s name what people search for; the hubs explain
   themselves.** Every indexable `<title>` now leads with the search term
   and ends with the brand („Sütterlin-Quiz: alte deutsche Schrift lesen

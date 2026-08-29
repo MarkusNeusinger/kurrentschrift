@@ -41,6 +41,11 @@ export const seo = {
     description:
       'Die drei historischen Vorlagen der deutschen Schreibschrift auf einen Blick — die Sütterlin Zug um Zug von der Feder geschrieben, zum Vergleichen und Nachschlagen.',
   },
+  vergleichen: {
+    title: 'Alte deutsche Schrift entziffern: Lesart prüfen · kurrentschrift.ink',
+    description:
+      'Ein Wort aus einem alten Brief, eine Vermutung — die Feder schreibt sie in Sütterlin und daneben die Lesarten, die genauso aussehen könnten (n/u, e/n, f/ſ). Zum Vergleichen mit dem Original.',
+  },
   schreiben: {
     title: 'Kurrent und Sütterlin schreiben lernen · kurrentschrift.ink',
     description:
