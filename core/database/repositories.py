@@ -10,7 +10,7 @@ import json
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import delete, func, select, tuple_
+from sqlalchemy import delete, func, or_, select, tuple_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer
@@ -71,6 +71,14 @@ class QuizWordRepository:
         return list(result.scalars().all())
 
 
+def _other_generations(keep: int):
+    """Every generation but `keep`, as two ranges rather than `!=`: gen leads
+    the primary key, so Postgres answers the common case — only the live
+    generation exists, ~700k rows — with two empty index range scans instead
+    of a full scan."""
+    return or_(LesartForm.gen < keep, LesartForm.gen > keep)
+
+
 class LesartRepository:
     """The Lesart vocabulary: generation-switched bulk loads, keyed reads."""
 
@@ -101,7 +109,7 @@ class LesartRepository:
         crashed sync never leaves a second vocabulary sitting in the table."""
         meta = await self.dictionary()
         live = meta.active_gen if meta else 0
-        await self.session.execute(delete(LesartForm).where(LesartForm.gen != live))
+        await self.session.execute(delete(LesartForm).where(_other_generations(live)))
         return live + 1
 
     async def add_forms(self, gen: int, rows: list[tuple[str, str, bool]]) -> int:
@@ -147,7 +155,7 @@ class LesartRepository:
             meta.forms = forms
             meta.sha256 = sha256
             meta.updated_at = now
-        await self.session.execute(delete(LesartForm).where(LesartForm.gen != gen))
+        await self.session.execute(delete(LesartForm).where(_other_generations(gen)))
         await self.session.flush()
         return meta
 
