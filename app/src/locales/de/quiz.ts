@@ -31,7 +31,10 @@ export const quiz = {
     difficultyShortHint: 'wie ordentlich die Handschrift ist',
     difficultyHint:
       'Höhere Stufen zeigen denselben Buchstaben in unsaubereren Handschriften — sobald solche Vorlagen vorliegen.',
-    // Summary line above the start button: "dein Quiz · Kurrent · Buchstaben · Sauber".
+    // Summary line above the start button, followed by the labels of the rows
+    // actually on screen (QuizSetupPanel shows a row only when it offers a
+    // choice) — today "dein Quiz · Buchstaben"; the script is named by
+    // `sourceNote` below.
     summaryPrefix: 'dein Quiz',
     noLetters: 'Für diese Auswahl sind noch keine Buchstaben freigegeben.',
     noLettersOther: 'Buchstaben erscheinen hier, sobald sie fertig nachgeschrieben und freigegeben sind.',
