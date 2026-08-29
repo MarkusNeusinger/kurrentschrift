@@ -57,6 +57,18 @@ const CAPITAL_CLUSTERS: string[][] = [
   ['b', 'v'],
 ];
 
+// The catalogue is keyed by the base glyph_key scheme (`n`, `longs`, `ae`).
+// A bbox locked under the legacy `lc-<letter>` / `uc-<letter>` scheme (kept
+// resolvable in domain/glyphs) maps to its base key here, so older locked
+// letters get the same sentences — the legacy scheme only ever covered a–z, so
+// the allograph/umlaut keys need no aliasing.
+const catalogueKey = (question: LetterQuestion): string => {
+  const { key } = question;
+  if (key.startsWith('lc-')) return key.slice(3);
+  if (key.startsWith('uc-')) return key.slice(3).toUpperCase();
+  return key;
+};
+
 const listCapitals = (letters: string[]): string => {
   const upper = letters.map((l) => l.toUpperCase());
   return upper.length <= 2 ? upper.join(' und ') : `${upper.slice(0, -1).join(', ')} und ${upper[upper.length - 1]}`;
@@ -67,7 +79,8 @@ const listCapitals = (letters: string[]): string => {
  * trap gets the sentence instead of a random miss. Lowercase answers, the
  * shown letter excluded; empty when the catalogue has nothing for the key. */
 export function confusablesOf(question: LetterQuestion): string[] {
-  const { key, kg } = question;
+  const { kg } = question;
+  const key = catalogueKey(question);
   const out = new Set<string>();
   if (kg.letterCase === 'upper') {
     for (const cluster of CAPITAL_CLUSTERS) if (cluster.includes(kg.answer)) cluster.forEach((l) => out.add(l));
@@ -85,7 +98,8 @@ export function confusablesOf(question: LetterQuestion): string[] {
 
 /** The explanation for a wrong pick, or null when the catalogue has none for this pair. */
 export function explainMiss(question: LetterQuestion, guessed: string): string | null {
-  const { key, kg } = question;
+  const { kg } = question;
+  const key = catalogueKey(question);
   const shown = kg.answer;
   if (guessed === shown) return null;
   const rules = de.quiz.play.rules;

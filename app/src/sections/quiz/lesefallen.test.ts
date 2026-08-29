@@ -73,6 +73,14 @@ describe('confusablesOf', () => {
     expect(new Set(confusablesOf(question('L')))).toEqual(new Set(['k', 'r']));
   });
 
+  it('serves a bbox locked under the legacy lc-/uc- key scheme like its base key', () => {
+    expect(new Set(confusablesOf(question('lc-n')))).toEqual(new Set(confusablesOf(question('n'))));
+    expect(explainMiss(question('lc-n'), 'u')).toBe(explainMiss(question('n'), 'u'));
+    expect(explainMiss(question('lc-f'), 's')).toBe(de.quiz.play.rules.fAsLongs);
+    expect(new Set(confusablesOf(question('uc-l')))).toEqual(new Set(['k', 'r']));
+    expect(explainMiss(question('uc-b'), 'v')).toBe(explainMiss(question('B'), 'v'));
+  });
+
   it('never lists the shown letter itself, and nothing for undocumented forms', () => {
     for (const key of ['n', 'L', 'ae', 'sz']) expect(confusablesOf(question(key))).not.toContain(question(key).kg.answer);
     expect(confusablesOf(question('g'))).toEqual([]);
