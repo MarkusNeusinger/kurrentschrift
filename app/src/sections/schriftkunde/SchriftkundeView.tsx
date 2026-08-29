@@ -196,7 +196,7 @@ function LetterRows({ items }: { items: readonly LetterItem[] }) {
   const keys = useMemo(() => items.flatMap((it) => (it.specimens ?? []).map((s) => s.key)), [items]);
   const [ref, near] = useInView<HTMLDivElement>('400px');
   const payloads = useSpecimenPayloads(keys, near);
-  const showNote = items.some((it) => it.specimens !== undefined && anyWritable(it.specimens, payloads));
+  const showNote = items.some((it) => !!it.specimens?.length && anyWritable(it.specimens, payloads));
   return (
     <>
       {showNote && (
