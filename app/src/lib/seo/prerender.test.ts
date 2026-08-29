@@ -230,6 +230,18 @@ describe('crawler prerender', () => {
     }
   });
 
+  it('never renders a link with an undefined or relative target', () => {
+    // A hub card without its route once rendered „kurrentschrift.inkundefined"
+    // (#453). Every href is either absolute to the site/API or a fragment.
+    for (const [file, html] of rendered) {
+      const body = html.slice(html.indexOf('<main>'), html.indexOf('</main>'));
+      for (const m of body.matchAll(/href="([^"]*)"/g)) {
+        expect(m[1], `${file}: ${m[1]}`).not.toContain('undefined');
+        expect(m[1], `${file}: ${m[1]}`).toMatch(/^(https?:\/\/|#)/);
+      }
+    }
+  });
+
   it('never leaves an unescaped angle bracket from the locale in the body', () => {
     // A locale string with "<" would break the document; escapeHtml is the
     // only path from locale to HTML, so a leak means a helper bypassed it.

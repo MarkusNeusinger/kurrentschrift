@@ -29,6 +29,9 @@ describe('lesarten', () => {
     expect(lesarten('das').map((l) => l.text)).not.toContain('daf');
     expect(lesarten('das').map((l) => l.text)).toEqual(['däs']);
     expect(lesarten('das Haus').map((l) => l.text)).not.toContain('daf Haus');
+    // Punctuation is a word boundary too — "das," ends in a round s.
+    expect(lesarten('das,').map((l) => l.text)).not.toContain('daf,');
+    expect(lesarten('das.').map((l) => l.text)).toEqual(['däs.']);
   });
 
   it('returns nothing for an empty guess or letters without a look-alike', () => {

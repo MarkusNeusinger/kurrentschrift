@@ -405,7 +405,10 @@ const schriftkundeBody = () => {
 
 // Like HubView: the area's short name as eyebrow, the H1 with the search term,
 // lead + the explanatory paragraph, then the tool cards.
-const hubBody = (h: typeof hub.lesen | typeof hub.schreiben, routes: Record<string, string>) => () =>
+// `routes` is keyed by the hub's OWN card ids, so a card added to the locale
+// without its route fails to compile instead of rendering a broken link (it
+// did once: „kurrentschrift.inkundefined" for the Lesart card).
+const hubBody = <H extends typeof hub.lesen | typeof hub.schreiben>(h: H, routes: Record<keyof H['cards'], string>) => () =>
   [
     `<p class="eyebrow">${e(h.title)}</p>`,
     `<h1>${e(h.heading)}</h1>`,
@@ -566,7 +569,7 @@ export const PAGES: readonly PageSpec[] = [
     file: 'lesen.html',
     ...seo.lesen,
     breadcrumbs: [crumbHome],
-    body: hubBody(hub.lesen, { quiz: paths.quiz, tafel: paths.tafel }),
+    body: hubBody(hub.lesen, { quiz: paths.quiz, tafel: paths.tafel, vergleichen: paths.vergleichen }),
   },
   { route: paths.quiz, file: 'quiz.html', ...seo.quiz, breadcrumbs: [crumbHome, crumbLesen], body: quizBody },
   { route: paths.tafel, file: 'tafel.html', ...seo.tafel, breadcrumbs: [crumbHome, crumbLesen], body: tafelBody },

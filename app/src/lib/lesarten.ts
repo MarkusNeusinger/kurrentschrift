@@ -54,7 +54,9 @@ export const LOOKALIKES: Readonly<Record<string, readonly string[]>> = {
 
 export const MAX_LESARTEN = 8;
 
-const isWordFinal = (chars: readonly string[], i: number): boolean => i === chars.length - 1 || /\s/.test(chars[i + 1]);
+// A letter is word-final at the end of the guess or before anything that is
+// not a letter (space, comma, full stop …).
+const isWordFinal = (chars: readonly string[], i: number): boolean => i === chars.length - 1 || !/\p{L}/u.test(chars[i + 1]);
 
 /** The readings that could look like `guess` on the page — one swapped letter
  * each, in word order, at most `max`, never the guess itself or a duplicate. */
