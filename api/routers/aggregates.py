@@ -56,6 +56,7 @@ from core.database import (
     Template,
     TemplateRepository,
 )
+from core.laufform import spike_gate
 
 
 router = APIRouter(prefix="/hands/{hand_id}/aggregates", tags=["aggregates"], dependencies=[Depends(require_admin)])
@@ -347,6 +348,23 @@ async def apply_laufform(
                     variant=row.variant,
                     reason="below_min_occurrences",
                     n_instances=row.n_instances,
+                )
+            )
+            continue
+        # Row gate (qualitaetsmetrik.md §14 LF8), last of all: a median that
+        # carries an anchor spike („Anker im leeren Papier" — the harvest's own
+        # detector, here on the ROW) is fit noise the statistics could not
+        # outvote — reported with its ratio, never written, no override (more
+        # evidence or the chart fallback).
+        spike = spike_gate(base, median)
+        if spike["exceeded"]:
+            skipped.append(
+                AggregateApplySkip(
+                    glyph_key=row.glyph_key,
+                    variant=row.variant,
+                    reason="anchor_spike",
+                    spike_ratio=spike["ratio"],
+                    spike_max=spike["max"],
                 )
             )
             continue

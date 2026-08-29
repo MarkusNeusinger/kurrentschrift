@@ -74,6 +74,7 @@ from scipy.ndimage import distance_transform_edt
 
 from core.compose import CAP_RESTART_BASES, _key_base
 from core.fit import fit_template_to_instance
+from core.laufform import anchor_spike_ratio
 from tools.pairlab.analyze import TRACE_WINDOW_MARGIN, _body_items, _fit_letter, _ink_extent_x, _to_px
 from tools.pairlab.anchors import repair_stranded_anchors
 from tools.pairlab.chain import chain_runs, fit_word_chain
@@ -290,59 +291,13 @@ class CaseHarvest:
 # ------------------------------------------------------------- pure geometry
 
 
-def anchor_spike_ratio(anchors: np.ndarray, stroke_starts: Sequence[int]) -> float:
-    """The „Anker im leeren Papier" spike ratio of a fitted anchor chain.
-
-    The largest step between consecutive anchors, measured against the median
-    step OF ITS OWN pen-stroke, maximised over the strokes. Numerator and
-    denominator share a stroke and a unit, so the ratio is scale-free and
-    comparable across glyphs — the 120-anchor capitals and the 6-anchor
-    punctuation alike.
-
-    PER STROKE, not pooled, because strokes differ in scale by ~1.5x: an i's
-    body against its dot, a ue's body against its two umlaut dots. A pooled
-    median is dominated by the long body stroke and understates a spike inside
-    a short one — measured on the real harvest, `ue` in „Zügel" scores 7.21
-    pooled but 10.61 against its own stroke, i.e. the pooled form silently kept
-    a needle. Over these 245 occurrences the change only ever tightened the gate
-    (25 rows score higher per-stroke, none lower across the threshold) — but
-    that is an empirical fact about this harvest, not a property of the two
-    forms: a short stroke whose own steps are unusually long could in principle
-    score lower per-stroke than pooled.
-
-    LIMIT, deliberately not papered over: a stroke with two anchors yields one
-    step, hence a ratio of exactly 1.0, and a three-anchor stroke makes the
-    median the mean and caps the ratio near 2 — such strokes are structurally
-    exempt. The shortest stroke in the current templates is a ue umlaut dot at
-    10 anchors, so nothing is exempt today; a future template with a 3-anchor
-    stroke would exempt itself silently.
-
-    Pen lifts never count: a stroke boundary is the hand setting the pen down
-    somewhere else, not a discontinuity of the line. Counting it would reject
-    every multi-stroke glyph — i, u, sz, t, ae — for writing exactly what its
-    ductus prescribes.
-
-    Returns 0.0 when there is nothing to judge (no stroke has two anchors), and
-    `inf` when a stroke's median step is zero while some step in it is not: a
-    chain that stands still and then jumps is the very failure this exists for.
-    """
-    pts = np.asarray(anchors, dtype=float).reshape(-1, 2)
-    if len(pts) < 2:
-        return 0.0
-    bounds = sorted({0, *(int(s) for s in stroke_starts if 0 < int(s) < len(pts)), len(pts)})
-    worst = 0.0
-    for start, end in zip(bounds[:-1], bounds[1:], strict=True):
-        stroke = pts[start:end]
-        if len(stroke) < 2:
-            continue
-        steps = np.hypot(*(stroke[1:] - stroke[:-1]).T)
-        largest, median = float(steps.max()), float(np.median(steps))
-        if median <= 0.0:
-            if largest > 0.0:
-                return float("inf")
-            continue
-        worst = max(worst, largest / median)
-    return worst
+# `anchor_spike_ratio` — the „Anker im leeren Papier" detector — lives in
+# `core/laufform.py` since LF8 (qualitaetsmetrik.md §14 `aug29`) and is imported
+# above: the same function scores every single fit here (against
+# MAX_ANCHOR_SPIKE_RATIO) and the ROW about to be written at the API's row gate
+# (against LAUFFORM_SPIKE_RATIO_MAX). Its per-stroke design and the measured
+# reason for it (ue in „Zügel": 7.21 pooled, 10.61 per stroke — a needle the
+# pooled form silently kept) are documented on the function itself.
 
 
 def _strokes_to_word_units(
@@ -1268,11 +1223,21 @@ def print_gate_table(rows: list[dict]) -> None:
             print(f"    {reason:>22}  {n:>5}")
 
 
-def apply_drafts(drafts: dict[str, dict], base_url: str, source_id: str, token: str) -> None:
+def apply_drafts(
+    drafts: dict[str, dict], base_url: str, source_id: str, token: str, min_occurrences: int | None = None
+) -> None:
+    """PUT every draft as the glyph's running-form row.
+
+    The endpoint enforces the evidence floor (`LAUFFORM_MIN_OCCURRENCES`, §14
+    LF7) and the row gate; `min_occurrences` lowers the floor EXPLICITLY for
+    this run (`?min_occurrences=N`, the LF1 author statement) — never silently.
+    A refused draft is reported per key, the run goes on.
+    """
     failed: list[str] = []
+    query = f"?min_occurrences={min_occurrences}" if min_occurrences is not None else ""
     for key, d in drafts.items():
         req = urllib.request.Request(
-            f"{base_url}/sources/{source_id}/templates/{key}/laufform",
+            f"{base_url}/sources/{source_id}/templates/{key}/laufform{query}",
             data=json.dumps(d).encode(),
             method="PUT",
             headers={"Content-Type": "application/json", "X-Admin-Token": token},
@@ -1324,6 +1289,12 @@ def main() -> None:
     ap.add_argument("--word-out", type=Path, default=Path("laufform_words.json"))
     ap.add_argument("--diag-csv", type=Path, help="per-slot gate diagnostics (one row per slot)")
     ap.add_argument("--apply", action="store_true")
+    ap.add_argument(
+        "--min-occurrences",
+        type=int,
+        default=None,
+        help="lower the endpoint's evidence floor for THIS --apply (LF1 author statement; default: the server floor)",
+    )
     ap.add_argument("--base-url", default="http://localhost:8000")
     ap.add_argument("--source-id")
     ap.add_argument("--hand-id", default="suetterlin-1922-norm")
@@ -1373,7 +1344,7 @@ def main() -> None:
         if not token or not args.source_id:
             raise SystemExit("--apply needs --source-id and the ADMIN_TOKEN env var")
         base = args.base_url.rstrip("/")
-        apply_drafts(drafts, base, args.source_id, token)
+        apply_drafts(drafts, base, args.source_id, token, min_occurrences=args.min_occurrences)
         apply_batch("instances", occurrences, base, args.source_id, token, args.hand_id, args.hand_label)
         apply_batch("word-instances", word_records, base, args.source_id, token, args.hand_id, args.hand_label)
 

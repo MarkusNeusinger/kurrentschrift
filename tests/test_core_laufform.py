@@ -156,3 +156,76 @@ def test_output_is_rounded_like_every_derivation_output():
     out = blend_stroke_ends(CHART, shifted, [0], window=0.25)
     assert all(round(v, 4) == v for p in out for v in p)
     _assert_close(out, shifted)
+
+
+# ----------------------------------------------------------------- row gate (LF8)
+
+from types import SimpleNamespace  # noqa: E402 — the row-gate block reads better as one unit
+
+from core.laufform import (  # noqa: E402
+    LAUFFORM_SPIKE_RATIO_MAX,
+    anchor_spike_ratio,
+    naturalness_gap,
+    row_naturalness,
+    spike_gate,
+)
+
+
+def test_spike_ratio_is_one_for_even_steps_and_the_jump_over_the_median_otherwise():
+    assert anchor_spike_ratio(CHART, [0]) == pytest.approx(1.0)
+    jumped = [list(p) for p in CHART]
+    jumped[5] = [jumped[5][0] + 0.5, jumped[5][1]]  # one anchor leaves the line by 0.5
+    ratio = anchor_spike_ratio(jumped, [0])
+    steps = [math.hypot(jumped[i + 1][0] - jumped[i][0], jumped[i + 1][1] - jumped[i][1]) for i in range(10)]
+    assert ratio == pytest.approx(max(steps) / sorted(steps)[5])
+    assert ratio > 3.0
+
+
+def test_spike_ratio_judges_each_stroke_against_its_own_median():
+    """A pen lift is not a spike, and a short dot stroke is measured against its
+    own steps, not the body's."""
+    body = CHART
+    dot = [[0.0 + i * 0.01, 1.5] for i in range(10)]  # tiny steps, far from the body
+    chain = body + dot
+    assert anchor_spike_ratio(chain, [0, 11]) == pytest.approx(1.0)
+    spiked_dot = [list(p) for p in dot]
+    spiked_dot[5] = [spiked_dot[5][0], 1.6]  # a 0.1 needle in a 0.01-step stroke
+    assert anchor_spike_ratio(body + spiked_dot, [0, 11]) > 5.0
+    # Pooled with a stroke that shares the dot's scale, the body's 0.11 steps
+    # would hide that 0.1 needle (ratio < 1); per stroke it is a 10x spike.
+    assert anchor_spike_ratio(spiked_dot, [0]) > 5.0
+    assert anchor_spike_ratio(dot, [0]) == pytest.approx(1.0)
+
+
+def test_spike_ratio_edge_cases():
+    assert anchor_spike_ratio([], [0]) == 0.0
+    assert anchor_spike_ratio([[0.0, 0.0]], [0]) == 0.0
+    assert anchor_spike_ratio([[0.0, 0.0], [1.0, 0.0]], [0]) == pytest.approx(1.0)  # two anchors: exempt
+    # Stands still (median step 0), then jumps: the very failure the ratio exists for.
+    assert anchor_spike_ratio([[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [1.0, 0.0]], [0]) == math.inf
+
+
+def test_spike_gate_reads_the_chart_stroke_starts_and_the_adopted_gate():
+    chart = SimpleNamespace(anchors=CHART, half_widths=[0.05] * 11, trace_meta={"stroke_starts": [0]})
+    assert LAUFFORM_SPIKE_RATIO_MAX is not None
+    ok = spike_gate(chart, [[x + 0.3, y] for x, y in CHART])
+    assert ok == {"ratio": pytest.approx(1.0), "max": LAUFFORM_SPIKE_RATIO_MAX, "exceeded": False}
+    jumped = [list(p) for p in CHART]
+    jumped[5] = [jumped[5][0] + 1.0, jumped[5][1]]
+    bad = spike_gate(chart, jumped)
+    assert bad["exceeded"] and bad["ratio"] > LAUFFORM_SPIKE_RATIO_MAX
+
+
+def test_row_naturalness_ranks_a_jagged_stroke_below_a_smooth_one():
+    """LF7's report column: the geometry-only §5 terms, sampled with the
+    chart's plan; a zig-zag along the same line scores lower."""
+    smooth = [[i * 0.1, 0.5] for i in range(21)]
+    jagged = [[i * 0.1, 0.5 + (0.03 if i % 2 else -0.03)] for i in range(21)]
+    hw = [0.05] * 21
+    n_smooth = row_naturalness(smooth, hw, [0], None, 64.0)
+    n_jagged = row_naturalness(jagged, hw, [0], None, 64.0)
+    assert 0.0 <= n_jagged["naturalness"] < n_smooth["naturalness"] <= 1.0
+    assert n_jagged["components"]["smoothness"] > n_smooth["components"]["smoothness"]
+    chart = SimpleNamespace(anchors=smooth, half_widths=hw, trace_meta={"stroke_starts": [0], "unit_px": 64})
+    assert naturalness_gap(chart, smooth)["gap"] == 0.0
+    assert naturalness_gap(chart, jagged)["gap"] > 0.0

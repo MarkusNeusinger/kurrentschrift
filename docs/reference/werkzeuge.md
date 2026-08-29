@@ -59,6 +59,24 @@ KEY`, `--full-blend`); `--window 0` kopiert die gespeicherten Zeilen
 wörtlich, sodass eine reine Chart-Rückfall-Karte (K0-Arm) nichts anderes
 bewegt.
 
+**`tools/laufform/inventory.py`** — die Bestandsaufnahme der gespeicherten
+Laufform-Zeilen gegen ihre Tafelformen (§14 LF7/LF8): je Zeile n, die
+Sprung-Ratio (`core.laufform.anchor_spike_ratio` auf der ZEILE — das
+Zeilen-Gate) neben der Natürlichkeits-Lücke als Berichts-Spalte, dazu das
+datengetriebene τ (Maximum der Zeilen mit n ≥ 3, aufgerundet) und die
+Zeilen darüber; `--png` zeichnet ausgewählte Zeilen über ihre Tafelform —
+das Bild, das das Wort-Lineal nie ansieht.
+
+```bash
+uv run python -m tools.laufform.inventory [--root DIR] [--json out.json]
+uv run --extra viz python -m tools.laufform.inventory --png inventory.png --only K,t,E
+```
+
+Die Ernte (`tools/laufform/harvest.py --apply`) läuft seit LF7 gegen den
+Boden des Endpunkts: ein Draft unter `LAUFFORM_MIN_OCCURRENCES` wird
+abgewiesen, außer `--min-occurrences N` senkt ihn ausdrücklich für DIESEN
+Lauf (die LF1-Autor-Aussage); das Sprung-Gate hat keinen Override.
+
 **`tools/pairlab`** — seziert EINEN Buchstaben-Übergang gegen seine echten
 Vorkommen in den Vorlagen, jeder Buchstabe UNABHÄNGIG neu eingepasst:
 trennt Konnektor-Form von Platzierungsfehler und misst, wie weit die echte

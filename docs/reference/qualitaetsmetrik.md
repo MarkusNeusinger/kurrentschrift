@@ -9370,3 +9370,22 @@ dem Autor MIT den Bildern vorgelegt; Rettungsweg für diese Klasse
 (§7.9): ein Form-Abstand zur Tafel je Anker in Nib-Radien, gegen die
 vertraute Population gemessen (eigene Pre-Reg — die Hand DARF von der
 Tafel abweichen, die Schwelle muss das trennen).
+
+**Adoptiert `aug29` (Bestandsaufnahme durch das Werkzeug, Root
+2026-08-29):** τ = **2,95** (`LAUFFORM_SPIKE_RATIO_MAX`; Maximum der
+21 vertrauten Zeilen = i 2,9405, sein Punkt-Zug). Über τ: ue 5,79 ·
+F 5,53 · ae 4,15 · b 3,55 · K 3,16 — ausnahmslos n=1-Zeilen des
+manuellen PUT, keine vertraute Zeile (per Konstruktion); direkt unter
+τ die vertrauten i 2,94 · o 2,85 · ſ 2,84 und das v (n=2) mit 2,86.
+Mechanik im Baum: `anchor_spike_ratio` in `core/laufform.py` (die
+Ernte importiert es), Boden + Sprung-Gate auf PUT
+(`?min_occurrences`, 422 mit Ratio/τ) und apply (`skipped`, `reason:
+anchor_spike`, `spike_ratio`/`spike_max`; SPA-Chip zeigt beide
+Zahlen), Ernte `--min-occurrences`; die Natürlichkeits-Lücke bleibt
+Berichts-Spalte der Bestandsaufnahme. Das Wort-Lineal ist byte-gleich
+(kein Kompositions-Code berührt). Nachtrag zur Vorregistrierung, wie
+angekündigt: die Trennung auf dieser Root war vor der Pre-Reg
+gesehen; was das Gate prospektiv leistet, zeigt der nächste Harvest.
+**Offen für den Autor:** ue, F, ae, b (über τ, in Prod) — Löschen =
+Chart-Rückfall wie beim K; v, E, P, k (unter τ, sichtbar verzogen) —
+Entscheidung nach Bild, Rettungsweg Form-Abstand (§7.9).
