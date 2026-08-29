@@ -9244,3 +9244,62 @@ Kompositions-Soll; (c) unter n→t UND „Kurrentschrift" n→t
 geradlinig, Haken weg; Nachweis der Klassenregel an weiteren
 Sägezahn→t/ſ-Wörtern des Sets: fechten, streiten, muß, Seiten). Kill
 wie immer; Rettungsweg dann der Fit-Prior.
+
+### Laufform LF7 `aug29` — Vorregistrierung: das Zeilen-Gate (Aufnahme einer Laufform-Zeile)
+
+Geschrieben und committet VOR der ersten Zahl. Anlass (Autor, nach
+Korb #7): das K kam als n=1-Zeile in den Schreibweg, „weil dadurch das
+eine Wort angeblich besser wurde" — der Buchstabe selbst war deutlich
+schlechter als seine Tafelform. Zwei Löcher: (1) der manuelle
+`PUT …/templates/{key}/laufform` (Harvest-/Schreib-Karten-Pfad) prüft
+nur die Ankerzahl — der Boden `LAUFFORM_MIN_OCCURRENCES` = 3 gilt
+allein im `apply-laufform`; genau über den PUT kamen am `aug26` die
+Zeilen E · F · K · P · ae · b · k · s · ue (n = 1) und f · v (n = 2).
+(2) Das Aufnahme-Gate war das WORT-Lineal (Pixeldeckung): ein
+zackiger Einzelfit, der auf der Tinte liegt, gewinnt dort — Zackigkeit
+sieht das Lineal nicht, und die Overlay-Sichtprüfung hat den
+K-Schwanz durchgewinkt. **Doktrin-Satz (neu, bindend):** ein
+Wort-Gewinn am Pixel-Lineal ist KEIN Aufnahmekriterium für eine
+Laufform-Zeile; aufgenommen wird eine Zeile nur über den Boden (n ≥ 3
+oder ausdrückliche Autor-Aussage per `min_occurrences`) UND das
+Zeilen-Gate unten.
+
+**Mechanismus.** (a) **Boden auf beiden Schreibpfaden:** der PUT
+verlangt `n_occurrences ≥ LAUFFORM_MIN_OCCURRENCES`, darunter 422,
+außer die Anfrage sagt es ausdrücklich (`?min_occurrences=1`, wie beim
+apply); `tools/laufform/harvest.py --apply` reicht `--min-occurrences`
+durch. (b) **Zeilen-Gate:** für die zu schreibende Zeile UND ihre
+Chart-Zeile wird die referenzfreie Natürlichkeit der §5-Metrik
+geometrie-seitig gerechnet — Glätte, Vertikalität, Eckenschärfe,
+Kollinearität mit den §5-Gewichten über die anwendbaren Terme; ohne
+Deckungs-Tor und ohne Rückzug (beide brauchen den Scan) — im
+Pixelrahmen der Chart-Zeile (`unit_px`), Strichanfänge/Ecken vom
+Duktus-Prior (`core/laufform.py::row_naturalness`). Gate-Größe ist die
+**Lücke** Δ = N(Chart) − N(Zeile): positiv = die Zeile ist unruhiger
+als ihre eigene Tafelform. Eine Zeile mit Δ > τ wird nicht geschrieben
+(PUT 422 mit Δ und τ im Detail; apply meldet die Zeile als `skipped`
+mit `reason: naturalness` und beiden Zahlen). Kein Override — eine
+Zeile, die objektiv unruhiger ist als ihre Tafelform, ist kein
+Autor-Wissen, sondern Fit-Rauschen; der Weg ist mehr Evidenz oder der
+Chart-Rückfall.
+
+**KEIN Handknopf: τ ist datengetrieben, die Regel steht hier vorher.**
+Population = die gespeicherten Zeilen der Root vom 2026-08-29 mit
+n ≥ 3 (die Gattung, der die Doktrin traut: a c d e g h i l longs m n o
+p r S Z sz t u w z — 21 Zeilen); τ = ihr größtes Δ, auf 0,01
+aufgerundet. Vorhersage, falsifizierbar: (i) die K-Zeile (n = 1, noch
+in der eingefrorenen Root) hat Δ > τ — hat sie das nicht, ist das Gate
+zu weich und der Arm gescheitert (Rettungsweg dann: die Komponenten
+einzeln gaten, Glätte zuerst); (ii) das Wort-Lineal bleibt byte-gleich
+— das Gate ändert keine Komposition, nur den Schreibpfad. Berichtet
+wird die ganze Verteilung (alle 32 Zeilen, Δ je Komponente) als
+**Bestandsaufnahme** (`tools/laufform/inventory.py`, mit Bildern der
+n < 3-Zeilen neben ihrer Tafelform); Zeilen über τ werden namentlich
+dem Autor vorgelegt — Löschen (Chart-Rückfall) ist eine
+Daten-Entscheidung hinter Autor-Go, mit dem Kugel-Muster je Wort
+berichtet, nicht gegatet.
+
+**Adoption.** τ wird `LAUFFORM_NATURALNESS_GAP_MAX` in
+`core/laufform.py`, das Gate greift auf beiden Schreibpfaden; der
+Doktrin-Satz geht in optimierungs-werkbank.md §6 und ins Glossar
+(„Zeilen-Gate (Laufform)").
