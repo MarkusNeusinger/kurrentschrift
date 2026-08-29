@@ -9112,3 +9112,69 @@ je Wort; c: die drei Korb-Stellen; d: Lotse/Kette im Write-Schritt),
 dazu der K0-Arm kombiniert. Erwartung, explizit: Breite ≈ Basis
 (Längs bleibt), t-Landetangente im Align-Fenster, Korb-Wörter wie bei
 LF5 besser.
+
+**Gemessen `aug29` — BEIDE Stufen verworfen, und die Erwartung ist
+WIDERLEGT: die Längs/Quer-These trägt nicht.** Mechanik-Prüfung wie
+erhofft (t-Landetangente 86,8° → 39,1° / 38,0°, K-Austritt −49,2° →
++36,0° / +44,6°, n-Kopf nur 0,015 xh bewegt, aber 32° → 42°). **(a)
+wordbench: W 0,25 → 0,119897 (+0,0132), W 0,5 → 0,135348 (+0,0286);
+Paare 0,146219 / 0,146480.** 57 von 63 bewegt, 21 : 36 bei W 0,25 —
+dieselben Verlierer wie LF5 (macht +0,085, Gewehr +0,080, einen
++0,079, Zorn +0,073, wenn +0,059), und die Breite steigt GENAUSO
+(0,1606 → 0,1905), dazu der Übergang (0,0881 → 0,0945); unter wird
+diesmal sogar schlechter (0,0866 → 0,0967), nur Kugel gewinnt leicht
+(0,0698). Befund: bei den gut belegten Buchstaben (e n=34, n n=31,
+i n=20) sind die Laufform-Enden keine Drift, in keiner Zerlegung —
+der flachere n-Kopf (32°) IST die Hand, das Lineal will ihn; nur beim
+t (n=4, Kringel-Zug) und beim K (n=1) sind die Enden Rauschen. **Eine
+globale Endregel ist der falsche Ort — die End-Evidenz ist je Glyph
+verschieden.** Kill greift, `LAUFFORM_END_WINDOW` bleibt 0; der
+Blend-Mechanismus bleibt als reproduzierbarer Kandidaten-Pfad
+(`tools/laufform/endblend.py`, Modi `transverse`/`full`) im
+Werkzeugkasten. Rettungswege (§7.9, je eigene Pre-Reg): (1) die
+Grammatik liest die LANDErichtung vom Duktus-Prior (J1 unten,
+Kompositionsseite, Geometrie unangetastet); (2) End-Prior im FIT
+(Kette/M4: Endanker-Regularisierung auf die Chart-Richtung, dann
+Re-Harvest — der tiefe Fix); (3) evidenz-gesteuerte Blende (nur
+Zeilen unter dem Boden n < 3 oder mit End-MAD über Nib) — nie
+derselbe Knopf global weicher.
+
+### Übergänge J1 `aug29` — Vorregistrierung: die Prior-Landerichtung (Korb #7, t nach n)
+
+Geschrieben und committet VOR der ersten Zahl. Konversion der
+LF5/LF6-Negative: die Geometrie der Laufform bleibt, was das Lineal
+will; was den t-Haken erzeugt, ist die GATING-Lesung der Grammatik —
+`entry_land_deg` wird am gerenderten Laufform-Kopf gemessen, und der
+t-Kopf (n=4, Anker 0 zum Kringel gezogen) liefert 86,8° statt der
+40,4° des Chart-Anstrichs, womit die Align-/Flanken-Kopplung
+(25–55°) nie in Frage kommt und der generische Bézier den Haken
+stehen lässt. Nach dem f, wo die Flankenkopplung greift, ist
+dasselbe t sauber (17 Samples getrimmt): die Kopplung IST die
+Reparatur, sie wird nur nicht erreicht.
+
+**Mechanismus.** Wenn ein Slot seine Laufform-Zeile rendert, wird
+`entry_land_deg` (B's Landerichtung, die Klassen-Entscheidung
+Align/Flanke/Sameslant/Ritt und die Steigung der Pass-through-Linie)
+am ERSTEN ZUG DER CHART-ZEILE gemessen — derselben Zeile, deren
+gespeicherte `entry.tangent_deg` die Kanonisierung ohnehin
+unverändert übernimmt („the tangents stay") —, mit demselben
+Bogenfenster; Ascender-Lean wird auf die Prior-Linie ebenso
+angewandt. Alles andere bleibt Laufform: die Kopplungs-Indizes
+werden weiter auf der gerenderten Laufform-Flanke gesucht, die
+Ankunftsrichtung des generischen Bézier (`d_in`) weiter an der
+gekoppelten Laufform-Linie gemessen (kein Saum-Knick), die
+Austrittsseite (`exit_deg`, Startrichtung des Verbinders) bleibt
+unangetastet. Ein Slot ohne Laufform-Zeile verhält sich
+byte-identisch.
+
+**EIN Knopf: Prior-Landerichtung an/aus.** Basis wie LF5
+(0,106720 / 0,146506, dieselbe Root, dieselbe Umgebung). Gates: (a)
+`word_loss`/`pair_loss` ≤ +0,002, bewegen dürfen sich nur Wörter mit
+Laufform-Glyphen; (b) Kompositions-Soll je Wort ohne Verlust; (c) unter
+n→t koppelt geradlinig (Platzierungsregel `align`/`flank_*`, Haken
+weg) und „Kurrentschrift" n→t ebenso; (d) Lotse/Kette dev-19 im
+Adoptions-PR NICHT gefahren — J1 ändert keine Karte, nur die
+Komposition, und die Kette liest ihr Kompositions-Soll aus derselben
+Komposition: die Bewegung des Solls wird unter (b) berichtet.
+Kill: ein verletztes Gate = keine Adoption; Rettungsweg dann der
+Fit-Prior (LF-Rettungsweg 2).
