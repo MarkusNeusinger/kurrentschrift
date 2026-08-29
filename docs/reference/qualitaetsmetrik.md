@@ -9044,3 +9044,71 @@ derselbe Knopf weicher.
 bleibt ein eigener Schritt hinter Autor-Go (Todoist) → `dbsnapshot` →
 PUT je Glyph → GET-Verify → Re-Export der Root als deklarierte
 Re-Baseline.
+
+**Gemessen `aug29` — BEIDE Stufen verworfen an Gate (a), der Riss ist
+lokalisiert: die Laufform-Enden tragen echte Ausdehnung.** Umgebung wie
+vorregistriert (BLAS gepinnt), Kandidaten-Karten aus
+`tools/laufform/endblend.py` über die Root vom 2026-08-29. Zuerst die
+Mechanik-Prüfung an den Korb-Glyphen: t-Landetangente 86,8° → 37,2°
+(W 0,25) / 39,3° (W 0,5), K-Austritt −49,2° → +39,5° / +44,5° mit
+Schwanzende auf der Chart-Position — die Blende tut, was sie soll. Eine
+Korrektur der Vorregistrierung: die Blende ist NICHT idempotent (nur
+Ende und Fensterrand sind Fixpunkte, im Fenster kontrahiert eine
+Wiederholung weiter zur Chart-Form); sie ist deterministisch aus dem
+Median, was für Prüfstein und Re-Apply genügt — der Prüfstein
+(`list`/`rebuild`/`apply`) vergleicht seit dieser Runde darum den
+Median DURCH den Builder gegen die gespeicherte Zeile. **(a) wordbench:
+W 0,25 → 0,118093 (+0,0114), W 0,5 → 0,128716 (+0,0220); Paare
+0,146459 / 0,146684 (±0,0002).** 57 von 63 Wörtern bewegen sich, bei
+W 0,25 19 besser gegen 38 schlechter. Die Korb-Wörter GEWINNEN (Kugel
+0,0717 → 0,0672, unter 0,0866 → 0,0785, `dconn` unter 0,110 → 0,081,
+`doff` 0,143 → 0,069; schießen −0,083, und-3 −0,049, Soldaten −0,037),
+die Verlierer sind die e/n/i/m-Wörter, und ihre Strafe ist BREITE:
+macht +0,112 (Breite +0,093), Gewehr +0,087, einen +0,075, Zorn +0,070
+(Breite +0,173), Zügel +0,039 (Breite +0,139); die Breiten-Komponente
+gesamt 0,1606 → 0,1885. Die Advance-Bewegung der Karte sagt dasselbe:
+n 1,912 → 1,878, u 1,817 → 1,788, i 0,820 → 0,793, l 0,901 → 0,854 —
+die gefitteten Endstrecken sind LÄNGER als die Chart-Stubs, und diese
+Längs-Ausdehnung ist Breite der Hand, keine Drift; die starre
+Chart-Endstrecke schneidet sie ab. **Der Riss trennt sich also in
+zwei Komponenten der End-Abweichung: längs (Breite, echt) und quer
+(der Zug zur Nachbar-Tinte, der die Tangente kippt).** Kill-Kriterium
+greift: keine Adoption, `LAUFFORM_END_WINDOW` bleibt 0 (der Builder
+kann blenden, tut es per Default nicht). **K0** (K auf Tafel, die
+anderen 31 Zeilen wörtlich): 0,106856 (+0,00014), nur Kugel bewegt
+sich (0,0717 → 0,0813, Übergang +0,020, Breite +0,014) — misst das
+Pixel-Lineal, das den zackigen Einzelfit auf der Tinte liegen sieht;
+die Sichtprüfung (c) und der Autor-Befund (die Wellen sind Teil des K)
+zählen hier gegen die Zahl. Rettungsweg → LF6 unten, §7.9-Zeile im
+selben PR.
+
+### Laufform LF6 `aug29` — Vorregistrierung: die Quer-Endblende (nur der Quer-Anteil der End-Drift geht zurück)
+
+Geschrieben und committet VOR der ersten Zahl. Konversion des
+LF5-Negativs: die End-Abweichung des Medians hat eine Längs-Komponente
+(entlang der Chart-Richtung am Ende = Ausdehnung des Stubs = Breite
+der Hand, vom Lineal bestätigt) und eine Quer-Komponente (der Zug zur
+Nachbar-Tinte: t-Anker 0 rutscht quer zum Anstrich Richtung Kringel,
+der K-Endanker quer zum Schwanz auf die Grundlinie). LF5 nahm beide
+zurück und verlor die Breite; LF6 nimmt nur die Quer-Komponente
+zurück.
+
+**Mechanismus.** Wie LF5 (Fenster W auf dem Chart-Zug, starres
+Anhängen mit Versatz T am Fensterrand, lineares w), aber der Rest
+Δ'ᵢ = Laufformᵢ − (Chartᵢ + T) wird je Anker in seine Komponente
+entlang der Chart-END-RICHTUNG d (Einheitsvektor Fensterrand → Ende
+auf dem Chart-Zug) und den Quer-Rest zerlegt:
+outᵢ = Chartᵢ + T + Δ'∥ᵢ + wᵢ · Δ'⊥ᵢ. Längs bleibt ganz (Breite,
+Stub-Länge), quer blendet auf 0 am Ende. Rein verschobene Laufform
+bleibt Fixpunkt; Züge kürzer als 2W wie in LF5 (Chart-Form am
+mittleren Versatz). Implementiert als Default-Modus von
+`blend_stroke_ends` (`transverse_only=True`; LF5 = `False`, für die
+Reproduktion erhalten), Stempel `trace_meta.laufform.end_window` +
+`end_mode`.
+
+**EIN Knopf: W, Leiter {0,25 · 0,5}**, Wirkmenge/Basis/Gates/Kill
+wie LF5 (a: ≤ +0,002 gegen 0,106720 / 0,146506; b: Kompositions-Soll
+je Wort; c: die drei Korb-Stellen; d: Lotse/Kette im Write-Schritt),
+dazu der K0-Arm kombiniert. Erwartung, explizit: Breite ≈ Basis
+(Längs bleibt), t-Landetangente im Align-Fenster, Korb-Wörter wie bei
+LF5 besser.
