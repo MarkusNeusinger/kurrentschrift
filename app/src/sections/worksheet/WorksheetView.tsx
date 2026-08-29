@@ -79,9 +79,10 @@ export function WorksheetView() {
   const [cfg, setCfg] = useState<LineatureConfig>(() => stripPreset(DEFAULT_PRESET));
   const [presetId, setPresetId] = useState<string>(DEFAULT_PRESET.id);
   const [caption, setCaption] = useState<string>(DEFAULT_PRESET.label);
-  // The Übungstext: model lines set into the rows, each followed by empty
-  // rows to copy it into.
+  // The Übungstext: model lines set into the rows, each followed by a grey
+  // copy to trace over and by empty rows to write it freely.
   const [text, setText] = useState<string>('');
+  const [trace, setTrace] = useState<boolean>(true);
   const [practiceRows, setPracticeRows] = useState<number>(2);
   // Ruling colour scheme: today's print look vs the ~1900 Schulheft print
   // (blue lines, optional red Randleiste). Preview and PDF read the same map.
@@ -115,11 +116,12 @@ export function WorksheetView() {
     () =>
       placeText(written.lines, rows, {
         xHeightMm: cfg.xHeightMm,
+        trace,
         practiceRows,
         left: cfg.marginMm,
         right: A4.widthMm - cfg.marginMm,
       }),
-    [written.lines, rows, cfg.xHeightMm, cfg.marginMm, practiceRows],
+    [written.lines, rows, cfg.xHeightMm, cfg.marginMm, trace, practiceRows],
   );
   const textStatus = useMemo(() => textStatusOf(written, placed), [written, placed]);
 
@@ -172,6 +174,8 @@ export function WorksheetView() {
             setRulingThemeId={setRulingThemeId}
             text={text}
             setText={setText}
+            trace={trace}
+            setTrace={setTrace}
             practiceRows={practiceRows}
             setPracticeRows={setPracticeRows}
             textStatus={textStatus}

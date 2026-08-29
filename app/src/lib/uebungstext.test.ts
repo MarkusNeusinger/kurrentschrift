@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { ComposedWordOut } from './api';
 import { buildLineature, PRESETS, type RowMetrics } from './lineatur';
 import { lineaturePdf } from './pdf';
-import { MAX_LINE_LEN, MAX_LINES, placeText, textLines } from './uebungstext';
+import { INK, MAX_LINE_LEN, MAX_LINES, placeText, textLines, TRACE } from './uebungstext';
 
 // A composed line: one square letter (a ring 0..w × 0..1 in template units)
 // followed by a connector, `missing` as given.
@@ -47,7 +47,7 @@ const rows: RowMetrics[] = Array.from({ length: 6 }, (_, i) => ({
   baseline: 32 + i * 20,
   bottom: 38 + i * 20,
 }));
-const opts = { xHeightMm: 6, practiceRows: 2, left: 15, right: 195 };
+const opts = { xHeightMm: 6, trace: false, practiceRows: 2, left: 15, right: 195 };
 
 // Byte-preserving decode (see lesetafel.test.ts for why not TextDecoder).
 async function latin1(blob: Blob): Promise<string> {
@@ -87,6 +87,28 @@ describe('placeText', () => {
     expect(strokeA.points[0][1]).toBeCloseTo(32 - 1.8);
     // The second line leaves two practice rows: row 3.
     expect(fillB.rings[0][0]).toEqual([18, 32 + 3 * 20]);
+  });
+
+  it('adds a grey trace copy on the row after the model line, and skips it without room', () => {
+    const placed = placeText(
+      [
+        { text: 'a', composed: composed(1) },
+        { text: 'b', composed: composed(1) },
+      ],
+      rows,
+      { ...opts, trace: true, practiceRows: 1 },
+    );
+    expect(placed.placed).toEqual(['a', 'b']);
+    const [inkA, , traceA, , inkB] = placed.shapes;
+    if (inkA.kind !== 'fill' || traceA.kind !== 'fill' || inkB.kind !== 'fill') throw new Error('shape kinds');
+    expect(inkA.color).toBe(INK);
+    expect(traceA.color).toBe(TRACE);
+    expect(traceA.rings[0][0][1]).toBe(rows[1].baseline);
+    expect(inkB.rings[0][0][1]).toBe(rows[3].baseline); // model, trace, one practice row
+    // A model line on the last row keeps its place; only the copy is dropped.
+    const last = placeText([{ text: 'z', composed: composed(1) }], rows.slice(0, 1), { ...opts, trace: true });
+    expect(last.placed).toEqual(['z']);
+    expect(last.shapes).toHaveLength(2);
   });
 
   it('leaves out a line wider than the ruling and reports it; a pending line keeps its row', () => {

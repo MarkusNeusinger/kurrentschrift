@@ -59,9 +59,9 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
   item 5/8.
 - **The Übungsblatt takes a text: Vorschrift lines on the ruling
   (`/schreiben/uebungsblatt`).** Type lines into the worksheet and each is
-  set in the written script (Sütterlin) on a row of the chosen ruling, with
-  empty rows beneath to copy it into — vision §2's content-aware practice
-  sheet. The composition is the Federprobe's (`GET /write/word` per line
+  set in the written script (Sütterlin) on a row of the chosen ruling, a
+  grey copy on the row beneath to trace over (switchable), then empty rows
+  to write it freely — vision §2's content-aware practice sheet. The composition is the Federprobe's (`GET /write/word` per line
   through the shared render cache, debounced, remembered by its text); the
   browser only places it (`lib/uebungstext.ts`: template units onto the row
   baseline with the Mittelband as x-height; a pending line keeps its row; a

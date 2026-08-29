@@ -716,8 +716,9 @@ Lineatur in einem Schritt, druckbar.
 Übungsblatt mit Text (`/schreiben/uebungsblatt`) setzt seinen Übungstext im
 Browser: jede Zeile wird wie in der Federprobe über `GET /write/word`
 komponiert, `app/src/lib/uebungstext.ts` legt die Komposition als Vorschrift
-auf die Zeilen der gewählten Lineatur (Mittelband = x-Höhe, Leerzeilen zum
-Nachschreiben darunter), und derselbe PDF-Builder wie die Lesetafel
+auf die Zeilen der gewählten Lineatur (Mittelband = x-Höhe; darunter eine
+graue Nachspur-Zeile und Leerzeilen zum Nachschreiben), und derselbe
+PDF-Builder wie die Lesetafel
 (`lib/pdf.ts`) schreibt das Blatt. Der unten beschriebene WeasyPrint-Pfad
 samt `POST /worksheet` wurde dafür nicht gebraucht — er bleibt als Option
 für mehrseitige, HTML-gesetzte Blätter stehen, ist aber nicht mehr der

@@ -77,11 +77,14 @@ interface ConfigPanelProps {
   onDownload: () => void;
   rulingThemeId: string;
   setRulingThemeId: (id: string) => void;
-  // The Übungstext: the lines, how many empty rows follow each, and the
-  // status line under the field (what is still being written, what the
-  // sheet leaves out); `busy` holds the download while a line is pending.
+  // The Übungstext: the lines, whether a grey trace copy follows each, how
+  // many empty rows follow, and the status line under the field (what is
+  // still being written, what the sheet leaves out); `busy` holds the
+  // download while a line is pending.
   text: string;
   setText: (s: string) => void;
+  trace: boolean;
+  setTrace: (on: boolean) => void;
   practiceRows: number;
   setPracticeRows: (n: number) => void;
   textStatus: { text: string; error: boolean } | null;
@@ -100,6 +103,8 @@ export function ConfigPanel({
   setRulingThemeId,
   text,
   setText,
+  trace,
+  setTrace,
   practiceRows,
   setPracticeRows,
   textStatus,
@@ -277,7 +282,12 @@ export function ConfigPanel({
             error={textStatus?.error ?? false}
             slotProps={{ htmlInput: { maxLength: MAX_TEXT_CHARS, autoCapitalize: 'off', spellCheck: false } }}
           />
-          <Box sx={{ mt: 2 }}>
+          <FormControlLabel
+            sx={{ mt: 1 }}
+            control={<Switch checked={trace} onChange={(e) => setTrace(e.target.checked)} disabled={!text.trim()} />}
+            label={de.worksheet.text.trace}
+          />
+          <Box sx={{ mt: 1 }}>
             <NumField
               label={de.worksheet.text.practiceRows}
               value={practiceRows}

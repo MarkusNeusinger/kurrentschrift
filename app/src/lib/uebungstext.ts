@@ -19,6 +19,8 @@ export const MAX_LINE_LEN = 60;
 /** The textarea's own cap: every line at full length plus its newline. */
 export const MAX_TEXT_CHARS = MAX_LINES * (MAX_LINE_LEN + 1);
 export const INK = '#1f1a14';
+/** The trace copy: light enough to write over, dark enough for a mono printer. */
+export const TRACE = '#B8B6AE';
 const INSET_MM = 3; // air between the ruling's end and the first letter
 // A connector item without rings carries its width; the fallback only guards
 // against a payload that predates the field.
@@ -43,7 +45,9 @@ export interface TextLine {
 export interface PlaceOptions {
   /** One template unit on paper — the ruling's Mittelband, mm. */
   xHeightMm: number;
-  /** Empty rows after each model line. */
+  /** A grey copy of each model line on the row after it, to trace over. */
+  trace: boolean;
+  /** Empty rows after each model line (after its trace row, if any). */
   practiceRows: number;
   /** The writing width: the ruling's left and right end, mm. */
   left: number;
@@ -62,16 +66,18 @@ export interface PlacedText {
   missing: string[];
 }
 
-/** Set the lines into the rows: line i takes the next free row and leaves
- * `practiceRows` empty ones after it. A pending line keeps its row, so the
- * sheet does not jump while a line is still being written. */
+/** Set the lines into the rows: line i takes the next free row, its grey
+ * trace copy the row after (when `trace`), and leaves `practiceRows` empty
+ * ones after that. A pending line keeps its rows, so the sheet does not jump
+ * while a line is still being written. */
 export function placeText(lines: readonly TextLine[], rows: readonly RowMetrics[], opts: PlaceOptions): PlacedText {
   const out: PlacedText = { shapes: [], placed: [], tooWide: [], noRow: [], missing: [] };
   const s = opts.xHeightMm;
   const x0 = opts.left + INSET_MM;
   const width = opts.right - INSET_MM - x0;
   if (!(s > 0) || !(width > 0)) return out;
-  const step = 1 + (Number.isFinite(opts.practiceRows) ? Math.max(0, Math.floor(opts.practiceRows)) : 0);
+  const practice = Number.isFinite(opts.practiceRows) ? Math.max(0, Math.floor(opts.practiceRows)) : 0;
+  const step = 1 + (opts.trace ? 1 : 0) + practice;
   const missing = new Set<string>();
   let next = 0;
   for (const line of lines) {
@@ -91,20 +97,27 @@ export function placeText(lines: readonly TextLine[], rows: readonly RowMetrics[
       out.noRow.push(line.text);
       continue;
     }
+    // The trace row is skipped silently at the page's end — the model line
+    // still stands, only its grey copy has no room.
+    const traceRow = opts.trace ? rows[next + 1] : undefined;
     next += step;
-    const mm = ([x, y]: readonly [number, number]): Mm => [x0 + (x - c.bounds.min_x) * s, row.baseline - y * s];
-    for (const it of c.items) {
-      if (it.rings?.length) {
-        out.shapes.push({ kind: 'fill', color: INK, rings: it.rings.filter((r) => r.length > 2).map((r) => r.map(mm)) });
-      } else if (it.centerline.length > 1) {
-        out.shapes.push({
-          kind: 'stroke',
-          color: INK,
-          widthMm: (it.stroke_width ?? CONNECTOR_UNITS) * s,
-          points: it.centerline.map(mm),
-        });
+    const emit = (baseline: number, color: string) => {
+      const mm = ([x, y]: readonly [number, number]): Mm => [x0 + (x - c.bounds.min_x) * s, baseline - y * s];
+      for (const it of c.items) {
+        if (it.rings?.length) {
+          out.shapes.push({ kind: 'fill', color, rings: it.rings.filter((r) => r.length > 2).map((r) => r.map(mm)) });
+        } else if (it.centerline.length > 1) {
+          out.shapes.push({
+            kind: 'stroke',
+            color,
+            widthMm: (it.stroke_width ?? CONNECTOR_UNITS) * s,
+            points: it.centerline.map(mm),
+          });
+        }
       }
-    }
+    };
+    emit(row.baseline, INK);
+    if (traceRow) emit(traceRow.baseline, TRACE);
     out.placed.push(line.text);
   }
   out.missing = [...missing];

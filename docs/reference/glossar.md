@@ -146,8 +146,9 @@ der Lernende in den Leerzeilen darunter nachschreibt. Auf der Seite: der
 Übungstext des Übungsblatts (`/schreiben/uebungsblatt`), zeilenweise in der
 nachgeschriebenen Vorlage gesetzt — komponiert wie in der Federprobe
 (`GET /write/word`), auf die Zeilen der gewählten Lineatur gelegt
-(Mittelband = x-Höhe), Leerzeilen zum Nachschreiben darunter; was nicht auf
-das Blatt passt, wird benannt statt gezeichnet. *Technisch:*
+(Mittelband = x-Höhe), darunter auf Wunsch eine graue Kopie zum Nachspuren
+und Leerzeilen zum Nachschreiben; was nicht auf das Blatt passt, wird
+benannt statt gezeichnet. *Technisch:*
 `app/src/lib/uebungstext.ts` (`placeText`), Browser-Hälfte
 `sections/worksheet/useWorksheetText.ts`.
 

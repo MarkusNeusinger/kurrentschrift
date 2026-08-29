@@ -6,14 +6,15 @@ export const worksheet = {
   title: 'Übungsblatt für die deutsche Schreibschrift',
   //   preserves the DIN&nbsp;A4 non-breaking space from the JSX original.
   intro:
-    'Hilfslinien für die deutsche Schreibschrift auf DIN A4. Wähle eine der drei Ausgangsschriften, passe das Verhältnis von Ober-, Mittel- und Unterlänge nach Belieben an, nimm auf Wunsch Schräglinien dazu — und lade das Blatt als PDF zum Ausdrucken. Auf Wunsch mit einer Vorschrift: dein Text in Sütterlin auf den Zeilen, darunter Platz zum Nachschreiben.',
+    'Hilfslinien für die deutsche Schreibschrift auf DIN A4. Wähle eine der drei Ausgangsschriften, passe das Verhältnis von Ober-, Mittel- und Unterlänge nach Belieben an, nimm auf Wunsch Schräglinien dazu — und lade das Blatt als PDF zum Ausdrucken. Auf Wunsch mit einer Vorschrift: dein Text in Sütterlin auf den Zeilen, darunter in Grau zum Nachspuren und Platz zum Nachschreiben.',
   preview: 'Vorschau · DIN A4',
   // The Übungstext (sections/worksheet/useWorksheetText.ts + lib/uebungstext.ts).
   text: {
     heading: 'Übungstext',
     label: 'Vorschrift (optional)',
     placeholder: 'z. B. Guten Morgen',
-    help: 'Jede Zeile wird in der nachgeschriebenen Sütterlin-Vorlage auf eine Zeile des Blattes gesetzt; darunter bleiben Leerzeilen zum Nachschreiben.',
+    help: 'Jede Zeile wird in der nachgeschriebenen Sütterlin-Vorlage auf eine Zeile des Blattes gesetzt — darunter auf Wunsch in Grau zum Nachspuren, dann Leerzeilen zum Nachschreiben.',
+    trace: 'Nachspur-Zeile in Grau',
     hint: 'Der Text wird in der Sütterlin-Vorlage gesetzt — der einzigen bislang nachgeschriebenen Schrift; die Lineatur darüber bleibt frei wählbar. Höchstens {{lines}} Zeilen mit je {{chars}} Zeichen; eine Zeile, die bei dieser Mittellänge nicht in die Breite passt, bleibt weg.',
     practiceRows: 'Leerzeilen je Vorschrift',
     loading: 'Der Text wird geschrieben …',
