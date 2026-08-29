@@ -90,8 +90,10 @@ orthographie-regeln.md §1
 
 **Lesefalle** — ein Buchstabenpaar, das sich in der deutschen
 Schreibschrift so ähnelt, dass Leseanfänger es regelmäßig vertauschen,
-und das EIN benennbares Merkmal trennt: ſ und f nur der Querstrich, n
-und u nur der u-Bogen, e und n die Enge der Züge, i und j die Unterlänge;
+und das ein benennbares Merkmal trennt — meist ein einziges: n und u
+nur der u-Bogen, e und n die Enge der Züge, i und j die Unterlänge; bei
+ſ und f sind es zwei: oben die Schleife des f gegen die Spitze des ſ,
+dann der Querstrich, den nur das f hat;
 dazu die Positionsregel des runden s (Silben-/Wortende) und die
 Versalien-Cluster L/K/R, N/M, B/V, für die der Katalog kein einzelnes
 Merkmal nennt. Im Repo: der Katalog `app/src/sections/quiz/lesefallen.ts`
