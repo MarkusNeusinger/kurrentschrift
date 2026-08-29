@@ -3,12 +3,26 @@
 substitutions:
   _SERVICE_NAME: kurrentschrift-api
   _REGION: europe-west4
-  _MEMORY: 1Gi
+  # 512Mi, not 1Gi: measured memory use is 15 % mean and 25 % p99 of 1 GiB
+  # (~254 MiB peak), so 512Mi keeps 2x headroom over p99. On a warm instance the
+  # memory tier is pure standing cost — idle memory bills at the full active
+  # rate while idle CPU gets a ~10x discount, so halving it removes a quarter of
+  # the min-instance bill for nothing.
+  _MEMORY: 512Mi
   _CPU: "1"
-  # min=0 keeps idle cost ~zero (cold start ~3s on first hit); max=1 caps the
-  # blast radius since this is a personal-scale project.
-  _MIN_INSTANCES: "0"
-  _MAX_INSTANCES: "1"
+  # min=1 buys away the cold start. It is NOT ~3s as this comment used to claim:
+  # measured over 30 days it is p50 9,447 ms / p95 12,245 ms, and ~279 of the 344
+  # startups were user-facing (60 % of all hours see no request at all, so the
+  # service is usually cold). 98 % of that is container start plus Python import
+  # — the DB is innocent at 0.13 s. Funded by dropping anyplot-app's min-instance,
+  # which was 99.56 % idle on a service that boots in 0.26 s; net cost ~0.
+  # max=3, not 1: with concurrency 15 a single instance queued the 16th request
+  # against a 60 s timeout, and — the actual reason — min=1 with max=1 forces a
+  # deploy to REPLACE the only instance instead of warming the new one beside it,
+  # which is where the ~73 deploy-rollout cold starts came from. Only running
+  # instances are billed, and at 12,812 requests/month a second one rarely spawns.
+  _MIN_INSTANCES: "1"
+  _MAX_INSTANCES: "3"
   _RUNTIME_SA: "kurrentschrift-runtime@kurrentschrift.iam.gserviceaccount.com"
   # DB lives on the anyplot Cloud SQL instance; cross-project cloudsql.client
   # is granted to the runtime SA in the anyplot project.
@@ -118,7 +132,7 @@ steps:
   # Pre-traffic smoke against the CANDIDATE revision (tag URL, serving no
   # traffic yet): a bad image that still answers /health can 500 on the real
   # render path — probe the paths the public site actually depends on, plus
-  # the fail-closed write gate. Retries cover the min-instances=0 cold start.
+  # the fail-closed write gate. Retries cover the candidate's own cold start.
   - name: "gcr.io/cloud-builders/gcloud"
     entrypoint: "bash"
     args:
@@ -132,9 +146,10 @@ steps:
           | python3 -c "import json,sys; t=json.load(sys.stdin)['status']['traffic']; c=next(x for x in t if x.get('tag')=='candidate'); print(c['url'], c['revisionName'])")"
         test "$$REV" = "${_SERVICE_NAME}-b$BUILD_ID" || { echo "candidate tag moved to $$REV (expected ${_SERVICE_NAME}-b$BUILD_ID)"; exit 1; }
         echo "smoke against candidate $$URL ($$REV)"
-        # Retry EVERY probe: /health doesn't touch the DB, so the first /styles
-        # or /write call can still be the first real DB request after the
-        # min-instances=0 cold start and may fail transiently.
+        # Retry EVERY probe: a freshly deployed candidate starts cold whatever
+        # _MIN_INSTANCES says, and /health doesn't touch the DB, so the first
+        # /styles or /write call can still be the first real DB request of that
+        # container's life and may fail transiently.
         RETRY="--retry 5 --retry-delay 5 --retry-all-errors"
         curl -fsS $$RETRY "$$URL/health" | grep -q '"healthy"'
         curl -fsS $$RETRY "$$URL/styles" | grep -q '"id"'

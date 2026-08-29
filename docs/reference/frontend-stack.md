@@ -367,9 +367,26 @@ Funktionsweise identisch.
   deploy-app), deployt aus `main`.
 - **Region:** europe-west4 — niedrige Latenz für deutschsprachige
   Hauptzielgruppe.
-- **Min instances:** 0 (Cold-Start akzeptabel für eine Lern-Webseite).
-- **Memory:** API 1 Gi (für FastAPI + WeasyPrint + ggf. TrOCR später
-  2–4 Gi), App 512 Mi.
+- **Min instances (Stand 2026-08-30):** API **1**, App **0**. Die frühere
+  Annahme „Cold-Start akzeptabel für eine Lern-Webseite" beruhte auf einem
+  geschätzten ~3-Sekunden-Start; gemessen sind es bei der API **p50 9 447 ms /
+  p95 12 245 ms**, und 60 % aller Stunden sehen gar keine Anfrage, der Dienst
+  ist also meist kalt. Rund 279 der 344 Starts in 30 Tagen waren nutzerseitig.
+  98 % der Zeit gehen für Containerstart und Python-Import drauf, die Datenbank
+  kostet 0,13 s. Die App bleibt bei 0 — sie startet in 170 ms und wäre eine
+  warme Instanz nicht wert. Gegenfinanziert durch `anyplot-app`, das mit 99,56 %
+  Leerlauf dauerwarm stand (anyplot#10812); netto ~0 €. Die Kostenrechnung
+  dahinter: eine Mindestinstanz mit 1 vCPU kostet rund 8,50 €/Monat, weil
+  Leerlauf-CPU zu ~10 % des Aktivsatzes abgerechnet wird, Leerlauf-Speicher
+  aber zum vollen Satz.
+- **Max instances:** API **3**, App 3. Nicht wegen Durchsatz — in 30 Tagen
+  liefen ganze 3 Anfragen auf HTTP 429 —, sondern weil `min=1` zusammen mit
+  `max=1` ein Deployment zwingt, die einzige Instanz zu **ersetzen**, statt die
+  neue daneben warmlaufen zu lassen. Daher kamen die ~73 Deploy-Kaltstarts.
+- **Memory:** API **512 Mi** (gemessen 15 % Mittel / 25 % p99 von 1 GiB, also
+  ~254 MiB Spitze — 512 Mi lässt doppelte Luft über p99; bei einer Dauerinstanz
+  ist die Speicherstufe reine Standmiete), App 512 Mi. Sollte WeasyPrint oder
+  später TrOCR mehr brauchen, wird hier wieder erhöht.
 - **Datenbank:** Alle Daten liegen in Postgres — DB `kurrentschrift` auf
   der Cloud-SQL-Instanz von anyplot (Zugang über `.env`). **Die lokale
   Entwicklung schreibt DIESELBE Cloud-SQL-DB; eine separate lokale DB gibt
