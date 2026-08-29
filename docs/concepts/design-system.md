@@ -260,9 +260,10 @@ Unklarheit „gehört die Tafel zu Lesen oder Schreiben?".
 |---|---|---|
 | `/` | Landing | Einstieg |
 | `/schriftkunde` | Überblick der deutschen Schreibschriften | Schriftkunde |
-| `/lesen` | Hub → Quiz, Tafel | Lesen |
+| `/lesen` | Hub → Quiz, Tafel, Lesart prüfen | Lesen |
 | `/quiz` | Lese-Quiz (Buchstaben + ganze Wörter) | Lesen |
 | `/tafel` | Schreibtafel (Vorlage) | Lesen |
+| `/lesen/vergleichen` | Lesart prüfen (Vermutung geschrieben + Lesarten mit vertauschten Verwechslern + Verwechsler-Paare) | Lesen |
 | `/schreiben` | Hub → Übungsblatt, Federprobe | Schreiben |
 | `/schreiben/uebungsblatt` | Übungsblatt-Generator (PDF) | Schreiben |
 | `/federprobe` | Live-Schreiber (Sütterlin-Synthese) | Schreiben |
@@ -293,7 +294,8 @@ eigenen drei Bereichen (Buchstaben · Übergänge · Wörter) — §7 `HeaderBar
 | `PaperCardLink` | DIE Papier-Karte, die ein Link ist: Hover/Fokus heben sie an, Rand wird viridian | `to`, `sx`; Geschwister-Export `PaperCardCta` (Haarlinie wischt bei Karten-Hover/-Fokus ein) — genutzt von Landing, Hubs, `/schriftkunde` |
 | `HubView` | Hub-Layout (Titel + Lead + Karten-Grid) | `title`, `lead`, `cards[{title,body,cta,to}]` |
 | `HeroWritten` | einspaltiger Landing-Hero: Markenwort wird von der Engine geschrieben | Engine-first (`WrittenWord`, seit 2026-08-27); die Engine bekommt beliebig lange (Geduld-Zeile nach ~3 s, Autor-Entscheid 2026-08-27) — GLKurrent-Wort (Specimen) mit Wisch + Federspitze nur bei echtem Scheitern (Fetch-Fehler, fehlende Glyphen), Caption wechselt mit dem Modus |
-| `WrittenGlyph` | ein Glyph „wie geschrieben" (Ductus-Playback) | weiße Arbeitsfläche |
+| `WrittenGlyph` | ein Glyph „wie geschrieben" (Ductus-Playback) | weiße Arbeitsfläche; `showReplay=false` für kleine Specimens mit eigener Replay-Geste |
+| `SpecimenStrip` | Buchstaben „wie geschrieben" als **markiertes Specimen** (§9): eigene Haarlinien-Fläche in `paper.hi`, Antiqua-Beschriftung darunter, Klick schreibt neu | `specimens[{key,label}]`, `payloads` (EIN Batch je Seite über `useSpecimenPayloads`), `height`; montiert erst in Sichtweite, zieht sich zurück, wenn nichts schreibbar ist — Schriftkunde-Besonderheiten, Lesart-Verwechsler |
 | `WrittenWord` | ganzes Wort/Zeile aus Per-Glyph-Diagnostik + Übergängen | Engine-Pfad; Font-Specimen ist Fallback |
 | `BootStatus` | Vollseiten-Boot-/Cold-Start-Zustand | Quiz, Admin |
 

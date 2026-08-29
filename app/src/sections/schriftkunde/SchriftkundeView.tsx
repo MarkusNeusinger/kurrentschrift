@@ -27,7 +27,7 @@
 // letter — design-system §9's "marked specimen on its own surface".
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Box, ButtonBase, Link, Typography } from '@mui/material';
+import { Box, Link, Typography } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 import type { SxProps, Theme } from '@mui/material/styles';
 import offenbacherSpecimen from '@/assets/specimens/offenbacher-koch-1928-excerpt.jpg';
@@ -36,13 +36,10 @@ import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 import { PaperCardCta, PaperCardLink } from '@/components/PaperCardLink';
 import { Prose } from '@/components/Prose';
-import { WrittenGlyph } from '@/components/WrittenGlyph';
+import { anyWritable, SpecimenStrip, useSpecimenPayloads, type Specimen } from '@/components/SpecimenStrip';
 import { WrittenWord } from '@/components/WrittenWord';
-import { CONFIG } from '@/global-config';
 import { useInView } from '@/hooks/useInView';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
-import { fetchRenderGlyphs, type GlyphRenderData } from '@/lib/api';
-import { de } from '@/locales';
 import { schriftkunde } from '@/locales/de/schriftkunde';
 import { paths } from '@/routes/paths';
 import { SCHRIFTKUNDE_SECTIONS, SECTION_IDS, type SectionId } from '@/sections/schriftkunde/sections';
@@ -74,7 +71,6 @@ const proseLink = {
 type SourceRef = { label: string; href: string };
 type TermItem = { term: string; desc: string };
 // A letter row's specimens: the public source's glyph_key + the Antiqua label.
-type Specimen = { readonly key: string; readonly label: string };
 type LetterItem = TermItem & { readonly specimens?: readonly Specimen[] };
 
 // Fragment targets sit under the sticky PublicHeader; the scroll margin keeps
@@ -190,92 +186,17 @@ function DefinitionRows({ items }: { items: readonly TermItem[] }) {
 
 // --- Buchstaben-Besonderheiten with specimen strips -------------------------
 
-const SPECIMEN_H = 84;
-
-// The section's render payloads by glyph_key: `null` while the batch is in
-// flight; a glyph maps to null when the source has no canonical for it, and
-// every key is absent when the engine could not be reached.
-type Payloads = ReadonlyMap<string, GlyphRenderData | null>;
-
-// One written form with its Antiqua label. The payload arrives from the
-// section's batch (WrittenGlyph's `data` — no fetch of its own); a click
-// writes it again (remount; only the reveal restarts).
-function SpecimenCell({ glyphKey, label, data }: { glyphKey: string; label: string; data: GlyphRenderData }) {
-  const [run, setRun] = useState(0);
-  return (
-    <ButtonBase
-      onClick={() => setRun((r) => r + 1)}
-      aria-label={`${label} — ${de.common.writtenGlyph.replay}`}
-      sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5, px: 0.5, borderRadius: '3px' }}
-    >
-      <Box sx={{ height: SPECIMEN_H, display: 'flex', alignItems: 'center' }}>
-        <WrittenGlyph key={run} glyphKey={glyphKey} data={data} height={SPECIMEN_H} surfaceBg="transparent" showReplay={false} />
-      </Box>
-      <Typography variant="caption" component="span" aria-hidden sx={{ fontFamily: garamond, fontStyle: 'italic', color: paper.sepia, lineHeight: 1 }}>
-        {label}
-      </Typography>
-    </ButtonBase>
-  );
-}
-
-// The specimen strip of one row on its own hairline surface (design-system
-// §9). Its cells mount only near the viewport, so the write-in plays when the
-// reader arrives rather than at page load below the fold. While the batch is
-// in flight the frame holds the space; once it has answered and none of the
-// row's glyphs can be written (no canonical, engine unreachable) the strip
-// goes entirely — no empty frame, no error box inside public prose.
-function SpecimenStrip({ specimens, payloads }: { specimens: readonly Specimen[]; payloads: Payloads | null }) {
-  const [ref, inView] = useInView<HTMLDivElement>('120px');
-  const forms = specimens.map((s) => ({ ...s, data: payloads?.get(s.key) ?? null }));
-  if (payloads && forms.every((f) => !f.data)) return null;
-  return (
-    <Box
-      ref={ref}
-      sx={{
-        display: 'flex',
-        alignItems: 'flex-end',
-        gap: 1,
-        px: 1.25,
-        py: 0.75,
-        minHeight: SPECIMEN_H + 30,
-        border: `1px solid ${paper.line}`,
-        borderRadius: '3px',
-        bgcolor: paper.hi,
-        flexShrink: 0,
-        alignSelf: { xs: 'flex-start', md: 'center' },
-      }}
-    >
-      {inView &&
-        forms.map((f, i) => f.data && <SpecimenCell key={`${f.key}-${i}`} glyphKey={f.key} label={f.label} data={f.data} />)}
-    </Box>
-  );
-}
-
 // The Buchstaben-Besonderheiten rows: DefinitionRows' layout plus a specimen
-// strip beside the description where the row names one. ONE batch request
-// (renderCache) fetches every specimen of the section as soon as it comes
-// near; the cells render from that payload map. The caption that calls the
-// strips "live geschrieben" stays only while a strip can show something — it
-// never describes what is not on screen.
+// strip (components/SpecimenStrip) beside the description where the row names
+// one. ONE batch request fetches every specimen of the section as soon as it
+// comes near; the strips render from that payload map. The caption that calls
+// the strips "live geschrieben" stays only while a strip can show something —
+// it never describes what is not on screen.
 function LetterRows({ items }: { items: readonly LetterItem[] }) {
-  const keys = useMemo(() => [...new Set(items.flatMap((it) => (it.specimens ?? []).map((s) => s.key)))], [items]);
+  const keys = useMemo(() => items.flatMap((it) => (it.specimens ?? []).map((s) => s.key)), [items]);
   const [ref, near] = useInView<HTMLDivElement>('400px');
-  const [payloads, setPayloads] = useState<Payloads | null>(null);
-  useEffect(() => {
-    if (!near) return undefined;
-    let cancelled = false;
-    fetchRenderGlyphs(CONFIG.sourceId, keys)
-      .then((m) => {
-        if (!cancelled) setPayloads(m);
-      })
-      .catch(() => {
-        if (!cancelled) setPayloads(new Map()); // unreachable engine: the strips withdraw
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [near, keys]);
-  const showNote = !payloads || items.some((it) => it.specimens?.some((s) => payloads.get(s.key)));
+  const payloads = useSpecimenPayloads(keys, near);
+  const showNote = items.some((it) => it.specimens !== undefined && anyWritable(it.specimens, payloads));
   return (
     <>
       {showNote && (
@@ -296,7 +217,9 @@ function LetterRows({ items }: { items: readonly LetterItem[] }) {
               <Typography variant="body2" sx={{ ...prose, flexGrow: 1 }}>
                 {it.desc}
               </Typography>
-              {it.specimens?.length ? <SpecimenStrip specimens={it.specimens} payloads={payloads} /> : null}
+              {it.specimens?.length ? (
+                <SpecimenStrip specimens={it.specimens} payloads={payloads} sx={{ alignSelf: { xs: 'flex-start', md: 'center' } }} />
+              ) : null}
             </Box>
           </Box>
         ))}

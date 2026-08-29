@@ -26,6 +26,11 @@ export const hub = {
         body: 'Die drei historischen Vorlagen auf einen Blick — die Sütterlin schreibt sich Zug um Zug selbst. Zum Vergleichen und Nachschlagen.',
         cta: 'Zur Tafel',
       },
+      vergleichen: {
+        title: 'Lesart prüfen',
+        body: 'Ein Wort aus deinem Brief, eine Vermutung — die Feder schreibt sie, und daneben die Lesarten, die genauso aussehen könnten.',
+        cta: 'Lesart prüfen',
+      },
     },
   },
   schreiben: {
