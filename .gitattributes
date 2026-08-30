@@ -10,12 +10,12 @@
 *.json  text
 *.cff   text
 
-# The changelog merges by UNION: every PR adds bullets under [Unreleased],
-# and two PRs adding at the same spot is not a conflict — git keeps both
-# sides (ours first, then theirs). The one thing union cannot judge is a
-# line that BOTH sides changed: it would appear twice, so the changelog
-# rule is "add on top of your category, never rewrite existing lines in
-# passing" (CLAUDE.md, working guardrails).
+# The changelog merges by UNION — the net under the release-cut PR and
+# header edits. Since 2026-08-30 a PR's entries go into changelog.d/<slug>.md
+# (one file per PR, folded in by `tools/changelog release`), so two PRs no
+# longer meet at the same line at all; union stays for the rare edit of the
+# file itself. The one thing union cannot judge is a line that BOTH sides
+# changed: it would appear twice — never rewrite existing lines in passing.
 CHANGELOG.md merge=union
 
 # SVG is XML text — keep diffable.

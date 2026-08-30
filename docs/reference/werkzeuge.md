@@ -380,6 +380,38 @@ lokal bauen, über die admin-gesicherte API laden, nie direkt in die DB.
   Wörterbuch-Update (neuer Pin in `fetch_igerman98.py` + `SOURCE.md`)
   oder einer Bank-Erweiterung einmal laufen lassen.
 
+## Der Changelog-Schnitt (`tools/changelog`)
+
+Kein Mess-, sondern das Release-Werkzeug: jede PR legt EIN Fragment
+`changelog.d/<slug>.md` ab (Format = das der CHANGELOG selbst, `### Category`
+über fett betitelten englischen Bullets; `changelog.d/README.md`) statt einen
+Bullet in `CHANGELOG.md` zu schreiben — die eine geteilte Stelle, an der bis
+2026-08-30 jeder Geschwister-Merge die anderen PRs in den Konflikt schickte
+(der Union-Merge-Treiber heilte nur den lokalen Rebase; GitHubs eigene
+Mergebarkeitsprüfung ignoriert ihn). Nur Standardbibliothek, damit der CI-Job
+ohne Projekt-Extras läuft; kein Netz, keine DB — es schreibt ausschließlich in
+den Arbeitsbaum.
+
+- **`check [--base origin/main]`** — jedes Fragment ist wohlgeformt (bekannte
+  Kategorie, fett betitelte Bullets, sonst nichts). Mit `--base` die PR-Regel
+  des CI-Jobs „Changelog (fragment)": das Diff trägt ein Fragment (oder ist
+  ein Release-Schnitt, der Fragmente löscht, oder rein `data/`), und
+  `[Unreleased]` hat keinen direkt geschriebenen Bullet dazubekommen.
+  Ausnahme nur per Label `skip-changelog` (der Job läuft dann nicht).
+- **`preview`** — der gesammelte `[Unreleased]`-Abschnitt, wie ihn der
+  nächste Schnitt schreiben würde: die Fragmente, neueste zuerst je
+  Kategorie nach dem Commit, der sie anlegte (ein noch nicht committetes
+  zuoberst), darunter, was die Datei noch aus der Zeit vor den Fragmenten
+  hält.
+- **`release X.Y.Z --title "…" [--date YYYY-MM-DD] [--dry-run]`** — der
+  Schnitt: neue Versionsüberschrift im Format der Datei
+  (`## [X.Y.Z] — Datum — Titel`), `pyproject.toml`, `uv.lock` und
+  `CITATION.cff` gehoben (je Zeile genau ein Treffer, sonst Abbruch),
+  Fragmente gelöscht; `--dry-run` zeigt Plan und Abschnitt, schreibt nichts.
+  Commit, Tag auf dem Merge-Commit und die kondensierte GitHub-Release
+  bleiben Handarbeit (Kopf der CHANGELOG).
+  `uv run python -m tools.changelog release 0.28.0 --title "…"`.
+
 ## Benches und Generator (Verweise)
 
 - **`tools/glyphbench`** — bewertet jeden autorisierten Buchstaben gegen

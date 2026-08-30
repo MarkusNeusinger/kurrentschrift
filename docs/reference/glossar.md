@@ -38,7 +38,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 
 - **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4
 - **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
-- **C** — CER §6 · Chamfer-Distanz §4 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
+- **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1
@@ -2096,6 +2096,24 @@ Status mit absolutem Datum: **bindend** (entschieden) · **lebend**
 **Befund-Journal** (datierte Momentaufnahme, wird nie fortgeschrieben, nur
 abgelöst) · **statisch** (quellenbelegtes Nachschlagematerial).
 → docs/index.md § Dokument-Status
+
+**Changelog-Fragment** *(`changelog.d/<slug>.md`)* — der Changelog-Beitrag
+einer PR als EIGENE Datei statt als Bullet unter `[Unreleased]` der
+geteilten `CHANGELOG.md` (seit 2026-08-30). Format = das der CHANGELOG
+selbst (`### Category` über fett betitelten englischen Bullets), damit der
+Release-Schnitt (`tools.changelog release`) die Fragmente unverändert unter
+die neue Versionsüberschrift faltet — neueste zuerst je Kategorie, nach dem
+Commit, der sie anlegte — und sie danach löscht. Grund: die eine geteilte
+Stelle war der Ort, an dem jeder Geschwister-Merge die anderen PRs in den
+Konflikt schickte (Audit-Serie 2026-08-29/30); der Union-Merge-Treiber
+heilte nur den lokalen Rebase, GitHubs eigene Mergebarkeitsprüfung
+ignoriert ihn. Der CI-Job „Changelog (fragment)" verlangt je PR ein
+Fragment (Ausnahmen: reine `data/`-PRs, Label `skip-changelog`) und weist
+direkt in `[Unreleased]` geschriebene Bullets ab. *Technisch:*
+`tools/changelog/__init__.py` — `parse_entries` (ein Parser für Fragmente
+und `[Unreleased]`), `check_pr` (die PR-Regel), `plan_release`/`apply_release`
+(der Schnitt); CI-Job `changelog` in `.github/workflows/ci.yml`.
+→ werkzeuge.md § Der Changelog-Schnitt · `changelog.d/README.md`
 
 ### Eigenhand-Erfassung
 

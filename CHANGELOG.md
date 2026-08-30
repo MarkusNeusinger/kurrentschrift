@@ -4,9 +4,14 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-Every PR adds its entries under `[Unreleased]`; a release moves that section under a new
-version heading AND bumps `CITATION.cff` (`version` + `date-released`) and
-`pyproject.toml` (`project.version` — `/docs` reads it at runtime) in the same commit.
+Every PR adds ONE fragment under `changelog.d/` (`<slug>.md`, in this file's own format —
+`changelog.d/README.md`; since 2026-08-30, enforced by the CI job „Changelog (fragment)")
+and leaves this file alone: `[Unreleased]` holds only what was written before the fragments
+existed, and `uv run python -m tools.changelog preview` shows the whole pending section.
+A release is one command, `uv run python -m tools.changelog release X.Y.Z --title "…"`:
+it folds the fragments under the new version heading (newest first within a category),
+bumps `pyproject.toml` (`project.version` — `/docs` reads it at runtime), `uv.lock` and
+`CITATION.cff` (`version` + `date-released`), and deletes the fragments — one commit.
 After the merge the tag goes on the merge commit and the GitHub release is created from
 the section — condensed, never copied (rule of 2026-08-28): an intro line with the merge
 count, the PR range and a link to this file; the section's own headings; one bullet per
@@ -16,12 +21,9 @@ headline number, its PR reference; a compare link at the end. The full text live
 here; the release page is the index into it.
 Code changes are covered here — data-only commits (chart sources,
 authored templates) are covered by their `SOURCE.md` provenance records instead.
-This file merges by union (`.gitattributes`: `CHANGELOG.md merge=union`, since
-2026-08-30): when two branches add bullets at the same spot, a local merge or rebase
-keeps both instead of stopping on a conflict (GitHub's own mergeability check may still
-flag the PR until it is rebased). Union cannot judge a line that BOTH sides changed —
-it would appear twice — so put a new bullet on top of its category and do not rewrite
-existing lines in passing; the reviewer reads `[Unreleased]` for duplicates.
+This file also merges by union (`.gitattributes`: `CHANGELOG.md merge=union`) — the net
+under the cut PR and header edits, not a licence to write bullets here again; union
+cannot judge a line that BOTH sides changed, so never rewrite existing lines in passing.
 
 ## [Unreleased]
 
