@@ -2,14 +2,15 @@
 
 - **B writes on instead of restarting at the baseline.** The capital B sat
   in the composer's restart class (`CAP_RESTART_BASES`), so its join
-  retraced the bowl and set down again at the Grundlinie — but the
-  authored B ductus ends in a rising midline departure, and the plate
-  writes straight on from there (Korb #8). B now takes the ordinary
-  lowercase join grammar from its ductus end; word bench unchanged, the
-  `Bi` drill's measured-join sensors improve (doff 0.130 → 0.095, dconn
-  0.499 → 0.344) while its pixel ruler pays for the higher-riding arc —
-  the author's plate reading and the join dissection agree, so the rule
-  wins (#463).
+  retraced the bowl and set down again at the Grundlinie — but B closes
+  its lower bowl in a b-like Kringel and the plate writes straight on
+  from there (Korb #8 plus the author's same-day follow-up: no wave). B
+  leaves the restart class and joins `KRINGEL_EXIT_BASES` instead: the
+  chart's ~49° coupling stub is cut at the knot as table form, and the
+  join runs level from the Kringel into the next letter's upper point.
+  Word bench unchanged; the chart-near `Bi` drill pays on the measured
+  stub it still writes — the same drill-vs-word tension the b/o Kringel
+  round documented (#463).
 
 ### Added
 

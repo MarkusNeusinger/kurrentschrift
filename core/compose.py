@@ -180,7 +180,11 @@ DLOOP_SWING_MIN_LAUNCH_DEG = 20.0
 # there (~y 0.77 at ~+7°, the arm grammar's band); word-final keeps the
 # full chart form, like LOOP_EXIT. Closed, enumerated set: v/w end in a
 # BACKWARD curl (no rising stub — the guards would reject them anyway).
-KRINGEL_EXIT_BASES = frozenset({"b", "o"})
+# The capital B closes its lower bowl in the same Kringel (author verdict,
+# Korb #8 follow-up, aug30: no wave after B — the Kringel runs into the
+# next letter's upper point); its chart stub launched at ~49° and forced
+# exactly that second crest.
+KRINGEL_EXIT_BASES = frozenset({"b", "o", "B"})
 KRINGEL_CROSS_MIN_Y = 0.5  # the knot sits in the upper midband, never a bowl crossing
 KRINGEL_MIN_STUB = 0.08  # the tip must rise this much above the knot (a real stub)
 # The lean is a property of FLOWING words: the isolated two-letter drills of
@@ -568,11 +572,12 @@ BAR_RETRACE_MIN_RISE_UNITS = 0.15
 # drawn and the pen retraces its own ink to the departure
 # (audit-transparent — the ſ precedent). Descender-loop capitals (G, Z)
 # already take the fork join; mid enders (E, F, W, I, D) keep their true
-# arm/bow exit. B LEFT the class (author verdict, Korb #8, aug30): its
-# authored ductus already ends in a rising midline departure toward the
-# neighbour (exit y 1.0, tangent ~49°) — the retrace walked that
-# continuation back over the bowl to a low pass and restarted at the
-# Grundlinie, while the plate writes ON from the ductus end. Round
+# arm/bow exit. B LEFT the class (author verdict, Korb #8 + follow-up,
+# aug30): it closes its lower bowl in a b-like Kringel (see
+# KRINGEL_EXIT_BASES) — the chart's rising ~49° coupling stub is table
+# form, the join departs LEVEL from the knot and runs into the next
+# letter's upper point, with no wave and no Grundlinie restart (the old
+# retrace walked the bowl back and restarted at the baseline). Round
 # bodies after a capital are met on their rising
 # flank (plate arrivals 0.48–0.69, lead-in intact) — HIGH_COUPLE's top
 # entry is contradicted in every capital case, so it is suppressed for a

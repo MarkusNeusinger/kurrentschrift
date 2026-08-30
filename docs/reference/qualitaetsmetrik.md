@@ -9649,6 +9649,19 @@ Autoren-Ground-Truth (Korb #8) und Join-Sezierung stimmen überein;
 das Wort-Lineal allein ist hier kein Aufnahmekriterium (Präzedenz:
 Zeilen-Gate-Lehre LF7). Sichtprüfung: Bi-Overlay vorher/nachher im PR.
 
+**Nachschärfung (Autor, gleicher Tag):** kein Wellenbogen nach dem B —
+der KRINGEL des B (das B schließt seinen unteren Bogen wie das kleine b
+in der kleinen Schleife) läuft eben in die obere Zacke des
+Folgebuchstabens. Der ~49°-Stub aus dem Kringel ist Tafelform, genau
+wie beim b/o (Korb #5, Säbel): B kommt in `KRINGEL_EXIT_BASES`, der
+Stub wird am Selbstkreuzungs-Knoten gekappt, der Join geht eben (~0,78)
+in die 0,78-Kopplung. Messstand danach: Wörter unverändert 0,106400,
+Paare 0,148467; der chart-nah geschriebene `Bi`-Drill misst am
+H2-Sensor schlechter (`doff` 0,095 → 0,351 — der Drill schreibt den
+Stub mit, die fließende Form nicht), dieselbe bekannte
+Drill-vs-Wort-Spannung wie bei der b/o-Kringel-Runde. Galerie
+Ba–Bl als Sichtbeleg im PR #463.
+
 **#9 (Stufe chart_ductus, zurück an den Autor):** `St` ist als das eine
 Groß-Cluster in den geschlossenen Ligatur-Satz aufgenommen (Shaping
 beider Zwillinge + Fixture; architektur.md §4). Bis die Tafel-Form im
