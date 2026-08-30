@@ -108,7 +108,7 @@ gemessenen Wert als `sources.slant_deg`-Override (Architektur §3).
   die Zwangsligaturen ch, ck, ſt, **tz** sind primär aus dem Fraktur-
   **Drucksatz** belegt
   ([Wikipedia: Ligatur (Typografie)](https://de.wikipedia.org/wiki/Ligatur_(Typografie))).
-  Der geschlossene Projekt-Satz (ch · ck · tz · ſt · qu · ß) ist eine
+  Der geschlossene Projekt-Satz (ch · ck · tz · ſt · St · qu · ß) ist eine
   Design-Entscheidung, siehe
   [architektur.md §4](../concepts/architektur.md).
 

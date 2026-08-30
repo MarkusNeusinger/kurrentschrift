@@ -92,7 +92,7 @@ def plan_items(plan: dict) -> Counter[str]:
     return counts
 
 
-_LIGATURES = {"ch", "ck", "tz", "longst", "qu", "sz"}
+_LIGATURES = {"ch", "ck", "tz", "longst", "St", "qu", "sz"}
 _LOWER_EXTRA = {"ae", "oe", "ue", "longs"}
 _UPPER_EXTRA = {"Ae", "Oe", "Ue"}
 

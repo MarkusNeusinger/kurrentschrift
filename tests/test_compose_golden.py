@@ -185,6 +185,26 @@ def test_fuge_absent_keeps_long_s() -> None:
     assert fuge_slots[6].position == "medial"
 
 
+def test_st_ligature_folds_exactly_cased() -> None:
+    """`St` is the one cased closed-set cluster: capital S + lowercase t fold,
+    every other casing keeps its own glyphs, and the lowercase st still folds
+    to the ſt ligature."""
+    assert [s.key for s in shape_word("Stein")] == ["St", "e", "i", "n"]
+    st = shape_word("Stein")[0]
+    assert st.ligature and st.position == "initial" and st.text == "St"
+    assert [s.key for s in shape_word("STEIN")] == ["S", "T", "E", "I", "N"]
+    assert [s.key for s in shape_word("Obst")] == ["O", "b", "longst"]
+
+
+def test_st_ligature_decomposes_keeping_case() -> None:
+    """A missing St canonical splits into capital S + t (never s/ſ), so the
+    word keeps writing exactly as before the cluster existed."""
+    slot = GlyphSlot("St", "St", "initial", True, False)
+    parts = decompose_ligature_slot(slot)
+    assert parts is not None
+    assert [(p.key, p.position) for p in parts] == [("S", "initial"), ("t", "medial")]
+
+
 def test_strip_fugen_clears_markers() -> None:
     assert strip_fugen("Haus|tür") == "Haustür"
     assert strip_fugen("Donners|tag") == "Donnerstag"

@@ -336,3 +336,22 @@ def test_kringel_cut_only_for_the_enumerated_bases() -> None:
     glyph = composed["items"][0]["centerline"]
     # Same geometry under a non-Kringel base keeps its stroke untouched.
     assert glyph[-1][1] > 0.9
+
+
+def test_kringel_cut_applies_to_the_capital_b() -> None:
+    """B closes its lower bowl in the same Kringel (Korb #8 follow-up): bound,
+    the stub is cut at the knot exactly like b's, so the join departs level
+    instead of cresting a wave off the ~49° chart stub."""
+    composed = _compose_pair(_KRINGEL_STROKE, "B")
+    glyph = composed["items"][0]["centerline"]
+    assert glyph[-1][1] < 0.8
+    assert max(y for _, y in glyph) < 0.95 - 1e-6
+    assert math.isclose(glyph[-1][1], 0.736, abs_tol=0.02)
+
+
+def test_kringel_stub_survives_word_finally_on_the_capital_b() -> None:
+    slot = GlyphSlot(key="B", text="B", position="final", ligature=False, space=False)
+    composed = compose_word([slot], {"B": _payload(_KRINGEL_STROKE)})
+    glyph = composed["items"][0]["centerline"]
+    # Unbound, the capital keeps its full chart form like the lowercase bases.
+    assert glyph[-1][1] > 0.9

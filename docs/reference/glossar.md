@@ -54,7 +54,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schreib-Karte §2 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schreib-Karte §2 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschrift §1
@@ -116,14 +116,25 @@ vision.md Ziel 4
 
 **Ligatur** — eine auf der Lehrtafel *als eigene Einheit gelehrte*
 Buchstabenverbindung. Der geschlossene Satz im Projekt: `ch` · `ck` · `tz`
-· `ſt` · `qu` · `ß`. Sie werden als eigene Glyphen mit eigenem Duktus
+· `ſt` · `St` · `qu` · `ß`. Sie werden als eigene Glyphen mit eigenem Duktus
 gespeichert („enumerieren, nicht generieren“) — im Gegensatz zu beliebigen
 Buchstabenpaaren, deren Verbindung erzeugt wird. Fehlt der Canonical eines
 Clusters, zerfällt der Slot beim Shaping in seine Einzelbuchstaben
-(Rückfall, `ch` · `ck` · `tz` · `ſt` · `qu`); `ß` bleibt davon
+(Rückfall, `ch` · `ck` · `tz` · `ſt` · `St` · `qu`); `ß` bleibt davon
 ausgenommen und ATOMAR — sein ſs/ſz-Zerfall ist selbst eine
 Allographen-Frage, und ein naiver Split schriebe mitten im Wort ſſ.
-→ architektur.md §4 · write-api.md „Pipeline“
+→ architektur.md §4 · write-api.md „Pipeline“ · „St-Ligatur“
+
+**St-Ligatur** — das eine GROSS-Cluster des geschlossenen Ligatur-Satzes
+(Korb #9, 2026-08-30): die 1922er Sütterlin-Vorlage schreibt das große S
+ohne Absetzen in das kleine t weiter, während andere Groß-Paare (`Sc` …)
+das S absetzen und an der Grundlinie neu ansetzen. Glyph-Key `St`; erkannt
+wird exakt großes S vor kleinem t (`STEIN`/`sT` zerfallen nie, eine Fuge
+dazwischen blockiert das Cluster). Bis der Autor die Tafel-Form im Wizard
+nachgefahren hat, greift der Ligatur-Zerfall: der Slot schreibt sich als
+S + t mit generiertem Übergang, exakt wie vor der Aufnahme in den Satz.
+`core/shaping.py` (`_LIGATURES`) · TS-Zwilling `app/src/domain/glyphs.ts`
+(`COMB`). → „Ligatur“ · architektur.md §4
 
 **Fuge** *(morpheme boundary)* — die Nahtstelle in einem zusammengesetzten
 Wort (Donners·tag, Aus·flug). Sie ist orthographisch relevant, weil dort
@@ -442,8 +453,9 @@ Satzzeichen als nicht verbindende Glyphen — dazu der **Ligatur-Zerfall**
 als Rückfall, wenn der Canonical eines Clusters fehlt: die
 Teilbuchstaben erben die Wortposition des Clusters (erster `initial`,
 letzter `final`, dazwischen medial), `ß` bleibt atomar
-(`core/shaping.py::decompose_ligature_slot`, TS-Zwilling
-`decomposeLigatureSlot`). Existiert **zweimal** —
+(`core/shaping.py::decompose_ligature_slot` — nur noch Python, der
+TS-Zwilling hat seinen Zerfall mit dem serverseitigen Compose-Umzug
+abgegeben). Das Shaping existiert **zweimal** —
 `core/shaping.py` (maßgeblich) und `app/src/domain/shaping.ts` (nur noch
 fürs Quiz); ein gemeinsames Fixture hält beide synchron.
 

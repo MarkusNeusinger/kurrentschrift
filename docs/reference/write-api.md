@@ -47,17 +47,20 @@ behält den ungecachten `/diagnostic`.
    `app/src/domain/shaping.ts`, gepinnt durch
    `tests/fixtures/shaping_cases.json`.
    **Ligatur-Zerfall als Rückfall:** Fehlt der Canonical eines Clusters
-   aus dem geschlossenen Satz (`ch` · `ck` · `tz` · `ſt` · `qu` · `ß`
-   — Ausnahme ß, siehe unten), zerfällt der Slot in seine
+   aus dem geschlossenen Satz (`ch` · `ck` · `tz` · `ſt` · `St` · `qu` ·
+   `ß` — Ausnahme ß, siehe unten; `St` ist das eine Groß-Cluster,
+   architektur.md §4), zerfällt der Slot in seine
    Einzelbuchstaben — das Wort schreibt sich
    dann mit einem generierten Übergang weiter, statt eine Lücke mit
    gebrochenen Verbindungsstrichen zu hinterlassen. Die Teilbuchstaben
+   behalten ihre Schreibung (`St` zerfällt in großes S + t) und
    erben die Wortposition des Clusters (der erste behält `initial`, der
    letzte `final`, die dazwischen sind medial). `ß` bleibt bewusst
    ATOMAR: sein historischer ſs/ſz-Zerfall ist selbst eine
    Allographen-Frage, und ein naiver Split schriebe mitten im Wort ſſ.
-   `core/shaping.py::decompose_ligature_slot`, im TS-Zwilling
-   `decomposeLigatureSlot`.
+   `core/shaping.py::decompose_ligature_slot` (nur noch Python — der
+   TS-Zwilling hat seinen Zerfall mit dem serverseitigen Compose-Umzug
+   abgegeben).
 2. **Komposition** (`core/compose.py::compose_word`): freigegebene
    Paar-Overrides (`glyph_pairs`, Redesign R3) werden pro Wort in EINER
    Query geladen und ersetzen für genau ihr Nachbarpaar den generierten

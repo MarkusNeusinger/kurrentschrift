@@ -220,7 +220,10 @@ festgelegten Punkten mit festgelegten Richtungen. Der Duktus *erzeugt* den
 Glyph + leichtes Jitter auf der Verbindung.
 
 **Ausnahme — geschlossener Satz gelehrter Ligatur-Einheiten.** Die Lehrtafel
-zeigt `ch`, `ck`, `tz`, `ſt`, `qu`, `ß` als *eigene gelehrte Einheiten*, nicht
+zeigt `ch`, `ck`, `tz`, `ſt`, `qu`, `ß` — und mit `St` genau EIN
+Groß-Cluster (Korb #9, 2026-08-30: die 1922er Vorlage schreibt das große S
+ohne Absetzen in das t weiter, anders als etwa `Sc`, wo das S abgesetzt und
+an der Grundlinie neu angesetzt wird) — als *eigene gelehrte Einheiten*, nicht
 als verbundene Einzelbuchstaben. „Übergang = Konsequenz" gilt für *beliebige*
 Buchstabenpaare — aber dieser **bekannte, endliche Satz** muss als eigene
 Primär-Glyphen mit eigenem Duktus in die Bibliothek, NICHT als

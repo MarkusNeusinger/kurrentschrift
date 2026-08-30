@@ -705,7 +705,7 @@ abgespeckt).
 ## Was diese Roadmap explizit aufschiebt
 
 - **Großbuchstaben** — eigene Allograph-Klasse mit anderem Duktus.
-- **Alle Ligaturen** des closed set (ch, ck, tz, ſt, qu, ß) — kommen
+- **Alle Ligaturen** des closed set (ch, ck, tz, ſt, St, qu, ß) — kommen
   mit dem Rest-Alphabet, sobald die nötigen Buchstaben dazukommen.
 - **Restliche Kleinbuchstaben** (b, c, f, g, h, i, j, k, m, o, p, q,
   r, t, u, v, w, x, y, z + ä, ö, ü, ß) — Erweiterung nach validiertem
