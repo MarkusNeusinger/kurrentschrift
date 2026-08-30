@@ -41,6 +41,22 @@ authored templates) are covered by their `SOURCE.md` provenance records instead.
 
 ### Added
 
+- **A letter of the Schreibtafel in detail (`/tafel?g=<key>`).** Tapping a
+  written letter on the Sütterlin sheet still re-writes it in place — and
+  now opens it below the sheet: the stroke order as numbered starts on the
+  finished form with a stepper („Zug 2 von 3") that shows the letter after
+  stroke n and the strokes still to come as a hairline, the Ansatz and
+  Auslauf of the Übergang as hollow rings, the live write-in at two tempi
+  (normal, langsam = 3×), the documented look-alikes written beside it
+  (the SpecimenStrip over `lib/lesarten`'s table: n → u, e, m; ſ → f, s;
+  s → ſ …) and „im Wort sehen" — a jump into the Federprobe with the
+  shortest bank word that shows the letter as written (a non-final s for
+  the ſ, a final s for the round s, an initial capital). The key rides the
+  URL like the admin's focus, so a letter is shareable and a deep link
+  switches the sheet to the written view. Vision goal 3, „Buchstaben in
+  Aktion"; the ligatures it names (ch, ck, ſt, tz, qu) are not traced in
+  the public source yet and so have no detail. Website audit 2026-08-29,
+  item 5/8.
 - **Lesarten are real words now — from a dictionary in the shared database.**
   The Lesart page offered letter swaps („Mnhme") as readings; the owner's
   verdict: a reading must be an existing word. `GET /lesarten?text=…`

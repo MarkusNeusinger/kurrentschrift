@@ -13,12 +13,13 @@
 import { Box, Button, Chip, Link, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 
 import { BootStatus } from '@/components/BootStatus';
 import { CategoryHeading } from '@/components/CategoryHeading';
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
+import { LetterDetail } from '@/sections/tafel/LetterDetail';
 import { WrittenSheet } from '@/sections/tafel/WrittenSheet';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { chartUrl } from '@/lib/api';
@@ -212,10 +213,73 @@ function OriginalScan({ source }: { source: SourceOut }) {
 }
 
 // One script's section: heading + Feder/state caption, then the body by state.
-function GrundtafelSection({ tafel }: { tafel: Grundtafel }) {
-  // Original is the default everywhere; the written grid is one toggle away.
-  const [view, setView] = useState<View>('original');
+// `selectedKey`/`onSelect` (the ?g=<key> letter detail) only matter for the
+// written script.
+function GrundtafelSection({
+  tafel,
+  selectedKey,
+  onSelect,
+}: {
+  tafel: Grundtafel;
+  selectedKey: string | null;
+  onSelect: (key: string | null) => void;
+}) {
   const feder = de.tafel.feder[tafel.styleId];
+  // The slot of the letter open in the detail (null if the key is not on this sheet).
+  const selectedSlot = selectedKey ? (tafel.rows.flat().find((s) => s.key === selectedKey) ?? null) : null;
+  // Original is the default everywhere; the written grid is one toggle away —
+  // except when the page opens on a letter (?g=…), which lives on the sheet.
+  const [view, setView] = useState<View>(selectedSlot ? 'written' : 'original');
+  // A letter chosen while the section is mounted (an in-app navigation to
+  // /tafel?g=…) also switches to the written view — the initial state above
+  // only covers the first render. Adjusted during render, not in an effect.
+  const [seenKey, setSeenKey] = useState<string | null>(selectedKey);
+  if (selectedKey !== seenKey) {
+    setSeenKey(selectedKey);
+    if (selectedSlot) setView('written');
+  }
+  // Bring the detail into view when a letter is chosen (tap or deep link), and
+  // keep it there while the sheet above still loads and reflows (a deep link
+  // lands before the written rows have their glyphs; the rows re-scale once
+  // the payloads arrive). The detail's own document offset is watched frame by
+  // frame — a ResizeObserver on the body misses the re-scale (measured
+  // 2026-08-29: the body reported one resize, the offset moved 460 px later) —
+  // until it has held still for 400 ms, 4 s at most, or the user scrolls.
+  useEffect(() => {
+    if (!selectedSlot) return;
+    let last = Number.NaN;
+    let still = performance.now();
+    let raf = 0;
+    const stop = () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('wheel', stop);
+      window.removeEventListener('touchmove', stop);
+      window.removeEventListener('keydown', stop);
+    };
+    const started = performance.now();
+    const tick = () => {
+      const el = document.getElementById('buchstabe');
+      if (el) {
+        const offset = el.getBoundingClientRect().top + window.scrollY;
+        if (Number.isNaN(last) || Math.abs(offset - last) > 1) {
+          last = offset;
+          still = performance.now();
+          el.scrollIntoView({ block: 'start' });
+        }
+      }
+      const now = performance.now();
+      if (now - started > 4000 || (el && now - still > 400)) {
+        stop(); // done: the listeners must not outlive the watch
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    window.addEventListener('wheel', stop, { passive: true });
+    window.addEventListener('touchmove', stop, { passive: true });
+    window.addEventListener('keydown', stop);
+    return stop;
+  }, [selectedSlot]);
 
   return (
     // `id` makes the section a deep-link target (landing links to /tafel#<styleId>);
@@ -256,9 +320,12 @@ function GrundtafelSection({ tafel }: { tafel: Grundtafel }) {
             <ToggleButton value="written">{de.tafel.viewWritten}</ToggleButton>
           </ToggleButtonGroup>
           {view === 'written' ? (
-            <WrittenSheet rows={tafel.rows} ratio={tafel.source.style_ratio} />
+            <WrittenSheet rows={tafel.rows} ratio={tafel.source.style_ratio} selectedKey={selectedKey} onSelect={onSelect} />
           ) : (
             <OriginalScan source={tafel.source} />
+          )}
+          {view === 'written' && selectedSlot?.key && (
+            <LetterDetail key={selectedSlot.key} glyphKey={selectedSlot.key} glyph={selectedSlot.glyph} onClose={() => onSelect(null)} />
           )}
           <SourceProvenance source={tafel.source} />
         </>
@@ -283,6 +350,17 @@ export function TafelView() {
   const { tafeln, loadError, waking } = useGrundtafeln();
   const { hash } = useLocation();
   const pdf = useLesetafelPdf(tafeln);
+  // The letter detail rides the URL (?g=<key>, the admin's focus pattern), so a
+  // letter is shareable; `replace` keeps tapping through the alphabet from
+  // flooding the history.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedKey = searchParams.get('g');
+  const selectLetter = (key: string | null) => {
+    const next = new URLSearchParams(searchParams);
+    if (key) next.set('g', key);
+    else next.delete('g');
+    setSearchParams(next, { replace: true });
+  };
 
   // Deep-link from the landing's script cards (/tafel#<styleId>): once the
   // sections exist, scroll the requested one clear of the sticky header (the
@@ -375,7 +453,7 @@ export function TafelView() {
         </Box>
         <Stack spacing={{ xs: 5, sm: 7 }}>
           {tafeln.map((t) => (
-            <GrundtafelSection key={t.styleId} tafel={t} />
+            <GrundtafelSection key={t.styleId} tafel={t} selectedKey={selectedKey} onSelect={selectLetter} />
           ))}
         </Stack>
       </PageContainer>
