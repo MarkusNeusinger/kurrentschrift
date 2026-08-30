@@ -9,7 +9,7 @@
   `Bi` drill's measured-join sensors improve (doff 0.130 → 0.095, dconn
   0.499 → 0.344) while its pixel ruler pays for the higher-riding arc —
   the author's plate reading and the join dissection agree, so the rule
-  wins (#NNN).
+  wins (#463).
 
 ### Added
 
@@ -20,4 +20,4 @@
   fold, a Fuge blocks the cluster), the decompose fallback keeps the
   capital S so words render exactly as before until the author traces the
   St chart form in the wizard, and the shared shaping fixture pins
-  `Stein`/`Straße`/`Stube` on the new key (#NNN).
+  `Stein`/`Straße`/`Stube` on the new key (#463).
