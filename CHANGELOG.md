@@ -17,23 +17,28 @@ here; the release page is the index into it.
 Code changes are covered here — data-only commits (chart sources,
 authored templates) are covered by their `SOURCE.md` provenance records instead.
 This file merges by union (`.gitattributes`: `CHANGELOG.md merge=union`, since
-2026-08-30), so parallel PRs adding bullets never conflict here: put a new bullet on
-top of its category and do not rewrite existing lines in passing — a line changed on
-both sides would appear twice, which the reviewer catches.
+2026-08-30): when two branches add bullets at the same spot, a local merge or rebase
+keeps both instead of stopping on a conflict (GitHub's own mergeability check may still
+flag the PR until it is rebased). Union cannot judge a line that BOTH sides changed —
+it would appear twice — so put a new bullet on top of its category and do not rewrite
+existing lines in passing; the reviewer reads `[Unreleased]` for duplicates.
 
 ## [Unreleased]
 
 ### Changed
 
-- **The changelog merges by union — sibling PRs no longer conflict in it.**
-  Every merge of one open PR used to turn the others `DIRTY` on
-  `CHANGELOG.md` (four rebases with hand-resolved conflicts on 2026-08-30
-  alone), and a DIRTY PR gets no CI run. `.gitattributes` now declares
-  `CHANGELOG.md merge=union`: git keeps both sides' bullets instead of
-  raising a conflict, so a rebase onto `main` goes through untouched. The
-  rule that makes union safe stands in the file's header, `CLAUDE.md` and
-  `.github/copilot-instructions.md`: add on top of your category, never
-  rewrite existing lines in passing.
+- **The changelog merges by union — a sibling merge no longer costs a
+  hand-resolved rebase.** Every merge of one open PR used to turn the
+  others `DIRTY` on `CHANGELOG.md` (four rebases with hand-resolved
+  conflicts on 2026-08-30 alone), and a DIRTY PR gets no CI run.
+  `.gitattributes` now declares `CHANGELOG.md merge=union`: a local merge or
+  rebase keeps both sides' bullets instead of stopping on a conflict, so
+  the rebase onto `main` is one command (verified on #458 and #459).
+  Whether GitHub's own mergeability check honours the driver is open — it
+  may keep flagging the PR until the rebase lands. What union cannot judge
+  is a line changed on both sides (it appears twice), hence the rule in
+  the file's header, `CLAUDE.md` and `.github/copilot-instructions.md`:
+  add on top of your category, never rewrite existing lines in passing.
 - **The API keeps a warm instance, so the first visitor after a quiet hour no
   longer waits nine seconds.** `_MIN_INSTANCES` 0 → 1, `_MEMORY` 1Gi → 512Mi,
   `_MAX_INSTANCES` 1 → 3 in `api/cloudbuild.yaml`. The old comment estimated the

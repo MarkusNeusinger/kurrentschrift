@@ -55,9 +55,12 @@ agent working in this repo:
 - **Every PR updates `CHANGELOG.md`** under `[Unreleased]`
   (Keep-a-Changelog categories, English, bold-titled bullets) — a PR
   without its entry is incomplete. The file merges by union
-  (`.gitattributes`, since 2026-08-30), so parallel PRs never conflict in
-  it — put a new bullet on TOP of its category and never rewrite existing
-  lines in passing (a line changed on both sides would appear twice).
+  (`.gitattributes`, since 2026-08-30): a local merge or rebase keeps both
+  sides' bullets instead of stopping on a conflict, so a sibling merge
+  costs one rebase and no hands (GitHub's own mergeability check may still
+  flag the PR until then). Union cannot judge a line changed on BOTH sides
+  — it appears twice — hence the rule: put a new bullet on TOP of its
+  category and never rewrite existing lines in passing.
   Data-only commits (chart sources,
   authored templates) are exempt; their provenance lives in `SOURCE.md`.
   A GitHub release is that section condensed, never copied (owner rule,
