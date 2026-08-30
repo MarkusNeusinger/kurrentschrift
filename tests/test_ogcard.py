@@ -14,6 +14,7 @@ from __future__ import annotations
 import pytest
 
 from tools import ogcard
+from tools.ogcard.__main__ import newest_by_revision
 
 
 WORD_SVG = (
@@ -73,6 +74,22 @@ def test_build_html_quotes_the_site_identity():
     assert "border-radius:50%" not in html
     # the landing page's own H1 as the lead
     assert ogcard.LEAD_HTML in html
+
+
+def test_newest_by_revision_counts_rather_than_spells():
+    """Playwright's revisions passed 1000, where a text sort picks the stale browser."""
+    paths = [
+        "/opt/pw-browsers/chromium_headless_shell-999/chrome-linux/headless_shell",
+        "/opt/pw-browsers/chromium_headless_shell-1148/chrome-linux/headless_shell",
+        "/opt/pw-browsers/chromium_headless_shell-1187/chrome-linux/headless_shell",
+    ]
+
+    assert newest_by_revision(paths) == paths[2]
+    assert newest_by_revision(list(reversed(paths))) == paths[2]
+    # an unusual layout stays usable, it just never outranks a numbered one
+    assert newest_by_revision(["/custom/headless_shell"]) == "/custom/headless_shell"
+    assert newest_by_revision(["/custom/headless_shell", paths[0]]) == paths[0]
+    assert newest_by_revision([]) is None
 
 
 def test_word_svg_url_is_the_public_render_route():

@@ -5,8 +5,9 @@
     uv run python -m tools.ogcard --svg word.svg        # a word SVG you already have
     uv run python -m tools.ogcard --html-only page.html # the composed page, no browser
 
-Reads one PUBLIC endpoint (`/write/word.svg`) and writes one file in the working
-tree. No database, no admin token, no remote.
+Reads one PUBLIC endpoint (`/write/word.svg`) — the only network call, and the
+reason `--svg` exists for an offline run — and writes one file in the working
+tree. No database, no admin token, nothing written anywhere but that file.
 
 The renderer is a headless Chromium — the one Playwright already installs for
 `/verify-frontend`; nothing is downloaded here. Point `OGCARD_CHROME` at a binary
@@ -19,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -41,6 +43,20 @@ CHROME_GLOBS = (
 )
 
 
+_REVISION = re.compile(r"-(\d+)[/\\]")
+
+
+def newest_by_revision(paths: list[str]) -> str | None:
+    """The highest Playwright revision among `paths` — by NUMBER, not by name.
+
+    Playwright numbers its installs `chromium-1187`, and those numbers pass 1000:
+    sorted as text, `chromium-999` comes after `chromium-1148` and a stale browser
+    wins. A path without a revision sorts last rather than raising — an unusual
+    layout should still be usable, just never preferred.
+    """
+    return max(paths, key=lambda p: (int(m.group(1)) if (m := _REVISION.search(p)) else -1, p), default=None)
+
+
 def find_chrome() -> Path:
     if override := (os.environ.get("OGCARD_CHROME") or os.environ.get("CHROME_BIN")):
         path = Path(override).expanduser()
@@ -48,9 +64,8 @@ def find_chrome() -> Path:
             raise FileNotFoundError(f"OGCARD_CHROME points at nothing: {path}")
         return path
     for pattern in CHROME_GLOBS:
-        # newest revision first, so a stale install does not win
-        if found := sorted(glob(os.path.expanduser(pattern)), reverse=True):
-            return Path(found[0])
+        if newest := newest_by_revision(glob(os.path.expanduser(pattern))):
+            return Path(newest)
     raise FileNotFoundError(
         "no headless Chromium found. Install one with Playwright (see /verify-frontend) "
         "or set OGCARD_CHROME=/path/to/headless_shell"
@@ -137,6 +152,7 @@ def main(argv: list[str] | None = None) -> int:
     html = build_html(prepare_word(raw))
 
     if args.html_only:
+        args.html_only.parent.mkdir(parents=True, exist_ok=True)
         args.html_only.write_text(html, encoding="utf-8")
         print(f"{args.html_only}  ← {origin}")
         return 0
