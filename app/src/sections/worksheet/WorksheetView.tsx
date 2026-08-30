@@ -5,20 +5,25 @@
 //
 // Scope per vision.md §2 / architektur.md §15: ratio ascender:x-height:descender
 // freely configurable with the three start-script presets (Kurrent · Sütterlin ·
-// Offenbacher), plus optional slant guides. The content-aware variant that
-// typesets Kurrent glyphs into the lines is the later WeasyPrint piece.
+// Offenbacher), plus optional slant guides — and, since 2026-08-30, the
+// content-aware part: an Übungstext set into the rows as a Vorschrift, composed
+// server-side like the Federprobe (useWorksheetText.ts) and placed by
+// lib/uebungstext.ts, drawn alike in the preview and the PDF.
 
 import { useMemo, useState } from 'react';
 import { Box, Paper, Typography } from '@mui/material';
 
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
+import { lettersFromKeys } from '@/domain/glyphs';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
-import { PRESETS, RULING_THEMES, buildLineature, type LineatureConfig } from '@/lib/lineatur';
+import { A4, PRESETS, RULING_THEMES, buildLineature, type LineatureConfig } from '@/lib/lineatur';
 import { lineaturePdf } from '@/lib/pdf';
+import { placeText, type PlacedText } from '@/lib/uebungstext';
 import { de, fmt } from '@/locales';
 import { ConfigPanel } from '@/sections/worksheet/ConfigPanel';
 import { PreviewSvg } from '@/sections/worksheet/PreviewSvg';
+import { useWorksheetText, type WorksheetText } from '@/sections/worksheet/useWorksheetText';
 import { tokens } from '@/theme';
 
 const ratioLabel = (c: LineatureConfig) =>
@@ -50,6 +55,22 @@ function stripPreset(p: (typeof PRESETS)[number]): LineatureConfig {
   return cfg;
 }
 
+const quoted = (lines: string[]) => lines.map((l) => `„${l}“`).join(', ');
+
+// The status line under the text field: what is still being written or
+// failed, what the sheet leaves out and why, which letters stay blank.
+function textStatusOf(written: WorksheetText, placed: PlacedText): { text: string; error: boolean } | null {
+  const t = de.worksheet.text;
+  const notes: string[] = [];
+  if (written.failed.length) notes.push(t.error);
+  else if (written.loading) notes.push(t.loading);
+  if (placed.tooWide.length) notes.push(fmt(t.tooWide, { lines: quoted(placed.tooWide) }));
+  if (placed.noRow.length) notes.push(fmt(t.noRow, { lines: quoted(placed.noRow) }));
+  const letters = lettersFromKeys(placed.missing);
+  if (letters) notes.push(fmt(t.missing, { letters }));
+  return notes.length ? { text: notes.join(' · '), error: written.failed.length > 0 } : null;
+}
+
 // Sütterlin is the active authoring script (CONFIG.sourceId), so the worksheet
 // opens on its preset; Kurrent/Offenbacher stay one click away.
 const DEFAULT_PRESET = PRESETS.find((p) => p.id === 'suetterlin') ?? PRESETS[0];
@@ -58,6 +79,11 @@ export function WorksheetView() {
   const [cfg, setCfg] = useState<LineatureConfig>(() => stripPreset(DEFAULT_PRESET));
   const [presetId, setPresetId] = useState<string>(DEFAULT_PRESET.id);
   const [caption, setCaption] = useState<string>(DEFAULT_PRESET.label);
+  // The Übungstext: model lines set into the rows, each followed by a grey
+  // copy to trace over and by empty rows to write it freely.
+  const [text, setText] = useState<string>('');
+  const [trace, setTrace] = useState<boolean>(true);
+  const [practiceRows, setPracticeRows] = useState<number>(2);
   // Ruling colour scheme: today's print look vs the ~1900 Schulheft print
   // (blue lines, optional red Randleiste). Preview and PDF read the same map.
   const [rulingThemeId, setRulingThemeIdRaw] = useState<string>(RULING_THEMES[0].id);
@@ -83,11 +109,30 @@ export function WorksheetView() {
     setCaption(p.label);
   };
 
-  const { segments, marks } = useMemo(() => buildLineature(cfg), [cfg]);
+  const { segments, marks, rows } = useMemo(() => buildLineature(cfg), [cfg]);
   const spec = buildSpec(cfg, caption);
+  const written = useWorksheetText(text);
+  const placed = useMemo(
+    () =>
+      placeText(written.lines, rows, {
+        xHeightMm: cfg.xHeightMm,
+        trace,
+        practiceRows,
+        left: cfg.marginMm,
+        right: A4.widthMm - cfg.marginMm,
+      }),
+    [written.lines, rows, cfg.xHeightMm, cfg.marginMm, trace, practiceRows],
+  );
+  const textStatus = useMemo(() => textStatusOf(written, placed), [written, placed]);
 
   const download = () => {
-    const blob = lineaturePdf(segments, { footerLeft: spec, footerRight: SITE_URL, marks, styles: rulingStyles });
+    const blob = lineaturePdf(segments, {
+      footerLeft: spec,
+      footerRight: SITE_URL,
+      marks,
+      styles: rulingStyles,
+      shapes: placed.shapes,
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -127,6 +172,14 @@ export function WorksheetView() {
             onDownload={download}
             rulingThemeId={rulingThemeId}
             setRulingThemeId={setRulingThemeId}
+            text={text}
+            setText={setText}
+            trace={trace}
+            setTrace={setTrace}
+            practiceRows={practiceRows}
+            setPracticeRows={setPracticeRows}
+            textStatus={textStatus}
+            busy={written.loading}
           />
 
           {/* Preview */}
@@ -143,7 +196,14 @@ export function WorksheetView() {
                 justifyContent: 'center',
               }}
             >
-              <PreviewSvg segments={segments} marks={marks} footerLeft={spec} footerRight={SITE_URL} styles={rulingStyles} />
+              <PreviewSvg
+                segments={segments}
+                marks={marks}
+                footerLeft={spec}
+                footerRight={SITE_URL}
+                styles={rulingStyles}
+                shapes={placed.shapes}
+              />
             </Paper>
           </Box>
         </Box>

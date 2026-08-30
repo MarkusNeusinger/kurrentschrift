@@ -19,7 +19,7 @@ import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 import { anyWritable, SpecimenStrip, useSpecimenPayloads } from '@/components/SpecimenStrip';
 import { WrittenWord } from '@/components/WrittenWord';
-import { knownGlyph } from '@/domain/glyphs';
+import { lettersFromKeys } from '@/domain/glyphs';
 import { useInView } from '@/hooks/useInView';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { getLesarten, type LesartDictionaryOut, type LesartenOut, type LesartReadingOut } from '@/lib/api';
@@ -42,17 +42,6 @@ const proseLink = {
   transition: 'color .2s',
   '&:hover': { color: paper.viridianText, textDecorationColor: paper.viridian },
 } as const;
-
-// Map an unrenderable glyph_key back to a human letter for the "not traced
-// yet" note (e.g. `longs` → ſ) — the Federprobe's helper, same purpose.
-function lettersFromKeys(keys: string[]): string {
-  const seen = new Set<string>();
-  for (const k of keys) {
-    const g = knownGlyph(k);
-    if (g) seen.add(g.glyph);
-  }
-  return [...seen].join(' · ');
-}
 
 // The Antiqua rendering of a reading with every swapped letter marked.
 function MarkedReading({ text, indices }: { text: string; indices: readonly number[] }) {

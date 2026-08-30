@@ -54,7 +54,7 @@ export const seo = {
   worksheet: {
     title: 'Übungsblatt Sütterlin & Kurrent als PDF · kurrentschrift.ink',
     description:
-      'Erzeuge ein Übungsblatt als PDF — Lineatur mit frei wählbarem Verhältnis, Schräglinien und Federwinkel, fertig zum Ausdrucken für die deutsche Schreibschrift.',
+      'Erzeuge ein Übungsblatt als PDF — Lineatur mit frei wählbarem Verhältnis, Schräglinien und Federwinkel, auf Wunsch mit deinem Text als Vorschrift in Sütterlin, fertig zum Ausdrucken.',
   },
   federprobe: {
     title: 'Text in Sütterlin schreiben lassen: die Federprobe · kurrentschrift.ink',

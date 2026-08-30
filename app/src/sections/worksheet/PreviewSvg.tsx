@@ -2,6 +2,14 @@ import { Box } from '@mui/material';
 import { useMemo } from 'react';
 
 import { A4, DRAW_ORDER, ROLE_STYLES, type LineRole, type RoleStyle, type Segment, type TextMark } from '@/lib/lineatur';
+import type { InkShape } from '@/lib/pdf';
+
+// Page millimetres to two decimals: a letter's silhouette has hundreds of
+// vertices, and a sheet of Übungstext holds hundreds of letters.
+const mm = (v: number) => v.toFixed(2);
+const ringsD = (rings: readonly (readonly [number, number])[][]) =>
+  rings.map((ring) => ring.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${mm(x)},${mm(y)}`).join(' ') + ' Z').join(' ');
+const pointsAttr = (points: readonly (readonly [number, number])[]) => points.map(([x, y]) => `${mm(x)},${mm(y)}`).join(' ');
 
 export function PreviewSvg({
   segments,
@@ -11,12 +19,15 @@ export function PreviewSvg({
   // Ruling colour scheme; pass the same map to lineaturePdf so preview and
   // print never diverge (defaults to the standard print look).
   styles = ROLE_STYLES,
+  // The Übungstext's ink (lib/uebungstext.ts), the same list lineaturePdf draws.
+  shapes = [],
 }: {
   segments: Segment[];
   marks: TextMark[];
   footerLeft: string;
   footerRight: string;
   styles?: Record<LineRole, RoleStyle>;
+  shapes?: readonly InkShape[];
 }) {
   // Paint in the same role order the PDF uses, so crossings look identical in
   // preview and print (stable sort keeps per-row order within a role).
@@ -54,6 +65,21 @@ export function PreviewSvg({
           />
         );
       })}
+      {shapes.map((s, i) =>
+        s.kind === 'fill' ? (
+          <path key={`s${i}`} d={ringsD(s.rings)} fill={s.color} fillRule="evenodd" stroke="none" />
+        ) : (
+          <polyline
+            key={`s${i}`}
+            points={pointsAttr(s.points)}
+            fill="none"
+            stroke={s.color}
+            strokeWidth={s.widthMm}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        ),
+      )}
       {marks.map((m, i) => (
         <text
           key={`m${i}`}

@@ -73,7 +73,7 @@ definiert (P1-Arbeit).
 | `/tafel[?g=<key>]` | Schreibtafel (Vorlage); mit `g` der Buchstabe im Detail unter dem Bogen (`sections/tafel/LetterDetail.tsx`, Vision Ziel 3: Strichfolge mit nummerierten Zügen und Stepper „Zug n von m", Ansatz/Auslauf-Ringe, Zug um Zug in zwei Tempi, Verwechsler als `SpecimenStrip`, Sprung in die Federprobe mit einem Bankwort — ein Tipp auf einen Buchstaben des Bogens setzt `g`, teilbar); seit 2026-08-29 mit „Lesetafel als PDF" — alle drei Vorlagen auf A4, im Browser gebaut (`lib/lesetafel.ts` auf `lib/pdf.ts`: die nachgeschriebene Schrift als gefüllte Silhouetten auf Lineatur mit Antiqua-Beschriftung, die anderen als ihre gemeinfreie Originaltafel, per Canvas zu JPEG gerastert und als DCTDecode-XObject eingebettet) | Lesen |
 | `/lesen/vergleichen` | Lesart prüfen — eine Vermutung wird geschrieben, daneben die **echten Wörter**, die sich von ihr nur in Verwechslern unterscheiden (`GET /lesarten?text=…`: Verwechsler-Schlüssel + Rang aus `core/lesarten`, Vokabular `lesart_forms` = igerman98 ∪ Wortbank, geladen über `tools.lesarten.sync`; seit 2026-08-30 — davor Buchstabentausch ohne Wort dahinter), und die klassischen Verwechsler-Paare nebeneinander (`?text=` teilbar) | Lesen |
 | `/schreiben` | Hub → Übungsblatt, Federprobe | Schreiben |
-| `/schreiben/uebungsblatt` | Übungsblatt-Generator (Lineatur-Konfigurator, PDF) | Schreiben |
+| `/schreiben/uebungsblatt` | Übungsblatt-Generator (Lineatur-Konfigurator, PDF); seit 2026-08-30 mit Übungstext — die Vorschrift-Zeilen serverseitig komponiert wie in der Federprobe (`/write/word`), im Browser in die Lineatur gesetzt (`lib/uebungstext.ts`) und in Vorschau wie PDF gleich gezeichnet | Schreiben |
 | `/federprobe` | Live-Schreiber (Sütterlin-Synthese mit generierten Übergängen) | Schreiben |
 | `/impressum` | Impressum, Datenschutz, Quellen | Footer |
 | `/lehrbuch` | Redirect → `/schriftkunde` (alter Name) | — |
@@ -638,7 +638,10 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   und der Lesart-Seite.
 - `sections/hub/` — `HubView` (die `/lesen`- und `/schreiben`-Bereichs-Hubs).
 - `sections/worksheet/` — `WorksheetView` + `ConfigPanel` + `PreviewSvg`
-  (Lineatur-Konfigurator, `/schreiben/uebungsblatt`).
+  (Lineatur-Konfigurator, `/schreiben/uebungsblatt`) + `useWorksheetText`
+  (Browser-Hälfte des Übungstexts: eine Komposition je Zeile über den
+  geteilten Render-Cache, entprellt, nach Text gemerkt; das Platzieren
+  auf die Zeilen ist die reine `lib/uebungstext.ts`).
 - `sections/scribe/` — der `/federprobe`-Live-Schreiber (Text →
   serverseitig komponiertes Wort, `WrittenWord`).
 - `sections/tafel/` — die `/tafel`-Schreibtafel (Vorlage-Zeilen „wie
@@ -650,9 +653,10 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   xref-Offsets Stringlängen bleiben), auf dem `lineaturePdf` (Übungsblatt)
   und `lib/lesetafel.ts` (Lesetafel: Zeilen-Reflow mit proportionalen
   Breiten wie `WrittenSheet`, Lineatur je Zeile, Seitenumbruch) sitzen —
-  clientseitig, weil beide Blätter reine Vektor-/Bild-Inhalte sind; der
-  WeasyPrint-Pfad (architektur.md §15) bleibt dem inhaltsbewussten
-  Übungsblatt vorbehalten.
+  clientseitig, weil alle Blätter reine Vektor-/Bild-Inhalte sind — seit
+  2026-08-30 auch das inhaltsbewusste Übungsblatt (`lib/uebungstext.ts`,
+  `ContentStream.polyline` für die Übergänge); der WeasyPrint-Pfad
+  (architektur.md §15) ist damit für das Einzelblatt nicht mehr nötig.
 - `sections/quiz/` — `QuizView` + `useQuizEngine` (gesamte Quiz-Logik ohne
   JSX) + Setup/Play/Results-Panels + `QuestionVisual` + `lesefallen.ts`
   (die Regel-Erklärung nach einem Fehlgriff: gezeigte Form gegen geratenen

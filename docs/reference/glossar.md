@@ -57,7 +57,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schreib-Karte §2 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · understanding §5
-- **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4
+- **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschrift §1
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wort-Trace §2 · Wortvorrat §5
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zeilen-Gate (Laufform) §2 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
@@ -140,6 +140,17 @@ Namen, die im Repo (Code-Kommentare, UI, Docs) durchgängig gelten:
 dazwischen heißen **Oberlänge · Mittellänge · Unterlänge**. Das
 Verhältnis der drei Zonen ist ein Schriftmerkmal (Sütterlin 1:1:1,
 Offenbacher 2:3:2, Kurrent 2:1:2). → allgemein.md §1
+
+**Vorschrift** — auf einem Übungsblatt die vorgeschriebene Musterzeile, die
+der Lernende in den Leerzeilen darunter nachschreibt. Auf der Seite: der
+Übungstext des Übungsblatts (`/schreiben/uebungsblatt`), zeilenweise in der
+nachgeschriebenen Vorlage gesetzt — komponiert wie in der Federprobe
+(`GET /write/word`), auf die Zeilen der gewählten Lineatur gelegt
+(Mittelband = x-Höhe), darunter auf Wunsch eine graue Kopie zum Nachspuren
+und Leerzeilen zum Nachschreiben; was nicht auf das Blatt passt, wird
+benannt statt gezeichnet. *Technisch:*
+`app/src/lib/uebungstext.ts` (`placeText`), Browser-Hälfte
+`sections/worksheet/useWorksheetText.ts`.
 
 **x-Höhe (`xh`)** — die Höhe der Mittellänge, also eines Buchstabens ohne
 Ober- und Unterlänge (klassisch: die Höhe des x). Sie ist die

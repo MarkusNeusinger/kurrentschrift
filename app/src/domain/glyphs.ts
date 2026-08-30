@@ -178,3 +178,15 @@ export function quizKeysFromLocked(bboxesByKey: Record<string, BboxFlags>): stri
 const BY_KEY: Map<string, KnownGlyph> = new Map(KNOWN_GLYPHS.map((g) => [g.key, g]));
 
 export const knownGlyph = (key: string): KnownGlyph | undefined => BY_KEY.get(key);
+
+// The human letters behind unrenderable glyph_keys, for the "not written yet"
+// notes of the Federprobe, the Lesart page and the Übungsblatt (`longs` → ſ,
+// `qu` → qu): unique, in first-seen order, joined with a middle dot.
+export function lettersFromKeys(keys: readonly string[]): string {
+  const seen = new Set<string>();
+  for (const k of keys) {
+    const g = knownGlyph(k);
+    if (g) seen.add(g.glyph);
+  }
+  return [...seen].join(' · ');
+}

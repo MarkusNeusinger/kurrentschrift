@@ -476,6 +476,8 @@ const worksheetBody = () => {
     p(t.config.penAngleHint),
     h2(t.config.rulingHeading),
     p(t.config.rulingNote),
+    h2(t.text.heading),
+    p(t.text.help),
     em(`${NEEDS_JS} ${t.config.download}.`),
   ].join('\n');
 };

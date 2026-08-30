@@ -16,7 +16,8 @@ import {
 
 import { InfoHint } from '@/components/InfoHint';
 import { PRESETS, type LineatureConfig } from '@/lib/lineatur';
-import { de } from '@/locales';
+import { MAX_LINE_LEN, MAX_LINES, MAX_TEXT_CHARS } from '@/lib/uebungstext';
+import { de, fmt } from '@/locales';
 import { tokens } from '@/theme';
 
 // Overline section label with an optional (i) affordance to its right — the
@@ -76,9 +77,39 @@ interface ConfigPanelProps {
   onDownload: () => void;
   rulingThemeId: string;
   setRulingThemeId: (id: string) => void;
+  // The Übungstext: the lines, whether a grey trace copy follows each, how
+  // many empty rows follow, and the status line under the field (what is
+  // still being written, what the sheet leaves out); `busy` holds the
+  // download while a line is pending.
+  text: string;
+  setText: (s: string) => void;
+  trace: boolean;
+  setTrace: (on: boolean) => void;
+  practiceRows: number;
+  setPracticeRows: (n: number) => void;
+  textStatus: { text: string; error: boolean } | null;
+  busy: boolean;
 }
 
-export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCaption, onDownload, rulingThemeId, setRulingThemeId }: ConfigPanelProps) {
+export function ConfigPanel({
+  cfg,
+  set,
+  presetId,
+  applyPreset,
+  caption,
+  setCaption,
+  onDownload,
+  rulingThemeId,
+  setRulingThemeId,
+  text,
+  setText,
+  trace,
+  setTrace,
+  practiceRows,
+  setPracticeRows,
+  textStatus,
+  busy,
+}: ConfigPanelProps) {
   const isSchulheft = rulingThemeId === 'schulheft';
   return (
     <Paper variant="outlined" sx={{ p: 2.5, bgcolor: tokens.surface.elevated }}>
@@ -227,6 +258,50 @@ export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCapti
 
         <Divider />
 
+        <Box>
+          <SectionLabel
+            info={
+              <InfoHint title={de.worksheet.text.heading}>
+                {fmt(de.worksheet.text.hint, { lines: MAX_LINES, chars: MAX_LINE_LEN })}
+              </InfoHint>
+            }
+          >
+            {de.worksheet.text.heading}
+          </SectionLabel>
+          <TextField
+            label={de.worksheet.text.label}
+            size="small"
+            fullWidth
+            multiline
+            minRows={2}
+            maxRows={6}
+            value={text}
+            onChange={(e) => setText(e.target.value.slice(0, MAX_TEXT_CHARS))}
+            placeholder={de.worksheet.text.placeholder}
+            helperText={textStatus?.text ?? de.worksheet.text.help}
+            error={textStatus?.error ?? false}
+            slotProps={{ htmlInput: { maxLength: MAX_TEXT_CHARS, autoCapitalize: 'off', spellCheck: false } }}
+          />
+          <FormControlLabel
+            sx={{ mt: 1 }}
+            control={<Switch checked={trace} onChange={(e) => setTrace(e.target.checked)} disabled={!text.trim()} />}
+            label={de.worksheet.text.trace}
+          />
+          <Box sx={{ mt: 1 }}>
+            <NumField
+              label={de.worksheet.text.practiceRows}
+              value={practiceRows}
+              onChange={setPracticeRows}
+              min={0}
+              max={6}
+              step={1}
+              disabled={!text.trim()}
+            />
+          </Box>
+        </Box>
+
+        <Divider />
+
         <TextField
           label={de.worksheet.config.captionLabel}
           size="small"
@@ -237,7 +312,7 @@ export function ConfigPanel({ cfg, set, presetId, applyPreset, caption, setCapti
           helperText={de.worksheet.config.captionHelp}
         />
 
-        <Button variant="contained" size="large" startIcon={<DownloadIcon />} onClick={onDownload}>
+        <Button variant="contained" size="large" startIcon={<DownloadIcon />} onClick={onDownload} disabled={busy}>
           {de.worksheet.config.download}
         </Button>
       </Stack>

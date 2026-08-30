@@ -75,6 +75,22 @@ existing lines in passing; the reviewer reads `[Unreleased]` for duplicates.
   Aktion"; the ligatures it names (ch, ck, ſt, tz, qu) are not traced in
   the public source yet and so have no detail. Website audit 2026-08-29,
   item 5/8.
+- **The Übungsblatt takes a text: Vorschrift lines on the ruling
+  (`/schreiben/uebungsblatt`).** Type lines into the worksheet and each is
+  set in the written script (Sütterlin) on a row of the chosen ruling, a
+  grey copy on the row beneath to trace over (switchable), then empty rows
+  to write it freely — vision §2's content-aware practice sheet. The composition is the Federprobe's (`GET /write/word` per line
+  through the shared render cache, debounced, remembered by its text); the
+  browser only places it (`lib/uebungstext.ts`: template units onto the row
+  baseline with the Mittelband as x-height; a pending line keeps its row; a
+  line too wide for the ruling or without a row left is named under the
+  field instead of drawn; letters not yet written are listed) and draws the
+  same shapes in the SVG preview and the PDF (`ContentStream.polyline` for
+  the connectors, even-odd fills for the letters). Ships client-side on the
+  Lesetafel's PDF builder instead of the WeasyPrint backend architektur.md
+  §15 planned — no rendering dependency in the API image, no new route; §15
+  carries the dated note. `lettersFromKeys` moved to `domain/glyphs` (three
+  pages share it now). Website audit 2026-08-29, item 7/8.
 - **Lesarten are real words now — from a dictionary in the shared database.**
   The Lesart page offered letter swaps („Mnhme") as readings; the owner's
   verdict: a reading must be an existing word. `GET /lesarten?text=…`

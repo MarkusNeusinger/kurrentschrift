@@ -1,11 +1,13 @@
-// Minimal, dependency-free PDF writer for the two printable sheets the site
-// makes in the browser: the lineature worksheet (`lineaturePdf`, straight
-// strokes + a caption) and the Lesetafel (lib/lesetafel.ts — filled letter
+// Minimal, dependency-free PDF writer for the printable sheets the site makes
+// in the browser: the worksheet (`lineaturePdf` — the ruling's straight
+// strokes, a caption and, since 2026-08-30, the Übungstext set into the rows,
+// lib/uebungstext.ts) and the Lesetafel (lib/lesetafel.ts — filled letter
 // silhouettes, rulings, labels, and the public-domain plates as JPEG images).
-// A hand-rolled PDF 1.4 beats pulling in a renderer for that; the doc's
-// WeasyPrint pipeline (architektur.md §15) stays reserved for the heavier
-// content-aware worksheet (text set in the script on a matching ruling). The
-// built-in Helvetica font (WinAnsi) renders German umlauts without embedding.
+// A hand-rolled PDF 1.4 beats pulling in a renderer for that, and it left the
+// doc's WeasyPrint pipeline (architektur.md §15) without a job for the single
+// sheet: the text arrives composed from `/write/word` and only needs placing.
+// The built-in Helvetica font (WinAnsi) renders German umlauts without
+// embedding.
 //
 // Everything is encoded as Latin-1 (one char → one byte), which keeps xref
 // byte offsets equal to string lengths; JPEG streams ride along as byte-chars.
@@ -109,6 +111,13 @@ export function helvWidthMm(text: string, fontPt: number): number {
 /** A point (or ring vertex) in page millimetres, top-left origin, y down. */
 export type Mm = [number, number];
 
+/** Ink set into the page, in millimetres: a letter's filled silhouette rings
+ * (even-odd) or a generated connector as a stroked polyline. The preview and
+ * the PDF draw the same list. */
+export type InkShape =
+  | { kind: 'fill'; color: string; rings: Mm[][] }
+  | { kind: 'stroke'; color: string; widthMm: number; points: Mm[] };
+
 // One page's content stream, written in page millimetres (top-left origin,
 // y down — the coordinate system every layout here thinks in) and converted to
 // PDF points (bottom-left origin, y up) at the last moment.
@@ -147,6 +156,24 @@ export class ContentStream {
     }
     if (parts.length) this.ops.push(`q ${rgbOp(color, 'rg')} ${parts.join(' ')} f* Q`);
     return this;
+  }
+
+  /** An open polyline stroked with round caps and joins (a connector's path). */
+  polyline(points: readonly Mm[], style: { color: string; widthMm: number }): this {
+    if (points.length < 2) return this;
+    this.ops.push(
+      `q ${rgbOp(style.color, 'RG')} ${this.px(style.widthMm)} w 1 J 1 j ` +
+        points.map(([x, y], i) => `${this.px(x)} ${this.py(y)} ${i === 0 ? 'm' : 'l'}`).join(' ') +
+        ' S Q',
+    );
+    return this;
+  }
+
+  /** One ink shape, by its kind. */
+  ink(shape: InkShape): this {
+    return shape.kind === 'fill'
+      ? this.fillRings(shape.rings, shape.color)
+      : this.polyline(shape.points, { color: shape.color, widthMm: shape.widthMm });
   }
 
   /** Helvetica text at a baseline point; `align` shifts the anchor. */
@@ -251,7 +278,8 @@ export class PdfDocument {
   }
 }
 
-/** The lineature worksheet: one A4 page of ruling segments plus labels. */
+/** The worksheet: one A4 page of ruling segments, the Übungstext set into its
+ * rows (lib/uebungstext.ts), plus labels. */
 export function lineaturePdf(
   segments: Segment[],
   opts: {
@@ -261,6 +289,8 @@ export function lineaturePdf(
     // Ruling colour scheme; preview and PDF must receive the same map so the
     // printout matches the screen (defaults to the standard print look).
     styles?: Record<LineRole, RoleStyle>;
+    // The Übungstext's ink, already in page millimetres — drawn over the ruling.
+    shapes?: readonly InkShape[];
   } = {},
 ): Blob {
   const styles = opts.styles ?? ROLE_STYLES;
@@ -272,6 +302,7 @@ export function lineaturePdf(
       page.line([s.x1, s.y1], [s.x2, s.y2], { color: st.color, widthMm: st.widthMm, dash: st.dash });
     }
   }
+  for (const shape of opts.shapes ?? []) page.ink(shape);
   // Standalone labels (e.g. the pen-angle gauge degree).
   for (const m of opts.marks ?? []) {
     page.text([m.x, m.y], m.text, { sizePt: m.sizeMm * PT_PER_MM, color: m.color ?? '#6B6A63' });
