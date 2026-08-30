@@ -158,3 +158,28 @@ jobs:
       # `npm run build` is `tsc && vite build`, so this gates the type-check too.
       - name: Build
         run: npm run build
+
+  changelog:
+    name: Changelog (fragment)
+    runs-on: ubuntu-latest
+    # Every PR carries a changelog fragment (changelog.d/<slug>.md) instead of
+    # a bullet in the shared CHANGELOG.md — the seam where sibling PRs used to
+    # conflict (2026-08-30). Data-only PRs pass on their own; a PR with truly
+    # nothing to tell gets the `skip-changelog` label. Push runs on main have
+    # no base to diff against and are skipped.
+    if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'skip-changelog')
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The gate diffs against the base branch, which a shallow checkout lacks.
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Set up Python
+        run: uv python install
+
+      # The tool is standard library only; no project dependencies are synced.
+      - name: Fragment present and well-formed
+        run: uv run --no-project python -m tools.changelog check --base "origin/${{ github.base_ref }}"

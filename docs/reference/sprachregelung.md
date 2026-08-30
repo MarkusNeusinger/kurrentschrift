@@ -83,7 +83,7 @@ auf Deutsch. Das ist kein Bruch zur anyplot-Linie, sondern dieselbe Regel
 ## 4. Englischer Stil: Google-Guide als Referenz-Fallback
 
 **Owner-Entscheid 2026-08-18.** Für alle **englischen Artefakte** —
-README, CHANGELOG, `docs/contributing.md`, die `tools/*/README.md`, die
+README, CHANGELOG samt `changelog.d/*.md`, `docs/contributing.md`, die `tools/*/README.md`, die
 Skills unter `.claude/skills/`,
 `CLAUDE.md`/`.github/copilot-instructions.md`, Commit-/PR-Prosa und
 englisch markierte `docs/research/`-Notizen — gilt der

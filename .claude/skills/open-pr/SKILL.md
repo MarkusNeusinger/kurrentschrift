@@ -76,11 +76,16 @@ a doc or the UI and could not resolve on their own — it adds the entry to
 in the same PR. Format and scope: `/write-docs` § „New terms go in the
 glossary“.
 
-**Changelog gate:** every PR adds its entries to `CHANGELOG.md` under
-`[Unreleased]` (Keep-a-Changelog categories, English, bold-titled
-bullets matching the existing entries) before the PR opens — that file
-is how releases get posted. Data-only commits (chart sources, authored
-templates) are exempt; their provenance lives in `SOURCE.md`.
+**Changelog gate:** every PR adds ONE fragment, `changelog.d/<slug>.md`,
+in the CHANGELOG's own format (`### Category` over bold-titled English
+bullets matching the existing entries; `changelog.d/README.md`) — never
+a bullet in `CHANGELOG.md` itself; the CI job „Changelog (fragment)"
+refuses both a PR without a fragment and a bullet written into
+`[Unreleased]`. Run the same gate locally before the push:
+`uv run python -m tools.changelog check --base origin/main`. Data-only
+commits (chart sources, authored templates) are exempt; their provenance
+lives in `SOURCE.md`. Add the PR number to the fragment's bullets once
+the PR exists (a follow-up commit is fine).
 
 Then the local CI equivalents — the same commands the pipeline runs,
 without the round trip (backend always; frontend build only if `app/`

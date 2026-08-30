@@ -52,17 +52,20 @@ agent working in this repo:
 
 - **Never commit on `main`.** Branch first, even for a quick
   "commit and push". `main` is protected; land changes via a PR.
-- **Every PR updates `CHANGELOG.md`** under `[Unreleased]`
-  (Keep-a-Changelog categories, English, bold-titled bullets) — a PR
-  without its entry is incomplete. The file merges by union
-  (`.gitattributes`, since 2026-08-30): a local merge or rebase keeps both
-  sides' bullets instead of stopping on a conflict, so a sibling merge
-  costs one rebase and no hands (GitHub's own mergeability check may still
-  flag the PR until then). Union cannot judge a line changed on BOTH sides
-  — it appears twice — hence the rule: put a new bullet on TOP of its
-  category and never rewrite existing lines in passing.
-  Data-only commits (chart sources,
-  authored templates) are exempt; their provenance lives in `SOURCE.md`.
+- **Every PR adds a changelog fragment** — `changelog.d/<slug>.md` in the
+  CHANGELOG's own format (`### Category` over bold-titled English bullets
+  like the existing entries; `changelog.d/README.md`), NEVER a bullet in
+  `CHANGELOG.md` itself: that shared spot is where every sibling merge
+  used to conflict, and since 2026-08-30 the CI job „Changelog (fragment)"
+  refuses both a PR without a fragment and a bullet written into
+  `[Unreleased]` directly —
+  `uv run python -m tools.changelog check --base origin/main` is the same
+  gate locally. Data-only commits (chart sources, authored templates) are
+  exempt; their provenance lives in `SOURCE.md`; a PR with truly nothing
+  to tell gets the `skip-changelog` label. The release is one command,
+  `uv run python -m tools.changelog release X.Y.Z --title "…"` (folds the
+  fragments newest-first under the new heading, bumps
+  `pyproject.toml`/`uv.lock`/`CITATION.cff`, deletes the fragments).
   A GitHub release is that section condensed, never copied (owner rule,
   2026-08-28): same headings, one bullet per NOTABLE entry (chores,
   dependency bumps and small fixes are left out; no fixed count), at most
@@ -620,15 +623,17 @@ impl-generate pipelines. Conventions:
 - **Branch policy:** main is protected; feature branches with PRs.
 - **Commit messages:** English, focused on WHY, conventional-commit prefix
   optional (`docs:`, `feat:`, `fix:`, `refactor:`).
-- **Changelog:** every PR adds its entries to `CHANGELOG.md` under
-  `[Unreleased]` (Keep-a-Changelog categories, English, bold-titled
-  bullets like the existing entries) — that file is how releases get
-  posted; a PR without its entry is incomplete. Data-only commits
-  (chart sources, authored templates) are exempt — provenance lives in
-  their `SOURCE.md`. A GitHub release is the section condensed, never
-  copied: same headings, one bullet per notable entry (chores and small
-  fixes left out, no fixed count), at most two lines each (bold title,
-  one clause, PR reference), intro line + compare link.
+- **Changelog:** every PR adds a fragment `changelog.d/<slug>.md`
+  (Keep-a-Changelog categories as `### Category` headings, English,
+  bold-titled bullets like the existing entries — `changelog.d/README.md`)
+  and never edits `CHANGELOG.md`; the CI job „Changelog (fragment)"
+  enforces it. Data-only commits (chart sources, authored templates) are
+  exempt — provenance lives in their `SOURCE.md`. The release cut is
+  `uv run python -m tools.changelog release X.Y.Z --title "…"`. A GitHub
+  release is the section condensed, never copied: same headings, one
+  bullet per notable entry (chores and small fixes left out, no fixed
+  count), at most two lines each (bold title, one clause, PR reference),
+  intro line + compare link.
 - **Codecov:** the bot comments the patch coverage on every PR (backend
   only). Treat it like a reviewer, not a hard gate: uncovered NEW logic
   that a unit test can reach cheaply gets a test in the same PR
