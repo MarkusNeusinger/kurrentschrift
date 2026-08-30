@@ -7,9 +7,10 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import delete, func, select, tuple_
+from sqlalchemy import delete, func, or_, select, tuple_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer
@@ -25,6 +26,8 @@ from core.database.models import (
     GlyphPair,
     Hand,
     Instance,
+    LesartDictionary,
+    LesartForm,
     PairAggregate,
     PairInstance,
     QuizWord,
@@ -66,6 +69,99 @@ class QuizWordRepository:
     async def list(self) -> list[QuizWord]:
         result = await self.session.execute(select(QuizWord).order_by(QuizWord.id))
         return list(result.scalars().all())
+
+
+def _other_generations(keep: int):
+    """Every generation but `keep`, as two ranges rather than `!=`: gen leads
+    the primary key, so Postgres answers the common case — only the live
+    generation exists, ~700k rows — with two empty index range scans instead
+    of a full scan."""
+    return or_(LesartForm.gen < keep, LesartForm.gen > keep)
+
+
+class LesartRepository:
+    """The Lesart vocabulary: generation-switched bulk loads, keyed reads."""
+
+    DICTIONARY_ID = 1
+
+    def __init__(self, session: AsyncSession):
+        self.session = session
+
+    async def dictionary(self) -> LesartDictionary | None:
+        return await self.session.get(LesartDictionary, self.DICTIONARY_ID)
+
+    async def candidates(self, key: str, limit: int = 2000) -> list[tuple[str, bool]]:
+        """Every live word in the key's bucket (word, bank)."""
+        meta = await self.dictionary()
+        if meta is None:
+            return []
+        result = await self.session.execute(
+            select(LesartForm.word, LesartForm.bank)
+            .where(LesartForm.gen == meta.active_gen, LesartForm.key == key)
+            .order_by(LesartForm.word)
+            .limit(limit)
+        )
+        return [(row[0], bool(row[1])) for row in result.all()]
+
+    async def begin_generation(self) -> int:
+        """A fresh generation number, above the live one. Every generation that
+        is not live — the rows of an abandoned load — is dropped first, so a
+        crashed sync never leaves a second vocabulary sitting in the table."""
+        meta = await self.dictionary()
+        live = meta.active_gen if meta else 0
+        await self.session.execute(delete(LesartForm).where(_other_generations(live)))
+        return live + 1
+
+    async def add_forms(self, gen: int, rows: list[tuple[str, str, bool]]) -> int:
+        """Insert (key, word, bank) rows into a generation. Rows are deduplicated
+        here so a repeated batch cannot violate the primary key."""
+        if not rows:
+            return 0
+        unique = {(key, word): bank for key, word, bank in rows}
+        existing = await self.session.execute(
+            select(LesartForm.key, LesartForm.word).where(
+                LesartForm.gen == gen, tuple_(LesartForm.key, LesartForm.word).in_(list(unique.keys()))
+            )
+        )
+        present = {(row[0], row[1]) for row in existing.all()}
+        payload = [
+            {"gen": gen, "key": key, "word": word, "bank": bank}
+            for (key, word), bank in unique.items()
+            if (key, word) not in present
+        ]
+        if payload:
+            await self.session.execute(LesartForm.__table__.insert(), payload)
+        return len(payload)
+
+    async def count_forms(self, gen: int) -> int:
+        result = await self.session.execute(select(func.count()).select_from(LesartForm).where(LesartForm.gen == gen))
+        return int(result.scalar_one())
+
+    async def commit_generation(self, gen: int, source: str, sha256: str) -> LesartDictionary:
+        """Make `gen` the live vocabulary and drop every other generation."""
+        forms = await self.count_forms(gen)
+        meta = await self.dictionary()
+        # Set in Python, not as a SQL expression: an expression would expire
+        # the attribute on flush and the async session cannot lazily refresh it.
+        now = datetime.now(UTC)
+        if meta is None:
+            meta = LesartDictionary(
+                id=self.DICTIONARY_ID, active_gen=gen, source=source, forms=forms, sha256=sha256, updated_at=now
+            )
+            self.session.add(meta)
+        else:
+            meta.active_gen = gen
+            meta.source = source
+            meta.forms = forms
+            meta.sha256 = sha256
+            meta.updated_at = now
+        await self.session.execute(delete(LesartForm).where(_other_generations(gen)))
+        await self.session.flush()
+        return meta
+
+    async def drop_generation(self, gen: int) -> int:
+        result = await self.session.execute(delete(LesartForm).where(LesartForm.gen == gen))
+        return int(result.rowcount or 0)
 
 
 class HandRepository:

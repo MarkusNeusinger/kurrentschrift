@@ -44,6 +44,37 @@ export interface QuizWordOut {
   fugen?: string | null;
 }
 
+// GET /lesarten?text=… — the real words a guessed word could be read as
+// (api/schemas.py LesartenOut): same length, every differing letter a
+// documented look-alike; `swaps` lists those letters, `cost` sums the pair
+// distances, `bank` marks the project's own curated words.
+export interface LesartSwapOut {
+  index: number;
+  from: string;
+  to: string;
+}
+
+export interface LesartReadingOut {
+  word: string;
+  bank: boolean;
+  cost: number;
+  swaps: LesartSwapOut[];
+}
+
+export interface LesartDictionaryOut {
+  source: string;
+  forms: number;
+  sha256: string;
+  updated_at?: string | null;
+}
+
+export interface LesartenOut {
+  text: string;
+  readings: LesartReadingOut[];
+  // null until a vocabulary has been loaded (a fresh DB).
+  dictionary: LesartDictionaryOut | null;
+}
+
 export interface SourceOut {
   id: string;
   style_id: string;

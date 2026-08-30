@@ -1,29 +1,19 @@
-// Lesarten — the alternative readings of a guessed word. For every letter that
-// has a documented look-alike in the German cursive (orthographie-regeln.md
-// §3, the Schriftkunde's Buchstaben-Besonderheiten, the quiz's Lesefallen
-// catalogue), the word with exactly that one letter swapped: a person holding
-// an old letter types what they believe it says and gets the readings that
-// would look the same on the page — „Muhme" beside „Mnhme" and „Mufme" — to
-// compare against the original. One swap per reading, left to right, so the
-// list reads in the order of the word; a cap keeps the number of written
-// words (one render request each) small.
+// The look-alike table of the German cursive, keyed by TYPED letter: which
+// letters a reader can mistake for one another (orthographie-regeln.md §3,
+// the Schriftkunde's Buchstaben-Besonderheiten, the quiz's Lesefallen
+// catalogue). Lowercase pairs (n/u, e/n, n/m, m/w, v/w, i/j, i/e, t/l, f/h,
+// f/t, ſ/f as s ↔ f — the long ſ is typed `s`), umlaut ↔ base letter (the
+// marks are the whole difference), the capital confusion clusters (L/K/R,
+// N/M, B/V). Symmetric: if n reads as u, u reads as n (pinned by the test).
 //
-// Typed letters, not glyph_keys: the long ſ is set by the shaping from a plain
-// `s` everywhere but at the word end, so the ſ/f trap is the pair s ↔ f for a
-// non-final s — a final s is the round s and looks nothing like an f.
+// Consumers: the Tafel's letter detail (its look-alike strip) and the crawler
+// page of the Lesart page (the table as text). The READINGS themselves —
+// real words that look like a guess — come from the API (`GET /lesarten`),
+// whose Python twin of this table (core/lesarten) buckets the vocabulary;
+// tests/test_lesarten_core.py holds the two tables together. Since
+// 2026-08-30 no reading is generated here: a letter swap without a word
+// behind it („Mnhme") is not a Lesart (owner).
 
-export interface Lesart {
-  readonly text: string;
-  /** Index of the swapped character in the guess. */
-  readonly index: number;
-  readonly from: string;
-  readonly to: string;
-}
-
-// Look-alikes by typed letter. Lowercase pairs from the reading-trap catalogue
-// (n/u, e/n, n/m, m/w, v/w, i/j, i/e, t/l, f/h, f/t, ſ/f), umlaut ↔ base
-// letter (the marks are the whole difference), and the capital confusion
-// clusters (L/K/R, N/M, B/V).
 export const LOOKALIKES: Readonly<Record<string, readonly string[]>> = {
   n: ['u', 'e', 'm'],
   u: ['n', 'ü'],
@@ -51,31 +41,3 @@ export const LOOKALIKES: Readonly<Record<string, readonly string[]>> = {
   B: ['V'],
   V: ['B'],
 };
-
-export const MAX_LESARTEN = 8;
-
-// A letter is word-final at the end of the guess or before anything that is
-// not a letter (space, comma, full stop …).
-const isWordFinal = (chars: readonly string[], i: number): boolean => i === chars.length - 1 || !/\p{L}/u.test(chars[i + 1]);
-
-/** The readings that could look like `guess` on the page — one swapped letter
- * each, in word order, at most `max`, never the guess itself or a duplicate. */
-export function lesarten(guess: string, max = MAX_LESARTEN): Lesart[] {
-  const chars = [...guess];
-  const out: Lesart[] = [];
-  const seen = new Set<string>([guess]);
-  for (let i = 0; i < chars.length && out.length < max; i++) {
-    const from = chars[i];
-    const alternatives = LOOKALIKES[from];
-    if (!alternatives) continue;
-    for (const to of alternatives) {
-      if (out.length >= max) break;
-      if (from === 's' && to === 'f' && isWordFinal(chars, i)) continue;
-      const text = [...chars.slice(0, i), to, ...chars.slice(i + 1)].join('');
-      if (seen.has(text)) continue;
-      seen.add(text);
-      out.push({ text, index: i, from, to });
-    }
-  }
-  return out;
-}

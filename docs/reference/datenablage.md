@@ -77,6 +77,18 @@ Drei Committ-Klassen, scharf getrennt:
 - `/derived` → committet **nur** aus dem CC-BY-4.0/CC0-Anteil. Was aus
   dem NC-SA-Subkorpus stammt, bleibt in `/derived/from-nc-sa` und ist
   gitignored — sonst NC/SA-Kollision mit MIT.
+- **Serverdaten unter Copyleft** (Autor-Entscheid 2026-08-30, erster Fall:
+  das GPL-Wörterbuch igerman98 in `/corpora/igerman98`): dieselbe
+  `/corpora`-Mechanik — `SOURCE.md` + `fetch_*.py` committet, Bytes
+  gitignored — plus die Regel, dass die Daten **nur in der geteilten
+  Datenbank** liegen (`lesart_forms`, Migration 0028, über
+  `tools.lesarten.sync`) und kein öffentlicher Endpunkt sie als Liste
+  herausgibt (`GET /lesarten?text=` liefert eine Handvoll Wörter je
+  Anfrage). GPL-Pflichten (Lizenztext, Quelle) entstehen erst bei
+  Weitergabe der Liste, die so nicht stattfindet; ins Image und ins
+  Frontend-Bundle kommt sie nicht. Die Rechtslage steht in der
+  `SOURCE.md`, die Doktrin in
+  [quellen-und-rechte.md §5](quellen-und-rechte.md).
 
 Süß erscheint **nirgends** als Datei — nur als Literaturzeile in
 README/Quellen (Quellen-Rechte §1).

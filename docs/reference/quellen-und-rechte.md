@@ -161,6 +161,22 @@ Originale werden **referenziert, nicht reproduziert**:
   Lizenz-Oberfläche neben Code (MIT) und `/data`.
 - Faustregel vor jedem Commit: *Ist das mein Ausdruck oder der einer
   geschützten Quelle?* Im Zweifel → nicht committen, nur verlinken.
+- **Copyleft-Wortlisten als Serverdaten** (Autor-Entscheid 2026-08-30):
+  Die Lesart-Seite braucht ein Wörterbuch, und die freien deutschen sind
+  Copyleft (igerman98: GPL 2/3; Wiktionary: CC BY-SA). Was die Lizenz
+  hergibt: Nutzung ohne Bedingungen, Pflichten erst bei *Weitergabe* der
+  Liste. „Nicht ins Repo, aber auf der Seite" ist dabei rechtlich kein
+  Unterschied — beides ist öffentlich; der Unterschied ist, *was* beim
+  Besucher ankommt. Darum: die Liste liegt nur in der geteilten DB
+  (`lesart_forms`), geladen über die Admin-API, und der öffentliche
+  Endpunkt `GET /lesarten?text=` gibt je Anfrage eine Handvoll Wörter
+  zurück, nie die Liste — keine Weitergabe, kein Bundle, kein Image-
+  Inhalt. Der MIT-Code ist kein abgeleitetes Werk der Liste. Nicht
+  gewählt: die Frequenzliste (Rechtekette unklar, `frequencywords-2018/
+  SOURCE.md` — Konsultationsquelle, „kein öffentlicher Endpunkt" bleibt)
+  und NC-Listen (Leipzig, DeReWo, SUBTLEX — NC bleibt ausgeschlossen).
+  Ablage: [datenablage.md §1](datenablage.md), Quelle:
+  `data/corpora/igerman98/SOURCE.md`.
 
 Dieses explizite Provenance-Handling ist zugleich das
 „ich kenne die Trade-offs"-Portfolio-Signal aus dem Naming-Doc.
