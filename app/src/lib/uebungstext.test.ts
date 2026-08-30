@@ -153,6 +153,8 @@ describe('placeText', () => {
 
   it('puts nothing on a page without rows; a cleared practice count counts as none', () => {
     expect(placeText([{ text: 'a', composed: composed(1) }], [], opts).noRow).toEqual(['a']);
+    // A pending line without a row left is reported too — it can never be placed.
+    expect(placeText([{ text: 'wartet', composed: null }], [], opts).noRow).toEqual(['wartet']);
     const placed = placeText(
       [
         { text: 'a', composed: composed(1) },

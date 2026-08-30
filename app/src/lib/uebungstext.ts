@@ -86,8 +86,10 @@ export function placeText(lines: readonly TextLine[], rows: readonly RowMetrics[
     if (!c || !c.items.length) {
       // Pending, failed, or nothing writable (every letter still unwritten):
       // the line keeps its rows so the sheet does not jump, and the
-      // missing-letter note names what stays blank.
+      // missing-letter note names what stays blank. Without a row left it
+      // is reported like any other line — it can never be placed.
       if (rows[next]) next += step;
+      else out.noRow.push(line.text);
       continue;
     }
     if ((c.bounds.max_x - c.bounds.min_x) * s > width) {
