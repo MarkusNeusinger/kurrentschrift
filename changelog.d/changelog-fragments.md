@@ -18,4 +18,5 @@
   `uv.lock` and `CITATION.cff` and deletes the fragments — the cut the
   header used to describe as hand steps. Standard library only, pinned by
   `tests/test_changelog_tool.py` including the gate against a throwaway git
-  repository; the union driver stays as the net under the cut PR itself.
+  repository; the union driver stays as the net under the cut PR itself
+  (#462).
