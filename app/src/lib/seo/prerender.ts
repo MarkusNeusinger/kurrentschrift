@@ -44,7 +44,11 @@ export const PUBLIC_SOURCE_ID = 'suetterlin-1922';
 // The site card index.html declares — route-independent on purpose, so link
 // previews (which never run JS) always get the same image.
 const OG_IMAGE = `${ORIGIN}/og.png`;
-const OG_IMAGE_ALT = 'Kurrentschrift — die alte deutsche Schreibschrift lesen und schreiben lernen';
+// The card is written by the engine, not set in the show font (tools/ogcard),
+// so the alt text says what it shows AND in which script — the same honesty the
+// hero caption keeps (HeroWritten: never claim a live synthesis over a font).
+const OG_IMAGE_ALT =
+  'Das Wort „Kurrentſchrift“, von der Synthese-Engine in Sütterlin geschrieben, über dem Satz „Alte Briefe wieder lesen — und selbst zur Feder greifen“';
 // First line of every prerendered file. The daily bot-serving check
 // (.github/workflows/bot-serving-check.yml) looks for exactly this string to
 // tell a prerendered page from the SPA shell — keep it stable.
