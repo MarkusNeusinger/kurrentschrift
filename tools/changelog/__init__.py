@@ -159,13 +159,25 @@ class Fragment:
     entries: Entries
 
 
-def _git(root: Path, *args: str) -> str:
-    """Stdout of a git command in `root`, or the empty string when it fails."""
+def _git(root: Path, *args: str, required: bool = False) -> str:
+    """Stdout of a git command in `root`.
+
+    The gate's calls are `required`: a failure there (an unfetched base ref, a
+    missing merge-base) must stop the check, because an empty diff would
+    otherwise read as "nothing changed" and let the PR pass. Only the
+    fragment-date lookup is best-effort and gets the empty string instead.
+    """
     try:
         done = subprocess.run(["git", *args], cwd=root, capture_output=True, text=True, check=False)
-    except OSError:
+    except OSError as e:
+        if required:
+            raise ChangelogError(f"git {' '.join(args)}: {e}") from e
         return ""
-    return done.stdout if done.returncode == 0 else ""
+    if done.returncode != 0:
+        if required:
+            raise ChangelogError(f"git {' '.join(args)} failed: {done.stderr.strip() or done.returncode}")
+        return ""
+    return done.stdout
 
 
 def _added_at(root: Path, path: Path) -> float:
@@ -289,7 +301,7 @@ def apply_release(release: Release) -> None:
 
 def _changed_files(root: Path, base: str) -> dict[str, str]:
     """`path → status letter` for everything HEAD changed since it branched off `base`."""
-    out = _git(root, "diff", "--name-status", "--no-renames", f"{base}...HEAD")
+    out = _git(root, "diff", "--name-status", "--no-renames", f"{base}...HEAD", required=True)
     changed: dict[str, str] = {}
     for line in out.splitlines():
         status, _, path = line.partition("\t")
@@ -316,12 +328,11 @@ def check_pr(base: str, *, root: Path = REPO_ROOT) -> list[str]:
     problems: list[str] = []
     release_cut = False
     if changed.get(CHANGELOG_NAME) == "M":
-        merge_base = _git(root, "merge-base", base, "HEAD").strip()
-        before_text = _git(root, "show", f"{merge_base}:{CHANGELOG_NAME}") if merge_base else ""
-        before = split_changelog(before_text) if before_text else None
+        merge_base = _git(root, "merge-base", base, "HEAD", required=True).strip()
+        before = split_changelog(_git(root, "show", f"{merge_base}:{CHANGELOG_NAME}", required=True))
         after = split_changelog((root / CHANGELOG_NAME).read_text(encoding="utf-8"))
-        release_cut = before is not None and after.newest_version != before.newest_version
-        gained = _bullets(after.unreleased) - (_bullets(before.unreleased) if before else set())
+        release_cut = after.newest_version != before.newest_version
+        gained = _bullets(after.unreleased) - _bullets(before.unreleased)
         for bullet in sorted(gained):
             title = bullet.split("\n", 1)[0][:72]
             problems.append(f"{CHANGELOG_NAME} [Unreleased] gained a bullet — it belongs in a fragment: {title}…")

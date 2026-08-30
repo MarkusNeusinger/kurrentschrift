@@ -206,6 +206,14 @@ def test_a_branch_with_no_changes_passes(repo: Path) -> None:
     assert cl.check_pr("main", root=repo) == []
 
 
+def test_an_unknown_base_stops_the_gate_instead_of_passing_it(repo: Path) -> None:
+    """An unfetched base would diff as empty and read as 'nothing changed' — the one silent pass the gate must not have."""
+    (repo / "core.py").write_text("x = 2\n", encoding="utf-8")
+    _commit_all(repo, "change")
+    with pytest.raises(cl.ChangelogError, match="git diff .*origin/nowhere"):
+        cl.check_pr("origin/nowhere", root=repo)
+
+
 def test_a_bullet_written_into_unreleased_directly_is_refused(repo: Path) -> None:
     """Even next to a proper fragment: the shared spot is what the fragments retire."""
     text = (repo / "CHANGELOG.md").read_text(encoding="utf-8")
