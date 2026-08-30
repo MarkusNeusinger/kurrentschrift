@@ -412,6 +412,53 @@ den Arbeitsbaum.
   bleiben Handarbeit (Kopf der CHANGELOG).
   `uv run python -m tools.changelog release 0.28.0 --title "…"`.
 
+## Die Teilen-Karte (`tools/ogcard`)
+
+Baut `app/public/og.png` — das Bild, das eine Vorschau von
+kurrentschrift.ink in Chat, Feed oder Suchergebnis zeigt. Bis 2026-08-30
+stand der Markenschriftzug darauf in der **Schau-Schrift**
+GL-GermanCursive; das widersprach der Seite, für die die Karte wirbt: der
+Hero schreibt „Kurrentſchrift“ mit der Synthese-Engine und fällt nur bei
+kaltem Backend auf den Font zurück. Die Karte geht jetzt denselben Weg wie
+der Hero — `GET /sources/{id}/write/word.svg` — und ist damit an die
+Vorlage gebunden statt an eine Schriftdatei: nach einem Re-Trace wird sie
+neu gebaut, nicht neu gemalt.
+
+Was aus der Seite zitiert wird (gespiegelt, nicht importiert — hier Python,
+dort TypeScript; jede Konstante nennt ihr Gegenstück): das Wort über
+`PUBLIC_SOURCE_ID` ohne Lineatur, der viridiane Schwung als der
+`Flourish`-Pfad aus `HeroWritten.tsx` samt seiner Platzierung, die
+Wortmarke aus `HeaderBar` — ohne ihren Punkt, weil Schwung und `.ink` den
+Akzent schon tragen — und die Farben aus `paper.ts`. Kein Fixture pinnt
+das: ein Bild hat keine Byte-Gleichheit, die sich zu prüfen lohnt; wandert
+eine der vier Quellen, wird die Karte neu gebaut und angesehen.
+
+Nur Standardbibliothek plus Pillow (Runtime-Dep), ein öffentlicher GET,
+kein Admin-Token, keine DB. Gerendert wird mit dem **headless Chromium, das
+Playwright für `/verify-frontend` ohnehin installiert** — hier wird nichts
+nachgeladen; `OGCARD_CHROME=<Pfad>` übersteuert die Suche. Der
+`headless_shell`-Build ist der richtige: `chrome` bemisst im neuen
+Headless-Modus das **Fenster** statt des Viewports und lässt einen weißen
+Streifen unter der Seite. Genau das prüft der Bau nach (Größe stimmt, das
+Papier erreicht alle vier Ecken), bevor er die Datei schreibt — der Fehler
+sieht in einer Dateiliste sonst unauffällig aus.
+
+Die komponierte Geometrie wird geholt und **nie committet** (reservierter
+Datensatz, [`quellen-und-rechte.md`](quellen-und-rechte.md) §5); im Repo
+landet das 1200×630-Raster eines einzigen Wortes — das veröffentlichte
+Teilen-Bild selbst, bewusste Produktfläche wie die `/write`-Payloads, aus
+denen es stammt.
+
+- **`uv run python -m tools.ogcard`** — holen, rendern, `app/public/og.png`
+  schreiben. `--api http://localhost:8000` gegen die lokale API,
+  `--svg <Datei>` mit einem schon vorliegenden Wort-SVG, `--out <Datei>`
+  woandershin, `--html-only <Datei>` schreibt nur die komponierte Seite
+  (zum Ansehen im Browser, ohne Screenshot).
+- **Alt-Text nachziehen** ist Handarbeit: `og:image:alt` steht in
+  `app/index.html` und als `OG_IMAGE_ALT` in `app/src/lib/seo/prerender.ts`
+  — danach `npm run prerender`, sonst tragen die ausgelieferten
+  Prerender-Seiten weiter die alte Beschreibung.
+
 ## Benches und Generator (Verweise)
 
 - **`tools/glyphbench`** — bewertet jeden autorisierten Buchstaben gegen
