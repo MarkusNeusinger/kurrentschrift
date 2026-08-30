@@ -31,8 +31,9 @@ brauchen einen eigenen Renderer.
 Ein Glyph spielt mit korrekter Schreibreihenfolge ab. Implementiert als
 `app/src/components/WrittenGlyph/WrittenGlyph.tsx` (Quiz-Prompt und die
 „Fertig geschrieben"-Stufe im Admin-Diagnose-Dialog; der Landing-Hero
-schreibt Stand heute noch den GLKurrent-Font per Clip-Path und wechselt
-erst nach der Wort-Komposition aus Templates auf diesen Renderer). Der
+schreibt das Markenwort seit 2026-08-27 engine-first mit `WrittenWord`
+über dieselbe Wort-Komposition — der GLKurrent-Clip-Path-Wisch ist nur
+noch sein Fallback bei echtem Fehler). Der
 gelieferte Stand geht über das Gate-4-Minimum (konstante Breite auf der
 Centerline) hinaus: enthüllt wird die gefüllte **Schwellzug-Silhouette**.
 

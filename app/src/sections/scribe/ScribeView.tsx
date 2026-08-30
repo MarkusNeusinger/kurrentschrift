@@ -18,6 +18,10 @@ import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de, fmt } from '@/locales';
 import { garamond, paper } from '@/styles/paper';
 
+// 48 keeps the line legible, not the API (which allows 160 for the
+// Übungsblatt's lines): WrittenWord scales the whole line into its frame —
+// 840 px, or the phone's width — and near 48 letters the x-height on a phone
+// is already down to ~8 px.
 const MAX_LEN = 48;
 const DEBOUNCE_MS = 450;
 
@@ -188,7 +192,7 @@ export function ScribeView() {
         </Paper>
 
         {missingLetters && (
-          <Typography variant="caption" component="p" sx={{ color: paper.sepia, mt: 1.5 }}>
+          <Typography variant="body2" component="p" sx={{ color: paper.sepia, mt: 1.5 }}>
             {fmt(de.scribe.missingNote, { letters: missingLetters })}
           </Typography>
         )}
