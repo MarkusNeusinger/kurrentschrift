@@ -26,11 +26,14 @@
 //      unmarked `word`/label form; only the render form (`entry.fugen`, passed
 //      to `shapeText`) carries the `|`.
 //
-//   2. The closed ligature set ch · ck · tz · ſt · qu · ß are *taught units*
-//      with their own template, not exit→entry chains (architektur.md §4). We
-//      detect them greedily, but only when the whole cluster is lowercase
-//      letters — a capitalised "China"/"Stein" is a capital C/S plus the rest,
-//      and a capital in the second slot ("McHale") keeps its own glyph too.
+//   2. The closed ligature set ch · ck · tz · ſt · qu · ß — plus the one CASED
+//      cluster St — are *taught units* with their own template, not exit→entry
+//      chains (architektur.md §4). We detect them greedily; the lowercase
+//      clusters fold only when the whole cluster is lowercase letters — a
+//      capitalised "China" is a capital C plus the rest, and a capital in the
+//      second slot ("McHale") keeps its own glyph too. St folds exactly
+//      capital S before lowercase t (Korb #9: the 1922 plate writes St in one
+//      continuous motion, unlike other capital pairs such as Sc).
 //
 // Everything else (arbitrary letter pairs) is connected by generated Übergänge
 // at render time, which is the whole point of avoiding a bigram table.
@@ -119,9 +122,20 @@ function tokenizeWord(word: string): RawToken[] {
       i += 1;
       continue;
     }
-    // Two-character ligatures need BOTH characters lowercase: a capital in
-    // either slot ("China", "McHale", "sT") is never part of the taught
-    // lowercase cluster and must keep its own glyph. Mirrors core/shaping.py.
+    // St-cluster: the one CASED taught unit of the closed set (Korb #9) —
+    // capital S writes into a lowercase t as ONE continuous glyph on the
+    // plate. Exactly S+t; "ST"/"sT" never fold, and a Fuge between them
+    // blocks the cluster (`next` is then the marker, not t). Mirrors
+    // core/shaping.py.
+    if (c === 'S' && next === 't') {
+      tokens.push({ letter: LIGATURE_BY_FORM.get('St') ?? null, text: c + next, ligature: true, sAllograph: false, forceRound: false, joins: true, quoteAllograph: false });
+      i += 2;
+      continue;
+    }
+    // The OTHER two-character ligatures need BOTH characters lowercase: a
+    // capital in either slot ("China", "McHale", "sT") is never part of the
+    // taught lowercase cluster and must keep its own glyph. Mirrors
+    // core/shaping.py.
     if (next !== undefined && isLowercaseLetter(c) && isLowercaseLetter(next)) {
       const pair = c + next;
       if (pair === 'ch' || pair === 'ck' || pair === 'tz' || pair === 'qu') {

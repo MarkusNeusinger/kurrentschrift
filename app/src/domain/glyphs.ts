@@ -63,11 +63,14 @@ const UPPER: Letter[] = [
 ];
 
 // Closed ligature set per `docs/concepts/architektur.md` §4 / CLAUDE.md.
+// St is the one cased member (Korb #9): capital S writes into t as one
+// continuous glyph on the 1922 plate.
 const COMB: Letter[] = [
   { glyph: 'ch', group: 'comb', base: 'ch' },
   { glyph: 'ck', group: 'comb', base: 'ck' },
   { glyph: 'tz', group: 'comb', base: 'tz' },
   { glyph: 'ſt', group: 'comb', base: 'longst', note: 'ſt-Ligatur' },
+  { glyph: 'St', group: 'comb', base: 'St', note: 'St-Ligatur' },
   { glyph: 'qu', group: 'comb', base: 'qu' },
   { glyph: 'ß', group: 'comb', base: 'sz', note: 'Eszett' },
 ];

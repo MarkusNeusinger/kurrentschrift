@@ -9621,3 +9621,39 @@ Trennung zeigen muss. Die Laufform-Lücke der Sütterlin-1922-Root steht
 damit bei 7 Glyphen (G, W, K, ue, F, ae, b); die eingefrorene Root
 bleibt eingefroren, der Neuexport ist die nächste deklarierte
 Re-Baseline.
+
+### Übergänge Korb-Runde `aug30` — B verlässt die Restart-Klasse (Korb #8) + St-Ligatur (Korb #9)
+
+**Anlass:** Zwei Korb-Aufträge des Autors. #8: das B soll nach seinem
+Duktus-Ende weiterschreiben, wird aber an der Grundlinie neu angesetzt.
+#9: `St` ist auf der 1922er Vorlage eine eigene, ohne Absetzen
+geschriebene Einheit (anders als `Sc`, wo das Absetzen richtig ist).
+
+**Diagnose #8 (Stufe join_rule):** Das B stand seit der Kapital-Runde
+`jul31` in `CAP_RESTART_BASES` — damals als Tief-Ender (0,0–0,2)
+vermessen. Der heutige autorisierte B-Duktus endet aber auf
+Mittellinienhöhe in einem steigenden Abgang (Exit y 1,0, Tangente ~49°):
+der Retrace lief diese Fortsetzung über den Bogen zurück und setzte wie
+ein frischer Anstrich an der Grundlinie an. Änderung: B verlässt die
+Klasse; der Join ist wieder die normale Kleinbuchstaben-Grammatik ab dem
+Duktus-Ende.
+
+**Messstand (eingefrorene Fixtures, BLAS gepinnt):** Wörter
+`bench_loss` 0,106400 **unverändert** (kein Abb.-19-Wort enthält ein
+gebundenes B). Paare 0,146580 → 0,148458 — die Bewegung ist allein
+`Bi` 0,162 → 0,224 am Pixel-Lineal, während BEIDE H2-Sensoren desselben
+Drills besser werden: `doff` 0,130 → 0,095, `dconn` 0,499 → 0,344 — der
+komponierte Join liegt dem sezierten Platten-Join näher, das
+Pixel-Lineal bestraft den etwas höher liegenden Bogen der Fortsetzung.
+Autoren-Ground-Truth (Korb #8) und Join-Sezierung stimmen überein;
+das Wort-Lineal allein ist hier kein Aufnahmekriterium (Präzedenz:
+Zeilen-Gate-Lehre LF7). Sichtprüfung: Bi-Overlay vorher/nachher im PR.
+
+**#9 (Stufe chart_ductus, zurück an den Autor):** `St` ist als das eine
+Groß-Cluster in den geschlossenen Ligatur-Satz aufgenommen (Shaping
+beider Zwillinge + Fixture; architektur.md §4). Bis die Tafel-Form im
+Wizard nachgefahren ist, greift der Ligatur-Zerfall — Rendering wie
+zuvor, die Bench-Slots sind eingefroren (eine Bewegung entstünde erst
+mit deklariertem Re-Export). Quiz-seitig fällt `Stube` aus dem
+Wörter-Pool, bis die Glyphe existiert (gewolltes Gating: kein halb
+geschriebenes Wort).

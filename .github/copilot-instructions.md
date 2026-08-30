@@ -244,7 +244,9 @@ Positionally-sanctioned form variants (the "A = A" on teaching charts) are
 separate templates (`variant`), not parameter deviations; positional
 connection strokes are *generated* from `entry`/`exit` tangents.
 
-The closed ligature set (`ch`, `ck`, `tz`, `ſt`, `qu`, `ß`) are first-
+The closed ligature set (`ch`, `ck`, `tz`, `ſt`, `qu`, `ß` — plus `St`,
+the one CASED cluster: the 1922 plate writes capital S into t without a
+lift) are first-
 class library entries, not exit→entry chains. Enumerate, don't generate.
 Arbitrary letter pairs *are* generated from `exit`/`entry` tangents +
 coupling height — that's the whole point of avoiding a bigram explosion.

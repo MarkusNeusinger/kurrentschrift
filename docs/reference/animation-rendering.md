@@ -108,8 +108,8 @@ el.animate(frames, { duration: t.dur, delay: t.delay, fill: 'forwards', easing: 
   volle Schwellzug-Profil (variable Breite), wird aber als fertige Form
   enthüllt — der generative Strichaufbau, bei dem die Breite mit dem Druck
   über die Zeit *entsteht*, kommt im post-MVP-Renderer (§2).
-- **Keine Ligatur-Animation.** Ligaturen (`ch`, `ck`, `ſt`, `tz`, `qu`, `ß`)
-  kommen mit der Erweiterung des Alphabets.
+- **Keine Ligatur-Animation.** Ligaturen (`ch`, `ck`, `ſt`, `St`, `tz`,
+  `qu`, `ß`) kommen mit der Erweiterung des Alphabets.
 
 ---
 

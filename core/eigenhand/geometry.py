@@ -245,6 +245,7 @@ ADVANCE_XH: dict[str, float] = {
     "ck": 1.55,
     "tz": 1.45,
     "longst": 1.35,
+    "St": 2.10,
     "qu": 1.75,
     "sz": 1.30,
     # capitals (defaults for the rest via _advance_of)

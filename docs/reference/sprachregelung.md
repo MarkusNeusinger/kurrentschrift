@@ -60,8 +60,9 @@ auf Deutsch. Das ist kein Bruch zur anyplot-Linie, sondern dieselbe Regel
 {"glyph": "ſt", "variant": 0}   # value = the char; key = English
 ```
 
-  Betrifft den geschlossenen Ligatur-Satz (`ch`, `ck`, `tz`, `ſt`, `qu`,
-  `ß`, §4 Referenz) und das `ſ`-Allograph (§3 Referenz). Kein Sprachbruch.
+  Betrifft den geschlossenen Ligatur-Satz (`ch`, `ck`, `tz`, `ſt`, `St`,
+  `qu`, `ß`, §4 Referenz) und das `ſ`-Allograph (§3 Referenz). Kein
+  Sprachbruch.
 
 ---
 

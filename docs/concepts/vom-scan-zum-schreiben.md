@@ -108,7 +108,8 @@ und verbessert ihn, ersetzt ihn aber nicht.
 
 **Fachlich:** `core/shaping.py` bildet Text auf geordnete `glyph_keys` ab —
 langes ſ vs. Schluss-s nach der historischen Regel samt manuellem Fugen-Marker
-`|` (`Donners|tag`), der geschlossene Ligatur-Satz `ch · ck · tz · ſt · qu · ß`
+`|` (`Donners|tag`), der geschlossene Ligatur-Satz `ch · ck · tz · ſt · St ·
+qu · ß` (St als das eine Groß-Cluster, architektur.md §4)
 als eigene Primärglyphen (enumerieren, nicht generieren), Ziffern und
 Satzzeichen als echte Glyphen mit `joins: false`; die Wort-Position ist reiner
 Render-Kontext und wird je Lauf gleicher `joins`-Klasse zugewiesen.

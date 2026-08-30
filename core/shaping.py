@@ -27,9 +27,13 @@ Two orthographic rules carry the historical look (architektur.md §3/§4):
    boundary (``Haus|tür``, ``Arbeits|amt``) the length heuristic gets wrong.
    The s right before the ``|`` renders round, no ligature spans the boundary,
    and the marker carries no glyph. Strip it for display with ``strip_fugen``.
-2. The closed ligature set ch · ck · tz · ſt · qu · ß are *taught units* with
-   their own template, not exit→entry chains (architektur.md §4), detected
-   greedily but only when the whole cluster is lowercase letters.
+2. The closed ligature set ch · ck · tz · ſt · qu · ß — plus the one CASED
+   cluster St — are *taught units* with their own template, not exit→entry
+   chains (architektur.md §4), detected greedily. The lowercase clusters fold
+   only when the whole cluster is lowercase letters; St folds exactly capital
+   S before lowercase t (Korb #9: the 1922 plate writes St in one continuous
+   motion, unlike other capital pairs such as Sc, which restart at the
+   baseline).
 
 Everything else (arbitrary letter pairs) is connected by generated Übergänge
 at compose time — the whole point of avoiding a bigram table.
@@ -95,7 +99,8 @@ for _c, _base in _UPPER_EXTRA.items():
     _LETTERS[_c] = _base
 
 # The closed ligature set, keyed by its written form (architektur.md §4).
-_LIGATURES: dict[str, str] = {"ch": "ch", "ck": "ck", "tz": "tz", "ſt": "longst", "qu": "qu", "ß": "sz"}
+# St is the one cased member — see rule 2 in the module docstring.
+_LIGATURES: dict[str, str] = {"ch": "ch", "ck": "ck", "tz": "tz", "ſt": "longst", "St": "St", "qu": "qu", "ß": "sz"}
 
 # Non-joining glyphs: digits and punctuation are written detached — no
 # Übergang ever enters or leaves them. Bases are ascii-safe glyph_keys.
@@ -163,9 +168,17 @@ def _tokenize_word(word: str) -> list[_RawToken]:
         if c == FUGE:
             i += 1
             continue
-        # Two-character ligatures need BOTH characters lowercase: a capital in
-        # either slot ("China", "McHale", "sT") is never part of the taught
-        # lowercase cluster and must keep its own glyph.
+        # St-cluster: the one CASED taught unit of the closed set (Korb #9) —
+        # capital S writes into a lowercase t as ONE continuous glyph on the
+        # plate. Exactly S+t; "ST"/"sT" never fold, and a Fuge between them
+        # blocks the cluster (nxt is then the marker, not t).
+        if c == "S" and nxt == "t":
+            tokens.append(_RawToken(_LIGATURES["St"], c + nxt, True, False, False))
+            i += 2
+            continue
+        # The OTHER two-character ligatures need BOTH characters lowercase: a
+        # capital in either slot ("China", "McHale", "sT") is never part of the
+        # taught lowercase cluster and must keep its own glyph.
         if nxt is not None and _is_lowercase_letter(c) and _is_lowercase_letter(nxt):
             pair = c + nxt
             if pair in ("ch", "ck", "tz", "qu"):
@@ -323,11 +336,12 @@ def decompose_ligature_slot(slot: GlyphSlot) -> list[GlyphSlot] | None:
 
     A closed-set cluster without a template decomposes into its constituent
     letters so the word still writes with a generated Übergang instead of a
-    connector-severing hole. Sub-letters inherit the cluster's word position
-    (first keeps ``initial``, last keeps ``final``, the rest is medial). ß
-    stays atomic: its historic decomposition (ſs/ſz) is itself an allograph
-    question — a naive split would write ſſ mid-word. Mirrors the TS
-    ``decomposeLigatureSlot``.
+    connector-severing hole. Sub-letters keep their case (St splits into the
+    capital S plus t) and inherit the cluster's word position (first keeps
+    ``initial``, last keeps ``final``, the rest is medial). ß stays atomic:
+    its historic decomposition (ſs/ſz) is itself an allograph question — a
+    naive split would write ſſ mid-word. The TS twin dropped its copy when
+    composition moved server-side; this is the only implementation.
     """
     if not slot.ligature or not slot.position:
         return None
@@ -342,10 +356,9 @@ def decompose_ligature_slot(slot: GlyphSlot) -> list[GlyphSlot] | None:
             position = "final"
         else:
             position = "medial"
-        c = raw.lower()
-        if c in ("s", "ſ"):
+        if raw in ("s", "ſ"):
             key = _LETTERS["s"] if position == "final" else _LETTERS["ſ"]
         else:
-            key = _LETTERS.get(c)
+            key = _LETTERS.get(raw)
         out.append(GlyphSlot(key, raw, position, False, False))
     return out

@@ -92,7 +92,9 @@ Einzelbuchstaben. Sie sind in [`architektur.md`](../concepts/architektur.md)
 fixiert: erste-Klasse-Bibliothekseinträge mit eigenem Duktus, nicht
 durch `exit→entry`-Verkettung generiert.
 
-Der Satz: `ch · ck · tz · ſt · qu · ß`.
+Der Satz: `ch · ck · tz · ſt · qu · ß` — dazu seit 2026-08-30 `St` als
+das eine Groß-Cluster: die 1922er Sütterlin-Vorlage schreibt das große S
+ohne Absetzen in das t weiter (Korb #9, architektur.md §4).
 
 `ß` ist in der Kurrent genaugenommen eine ſ+z-Ligatur (ſʒ, daher der
 Name „Eszett"; die ſ+s-Deutung gehört zur Antiqua-Tradition — die
