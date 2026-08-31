@@ -352,6 +352,20 @@ export const admin = {
     // trace (wording shared with belege.provenanceAuthored) + a toolbar tally.
     authoredChip: 'von Hand ✓',
     authoredCount: '{{done}}/{{total}} von Hand nachgefahren',
+    // A specimen whose own ink is clipped: never nachfahrbar, so it leaves the
+    // open list and the tally's denominator instead of sitting there forever.
+    incompleteChip: 'unvollständig',
+    incompleteChipHint:
+      'Die Tinte dieser Probe ist angeschnitten (i-Punkt oder letzter Buchstabe fehlt) — sie lässt sich nicht von Hand nachfahren und zählt darum nicht zum Soll. Vermerkt im words.json-Sidecar der Vorlage.',
+    // Appended to the tally when the list holds flagged specimens.
+    incompleteCount: '{{count}} unvollständig',
+    // The status filter over the specimen list — the answer to „was fehlt noch?“
+    statusLabel: 'Nachfahren',
+    statusAll: 'Alle',
+    statusOpen: 'Offen',
+    statusAuthored: 'Nachgefahren',
+    statusIncomplete: 'Unvollständig',
+    statusEmpty: 'Keine Wortprobe passt zu dieser Auswahl (Status oder Suchtext).',
     // Specimen scores (redesign R1b Stufe 2): the frozen wordbench ruler per
     // card, worst first = the work list.
     scoreButton: 'Scores berechnen & sortieren',

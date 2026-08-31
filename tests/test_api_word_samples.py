@@ -46,6 +46,8 @@ async def test_list_word_samples(api, tmp_path):
             {**WORD, "id": "unter-2", "kind": "pair"},
             {**WORD, "id": "abc", "set": "abb22"},
             {**WORD, "id": "emptyset", "set": "  "},
+            {**WORD, "id": "clipped", "incomplete": True, "note": "i-dot cut off at the plate edge"},
+            {**WORD, "id": "noted", "note": "reads on, not vn"},
             {"word": "malformed"},  # missing rect/page — skipped, not 500
         ],
     )
@@ -54,7 +56,7 @@ async def test_list_word_samples(api, tmp_path):
     assert res.status == 200
     assert "max-age" in res.headers.get("cache-control", "")
     rows = res.json()
-    assert [r["id"] for r in rows] == ["unter", "unter-2", "abc", "emptyset"]
+    assert [r["id"] for r in rows] == ["unter", "unter-2", "abc", "emptyset", "clipped", "noted"]
     first = rows[0]
     assert first["word"] == "unter"
     assert first["kind"] == "word"
@@ -70,6 +72,12 @@ async def test_list_word_samples(api, tmp_path):
     # A whitespace-only set tag normalizes to null — it must not classify the
     # row as another hand.
     assert rows[3]["sample_set"] is None
+    # The clipped-ink flag rides along so the admin can keep a specimen nobody
+    # can ever trace by hand out of the manual tracing to-do list; the note is
+    # its reason, and it also travels on an unflagged row.
+    assert (first["incomplete"], first["note"]) == (False, None)
+    assert (rows[4]["incomplete"], rows[4]["note"]) == (True, "i-dot cut off at the plate edge")
+    assert (rows[5]["incomplete"], rows[5]["note"]) == (False, "reads on, not vn")
 
 
 async def test_list_word_samples_empty_without_sidecar(api, tmp_path):
@@ -107,6 +115,31 @@ def test_load_word_samples_hardening(tmp_path):
     )
     rows = load_word_samples(tmp_path / "chart.png")
     assert [r["id"] for r in rows] == ["ok"]
+
+
+def test_load_word_samples_normalizes_annotations(tmp_path):
+    """`incomplete` is strictly boolean and `note` is prose-or-None.
+
+    Hand-maintained data: a stray `"false"` string must not silently take a
+    specimen out of the tracing to-do list, and a blank note must not show up
+    as an empty tooltip."""
+    (tmp_path / "words.json").write_text(
+        json.dumps(
+            {
+                "words": [
+                    {**WORD, "id": "plain"},
+                    {**WORD, "id": "flagged", "incomplete": True, "note": "  last letter runs off the plate  "},
+                    {**WORD, "id": "stringy", "incomplete": "false", "note": "   "},
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    rows = {r["id"]: r for r in load_word_samples(tmp_path / "chart.png")}
+    assert (rows["plain"]["incomplete"], rows["plain"]["note"]) == (False, None)
+    assert rows["flagged"]["incomplete"] is True
+    assert rows["flagged"]["note"] == "last letter runs off the plate"
+    assert (rows["stringy"]["incomplete"], rows["stringy"]["note"]) == (False, None)
 
 
 async def test_word_sample_crop_png_and_excludes(api, tmp_path):

@@ -47,6 +47,8 @@ def _to_out(sample: dict) -> WordSampleOut:
         baseline_y=int(sample["baseline_y"]) - y0,
         midband_y=int(sample["midband_y"]) - y0,
         rect=[x0, y0, x1, y1],
+        incomplete=bool(sample.get("incomplete")),
+        note=sample.get("note") or None,
     )
 
 

@@ -189,6 +189,14 @@ def load_word_samples(chart_path: str | Path) -> list[dict]:
     with -2/-3 suffixes already); `[]` when the source has no sidecar. Entries
     without the required rect/page fields are skipped rather than raised — the
     sidecar is hand-maintained data, not code.
+
+    Two hand-written annotations are normalized here rather than at every
+    reader: `incomplete` (boolean — the specimen's own ink is clipped, so no
+    one will ever trace it by hand: a cut-off i-dot, a last letter running off
+    the plate) and `note` (free prose, the reason and any reading caveat). A
+    specimen stays in the sidecar when it is flagged — it is still measurable
+    evidence for everything the clipping does not touch; the flag only takes it
+    out of the manual tracing to-do list.
     """
     sidecar = resolve_chart_path(chart_path).parent / "words.json"
     if not sidecar.exists():
@@ -226,6 +234,9 @@ def load_word_samples(chart_path: str | Path) -> list[dict]:
             continue
         entry["page"] = page
         entry["id"] = str(rec.get("id") or rec["word"])
+        entry["incomplete"] = rec.get("incomplete") is True
+        note = str(rec.get("note") or "").strip()
+        entry["note"] = note or None
         out.append(entry)
     return out
 

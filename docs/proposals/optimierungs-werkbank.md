@@ -310,3 +310,28 @@ vom Symptom zur Änderung und zurück.
   fehlt hier bewusst:** es ändert Rendering und ist damit genau der
   Griff, den §3 auf dieser Fläche verbietet — angeschaut und
   reklamiert wird hier, gerechnet und übernommen woanders.
+- **W6 — Nachfahr-Stand** (umgesetzt): die Wörter-Übersicht beantwortet
+  „was fehlt noch?" als Auswahl statt als Scrollarbeit. Neben dem
+  Suchfeld steht ein Status-Filter **Alle · Offen · Nachgefahren ·
+  Unvollständig** über den Wortproben des Tabs; „Offen" ist damit die
+  Arbeitsliste des Nachfahr-Durchgangs. Der Stand einer Probe ist genau
+  dreiwertig (`traceStatusOf`, `shell/model.ts`): eine gespeicherte
+  `authored`-Bahn heißt fertig (ein automatischer Fit **nicht** — er ist
+  das, was der Durchgang ersetzt), ein im Sidecar als `incomplete`
+  markierter Beleg heißt „geht nie", alles andere ist offen. Der
+  Markierungs-Grund: manche Proben lassen sich gar nicht nachfahren,
+  weil die eigene Tinte angeschnitten ist — der i-Punkt fehlt, der
+  letzte Buchstabe läuft aus dem Rechteck. Ohne Kennzeichnung sitzen sie
+  für immer als unerreichbares „offen" in der Liste und im Zähler; mit
+  ihr fallen sie aus beiden heraus (`{{done}}/{{total}} von Hand
+  nachgefahren · n unvollständig`), bleiben aber Beleg: der heile Teil
+  ist weiter messbar, und Karte wie Wort-Detail tragen den Chip
+  „unvollständig" mit dem Sidecar-`note` als Begründung.
+  Die Markierung ist **Daten, nicht Klick** — `"incomplete": true` plus
+  `note` an der Zeile in `data/sources/<id>/words.json`, committet wie
+  jede andere Beleg-Metadatenzeile (`exclude`, Lineatur), und der
+  öffentliche Read `/word-samples` reicht beide Felder durch. Die
+  Rechteck-Ecken sind eingefrorene Bench-Fixtures: eine angeschnittene
+  Probe wird darum markiert, nicht stillschweigend größer geschnitten —
+  ein anderes Rechteck wäre ein Re-Baseline des Wort-Benchs
+  (`qualitaetsmetrik.md` §14) und braucht dessen Verfahren.
