@@ -62,7 +62,8 @@ agent working in this repo:
   `uv run python -m tools.changelog check --base origin/main` is the same
   gate locally. Data-only commits (chart sources, authored templates) are
   exempt; their provenance lives in `SOURCE.md`; a PR with truly nothing
-  to tell gets the `skip-changelog` label. The release is one command,
+  to tell gets the `skip-changelog` label, and Dependabot's PRs skip the
+  job by author. The release is one command,
   `uv run python -m tools.changelog release X.Y.Z --title "…"` (folds the
   fragments newest-first under the new heading, bumps
   `pyproject.toml`/`uv.lock`/`CITATION.cff`, deletes the fragments).

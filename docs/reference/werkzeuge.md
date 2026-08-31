@@ -397,7 +397,9 @@ den Arbeitsbaum.
   des CI-Jobs „Changelog (fragment)": das Diff trägt ein Fragment (oder ist
   ein Release-Schnitt, der Fragmente löscht, oder rein `data/`), und
   `[Unreleased]` hat keinen direkt geschriebenen Bullet dazubekommen.
-  Ausnahme nur per Label `skip-changelog` (der Job läuft dann nicht).
+  Ausnahmen laufen über den Job, nicht über das Werkzeug: Label
+  `skip-changelog` und Dependabot als PR-Autor — in beiden Fällen läuft der
+  Job gar nicht erst.
 - **`preview`** — der gesammelte `[Unreleased]`-Abschnitt, wie ihn der
   nächste Schnitt schreiben würde: die Fragmente, neueste zuerst je
   Kategorie nach dem Commit, der sie anlegte (ein noch nicht committetes
