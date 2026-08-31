@@ -29,7 +29,7 @@
   beside its own ink and stamped „Rahmen veraltet". The correction is
   exactly that origin shift — no re-tracing — and it is idempotent: a row
   already sitting in the repaired crop is left alone. It writes to the
-  shared database, so it is dry-run by default (#NNN).
+  shared database, so it is dry-run by default (#471).
 
 ### Changed
 
