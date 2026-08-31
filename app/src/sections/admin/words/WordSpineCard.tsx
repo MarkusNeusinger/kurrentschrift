@@ -227,9 +227,9 @@ export function WordSpineCard({
           color={row.provenance === 'authored' ? 'success' : 'default'}
           label={row.provenance === 'authored' ? t.provenanceAuthored : t.provenanceTraced}
         />
-        {/* The clipped-ink flag travels into the detail as well: it is the
-            answer to „warum ist die hier noch nicht nachgefahren?", and the
-            place where the sidecar's reason is readable. */}
+        {/* The clipped-ink flag travels into the detail as well: it answers
+            why this specimen is still not traced by hand, and it is the place
+            where the sidecar's reason is readable. */}
         {sample.incomplete && (
           <Tooltip title={sample.note || de.admin.compare.incompleteChipHint}>
             <Chip size="small" color="warning" variant="outlined" label={de.admin.compare.incompleteChip} />
