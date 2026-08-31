@@ -34,6 +34,7 @@ import {
   rmseMean,
   traceFrameOf,
   traceMatrix,
+  traceStatusOf,
   type Mark,
   type SpecimenRef,
 } from '@/sections/admin/shell/model';
@@ -229,8 +230,10 @@ export function WordSpineCard({
         />
         {/* The clipped-ink flag travels into the detail as well: it answers
             why this specimen is still not traced by hand, and it is the place
-            where the sidecar's reason is readable. */}
-        {sample.incomplete && (
+            where the sidecar's reason is readable. Through `traceStatusOf`, so
+            a flagged specimen that WAS traced by hand shows the same thing here
+            as in the overview — the authored line, not the flag. */}
+        {traceStatusOf(sample, row) === 'incomplete' && (
           <Tooltip title={sample.note || de.admin.compare.incompleteChipHint}>
             <Chip size="small" color="warning" variant="outlined" label={de.admin.compare.incompleteChip} />
           </Tooltip>
