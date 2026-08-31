@@ -38,7 +38,8 @@ from scipy.ndimage import find_objects
 from scipy.ndimage import label as cc_label
 
 from core.extract import binarize_adaptive
-from tools.wordbench.export_fixtures import DESPECKLE_MIN_AREA_PX, REPO_ROOT, despeckle, load_page
+from core.word_metric import DESPECKLE_MIN_AREA_PX, despeckle
+from tools.wordbench.export_fixtures import REPO_ROOT, load_page
 
 
 DEFAULT_SOURCE_ID = "suetterlin-1922"

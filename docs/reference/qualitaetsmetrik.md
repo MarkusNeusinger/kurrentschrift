@@ -9670,3 +9670,64 @@ zuvor, die Bench-Slots sind eingefroren (eine Bewegung entstünde erst
 mit deklariertem Re-Export). Quiz-seitig fällt `Stube` aus dem
 Wörter-Pool, bis die Glyphe existiert (gewolltes Gating: kein halb
 geschriebenes Wort).
+
+---
+
+## 15. Sechs angeschnittene Wortproben repariert — angekündigtes Re-Baseline des Wort-Benchs (`aug31`)
+
+**Befund (Autor, aus der Werkbank).** Wortproben, die sich nicht
+nachfahren lassen, weil der i-Punkt fehlt oder der letzte Buchstabe
+halb ist. Nachgemessen auf der ROHEN binarisierten Platte (ohne
+Despeckle — genau dort verschwindet ein dünner Sütterlin-i-Strich):
+von den 202 committeten Proben liegen **169 auf exakt 3 px Luft**, dem
+Standardrand von `propose_boxes` (`BOX_PAD_PX`), und **sechs unter
+diesem Standard**, vier davon mit tatsächlich angeschnittener Tinte:
+
+| Probe | Fehler | Reparatur |
+|---|---|---|
+| `regieren` | −37 px rechts | **nicht angewandt** (s. u.) |
+| `zum` | −13 px oben (u-Bogen durchgeschnitten) | oben +19 |
+| `einer` | −5 px oben (i-Strich durchgeschnitten) | oben +11 |
+| `das` | −4 px links (Anstrich) | links +10 |
+| `und` | 1 px links | links +5 |
+| `Wer` · `zwei` | 2 px | oben +4 · unten +3 |
+
+Die Ursache ist der Standard selbst, nicht die einzelne Zeile: 3 px auf
+der **despeckelten** Maske gemessen sind zu wenig für eine Marke, die
+unter der Despeckle-Schwelle (24 px) liegt. `tools/wordbench/repair_boxes.py`
+misst darum roh nach und hebt nur, was unter dem Standard liegt, auf 6 px;
+die 169 Standard-Rechtecke bleiben Byte für Byte stehen — jedes
+angefasste Rechteck ist ein Fixture und eine Bahn-Registrierung, die
+mitwandern muss.
+
+**`regieren` bleibt ungeschnitten und ist trotzdem kein Mangel.** Die
+37 px jenseits der Kante sind das Komma, das am Auslauf des letzten
+`n` **hängt** — eine Komponente, also trennt sie keine Lageregel. Der
+Deckel (eine x-Höhe Wachstum) meldet den Fall, statt ihn anzuwenden:
+eine Box, die das Komma schluckt, wäre schlechter als eine, die es
+abschneidet (`words.json`: „the stored `word` carries letters only").
+Die Buchstaben selbst sind vollständig; die Probe braucht weder
+Reparatur noch `incomplete`-Marke.
+
+**Was das Re-Baseline auslöst.** Die Rechtecke sind eingefrorene
+Referenzgeometrie: sechs veränderte Crops heißen sechs veränderte
+Referenzmasken. Fällig sind darum, in dieser Reihenfolge, und **nicht
+von dieser Session ausgeführt** (die Fixture-Roots sind lokal, die
+Registrierungs-Korrektur schreibt in die geteilte DB):
+
+1. `uv run python -m tools.wordbench.shift_registrations --shift …`
+   — die gespeicherten Bahnen der sechs Proben registrieren CROP-lokal
+   und stehen sonst um den Ursprungs-Versatz daneben (Frame-Gate
+   `frame_stale`, „Rahmen veraltet" in der Werkbank). Kein Nachfahren
+   nötig: die Korrektur IST der Versatz. Idempotent.
+2. Fixture-Re-Export (`export_fixtures.py`), dann ein Wortbench-Lauf.
+3. Die neuen Headlines hier eintragen. **Zahlen über diese Grenze sind
+   nicht vergleichbar** (§2 „Re-Baseline ist eine bewusste menschliche
+   Entscheidung"): sechs von 63 Wort-Referenzen zeigen ab jetzt mehr
+   Tinte als vorher, und mehr Tinte im Soll heißt ohne jede
+   Code-Änderung eine andere Zahl.
+
+Erwartete Richtung: der Loss der sechs steigt eher, denn der i-Strich
+und der u-Bogen, die vorher fehlten, will die Komposition jetzt auch
+treffen. Das ist die richtige Richtung — vorher wurde gegen einen
+Buchstaben gemessen, der auf der Referenz gar nicht ganz da war.
