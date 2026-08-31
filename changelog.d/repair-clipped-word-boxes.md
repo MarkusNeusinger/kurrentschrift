@@ -1,10 +1,11 @@
 ### Fixed
 
-- **Seven word specimens whose rect cut off their own ink.** The i-Strich of
-  `einer` and the u-Bogen of `zum` were sliced by the top edge of their
-  crop, the last `n` of `regieren` was cut by 37 px on the right, `das` and
-  `und` lost the d's entry stroke, `Wer` and `zwei` sat below the plate's
-  own clearance. The rects now enclose that ink with air, and the comma
+- **Seven word specimens whose rect sat too tight around their word, four of
+  them cutting it.** The i-Strich of `einer` and the u-Bogen of `zum` were
+  sliced by the top edge of their crop, the last `n` of `regieren` was cut
+  by 37 px on the right, and `das` lost the d's entry stroke; `und`, `Wer`
+  and `zwei` merely sat below the plate's own clearance. The rects now
+  enclose that ink with air, and the comma
   that came in beside `regieren`'s exit stroke is covered by an `exclude` —
   the sidecar's own answer to punctuation at a box edge.
 - **`zum`'s crop showed a white block.** Its `exclude` was anchored to the

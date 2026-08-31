@@ -47,10 +47,13 @@ WHAT ELSE MOVES WITH A RECT (do not skip):
   * `baseline_y`/`midband_y` are PAGE coordinates and stay valid unchanged.
   * Stored word traces register in CROP-local pixels
     (`measurements.registration_px`), so a moved `x0`/`y0` shifts them out of
-    place. `--registration-shift` writes the exact per-specimen correction as
-    JSON; `tools/wordbench/shift_registrations.py` applies it through the admin
-    API. Skipping this leaves every trace of a repaired specimen stamped
-    „Rahmen veraltet" and out of the bench.
+    place. `tools/wordbench/shift_registrations.py --baseline <old words.json>`
+    applies the correction through the admin API; it derives the delta from the
+    two sidecar VERSIONS itself, so no shift list travels between the two tools
+    and there is nothing to keep in step. Skipping it leaves every trace of a
+    repaired specimen mis-registered — vertically that surfaces as the stale
+    frame badge and drops the row from the bench, horizontally nothing catches
+    it at all.
   * The wordbench fixture roots freeze these rects. A repaired plate needs a
     fixture re-export and a dated re-baseline entry in `qualitaetsmetrik.md`
     §15 — the ruler changed, and silently comparing across it is the one thing
@@ -59,9 +62,11 @@ WHAT ELSE MOVES WITH A RECT (do not skip):
 Usage:
     uv run python -m tools.wordbench.repair_boxes --report
     uv run python -m tools.wordbench.repair_boxes --sheets temp/repair
+
+    # keep the pre-repair sidecar: the trace correction is measured against it
     git show origin/main:data/sources/suetterlin-1922/words.json > temp/old.json
-    uv run python -m tools.wordbench.repair_boxes --apply \
-        --registration-shift temp/shift.json --since temp/old.json
+    uv run python -m tools.wordbench.repair_boxes --apply
+    uv run python -m tools.wordbench.shift_registrations --baseline temp/old.json
 """
 
 from __future__ import annotations
@@ -134,8 +139,8 @@ class Repair:
     new: tuple[int, int, int, int]
     reasons: list[str]
     # The entry's exclude rects AFTER the repair: obsolete ones dropped, ones
-    # for newly enclosed foreign ink added. `None` means the repair does not
-    # change them (a refused candidate).
+    # for newly enclosed foreign ink added. Empty on a refused candidate, which
+    # changes nothing about the entry at all.
     excludes: list[list[int]] = field(default_factory=list)
     added_excludes: list[list[int]] = field(default_factory=list)
     dropped_excludes: list[list[int]] = field(default_factory=list)

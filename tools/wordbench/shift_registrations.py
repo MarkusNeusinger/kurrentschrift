@@ -5,9 +5,10 @@ the word origin's crop column, `baseline_row` its Grundlinie row). The crop
 starts at the sidecar rect's origin, so repairing a rect — growing it upward to
 enclose a cut-off i-Strich, leftward to catch an Anstrich — moves that origin
 and leaves every stored trace of the specimen sitting `dx`/`dy` px off the crop
-it belongs to. The SPA badges a vertical drift „Rahmen veraltet" and the fixture
-export drops the row from the bench (`export_fixtures._frame_stale_reason`); a
-horizontal one nothing catches at all, which is why it has to be exact here.
+it belongs to. A vertical drift at least surfaces: the SPA badges it „Rahmen
+veraltet" ("frame out of date") and the fixture export drops the row from the
+bench (`export_fixtures._frame_stale_reason`). A horizontal one nothing catches
+at all, which is why this has to be exact rather than merely close.
 
 Nothing about the pen path changed, so nothing needs re-tracing: the correction
 is exactly the origin's shift, `tx += dx` and `baseline_row += dy`.
