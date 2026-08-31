@@ -2120,8 +2120,8 @@ Stelle war der Ort, an dem jeder Geschwister-Merge die anderen PRs in den
 Konflikt schickte (Audit-Serie 2026-08-29/30); der Union-Merge-Treiber
 heilte nur den lokalen Rebase, GitHubs eigene Mergebarkeitsprüfung
 ignoriert ihn. Der CI-Job „Changelog (fragment)" verlangt je PR ein
-Fragment (Ausnahmen: reine `data/`-PRs, Label `skip-changelog`) und weist
-direkt in `[Unreleased]` geschriebene Bullets ab. *Technisch:*
+Fragment (Ausnahmen: reine `data/`-PRs, Label `skip-changelog`, PRs von
+Dependabot) und weist direkt in `[Unreleased]` geschriebene Bullets ab. *Technisch:*
 `tools/changelog/__init__.py` — `parse_entries` (ein Parser für Fragmente
 und `[Unreleased]`), `check_pr` (die PR-Regel), `plan_release`/`apply_release`
 (der Schnitt); CI-Job `changelog` in `.github/workflows/ci.yml`.

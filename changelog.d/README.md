@@ -35,8 +35,10 @@ Rules, all enforced by `uv run python -m tools.changelog check`:
 - Nothing else in the file — no prose above the first heading, no `##`.
 
 The CI job „Changelog (fragment)" requires a fragment in every PR — except
-data-only PRs (everything under `data/`, covered by `SOURCE.md`) and PRs
-labelled `skip-changelog` — and refuses bullets written into `[Unreleased]`
+data-only PRs (everything under `data/`, covered by `SOURCE.md`), PRs
+labelled `skip-changelog` and Dependabot's own PRs (a bot writes neither a
+fragment nor a label, and its routine bumps are what the release notes leave
+out anyway) — and refuses bullets written into `[Unreleased]`
 directly. `uv run python -m tools.changelog check --base origin/main` is the
 same check locally; `uv run python -m tools.changelog preview` prints the
 pending section.

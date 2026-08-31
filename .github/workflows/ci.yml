@@ -167,7 +167,16 @@ jobs:
     # conflict (2026-08-30). Data-only PRs pass on their own; a PR with truly
     # nothing to tell gets the `skip-changelog` label. Push runs on main have
     # no base to diff against and are skipped.
-    if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'skip-changelog')
+    #
+    # Dependabot is skipped by author: its PRs are the routine bumps the release
+    # notes leave out anyway, and a bot can neither write a fragment nor reach
+    # for the label — so the gate would just sit red on every Monday's batch
+    # (#468, 2026-08-31). A bump that DOES deserve a line (the peer-dep override
+    # of #235) reaches the changelog through the human PR that carries the fix.
+    if: >-
+      github.event_name == 'pull_request'
+      && !contains(github.event.pull_request.labels.*.name, 'skip-changelog')
+      && github.event.pull_request.user.login != 'dependabot[bot]'
     steps:
       - uses: actions/checkout@v7
         with:
