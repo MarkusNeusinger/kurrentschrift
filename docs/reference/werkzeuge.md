@@ -516,17 +516,24 @@ denen es stammt.
   Kasten auf sauberes Papier). Eine Box, die weiter Fremdtinte deckt,
   bleibt in jedem Fall stehen — handgesetztes Urteil.
   `--report` · `--sheets <dir>` (Vorher/Nachher-Kacheln, rot/grün) ·
-  `--apply` · `--registration-shift <json>` (mit `--since <alte
-  words.json>` über mehrere Läufe hinweg korrekt).
+  `--apply`.
   **Zwei Dinge wandern mit** und dürfen nicht vergessen werden:
   gespeicherte Wortbahnen registrieren CROP-lokal, also verschiebt ein
-  bewegtes `x0`/`y0` sie — `shift_registrations.py` rechnet genau den
-  Ursprungs-Versatz auf `tx`/`baseline_row` (idempotent: es bewegt nur
-  Zeilen, die noch besser zur ALTEN Geometrie passen; `--apply` schreibt in
-  die GETEILTE DB und braucht die Zusage des Autors). Und die
-  Fixture-Roots frieren die Rechtecke ein: eine reparierte Platte braucht
-  einen Fixture-Re-Export plus datierten Re-Baseline-Eintrag in
-  [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §14.
+  bewegtes `x0`/`y0` sie — `shift_registrations.py --baseline <alte
+  words.json>` rechnet genau den Ursprungs-Versatz auf `tx`/`baseline_row`
+  und leitet ihn aus den beiden Sidecar-STÄNDEN selbst ab, sodass zwischen
+  den Werkzeugen keine Liste hin und her wandert. Welchem Ausschnitt eine
+  Zeile gerade folgt, wird **festgehalten**: eine verschobene Zeile trägt
+  ihren Ursprung als `measurements.rect_origin`, eine Zeile ohne Stempel
+  gehört zum `--baseline`-Stand. Ohne das ist ein Lauf auf der x-Achse
+  nicht wiederholbar — ein Test über `baseline_row` allein sieht eine
+  reine Links-Reparatur (`das`, `und`) gar nicht, und deren `tx` bliebe
+  stumm zurück, wo die senkrechte Drift wenigstens als „Rahmen veraltet"
+  auffiele. `--apply` schreibt in die GETEILTE DB und braucht die Zusage
+  des Autors. Und die Fixture-Roots frieren die Rechtecke ein: eine
+  reparierte Platte braucht einen Fixture-Re-Export plus datierten
+  Re-Baseline-Eintrag in
+  [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §15.
 - **`tools/tracebench` + `tools/pairlab/follow`** — das Lineal und der
   Mess-Kandidat des Tintenfolger-Duells
   ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md);

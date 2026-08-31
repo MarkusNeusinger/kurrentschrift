@@ -386,31 +386,6 @@ def _neighbour_limits(
     return left, top, right, bottom
 
 
-def registration_shifts(source_id: str, baseline: Path) -> dict[str, dict[str, int]]:
-    """Per specimen, how far its crop ORIGIN moved since `baseline` — the
-    correction every stored trace of it has to follow.
-
-    Read off two sidecar versions rather than off a repair plan, so it is right
-    no matter how the rect got where it is: two runs of this tool, a hand edit,
-    or both. `git show <ref>:data/sources/<id>/words.json > old.json` produces
-    the baseline."""
-
-    def origins(path: Path) -> dict[str, tuple[int, int]]:
-        data = json.loads(path.read_text(encoding="utf-8"))
-        return {str(w.get("id") or w["word"]): (int(w["x0"]), int(w["y0"])) for w in data["words"]}
-
-    was = origins(baseline)
-    now = origins(REPO_ROOT / "data" / "sources" / source_id / "words.json")
-    out: dict[str, dict[str, int]] = {}
-    for sid, (nx, ny) in now.items():
-        if sid not in was:
-            continue
-        dx, dy = was[sid][0] - nx, was[sid][1] - ny
-        if dx or dy:
-            out[sid] = {"dx": dx, "dy": dy}
-    return out
-
-
 def xh_of(entry: dict) -> float:
     """This specimen's x-height in page pixels — the scale every tolerance in
     this tool is expressed in."""
@@ -568,22 +543,10 @@ def main() -> None:
     parser.add_argument("--report", action="store_true", help="print the plan (default when nothing else is asked)")
     parser.add_argument("--sheets", type=Path, help="write one before/after tile per repair into this directory")
     parser.add_argument("--apply", action="store_true", help="write the repaired rects into words.json")
-    parser.add_argument(
-        "--registration-shift",
-        type=Path,
-        help="write the per-specimen crop-origin shift stored traces must follow (JSON)",
-    )
-    parser.add_argument(
-        "--since",
-        type=Path,
-        help="baseline words.json the shift is measured against "
-        "(git show <ref>:data/sources/<id>/words.json > old.json); "
-        "without it the shift covers only the repairs THIS run applies",
-    )
     args = parser.parse_args()
 
     repairs, refused = plan_repairs(args.source, args.pad)
-    if args.report or not (args.sheets or args.apply or args.registration_shift):
+    if args.report or not (args.sheets or args.apply):
         print(f"{len(repairs)} specimen(s) clip their own ink\n")
         for r in repairs:
             extra = ""
@@ -601,19 +564,6 @@ def main() -> None:
     if args.sheets:
         draw_repair_tiles(args.source, repairs, args.sheets)
         print(f"wrote {len(repairs)} tile(s) to {args.sheets}")
-    if args.registration_shift:
-        payload = (
-            registration_shifts(args.source, args.since)
-            if args.since
-            else {
-                r.sample_id: {"dx": r.registration_shift[0], "dy": r.registration_shift[1]}
-                for r in repairs
-                if r.registration_shift != (0, 0)
-            }
-        )
-        args.registration_shift.parent.mkdir(parents=True, exist_ok=True)
-        args.registration_shift.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        print(f"wrote {len(payload)} registration shift(s) to {args.registration_shift}")
     if args.apply:
         apply_repairs(args.source, repairs)
         print(f"applied {len(repairs)} repair(s) to words.json — re-export the fixtures and log the re-baseline")

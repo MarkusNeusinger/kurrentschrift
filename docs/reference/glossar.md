@@ -2106,8 +2106,10 @@ angeschnitten war). Die `exclude`-Boxen wandern mit — neu eingeschlossene
 Fremdtinte bekommt eine, eine die nur noch eigene Tinte verdeckt fällt
 weg. Zwei weitere Dinge wandern mit: die CROP-lokalen
 Registrierungen gespeicherter Bahnen (`shift_registrations.py`, reiner
-Ursprungs-Versatz, kein Nachfahren) und die Fixture-Roots (Re-Export +
-datierter §14-Eintrag).
+Ursprungs-Versatz, kein Nachfahren — die verschobene Zeile bekommt den
+Ursprung, auf den sie sich bezieht, als `rect_origin` mitgestempelt, sonst
+ist ein Lauf auf der x-Achse nicht wiederholbar) und die Fixture-Roots
+(Re-Export + datierter §15-Eintrag).
 
 **H0–H5 · R1–R5 · W1–W6 · M0–M7** — die vier Nummerierungen der
 Arbeitspläne, bewusst getrennt gehalten:

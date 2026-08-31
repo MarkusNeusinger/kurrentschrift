@@ -157,47 +157,6 @@ def test_apply_touches_only_the_rect(tmp_path, monkeypatch):
     assert (stored["exclude"], stored["note"]) == ([[1, 2, 3, 4]], "keep me")
 
 
-# ------------------------------- the other half: traces move with their crop
-
-
-def _trace(specimen_id="probe", baseline_row=60.0, tx=4.0, **extra):
-    return {
-        "kind": "word",
-        "specimen_id": specimen_id,
-        "word": "probe",
-        "slots": ["p"],
-        "strokes": [[[0, 0], [1, 1]]],
-        "provenance": "authored",
-        "measurements": {"registration_px": {"tx": tx, "ty": 0.0, "baseline_row": baseline_row}, **extra},
-    }
-
-
-SHIFT = {"probe": {"dx": 0, "dy": 11}}
-# Crop-local Grundlinie before and after the rect grew 11 px upward.
-ROWS = {"probe": (60, 71)}
-
-
-def test_shift_moves_a_trace_left_behind_by_the_repair():
-    todo = shift_registrations.plan([_trace(baseline_row=60.0)], SHIFT, ROWS)
-    assert len(todo) == 1
-    moved = shift_registrations.shifted(todo[0], SHIFT)
-    assert moved["measurements"]["registration_px"]["baseline_row"] == 71.0
-    # An authored row stays authored: coercing it to `traced` would hand the
-    # author's own pen work to the next harvest to overwrite.
-    assert moved["provenance"] == "authored"
-
-
-def test_shift_is_idempotent():
-    """A row already sitting in the repaired crop is left alone — running the
-    correction twice must not double-shift it."""
-    assert shift_registrations.plan([_trace(baseline_row=71.0)], SHIFT, ROWS) == []
-
-
-def test_shift_skips_rows_of_untouched_specimens_and_rows_without_registration():
-    rows = [_trace(specimen_id="other", baseline_row=60.0), {**_trace(), "measurements": {}}]
-    assert shift_registrations.plan(rows, SHIFT, ROWS) == []
-
-
 # ------------------------------------ the excludes a moved edge invalidates
 
 
@@ -265,16 +224,85 @@ def test_keeps_an_exclude_that_still_covers_foreign_ink(tmp_path, monkeypatch):
     assert repairs[0].dropped_excludes == []
 
 
-def test_registration_shift_reads_two_sidecar_versions(tmp_path, monkeypatch):
-    """The correction a stored trace follows is measured between sidecar
-    VERSIONS, not off a repair plan — so it stays right across two runs of the
-    tool, a hand edit, or both."""
+def test_origins_read_the_crop_corner_of_every_specimen(tmp_path):
+    """The correction is measured between sidecar VERSIONS rather than off a
+    repair plan, so it stays right across two runs of the tool, a hand edit, or
+    both."""
     src = _dirs(tmp_path)
-    monkeypatch.setattr(repair_boxes, "REPO_ROOT", src.parent.parent.parent)
     _sidecar(src, [_entry((139, 409, 313, 484), id="einer"), _entry((10, 20, 90, 80), id="still")])
-    old = src / "old.json"
-    old.write_text(
-        json.dumps({"words": [_entry((149, 420, 313, 484), id="einer"), _entry((10, 20, 90, 80), id="still")]}),
-        encoding="utf-8",
-    )
-    assert repair_boxes.registration_shifts(src.name, old) == {"einer": {"dx": 10, "dy": 11}}
+    assert shift_registrations.origins(src / "words.json") == {"einer": (139, 409), "still": (10, 20)}
+
+
+# ------------------------------- the other half: traces move with their crop
+#
+# The registration is crop-local, so it only means anything together with the
+# crop origin it counts from — which is why a shifted row carries that origin.
+# A `baseline_row` test alone cannot see a repair that moved only `x0`, and two
+# of the real ones (`das`, `und`) are exactly that.
+
+
+def _trace(specimen_id="probe", baseline_row=60.0, tx=4.0, origin=None, registration=True):
+    measurements: dict = {"registration_px": {"tx": tx, "ty": 0.0, "baseline_row": baseline_row}}
+    if not registration:
+        measurements = {"xh_px": 30.0}
+    if origin is not None:
+        measurements[shift_registrations.ORIGIN_KEY] = list(origin)
+    return {
+        "kind": "word",
+        "specimen_id": specimen_id,
+        "word": "probe",
+        "slots": ["p"],
+        "strokes": [[[0, 0], [1, 1]]],
+        "provenance": "authored",
+        "measurements": measurements,
+    }
+
+
+WAS = {"probe": (149, 420), "still": (10, 20)}
+NOW = {"probe": (139, 409), "still": (10, 20)}  # left +10, top +11
+
+
+def test_shift_moves_a_trace_left_behind_by_the_repair():
+    todo = shift_registrations.plan([_trace()], WAS, NOW)
+    assert [d for _, d in todo] == [(10, 11)]
+    moved = shift_registrations.shifted(*todo[0], NOW["probe"])
+    assert moved["measurements"]["registration_px"] == {"tx": 14.0, "ty": 0.0, "baseline_row": 71.0}
+    # The origin it now counts from travels with it — that is what makes the
+    # next run exact instead of guessing.
+    assert moved["measurements"][shift_registrations.ORIGIN_KEY] == [139, 409]
+    # An authored row stays authored: coercing it to `traced` would hand the
+    # author's own pen work to the next harvest to overwrite.
+    assert moved["provenance"] == "authored"
+
+
+def test_shift_moves_a_left_edge_only_repair():
+    """dx without dy — `das` and `und`. Nothing in the row's numbers changes
+    vertically, so a `baseline_row` comparison sees no drift and would leave
+    `tx` behind, mis-registering the trace horizontally with nothing to catch
+    it (the vertical drift at least shows as „Rahmen veraltet")."""
+    was, now = {"probe": (149, 420)}, {"probe": (139, 420)}
+    todo = shift_registrations.plan([_trace()], was, now)
+    assert [d for _, d in todo] == [(10, 0)]
+    moved = shift_registrations.shifted(*todo[0], now["probe"])
+    assert moved["measurements"]["registration_px"]["tx"] == 14.0
+    assert moved["measurements"]["registration_px"]["baseline_row"] == 60.0
+
+
+def test_shift_is_idempotent_on_both_axes():
+    for origin, was, now in (
+        ((139, 409), WAS, NOW),  # top+left repair, already stamped
+        ((139, 420), {"probe": (149, 420)}, {"probe": (139, 420)}),  # left only
+    ):
+        assert shift_registrations.plan([_trace(origin=origin)], was, now) == []
+
+
+def test_shift_skips_untouched_specimens_and_rows_without_a_registration():
+    rows = [_trace(specimen_id="still"), _trace(registration=False)]
+    assert shift_registrations.plan(rows, WAS, NOW) == []
+
+
+def test_shift_trusts_the_stamp_over_the_baseline():
+    """A row stamped with an intermediate origin is corrected from THERE, so a
+    second repair on top of a first one does not double-shift it."""
+    todo = shift_registrations.plan([_trace(origin=(144, 415))], WAS, NOW)
+    assert [d for _, d in todo] == [(5, 6)]

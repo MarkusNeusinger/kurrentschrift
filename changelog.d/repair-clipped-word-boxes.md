@@ -35,9 +35,14 @@
   at one x-height it refused `regieren`, whose last letter really is cut.
 - **`tools/wordbench/shift_registrations.py` for the other half.** A stored
   trace registers in crop-local pixels, so a moved rect origin leaves it
-  beside its own ink and stamped „Rahmen veraltet". The correction is
-  exactly that origin shift — no re-tracing — and it is idempotent: a row
-  already sitting in the repaired crop is left alone. It writes to the
+  beside its own ink — vertically that shows as „Rahmen veraltet", and
+  horizontally nothing catches it at all. The correction is exactly that
+  origin shift, no re-tracing. Which crop a row currently counts from is
+  recorded rather than guessed: a shifted row carries its origin as
+  `measurements.rect_origin`, and a row without that stamp belongs to the
+  `--baseline` sidecar. That makes the run exact and repeatable on both
+  axes; a `baseline_row` comparison alone cannot see a repair that moved
+  only `x0`, and two of the real ones are exactly that. It writes to the
   shared database, so it is dry-run by default (#471).
 
 ### Changed

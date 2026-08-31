@@ -9730,16 +9730,21 @@ Werkzeug nicht (eine weitere Fassung wollte 12 handgesetzte Boxen
 löschen).
 
 **Was das Re-Baseline auslöst.** Die Rechtecke sind eingefrorene
-Referenzgeometrie: sechs veränderte Crops heißen sechs veränderte
+Referenzgeometrie: sieben veränderte Crops heißen sieben veränderte
 Referenzmasken. Fällig sind darum, in dieser Reihenfolge, und **nicht
 von dieser Session ausgeführt** (die Fixture-Roots sind lokal, die
 Registrierungs-Korrektur schreibt in die geteilte DB):
 
-1. `uv run python -m tools.wordbench.shift_registrations --shift …`
-   — die gespeicherten Bahnen der sechs Proben registrieren CROP-lokal
-   und stehen sonst um den Ursprungs-Versatz daneben (Frame-Gate
-   `frame_stale`, „Rahmen veraltet" in der Werkbank). Kein Nachfahren
-   nötig: die Korrektur IST der Versatz. Idempotent.
+1. `git show <merge-base>:…/words.json > temp/old.json`, dann
+   `uv run python -m tools.wordbench.shift_registrations --baseline
+   temp/old.json` — die gespeicherten Bahnen der fünf Proben mit bewegtem
+   Ursprung (`das` dx 10 · `und` dx 5 · `einer` dy 11 · `zum` dy 19 ·
+   `Wer` dy 4) registrieren CROP-lokal und stehen sonst daneben
+   (Frame-Gate `frame_stale`, „Rahmen veraltet" in der Werkbank; die
+   waagerechte Drift fängt gar nichts ab). Kein Nachfahren nötig: die
+   Korrektur IST der Versatz, und die verschobene Zeile bekommt den
+   Ursprung als `rect_origin` mitgestempelt, was den Lauf auf beiden
+   Achsen wiederholbar macht.
 2. Fixture-Re-Export (`export_fixtures.py`), dann ein Wortbench-Lauf.
 3. Die neuen Headlines hier eintragen. **Zahlen über diese Grenze sind
    nicht vergleichbar** (§2 „Re-Baseline ist eine bewusste menschliche
