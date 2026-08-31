@@ -16,4 +16,4 @@
   part is still measurable. The flag is data rather than a click because
   the rect corners are frozen bench fixtures — re-cutting a clipped
   specimen larger would re-baseline the word bench. `/word-samples` now
-  carries `incomplete` and `note` (#NNN).
+  carries `incomplete` and `note` (#470).
