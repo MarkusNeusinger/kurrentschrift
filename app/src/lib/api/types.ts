@@ -114,6 +114,13 @@ export interface WordSampleOut {
   // because the endpoint is cached long (stale-while-revalidate spans days):
   // a browser/CDN may still serve the pre-`rect` schema after a deploy.
   rect?: number[];
+  // Sidecar flag: this specimen's own ink is clipped (cut-off i-dot, last
+  // letter running off the plate), so it can never be traced by hand. Optional
+  // for the same cache reason as `rect` — absent reads as "not flagged".
+  incomplete?: boolean;
+  // The sidecar's per-entry prose — the reason behind `incomplete`, or a
+  // reading caveat. Optional for the same cache reason.
+  note?: string | null;
 }
 
 // Fit context of one stored word trace (see tools/laufform/harvest.py). Every

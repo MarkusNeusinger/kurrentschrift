@@ -21,7 +21,14 @@ import { polylineToPathD, ringsToPathD } from '@/lib/svg';
 import { de, fmt } from '@/locales/admin';
 import { PairEditorDialog } from '@/sections/admin/pairs/PairEditorDialog';
 import { pairKeysOf } from '@/sections/admin/pairs/pairKeys';
-import { traceFrameOf, traceMatrix } from '@/sections/admin/shell/model';
+import {
+  matchesTraceFilter,
+  traceFrameOf,
+  traceMatrix,
+  traceStatusOf,
+  type TraceFilter,
+  type TraceStatus,
+} from '@/sections/admin/shell/model';
 import { useWorkbench } from '@/sections/admin/shell/WorkbenchData';
 import { garamond } from '@/styles/paper';
 
@@ -137,6 +144,7 @@ function WordCard({
   sourceId,
   overlay,
   traced,
+  status,
   bust,
   score,
   measured,
@@ -149,6 +157,9 @@ function WordCard({
   // This specimen's stored trace, when one exists — used ONLY for the overlay's
   // registration (see SpecimenOverlay); the card never draws the trace itself.
   traced: WordInstanceOut | null;
+  // Where the specimen stands in the manual tracing pass — computed once by the
+  // list (it filters and tallies on the same value).
+  status: TraceStatus;
   // The admin-wide reload stamp — see `reload` below.
   bust: number;
   score?: WordSampleScoreOut;
@@ -192,12 +203,18 @@ function WordCard({
           {sample.id}
         </Typography>
         {sample.sample_set && <Chip size="small" label={sample.sample_set} />}
-        {/* The manual-reference progress marker: only an `authored` trace gets
-            a chip — absence IS the "still to do" state, so the list stays
-            scannable while working through the hand-traced reference set. */}
-        {traced?.provenance === 'authored' && (
+        {/* The manual-reference progress marker: a done card gets the green
+            chip, a clipped specimen the warning one — plain absence still IS
+            the "still to do" state, so the list stays scannable while working
+            through the hand-traced reference set. */}
+        {status === 'authored' && (
           <Tooltip title={de.admin.belege.provenanceAuthored}>
             <Chip size="small" color="success" label={de.admin.compare.authoredChip} />
+          </Tooltip>
+        )}
+        {status === 'incomplete' && (
+          <Tooltip title={sample.note || de.admin.compare.incompleteChipHint}>
+            <Chip size="small" color="warning" variant="outlined" label={de.admin.compare.incompleteChip} />
           </Tooltip>
         )}
         {score && <ScoreChip score={score} />}
@@ -287,6 +304,7 @@ export function WordComparison({
   mode,
   overlay,
   filterText = '',
+  traceFilter = 'all',
   onPick,
 }: {
   mode: WordCompareMode;
@@ -294,6 +312,9 @@ export function WordComparison({
   // Free-text filter over the specimen words, owned by the surrounding view
   // (the list is long enough that scrolling for one word is not a plan).
   filterText?: string;
+  // Filter over the manual-tracing status, owned by the surrounding view too:
+  // „Offen" turns the list into the to-do list of the tracing pass.
+  traceFilter?: TraceFilter;
   onPick?: (sample: WordSampleOut) => void;
 }) {
   const { source, sourceId, cropCacheBust, refreshCrop } = useAdmin();
@@ -353,19 +374,30 @@ export function WordComparison({
     // rects/heights can have changed, and stale dims squash the fresh crops.
   }, [sourceId, cropCacheBust]);
 
+  const statusOf = useCallback(
+    (s: WordSampleOut) => traceStatusOf(s, tracedById.get(s.id) ?? null),
+    [tracedById],
+  );
+
   // Progress of the manual reference set for this tab — counted over the
-  // mode's whole specimen list (not the text-filtered slice), so the tally
-  // stays the tab's truth while searching.
+  // mode's whole specimen list (not the filtered slice), so the tally stays
+  // the tab's truth while searching. The clipped specimens leave the
+  // DENOMINATOR: they are not work anyone can do, and counting them would keep
+  // the tally short of its total for good. They get their own number instead.
   const authoredTally = useMemo(() => {
-    const rows = (samples ?? []).filter((s) => matchesMode(s, mode));
-    const done = rows.filter((s) => tracedById.get(s.id)?.provenance === 'authored').length;
-    return { done, total: rows.length };
-  }, [samples, mode, tracedById]);
+    const rows = (samples ?? []).filter((s) => matchesMode(s, mode)).map(statusOf);
+    return {
+      done: rows.filter((st) => st === 'authored').length,
+      total: rows.filter((st) => st !== 'incomplete').length,
+      incomplete: rows.filter((st) => st === 'incomplete').length,
+    };
+  }, [samples, mode, statusOf]);
 
   const visible = useMemo(() => {
     const needle = filterText.trim().toLowerCase();
     const rows = (samples ?? [])
       .filter((s) => matchesMode(s, mode))
+      .filter((s) => matchesTraceFilter(traceFilter, statusOf(s)))
       .filter((s) => !needle || s.word.toLowerCase().includes(needle));
     // Once scored, worst first — that IS the work list. Unscored rows keep
     // their sidecar order at the end. Deliberately NOT while the sweep runs:
@@ -374,7 +406,7 @@ export function WordComparison({
     return rows.length && !scoring && Object.keys(scores).length
       ? [...rows].sort((a, b) => (scores[b.id]?.loss ?? -1) - (scores[a.id]?.loss ?? -1))
       : rows;
-  }, [samples, mode, scores, scoring, filterText]);
+  }, [samples, mode, scores, scoring, filterText, traceFilter, statusOf]);
 
   // Sequentially score every specimen of the tab: the endpoint is CPU-bound
   // server-side (compose + chamfer grid search), a parallel fan-out would
@@ -407,7 +439,13 @@ export function WordComparison({
       </Box>
     );
   }
-  if (visible.length === 0) return <Alert severity="info">{de.admin.compare.wordsEmpty}</Alert>;
+  if (visible.length === 0) {
+    // An empty list means two different things — the source has no specimens
+    // at all, or this status has none left (which, for „Offen", is the good
+    // news that the pass is through).
+    const empty = samples.length === 0 ? de.admin.compare.wordsEmpty : de.admin.compare.statusEmpty;
+    return <Alert severity="info">{empty}</Alert>;
+  }
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 1100 }}>
@@ -436,6 +474,8 @@ export function WordComparison({
           )}
           <Typography variant="caption" color="text.secondary">
             {fmt(de.admin.compare.authoredCount, { done: authoredTally.done, total: authoredTally.total })}
+            {authoredTally.incomplete > 0 &&
+              ` · ${fmt(de.admin.compare.incompleteCount, { count: authoredTally.incomplete })}`}
           </Typography>
           {/* Same affordance as the letters grid: re-compose the written faces
               after a template, Laufform or override change, instead of
@@ -466,6 +506,7 @@ export function WordComparison({
             sourceId={sourceId}
             overlay={overlay}
             traced={tracedById.get(s.id) ?? null}
+            status={statusOf(s)}
             bust={cropCacheBust}
             score={scores[s.id]}
             // Matched by the SAME base-key pair the editor deep link uses, so

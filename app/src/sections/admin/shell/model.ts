@@ -7,7 +7,7 @@
 // when the three views (Buchstaben · Übergänge · Wörter) all became places
 // where an element is inspected and complained about.
 
-import type { InstanceOut, WordInstanceOut, WorkItemIn } from '@/lib/api';
+import type { InstanceOut, WordInstanceOut, WordSampleOut, WorkItemIn } from '@/lib/api';
 import { de } from '@/locales/admin';
 import { paper, pigment } from '@/styles/paper';
 
@@ -73,6 +73,28 @@ export function rmseMean(row: WordInstanceOut): number | null {
 export function badness(row: WordInstanceOut): number {
   return (row.measurements.unfitted_slots?.length ?? 0) * 10 + (rmseMean(row) ?? 0);
 }
+
+// Where a specimen stands in the manual tracing pass — the one question the
+// word overview's status filter answers. Three states, and only three:
+//   `authored`   — a hand-drawn trace is stored for it, the work is done;
+//   `incomplete` — the sidecar flags the specimen's own ink as clipped, so the
+//                  work can never be done (a cut-off i-dot, a last letter
+//                  running off the plate). Not a to-do, and not a failure;
+//   `open`       — everything else: still to trace.
+// `authored` wins over `incomplete` deliberately: where a flagged specimen was
+// traced anyway, the stored line is the truth about it, not the flag.
+export type TraceStatus = 'authored' | 'open' | 'incomplete';
+
+export function traceStatusOf(sample: WordSampleOut, traced: WordInstanceOut | null | undefined): TraceStatus {
+  if (traced?.provenance === 'authored') return 'authored';
+  return sample.incomplete ? 'incomplete' : 'open';
+}
+
+// The overview's filter over that status — `all` plus the three states.
+export type TraceFilter = 'all' | TraceStatus;
+
+export const matchesTraceFilter = (filter: TraceFilter, status: TraceStatus): boolean =>
+  filter === 'all' || filter === status;
 
 export interface CropBox {
   x: number;

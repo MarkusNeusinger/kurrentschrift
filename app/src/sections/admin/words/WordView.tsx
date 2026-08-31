@@ -17,6 +17,7 @@ import {
   Chip,
   CircularProgress,
   FormControlLabel,
+  MenuItem,
   Switch,
   TextField,
   ToggleButton,
@@ -40,7 +41,7 @@ import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { useWorkbench } from '@/sections/admin/shell/WorkbenchData';
 import { joinsOfText, joinsUrl, keysOfText, lettersUrl, readWordFocus, wordsUrl } from '@/sections/admin/shell/focus';
-import { badness } from '@/sections/admin/shell/model';
+import { badness, type TraceFilter } from '@/sections/admin/shell/model';
 import { garamond } from '@/styles/paper';
 
 import { AuthoredTraceReview } from './AuthoredTraceReview';
@@ -64,6 +65,13 @@ export function WordView() {
   // traces alone, as a quality pass over one's own pen work.
   const [mode, setMode] = useState<WordCompareMode | 'authored'>('words');
   const [filter, setFilter] = useState('');
+  // Which specimens of the tab to list, by their standing in the manual
+  // tracing pass. „Offen" is the whole point: without it the still-to-trace
+  // rows are only findable by scrolling the full list looking for a missing
+  // chip — and the ones that can NEVER be traced (clipped ink) sit in there
+  // indistinguishably. Default stays „Alle": the overview is first of all an
+  // overview.
+  const [traceFilter, setTraceFilter] = useState<TraceFilter>('all');
   // What is drawn OVER the specimen crop. The overview defaults to the plain
   // side-by-side (crop | wie geschrieben) — the same first look the letters
   // grid gives — and the overlay is one switch away for when the exact
@@ -166,6 +174,23 @@ export function WordView() {
             onChange={(e) => setFilter(e.target.value)}
             sx={{ width: 200 }}
           />
+          {/* The Nachfahr-Übersicht is the authored rows BY DEFINITION — a
+              status filter over it would only ever have one non-empty entry. */}
+          {mode !== 'authored' && (
+            <TextField
+              select
+              size="small"
+              label={de.admin.compare.statusLabel}
+              value={traceFilter}
+              onChange={(e) => setTraceFilter(e.target.value as TraceFilter)}
+              sx={{ width: 190 }}
+            >
+              <MenuItem value="all">{de.admin.compare.statusAll}</MenuItem>
+              <MenuItem value="open">{de.admin.compare.statusOpen}</MenuItem>
+              <MenuItem value="authored">{de.admin.compare.statusAuthored}</MenuItem>
+              <MenuItem value="incomplete">{de.admin.compare.statusIncomplete}</MenuItem>
+            </TextField>
+          )}
           <ToggleButtonGroup
             size="small"
             exclusive
@@ -196,6 +221,7 @@ export function WordView() {
             mode={mode}
             overlay={overlay}
             filterText={filter}
+            traceFilter={traceFilter}
             onPick={(sample) => focus(sample.word, sample.id)}
           />
         )}

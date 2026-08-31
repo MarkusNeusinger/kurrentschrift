@@ -49,13 +49,14 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **K** — k0-Protokoll §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Lesart §1 · Lesefalle §1 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Mindestbelegung (Eigenhand) §5
-- **N** — Nachbarbindung §4 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
+- **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schreib-Karte §2 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
+- **U** — Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschrift §1
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wort-Trace §2 · Wortvorrat §5
@@ -2063,7 +2064,31 @@ der Wort-Editor lässt ein misslungenes automatisches Nachfahren von Hand
 überschrieben); der Paar-Editor zeichnet einen Verbinder für genau ein Paar
 und gibt ihn frei (→ `glyph_pairs`, die sparsame Ausnahme).
 
-**H0–H5 · R1–R5 · W1–W5 · M0–M7** — die vier Nummerierungen der
+**Nachfahr-Stand** *(`traceStatusOf`, `shell/model.ts`)* — der dreiwertige
+Stand einer Wortprobe im manuellen Nachfahr-Durchgang, hinter dem
+Status-Filter der Wörter-Übersicht (Alle · Offen · Nachgefahren ·
+Unvollständig): **nachgefahren** = eine gespeicherte `authored`-Bahn
+liegt vor (ein automatischer Fit zählt **nicht** — er ist genau das, was
+der Durchgang ersetzt) · **unvollständig** = die Probe ist als
+angeschnitten markiert, das Nachfahren geht also nie · **offen** = alles
+übrige, und damit die Arbeitsliste. „Offen" ist der Filter, den es
+gibt, damit „was fehlt noch?" eine Auswahl ist und keine Scrollarbeit.
+
+**Unvollständige Wortprobe** *(`incomplete`, words.json)* — eine
+Wortprobe, deren EIGENE Tinte angeschnitten ist: der i-Punkt fehlt, der
+letzte Buchstabe läuft aus dem Rechteck. Sie lässt sich nicht von Hand
+nachfahren und ist darum weder Arbeit noch Versäumnis — markiert mit
+`"incomplete": true` (Grund im `note` daneben) an ihrer Zeile im
+committeten Sidecar `data/sources/<id>/words.json`, fällt sie aus der
+Arbeitsliste **und** aus dem Nenner des Nachfahr-Zählers heraus und wird
+als eigene Zahl ausgewiesen. **Beleg bleibt sie**: der heile Teil ist
+weiter messbar. Nicht zu verwechseln mit **Fremdtinte** (§3) — die
+stammt aus einer Nachbarzeile und wird per `exclude` weiß gemalt; hier
+fehlt Tinte des Wortes selbst. Das Rechteck einfach größer zu schneiden
+ist keine Alternative: die Ecken sind eingefrorene Bench-Fixtures
+(`qualitaetsmetrik.md` §14).
+
+**H0–H5 · R1–R5 · W1–W6 · M0–M7** — die vier Nummerierungen der
 Arbeitspläne, bewusst getrennt gehalten:
 **H** = Handmodell-Stufenplan (H0 Bench-Anschluss der Laufformen · H1
 Vorkommen + Aggregate · H2 Paar-Statistik · H3 Konstanten → Hand-Parameter
@@ -2072,7 +2097,7 @@ Vorkommen + Aggregate · H2 Paar-Statistik · H3 Konstanten → Hand-Parameter
 R3 geerntete Paar-Overrides · R4 Platzierungsrest · R5 Schräglage; alle
 umgesetzt).
 **W** = Werkbank (W1 Backend · W2 Seite · W3 Wort-Editor · W4 Protokoll ·
-W5 Stufen-Einsicht; alle umgesetzt).
+W5 Stufen-Einsicht · W6 Nachfahr-Stand; alle umgesetzt).
 **M** = MVP-Roadmap (M0 Toolchain … **M4 Fit-Routine** … M7 abgespeckte
 Animation) — daher „M4-Fit“. Nicht zu verwechseln mit den vier
 Kettenfit-Kennzahlen M1–M4 (§3).

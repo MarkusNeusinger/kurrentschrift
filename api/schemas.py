@@ -209,6 +209,15 @@ class WordSampleOut(BaseModel):
     # (crop-local = page − rect[:2]). Public like the rest: this is PD-plate
     # measurement metadata from the committed sidecar, not learned data.
     rect: list[int] = Field(min_length=4, max_length=4)
+    # The specimen's own ink is clipped — a cut-off i-dot, a last letter running
+    # off the plate — so it can never be traced by hand. It stays a specimen
+    # (the intact part is still measurable); the flag only takes it out of the
+    # manual tracing to-do list, where it would otherwise sit forever as an
+    # unreachable "still open".
+    incomplete: bool = False
+    # The sidecar's per-entry prose: why the row is flagged, or a reading
+    # caveat ("reads on, not vn"). Shown as the flag's tooltip in the admin.
+    note: str | None = None
 
 
 # ------------------------------------------------------------------ Glyph pair
