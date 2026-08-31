@@ -9673,15 +9673,16 @@ geschriebenes Wort).
 
 ---
 
-## 15. Sechs angeschnittene Wortproben repariert — angekündigtes Re-Baseline des Wort-Benchs (`aug31`)
+## 15. Sieben angeschnittene Wortproben repariert — angekündigtes Re-Baseline des Wort-Benchs (`aug31`)
 
 **Befund (Autor, aus der Werkbank).** Wortproben, die sich nicht
 nachfahren lassen, weil der i-Punkt fehlt oder der letzte Buchstabe
 halb ist. Nachgemessen auf der ROHEN binarisierten Platte (ohne
 Despeckle — genau dort verschwindet ein dünner Sütterlin-i-Strich):
 von den 202 committeten Proben liegen **169 auf exakt 3 px Luft**, dem
-Standardrand von `propose_boxes` (`BOX_PAD_PX`), und **sechs unter
-diesem Standard**, vier davon mit tatsächlich angeschnittener Tinte:
+Standardrand von `propose_boxes` (`BOX_PAD_PX`), und **sieben unter
+diesem Standard**, vier davon mit tatsächlich angeschnittener Tinte
+(negative Luft — die übrigen drei liegen knapp darunter):
 
 | Probe | Fehler | Reparatur |
 |---|---|---|
@@ -9690,7 +9691,8 @@ diesem Standard**, vier davon mit tatsächlich angeschnittener Tinte:
 | `einer` | −5 px oben (i-Strich durchgeschnitten) | oben +11 |
 | `das` | −4 px links (Anstrich) | links +10 |
 | `und` | 1 px links | links +5 |
-| `Wer` · `zwei` | 2 px | oben +4 · unten +3 |
+| `Wer` | 2 px oben | oben +4 |
+| `zwei` | 2 px unten | unten +3 |
 
 Die Ursache ist der Standard selbst, nicht die einzelne Zeile: 3 px auf
 der **despeckelten** Maske gemessen sind zu wenig für eine Marke, die
@@ -9752,7 +9754,7 @@ Registrierungs-Korrektur schreibt in die geteilte DB):
    Tinte als vorher, und mehr Tinte im Soll heißt ohne jede
    Code-Änderung eine andere Zahl.
 
-Erwartete Richtung: der Loss der sechs steigt eher, denn der i-Strich
+Erwartete Richtung: der Loss der sieben steigt eher, denn der i-Strich
 und der u-Bogen, die vorher fehlten, will die Komposition jetzt auch
 treffen. Das ist die richtige Richtung — vorher wurde gegen einen
 Buchstaben gemessen, der auf der Referenz gar nicht ganz da war.
