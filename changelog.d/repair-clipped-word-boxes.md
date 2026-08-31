@@ -1,9 +1,18 @@
 ### Fixed
 
-- **Six word specimens whose rect cut off their own ink.** The i-Strich of
+- **Seven word specimens whose rect cut off their own ink.** The i-Strich of
   `einer` and the u-Bogen of `zum` were sliced by the top edge of their
-  crop, `das` and `und` lost the d's entry stroke, `Wer` and `zwei` sat
-  below the plate's own clearance. The rects now enclose that ink with air.
+  crop, the last `n` of `regieren` was cut by 37 px on the right, `das` and
+  `und` lost the d's entry stroke, `Wer` and `zwei` sat below the plate's
+  own clearance. The rects now enclose that ink with air, and the comma
+  that came in beside `regieren`'s exit stroke is covered by an `exclude` —
+  the sidecar's own answer to punctuation at a box edge.
+- **`zum`'s crop showed a white block.** Its `exclude` was anchored to the
+  old top edge, where it hid the stub of the u-Bogen the rect cut through.
+  Over the repaired crop it painted clean paper white and clipped the mark
+  the repair had just rescued. An exclude that hides only the word's own
+  ink is now dropped with the repair; one that still covers foreign ink
+  always stays, even where it grazes the word.
   The cause was the standard itself: `propose_boxes` cuts with a 3 px pad
   measured on the DESPECKLED mask, and a thin Sütterlin diacritic falls
   under the despeckle floor or lands on the border.
@@ -21,9 +30,9 @@
   punctuation hangs entirely below the Mittellinie and is never pulled in
   (every right-edge candidate of the first pass was a comma), pale
   bleed-through fails a darkness comparison against the word's own stroke.
-  An edge that would grow by more than one x-height is reported instead of
-  applied — then something foreign hangs on the ink, as with the comma
-  fused to the last letter's exit stroke in `regieren`.
+  An edge that would grow by more than two x-heights is reported instead of
+  applied, as a backstop behind those rules rather than a rule of its own:
+  at one x-height it refused `regieren`, whose last letter really is cut.
 - **`tools/wordbench/shift_registrations.py` for the other half.** A stored
   trace registers in crop-local pixels, so a moved rect origin leaves it
   beside its own ink and stamped „Rahmen veraltet". The correction is

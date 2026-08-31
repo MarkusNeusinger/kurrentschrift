@@ -9685,8 +9685,8 @@ diesem Standard**, vier davon mit tatsächlich angeschnittener Tinte:
 
 | Probe | Fehler | Reparatur |
 |---|---|---|
-| `regieren` | −37 px rechts | **nicht angewandt** (s. u.) |
-| `zum` | −13 px oben (u-Bogen durchgeschnitten) | oben +19 |
+| `regieren` | −37 px rechts (letztes `n` durchgeschnitten) | rechts +43, Komma per `exclude` |
+| `zum` | −13 px oben (u-Bogen durchgeschnitten) | oben +19, obsolete `exclude` entfernt |
 | `einer` | −5 px oben (i-Strich durchgeschnitten) | oben +11 |
 | `das` | −4 px links (Anstrich) | links +10 |
 | `und` | 1 px links | links +5 |
@@ -9700,14 +9700,34 @@ die 169 Standard-Rechtecke bleiben Byte für Byte stehen — jedes
 angefasste Rechteck ist ein Fixture und eine Bahn-Registrierung, die
 mitwandern muss.
 
-**`regieren` bleibt ungeschnitten und ist trotzdem kein Mangel.** Die
-37 px jenseits der Kante sind das Komma, das am Auslauf des letzten
-`n` **hängt** — eine Komponente, also trennt sie keine Lageregel. Der
-Deckel (eine x-Höhe Wachstum) meldet den Fall, statt ihn anzuwenden:
-eine Box, die das Komma schluckt, wäre schlechter als eine, die es
-abschneidet (`words.json`: „the stored `word` carries letters only").
-Die Buchstaben selbst sind vollständig; die Probe braucht weder
-Reparatur noch `incomplete`-Marke.
+**Zwei Befunde kamen aus der Sichtprüfung des Autors, nicht aus dem
+Code** — beide waren Fehler der ersten Fassung dieses Werkzeugs:
+
+**`regieren` war rechts wirklich abgeschnitten.** Die erste Fassung
+verweigerte die Reparatur mit einem Deckel von einer x-Höhe und der
+Begründung, jenseits der Kante liege das Komma. Nachgemessen: die 37 px
+sind der **Auslauf des letzten `n` selbst**; das Komma ist eine eigene
+Komponente (Schwärze 0,454 gegen 0,392 des Wortes) und beginnt erst
+dahinter. Ein Deckel von einer x-Höhe verweigert damit eine echte
+Reparatur — die schlimmere der beiden Fehlerarten, denn die Regeln, die
+tatsächlich über Zugehörigkeit entscheiden (Lineatur-Zone, Schwärze,
+Interpunktion), stehen davor. Der Deckel sitzt jetzt bei 2 xh und ist
+nur noch Rückfallebene. Das mitgewachsene Komma bekommt eine
+`exclude`-Box — genau der im Sidecar dokumentierte Fall („punctuation
+overlapping a box edge"): sie deckt 198 von 198 Komma-Pixeln und **0**
+Pixel des Wortes.
+
+**`zum` zeigte einen weißen Block im Ausschnitt.** Seine `exclude`-Box
+war am ALTEN Oberrand verankert und verdeckte dort den Stummel des
+u-Bogens, durch den das alte Rechteck schnitt. Über dem reparierten
+Ausschnitt malt sie einen weißen Kasten auf sauberes Papier und
+beschneidet genau die Marke, die die Reparatur gerettet hat. Regel
+daraus: eine `exclude`-Box, die nur noch EIGENE Tinte verdeckt und keine
+fremde mehr, wird entfernt. Bewusst eng — deckt sie weiter Fremdtinte,
+bleibt sie stehen, auch wenn sie das Wort streift: das ist ein
+handgesetztes Urteil über eine Nachbarzeile, und das überstimmt dieses
+Werkzeug nicht (eine weitere Fassung wollte 12 handgesetzte Boxen
+löschen).
 
 **Was das Re-Baseline auslöst.** Die Rechtecke sind eingefrorene
 Referenzgeometrie: sechs veränderte Crops heißen sechs veränderte

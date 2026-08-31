@@ -131,12 +131,13 @@ def test_ignores_pale_bleed_through(tmp_path, monkeypatch):
     assert (repairs, refused) == ([], [])
 
 
-def test_refuses_a_growth_beyond_one_x_height(tmp_path, monkeypatch):
+def test_refuses_a_runaway_growth(tmp_path, monkeypatch):
     src = _dirs(tmp_path)
-    # Punctuation FUSED to the last letter's exit stroke (the committed
-    # „regieren" case): one component, so no positional rule separates it —
-    # the cap is what stops the box from swallowing it. Reported, never applied.
-    fused = (150, BASELINE - 6, 360, BASELINE, 30)
+    # Punctuation FUSED to a letter: one component, so no positional rule
+    # separates it, and only the cap stops the box from swallowing it.
+    # Reported, never applied. The cap is loose on purpose — at one x-height it
+    # refused the real „regieren", whose last letter is genuinely cut by 37 px.
+    fused = (150, BASELINE - 6, 420, BASELINE, 30)
     repairs, refused = _plan(src, monkeypatch, [BODY, fused], [_entry((147, MIDBAND - 3, 303, BASELINE + 3))])
     assert repairs == []
     assert [r.sample_id for r in refused] == ["probe"]
@@ -195,3 +196,85 @@ def test_shift_is_idempotent():
 def test_shift_skips_rows_of_untouched_specimens_and_rows_without_registration():
     rows = [_trace(specimen_id="other", baseline_row=60.0), {**_trace(), "measurements": {}}]
     assert shift_registrations.plan(rows, SHIFT, ROWS) == []
+
+
+# ------------------------------------ the excludes a moved edge invalidates
+
+
+def test_adds_an_exclude_for_foreign_ink_the_growth_takes_in(tmp_path, monkeypatch):
+    src = _dirs(tmp_path)
+    # The „regieren" shape: the last letter's exit stroke is cut by the right
+    # edge, and a comma sits in the strip the repair has to gain. Enclosing the
+    # letter takes the comma in, and the stored `word` carries letters only —
+    # so the repair hands back an exclude over it.
+    exit_stroke = (296, MIDBAND + 6, 340, MIDBAND + 18, 30)
+    # Beside the exit stroke and below the Mittellinie, not touching it — as on
+    # the plate, where the comma overlaps the last letter's x-range but is its
+    # own component.
+    comma = (330, MIDBAND + 22, 344, BASELINE + 2, 30)
+    repairs, _ = _plan(src, monkeypatch, [BODY, exit_stroke, comma], [_entry((147, MIDBAND - 3, 303, BASELINE + 3))])
+    assert len(repairs) == 1
+    r = repairs[0]
+    assert r.new[2] >= 340, "the cut exit stroke is still outside"
+    assert len(r.added_excludes) == 1
+    ex = r.added_excludes[0]
+    assert ex[0] <= comma[0] and ex[2] >= comma[2] and ex[1] <= comma[1]
+    # Clipped to the crop: what lies outside it needs no painting over.
+    assert ex[3] >= min(comma[3], r.new[3])
+
+
+def test_does_not_cover_a_speck_that_was_inside_all_along(tmp_path, monkeypatch):
+    src = _dirs(tmp_path)
+    # A speck well inside the committed rect, nowhere near the edge that moves.
+    # Not this repair's business: covering it would change a crop where nothing
+    # was wrong.
+    speck = (200, MIDBAND - 2, 208, MIDBAND + 4, 30)
+    dot = (250, MIDBAND - 25, 264, MIDBAND - 13, 30)
+    repairs, _ = _plan(src, monkeypatch, [BODY, speck, dot], [_entry((147, MIDBAND - 20, 303, BASELINE + 3))])
+    assert [r.added_excludes for r in repairs] == [[]]
+
+
+def test_drops_an_exclude_that_now_hides_only_the_word_s_own_ink(tmp_path, monkeypatch):
+    src = _dirs(tmp_path)
+    # `zum`'s case: the exclude was hiding the stub of a diacritic the old rect
+    # cut through. Once the rect encloses the whole mark, the exclude paints a
+    # white block into clean paper and clips what the repair just rescued.
+    # As on the plate, the exclude CLIPS the mark rather than covering it: an
+    # exclude that swallows a component whole is the sidecar saying "this is
+    # foreign", and that judgement is not this tool's to overrule.
+    dot = (200, MIDBAND - 25, 214, MIDBAND - 13, 30)
+    stale = [190, MIDBAND - 16, 230, MIDBAND - 8]
+    entry = _entry((147, MIDBAND - 30, 303, BASELINE + 3), id="probe", exclude=[stale])
+    repairs, _ = _plan(src, monkeypatch, [BODY, dot], [entry])
+    assert len(repairs) == 1
+    assert repairs[0].dropped_excludes == [stale]
+    assert repairs[0].excludes == []
+    assert repairs[0].new == repairs[0].old, "the rect was fine — only the exclude was not"
+
+
+def test_keeps_an_exclude_that_still_covers_foreign_ink(tmp_path, monkeypatch):
+    src = _dirs(tmp_path)
+    # A neighbouring line's descender, already excluded by hand. It grazes the
+    # word, but it is still doing its job — this tool does not overrule a
+    # hand-placed judgement about a neighbour.
+    descender = (200, MIDBAND - 90, 210, MIDBAND + 20, 30)
+    dot = (250, MIDBAND - 25, 264, MIDBAND - 13, 30)
+    entry = _entry((147, MIDBAND - 20, 303, BASELINE + 3), id="probe", exclude=[[196, MIDBAND - 20, 216, MIDBAND + 24]])
+    repairs, _ = _plan(src, monkeypatch, [BODY, descender, dot], [entry])
+    assert len(repairs) == 1
+    assert repairs[0].dropped_excludes == []
+
+
+def test_registration_shift_reads_two_sidecar_versions(tmp_path, monkeypatch):
+    """The correction a stored trace follows is measured between sidecar
+    VERSIONS, not off a repair plan — so it stays right across two runs of the
+    tool, a hand edit, or both."""
+    src = _dirs(tmp_path)
+    monkeypatch.setattr(repair_boxes, "REPO_ROOT", src.parent.parent.parent)
+    _sidecar(src, [_entry((139, 409, 313, 484), id="einer"), _entry((10, 20, 90, 80), id="still")])
+    old = src / "old.json"
+    old.write_text(
+        json.dumps({"words": [_entry((149, 420, 313, 484), id="einer"), _entry((10, 20, 90, 80), id="still")]}),
+        encoding="utf-8",
+    )
+    assert repair_boxes.registration_shifts(src.name, old) == {"einer": {"dx": 10, "dy": 11}}

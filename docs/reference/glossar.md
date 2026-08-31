@@ -2099,9 +2099,12 @@ Standardschnitt auf der despeckelten misst und ein dünner i-Strich
 unter dieser Schwelle liegt. Was eigene Tinte ist, entscheidet die
 **Lineatur der Zeile**: außerhalb ±1,35 xh liegt die Nachbarzeile,
 Interpunktion hängt ganz unter der Mittellinie und kommt nie herein,
-blasser Durchschlag fällt am Schwärze-Vergleich aus. Wächst eine Kante
-um mehr als eine x-Höhe, wird gemeldet statt angewandt — dann hängt
-Fremdes an der Tinte. Zwei Dinge wandern mit: die CROP-lokalen
+blasser Durchschlag fällt am Schwärze-Vergleich aus. Über 2 x-Höhen
+Wachstum wird gemeldet statt angewandt (Rückfallebene, bewusst locker:
+bei einer x-Höhe verweigerte sie `regieren`, dessen letztes `n` wirklich
+angeschnitten war). Die `exclude`-Boxen wandern mit — neu eingeschlossene
+Fremdtinte bekommt eine, eine die nur noch eigene Tinte verdeckt fällt
+weg. Zwei weitere Dinge wandern mit: die CROP-lokalen
 Registrierungen gespeicherter Bahnen (`shift_registrations.py`, reiner
 Ursprungs-Versatz, kein Nachfahren) und die Fixture-Roots (Re-Export +
 datierter §14-Eintrag).

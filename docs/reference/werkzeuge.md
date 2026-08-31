@@ -505,12 +505,19 @@ denen es stammt.
   eine Pixelzahl: Komponenten außerhalb ±1,35 xh gehören der Nachbarzeile;
   Interpunktion hängt ganz unter der Mittellinie und kommt nie herein (jeder
   Rechts-Kandidat des ersten Laufs war ein Komma); blasser Durchschlag fällt
-  am Schwärze-Vergleich mit dem eigenen Strich aus. Wächst eine Kante um
-  mehr als eine x-Höhe, wird der Fall **gemeldet statt angewandt** — dann
-  hängt Fremdes an der Tinte (bei `regieren` das Komma am Auslauf des
-  letzten Buchstabens).
+  am Schwärze-Vergleich mit dem eigenen Strich aus. Über 2 x-Höhen
+  Wachstum wird **gemeldet statt angewandt** — nur Rückfallebene hinter
+  den Regeln davor, und bewusst locker: bei einer x-Höhe verweigerte der
+  Deckel `regieren`, dessen letztes `n` wirklich um 37 px angeschnitten
+  ist. Die `exclude`-Boxen wandern mit: was das gewachsene Stück NEU
+  einschließt und dem Wort nicht gehört, bekommt eine (das Komma neben
+  `regieren`s Auslauf), und eine Box, die nur noch eigene Tinte verdeckt,
+  fällt weg (`zum`s Box hing am alten Oberrand und malte einen weißen
+  Kasten auf sauberes Papier). Eine Box, die weiter Fremdtinte deckt,
+  bleibt in jedem Fall stehen — handgesetztes Urteil.
   `--report` · `--sheets <dir>` (Vorher/Nachher-Kacheln, rot/grün) ·
-  `--apply` · `--registration-shift <json>`.
+  `--apply` · `--registration-shift <json>` (mit `--since <alte
+  words.json>` über mehrere Läufe hinweg korrekt).
   **Zwei Dinge wandern mit** und dürfen nicht vergessen werden:
   gespeicherte Wortbahnen registrieren CROP-lokal, also verschiebt ein
   bewegtes `x0`/`y0` sie — `shift_registrations.py` rechnet genau den

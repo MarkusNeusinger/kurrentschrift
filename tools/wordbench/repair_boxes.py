@@ -10,21 +10,38 @@ letter that is not fully there.
 
 This tool re-derives the rect of exactly those specimens from the RAW binarised
 page (no despeckle, so the faint marks count), and leaves every other rect byte
-for byte as committed. Which ink is the word's OWN is the whole question:
+for byte as committed. Which ink is the word's OWN is the whole question, and
+this line's own lineature answers most of it:
 
-  * a component with the majority of its pixels inside the rect is the word's,
-    UNLESS its bbox reaches more than `--band` px beyond an edge — a descender
-    from the line above dips deep into a rect but starts far above it, and
-    swallowing it would drag the box into the neighbouring line;
-  * a SMALL component (a diacritic) near the rect's top, inside its x-range,
-    is the word's even when it lies entirely outside — that is precisely the
-    cut-off i-dot this tool exists for;
+  * ink outside the writing zone (±1.35 xh around Mittellinie/Grundlinie)
+    belongs to a neighbouring line, however deep it dips into the rect — a
+    descender from above is mostly INSIDE and would fool a majority test;
+  * a component with the majority of its pixels inside the rect is the word's;
+    a SMALL one (a diacritic) is the word's even when it lies mostly or
+    entirely outside — that is precisely the cut-off i-Strich and the sliced
+    u-Bogen this tool exists for;
+  * punctuation hangs entirely below the Mittellinie and never counts: the
+    stored `word` carries letters only, and every right-edge candidate of the
+    first pass was a comma;
+  * a pale candidate that is not within INK_DARKNESS_TOL of the word's own
+    stroke is bleed-through or foxing;
   * anything an `exclude` rect already covers is foreign ink by the sidecar's
-    own testimony and never counts (same component-wise rule the metric uses).
+    own testimony (same component-wise rule the metric uses).
 
 The repaired rect is that ink's bbox plus `--pad`, clamped to the plate and to
 the midpoint of the gap to any neighbouring specimen — a crop must never eat
 its neighbour's word.
+
+The `exclude` rects move with it, in both directions:
+
+  * ink the GROWTH newly encloses that is not the word's own gets one — the
+    comma beside `regieren`'s last letter, the case the sidecar's own note
+    calls "punctuation overlapping a box edge";
+  * one that now hides only the word's own ink loses its job and is dropped:
+    `zum`'s was anchored to the old top edge, and over the repaired crop it
+    painted a white block into clean paper. An exclude still covering foreign
+    ink always stays, even where it grazes the word — that is a hand-placed
+    judgement about a neighbour, not this tool's to overrule.
 
 WHAT ELSE MOVES WITH A RECT (do not skip):
   * `baseline_y`/`midband_y` are PAGE coordinates and stay valid unchanged.
@@ -36,20 +53,22 @@ WHAT ELSE MOVES WITH A RECT (do not skip):
     „Rahmen veraltet" and out of the bench.
   * The wordbench fixture roots freeze these rects. A repaired plate needs a
     fixture re-export and a dated re-baseline entry in `qualitaetsmetrik.md`
-    §14 — the ruler changed, and silently comparing across it is the one thing
+    §15 — the ruler changed, and silently comparing across it is the one thing
     the frozen-reference rule forbids.
 
 Usage:
     uv run python -m tools.wordbench.repair_boxes --report
     uv run python -m tools.wordbench.repair_boxes --sheets temp/repair
-    uv run python -m tools.wordbench.repair_boxes --apply --registration-shift temp/shift.json
+    git show origin/main:data/sources/suetterlin-1922/words.json > temp/old.json
+    uv run python -m tools.wordbench.repair_boxes --apply \
+        --registration-shift temp/shift.json --since temp/old.json
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
@@ -58,7 +77,7 @@ from scipy.ndimage import find_objects
 from scipy.ndimage import label as cc_label
 
 from core.extract import binarize_adaptive
-from core.word_metric import EXCLUDE_COMPONENT_FRAC
+from core.word_metric import DESPECKLE_MIN_AREA_PX, EXCLUDE_COMPONENT_FRAC
 from tools.wordbench.export_fixtures import REPO_ROOT, load_page
 
 
@@ -98,6 +117,13 @@ DIACRITIC_MAX_AREA_PX = 300
 # diacritic on Abb. 19 measures 40–230 px.
 SPECK_MIN_AREA_PX = 40
 
+# Backstop behind the rules above: growth beyond this many x-heights is
+# reported rather than applied. Deliberately loose — the lineature zone, the
+# darkness test and the punctuation rule are what actually decide whose ink it
+# is, and a tight cap refuses genuine repairs (at 1.0 it refused „regieren",
+# whose last letter is cut by 37 px = 1.2 xh).
+GROWTH_CAP_XH = 2.0
+
 
 @dataclass
 class Repair:
@@ -107,6 +133,12 @@ class Repair:
     old: tuple[int, int, int, int]
     new: tuple[int, int, int, int]
     reasons: list[str]
+    # The entry's exclude rects AFTER the repair: obsolete ones dropped, ones
+    # for newly enclosed foreign ink added. `None` means the repair does not
+    # change them (a refused candidate).
+    excludes: list[list[int]] = field(default_factory=list)
+    added_excludes: list[list[int]] = field(default_factory=list)
+    dropped_excludes: list[list[int]] = field(default_factory=list)
 
     @property
     def delta(self) -> tuple[int, int, int, int]:
@@ -147,7 +179,13 @@ class PageInk:
         return int(xs.start), int(ys.start), int(xs.stop), int(ys.stop)
 
     def own_ink_box(self, entry: dict, excludes: list[list[int]]) -> tuple[int, int, int, int] | None:
-        """Bounding box of the ink that belongs to this specimen.
+        """`own_ink` without the component ids — the shape most callers want."""
+        return self.own_ink(entry, excludes)[0]
+
+    def own_ink(self, entry: dict, excludes: list[list[int]]) -> tuple[tuple[int, int, int, int] | None, set[int]]:
+        """Bounding box of the ink that belongs to this specimen, and which
+        components it is made of — the caller needs the ids to tell what a
+        grown rect newly took in that is NOT this word.
 
         The word's own lineature does the deciding: `midband_y`/`baseline_y`
         are page rows, so the writing zone of THIS line is known exactly, and
@@ -189,10 +227,70 @@ class PageInk:
             candidates.append((int(cid), box))
 
         candidates.extend(self._floating_diacritics(rect, excludes, zone_top, core))
-        boxes = self._drop_punctuation([b for _, b in candidates], midband, xh)
-        if not boxes:
-            return None
-        return (min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes))
+        keep = self._drop_punctuation(candidates, midband, xh)
+        if not keep:
+            return None, set()
+        boxes = [b for _, b in keep]
+        box = (min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes))
+        return box, {cid for cid, _ in keep}
+
+    def newly_enclosed_foreign_ink(
+        self, old: tuple[int, int, int, int], new: tuple[int, int, int, int], own: set[int]
+    ) -> list[tuple[int, int, int, int]]:
+        """Ink the GROWTH took in that is not the word's own — what an `exclude`
+        has to paint back out.
+
+        This is the „regieren" case: enclosing the last letter's exit stroke
+        pulls the comma beside it into the crop, and the stored `word` carries
+        letters only. Same answer `propose_boxes` gives a fresh proposal, just
+        for a rect that moved.
+
+        Only what the growth is responsible for: a speck that sat inside the
+        committed rect all along is not this repair's business, and covering it
+        would change a crop where nothing was wrong."""
+        x0, y0, x1, y1 = new
+        inside = self.labels[y0:y1, x0:x1]
+        out: list[tuple[int, int, int, int]] = []
+        for cid in np.unique(inside):
+            if cid == 0 or int(cid) in own or self.sizes[cid] < DESPECKLE_MIN_AREA_PX:
+                # Below the despeckle floor the exporter drops it from the mask
+                # anyway, and a 2 px exclude sliver risks nipping real ink.
+                continue
+            bx0, by0, bx1, by1 = self.component_box(int(cid))
+            # Only ink that reaches into the strip the repair GAINED. A
+            # component that merely crossed an edge which did not move was
+            # already in the committed crop, and covering it now would change a
+            # crop where nothing was wrong.
+            if not _reaches_growth((bx0, by0, bx1, by1), old, new):
+                continue
+            out.append((max(x0, bx0 - 1), max(y0, by0 - 1), min(x1, bx1 + 1), min(y1, by1 + 1)))
+        return out
+
+    def exclude_hides_own_ink(self, exclude: list[int], own: set[int]) -> bool:
+        """Whether an exclude rect now sits on the word's OWN ink and hides no
+        foreign ink any more — i.e. whether the repair made it wrong.
+
+        `zum`'s did exactly that: it had been hiding the stub of a u-Bogen the
+        old rect cut through, and over the repaired crop it paints a white
+        block into clean paper and clips the mark the repair just rescued.
+
+        Both halves are required, and deliberately so. An exclude that still
+        covers foreign ink stays even if it grazes the word — that is a
+        hand-placed judgement about a neighbour's descender, and this tool does
+        not overrule it. Only an exclude that has become pure damage goes."""
+        ex0, ey0, ex1, ey1 = (int(round(float(v))) for v in exclude[:4])
+        if ex0 >= ex1 or ey0 >= ey1:
+            return False
+        region = self.labels[ey0:ey1, ex0:ex1]
+        hides_own = False
+        for cid in np.unique(region):
+            if cid == 0:
+                continue
+            if int(cid) in own:
+                hides_own = True
+            elif self.sizes[cid] >= DESPECKLE_MIN_AREA_PX:
+                return False  # still doing its job
+        return hides_own
 
     def _core_darkness(self, inside: np.ndarray) -> float:
         """Median darkness of the biggest component inside the rect — the word's
@@ -231,8 +329,8 @@ class PageInk:
 
     @staticmethod
     def _drop_punctuation(
-        boxes: list[tuple[int, int, int, int]], midband: int, xh: float
-    ) -> list[tuple[int, int, int, int]]:
+        candidates: list[tuple[int, tuple[int, int, int, int]]], midband: int, xh: float
+    ) -> list[tuple[int, tuple[int, int, int, int]]]:
         """The stored `word` carries letters only (words.json says so itself),
         so a comma or period trailing the last letter must never pull the rect
         out over it — and on these plates it would, every time: every
@@ -243,7 +341,7 @@ class PageInk:
         does not separate them either. What does: every LETTER reaches up into
         the x-height band, and punctuation hangs entirely below the
         Mittellinie."""
-        return [b for b in boxes if b[1] <= midband + 0.3 * xh]
+        return [(cid, b) for cid, b in candidates if b[1] <= midband + 0.3 * xh]
 
     def _excluded(self, cid: int, excludes: list[list[int]]) -> bool:
         """The sidecar's own verdict: a component lying at least
@@ -288,6 +386,31 @@ def _neighbour_limits(
     return left, top, right, bottom
 
 
+def registration_shifts(source_id: str, baseline: Path) -> dict[str, dict[str, int]]:
+    """Per specimen, how far its crop ORIGIN moved since `baseline` — the
+    correction every stored trace of it has to follow.
+
+    Read off two sidecar versions rather than off a repair plan, so it is right
+    no matter how the rect got where it is: two runs of this tool, a hand edit,
+    or both. `git show <ref>:data/sources/<id>/words.json > old.json` produces
+    the baseline."""
+
+    def origins(path: Path) -> dict[str, tuple[int, int]]:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return {str(w.get("id") or w["word"]): (int(w["x0"]), int(w["y0"])) for w in data["words"]}
+
+    was = origins(baseline)
+    now = origins(REPO_ROOT / "data" / "sources" / source_id / "words.json")
+    out: dict[str, dict[str, int]] = {}
+    for sid, (nx, ny) in now.items():
+        if sid not in was:
+            continue
+        dx, dy = was[sid][0] - nx, was[sid][1] - ny
+        if dx or dy:
+            out[sid] = {"dx": dx, "dy": dy}
+    return out
+
+
 def xh_of(entry: dict) -> float:
     """This specimen's x-height in page pixels — the scale every tolerance in
     this tool is expressed in."""
@@ -295,7 +418,7 @@ def xh_of(entry: dict) -> float:
 
 
 def plan_repairs(source_id: str, pad: int = PAD_PX) -> tuple[list[Repair], list[Repair]]:
-    """(repairs to apply, candidates refused for growing more than one x-height)"""
+    """(repairs to apply, candidates refused for a runaway growth)"""
     sidecar = json.loads((REPO_ROOT / "data" / "sources" / source_id / "words.json").read_text(encoding="utf-8"))
     words = sidecar["words"]
     inks: dict[str, PageInk] = {}
@@ -308,13 +431,25 @@ def plan_repairs(source_id: str, pad: int = PAD_PX) -> tuple[list[Repair], list[
             inks[page] = PageInk(REPO_ROOT / "data" / "sources" / source_id / page)
         ink = inks[page]
         rect = (int(w["x0"]), int(w["y0"]), int(w["x1"]), int(w["y1"]))
-        box = ink.own_ink_box(w, w.get("exclude") or [])
+        excludes = [list(map(int, ex[:4])) for ex in (w.get("exclude") or [])]
+        box, own = ink.own_ink(w, excludes)
         if box is None:
             continue
 
         clearance = (box[0] - rect[0], box[1] - rect[1], rect[2] - box[2], rect[3] - box[3])
         if min(clearance) >= MIN_CLEARANCE_PX:
-            continue  # the ink has air on every side — leave the rect alone
+            # The ink has air on every side, so the rect stays — but its
+            # excludes are still checked. An earlier repair can have made one
+            # obsolete, and a stale exclude is not a harmless leftover: the
+            # exporter paints its area paper-white, so it shows up as a white
+            # block in the middle of the crop (`zum`, seen by the author).
+            stale = [ex for ex in excludes if ink.exclude_hides_own_ink(ex, own)]
+            if stale:
+                repair = Repair(str(w.get("id") or w["word"]), w["word"], page, rect, rect, ["exclude only"])
+                repair.excludes = [ex for ex in excludes if ex not in stale]
+                repair.dropped_excludes = stale
+                repairs.append(repair)
+            continue
 
         others = [
             (int(o["x0"]), int(o["y0"]), int(o["x1"]), int(o["y1"])) for o in words if o["page"] == page and o is not w
@@ -330,22 +465,52 @@ def plan_repairs(source_id: str, pad: int = PAD_PX) -> tuple[list[Repair], list[
         )
         if new == rect:
             continue
-        # A repair moves an edge by a few px to clear a diacritic or a sliced
-        # stroke. A whole x-height of growth means the ink crossing the border
-        # is not a fragment of this word at all — punctuation fused to the last
-        # letter's exit is the case on these plates (the „regieren" comma) —
-        # and a box that swallows it is worse than one that cuts it. Report,
-        # never apply: the sidecar's `incomplete` flag is the honest answer
-        # when the ink truly cannot be enclosed.
-        cap = xh_of(w)
+        # A runaway would mean the ink crossing the border is not this word's
+        # at all — but the lineature zone, the darkness test and the
+        # punctuation rule already decide that, one by one and for a reason.
+        # The cap is only the backstop behind them, so it is generous: at one
+        # x-height it refused „regieren", whose last letter really is cut by
+        # 37 px, and refusing a true repair is the worse failure of the two.
         grown = (rect[0] - new[0], rect[1] - new[1], new[2] - rect[2], new[3] - rect[3])
-        if max(grown) > cap:
-            refused.append(Repair(str(w.get("id") or w["word"]), w["word"], page, rect, new, ["over cap"]))
-            continue
         sides = ("left", "top", "right", "bottom")
         reasons = [f"{s}+{d}" for s, d in zip(sides, grown, strict=True) if d]
-        repairs.append(Repair(str(w.get("id") or w["word"]), w["word"], page, rect, new, reasons))
+        repair = Repair(str(w.get("id") or w["word"]), w["word"], page, rect, new, reasons)
+        if max(grown) > GROWTH_CAP_XH * xh_of(w):
+            refused.append(repair)
+            continue
+        # Two things the moved edge changes about the excludes, both of which
+        # the author saw before this code did:
+        #   * the grown rect can take in ink that is NOT this word — enclosing
+        #     „regieren"'s exit stroke pulls the comma in beside it;
+        #   * an exclude anchored to the OLD edge can end up over nothing —
+        #     `zum`'s hid the stub of the u-Bogen the old rect cut through, and
+        #     over the repaired crop it is a white block on clean paper.
+        repair.excludes = [ex for ex in excludes if not ink.exclude_hides_own_ink(ex, own)]
+        repair.dropped_excludes = [ex for ex in excludes if ex not in repair.excludes]
+        for ex in ink.newly_enclosed_foreign_ink(rect, new, own):
+            if not any(_overlaps(ex, kept) for kept in repair.excludes):
+                repair.excludes.append(list(ex))
+                repair.added_excludes.append(list(ex))
+        repairs.append(repair)
     return repairs, refused
+
+
+def _overlaps(a: tuple[int, int, int, int] | list[int], b: list[int] | tuple[int, int, int, int]) -> bool:
+    return a[0] < b[2] and b[0] < a[2] and a[1] < b[3] and b[1] < a[3]
+
+
+def _reaches_growth(
+    box: tuple[int, int, int, int], old: tuple[int, int, int, int], new: tuple[int, int, int, int]
+) -> bool:
+    """Whether `box` touches any strip the repair added to the rect — the four
+    slabs between the old edges and the new ones."""
+    strips = (
+        (new[0], new[1], old[0], new[3]),  # left
+        (new[0], new[1], new[2], old[1]),  # top
+        (old[2], new[1], new[2], new[3]),  # right
+        (new[0], old[3], new[2], new[3]),  # bottom
+    )
+    return any(s[0] < s[2] and s[1] < s[3] and _overlaps(box, s) for s in strips)
 
 
 # ------------------------------------------------------------------ rendering
@@ -389,6 +554,10 @@ def apply_repairs(source_id: str, repairs: list[Repair]) -> None:
         if r is None:
             continue
         w["x0"], w["y0"], w["x1"], w["y1"] = r.new
+        if r.excludes:
+            w["exclude"] = [list(ex) for ex in r.excludes]
+        else:
+            w.pop("exclude", None)
     path.write_text(json.dumps(sidecar, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
 
 
@@ -404,13 +573,25 @@ def main() -> None:
         type=Path,
         help="write the per-specimen crop-origin shift stored traces must follow (JSON)",
     )
+    parser.add_argument(
+        "--since",
+        type=Path,
+        help="baseline words.json the shift is measured against "
+        "(git show <ref>:data/sources/<id>/words.json > old.json); "
+        "without it the shift covers only the repairs THIS run applies",
+    )
     args = parser.parse_args()
 
     repairs, refused = plan_repairs(args.source, args.pad)
     if args.report or not (args.sheets or args.apply or args.registration_shift):
         print(f"{len(repairs)} specimen(s) clip their own ink\n")
         for r in repairs:
-            print(f"  {r.sample_id:<18} {r.word:<14} {r.page:<18} {' '.join(r.reasons)}")
+            extra = ""
+            if r.added_excludes:
+                extra += f"  +exclude {r.added_excludes}"
+            if r.dropped_excludes:
+                extra += f"  -exclude {r.dropped_excludes}"
+            print(f"  {r.sample_id:<18} {r.word:<14} {r.page:<18} {' '.join(r.reasons)}{extra}")
         if refused:
             print(f"\n{len(refused)} candidate(s) refused — the ink crossing the border grows the box by")
             print("more than one x-height, so it is not a fragment of this word (punctuation fused to")
@@ -421,11 +602,15 @@ def main() -> None:
         draw_repair_tiles(args.source, repairs, args.sheets)
         print(f"wrote {len(repairs)} tile(s) to {args.sheets}")
     if args.registration_shift:
-        payload = {
-            r.sample_id: {"dx": r.registration_shift[0], "dy": r.registration_shift[1]}
-            for r in repairs
-            if r.registration_shift != (0, 0)
-        }
+        payload = (
+            registration_shifts(args.source, args.since)
+            if args.since
+            else {
+                r.sample_id: {"dx": r.registration_shift[0], "dy": r.registration_shift[1]}
+                for r in repairs
+                if r.registration_shift != (0, 0)
+            }
+        )
         args.registration_shift.parent.mkdir(parents=True, exist_ok=True)
         args.registration_shift.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(f"wrote {len(payload)} registration shift(s) to {args.registration_shift}")
