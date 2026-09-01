@@ -22,4 +22,4 @@
 - **The batch write would have renamed the writer.** Its `hand` is a
   get-or-create that overwrites `label`/`era`/`note` with whatever the body
   carries, and `label` is required — so the tool now reads the stored hand
-  back and echoes it instead of inventing one (#NNN).
+  back and echoes it instead of inventing one (#472).
