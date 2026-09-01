@@ -59,6 +59,15 @@ COPY --from=builder --chown=appuser:appuser /app/.venv ./.venv
 # Application code. The compute layer lives in /core, the HTTP layer in /api.
 COPY --chown=appuser:appuser api/ ./api/
 COPY --chown=appuser:appuser core/ ./core/
+# pyproject.toml is a RUNTIME file here, not just a build input: the project is
+# a virtual uv workspace rather than an installed distribution, so
+# importlib.metadata has no record of it and api.main::_project_version() reads
+# this file next to api/ as its one version source. The single-stage build
+# shipped it as a side effect of the install step; the runtime stage has to
+# receive it on purpose, or every start logs a packaging error and /docs reports
+# 0.0.0. A few KB. (The sibling repo anyplot needs no equivalent — its
+# api/version.py reads importlib.metadata, which the copied venv carries.)
+COPY --chown=appuser:appuser pyproject.toml ./
 # Source charts are read by the pipeline; ship the whole tree (~6 MB) so a
 # CONFIG.sourceId flip never deploys an image missing its chart.
 COPY --chown=appuser:appuser data/sources/ ./data/sources/
