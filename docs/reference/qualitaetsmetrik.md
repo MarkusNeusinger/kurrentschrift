@@ -3,9 +3,9 @@
 > **Status (2026-08-12): lebend.** Fortlaufend gepflegte Messlatte und
 > Baseline-Journal — jeder Bench-Lauf und jedes bewusste Re-Baseline
 > schreibt hier einen datierten Abschnitt fort; aktuelle Headlines:
-> Wörter 0,110392 · Paare 0,165678 (Re-Baseline `aug07`); das Journal
-> reicht bis `aug11` (§11e). Die Verworfen-Listen (§4, §5, §6) bleiben
-> geschlossen.
+> Wörter 0,109255 · Paare 0,148433 (Re-Baseline `sep01`, §15 — sieben
+> reparierte Wort-Rechtecke); das Journal reicht bis `sep01` (§15). Die
+> Verworfen-Listen (§4, §5, §6) bleiben geschlossen.
 
 Wie die Qualität einer kanonischen Glyphe gemessen wird, wie der
 hermetische Benchmark (`tools/glyphbench`) und der Experiment-Loop
@@ -9731,30 +9731,46 @@ handgesetztes Urteil über eine Nachbarzeile, und das überstimmt dieses
 Werkzeug nicht (eine weitere Fassung wollte 12 handgesetzte Boxen
 löschen).
 
-**Was das Re-Baseline auslöst.** Die Rechtecke sind eingefrorene
-Referenzgeometrie: sieben veränderte Crops heißen sieben veränderte
-Referenzmasken. Fällig sind darum, in dieser Reihenfolge, und **nicht
-von dieser Session ausgeführt** (die Fixture-Roots sind lokal, die
-Registrierungs-Korrektur schreibt in die geteilte DB):
+**Das Re-Baseline, ausgeführt (`sep01`).** Die Rechtecke sind
+eingefrorene Referenzgeometrie: sieben veränderte Crops heißen sieben
+veränderte Referenzmasken. Die drei fälligen Schritte sind gelaufen, in
+dieser Reihenfolge — die Reihenfolge ist keine Kosmetik, denn der
+Fixture-Bau liest die Registrierungen, die Schritt 1 erst geraderückt:
 
-1. `git show <merge-base>:…/words.json > temp/old.json`, dann
-   `uv run python -m tools.wordbench.shift_registrations --baseline
-   temp/old.json` — die gespeicherten Bahnen der fünf Proben mit bewegtem
-   Ursprung (`das` dx 10 · `und` dx 5 · `einer` dy 11 · `zum` dy 19 ·
-   `Wer` dy 4) registrieren CROP-lokal und stehen sonst daneben
-   (Frame-Gate `frame_stale`, „Rahmen veraltet" in der Werkbank; die
-   waagerechte Drift fängt gar nichts ab). Kein Nachfahren nötig: die
-   Korrektur IST der Versatz, und die verschobene Zeile bekommt den
-   Ursprung als `rect_origin` mitgestempelt, was den Lauf auf beiden
-   Achsen wiederholbar macht.
-2. Fixture-Re-Export (`export_fixtures.py`), dann ein Wortbench-Lauf.
-3. Die neuen Headlines hier eintragen. **Zahlen über diese Grenze sind
-   nicht vergleichbar** (§2 „Re-Baseline ist eine bewusste menschliche
-   Entscheidung"): sechs von 63 Wort-Referenzen zeigen ab jetzt mehr
-   Tinte als vorher, und mehr Tinte im Soll heißt ohne jede
-   Code-Änderung eine andere Zahl.
+1. **Bahnen nachgezogen** (`shift_registrations --baseline <words.json vor
+   der Reparatur>`, gegen die deployte API mit Autoren-Zusage). Fünf
+   Proben hatten ihren Ursprung bewegt und ihre Bahnen entsprechend
+   daneben: `das` tx +10 · `und` tx +5 (beide `authored`) · `Wer` tx +0
+   baseline_row +4 (`authored`) · `einer` +11 · `zum` +19 (beide
+   `traced`). 5 von 96 Zeilen geschrieben, kein Nachfahren. Kontrolle
+   danach: jede der fünf trägt `rect_origin` gleich dem Sidecar-Rechteck,
+   Restdrift zur Crop-Grundlinie ≤ 1 px (Gate: 4 px), und ein zweiter
+   Lauf findet **0 to correct** — die Stempel-Idempotenz trägt.
+2. **Fixture-Roots neu gebaut**, in der Cloud über den lesenden Zwilling
+   `fetch_fixtures --set all --verify`: „verify ok: every rebuilt row
+   renders identically and 12 compositions match /write/word (12
+   bit-exact)". Entscheidend für Schritt 1: **0 frame-stale** in allen
+   drei Sets, und der Wörter-Satz behält alle 29 `authored` + 34 `traced`
+   Wortbahnen. Ohne die Korrektur wären die fünf reparierten Proben hier
+   als veralteter Rahmen aus dem Bench gefallen.
+3. **Gemessen** (BLAS auf einen Thread gepinnt):
 
-Erwartete Richtung: der Loss der sieben steigt eher, denn der i-Strich
-und der u-Bogen, die vorher fehlten, will die Komposition jetzt auch
-treffen. Das ist die richtige Richtung — vorher wurde gegen einen
-Buchstaben gemessen, der auf der Referenz gar nicht ganz da war.
+| Satz | vorher | jetzt |
+|---|---|---|
+| Wörter (`bench_loss`, 63 Proben) | 0,106400 | **0,109255** |
+| Paare (`pair_loss`, 33 Proben) | 0,148467 | **0,148433** |
+
+Die Wörter steigen um +0,0029 — **die vorhergesagte Richtung**. Der Loss
+der reparierten Proben: `regieren` 0,2338 · `Wer` 0,1499 · `und` 0,0882 ·
+`zwei` 0,0780 · `das` 0,0731 · `einer` 0,0627 · `zum` 0,0594. Die Paare
+bewegen sich um −0,00003, also gar nicht: auf Abb. 20 wurde kein
+Rechteck angefasst, und dass die Zahl trotzdem nicht exakt steht, ist der
+gemeinsame Fixture-Neubau, nicht die Reparatur.
+
+**Zahlen über diese Grenze sind nicht vergleichbar** (§2 „Re-Baseline ist
+eine bewusste menschliche Entscheidung"). Sieben von 63 Wort-Referenzen
+zeigen ab jetzt mehr Tinte als vorher, und mehr Tinte im Soll heißt ohne
+jede Code-Änderung eine andere Zahl. Das ist die richtige Richtung:
+vorher wurde gegen einen Buchstaben gemessen, der auf der Referenz gar
+nicht ganz da war — `regieren` ist mit 0,2338 der teuerste der sieben,
+und genau bei ihm fehlte am meisten (der halbe letzte Buchstabe).

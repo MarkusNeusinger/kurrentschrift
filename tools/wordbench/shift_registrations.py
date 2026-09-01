@@ -48,6 +48,7 @@ from pathlib import Path
 from typing import Any
 
 from tools.wordbench.export_fixtures import REPO_ROOT
+from tools.wordbench.fetch_fixtures import USER_AGENT, ApiClient, _NoRedirectHandler, _ssl_context
 
 
 DEFAULT_SOURCE_ID = "suetterlin-1922"
@@ -59,17 +60,37 @@ DEFAULT_API = "http://localhost:8000"
 ORIGIN_KEY = "rect_origin"
 
 
-def _request(url: str, token: str, method: str = "GET", body: dict | None = None) -> Any:
-    data = json.dumps(body).encode() if body is not None else None
-    req = urllib.request.Request(url, data=data, method=method)
-    req.add_header("X-Admin-Token", token)
-    if data is not None:
-        req.add_header("Content-Type", "application/json")
+def put_json(base_url: str, path: str, token: str, body: dict) -> Any:
+    """The one write this tool makes.
+
+    Reads go through `fetch_fixtures.ApiClient`, which has no write verb ON
+    PURPOSE — so that module cannot mutate the deployed system even by
+    accident, and it must stay that way. Hence this separate writer; it borrows
+    that client's redirect and TLS handlers rather than restating them, because
+    a second implementation is a second place for the property to go missing
+    (the archive tool's docstring makes the same point). A plain urllib request
+    also gets a 403 from the edge: the User-Agent is part of what gets through.
+    """
+    if not base_url.startswith("https://"):
+        raise SystemExit(f"API base must be https://, got {base_url!r}")
+    opener = urllib.request.build_opener(_NoRedirectHandler(), urllib.request.HTTPSHandler(context=_ssl_context()))
+    request = urllib.request.Request(  # noqa: S310 — https, fixed scheme
+        f"{base_url}{path}",
+        data=json.dumps(body).encode(),
+        method="PUT",
+        headers={
+            "User-Agent": USER_AGENT,
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "X-Admin-Token": token,
+        },
+    )
     try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
-            return json.loads(resp.read())
-    except urllib.error.HTTPError as e:  # surface the API's own detail, not a bare 4xx
-        raise SystemExit(f"{method} {url} -> {e.code}: {e.read()[:400].decode(errors='replace')}") from e
+        with opener.open(request, timeout=120) as response:
+            return json.loads(response.read())
+    except urllib.error.HTTPError as exc:  # surface the API's own detail, not a bare 4xx
+        # The token lives in a header only — no URL or reason can carry it.
+        raise SystemExit(f"PUT {path} → HTTP {exc.code}: {exc.read()[:400].decode(errors='replace')}") from None
 
 
 def origins(path: Path) -> dict[str, tuple[int, int]]:
@@ -100,6 +121,18 @@ def plan(
         if (dx, dy) != (0, 0):
             todo.append((row, (dx, dy)))
     return todo
+
+
+def hand_body(hand: dict) -> dict:
+    """The writer as the batch write wants it back — read from the API, never
+    invented.
+
+    The endpoint's `hand` is a get-or-CREATE and it OVERWRITES `label`/`era`/
+    `note` with whatever the body carries. A placeholder label would therefore
+    rename the writer as a side effect of moving a registration; `label` is
+    also required, so leaving it out is not an option either. `style_id` is not
+    accepted in the body at all — the server takes it from the source."""
+    return {k: hand[k] for k in ("id", "label", "era", "note") if hand.get(k) is not None}
 
 
 def shifted(row: dict, delta: tuple[int, int], origin: tuple[int, int]) -> dict:
@@ -149,8 +182,8 @@ def main() -> None:
         print("no rect origin moved since the baseline — nothing to do")
         return
 
-    base = f"{args.api.rstrip('/')}/sources/{args.source}"
-    rows = _request(f"{base}/word-instances", token)
+    api = ApiClient(args.api, token=token)
+    rows = api.get(f"/sources/{args.source}/word-instances", admin=True)
     todo = plan(rows, baseline, current)
     print(f"{len(moved)} specimen(s) moved, {len(rows)} stored trace(s), {len(todo)} to correct:")
     for row, (dx, dy) in todo:
@@ -168,11 +201,11 @@ def main() -> None:
         if not hand_id:
             print(f"skipping {len(items)} row(s) without a hand — the batch write needs one", file=sys.stderr)
             continue
-        result = _request(
-            f"{base}/word-instances",
+        result = put_json(
+            api.base_url,
+            f"/sources/{args.source}/word-instances",
             token,
-            method="PUT",
-            body={"hand": {"id": hand_id}, "replace": False, "items": items},
+            {"hand": hand_body(api.get(f"/hands/{hand_id}", admin=True)), "replace": False, "items": items},
         )
         print(f"hand {hand_id}: stored {result['stored']}, skipped {result['skipped']}")
 
