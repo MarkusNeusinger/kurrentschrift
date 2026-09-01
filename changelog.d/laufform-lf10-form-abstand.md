@@ -17,4 +17,4 @@
   stored reference row P sits at 1.01 — the pre-registered kill fired, so no
   write path reads the quantity and no row was touched; the entry, the
   autopsy and the rescue paths are in `qualitaetsmetrik.md` §14 („Laufform
-  LF10") and `tintenfolger.md` §7.9.
+  LF10") and `tintenfolger.md` §7.9 (#474).
