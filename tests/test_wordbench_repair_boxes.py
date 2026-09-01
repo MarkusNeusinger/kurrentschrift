@@ -306,3 +306,12 @@ def test_shift_trusts_the_stamp_over_the_baseline():
     second repair on top of a first one does not double-shift it."""
     todo = shift_registrations.plan([_trace(origin=(144, 415))], WAS, NOW)
     assert [d for _, d in todo] == [(5, 6)]
+
+
+def test_the_batch_write_echoes_the_stored_hand():
+    """The endpoint's `hand` is a get-or-create that overwrites label/era/note,
+    so a placeholder would rename the writer as a side effect of moving a
+    registration. Only what the API returned goes back; `style_id` is the
+    server's to decide and is not part of the body."""
+    hand = {"id": "suetterlin-1922-norm", "style_id": "suetterlin", "label": "Sütterlin 1922", "era": None}
+    assert shift_registrations.hand_body(hand) == {"id": "suetterlin-1922-norm", "label": "Sütterlin 1922"}
