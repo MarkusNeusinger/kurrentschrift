@@ -89,6 +89,26 @@ LAUFFORM_END_WINDOW = 0.0
 
 _DECIMALS = 4
 
+# Fallback nib radius (template units) for a chart row without usable widths —
+# the stand-in shared by the sampler helpers and the form distance (LF10).
+_FALLBACK_NIB_RADIUS = 0.05
+
+
+def _half_widths(chart_row: Any) -> np.ndarray:
+    """A chart row's half-widths as a flat float array — empty when the row
+    carries none.
+
+    A row's `half_widths` may be NULL (the column is nullable, and an attribute
+    view can leave it out), and `np.asarray(None, dtype=float)` is not an empty
+    array but a 0-d NaN whose `len()` raises. Missing widths therefore have to
+    be caught BEFORE the conversion; they are exactly the case
+    `_FALLBACK_NIB_RADIUS` exists for.
+    """
+    raw = getattr(chart_row, "half_widths", None)
+    if raw is None:
+        return np.zeros(0, dtype=float)
+    return np.asarray(raw, dtype=float).reshape(-1)
+
 
 def _arc_lengths(points: Sequence[Point]) -> list[float]:
     """Cumulative arc length along a polyline, starting at 0."""
@@ -422,9 +442,9 @@ def _rendered_first_stroke(chart_row: Any, anchors: Sequence[Sequence[float]]) -
     if len(pts) < 2:
         return np.zeros((0, 2))
     meta = getattr(chart_row, "trace_meta", None) or {}
-    half_widths = np.asarray(chart_row.half_widths, dtype=float)
+    half_widths = _half_widths(chart_row)
     if len(half_widths) != len(pts):
-        half_widths = np.full(len(pts), float(half_widths.mean()) if len(half_widths) else 0.05)
+        half_widths = np.full(len(pts), float(half_widths.mean()) if len(half_widths) else _FALLBACK_NIB_RADIUS)
     lines = multi_stroke_centerlines(
         pts,
         half_widths,
@@ -464,10 +484,6 @@ def head_gate(chart_row: Any, anchors: Sequence[Sequence[float]]) -> dict[str, A
 
 # ----------------------------------------------------------------- form distance (LF10)
 
-# Fallback nib radius (template units) for a chart row without usable widths —
-# the same stand-in the sampler helpers above use for a missing width array.
-_FALLBACK_NIB_RADIUS = 0.05
-
 
 def _sampled_strokes(chart_row: Any, anchors: Sequence[Sequence[float]]) -> list[np.ndarray]:
     """Every pen-stroke's centerline as the renderer samples it: the chart
@@ -483,7 +499,7 @@ def _sampled_strokes(chart_row: Any, anchors: Sequence[Sequence[float]]) -> list
     raw = [pts[a:b] for a, b in ranges]
     if len(pts) < 2:
         return raw
-    half_widths = np.asarray(chart_row.half_widths, dtype=float)
+    half_widths = _half_widths(chart_row)
     if len(half_widths) != len(pts):
         half_widths = np.full(len(pts), float(half_widths.mean()) if len(half_widths) else _FALLBACK_NIB_RADIUS)
     plan = build_sample_plan(pts, starts, meta.get("corner_anchors"), QUALITY_N_SAMPLES)
@@ -536,8 +552,10 @@ def form_distance(
     starts), and per anchor of the CHART the distance to the row's rendered
     centerline of the same stroke — two directions, reported separately
     (tracebench practice: no symmetric mean). Both in nib radii of the chart,
-    `r` = median of its `half_widths`. The gate quantity is the worse
-    directional p90: a form defect is LOCAL (a segment, a stroke, a bow — a
+    `r` = median of its `half_widths` — `_FALLBACK_NIB_RADIUS` when the row
+    carries no widths at all (NULL or empty) or none of them is positive, so a
+    width-less row is measured rather than refused. The gate quantity is the
+    worse directional p90: a form defect is LOCAL (a segment, a stroke, a bow — a
     minority of the anchors) while the hand's legitimate deviation is GLOBAL
     and smooth (width, a head angle), so p90 sees the one and not the other;
     the median and the maximum ride along as the pre-registered sensitivity
@@ -573,9 +591,9 @@ def form_distance(
         raise ValueError(f"anchor count {len(row_pts)} != chart row's {len(chart_pts)}")
     if len(chart_pts) == 0:
         raise ValueError("need at least 1 anchor")
-    half_widths = np.asarray(chart_row.half_widths, dtype=float)
+    half_widths = _half_widths(chart_row)
     radius = float(np.median(half_widths)) if len(half_widths) else 0.0
-    if not radius > 0.0:
+    if not radius > 0.0:  # also catches a NaN median
         radius = _FALLBACK_NIB_RADIUS
     meta = getattr(chart_row, "trace_meta", None) or {}
     ranges = stroke_slices(len(chart_pts), meta.get("stroke_starts"))

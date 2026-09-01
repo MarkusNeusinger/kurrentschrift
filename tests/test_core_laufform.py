@@ -233,7 +233,7 @@ def test_row_naturalness_ranks_a_jagged_stroke_below_a_smooth_one():
 
 # ----------------------------------------------------------------- form distance (LF10)
 
-from core.laufform import form_distance  # noqa: E402
+from core.laufform import _FALLBACK_NIB_RADIUS, form_distance  # noqa: E402
 
 
 # A straight 2-xh stroke along x, 21 anchors, nib radius 0.05 (so 1 nib radius
@@ -310,3 +310,29 @@ def test_polyline_and_rendered_agree_on_a_straight_stroke_and_the_count_must_mat
     assert f_rendered["p90"] == pytest.approx(f_polyline["p90"], abs=1e-3)
     with pytest.raises(ValueError):
         form_distance(LINE_CHART, LINE[:-1])
+
+
+@pytest.mark.parametrize("widths", [None, []])
+def test_a_chart_row_without_usable_widths_falls_back_to_the_stand_in_nib_radius(widths):
+    """`half_widths` may be NULL or empty — the fallback radius has to carry
+    the measurement, not merely be documented: `np.asarray(None, dtype=float)`
+    is a 0-d NaN whose length raises before any fallback can be reached."""
+    chart = SimpleNamespace(anchors=LINE, half_widths=widths, trace_meta={"stroke_starts": [0]})
+    identical = form_distance(chart, LINE)
+    assert identical["nib_radius"] == pytest.approx(_FALLBACK_NIB_RADIUS)
+    assert identical["p90"] == 0.0 and identical["max"] == 0.0
+    shifted = [[x, y + 2 * _FALLBACK_NIB_RADIUS] for x, y in LINE]
+    assert form_distance(chart, shifted)["p90"] == pytest.approx(2.0, abs=1e-3)
+    # The stand-in IS the nib of LINE_CHART, so both rows measure the same.
+    assert form_distance(chart, shifted)["row_to_chart"] == form_distance(LINE_CHART, shifted)["row_to_chart"]
+    # The unrendered path (sensitivity check f) needs no widths at all.
+    assert form_distance(chart, shifted, rendered=False)["p90"] == pytest.approx(2.0, abs=1e-3)
+
+
+def test_a_chart_view_without_a_half_widths_attribute_is_measured_too():
+    """An attribute view may leave `half_widths` out entirely; the row still
+    gets measured, in fallback nib radii."""
+    chart = SimpleNamespace(anchors=LINE, trace_meta={"stroke_starts": [0]})
+    f = form_distance(chart, [[x, y + _FALLBACK_NIB_RADIUS] for x, y in LINE])
+    assert f["nib_radius"] == pytest.approx(_FALLBACK_NIB_RADIUS)
+    assert f["p90"] == pytest.approx(1.0, abs=1e-3)

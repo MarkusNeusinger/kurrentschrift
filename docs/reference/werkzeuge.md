@@ -76,7 +76,9 @@ Berichts-Spalte, kein Gate im Schreibweg. `--laufform DATEI.json` misst
 KANDIDATEN-Zeilen (Harvest-Draft-Format `{key: {anchors, n_occurrences}}`,
 dieselbe Datei wie `wordbench.run --laufform`; in der Tabelle mit `*`, nie in
 einem τ) über den Tafeln der Root; `--png` zeichnet ausgewählte Zeilen über
-ihre Tafelform, die Anker ab dem eigenen p90 schwarz — das Bild, das das
+ihre Tafelform, die Anker ab dem eigenen p90 schwarz — auf der Seite, von der
+die schlechtere Richtung misst (Zeile bei `row_to_chart`, Tafel bei
+`chart_to_row`; im Panel-Titel als `Z→T`/`T→Z` genannt) — das Bild, das das
 Wort-Lineal nie ansieht.
 
 ```bash

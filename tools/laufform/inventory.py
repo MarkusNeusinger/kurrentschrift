@@ -1,13 +1,13 @@
 """Inventory of the stored Laufform rows against their chart forms (LF7–LF10) —
-the „Bestandsaufnahme" of qualitaetsmetrik.md §14.
+the stock-taking pass (Bestandsaufnahme) of qualitaetsmetrik.md §14.
 
 Measurement layer only (docs/reference/werkzeuge.md): reads `templates.json`
 (chart rows) + `templates_laufform.json` (the stored running forms) of ONE
 fixture root and prints, per row, the ROW GATE quantity — the anchor spike
-ratio (`core.laufform.anchor_spike_ratio`, „Anker im leeren Papier", measured
-on the row over the chart's stroke starts; LF8) — beside the report columns of
-LF7 (the geometry-only naturalness of chart and row and their gap Δ) and the
-row's evidence count, the HEAD GATE quantity of LF9 — the row's head
+ratio (`core.laufform.anchor_spike_ratio`, the Anker-im-leeren-Papier detector,
+measured on the row over the chart's stroke starts; LF8) — beside the report
+columns of LF7 (the geometry-only naturalness of chart and row and their gap Δ)
+and the row's evidence count, the HEAD GATE quantity of LF9 — the row's head
 deviation (`core.laufform.head_deviation`: how far the first stroke's landing
 direction turns away from the chart's, in degrees) — and the FORM DISTANCE of
 LF10 (`core.laufform.form_distance`: per anchor the distance to the other
@@ -30,9 +30,11 @@ harvest-draft shape `{key: {anchors, n_occurrences}}` (the same file
 `wordbench.run --laufform` takes). Candidates are listed with `*` beside the
 stored rows and never join the trusted population: every τ is derived from the
 stored rows alone. `--png` draws each selected row over its chart form
-(anchors, both in template units; the row's anchors at or above its own form
-p90 marked black) — the picture the word ruler never looks at. Never writes
-to the DB or the fixture root.
+(anchors, both in template units; the anchors at or above the row's own form
+p90 marked black, on the side the worse direction measures FROM — the row's
+for `row_to_chart`, the chart's for `chart_to_row`, named in the panel title)
+— the picture the word ruler never looks at. Never writes to the DB or the
+fixture root.
 """
 
 from __future__ import annotations
@@ -236,7 +238,14 @@ def print_table(rows: list[dict], taus: dict) -> None:
 
 def draw(root: Path, rows: list[dict], only: set[str] | None, out: Path, candidates: dict | None = None) -> None:
     """One panel per selected row: chart (grey) under the Laufform (red); the
-    row's anchors at or above its own form p90 are marked black."""
+    anchors at or above the row's own form p90 are marked black.
+
+    The markers follow the DIRECTION that set that p90 (the table's `dir`
+    column, in the panel title): with `row_to_chart` they sit on the row's
+    anchors, with `chart_to_row` on the chart's — otherwise a row whose gate
+    value comes from the chart side would get markers measured against the
+    other direction's p90, below the number the panel prints.
+    """
     import matplotlib  # noqa: PLC0415 — viz extra, dev-only
 
     matplotlib.use("Agg")
@@ -260,17 +269,21 @@ def draw(root: Path, rows: list[dict], only: set[str] | None, out: Path, candida
         ax.plot([p[0] for p in ca], [p[1] for p in ca], "-", color="0.6", lw=3, alpha=0.7, label="Tafel")
         ax.plot([p[0] for p in la], [p[1] for p in la], "-", color="tab:red", lw=1.2, label="Laufform")
         ax.plot([p[0] for p in la], [p[1] for p in la], ".", color="tab:red", ms=2)
-        values = r["form"]["row_to_chart_values"]
-        threshold = r["form"]["row_to_chart"]
-        far = [p for p, v in zip(la, values, strict=True) if v >= threshold]
+        f = r["form"]
+        row_side = f["direction"] == "row_to_chart"
+        marked = la if row_side else ca
+        values = f["row_to_chart_values"] if row_side else f["chart_to_row_values"]
+        threshold = f["row_to_chart"] if row_side else f["chart_to_row"]  # == f["p90"], by construction
+        far = [p for p, v in zip(marked, values, strict=True) if v >= threshold]
         if far:
-            ax.plot([p[0] for p in far], [p[1] for p in far], "o", color="black", ms=3, label="≥ p90")
+            label = f"≥ p90 ({'Zeile' if row_side else 'Tafel'})"
+            ax.plot([p[0] for p in far], [p[1] for p in far], "o", color="black", ms=3, label=label)
         for y in (0.0, 1.0):
             ax.axhline(y, color="0.85", lw=0.5)
         ax.set_aspect("equal")
         ax.set_title(
             f"{key}{'*' if r['candidate'] else ''}  n={r['n_occurrences']}  spike {r['spike_ratio']:.2f}  "
-            f"form {r['form']['p90']:.2f}",
+            f"form {f['p90']:.2f} {'Z→T' if row_side else 'T→Z'}",
             fontsize=10,
         )
         ax.tick_params(labelsize=7)
