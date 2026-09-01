@@ -1,49 +1,75 @@
-# Dockerfile for kurrentschrift FastAPI backend on Cloud Run.
-# Pattern mirrors ~/projects/anyplot/api/Dockerfile so deployment scripts
-# can be templated identically. Placeholder for v1 — not exercised locally.
+# Multi-stage Dockerfile for the kurrentschrift FastAPI backend on Cloud Run.
+#
+# Same shape as app/Dockerfile: a builder stage that installs, and a clean
+# runtime stage that only receives the finished artefacts. The single-stage
+# version this replaces carried 362.9 MB of ballast in a 584.8 MB image (62 %),
+# in two layers that each had a named cause — see the comments at the apt and
+# the COPY --chown lines below.
+#
+# Both stages MUST use the same base image: `uv venv` records the interpreter
+# path in .venv/pyvenv.cfg and writes /app/.venv/bin shebangs, so the runtime
+# stage has to offer the same interpreter at the same path (hence WORKDIR /app
+# on both sides too).
+
+FROM python:3.13-slim AS builder
+
+WORKDIR /app
+
+# No build-essential: every one of the 88 packages in uv.lock ships a wheel, so
+# nothing is ever compiled here. The toolchain was 110 MB that only ever sat
+# there. If a future dependency arrives sdist-only, the build fails loudly at
+# this step — which is the right place to notice, not a silently fat image.
+RUN pip install --no-cache-dir uv
+
+# Lock/manifest first for layer caching. The root project is a virtual one
+# (uv.lock: `source = { virtual = "." }`), so this installs dependencies and
+# never the project itself — which is why the source tree is not needed yet.
+# `--frozen` honors uv.lock instead of re-resolving from pyproject.toml
+# (avoids architecture-specific wheel surprises seen on Cloud Build).
+COPY pyproject.toml uv.lock README.md ./
+RUN uv venv && uv sync --frozen
+
+
 FROM python:3.13-slim
 
 WORKDIR /app
 
-# System deps for scipy/skimage wheels + the curl probe.
-RUN apt-get update && apt-get install -y \
-    build-essential \
+# curl serves the HEALTHCHECK below, and nothing else needs a system package.
+# libgl1 used to be installed here for OpenCV — which this project deliberately
+# does not depend on (see tools/eigenhand/fiducial.py). It was 91 MB carried by
+# an image that never imports cv2.
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
-    libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy lock/manifest first for layer-caching.
-COPY pyproject.toml uv.lock README.md ./
+RUN useradd -m -u 1000 appuser
 
-# uv with --frozen so we don't re-resolve from pyproject.toml at build time
-# (avoids architecture-specific wheel surprises seen on Cloud Build).
-RUN pip install --no-cache-dir uv && \
-    uv venv && \
-    uv sync --frozen
+# `COPY --chown` sets ownership as the layer is written. The old
+# `RUN chown -R appuser:appuser /app` did it afterwards, which rewrites every
+# touched file into a fresh layer and so duplicated the entire venv: 150.9 MB
+# for a permission bit. The venv's executables keep their modes across COPY,
+# so the `chmod -R 755 .venv/bin` that used to ride along is gone too.
+COPY --from=builder --chown=appuser:appuser /app/.venv ./.venv
 
 # Application code. The compute layer lives in /core, the HTTP layer in /api.
-COPY api/ ./api/
-COPY core/ ./core/
+COPY --chown=appuser:appuser api/ ./api/
+COPY --chown=appuser:appuser core/ ./core/
 # Source charts are read by the pipeline; ship the whole tree (~6 MB) so a
 # CONFIG.sourceId flip never deploys an image missing its chart.
-COPY data/sources/ ./data/sources/
+COPY --chown=appuser:appuser data/sources/ ./data/sources/
 # Alembic migrations — shipped so the same image can run `alembic upgrade head`
 # as the pre-deploy migrate Cloud Run Job (see api/cloudbuild.yaml).
-COPY alembic.ini ./
-COPY alembic/ ./alembic/
+COPY --chown=appuser:appuser alembic.ini ./
+COPY --chown=appuser:appuser alembic/ ./alembic/
 # Seed data the quiz_words migrations (0010/0011) read at apply time — without
 # it the migrate job dies on FileNotFoundError (seen on the 0011 deploy).
-COPY tools/quizgen/quiz_words.json ./tools/quizgen/quiz_words.json
+COPY --chown=appuser:appuser tools/quizgen/quiz_words.json ./tools/quizgen/quiz_words.json
 # The crawler pages (app/src/lib/seo/prerender.ts renders them at the APP
 # build; the files are committed). `/seo-proxy/{route}` serves them to the
 # mapped crawler UAs the site's nginx proxies here — same relative path as in
 # a checkout, so core.config's default `prerender_dir` needs no override.
-COPY app/prerender/ ./app/prerender/
+COPY --chown=appuser:appuser app/prerender/ ./app/prerender/
 
-# Non-root user.
-RUN useradd -m -u 1000 appuser && \
-    chown -R appuser:appuser /app && \
-    chmod -R 755 /app/.venv/bin
 USER appuser
 
 EXPOSE 8000
