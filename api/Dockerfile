@@ -1,10 +1,13 @@
 # Multi-stage Dockerfile for the kurrentschrift FastAPI backend on Cloud Run.
 #
 # Same shape as app/Dockerfile: a builder stage that installs, and a clean
-# runtime stage that only receives the finished artefacts. The single-stage
-# version this replaces carried 362.9 MB of ballast in a 584.8 MB image (62 %),
-# in two layers that each had a named cause — see the comments at the apt and
-# the COPY --chown lines below.
+# runtime stage that only receives the finished artefacts. Measured in Cloud
+# Build with the same tool for both, the single-stage version this replaces was
+# 1.61 GB unpacked against 531 MB here; in Artifact Registry, which bills the
+# compressed layers, it was 584.8 MB. Two layers carried the difference, each
+# with a named cause — see the comments at the apt and the COPY --chown lines
+# below. Sizes further down are labelled where they are quoted: layer figures
+# from `docker history` are unpacked, registry figures are compressed.
 #
 # Both stages MUST use the same base image: `uv venv` records the interpreter
 # path in .venv/pyvenv.cfg and writes /app/.venv/bin shebangs, so the runtime
@@ -16,9 +19,9 @@ FROM python:3.13-slim AS builder
 WORKDIR /app
 
 # No build-essential: every one of the 88 packages in uv.lock ships a wheel, so
-# nothing is ever compiled here. The toolchain was 110 MB that only ever sat
-# there. If a future dependency arrives sdist-only, the build fails loudly at
-# this step — which is the right place to notice, not a silently fat image.
+# nothing is ever compiled here — the toolchain only ever sat there. If a future
+# dependency arrives sdist-only, the build fails loudly at this step, which is
+# the right place to notice, not a silently fat image.
 RUN pip install --no-cache-dir uv
 
 # Lock/manifest first for layer caching. The root project is a virtual one
@@ -36,8 +39,9 @@ WORKDIR /app
 
 # curl serves the HEALTHCHECK below, and nothing else needs a system package.
 # libgl1 used to be installed here for OpenCV — which this project deliberately
-# does not depend on (see tools/eigenhand/fiducial.py). It was 91 MB carried by
-# an image that never imports cv2.
+# does not depend on (see tools/eigenhand/fiducial.py), and cv2 appears nowhere
+# but in the line that installed the library for it. Together with
+# build-essential this apt layer was 638 MB unpacked; it is 13.7 MB now.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
@@ -46,8 +50,9 @@ RUN useradd -m -u 1000 appuser
 
 # `COPY --chown` sets ownership as the layer is written. The old
 # `RUN chown -R appuser:appuser /app` did it afterwards, which rewrites every
-# touched file into a fresh layer and so duplicated the entire venv: 150.9 MB
-# for a permission bit. The venv's executables keep their modes across COPY,
+# touched file into a fresh layer and so duplicated the entire venv — 150.9 MB
+# compressed, the second-largest layer in the old image, for a permission bit.
+# The venv's executables keep their modes across COPY,
 # so the `chmod -R 755 .venv/bin` that used to ride along is gone too.
 COPY --from=builder --chown=appuser:appuser /app/.venv ./.venv
 
