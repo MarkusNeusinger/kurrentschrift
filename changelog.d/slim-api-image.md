@@ -12,3 +12,4 @@
   result is ~222 MB, which is 62 % less Artifact Registry growth per deploy and
   a shorter deploy rollout; the user-visible cold start was already bought away
   by the min-instance, so this is a cost and rollout change, not a latency one.
+  Measured in Cloud Build against the serving image: 1.61 GB to 531 MB (#473).
