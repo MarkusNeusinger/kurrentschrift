@@ -9670,3 +9670,91 @@ zuvor, die Bench-Slots sind eingefroren (eine Bewegung entstünde erst
 mit deklariertem Re-Export). Quiz-seitig fällt `Stube` aus dem
 Wörter-Pool, bis die Glyphe existiert (gewolltes Gating: kein halb
 geschriebenes Wort).
+
+---
+
+## 15. Sieben angeschnittene Wortproben repariert — angekündigtes Re-Baseline des Wort-Benchs (`aug31`)
+
+**Befund (Autor, aus der Werkbank).** Wortproben, die sich nicht
+nachfahren lassen, weil der i-Punkt fehlt oder der letzte Buchstabe
+halb ist. Nachgemessen auf der ROHEN binarisierten Platte (ohne
+Despeckle — genau dort verschwindet ein dünner Sütterlin-i-Strich):
+von den 202 committeten Proben liegen **169 auf exakt 3 px Luft**, dem
+Standardrand von `propose_boxes` (`BOX_PAD_PX`), und **sieben unter
+diesem Standard**, vier davon mit tatsächlich angeschnittener Tinte
+(negative Luft — die übrigen drei liegen knapp darunter):
+
+| Probe | Fehler | Reparatur |
+|---|---|---|
+| `regieren` | −37 px rechts (letztes `n` durchgeschnitten) | rechts +43, Komma per `exclude` |
+| `zum` | −13 px oben (u-Bogen durchgeschnitten) | oben +19, obsolete `exclude` entfernt |
+| `einer` | −5 px oben (i-Strich durchgeschnitten) | oben +11 |
+| `das` | −4 px links (Anstrich) | links +10 |
+| `und` | 1 px links | links +5 |
+| `Wer` | 2 px oben | oben +4 |
+| `zwei` | 2 px unten | unten +3 |
+
+Die Ursache ist der Standard selbst, nicht die einzelne Zeile: 3 px auf
+der **despeckelten** Maske gemessen sind zu wenig für eine Marke, die
+unter der Despeckle-Schwelle (24 px) liegt. `tools/wordbench/repair_boxes.py`
+misst darum roh nach und hebt nur, was unter dem Standard liegt, auf 6 px;
+die 169 Standard-Rechtecke bleiben Byte für Byte stehen — jedes
+angefasste Rechteck ist ein Fixture und eine Bahn-Registrierung, die
+mitwandern muss.
+
+**Zwei Befunde kamen aus der Sichtprüfung des Autors, nicht aus dem
+Code** — beide waren Fehler der ersten Fassung dieses Werkzeugs:
+
+**`regieren` war rechts wirklich abgeschnitten.** Die erste Fassung
+verweigerte die Reparatur mit einem Deckel von einer x-Höhe und der
+Begründung, jenseits der Kante liege das Komma. Nachgemessen: die 37 px
+sind der **Auslauf des letzten `n` selbst**; das Komma ist eine eigene
+Komponente (Schwärze 0,454 gegen 0,392 des Wortes) und beginnt erst
+dahinter. Ein Deckel von einer x-Höhe verweigert damit eine echte
+Reparatur — die schlimmere der beiden Fehlerarten, denn die Regeln, die
+tatsächlich über Zugehörigkeit entscheiden (Lineatur-Zone, Schwärze,
+Interpunktion), stehen davor. Der Deckel sitzt jetzt bei 2 xh und ist
+nur noch Rückfallebene. Das mitgewachsene Komma bekommt eine
+`exclude`-Box — genau der im Sidecar dokumentierte Fall („punctuation
+overlapping a box edge"): sie deckt 198 von 198 Komma-Pixeln und **0**
+Pixel des Wortes.
+
+**`zum` zeigte einen weißen Block im Ausschnitt.** Seine `exclude`-Box
+war am ALTEN Oberrand verankert und verdeckte dort den Stummel des
+u-Bogens, durch den das alte Rechteck schnitt. Über dem reparierten
+Ausschnitt malt sie einen weißen Kasten auf sauberes Papier und
+beschneidet genau die Marke, die die Reparatur gerettet hat. Regel
+daraus: eine `exclude`-Box, die nur noch EIGENE Tinte verdeckt und keine
+fremde mehr, wird entfernt. Bewusst eng — deckt sie weiter Fremdtinte,
+bleibt sie stehen, auch wenn sie das Wort streift: das ist ein
+handgesetztes Urteil über eine Nachbarzeile, und das überstimmt dieses
+Werkzeug nicht (eine weitere Fassung wollte 12 handgesetzte Boxen
+löschen).
+
+**Was das Re-Baseline auslöst.** Die Rechtecke sind eingefrorene
+Referenzgeometrie: sieben veränderte Crops heißen sieben veränderte
+Referenzmasken. Fällig sind darum, in dieser Reihenfolge, und **nicht
+von dieser Session ausgeführt** (die Fixture-Roots sind lokal, die
+Registrierungs-Korrektur schreibt in die geteilte DB):
+
+1. `git show <merge-base>:…/words.json > temp/old.json`, dann
+   `uv run python -m tools.wordbench.shift_registrations --baseline
+   temp/old.json` — die gespeicherten Bahnen der fünf Proben mit bewegtem
+   Ursprung (`das` dx 10 · `und` dx 5 · `einer` dy 11 · `zum` dy 19 ·
+   `Wer` dy 4) registrieren CROP-lokal und stehen sonst daneben
+   (Frame-Gate `frame_stale`, „Rahmen veraltet" in der Werkbank; die
+   waagerechte Drift fängt gar nichts ab). Kein Nachfahren nötig: die
+   Korrektur IST der Versatz, und die verschobene Zeile bekommt den
+   Ursprung als `rect_origin` mitgestempelt, was den Lauf auf beiden
+   Achsen wiederholbar macht.
+2. Fixture-Re-Export (`export_fixtures.py`), dann ein Wortbench-Lauf.
+3. Die neuen Headlines hier eintragen. **Zahlen über diese Grenze sind
+   nicht vergleichbar** (§2 „Re-Baseline ist eine bewusste menschliche
+   Entscheidung"): sechs von 63 Wort-Referenzen zeigen ab jetzt mehr
+   Tinte als vorher, und mehr Tinte im Soll heißt ohne jede
+   Code-Änderung eine andere Zahl.
+
+Erwartete Richtung: der Loss der sieben steigt eher, denn der i-Strich
+und der u-Bogen, die vorher fehlten, will die Komposition jetzt auch
+treffen. Das ist die richtige Richtung — vorher wurde gegen einen
+Buchstaben gemessen, der auf der Referenz gar nicht ganz da war.

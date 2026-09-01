@@ -1,0 +1,58 @@
+### Fixed
+
+- **Seven word specimens whose rect sat too tight around their word, four of
+  them cutting it.** The i-Strich of `einer` and the u-Bogen of `zum` were
+  sliced by the top edge of their crop, the last `n` of `regieren` was cut
+  by 37 px on the right, and `das` lost the d's entry stroke; `und`, `Wer`
+  and `zwei` merely sat below the plate's own clearance. The rects now
+  enclose that ink with air, and the comma
+  that came in beside `regieren`'s exit stroke is covered by an `exclude` —
+  the sidecar's own answer to punctuation at a box edge.
+- **`zum`'s crop showed a white block.** Its `exclude` was anchored to the
+  old top edge, where it hid the stub of the u-Bogen the rect cut through.
+  Over the repaired crop it painted clean paper white and clipped the mark
+  the repair had just rescued. An exclude that hides only the word's own
+  ink is now dropped with the repair; one that still covers foreign ink
+  always stays, even where it grazes the word.
+  The cause was the standard itself: `propose_boxes` cuts with a 3 px pad
+  measured on the DESPECKLED mask, and a thin Sütterlin diacritic falls
+  under the despeckle floor or lands on the border.
+
+### Added
+
+- **`tools/wordbench/repair_boxes.py`, the repair as a repeatable
+  measurement.** It re-measures on the raw binarised plate and lifts only
+  the edges whose clearance fell below the plate's standard — 169 of the
+  202 specimens sit at exactly that 3 px and are left byte for byte alone,
+  because every rect it touches is a fixture and a stored trace
+  registration that has to move with it. What counts as the word's own ink
+  is decided by the line's own lineature rather than a pixel count:
+  components outside ±1.35 x-heights belong to the neighbouring line,
+  punctuation hangs entirely below the Mittellinie and is never pulled in
+  (every right-edge candidate of the first pass was a comma), pale
+  bleed-through fails a darkness comparison against the word's own stroke.
+  An edge that would grow by more than two x-heights is reported instead of
+  applied, as a backstop behind those rules rather than a rule of its own:
+  at one x-height it refused `regieren`, whose last letter really is cut.
+- **`tools/wordbench/shift_registrations.py` for the other half.** A stored
+  trace registers in crop-local pixels, so a moved rect origin leaves it
+  beside its own ink — vertically that shows as „Rahmen veraltet", and
+  horizontally nothing catches it at all. The correction is exactly that
+  origin shift, no re-tracing. Which crop a row currently counts from is
+  recorded rather than guessed: a shifted row carries its origin as
+  `measurements.rect_origin`, and a row without that stamp belongs to the
+  `--baseline` sidecar. That makes the run exact and repeatable on both
+  axes; a `baseline_row` comparison alone cannot see a repair that moved
+  only `x0`, and two of the real ones are exactly that. It writes to the
+  shared database, so it is dry-run by default (#471).
+
+### Changed
+
+- **A clipped specimen is repaired first and flagged `incomplete` second.**
+  The flag stays for ink that ends on the plate itself, where no rect can
+  enclose it. The frozen fixture is a reason for a declared re-baseline,
+  not a reason to leave the defect standing — `qualitaetsmetrik.md` §15
+  carries the dated entry and the re-export the repair falls due for.
+- **`propose_boxes.py` imports its mask helpers from `core.word_metric`
+  again.** They moved there and the tool had been failing on import ever
+  since.

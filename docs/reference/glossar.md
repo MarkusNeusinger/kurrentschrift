@@ -53,7 +53,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
-- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
+- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schreib-Karte §2 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **U** — Unvollständige Wortprobe §5
@@ -2084,9 +2084,32 @@ Arbeitsliste **und** aus dem Nenner des Nachfahr-Zählers heraus und wird
 als eigene Zahl ausgewiesen. **Beleg bleibt sie**: der heile Teil ist
 weiter messbar. Nicht zu verwechseln mit **Fremdtinte** (§3) — die
 stammt aus einer Nachbarzeile und wird per `exclude` weiß gemalt; hier
-fehlt Tinte des Wortes selbst. Das Rechteck einfach größer zu schneiden
-ist keine Alternative: die Ecken sind eingefrorene Bench-Fixtures
-(`qualitaetsmetrik.md` §14).
+fehlt Tinte des Wortes selbst. **Die Marke ist das zweite Mittel, nicht
+das erste** (Autor, 2026-08-31): schneidet nur das RECHTECK die Tinte
+ab, wird das Rechteck repariert (→ Rechteck-Reparatur) — angeschnittene
+Wörter bringen nichts, und das eingefrorene Fixture ist ein Grund für
+ein angekündigtes Re-Baseline, keiner, den Mangel stehen zu lassen.
+`incomplete` bleibt für das, was kein Rechteck einfangen kann: Tinte,
+die auf der Platte selbst endet.
+
+**Rechteck-Reparatur** *(`tools/wordbench/repair_boxes.py`)* — das
+Nachziehen einer Wortproben-Kante, die die eigene Tinte anschneidet.
+Gemessen wird auf der ROHEN binarisierten Platte, weil der
+Standardschnitt auf der despeckelten misst und ein dünner i-Strich
+unter dieser Schwelle liegt. Was eigene Tinte ist, entscheidet die
+**Lineatur der Zeile**: außerhalb ±1,35 xh liegt die Nachbarzeile,
+Interpunktion hängt ganz unter der Mittellinie und kommt nie herein,
+blasser Durchschlag fällt am Schwärze-Vergleich aus. Über 2 x-Höhen
+Wachstum wird gemeldet statt angewandt (Rückfallebene, bewusst locker:
+bei einer x-Höhe verweigerte sie `regieren`, dessen letztes `n` wirklich
+angeschnitten war). Die `exclude`-Boxen wandern mit — neu eingeschlossene
+Fremdtinte bekommt eine, eine die nur noch eigene Tinte verdeckt fällt
+weg. Zwei weitere Dinge wandern mit: die CROP-lokalen
+Registrierungen gespeicherter Bahnen (`shift_registrations.py`, reiner
+Ursprungs-Versatz, kein Nachfahren — die verschobene Zeile bekommt den
+Ursprung, auf den sie sich bezieht, als `rect_origin` mitgestempelt, sonst
+ist ein Lauf auf der x-Achse nicht wiederholbar) und die Fixture-Roots
+(Re-Export + datierter §15-Eintrag).
 
 **H0–H5 · R1–R5 · W1–W6 · M0–M7** — die vier Nummerierungen der
 Arbeitspläne, bewusst getrennt gehalten:

@@ -1,0 +1,308 @@
+"""Unit tests for the rect repair that re-encloses clipped specimen ink.
+
+Synthetic plates, no committed data: each case is one drawn shape whose right
+answer a reader can see in the numbers. What has to hold, because every one of
+these was a wrong repair the tool proposed before the rule existed:
+
+* a diacritic sliced by the top edge pulls the edge out — that is the whole
+  point (the cut i-Strich of „einer", the cut u-Bogen of „zum");
+* a comma trailing the last letter never does, however close it sits: the
+  stored `word` carries letters only, and the first pass proposed four
+  right-edge repairs that were all commas;
+* ink from the neighbouring line never does either, whether it floats above
+  the rect (foxing, bleed-through) or dips into it (a descender);
+* a rect whose ink already has the plate's standard clearance is left BYTE for
+  byte alone — every rect this tool touches is a fixture and a stored trace
+  registration that has to move with it.
+"""
+
+from __future__ import annotations
+
+import json
+
+import numpy as np
+from PIL import Image
+
+from tools.wordbench import repair_boxes, shift_registrations
+
+
+# The synthetic plate's lineature, chosen like the real Abb. 19: x-height 30 px.
+MIDBAND, BASELINE = 130, 160
+XH = BASELINE - MIDBAND
+
+
+def _plate(tmp_path, shapes: list[tuple[int, int, int, int, int]], name="plate.png"):
+    """A white page with black boxes: (x0, y0, x1, y1, gray)."""
+    arr = np.full((400, 500), 255, dtype=np.uint8)
+    for x0, y0, x1, y1, gray in shapes:
+        arr[y0:y1, x0:x1] = gray
+    Image.fromarray(arr, mode="L").save(tmp_path / name)
+    return tmp_path / name
+
+
+def _entry(rect, **extra):
+    x0, y0, x1, y1 = rect
+    return {
+        "word": "probe",
+        "page": "plate.png",
+        "x0": x0,
+        "y0": y0,
+        "x1": x1,
+        "y1": y1,
+        "baseline_y": BASELINE,
+        "midband_y": MIDBAND,
+        **extra,
+    }
+
+
+def _sidecar(tmp_path, entries: list[dict]) -> None:
+    (tmp_path / "words.json").write_text(json.dumps({"words": entries}), encoding="utf-8")
+
+
+def _plan(src, monkeypatch, shapes, entries):
+    _plate(src, shapes)
+    _sidecar(src, entries)
+    # plan_repairs resolves REPO_ROOT/data/sources/<id>/, and `src` IS that
+    # directory — so the root is three levels up.
+    monkeypatch.setattr(repair_boxes, "REPO_ROOT", src.parent.parent.parent)
+    return repair_boxes.plan_repairs(src.name)
+
+
+def _dirs(tmp_path):
+    """A data/sources/<id>/ layout whose <id> directory is tmp_path itself."""
+    src = tmp_path / "data" / "sources" / "plate-src"
+    src.mkdir(parents=True)
+    return src
+
+
+# The word body: a solid bar across the x-height band, dark ink.
+BODY = (150, MIDBAND, 300, BASELINE, 30)
+
+
+def test_repairs_a_diacritic_cut_by_the_top_edge(tmp_path, monkeypatch):
+    src = _dirs(tmp_path)
+    dot = (200, MIDBAND - 25, 214, MIDBAND - 13, 30)  # floats above the body
+    # The rect starts BELOW the dot's top: the mark is sliced, exactly the
+    # committed „einer" case.
+    repairs, refused = _plan(src, monkeypatch, [BODY, dot], [_entry((147, MIDBAND - 20, 303, BASELINE + 3))])
+    assert not refused
+    assert len(repairs) == 1
+    r = repairs[0]
+    assert r.new[1] == dot[1] - repair_boxes.PAD_PX  # top pulled out to clear the mark
+    assert r.new[0::2] == r.old[0::2]  # the sides it did not need to move stay put
+    # The correction a stored trace must follow is the origin's own shift.
+    assert r.registration_shift == (0, r.old[1] - r.new[1])
+
+
+def test_leaves_a_rect_with_standard_clearance_alone(tmp_path, monkeypatch):
+    src = _dirs(tmp_path)
+    pad = repair_boxes.MIN_CLEARANCE_PX
+    rect = (BODY[0] - pad, BODY[1] - pad, BODY[2] + pad, BODY[3] + pad)
+    repairs, refused = _plan(src, monkeypatch, [BODY], [_entry(rect)])
+    assert (repairs, refused) == ([], [])
+
+
+def test_never_grows_over_trailing_punctuation(tmp_path, monkeypatch):
+    src = _dirs(tmp_path)
+    # A comma: below the Mittellinie, just past the last letter — and here it
+    # even overlaps the body's rows, which is why "sits beside the word" was
+    # not enough of a rule.
+    comma = (306, BASELINE - 6, 318, BASELINE + 10, 30)
+    repairs, _ = _plan(src, monkeypatch, [BODY, comma], [_entry((147, MIDBAND - 3, 303, BASELINE + 3))])
+    assert all(r.new[2] <= 303 for r in repairs), "the rect grew out over the comma"
+
+
+def test_ignores_ink_from_the_neighbouring_line(tmp_path, monkeypatch):
+    src = _dirs(tmp_path)
+    # A descender from the line above: starts far above this line's ascender
+    # zone and dips into the rect, so most of it is INSIDE — the majority test
+    # alone would have adopted it.
+    descender = (200, MIDBAND - 90, 210, MIDBAND + 20, 30)
+    repairs, _ = _plan(src, monkeypatch, [BODY, descender], [_entry((147, MIDBAND - 3, 303, BASELINE + 3))])
+    assert all(r.new[1] >= MIDBAND - repair_boxes.ASCENDER_XH * XH for r in repairs)
+
+
+def test_ignores_pale_bleed_through(tmp_path, monkeypatch):
+    src = _dirs(tmp_path)
+    # Diacritic-shaped and inside the ascender zone, but far paler than the
+    # word's own stroke: foxing or a verso ghost, not this word's mark.
+    ghost = (200, MIDBAND - 25, 214, MIDBAND - 13, 205)
+    repairs, refused = _plan(src, monkeypatch, [BODY, ghost], [_entry((147, MIDBAND - 3, 303, BASELINE + 3))])
+    assert (repairs, refused) == ([], [])
+
+
+def test_refuses_a_runaway_growth(tmp_path, monkeypatch):
+    src = _dirs(tmp_path)
+    # Punctuation FUSED to a letter: one component, so no positional rule
+    # separates it, and only the cap stops the box from swallowing it.
+    # Reported, never applied. The cap is loose on purpose — at one x-height it
+    # refused the real „regieren", whose last letter is genuinely cut by 37 px.
+    fused = (150, BASELINE - 6, 420, BASELINE, 30)
+    repairs, refused = _plan(src, monkeypatch, [BODY, fused], [_entry((147, MIDBAND - 3, 303, BASELINE + 3))])
+    assert repairs == []
+    assert [r.sample_id for r in refused] == ["probe"]
+
+
+def test_apply_touches_only_the_rect(tmp_path, monkeypatch):
+    src = _dirs(tmp_path)
+    dot = (200, MIDBAND - 25, 214, MIDBAND - 13, 30)
+    entry = _entry((147, MIDBAND - 20, 303, BASELINE + 3), id="probe", exclude=[[1, 2, 3, 4]], note="keep me")
+    repairs, _ = _plan(src, monkeypatch, [BODY, dot], [entry])
+    repair_boxes.apply_repairs(src.name, repairs)
+    stored = json.loads((src / "words.json").read_text(encoding="utf-8"))["words"][0]
+    assert stored["y0"] == repairs[0].new[1]
+    # Page-coordinate lineature does not move with the crop origin, and the
+    # entry's other hand-maintained fields survive the rewrite untouched.
+    assert (stored["baseline_y"], stored["midband_y"]) == (BASELINE, MIDBAND)
+    assert (stored["exclude"], stored["note"]) == ([[1, 2, 3, 4]], "keep me")
+
+
+# ------------------------------------ the excludes a moved edge invalidates
+
+
+def test_adds_an_exclude_for_foreign_ink_the_growth_takes_in(tmp_path, monkeypatch):
+    src = _dirs(tmp_path)
+    # The „regieren" shape: the last letter's exit stroke is cut by the right
+    # edge, and a comma sits in the strip the repair has to gain. Enclosing the
+    # letter takes the comma in, and the stored `word` carries letters only —
+    # so the repair hands back an exclude over it.
+    exit_stroke = (296, MIDBAND + 6, 340, MIDBAND + 18, 30)
+    # Beside the exit stroke and below the Mittellinie, not touching it — as on
+    # the plate, where the comma overlaps the last letter's x-range but is its
+    # own component.
+    comma = (330, MIDBAND + 22, 344, BASELINE + 2, 30)
+    repairs, _ = _plan(src, monkeypatch, [BODY, exit_stroke, comma], [_entry((147, MIDBAND - 3, 303, BASELINE + 3))])
+    assert len(repairs) == 1
+    r = repairs[0]
+    assert r.new[2] >= 340, "the cut exit stroke is still outside"
+    assert len(r.added_excludes) == 1
+    ex = r.added_excludes[0]
+    assert ex[0] <= comma[0] and ex[2] >= comma[2] and ex[1] <= comma[1]
+    # Clipped to the crop: what lies outside it needs no painting over.
+    assert ex[3] >= min(comma[3], r.new[3])
+
+
+def test_does_not_cover_a_speck_that_was_inside_all_along(tmp_path, monkeypatch):
+    src = _dirs(tmp_path)
+    # A speck well inside the committed rect, nowhere near the edge that moves.
+    # Not this repair's business: covering it would change a crop where nothing
+    # was wrong.
+    speck = (200, MIDBAND - 2, 208, MIDBAND + 4, 30)
+    dot = (250, MIDBAND - 25, 264, MIDBAND - 13, 30)
+    repairs, _ = _plan(src, monkeypatch, [BODY, speck, dot], [_entry((147, MIDBAND - 20, 303, BASELINE + 3))])
+    assert [r.added_excludes for r in repairs] == [[]]
+
+
+def test_drops_an_exclude_that_now_hides_only_the_word_s_own_ink(tmp_path, monkeypatch):
+    src = _dirs(tmp_path)
+    # `zum`'s case: the exclude was hiding the stub of a diacritic the old rect
+    # cut through. Once the rect encloses the whole mark, the exclude paints a
+    # white block into clean paper and clips what the repair just rescued.
+    # As on the plate, the exclude CLIPS the mark rather than covering it: an
+    # exclude that swallows a component whole is the sidecar saying "this is
+    # foreign", and that judgement is not this tool's to overrule.
+    dot = (200, MIDBAND - 25, 214, MIDBAND - 13, 30)
+    stale = [190, MIDBAND - 16, 230, MIDBAND - 8]
+    entry = _entry((147, MIDBAND - 30, 303, BASELINE + 3), id="probe", exclude=[stale])
+    repairs, _ = _plan(src, monkeypatch, [BODY, dot], [entry])
+    assert len(repairs) == 1
+    assert repairs[0].dropped_excludes == [stale]
+    assert repairs[0].excludes == []
+    assert repairs[0].new == repairs[0].old, "the rect was fine — only the exclude was not"
+
+
+def test_keeps_an_exclude_that_still_covers_foreign_ink(tmp_path, monkeypatch):
+    src = _dirs(tmp_path)
+    # A neighbouring line's descender, already excluded by hand. It grazes the
+    # word, but it is still doing its job — this tool does not overrule a
+    # hand-placed judgement about a neighbour.
+    descender = (200, MIDBAND - 90, 210, MIDBAND + 20, 30)
+    dot = (250, MIDBAND - 25, 264, MIDBAND - 13, 30)
+    entry = _entry((147, MIDBAND - 20, 303, BASELINE + 3), id="probe", exclude=[[196, MIDBAND - 20, 216, MIDBAND + 24]])
+    repairs, _ = _plan(src, monkeypatch, [BODY, descender, dot], [entry])
+    assert len(repairs) == 1
+    assert repairs[0].dropped_excludes == []
+
+
+def test_origins_read_the_crop_corner_of_every_specimen(tmp_path):
+    """The correction is measured between sidecar VERSIONS rather than off a
+    repair plan, so it stays right across two runs of the tool, a hand edit, or
+    both."""
+    src = _dirs(tmp_path)
+    _sidecar(src, [_entry((139, 409, 313, 484), id="einer"), _entry((10, 20, 90, 80), id="still")])
+    assert shift_registrations.origins(src / "words.json") == {"einer": (139, 409), "still": (10, 20)}
+
+
+# ------------------------------- the other half: traces move with their crop
+#
+# The registration is crop-local, so it only means anything together with the
+# crop origin it counts from — which is why a shifted row carries that origin.
+# A `baseline_row` test alone cannot see a repair that moved only `x0`, and two
+# of the real ones (`das`, `und`) are exactly that.
+
+
+def _trace(specimen_id="probe", baseline_row=60.0, tx=4.0, origin=None, registration=True):
+    measurements: dict = {"registration_px": {"tx": tx, "ty": 0.0, "baseline_row": baseline_row}}
+    if not registration:
+        measurements = {"xh_px": 30.0}
+    if origin is not None:
+        measurements[shift_registrations.ORIGIN_KEY] = list(origin)
+    return {
+        "kind": "word",
+        "specimen_id": specimen_id,
+        "word": "probe",
+        "slots": ["p"],
+        "strokes": [[[0, 0], [1, 1]]],
+        "provenance": "authored",
+        "measurements": measurements,
+    }
+
+
+WAS = {"probe": (149, 420), "still": (10, 20)}
+NOW = {"probe": (139, 409), "still": (10, 20)}  # left +10, top +11
+
+
+def test_shift_moves_a_trace_left_behind_by_the_repair():
+    todo = shift_registrations.plan([_trace()], WAS, NOW)
+    assert [d for _, d in todo] == [(10, 11)]
+    moved = shift_registrations.shifted(*todo[0], NOW["probe"])
+    assert moved["measurements"]["registration_px"] == {"tx": 14.0, "ty": 0.0, "baseline_row": 71.0}
+    # The origin it now counts from travels with it — that is what makes the
+    # next run exact instead of guessing.
+    assert moved["measurements"][shift_registrations.ORIGIN_KEY] == [139, 409]
+    # An authored row stays authored: coercing it to `traced` would hand the
+    # author's own pen work to the next harvest to overwrite.
+    assert moved["provenance"] == "authored"
+
+
+def test_shift_moves_a_left_edge_only_repair():
+    """dx without dy — `das` and `und`. Nothing in the row's numbers changes
+    vertically, so a `baseline_row` comparison sees no drift and would leave
+    `tx` behind, mis-registering the trace horizontally with nothing to catch
+    it (the vertical drift at least shows as „Rahmen veraltet")."""
+    was, now = {"probe": (149, 420)}, {"probe": (139, 420)}
+    todo = shift_registrations.plan([_trace()], was, now)
+    assert [d for _, d in todo] == [(10, 0)]
+    moved = shift_registrations.shifted(*todo[0], now["probe"])
+    assert moved["measurements"]["registration_px"]["tx"] == 14.0
+    assert moved["measurements"]["registration_px"]["baseline_row"] == 60.0
+
+
+def test_shift_is_idempotent_on_both_axes():
+    for origin, was, now in (
+        ((139, 409), WAS, NOW),  # top+left repair, already stamped
+        ((139, 420), {"probe": (149, 420)}, {"probe": (139, 420)}),  # left only
+    ):
+        assert shift_registrations.plan([_trace(origin=origin)], was, now) == []
+
+
+def test_shift_skips_untouched_specimens_and_rows_without_a_registration():
+    rows = [_trace(specimen_id="still"), _trace(registration=False)]
+    assert shift_registrations.plan(rows, WAS, NOW) == []
+
+
+def test_shift_trusts_the_stamp_over_the_baseline():
+    """A row stamped with an intermediate origin is corrected from THERE, so a
+    second repair on top of a first one does not double-shift it."""
+    todo = shift_registrations.plan([_trace(origin=(144, 415))], WAS, NOW)
+    assert [d for _, d in todo] == [(5, 6)]

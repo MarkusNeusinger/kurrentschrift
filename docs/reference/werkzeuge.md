@@ -492,6 +492,48 @@ denen es stammt.
   eingefrorene Zeile) und `--no-laufform` komponiert chart-treu ohne
   jede Laufform. Beide liefern per Doktrin §6 eine
   OFF-HEADLINE-Kandidatenzahl, nie die Headline.
+- **`tools/wordbench/repair_boxes.py` + `shift_registrations.py`** (`aug31`)
+  — die Reparatur eines Rechtecks, das die EIGENE Tinte seiner Probe
+  anschneidet (der abgeschnittene i-Strich, der halbe letzte Buchstabe).
+  `propose_boxes` schneidet mit 3 px Rand auf der **despeckelten** Maske;
+  ein dünnes Sütterlin-Diakritikum fällt unter diese Schwelle oder landet
+  auf der Kante. `repair_boxes` misst auf der ROHEN Maske nach und zieht
+  nur die Kanten heraus, deren Luft unter dem Plattenstandard liegt — alles
+  andere bleibt Byte für Byte stehen (gemessen: 169 der 202 Proben liegen
+  exakt auf den 3 px und werden nicht angefasst). Was eigene Tinte ist,
+  entscheidet die **Lineatur der Zeile** (`midband_y`/`baseline_y`), nicht
+  eine Pixelzahl: Komponenten außerhalb ±1,35 xh gehören der Nachbarzeile;
+  Interpunktion hängt ganz unter der Mittellinie und kommt nie herein (jeder
+  Rechts-Kandidat des ersten Laufs war ein Komma); blasser Durchschlag fällt
+  am Schwärze-Vergleich mit dem eigenen Strich aus. Über 2 x-Höhen
+  Wachstum wird **gemeldet statt angewandt** — nur Rückfallebene hinter
+  den Regeln davor, und bewusst locker: bei einer x-Höhe verweigerte der
+  Deckel `regieren`, dessen letztes `n` wirklich um 37 px angeschnitten
+  ist. Die `exclude`-Boxen wandern mit: was das gewachsene Stück NEU
+  einschließt und dem Wort nicht gehört, bekommt eine (das Komma neben
+  `regieren`s Auslauf), und eine Box, die nur noch eigene Tinte verdeckt,
+  fällt weg (`zum`s Box hing am alten Oberrand und malte einen weißen
+  Kasten auf sauberes Papier). Eine Box, die weiter Fremdtinte deckt,
+  bleibt in jedem Fall stehen — handgesetztes Urteil.
+  `--report` · `--sheets <dir>` (Vorher/Nachher-Kacheln, rot/grün) ·
+  `--apply`.
+  **Zwei Dinge wandern mit** und dürfen nicht vergessen werden:
+  gespeicherte Wortbahnen registrieren CROP-lokal, also verschiebt ein
+  bewegtes `x0`/`y0` sie — `shift_registrations.py --baseline <alte
+  words.json>` rechnet genau den Ursprungs-Versatz auf `tx`/`baseline_row`
+  und leitet ihn aus den beiden Sidecar-STÄNDEN selbst ab, sodass zwischen
+  den Werkzeugen keine Liste hin und her wandert. Welchem Ausschnitt eine
+  Zeile gerade folgt, wird **festgehalten**: eine verschobene Zeile trägt
+  ihren Ursprung als `measurements.rect_origin`, eine Zeile ohne Stempel
+  gehört zum `--baseline`-Stand. Ohne das ist ein Lauf auf der x-Achse
+  nicht wiederholbar — ein Test über `baseline_row` allein sieht eine
+  reine Links-Reparatur (`das`, `und`) gar nicht, und deren `tx` bliebe
+  stumm zurück, wo die senkrechte Drift wenigstens als „Rahmen veraltet"
+  auffiele. `--apply` schreibt in die GETEILTE DB und braucht die Zusage
+  des Autors. Und die Fixture-Roots frieren die Rechtecke ein: eine
+  reparierte Platte braucht einen Fixture-Re-Export plus datierten
+  Re-Baseline-Eintrag in
+  [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §15.
 - **`tools/tracebench` + `tools/pairlab/follow`** — das Lineal und der
   Mess-Kandidat des Tintenfolger-Duells
   ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md);
