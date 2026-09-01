@@ -9787,6 +9787,77 @@ Median kam, gegen ihre Masken (die Form-Drift einer n=1-Zeile ist ein
 schlecht deckender Einzelfit); (4) humanbench-Zeilen-Runde — das
 Wahrnehmungs-Lineal über die Zeilen (menschliche-bewertung.md).
 
+### Laufform LF10 `sep01` — gemessen: die Vorhersage (i) ist FALSCH, der Form-Abstand wird nicht adoptiert
+
+**Bestandsaufnahme** (`tools/laufform/inventory.py`, Neuexport
+2026-09-01, 22 Zeilen, BLAS gepinnt; Nib-Radien der Tafeln 0,063–0,067
+xh): τ_form = **1,40** — gesetzt vom w (1,39 Nib-Radien, Zeile→Tafel,
+Anker 109 im ersten Zug; die zehn Prozent fernsten Anker sitzen auf der
+linken Flanke des ersten Schafts und auf der rechten Seite der
+Schlussschleife, die enger sitzt als die Tafel — Breite der Hand, wie
+vorhergesagt: global und glatt), dann Z 1,35 (Tafel→Zeile, Kopf und
+untere Schleife), sz 1,24 (die ß-Bogen im zweiten Zug), g 1,22 (untere
+Schleife). **P liegt mit 1,01 darunter** (Rang 5 von 22, zwischen g und
+p 1,00; Zeile→Tafel, schlechtester Anker 119 im zweiten Zug; Median
+0,36, Maximum 2,55): der P-Bogen läuft einen Nib-Radius INNERHALB des
+Tafel-Bogens, der Fuß-Zug wackelt an seinem Anfang — in der Größenordnung
+der letzten w-Arkade. Kill-Klausel erfüllt, keine Adoption. (ii)
+erfüllt: s 0,42, die Negativkontrolle bleibt frei. (iv) erfüllt: kein
+Kompositions-Code berührt, Golden-Fixture grün. Keine Zeile über
+τ_form, und **keine der sechs Empfindlichkeitsprüfungen kehrt den
+Befund um** — jede setzt P unter ihr eigenes τ: (a) Median τ 0,48 /
+P 0,36; (b) Maximum τ 3,00 / P 2,55; (c) Zeile→Tafel τ 1,40 / P 1,01,
+Tafel→Zeile τ 1,38 / P 0,91; (d) index-weise τ 1,49 / P 1,11; (e)
+zug-agnostisch τ 1,40 / P 1,01; (f) Anker-Polylinie τ 1,40 / P 1,01.
+Die Varianten (e) und (f) liegen bis auf die dritte Dezimale auf der
+Gate-Größe — auf diesen Zeilen liegt kein Anker näher an einem FREMDEN
+Zug als am eigenen, und die gerenderte Mittellinie weicht von der
+Polylinie um weniger als ein Hundertstel Nib-Radius ab; (d) liegt
+überall etwas höher (der Längs-Anteil), ohne die Ordnung zu ändern.
+
+**Zerlegung nach der Zahl (Nachtrag, kein Teil der Vorregistrierung):**
+zug-weise — der vorregistrierte Rettungsweg (1) — trennt auf dieser
+Root ebenfalls nicht: P-Zug 1 (71 Anker, Bogen + Fuß) p90 1,15 gegen
+sz-Zug 1 (52 Anker, die ß-Bögen) 1,69; die Einzug-Zeilen w 1,39, Z 1,35,
+g 1,22 liegen ohnehin darüber. Rettungsweg (1) ist damit ohne eigenen
+Lauf entkräftet und wird nicht wiedervorgelegt. Der Sensor selbst
+verhält sich wie gebaut (identische Zeile 0, Querversatz um k
+Nib-Radien = k, Gleiten entlang des Zugs unsichtbar, ein 15-%-Segment
+bewegt das p90 und nicht den Median — `tests/test_core_laufform.py`).
+
+**Was der Befund heißt.** Der Form-Abstand misst Geometrie treu, und
+die Geometrie des P liegt IM Band der vertrauten Zeilen: w, Z, sz, g
+weichen an ihren Schleifen weiter von der Tafel ab als das P an seinem
+Bogen, und niemand liest sie als Fehler. Was der Autor an P (und an v,
+E, k) als „sichtbar verzogen" sah, ist also kein Abstandsbetrag —
+menschliche-bewertung.md §1 in Reinform: die Kennzahl misst Abstände,
+der Mensch liest Form (Richtung, Proportion, Rhythmus). Die beiden
+Gates, die trennen (Sprung LF8, Kopf LF9), messen genau NICHT den
+Abstand, sondern eine Diskontinuität bzw. eine Richtung. **Nicht
+gemessen:** v, E, k — in Prod seit der LF9-Datenaktion gelöscht; die
+Kopie aus dem Archiv-Snapshot `2026-08-26T23-16-40Z` und die
+Rekonstruktion aus den DB-Vorkommen hat der Auto-Mode-Klassifikator in
+dieser Sitzung verweigert. Der Nachtrag steht dem Autor offen
+(`inventory --laufform DATEI.json` über der Root, τ_form bleibt 1,40);
+er kann die Klasse bestätigen oder widerlegen, das P-Negativ hebt er
+nicht auf — P war die pre-registrierte Kill-Bedingung.
+
+**Rettungswege (je eigene Pre-Reg — nie derselbe Knopf weicher), auch
+in tintenfolger.md §7.9:** (1) ~~zug-weises Gate~~ — nach der Zahl
+entkräftet (oben); (2) **Richtungs-Abstand**: Tangentenwinkel Zeile
+gegen Tafel je Anker, p90 — das flache Segment statt der v-Diagonale
+und der seitliche E-Querstrich sind Richtungsfehler, kein Lagebetrag;
+(3) **Tinten-Evidenz der Zeile**: die Rückzugs-Treue der Fits, aus denen
+der Median kam, gegen ihre Masken — eine n=1-Zeile IST ihr Einzelfit,
+und ein Fit, der die Tinte schlecht deckt, ist eine schlechte Zeile,
+gleich wie weit er von der Tafel liegt; (4) **humanbench-Zeilen-Runde**:
+das Wahrnehmungs-Lineal über die 22 Zeilen als Bilder — es sagt erst,
+WAS an P stört, bevor ein weiterer Geometrie-Sensor gebaut wird; (5)
+**Nachtrag v/E/k** über `--laufform` (Archiv oder Rekonstruktion) —
+Klassen-Bestätigung, kein Gate-Kandidat. Datenaktion: keine; P bleibt
+(Autor-Entscheid), kein Schreibpfad liest den Form-Abstand, die
+Inventar-Spalte `form` bleibt Berichts-Spalte.
+
 ---
 
 ## 15. Sieben angeschnittene Wortproben repariert — angekündigtes Re-Baseline des Wort-Benchs (`aug31`)

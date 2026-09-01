@@ -60,19 +60,29 @@ wörtlich, sodass eine reine Chart-Rückfall-Karte (K0-Arm) nichts anderes
 bewegt.
 
 **`tools/laufform/inventory.py`** — die Bestandsaufnahme der gespeicherten
-Laufform-Zeilen gegen ihre Tafelformen (§14 LF7/LF8/LF9): je Zeile n, die
+Laufform-Zeilen gegen ihre Tafelformen (§14 LF7/LF8/LF9/LF10): je Zeile n, die
 Sprung-Ratio (`core.laufform.anchor_spike_ratio` auf der ZEILE — das
 Sprung-Gate) und die Kopf-Abweichung `head°` (`core.laufform.head_deviation`,
 die Landerichtung des ersten Zugs gegen die Tafel — das Kopf-Gate) neben der
 Natürlichkeits-Lücke als Berichts-Spalte, dazu das datengetriebene τ der
 Sprung-Ratio (Maximum der Zeilen mit n ≥ 3, aufgerundet), das
 Doktrin-τ des Kopf-Gates (15°) und die Zeilen über dem einen wie dem
-anderen (Spalte `gates`); `--png` zeichnet ausgewählte Zeilen über ihre
-Tafelform — das Bild, das das Wort-Lineal nie ansieht.
+anderen (Spalte `gates`). Seit LF10 dazu der Form-Abstand
+(`core.laufform.form_distance`: je Anker der Abstand zur gerenderten
+Mittellinie desselben Zugs der Gegenseite in Nib-Radien der Tafel, beide
+Richtungen; Spalten `form` = schlechteres p90, `f-med`, `f-max`, `dir`), sein
+datengetriebenes τ_form und die vorregistrierten Varianten im Fuß —
+Berichts-Spalte, kein Gate im Schreibweg. `--laufform DATEI.json` misst
+KANDIDATEN-Zeilen (Harvest-Draft-Format `{key: {anchors, n_occurrences}}`,
+dieselbe Datei wie `wordbench.run --laufform`; in der Tabelle mit `*`, nie in
+einem τ) über den Tafeln der Root; `--png` zeichnet ausgewählte Zeilen über
+ihre Tafelform, die Anker ab dem eigenen p90 schwarz — das Bild, das das
+Wort-Lineal nie ansieht.
 
 ```bash
 uv run python -m tools.laufform.inventory [--root DIR] [--json out.json]
 uv run --extra viz python -m tools.laufform.inventory --png inventory.png --only K,t,E
+uv run python -m tools.laufform.inventory --root temp/lf10-root/suetterlin/suetterlin-1922 --laufform drafts.json
 ```
 
 Die Ernte (`tools/laufform/harvest.py --apply`) läuft seit LF7 gegen den

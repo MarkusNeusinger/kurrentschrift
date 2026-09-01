@@ -229,3 +229,84 @@ def test_row_naturalness_ranks_a_jagged_stroke_below_a_smooth_one():
     chart = SimpleNamespace(anchors=smooth, half_widths=hw, trace_meta={"stroke_starts": [0], "unit_px": 64})
     assert naturalness_gap(chart, smooth)["gap"] == 0.0
     assert naturalness_gap(chart, jagged)["gap"] > 0.0
+
+
+# ----------------------------------------------------------------- form distance (LF10)
+
+from core.laufform import form_distance  # noqa: E402
+
+
+# A straight 2-xh stroke along x, 21 anchors, nib radius 0.05 (so 1 nib radius
+# = 0.05 xh); a second, separate stroke 1 xh above it for the stroke tests.
+LINE = [[i * 0.1, 0.0] for i in range(21)]
+NIB = 0.05
+LINE_CHART = SimpleNamespace(anchors=LINE, half_widths=[NIB] * 21, trace_meta={"stroke_starts": [0]})
+
+
+def test_identical_row_has_zero_form_distance():
+    f = form_distance(LINE_CHART, LINE)
+    assert f["nib_radius"] == pytest.approx(NIB)
+    assert f["p90"] == 0.0 and f["median"] == 0.0 and f["max"] == 0.0
+    assert f["correspondence"]["p90"] == 0.0
+
+
+@pytest.mark.parametrize("k", [1.0, 2.5, 4.0])
+def test_transverse_shift_by_k_nib_radii_measures_k(k):
+    """A row shifted across the stroke by k nib radii sits k radii off the
+    chart line in both directions — and the index-wise distance agrees."""
+    shifted = [[x, y + k * NIB] for x, y in LINE]
+    f = form_distance(LINE_CHART, shifted)
+    assert f["row_to_chart"]["p90"] == pytest.approx(k, abs=1e-3)
+    assert f["chart_to_row"]["p90"] == pytest.approx(k, abs=1e-3)
+    assert f["median"] == pytest.approx(k, abs=1e-3) and f["p90"] == pytest.approx(k, abs=1e-3)
+    assert f["correspondence"]["median"] == pytest.approx(k, abs=1e-3)
+
+
+def test_sliding_along_the_stroke_is_invisible_to_the_line_distance_but_not_to_the_index_wise_one():
+    """The longitudinal extent LF5/LF6 found to be the hand's own: a row slid
+    along its chart line stays on the path (interior anchors at distance 0) —
+    only the anchors pushed past the chart's end leave it, and the index-wise
+    correspondence distance reports the full slide."""
+    slid = [[x + 0.1, y] for x, y in LINE]  # one step = 2 nib radii along the line
+    f = form_distance(LINE_CHART, slid)
+    assert f["row_to_chart"]["median"] == 0.0
+    assert f["chart_to_row"]["median"] == 0.0
+    assert f["row_to_chart"]["max"] == pytest.approx(2.0, abs=1e-3)  # the last anchor overhangs the chart end
+    assert f["correspondence"]["median"] == pytest.approx(2.0, abs=1e-3)
+
+
+def test_local_defect_moves_p90_not_the_median():
+    """A flat segment instead of the chart's line over 15 % of the anchors —
+    the LF10 class (the v's diagonal): the median stays put, the p90 does not."""
+    bent = [list(p) for p in LINE]
+    for i in range(9, 12):
+        bent[i][1] = 4 * NIB
+    f = form_distance(LINE_CHART, bent)
+    assert f["median"] < 0.5
+    assert f["p90"] > 3.0
+    assert f["p90_direction"] in ("row_to_chart", "chart_to_row")
+    assert f["row_to_chart"]["argmax"] in (9, 10, 11)
+
+
+def test_same_stroke_rule_does_not_let_another_stroke_rescue_a_displaced_one():
+    """The E's cross stroke sitting sideways: measured against its OWN stroke
+    it is far off; the nearest point of ANY stroke (sensitivity check e) may
+    lie on the other stroke and hide it."""
+    upper = [[i * 0.1, 1.0] for i in range(21)]
+    chart = SimpleNamespace(anchors=LINE + upper, half_widths=[NIB] * 42, trace_meta={"stroke_starts": [0, 21]})
+    # The second stroke of the row drops onto the first stroke's line.
+    dropped = LINE + [[x, 0.0] for x, _ in upper]
+    same = form_distance(chart, dropped)
+    any_stroke = form_distance(chart, dropped, same_stroke=False)
+    assert same["p90"] == pytest.approx(20.0, abs=1e-3)  # 1 xh / 0.05 = 20 nib radii, on the second stroke
+    assert same["row_to_chart"]["values"][:21] == [0.0] * 21
+    assert any_stroke["row_to_chart"]["p90"] == 0.0  # the dropped stroke lies on the first stroke's line
+    assert any_stroke["chart_to_row"]["p90"] > 0.0  # but the chart's upper stroke is left uncovered
+
+
+def test_polyline_and_rendered_agree_on_a_straight_stroke_and_the_count_must_match():
+    f_rendered = form_distance(LINE_CHART, [[x, y + NIB] for x, y in LINE])
+    f_polyline = form_distance(LINE_CHART, [[x, y + NIB] for x, y in LINE], rendered=False)
+    assert f_rendered["p90"] == pytest.approx(f_polyline["p90"], abs=1e-3)
+    with pytest.raises(ValueError):
+        form_distance(LINE_CHART, LINE[:-1])
