@@ -22,4 +22,10 @@
 - **The batch write would have renamed the writer.** Its `hand` is a
   get-or-create that overwrites `label`/`era`/`note` with whatever the body
   carries, and `label` is required — so the tool now reads the stored hand
-  back and echoes it instead of inventing one (#472).
+  back and echoes it instead of inventing one.
+- **`shift_registrations --api` defaults to the deployed host.** Its old
+  `http://localhost:8000` default became unusable the moment the tool
+  adopted the https-only shared client, which is right: the admin token
+  travels in a header. Same default and `API_BASE_URL` override as
+  `fetch_fixtures` and `dbsnapshot`, and nothing is lost — the dev server
+  writes the same shared database anyway (#472).

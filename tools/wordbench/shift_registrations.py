@@ -27,9 +27,10 @@ only the row would silently leave their `tx` behind).
     # dry run — prints every row it would move, writes nothing
     uv run python -m tools.wordbench.shift_registrations --baseline temp/old.json
 
-    # against the deployed API (the apex 302s at the Access edge; use the api host)
+    # writes; the default API base is the deployed host (the apex 302s at the
+    # Access edge, so it is the api host)
     ADMIN_TOKEN=… uv run python -m tools.wordbench.shift_registrations \\
-        --baseline temp/old.json --api https://api.kurrentschrift.ink --apply
+        --baseline temp/old.json --apply
 
 `--apply` WRITES TO THE SHARED DATABASE. Ask the author first: local dev and
 the deployed API talk to the same Cloud SQL instance.
@@ -48,11 +49,10 @@ from pathlib import Path
 from typing import Any
 
 from tools.wordbench.export_fixtures import REPO_ROOT
-from tools.wordbench.fetch_fixtures import USER_AGENT, ApiClient, _NoRedirectHandler, _ssl_context
+from tools.wordbench.fetch_fixtures import DEFAULT_API_BASE, USER_AGENT, ApiClient, _NoRedirectHandler, _ssl_context
 
 
 DEFAULT_SOURCE_ID = "suetterlin-1922"
-DEFAULT_API = "http://localhost:8000"
 
 # Stamped into a shifted row: the crop origin its registration is expressed in.
 # A registration is meaningless without it — the crop it counts from is the one
@@ -166,7 +166,16 @@ def main() -> None:
         help="the words.json version an unstamped row's registration counts from "
         "(git show <ref>:data/sources/<id>/words.json > old.json)",
     )
-    parser.add_argument("--api", default=DEFAULT_API)
+    # Same default and env override as `fetch_fixtures`/`dbsnapshot`, and for
+    # the same reason: the shared client refuses a non-https base, because the
+    # admin token travels in a header. A local http://localhost:8000 is
+    # therefore not an option here — and loses nothing, since the dev server
+    # talks to the same shared database anyway.
+    parser.add_argument(
+        "--api",
+        default=os.environ.get("API_BASE_URL") or DEFAULT_API_BASE,
+        help=f"API base, https only (default: {DEFAULT_API_BASE})",
+    )
     parser.add_argument("--token-env", default="ADMIN_TOKEN")
     parser.add_argument("--apply", action="store_true", help="WRITE the corrected registrations (shared DB!)")
     args = parser.parse_args()
