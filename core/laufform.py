@@ -486,12 +486,21 @@ def head_gate(chart_row: Any, anchors: Sequence[Sequence[float]]) -> dict[str, A
 
 
 def _sampled_strokes(chart_row: Any, anchors: Sequence[Sequence[float]]) -> list[np.ndarray]:
-    """Every pen-stroke's centerline as the renderer samples it: the chart
-    row's sample plan (stroke starts, corner knots, QUALITY_N_SAMPLES) over the
-    given anchors, in the template frame (no slant). One `(k, 2)` array per
-    stroke of `stroke_slices`, in writing order; a stroke the plan cannot
-    sample falls back to its own anchor polyline, so the list always lines up
-    with the anchor ranges and no stroke is ever empty."""
+    """Every pen-stroke's centerline as the renderer samples it, in the
+    template frame (no slant). One `(k, 2)` array per stroke of
+    `stroke_slices`, in writing order; a stroke the plan cannot sample falls
+    back to its own anchor polyline, so the list always lines up with the
+    anchor ranges and no stroke is ever empty.
+
+    What the CHART ROW supplies is the plan's structure — stroke starts,
+    corner knots, widths, QUALITY_N_SAMPLES — while the plan's chord-length
+    allocation across sub-arcs follows the anchors actually passed in. That
+    asymmetry is deliberate and does not reach the measurement: the sample
+    count only sets how densely the SAME spline is discretised, and LF10
+    measures a distance to the resulting polyline, not sample against sample.
+    Probed on a sub-arc split flipped from 55/186 to 180/61 samples: the p90
+    moved by 0.000000 nib radii.
+    """
     pts = np.asarray(anchors, dtype=float).reshape(-1, 2)
     meta = getattr(chart_row, "trace_meta", None) or {}
     starts = meta.get("stroke_starts")
