@@ -434,7 +434,15 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
-    args = build_parser().parse_args()
+    parser = build_parser()
+    args = parser.parse_args()
+    # A narrowing knob that is silently ignored is the worst kind: the run
+    # would report the BASELINE under the name of a candidate arm. Same
+    # doctrine as --expect-root — a number must never lie about its origin.
+    if args.exit_trim_min_kink and not args.exit_trim:
+        parser.error("--exit-trim-min-kink narrows --exit-trim; pass --exit-trim too (or drop it)")
+    if args.exit_trim_min_kink < 0:
+        parser.error("--exit-trim-min-kink is a kink in degrees and cannot be negative")
 
     overrides_by_base: dict[tuple[str, str], dict] = {}
     if args.overrides:

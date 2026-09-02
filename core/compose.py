@@ -1038,13 +1038,22 @@ def _flank_couple_steepest(first_line: list[Point], dx: float, exit_pt: Point) -
     return best
 
 
-def _straight_connector(p0: Point, first_line: list[Point], dx: float, couple_index: int) -> list[Point]:
-    """The straight collinear middle piece from A's exit onto B's flank sample."""
-    target: Point = (first_line[couple_index][0] + dx, first_line[couple_index][1])
+def _straight_to(p0: Point, target: Point) -> list[Point]:
+    """A straight connector between two points already in word coordinates."""
     return [
         (p0[0] + (target[0] - p0[0]) * i / CONNECT_SAMPLES, p0[1] + (target[1] - p0[1]) * i / CONNECT_SAMPLES)
         for i in range(CONNECT_SAMPLES + 1)
     ]
+
+
+def _straight_connector(p0: Point, first_line: list[Point], dx: float, couple_index: int) -> list[Point]:
+    """The straight collinear middle piece from A's exit onto B's flank sample."""
+    return _straight_to(p0, (first_line[couple_index][0] + dx, first_line[couple_index][1]))
+
+
+def _wrap_deg(deg: float) -> float:
+    """An angle difference folded into (−180, 180]."""
+    return -((180.0 - deg) % 360.0 - 180.0)
 
 
 def _overlap_extend(line: list[Point], start: bool = True, end: bool = True) -> list[Point]:
@@ -1238,19 +1247,6 @@ def _exit_trim_index(line: list[Point], couple_pt: Point) -> int | None:
         if abs(_wrap_deg(chord - own)) <= EXIT_TRIM_TOL_DEG:
             return k
     return None
-
-
-def _wrap_deg(deg: float) -> float:
-    """An angle difference folded into (−180, 180]."""
-    return -((180.0 - deg) % 360.0 - 180.0)
-
-
-def _straight_to(p0: Point, target: Point) -> list[Point]:
-    """``_straight_connector``'s line, for a target already in word coordinates."""
-    return [
-        (p0[0] + (target[0] - p0[0]) * i / CONNECT_SAMPLES, p0[1] + (target[1] - p0[1]) * i / CONNECT_SAMPLES)
-        for i in range(CONNECT_SAMPLES + 1)
-    ]
 
 
 def _cut_exit_stub(item: dict, line: list[Point], cut: int, half: float) -> None:
