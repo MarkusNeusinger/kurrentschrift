@@ -10,10 +10,12 @@
   anything else — it holds data by definition and is the likeliest home for
   such a file. It covers every reserved wire shape, not just templates:
   occurrences (`anchors`, `half_widths`, `strokes`) and aggregates
-  (`cluster_center`, `connector_center`) too, and it looks for the numbers
-  next to the key rather than anywhere in the blob — an occurrence may be as
-  small as four anchor points, which no global run-length floor would catch.
-  Only a missing `git` or a
+  (`cluster_center`, `connector_center`) too, plus the render geometry
+  (`silhouette_px`, `outline_polygon`, `fitted_outline_px`). It looks for the
+  numbers next to the key rather than anywhere in the blob, with a minimum
+  count PER key, because the schemas differ: four anchor points is eight
+  coordinates, while a word occurrence is schema-valid at a single two-point
+  stroke — four numbers. No global floor covers both. Only a missing `git` or a
   shallow clone lets it skip; an error from `rev-list` or `cat-file` fails it,
   because a guard that skips on its own errors keeps CI green without ever
   looking. Two batched `cat-file` calls put the whole sweep at about three

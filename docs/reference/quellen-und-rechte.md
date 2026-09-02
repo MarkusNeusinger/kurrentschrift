@@ -311,12 +311,17 @@ losschreiben" kann, gilt technisch:
   alle je committeten Blobs außerhalb der Code-Bäume durch und meldet
   jeden, der einen Render-Payload trägt (Payload-Schlüssel **plus** einen
   Zahlenlauf DIREKT dahinter — eine bloße Erwähnung des Feldnamens in Prosa
-  oder in einem Generator-Skript ist ausdrücklich erlaubt). Schlüsselnah und
-  kurz (acht Zahlen im Umkreis von 300 Bytes) statt global und lang: ein
-  Vorkommen darf aus nur vier Ankerpunkten bestehen, und zwischen zwei
-  Einträgen brechen JSON-Schlüssel jeden längeren Lauf — eine globale
-  40-Zahlen-Schwelle ließe kleine Vorkommens-Dumps also durch, während sie
-  behauptet, sie abzudecken. Die oben genannten
+  oder in einem Generator-Skript ist ausdrücklich erlaubt). Schlüsselnah
+  (Umkreis 300 Bytes) statt global, und die Mindest-Zahlenzahl steht **je
+  Schlüssel**, weil die Schemata sich unterscheiden: `InstanceItem.anchors`
+  hat `min_length` 4, also acht Koordinaten, während ein
+  `WordInstanceItem.strokes` schon mit einem Zwei-Punkt-Zug schema-gültig ist
+  — vier Zahlen. Zwischen zwei Einträgen brechen JSON-Schlüssel jeden
+  längeren Lauf, deshalb ließe eine globale 40-Zahlen-Schwelle kleine
+  Vorkommens-Dumps durch, während sie behauptet, sie abzudecken. Die
+  Schlüsselliste deckt auch die Render-Geometrie mit ab (`silhouette_px`,
+  `outline_polygon(s)`, `fitted_outline_px` aus `core/pipeline.py` und
+  `core/fit.py`). Die oben genannten
   Blobs sind per Hash gepinnt, alles andere lässt den Test rot werden.
   Gepinnt wird per Blob-Hash und nicht per Pfad: Eine Pfad-Ausnahme ließe
   einen NEUEN Dump unter demselben Pfad durch — genau den Fall, den das

@@ -93,10 +93,10 @@ public since 2026-05-19) is **known and ACCEPTED — author's decision of
 re-report it as a finding and do not propose a purge again**: rewriting a
 public `main` would not unmake the copies that clones and forks already
 hold, the README reservation stays the legal boundary either way, and what
-is actually prevented is the repetition. The same holds for the four
-`mvp/canonical/*_v0.json` blobs of the pre-DB prototype — **accepted on
-2026-09-03 on the same reasoning**, likewise settled, likewise not to be
-re-raised.
+is actually prevented is the repetition. The same holds for the three
+`mvp/canonical/*_v0.json` files of the pre-DB prototype — four revisions
+each, twelve blobs — **accepted on 2026-09-03 on the same reasoning**,
+likewise settled, likewise not to be re-raised.
 
 Adding a hash to that allowlist is a licensing decision of the author's,
 never a way to get a red test green. The binary-extension net above cannot
@@ -262,10 +262,11 @@ behind), and the history sweep gained the content pickaxe that finally
 names `.design-sync/previews/_writtenGlyphData.ts`. Both items that opened
 on that day are closed: the `igerman98` index gap was filled, and that blob
 was ACCEPTED by the author on 2026-09-02 and pinned in
-`tests/test_reserved_history.py`. The same net then surfaced four
-`mvp/canonical/*_v0.json` blobs of the pre-DB prototype, which the author
-accepted on 2026-09-03 on the same reasoning; they are pinned there too.
-Nothing in the history battery is open — everything prints only OK lines.
+`tests/test_reserved_history.py`. The same net then surfaced the three
+`mvp/canonical/*_v0.json` files of the pre-DB prototype (four revisions
+each, twelve blobs), which the author accepted on 2026-09-03 on the same
+reasoning; they are pinned there too — 13 blobs in total. Nothing in the
+history battery is open — everything prints only OK lines.
 
 ## Gotchas
 

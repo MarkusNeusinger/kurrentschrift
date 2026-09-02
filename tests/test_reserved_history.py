@@ -46,43 +46,53 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# Identifiers that only a reserved payload carries — every wire shape §5
-# reserves, not just the canonical templates: templates and their renders
-# (`skeleton_polyline_px`, `anchors_template`, `half_widths_template`,
-# `centerlines_template`, `outline_paths`), per-occurrence instances
-# (`anchors`, `half_widths`, `strokes`) and per-hand aggregates
-# (`cluster_center`, `connector_center`). The short forms are deliberate:
-# `anchors` subsumes `pixel_anchors` and `anchors_template`, `half_widths`
-# subsumes `half_widths_px`. Measured against the whole history, widening the
-# list this far adds no false positive — it flags exactly the recorded blobs
-# and nothing else.
-PAYLOAD_KEYS = (
-    b"skeleton_polyline",
-    b"anchors",
-    b"half_widths",
-    b"centerlines",
-    b"outline_paths",
-    b"strokes",
-    b"cluster_center",
-    b"connector_center",
-)
+# Reserved identifier → the fewest numbers that key can legitimately carry.
+# Every wire shape §5 reserves is here, not just the canonical templates:
+# templates and their renders (`skeleton_polyline_px`, `anchors_template`,
+# `half_widths_template`, `centerlines_template`, `outline_paths`), the render
+# geometry (`silhouette_px`, `outline_polygon(s)`, `fitted_outline_px` from
+# `core/pipeline.py` and `core/fit.py`), per-occurrence instances (`anchors`,
+# `half_widths`, `strokes`) and per-hand aggregates (`cluster_center`,
+# `connector_center`). Short forms are deliberate: `anchors` subsumes
+# `pixel_anchors` and `anchors_template`, `half_widths` subsumes
+# `half_widths_px`, `outline_polygon` subsumes `outline_polygons`.
+#
+# The floor is PER KEY because the schemas differ: `InstanceItem.anchors` has
+# min_length 4, i.e. eight coordinates, while a `WordInstanceItem.strokes` is
+# schema-valid at a single two-point stroke — four numbers. One global floor
+# would either miss the small shapes or invite false positives on the large
+# ones. Measured over the whole history these floors produce no false
+# positive: they flag exactly the recorded blobs and nothing else.
+PAYLOAD_KEYS: dict[bytes, int] = {
+    b"skeleton_polyline": 8,
+    b"anchors": 8,
+    b"half_widths": 6,
+    b"centerlines": 8,
+    b"outline_paths": 8,
+    b"outline_polygon": 8,
+    b"silhouette_px": 8,
+    b"fitted_outline_px": 8,
+    b"strokes": 4,
+    b"cluster_center": 4,
+    b"connector_center": 4,
+}
+
 
 # A key alone is not a leak: CHANGELOG.md, CLAUDE.md and the generator scripts
 # all NAME these fields, and prose about the format is explicitly allowed. What
 # distinguishes a dump is that the numbers travel WITH the key — so the run is
 # looked for right after each key, not anywhere in the blob.
 #
-# Key-local and short (8 numbers) rather than global and long: an occurrence
-# may legitimately be as small as four anchor points, i.e. eight coordinates,
-# and between two items sit JSON keys that break any longer run — a global
-# 40-number floor therefore passed small occurrence dumps while claiming to
-# cover them. The separator tolerates brackets because dense geometry is as
-# often nested (`[[x, y], …]`) as flat, and a comma-only run breaks at `],[`.
-#
-# Measured over the whole history this pair (key + 8 numbers within 300 bytes)
-# produces no false positive: prose that names a field does not follow it with
-# coordinates.
-_NUMBER_RUN = re.compile(rb"(?:-?\d+(?:\.\d+)?[\s,\[\]]+){8,}")
+# Key-local and short rather than global and long: between two items sit JSON
+# keys that break any longer run, so a global 40-number floor passed small
+# occurrence dumps while claiming to cover them. The separator tolerates
+# brackets because dense geometry is as often nested (`[[x, y], …]`) as flat,
+# and a comma-only run breaks at `],[`.
+def _run_of(count: int) -> re.Pattern[bytes]:
+    return re.compile(rb"(?:-?\d+(?:\.\d+)?[\s,\[\]]+){%d,}" % count)
+
+
+_RUNS = {key: _run_of(count) for key, count in PAYLOAD_KEYS.items()}
 _KEY_WINDOW = 300
 
 # Trees whose contents are source, tests, tooling or documentation about the
@@ -138,10 +148,10 @@ ACCEPTED_BLOBS = {
 
 def carries_payload(body: bytes) -> bool:
     """True when a reserved key is followed by coordinates rather than prose."""
-    for key in PAYLOAD_KEYS:
+    for key, run in _RUNS.items():
         start = 0
         while (found_at := body.find(key, start)) != -1:
-            if _NUMBER_RUN.search(body[found_at : found_at + _KEY_WINDOW]):
+            if run.search(body[found_at : found_at + _KEY_WINDOW]):
                 return True
             start = found_at + 1
     return False
@@ -248,6 +258,12 @@ def payload_blobs() -> dict[str, str]:
         # run. A global 40-number floor let this through while claiming to
         # cover occurrences; key-local detection catches it.
         ("minimal occurrence", b'{"anchors": [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0], [7.0, 8.0]], "glyph": "e"}', True),
+        # The SMALLEST schema-valid word occurrence: WordInstanceItem.strokes
+        # allows a single two-point stroke, so four numbers. An eight-number
+        # floor would have let this through.
+        ("minimal strokes", b'{"strokes": [[[1.0, 2.0], [3.0, 4.0]]], "word": "das"}', True),
+        # Render geometry from the fit path, which the key list missed at first.
+        ("fitted outline", b'"fitted_outline_px": [' + b", ".join(b"[1.0, 2.0]" for _ in range(6)) + b"]", True),
         # Numbers far from the key are not the key's payload.
         ("key far from numbers", b'"half_widths" is a field.' + b"x" * 400 + b"1, 2, 3, 4, 5, 6, 7, 8, 9,", False),
     ],
