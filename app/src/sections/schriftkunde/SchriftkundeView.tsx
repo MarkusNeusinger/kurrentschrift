@@ -32,6 +32,7 @@ import { Link as RouterLink, useLocation } from 'react-router-dom';
 import type { SxProps, Theme } from '@mui/material/styles';
 import offenbacherSpecimen from '@/assets/specimens/offenbacher-koch-1928-excerpt.jpg';
 import { CategoryHeading } from '@/components/CategoryHeading';
+import { BackToTop } from '@/components/BackToTop';
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 import { PaperCardCta, PaperCardLink } from '@/components/PaperCardLink';
@@ -60,13 +61,9 @@ const prose = {
   lineHeight: 1.7,
 } as const;
 
-// In-prose links: sepia with a hairline underline, viridian on hover.
-const proseLink = {
-  color: paper.sepia,
-  textDecorationColor: `${paper.sepia}80`,
-  transition: 'color .2s',
-  '&:hover': { color: paper.viridianText, textDecorationColor: paper.viridian },
-} as const;
+// In-prose links carry no local style any more: the theme's `MuiLink` owns the
+// look (always-underlined, contrast-derived viridian) so the three prose pages
+// cannot drift apart on it — see theme/components.ts.
 
 type SourceRef = { label: string; href: string };
 type TermItem = { term: string; desc: string };
@@ -92,7 +89,7 @@ function SourceLine({ sources, sx }: { sources: readonly SourceRef[]; sx?: SxPro
       {sources.map((s, i) => (
         <Box component="span" key={s.href}>
           {i > 0 && <Box component="span" sx={{ mx: 0.5 }}>·</Box>}
-          <Link href={s.href} target="_blank" rel="noopener noreferrer" sx={proseLink}>
+          <Link href={s.href} target="_blank" rel="noopener noreferrer">
             {s.label}
           </Link>
         </Box>
@@ -126,7 +123,7 @@ function SectionNav() {
       <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexWrap: 'wrap', rowGap: 0.25 }}>
         {SCHRIFTKUNDE_SECTIONS.map((s, i) => (
           <Box component="li" key={s.id} sx={{ display: 'inline' }}>
-            <Link href={`#${s.id}`} variant="body2" sx={proseLink}>
+            <Link href={`#${s.id}`} variant="body2">
               {s.heading}
             </Link>
             {/* trailing separator, so a wrapped line ends on the dot rather than starting with one */}
@@ -247,7 +244,10 @@ const specimenBoxSx = {
   borderBottom: `1px solid ${paper.line}`,
   py: 1.75,
 } as const;
-const specimenCaptionSx = { fontFamily: garamond, fontStyle: 'italic', fontSize: '0.76rem', color: paper.sepia, mt: 0.75, textAlign: 'center' } as const;
+// Family, italic and tone stay local (§3 allows those in `sx`); the SIZE comes
+// from the `caption` variant at the call site — the ad-hoc 0.76rem rendered at
+// 12.16px, the smallest type on the site and under the binding 14px floor (§9).
+const specimenCaptionSx = { fontFamily: garamond, fontStyle: 'italic', color: paper.sepia, mt: 0.75, textAlign: 'center' } as const;
 
 // One variant's specimen box + caption (see file header). The Sütterlin block is
 // stateful: the engine writes the word live, and on a cold/unreachable API
@@ -304,7 +304,11 @@ function SpecimenBlock({ id }: { id: string }) {
   return (
     <>
       <Box sx={specimenBoxSx}>{content}</Box>
-      {caption && <Typography sx={specimenCaptionSx}>{caption}</Typography>}
+      {caption && (
+        <Typography variant="caption" component="p" sx={specimenCaptionSx}>
+          {caption}
+        </Typography>
+      )}
     </>
   );
 }
@@ -441,7 +445,7 @@ export function SchriftkundeView() {
           <DefinitionRows items={t.decipher} />
           <Typography variant="body2" sx={{ ...prose, mt: 1.5, maxWidth: '62ch' }}>
             {t.decipherTafel.before}
-            <Link component={RouterLink} to={paths.tafel} sx={proseLink}>
+            <Link component={RouterLink} to={paths.tafel}>
               {t.decipherTafel.linkLabel}
             </Link>
             {t.decipherTafel.after}
@@ -487,7 +491,7 @@ export function SchriftkundeView() {
               <Box component="ul" sx={{ mt: 0.75, mb: 0, pl: 3 }}>
                 {group.items.map((s) => (
                   <Typography key={s.href} variant="body2" component="li" sx={{ ...prose, mb: 0.4 }}>
-                    <Link href={s.href} target="_blank" rel="noopener noreferrer" sx={proseLink}>
+                    <Link href={s.href} target="_blank" rel="noopener noreferrer">
                       {s.label}
                     </Link>
                   </Typography>
@@ -503,7 +507,7 @@ export function SchriftkundeView() {
           <Box sx={{ borderLeft: `2px solid ${paper.viridian}`, pl: 2, py: 0.25 }}>
             <Typography sx={{ ...prose, maxWidth: '62ch' }}>
               {t.recommendation.before}
-              <Link href={t.recommendation.href} target="_blank" rel="noopener noreferrer" sx={proseLink}>
+              <Link href={t.recommendation.href} target="_blank" rel="noopener noreferrer">
                 {t.recommendation.linkLabel}
               </Link>
               {t.recommendation.after}
@@ -515,7 +519,7 @@ export function SchriftkundeView() {
           <Box component="ul" sx={{ mt: 0.75, mb: 0, pl: 3 }}>
             {t.recommendation.practiceLinks.map((s) => (
               <Typography key={s.href} variant="body2" component="li" sx={{ ...prose, mb: 0.4 }}>
-                <Link href={s.href} target="_blank" rel="noopener noreferrer" sx={proseLink}>
+                <Link href={s.href} target="_blank" rel="noopener noreferrer">
                   {s.label}
                 </Link>
               </Typography>
@@ -550,6 +554,7 @@ export function SchriftkundeView() {
           </Box>
         </Section>
       </PageContainer>
+      <BackToTop />
     </PublicLayout>
   );
 }

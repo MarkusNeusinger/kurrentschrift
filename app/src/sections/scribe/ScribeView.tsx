@@ -16,6 +16,7 @@ import { WrittenWord } from '@/components/WrittenWord';
 import { lettersFromKeys } from '@/domain/glyphs';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de, fmt } from '@/locales';
+import { hitArea } from '@/styles/hitArea';
 import { garamond, paper } from '@/styles/paper';
 
 // 48 keeps the line legible, not the API (which allows 160 for the
@@ -119,7 +120,9 @@ export function ScribeView() {
           sx={{ mb: 1 }}
         />
 
-        <Stack direction="row" sx={{ flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 3 }}>
+        {/* gap 1.5 (12px), not 1: the chips carry an invisible 44px target
+            below, and 8px of air would let two of them overlap it. */}
+        <Stack direction="row" sx={{ flexWrap: 'wrap', alignItems: 'center', gap: 1.5, mb: 3 }}>
           <Typography component="span" variant="body2" sx={{ color: paper.inkSoft }}>
             {de.scribe.examplesLabel}
           </Typography>
@@ -130,7 +133,7 @@ export function ScribeView() {
               size="small"
               variant="outlined"
               onClick={() => setInput(ex)}
-              sx={{ fontFamily: garamond, borderColor: paper.line, color: paper.ink }}
+              sx={[hitArea(), { fontFamily: garamond, borderColor: paper.line, color: paper.ink }]}
             />
           ))}
           {/* Share the written text — copies the ?text= deep link, label flips
@@ -138,7 +141,7 @@ export function ScribeView() {
           <Button
             size="small"
             onClick={copyLink}
-            sx={{ ml: 'auto', fontFamily: garamond, color: copied ? paper.viridianText : paper.sepia, minWidth: 0 }}
+            sx={[hitArea(), { ml: 'auto', fontFamily: garamond, color: copied ? paper.viridianText : paper.sepia, minWidth: 0 }]}
           >
             {copied ? de.scribe.copied : de.scribe.copyLink}
           </Button>

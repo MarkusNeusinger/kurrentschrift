@@ -34,7 +34,21 @@ export function PageContainer({ children, width = 'text', component = 'div', sx 
           width: '100%',
           maxWidth,
           mx: 'auto',
-          px: { xs: 2.5, sm: 4, md: 6 },
+          // The page gutter is 20/32/48px — but index.html opts the document
+          // into `viewport-fit=cover`, so on a notched phone in landscape the
+          // first ~47px of each edge sit under the cutout. `max()` keeps the
+          // designed gutter everywhere it is already big enough and yields to
+          // the device inset only where the inset is larger (design-system §4).
+          pl: {
+            xs: 'max(20px, env(safe-area-inset-left))',
+            sm: 'max(32px, env(safe-area-inset-left))',
+            md: 'max(48px, env(safe-area-inset-left))',
+          },
+          pr: {
+            xs: 'max(20px, env(safe-area-inset-right))',
+            sm: 'max(32px, env(safe-area-inset-right))',
+            md: 'max(48px, env(safe-area-inset-right))',
+          },
         },
         ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
       ]}

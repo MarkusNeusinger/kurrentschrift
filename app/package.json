@@ -13,7 +13,8 @@
     "type-check": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "fonts:sync": "node scripts/sync-fonts.mjs"
+    "fonts:sync": "node scripts/sync-fonts.mjs",
+    "type-floor": "node scripts/type-floor.mjs"
   },
   "engines": {
     "node": ">=22"

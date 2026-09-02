@@ -15,6 +15,7 @@ import { Box, Button, ButtonBase, Chip, CircularProgress, Link, Paper, Stack, Te
 import { Link as RouterLink, useSearchParams } from 'react-router-dom';
 
 import { CategoryHeading } from '@/components/CategoryHeading';
+import { BackToTop } from '@/components/BackToTop';
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 import { anyWritable, SpecimenStrip, useSpecimenPayloads } from '@/components/SpecimenStrip';
@@ -37,12 +38,8 @@ const MAX_LEN = 32;
 const DEBOUNCE_MS = 450;
 
 const prose = { color: paper.inkSoft, lineHeight: 1.7 } as const;
-const proseLink = {
-  color: paper.sepia,
-  textDecorationColor: `${paper.sepia}80`,
-  transition: 'color .2s',
-  '&:hover': { color: paper.viridianText, textDecorationColor: paper.viridian },
-} as const;
+// (The in-prose link look lives in the theme's `MuiLink` — see
+// theme/components.ts; nothing local is needed here any more.)
 
 // The Antiqua rendering of a reading with every swapped letter marked.
 function MarkedReading({ text, indices }: { text: string; indices: readonly number[] }) {
@@ -320,12 +317,12 @@ export function VergleichenView() {
           <CategoryHeading>{t.moreHeading}</CategoryHeading>
           <Box component="ul" sx={{ m: 0, pl: 3 }}>
             <Typography component="li" sx={{ ...prose, mb: 0.5 }}>
-              <Link component={RouterLink} to={`${paths.schriftkunde}#${SECTION_IDS.decipher}`} sx={proseLink}>
+              <Link component={RouterLink} to={`${paths.schriftkunde}#${SECTION_IDS.decipher}`}>
                 {t.moreDecipher}
               </Link>
             </Typography>
             <Typography component="li" sx={prose}>
-              <Link component={RouterLink} to={paths.quiz} sx={proseLink}>
+              <Link component={RouterLink} to={paths.quiz}>
                 {t.moreQuiz}
               </Link>
             </Typography>
@@ -335,6 +332,7 @@ export function VergleichenView() {
           </Typography>
         </Box>
       </PageContainer>
+      <BackToTop />
     </PublicLayout>
   );
 }
