@@ -404,13 +404,14 @@ Merkmale, über die geurteilt werden soll**: Schleifenweite,
 Binnenraum, die Rundung eines Bogens — bei zugefüllten Ringen sehen
 beide Arme an der entscheidenden Stelle gleich aus, und der Beurteiler
 antwortet ehrlich „kein Unterschied". Sichtbar wurde das erst in den
-Zahlen: auf den 27 Bildschirmen der defekten Fassung lag der
-Unentschieden-Anteil bei 48 %, auf den 48 der reparierten bei 22,9 %
-(§14 „Laufform LF11 — humanbench-Wortrunde"). Ein Anzeigefehler
-erzeugt hier also kein Rauschen in beide Richtungen, sondern **einen
-gerichteten Zug zur Mitte** — er lässt einen echten Unterschied als
-Unentschieden erscheinen und würde damit jeden Kandidaten
-kleinreden.
+Zahlen: über die Verdikt-Bildschirme gezählt lag der
+Unentschieden-Anteil auf der defekten Fassung bei **50,0 %**, auf der
+reparierten bei **25,6 %** (§14 „Laufform LF11 — humanbench-Wortrunde").
+Ein Anzeigefehler erzeugt hier also kein Rauschen in beide Richtungen,
+sondern **einen gerichteten Zug zur Mitte** — er lässt einen echten
+Unterschied als Unentschieden erscheinen und würde damit jeden
+Kandidaten kleinreden. Genau darum ist er teuer: er kostete der Runde
+die Tie-Schranke, die sie sonst genommen hätte.
 
 Zwei Regeln folgen daraus:
 
@@ -420,14 +421,35 @@ Zwei Regeln folgen daraus:
    gezeigt wird, muss deckungsgleich sein mit dem, worüber geurteilt
    werden soll.
 2. **Ein Anzeigefehler, der mitten in einer Runde behoben wird, teilt
-   die Runde.** Die Grenze liegt im Zeitstempel der Urteile, nicht in
-   ihrem Inhalt — sie ist damit unabhängig vom Ergebnis feststellbar,
-   und nur deshalb ist der Ausschluss der defekten Hälfte kein
-   Rosinenpicken. Er bleibt trotzdem POST-HOC und wird in beiden
-   Lesarten berichtet: die Runde als Ganzes UND die bereinigte Menge,
-   in einer Tabelle nebeneinander, mit dem Entscheid des Autors
-   darunter. Wer nur die günstigere Hälfte zeigt, hat die Regel nicht
-   befolgt.
+   die Runde — aber eine geteilte Runde ist eine SCHWÄCHERE Runde, und
+   der Auswerteplan gilt für die Teilmenge unverändert.** Die Grenze
+   liegt im Zeitstempel der Urteile, nicht in ihrem Inhalt; sie ist
+   damit unabhängig vom Ergebnis feststellbar, und nur deshalb ist der
+   Ausschluss der defekten Hälfte kein Rosinenpicken. Drei Dinge sind
+   trotzdem bindend:
+
+   - **Die bereinigte Menge wird nach demselben Plan ausgezählt.**
+     Gespiegelte Wiederholungen messen die Verlässlichkeit und stimmen
+     NIE mit; wer die Bildschirme einer Hälfte einfach addiert, zählt
+     sie mit und bekommt eine Zahl, die es nicht gibt. Genau das ist bei
+     der ersten LF11-Auswertung passiert (36 : 1 aus „48 Bildschirmen"
+     statt 28 : 1 aus 39 Verdikt-Bildschirmen).
+   - **Ein Schnitt zerlegt auch die Wiederholungspaare.** Bleiben in der
+     bereinigten Menge weniger als `MIN_PAIRED_REPEATS` = 6
+     vollständige Paare, **trägt sie keinen Adoptionsanspruch** — sie
+     ist diagnostisch. Die Verlässlichkeit der GANZEN Runde ersetzt das
+     nicht: sie ist über eine Anzeige gemessen, die es in der Hälfte
+     der Bildschirme nicht mehr gibt.
+   - **Berichtet werden beide Lesarten** — die Runde als Ganzes UND die
+     bereinigte Menge, in einer Tabelle nebeneinander. Wer nur die
+     günstigere Hälfte zeigt, hat die Regel nicht befolgt.
+
+   Reicht die bereinigte Menge nicht, ist der Weg zu einem echten
+   Verdikt eine **Wiederholungsrunde vollständig auf der reparierten
+   Seite** — nicht ein weicheres Kriterium. Eine Freigabe kann der Autor
+   trotzdem erteilen; sie heißt dann Autor-Entscheid und nicht
+   Instrument-Verdikt, und die Unterscheidung gehört in den
+   §14-Eintrag.
 
 ### 3.7 Ein Marker je Bild — und ein fehlender Marker ist kein Datum
 
@@ -936,9 +958,12 @@ Kategorien-Durchgang mit den alten Fits, und die gelabelten Vorkommen paarig.
 
 > **Stand 2026-09-03: gebaut, synthetisch abgenommen — und einmal
 > gefahren.** Die erste Runde (`sep02`, Basis gegen die LF11-Karte) hat
-> den Modus getragen: sie war entscheidungsfähig, hat eine Adoption
-> ausgelöst und dem Instrument die Konstruktionsregel §3.6b („gefüllte
-> Ringe“) eingetragen. Die Zahlen einer Runde gehören nach
+> den Modus getragen und dem Instrument die Konstruktionsregel §3.6b
+> („gefüllte Ringe“) eingetragen. Ein **formales** Verdikt hat sie nicht
+> geliefert: ein Anzeigefehler in den ersten 27 Bildschirmen hat sie
+> geteilt, und die bereinigte Menge nimmt die Tie-Schranke knapp nicht
+> und hat zu wenige Wiederholungspaare. Die Richtung war eindeutig, der
+> Autor hat auf dieser Grundlage freigegeben. Die Zahlen gehören nach
 > [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §14 („Laufform LF11 —
 > humanbench-Wortrunde“); hier steht nur, wie sie zustande kommen.
 

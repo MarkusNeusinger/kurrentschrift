@@ -2,9 +2,12 @@
 
 - **The running forms of the 1922 hand are smooth now.** All 22 Laufform rows
   of `suetterlin-1922` were rewritten as spline-basis medians (LF11, knot
-  spacing 0.16 x-heights) after the first humanbench word round decided what no
-  ruler could: on the 48 screens of the repaired page the author chose the
-  candidate 36 times against 1. The rows had been reversing their curvature a
+  spacing 0.16 x-heights) on the author's decision, informed by the first
+  humanbench word round: 28 judgements to 1 for the candidate on the repaired
+  page, 40 to 1 across the whole round. The round does not carry a formal
+  verdict — a display fault split it, and the cleaned half misses the tie
+  threshold by 0.6 points — so the journal records an author decision rather
+  than an instrument verdict. The rows had been reversing their curvature a
   median of 6.9 times per x-height against their chart rows' 0.2 — the worst of
   them, the `c`, 21.8 times — and every bound word rendered one, which made it
   the single largest difference between "written" and "computed" in the product.
@@ -27,7 +30,9 @@
   toward "no difference".** The silhouette of a pen stroke is an outer ring plus
   the rings of its interior, and the page filled each ring separately, so every
   loop ran solid — which erases exactly the features a reader is asked to judge.
-  The tie share was 48 % on the affected screens against 22.9 % on the repaired
+  The tie share was 50.0 % on the affected screens against 25.6 % on the repaired
   ones. `menschliche-bewertung.md` gains it as construction rule 3.6b next to
-  the failure it came from, with the rule that a display fixed mid-round splits
-  the round at the timestamp and both readings get reported (#501).
+  the failure it came from — including the part the first draft of this PR got
+  wrong: a split round is a weaker round, its cleaned half is counted under the
+  same plan (mirrored repeats never vote), and below six complete repeat pairs
+  it is diagnostic rather than adoption-carrying (#501).

@@ -3605,7 +3605,7 @@ die DB) — mit seiner Bedingung.
 | sep02 | Laufform | [LF11 gemessen](#laufform-lf11-sep02--gemessen-eine-sprosse-besteht-alle-gates-und-sie-repariert-die-zeilen-gates-gleich-mit) | Pre-Reg + gemessen · Sprosse Δs 0,16 besteht alle Gates; Adoption offen | Zacken/xh 6,86→0,45, Wörter 0,109218 · Paare 0,148198, keine Kreuzung verloren; Karte trocken, wartet auf die humanbench-Wort-Runde |
 | sep02 | Übergänge | [J4 Austritts-Kollinearität (`exit_trim`)](#übergänge-j4-sep02--vorregistrierung-die-austritts-kollinearität-exit_trim) | Pre-Reg + gemessen · verworfen | 4 von 5 Gates grün (Wörter −0,000535, seam_dep +12,52→−1,39), (b) rot: `dconn` fällt nur in 20 % statt 60 % |
 | sep02 | Übergänge | [J4b enge Klasse](#übergänge-j4b-sep02--post-hoc-die-enge-klasse-nur-die-joins-die-wirklich-knicken) | POST-HOC · verworfen | Schnitt bei 20° Knick rettet den Arm nicht: `dconn` 43 %, seam_dep der Klasse nur +8,02 — Rettungswege in §7.9 |
-| sep02 | Laufform | [LF11 humanbench-Runde und Adoption](#laufform-lf11-sep02--humanbench-wortrunde-instrumentdefekt-und-adoption-prod-write--re-baseline) | **ADOPTIERT** · Prod-Write + Re-Baseline | 48 reparierte Bildschirme 36:1 für LF11 (97,3 %, Ties 22,9 %); 27 als Instrumentdefekt „gefüllte Ringe" ausgeschlossen (POST-HOC, Autor-Entscheid); Write nach Snapshot `2026-09-02T21-58-16Z`, Readback 22/22; Wörter 0,109218 · Paare 0,148198 |
+| sep02 | Laufform | [LF11 humanbench-Runde und Adoption](#laufform-lf11-sep02--humanbench-wortrunde-instrumentdefekt-und-adoption-prod-write--re-baseline) | **ADOPTIERT auf Autor-Entscheid** (kein formales Instrument-Verdikt) · Prod-Write + Re-Baseline | Richtung eindeutig (reparierte Menge 28:1 = 96,6 %, ganze Runde 40:1), aber die Tie-Schranke hält in keiner Lesart (25,6 % bzw. 34,9 % gegen ≤ 25 %) und die bereinigte Menge hat nur 3 der nötigen 6 Wiederholungspaare; 27 Bildschirme als Instrumentdefekt „gefüllte Ringe" ausgeschlossen (POST-HOC); Write nach Snapshot `2026-09-02T21-58-16Z`, Readback 22/22; Wörter 0,109218 · Paare 0,148198 |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -10763,33 +10763,61 @@ liefen auf der reparierten Seite. Beleg
 die Zeitstempel der ersten 27 sind identisch mit dem Zwischenstand von
 20:30 Uhr.
 
-**Beide Lesarten, nebeneinander — die Ausschluss-Entscheidung wird nicht
-versteckt:**
+**Nachgerechnet nach dem bindenden Auswerteplan — und das Ergebnis ist
+schwächer, als die erste Fassung dieses Abschnitts behauptet hat.** Der
+Plan (`menschliche-bewertung.md`, „Der Auswerteplan") verlangt zweierlei,
+das eine Zählung über „48 Bildschirme" verletzt: **gespiegelte
+Wiederholungen messen die Verlässlichkeit und stimmen NIE mit** (darum
+zählt `analyse.py` 63 und nicht 75), und **unter
+`MIN_PAIRED_REPEATS` = 6 vollständigen Paaren trägt eine Menge keinen
+Adoptionsanspruch**. Beides nachgezogen (Wiederholungen entfernt, Schnitt
+an derselben Zeitstempel-Grenze):
 
-| Menge | entschieden | LF11 : Basis | Anteil | „kein Unterschied" | Schwellen (≥ 60 % / ≤ 25 %) |
-|---|---|---|---|---|---|
-| alle 75 Bildschirme | 51 | 49 : 2 | 96,1 % | 24 (32,0 %) | Kandidat ✓ · Ties **✗** |
-| Werkzeuglauf über die 63 Wörter | 41 | 40 : 1 | 97,6 % | 22 (34,9 %) | `adopt: false` |
-| **die 48 reparierten** | **37** | **36 : 1** | **97,3 %** | **11 (22,9 %)** | **beide ✓** |
+| Menge (nur Verdikt-Bildschirme) | n | entschieden | LF11 : Basis | Anteil | „kein Unterschied" | Schwellen (≥ 60 % / ≤ 25 %) |
+|---|---|---|---|---|---|---|
+| ganze Runde | 63 | 41 | 40 : 1 | 97,6 % | 22 (34,9 %) | Kandidat ✓ · Ties **✗** |
+| die 27 defekten | 24 | 12 | 12 : 0 | 100 % | 12 (50,0 %) | Kandidat ✓ · Ties **✗** |
+| die 48 reparierten | 39 | 29 | 28 : 1 | 96,6 % | 10 (**25,6 %**) | Kandidat ✓ · Ties **✗** (um 0,6 Punkte) |
 
-Auf den 48 reparierten tragen alle drei Verdachtsklassen: kontrolle
-13/13, lineal-streit 12/12, zeile-repariert 11/12; die drei
-Wiederholungspaare, die vollständig im reparierten Teil liegen, stimmen
-3/3.
+Verlässlichkeit: 12 Paare über die ganze Runde, **10/12 gleicher Arm**
+(über der Münzwurf-Schranke, nur 2/12 gleiche Seite) — aber
+**nur 3 Paare liegen vollständig im reparierten Teil**, also unter
+`MIN_PAIRED_REPEATS` = 6.
 
-**Entscheid des Autors (2026-09-02): die 48 reparierten Bildschirme
-gelten als Runde, die 27 fehlerhaften werden als Instrumentdefekt
-ausgeschlossen.** Das ist ein POST-HOC-Ausschluss und wird als solcher
-geführt — er ist nicht durch die Vorregistrierung gedeckt, sondern
-durch einen benannten, physikalisch erklärten und in PR #492 behobenen
-Fehler des Anzeigewegs, dessen Grenze im Zeitstempel liegt und nicht in
-den Urteilen. Wer die Runde als Ganzes liest, findet die Tie-Schwelle
-verfehlt; das steht oben in derselben Tabelle. Die Lehre ist als
-Konstruktionsregel 3.6b in `menschliche-bewertung.md` festgehalten —
-neben dem Fehler, für den sie kam.
+**Damit trägt KEINE Teilmenge einen formalen Adoptionsanspruch nach dem
+vorregistrierten Plan.** Die Richtung ist in jeder Lesart eindeutig und
+sehr stark (28 : 1 auf den reparierten, 40 : 1 über die ganze Runde,
+kein einziger Bildschirm für die Basis unter den defekten) — was fehlt,
+ist die Tie-Schranke: der Unentschieden-Anteil bleibt auch bereinigt mit
+25,6 % um 0,6 Punkte über der Grenze, und die bereinigte Menge ist auf
+der Verlässlichkeits-Seite unterbesetzt.
+
+**Was der Write also ist: eine Autor-Entscheidung, informiert durch die
+Runde — kein Verdikt des Instruments.** Der Autor hat die 27 defekten
+Bildschirme als Instrumentdefekt ausgeschlossen (POST-HOC; die Grenze
+liegt im Zeitstempel, nicht in den Urteilen, und der Fehler ist benannt,
+physikalisch erklärt und in PR #492 behoben) und auf dieser Grundlage
+freigegeben. Das ist zulässig — die Schwellen sind eine
+Adoptions-AUTOMATIK, keine Erlaubnisschranke für den Autor —, aber es
+ist etwas anderes, als das Instrument entscheiden zu lassen, und wird
+hier nicht als solches ausgegeben. Die erste Fassung dieses Abschnitts
+zählte 36 : 1 aus 48 Bildschirmen; darin steckten Wiederholungen, die
+nicht mitstimmen dürfen. **Gefunden hat das die Copilot-Durchsicht von
+PR #501, nicht diese Messung** — festgehalten, weil ein Auswerteplan,
+der beim ersten Gebrauch umgangen wird, keiner ist.
+
+**Der saubere Weg zu einem echten Verdikt** (offen, für den Autor): eine
+Wiederholungsrunde vollständig auf der reparierten Seite, mit ihren
+eigenen ≥ 6 Paaren. Sie kostet ~10 Minuten und würde die Frage
+beantworten, die diese Runde nur noch nahelegt.
+
+Die Lehre aus dem Defekt selbst ist als Konstruktionsregel 3.6b in
+`menschliche-bewertung.md` festgehalten — neben dem Fehler, für den sie
+kam.
 
 **Autor-Go (2026-09-03, 00:15): „Weg 1, Go — mit 96 % ist das eindeutig
-der richtige Weg."**
+der richtige Weg."** (Die 96 % sind der Kandidaten-Anteil, der in jeder
+Lesart hält; die Schranke, die fehlt, ist die Tie-Schranke.)
 
 **Der Write.** Archiv-Snapshot **vorher**:
 `kurrentschrift-data/db-snapshots/2026-09-02T21-58-16Z` (Plausibilität

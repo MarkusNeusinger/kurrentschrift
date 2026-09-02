@@ -4,7 +4,7 @@
 > gemessen und §7 in Arbeit; adoptiert sind Kette **v5** (`aug26`),
 > Lotse **v0.17** (`aug20`), die Lineal-Stände **v2.1** (`aug16`) /
 > **L-U** (`aug26`) und die Laufform **LF11** („glatte Zeile", `sep02`,
-> nach der ersten humanbench-Wortrunde). Der Ist-Stand mit Zahlen steht im nächsten
+> auf Autor-Entscheid nach der ersten humanbench-Wortrunde). Der Ist-Stand mit Zahlen steht im nächsten
 > Abschnitt „Stand der Kampagne“, die stehenden Rettungswege in §7.9,
 > die offenen Arme und Autorenschritte in §7.11. Zahlen und
 > Vorregistrierungen wohnen ausschließlich in
@@ -76,15 +76,21 @@ Verfahrensseite; geändert wird sie nie hier.
 > K-E1/K-E2 · LF1/LF2/LF3/LF5/LF6/LF7/LF10 · J1/J2/J3 · J4/J4b. K-D
 > wurde gegenstandslos, nicht verworfen.
 >
-> **Adoptiert `sep02`.** LF11 „glatte Zeile" (Sprosse Δs 0,16): alle
-> vier Trocken-Gates grün, danach die erste humanbench-WORT-Runde —
-> auf den 48 Bildschirmen der reparierten Seite **36 : 1 für LF11**
-> (97,3 %, Ties 22,9 %), 27 Bildschirme als Instrumentdefekt „gefüllte
-> Ringe" ausgeschlossen (POST-HOC, Autor-Entscheid). Autor-Go, Snapshot
-> `2026-09-02T21-58-16Z`, 22 Zeilen geschrieben, Readback 22/22. Die
-> Laufform-Zeilen der 1922er Hand sind seither Spline-Basis-Mediane.
-> Das war der Fall, für den das Auge gebaut wurde: das Wort-Lineal
-> belohnt den Zickzack stellenweise und konnte nicht entscheiden.
+> **Adoptiert `sep02` auf Autor-Entscheid.** LF11 „glatte Zeile"
+> (Sprosse Δs 0,16): alle vier Trocken-Gates grün, danach die erste
+> humanbench-WORT-Runde. Deren Richtung ist eindeutig — **28 : 1 für
+> LF11** auf den Verdikt-Bildschirmen der reparierten Seite (96,6 %),
+> 40 : 1 über die ganze Runde —, ein FORMALES Verdikt trägt sie aber
+> nicht: ein Anzeigefehler („gefüllte Ringe", PR #492) hat die ersten 27
+> Bildschirme entwertet, und die bereinigte Menge nimmt die Tie-Schranke
+> mit 25,6 % knapp nicht und hat nur 3 der nötigen 6
+> Wiederholungspaare. Der Autor hat auf dieser Grundlage freigegeben;
+> Snapshot `2026-09-02T21-58-16Z`, 22 Zeilen geschrieben, Readback
+> 22/22. Die Laufform-Zeilen der 1922er Hand sind seither
+> Spline-Basis-Mediane. Der Fall bleibt der, für den das Auge gebaut
+> wurde — das Wort-Lineal belohnt den Zickzack stellenweise —, nur hat
+> das Auge diesmal beschlagen. **Offen: eine Wiederholungsrunde
+> vollständig auf der reparierten Seite (§7.11).**
 >
 > **Offen (§7.11).** KI-messbar: LF4 (p) ·
 > Abstandsterm/Schleifen-Halteterm für die 13 v5-Rückweisungen ·
@@ -1136,7 +1142,8 @@ davon liegt zusätzlich als Todoist-Aufgabe im Projekt „Kurrentschrift"):
 | Schritt | Herkunft | Warum er hängt | Stand |
 |---|---|---|---|
 | **Bestätigungssatz A, dann B** | §2.5, verfahren-lotse.md | Schlussstein vor jeder Adoption jenseits der Routen-Konstanten; er sperrt außerdem den referenzfreien Auswähler „Vier Augen" | offen |
-| **humanbench-WORT-Runde** | §14 „Methodik-Lücke `aug16`", K-E1/K-E2 | der einzige benannte Tie-Breaker für ruler-indifferente Fälle | **erste Runde gefahren `sep02`** (Basis vs. LF11, Fassung A2): das Instrument steht und hat entschieden, wo das Lineal blind war — §14 „Laufform LF11 — humanbench-Wortrunde". Für K-E1/K-E2 weiter offen, aber nicht mehr mangels Instrument |
+| **humanbench-WORT-Runde** | §14 „Methodik-Lücke `aug16`", K-E1/K-E2 | der einzige benannte Tie-Breaker für ruler-indifferente Fälle | **erste Runde gefahren `sep02`** (Basis vs. LF11, Fassung A2): das Instrument steht, ein formales Verdikt trug die Runde wegen des Anzeigefehlers aber nicht — §14 „Laufform LF11 — humanbench-Wortrunde". Für K-E1/K-E2 weiter offen, aber nicht mehr mangels Instrument |
+| **LF11-Wiederholungsrunde auf der reparierten Seite** | §14 „Laufform LF11 — humanbench-Wortrunde" | die `sep02`-Runde wurde vom Anzeigefehler „gefüllte Ringe" geteilt; die bereinigte Menge verfehlt die Tie-Schranke um 0,6 Punkte und hat 3 statt 6 Wiederholungspaare | offen: ~10 min Urteilszeit, gleiche Karten, vollständig auf der reparierten Seite — sie würde den Autor-Entscheid durch ein Instrument-Verdikt ersetzen |
 | **Prod-Re-Harvest der `traced`-Zeilen mit Kette v5** | §14 K-B · v4 · LF3b-W | seit `aug19` viermal vertagt („hinter Autor-Go + dbsnapshot"); die gespeicherten Bahnen stammen noch aus älteren Ketten-Ständen | offen |
 | **St-Ligatur im Wizard nachfahren** | §14 „Übergänge Korb-Runde `aug30`" (Korb #9) | bis dahin greift der Ligatur-Zerfall, und `Stube` fällt aus dem Quiz-Pool | offen |
 | **Laufform-Lücke G · W · K · ue · F · ae · b** | §14 „Lotse v0.15 `aug19`" (dritter Nachtrag), LF8/LF9 | 43 von 62 Glyphen komponieren aus der rohen Chart-Form, weil ihnen die Laufform fehlt oder sie ein Gate nicht bestand | offen; der Weg dorthin ist die Eigenhand-Ernte |
