@@ -32,9 +32,11 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       // Without `include`, Vitest 4 reports only the modules a test happened to
-      // import — which read as 82.7 % while the whole SPA source was at 18.1 %.
-      // A coverage number that measures its own test list is worse than none.
-      // (This is Vitest 4's replacement for the old `all: true`.)
+      // import — 43 of 201 SPA source files, which read as a headline in the
+      // eighties. A coverage number that measures its own test list is worse
+      // than none. (This is Vitest 4's replacement for the old `all: true`.)
+      // The honest figures live where they can be kept current: the Codecov
+      // floors in codecov.yml and docs/reference/frontend-stack.md §1.
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['src/**/*.test.*', 'src/main.tsx', 'src/vite-env.d.ts'],
       reporter: ['text-summary', 'json'],
