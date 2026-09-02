@@ -7,7 +7,7 @@
   them — Nachschlagen, Lesen, Schreiben — and points at each area's entry
   rather than repeating the inventory the cards below already hold. Built from
   the existing `PaperCardLink`, so the focus ring, the link colour and the
-  touch target come from the theme instead of a new component (#NNN).
+  touch target come from the theme instead of a new component (#503).
 
 ### Changed
 
@@ -16,11 +16,11 @@
   around. The Kirchenbucheintrag joins the letters and deeds, and the reasons —
   Familienforschung, Archiv, Neugier — sit as an aside between dashes, so the
   sentence keeps the tone of a preface around 1900 rather than turning into a
-  pitch (#NNN).
+  pitch (#503).
 
 ### Fixed
 
 - **The Übungsblatt page's sitemap date was left behind by its own change.**
   #499 rewrote `worksheet.ts` but not the `<lastmod>` that the prerender prints
   as that page's visible „Stand" line. The guard added in #483 caught it on the
-  next build, which is what it is for (#NNN).
+  next build, which is what it is for (#503).
