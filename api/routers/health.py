@@ -30,8 +30,10 @@ async def health(request: Request) -> dict:
     the gate, so the answer comes back on every route into the service: the
     `api.` host, the apex `/api/*` behind Cloudflare Access, the site's nginx,
     the raw `run.app`. That is what makes the rollout measurable instead of a
-    leap: with the Transform Rule live but the gate still off, every path that
-    must keep working has to answer `off-seen` before the switch is thrown. It
+    leap: with the edge already stamping but the gate still off, every path that
+    must keep working has to answer `off-seen` before the switch is thrown —
+    which is how the admin route was caught still answering `off`, its Worker
+    subrequest skipping the zone's Transform Rules (`infra/cloudflare/`). It
     reports the verdict, never the value, and tells a caller nothing about its
     own request it did not already know.
     """

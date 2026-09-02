@@ -745,14 +745,20 @@ Eine **Transform-Rule** stempelt seit 2026-09-02 den Header
 `api.kurrentschrift.ink` weiterreicht; alles ohne ihn bekommt **403** —
 vor dem Limiter, vor `require_admin`, vor jeder DB-Abfrage. Es ist
 **keine Authentifizierung**: der Header sagt „durch die Vordertür", nicht
-wer da kommt. Ohne gesetzte `ORIGIN_SECRET`-Env ist die Prüfung aus, und
-genau das ist der Rollback; ausgenommen bleiben `/health` (der Deploy-Smoke
-probt die `run.app`-Tag-URL) und `/seo-proxy/…` (Crawler-Pfad). `/health`
+wer da kommt. **Eine Ausnahme, gemessen beim Rollout:** ein
+Worker-Subrequest an einen Host DERSELBEN Zone läuft an den Transform-Rules
+vorbei, deshalb stempelt der Apex-Worker vor dem Admin-Weg selbst
+(`infra/cloudflare/`). Ohne gesetzte `ORIGIN_SECRET`-Env ist die Prüfung aus,
+und genau das ist der Rollback (Env entfernen **und** die neue Revision
+promoten); ausgenommen bleiben `/health` (der Deploy-Smoke probt die
+`run.app`-Tag-URL) und `/seo-proxy/…` (Crawler-Pfad). `/health`
 meldet als `origin_gate` das Urteil für den fragenden Request (`off` ·
 `off-seen` · `ok` · `missing` · `mismatch`, nie den Wert); `off-seen` heißt
-„Regel liefert, Prüfung noch aus" und ist das Messmittel, mit dem jeder Weg
-in den Dienst bestätigt wird, bevor scharf geschaltet wird. *Technisch:*
-`api/origin_gate.py`, `core/config.py::origin_secret`.
+„Header kommt an, Prüfung noch aus" und ist das Messmittel, mit dem jeder Weg
+in den Dienst bestätigt wird, bevor scharf geschaltet wird — es ist der
+Grund, warum der Worker-Befund vor und nicht nach dem Scharfschalten auffiel.
+*Technisch:* `api/origin_gate.py`, `core/config.py::origin_secret`,
+`infra/cloudflare/kurrentschrift-api-proxy.js`.
 → frontend-stack.md §5, quellen-und-rechte.md §5
 
 **Prerender-Pfad (Crawler)** — Crawler und KI-Agenten (kein JavaScript)

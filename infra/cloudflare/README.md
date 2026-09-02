@@ -41,8 +41,16 @@ Messvorschrift unten): erst `off`, nach dem Worker-Update mit Secret-Binding
 `off-seen`, nach dem Scharfschalten `ok`.
 
 Die Bindung wird bewusst als `if (env.ORIGIN_SECRET)` geprüft: eine fehlende
-Bindung stempelt nichts, statt einen leeren Header zu senden — dasselbe
-„unset heißt aus" wie auf der API-Seite, und derselbe Rollback.
+Bindung stempelt **nichts**, statt einen leeren Header zu senden. Das macht den
+Worker für ein noch nicht scharfes Gate unschädlich — es ist aber **KEIN
+Rollback**. Solange der Cloud-Run-Dienst scharf ist, beantwortet er jeden
+Admin-Request ohne Header mit 403: die Bindung wegzunehmen legt den Admin lahm,
+statt ihn zu befreien. Zurückgenommen wird immer auf der API-Seite —
+`ORIGIN_SECRET` aus dem Dienst entfernen **und die entstehende Revision
+promoten** (zwei Befehle,
+[`frontend-stack.md`](../../docs/reference/frontend-stack.md) §5). Reihenfolge
+in beide Richtungen: erst der Worker stempelt, dann wird das Gate scharf; erst
+das Gate wird stumpf, dann darf der Worker aufhören zu stempeln.
 
 ## Einstellungen (Dashboard)
 

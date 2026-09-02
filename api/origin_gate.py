@@ -15,11 +15,18 @@ costs anything. It is not authentication — it says "you came through the front
 door", nothing about who you are; `api/auth.py` still decides what a caller may
 do.
 
-**The check is OFF unless `ORIGIN_SECRET` is set.** That is the whole rollback
-story: unset the environment variable on the Cloud Run service and the gate
-disappears without a deploy. Local development and the test suite therefore
-never see it, and the rollout can put the code in production long before the
-rule and the secret exist (see the checklist in the PR of `origin-secret-gate`).
+One path stamps it itself rather than getting it from the rule: the admin route
+`kurrentschrift.ink/api/*` runs through a Cloudflare Worker, and a Worker
+subrequest to a host in the SAME zone skips that zone's Transform Rules
+(measured during the rollout — see `infra/cloudflare/`, where the Worker's
+source now lives).
+
+**The check is OFF unless `ORIGIN_SECRET` is set.** That is the rollback: take
+the variable off the Cloud Run service, and promote the revision that creates
+(this service pins traffic to a named revision, so the new one serves nothing
+until it is promoted). Local development and the test suite therefore never see
+the gate, and the rollout could put the code in production long before the rule
+and the secret existed.
 
 Exempt by path, and only these two:
 
@@ -84,16 +91,19 @@ def header_verdict(request: Request) -> str:
     * armed — `ok` · `missing` · `mismatch`
     * not armed — `off` (no header arrived) · `off-seen` (one did)
 
-    `off-seen` is the one that makes the rollout safe rather than brave. The
-    riskiest unknown is whether a path that is not a plain browser request
-    carries the header at all — above all the admin route, where the apex
-    `/api/*` reaches this service through a Cloudflare Worker, and a Worker
-    subrequest is not obviously subject to the same zone's Transform Rules. So
-    the order is: put the rule live while the gate is still off, then ask each
-    path in turn — the `api.` host, the apex behind Cloudflare Access, the
-    site's nginx, the raw `run.app` — and only arm the gate once every path
-    that must keep working answers `off-seen`. Collapsing that into a bare
-    `off` would have made the switch a leap.
+    `off-seen` is the one that makes the rollout safe rather than brave: put
+    the rule live while the gate is still off, then ask each path in turn — the
+    `api.` host, the apex behind Cloudflare Access, the site's nginx, the raw
+    `run.app` — and only arm the gate once every path that must keep working
+    answers `off-seen`. Collapsing that into a bare `off` would have made the
+    switch a leap.
+
+    It earned its keep on the first run. The admin route reaches this service
+    through a Cloudflare Worker, and a Worker subrequest to a host in the SAME
+    zone turns out to skip that zone's Transform Rules — the apex answered
+    `off` with the rule already live, and arming the gate then would have taken
+    the whole admin down. The Worker now stamps the header itself
+    (`infra/cloudflare/`).
 
     It reports the verdict, never the value, and tells a caller on `run.app`
     only what it already knows about its own request.

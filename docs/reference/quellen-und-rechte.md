@@ -272,9 +272,11 @@ losschreiben" kann, gilt technisch:
   `*.run.app`-Adresse antwortete also an Cloudflare vorbei: ohne
   Rate-Limiting-Regel, ohne WAF, ohne Cache. Eine Transform-Rule stempelt
   jetzt `X-Origin-Secret` auf jeden Request, den Cloudflare für
-  `api.kurrentschrift.ink` weiterreicht, und `api/origin_gate.py` beantwortet
-  alles andere mit **403** — vor dem Limiter, vor `require_admin`, vor jeder
-  DB-Abfrage. Das ändert an der öffentlich/reserviert-Trennung NICHTS (der
+  `api.kurrentschrift.ink` weiterreicht (der Apex-Worker vor dem Admin-Weg
+  stempelt selbst — ein Worker-Subrequest umgeht die Regeln der eigenen Zone,
+  [`infra/cloudflare/`](../../infra/cloudflare/README.md)), und
+  `api/origin_gate.py` beantwortet alles andere mit **403** — vor dem Limiter,
+  vor `require_admin`, vor jeder DB-Abfrage. Das ändert an der öffentlich/reserviert-Trennung NICHTS (der
   Header sagt nur „durch die Vordertür", nicht wer da kommt); es sorgt dafür,
   dass die Trennung überhaupt an der einzigen Stelle greift, an der sie
   gemessen wird. Ausgenommen bleiben `/health` (sonst schlägt jeder Deploy-

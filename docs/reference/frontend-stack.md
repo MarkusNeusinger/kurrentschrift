@@ -3,7 +3,9 @@
 > **Status (2026-08-28): lebend.** Ist-Stand von Stack, Routen, i18n-Soll,
 > Deploy, Admin-Gate und Crawler-Prerender; jede Änderung an
 > `app/package.json`, `app/src/routes/paths.ts`, den Cloudbuild-/nginx-Dateien,
-> `api/auth.py` oder `app/src/lib/seo/prerender.ts` zieht hier nach.
+> `api/auth.py`, `api/origin_gate.py`, `infra/cloudflare/` (der Apex-Worker —
+> §5 hängt seit 2026-09-02 an seiner Konfiguration) oder
+> `app/src/lib/seo/prerender.ts` zieht hier nach.
 > Am 2026-08-03 gegen den Code geprüft und deckungsgleich (Admin-Routen nach
 > dem Redesign „aus einem Guss": `/admin` Vorlagen-Auswahl + die drei
 > Ansichten Buchstaben · Übergänge · Wörter; Admin-Token-Regeln, PR #263).
