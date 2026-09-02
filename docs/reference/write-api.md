@@ -38,6 +38,30 @@ drei von vier Assistenten-Abrufen genau solche HITs. Die SPA fragt die
 SVGs nie an, also verliert nichts Menschliches den Edge-Cache. Der Admin
 behält den ungecachten `/diagnostic`.
 
+### Ratenbegrenzung auf dem Kompositionspfad
+
+Die beiden `/word`-Routen tragen zusätzlich einen **In-Process-Token-Bucket pro
+Client-IP** (`api/rate_limit.py`, Default 60 Anfragen/min mit Burst 20;
+`WRITE_RATE_LIMIT_PER_MIN=0` schaltet ihn ab). Sie sind der einzige öffentliche
+Read, dessen Kosten der Aufrufer bestimmt: ein eindeutiger Text ist bauartbedingt
+ein Cache-MISS, und ein 155-Zeichen-Text kostete am 2026-09-01 live 0,80 s TTFB
+und 1.653.798 Bytes. `/write/glyphs` und die Einzel-Reads sind durch den
+autorisierten Bestand begrenzt (~30 Zeilen, alle im Payload-Memo) und deshalb
+**ausgenommen**. Über dem Limit antwortet die Route **429** mit `Retry-After`
+(die ehrliche Wartezeit, aufgerundet) und `private, no-store` — eine Ablehnung
+gilt dem Aufrufer, nicht der URL, und darf nicht für den nächsten Besucher
+gecacht werden.
+
+Der Schlüssel ist der **rechteste** `x-forwarded-for`-Eintrag bzw.
+`cf-connecting-ip` (`api/request_context.py::client_ip`, anyplot-Muster) — der
+linkeste ist client-gesteuert und erlaubte sowohl das Umgehen des eigenen Limits
+als auch das Vergiften eines fremden Buckets. Der Bucket wirkt **pro Prozess**:
+bei `--max-instances=3` liegt die effektive Decke entsprechend höher, und er
+misst nicht exakt, sondern begrenzt, was ein Aufrufer aus EINEM Container
+ziehen kann. Das ist Absicht — beide Cloud-Run-Dienste stehen mit `ingress=all`
+im Netz, eine Cloudflare-Regel wäre über die `run.app`-URL umgehbar, dieser
+Bucket nicht.
+
 ## Pipeline
 
 1. **Shaping** (`core/shaping.py`): Text → geordnete `glyph_keys` —

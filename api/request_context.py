@@ -1,14 +1,45 @@
 """Request-scoped helpers shared across routers and middleware.
 
-Mirrors `api/request_context.py` in the sister project anyplot; only the
-analytics half is needed here (there is no rate limiter keyed by client IP
-yet — when one arrives, its `client_ip` takes the RIGHTMOST forwarded entry
-for the reasons anyplot documents, and the two must not be merged).
+Mirrors `api/request_context.py` in the sister project anyplot. Two functions
+that answer OPPOSITE questions about the same request and must never be merged:
+`client_ip` keys the `/write/word` rate limit (`api/rate_limit.py`) and takes
+the RIGHTMOST forwarded entry, `visitor_ip` keys analytics and takes the
+leftmost. Each docstring says why.
 """
 
 import ipaddress
 
 from fastapi import Request
+
+
+def client_ip(request: Request) -> str:
+    """Resolve the client IP for rate-limit keying — deliberately not `visitor_ip`.
+
+    Trust order (client → Cloudflare → Cloud Run), anyplot's verbatim:
+
+    1. `cf-connecting-ip` — Cloudflare overwrites any client-supplied value on
+       proxied traffic, so a browser on kurrentschrift.ink cannot spoof it.
+    2. Rightmost non-empty `x-forwarded-for` entry — appended by the trusted
+       infrastructure hop. The LEFTMOST entry is client-controlled: trusting it
+       lets a caller both evade its own limit and poison a victim's bucket to
+       lock them out. Empty entries from malformed headers ("1.2.3.4, ") are
+       skipped so nobody can force everyone into one shared empty-string bucket.
+    3. `request.client.host` as the last resort.
+
+    A caller bypassing Cloudflare via the `run.app` URL can still forge
+    `cf-connecting-ip`, but that only scatters its OWN requests across buckets
+    — no better than rotating source IPs, and it can no longer impersonate
+    someone else's. Closing that door needs the edge (a Cloudflare rate-limit
+    rule, or a shared origin secret); this limiter is the layer that works on
+    both paths.
+    """
+    cf_ip = request.headers.get("cf-connecting-ip", "").strip()
+    if cf_ip:
+        return cf_ip
+    for entry in reversed(request.headers.get("x-forwarded-for", "").split(",")):
+        if entry.strip():
+            return entry.strip()
+    return request.client.host if request.client else ""
 
 
 def visitor_ip(request: Request) -> str:
@@ -23,7 +54,7 @@ def visitor_ip(request: Request) -> str:
     probe events and watching them vanish).
 
     Spoofing is not a concern in this direction: a forged value skews a
-    geolocation bucket, nothing more.
+    geolocation bucket, where forging the rate-limit key would lock people out.
 
     Order: the leftmost valid `x-forwarded-for` entry FIRST — then
     `cf-connecting-ip`, then the socket peer. Not the other way round, as
