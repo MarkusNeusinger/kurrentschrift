@@ -236,6 +236,53 @@ async def test_a_repeated_violation_is_counted_but_not_logged_again(api: Harness
     assert list(csp_module._seen.values()) == [5]
 
 
+async def test_every_hundredth_repeat_is_logged_again(api: Harness, caplog):
+    """The contract is one line per distinct violation PLUS one per hundredth
+    repeat — a violation that fires ten thousand times is not the same finding
+    as one that fires twice, and the running count is where that shows.
+
+    Driven through `_record` rather than 200 HTTP requests: the subject is the
+    counting rule, and the round trip is covered by the tests around this one.
+    """
+    with caplog.at_level(logging.WARNING, logger="api.routers.csp"):
+        for _ in range(csp_module._REPEAT_INTERVAL * 2):
+            csp_module._record(REPORT_URI_BODY["csp-report"])
+    assert list(csp_module._seen.values()) == [csp_module._REPEAT_INTERVAL * 2]
+    # #1, #100, #200.
+    assert caplog.text.count("CSP report (") == 3
+    assert "(#100)" in caplog.text and "(#200)" in caplog.text
+
+
+async def test_a_reported_value_cannot_forge_a_log_line(api: Harness, caplog):
+    """The fields are attacker-controlled — this is an anonymous POST.
+
+    A `blocked-uri` carrying a newline would otherwise write a second, invented
+    entry into Cloud Logging, and other control characters can hide what the
+    real entry says (Copilot review, PR #497).
+    """
+    body = {
+        "csp-report": {
+            "effective-directive": "img-src",
+            "blocked-uri": "https://evil.invalid/x\nWARNING  api.routers.csp: nothing to see here",
+            "document-uri": "https://kurrentschrift.ink/\r\x07quiz",
+        }
+    }
+    with caplog.at_level(logging.WARNING, logger="api.routers.csp"):
+        assert (await api.client.request("POST", "/csp-report", json_body=body)).status == 204
+    assert len(caplog.records) == 1
+    assert "\n" not in caplog.records[0].getMessage()
+    assert "\\x0a" in caplog.text
+    assert "nothing to see here" in caplog.text  # rendered inline, not as its own line
+
+
+async def test_a_padded_field_cannot_push_the_line_out_of_view(api: Harness, caplog):
+    body = {"csp-report": {"effective-directive": "img-src", "blocked-uri": "https://evil.invalid/" + "x" * 5000}}
+    with caplog.at_level(logging.WARNING, logger="api.routers.csp"):
+        assert (await api.client.request("POST", "/csp-report", json_body=body)).status == 204
+    (key,) = csp_module._seen
+    assert len(key[1]) == csp_module.MAX_FIELD_CHARS
+
+
 async def test_a_body_that_is_not_a_report_changes_nothing(api: Harness):
     """A bare object, an empty array, a string — accepted and ignored.
 

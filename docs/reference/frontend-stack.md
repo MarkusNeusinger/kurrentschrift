@@ -740,8 +740,12 @@ curl -sS -o /dev/null -w '%{http_code}\n' -X POST \
 
 `403` heißt: Die Cloudflare-Transform-Rule stempelt `X-Origin-Secret` nicht auf
 POST-Anfragen (§5). Die Meldungen selbst stehen als `WARNING` im Log der API,
-eine Zeile je *verschiedener* Verletzung (Wiederholungen werden gezählt, nicht
-erneut geloggt).
+eine Zeile je *verschiedener* Verletzung und danach eine je hundertster
+Wiederholung — eine Verletzung, die zehntausendmal feuert, ist ein anderer
+Befund als eine, die zweimal feuert, und der mitlaufende Zähler ist die Stelle,
+an der man das sieht. Jeder geloggte Wert wird entschärft: Die Felder kommen
+aus einer anonymen POST-Anfrage, ein Zeilenumbruch darin würde sonst weitere
+Log-Einträge erfinden.
 
 **Scharfschalten ist eine Zeile:** In `app/security-headers.conf` den
 Header-Namen `Content-Security-Policy-Report-Only` zu `Content-Security-Policy`

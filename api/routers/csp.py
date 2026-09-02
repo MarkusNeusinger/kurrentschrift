@@ -29,11 +29,17 @@ nothing at all, so it was taken back out (`app/security-headers.conf` carries
 the measurement). The second shape is parsed anyway: it costs one branch, and
 it means the day `report-to` is proven to deliver, only the header changes.
 
-**No reported URL is logged whole.** The public pages put what the VISITOR
-TYPED into the URL — `/federprobe?text=…` and `/lesen/vergleichen?text=…` are
-shareable by design — and a report carries `document-uri` verbatim. Query and
-fragment are cut off before anything is logged or memoised (`_path_only`), so a
-security measure never turns into a transcript of what strangers wrote.
+**Every logged value is sanitised, and no reported URL is logged whole.** The
+fields of a report are attacker-controlled — this is an anonymous POST — so a
+value carrying a newline would forge further log entries. `_field` renders
+control characters and caps the length of everything it returns, and it is the
+one door all seven values pass through.
+
+The public pages additionally put what the VISITOR TYPED into the URL —
+`/federprobe?text=…` and `/lesen/vergleichen?text=…` are shareable by design —
+and a report carries `document-uri` verbatim. Query and fragment are cut off
+before anything is logged or memoised (`_path_only`), so a security measure
+never turns into a transcript of what strangers wrote.
 
 **Deliberately NOT exempt from the rate limiter.** This is the one POST on this
 API that anyone may call, so the wide bucket (600/min per client) is precisely
@@ -67,11 +73,13 @@ router = APIRouter(tags=["security"])
 # `script-sample` and nothing more. Anything larger is not a browser.
 MAX_BODY_BYTES = 64 * 1024
 
-# One log line per distinct violation, then every hundredth repeat. A single
-# missing source produces one report per page view, and a log that repeats it
-# ten thousand times is a log nobody reads. The dict is per process and lost on
-# restart, which is correct: the point is to name the distinct violations of the
-# report-only week, not to be a meter.
+# One log line per distinct violation, and then one per hundredth repeat. A
+# single missing source produces one report per page view, and a log that
+# repeats it ten thousand times is a log nobody reads — but a violation that
+# fires ten thousand times is also not the same finding as one that fires
+# twice, and the every-hundredth line is where that difference shows.
+# The dict is per process and lost on restart, which is correct: the point is
+# to name the distinct violations of the report-only week, not to be a meter.
 _REPEAT_INTERVAL = 100
 # Above this many distinct violations the counter stops growing. A policy with
 # 200 distinct violations does not need the 201st to be understood, and an
@@ -87,16 +95,29 @@ _seen: dict[tuple[str, str, str], int] = {}
 _overflow = 0
 
 
+# Control characters, rendered rather than emitted. THE reason this exists: a
+# report is an anonymous POST whose fields are interpolated into a log line, so
+# a value carrying `\n` would forge further Cloud Logging entries, and other
+# control characters can hide what the real entry says (Copilot review, PR #497).
+_CONTROL = {c: f"\\x{c:02x}" for c in [*range(0x20), 0x7F]}
+# Long enough for any real URL that matters, short enough that a padded field
+# cannot push the interesting part of the line out of view.
+MAX_FIELD_CHARS = 300
+
+
 def _field(report: dict[str, Any], *names: str) -> str:
-    """First non-empty value among `names`, as a string.
+    """First non-empty value among `names`, as a SAFE string.
 
     The two wire formats spell the same field differently (`violated-directive`
     vs `effectiveDirective`), so every read names both.
+
+    Every value the endpoint logs passes through here, which is what makes the
+    sanitising trustworthy: there is one door, not seven.
     """
     for name in names:
         value = report.get(name)
         if value:
-            return str(value)
+            return str(value).translate(_CONTROL)[:MAX_FIELD_CHARS]
     return "?"
 
 

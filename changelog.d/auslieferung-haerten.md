@@ -53,9 +53,12 @@
   without it the same violation arrived in under a second. A channel that
   silences the working one without replacing it is worse than no channel, so
   `report-to` waits until a report is seen arriving through it over HTTPS. One
-  log line per *distinct* violation, repeats counted rather than
-  repeated, the body capped at 64 KB, and the memo bounded — it is the one
-  public write operation of this API, so it is named and argued in
+  log line per *distinct* violation and one per hundredth repeat — a violation
+  that fires ten thousand times is a different finding from one that fires
+  twice, and the running count is where that shows. Every logged value is
+  sanitised (the fields are attacker-controlled, so a newline would otherwise
+  forge log entries), the body is capped at 64 KB and the memo is bounded. It
+  is the one public write operation of this API, so it is named and argued in
   `tests/test_api_public_surface.py::PUBLIC_WRITES` rather than simply added
   (#497).
 
