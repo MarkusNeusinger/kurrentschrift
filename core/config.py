@@ -60,6 +60,19 @@ class Settings(BaseSettings):
             return self.bot_analytics
         return self.environment == "production"
 
+    # ------------------------------------------------------------------ Rate limit
+    # The compose path `/write/word*` is the one public read whose cost is set
+    # by the CALLER's input: a unique text misses every cache and, at the
+    # 160-character maximum, costs ~0.8 s of CPU and ~1.6 MB of egress. The
+    # in-process token bucket (api/rate_limit.py) bounds what one client can
+    # pull out of one container; `/write/glyphs` and the single reads are
+    # bounded by the authored inventory and stay exempt. 60/min sustained with
+    # a burst of 20 sits far above any human page (the Schreibtafel composes
+    # one word per interaction) and far below a scripted harvest.
+    # `WRITE_RATE_LIMIT_PER_MIN=0` disables the limiter.
+    write_rate_limit_per_min: int = 60
+    write_rate_limit_burst: int = 20
+
     # ------------------------------------------------------------------ CORS
     # Explicit env override wins; otherwise the effective regex is picked per
     # environment (see `cors_allow_origin_regex`) so the localhost/LAN dev

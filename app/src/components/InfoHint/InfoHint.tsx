@@ -15,6 +15,7 @@ import { useId, useState, type MouseEvent, type ReactNode } from 'react';
 import { Box, IconButton, Popover, Typography } from '@mui/material';
 
 import { de } from '@/locales';
+import { hitArea } from '@/styles/hitArea';
 import { paper } from '@/styles/paper';
 
 // The Kurrent-i monogram. The glyph is set oversized and clipped to the ring so
@@ -64,15 +65,18 @@ export function InfoHint({ children, title, label }: InfoHintProps) {
           const el = e.currentTarget;
           setAnchor((a) => (a ? null : el));
         }}
-        sx={{
-          // p 0.25 lifts the 22px mark to a 26px hit area — clear of the WCAG
-          // 2.2 target-size minimum (24x24 CSS px). Plain ink at rest so the
-          // accent stays quiet; viridian only lights up on hover/focus.
-          p: 0.25,
-          color: paper.inkSoft,
-          verticalAlign: 'text-bottom',
-          '&:hover, &:focus-visible': { color: 'primary.main', bgcolor: 'transparent' },
-        }}
+        sx={[
+          // p 0.25 lifts the 22px mark to a 26px painted area — the monogram is
+          // meant to stay a quiet mark, so the thumb gets the missing 18px from
+          // the invisible `hitArea` instead of a bigger drawing (§9).
+          hitArea(),
+          {
+            p: 0.25,
+            color: paper.inkSoft,
+            verticalAlign: 'text-bottom',
+            '&:hover, &:focus-visible': { color: 'primary.main', bgcolor: 'transparent' },
+          },
+        ]}
       >
         <InfoMark />
       </IconButton>

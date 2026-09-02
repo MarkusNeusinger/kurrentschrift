@@ -836,6 +836,29 @@ class TestStrips:
         assert listing.json()["strips"] == []
 
     @pytest.mark.asyncio
+    async def test_a_strip_over_the_size_limit_is_refused_with_413(self, api: Harness, monkeypatch):
+        """The one bound on how much a single request can push into the DB.
+
+        `MAX_STRIP_BYTES` is 8 MiB in production; the limit is lowered here so
+        the test can cross it with a real PNG instead of shipping 11 MB of
+        base64 through the suite. The refusal must be 413 — a size problem is
+        not a malformed request — and must name both numbers, because the tool
+        on the other end (`tools.eigenhand.sync --mit-streifen`) prints it.
+        """
+        import api.routers.eigenhand as eigenhand_router
+
+        stored = await _store_strip(api, record=True, upload=False)
+        monkeypatch.setattr(eigenhand_router, "MAX_STRIP_BYTES", len(stored["png"]) - 1)
+        res = await _put_strip(api, stored["png"], stored)
+        assert res.status == 413
+        assert str(len(stored["png"])) in res.json()["detail"]
+
+        # One byte of headroom and the same request goes through — so the 413
+        # is the limit talking, not some other refusal upstream of it.
+        monkeypatch.setattr(eigenhand_router, "MAX_STRIP_BYTES", len(stored["png"]))
+        assert (await _put_strip(api, stored["png"], stored)).status == 201
+
+    @pytest.mark.asyncio
     async def test_a_declared_hash_that_does_not_match_the_bytes_is_refused(self, api: Harness):
         # sha256 is the archive's identity for this file — a wrong one would
         # break the restore check silently.

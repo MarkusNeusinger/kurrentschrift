@@ -18,6 +18,7 @@ import { IconButton, keyframes, type SxProps, type Theme } from '@mui/material';
 import type { MutableRefObject } from 'react';
 
 import { de } from '@/locales';
+import { hitArea } from '@/styles/hitArea';
 import { inkState, schulheft } from '@/styles/paper';
 import { polylineToPathD, type Ring } from '@/lib/svg';
 
@@ -167,7 +168,10 @@ export function ReplayButton({ onClick }: { onClick: () => void }) {
       size="small"
       onClick={onClick}
       aria-label={de.common.writtenGlyph.replay}
-      sx={{ position: 'absolute', bottom: 4, right: 4, color: 'text.disabled', '&:hover': { color: 'text.secondary' } }}
+      // `hitArea` first, so the button's own `position: absolute` wins over the
+      // helper's `relative` — the ↻ keeps its 30px optics and grows an
+      // invisible 44px target (design-system §9).
+      sx={[hitArea(), { position: 'absolute', bottom: 4, right: 4, color: 'text.disabled', '&:hover': { color: 'text.secondary' } }]}
     >
       <ReplayIcon fontSize="small" />
     </IconButton>
