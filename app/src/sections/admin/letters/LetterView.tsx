@@ -23,12 +23,13 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { useAdmin } from '@/context/AdminContext';
 import { LETTER_BY_KEY } from '@/domain/glyphs';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { cropUrl } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { ChartView } from '@/sections/admin/chart/ChartView';
@@ -58,6 +59,27 @@ export function LetterView() {
 
   const { glyphKey } = readLetterFocus(params);
   const [chartOpen, setChartOpen] = useState(false);
+  // „Tafel öffnen" adds ~650px BELOW the fold, so the only thing that used to
+  // change on screen was the button's own label — and on a letter with no crop
+  // yet, that button is the single way in („unten die Tafel öffnen und ein
+  // Rechteck ziehen"). Bring the plate into view when it opens, and the letter
+  // head back when it closes so the button never ends up under the fold itself.
+  const chartRef = useRef<HTMLDivElement | null>(null);
+  const headRef = useRef<HTMLDivElement | null>(null);
+  const reducedMotion = usePrefersReducedMotion();
+  // In an effect, not the click handler: the block is measured only after the
+  // render that opens it — scrolling from the handler would target the old box.
+  // The mount run is skipped, or arriving at the view would scroll it by itself.
+  const chartToggled = useRef(false);
+  useEffect(() => {
+    if (!chartToggled.current) {
+      chartToggled.current = true;
+      return;
+    }
+    const behavior = reducedMotion ? 'auto' : 'smooth';
+    const target = chartOpen ? chartRef.current : headRef.current;
+    target?.scrollIntoView({ behavior, block: 'start' });
+  }, [chartOpen, reducedMotion]);
   const [applyOpen, setApplyOpen] = useState(false);
   // The Laufform face reports itself unavailable when the letter has no
   // variant-100 row — most letters do not, and that is information, not a gap.
@@ -131,9 +153,10 @@ export function LetterView() {
   const { prev, next } = neighbourLetters(glyphKey);
 
   return (
-    <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
+    <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }} ref={headRef}>
       <ViewHeader
         eyebrow={de.admin.shell.areaLetters}
+        titleText={fmt(t.letterHeading, { key: letter?.glyph ?? glyphKey })}
         title={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             <IconButton size="small" disabled={!prev} aria-label={t.prevLetter} onClick={() => prev && focus(prev)}>
@@ -355,7 +378,10 @@ export function LetterView() {
           maxWidth: 760,
         }}
       >
-        <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+        {/* h2 like every other panel head. This is the one block on the page
+            that CHANGES the rendering, and it was the only one not in the
+            outline — a screen reader could not reach it by heading. */}
+        <Typography component="h2" variant="subtitle2" sx={{ mb: 0.5 }}>
           {t.applyBlockTitle}
         </Typography>
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
@@ -391,7 +417,7 @@ export function LetterView() {
           default: it is the one tool here that needs the whole plate, and it is
           only reached for when a crop has to be cut or corrected. */}
       <Collapse in={chartOpen} unmountOnExit>
-        <Box sx={{ mt: 2, border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
+        <Box ref={chartRef} sx={{ mt: 2, border: 1, borderColor: 'divider', borderRadius: 2, overflow: 'hidden' }}>
           <Box sx={{ height: { xs: '60vh', md: '70vh' }, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <ChartInPanel />
           </Box>

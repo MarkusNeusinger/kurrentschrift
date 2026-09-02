@@ -361,7 +361,7 @@ function CompareCard({
             way INTO that letter — as an explicit button, not a click target on
             the whole card (which also carries the faces). */}
         {onPick && (
-          <Button size="small" onClick={() => onPick(glyphKey)}>
+          <Button size="small" onClick={() => onPick(glyphKey)} aria-label={fmt(t.openLetterFor, { key: glyphKey })}>
             {t.openLetter}
           </Button>
         )}
@@ -527,13 +527,15 @@ export function GlyphComparison({ onPick }: { onPick?: (glyphKey: string) => voi
     ? de.admin.shell.evidenceError
     : !occurrencesKnown || workbench.letterStats.status === 'loading'
       ? de.admin.werkbank.statsLoading
-      : workbench.letterStats.status === 'no-hand'
-        ? de.admin.werkbank.statsNoHand
-        : workbench.letterStats.status === 'unavailable'
-          ? de.admin.werkbank.statsUnavailable
-          : workbench.letterStats.layerEmpty
-            ? de.admin.compare.noAggregateLayer
-            : de.admin.compare.noAggregateShort;
+      : workbench.letterStats.status === 'no-occurrences'
+        ? de.admin.werkbank.statsNoOccurrences
+        : workbench.letterStats.status === 'no-hand'
+          ? de.admin.werkbank.statsNoHand
+          : workbench.letterStats.status === 'unavailable'
+            ? de.admin.werkbank.statsUnavailable
+            : workbench.letterStats.layerEmpty
+              ? de.admin.compare.noAggregateLayer
+              : de.admin.compare.noAggregateShort;
 
   // The hand the numbers belong to — a grid that pools occurrences across two
   // writers and draws ONE hand's median beside them has to say so (the lens

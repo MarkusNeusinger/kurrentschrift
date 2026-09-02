@@ -40,8 +40,8 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
-- **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
-- **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
+- **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
+- **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
@@ -61,7 +61,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschrift §1
 - **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
-- **Z** — Zeilen-Gate (Laufform) §2 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · „Zug um Zug“ §7 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
+- **Z** — Zeilen-Gate (Laufform) §2 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · „Zug um Zug“ §7 · Zwei Stillen (Leerzustands-Regel) §5 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
 
 ---
 
@@ -2292,6 +2292,54 @@ Dependabot) und weist direkt in `[Unreleased]` geschriebene Bullets ab. *Technis
 und `[Unreleased]`), `check_pr` (die PR-Regel), `plan_release`/`apply_release`
 (der Schnitt); CI-Job `changelog` in `.github/workflows/ci.yml`.
 → werkzeuge.md § Der Changelog-Schnitt · `changelog.d/README.md`
+
+**Fehlerschicht (`apiErrorText`)** — die deutsche Antwort der Werkbank
+auf einen fehlgeschlagenen API-Aufruf: aus dem HTTP-Status wird **ein
+Satz, der den nächsten Schritt nennt** („Diese Glyphe ist gesperrt — erst
+in der Tafel entsperren"), und die englische Rohzeile des Servers bleibt
+darunter in einem zugeklappten `<details>` („Technische Meldung") stehen.
+Beides zusammen ist der Punkt: Vorher renderten alle achtzehn Admin-Stellen
+`String(err)` wörtlich, also stand „Error: 423 Locked: glyph 'longs' is
+locked; pass force=true to overwrite" mitten in deutscher Oberfläche und
+sagte nichts darüber, was zu tun ist; bloßes Übersetzen hätte die einzige
+Diagnose weggeworfen, die es gibt. **Der Satz antwortet, das Detail
+beweist.** Der Rückgabewert trägt zusätzlich den `status`, damit
+Aufrufer einen Sonderfall (404 = „noch nicht angelegt", kein Fehler) am
+Typ erkennen statt die Meldung nach „404" zu durchsuchen.
+Der **Name** ist englisch, die **Ausgabe** deutsch — sprachregelung.md §1
+verlangt englische Bezeichner, und §3 verwirft deutsche Identifier
+ausdrücklich auch für deutsche Fachbegriffe („Begriff gehört in den
+Kommentar, nicht in den Bezeichner"). Der Begriff steht also hier im
+Glossar, nicht im Code.
+*Technisch:* `app/src/sections/admin/shell/apiErrorText.ts` +
+`ErrorText.tsx`; die Sätze in `app/src/locales/de/admin.ts` (`admin.errors`).
+Liegt bewusst unter `sections/admin/` und nicht bei `lib/api/`: der
+Katalog darf das öffentliche Bundle nicht erreichen (`no-restricted-imports`).
+
+**Entwurfsnetz des Wizards** — die Rettungskopie des gezeichneten Wegs.
+Der Weg ist der **einzige** Zustand des Einrichten-Wizards, der nicht
+live committet wird (Ausschluss, Tinte, Lineatur und Schräglage schreiben
+sofort), und zugleich der Schritt, an dem Handarbeit Ground Truth erzeugt
+(→ Stufen-Doktrin). Deshalb zwei Schichten: Escape, Backdrop-Klick und
+„Schließen" laufen alle über **eine** Rückfrage, die benennt, was
+verloren ginge und was nicht; und selbst das bewusste „Verwerfen" legt
+die Striche unter `kurrentschrift.wizard.<sourceId>.<glyphKey>` in den
+`sessionStorage`, sodass das nächste Öffnen sie zum Wiederherstellen
+anbietet statt sie stillschweigend zurückzumalen.
+*Technisch:* `useWizard.ts` (`dirty`, `discardAndClose`, `draft`),
+`SetupWizard.tsx` (`requestClose`).
+
+**Zwei Stillen (Leerzustands-Regel)** — ein Leerzustand muss die Ursache
+nennen, die tatsächlich vorliegt, nicht die nächstbeste. Konkret in der
+Werkbank: `no-occurrences` („Noch keine Vorkommen geerntet") gegen
+`no-hand` („Keine Hand an den Vorkommen hinterlegt"). Die Hand wird **aus**
+den Vorkommen abgeleitet — gibt es keine, kann keine eine Hand nennen,
+und der Hand-Satz benennt eine Ursache, die es noch gar nicht geben kann;
+genau das stand vor 2026-09 auf jeder Karte einer frisch geseedeten
+Vorlage. Dieselbe Regel gilt eine Ebene höher schon für die Aggregate
+(„kein Neuaufbau" vs. „unter der Mindest-Vorkommenszahl").
+*Technisch:* `StatsStatus` in `LensStats.tsx`, abgeleitet in
+`WorkbenchData.tsx::statsContextOf` und `pairMeasurement.ts::aggregateLayerState`.
 
 **Typo-Boden** — die bindende Untergrenze der Schriftgrößen des öffentlichen
 Auftritts: Fließtext ≥ 19 px, Caption ≥ 14 px, ohne Ad-hoc-Größen (design-system.md
