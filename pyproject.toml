@@ -16,6 +16,23 @@ keywords = [
     "analysis-by-synthesis",
     "ductus",
 ]
+# Trove classifiers: the project is not published to PyPI, but these are what
+# GitHub, `uv`/pip metadata readers and the CITATION.cff consumers show for it,
+# and they were missing entirely. `Private :: Do Not Upload` is the documented
+# guard against an accidental upload.
+classifiers = [
+    "Private :: Do Not Upload",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    # No `License ::` classifier: PEP 639 forbids pairing one with the SPDX
+    # `license = "MIT"` expression above, and modern backends reject the mix.
+    "Natural Language :: German",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Topic :: Text Processing :: Linguistic",
+    "Typing :: Typed",
+]
 dependencies = [
     # Scientific stack — ductus extraction, distance transform, skeletonisation
     "numpy>=2.5.1",
@@ -64,6 +81,9 @@ test = [
 [project.urls]
 Homepage = "https://kurrentschrift.ink"
 Repository = "https://github.com/MarkusNeusinger/kurrentschrift"
+Documentation = "https://github.com/MarkusNeusinger/kurrentschrift/blob/main/docs/index.md"
+Changelog = "https://github.com/MarkusNeusinger/kurrentschrift/blob/main/CHANGELOG.md"
+Issues = "https://github.com/MarkusNeusinger/kurrentschrift/issues"
 
 # ===== Ruff Configuration =====
 
