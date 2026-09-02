@@ -1,6 +1,6 @@
 # Glossar — Fachbegriffe und Repo-Redewendungen
 
-> **Status (2026-08-12): lebend.** Nachschlagewerk über die Begriffe, die
+> **Status (2026-09-01): lebend.** Nachschlagewerk über die Begriffe, die
 > in `docs/`, in Issues/PRs und in der Admin-Oberfläche vorkommen.
 > Nachzieh-Pflicht: **jedes Doc und jeder PR, der einen neuen Fachbegriff
 > oder eine neue Kennzahl prägt, legt im selben Zug einen Eintrag hier an**
@@ -53,15 +53,15 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
-- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schreib-Karte §2 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
+- **S** — Same-Hand-Disziplin §4 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **U** — Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · understanding §5
-- **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschrift §1
-- **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
+- **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschub-Kalibrierung §2 · Vorschrift §1
+- **W** — W1–W6 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
-- **Z** — Zeilen-Gate (Laufform) §2 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
+- **Z** — Zeilen-Gate (Laufform) §2 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · zonale Rückweisung (`zonal`) §3 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
 
 ---
 
@@ -481,8 +481,57 @@ Bogen-Exits, rückwärts zeigende Exits.
 **Klassenregel** — eine Regel, die für eine ganze *Klasse* von Übergängen
 gilt (alle d-Schleifen-Exits, alle Deckstrich-Bögen, alle r-Arme). Das
 Leitprinzip der Optimierung: **eine Klassenregel hebt viele Paare, ein
-Override repariert eine Stelle.** Benannte Klassen im Code: Girlande ·
-Gabel-Join · Bar-Exit · Kringel-Exit · Kapital-Übergabe · Arkaden-Diagonale.
+Override repariert eine Stelle.** Die Klassen sind im Code als
+Buchstabenmengen ausbuchstabiert, und diese Konstanten sind die Quelle —
+die Liste hier ist ihr Inhaltsverzeichnis (`core/compose.py`, Stand
+2026-09-01, 14 Mengen):
+
+| Klasse | Konstante | gilt für |
+|---|---|---|
+| Bowl-Exit-Tuck | `BOWL_EXIT_TUCK_BASES` | b · c · d · o |
+| Arkaden-Eintritt | `ARCADE_ENTRY_BASES` | m · n |
+| hohe Kopplung | `HIGH_COUPLE_BASES` | e · a · o · c · d · g · q · ae · oe |
+| Oberlängen-Neigung | `ASCENDER_LEAN_BASES` | d |
+| Schleifen-Exit | `LOOP_EXIT_BASES` | d · s |
+| Kringel-Exit | `KRINGEL_EXIT_BASES` | b · o · B |
+| Arm-Fusion | `ARM_FUSE_BASES` | die hohe Kopplung + r · i |
+| gleichschräge Kopplung | `SAMESLANT_COUPLE_BASES` | n · m · i · u |
+| Unterlängen-Ritt | `DESCENDER_RIDE_BASES` | c · t |
+| Bar-Exit | `BAR_EXIT_BASES` | t · f |
+| Deckbogen-Austritt | `COVER_ARCADE_EXIT_BASES` | o · b · v · w |
+| Deckbogen-Eintritt | `COVER_ARCADE_ENTRY_BASES` | n · m · i · r |
+| Schleife in Rundform | `LOOP_ROUND_ENTRY_BASES` | e · a · o |
+| Restart-Klasse | `CAP_RESTART_BASES` | S · O · K · P |
+
+Dazu die Klassen ohne eigene Buchstabenmenge, weil ihre Bedingung
+geometrisch ist: Girlande · Gabel-Join · Cusp-Connector.
+
+**Restart-Klasse** *(`CAP_RESTART_BASES`)* — die Versalien, deren
+Verbinder mit einem vorangestellten **Rückzug** beginnt: die Feder fährt
+den eigenen Bogen zurück und setzt an der Grundlinie an wie zu einem
+frischen Anstrich, statt vom Duktus-Ende aus weiterzulaufen. Tafelform
+für S · O · K · P. Wer in der Klasse steckt, ist eine gemessene
+Aussage über die Vorlage, keine Vereinfachung: das **B** hat sie
+`aug30` verlassen, weil sein autorisierter Duktus auf Mittellinienhöhe
+in einem steigenden Abgang endet — der Retrace lief diese Fortsetzung
+sinnlos zurück (Korb #8). Die Naht-Winkel-Spalte zählt Verbinder dieser
+Klasse aus und meldet sie getrennt, weil ihr „Abgang“ eine gewollte
+180°-Kehre ist.
+*Technisch:* `core/compose.py::CAP_RESTART_BASES`, `cap_retrace` in
+`compose_word` → qualitaetsmetrik.md §14 „Übergänge Korb-Runde `aug30`“
+
+**Vorschub-Kalibrierung** *(advance calibration)* — die Runde, in der
+die Abstände zwischen zwei Buchstaben nicht mehr geraten, sondern aus
+den **gemessenen** Joins der Platte nachgezogen wurden: 218 sezierte
+Übergänge der Worttafel liefern je Klasse, wie weit die Hand vorschiebt,
+und die Klassenregeln bekommen diese Werte statt gewählter Konstanten.
+Adoptiert wurden vier Stücke (Bowl-Tuck · w/v-Rückwärts ·
+longs-Ausnahme · Balken-Steigung) plus der align/nested-Floor der
+Folgerunde; die „Arkaden-Luft“ fiel als Beleg-Varianz durch. Die Runde
+ist der Grund, warum das Wort-Lineal von 0,110983 auf 0,108091 fiel —
+der größte Einzelsprung der Kompositions-Arbeit.
+*Technisch:* `core/compose.py` (Welle 2, PR #361/#363) →
+qualitaetsmetrik.md §14 „Welle 2 · P1“ und „Welle 2 · P2“
 
 **Girlande** — die tief durchhängende Verbindung, die von einem Exit in
 den nächsten Arkaden-Eintritt (n, m, i, u) fällt — das rhythmische
@@ -806,6 +855,48 @@ und Retraces sind duktus-fix. *Technisch:*
 `STRUCTURE_GUARD_MAX_RETRIES` → qualitaetsmetrik.md §14 (Arm ⑨).
 Nicht zu verwechseln mit dem **Laufform-Topologie-Wächter** (unten) —
 gleicher Geist (Duktus-Topologie ist unantastbar), andere Schicht.
+
+**zonale Rückweisung** *(`zonal`, K0-Z)* — die Reparatur des
+Topologie-Wächters an seiner teuersten Eigenschaft: er verwirft eine
+Runde **atomar**. Eine Runde bündelt aber oft eine erlaubte
+Soll-Reparatur mit einer verbotenen Erfindung, und beim Voll-Revert
+fällt die Reparatur mit. Die zonale Rückweisung lokalisiert stattdessen
+die Verletzungen (Positions-Diff gegen die Vorrunde), pinnt die Anker im
+Radius **0,55 xh** um jede und löst EINMAL nach — der Rest der Runde
+bleibt. `guard_outcome` protokolliert je Wort, was passierte
+(`accept` · `zonal` · `revert-init`), und genau daran ist die Wirkung
+belegt: 26 der 31 bewegten Wörter waren unter dem alten Wächter ein
+Runde-1-Rollback auf den Init. Radius 0 reproduziert das alte
+Verhalten byte-identisch. *Technisch:*
+`tools/pairlab/follow.py`, `--structure-guard-zone <xh>`,
+`FollowWeights.structure_guard_zone_units` (Default 0,55 seit Kette v5)
+→ qualitaetsmetrik.md §14 „Kette K0-Z `aug20`“ und „Kette v5 `aug26`“
+
+**Ratsche** *(Ratschen-Budget, `structure_guard_ratchet`, K0-Z-R)* —
+die zweite Reparatur derselben Schicht: das Struktur-Budget des
+Wächters bleibt nicht auf dem Stand der Initialisierung stehen, sondern
+**zieht nach jeder akzeptierten Runde Richtung Soll nach** — wie eine
+Ratsche, die nur in eine Richtung greift. Ohne sie darf eine Runde eine
+Klassenzahl beliebig oft wieder verschlechtern, solange sie unter dem
+alten Init-Budget bleibt; mit ihr ist jeder erreichte Struktur-Gewinn
+die neue Obergrenze. Zusammen mit der zonalen Rückweisung und dem
+Kompositions-Soll bildet sie den Wächter-Stack, der seit Kette v5
+(`aug26`) der Default ist. *Technisch:*
+`tools/pairlab/follow.py`, `--no-structure-guard-ratchet` schaltet sie
+ab → qualitaetsmetrik.md §14 „Kette K0-Z-R `aug20`“ und „Kette K0-S
+`aug21`“
+
+**Schienen-Auslauf** *(tail runout)* — die erste adoptierte Konstante
+der Route Lotse und ein Owner-Fund, kein geplanter Arm: am ENDE eines
+Wortes hört die Tinte auf, aber die Karte läuft weiter; ohne Deckel
+folgt der Ritt der Karte ins Leere und schleppt einen Schwanz hinter
+sich her. Der Auslauf begrenzt, wie weit der Ritt nach dem letzten
+Tinten-Sample noch der Karte folgen darf. Adoptiert bei **1,0** —
+er allein senkte den dtw-Median der Route von 0,119 auf 0,101 und ein
+Einzelwort von 0,343 auf 0,087. *Technisch:*
+`tools/inkpilot/pilot.py::TAIL_RUNOUT_MAX_UNITS` →
+qualitaetsmetrik.md §14 „Route Lotse `aug16`“, Ledger:
+verfahren-lotse.md
 
 **Laufform-Topologie-Wächter** *(LF2)* — die Schichtungs-Regel auf der
 Laufform-Ebene: eine Laufform-Zeile, die eine GEZÄHLTE Chart-Kreuzung
