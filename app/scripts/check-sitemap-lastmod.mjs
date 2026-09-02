@@ -33,7 +33,12 @@ const git = (args) => execFileSync('git', args, { cwd: appDir, encoding: 'utf8' 
 let history = true;
 let dirty = new Set();
 try {
-  if (git(['rev-parse', '--is-shallow-repository']) === 'true') history = false;
+  if (git(['rev-parse', '--is-shallow-repository']) === 'true') {
+    // CI checks out with fetch-depth 1, where every file looks as if it
+    // changed in the single fetched commit — ten false alarms, not a guard.
+    history = false;
+    console.log('sitemap-lastmod — flache Klonung ohne Historie, nur der Arbeitsbaum wird geprüft');
+  }
   // Paths come back relative to the repo root; PageSpec.sources are relative
   // to app/, so translate through the repo root once.
   const repoRoot = git(['rev-parse', '--show-toplevel']);
