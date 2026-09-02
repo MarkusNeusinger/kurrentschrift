@@ -2,26 +2,29 @@
 // touch-targets — the standing check under design-system.md §9.3 (binding since
 // 2026-09-03): an interactive target measures at least 44px in its smaller edge.
 //
-// It does NOT sweep every control on the site. Most small targets there are
-// legitimate — links in running prose are the rule's own exception, and the
-// header nav sits at 24px by design and passes WCAG 2.2 SC 2.5.8 through the
-// spacing exception. A blanket sweep would be a wall of false positives that
-// nobody reads.
+// It does NOT sweep every control on the site — the rule has exactly one
+// exception, links in running prose, and a sweep would report every one of them
+// forever. What it checks instead are the controls where the 44px is not
+// obvious from the drawing and can therefore regress unnoticed:
 //
-// Instead it guards the MECHANISM: the handful of controls that are deliberately
-// drawn small and get their 44px from the invisible `hitArea()` pseudo-element
-// (app/src/styles/hitArea.ts). Those are the ones that can regress silently —
-// remove the helper, or wrap the control in something with `overflow: hidden`,
-// and the drawing is unchanged while the target quietly shrinks back. Nothing on
-// screen tells you; this does.
+//   · those that get their 44px from the invisible `hitArea()` pseudo-element
+//     (app/src/styles/hitArea.ts) — remove the helper, or wrap the control in
+//     something with `overflow: hidden`, and the drawing is unchanged while the
+//     target quietly shrinks back;
+//   · the header area links, which reach the floor through padding instead
+//     (HeaderBar.tsx) — on phones the bar stacks into two rows, and an
+//     invisible overlay there would have made the rows' targets overlap.
+//
+// Nothing on screen tells you when either of those breaks; this does.
 //
 // The probe is the real thing, not a computed size: for each axis where the
-// element's own box is under 44px, it asks `document.elementFromPoint` at 22px
-// from the centre — the edge of the 44px square — and requires the answer to be
-// the control itself. A clipped pseudo-element fails that; a computed-height
-// check would not. Axes where the box already exceeds 44px are not probed: there
-// the helper does nothing, and a neighbour's own hit area may legitimately win
-// the point.
+// element's own box is under 44px, it asks `document.elementFromPoint` at the
+// inclusive edge of the 44px square — 22px from the centre, minus a hundredth
+// of a pixel so the probe sits inside rather than on the exclusive boundary —
+// and requires the answer to be the control itself. A clipped pseudo-element
+// fails that; a computed-height check would not. Axes where the box already
+// exceeds 44px are not probed: there the padding or the helper does nothing, and
+// a neighbour's own target may legitimately win the point.
 //
 //   node scripts/touch-targets.mjs                        # localhost:3000, 390px
 //   node scripts/touch-targets.mjs --base https://kurrentschrift.ink
@@ -45,6 +48,16 @@ const TOUCH_TARGET = 44;
 // costs a full quiz round — the primitive is covered, the detour is not worth
 // the runtime.
 const CHECKS = [
+  {
+    // The area links are on every page; checking them once is enough. At this
+    // width the bar stacks into two rows, which is the layout where they used
+    // to fall short — and where an invisible overlay would have overlapped.
+    route: '/lesen',
+    targets: [
+      { name: 'Kopf-Navigation (Schriftkunde)', find: "document.querySelector('header nav a')" },
+      { name: 'Kopf-Navigation (Lesen)', find: "document.querySelectorAll('header nav a')[1]" },
+    ],
+  },
   {
     route: '/federprobe',
     targets: [
@@ -95,10 +108,12 @@ const PROBE = (find, floor) => `(() => {
   if (!r.width || !r.height) return null;
   const cx = r.left + r.width / 2;
   const cy = r.top + r.height / 2;
-  // The last point INSIDE the 44px square, not its boundary: a CSS pixel edge
-  // is exclusive, so hit-testing exactly at centre+22 lands on the parent about
-  // half the time and would report a violation that is not one.
-  const reach = ${floor} / 2 - 0.5;
+  // The 44px square is checked INCLUSIVELY: the probe sits a hair inside its
+  // edge, not half a pixel in. A CSS pixel boundary is exclusive, so testing
+  // exactly at centre+22 lands on the parent about half the time and would
+  // report violations that are none; backing off by a whole 0.5px would have
+  // been the opposite error — it passes a 43px target as if it were 44.
+  const reach = ${floor} / 2 - 0.01;
   const hits = (x, y) => {
     const at = document.elementFromPoint(x, y);
     return { ok: !!at && (at === el || el.contains(at)), got: at ? at.tagName.toLowerCase() + (at.className && typeof at.className === 'string' ? '.' + at.className.split(' ')[0] : '') : 'nothing' };

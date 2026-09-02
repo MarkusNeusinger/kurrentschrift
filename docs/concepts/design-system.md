@@ -399,6 +399,17 @@ Angewandt auf `ReplayButton`, `InfoHint`, die Quiz-Nebenknöpfe („beenden",
 „Link kopieren"; die Umschaltgruppen wachsen unter `sm` per Theme auf
 `minHeight: 44`.
 
+**Wo Nachbarn dicht stehen, wächst das Element statt seiner Trefferfläche.** Die
+drei Bereichslinks der Kopfleiste sind der Fall: auf dem Handy bricht die Leiste
+in zwei Zeilen, deren Textmitten 28 px auseinanderliegen — zwei unsichtbare
+44er-Flächen hätten sich um 16 px überlappt, und ein Tipp auf „Lesen" wäre auf
+„Schriftkunde" gelandet. `HeaderNavLink` bekommt darum echtes Innenmaß
+(`minHeight`/`minWidth` 44, `px`), womit die Zeilen auseinanderrücken; die
+Haarlinie sitzt seither an einem inneren `span`, damit sie weiter am Wort klebt
+statt am Polster. Die Leiste wächst dadurch auf schmalen Geräten von 82 auf
+121 px, auf `sm+` bleibt sie unverändert. Faustregel: Überlagerung nur dort, wo
+das Element allein steht.
+
 **Messbar statt behauptet**, wie der Typo-Boden: `npm run touch-targets`
 (`app/scripts/touch-targets.mjs`) fährt die betroffenen Routen an und fragt für
 jede Achse, auf der ein Element kleiner als 44 px GEZEICHNET ist, per

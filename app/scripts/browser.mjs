@@ -29,13 +29,44 @@ export class Cdp {
     this.socket = socket;
     this.seq = 0;
     this.pending = new Map();
+    /** method → set of listeners, for the protocol's fire-and-forget events. */
+    this.listeners = new Map();
     socket.addEventListener('message', (event) => {
       const msg = JSON.parse(event.data);
+      // A message without an id is an event, not a reply to one of our calls.
+      if (msg.id === undefined) {
+        for (const fn of [...(this.listeners.get(msg.method) ?? [])]) fn(msg.params ?? {});
+        return;
+      }
       const waiter = this.pending.get(msg.id);
       if (!waiter) return;
       this.pending.delete(msg.id);
       if (msg.error) waiter.reject(new Error(msg.error.message));
       else waiter.resolve(msg.result);
+    });
+  }
+
+  on(method, fn) {
+    if (!this.listeners.has(method)) this.listeners.set(method, new Set());
+    this.listeners.get(method).add(fn);
+  }
+
+  off(method, fn) {
+    this.listeners.get(method)?.delete(fn);
+  }
+
+  /**
+   * Resolve on the next occurrence of `method`. Arm this BEFORE the call that
+   * triggers it — an event that fires while we are still awaiting the call's
+   * reply would otherwise be missed.
+   */
+  once(method) {
+    return new Promise((resolve) => {
+      const fn = (params) => {
+        this.off(method, fn);
+        resolve(params);
+      };
+      this.on(method, fn);
     });
   }
 
@@ -70,10 +101,24 @@ export class Cdp {
    * a fallback face reports different metrics than the real one.
    */
   async goto(url) {
-    await this.send('Page.navigate', { url });
+    // `Page.navigate` resolves as soon as the navigation is COMMITTED, not when
+    // the new document exists — so the readiness poll below could otherwise be
+    // answered by the PREVIOUS route, whose <main> is still in the DOM and
+    // whose readyState is long since 'complete'. Two guards against that:
+    // wait for the load event of the new document (armed before navigating, or
+    // it can fire while we await the navigate reply), and then require the
+    // document to actually BE the route we asked for.
+    const loaded = this.once('Page.loadEventFired');
+    const { errorText } = await this.send('Page.navigate', { url });
+    if (errorText) throw new Error(`navigation to ${url} failed: ${errorText}`);
+    await Promise.race([loaded, sleep(15000)]);
+
+    const wanted = new URL(url).pathname;
     for (let attempt = 0; attempt < 40; attempt += 1) {
       const ready = await this.evaluate(
-        "document.readyState === 'complete' && !!document.querySelector('main, [role=main], h1')",
+        `location.pathname === ${JSON.stringify(wanted)} &&` +
+          " document.readyState === 'complete' &&" +
+          " !!document.querySelector('main, [role=main], h1')",
       );
       if (ready) break;
       await sleep(250);
