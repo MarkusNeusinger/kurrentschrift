@@ -63,7 +63,10 @@ allowed the jitter it causes). A mismatch is a hard failure. The gate compares
 the full fixture rows: since issue #289 the write path builds its rows through
 the same `core.database.models.template_render_row` shape, `glyph` included,
 so the fluent body widening (`core.pipeline._fluent_widen`) applies on both
-sides — `--verify` therefore needs a deployed API at or after that fix.
+sides — `--verify` therefore needs a deployed API at or after that fix. Both
+layers put the API's 4-decimal wire rounding (`core.rounding`) on the LOCAL
+side before comparing, so the gate measures the row and the composition and
+never the serialisation.
 
 `ADMIN_TOKEN` is read from the environment and sent as `X-Admin-Token`. It is
 never printed, logged or echoed into an error message.
@@ -98,6 +101,7 @@ import numpy as np
 from api.routers.templates import build_laufform_canonical
 from api.routers.write import MAX_BATCH_KEYS
 from core.database.models import LAUFFORM_VARIANT
+from core.rounding import round_wire_numbers
 from core.shaping import GlyphSlot, glyph_keys_of
 from tools.wordbench.export_fixtures import (
     DEFAULT_OUT_DIR,
@@ -713,7 +717,12 @@ def verify_rows(client: ApiClient, source_id: str, root: Path, bust: str) -> lis
         for key in keys:
             if key not in served:
                 continue
-            local = render_payload_for_template(rows[key], style_ratio, width_resolver, nib)
+            # Same 4-decimal walk the API puts on at serialisation
+            # (`core.rounding`) — without it the gate would fail on the wire
+            # contract instead of on the row: the fluent widening leaves
+            # `advance`/`entry`/`exit_pt` unrounded, and the served copy is
+            # rounded, which is a 5e-5 gap against a 1e-9 tolerance.
+            local = round_wire_numbers(render_payload_for_template(rows[key], style_ratio, width_resolver, nib))
             error = payload_mismatch(local, served[key])
             if error:
                 failures.append(f"{root.name}/{filename}: {key!r} {error}")
@@ -786,8 +795,14 @@ def verify(
         stride = max(1, len(cases) // per_set)
         for case in cases[::stride][:per_set]:
             served = client.get(f"/sources/{quote(source_id, safe='')}/write/word", {"text": case.word, "bust": bust})
+            # The local composition goes through the same 4-decimal walk the
+            # API applies at serialisation (`core.rounding`): composition does
+            # not round, so without this the two sides differ by up to 5e-5 xh
+            # of serialisation noise alone — a bit-tight root would fail the
+            # gate on the wire format rather than on a wrong row.
+            local_items = round_wire_numbers(derive_word(case).composed["items"])
             error, shape, placement = composition_mismatch(
-                derive_word(case).composed["items"], served["items"], shape_tol=shape_tol, placement_tol=root_tol
+                local_items, served["items"], shape_tol=shape_tol, placement_tol=root_tol
             )
             checked += 1
             exact += placement == 0.0

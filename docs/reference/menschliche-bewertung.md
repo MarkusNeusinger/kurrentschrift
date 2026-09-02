@@ -1,12 +1,15 @@
 # Menschliche Bewertung — der blinde Urteilsdurchgang über die Fits
 
-> **Status (2026-08-12): lebend.** Beschreibt das Instrument
+> **Status (2026-09-02): lebend.** Beschreibt das Instrument
 > ([`tools/humanbench`](../../tools/humanbench)) und das Verfahren eines
 > Bewertungsdurchgangs — die Methode, nicht die Ergebnisse. Nachzuziehen bei
 > jeder Änderung am Instrument (Kategorien, Stichproben- und
 > Wiederholungsregeln, Darstellung, neue Modi in
 > `tools/humanbench/build.py` bzw. `page.py`) und bei jeder Runde, deren
-> Aufbau von dem hier beschriebenen abweicht.
+> Aufbau von dem hier beschriebenen abweicht. Seit 2026-09-02 hat das
+> Instrument einen dritten Modus — den **Wortmodus auf der Echtheitsfrage**
+> (§8a); gebaut und synthetisch abgenommen, gefahren wurde damit noch keine
+> Runde.
 
 Diese Datei existiert, damit eine Wiederholung ein **Nachbau** ist und keine
 Neuplanung. Jede Regel hier hat eine Runde gekostet; sie steht mit ihrer
@@ -43,6 +46,12 @@ Ein zweiter Ertrag fällt kostenlos an und ist oft der
 entscheidungsrelevanteste: die **Validierung eines bereits ausgelieferten
 Gates** gegen die menschlichen Urteile — wirft es Vorkommen weg, die ein
 Mensch behalten würde, oder behält es welche, die er verworfen hätte?
+
+Die paarigen Modi (§8, §8a) stellen eine **andere** Frage — nicht „was sieht
+welche Kennzahl?“, sondern „welche von zwei Rechnungen ist besser?“ bzw.
+„welche sieht echter geschrieben aus?“. Sie liefern deshalb weder
+Abdeckungsmatrix noch Prävalenz, sondern eine Richtung; ihre Runden sind mit
+denen dieses Abschnitts nicht vergleichbar.
 
 ### Was er ausdrücklich NICHT liefert
 
@@ -261,7 +270,7 @@ Paare je etwa ein Ja; die Übereinstimmung kommt dann fast ganz aus Einigkeit
 gezielt aus den bekannten Fällen der Vorrunde), was mehr Wiederholungen
 braucht als die voreingestellten 12.
 
-> **Offen — das Werkzeug kann diese Lehre noch nicht ausführen.**
+> **Offen für den Kategorien-Modus — im Wortmodus umgesetzt.**
 > `build.py::pick_repeats` zieht nach Häufigkeit und Band, nicht nach
 > Kategorie; die Labels der Vorrunde gehen gar nicht erst hinein. Die
 > Auswertung *überwacht* die Regel bereits
@@ -273,6 +282,15 @@ braucht als die voreingestellten 12.
 > wiederholt die Runde exakt die Messung, die beim ersten Mal nichts ergeben
 > hat. Für den **paarigen** Durchgang (§8) ist das nicht nötig: dort misst
 > die Wiederholung die Seitenneigung, nicht eine Kategorie.
+>
+> Der **Wortmodus** (§8a) teilt seine Wiederholungen trotzdem über Klassen
+> aus (`build.py::pick_word_repeats`) — aus einem anderen Grund als dem hier
+> genannten: nach Häufigkeit ließe sich dort ohnehin nichts ziehen (jedes
+> Wort kommt einmal vor), und die Klassen sorgen dafür, dass die gemessene
+> Seitenneigung über die ganze Runde streut statt in einer Wortsorte zu
+> sitzen. Für die **Verlässlichkeit je Klasse** heißt das dasselbe wie oben:
+> ohne deklarierte Klassen (`--strata`) hat die klassenweise Lesart des
+> Verdikts keine Wiederholungen unter sich, und der Builder sagt das laut.
 
 ### 3.3 Rückhaltemenge
 
@@ -481,13 +499,17 @@ Der Plan gehört zur Runde und wird mit den Urteilen aufbewahrt (§6).
 ### Schritt 0 — Frage und Plan
 
 Festlegen, was die Runde beantworten soll: ein **Kategorien-Durchgang**
-(`single`, „was stimmt hier nicht?“) oder ein **paariger Vergleich**
-(`paired`, §8). Beim paarigen gehört die **Frage selbst** in die Festlegung —
-„welche Linie folgt der Tinte besser?“ solange es eindeutige Fehler gibt,
-„welche sieht echter geschrieben aus?“ erst danach; die beiden messen
-Verschiedenes und ihre Runden sind nicht vergleichbar (§8). Dann den
-Auswerteplan schreiben (§4). Der Plan darf nach dem Bauen entstehen — nie nach
-dem Labeln.
+(`single`, „was stimmt hier nicht?“), ein **paariger Vergleich** über einzelne
+Buchstaben (`paired`, §8) oder eine **Wortrunde** (`word`, §8a). Bei beiden
+paarigen gehört die **Frage selbst** in die Festlegung — „welche Linie folgt
+der Tinte besser?“ solange es eindeutige Fehler gibt, „welche sieht echter
+geschrieben aus?“ erst danach; die beiden messen Verschiedenes und ihre Runden
+sind nicht vergleichbar (§8). Seit 2026-09-02 muss man sie nicht mehr nur
+aufschreiben: die Frage steht im Seitenaufruf (`page.py --question ink |
+authentic`) und färbt die **Kopfzeile des Ergebnistextes** (`VERGLEICH/n`
+gegen `ECHTHEIT/n`), sodass ein Text seiner Frage auch dann noch zuzuordnen
+ist, wenn der Plan verlorengeht. Dann den Auswerteplan schreiben (§4). Der
+Plan darf nach dem Bauen entstehen — nie nach dem Labeln.
 
 ### Schritt 1 — Bauen
 
@@ -512,6 +534,17 @@ schränkt zusätzlich ein (§3.3):
 ```bash
 uv run python -m tools.humanbench.build --round 4 \
     --only temp/humanbench/runde-2/reserve.json
+```
+
+Eine **Wortrunde** bringt statt Vorkommen zwei Kompositionen mit und holt ihre
+Ausschnitte aus einer eingefrorenen Wordbench-Wurzel (§8a):
+
+```bash
+uv run python -m tools.humanbench.wordarm --arm Basis --out temp/basis.json
+uv run python -m tools.humanbench.wordarm --arm LF11 --laufform temp/lf11.json \
+    --registration-from temp/basis.json --out temp/lf11.json
+uv run python -m tools.humanbench.build --round 5 \
+    --word-arms temp/basis.json temp/lf11.json --strata temp/klassen.json
 ```
 
 Geschrieben wird nach `temp/humanbench/runde-<n>/`:
@@ -548,9 +581,10 @@ uv run python -m tools.humanbench.page \
 ```
 
 Der Modus folgt dem Payload, nicht einem Flag: ein Panel je Bild ergibt den
-Kategorien-Durchgang, zwei den paarigen Vergleich. Die Seite ist in sich
-geschlossen — Crops als `data:`-URIs, Stil und Skript inline, kein Font, kein
-CDN, kein Netzzugriff.
+Kategorien-Durchgang, zwei den paarigen Vergleich. Nur die **Frage** ist eine
+Angabe des Aufrufers (`--question authentic` für die Wortrunde), weil sie
+nicht aus der Geometrie folgt. Die Seite ist in sich geschlossen — Crops als
+`data:`-URIs, Stil und Skript inline, kein Font, kein CDN, kein Netzzugriff.
 
 ### Schritt 3 — Veröffentlichen
 
@@ -600,6 +634,17 @@ uv run python -m tools.humanbench.analyse \
     --rows temp/humanbench/runde-2/rows.json \
     [--spots temp/humanbench/runde-2/spots.json] \
     [--gate 'spike>=8.0:A'] [--union W,B] [--drop-unsure] [--json auswertung.json]
+```
+
+Eine **paarige** Runde braucht dieselben zwei Dateien und sonst nichts — es
+gibt weder Kennzahlen je Vorkommen noch Marker, und welcher der beiden Pläne
+läuft, liest das Werkzeug am Antwort-Vokabular des Textes ab (`L`/`R`/`N`
+gegen die Kategorienbuchstaben), nicht an einem Schalter:
+
+```bash
+uv run python -m tools.humanbench.analyse \
+    --result temp/humanbench/runde-5/urteile.txt \
+    --key temp/humanbench/runde-5/key.json [--json auswertung.json]
 ```
 
 Die Reihenfolge steckt im Werkzeug, nicht im Kopf des Auswertenden: Eine
@@ -666,9 +711,12 @@ Urteile, Plan, Auswertung und Stempel sichern (§6), die Befunde nach
   und sie entstehen in einem Container, der am nächsten Tag weg ist. Sie
   enthalten keine Geometrie: ein Kürzel, ein Bildpunkt, Sekunden, Prosa.
 * **der schmale Schlüssel** (`vorkommen.json`, vom Builder geschrieben) — uid
-  → Glyph, Vorlagenwort, Slot, `repeat_of`. Ohne ihn wäre eine Zeile wie
-  `S026:AW#81,76` eine bedeutungslose Zeichenkette; welcher Buchstabe in
-  welchem Wort einer gemeinfreien Tafel steht, ist keine gelernte Geometrie.
+  → Glyph, Vorlagenwort, Slot, `repeat_of`; in der Wortrunde (§8a) statt
+  dessen uid → Fixture-Eintrag, Worttext, Verdachtsklasse, `repeat_of`. Ohne
+  ihn wäre eine Zeile wie `S026:AW#81,76` eine bedeutungslose Zeichenkette;
+  welcher Buchstabe in welchem Wort einer gemeinfreien Tafel steht, ist keine
+  gelernte Geometrie — die Klasse steht mit drin, weil die klassenweise
+  Lesart des Verdikts zum Plan gehört und sonst den vollen Schlüssel bräuchte.
 * **der Auswerteplan und die Auswertung** — Methode und Zahlen.
 * **der Stempel** (`provenance.json`) — Parameter und Zählungen, keine
   Geometrie.
@@ -717,6 +765,14 @@ lautlos, welche Bildschirme sich wiederholen), und `code_dirty`. Ein Commit
 sagt nur dann, welcher Code die Runde gebaut hat, wenn der Baum sauber war;
 stand `code_dirty` auf `true`, ist der Commit ein Anhaltspunkt und kein
 Nachweis.
+
+Eine Wortrunde (§8a) legt zwei Blöcke dazu: `question` (welche der beiden
+paarigen Fragen gestellt wurde) und `arms` — je Seite Name, Datei und
+**SHA-256** der gezeichneten Bytes, dazu die Einstellungen, mit denen der Arm
+komponiert wurde (Nib, Laufform-Überlagerung, ob die Registrierung gepinnt
+war, ob ein synthetischer Defekt injiziert wurde). Der Arm entsteht außerhalb
+des Instruments; ohne seine Prüfsumme benennt die Runde eine Datei, die
+seither umgeschrieben sein kann.
 
 **Warum er zwingend ist:** Ein Urteil gilt gegen **einen** Stand des Fits.
 Ändert sich der Algorithmus — und genau das ist der Zweck der Übung —, werden
@@ -829,6 +885,233 @@ Kategorien-Durchgang mit den alten Fits, und die gelabelten Vorkommen paarig.
 
 ---
 
+## 8a. Der Wortmodus — die Echtheitsfrage
+
+> **Stand 2026-09-02: gebaut, synthetisch abgenommen, noch nicht gefahren.**
+> Die Zahlen einer Runde gehören nach
+> [`qualitaetsmetrik.md`](qualitaetsmetrik.md); hier steht nur, wie sie
+> zustande kommen.
+
+### Warum ein dritter Modus
+
+Das Audit vom 2026-09-02 (Befund 10) hat drei Defekte benannt, die **jedes
+eingefrorene Lineal des Projekts übersieht**:
+
+* den **Anker-Median-Zickzack** jeder Laufform-Zeile — das Wort-Lineal
+  resampelt ihn weg, bevor es misst;
+* den **um rund ein Viertel zu dünnen Strich** — keine einzige Kennzahl trägt
+  die Strichbreite überhaupt;
+* den **Knick an der Naht** jedes Verbinder-Austritts — er sitzt unter dem
+  0,05–0,12-xh-Fenster, in dem das Wort-Lineal arbeitet.
+
+Der Kategorien-Durchgang sieht sie ebenso wenig, und zwar aus zwei
+Konstruktionsgründen, die in §9 seit Runde 01 als Grenzen stehen: er zeigt
+**einen Buchstaben**, nicht ein Wort, und er zeichnet eine **Mittellinie**,
+keine Tinte. Der Zickzack und die Strichstärke sind aber Eigenschaften der
+Tinte, und der Naht-Knick gehört dem Übergang zwischen zwei Buchstaben.
+
+Solange dieses Instrument fehlte, war jede Verbesserung am Duktus — LF11, der
+Platten-Nib, der Austritts-Trim — **unbeweisbar und jede Adoption
+Geschmackssache**. Es ist zugleich der in
+[`tintenfolger.md`](../proposals/tintenfolger.md) §7.9 zweimal vorgemerkte
+**Tie-Breaker**: für die Methodik-Lücke (drei Kills, entschieden von
+Netto-Deltas ≤ 0,0007, bei denen das Lineal nur zuckt) und als Rettungsweg für
+K-E (Gewinn und Verlust in derselben Formulierung untrennbar, Lineal
+indifferent).
+
+Die Reihenfolge aus §8 gilt unverändert und ist nicht umkehrbar: **erst die
+eindeutigen Fehler weg, dann die Echtheit.** Ein Echtheitsvergleich über
+Wörter, von denen eines noch einen groben Fit-Fehler trägt, misst den Fehler.
+
+### Was gezeigt wird
+
+Ein **Specimen-Wort** aus einer eingefrorenen Wordbench-Wurzel (`crop.png` +
+`word.json`), darüber **zwei Kompositionen** — Basis und Kandidat — auf
+**einem** Bild und in **einem** Ausschnitt. Eine einzige Frage: „Welche Zeile
+sieht echter geschrieben aus?“, drei gleichwertige Antworten (links · rechts ·
+kein Unterschied erkennbar).
+
+Die Regeln aus §8 gelten alle weiter — Seitenzuweisung nur im Schlüssel,
+Seitenverteilung aus der Saat, ein gemeinsames Bild, gespiegelte
+Wiederholungen, verworfene und gezählte Einzelgänger. Dazu kommen fünf, die
+der Modus sich selbst eingehandelt hat:
+
+**Gezeichnet wird die TINTE, nicht die Mittellinie.** Buchstabenkörper als
+gefüllte Silhouetten (`rings`), erzeugte Verbinder als Kapseln ihrer eigenen
+Breite (`stroke_width`). Das ist der ganze Zweck des Modus: ein Strich, der um
+ein Viertel zu dünn ist, ist auf einer Haarlinie unsichtbar, und „sieht echter
+geschrieben aus“ ist eine Frage an das Schriftbild, nicht an den Verlauf
+seiner Mitte. Preis: **eine Wortrunde ist mit den Buchstabenrunden nicht
+vergleichbar** — andere Frage, andere Darstellung. Das ist beabsichtigt und
+steht in der Kopfzeile ihres Ergebnistextes (`ECHTHEIT/n`).
+
+**Die Vorlage wird blass gelegt, statt die Tinte zu umsäumen.** Das
+kartografische Casing aus §3.5 wäre hier genau die falsche Sicherung: ein
+heller Saum um eine gefüllte Silhouette verändert, wie **schwer** sie
+aussieht — und die Strichstärke ist das, worüber geurteilt werden soll. Also
+läuft der Ausschnitt auf 45 % Deckkraft, die Komposition wird in ihrer wahren
+Stärke gezeichnet, und der Fall, gegen den das Casing existierte (Linie
+unsichtbar in fast schwarzer Tinte), kann gar nicht mehr eintreten. Die
+Vorlage bleibt als **Maßstab dafür sichtbar, wie geschrieben aussieht** —
+nicht als Ziel, das getroffen werden soll; genau das steht auch im Kopftext
+der Seite.
+
+**Jeder Arm bringt seine eigene Registrierung mit — und pinnt sie, wenn der
+Mechanismus die Platzierung nicht bewegt.** Für die Echtheitsfrage ist eine
+Verschiebung nicht das Beurteilte, also darf jeder Arm dort sitzen, wo das
+Lineal ihn hinsetzt. Es ist aber die eine Stelle, an der die Blindheit lecken
+kann: ein Arm, der systematisch tiefer sitzt, ist über eine Runde hinweg als
+Gruppe lesbar, obwohl die Saat die Seiten würfelt. `wordarm.py
+--registration-from` übernimmt deshalb die Registrierung des anderen Arms, und
+der Stempel hält fest, ob das geschehen ist.
+
+**Eine Komposition, die über ihren eigenen Crop hinausläuft, wird namentlich
+gemeldet.** §3.4 mit einer wortgroßen Fehlerquelle: der Ausschnitt IST das
+eingefrorene Rechteck der Fixture, es lässt sich also nichts jenseits davon
+„herbeipolstern“. Wer sie stumm zeichnete, fragte den Beurteiler nach
+Schreibung, die er nicht sehen kann. (Im ersten Bau der 63er-Wurzel betraf das
+3 bzw. 6 Wörter — je nach Arm.)
+
+**Auf dem Telefon stapeln sich die beiden Panels.** Die einzige Ausnahme von
+§8s „nebeneinander bei jeder Breite“, und sie folgt aus dessen eigener
+Begründung: verlangt ist, dass **beide gleichzeitig auf dem Schirm** sind. Ein
+Wort ist breit und flach — nebeneinander bei 390 px sind es zwei Briefmarken,
+an denen sich keine Strichstärke beurteilen lässt, gestapelt sind es zwei
+lesbare Zeilen. Ausgelöst wird das aus dem Seitenverhältnis des Ausschnitts
+(≥ 2 : 1), nicht aus dem Modus, also bleibt eine Buchstabenrunde unberührt.
+
+### Woher die beiden Arme kommen
+
+**Der Modus komponiert nichts.** Beide Arme kommen als Datei, genau wie der
+paarige Modus zwei Instanz-Schnappschüsse bekommt. Ein Instrument, das seinen
+Kandidaten selbst rechnete, könnte von dem Lineal wegdriften, das ihn
+hinterher bestätigen soll — und dann verglichen zwei Runden Dinge, die
+niemand sonst reproduzieren kann.
+
+Der Vertrag steht im Kopf von [`build.py`](../../tools/humanbench/build.py):
+je Wort eine Registrierung (`xh_px`, `tx`, `ty`) plus `strokes` (Punkte in
+x-Höhen, y nach OBEN von der Grundlinie, dazu eine Strichbreite) und `fills`
+(Silhouetten im selben Rahmen) — also wörtlich das, was `compose_word`
+ohnehin liefert. Jeder Arm darf ihn schreiben;
+[`wordarm.py`](../../tools/humanbench/wordarm.py) ist der Referenz-Erzeuger
+und deckt die heute anstehenden Fälle ab: die **Basis**, eine
+**Kandidaten-Laufformkarte** (`--laufform`, wie beim Wordbench) und einen
+**anderen Nib** (`--nib`). Er komponiert dabei per IMPORT wie
+`tools/wordbench/run.py` und platziert mit `core.word_metric.score_word` —
+derselbe Rahmen, den das automatische Lineal misst.
+
+Der Stempel führt je Arm Name, Datei und **SHA-256** — ohne den benennt eine
+Runde eine Datei, die seither umgeschrieben sein kann, und „der Kandidat hat
+gewonnen“ zeigt auf nichts.
+
+**Und der Bau bricht ab, wenn die beiden Arme nicht gegen dieselbe Referenz
+komponiert wurden** (`build.py::check_arm_scope`: Stil, `source_id`,
+Fixture-Wurzel und der Export-Zeitstempel der Wurzel, jeweils gegeneinander und
+gegen die gebaute Runde). Die ganze Behauptung einer Wortrunde ist, dass sich
+die beiden Bilder in der Komposition unterscheiden und **in nichts sonst** —
+zwei Fixture-Wurzeln tragen aber andere Ausschnitte, andere eingefrorene Slots
+und andere Registrierungen. Ohne die Prüfung baut die Runde trotzdem: 63
+Bildschirme, ein sauberes Verdikt, und ein Vergleich zweier Dinge, die nie
+dieselbe Messung waren. Der gefährlichste Fall ist dabei nicht hypothetisch —
+ein Arm über `suetterlin-1922-abb22` ist eine **andere Hand**, die die
+Same-Hand-Disziplin ohnehin nie in denselben Satz lässt. Ein Arm, der gar
+nichts über seine Referenz sagt, kann nicht geprüft werden und wird dafür auch
+nicht abgelehnt — er wird gemeldet.
+
+### Bänder, Klassen und Wiederholungen
+
+Die Schwere-Achse des Kategorien-Modus („wie weit liegt der Fit von seiner
+Tinte“) gibt es hier nicht; an ihre Stelle tritt **wie weit der Kandidat das
+Wort bewegt hat** (`arm_gap`, symmetrisch, in x-Höhen). Der Grund ist §3.1s:
+Bildschirme, auf denen sich nichts bewegt hat, sind genau die, an denen eine
+stille Seitenneigung sichtbar wird — jeder Präfix muss sie erreichen.
+
+Die **Wiederholungen** werden reihum über die **Verdachtsklassen** ausgeteilt
+(`--strata`, Wort-ID → Klasse; ohne Angabe treten die Bänder an ihre Stelle
+und der Builder warnt). Nach Häufigkeit ginge es ohnehin nicht — jedes Wort
+kommt einmal vor. Gemessen wird damit nicht die Verlässlichkeit einer
+Kategorie, sondern die **Seitenneigung**, und die Klassen sorgen dafür, dass
+sie über die Runde streut statt in einer Wortsorte zu sitzen.
+
+Zwei Voreinstellungen folgen dem Modus statt dem Schalter, weil ein Wortsatz
+ein Viertel so groß und sein Ausschnitt viermal so groß ist wie im
+Buchstabenmodus: **Mindestabstand 15** statt 40 (bei 40 + 25 Jitter ließe sich
+in 63 Wörtern keine einzige Wiederholung platzieren) und **Zoom 2×** statt 4×
+(bei 4× sprengt eine 75-Bildschirm-Runde die 16-MB-Grenze eines Artifacts).
+Dass der kürzere Abstand hier vertretbar ist, liegt an der Spiegelung: sie —
+nicht der Abstand — ist es, die das Urteil neu erzwingt (§8).
+
+### Der Auswerteplan (vorregistriert, vor jeder Runde)
+
+Fünf Schritte in bindender Reihenfolge, im Werkzeug
+(`analyse.py::analyse_paired`) und nicht im Kopf des Auswertenden:
+
+1. **Seiten-Verlässlichkeit zuerst.** Aus den gespiegelten Wiederholungen:
+   zweimal derselbe **Arm** genannt heißt, die Buchstaben sind gekippt;
+   zweimal dieselbe **Seite** heißt, sie sind es nicht. Unter
+   `MIN_PAIRED_REPEATS` = 6 Paaren oder auf Münzwurf-Niveau
+   (≤ 7/12 Arm-Übereinstimmung) **trägt die Runde keinen Adoptionsanspruch** —
+   ein Arm-Anteil aus Antworten, die nach Position gegeben wurden, ist ein
+   Münzwurf mit Prozentzeichen.
+2. **Seitenbilanz.** Wie oft links gewonnen hat, gleich welcher Arm dort
+   stand. Berichtet, nie entscheidend: die Saat verteilt die Arme gleichmäßig
+   über die Seiten, eine Neigung verbreitert das Ergebnis also, sie verschiebt
+   es nicht.
+3. **Das Verdikt gegen die vorher gesetzte Schwelle:**
+   **Adoption bei ≥ 60 % Kandidat unter den ENTSCHIEDENEN Bildschirmen und
+   ≤ 25 % „kein Unterschied“ über alle.** Zwei Bedingungen, weil sie zwei
+   Dinge fragen — „wenn ein Unterschied sichtbar ist, wer gewinnt?“ und „ist
+   er oft genug sichtbar, um etwas zu ändern?“. Die Unentschiedenen stehen
+   deshalb nur im zweiten Nenner; im ersten mitgezählt, bestraften sie
+   dieselbe Tatsache zweimal. Beide Nenner werden gedruckt, damit niemand
+   raten muss, welcher gemeint war.
+4. **Je Verdachtsklasse** dieselben drei Zahlen, unter
+   `MIN_PAIRED_PER_CLASS` = 8 als „zu wenig“ statt als Anteil. Vorregistriert
+   und nicht hinterher gesucht: nach der stehenden Direktive zu asymmetrischen
+   Befunden (2026-08-26) wird ein Verlierer **erst in Klassen zerlegt**, bevor
+   er verworfen wird, und Teil-Adoption ist ein legitimer Ausgang — aber nur,
+   wenn die Aufteilung vor den Zahlen dastand.
+5. **Drift** über die Sequenz (Armmix, Unentschieden-Quote, Mediandauer), dann
+   die Notizen wörtlich.
+
+Was ein Ergebnis auslösen darf, ist damit ebenfalls vorab gesetzt: `adopt`
+verlangt **beide** Schwellen UND die Vorbedingung aus Schritt 1. Eine Runde,
+die die Schwellen auf unzuverlässigen Antworten reißt, liest sich im Bericht
+als das, was sie ist, und nicht als Adoption. Und wie überall gilt §4: eine
+rendernde Änderung braucht zusätzlich das A/B gegen die gemessene Tinte und
+die Freigabe des Autors — das Menschenurteil ersetzt es nicht, es entscheidet
+den Fall, in dem das Lineal indifferent ist.
+
+### Was der Modus NICHT liefert
+
+* **Keine Prävalenz und keine Fehlerrate.** Er misst eine Richtung auf
+  denselben Wörtern, wie §8.
+* **Keine Vergleichbarkeit mit den Buchstabenrunden** — andere Frage, andere
+  Darstellung, anderes Objekt.
+* **Kein Urteil über die Genauigkeit.** Wer wissen will, welche Zeile näher an
+  der Tinte liegt, fragt das Lineal; die beiden können einander sogar
+  zuwiderlaufen (§8).
+
+### Grenzen dieses Modus
+
+* **Ein Beurteiler, und er ist der Autor des Kandidaten.** Die Blindheit deckt
+  ab, welche Seite welcher Arm ist — nicht, dass er eine Erwartung hat.
+  Abkühlabstand zu eigenen Nachfahrungen einhalten.
+* **Die Vorlage darunter ist Maßstab und Verzerrung zugleich.** Ein Kandidat,
+  der der Platte näher kommt, kann „echter“ aussehen, *weil* er sie trifft —
+  also genau die Genauigkeitsfrage in der Echtheitsfrage. Der Kopftext sagt es
+  dem Beurteiler; eine Runde, die es prüfen will, braucht einen zweiten Block
+  ohne Hintergrund und darf ihn nicht mit diesem mitteln.
+* **63 Wörter sind die ganze Grundgesamtheit.** Es gibt keine Rückhaltemenge
+  (§3.3) — was auf dieser Wurzel entschieden wird, ist auf ihr entwickelt
+  UND bestätigt. Ein Bestätigungssatz müsste aus einer anderen Wurzel kommen
+  (`abb22` ist eine andere Hand und darf nicht dazugemittelt werden).
+* **Die Klassen sind eine Behauptung des Runden-Autors**, keine Messung. Sie
+  gehören mit ihrer Begründung in den Plan, sonst ist die klassenweise Lesart
+  aus Schritt 4 eine nachträgliche Idee.
+
+---
+
 ## 9. Bekannte Grenzen
 
 * **Die gelabelten Vorkommen sind die Überlebenden.** Sie stammen aus den
@@ -842,11 +1125,16 @@ Kategorien-Durchgang mit den alten Fits, und die gelabelten Vorkommen paarig.
   Schwellzug (`half_widths`) kommt nicht vor. Eine Runde, die ihn mitfragen
   will, muss ihn als **zweite** Darstellung zeigen und mit eigener Kategorie
   fragen, ohne das Centerline-Urteil zu verändern — sonst ist die
-  Vergleichbarkeit mit der Vorrunde dahin.
+  Vergleichbarkeit mit der Vorrunde dahin. Der **Wortmodus** (§8a) zeichnet
+  die Tinte und sieht die Strichstärke damit; er ist genau deshalb eine
+  eigene, mit den Buchstabenrunden nicht vergleichbare Messung und keine
+  Erweiterung dieser hier.
 * **Ein Buchstabe je Bild, nie ein ganzes Wort.** Fehler, die dem Wort gehören
-  (Registrierung, x-Höhe), erscheinen als Häufung von Einzelurteilen und
-  müssen erschlossen werden. Ein Wort-Übersichtsbildschirm mit eigener
-  Kategorie macht diese Signatur direkt sichtbar.
+  (Registrierung, x-Höhe, die Naht zwischen zwei Buchstaben), erscheinen als
+  Häufung von Einzelurteilen und müssen erschlossen werden. Für den
+  **paarigen** Fall ist das seit dem Wortmodus (§8a) behoben — dort ist das
+  Wort das Objekt; für den **Kategorien**-Durchgang steht es offen, und ein
+  Wort-Übersichtsbildschirm mit eigener Kategorie bliebe der Weg dorthin.
 * **Ein einziger Beurteiler.** Gemessen ist die Übereinstimmung des Autors
   **mit sich selbst**. Übereinstimmung zwischen Personen ist nicht gemessen,
   und die Kategorien sind nie an einem Fremden erprobt worden — der Grund,
