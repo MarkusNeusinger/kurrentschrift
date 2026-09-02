@@ -58,7 +58,14 @@ ROUTE_PAGES = {
 ALL_ROUTES = "alle Routen"
 
 # `aug14`, `sep02` — the journal's own date tag, also the Datum column everywhere.
-_DATE_TAG = re.compile(r"\b((?:jun|jul|aug|sep|okt|nov|dez)\d{2})\b")
+# All twelve months, not just the ones the campaign has run through so far: the
+# route-page rule matches on this tag, so a month the pattern does not know
+# would silently stop enforcing it — no error, just a gate that waves everything
+# through. The campaign started in `jun` and the first January would have found
+# that out the hard way. The abbreviations are GERMAN, which the docs settle
+# themselves by writing `okt`/`nov`/`dez` rather than oct/nov/dec; `mär` is
+# accepted beside `mrz` because both spellings are current in German.
+_DATE_TAG = re.compile(r"\b((?:jan|feb|mrz|mär|apr|mai|jun|jul|aug|sep|okt|nov|dez)\d{2})\b")
 _LINK = re.compile(r"\[(?P<text>[^\]]*)\]\(#(?P<anchor>[^)]+)\)")
 # German decimals as the docs write them: 0,109255 — three digits or more, so a
 # stray "1,5 xh" cannot pass for a headline.

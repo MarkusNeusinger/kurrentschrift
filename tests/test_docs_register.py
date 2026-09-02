@@ -146,6 +146,25 @@ def test_the_newest_ledger_row_must_be_the_status_headline(repo: Path) -> None:
     assert any("is not the status blockquote's headline" in p for p in problems)
 
 
+@pytest.mark.parametrize("tag", ["jan07", "feb28", "mrz12", "mär12", "apr01", "mai31", "jun11", "dez24"])
+def test_the_date_tag_covers_every_month(tag: str) -> None:
+    # The route-page rule matches on this tag: a month the pattern does not know
+    # would not fail the check, it would silently stop enforcing it.
+    assert dr._DATE_TAG.findall(f"| {tag} | Kette | …") == [tag]
+
+
+def test_a_route_entry_of_a_new_year_is_still_enforced(repo: Path) -> None:
+    text = (
+        JOURNAL.replace("| aug20 | Lotse |", "| mrz12 | Lotse |")
+        .replace("### Lotse v0.17 `aug20`", "### Lotse v0.17 `mrz12`")
+        .replace("#lotse-v017-aug20--das-reservierungs-veto", "#lotse-v017-mrz12--das-reservierungs-veto")
+    )
+    _write(repo, dr.JOURNAL, text)
+    problems = dr.check_all(root=repo)
+    # The Lotse page still only knows aug20, so the missing ledger row must show.
+    assert any("has no ledger row in docs/reference/verfahren-lotse.md" in p for p in problems)
+
+
 def test_a_route_entry_missing_from_its_process_page_fails(repo: Path) -> None:
     _write(repo, dr.ROUTE_PAGES["Lotse"], LOTSE.replace("| aug20 |", "| aug19 |"))
     problems = dr.check_all(root=repo)
