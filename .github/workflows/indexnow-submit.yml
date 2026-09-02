@@ -38,7 +38,7 @@ env:
 jobs:
   submit:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -53,6 +53,22 @@ jobs:
           n=$(wc -l < urls.txt)
           echo "::notice::${n} URL(s) from app/public/sitemap.xml"
           cat urls.txt
+          # This run starts with the push; the Cloud Build deploy that serves
+          # the key file (and the new pages) finishes minutes later. Wait for
+          # the key file (up to ~8 min) so a first rollout or a key rotation
+          # is not rejected — but submit either way: a runner behind
+          # Cloudflare's bot management may see a 403 that Bing's own fetch
+          # does not, and IndexNow verifies the key itself.
+          for i in $(seq 1 16); do
+            if curl -fsS --max-time 15 -o /dev/null "https://${HOST}/${INDEXNOW_KEY}.txt"; then
+              echo "::notice::key file reachable"; break
+            fi
+            if [ "$i" -eq 16 ]; then
+              echo "::warning::key file not confirmed reachable after 8 min; submitting anyway"
+            else
+              sleep 30
+            fi
+          done
           body=$(jq -n --arg host "$HOST" --arg key "$INDEXNOW_KEY" \
             --arg loc "https://${HOST}/${INDEXNOW_KEY}.txt" \
             --rawfile list urls.txt \
