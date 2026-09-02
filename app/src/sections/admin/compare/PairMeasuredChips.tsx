@@ -41,6 +41,7 @@ function aggregateReason(state: AggregateLayerState): { chip: string; line: stri
   const t = de.admin.compare;
   const w = de.admin.werkbank;
   if (state.status === 'loading') return null;
+  if (state.status === 'no-occurrences') return { chip: t.measuredNoOccurrences, line: w.statsNoOccurrences };
   if (state.status === 'no-hand') return { chip: t.measuredNoHand, line: w.statsNoHand };
   if (state.status === 'unavailable') return { chip: t.measuredNoAccess, line: w.statsUnavailable };
   if (state.layerEmpty) return { chip: t.measuredNoRebuild, line: w.statsNoRebuild };

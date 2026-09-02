@@ -398,6 +398,7 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
                   setOffsetDx(v as number);
                   setGeometryDirty(true);
                 }}
+                aria-label={de.admin.pairs.offsetLabel}
               />
               <Typography variant="caption" sx={{ width: 48, textAlign: 'right' }}>
                 {offsetDx.toFixed(2)}

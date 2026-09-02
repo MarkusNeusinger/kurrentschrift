@@ -109,7 +109,10 @@ export function ChartToolbar({
       </Tooltip>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: { xs: 0, sm: 300 }, flex: { xs: 1, sm: 'none' } }}>
-        <IconButton size="small" onClick={onZoomOut}>
+        {/* Icon-only buttons and a bare slider: nothing here is text, so all
+            three carry their own name. The wizard's identical control already
+            did (WizardCanvas) — this is the same three keys. */}
+        <IconButton size="small" onClick={onZoomOut} aria-label={de.wizard.canvas.zoomOut}>
           <RemoveIcon />
         </IconButton>
         <Slider
@@ -121,8 +124,9 @@ export function ChartToolbar({
           step={0.05}
           marks={ZOOM_PRESETS.map((p) => ({ value: p }))}
           onChange={(_e, v) => typeof v === 'number' && onZoomChange(v)}
+          aria-label={de.wizard.canvas.zoom}
         />
-        <IconButton size="small" onClick={onZoomIn}>
+        <IconButton size="small" onClick={onZoomIn} aria-label={de.wizard.canvas.zoomIn}>
           <AddIcon />
         </IconButton>
         <Typography variant="caption" sx={{ minWidth: 50 }}>

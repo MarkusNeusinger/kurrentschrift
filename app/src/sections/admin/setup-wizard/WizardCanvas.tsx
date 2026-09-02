@@ -835,6 +835,9 @@ export function WizardCanvas({
           step={0.05}
           value={userZoom}
           onChange={(_e, v) => typeof v === 'number' && applyZoom(v)}
+          // The label sits in the −/+ buttons beside it, not in text a slider
+          // could be labelled BY, so it carries its own name.
+          aria-label={de.wizard.canvas.zoom}
         />
         <IconButton size="small" onClick={() => zoomBy(1.3)} sx={{ color: '#bbb' }} aria-label={de.wizard.canvas.zoomIn}>
           <AddIcon fontSize="small" />
