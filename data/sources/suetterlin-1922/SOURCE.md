@@ -42,7 +42,28 @@
 - Pipeline:  Unberührt. Messung/Skelettierung/Crops lesen weiterhin `chart.jpg`
              (`core/chart.py`); Sütterlin ist Gleichzug, daher geht durch die
              flache Binarisierung der SVG keine Strichstärken-Information verloren.
+- Maße:      183 390 Bytes
+- SHA256:    824af6ea09795473b1fda9a2109dd77ae581a80d71cd03137dff20e1d635af17
 - Regenerate: `uv run data/sources/suetterlin-1922/vectorize_chart.py`
+
+## words.json — Wort- und Paar-Referenzen zu Abb. 19 / Abb. 20 / Abb. 22
+
+- Zweck:     Sidecar der verbundenen Schriftproben: je Eintrag ein Rechteck
+             plus Lineatur in Seitenpixeln der jeweiligen Platte, dazu
+             optionale `exclude`-Rechtecke (fremde Tinte aus Nachbarzeilen)
+             und `kind: pair` für die isolierten Buchstabenpaare aus Abb. 20.
+             202 Einträge. Grundlage der Wort-Bench-Fixtures.
+- Author:    Eigene Auszeichnung des Projektautors über der gemeinfreien
+             Platte — kein Fremdmaterial. Die Rechtecke wurden von
+             `tools/wordbench/propose_boxes.py` vorgeschlagen und je Zeile
+             visuell geprüft; die Lineatur ist an der Tinte gemessen (die
+             Platten tragen keine gedruckte Linierung).
+- Processing: Eingefroren in die Bench-Fixtures durch
+             `tools/wordbench/export_fixtures.py`; eine reparierte Platte
+             braucht Re-Export **und** einen datierten Re-Baseline-Eintrag in
+             `docs/reference/qualitaetsmetrik.md`.
+- Maße:      45 961 Bytes
+- SHA256:    1942403bdbbf9567931c45cfa95a6f161f1d4509b0a2c9e4f8e786b64e1608a7
 
 ## words-abb19.png — 1756 × 1783 px, 3,5 MB
 
