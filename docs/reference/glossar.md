@@ -2089,7 +2089,12 @@ Unterschied". Ein Anzeigefehler dieser Art rauscht nicht, er **zieht zur
 Mitte** und redet jeden Kandidaten klein — vorhergesagt aus dem
 Mechanismus; wie groß der Effekt ist, hat noch keine Runde sauber
 gemessen (dazu bräuchte es dieselben Bilder unter beiden Fassungen).
-Behoben in PR #492, nach dem Bestand bevor eine Runde geurteilt wurde.
+Behoben in PR #492. Ob der Fehler außerdem Urteile erreicht hat, ist
+offen: der Bestand sagt nein (die Payloads tragen das erst mit #492
+eingeführte Format), das Sitzungsprotokoll der LF11-Runde sagt, die
+ersten 27 Bildschirme seien noch auf der alten Anzeige gelaufen — eine
+vorher geöffnete Browser-Seite erklärt beides und hinterlässt keine
+Datei (§14 „Laufform LF11 — humanbench-Wortrunde").
 Regel daraus: vor der ersten Runde eine Form mit Binnenfläche
 gegenprüfen — und falls eine Anzeige doch mitten in einer Runde repariert
 wird, teilt das die Runde: die Grenze liegt im Zeitstempel, die

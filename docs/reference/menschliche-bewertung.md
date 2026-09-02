@@ -386,9 +386,10 @@ Nicht-Befunde nicht wegerklärt.
 
 ### 3.6b Ein Federzug ist EIN Pfad — Binnenflächen bleiben offen
 
-Die zweitteuerste Regel, und sie kam auf demselben Weg wie 3.6a: nicht
-aus dem Nachdenken, sondern aus einer laufenden Runde, die sie gekostet
-hat.
+Die zweite Regel, die nicht aus dem Nachdenken kam, sondern aus dem
+Ernstfall: gefunden bei der VORBEREITUNG der ersten Wortrunde, auf der
+ersten Seite, die der Autor öffnete (PR #492). Ob sie außerdem Urteile
+erwischt hat, ist ungeklärt — siehe unten.
 
 Die Silhouette eines Federzugs ist ein Außenring **plus** die Ringe
 seiner Binnenflächen — die Innenfläche einer Schleife, das Auge eines
@@ -444,8 +445,8 @@ Zwei Regeln folgen daraus:
      bereinigten Menge weniger als `MIN_PAIRED_REPEATS` = 6
      vollständige Paare, **trägt sie keinen Adoptionsanspruch** — sie
      ist diagnostisch. Die Verlässlichkeit der GANZEN Runde ersetzt das
-     nicht: sie ist über eine Anzeige gemessen, die es in der Hälfte
-     der Bildschirme nicht mehr gibt.
+     nicht: sie ist über beide Anzeige-Fassungen gemessen, die
+     bereinigte Menge aber nur über eine.
    - **Berichtet werden beide Lesarten** — die Runde als Ganzes UND die
      bereinigte Menge, in einer Tabelle nebeneinander. Wer nur die
      günstigere Hälfte zeigt, hat die Regel nicht befolgt.
@@ -966,9 +967,9 @@ Kategorien-Durchgang mit den alten Fits, und die gelabelten Vorkommen paarig.
 > gefahren.** Die erste Runde (`sep02`, Basis gegen die LF11-Karte) hat
 > den Modus getragen und dem Instrument die Konstruktionsregel §3.6b
 > („gefüllte Ringe“) eingetragen. Ein **formales** Verdikt hat sie nicht
-> geliefert: ein Anzeigefehler in den ersten 27 Bildschirmen hat sie
-> geteilt, und die bereinigte Menge nimmt die Tie-Schranke knapp nicht
-> und hat zu wenige Wiederholungspaare. Die Richtung war eindeutig, der
+> geliefert: der Unentschieden-Anteil liegt mit 34,9 % über der
+> vorregistrierten Schranke von 25 %, und auch die günstigste Teilmenge
+> bleibt mit 25,6 % darüber. Die Richtung war eindeutig, der
 > Autor hat auf dieser Grundlage freigegeben. Die Zahlen gehören nach
 > [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §14 („Laufform LF11 —
 > humanbench-Wortrunde“); hier steht nur, wie sie zustande kommen.

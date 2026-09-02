@@ -3,11 +3,11 @@
 - **The running forms of the 1922 hand are smooth now.** All 22 Laufform rows
   of `suetterlin-1922` were rewritten as spline-basis medians (LF11, knot
   spacing 0.16 x-heights) on the author's decision, informed by the first
-  humanbench word round: 28 judgements to 1 for the candidate on the repaired
-  page, 40 to 1 across the whole round. The round does not carry a formal
-  verdict — a display fault split it, and the cleaned half misses the tie
-  threshold by 0.6 points — so the journal records an author decision rather
-  than an instrument verdict. The rows had been reversing their curvature a
+  humanbench word round, which came out 40 judgements to 1 for the candidate and
+  reliable on its repeat pairs. The round carries no formal verdict — the
+  "no difference" share is 34.9 % against a pre-registered ceiling of 25 % — so
+  the journal records an author decision rather than an instrument verdict.
+  The rows had been reversing their curvature a
   median of 6.9 times per x-height against their chart rows' 0.2 — the worst of
   them, the `c`, 21.8 times — and every bound word rendered one, which made it
   the single largest difference between "written" and "computed" in the product.
@@ -19,9 +19,9 @@
   change appears there as that expires; no purge (#501).
 - **The journal records a decision no number could have made, and says whose it
   was.** `docs/reference/qualitaetsmetrik.md` §14 carries the entry — the round,
-  the display fault that split it, all three tallies side by side under the
-  binding analysis plan, why none of them clears the tie bar, the author's
-  post-hoc exclusion and release, and the write with its snapshot timestamp and
+  all three tallies side by side under the binding analysis plan, why none of
+  them clears the tie bar, the unresolved question of whether a display fault
+  reached any of the judgements, and the write with its snapshot timestamp and
   read-back — plus the re-baseline row in the headline ledger with the new root
   digests. `tintenfolger.md` marks LF11 adopted on the author's decision and
   opens the repeat round that would replace it with a real verdict (#501).
