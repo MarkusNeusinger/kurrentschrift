@@ -29,6 +29,7 @@ from core.database import (
     TemplateRepository,
     template_render_row,
 )
+from core.rounding import round_wire_numbers
 from core.shaping import decompose_ligature_slot, glyph_keys_of, shape_text
 
 
@@ -60,9 +61,21 @@ def _cached_payload(entry: dict, glyph_key: str, ctx) -> dict:
 def _geometry_response(content: dict) -> Response:
     """Serialize a render/compose payload with orjson, bypassing FastAPI's
     jsonable_encoder walk — pure overhead over these already-JSON-safe dicts
-    of plain floats/lists (~100k numbers per word batch)."""
+    of plain floats/lists (~100k numbers per word batch).
+
+    The payload is put back on the documented 4-decimal contract here, at the
+    serialisation boundary and nowhere else (`core.rounding`): the pipeline
+    rounds what it stores, but composition multiplies those inputs apart again,
+    so a third of `/write/word`'s numbers carried float64 noise below the
+    contract's own resolution — 46,440 identity / 13,864 gzip bytes for `lesen`
+    against 30,570 / 10,840 rounded. `core/compose.py` and the golden parity
+    fixture stay untouched; `/write/glyphs` is already rounded and the walk is
+    idempotent, so its bytes do not move.
+    """
     return Response(
-        content=orjson.dumps(content), media_type="application/json", headers={"Cache-Control": CACHE_CONTROL}
+        content=orjson.dumps(round_wire_numbers(content)),
+        media_type="application/json",
+        headers={"Cache-Control": CACHE_CONTROL},
     )
 
 
