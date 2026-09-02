@@ -112,9 +112,13 @@ def build_candidates(
         stack = np.asarray(anchor_sets, dtype=float)
         meta = chart.get("trace_meta") or {}
         notes: list[str] = []
-        if knot_spacing <= 0.0:
-            median = np.median(stack, axis=0)
-        else:
+        # The per-anchor median is computed either way: for `--knots 0` it IS
+        # the arm, and for a spline rung it is what the head/tail columns below
+        # measure the smoothing's end movement against (the pre-registration
+        # left the ends free and promised to report how far they travelled).
+        plain = np.median(stack, axis=0)
+        median = plain
+        if knot_spacing > 0.0:
             median, notes = spline_basis_median(
                 stack,
                 chart["anchors"],
@@ -131,8 +135,8 @@ def build_candidates(
         zig = smoothness_gap(view, row["anchors"])
         spike, head = spike_gate(view, row["anchors"]), head_gate(view, row["anchors"])
         moved = np.asarray(row["anchors"], dtype=float) - np.asarray(chart["anchors"], dtype=float)
-        head_move = math.hypot(*(np.asarray(row["anchors"][0]) - median[0]))
-        tail_move = math.hypot(*(np.asarray(row["anchors"][-1]) - median[-1]))
+        head_move = math.hypot(*(median[0] - plain[0]))
+        tail_move = math.hypot(*(median[-1] - plain[-1]))
         report.append(
             f"  {key:6s} n={len(anchor_sets):>2}  zig {zig['candidate']:6.2f} (chart {zig['chart']:5.2f}, "
             f"Δ {zig['gap']:+6.2f})  spike {spike['ratio']:5.2f}{'!' if spike['exceeded'] else ' '} "

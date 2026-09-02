@@ -10064,7 +10064,12 @@ in der Vorregistrierung benannten drei Wegen und einer §7.9-Zeile.
    Vorregistrierung (die Enden festzuhalten hätte einen zweiten
    End-Mechanismus neben LF5/LF6 eingeführt), es ist als Test
    festgenagelt, und die Zeilen-Gates fangen es ab. Ein späterer Arm
-   könnte hier ansetzen.
+   könnte hier ansetzen. Die versprochene Berichtsgröße, gemessen:
+   die Glättung BEWEGT die Enden bei Δs 0,16 kaum — Kopf und Schwanz
+   wandern gegen den Per-Anker-Median je Zeile um 0,000–0,007 xh, der
+   einzige Ausreißer ist der Schwanz des i mit 0,018 xh. Alle unter
+   dem Nib-Radius (0,064 xh), und genau darum bleibt das Kopf-Gate für
+   jede Zeile grün.
 2. **Drei Wortproben laufen über ihren Fixture-Ausschnitt hinaus**
    (`Soldaten`, `schießen`, `Säbel`) — Fund aus T4, in dieser Runde
    bestätigt stehen gelassen. Betrifft die Referenz, nicht den
