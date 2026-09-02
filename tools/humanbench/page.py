@@ -296,6 +296,46 @@ def _strokes(raw: Any, where: str) -> list[list[list[float]]]:
     return out
 
 
+def _shapes(raw: Any, where: str) -> list[list[list[list[float]]]]:
+    """Filled shapes of one panel: per pen stroke its exterior ring plus counters.
+
+    The nesting is load-bearing and is therefore required rather than guessed
+    at. A pen stroke's silhouette is one exterior with the loop interiors it
+    encloses; drawn as independent shapes they fill in solid, and the writing
+    reads as a blob exactly where it has a loop. Grouped, the page draws them
+    as ONE evenodd path and the counters stay paper — the same contract
+    production has always used (``app/src/lib/svg.ts::ringsToPathD``).
+
+    A FLAT ring list is refused instead of read as a single-ring shape: it
+    parses perfectly and fails silently, which is the one thing a judging
+    session cannot afford.
+    """
+    if not isinstance(raw, Sequence) or isinstance(raw, str):
+        raise ValueError(f"{where}: 'fills' must be a list of shapes")
+    out: list[list[list[list[float]]]] = []
+    for si, shape in enumerate(raw):
+        if not isinstance(shape, Sequence) or isinstance(shape, str):
+            raise ValueError(f"{where}: fill {si} is not a list of rings")
+        if shape and all(_looks_like_point(ring) for ring in shape):
+            raise ValueError(
+                f"{where}: fill {si} is a flat ring, not a list of rings — its loop counters would be "
+                f"drawn filled; group each pen stroke's rings into one shape"
+            )
+        rings = _paths(shape, f"{where} fill {si}", "rings", 3)
+        if rings:
+            out.append(rings)
+    return out
+
+
+def _looks_like_point(value: Any) -> bool:
+    return (
+        isinstance(value, Sequence)
+        and not isinstance(value, str)
+        and len(value) == 2
+        and all(isinstance(c, (int, float)) and not isinstance(c, bool) for c in value)
+    )
+
+
 def _widths(raw: Any, where: str, n_strokes: int) -> list[float]:
     """Per-stroke widths in panel pixels, or an empty list for the hairline.
 
@@ -342,7 +382,7 @@ def _panel(raw: Any, where: str, shared: dict[str, Any]) -> dict[str, Any]:
     # A filled silhouette is ink too: the word mode draws letter bodies as
     # rings and only the generated connectors as capsules, so a panel may
     # legitimately carry no polyline at all — but never neither.
-    fills = _paths(merged.get("fills", []), where, "fills", 3)
+    fills = _shapes(merged.get("fills", []), where)
     if not strokes and not fills:
         # Both counts named, because the two ways to be empty look identical
         # from the outside: a stroke set whose polylines are all single points,
@@ -1037,10 +1077,15 @@ function drawPanel(el, panel, interactive) {
   // centerline, because a stroke a quarter too thin is invisible on a hairline.
   // Drawn flat and uncased: see INKED above for why a halo would be the wrong
   // safeguard here.
-  for (const ring of panel.fills) {
-    const g = document.createElementNS(ns, 'polygon');
-    g.setAttribute('points', ring.map((q) => q.join(',')).join(' '));
+  // ONE path per pen stroke, fill-rule evenodd: a silhouette is an exterior
+  // plus the counters it encloses, so drawn as separate polygons every loop
+  // interior fills in solid and the writing reads as a blob. Same contract as
+  // production (app/src/lib/svg.ts::ringsToPathD).
+  for (const shape of panel.fills) {
+    const g = document.createElementNS(ns, 'path');
+    g.setAttribute('d', shape.map((ring) => 'M' + ring.map((q) => q.join(',')).join(' L') + ' Z').join(' '));
     g.setAttribute('fill', '#8f2d2d');
+    g.setAttribute('fill-rule', 'evenodd');
     g.setAttribute('stroke', 'none');
     svg.appendChild(g);
   }

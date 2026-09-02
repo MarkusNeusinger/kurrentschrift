@@ -47,9 +47,11 @@ INKED = [
         "w": 120,
         "h": 40,
         "img": PNG,
+        # `fills` is one entry per pen stroke, and each entry is that stroke's
+        # ring list — exterior plus the counters it encloses.
         "panels": [
-            {"strokes": [[[0, 0], [10, 10]]], "widths": [6.0], "fills": [[[0, 0], [4, 0], [4, 4]]]},
-            {"strokes": [[[0, 0], [10, 10]]], "widths": [9.0], "fills": [[[0, 0], [5, 0], [5, 5]]]},
+            {"strokes": [[[0, 0], [10, 10]]], "widths": [6.0], "fills": [[[[0, 0], [4, 0], [4, 4]]]]},
+            {"strokes": [[[0, 0], [10, 10]]], "widths": [9.0], "fills": [[[[0, 0], [5, 0], [5, 5]]]]},
         ],
     }
 ]
@@ -163,13 +165,37 @@ def test_an_inked_panel_carries_its_own_widths_and_fills():
 def test_a_panel_may_draw_only_fills_but_never_nothing():
     """The word mode's letter bodies are rings and only the connectors are
     strokes, so a panel with no polyline is legitimate — an empty one is not."""
-    fills_only = [{"id": "S001", "w": 40, "h": 30, "img": PNG, "panels": [{"fills": [[[0, 0], [4, 0], [4, 4]]]}] * 2}]
+    fills_only = [{"id": "S001", "w": 40, "h": 30, "img": PNG, "panels": [{"fills": [[[[0, 0], [4, 0], [4, 4]]]]}] * 2}]
     items, _ = normalise(fills_only)
     assert [sorted(p) for p in items[0]["panels"]] == [["fills"]] * 2
     # And the refusal names BOTH counts, because a ring too short to enclose
     # anything looks from the outside exactly like a missing stroke.
     with pytest.raises(ValueError, match=r"a stroke \(2\+ points\) or a ring \(3\+ points\)"):
-        normalise([{"id": "S001", "w": 40, "h": 30, "img": PNG, "panels": [{"fills": [[[0, 0], [4, 0]]]}] * 2}])
+        normalise([{"id": "S001", "w": 40, "h": 30, "img": PNG, "panels": [{"fills": [[[[0, 0], [4, 0]]]]}] * 2}])
+
+
+def test_a_pen_stroke_s_rings_are_drawn_as_ONE_evenodd_path():
+    """The bug the author caught on 2026-09-02: a silhouette is an exterior plus
+    the counters it encloses, and drawn as separate polygons every loop interior
+    fills in solid — the `Z` of „Zorn" came out a teardrop blob. Grouped and
+    drawn evenodd, the counters stay paper; production has always done it this
+    way (`app/src/lib/svg.ts::ringsToPathD`)."""
+    with_hole = copy.deepcopy(INKED)
+    with_hole[0]["panels"][0]["fills"] = [[[[0, 0], [9, 0], [9, 9], [0, 9]], [[3, 3], [6, 3], [6, 6]]]]
+    items, _ = normalise(with_hole)
+    assert [len(ring) for ring in items[0]["panels"][0]["fills"][0]] == [4, 3]
+    html = build_page(with_hole)
+    assert "'fill-rule', 'evenodd'" in html, "the holes are no longer drawn as holes"
+    assert "createElementNS(ns, 'polygon')" not in html, "a per-ring polygon fills every counter solid"
+
+
+def test_a_flat_ring_list_is_refused_rather_than_read_as_one_shape():
+    """It parses perfectly and fails silently — the one thing a judging session
+    cannot afford, since the page would be wrong on every screen with a loop."""
+    flat = copy.deepcopy(INKED)
+    flat[0]["panels"][0]["fills"] = [[[0, 0], [4, 0], [4, 4]]]
+    with pytest.raises(ValueError, match="flat ring, not a list of rings"):
+        normalise(flat)
 
 
 def test_a_short_widths_array_is_refused():
