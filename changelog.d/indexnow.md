@@ -9,4 +9,4 @@
   paths that trigger the Cloud Build deploy — or on demand. Ten pages make the
   whole sitemap the natural unit; a diff-to-route mapping would be more code
   than the site has routes. Google does not take part and keeps reading the
-  sitemap; the protocol is free (#NNN).
+  sitemap; the protocol is free (#491).
