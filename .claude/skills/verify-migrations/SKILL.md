@@ -41,10 +41,13 @@ Python 3.13, and `--no-project` sidesteps the `requires-python >=3.13`
 constraint — the server is a separate process, alembic still runs in the
 project env. The bundled server is ~16.x, which is what these checks need.
 
-**The directory must be `/var/tmp/…`, not the session scratchpad.** The
-scratchpad path is ~101 characters, and a Unix socket needs another
-`/.s.PGSQL.5432` on top — past the 107-character `sockaddr_un` limit, so the
-server never comes up.
+**Use `/var/tmp/…`, not the session scratchpad.** A Unix socket path is
+capped at 107 characters (`sockaddr_un`), and the server appends
+`/.s.PGSQL.5432` — 14 of them — to whatever directory you name. A session
+scratchpad path already runs to ~91 characters before that suffix, which
+leaves no usable margin and varies with the session id, so the server may or
+may not come up depending on the session. `/var/tmp/pg-kurrent-check` is
+short and always works.
 
 **With Docker (local machine, if the daemon is available):**
 
