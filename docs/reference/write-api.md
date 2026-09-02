@@ -4,6 +4,10 @@
 > `/write/*`-Endpunkte; jede Änderung an `api/routers/write.py` (inkl.
 > `compose_word_payload`), `core/shaping.py`, `core/compose.py`, dem
 > Render-Payload oder den Cache-Headern muss hier nachgezogen werden.
+> Der Abschnitt [„Ratenbegrenzung"](#ratenbegrenzung--zwei-buckets-eng-vor-weit)
+> beschreibt seit dem 2026-09-02 die Buckets der GANZEN API, nicht nur die des
+> Kompositionspfads — er ist die eine Stelle, an der das Limit dokumentiert
+> ist, und gehört zu `api/rate_limit.py`.
 
 Dieses Dokument beschreibt den ausgelieferten Stand; die Design-Geschichte
 und verworfenen Alternativen stehen im Proposal
@@ -38,19 +42,50 @@ drei von vier Assistenten-Abrufen genau solche HITs. Die SPA fragt die
 SVGs nie an, also verliert nichts Menschliches den Edge-Cache. Der Admin
 behält den ungecachten `/diagnostic`.
 
-### Ratenbegrenzung auf dem Kompositionspfad
+### Ratenbegrenzung — zwei Buckets, eng vor weit
 
-Die beiden `/word`-Routen tragen zusätzlich einen **In-Process-Token-Bucket pro
-Client-IP** (`api/rate_limit.py`, Default 60 Anfragen/min mit Burst 20;
-`WRITE_RATE_LIMIT_PER_MIN=0` schaltet ihn ab). Sie sind der einzige öffentliche
-Read, dessen Kosten der Aufrufer bestimmt: ein eindeutiger Text ist bauartbedingt
-ein Cache-MISS, und ein 155-Zeichen-Text kostete am 2026-09-01 live 0,80 s TTFB
-und 1.653.798 Bytes. `/write/glyphs` und die Einzel-Reads sind durch den
-autorisierten Bestand begrenzt (~30 Zeilen, alle im Payload-Memo) und deshalb
-**ausgenommen**. Über dem Limit antwortet die Route **429** mit `Retry-After`
-(die ehrliche Wartezeit, aufgerundet) und `private, no-store` — eine Ablehnung
-gilt dem Aufrufer, nicht der URL, und darf nicht für den nächsten Besucher
-gecacht werden.
+`api/rate_limit.py` hält **zwei In-Process-Token-Buckets je Client**, beide als
+Middleware angewandt und deshalb für JEDE Methode wirksam, HEAD eingeschlossen.
+Geprüft wird eng zuerst, damit eine abgelehnte Anfrage nicht auch noch ein
+Token des weiten Buckets kostet.
+
+| Bucket | Gilt für | Default | Abschalten |
+|---|---|---|---|
+| **eng** | `GET /sources/{id}/write/word` + `…/word.svg` | 60/min, Burst 20 | `WRITE_RATE_LIMIT_PER_MIN=0` |
+| **weit** | **alle übrigen Routen**, GET und HEAD eingeschlossen | 600/min, Burst 120 | `PUBLIC_RATE_LIMIT_PER_MIN=0` |
+
+Der **enge** Bucket sitzt vor dem einzigen öffentlichen Read, dessen Kosten der
+Aufrufer bestimmt: ein eindeutiger Text ist bauartbedingt ein Cache-MISS, und
+ein 155-Zeichen-Text kostete am 2026-09-01 live 0,80 s TTFB und 1.653.798 Bytes.
+
+Der **weite** Bucket (Owner-Entscheid 2026-09-02: „soll nur extreme Nutzung
+blocken, damit mir keine riesigen Kosten entstehen können oder jemand alles
+lahmlegen kann") schließt den Rest der Fläche: `/write/glyphs` batcht bis zu 80
+Keys, jeder Katalog-Read geht an die DB, und nichts hinderte ein Skript daran,
+die API in einer Schleife abzugehen. 600/min mit Burst 120 ist eine
+Größenordnung über dem, was das Blättern auf der Website erzeugt — ein
+Tafel-Seitenaufruf sind ein paar gebatchte Anfragen, eine Quizrunde eine — und
+deutlich unter dem, was eine Ernte braucht. **Vorschlag, keine Messung.**
+
+**Ausgenommen sind beide Buckets** für `/health` (Deploy-Smoke und
+Uptime-Probe: den Health-Check zu drosseln, um einen lauten Client zu
+bestrafen, macht aus einer Ratenbegrenzung einen Ausfall) und für
+`/seo-proxy/…` (die vorgerenderten Crawler-Seiten kommen ALLE über das nginx
+der Website herein und teilen sich damit EINEN Schlüssel — ein Bucket würde den
+gesamten Crawler-Trichter samt täglichem Bot-Wächter wie einen einzigen
+Missbrauchsfall drosseln; billiger als ein Dateiaufruf von 8 KB ohne DB ist
+ohnehin keine Route).
+
+Über dem Limit antwortet die Route **429** mit `Retry-After` (die ehrliche
+Wartezeit, aufgerundet) und `private, no-store` — eine Ablehnung gilt dem
+Aufrufer, nicht der URL, und darf nicht für den nächsten Besucher gecacht
+werden. Die Middleware sitzt INNERHALB von CORS, damit ein Browser die 429 auch
+als 429 lesen kann statt als undurchsichtigen Netzwerkfehler.
+
+**Am 200 ändert sich nichts.** Der Zähler steht am **Origin**: eine am Edge
+beantwortete Anfrage erreicht ihn nie, Cloudflare cacht die öffentlichen Reads
+unverändert weiter, und nur Cache-MISSES kosten ein Token. Kein Header, kein
+`Vary`, keine Cache-Klasse einer durchgelassenen Antwort wird angefasst.
 
 Der Schlüssel (`api/request_context.py::rate_limit_key`) verbindet ZWEI Header,
 weil keiner allein auf beiden erreichbaren Wegen zugleich fälschungssicher und
@@ -61,13 +96,13 @@ Cloudflare-Weg der echte Besucher, auf der `run.app`-URL vom Aufrufer selbst
 geschrieben). Verbunden schließt jeder das Loch des anderen: wer über `run.app`
 eine fremde `cf-connecting-ip` fälscht, trägt seine EIGENE Adresse in der ersten
 Hälfte des Schlüssels und landet nie im Bucket des Opfers. Der linkeste
-XFF-Eintrag wird nie benutzt — er ist client-gesteuert. Der Bucket wirkt
-**pro Prozess**:
-bei `--max-instances=3` liegt die effektive Decke entsprechend höher, und er
-misst nicht exakt, sondern begrenzt, was ein Aufrufer aus EINEM Container
-ziehen kann. Das ist Absicht — beide Cloud-Run-Dienste stehen mit `ingress=all`
-im Netz, eine Cloudflare-Regel wäre über die `run.app`-URL umgehbar, dieser
-Bucket nicht.
+XFF-Eintrag wird nie benutzt — er ist client-gesteuert.
+
+Beide Buckets wirken **pro Prozess**: bei `--max-instances=3` liegt die
+effektive Decke bis zu dreimal so hoch. Sie messen nicht exakt, sondern
+begrenzen, was ein Aufrufer aus EINEM Container ziehen kann. Das ist Absicht —
+beide Cloud-Run-Dienste stehen mit `ingress=all` im Netz, eine
+Cloudflare-Regel wäre über die `run.app`-URL umgehbar, diese Buckets nicht.
 
 ## Pipeline
 

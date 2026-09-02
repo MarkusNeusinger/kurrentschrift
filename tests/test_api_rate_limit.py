@@ -1,16 +1,17 @@
-"""The `/write/word*` token bucket (`api/rate_limit.py`).
+"""The two token buckets in front of the API (`api/rate_limit.py`).
 
-The bucket is the only rate limit in front of the compose path, and on the
-`run.app` URL — both Cloud Run services stand with `ingress=all` — it is the
-only one at all. What it must do is behaviour over TIME, so every timing test
-drives an injected clock instead of sleeping.
+A narrow one for the compose path `/write/word*` and a wide one over every
+other route, GET and HEAD included. On the `run.app` URL — both Cloud Run
+services stand with `ingress=all` — they are the only rate limit at all. What
+they must do is behaviour over TIME, so every timing test drives an injected
+clock instead of sleeping.
 """
 
 from __future__ import annotations
 
 import pytest
 
-from api.rate_limit import TokenBucketLimiter, write_limiter
+from api.rate_limit import TokenBucketLimiter, public_limiter, write_limiter
 from tests.api_harness import Harness
 
 
@@ -151,6 +152,137 @@ async def test_glyph_reads_are_exempt_from_the_word_limit(api: Harness, monkeypa
     assert (await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": "n"})).status == 200
     assert (await api.client.request("GET", f"/sources/{source_id}/write/glyphs/n")).status == 200
     assert (await api.client.request("GET", f"/sources/{source_id}/write/glyphs/n.svg")).status == 200
+
+
+# ------------------------------------------------- the wide bucket, all routes
+
+
+async def test_the_wide_bucket_covers_plain_reads(api: Harness, monkeypatch):
+    """Owner decision 2026-09-02: extreme use must be blocked everywhere, not
+    only on the compose path. Before this, nothing stopped a script from
+    walking the catalogue and the batch reads in a loop."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    monkeypatch.setattr(public_limiter, "burst", 2.0)
+    public_limiter.reset()
+
+    assert (await api.client.request("GET", "/styles")).status == 200
+    assert (await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": "n"})).status == 200
+
+    res = await api.client.request("GET", "/quiz-words")
+    assert res.status == 429
+    assert res.headers["retry-after"] == "1"
+    assert res.headers["cache-control"] == "private, no-store"
+    assert "too many requests" in res.json()["detail"]
+
+    # …and a write, and an unknown path: the limiter sits before routing, so a
+    # flood of 404s costs nothing to produce either.
+    assert (await api.client.request("PUT", f"/sources/{source_id}/bboxes/n", json_body={})).status == 429
+    assert (await api.client.request("GET", "/no-such-route")).status == 429
+
+
+async def test_head_spends_a_token_like_the_get_it_stands_for(api: Harness, monkeypatch):
+    """`HeadAsGetMiddleware` answers HEAD from the GET route, so an unlimited
+    HEAD would be a limit one header away from being evaded."""
+    await api.seed_style_and_source()
+    monkeypatch.setattr(public_limiter, "burst", 2.0)
+    public_limiter.reset()
+
+    assert (await api.client.request("HEAD", "/styles")).status == 200
+    assert (await api.client.request("HEAD", "/styles")).status == 200
+    assert (await api.client.request("HEAD", "/styles")).status == 429
+    assert (await api.client.request("GET", "/styles")).status == 429
+
+
+async def test_health_and_the_prerendered_pages_stay_exempt(api: Harness, monkeypatch):
+    """`/health` carries the deploy smoke and any uptime probe — throttling it
+    to punish a busy client would turn a rate limit into an outage. The
+    `/seo-proxy` pages all arrive through the site's nginx and therefore share
+    ONE key, so a bucket would throttle the whole crawler funnel at once."""
+    monkeypatch.setattr(public_limiter, "burst", 0.5)  # never holds a whole token
+    public_limiter.reset()
+
+    assert (await api.client.request("GET", "/styles")).status == 429
+    for _ in range(3):
+        assert (await api.client.request("GET", "/health")).status == 200
+        assert (await api.client.request("GET", "/seo-proxy/schriftkunde")).status in (200, 404)
+    # The root and the machine files are NOT exempt — they are not the funnel.
+    assert (await api.client.request("GET", "/robots.txt")).status == 429
+    # …and the exemption is the prefix WITH its slash, so a neighbouring path
+    # cannot slip through on a shared stem.
+    from api.rate_limit import limiters_for
+
+    assert limiters_for("/seo-proxy/schriftkunde") == ()
+    assert limiters_for("/seo-proxy") == ()  # the redirect to /seo-proxy/
+    assert limiters_for("/seo-proxy-admin") != ()
+
+
+async def test_the_narrow_bucket_answers_before_the_wide_one(api: Harness, monkeypatch):
+    """Two-stage, narrow first: a caller hammering `/write/word` is told about
+    the limit it actually broke, and the refused request does not also spend a
+    token of the wide budget."""
+    source_id = await _seed_word(api)
+    monkeypatch.setattr(write_limiter, "burst", 1.0)
+    monkeypatch.setattr(public_limiter, "burst", 10.0)
+    write_limiter.reset()
+    public_limiter.reset()
+
+    assert (await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nn"})).status == 200
+    res = await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nn"})
+    assert res.status == 429
+    # The NARROW bucket's wording, not the wide one's.
+    assert "word compositions" in res.json()["detail"]
+    assert str(int(write_limiter.per_minute)) in res.json()["detail"]
+
+    # Nine tokens of the wide budget are left — one spent by the allowed word
+    # request, none by the refused one — so the rest of the site keeps working
+    # while the compose path is throttled.
+    for _ in range(9):
+        assert (await api.client.request("GET", "/styles")).status == 200
+    assert (await api.client.request("GET", "/styles")).status == 429
+
+
+async def test_the_word_path_pattern_matches_the_real_routes():
+    """The middleware runs BEFORE routing, so it matches the compose paths by
+    pattern. Held against the router table here so the narrow bucket cannot
+    silently stop applying if a route is renamed."""
+    from fastapi.routing import APIRoute
+
+    from api.main import app
+    from api.rate_limit import WORD_PATHS, limiters_for
+
+    word_routes = set()
+    for route in app.routes:
+        inner = getattr(route, "original_router", None)
+        candidates = (
+            [(route, "")]
+            if inner is None
+            else [(r, getattr(getattr(route, "include_context", None), "prefix", "") or "") for r in inner.routes]
+        )
+        for r, prefix in candidates:
+            if isinstance(r, APIRoute) and (prefix + r.path).endswith(("/write/word", "/write/word.svg")):
+                word_routes.add(prefix + r.path)
+
+    assert word_routes == {"/sources/{source_id}/write/word", "/sources/{source_id}/write/word.svg"}
+    for path in word_routes:
+        filled = path.format(source_id="suetterlin-1922")
+        assert WORD_PATHS.match(filled), filled
+        assert limiters_for(filled) == (write_limiter, public_limiter)
+
+    # …and nothing else is caught by it.
+    for other in ("/sources/x/write/glyphs", "/sources/x/write/glyphs/n", "/sources/x/write/word/extra", "/styles"):
+        assert not WORD_PATHS.match(other), other
+        assert limiters_for(other) == (public_limiter,)
+
+
+async def test_a_200_is_not_touched_by_the_limiter(api: Harness):
+    """The edge keeps caching the public reads exactly as before: the limiter
+    counts at the origin and adds nothing to a response it lets through."""
+    await api.seed_style_and_source()
+    res = await api.client.request("GET", "/styles")
+    assert res.status == 200
+    assert res.headers["cache-control"] == "public, max-age=300, s-maxage=86400, stale-while-revalidate=604800"
+    assert "retry-after" not in res.headers
 
 
 async def test_the_bucket_keys_on_the_rightmost_forwarded_entry(api: Harness, monkeypatch):

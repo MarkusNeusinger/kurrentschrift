@@ -53,11 +53,12 @@ async def api(monkeypatch):
     - `api.dependencies.is_db_configured` is forced True so `require_db` passes
       regardless of the host's real DATABASE_URL / .env;
     - a known ADMIN_TOKEN is configured (individual tests may unset it);
-    - the `/write/word` token bucket is emptied of the previous test's requests
-      — it is a process-wide singleton, so without this the suite would spend
-      one shared burst across every test that composes a word and the last ones
-      would start seeing 429s. Each test keeps the real limiter, with its own
-      full bucket (`tests/test_api_rate_limit.py` drives it on a fake clock).
+    - BOTH token buckets are emptied of the previous test's requests — they are
+      process-wide singletons, so without this the suite would spend one shared
+      burst across every test that makes a request (the wide bucket sees every
+      single one) and the last tests would start seeing 429s. Each test keeps
+      the real limiters, with their own full buckets
+      (`tests/test_api_rate_limit.py` drives them on a fake clock).
 
     Harness/client classes live in `tests/api_harness.py`.
     """
@@ -66,7 +67,7 @@ async def api(monkeypatch):
 
     import api.dependencies as api_dependencies
     from api.main import app
-    from api.rate_limit import write_limiter
+    from api.rate_limit import public_limiter, write_limiter
     from core.config import settings
     from core.database import Base, get_db
     from tests.api_harness import ADMIN_TOKEN, AsgiClient, Harness
@@ -89,6 +90,7 @@ async def api(monkeypatch):
     monkeypatch.setattr(api_dependencies, "is_db_configured", lambda: True)
     monkeypatch.setattr(settings, "admin_token", ADMIN_TOKEN)
     write_limiter.reset()
+    public_limiter.reset()
 
     try:
         yield Harness(AsgiClient(app), session_maker)

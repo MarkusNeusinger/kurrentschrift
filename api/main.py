@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.middleware.gzip import GZipMiddleware  # noqa: E402
 
 from api.analytics import classify_asset, track_asset_fetch, track_bot_fetch  # noqa: E402
+from api.rate_limit import RateLimitMiddleware  # noqa: E402
 from api.routers import (  # noqa: E402
     aggregates_router,
     bboxes_router,
@@ -115,8 +116,12 @@ app = FastAPI(
 
 # Added FIRST, so it ends up INNERMOST: `add_middleware` prepends, and the
 # stack runs outermost-first. Everything above it — the bot counter, gzip,
-# CORS — therefore still sees the request as HEAD.
+# CORS, the rate limiter — therefore still sees the request as HEAD.
 app.add_middleware(HeadAsGetMiddleware)
+# Just outside it, and just inside CORS. Outside HeadAsGet so a HEAD probe
+# spends a token exactly like the GET it stands for; inside CORS so a browser
+# can READ the 429 as a 429 instead of an opaque network error.
+app.add_middleware(RateLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=settings.cors_allow_origin_regex,
