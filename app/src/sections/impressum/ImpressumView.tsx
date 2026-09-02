@@ -12,6 +12,7 @@ import { Box, Link, Typography } from '@mui/material';
 
 import portraitUrl from '@/assets/markus-neusinger.webp';
 import { CategoryHeading } from '@/components/CategoryHeading';
+import { BackToTop } from '@/components/BackToTop';
 import { PageContainer } from '@/components/PageContainer';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { de } from '@/locales';
@@ -38,13 +39,8 @@ const subTitle = {
   mb: 0.5,
 } as const;
 
-// In-prose links: sepia with a hairline underline, viridian on hover.
-const proseLink = {
-  color: paper.sepia,
-  textDecorationColor: `${paper.sepia}80`,
-  transition: 'color .2s',
-  '&:hover': { color: paper.viridianText, textDecorationColor: paper.viridian },
-} as const;
+// In-prose links carry no local style any more — the theme's `MuiLink` owns it
+// (always-underlined, contrast-derived viridian); see theme/components.ts.
 
 function Section({ heading, children }: { heading: string; children: ReactNode }) {
   return (
@@ -102,12 +98,12 @@ export function ImpressumView() {
 
               <Typography sx={subTitle}>{t.imprint.contactLabel}</Typography>
               <Typography sx={{ ...prose, mb: 0 }}>
-                <Link href={`mailto:${t.imprint.email}`} sx={proseLink}>
+                <Link href={`mailto:${t.imprint.email}`}>
                   {t.imprint.email}
                 </Link>
                 <br />
                 {t.imprint.linkedinLabel}:{' '}
-                <Link href={t.imprint.linkedinUrl} target="_blank" rel="noopener noreferrer" sx={proseLink}>
+                <Link href={t.imprint.linkedinUrl} target="_blank" rel="noopener noreferrer">
                   {t.imprint.linkedinHandle}
                 </Link>
               </Typography>
@@ -121,7 +117,7 @@ export function ImpressumView() {
               <Fragment key={p.name}>
                 {i > 0 && <br />}
                 {/* no noreferrer — own sites, keep the referrer for their analytics */}
-                <Link href={p.url} target="_blank" rel="noopener" sx={proseLink}>
+                <Link href={p.url} target="_blank" rel="noopener">
                   {p.name}
                 </Link>
                 {' — '}
@@ -138,7 +134,7 @@ export function ImpressumView() {
           <Typography sx={subTitle}>{t.privacy.analyticsTitle}</Typography>
           <Typography sx={prose}>
             {t.privacy.analyticsBeforeLink}
-            <Link href={t.privacy.analyticsUrl} target="_blank" rel="noopener noreferrer" sx={proseLink}>
+            <Link href={t.privacy.analyticsUrl} target="_blank" rel="noopener noreferrer">
               {t.privacy.analyticsLinkText}
             </Link>
             {t.privacy.analyticsAfterLink}
@@ -186,7 +182,7 @@ export function ImpressumView() {
           <Typography sx={prose}>{t.sources.fonts}</Typography>
           <Typography sx={prose}>
             {t.sources.codeBeforeLink}
-            <Link href={t.sources.codeUrl} target="_blank" rel="noopener noreferrer" sx={proseLink}>
+            <Link href={t.sources.codeUrl} target="_blank" rel="noopener noreferrer">
               {t.sources.codeLinkText}
             </Link>
             {t.sources.codeAfterLink}
@@ -204,6 +200,7 @@ export function ImpressumView() {
         </Typography>
         </Box>
       </PageContainer>
+      <BackToTop />
     </PublicLayout>
   );
 }

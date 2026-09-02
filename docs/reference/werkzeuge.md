@@ -209,6 +209,17 @@ Labels festgelegt hat. Verfahren, Fehler-Taxonomie und Aufbewahrungsregeln
 stehen in [`menschliche-bewertung.md`](menschliche-bewertung.md), die Befunde
 einer Runde in [`qualitaetsmetrik.md`](qualitaetsmetrik.md).
 
+Seit 2026-09-02 kommt ein dritter Modus dazu, die **Wortrunde auf der
+Echtheitsfrage** (`--word-arms BASIS KANDIDAT`,
+[`menschliche-bewertung.md`](menschliche-bewertung.md) §8a): ein ganzes
+Specimen-Wort aus einer eingefrorenen Wordbench-Wurzel, darüber zwei
+Kompositionen **als Tinte** — der einzige Aufbau, in dem Zickzack,
+Strichstärke und Naht-Knick überhaupt sichtbar sind. `wordarm.py` ist der
+Referenz-Erzeuger der beiden Arme (`--laufform` für eine Kandidatenkarte,
+`--nib` für einen anderen Federmodus, `--registration-from` zum Pinnen der
+Platzierung); er komponiert per Import wie `tools/wordbench/run.py` und
+platziert mit demselben Lineal.
+
 Geschrieben wird nirgends — weder in die Datenbank noch über die API.
 `page.py` und `analyse.py` sehen beides überhaupt nicht: Die Seite ist ein
 reiner Renderer, die Auswertung liest nur Dateien. Einzig `build.py` greift
@@ -224,6 +235,16 @@ Schlüssel (uid → Glyph, Wort, Slot), Stempel, `SOURCE.md`
 uv run python -m tools.humanbench.build --round 2 --n-label 150 --repeats 12
 uv run python -m tools.humanbench.build --round 3 \
     --paired temp/fits-alt.json temp/fits-neu.json
+
+# Wortrunde: zwei Arme erzeugen, bauen, mit der Echtheitsfrage rendern
+uv run python -m tools.humanbench.wordarm --arm Basis --out temp/basis.json
+uv run python -m tools.humanbench.wordarm --arm LF11 --laufform temp/lf11-karte.json \
+    --registration-from temp/basis.json --out temp/lf11.json
+uv run python -m tools.humanbench.build --round 5 \
+    --word-arms temp/basis.json temp/lf11.json --strata temp/klassen.json
+uv run python -m tools.humanbench.page --question authentic \
+    --payload temp/humanbench/runde-5/payload.json \
+    --out temp/humanbench/runde-5/echtheit.html --round 5
 
 uv run python -m tools.humanbench.page \
     --payload temp/humanbench/runde-2/payload.json \

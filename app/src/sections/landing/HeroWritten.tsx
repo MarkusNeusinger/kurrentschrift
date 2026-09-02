@@ -382,6 +382,11 @@ export function HeroWritten() {
           sx={{
             fontFamily: garamond,
             fontSize: '1.2rem',
+            // 19.2px at weight 600 counts as WCAG "large text" (threshold 3:1),
+            // which the period tone #40826d clears at 3.72:1 — the smallest
+            // change that lifts the single Lighthouse contrast failure of the
+            // landing page without leaving the palette (audit 2026-09-02).
+            fontWeight: 600,
             px: '2.4rem',
             py: '0.6rem',
             borderRadius: '8px',

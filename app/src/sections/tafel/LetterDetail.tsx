@@ -24,6 +24,7 @@ import { de, fmt } from '@/locales';
 import { paths } from '@/routes/paths';
 import { WORD_BANK } from '@/sections/quiz/wordBank';
 import { exampleWord, lookalikeKeys, strokeCount, strokeStarts } from '@/sections/tafel/letterDetail';
+import { hitArea } from '@/styles/hitArea';
 import { display, garamond, paper } from '@/styles/paper';
 
 const t = de.tafel.detail;
@@ -137,7 +138,7 @@ export function LetterDetail({ glyphKey, glyph, onClose }: Props) {
         <Typography variant="h5" component="h3" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, flexGrow: 1 }}>
           {t.heading}: {name}
         </Typography>
-        <IconButton size="small" onClick={onClose} aria-label={t.close} sx={{ color: paper.sepia }}>
+        <IconButton size="small" onClick={onClose} aria-label={t.close} sx={[hitArea(), { color: paper.sepia }]}>
           <CloseIcon fontSize="small" />
         </IconButton>
       </Box>
