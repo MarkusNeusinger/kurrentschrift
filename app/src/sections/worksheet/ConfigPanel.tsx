@@ -19,6 +19,7 @@ import { PRESETS, type LineatureConfig } from '@/lib/lineatur';
 import { MAX_LINES, MAX_TEXT_CHARS } from '@/lib/uebungstext';
 import { de, fmt } from '@/locales';
 import { mmLabel } from '@/sections/worksheet/status';
+import { hitArea } from '@/styles/hitArea';
 import { tokens } from '@/theme';
 
 /** Upper end of one ratio part. The documented lineatures span 1:1:1 to
@@ -365,6 +366,8 @@ export function ConfigPanel({
           startIcon={<DownloadIcon />}
           onClick={onDownload}
           disabled={busy || sheetNote !== null}
+          // 42.3px as drawn — under the §9.3 floor by not quite two pixels.
+          sx={hitArea()}
         >
           {de.worksheet.config.download}
         </Button>

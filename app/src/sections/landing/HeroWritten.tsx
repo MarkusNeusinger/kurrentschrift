@@ -27,6 +27,7 @@ import { useElementSize } from '@/hooks/useElementSize';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { de } from '@/locales';
 import { paths } from '@/routes/paths';
+import { hitArea } from '@/styles/hitArea';
 import { display, garamond, letterpress, paper, script } from '@/styles/paper';
 
 const t = de.landing.hero;
@@ -404,6 +405,10 @@ export function HeroWritten() {
           component={RouterLink}
           to={paths.schreiben}
           sx={{
+            // The quiet second CTA: 31px tall as drawn, so it takes the §9.3
+            // floor from an invisible hit area rather than growing into a
+            // second filled button next to „Lesen".
+            ...hitArea(),
             fontFamily: garamond,
             fontSize: '1.2rem',
             color: paper.inkSoft,
@@ -430,6 +435,7 @@ export function HeroWritten() {
           type="button"
           onClick={() => setRunKey((k) => k + 1)}
           sx={{
+            ...hitArea(),
             display: 'block',
             mx: 'auto',
             mt: { xs: 3, md: 3.5 },

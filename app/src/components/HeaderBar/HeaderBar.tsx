@@ -21,7 +21,7 @@ import { Link as RouterLink } from 'react-router-dom';
 
 import { PAGE_WIDTHS } from '@/components/PageContainer';
 import { de } from '@/locales';
-import { TOUCH_TARGET } from '@/styles/hitArea';
+import { hitArea, TOUCH_TARGET } from '@/styles/hitArea';
 import { display, paper } from '@/styles/paper';
 
 export interface HeaderBarProps {
@@ -90,6 +90,10 @@ export function Wordmark({ to, onClick }: WordmarkProps) {
       to={to}
       onClick={onClick}
       sx={{
+        // The wordmark is a link home (and the 5-tap admin gesture): 30px tall
+        // as drawn, so it takes the §9.3 floor from an invisible hit area. It
+        // stands alone in the bar, so an overlay steals nothing.
+        ...hitArea(),
         display: 'inline-flex',
         alignItems: 'baseline',
         textDecoration: 'none',

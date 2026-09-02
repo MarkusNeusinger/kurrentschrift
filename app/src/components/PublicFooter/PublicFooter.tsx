@@ -18,9 +18,15 @@ import { Link as RouterLink } from 'react-router-dom';
 import { PageContainer } from '@/components/PageContainer';
 import { de } from '@/locales';
 import { paths } from '@/routes/paths';
+import { hitArea } from '@/styles/hitArea';
 import { garamond, paper } from '@/styles/paper';
 
+// Chrome, not prose: these keep `textDecoration: none` (so the theme's
+// always-underline for running text doesn't reach them, §9.2) and take the
+// §9.3 touch floor from an invisible hit area — they are 27px tall as drawn and
+// the row has room above and below them.
 const footerLink = {
+  ...hitArea(),
   color: paper.sepia,
   textDecoration: 'none',
   '&:hover': { color: paper.viridian },

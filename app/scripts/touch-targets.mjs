@@ -2,35 +2,36 @@
 // touch-targets — the standing check under design-system.md §9.3 (binding since
 // 2026-09-03): an interactive target measures at least 44px in its smaller edge.
 //
-// It does NOT sweep every control on the site — the rule has exactly one
-// exception, links in running prose, and a sweep would report every one of them
-// forever. What it checks instead are the controls where the 44px is not
-// obvious from the drawing and can therefore regress unnoticed:
+// It sweeps EVERY interactive element on every public route. An earlier version
+// checked a hand-kept inventory of the controls that wear `hitArea()`, which was
+// the wrong shape: a list can pass while the rule is broken somewhere it does
+// not name, and it did — the Lesart example chips and the Tafel step buttons
+// were both under the floor while the check reported the site clear. A rule that
+// is only enforced where someone remembered to look is not enforced.
 //
-//   · those that get their 44px from the invisible `hitArea()` pseudo-element
-//     (app/src/styles/hitArea.ts) — remove the helper, or wrap the control in
-//     something with `overflow: hidden`, and the drawing is unchanged while the
-//     target quietly shrinks back;
-//   · the header area links, which reach the floor through padding instead
-//     (HeaderBar.tsx) — on phones the bar stacks into two rows, and an
-//     invisible overlay there would have made the rows' targets overlap.
+// The rule has exactly ONE exception, and the sweep encodes it the way §9.2
+// makes it recognisable: a link in running prose is underlined (the theme gives
+// every `MuiLink` `underline: 'always'`), while chrome that only looks like a
+// link — the header areas, the footer row — opts out with `textDecoration:
+// none`. So: an <a> that is underlined is prose and is skipped. Everything else
+// must reach the floor. On the public routes that exempts 84 source links and
+// leaves 26 real controls.
 //
-// Nothing on screen tells you when either of those breaks; this does.
-//
-// The probe is the real thing, not a computed size: for each axis where the
-// element's own box is under 44px, it asks `document.elementFromPoint` at the
-// inclusive edge of the 44px square — 22px from the centre, minus a hundredth
-// of a pixel so the probe sits inside rather than on the exclusive boundary —
-// and requires the answer to be the control itself. A clipped pseudo-element
-// fails that; a computed-height check would not. Axes where the box already
-// exceeds 44px are not probed: there the padding or the helper does nothing, and
-// a neighbour's own target may legitimately win the point.
+// The probe is the real hit area, not a computed size: for each axis where the
+// element is drawn under 44px it asks `document.elementFromPoint` at the
+// inclusive edge of the 44px square — 22px from the centre, less a hundredth of
+// a pixel so the probe sits inside rather than on the exclusive boundary — and
+// requires the element itself to answer. That catches the one way this rule
+// breaks silently: an `overflow: hidden` clips the `hitArea()` pseudo-element,
+// the drawing is unchanged, and the target shrinks back. A computed-size check
+// would sail past it. Axes where the box already exceeds 44px are not probed —
+// there nothing is load-bearing, and a neighbour may legitimately win the point.
 //
 //   node scripts/touch-targets.mjs                        # localhost:3000, 390px
 //   node scripts/touch-targets.mjs --base https://kurrentschrift.ink
 //
-// Needs a reachable API: the replay button only exists once a word has been
-// written. Like `type-floor.mjs` this is a local check, not a CI gate.
+// Needs a reachable API: half these controls only exist once the engine has
+// written something. Like `type-floor.mjs` this is a local check, not a CI gate.
 
 import { setTimeout as sleep } from 'node:timers/promises';
 
@@ -39,105 +40,85 @@ import { launchChrome, openPage, splitFlag } from './browser.mjs';
 /** The binding floor in CSS px (design-system.md §9.3). */
 const TOUCH_TARGET = 44;
 
-// Each target names an element by a browser-side expression. `wait` marks the
-// ones that only appear once the engine has written something, so a slow API
-// reads as "still coming" rather than as a failure.
-//
-// Not listed, deliberately: the quiz results screen's „Einstellungen ändern".
-// It is the same `QuietButton` primitive as „beenden" below, and reaching it
-// costs a full quiz round — the primitive is covered, the detour is not worth
-// the runtime.
-const CHECKS = [
-  {
-    // The area links are on every page; checking them once is enough. At this
-    // width the bar stacks into two rows, which is the layout where they used
-    // to fall short — and where an invisible overlay would have overlapped.
-    route: '/lesen',
-    targets: [
-      { name: 'Kopf-Navigation (Schriftkunde)', find: "document.querySelector('header nav a')" },
-      { name: 'Kopf-Navigation (Lesen)', find: "document.querySelectorAll('header nav a')[1]" },
-    ],
-  },
-  {
-    route: '/federprobe',
-    targets: [
-      { name: 'Beispiel-Chip (Federprobe)', find: "document.querySelector('.MuiChip-root')" },
-      {
-        name: '„Link kopieren"',
-        find: "[...document.querySelectorAll('button')].find((b) => /Link kopieren/.test(b.innerText))",
-      },
-      { name: 'ReplayButton ↻', find: `document.querySelector('[aria-label="noch einmal schreiben"]')`, wait: true },
-    ],
-  },
-  {
-    route: '/schreiben/uebungsblatt',
-    targets: [
-      { name: 'InfoHint (i)', find: "document.querySelector('button[aria-haspopup=\"dialog\"]')" },
-      {
-        name: 'Umschaltgruppe (Ausgangsschrift)',
-        find: "document.querySelector('.MuiToggleButtonGroup-root .MuiToggleButton-root')",
-      },
-    ],
-  },
-  {
-    route: '/tafel?g=n',
-    targets: [
-      { name: '„Detail schließen"', find: `document.querySelector('[aria-label="Detail schließen"]')`, wait: true },
-    ],
-  },
-  {
-    route: '/quiz',
-    // The quiz opens on its setup panel; „beenden" only exists in play.
-    // Returns false until the button exists — the panel only renders once the
-    // word bank has arrived, so a single click would race the API.
-    setup: "(() => { const b = [...document.querySelectorAll('button')].find((x) => /Quiz starten/.test(x.innerText)); if (!b) return false; b.click(); return true; })()",
-    targets: [{ name: '„beenden" (QuietButton)', find: "[...document.querySelectorAll('button')].find((b) => b.innerText.trim() === 'beenden')", wait: true }],
-  },
+const DEFAULT_ROUTES = [
+  '/',
+  '/schriftkunde',
+  '/lesen',
+  '/lesen/vergleichen',
+  '/quiz',
+  '/tafel',
+  '/tafel?g=n',
+  '/schreiben',
+  '/schreiben/uebungsblatt',
+  '/federprobe',
+  '/impressum',
+  '/gibt-es-nicht-404',
 ];
 
-// Runs in the page. Returns null while a `wait` target has not appeared yet.
-//
-// `elementFromPoint` works in VIEWPORT coordinates and answers null for
-// anything outside it, so the element is centred first — otherwise a control
-// below the fold reports "hit nothing" and looks like a violation it is not.
-const PROBE = (find, floor) => `(() => {
-  const el = ${find};
-  if (!el) return null;
-  el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
-  const r = el.getBoundingClientRect();
-  if (!r.width || !r.height) return null;
-  const cx = r.left + r.width / 2;
-  const cy = r.top + r.height / 2;
-  // The 44px square is checked INCLUSIVELY: the probe sits a hair inside its
-  // edge, not half a pixel in. A CSS pixel boundary is exclusive, so testing
-  // exactly at centre+22 lands on the parent about half the time and would
-  // report violations that are none; backing off by a whole 0.5px would have
-  // been the opposite error — it passes a 43px target as if it were 44.
+// Routes that hide controls behind a first interaction. Kept tiny on purpose —
+// every entry here is a control the sweep would otherwise never see.
+const SETUP = {
+  '/quiz':
+    "(() => { const b = [...document.querySelectorAll('button')].find((x) => /Quiz starten/.test(x.innerText)); if (!b) return false; b.click(); return true; })()",
+};
+
+// The one KNOWN shortfall, named rather than silently skipped: the Schreibtafel
+// renders the alphabet as SVG cells that tile their row edge to edge (measured
+// at 390px: 41–98px wide, gaps of 0). They are 73px tall, so they clear WCAG 2.2
+// SC 2.5.8 comfortably, but the narrowest are ~41px wide. Neither remedy is
+// free — an invisible overlay would reach into the neighbouring letter and steal
+// its tap, and widening the cells reflows the reference grid the page exists to
+// show. That is an author's call on the tafel's layout, not a fix to make in
+// passing, so it is listed here where it stays visible instead of quietly
+// passing. See design-system.md §9.3 „Offen".
+const KNOWN_SHORTFALL = {
+  // Must evaluate to a BOOLEAN: `a && el.closest(...)` would put a DOM node in
+  // the result and the row could not be serialised out of the page.
+  match: "el.tagName.toLowerCase() === 'g' && !!el.closest('svg')",
+  why: 'Schreibtafel-Zellen (SVG, kacheln lückenlos) — Autor-Entscheid offen',
+};
+
+const SWEEP = (floor) => `(() => {
+  const SEL = 'a[href], button, [role=button], [role=tab], [role=switch], input, select, textarea, [tabindex]:not([tabindex="-1"])';
   const reach = ${floor} / 2 - 0.01;
-  const hits = (x, y) => {
-    const at = document.elementFromPoint(x, y);
-    return { ok: !!at && (at === el || el.contains(at)), got: at ? at.tagName.toLowerCase() + (at.className && typeof at.className === 'string' ? '.' + at.className.split(' ')[0] : '') : 'nothing' };
-  };
-  const probes = [];
-  // Only the axes where the drawn box falls short — that is where the invisible
-  // hit area is load-bearing and can regress.
-  if (r.height < ${floor}) {
-    probes.push({ dir: 'oben', ...hits(cx, cy - reach) });
-    probes.push({ dir: 'unten', ...hits(cx, cy + reach) });
+  const rows = [];
+  for (const el of document.querySelectorAll(SEL)) {
+    if (el.disabled) continue;
+    const cs = getComputedStyle(el);
+    if (cs.visibility === 'hidden' || cs.display === 'none' || cs.opacity === '0') continue;
+
+    // §9.2's exception, read off the page: running-prose links are underlined,
+    // chrome links set textDecoration: none.
+    if (el.tagName.toLowerCase() === 'a' && cs.textDecorationLine.includes('underline')) continue;
+
+    const r = el.getBoundingClientRect();
+    if (!r.width || !r.height) continue;
+
+    const known = ${KNOWN_SHORTFALL.match};
+    const label = (el.innerText || el.getAttribute('aria-label') || el.tagName).trim().slice(0, 30).replace(/\\s+/g, ' ');
+    const drawn = [Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10];
+    if (Math.min(r.width, r.height) >= ${floor}) { rows.push({ label, drawn, ok: true, wide: true, known }); continue; }
+
+    el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' });
+    const b = el.getBoundingClientRect();
+    const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+    const hit = (x, y) => {
+      const at = document.elementFromPoint(x, y);
+      return !!at && (at === el || el.contains(at));
+    };
+    const probes = [];
+    if (b.height < ${floor}) probes.push(['oben', hit(cx, cy - reach)], ['unten', hit(cx, cy + reach)]);
+    if (b.width < ${floor}) probes.push(['links', hit(cx - reach, cy)], ['rechts', hit(cx + reach, cy)]);
+    rows.push({ label, drawn, ok: probes.every((p) => p[1]), wide: false, known, missed: probes.filter((p) => !p[1]).map((p) => p[0]) });
   }
-  if (r.width < ${floor}) {
-    probes.push({ dir: 'links', ...hits(cx - reach, cy) });
-    probes.push({ dir: 'rechts', ...hits(cx + reach, cy) });
-  }
-  return {
-    box: [Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10],
-    probes,
-    ok: probes.every((p) => p.ok),
-  };
+  // Serialised here rather than handed back as an object: the Schreibtafel puts
+  // 60+ rows in this array, and CDP's returnByValue gives up on a graph that
+  // size with "Object reference chain is too long".
+  return JSON.stringify(rows);
 })()`;
 
 function parseArgs(argv) {
-  const opts = { base: 'http://localhost:3000', width: 390, height: 844 };
+  const opts = { base: 'http://localhost:3000', width: 390, height: 844, routes: DEFAULT_ROUTES };
   for (let i = 0; i < argv.length; i += 1) {
     const [flag, inline] = splitFlag(argv[i]);
     const value = inline ?? argv[++i];
@@ -151,6 +132,9 @@ function parseArgs(argv) {
       case '--height':
         opts.height = Number(value);
         break;
+      case '--routes':
+        opts.routes = value.split(',');
+        break;
       default:
         throw new Error(`unknown argument: ${flag}`);
     }
@@ -162,66 +146,54 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const port = 9722 + Math.floor(Math.random() * 200);
   const chrome = await launchChrome(port, { ...opts, label: 'touch-targets' });
-  let failures = 0;
-  let missing = 0;
+  let checked = 0;
+  let known = 0;
+  const failures = [];
 
   try {
     const cdp = await openPage(port, opts);
     console.log(`touch targets ${TOUCH_TARGET}px · ${opts.base} · ${opts.width}x${opts.height}\n`);
 
-    for (const check of CHECKS) {
-      await cdp.goto(opts.base + check.route);
-      if (check.setup) {
-        let done = false;
-        for (let attempt = 0; !done && attempt < 24; attempt += 1) {
-          done = await cdp.evaluate(check.setup);
-          if (!done) await sleep(500);
-        }
-        await sleep(1200);
-      }
-      console.log(`  ${check.route}`);
-
-      for (const target of check.targets) {
-        let probe = await cdp.evaluate(PROBE(target.find, TOUCH_TARGET));
-        // Engine-written surfaces need a moment; poll rather than guess a delay.
-        for (let attempt = 0; target.wait && !probe && attempt < 24; attempt += 1) {
+    for (const route of opts.routes) {
+      await cdp.goto(opts.base + route);
+      if (SETUP[route]) {
+        for (let attempt = 0; attempt < 24; attempt += 1) {
+          if (await cdp.evaluate(SETUP[route])) break;
           await sleep(500);
-          probe = await cdp.evaluate(PROBE(target.find, TOUCH_TARGET));
         }
-        if (!probe) {
-          missing += 1;
-          console.log(`     ??  ${target.name} — not found (API asleep? selector stale?)`);
-          continue;
-        }
-        const [w, h] = probe.box;
-        if (probe.probes.length === 0) {
-          console.log(`     ok  ${target.name} — ${w}×${h}, box already ≥ ${TOUCH_TARGET}px`);
-          continue;
-        }
-        if (probe.ok) {
-          console.log(`     ok  ${target.name} — ${w}×${h} drawn, ${TOUCH_TARGET}px reached (${probe.probes.map((p) => p.dir).join('/')})`);
-          continue;
-        }
-        failures += 1;
-        console.log(`   FAIL  ${target.name} — ${w}×${h} drawn, hit area does not reach ${TOUCH_TARGET}px`);
-        for (const p of probe.probes.filter((x) => !x.ok)) {
-          console.log(`           ${p.dir}: traf ${p.got}`);
-        }
+        await sleep(1500);
+      }
+      // Engine-written surfaces (replay buttons, tafel cells) arrive late.
+      await sleep(1200);
+
+      const rows = JSON.parse(await cdp.evaluate(SWEEP(TOUCH_TARGET)));
+      const bad = rows.filter((r) => !r.ok && !r.known);
+      const shortfall = rows.filter((r) => !r.ok && r.known);
+      checked += rows.length;
+      known += shortfall.length;
+      const note = shortfall.length ? ` (+${shortfall.length} bekannt)` : '';
+      if (bad.length === 0) {
+        console.log(`  ok    ${route.padEnd(26)} ${rows.length} Ziele${note}`);
+        continue;
+      }
+      console.log(`  FAIL  ${route.padEnd(26)} ${rows.length} Ziele${note}`);
+      for (const r of bad) {
+        failures.push({ route, ...r });
+        console.log(`          ${r.drawn[0]}×${r.drawn[1]} — „${r.label}" verfehlt: ${r.missed.join('/')}`);
       }
     }
   } finally {
     chrome.kill();
   }
 
-  if (missing) {
-    console.log(`\n${missing} target(s) not found — check the site is up with a reachable API.`);
-  }
+  console.log(`\n${checked} interaktive Ziele geprüft (Fließtext-Links nach §9.2 ausgenommen).`);
+  if (known) console.log(`${known} bekannte Unterschreitung(en): ${KNOWN_SHORTFALL.why}`);
   console.log(
-    failures === 0
-      ? `\nAll checked controls reach the ${TOUCH_TARGET}px floor.`
-      : `\n${failures} control(s) under the ${TOUCH_TARGET}px floor — design-system.md §9.3.`,
+    failures.length === 0
+      ? `Alle erreichen den ${TOUCH_TARGET}px-Boden.`
+      : `${failures.length} unter dem ${TOUCH_TARGET}px-Boden — design-system.md §9.3.`,
   );
-  process.exitCode = failures === 0 && missing === 0 ? 0 : 1;
+  process.exitCode = failures.length === 0 ? 0 : 1;
 }
 
 main().catch((error) => {

@@ -91,7 +91,12 @@ export class Cdp {
       returnByValue: true,
       awaitPromise: true,
     });
-    if (exceptionDetails) throw new Error(exceptionDetails.text ?? 'evaluation failed');
+    if (exceptionDetails) {
+      // `text` alone is the useless "Uncaught"; the description carries the
+      // actual message and stack from inside the page.
+      const detail = exceptionDetails.exception?.description ?? exceptionDetails.text ?? 'evaluation failed';
+      throw new Error(detail);
+    }
     return result.value;
   }
 

@@ -124,9 +124,11 @@ export function ScribeView() {
           sx={{ mb: 1 }}
         />
 
-        {/* gap 1.5 (12px), not 1: the chips carry an invisible 44px target
-            below, and 8px of air would let two of them overlap it. */}
-        <Stack direction="row" sx={{ flexWrap: 'wrap', alignItems: 'center', gap: 1.5, mb: 3 }}>
+        {/* The chips are 28px tall and carry an invisible 44px target (§9.3), so
+            the ROW pitch has to clear 44 or a wrapped row's target overlaps the
+            row above it and steals its taps — measured: at rowGap 1.5 the chip
+            „das" lost its lower edge to the row below. 28 + 16 = 44 exactly. */}
+        <Stack direction="row" sx={{ flexWrap: 'wrap', alignItems: 'center', columnGap: 1.5, rowGap: 2, mb: 3 }}>
           <Typography component="span" variant="body2" sx={{ color: paper.inkSoft }}>
             {de.scribe.examplesLabel}
           </Typography>

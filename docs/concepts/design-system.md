@@ -410,17 +410,40 @@ statt am Polster. Die Leiste wächst dadurch auf schmalen Geräten von 82 auf
 121 px, auf `sm+` bleibt sie unverändert. Faustregel: Überlagerung nur dort, wo
 das Element allein steht.
 
+**Offen — Autor-Entscheid: die Zellen der Schreibtafel.** Die geschriebene Tafel
+setzt das Alphabet als SVG-Zellen, die ihre Zeile lückenlos kacheln (bei 390 px
+gemessen: 41–98 px breit, Lücke 0, Höhe 73 px). Die schmalsten reißen den Boden
+in der Breite. Beide Auswege kosten etwas: eine unsichtbare Fläche griffe in den
+Nachbarbuchstaben und nähme ihm den Tipp, eine Verbreiterung baut das
+Nachschlage-Raster um, dessentwegen die Seite existiert. WCAG 2.2 SC 2.5.8 ist
+mit 41 × 73 px deutlich erfüllt. Bis zur Entscheidung stehen die Zellen als
+benannte Ausnahme in `touch-targets.mjs` — sichtbar gezählt, nicht stillschweigend
+übersprungen.
+
 **Messbar statt behauptet**, wie der Typo-Boden: `npm run touch-targets`
-(`app/scripts/touch-targets.mjs`) fährt die betroffenen Routen an und fragt für
-jede Achse, auf der ein Element kleiner als 44 px GEZEICHNET ist, per
-`document.elementFromPoint` in 22 px Abstand vom Mittelpunkt nach — die Kante des
-44er-Quadrats muss das Element selbst treffen. Das prüft die echte Trefferfläche
-statt einer berechneten Größe und fängt damit den einen stillen Weg, auf dem die
-Regel bricht: ein `overflow: hidden` am Element beschneidet das Pseudo-Element,
-die Zeichnung bleibt gleich und das Ziel schrumpft unbemerkt zurück. Achsen, auf
-denen die Box schon ≥ 44 px ist, werden nicht geprüft — dort trägt die Hilfe
-nichts, und die Trefferfläche eines Nachbarn dürfte den Punkt zu Recht gewinnen.
+(`app/scripts/touch-targets.mjs`) fährt **alle** öffentlichen Routen an und misst
+**jedes** interaktive Element — 217 sind es heute. Ausgenommen ist genau die eine
+Ausnahme der Regel, und zwar an dem Merkmal, das §9.2 ihr gibt: ein `<a>` mit
+Unterstreichung ist ein Fließtext-Link (84 Stück); Chrome, das nur wie ein Link
+aussieht, setzt `textDecoration: none` und wird mitgemessen. Eine gepflegte
+Liste stand vorher hier und war die falsche Form — sie bestand, während die
+Lesart-Chips und die Tafel-Schrittknöpfe den Boden rissen.
+
+Geprüft wird die echte Trefferfläche statt einer berechneten Größe: für jede
+Achse, auf der ein Element kleiner als 44 px GEZEICHNET ist, fragt das Skript per
+`document.elementFromPoint` an der Kante des 44er-Quadrats nach, und dort muss
+das Element selbst antworten. Das fängt den einen stillen Weg, auf dem die Regel
+bricht: ein `overflow: hidden` beschneidet das Pseudo-Element, die Zeichnung
+bleibt gleich und das Ziel schrumpft unbemerkt zurück. Achsen, auf denen die Box
+schon ≥ 44 px ist, werden nicht geprüft — dort trägt die Hilfe nichts, und die
+Trefferfläche eines Nachbarn dürfte den Punkt zu Recht gewinnen.
 Kein Gate in der CI: das Skript braucht die laufende Seite samt erreichbarer API.
+
+**Die Zeilenteilung zählt mit.** Wo umbrechende Elemente eine unsichtbare
+Trefferfläche tragen, muss der ZEILENABSTAND sie fassen, sonst greift die untere
+Zeile über die obere und nimmt ihr die Tipps (gemessen an den Federprobe-Chips:
+28 px Chip + 12 px Lücke = 40 px Rasterhöhe, die untere Reihe gewann). Regel:
+`rowGap` so wählen, dass Elementhöhe + Lücke ≥ 44 px.
 
 ---
 
@@ -437,9 +460,9 @@ Kein Gate in der CI: das Skript braucht die laufende Seite samt erreichbarer API
   an die Aufrufstelle. Gegenprobe: `npm run type-floor` (§9) und
   `npm run touch-targets` (§9.3) — beide gegen die laufende Seite — plus ein
   Tastatur-Durchgang für den Fokusring (§9.1), den kein Skript ersetzt.
-  Wer ein Bedienelement neu mit `hitArea()` versieht, trägt es in die
-  `CHECKS`-Liste von `app/scripts/touch-targets.mjs` ein; sonst ist es das eine
-  Element, dessen Rückfall niemand bemerkt.
+  Ein neues Bedienelement muss nirgends nachgetragen werden — der Sweep findet
+  jedes von selbst; nur eine begründete Ausnahme gehört benannt in
+  `app/scripts/touch-targets.mjs`.
 - **Der Admin ist mitgemeint**, wo §3 (Typo) und §7 (`HeaderBar`) es sagen: eine Änderung
   an Leiter oder Kopfleiste wird an **beiden** Leisten (`PublicHeader` +
   `sections/admin/shell/AdminHeader`) und an den Werkbank-Köpfen (`shell/Panel.tsx`,
