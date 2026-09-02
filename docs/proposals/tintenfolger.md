@@ -1,9 +1,10 @@
 # Tintenfolger: der Prüfstand und die zwei Routen zur Wortbahn
 
-> **Status (2026-09-01): teil-umgesetzt.** Das Duell ist komplett
+> **Status (2026-09-03): teil-umgesetzt.** Das Duell ist komplett
 > gemessen und §7 in Arbeit; adoptiert sind Kette **v5** (`aug26`),
-> Lotse **v0.17** (`aug20`) und die Lineal-Stände **v2.1** (`aug16`) /
-> **L-U** (`aug26`). Der Ist-Stand mit Zahlen steht im nächsten
+> Lotse **v0.17** (`aug20`), die Lineal-Stände **v2.1** (`aug16`) /
+> **L-U** (`aug26`) und die Laufform **LF11** („glatte Zeile", `sep02`,
+> nach der ersten humanbench-Wortrunde). Der Ist-Stand mit Zahlen steht im nächsten
 > Abschnitt „Stand der Kampagne“, die stehenden Rettungswege in §7.9,
 > die offenen Arme und Autorenschritte in §7.11. Zahlen und
 > Vorregistrierungen wohnen ausschließlich in
@@ -539,7 +540,7 @@ DANN, nicht implizit jetzt.
 | **4** | Folger-Sweeps: Arm ① λ-Leiter (**PR #345**, ehrliches Negativ), Arm-⑥-Unterbau (**PR #346**), Arme ⑤+⑥ (**PR #347**, Overlap freigesprochen · Korrespondenz-Kappe), Arm ⑥b klassenbewusste Korrespondenz (**PR #348**, Hypothese bestätigt, keine Adoption), Arm ⑨ Topologie-Wächter (**PR #355**, Kontrakt hält, beide Kills feuern — Route-A-Fazit); kein Default adoptiert | **abgeschlossen** |
 | **5** | `tools/inksight/`-Pipeline (isoliert, Umgebung verifiziert, erstes Kurrent-Ergebnis) | **PR #340** |
 | **6** | Das Duell: Struktur-Zähler v2/v2.1 + Soll-Spalten (**PR #351/#352/#353**), Route G (**PR #354**), InkSight-T0 (**PR #356**), Duell-Seite mit 6 Ebenen | **abgeschlossen** |
-| **7** | humanbench-WORT-Runde (neuer Item-Renderer; Bias benannt: der Autor beurteilt eigene Nachfahrungen — Abkühl-Abstand oder Zweitrichter) | offen, braucht den Autor |
+| **7** | humanbench-WORT-Runde (neuer Item-Renderer; Bias benannt: der Autor beurteilt eigene Nachfahrungen — Abkühl-Abstand oder Zweitrichter) | **erste Runde gefahren `sep02`** (Basis gegen LF11, Adoption ausgelöst); als Tie-Breaker für K-E1/K-E2 weiter offen |
 
 **Betriebsregeln:** DB wird von Bench/Folger nie beschrieben; Fixtures +
 `landmarks.py` + `core/geometry.py` + `core/quality_suetterlin.py`

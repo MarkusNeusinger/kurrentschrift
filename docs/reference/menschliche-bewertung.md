@@ -1,6 +1,6 @@
 # Menschliche Bewertung — der blinde Urteilsdurchgang über die Fits
 
-> **Status (2026-09-02): lebend.** Beschreibt das Instrument
+> **Status (2026-09-03): lebend.** Beschreibt das Instrument
 > ([`tools/humanbench`](../../tools/humanbench)) und das Verfahren eines
 > Bewertungsdurchgangs — die Methode, nicht die Ergebnisse. Nachzuziehen bei
 > jeder Änderung am Instrument (Kategorien, Stichproben- und
@@ -8,8 +8,10 @@
 > `tools/humanbench/build.py` bzw. `page.py`) und bei jeder Runde, deren
 > Aufbau von dem hier beschriebenen abweicht. Seit 2026-09-02 hat das
 > Instrument einen dritten Modus — den **Wortmodus auf der Echtheitsfrage**
-> (§8a); gebaut und synthetisch abgenommen, gefahren wurde damit noch keine
-> Runde.
+> (§8a). **Die erste Wortrunde ist gefahren** (`sep02`, Basis gegen LF11):
+> sie hat entschieden, wo das Wort-Lineal blind war, und dem Dokument die
+> Konstruktionsregel §3.6b eingetragen. Zahlen und Verdikt wohnen in
+> `qualitaetsmetrik.md` §14 („Laufform LF11 — humanbench-Wortrunde“).
 
 Diese Datei existiert, damit eine Wiederholung ein **Nachbau** ist und keine
 Neuplanung. Jede Regel hier hat eine Runde gekostet; sie steht mit ihrer
@@ -932,10 +934,13 @@ Kategorien-Durchgang mit den alten Fits, und die gelabelten Vorkommen paarig.
 
 ## 8a. Der Wortmodus — die Echtheitsfrage
 
-> **Stand 2026-09-02: gebaut, synthetisch abgenommen, noch nicht gefahren.**
-> Die Zahlen einer Runde gehören nach
-> [`qualitaetsmetrik.md`](qualitaetsmetrik.md); hier steht nur, wie sie
-> zustande kommen.
+> **Stand 2026-09-03: gebaut, synthetisch abgenommen — und einmal
+> gefahren.** Die erste Runde (`sep02`, Basis gegen die LF11-Karte) hat
+> den Modus getragen: sie war entscheidungsfähig, hat eine Adoption
+> ausgelöst und dem Instrument die Konstruktionsregel §3.6b („gefüllte
+> Ringe“) eingetragen. Die Zahlen einer Runde gehören nach
+> [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §14 („Laufform LF11 —
+> humanbench-Wortrunde“); hier steht nur, wie sie zustande kommen.
 
 ### Warum ein dritter Modus
 

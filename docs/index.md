@@ -414,8 +414,9 @@ auseinanderfallen.
   darum eigene Minimalfassung); Anzeige-Namen aller Verfahren im
   Glossar-Eintrag „Duell-Namen" —
   *Status: teil-umgesetzt (Duell komplett gemessen; adoptiert sind Kette
-  v5, Lotse v0.17 und die Lineal-Stände v2.1/L-U; Optimierungsplan §7 in
-  Arbeit, offene Arme in §7.11)*
+  v5, Lotse v0.17, die Lineal-Stände v2.1/L-U und die Laufform LF11
+  „glatte Zeile" nach der ersten humanbench-Wortrunde; Optimierungsplan
+  §7 in Arbeit, offene Arme in §7.11)*
 - **[Planänderungen](proposals/planaenderungen.md)** — vier Vorschläge:
   §2/§4 systematische Bigramm-Extraktion aus Beispieltext; §3/§6.1
   Positions-Verteilung datengetrieben; M4+-Modul `core/orthography.py`

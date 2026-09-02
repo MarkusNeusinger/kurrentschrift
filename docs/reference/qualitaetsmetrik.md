@@ -3637,7 +3637,7 @@ Vorbedingung (Glossar „Wurzel-Digest“, `tools/wordbench/README.md`).
 | aug30 | #463 | dieselbe undeklarierte Wurzel, nach B-Kringel + Nachschärfung | 0,106400 | 0,148467 | §14 „Übergänge Korb-Runde“ |
 | sep01 | #472 | **Re-Baseline**: sieben reparierte Wort-Rechtecke, Bahnen nachgezogen, Wurzeln neu gebaut | 0,109255 | 0,148433 | §15 |
 | sep02 | dieser PR | Wurzeln neu gebaut (`fetch_fixtures --set all --verify`), `exported_at` 2026-09-02T08:00:29+00:00, `root_digest` `28ba1afebc53…` (`suetterlin-1922`) / `f0cf3d53414c…` (`suetterlin-1922-pairs`) — **keine** Re-Baseline: §15 wird exakt reproduziert | 0,109255 | 0,148433 | dieser Ledger-Eintrag |
-| sep02 | #501 | **Re-Baseline nach dem LF11-Write**: 22 Laufform-Zeilen auf Spline-Basis-Mediane umgestellt (Snapshot `2026-09-02T21-58-16Z`, Readback 22/22), Wurzeln neu gebaut, `exported_at` 2026-09-02T22:13:54+00:00, `root_digest` `2e3581287bed…` (`suetterlin-1922`) / `cee9d363f497…` (`suetterlin-1922-pairs`); trifft die trockene LF11-Vorhersage exakt | 0,109218 | 0,148198 | §14 „Laufform LF11 — humanbench-Wortrunde, Instrumentdefekt und Adoption“ |
+| sep02 | #501 | **Re-Baseline nach dem LF11-Write**: 22 Laufform-Zeilen auf Spline-Basis-Mediane umgestellt (Snapshot `2026-09-02T21-58-16Z`, Readback 22/22), Wurzeln neu gebaut: `suetterlin-1922` `exported_at` 2026-09-02T22:13:54+00:00 `root_digest` `2e3581287bed…`, `suetterlin-1922-pairs` `exported_at` 2026-09-02T22:13:53+00:00 `root_digest` `cee9d363f497…`; trifft die trockene LF11-Vorhersage exakt | 0,109218 | 0,148198 | §14 „Laufform LF11 — humanbench-Wortrunde, Instrumentdefekt und Adoption“ |
 
 **Nachtrag `sep02` — die `aug30`-Wurzel ist eine undeklarierte
 Re-Baseline.** Zwischen der `aug29`-Wurzel (0,106720 / 0,146506, im

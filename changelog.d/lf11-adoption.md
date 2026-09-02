@@ -4,10 +4,11 @@
   of `suetterlin-1922` were rewritten as spline-basis medians (LF11, knot
   spacing 0.16 x-heights) after the first humanbench word round decided what no
   ruler could: on the 48 screens of the repaired page the author chose the
-  candidate 36 times against 1. The rows had been wandering left-right-left 2 to
-  11 times per x-height where the chart rows they came from wander zero times,
-  and every bound word rendered one — the single largest difference between
-  "written" and "computed" in the product. The frozen word bench moves from
+  candidate 36 times against 1. The rows had been reversing their curvature a
+  median of 6.9 times per x-height against their chart rows' 0.2 — the worst of
+  them, the `c`, 21.8 times — and every bound word rendered one, which made it
+  the single largest difference between "written" and "computed" in the product.
+  Production now serves a median of 0.6. The frozen word bench moves from
   0.109255 to 0.109218 and the pairs from 0.148433 to 0.148198, which is exactly
   what the dry measurement predicted, down to every component and diagnostic
   line. Public `/write/word` responses carry up to 24 h of edge cache, so the
