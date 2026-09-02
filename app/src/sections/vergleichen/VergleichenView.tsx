@@ -116,8 +116,12 @@ export function VergleichenView() {
       cancelled = true;
     };
   }, [text]);
-  const readings: LesartReadingOut[] | null = answer && answer.text === text ? answer.readings : null;
-  const dictionary: LesartDictionaryOut | null | undefined = answer?.dictionary;
+  // Both halves come from the answer to THIS text, never from the last one:
+  // a provenance line left standing under a word that is still loading would
+  // credit a dictionary for words nobody has seen yet.
+  const current: LesartenOut | null = answer && answer.text === text ? answer : null;
+  const readings: LesartReadingOut[] | null = current?.readings ?? null;
+  const dictionary: LesartDictionaryOut | null | undefined = current?.dictionary;
   const state = lesartenState(readings, dictionary, failedText === text && readings === null);
   const missingLetters = useMemo(() => lettersFromKeys(missing), [missing]);
 

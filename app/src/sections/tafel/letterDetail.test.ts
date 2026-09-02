@@ -53,7 +53,10 @@ describe('letterDetail', () => {
     expect(exampleWord('s', WORD_BANK)?.word).toMatch(/s$/); // a final s → round s
     // Capitals: whichever capital the bank has a word for, the word starts with it.
     const capitals = ['A', 'B', 'D', 'H', 'K', 'M', 'S', 'W'].map((c) => [c, exampleWord(c, WORD_BANK)] as const);
-    for (const [c, w] of capitals) expect(w!.word.startsWith(c), `${c}: ${w!.word}`).toBe(true);
+    for (const [c, w] of capitals) {
+      expect(w, `${c} has no example word`).not.toBeNull();
+      expect(w?.word.startsWith(c), `${c}: ${w?.word}`).toBe(true);
+    }
     expect(exampleWord('n', WORD_BANK)?.word).toContain('n');
     expect(exampleWord('n', WORD_BANK)?.historic).toBe(false);
     // Digits and punctuation are the only glyphs no word can show.
