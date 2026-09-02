@@ -9996,6 +9996,20 @@ nicht, wie vorhergesagt. Größte Bewegungen: `Zaum` 0,2782 → 0,1960
 gegen `Sporn` +0,0440 und `muß-2` +0,0237. `worst_word` wandert von
 `Zaum` 0,278238 auf `regieren` 0,234335.
 
+**Die Sichtprüfung sagt etwas, das keine dieser Zahlen sagt** (Regel
+„die Overlays sind die Wahrheit", wordbench-README). Angesehen wurden
+der größte Gewinner und der größte VERLIERER. `Zaum` ist im Kandidaten
+sichtbar sauberer — erwartbar. `Sporn` aber auch: die Basis zieht durch
+`orn` eine ausgefranste, haarige Mittellinie, der Kandidat eine glatte.
+Das Wort, das am Lineal 0,0440 VERLIERT, sieht besser aus. Der Grund
+liegt in der Metrik selbst: eine zappelnde Mittellinie streift durch
+ihr Zittern mehr Specimen-Tinte und gewinnt damit an Deckung, was die
+Glättung zurückgeben muss. **Das Lineal ist gegenüber dem Zickzack
+also nicht nur blind, es belohnt ihn stellenweise** — womit die
++0,002-Toleranz von Gate (a) sich nachträglich als richtig
+dimensioniert erweist und die humanbench-Runde nicht Kür ist, sondern
+das einzige Instrument, das in die richtige Richtung zeigt.
+
 **Der Glätte-Sensor (Gate b).** Median über die 22 Zeilen, Tafel-Median
 0,2274:
 
