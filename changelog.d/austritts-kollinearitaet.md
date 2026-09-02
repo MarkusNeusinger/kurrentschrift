@@ -18,8 +18,8 @@
   (51% once the length artifact is taken out, still short of the 60% gate), so
   the switch defaults to off, the golden fixture is untouched, and the numbers,
   the post-hoc narrow-class arm and four named rescue paths are recorded in
-  `qualitaetsmetrik.md` §14 „Übergänge J4/J4b" (#NNN).
+  `qualitaetsmetrik.md` §14 „Übergänge J4/J4b" (#488).
 - **`--exit-trim` on the word bench**, with `--exit-trim-min-kink` to narrow the
   rule to the joins that actually kink. A candidate arm's own measurement, never
   the headline — the same discipline `--overrides` and `--laufform` carry, and
-  the run says so in its header (#NNN).
+  the run says so in its header (#488).
