@@ -113,13 +113,22 @@ def _read(root: Path, path: Path) -> str:
 
 
 def journal_section(text: str) -> tuple[list[str], int]:
-    """The lines of §14 and the file offset they start at (0-based)."""
+    """The journal's lines and the file offset they start at (0-based).
+
+    The journal opens at `## 14.` and runs to the END OF THE FILE, not to the
+    next `## `. §15 is itself a dated journal entry (the rect-repair
+    re-baseline), and a round that appends its section at the file end — which
+    is what every round does — lands after that heading rather than inside §14:
+    LF11, J4 and J4b did exactly that on 2026-09-02. Stopping at the next `## `
+    would leave those entries unindexed and their register rows dangling, which
+    is the opposite of what this gate is for. Nothing is moved to make this
+    true; the window simply matches where the rounds actually write.
+    """
     lines = text.split("\n")
     start = next((i for i, line in enumerate(lines) if line.startswith(SECTION_HEADING)), None)
     if start is None:
         raise RegisterError(f"{JOURNAL}: no '{SECTION_HEADING.strip()}' heading — the journal moved?")
-    end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("## ")), len(lines))
-    return lines[start:end], start
+    return lines[start:], start
 
 
 def entries(text: str) -> list[Entry]:

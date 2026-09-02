@@ -47,7 +47,7 @@ from core.quality_suetterlin import (
     crossing_collinearity,
     verticality,
 )
-from core.template import multi_stroke_centerlines
+from core.template import build_sample_plan, multi_stroke_centerlines, sample_with_sample_plan, stroke_slices
 
 
 Point = tuple[float, float]
@@ -77,6 +77,18 @@ LAUFFORM_SPIKE_RATIO_MAX: float | None = 2.95
 # see a head that turns, and no other trusted row comes near (m 15°, w 14°).
 # None turns the gate off.
 LAUFFORM_HEAD_DEVIATION_MAX: float | None = 15.0
+# Smoothness sensor (LF11, qualitaetsmetrik.md §14 `sep02`): the step the
+# rendered centerline is resampled onto before its turn angles are read, and the
+# turn below which a sign change is numerical noise rather than a zigzag.
+#
+# 0.02 xh is a third of the nib radius (0.064 xh on the pooled 1922 nib) — fine
+# enough that a wobble the pen could not have drawn still shows, coarse enough
+# that the reading is not the sampler's own rounding. 3° is where the audit of
+# 2026-09-02 drew the line, and the chart rows confirm it: at that threshold
+# their rates sit at or near zero (o 0.00, e 0.00, n 0.46), so the sensor calls
+# a drawn form smooth.
+ZIGZAG_STEP_UNITS = 0.02
+ZIGZAG_TURN_MIN_DEG = 3.0
 # Pixel frame the geometry-only naturalness is measured in when the chart row
 # carries no `unit_px` of its own (the Sütterlin-1922 rows carry 63–64).
 DEFAULT_UNIT_PX = 64.0
@@ -88,6 +100,26 @@ DEFAULT_UNIT_PX = 64.0
 LAUFFORM_END_WINDOW = 0.0
 
 _DECIMALS = 4
+
+# Fallback nib radius (template units) for a chart row without usable widths —
+# the stand-in shared by the sampler helpers and the form distance (LF10).
+_FALLBACK_NIB_RADIUS = 0.05
+
+
+def _half_widths(chart_row: Any) -> np.ndarray:
+    """A chart row's half-widths as a flat float array — empty when the row
+    carries none.
+
+    A row's `half_widths` may be NULL (the column is nullable, and an attribute
+    view can leave it out), and `np.asarray(None, dtype=float)` is not an empty
+    array but a 0-d NaN whose `len()` raises. Missing widths therefore have to
+    be caught BEFORE the conversion; they are exactly the case
+    `_FALLBACK_NIB_RADIUS` exists for.
+    """
+    raw = getattr(chart_row, "half_widths", None)
+    if raw is None:
+        return np.zeros(0, dtype=float)
+    return np.asarray(raw, dtype=float).reshape(-1)
 
 
 def _arc_lengths(points: Sequence[Point]) -> list[float]:
@@ -413,18 +445,18 @@ def _landing_direction_deg(points: np.ndarray, window: float) -> float | None:
     return math.degrees(math.atan2(dy, dx))
 
 
-def _rendered_first_stroke(chart_row: Any, anchors: Sequence[Sequence[float]]) -> np.ndarray:
-    """The first pen-stroke's centerline as the renderer draws it — the chart's
+def _rendered_strokes(chart_row: Any, anchors: Sequence[Sequence[float]]) -> list[np.ndarray]:
+    """Every pen-stroke's centerline as the renderer draws it — the chart's
     sample plan (stroke starts, corner knots, widths) over the given anchors,
-    the same spline the join grammar reads its landing off. Empty when there
+    the same spline the join grammar reads its tangents off. Empty when there
     is nothing to sample."""
     pts = np.asarray(anchors, dtype=float).reshape(-1, 2)
     if len(pts) < 2:
-        return np.zeros((0, 2))
+        return []
     meta = getattr(chart_row, "trace_meta", None) or {}
-    half_widths = np.asarray(chart_row.half_widths, dtype=float)
+    half_widths = _half_widths(chart_row)
     if len(half_widths) != len(pts):
-        half_widths = np.full(len(pts), float(half_widths.mean()) if len(half_widths) else 0.05)
+        half_widths = np.full(len(pts), float(half_widths.mean()) if len(half_widths) else _FALLBACK_NIB_RADIUS)
     lines = multi_stroke_centerlines(
         pts,
         half_widths,
@@ -433,7 +465,13 @@ def _rendered_first_stroke(chart_row: Any, anchors: Sequence[Sequence[float]]) -
         n=QUALITY_N_SAMPLES,
         corner_anchors=meta.get("corner_anchors"),
     )
-    return np.asarray(lines[0], dtype=float) if lines else np.zeros((0, 2))
+    return [np.asarray(line, dtype=float) for line in lines]
+
+
+def _rendered_first_stroke(chart_row: Any, anchors: Sequence[Sequence[float]]) -> np.ndarray:
+    """The first pen-stroke's rendered centerline, or an empty array."""
+    lines = _rendered_strokes(chart_row, anchors)
+    return lines[0] if lines else np.zeros((0, 2))
 
 
 def head_deviation(chart_row: Any, anchors: Sequence[Sequence[float]]) -> float:
@@ -460,3 +498,255 @@ def head_gate(chart_row: Any, anchors: Sequence[Sequence[float]]) -> dict[str, A
     deviation = round(head_deviation(chart_row, anchors), 2)
     limit = LAUFFORM_HEAD_DEVIATION_MAX
     return {"deviation": deviation, "max": limit, "exceeded": limit is not None and deviation > limit}
+
+
+# ----------------------------------------------------------------- smoothness sensor (LF11)
+
+
+def _resample_uniform(points: np.ndarray, step: float) -> np.ndarray:
+    """Resample an open polyline onto uniform arc-length steps of `step`.
+
+    Unlike the aggregation's `_resample_polyline`, which asks for a fixed COUNT,
+    this asks for a fixed SPACING: the sensor below counts turns per unit of arc,
+    so every stroke of every glyph has to be read on the same ruler — a fixed
+    count would measure a long stroke more coarsely than a short one and make
+    the rates incomparable. The final point is kept, so the last step may be
+    shorter. Returns fewer than three points when there is nothing to turn on.
+
+    Consecutive duplicate points are dropped first. `np.interp` is only defined
+    for a strictly increasing `xp`, and a repeated sample makes the cumulative
+    arc flat there — the sampler rounds to four decimals, so two samples CAN
+    coincide on a slow, tightly curved stretch. On the Sütterlin-1922 root not
+    one of the 15840 rendered samples repeats and the guard changes no measured
+    rate by 0.000000; it is here so the sensor cannot be ill-defined on a row
+    that does repeat, rather than because this data needed it.
+    """
+    pts = np.asarray(points, dtype=float).reshape(-1, 2)
+    if len(pts) >= 2:
+        pts = pts[np.concatenate([[True], np.any(np.diff(pts, axis=0) != 0.0, axis=1)])]
+    if len(pts) < 2 or step <= 0.0:
+        return pts
+    steps = np.hypot(*np.diff(pts, axis=0).T)
+    cumulative = np.concatenate([[0.0], np.cumsum(steps)])
+    total = float(cumulative[-1])
+    if total <= 0.0:
+        return pts[:1]
+    targets = np.arange(0.0, total, step)
+    if targets[-1] < total:
+        targets = np.append(targets, total)
+    return np.column_stack([np.interp(targets, cumulative, pts[:, 0]), np.interp(targets, cumulative, pts[:, 1])])
+
+
+def zigzag_rate(chart_row: Any, anchors: Sequence[Sequence[float]]) -> float:
+    """How often the rendered row reverses its curvature, per x-height of arc.
+
+    The Glätte-Sensor of LF11 (qualitaetsmetrik.md §14 `sep02`) and the one
+    quantity that names the defect the audit of 2026-09-02 put first: a stored
+    running form wanders left-right-left along its own path 2–11 times per
+    x-height where the chart row it was derived from wanders zero times, and
+    every bound word renders it. No frozen ruler sees it — both the word bench
+    and the ink follower resample the wobble away before they score — so it
+    needed a sensor of its own before it could be moved.
+
+    Measured on the RENDERED centerline (the chart's sample plan over the given
+    anchors, exactly as `head_deviation` reads its landing) rather than on the
+    anchor polyline: what a reader sees is the drawn spline, and the anchors are
+    only its control net. Each pen-stroke is resampled onto `ZIGZAG_STEP_UNITS`
+    of arc, the turn angle at each interior sample is taken, and a sign change
+    between consecutive turns counts when at least one of the two exceeds
+    `ZIGZAG_TURN_MIN_DEG` — a stroke's genuine inflections (an `e`'s loop into
+    its exit) are few and large, while the median jitter is many and small, and
+    the threshold is what separates them from the sampler's own rounding.
+
+    Pen lifts never count, as in `anchor_spike_ratio`: strokes are read one at a
+    time and their counts and arcs pooled, so the jump from an i's body to its
+    dot is not a reversal. Returns 0.0 when there is no arc to judge.
+    """
+    total_arc = 0.0
+    reversals = 0
+    for line in _rendered_strokes(chart_row, anchors):
+        pts = _resample_uniform(line, ZIGZAG_STEP_UNITS)
+        if len(pts) < 3:
+            continue
+        deltas = np.diff(pts, axis=0)
+        arc = float(np.hypot(*deltas.T).sum())
+        if arc <= 0.0:
+            continue
+        total_arc += arc
+        headings = np.arctan2(deltas[:, 1], deltas[:, 0])
+        turns = np.degrees((np.diff(headings) + np.pi) % (2.0 * np.pi) - np.pi)
+        if len(turns) < 2:
+            continue
+        a, b = turns[:-1], turns[1:]
+        loud = np.maximum(np.abs(a), np.abs(b)) > ZIGZAG_TURN_MIN_DEG
+        reversals += int(np.count_nonzero((a * b < 0.0) & loud))
+    return 0.0 if total_arc <= 0.0 else reversals / total_arc
+
+
+def smoothness_gap(chart_row: Any, anchors: Sequence[Sequence[float]]) -> dict[str, Any]:
+    """The sensor's reading for one candidate row beside its own chart row.
+
+    `gap` is candidate − chart, in reversals per x-height: positive means the
+    row wobbles more than the drawn form it was derived from. That difference,
+    not the absolute rate, is the comparable quantity — a curly capital turns
+    more often than an `l` for reasons that are ductus, not defect.
+    """
+    chart = round(zigzag_rate(chart_row, chart_row.anchors), 4)
+    candidate = round(zigzag_rate(chart_row, anchors), 4)
+    return {"chart": chart, "candidate": candidate, "gap": round(candidate - chart, 4)}
+
+
+# ----------------------------------------------------------------- form distance (LF10)
+
+
+def _sampled_strokes(chart_row: Any, anchors: Sequence[Sequence[float]]) -> list[np.ndarray]:
+    """Every pen-stroke's centerline as the renderer samples it, in the
+    template frame (no slant). One `(k, 2)` array per stroke of
+    `stroke_slices`, in writing order; a stroke the plan cannot sample falls
+    back to its own anchor polyline, so the list always lines up with the
+    anchor ranges and no stroke is ever empty.
+
+    What the CHART ROW supplies is the plan's structure — stroke starts,
+    corner knots, widths, QUALITY_N_SAMPLES — while the plan's chord-length
+    allocation across sub-arcs follows the anchors actually passed in. That
+    asymmetry is deliberate and does not reach the measurement: the sample
+    count only sets how densely the SAME spline is discretised, and LF10
+    measures a distance to the resulting polyline, not sample against sample.
+    Probed on a sub-arc split flipped from 55/186 to 180/61 samples: the p90
+    moved by 0.000000 nib radii.
+    """
+    pts = np.asarray(anchors, dtype=float).reshape(-1, 2)
+    meta = getattr(chart_row, "trace_meta", None) or {}
+    starts = meta.get("stroke_starts")
+    ranges = stroke_slices(len(pts), starts)
+    raw = [pts[a:b] for a, b in ranges]
+    if len(pts) < 2:
+        return raw
+    half_widths = _half_widths(chart_row)
+    if len(half_widths) != len(pts):
+        half_widths = np.full(len(pts), float(half_widths.mean()) if len(half_widths) else _FALLBACK_NIB_RADIUS)
+    plan = build_sample_plan(pts, starts, meta.get("corner_anchors"), QUALITY_N_SAMPLES)
+    sx, sy, _sw = sample_with_sample_plan(pts, half_widths, plan)
+    bounds = [*plan.sample_starts, len(sx)]
+    sampled = [np.column_stack([sx[a:b], sy[a:b]]) for a, b in zip(bounds[:-1], bounds[1:], strict=True)]
+    if len(sampled) != len(raw):
+        return raw
+    return [line if len(line) >= 2 else raw[i] for i, line in enumerate(sampled)]
+
+
+def _distances_to_polyline(points: np.ndarray, line: np.ndarray) -> np.ndarray:
+    """Exact distance of every point to a polyline — the nearest point on any
+    of its segments, not merely the nearest vertex."""
+    if len(line) == 0:
+        return np.full(len(points), np.inf)
+    if len(line) == 1:
+        return np.linalg.norm(points - line[0], axis=1)
+    a, b = line[:-1], line[1:]
+    ab = b - a
+    ab2 = np.einsum("ij,ij->i", ab, ab)
+    ab2 = np.where(ab2 > 0.0, ab2, 1.0)
+    ap = points[:, None, :] - a[None, :, :]
+    t = np.clip(np.einsum("kmj,mj->km", ap, ab) / ab2[None, :], 0.0, 1.0)
+    foot = a[None, :, :] + t[..., None] * ab[None, :, :]
+    return np.linalg.norm(points[:, None, :] - foot, axis=2).min(axis=1)
+
+
+def _summary(values: np.ndarray) -> dict[str, Any]:
+    return {
+        "median": round(float(np.median(values)), 4),
+        "p90": round(float(np.percentile(values, 90)), 4),
+        "max": round(float(np.max(values)), 4),
+        "argmax": int(np.argmax(values)),
+        "values": [round(float(v), 4) for v in values],
+    }
+
+
+def form_distance(
+    chart_row: Any, anchors: Sequence[Sequence[float]], *, same_stroke: bool = True, rendered: bool = True
+) -> dict[str, Any]:
+    """The form distance of a candidate row to its chart row (LF10,
+    qualitaetsmetrik.md §14 `sep01`): how far the running form leaves the
+    chart's path, per anchor, in chart nib radii.
+
+    Both rows are rendered with the chart's sample plan (`_sampled_strokes`,
+    the renderer's own sampler — the anchor polyline misreads the dense
+    capital heads, §14 LF9). Per anchor of the ROW the distance to the chart's
+    rendered centerline of THE SAME stroke (the row shares the chart's stroke
+    starts), and per anchor of the CHART the distance to the row's rendered
+    centerline of the same stroke — two directions, reported separately
+    (tracebench practice: no symmetric mean). Both in nib radii of the chart,
+    `r` = median of its `half_widths` — `_FALLBACK_NIB_RADIUS` when the row
+    carries no widths at all (NULL or empty) or none of them is positive, so a
+    width-less row is measured rather than refused. The gate quantity is the
+    worse directional p90: a form defect is LOCAL (a segment, a stroke, a bow — a
+    minority of the anchors) while the hand's legitimate deviation is GLOBAL
+    and smooth (width, a head angle), so p90 sees the one and not the other;
+    the median and the maximum ride along as the pre-registered sensitivity
+    checks, as does the index-wise `correspondence` distance |row_i − chart_i|
+    (it carries the longitudinal extent LF5/LF6 found to be the hand's own).
+
+    No rigid registration beforehand: the fit keeps the global translation in
+    the placement (`core/fit.py`, `fitted_anchors = template_anchors +
+    deltas`), so the row's anchors already live in the chart's frame and any
+    shift in them IS form or width.
+
+    Args:
+        chart_row: The variant-0 template (ORM row or an attribute view with
+            `anchors`, `half_widths`, `trace_meta`).
+        anchors: The candidate row's anchors, same count as the chart's.
+        same_stroke: Measure against the same stroke (default); False takes
+            the nearest point of ANY stroke (sensitivity check e).
+        rendered: Measure against the rendered centerline (default); False
+            uses the bare anchor polylines (sensitivity check f).
+
+    Returns:
+        `nib_radius`, `row_to_chart` and `chart_to_row` (each with `median`,
+        `p90`, `max`, `argmax` and the per-anchor `values`), the worse-direction
+        `median` / `p90` / `max` at the top level with `p90_direction`, and
+        `correspondence` (index-wise, same summary shape).
+
+    Raises:
+        ValueError: If the two anchor lists differ in length.
+    """
+    chart_pts = np.asarray(chart_row.anchors, dtype=float).reshape(-1, 2)
+    row_pts = np.asarray(anchors, dtype=float).reshape(-1, 2)
+    if len(chart_pts) != len(row_pts):
+        raise ValueError(f"anchor count {len(row_pts)} != chart row's {len(chart_pts)}")
+    if len(chart_pts) == 0:
+        raise ValueError("need at least 1 anchor")
+    half_widths = _half_widths(chart_row)
+    radius = float(np.median(half_widths)) if len(half_widths) else 0.0
+    if not radius > 0.0:  # also catches a NaN median
+        radius = _FALLBACK_NIB_RADIUS
+    meta = getattr(chart_row, "trace_meta", None) or {}
+    ranges = stroke_slices(len(chart_pts), meta.get("stroke_starts"))
+    if rendered:
+        chart_lines = _sampled_strokes(chart_row, chart_pts)
+        row_lines = _sampled_strokes(chart_row, row_pts)
+    else:
+        chart_lines = [chart_pts[a:b] for a, b in ranges]
+        row_lines = [row_pts[a:b] for a, b in ranges]
+
+    def one_direction(points: np.ndarray, lines: list[np.ndarray]) -> np.ndarray:
+        if same_stroke:
+            out = np.zeros(len(points))
+            for (a, b), line in zip(ranges, lines, strict=True):
+                out[a:b] = _distances_to_polyline(points[a:b], line)
+            return out / radius
+        return np.min(np.stack([_distances_to_polyline(points, line) for line in lines]), axis=0) / radius
+
+    row_to_chart = one_direction(row_pts, chart_lines)
+    chart_to_row = one_direction(chart_pts, row_lines)
+    correspondence = np.linalg.norm(row_pts - chart_pts, axis=1) / radius
+    a, b = _summary(row_to_chart), _summary(chart_to_row)
+    worse = "row_to_chart" if a["p90"] >= b["p90"] else "chart_to_row"
+    return {
+        "nib_radius": round(radius, 4),
+        "row_to_chart": a,
+        "chart_to_row": b,
+        "median": max(a["median"], b["median"]),
+        "p90": max(a["p90"], b["p90"]),
+        "max": max(a["max"], b["max"]),
+        "p90_direction": worse,
+        "correspondence": _summary(correspondence),
+    }

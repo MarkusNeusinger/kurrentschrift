@@ -110,6 +110,16 @@ def test_an_entry_without_a_register_row_fails(repo: Path) -> None:
     assert any("has no register row" in p for p in problems)
 
 
+def test_an_entry_appended_after_the_next_heading_still_counts(repo: Path) -> None:
+    # Rounds append at the END of the file, which lands after §15 rather than
+    # inside §14 — LF11, J4 and J4b did on 2026-09-02. Such an entry is a
+    # journal entry and needs its register row like any other.
+    text = JOURNAL + "\n### Kette K-Z `sep02` — nach §15 angehängt\n\nGemessen.\n"
+    _write(repo, dr.JOURNAL, text)
+    assert "Kette K-Z `sep02` — nach §15 angehängt" in [e.title for e in dr.entries(text)]
+    assert any("has no register row" in p for p in dr.check_all(root=repo))
+
+
 def test_a_register_row_pointing_nowhere_fails(repo: Path) -> None:
     text = JOURNAL.replace("#lotse-v017-aug20--das-reservierungs-veto", "#gibt-es-nicht")
     _write(repo, dr.JOURNAL, text)

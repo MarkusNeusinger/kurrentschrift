@@ -61,6 +61,14 @@ uv run python -m tools.wordbench.run --no-laufform
 # Same discipline as --overrides: its own number, never the headline.
 uv run python -m tools.wordbench.run --set pairs --laufform temp/laufform_draft.json
 
+# Optional: compose with the opt-in exit-side collinearity rule (the sawtooth
+# exit's chart stub is cut back until the join leaves it collinearly — see
+# core/compose.py EXIT_TRIM_WINDOW). Same discipline again: a candidate arm's
+# own number, never the headline. --exit-trim-min-kink narrows it to the joins
+# that actually kink.
+uv run python -m tools.wordbench.run --set all --exit-trim
+uv run python -m tools.wordbench.run --set all --exit-trim --exit-trim-min-kink 20
+
 # Box proposal / verification sheets for annotating a new plate (no DB):
 uv run python -m tools.wordbench.propose_boxes --page words-abb19.png --expect-lines 12 --strips
 uv run python -m tools.wordbench.propose_boxes --page words-abb19.png --expect-lines 12 --validate
@@ -169,7 +177,10 @@ entry's joins; the block lines pool every matched join:
 `seam_dep_abs_median` / `seam_arr_abs_median`. On the frozen 1922 word plate
 the composer departs `+11.87°` (|Δ| 13.10) and arrives `−3.26°` (|Δ| 11.18)
 over 206 of 214 joins — the number the "Austritts-Kollinearität" class rule
-is meant to move.
+is meant to move. It moves it: `--exit-trim` takes the departure median to
+`−1.39°` on the `sep01` roots. The arm was still rejected — `dconn` does not
+follow (qualitaetsmetrik.md §14 „Übergänge J4/J4b"), so the switch stays off
+by default.
 - `width` — |log| of the total-ink-width ratio: spacing/rhythm errors that
   per-point chamfer barely sees. For PAIRS this component carries a constant
   positive bias (the plate draws lead-in/lead-out strokes the composed

@@ -72,14 +72,24 @@ Verfahrensseite; geändert wird sie nie hier.
 > Best-of-N · P3-K1/K2/K3 · O2-Trim-Jitter · Lotse v0.2/v0.3/v0.4/v0.6/
 > v0.8/v0.10/v0.12/v0.14/v0.15/v0.18 und die Auflösungs-Familie ·
 > K0-Z/K0-Z-R (als K0-S wiedervorgelegt und in v5 aufgegangen) ·
-> K-E1/K-E2 · LF1/LF2/LF3/LF5/LF6/LF7 · J1/J2/J3. K-D wurde
-> gegenstandslos, nicht verworfen.
+> K-E1/K-E2 · LF1/LF2/LF3/LF5/LF6/LF7/LF10 · J1/J2/J3 · J4/J4b. K-D
+> wurde gegenstandslos, nicht verworfen.
 >
-> **Offen (§7.11).** KI-messbar: LF4 (p) · Form-Abstand-Arm ·
+> **Bestanden, aber noch nicht adoptiert.** LF11 „glatte Zeile"
+> (`sep02`, Sprosse Δs 0,16): alle vier Trocken-Gates grün, die
+> Kandidaten-Karte liegt als 22 volle Fixture-Zeilen vor, geschrieben
+> ist nichts. Die Adoption hängt an der humanbench-Wort-Runde und
+> danach am Autor-Go — das Wort-Lineal belohnt den Zickzack
+> stellenweise, also entscheidet hier das Auge.
+>
+> **Offen (§7.11).** KI-messbar: LF4 (p) ·
 > Abstandsterm/Schleifen-Halteterm für die 13 v5-Rückweisungen ·
 > Distanzfeld-NUR-Claim · Lotse-Zonen-Stufe · InkSight B2 und die
-> Nachmessung auf Kappe 1,5 · Austritts-Kollinearität (Sensor
-> `seam_deg` steht seit `sep02`). Autorenschritte: Bestätigungssatz
+> Nachmessung auf Kappe 1,5 · die drei LF10-Konversionen
+> (Richtungs-Abstand · Tinten-Evidenz der Zeile · humanbench-Zeilen-
+> Runde) · die zwei J4-Konversionen (nur die Ankunftsseite · eine
+> ausdehnungs-normierte Formdistanz als neuer Sensor).
+> Autorenschritte: Bestätigungssatz
 > A/B · humanbench-WORT-Runde · Prod-Re-Harvest der `traced`-Zeilen mit
 > Kette v5 · St-Ligatur im Wizard · Laufform-Lücke G/W/K/ue/F/ae/b ·
 > die Herkunft der `aug30`-Fixture-Wurzel.
@@ -963,9 +973,14 @@ der eingefrorenen Worttafel 1922: Abgang **+12,52°**, Ankunft
 auf der `aug14`-Wurzel derselben Platte +11,87° / −3,26° über 206 der
 214 — der Unterschied liegt an der Wurzel, nicht am Sensor. Der
 Verbinder geht also systematisch STEILER ab, als der Buchstabe zuletzt
-lief, und kommt nur wenig flacher an. Damit hat der Rettungsweg
-„Verbinder-Form“ erstmals ein Maß; ein Arm daraus braucht wie jeder
-andere seine eigene Vorregistrierung (§7.11 „Austritts-Kollinearität“).
+lief, und kommt nur wenig flacher an. Damit hatte der Rettungsweg
+„Verbinder-Form“ erstmals ein Maß — und noch am selben Tag seinen Arm:
+J4 (`exit_trim`) beseitigt den Knick fast vollständig (+12,52° →
+−1,39°), scheitert aber an Gate (b), weil `dconn` über eine Naht, die
+die Grenze zwischen Buchstabe und Verbinder verschiebt, konstruktiv gar
+nicht urteilen kann. Der Sensor hat also gehalten, was er sollte: er
+hat den Defekt sichtbar gemacht UND die Blindstelle des Lineals. Die
+Zeile dazu steht unten (J4/J4b), die Konversionen in §7.11.
 
 | Verworfen (§14) | Fund / gemessene Decke | Rettungsweg | Auslöser |
 |---|---|---|---|
@@ -999,8 +1014,10 @@ andere seine eigene Vorregistrierung (§7.11 „Austritts-Kollinearität“).
 | Übergänge J1 Prior-Landerichtung (`aug29`) | (a) grün (0,106720 → 0,105757, 18 : 14), (c) rot: unter n→t unverändert — `ALIGN_MAX_ENTRY_Y` 0,62 (der `jul`-Workaround für die steile Tangenten-Lesung) sperrt den t-Anstrich (Fuß 0,64/0,70) vom Pass-through, der Kandidaten-Scan bricht am Haken-Segment ab, `d_in` misst am Haken; nicht adoptiert, weil (c) Gate ist | **J2 Anstrich-Verlängerung in den Schaft** (Klassenpfad t/ſ nach Sägezahn: Prior-Richtung + FORK-Kopplungsindex + gerade Linie mit Trim, wie f→t) — J1 wird dort mitgemessen | J2 gemessen `aug29` und verworfen (eigene Zeile), weiter als J3 |
 | Übergänge J2 Anstrich-Verlängerung in den Schaft (`aug29`) | (a) rot (+0,0041, 2 : 6), (c) formal erreicht — aber die sieben `fit_ok`-Dissektionen widerlegen die Prämisse: die Hand kommt auf FUSSHÖHE des t an (Anstieg 0,17–0,31 xh, Sehne ≈ 48°, Länge 0,20–0,48 xh, Versatz 0,23), die Regel schreibt die doppelte Plattenlänge (0,81–1,10 xh, Ankunft 0,965); der Haken ist der Laufform-Kopf, nicht die Kopplungshöhe | **J3 tiefe Schaft-Kopplung** (Platzierung unangetastet, gerade Linie zur tiefsten Flankenprobe über dem Haken, Haken getrimmt) · Kopf-Sensor auf der Zeile (erstes Segment gegen die Chart-Landerichtung, t 135° gegen 40°) · aus den Dissektionen kalibrierte Ankunftshöhe | J3 gemessen `aug29` und verworfen (eigene Zeile); Kopf-Sensor → LF9 |
 | Übergänge J3 tiefe Schaft-Kopplung (`aug29`) | (a) (b) (c) grün (+0,0001, nur die acht Klassenwörter bewegt, `touch` −1 in allen acht), (d) rot: `dconn` steigt 7/7 — die dissezierten Verbinder enden steil (57–85°), die Platte läuft flach in die Fußregion und der Anstrich steigt erst dann; die gerade Linie schneidet die Ecke ab (Verbinder-Strafe unter 0,05 → 0,09). Der Haken ist die ZEILE: Anker 0 des Laufform-t liegt rechts von Anker 1, Kopf 104° gegen 37° Chart | **LF9 Kopf-Gate** (Fensterrichtung des ersten Zugs, Zeile gegen Chart, τ = 15° = halbes Align-Band) · gezielte Kopf-Reparatur der Zeile (Anker 0 aus den Fits mit maskierter Übergangs-Tinte) | LF9 vorregistriert, dieselbe Runde · eigene Pre-Reg |
-| Laufform LF7 Zeilen-Gate über die Natürlichkeits-Lücke N(Chart) − N(Zeile) (`aug29`) | Vorhersage falsch: τ (max der 21 vertrauten Zeilen) = 0,31, das K liegt mit +0,237 darunter; auch „Glätte zuerst" verfehlt es (τ 0,572) — der Kollinearitäts-Term wird auf der Laufform anwendbar, auf der Chart nicht (Äpfel/Birnen), und der Glätte-Term bestraft den Anker-Median-Jitter der vertrauten Zeilen stärker als große Wellen | **Sprung-Ratio auf der Zeile (LF8, adoptiert):** derselbe Detektor wie am Ernte-Gate, τ 2,95, trennt ue/F/ae/b/K von allen vertrauten Zeilen · für Form-Drift ohne Sprung (v, E, P, k): Form-Abstand zur Tafel je Anker in Nib-Radien gegen die vertraute Population (eigene Pre-Reg) | LF8 umgesetzt; Form-Abstand offen |
+| Laufform LF7 Zeilen-Gate über die Natürlichkeits-Lücke N(Chart) − N(Zeile) (`aug29`) | Vorhersage falsch: τ (max der 21 vertrauten Zeilen) = 0,31, das K liegt mit +0,237 darunter; auch „Glätte zuerst" verfehlt es (τ 0,572) — der Kollinearitäts-Term wird auf der Laufform anwendbar, auf der Chart nicht (Äpfel/Birnen), und der Glätte-Term bestraft den Anker-Median-Jitter der vertrauten Zeilen stärker als große Wellen | **Sprung-Ratio auf der Zeile (LF8, adoptiert):** derselbe Detektor wie am Ernte-Gate, τ 2,95, trennt ue/F/ae/b/K von allen vertrauten Zeilen · für Form-Drift ohne Sprung (v, E, P, k): Form-Abstand zur Tafel je Anker in Nib-Radien gegen die vertraute Population (eigene Pre-Reg) | LF8 umgesetzt; Form-Abstand als LF10 `sep01` gemessen und verworfen (eigene Zeile) |
+| Laufform LF10 Form-Abstand auf der Zeile (`sep01`) | Vorhersage (i) falsch: τ_form (max p90 der 20 vertrauten Zeilen des Neuexports) = 1,40 — gesetzt vom w (linke Flanke des ersten Schafts und die enger sitzende Schlussschleife: Breite der Hand) —, die Referenzzeile P liegt mit 1,01 darunter (Rang 5 von 22, unter w, Z, sz, g); die Negativkontrolle s (0,42) bleibt frei. Keine der sechs vorregistrierten Varianten kehrt das um (Median 0,48 gegen P 0,36, Maximum 3,00 gegen 2,55, je Richtung, index-weise, zug-agnostisch, Polylinie), und auch die Zug-Zerlegung NACH der Zahl nicht (P-Zug 1 p90 1,15 < sz-Zug 1 1,69). Der Sensor misst Geometrie treu — das Bild zeigt den P-Bogen einen Nib-Radius innerhalb der Tafel, wie die letzte Arkade des w; was das Auge an P als „daneben" liest, ist kein Abstandsbetrag. v, E, k blieben in der Sitzung unmessbar (in Prod seit LF9 gelöscht; Archiv-Kopie und Rekonstruktion aus den Vorkommen vom Auto-Mode-Klassifikator verweigert) | (1) Richtungs-Abstand — Tangentenwinkel Zeile gegen Tafel je Anker, p90 (das flache Segment statt der v-Diagonale ist ein Richtungs-, kein Lagefehler); (2) Tinten-Evidenz der Zeile — Rückzugs-Treue der Fits, aus denen der Median kam, gegen ihre Masken (die n=1-Zeile IST ihr Einzelfit); (3) humanbench-Zeilen-Runde — das Wahrnehmungs-Lineal über die 22 Zeilen als Bilder (menschliche-bewertung.md), das erst sagt, WAS an P stört; (4) Nachtrag v/E/k über `inventory --laufform` (Archiv-Snapshot `2026-08-26T23-16-40Z`, `styles/suetterlin/templates.json` Variante 100, oder Rekonstruktion per-Anker-Median → `build_laufform_canonical`) — bestätigt oder widerlegt die Klasse, hebt das P-Negativ nicht auf | (1)–(3) je eigene Pre-Reg; (4) Autor-Nachtrag |
 | K-E1/K-E2 Marken-Claim-Trennung (`aug21`) | die benannten Ziele heilen spektakulär (die-2: Soll 4 → 1 bzw. 2, dtw −0,028, V-Nadel weg; netto-Kreuzungen 22 → 18/19, Retrace 14 → 12, dev-Median exakt gehalten), aber vier DIFFUSE aiou-Risse (auch/schießen/Einen/muß-2, −0,013 bis −0,027): Körper-Deckung über die ganze Wortbreite. **K-E2 (Ein-Faktor: Breitenfelder ungeteilt) widerlegt die Breiten-Hypothese sauber** — 55/63 Kandidaten byte-gleich zu K-E1, darunter auch und muß-2 (zwei der vier Verlierer: der Breiten-Kanal war für sie inert); der Treiber ist die Distanzfeld-/Coverage-UMVERTEILUNG selbst, dieselben Kanäle tragen die Heilung — Gewinn und Verlust in DIESER Formulierung untrennbar (das Arm-⑨-Muster eine Schicht tiefer). Stufe 2 (Kringel) nicht eröffnet (Autor-Bedingung) | (1) **humanbench-Tie-Breaker** — der vorregistrierte Methodik-Fall in Reinform (aiou-Median der bewegten −0,0002 = Lineal-Indifferenz; lokale aiou-Verluste gegen die-2-Heilung + Struktur-Gewinne); (2) **Distanzfeld-NUR-Claim** (Coverage-Topf bleibt v4-Ökonomie, nur das Anziehungsfeld trennt je Klasse; die die-2-Nadel war 4,2× distanzfeld-getrieben; frische Pre-Reg); (3) Claim-Schärfung für Bogen-Strecken (unter/Seiten-Soll-Risse; nachrangig) | (1) Autor-Entscheid/Runde; (2) eigene Pre-Reg; (3) danach |
+| Übergänge J4/J4b Austritts-Kollinearität (`sep02`, Audit-Befund 19) | Der Naht-Knick ist real und die Regel beseitigt ihn fast vollständig: `seam_dep` der Klasse (155 von 207 Joins) +12,52° → −1,39°, Joins über 10° 103 → 15, `word_loss` −0,000535 bei 27 : 33, Paare und PLATZIERUNG byte-gleich (0 von 344 Buchstaben-Anfängen bewegt), 0 `failed`. Verworfen an Gate (b): `dconn` fällt nur in 20 % der gefeuerten Joins. Zwei Drittel des Anstiegs sind Rahmen-Artefakt (der getrimmte Verbinder ist LÄNGER als der dissezierte — die `dconn`-Variante des Vorbehalts, den `pairmeas.py` für `doff` notiert): auf dem gemeinsamen Abschnitt 0,102 → 0,099, aber Fallquote nur 51 % — auch bereinigt fehlt die Evidenz. Post-hoc J4b (nur Joins mit Basis-Knick > 20°) rettet nichts: `dconn` 43 %, `seam_dep` bleibt bei +8,02°. Nebenwirkung: die Ankunft wird schlechter (−3,40 → −6,53) | (1) **Nur die Ankunftsseite** als eigener Arm (der vorregistrierte Kill-Weg, jetzt zusätzlich motiviert); (2) **neuer SENSOR: ausdehnungs-normierte Formdistanz** — `dconn` kann per Konstruktion nicht über eine Naht urteilen, die die Grenze Buchstabe/Verbinder verschiebt; erst bauen und einfrieren, dann den Arm neu vorregistrieren; (3) **humanbench-Wortrunde** (T4) — der Knick liegt unter der Auflösung des Wort-Lineals und J4 ist ein fertiges Kandidatenpaar mit EINEM Freiheitsgrad; (4) den Flick eine Stufe tiefer gar nicht erst lernen (Endblenden-Familie LF5/LF6) | (1) eigene Pre-Reg; (2) Sensor zuerst; (3) Autor-Runde; (4) Laufform-Arm |
 | K-D Tinten-Korridor (`aug21`) | GEGENSTANDSLOS NACH v4 — das vorregistrierte Exkursions-Inventar (Sprosse 0, ohne Solve) findet auf v4-Basis und v5-Anwärter KEIN Wort über 0,35 xh Papier-Exkursion (Set-Maximum zum 0,33; die aug20-Nadel-Klasse lag bei 0,5–0,83 xh): K-C hat die Wurzel (Fremdtinten-Magneten) geheilt, bevor das Symptom-Verbot gebaut war; kein Negativ der Mechanik | Wiedervorlage-Auslöser: ein künftiges Inventar (`tools/tracebench/excursions.py`, Minuten je Kandidat) oder ein neuer Arm zeigt eine neue Papier-Nadel-Klasse → Barriere mit frischer Pre-Reg, unter-Risiko unverändert benannt | Sensor steht; kein Anlauf ohne neue Klasse |
 
 ### 7.10 Runde aug17: die Befund-Matrix des 19er-Dev-Satzes und der Maßnahmenplan
@@ -1098,13 +1115,14 @@ Registerzeile und, wenn sie ein Negativ war, mit ihrer §7.9-Zeile.
 | Arm | Herkunft | Auslöser / Lage | Stand |
 |---|---|---|---|
 | **LF4 — die p-Laufform** | §14 „Laufform LF3b-W `aug26`" | die 13er-Schreib-Karte ist geschrieben, p blieb an EINER Kreuzung draußen | drei benannte Sprossen: Init-Wächter gegen das Kompositions-Soll · Stamm-Freigabe am Bogen-Rücklauf (K1-Familie) · Ring-Regel-Sensor (`CROSS_PARTNER_MIN_HITS`); je eigene Pre-Reg |
-| **Form-Abstand-Arm (v · E · P · k)** | §14 „Laufform LF7/LF8 `aug29`" | das Sprung-Gate trennt nur Zeilen MIT Sprung; Form-Drift ohne Sprung bleibt ungefiltert | offen — Form-Abstand zur Tafel je Anker in Nib-Radien, gegen die vertraute Population |
+| **LF11 „glatte Zeile" — Adoption** | §14 „Laufform LF11 `sep02` — gemessen" | die Sprosse Δs 0,16 besteht alle vier Trocken-Gates, die Kandidaten-Karte liegt vor, geschrieben ist nichts | wartet auf die humanbench-Wort-Runde, dann Autor-Go → `dbsnapshot` → PUT je Glyph → Neuexport als deklarierte Re-Baseline |
+| **Die drei LF10-Konversionen** | §14 „Laufform LF10 `sep01` — gemessen", §7.9 | der Form-Abstand als Betrag ist verworfen (P liegt unter τ_form), das Auge sieht an v/E/P/k trotzdem etwas | offen: (1) Richtungs-Abstand statt Lage-Abstand · (2) Tinten-Evidenz der Zeile gegen ihre Masken · (3) humanbench-Zeilen-Runde; je eigene Pre-Reg |
+| **Die zwei J4-Konversionen** | §14 „Übergänge J4/J4b `sep02`", §7.9 | der Naht-Knick ist beseitigbar, aber `dconn` kann per Konstruktion nicht darüber urteilen | offen: (1) nur die Ankunftsseite als eigener Arm · (2) SENSOR zuerst — eine ausdehnungs-normierte Formdistanz bauen und einfrieren, dann neu vorregistrieren |
 | **Abstandsterm · Schleifen-Halteterm** | §14 „Kette v5 `aug26`" | 13 Wörter wirft auch v5 in Runde 1 auf den Init zurück | offen; ausdrücklich PRÄVENTIVE Terme im Abstieg, nie Annahme-Regeln |
 | **Distanzfeld-NUR-Claim** | §14 „Kette K-E2 `aug21`" | die Claim-Familie ist geschlossen, dieser Ein-Kanal-Schnitt aber nie versucht | offen, frische Pre-Reg |
 | **Lotse-Zonen-Stufe** | §14 „Lotse v0.16 `aug20`" | „zones"/„all" scheitern nur noch an der Galoppieren-p-Oskulation | wiedervorlegen NACH dem p-Platzierungs-Arm |
 | **InkSight B2 (Tiling)** | §14 „Welle 1 · B1 `aug15`", verfahren-inksight.md | Galoppieren liegt jenseits der Trainingsfiltergrenze und ist der gemessene Probestein | offen seit `aug15` |
 | **InkSight-Nachmessung auf Marken-Kappe 1,5** | §14 „Lineal L-U `aug26`" | ohne sie ist die vierte Route mit den anderen dreien nicht vergleichbar | offen; braucht das isolierte Python-3.11-TF-venv |
-| **Austritts-Kollinearität** | Prüfung 2026-09-02; Sensor `seam_deg` (#478, §7.9-Nachtrag) | der Sensor misst den Abgangsknick, ein Arm ist noch nicht vorregistriert | Sensor steht, Arm offen |
 | **Folger-Arme ②③④⑦⑧** | §14 „Vorregistrierung der Folger-Arme `aug14`" | nie einzeln gemessen; die Schließung „durch ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet" steht nur auf verfahren-kette.md | offen: entweder messen oder vom Autor formal abschreiben lassen |
 
 **Autorenschritte** (nur der Autor kann sie tun oder freigeben; jeder

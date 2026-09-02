@@ -36,13 +36,13 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
-- **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4
+- **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
 - **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
-- **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1
-- **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
+- **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
+- **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
@@ -54,7 +54,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Same-Hand-Disziplin §4 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftkunde (Seite) §7 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Same-Hand-Disziplin §4 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftkunde (Seite) §7 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
@@ -367,6 +367,62 @@ knappste vertraute Zeile darunter.
 Skip-Grund `head_deviation` mit `head_deviation`/`head_max`,
 Inventar-Spalte `head°` → qualitaetsmetrik.md §14 („Laufform LF9")
 
+**Glätte-Sensor** — die Kennzahl, die das Zittern einer Laufform-Zeile
+zum ersten Mal benennt (§14 LF11, `sep02`): wie oft die GERENDERTE
+Mittellinie ihre Krümmung umkehrt, je x-Höhe Bogenlänge. Jeder Zug wird
+auf 0,02-xh-Schritte resampelt (ein Drittel des Nib-Radius), der
+Drehwinkel je Schritt gebildet und jeder Vorzeichenwechsel gezählt, bei
+dem mindestens eine der beiden Drehungen über 3° liegt — das trennt die
+Zacke vom Rundungsrauschen. Federabsätze zählen nie, wie beim
+Sprung-Gate. Der Sensor musste gebaut werden, weil KEIN eingefrorenes
+Lineal die Größe sieht: Wort-Bench und Tintenfolger resampeln den
+Zickzack weg, bevor sie werten — die Zeilen der Root zackten mit 6,9
+gegen 0,2 der Tafel, ohne dass eine Zahl je darauf reagiert hätte.
+Berichtsspalte, kein Gate. *Technisch:* `core/laufform.py`
+(`zigzag_rate`, `smoothness_gap`, `ZIGZAG_STEP_UNITS`,
+`ZIGZAG_TURN_MIN_DEG`), Inventar-Spalte `zig` →
+qualitaetsmetrik.md §14 („Laufform LF11")
+
+**Spline-Basis-Median** — die glatte Zwillingsform des Per-Anker-Medians
+(§14 LF11, `sep02`): statt jeden der 120 Anker einzeln zu medianisieren
+— wobei nichts im Modell Nachbarn koppelt und das Eigenrauschen des
+Schätzers als Zickzack in die geschriebene Zeile durchschlägt — wird
+jedes Vorkommen je Zug per kleinster Quadrate auf eine geklammerte
+kubische B-Spline projiziert, der Median über die KONTROLLPUNKTE
+genommen und an den Ankerparametern der Tafel zurück ausgewertet.
+Gemeinsamer Parameter ist die Bogenlänge der TAFELZEILE (damit alle
+Vorkommen auf dieselbe Basis projizieren), die Ecken des Duktus-Priors
+werden Knoten der Vielfachheit 3 (damit eine Ecke Ecke bleibt), und ein
+Zug ohne Platz für die Basis behält den Per-Anker-Median und sagt es.
+Ein Knopf: der Knotenabstand Δs; gemessen auf {0,08 · 0,16 · 0,32} xh,
+bestanden hat 0,16. *Technisch:*
+`core/aggregate.py::spline_basis_median`, Kandidaten-Karten trocken über
+`tools/laufform/smoothrow.py`; `aggregate_instances` bleibt bis zu einer
+Adoption beim Per-Anker-Median → qualitaetsmetrik.md §14 („Laufform LF11")
+
+**Form-Abstand (Laufform)** — der vierte, GEMESSENE und (Stand
+`sep01`) NICHT adoptierte Sensor der Zeilen-Gate-Familie (§14 LF10):
+wie weit eine Laufform-Zeile die Bahn ihrer Tafelzeile verlässt, je
+Anker in Nib-Radien der Tafel. Beide Zeilen werden mit dem Sample-Plan
+der Tafel gerendert; je Anker der kürzeste Abstand zur gerenderten
+Mittellinie DESSELBEN Zugs der Gegenseite, in beide Richtungen getrennt
+(Zeile→Tafel, Tafel→Zeile — kein symmetrisches Mittel); Gate-Größe das
+schlechtere p90 der beiden Richtungen (`form_p90`), Median und Maximum
+als Empfindlichkeitsprüfungen, dazu der index-weise Abstand
+|Zeile_i − Tafel_i| (er trägt den Längs-Anteil, den LF5/LF6 als Breite
+der Hand bestätigt haben; der Linien-Abstand ist gegen Gleiten entlang
+des Zugs blind, absichtlich). Gebaut für die Form-Drift OHNE Sprung
+(v, E, P, k), die das Sprung-Gate durchlässt. Gemessen `sep01` auf dem
+Neuexport: τ_form = 1,40 (w — die enger sitzende Schlussschleife, Breite
+der Hand), die Referenzzeile P liegt mit 1,01 darunter — der Sensor
+misst Geometrie treu, die Abweichung des P liegt im Band der vertrauten
+Zeilen; was das Auge an P liest, ist kein Abstandsbetrag. Bleibt
+Berichts-Spalte der Bestandsaufnahme, kein Schreibpfad liest sie.
+*Technisch:* `core/laufform.py::form_distance`, Inventar-Spalten
+`form`/`f-med`/`f-max` + τ_form, `--laufform DATEI.json` für
+Kandidaten-Zeilen → qualitaetsmetrik.md §14 („Laufform LF10"),
+tintenfolger.md §7.9
+
 **Zeilen-Gate (Laufform)** — die drei Prüfungen, die eine
 Laufform-Zeile bestehen muss, bevor sie in den Schreibweg kommt (§14
 LF7/LF8/LF9, `aug29`), auf BEIDEN Schreibpfaden (manueller `PUT
@@ -484,7 +540,7 @@ Leitprinzip der Optimierung: **eine Klassenregel hebt viele Paare, ein
 Override repariert eine Stelle.** Die Klassen sind im Code als
 Buchstabenmengen ausbuchstabiert, und diese Konstanten sind die Quelle —
 die Liste hier ist ihr Inhaltsverzeichnis (`core/compose.py`, Stand
-2026-09-01, 14 Mengen):
+2026-09-02: 14 positive Mengen plus eine Ausschlussmenge):
 
 | Klasse | Konstante | gilt für |
 |---|---|---|
@@ -502,9 +558,11 @@ die Liste hier ist ihr Inhaltsverzeichnis (`core/compose.py`, Stand
 | Deckbogen-Eintritt | `COVER_ARCADE_ENTRY_BASES` | n · m · i · r |
 | Schleife in Rundform | `LOOP_ROUND_ENTRY_BASES` | e · a · o |
 | Restart-Klasse | `CAP_RESTART_BASES` | S · O · K · P |
+| Austritts-Trim (opt-in) | `EXIT_TRIM_EXCLUDED_BASES` *(Ausschluss)* | alle Basen AUSSER Schleifen-, Kringel- und Bar-Exit |
 
 Dazu die Klassen ohne eigene Buchstabenmenge, weil ihre Bedingung
-geometrisch ist: Girlande · Gabel-Join · Cusp-Connector.
+geometrisch ist: Girlande · Gabel-Join · Cusp-Connector ·
+Kapital-Übergabe · Arkaden-Diagonale.
 
 **Restart-Klasse** *(`CAP_RESTART_BASES`)* — die Versalien, deren
 Verbinder mit einem vorangestellten **Rückzug** beginnt: die Feder fährt
@@ -550,6 +608,37 @@ setzte über dem Kringel einen zweiten Scheitel, den die Platte nie
 schreibt).
 *Technisch:* `KRINGEL_EXIT_BASES` + `_last_ink_crossing` in
 `core/compose.py`.
+
+**Austritts-Trim** *(`exit_trim`)* — die A-seitige Spiegelregel zum
+`entry_trim`: der Sägezahn-Austritt von e/n/m/u/i behält in der Chartzelle
+einen **Abschluss-Flick** (die letzten 0,05 xh drehen beim `e` von 45° auf
+9° ab, beim `i` sogar nach unten), während der Composer seine
+Austrittsrichtung über 0,12 xh liest und den Verbinder daran ausrichtet —
+die Tinte am Saum läuft dadurch 13–42° flacher als der abgehende Strich
+(Audit-Befund 19 vom 2026-09-02, sichtbar am **Naht-Winkel**). Die Regel
+schneidet den Stummel von der Spitze her bis zu der Stelle zurück, an der
+die Gerade zum **unveränderten** Kopplungspunkt die eigene Laufrichtung
+des Stummels fortsetzt, und zeichnet den Übergang als eben diese Gerade —
+Mittellinie UND Silhouette, Boden der Suche ist die **Fußwende**
+(das letzte lokale y-Minimum des Zuges; der Buchstabenkörper wird nie
+angeschnitten). Anders als Schleifen-, Kringel- und Balken-Exit greift sie
+NACH der Platzierung, damit die Spationierung als experimentelle Kontrolle
+unberührt bleibt. **Status: opt-in, Standard aus, nicht adoptiert** —
+`seam_dep` der Klasse geht von +12,52° auf −1,39° und das Wort-Lineal ist
+leicht dafür, aber `dconn` gegen die dissezierten Hand-Verbindungen fällt
+nur in 20 % (artefaktbereinigt 51 %) der Joins; Gate (b) rot
+(qualitaetsmetrik.md §14 „Übergänge J4/J4b").
+*Technisch:* `EXIT_TRIM_WINDOW`, `EXIT_TRIM_TOL_DEG`,
+`EXIT_TRIM_MIN_KINK_DEG`, `_exit_trim_index`, `_cut_exit_stub` in
+`core/compose.py`; Bench-Schalter `--exit-trim`.
+
+**Fußwende** — das letzte lokale y-Minimum eines Zuges: die Stelle, an der
+die Feder ihren Abstrich beendet und in den Austritts-Stummel hochdreht.
+Strukturelle Untergrenze des **Austritts-Trims** — weiter zurück wird nie
+geschnitten, sonst verlöre der Buchstabe seinen Körper statt seiner
+Tafelform.
+*Technisch:* `_foot_turn_index` in `core/compose.py` (nicht zu verwechseln
+mit `_loop_return_foot`, dem Schleifenfuß des Schleifen-Exits).
 
 **Bowl-Exit-Tuck** — die klassenbewusste Clearance nach einem
 geschlossenen Rundkörper-Ausgang (b/c/d/o): die Hand rückt den
@@ -1237,8 +1326,11 @@ sichtbar bewegt. Ein Absturz zählt als 1,0. → qualitaetsmetrik.md §1
 
 **`pair_loss`** — dieselbe Kopfzahl für das getrennte Set der isolierten
 Buchstabenpaare (Abb. 20). Wörter und Paare bekommen eigene Headlines und
-werden **nie** gemittelt. Aktueller Stand: Wörter 0,116886 · Paare
-0,164506 (Lauf `aug02`).
+werden **nie** gemittelt. Der aktuelle Stand steht bewusst **nicht hier**:
+eine Zahl in zwei Docs veraltet in einem davon (dieser Satz nannte bis
+2026-09-02 noch den Lauf `aug02`). Er wohnt im Status-Blockquote von
+qualitaetsmetrik.md, seine Historie samt Fixture-Wurzeln im
+Headline-Ledger am Kopf von §14. → qualitaetsmetrik.md §6/§14
 
 **Chamfer-Distanz** — ein Standardmaß für „wie weit sind zwei Formen
 auseinander“: für jeden Punkt der einen Form der Abstand zum nächsten

@@ -61,17 +61,29 @@ class Settings(BaseSettings):
         return self.environment == "production"
 
     # ------------------------------------------------------------------ Rate limit
-    # The compose path `/write/word*` is the one public read whose cost is set
-    # by the CALLER's input: a unique text misses every cache and, at the
-    # 160-character maximum, costs ~0.8 s of CPU and ~1.6 MB of egress. The
-    # in-process token bucket (api/rate_limit.py) bounds what one client can
-    # pull out of one container; `/write/glyphs` and the single reads are
-    # bounded by the authored inventory and stay exempt. 60/min sustained with
-    # a burst of 20 sits far above any human page (the Schreibtafel composes
-    # one word per interaction) and far below a scripted harvest.
-    # `WRITE_RATE_LIMIT_PER_MIN=0` disables the limiter.
+    # Two token buckets per client, both in `api/rate_limit.py`, narrow first.
+    #
+    # NARROW — the compose path `/write/word*`, the one public read whose cost
+    # is set by the CALLER's input: a unique text misses every cache and, at the
+    # 160-character maximum, costs ~0.8 s of CPU and ~1.6 MB of egress. 60/min
+    # sustained with a burst of 20 sits far above any human page (the
+    # Schreibtafel composes one word per interaction) and far below a scripted
+    # harvest.
     write_rate_limit_per_min: int = 60
     write_rate_limit_burst: int = 20
+
+    # WIDE — every other route, GET and HEAD included (owner decision
+    # 2026-09-02: block extreme use so no one can run up the bill or take the
+    # service down with sheer request volume). A PROPOSAL, not a measurement:
+    # 600/min with a burst of 120 is an order of magnitude above what browsing
+    # the site produces — a Tafel page load is a handful of batched requests, a
+    # quiz round one — and well under what walking the API in a loop needs.
+    # It counts at the ORIGIN, so edge-cached reads never reach it and only
+    # cache misses spend a token; `/health` and the prerendered `/seo-proxy`
+    # pages are exempt (rate_limit.py says why). Either
+    # `*_RATE_LIMIT_PER_MIN=0` disables that bucket.
+    public_rate_limit_per_min: int = 600
+    public_rate_limit_burst: int = 120
 
     # ------------------------------------------------------------------ CORS
     # Explicit env override wins; otherwise the effective regex is picked per
