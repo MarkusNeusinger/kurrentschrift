@@ -1,4 +1,4 @@
-"""Inventory of the stored Laufform rows against their chart forms (LF7–LF10) —
+"""Inventory of the stored Laufform rows against their chart forms (LF7–LF11) —
 the stock-taking pass (Bestandsaufnahme) of qualitaetsmetrik.md §14.
 
 Measurement layer only (docs/reference/werkzeuge.md): reads `templates.json`
@@ -9,16 +9,20 @@ measured on the row over the chart's stroke starts; LF8) — beside the report
 columns of LF7 (the geometry-only naturalness of chart and row and their gap Δ)
 and the row's evidence count, the HEAD GATE quantity of LF9 — the row's head
 deviation (`core.laufform.head_deviation`: how far the first stroke's landing
-direction turns away from the chart's, in degrees) — and the FORM DISTANCE of
+direction turns away from the chart's, in degrees) — the FORM DISTANCE of
 LF10 (`core.laufform.form_distance`: per anchor the distance to the other
 side's rendered centerline of the same stroke, in chart nib radii, both
 directions; the column `form` is the worse directional p90, `f-med` the worse
-median). The pre-registered gate rules are applied on top: τ = the largest
-spike ratio among the rows with n ≥ LAUFFORM_MIN_OCCURRENCES, rounded up to
-0.01, the doctrine-derived head gate LAUFFORM_HEAD_DEVIATION_MAX, and τ_form =
-the largest form p90 among the same trusted rows, rounded up to 0.01 (LF10 —
-measured, not adopted: no write path reads it); every row over any of them is
-listed — those are the rows the author decides about.
+median) — and the SMOOTHNESS SENSOR of LF11 (`core.laufform.zigzag_rate`: how
+often the rendered row reverses its curvature per x-height, in the column `zig`
+beside its own chart row's rate; report-only, and the one column that names the
+wobble no frozen ruler sees). The pre-registered gate rules are applied on top:
+τ = the largest spike ratio among the rows with n ≥ LAUFFORM_MIN_OCCURRENCES,
+rounded up to 0.01, the doctrine-derived head gate
+LAUFFORM_HEAD_DEVIATION_MAX, and τ_form = the largest form p90 among the same
+trusted rows, rounded up to 0.01 (LF10 — measured, not adopted: no write path
+reads it); every row over any of them is listed — those are the rows the author
+decides about.
 
     uv run python -m tools.laufform.inventory [--root DIR] [--json out.json]
     uv run --extra viz python -m tools.laufform.inventory --png inventory.png [--only K,t,E]
@@ -52,6 +56,7 @@ from core.laufform import (
     form_distance,
     head_deviation,
     naturalness_gap,
+    smoothness_gap,
 )
 
 
@@ -102,6 +107,7 @@ def _form_columns(chart: dict, anchors: list) -> dict:
 def _row_record(key: str, chart: dict, anchors: list, n: int, *, candidate: bool) -> dict:
     starts = (chart.get("trace_meta") or {}).get("stroke_starts")
     g = naturalness_gap(_chart_view(chart), anchors)
+    zig = smoothness_gap(_chart_view(chart), anchors)
     comp_gap = {
         k: round(g["candidate"]["components"][k] - g["chart"]["components"][k], 4) for k in g["chart"]["components"]
     }
@@ -112,6 +118,9 @@ def _row_record(key: str, chart: dict, anchors: list, n: int, *, candidate: bool
         "spike_ratio": round(anchor_spike_ratio(anchors, starts), 4),
         "chart_spike_ratio": round(anchor_spike_ratio(chart["anchors"], starts), 4),
         "head_deviation": round(head_deviation(_chart_view(chart), anchors), 2),
+        "zigzag_rate": zig["candidate"],
+        "chart_zigzag_rate": zig["chart"],
+        "zigzag_gap": zig["gap"],
         "gap": g["gap"],
         "chart_naturalness": g["chart"]["naturalness"],
         "row_naturalness": g["candidate"]["naturalness"],
@@ -179,7 +188,7 @@ def print_table(rows: list[dict], taus: dict) -> None:
     head_max = LAUFFORM_HEAD_DEVIATION_MAX
     print(
         f"{'key':7s} {'n':>3s} {'spike':>6s} {'chart':>6s} {'head°':>6s} {'form':>6s} {'f-med':>6s} {'f-max':>6s} "
-        f"dir   {'Δ nat':>7s}  smooth  vert   corner cross   gates"
+        f"dir   {'zig':>6s} {'z-chart':>7s}   {'Δ nat':>7s}  smooth  vert   corner cross   gates"
     )
     for r in rows:
         cg = r["component_gap"]
@@ -191,6 +200,7 @@ def print_table(rows: list[dict], taus: dict) -> None:
         print(
             f"{key:7s} {r['n_occurrences']:3d} {r['spike_ratio']:6.2f} {r['chart_spike_ratio']:6.2f} "
             f"{r['head_deviation']:6.1f} {f['p90']:6.2f} {f['median']:6.2f} {f['max']:6.2f} {direction}   "
+            f"{r['zigzag_rate']:6.2f} {r['chart_zigzag_rate']:7.2f}   "
             f"{r['gap']:+7.4f}  {cg['smoothness']:+.3f} {cg['verticality']:+.3f} "
             f"{cg['corner']:+.3f} {cg['collinearity']:+.3f}{flag}"
         )

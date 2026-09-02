@@ -59,12 +59,38 @@ KEY`, `--full-blend`); `--window 0` kopiert die gespeicherten Zeilen
 wörtlich, sodass eine reine Chart-Rückfall-Karte (K0-Arm) nichts anderes
 bewegt.
 
+**`tools/laufform/smoothrow.py`** — baut die Kandidaten-Karten des Arms
+LF11 „glatte Zeile" (§14 `sep02`) aus den VORKOMMEN eines Harvests
+(`--occurrences`, die `--occ-out`-Datei) plus den Tafelzeilen einer Root:
+je Zug eine Projektion auf eine kubische B-Spline mit Knoten alle `--knots`
+x-Höhen, Median über die Kontrollpunkte, zurück auf die Tafelanker
+(`core.aggregate.spline_basis_median`). `--knots 0` ist der KONTROLL-Arm —
+dieselben Vorkommen durch den heutigen Per-Anker-Median, damit die Glättung
+von der Ableitungsdrift eines frischen Harvests unterscheidbar bleibt.
+Ausgabe sind volle Fixture-Zeilen, die `wordbench.run --laufform`,
+`wordlab --laufform` und `humanbench.wordarm --laufform` wörtlich nehmen;
+je Zeile werden Glätte-Sensor, Sprung- und Kopf-Gate und die
+Kopf-/Schwanz-Bewegung berichtet. Standardmäßig nennt die Karte genau die
+Schlüssel, für die die Root schon eine Zeile hat (`--keys stored`) — eine
+Karte mit zusätzlichen Zeilen komponierte einen anderen Buchstabensatz als
+die Basis, gegen die sie gemessen wird. Kein DB-Write.
+
+```bash
+uv run python -m tools.laufform.harvest --path chain --sets words --min-n 1 \
+    --jobs 4 --occ-out temp/lf11/occ.json
+uv run python -m tools.laufform.smoothrow --occurrences temp/lf11/occ.json \
+    --knots 0.16 --out temp/lf11/cand.json
+```
+
 **`tools/laufform/inventory.py`** — die Bestandsaufnahme der gespeicherten
 Laufform-Zeilen gegen ihre Tafelformen (§14 LF7/LF8/LF9/LF10): je Zeile n, die
 Sprung-Ratio (`core.laufform.anchor_spike_ratio` auf der ZEILE — das
 Sprung-Gate) und die Kopf-Abweichung `head°` (`core.laufform.head_deviation`,
 die Landerichtung des ersten Zugs gegen die Tafel — das Kopf-Gate) neben der
-Natürlichkeits-Lücke als Berichts-Spalte, dazu das datengetriebene τ der
+Natürlichkeits-Lücke und dem Glätte-Sensor `zig`
+(`core.laufform.zigzag_rate`, Krümmungs-Umkehrungen je x-Höhe, neben der
+Rate der eigenen Tafelzeile; §14 LF11) als Berichts-Spalten, dazu das
+datengetriebene τ der
 Sprung-Ratio (Maximum der Zeilen mit n ≥ 3, aufgerundet), das
 Doktrin-τ des Kopf-Gates (15°) und die Zeilen über dem einen wie dem
 anderen (Spalte `gates`). Seit LF10 dazu der Form-Abstand
