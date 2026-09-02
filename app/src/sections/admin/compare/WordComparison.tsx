@@ -223,7 +223,12 @@ function WordCard({
         )}
         <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
           {onPick && (
-            <Button size="small" variant="text" onClick={onPick}>
+            <Button
+              size="small"
+              variant="text"
+              onClick={onPick}
+              aria-label={fmt(de.admin.compare.openWordFor, { word: sample.word })}
+            >
               {de.admin.compare.openWord}
             </Button>
           )}

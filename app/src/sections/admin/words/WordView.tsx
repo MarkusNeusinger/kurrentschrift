@@ -233,6 +233,7 @@ export function WordView() {
     <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
       <ViewHeader
         eyebrow={de.admin.shell.areaWords}
+        titleText={fmt(t.wordHeading, { text })}
         title={<Typography sx={{ fontFamily: garamond, fontSize: 28, lineHeight: 1.2 }}>{text}</Typography>}
         chips={
           <>

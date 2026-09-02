@@ -92,6 +92,9 @@ def check_transition(stored: Mapping[str, Any], changes: Mapping[str, Any]) -> s
     3. Closing needs a STORED `understanding` — the ack has to have happened in
        its own step — plus the diagnosed stage and the outcome. A 'note' item
        has no writing-path stage to name, so it closes on the outcome alone.
+    4. Every demanded field is read from THIS patch, never from the row. After a
+       rejection the row keeps its old protocol fields, and a transition that
+       could lean on them would wave through the round the rejection asked for.
 
     The way back to 'open' (the admin rejecting a restatement) is always
     allowed: rejecting must never be harder than filing.
@@ -114,7 +117,15 @@ def check_transition(stored: Mapping[str, Any], changes: Mapping[str, Any]) -> s
             f"`reproduced` first, then close it ({_DOC})"
         )
 
-    missing = [f for f in required if _blank(changes.get(f, stored.get(f)))]
+    # Read the required fields from `changes` ALONE — never falling back to what
+    # is already stored. The Korb rejects a restatement by putting the row back
+    # to 'open' while deliberately leaving `understanding`/`stage`/`resolution`
+    # in place, so a `stored` fallback let a bare {"status": "done"} re-enact the
+    # very restatement the author had just rejected — the second round was the
+    # one round with no gate at all. There is no other way in for these fields
+    # either: `_PROTOCOL_FIELDS` above bars a status-less PATCH from writing
+    # them, so demanding them here is what makes them re-sendable at all.
+    missing = [f for f in required if _blank(changes.get(f))]
     if not missing:
         return None
     listed = ", ".join(missing)
