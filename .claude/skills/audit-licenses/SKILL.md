@@ -37,15 +37,20 @@ git ls-files -z | xargs -0 -I{} du -k "{}" 2>/dev/null | sort -rn | head -20
 images smuggled inside SVGs:
 
 ```bash
-git grep -nlI ';base64,' -- . ':!tools/fitview/build.py' ':!tools/humanbench/page.py' ':!.claude/skills/audit-licenses/SKILL.md' || echo "OK: no new data-URI embeddings"
+git grep -nIE ';base64,[A-Za-z0-9+/]{200,}' -- . ':!.claude/skills/audit-licenses/SKILL.md' || echo "OK: no embedded data-URI payload"
 git grep -nE '<image|data:image' -- '*.svg' || echo "OK: no raster payload in tracked SVGs"
 ```
 
-(The excluded files: the two tools GENERATE data-URIs into the
-self-contained HTML pages they write under `temp/` — code constructing
-the string, not an embedded payload — and this skill file quotes the
-pattern itself. The former exclude
-`docs/reference/kurrentschrift-landing.html` was deleted in #209.)
+**Match the payload class, not a file list.** A bare `;base64,` grep hits
+every generator in the repo — the tools and tests that BUILD a data-URI at
+runtime (`"data:image/png;base64," + b64encode(...)`) — and the exclusion
+list to suppress them has to grow with each new generator. It had fallen
+five files behind by 2026-09-02, so the OK branch could never fire and each
+run ended in hits a human re-judged by hand. The length bound is the honest
+discriminator instead: a real embedded payload carries hundreds of literal
+base64 characters right after the marker, while a generator has an
+identifier or a quote there. Verified 2026-09-02 — zero hits repo-wide,
+and it still catches a synthetic 400-character embedding.
 
 **History** — publishing exposes every blob ever committed, not just
 HEAD. First command: binaries that existed but are gone from HEAD
@@ -56,6 +61,31 @@ names:
 comm -23 <(git rev-list --objects --all | awk '{print $2}' | grep -iE '\.(png|jpe?g|woff2?|ttf|otf|eot|pdf|gif|webp|zip|tar|t?gz|bz2|xz)$' | sort -u) <(git ls-files | sort)
 git log --diff-filter=D --name-only --pretty=format: | sort -u
 ```
+
+**Those two nets only see BINARY extensions and deleted paths — the
+reserved dataset leaks as text.** The learned data travels as JSON or
+TypeScript, so a third net searches history by CONTENT for the payload keys
+that only a template dump carries:
+
+```bash
+for pat in skeleton_polyline_px pixel_anchors half_widths_px anchors_template outline_paths; do
+  echo "== $pat"; git log --all -S"$pat" --diff-filter=A --name-only --pretty=format:'%h %ad %s' --date=short
+done
+```
+
+**The rule: a hit under `core/`, `api/`, `app/`, `tools/`, `tests/`,
+`docs/`, `alembic/` or `.claude/` is code, a test or prose about the
+format — anything else is a finding**, because nothing outside those trees
+has a reason to carry a rendered template.
+
+Known and already decided, so not a fresh finding:
+`.design-sync/previews/_writtenGlyphData.ts` (added 2026-06-20 in 84c6332 /
+PR #108, 32219 bytes, the diagnostic payloads of two templates; removed
+from HEAD 2026-07-31 by PR #254 but NOT from history, and the repo has been
+public since 2026-05-19). The binary-extension net above cannot see a
+`.ts` file, which is why it went unreported for two months. How the blob
+itself is handled — purge versus documented acceptance — is the author's
+call; this net exists so the next one is caught the day it lands.
 
 **Bundled fonts vs. notices** — since 2026-08-27 the Garamond/Playfair
 subsets are self-hosted as TRACKED verbatim copies in `app/public/fonts/`
@@ -80,7 +110,8 @@ git ls-files | grep -i -E 'suess|süß|suss' || echo "OK: no such file"
 Origin/Direct permalink; attribution may live in per-file lines):
 
 ```bash
-for d in data/sources/*/; do
+for d in data/sources/*/ data/corpora/*/ data/samples/*/ data/humanbench/ data/variants/*/; do
+  [ -d "$d" ] || continue
   s="${d}SOURCE.md"
   if [ ! -f "$s" ]; then echo "MISSING: $s"; continue; fi
   ok=1
@@ -91,6 +122,39 @@ for d in data/sources/*/; do
 done
 ```
 
+**Every recorded SHA256 still matches its bytes** — the only net that
+catches a source image quietly swapped for a different one:
+
+```bash
+for s in data/sources/*/SOURCE.md; do
+  d=$(dirname "$s")
+  grep -E '^- SHA256:' "$s" | grep -oE '[0-9a-f]{64}' | while read h; do
+    found=""
+    for f in $(find "$d" app/src/assets/specimens -type f ! -name '*.md' 2>/dev/null); do
+      [ "$(sha256sum "$f" | cut -d' ' -f1)" = "$h" ] && found="$f"
+    done
+    [ -n "$found" ] && echo "OK hash: $found" || echo "UNMATCHED hash in $s: ${h:0:16}…"
+  done
+done
+```
+
+Anchor on `^- SHA256:` specifically: a `Source-SHA256:` line records the
+hash of the UPSTREAM original (the DNB page scan behind Abb. 22), which by
+design has no counterpart in the repo and would otherwise report as
+unmatched forever. Where a source ships a `SHA256SUMS` file — the 22
+Leitfaden pages — `sha256sum -c SHA256SUMS` inside that directory is the
+equivalent check. All 12 recorded hashes verified on 2026-09-02.
+
+**Sweep every `data/` subtree, not just `data/sources/`.** Both this loop
+and the index loop below used to run over `data/sources/*/` alone, so
+`corpora/`, `samples/` and `humanbench/` were never checked — that blind
+spot is exactly how the one source with real copyleft obligations
+(`igerman98`, GPL 2/3) stayed out of the index unnoticed. Note the two
+field sets when judging a hit: third-party sources additionally owe
+Origin/Direct/SHA256/Processing per file, while own collections
+(`own-hand`, `humanbench`) legitimately have no external file and no
+SHA256 — a naive hash requirement produces false MISSING lines there.
+
 **Every tracked data file is metadata or covered by a SOURCE.md, and
 every source is indexed in DATA_PROVENANCE.md:**
 
@@ -99,8 +163,27 @@ git ls-files data/ | grep -v -E '(SOURCE\.md|README\.md|DATA_PROVENANCE\.md|fetc
   d=$(dirname "$f")
   if [ -f "$d/SOURCE.md" ]; then echo "covered by SOURCE.md: $f"; else echo "UNCOVERED: $f"; fi
 done
-for d in data/sources/*/; do id=$(basename "$d"); grep -q "$id" data/DATA_PROVENANCE.md && echo "OK in index: $id" || echo "MISSING from index: $id"; done
+for d in data/sources/*/ data/corpora/*/ data/samples/*/ data/humanbench/ data/variants/*/; do
+  [ -d "$d" ] || continue; id=$(basename "$d")
+  grep -q "$id" data/DATA_PROVENANCE.md && echo "OK in index: $id" || echo "MISSING from index: $id"
+done
 ```
+
+**Derived images shipped from the app tree need provenance too.** The
+loops above only walk `data/`, so a PD excerpt cropped into
+`app/src/assets/` is invisible to them although it is publicly served:
+
+```bash
+for f in app/src/assets/specimens/*; do
+  b=$(basename "$f")
+  grep -rqF "$b" data/sources/*/SOURCE.md 2>/dev/null && echo "OK provenance: $b" || echo "NO PROVENANCE: $b"
+done
+```
+
+Every file there must be named in some `data/sources/*/SOURCE.md`, with its
+derivation (which region of which original, scaling, quality), its
+dimensions and its SHA256 — `datenablage.md` §2 requires both for any
+altered original.
 
 ## 2 · Judging the hits
 
@@ -149,7 +232,20 @@ sweep additionally finds 18 tracked font binaries under
 license condition, verified by `npm run fonts:sync`) plus the two show
 fonts moved there from `app/src/assets/fonts/`
 (`gl-germancursive.woff2`, `suetterlin-hjz-1911.ttf`) — all covered by
-the notices. All other checks print only OK lines.
+the notices.
+
+**Re-verified 2026-09-02** (full battery, read-only): 7 sources under
+`data/sources/` each with a complete SOURCE.md, every SHA256 recorded there
+matching its bytes, `sha256sum -c SHA256SUMS` green for the 22 Leitfaden
+pages, gitignore boundaries holding for own-hand/corpora/bench fixtures, no
+raster payload in a tracked SVG, the Süß check empty, and 18 font binaries
+all covered by the notices. Two nets were rebuilt in the same pass and are
+the reason this section is dated twice: the base64 net now matches the
+payload class instead of an exclusion list (it had fallen five files
+behind), and the history sweep gained the content pickaxe that finally
+names `.design-sync/previews/_writtenGlyphData.ts`. That blob and the
+`igerman98` index gap are the two open items — everything else prints only
+OK lines.
 
 ## Gotchas
 

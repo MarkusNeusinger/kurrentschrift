@@ -53,7 +53,10 @@ describe('seo coverage', () => {
     for (const t of titles) expect(t.length, t).toBeGreaterThanOrEqual(10);
     for (const t of titles) expect(t.length, t).toBeLessThanOrEqual(80);
     for (const d of descriptions) expect(d.length, d).toBeGreaterThanOrEqual(40);
-    for (const d of descriptions) expect(d.length, d).toBeLessThanOrEqual(200);
+    // 155, not 200: Google truncates a longer description mid-sentence, and
+    // the clause that is lost is usually the one carrying the promise — five
+    // descriptions had drifted to 190 under the old gate (audit 2026-09-02).
+    for (const d of descriptions) expect(d.length, d).toBeLessThanOrEqual(155);
   });
 
   it('sitemap lists exactly the public routes', () => {

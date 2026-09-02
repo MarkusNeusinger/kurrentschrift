@@ -13,8 +13,12 @@ export const hub = {
     title: 'Lesen',
     heading: 'Alte deutsche Schrift lesen lernen',
     lead: 'Alte deutsche Handschrift entziffern — Schritt für Schritt. Vom einzelnen Buchstaben bis zum ganzen Wort.',
+    // The quiz explains a MISS only for the documented look-alike pairs
+    // (sections/quiz/lesefallen.ts: „no explanation is better than an invented
+    // one") and never for whole words — so the promise here names the pairs
+    // instead of claiming every Fehlgriff (website audit 2026-09-02).
     about:
-      'Kurrent und Sütterlin — die deutsche Schreibschrift, die bis 1941 in der Schule gelehrt wurde — liest heute kaum noch jemand: Die Buchstaben haben andere Formen, und f, ſ, n, u und e sehen einander zum Verwechseln ähnlich. Wer alte Briefe, Postkarten, Kirchenbücher oder Tagebücher entziffern will, übt hier vom einzelnen Buchstaben bis zum ganzen Wort: Das Quiz fragt ab und erklärt jeden Fehlgriff, die Schreibtafel zeigt jede Vorlage Buchstabe für Buchstabe. Was Kurrent, Sütterlin und Offenbacher unterscheidet, erklärt die Schriftkunde.',
+      'Wer heute einen Brief der Urgroßmutter, ein Kirchenbuch oder eine Feldpostkarte aufschlägt, steht meist vor der deutschen Kurrentschrift — und ihrer späten Schulform, der Sütterlin, die bis 1941 in der Schule gelehrt wurde. Die Buchstaben sind dieselben wie heute, nur ihre Gestalt ist eine andere: Das e sieht aus wie ein n, das u trägt zur Unterscheidung einen Bogen, und das lange ſ wird gern für ein f gehalten. Gelesen lernt man sie so, wie sie damals geschrieben wurde — Buchstabe für Buchstabe und dann im ganzen Wort. Drei Hilfen stehen dafür bereit: das Lese-Quiz, das abfragt und dir bei den klassischen Verwechslern das Merkmal nennt, an dem du die Form das nächste Mal erkennst; die Schreibtafel, die jede Vorlage Buchstabe für Buchstabe zeigt; und die Lesart-Prüfung für das eine Wort, das sich nicht entziffern lassen will. Worin sich Kurrent, Sütterlin und Offenbacher unterscheiden, erklärt die Schriftkunde.',
     cards: {
       quiz: {
         title: 'Lese-Quiz',
@@ -41,7 +45,7 @@ export const hub = {
     heading: 'Kurrent und Sütterlin selbst schreiben',
     lead: 'Selbst zur Feder greifen. Übe die Züge auf dem ausgedruckten Übungsblatt — oder sieh der Feder beim Schreiben zu.',
     about:
-      'Die deutsche Schreibschrift lernt man wie damals: auf der Lineatur, Zug um Zug. Das Übungsblatt druckt die Lineatur der gewählten Ausgangsschrift als PDF — Kurrent (2 : 1 : 2, geneigt), Sütterlin (1 : 1 : 1, aufrecht) oder Offenbacher — mit Schräglinien und Federwinkel nach Wahl, auf Wunsch mit deinem Text als Vorschrift in den Zeilen. Die Federprobe schreibt jeden getippten Text in Sütterlin vor, mit allen Übergängen zwischen den Buchstaben: zum Abschauen, bevor die eigene Feder ansetzt.',
+      'Schreiben ist der kürzeste Weg zum Lesen: Wer einmal selbst gespürt hat, wie das lange ſ oben spitz zuläuft und das f seine Schleife bekommt, verwechselt die beiden nicht mehr. Deshalb lohnt der Griff zur Feder auch für alle, die eigentlich nur entziffern wollen. Viel braucht es nicht — ein Blatt mit Lineatur, eine Vorschrift und Geduld. Das Übungsblatt druckt die Lineatur der gewählten Ausgangsschrift als PDF auf DIN A4 — Kurrent (2 : 1 : 2, geneigt), Sütterlin (1 : 1 : 1, aufrecht) oder Offenbacher — mit Schräglinien und Federwinkel nach Wahl, auf Wunsch mit deinem Text als Vorschrift in den Zeilen. Die Federprobe zeigt vorher, wie jeder Zug gesetzt wird und wo ein Buchstabe in den nächsten übergeht. Eine gewöhnliche Füllfeder genügt: Die Sütterlin ist eine Gleichzugschrift und verlangt keinen Druckwechsel.',
     cards: {
       worksheet: {
         title: 'Übungsblatt',

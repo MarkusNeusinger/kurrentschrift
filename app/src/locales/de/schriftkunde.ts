@@ -121,7 +121,7 @@ export const schriftkunde = {
       // never take a pen-edge angle for a slant.
       facts: [
         { k: 'Schräglage', v: '~45–75° zur Grundlinie (90° = senkrecht); um 1900: 60–70°' },
-        { k: 'Lineatur', v: '2:1:2 (große Ober-/Unterlängen)' },
+        { k: 'Lineatur', v: '2 : 1 : 2 (große Ober-/Unterlängen)' },
         { k: 'Feder', v: 'ab dem 19. Jh. Spitzfeder' },
         { k: 'Strich', v: 'Schwellzug (druckabhängig)' },
       ],
@@ -147,7 +147,7 @@ export const schriftkunde = {
         'Ludwig Sütterlins bewusst aufrechte, vereinfachte Ausgangsschrift für den Schreibunterricht. Heute heißt umgangssprachlich fast jede Kurrent „Sütterlin“ — gemeint ist aber nur diese eine, späte Variante.',
       facts: [
         { k: 'Schriftlage', v: 'senkrecht (90° zur Grundlinie)' },
-        { k: 'Lineatur', v: '1:1:1' },
+        { k: 'Lineatur', v: '1 : 1 : 1' },
         { k: 'Feder', v: 'Gleichzugfeder (Kugelspitz-/Redisfeder)' },
         { k: 'Strich', v: 'Gleichzug (kein Druckwechsel)' },
       ],
@@ -167,7 +167,7 @@ export const schriftkunde = {
         'Ein künstlerischer Gegenentwurf zur pädagogisch gedachten Sütterlin. Als allgemeine Schulschrift setzte sie sich nicht durch.',
       facts: [
         { k: 'Schräglage', v: '75–80° zur Grundlinie (90° = senkrecht)' },
-        { k: 'Lineatur', v: '2:3:2 (auch 3:4:3), mittenbetont' },
+        { k: 'Lineatur', v: '2 : 3 : 2 (auch 3 : 4 : 3), mittenbetont' },
         { k: 'Feder', v: 'Band-/Breitfeder, Federkante 15–20° zur Schreiblinie (der Federwinkel — nicht die Schräglage)' },
         { k: 'Strich', v: 'richtungsabhängiger Bandzug' },
       ],
@@ -186,7 +186,7 @@ export const schriftkunde = {
   // Specimen captions, keyed by variant id (rendered next to the visual).
   specimen: {
     kurrentCaption: 'Schauschrift-Font (GL-GermanCursive)',
-    suetterlinCaption: 'live geschrieben aus der gemeinfreien Vorlage von 1922 — die Synthese-Engine des Projekts',
+    suetterlinCaption: 'live geschrieben aus der gemeinfreien Sütterlin-Ausgangsschrift von 1922 — die Synthese-Engine des Projekts',
     // Shown when the engine can't render (cold/unreachable API) and the card
     // falls back to the bundled Sütterlin font — kept truthful about what's on
     // screen. That font maps the long ſ onto the plain 's' key (round End-s is on
@@ -253,8 +253,14 @@ export const schriftkunde = {
   // --- Why we no longer write this way ("Warum wir heute nicht mehr so schreiben")
   endHeading: 'Warum wir heute nicht mehr so schreiben',
   endParagraphs: [
-    'Die Kurrent und die Sütterlin verschwanden nicht allmählich, sondern fast auf einen Schlag: Ein Erlass vom Januar 1941 beendete die gebrochenen Druckschriften, ein Rundschreiben vom 1. September 1941 untersagte, die Kurrent in der Schule zu lehren. Ab dem Schuljahr 1941/42 lernten alle Kinder nur noch die lateinische „Deutsche Normalschrift“.',
-    'Begründet wurde das Verbot mit der Behauptung, die gebrochenen Schriften seien „Schwabacher Judenlettern“ — eine erfundene, sachlich falsche Propaganda. Als sachlichen Grund nannte der Chef der Reichskanzlei bei der Weiterleitung des Erlasses dagegen, dass Ausländer die eckige deutsche Schrift meist nicht lesen könnten.',
+    // Two distinct acts, routinely mixed up (docs/schriftkunde/allgemein.md,
+    // Chronologie 1941): the Normalschrifterlass of 3 January 1941 was a
+    // CIRCULAR from a party office and ended the broken PRINT types; the
+    // school ban on Kurrent came as a DECREE of the education ministry to
+    // 1 September. The page claims every statement is sourced — so it names
+    // which was which, and the timeline entry below says the same.
+    'Die Kurrent und die Sütterlin verschwanden nicht allmählich, sondern fast auf einen Schlag: Ein Rundschreiben Martin Bormanns vom 3. Januar 1941 — der sogenannte Normalschrifterlass, obwohl er von einer Parteidienststelle kam und nicht aus der Reichskanzlei — beendete die gebrochenen Druckschriften; ein Erlass des Reichserziehungsministeriums untersagte zum 1. September 1941, die Kurrent in der Schule zu lehren. Ab dem Schuljahr 1941/42 lernten alle Kinder nur noch die lateinische „Deutsche Normalschrift“.',
+    'Begründet wurde das Verbot mit der Behauptung, die gebrochenen Schriften seien „Schwabacher Judenlettern“ — eine erfundene, sachlich falsche Propaganda. Als sachlichen Grund nannte der Chef der Reichskanzlei bei der Weiterleitung des Rundschreibens dagegen, dass Ausländer die eckige deutsche Schrift meist nicht lesen könnten.',
     'Die Folge: Wer ab 1941/42 eingeschult wurde, lernte die alte Schrift gar nicht mehr. Innerhalb einer einzigen Generation wurde aus einer Alltagsschrift eine, die heute nur noch wenige lesen können — deshalb wirkt ein alter Brief oft wie eine Geheimschrift.',
   ],
   endSources: [SRC.erlass, SRC.antiquaFraktur, SRC.suetterlin],
@@ -273,7 +279,7 @@ export const schriftkunde = {
     },
     {
       term: 'Bandzugfeder',
-      desc: 'Breite, flache Schreibkante (auch Breitfeder). Die Strichstärke wechselt mit der Richtung — am breitesten quer zur Kante, am feinsten längs. Bei der Offenbacher wird die Kante in 15–20° zur Grundlinie geführt.',
+      desc: 'Breite, flache Schreibkante (auch Breitfeder). Die Strichstärke wechselt mit der Richtung — am breitesten quer zur Kante, am feinsten längs. Bei der Offenbacher wird die Kante in 15–20° zur Schreiblinie geführt.',
     },
   ],
   federnSources: [SRC.feder, SRC.redis],
@@ -292,7 +298,9 @@ export const schriftkunde = {
     },
     {
       term: 'Papier & Tafel',
-      desc: 'Geschrieben wurde auf reißfestem Hadernpapier, ab dem 19. Jahrhundert auf vergilbendem Holzschliffpapier. Das Schreiben lernte man auf der Schiefertafel und im vierlinigen Schönschreibheft.',
+      // „Mitte des 19. Jh." — Kellers Patentverkauf 1846, nicht der
+      // Jahrhundertanfang (docs/schriftkunde/tinte-und-material.md).
+      desc: 'Geschrieben wurde auf reißfestem Hadernpapier, ab der Mitte des 19. Jahrhunderts auf vergilbendem Holzschliffpapier. Das Schreiben lernte man auf der Schiefertafel und im vierlinigen Schönschreibheft.',
     },
   ],
   materialSources: [SRC.eisengallus, SRC.kunsthalleKarlsruhe, SRC.hadernpapier, SRC.schiefertafel],
@@ -305,7 +313,7 @@ export const schriftkunde = {
   // view drops it when no strip could render (engine unreachable), so it never
   // describes something that is not on screen.
   lettersSpecimenNote:
-    'Die Schriftproben daneben schreibt die Engine live aus der Sütterlin-Vorlage von 1922; der Antiqua-Buchstabe darunter benennt jede Form, ein Klick schreibt sie noch einmal.',
+    'Die Schriftproben daneben schreibt die Feder live aus der Sütterlin-Ausgangsschrift von 1922; der Antiqua-Buchstabe darunter benennt jede Form, ein Klick schreibt sie noch einmal.',
   // `specimens`: the glyphs written live beside a row, in reading order —
   // `key` is the public source's glyph_key (base scheme: `longs`, `sz`, `ae`),
   // `label` the Antiqua letter shown under the written form. A row without a
@@ -416,7 +424,7 @@ export const schriftkunde = {
     { year: '13.–16. Jh.', text: 'Aus der gotischen Kursive entsteht über die Kanzleibastarda die deutsche Kurrent.' },
     { year: '1714', text: 'Preußen führt mit den Vorlagen von Hilmar Curas die erste Normschrift für den Schreibunterricht ein.' },
     { year: '19. Jh.', text: 'Die metallene Spitzfeder lässt die Kurrent stärker nach rechts neigen — die Schulvorschriften streuen weit, von 45° bis 75°.' },
-    { year: 'um 1900', text: 'Die klassische Kurrent steht auf der Lineatur 2:1:2 und einer Schräglage von 60–70°.' },
+    { year: 'um 1900', text: 'Die klassische Kurrent steht auf der Lineatur 2 : 1 : 2 und einer Schräglage von 60–70°.' },
     { year: '1911', text: 'Ludwig Sütterlin entwirft im preußischen Auftrag seine bewusst aufrechte Ausgangsschrift.' },
     { year: '1915', text: 'Einführung der Sütterlinschrift in Preußen, zunächst probeweise; in den Folgejahren verbindlich (die Quellen nennen leicht abweichende Jahre).' },
     { year: '1927', text: 'Rudolf Koch entwirft die Offenbacher Schrift als künstlerischen Gegenentwurf.' },
@@ -470,7 +478,7 @@ export const schriftkunde = {
     SRC.schiefertafel,
   ],
   sourcesRepo:
-    'Als gemeinfreie Originaltafeln arbeitet das Projekt mit der Loth-Tafel 1866 (Kurrent), der Sütterlin-Ausgangsschrift 1922 und der Offenbacher-Tafel von Rudolf Koch (1928).',
+    'Als gemeinfreie Originaltafeln arbeitet das Projekt mit der Loth-Tafel 1866 (Kurrent), der Sütterlin-Ausgangsschrift von 1922 und der Offenbacher-Tafel von Rudolf Koch (1928).',
 
   // --- Weiterlernen (Empfehlung) ---------------------------------------------
   recommendation: {

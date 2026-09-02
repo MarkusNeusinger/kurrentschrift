@@ -31,6 +31,7 @@ import { vergleichen } from '../../locales/de/vergleichen.ts';
 import { worksheet } from '../../locales/de/worksheet.ts';
 import { LOOKALIKES } from '../../lib/lesarten.ts';
 import { paths } from '../../routes/paths.ts';
+import { DIFFICULTIES, MODES, offersChoice, SCRIPTS } from '../../sections/quiz/quizOptions.ts';
 import { SCHRIFTKUNDE_SECTIONS, SECTION_IDS } from '../../sections/schriftkunde/sections.ts';
 import { TRY_TARGETS } from '../../sections/schriftkunde/tryTargets.ts';
 
@@ -162,7 +163,16 @@ export interface PageSpec {
   readonly breadcrumbs?: readonly { readonly route: string; readonly label: string }[];
   readonly jsonLd?: object; // page-specific structured data, beside the site/breadcrumb node
   readonly body: () => string;
+  // The app-relative files whose CONTENT this page renders — the input of the
+  // sitemap-lastmod guard (scripts/check-sitemap-lastmod.mjs): when one of them
+  // is newer than the route's <lastmod>, the page's visible "Stand" line lies.
+  // Content only, therefore: each page's own locale namespace plus seo.ts (its
+  // title/description, which the body prints), and the data modules a body
+  // walks. NOT common.ts or paths.ts — site chrome is not the page's date.
+  readonly sources: readonly string[];
 }
+
+const SEO_TS = 'src/locales/de/seo.ts';
 
 // ---------------------------------------------------------------- Kennwerte
 
@@ -428,19 +438,36 @@ const hubBody =
       }),
     ].join('\n');
 
+// The setup panel shows a row only where the learner can really choose
+// (quizOptions.offersChoice, QuizSetupPanel) — an unavailable option is never
+// a greyed-out promise. This page follows the SAME rule from the SAME tables:
+// it used to advertise Kurrent, Offenbacher and three difficulty levels the
+// site does not have, so crawlers and AI answers read a Kurrent quiz with
+// three handwriting levels, against the page's own title (audit 2026-09-02).
+// What is fixed rather than chosen is stated as prose instead — `about` names
+// the script that is drilled today, `sourceNote` the plate it comes from.
 const quizBody = () => {
   const t = quiz;
-  const d = t.difficulties;
+  const open = (options: readonly { label: string; available: boolean }[]) =>
+    options.filter((o) => o.available).map((o) => o.label);
+  const row = (label: string, values: readonly string[], hint: string) =>
+    `<dt>${e(label)}</dt><dd>${values.map(e).join(' · ')} — ${e(hint)}</dd>`;
+  const choiceRows: string[] = [];
+  if (offersChoice(SCRIPTS)) choiceRows.push(row(t.setup.scriptLabel, open(SCRIPTS), t.setup.scriptHint));
+  if (offersChoice(MODES)) choiceRows.push(row(t.setup.taskLabel, open(MODES), t.setup.taskHint));
+  if (offersChoice(DIFFICULTIES)) {
+    const levels = DIFFICULTIES.filter((o) => o.available).map((o) => `${o.label} (${o.hint})`);
+    choiceRows.push(row(t.setup.difficultyLabel, levels, t.setup.difficultyShortHint));
+  }
   return [
     `<h1>${e(t.heading)}</h1>`,
     p(seo.quiz.description),
+    p(t.about),
     p(`${t.setup.introLead}${t.setup.introRest}`),
-    '<dl>',
-    `<dt>${e(t.setup.scriptLabel)}</dt><dd>${[t.scripts.kurrent, t.scripts.suetterlin, t.scripts.offenbacher].map(e).join(' · ')} — ${e(t.setup.scriptHint)}</dd>`,
-    `<dt>${e(t.setup.taskLabel)}</dt><dd>${e(t.setup.modeLetters)} · ${e(t.setup.modeWords)} — ${e(t.setup.taskHint)}</dd>`,
-    `<dt>${e(t.setup.difficultyLabel)}</dt><dd>${[d.clean, d.worn, d.messy].map((x) => `${e(x.label)} (${e(x.hint)})`).join(' · ')} — ${e(t.setup.difficultyShortHint)}</dd>`,
-    '</dl>',
-    p(t.setup.difficultyHint),
+    ...(choiceRows.length ? ['<dl>', ...choiceRows, '</dl>'] : []),
+    // The difficulty explainer lives inside the difficulty row on the page
+    // (its InfoHint), so it appears here only when that row does.
+    ...(offersChoice(DIFFICULTIES) ? [p(t.setup.difficultyHint)] : []),
     p(t.setup.sourceNote),
     em(NEEDS_JS),
   ].join('\n');
@@ -524,6 +551,7 @@ const scribeBody = () => {
   return [
     `<h1>${e(t.heading)}</h1>`,
     p(t.lead),
+    p(t.about),
     p(`${t.examplesLabel} ${t.examples.join(', ')}`),
     p(t.disclaimer),
     em(NEEDS_JS),
@@ -572,7 +600,7 @@ const notFoundBody = () =>
   );
 
 export const PAGES: readonly PageSpec[] = [
-  { route: '/', file: 'index.html', ...seo.home, body: landingBody },
+  { route: '/', file: 'index.html', ...seo.home, body: landingBody, sources: ['src/locales/de/landing.ts', SEO_TS] },
   {
     route: paths.schriftkunde,
     file: 'schriftkunde.html',
@@ -580,6 +608,12 @@ export const PAGES: readonly PageSpec[] = [
     breadcrumbs: [crumbHome],
     jsonLd: kennwerteLd(),
     body: schriftkundeBody,
+    sources: [
+      'src/locales/de/schriftkunde.ts',
+      'src/sections/schriftkunde/sections.ts',
+      'src/sections/schriftkunde/tryTargets.ts',
+      SEO_TS,
+    ],
   },
   {
     route: paths.lesen,
@@ -587,15 +621,35 @@ export const PAGES: readonly PageSpec[] = [
     ...seo.lesen,
     breadcrumbs: [crumbHome],
     body: hubBody(hub.lesen, { quiz: paths.quiz, tafel: paths.tafel, vergleichen: paths.vergleichen }),
+    sources: ['src/locales/de/hub.ts', SEO_TS],
   },
-  { route: paths.quiz, file: 'quiz.html', ...seo.quiz, breadcrumbs: [crumbHome, crumbLesen], body: quizBody },
-  { route: paths.tafel, file: 'tafel.html', ...seo.tafel, breadcrumbs: [crumbHome, crumbLesen], body: tafelBody },
+  {
+    route: paths.quiz,
+    file: 'quiz.html',
+    ...seo.quiz,
+    breadcrumbs: [crumbHome, crumbLesen],
+    body: quizBody,
+    // quizOptions decides which rows the body shows at all — a flipped
+    // `available` changes this page's text without touching its locale.
+    sources: ['src/locales/de/quiz.ts', 'src/sections/quiz/quizOptions.ts', SEO_TS],
+  },
+  {
+    route: paths.tafel,
+    file: 'tafel.html',
+    ...seo.tafel,
+    breadcrumbs: [crumbHome, crumbLesen],
+    body: tafelBody,
+    // landing.scripts carries the per-script „written vs. original" status the
+    // Tafel body prints.
+    sources: ['src/locales/de/tafel.ts', 'src/locales/de/landing.ts', SEO_TS],
+  },
   {
     route: paths.vergleichen,
     file: 'lesen/vergleichen.html',
     ...seo.vergleichen,
     breadcrumbs: [crumbHome, crumbLesen],
     body: vergleichenBody,
+    sources: ['src/locales/de/vergleichen.ts', 'src/lib/lesarten.ts', SEO_TS],
   },
   {
     route: paths.schreiben,
@@ -603,6 +657,7 @@ export const PAGES: readonly PageSpec[] = [
     ...seo.schreiben,
     breadcrumbs: [crumbHome],
     body: hubBody(hub.schreiben, { worksheet: paths.worksheet, federprobe: paths.scribe }),
+    sources: ['src/locales/de/hub.ts', SEO_TS],
   },
   {
     route: paths.worksheet,
@@ -610,10 +665,35 @@ export const PAGES: readonly PageSpec[] = [
     ...seo.worksheet,
     breadcrumbs: [crumbHome, crumbSchreiben],
     body: worksheetBody,
+    sources: ['src/locales/de/worksheet.ts', SEO_TS],
   },
-  { route: paths.scribe, file: 'federprobe.html', ...seo.federprobe, breadcrumbs: [crumbHome, crumbSchreiben], body: scribeBody },
-  { route: paths.impressum, file: 'impressum.html', ...seo.impressum, breadcrumbs: [crumbHome], body: impressumBody },
-  { route: null, file: '404.html', title: seo.notFound.title, description: seo.notFound.description, noindex: true, body: notFoundBody },
+  {
+    route: paths.scribe,
+    file: 'federprobe.html',
+    ...seo.federprobe,
+    breadcrumbs: [crumbHome, crumbSchreiben],
+    body: scribeBody,
+    sources: ['src/locales/de/scribe.ts', SEO_TS],
+  },
+  {
+    route: paths.impressum,
+    file: 'impressum.html',
+    ...seo.impressum,
+    breadcrumbs: [crumbHome],
+    body: impressumBody,
+    sources: ['src/locales/de/impressum.ts', SEO_TS],
+  },
+  {
+    route: null,
+    file: '404.html',
+    title: seo.notFound.title,
+    description: seo.notFound.description,
+    noindex: true,
+    body: notFoundBody,
+    // No route, so no <lastmod> of its own — it carries the newest date in the
+    // file (latestStand) and the guard skips it.
+    sources: ['src/locales/de/common.ts', SEO_TS],
+  },
 ];
 
 // ---------------------------------------------------------------- document

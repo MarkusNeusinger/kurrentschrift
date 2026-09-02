@@ -5,65 +5,72 @@
      point to (/quiz, /tafel, /schreiben/uebungsblatt, /federprobe) carry the
      content weight. Keep in sync with paths.ts; bump <lastmod> when a page's
      content changes. Revisit once the i18n /de/ and /en/ prefixes land
-     (docs/reference/frontend-stack.md §Sitemap). -->
+     (docs/reference/frontend-stack.md §Sitemap).
+
+     <lastmod> is not bookkeeping alone: prerender.ts reads it as each crawler
+     page's visible "Stand" line, so a stale date tells every bot the text is
+     older than it is (four routes had drifted up to two weeks by the website
+     audit 2026-09-02). `npm run prerender` therefore runs
+     scripts/check-sitemap-lastmod.mjs, which holds every date against the git
+     history of the files that page renders — see PageSpec.sources. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://kurrentschrift.ink/</loc>
-    <lastmod>2026-08-27</lastmod>
+    <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/schriftkunde</loc>
-    <lastmod>2026-08-28</lastmod>
+    <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/lesen</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/quiz</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/lesen/vergleichen</loc>
-    <lastmod>2026-08-29</lastmod>
+    <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/tafel</loc>
-    <lastmod>2026-08-28</lastmod>
+    <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/schreiben</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/schreiben/uebungsblatt</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/federprobe</loc>
-    <lastmod>2026-08-28</lastmod>
+    <lastmod>2026-09-02</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://kurrentschrift.ink/impressum</loc>
-    <lastmod>2026-07-16</lastmod>
+    <lastmod>2026-09-02</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

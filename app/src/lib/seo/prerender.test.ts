@@ -10,15 +10,17 @@
 // (d) HEAD + CHROME: title, description, canonical/noindex, the marker the
 //     bot-serving check looks for, the site nav on every page, the in-band
 //     rights note.
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import { CONFIG } from '../../global-config.ts';
+import { quiz } from '../../locales/de/quiz.ts';
 import { schriftkunde } from '../../locales/de/schriftkunde.ts';
 import { worksheet } from '../../locales/de/worksheet.ts';
 import { paths } from '../../routes/paths.ts';
+import { DIFFICULTIES, MODES, offersChoice, SCRIPTS } from '../../sections/quiz/quizOptions.ts';
 import { SCHRIFTKUNDE_SECTIONS } from '../../sections/schriftkunde/sections.ts';
 import {
   COMPLETENESS,
@@ -129,8 +131,12 @@ describe('crawler prerender', () => {
       expect(slant, v.id).toContain('zur Grundlinie');
       for (const n of v.data.slantDeg) expect(slant, v.id).toContain(String(n));
       if ('slantAround1900Deg' in v.data) for (const n of v.data.slantAround1900Deg) expect(slant).toContain(String(n));
-      expect(fact('Lineatur'), v.id).toContain(v.data.lineature.join(':'));
-      if ('lineatureAlt' in v.data) expect(fact('Lineatur')).toContain(v.data.lineatureAlt.join(':'));
+      // Spaced ratio („2 : 1 : 2", Duden's Verhältniszeichen) — ONE notation
+      // across the public texts; the worksheet presets and the hubs already
+      // wrote it that way (website audit 2026-09-02). The machine-readable
+      // Kennwerte keep the numeric array; only the prose is pinned here.
+      expect(fact('Lineatur'), v.id).toContain(v.data.lineature.join(' : '));
+      if ('lineatureAlt' in v.data) expect(fact('Lineatur')).toContain(v.data.lineatureAlt.join(' : '));
       expect(fact('Feder'), v.id).toContain(v.data.pen);
       if ('penAngleDeg' in v.data) {
         for (const n of v.data.penAngleDeg) expect(fact('Feder')).toContain(String(n));
@@ -144,6 +150,55 @@ describe('crawler prerender', () => {
     for (const preset of Object.values(worksheet.presets)) {
       if (/Schräglage \d/.test(preset.note)) expect(preset.note).toContain('zur Grundlinie');
       if (/Federkante|Federwinkel/.test(preset.note)) expect(preset.note).toContain('zur Schreiblinie');
+    }
+  });
+
+  it('names, per page, the files whose date its Stand line must follow', () => {
+    // scripts/check-sitemap-lastmod.mjs holds every <lastmod> against the git
+    // history of these files; a page without them (or with a path that has
+    // since moved) would silently drop out of that guard.
+    for (const spec of PAGES) {
+      expect(spec.sources.length, spec.file).toBeGreaterThan(0);
+      for (const file of spec.sources) {
+        expect(existsSync(join(appDir, file)), `${spec.file}: ${file}`).toBe(true);
+      }
+      // Its own locale namespace is the minimum — a page that named only
+      // seo.ts would follow the wrong file's date.
+      expect(spec.sources.some((f) => f !== 'src/locales/de/seo.ts'), spec.file).toBe(true);
+    }
+  });
+
+  it('offers the crawler no quiz option the setup keeps hidden', () => {
+    // The page must not advertise a script or a difficulty level that does not
+    // exist — it did, until the website audit 2026-09-02 (Kurrent, Offenbacher
+    // and three handwriting levels in the <dl>). The rule is the SPA's:
+    // a row appears only where `offersChoice` holds, and only its AVAILABLE
+    // options are named. Flipping an option to `available: true` in
+    // quizOptions.ts makes this pass again — editing the HTML by hand does not.
+    const html = rendered.get('quiz.html')!;
+    const body = html.slice(html.indexOf('<main>'), html.indexOf('</main>'));
+    const list = body.match(/<dl>([\s\S]*?)<\/dl>/)?.[1] ?? '';
+    for (const option of [...SCRIPTS, ...MODES, ...DIFFICULTIES]) {
+      if (option.available) continue;
+      expect(list, `${option.label} steht im Quiz-Body, ist aber nicht wählbar`).not.toContain(escapeHtml(option.label));
+    }
+    // …and a row that offers no choice has no <dt> at all.
+    const rowShown = (label: string) => list.includes(`<dt>${escapeHtml(label)}</dt>`);
+    expect(rowShown(quiz.setup.scriptLabel)).toBe(offersChoice(SCRIPTS));
+    expect(rowShown(quiz.setup.taskLabel)).toBe(offersChoice(MODES));
+    expect(rowShown(quiz.setup.difficultyLabel)).toBe(offersChoice(DIFFICULTIES));
+    // Every option that IS available still has to be named — a filter that
+    // silently dropped everything would pass the two checks above.
+    const groups: { options: readonly { label: string; available: boolean }[]; label: string }[] = [
+      { options: SCRIPTS, label: quiz.setup.scriptLabel },
+      { options: MODES, label: quiz.setup.taskLabel },
+      { options: DIFFICULTIES, label: quiz.setup.difficultyLabel },
+    ];
+    for (const group of groups) {
+      if (!rowShown(group.label)) continue;
+      for (const option of group.options.filter((o) => o.available)) {
+        expect(list, option.label).toContain(escapeHtml(option.label));
+      }
     }
   });
 
