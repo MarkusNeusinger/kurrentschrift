@@ -1,9 +1,24 @@
 name: CI
 
-# Lint + test gate for backend (Python/uv) and frontend (React/Vite).
+# Lint + test gate for backend (Python/uv) and frontend (React/Vite), plus a
+# build of the shipped API image.
 # Modelled after the anyplot pipeline: Ruff for lint+format, pytest for the
 # compute/API layer, tsc+vite build for the SPA. Keep this in sync with the
 # local dev commands documented in CLAUDE.md.
+#
+# Two conventions this file keeps, both adopted from anyplot:
+#
+# - Every `uses:` is pinned to a commit SHA with the version as a comment. A
+#   movable tag is a write handle into these runners, and both the backend and
+#   the frontend job hand CODECOV_TOKEN to the environment a preceding action
+#   already runs in. Dependabot bumps SHA pins exactly as it bumps tags (the
+#   `github-actions` group in .github/dependabot.yml), so this costs nothing to
+#   maintain — a new workflow starts pinned, never with a tag.
+# - Every job carries `timeout-minutes`. GitHub's default is 360, so a hung
+#   pytest (a Cloud SQL connection attempt, a Postgres service that never turns
+#   ready) would burn six hours per job and report nothing useful. Measured over
+#   the last 20 runs the green ones sit at min 157 s / median 190 s / max 491 s;
+#   the caps below are generous over that maximum so a cold uv cache still fits.
 
 on:
   push:
@@ -23,11 +38,12 @@ jobs:
   backend:
     name: Backend (ruff + pytest)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
         with:
           enable-cache: true
 
@@ -60,6 +76,7 @@ jobs:
   migrations:
     name: Migrations (alembic upgrade head)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     # Full migration chain incl. seeds against a real Postgres 16 — catches
     # broken revisions, JSONB/DDL issues and seed-file drift that the SQLite
     # test harness cannot see. The service DB is throwaway; no shared Cloud SQL
@@ -79,10 +96,10 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
         with:
           enable-cache: true
 
@@ -119,14 +136,15 @@ jobs:
   frontend:
     name: Frontend (build)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: app
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Node
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           # 22 = active LTS (Node 20 reached end-of-life 2026-04-30).
           node-version: 22
@@ -162,6 +180,7 @@ jobs:
   changelog:
     name: Changelog (fragment)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     # Every PR carries a changelog fragment (changelog.d/<slug>.md) instead of
     # a bullet in the shared CHANGELOG.md — the seam where sibling PRs used to
     # conflict (2026-08-30). Data-only PRs pass on their own; a PR with truly
@@ -178,13 +197,13 @@ jobs:
       && !contains(github.event.pull_request.labels.*.name, 'skip-changelog')
       && github.event.pull_request.user.login != 'dependabot[bot]'
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # The gate diffs against the base branch, which a shallow checkout lacks.
           fetch-depth: 0
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
 
       - name: Set up Python
         run: uv python install
@@ -192,3 +211,110 @@ jobs:
       # The tool is standard library only; no project dependencies are synced.
       - name: Fragment present and well-formed
         run: uv run --no-project python -m tools.changelog check --base "origin/${{ github.base_ref }}"
+
+  image:
+    name: Image (build + container smoke)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # Until this job existed, the first build attempt of a changed Dockerfile
+    # happened in Cloud Build — after the merge. #473 is the proof: pyproject.toml
+    # fell out of the runtime stage, api.main::_project_version() would have
+    # reported 0.0.0 in production, and the Cloud Build smoke could not have seen
+    # it because /health carries no version field. A human reviewer caught it.
+    #
+    # The job runs in parallel with the other four, so the pipeline's wall clock
+    # is unchanged; it only adds runner minutes.
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+
+      # push: false — nothing here reaches a registry; Cloud Build still owns the
+      # published image. load: true puts the result into the local daemon so the
+      # smoke below can actually run it. The GHA cache keeps the repeat builds of
+      # an unchanged Dockerfile at seconds instead of minutes.
+      - name: Build the API image
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
+        with:
+          context: .
+          file: api/Dockerfile
+          push: false
+          load: true
+          tags: kurrentschrift-api:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # No database, no secrets: the container is started bare and only asked the
+      # questions that need no Cloud SQL. That is deliberate — this is a check of
+      # the IMAGE, not of the deployment.
+      - name: Container smoke (no database)
+        run: |
+          set -euo pipefail
+          docker run -d --name api -p 8000:8000 kurrentschrift-api:ci
+
+          ready=0
+          for _ in $(seq 30); do
+            if curl -fsS localhost:8000/health >/dev/null 2>&1; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo "::error::the container never answered /health within 60 s"
+            exit 1
+          fi
+          curl -fsS localhost:8000/health | grep -q '"healthy"'
+          echo "health OK"
+
+          # THE assert that would have caught #473. api.main reads pyproject.toml
+          # from next to api/ at startup (the project is a virtual uv workspace,
+          # so importlib.metadata knows nothing about it) and falls back to 0.0.0
+          # when the file is missing — silently, in a field nothing else probes.
+          want=$(python3 -c "import tomllib;print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          got=$(curl -fsS localhost:8000/openapi.json | python3 -c "import json,sys;print(json.load(sys.stdin)['info']['version'])")
+          if [ "$got" != "$want" ]; then
+            echo "::error::the image reports version $got, pyproject.toml says $want"
+            exit 1
+          fi
+          echo "version OK: $got"
+
+          # Pins the runtime stage's COPY list against a future rebuild. Each of
+          # these is a file the image is expected to SERVE or RUN, not a build
+          # input: the crawler pages go out over /seo-proxy, the quiz seed is read
+          # by migrations 0010/0011 at apply time, and alembic/ is what the
+          # pre-deploy migrate job executes out of this very image.
+          docker exec api test -f /app/app/prerender/index.html
+          docker exec api test -f /app/tools/quizgen/quiz_words.json
+          docker exec api test -f /app/alembic.ini
+          docker exec api test -d /app/alembic
+          docker exec api test -d /app/data/sources
+          echo "COPY list OK"
+
+      - name: Container logs on failure
+        if: failure()
+        run: docker logs api || true
+
+      # Threshold `warning` with four named exceptions, rather than a
+      # non-blocking run: that way a NEW warning blocks, which is the point of
+      # having the linter at all. All four exceptions are deliberate choices
+      # documented at their line in api/Dockerfile, and Dockerfile edits are not
+      # this PR's to make. app/Dockerfile passes with no exceptions.
+      - name: Hadolint (api/Dockerfile)
+        uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
+        with:
+          dockerfile: api/Dockerfile
+          failure-threshold: warning
+          # DL3013 `pip install uv` unpinned — uv is the installer; the versions
+          #        that matter are pinned in uv.lock, which the next line honours.
+          # DL3008 unpinned apt `curl` — pinning a Debian point release breaks the
+          #        build on every security update of the base image.
+          # DL3066 non-numeric USER — `useradd -u 1000` gives it a fixed uid; the
+          #        name is what the COPY --chown lines read.
+          # DL3025 shell-form HEALTHCHECK CMD — the `|| exit 1` fallback needs a
+          #        shell; JSON form cannot express it.
+          ignore: DL3013,DL3008,DL3066,DL3025
+
+      - name: Hadolint (app/Dockerfile)
+        uses: hadolint/hadolint-action@06be81baf89a55ffd0e24b8f04a4185738dd3387 # v3.5.0
+        with:
+          dockerfile: app/Dockerfile
+          failure-threshold: warning
