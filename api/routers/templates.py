@@ -297,27 +297,27 @@ async def put_laufform(
         raise HTTPException(status.HTTP_409_CONFLICT, detail=f"no chart template for {glyph_key!r} — author it first")
     if len(payload.anchors) != len(base.anchors):
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"anchor count {len(payload.anchors)} != chart row's {len(base.anchors)}"
             " — the ductus prior must match",
         )
     if payload.n_occurrences < min_occurrences:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"{payload.n_occurrences} occurrence(s) behind the draft for {glyph_key!r} — below the floor of "
             f"{min_occurrences} (LAUFFORM_MIN_OCCURRENCES); pass ?min_occurrences=1 only as an explicit author statement",
         )
     spike = spike_gate(base, payload.anchors)
     if spike["exceeded"]:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"the draft for {glyph_key!r} carries an anchor spike: ratio {spike['ratio']:.2f} over the row gate "
             f'{spike["max"]:.2f} (§14 LF8, „Anker im leeren Papier") — more evidence or the chart fallback, no override',
         )
     head = head_gate(base, payload.anchors)
     if head["exceeded"]:
         raise HTTPException(
-            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail=f"the draft for {glyph_key!r} turns its head away from the chart: {head['deviation']:.1f}° over the "
             f"head gate {head['max']:.0f}° (§14 LF9) — a running form lands where the ductus prior lands, no override",
         )

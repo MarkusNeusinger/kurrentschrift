@@ -178,7 +178,7 @@ Eine zentrale Komponente statt sieben driftender `<Container>`: `PageContainer`
 <PageContainer width="text" sx={{ pt: { xs: 4, md: 6 } }}>
 ```
 
-`PageContainer` setzt `maxWidth`, `mx:auto`, responsives `px:{xs:2.5,sm:4,md:6}` und
+`PageContainer` setzt `maxWidth`, `mx:auto`, ein responsives Innenmaß von 20/32/48 px und
 liegt über den Papier-Overlays (`position:relative; zIndex:1`). Die Seite gibt nur
 ihr **oberes** `pt` (und Sonder-`sx`) dazu — **kein eigenes `pb`/`py`** auf dem
 äußeren Container. **`PublicHeader`/`PublicFooter`** spannen die Leiste voll,
@@ -189,6 +189,15 @@ besitzt **allein der `PublicFooter`** über sein `mt:{xs:8,md:11}`. Setzt eine S
 zusätzlich `pb`/`py` auf ihren äußeren `PageContainer`, addiert sich beides und der
 Abstand driftet von Seite zu Seite. Regel: äußerer Container nur `pt`, der Footer
 trägt den Rest — so ist der Abstand überall gleich.
+
+**Das Innenmaß schließt die Safe-Area ein.** `index.html` fährt
+`viewport-fit=cover`, die Seite reicht auf Geräten mit Aussparung also bis unter
+Notch und Home-Indikator. Darum steht das Gutter als
+`max(20px, env(safe-area-inset-left))` (analog rechts, je Stufe) und der
+`PublicFooter` als `calc(24px + env(safe-area-inset-bottom))`: das entworfene Maß
+gilt überall, das Geräte-Inset gewinnt nur dort, wo es größer ist. Wer das
+Innenmaß ändert, hält die `max()`-Form — sonst kommt die Kompensation lautlos
+wieder abhanden.
 
 **Lesemaß.** Fließtext kappt zusätzlich auf ~66 Zeichen (Bringhurst) über `Prose`
 (`app/src/components/Prose`), Default `measure='47rem'`, **`align='left'`** (durchgehende
@@ -298,6 +307,7 @@ eigenen drei Bereichen (Buchstaben · Übergänge · Wörter) — §7 `HeaderBar
 | `SpecimenStrip` | Buchstaben „wie geschrieben" als **markiertes Specimen** (§9): eigene Haarlinien-Fläche in `paper.hi`, Antiqua-Beschriftung darunter, Klick schreibt neu | `specimens[{key,label}]`, `payloads` (EIN Batch je Seite über `useSpecimenPayloads`), `height`; montiert erst in Sichtweite, zieht sich zurück, wenn nichts schreibbar ist — Schriftkunde-Besonderheiten, Lesart-Verwechsler |
 | `WrittenWord` | ganzes Wort/Zeile aus Per-Glyph-Diagnostik + Übergängen | Engine-Pfad; Font-Specimen ist Fallback |
 | `BootStatus` | Vollseiten-Boot-/Cold-Start-Zustand | Quiz, Admin |
+| `BackToTop` | schwebende Rückkehr an den Seitenanfang, erscheint ab zwei Bildschirmen Scrollweg | nur auf den langen Inhaltsseiten (`/schriftkunde` ≈ 20 Handy-Bildschirme, `/impressum`, `/lesen/vergleichen`); 44 × 44, Papierfläche mit Haarlinie (§5), `prefers-reduced-motion` springt statt zu gleiten |
 
 ---
 
@@ -334,6 +344,58 @@ Beleg-Kachel beschriftet mit `variant="caption"`, nicht mit 10 px). Kontrast:
 Tinte/Sepia auf Papier, nie blass auf blass. Diese Regel hat Vorrang vor jeder
 Epochen-Anmutung.
 
+**Messbar statt behauptet.** Der Typo-Boden hat ein eincheckbares Gitter:
+`node app/scripts/type-floor.mjs` fährt alle öffentlichen Routen in einem echten
+Browser an, liest die *berechnete* Schriftgröße jedes Elements mit eigenem Text
+und schlägt unter 14 px fehl (der 13-px-`overline` ist als Teil der Leiter aus
+§3 ausgenommen). Nach jeder Typo- oder Theme-Änderung laufen lassen; das Skript
+ist der Mobil-Schritt von `/verify-frontend`.
+
+### 9.1 Fokus (bindend)
+
+**Jedes fokussierbare Element trägt einen sichtbaren Ring:** 2 px `viridian`,
+`outline-offset` 2–3 px. Er liegt EINMAL im Theme
+(`theme/components.ts` → `MuiButtonBase` + `MuiChip` + `MuiLink`) und trifft damit
+Button, IconButton, ToggleButton, Chip, jedes eigene `ButtonBase` und jeden Link.
+Drei Flächen haben keine MUI-Basis und tragen darum ihre eigene Regel:
+`PaperCardLink` und `HeaderNavLink` denselben Ring, die SVG-Zellen der
+Schreibtafel stattdessen eine eingefärbte Zellenfläche (`WrittenSheet.tsx`) —
+ein Ring um ein SVG-`<g>` säße dort falsch. Auch MUI-Textfelder bleiben
+ausgenommen: sie zeigen Fokus über ihren eigenen Rahmen (2 px `viridian`).
+Hintergrund: MUIs `ButtonBase` setzt selbst `outline: 0` — ohne die Theme-Regel
+ist eine fokussierte Schaltfläche von ihren Nachbarn nicht zu unterscheiden (das
+Quiz war so per Tastatur unbedienbar, Audit 2026-09-02). Lighthouse sieht diesen
+Fehler nicht (`focusable-controls` ist dort *manual*): Der Nachweis ist ein
+Tastatur-Durchgang, kein Score.
+
+### 9.2 Links (bindend)
+
+**Ein Link im Fließtext ist ohne Farbsehen erkennbar:** durchgehend unterstrichen
+(`MuiLink.defaultProps.underline = 'always'`), in `paper.viridianText` (5,15:1
+auf dem Papiergrund), die Unterstreichung als Haarlinie derselben Farbe. Farbe
+allein reicht nicht — gegen die Prosa stand sie bei 1,35:1, und eine Unterstreichung
+erst bei `:hover` gibt es für Tastatur und Finger gar nicht (WCAG 1.4.1).
+Die Regel wohnt im Theme; die drei Prosa-Seiten haben ihre eigenen `proseLink`-Konstanten
+dafür abgegeben. **Ausnahme: Chrome, die als Chrome liest** — Kopfleiste und Fußzeile
+setzen weiter `textDecoration: 'none'` in ihrem `sx` (ihre Trennung vom Text kommt
+aus der Position, nicht aus der Auszeichnung). Gefüllte CTAs sind keine Links im
+Sinne dieser Regel; für sie gilt: Label ≥ 600 oder Fläche auf `viridianText`.
+
+### 9.3 Trefferflächen (Vorschlag — Freigabe durch den Autor offen)
+
+**Vorgeschlagene Regel, noch nicht bindend:** interaktive Ziele ≥ 44 px in der
+kleineren Kante (Apple HIG 44 pt, Material 48 dp); Ausnahme sind Links im
+Fließtext. Wo die Optik ein kleineres Element verlangt, trägt es eine unsichtbare
+Trefferfläche statt einer kleineren Wahrheit — `hitArea()` aus
+`app/src/styles/hitArea.ts` (ein zentriertes `::after` mit
+`max(100%, 44px)`; die Optik bleibt unverändert). WCAG 2.2 SC 2.5.8 (24 × 24 px)
+hielt die Seite schon vorher über die Abstandsausnahme; diese Regel richtet sich
+gegen die Plattformempfehlung, nicht gegen WCAG — deshalb ist sie ein Vorschlag,
+bis der Autor sie freigibt. Angewandt ist sie bereits auf `ReplayButton`,
+`InfoHint`, die Quiz-Nebenknöpfe („beenden", „Einstellungen ändern"), das
+Detail-Schließen der Tafel, die Federprobe-Chips und „Link kopieren"; die
+Umschaltgruppen wachsen unter `sm` per Theme auf `minHeight: 44`.
+
 ---
 
 ## 10. Pflege & Sync
@@ -342,6 +404,12 @@ Epochen-Anmutung.
   `components/PageContainer`, `components/Prose`, `components/PageHeader` (Seitenkopf),
   `components/HeaderBar` (die eine Kopfleiste, §7) bzw.
   `components/PublicFooter` (Footer-`mt` = der eine Abstand, §4) nachziehen (und umgekehrt).
+- Die drei Bedienbarkeits-Regeln aus §9 wohnen an genau einer Stelle:
+  `theme/components.ts` (Fokusring, Link-Auszeichnung, Typo-Boden der
+  MUI-`small`-Größen, `minHeight` der Umschaltgruppen unter `sm`) und
+  `styles/hitArea.ts` (Trefferfläche). Eine neue Ausnahme gehört dorthin, nicht
+  an die Aufrufstelle. Gegenprobe: `npm run type-floor` plus ein
+  Tastatur-Durchgang (§9.1).
 - **Der Admin ist mitgemeint**, wo §3 (Typo) und §7 (`HeaderBar`) es sagen: eine Änderung
   an Leiter oder Kopfleiste wird an **beiden** Leisten (`PublicHeader` +
   `sections/admin/shell/AdminHeader`) und an den Werkbank-Köpfen (`shell/Panel.tsx`,

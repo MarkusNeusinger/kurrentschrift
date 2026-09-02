@@ -885,8 +885,7 @@ def _decoded_png(encoded: str) -> bytes:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="png_base64 is not valid base64") from exc
     if len(png) > MAX_STRIP_BYTES:
         raise HTTPException(
-            status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-            detail=f"strip is {len(png)} bytes — the limit is {MAX_STRIP_BYTES}",
+            status.HTTP_413_CONTENT_TOO_LARGE, detail=f"strip is {len(png)} bytes — the limit is {MAX_STRIP_BYTES}"
         )
     if not png.startswith(b"\x89PNG\r\n\x1a\n"):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="the uploaded bytes are not a PNG")

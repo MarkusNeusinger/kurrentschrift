@@ -36,11 +36,11 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
-- **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
+- **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
 - **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
-- **E** — EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
+- **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
@@ -55,11 +55,11 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftkunde (Seite) §7 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
-- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
+- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschrift §1
-- **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
+- **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zeilen-Gate (Laufform) §2 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · „Zug um Zug“ §7 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
 
@@ -2009,6 +2009,55 @@ geworden?“) auf denselben Vorkommen — nicht die Prävalenz je Fehlerart und
 keine Fehlerrate. *Technisch:* `tools/humanbench/build.py::build_paired`
 → menschliche-bewertung.md §8
 
+**Echtheitsfrage** *(authenticity question)* — die zweite der beiden Fragen,
+die ein **paariger Blindvergleich** stellen kann: **„welche sieht echter
+geschrieben aus?“** statt „welche Linie folgt der Tinte besser?“. Sie löst die
+Genauigkeitsfrage ab, sobald beide Linien gleich gut auf der Tinte liegen —
+dann misst jene nichts mehr (zwei genaue Linien sind beide genau). Gefragt
+wird nach dem Schriftbild, nicht nach der Nähe zur Vorlage; die beiden können
+einander sogar zuwiderlaufen, weil eine Linie, die jeden Skelett-Zacken
+mitnimmt, genauer ist und weniger geschrieben aussieht. Weil sie etwas anderes
+misst, sind ihre Runden mit denen der Genauigkeitsfrage **nicht vergleichbar**
+— das Instrument trägt die gestellte Frage deshalb in die Kopfzeile des
+Ergebnistextes (`ECHTHEIT/n` gegen `VERGLEICH/n`), damit ein Text auch ohne
+seinen Plan zuzuordnen bleibt. *Technisch:*
+`tools/humanbench/page.py::QUESTIONS` (`--question ink | authentic`),
+Auswertung `analyse.py::analyse_paired`
+→ menschliche-bewertung.md §8, §8a
+
+**Wortrunde** *(word round)* — der dritte Modus des Bewertungsdurchgangs und
+der einzige, der die drei sichtbarsten Defekte des Geschriebenen überhaupt
+zeigt: den **Anker-Median-Zickzack** einer Laufform-Zeile, den **zu dünnen
+Strich** und den **Knick an der Naht**. Jedes eingefrorene Lineal ist für sie
+blind (das Resampling schluckt den Zickzack, keine Kennzahl trägt die Breite,
+der Knick sitzt unter dem Messfenster) und der Kategorien-Durchgang ebenfalls,
+weil er einen *Buchstaben* zeigt und eine *Mittellinie* zeichnet. Die
+Wortrunde zeigt stattdessen ein ganzes Specimen-Wort mit **zwei Kompositionen
+als Tinte** darüber — gefüllte Silhouetten und Verbinder-Kapseln ihrer eigenen
+Breite — und stellt die **Echtheitsfrage**. Vorregistriert entschieden wird
+sie bei **≥ 60 % Kandidat unter den entschiedenen Bildschirmen und ≤ 25 % „kein
+Unterschied“ über alle**, und nur, wenn die gespiegelten Wiederholungen zeigen,
+dass nicht nach Position geantwortet wurde. *Technisch:*
+`tools/humanbench/build.py --word-arms` (`build_word`), Erzeuger
+`tools/humanbench/wordarm.py`, Auswertung `analyse.py::analyse_paired` mit
+`ADOPT_CANDIDATE_SHARE`/`ADOPT_MAX_TIE_SHARE`
+→ menschliche-bewertung.md §8a
+
+**Arm-Datei** *(arm file)* — die Eingabe einer **Wortrunde**: je Seite eine
+JSON-Datei mit einer Komposition je Fixture-Wort — Registrierung plus
+`strokes` (Punkte in x-Höhen, y nach oben von der Grundlinie, mit
+Strichbreite) und `fills` (Silhouetten) —, also wörtlich das, was
+`compose_word` liefert. Der Builder komponiert **nichts** selbst: ein
+Instrument, das seinen eigenen Kandidaten rechnete, könnte von dem Lineal
+wegdriften, das ihn bestätigen soll. Zwei Größen daraus wandern in den
+Schlüssel: der **`arm_gap`** (wie weit die beiden Arme auf diesem Wort
+auseinanderlaufen, symmetrisch, in x-Höhen — die Schwere-Achse, an der die
+Bänder geschnitten werden) und die **Verdachtsklasse** (`--strata`, die
+deklarierte Fehlerklasse eines Wortes, über die die Wiederholungen ausgeteilt
+werden). *Technisch:* Vertrag im Kopf von `tools/humanbench/build.py`,
+Referenz-Erzeuger `tools/humanbench/wordarm.py`, Prüfsumme je Arm im
+Provenienz-Stempel → menschliche-bewertung.md §8a
+
 **Ortsmarker · Ortsprüfung** — der eine Punkt, den der Beurteiler je Bild in
 den Ausschnitt klickt (die auffälligste Stelle, nicht alle), und die
 Auswertung darüber. Sein Wert liegt darin, dass er **unabhängig von der
@@ -2243,6 +2292,29 @@ Dependabot) und weist direkt in `[Unreleased]` geschriebene Bullets ab. *Technis
 und `[Unreleased]`), `check_pr` (die PR-Regel), `plan_release`/`apply_release`
 (der Schnitt); CI-Job `changelog` in `.github/workflows/ci.yml`.
 → werkzeuge.md § Der Changelog-Schnitt · `changelog.d/README.md`
+
+**Typo-Boden** — die bindende Untergrenze der Schriftgrößen des öffentlichen
+Auftritts: Fließtext ≥ 19 px, Caption ≥ 14 px, ohne Ad-hoc-Größen (design-system.md
+§9). „Boden" statt „Richtwert", weil er MESSBAR ist: `app/scripts/type-floor.mjs`
+fährt alle öffentlichen Routen in einem echten Browser an, liest die *berechnete*
+Schriftgröße jedes Elements mit eigenem Text und schlägt unter 14 px fehl. Genau
+eine Ausnahme ist sanktioniert, der 13-px-`overline` der Typo-Leiter (§3). Der
+Boden wurde am 02.09.2026 an 17 Stellen unterschritten — durchweg
+MUI-`size="small"`-Vorgaben und Ad-hoc-`fontSize`-Werte, keine Absicht; deshalb
+sitzt die Korrektur im Theme und die Kontrolle im Skript.
+→ concepts/design-system.md §9 · `app/scripts/type-floor.mjs`
+
+**Trefferfläche** *(`hitArea`)* — die unsichtbare Vergrößerung eines
+Bedienelements auf das 44-px-Touch-Ziel, ohne seine Optik anzufassen: ein
+zentriertes `::after` mit `max(100%, 44px)` in beiden Kanten
+(`app/src/styles/hitArea.ts`). Sie ist die Antwort auf den Konflikt zwischen
+Plattformempfehlung (Apple HIG 44 pt, Material 48 dp) und einem Entwurf, dessen
+kleine Marken — das Wiederholen-↻ über der Tinte, das Kurrent-i des `InfoHint`,
+das leise „beenden" — absichtlich leise sind: **eine unsichtbare Trefferfläche
+statt einer kleineren Wahrheit.** WCAG 2.2 SC 2.5.8 (24 × 24 px) hielt die Seite
+schon vorher über die Abstandsausnahme; die 44-px-Regel selbst ist bis zur
+Freigabe des Autors ein Vorschlag (design-system.md §9.3).
+→ concepts/design-system.md §9.3 · `app/src/styles/hitArea.ts`
 
 ### Eigenhand-Erfassung
 
