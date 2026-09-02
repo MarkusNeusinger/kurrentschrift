@@ -1,4 +1,4 @@
-"""Build an LF11 „glatte Zeile" candidate map from harvested occurrences.
+"""Build an LF11 smooth-row candidate map („glatte Zeile") from harvested occurrences.
 
 Measurement layer only (docs/reference/werkzeuge.md): reads the per-occurrence
 fits a harvest wrote (`--occ-out laufform_occurrences.json`) plus the chart rows

@@ -87,8 +87,19 @@ def _stroke_bounds(n_anchors: int, stroke_starts: Sequence[int] | None) -> list[
 
 
 def _knot_vector(arc: np.ndarray, corners: Sequence[int], spacing: float, degree: int) -> np.ndarray:
-    """Clamped knot vector over [0, arc[-1]]: uniform interior knots at `spacing`,
-    plus every corner as a knot of multiplicity `degree`.
+    """Clamped knot vector over [0, arc[-1]]: evenly spaced interior knots as
+    close to `spacing` as a whole number of spans allows, plus every corner as a
+    knot of multiplicity `degree`.
+
+    `spacing` is a target, not an exact step. The stroke is divided into
+    `round(total / spacing)` equal spans, so the effective step is
+    `total / spans` — up to half a span away from what was asked for, and
+    furthest on a short stroke (0.4 xh of arc at a target of 0.32 gives one span
+    of 0.4). The alternative, laying exact `spacing` steps from one end, leaves a
+    stub span at the other whose control point is poorly determined by the few
+    samples inside it — an end artefact in the very estimator meant to remove
+    one. An even division has no stub, and the ladder is coarse enough
+    (§14 LF11) that the rounding never reorders two rungs.
 
     The corner multiplicity is what lets the basis DRAW a corner instead of
     rounding it off: at multiplicity `degree` a B-spline is only C⁰ there, which
