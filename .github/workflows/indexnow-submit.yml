@@ -22,6 +22,9 @@ on:
     branches: [main]
     paths:
       - 'app/**'
+      # A change to this workflow exercises itself; a fix that never runs
+      # until the next app deploy is a fix nobody saw.
+      - '.github/workflows/indexnow-submit.yml'
   workflow_dispatch:
 
 permissions:
@@ -84,27 +87,31 @@ jobs:
             --rawfile list urls.txt \
             '{host: $host, key: $key, keyLocation: $loc,
               urlList: ($list | split("\n") | map(select(length > 0)))}' > body.json
-          # Bounded like the other curl calls in this repo: a slow or flaky
-          # api.indexnow.org must not burn the job timeout. A transport error
-          # after the retries yields code 000 and falls into the "transient"
-          # branch below instead of aborting under `set -e`.
-          code=$(curl -sS -o response.txt -w '%{http_code}' \
-            --max-time 60 --retry 3 --retry-delay 5 --retry-all-errors \
-            -X POST "https://api.indexnow.org/indexnow" \
-            -H "Content-Type: application/json; charset=utf-8" \
-            --data @body.json) || code="000"
+          # First use of a key (rollout or rotation): IndexNow verifies the
+          # key file asynchronously and answers 403 SiteVerificationNotCompleted
+          # until it has. Retry that case for up to ten minutes; if it
+          # persists, the run fails visibly and can be re-run.
+          for try in $(seq 1 10); do
+            # Bounded like the other curl calls in this repo: a slow or flaky
+            # api.indexnow.org must not burn the job timeout. A transport error
+            # after the retries yields code 000 and falls into the "transient"
+            # branch below instead of aborting under `set -e`.
+            code=$(curl -sS -o response.txt -w '%{http_code}' \
+              --max-time 60 --retry 3 --retry-delay 5 --retry-all-errors \
+              -X POST "https://api.indexnow.org/indexnow" \
+              -H "Content-Type: application/json; charset=utf-8" \
+              --data @body.json) || code="000"
+            if [ "$code" = 403 ] && grep -q SiteVerificationNotCompleted response.txt 2>/dev/null; then
+              echo "::notice::IndexNow has not finished verifying the key file yet (try ${try}/10); waiting 60 s"
+              sleep 60
+              continue
+            fi
+            break
+          done
           case "$code" in
             200|202) echo "::notice::IndexNow accepted ${n} URL(s) (HTTP ${code})" ;;
-            # First use of a key (rollout or rotation): IndexNow verifies the
-            # key file asynchronously and answers 403 SiteVerificationNotCompleted
-            # until it has. Not our fault, so warn; the next deploy resubmits.
-            403)
-              if grep -q SiteVerificationNotCompleted response.txt 2>/dev/null; then
-                echo "::warning::IndexNow has not finished verifying the key file yet (403 SiteVerificationNotCompleted); resubmitted on the next deploy"
-              else
-                echo "::error::IndexNow rejected the submission (HTTP 403): $(head -c 300 response.txt 2>/dev/null)"; exit 1
-              fi ;;
-            # Any other 4xx is a key or payload problem on our side; make it visible.
+            # 4xx is a key or payload problem on our side (or the key still
+            # unverified after ten minutes); make it visible.
             4*) echo "::error::IndexNow rejected the submission (HTTP ${code}): $(head -c 300 response.txt 2>/dev/null)"; exit 1 ;;
             # 5xx / no response: their side. The next deploy resubmits the
             # whole sitemap anyway, so a warning is the right weight.
