@@ -78,19 +78,18 @@ Verfahrensseite; geändert wird sie nie hier.
 >
 > **Adoptiert `sep02` auf Autor-Entscheid.** LF11 „glatte Zeile"
 > (Sprosse Δs 0,16): alle vier Trocken-Gates grün, danach die erste
-> humanbench-WORT-Runde. Deren Richtung ist eindeutig — **28 : 1 für
-> LF11** auf den Verdikt-Bildschirmen der reparierten Seite (96,6 %),
-> 40 : 1 über die ganze Runde —, ein FORMALES Verdikt trägt sie aber
-> nicht: ein Anzeigefehler („gefüllte Ringe", PR #492) hat die ersten 27
-> Bildschirme entwertet, und die bereinigte Menge nimmt die Tie-Schranke
-> mit 25,6 % knapp nicht und hat nur 3 der nötigen 6
-> Wiederholungspaare. Der Autor hat auf dieser Grundlage freigegeben;
-> Snapshot `2026-09-02T21-58-16Z`, 22 Zeilen geschrieben, Readback
-> 22/22. Die Laufform-Zeilen der 1922er Hand sind seither
+> humanbench-WORT-Runde. Sie ist verlässlich (10/12 Paare gleicher Arm)
+> und ihre Richtung ist erdrückend — **40 : 1 für LF11** unter den
+> entschiedenen Verdikt-Bildschirmen —, ein FORMALES Verdikt trägt sie
+> aber nicht: der Unentschieden-Anteil liegt mit 34,9 % über der
+> vorregistrierten Schranke von 25 %, und auch die günstigste Teilmenge
+> bleibt mit 25,6 % darüber. Der Autor hat auf dieser Grundlage
+> freigegeben; Snapshot `2026-09-02T21-58-16Z`, 22 Zeilen geschrieben,
+> Readback 22/22. Die Laufform-Zeilen der 1922er Hand sind seither
 > Spline-Basis-Mediane. Der Fall bleibt der, für den das Auge gebaut
-> wurde — das Wort-Lineal belohnt den Zickzack stellenweise —, nur hat
-> das Auge diesmal beschlagen. **Offen: eine Wiederholungsrunde
-> vollständig auf der reparierten Seite (§7.11).**
+> wurde — das Wort-Lineal belohnt den Zickzack stellenweise. **Offen:
+> eine Wiederholungsrunde auf der sicher reparierten Anzeige, und die
+> Klärung, ob ein Teil dieser Runde auf der defekten lief (§7.11).**
 >
 > **Offen (§7.11).** KI-messbar: LF4 (p) ·
 > Abstandsterm/Schleifen-Halteterm für die 13 v5-Rückweisungen ·
@@ -1143,7 +1142,7 @@ davon liegt zusätzlich als Todoist-Aufgabe im Projekt „Kurrentschrift"):
 |---|---|---|---|
 | **Bestätigungssatz A, dann B** | §2.5, verfahren-lotse.md | Schlussstein vor jeder Adoption jenseits der Routen-Konstanten; er sperrt außerdem den referenzfreien Auswähler „Vier Augen" | offen |
 | **humanbench-WORT-Runde** | §14 „Methodik-Lücke `aug16`", K-E1/K-E2 | der einzige benannte Tie-Breaker für ruler-indifferente Fälle | **erste Runde gefahren `sep02`** (Basis vs. LF11, Fassung A2): das Instrument steht, ein formales Verdikt trug die Runde wegen des Anzeigefehlers aber nicht — §14 „Laufform LF11 — humanbench-Wortrunde". Für K-E1/K-E2 weiter offen, aber nicht mehr mangels Instrument |
-| **LF11-Wiederholungsrunde auf der reparierten Seite** | §14 „Laufform LF11 — humanbench-Wortrunde" | die `sep02`-Runde wurde vom Anzeigefehler „gefüllte Ringe" geteilt; die bereinigte Menge verfehlt die Tie-Schranke um 0,6 Punkte und hat 3 statt 6 Wiederholungspaare | offen: ~10 min Urteilszeit, gleiche Karten, vollständig auf der reparierten Seite — sie würde den Autor-Entscheid durch ein Instrument-Verdikt ersetzen |
+| **LF11-Wiederholungsrunde auf der sicher reparierten Anzeige** | §14 „Laufform LF11 — humanbench-Wortrunde" | die `sep02`-Runde verfehlt die Tie-Schranke (34,9 % gegen ≤ 25 %), und ob ein Teil von ihr auf der defekten Anzeige „gefüllte Ringe" lief, ist zwischen Sitzungsprotokoll und Bestand ungeklärt | offen: ~10 min Urteilszeit, gleiche Karten — sie ersetzt den Autor-Entscheid durch ein Instrument-Verdikt und klärt den Zweifel an der Anzeige gleich mit |
 | **Prod-Re-Harvest der `traced`-Zeilen mit Kette v5** | §14 K-B · v4 · LF3b-W | seit `aug19` viermal vertagt („hinter Autor-Go + dbsnapshot"); die gespeicherten Bahnen stammen noch aus älteren Ketten-Ständen | offen |
 | **St-Ligatur im Wizard nachfahren** | §14 „Übergänge Korb-Runde `aug30`" (Korb #9) | bis dahin greift der Ligatur-Zerfall, und `Stube` fällt aus dem Quiz-Pool | offen |
 | **Laufform-Lücke G · W · K · ue · F · ae · b** | §14 „Lotse v0.15 `aug19`" (dritter Nachtrag), LF8/LF9 | 43 von 62 Glyphen komponieren aus der rohen Chart-Form, weil ihnen die Laufform fehlt oder sie ein Gate nicht bestand | offen; der Weg dorthin ist die Eigenhand-Ernte |

@@ -26,15 +26,12 @@
   digests. `tintenfolger.md` marks LF11 adopted on the author's decision and
   opens the repeat round that would replace it with a real verdict (#501).
 
-### Fixed
-
-- **A judging page that filled its own loops was quietly pulling every verdict
-  toward "no difference".** The silhouette of a pen stroke is an outer ring plus
-  the rings of its interior, and the page filled each ring separately, so every
-  loop ran solid — which erases exactly the features a reader is asked to judge.
-  The tie share was 50.0 % on the affected screens against 25.6 % on the repaired
-  ones. `menschliche-bewertung.md` gains it as construction rule 3.6b next to
-  the failure it came from — including the part the first draft of this PR got
-  wrong: a split round is a weaker round, its cleaned half is counted under the
-  same plan (mirrored repeats never vote), and below six complete repeat pairs
-  it is diagnostic rather than adoption-carrying (#501).
+- **The judging method learned two rules from its first real round.**
+  `menschliche-bewertung.md` gains construction rule 3.6b beside the loop-fill
+  fault that #492 fixed: check a form with an interior before the first round,
+  because filling a loop erases exactly the features the question asks about and
+  pulls answers toward "no difference" rather than adding noise in both
+  directions. And the part this PR's own first draft got wrong: a split round is
+  a weaker round, its cleaned half is counted under the same plan (mirrored
+  repeats never vote), and below six complete repeat pairs it is diagnostic
+  rather than adoption-carrying (#501).

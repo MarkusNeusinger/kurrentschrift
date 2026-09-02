@@ -2075,8 +2075,8 @@ sind die Fits“.
 `analyse.py` rechnet in der vorregistrierten Reihenfolge)
 → menschliche-bewertung.md
 
-**Gefüllte Ringe** — der benannte Instrumentdefekt der ersten
-humanbench-WORT-Runde (`sep02`) und seither eine Konstruktionsregel
+**Gefüllte Ringe** — der Anzeigefehler, den die Vorbereitung der ersten
+humanbench-WORT-Runde (`sep02`) zutage förderte, und seither eine Konstruktionsregel
 (`menschliche-bewertung.md` §3.6b): die Silhouette eines Federzugs ist
 ein Außenring PLUS die Ringe seiner Binnenflächen, und die Urteilsseite
 füllte jeden Ring einzeln statt die Gruppe als EINEN Pfad mit
@@ -2085,13 +2085,17 @@ als massiver Tropfen). Tückisch ist nicht die Hässlichkeit, sondern die
 RICHTUNG des Schadens — zugefüllt sehen beide Arme genau an den
 Merkmalen gleich aus, über die geurteilt werden soll (Schleifenweite,
 Binnenraum, Bogenrundung), also antwortet der Beurteiler ehrlich „kein
-Unterschied": über die Verdikt-Bildschirme gezählt **50,0 %**
-Unentschieden auf der defekten Fassung gegen **25,6 %** auf der
-reparierten. Ein Anzeigefehler dieser Art rauscht nicht, er zieht zur
-Mitte und redet jeden Kandidaten klein. Behoben in PR #492. Regel daraus: vor der ersten Runde eine Form mit Binnenfläche
-gegenprüfen, und eine mitten in der Runde behobene Anzeige TEILT die
-Runde — die Grenze liegt im Zeitstempel, der Ausschluss bleibt post-hoc
-und wird in beiden Lesarten berichtet.
+Unterschied". Ein Anzeigefehler dieser Art rauscht nicht, er **zieht zur
+Mitte** und redet jeden Kandidaten klein — vorhergesagt aus dem
+Mechanismus; wie groß der Effekt ist, hat noch keine Runde sauber
+gemessen (dazu bräuchte es dieselben Bilder unter beiden Fassungen).
+Behoben in PR #492, nach dem Bestand bevor eine Runde geurteilt wurde.
+Regel daraus: vor der ersten Runde eine Form mit Binnenfläche
+gegenprüfen — und falls eine Anzeige doch mitten in einer Runde repariert
+wird, teilt das die Runde: die Grenze liegt im Zeitstempel, die
+bereinigte Menge wird nach demselben Auswerteplan gezählt (Wiederholungen
+stimmen nie mit) und trägt unter sechs vollständigen Paaren keinen
+Adoptionsanspruch; berichtet werden beide Lesarten.
 → menschliche-bewertung.md §3.6b, qualitaetsmetrik.md §14 („Laufform
 LF11 — humanbench-Wortrunde")
 

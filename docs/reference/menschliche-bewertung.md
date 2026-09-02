@@ -403,19 +403,21 @@ Der Schaden war nicht kosmetisch. Der Defekt trifft **genau die
 Merkmale, über die geurteilt werden soll**: Schleifenweite,
 Binnenraum, die Rundung eines Bogens — bei zugefüllten Ringen sehen
 beide Arme an der entscheidenden Stelle gleich aus, und der Beurteiler
-antwortet ehrlich „kein Unterschied". Sichtbar wurde das erst in den
-Zahlen: über die Verdikt-Bildschirme gezählt lag der
-Unentschieden-Anteil auf der defekten Fassung bei **50,0 %**, auf der
-reparierten bei **25,6 %** (§14 „Laufform LF11 — humanbench-Wortrunde").
-Ein Anzeigefehler erzeugt hier also kein Rauschen in beide Richtungen,
-sondern **einen gerichteten Zug zur Mitte** — er lässt einen echten
-Unterschied als Unentschieden erscheinen und würde damit jeden
-Kandidaten kleinreden. Was er die Runde gekostet hat, lässt sich
-allerdings nicht ausrechnen: auch die reparierte Hälfte bleibt mit
-25,6 % über der Schranke, und ob eine Runde ganz auf der reparierten
-Seite sie genommen hätte, weiß nur diese Runde selbst. Der Defekt hat
-die Tie-Rate nachweislich gehoben; dass er allein die Schranke gekostet
-hat, ist eine Vermutung und keine Messung.
+antwortet ehrlich „kein Unterschied". Der Mechanismus sagt eine Richtung vorher: **kein Rauschen in beide
+Richtungen, sondern ein Zug zur Mitte** — ein echter Unterschied
+erscheint als Unentschieden, und das redet jeden Kandidaten klein.
+
+Wie groß der Effekt ist, sagt die LF11-Runde allerdings NICHT. Dort
+lagen die Unentschieden-Anteile bei 50,0 % in der ersten und 25,6 % in
+der zweiten Hälfte der Urteilsreihenfolge (§14 „Laufform LF11 —
+humanbench-Wortrunde") — das passt zur Vorhersage, ist aber **kein
+Beweis**: die beiden Hälften sind verschiedene Bildschirme in
+verschiedener Reihenfolge, also erklären Wortmischung, Position im
+Durchgang und Ermüdung einen Teil des Unterschieds mit; und ob dort
+überhaupt eine Hälfte auf der defekten Seite lief, ist zwischen
+Sitzungsprotokoll und Bestand ungeklärt. Eine Beobachtung, die zum
+Mechanismus passt — mehr trägt sie nicht. Sauber messen ließe sich der
+Effekt nur an DENSELBEN Bildern unter beiden Fassungen.
 
 Zwei Regeln folgen daraus:
 

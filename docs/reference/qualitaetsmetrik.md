@@ -3605,7 +3605,7 @@ die DB) — mit seiner Bedingung.
 | sep02 | Laufform | [LF11 gemessen](#laufform-lf11-sep02--gemessen-eine-sprosse-besteht-alle-gates-und-sie-repariert-die-zeilen-gates-gleich-mit) | Pre-Reg + gemessen · Sprosse Δs 0,16 besteht alle Gates; Adoption offen | Zacken/xh 6,86→0,45, Wörter 0,109218 · Paare 0,148198, keine Kreuzung verloren; Karte trocken, wartet auf die humanbench-Wort-Runde |
 | sep02 | Übergänge | [J4 Austritts-Kollinearität (`exit_trim`)](#übergänge-j4-sep02--vorregistrierung-die-austritts-kollinearität-exit_trim) | Pre-Reg + gemessen · verworfen | 4 von 5 Gates grün (Wörter −0,000535, seam_dep +12,52→−1,39), (b) rot: `dconn` fällt nur in 20 % statt 60 % |
 | sep02 | Übergänge | [J4b enge Klasse](#übergänge-j4b-sep02--post-hoc-die-enge-klasse-nur-die-joins-die-wirklich-knicken) | POST-HOC · verworfen | Schnitt bei 20° Knick rettet den Arm nicht: `dconn` 43 %, seam_dep der Klasse nur +8,02 — Rettungswege in §7.9 |
-| sep02 | Laufform | [LF11 humanbench-Runde und Adoption](#laufform-lf11-sep02--humanbench-wortrunde-instrumentdefekt-und-adoption-prod-write--re-baseline) | **ADOPTIERT auf Autor-Entscheid** (kein formales Instrument-Verdikt) · Prod-Write + Re-Baseline | Richtung eindeutig (reparierte Menge 28:1 = 96,6 %, ganze Runde 40:1), aber die Tie-Schranke hält in keiner Lesart (25,6 % bzw. 34,9 % gegen ≤ 25 %) und die bereinigte Menge hat nur 3 der nötigen 6 Wiederholungspaare; 27 Bildschirme als Instrumentdefekt „gefüllte Ringe" ausgeschlossen (POST-HOC); Write nach Snapshot `2026-09-02T21-58-16Z`, Readback 22/22; Wörter 0,109218 · Paare 0,148198 |
+| sep02 | Laufform | [LF11 humanbench-Runde und Adoption](#laufform-lf11-sep02--humanbench-wortrunde-instrumentdefekt-und-adoption-prod-write--re-baseline) | **ADOPTIERT auf Autor-Entscheid** (kein formales Instrument-Verdikt) · Prod-Write + Re-Baseline | Runde verlässlich (10/12 Arm) und Richtung erdrückend (40 : 1), aber die Tie-Schranke fällt in JEDER Lesart (34,9 % gesamt, 25,6 % in der günstigsten Teilmenge, gegen ≤ 25 %) — `adopt: false`; ob ein Teil der Runde auf der defekten Anzeige „gefüllte Ringe" lief, ist zwischen Protokoll und Bestand ungeklärt (offener Punkt); Write nach Snapshot `2026-09-02T21-58-16Z`, Readback 22/22; Wörter 0,109218 · Paare 0,148198 |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -10752,16 +10752,37 @@ Zeile, es soll das Wort nicht verschieben). Basis-Karte `sha256`
 Position. Dateien:
 `temp/lf11/humanbench/runde-lf11-strata-gap8/`.
 
-**Der Instrumentdefekt — und warum er die Runde spaltet.** Die ersten
-**27** Bildschirme in Urteilsreihenfolge liefen auf der Seitenfassung
-VOR PR #492, in der die Schleifen-Innenflächen zugefüllt waren (das `Z`
-von „Zorn" als massiver Tropfen): die Silhouette eines Federzugs ist ein
-Außenring PLUS seine Binnenflächen, und die Seite füllte jeden Ring
-einzeln statt die Gruppe als einen `evenodd`-Pfad. Die restlichen **48**
-liefen auf der reparierten Seite. Beleg
-`befund-ringe-VORHER-Zorn.png` gegen `befund-ringe-NACHHER-Zorn.png`;
-die Zeitstempel der ersten 27 sind identisch mit dem Zwischenstand von
-20:30 Uhr.
+**Der Instrumentdefekt — und ein UNGEKLÄRTER Widerspruch darüber, ob er
+die Runde spaltet.** Der Defekt selbst ist unstrittig: bis PR #492 füllte
+die Urteilsseite jeden Ring einer Federzug-Silhouette einzeln statt die
+Gruppe als einen `evenodd`-Pfad, sodass jede Schleife zulief (das `Z` von
+„Zorn" als massiver Tropfen; Beleg `befund-ringe-VORHER-Zorn.png` gegen
+`befund-ringe-NACHHER-Zorn.png`).
+
+Strittig ist, ob er in die Urteile hineinreicht. Im Sitzungsprotokoll
+steht, die ersten **27** Bildschirme in Urteilsreihenfolge seien noch auf
+der defekten Seite gelaufen und nur die restlichen **48** auf der
+reparierten. **Die Artefakte stützen das nicht:**
+
+- Alle drei Payloads der Runde tragen `built_at`
+  `2026-09-02T17:59:24+00:00` und **`"format": 2`** — das ist genau das
+  Format, das #492 EINGEFÜHRT hat (die alte, flache Ringliste wird seither
+  abgewiesen statt gezeichnet).
+- Es existiert im ganzen Baum **eine einzige** `urteile.txt`, im
+  Verzeichnis dieser Payloads, geschrieben um 23:51 — knapp vier Stunden
+  NACH dem reparierten Bau.
+- Das Fragment von #492 sagt ausdrücklich „caught by the author on the
+  first page he opened, **before any round was judged**", und die
+  `LIES-MICH.md` von 20:04 führt die Runde als „vorbereitet, noch nicht
+  gefahren".
+
+Widerlegt ist das Protokoll damit nicht — eine vor 19:59 geöffnete
+Browser-Seite zeigt die alte Fassung weiter, und das hinterlässt keine
+Datei. Belegen lässt es sich aus dem Bestand aber nicht, und **eine
+Ausschluss-Entscheidung, deren Grenze sich nicht nachprüfen lässt, taugt
+nicht als Grundlage einer Adoption.** Der Abschnitt führt darum beide
+Lesarten und stützt sich auf die, die der Bestand hergibt: **die Runde als
+Ganzes.** Die Klärung liegt beim Autor (offener Punkt unten).
 
 **Nachgerechnet nach dem bindenden Auswerteplan — und das Ergebnis ist
 schwächer, als die erste Fassung dieses Abschnitts behauptet hat.** Der
@@ -10775,22 +10796,25 @@ an derselben Zeitstempel-Grenze):
 
 | Menge (nur Verdikt-Bildschirme) | n | entschieden | LF11 : Basis | Anteil | „kein Unterschied" | Schwellen (≥ 60 % / ≤ 25 %) |
 |---|---|---|---|---|---|---|
-| ganze Runde | 63 | 41 | 40 : 1 | 97,6 % | 22 (34,9 %) | Kandidat ✓ · Ties **✗** |
-| die 27 defekten | 24 | 12 | 12 : 0 | 100 % | 12 (50,0 %) | Kandidat ✓ · Ties **✗** |
-| die 48 reparierten | 39 | 29 | 28 : 1 | 96,6 % | 10 (**25,6 %**) | Kandidat ✓ · Ties **✗** (um 0,6 Punkte) |
+| **ganze Runde (die belegte Menge)** | **63** | **41** | **40 : 1** | **97,6 %** | **22 (34,9 %)** | **Kandidat ✓ · Ties ✗** |
+| erste 27 laut Protokoll | 24 | 12 | 12 : 0 | 100 % | 12 (50,0 %) | Kandidat ✓ · Ties **✗** |
+| letzte 48 laut Protokoll | 39 | 29 | 28 : 1 | 96,6 % | 10 (25,6 %) | Kandidat ✓ · Ties **✗** (um 0,6 Punkte) |
 
-Verlässlichkeit: 12 Paare über die ganze Runde, **10/12 gleicher Arm**
-(über der Münzwurf-Schranke, nur 2/12 gleiche Seite) — aber
-**nur 3 Paare liegen vollständig im reparierten Teil**, also unter
-`MIN_PAIRED_REPEATS` = 6.
+Verlässlichkeit über die ganze Runde: 12 Paare, **10/12 gleicher Arm**,
+nur 2/12 gleiche Seite — beide Schranken genommen, die Runde ist
+verlässlich. (Beim Protokoll-Schnitt lägen nur 3 Paare in der zweiten
+Hälfte, unter `MIN_PAIRED_REPEATS` = 6 — auch deshalb trüge die
+bereinigte Menge keinen Anspruch.)
 
-**Damit trägt KEINE Teilmenge einen formalen Adoptionsanspruch nach dem
-vorregistrierten Plan.** Die Richtung ist in jeder Lesart eindeutig und
-sehr stark (28 : 1 auf den reparierten, 40 : 1 über die ganze Runde,
-kein einziger Bildschirm für die Basis unter den defekten) — was fehlt,
-ist die Tie-Schranke: der Unentschieden-Anteil bleibt auch bereinigt mit
-25,6 % um 0,6 Punkte über der Grenze, und die bereinigte Menge ist auf
-der Verlässlichkeits-Seite unterbesetzt.
+**Ergebnis, unabhängig davon, welche Lesart gilt: die Tie-Schranke fällt
+in JEDER Menge.** Über die ganze Runde mit 34,9 %, in der günstigsten
+Teilmenge immer noch mit 25,6 %. Der Kandidaten-Anteil ist überall
+erdrückend (40 : 1 gesamt, kein einziger Bildschirm für die Basis in den
+ersten 27), die Richtung steht also außer Frage — **ein formaler
+Adoptionsanspruch nach dem vorregistrierten Plan entsteht daraus
+nicht.** Das ist genau das, was der Werkzeuglauf von Anfang an gemeldet
+hat (`adopt: false`); die erste Fassung dieses Abschnitts hat es mit
+einer Teilmenge überschrieben, die Wiederholungen mitzählte.
 
 **Was der Write also ist: eine Autor-Entscheidung, informiert durch die
 Runde — kein Verdikt des Instruments.** Der Autor hat die 27 defekten
@@ -10806,10 +10830,18 @@ nicht mitstimmen dürfen. **Gefunden hat das die Copilot-Durchsicht von
 PR #501, nicht diese Messung** — festgehalten, weil ein Auswerteplan,
 der beim ersten Gebrauch umgangen wird, keiner ist.
 
-**Der saubere Weg zu einem echten Verdikt** (offen, für den Autor): eine
-Wiederholungsrunde vollständig auf der reparierten Seite, mit ihren
-eigenen ≥ 6 Paaren. Sie kostet ~10 Minuten und würde die Frage
-beantworten, die diese Runde nur noch nahelegt.
+**Zwei offene Punkte für den Autor:**
+
+1. **Lief wirklich ein Teil der Runde auf der defekten Seite?** Der
+   Bestand sagt nein (Payloads in `format: 2`, eine einzige `urteile.txt`
+   um 23:51, #492 und die `LIES-MICH` von 20:04), das Sitzungsprotokoll
+   sagt ja. Eine offene Browser-Seite erklärt beides — nur weiß das nur
+   der Autor. Solange es offen ist, gilt die ganze Runde als die
+   belegte Menge.
+2. **Der saubere Weg zu einem echten Verdikt:** eine Wiederholungsrunde
+   auf der heutigen, sicher reparierten Seite, mit ihren eigenen ≥ 6
+   Paaren. ~10 Minuten Urteilszeit, und sie beantwortet beide Fragen auf
+   einmal — die Tie-Schranke und den Zweifel an der Anzeige.
 
 Die Lehre aus dem Defekt selbst ist als Konstruktionsregel 3.6b in
 `menschliche-bewertung.md` festgehalten — neben dem Fehler, für den sie
