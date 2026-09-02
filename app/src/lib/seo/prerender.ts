@@ -282,6 +282,16 @@ const landingBody = () => {
         `${h3(`${s.name} (${s.feder})`)}${p(s.desc)}<p>${e(s.status)} · ${a(`${abs(paths.tafel)}#${s.styleId}`, s.cta)}</p>`,
     )
     .join('');
+  // The "So geht es" steps, in the locale's own order (which is the page's) —
+  // keyed by the step ids so a new step without a route fails to compile.
+  const howRoutes: Record<keyof typeof t.howSteps, string> = {
+    nachschlagen: paths.schriftkunde,
+    lesen: paths.quiz,
+    schreiben: paths.worksheet,
+  };
+  const howRows = (Object.keys(t.howSteps) as (keyof typeof t.howSteps)[])
+    .map((k) => `${h3(t.howSteps[k].title)}${p(t.howSteps[k].desc)}<p>${a(abs(howRoutes[k]), t.howSteps[k].cta)}</p>`)
+    .join('');
   const toolRoutes: Record<keyof typeof t.tools, string> = {
     schriftkunde: paths.schriftkunde,
     quiz: paths.quiz,
@@ -301,6 +311,8 @@ const landingBody = () => {
     // fact is stated, not faked with a font.
     `<p><em>„${e(t.hero.word)}“ ${e(t.hero.wordCaptionEngine)}</em></p>`,
     `<p>${a(abs(paths.schreiben), t.hero.ctaWrite)} · ${a(abs(paths.lesen), t.hero.ctaRead)}</p>`,
+    h2(t.howHeading),
+    howRows,
     h2(t.scriptsHeading),
     p(t.scriptsIntro),
     scriptRows,
