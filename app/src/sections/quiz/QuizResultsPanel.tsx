@@ -4,14 +4,22 @@
 // "sauber gelesen" note when nothing was missed. The forms render "as written"
 // (WrittenGlyph / WrittenWord), with a plain-type fallback. The tallies
 // accumulate in useQuizEngine and arrive via props.
+//
+// Every letter card is a way on: it links to that letter on the Schreibtafel
+// (/tafel?g=<key>), which writes it stroke by stroke beside its look-alikes.
+// Before that the three tools stood next to each other instead of in a loop —
+// the whole results screen held not one link (website audit 2026-09-02,
+// finding 29).
 
 import { Box, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 
 import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { WrittenWord } from '@/components/WrittenWord';
-import { de } from '@/locales';
+import { de, fmt } from '@/locales';
+import { paths } from '@/routes/paths';
 import { InkButton, QuietButton, QuizEyebrow } from '@/sections/quiz/quizUi';
 import { type ConfusionMap, type MissMap, type TallyRef } from '@/sections/quiz/useQuizEngine';
 import { cardSurface, display, garamond, paper, pigment, quiz, quizRadius } from '@/styles/paper';
@@ -63,6 +71,48 @@ function ResultForm({ refr, height }: { refr: TallyRef; height: number }) {
   );
 }
 
+// Where a tallied form leads. A LETTER carries the same glyph_key the
+// Schreibtafel opens with `?g=`; a word tally has no single letter to look at,
+// so its card stays plain.
+function tafelLink(refr: TallyRef): string | null {
+  return refr.kind === 'letter' && refr.renderKey
+    ? `${paths.tafel}?g=${encodeURIComponent(refr.renderKey)}`
+    : null;
+}
+
+// One results card: a link into the Schreibtafel where there is one to make,
+// otherwise the same box as before. The card keeps its own colours — only the
+// pointer, the aria-label and the viridian edge on hover/focus say it leads on.
+function ResultCard({
+  to,
+  label,
+  sx,
+  children,
+}: {
+  to: string | null;
+  label: string;
+  sx: object;
+  children: ReactNode;
+}) {
+  if (!to) return <Box sx={sx}>{children}</Box>;
+  return (
+    <Box
+      component={RouterLink}
+      to={to}
+      aria-label={fmt(de.quiz.results.tafelLinkAria, { form: label })}
+      sx={{
+        ...sx,
+        color: 'inherit',
+        textDecoration: 'none',
+        transition: 'border-color .2s',
+        '&:hover, &:focus-visible': { borderColor: paper.viridian },
+      }}
+    >
+      {children}
+    </Box>
+  );
+}
+
 export function QuizResultsPanel(p: ResultsProps) {
   const { correct, seen } = p.stats;
   const pct = seen > 0 ? Math.round((correct / seen) * 100) : 0;
@@ -73,6 +123,10 @@ export function QuizResultsPanel(p: ResultsProps) {
     [p.confusions],
   );
   const clean = topMisses.length === 0;
+  const linksToTafel = useMemo(
+    () => topMisses.some((m) => tafelLink(m)) || topConfusions.some((c) => tafelLink(c.correct)),
+    [topMisses, topConfusions],
+  );
 
   return (
     <Stack spacing={3}>
@@ -114,8 +168,12 @@ export function QuizResultsPanel(p: ResultsProps) {
           </Typography>
           <Stack spacing={1}>
             {topConfusions.map((c) => (
-              <Box
+              // The card leads to the form that SHOULD have been read — that
+              // is the one the learner needs to look at again.
+              <ResultCard
                 key={`${c.correct.renderKey ?? c.correct.label}__${c.guessed.renderKey ?? c.guessed.label}`}
+                to={tafelLink(c.correct)}
+                label={c.correct.label}
                 sx={{
                   display: 'flex',
                   alignItems: 'center',
@@ -140,7 +198,7 @@ export function QuizResultsPanel(p: ResultsProps) {
                   ·{c.count}
                   {de.quiz.results.times}
                 </Typography>
-              </Box>
+              </ResultCard>
             ))}
           </Stack>
         </Box>
@@ -174,8 +232,10 @@ export function QuizResultsPanel(p: ResultsProps) {
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
             {topMisses.map((m) => (
-              <Box
+              <ResultCard
                 key={m.renderKey ?? m.label}
+                to={tafelLink(m)}
+                label={m.label}
                 sx={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -200,10 +260,16 @@ export function QuizResultsPanel(p: ResultsProps) {
                   ·{m.count}
                   {de.quiz.results.times}
                 </Typography>
-              </Box>
+              </ResultCard>
             ))}
           </Box>
         </Box>
+      )}
+      {/* The way on — shown only when at least one card actually leads there. */}
+      {linksToTafel && (
+        <Typography component="p" variant="caption" sx={{ color: paper.sepia, mt: -1.5 }}>
+          {de.quiz.results.tafelHint}
+        </Typography>
       )}
 
       {/* Actions */}

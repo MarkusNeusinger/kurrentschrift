@@ -123,6 +123,12 @@ export const quiz = {
     cleanNote: 'Keine Verwechslungen — sauber gelesen.',
     // Suffix after a count, e.g. "1×".
     times: '×',
+    // Under the two result blocks: every letter card leads to that letter on
+    // the Schreibtafel (/tafel?g=<key>), where it writes itself stroke by
+    // stroke — the way on after a misread.
+    tafelHint: 'Eine Form antippen: die Schreibtafel schreibt sie Zug um Zug vor.',
+    // Aria label of such a card (interpolates the letter's name).
+    tafelLinkAria: '{{form}} auf der Schreibtafel ansehen',
     replay: 'Weiter üben',
     settings: 'Einstellungen ändern',
   },

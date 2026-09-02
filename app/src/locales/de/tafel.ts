@@ -86,6 +86,9 @@ export const tafel = {
     lookalikes: 'Verwechsler',
     // Jump into the Federprobe with a word that contains the letter (interpolates {{word}}).
     inWord: 'im Wort sehen: „{{word}}“',
+    // Same jump, but the word comes from the bank's historic layer — said
+    // plainly, so nobody takes it for today's German.
+    inWordHistoric: 'im Wort sehen: „{{word}}“ — ein Wort aus alten Briefen',
     unavailable: 'Für diesen Buchstaben liegt gerade keine nachgeschriebene Form vor.',
     // One sentence for the crawler page and the section hint.
     hint: 'Ein Tipp auf einen nachgeschriebenen Buchstaben öffnet ihn im Detail: die Strichfolge mit nummerierten Zügen, Ansatz und Auslauf, das Schreiben Zug um Zug in zwei Tempi, die Verwechsler daneben — und ein Sprung in die Federprobe, um ihn im Wort zu sehen.',
