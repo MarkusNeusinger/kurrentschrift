@@ -59,14 +59,19 @@ jobs:
             '{host: $host, key: $key, keyLocation: $loc,
               urlList: ($list | split("\n") | map(select(length > 0)))}')
           # Bounded like the other curl calls in this repo: a slow or flaky
-          # api.indexnow.org must not burn the job timeout or fail a push.
+          # api.indexnow.org must not burn the job timeout. A transport error
+          # after the retries yields code 000 and falls into the "transient"
+          # branch below instead of aborting under `set -e`.
           code=$(curl -sS -o response.txt -w '%{http_code}' \
             --max-time 30 --retry 3 --retry-delay 5 --retry-all-errors \
             -X POST "https://api.indexnow.org/indexnow" \
             -H "Content-Type: application/json; charset=utf-8" \
-            --data "$body")
+            --data "$body") || code="000"
           case "$code" in
             200|202) echo "::notice::IndexNow accepted ${n} URL(s) (HTTP ${code})" ;;
             # 4xx is a key or payload problem on our side; make it visible.
-            *) echo "::error::IndexNow returned HTTP ${code}: $(head -c 300 response.txt)"; exit 1 ;;
+            4*) echo "::error::IndexNow rejected the submission (HTTP ${code}): $(head -c 300 response.txt 2>/dev/null)"; exit 1 ;;
+            # 5xx / no response: their side. The next deploy resubmits the
+            # whole sitemap anyway, so a warning is the right weight.
+            *) echo "::warning::IndexNow unavailable (HTTP ${code}); will be resubmitted on the next deploy" ;;
           esac
