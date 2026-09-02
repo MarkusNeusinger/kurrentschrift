@@ -11,7 +11,8 @@
   median of 6.9 times per x-height against their chart rows' 0.2 — the worst of
   them, the `c`, 21.8 times — and every bound word rendered one, which made it
   the single largest difference between "written" and "computed" in the product.
-  Production now serves a median of 0.6. The frozen word bench moves from
+  Across the 22 rows production serves, the mean rate falls from 8.570 to 0.627.
+  The frozen word bench moves from
   0.109255 to 0.109218 and the pairs from 0.148433 to 0.148198, which is exactly
   what the dry measurement predicted, down to every component and diagnostic
   line. Public `/write/word` responses carry up to 24 h of edge cache, so the

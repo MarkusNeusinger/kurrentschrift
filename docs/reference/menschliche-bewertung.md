@@ -410,8 +410,12 @@ reparierten bei **25,6 %** (§14 „Laufform LF11 — humanbench-Wortrunde").
 Ein Anzeigefehler erzeugt hier also kein Rauschen in beide Richtungen,
 sondern **einen gerichteten Zug zur Mitte** — er lässt einen echten
 Unterschied als Unentschieden erscheinen und würde damit jeden
-Kandidaten kleinreden. Genau darum ist er teuer: er kostete der Runde
-die Tie-Schranke, die sie sonst genommen hätte.
+Kandidaten kleinreden. Was er die Runde gekostet hat, lässt sich
+allerdings nicht ausrechnen: auch die reparierte Hälfte bleibt mit
+25,6 % über der Schranke, und ob eine Runde ganz auf der reparierten
+Seite sie genommen hätte, weiß nur diese Runde selbst. Der Defekt hat
+die Tie-Rate nachweislich gehoben; dass er allein die Schranke gekostet
+hat, ist eine Vermutung und keine Messung.
 
 Zwei Regeln folgen daraus:
 

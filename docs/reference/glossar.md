@@ -2085,10 +2085,10 @@ als massiver Tropfen). Tückisch ist nicht die Hässlichkeit, sondern die
 RICHTUNG des Schadens — zugefüllt sehen beide Arme genau an den
 Merkmalen gleich aus, über die geurteilt werden soll (Schleifenweite,
 Binnenraum, Bogenrundung), also antwortet der Beurteiler ehrlich „kein
-Unterschied": 48 % Unentschieden auf den 27 defekten Bildschirmen gegen
-22,9 % auf den 48 reparierten. Ein Anzeigefehler dieser Art rauscht
-nicht, er zieht zur Mitte und redet jeden Kandidaten klein. Behoben in
-PR #492. Regel daraus: vor der ersten Runde eine Form mit Binnenfläche
+Unterschied": über die Verdikt-Bildschirme gezählt **50,0 %**
+Unentschieden auf der defekten Fassung gegen **25,6 %** auf der
+reparierten. Ein Anzeigefehler dieser Art rauscht nicht, er zieht zur
+Mitte und redet jeden Kandidaten klein. Behoben in PR #492. Regel daraus: vor der ersten Runde eine Form mit Binnenfläche
 gegenprüfen, und eine mitten in der Runde behobene Anzeige TEILT die
 Runde — die Grenze liegt im Zeitstempel, der Ausschluss bleibt post-hoc
 und wird in beiden Lesarten berichtet.
