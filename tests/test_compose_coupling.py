@@ -108,9 +108,9 @@ def test_laufform_variant_renders_in_flowing_runs_only():
     # for glyphs in a run >= the lean gate; a short drill stays chart-true.
     chart = [[0.0, 0.2], [0.2, 0.6], [0.4, 1.0], [0.6, 0.5], [0.8, 0.55]]
     lauf = [[0.0, 0.2], [0.3, 0.6], [0.6, 1.0], [0.9, 0.5], [1.2, 0.55]]
-    keys = ["n-medial", "u-medial", "i-medial"]
+    keys = ["n", "u", "i"]  # bare base keys — positional suffixes are gone since migration 0017
     data = {k: _payload(chart) for k in keys}
-    alt = {"u-medial": _payload(lauf)}
+    alt = {"u": _payload(lauf)}
 
     long_run = compose_word([_slot(k) for k in keys], data, laufform_by_key=alt)
     # Glyph items are emitted in slot order — index 1 is the u.

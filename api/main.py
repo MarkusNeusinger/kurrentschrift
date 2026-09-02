@@ -9,9 +9,7 @@ from dotenv import load_dotenv  # noqa: I001
 load_dotenv()
 
 import logging  # noqa: E402
-import tomllib  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
-from pathlib import Path  # noqa: E402
 
 from fastapi import FastAPI, Request, Response  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
@@ -39,6 +37,7 @@ from api.routers import (  # noqa: E402
     work_items_session_router,
     write_router,
 )
+from api.version import APP_VERSION  # noqa: E402
 from core.config import settings  # noqa: E402
 from core.database import close_db, init_db, is_db_configured  # noqa: E402
 
@@ -47,20 +46,45 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 
-def _project_version() -> str:
-    """The one version source: pyproject.toml (shipped in the image next to
-    api/). The project is an uv workspace, not an installed distribution, so
-    importlib.metadata has no record — read the file instead of keeping a
-    second hardcoded string here that drifts (it sat at 0.2.0 for epochs)."""
-    try:
-        pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
-        return str(tomllib.loads(pyproject.read_text(encoding="utf-8"))["project"]["version"])
-    except (OSError, KeyError, tomllib.TOMLDecodeError):  # pragma: no cover — packaging error, not runtime
-        # A cosmetic version must never keep the API from starting, but a
-        # missing/unparsable pyproject in the image is a packaging bug —
-        # scream in the logs instead of failing silently.
-        logger.exception("could not read project.version from pyproject.toml — check the image contents")
-        return "0.0.0"
+class HeadAsGetMiddleware:
+    """Answer HEAD with the matching GET route's status and headers, no body.
+
+    Taken from the sister project anyplot (`api/main.py`). FastAPI's
+    `@router.get` registers GET-only routes — Starlette's plain `Route` would
+    add HEAD itself — so every HEAD probe answered 405 across the whole API:
+    link checkers, and the assistants that preflight a URL before fetching it.
+    That hit the two SVG assets `llms.txt` advertises; they only looked healthy
+    from outside because Cloudflare answers HEAD from a cached GET.
+
+    An ASGI rewrite rather than adding HEAD to `route.methods`: the latter also
+    emits a `head` operation per path into openapi.json and doubles the
+    documented surface. Content-Length from the GET response is kept — that is
+    what HEAD promises.
+
+    Placement differs from anyplot's, deliberately: this app is wrapped as the
+    INNERMOST user middleware, so the analytics middleware above it still sees
+    the real `HEAD` and does not count a probe as a page read or an asset
+    fetch. anyplot wraps outermost because it has no such counter.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http" or scope["method"] != "HEAD":
+            await self.app(scope, receive, send)
+            return
+        scope = {**scope, "method": "GET"}
+
+        # Body chunks are emptied but their `more_body` sequencing is kept —
+        # forcing an early end while a streaming response keeps sending would
+        # violate the ASGI message protocol.
+        async def send_without_body(message):
+            if message["type"] == "http.response.body":
+                message = {**message, "body": b""}
+            await send(message)
+
+        await self.app(scope, receive, send_without_body)
 
 
 @asynccontextmanager
@@ -82,13 +106,17 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(
     title="kurrentschrift admin API",
     description="Canonical ductus-template extraction for normed pre-1900 German Kurrent script.",
-    version=_project_version(),
+    version=APP_VERSION,
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
 )
 
+# Added FIRST, so it ends up INNERMOST: `add_middleware` prepends, and the
+# stack runs outermost-first. Everything above it — the bot counter, gzip,
+# CORS — therefore still sees the request as HEAD.
+app.add_middleware(HeadAsGetMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=settings.cors_allow_origin_regex,
@@ -128,7 +156,10 @@ async def record_bot_fetch(request: Request, call_next):
             track_bot_fetch(request, path.removeprefix("/seo-proxy").rstrip("/") or "/", response.status_code)
         return response
     asset = classify_asset(path, request.query_params.get("text"))
-    if asset is not None:
+    # Same rule as the page reads above: a HEAD probe fetches no bytes and is
+    # not a read. It reaches a route at all only since HeadAsGetMiddleware, so
+    # without this line the new 200s would inflate the asset counts.
+    if asset is not None and request.method == "GET":
         kind, source, key = asset
         track_asset_fetch(request, asset=kind, source=source, key=key, status=response.status_code)
     return response
