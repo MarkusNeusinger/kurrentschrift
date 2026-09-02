@@ -6,9 +6,10 @@
   key AND a long run of numbers, so prose or a generator script that merely
   names a field does not fire. Known blobs are pinned by content hash, never
   by path: a path exemption would wave through a NEW dump written to the same
-  place, which is the mistake being guarded against. It costs ~2 s because it
-  scans the roughly eighty paths that have ever lived outside those trees
-  rather than pickaxing all of history (#NNN).
+  place, which is the mistake being guarded against. `data/` is scanned like
+  anything else — it holds data by definition and is the likeliest home for
+  such a file. Two batched `cat-file` calls put the whole sweep at about three
+  seconds (#NNN).
 
 ### Changed
 

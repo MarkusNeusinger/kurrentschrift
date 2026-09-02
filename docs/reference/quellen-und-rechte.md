@@ -307,7 +307,12 @@ losschreiben" kann, gilt technisch:
   Blobs sind per Hash gepinnt, alles andere lässt den Test rot werden.
   Gepinnt wird per Blob-Hash und nicht per Pfad: Eine Pfad-Ausnahme ließe
   einen NEUEN Dump unter demselben Pfad durch — genau den Fall, den das
-  Netz verhindern soll.
+  Netz verhindern soll. Der Zahlenlauf erlaubt ausdrücklich auch Klammern
+  zwischen den Zahlen, denn dichte Geometrie steht ebenso oft verschachtelt
+  (`anchors_template: [[x, y], …]`) wie flach; ein reines Komma-Muster bräche
+  an jedem `],[` und ließe einen Dump aus lauter Koordinatenpaaren durch.
+  `data/` wird mitgeprüft und ist ausdrücklich KEIN Code-Baum — dort läge
+  eine autorierte Payload am naheliegendsten.
 - **Seit 2026-09-02 liegt eine Schicht DAVOR: das Origin-Geheimnis.** Alle
   bisherigen Punkte beschreiben, was die API einem Aufrufer antwortet. Sie
   galten aber nur, solange man die API überhaupt nur über den Edge erreicht —

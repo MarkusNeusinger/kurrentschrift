@@ -23,12 +23,17 @@ Why by blob hash and not by path: a path allowlist would wave through a NEW
 dump written to the same path, which is exactly the mistake this guards
 against. The hash identifies one immutable object and nothing else.
 
-The scan is deliberately scoped the way the `/audit-licenses` doctrine words
-it — a hit under a code tree is source, a test or prose ABOUT the format, and
-those trees legitimately carry these identifiers. Only blobs outside them are
-candidates, which also keeps the test cheap: it walks the ~80 paths that have
-ever lived outside the code trees rather than pickaxing all of history, so its
-cost grows with repository breadth, not with the number of commits.
+The scan is scoped the way the `/audit-licenses` doctrine words it — a hit
+under a code tree is source, a test or prose ABOUT the format, and those trees
+legitimately carry these identifiers. `data/` is NOT such a tree: it holds
+data by definition, and is the likeliest home for an authored payload, so it
+is scanned.
+
+Cost: every VERSION of every outside-tree path is its own blob, so this reads
+a few thousand objects, not eighty — but it does so in two batched `cat-file`
+calls and finishes in about three seconds. It is cheaper than pickaxing the
+history per payload key (~8 s per pattern) and, unlike that, it inspects
+content rather than trusting a path or an extension.
 """
 
 from __future__ import annotations
@@ -51,10 +56,17 @@ PAYLOAD_KEYS = (b"skeleton_polyline_px", b"pixel_anchors", b"half_widths_px", b"
 # counts when it also carries a long run of numeric literals. Without this the
 # net cries wolf on every release note that mentions a field name, and a net
 # that always fires is one nobody reads.
-_NUMBER_RUN = re.compile(rb"(?:-?\d+(?:\.\d+)?\s*,\s*){40,}")
+# The separator has to tolerate brackets, not just commas: dense geometry is
+# just as often nested (`anchors_template: [[x, y], …]`, `outline_paths`) as
+# flat, and a comma-only run breaks at every `],[` — so a dump made only of
+# coordinate PAIRS would have slipped through while looking guarded.
+_NUMBER_RUN = re.compile(rb"(?:-?\d+(?:\.\d+)?[\s,\[\]]+){40,}")
 
 # Trees whose contents are source, tests, tooling or documentation about the
 # format. `/audit-licenses` states the same rule in prose.
+# `data/` is deliberately NOT here: `datenablage.md` defines it as data, not
+# code, and it is the most natural place for someone to put an authored
+# payload — exempting it would blind the guard exactly where it is needed.
 CODE_TREES = (
     "core/",
     "api/",
@@ -63,7 +75,6 @@ CODE_TREES = (
     "tests/",
     "docs/",
     "alembic/",
-    "data/",
     "scripts/",
     "changelog.d/",
     ".claude/",
@@ -175,6 +186,27 @@ def payload_blobs() -> dict[str, str]:
         return _blobs_carrying_payload(_candidate_blobs())
     except (subprocess.CalledProcessError, FileNotFoundError) as exc:
         pytest.skip(f"git history not available here: {exc}")
+
+
+@pytest.mark.parametrize(
+    ("shape", "body", "expected"),
+    [
+        # A flat width array — the shape that happened to be present in the
+        # blobs already on record.
+        ("flat", b'"half_widths_px": [' + b", ".join(b"0.5" for _ in range(50)) + b"]", True),
+        # Coordinate PAIRS: `],[` between the numbers. A comma-only separator
+        # broke the run here, so this dump would have passed as clean.
+        ("nested pairs", b'"anchors_template": [' + b", ".join(b"[1.0, 2.0]" for _ in range(50)) + b"]", True),
+        # Prose and code name the fields without carrying the numbers.
+        ("prose mention", b"The payload carries `half_widths_px` and `outline_paths` per glyph.", False),
+        # Numbers without a payload key are not a template dump.
+        ("bare numbers", b"[" + b", ".join(b"3" for _ in range(200)) + b"]", False),
+    ],
+)
+def test_detector_matches_payload_shapes_not_mentions(shape: str, body: bytes, expected: bool) -> None:
+    """The detector needs a payload key AND numbers travelling with it."""
+    detected = any(key in body for key in PAYLOAD_KEYS) and bool(_NUMBER_RUN.search(body))
+    assert detected is expected, f"{shape}: expected detected={expected}"
 
 
 def test_no_new_reserved_blob_in_history(payload_blobs: dict[str, str]) -> None:
