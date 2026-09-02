@@ -49,7 +49,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **K** — k0-Protokoll §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Lesart §1 · Lesefalle §1 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Mindestbelegung (Eigenhand) §5
-- **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
+- **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
@@ -59,7 +59,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **U** — Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschrift §1
-- **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Trace §2 · Wortvorrat §5
+- **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zeilen-Gate (Laufform) §2 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
 
@@ -1294,7 +1294,8 @@ Override misst gegen sein eigenes Quell-Specimen konstruktionsbedingt ~0.
 im Repo streng festgelegt: eigener try/except, angehängt *nach* dem
 stabilen Block, und der **Headline-Nachweis ist Pflicht** — ein Lauf vor
 und nach der Einführung muss bis zur letzten Stelle identisch sein. Die
-Linie dieser Spalten: Slant (R5) → Gleichzug (`jul30`) → `meas` (`aug02`).
+Linie dieser Spalten: Slant (R5) → Gleichzug (`jul30`) → `meas` (`aug02`)
+→ Naht-Winkel (`sep02`).
 
 **Slant-Spalte** — Report-Spalte, die die gemessene Schräglage der Vorlage
 gegen die der komponierten Zeile stellt (90° = senkrecht), aus dem
@@ -1307,6 +1308,24 @@ Stift ist gesprungen); **(b) EINE STRICHBREITE** — zwei fast parallele
 Pfadstücke in einem bestimmten Abstandsband lesen sich als doppelt breiter
 Strich („Doppelung“). Exaktes Nachfahren (Retrace) und transversales
 Kreuzen sind erlaubt. `tools/wordbench/gleichzug.py`.
+
+**Naht-Winkel** *(`seam_deg`)* — wie stark die Feder an der **Naht**
+abknickt, also dort, wo ein generierter Verbinder den Buchstaben verlässt
+(`dep`, Abgang) und den nächsten erreicht (`arr`, Ankunft). Gemessen wird
+die Richtungsdifferenz **Abgehend minus Ankommend in Schreibrichtung**, in
+Grad, positiv = die Feder dreht gegen den Uhrzeigersinn; das Fenster ist
+mit 0,05 xh Bogenlänge bewusst *kleiner* als die 0,12 xh, auf die der
+Composer seine Verbinder-Tangenten ausrichtet — auf dem Fenster der
+Konstruktion selbst gemessen wäre der Restknick per Definition null. Auf
+der eingefrorenen 1922er Worttafel geht der Verbinder im Median **+11,87°**
+steiler ab, als der Buchstabe zuletzt lief, und kommt **−3,26°** flacher
+an (Prüfung 2026-09-02, 206 von 214 Joins). Ausgeschlossen und gezählt:
+Verbinder mit vorangestelltem Versal-Rückzug (deren „Abgang“ ist eine
+gewollte 180°-Kehre). Echte Kehren (ſ/w/r/v) bleiben drin — Duktus, kein
+Defekt. Report-Spalte, nie Teil des Loss.
+*Technisch:* `tools/wordbench/seam.py::seam_angles`, `SEAM_WINDOW`;
+Blockzeilen `seam_dep_median` / `seam_arr_median` (vorzeichenbehaftet) und
+`seam_*_abs_median`. → tools/wordbench/README.md
 
 **Natürlichkeitsmetrik (Sütterlin)** — die zweite, *referenzfreie* Metrik:
 Weil Sütterlin einen pixeligen Scan mit konstanter Strichbreite hat, wäre
@@ -1334,6 +1353,24 @@ geändert wird der Composer, nie das Lineal.
 **Re-Baseline** — der bewusste, menschlich entschiedene Neu-Export dieser
 Referenzen. **Zahlen über eine Re-Baseline hinweg sind nicht
 vergleichbar** und werden im Journal ausdrücklich als solche markiert.
+
+**Wurzel-Digest** *(`root_digest`)* — der Fingerabdruck einer
+Fixture-Wurzel, damit man einer Kennzahl ansieht, **worauf** sie gemessen
+wurde: SHA-256 über die *sortierte* Liste aus (relativem Pfad, Größe,
+SHA-256 der Bytes) aller Dateien der Wurzel. Deterministisch (die
+Sortierung ist die einzige Reihenfolge), blind für Zeitstempel und Rechte
+(eine kopierte Wurzel behält ihre Identität), empfindlich schon gegen ein
+einzelnes gekipptes Byte oder eine bloß hinzugefügte Datei. Weil die
+Wurzeln gitignored sind, hinterlässt ein Neu-Export sonst keine Spur — die
+Prüfung vom 2026-09-02 fand ein Zahlenpaar, dessen Grundlage niemand mehr
+rekonstruieren konnte (die **undeklarierte Re-Baseline**). Hausregel:
+**jede genannte Headline nennt `exported_at` + die ersten 12 Hex daneben**;
+`--expect-root <Präfix>` macht die erwartete Grundlage zur Vorbedingung und
+bricht *vor* dem Messen ab.
+*Technisch:* `tools/wordbench/run.py::root_digest`, Kopfzeilen `root:` /
+`digest=`, volle Digests im `--json`-Report unter `roots`; im selben Zug
+prüft der Messlauf das `page_sha256` des Manifests gegen die Tafel-Bytes.
+→ tools/wordbench/README.md
 
 **MAD** *(median absolute deviation)* — die robuste Streuung: Median der
 absoluten Abweichungen vom Median. Anders als die Standardabweichung

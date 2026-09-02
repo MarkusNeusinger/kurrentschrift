@@ -162,7 +162,13 @@ Seite als `/schriftkunde.md`) war der Vorläufer und ist in diesem Pfad
 aufgegangen. Weil der Pfad für Menschen unsichtbar ist, prüft ihn
 `.github/workflows/bot-serving-check.yml` täglich gegen den
 Cloud-Run-Origin — anyplots Alarm, der dort vier stille Wochen mit 502
-für jeden Crawler beendet hat.
+für jeden Crawler beendet hat. Der Wächter schreibt keine Erwartung
+selbst hin: Er checkt das Repo aus und liest Route **und** Titel je
+Seite aus den committeten Dateien unter `app/prerender/` (Route aus dem
+Pfad, Titel per `grep` aus der Datei). Eine Copy-Änderung zieht ihn
+damit automatisch nach, jede neue vorgerenderte Seite ist ab dem Tag
+ihres Commits mitgeprüft — und ein Fehlschlag legt ein Issue mit festem
+Titel an, das der nächste grüne Lauf wieder schließt.
 
 **Auffindbarkeit (2026-08-28):** Ein Sitzungsprotokoll eines Assistenten
 vom selben Tag hat gezeigt, dass die ganze Kette an der ersten Stufe

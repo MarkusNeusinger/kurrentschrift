@@ -35,6 +35,11 @@ uv run python -m tools.wordbench.export_fixtures --set all
 uv run python -m tools.wordbench.run --style suetterlin
 uv run python -m tools.wordbench.run --style suetterlin --set pairs
 
+# Optional but recommended for anything you will QUOTE: pin the base. The run
+# aborts before measuring unless every selected root's digest starts with one
+# of the given prefixes (--set all selects two roots, so give two).
+uv run python -m tools.wordbench.run --set all --expect-root 219182,9f94ba
+
 # Optional: overlay PNGs (specimen skeleton blue, composed centerlines red) + JSON report
 uv run python -m tools.wordbench.run --artifacts runs/dev/overlays --json runs/dev/report.json
 
@@ -82,6 +87,36 @@ experiment cannot "improve" by sliding the word around. Re-exporting fixtures
 is an explicit human re-baseline; before/after numbers are not comparable
 across it.
 
+### Which base a run measured (`root_digest`, `--expect-root`)
+
+The roots are gitignored, so a re-export leaves no diff — for a while nobody
+could tell which base a quoted headline belonged to (the audit of 2026-09-02
+found a pair of numbers whose base was unreconstructable). Every run therefore
+states its base before it measures anything:
+
+```
+root: suetterlin-1922 exported_at=2026-08-14T06:02:45+00:00
+digest=219182189b93
+```
+
+- **`root_digest(root)`** (`run.py`) — SHA-256 over the **sorted** list of
+  `(relative POSIX path, size, SHA-256 of the bytes)` of every file under the
+  root. Deterministic (the sort is the only ordering), blind to mtimes and
+  permissions (copying a root keeps its identity), and sensitive to a single
+  flipped byte as well as to a file merely added, removed or renamed. The
+  header prints the first 12 hex; `--json` carries the full 64 under `roots`.
+- **Quote it.** A result is only comparable to another measured on the same
+  base, so a note, a `§14` entry or a PR body that states a headline states
+  `exported_at` + the 12-hex digest next to it.
+- **`--expect-root <prefix>[,<prefix>…]`** — the run aborts BEFORE composing
+  anything unless every selected root matches a prefix *and* every prefix
+  matches a root (a stale prefix is an error, not a pass). Use it for any run
+  whose number leaves the session.
+- **`page_sha256`** — the manifest already recorded the hash of every specimen
+  page a set was frozen from; the measuring run now re-checks it against
+  `data/sources/<source_id>/<page>` and aborts on a mismatch. Previously only
+  the rebuild path (`fetch_fixtures.py`) ever looked.
+
 ## Scoring (see metric.py for the precise definitions)
 
 ```
@@ -108,6 +143,33 @@ distance. Block medians plus `meas_excluded` (QC-rejected dissections and
 override-rendered joins, counted rather than averaged) are appended after
 the stable block. Also report-only: a headline must stay byte-identical
 across such a column's introduction.
+
+The newest member of that lineage is the **seam angle**
+(`seam n=<matched>/<joins> dep=… arr=…`, `seam.py`): how far the pen TURNS
+where a generated connector meets the letters it joins. Both ends use one
+sign convention — outgoing minus incoming in travel order, so positive means
+the pen turns counter-clockwise:
+
+- `dep` — `direction(connector, start) − direction(left glyph's last body
+  stroke, end)`;
+- `arr` — `direction(right glyph's first body stroke, start) −
+  direction(connector, end)`.
+
+Directions are read over `SEAM_WINDOW` = **0.05 xh of arc length**,
+deliberately smaller than the 0.12 xh window `core/compose.py` aligns its
+connector tangents on — measuring the residual kink on the composer's own
+window would measure it against its own construction. The connector's
+`CONNECT_OVERLAP` tuck samples are removed first, and a connector item
+carrying a capital's prefixed ornament retrace is excluded and counted
+(`seam_excluded: retrace=…`): its "departure" is a designed 180° turnaround.
+Genuine reversals (the ſ/w/r/v turnarounds) are kept — they are ductus, not
+defect, and a median carries them. Per row the medians are SIGNED over that
+entry's joins; the block lines pool every matched join:
+`seam_dep_median` / `seam_arr_median` (signed) and
+`seam_dep_abs_median` / `seam_arr_abs_median`. On the frozen 1922 word plate
+the composer departs `+11.87°` (|Δ| 13.10) and arrives `−3.26°` (|Δ| 11.18)
+over 206 of 214 joins — the number the "Austritts-Kollinearität" class rule
+is meant to move.
 - `width` — |log| of the total-ink-width ratio: spacing/rhythm errors that
   per-point chamfer barely sees. For PAIRS this component carries a constant
   positive bias (the plate draws lead-in/lead-out strokes the composed
@@ -122,6 +184,8 @@ across such a column's introduction.
 ## Output contract (parsed by the experiment loop — keep stable)
 
 ```
+root: suetterlin-1922 exported_at=2026-08-14T06:02:45+00:00
+digest=219182189b93
 word wenn            loss 0.202180  trans 0.148 cover 0.176 width 0.370  (tx=22, ty=1)
 ---
 bench_loss:      0.184426
@@ -134,11 +198,17 @@ words_skipped_ids: Wer,Soldaten,muß,…
 comp_transition: 0.166240
 comp_coverage: 0.185325
 comp_width: 0.223770
+runtime_s:       31.4
 ```
 
 Byte-stable grep anchor: `grep "^bench_loss:" run.log`. The pairs block
 (`--set pairs`/`all`) mirrors it with `pair_loss:`, `worst_pair:`,
 `pairs_scored/skipped/failed`, `pairs_skipped_ids:` and `pair_comp_*` lines.
+The two header lines precede everything (one pair per selected root);
+`runtime_s:` closes the run, after the last block. Elided from the example
+above, since they vary with the fixture set: the report-only medians
+(`slant_*`, `gleichzug_*`, `meas_*`, `seam_*`), which follow the component
+block inside each block and never displace it.
 
 ## Overlays
 
