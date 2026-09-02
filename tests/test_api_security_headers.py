@@ -106,10 +106,12 @@ def _fresh_state():
     the previous test's.
     """
     csp_module._seen.clear()
+    csp_module._overflow = 0
     public_limiter.reset()
     write_limiter.reset()
     yield
     csp_module._seen.clear()
+    csp_module._overflow = 0
 
 
 async def test_a_public_read_carries_both_headers(api: Harness):
@@ -212,19 +214,32 @@ async def test_an_oversized_body_is_refused_before_it_is_parsed(api: Harness):
     assert csp_module._seen == {}
 
 
-async def test_the_violation_memo_cannot_grow_without_bound(api: Harness):
+async def test_the_violation_memo_cannot_grow_without_bound(api: Harness, caplog):
     """A policy with one wrong directive per page would otherwise grow a dict
-    behind a public POST, one entry per distinct blocked URL."""
+    behind a public POST, one entry per distinct blocked URL.
+
+    And past the cap the LOG must not become the new leak: a violation with no
+    counter of its own would look "seen for the first time" on every single
+    report. The overflow is counted and announced once.
+    """
     original = public_limiter.per_minute
     # The bucket is not the subject here, and 210 requests in a millisecond is
     # not what it exists to allow.
     public_limiter.per_minute = 0
+    overflow = 10
     try:
-        for i in range(csp_module._MAX_TRACKED + 10):
-            body = {"csp-report": {"effective-directive": "img-src", "blocked-uri": f"https://example.invalid/{i}"}}
-            res = await api.client.request("POST", "/csp-report", json_body=body)
-            assert res.status == 204
+        with caplog.at_level(logging.WARNING, logger="api.routers.csp"):
+            for i in range(csp_module._MAX_TRACKED + overflow):
+                body = {"csp-report": {"effective-directive": "img-src", "blocked-uri": f"https://example.invalid/{i}"}}
+                res = await api.client.request("POST", "/csp-report", json_body=body)
+                assert res.status == 204
     finally:
         public_limiter.per_minute = original
         public_limiter.reset()
     assert len(csp_module._seen) == csp_module._MAX_TRACKED
+    assert csp_module._overflow == overflow
+    # One line per tracked violation, plus exactly one about the overflow.
+    # `"CSP report ("` and not `"CSP report"` — the overflow line says
+    # "CSP reports:" and would otherwise be counted as a violation of its own.
+    assert caplog.text.count("CSP report (") == csp_module._MAX_TRACKED
+    assert caplog.text.count("CSP reports: more than") == 1

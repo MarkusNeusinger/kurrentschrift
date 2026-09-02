@@ -74,6 +74,11 @@ _MAX_TRACKED = 200
 
 _lock = threading.Lock()
 _seen: dict[tuple[str, str, str], int] = {}
+# How many reports arrived after the memo filled up. Counted, not logged: a
+# violation past the cap has no count of its own, so "first time seen" would be
+# true forever and every single report would produce a line — the flood the
+# memo exists to prevent, arriving through the door left open for it.
+_overflow = 0
 
 
 def _field(report: dict[str, Any], *names: str) -> str:
@@ -110,14 +115,29 @@ def _reports(payload: Any) -> list[dict[str, Any]]:
 
 def _record(report: dict[str, Any]) -> None:
     """Log a violation the first time it is seen, then every hundredth time."""
+    global _overflow
     directive = _field(report, "effective-directive", "effectiveDirective", "violated-directive", "violatedDirective")
     blocked = _field(report, "blocked-uri", "blockedURL", "blockedURI")
     document = _field(report, "document-uri", "documentURL", "documentURI")
     key = (directive, blocked, document)
     with _lock:
-        count = _seen.get(key, 0) + 1
-        if key in _seen or len(_seen) < _MAX_TRACKED:
+        if key in _seen:
+            count = _seen[key] + 1
             _seen[key] = count
+        elif len(_seen) < _MAX_TRACKED:
+            count = 1
+            _seen[key] = count
+        else:
+            _overflow += 1
+            count = None
+            announce_overflow = _overflow == 1
+    if count is None:
+        if announce_overflow:
+            logger.warning(
+                "CSP reports: more than %d distinct violations seen — further NEW ones are counted, not logged",
+                _MAX_TRACKED,
+            )
+        return
     if count == 1 or count % _REPEAT_INTERVAL == 0:
         logger.warning(
             "CSP report (#%d): %s blocked %s on %s — disposition=%s, source=%s:%s",
