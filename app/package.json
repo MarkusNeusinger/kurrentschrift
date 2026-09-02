@@ -14,7 +14,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "fonts:sync": "node scripts/sync-fonts.mjs",
-    "type-floor": "node scripts/type-floor.mjs"
+    "type-floor": "node scripts/type-floor.mjs",
+    "touch-targets": "node scripts/touch-targets.mjs"
   },
   "engines": {
     "node": ">=22"

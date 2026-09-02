@@ -21,6 +21,7 @@ import { Link as RouterLink } from 'react-router-dom';
 
 import { PAGE_WIDTHS } from '@/components/PageContainer';
 import { de } from '@/locales';
+import { hitArea, TOUCH_TARGET } from '@/styles/hitArea';
 import { display, paper } from '@/styles/paper';
 
 export interface HeaderBarProps {
@@ -89,6 +90,10 @@ export function Wordmark({ to, onClick }: WordmarkProps) {
       to={to}
       onClick={onClick}
       sx={{
+        // The wordmark is a link home (and the 5-tap admin gesture): 30px tall
+        // as drawn, so it takes the §9.3 floor from an invisible hit area. It
+        // stands alone in the bar, so an overlay steals nothing.
+        ...hitArea(),
         display: 'inline-flex',
         alignItems: 'baseline',
         textDecoration: 'none',
@@ -134,7 +139,18 @@ export interface HeaderNavLinkProps {
 }
 
 /** One area link: Playfair, ink when current, with the viridian hairline that
- *  grows from 0 to full width on hover. */
+ *  grows from 0 to full width on hover.
+ *
+ *  The box is padded out to the 44px touch floor (design-system §9.3, binding
+ *  since 2026-09-03) rather than wearing an invisible `hitArea()`. On phones the
+ *  bar stacks into two rows whose text baselines sit 28px apart; a 44px overlay
+ *  on each would have made the two rows' targets OVERLAP by 16px, so a tap
+ *  aimed at „Lesen" could land on „Schriftkunde". Real padding grows the rows
+ *  apart instead, which is the honest version of the same rule.
+ *
+ *  The hairline moved onto an inner span in the same move: on the padded link
+ *  it would otherwise sit 4px below the PADDING and span its full width, far
+ *  from the word it underlines. */
 export function HeaderNavLink({ label, to, active, exact = false, sx }: HeaderNavLinkProps) {
   return (
     <Link
@@ -153,6 +169,27 @@ export function HeaderNavLink({ label, to, active, exact = false, sx }: HeaderNa
           position: 'relative',
           whiteSpace: 'nowrap',
           transition: 'color .25s',
+          // The 44px floor in BOTH edges — „Lesen" is only 40px of text wide,
+          // so the horizontal padding is load-bearing too, not decoration.
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: TOUCH_TARGET,
+          minWidth: TOUCH_TARGET,
+          px: 0.5,
+          '&:hover': { color: paper.ink },
+          '&:hover .navrule::after': { width: '100%' },
+          // Visible keyboard-focus ring (2px viridian, offset).
+          '&:focus-visible': { color: paper.ink, outline: `2px solid ${paper.viridian}`, outlineOffset: 3 },
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      <Box
+        component="span"
+        className="navrule"
+        sx={{
+          position: 'relative',
           '&::after': {
             content: '""',
             position: 'absolute',
@@ -163,15 +200,10 @@ export function HeaderNavLink({ label, to, active, exact = false, sx }: HeaderNa
             bgcolor: paper.viridian,
             transition: 'width .3s ease',
           },
-          '&:hover': { color: paper.ink },
-          '&:hover::after': { width: '100%' },
-          // Visible keyboard-focus ring (2px viridian, offset).
-          '&:focus-visible': { color: paper.ink, outline: `2px solid ${paper.viridian}`, outlineOffset: 3 },
-        },
-        ...(Array.isArray(sx) ? sx : [sx]),
-      ]}
-    >
-      {label}
+        }}
+      >
+        {label}
+      </Box>
     </Link>
   );
 }

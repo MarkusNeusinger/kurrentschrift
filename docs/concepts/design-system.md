@@ -381,20 +381,69 @@ setzen weiter `textDecoration: 'none'` in ihrem `sx` (ihre Trennung vom Text kom
 aus der Position, nicht aus der Auszeichnung). Gefüllte CTAs sind keine Links im
 Sinne dieser Regel; für sie gilt: Label ≥ 600 oder Fläche auf `viridianText`.
 
-### 9.3 Trefferflächen (Vorschlag — Freigabe durch den Autor offen)
+### 9.3 Trefferflächen (bindend — Entscheid des Autors, 2026-09-03)
 
-**Vorgeschlagene Regel, noch nicht bindend:** interaktive Ziele ≥ 44 px in der
-kleineren Kante (Apple HIG 44 pt, Material 48 dp); Ausnahme sind Links im
-Fließtext. Wo die Optik ein kleineres Element verlangt, trägt es eine unsichtbare
-Trefferfläche statt einer kleineren Wahrheit — `hitArea()` aus
-`app/src/styles/hitArea.ts` (ein zentriertes `::after` mit
-`max(100%, 44px)`; die Optik bleibt unverändert). WCAG 2.2 SC 2.5.8 (24 × 24 px)
-hielt die Seite schon vorher über die Abstandsausnahme; diese Regel richtet sich
-gegen die Plattformempfehlung, nicht gegen WCAG — deshalb ist sie ein Vorschlag,
-bis der Autor sie freigibt. Angewandt ist sie bereits auf `ReplayButton`,
-`InfoHint`, die Quiz-Nebenknöpfe („beenden", „Einstellungen ändern"), das
-Detail-Schließen der Tafel, die Federprobe-Chips und „Link kopieren"; die
-Umschaltgruppen wachsen unter `sm` per Theme auf `minHeight: 44`.
+**Interaktive Ziele messen ≥ 44 px in der kleineren Kante** (Apple HIG 44 pt,
+Material 48 dp); Ausnahme sind Links im Fließtext. Wo die Optik ein kleineres
+Element verlangt, trägt es eine unsichtbare Trefferfläche statt einer kleineren
+Wahrheit — `hitArea()` aus `app/src/styles/hitArea.ts` (ein zentriertes
+`::after` mit `max(100%, 44px)`; die Optik bleibt unverändert).
+
+Die Regel geht über WCAG hinaus: SC 2.5.8 (24 × 24 px) hielt die Seite schon
+vorher über die Abstandsausnahme, hier gilt die Plattformempfehlung. Sie war bis
+zum 03.09.2026 als Vorschlag notiert und ist seit dem Entscheid des Autors
+bindend.
+
+Angewandt auf `ReplayButton`, `InfoHint`, die Quiz-Nebenknöpfe („beenden",
+„Einstellungen ändern"), das Detail-Schließen der Tafel, die Federprobe-Chips und
+„Link kopieren"; die Umschaltgruppen wachsen unter `sm` per Theme auf
+`minHeight: 44`.
+
+**Wo Nachbarn dicht stehen, wächst das Element statt seiner Trefferfläche.** Die
+drei Bereichslinks der Kopfleiste sind der Fall: auf dem Handy bricht die Leiste
+in zwei Zeilen, deren Textmitten 28 px auseinanderliegen — zwei unsichtbare
+44er-Flächen hätten sich um 16 px überlappt, und ein Tipp auf „Lesen" wäre auf
+„Schriftkunde" gelandet. `HeaderNavLink` bekommt darum echtes Innenmaß
+(`minHeight`/`minWidth` 44, `px`), womit die Zeilen auseinanderrücken; die
+Haarlinie sitzt seither an einem inneren `span`, damit sie weiter am Wort klebt
+statt am Polster. Die Leiste wächst dadurch auf schmalen Geräten von 82 auf
+121 px, auf `sm+` bleibt sie unverändert. Faustregel: Überlagerung nur dort, wo
+das Element allein steht.
+
+**Offen — Autor-Entscheid: die Zellen der Schreibtafel.** Die geschriebene Tafel
+setzt das Alphabet als SVG-Zellen, die ihre Zeile lückenlos kacheln (bei 390 px
+gemessen: 41–98 px breit, Lücke 0, Höhe 73 px). Die schmalsten reißen den Boden
+in der Breite. Beide Auswege kosten etwas: eine unsichtbare Fläche griffe in den
+Nachbarbuchstaben und nähme ihm den Tipp, eine Verbreiterung baut das
+Nachschlage-Raster um, dessentwegen die Seite existiert. WCAG 2.2 SC 2.5.8 ist
+mit 41 × 73 px deutlich erfüllt. Bis zur Entscheidung stehen die Zellen als
+benannte Ausnahme in `touch-targets.mjs` — sichtbar gezählt, nicht stillschweigend
+übersprungen.
+
+**Messbar statt behauptet**, wie der Typo-Boden: `npm run touch-targets`
+(`app/scripts/touch-targets.mjs`) fährt **alle** öffentlichen Routen an und misst
+**jedes** interaktive Element — 217 sind es heute. Ausgenommen ist genau die eine
+Ausnahme der Regel, und zwar an dem Merkmal, das §9.2 ihr gibt: ein `<a>` mit
+Unterstreichung ist ein Fließtext-Link (84 Stück); Chrome, das nur wie ein Link
+aussieht, setzt `textDecoration: none` und wird mitgemessen. Eine gepflegte
+Liste stand vorher hier und war die falsche Form — sie bestand, während die
+Lesart-Chips und die Tafel-Schrittknöpfe den Boden rissen.
+
+Geprüft wird die echte Trefferfläche statt einer berechneten Größe: für jede
+Achse, auf der ein Element kleiner als 44 px GEZEICHNET ist, fragt das Skript per
+`document.elementFromPoint` an der Kante des 44er-Quadrats nach, und dort muss
+das Element selbst antworten. Das fängt den einen stillen Weg, auf dem die Regel
+bricht: ein `overflow: hidden` beschneidet das Pseudo-Element, die Zeichnung
+bleibt gleich und das Ziel schrumpft unbemerkt zurück. Achsen, auf denen die Box
+schon ≥ 44 px ist, werden nicht geprüft — dort trägt die Hilfe nichts, und die
+Trefferfläche eines Nachbarn dürfte den Punkt zu Recht gewinnen.
+Kein Gate in der CI: das Skript braucht die laufende Seite samt erreichbarer API.
+
+**Die Zeilenteilung zählt mit.** Wo umbrechende Elemente eine unsichtbare
+Trefferfläche tragen, muss der ZEILENABSTAND sie fassen, sonst greift die untere
+Zeile über die obere und nimmt ihr die Tipps (gemessen an den Federprobe-Chips:
+28 px Chip + 12 px Lücke = 40 px Rasterhöhe, die untere Reihe gewann). Regel:
+`rowGap` so wählen, dass Elementhöhe + Lücke ≥ 44 px.
 
 ---
 
@@ -408,8 +457,12 @@ Umschaltgruppen wachsen unter `sm` per Theme auf `minHeight: 44`.
   `theme/components.ts` (Fokusring, Link-Auszeichnung, Typo-Boden der
   MUI-`small`-Größen, `minHeight` der Umschaltgruppen unter `sm`) und
   `styles/hitArea.ts` (Trefferfläche). Eine neue Ausnahme gehört dorthin, nicht
-  an die Aufrufstelle. Gegenprobe: `npm run type-floor` plus ein
-  Tastatur-Durchgang (§9.1).
+  an die Aufrufstelle. Gegenprobe: `npm run type-floor` (§9) und
+  `npm run touch-targets` (§9.3) — beide gegen die laufende Seite — plus ein
+  Tastatur-Durchgang für den Fokusring (§9.1), den kein Skript ersetzt.
+  Ein neues Bedienelement muss nirgends nachgetragen werden — der Sweep findet
+  jedes von selbst; nur eine begründete Ausnahme gehört benannt in
+  `app/scripts/touch-targets.mjs`.
 - **Der Admin ist mitgemeint**, wo §3 (Typo) und §7 (`HeaderBar`) es sagen: eine Änderung
   an Leiter oder Kopfleiste wird an **beiden** Leisten (`PublicHeader` +
   `sections/admin/shell/AdminHeader`) und an den Werkbank-Köpfen (`shell/Panel.tsx`,

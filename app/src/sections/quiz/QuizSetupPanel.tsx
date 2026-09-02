@@ -153,7 +153,11 @@ function Row({
           </Typography>
           {info}
         </Box>
-        <Typography sx={{ fontFamily: garamond, fontSize: { xs: 13, sm: 13.5 }, color: paper.sepia, mt: 0.25 }}>
+        {/* `caption` (14px), not an ad-hoc 13/13.5: the row hint is the last
+            place on the public site under the §9 floor. It renders only for
+            settings that actually offer a choice (#447), which is why an
+            earlier measuring pass walked past it. */}
+        <Typography variant="caption" component="p" sx={{ fontFamily: garamond, color: paper.sepia, mt: 0.25 }}>
           {hint}
         </Typography>
       </Box>

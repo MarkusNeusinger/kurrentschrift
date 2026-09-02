@@ -20,6 +20,7 @@ import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { trackEvent } from '@/lib/analytics';
 import { de } from '@/locales';
 import { paths } from '@/routes/paths';
+import { hitArea } from '@/styles/hitArea';
 
 /** Where the miss came from — a URL that matches no route is a different
  *  problem from a route that rendered and then threw. */
@@ -55,7 +56,7 @@ export function NotFoundPage({ source = 'catch_all' }: { source?: NotFoundSource
         <Typography color="text.secondary" sx={{ maxWidth: 480 }}>
           {de.common.notFound.body}
         </Typography>
-        <Button component={RouterLink} to={paths.home} variant="outlined" sx={{ mt: 1 }}>
+        <Button component={RouterLink} to={paths.home} variant="outlined" sx={[hitArea(), { mt: 1 }]}>
           {de.common.notFound.toHome}
         </Button>
       </Box>

@@ -28,6 +28,7 @@ import { de, fmt } from '@/locales';
 import { paths } from '@/routes/paths';
 import { SECTION_IDS } from '@/sections/schriftkunde/sections';
 import { lesartenState, showsDictionaryNote } from '@/sections/vergleichen/lesartenPanel';
+import { hitArea } from '@/styles/hitArea';
 import { display, garamond, paper } from '@/styles/paper';
 
 const t = de.vergleichen;
@@ -159,7 +160,9 @@ export function VergleichenView() {
             }}
             sx={{ mb: 1 }}
           />
-          <Stack direction="row" sx={{ flexWrap: 'wrap', alignItems: 'center', gap: 1, mb: 2.5 }}>
+          {/* rowGap 2 for the same reason as the Federprobe chips: 28px chip +
+              16px = the 44px pitch their hit areas need to not overlap. */}
+          <Stack direction="row" sx={{ flexWrap: 'wrap', alignItems: 'center', columnGap: 1, rowGap: 2, mb: 2.5 }}>
             <Typography component="span" variant="body2" sx={{ color: paper.inkSoft }}>
               {t.examplesLabel}
             </Typography>
@@ -170,7 +173,7 @@ export function VergleichenView() {
                 size="small"
                 variant="outlined"
                 onClick={() => setInput(ex)}
-                sx={{ fontFamily: garamond, borderColor: paper.line, color: paper.ink }}
+                sx={[hitArea(), { fontFamily: garamond, borderColor: paper.line, color: paper.ink }]}
               />
             ))}
           </Stack>

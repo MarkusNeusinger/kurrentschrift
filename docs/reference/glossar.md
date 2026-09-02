@@ -2583,9 +2583,16 @@ Plattformempfehlung (Apple HIG 44 pt, Material 48 dp) und einem Entwurf, dessen
 kleine Marken — das Wiederholen-↻ über der Tinte, das Kurrent-i des `InfoHint`,
 das leise „beenden" — absichtlich leise sind: **eine unsichtbare Trefferfläche
 statt einer kleineren Wahrheit.** WCAG 2.2 SC 2.5.8 (24 × 24 px) hielt die Seite
-schon vorher über die Abstandsausnahme; die 44-px-Regel selbst ist bis zur
-Freigabe des Autors ein Vorschlag (design-system.md §9.3).
-→ concepts/design-system.md §9.3 · `app/src/styles/hitArea.ts`
+schon vorher über die Abstandsausnahme; die 44-px-Regel geht bewusst darüber
+hinaus und ist seit dem **Entscheid des Autors vom 03.09.2026 bindend**
+(design-system.md §9.3, bis dahin als Vorschlag notiert). Nachgeprüft wird sie
+nicht an der berechneten Größe, sondern an der echten Trefferfläche:
+`npm run touch-targets` fragt per `elementFromPoint` in 22 px Abstand vom
+Mittelpunkt nach — das fängt den stillen Bruch, bei dem ein `overflow: hidden`
+das Pseudo-Element beschneidet und das Ziel bei unveränderter Zeichnung
+zurückschrumpft.
+→ concepts/design-system.md §9.3 · `app/src/styles/hitArea.ts` ·
+`app/scripts/touch-targets.mjs`
 
 ### Eigenhand-Erfassung
 

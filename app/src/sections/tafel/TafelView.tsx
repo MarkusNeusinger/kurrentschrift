@@ -25,6 +25,7 @@ import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { chartUrl } from '@/lib/api';
 import type { SourceOut } from '@/lib/api';
 import { de } from '@/locales';
+import { hitArea } from '@/styles/hitArea';
 import { garamond, paper } from '@/styles/paper';
 import { useGrundtafeln, type Grundtafel } from '@/sections/tafel/useGrundtafeln';
 import { useLesetafelPdf } from '@/sections/tafel/useLesetafelPdf';
@@ -461,7 +462,7 @@ export function TafelView() {
         {/* The printable Lesetafel — built in the browser from the same data
             the page shows (useLesetafelPdf); the hint says what the file holds. */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mt: -1.5, mb: { xs: 4, sm: 5 } }}>
-          <Button variant="outlined" size="small" onClick={pdf.build} disabled={pdf.state === 'building'} sx={{ flexShrink: 0 }}>
+          <Button variant="outlined" size="small" onClick={pdf.build} disabled={pdf.state === 'building'} sx={[hitArea(), { flexShrink: 0 }]}>
             {pdf.state === 'building' ? de.tafel.pdf.building : de.tafel.pdf.button}
           </Button>
           <Typography variant="body2" sx={{ color: pdf.state === 'error' ? 'error.main' : paper.inkSoft, maxWidth: '60ch' }}>
