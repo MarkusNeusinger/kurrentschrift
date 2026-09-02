@@ -16,9 +16,14 @@ import {
 
 import { InfoHint } from '@/components/InfoHint';
 import { PRESETS, type LineatureConfig } from '@/lib/lineatur';
-import { MAX_LINE_LEN, MAX_LINES, MAX_TEXT_CHARS } from '@/lib/uebungstext';
+import { MAX_LINES, MAX_TEXT_CHARS } from '@/lib/uebungstext';
 import { de, fmt } from '@/locales';
+import { mmLabel } from '@/sections/worksheet/status';
 import { tokens } from '@/theme';
+
+/** Upper end of one ratio part. The documented lineatures span 1:1:1 to
+ * 2:3:2; six parts leave room to experiment and still fit a row on A4. */
+export const MAX_RATIO = 6;
 
 // Overline section label with an optional (i) affordance to its right — the
 // detail that used to sit as a sentence under the control now lives behind the
@@ -45,6 +50,17 @@ function NumField(props: {
   disabled?: boolean;
 }) {
   const { label, value, onChange, min, max, step, unit, disabled } = props;
+  // `min`/`max` on a number input only bind its spinner — typing 99 into a
+  // 0..6 field is accepted by every browser, and 99 parts of Oberlänge left
+  // an empty A4 page with a live download button (audit 2026-09-02). So the
+  // value is brought back into range when the field is left: while it has the
+  // focus the writer keeps every keystroke, including the half-typed ones.
+  const clamp = (v: number) => {
+    if (!Number.isFinite(v)) return v;
+    if (min !== undefined && v < min) return min;
+    if (max !== undefined && v > max) return max;
+    return v;
+  };
   return (
     <TextField
       label={label}
@@ -57,6 +73,10 @@ function NumField(props: {
       // non-finite config as "blank preview" rather than snapping the value back.
       value={Number.isFinite(value) ? value : ''}
       onChange={(e) => onChange(parseFloat(e.target.value))}
+      onBlur={() => {
+        const clamped = clamp(value);
+        if (clamped !== value) onChange(clamped);
+      }}
       slotProps={{
         htmlInput: { min, max, step },
         input: unit
@@ -89,6 +109,15 @@ interface ConfigPanelProps {
   setPracticeRows: (n: number) => void;
   textStatus: { text: string; error: boolean } | null;
   busy: boolean;
+  /** Roughly how many characters one row holds at the chosen Mittellänge —
+   * the honest replacement for the flat "60" the help text used to promise. */
+  maxChars: number;
+  /** Said under the field when the ruling's script is not the one the
+   * Vorschrift is written in; null when the two agree. */
+  scriptMismatch: string | null;
+  /** Why there is nothing to print, or null when there is. Holds the PDF
+   * button and stands over the preview. */
+  sheetNote: string | null;
 }
 
 export function ConfigPanel({
@@ -109,6 +138,9 @@ export function ConfigPanel({
   setPracticeRows,
   textStatus,
   busy,
+  maxChars,
+  scriptMismatch,
+  sheetNote,
 }: ConfigPanelProps) {
   const isSchulheft = rulingThemeId === 'schulheft';
   return (
@@ -139,13 +171,18 @@ export function ConfigPanel({
         <Divider />
 
         <Box>
-          <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block', mb: 1.5 }}>
+          <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block' }}>
             {de.worksheet.config.ratioHeading}
           </Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 1.5 }}>
+            {de.worksheet.config.ratioParts}
+          </Typography>
+          {/* The documented lineatures run from 1:1:1 to 2:3:2; MAX_RATIO is
+              well clear of them and still keeps a row on the page. */}
           <Stack direction="row" spacing={1}>
-            <NumField label={de.worksheet.config.ratioAscender} value={cfg.ratioAscender} onChange={(v) => set({ ratioAscender: v })} min={0} step={0.5} />
-            <NumField label={de.worksheet.config.ratioXHeight} value={cfg.ratioXHeight} onChange={(v) => set({ ratioXHeight: v })} min={0.1} step={0.5} />
-            <NumField label={de.worksheet.config.ratioDescender} value={cfg.ratioDescender} onChange={(v) => set({ ratioDescender: v })} min={0} step={0.5} />
+            <NumField label={de.worksheet.config.ratioAscender} value={cfg.ratioAscender} onChange={(v) => set({ ratioAscender: v })} min={0} max={MAX_RATIO} step={0.5} />
+            <NumField label={de.worksheet.config.ratioXHeight} value={cfg.ratioXHeight} onChange={(v) => set({ ratioXHeight: v })} min={0.1} max={MAX_RATIO} step={0.5} />
+            <NumField label={de.worksheet.config.ratioDescender} value={cfg.ratioDescender} onChange={(v) => set({ ratioDescender: v })} min={0} max={MAX_RATIO} step={0.5} />
           </Stack>
         </Box>
 
@@ -262,7 +299,7 @@ export function ConfigPanel({
           <SectionLabel
             info={
               <InfoHint title={de.worksheet.text.heading}>
-                {fmt(de.worksheet.text.hint, { lines: MAX_LINES, chars: MAX_LINE_LEN })}
+                {fmt(de.worksheet.text.hint, { lines: MAX_LINES, xh: mmLabel(cfg.xHeightMm), chars: maxChars })}
               </InfoHint>
             }
           >
@@ -278,10 +315,17 @@ export function ConfigPanel({
             value={text}
             onChange={(e) => setText(e.target.value.slice(0, MAX_TEXT_CHARS))}
             placeholder={de.worksheet.text.placeholder}
-            helperText={textStatus?.text ?? de.worksheet.text.help}
+            // The status wins over the help text: a line the sheet cannot hold
+            // is named here, under the field, and not in a closed popover.
+            helperText={textStatus?.text ?? fmt(de.worksheet.text.help, { xh: mmLabel(cfg.xHeightMm), chars: maxChars })}
             error={textStatus?.error ?? false}
             slotProps={{ htmlInput: { maxLength: MAX_TEXT_CHARS, autoCapitalize: 'off', spellCheck: false } }}
           />
+          {scriptMismatch && (
+            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 1 }}>
+              {scriptMismatch}
+            </Typography>
+          )}
           <FormControlLabel
             sx={{ mt: 1 }}
             control={<Switch checked={trace} onChange={(e) => setTrace(e.target.checked)} disabled={!text.trim()} />}
@@ -312,7 +356,16 @@ export function ConfigPanel({
           helperText={de.worksheet.config.captionHelp}
         />
 
-        <Button variant="contained" size="large" startIcon={<DownloadIcon />} onClick={onDownload} disabled={busy}>
+        {/* Nothing to print means nothing to offer: an empty sheet used to
+            download as a blank page (audit 2026-09-02). The reason stands
+            over the preview, so the disabled button is never a riddle. */}
+        <Button
+          variant="contained"
+          size="large"
+          startIcon={<DownloadIcon />}
+          onClick={onDownload}
+          disabled={busy || sheetNote !== null}
+        >
           {de.worksheet.config.download}
         </Button>
       </Stack>

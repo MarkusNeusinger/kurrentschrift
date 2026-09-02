@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { CONFIG } from '@/global-config';
 import { fetchRenderWord, type ComposedWordOut } from '@/lib/api';
-import { textLines, type TextLine } from '@/lib/uebungstext';
+import { textLines, type InputLine, type TextLine } from '@/lib/uebungstext';
 
 const DEBOUNCE_MS = 450;
 
@@ -19,6 +19,9 @@ export interface WorksheetText {
   loading: boolean;
   /** Lines whose composition failed (the API unreachable); retried on the next edit. */
   failed: string[];
+  /** Rows past the sheet's line cap — never composed, but named in the status
+   * so the field's own limits do not swallow anything either. */
+  overflow: InputLine[];
 }
 
 export function useWorksheetText(text: string, sourceId: string = CONFIG.sourceId): WorksheetText {
@@ -27,12 +30,14 @@ export function useWorksheetText(text: string, sourceId: string = CONFIG.sourceI
   // forgotten again so the next edit retries it.
   const [answers, setAnswers] = useState<Map<string, ComposedWordOut | 'error'>>(() => new Map());
   const requested = useRef(new Set<string>());
-  const wanted = useMemo(() => textLines(text), [text]);
+  const read = useMemo(() => textLines(text), [text]);
+  const wanted = read.lines;
   const keyOf = (line: string) => `${sourceId}\n${line}`;
 
   useEffect(() => {
-    // One request per distinct line, however often it is typed.
-    const todo = [...new Set(wanted)].filter((line) => !requested.current.has(keyOf(line)));
+    // One request per distinct line, however often it is typed — two rows
+    // holding the same words share one composition.
+    const todo = [...new Set(wanted.map((l) => l.text))].filter((line) => !requested.current.has(keyOf(line)));
     if (!todo.length) return;
     const timer = setTimeout(() => {
       for (const line of todo) {
@@ -54,14 +59,15 @@ export function useWorksheetText(text: string, sourceId: string = CONFIG.sourceI
 
   return useMemo(() => {
     const lines = wanted.map((line): TextLine => {
-      const a = answers.get(keyOf(line));
-      return { text: line, composed: a && a !== 'error' ? a : null };
+      const a = answers.get(keyOf(line.text));
+      return { ...line, composed: a && a !== 'error' ? a : null };
     });
     return {
       lines,
-      loading: wanted.some((line) => !answers.has(keyOf(line))),
-      failed: wanted.filter((line) => answers.get(keyOf(line)) === 'error'),
+      loading: wanted.some((line) => !answers.has(keyOf(line.text))),
+      failed: wanted.filter((line) => answers.get(keyOf(line.text)) === 'error').map((line) => line.text),
+      overflow: read.overflow,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wanted, answers, sourceId]);
+  }, [wanted, read.overflow, answers, sourceId]);
 }

@@ -15,15 +15,15 @@ import { Box, Paper, Typography } from '@mui/material';
 
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
-import { lettersFromKeys } from '@/domain/glyphs';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { A4, PRESETS, RULING_THEMES, buildLineature, type LineatureConfig } from '@/lib/lineatur';
 import { lineaturePdf } from '@/lib/pdf';
-import { placeText, type PlacedText } from '@/lib/uebungstext';
+import { maxCharsPerLine, placeText } from '@/lib/uebungstext';
 import { de, fmt } from '@/locales';
 import { ConfigPanel } from '@/sections/worksheet/ConfigPanel';
 import { PreviewSvg } from '@/sections/worksheet/PreviewSvg';
-import { useWorksheetText, type WorksheetText } from '@/sections/worksheet/useWorksheetText';
+import { scriptMismatchNote, sheetNoteOf, textStatusOf, WRITTEN_SCRIPT } from '@/sections/worksheet/status';
+import { useWorksheetText } from '@/sections/worksheet/useWorksheetText';
 import { tokens } from '@/theme';
 
 const ratioLabel = (c: LineatureConfig) =>
@@ -34,7 +34,10 @@ const SITE_URL = 'kurrentschrift.ink';
 // The left footer string: the free-text caption (title/name) plus the live
 // spec (ratio + slant + pen angle), so a printed sheet carries its settings.
 // The site URL is placed in the opposite corner (see render below).
-function buildSpec(cfg: LineatureConfig, caption: string): string {
+// `mixedScript` adds the one thing the sheet could otherwise not tell about
+// itself: that the Vorschrift is written in another script than the ruling is
+// labelled with — a sheet on the table has no popover to open.
+function buildSpec(cfg: LineatureConfig, caption: string, mixedScript: boolean): string {
   const parts: string[] = [];
   const c = caption.trim();
   if (c) parts.push(c);
@@ -43,6 +46,7 @@ function buildSpec(cfg: LineatureConfig, caption: string): string {
   }
   if (cfg.showSlant && Number.isFinite(cfg.slantDeg)) parts.push(fmt(de.worksheet.spec.slant, { deg: cfg.slantDeg }));
   if (cfg.showPenAngle && Number.isFinite(cfg.penAngleDeg)) parts.push(fmt(de.worksheet.spec.pen, { deg: cfg.penAngleDeg }));
+  if (mixedScript) parts.push(de.worksheet.spec.vorschrift);
   return parts.join('  ·  ');
 }
 
@@ -55,25 +59,9 @@ function stripPreset(p: (typeof PRESETS)[number]): LineatureConfig {
   return cfg;
 }
 
-const quoted = (lines: string[]) => lines.map((l) => `„${l}“`).join(', ');
-
-// The status line under the text field: what is still being written or
-// failed, what the sheet leaves out and why, which letters stay blank.
-function textStatusOf(written: WorksheetText, placed: PlacedText): { text: string; error: boolean } | null {
-  const t = de.worksheet.text;
-  const notes: string[] = [];
-  if (written.failed.length) notes.push(t.error);
-  else if (written.loading) notes.push(t.loading);
-  if (placed.tooWide.length) notes.push(fmt(t.tooWide, { lines: quoted(placed.tooWide) }));
-  if (placed.noRow.length) notes.push(fmt(t.noRow, { lines: quoted(placed.noRow) }));
-  const letters = lettersFromKeys(placed.missing);
-  if (letters) notes.push(fmt(t.missing, { letters }));
-  return notes.length ? { text: notes.join(' · '), error: written.failed.length > 0 } : null;
-}
-
 // Sütterlin is the active authoring script (CONFIG.sourceId), so the worksheet
 // opens on its preset; Kurrent/Offenbacher stay one click away.
-const DEFAULT_PRESET = PRESETS.find((p) => p.id === 'suetterlin') ?? PRESETS[0];
+const DEFAULT_PRESET = PRESETS.find((p) => p.id === WRITTEN_SCRIPT) ?? PRESETS[0];
 
 export function WorksheetView() {
   const [cfg, setCfg] = useState<LineatureConfig>(() => stripPreset(DEFAULT_PRESET));
@@ -110,7 +98,6 @@ export function WorksheetView() {
   };
 
   const { segments, marks, rows } = useMemo(() => buildLineature(cfg), [cfg]);
-  const spec = buildSpec(cfg, caption);
   const written = useWorksheetText(text);
   const placed = useMemo(
     () =>
@@ -123,7 +110,11 @@ export function WorksheetView() {
       }),
     [written.lines, rows, cfg.xHeightMm, cfg.marginMm, trace, practiceRows],
   );
-  const textStatus = useMemo(() => textStatusOf(written, placed), [written, placed]);
+  const textStatus = useMemo(() => textStatusOf(written, placed, cfg.xHeightMm), [written, placed, cfg.xHeightMm]);
+  const scriptMismatch = scriptMismatchNote(presetId, text);
+  const sheetNote = sheetNoteOf(cfg, rows.length);
+  const spec = buildSpec(cfg, caption, scriptMismatch !== null && placed.placed.length > 0);
+  const maxChars = maxCharsPerLine(cfg.xHeightMm, cfg.marginMm, A4.widthMm - cfg.marginMm);
 
   const download = () => {
     const blob = lineaturePdf(segments, {
@@ -180,6 +171,9 @@ export function WorksheetView() {
             setPracticeRows={setPracticeRows}
             textStatus={textStatus}
             busy={written.loading}
+            maxChars={maxChars}
+            scriptMismatch={scriptMismatch}
+            sheetNote={sheetNote}
           />
 
           {/* Preview */}
@@ -187,6 +181,17 @@ export function WorksheetView() {
             <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
               {de.worksheet.preview}
             </Typography>
+            {/* A blank sheet says why it is blank — it used to look like a
+                finished page and downloaded as one (audit 2026-09-02). */}
+            {sheetNote && (
+              <Typography
+                role="status"
+                variant="body2"
+                sx={{ color: 'error.main', mb: 1.5, maxWidth: '44rem' }}
+              >
+                {sheetNote}
+              </Typography>
+            )}
             <Paper
               variant="outlined"
               sx={{
@@ -203,6 +208,7 @@ export function WorksheetView() {
                 footerRight={SITE_URL}
                 styles={rulingStyles}
                 shapes={placed.shapes}
+                rowMarks={placed.marks}
               />
             </Paper>
           </Box>
