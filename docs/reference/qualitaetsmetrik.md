@@ -9671,6 +9671,193 @@ mit deklariertem Re-Export). Quiz-seitig fällt `Stube` aus dem
 Wörter-Pool, bis die Glyphe existiert (gewolltes Gating: kein halb
 geschriebenes Wort).
 
+### Laufform LF10 `sep01` — Vorregistrierung: der Form-Abstand auf der Zeile
+
+Geschrieben und committet VOR der ersten Zahl. Anlass: der in LF8
+benannte Rettungsweg (§7.9 in tintenfolger.md): das Sprung-Gate fängt
+Zeilen mit Anker-SPRÜNGEN (ue/F/ae/b/K), nicht die Form-Drift ohne
+Sprung — v 2,86 (flaches Segment statt der Diagonale), E 2,62 (der
+Querstrich sitzt seitlich), P 2,31 (Bogen/Fuß neben der Tafel), k 2,47
+(die Schleife verzogen) passierten es sichtbar verzogen; der Autor
+stellte die vier mit „Form-Abstand-Arm abwarten" zurück (Todoist-Auftrag
+vom 29.08.). Seither hat das Kopf-Gate (LF9, Datenaktion `aug29`
+15:09Z) v, E und k mit gelöscht; P (9,8°) steht noch. Doktrin
+(menschliche-bewertung.md §1): Kennzahlen messen Geometrie, der Mensch
+benennt den Fehler — ein Lineal taugt, wenn es die BEKANNTEN Fehlzeilen
+von der vertrauten Population trennt, ohne diese zu fangen. Und die
+Hand DARF von der Tafel abweichen (der n-Kopf bei 32° statt 42° ist
+echt, die Laufformen sind 3–11 % breiter als die Tafel): die Schwelle
+kommt darum aus der vertrauten Population, nie von Hand.
+
+**Sensor.** `form_distance(chart_row, anchors)` (`core/laufform.py`).
+Tafel und Laufform werden mit dem Sample-Plan der Tafel gerendert
+(`core.template.multi_stroke_centerlines`: Strichanfänge + Eckanker der
+Chart, 240 Proben je Zug, Schräglage 90° — der Sampler des Renderers,
+wie beim Kopf-Sensor LF9; die Anker-Polylinie liest die dichten
+Kapitalen-Köpfe bis 33° falsch). Je Anker i der ZEILE (Zug s nach den
+`stroke_starts` der Chart, die die Zeile teilt): d_i = kürzester Abstand
+zum gerenderten Zug s der TAFEL (Punkt-zu-Segment, exakt); umgekehrt je
+Anker j der TAFEL: e_j = kürzester Abstand zum gerenderten Zug s der
+ZEILE. DERSELBE Zug, nicht irgendeiner — ein seitlich sitzender
+E-Querstrich darf nicht vom nahen E-Schaft „gerettet" werden. Beides in
+Nib-Radien der Tafel: r = Median der Chart-`half_widths`
+(Template-Einheiten). Beide Richtungen getrennt (§14-Praxis des
+Tintenfolger-Benchs: kein symmetrisches Mittel), je Richtung Median,
+p90 (`np.percentile(·, 90)`, linear interpoliert) und Maximum.
+**Gate-Größe: `form_p90` = max(p90 Zeile→Tafel, p90 Tafel→Zeile)** —
+die schlechtere Richtung. Warum p90 und nicht der Median: die vier
+Fehler sind LOKAL (ein Segment, ein Zug, ein Bogen, eine Schleife —
+eine Minderheit der 120 Anker), die legitimen Abweichungen der Hand
+sind GLOBAL und glatt (Breite, Kopfwinkel) — ein lokaler Fehler über
+≥ 10 % der Anker bewegt das p90, den Median kaum; das Maximum wäre ein
+Ein-Anker-Sensor (LF8-Gebiet, dort setzte der i-Punkt-Zug τ). Warum
+KEINE starre Registrierung vorab: der Fit parametrisiert die globale
+Verschiebung in der PLATZIERUNG (`core/fit.py`: `fitted_anchors =
+template_anchors + deltas`, tx/ty gehen in `x_origin_fit` /
+`baseline_y_fit`), die gefitteten Anker liegen im Rahmen der Tafel und
+der Median erbt ihn — eine Verschiebung der Zeile IST Form oder Breite.
+Warum Abstand zur LINIE und nicht je Anker-Index: der index-weise
+Abstand |Zeile_i − Tafel_i| enthält den LÄNGS-Anteil (längerer
+Anstrich, längerer Auslauf), den LF5/LF6 als Breite der Hand bestätigt
+haben; der Linien-Abstand ist invariant gegen Gleiten entlang des Zugs
+und misst nur, ob die Form die Bahn verlässt. Der index-weise Abstand
+ist die benannte Empfindlichkeitsprüfung (d). Berichtet wird auf zwei
+Dezimalen; τ entsteht aus den ungerundeten Werten.
+
+**Population und τ (KEIN Handknopf, die Regel steht vorher).** Root:
+Neuexport vom 2026-09-01 (`temp/lf10-root`, gitignored — DB-Stand nach
+LF8/LF9, 22 Zeilen; die eingefrorene Root bleibt unberührt). Vertraute
+Population = die 20 Zeilen mit n ≥ `LAUFFORM_MIN_OCCURRENCES` = 3:
+a c d e g h i l longs m n o p r S Z sz u w z — die Gattung, der die
+Doktrin traut UND die der Autor nach LF8/LF9 behalten hat (das t, n = 4,
+ist seit dem Kopf-Gate eine bekannte Fehlzeile und gehört nicht dazu).
+τ = ihr größtes `form_p90`, auf 0,01 aufgerundet (die LF7/LF8-Regel).
+Referenzfälle (bekannte Fehlzeilen): **P** (n = 1, gespeichert); **v, E,
+k** — nicht mehr in Prod. Ihre Zeilen liegen im Archiv-Snapshot
+`2026-08-26T23-16-40Z` (32 Laufform-Zeilen = die LF7-Zählung) und
+leiten sich bit-genau aus den DB-Vorkommen ab (per-Anker-Median →
+`build_laufform_canonical`, Fenster 0); beide Wege hat der
+Auto-Mode-Klassifikator in dieser Sitzung verweigert (Kopie aus dem
+Archiv, Rekonstruktion aus den Vorkommen). Die Messung der drei ist
+darum ein **Nachtrag des Autors** — das Werkzeug nimmt dafür
+`--laufform DATEI.json` (Kandidaten-Zeilen im Harvest-Draft-Format
+`{key: {anchors, n_occurrences}}`, dieselbe Datei wie `wordbench.run
+--laufform`) und misst sie über den Tafeln der Root, τ bleibt das der
+vertrauten Population. Negativkontrolle: **s** (n = 1, gespeichert), das
+die LF7-Bilder als „folgt der Tafel" ausweisen.
+
+**Vorhersagen (prospektiv, falsifizierbar):** (i) P > τ; (ii) s < τ —
+die Negativkontrolle bleibt frei; (iii) v, E, k > τ, sobald ihre Zeilen
+(Archiv oder Rekonstruktion) im Nachtrag gemessen sind; (iv) das
+Wort-Lineal bleibt byte-gleich (kein Kompositions-Code berührt).
+**Kill:** P ≤ τ ODER s > τ → der Sensor trennt die bekannten Fehlzeilen
+nicht von der vertrauten Population, keine Adoption; ebenso, wenn im
+Nachtrag eine der drei (v, E, k) ≤ τ liegt. Eine vertraute Zeile über τ
+ist per Konstruktion unmöglich — berichtet wird aber, WELCHE vertraute
+Zeile τ setzt, in welcher Richtung und an welchem Zug: sitzt ihr p90 an
+einer Stelle, die das Auge als Fehler liest, ist das ein Befund über
+die Population (Autor-Vorlage mit Bild), nicht über das Lineal.
+
+**Empfindlichkeitsprüfungen (berichtet, nie Gate):** (a) Median statt
+p90; (b) Maximum; (c) nur eine Richtung (Zeile→Tafel bzw. Tafel→Zeile);
+(d) index-weiser Abstand |Zeile_i − Tafel_i| in Nib-Radien, p90; (e)
+zug-agnostisch — nächster Punkt IRGENDEINES Tafel-Zugs; (f)
+Anker-Polylinie statt gerenderter Mittellinie. Jede Variante bekommt
+ihr eigenes τ nach derselben Regel und dieselben Vorhersagen (i)–(ii);
+kehrt eine den Befund um, steht das im Ergebnis.
+
+**Adoption (bei Erfolg).** τ wird `LAUFFORM_FORM_DISTANCE_MAX` in
+`core/laufform.py`, das Gate greift wie LF8/LF9 auf beiden
+Schreibpfaden (PUT 422 mit `form_p90` und τ; apply `skipped` mit
+`reason: form_distance`, `form_p90`/`form_max`), Inventar-Spalte +
+Markierung — als EIGENER Schritt hinter Autor-Go: der Autor hat die
+Referenzzeilen mit „abwarten" belegt, dieser PR misst und schreibt
+nichts (keine DB-Aktion, kein Gate im Schreibweg). Ob P (und die
+Nachtrag-Zeilen) auf die Tafel zurückfallen, ist eine Daten-Entscheidung
+des Autors, nie automatisch.
+
+**Rettungswege (bei Scheitern, je eigene Pre-Reg — nie derselbe Knopf
+weicher):** (1) zug-weises Gate — Maximum über die Züge des Zug-p90
+(ein seitlicher Querstrich ist ein GANZER Zug und kann im Zeilen-p90
+über 120 Anker untergehen); (2) Richtungs-Abstand — Winkel zwischen
+Zeilen- und Tafel-Tangente je Anker (das flache Segment statt der
+Diagonale ist ein Richtungs-, nicht nur ein Lage-Fehler); (3)
+Tinten-Evidenz der Zeile — die Rückzugs-Treue der Fits, aus denen der
+Median kam, gegen ihre Masken (die Form-Drift einer n=1-Zeile ist ein
+schlecht deckender Einzelfit); (4) humanbench-Zeilen-Runde — das
+Wahrnehmungs-Lineal über die Zeilen (menschliche-bewertung.md).
+
+### Laufform LF10 `sep01` — gemessen: die Vorhersage (i) ist FALSCH, der Form-Abstand wird nicht adoptiert
+
+**Bestandsaufnahme** (`tools/laufform/inventory.py`, Neuexport
+2026-09-01, 22 Zeilen, BLAS gepinnt; Nib-Radien der Tafeln 0,063–0,067
+xh): τ_form = **1,40** — gesetzt vom w (1,39 Nib-Radien, Zeile→Tafel,
+Anker 109 im ersten Zug; die zehn Prozent fernsten Anker sitzen auf der
+linken Flanke des ersten Schafts und auf der rechten Seite der
+Schlussschleife, die enger sitzt als die Tafel — Breite der Hand, wie
+vorhergesagt: global und glatt), dann Z 1,35 (Tafel→Zeile, Kopf und
+untere Schleife), sz 1,24 (die ß-Bogen im zweiten Zug), g 1,22 (untere
+Schleife). **P liegt mit 1,01 darunter** (Rang 5 von 22, zwischen g und
+p 1,00; Zeile→Tafel, schlechtester Anker 119 im zweiten Zug; Median
+0,36, Maximum 2,55): der P-Bogen läuft einen Nib-Radius INNERHALB des
+Tafel-Bogens, der Fuß-Zug wackelt an seinem Anfang — in der Größenordnung
+der letzten w-Arkade. Kill-Klausel erfüllt, keine Adoption. (ii)
+erfüllt: s 0,42, die Negativkontrolle bleibt frei. (iv) erfüllt: kein
+Kompositions-Code berührt, Golden-Fixture grün. Keine Zeile über
+τ_form, und **keine der sechs Empfindlichkeitsprüfungen kehrt den
+Befund um** — jede setzt P unter ihr eigenes τ: (a) Median τ 0,48 /
+P 0,36; (b) Maximum τ 3,00 / P 2,55; (c) Zeile→Tafel τ 1,40 / P 1,01,
+Tafel→Zeile τ 1,38 / P 0,91; (d) index-weise τ 1,49 / P 1,11; (e)
+zug-agnostisch τ 1,40 / P 1,01; (f) Anker-Polylinie τ 1,40 / P 1,01.
+Die Varianten (e) und (f) liegen bis auf die dritte Dezimale auf der
+Gate-Größe — auf diesen Zeilen liegt kein Anker näher an einem FREMDEN
+Zug als am eigenen, und die gerenderte Mittellinie weicht von der
+Polylinie um weniger als ein Hundertstel Nib-Radius ab; (d) liegt
+überall etwas höher (der Längs-Anteil), ohne die Ordnung zu ändern.
+
+**Zerlegung nach der Zahl (Nachtrag, kein Teil der Vorregistrierung):**
+zug-weise — der vorregistrierte Rettungsweg (1) — trennt auf dieser
+Root ebenfalls nicht: P-Zug 1 (71 Anker, Bogen + Fuß) p90 1,15 gegen
+sz-Zug 1 (52 Anker, die ß-Bögen) 1,69; die Einzug-Zeilen w 1,39, Z 1,35,
+g 1,22 liegen ohnehin darüber. Rettungsweg (1) ist damit ohne eigenen
+Lauf entkräftet und wird nicht wiedervorgelegt. Der Sensor selbst
+verhält sich wie gebaut (identische Zeile 0, Querversatz um k
+Nib-Radien = k, Gleiten entlang des Zugs unsichtbar, ein 15-%-Segment
+bewegt das p90 und nicht den Median — `tests/test_core_laufform.py`).
+
+**Was der Befund heißt.** Der Form-Abstand misst Geometrie treu, und
+die Geometrie des P liegt IM Band der vertrauten Zeilen: w, Z, sz, g
+weichen an ihren Schleifen weiter von der Tafel ab als das P an seinem
+Bogen, und niemand liest sie als Fehler. Was der Autor an P (und an v,
+E, k) als „sichtbar verzogen" sah, ist also kein Abstandsbetrag —
+menschliche-bewertung.md §1 in Reinform: die Kennzahl misst Abstände,
+der Mensch liest Form (Richtung, Proportion, Rhythmus). Die beiden
+Gates, die trennen (Sprung LF8, Kopf LF9), messen genau NICHT den
+Abstand, sondern eine Diskontinuität bzw. eine Richtung. **Nicht
+gemessen:** v, E, k — in Prod seit der LF9-Datenaktion gelöscht; die
+Kopie aus dem Archiv-Snapshot `2026-08-26T23-16-40Z` und die
+Rekonstruktion aus den DB-Vorkommen hat der Auto-Mode-Klassifikator in
+dieser Sitzung verweigert. Der Nachtrag steht dem Autor offen
+(`inventory --laufform DATEI.json` über der Root, τ_form bleibt 1,40);
+er kann die Klasse bestätigen oder widerlegen, das P-Negativ hebt er
+nicht auf — P war die pre-registrierte Kill-Bedingung.
+
+**Rettungswege (je eigene Pre-Reg — nie derselbe Knopf weicher), auch
+in tintenfolger.md §7.9:** (1) ~~zug-weises Gate~~ — nach der Zahl
+entkräftet (oben); (2) **Richtungs-Abstand**: Tangentenwinkel Zeile
+gegen Tafel je Anker, p90 — das flache Segment statt der v-Diagonale
+und der seitliche E-Querstrich sind Richtungsfehler, kein Lagebetrag;
+(3) **Tinten-Evidenz der Zeile**: die Rückzugs-Treue der Fits, aus denen
+der Median kam, gegen ihre Masken — eine n=1-Zeile IST ihr Einzelfit,
+und ein Fit, der die Tinte schlecht deckt, ist eine schlechte Zeile,
+gleich wie weit er von der Tafel liegt; (4) **humanbench-Zeilen-Runde**:
+das Wahrnehmungs-Lineal über die 22 Zeilen als Bilder — es sagt erst,
+WAS an P stört, bevor ein weiterer Geometrie-Sensor gebaut wird; (5)
+**Nachtrag v/E/k** über `--laufform` (Archiv oder Rekonstruktion) —
+Klassen-Bestätigung, kein Gate-Kandidat. Datenaktion: keine; P bleibt
+(Autor-Entscheid), kein Schreibpfad liest den Form-Abstand, die
+Inventar-Spalte `form` bleibt Berichts-Spalte.
+
 ---
 
 ## 15. Sieben angeschnittene Wortproben repariert — angekündigtes Re-Baseline des Wort-Benchs (`aug31`)
@@ -9774,6 +9961,359 @@ jede Code-Änderung eine andere Zahl. Das ist die richtige Richtung:
 vorher wurde gegen einen Buchstaben gemessen, der auf der Referenz gar
 nicht ganz da war — `regieren` ist mit 0,2338 der teuerste der sieben,
 und genau bei ihm fehlte am meisten (der halbe letzte Buchstabe).
+
+### Laufform LF11 `sep02` — Vorregistrierung: die glatte Zeile (Spline-Basis-Median statt Per-Anker-Median)
+
+Geschrieben und committet VOR der ersten Zahl dieses Arms. Basis:
+Wörter-Root `suetterlin-1922` `exported_at=2026-09-02T08:00:29+00:00`
+`digest=28ba1afebc53`, Paar-Root `suetterlin-1922-pairs` gleicher
+Zeitstempel `digest=f0cf3d53414c`; in dieser Umgebung frisch gerechnet
+mit `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1` und `--expect-root`:
+**Wörter 0,109255 · Paare 0,148433** — die §15-Kopfzahl, exakt
+reproduziert. Die Root wird in dieser Runde NICHT neu exportiert und
+`core/word_metric.py` nicht angefasst.
+
+**Namenskollision, benannt:** LF10 ist durch PR #474 („Form-Abstand
+einer Laufform-Zeile") belegt, der beim Schreiben dieser
+Vorregistrierung offen war. Dieser Arm heißt darum LF11. Die beiden
+Arme sind inhaltlich verschieden — LF10 misst den ABSTAND einer Zeile
+zur Tafel, LF11 ändert den SCHÄTZER, der die Zeile erzeugt — und
+berühren sich nur darin, dass beide auf `core/laufform.py` arbeiten.
+
+**Befund (Audit 2026-09-02, Rang 4).** Die gespeicherten
+Laufform-Zeilen zittern: auf 0,02 xh resampelte Centerlines,
+Krümmungs-Vorzeichenwechsel über 3°, gezählt je x-Höhe Bogenlänge —
+n 0,46 → 2,81 · o 0,00 → 11,25 · i 0,89 → 10,34 · e 0,00 → 2,74
+(Tafel → Zeile). Ursache ist der Schätzer selbst:
+`core/aggregate.py::_median_and_mad` medianisiert jeden der 120 Anker
+UNABHÄNGIG, und nichts im Modell koppelt Nachbarn — der Kommentar an
+`LAUFFORM_MIN_OCCURRENCES` sagt es seit jeher („neighbouring anchors
+are medianed independently"). Gerendert wird die Zeile in jedem Lauf
+≥ `ASCENDER_LEAN_MIN_RUN` = 3 (`core/compose.py`), also in praktisch
+jedem öffentlichen Wort. Kein Lineal sieht es: Wort- und Tinten-Bench
+resampeln den Zickzack weg (§14 „Feinschliff"). Das ist der größte
+Einzelunterschied zwischen „geschrieben" und „gerechnet" im Produkt.
+
+**Mechanismus (LF11).** Der Median wandert aus dem Ankerraum in eine
+GLATTE BASIS. Je Pen-Zug (Grenzen aus `trace_meta.stroke_starts` der
+Tafelzeile, also dem Duktus-Prior — ein Federabsatz ist keine
+Unstetigkeit der Linie, sondern ein anderer Zug und wird einzeln
+gefittet):
+
+1. **Gemeinsamer Parameter.** Die kumulierte Bogenlänge der TAFELZEILE
+   entlang des Zuges, in x-Höhen. Sie ist vorkommensunabhängig, also
+   projizieren alle Vorkommen auf dieselbe Basis — die Voraussetzung
+   dafür, dass ein Median über Kontrollpunkte überhaupt definiert ist.
+   Die Vorkommen sind zulässig gestapelt, weil die Ernte sie zentriert
+   auf die Tafel ablegt („shapes, not placements") und alle die
+   Ankerzahl der Tafel tragen.
+2. **Basis.** Geklammerte kubische B-Spline (Grad 3 — der niedrigste
+   Grad mit stetiger Krümmung, und die Krümmung ist genau die Größe,
+   deren Vorzeichenwechsel der Sensor zählt). Innere Knoten in
+   gleichem Bogenabstand Δs; die Ecken der Tafelzeile
+   (`trace_meta.corner_anchors`) kommen als Knoten mit Vielfachheit 3
+   dazu, damit die Basis dort eine C⁰-Ecke DARSTELLEN kann statt sie
+   wegzuglätten.
+3. **Projektion.** Jedes Vorkommen wird in x und y getrennt per
+   kleinster Quadrate auf diese Basis projiziert → Kontrollpunkte.
+4. **Median.** Komponentenweiser Median über die Vorkommen je
+   Kontrollpunkt — dieselbe Robustheit wie heute, nur eine Ebene
+   höher.
+5. **Rückweg.** Auswertung des Median-Kontrollpolygons an den
+   Parameterwerten der Tafelanker → exakt wieder 120 Anker, gleiche
+   Ankerzahl, gleiche Topologie. Danach läuft die Zeile durch dieselbe
+   Kanonisierung wie jede andere (`build_laufform_canonical` über
+   `laufform_row_from_payload`), also ohne zweite Sonderbehandlung.
+
+Ein Zug, der für nicht einmal eine Spanne reicht (< 2·Δs Bogen) oder
+weniger als Grad+1 Anker hat, fällt auf den heutigen Per-Anker-Median
+zurück — die Karte ist damit total, und der Rückfall wird je Zeile
+berichtet. Die Enden werden NICHT festgehalten: die Endanker tragen
+Entry/Exit-Tangente, aber ob die Projektion sie bewegt, ist genau die
+Frage, die das Kopf-Gate (LF9) beantwortet — ein zweiter Endmechanismus
+neben LF5/LF6 würde die Messung verwischen. Kopf- und Schwanzbewegung
+werden je Zeile berichtet.
+
+**EIN Knopf: der Knotenabstand Δs, Leiter {0,08 · 0,16 · 0,32} xh.**
+0,08 ist der im Audit vorgeschlagene Wert; die Leiter muss über ihn
+hinausreichen, weil die gemessene Zickzack-Rate des o (11,25/xh) einer
+Periode von ~0,09 xh entspricht — eine Basis mit Knoten alle 0,08 xh
+kann eine Schwingung dieser Periode noch tragen. 0,32 xh liegt bei
+einem Fünftel des LF3-Fensters (0,5 xh) und beim Fünffachen des
+Nib-Radius (0,064 xh); jenseits davon wäre nicht mehr Rauschen,
+sondern Form entfernt. Jede Sprosse wird berichtet, adoptiert wird
+höchstens eine.
+
+**Drei Arme, damit der Effekt isoliert ist.** Der Schätzer braucht die
+Vorkommen, also einen frischen Harvest — und ein frischer Harvest ist
+schon für sich eine andere Ableitung als die gespeicherten Zeilen
+(Kette v5, reparierte Rechtecke, andere n). Gemessen wird darum:
+
+- **Basis** — die gespeicherten Zeilen der eingefrorenen Root (22
+  Zeilen), die Produktionswirklichkeit, Kopfzahl oben.
+- **LF11-M (Kontrolle)** — Per-Anker-Median über DIE GLEICHEN frisch
+  geernteten Vorkommen. Trägt die Ableitungsdrift und sonst nichts.
+- **LF11-K (Kandidat)** — Spline-Basis-Median über dieselben
+  Vorkommen, je Sprosse der Leiter.
+
+Der Glättungseffekt ist der Kontrast M → K; die Drift ist Basis → M.
+Beide Karten nennen **exakt die 22 Schlüssel, für die die Root eine
+Zeile hat** — eine Karte, die zusätzliche Zeilen einführte, komponierte
+einen anderen Buchstabensatz als die Basis, und der Vergleich wäre
+keiner. Harvest: `tools.laufform.harvest --path chain --sets words
+--min-n 1 --jobs 4`, BLAS gepinnt (237 Vorkommen über 34 Schlüssel,
+alle 22 darunter).
+
+**Der Glätte-Sensor, definiert (neue Größe, `core/laufform.py`).**
+`zigzag_rate(anchors, …)` — die Zeile wird durch den Sample-Plan der
+Tafelzeile gerendert (`multi_stroke_centerlines`, dieselben 240
+Samples, Strichanfänge und Ecken vom Duktus-Prior, wie
+`_rendered_first_stroke` es für LF9 tut), jeder Zug auf gleichmäßige
+Schritte von 0,02 xh resampelt, der Drehwinkel je Schritt gebildet und
+gezählt, wie oft sein VORZEICHEN wechselt, wobei nur Wechsel zählen,
+bei denen mindestens eine der beiden beteiligten Drehungen über 3°
+liegt (das trennt die Zacke vom numerischen Rauschen um null).
+Normiert auf die Bogenlänge in x-Höhen: Zacken je xh. Das ist die
+Größe des Audits; ihre Zahlen (Tafel n 0,46 · o 0,00 · i 0,89 ·
+e 0,00) dienen als KALIBRIERUNG — der Sensor wird zuerst gegen sie
+gehalten, und eine Abweichung ist ein berichteter Befund, keine
+verschobene Latte.
+
+**Messung (alles TROCKEN, kein DB-Write, kein `apply-laufform`, BLAS
+gepinnt).**
+
+(a) **Lineal.** `wordbench.run --set all --laufform <Karte>
+--expect-root 28ba1afebc53,f0cf3d53414c`: `bench_loss` ≤ 0,109255 +
+0,002 UND `pair_loss` ≤ 0,148433 + 0,002. Erwartung ≈ neutral, das
+Lineal ist für den Zickzack blind; der Gate steht da, damit die
+Glättung keine Form kostet. Zusätzlich berichtet: K gegen M, also der
+isolierte Glättungsanteil.
+
+(b) **Glätte.** Median der Zacken-Rate über die 22 Zeilen: der
+Kandidat schließt ≥ 50 % der Lücke zur Tafel (Median über dieselben
+22 Tafelzeilen), UND je Zeile gilt Zacken(K) ≤ Zacken(Tafel) + 1.
+
+(c) **Zeilen-Gates.** Keine Zeile der Kandidaten-Karte verletzt das
+Sprung-Gate (LF8, τ = 2,95) oder das Kopf-Gate (LF9, 15°), die ihre
+eigene Kontroll-Zeile (LF11-M) besteht. Formuliert als „nicht NEU
+brechen", weil die Root selbst Zeilen über dem Kopf-Gate trägt (t, E,
+f, v, k — §14 `aug29`) und ein frischer Harvest sie erbt; jede
+vorbestehende Verletzung wird namentlich berichtet, nicht dem Schätzer
+angelastet.
+
+(d) **Kompositions-Soll.** `tools.tracebench.soll.ductus_soll` über
+alle 63 Wörter, Kandidaten-Root gegen Basis-Root (Kopie der Root im
+Scratchpad, nur `templates_laufform.json` getauscht — die eingefrorene
+Root bleibt schreibgeschützt): kein Wort verliert eine Kreuzung. Jede
+Bewegung wird berichtet.
+
+(e) **Lotse/Kette dev-19** laufen NICHT in dieser Runde — aus dem
+Grund, den LF5 `aug29` festgehalten hat: sie gehören zum
+Schreib-Schritt, weil sie die Karte messen, DIE GESCHRIEBEN WIRD.
+Diese Runde schreibt nichts.
+
+**Kill-Kriterium:** ein rotes Gate = keine Adoption der Sprosse. Rot
+auf allen drei Sprossen = der Arm ist gescheitert; die dann benannten
+Rettungswege (Regel „jedes ehrliche Negativ nennt seine
+Konversionswege", §7.9 in `tintenfolger.md`): (1) Glättung nur der
+Zeilen mit n ≥ 5 — der Schätzer braucht Vorkommen, und eine n=1-Zeile
+ist eine Projektion, kein Median; (2) krümmungsregularisierter
+L1-Median im Ankerraum statt einer Basis (anderer Mechanismus, gleiche
+Größe); (3) Regularisierung im Fit selbst, nicht in der Aggregation
+(Kette/M4 — dann zittert schon das Vorkommen nicht). Nie derselbe
+Knopf mit weicheren Gates.
+
+**Adoption.** Eine Karte, die alle Gates besteht, wird NICHT
+geschrieben. Die Adoption hängt an drei Dingen in dieser Reihenfolge:
+der humanbench-Wort-Runde (Echtheitsfrage, PR #480 — `wordarm.py
+--laufform <Karte>` nimmt genau diese Karte), dem Autor-Go und dann
+erst `dbsnapshot` → PUT je Glyph → GET-Verify → Neuexport der Root als
+deklarierte Re-Baseline. Der Golden bleibt in jedem Fall unberührt:
+LF11 ändert Daten, keinen Code im Chart-Pfad.
+
+**Asymmetrie-Regel (Owner-Direktive `aug26`) gilt auch hier:** fällt
+die Karte als Ganzes, wird die Verlierer-Menge in Klassen zerlegt
+(n-Klasse, Ecken-Zahl, Zug-Zahl) und eine Teil-Adoption geprüft, statt
+den Befund zu verwerfen.
+
+### Laufform LF11 `sep02` — gemessen: EINE Sprosse besteht alle Gates, und sie repariert die Zeilen-Gates gleich mit
+
+Umgebung wie vorregistriert: Root `suetterlin-1922`
+`exported_at=2026-09-02T08:00:29+00:00` `digest=28ba1afebc53` und
+`suetterlin-1922-pairs` `digest=f0cf3d53414c`, jeder Lauf mit
+`--expect-root` und `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`.
+Harvest: 237 Vorkommen über 34 Schlüssel, davon die 22 mit
+gespeicherter Zeile. Es wurde nichts geschrieben.
+
+**Zuerst die Kalibrierung des Sensors — und ihre Abweichung, wie
+angekündigt berichtet.** Der Sensor reproduziert das QUALITATIVE Bild
+des Audits exakt: die Tafelzeilen sind still (Median 0,23 Zacken/xh;
+o, e, d, h, longs, s, z bei 0,00), die gespeicherten Zeilen laut
+(Median 6,86), und die Rangfolge stimmt — c 21,78 · i 20,01 · o 18,19
+sind auch hier die drei lautesten. Die ABSOLUTEN Zahlen liegen jedoch
+systematisch höher als die des Audits (i 20,01 gegen 10,34 · o 18,19
+gegen 11,25 · n 7,30 gegen 2,81 · e 8,88 gegen 2,74), und der Faktor
+ist nicht konstant (1,6 bis 3,2). Die wahrscheinliche Ursache: das
+Audit las die Centerlines aus den `/write/glyphs`-Payloads, dieser
+Sensor rendert sie über den Sample-Plan der Tafelzeile bei aufrechtem
+Schnitt — zwei Wege zur selben Größe, die sich in Slant und
+Sample-Herkunft unterscheiden. **Die Latte ist NICHT verschoben
+worden:** Gate (b) ist von Anfang an relativ formuliert (Lücke zur
+Tafel, gemessen mit DEMSELBEN Sensor), also trägt der Offset sich weg.
+Wer die Audit-Zahl zitiert, zitiert eine andere Messung derselben
+Sache — beide Reihen stehen hier nebeneinander, damit das nicht
+verwechselt wird.
+
+**Empfindlichkeitsprüfung des Sensors (Copilot-Fund, nachgemessen).**
+Der Sampler rundet auf vier Nachkommastellen, zwei Samples könnten
+also zusammenfallen — und `np.interp` ist nur für streng steigende
+Parameter definiert. Nachgezählt über alle 66 gerenderten Zeilen
+(Tafel, Basis, Kandidat): **0 von 15840 Samples wiederholen sich**, und
+das nachträgliche Entfernen von Dubletten ändert keine einzige Rate um
+mehr als 0,000000. Der Sensor entfernt sie seit dieser Runde trotzdem,
+damit er auf einer Zeile, die welche erzeugt, nicht undefiniert ist —
+die Absicherung ist nachweislich folgenlos für alle hier berichteten
+Zahlen, keine Nachjustierung.
+
+**Die vier Arme am Wort- und Paar-Lineal (Gate a).**
+
+| Arm | `bench_loss` | Δ Basis | `pair_loss` | Δ Basis | Gate (a) |
+|---|---|---|---|---|---|
+| Basis (gespeichert) | 0,109255 | — | 0,148433 | — | — |
+| LF11-M (Kontrolle) | 0,108902 | −0,000353 | 0,148471 | +0,000038 | grün |
+| K Δs 0,08 | 0,109640 | +0,000385 | 0,148460 | +0,000027 | grün |
+| **K Δs 0,16** | **0,109218** | **−0,000037** | **0,148198** | **−0,000235** | **grün** |
+| K Δs 0,32 | 0,112485 | +0,003230 | 0,148067 | −0,000366 | **ROT** |
+
+Die Erwartung „≈ neutral, das Lineal ist blind" ist eingetroffen und
+zwar in ihrer stärksten Form: bei Δs 0,16 stehen 27 besser gegen 31
+schlechter, Summe der Gewinne −0,2833 gegen Summe der Verluste
++0,2731 über 96 Einträge — das Lineal sieht die Glättung schlicht
+nicht, wie vorhergesagt. Größte Bewegungen: `Zaum` 0,2782 → 0,1960
+(−0,0822, der schlechteste Eintrag der Basis) und `Zügel` −0,0411
+gegen `Sporn` +0,0440 und `muß-2` +0,0237. `worst_word` wandert von
+`Zaum` 0,278238 auf `regieren` 0,234335.
+
+**Die Sichtprüfung sagt etwas, das keine dieser Zahlen sagt** (Regel
+„die Overlays sind die Wahrheit", wordbench-README). Angesehen wurden
+der größte Gewinner und der größte VERLIERER. `Zaum` ist im Kandidaten
+sichtbar sauberer — erwartbar. `Sporn` aber auch: die Basis zieht durch
+`orn` eine ausgefranste, haarige Mittellinie, der Kandidat eine glatte.
+Das Wort, das am Lineal 0,0440 VERLIERT, sieht besser aus. Der Grund
+liegt in der Metrik selbst: eine zappelnde Mittellinie streift durch
+ihr Zittern mehr Specimen-Tinte und gewinnt damit an Deckung, was die
+Glättung zurückgeben muss. **Das Lineal ist gegenüber dem Zickzack
+also nicht nur blind, es belohnt ihn stellenweise** — womit die
++0,002-Toleranz von Gate (a) sich nachträglich als richtig
+dimensioniert erweist und die humanbench-Runde nicht Kür ist, sondern
+das einzige Instrument, das in die richtige Richtung zeigt.
+
+**Der Glätte-Sensor (Gate b).** Median über die 22 Zeilen, Tafel-Median
+0,2274:
+
+| Arm | Median Zacken/xh | Lücke zur Tafel | geschlossen | Zeilen über Tafel + 1 | Gate (b) |
+|---|---|---|---|---|---|
+| Basis | 6,864 | 6,637 | — | 22 von 22 | — |
+| LF11-M | 6,695 | 6,468 | 2,5 % | 22 von 22 | ROT |
+| K 0,08 | 2,005 | 1,778 | 73,2 % | 15 von 22 | **ROT** (Je-Zeile-Hälfte) |
+| **K 0,16** | **0,449** | **0,222** | **96,7 %** | **0 von 22** | **grün** |
+| K 0,32 | 0,321 | 0,093 | 98,6 % | 1 von 22 (i) | ROT (i) |
+
+Gegen die Kontrolle gerechnet — also der isolierte Glättungsanteil,
+ohne die Ableitungsdrift — schließt 0,08 72,5 %, 0,16 96,6 % und
+0,32 98,6 % der Lücke. Die Kontrolle selbst bewegt 2,5 %: **der
+Zickzack ist nicht die Ernte, er ist der Schätzer.** Das ist der
+eigentliche Befund dieser Runde und er ist sauber isoliert.
+
+**Die Zeilen-Gates (Gate c) — hier liegt die Überraschung.** Der
+frische Per-Anker-Median (Kontrolle) bricht fünf Gates, die die
+kuratierte Basis nicht bricht: Sprung-Gate i 4,09 und longs 3,40 (τ =
+2,95), Kopf-Gate S 16,1° · w 16,3° · z 16,9° (Grenze 15°). Das ist
+die Ableitungsdrift, nicht die Glättung — und es zeigt, wie viel
+Handarbeit in den gespeicherten Zeilen steckt. Δs 0,16 bricht **kein
+einziges** Gate und repariert alle fünf: i 4,09 → 2,19 · longs
+3,40 → 2,72 · S 16,1° → 8,3° · w 16,3° → 14,4° · z 16,9° → 7,1°. Die
+beiden anderen Sprossen brechen je eines NEU — 0,08 den Kopf des Z
+(10,8° → 16,1°), 0,32 den des P (9,6° → 15,2°) — und sind damit an
+(c) rot. Dass ausgerechnet die mittlere Sprosse beide Enden der Leiter
+schlägt, ist kein Zufall: 0,08 lässt die Zacke im Kopf noch stehen,
+0,32 verformt den Kopf schon selbst.
+
+**Das Kompositions-Soll (Gate d).** Alle 63 Wörter, Kandidaten-Root
+gegen Basis-Root: **kein Wort verliert eine Kreuzung**, in keinem Arm.
+Gewonnen wird eine, `von` 1 → 2 — in JEDEM Arm einschließlich der
+Kontrolle, also die Ableitung, nicht die Glättung. Δs 0,16 bewegt
+darüber hinaus keine Zone und keinen Zug. Δs 0,32 gewinnt Kreuzungen
+in 15 Wörtern (`haben` 3 → 5, `Galoppieren` 6 → 8, …) — kein
+Gate-Bruch nach dem Wortlaut der Vorregistrierung, aber ein deutliches
+Zeichen, dass diese Sprosse die Form selbst anfasst; sie ist an (a)
+und (c) ohnehin rot.
+
+**Gate (e)** lief wie vorregistriert nicht: Lotse/Kette dev-19 messen
+die Karte, die geschrieben wird, und diese Runde schreibt nichts.
+
+**Nachtrag nach dem Merge von LF10 (#474): entfernt die Glättung
+Rauschen oder Form?** Die Frage war bis dahin nicht beantwortbar — es
+gab keine Kennzahl für „Abstand zur Tafelform". LF10 liefert genau die,
+und da beide Arme dieselbe Wurzel und dieselben 22 Zeilen benutzen,
+lassen sie sich direkt gegeneinander lesen. Ergebnis (Kandidat Δs 0,16
+gegen die Kontrolle, also der isolierte Glättungsanteil): der
+Glätte-Sensor fällt um den Faktor 15 (Median 6,695 → 0,449
+Zacken/xh), während der **Form-Abstand sich praktisch nicht bewegt und
+im Median sogar SINKT — Median-Δ des `form`-p90 −0,012 Nib-Radien, Spanne
+−0,102 bis +0,036; 7 von 22 Zeilen liegen minimal höher.** Die geglättete
+Zeile liegt also nicht weiter von ihrer Tafelform entfernt als die
+zappelnde, sondern eher näher. Das ist die unabhängige Bestätigung, dass
+LF11 das Rauschen des Schätzers wegnimmt und nicht die Form der Hand —
+gemessen mit einem Instrument, das dieser Arm nicht gebaut hat und nicht
+kannte, als er vorregistriert wurde. (`form` bleibt dabei LF10s
+Berichts-Spalte, kein Gate; τ_form ist nicht adoptiert.)
+
+**Verdikt: Δs 0,16 xh besteht (a), (b), (c) und (d).** Die
+Kandidaten-Karte liegt als 22 volle Fixture-Zeilen vor und wird NICHT
+geschrieben. Nächster Schritt ist die humanbench-Wort-Runde (PR #480,
+`wordarm.py --laufform`), danach der Autor-Go; erst dahinter
+`dbsnapshot` → PUT je Glyph → GET-Verify → Neuexport als deklarierte
+Re-Baseline.
+
+**Kein §7.9-Eintrag fällig.** Die Rettungswege-Regel gilt dem ehrlichen
+Negativ; dieser Arm ist keines. Die beiden verworfenen SPROSSEN sind
+innerhalb eines bestandenen Arms verworfen, und ihr Konversionsweg ist
+benannt und bereits beschritten: die mittlere Sprosse. Fällt die
+humanbench-Runde gegen die Karte, wird DAS der Negativ-Eintrag, mit den
+in der Vorregistrierung benannten drei Wegen und einer §7.9-Zeile.
+
+**Zwei Nebenbefunde, gemeldet statt behoben:**
+
+1. **Die geklammerten Enden werden am wenigsten geglättet.** Ein
+   Kontrollpunkt am geklammerten Ende sitzt auf den Daten, also folgt
+   die Projektion dem letzten Anker weiter als den mittleren; im
+   Einheitstest bleiben am Ende 0,013 von 0,020 xh Zacke stehen, in
+   der Mitte 0,003. Das war die bewusste Nicht-Entscheidung der
+   Vorregistrierung (die Enden festzuhalten hätte einen zweiten
+   End-Mechanismus neben LF5/LF6 eingeführt), es ist als Test
+   festgenagelt, und die Zeilen-Gates fangen es ab. Ein späterer Arm
+   könnte hier ansetzen. Die versprochene Berichtsgröße, gemessen:
+   die Glättung BEWEGT die Enden bei Δs 0,16 kaum — Kopf und Schwanz
+   wandern gegen den Per-Anker-Median je Zeile um 0,000–0,007 xh, der
+   einzige Ausreißer ist der Schwanz des i mit 0,018 xh. Alle unter
+   dem Nib-Radius (0,064 xh), und genau darum bleibt das Kopf-Gate für
+   jede Zeile grün.
+2. **Drei Wortproben laufen über ihren Fixture-Ausschnitt hinaus**
+   (`Soldaten`, `schießen`, `Säbel`) — Fund aus T4, in dieser Runde
+   bestätigt stehen gelassen. Betrifft die Referenz, nicht den
+   Schätzer.
+
+**Selbst entschieden (Routine im Rahmen der Vorregistrierung):** die
+Leiter {0,08 · 0,16 · 0,32} statt nur des Audit-Werts 0,08 (Begründung
+in der Vorregistrierung: die gemessene Zickzack-Periode liegt bei
+~0,09 xh, eine Basis mit Knoten alle 0,08 xh trägt sie noch); Grad 3;
+Schnitt der Einheitstests; die Kontrolle als dritter Arm; die
+Schlüsselmenge „genau die 22 gespeicherten Zeilen". Werkzeug:
+`tools/laufform/smoothrow.py`, Sensor `core/laufform.py::zigzag_rate`,
+Schätzer `core/aggregate.py::spline_basis_median` —
+`aggregate_instances` bleibt unverändert beim Per-Anker-Median, bis
+eine Adoption etwas anderes sagt.
 
 ### Übergänge J4 `sep02` — Vorregistrierung: die Austritts-Kollinearität (`exit_trim`)
 
