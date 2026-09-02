@@ -37,6 +37,25 @@ const tools = [
 
 const roadmap = de.landing.roadmap;
 
+// The "So geht es" three-step, in the order the top nav names the areas.
+// `howRoutes` is keyed by the locale's own step ids, so a step added without
+// its route fails to compile instead of rendering a dead card (the same guard
+// the hub cards use). Each step points at the ENTRY of its area.
+// Each step goes to its AREA, not to one of its tools: the sentences name two
+// tools apiece, and the hub is the page that holds both (design-system.md §6 —
+// /lesen and /schreiben are the hub entries; Schriftkunde is its own area page
+// with no hub above it). Linking straight to the quiz or the worksheet would
+// promise the area and deliver one tool, hiding the other (Copilot review).
+const howRoutes: Record<keyof typeof de.landing.howSteps, string> = {
+  nachschlagen: paths.schriftkunde,
+  lesen: paths.lesen,
+  schreiben: paths.schreiben,
+};
+const howSteps = (Object.keys(de.landing.howSteps) as (keyof typeof de.landing.howSteps)[]).map((id) => ({
+  ...de.landing.howSteps[id],
+  to: howRoutes[id],
+}));
+
 // The three starter scripts from the Kurrent family. `written` marks which the
 // engine can already render (Sütterlin); `state` is the small badge text.
 const scripts = de.landing.scripts;
@@ -46,6 +65,65 @@ export function LandingView() {
     <PublicLayout>
       {/* hero — single column, the brand word written live by a pen */}
       <HeroWritten />
+
+      {/* "So geht es" — the path through the three areas, right after the hero:
+          the page answered „was" but not „wie fange ich an" (owner decision
+          2026-09-03). Same PaperCardLink as every other card here, so the
+          focus ring, the link colour and the touch target come from the theme
+          (#485) rather than from a new component. */}
+      <PageContainer width="wide" sx={{ pt: { xs: 4, md: 6 } }}>
+        <CategoryHeading>{de.landing.howHeading}</CategoryHeading>
+        {/* An ORDERED list, not three cards in a grid: the order is the whole
+            point of the section, and it must reach a screen reader too — the
+            printed ordinal alone would not (Copilot review, #503). `role="list"`
+            is kept because `list-style: none` drops list semantics in Safari;
+            Reveal is the <li> itself, so the grid still stretches the items to
+            equal height. */}
+        <Box
+          component="ol"
+          role="list"
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+            gap: 2.5,
+            listStyle: 'none',
+            p: 0,
+            m: 0,
+          }}
+        >
+          {howSteps.map((step, i) => (
+            <Reveal key={step.to} delay={i * 0.06} component="li">
+              <PaperCardLink to={step.to}>
+                {/* The ordinal in ink, for the eye. The list itself carries the
+                    sequence for assistive tech, so a bare „1" read out before
+                    the heading would only be noise — hence aria-hidden. */}
+                <Typography
+                  component="span"
+                  variant="caption"
+                  aria-hidden
+                  sx={{ fontFamily: display, fontStyle: 'italic', color: paper.viridianText, display: 'block', mb: 0.25 }}
+                >
+                  {i + 1}
+                </Typography>
+                {/* h3: the cards sit directly under the CategoryHeading <h2> */}
+                <Typography
+                  variant="h5"
+                  component="h3"
+                  sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, textShadow: letterpress, mb: 0.5 }}
+                >
+                  {step.title}
+                </Typography>
+                <Typography variant="body2" sx={{ color: paper.inkSoft, lineHeight: 1.55, mb: 1.25, flexGrow: 1 }}>
+                  {step.desc}
+                </Typography>
+                <Typography variant="body2" sx={{ color: paper.viridianText, fontWeight: 500 }}>
+                  {step.cta}
+                </Typography>
+              </PaperCardLink>
+            </Reveal>
+          ))}
+        </Box>
+      </PageContainer>
 
       {/* the three scripts — starters from the Kurrent family, each its own pen */}
       <PageContainer width="wide" sx={{ pt: { xs: 4, md: 6 } }}>

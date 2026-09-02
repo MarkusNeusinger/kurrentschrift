@@ -19,11 +19,16 @@ export const landing = {
     wordCaptionEngine:
       '— eben live geschrieben von der Synthese-Engine: heute in Sütterlin, laufend verfeinert — Kurrent und Offenbacher folgen.',
     title: 'Alte Briefe wieder lesen — und selbst zur Feder greifen.',
+    // The lead answers „was" and — since the website audit 2026-09-02 (owner
+    // decision 2026-09-03) — „für wen": the Kirchenbucheintrag and the named
+    // Familienforschung are what the core audience arrives with. Tone stays a
+    // preface around 1900, so the reasons are an aside between dashes, not a
+    // target-group pitch.
     leadBeforeBold:
-      'Kurrent, Sütterlin und Offenbacher: die Schriften, in denen unsere Vorfahren ihre Briefe und Urkunden niederschrieben — und die heute',
+      'Kurrent, Sütterlin und Offenbacher: die Schriften, in denen unsere Vorfahren ihre Briefe, Kirchenbucheinträge und Urkunden niederschrieben — und die heute',
     leadBold: 'kaum noch jemand entziffert',
     leadAfterBold:
-      '. Hier lernst du, sie wieder zu lesen, mit der Feder nachzuschreiben und Zug um Zug zu verstehen.',
+      '. Hier lernst du — ob für die Familienforschung, im Archiv oder aus Neugier —, sie wieder zu lesen, mit der Feder nachzuschreiben und Zug um Zug zu verstehen.',
     ctaWrite: 'Schreiben',
     ctaRead: 'Lesen',
     replay: '↻ noch einmal schreiben',
@@ -31,6 +36,31 @@ export const landing = {
     // hero waits for the WRITTEN word instead of swapping in a static font
     // (owner decision 2026-08-27).
     waiting: 'die Feder setzt an — einen Moment …',
+  },
+  // Section 0: the way through the site, in the order the top nav names the
+  // three areas (Schriftkunde · Lesen · Schreiben). The landing answered „was"
+  // in ten seconds but never „wie fange ich an" — five tool cards of equal
+  // rank and no path through them (website audit 2026-09-02, owner decision
+  // 2026-09-03). One sentence and one link per step; the steps point at the
+  // ENTRY of each area, not at every tool it holds — the cards below still do
+  // the full inventory.
+  howHeading: 'So geht es',
+  howSteps: {
+    nachschlagen: {
+      title: 'Nachschlagen',
+      desc: 'Die Schriftkunde sagt dir, welche Schrift vor dir liegt; die Schreibtafel zeigt jeden Buchstaben — zum Danebenlegen, auch als PDF.',
+      cta: 'Zur Schriftkunde →',
+    },
+    lesen: {
+      title: 'Lesen',
+      desc: 'Das Lese-Quiz übt die Formen, an denen jeder stolpert; die Lesart-Prüfung hilft bei dem einen Wort, das sich nicht entziffern lassen will.',
+      cta: 'Zu den Lese-Übungen →',
+    },
+    schreiben: {
+      title: 'Schreiben',
+      desc: 'Das Übungsblatt bringt die Lineatur aufs Papier, die Federprobe schreibt dir jeden Zug vor.',
+      cta: 'Zu den Schreib-Übungen →',
+    },
   },
   // Section 1: the scripts. "Kurrent(schrift)" is really an umbrella over a
   // whole family of German cursive hands; these three make good starters

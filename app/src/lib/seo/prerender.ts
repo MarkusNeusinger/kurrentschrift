@@ -282,6 +282,24 @@ const landingBody = () => {
         `${h3(`${s.name} (${s.feder})`)}${p(s.desc)}<p>${e(s.status)} · ${a(`${abs(paths.tafel)}#${s.styleId}`, s.cta)}</p>`,
     )
     .join('');
+  // The "So geht es" steps, in the locale's own order (which is the page's) —
+  // keyed by the step ids so a new step without a route fails to compile.
+  // The AREA entries, the same as the page (LandingView `howRoutes`): a step
+  // names two tools, and the hub is the page that holds both.
+  const howRoutes: Record<keyof typeof t.howSteps, string> = {
+    nachschlagen: paths.schriftkunde,
+    lesen: paths.lesen,
+    schreiben: paths.schreiben,
+  };
+  // An <ol>, like the page: the order is the point of the section, so a
+  // crawler and a screen reader should read it as a sequence, not as three
+  // unrelated links (Copilot review, #503).
+  const howRows = `<ol>${(Object.keys(t.howSteps) as (keyof typeof t.howSteps)[])
+    .map(
+      (k) =>
+        `<li><strong>${e(t.howSteps[k].title)}</strong> — ${e(t.howSteps[k].desc)} ${a(abs(howRoutes[k]), t.howSteps[k].cta)}</li>`,
+    )
+    .join('')}</ol>`;
   const toolRoutes: Record<keyof typeof t.tools, string> = {
     schriftkunde: paths.schriftkunde,
     quiz: paths.quiz,
@@ -301,6 +319,8 @@ const landingBody = () => {
     // fact is stated, not faked with a font.
     `<p><em>„${e(t.hero.word)}“ ${e(t.hero.wordCaptionEngine)}</em></p>`,
     `<p>${a(abs(paths.schreiben), t.hero.ctaWrite)} · ${a(abs(paths.lesen), t.hero.ctaRead)}</p>`,
+    h2(t.howHeading),
+    howRows,
     h2(t.scriptsHeading),
     p(t.scriptsIntro),
     scriptRows,

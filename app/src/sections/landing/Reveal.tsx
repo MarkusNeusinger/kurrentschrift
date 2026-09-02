@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ElementType, type ReactNode } from 'react';
 
 const reduce = '@media (prefers-reduced-motion: reduce)';
 // Print gets the finished page: a reveal that never fired (nothing scrolls
@@ -8,7 +8,20 @@ const print = '@media print';
 
 // Small scroll-reveal wrapper (IntersectionObserver, fires once). Without the
 // observer (an old browser, a reader mode) the content shows at once.
-export function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
+//
+// `component` exists so the wrapper can BE the semantic element instead of
+// nesting inside it — the "So geht es" steps are an <ol>, and a plain div
+// between the list and its items would both break the list semantics and cost
+// the grid stretch the cards need for equal height.
+export function Reveal({
+  children,
+  delay = 0,
+  component = 'div',
+}: {
+  children: ReactNode;
+  delay?: number;
+  component?: ElementType;
+}) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [shown, setShown] = useState(() => typeof IntersectionObserver === 'undefined');
   useEffect(() => {
@@ -29,6 +42,7 @@ export function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: n
   return (
     <Box
       ref={ref}
+      component={component}
       sx={{
         opacity: shown ? 1 : 0,
         transform: shown ? 'none' : 'translateY(22px)',
