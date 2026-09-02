@@ -113,18 +113,20 @@ def test_cors_allow_origin_regex_splits_by_environment(monkeypatch):
 
 
 def test_a_renamed_starlette_constant_fails_the_run():
-    """The module-independent `filterwarnings` rule in pyproject.toml.
+    """The module- and category-independent `filterwarnings` rule in pyproject.
 
     Starlette warns about its renamed status constants with `stacklevel=3`, so
     the warning is attributed to `fastapi.routing` and the three
     module-anchored rules (`…:api(\\.|$)` and friends) look straight past it —
     which is how five deprecated constants lived in the error paths until the
-    2026-09-02 audit counted them. This asserts the behaviour, not the config
-    line: under the configured filters, reading one raises.
+    2026-09-02 audit counted them. Starlette 1.6 then moved the warning off
+    `DeprecationWarning` onto its own `UserWarning` subclass, which is why the
+    rule pins neither. This asserts the behaviour, not the config line: under
+    the configured filters, reading one raises.
     """
     from starlette import status as starlette_status
 
-    with pytest.raises(DeprecationWarning):
+    with pytest.raises(Warning, match="is deprecated"):
         getattr(starlette_status, "HTTP_422_UNPROCESSABLE_ENTITY")  # noqa: B009 — the read IS the assertion
 
 

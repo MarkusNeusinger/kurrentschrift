@@ -129,13 +129,17 @@ filterwarnings = [
     'error::DeprecationWarning:api(\.|$)',
     'error::DeprecationWarning:core(\.|$)',
     'error::DeprecationWarning:tools(\.|$)',
-    # …and one rule that does not depend on the module at all. Starlette warns
-    # about its own renamed status constants with `stacklevel=3`, so Python
-    # blames the frame three levels up — `fastapi.routing`, never `api.*` — and
-    # the three module-anchored rules above look straight past it. That is how
-    # five deprecated constants (four HTTP_422_UNPROCESSABLE_ENTITY, one
-    # HTTP_413_REQUEST_ENTITY_TOO_LARGE) sat in the error paths until the
-    # 2026-09-02 audit counted them. Whoever the traceback blames, a renamed
-    # `HTTP_*` constant is OUR call site: fail the run.
-    'error:.*is deprecated\. Use .HTTP_:DeprecationWarning',
+    # …and one rule that depends on neither the module NOR the category.
+    # Starlette warns about its own renamed status constants with
+    # `stacklevel=3`, so Python blames the frame three levels up —
+    # `fastapi.routing`, never `api.*` — and the three module-anchored rules
+    # above look straight past it. That is how five deprecated constants (four
+    # HTTP_422_UNPROCESSABLE_ENTITY, one HTTP_413_REQUEST_ENTITY_TOO_LARGE) sat
+    # in the error paths until the 2026-09-02 audit counted them. No category
+    # either (so: any Warning), because starlette 1.6 moved the warning off
+    # DeprecationWarning onto its own UserWarning subclass — a category-pinned
+    # rule would have gone blind again at the next upgrade. Whoever the
+    # traceback blames and whatever the class, a renamed `HTTP_*` constant is
+    # OUR call site: fail the run.
+    'error:.*is deprecated\. Use .HTTP_',
 ]
