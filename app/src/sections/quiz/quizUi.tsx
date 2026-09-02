@@ -74,7 +74,12 @@ export function OptionChip({
       disabled={disabled}
       onClick={onClick}
       aria-pressed={selected}
-      sx={{
+      // 39px as drawn — the setup chips take the last 5px of the §9.3 floor
+      // from an invisible hit area; the 12px gap between them keeps the wrapped
+      // rows 51px apart, so no chip's target reaches into its neighbour's.
+      sx={[
+        hitArea(),
+        {
         display: 'inline-flex',
         alignItems: 'center',
         gap: 0.75,
@@ -89,9 +94,10 @@ export function OptionChip({
         fontFamily: garamond,
         fontSize: { xs: 16, sm: 16.5 },
         opacity: disabled ? 0.5 : 1,
-        transition: 'border-color 120ms ease, color 120ms ease, background-color 120ms ease',
-        '&:hover': disabled ? {} : { borderColor: paper.viridian, color: paper.ink },
-      }}
+          transition: 'border-color 120ms ease, color 120ms ease, background-color 120ms ease',
+          '&:hover': disabled ? {} : { borderColor: paper.viridian, color: paper.ink },
+        },
+      ]}
     >
       {selected && (
         <Box aria-hidden sx={{ width: 7, height: 7, borderRadius: '50%', bgcolor: paper.viridian, flexShrink: 0 }} />

@@ -422,12 +422,26 @@ benannte Ausnahme in `touch-targets.mjs` — sichtbar gezählt, nicht stillschwe
 
 **Messbar statt behauptet**, wie der Typo-Boden: `npm run touch-targets`
 (`app/scripts/touch-targets.mjs`) fährt **alle** öffentlichen Routen an und misst
-**jedes** interaktive Element — 217 sind es heute. Ausgenommen ist genau die eine
-Ausnahme der Regel, und zwar an dem Merkmal, das §9.2 ihr gibt: ein `<a>` mit
-Unterstreichung ist ein Fließtext-Link (84 Stück); Chrome, das nur wie ein Link
-aussieht, setzt `textDecoration: none` und wird mitgemessen. Eine gepflegte
-Liste stand vorher hier und war die falsche Form — sie bestand, während die
-Lesart-Chips und die Tafel-Schrittknöpfe den Boden rissen.
+**jedes** interaktive Element — 255 sind es heute, über alle Bildschirmzustände
+(das Quiz zählt dreimal: Einrichtung, Runde, Auswertung, weil jeder Zustand
+andere Bedienelemente zeigt). Ausgenommen ist genau die eine Ausnahme der Regel,
+und sie braucht ZWEI Merkmale: unterstrichen **und** außerhalb von `<nav>`.
+Die Unterstreichung allein genügt nicht — die Sprungliste der Schriftkunde ist
+ebenfalls unterstrichen, ist aber Navigation und schuldet den Boden (sie trägt
+ihn seit 2026-09-03 über `minHeight`, was ihre Zeilen zugleich auseinanderrückt).
+Chrome, das nur wie ein Link aussieht, setzt `textDecoration: none` und wird
+ohnehin mitgemessen.
+
+Zwei Feinheiten, die das Messen erst ehrlich machen: Ein in ein `<label>`
+gewickeltes Bedienelement wird **am Label** gemessen — dort tippt man hin, und
+MUIs Switch legt nur einen durchsichtigen `<input>` darüber (deshalb prüft der
+Sweep auch keine Deckkraft: unsichtbar heißt nicht unbedienbar, das entscheidet
+der Treffertest). Und die benannte Ausnahme der Tafel-Zellen hängt am Merkmal
+`rect.cellbg` der Zelle, nicht an „ist eine SVG-Gruppe" — sonst erbte das nächste
+zu kleine SVG-Element die Ausnahme, statt aufzufallen.
+
+Eine gepflegte Liste stand hier zuerst und war die falsche Form: sie bestand,
+während die Lesart-Chips und die Tafel-Schrittknöpfe den Boden rissen.
 
 Geprüft wird die echte Trefferfläche statt einer berechneten Größe: für jede
 Achse, auf der ein Element kleiner als 44 px GEZEICHNET ist, fragt das Skript per

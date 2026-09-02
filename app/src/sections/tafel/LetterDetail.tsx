@@ -129,7 +129,11 @@ export function LetterDetail({ glyphKey, glyph, onClose }: Props) {
       component="section"
       id="buchstabe"
       aria-label={`${t.heading}: ${name}`}
-      sx={{ border: `1px solid ${paper.line}`, borderRadius: '3px', bgcolor: paper.hi, p: { xs: 2, sm: 3 }, scrollMarginTop: { xs: 100, md: 84 } }}
+      // scrollMarginTop keeps the auto-scrolled `?g=` detail clear of the
+      // sticky header: 121 px below `sm` since its two nav rows took the 44 px
+      // touch floor (§9.3, #504), 73 px from `sm` up. Keep in step with
+      // `anchorSx` in SchriftkundeView.
+      sx={{ border: `1px solid ${paper.line}`, borderRadius: '3px', bgcolor: paper.hi, p: { xs: 2, sm: 3 }, scrollMarginTop: { xs: 133, sm: 84 } }}
     >
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1.5, mb: 1.5 }}>
         <Typography component="span" sx={{ fontFamily: garamond, fontSize: '2.2rem', lineHeight: 1, color: paper.ink }}>

@@ -45,6 +45,7 @@ import { schriftkunde } from '@/locales/de/schriftkunde';
 import { paths } from '@/routes/paths';
 import { SCHRIFTKUNDE_SECTIONS, SECTION_IDS, type SectionId } from '@/sections/schriftkunde/sections';
 import { TRY_TARGETS } from '@/sections/schriftkunde/tryTargets';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 import { display, garamond, paper, script, suetterlin } from '@/styles/paper';
 
 // Imported directly, not via the `de` barrel: this route chunk is the only
@@ -72,8 +73,12 @@ type LetterItem = TermItem & { readonly specimens?: readonly Specimen[] };
 
 // Fragment targets sit under the sticky PublicHeader; the scroll margin keeps
 // a jumped-to heading clear of it (jump list, /schriftkunde#… URLs). Measured
-// header: ~82 px on phones (the nav wraps to a second line), ~67 px from md.
-const anchorSx = { scrollMarginTop: { xs: 100, md: 84 } } as const;
+// header: 121 px below `sm`, where the nav wraps to two rows AND each row now
+// carries the 44 px touch floor (§9.3, #504); 73 px from `sm` up, where the
+// three areas sit on one row. The breakpoints follow the header's own
+// `flexDirection: { xs: 'column', sm: 'row' }`, not `md` — between sm and md
+// the bar is already a single row, and the old `md` key over-scrolled there.
+const anchorSx = { scrollMarginTop: { xs: 133, sm: 84 } } as const;
 
 // A "Quellen: a · b" line — the per-section / per-card citation row. `sx` is the
 // proper MUI SxProps and merged via the array form, so callers may pass any
@@ -123,7 +128,16 @@ function SectionNav() {
       <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0, display: 'flex', flexWrap: 'wrap', rowGap: 0.25 }}>
         {SCHRIFTKUNDE_SECTIONS.map((s, i) => (
           <Box component="li" key={s.id} sx={{ display: 'inline' }}>
-            <Link href={`#${s.id}`} variant="body2">
+            {/* Navigation, not prose: the jump list is underlined like running
+                text but it is a list of targets, so it owes the §9.3 floor.
+                `inline-flex` + minHeight makes each entry a real 44px target
+                inside the wrapping line — which also spaces the rows, so no
+                entry's target reaches into the one above it. */}
+            <Link
+              href={`#${s.id}`}
+              variant="body2"
+              sx={{ display: 'inline-flex', alignItems: 'center', minHeight: TOUCH_TARGET }}
+            >
               {s.heading}
             </Link>
             {/* trailing separator, so a wrapped line ends on the dot rather than starting with one */}
