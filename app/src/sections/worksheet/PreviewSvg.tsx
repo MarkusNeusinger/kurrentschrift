@@ -3,6 +3,9 @@ import { useMemo } from 'react';
 
 import { A4, DRAW_ORDER, ROLE_STYLES, type LineRole, type RoleStyle, type Segment, type TextMark } from '@/lib/lineatur';
 import type { InkShape } from '@/lib/pdf';
+import type { RowMark } from '@/lib/uebungstext';
+import { de, fmt } from '@/locales';
+import { schulheft } from '@/styles/paper';
 
 // Page millimetres to two decimals: a letter's silhouette has hundreds of
 // vertices, and a sheet of Übungstext holds hundreds of letters.
@@ -21,6 +24,10 @@ export function PreviewSvg({
   styles = ROLE_STYLES,
   // The Übungstext's ink (lib/uebungstext.ts), the same list lineaturePdf draws.
   shapes = [],
+  // Rows held open for a line the ruling is too narrow for. Preview only —
+  // they are deliberately NOT passed to lineaturePdf: a printed practice
+  // sheet carries no warning bands, it just keeps the row free.
+  rowMarks = [],
 }: {
   segments: Segment[];
   marks: TextMark[];
@@ -28,6 +35,7 @@ export function PreviewSvg({
   footerRight: string;
   styles?: Record<LineRole, RoleStyle>;
   shapes?: readonly InkShape[];
+  rowMarks?: readonly RowMark[];
 }) {
   // Paint in the same role order the PDF uses, so crossings look identical in
   // preview and print (stable sort keeps per-row order within a role).
@@ -80,6 +88,33 @@ export function PreviewSvg({
           />
         ),
       )}
+      {rowMarks.map((r) => (
+        <g key={`r${r.no}`}>
+          <title>{fmt(de.worksheet.text.markTitle, { no: r.no })}</title>
+          <rect
+            x={r.x}
+            y={r.y}
+            width={r.width}
+            height={r.height}
+            fill="none"
+            stroke={schulheft.marginRed}
+            strokeWidth={0.4}
+            strokeDasharray="2 1.5"
+          />
+          {/* The row number in the margin, so the sentence under the text
+              field and the marked row name the same line. */}
+          <text
+            x={Math.max(1, r.x - 1)}
+            y={r.y + r.height}
+            fontSize={Math.min(4, r.height)}
+            fill={schulheft.marginRed}
+            fontFamily="sans-serif"
+            textAnchor="end"
+          >
+            {r.no}
+          </text>
+        </g>
+      ))}
       {marks.map((m, i) => (
         <text
           key={`m${i}`}

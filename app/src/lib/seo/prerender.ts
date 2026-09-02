@@ -30,6 +30,7 @@ import { tafel } from '../../locales/de/tafel.ts';
 import { vergleichen } from '../../locales/de/vergleichen.ts';
 import { worksheet } from '../../locales/de/worksheet.ts';
 import { LOOKALIKES } from '../../lib/lesarten.ts';
+import { maxCharsPerLine } from '../../lib/uebungstext.ts';
 import { paths } from '../../routes/paths.ts';
 import { DIFFICULTIES, MODES, offersChoice, SCRIPTS } from '../../sections/quiz/quizOptions.ts';
 import { SCHRIFTKUNDE_SECTIONS, SECTION_IDS } from '../../sections/schriftkunde/sections.ts';
@@ -492,6 +493,20 @@ const tafelBody = () => {
   ].join('\n');
 };
 
+// The worksheet's help text names how many characters a row holds, which
+// depends on the Mittellänge — so the prerendered page states the numbers the
+// page opens with (the Sütterlin preset, lib/lineatur.ts PRESETS), never a raw
+// {{placeholder}}. Restated here for the same reason as PUBLIC_API above: the
+// Node-run build resolves neither the `@/` alias nor the extensionless imports
+// inside lineatur.ts, and prerender.test.ts holds these in step with it.
+export const A4_WIDTH_MM = 210;
+export const DEFAULT_X_HEIGHT_MM = 6;
+export const DEFAULT_MARGIN_MM = 15;
+// The `fmt` of locales/index.ts, which this module cannot import for the same
+// resolution reason; the two are one line each and pinned by the same test.
+const fill = (template: string, params: Record<string, string | number>) =>
+  template.replace(/\{\{(\w+)\}\}/g, (_, key: string) => String(params[key] ?? ''));
+
 const worksheetBody = () => {
   const t = worksheet;
   return [
@@ -508,7 +523,12 @@ const worksheetBody = () => {
     h2(t.config.rulingHeading),
     p(t.config.rulingNote),
     h2(t.text.heading),
-    p(t.text.help),
+    p(
+      fill(t.text.help, {
+        xh: DEFAULT_X_HEIGHT_MM.toLocaleString('de-DE'),
+        chars: maxCharsPerLine(DEFAULT_X_HEIGHT_MM, DEFAULT_MARGIN_MM, A4_WIDTH_MM - DEFAULT_MARGIN_MM),
+      }),
+    ),
     em(`${NEEDS_JS} ${t.config.download}.`),
   ].join('\n');
 };

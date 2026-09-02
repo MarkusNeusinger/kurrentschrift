@@ -31,8 +31,9 @@ export function useWorksheetText(text: string, sourceId: string = CONFIG.sourceI
   const keyOf = (line: string) => `${sourceId}\n${line}`;
 
   useEffect(() => {
-    // One request per distinct line, however often it is typed.
-    const todo = [...new Set(wanted)].filter((line) => !requested.current.has(keyOf(line)));
+    // One request per distinct line, however often it is typed — two rows
+    // holding the same words share one composition.
+    const todo = [...new Set(wanted.map((l) => l.text))].filter((line) => !requested.current.has(keyOf(line)));
     if (!todo.length) return;
     const timer = setTimeout(() => {
       for (const line of todo) {
@@ -54,13 +55,13 @@ export function useWorksheetText(text: string, sourceId: string = CONFIG.sourceI
 
   return useMemo(() => {
     const lines = wanted.map((line): TextLine => {
-      const a = answers.get(keyOf(line));
-      return { text: line, composed: a && a !== 'error' ? a : null };
+      const a = answers.get(keyOf(line.text));
+      return { ...line, composed: a && a !== 'error' ? a : null };
     });
     return {
       lines,
-      loading: wanted.some((line) => !answers.has(keyOf(line))),
-      failed: wanted.filter((line) => answers.get(keyOf(line)) === 'error'),
+      loading: wanted.some((line) => !answers.has(keyOf(line.text))),
+      failed: wanted.filter((line) => answers.get(keyOf(line.text)) === 'error').map((line) => line.text),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wanted, answers, sourceId]);

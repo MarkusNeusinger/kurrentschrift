@@ -16,6 +16,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import { CONFIG } from '../../global-config.ts';
+import { A4, PRESETS } from '../../lib/lineatur.ts';
+import { maxCharsPerLine } from '../../lib/uebungstext.ts';
 import { quiz } from '../../locales/de/quiz.ts';
 import { schriftkunde } from '../../locales/de/schriftkunde.ts';
 import { worksheet } from '../../locales/de/worksheet.ts';
@@ -23,7 +25,10 @@ import { paths } from '../../routes/paths.ts';
 import { DIFFICULTIES, MODES, offersChoice, SCRIPTS } from '../../sections/quiz/quizOptions.ts';
 import { SCHRIFTKUNDE_SECTIONS } from '../../sections/schriftkunde/sections.ts';
 import {
+  A4_WIDTH_MM,
   COMPLETENESS,
+  DEFAULT_MARGIN_MM,
+  DEFAULT_X_HEIGHT_MM,
   escapeHtml,
   KENNWERTE_LEGEND,
   kennwerte,
@@ -120,6 +125,22 @@ describe('crawler prerender', () => {
     // prerender.ts cannot import global-config (import.meta.env) under Node.
     expect(PUBLIC_API).toBe(CONFIG.publicApiBase);
     expect(PUBLIC_SOURCE_ID).toBe(CONFIG.sourceId);
+  });
+
+  it('restates the page geometry the worksheet opens with, and fills its counts in', () => {
+    // Same reason: lineatur.ts resolves neither under plain Node. The help
+    // text names a character count that follows the Mittellänge, so the
+    // prerendered page must show a number, never a raw placeholder.
+    const suetterlin = PRESETS.find((p) => p.id === 'suetterlin')!;
+    expect(A4_WIDTH_MM).toBe(A4.widthMm);
+    expect(DEFAULT_X_HEIGHT_MM).toBe(suetterlin.xHeightMm);
+    expect(DEFAULT_MARGIN_MM).toBe(suetterlin.marginMm);
+    const file = PAGES.find((pg) => pg.route === paths.worksheet)!.file;
+    const html = rendered.get(file) ?? '';
+    expect(html).not.toMatch(/\{\{\w+\}\}/);
+    expect(html).toContain(
+      `bei ${DEFAULT_X_HEIGHT_MM} mm Mittellänge sind das etwa ${maxCharsPerLine(DEFAULT_X_HEIGHT_MM, DEFAULT_MARGIN_MM, A4_WIDTH_MM - DEFAULT_MARGIN_MM)} Zeichen`,
+    );
   });
 
   it('holds the Kennwerte and the prose facts together, with every angle naming its reference', () => {

@@ -6,7 +6,9 @@
 // draw items WrittenWord animates) and this module only PLACES it — template
 // units (x-height = 1, baseline = 0, y up) → page millimetres (y down), one
 // composed line per model row, the practice rows skipped, and what the page
-// cannot hold reported instead of drawn. Pure and framework-free like
+// cannot hold reported instead of drawn — reported by its row number in the
+// text field, because a note the writer cannot trace back to a line is no
+// note at all (website audit 2026-09-02). Pure and framework-free like
 // lib/lineatur.ts; the SVG preview and the PDF writer consume the same shapes,
 // so the printout matches the screen.
 
@@ -26,18 +28,53 @@ const INSET_MM = 3; // air between the ruling's end and the first letter
 // against a payload that predates the field.
 const CONNECTOR_UNITS = 0.1;
 
+// How wide one character runs, in template units (x-height = 1) — the figure
+// the character estimate is built on. Measured 2026-09-02 against the live
+// composer (`GET /write/word`, suetterlin-1922) on `abcdefghijklmnopqrstuvwxyz`:
+// 40.354 units over 26 characters. German prose sits below it (0.6-mm-narrower
+// per character: "heute schreibe ich Dir aus Straßburg." 1.250, "das denen
+// lesen und der Tag" 1.456, "Guten Morgen" 1.728), so the alphabet's own
+// average under-promises slightly rather than over — which is the direction an
+// estimate on a practice sheet should err in. Single letters spread far wider
+// than any average (i 1.06, m 3.04), so this number answers "roughly how much
+// fits", never "this line will fit": the per-line verdict comes from the
+// line's OWN composition in placeText.
+export const AVG_ADVANCE_UNITS = 1.55;
+
+/** The writing width of a row: between the ruling's ends, less the air at
+ * both ends that the first and last letter keep. */
+export function writingWidthMm(left: number, right: number): number {
+  return right - INSET_MM - (left + INSET_MM);
+}
+
+/** Roughly how many characters a line holds at this x-height — the honest
+ * replacement for the flat "60" the help text used to promise, which is only
+ * the textarea's cap. Rounded down and never above that cap. */
+export function maxCharsPerLine(xHeightMm: number, left: number, right: number): number {
+  const width = writingWidthMm(left, right);
+  if (!(xHeightMm > 0) || !(width > 0)) return 0;
+  return Math.max(0, Math.min(MAX_LINE_LEN, Math.floor(width / (xHeightMm * AVG_ADVANCE_UNITS))));
+}
+
+/** A line of the text field, with the number it carries there. */
+export interface InputLine {
+  /** 1-based row in the text field, counted as typed — empty rows included, so
+   * the number in a message names the row the writer sees. */
+  no: number;
+  text: string;
+}
+
 /** The non-empty lines of the text field, trimmed and NFC-normalised like the
- * server, capped in count and length. */
-export function textLines(text: string): string[] {
+ * server, capped in count and length, each keeping its own row number. */
+export function textLines(text: string): InputLine[] {
   return text
     .split(/\r?\n/)
-    .map((line) => line.normalize('NFC').trim().slice(0, MAX_LINE_LEN).trim())
-    .filter((line) => line.length > 0)
+    .map((line, i) => ({ no: i + 1, text: line.normalize('NFC').trim().slice(0, MAX_LINE_LEN).trim() }))
+    .filter((line) => line.text.length > 0)
     .slice(0, MAX_LINES);
 }
 
-export interface TextLine {
-  text: string;
+export interface TextLine extends InputLine {
   /** The server's composition, or null while it is pending or failed. */
   composed: ComposedWordOut | null;
 }
@@ -54,27 +91,54 @@ export interface PlaceOptions {
   right: number;
 }
 
+/** A line the ruling is too narrow for at this x-height. The Lineatur is not
+ * negotiable (author's decision 2026-09-02: no scaling, no re-wrapping — the
+ * model line's height must keep matching the rows it is written between), so
+ * the line stays unwritten and says so, with the count it would need. */
+export interface TooWideLine extends InputLine {
+  /** The line's length, the figure the writer can act on. */
+  chars: number;
+  /** How many characters of THIS line fit — from its own composed width, not
+   * from an average. 0 when even one character is too wide. */
+  fits: number;
+}
+
+/** A row left empty on purpose, marked in the preview so nothing vanishes
+ * silently. Preview only: a printed practice sheet carries no warnings. */
+export interface RowMark {
+  no: number;
+  /** The x-height band of the reserved row, mm from the page top. */
+  y: number;
+  height: number;
+  x: number;
+  width: number;
+}
+
 export interface PlacedText {
   shapes: InkShape[];
   /** The lines drawn, in order. */
   placed: string[];
-  /** Lines wider than the writing width at this x-height — left out. */
-  tooWide: string[];
+  /** Lines wider than the writing width at this x-height — left unwritten,
+   * their row reserved and marked. */
+  tooWide: TooWideLine[];
   /** Lines the page has no row left for — left out. */
-  noRow: string[];
+  noRow: InputLine[];
   /** glyph_keys the compositions could not place (their letters stay blank). */
   missing: string[];
+  /** Rows held open for a line that could not be written (preview only). */
+  marks: RowMark[];
 }
 
 /** Set the lines into the rows: line i takes the next free row, its grey
  * trace copy the row after (when `trace`), and leaves `practiceRows` empty
  * ones after that. A pending line keeps its rows, so the sheet does not jump
- * while a line is still being written. */
+ * while a line is still being written — and so does a line too wide for the
+ * ruling, which is reported and marked instead of quietly dropped. */
 export function placeText(lines: readonly TextLine[], rows: readonly RowMetrics[], opts: PlaceOptions): PlacedText {
-  const out: PlacedText = { shapes: [], placed: [], tooWide: [], noRow: [], missing: [] };
+  const out: PlacedText = { shapes: [], placed: [], tooWide: [], noRow: [], missing: [], marks: [] };
   const s = opts.xHeightMm;
   const x0 = opts.left + INSET_MM;
-  const width = opts.right - INSET_MM - x0;
+  const width = writingWidthMm(opts.left, opts.right);
   if (!(s > 0) || !(width > 0)) return out;
   const practice = Number.isFinite(opts.practiceRows) ? Math.max(0, Math.floor(opts.practiceRows)) : 0;
   const step = 1 + (opts.trace ? 1 : 0) + practice;
@@ -89,16 +153,38 @@ export function placeText(lines: readonly TextLine[], rows: readonly RowMetrics[
       // missing-letter note names what stays blank. Without a row left it
       // is reported like any other line — it can never be placed.
       if (rows[next]) next += step;
-      else out.noRow.push(line.text);
+      else out.noRow.push({ no: line.no, text: line.text });
       continue;
     }
-    if ((c.bounds.max_x - c.bounds.min_x) * s > width) {
-      out.tooWide.push(line.text);
+    const lineWidth = (c.bounds.max_x - c.bounds.min_x) * s;
+    if (lineWidth > width) {
+      // Too wide for the ruling. The line is not scaled and not re-wrapped —
+      // it would no longer sit in its rows — but it does not disappear
+      // either: it keeps its row, the row is marked in the preview, and the
+      // report says how many of its characters would have fitted.
+      const perChar = lineWidth / line.text.length;
+      out.tooWide.push({
+        no: line.no,
+        text: line.text,
+        chars: line.text.length,
+        fits: perChar > 0 ? Math.floor(width / perChar) : 0,
+      });
+      const held = rows[next];
+      if (held) {
+        out.marks.push({
+          no: line.no,
+          y: held.waist,
+          height: held.baseline - held.waist,
+          x: x0,
+          width,
+        });
+        next += step;
+      }
       continue;
     }
     const row = rows[next];
     if (!row) {
-      out.noRow.push(line.text);
+      out.noRow.push({ no: line.no, text: line.text });
       continue;
     }
     // The trace row is skipped silently at the page's end — the model line
