@@ -29,6 +29,12 @@ nothing at all, so it was taken back out (`app/security-headers.conf` carries
 the measurement). The second shape is parsed anyway: it costs one branch, and
 it means the day `report-to` is proven to deliver, only the header changes.
 
+**No reported URL is logged whole.** The public pages put what the VISITOR
+TYPED into the URL — `/federprobe?text=…` and `/lesen/vergleichen?text=…` are
+shareable by design — and a report carries `document-uri` verbatim. Query and
+fragment are cut off before anything is logged or memoised (`_path_only`), so a
+security measure never turns into a transcript of what strangers wrote.
+
 **Deliberately NOT exempt from the rate limiter.** This is the one POST on this
 API that anyone may call, so the wide bucket (600/min per client) is precisely
 the net it needs; a browser emits a handful of reports per document, orders of
@@ -94,6 +100,24 @@ def _field(report: dict[str, Any], *names: str) -> str:
     return "?"
 
 
+def _path_only(url: str) -> str:
+    """A reported URL with its query and fragment removed.
+
+    **This is a privacy measure, not tidiness.** The public pages put what the
+    VISITOR TYPED into the URL — `/federprobe?text=…` and
+    `/lesen/vergleichen?text=…` are shareable by design — and a violation report
+    carries `document-uri` verbatim. Logging it whole would copy a stranger's
+    text into Cloud Logging as a side effect of a security measure. The path is
+    what a policy finding is about; the query never is.
+
+    Applied to `blocked-uri` for the same reason: a blocked request to this
+    site's own API carries the rendered text in its query string.
+    """
+    for cut in ("#", "?"):
+        url = url.split(cut, 1)[0]
+    return url
+
+
 def _reports(payload: Any) -> list[dict[str, Any]]:
     """Every violation object in a body of either shape."""
     if isinstance(payload, dict):
@@ -117,8 +141,8 @@ def _record(report: dict[str, Any]) -> None:
     """Log a violation the first time it is seen, then every hundredth time."""
     global _overflow
     directive = _field(report, "effective-directive", "effectiveDirective", "violated-directive", "violatedDirective")
-    blocked = _field(report, "blocked-uri", "blockedURL", "blockedURI")
-    document = _field(report, "document-uri", "documentURL", "documentURI")
+    blocked = _path_only(_field(report, "blocked-uri", "blockedURL", "blockedURI"))
+    document = _path_only(_field(report, "document-uri", "documentURL", "documentURI"))
     key = (directive, blocked, document)
     with _lock:
         if key in _seen:
@@ -146,7 +170,7 @@ def _record(report: dict[str, Any]) -> None:
             blocked,
             document,
             _field(report, "disposition"),
-            _field(report, "source-file", "sourceFile"),
+            _path_only(_field(report, "source-file", "sourceFile")),
             _field(report, "line-number", "lineNumber"),
         )
 

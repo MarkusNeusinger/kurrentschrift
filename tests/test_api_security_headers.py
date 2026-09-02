@@ -1,9 +1,12 @@
-"""The API host's own two response headers, and the CSP report endpoint.
+"""The API host's own response headers, and the CSP report endpoint.
 
 `api/security_headers.py` is a floor: every response this service produces
-carries `nosniff` and a `Referrer-Policy`, including the ones no router ever
-sees — the origin gate's 403 and the rate limiter's 429 are JSON bodies handed
-to a browser like any other.
+carries `nosniff`, a `Referrer-Policy` and HSTS — including the ones no router
+ever sees. The origin gate's 403 and the rate limiter's 429 are JSON bodies
+handed to a browser like any other, and the unhandled-500 is written by
+Starlette OUTSIDE every user middleware, so it is covered from `api.main`'s
+`Exception` handler instead. Each of those four paths is driven below, because
+each reaches the wire by a different route.
 
 `api/routers/csp.py` is the other half of the report-only week: it is the one
 POST on this API that anybody may call, so the tests below pin what it accepts,
@@ -52,13 +55,21 @@ REPORT_TO_BODY = [
 ]
 
 
-async def _post_raw(body: bytes, *, content_type: str, path: str = "/csp-report") -> dict:
-    """POST arbitrary BYTES to the real app.
+# The `http.response.start` message of the last `_post_raw` call, kept so a
+# call that RAISES after sending (ServerErrorMiddleware does exactly that) can
+# still be asserted on.
+_LAST_RESPONSE: dict[str, dict] = {}
+
+
+async def _post_raw(body: bytes, *, content_type: str, path: str = "/csp-report", method: str = "POST") -> dict:
+    """Drive the real app with arbitrary BYTES.
 
     `tests.api_harness.AsgiClient` always JSON-encodes its payload, so a body
     that is not JSON cannot be expressed there — and "what happens to a body
-    that is not JSON" is exactly the question on a public POST. This route
-    touches no database, so it needs none of the harness's wiring.
+    that is not JSON" is exactly the question on a public POST. It also swallows
+    nothing: an exception that reaches `ServerErrorMiddleware` propagates out of
+    here, which is what the 500 test needs. Neither route touches a database, so
+    neither needs the harness's wiring.
     """
     from api.main import app
 
@@ -67,7 +78,7 @@ async def _post_raw(body: bytes, *, content_type: str, path: str = "/csp-report"
         "type": "http",
         "asgi": {"version": "3.0", "spec_version": "2.3"},
         "http_version": "1.1",
-        "method": "POST",
+        "method": method,
         "scheme": "https",
         "path": path,
         "raw_path": path.encode(),
@@ -91,7 +102,10 @@ async def _post_raw(body: bytes, *, content_type: str, path: str = "/csp-report"
 
     async def send(message):
         messages.append(message)
+        if message["type"] == "http.response.start":
+            _LAST_RESPONSE["start"] = message
 
+    _LAST_RESPONSE.clear()
     await app(scope, receive, send)
     start = next(m for m in messages if m["type"] == "http.response.start")
     return {"status": start["status"], "headers": dict(start.get("headers", []))}
@@ -135,6 +149,46 @@ async def test_a_404_carries_them_too(api: Harness):
     assert res.status == 404
     for name, value in EXPECTED.items():
         assert res.headers.get(name) == value
+
+
+async def test_an_unhandled_500_carries_them(api: Harness):
+    """The one response the middleware cannot reach.
+
+    Starlette builds `ServerErrorMiddleware` OUTSIDE every user middleware, so
+    a 500 from an unhandled exception is written before the header layer would
+    see it. `api.main` closes that with an `Exception` handler; this drives a
+    route that raises and reads the headers off the wire.
+    """
+    from fastapi import APIRouter
+
+    from api.main import app
+
+    router = APIRouter()
+
+    @router.get("/boom-for-the-header-test")
+    async def _boom():
+        raise RuntimeError("deliberate")
+
+    # Snapshot and restore the whole list rather than filtering it: recent
+    # FastAPI keeps an included router as a lazy WRAPPER, whose `.path` is not
+    # the route's, so a filter would leave the route behind — and
+    # tests/test_api_public_surface.py walks the table and fails on any path it
+    # cannot classify.
+    before = list(app.router.routes)
+    app.include_router(router)
+    # ServerErrorMiddleware re-raises after sending, so the traceback still
+    # reaches the log — the response is what this asserts on.
+    try:
+        with pytest.raises(RuntimeError):
+            await _post_raw(b"", content_type="text/plain", path="/boom-for-the-header-test", method="GET")
+        res = _LAST_RESPONSE["start"]
+    finally:
+        app.router.routes = before
+    headers = {k.decode().lower(): v.decode() for k, v in res.get("headers", [])}
+    assert res["status"] == 500
+    for name, value in EXPECTED.items():
+        assert headers.get(name) == value
+    assert headers.get("cache-control") == "private, no-store"
 
 
 async def test_a_rate_limit_refusal_carries_them(api: Harness):
@@ -212,6 +266,35 @@ async def test_an_oversized_body_is_refused_before_it_is_parsed(api: Harness):
     res = await api.client.request("POST", "/csp-report", json_body=huge)
     assert res.status == 413
     assert csp_module._seen == {}
+
+
+async def test_no_reported_url_is_logged_with_its_query(api: Harness, caplog):
+    """`/federprobe?text=…` carries what the VISITOR TYPED.
+
+    A report quotes `document-uri` verbatim, so logging it whole would copy a
+    stranger's text into Cloud Logging as a side effect of a security measure
+    (Copilot review, PR #497). Path yes, query never.
+    """
+    body = {
+        "csp-report": {
+            "document-uri": "https://kurrentschrift.ink/federprobe?text=meine%20geheime%20Nachricht#hier",
+            "effective-directive": "img-src",
+            "blocked-uri": "https://api.kurrentschrift.ink/sources/s/write/word.svg?text=auch%20geheim",
+            "source-file": "https://kurrentschrift.ink/assets/index-abc.js?v=1",
+        }
+    }
+    with caplog.at_level(logging.WARNING, logger="api.routers.csp"):
+        assert (await api.client.request("POST", "/csp-report", json_body=body)).status == 204
+    assert "geheim" not in caplog.text
+    assert "text=" not in caplog.text
+    assert "#hier" not in caplog.text
+    assert "?v=1" not in caplog.text
+    assert "https://kurrentschrift.ink/federprobe" in caplog.text
+    # …and the memo is keyed on the stripped form, so one page with a thousand
+    # different texts is ONE tracked violation, not a thousand.
+    assert list(csp_module._seen) == [
+        ("img-src", "https://api.kurrentschrift.ink/sources/s/write/word.svg", "https://kurrentschrift.ink/federprobe")
+    ]
 
 
 async def test_the_violation_memo_cannot_grow_without_bound(api: Harness, caplog):

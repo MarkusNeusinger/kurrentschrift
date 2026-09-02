@@ -14,8 +14,10 @@ from contextlib import asynccontextmanager  # noqa: E402
 from fastapi import FastAPI, Request, Response  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.middleware.gzip import GZipMiddleware  # noqa: E402
+from fastapi.responses import JSONResponse  # noqa: E402
 
 from api.analytics import classify_asset, track_asset_fetch, track_bot_fetch  # noqa: E402
+from api.http import NO_STORE  # noqa: E402
 from api.origin_gate import OriginSecretMiddleware  # noqa: E402
 from api.rate_limit import RateLimitMiddleware  # noqa: E402
 from api.routers import (  # noqa: E402
@@ -40,7 +42,7 @@ from api.routers import (  # noqa: E402
     work_items_session_router,
     write_router,
 )
-from api.security_headers import SecurityHeadersMiddleware  # noqa: E402
+from api.security_headers import SECURITY_HEADERS_STR, SecurityHeadersMiddleware  # noqa: E402
 from api.version import APP_VERSION  # noqa: E402
 from core.config import settings  # noqa: E402
 from core.database import close_db, init_db, is_db_configured  # noqa: E402
@@ -116,6 +118,32 @@ app = FastAPI(
     redoc_url="/redoc",
     openapi_url="/openapi.json",
 )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception(_request: Request, exc: Exception) -> JSONResponse:
+    """The one response `SecurityHeadersMiddleware` can never reach.
+
+    Starlette builds `ServerErrorMiddleware` OUTSIDE every user middleware, so
+    the 500 it writes for an unhandled exception is already on the wire before
+    the header layer would see it — which made "every response this API answers"
+    quietly untrue (Copilot review, PR #497). Registering a handler for
+    `Exception` puts THIS response in its place, headers and all: Starlette
+    lifts the handler out of the table and hands it to that very middleware.
+
+    The exception is still re-raised afterwards by `ServerErrorMiddleware`, so
+    the traceback reaches the log exactly as before. Only the body changes, and
+    it changes toward the rest of this API: a JSON `detail`, like the 401, the
+    403 and the 429, instead of a bare text line. `no-store` because a failure
+    is about one request and must never be served to the next visitor.
+    """
+    logger.exception("unhandled error on a request", exc_info=exc)
+    return JSONResponse(
+        {"detail": "internal server error"},
+        status_code=500,
+        headers={**SECURITY_HEADERS_STR, "Cache-Control": NO_STORE},
+    )
+
 
 # The middleware stack, written innermost-first because `add_middleware`
 # PREPENDS — the last one added is the outermost. Reading the calls below from

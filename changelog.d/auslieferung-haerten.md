@@ -16,13 +16,24 @@
   ships as `Content-Security-Policy-Report-Only` for one week and is switched
   by shortening the header name (#497).
 
-- **The API host stamps `nosniff` and a `Referrer-Policy` on everything it
-  answers.** `api.kurrentschrift.ink` is a second public host — SVG renders,
-  crop images, JSON — and it carried neither. A lean ASGI middleware
+- **The API host stamps `nosniff`, a `Referrer-Policy` and HSTS on everything
+  it answers.** `api.kurrentschrift.ink` is a second public host — SVG renders,
+  crop images, JSON — and it carried none of them. A lean ASGI middleware
   (`api/security_headers.py`) sits outside both gates, so the origin gate's 403
-  and the rate limiter's 429 get them too. Deliberately no CSP there: `/docs`
-  and `/redoc` load their bundles from a CDN and run inline scripts, so a
-  policy worth setting would break the API's own documentation (#497).
+  and the rate limiter's 429 get them too, and an `Exception` handler covers
+  the one response Starlette writes outside every user middleware: the
+  unhandled 500. HSTS has to be repeated here precisely *because* the apex
+  policy leaves `includeSubDomains` off — the header is keyed to the hostname
+  of the response that carried it, so the apex says nothing about this host.
+  Deliberately no CSP there: `/docs` and `/redoc` load their bundles from a CDN
+  and run inline scripts, so a policy worth setting would break the API's own
+  documentation (#497).
+
+- **A CSP report never carries a visitor's text into the log.** The public
+  pages put what was typed into the URL — `/federprobe?text=…` is shareable by
+  design — and a violation report quotes `document-uri` verbatim. Query and
+  fragment are cut off before anything is logged or memoised, so a security
+  measure does not become a transcript of what strangers wrote (#497).
 
 - **Nothing named `.env` can reach a build context or a source upload any
   more.** `.dockerignore` listed `.env`, `.env.local` and `.env.*.local` — a

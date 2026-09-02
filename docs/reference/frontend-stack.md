@@ -745,8 +745,8 @@ erneut geloggt).
 
 **Scharfschalten ist eine Zeile:** In `app/security-headers.conf` den
 Header-Namen `Content-Security-Policy-Report-Only` zu `Content-Security-Policy`
-ändern und deployen. `report-uri`/`report-to` bleiben stehen, damit auch danach
-gemeldet wird.
+ändern und deployen. `report-uri` bleibt stehen, damit auch danach gemeldet
+wird — eine tatsächlich blockierte Quelle will man erst recht erfahren.
 
 **`Cache-Control` auf der Hülle.** `location = /index.html` setzt `no-cache` —
 bewusst nicht anyplots `no-store, must-revalidate`. Ohne Header trug die Antwort
@@ -757,15 +757,31 @@ und der gemessene Weg endet in einem 304 mit null Bytes; `no-store` würde die
 Hülle bei jeder Navigation neu laden. Der nächste Abgleich mit der Schwesterdatei
 wird das „reparieren" wollen — der Grund steht als Kommentar daneben.
 
-**Der API-Host hat seine eigenen zwei.** `api.kurrentschrift.ink` ist ein
+**Der API-Host hat seine eigenen drei.** `api.kurrentschrift.ink` ist ein
 zweiter öffentlicher Host mit eigenen Antworten; `api/security_headers.py`
-hängt `nosniff` und `Referrer-Policy` an jede von ihnen — auch an die 403 des
-Origin-Gates und die 429 des Limiters, denn die Middleware sitzt außerhalb
-beider. Keine CSP dort: `/docs` und `/redoc` laden Swagger UI bzw. ReDoc von
+hängt `nosniff`, `Referrer-Policy` und HSTS an jede von ihnen — auch an die 403
+des Origin-Gates und die 429 des Limiters, denn die Middleware sitzt außerhalb
+beider. **HSTS muss hier wiederholt werden, gerade WEIL der Apex bewusst ohne
+`includeSubDomains` fährt:** Der Header gilt im Browser für den Hostnamen der
+Antwort, die ihn trug — der Apex sagt über diesen Host nichts aus, auch nicht
+als Geschwister, und dass Cloudflare für beide Namen TLS terminiert, ändert
+daran nichts (Copilot-Review, PR #497). `app/nginx.conf` blendet die drei am
+Crawler-Proxy per `proxy_hide_header` aus, weil die Seite sie dort selbst setzt.
+Eine Antwort erreicht die Middleware nie: Starlette baut
+`ServerErrorMiddleware` AUSSERHALB jeder User-Middleware, die 500 einer
+unbehandelten Ausnahme ist also schon auf der Leitung. Dafür registriert
+`api/main.py` einen `Exception`-Handler — genau die Antwort, die jene
+Middleware sendet — und stempelt die Header dort.
+Keine CSP dort: `/docs` und `/redoc` laden Swagger UI bzw. ReDoc von
 `cdn.jsdelivr.net` und führen Inline-Skripte aus; eine Policy, die streng genug
-wäre, um etwas zu taugen, würde die eigene API-Dokumentation zerlegen. Kein
-HSTS: Der Header gehört zu dem Host, der für Browser TLS terminiert, und
-Cloudflare steht vor beiden Namen.
+wäre, um etwas zu taugen, würde die eigene API-Dokumentation zerlegen.
+
+**Keine gemeldete URL wird ganz geloggt.** `/federprobe?text=…` und
+`/lesen/vergleichen?text=…` tragen, was der BESUCHER getippt hat — sie sind
+zum Teilen gemacht —, und ein Report zitiert `document-uri` wörtlich. Query und
+Fragment werden abgeschnitten, bevor irgendetwas geloggt oder gemerkt wird
+(`api/routers/csp.py::_path_only`); eine Sicherheitsmaßnahme soll nicht
+nebenbei mitschreiben, was Fremde schreiben.
 
 ### Reverse-Proxy / Routing
 
