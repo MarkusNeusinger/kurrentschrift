@@ -217,6 +217,23 @@ Zeitpunkt bereits; ein Sitemap-Eintrag für llms.txt wurde verworfen
 (Hülle) und `test_api_http.py`/`test_api_public_surface.py`
 (API-Redirect).
 
+**IndexNow (2026-09-02):** Die Suchmaschinen erfahren von Änderungen
+nicht mehr nur beim nächsten Crawl: `.github/workflows/indexnow-submit.yml`
+meldet bei jedem Push auf `main`, der `app/**` berührt (dieselben Pfade
+wie der Cloud-Build-Trigger `deploy-app`), die zehn URLs aus
+`app/public/sitemap.xml` per POST an `api.indexnow.org`; Bing, Yandex,
+Seznam, Naver und Yep teilen sich die Meldung, Google nimmt nicht teil
+und liest weiter die Sitemap. Der Nachweis ist die öffentliche
+Schlüsseldatei `app/public/kurrentschrift-indexnow-….txt`, die nginx wie
+`robots.txt` und `llms.txt` direkt ausliefert — die Suchmaschinen holen
+sie mit ihrem Crawler-UA, und ohne die `*.txt`-Location liefe der Abruf in
+den Prerender-Proxy und ein 404. Der Schlüssel ist per Protokoll
+öffentlich; er beweist nur die Kontrolle über den Host. Die ganze Sitemap
+je Meldung ist bei zehn Seiten die natürliche Einheit (Grenze des
+Protokolls: 10 000 URLs je Aufruf); ein Diff-auf-Routen-Mapping wie bei
+anyplot wäre mehr Code, als die Seite Routen hat. Empfehlung der Bing
+Webmaster Tools; kostenlos.
+
 Und weil die Abrufe dort sichtbar sind, werden sie dort gezählt: Jeder
 `/seo-proxy`-Abruf eines bekannten Agenten landet als Event `bot_fetch`
 auf der **zweiten Plausible-Site `bots.kurrentschrift.ink`** — nie auf

@@ -44,7 +44,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
-- **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
+- **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — k0-Protokoll §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
@@ -750,6 +750,19 @@ Zeile ist der Marker `<!-- kurrentschrift.ink prerender -->`. Löste am
 `tests/test_api_seo_proxy.py` und täglich
 `.github/workflows/bot-serving-check.yml`. → frontend-stack.md §6,
 crawler-richtlinie.md §3
+
+**IndexNow** — das freie, offene Push-Protokoll von Bing und Yandex
+(mitgenutzt von Seznam, Naver, Yep): Statt auf den nächsten Crawl zu
+warten, meldet die Seite geänderte URLs per POST an `api.indexnow.org`;
+Google nimmt nicht teil und liest weiter die Sitemap. Der Nachweis, dass
+die Meldung vom Host stammt, ist eine öffentliche Schlüsseldatei
+`app/public/kurrentschrift-indexnow-….txt` (nginx liefert sie wie die
+anderen Maschinendateien direkt aus). Gemeldet wird bei jedem Push auf
+`main`, der `app/**` berührt — dieselben Pfade wie der Cloud-Build-Trigger
+`deploy-app` — die komplette Sitemap (zehn URLs), weil bei zehn Seiten die
+Sitemap die natürliche Einheit ist. Seit 2026-09-02, auf Empfehlung der
+Bing Webmaster Tools. *Technisch:*
+`.github/workflows/indexnow-submit.yml`. → crawler-richtlinie.md §3
 
 **Bot-Site (`bot_fetch`)** — die zweite Plausible-Site
 `bots.kurrentschrift.ink`, auf der die Seitenabrufe von Crawlern und
