@@ -128,7 +128,18 @@ def _base_key(slots: Sequence[Any], index: int | None) -> str:
     return _key_base(slot.key, slot.position)
 
 
-def _body_lines(composed: dict) -> dict[int, list[list]]:
+def join_pair_keys(slots: Sequence[Any], item: dict) -> tuple[str, str]:
+    """The ``(left, right)`` base glyph keys a connector item joins.
+
+    Shared with tools/wordbench/seam.py so both report columns label a join
+    the same way — post-R2 bare bases, read off the frozen slots rather than
+    off the item's own ``pair`` (which carries the raw, possibly
+    position-suffixed keys).
+    """
+    return _base_key(slots, item.get("from_slot")), _base_key(slots, item.get("to_slot"))
+
+
+def body_lines(composed: dict) -> dict[int, list[list]]:
     """slot_index -> the slot's NON-diacritic glyph centerlines, writing order.
 
     The composer emits a slot's body strokes consecutively and holds its
@@ -136,6 +147,8 @@ def _body_lines(composed: dict) -> dict[int, list[list]]:
     the glyph's first stroke start and last stroke end — the frame
     tools/pairlab/analyze.py fitted and harvested in. Connector items carry
     ``from_slot``/``to_slot`` but no ``slot_index`` and never appear.
+
+    Public because tools/wordbench/seam.py reads its seams in the same frame.
     """
     lines: dict[int, list[list]] = {}
     for item in composed.get("items", []):
@@ -170,7 +183,7 @@ def compare_joins(composed: dict, slots: Sequence[Any], measured: Iterable[dict]
         report column must not be able to take the run down.
     """
     by_slot = {int(r["slot"]): r for r in measured}
-    bodies = _body_lines(composed)
+    bodies = body_lines(composed)
     joins: list[dict] = []
     n_joins = 0
     excluded_fit = 0
@@ -188,8 +201,7 @@ def compare_joins(composed: dict, slots: Sequence[Any], measured: Iterable[dict]
         row = by_slot.get(item.get("from_slot"))
         if row is None:
             continue
-        left = _base_key(slots, item.get("from_slot"))
-        right = _base_key(slots, item.get("to_slot"))
+        left, right = join_pair_keys(slots, item)
         if (row["left_key"], row["right_key"]) != (left, right):
             continue  # the frozen slots moved under the harvest — not comparable
         if not (row.get("measurements") or {}).get("fit_ok"):
