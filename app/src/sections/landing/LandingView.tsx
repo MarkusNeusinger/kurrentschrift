@@ -68,13 +68,30 @@ export function LandingView() {
           (#485) rather than from a new component. */}
       <PageContainer width="wide" sx={{ pt: { xs: 4, md: 6 } }}>
         <CategoryHeading>{de.landing.howHeading}</CategoryHeading>
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 2.5 }}>
+        {/* An ORDERED list, not three cards in a grid: the order is the whole
+            point of the section, and it must reach a screen reader too — the
+            printed ordinal alone would not (Copilot review, #503). `role="list"`
+            is kept because `list-style: none` drops list semantics in Safari;
+            Reveal is the <li> itself, so the grid still stretches the items to
+            equal height. */}
+        <Box
+          component="ol"
+          role="list"
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+            gap: 2.5,
+            listStyle: 'none',
+            p: 0,
+            m: 0,
+          }}
+        >
           {howSteps.map((step, i) => (
-            <Reveal key={step.to} delay={i * 0.06}>
+            <Reveal key={step.to} delay={i * 0.06} component="li">
               <PaperCardLink to={step.to}>
-                {/* the step's number as a quiet ordinal above its name — the
-                    only thing that makes the row read as a sequence. Decorative
-                    for a screen reader; the titles carry the meaning. */}
+                {/* The ordinal in ink, for the eye. The list itself carries the
+                    sequence for assistive tech, so a bare „1" read out before
+                    the heading would only be noise — hence aria-hidden. */}
                 <Typography
                   component="span"
                   variant="caption"

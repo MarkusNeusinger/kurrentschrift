@@ -289,9 +289,15 @@ const landingBody = () => {
     lesen: paths.quiz,
     schreiben: paths.worksheet,
   };
-  const howRows = (Object.keys(t.howSteps) as (keyof typeof t.howSteps)[])
-    .map((k) => `${h3(t.howSteps[k].title)}${p(t.howSteps[k].desc)}<p>${a(abs(howRoutes[k]), t.howSteps[k].cta)}</p>`)
-    .join('');
+  // An <ol>, like the page: the order is the point of the section, so a
+  // crawler and a screen reader should read it as a sequence, not as three
+  // unrelated links (Copilot review, #503).
+  const howRows = `<ol>${(Object.keys(t.howSteps) as (keyof typeof t.howSteps)[])
+    .map(
+      (k) =>
+        `<li><strong>${e(t.howSteps[k].title)}</strong> — ${e(t.howSteps[k].desc)} ${a(abs(howRoutes[k]), t.howSteps[k].cta)}</li>`,
+    )
+    .join('')}</ol>`;
   const toolRoutes: Record<keyof typeof t.tools, string> = {
     schriftkunde: paths.schriftkunde,
     quiz: paths.quiz,
