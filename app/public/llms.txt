@@ -1,16 +1,16 @@
 # kurrentschrift.ink
 
-> Die alte deutsche Schreibschrift lesen und schreiben lernen: Kurrent, Sütterlin und Offenbacher Schrift — mit Schriftkunde, Buchstaben-Quiz, Schreibtafel, Übungsblättern und einer Feder, die eingegebenen Text live im synthetisierten Duktus schreibt.
+> Die alte deutsche Schreibschrift lesen und schreiben lernen: Kurrent, Sütterlin und Offenbacher Schrift — mit Schriftkunde, Lese-Quiz, Schreibtafel, Übungsblättern und einer Feder, die eingegebenen Text live schreibt.
 
-Die nachgebildeten Schriftzüge sind sorgfältige Synthesen aus gemeinfreien historischen Schreibvorlagen (Sütterlin-Leitfaden 1922, Loth 1866, Petzendorfer 1889, Koch 1928) und als solche gekennzeichnet; daneben zeigt die Seite die gemeinfreien Originaltafeln selbst, jeweils mit Quellenangabe. Inhalte auf Deutsch.
+Die nachgebildeten Schriftzüge sind sorgfältige Synthesen aus gemeinfreien historischen Schreibvorlagen (Sütterlin-Ausgangsschrift von 1922, Loth 1866, Petzendorfer 1889, Koch 1928) und als solche gekennzeichnet; daneben zeigt die Seite die gemeinfreien Originaltafeln selbst, jeweils mit Quellenangabe. Inhalte auf Deutsch.
 
 Jede Seite liefert Crawlern und KI-Agenten, die kein JavaScript ausführen, unter derselben Adresse eine vorgerenderte HTML-Fassung mit dem vollständigen Text (erkannt am User-Agent — die Liste ist dieselbe wie bei anyplot.ai). Wer mit einem anderen Client abruft, bekommt die App-Hülle; die Texte stehen dann als Quelle offen im Repository (app/src/locales/de/).
 
 ## Bereiche
 
-- [Schriftkunde](https://kurrentschrift.ink/schriftkunde): Belegter Überblick über die deutschen Schreibschriften — Grundbegriffe, die drei Ausgangsschriften, Federn, Tinte & Papier, Buchstaben-Besonderheiten, Zahlen & Zeichen, Chronologie, eine Schritt-für-Schritt-Anleitung „Einen alten Brief entziffern" und das Kapitel zum Normalschrifterlass 1941 („Warum wir heute nicht mehr so schreiben") — die zitierfähige Volltextseite mit allen Quellenangaben
+- [Schriftkunde](https://kurrentschrift.ink/schriftkunde): Belegter Überblick über die deutschen Schreibschriften — Grundbegriffe, die drei Ausgangsschriften, Federn, Tinte & Papier, Buchstaben-Besonderheiten, Zahlen & Zeichen, Chronologie, eine Schritt-für-Schritt-Anleitung „Einen alten Brief entziffern“ und das Kapitel zum Normalschrifterlass 1941 („Warum wir heute nicht mehr so schreiben“) — die zitierfähige Volltextseite mit allen Quellenangaben
 - [Lesen](https://kurrentschrift.ink/lesen): Übersicht der Lese-Übungen
-- [Buchstaben-Quiz](https://kurrentschrift.ink/quiz): Sütterlin-Buchstaben und -Wörter erkennen, mit Auswertung
+- [Lese-Quiz](https://kurrentschrift.ink/quiz): Sütterlin-Buchstaben und -Wörter erkennen, mit Auswertung
 - [Schreibtafel](https://kurrentschrift.ink/tafel): Die drei Grundtafeln; das Sütterlin-Alphabet schreibt sich Zug um Zug selbst
 - [Lesart prüfen](https://kurrentschrift.ink/lesen/vergleichen): Eine Vermutung eintippen — die Feder schreibt sie in Sütterlin; dazu die klassischen Verwechsler-Paare nebeneinander geschrieben. Lesarten mit je einem vertauschten Verwechsler (n/u, e/n, f/ſ …) nennt die Seite, sobald ein Wörterbuch geladen ist
 - [Schreiben](https://kurrentschrift.ink/schreiben): Übersicht der Schreib-Übungen

@@ -84,7 +84,7 @@ export const landing = {
     scribe: {
       title: 'Federprobe',
       cta: 'Wort schreiben lassen →',
-      desc: 'Ein Wort oder einen kurzen Satz eingeben — und zusehen, wie der nachgebildete Duktus es Zug um Zug in Sütterlin schreibt, samt den Übergängen von Buchstabe zu Buchstabe.',
+      desc: 'Ein Wort oder einen kurzen Satz eingeben — und zusehen, wie die Feder es Zug um Zug in Sütterlin schreibt, samt den Übergängen von Buchstabe zu Buchstabe.',
     },
     quiz: {
       title: 'Lese-Quiz',

@@ -4,10 +4,21 @@ This file provides guidance to GitHub Copilot (and any other AI agent that
 reads `.github/copilot-instructions.md`) when working in this repository.
 
 A companion guide `CLAUDE.md` at the repo root contains the same domain
-information targeted at Claude Code. Both files MUST stay in sync — if you
-change one, check the other. Both are deliberately SHORT: they say where
-things live and which rules bind, while what is *true* about a subsystem
-lives in the German design docs under `docs/` (start at `docs/index.md`).
+information targeted at Claude Code. **Both files MUST stay in sync** — if
+you change one, check the other; `tests/test_agent_instructions.py` pins
+that the rules mirrored between them stay present on both sides, and that
+every path and `§N` reference they cite actually resolves.
+
+What is mirrored: the working guardrails, the repository map, the
+read-these list, the data-and-licensing rules, and the core architectural
+commitment. What stays one-sided: Claude-specific mechanics (its skills,
+delegation, recovery recipes) on that side, and Copilot-specific context
+(task suitability, the descriptive stack/deploy sections) on this one.
+
+Both say where things live and which rules bind; what is *true* about a
+subsystem lives in the German design docs under `docs/` (start at
+`docs/index.md`). Prefer a pointer to a list — a list of file or table
+names rots with every PR, a pointer does not.
 
 ---
 
@@ -52,6 +63,32 @@ agent working in this repo:
 
 - **Never commit on `main`.** Branch first, even for a quick
   "commit and push". `main` is protected; land changes via a PR.
+- **A PR that finishes an issue closes it** — `Fixes #N` (or `Closes #N`)
+  on its own line in the PR body (author directive, 2026-08-16). A bare
+  mention closes nothing, and the author merges live: without the keyword
+  the issue is left open behind the merge.
+- **Carry a good solution straight to the sibling repo** (author
+  directive, 2026-09-01): kurrentschrift and the sibling repo anyplot
+  share stack, deploy pattern and cloud account, so any asymmetry is a
+  defect that gets noticed once and then rots in the weaker repo.
+  Transfer in the same round, one PR per repo, each following its own
+  conventions (here a `changelog.d/` fragment, there a bullet under
+  `[Unreleased]`). It holds in both directions.
+- **Use an asymmetric finding, don't discard it** (author directive,
+  2026-08-26): the more lopsided better:worse is (chain v5: 32 words
+  better, 2 worse), the more the loser is a decomposition task rather
+  than a rejection. Decompose the losers into classes first, pre-register
+  a rescue path per class, and treat partial adoption as legitimate; the
+  gates stay immovable — they say "not like this", not "not at all".
+  Before the FIRST comparison, verify base and arm are the same stack but
+  for the one registered knob, and get a second opinion before booking
+  any asymmetric result as a negative.
+- **The author authors in the PROD admin, so admin-UI reports are against
+  `origin/main`** — which can be AHEAD of the working branch (2026-07-25).
+  Before diagnosing one, compare `main..origin/main`, and check whether
+  the report is simply a stale long-lived tab (the SPA keeps its old
+  bundle until a reload). Cut the fix branch from `origin/main`, and
+  never unlock or modify authored glyphs for testing.
 - **Every PR adds a changelog fragment** — `changelog.d/<slug>.md` in the
   CHANGELOG's own format (`### Category` over bold-titled English bullets
   like the existing entries; `changelog.d/README.md`), NEVER a bullet in
@@ -165,9 +202,9 @@ agent working in this repo:
 
 - Frontend feature work that follows the existing `/app/` patterns
   (drag-on-canvas, stylus capture, diagnostic panels).
-- New FastAPI routes that mirror the `api/routers/{health,styles,hands,
-  sources,chart,bboxes,templates,pairs,instances,aggregates,write,
-  word_samples,work_items,quiz_words}.py` shape.
+- New FastAPI routes that mirror the shape of the existing routers —
+  every module under `api/routers/` is one (list the directory rather
+  than trusting a list written here).
 - Adding numpy/scipy/scikit-image pipeline steps inside `core/`.
 - Writing/improving unit tests under `tests/` (a pytest suite already
   exists — mirror the existing flat `tests/test_<module>.py` layout).
@@ -235,7 +272,8 @@ substantive work.**
 crossing resolution. A canonical template's key is `(style, glyph,
 variant)` — `style` is the Grundvorlage/script family (Kurrent ·
 Sütterlin · Offenbacher), the rest is the library unit within a style, not
-just glyph. Since the R2 position removal (schreibsystem-redesign.md,
+just glyph. Since the R2 position removal
+(`docs/proposals/schreibsystem-redesign.md`,
 migration 0017) glyph_keys are bare base keys (`a`, `longs`, `ch`) — ONE
 authored form per glyph, no initial/medial/final triplication; the word
 position is per-slot RENDER context from `core/shaping.py` (Anstrich/
@@ -340,18 +378,23 @@ schriftkunde · proposals · research · notes is explained at the top of
 
 ## Development Setup
 
-Three steps (see `.claude/commands/start.md` for the slash command):
+Two steps (see `.claude/commands/start.md` for the slash command):
 
 ```bash
-# Schema (run once or after migrations)
-uv run alembic upgrade head
-
 # Backend on :8000
 uv run uvicorn api.main:app --reload --port 8000
 
 # Frontend on :3000 with /api proxy to :8000
-cd app && npm install && npm run dev
+# (--no-audit --no-fund: the audit step turns 13 s into ~8 min)
+cd app && npm install --no-audit --no-fund && npm run dev
 ```
+
+**Do not run `alembic upgrade head` as a setup step.** There is no local
+DB — that URL is the shared Cloud SQL instance prod reads, and
+`alembic/env.py` calls `load_dotenv()`, so the bare command runs DDL
+against production. Schema changes ride the `kurrentschrift-migrate`
+Cloud Run job of the deploy pipeline; a revision is verified locally
+against a throwaway Postgres first (the migrations gate).
 
 Python package manager: **uv**. Frontend: **npm** (note: anyplot uses
 yarn, kurrentschrift uses npm — `package-lock.json` is checked in).
@@ -405,9 +448,9 @@ Mittellänge · Unterlänge).
 
 ### Database Schema (Postgres + SQLAlchemy async)
 
-Tables: `styles`, `hands`, `sources`, `bboxes`, `templates`, `glyph_pairs`,
-`instances`, `pair_instances`, `word_instances`, `aggregates`,
-`pair_aggregates`, `work_items`, `quiz_words`. What each one holds and why:
+The tables are the `__tablename__` declarations in
+`core/database/models.py` — read them there rather than from a list here,
+which rots with every migration. What each one holds and why:
 `docs/concepts/architektur.md` §3 + §12 (canonical templates vs.
 per-occurrence instances vs. per-hand aggregates),
 `docs/proposals/handmodell-stufenplan.md` (the H1/H2 statistics layers),
@@ -532,7 +575,7 @@ Three commit classes, kept strictly separate (see
    gitignored despite the owner's copyright — reserved dataset, backed up
    to the private archive; only `SOURCE.md` + `README.md` are committed
    (`docs/proposals/eigenhand-erfassung.md` §8).
-2. **Gitignored:** `/data/corpora/` — only `SOURCE.md` + `fetch_corpus.py`
+2. **Gitignored:** `/data/corpora/` — only `SOURCE.md` + `fetch_*.py`
    are committed, never the data files. Pin DOI versions.
 3. **Mixed:** `/data/derived/from-cc-by/` is committable;
    `/data/derived/from-nc-sa/` is gitignored (NC-SA collides with MIT).
@@ -546,6 +589,12 @@ Hard rules:
   order: own hand → explicit PD/CC0 → own photo of a PD original.
 - "Script-downloaded" ≠ "license-free." The license of the bytes follows
   the bytes, not the fetch mechanism.
+- **Copyleft word lists are server data, never repo content** (author's
+  decision 2026-08-30): the GPL German dictionary
+  (`data/corpora/igerman98`) lives only in the shared DB (`lesart_forms`,
+  loaded by `tools.lesarten.sync`); `GET /lesarten?text=` answers a
+  handful of words per request, never the list — no bytes in the repo,
+  the image or the bundle (`docs/reference/quellen-und-rechte.md` §5).
 - **The LEARNED dataset stays out of the repo (open-core moat).** The
   authored ductus templates, Laufformen and occurrence statistics — the DB
   contents — are reserved outside the MIT grant (README "License").
@@ -643,8 +692,12 @@ impl-generate pipelines. Conventions:
   (prefer extracting a pure core from DB/async wrappers); lines only a
   live DB/HTTP flow exercises are covered by the API verification
   sweep instead.
-- **Pre-commit hooks:** none configured yet — when added, do not bypass
-  with `--no-verify`.
+- **Pre-commit hooks:** configured since PR #204
+  (`.pre-commit-config.yaml`) — a local ruff `check` + `format` gate that
+  runs THROUGH uv, so the version is always the one `uv.lock` pins.
+  Install once with `uvx pre-commit install`;
+  `uvx pre-commit run --all-files` is the same gate on demand. ESLint and
+  Vitest stay deliberately CI-only. Never bypass with `--no-verify`.
 - **Glyph- and word-pipeline changes are benchmarked:** a PR touching
   `core/` extraction, composition or rendering quotes before/after bench
   numbers. `tools/glyphbench` scores every authored glyph against frozen
@@ -690,7 +743,11 @@ cannot invoke them, but the gate each one stands for still applies:
 | `/data`, binaries, licenses | `/audit-licenses` — provenance battery |
 | commit/push/PR requests | `/open-pr` — the local gates, then CI + review to green |
 | glyph-pipeline experiments | `/optimize-glyphs` — frozen bench discipline |
+| Tintenfolger measurement rounds | `/verify-trace` — BLAS pinned, base and arm the same stack but one knob, §14 + ledger afterwards |
 | Auftragskorb work | `/work-basket` — the protocol the API enforces |
+| anything that can overwrite geometry | `/dbsnapshot` — create freely, never destroy |
+| cutting a release | `/release` — fold fragments, tag the merge commit, condensed notes |
+| the weekly dependency batch | `/dependabot` — never `update-branch` a bot PR |
 | session retros | `/optimize-skills` — recurring friction folded back into the skills |
 
 Known gaps without a loop: admin write flows against the LIVE DB (the HTTP

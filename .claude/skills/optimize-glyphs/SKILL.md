@@ -20,6 +20,12 @@ numbers but never the goalposts.
 
 ## 0 · Hard rules (read first)
 
+- **Read `docs/reference/qualitaetsmetrik.md` BEFORE the first run.** It
+  carries the score/`bench_loss` definition, the frozen-reference rule, the
+  baseline history a new number has to be comparable against, and §14's
+  experiment learnings including the *verworfen* items — a mechanism already
+  rejected there is not a hypothesis, it is a repeat. CLAUDE.md makes this
+  reading mandatory for this skill.
 - **Never touch the DB.** The loop runs only on local fixtures; the
   one-time export is the single read-only DB access; write-back to
   templates is a separate explicit admin action in the UI — never part
@@ -45,23 +51,36 @@ numbers but never the goalposts.
   `bench_loss` (unlike the old silhouette-only Kurrent metric). Chase
   the worst component (the `comp_<name>:` footer lines, and
   `--compare prev.json` for per-glyph deltas). Still *look* though —
-  `python -m tools.glyphlab <key> [--live] [--stages]` annotates each
-  panel with its per-category penalty (where the points went; writes to
-  `temp/`, `uv run --extra viz`) — the number says how much, the overlay
-  says why. The remaining silhouette-coverage gate is still a proxy; a
+  `uv run --extra viz python -m tools.glyphlab <key> [--live] [--stages]`
+  annotates each panel with its per-category penalty (where the points
+  went; writes to `temp/`) — the number says how much, the overlay says
+  why. `<key>` must be a key that EXISTS in the frozen fixture root
+  (pre-0017 names, `t-final` not `t-medial`, and never a bare `t`);
+  anything else aborts with `KeyError: "no fixture '…'"`. The remaining silhouette-coverage gate is still a proxy; a
   keep that looks worse is a discard.
 
 ## 1 · Setup (once per run)
 
 ```bash
 git checkout -b optimize/<tag>        # e.g. optimize/jun12
-# Fixtures present + fresh? manifest.json carries per-glyph updated_at;
-# if missing or stale vs the DB, export ONCE (read-only):
+# Fixtures MISSING entirely? Only then export (read-only) — see the
+# freeze note below before you run this:
 uv run python -m tools.glyphbench.export_fixtures
 mkdir -p tools/glyphbench/runs/<tag>
 printf 'commit\tbench_loss\tmedian_iou\tworst_glyph\truntime_s\tstatus\tdescription\n' \
   > tools/glyphbench/runs/<tag>/results.tsv
 ```
+
+**The fixture root is FROZEN — do not re-export it to "refresh" it.** The
+Sütterlin root was exported on 2026-06-18, before migration `0017` removed
+the position suffix, so its 35 scored keys are the pre-0017 names
+(`t-final`, `longs-final`, `i-initial`); `-medial` does not exist there at
+all. A re-export against today's DB renames every key to its bare form
+(`n-medial` → `n`) and re-derives every reference mask. That is a **declared
+re-baseline**, not an update: it makes the whole baseline history in
+`qualitaetsmetrik.md` §3 incomparable in one step. It needs the author's
+go-ahead and a new baseline section in that file first. Within a run the
+root stays untouched, full stop (the frozen-reference rule above).
 
 Baseline first: run the bench on the unchanged code and record the
 first row with status `keep` and description `baseline`.
@@ -106,7 +125,7 @@ comes up (rule 0).
 
 ```bash
 uv run python -m tools.glyphbench.run --style suetterlin --artifacts tools/glyphbench/runs/<tag>/overlays
-python -m tools.glyphlab t-medial l-medial b-medial g-medial   # annotated per-category breakdown
+uv run --extra viz python -m tools.glyphlab t-final l-final b-final g-final   # annotated per-category breakdown
 ```
 
 Eyeball the worst glyphs from the footer/`worst_glyph` — for Sütterlin
