@@ -36,6 +36,7 @@ Siehe [`docs/reference/datenablage.md`](../docs/reference/datenablage.md) §1.
 | ID | Pfad | Typ | Lizenz | Quelle |
 |---|---|---|---|---|
 | `frequencywords-2018` | [`corpora/frequencywords-2018/`](corpora/frequencywords-2018/SOURCE.md) | Konsultations-Frequenzlisten de/en 50k (OpenSubtitles 2018) — Bytes gitignored, per `fetch_frequencywords.py` reproduzierbar (SHA256-gepinnt); Auswertung nur lokal (Übergangsraum der Eigenhand-Erfassung) | Repo MIT; Listen = abgeleitete Datenbanken aus OPUS-OpenSubtitles → Konsultations-Quelle, nie committet | hermitdave/FrequencyWords (OPUS, Lison & Tiedemann 2016) |
+| `igerman98` | [`corpora/igerman98/`](corpora/igerman98/SOURCE.md) | Hunspell-Wörterbuch `de_DE_frami` (258 200 Stämme, ≈ 807 000 expandierte Formen) — Bytes gitignored, per `fetch_igerman98.py` reproduzierbar; die expandierten Formen sind **Serverdaten** in `lesart_forms` (Migration 0028), nie Repo-Inhalt, nie im Image, nie im Bundle | **GNU GPL 2 oder 3** — die einzige Quelle des Repos mit echten Pflichten; sie entstehen erst bei WEITERGABE, und die findet nicht statt: `GET /lesarten?text=` gibt je Anfrage eine Handvoll Wörter zurück, nie die Liste (Autor-Entscheid 2026-08-30, [`quellen-und-rechte.md`](../docs/reference/quellen-und-rechte.md) §5) | LibreOffice/dictionaries @ `32b006a2` (Björn Jacke; frami-Erweiterung F. M. Baumann) |
 
 ## Eigene Erhebungen (kein fremdes Werk — Commit-Klasse 1)
 

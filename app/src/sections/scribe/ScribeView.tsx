@@ -103,6 +103,10 @@ export function ScribeView() {
       <PageContainer width="text" sx={{ pt: { xs: 4, md: 7 } }}>
         <PageHeader eyebrow={de.common.nav.write} title={de.scribe.heading}>
           <Typography sx={{ color: paper.inkSoft }}>{de.scribe.lead}</Typography>
+          {/* The explanatory paragraph a first-time visitor — and a crawler —
+              owes: what this page is and how far it reaches (same slot as the
+              hubs' `about`, HubView). */}
+          <Typography sx={{ color: paper.inkSoft, mt: 1.5 }}>{de.scribe.about}</Typography>
         </PageHeader>
 
         <TextField

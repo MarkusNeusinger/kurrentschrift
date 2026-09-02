@@ -8,7 +8,7 @@
     "dev": "vite --host",
     "prebuild": "npm run prerender",
     "build": "tsc && vite build",
-    "prerender": "node --experimental-strip-types scripts/build-prerender.mjs",
+    "prerender": "node --experimental-strip-types scripts/build-prerender.mjs && node --experimental-strip-types scripts/check-sitemap-lastmod.mjs",
     "preview": "vite preview --host",
     "type-check": "tsc --noEmit",
     "lint": "eslint .",

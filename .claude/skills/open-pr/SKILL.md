@@ -1,6 +1,6 @@
 ---
 name: open-pr
-description: Take a finished change from diff to an open, green, review-clean PR — run the matching verify skills and the local CI gates first, then commit, push and open the PR, watch the pipeline AND the Copilot review, fix sensible findings and resolve the review threads. Never merges unless the user explicitly asks in this session. Use when asked to open or create a PR, ship a change, or finish up a change.
+description: Take a finished change from diff to an open, green, review-clean PR — run the matching verify skills and the local CI gates first, then commit, push and open the PR, watch the pipeline AND the Copilot review, fix sensible findings and resolve the review threads. Never merges unless the user explicitly asks in this session. Use when asked to commit, push, open or create a PR, ship a change, or finish up a change.
 ---
 
 # Open a PR (ship a change)
@@ -53,14 +53,18 @@ foreground-`Monitor` there.
 ## 1 · Pre-PR gates (pick by what the diff touches)
 
 ```bash
-git diff --name-only main...
+git diff --name-only origin/main...
 ```
+
+(`origin/main...`, not `main...`: the author merges PRs live, so the local
+`main` is regularly behind and a stale base silently shrinks this list.)
 
 | Diff touches | Run |
 |---|---|
 | `app/` | `/verify-frontend` (click through the changed flow, console, both viewports) |
 | `api/` | `/verify-api` (endpoint sweep, admin gate) |
 | `core/`, `tests/` | `/verify-core` (pytest + direct-invocation smoke) |
+| `alembic/` | `/verify-migrations` (the shared DB must never meet an unverified revision — this runs BEFORE the push, not after) |
 | `docs/`, `CLAUDE.md` | `/write-docs` checklist (index, sync duties) |
 | `data/`, new binaries, license files | `/audit-licenses` |
 | any code | `/simplify` (built-in Claude Code skill, not under `.claude/skills/`) for a quality pass when the change is non-trivial |
@@ -96,8 +100,13 @@ after pushing means this step was skipped:
 ```bash
 uv run --extra test pytest
 uv run --extra dev ruff check . && uv run --extra dev ruff format --check .
-cd app && npm run build
+cd app && npm run lint && npm run test && npm run build
 ```
+
+(All three frontend commands, not just `build`: the CI „Frontend (build)"
+job runs `npm ci` → `npm run lint` → `npm run test -- --coverage` →
+`npm run build`. A red ESLint or a red Vitest passes a `build`-only check
+locally and fails in Actions.)
 
 (`--extra test` matters on a fresh venv: pytest and its async deps
 live in the `test` extra, not in the default deps.)
@@ -117,6 +126,12 @@ the same in both environments:
 ```bash
 git push -u origin <branch>
 ```
+
+**A PR that finishes an issue closes it from the body** (author directive,
+2026-08-16): put the closing keyword on its own line — `Fixes #N` (or
+`Closes #N`) — so the merge closes the issue instead of leaving it for a
+manual sweep. One line per issue; a PR that merely touches an issue
+references it without the keyword.
 
 Then open the PR (ready for review, not a draft):
 
@@ -146,8 +161,10 @@ downgrade-roundtrip sequence against a throwaway Postgres; run
 If a check fails: read the run log, fix, push — the loop restarts.
 
 **b. Wait for the Copilot review.** It arrives asynchronously a few
-minutes after push; the bot's login is exactly
-`copilot-pull-request-reviewer`.
+minutes after push. The bot's login has two spellings and a filter that
+knows only one will silently miss it: `copilot-pull-request-reviewer` in
+`gh pr view --json reviews`, `copilot-pull-request-reviewer[bot]` in the
+REST API and in `requested_reviewers`.
 
 - **Local:** don't foreground-sleep and don't hand-poll — load the
   `Monitor` tool via ToolSearch and run an until-loop sized to the
@@ -216,6 +233,33 @@ merge, first re-fetch the live state — local
 `mcp__github__pull_request_read` — the user merges live and the PR may
 already be gone.
 
+## 4 · After the merge: watch the deploy
+
+Green CI does not mean a green deploy. **CI never imports `api/` or
+`core/`**, so an import error ships green and only fails in the deploy's
+`kurrentschrift-migrate` step — and a change to the image or its
+dependencies (PR #473's two-stage Dockerfile is exactly that class) can
+break a rollout that every check approved.
+
+Which trigger fires for which path: `api/**`, `core/**`, `alembic/**`,
+`pyproject.toml` → the API build (`api/cloudbuild.yaml`); `app/**` → the
+app build. Both build in `europe-west4`.
+
+```bash
+gcloud builds list --region=europe-west4 --limit 3 \
+  --format='table(id,status,createTime,substitutions.TRIGGER_NAME,substitutions.SHORT_SHA)'
+gcloud builds log --region=europe-west4 <id>      # only when one is red
+```
+
+**`--region` is load-bearing.** Without it the call lists the global
+region, which here holds only months-old builds — it reads exactly like
+"nothing was triggered" and has been misread that way before.
+
+These are reads against the production project, which CLAUDE.md's
+prod-touching rule covers: **name the command and ask in-session before
+running it**, or simply hand the author the two lines to run. Never
+`gcloud run deploy`, never a rollback, from this skill.
+
 ## Gotchas
 
 - **`isOutdated` ≠ `isResolved`.** A force-push or fix can outdate a
@@ -250,8 +294,9 @@ already be gone.
   or enable `pipefail` explicitly if a pipe is unavoidable.
 - **Local gates first saves whole round trips** — the pipeline runs
   the same checks (pytest + ruff under a
-  `uv sync --extra dev --extra test --frozen` env, `npm ci` +
-  `npm run build`); anything red locally is guaranteed red in Actions.
+  `uv sync --extra dev --extra test --frozen` env, then `npm ci` +
+  `npm run lint` + `npm run test -- --coverage` + `npm run build`);
+  anything red locally is guaranteed red in Actions.
 
 ## Troubleshooting
 

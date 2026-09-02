@@ -130,11 +130,20 @@ A `note` row closes on `resolution` alone: every stage in that
 vocabulary names a stage of the WRITING path, and a UI wrinkle has none.
 Send one anyway where it genuinely applies. The ack step is unchanged.
 
-Two things it will refuse, both on purpose: acking and closing in ONE
+Three things it will refuse, all on purpose: acking and closing in ONE
 call (the restatement is only worth writing if it stood there while it
-could still be corrected), and writing a protocol field on a PATCH
-without a `status` (it would slip past the ack gate). Step 2 and step 5
-are two calls, always.
+could still be corrected); writing a protocol field on a PATCH
+without a `status` (it would slip past the ack gate); and closing on a
+field that is merely STORED rather than sent in this very PATCH. Step 2
+and step 5 are two calls, always.
+
+That third rule is what carries a second round: **after a rejection you
+must send `stage` and `resolution` again — a bare `{"status":"done"}`
+answers 422**, because rejecting a row resets it to `open` while
+deliberately leaving the old `understanding`, `stage` and `resolution`
+in place, and a fallback to the stored values would silently reinstate
+the very restatement the author just rejected
+(`docs/proposals/optimierungs-werkbank.md` §5.1).
 
 `resolution` names the stage, the change, the PR and the measurement.
 The PR description names `Korb #<id>` in return, so the archive is
@@ -167,4 +176,11 @@ re-trace). The row stays visible at the top of the Korb.
   see is a complete, honest closure.
 - The admin may reject a restatement while you work: the row goes back
   to `open` with a `Korrektur:` in the note. Re-read the row before you
-  close it.
+  close it, and **send `stage` and `resolution` again** in the closing
+  PATCH. The rejected values are still stored, but the API no longer
+  falls back to them: a bare `{"status":"done"}` answers 422, precisely
+  so a rejected restatement cannot come back into force untouched. The
+  stored `understanding` does satisfy the gate, so no fresh `ack` is
+  forced — but the rejection came with a correction, so re-ack with a
+  restatement that answers it rather than closing on the one the author
+  turned down.

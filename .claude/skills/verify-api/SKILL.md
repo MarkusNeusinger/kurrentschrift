@@ -39,7 +39,6 @@ one, so sweep against it:
 ```bash
 curl -fsS http://localhost:8000/styles | python3 -c 'import json,sys; d=json.load(sys.stdin); print([s["id"] for s in d])'
 curl -fsS http://localhost:8000/sources | python3 -c 'import json,sys; d=json.load(sys.stdin); print([s["id"] for s in d])'
-curl -fsS http://localhost:8000/hands
 curl -fsS http://localhost:8000/quiz-words | python3 -c 'import json,sys; print(len(json.load(sys.stdin)))'
 curl -fsS http://localhost:8000/sources/suetterlin-1922/bboxes/status | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d), sum(1 for b in d if b["locked"]))'
 curl -fsS http://localhost:8000/sources/suetterlin-1922/templates | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d))'
@@ -48,9 +47,13 @@ curl -fsS http://localhost:8000/sources/suetterlin-1922/templates | python3 -c '
 Expected baseline: styles = `['kurrent', 'offenbacher', 'suetterlin']`
 (three seeded Grundvorlagen); sources = `['koch-1928', 'loth-1866',
 'petzendorfer-1889', 'suetterlin-1922']` (four seeded chart sources);
-`hands` = `[]` (normal at this stage); quiz-words ≈ 500. Bbox status +
-templates list the authored glyph keys — the counts grow as glyphs get
-authored, so check shape, not exact numbers.
+quiz-words ≈ 640 and grows with every re-seed (641 on 2026-09-02). Bbox
+status + templates list the authored glyph keys — the counts grow as glyphs
+get authored, so check shape, not exact numbers.
+
+**`/hands` is NOT in this sweep** — it is admin-gated since 2026-08-28
+(`api/routers/hands.py`: the writer registry is the index of the reserved
+dataset). It belongs to the 401 probes in §3.
 
 The public write/render endpoints (the engine behind Federprobe, Tafel
 and the quiz — a 200 with `items`/`glyphs` verifies core + DB + chart
@@ -58,30 +61,39 @@ file together, and both carry Cache-Control):
 
 ```bash
 curl -fsS 'http://localhost:8000/sources/suetterlin-1922/write/word?text=lesen' | python3 -c 'import json,sys; d=json.load(sys.stdin); print(len(d["items"]), d["missing"])'
-curl -fsS 'http://localhost:8000/sources/suetterlin-1922/write/glyphs?keys=n-medial' | python3 -c 'import json,sys; d=json.load(sys.stdin); print([g["glyph_key"] for g in d["glyphs"]], d["missing"])'
-curl -fsS http://localhost:8000/sources/suetterlin-1922/templates/n-medial/diagnostic | python3 -c 'import json,sys; print(sorted(json.load(sys.stdin).keys())[:6])'
-curl -fsS -o /dev/null -w '%{content_type} %{http_code}\n' http://localhost:8000/sources/suetterlin-1922/bboxes/n-medial/crop
+curl -fsS 'http://localhost:8000/sources/suetterlin-1922/write/glyphs?keys=n' | python3 -c 'import json,sys; d=json.load(sys.stdin); print([g["glyph_key"] for g in d["glyphs"]], d["missing"])'
+curl -fsS -o /dev/null -w '%{content_type} %{http_code}\n' http://localhost:8000/sources/suetterlin-1922/bboxes/n/crop
 ```
 
 Expected: word compose returns draw items (missing = `[]` for a fully
-authored word); diagnostic keys include `anchors_template`,
-`outline_polygons`, `template_guides`; crop returns `image/png 200`.
+authored word); `write/glyphs` returns `['n'] []`; crop returns
+`image/png 200`.
+
+**glyph_keys are BARE** (`n`, `longs`, `ch`) since migration `0017`
+(2026-07-17) removed the position suffix. A positional key like `n-medial`
+is not an error you can read — it silently answers `{"glyphs":[],
+"missing":["n-medial"]}` and the crop 404s. If a sweep line comes back
+empty, check the key shape before suspecting the data.
 
 ## 3 · Admin write gate (probe only — do not write)
 
 Write endpoints (`PUT`/`DELETE` bboxes, `POST …/trace`,
-`POST …/trace-preview`, `POST …/resample`, `DELETE` templates) AND the
-compute-heavy diagnostics `GET …/fit` + `GET …/quality` are gated by
-`require_admin` (the two GETs cost seconds of CPU per call, so they are
-gated like the writes — an unauthenticated `/fit` returning 401 is
-correct, not a regression). The safe probe is the unauthorized request:
+`POST …/trace-preview`, `POST …/resample`, `DELETE` templates) AND a set of
+READS are gated by `require_admin`: everything that hands out a bbox row, a
+template row, an occurrence, a pair override, a hand, an aggregate or the
+own-hand Bestand. That is the open-core reservation, not a performance
+guard — `/hands`, the raw `GET …/templates/{key}`, `…/diagnostic`, `…/fit`
+and `…/quality` all answer 401 unauthenticated, and each of those 401s is
+correct, not a regression. The safe probe is the unauthorized request:
 
 ```bash
-curl -s -o /dev/null -w '%{http_code}\n' -X PUT -H 'Content-Type: application/json' -d '{}' http://localhost:8000/sources/suetterlin-1922/bboxes/n-medial
-curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8000/sources/suetterlin-1922/templates/n-medial/fit
+curl -s -o /dev/null -w '%{http_code}\n' -X PUT -H 'Content-Type: application/json' -d '{}' http://localhost:8000/sources/suetterlin-1922/bboxes/n
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8000/sources/suetterlin-1922/templates/n/fit
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8000/sources/suetterlin-1922/templates/n/diagnostic
+curl -s -o /dev/null -w '%{http_code}\n' http://localhost:8000/hands
 ```
 
-Expected: `401` for both with `ADMIN_TOKEN` configured — or `503` when neither
+Expected: `401` for all four with `ADMIN_TOKEN` configured — or `503` when neither
 `ADMIN_TOKEN` nor Cloudflare Access is configured (`require_admin`
 fails closed, `api/auth.py`); a 503 here means the env is missing the
 token, not that the gate is broken. **Do not send authorized writes
@@ -109,6 +121,13 @@ suites (`tests/test_api_http.py`, `tests/test_api_admin_writes.py`,
 paths and the CF-Access branch against in-memory SQLite — no live DB
 needed for those.
 
+**`tests/test_api_public_surface.py` is the authority on which read is
+public and which is reserved** — it enumerates every GET route of the app
+and fails when one is in neither set, so the split can never drift
+silently. Read it before moving a line between §2 and §3 here, and add the
+route there in the same PR as any new read endpoint. When a sweep line and
+that file disagree, the file is right and this skill is stale.
+
 ## Gotchas
 
 - **The DB is shared.** A locally "tested" PUT/POST/DELETE lands in
@@ -131,12 +150,14 @@ needed for those.
   Prod schema changes go through the `kurrentschrift-migrate` Cloud
   Run job that the deploy pipeline executes (`api/cloudbuild.yaml`),
   never ad-hoc DDL.
-- **`hands` being empty is normal** at the current MVP stage — don't
-  read it as a broken endpoint.
-- **`/diagnostic` is slow-ish by design** (it runs skeletonisation on
-  the chart crop per call); a sub-second JSON response is still the
-  norm locally. `/fit` + `/quality` are admin-gated for the same
-  reason — probe them for 401, don't expect public 200s.
+- **`/hands` answers 401, and that is correct** since 2026-08-28 — it is
+  the writer registry of the reserved dataset, not a broken endpoint. An
+  older reading of this skill expected `[]`; it never will again.
+- **`/diagnostic` is admin-gated AND slow-ish** (it runs skeletonisation on
+  the chart crop per call). Authorized, a sub-second JSON response is the
+  norm locally with keys `anchors_template`, `outline_polygons`,
+  `template_guides`. Unauthorized it is a 401 like `/fit` + `/quality` —
+  probe for the 401, don't expect a public 200.
 - **Router prefixes nest under sources**: bboxes and templates live at
   `/sources/{source_id}/…`, not top-level. Seeded sources:
   `loth-1866` + `petzendorfer-1889` (Kurrent), `suetterlin-1922`
