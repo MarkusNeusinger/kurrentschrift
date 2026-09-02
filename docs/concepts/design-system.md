@@ -381,20 +381,35 @@ setzen weiter `textDecoration: 'none'` in ihrem `sx` (ihre Trennung vom Text kom
 aus der Position, nicht aus der Auszeichnung). Gefüllte CTAs sind keine Links im
 Sinne dieser Regel; für sie gilt: Label ≥ 600 oder Fläche auf `viridianText`.
 
-### 9.3 Trefferflächen (Vorschlag — Freigabe durch den Autor offen)
+### 9.3 Trefferflächen (bindend — Entscheid des Autors, 2026-09-03)
 
-**Vorgeschlagene Regel, noch nicht bindend:** interaktive Ziele ≥ 44 px in der
-kleineren Kante (Apple HIG 44 pt, Material 48 dp); Ausnahme sind Links im
-Fließtext. Wo die Optik ein kleineres Element verlangt, trägt es eine unsichtbare
-Trefferfläche statt einer kleineren Wahrheit — `hitArea()` aus
-`app/src/styles/hitArea.ts` (ein zentriertes `::after` mit
-`max(100%, 44px)`; die Optik bleibt unverändert). WCAG 2.2 SC 2.5.8 (24 × 24 px)
-hielt die Seite schon vorher über die Abstandsausnahme; diese Regel richtet sich
-gegen die Plattformempfehlung, nicht gegen WCAG — deshalb ist sie ein Vorschlag,
-bis der Autor sie freigibt. Angewandt ist sie bereits auf `ReplayButton`,
-`InfoHint`, die Quiz-Nebenknöpfe („beenden", „Einstellungen ändern"), das
-Detail-Schließen der Tafel, die Federprobe-Chips und „Link kopieren"; die
-Umschaltgruppen wachsen unter `sm` per Theme auf `minHeight: 44`.
+**Interaktive Ziele messen ≥ 44 px in der kleineren Kante** (Apple HIG 44 pt,
+Material 48 dp); Ausnahme sind Links im Fließtext. Wo die Optik ein kleineres
+Element verlangt, trägt es eine unsichtbare Trefferfläche statt einer kleineren
+Wahrheit — `hitArea()` aus `app/src/styles/hitArea.ts` (ein zentriertes
+`::after` mit `max(100%, 44px)`; die Optik bleibt unverändert).
+
+Die Regel geht über WCAG hinaus: SC 2.5.8 (24 × 24 px) hielt die Seite schon
+vorher über die Abstandsausnahme, hier gilt die Plattformempfehlung. Sie war bis
+zum 03.09.2026 als Vorschlag notiert und ist seit dem Entscheid des Autors
+bindend.
+
+Angewandt auf `ReplayButton`, `InfoHint`, die Quiz-Nebenknöpfe („beenden",
+„Einstellungen ändern"), das Detail-Schließen der Tafel, die Federprobe-Chips und
+„Link kopieren"; die Umschaltgruppen wachsen unter `sm` per Theme auf
+`minHeight: 44`.
+
+**Messbar statt behauptet**, wie der Typo-Boden: `npm run touch-targets`
+(`app/scripts/touch-targets.mjs`) fährt die betroffenen Routen an und fragt für
+jede Achse, auf der ein Element kleiner als 44 px GEZEICHNET ist, per
+`document.elementFromPoint` in 22 px Abstand vom Mittelpunkt nach — die Kante des
+44er-Quadrats muss das Element selbst treffen. Das prüft die echte Trefferfläche
+statt einer berechneten Größe und fängt damit den einen stillen Weg, auf dem die
+Regel bricht: ein `overflow: hidden` am Element beschneidet das Pseudo-Element,
+die Zeichnung bleibt gleich und das Ziel schrumpft unbemerkt zurück. Achsen, auf
+denen die Box schon ≥ 44 px ist, werden nicht geprüft — dort trägt die Hilfe
+nichts, und die Trefferfläche eines Nachbarn dürfte den Punkt zu Recht gewinnen.
+Kein Gate in der CI: das Skript braucht die laufende Seite samt erreichbarer API.
 
 ---
 
@@ -408,8 +423,12 @@ Umschaltgruppen wachsen unter `sm` per Theme auf `minHeight: 44`.
   `theme/components.ts` (Fokusring, Link-Auszeichnung, Typo-Boden der
   MUI-`small`-Größen, `minHeight` der Umschaltgruppen unter `sm`) und
   `styles/hitArea.ts` (Trefferfläche). Eine neue Ausnahme gehört dorthin, nicht
-  an die Aufrufstelle. Gegenprobe: `npm run type-floor` plus ein
-  Tastatur-Durchgang (§9.1).
+  an die Aufrufstelle. Gegenprobe: `npm run type-floor` (§9) und
+  `npm run touch-targets` (§9.3) — beide gegen die laufende Seite — plus ein
+  Tastatur-Durchgang für den Fokusring (§9.1), den kein Skript ersetzt.
+  Wer ein Bedienelement neu mit `hitArea()` versieht, trägt es in die
+  `CHECKS`-Liste von `app/scripts/touch-targets.mjs` ein; sonst ist es das eine
+  Element, dessen Rückfall niemand bemerkt.
 - **Der Admin ist mitgemeint**, wo §3 (Typo) und §7 (`HeaderBar`) es sagen: eine Änderung
   an Leiter oder Kopfleiste wird an **beiden** Leisten (`PublicHeader` +
   `sections/admin/shell/AdminHeader`) und an den Werkbank-Köpfen (`shell/Panel.tsx`,

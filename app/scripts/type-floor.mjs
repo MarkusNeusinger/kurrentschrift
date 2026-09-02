@@ -15,17 +15,14 @@
 //   node scripts/type-floor.mjs --width 1280 --floor 14
 //
 // No new dependency: it drives Chrome over the DevTools Protocol using Node 22's
-// built-in WebSocket. Point CHROME_PATH at a binary if the search below misses.
+// built-in WebSocket (`browser.mjs`, shared with `touch-targets.mjs`).
+// Point CHROME_PATH at a binary if its search misses.
 //
 // Deliberately NOT reported: the 13px `overline` variant (eyebrows, worksheet
 // section labels). It is written into the type ladder of design-system.md §3 and
 // is therefore sanctioned, not drift — see EXEMPT_CLASSES.
 
-import { spawn } from 'node:child_process';
-import { existsSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { setTimeout as sleep } from 'node:timers/promises';
+import { launchChrome, openPage, splitFlag } from './browser.mjs';
 
 const DEFAULT_ROUTES = [
   '/',
@@ -41,25 +38,13 @@ const DEFAULT_ROUTES = [
   '/gibt-es-nicht-404',
 ];
 
-const CHROME_CANDIDATES = [
-  process.env.CHROME_PATH,
-  '/usr/bin/google-chrome',
-  '/usr/bin/google-chrome-stable',
-  '/usr/bin/chromium',
-  '/usr/bin/chromium-browser',
-  '/snap/bin/chromium',
-];
-
 // ── arguments ───────────────────────────────────────────────────────────────
 
 function parseArgs(argv) {
   const opts = { base: 'http://localhost:3000', floor: 14, width: 390, height: 844, routes: DEFAULT_ROUTES };
   for (let i = 0; i < argv.length; i += 1) {
-    // Split on the FIRST `=` only — a value may contain more of them
-    // (`--base=https://host/?a=b`).
-    const eq = argv[i].indexOf('=');
-    const flag = eq === -1 ? argv[i] : argv[i].slice(0, eq);
-    const value = eq === -1 ? argv[++i] : argv[i].slice(eq + 1);
+    const [flag, inline] = splitFlag(argv[i]);
+    const value = inline ?? argv[++i];
     switch (flag) {
       case '--base':
         opts.base = value.replace(/\/+$/, '');
@@ -119,124 +104,21 @@ const MEASURE = (floor) => `(() => {
   return Array.from(rows.values()).sort((a, b) => a.px - b.px);
 })()`;
 
-// ── a very small CDP client ─────────────────────────────────────────────────
-
-class Cdp {
-  constructor(socket) {
-    this.socket = socket;
-    this.seq = 0;
-    this.pending = new Map();
-    socket.addEventListener('message', (event) => {
-      const msg = JSON.parse(event.data);
-      const waiter = this.pending.get(msg.id);
-      if (!waiter) return;
-      this.pending.delete(msg.id);
-      if (msg.error) waiter.reject(new Error(msg.error.message));
-      else waiter.resolve(msg.result);
-    });
-  }
-
-  static async connect(url) {
-    const socket = new WebSocket(url);
-    await new Promise((resolve, reject) => {
-      socket.addEventListener('open', resolve, { once: true });
-      socket.addEventListener('error', () => reject(new Error(`cannot open ${url}`)), { once: true });
-    });
-    return new Cdp(socket);
-  }
-
-  send(method, params = {}) {
-    const id = ++this.seq;
-    this.socket.send(JSON.stringify({ id, method, params }));
-    return new Promise((resolve, reject) => this.pending.set(id, { resolve, reject }));
-  }
-
-  async evaluate(expression) {
-    const { result, exceptionDetails } = await this.send('Runtime.evaluate', {
-      expression,
-      returnByValue: true,
-      awaitPromise: true,
-    });
-    if (exceptionDetails) throw new Error(exceptionDetails.text ?? 'evaluation failed');
-    return result.value;
-  }
-}
-
-function findChrome() {
-  const found = CHROME_CANDIDATES.find((p) => p && existsSync(p));
-  if (!found) {
-    throw new Error(
-      'no Chrome found — install one or set CHROME_PATH (candidates: ' +
-        CHROME_CANDIDATES.filter(Boolean).join(', ') +
-        ')',
-    );
-  }
-  return found;
-}
-
-async function launch(port, { width, height }) {
-  const child = spawn(
-    findChrome(),
-    [
-      '--headless=new',
-      `--remote-debugging-port=${port}`,
-      `--window-size=${width},${height}`,
-      '--no-sandbox',
-      '--disable-gpu',
-      `--user-data-dir=${join(tmpdir(), `type-floor-${port}`)}`,
-      'about:blank',
-    ],
-    { stdio: 'ignore' },
-  );
-  // The port is not listening the moment spawn returns; poll the HTTP endpoint.
-  for (let attempt = 0; attempt < 60; attempt += 1) {
-    try {
-      const res = await fetch(`http://127.0.0.1:${port}/json/version`);
-      if (res.ok) return child;
-    } catch {
-      // not up yet
-    }
-    await sleep(250);
-  }
-  child.kill();
-  throw new Error('Chrome did not open its debugging port within 15s');
-}
-
 // ── run ─────────────────────────────────────────────────────────────────────
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const port = 9222 + Math.floor(Math.random() * 500);
-  const chrome = await launch(port, opts);
+  const chrome = await launchChrome(port, { ...opts, label: 'type-floor' });
   let violations = 0;
 
   try {
-    const target = await (await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: 'PUT' })).json();
-    const cdp = await Cdp.connect(target.webSocketDebuggerUrl);
-    await cdp.send('Page.enable');
-    await cdp.send('Runtime.enable');
-    await cdp.send('Emulation.setDeviceMetricsOverride', {
-      width: opts.width,
-      height: opts.height,
-      deviceScaleFactor: 1,
-      mobile: opts.width < 700,
-    });
+    const cdp = await openPage(port, opts);
 
     console.log(`type floor ${opts.floor}px · ${opts.base} · ${opts.width}x${opts.height}\n`);
 
     for (const route of opts.routes) {
-      await cdp.send('Page.navigate', { url: opts.base + route });
-      // The SPA mounts after the load event; wait for real content, then let
-      // fonts settle (a fallback face can report a different size).
-      for (let attempt = 0; attempt < 40; attempt += 1) {
-        const ready = await cdp.evaluate(
-          "document.readyState === 'complete' && !!document.querySelector('main, [role=main], h1')",
-        );
-        if (ready) break;
-        await sleep(250);
-      }
-      await cdp.evaluate('document.fonts ? document.fonts.ready.then(() => true) : true');
-      await sleep(300);
+      await cdp.goto(opts.base + route);
 
       const rows = await cdp.evaluate(MEASURE(opts.floor));
       if (rows.length === 0) {
