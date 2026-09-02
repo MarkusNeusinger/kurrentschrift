@@ -47,7 +47,11 @@ import type { RefObject } from 'react';
 
 import { fetchEigenhandStrip, getEigenhandStrips } from '@/lib/api';
 import type { EigenhandStrip, EigenhandStripBox, EigenhandStripFilter } from '@/lib/api';
+import { apiFehlertext } from '@/sections/admin/shell/apiFehlertext';
+import type { ApiFehler } from '@/sections/admin/shell/apiFehlertext';
 import { de, fmt } from '@/locales/admin';
+import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
+import { FehlerText } from '@/sections/admin/shell/FehlerText';
 import { Panel } from '@/sections/admin/shell/Panel';
 import { paper } from '@/styles/paper';
 
@@ -91,7 +95,7 @@ function useStripImage(
 ) {
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiFehler | null>(null);
 
   useEffect(() => {
     if (!enabled) return undefined;
@@ -105,7 +109,7 @@ function useStripImage(
         objectUrl = URL.createObjectURL(blob);
         setUrl(objectUrl);
       })
-      .catch((err: unknown) => alive && setError(String(err)))
+      .catch((err: unknown) => alive && setError(apiFehlertext(err)))
       .finally(() => alive && setLoading(false));
     return () => {
       alive = false;
@@ -263,7 +267,7 @@ function StripTile({
 
       {error && (
         <Alert severity="warning" sx={{ mt: 1 }}>
-          {t.stripImagesError} {error}
+          <FehlerText fehler={error} prefix={t.stripImagesError} />
         </Alert>
       )}
     </Box>
@@ -314,9 +318,12 @@ function CropTile({
         // of on a row of collapsed captions.
         <Box sx={{ height: `${row.height_px * zoom}px`, minWidth: '8rem', bgcolor: paper.hi, borderRadius: 1 }} />
       )}
+      {/* A tile in a gallery has no room for a fold-out, so the sentence stands
+          alone and the raw line rides along as the tooltip — still one hover
+          away, never lost. */}
       {error && (
-        <Typography variant="caption" sx={{ color: 'warning.main' }}>
-          {t.stripImagesError} {error}
+        <Typography variant="caption" sx={{ color: 'warning.main' }} title={error.detail}>
+          {t.stripImagesError} {error.satz}
         </Typography>
       )}
     </Box>
@@ -345,6 +352,7 @@ function Lupe({ target, onClose }: { target: LupeTarget | null; onClose: () => v
                 value={zoom}
                 onChange={(_e, value) => setZoom(Array.isArray(value) ? value[0] : value)}
                 sx={{ maxWidth: '20rem' }}
+                aria-label={t.stripZoom}
               />
             </Stack>
             <Box sx={{ overflow: 'auto', maxHeight: '75vh', bgcolor: paper.hi, borderRadius: 1 }}>
@@ -380,7 +388,7 @@ export function StripsPanel({
 }) {
   const t = de.admin.eigenhand;
   const [strips, setStrips] = useState<EigenhandStrip[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiFehler | null>(null);
   const [loading, setLoading] = useState(false);
   const [zoom, setZoom] = useState<Zoom>(0.25);
   // The rulings are dropped by default — what one wants to look at is the
@@ -415,7 +423,7 @@ export function StripsPanel({
     setShownCount(PAGE);
     getEigenhandStrips(hand, { wort: filter.wort, item: filter.item }, { retries: 2 })
       .then((data) => !cancelled && setStrips(data.strips))
-      .catch((err: unknown) => !cancelled && setError(String(err)))
+      .catch((err: unknown) => !cancelled && setError(apiFehlertext(err)))
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
@@ -505,14 +513,15 @@ export function StripsPanel({
 
       {error && (
         <Alert severity="warning" sx={{ mb: 2 }}>
-          {t.stripImagesError} {error}
+          <FehlerText fehler={error} prefix={t.stripImagesError} />
         </Alert>
       )}
 
       {!loading && !error && strips.length === 0 && (
-        <Typography variant="caption" sx={{ color: paper.inkSoft }}>
-          {filtered ? fmt(t.stripBelegeEmpty, { hand }) : fmt(t.stripImagesEmpty, { hand })}
-        </Typography>
+        <TerminalCommand
+          lead={filtered ? fmt(t.stripBelegeEmpty, { hand }) : t.stripImagesEmpty}
+          command={fmt(t.syncCommand, { hand })}
+        />
       )}
 
       {filtered ? (

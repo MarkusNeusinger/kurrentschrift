@@ -34,9 +34,27 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import LockIcon from '@mui/icons-material/Lock';
-import { Alert, Box, Button, Dialog, Step, StepButton, Stepper, Typography, useMediaQuery, useTheme } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Step,
+  StepButton,
+  Stepper,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
+import { useState } from 'react';
 
-import { de } from '@/locales/admin';
+import { de, fmt } from '@/locales/admin';
+import { FehlerText } from '@/sections/admin/shell/FehlerText';
 import { useCropView } from './useCropView';
 import { useWizard } from './useWizard';
 import { WizardCanvas } from './WizardCanvas';
@@ -48,7 +66,10 @@ import { TraceStep } from './steps/TraceStep';
 
 export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; open: boolean; onClose: () => void }) {
   const wizard = useWizard(glyphKey, open, onClose);
-  const { source, bbox, known, hasCanonical, step, setStep, stepId, busy, snack, setSnack, finish } = wizard;
+  const { source, bbox, known, hasCanonical, step, setStep, stepId, busy, snack, setSnack, finish, dirty } = wizard;
+
+  // Asked before an unsaved Weg would be dropped — see `requestClose` below.
+  const [confirmClose, setConfirmClose] = useState(false);
 
   // On a portrait phone the fixed-width side panel used to squeeze the crop
   // canvas to near-zero (only visible after rotating to landscape). Below `md`
@@ -118,6 +139,10 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
             preview={wizard.preview}
             previewBusy={wizard.previewBusy}
             computePreview={wizard.computePreview}
+            locked={bbox.locked}
+            draft={wizard.draft}
+            restoreDraft={wizard.restoreDraft}
+            dismissDraft={wizard.dismissDraft}
           />
         );
       case 'overview':
@@ -140,13 +165,46 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
   // both read the stored canonical); every other step advances freely.
   const canAdvance = stepId === 'weg' ? hasCanonical : true;
 
+  // THE single way out. MUI hands `onClose` the reason, so `escapeKeyDown` and
+  // `backdropClick` land here just like the footer's „Schließen" — which is the
+  // whole point: all three used to drop a drawn Weg without a word, and the Weg
+  // is the one thing in this dialog that is not already on the server.
+  const requestClose = () => {
+    if (dirty) {
+      setConfirmClose(true);
+      return;
+    }
+    onClose();
+  };
+
+  // Shown BEFORE the work rather than as a 423 after it. The wizard already
+  // reads the bbox, so the lock was knowable all along — it just never said so,
+  // and „Weg speichern" then failed with an English server line.
+  const locked = bbox.locked;
+
   return (
-    <Dialog open={open} onClose={onClose} fullScreen={compact} fullWidth maxWidth="lg" slotProps={{ paper: { sx: { height: compact ? '100%' : '92vh' } } }}>
-      <Box sx={{ px: 2, pt: 2 }}>
-        <Typography variant="h6">{de.wizard.title} {known.label}</Typography>
-        <Stepper nonLinear activeStep={step} sx={{ mt: 1 }}>
+    <Dialog
+      open={open}
+      onClose={requestClose}
+      fullScreen={compact}
+      fullWidth
+      maxWidth="lg"
+      // overflowX on the paper: a sub-pixel cell width in step 4 used to push a
+      // full-width horizontal scrollbar under the whole dialog and clip the one
+      // cell („Überlagert") that answers the step's question.
+      slotProps={{ paper: { sx: { height: compact ? '100%' : '92vh', overflowX: 'hidden' } } }}
+    >
+      <Box sx={{ px: 2, pt: 2, minWidth: 0 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+          <Typography variant="h6">
+            {de.wizard.title} {known.label}
+          </Typography>
+          {locked && <Chip size="small" color="warning" variant="outlined" label={de.wizard.lock.chip} />}
+        </Box>
+        {/* The stepper's own list overflowed its box by 8px at every width. */}
+        <Stepper nonLinear activeStep={step} sx={{ mt: 1, minWidth: 0 }}>
           {STEPS.map((s, i) => (
-            <Step key={s.id} completed={false}>
+            <Step key={s.id} completed={false} sx={{ minWidth: 0 }}>
               <StepButton color="inherit" onClick={() => setStep(i)}>
                 {s.label}
               </StepButton>
@@ -195,8 +253,8 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
         )}
       </Box>
       {snack && (
-        <Alert severity="info" onClose={() => setSnack(null)} sx={{ mx: 2 }}>
-          {snack}
+        <Alert severity={snack.kind} onClose={() => setSnack(null)} sx={{ mx: 2 }}>
+          {snack.fehler ? <FehlerText fehler={snack.fehler} prefix={snack.text} /> : snack.text}
         </Alert>
       )}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderTop: 1, borderColor: 'divider' }}>
@@ -204,7 +262,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
           {de.wizard.footer.back}
         </Button>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button onClick={onClose}>{de.wizard.footer.close}</Button>
+          <Button onClick={requestClose}>{de.wizard.footer.close}</Button>
           {step < STEPS.length - 1 ? (
             <Button variant="contained" endIcon={<ArrowForwardIcon />} disabled={!canAdvance} onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}>
               {de.wizard.footer.next}
@@ -216,6 +274,32 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
           )}
         </Box>
       </Box>
+
+      {/* The guard itself. It names what is lost AND what is not — the author
+          should not have to remember which of the four steps live-commit. Its
+          „Verwerfen" still tucks the strokes into sessionStorage, so even the
+          deliberate discard is offered back on the next opening. */}
+      <Dialog open={confirmClose} onClose={() => setConfirmClose(false)} maxWidth="xs">
+        <DialogTitle>{de.wizard.confirmClose.title}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{de.wizard.confirmClose.body}</DialogContentText>
+          <DialogContentText sx={{ mt: 1 }}>
+            {fmt(de.wizard.confirmClose.strokes, { count: wizard.strokes.length })}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmClose(false)}>{de.wizard.confirmClose.keep}</Button>
+          <Button
+            color="warning"
+            onClick={() => {
+              setConfirmClose(false);
+              wizard.discardAndClose();
+            }}
+          >
+            {de.wizard.confirmClose.discard}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Dialog>
   );
 }

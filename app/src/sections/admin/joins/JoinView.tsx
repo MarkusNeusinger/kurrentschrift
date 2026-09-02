@@ -11,6 +11,7 @@
 // right, and now they can be looked at and complained about.
 
 import {
+  Alert,
   Box,
   Button,
   Chip,
@@ -166,6 +167,12 @@ export function JoinView() {
   // preview both have to be re-read, and so do the matrix badges.
   const [pairTick, setPairTick] = useState(0);
   const [overrideRow, setOverrideRow] = useState<GlyphPairOut | null>(null);
+  // The glyph_keys the composition could not write, reported by WrittenWord —
+  // TAGGED with the pair they were reported for. Tagging rather than clearing in
+  // an effect is what makes the chip honest during a switch: the callback only
+  // fires once the NEW composition lands, so an untagged value would show the
+  // previous join's gap in the meantime.
+  const [missingFor, setMissingFor] = useState<{ text: string; keys: string[] }>({ text: '', keys: [] });
 
   const focus = (left: string | null, right: string | null) =>
     setParams(left && right ? { l: left, r: right } : {}, { replace: false });
@@ -208,6 +215,7 @@ export function JoinView() {
   };
 
   const pairText = leftKey && rightKey ? textForPair(leftKey, rightKey) : '';
+  const missing = missingFor.text === pairText ? missingFor.keys : [];
   const occurrences = leftKey && rightKey ? (workbench.pairsByKey.get(pairKeyOf(leftKey, rightKey)) ?? []) : [];
   const aggregate = leftKey && rightKey ? workbench.pairAggregateByKey.get(pairKeyOf(leftKey, rightKey)) : undefined;
 
@@ -363,6 +371,7 @@ export function JoinView() {
     <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
       <ViewHeader
         eyebrow={de.admin.shell.areaJoins}
+        titleText={fmt(t.joinHeading, { left: leftKey, right: rightKey })}
         title={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             {picker}
@@ -408,6 +417,25 @@ export function JoinView() {
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' }, gap: 2, alignItems: 'start' }}>
         {/* 1 — what the engine writes today. */}
         <Panel title={t.writtenTitle} caption={overrideRow?.approved ? t.writtenCaptionOverride : t.writtenCaption}>
+          {/* The view invites typing any pair, including ones no plate ever
+              wrote — so an uncreated letter is a NORMAL outcome here, not a
+              fault. WrittenWord renders null on empty items, which left a mute
+              white box; the API knew all along and says so in `missing`. Both
+              letters missing gets a full sentence, one gets the same chip the
+              word cards already carry. */}
+          {missing.length > 0 && (
+            <Box sx={{ mb: 1.5 }}>
+              {missing.length >= 2 ? (
+                <Alert severity="info">{t.writtenNoneCreated}</Alert>
+              ) : (
+                <Chip
+                  size="small"
+                  color="warning"
+                  label={`${de.admin.compare.missingPrefix}${missing.join(', ')}`}
+                />
+              )}
+            </Box>
+          )}
           <Box
             sx={{
               bgcolor: '#fff',
@@ -428,6 +456,7 @@ export function JoinView() {
               height={PREVIEW_H}
               animate={false}
               showLineature
+              onResolved={({ missing: keys }) => setMissingFor({ text: pairText, keys })}
             />
           </Box>
           {/* The two letters first — checking whether the fault is already in

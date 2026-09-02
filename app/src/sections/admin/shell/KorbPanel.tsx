@@ -350,7 +350,15 @@ export function KorbPanel({
         <Typography variant="subtitle2" sx={{ flex: 1 }}>
           {`⚑ ${t.korbTitle} (${fmt(t.korbOpenCount, { count: openCount })})`}
         </Typography>
-        <IconButton size="small" aria-label={t.korbTitle} onClick={() => setExpanded((v) => !v)}>
+        {/* The name says what the button DOES, not what it sits next to (it
+            was „Auftragskorb", which is the heading right beside it), and
+            aria-expanded reports the state the chevron shows visually. */}
+        <IconButton
+          size="small"
+          aria-label={expanded ? de.admin.shell.closeKorb : de.admin.shell.openKorb}
+          aria-expanded={expanded}
+          onClick={() => setExpanded((v) => !v)}
+        >
           {expanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
         </IconButton>
       </Box>

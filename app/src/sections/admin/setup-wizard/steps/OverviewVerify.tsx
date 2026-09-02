@@ -64,7 +64,12 @@ export function OverviewVerify({
   const refined = preview?.refined;
   const cropW = refined?.crop_size.w ?? 1;
   const cropH = refined?.crop_size.h ?? 1;
-  const cellW = (CELL_H * cropW) / cropH;
+  // Floored, not left fractional. Three cells plus their gaps fill the panel
+  // exactly; a 235.7px cell rounded UP at paint time, and the extra pixel put a
+  // full-width horizontal scrollbar under the whole wizard — clipping the one
+  // cell („Überlagert") that answers this step's question. One pixel narrower
+  // is invisible; the scrollbar was not.
+  const cellW = Math.floor((CELL_H * cropW) / cropH);
   const delta =
     preview?.raw.quality && preview?.refined.quality ? preview.refined.quality.score - preview.raw.quality.score : null;
 
@@ -95,7 +100,9 @@ export function OverviewVerify({
 
       {refined && (
         <>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+          {/* minWidth:0 lets the row shrink inside its flex parent instead of
+              claiming its content width; flexWrap keeps the wide-bbox layout. */}
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, minWidth: 0 }}>
             <Cell label={t.cellCrop}>
               <Box sx={{ width: cellW, height: CELL_H, bgcolor: '#fff', border: 1, borderColor: 'divider' }}>
                 <img

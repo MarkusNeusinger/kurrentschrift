@@ -11,9 +11,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useAdmin } from '@/context/AdminContext';
 import { cropUrl, getDiagnostic } from '@/lib/api';
 import type { DiagnosticData } from '@/lib/api';
+import { apiFehlertext } from '@/sections/admin/shell/apiFehlertext';
+import type { ApiFehler } from '@/sections/admin/shell/apiFehlertext';
 import { ringsToPathD } from '@/lib/svg';
 import { de, fmt } from '@/locales/admin';
 import { useColumnWidth } from '@/sections/admin/diagnostics/useColumnWidth';
+import { FehlerText } from '@/sections/admin/shell/FehlerText';
 
 interface Props {
   glyphKey: string;
@@ -36,7 +39,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
   const COL_H_PX = colHeight ?? COL_H;
   const [data, setData] = useState<DiagnosticData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiFehler | null>(null);
   const onDataRef = useRef(onData);
   onDataRef.current = onData;
 
@@ -48,7 +51,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
         setData(d);
         onDataRef.current?.(d);
       })
-      .catch((e) => setError(String(e)))
+      .catch((e: unknown) => setError(apiFehlertext(e)))
       .finally(() => setLoading(false));
   }, [sourceId, glyphKey]);
 
@@ -70,8 +73,11 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
   if (error) {
     return (
       <Box sx={{ p: 2 }}>
-        <Alert severity={error.includes('404') ? 'info' : 'error'}>
-          {error.includes('404') ? de.admin.diagnostics.noCanonicalShort : error}
+        {/* A 404 here is not a fault: the glyph simply has no canonical yet.
+            Branching on the typed status instead of sniffing the message for
+            "404" also keeps the German sentence free to change. */}
+        <Alert severity={error.status === 404 ? 'info' : 'error'}>
+          {error.status === 404 ? de.admin.diagnostics.noCanonicalShort : <FehlerText fehler={error} />}
         </Alert>
         <Button size="small" startIcon={<RefreshIcon />} onClick={fetch} sx={{ mt: 1 }}>
           {de.admin.diagnostics.reload}

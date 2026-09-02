@@ -14,9 +14,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAdmin } from '@/context/AdminContext';
 import { cropUrl, getFit } from '@/lib/api';
 import type { FitData } from '@/lib/api';
+import { apiFehlertext } from '@/sections/admin/shell/apiFehlertext';
+import type { ApiFehler } from '@/sections/admin/shell/apiFehlertext';
 import { ringsToPathD } from '@/lib/svg';
 import { de } from '@/locales/admin';
 import { useColumnWidth } from '@/sections/admin/diagnostics/useColumnWidth';
+import { FehlerText } from '@/sections/admin/shell/FehlerText';
 
 interface Props {
   glyphKey: string;
@@ -46,7 +49,7 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
   const COL_H_PX = colHeight ?? COL_H;
   const [data, setData] = useState<FitData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ApiFehler | null>(null);
   const [lambda, setLambda] = useState(1.0);
 
   const fetchFit = useCallback(
@@ -55,7 +58,7 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
       setError(null);
       getFit(sourceId, glyphKey, lambdaReg)
         .then((d) => setData(d))
-        .catch((e) => setError(String(e)))
+        .catch((e: unknown) => setError(apiFehlertext(e)))
         .finally(() => setLoading(false));
     },
     [sourceId, glyphKey],
@@ -81,8 +84,9 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
   if (error) {
     return (
       <Box sx={{ p: 2 }}>
-        <Alert severity={error.includes('404') ? 'info' : 'error'}>
-          {error.includes('404') ? de.admin.diagnostics.noCanonicalShort : error}
+        {/* Same rule as the two sibling views: a 404 means "not authored yet". */}
+        <Alert severity={error.status === 404 ? 'info' : 'error'}>
+          {error.status === 404 ? de.admin.diagnostics.noCanonicalShort : <FehlerText fehler={error} />}
         </Alert>
         <Button size="small" startIcon={<RefreshIcon />} onClick={() => fetchFit(lambda)} sx={{ mt: 1 }}>
           {de.admin.diagnostics.reload}
@@ -191,6 +195,7 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
           onChange={(_e, v) => setLambda(v as number)}
           onChangeCommitted={(_e, v) => fetchFit(v as number)}
           valueLabelDisplay="auto"
+          aria-label={de.admin.fit.regularization}
         />
       </Box>
     </Stack>

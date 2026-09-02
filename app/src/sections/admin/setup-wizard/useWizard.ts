@@ -7,6 +7,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { getDiagnostic, getGlyph, postResample, postTrace, postTracePreview, putBbox } from '@/lib/api';
+import { apiFehlertext } from '@/sections/admin/shell/apiFehlertext';
+import type { ApiFehler } from '@/sections/admin/shell/apiFehlertext';
 import { bboxInFromOut } from '@/lib/bbox';
 import { knownGlyph } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
@@ -27,6 +29,48 @@ type BboxFieldPatch = Partial<BboxIn> | ((current: BboxOut) => Partial<BboxIn> |
 export interface SavedTraceOverlay {
   rawPath: StrokePoint[];
   anchorsPx: Array<[number, number]>;
+}
+
+// One message in the wizard's alert bar, WITH its severity. Every message used
+// to render as `info`, so "423 Locked: glyph 'longs' is locked" appeared in the
+// same blue-grey box as "Weg gespeichert" — the one surface where a failed
+// write must not look like a confirmation. `fehler` rides along when the message
+// came from a failed call, so the raw server line stays one click away.
+export interface WizardSnack {
+  kind: 'success' | 'info' | 'warning' | 'error';
+  text: string;
+  fehler?: ApiFehler;
+}
+
+// The rescued Weg lives in sessionStorage — the tab's own memory, gone when the
+// tab is, which is the right lifetime for "you drew this a minute ago". Scoped
+// by source AND glyph so one glyph's draft can never be offered on another.
+const draftKeyFor = (sourceId: string, glyphKey: string): string => `kurrentschrift.wizard.${sourceId}.${glyphKey}`;
+
+function readDraft(sourceId: string, glyphKey: string): StrokePoint[][] | null {
+  try {
+    const raw = window.sessionStorage.getItem(draftKeyFor(sourceId, glyphKey));
+    if (!raw) return null;
+    const parsed: unknown = JSON.parse(raw);
+    // Anything that is not a non-empty list of strokes is treated as absent:
+    // a half-written or hand-edited entry must never break the step it lands on.
+    if (!Array.isArray(parsed) || parsed.length === 0) return null;
+    return parsed as StrokePoint[][];
+  } catch {
+    // Private mode, a quota refusal, unparsable JSON — all the same answer.
+    return null;
+  }
+}
+
+function writeDraft(sourceId: string, glyphKey: string, strokes: StrokePoint[][]): void {
+  try {
+    const key = draftKeyFor(sourceId, glyphKey);
+    if (strokes.length === 0) window.sessionStorage.removeItem(key);
+    else window.sessionStorage.setItem(key, JSON.stringify(strokes));
+  } catch {
+    // The draft is a net, not a feature: if the browser refuses to hold it, the
+    // confirmation dialog still stands between the author and the loss.
+  }
 }
 
 const summaryOf = (g: { glyph_key: string; glyph: string; variant: number; advance: number }): GlyphSummary => ({
@@ -72,7 +116,11 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   // and inking against it is the right starting point.
   const [showMask, setShowMask] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [snack, setSnack] = useState<string | null>(null);
+  const [snack, setSnack] = useState<WizardSnack | null>(null);
+  // A draft found in sessionStorage on opening, waiting to be taken or dropped.
+  // Held apart from `strokes` on purpose: restoring is the author's decision,
+  // and silently repainting a canvas is its own kind of surprise.
+  const [draft, setDraft] = useState<StrokePoint[][] | null>(null);
   // Saved-Weg reference overlay on the Weg step (toggleable, on by default).
   const [showSaved, setShowSaved] = useState(true);
   const [savedTrace, setSavedTrace] = useState<SavedTraceOverlay | null>(null);
@@ -93,10 +141,14 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     setWegTool('draw');
     setShowMask(true);
     setStrokes([]);
+    setSnack(null);
     previewEpoch.current++;
     setPreview(null);
     setPreviewBusy(false);
-  }, [glyphKey, open]);
+    // Look for a Weg the last visit closed on. Only while OPENING: reading it
+    // on the way out would offer back the draft that was just discarded.
+    setDraft(open ? readDraft(sourceId, glyphKey) : null);
+  }, [glyphKey, open, sourceId]);
 
   // Savable points (strokes with ≥2 points; stray taps excluded) — gates "save".
   const savablePoints = savablePointCount(strokes);
@@ -161,7 +213,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
           bboxesByKeyRef.current = { ...bboxesByKeyRef.current, [glyphKey]: saved };
           upsertBbox(glyphKey, saved);
         } catch (err) {
-          setSnack(`${de.wizard.snack.saveFailed} ${err}`);
+          setSnack({ kind: 'error', text: de.wizard.snack.saveFailed, fehler: apiFehlertext(err) });
         }
       };
       const next = bboxWriteQueue.current.then(run);
@@ -200,7 +252,8 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
         const other = field === 'baseline_y' ? bbox.midband_y : bbox.baseline_y;
         const ok = field === 'baseline_y' ? curY > other : curY < other;
         if (ok) await updateBboxField({ [field]: curY });
-        else setSnack(de.wizard.snack.baselineBelowMidband);
+        // A refused gesture, not a failed write: amber, and nothing to unfold.
+        else setSnack({ kind: 'warning', text: de.wizard.snack.baselineBelowMidband });
       }
     },
     [bbox, updateBboxField],
@@ -329,11 +382,15 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
         n_anchors: nAnchors,
       });
       markGlyphTraced(glyphKey, summaryOf(g));
-      setSnack(fmt(de.wizard.snack.traceSaved, { count: g.anchors.length }));
+      setSnack({ kind: 'success', text: fmt(de.wizard.snack.traceSaved, { count: g.anchors.length }) });
       setStrokes([]);
+      // Saved is saved: the rescue copy has nothing left to rescue, and leaving
+      // it would offer the same Weg back on the next visit.
+      writeDraft(sourceId, glyphKey, []);
+      setDraft(null);
       void refreshSavedTrace();
     } catch (err) {
-      setSnack(String(err));
+      setSnack({ kind: 'error', text: de.wizard.snack.traceFailed, fehler: apiFehlertext(err) });
     } finally {
       setBusy(false);
     }
@@ -350,7 +407,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
       try {
         rawPath = (await getGlyph(sourceId, glyphKey)).raw_path; // the saved Weg
       } catch (err) {
-        setSnack(String(err));
+        setSnack({ kind: 'error', text: de.wizard.snack.previewFailed, fehler: apiFehlertext(err) });
         return;
       }
     }
@@ -365,7 +422,9 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
       });
       if (previewEpoch.current === epoch) setPreview(p);
     } catch (err) {
-      if (previewEpoch.current === epoch) setSnack(String(err));
+      if (previewEpoch.current === epoch) {
+        setSnack({ kind: 'error', text: de.wizard.snack.previewFailed, fehler: apiFehlertext(err) });
+      }
     } finally {
       if (previewEpoch.current === epoch) setPreviewBusy(false);
     }
@@ -378,10 +437,10 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     try {
       const g = await postResample(sourceId, glyphKey, { nAnchors });
       markGlyphTraced(glyphKey, summaryOf(g));
-      setSnack(fmt(de.wizard.snack.resampled, { count: g.anchors.length }));
+      setSnack({ kind: 'success', text: fmt(de.wizard.snack.resampled, { count: g.anchors.length }) });
       void refreshSavedTrace();
     } catch (err) {
-      setSnack(String(err));
+      setSnack({ kind: 'error', text: de.wizard.snack.resampleFailed, fehler: apiFehlertext(err) });
     } finally {
       setBusy(false);
     }
@@ -394,13 +453,42 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     try {
       const saved = await putBbox(sourceId, glyphKey, { ...bboxInFromOut(bbox), locked: true });
       upsertBbox(glyphKey, saved);
+      writeDraft(sourceId, glyphKey, []);
       onClose();
     } catch (err) {
-      setSnack(`${de.wizard.snack.finishFailed} ${err}`);
+      setSnack({ kind: 'error', text: de.wizard.snack.finishFailed, fehler: apiFehlertext(err) });
     } finally {
       setBusy(false);
     }
   }, [sourceId, bbox, glyphKey, upsertBbox, onClose]);
+
+  // ------------------------------------------------------ leaving the wizard
+  // The drawn Weg is the ONLY state in this dialog that is not already on the
+  // server: Ausschluss, Tinte, Lineatur and Schräglage all live-commit through
+  // updateBboxField. So `dirty` is exactly "there are strokes on the canvas" —
+  // and it is the one thing worth stopping a close for, because re-drawing the
+  // ductus is an author's step nobody and nothing else can repeat
+  // (optimierungs-werkbank.md §5: manual input where it creates ground truth).
+  const dirty = strokes.length > 0;
+
+  // Leave for real, putting the strokes into the tab's memory on the way out.
+  // Called by the confirmation dialog's „Verwerfen", so the discard is never
+  // quite final — the next opening offers them back.
+  const discardAndClose = useCallback(() => {
+    writeDraft(sourceId, glyphKey, strokes);
+    setStrokes([]);
+    onClose();
+  }, [sourceId, glyphKey, strokes, onClose]);
+
+  const restoreDraft = useCallback(() => {
+    if (draft) setStrokes(draft);
+    setDraft(null);
+  }, [draft]);
+
+  const dismissDraft = useCallback(() => {
+    writeDraft(sourceId, glyphKey, []);
+    setDraft(null);
+  }, [sourceId, glyphKey]);
 
   return {
     // admin-context reads the shell/canvas/panels need
@@ -418,6 +506,12 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
     strokes,
     setStrokes,
     savablePoints,
+    // leaving: the unsaved-Weg guard and the rescued draft it feeds
+    dirty,
+    discardAndClose,
+    draft,
+    restoreDraft,
+    dismissDraft,
     wegTool,
     setWegTool,
     nudgeRadius,
