@@ -39,6 +39,14 @@ gemeinsam für Endnutzer und Admin, mit Auth-Gate für sensible Routen.
 **Package Manager:** npm (wie heute im Repo — `app/package-lock.json` ist
 checked in; anyplot nutzt yarn, wir bewusst nicht).
 
+**Test-Abdeckung:** Vitest misst seit 2026-09-02 über die **ganze**
+SPA-Quelle (`test.coverage.include: ['src/**/*.{ts,tsx}']` in
+`app/vite.config.ts`, in Vitest 4 der Ersatz für das alte `all: true`) —
+ohne diesen Block zählt nur, was ein Test zufällig importiert, was 82,7 %
+meldete, wo über die ganze Quelle 19,2 % stehen. Eine Zahl, die ihre
+eigene Testliste misst, ist schlechter als keine. Die Codecov-Ziele in
+`codecov.yml` sind seither feste Böden je Flag statt `auto`.
+
 **Begründung gegen andere Stacks (Verworfen-Sektion):**
 
 - *Astro mit Islands-Architektur* — wäre für die SEO-Inhaltsseite ein

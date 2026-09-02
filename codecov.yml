@@ -2,9 +2,29 @@
 coverage:
   status:
     project:
+      # Fixed floors, not `auto`. `auto` compares against the base commit, and
+      # the frontend report was re-baselined on 2026-09-02 (app/vite.config.ts
+      # now measures the whole SPA source instead of only the modules a test
+      # imported: 43 files became 201). That is a one-time step DOWN in the
+      # reported total — honest, but every PR opened across it would have died
+      # on the 1 % threshold. Measured right after the re-baseline: backend
+      # 87.9 %, frontend 19.2 %, combined 59.2 %.
       default:
-        target: auto
+        target: 55%
         threshold: 1%
+      backend:
+        # The backend is genuinely tested; this floor is a real gate.
+        target: 85%
+        flags:
+          - backend
+      frontend:
+        # Under the measured 19.2 %, deliberately: the gap IS the missing
+        # component tests, and a floor that reds a PR for adding untested UI
+        # would only push people back toward measuring less. Raise it as the
+        # component tests land — that is the point of stating it as a number.
+        target: 15%
+        flags:
+          - frontend
     patch:
       backend:
         target: 80%
