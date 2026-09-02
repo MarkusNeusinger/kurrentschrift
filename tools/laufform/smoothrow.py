@@ -162,12 +162,17 @@ def main() -> None:
     )
     ap.add_argument("--out", type=Path, required=True, help="candidate map (glyph_key -> full fixture row)")
     args = ap.parse_args()
+    if args.knots < 0.0:
+        # Exactly 0 is the control arm and says so in the header; a negative
+        # would quietly select it too, and a run whose arm nobody can read off
+        # the command that produced it is not a measurement.
+        raise SystemExit(f"--knots must be 0 (control arm) or a positive spacing, got {args.knots}")
 
     occurrences = json.loads(args.occurrences.read_text())
     rows, report = build_candidates(args.root, occurrences, args.knots, keys=args.keys)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(rows, ensure_ascii=False))
-    arm = "per-anchor median (control)" if args.knots <= 0 else f"spline basis, knots {args.knots} xh"
+    arm = "per-anchor median (control)" if args.knots == 0.0 else f"spline basis, knots {args.knots} xh"
     print(f"LF11 {arm} · root={args.root.name}: {len(rows)} candidate rows → {args.out}")
     print("\n".join(report))
 

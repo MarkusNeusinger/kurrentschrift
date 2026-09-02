@@ -512,8 +512,18 @@ def _resample_uniform(points: np.ndarray, step: float) -> np.ndarray:
     count would measure a long stroke more coarsely than a short one and make
     the rates incomparable. The final point is kept, so the last step may be
     shorter. Returns fewer than three points when there is nothing to turn on.
+
+    Consecutive duplicate points are dropped first. `np.interp` is only defined
+    for a strictly increasing `xp`, and a repeated sample makes the cumulative
+    arc flat there — the sampler rounds to four decimals, so two samples CAN
+    coincide on a slow, tightly curved stretch. On the Sütterlin-1922 root not
+    one of the 15840 rendered samples repeats and the guard changes no measured
+    rate by 0.000000; it is here so the sensor cannot be ill-defined on a row
+    that does repeat, rather than because this data needed it.
     """
     pts = np.asarray(points, dtype=float).reshape(-1, 2)
+    if len(pts) >= 2:
+        pts = pts[np.concatenate([[True], np.any(np.diff(pts, axis=0) != 0.0, axis=1)])]
     if len(pts) < 2 or step <= 0.0:
         return pts
     steps = np.hypot(*np.diff(pts, axis=0).T)

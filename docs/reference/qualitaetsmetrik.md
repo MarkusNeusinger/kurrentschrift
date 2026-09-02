@@ -10164,6 +10164,17 @@ Wer die Audit-Zahl zitiert, zitiert eine andere Messung derselben
 Sache — beide Reihen stehen hier nebeneinander, damit das nicht
 verwechselt wird.
 
+**Empfindlichkeitsprüfung des Sensors (Copilot-Fund, nachgemessen).**
+Der Sampler rundet auf vier Nachkommastellen, zwei Samples könnten
+also zusammenfallen — und `np.interp` ist nur für streng steigende
+Parameter definiert. Nachgezählt über alle 66 gerenderten Zeilen
+(Tafel, Basis, Kandidat): **0 von 15840 Samples wiederholen sich**, und
+das nachträgliche Entfernen von Dubletten ändert keine einzige Rate um
+mehr als 0,000000. Der Sensor entfernt sie seit dieser Runde trotzdem,
+damit er auf einer Zeile, die welche erzeugt, nicht undefiniert ist —
+die Absicherung ist nachweislich folgenlos für alle hier berichteten
+Zahlen, keine Nachjustierung.
+
 **Die vier Arme am Wort- und Paar-Lineal (Gate a).**
 
 | Arm | `bench_loss` | Δ Basis | `pair_loss` | Δ Basis | Gate (a) |

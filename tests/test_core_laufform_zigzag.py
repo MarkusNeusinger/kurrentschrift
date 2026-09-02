@@ -80,3 +80,16 @@ def test_the_sensor_reads_a_finer_step_than_the_nib():
 def test_a_degenerate_row_is_zero_not_an_error():
     assert zigzag_rate(_row([[0.0, 0.0]]), [[0.0, 0.0]]) == 0.0
     assert zigzag_rate(_row([[0.0, 0.0], [0.0, 0.0]]), [[0.0, 0.0], [0.0, 0.0]]) == 0.0
+
+
+def test_repeated_samples_cannot_make_the_reading_ill_defined():
+    """The sampler rounds to four decimals, so two samples can coincide on a
+    slow, tightly curved stretch — and `np.interp` is only defined for a
+    strictly increasing parameter. Duplicates are dropped before the arc is
+    built, so inserting them changes nothing rather than being undefined."""
+    doubled = [p for point in STRAIGHT for p in (point, list(point))]
+    assert zigzag_rate(_row(doubled), doubled) == zigzag_rate(_row(STRAIGHT), STRAIGHT) == 0.0
+
+    wobbly = [[x, y + (0.03 if i % 2 else -0.03)] for i, (x, y) in enumerate(ARC)]
+    wobbly_doubled = [p for point in wobbly for p in (point, list(point))]
+    assert zigzag_rate(_row(wobbly_doubled), wobbly_doubled) > 0.0
