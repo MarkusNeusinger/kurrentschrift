@@ -41,7 +41,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
-- **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1
+- **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
@@ -399,6 +399,29 @@ bestanden hat 0,16. *Technisch:*
 `core/aggregate.py::spline_basis_median`, Kandidaten-Karten trocken über
 `tools/laufform/smoothrow.py`; `aggregate_instances` bleibt bis zu einer
 Adoption beim Per-Anker-Median → qualitaetsmetrik.md §14 („Laufform LF11")
+
+**Form-Abstand (Laufform)** — der vierte, GEMESSENE und (Stand
+`sep01`) NICHT adoptierte Sensor der Zeilen-Gate-Familie (§14 LF10):
+wie weit eine Laufform-Zeile die Bahn ihrer Tafelzeile verlässt, je
+Anker in Nib-Radien der Tafel. Beide Zeilen werden mit dem Sample-Plan
+der Tafel gerendert; je Anker der kürzeste Abstand zur gerenderten
+Mittellinie DESSELBEN Zugs der Gegenseite, in beide Richtungen getrennt
+(Zeile→Tafel, Tafel→Zeile — kein symmetrisches Mittel); Gate-Größe das
+schlechtere p90 der beiden Richtungen (`form_p90`), Median und Maximum
+als Empfindlichkeitsprüfungen, dazu der index-weise Abstand
+|Zeile_i − Tafel_i| (er trägt den Längs-Anteil, den LF5/LF6 als Breite
+der Hand bestätigt haben; der Linien-Abstand ist gegen Gleiten entlang
+des Zugs blind, absichtlich). Gebaut für die Form-Drift OHNE Sprung
+(v, E, P, k), die das Sprung-Gate durchlässt. Gemessen `sep01` auf dem
+Neuexport: τ_form = 1,40 (w — die enger sitzende Schlussschleife, Breite
+der Hand), die Referenzzeile P liegt mit 1,01 darunter — der Sensor
+misst Geometrie treu, die Abweichung des P liegt im Band der vertrauten
+Zeilen; was das Auge an P liest, ist kein Abstandsbetrag. Bleibt
+Berichts-Spalte der Bestandsaufnahme, kein Schreibpfad liest sie.
+*Technisch:* `core/laufform.py::form_distance`, Inventar-Spalten
+`form`/`f-med`/`f-max` + τ_form, `--laufform DATEI.json` für
+Kandidaten-Zeilen → qualitaetsmetrik.md §14 („Laufform LF10"),
+tintenfolger.md §7.9
 
 **Zeilen-Gate (Laufform)** — die drei Prüfungen, die eine
 Laufform-Zeile bestehen muss, bevor sie in den Schreibweg kommt (§14
