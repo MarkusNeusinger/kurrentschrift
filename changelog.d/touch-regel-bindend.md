@@ -21,7 +21,7 @@
   the drawing is unchanged and the target shrinks back unnoticed — which a
   computed-size check would sail past. Verified against a deliberately broken
   control: removing `hitArea()` from the replay button is reported, and only that
-  one (#500).
+  one (#504).
 
 ### Fixed
 
@@ -29,9 +29,9 @@
   only for settings that actually offer a choice, which is why the measuring pass
   of the previous round walked past it and reported the site clear; the run that
   makes the sibling rule binding caught it. Now `variant="caption"` like every
-  other hint (#500).
+  other hint (#504).
 - **`npm run build` was failing on `main`.** The sitemap `lastmod` for
   `/schreiben/uebungsblatt` still read 2026-09-02 while its copy changed on
   2026-09-03, and the guard that holds those two together is part of `prebuild` —
   so every branch cut from `main` inherited a red frontend build. Bumped, with
-  the prerendered „Stand" line that follows from it (#500).
+  the prerendered „Stand" line that follows from it (#504).
