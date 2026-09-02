@@ -9,12 +9,13 @@
   dialect-aware and paged under asyncpg's 32 767 bind parameters, and the
   reported `inserted` count is what the statement actually added. The whole
   718 665-word vocabulary now loads in 144 flat batches — 0.21 s the first,
-  0.27 s the last, 0.18–0.41 s across the run, 34 s in total.
+  0.27 s the last, 0.18–0.41 s across the run, 34 s in total (#477).
 - **A 67-character compound no longer kills the run.** Two words the igerman98
   expansion produces are longer than the `lesart_forms.word` column, and the
   API refuses the entire batch that carries one — batch 17 of the first
   production attempt died on it. The bound now lives once, as
   `core.lesarten.WORD_MAX`, the loader drops what exceeds it and says how
-  many, and the server keeps its 400 as the defence for every other client.
+  many, and the server keeps its 400 as the defence for every other client
+  (#477).
 - **The loader prints the seconds each batch took.** The number that grew is
-  the one the first two attempts had no way to see.
+  the one the first two attempts had no way to see (#477).
