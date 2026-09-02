@@ -84,22 +84,34 @@ Edit code → paste the contents of `kurrentschrift-api-proxy.js` → Deploy. Th
 secret binding is created once under Settings → Variables as a *Secret*; it
 survives later deploys.
 
-**API** (when it has to be scriptable) — multipart of metadata plus module:
+**API** (when it has to be scriptable) — multipart of metadata plus module. The
+secret is never typed: it is read from Secret Manager at execution time, stays
+in a shell variable, and reaches `curl` through stdin, so it lands in no shell
+history, no file and no process list.
 
 ```bash
-# The secret's value lives in Secret Manager; never in a log or a file.
-curl -X PUT \
+# Command substitution strips the trailing newline gcloud may print — the same
+# newline that once made ADMIN_TOKEN unusable in a header (2026-08).
+ORIGIN_SECRET=$(gcloud secrets versions access latest \
+  --secret=ORIGIN_SECRET --project=kurrentschrift)
+
+ORIGIN_SECRET="$ORIGIN_SECRET" python3 -c '
+import json, os, sys
+json.dump({
+    "main_module": "worker.js",
+    "compatibility_date": "2024-11-01",
+    "bindings": [
+        {"type": "secret_text", "name": "ORIGIN_SECRET", "text": os.environ["ORIGIN_SECRET"]},
+    ],
+}, sys.stdout)' | curl -X PUT \
   "https://api.cloudflare.com/client/v4/accounts/{account}/workers/scripts/kurrentschrift-api-proxy" \
   -H "Authorization: Bearer $CF_API_TOKEN" \
-  -F 'metadata={
-        "main_module": "worker.js",
-        "compatibility_date": "2024-11-01",
-        "bindings": [
-          {"type": "secret_text", "name": "ORIGIN_SECRET", "text": "<value>"}
-        ]
-      };type=application/json' \
+  -F 'metadata=<-;type=application/json' \
   -F 'worker.js=@infra/cloudflare/kurrentschrift-api-proxy.js;type=application/javascript+module'
 ```
+
+If that reads like more machinery than the job deserves, it is — deploy from the
+dashboard instead. The API path exists for the day it has to run unattended.
 
 A script `PUT` **replaces** the bindings wholesale: omitting one removes it —
 the same trap that made the Cloud Run side swap `--set-secrets` for
