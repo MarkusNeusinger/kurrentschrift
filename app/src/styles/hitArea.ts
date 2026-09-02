@@ -23,6 +23,11 @@ export const TOUCH_TARGET = 44;
  * itself, so a caller that positions the control absolutely must spread this
  * helper FIRST and let its own `position: absolute` win.
  *
+ * ONE constraint: an `overflow: hidden` on the control clips the pseudo-element
+ * and the target silently stays small. None of today's call sites do that (all
+ * verified with `document.elementFromPoint` just outside the visual box), but a
+ * future one might — check the hit, don't assume it.
+ *
  * Returns a plain style object rather than `SxProps` so callers can spread it
  * into the `sx={[…]}` array form — `SxProps` is itself a union with an array
  * member and would not compose.

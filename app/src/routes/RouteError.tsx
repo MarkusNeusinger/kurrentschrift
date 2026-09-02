@@ -51,13 +51,18 @@ function isChunkLoadError(error: unknown): boolean {
   );
 }
 
-// sessionStorage throws in some privacy modes; a missing loop guard must not
-// itself become the error, so both accessors swallow.
+// sessionStorage throws in some privacy modes. Both accessors swallow — a
+// missing loop guard must not itself become the error — but they fail toward
+// NOT reloading: an automatic reload without a guard is the one case that can
+// spin a tab forever (a stale index.html that keeps naming dead chunks would
+// fail, reload, fail again, with nothing able to remember the first attempt).
 function hasAttemptedReload(): boolean {
   try {
     return Boolean(sessionStorage.getItem(RELOAD_ATTEMPT_KEY));
   } catch {
-    return false;
+    // No storage means no guard: report the attempt as already spent so the
+    // visitor gets the manual button rather than a loop.
+    return true;
   }
 }
 
@@ -65,7 +70,8 @@ function markReloadAttempted(): void {
   try {
     sessionStorage.setItem(RELOAD_ATTEMPT_KEY, String(Date.now()));
   } catch {
-    // Without the guard we simply don't auto-reload (see below).
+    // Unreachable in practice — a storage that cannot be written cannot be read
+    // either, so `hasAttemptedReload` has already suppressed the reload.
   }
 }
 

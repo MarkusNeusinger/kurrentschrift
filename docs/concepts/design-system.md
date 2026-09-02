@@ -356,9 +356,12 @@ ist der Mobil-Schritt von `/verify-frontend`.
 **Jedes fokussierbare Element trägt einen sichtbaren Ring:** 2 px `viridian`,
 `outline-offset` 2–3 px. Er liegt EINMAL im Theme
 (`theme/components.ts` → `MuiButtonBase` + `MuiChip` + `MuiLink`) und trifft damit
-Button, IconButton, ToggleButton, Chip, jedes eigene `ButtonBase` und jeden Link;
-`PaperCardLink`, `HeaderNavLink` und die SVG-Zellen der Schreibtafel tragen ihre
-eigene, gleich aussehende Regel, weil sie keine MUI-Basis haben.
+Button, IconButton, ToggleButton, Chip, jedes eigene `ButtonBase` und jeden Link.
+Drei Flächen haben keine MUI-Basis und tragen darum ihre eigene Regel:
+`PaperCardLink` und `HeaderNavLink` denselben Ring, die SVG-Zellen der
+Schreibtafel stattdessen eine eingefärbte Zellenfläche (`WrittenSheet.tsx`) —
+ein Ring um ein SVG-`<g>` säße dort falsch. Auch MUI-Textfelder bleiben
+ausgenommen: sie zeigen Fokus über ihren eigenen Rahmen (2 px `viridian`).
 Hintergrund: MUIs `ButtonBase` setzt selbst `outline: 0` — ohne die Theme-Regel
 ist eine fokussierte Schaltfläche von ihren Nachbarn nicht zu unterscheiden (das
 Quiz war so per Tastatur unbedienbar, Audit 2026-09-02). Lighthouse sieht diesen

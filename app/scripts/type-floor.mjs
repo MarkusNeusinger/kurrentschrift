@@ -55,8 +55,11 @@ const CHROME_CANDIDATES = [
 function parseArgs(argv) {
   const opts = { base: 'http://localhost:3000', floor: 14, width: 390, height: 844, routes: DEFAULT_ROUTES };
   for (let i = 0; i < argv.length; i += 1) {
-    const [flag, inline] = argv[i].split('=');
-    const value = inline ?? argv[++i];
+    // Split on the FIRST `=` only — a value may contain more of them
+    // (`--base=https://host/?a=b`).
+    const eq = argv[i].indexOf('=');
+    const flag = eq === -1 ? argv[i] : argv[i].slice(0, eq);
+    const value = eq === -1 ? argv[++i] : argv[i].slice(eq + 1);
     switch (flag) {
       case '--base':
         opts.base = value.replace(/\/+$/, '');
