@@ -152,11 +152,21 @@ steps:
         # container's life and may fail transiently.
         RETRY="--retry 5 --retry-delay 5 --retry-all-errors"
         curl -fsS $$RETRY "$$URL/health" | grep -q '"healthy"'
+        # …and that it is THIS build's code. /health reports pyproject's
+        # version; without the assertion the smoke passes just as happily
+        # against an image that is not the one this build produced — exactly
+        # what a stale or mis-tagged image looks like from outside.
+        VERSION=$$(sed -n 's/^version = "\(.*\)"/\1/p' pyproject.toml | head -1)
+        test -n "$$VERSION" || { echo "could not read project.version from pyproject.toml"; exit 1; }
+        served=$$(curl -fsS $$RETRY "$$URL/health")
+        echo "$$served" | grep -q "\"version\":\"$$VERSION\"" || { echo "candidate serves $$served, expected version $$VERSION"; exit 1; }
         curl -fsS $$RETRY "$$URL/styles" | grep -q '"id"'
         curl -fsS $$RETRY "$$URL/sources/suetterlin-1922/write/word?text=lesen" | grep -q '"items"'
         # Fail-closed admin gate, probed via a body-less admin-gated GET so the
-        # assertion can never race request-body validation.
-        code=$$(curl -s $$RETRY -o /dev/null -w '%{http_code}' "$$URL/sources/suetterlin-1922/templates/n-medial/fit")
+        # assertion can never race request-body validation. The key is the bare
+        # `n`: positional suffixes are gone since migration 0017, and the old
+        # `n-medial` passed only because the gate fires before the 404.
+        code=$$(curl -s $$RETRY -o /dev/null -w '%{http_code}' "$$URL/sources/suetterlin-1922/templates/n/fit")
         test "$$code" = "401" || { echo "admin gate expected 401, got $$code"; exit 1; }
         echo "smoke OK"
     id: "smoke"
