@@ -1,10 +1,12 @@
 # Qualitätsmetrik & Glyph-Bench
 
-> **Status (2026-09-02): lebend.** Fortlaufend gepflegte Messlatte und
+> **Status (2026-09-03): lebend.** Fortlaufend gepflegte Messlatte und
 > Baseline-Journal — jeder Bench-Lauf und jedes bewusste Re-Baseline
 > schreibt hier einen datierten Abschnitt fort; aktuelle Headlines:
-> Wörter 0,109255 · Paare 0,148433 (Re-Baseline `sep01`, §15 — sieben
-> reparierte Wort-Rechtecke); das Journal reicht bis `sep01` (§15). Die
+> Wörter 0,109218 · Paare 0,148198 (Re-Baseline `sep02` — die 22
+> Laufform-Zeilen sind seit dem LF11-Write Spline-Basis-Mediane,
+> §14 „Laufform LF11 — humanbench-Wortrunde, Instrumentdefekt und
+> Adoption“); das Journal reicht bis `sep02`. Die
 > Verworfen-Listen (§4, §5, §6) bleiben geschlossen.
 
 Wie die Qualität einer kanonischen Glyphe gemessen wird, wie der
@@ -3603,6 +3605,7 @@ die DB) — mit seiner Bedingung.
 | sep02 | Laufform | [LF11 gemessen](#laufform-lf11-sep02--gemessen-eine-sprosse-besteht-alle-gates-und-sie-repariert-die-zeilen-gates-gleich-mit) | Pre-Reg + gemessen · Sprosse Δs 0,16 besteht alle Gates; Adoption offen | Zacken/xh 6,86→0,45, Wörter 0,109218 · Paare 0,148198, keine Kreuzung verloren; Karte trocken, wartet auf die humanbench-Wort-Runde |
 | sep02 | Übergänge | [J4 Austritts-Kollinearität (`exit_trim`)](#übergänge-j4-sep02--vorregistrierung-die-austritts-kollinearität-exit_trim) | Pre-Reg + gemessen · verworfen | 4 von 5 Gates grün (Wörter −0,000535, seam_dep +12,52→−1,39), (b) rot: `dconn` fällt nur in 20 % statt 60 % |
 | sep02 | Übergänge | [J4b enge Klasse](#übergänge-j4b-sep02--post-hoc-die-enge-klasse-nur-die-joins-die-wirklich-knicken) | POST-HOC · verworfen | Schnitt bei 20° Knick rettet den Arm nicht: `dconn` 43 %, seam_dep der Klasse nur +8,02 — Rettungswege in §7.9 |
+| sep02 | Laufform | [LF11 humanbench-Runde und Adoption](#laufform-lf11-sep02--humanbench-wortrunde-instrumentdefekt-und-adoption-prod-write--re-baseline) | **ADOPTIERT auf Autor-Entscheid** (kein formales Instrument-Verdikt) · Prod-Write + Re-Baseline | Runde verlässlich (10/12 Arm) und Richtung erdrückend (40 : 1), aber die Tie-Schranke fällt in JEDER Lesart (34,9 % gesamt, 25,6 % in der günstigsten Teilmenge, gegen ≤ 25 %) — `adopt: false`; ob ein Teil der Runde auf der defekten Anzeige „gefüllte Ringe" lief, ist zwischen Protokoll und Bestand ungeklärt (offener Punkt); Write nach Snapshot `2026-09-02T21-58-16Z`, Readback 22/22; Wörter 0,109218 · Paare 0,148198 |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -3634,6 +3637,7 @@ Vorbedingung (Glossar „Wurzel-Digest“, `tools/wordbench/README.md`).
 | aug30 | #463 | dieselbe undeklarierte Wurzel, nach B-Kringel + Nachschärfung | 0,106400 | 0,148467 | §14 „Übergänge Korb-Runde“ |
 | sep01 | #472 | **Re-Baseline**: sieben reparierte Wort-Rechtecke, Bahnen nachgezogen, Wurzeln neu gebaut | 0,109255 | 0,148433 | §15 |
 | sep02 | dieser PR | Wurzeln neu gebaut (`fetch_fixtures --set all --verify`), `exported_at` 2026-09-02T08:00:29+00:00, `root_digest` `28ba1afebc53…` (`suetterlin-1922`) / `f0cf3d53414c…` (`suetterlin-1922-pairs`) — **keine** Re-Baseline: §15 wird exakt reproduziert | 0,109255 | 0,148433 | dieser Ledger-Eintrag |
+| sep02 | #501 | **Re-Baseline nach dem LF11-Write**: 22 Laufform-Zeilen auf Spline-Basis-Mediane umgestellt (Snapshot `2026-09-02T21-58-16Z`, Readback 22/22), Wurzeln neu gebaut: `suetterlin-1922` `exported_at` 2026-09-02T22:13:54+00:00 `root_digest` `2e3581287bed…`, `suetterlin-1922-pairs` `exported_at` 2026-09-02T22:13:53+00:00 `root_digest` `cee9d363f497…`; trifft die trockene LF11-Vorhersage exakt | 0,109218 | 0,148198 | §14 „Laufform LF11 — humanbench-Wortrunde, Instrumentdefekt und Adoption“ |
 
 **Nachtrag `sep02` — die `aug30`-Wurzel ist eine undeklarierte
 Re-Baseline.** Zwischen der `aug29`-Wurzel (0,106720 / 0,146506, im
@@ -10721,3 +10725,197 @@ bleiben im Baum, damit der nächste Arm nicht bei null anfängt.
    Laufform-Ableitung ihn gar nicht erst lernen (Endblende-Familie LF5/LF6
    arbeitet an derselben Stelle) — dann bräuchte die Grammatik die Regel
    nicht.
+
+### Laufform LF11 `sep02` — humanbench-Wortrunde, Instrumentdefekt und Adoption (Prod-Write + Re-Baseline)
+
+Der Abschluss des Arms, der in den beiden LF11-Einträgen oben
+vorregistriert und trocken gemessen wurde. **Keine Zahl dort ist
+angefasst — hier steht nur, was danach kam.**
+
+**Warum überhaupt eine Menschenrunde.** Die Kandidaten-Karte bestand
+alle vier trockenen Gates, und trotzdem konnte keine Zahl sie
+freigeben: das Wort-Lineal ist gegenüber dem Zickzack nicht nur blind,
+es belohnt ihn stellenweise (LF11 `gemessen`, Absatz „Die Sichtprüfung
+sagt etwas, das keine dieser Zahlen sagt" — `Sporn` verliert 0,0440 und
+sieht besser aus). Genau dafür ist die Echtheitsfrage gebaut
+(`menschliche-bewertung.md` §8).
+
+**Die Runde.** Fassung A2, Frage `ECHTHEIT/3` („Welche Zeile sieht
+echter geschrieben aus?", drei gleichwertige Antworten), 75 Bildschirme
+= 63 Wortproben + 12 blinde gespiegelte Wiederholungen, Saat 20260003,
+Kandidat an die Registrierung der Basis gepinnt (LF11 glättet die
+Zeile, es soll das Wort nicht verschieben). Basis-Karte `sha256`
+`10204637efe2eb89`, Kandidat `64e5c6bf3005ff6e`, Wurzel
+`28ba1afebc53` / `exported_at 2026-09-02T08:00:29+00:00`.
+**Verlässlichkeit: 10 von 12 Wiederholungspaaren gleicher Arm, nur 2 von
+12 gleiche Seite** — es wurde nach dem Bild geurteilt, nicht nach der
+Position. Dateien:
+`temp/lf11/humanbench/runde-lf11-strata-gap8/`.
+
+**Der Instrumentdefekt — und ein UNGEKLÄRTER Widerspruch darüber, ob er
+die Runde spaltet.** Der Defekt selbst ist unstrittig: bis PR #492 füllte
+die Urteilsseite jeden Ring einer Federzug-Silhouette einzeln statt die
+Gruppe als einen `evenodd`-Pfad, sodass jede Schleife zulief (das `Z` von
+„Zorn" als massiver Tropfen; Beleg `befund-ringe-VORHER-Zorn.png` gegen
+`befund-ringe-NACHHER-Zorn.png`).
+
+Strittig ist, ob er in die Urteile hineinreicht. Im Sitzungsprotokoll
+steht, die ersten **27** Bildschirme in Urteilsreihenfolge seien noch auf
+der defekten Seite gelaufen und nur die restlichen **48** auf der
+reparierten. **Die Artefakte stützen das nicht:**
+
+- Alle drei Payloads der Runde tragen `built_at`
+  `2026-09-02T17:59:24+00:00` und **`"format": 2`** — das ist genau das
+  Format, das #492 EINGEFÜHRT hat (die alte, flache Ringliste wird seither
+  abgewiesen statt gezeichnet).
+- Es existiert im ganzen Baum **eine einzige** `urteile.txt`, im
+  Verzeichnis dieser Payloads, geschrieben um 23:51 — knapp vier Stunden
+  NACH dem reparierten Bau.
+- Das Fragment von #492 sagt ausdrücklich „caught by the author on the
+  first page he opened, **before any round was judged**", und die
+  `LIES-MICH.md` von 20:04 führt die Runde als „vorbereitet, noch nicht
+  gefahren".
+
+Widerlegt ist das Protokoll damit nicht — eine vor 19:59 geöffnete
+Browser-Seite zeigt die alte Fassung weiter, und das hinterlässt keine
+Datei. Belegen lässt es sich aus dem Bestand aber nicht, und **eine
+Ausschluss-Entscheidung, deren Grenze sich nicht nachprüfen lässt, taugt
+nicht als Grundlage einer Adoption.** Der Abschnitt führt darum beide
+Lesarten und stützt sich auf die, die der Bestand hergibt: **die Runde als
+Ganzes.** Die Klärung liegt beim Autor (offener Punkt unten).
+
+**Nachgerechnet nach dem bindenden Auswerteplan — und das Ergebnis ist
+schwächer, als die erste Fassung dieses Abschnitts behauptet hat.** Der
+Plan (`menschliche-bewertung.md`, „Der Auswerteplan") verlangt zweierlei,
+das eine Zählung über „48 Bildschirme" verletzt: **gespiegelte
+Wiederholungen messen die Verlässlichkeit und stimmen NIE mit** (darum
+zählt `analyse.py` 63 und nicht 75), und **unter
+`MIN_PAIRED_REPEATS` = 6 vollständigen Paaren trägt eine Menge keinen
+Adoptionsanspruch**. Beides nachgezogen (Wiederholungen entfernt, Schnitt
+an derselben Zeitstempel-Grenze):
+
+| Menge (nur Verdikt-Bildschirme) | n | entschieden | LF11 : Basis | Anteil | „kein Unterschied" | Schwellen (≥ 60 % / ≤ 25 %) |
+|---|---|---|---|---|---|---|
+| **ganze Runde (die belegte Menge)** | **63** | **41** | **40 : 1** | **97,6 %** | **22 (34,9 %)** | **Kandidat ✓ · Ties ✗** |
+| erste 27 laut Protokoll | 24 | 12 | 12 : 0 | 100 % | 12 (50,0 %) | Kandidat ✓ · Ties **✗** |
+| letzte 48 laut Protokoll | 39 | 29 | 28 : 1 | 96,6 % | 10 (25,6 %) | Kandidat ✓ · Ties **✗** (um 0,6 Punkte) |
+
+Verlässlichkeit über die ganze Runde: 12 Paare, **10/12 gleicher Arm**,
+nur 2/12 gleiche Seite — beide Schranken genommen, die Runde ist
+verlässlich. (Beim Protokoll-Schnitt lägen nur 3 Paare in der zweiten
+Hälfte, unter `MIN_PAIRED_REPEATS` = 6 — auch deshalb trüge die
+bereinigte Menge keinen Anspruch.)
+
+**Ergebnis, unabhängig davon, welche Lesart gilt: die Tie-Schranke fällt
+in JEDER Menge.** Über die ganze Runde mit 34,9 %, in der günstigsten
+Teilmenge immer noch mit 25,6 %. Der Kandidaten-Anteil ist überall
+erdrückend (40 : 1 gesamt, kein einziger Bildschirm für die Basis in den
+ersten 27), die Richtung steht also außer Frage — **ein formaler
+Adoptionsanspruch nach dem vorregistrierten Plan entsteht daraus
+nicht.** Das ist genau das, was der Werkzeuglauf von Anfang an gemeldet
+hat (`adopt: false`); die erste Fassung dieses Abschnitts hat es mit
+einer Teilmenge überschrieben, die Wiederholungen mitzählte.
+
+**Was der Write also ist: eine Autor-Entscheidung, informiert durch die
+Runde — kein Verdikt des Instruments.** Der Autor hat die 27 defekten
+Bildschirme als Instrumentdefekt ausgeschlossen (POST-HOC; die Grenze
+liegt im Zeitstempel, nicht in den Urteilen, und der Fehler ist benannt,
+physikalisch erklärt und in PR #492 behoben) und auf dieser Grundlage
+freigegeben. Das ist zulässig — die Schwellen sind eine
+Adoptions-AUTOMATIK, keine Erlaubnisschranke für den Autor —, aber es
+ist etwas anderes, als das Instrument entscheiden zu lassen, und wird
+hier nicht als solches ausgegeben. Die erste Fassung dieses Abschnitts
+zählte 36 : 1 aus 48 Bildschirmen; darin steckten Wiederholungen, die
+nicht mitstimmen dürfen. **Gefunden hat das die Copilot-Durchsicht von
+PR #501, nicht diese Messung** — festgehalten, weil ein Auswerteplan,
+der beim ersten Gebrauch umgangen wird, keiner ist.
+
+**Zwei offene Punkte für den Autor:**
+
+1. **Lief wirklich ein Teil der Runde auf der defekten Seite?** Der
+   Bestand sagt nein (Payloads in `format: 2`, eine einzige `urteile.txt`
+   um 23:51, #492 und die `LIES-MICH` von 20:04), das Sitzungsprotokoll
+   sagt ja. Eine offene Browser-Seite erklärt beides — nur weiß das nur
+   der Autor. Solange es offen ist, gilt die ganze Runde als die
+   belegte Menge.
+2. **Der saubere Weg zu einem echten Verdikt:** eine Wiederholungsrunde
+   auf der heutigen, sicher reparierten Seite, mit ihren eigenen ≥ 6
+   Paaren. ~10 Minuten Urteilszeit, und sie beantwortet beide Fragen auf
+   einmal — die Tie-Schranke und den Zweifel an der Anzeige.
+
+Die Lehre aus dem Defekt selbst ist als Konstruktionsregel 3.6b in
+`menschliche-bewertung.md` festgehalten — neben dem Fehler, für den sie
+kam.
+
+**Autor-Go (2026-09-03, 00:15): „Weg 1, Go — mit 96 % ist das eindeutig
+der richtige Weg."** (Die 96 % sind der Kandidaten-Anteil, der in jeder
+Lesart hält; die Schranke, die fehlt, ist die Tie-Schranke.)
+
+**Der Write.** Archiv-Snapshot **vorher**:
+`kurrentschrift-data/db-snapshots/2026-09-02T21-58-16Z` (Plausibilität
+gegen den Vorgänger `2026-09-02T06-16-17Z`: keine Tabelle geschrumpft).
+Vor dem Schreiben geprüft und protokolliert: alle 22 Live-Zeilen waren
+**byte-identisch mit der eingefrorenen Wurzel** — nichts in Prod war
+jünger als die Ernte der Karte; live existierten genau die 22 Schlüssel,
+die die Karte nennt; die serverseitige Kanonisierung
+(`build_laufform_canonical`, die der PUT erneut ausführt) ist auf allen
+22 Zeilen ein verifizierter No-op; kein Gate hätte eine Zeile
+abgewiesen. Ausgeführt hat den Write der Autor selbst über
+`PUT /sources/suetterlin-1922/templates/{key}/laufform` gegen
+`api.kurrentschrift.ink`, `P`/`S`/`s` mit `?min_occurrences=1` (die
+ausdrückliche Autor-Aussage nach LF7 — dieselben n, die diese Zeilen
+schon trugen). **Readback: 22 Zeilen identisch, 0 abweichend.** Keine
+Chart-Zeile (Variante 0) und kein Schlüssel außerhalb der Karte wurde
+berührt. Ankerbewegung gegen den vorherigen Stand: max 0,0654 xh, Mittel
+0,0067 xh.
+
+**Die Re-Baseline.** Beide Wurzeln neu gebaut
+(`fetch_fixtures --set all --verify`, 12/12 bit-exakt), Bench mit
+gepinnten BLAS-Threads:
+
+| | Wörter | Paare |
+|---|---|---|
+| vor dem Write (`sep01`-Stand) | 0,109255 | 0,148433 |
+| **nach dem Write** | **0,109218** | **0,148198** |
+
+**Das ist exakt die trockene LF11-Zahl** — und nicht nur die Headline:
+der gesamte Komponenten- und Diagnoseblock (`comp_*`, `meas_*`,
+`gleichzug_*`, `seam_dep_median` +7,99) stimmt Zeile für Zeile mit dem
+Overlay-Lauf vom Vormittag überein. Die Vorhersage „die Karte, die
+gemessen wurde, ist die Karte, die geschrieben wird" ist damit
+eingelöst. Nebenbefund: der Naht-Abgang sinkt von +12,52 auf +7,99 —
+die glatte Zeile verlässt den Buchstaben weniger steil, ohne dass eine
+Übergangsregel angefasst wurde.
+
+**Wurzel-Identität nach der Kopfregel.** Gemessen wurde auf
+`suetterlin-1922` `exported_at 2026-09-02T22:13:54+00:00`
+`digest 2e3581287bed` und `suetterlin-1922-pairs`
+`exported_at 2026-09-02T22:13:53+00:00` `digest cee9d363f497`.
+
+**Befund zur Kopfregel selbst (neu, gemeldet):** derselbe DB-Stand,
+zweimal exportiert (Worktree 22:13, Hauptcheckout 22:16), ergibt
+**verschiedene Digests** — die beiden Wurzeln unterscheiden sich in
+genau einer Datei und genau einem Feld, `manifest.json.exported_at`,
+und messen identisch (0,109218 / 0,148198 auf beiden). Der
+`root_digest` identifiziert also einen **Export**, nicht einen
+DB-Stand. Für `--expect-root` heißt das: es ist der Digest der Wurzel zu
+zitieren, auf der wirklich gemessen wurde; ein Neu-Export derselben
+Daten verlangt einen neuen Digest, ohne dass sich eine Zahl bewegt.
+Die Zeile im Hauptcheckout trägt `6cbab9d5c092` / `965ab3c57ebd`.
+
+**Unabhängige Gegenprobe an der lebenden API** (nicht das
+Schreibwerkzeug, das den Readback gemacht hat): alle 22 Zeilen, die
+`GET …/templates/{key}?variant=100` heute liefert, stimmen mit der neu
+gebauten Wurzel überein, und die mittlere Zacken-Rate, die Prod
+ausliefert, fällt von **8,570 auf 0,627** Krümmungs-Umkehrungen je
+x-Höhe — Faktor 13,7. Das ist die Größe, um die der ganze Arm gebaut
+wurde, gemessen dort, wo sie ankommt.
+
+**Stand danach.** Die 22 Laufform-Zeilen der Sütterlin-1922-Hand sind
+Spline-Basis-Mediane; `aggregate_instances` medianisiert weiterhin je
+Anker — die Adoption betrifft die DATEN, nicht den Default des
+Aggregators (der Weg dorthin ist ein eigener Arm, wenn er je gebraucht
+wird). Der Golden bleibt unberührt. **Die öffentlichen
+`/write/word`-Antworten liegen bis zu 24 h im Edge-Cache; der Wechsel
+auf die glatten Zeilen wird dort erst mit Ablauf sichtbar — kein Purge
+(Entscheid des Autors).**
