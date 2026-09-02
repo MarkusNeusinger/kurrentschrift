@@ -28,7 +28,10 @@ export const hub = {
       },
       vergleichen: {
         title: 'Lesart prüfen',
-        body: 'Ein Wort aus deinem Brief, eine Vermutung — die Feder schreibt sie, und daneben die Lesarten, die genauso aussehen könnten.',
+        // Careful with the promise: the readings need a dictionary on the
+        // server, and until it is loaded the page can only write the guess and
+        // show the confusable pairs (website audit 2026-09-02).
+        body: 'Ein Wort aus deinem Brief, eine Vermutung — die Feder schreibt sie, daneben die Verwechsler, an denen das Entziffern hängt. Kennt das Wörterbuch ähnliche Wörter, stehen sie dabei.',
         cta: 'Lesart prüfen',
       },
     },

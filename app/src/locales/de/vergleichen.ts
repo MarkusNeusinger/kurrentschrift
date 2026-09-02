@@ -43,9 +43,13 @@ export const vergleichen = {
   lesartenLoading: 'Wörter werden gesucht …',
   lesartenError: 'Die Wörter lassen sich gerade nicht abfragen — der Server ist nicht erreichbar.',
   noLesarten: 'Kein Wort im Wörterbuch sieht dieser Lesart zum Verwechseln ähnlich — sie ist wohl eindeutig.',
+  // Shown INSTEAD of `noLesarten` while the server holds no dictionary at all
+  // (website audit 2026-09-02: the page said „wohl eindeutig" over an empty
+  // shelf). Says what is missing and what the page can still do.
+  noDictionary:
+    'Das Wörterbuch ist noch nicht geladen — darum kann die Seite hier noch keine ähnlichen Wörter nennen. Halte so lange die geschriebene Lesart oben neben dein Original; die klassischen Verwechsler stehen darunter.',
   // Where the words come from (interpolates {{forms}}, the live vocabulary's size).
   dictionaryNote: 'Wortformen aus dem freien deutschen Wörterbuch igerman98 ({{forms}} Formen) und der Wortbank dieser Seite; Namen und alte Wörter, die beide nicht kennen, fehlen hier.',
-  dictionaryMissing: 'Das Wörterbuch ist noch nicht geladen — bis dahin kann die Seite keine Wörter nennen.',
 
   // --- Die klassischen Verwechsler ------------------------------------------
   pairsHeading: 'Die klassischen Verwechsler',
