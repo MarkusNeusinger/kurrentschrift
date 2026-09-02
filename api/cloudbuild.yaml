@@ -144,6 +144,21 @@ steps:
         # /styles or /write call can still be the first real DB request of that
         # container's life and may fail transiently.
         RETRY="--retry 5 --retry-delay 5 --retry-all-errors"
+        # The candidate is probed on its `run.app` tag URL, which by definition
+        # never passes the Cloudflare edge — so once ORIGIN_SECRET is set on the
+        # service (api/origin_gate.py) every probe but /health needs the header
+        # the edge would have stamped. Read here rather than through
+        # `availableSecrets` on purpose: that resolves at build start and would
+        # fail every build until the secret exists, which is precisely step (a)
+        # of the rollout. Missing secret or missing permission => empty => the
+        # probes run bare, which is correct while the gate is off and fails
+        # loudly at /styles once it is on. The value is captured, never echoed;
+        # the step runs without `set -x`.
+        ORIGIN_SECRET=$$(gcloud secrets versions access latest --secret=ORIGIN_SECRET 2>/dev/null || true)
+        HDR=()
+        if [ -n "$$ORIGIN_SECRET" ]; then HDR=(-H "X-Origin-Secret: $$ORIGIN_SECRET"); fi
+        # /health stays bare: it is exempt from the gate, and that is what makes
+        # it the probe that always reaches a cold candidate.
         curl -fsS $$RETRY "$$URL/health" | grep -q '"healthy"'
         # …and that it is THIS build's code. /health reports pyproject's
         # version; without the assertion the smoke passes just as happily
@@ -153,13 +168,24 @@ steps:
         test -n "$$VERSION" || { echo "could not read project.version from pyproject.toml"; exit 1; }
         served=$$(curl -fsS $$RETRY "$$URL/health")
         echo "$$served" | grep -q "\"version\":\"$$VERSION\"" || { echo "candidate serves $$served, expected version $$VERSION"; exit 1; }
-        curl -fsS $$RETRY "$$URL/styles" | grep -q '"id"'
-        curl -fsS $$RETRY "$$URL/sources/suetterlin-1922/write/word?text=lesen" | grep -q '"items"'
+        # …and that the secret this BUILD can read is the one the SERVICE was
+        # given. /health reports the verdict for the request it was asked with
+        # (never the value), so a rotation applied to only one of the two shows
+        # up here instead of as a mysterious 403 after the promote.
+        if [ -n "$$ORIGIN_SECRET" ]; then
+          gate=$$(curl -fsS $$RETRY "$${HDR[@]}" "$$URL/health" | python3 -c "import json,sys; print(json.load(sys.stdin).get('origin_gate'))")
+          case "$$gate" in
+            ok|off) echo "origin gate: $$gate" ;;
+            *) echo "origin gate says '$$gate' for this build's secret — service and build disagree"; exit 1 ;;
+          esac
+        fi
+        curl -fsS $$RETRY "$${HDR[@]}" "$$URL/styles" | grep -q '"id"'
+        curl -fsS $$RETRY "$${HDR[@]}" "$$URL/sources/suetterlin-1922/write/word?text=lesen" | grep -q '"items"'
         # Fail-closed admin gate, probed via a body-less admin-gated GET so the
         # assertion can never race request-body validation. The key is the bare
         # `n`: positional suffixes are gone since migration 0017, and the old
         # `n-medial` passed only because the gate fires before the 404.
-        code=$$(curl -s $$RETRY -o /dev/null -w '%{http_code}' "$$URL/sources/suetterlin-1922/templates/n/fit")
+        code=$$(curl -s $$RETRY "$${HDR[@]}" -o /dev/null -w '%{http_code}' "$$URL/sources/suetterlin-1922/templates/n/fit")
         test "$$code" = "401" || { echo "admin gate expected 401, got $$code"; exit 1; }
         echo "smoke OK"
     id: "smoke"

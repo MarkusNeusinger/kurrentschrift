@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.middleware.gzip import GZipMiddleware  # noqa: E402
 
 from api.analytics import classify_asset, track_asset_fetch, track_bot_fetch  # noqa: E402
+from api.origin_gate import OriginSecretMiddleware  # noqa: E402
 from api.rate_limit import RateLimitMiddleware  # noqa: E402
 from api.routers import (  # noqa: E402
     aggregates_router,
@@ -122,6 +123,11 @@ app.add_middleware(HeadAsGetMiddleware)
 # spends a token exactly like the GET it stands for; inside CORS so a browser
 # can READ the 429 as a 429 instead of an opaque network error.
 app.add_middleware(RateLimitMiddleware)
+# Outside the limiter in turn: a caller that never came through the edge is
+# refused before it spends anyone's token. Still inside CORS, for the same
+# reason the limiter is — and because CORSMiddleware answers a preflight there,
+# which can never carry a custom header. Dormant until ORIGIN_SECRET is set.
+app.add_middleware(OriginSecretMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=settings.cors_allow_origin_regex,
