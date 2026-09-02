@@ -1,8 +1,13 @@
 // Per-route SEO copy (title + meta description), consumed by usePageMeta in the
 // thin page mounts. One place for every public page's <title>/description so the
 // catalogue stays consistent — the descriptions read for a human in a search
-// result, ~150 characters, German (the site is German, see sprachregelung.md).
+// result, German (the site is German, see sprachregelung.md).
 // Keyed by page, mirroring routes/paths.ts.
+//
+// Description rule: at most 155 characters — Google truncates a longer one
+// mid-sentence, so the last clause is lost exactly where the promise usually
+// sits. Pinned by routes/seoCoverage.test.ts (the gate allowed 200 until the
+// website audit 2026-09-02 found five descriptions running to 190).
 //
 // Title rule (SEO audit 2026-08-29, frontend-stack.md §4): the search term a
 // person would type comes FIRST (Sütterlin, Kurrent, alte deutsche Schrift,
@@ -19,12 +24,12 @@ export const seo = {
   home: {
     title: 'kurrentschrift.ink — deutsche Kurrent & Sütterlin lesen und schreiben',
     description:
-      'Alte deutsche Schreibschrift lesen und schreiben lernen — Kurrent, Sütterlin, Offenbacher: mit Quiz, Schreibtafel, Übungsblatt und einer Feder, die live schreibt.',
+      'Alte deutsche Schrift lesen und schreiben lernen: Kurrent, Sütterlin, Offenbacher — Quiz, Schreibtafel, Übungsblatt und eine Feder, die live schreibt.',
   },
   schriftkunde: {
     title: 'Alte deutsche Schrift: Kurrent, Sütterlin, Offenbacher · kurrentschrift.ink',
     description:
-      'Ein quellengestützter Überblick über die deutschen Schreibschriften — Kurrent, Sütterlin und Offenbacher: Lineatur, Federn, Tinte, Buchstaben-Besonderheiten und ihre Geschichte.',
+      'Quellengestützter Überblick über Kurrent, Sütterlin und Offenbacher: Lineatur, Federn, Tinte, Buchstaben-Besonderheiten, Chronologie und das Verbot 1941.',
   },
   lesen: {
     title: 'Alte deutsche Schrift lesen lernen · kurrentschrift.ink',
@@ -39,12 +44,12 @@ export const seo = {
   tafel: {
     title: 'Sütterlin-Alphabet und Kurrent-Alphabet: die Schreibtafel · kurrentschrift.ink',
     description:
-      'Die drei historischen Vorlagen der deutschen Schreibschrift auf einen Blick — die Sütterlin Zug um Zug von der Feder geschrieben, zum Vergleichen und Nachschlagen.',
+      'Sütterlin-, Kurrent- und Offenbacher-Alphabet auf einen Blick: die Sütterlin Zug um Zug geschrieben, mit Strichfolge je Buchstabe — als Lesetafel-PDF.',
   },
   vergleichen: {
     title: 'Alte deutsche Schrift entziffern: Lesart prüfen · kurrentschrift.ink',
     description:
-      'Ein Wort aus einem alten Brief, eine Vermutung — die Feder schreibt sie in Sütterlin und daneben die Lesarten, die genauso aussehen könnten (n/u, e/n, f/ſ). Zum Vergleichen mit dem Original.',
+      'Ein Wort aus einem alten Brief, eine Vermutung: Die Feder schreibt sie in Sütterlin — daneben die Wörter, die genauso aussehen könnten (n/u, e/n, f/ſ).',
   },
   schreiben: {
     title: 'Kurrent und Sütterlin schreiben lernen · kurrentschrift.ink',
@@ -54,7 +59,7 @@ export const seo = {
   worksheet: {
     title: 'Übungsblatt Sütterlin & Kurrent als PDF · kurrentschrift.ink',
     description:
-      'Erzeuge ein Übungsblatt als PDF — Lineatur mit frei wählbarem Verhältnis, Schräglinien und Federwinkel, auf Wunsch mit deinem Text als Vorschrift in Sütterlin, fertig zum Ausdrucken.',
+      'Übungsblatt für Sütterlin und Kurrent als PDF: Lineatur mit wählbarem Verhältnis, Schräglinien und Federwinkel, auf Wunsch mit deinem Text als Vorschrift.',
   },
   federprobe: {
     title: 'Text in Sütterlin schreiben lassen: die Federprobe · kurrentschrift.ink',
