@@ -89,13 +89,23 @@ secret is never typed: it is read from Secret Manager at execution time, stays
 in a shell variable, and reaches `curl` through stdin, so it lands in no shell
 history, no file and no process list.
 
-```bash
-# Command substitution strips the trailing newline gcloud may print — the same
-# newline that once made ADMIN_TOKEN unusable in a header (2026-08).
-ORIGIN_SECRET=$(gcloud secrets versions access latest \
-  --secret=ORIGIN_SECRET --project=kurrentschrift)
+It runs in a fail-fast subshell for a reason: a script `PUT` replaces the
+bindings, so a failed or empty secret read would deploy an EMPTY binding, the
+Worker would stop stamping, and the armed admin route would go down — the very
+outage this gate exists to avoid. Every step is therefore checked before the
+next one runs.
 
-ORIGIN_SECRET="$ORIGIN_SECRET" python3 -c '
+```bash
+(
+  set -euo pipefail
+
+  # Command substitution strips the trailing newline gcloud may print — the
+  # same newline that once made ADMIN_TOKEN unusable in a header (2026-08).
+  ORIGIN_SECRET=$(gcloud secrets versions access latest \
+    --secret=ORIGIN_SECRET --project=kurrentschrift)
+  [ -n "$ORIGIN_SECRET" ] || { echo "empty ORIGIN_SECRET — refusing to deploy"; exit 1; }
+
+  ORIGIN_SECRET="$ORIGIN_SECRET" python3 -c '
 import json, os, sys
 json.dump({
     "main_module": "worker.js",
@@ -103,11 +113,21 @@ json.dump({
     "bindings": [
         {"type": "secret_text", "name": "ORIGIN_SECRET", "text": os.environ["ORIGIN_SECRET"]},
     ],
-}, sys.stdout)' | curl -X PUT \
-  "https://api.cloudflare.com/client/v4/accounts/{account}/workers/scripts/kurrentschrift-api-proxy" \
-  -H "Authorization: Bearer $CF_API_TOKEN" \
-  -F 'metadata=<-;type=application/json' \
-  -F 'worker.js=@infra/cloudflare/kurrentschrift-api-proxy.js;type=application/javascript+module'
+}, sys.stdout)' | curl --fail-with-body -sS -X PUT \
+    "https://api.cloudflare.com/client/v4/accounts/{account}/workers/scripts/kurrentschrift-api-proxy" \
+    -H "Authorization: Bearer $CF_API_TOKEN" \
+    -F 'metadata=<-;type=application/json' \
+    -F 'worker.js=@infra/cloudflare/kurrentschrift-api-proxy.js;type=application/javascript+module'
+)
+```
+
+`pipefail` so a failing `python3` cannot be masked by a succeeding `curl`;
+`--fail-with-body` so an HTTP error is a non-zero exit AND still prints
+Cloudflare's JSON reason, which plain `-f` swallows. Then measure before
+trusting it:
+
+```bash
+curl -s https://kurrentschrift.ink/api/health   # expect "origin_gate":"ok"
 ```
 
 If that reads like more machinery than the job deserves, it is — deploy from the
