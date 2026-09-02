@@ -276,6 +276,86 @@ losschreiben" kann, gilt technisch:
   Entscheidung selbst bleibt unangetastet. Folgeaufgabe unverändert: das
   Golden auf synthetische Test-Templates umstellen, dann verschwindet auch
   das.
+- **Bekannte, akzeptierte Ausnahme in der ÖFFENTLICHEN HISTORIE**
+  (Entscheid des Autors 2026-09-02): `.design-sync/previews/_writtenGlyphData.ts`
+  — Blob `4e02e1a7be720d34c3f161c17afe821a1032df1b`, 32 219 Bytes,
+  hinzugefügt am 2026-06-20 mit Commit `84c6332` (PR #108), am 2026-07-31
+  von PR #254 („Harden the open-core moat") nur aus HEAD entfernt, **nie
+  aus der Historie**. Die Datei trägt die Diagnose-Payloads zweier
+  Templates (`eMedial`, `tMedial` in der Vor-`0017`-Benennung) mit
+  `skeleton_polyline_px`, `half_widths_px`, `anchors` und `outline` — also
+  genau die Route, die heute als reserviert gepinnt ist. Das Repository ist
+  seit 2026-05-19 öffentlich, der Blob damit in jedem Klon per
+  `git show 84c6332:…` lesbar.
+
+  **Warum angenommen und nicht gepurgt:** Ein Purge
+  (`git filter-repo` + Force-Push) schriebe die Historie eines
+  ÖFFENTLICHEN `main` um und macht die Kopie trotzdem nicht ungeschehen —
+  jeder bestehende Klon und jeder Fork behält sie, ein Purge senkt nur die
+  Auffindbarkeit. Dem stünde der Preis gegenüber, dass jede fremde Kopie
+  des Repos unbrauchbar wird. Inhaltlich geht es um zwei von rund 80
+  Glyphen in einer längst überholten Geometrie. Die rechtliche Schranke
+  bleibt unverändert der Vorbehalt im README („License") — der gilt
+  unabhängig davon, ob Bytes irgendwo abrufbar sind; technisch verhindert
+  wird nur die WIEDERHOLUNG.
+- **Ebenfalls angenommen** (Entscheid des Autors 2026-09-03, dieselbe
+  Begründung wie oben): die handnachgefahrenen Kanonischen des ersten
+  Prototyps aus der Zeit vor der Datenbank, hinzugefügt am 2026-05-20 mit
+  Commit `4dc98c7`, aus HEAD verschwunden am 2026-05-22 mit `9365b65`
+  (Umzug `/mvp/` → `/core/` + Postgres). Der Entscheid gilt den drei
+  DATEIEN `e-medial_v0.json`, `s-final_v0.json`, `s-medial_v0.json` und
+  damit allen ihren Fassungen — je vier Revisionen, zusammen zwölf Blobs.
+  Namentlich per Hash gepinnt sind sie in `tests/test_reserved_history.py`;
+  dort steht die maßgebliche Liste, nicht hier, damit die beiden nicht
+  auseinanderlaufen können.
+
+  Das Audit vom 2026-09-02 hatte sie als „0,9–1,1 KB große Hand-Seeds"
+  beiseitegelegt; nachgemessen reichen sie bis über 50 KB mit je 50
+  `pixel_anchors` und `half_widths_px` — dieselbe Klasse autorierter
+  Geometrie wie der Blob darüber, kein Stummel. Aufgefallen ist die
+  Fehlangabe erst, als das Nachweis-Netz unten sie als INHALT statt als
+  Dateigröße prüfte; und die vier Revisionen je Datei wurden erst sichtbar,
+  als es den Zahlenlauf schlüsselnah statt global suchte.
+
+  **Das Nachweis-Netz** dazu ist `tests/test_reserved_history.py`: Es geht
+  alle je committeten Blobs außerhalb der Code-Bäume durch und meldet
+  jeden, der einen Render-Payload trägt (Payload-Schlüssel **plus** einen
+  Zahlenlauf DIREKT dahinter — eine bloße Erwähnung des Feldnamens in Prosa
+  oder in einem Generator-Skript ist ausdrücklich erlaubt). Schlüsselnah
+  (Umkreis 300 Bytes) statt global, und die Mindest-Zahlenzahl steht **je
+  Schlüssel**, weil die Schemata sich unterscheiden: `InstanceItem.anchors`
+  hat `min_length` 4, also acht Koordinaten, während ein
+  `WordInstanceItem.strokes` schon mit einem Zwei-Punkt-Zug schema-gültig ist
+  — vier Zahlen. Zwischen zwei Einträgen brechen JSON-Schlüssel jeden
+  längeren Lauf, deshalb ließe eine globale 40-Zahlen-Schwelle kleine
+  Vorkommens-Dumps durch, während sie behauptet, sie abzudecken. Die
+  Schlüsselliste deckt auch die Render-Geometrie mit ab (`silhouette_px`,
+  `outline_polygon(s)`, `fitted_outline_px` aus `core/pipeline.py` und
+  `core/fit.py`). Die oben genannten
+  Blobs sind per Hash gepinnt, alles andere lässt den Test rot werden.
+  Gepinnt wird per Blob-Hash und nicht per Pfad: Eine Pfad-Ausnahme ließe
+  einen NEUEN Dump unter demselben Pfad durch — genau den Fall, den das
+  Netz verhindern soll. Der Zahlenlauf erlaubt ausdrücklich auch Klammern
+  zwischen den Zahlen, denn dichte Geometrie steht ebenso oft verschachtelt
+  (`anchors_template: [[x, y], …]`) wie flach; ein reines Komma-Muster bräche
+  an jedem `],[` und ließe einen Dump aus lauter Koordinatenpaaren durch.
+  `data/` wird mitgeprüft und ist ausdrücklich KEIN Code-Baum — dort läge
+  eine autorierte Payload am naheliegendsten. Die Schlüsselliste ist Feld
+  für Feld gegen `api/schemas.py` durchgegangen und deckt ALLE hier
+  vorbehaltenen Wire-Formen ab, nicht nur die Tafel-Templates: Templates und
+  ihre Renders (`skeleton_polyline`, `anchors*`, `half_widths*`,
+  `centerlines*`, `outline_paths`, `outline_polygon`, `silhouette_px`,
+  `fitted_outline_px`), die Glyphen- und Wort-Vorkommen (`anchors`,
+  `half_widths`, `strokes`), die **Paar-Overrides und Paar-Vorkommen**
+  (`connector` aus `PairGeometry`, das auch `PairInstanceItem.geometry`
+  trägt), die Aggregate (`cluster_center`, `laufform_anchors`,
+  `offset_center`) und die Bbox-Autorenarbeit (`points` der Masken-Striche,
+  `slant_xs` der Schräglagen-Linien) — gemessen ohne einen einzigen
+  Fehlalarm über die gesamte Historie. Und der Test **überspringt sich
+  nicht selbst**: nur ein fehlendes `git` (oder ein flacher Klon) gilt als
+  „hier nicht prüfbar", jeder Fehler von `rev-list`/`cat-file` macht ihn
+  rot — ein Wächter, der bei eigenen Fehlern schweigt, hielte CI grün,
+  ohne je hingesehen zu haben.
 - **Seit 2026-09-02 liegt eine Schicht DAVOR: das Origin-Geheimnis.** Alle
   bisherigen Punkte beschreiben, was die API einem Aufrufer antwortet. Sie
   galten aber nur, solange man die API überhaupt nur über den Edge erreicht —

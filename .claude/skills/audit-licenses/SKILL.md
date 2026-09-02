@@ -78,14 +78,30 @@ done
 format — anything else is a finding**, because nothing outside those trees
 has a reason to carry a rendered template.
 
-Known and already decided, so not a fresh finding:
+**This net is now a test, so run the test rather than the loop above:**
+`uv run --extra test pytest tests/test_reserved_history.py`. It walks every
+blob ever committed outside the code trees and reports each one carrying a
+render payload — a payload key AND a long run of numbers, so a mere mention
+of a field name in prose or in a generator script does not fire. The blobs
+already on record are pinned there by hash; anything else fails.
+
 `.design-sync/previews/_writtenGlyphData.ts` (added 2026-06-20 in 84c6332 /
 PR #108, 32219 bytes, the diagnostic payloads of two templates; removed
 from HEAD 2026-07-31 by PR #254 but NOT from history, and the repo has been
-public since 2026-05-19). The binary-extension net above cannot see a
-`.ts` file, which is why it went unreported for two months. How the blob
-itself is handled — purge versus documented acceptance — is the author's
-call; this net exists so the next one is caught the day it lands.
+public since 2026-05-19) is **known and ACCEPTED — author's decision of
+2026-09-02, documented in `docs/reference/quellen-und-rechte.md` §5. Do not
+re-report it as a finding and do not propose a purge again**: rewriting a
+public `main` would not unmake the copies that clones and forks already
+hold, the README reservation stays the legal boundary either way, and what
+is actually prevented is the repetition. The same holds for the three
+`mvp/canonical/*_v0.json` files of the pre-DB prototype — four revisions
+each, twelve blobs — **accepted on 2026-09-03 on the same reasoning**,
+likewise settled, likewise not to be re-raised.
+
+Adding a hash to that allowlist is a licensing decision of the author's,
+never a way to get a red test green. The binary-extension net above cannot
+see a `.ts` or `.json` file at all, which is why this class went unreported
+for two months.
 
 **Bundled fonts vs. notices** — since 2026-08-27 the Garamond/Playfair
 subsets are self-hosted as TRACKED verbatim copies in `app/public/fonts/`
@@ -243,9 +259,14 @@ all covered by the notices. Two nets were rebuilt in the same pass and are
 the reason this section is dated twice: the base64 net now matches the
 payload class instead of an exclusion list (it had fallen five files
 behind), and the history sweep gained the content pickaxe that finally
-names `.design-sync/previews/_writtenGlyphData.ts`. That blob and the
-`igerman98` index gap are the two open items — everything else prints only
-OK lines.
+names `.design-sync/previews/_writtenGlyphData.ts`. Both items that opened
+on that day are closed: the `igerman98` index gap was filled, and that blob
+was ACCEPTED by the author on 2026-09-02 and pinned in
+`tests/test_reserved_history.py`. The same net then surfaced the three
+`mvp/canonical/*_v0.json` files of the pre-DB prototype (four revisions
+each, twelve blobs), which the author accepted on 2026-09-03 on the same
+reasoning; they are pinned there too — 13 blobs in total. Nothing in the
+history battery is open — everything prints only OK lines.
 
 ## Gotchas
 
