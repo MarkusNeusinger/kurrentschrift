@@ -31,13 +31,10 @@ from api.schemas import (
     LesartSwapOut,
 )
 from core.database import LesartDictionary, LesartRepository
-from core.lesarten import DEFAULT_LIMIT, MAX_TEXT_LEN, lesart_key, rank_readings
+from core.lesarten import DEFAULT_LIMIT, MAX_TEXT_LEN, WORD_MAX, lesart_key, rank_readings
 
 
 router = APIRouter(prefix="/lesarten", tags=["lesarten"])
-
-# Bank words the load may carry beyond the dictionary's own bound.
-_WORD_MAX = 64
 
 
 async def _require_open(repo: LesartRepository, gen: int) -> None:
@@ -119,15 +116,24 @@ async def begin_generation(body: LesartGenerationIn, db: AsyncSession = Depends(
     "/dictionary/generations/{gen}/forms", response_model=LesartFormsOut, dependencies=[Depends(require_admin)]
 )
 async def add_forms(gen: int, body: LesartFormsIn, db: AsyncSession = Depends(require_db)) -> LesartFormsOut:
-    """Add a batch of words to the open generation (keys computed here)."""
+    """Add a batch of words to the open generation (keys computed here).
+
+    An unusable word — blank, containing whitespace, or longer than
+    `WORD_MAX` (the column's own bound) — fails the WHOLE batch with 400
+    rather than being skipped silently. Dropping is a loader decision and
+    `tools.lesarten.sync` takes it visibly, printing what it left out; a
+    server that swallowed the same word would leave every other client with
+    an `inserted` count it cannot explain, and a vocabulary quietly short of
+    what it sent.
+    """
     repo = LesartRepository(db)
     await _require_open(repo, gen)
     rows: list[tuple[str, str, bool]] = []
     for word, bank in body.words:
         w = word.strip()
-        if not w or len(w) > _WORD_MAX or any(ch.isspace() for ch in w):
+        if not w or len(w) > WORD_MAX or any(ch.isspace() for ch in w):
             raise HTTPException(
-                status.HTTP_400_BAD_REQUEST, detail=f"{word!r} is not a single word of at most {_WORD_MAX} characters"
+                status.HTTP_400_BAD_REQUEST, detail=f"{word!r} is not a single word of at most {WORD_MAX} characters"
             )
         rows.append((lesart_key(w), w, bool(bank)))
     inserted = await repo.add_forms(gen, rows)

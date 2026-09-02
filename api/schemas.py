@@ -103,8 +103,12 @@ class LesartFormsIn(BaseModel):
     computes every bucket key itself (core.lesarten.lesart_key), so the tool
     and the query can never disagree on the key."""
 
-    # The repository's duplicate check binds two parameters per pair and
-    # PostgreSQL stops at 65 535 per statement; 20 000 is the tool's batch.
+    # No driver bound applies here any more: the repository pages its
+    # `INSERT … ON CONFLICT DO NOTHING` into statements that stay under
+    # asyncpg's 32 767 bind parameters, whatever a batch's size. What is left
+    # is request size and time — 20 000 words are ~400 KB of JSON and load in
+    # well under a second, far inside Cloudflare's 100 s origin timeout — so
+    # the tool's batch stays 20 000 and this bound stays its ceiling.
     words: list[tuple[str, bool]] = Field(max_length=20_000)
 
 
