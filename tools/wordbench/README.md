@@ -198,14 +198,17 @@ words_skipped_ids: Wer,Soldaten,muß,…
 comp_transition: 0.166240
 comp_coverage: 0.185325
 comp_width: 0.223770
+runtime_s:       31.4
 ```
 
 Byte-stable grep anchor: `grep "^bench_loss:" run.log`. The pairs block
 (`--set pairs`/`all`) mirrors it with `pair_loss:`, `worst_pair:`,
 `pairs_scored/skipped/failed`, `pairs_skipped_ids:` and `pair_comp_*` lines.
-The two header lines precede everything (one pair per selected root); the
-report-only medians — `slant_*`, `gleichzug_*`, `meas_*`, `seam_*` — follow
-the component block and never displace it.
+The two header lines precede everything (one pair per selected root);
+`runtime_s:` closes the run, after the last block. Elided from the example
+above, since they vary with the fixture set: the report-only medians
+(`slant_*`, `gleichzug_*`, `meas_*`, `seam_*`), which follow the component
+block inside each block and never displace it.
 
 ## Overlays
 
