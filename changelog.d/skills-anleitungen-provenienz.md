@@ -10,13 +10,13 @@
   own spot-check command (`KeyError: no fixture 't-medial'`) and invited a
   silent re-export of the frozen fixture root; `/start` recommended
   `alembic upgrade head` against what is the shared production DB. Each fix
-  was verified by running it (#NNN).
+  was verified by running it (#484).
 - **A raw NUL byte made a TypeScript file binary to git and grep.**
   `SpecimenStrip/payloads.ts` joined its cache signature on a literal NUL, so
   `file` reported the source as `application/octet-stream`, every diff on it
   read `Bin 0 -> 2722 bytes`, and the licence audit's payload sweep skipped
   it entirely. The separator is now a comma — same job, and the file is text
-  again (#NNN).
+  again (#484).
 
 ### Added
 
@@ -25,7 +25,7 @@
   root), gains the `.env` trap as §0 — `alembic/env.py` calls `load_dotenv()`,
   so an un-exported `DATABASE_URL` silently aims at production — a single-head
   check as the fourth check, and the snapshot precondition before any
-  DROP/rewrite revision (#NNN).
+  DROP/rewrite revision (#484).
 - **Four new skills for procedures that had none.** `/verify-trace` turns the
   five-step Tintenfolger measurement liturgy into a checklist with the BLAS
   pinning in the command line rather than in prose, and the "base and arm are
@@ -33,13 +33,13 @@
   produced two wrong measurements in two days. `/dbsnapshot` carries the
   create-only archive rules and the correct entry point. `/release` covers the
   fold, the tag on the merge commit and the condensed-notes rule.
-  `/dependabot` covers the weekly batch and the `update-branch` trap (#NNN).
+  `/dependabot` covers the weekly batch and the `update-branch` trap (#484).
 - **`tests/test_agent_instructions.py` pins the agent guides against drift.**
   136 backticked paths must resolve, 48 `§N` references must hit a real
   heading (a range like `§3–§6` asserts every section in it), and 22 rules
   must be present in BOTH `CLAUDE.md` and
   `copilot-instructions.md` — the two files claim to stay in sync, and until
-  now nothing checked it (#NNN).
+  now nothing checked it (#484).
 
 ### Changed
 
@@ -53,7 +53,7 @@
   reports are against `origin/main`). All nine are now in both files, the
   pre-commit section states what is actually configured, and rotting file
   lists became pointers. `prime.md` shed the repository map it duplicated out
-  of date (#NNN).
+  of date (#484).
 - **Two licence nets that had stopped working.** The hidden-payload sweep
   matched a bare `;base64,` and needed an exclusion list that had fallen five
   files behind, so its OK branch could never fire; it now matches the payload
@@ -61,7 +61,7 @@
   still catching a synthetic embedding. The history sweep only ever saw binary
   extensions, so the reserved-data blob committed in June as a `.ts` file was
   invisible to it; a content pickaxe over the payload keys now names it
-  (#NNN).
+  (#484).
 
 - **Data provenance closed at four gaps.** `igerman98` — the one source with
   real copyleft obligations — was missing from the provenance index and its
@@ -71,4 +71,4 @@
   §5 described the compose golden as "no templates" when it holds the full
   render payloads of 27 glyph keys. All corrected against measurement, and the
   audit battery now also sweeps `data/corpora`, `data/samples` and the shipped
-  specimens (#NNN).
+  specimens (#484).
