@@ -77,6 +77,18 @@ LAUFFORM_SPIKE_RATIO_MAX: float | None = 2.95
 # see a head that turns, and no other trusted row comes near (m 15°, w 14°).
 # None turns the gate off.
 LAUFFORM_HEAD_DEVIATION_MAX: float | None = 15.0
+# Smoothness sensor (LF11, qualitaetsmetrik.md §14 `sep02`): the step the
+# rendered centerline is resampled onto before its turn angles are read, and the
+# turn below which a sign change is numerical noise rather than a zigzag.
+#
+# 0.02 xh is a third of the nib radius (0.064 xh on the pooled 1922 nib) — fine
+# enough that a wobble the pen could not have drawn still shows, coarse enough
+# that the reading is not the sampler's own rounding. 3° is where the audit of
+# 2026-09-02 drew the line, and the chart rows confirm it: at that threshold
+# their rates sit at or near zero (o 0.00, e 0.00, n 0.46), so the sensor calls
+# a drawn form smooth.
+ZIGZAG_STEP_UNITS = 0.02
+ZIGZAG_TURN_MIN_DEG = 3.0
 # Pixel frame the geometry-only naturalness is measured in when the chart row
 # carries no `unit_px` of its own (the Sütterlin-1922 rows carry 63–64).
 DEFAULT_UNIT_PX = 64.0
@@ -413,14 +425,14 @@ def _landing_direction_deg(points: np.ndarray, window: float) -> float | None:
     return math.degrees(math.atan2(dy, dx))
 
 
-def _rendered_first_stroke(chart_row: Any, anchors: Sequence[Sequence[float]]) -> np.ndarray:
-    """The first pen-stroke's centerline as the renderer draws it — the chart's
+def _rendered_strokes(chart_row: Any, anchors: Sequence[Sequence[float]]) -> list[np.ndarray]:
+    """Every pen-stroke's centerline as the renderer draws it — the chart's
     sample plan (stroke starts, corner knots, widths) over the given anchors,
-    the same spline the join grammar reads its landing off. Empty when there
+    the same spline the join grammar reads its tangents off. Empty when there
     is nothing to sample."""
     pts = np.asarray(anchors, dtype=float).reshape(-1, 2)
     if len(pts) < 2:
-        return np.zeros((0, 2))
+        return []
     meta = getattr(chart_row, "trace_meta", None) or {}
     half_widths = np.asarray(chart_row.half_widths, dtype=float)
     if len(half_widths) != len(pts):
@@ -433,7 +445,13 @@ def _rendered_first_stroke(chart_row: Any, anchors: Sequence[Sequence[float]]) -
         n=QUALITY_N_SAMPLES,
         corner_anchors=meta.get("corner_anchors"),
     )
-    return np.asarray(lines[0], dtype=float) if lines else np.zeros((0, 2))
+    return [np.asarray(line, dtype=float) for line in lines]
+
+
+def _rendered_first_stroke(chart_row: Any, anchors: Sequence[Sequence[float]]) -> np.ndarray:
+    """The first pen-stroke's rendered centerline, or an empty array."""
+    lines = _rendered_strokes(chart_row, anchors)
+    return lines[0] if lines else np.zeros((0, 2))
 
 
 def head_deviation(chart_row: Any, anchors: Sequence[Sequence[float]]) -> float:
@@ -460,3 +478,86 @@ def head_gate(chart_row: Any, anchors: Sequence[Sequence[float]]) -> dict[str, A
     deviation = round(head_deviation(chart_row, anchors), 2)
     limit = LAUFFORM_HEAD_DEVIATION_MAX
     return {"deviation": deviation, "max": limit, "exceeded": limit is not None and deviation > limit}
+
+
+def _resample_uniform(points: np.ndarray, step: float) -> np.ndarray:
+    """Resample an open polyline onto uniform arc-length steps of `step`.
+
+    Unlike the aggregation's `_resample_polyline`, which asks for a fixed COUNT,
+    this asks for a fixed SPACING: the sensor below counts turns per unit of arc,
+    so every stroke of every glyph has to be read on the same ruler — a fixed
+    count would measure a long stroke more coarsely than a short one and make
+    the rates incomparable. The final point is kept, so the last step may be
+    shorter. Returns fewer than three points when there is nothing to turn on.
+    """
+    pts = np.asarray(points, dtype=float).reshape(-1, 2)
+    if len(pts) < 2 or step <= 0.0:
+        return pts
+    steps = np.hypot(*np.diff(pts, axis=0).T)
+    cumulative = np.concatenate([[0.0], np.cumsum(steps)])
+    total = float(cumulative[-1])
+    if total <= 0.0:
+        return pts[:1]
+    targets = np.arange(0.0, total, step)
+    if targets[-1] < total:
+        targets = np.append(targets, total)
+    return np.column_stack([np.interp(targets, cumulative, pts[:, 0]), np.interp(targets, cumulative, pts[:, 1])])
+
+
+def zigzag_rate(chart_row: Any, anchors: Sequence[Sequence[float]]) -> float:
+    """How often the rendered row reverses its curvature, per x-height of arc.
+
+    The Glätte-Sensor of LF11 (qualitaetsmetrik.md §14 `sep02`) and the one
+    quantity that names the defect the audit of 2026-09-02 put first: a stored
+    running form wanders left-right-left along its own path 2–11 times per
+    x-height where the chart row it was derived from wanders zero times, and
+    every bound word renders it. No frozen ruler sees it — both the word bench
+    and the ink follower resample the wobble away before they score — so it
+    needed a sensor of its own before it could be moved.
+
+    Measured on the RENDERED centerline (the chart's sample plan over the given
+    anchors, exactly as `head_deviation` reads its landing) rather than on the
+    anchor polyline: what a reader sees is the drawn spline, and the anchors are
+    only its control net. Each pen-stroke is resampled onto `ZIGZAG_STEP_UNITS`
+    of arc, the turn angle at each interior sample is taken, and a sign change
+    between consecutive turns counts when at least one of the two exceeds
+    `ZIGZAG_TURN_MIN_DEG` — a stroke's genuine inflections (an `e`'s loop into
+    its exit) are few and large, while the median jitter is many and small, and
+    the threshold is what separates them from the sampler's own rounding.
+
+    Pen lifts never count, as in `anchor_spike_ratio`: strokes are read one at a
+    time and their counts and arcs pooled, so the jump from an i's body to its
+    dot is not a reversal. Returns 0.0 when there is no arc to judge.
+    """
+    total_arc = 0.0
+    reversals = 0
+    for line in _rendered_strokes(chart_row, anchors):
+        pts = _resample_uniform(line, ZIGZAG_STEP_UNITS)
+        if len(pts) < 3:
+            continue
+        deltas = np.diff(pts, axis=0)
+        arc = float(np.hypot(*deltas.T).sum())
+        if arc <= 0.0:
+            continue
+        total_arc += arc
+        headings = np.arctan2(deltas[:, 1], deltas[:, 0])
+        turns = np.degrees((np.diff(headings) + np.pi) % (2.0 * np.pi) - np.pi)
+        if len(turns) < 2:
+            continue
+        a, b = turns[:-1], turns[1:]
+        loud = np.maximum(np.abs(a), np.abs(b)) > ZIGZAG_TURN_MIN_DEG
+        reversals += int(np.count_nonzero((a * b < 0.0) & loud))
+    return 0.0 if total_arc <= 0.0 else reversals / total_arc
+
+
+def smoothness_gap(chart_row: Any, anchors: Sequence[Sequence[float]]) -> dict[str, Any]:
+    """The sensor's reading for one candidate row beside its own chart row.
+
+    `gap` is candidate − chart, in reversals per x-height: positive means the
+    row wobbles more than the drawn form it was derived from. That difference,
+    not the absolute rate, is the comparable quantity — a curly capital turns
+    more often than an `l` for reasons that are ductus, not defect.
+    """
+    chart = round(zigzag_rate(chart_row, chart_row.anchors), 4)
+    candidate = round(zigzag_rate(chart_row, anchors), 4)
+    return {"chart": chart, "candidate": candidate, "gap": round(candidate - chart, 4)}

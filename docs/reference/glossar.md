@@ -42,7 +42,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1
-- **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4 · Gute-Fortsetzung §4
+- **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
@@ -54,7 +54,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schreib-Karte §2 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schreib-Karte §2 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **U** — Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · understanding §5
@@ -366,6 +366,39 @@ knappste vertraute Zeile darunter.
 *Technisch:* `core/laufform.py` (`head_deviation`, `head_gate`),
 Skip-Grund `head_deviation` mit `head_deviation`/`head_max`,
 Inventar-Spalte `head°` → qualitaetsmetrik.md §14 („Laufform LF9")
+
+**Glätte-Sensor** — die Kennzahl, die das Zittern einer Laufform-Zeile
+zum ersten Mal benennt (§14 LF11, `sep02`): wie oft die GERENDERTE
+Mittellinie ihre Krümmung umkehrt, je x-Höhe Bogenlänge. Jeder Zug wird
+auf 0,02-xh-Schritte resampelt (ein Drittel des Nib-Radius), der
+Drehwinkel je Schritt gebildet und jeder Vorzeichenwechsel gezählt, bei
+dem mindestens eine der beiden Drehungen über 3° liegt — das trennt die
+Zacke vom Rundungsrauschen. Federabsätze zählen nie, wie beim
+Sprung-Gate. Der Sensor musste gebaut werden, weil KEIN eingefrorenes
+Lineal die Größe sieht: Wort-Bench und Tintenfolger resampeln den
+Zickzack weg, bevor sie werten — die Zeilen der Root zackten mit 6,9
+gegen 0,2 der Tafel, ohne dass eine Zahl je darauf reagiert hätte.
+Berichtsspalte, kein Gate. *Technisch:* `core/laufform.py`
+(`zigzag_rate`, `smoothness_gap`, `ZIGZAG_STEP_UNITS`,
+`ZIGZAG_TURN_MIN_DEG`), Inventar-Spalte `zig` →
+qualitaetsmetrik.md §14 („Laufform LF11")
+
+**Spline-Basis-Median** — die glatte Zwillingsform des Per-Anker-Medians
+(§14 LF11, `sep02`): statt jeden der 120 Anker einzeln zu medianisieren
+— wobei nichts im Modell Nachbarn koppelt und das Eigenrauschen des
+Schätzers als Zickzack in die geschriebene Zeile durchschlägt — wird
+jedes Vorkommen je Zug per kleinster Quadrate auf eine geklammerte
+kubische B-Spline projiziert, der Median über die KONTROLLPUNKTE
+genommen und an den Ankerparametern der Tafel zurück ausgewertet.
+Gemeinsamer Parameter ist die Bogenlänge der TAFELZEILE (damit alle
+Vorkommen auf dieselbe Basis projizieren), die Ecken des Duktus-Priors
+werden Knoten der Vielfachheit 3 (damit eine Ecke Ecke bleibt), und ein
+Zug ohne Platz für die Basis behält den Per-Anker-Median und sagt es.
+Ein Knopf: der Knotenabstand Δs; gemessen auf {0,08 · 0,16 · 0,32} xh,
+bestanden hat 0,16. *Technisch:*
+`core/aggregate.py::spline_basis_median`, Kandidaten-Karten trocken über
+`tools/laufform/smoothrow.py`; `aggregate_instances` bleibt bis zu einer
+Adoption beim Per-Anker-Median → qualitaetsmetrik.md §14 („Laufform LF11")
 
 **Zeilen-Gate (Laufform)** — die drei Prüfungen, die eine
 Laufform-Zeile bestehen muss, bevor sie in den Schreibweg kommt (§14

@@ -73,6 +73,130 @@ def _median_and_mad(stack: np.ndarray) -> tuple[list[list[float]], list[list[flo
     return (median.round(_GEOMETRY_DECIMALS).tolist(), mad.round(_GEOMETRY_DECIMALS).tolist())
 
 
+# Spline-basis median (LF11, qualitaetsmetrik.md §14 `sep02`). The degree is
+# the lowest one with continuous curvature — and curvature is exactly the
+# quantity whose sign changes the smoothness sensor counts, so a lower degree
+# would leave the defect representable in the basis meant to exclude it.
+SPLINE_MEDIAN_DEGREE = 3
+
+
+def _stroke_bounds(n_anchors: int, stroke_starts: Sequence[int] | None) -> list[tuple[int, int]]:
+    """Half-open [start, end) index ranges of the pen-strokes over `n_anchors`."""
+    marks = sorted({0, *(int(s) for s in (stroke_starts or []) if 0 < int(s) < n_anchors), n_anchors})
+    return list(zip(marks[:-1], marks[1:], strict=True))
+
+
+def _knot_vector(arc: np.ndarray, corners: Sequence[int], spacing: float, degree: int) -> np.ndarray:
+    """Clamped knot vector over [0, arc[-1]]: uniform interior knots at `spacing`,
+    plus every corner as a knot of multiplicity `degree`.
+
+    The corner multiplicity is what lets the basis DRAW a corner instead of
+    rounding it off: at multiplicity `degree` a B-spline is only C⁰ there, which
+    is what the chart's `corner_anchors` assert the pen did. A uniform knot that
+    lands on a corner is dropped rather than added to it — stacking it past
+    `degree` would tear the curve apart at that point.
+    """
+    total = float(arc[-1])
+    spans = max(1, int(round(total / spacing)))
+    uniform = [total * i / spans for i in range(1, spans)]
+    corner_pos = sorted({float(arc[c]) for c in corners if 0 < c < len(arc) - 1})
+    # Half a span is the widest a uniform knot may sit from a corner and still be
+    # the same knot; closer than that it only crowds the corner's own stack.
+    guard = 0.5 * total / spans
+    interior = [u for u in uniform if all(abs(u - c) > guard for c in corner_pos)]
+    for c in corner_pos:
+        interior.extend([c] * degree)
+    return np.asarray([0.0] * (degree + 1) + sorted(interior) + [total] * (degree + 1), dtype=float)
+
+
+def spline_basis_median(
+    stack: np.ndarray,
+    chart_anchors: Sequence[Sequence[float]],
+    stroke_starts: Sequence[int] | None = None,
+    corner_anchors: Sequence[int] | None = None,
+    *,
+    knot_spacing: float,
+    degree: int = SPLINE_MEDIAN_DEGREE,
+) -> tuple[np.ndarray, list[str]]:
+    """The per-anchor median's smooth twin: median in a B-spline basis (LF11).
+
+    `_median_and_mad` medians each of the 120 anchors on its own, and nothing in
+    the model couples a neighbour — so the estimator's own noise survives into
+    the written row as a wobble the drawn form never had (2–11 curvature
+    reversals per x-height against the chart row's zero; the audit of
+    2026-09-02, §14 `sep02`). No frozen ruler sees it, because every one of them
+    resamples it away before scoring.
+
+    This median lives one level up. Per pen-stroke, the CHART row's cumulative
+    arc length is the common parameter — occurrence-independent, so every
+    occurrence projects onto one and the same basis, which is what makes a
+    median over control points defined at all. Each occurrence is least-squares
+    projected onto a clamped B-spline over that parameter (the chart's corners
+    entering as knots of multiplicity `degree`, so a corner stays a corner), the
+    median is taken per control point, and the result is evaluated back at the
+    chart's own anchor parameters — same anchor count, same topology, same
+    downstream canonicalisation.
+
+    Occurrences may be stacked because the harvest stores them centered onto the
+    chart template ("shapes, not placements") with the chart's anchor count.
+
+    A stroke with no room for the basis — shorter than two spans, fewer anchors
+    than the basis has functions, or a degenerate zero-length arc — keeps the
+    per-anchor median for its own index range. The map is total either way, and
+    every such fallback is named in the returned notes rather than hidden.
+
+    Args:
+        stack: Occurrence anchors, shape (n_occurrences, n_anchors, 2).
+        chart_anchors: The chart row's anchors, shape (n_anchors, 2) — the
+            parameterisation, never a summand.
+        stroke_starts: The chart's `trace_meta.stroke_starts`.
+        corner_anchors: The chart's `trace_meta.corner_anchors`.
+        knot_spacing: Interior knot spacing in x-height units (the one knob).
+        degree: B-spline degree.
+
+    Returns:
+        Tuple of (median anchors as an (n_anchors, 2) array, fallback notes).
+    """
+    from scipy.interpolate import BSpline  # noqa: PLC0415 — heavy import, one call site
+
+    if knot_spacing <= 0.0:
+        raise ValueError(f"knot_spacing must be positive, got {knot_spacing}")
+    pts = np.asarray(stack, dtype=float)
+    if pts.ndim != 3 or pts.shape[2] != 2:
+        raise ValueError(f"stack must be (n_occurrences, n_anchors, 2), got {pts.shape}")
+    chart = np.asarray(chart_anchors, dtype=float).reshape(-1, 2)
+    if len(chart) != pts.shape[1]:
+        raise ValueError(f"chart has {len(chart)} anchors, occurrences have {pts.shape[1]}")
+
+    out = np.median(pts, axis=0)
+    notes: list[str] = []
+    corners = [int(c) for c in (corner_anchors or [])]
+    for start, end in _stroke_bounds(len(chart), stroke_starts):
+        segment = chart[start:end]
+        if len(segment) < degree + 2:
+            notes.append(f"stroke {start}:{end} kept the anchor median ({len(segment)} anchors)")
+            continue
+        arc = np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(segment, axis=0).T))])
+        total = float(arc[-1])
+        if total < 2.0 * knot_spacing:
+            notes.append(f"stroke {start}:{end} kept the anchor median (arc {total:.3f} xh < 2 knots)")
+            continue
+        knots = _knot_vector(arc, [c - start for c in corners if start < c < end - 1], knot_spacing, degree)
+        n_basis = len(knots) - degree - 1
+        if n_basis > len(segment):
+            notes.append(f"stroke {start}:{end} kept the anchor median ({n_basis} basis > {len(segment)} anchors)")
+            continue
+        design = BSpline.design_matrix(arc, knots, degree).toarray()
+        # One factorisation for every occurrence and both axes: the basis depends
+        # on the chart alone, so they differ only in the right-hand side. Columns
+        # run (occurrence, axis); the median is taken per control point after
+        # unstacking them.
+        rhs = pts[:, start:end, :].transpose(1, 0, 2).reshape(len(segment), -1)
+        control, *_ = np.linalg.lstsq(design, rhs, rcond=None)
+        out[start:end] = BSpline(knots, np.median(control.reshape(n_basis, len(pts), 2), axis=1), degree)(arc)
+    return out, notes
+
+
 def _mean_stats(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
     """Pool the layer-1 statistics of one aggregation group.
 

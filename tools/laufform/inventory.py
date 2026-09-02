@@ -7,9 +7,12 @@ fixture root and prints, per row, the ROW GATE quantity — the anchor spike
 ratio (`core.laufform.anchor_spike_ratio`, „Anker im leeren Papier", measured
 on the row over the chart's stroke starts; LF8) — beside the report columns of
 LF7 (the geometry-only naturalness of chart and row and their gap Δ) and the
-row's evidence count, and the HEAD GATE quantity of LF9 — the row's head
+row's evidence count, the HEAD GATE quantity of LF9 — the row's head
 deviation (`core.laufform.head_deviation`: how far the first stroke's landing
-direction turns away from the chart's, in degrees). The pre-registered gate
+direction turns away from the chart's, in degrees) — and the SMOOTHNESS SENSOR
+of LF11 (`core.laufform.zigzag_rate`: how often the rendered row reverses its
+curvature per x-height, printed beside its own chart row's rate; report-only,
+and the one column that names the wobble no frozen ruler sees). The pre-registered gate
 rules are applied on top: τ = the largest spike ratio among the rows with
 n ≥ LAUFFORM_MIN_OCCURRENCES, rounded up to 0.01, and the doctrine-derived
 head gate LAUFFORM_HEAD_DEVIATION_MAX; every row over either is listed — those
@@ -32,7 +35,13 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from core.aggregate import LAUFFORM_MIN_OCCURRENCES
-from core.laufform import LAUFFORM_HEAD_DEVIATION_MAX, anchor_spike_ratio, head_deviation, naturalness_gap
+from core.laufform import (
+    LAUFFORM_HEAD_DEVIATION_MAX,
+    anchor_spike_ratio,
+    head_deviation,
+    naturalness_gap,
+    smoothness_gap,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -65,6 +74,7 @@ def inventory(root: Path) -> tuple[list[dict], float | None]:
         n = int(meta.get("n_occurrences") or 0)
         starts = (chart.get("trace_meta") or {}).get("stroke_starts")
         g = naturalness_gap(_chart_view(chart), row["anchors"])
+        zig = smoothness_gap(_chart_view(chart), row["anchors"])
         comp_gap = {
             k: round(g["candidate"]["components"][k] - g["chart"]["components"][k], 4) for k in g["chart"]["components"]
         }
@@ -75,6 +85,9 @@ def inventory(root: Path) -> tuple[list[dict], float | None]:
                 "spike_ratio": round(anchor_spike_ratio(row["anchors"], starts), 4),
                 "chart_spike_ratio": round(anchor_spike_ratio(chart["anchors"], starts), 4),
                 "head_deviation": round(head_deviation(_chart_view(chart), row["anchors"]), 2),
+                "zigzag_rate": zig["candidate"],
+                "chart_zigzag_rate": zig["chart"],
+                "zigzag_gap": zig["gap"],
                 "gap": g["gap"],
                 "chart_naturalness": g["chart"]["naturalness"],
                 "row_naturalness": g["candidate"]["naturalness"],
@@ -90,7 +103,10 @@ def inventory(root: Path) -> tuple[list[dict], float | None]:
 
 def print_table(rows: list[dict], tau: float | None) -> None:
     head_max = LAUFFORM_HEAD_DEVIATION_MAX
-    head = f"{'key':6s} {'n':>3s} {'spike':>6s} {'chart':>6s} {'head°':>6s}   {'Δ nat':>7s}  smooth  vert   corner cross   gates"
+    head = (
+        f"{'key':6s} {'n':>3s} {'spike':>6s} {'chart':>6s} {'head°':>6s} {'zig':>6s} {'chart':>6s}   "
+        f"{'Δ nat':>7s}  smooth  vert   corner cross   gates"
+    )
     print(head)
     for r in rows:
         cg = r["component_gap"]
@@ -102,7 +118,8 @@ def print_table(rows: list[dict], tau: float | None) -> None:
         flag = f"  ← {' · '.join(flags)}" if flags else ""
         print(
             f"{r['glyph_key']:6s} {r['n_occurrences']:3d} {r['spike_ratio']:6.2f} {r['chart_spike_ratio']:6.2f} "
-            f"{r['head_deviation']:6.1f}   {r['gap']:+7.4f}  {cg['smoothness']:+.3f} {cg['verticality']:+.3f} "
+            f"{r['head_deviation']:6.1f} {r['zigzag_rate']:6.2f} {r['chart_zigzag_rate']:6.2f}   "
+            f"{r['gap']:+7.4f}  {cg['smoothness']:+.3f} {cg['verticality']:+.3f} "
             f"{cg['corner']:+.3f} {cg['collinearity']:+.3f}{flag}"
         )
     trusted = [r for r in rows if r["n_occurrences"] >= LAUFFORM_MIN_OCCURRENCES]

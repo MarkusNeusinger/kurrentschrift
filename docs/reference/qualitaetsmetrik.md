@@ -9948,3 +9948,135 @@ LF11 ändert Daten, keinen Code im Chart-Pfad.
 die Karte als Ganzes, wird die Verlierer-Menge in Klassen zerlegt
 (n-Klasse, Ecken-Zahl, Zug-Zahl) und eine Teil-Adoption geprüft, statt
 den Befund zu verwerfen.
+
+### Laufform LF11 `sep02` — gemessen: EINE Sprosse besteht alle Gates, und sie repariert die Zeilen-Gates gleich mit
+
+Umgebung wie vorregistriert: Root `suetterlin-1922`
+`exported_at=2026-09-02T08:00:29+00:00` `digest=28ba1afebc53` und
+`suetterlin-1922-pairs` `digest=f0cf3d53414c`, jeder Lauf mit
+`--expect-root` und `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`.
+Harvest: 237 Vorkommen über 34 Schlüssel, davon die 22 mit
+gespeicherter Zeile. Es wurde nichts geschrieben.
+
+**Zuerst die Kalibrierung des Sensors — und ihre Abweichung, wie
+angekündigt berichtet.** Der Sensor reproduziert das QUALITATIVE Bild
+des Audits exakt: die Tafelzeilen sind still (Median 0,23 Zacken/xh;
+o, e, d, h, longs, s, z bei 0,00), die gespeicherten Zeilen laut
+(Median 6,86), und die Rangfolge stimmt — c 21,78 · i 20,01 · o 18,19
+sind auch hier die drei lautesten. Die ABSOLUTEN Zahlen liegen jedoch
+systematisch höher als die des Audits (i 20,01 gegen 10,34 · o 18,19
+gegen 11,25 · n 7,30 gegen 2,81 · e 8,88 gegen 2,74), und der Faktor
+ist nicht konstant (1,6 bis 3,2). Die wahrscheinliche Ursache: das
+Audit las die Centerlines aus den `/write/glyphs`-Payloads, dieser
+Sensor rendert sie über den Sample-Plan der Tafelzeile bei aufrechtem
+Schnitt — zwei Wege zur selben Größe, die sich in Slant und
+Sample-Herkunft unterscheiden. **Die Latte ist NICHT verschoben
+worden:** Gate (b) ist von Anfang an relativ formuliert (Lücke zur
+Tafel, gemessen mit DEMSELBEN Sensor), also trägt der Offset sich weg.
+Wer die Audit-Zahl zitiert, zitiert eine andere Messung derselben
+Sache — beide Reihen stehen hier nebeneinander, damit das nicht
+verwechselt wird.
+
+**Die vier Arme am Wort- und Paar-Lineal (Gate a).**
+
+| Arm | `bench_loss` | Δ Basis | `pair_loss` | Δ Basis | Gate (a) |
+|---|---|---|---|---|---|
+| Basis (gespeichert) | 0,109255 | — | 0,148433 | — | — |
+| LF11-M (Kontrolle) | 0,108902 | −0,000353 | 0,148471 | +0,000038 | grün |
+| K Δs 0,08 | 0,109640 | +0,000385 | 0,148460 | +0,000027 | grün |
+| **K Δs 0,16** | **0,109218** | **−0,000037** | **0,148198** | **−0,000235** | **grün** |
+| K Δs 0,32 | 0,112485 | +0,003230 | 0,148067 | −0,000366 | **ROT** |
+
+Die Erwartung „≈ neutral, das Lineal ist blind" ist eingetroffen und
+zwar in ihrer stärksten Form: bei Δs 0,16 stehen 27 besser gegen 31
+schlechter, Summe der Gewinne −0,2833 gegen Summe der Verluste
++0,2731 über 96 Einträge — das Lineal sieht die Glättung schlicht
+nicht, wie vorhergesagt. Größte Bewegungen: `Zaum` 0,2782 → 0,1960
+(−0,0822, der schlechteste Eintrag der Basis) und `Zügel` −0,0411
+gegen `Sporn` +0,0440 und `muß-2` +0,0237. `worst_word` wandert von
+`Zaum` 0,278238 auf `regieren` 0,234335.
+
+**Der Glätte-Sensor (Gate b).** Median über die 22 Zeilen, Tafel-Median
+0,2274:
+
+| Arm | Median Zacken/xh | Lücke zur Tafel | geschlossen | Zeilen über Tafel + 1 | Gate (b) |
+|---|---|---|---|---|---|
+| Basis | 6,864 | 6,637 | — | 22 von 22 | — |
+| LF11-M | 6,695 | 6,468 | 2,5 % | 22 von 22 | ROT |
+| K 0,08 | 2,005 | 1,778 | 73,2 % | 15 von 22 | **ROT** (Je-Zeile-Hälfte) |
+| **K 0,16** | **0,449** | **0,222** | **96,7 %** | **0 von 22** | **grün** |
+| K 0,32 | 0,321 | 0,093 | 98,6 % | 1 von 22 (i) | ROT (i) |
+
+Gegen die Kontrolle gerechnet — also der isolierte Glättungsanteil,
+ohne die Ableitungsdrift — schließt 0,08 72,5 %, 0,16 96,6 % und
+0,32 98,6 % der Lücke. Die Kontrolle selbst bewegt 2,5 %: **der
+Zickzack ist nicht die Ernte, er ist der Schätzer.** Das ist der
+eigentliche Befund dieser Runde und er ist sauber isoliert.
+
+**Die Zeilen-Gates (Gate c) — hier liegt die Überraschung.** Der
+frische Per-Anker-Median (Kontrolle) bricht fünf Gates, die die
+kuratierte Basis nicht bricht: Sprung-Gate i 4,09 und longs 3,40 (τ =
+2,95), Kopf-Gate S 16,1° · w 16,3° · z 16,9° (Grenze 15°). Das ist
+die Ableitungsdrift, nicht die Glättung — und es zeigt, wie viel
+Handarbeit in den gespeicherten Zeilen steckt. Δs 0,16 bricht **kein
+einziges** Gate und repariert alle fünf: i 4,09 → 2,19 · longs
+3,40 → 2,72 · S 16,1° → 8,3° · w 16,3° → 14,4° · z 16,9° → 7,1°. Die
+beiden anderen Sprossen brechen je eines NEU — 0,08 den Kopf des Z
+(10,8° → 16,1°), 0,32 den des P (9,6° → 15,2°) — und sind damit an
+(c) rot. Dass ausgerechnet die mittlere Sprosse beide Enden der Leiter
+schlägt, ist kein Zufall: 0,08 lässt die Zacke im Kopf noch stehen,
+0,32 verformt den Kopf schon selbst.
+
+**Das Kompositions-Soll (Gate d).** Alle 63 Wörter, Kandidaten-Root
+gegen Basis-Root: **kein Wort verliert eine Kreuzung**, in keinem Arm.
+Gewonnen wird eine, `von` 1 → 2 — in JEDEM Arm einschließlich der
+Kontrolle, also die Ableitung, nicht die Glättung. Δs 0,16 bewegt
+darüber hinaus keine Zone und keinen Zug. Δs 0,32 gewinnt Kreuzungen
+in 15 Wörtern (`haben` 3 → 5, `Galoppieren` 6 → 8, …) — kein
+Gate-Bruch nach dem Wortlaut der Vorregistrierung, aber ein deutliches
+Zeichen, dass diese Sprosse die Form selbst anfasst; sie ist an (a)
+und (c) ohnehin rot.
+
+**Gate (e)** lief wie vorregistriert nicht: Lotse/Kette dev-19 messen
+die Karte, die geschrieben wird, und diese Runde schreibt nichts.
+
+**Verdikt: Δs 0,16 xh besteht (a), (b), (c) und (d).** Die
+Kandidaten-Karte liegt als 22 volle Fixture-Zeilen vor und wird NICHT
+geschrieben. Nächster Schritt ist die humanbench-Wort-Runde (PR #480,
+`wordarm.py --laufform`), danach der Autor-Go; erst dahinter
+`dbsnapshot` → PUT je Glyph → GET-Verify → Neuexport als deklarierte
+Re-Baseline.
+
+**Kein §7.9-Eintrag fällig.** Die Rettungswege-Regel gilt dem ehrlichen
+Negativ; dieser Arm ist keines. Die beiden verworfenen SPROSSEN sind
+innerhalb eines bestandenen Arms verworfen, und ihr Konversionsweg ist
+benannt und bereits beschritten: die mittlere Sprosse. Fällt die
+humanbench-Runde gegen die Karte, wird DAS der Negativ-Eintrag, mit den
+in der Vorregistrierung benannten drei Wegen und einer §7.9-Zeile.
+
+**Zwei Nebenbefunde, gemeldet statt behoben:**
+
+1. **Die geklammerten Enden werden am wenigsten geglättet.** Ein
+   Kontrollpunkt am geklammerten Ende sitzt auf den Daten, also folgt
+   die Projektion dem letzten Anker weiter als den mittleren; im
+   Einheitstest bleiben am Ende 0,013 von 0,020 xh Zacke stehen, in
+   der Mitte 0,003. Das war die bewusste Nicht-Entscheidung der
+   Vorregistrierung (die Enden festzuhalten hätte einen zweiten
+   End-Mechanismus neben LF5/LF6 eingeführt), es ist als Test
+   festgenagelt, und die Zeilen-Gates fangen es ab. Ein späterer Arm
+   könnte hier ansetzen.
+2. **Drei Wortproben laufen über ihren Fixture-Ausschnitt hinaus**
+   (`Soldaten`, `schießen`, `Säbel`) — Fund aus T4, in dieser Runde
+   bestätigt stehen gelassen. Betrifft die Referenz, nicht den
+   Schätzer.
+
+**Selbst entschieden (Routine im Rahmen der Vorregistrierung):** die
+Leiter {0,08 · 0,16 · 0,32} statt nur des Audit-Werts 0,08 (Begründung
+in der Vorregistrierung: die gemessene Zickzack-Periode liegt bei
+~0,09 xh, eine Basis mit Knoten alle 0,08 xh trägt sie noch); Grad 3;
+Schnitt der Einheitstests; die Kontrolle als dritter Arm; die
+Schlüsselmenge „genau die 22 gespeicherten Zeilen". Werkzeug:
+`tools/laufform/smoothrow.py`, Sensor `core/laufform.py::zigzag_rate`,
+Schätzer `core/aggregate.py::spline_basis_median` —
+`aggregate_instances` bleibt unverändert beim Per-Anker-Median, bis
+eine Adoption etwas anderes sagt.
