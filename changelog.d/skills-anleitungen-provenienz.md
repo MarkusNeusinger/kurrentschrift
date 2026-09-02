@@ -43,6 +43,12 @@
 
 ### Changed
 
+- **`/work-basket` states what a second round after a rejection costs.**
+  The skill said only "re-read the row before you close it", which no
+  longer describes the API: closing now reads `stage` and `resolution`
+  from the PATCH itself, never from the stored row, so a bare
+  `{"status":"done"}` answers 422 instead of quietly reinstating the
+  restatement the author had just rejected (#484).
 - **`/verify-frontend` now judges against the binding spec, and measures
   a11y the only way that works.** Style checks pointed at
   `style-guide.md`, which says itself that tokens are no longer maintained
