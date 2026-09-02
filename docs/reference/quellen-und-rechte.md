@@ -266,6 +266,48 @@ losschreiben" kann, gilt technisch:
   Entscheidung selbst bleibt unangetastet. Folgeaufgabe unverändert: das
   Golden auf synthetische Test-Templates umstellen, dann verschwindet auch
   das.
+- **Bekannte, akzeptierte Ausnahme in der ÖFFENTLICHEN HISTORIE**
+  (Entscheid des Autors 2026-09-02): `.design-sync/previews/_writtenGlyphData.ts`
+  — Blob `4e02e1a7be720d34c3f161c17afe821a1032df1b`, 32 219 Bytes,
+  hinzugefügt am 2026-06-20 mit Commit `84c6332` (PR #108), am 2026-07-31
+  von PR #254 („Harden the open-core moat") nur aus HEAD entfernt, **nie
+  aus der Historie**. Die Datei trägt die Diagnose-Payloads zweier
+  Templates (`eMedial`, `tMedial` in der Vor-`0017`-Benennung) mit
+  `skeleton_polyline_px`, `half_widths_px`, `anchors` und `outline` — also
+  genau die Route, die heute als reserviert gepinnt ist. Das Repository ist
+  seit 2026-05-19 öffentlich, der Blob damit in jedem Klon per
+  `git show 84c6332:…` lesbar.
+
+  **Warum angenommen und nicht gepurgt:** Ein Purge
+  (`git filter-repo` + Force-Push) schriebe die Historie eines
+  ÖFFENTLICHEN `main` um und macht die Kopie trotzdem nicht ungeschehen —
+  jeder bestehende Klon und jeder Fork behält sie, ein Purge senkt nur die
+  Auffindbarkeit. Dem stünde der Preis gegenüber, dass jede fremde Kopie
+  des Repos unbrauchbar wird. Inhaltlich geht es um zwei von rund 80
+  Glyphen in einer längst überholten Geometrie. Die rechtliche Schranke
+  bleibt unverändert der Vorbehalt im README („License") — der gilt
+  unabhängig davon, ob Bytes irgendwo abrufbar sind; technisch verhindert
+  wird nur die WIEDERHOLUNG.
+- **Offen, Entscheid des Autors steht aus:** `mvp/canonical/{e-medial,
+  s-final,s-medial}_v0.json` (vier Blobs, ebenfalls nur aus HEAD entfernt).
+  Es sind die handnachgefahrenen Kanonischen des ersten Prototyps aus der
+  Zeit vor der Datenbank. Das Audit vom 2026-09-02 hatte sie als
+  „0,9–1,1 KB große Hand-Seeds" beiseitegelegt; nachgemessen sind es je
+  ~39 KB mit 50 `pixel_anchors` und `half_widths_px` — dieselbe Klasse
+  autorierter Geometrie wie oben, kein Stummel. Damit ist dieselbe Frage
+  wie beim Blob darüber zu beantworten (annehmen oder purgen); bis dahin
+  sind sie in `tests/test_reserved_history.py` als bekannt vermerkt, damit
+  der Alarm für NEUE Funde scharf bleibt.
+
+  **Das Nachweis-Netz** dazu ist `tests/test_reserved_history.py`: Es geht
+  alle je committeten Blobs außerhalb der Code-Bäume durch und meldet
+  jeden, der einen Render-Payload trägt (Payload-Schlüssel **plus** einen
+  langen Zahlenlauf — eine bloße Erwähnung des Feldnamens in Prosa oder in
+  einem Generator-Skript ist ausdrücklich erlaubt). Die oben genannten
+  Blobs sind per Hash gepinnt, alles andere lässt den Test rot werden.
+  Gepinnt wird per Blob-Hash und nicht per Pfad: Eine Pfad-Ausnahme ließe
+  einen NEUEN Dump unter demselben Pfad durch — genau den Fall, den das
+  Netz verhindern soll.
 - **Seit 2026-09-02 liegt eine Schicht DAVOR: das Origin-Geheimnis.** Alle
   bisherigen Punkte beschreiben, was die API einem Aufrufer antwortet. Sie
   galten aber nur, solange man die API überhaupt nur über den Edge erreicht —
