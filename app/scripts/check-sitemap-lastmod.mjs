@@ -29,6 +29,15 @@ const appDir = fileURLToPath(new URL('../', import.meta.url));
 const sitemap = readFileSync(new URL('../public/sitemap.xml', import.meta.url), 'utf8');
 
 const git = (args) => execFileSync('git', args, { cwd: appDir, encoding: 'utf8' }).trim();
+// `git status --porcelain` lines are "XY PATH" and X is a SPACE for a change
+// that is only in the working tree — so the output must not be trimmed as a
+// whole: that eats the first line's status column and shifts its path by one
+// character ("app/…" became "pp/…"), which silently emptied `dirty`.
+const gitLines = (args) =>
+  execFileSync('git', args, { cwd: appDir, encoding: 'utf8' })
+    .split('\n')
+    .map((line) => line.replace(/\r$/, ''))
+    .filter((line) => line.length > 0);
 
 let history = true;
 let dirty = new Set();
@@ -39,18 +48,29 @@ try {
     history = false;
     console.log('sitemap-lastmod — flache Klonung ohne Historie, nur der Arbeitsbaum wird geprüft');
   }
-  // Paths come back relative to the repo root; PageSpec.sources are relative
-  // to app/, so translate through the repo root once.
+  // PageSpec.sources are relative to app/, so every reported path has to land
+  // in that frame. `--porcelain` reports repo-root-relative paths and ignores
+  // status.relativePaths (verified: `git -c status.relativePaths=true status
+  // --porcelain` still answers "app/src/…" from inside app/) — but the
+  // translation does not rely on that. A path is read from the repo root
+  // first, and anything that does not resolve under app/ is retried as
+  // already-app-relative, because the failure this guard exists to prevent is
+  // a SILENT one: a frame mismatch would empty `dirty` and quietly disarm it.
   const repoRoot = git(['rev-parse', '--show-toplevel']);
-  const prefix = relative(repoRoot, resolve(appDir));
+  const appAbs = resolve(appDir);
+  const toAppRelative = (path) => {
+    const fromRoot = relative(appAbs, resolve(repoRoot, path));
+    return fromRoot.startsWith('..') ? path : fromRoot;
+  };
   dirty = new Set(
-    git(['status', '--porcelain', '--', '.'])
-      .split('\n')
-      .filter(Boolean)
-      .map((line) => line.slice(3).trim())
+    gitLines(['status', '--porcelain', '--', '.'])
+      // "XY PATH": two status columns and one space, then the path.
+      .map((line) => line.slice(3))
       // A rename reads "old -> new"; the new path is the one that matters.
       .map((path) => (path.includes(' -> ') ? path.split(' -> ')[1] : path))
-      .map((path) => relative(prefix, path)),
+      // Porcelain quotes a path with unusual characters ("src/a\tb.ts").
+      .map((path) => (path.startsWith('"') && path.endsWith('"') ? JSON.parse(path) : path))
+      .map(toAppRelative),
   );
 } catch {
   // Not a git checkout (an unpacked tarball, a Docker build context): nothing
