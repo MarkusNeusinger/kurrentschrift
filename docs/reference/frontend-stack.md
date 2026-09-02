@@ -1,15 +1,20 @@
 # Frontend-Stack
 
-> **Status (2026-08-28): lebend.** Ist-Stand von Stack, Routen, i18n-Soll,
+> **Status (2026-09-02): lebend.** Ist-Stand von Stack, Routen, i18n-Soll,
 > Deploy, Admin-Gate und Crawler-Prerender; jede Änderung an
 > `app/package.json`, `app/src/routes/paths.ts`, den Cloudbuild-/nginx-Dateien,
-> `api/auth.py` oder `app/src/lib/seo/prerender.ts` zieht hier nach.
+> `api/auth.py`, `api/origin_gate.py`, `infra/cloudflare/` (der Apex-Worker —
+> §5 hängt seit 2026-09-02 an seiner Konfiguration) oder
+> `app/src/lib/seo/prerender.ts` zieht hier nach.
 > Am 2026-08-03 gegen den Code geprüft und deckungsgleich (Admin-Routen nach
 > dem Redesign „aus einem Guss": `/admin` Vorlagen-Auswahl + die drei
 > Ansichten Buchstaben · Übergänge · Wörter; Admin-Token-Regeln, PR #263).
 > Am 2026-08-16 um die aus `CLAUDE.md` hierher verschobenen Detailregeln
 > ergänzt (Vier-Gesichter-Übersicht, Registrierungs-Regel, Kostenbudget,
 > Cloud-Session-Betrieb u. a.) — Beschreibungsstand dieser Punkte: 2026-08-16.
+> Am 2026-09-02 um §5 „Origin-Geheimnis" ergänzt und beim Rollout korrigiert:
+> der Apex-Worker stempelt selbst, weil ein Worker-Subrequest die
+> Transform-Rules der eigenen Zone umgeht (`infra/cloudflare/`).
 
 Technische Spezifikation des Endnutzer-Frontends aus Vision §1 (Einstieg),
 §2 (Lineatur-Konfigurator), §3 (Animation), §4 (Lesen üben), §5 (Lese-Hilfe
@@ -353,18 +358,26 @@ nichts darüber, wer da kommt. Wer etwas darf, entscheidet weiterhin
   nginx der Website holt die Prerender-Seiten über `api.kurrentschrift.ink`
   (`app/nginx.conf` `@seo_proxy`), kommt also durch den Edge und trägt den
   Header — aber der Preis eines Irrtums wären 403 für jeden Crawler.
-- **Der Admin-Weg ist unverändert:** die Apex `/api/*` läuft über den
-  Cloudflare-Worker auf `api.kurrentschrift.ink`, also ebenfalls durch den Edge.
-  nginx kennt kein `/api` und ruft nichts direkt auf.
+- **Der Admin-Weg stempelt selbst — das war der Befund des Rollouts.** Die
+  Apex `/api/*` erreicht den Dienst über den Worker
+  `kurrentschrift-api-proxy`, und ein **Worker-Subrequest an einen Host
+  derselben Zone läuft an den Transform-Rules der Zone vorbei**. Die Regel
+  greift also für Browser und Crawler, aber nicht für das `fetch()` aus dem
+  Worker heraus: `/api/health` meldete nach dem Anlegen der Regel weiterhin
+  `off`. Der Worker setzt den Header deshalb selbst aus einer
+  `secret_text`-Bindung `ORIGIN_SECRET` (danach `off-seen`, nach dem
+  Scharfschalten `ok`). Quelltext, Einstellungen und Deploy-Weg liegen seit
+  2026-09-02 im Repo: [`infra/cloudflare/`](../../infra/cloudflare/README.md) —
+  vorher existierte der Worker nur im Dashboard. nginx kennt kein `/api` und
+  ruft nichts direkt auf.
 - **`/health` meldet das Urteil** für den Request, mit dem es gefragt wurde:
   `origin_gate` = `off` · `off-seen` · `ok` · `missing` · `mismatch` (nie der
   Wert). Damit lässt sich JEDER Weg in den Dienst — `api.`-Host, Apex hinter
   Access, nginx, rohe `run.app` — prüfen, BEVOR das Gate scharf geschaltet
   wird: Transform-Rule anlegen, dann muss jeder Weg, der weiterlaufen soll,
-  `off-seen` melden; erst danach die Env setzen. Der riskanteste Unbekannte
-  dabei ist der Admin-Weg, denn die Apex `/api/*` erreicht den Dienst über
-  einen Cloudflare-Worker, und ob dessen Subrequest die Transform-Rule
-  derselben Zone durchläuft, ist nichts, was man raten sollte.
+  `off-seen` melden; erst danach die Env setzen. Genau diese Messung hat den
+  Worker-Befund oben gefunden, bevor er den Admin lahmlegen konnte — sie ist
+  nicht Zierrat, sondern der Grund, warum das Scharfschalten kein Sprung war.
 - **Break-Glass braucht jetzt beide Header.** Der dokumentierte Notweg über die
   direkte `run.app`-URL mit `X-Admin-Token` läuft ins 403, solange nicht
   zusätzlich `X-Origin-Secret` mitgeschickt wird — beide Werte liegen im Secret
@@ -658,12 +671,14 @@ Fehler. `kind` ist die Eigenschaft, nach der man filtert:
 
 ### Reverse-Proxy / Routing
 
-- `/api/*` → der Cloudflare-Worker vor dem App-Service leitet auf
+- `/api/*` → der Cloudflare-Worker `kurrentschrift-api-proxy` leitet auf
   `api.kurrentschrift.ink` (FastAPI) um; nginx im App-Container kennt
-  kein `/api` (siehe Kopfkommentar `app/nginx.conf`). Weil dieser Umweg
-  ebenfalls über den Edge läuft, trägt er das Origin-Geheimnis aus §5 — nginx
-  selbst muss nichts mitschicken, sein einziger Ausgang (`@seo_proxy`) geht
-  auch über `api.kurrentschrift.ink`.
+  kein `/api` (siehe Kopfkommentar `app/nginx.conf`). Weil ein
+  Worker-Subrequest die Transform-Rules der eigenen Zone NICHT durchläuft,
+  stempelt dieser Worker das Origin-Geheimnis aus §5 selbst — Quelltext und
+  Einstellungen: [`infra/cloudflare/`](../../infra/cloudflare/README.md). nginx
+  muss nichts mitschicken: sein einziger Ausgang (`@seo_proxy`) geht über
+  `api.kurrentschrift.ink` und damit durch den Edge, wo die Regel greift.
 - `/admin/*` → React-SPA (Auth-Gate am Edge via Cloudflare Access, §5).
 - alles andere → React-SPA mit Fallback `index.html` (nginx).
 

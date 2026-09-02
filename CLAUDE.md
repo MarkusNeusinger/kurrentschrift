@@ -60,6 +60,14 @@ updates its owning doc in the same PR.
 - **`/data`** — sources/corpora/derived under per-source licenses; commit
   classes and rules in `docs/reference/datenablage.md` +
   `docs/reference/quellen-und-rechte.md` (see "Data & licensing" below).
+- **`/infra`** — the Cloudflare configuration that would otherwise live only in
+  the dashboard: `infra/cloudflare/kurrentschrift-api-proxy.js` is the Worker
+  behind the admin route `kurrentschrift.ink/api/*`, and it stamps the origin
+  secret itself because a Worker subrequest skips its own zone's Transform
+  Rules. **The `.js` mirrors the deployed bytes** — change it and deploy it,
+  change the dashboard and pull it back — so a `diff` stays meaningful.
+  Settings, deploy path and the `off`/`off-seen`/`ok` measurement:
+  `infra/cloudflare/README.md`.
 - **Measurement tools** (`tools/`) — the bench/lab family (wordbench,
   glyphbench, tracebench, glyphlab/wordlab/pairlab, humanbench, inksight,
   routeg, inkpilot) plus the LOCAL half of the own-hand capture chain
