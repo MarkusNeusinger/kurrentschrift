@@ -188,6 +188,20 @@ def test_a_pen_stroke_s_rings_are_drawn_as_ONE_evenodd_path():
     assert "'fill-rule', 'evenodd'" in html, "the holes are no longer drawn as holes"
     assert "createElementNS(ns, 'polygon')" not in html, "a per-ring polygon fills every counter solid"
 
+    # And the handoff itself, which the two assertions above do NOT cover: one
+    # evenodd path PER RING satisfies both and refills every counter. What makes
+    # a counter a counter is that all rings of a shape are subpaths of the SAME
+    # `d` — pinned on the emitted script, which cannot be imported.
+    block = re.search(r"for \(const shape of panel\.fills\) \{(.*?)\n  \}", html, re.S)
+    assert block, "the fill loop is no longer recognisable"
+    body = block.group(1)
+    assert body.count("createElementNS(ns, 'path')") == 1, "one path per SHAPE, not one per ring"
+    assert "for (const ring of" not in body, "iterating the rings into separate elements refills the counters"
+    drawn = re.search(r"setAttribute\('d', (.*?)\);", body, re.S)
+    assert drawn and "shape.map(" in drawn.group(1) and ".join(" in drawn.group(1), (
+        "the 'd' value has to fold every ring of the shape into subpaths of one path"
+    )
+
 
 def test_a_flat_ring_list_is_refused_rather_than_read_as_one_shape():
     """It parses perfectly and fails silently — the one thing a judging session
