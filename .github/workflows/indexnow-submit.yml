@@ -60,8 +60,10 @@ jobs:
           # Cloudflare's bot management may see a 403 that Bing's own fetch
           # does not, and IndexNow verifies the key itself.
           for i in $(seq 1 16); do
+            # On a transport failure curl still prints 000 for %{http_code};
+            # the fallback is assigned afterwards so nothing is appended.
             status=$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' \
-              "https://${HOST}/${INDEXNOW_KEY}.txt" || echo 000)
+              "https://${HOST}/${INDEXNOW_KEY}.txt") || status=000
             case "$status" in
               200) echo "::notice::key file reachable"; break ;;
               # Deployed, but this runner is blocked at the edge: no point in
@@ -74,23 +76,35 @@ jobs:
               sleep 30
             fi
           done
-          body=$(jq -n --arg host "$HOST" --arg key "$INDEXNOW_KEY" \
+          # The body goes through a file, not a command-line argument: ten
+          # URLs fit either way, but anyplot's full-sitemap batch (~260 KB)
+          # exceeded Linux's 128 KB cap per argument and curl never ran.
+          jq -n --arg host "$HOST" --arg key "$INDEXNOW_KEY" \
             --arg loc "https://${HOST}/${INDEXNOW_KEY}.txt" \
             --rawfile list urls.txt \
             '{host: $host, key: $key, keyLocation: $loc,
-              urlList: ($list | split("\n") | map(select(length > 0)))}')
+              urlList: ($list | split("\n") | map(select(length > 0)))}' > body.json
           # Bounded like the other curl calls in this repo: a slow or flaky
           # api.indexnow.org must not burn the job timeout. A transport error
           # after the retries yields code 000 and falls into the "transient"
           # branch below instead of aborting under `set -e`.
           code=$(curl -sS -o response.txt -w '%{http_code}' \
-            --max-time 30 --retry 3 --retry-delay 5 --retry-all-errors \
+            --max-time 60 --retry 3 --retry-delay 5 --retry-all-errors \
             -X POST "https://api.indexnow.org/indexnow" \
             -H "Content-Type: application/json; charset=utf-8" \
-            --data "$body") || code="000"
+            --data @body.json) || code="000"
           case "$code" in
             200|202) echo "::notice::IndexNow accepted ${n} URL(s) (HTTP ${code})" ;;
-            # 4xx is a key or payload problem on our side; make it visible.
+            # First use of a key (rollout or rotation): IndexNow verifies the
+            # key file asynchronously and answers 403 SiteVerificationNotCompleted
+            # until it has. Not our fault, so warn; the next deploy resubmits.
+            403)
+              if grep -q SiteVerificationNotCompleted response.txt 2>/dev/null; then
+                echo "::warning::IndexNow has not finished verifying the key file yet (403 SiteVerificationNotCompleted); resubmitted on the next deploy"
+              else
+                echo "::error::IndexNow rejected the submission (HTTP 403): $(head -c 300 response.txt 2>/dev/null)"; exit 1
+              fi ;;
+            # Any other 4xx is a key or payload problem on our side; make it visible.
             4*) echo "::error::IndexNow rejected the submission (HTTP ${code}): $(head -c 300 response.txt 2>/dev/null)"; exit 1 ;;
             # 5xx / no response: their side. The next deploy resubmits the
             # whole sitemap anyway, so a warning is the right weight.
