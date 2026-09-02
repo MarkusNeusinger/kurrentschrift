@@ -153,12 +153,20 @@ def arm_drawing(composed: dict, registration: dict) -> dict:
     composer inked it at. Drawing the ink rather than the centerline is the
     whole point of the word mode — a stroke a quarter too thin is invisible on
     a hairline, and the authenticity question is about how the writing looks.
+
+    One item's rings stay GROUPED as one shape, because that grouping is the
+    only thing that says which ring is a hole. A pen stroke's silhouette is an
+    exterior plus the counters it encloses (the ``Z`` of „Zorn" ships 155 + 36 +
+    16 points), and flattening them into independent shapes paints every loop
+    interior solid — the writing then reads as a blob and the round would be
+    judging the renderer. Production has always drawn them as ONE evenodd path
+    (``app/src/lib/svg.ts::ringsToPathD``); this is the same contract.
     """
     strokes, fills = [], []
     for item in composed["items"]:
         rings = item.get("rings")
         if rings:
-            fills.extend([[list(map(float, p)) for p in ring] for ring in rings])
+            fills.append([[list(map(float, p)) for p in ring] for ring in rings])
         else:
             strokes.append(
                 {
@@ -206,7 +214,9 @@ def zigzag(words: dict[str, dict], amplitude: float = ZIGZAG_AMPLITUDE) -> None:
     for drawing in words.values():
         for stroke in drawing["strokes"]:
             stroke["points"] = _saw(stroke["points"], amplitude)
-        drawing["fills"] = [_saw(ring, amplitude) for ring in drawing["fills"]]
+        # Ring by ring, but the SHAPE grouping survives — a counter that lost
+        # its exterior would be drawn as a solid blob.
+        drawing["fills"] = [[_saw(ring, amplitude) for ring in shape] for shape in drawing["fills"]]
 
 
 def _saw(points: list[list[float]], amplitude: float) -> list[list[float]]:

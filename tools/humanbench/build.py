@@ -36,11 +36,14 @@ Laufform card, a different nib, a connector trim) writes the same file:
      "words": {"<entry id>": {
          "registration": {"xh_px": 33.0, "tx": 12.0, "ty": -1.0},
          "strokes": [{"points": [[x, y], ...], "width": 0.14}],
-         "fills":   [[[x, y], ...]]}}}
+         "fills":   [[[[x, y], ...], [[x, y], ...]]]}}}
 
 Coordinates are the composer's own WORD FRAME (x to the right in x-heights,
 y UP in x-heights from the baseline, i.e. ``composed["items"][*]["centerline"]``
-and ``["rings"]``); ``width`` is a stroke width in x-heights. The registration
+and ``["rings"]``); ``width`` is a stroke width in x-heights. ``fills`` is one
+entry per pen stroke and each entry is that stroke's RING LIST — the exterior
+plus the counters it encloses, exactly as ``compose_word`` groups them, because
+the grouping is the only thing that says which ring is a hole. The registration
 maps that frame onto the fixture crop and is the arm's OWN — see
 ``word_cases`` for why, and for when to pin it instead.
 
@@ -162,7 +165,10 @@ WORD_MIN_REPEAT_GAP = 15
 # plate is still ~66 screen pixels.
 WORD_ZOOM = 2
 NO_STRATUM = "-"
-WORD_ARM_FORMAT = 1
+# 2 groups a pen stroke's silhouette rings into ONE shape. Format 1 listed them
+# flat, which lost the only information that says which ring is a hole, and the
+# page painted every loop counter solid.
+WORD_ARM_FORMAT = 2
 
 # One screen, and the key fields a mode adds to a repeat of it.
 Renderer = Callable[[str, "Occurrence", dict], dict]
@@ -742,7 +748,10 @@ class ArmWord:
     tx: float
     ty: float
     strokes: tuple[ArmStroke, ...]
-    fills: tuple[np.ndarray, ...]  # silhouette rings — the INK, not a centerline
+    # One entry per pen stroke: its silhouette as an exterior ring plus the
+    # counters it encloses, GROUPED. The grouping is what makes a hole a hole
+    # (drawn evenodd); flattened, every loop interior fills in solid.
+    fills: tuple[tuple[np.ndarray, ...], ...]
 
 
 @dataclass(frozen=True)
@@ -819,11 +828,29 @@ def _arm_word(drawing: Any, where: str) -> ArmWord:
     except (KeyError, TypeError, ValueError) as exc:
         raise SystemExit(f"{where}: registration needs a numeric xh_px ({exc})") from exc
     strokes = tuple(_arm_stroke(s, where) for s in drawing.get("strokes") or [])
-    fills = tuple(np.asarray(ring, dtype=float) for ring in drawing.get("fills") or [])
-    fills = tuple(ring for ring in fills if ring.ndim == 2 and ring.shape[0] >= 3 and ring.shape[1] >= 2)
+    fills = tuple(shape for shape in (_arm_shape(raw, where) for raw in drawing.get("fills") or []) if shape)
     if not strokes and not fills:
         raise SystemExit(f"{where}: nothing drawable — an empty panel is a broken screen, not a round")
     return ArmWord(xh=xh, tx=tx, ty=ty, strokes=strokes, fills=fills)
+
+
+def _arm_shape(raw: Any, where: str) -> tuple[np.ndarray, ...]:
+    """One pen stroke's silhouette: its exterior ring plus its counters.
+
+    A flat ring (format 1, ``[[x, y], …]``) is REFUSED rather than accepted as
+    a one-ring shape. It parses perfectly and draws a filled blob where the
+    writing has a loop, so the failure would be silent exactly where it costs a
+    judging session — better to name it and have the arm re-produced.
+    """
+    rings = [np.asarray(ring, dtype=float) for ring in raw or []]
+    # ndim 1 = a list of POINTS where a list of rings belongs (a flat ring),
+    # ndim 0 = a bare coordinate (a single point handed in as a shape).
+    if rings and all(ring.ndim <= 1 for ring in rings):
+        raise SystemExit(
+            f"{where}: 'fills' looks like format {WORD_ARM_FORMAT - 1} — a flat ring list. Its loop counters "
+            f"would be drawn filled; re-produce the arm with tools.humanbench.wordarm."
+        )
+    return tuple(ring for ring in rings if ring.ndim == 2 and ring.shape[0] >= 3 and ring.shape[1] >= 2)
 
 
 def _arm_stroke(raw: Any, where: str) -> ArmStroke:
@@ -850,7 +877,7 @@ def to_crop(points: np.ndarray, arm: ArmWord, baseline_row: float) -> np.ndarray
 def arm_paths_px(arm: ArmWord, baseline_row: float) -> list[np.ndarray]:
     """Every drawn path of one arm, in crop pixels — strokes and fills alike."""
     return [to_crop(s.points, arm, baseline_row) for s in arm.strokes] + [
-        to_crop(ring, arm, baseline_row) for ring in arm.fills
+        to_crop(ring, arm, baseline_row) for shape in arm.fills for ring in shape
     ]
 
 
@@ -995,8 +1022,10 @@ def _word_panel(arm: ArmWord, case: WordCase, window: tuple[int, int, int, int],
         # page's hairline; anything else is the composed stroke width, carried
         # to the screen in panel pixels so a nib change is visible as one.
         panel["widths"].append(round(stroke.width * arm.xh * zoom, 1))
-    for ring in arm.fills:
-        panel["fills"].append(screen_path(to_crop(ring, arm, case.baseline_row), window, zoom))
+    for shape in arm.fills:
+        # Grouped, so the page can draw the shape as ONE evenodd path and its
+        # counters stay paper — see `_arm_shape`.
+        panel["fills"].append([screen_path(to_crop(ring, arm, case.baseline_row), window, zoom) for ring in shape])
     return {key: value for key, value in panel.items() if value}
 
 

@@ -32,7 +32,12 @@ COMPOSED = {
     "items": [
         {
             "centerline": [[0.0, 0.0], [0.5, 1.0], [1.0, 0.0]],
-            "rings": [[[0.0, 0.1], [1.0, 0.1], [1.0, -0.1], [0.0, -0.1]]],
+            # A loop glyph's silhouette: the exterior plus the counter it
+            # encloses — what `compose_word` ships for a `Z`, `e` or `l`.
+            "rings": [
+                [[0.0, 0.1], [1.0, 0.1], [1.0, -0.1], [0.0, -0.1]],
+                [[0.3, 0.05], [0.6, 0.05], [0.6, -0.05], [0.3, -0.05]],
+            ],
             "mask_width": 0.19,
         },
         {"centerline": [[1.0, 0.0], [1.4, 0.3], [1.8, 0.0]], "stroke_width": 0.145, "lift": False},
@@ -45,7 +50,11 @@ def test_arm_drawing_ships_bodies_as_ink_and_connectors_as_capsules():
     the body travels as its silhouette and the connector as its own width."""
     drawn = arm_drawing(COMPOSED, REGISTRATION)
     assert drawn["registration"] == {"xh_px": 31.0, "tx": 10.0, "ty": 1.0}
-    assert len(drawn["fills"]) == 1 and len(drawn["fills"][0]) == 4
+    # ONE shape for the pen stroke, carrying both of its rings: the grouping is
+    # the only thing that says the second ring is a HOLE. Flattened, the loop
+    # interior is painted solid and the writing reads as a blob.
+    assert len(drawn["fills"]) == 1
+    assert [len(ring) for ring in drawn["fills"][0]] == [4, 4]
     assert len(drawn["strokes"]) == 1
     assert drawn["strokes"][0]["width"] == pytest.approx(0.145)
     # The body's centerline is NOT drawn a second time — the silhouette is the ink.
@@ -91,9 +100,12 @@ def test_the_synthetic_zigzag_is_the_size_it_claims_and_alternates_sides():
     hundredths of an x-height, which is exactly what the rulers resample away.
     Applied to the drawn ink, because that is what a human sees."""
     words = {"unter": arm_drawing(COMPOSED, REGISTRATION)}
-    before = np.asarray(words["unter"]["fills"][0], dtype=float)
+    before = np.asarray(words["unter"]["fills"][0][0], dtype=float)
     zigzag(words)
-    after = np.asarray(words["unter"]["fills"][0], dtype=float)
+    after = np.asarray(words["unter"]["fills"][0][0], dtype=float)
+    # The shape grouping survives the injection — a counter that lost its
+    # exterior would be drawn as a solid blob.
+    assert [len(ring) for ring in words["unter"]["fills"][0]] == [4, 4]
     offsets = np.hypot(*(after - before).T)
     # Tolerance is the file's own display precision (six decimals), not slack.
     assert offsets == pytest.approx(np.full(len(before), ZIGZAG_AMPLITUDE), abs=1e-5)

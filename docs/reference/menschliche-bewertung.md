@@ -992,7 +992,18 @@ Der Vertrag steht im Kopf von [`build.py`](../../tools/humanbench/build.py):
 je Wort eine Registrierung (`xh_px`, `tx`, `ty`) plus `strokes` (Punkte in
 x-Höhen, y nach OBEN von der Grundlinie, dazu eine Strichbreite) und `fills`
 (Silhouetten im selben Rahmen) — also wörtlich das, was `compose_word`
-ohnehin liefert. Jeder Arm darf ihn schreiben;
+ohnehin liefert.
+
+**Und `fills` ist je Federzug GRUPPIERT** — Außenring plus die Binnenflächen,
+die er einschließt (das `Z` von „Zorn“ bringt 155 + 36 + 16 Punkte mit). Die
+Gruppierung ist das Einzige, was einen Ring als **Loch** ausweist; flach
+gelistet malt die Seite jede Schleifen-Innenfläche aus, und das Wort erscheint
+genau dort als Klecks, wo es eine Schleife hat. Gezeichnet wird deshalb je
+Federzug EIN Pfad mit `fill-rule="evenodd"`, wie es die Produktion seit jeher
+tut (`app/src/lib/svg.ts::ringsToPathD`). Eine flache Ringliste wird
+**abgelehnt** statt als Ein-Ring-Form gelesen: sie parst fehlerfrei und
+scheitert lautlos: der Fehler, den der Autor 2026-09-02 auf dem ersten Blatt
+sah, das er öffnete. Jeder Arm darf ihn schreiben;
 [`wordarm.py`](../../tools/humanbench/wordarm.py) ist der Referenz-Erzeuger
 und deckt die heute anstehenden Fälle ab: die **Basis**, eine
 **Kandidaten-Laufformkarte** (`--laufform`, wie beim Wordbench) und einen

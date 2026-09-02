@@ -538,8 +538,10 @@ def test_a_context_free_round_still_renders():
 
 def arm_word(xh: float = 20.0, tx: float = 0.0, ty: float = 0.0, *, dy: float = 0.0, width: float = 0.15) -> ArmWord:
     line = np.array([[0.0, 0.0 + dy], [1.0, 1.0 + dy], [2.0, 0.0 + dy]])
-    ring = np.array([[0.0, 0.0], [1.0, 0.2], [1.0, -0.2], [0.0, -0.2]])
-    return ArmWord(xh=xh, tx=tx, ty=ty, strokes=(ArmStroke(line, width),), fills=(ring,))
+    # One pen stroke's silhouette: an exterior ring plus the counter it encloses.
+    outer = np.array([[0.0, 0.0], [1.0, 0.2], [1.0, -0.2], [0.0, -0.2]])
+    hole = np.array([[0.3, 0.05], [0.6, 0.05], [0.6, -0.05], [0.3, -0.05]])
+    return ArmWord(xh=xh, tx=tx, ty=ty, strokes=(ArmStroke(line, width),), fills=((outer, hole),))
 
 
 def word_case(entry_id: str = "unter", **arms) -> WordCase:
@@ -587,7 +589,7 @@ def arm_file(tmp_path, name, ids, *, dy=0.0, width=0.15, xh=20.0):
                     entry_id: {
                         "registration": {"xh_px": xh, "tx": 1.0, "ty": 0.0},
                         "strokes": [{"points": [[0.0, dy], [1.0, 1.0 + dy], [2.0, dy]], "width": width}],
-                        "fills": [[[0.0, 0.0], [1.0, 0.2], [1.0, -0.2]]],
+                        "fills": [[[[0.0, 0.0], [1.0, 0.2], [1.0, -0.2]]]],
                     }
                     for entry_id in ids
                 },
@@ -606,6 +608,44 @@ def test_load_arm_reads_the_contract_and_stamps_the_bytes(tmp_path):
     assert drawn.xh == 20.0 and drawn.tx == 1.0
     assert len(drawn.strokes) == 1 and drawn.strokes[0].width == 0.15
     assert len(drawn.fills) == 1
+
+
+def test_an_arm_keeps_a_pen_stroke_s_rings_together_as_one_shape(tmp_path):
+    """The grouping is the only thing that says which ring is a HOLE.
+
+    A silhouette is an exterior plus the counters it encloses — the „Z" of
+    „Zorn" ships 155 + 36 + 16 points. Flattened into independent shapes, every
+    loop interior is painted solid and the writing reads as a blob exactly
+    where it has a loop; the round would then be judging the renderer.
+    """
+    path = tmp_path / "arm.json"
+    path.write_text(
+        json.dumps(
+            {
+                "words": {
+                    "Zorn": {
+                        "registration": {"xh_px": 20.0},
+                        "fills": [[[[0, 0], [4, 0], [4, 4], [0, 4]], [[1, 1], [3, 1], [3, 3]]]],
+                    }
+                }
+            }
+        )
+    )
+    fills = load_arm(path).words["Zorn"].fills
+    assert len(fills) == 1, "one pen stroke, one shape"
+    assert [len(ring) for ring in fills[0]] == [4, 3], "exterior and its counter stay together"
+
+
+def test_a_flat_ring_list_is_refused_instead_of_read_as_one_shape(tmp_path):
+    """Format 1 parses perfectly and fails SILENTLY — filled loop counters on
+    every screen. Named, so the arm gets re-produced instead of judged."""
+    path = tmp_path / "old.json"
+    # Format 1: `fills` was a list of RINGS, not a list of shapes.
+    path.write_text(
+        json.dumps({"words": {"a": {"registration": {"xh_px": 20.0}, "fills": [[[0, 0], [4, 0], [4, 4]]]}}})
+    )
+    with pytest.raises(SystemExit, match="looks like format 1"):
+        load_arm(path)
 
 
 @pytest.mark.parametrize(
