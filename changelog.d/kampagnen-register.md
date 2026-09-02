@@ -4,8 +4,10 @@
   with two tables: one row per dated entry (date, route, arm, type and
   verdict, linked to the section) and the headline ledger the running text
   never got — every wordbench headline since `aug14` with the fixture root
-  it was measured on. 74 entries and ~47,000 words were previously
-  navigable only by reading them (#489).
+  it was measured on. 80 entries and ~47,000 words were previously
+  navigable only by reading them. The journal runs from `## 14.` to the end
+  of the file, because a round appends its section there and that lands
+  after the §15 heading, as LF11, J4 and J4b did (#489).
 - **`tools/docs_register`, the gate that keeps the registers current.**
   `uv run python -m tools.docs_register check` requires a register row for
   every §14 entry, a number the journal already carries behind every ledger
