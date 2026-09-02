@@ -54,12 +54,12 @@ export const landing = {
     lesen: {
       title: 'Lesen',
       desc: 'Das Lese-Quiz übt die Formen, an denen jeder stolpert; die Lesart-Prüfung hilft bei dem einen Wort, das sich nicht entziffern lassen will.',
-      cta: 'Zum Lese-Quiz →',
+      cta: 'Zu den Lese-Übungen →',
     },
     schreiben: {
       title: 'Schreiben',
       desc: 'Das Übungsblatt bringt die Lineatur aufs Papier, die Federprobe schreibt dir jeden Zug vor.',
-      cta: 'Zum Übungsblatt →',
+      cta: 'Zu den Schreib-Übungen →',
     },
   },
   // Section 1: the scripts. "Kurrent(schrift)" is really an umbrella over a

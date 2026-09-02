@@ -41,10 +41,15 @@ const roadmap = de.landing.roadmap;
 // `howRoutes` is keyed by the locale's own step ids, so a step added without
 // its route fails to compile instead of rendering a dead card (the same guard
 // the hub cards use). Each step points at the ENTRY of its area.
+// Each step goes to its AREA, not to one of its tools: the sentences name two
+// tools apiece, and the hub is the page that holds both (design-system.md §6 —
+// /lesen and /schreiben are the hub entries; Schriftkunde is its own area page
+// with no hub above it). Linking straight to the quiz or the worksheet would
+// promise the area and deliver one tool, hiding the other (Copilot review).
 const howRoutes: Record<keyof typeof de.landing.howSteps, string> = {
   nachschlagen: paths.schriftkunde,
-  lesen: paths.quiz,
-  schreiben: paths.worksheet,
+  lesen: paths.lesen,
+  schreiben: paths.schreiben,
 };
 const howSteps = (Object.keys(de.landing.howSteps) as (keyof typeof de.landing.howSteps)[]).map((id) => ({
   ...de.landing.howSteps[id],

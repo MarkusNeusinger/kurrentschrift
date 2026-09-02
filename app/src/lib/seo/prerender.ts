@@ -284,10 +284,12 @@ const landingBody = () => {
     .join('');
   // The "So geht es" steps, in the locale's own order (which is the page's) —
   // keyed by the step ids so a new step without a route fails to compile.
+  // The AREA entries, the same as the page (LandingView `howRoutes`): a step
+  // names two tools, and the hub is the page that holds both.
   const howRoutes: Record<keyof typeof t.howSteps, string> = {
     nachschlagen: paths.schriftkunde,
-    lesen: paths.quiz,
-    schreiben: paths.worksheet,
+    lesen: paths.lesen,
+    schreiben: paths.schreiben,
   };
   // An <ol>, like the page: the order is the point of the section, so a
   // crawler and a screen reader should read it as a sequence, not as three
