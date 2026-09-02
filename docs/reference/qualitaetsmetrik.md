@@ -10843,6 +10843,14 @@ zitieren, auf der wirklich gemessen wurde; ein Neu-Export derselben
 Daten verlangt einen neuen Digest, ohne dass sich eine Zahl bewegt.
 Die Zeile im Hauptcheckout trägt `6cbab9d5c092` / `965ab3c57ebd`.
 
+**Unabhängige Gegenprobe an der lebenden API** (nicht das
+Schreibwerkzeug, das den Readback gemacht hat): alle 22 Zeilen, die
+`GET …/templates/{key}?variant=100` heute liefert, stimmen mit der neu
+gebauten Wurzel überein, und die mittlere Zacken-Rate, die Prod
+ausliefert, fällt von **8,570 auf 0,627** Krümmungs-Umkehrungen je
+x-Höhe — Faktor 13,7. Das ist die Größe, um die der ganze Arm gebaut
+wurde, gemessen dort, wo sie ankommt.
+
 **Stand danach.** Die 22 Laufform-Zeilen der Sütterlin-1922-Hand sind
 Spline-Basis-Mediane; `aggregate_instances` medianisiert weiterhin je
 Anker — die Adoption betrifft die DATEN, nicht den Default des
