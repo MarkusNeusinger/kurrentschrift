@@ -10,11 +10,25 @@ substitutions:
   # the min-instance bill for nothing.
   _MEMORY: 512Mi
   _CPU: "1"
-  # min=1 buys away the cold start. It is NOT ~3s as this comment used to claim:
-  # measured over 30 days it is p50 9,447 ms / p95 12,245 ms, and ~279 of the 344
-  # startups were user-facing (60 % of all hours see no request at all, so the
-  # service is usually cold). 98 % of that is container start plus Python import
-  # — the DB is innocent at 0.13 s. Funded by dropping anyplot-app's min-instance,
+  # min=1 buys away MOST of the cold start, and this line has twice been more
+  # confident than the measurement — so, precisely:
+  #  * Duration: p50 9,447 ms / p95 12,245 ms over 30 days (not the "~3 s" this
+  #    comment claimed before), of which 98 % is container start plus Python
+  #    import; the DB is innocent at 0.13 s.
+  #  * What min=1 fixed: the AUTOSCALING cold starts, completely — 23 in the
+  #    five days before, none after.
+  #  * What it did NOT fix: RECYCLE starts, when Cloud Run replaces the standing
+  #    instance on its own. Two on 2026-09-01, at 16.1 s and 11.0 s. The client's
+  #    retry logic is therefore still earning its keep, and any claim that the
+  #    cold start is "gone" is wrong.
+  #  * Since 2026-09-02 the image carries bytecode (UV_COMPILE_BYTECODE plus a
+  #    compileall pass, api/Dockerfile). Measured with `-X importtime` on
+  #    CPython 3.13, three runs each, importing api.main with an empty vs. a
+  #    warm __pycache__: 3,081–3,230 ms without, 909–1,038 ms with — ~2.2 s off
+  #    every start there is, recycles included. Measured against a local venv,
+  #    not inside the image (no Docker in that session): the ratio is the
+  #    finding, the absolute numbers are an upper bound.
+  # Funded by dropping anyplot-app's min-instance,
   # which was 99.56 % idle on a service that boots in 0.26 s; net cost ~0.
   # max=3, not 1: with concurrency 15 a single instance queued the 16th request
   # against a 60 s timeout, and — the actual reason — min=1 with max=1 forces a

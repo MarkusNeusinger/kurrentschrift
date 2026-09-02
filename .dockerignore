@@ -16,9 +16,11 @@ node_modules
 dist
 build
 *.egg-info
-.env
-.env.local
-.env.*.local
+# `.env*`, not the three names that happen to exist: .env holds DATABASE_URL
+# and ADMIN_TOKEN, and a variant nobody thought of (.env.staging) fell straight
+# through the old list into the build context. Same rule in .gcloudignore and
+# app/.dockerignore.
+.env*
 docs
 tests
 .github

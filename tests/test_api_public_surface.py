@@ -99,13 +99,19 @@ RESERVED = {
     "/eigenhand/strips/{hand}/{strip}/{fassung}",
 }
 
-# Non-GET operations that are deliberately open to the public. EMPTY, and it
-# stays empty until someone argues a case in review: everything this API
-# writes is authored data — bboxes, templates, Laufform rows, occurrences,
-# pair overrides, work items, the own-hand Bestand — i.e. exactly the reserved
-# dataset (quellen-und-rechte.md §5). The list exists so that opening a write
-# path is a visible, named decision rather than a forgotten decorator.
-PUBLIC_WRITES: set[tuple[str, str]] = set()
+# Non-GET operations that are deliberately open to the public. It exists so
+# that opening a write path is a visible, named decision rather than a
+# forgotten decorator, and it held exactly ONE entry for a long time by being
+# empty: everything this API writes is authored data — bboxes, templates,
+# Laufform rows, occurrences, pair overrides, work items, the own-hand Bestand
+# — i.e. exactly the reserved dataset (quellen-und-rechte.md §5).
+#
+# `POST /csp-report` is the first exception and does not touch that argument:
+# it accepts a browser's account of the SITE's own Content-Security-Policy,
+# writes nothing anywhere (api/routers/csp.py logs and counts in process), and
+# must answer anonymously or the report-only week produces nothing at all. It
+# reads no data and returns none — its 204 carries no body.
+PUBLIC_WRITES: set[tuple[str, str]] = {("POST", "/csp-report")}
 
 # Placeholder values for the path parameters; `{source_id}` is filled from the
 # seeded source at request time.
@@ -220,10 +226,23 @@ async def test_every_write_operation_is_gated(api: Harness):
         assert res.status in _GATE_STATUSES, f"{method} {path} answered {res.status} without the admin credential"
 
 
-async def test_public_writes_list_stays_empty(api: Harness):
-    """The exception list is a decision, not a drawer. If a write path ever
-    becomes public, this test is where the argument gets written down."""
-    assert PUBLIC_WRITES == set()
+async def test_every_public_write_is_named_and_argued(api: Harness):
+    """The exception list is a decision, not a drawer.
+
+    Each entry needs a case, and the case is written above the list. Today
+    there is exactly one: `POST /csp-report`, which takes a browser's report
+    about the SITE's own Content-Security-Policy, writes nothing and returns
+    nothing (api/routers/csp.py). It must answer anonymously — a report cannot
+    carry a credential — which is why it cannot simply be gated like the rest.
+
+    A second entry is not forbidden; adding one WITHOUT extending this
+    docstring is. And the path must really be reachable: the assertion below
+    keeps the list from silently naming an operation that answers 401 anyway,
+    which would look like an argued exception and be a dead line.
+    """
+    assert PUBLIC_WRITES == {("POST", "/csp-report")}
+    res = await api.client.request("POST", "/csp-report", json_body={})
+    assert res.status not in _GATE_STATUSES, "the one public write is gated after all"
 
 
 async def test_reserved_reads_are_never_cacheable(api: Harness):

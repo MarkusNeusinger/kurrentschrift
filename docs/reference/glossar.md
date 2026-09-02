@@ -36,7 +36,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
-- **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
+- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
 - **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
@@ -53,7 +53,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
-- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
+- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftkunde (Seite) §7 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Unantastbare Lineatur §7 · Unvollständige Wortprobe §5
@@ -760,6 +760,38 @@ Grund, warum der Worker-Befund vor und nicht nach dem Scharfschalten auffiel.
 *Technisch:* `api/origin_gate.py`, `core/config.py::origin_secret`,
 `infra/cloudflare/kurrentschrift-api-proxy.js`.
 → frontend-stack.md §5, quellen-und-rechte.md §5
+
+**Report-Only-Woche** — die Woche, in der eine neue
+Content-Security-Policy als `Content-Security-Policy-Report-Only`
+ausgeliefert wird: Sie **blockiert nichts**, sondern lässt den Browser jede
+Quelle melden, die sie verboten hätte. Danach wird sie scharf geschaltet,
+indem der Header-Name um `-Report-Only` gekürzt wird — eine Zeile.
+Der Umweg ist kein Zögern, sondern die Antwort auf eine Asymmetrie: Eine zu
+enge Policy fällt auf der öffentlichen Seite sofort auf, in der **Werkbank**
+aber erst dem Autor — und die kann kein automatischer Durchgang öffnen, weil
+sie hinter Cloudflare Access liegt. Die Woche ist nur so viel wert wie die
+Meldungen, die sie erzeugt: Ziel der Meldung ist `POST /csp-report` auf dem
+API-Host, der zählt und loggt und **nichts** schreibt; jede gemeldete
+Verletzung ist ein Befund, der vor dem Scharfschalten in die Policy gehört
+(oder abgestellt wird). Gemeldet wird per `report-uri`, und **nur** so: Die
+naheliegende Fassung deklariert daneben `report-to` (Reporting-API) — und
+genau das ließ Chromium im Durchgang vom 2026-09-02 `report-uri` ignorieren
+und dann gar nichts liefern. *Technisch:*
+`app/security-headers.conf`, `api/routers/csp.py`,
+`tests/test_csp_policy.py`. → frontend-stack.md §6
+
+**`add_header`-Vererbungsfalle** — nginx vererbt Antwort-Header **nicht über
+Ebenen hinweg**: Sobald ein `location`-Block einen eigenen `add_header` setzt
+(und sei es nur ein `Cache-Control`), fallen sämtliche auf Server-Ebene
+gesetzten Header für diesen Block still weg. Kein Fehler, keine Warnung —
+nur eine URL, die als einzige ohne CSP und ohne `nosniff` ausgeliefert wird.
+Deshalb stehen die Header dieses Projekts in einer eigenen Datei, die im
+Server-Block **und** in jedem `location` mit eigenem `add_header` per
+`include` gezogen wird; wer irgendwo einen `add_header` ergänzt, ergänzt die
+`include`-Zeile daneben. *Technisch:* `app/security-headers.conf`,
+`app/nginx.conf`; gehalten von
+`tests/test_csp_policy.py::test_every_nginx_location_with_its_own_header_reincludes_the_snippet`.
+→ frontend-stack.md §6
 
 **Prerender-Pfad (Crawler)** — Crawler und KI-Agenten (kein JavaScript)
 bekommen je öffentliche Route eine zur Build-Zeit aus dem Locale-Katalog

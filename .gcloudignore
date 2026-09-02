@@ -24,6 +24,13 @@ node_modules
 dist
 build
 
+# Secrets. `.env*` rather than the three names that happen to exist today: the
+# root .env holds DATABASE_URL and ADMIN_TOKEN, app/.env holds
+# VITE_ADMIN_TOKEN, and a variant nobody thought of (.env.staging) is exactly
+# how the next one reaches a build tarball. Same rule in .dockerignore and
+# app/.dockerignore, so context and upload agree.
+.env*
+
 # Editor / OS
 .DS_Store
 *.swp

@@ -14,14 +14,17 @@ from contextlib import asynccontextmanager  # noqa: E402
 from fastapi import FastAPI, Request, Response  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.middleware.gzip import GZipMiddleware  # noqa: E402
+from fastapi.responses import JSONResponse  # noqa: E402
 
 from api.analytics import classify_asset, track_asset_fetch, track_bot_fetch  # noqa: E402
+from api.http import NO_STORE  # noqa: E402
 from api.origin_gate import OriginSecretMiddleware  # noqa: E402
 from api.rate_limit import RateLimitMiddleware  # noqa: E402
 from api.routers import (  # noqa: E402
     aggregates_router,
     bboxes_router,
     chart_router,
+    csp_router,
     eigenhand_router,
     hands_router,
     health_router,
@@ -39,6 +42,7 @@ from api.routers import (  # noqa: E402
     work_items_session_router,
     write_router,
 )
+from api.security_headers import SECURITY_HEADERS_STR, SecurityHeadersMiddleware  # noqa: E402
 from api.version import APP_VERSION  # noqa: E402
 from core.config import settings  # noqa: E402
 from core.database import close_db, init_db, is_db_configured  # noqa: E402
@@ -115,11 +119,40 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
+
+@app.exception_handler(Exception)
+async def unhandled_exception(_request: Request, _exc: Exception) -> JSONResponse:
+    """The one response `SecurityHeadersMiddleware` can never reach.
+
+    Starlette builds `ServerErrorMiddleware` OUTSIDE every user middleware, so
+    the 500 it writes for an unhandled exception is already on the wire before
+    the header layer would see it — which made "every response this API answers"
+    quietly untrue (Copilot review, PR #497). Registering a handler for
+    `Exception` puts THIS response in its place, headers and all: Starlette
+    lifts the handler out of the table and hands it to that very middleware.
+
+    The exception is still re-raised afterwards by `ServerErrorMiddleware`, so
+    the traceback reaches the log exactly as before — which is also why this
+    handler logs NOTHING itself: a `logger.exception` here would put a second
+    full traceback beside uvicorn's for every 500, doubling what an error-count
+    alert sees (Copilot review, PR #497). Only the body changes, and it changes
+    toward the rest of this API: a JSON `detail`, like the 401, the 403 and the
+    429, instead of a bare text line. `no-store` because a failure is about one
+    request and must never be served to the next visitor.
+    """
+    return JSONResponse(
+        {"detail": "internal server error"},
+        status_code=500,
+        headers={**SECURITY_HEADERS_STR, "Cache-Control": NO_STORE},
+    )
+
+
 # The middleware stack, written innermost-first because `add_middleware`
 # PREPENDS — the last one added is the outermost. Reading the calls below from
 # the bottom up gives the order a request actually travels:
 #
-#   CORS → origin gate → bot counter → gzip → rate limit → HEAD-as-GET → router
+#   CORS → security headers → origin gate → bot counter → gzip → rate limit →
+#   HEAD-as-GET → router
 #
 # Every position in it is load-bearing:
 #
@@ -127,6 +160,9 @@ app = FastAPI(
 #   browser needs to READ it as a 403/429 rather than as an opaque network
 #   error — and so a preflight, which can never carry a custom header, is
 #   answered before the origin gate sees it.
+# * The security headers directly inside CORS and OUTSIDE both gates, so a 403
+#   from the origin gate and a 429 from the limiter carry `nosniff` too — those
+#   are JSON bodies handed to a browser like any other (api/security_headers.py).
 # * The origin gate directly inside CORS: a caller that never came through the
 #   edge is refused before ANY of the work below runs. That includes the bot
 #   counter — otherwise a direct caller with a crawler User-Agent would turn
@@ -177,11 +213,12 @@ async def record_bot_fetch(request: Request, call_next):
     return response
 
 
-# The two outermost layers, registered AFTER the decorator above so they end up
-# outside it — see the stack comment where the inner ones are added. Dormant
-# until ORIGIN_SECRET is set; CORS wraps everything so every refusal stays
-# readable in a browser.
+# The three outermost layers, registered AFTER the decorator above so they end
+# up outside it — see the stack comment where the inner ones are added. The
+# origin gate is dormant until ORIGIN_SECRET is set; the security headers apply
+# always; CORS wraps everything so every refusal stays readable in a browser.
 app.add_middleware(OriginSecretMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=settings.cors_allow_origin_regex,
@@ -192,6 +229,7 @@ app.add_middleware(
 
 
 app.include_router(health_router)
+app.include_router(csp_router)
 app.include_router(seo_router)
 app.include_router(styles_router)
 app.include_router(hands_router)

@@ -22,7 +22,26 @@ WORKDIR /app
 # nothing is ever compiled here — the toolchain only ever sat there. If a future
 # dependency arrives sdist-only, the build fails loudly at this step, which is
 # the right place to notice, not a silently fat image.
-RUN pip install --no-cache-dir uv
+#
+# uv is PINNED. It is the only unpinned input this image had: `uv.lock` fixes
+# every dependency, the base image fixes the interpreter, and the resolver
+# itself floated on whatever PyPI served that morning. A resolver change is
+# exactly the kind of difference that makes "it built yesterday" true and
+# useless.
+RUN pip install --no-cache-dir uv==0.10.9
+
+# Write .pyc alongside every installed module. Without this the venv ships
+# source only — and `.dockerignore` excludes `__pycache__`, so the COPYs bring
+# none either — which left every cold start compiling ~1,550 modules. Measured
+# for the audit of 2026-09-02: 3.09–4.16 s of import without bytecode against
+# 1.08–2.63 s with it, i.e. ~2 s of a ~12 s cold start (finding 27).
+ENV UV_COMPILE_BYTECODE=1
+# Which interpreter the venv is built on, said out loud. uv otherwise picks one
+# by discovery and may DOWNLOAD a managed CPython — a different build of 3.13
+# than the runtime stage offers at the same path, which is the one thing the
+# two-stage split cannot survive (see the note above about pyvenv.cfg).
+ENV UV_PYTHON=/usr/local/bin/python3.13
+ENV UV_PYTHON_DOWNLOADS=never
 
 # Lock/manifest first for layer caching. The root project is a virtual one
 # (uv.lock: `source = { virtual = "." }`), so this installs dependencies and
@@ -85,6 +104,16 @@ COPY --chown=appuser:appuser tools/quizgen/quiz_words.json ./tools/quizgen/quiz_
 COPY --chown=appuser:appuser app/prerender/ ./app/prerender/
 
 USER appuser
+
+# The other half of UV_COMPILE_BYTECODE above: that one covers the venv, this
+# one covers OUR code, which arrives through the COPYs and therefore has no
+# .pyc of its own. Run as appuser, after the USER switch, so the __pycache__
+# directories belong to the process that will read them — a root-owned cache in
+# an appuser tree works, but only by accident of file modes.
+# `-q` keeps the build log readable; a compile error still fails the build,
+# which is the second thing this line buys: a syntax error in a module that
+# only some request path imports now stops the IMAGE instead of a request.
+RUN .venv/bin/python -m compileall -q api core alembic
 
 EXPOSE 8000
 
