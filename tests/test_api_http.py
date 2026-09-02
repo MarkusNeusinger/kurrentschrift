@@ -32,9 +32,13 @@ from tests.api_harness import Harness
 
 # ------------------------------------------------------------------ admin gate
 
-# Every admin-gated endpoint (method, path template, JSON body or None). /fit,
-# /quality and /diagnostic are compute-heavy read endpoints gated like the
-# writes (each re-runs the image pipeline per request).
+# A SAMPLE of admin-gated endpoints (method, path template, JSON body or None),
+# exercised here against a missing token, a wrong token and a fail-closed 503.
+# COMPLETENESS is not this list's job and never was — it covered 11 of the 33
+# write operations: `tests/test_api_public_surface.py` walks the router table
+# and pins every non-GET operation plus every reserved GET. /fit, /quality and
+# /diagnostic are compute-heavy read endpoints gated like the writes (each
+# re-runs the image pipeline per request).
 WRITE_ENDPOINTS = [
     ("PUT", "/sources/{src}/bboxes/a", {}),
     ("DELETE", "/sources/{src}/bboxes/a", None),
@@ -108,6 +112,24 @@ def test_cors_allow_origin_regex_splits_by_environment(monkeypatch):
     assert settings.cors_allow_origin_regex == r"^https://example\.org$"
 
 
+def test_a_renamed_starlette_constant_fails_the_run():
+    """The module- and category-independent `filterwarnings` rule in pyproject.
+
+    Starlette warns about its renamed status constants with `stacklevel=3`, so
+    the warning is attributed to `fastapi.routing` and the three
+    module-anchored rules (`…:api(\\.|$)` and friends) look straight past it —
+    which is how five deprecated constants lived in the error paths until the
+    2026-09-02 audit counted them. Starlette 1.6 then moved the warning off
+    `DeprecationWarning` onto its own `UserWarning` subclass, which is why the
+    rule pins neither. This asserts the behaviour, not the config line: under
+    the configured filters, reading one raises.
+    """
+    from starlette import status as starlette_status
+
+    with pytest.raises(Warning, match="is deprecated"):
+        getattr(starlette_status, "HTTP_422_UNPROCESSABLE_ENTITY")  # noqa: B009 — the read IS the assertion
+
+
 async def test_require_db_503_detail_distinguishes_init_failure(monkeypatch):
     """`DATABASE_URL is set but the connection failed` must not be answered
     with `Set DATABASE_URL...` — that detail is for the unconfigured case."""
@@ -134,6 +156,54 @@ async def test_health_ok(api: Harness):
     res = await api.client.request("GET", "/health")
     assert res.status == 200
     assert res.json()["status"] == "healthy"
+
+
+async def test_health_names_the_running_version(api: Harness):
+    """The deploy's pre-traffic smoke asserts this equals the version in the
+    build's own checkout — without it, a smoke passes happily against an image
+    that is not the one this build produced (`api/cloudbuild.yaml`)."""
+    import tomllib
+    from pathlib import Path
+
+    pyproject = tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text(encoding="utf-8"))
+    expected = pyproject["project"]["version"]
+
+    assert (await api.client.request("GET", "/health")).json()["version"] == expected
+    assert (await api.client.request("GET", "/")).json()["version"] == expected
+
+
+async def test_head_answers_like_get_with_an_empty_body(api: Harness):
+    """`HeadAsGetMiddleware`: FastAPI's `@router.get` is GET-only, so every
+    HEAD probe used to answer 405 — link checkers, and the assistants that
+    preflight a URL before fetching the two SVG assets llms.txt advertises.
+    They only looked healthy from outside because the edge answers HEAD from
+    a cached GET."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+
+    for path in ("/health", "/styles", "/robots.txt", f"/sources/{source_id}/write/glyphs/n.svg"):
+        get = await api.client.request("GET", path)
+        head = await api.client.request("HEAD", path)
+        assert head.status == get.status == 200, path
+        assert head.body == b"", path
+        assert head.headers.get("content-type") == get.headers.get("content-type"), path
+        # HEAD promises the GET's Content-Length; a body-less 200 that claims 0
+        # would tell a link checker the page is empty.
+        assert head.headers.get("content-length") == get.headers.get("content-length"), path
+
+
+async def test_head_on_a_seo_page_answers_but_is_not_counted_as_a_read(api: Harness, monkeypatch):
+    """A HEAD probe fetches no page. The counter keys on the REAL method, which
+    is why the middleware sits innermost rather than outermost as in anyplot."""
+    import api.main as api_main
+
+    seen: list[tuple[str, int]] = []
+    monkeypatch.setattr(api_main, "track_bot_fetch", lambda _req, page, status: seen.append((page, status)))
+
+    assert (await api.client.request("HEAD", "/seo-proxy/schriftkunde")).status in (200, 404)
+    assert seen == []
+    await api.client.request("GET", "/seo-proxy/schriftkunde")
+    assert [page for page, _ in seen] == ["/schriftkunde"]
 
 
 async def test_styles_empty_db_returns_empty_list_with_cache_control(api: Harness):

@@ -3,9 +3,19 @@
 The pooled constant nib (architektur.md §5: one Gleichzug pen per source) is an
 O(all-templates) JSONB scan whose result only changes when a template of the
 source is written — memoise it per (style, source) with explicit invalidation
-from the admin write endpoints. Single-process cache by design: the service
-runs one instance (max-instances=1) and every template write flows through this
-process; the TTL is the safety net for out-of-band writes (psql, migrations).
+from the admin write endpoints.
+
+The cache is PER PROCESS, and the service runs up to three instances
+(`api/cloudbuild.yaml` `_MAX_INSTANCES`), so `invalidate_pooled_style` clears
+only the instance that took the write. What that costs is bounded and small:
+the template rows themselves never go stale, because the payload memo keys on
+`updated_at` and a written row misses its own entry everywhere. Only the POOLED
+nib/pen — a statistic over ALL templates of the source — can lag on an instance
+that did not see the write, and only until `_NIB_TTL_S` (10 min) expires it.
+The TTL is therefore the real coherence bound, for a second instance exactly as
+for an out-of-band write (psql, a migration). In practice the workbench's
+write and its next read land on the same warm instance: min-instances is 1, and
+a second one spawns only under concurrent load.
 """
 
 import logging

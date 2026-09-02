@@ -10,7 +10,11 @@ split in both directions and keeps it complete:
   endpoint in neither set fails here, so the split can never drift silently;
 - every PUBLIC read answers without credentials (any status but a gate's);
 - every RESERVED read answers 401 without credentials, whatever else the
-  request would have hit (a 404 for a missing row comes AFTER the gate).
+  request would have hit (a 404 for a missing row comes AFTER the gate);
+- every NON-GET operation answers 401 without credentials, against an
+  explicitly empty list of public write paths. Everything this API writes is
+  authored data, so the list has nothing in it — but a future public write
+  path has to be named there rather than simply forgotten.
 
 PUBLIC is what the public pages and their crawlers need: catalogue descriptors
 (styles, sources), the quiz bank, the /write renders, the slim bbox status
@@ -95,6 +99,14 @@ RESERVED = {
     "/eigenhand/strips/{hand}/{strip}/{fassung}",
 }
 
+# Non-GET operations that are deliberately open to the public. EMPTY, and it
+# stays empty until someone argues a case in review: everything this API
+# writes is authored data — bboxes, templates, Laufform rows, occurrences,
+# pair overrides, work items, the own-hand Bestand — i.e. exactly the reserved
+# dataset (quellen-und-rechte.md §5). The list exists so that opening a write
+# path is a visible, named decision rather than a forgotten decorator.
+PUBLIC_WRITES: set[tuple[str, str]] = set()
+
 # Placeholder values for the path parameters; `{source_id}` is filled from the
 # seeded source at request time.
 _PARAMS = {
@@ -109,6 +121,9 @@ _PARAMS = {
     "sheet": "B0001",
     "strip": "S0001",
     "fassung": "1",
+    # Only write paths reach these (the Lesart vocabulary load) — the gate
+    # fires long before the value means anything.
+    "gen": "1",
 }
 # The renders 422 without their query — a 422 is not a gate, but a real
 # request is the more honest probe.
@@ -120,13 +135,13 @@ _QUERY = {
 _GATE_STATUSES = {401, 403}
 
 
-def _get_routes() -> set[str]:
-    """Every GET path the app serves, with included routers flattened.
+def _routes() -> list[tuple[str, str]]:
+    """Every (method, path) operation the app serves, included routers flattened.
 
     Recent FastAPI keeps an included router as a lazy wrapper in `app.routes`
     (`original_router` + `include_context.prefix`) rather than copying its
     routes in; older versions inline them as `APIRoute`s. Both are walked."""
-    found: set[str] = set()
+    found: list[tuple[str, str]] = []
     for route in app.routes:
         inner = getattr(route, "original_router", None)
         if inner is None:
@@ -135,9 +150,23 @@ def _get_routes() -> set[str]:
             prefix = getattr(getattr(route, "include_context", None), "prefix", "") or ""
             candidates = [(r, prefix) for r in inner.routes]
         for r, prefix in candidates:
-            if isinstance(r, APIRoute) and "GET" in r.methods:
-                found.add(prefix + r.path)
-    return found - _FRAMEWORK
+            if not isinstance(r, APIRoute):
+                continue
+            path = prefix + r.path
+            if path in _FRAMEWORK:
+                continue
+            found += [(method, path) for method in r.methods if method not in ("HEAD", "OPTIONS")]
+    return found
+
+
+def _get_routes() -> set[str]:
+    """Every GET path the app serves."""
+    return {path for method, path in _routes() if method == "GET"}
+
+
+def _write_operations() -> set[tuple[str, str]]:
+    """Every non-GET operation the app serves."""
+    return {(method, path) for method, path in _routes() if method != "GET"}
 
 
 def test_every_get_route_is_classified():
@@ -167,6 +196,34 @@ async def test_reserved_reads_are_401_without_credentials(api: Harness):
     for path in sorted(RESERVED):
         res = await api.client.request("GET", _fill(path, source_id))
         assert res.status == 401, f"{path} answered {res.status} without the admin credential"
+
+
+async def test_every_write_operation_is_gated(api: Harness):
+    """No credential, no write — for EVERY non-GET operation, not a hand-kept
+    sample of them.
+
+    `tests/test_api_http.py::WRITE_ENDPOINTS` covered 11 of the 33 by hand, so
+    a new POST/PUT/PATCH/DELETE that forgot `require_admin` fell through no net
+    at all. This walks the router table instead, so the pin cannot go stale:
+    every operation answers 401 (or 403 on a CF-Access identity outside the
+    allow-list) before it ever looks at the body.
+    """
+    _, source_id = await api.seed_style_and_source()
+    operations = _write_operations()
+    # Non-vacuity: the app has 30+ write operations; a walk that finds a
+    # handful means the router flattening broke, not that the surface shrank.
+    assert len(operations) >= 30, f"only {len(operations)} write operations found — the route walk is broken"
+    for method, path in sorted(operations):
+        if (method, path) in PUBLIC_WRITES:
+            continue
+        res = await api.client.request(method, _fill(path, source_id), json_body={})
+        assert res.status in _GATE_STATUSES, f"{method} {path} answered {res.status} without the admin credential"
+
+
+async def test_public_writes_list_stays_empty(api: Harness):
+    """The exception list is a decision, not a drawer. If a write path ever
+    becomes public, this test is where the argument gets written down."""
+    assert PUBLIC_WRITES == set()
 
 
 async def test_reserved_reads_are_never_cacheable(api: Harness):

@@ -7,6 +7,11 @@ subset, straight from the stored template rows — no chart I/O — and sets cac
 headers so browser + edge absorb repeat traffic
 (docs/proposals/schreibsystem-und-wortbench.md, Phase A). Read-only, no admin
 gate — same visibility as /diagnostic.
+
+The two `/word` routes additionally pass an in-process token bucket per client
+IP (`api/rate_limit.py`): they are the one public read whose cost the CALLER
+sets, and a unique text misses every cache by construction. The batch and
+single glyph reads are bounded by the authored inventory and stay exempt.
 """
 
 import unicodedata
@@ -19,6 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.dependencies import require_db, require_source
 from api.glyph_svg import glyph_svg, word_svg
 from api.http import BROWSER_ONLY_CACHE, CACHE_CONTROL
+from api.rate_limit import limit_word_composition
 from api.rendering import render_payload_cached, resolve_render_context
 from core.compose import compose_word
 from core.database import (
@@ -29,6 +35,7 @@ from core.database import (
     TemplateRepository,
     template_render_row,
 )
+from core.rounding import round_wire_numbers
 from core.shaping import decompose_ligature_slot, glyph_keys_of, shape_text
 
 
@@ -60,9 +67,23 @@ def _cached_payload(entry: dict, glyph_key: str, ctx) -> dict:
 def _geometry_response(content: dict) -> Response:
     """Serialize a render/compose payload with orjson, bypassing FastAPI's
     jsonable_encoder walk — pure overhead over these already-JSON-safe dicts
-    of plain floats/lists (~100k numbers per word batch)."""
+    of plain floats/lists (~100k numbers per word batch).
+
+    The payload is put back on the documented 4-decimal contract here, at the
+    serialisation boundary and nowhere else (`core.rounding`): the pipeline
+    rounds what it stores, but composition multiplies those inputs apart again,
+    so a third of `/write/word`'s numbers carried float64 noise below the
+    contract's own resolution — 46,440 identity / 13,864 gzip bytes for `lesen`
+    against 30,570 / 10,840 rounded. `core/compose.py`, the golden parity
+    fixture and the word-sample score (which reads the composition, not the
+    wire payload) stay untouched; `/write/glyphs` was already inside the
+    contract except for the fluent widening's two values, and moved by 24 bytes
+    in 61,064.
+    """
     return Response(
-        content=orjson.dumps(content), media_type="application/json", headers={"Cache-Control": CACHE_CONTROL}
+        content=orjson.dumps(round_wire_numbers(content)),
+        media_type="application/json",
+        headers={"Cache-Control": CACHE_CONTROL},
     )
 
 
@@ -182,7 +203,7 @@ async def compose_word_payload(text: str, source: Source, db: AsyncSession, *, p
     return await run_in_threadpool(compute)
 
 
-@router.get("/word")
+@router.get("/word", dependencies=[Depends(limit_word_composition)])
 async def get_write_word(
     text: str = Query(..., description="the word or line to write (NFC-normalised, trimmed, ≤160 chars)"),
     source: Source = Depends(require_source),
@@ -216,7 +237,7 @@ def _normalized_text(text: str) -> str:
     return normalized
 
 
-@router.get("/word.svg")
+@router.get("/word.svg", dependencies=[Depends(limit_word_composition)])
 async def get_write_word_svg(
     text: str = Query(..., description="the word or line to write (NFC-normalised, trimmed, ≤160 chars)"),
     source: Source = Depends(require_source),

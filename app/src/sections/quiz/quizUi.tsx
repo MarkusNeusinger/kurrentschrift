@@ -6,6 +6,7 @@ import { Box, Button, ButtonBase, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import type { ReactNode, Ref } from 'react';
 
+import { hitArea } from '@/styles/hitArea';
 import { garamond, paper, quiz, quizRadius } from '@/styles/paper';
 
 // The dark "ink" call-to-action ("Quiz starten →", "Weiter →", "Weiter üben →").
@@ -128,15 +129,21 @@ export function QuietButton({ onClick, children }: { onClick: () => void; childr
   return (
     <ButtonBase
       onClick={onClick}
-      sx={{
-        fontFamily: garamond,
-        fontSize: 15,
-        color: paper.sepia,
-        px: 0.5,
-        borderRadius: quizRadius,
-        transition: 'color 120ms ease',
-        '&:hover': { color: paper.viridianText },
-      }}
+      // The label is meant to stay quiet (19px tall as drawn), so the thumb
+      // target comes from the invisible `hitArea` rather than from padding
+      // that would make it compete with the ink CTA next to it (§9).
+      sx={[
+        hitArea(),
+        {
+          fontFamily: garamond,
+          fontSize: 15,
+          color: paper.sepia,
+          px: 0.5,
+          borderRadius: quizRadius,
+          transition: 'color 120ms ease',
+          '&:hover': { color: paper.viridianText },
+        },
+      ]}
     >
       {children}
     </ButtonBase>
