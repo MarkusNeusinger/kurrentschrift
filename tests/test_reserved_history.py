@@ -163,6 +163,15 @@ def _blobs_carrying_payload(blobs: dict[str, str]) -> dict[str, str]:
 @pytest.fixture(scope="module")
 def payload_blobs() -> dict[str, str]:
     try:
+        # A shallow clone has no history to walk, so the scan would come back
+        # empty and BOTH tests below would report something untrue — one a
+        # false all-clear, the other a false alarm. Skipping says so out loud
+        # instead. CI checks out the backend job with fetch-depth: 0 for
+        # exactly this reason.
+        # (Asked of git rather than by looking for `.git/shallow`: in a worktree
+        # `.git` is a file and the marker lives in the shared git dir.)
+        if _git("rev-parse", "--is-shallow-repository").strip() == b"true":
+            pytest.skip("shallow clone: no history to scan (CI uses fetch-depth: 0)")
         return _blobs_carrying_payload(_candidate_blobs())
     except (subprocess.CalledProcessError, FileNotFoundError) as exc:
         pytest.skip(f"git history not available here: {exc}")
