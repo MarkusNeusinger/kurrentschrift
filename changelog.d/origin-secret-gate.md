@@ -18,9 +18,11 @@
   pre-traffic smoke probes the candidate revision on its `run.app` tag URL,
   which by definition never passes the edge, and `/seo-proxy/…` stays exempt as
   belt and braces on the crawler path. `/health` also reports `origin_gate`
-  (`off` · `ok` · `missing` · `mismatch`, never the value), so every route into
-  the service — the `api.` host, the apex `/api/*` behind Cloudflare Access, the
-  site's nginx, the raw `run.app` — can be checked BEFORE the gate is armed.
+  (`off` · `off-seen` · `ok` · `missing` · `mismatch`, never the value), so
+  every route into the service — the `api.` host, the apex `/api/*` behind
+  Cloudflare Access, the site's nginx, the raw `run.app` — can be checked
+  BEFORE the gate is armed: with the Transform Rule live but the gate still
+  off, each path that must keep working has to answer `off-seen` first.
   Break-glass over the direct URL now needs both `X-Admin-Token` and the origin
   header; both live in Secret Manager (#NNN).
 
@@ -34,4 +36,8 @@
   off, and loud at the first `/styles` once it is on. The smoke additionally
   asserts that the secret the BUILD can read is the one the SERVICE was given,
   so a rotation applied to only one side surfaces there instead of as a
-  mysterious 403 after the promote (#NNN).
+  mysterious 403 after the promote. The deploy also switched from
+  `--set-secrets` to `--update-secrets`: the former replaces the whole binding
+  set and would have stripped the hand-attached `ORIGIN_SECRET` from every
+  revision the pipeline creates, silently disarming the gate on the next deploy
+  (#NNN).

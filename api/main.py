@@ -115,26 +115,27 @@ app = FastAPI(
     openapi_url="/openapi.json",
 )
 
-# Added FIRST, so it ends up INNERMOST: `add_middleware` prepends, and the
-# stack runs outermost-first. Everything above it — the bot counter, gzip,
-# CORS, the rate limiter — therefore still sees the request as HEAD.
+# The middleware stack, written innermost-first because `add_middleware`
+# PREPENDS — the last one added is the outermost. Reading the calls below from
+# the bottom up gives the order a request actually travels:
+#
+#   CORS → origin gate → bot counter → gzip → rate limit → HEAD-as-GET → router
+#
+# Every position in it is load-bearing:
+#
+# * CORS outermost, so a refusal from either gate still carries the headers a
+#   browser needs to READ it as a 403/429 rather than as an opaque network
+#   error — and so a preflight, which can never carry a custom header, is
+#   answered before the origin gate sees it.
+# * The origin gate directly inside CORS: a caller that never came through the
+#   edge is refused before ANY of the work below runs. That includes the bot
+#   counter — otherwise a direct caller with a crawler User-Agent would turn
+#   each of its own refusals into an outbound Plausible request, unthrottled,
+#   because the rate limiter sits further in (Copilot review, PR #493).
+# * The rate limiter outside HeadAsGet, so a HEAD probe spends a token exactly
+#   like the GET it stands for.
 app.add_middleware(HeadAsGetMiddleware)
-# Just outside it, and just inside CORS. Outside HeadAsGet so a HEAD probe
-# spends a token exactly like the GET it stands for; inside CORS so a browser
-# can READ the 429 as a 429 instead of an opaque network error.
 app.add_middleware(RateLimitMiddleware)
-# Outside the limiter in turn: a caller that never came through the edge is
-# refused before it spends anyone's token. Still inside CORS, for the same
-# reason the limiter is — and because CORSMiddleware answers a preflight there,
-# which can never carry a custom header. Dormant until ORIGIN_SECRET is set.
-app.add_middleware(OriginSecretMiddleware)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origin_regex=settings.cors_allow_origin_regex,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 # Geometry payloads (diagnostic ~15–22 KB, write batches) compress ~4–8×.
 # GZip has no content-type filter, so admin chart/crop images get a useless
 # recompress pass too — a few ms on rare admin loads, accepted for the public
@@ -174,6 +175,20 @@ async def record_bot_fetch(request: Request, call_next):
         kind, source, key = asset
         track_asset_fetch(request, asset=kind, source=source, key=key, status=response.status_code)
     return response
+
+
+# The two outermost layers, registered AFTER the decorator above so they end up
+# outside it — see the stack comment where the inner ones are added. Dormant
+# until ORIGIN_SECRET is set; CORS wraps everything so every refusal stays
+# readable in a browser.
+app.add_middleware(OriginSecretMiddleware)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=settings.cors_allow_origin_regex,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 app.include_router(health_router)

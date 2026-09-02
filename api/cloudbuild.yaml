@@ -98,7 +98,18 @@ steps:
       - "--port=8000"
       - "--allow-unauthenticated"
       - "--add-cloudsql-instances=${_CLOUDSQL_INSTANCE}"
-      - "--set-secrets=DATABASE_URL=DATABASE_URL:latest,ADMIN_TOKEN=ADMIN_TOKEN:latest,CF_ACCESS_TEAM_DOMAIN=CF_ACCESS_TEAM_DOMAIN:latest,CF_ACCESS_AUD=CF_ACCESS_AUD:latest"
+      # `--update-secrets`, NOT `--set-secrets`: the latter replaces the whole
+      # binding set, so it would strip any secret attached out of band from
+      # every revision this pipeline creates. ORIGIN_SECRET (api/origin_gate.py)
+      # is exactly such a binding — it is attached by hand when the gate is
+      # armed and removed by hand to roll back, and `--set-secrets` would have
+      # silently disarmed the gate on the next deploy (Copilot review, PR #493).
+      # It cannot be listed here instead: Cloud Run refuses a deploy that names
+      # a secret which does not exist, which would break every build until the
+      # rollout reaches step (c). The cost of `--update-secrets` is that a
+      # binding dropped from this line is no longer removed automatically —
+      # worth it against a gate that turns itself off.
+      - "--update-secrets=DATABASE_URL=DATABASE_URL:latest,ADMIN_TOKEN=ADMIN_TOKEN:latest,CF_ACCESS_TEAM_DOMAIN=CF_ACCESS_TEAM_DOMAIN:latest,CF_ACCESS_AUD=CF_ACCESS_AUD:latest"
       - "--execution-environment=gen2"
       # ^|^ alt delimiter: ADMIN_ALLOWED_EMAILS_RAW contains @ and may contain ,
       - "--set-env-vars=^|^ENVIRONMENT=production|ADMIN_ALLOWED_EMAILS_RAW=${_ADMIN_ALLOWED_EMAILS}"
@@ -172,10 +183,15 @@ steps:
         # given. /health reports the verdict for the request it was asked with
         # (never the value), so a rotation applied to only one of the two shows
         # up here instead of as a mysterious 403 after the promote.
+        # `off`/`off-seen` are ACCEPTED, not failures: they are the gate before
+        # step (c) of the rollout and after a rollback, and a build that
+        # refused to run then would take the deploy pipeline down exactly when
+        # it is needed most. Only `mismatch` is a real disagreement.
         if [ -n "$$ORIGIN_SECRET" ]; then
           gate=$$(curl -fsS $$RETRY "$${HDR[@]}" "$$URL/health" | python3 -c "import json,sys; print(json.load(sys.stdin).get('origin_gate'))")
           case "$$gate" in
-            ok|off) echo "origin gate: $$gate" ;;
+            ok) echo "origin gate: armed, and this build's secret matches" ;;
+            off|off-seen) echo "origin gate: $$gate (not armed on this revision)" ;;
             *) echo "origin gate says '$$gate' for this build's secret — service and build disagree"; exit 1 ;;
           esac
         fi

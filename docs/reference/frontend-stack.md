@@ -337,9 +337,15 @@ nichts darüber, wer da kommt. Wer etwas darf, entscheidet weiterhin
 `api/auth.py`.
 
 - **Unset heißt aus.** Ohne `ORIGIN_SECRET` in der Cloud-Run-Env ist die Prüfung
-  komplett inaktiv — das ist zugleich der Rollback (Variable entfernen, kein
-  Deploy nötig) und der Grund, warum lokale Entwicklung und Testsuite sie nie
-  sehen.
+  komplett inaktiv — das ist zugleich der Rollback und der Grund, warum lokale
+  Entwicklung und Testsuite sie nie sehen. **Achtung beim Rollback:** eine
+  Änderung an Secrets oder Env legt eine NEUE Revision an, und der Dienst hängt
+  nach jedem Deploy an einer namentlich festgenagelten Revision
+  (`update-traffic --to-revisions=…`, `api/cloudbuild.yaml`) — die neue bekommt
+  also erst Verkehr, wenn sie ausdrücklich promotet wird. Scharfschalten und
+  Zurücknehmen sind deshalb je ZWEI Befehle: `services update …`, dann
+  `services update-traffic --to-revisions=<neue Revision>=100`. Kein neuer
+  Build, aber auch kein Selbstläufer.
 - **Ausgenommen sind `/health` und `/seo-proxy/…`.** `/health` erreicht der
   Deploy-Smoke auf der `run.app`-Tag-URL der Kandidaten-Revision, die
   definitionsgemäß nie am Edge vorbeikommt — ein Gate davor ließe jeden Deploy

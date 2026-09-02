@@ -137,6 +137,39 @@ async def test_a_preflight_is_never_refused(api: Harness, armed):
     assert refused.headers["access-control-allow-origin"] == "https://kurrentschrift.ink"
 
 
+async def test_a_refusal_never_reaches_the_bot_counter(api: Harness, armed):
+    """The gate has to sit OUTSIDE the analytics middleware, not just outside
+    the rate limiter.
+
+    An asset path plus a crawler User-Agent makes the counter fire an outbound
+    Plausible request per request. If the gate were inside it, a caller on the
+    direct `run.app` URL could turn each of its OWN refusals into one of those
+    — unthrottled, because the rate limiter sits further in still (Copilot
+    review, PR #493). A refused request must cost nothing at all.
+    """
+    from unittest.mock import patch
+
+    import api.main as api_main
+
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    crawler = {"User-Agent": "Mozilla/5.0 (compatible; Claude-User/1.0)"}
+    asset = f"/sources/{source_id}/write/glyphs/n.svg"
+
+    with patch.object(api_main, "track_asset_fetch") as assets, patch.object(api_main, "track_bot_fetch") as pages:
+        assert (await api.client.request("GET", asset, headers=crawler)).status == 403
+        assert (await api.client.request("GET", "/seo-proxy/nope", headers=crawler)).status in (200, 404)
+        assert assets.call_count == 0
+        # …while the exempt crawler path is still counted exactly as before.
+        assert pages.call_count == 1
+
+    # And with the header the asset read counts again — the gate suppresses a
+    # refusal, not the measurement.
+    with patch.object(api_main, "track_asset_fetch") as assets:
+        assert (await api.client.request("GET", asset, headers=crawler | _edge())).status == 200
+        assert assets.call_count == 1
+
+
 async def test_health_reports_the_verdict_for_the_request_it_was_asked_with(api: Harness, armed):
     """What makes the rollout measurable: every route into the service can be
     asked whether the header arrives, BEFORE the gate is armed."""
