@@ -1,78 +1,93 @@
-# Cloudflare — der Apex-Worker vor der API
+# Cloudflare — the apex Worker in front of the API
 
-> **Status (2026-09-02): lebend.** Dieses Verzeichnis ist die *Quelle* für
-> Cloudflare-Konfiguration, die sonst nur im Dashboard existiert. Angelegt,
-> weil der Worker beim Rollout des Origin-Gates (PR #493) nirgends im Repo
-> stand und niemand ohne Dashboard-Zugang sehen konnte, was er tut.
+> **Status (2026-09-02): live.** This directory is the SOURCE for Cloudflare
+> configuration that would otherwise exist only in the dashboard. It was created
+> because the Worker went unmentioned in the repo until the origin gate's
+> rollout (PR #493), so nobody without dashboard access could see what it does.
+>
+> English, like `changelog.d/README.md` and unlike the German documents under
+> `docs/` — the repo's convention is that a README is English
+> (`docs/reference/sprachregelung.md` §1).
 
-## Was hier liegt
+## What is here
 
-| Datei | Rolle |
+| File | Role |
 |---|---|
-| `kurrentschrift-api-proxy.js` | der Worker hinter der Route `kurrentschrift.ink/api/*` |
+| `kurrentschrift-api-proxy.js` | the Worker behind the route `kurrentschrift.ink/api/*` |
 
-**Die `.js` ist ein Spiegel der ausgelieferten Bytes, kein Entwurf.** Wer sie
-ändert, deployt sie auch — und wer im Dashboard etwas ändert, zieht sie hier
-nach. Genau deshalb steht kein Kopfkommentar mit Provenienz in der Datei
-selbst: so bleibt ein `diff` zwischen Repo und laufendem Script aussagekräftig
-statt ständig „unterschiedlich".
+**The `.js` mirrors the deployed bytes; it is not a draft.** Change it and
+deploy it; change it in the dashboard and pull it back here. That is also why
+the file carries no provenance header of its own: a comment there would make
+every `diff` between the repo and the running script read "different" forever,
+and that diff is the point of keeping a mirror.
 
-## Der Worker
+> **After merging this PR the Worker needs a redeploy.** The
+> `headers.delete('X-Origin-Secret')` line is newer than the running script (see
+> "Why it strips the header first"), so repo and deployment are out of step
+> until it is pushed.
 
-**Zweck.** `kurrentschrift.ink/api/*` ist der ADMIN-Weg zur API. Er existiert,
-weil das Cloudflare-Access-Cookie auf der Apex host-only gesetzt ist: nur unter
-diesem Host reist es mit, und nur dort injiziert Access das verifizierende JWT
-(→ [`frontend-stack.md`](../../docs/reference/frontend-stack.md) §5). Der Worker
-schneidet das Präfix `/api` ab und reicht den Request an
-`https://api.kurrentschrift.ink` weiter. Öffentliche Seiten benutzen ihn nicht;
-die lesen direkt die offene Subdomain (`CONFIG.publicApiBase`).
+## The Worker
 
-**Warum er das Origin-Geheimnis selbst stempelt.** Das ist der Befund, für den
-dieses Verzeichnis entstanden ist:
+**Purpose.** `kurrentschrift.ink/api/*` is the ADMIN path to the API. It exists
+because the Cloudflare Access cookie on the apex is host-only: it travels under
+that host and nowhere else, and only there does Access inject the verifying JWT
+(→ [`frontend-stack.md`](../../docs/reference/frontend-stack.md) §5). The Worker
+strips the `/api` prefix and forwards to `https://api.kurrentschrift.ink`.
+Public pages do not use it; they read the open subdomain directly
+(`CONFIG.publicApiBase`).
 
-> Ein Worker-Subrequest an einen Host **derselben Zone** läuft an den
-> Transform-Rules der Zone **vorbei**.
+**Why it stamps the origin secret itself.** This is the finding this directory
+exists for:
 
-Die Transform-Rule stempelt `X-Origin-Secret` auf alles, was Cloudflare für
-`api.kurrentschrift.ink` weiterreicht — aber eben nicht auf ein `fetch()` aus
-einem Worker heraus. Ohne die vier Zeilen im Worker hätte das Scharfschalten des
-Gates den ganzen Admin lahmgelegt. Gemessen wurde das an `/api/health` (siehe
-Messvorschrift unten): erst `off`, nach dem Worker-Update mit Secret-Binding
-`off-seen`, nach dem Scharfschalten `ok`.
+> A Worker subrequest to a host in the **same zone** bypasses that zone's
+> Transform Rules.
 
-Die Bindung wird bewusst als `if (env.ORIGIN_SECRET)` geprüft: eine fehlende
-Bindung stempelt **nichts**, statt einen leeren Header zu senden. Das macht den
-Worker für ein noch nicht scharfes Gate unschädlich — es ist aber **KEIN
-Rollback**. Solange der Cloud-Run-Dienst scharf ist, beantwortet er jeden
-Admin-Request ohne Header mit 403: die Bindung wegzunehmen legt den Admin lahm,
-statt ihn zu befreien. Zurückgenommen wird immer auf der API-Seite —
-`ORIGIN_SECRET` aus dem Dienst entfernen **und die entstehende Revision
-promoten** (zwei Befehle,
-[`frontend-stack.md`](../../docs/reference/frontend-stack.md) §5). Reihenfolge
-in beide Richtungen: erst der Worker stempelt, dann wird das Gate scharf; erst
-das Gate wird stumpf, dann darf der Worker aufhören zu stempeln.
+The Transform Rule stamps `X-Origin-Secret` on everything Cloudflare forwards
+for `api.kurrentschrift.ink` — but not on a `fetch()` issued from inside a
+Worker. Without those lines in the Worker, arming the gate would have taken the
+whole admin down. It was measured on `/api/health` (see "Measuring" below):
+first `off`, then `off-seen` once the Worker had its secret binding, then `ok`
+after arming.
 
-## Einstellungen (Dashboard)
+**Why it strips the header first.** `headers` is cloned from the incoming
+request, so without `headers.delete('X-Origin-Secret')` a caller could supply
+that header itself and have it forwarded whenever the binding is unset. Two
+consequences, one of them subtle: the documented "unset binding stamps nothing"
+would be false, and an unarmed `/health` probe would report a spurious
+`off-seen` — corrupting the one measurement the rollout hangs on.
+
+**Why the binding is guarded by `if (env.ORIGIN_SECRET)`.** A missing binding
+stamps nothing rather than sending an empty header, which makes the Worker
+harmless while the gate is not yet armed. It is **NOT a rollback.** As long as
+the Cloud Run service is armed, every admin request without the header gets a
+403: removing the binding takes the admin down rather than freeing it. Rolling
+back always happens on the API side — remove `ORIGIN_SECRET` from the service
+**and promote the resulting revision** (two commands;
+[`frontend-stack.md`](../../docs/reference/frontend-stack.md) §5). The ordering
+holds in both directions: the Worker starts stamping before the gate is armed,
+and stops only after it is disarmed.
+
+## Settings (dashboard)
 
 | | |
 |---|---|
-| Script-Name | `kurrentschrift-api-proxy` |
-| Route | `kurrentschrift.ink/api/*` (Zone `kurrentschrift.ink`) |
-| Binding | `secret_text` **`ORIGIN_SECRET`** — Wert = Secret Manager `ORIGIN_SECRET`, derselbe, den der Cloud-Run-Dienst bekommt |
+| Script name | `kurrentschrift-api-proxy` |
+| Route | `kurrentschrift.ink/api/*` (zone `kurrentschrift.ink`) |
+| Binding | `secret_text` **`ORIGIN_SECRET`** — value = Secret Manager `ORIGIN_SECRET`, the same one the Cloud Run service gets |
 | `compatibility_date` | `2024-11-01` |
-| Modultyp | ES-Modul (`export default { fetch }`) |
+| Module type | ES module (`export default { fetch }`) |
 
-## Deploy
+## Deploying
 
-**Dashboard** (der übliche Weg): Workers & Pages → `kurrentschrift-api-proxy` →
-Edit code → Inhalt von `kurrentschrift-api-proxy.js` einfügen → Deploy. Die
-Secret-Bindung wird einmalig unter Settings → Variables als *Secret* angelegt;
-sie überlebt spätere Deploys.
+**Dashboard** (the usual way): Workers & Pages → `kurrentschrift-api-proxy` →
+Edit code → paste the contents of `kurrentschrift-api-proxy.js` → Deploy. The
+secret binding is created once under Settings → Variables as a *Secret*; it
+survives later deploys.
 
-**API** (wenn es skriptbar sein soll) — Multipart aus Metadaten + Modul:
+**API** (when it has to be scriptable) — multipart of metadata plus module:
 
 ```bash
-# Der Secret-Wert steht im Secret Manager; nie in ein Log oder eine Datei.
+# The secret's value lives in Secret Manager; never in a log or a file.
 curl -X PUT \
   "https://api.cloudflare.com/client/v4/accounts/{account}/workers/scripts/kurrentschrift-api-proxy" \
   -H "Authorization: Bearer $CF_API_TOKEN" \
@@ -80,37 +95,36 @@ curl -X PUT \
         "main_module": "worker.js",
         "compatibility_date": "2024-11-01",
         "bindings": [
-          {"type": "secret_text", "name": "ORIGIN_SECRET", "text": "<Wert>"}
+          {"type": "secret_text", "name": "ORIGIN_SECRET", "text": "<value>"}
         ]
       };type=application/json' \
   -F 'worker.js=@infra/cloudflare/kurrentschrift-api-proxy.js;type=application/javascript+module'
 ```
 
-Die Bindungen sind bei einem Script-`PUT` **vollständig ersetzend**: wer sie
-weglässt, entfernt sie — genau die Falle, die auf der Cloud-Run-Seite
-`--set-secrets` gegen `--update-secrets` getauscht hat
-(`api/cloudbuild.yaml`). Also entweder alle Bindungen mitschicken oder im
-Dashboard deployen.
+A script `PUT` **replaces** the bindings wholesale: omitting one removes it —
+the same trap that made the Cloud Run side swap `--set-secrets` for
+`--update-secrets` (`api/cloudbuild.yaml`). So either send every binding or
+deploy from the dashboard.
 
-## Messvorschrift: hat der Header den Weg genommen?
+## Measuring: did the header take this path?
 
-`/health` ist vom Origin-Gate ausgenommen und meldet sein Urteil über den
-Request, mit dem es gefragt wurde — **nie den Wert**:
+`/health` is exempt from the origin gate and reports its verdict on the request
+it was asked with — **never the value**:
 
-| `origin_gate` | heißt |
+| `origin_gate` | meaning |
 |---|---|
-| `off` | Gate nicht scharf, **kein** Header angekommen |
-| `off-seen` | Gate nicht scharf, Header ist angekommen — der Zustand, in dem man vor dem Scharfschalten stehen will |
-| `ok` | Gate scharf, Header stimmt |
-| `missing` | Gate scharf, kein Header — dieser Weg wäre jetzt tot |
-| `mismatch` | Gate scharf, falscher Wert (halb angewendete Rotation) |
+| `off` | gate not armed, **no** header arrived |
+| `off-seen` | gate not armed, the header arrived — the state to be in before arming |
+| `ok` | gate armed, header matches |
+| `missing` | gate armed, no header — this path would now be dead |
+| `mismatch` | gate armed, wrong value (half-applied rotation) |
 
 ```bash
-curl -s https://api.kurrentschrift.ink/health   # der öffentliche Weg
-curl -s https://kurrentschrift.ink/api/health   # DIESER Worker (mit Access-Cookie)
-curl -s https://<api-run-url>/health            # muss "off"/"missing" bleiben: die geschlossene Tür
+curl -s https://api.kurrentschrift.ink/health   # the public path
+curl -s https://kurrentschrift.ink/api/health   # THIS Worker (with the Access cookie)
+curl -s https://<api-run-url>/health            # must stay "off"/"missing": the closed door
 ```
 
-Nach jeder Änderung am Worker, an der Transform-Rule oder am Secret gilt: erst
-messen, dann scharf schalten. Reihenfolge und Rollback stehen in
+After any change to the Worker, the Transform Rule or the secret: measure
+first, arm second. The order and the rollback are in
 [`frontend-stack.md`](../../docs/reference/frontend-stack.md) §5.

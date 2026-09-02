@@ -11,6 +11,17 @@
   script `PUT`) and the `off`/`off-seen`/`ok` measurement that verifies a path
   before the origin gate is armed (#NNN).
 
+### Security
+
+- **The apex Worker no longer forwards a caller's own `X-Origin-Secret`.** Its
+  headers are cloned from the incoming request, so while the secret binding was
+  unset a client could supply that header and have it passed to the API — which
+  made the documented "unset binding stamps nothing" untrue and, worse, would
+  have let an unarmed `/health` probe report a spurious `off-seen`, corrupting
+  the one measurement the whole rollout hangs on. The header is deleted before
+  the binding is applied. **The Worker needs a redeploy for this line to take
+  effect**; the repo copy is otherwise the deployed bytes (#NNN).
+
 ### Fixed
 
 - **The origin gate's documentation said the admin route was covered by the
