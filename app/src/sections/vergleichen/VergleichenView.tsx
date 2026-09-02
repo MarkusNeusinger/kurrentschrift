@@ -26,6 +26,7 @@ import { getLesarten, type LesartDictionaryOut, type LesartenOut, type LesartRea
 import { de, fmt } from '@/locales';
 import { paths } from '@/routes/paths';
 import { SECTION_IDS } from '@/sections/schriftkunde/sections';
+import { lesartenState, showsDictionaryNote } from '@/sections/vergleichen/lesartenPanel';
 import { display, garamond, paper } from '@/styles/paper';
 
 const t = de.vergleichen;
@@ -115,9 +116,13 @@ export function VergleichenView() {
       cancelled = true;
     };
   }, [text]);
-  const readings: LesartReadingOut[] | null = answer && answer.text === text ? answer.readings : null;
-  const dictionary: LesartDictionaryOut | null | undefined = answer?.dictionary;
-  const readingsError = failedText === text && readings === null;
+  // Both halves come from the answer to THIS text, never from the last one:
+  // a provenance line left standing under a word that is still loading would
+  // credit a dictionary for words nobody has seen yet.
+  const current: LesartenOut | null = answer && answer.text === text ? answer : null;
+  const readings: LesartReadingOut[] | null = current?.readings ?? null;
+  const dictionary: LesartDictionaryOut | null | undefined = current?.dictionary;
+  const state = lesartenState(readings, dictionary, failedText === text && readings === null);
   const missingLetters = useMemo(() => lettersFromKeys(missing), [missing]);
 
   // The confusable pairs: one batch for all their glyphs, fetched when the
@@ -226,18 +231,20 @@ export function VergleichenView() {
         <Box component="section" sx={{ mt: { xs: 5, md: 6 } }}>
           <CategoryHeading>{t.lesartenHeading}</CategoryHeading>
           <Typography sx={{ ...prose, mb: 2, maxWidth: '64ch' }}>{t.lesartenIntro}</Typography>
-          {!text ? null : readingsError ? (
+          {!text ? null : state === 'error' ? (
             <Typography sx={{ ...prose, fontStyle: 'italic' }}>{t.lesartenError}</Typography>
-          ) : readings === null ? (
+          ) : state === 'loading' ? (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: paper.inkSoft }}>
               <CircularProgress size={18} aria-hidden />
               <Typography sx={prose}>{t.lesartenLoading}</Typography>
             </Box>
-          ) : readings.length === 0 ? (
+          ) : state === 'noDictionary' ? (
+            <Typography sx={{ ...prose, fontStyle: 'italic' }}>{t.noDictionary}</Typography>
+          ) : state === 'noReadings' ? (
             <Typography sx={{ ...prose, fontStyle: 'italic' }}>{t.noLesarten}</Typography>
           ) : (
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, gap: 2 }}>
-              {readings.map((r) => (
+              {(readings ?? []).map((r) => (
                 <ButtonBase
                   key={r.word}
                   onClick={() => takeOver(r.word)}
@@ -269,9 +276,12 @@ export function VergleichenView() {
               ))}
             </Box>
           )}
-          {dictionary !== undefined && (
+          {/* Provenance of the words — only where words came from. Without a
+              dictionary the state above has already said so, and saying it
+              twice is what made the page contradict itself. */}
+          {showsDictionaryNote(dictionary) && (
             <Typography variant="caption" component="p" sx={{ color: paper.sepia, fontStyle: 'italic', mt: 1.5, maxWidth: '64ch' }}>
-              {dictionary ? fmt(t.dictionaryNote, { forms: dictionary.forms.toLocaleString('de-DE') }) : t.dictionaryMissing}
+              {fmt(t.dictionaryNote, { forms: dictionary.forms.toLocaleString('de-DE') })}
             </Typography>
           )}
         </Box>

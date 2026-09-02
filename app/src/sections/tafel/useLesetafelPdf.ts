@@ -26,6 +26,15 @@ function loadImage(url: string): Promise<HTMLImageElement> {
     const img = new Image();
     // The API allows the site's origin (CORS), so the canvas stays untainted
     // and can be read back as JPEG.
+    //
+    // This attribute alone is not enough, and that is why TafelView's DISPLAY
+    // image carries it too: a browser keys its HTTP cache by CORS mode. The
+    // page shows the same plate URL, so whichever request goes first files the
+    // entry — and a no-CORS entry answered to this CORS-mode load carries no
+    // Access-Control-Allow-Origin, which the browser then blocks. Live on
+    // 2026-09-02 that killed the button on every visit that had let the plate
+    // load first (website audit, finding 2); if it ever comes back, check that
+    // the <img> in TafelView still has crossOrigin="anonymous".
     img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error(`plate failed to load: ${url}`));

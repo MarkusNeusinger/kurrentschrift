@@ -80,7 +80,10 @@ function SourceProvenance({ source }: { source: SourceOut }) {
 // legible without leaving the page. While zoomed, press-and-drag pans the sheet
 // with mouse OR finger (pointer events); a clean tap zooms back out. A 6px move
 // threshold separates a pan (hold + drag) from a tap (click).
-function OriginalScan({ source }: { source: SourceOut }) {
+//
+// Exported for the test that pins the two attributes on the image below —
+// `crossOrigin` (the PDF depends on it) and the reserved box.
+export function OriginalScan({ source }: { source: SourceOut }) {
   const [zoomed, setZoomed] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -194,11 +197,25 @@ function OriginalScan({ source }: { source: SourceOut }) {
           src={chartUrl(source.id)}
           alt={de.tafel.originalAlt}
           draggable={false}
+          // MUST stay: „Lesetafel als PDF" rasterises this very URL through a
+          // canvas and needs an untainted image, so useLesetafelPdf loads it
+          // with crossOrigin='anonymous'. A browser keys its HTTP cache by CORS
+          // mode: without the attribute HERE, the display image files a no-CORS
+          // entry first, the PDF's CORS-mode request is answered from it, finds
+          // no Access-Control-Allow-Origin and is blocked — which is exactly how
+          // the button died in production (website audit 2026-09-02, finding 2).
+          crossOrigin="anonymous"
           // Three Grundtafeln render at once (~1.4 MB of JPEG), two below the
           // fold — defer them like the Schriftkunde/Impressum images do. The
           // deep-link re-align effect tolerates the late reflow (ResizeObserver).
           loading="lazy"
           decoding="async"
+          // Reserve the plate's box before its bytes arrive: three lazy scans
+          // of a few hundred pixels' height each shifted the page as they
+          // landed (desktop CLS 0.47, the route's only Lighthouse failure).
+          // The ratio is the source's own chart_size, so it can never drift
+          // from the file the API serves.
+          style={{ aspectRatio: `${source.chart_size.w} / ${source.chart_size.h}` }}
           sx={{
             display: 'block',
             width: zoomed ? 'auto' : '100%',

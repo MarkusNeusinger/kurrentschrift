@@ -4,9 +4,11 @@
 // example word for „im Wort sehen". No React, no fetch.
 
 import { LETTERS } from '@/domain/glyphs';
+import { glyphKeysOf, shapeText } from '@/domain/shaping';
 import type { GlyphRenderData } from '@/lib/api';
 import { LOOKALIKES } from '@/lib/lesarten';
 import type { WordEntry } from '@/sections/quiz/wordBank';
+import { EXAMPLE_WORDS } from '@/sections/tafel/exampleWords';
 
 type Pt = [number, number];
 
@@ -40,21 +42,42 @@ export function lookalikeKeys(key: string): string[] {
   return [...new Set(keys)];
 }
 
-/** A short everyday word that shows the letter in use — the shortest modern
- * bank word containing it: a non-final s for the long ſ, a final s for the
- * round s, a word-initial capital for an uppercase letter. Null when the
- * bank has none. */
-export function exampleWord(key: string, bank: readonly WordEntry[]): string | null {
+/** An example word for the „im Wort sehen" bridge into the Federprobe. */
+export interface ExampleWord {
+  word: string;
+  /** True for a word from the bank's historic layer (the vocabulary of old
+   * letters, not of today's speech) — the link says so rather than passing
+   * „Muhme" off as everyday German. */
+  historic: boolean;
+}
+
+/** A short word that shows the letter in use, picked in three rungs: the
+ * shortest MODERN bank word that shows it, else the shortest HISTORIC one,
+ * else the checked constant in exampleWords.ts. Null only for the glyphs no
+ * word shows — digits and punctuation.
+ *
+ * „Shows it" is asked of the shaper itself (domain/shaping), not of the
+ * spelling: a word shows the letter when the slots it is written in carry
+ * this glyph_key. That is what makes „sein" a ſ-word but „Fenster" an
+ * ſt-word, „das" an s-word but „sein" not, and „Buch" no h-word at all — the
+ * h there is written inside the ch ligature, where nobody can point at it.
+ * Words with a Fuge marker stay out: their render form carries a `|` the
+ * Federprobe link would not pass on, so the s at the seam would come out long
+ * (`Donners|tag`). */
+export function exampleWord(key: string, bank: readonly WordEntry[]): ExampleWord | null {
   const letter = LETTERS.find((l) => l.base === key);
   if (!letter) return null;
-  const glyph = letter.glyph;
-  const matches = (w: string): boolean => {
-    if (key === 'longs') return /s\p{L}/u.test(w); // an s followed by a letter is set as the long ſ
-    if (key === 's') return w.endsWith('s'); // only a final s is the round s
-    if (letter.group === 'upper') return w.startsWith(glyph);
-    return w.includes(glyph);
-  };
-  const candidates = bank.filter((e) => e.era === 'modern' && !e.fugen && matches(e.word)).map((e) => e.word);
-  if (!candidates.length) return null;
-  return candidates.sort((a, b) => a.length - b.length || a.localeCompare(b))[0];
+  const matches = (w: string): boolean => glyphKeysOf(shapeText(w)).includes(key);
+  const shortest = (era: WordEntry['era']): string | undefined =>
+    bank
+      .filter((e) => e.era === era && !e.fugen && matches(e.word))
+      .map((e) => e.word)
+      .sort((a, b) => a.length - b.length || a.localeCompare(b))[0];
+
+  const modern = shortest('modern');
+  if (modern) return { word: modern, historic: false };
+  const historic = shortest('historic');
+  if (historic) return { word: historic, historic: true };
+  const fallback = EXAMPLE_WORDS[key];
+  return fallback ? { word: fallback, historic: false } : null;
 }
