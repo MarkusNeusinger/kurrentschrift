@@ -6,6 +6,13 @@ export const quiz = {
   // H1 with the search term in it (SEO audit 2026-08-29, locales/de/seo.ts).
   title: 'Lese-Quiz',
   heading: 'Sütterlin lesen üben: das Lese-Quiz',
+  // The explanatory paragraph under the H1 (SPA: over the setup; prerender:
+  // over the option list). It says what a round looks like, what is explained
+  // after a miss — the DOCUMENTED look-alikes, never „jeden Fehlgriff“
+  // (lesefallen.ts) — and which script is drilled today, so neither a person
+  // nor a crawler is promised a Kurrent quiz (website audit 2026-09-02).
+  about:
+    'Das Quiz zeigt dir einen Buchstaben oder ein ganzes Wort, wie es die Feder nach der Sütterlin-Ausgangsschrift von 1922 schreibt, und fragt: Welcher ist das? Vier Antworten stehen zur Wahl, darunter meist der Verwechsler, mit dem Leseanfänger die Form am häufigsten vertauschen — n und u, e und n, das lange ſ und das f. Liegst du daneben, stehen beide Formen nebeneinander; bei den klassischen Verwechslern kommt das Merkmal dazu, das sie trennt: der Bogen über dem u, die Schleife und der Querstrich des f. Bei den Wörtern kommen neben Alltagswörtern die Vokabeln alter Briefe an die Reihe — Muhme, Wittib, ergebenst — mit kurzer Erklärung. Am Ende zeigt die Auswertung, welche Formen Mühe machten. Geübt wird bislang nur die Sütterlin; Kurrent und Offenbacher folgen, sobald ihre Vorlagen nachgeschrieben sind.',
   // Quiz option lists (quizTypes.ts) — script + difficulty labels.
   scripts: {
     kurrent: 'Kurrent',
@@ -123,6 +130,12 @@ export const quiz = {
     cleanNote: 'Keine Verwechslungen — sauber gelesen.',
     // Suffix after a count, e.g. "1×".
     times: '×',
+    // Under the two result blocks: every letter card leads to that letter on
+    // the Schreibtafel (/tafel?g=<key>), where it writes itself stroke by
+    // stroke — the way on after a misread.
+    tafelHint: 'Eine Form antippen: die Schreibtafel schreibt sie Zug um Zug vor.',
+    // Aria label of such a card (interpolates the letter's name).
+    tafelLinkAria: '{{form}} auf der Schreibtafel ansehen',
     replay: 'Weiter üben',
     settings: 'Einstellungen ändern',
   },

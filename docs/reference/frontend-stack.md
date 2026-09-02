@@ -39,6 +39,14 @@ gemeinsam für Endnutzer und Admin, mit Auth-Gate für sensible Routen.
 **Package Manager:** npm (wie heute im Repo — `app/package-lock.json` ist
 checked in; anyplot nutzt yarn, wir bewusst nicht).
 
+**Test-Abdeckung:** Vitest misst seit 2026-09-02 über die **ganze**
+SPA-Quelle (`test.coverage.include: ['src/**/*.{ts,tsx}']` in
+`app/vite.config.ts`, in Vitest 4 der Ersatz für das alte `all: true`) —
+ohne diesen Block zählt nur, was ein Test zufällig importiert, was 82,7 %
+meldete, wo über die ganze Quelle 19,2 % stehen. Eine Zahl, die ihre
+eigene Testliste misst, ist schlechter als keine. Die Codecov-Ziele in
+`codecov.yml` sind seither feste Böden je Flag statt `auto`.
+
 **Begründung gegen andere Stacks (Verworfen-Sektion):**
 
 - *Astro mit Islands-Architektur* — wäre für die SEO-Inhaltsseite ein
@@ -220,7 +228,30 @@ indexiert. Regel seitdem (`app/src/locales/de/seo.ts`, gepinnt von
 - **Die Hubs `/lesen` und `/schreiben` tragen je einen erklärenden Absatz**
   (`hub.*.about`: was die Schrift ist, für wen die Werkzeuge sind, Fakten
   aus der Schriftkunde) — vorher 139 bzw. 141 Wörter, zu dünn für einen
-  Treffer.
+  Treffer. Seit dem Website-Audit 2026-09-02 gilt dasselbe für die beiden
+  Werkzeug-Seiten: `quiz.about` und `scribe.about` stehen unter der H1, in
+  der SPA wie im Prerender (vorher 111 bzw. 129 Wörter Hauptinhalt).
+- **`description`: höchstens 155 Zeichen** (`seoCoverage.test.ts`). Google
+  schneidet länger mitten im Satz ab, und verloren geht regelmäßig die
+  letzte Teilaussage — genau dort steht die Zusage. Das Gate erlaubte bis
+  zum Audit 2026-09-02 200 Zeichen; fünf Beschreibungen waren daraufhin auf
+  bis zu 190 gewachsen. Dieselben Texte stehen als `og:description` im
+  Prerender und (für die Startseite) in `app/index.html` — beim Kürzen
+  mitziehen.
+- **Was eine Seite verspricht, muss sie halten.** Der Prerender ist kein
+  zweiter Textbestand, sondern dieselbe Locale in anderer Form: Wo die SPA
+  eine Auswahl verbirgt, weil es sie nicht gibt (`quizOptions.offersChoice`),
+  verbirgt die vorgerenderte Seite sie auch — sonst lesen Crawler und
+  KI-Antworten ein Angebot, das die Seite nicht hat (Audit 2026-09-02:
+  Kurrent, Offenbacher und drei Schwierigkeitsstufen im Quiz-Body). Gepinnt
+  von `lib/seo/prerender.test.ts`.
+- **`<lastmod>` in `sitemap.xml` ist die „Stand"-Zeile der Crawler-Seite**
+  (`prerender.ts` liest sie von dort), nicht bloß Buchhaltung. Wer Copy
+  ändert, zieht das Datum der betroffenen Route mit;
+  `scripts/check-sitemap-lastmod.mjs` läuft im `npm run prerender` und
+  hält jedes Datum gegen die Git-Historie der Dateien, die die Seite
+  rendert (`PageSpec.sources`). Bei flacher Klonung (kein `git log`)
+  überspringt der Wächter still, statt zehn Fehlalarme zu werfen.
 - **`/seo-proxy` beantwortet HEAD** wie GET ohne Body (vorher 405 — für
   einen Link-Checker eine tote Seite).
 - Der Prerender nimmt die Breadcrumb-Bezeichnung des letzten Glieds aus

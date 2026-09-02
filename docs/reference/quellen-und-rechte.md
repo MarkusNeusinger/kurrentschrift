@@ -251,9 +251,20 @@ losschreiben" kann, gilt technisch:
   §2). Wer massenhaft abgreift, verletzt den Vorbehalt — das ist die
   rechtliche, nicht die technische Grenze.
 - **Bekannte, akzeptierte Ausnahme:** `tests/fixtures/compose_golden.json.gz`
-  pinnt die Composer-Parität mit 11 gerenderten Wörtern (keine
-  Templates, nicht generalisierbar). Folgeaufgabe: das Golden auf
-  synthetische Test-Templates umstellen, dann verschwindet auch das.
+  pinnt die Composer-Parität mit 11 gerenderten Wörtern. Die Datei enthält
+  je Wort die Render-Payloads der benutzten Glyphen — `anchors_template`,
+  `half_widths_template`, `centerlines_template`, `outline_paths`,
+  `template_guides`, `entry`/`exit_pt`, `advance` —, zusammen **27
+  glyph_keys** der Sütterlin-Grundvorlage (`G M S a b c ch ck d e g h i k l
+  longs n o r s t tz u ue v w z`, gemessen 2026-09-02). Das ist
+  strukturgleich mit der öffentlichen Antwort von
+  `GET /sources/{id}/write/glyphs` und geht damit nicht über die bewusst
+  offene Produkt-Oberfläche hinaus — liegt aber, anders als jene, offline im
+  Klon. Die frühere Beschreibung „keine Templates, nicht generalisierbar"
+  war sachlich falsch und ist hier durch den gemessenen Stand ersetzt; die
+  Entscheidung selbst bleibt unangetastet. Folgeaufgabe unverändert: das
+  Golden auf synthetische Test-Templates umstellen, dann verschwindet auch
+  das.
 - Ein öffentlicher Datensatz entsteht nur als **bewusster
   Ziel-7-Release** (architektur.md §17, eigene Lizenz, Zenodo) — nie
   implizit über Repo oder API.

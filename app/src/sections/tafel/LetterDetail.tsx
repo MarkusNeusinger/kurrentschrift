@@ -118,7 +118,7 @@ export function LetterDetail({ glyphKey, glyph, onClose }: Props) {
   );
   const lookalikeKeysMemo = useMemo(() => specimens.map((s) => s.key), [specimens]);
   const payloads = useSpecimenPayloads(lookalikeKeysMemo, true);
-  const word = useMemo(() => exampleWord(glyphKey, WORD_BANK), [glyphKey]);
+  const example = useMemo(() => exampleWord(glyphKey, WORD_BANK), [glyphKey]);
   const name = knownGlyph(glyphKey)?.label ?? glyph;
   const count = data ? strokeCount(data) : 0;
   const shown = upto ?? count;
@@ -224,9 +224,9 @@ export function LetterDetail({ glyphKey, glyph, onClose }: Props) {
             <SpecimenStrip specimens={specimens} payloads={payloads} height={72} sx={{ bgcolor: '#fff' }} />
           </Box>
         )}
-        {word && (
-          <Link component={RouterLink} to={`${paths.scribe}?text=${encodeURIComponent(word)}`} variant="body2" sx={{ color: paper.viridianText, ml: { sm: 'auto' } }}>
-            {fmt(t.inWord, { word })} →
+        {example && (
+          <Link component={RouterLink} to={`${paths.scribe}?text=${encodeURIComponent(example.word)}`} variant="body2" sx={{ color: paper.viridianText, ml: { sm: 'auto' } }}>
+            {fmt(example.historic ? t.inWordHistoric : t.inWord, { word: example.word })} →
           </Link>
         )}
       </Box>

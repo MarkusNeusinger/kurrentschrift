@@ -34,34 +34,34 @@ antrifft und nicht raten können soll.
 Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§2** Architektur & Datenmodell · **§3** Mess- und Fit-Vokabular ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
-**§6** Extern/Forschung.
+**§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
 - **A** — Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4
 - **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
-- **F** — Fassung (Eigenhand) §5 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1
-- **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4 · Gute-Fortsetzung §4
+- **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1
+- **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — k0-Protokoll §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
-- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Lesart §1 · Lesefalle §1 · Ligatur §1 · Lineatur §1 · loss §4
+- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Mindestbelegung (Eigenhand) §5
-- **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Natürlichkeitsmetrik §4 · Nullprobe §4
+- **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schreib-Karte §2 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftkunde (Seite) §7 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
 - **U** — Unvollständige Wortprobe §5
-- **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · understanding §5
+- **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschrift §1
-- **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wort-Trace §2 · Wortvorrat §5
+- **W** — W1–W5 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
-- **Z** — Zeilen-Gate (Laufform) §2 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
+- **Z** — Zeilen-Gate (Laufform) §2 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · „Zug um Zug“ §7 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
 
 ---
 
@@ -1317,7 +1317,8 @@ Override misst gegen sein eigenes Quell-Specimen konstruktionsbedingt ~0.
 im Repo streng festgelegt: eigener try/except, angehängt *nach* dem
 stabilen Block, und der **Headline-Nachweis ist Pflicht** — ein Lauf vor
 und nach der Einführung muss bis zur letzten Stelle identisch sein. Die
-Linie dieser Spalten: Slant (R5) → Gleichzug (`jul30`) → `meas` (`aug02`).
+Linie dieser Spalten: Slant (R5) → Gleichzug (`jul30`) → `meas` (`aug02`)
+→ Naht-Winkel (`sep02`).
 
 **Slant-Spalte** — Report-Spalte, die die gemessene Schräglage der Vorlage
 gegen die der komponierten Zeile stellt (90° = senkrecht), aus dem
@@ -1330,6 +1331,24 @@ Stift ist gesprungen); **(b) EINE STRICHBREITE** — zwei fast parallele
 Pfadstücke in einem bestimmten Abstandsband lesen sich als doppelt breiter
 Strich („Doppelung“). Exaktes Nachfahren (Retrace) und transversales
 Kreuzen sind erlaubt. `tools/wordbench/gleichzug.py`.
+
+**Naht-Winkel** *(`seam_deg`)* — wie stark die Feder an der **Naht**
+abknickt, also dort, wo ein generierter Verbinder den Buchstaben verlässt
+(`dep`, Abgang) und den nächsten erreicht (`arr`, Ankunft). Gemessen wird
+die Richtungsdifferenz **Abgehend minus Ankommend in Schreibrichtung**, in
+Grad, positiv = die Feder dreht gegen den Uhrzeigersinn; das Fenster ist
+mit 0,05 xh Bogenlänge bewusst *kleiner* als die 0,12 xh, auf die der
+Composer seine Verbinder-Tangenten ausrichtet — auf dem Fenster der
+Konstruktion selbst gemessen wäre der Restknick per Definition null. Auf
+der eingefrorenen 1922er Worttafel geht der Verbinder im Median **+11,87°**
+steiler ab, als der Buchstabe zuletzt lief, und kommt **−3,26°** flacher
+an (Prüfung 2026-09-02, 206 von 214 Joins). Ausgeschlossen und gezählt:
+Verbinder mit vorangestelltem Versal-Rückzug (deren „Abgang“ ist eine
+gewollte 180°-Kehre). Echte Kehren (ſ/w/r/v) bleiben drin — Duktus, kein
+Defekt. Report-Spalte, nie Teil des Loss.
+*Technisch:* `tools/wordbench/seam.py::seam_angles`, `SEAM_WINDOW`;
+Blockzeilen `seam_dep_median` / `seam_arr_median` (vorzeichenbehaftet) und
+`seam_*_abs_median`. → tools/wordbench/README.md
 
 **Natürlichkeitsmetrik (Sütterlin)** — die zweite, *referenzfreie* Metrik:
 Weil Sütterlin einen pixeligen Scan mit konstanter Strichbreite hat, wäre
@@ -1357,6 +1376,24 @@ geändert wird der Composer, nie das Lineal.
 **Re-Baseline** — der bewusste, menschlich entschiedene Neu-Export dieser
 Referenzen. **Zahlen über eine Re-Baseline hinweg sind nicht
 vergleichbar** und werden im Journal ausdrücklich als solche markiert.
+
+**Wurzel-Digest** *(`root_digest`)* — der Fingerabdruck einer
+Fixture-Wurzel, damit man einer Kennzahl ansieht, **worauf** sie gemessen
+wurde: SHA-256 über die *sortierte* Liste aus (relativem Pfad, Größe,
+SHA-256 der Bytes) aller Dateien der Wurzel. Deterministisch (die
+Sortierung ist die einzige Reihenfolge), blind für Zeitstempel und Rechte
+(eine kopierte Wurzel behält ihre Identität), empfindlich schon gegen ein
+einzelnes gekipptes Byte oder eine bloß hinzugefügte Datei. Weil die
+Wurzeln gitignored sind, hinterlässt ein Neu-Export sonst keine Spur — die
+Prüfung vom 2026-09-02 fand ein Zahlenpaar, dessen Grundlage niemand mehr
+rekonstruieren konnte (die **undeklarierte Re-Baseline**). Hausregel:
+**jede genannte Headline nennt `exported_at` + die ersten 12 Hex daneben**;
+`--expect-root <Präfix>` macht die erwartete Grundlage zur Vorbedingung und
+bricht *vor* dem Messen ab.
+*Technisch:* `tools/wordbench/run.py::root_digest`, Kopfzeilen `root:` /
+`digest=`, volle Digests im `--json`-Report unter `roots`; im selben Zug
+prüft der Messlauf das `page_sha256` des Manifests gegen die Tafel-Bytes.
+→ tools/wordbench/README.md
 
 **MAD** *(median absolute deviation)* — die robuste Streuung: Median der
 absoluten Abweichungen vom Median. Anders als die Standardabweichung
@@ -2544,6 +2581,74 @@ begrenztem Speicher und **Box-Schranken** (daher das B — genau die
 Schranken, die die Platzierungsblöcke des Fits brauchen). Steht hier, weil
 Abbruchmeldungen dieses Optimierers (`STOP: TOTAL NO. OF ITERATIONS
 REACHED LIMIT`) in Befundtexten wörtlich zitiert werden.
+
+---
+
+## §7 Öffentliche Seiten — die Produktnamen
+
+Die Namen, unter denen Besucher die Werkzeuge kennen. Sie stehen hier, weil
+sie im Repo bislang nur *benutzt* wurden: „Schreibtafel“, „Lesetafel“ und
+„Grundtafel“ meinen drei verschiedene Dinge, und „Tafel · Chart“ (§2) ist
+noch einmal ein viertes — die Lehrbuch-Tafel als Datenquelle, nicht die
+Seite. Ein Blick hierher spart das Auseinandersortieren (Website-Audit
+2026-09-02). Die Texte selbst liegen in `app/src/locales/de/`, eine Datei je
+Namensraum; die Seiten sind die Routen aus `app/src/routes/paths.ts`.
+
+**Schriftkunde** *(`/schriftkunde`)* — die belegte Übersichtsseite über
+Kurrent, Sütterlin und Offenbacher: Grundbegriffe, die drei
+Ausgangsschriften mit ihren Kennwerten, Federn, Tinte und Papier,
+Buchstaben-Besonderheiten, Chronologie, Quellen. Jede Angabe stützt sich
+auf `docs/schriftkunde/*.md` — das Faktenblatt ist die einzige Quelle für
+historische Aussagen auf der Website, nicht das Gedächtnis des Schreibenden.
+`locales/de/schriftkunde.ts`, Abschnitts-Anker in
+`sections/schriftkunde/sections.ts`.
+
+**Lese-Quiz** *(`/quiz`)* — das Abfragespiel: eine geschriebene Form
+(einzelner Buchstabe oder ganzes Wort), vier Antworten, nach einem Fehlgriff
+beide Formen nebeneinander. Erklärt wird ein Fehlgriff nur bei den
+dokumentierten Verwechslerpaaren (→ Lesefalle §1, `sections/quiz/
+lesefallen.ts`) — „no explanation is better than an invented one“. Welche
+Auswahlzeilen die Seite überhaupt zeigt, entscheidet `offersChoice`
+(`sections/quiz/quizOptions.ts`): eine Zeile mit nur einer verfügbaren
+Option ist eine Tatsache, keine Wahl, und erscheint darum weder in der SPA
+noch auf der vorgerenderten Crawler-Seite.
+
+**Schreibtafel** *(`/tafel`)* — die Alphabet-Seite: die drei Grundtafeln
+nebeneinander zum Vergleichen und Nachschlagen; die Sütterlin schreibt sich
+dort Zug um Zug selbst, jeder Buchstabe mit seiner Strichfolge.
+`sections/tafel/TafelView.tsx`.
+
+**Grundtafel** — die gemeinfreie Original-Lehrtafel *einer Quelle*
+(Loth 1866, Sütterlin 1922, Koch 1928), so wie sie gedruckt wurde — das
+Bild, nicht die Nachschrift. Drei davon zeigt die Schreibtafel.
+`sections/tafel/useGrundtafeln.ts`; die Quelle dahinter ist die Vorlage
+(§2).
+
+**Lesetafel** — das A4-PDF der Schreibtafel: dieselben Formen zum
+Ausdrucken und Danebenlegen beim Entziffern. `lib/lesetafel.ts`.
+
+**Lesart prüfen** *(`/lesen/vergleichen`)* — die Hilfe für das eine Wort,
+das sich nicht entziffern lässt: Man tippt seine Vermutung ein, die Feder
+schreibt sie, daneben stehen die Wörter, die sich von ihr nur in
+Verwechslerpaaren unterscheiden (→ Lesart §1, `GET /lesarten`).
+
+**Federprobe** *(`/federprobe`)* — die Schreibfläche für beliebigen Text:
+eingetippt, live in Sütterlin geschrieben, mit den generierten Übergängen.
+Die öffentliche Kostprobe der Komposition (§2). `sections/scribe/`.
+
+**Übungsblatt** *(`/schreiben/uebungsblatt`)* — das erzeugte PDF mit der
+Lineatur der gewählten Ausgangsschrift, wahlweise mit Schräglinien,
+Federwinkelmarke und dem eigenen Text als Vorschrift (§1) in den Zeilen.
+`sections/worksheet/`.
+
+**„Zug um Zug“** — das Leitmotiv der öffentlichen Texte und zugleich eine
+inhaltliche Zusage: Was die Seite zeigt, ist die **Bewegung der Feder** in
+ihrer Strichfolge, nicht eine Schriftart mit fertigen Buchstabenbildern.
+Wo der Satz steht, muss dahinter eine echte Komposition aus dem Duktus (§1)
+stehen — `WrittenGlyph`/`WrittenWord`, nicht der Fallback-Font. In der Prosa
+heißt die schreibende Instanz „die Feder“; „Synthese“ bzw.
+„Synthese-Engine“ bleibt den Stellen vorbehalten, die das Gezeigte
+*kennzeichnen* (Bildunterschriften, Herkunftshinweise).
 
 ---
 

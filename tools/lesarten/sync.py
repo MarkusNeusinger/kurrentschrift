@@ -23,9 +23,12 @@ import argparse
 import hashlib
 import json
 import sys
+import time
 import urllib.error
+from collections.abc import Iterable
 from pathlib import Path
 
+from core.lesarten import WORD_MAX
 from tools.eigenhand.apiclient import admin_token, api_base, request_json
 from tools.lesarten.expand import REPO_ROOT, load_forms
 
@@ -41,11 +44,35 @@ def bank_words(path: Path = QUIZ_WORDS) -> set[str]:
     return {str(r["word"]).replace("|", "") for r in rows if r.get("word")}
 
 
+def drop_overlong(words: Iterable[str]) -> tuple[list[str], list[str]]:
+    """Split a word list at `WORD_MAX` into (kept, dropped), order preserved.
+
+    The column is `String(64)`, so a longer word cannot be stored and the API
+    refuses the whole batch that carries one — the first production load died
+    on exactly that, at word 80 000-odd. Nothing of value is lost: the two
+    forms the igerman98 expansion produces above the bound are administrative
+    compounds of 67 characters
+    (`Grundstücksverkehrsgenehmigungszuständigkeitsübertragungsverordnung`
+    and its `-en` plural), and a reading is only ever asked for a guess of at
+    most `MAX_TEXT_LEN` = 32 characters.
+    """
+    kept: list[str] = []
+    dropped: list[str] = []
+    for word in words:
+        (dropped if len(word) > WORD_MAX else kept).append(word)
+    return kept, dropped
+
+
 def build() -> tuple[list[tuple[str, bool]], str]:
-    """(sorted [word, bank] pairs, sha256 of the sorted words)."""
+    """(sorted [word, bank] pairs, sha256 of the sorted words).
+
+    The hash covers what is actually pushed, so it changes with the cap — a
+    build filtered differently is a different build."""
     forms = load_forms()
     bank = bank_words()
-    words = sorted(forms | bank)
+    words, dropped = drop_overlong(sorted(forms | bank))
+    if dropped:
+        print(f"dropped {len(dropped):,} words longer than {WORD_MAX} characters (e.g. {dropped[0]!r})")
     pairs = [(w, w in bank) for w in words]
     digest = hashlib.sha256("\n".join(words).encode("utf-8")).hexdigest()
     return pairs, digest
@@ -67,10 +94,13 @@ def push(pairs: list[tuple[str, bool]], digest: str, api: str, token: str, batch
         total = 0
         for i in range(0, len(pairs), batch):
             chunk = pairs[i : i + batch]
+            started = time.monotonic()
             out = request_json("POST", f"{api}/lesarten/dictionary/generations/{gen}/forms", token, {"words": chunk})
             assert out is not None
             total = int(out["total"])
-            print(f"  {i + len(chunk):>9,} sent · {total:,} stored")
+            # The per-batch second is what the first load lacked: it grew with
+            # the rows already stored until the request outlived the edge.
+            print(f"  {i + len(chunk):>9,} sent · {total:,} stored · {time.monotonic() - started:.2f} s")
         meta = request_json("POST", f"{api}/lesarten/dictionary/generations/{gen}/commit", token, body)
         assert meta is not None
         print(f"live: generation {gen}, {meta['forms']:,} forms, {meta['source']}")

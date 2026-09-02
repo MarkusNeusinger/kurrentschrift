@@ -387,7 +387,16 @@ lokal bauen, über die admin-gesicherte API laden, nie direkt in die DB.
   nichts zu tun) → Batches à 20 000 Wörter (der Server berechnet den
   Verwechsler-Schlüssel selbst, `core.lesarten.lesart_key`) → `commit`
   schaltet die Generation live und löscht die alte; ein Abbruch löscht
-  die angefangene. `--dry-run` zeigt nur die Zahlen. Braucht `ADMIN_TOKEN`
+  die angefangene. Jede Batch-Zeile nennt ihre Sekunden — die Zahl muss
+  über den ganzen Lauf flach bleiben; wächst sie mit den schon
+  gespeicherten Zeilen, ist die Ladefunktion wieder auf einen Lesevorgang
+  vor dem Insert zurückgefallen (2026-09-02). Wörter über
+  `core.lesarten.WORD_MAX` = 64 Zeichen fallen vor dem Push heraus (die
+  Spalte ist `String(64)`, die API weist den ganzen Batch mit 400 ab);
+  der Bau sagt beim Start, wie viele — aktuell zwei
+  67-Zeichen-Verwaltungskomposita, die als Lesart ohnehin nie in Frage
+  kommen (eine Anfrage ist auf 32 Zeichen begrenzt). `--dry-run` zeigt
+  nur die Zahlen. Braucht `ADMIN_TOKEN`
   (`ADMIN_TOKEN=… uv run python -m tools.lesarten.sync`). Nach einem
   Wörterbuch-Update (neuer Pin in `fetch_igerman98.py` + `SOURCE.md`)
   oder einer Bank-Erweiterung einmal laufen lassen.

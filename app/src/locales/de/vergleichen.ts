@@ -23,11 +23,11 @@ export const vergleichen = {
   examplesLabel: 'Beispiele:',
   // Words a genealogist meets — all letters traced in the public source.
   examples: ['Muhme', 'Wittib', 'Taufe', 'Häusler'],
-  writtenCaption: 'So schreibt es die Sütterlin-Vorlage von 1922 — vergleiche mit deinem Original.',
+  writtenCaption: 'So schreibt es die Sütterlin-Ausgangsschrift von 1922 — vergleiche mit deinem Original.',
   // Some letters have no canonical yet (interpolates {{letters}}).
   missingNote: 'Diese Buchstaben sind noch nicht nachgeschrieben und bleiben darum frei: {{letters}}',
   emptyHint: 'Tippe oben, was du zu lesen glaubst.',
-  loadError: 'Der Schreibdienst ist gerade nicht erreichbar — die Feder muss kurz pausieren.',
+  loadError: 'Die Feder muss gerade pausieren — der Server ist nicht erreichbar.',
   retry: 'Erneut versuchen',
 
   // --- Lesarten -------------------------------------------------------------
@@ -43,14 +43,18 @@ export const vergleichen = {
   lesartenLoading: 'Wörter werden gesucht …',
   lesartenError: 'Die Wörter lassen sich gerade nicht abfragen — der Server ist nicht erreichbar.',
   noLesarten: 'Kein Wort im Wörterbuch sieht dieser Lesart zum Verwechseln ähnlich — sie ist wohl eindeutig.',
+  // Shown INSTEAD of `noLesarten` while the server holds no dictionary at all
+  // (website audit 2026-09-02: the page said „wohl eindeutig" over an empty
+  // shelf). Says what is missing and what the page can still do.
+  noDictionary:
+    'Das Wörterbuch ist noch nicht geladen — darum kann die Seite hier noch keine ähnlichen Wörter nennen. Halte so lange die geschriebene Lesart oben neben dein Original; die klassischen Verwechsler stehen darunter.',
   // Where the words come from (interpolates {{forms}}, the live vocabulary's size).
   dictionaryNote: 'Wortformen aus dem freien deutschen Wörterbuch igerman98 ({{forms}} Formen) und der Wortbank dieser Seite; Namen und alte Wörter, die beide nicht kennen, fehlen hier.',
-  dictionaryMissing: 'Das Wörterbuch ist noch nicht geladen — bis dahin kann die Seite keine Wörter nennen.',
 
   // --- Die klassischen Verwechsler ------------------------------------------
   pairsHeading: 'Die klassischen Verwechsler',
   pairsIntro: 'Die Paare, an denen das Entziffern am häufigsten hängt — nebeneinander geschrieben, mit dem Merkmal, das sie unterscheidet.',
-  pairsNote: 'Die Buchstaben schreibt die Engine live aus der Sütterlin-Vorlage von 1922; der Antiqua-Buchstabe darunter benennt jede Form, ein Klick schreibt sie noch einmal.',
+  pairsNote: 'Die Buchstaben schreibt die Feder live aus der Sütterlin-Ausgangsschrift von 1922; der Antiqua-Buchstabe darunter benennt jede Form, ein Klick schreibt sie noch einmal.',
   // `specimens`: glyph_keys of the public source + Antiqua labels (SpecimenStrip).
   pairs: [
     {
@@ -116,5 +120,9 @@ export const vergleichen = {
   moreDecipher: 'Einen alten Brief entziffern — die Schritte in der Schriftkunde',
   moreQuiz: 'Lesen üben im Lese-Quiz',
   // Honest provenance note, mirroring the Federprobe's.
-  disclaimer: 'Synthese, klar gekennzeichnet — nachgebildete Schrift aus der Sütterlin-Ausgangsschrift 1922, kein historisches Original. Briefe des 19. Jahrhunderts stehen in der stärker geneigten Kurrent mit Schwellzug; die Buchstabenformen und ihre Verwechsler sind dieselben.',
+  // The Sütterlin is a SIMPLIFIED Ausgangsschrift, not the 19th-century
+  // Kurrent in another slant: shapes eased, ascenders/descenders shortened to
+  // 1 : 1 : 1 (docs/schriftkunde/suetterlin.md „Form"). So the sentence may
+  // promise the same look-alikes, not the same letters.
+  disclaimer: 'Synthese, klar gekennzeichnet — nachgebildete Schrift aus der Sütterlin-Ausgangsschrift von 1922, kein historisches Original. Briefe des 19. Jahrhunderts stehen in der stärker geneigten Kurrent mit Schwellzug; die Buchstaben sind dort schräger und in den Längen anders proportioniert, die Grundformen und ihre Verwechsler aber dieselben.',
 } as const;

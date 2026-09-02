@@ -55,13 +55,6 @@ steps:
     id: "push-image"
     waitFor: ["build-image"]
 
-  - name: "gcr.io/cloud-builders/docker"
-    args:
-      - "push"
-      - "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:latest"
-    id: "push-latest"
-    waitFor: ["build-image"]
-
   # Apply DB migrations BEFORE the new code serves traffic. Runs as a Cloud Run
   # Job under the runtime SA, so it reaches Cloud SQL as the kurrentschrift role
   # (which owns its tables). The job
@@ -176,6 +169,18 @@ steps:
       - "--to-revisions=${_SERVICE_NAME}-b$BUILD_ID=100"
     id: "promote"
     waitFor: ["smoke"]
+
+  # `:latest` means "the image currently serving", so it moves only after the
+  # promote step. Pushed before the rollout — as it was until now — the tag
+  # named an image that a failing migrate or smoke may have stopped from ever
+  # serving a request, which is exactly the wrong thing to hand someone who
+  # pulls `:latest` to reproduce production.
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      - "push"
+      - "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:latest"
+    id: "push-latest"
+    waitFor: ["promote"]
 
 images:
   - "europe-west4-docker.pkg.dev/$PROJECT_ID/kurrentschrift/${_SERVICE_NAME}:$BUILD_ID"
