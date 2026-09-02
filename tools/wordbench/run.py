@@ -16,11 +16,19 @@ pairs of Abb. 20 report their own ``pair_loss`` headline. Entries frozen as
 reported by name — an authoring gap is not a composition failure; a crash of
 an authored entry still counts 1.0.
 
+Every run states WHICH BASE it measured before it measures anything: two header
+lines per fixture root (``root: <name> exported_at=…`` and ``digest=<12 hex>``,
+see ``root_digest``), the manifest's own ``page_sha256`` re-checked against the
+committed page bytes, and ``--expect-root`` to make the expected base a
+precondition rather than a hope. The roots are gitignored, so a silent
+re-export used to be invisible — an undeclared re-baseline is exactly what the
+audit of 2026-09-02 could no longer trace.
+
 Usage:
     uv run python -m tools.wordbench.run [--style suetterlin]
         [--set words|pairs|<custom set like abb22>|all] [--words unter,das]
         [--artifacts DIR] [--json report.json] [--compare old.json]
-        [--laufform draft.json | --no-laufform]
+        [--laufform draft.json | --no-laufform] [--expect-root <digest-prefix>]
 
     ``--laufform`` composes with CANDIDATE running forms instead of the frozen
     ones — the Laufform twin of ``--overrides``, and under the same discipline
@@ -56,12 +64,16 @@ delta in the harvest's body frame, ``dconn`` the start-aligned connector-shape
 distance (tools/wordbench/pairmeas.py) — per row as
 ``meas n=<matched>/<joins> doff=… dconn=…`` and as ``meas_matched`` +
 ``meas_excluded`` (QC-rejected dissections / override-rendered joins) +
-``meas_doff_median``/``meas_dconn_median`` in the block.
+``meas_doff_median``/``meas_dconn_median`` in the block — and ``seam``
+(tools/wordbench/seam.py): the turn angle at each end of a generated
+connector, ``dep``/``arr`` per row and pooled ``seam_dep_median`` /
+``seam_arr_median`` / ``seam_*_abs_median`` in the block.
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import time
 from pathlib import Path
@@ -75,15 +87,98 @@ from core.shaping import GlyphSlot
 from tools.wordbench.gleichzug import audit_composed
 from tools.wordbench.metric import score_word
 from tools.wordbench.pairmeas import compare_joins, load_measured, rows_for_entry
+from tools.wordbench.seam import seam_angles
 from tools.wordbench.slant import composed_raster, slant_deg
 
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
+REPO_ROOT = Path(__file__).resolve().parents[2]
 STYLES = ("suetterlin", "kurrent", "offenbacher")
 # Provenance stamped into a Laufform row DERIVED from a --laufform draft, where
 # the frozen rows carry the apply-step's (or the fetcher's). Nothing in the
 # render path reads it; it keeps an artifact traceable to its overlay run.
 LAUFFORM_OVERLAY_META = {"derived_from": "laufform-overlay", "via": "wordbench.run"}
+
+
+def root_digest(root: Path) -> str:
+    """The identity of a fixture root: SHA-256 over its complete file listing.
+
+    The digest is taken over the SORTED list of ``(relative POSIX path, size in
+    bytes, SHA-256 of the bytes)`` of every regular file under ``root``: one
+    ``"<relpath>\\0<size>\\0<sha256>\\n"`` record per file, sorted by the
+    relative path, concatenated into a single SHA-256. Properties that make it
+    usable as a citable base identity:
+
+    * deterministic — the sort is the only ordering, so the filesystem's walk
+      order, the machine and the export's own dict order cannot move it;
+    * blind to metadata — mtimes, ownership and permissions are not hashed, so
+      copying a root between checkouts (which the bench does) keeps it stable;
+    * sensitive to one flipped byte anywhere, including a file merely ADDED or
+      REMOVED, because the path list itself is hashed.
+
+    Its purpose: a wordbench headline is only comparable to another headline
+    measured on the same base. The roots are gitignored, so nothing in the repo
+    records a re-export — quoting ``exported_at`` plus the first 12 hex of this
+    digest next to a number makes an undeclared re-baseline visible at once
+    instead of at the next audit.
+    """
+    outer = hashlib.sha256()
+    files = sorted((p for p in root.rglob("*") if p.is_file()), key=lambda p: p.relative_to(root).as_posix())
+    for path in files:
+        inner = hashlib.sha256()
+        with path.open("rb") as fh:
+            for chunk in iter(lambda: fh.read(1 << 20), b""):
+                inner.update(chunk)
+        rel = path.relative_to(root).as_posix()
+        outer.update(f"{rel}\0{path.stat().st_size}\0{inner.hexdigest()}\n".encode())
+    return outer.hexdigest()
+
+
+def page_hash_problems(manifest: dict, repo_root: Path = REPO_ROOT) -> list[str]:
+    """Re-check a manifest's ``page_sha256`` against the committed page bytes.
+
+    The export already records the hash of every specimen page a set was frozen
+    from; until now only the rebuild path (fetch_fixtures) ever compared it, so
+    a measuring run happily scored fixtures whose plate had moved underneath
+    them. Returns one human-readable line per problem (missing file, changed
+    bytes) and an empty list when the manifest carries no hashes at all — an
+    older export keeps running unchanged.
+    """
+    problems: list[str] = []
+    source_id = manifest.get("source_id")
+    for page, expected in sorted((manifest.get("page_sha256") or {}).items()):
+        path = repo_root / "data" / "sources" / str(source_id) / page
+        if not path.is_file():
+            problems.append(f"{page}: missing at {path}")
+            continue
+        actual = hashlib.sha256(path.read_bytes()).hexdigest()
+        if actual != expected:
+            problems.append(f"{page}: manifest {expected[:12]} vs file {actual[:12]}")
+    return problems
+
+
+def check_expected_roots(expect: str, digests: dict[str, str]) -> None:
+    """Abort unless every selected root — and every stated prefix — is accounted for.
+
+    ``expect`` is a comma-separated list of digest prefixes (``--set all``
+    selects two roots and therefore needs two). BOTH directions are required:
+    an unmatched root would let the run measure a base nobody asked for, and an
+    unmatched prefix is a stale or mistyped expectation that must not pass
+    silently just because the other half happened to match.
+    """
+    prefixes = [p.strip().lower() for p in expect.split(",") if p.strip()]
+    if not prefixes:
+        raise SystemExit("--expect-root: no digest prefix given")
+    unmatched_roots = [n for n, d in sorted(digests.items()) if not any(d.startswith(p) for p in prefixes)]
+    unmatched_prefixes = [p for p in prefixes if not any(d.startswith(p) for d in digests.values())]
+    if unmatched_roots or unmatched_prefixes:
+        actual = "\n  ".join(f"{n} digest={d}" for n, d in sorted(digests.items()))
+        raise SystemExit(
+            "--expect-root does not match the fixture roots this run would measure"
+            + (f"\n  unmatched roots: {', '.join(unmatched_roots)}" if unmatched_roots else "")
+            + (f"\n  unmatched prefixes: {', '.join(unmatched_prefixes)}" if unmatched_prefixes else "")
+            + f"\n  {actual}"
+        )
 
 
 def _overlay(word_dir: Path, word_meta: dict, composed: dict, report: dict, out_path: Path) -> None:
@@ -255,6 +350,23 @@ def _print_block(reports: list[dict], skipped: list[dict], kind: str) -> None:
                 values = [m[f"{label}_mean"] for m in meas if m[f"{label}_mean"] is not None]
                 if values:
                     print(f"{slant_prefix}meas_{label}_median: {float(np.median(values)):.3f}")
+        # Seam turn angles (report-only): how far the generated connector
+        # departs from / arrives at the letter it joins. POOLED over every
+        # matched join of the block rather than averaged per entry — a word
+        # with one join must not weigh as much as a word with six.
+        seams = [r["seam"] for r in scored if r.get("seam")]
+        if seams:
+            matched = sum(s["n_matched"] for s in seams)
+            total = sum(s["n_joins"] for s in seams)
+            print(f"{slant_prefix}seam_matched: {matched}/{total}")
+            # Excluded, counted rather than averaged: a connector item with a
+            # capital's ornament retrace prefixed to it (see seam.py).
+            print(f"{slant_prefix}seam_excluded: retrace={sum(s['excluded_retrace'] for s in seams)}")
+            for label, key in (("dep", "dep_deg"), ("arr", "arr_deg")):
+                values = [j[key] for s in seams for j in s["joins"]]
+                if values:
+                    print(f"{slant_prefix}seam_{label}_median: {float(np.median(values)):+.2f}")
+                    print(f"{slant_prefix}seam_{label}_abs_median: {float(np.median(np.abs(values))):.2f}")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -269,6 +381,12 @@ def build_parser() -> argparse.ArgumentParser:
         "named explicitly so it can never mix into the same-hand headlines.",
     )
     parser.add_argument("--fixtures", type=Path, default=FIXTURES, help="fixture root (default: the frozen set)")
+    parser.add_argument(
+        "--expect-root",
+        help="comma-separated digest prefixes (see root_digest) the selected fixture roots MUST start "
+        "with; the run aborts BEFORE measuring on any mismatch, so it can never silently score a "
+        "different base than the one a result is quoted against",
+    )
     parser.add_argument("--words", help="comma-separated id/word filter")
     parser.add_argument("--artifacts", type=Path, help="write overlay PNGs here")
     parser.add_argument("--json", type=Path, help="write the full report here")
@@ -319,11 +437,35 @@ def main() -> None:
     # scoped to the canonical SAME-HAND sets — a custom cross-hand set (abb22)
     # would otherwise silently join the words headline.
     wanted = ("words", "pairs") if args.which == "all" else (args.which,)
-    manifests = [
-        p for p in sorted(style_root.glob("*/manifest.json")) if json.loads(p.read_text()).get("set", "words") in wanted
-    ]
-    if not manifests:
+    selected: list[tuple[Path, dict]] = []
+    for manifest_path in sorted(style_root.glob("*/manifest.json")):
+        manifest = json.loads(manifest_path.read_text())
+        if manifest.get("set", "words") in wanted:
+            selected.append((manifest_path.parent, manifest))
+    if not selected:
         raise SystemExit(f"no {args.which} fixtures under {style_root} — run tools/wordbench/export_fixtures first")
+
+    # WHICH BASE this run measures — stated, checked and only then scored.
+    # Everything here happens before the first composition so a run can never
+    # produce a number against fixtures it was not asked for.
+    root_meta: list[dict] = []
+    for root, manifest in selected:
+        digest = root_digest(root)
+        root_meta.append(
+            {
+                "name": root.name,
+                "set": manifest.get("set", "words"),
+                "exported_at": manifest.get("exported_at") or "unknown",
+                "digest": digest,
+            }
+        )
+        print(f"root: {root.name} exported_at={root_meta[-1]['exported_at']}")
+        print(f"digest={digest[:12]}")
+    if args.expect_root:
+        check_expected_roots(args.expect_root, {m["name"]: m["digest"] for m in root_meta})
+    page_problems = [f"{root.name}: {p}" for root, manifest in selected for p in page_hash_problems(manifest)]
+    if page_problems:
+        raise SystemExit("specimen pages do not match the manifest's page_sha256:\n  " + "\n  ".join(page_problems))
 
     word_filter = set(args.words.split(",")) if args.words else None
     reports: list[dict] = []
@@ -331,9 +473,9 @@ def main() -> None:
     # Entries whose meas guard fired — reported ONCE per run below, so a
     # systematic schema failure never reads like "this set has no artifact".
     pairmeas_failures: list[tuple[str, str]] = []
-    for manifest_path in manifests:
-        manifest = json.loads(manifest_path.read_text())
-        root = manifest_path.parent
+    # Same doctrine for the seam sensor: one run-level line, never per entry.
+    seam_failures: list[tuple[str, str]] = []
+    for root, manifest in selected:
         templates = json.loads((root / "templates.json").read_text())
         # The frozen Laufform variants (median running forms): production
         # composes with them per flowing run, so the headline does too. An
@@ -445,6 +587,15 @@ def main() -> None:
                 except Exception as exc:
                     report["pairmeas_error"] = f"{type(exc).__name__}: {exc}"
                     pairmeas_failures.append((entry_id, report["pairmeas_error"]))
+            # Seam angles (the connector's turn against the letters it joins) —
+            # same doctrine again: REPORT columns under their OWN guard, needing
+            # no frozen artifact because the composition carries the geometry.
+            if composed is not None:
+                try:
+                    report["seam"] = seam_angles(composed, slots)
+                except Exception as exc:
+                    report["seam_error"] = f"{type(exc).__name__}: {exc}"
+                    seam_failures.append((entry_id, report["seam_error"]))
             report["id"] = entry_id
             report["word"] = entry["word"]
             report["kind"] = kind
@@ -457,6 +608,9 @@ def main() -> None:
     if pairmeas_failures:
         entry_id, error = pairmeas_failures[0]
         print(f"warning: meas columns failed on {len(pairmeas_failures)} entries (first {entry_id}: {error})")
+    if seam_failures:
+        entry_id, error = seam_failures[0]
+        print(f"warning: seam columns failed on {len(seam_failures)} entries (first {entry_id}: {error})")
 
     for r in sorted(reports, key=lambda r: r["id"]):
         if r["failed"]:
@@ -484,13 +638,28 @@ def main() -> None:
                 meas = f"  meas n={pm['n_matched']}/{pm['n_joins']} doff={doff} dconn={dconn}"
             elif "pairmeas_error" in r:
                 meas = "  meas n=-/- doff=- dconn=-"
+            # Seam turn angles at the two ends of every generated connector,
+            # SIGNED medians over this entry's joins (degrees, + = the pen
+            # turns counter-clockwise at the seam). Stable column like the
+            # ones above: printed on every scored entry, '-' where nothing
+            # matched, all-dash when this entry's guard fired.
+            sm = r.get("seam")
+            seam = ""
+            if sm:
+                dep = f"{sm['dep_median']:+.1f}" if sm["dep_median"] is not None else "-"
+                arr = f"{sm['arr_median']:+.1f}" if sm["arr_median"] is not None else "-"
+                seam = f"  seam n={sm['n_matched']}/{sm['n_joins']} dep={dep} arr={arr}"
+            elif "seam_error" in r:
+                seam = "  seam n=-/- dep=- arr=-"
             print(
                 f"word {r['id']:<15} loss {r['loss']:.6f}  "
                 f"trans {r['transition']:.3f} cover {r['coverage']:.3f} width {r['width']:.3f}  "
-                f"(tx={reg['tx']:.0f}, ty={reg['ty']:.0f}){slant}{flow}{meas}"
+                f"(tx={reg['tx']:.0f}, ty={reg['ty']:.0f}){slant}{flow}{meas}{seam}"
             )
 
-    result: dict = {"style": args.style, "set": args.which}
+    # The FULL digests go into the report (the header prints 12 hex to stay
+    # readable) — a stored report must be enough to re-check its own base.
+    result: dict = {"style": args.style, "set": args.which, "roots": root_meta}
     if args.overrides:
         result["overrides"] = str(args.overrides)
     if args.laufform:
