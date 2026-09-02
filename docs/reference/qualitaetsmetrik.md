@@ -9886,3 +9886,119 @@ Klasse +12,52 → **−1,32** (|Δ| 1,96), Joins über 10° von 105 auf 15. Die
 Kopplungspunkt UNTER der eigenen Steiggeraden des Stummels (`n` 13 von
 14, `l` 7 von 7 — Platzierungen `nested_fall`/`align_floor`), da schafft
 kein Rückschnitt Kollinearität.
+
+**Gemessen `sep02` — (b) rot: NICHT adoptiert.** Vier der fünf Gates
+grün, das fünfte klar rot; strikt nach Vorregistrierung ist das eine
+Ablehnung. Basis und Kandidat auf derselben Wurzel
+(`28ba1afebc53` / `f0cf3d53414c`, `exported_at=2026-09-02T08:00:29+00:00`),
+BLAS auf einen Thread, Schalter aus reproduziert die Basis bit-genau.
+
+| Gate | Soll | Gemessen | |
+|---|---|---|---|
+| (a) `word_loss` | ≤ +0,002 | 0,109255 → **0,108720** (−0,000535) | grün |
+| (a) `pair_loss` | ≤ +0,002 | 0,148433 → **0,148433** (±0) | grün |
+| (b) `dconn` fällt | ≥ 60 % | **20 %** (24 von 121 gefeuerten) | **rot** |
+| (c) Platzierung | byte-gleich | **0** von 344 Buchstaben-Anfängen bewegt (Wörter + Paare) | grün |
+| (d) Kompositions-Soll | ohne Verlust | 63/63 Wörter, 33/33 Paare, 0 `failed` | grün |
+| (e) `seam_dep`-Median | < 5° | +12,52 → **−1,39** (\|Δ\| 12,52 → 2,00) | grün |
+
+Die Vorhersage traf: 137 von 155 Klassen-Joins feuern (88 %, vorhergesagt
+89 %), `seam_dep` der Klasse geht auf −1,39 (vorhergesagt −1,32), die
+Joins über 10° fallen von 103 auf 15 (vorhergesagt 15), und die
+Nicht-Treffer sind genau die vorhergesagten Klassen (`l` 7/7, `a` 6,
+`n` 1, `k` 2). Der Paar-Satz bewegt sich um NULL, weil seine Klasse LEER
+ist: die 33 Abb.-20-Drills beginnen sämtlich mit Buchstaben außerhalb des
+Sägezahn-Bandes. Wort-Ebene: 60 Proben bewegt, 27 besser : 33 schlechter,
+in der Summe die −0,000535 (`Zaum` −0,0375 · `Sprünge` −0,0173 ·
+`Zügel` −0,0153 gegen `mit-2` +0,0228 · `einer` +0,0181 · `kann`
++0,0126).
+
+**Das rote Gate, ehrlich zerlegt — es bleibt rot.** `dconn` steigt im
+Median von 0,105 auf 0,148. Ein Teil davon ist der Rahmen-Artefakt, den
+die Vorregistrierung für `doff` schon benannt hat, hier in seiner
+`dconn`-Variante: der komponierte Verbinder ist nach dem Trim LÄNGER (er
+zeichnet das Stück mit, das der Buchstabe nicht mehr schreibt), während
+der gemessene aus der Platte den alten, kürzeren Abschnitt umfasst — zwei
+start-ausgerichtete Kurven verschiedener Ausdehnung liegen mechanisch
+weiter auseinander. Nachgerechnet auf dem GEMEINSAMEN Stück (Kandidat am
+alten Abgang abgeschnitten, damit beide Kurven dieselbe Strecke
+überdecken): 0,102 → **0,099**, fällt in **51 %** der Joins. Also: rund
+zwei Drittel des Anstiegs sind Artefakt (Median +0,051 der Differenz) —
+aber auch die artefaktbereinigte Lesung erreicht die 60 % nicht. Die
+Hand-Nachfahrungen sagen über die Form dieser Naht schlicht nichts
+Positives; sie ist danach weder näher noch ferner. Das Gate fällt nicht
+an einer schiefen Messung, sondern an fehlender Evidenz. `doff` stieg wie
+vorhergesagt (0,125 → 0,160), berichtet, nicht gewertet.
+
+**Nebenwirkung, berichtet:** die ANKUNFT wird leicht schlechter
+(`seam_arr_median` −3,40 → −6,53, |Δ| 9,63 → 12,46, Joins über 10° von 76
+auf 85). Die Gerade kommt anders an als die taute Kubik — ein weiteres
+Argument dafür, dass die Ankunftsseite ihren eigenen Arm braucht.
+
+**Nachtrag zur Vorregistrierung, offengelegt:** die Formulierung „`doff`
+byte-gleich" war nicht haltbar und wurde VOR der ersten Zahl auf die
+gemeinte Größe präzisiert (Platzierung des rechten Buchstabens
+byte-gleich). Die Präzisierung hat das Ergebnis nicht gerettet — das Gate,
+an dem der Arm scheitert, ist `dconn`, und es wurde nicht angefasst.
+
+### Übergänge J4b `sep02` — POST-HOC: die enge Klasse (nur die Joins, die wirklich knicken)
+
+**Ausdrücklich post-hoc**, nach dem J4-Negativ auf denselben Zahlen
+gewählt — kein vorregistrierter Arm, und die Zahlen unten zählen nicht
+als Bestätigung. Grund für die Messung: die Owner-Direktive
+„asymmetrische Befunde nutzen" verlangt, die Verlierer erst in Klassen zu
+zerlegen, bevor ein Negativ geschlossen wird.
+
+**Die Zerlegung.** Auf der artefaktbereinigten `dconn`-Lesung trägt
+genau eine Teilklasse ein Signal: die Joins, deren Abgang im Basiszustand
+stark knickt. Nach Basis-Knick |dep₀| (n = gefeuert, Fallquote der
+bereinigten `dconn`): > 20° **70 %** (21/30) · 10–20° 45 % · 5–10° 47 % ·
+≤ 5° 43 %. Nach Buchstabe: `i` 82 %, `h` 80 %, `m`/`g`/`G` 100 % (n ≤ 4),
+gegen `c` 0 % (n=6), `a` 22 %, `n` 23 %. Nach Platzierung ohne Muster
+(`connect_gap` 65 %, `clearance_floor` 52 %, `align` 50 %). Der Schnitt
+„nur wo es knickt" ist damit der einzige, der nicht nach
+Kurvenanpassung aussieht — er ist auch inhaltlich der bessere Satz:
+repariere den Defekt, lass in Ruhe, was schon läuft.
+
+**Gemessen** (`EXIT_TRIM_MIN_KINK_DEG` = 20, `--exit-trim-min-kink 20`,
+gleiche Wurzel, gleiche Umgebung): 34 von 155 Klassen-Joins feuern
+(22 %). `word_loss` 0,109255 → 0,109175 (−0,000080), `pair_loss`
+unverändert, Platzierung byte-gleich, 0 `failed`. **Aber beide
+Ziel-Gates verfehlt:** `dconn` fällt in 43 % der gefeuerten Joins (13 von
+30, Gate ≥ 60 %), und `seam_dep` der Klasse kommt nur auf +8,02 (|Δ|
+9,11, Joins über 10° von 103 auf 69 — Gate < 5°). Die enge Klasse rettet
+den Arm also NICHT: sie halbiert den Schaden am `dconn` und verliert
+dafür fast die ganze Wirkung auf die Naht.
+
+**Verdikt beider Arme.** Der Naht-Knick ist real, messbar und mit dem
+Austritts-Trim praktisch vollständig zu beseitigen (+12,52° → −1,39°);
+das Wort-Lineal ist leicht dafür; die einzige Instanz, die die FORM der
+Naht gegen die Hand hält, ist indifferent. Damit fehlt der Adoption die
+Evidenz, und `compose.py` behält den Schalter auf Standard aus — das
+Golden bleibt unangetastet. Der Schalter, seine Konstanten und die Tests
+bleiben im Baum, damit der nächste Arm nicht bei null anfängt.
+
+**Rettungswege** (Register: `tintenfolger.md` §7.9):
+
+1. **Nur die Ankunftsseite** (der vorregistrierte Kill-Rettungsweg, jetzt
+   zusätzlich motiviert: J4 verschlechtert die Ankunft von −3,40 auf
+   −6,53). Eigener Arm, eigene Vorregistrierung.
+2. **Neuer Sensor statt neuer Knopf: eine ausdehnungs-normierte
+   Formdistanz.** `dconn` kann per Konstruktion nicht über eine Naht
+   urteilen, die die Grenze zwischen Buchstabe und Verbinder verschiebt —
+   dieselbe Blindstelle, die `pairmeas.py` für `doff` schon notiert. Ein
+   Maß, das den GEMEINSAMEN Abschnitt vergleicht (die Rechnung oben ist
+   der Prototyp, 0,102 → 0,099), wäre das Instrument, mit dem diese
+   Klasse von Regeln überhaupt beurteilbar wird. Bauen, einfrieren, DANN
+   den Arm neu vorregistrieren — nicht umgekehrt.
+3. **Menschliches Urteil statt Lineal.** Der Knick ist unter der
+   Auflösung des Wort-Lineals (Befund 19 sagt es selbst) und `dconn` ist
+   für ihn ungeeignet — die humanbench-Wortrunde mit der Echtheitsfrage
+   (T4, `menschliche-bewertung.md` §8) ist das einzige vorhandene
+   Instrument, das den Saum sieht. J4 ist ein fertiges Kandidatenpaar
+   dafür: identische Platzierung, EIN veränderter Freiheitsgrad.
+4. **Die Ursache eine Stufe tiefer beheben.** Der Flick ist Tafelform in
+   der Vorlage. Statt ihn beim Komponieren wegzuschneiden, könnte die
+   Laufform-Ableitung ihn gar nicht erst lernen (Endblende-Familie LF5/LF6
+   arbeitet an derselben Stelle) — dann bräuchte die Grammatik die Regel
+   nicht.
