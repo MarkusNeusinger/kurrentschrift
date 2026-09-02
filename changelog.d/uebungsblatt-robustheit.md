@@ -12,23 +12,23 @@
   sits exactly between its lines has stopped being a Vorschrift. The counts are
   measured, not guessed: how many characters fit comes from that line's own
   composition, and the help text's estimate from `AVG_ADVANCE_UNITS`, the
-  composer's own average over a–z (#NNN).
+  composer's own average over a–z (#499).
 - **The help text promises what the sheet can keep.** „Höchstens 12 Zeilen mit
   je 60 Zeichen“ quoted the text field's cap while 20 characters already ran off
   the row; it now computes from the chosen Mittellänge and page margin — 18
   characters at 6 mm, 44 at the Kurrent preset's 2,5 mm — and the prerendered
-  crawler page states the same figure instead of a placeholder (#NNN).
+  crawler page states the same figure instead of a placeholder (#499).
 - **An empty sheet says why, and cannot be downloaded.** 99 parts of Oberlänge
   fit no row on A4 and produced a blank but eagerly downloadable page. The three
   ratio fields now carry a `max` of 6 and clamp on blur (typing past a number
   input's `max` is accepted by every browser), and a page without a single row
-  explains itself over the preview and holds the PDF button (#NNN).
+  explains itself over the preview and holds the PDF button (#499).
 - **A printed sheet explains its own mixed script.** With Kurrent or Offenbacher
   chosen, the Vorschrift is still set in Sütterlin — the only script written out
   so far. A line under the text field says so, and the sheet's footer prints
   „Kurrent · 2 : 1 : 2 · Vorschrift in Sütterlin“, so a printout on the table
-  needs no popover to be understood (#NNN).
+  needs no popover to be understood (#499).
 - **The ratio heading stops breaking after its first colon.** „Verhältnis ·
   Oberlänge : Mittellänge : Unterlänge“ wrapped mid-ratio in the 340 px panel
   and left a dangling colon at 360 px; it is now an overline plus its own
-  caption line, the colons bound with non-breaking spaces (#NNN).
+  caption line, the colons bound with non-breaking spaces (#499).
