@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import math
 
+import pytest
+
 from core.compose import (
     ALIGN_MAX_ENTRY_Y,
     ALIGN_MIN_RISE,
@@ -512,3 +514,27 @@ def test_cut_exit_stub_takes_the_silhouette_with_the_centerline() -> None:
     _cut_exit_stub(item, line, 5, 0.1)
     assert item["centerline"] == [[0.1 * i, 0.0] for i in range(6)]
     assert max(x for ring in item["rings"] for x, _ in ring) < 0.9
+
+
+def test_exit_trim_leaves_no_stale_bounds() -> None:
+    # `track` only grows the box and the trim takes ink away after the stroke
+    # was tracked, so the bounds must be recomputed — otherwise a cut tip that
+    # reached past everything drawn after it leaves the viewBox too large.
+    composed = _compose_sawtooth(exit_trim=True)
+    pts = [
+        p
+        for item in composed["items"]
+        for p in (list(item["centerline"]) + [q for ring in (item.get("rings") or []) for q in ring])
+    ]
+    b = composed["bounds"]
+    assert b["min_x"] == min(x for x, _ in pts)
+    assert b["max_x"] == max(x for x, _ in pts)
+    assert b["min_y"] == min(y for _, y in pts)
+    assert b["max_y"] == max(y for _, y in pts)
+
+
+def test_exit_trim_min_kink_rejects_a_negative_angle() -> None:
+    # A negative angle would read as "do not narrow", which is what 0.0 means —
+    # a caller passing one has a bug, and the CLI already refuses it.
+    with pytest.raises(ValueError, match="cannot be negative"):
+        _compose_sawtooth(exit_trim=True, min_kink=-1.0)

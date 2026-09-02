@@ -418,7 +418,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--exit-trim",
         action="store_true",
         help="compose with the opt-in exit-side collinearity rule (core.compose EXIT_TRIM_WINDOW, "
-        'pre-registered under the heading „Übergänge J4" in qualitaetsmetrik.md §14): a sawtooth '
+        'pre-registered under the heading "Übergänge J4" in qualitaetsmetrik.md §14): a sawtooth '
         "exit's chart stub is cut back to where the "
         "straight to the unchanged coupling point continues the letter's own direction — a CANDIDATE "
         "arm, its own measurement, never the headline",
@@ -428,8 +428,8 @@ def build_parser() -> argparse.ArgumentParser:
         type=float,
         default=0.0,
         metavar="DEG",
-        help="narrow --exit-trim to the joins whose departure kinks by more than DEG "
-        "(core.compose EXIT_TRIM_MIN_KINK_DEG; 0 = the full pre-registered class)",
+        help="narrow --exit-trim to the joins whose departure kinks by AT LEAST DEG (the post-hoc "
+        "J4b arm; core.compose EXIT_TRIM_MIN_KINK_DEG, 0 = the full pre-registered J4 class)",
     )
     return parser
 
@@ -456,8 +456,11 @@ def main() -> None:
         laufform_payload = load_laufform_payload(args.laufform)
         print(f"laufform: {len(laufform_payload)} rows from {args.laufform} (own number - never the headline)")
     if args.exit_trim:
+        # The header is provenance: it names the arm the run actually measured,
+        # so a narrowed run never files itself under the full class's name.
         narrowed = f" min_kink={args.exit_trim_min_kink:g}deg" if args.exit_trim_min_kink else ""
-        print(f"exit_trim: on{narrowed} (candidate arm J4 - own number, never the headline)")
+        arm = "J4b" if args.exit_trim_min_kink else "J4"
+        print(f"exit_trim: on{narrowed} (candidate arm {arm} - own number, never the headline)")
 
     t0 = time.perf_counter()
     style_root = args.fixtures / args.style

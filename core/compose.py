@@ -1764,6 +1764,12 @@ def compose_word(
     adjacent overrides never conflict: each constrains only its right glyph.
     ``None``/no matching pair keeps the generator path byte-identical.
     """
+    if exit_trim_min_kink_deg < 0.0:
+        # A negative angle would silently read as "do not narrow", which is
+        # what 0.0 means — so a caller that passed one has a bug, not a wish.
+        raise ValueError(
+            f"exit_trim_min_kink_deg is a kink in degrees and cannot be negative: {exit_trim_min_kink_deg}"
+        )
     items: list[dict] = []
     missing: list[str] = []
     guides: dict | None = None
@@ -1789,6 +1795,10 @@ def compose_word(
     # sets the umlauts after the word body, not mid-flow. Each becomes its own
     # pen-down (lift) so the renderer pauses before placing it.
     pending_diacritics: list[dict] = []
+    # Whether any exit stub was cut back after its stroke had been tracked —
+    # the one case where the running bounds can be too LARGE (see the recompute
+    # at the end of this function). False on the default path.
+    trimmed_exits = False
 
     def flush_diacritics() -> None:
         for it in pending_diacritics:
@@ -2508,6 +2518,7 @@ def compose_word(
                 if cut is not None:
                     centerline = _straight_to(stub[cut], centerline[-1])
                     _cut_exit_stub(prev.exit_item, stub, cut, prev.width)
+                    trimmed_exits = True
                     # The join now departs at the cut, so that is the exit the
                     # provenance states — otherwise every trimmed join would
                     # read as a prefixed retrace to a downstream sensor.
@@ -2640,6 +2651,21 @@ def compose_word(
 
     end_swing()  # the last word's Endstrich …
     flush_diacritics()  # … then its marks, once the body is complete
+
+    if trimmed_exits:
+        # ``track`` only ever GROWS the box, and an exit trim takes ink away
+        # from a stroke that was already tracked — so a cut tip that reached
+        # past everything drawn after it would leave the box too large. On the
+        # frozen word set the connector always covers the cut tip and the box
+        # never actually moves (measured: 0.000000 xh over 96 entries), but
+        # that is a property of this geometry, not of the rule. Recomputing
+        # from the emitted items makes it exact instead of lucky. Runs only on
+        # the opt-in arm, so the default path stays byte-identical.
+        min_x, max_x, min_y, max_y = math.inf, -math.inf, math.inf, -math.inf
+        for item in items:  # flush_diacritics has already emptied the pending list
+            track([tuple(p) for p in item["centerline"]])
+            for ring in item.get("rings") or []:
+                track([tuple(p) for p in ring])
 
     if not math.isfinite(min_x):
         min_x, max_x, min_y, max_y = 0.0, 1.0, 0.0, 1.0
