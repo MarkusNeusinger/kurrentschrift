@@ -29,14 +29,6 @@ export interface ScriptOption {
 export const offersChoice = (options: ReadonlyArray<{ available: boolean }>): boolean =>
   options.filter((o) => o.available).length >= 2;
 
-// The single available option of a row that offers no choice — what the copy
-// states as a fact instead of rendering a menu. Null when a row happens to
-// have none (an empty pool), so a caller must handle that case explicitly.
-export const soleOption = <T extends { available: boolean }>(options: readonly T[]): T | null => {
-  const open = options.filter((o) => o.available);
-  return open.length === 1 ? open[0] : null;
-};
-
 export const SCRIPTS: ScriptOption[] = [
   { id: 'kurrent', label: quiz.scripts.kurrent, available: false },
   { id: 'suetterlin', label: quiz.scripts.suetterlin, available: true },

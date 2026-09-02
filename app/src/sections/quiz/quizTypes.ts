@@ -16,7 +16,6 @@ export {
   MODES,
   offersChoice,
   SCRIPTS,
-  soleOption,
   type Difficulty,
   type DifficultyOption,
   type ModeOption,
