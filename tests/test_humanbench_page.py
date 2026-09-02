@@ -16,7 +16,7 @@ import re
 
 import pytest
 
-from tools.humanbench.analyse import RESULT_HEAD, parse_result
+from tools.humanbench.analyse import RESULT_HEAD, parse_paired_result, parse_result
 from tools.humanbench.page import build_page, normalise
 
 
@@ -35,6 +35,22 @@ PAIRED = [
         "h": 30,
         "img": PNG,
         "panels": [{"strokes": [[[0, 0], [10, 10]]]}, {"strokes": [[[2, 2], [12, 12]]]}],
+    }
+]
+
+# A WORD screen: the same specimen crop, two compositions drawn as INK —
+# silhouette rings for the letter bodies, capsules of their own width for the
+# generated connectors.
+INKED = [
+    {
+        "id": "S001",
+        "w": 120,
+        "h": 40,
+        "img": PNG,
+        "panels": [
+            {"strokes": [[[0, 0], [10, 10]]], "widths": [6.0], "fills": [[[0, 0], [4, 0], [4, 4]]]},
+            {"strokes": [[[0, 0], [10, 10]]], "widths": [9.0], "fills": [[[0, 0], [5, 0], [5, 5]]]},
+        ],
     }
 ]
 
@@ -93,6 +109,91 @@ def test_the_emitted_header_tag_parses_as_a_header():
 
 def test_paired_pages_tag_themselves_differently():
     assert config_of(build_page(PAIRED, round_label="3"), "tag") == "VERGLEICH/3"
+
+
+# ------------------------------------------------------- the two paired questions
+#
+# „welche Linie folgt der Tinte besser?" and „welche sieht echter geschrieben
+# aus?" measure different properties and their rounds are not comparable
+# (menschliche-bewertung.md §8). The instrument therefore carries the question
+# into the RESULT FILE's own header, so a text can never be filed under the
+# wrong one months later.
+
+
+def test_the_authenticity_question_tags_its_result_file_differently():
+    html = build_page(INKED, round_label="4", question="authentic")
+    tag = config_of(html, "tag")
+    assert tag == "ECHTHEIT/4"
+    assert RESULT_HEAD.match(f"{tag} geprueft=1 von 1")
+    assert parse_paired_result(f"{tag} geprueft=1 von 1\nS001:L@4s\n").tag == "ECHTHEIT/4"
+
+
+def test_the_authenticity_page_asks_about_writing_and_not_about_accuracy():
+    """The wording is the measurement: asked as an accuracy question, the round
+    would score the same two panels on the property it exists to look past."""
+    html = build_page(INKED, question="authentic")
+    assert "Welche Zeile sieht echter geschrieben aus?" in html
+    assert "Links sieht echter aus" in html and "Links folgt besser" not in html
+    assert config_of(html, "question") == "authentic"
+    assert config_of(build_page(PAIRED), "question") == "ink"
+
+
+def test_a_category_round_cannot_be_given_a_two_way_question():
+    with pytest.raises(ValueError, match="need two panels"):
+        build_page(SINGLE, question="authentic")
+
+
+def test_an_unknown_question_is_refused_at_build_time():
+    with pytest.raises(ValueError, match="is not one of"):
+        build_page(PAIRED, question="schoenheit")
+
+
+# ------------------------------------------------------------------ inked panels
+
+
+def test_an_inked_panel_carries_its_own_widths_and_fills():
+    """Stroke weight is the datum: a word round exists partly because a stroke a
+    quarter too thin is invisible on a hairline centerline."""
+    items, _ = normalise(INKED)
+    panels = items[0]["panels"]
+    assert [p["widths"] for p in panels] == [[6.0], [9.0]]
+    assert [len(p["fills"]) for p in panels] == [1, 1]
+
+
+def test_a_panel_may_draw_only_fills_but_never_nothing():
+    """The word mode's letter bodies are rings and only the connectors are
+    strokes, so a panel with no polyline is legitimate — an empty one is not."""
+    fills_only = [{"id": "S001", "w": 40, "h": 30, "img": PNG, "panels": [{"fills": [[[0, 0], [4, 0], [4, 4]]]}] * 2}]
+    items, _ = normalise(fills_only)
+    assert [sorted(p) for p in items[0]["panels"]] == [["fills"]] * 2
+    with pytest.raises(ValueError, match="no drawable stroke"):
+        normalise([{"id": "S001", "w": 40, "h": 30, "img": PNG, "panels": [{"fills": [[[0, 0], [4, 0]]]}] * 2}])
+
+
+def test_a_short_widths_array_is_refused():
+    """It would silently ink the tail of a word at the wrong weight."""
+    broken = copy.deepcopy(INKED)
+    broken[0]["panels"][0]["strokes"].append([[1, 1], [2, 2]])
+    with pytest.raises(ValueError, match="one per stroke or none"):
+        normalise(broken)
+
+
+def test_the_inked_payload_still_carries_nothing_but_geometry():
+    raw = copy.deepcopy(INKED)
+    raw[0]["arm"] = "LF11"
+    raw[0]["panels"][0]["arm"] = "base"
+    items, _ = normalise(raw)
+    assert set(items[0]) == {"id", "w", "h", "img", "panels"}
+    assert [sorted(p) for p in items[0]["panels"]] == [["fills", "strokes", "widths"]] * 2
+
+
+def test_the_drawn_ink_is_never_inherited_from_the_item():
+    """The two panels are being compared ON the ink; a panel that fell back to
+    an item-level `strokes`/`fills` would draw the other arm's writing. Pinned
+    on the emitted script, which cannot be imported."""
+    html = build_page(INKED)
+    for field in ("strokes", "widths", "fills"):
+        assert re.search(rf"{field}: p\.{field} \|\| \[\]", html), f"{field} gained an item-level fallback"
 
 
 @pytest.mark.parametrize("state", ["at", "seen", "notes", "spent", "spots", "answers", "picks"])

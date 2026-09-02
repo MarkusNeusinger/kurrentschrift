@@ -1,8 +1,11 @@
-"""analyse — the pre-registered evaluation of a humanbench SINGLE pass.
+"""analyse — the pre-registered evaluation of a humanbench pass.
 
     uv run python -m tools.humanbench.analyse \\
         --result round2/result.txt --key round2/key.json \\
         --rows round2/rows.json --spots round2/spots.json
+
+    uv run python -m tools.humanbench.analyse \\
+        --result runde-4/urteile.txt --key runde-4/key.json     # a paired round
 
 ``page.py`` collects the judgement and ``build.py`` decides what gets judged;
 this is the third piece — it turns the emitted result text back into numbers,
@@ -51,6 +54,31 @@ Three standing rules are wired in rather than left to the caller:
   evaluation** — there is nothing to judge there, so it neither counts as a
   positive nor pads the negatives.
 
+A PAIRED round — the before/after comparison, and the word round on the
+authenticity question — answers a different question and gets its own plan,
+five steps, in the same binding order (``analyse_paired``):
+
+1. **Side reliability first** — the mirrored repeats. A repeat shows the same
+   occurrence with the panels swapped, so answering it the same way names the
+   same ARM and answering it by position names the same SIDE. Below the
+   coin-flip band the round carries no adoption claim at all: a per-arm share
+   computed from position answers is a coin toss wearing a verdict's clothes.
+2. **Side balance** — how often left won, regardless of arm. The seed spreads
+   the arms evenly over the sides, so a preference cannot bias the verdict; it
+   widens it, and it is reported rather than assumed away.
+3. **The verdict**, against a threshold fixed before the round existed:
+   **adopt at ≥ 60 % candidate among the DECIDED screens and ≤ 25 % „kein
+   Unterschied" over all of them.** Two conditions because they ask two
+   things — „when a difference is visible, who wins?" and „is it visible often
+   enough to be worth adopting?" — and putting the ties into the first
+   denominator as well would count the same fact twice.
+4. **Per suspicion class** — the same three numbers per declared class, „too
+   few" below `MIN_PAIRED_PER_CLASS`. Pre-registered, not fished for
+   afterwards: a candidate that loses overall while carrying one class is the
+   normal shape of a result here, and partial adoption is legitimate — but
+   only if the split was named before the numbers were.
+5. **Drift**, then the notes verbatim.
+
 No database, no API, no network. The per-occurrence metrics arrive as a file
 the caller supplies, which is also what keeps the learned geometry out of this
 repo (``docs/reference/quellen-und-rechte.md`` §5): the module reads numbers,
@@ -69,7 +97,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
-from tools.humanbench.page import CATEGORIES, CHOICES
+from tools.humanbench.page import CATEGORIES, CHOICES, QUESTIONS
 
 
 # The verdict vocabulary comes from the instrument itself, so the parser cannot
@@ -80,6 +108,11 @@ MODIFIER_CODES: tuple[str, ...] = tuple(c.code for c in CATEGORIES if c.kind == 
 CHOICE_CODES: tuple[str, ...] = tuple(c.code for c in CHOICES)
 CATEGORY_LABEL: dict[str, str] = {c.code: c.tally for c in CATEGORIES}
 TALLY_CODE: dict[str, str] = {c.tally: c.code for c in CATEGORIES}
+# Every question set writes the same three codes under different labels, so a
+# paste from either page reads back — and the LABEL is not thrown away, because
+# it is the one place a result file says which question was answered.
+CHOICE_TALLY_CODE: dict[str, str] = {c.tally: c.code for choices in QUESTIONS.values() for c in choices}
+CHOICE_LABEL: dict[str, str] = {c.code: c.tally for c in CHOICES}
 
 GOOD = "G"  # the verdict that says nothing is wrong
 UNRATABLE = "K"  # „komplett daneben" — excluded from every other category
@@ -111,6 +144,31 @@ HEAD_FRACTION = 0.10
 TAIL_FRACTION = 0.90
 
 DRIFT_BLOCKS = 3
+
+# --- the paired plan, fixed BEFORE any round on the authenticity question ----
+#
+# Adoption of a candidate needs both: it has to win when a difference is seen
+# AT ALL, and the difference has to be seen often enough to be worth a change
+# to what everybody renders. The shares are deliberately coarse — this is a
+# single judge over ~60 words, and a threshold anybody could tune afterwards
+# would make the round decoration.
+ADOPT_CANDIDATE_SHARE = 0.60  # of the DECIDED screens
+ADOPT_MAX_TIE_SHARE = 0.25  # of ALL judged screens
+# Below this many mirrored repeat pairs, or at coin-flip agreement over them,
+# the round reports its numbers and claims nothing: a per-arm share built from
+# answers given by position is not a verdict about the arms.
+MIN_PAIRED_REPEATS = 6
+# A class thinner than this gets „too few" instead of a share, exactly like a
+# thin category in the single plan.
+MIN_PAIRED_PER_CLASS = 8
+# Side preference is reported, never decisive — the seed spreads the arms over
+# the sides. Past this share it is called out, because a judge answering mostly
+# by position is the situation step 1 exists to catch.
+SIDE_LOPSIDED = 0.65
+# The arm names the builders write into the key. The FIRST match is the side a
+# „≥ 60 %" is about; everything else is the base it is measured against.
+CANDIDATE_SIDES: tuple[str, ...] = ("candidate", "new")
+TIE = "N"
 
 # The per-occurrence metrics of the round that produced this module. A rows
 # file without one of them simply drops that line from the matrix; a rows file
@@ -252,6 +310,100 @@ def parse_result(text: str) -> ParsedResult:
                 f'the page counted {claimed} × „{CATEGORY_LABEL[code]}", the verdict lines carry {counted}'
             )
     return ParsedResult(head.group("tag"), int(head.group("judged")), int(head.group("total")), tuple(verdicts))
+
+
+@dataclass(frozen=True)
+class Preference:
+    """One judged screen of a PAIRED round: which panel won, or neither."""
+
+    uid: str
+    choice: str  # L / R / N
+    seconds: int | None
+    note: str | None
+    position: int
+
+
+@dataclass(frozen=True)
+class ParsedPaired:
+    tag: str
+    judged: int
+    total: int
+    preferences: tuple[Preference, ...]
+
+
+def looks_paired(text: str) -> bool:
+    """Decide which kind of round a result text is, by its verdict vocabulary.
+
+    Read off the file rather than taken from a flag, for the same reason the
+    page picks its mode from the payload: the round already decided what it is,
+    and a flag is one more thing to get wrong months later when a text is
+    re-analysed.
+    """
+    for line in text.splitlines()[1:]:
+        match = RESULT_LINE.match(line.strip())
+        if not match:
+            continue
+        verdict = match.group("verdict")
+        if verdict and verdict != "-":
+            return all(code in CHOICE_CODES for code in verdict)
+    return False
+
+
+def parse_paired_result(text: str) -> ParsedPaired:
+    """Parse the result text of a paired round (``<uid>:<L|R|N>[@<secs>s][ "note"]``).
+
+    The header tag says WHICH question was asked (``VERGLEICH`` = follows the
+    ink better, ``ECHTHEIT`` = looks more genuinely written) and is kept
+    verbatim: the two measure different properties, their rounds are not
+    comparable, and a text whose question nobody recorded cannot be filed
+    afterwards (menschliche-bewertung.md §8).
+    """
+    lines = [line for line in text.splitlines() if line.strip()]
+    if not lines:
+        raise ResultFormatError("empty result")
+    head = RESULT_HEAD.match(lines[0])
+    if not head:
+        raise ResultFormatError(f"no header line, got {lines[0]!r}")
+
+    preferences: list[Preference] = []
+    seen: set[str] = set()
+    tallies: dict[str, int] = {}
+    for position, line in enumerate(lines[1:]):
+        tally = TALLY_LINE.match(line)
+        if tally and tally.group("label").strip() in CHOICE_TALLY_CODE:
+            code = CHOICE_TALLY_CODE[tally.group("label").strip()]
+            if code in tallies:
+                raise ResultFormatError(f"line {position + 2}: the tally for {code} is given twice")
+            tallies[code] = int(tally.group("count"))
+            continue
+        if tallies:
+            raise ResultFormatError(f"line {position + 2}: verdict line behind the tally block: {line!r}")
+        match = RESULT_LINE.match(line)
+        if not match:
+            raise ResultFormatError(f"line {position + 2} does not parse: {line!r}")
+        raw = match.group("verdict")
+        if raw == "-" or len(raw) != 1 or raw not in CHOICE_CODES:
+            raise ResultFormatError(f"line {position + 2}: {raw!r} is not one of {''.join(CHOICE_CODES)}")
+        if match.group("sx") is not None:
+            # The paired page places no marker; one in the file means the text
+            # came from a category round and the two would be mixed.
+            raise ResultFormatError(f"line {position + 2} carries a spot marker — that is a category round")
+        uid = match.group("uid")
+        if uid in seen:
+            raise ResultFormatError(f"line {position + 2}: {uid} judged twice")
+        seen.add(uid)
+        seconds = int(match.group("seconds")) if match.group("seconds") else None
+        preferences.append(Preference(uid, raw, seconds, match.group("note"), position))
+
+    if len(preferences) != int(head.group("judged")):
+        raise ResultFormatError(f"header claims {head.group('judged')} judged, file carries {len(preferences)}")
+    for code, claimed in tallies.items():
+        counted = sum(1 for p in preferences if p.choice == code)
+        if counted != claimed:
+            raise ResultFormatError(
+                f'the page counted {claimed} × „{CHOICE_LABEL[code]}", the verdict lines carry {counted}'
+            )
+    return ParsedPaired(head.group("tag"), int(head.group("judged")), int(head.group("total")), tuple(preferences))
 
 
 def load_key(entries: Iterable[dict]) -> dict[str, dict]:
@@ -741,6 +893,222 @@ def analyse(
     }
 
 
+# ---------------------------------------------------- the paired plan's steps
+
+
+def arm_of(entry: dict | None, choice: str) -> str | None:
+    """Which ARM a chosen side names, from the key's own order — never the page's.
+
+    The panel order is the only record of the assignment and lives in the key
+    alone (the payload carries geometry and nothing else). A repeat is shown
+    MIRRORED and carries its own swapped order, so the same lookup handles both
+    showings without anybody having to remember which one was flipped.
+    """
+    order = (entry or {}).get("order") or []
+    if choice == TIE or len(order) != 2:
+        return None
+    return str(order[0] if choice == "L" else order[1])
+
+
+def arms_named(key: dict[str, dict]) -> tuple[str, ...]:
+    """The two arm names the key uses, candidate first when one is recognised."""
+    names = sorted({str(side) for entry in key.values() for side in (entry.get("order") or [])})
+    candidate = next((name for name in CANDIDATE_SIDES if name in names), None)
+    return (candidate, *[n for n in names if n != candidate]) if candidate else tuple(names)
+
+
+def _shown_paired(preferences: Sequence[Preference], key: dict[str, dict]) -> list[Preference]:
+    return [p for p in preferences if not (key.get(p.uid) or {}).get("repeat_of")]
+
+
+def side_reliability(preferences: Sequence[Preference], key: dict[str, dict]) -> dict[str, Any]:
+    """Step 1 — the mirrored repeats, and what they say about the answers.
+
+    Two agreements, and they are almost exclusive by construction: naming the
+    same ARM across a mirrored pair means the letters flipped, naming the same
+    SIDE means they did not. Only „kein Unterschied" twice is both. The arm
+    agreement is the ceiling the verdict sits under — if the judge answers by
+    position, a per-arm share is a coin toss with a percentage sign.
+    """
+    by_uid = {p.uid: p for p in preferences}
+    pairs: list[tuple[Preference, Preference, dict, dict]] = []
+    missing: list[str] = []
+    for entry in key.values():
+        first, repeat = entry.get("repeat_of"), entry["uid"]
+        if not first:
+            continue
+        if first in by_uid and repeat in by_uid:
+            pairs.append((by_uid[first], by_uid[repeat], key[first], entry))
+        else:
+            missing.append(repeat)
+
+    arm_agree = sum(1 for a, b, ka, kb in pairs if arm_of(ka, a.choice) == arm_of(kb, b.choice))
+    side_agree = sum(1 for a, b, _ka, _kb in pairs if a.choice == b.choice)
+    both_tie = sum(1 for a, b, _ka, _kb in pairs if a.choice == TIE and b.choice == TIE)
+    mirrored = sum(1 for _a, _b, _ka, kb in pairs if kb.get("mirrored"))
+    rate = (arm_agree / len(pairs)) if pairs else None
+    return {
+        "pairs": len(pairs),
+        "mirrored": mirrored,
+        "missing_repeats": missing,
+        "arm_agree": arm_agree,
+        "side_agree": side_agree,
+        "both_tie": both_tie,
+        "rate": rate,
+        "band": _reliability_band(arm_agree, len(pairs)),
+        "too_few_pairs": len(pairs) < MIN_PAIRED_REPEATS,
+        # The pre-registered precondition, evaluated here rather than left to
+        # the reader: without it the adoption line below would be a number
+        # nobody had to earn.
+        "carries_a_verdict": bool(pairs)
+        and len(pairs) >= MIN_PAIRED_REPEATS
+        and rate is not None
+        and rate > COIN_FLIP_AGREEMENT,
+    }
+
+
+def side_balance(preferences: Sequence[Preference], key: dict[str, dict]) -> dict[str, Any]:
+    """Step 2 — how often each SIDE won, whichever arm stood there."""
+    shown = _shown_paired(preferences, key)
+    left = sum(1 for p in shown if p.choice == "L")
+    right = sum(1 for p in shown if p.choice == "R")
+    decided = left + right
+    share = (left / decided) if decided else None
+    return {
+        "n": len(shown),
+        "left": left,
+        "right": right,
+        "tie": len(shown) - decided,
+        "left_share": share,
+        "lopsided": share is not None and (share >= SIDE_LOPSIDED or share <= 1 - SIDE_LOPSIDED),
+    }
+
+
+def _tally(group: Sequence[Preference], key: dict[str, dict], candidate: str | None) -> dict[str, Any]:
+    per_arm = Counter(arm_of(key.get(p.uid), p.choice) for p in group if p.choice != TIE)
+    ties = sum(1 for p in group if p.choice == TIE)
+    decided = sum(per_arm.values())
+    wins = per_arm.get(candidate, 0) if candidate else 0
+    return {
+        "n": len(group),
+        "per_arm": {str(name): count for name, count in sorted(per_arm.items(), key=lambda kv: str(kv[0]))},
+        "decided": decided,
+        "ties": ties,
+        # Two denominators, and both are printed: the share among the DECIDED
+        # screens answers „who wins when a difference is visible", the tie share
+        # over ALL of them answers „is it visible often enough to act on".
+        "candidate_share": (wins / decided) if decided and candidate else None,
+        "tie_share": (ties / len(group)) if group else None,
+        "candidate_share_all": (wins / len(group)) if group and candidate else None,
+    }
+
+
+def verdict(preferences: Sequence[Preference], key: dict[str, dict], *, reliable: bool) -> dict[str, Any]:
+    """Step 3 — the pre-registered decision, over the pass proper."""
+    arms = arms_named(key)
+    candidate = arms[0] if arms and arms[0] in CANDIDATE_SIDES else None
+    cell = _tally(_shown_paired(preferences, key), key, candidate)
+    passes = (
+        candidate is not None
+        and cell["candidate_share"] is not None
+        and cell["candidate_share"] >= ADOPT_CANDIDATE_SHARE
+        and cell["tie_share"] is not None
+        and cell["tie_share"] <= ADOPT_MAX_TIE_SHARE
+    )
+    return {
+        "arms": list(arms),
+        "candidate": candidate,
+        **cell,
+        "thresholds": {"candidate_share": ADOPT_CANDIDATE_SHARE, "tie_share": ADOPT_MAX_TIE_SHARE},
+        "meets_thresholds": passes,
+        # „Adopt" needs BOTH the thresholds and step 1's precondition. Kept as
+        # two fields so a round that clears the bar on unreliable answers reads
+        # as what it is, instead of as an adoption.
+        "adopt": bool(passes and reliable),
+    }
+
+
+def per_class(preferences: Sequence[Preference], key: dict[str, dict]) -> dict[str, Any]:
+    """Step 4 — the same three numbers per declared suspicion class.
+
+    Pre-registered rather than reached for afterwards: the standing directive
+    on asymmetric results (2026-08-26) is to take a loser apart by class before
+    discarding it, and partial adoption is a legitimate outcome — but only if
+    the split existed before the numbers did.
+    """
+    arms = arms_named(key)
+    candidate = arms[0] if arms and arms[0] in CANDIDATE_SIDES else None
+    groups: dict[str, list[Preference]] = {}
+    for p in _shown_paired(preferences, key):
+        groups.setdefault(str((key.get(p.uid) or {}).get("stratum") or "-"), []).append(p)
+    return {
+        name: {**_tally(group, key, candidate), "too_few": len(group) < MIN_PAIRED_PER_CLASS}
+        for name, group in sorted(groups.items())
+    }
+
+
+def paired_drift(preferences: Sequence[Preference], key: dict[str, dict], blocks: int = DRIFT_BLOCKS) -> dict[str, Any]:
+    """Step 5 — arm mix, tie rate and judging time over the sequence."""
+    shown = _shown_paired(preferences, key)
+    n = len(shown)
+    bounds = [round(i * n / blocks) for i in range(blocks + 1)]
+    out = []
+    for lo, hi in zip(bounds[:-1], bounds[1:], strict=True):
+        block = shown[lo:hi]
+        times = [p.seconds for p in block if p.seconds is not None]
+        out.append(
+            {
+                "range": [lo, hi],
+                "n": len(block),
+                "arms": dict(Counter(str(arm_of(key.get(p.uid), p.choice)) for p in block)),
+                "ties": sum(1 for p in block if p.choice == TIE),
+                "timed": len(times),
+                "median_seconds": statistics.median(times) if times else None,
+            }
+        )
+    return {"blocks": out}
+
+
+def paired_notes(preferences: Sequence[Preference], key: dict[str, dict]) -> list[dict[str, Any]]:
+    """The free-text remarks, verbatim, with the screen and the arm they chose."""
+    return [
+        {
+            "uid": p.uid,
+            "entry": (key.get(p.uid) or {}).get("entry") or (key.get(p.uid) or {}).get("glyph"),
+            "text": (key.get(p.uid) or {}).get("text") or (key.get(p.uid) or {}).get("word"),
+            "choice": p.choice,
+            "arm": arm_of(key.get(p.uid), p.choice),
+            "note": p.note,
+        }
+        for p in preferences
+        if p.note
+    ]
+
+
+def analyse_paired(parsed: ParsedPaired, key: dict[str, dict]) -> dict[str, Any]:
+    """Run the paired plan's five steps in order and return every number."""
+    preferences = list(parsed.preferences)
+    unknown = sorted({p.uid for p in preferences} - set(key))
+    if unknown:
+        raise ResultFormatError(f"result carries {len(unknown)} screen(s) the key does not know: {unknown[:5]}")
+    reliability_cell = side_reliability(preferences, key)
+    return {
+        "pass": {
+            "tag": parsed.tag,
+            "judged": parsed.judged,
+            "total": parsed.total,
+            "key_entries": len(key),
+            "unjudged": [uid for uid in key if uid not in {p.uid for p in preferences}],
+        },
+        "reliability": reliability_cell,
+        "sides": side_balance(preferences, key),
+        "verdict": verdict(preferences, key, reliable=reliability_cell["carries_a_verdict"]),
+        "classes": per_class(preferences, key),
+        "drift": paired_drift(preferences, key),
+        "notes": paired_notes(preferences, key),
+    }
+
+
 # ------------------------------------------------------------------- report
 
 
@@ -904,6 +1272,92 @@ def _ratio(value: float | None) -> str:
     return "—" if value is None else f"{value:.2f}"
 
 
+def format_paired_report(result: dict[str, Any]) -> str:
+    """The paired plan's five steps as a plain-text report, in the plan's order."""
+    out: list[str] = []
+    meta = result["pass"]
+    out.append(f"=== {meta['tag']} — {meta['judged']} of {meta['total']} screens judged ===")
+    out.append(f"  key {meta['key_entries']} entries")
+    if meta["unjudged"]:
+        out.append(f"  ! {len(meta['unjudged'])} screen(s) in the key were not judged: {meta['unjudged'][:8]}")
+
+    rel = result["reliability"]
+    out.append("")
+    out.append("=== 1. side reliability — the MIRRORED repeats (the verdict sits under this) ===")
+    out.append(
+        f"  same arm: {rel['arm_agree']}/{rel['pairs']} pairs ({_pct(rel['rate'])})"
+        f" · same side: {rel['side_agree']}/{rel['pairs']} · both „kein Unterschied“: {rel['both_tie']}"
+        + (f"  [{rel['band']}]" if rel["band"] else "")
+    )
+    out.append(f"  {rel['mirrored']} of {rel['pairs']} repeats were shown mirrored")
+    if rel["missing_repeats"]:
+        out.append(f"  ! repeats without both readings: {rel['missing_repeats']}")
+    if rel["too_few_pairs"]:
+        out.append(f"  ! fewer than {MIN_PAIRED_REPEATS} pairs — no adoption claim can rest on this round")
+    if not rel["carries_a_verdict"]:
+        out.append("  ! the answers do not clear the coin-flip band: the numbers below describe, they decide nothing")
+
+    sides = result["sides"]
+    out.append("")
+    out.append("=== 2. side balance — reported, never decisive (the seed spreads the arms) ===")
+    out.append(
+        f"  left {sides['left']} · right {sides['right']} · no difference {sides['tie']}"
+        f"  (left {_pct(sides['left_share'])} of the decided)"
+    )
+    if sides["lopsided"]:
+        out.append(f"  ! past {_pct(SIDE_LOPSIDED)} one way — a judge answering by position is what step 1 catches")
+
+    ver = result["verdict"]
+    out.append("")
+    out.append("=== 3. verdict — against the thresholds fixed before the round ===")
+    out.append(
+        f"  arms: {', '.join(ver['arms']) or '—'}" + (f"  (candidate: {ver['candidate']})" if ver["candidate"] else "")
+    )
+    out.append(f"  wins per arm: {ver['per_arm']} · decided {ver['decided']} · no difference {ver['ties']}")
+    out.append(
+        f"  candidate {_pct(ver['candidate_share'])} of the decided (threshold ≥ "
+        f"{_pct(ver['thresholds']['candidate_share'])}) · {_pct(ver['candidate_share_all'])} of all screens"
+    )
+    out.append(
+        f"  „kein Unterschied“ {_pct(ver['tie_share'])} of all screens (threshold ≤ "
+        f"{_pct(ver['thresholds']['tie_share'])})"
+    )
+    if ver["candidate"] is None:
+        out.append("  ! neither arm is named as the candidate in the key — reported per arm, not decided")
+    out.append(
+        f"  → thresholds {'MET' if ver['meets_thresholds'] else 'not met'};"
+        f" decision: {'ADOPT' if ver['adopt'] else 'do not adopt'}"
+    )
+
+    out.append("")
+    out.append(f"=== 4. per suspicion class (too few below {MIN_PAIRED_PER_CLASS}) ===")
+    out.append(f"  {'class':<14}{'n':>4}{'decided':>9}{'cand':>7}{'share':>8}{'ties':>7}")
+    for name, cell in result["classes"].items():
+        wins = cell["per_arm"].get(ver["candidate"], 0) if ver["candidate"] else 0
+        mark = "   too few" if cell["too_few"] else ""
+        out.append(
+            f"  {name:<14}{cell['n']:>4}{cell['decided']:>9}{wins:>7}"
+            f"{_pct(cell['candidate_share']):>8}{_pct(cell['tie_share']):>7}{mark}"
+        )
+
+    out.append("")
+    out.append(f"=== 5. drift — the sequence in {len(result['drift']['blocks'])} blocks ===")
+    for block in result["drift"]["blocks"]:
+        mix = " ".join(f"{name} {n}" for name, n in sorted(block["arms"].items()) if name != "None")
+        median = "—" if block["median_seconds"] is None else f"{block['median_seconds']:g}s"
+        out.append(
+            f"  {block['range'][0]:>3}–{block['range'][1]:<3} n {block['n']:>3} · {mix}"
+            f" · ties {block['ties']} · median {median} (n {block['timed']})"
+        )
+
+    if result["notes"]:
+        out.append("")
+        out.append("=== notes (verbatim) ===")
+        for note in result["notes"]:
+            out.append(f'  {note["uid"]} ({note["text"]}, chose {note["choice"]} = {note["arm"]}) "{note["note"]}"')
+    return "\n".join(out)
+
+
 # ------------------------------------------------------------------- CLI
 
 
@@ -936,8 +1390,34 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    parsed = parse_result(args.result.read_text(encoding="utf-8"))
+    text = args.result.read_text(encoding="utf-8")
     key = load_key(json.loads(args.key.read_text(encoding="utf-8")))
+    if looks_paired(text):
+        # A paired round has no categories, no metrics and no markers; the
+        # single plan's flags would be answered with silence, so they are named
+        # as ignored rather than quietly dropped.
+        ignored = [
+            name
+            for name, given in (
+                ("--rows", args.rows),
+                ("--spots", args.spots),
+                ("--union", args.union),
+                ("--metrics", args.metrics),
+                ("--flags", args.flags),
+                ("--drop-unsure", args.drop_unsure),
+            )
+            if given
+        ]
+        if ignored:
+            print(f"note: {', '.join(ignored)} does not apply to a paired round — ignored")
+        result = analyse_paired(parse_paired_result(text), key)
+        print(format_paired_report(result))
+        if args.json_out:
+            args.json_out.write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+            print(f"\nwrote {args.json_out}")
+        return 0
+
+    parsed = parse_result(text)
     rows = index_by_uid(json.loads(args.rows.read_text(encoding="utf-8"))) if args.rows else {}
     geometry = dict(rows)
     if args.spots:

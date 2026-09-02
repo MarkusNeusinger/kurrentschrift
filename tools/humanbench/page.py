@@ -28,6 +28,23 @@ what decides which question can be asked:
   assignment cannot be read out of the page source either. Which side was the
   new one lives in the builder's key file, never here.
 
+A paired page asks ONE of two questions, and which one is part of the record
+rather than a detail of the wording (``menschliche-bewertung.md`` §8): while
+there are unambiguous defects the question is „welche Linie folgt der Tinte
+besser?" (``question="ink"``, tag ``VERGLEICH``); once both lines lie on the
+ink equally well that question measures nothing, and it becomes „welche sieht
+echter geschrieben aus?" (``question="authentic"``, tag ``ECHTHEIT``). The two
+measure different properties — accuracy can even run against authenticity, a
+line that follows every skeleton jag being more accurate and less written — so
+their rounds are not comparable, and the TAG carries the difference into the
+result file's header so no round can later be filed under the wrong question.
+
+A panel may draw filled ``fills`` and per-stroke ``widths`` beside its
+polylines. That is what the word round needs: the defects it exists for (a
+stroke a quarter too thin, a saw-toothed running form, the kink at a
+connector's seam) are properties of the INK, and a hairline centerline shows
+none of the first two.
+
 Properties that carry over from the pass-2 instrument, each for its reason:
 
 * **Cartographic casing.** A light halo under the line and under the marker, so
@@ -120,6 +137,9 @@ CATEGORIES: tuple[Category, ...] = (
 # The paired mode's answers. Deliberately three: a winner each way and the
 # claim that there is none. Anything finer would ask the judge to rank a
 # difference they just said they cannot see.
+#
+# The accuracy question — the one to ask while unambiguous defects are still
+# there, because an outlier or a misplaced arc is exactly what accuracy means.
 CHOICES: tuple[Choice, ...] = (
     Choice("L", ("1", "ArrowLeft"), "Links folgt besser", "Links besser", key_note="1 oder ←"),
     Choice("R", ("2", "ArrowRight"), "Rechts folgt besser", "Rechts besser", key_note="2 oder →"),
@@ -133,6 +153,25 @@ CHOICES: tuple[Choice, ...] = (
     ),
 )
 
+# The authenticity question — the project's actual yardstick, and the one the
+# frozen rulers cannot stand in for. Same three answers and the same codes, so
+# a result file parses identically; only the wording moves, because the
+# property being judged is a different one.
+AUTHENTIC_CHOICES: tuple[Choice, ...] = (
+    Choice("L", ("1", "ArrowLeft"), "Links sieht echter aus", "Links echter", key_note="1 oder ←"),
+    Choice("R", ("2", "ArrowRight"), "Rechts sieht echter aus", "Rechts echter", key_note="2 oder →"),
+    Choice(
+        "N",
+        ("3",),
+        "Kein Unterschied erkennbar",
+        "Kein Unterschied",
+        key_note="Taste 3",
+        why="der Streit liegt unter der Sichtbarkeit",
+    ),
+)
+
+QUESTIONS: dict[str, tuple[Choice, ...]] = {"ink": CHOICES, "authentic": AUTHENTIC_CHOICES}
+
 _KIND_ORDER = {"solo": 0, "finding": 1, "modifier": 2}
 
 
@@ -141,6 +180,7 @@ class PageMeta:
     """Everything the page says about itself, resolved from payload + CLI."""
 
     mode: str
+    question: str
     tag: str
     eyebrow: str
     headline: str
@@ -181,6 +221,22 @@ _DEFAULTS: dict[str, dict[str, str]] = {
             "Quelltext. Die Zuordnung liegt beim Auswerter."
         ),
     },
+    "authentic": {
+        "tag": "ECHTHEIT",
+        "eyebrow": "Blindvergleich — Echtheit",
+        "headline": "Welche Zeile sieht echter geschrieben aus?",
+        "lede": (
+            "Dasselbe Wort der Vorlage, zweimal vom System geschrieben. Gefragt ist *nicht*, welche "
+            "genauer auf der Tinte liegt, sondern welche *nach Hand aussieht* — Strichstärke, "
+            "Schwung, die Übergänge. *Alle drei Antworten sind vollwertig* — „kein Unterschied“ ist "
+            "ein Ergebnis, keine Ausrede."
+        ),
+        "lede_fine": (
+            "Die Vorlage liegt als Hintergrund darunter; sie ist der Maßstab dafür, wie geschrieben "
+            "aussieht, nicht das Ziel, das getroffen werden soll. Welche Seite welche Rechnung zeigt, "
+            "steht nirgends auf dieser Seite — auch nicht im Quelltext."
+        ),
+    },
 }
 
 
@@ -209,29 +265,51 @@ def _data_uri(raw: Any, where: str) -> str:
     return "data:image/png;base64," + raw
 
 
-def _strokes(raw: Any, where: str) -> list[list[list[float]]]:
-    """Validate the polyline set of one panel and round it to display precision.
+def _paths(raw: Any, where: str, field: str, minimum: int) -> list[list[list[float]]]:
+    """Validate one panel's path set and round it to display precision.
 
     Coordinates are in the panel's own pixel frame (0..w, 0..h). Sub-pixel
     precision beyond two decimals is invisible at any zoom the page uses and
     only inflates the file, which is the scarce resource here.
     """
     if not isinstance(raw, Sequence) or isinstance(raw, str):
-        raise ValueError(f"{where}: 'strokes' must be a list of polylines")
+        raise ValueError(f"{where}: {field!r} must be a list of paths")
     out: list[list[list[float]]] = []
-    for si, stroke in enumerate(raw):
-        if not isinstance(stroke, Sequence) or isinstance(stroke, str):
-            raise ValueError(f"{where}: stroke {si} is not a list of points")
+    for si, path in enumerate(raw):
+        if not isinstance(path, Sequence) or isinstance(path, str):
+            raise ValueError(f"{where}: {field} {si} is not a list of points")
         pts: list[list[float]] = []
-        for point in stroke:
+        for point in path:
             if not isinstance(point, Sequence) or isinstance(point, str) or len(point) != 2:
-                raise ValueError(f"{where}: stroke {si} has a point that is not [x, y]")
+                raise ValueError(f"{where}: {field} {si} has a point that is not [x, y]")
             pts.append([round(float(point[0]), 2), round(float(point[1]), 2)])
-        if len(pts) >= 2:  # a one-point stroke draws nothing; a pen lift is a new stroke
+        if len(pts) >= minimum:  # a one-point stroke draws nothing; a pen lift is a new stroke
             out.append(pts)
+    return out
+
+
+def _strokes(raw: Any, where: str) -> list[list[list[float]]]:
+    """The judged polylines of one panel; at least one is required."""
+    out = _paths(raw, where, "strokes", 2)
     if not out:
         raise ValueError(f"{where}: no drawable stroke (each needs at least two points)")
     return out
+
+
+def _widths(raw: Any, where: str, n_strokes: int) -> list[float]:
+    """Per-stroke widths in panel pixels, or an empty list for the hairline.
+
+    Pinned to the stroke count on purpose: a short widths array would silently
+    ink the tail of a word at the wrong weight, and stroke weight is the very
+    thing a word round is asked to judge.
+    """
+    if raw is None:
+        return []
+    if not isinstance(raw, Sequence) or isinstance(raw, str):
+        raise ValueError(f"{where}: 'widths' must be a list of numbers")
+    if len(raw) != n_strokes:
+        raise ValueError(f"{where}: {len(raw)} widths for {n_strokes} strokes — one per stroke or none")
+    return [round(float(value), 2) for value in raw]
 
 
 def _panel(raw: Any, where: str, shared: dict[str, Any]) -> dict[str, Any]:
@@ -260,11 +338,20 @@ def _panel(raw: Any, where: str, shared: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(f"{where}: panel size {width}x{height} is not drawable")
     if "img" not in merged:
         raise ValueError(f"{where}: panel needs an 'img' (its own or the item's)")
+    strokes = _paths(merged.get("strokes", []), where, "strokes", 2)
+    # A filled silhouette is ink too: the word mode draws letter bodies as
+    # rings and only the generated connectors as capsules, so a panel may
+    # legitimately carry no polyline at all — but never neither.
+    fills = _paths(merged.get("fills", []), where, "fills", 3)
+    if not strokes and not fills:
+        raise ValueError(f"{where}: no drawable stroke (each needs at least two points)")
     return {
         "w": width,
         "h": height,
         "img": _data_uri(merged["img"], where),
-        "strokes": _strokes(merged.get("strokes", []), where),
+        "strokes": strokes,
+        "widths": _widths(merged.get("widths"), where, len(strokes)),
+        "fills": fills,
         # Optional, and validated only when present: a panel with no surrounding
         # pen path is legitimate (a word of one letter, or a round built without
         # traces), whereas a panel with no JUDGED line is a broken screen.
@@ -278,6 +365,9 @@ def _panels_of(raw: dict[str, Any], where: str) -> list[dict[str, Any]]:
     # path, identical for both panels, so hoisting it cannot leak which side is
     # which — and drawing it once is what keeps a joined letter from appearing
     # to stop short (see `build.py::context_strokes`).
+    # `strokes`/`widths`/`fills` are deliberately NOT shareable: they are the
+    # two things being compared, and a panel that inherited them would draw the
+    # other arm's ink.
     shared = {k: raw[k] for k in ("w", "h", "img", "context") if k in raw}
     if "panels" in raw:
         panels = raw["panels"]
@@ -312,7 +402,10 @@ def _pack(item_id: str, panels: list[dict[str, Any]]) -> dict[str, Any]:
             "w": first["w"],
             "h": first["h"],
             "img": first["img"],
-            "panels": [{"strokes": p["strokes"]} for p in panels],
+            # Only the fields a panel actually carries: a letter round's panel
+            # stays `{"strokes"}`, which is what keeps its payload as narrow as
+            # the blindness rule (§3.8) promises.
+            "panels": [{key: p[key] for key in ("strokes", "widths", "fills") if p[key]} for p in panels],
         }
         if first["context"]:
             item["context"] = first["context"]
@@ -405,10 +498,10 @@ def _category_buttons() -> str:
     return "\n      ".join(rows)
 
 
-def _choice_buttons() -> str:
+def _choice_buttons(choices: tuple[Choice, ...]) -> str:
     """Markup for the paired mode's two-way preference."""
     rows = []
-    for choice in CHOICES:
+    for choice in choices:
         why = f'<span class="why">{html.escape(choice.why)}</span>' if choice.why else ""
         rows.append(
             f'<button class="choice" data-c="{html.escape(choice.code)}" type="button" aria-pressed="false">'
@@ -418,9 +511,9 @@ def _choice_buttons() -> str:
     return "\n      ".join(rows)
 
 
-def _hint(mode: str) -> str:
+def _hint(mode: str, choices: tuple[Choice, ...]) -> str:
     if mode == "paired":
-        keys = " / ".join(c.keys[0] for c in CHOICES)
+        keys = " / ".join(c.keys[0] for c in choices)
         return f"Tasten {keys} · Pfeiltasten · Rücktaste = zurück"
     keys = [c.key for c in CATEGORIES]
     return f"Tasten {keys[0]}–{keys[-1]} · Enter = weiter · Rücktaste = zurück"
@@ -433,7 +526,17 @@ def _js_json(value: Any) -> str:
 
 def _resolve_meta(items: list[dict[str, Any]], payload_meta: dict[str, Any], overrides: dict[str, Any]) -> PageMeta:
     mode = "paired" if len(items[0]["panels"]) == 2 else "single"
-    defaults = _DEFAULTS[mode]
+
+    question = str(overrides.get("question") or payload_meta.get("question") or "ink")
+    if question not in QUESTIONS:
+        raise ValueError(f"question {question!r} is not one of {sorted(QUESTIONS)}")
+    if mode == "single" and question != "ink":
+        raise ValueError("a category round asks the categories; the two-way questions need two panels")
+    # The question, not just the panel count, decides how the page speaks and
+    # what its result file is tagged: two paired rounds on different questions
+    # measure different properties and must not be filed as one series (§8).
+    voice = mode if question == "ink" else question
+    defaults = _DEFAULTS[voice]
 
     def pick(name: str) -> str:
         for source in (overrides, payload_meta):
@@ -454,6 +557,7 @@ def _resolve_meta(items: list[dict[str, Any]], payload_meta: dict[str, Any], ove
         raise ValueError(f"tag {full_tag!r} must be one whitespace-free token — it heads the result file")
     return PageMeta(
         mode=mode,
+        question=question,
         tag=full_tag,
         eyebrow=pick("eyebrow"),
         headline=headline,
@@ -468,13 +572,16 @@ def _resolve_meta(items: list[dict[str, Any]], payload_meta: dict[str, Any], ove
 def build_page(payload: Any, **overrides: Any) -> str:
     """Return the finished, self-contained HTML for ``payload``.
 
-    Keyword overrides (all optional, all strings): ``tag``, ``round_label``,
-    ``eyebrow``, ``headline``, ``title``, ``lede``, ``lede_fine``, ``store``.
+    Keyword overrides (all optional, all strings): ``question`` (``ink`` or
+    ``authentic``), ``tag``, ``round_label``, ``eyebrow``, ``headline``,
+    ``title``, ``lede``, ``lede_fine``, ``store``.
     """
     items, payload_meta = normalise(payload)
     meta = _resolve_meta(items, payload_meta, overrides)
+    choices = QUESTIONS[meta.question]
     config = {
         "mode": meta.mode,
+        "question": meta.question,
         "tag": meta.tag,
         "store": meta.store,
         "order": [c.code for c in CATEGORIES],
@@ -483,7 +590,7 @@ def build_page(payload: Any, **overrides: Any) -> str:
             for c in (CATEGORIES if meta.mode == "single" else ())
         ],
         "choices": [
-            {"code": c.code, "keys": list(c.keys), "tally": c.tally} for c in (CHOICES if meta.mode == "paired" else ())
+            {"code": c.code, "keys": list(c.keys), "tally": c.tally} for c in (choices if meta.mode == "paired" else ())
         ],
     }
     fine = f'<span class="fine"><br>{_emphasise(meta.lede_fine)}</span>' if meta.lede_fine else ""
@@ -493,9 +600,9 @@ def build_page(payload: Any, **overrides: Any) -> str:
         "__HEADLINE__": html.escape(meta.headline),
         "__LEDE__": _emphasise(meta.lede) + fine,
         "__MODE__": meta.mode,
-        "__HINT__": html.escape(_hint(meta.mode)),
+        "__HINT__": html.escape(_hint(meta.mode, choices)),
         "__CATEGORY_BUTTONS__": _category_buttons() if meta.mode == "single" else "",
-        "__CHOICE_BUTTONS__": _choice_buttons() if meta.mode == "paired" else "",
+        "__CHOICE_BUTTONS__": _choice_buttons(choices) if meta.mode == "paired" else "",
         "__CONFIG__": _js_json(config),
         "__ITEMS__": _js_json(items),
     }
@@ -523,7 +630,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--payload", required=True, type=Path, help="JSON payload (list of items or an envelope)")
     parser.add_argument("--out", required=True, type=Path, help="HTML file to write")
     parser.add_argument("--round", dest="round_label", default="", help="pass number, e.g. 3 -> 'BEFUND/3'")
-    parser.add_argument("--tag", default="", help="result header tag (default BEFUND / VERGLEICH)")
+    parser.add_argument(
+        "--question",
+        default="",
+        choices=("", *sorted(QUESTIONS)),
+        help="which paired question is asked: ink = follows the ink better, authentic = looks more "
+        "genuinely written [the payload's own, else ink]",
+    )
+    parser.add_argument("--tag", default="", help="result header tag (default BEFUND / VERGLEICH / ECHTHEIT)")
     parser.add_argument("--title", default="", help="browser tab title (default: the headline)")
     parser.add_argument("--headline", default="", help="the page's own question")
     parser.add_argument("--eyebrow", default="", help="small line above the headline")
@@ -540,6 +654,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             title=args.title,
             headline=args.headline,
             eyebrow=args.eyebrow,
+            question=args.question,
         )
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"error: {exc}", file=sys.stderr)
@@ -703,6 +818,14 @@ _TEMPLATE = r"""<title>__TITLE__</title>
     .stage svg { max-height: 20vh; }
     [data-mode="paired"] .pair { gap: 8px; }
     [data-mode="paired"] .stage svg { max-height: 24vh; }
+    /* The one exception to „side by side at every width": a WORD is wide and
+       short, and at 390 px two of them side by side are two thumbnails nobody
+       can judge a stroke weight from. The rule's reason is that both have to be
+       on screen at once — for this aspect ratio stacking is what achieves that,
+       and side by side is what defeats it. Set per item from the crop's own
+       proportions, so a letter round is untouched. */
+    [data-mode="paired"][data-wide="1"] .pair { grid-template-columns: 1fr; }
+    [data-mode="paired"][data-wide="1"] .stage svg { max-height: 20vh; }
     h1 { font-size: 18px; }
     .lede { font-size: 13px; margin-top: 6px; }
     button.cat, button.choice { font-size: 12.5px; padding: 7px 3px; line-height: 1.25; }
@@ -857,7 +980,10 @@ function panelOf(item, i) {
   const p = item.panels[i];
   return {
     w: p.w || item.w, h: p.h || item.h, img: p.img || item.img,
-    strokes: p.strokes, context: p.context || item.context || [],
+    // Never inherited from the item: the drawn ink is what the two panels are
+    // being compared on, so a panel that borrowed it would show the other arm.
+    strokes: p.strokes || [], widths: p.widths || [], fills: p.fills || [],
+    context: p.context || item.context || [],
   };
 }
 
@@ -868,11 +994,21 @@ function drawPanel(el, panel, interactive) {
   svg.setAttribute('width', panel.w);
   svg.setAttribute('height', panel.h);
   svg.setAttribute('role', 'img');
-  svg.setAttribute('aria-label', 'Ausschnitt der Schriftplatte mit der berechneten Mittellinie');
+  // A panel that draws INK (the word mode) fades the specimen instead of casing
+  // its own strokes: a halo around a filled silhouette changes how heavy the
+  // silhouette looks, and stroke weight is exactly what such a round judges.
+  // Faded, the composed ink never has to fight a near-black ground, so it can
+  // be drawn at its true weight — and the specimen stays there as the reference
+  // for what written looks like.
+  const INKED = panel.fills.length > 0 || panel.widths.length > 0;
+  svg.setAttribute('aria-label', INKED
+    ? 'Ausschnitt der Schriftplatte mit der darübergeschriebenen Komposition'
+    : 'Ausschnitt der Schriftplatte mit der berechneten Mittellinie');
   const img = document.createElementNS(ns, 'image');
   img.setAttribute('href', panel.img);
   img.setAttribute('width', panel.w);
   img.setAttribute('height', panel.h);
+  if (INKED) img.setAttribute('opacity', '0.45');
   svg.appendChild(img);
   // Cartographic casing: a light halo under the line so it stays legible INSIDE
   // the near-black stroke, not only where it leaves the ink. Without this the
@@ -894,17 +1030,44 @@ function drawPanel(el, panel, interactive) {
     c.setAttribute('stroke-linecap', 'round');
     svg.appendChild(c);
   }
-  for (const pass of [{ c: '#fdf6e8', w: 5, o: 0.85 }, { c: '#b03a3a', w: 2, o: 1 }]) {
-    for (const stroke of panel.strokes) {
+  // Filled silhouettes are the word mode's letter bodies — the INK, not a
+  // centerline, because a stroke a quarter too thin is invisible on a hairline.
+  // Drawn flat and uncased: see INKED above for why a halo would be the wrong
+  // safeguard here.
+  for (const ring of panel.fills) {
+    const g = document.createElementNS(ns, 'polygon');
+    g.setAttribute('points', ring.map((q) => q.join(',')).join(' '));
+    g.setAttribute('fill', '#8f2d2d');
+    g.setAttribute('stroke', 'none');
+    svg.appendChild(g);
+  }
+  // A per-stroke width is the composed stroke's own weight, in panel pixels;
+  // without one the stroke is a judged CENTERLINE and keeps the cased hairline
+  // the letter modes have always drawn (§3.5).
+  if (panel.widths.length) {
+    panel.strokes.forEach((stroke, i) => {
       const p = document.createElementNS(ns, 'polyline');
       p.setAttribute('points', stroke.map((q) => q.join(',')).join(' '));
       p.setAttribute('fill', 'none');
-      p.setAttribute('stroke', pass.c);
-      p.setAttribute('stroke-width', String(pass.w));
-      p.setAttribute('stroke-opacity', String(pass.o));
+      p.setAttribute('stroke', '#8f2d2d');
+      p.setAttribute('stroke-width', String(Math.max(1, panel.widths[i])));
       p.setAttribute('stroke-linecap', 'round');
       p.setAttribute('stroke-linejoin', 'round');
       svg.appendChild(p);
+    });
+  } else {
+    for (const pass of [{ c: '#fdf6e8', w: 5, o: 0.85 }, { c: '#b03a3a', w: 2, o: 1 }]) {
+      for (const stroke of panel.strokes) {
+        const p = document.createElementNS(ns, 'polyline');
+        p.setAttribute('points', stroke.map((q) => q.join(',')).join(' '));
+        p.setAttribute('fill', 'none');
+        p.setAttribute('stroke', pass.c);
+        p.setAttribute('stroke-width', String(pass.w));
+        p.setAttribute('stroke-opacity', String(pass.o));
+        p.setAttribute('stroke-linecap', 'round');
+        p.setAttribute('stroke-linejoin', 'round');
+        svg.appendChild(p);
+      }
     }
   }
   if (interactive && spots[at]) {
@@ -939,7 +1102,11 @@ function render() {
   clockOut();
   if (at >= ITEMS.length) { finish(); return; }
   const item = ITEMS[at];
-  drawPanel($('stage-0'), panelOf(item, 0), !PAIRED);
+  const first = panelOf(item, 0);
+  // Wide and short (a whole word) stacks on a phone instead of shrinking to two
+  // thumbnails — see the `[data-wide="1"]` rule in the stylesheet.
+  $('wrap').dataset.wide = first.h && first.w / first.h >= 2 ? '1' : '0';
+  drawPanel($('stage-0'), first, !PAIRED);
   if (PAIRED) drawPanel($('stage-1'), panelOf(item, 1), false);
   $('pos').textContent = at + 1;
   $('fill').style.width = (100 * at / ITEMS.length) + '%';
