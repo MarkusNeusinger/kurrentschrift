@@ -6,6 +6,25 @@ export const admin = {
   layout: {
     openMenu: 'Menü öffnen',
   },
+  // The German error layer (sections/admin/shell/apiErrorText.ts, rendered by
+  // ErrorText.tsx beside it): one sentence per HTTP status, each naming the
+  // next step rather than the failure. The raw English line stays reachable
+  // under `detailSummary` — the sentence is the answer, the detail is the
+  // evidence.
+  errors: {
+    offline: 'Keine Verbindung zur API — läuft der Server noch?',
+    badRequest: 'Die Anfrage passt nicht zu den Daten — die Angaben stimmen so nicht.',
+    noAdmin: 'Kein Admin-Zugang — Anmeldung bzw. Token prüfen.',
+    notFound: 'Dazu liegt nichts vor — es ist noch nicht angelegt oder gerade gelöscht worden.',
+    conflict: 'Der Stand hat sich inzwischen geändert — erst neu laden, dann noch einmal.',
+    tooLarge: 'Die Datei ist zu groß für diesen Weg.',
+    invalid: 'Die Angaben sind unvollständig oder unzulässig.',
+    locked: 'Diese Glyphe ist gesperrt — erst in der Tafel entsperren, dann speichern.',
+    tooMany: 'Zu viele Anfragen kurz hintereinander — einen Moment warten.',
+    server: 'Der Server konnte das nicht verarbeiten — der Fehler liegt nicht bei dir.',
+    // Label of the collapsed <details> that carries the raw server line.
+    detailSummary: 'Technische Meldung',
+  },
   // The shell: the header over all three views, the Vorlage picker the admin is
   // entered through, and the Auftragskorb drawer.
   shell: {
@@ -36,6 +55,10 @@ export const admin = {
     overviewTitle: 'Buchstaben',
     overviewIntro:
       'Jeder erstellte Buchstabe viermal nebeneinander: der Tafel-Ausschnitt, die daraus geschriebene Tafel-Form, die Laufform für fließende Wörter und die Statistik dahinter — der Median dieser Hand über ihren gemessenen Vorkommen, die Vorkommen selbst dünn dahinter. Daneben die Kennzahlen: wie viele Vorkommen, wie gut die Einpassung sitzt, wie die Form bewertet ist. „Öffnen“ führt in den einzelnen Buchstaben mit allen Werkzeugen.',
+    // The detail view's heading as plain text. Its visible head is the paging
+    // arrows around a glyph chip, which cannot BE an h1 — this is the h1 behind
+    // it, so the page keeps a document outline (see ViewHeader `titleText`).
+    letterHeading: 'Buchstabe {{key}}',
     pickLetter: 'Buchstabe wählen',
     prevLetter: 'Vorheriger Buchstabe',
     nextLetter: 'Nächster Buchstabe',
@@ -136,6 +159,8 @@ export const admin = {
     overviewTitle: 'Übergänge',
     overviewIntro:
       'Der Übergang ist das, was die Engine zwischen zwei Buchstaben erzeugt. Hier steht jede Zweierkombination — auch solche, die keine Platte je geschrieben hat: tippe sie einfach ein. Ein Klick auf eine Zelle öffnet die Verbindung mit Messung, Statistik und (als letztes Mittel) dem Paar-Editor.',
+    // Plain-text h1 behind the two-picker head (see letters.letterHeading).
+    joinHeading: 'Übergang {{left}} → {{right}}',
     pickLeft: 'links',
     pickRight: 'rechts',
     freeTextLabel: 'Kombination eintippen',
@@ -150,6 +175,11 @@ export const admin = {
       'Beide Buchstaben mit dem generierten Übergang, serverseitig komponiert — genau so, wie die Engine sie in einem Wort schreibt.',
     writtenCaptionOverride:
       'Für dieses Paar ist ein freigegebener Override gespeichert: gezeichnet statt generiert, verbatim gerendert.',
+    // Shown instead of the mute white box when NEITHER letter is authored yet.
+    // The view invites typing any pair, so this is a normal answer, not a fault
+    // — and the „Buchstabe x/y" buttons right below it are the next step.
+    writtenNoneCreated:
+      'Für diesen Übergang ist noch keiner der beiden Buchstaben erstellt — erst im Wizard zeichnen, dann schreibt die Engine das Paar.',
     overrideLastResort:
       'Erst die Klassenregel schärfen (hebt alle Paare derselben Art), zeichnen nur als letztes Mittel — jeder Override friert eine Stelle ein.',
     toLetter: 'Buchstabe {{key}}',
@@ -186,6 +216,8 @@ export const admin = {
     overviewTitle: 'Wörter',
     overviewIntro:
       'Im Wort wird sichtbar, was einzeln noch stimmte. Jede Wortprobe der Vorlage steht neben demselben Wort „wie geschrieben“; „Öffnen“ führt in das einzelne Wort mit Spur, Vorkommen und Bewertung. Oben lässt sich jeder beliebige Text eintippen — auch einer, den keine Platte enthält.',
+    // Plain-text h1 behind the Garamond-set word (see letters.letterHeading).
+    wordHeading: 'Wort {{text}}',
     freeTextLabel: 'Wort oder Satz',
     freeTextHint: 'Beliebiger Text — er muss in keiner Wortprobe vorkommen.',
     freeTextSubmit: 'Schreiben',
@@ -327,6 +359,12 @@ export const admin = {
     // every card carries the way into its own detail.
     openLetter: 'Öffnen',
     openWord: 'Öffnen',
+    // The visible word stays „Öffnen" — the card around it says which subject
+    // it belongs to. A screen reader gets no card, though: /admin/woerter alone
+    // listed 63 buttons all called „Öffnen", so the accessible name names the
+    // subject and the visible label stays short.
+    openLetterFor: 'Buchstabe {{key}} öffnen',
+    openWordFor: 'Wort {{word}} öffnen',
     showCorners: 'Ecken markieren',
     animate: 'Schreiben animieren',
     reload: 'Neu laden',
@@ -385,6 +423,7 @@ export const admin = {
     // words. „keine Messung" is reserved for the case it describes: the hand's
     // aggregates are loaded, this join is simply not among them.
     measuredNone: 'keine Messung',
+    measuredNoOccurrences: 'keine Vorkommen',
     measuredNoHand: 'keine Hand',
     measuredNoRebuild: 'kein Aggregat',
     measuredNoAccess: 'nicht ladbar',
@@ -577,6 +616,11 @@ export const admin = {
     statsHand: 'Hand {{hand}}',
     statsMixedHands: 'mehrere Hände in den Vorkommen — gezeigt: {{hand}}',
     statsLoading: 'Statistik wird geladen …',
+    // The first-run silence, and the one that used to speak for it. With zero
+    // occurrences there is nothing that could carry a hand, so „keine Hand"
+    // named an impossible cause on every card of a fresh Vorlage; this one
+    // names the next step instead.
+    statsNoOccurrences: 'Noch keine Vorkommen geerntet — die Statistik entsteht aus den vermessenen Wörtern.',
     statsNoHand: 'Keine Hand an den Vorkommen hinterlegt — ohne Hand gibt es keine Statistik.',
     statsUnavailable: 'Statistik nicht ladbar (Admin-Zugang nötig).',
     // Two different silences: the hand has no aggregates at all, or it has
@@ -843,8 +887,16 @@ export const admin = {
     joinsShowOpen: 'nur offene zeigen',
     joinsEmpty: 'Alle Übergänge des Plans sind belegt.',
     quotenTitle: 'Quoten',
+    // The panel's caption used to be `quotenTitle` again by mistake, so „Quoten"
+    // stood twice above its own text. This is the caption the neighbours all
+    // have: one line saying what the block shows.
+    quotenCaption:
+      'Wie viel des Übergangsraums die Hand schon belegt und wie tief — gewichtet nach Häufigkeit im Korpus.',
+    // Sentence and command are two keys, not one: the command is set in
+    // monospace on its own line with a copy button (TerminalCommand).
     quotenNone:
-      'Erstbeleg- und Ausbau-Quote brauchen die Übergangsraum-Gewichte; die liegen noch nicht in der Datenbank. Vom Rechner mit den Konsult-Korpora: uv run python -m tools.eigenhand.universe --push',
+      'Erstbeleg- und Ausbau-Quote brauchen die Übergangsraum-Gewichte; die liegen noch nicht in der Datenbank. Vom Rechner mit den Konsult-Korpora:',
+    quotenNoneCommand: 'uv run python -m tools.eigenhand.universe --push',
     queueTitle: 'Nächste Streifen',
     printTitle: 'Bogen drucken',
     printIntro:
@@ -858,8 +910,8 @@ export const admin = {
     openPdf: 'PDF öffnen',
     openStackPdf: 'Stapel als ein PDF öffnen ({{count}} Seiten)',
     pdfError: 'Das PDF konnte nicht geladen werden.',
-    localHint:
-      'Nach dem Schreiben lokal weiter: uv run python -m tools.eigenhand.pull --hand {{hand}} --sheet {{sheet}} holt Layout und PDF, danach ingest → Siebung → apply → sync.',
+    localHint: 'Nach dem Schreiben lokal weiter — holt Layout und PDF, danach ingest → Siebung → apply → sync:',
+    localHintCommand: 'uv run python -m tools.eigenhand.pull --hand {{hand}} --sheet {{sheet}}',
     setupTitle: 'Stehendes Setup',
     setupIntro:
       'Feder, Tinte und Papier sind Parameter der ganzen Kampagne, nicht Angaben eines einzelnen Imports — einmal hier eintragen, dann liest ingest sie als Vorgabe. Was eine Sitzung wirklich benutzt hat, steht zusätzlich an jeder Fassung.',
@@ -875,13 +927,16 @@ export const admin = {
     setupNone:
       'Für diese Hand ist noch kein Setup hinterlegt. Vor der ersten Sitzung eintragen — Fassungen, die davor eingelesen werden, tragen keine Feder-, Tinten- und Papierangabe.',
     setupError: 'Das Setup konnte nicht gesichert werden.',
-    setupLocal:
-      'Auf dem Schreib-Rechner einmal holen: uv run python -m tools.eigenhand.setup --hand {{hand}} --pull',
+    setupLocal: 'Auf dem Schreib-Rechner einmal holen:',
+    setupLocalCommand: 'uv run python -m tools.eigenhand.setup --hand {{hand}} --pull',
+    // Label + confirmation of the copy button beside every command.
+    commandCopy: 'Befehl kopieren',
+    commandCopied: 'kopiert',
     stripImagesTitle: 'Geschriebene Streifen',
     stripImagesIntro:
       'Die eingelesenen Streifen, wie sie in der Datenbank liegen — admin-geschützt, nie öffentlich, nie im Repository. Der Wort-Ausschnitt wird aus dem Bogen-Layout berechnet und braucht keinen eigenen Speicher.',
-    stripImagesEmpty:
-      'Noch keine Streifenbilder hochgeschoben. Lokal: uv run python -m tools.eigenhand.sync --hand {{hand}} --mit-streifen',
+    stripImagesEmpty: 'Noch keine Streifenbilder hochgeschoben. Lokal:',
+    syncCommand: 'uv run python -m tools.eigenhand.sync --hand {{hand}} --mit-streifen',
     stripImagesError: 'Der Streifen konnte nicht geladen werden.',
     stripShow: 'Streifen zeigen',
     stripHide: 'einklappen',
@@ -896,7 +951,7 @@ export const admin = {
     stripLupeClose: 'schließen',
     stripBelegeCount: 'Belege: {{count}} in {{strips}} Streifen',
     stripBelegeEmpty:
-      'Kein gespeicherter Streifen trägt das. Die Zeichen-Tafel zählt auch Fassungen, deren Bild noch nicht hochgeschoben ist — lokal: uv run python -m tools.eigenhand.sync --hand {{hand}} --mit-streifen',
+      'Kein gespeicherter Streifen trägt das. Die Zeichen-Tafel zählt auch Fassungen, deren Bild noch nicht hochgeschoben ist — lokal:',
     stripBelegeIntro:
       'Gezeigt wird der Wort-Ausschnitt; das Zeichen sitzt darin. Die Zerlegung in einzelne Buchstaben ist Sache des Tintenfolgers (Phase 5), nicht der Kartei.',
     stripMore: 'weitere {{count}} laden',

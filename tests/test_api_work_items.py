@@ -371,6 +371,18 @@ async def test_rejects_unworkable_targets_and_unknown_keys(api: Harness):
         ({"kind": "note", "understanding": "u"}, {"status": "done"}, False),
         ({"kind": "note", "understanding": "u"}, {"status": "returned", "resolution": "braucht dich"}, True),
         ({"kind": "note", "understanding": "u"}, {"status": "done", "stage": "composition", "resolution": "r"}, True),
+        # A rejected row still CARRIES the protocol fields the author sent it
+        # back over (the Korb resets the status and leaves them standing), so
+        # the second round has to restate them rather than lean on the old ones.
+        ({"understanding": "u", "stage": "laufform", "resolution": "r"}, {"status": "ack"}, False),
+        ({"understanding": "u", "stage": "laufform", "resolution": "r"}, {"status": "done"}, False),
+        ({"understanding": "u", "stage": "laufform", "resolution": "r"}, {"status": "returned"}, False),
+        # …and it passes as soon as the round says its own piece again.
+        (
+            {"understanding": "u", "stage": "laufform", "resolution": "r"},
+            {"status": "done", "stage": "join_rule", "resolution": "diesmal die Klassenregel"},
+            True,
+        ),
     ],
 )
 def test_check_transition_rules(stored: dict, changes: dict, expected_ok: bool):

@@ -145,13 +145,20 @@ des Vokabulars benennt eine Stufe des SCHREIBWEGS und hätte über eine
 UI-Kleinigkeit nichts Wahres zu sagen; erlaubt bleibt sie, wo sie
 zutrifft. Die Rückspiegelung (`ack`) gilt unverändert.
 
-Zwei Regeln machen den Ablauf unumgehbar: Protokollfelder reisen **nur
+Drei Regeln machen den Ablauf unumgehbar: Protokollfelder reisen **nur
 mit ihrem Statuswechsel** (ein PATCH ohne `status` darf die Notiz
-ändern und sonst nichts), und `done`/`returned` verlangen ein bereits
+ändern und sonst nichts); `done`/`returned` verlangen ein bereits
 **gespeichertes** `understanding` — Zurückspiegeln und Abschließen in
-einem Aufruf lehnt die API ab. Beides schützt dasselbe: Die
-Rückspiegelung ist nur etwas wert, solange sie dasteht, während sie
-noch korrigiert werden kann.
+einem Aufruf lehnt die API ab; und jedes verlangte Feld muss **in
+diesem PATCH stehen**, nie im schon gespeicherten Zustand. Die dritte
+Regel ist die, die die zweite Runde trägt: Beim Zurückweisen setzt der
+Korb die Zeile auf `open` zurück und lässt `understanding`, `stage` und
+`resolution` bewusst stehen — ein Rückgriff auf den Bestand ließe ein
+nacktes `{"status":"done"}` genau die Rückspiegelung wieder in Kraft
+setzen, die der Autor gerade zurückgewiesen hat. Alle drei schützen
+dasselbe: Die Rückspiegelung ist nur etwas wert, solange sie dasteht,
+während sie noch korrigiert werden kann — und nach einer Korrektur
+erst recht.
 
 ### 5.2 Ablauf, bindend bei jedem Auftrag
 

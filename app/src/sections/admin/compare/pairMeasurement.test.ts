@@ -105,6 +105,22 @@ describe('aggregateLayerState', () => {
     });
   });
 
+  it('separates „no occurrences at all" from „occurrences that name no hand"', () => {
+    // With zero occurrences nothing COULD have named a hand, so „keine Hand"
+    // would blame a cause that cannot exist yet — the first-run state gets its
+    // own sentence, naming the harvest as the next step (audit 2026-09-02).
+    expect(aggregateLayerState(layer({ key: null, rows: null }), null, true, true)).toEqual({
+      status: 'no-occurrences',
+      layerEmpty: false,
+    });
+    // …and it never wins over „still loading": an empty list that has not
+    // arrived is not an empty list.
+    expect(aggregateLayerState(layer({ key: null, rows: null }), null, false, true)).toEqual({
+      status: 'loading',
+      layerEmpty: false,
+    });
+  });
+
   it('counts rows of a previous hand as still loading, never as the current one`s', () => {
     expect(aggregateLayerState(layer({ key: 'abb22-schueler' }), 'suetterlin-1922-norm', true)).toEqual({
       status: 'loading',
