@@ -42,7 +42,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
-- **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
+- **G** — G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
@@ -2067,6 +2067,26 @@ sind die Fits“.
 *Technisch:* `tools/humanbench` (`build.py` baut, `page.py` rendert,
 `analyse.py` rechnet in der vorregistrierten Reihenfolge)
 → menschliche-bewertung.md
+
+**Gefüllte Ringe** — der benannte Instrumentdefekt der ersten
+humanbench-WORT-Runde (`sep02`) und seither eine Konstruktionsregel
+(`menschliche-bewertung.md` §3.6b): die Silhouette eines Federzugs ist
+ein Außenring PLUS die Ringe seiner Binnenflächen, und die Urteilsseite
+füllte jeden Ring einzeln statt die Gruppe als EINEN Pfad mit
+`fill-rule: evenodd`. Folge: jede Schleife läuft zu (das `Z` von „Zorn"
+als massiver Tropfen). Tückisch ist nicht die Hässlichkeit, sondern die
+RICHTUNG des Schadens — zugefüllt sehen beide Arme genau an den
+Merkmalen gleich aus, über die geurteilt werden soll (Schleifenweite,
+Binnenraum, Bogenrundung), also antwortet der Beurteiler ehrlich „kein
+Unterschied": 48 % Unentschieden auf den 27 defekten Bildschirmen gegen
+22,9 % auf den 48 reparierten. Ein Anzeigefehler dieser Art rauscht
+nicht, er zieht zur Mitte und redet jeden Kandidaten klein. Behoben in
+PR #492. Regel daraus: vor der ersten Runde eine Form mit Binnenfläche
+gegenprüfen, und eine mitten in der Runde behobene Anzeige TEILT die
+Runde — die Grenze liegt im Zeitstempel, der Ausschluss bleibt post-hoc
+und wird in beiden Lesarten berichtet.
+→ menschliche-bewertung.md §3.6b, qualitaetsmetrik.md §14 („Laufform
+LF11 — humanbench-Wortrunde")
 
 **Fehler-Taxonomie** — die sechs Kategorien, in denen ein
 Bewertungsdurchgang urteilt, plus ein Modifikator. Sie sind die

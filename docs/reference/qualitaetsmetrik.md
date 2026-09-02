@@ -1,10 +1,12 @@
 # Qualitätsmetrik & Glyph-Bench
 
-> **Status (2026-09-02): lebend.** Fortlaufend gepflegte Messlatte und
+> **Status (2026-09-03): lebend.** Fortlaufend gepflegte Messlatte und
 > Baseline-Journal — jeder Bench-Lauf und jedes bewusste Re-Baseline
 > schreibt hier einen datierten Abschnitt fort; aktuelle Headlines:
-> Wörter 0,109255 · Paare 0,148433 (Re-Baseline `sep01`, §15 — sieben
-> reparierte Wort-Rechtecke); das Journal reicht bis `sep01` (§15). Die
+> Wörter 0,109218 · Paare 0,148198 (Re-Baseline `sep02` — die 22
+> Laufform-Zeilen sind seit dem LF11-Write Spline-Basis-Mediane,
+> §14 „Laufform LF11 — humanbench-Wortrunde, Instrumentdefekt und
+> Adoption“); das Journal reicht bis `sep02`. Die
 > Verworfen-Listen (§4, §5, §6) bleiben geschlossen.
 
 Wie die Qualität einer kanonischen Glyphe gemessen wird, wie der
@@ -3603,6 +3605,7 @@ die DB) — mit seiner Bedingung.
 | sep02 | Laufform | [LF11 gemessen](#laufform-lf11-sep02--gemessen-eine-sprosse-besteht-alle-gates-und-sie-repariert-die-zeilen-gates-gleich-mit) | Pre-Reg + gemessen · Sprosse Δs 0,16 besteht alle Gates; Adoption offen | Zacken/xh 6,86→0,45, Wörter 0,109218 · Paare 0,148198, keine Kreuzung verloren; Karte trocken, wartet auf die humanbench-Wort-Runde |
 | sep02 | Übergänge | [J4 Austritts-Kollinearität (`exit_trim`)](#übergänge-j4-sep02--vorregistrierung-die-austritts-kollinearität-exit_trim) | Pre-Reg + gemessen · verworfen | 4 von 5 Gates grün (Wörter −0,000535, seam_dep +12,52→−1,39), (b) rot: `dconn` fällt nur in 20 % statt 60 % |
 | sep02 | Übergänge | [J4b enge Klasse](#übergänge-j4b-sep02--post-hoc-die-enge-klasse-nur-die-joins-die-wirklich-knicken) | POST-HOC · verworfen | Schnitt bei 20° Knick rettet den Arm nicht: `dconn` 43 %, seam_dep der Klasse nur +8,02 — Rettungswege in §7.9 |
+| sep02 | Laufform | [LF11 humanbench-Runde und Adoption](#laufform-lf11-sep02--humanbench-wortrunde-instrumentdefekt-und-adoption-prod-write--re-baseline) | **ADOPTIERT** · Prod-Write + Re-Baseline | 48 reparierte Bildschirme 36:1 für LF11 (97,3 %, Ties 22,9 %); 27 als Instrumentdefekt „gefüllte Ringe" ausgeschlossen (POST-HOC, Autor-Entscheid); Write nach Snapshot `2026-09-02T21-58-16Z`, Readback 22/22; Wörter 0,109218 · Paare 0,148198 |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -3634,6 +3637,7 @@ Vorbedingung (Glossar „Wurzel-Digest“, `tools/wordbench/README.md`).
 | aug30 | #463 | dieselbe undeklarierte Wurzel, nach B-Kringel + Nachschärfung | 0,106400 | 0,148467 | §14 „Übergänge Korb-Runde“ |
 | sep01 | #472 | **Re-Baseline**: sieben reparierte Wort-Rechtecke, Bahnen nachgezogen, Wurzeln neu gebaut | 0,109255 | 0,148433 | §15 |
 | sep02 | dieser PR | Wurzeln neu gebaut (`fetch_fixtures --set all --verify`), `exported_at` 2026-09-02T08:00:29+00:00, `root_digest` `28ba1afebc53…` (`suetterlin-1922`) / `f0cf3d53414c…` (`suetterlin-1922-pairs`) — **keine** Re-Baseline: §15 wird exakt reproduziert | 0,109255 | 0,148433 | dieser Ledger-Eintrag |
+| sep02 | #497 | **Re-Baseline nach dem LF11-Write**: 22 Laufform-Zeilen auf Spline-Basis-Mediane umgestellt (Snapshot `2026-09-02T21-58-16Z`, Readback 22/22), Wurzeln neu gebaut, `exported_at` 2026-09-02T22:13:54+00:00, `root_digest` `2e3581287bed…` (`suetterlin-1922`) / `cee9d363f497…` (`suetterlin-1922-pairs`); trifft die trockene LF11-Vorhersage exakt | 0,109218 | 0,148198 | §14 „Laufform LF11 — humanbench-Wortrunde, Instrumentdefekt und Adoption“ |
 
 **Nachtrag `sep02` — die `aug30`-Wurzel ist eine undeklarierte
 Re-Baseline.** Zwischen der `aug29`-Wurzel (0,106720 / 0,146506, im
@@ -10721,3 +10725,129 @@ bleiben im Baum, damit der nächste Arm nicht bei null anfängt.
    Laufform-Ableitung ihn gar nicht erst lernen (Endblende-Familie LF5/LF6
    arbeitet an derselben Stelle) — dann bräuchte die Grammatik die Regel
    nicht.
+
+### Laufform LF11 `sep02` — humanbench-Wortrunde, Instrumentdefekt und Adoption (Prod-Write + Re-Baseline)
+
+Der Abschluss des Arms, der in den beiden LF11-Einträgen oben
+vorregistriert und trocken gemessen wurde. **Keine Zahl dort ist
+angefasst — hier steht nur, was danach kam.**
+
+**Warum überhaupt eine Menschenrunde.** Die Kandidaten-Karte bestand
+alle vier trockenen Gates, und trotzdem konnte keine Zahl sie
+freigeben: das Wort-Lineal ist gegenüber dem Zickzack nicht nur blind,
+es belohnt ihn stellenweise (LF11 `gemessen`, Absatz „Die Sichtprüfung
+sagt etwas, das keine dieser Zahlen sagt" — `Sporn` verliert 0,0440 und
+sieht besser aus). Genau dafür ist die Echtheitsfrage gebaut
+(`menschliche-bewertung.md` §8).
+
+**Die Runde.** Fassung A2, Frage `ECHTHEIT/3` („Welche Zeile sieht
+echter geschrieben aus?", drei gleichwertige Antworten), 75 Bildschirme
+= 63 Wortproben + 12 blinde gespiegelte Wiederholungen, Saat 20260003,
+Kandidat an die Registrierung der Basis gepinnt (LF11 glättet die
+Zeile, es soll das Wort nicht verschieben). Basis-Karte `sha256`
+`10204637efe2eb89`, Kandidat `64e5c6bf3005ff6e`, Wurzel
+`28ba1afebc53` / `exported_at 2026-09-02T08:00:29+00:00`.
+**Verlässlichkeit: 10 von 12 Wiederholungspaaren gleicher Arm, nur 2 von
+12 gleiche Seite** — es wurde nach dem Bild geurteilt, nicht nach der
+Position. Dateien:
+`temp/lf11/humanbench/runde-lf11-strata-gap8/`.
+
+**Der Instrumentdefekt — und warum er die Runde spaltet.** Die ersten
+**27** Bildschirme in Urteilsreihenfolge liefen auf der Seitenfassung
+VOR PR #492, in der die Schleifen-Innenflächen zugefüllt waren (das `Z`
+von „Zorn" als massiver Tropfen): die Silhouette eines Federzugs ist ein
+Außenring PLUS seine Binnenflächen, und die Seite füllte jeden Ring
+einzeln statt die Gruppe als einen `evenodd`-Pfad. Die restlichen **48**
+liefen auf der reparierten Seite. Beleg
+`befund-ringe-VORHER-Zorn.png` gegen `befund-ringe-NACHHER-Zorn.png`;
+die Zeitstempel der ersten 27 sind identisch mit dem Zwischenstand von
+20:30 Uhr.
+
+**Beide Lesarten, nebeneinander — die Ausschluss-Entscheidung wird nicht
+versteckt:**
+
+| Menge | entschieden | LF11 : Basis | Anteil | „kein Unterschied" | Schwellen (≥ 60 % / ≤ 25 %) |
+|---|---|---|---|---|---|
+| alle 75 Bildschirme | 51 | 49 : 2 | 96,1 % | 24 (32,0 %) | Kandidat ✓ · Ties **✗** |
+| Werkzeuglauf über die 63 Wörter | 41 | 40 : 1 | 97,6 % | 22 (34,9 %) | `adopt: false` |
+| **die 48 reparierten** | **37** | **36 : 1** | **97,3 %** | **11 (22,9 %)** | **beide ✓** |
+
+Auf den 48 reparierten tragen alle drei Verdachtsklassen: kontrolle
+13/13, lineal-streit 12/12, zeile-repariert 11/12; die drei
+Wiederholungspaare, die vollständig im reparierten Teil liegen, stimmen
+3/3.
+
+**Entscheid des Autors (2026-09-02): die 48 reparierten Bildschirme
+gelten als Runde, die 27 fehlerhaften werden als Instrumentdefekt
+ausgeschlossen.** Das ist ein POST-HOC-Ausschluss und wird als solcher
+geführt — er ist nicht durch die Vorregistrierung gedeckt, sondern
+durch einen benannten, physikalisch erklärten und in PR #492 behobenen
+Fehler des Anzeigewegs, dessen Grenze im Zeitstempel liegt und nicht in
+den Urteilen. Wer die Runde als Ganzes liest, findet die Tie-Schwelle
+verfehlt; das steht oben in derselben Tabelle. Die Lehre ist als
+Konstruktionsregel 3.6b in `menschliche-bewertung.md` festgehalten —
+neben dem Fehler, für den sie kam.
+
+**Autor-Go (2026-09-03, 00:15): „Weg 1, Go — mit 96 % ist das eindeutig
+der richtige Weg."**
+
+**Der Write.** Archiv-Snapshot **vorher**:
+`kurrentschrift-data/db-snapshots/2026-09-02T21-58-16Z` (Plausibilität
+gegen den Vorgänger `2026-09-02T06-16-17Z`: keine Tabelle geschrumpft).
+Vor dem Schreiben geprüft und protokolliert: alle 22 Live-Zeilen waren
+**byte-identisch mit der eingefrorenen Wurzel** — nichts in Prod war
+jünger als die Ernte der Karte; live existierten genau die 22 Schlüssel,
+die die Karte nennt; die serverseitige Kanonisierung
+(`build_laufform_canonical`, die der PUT erneut ausführt) ist auf allen
+22 Zeilen ein verifizierter No-op; kein Gate hätte eine Zeile
+abgewiesen. Ausgeführt hat den Write der Autor selbst über
+`PUT /sources/suetterlin-1922/templates/{key}/laufform` gegen
+`api.kurrentschrift.ink`, `P`/`S`/`s` mit `?min_occurrences=1` (die
+ausdrückliche Autor-Aussage nach LF7 — dieselben n, die diese Zeilen
+schon trugen). **Readback: 22 Zeilen identisch, 0 abweichend.** Keine
+Chart-Zeile (Variante 0) und kein Schlüssel außerhalb der Karte wurde
+berührt. Ankerbewegung gegen den vorherigen Stand: max 0,0654 xh, Mittel
+0,0067 xh.
+
+**Die Re-Baseline.** Beide Wurzeln neu gebaut
+(`fetch_fixtures --set all --verify`, 12/12 bit-exakt), Bench mit
+gepinnten BLAS-Threads:
+
+| | Wörter | Paare |
+|---|---|---|
+| vor dem Write (`sep01`-Stand) | 0,109255 | 0,148433 |
+| **nach dem Write** | **0,109218** | **0,148198** |
+
+**Das ist exakt die trockene LF11-Zahl** — und nicht nur die Headline:
+der gesamte Komponenten- und Diagnoseblock (`comp_*`, `meas_*`,
+`gleichzug_*`, `seam_dep_median` +7,99) stimmt Zeile für Zeile mit dem
+Overlay-Lauf vom Vormittag überein. Die Vorhersage „die Karte, die
+gemessen wurde, ist die Karte, die geschrieben wird" ist damit
+eingelöst. Nebenbefund: der Naht-Abgang sinkt von +12,52 auf +7,99 —
+die glatte Zeile verlässt den Buchstaben weniger steil, ohne dass eine
+Übergangsregel angefasst wurde.
+
+**Wurzel-Identität nach der Kopfregel.** Gemessen wurde auf
+`suetterlin-1922` `exported_at 2026-09-02T22:13:54+00:00`
+`digest 2e3581287bed` und `suetterlin-1922-pairs`
+`exported_at 2026-09-02T22:13:53+00:00` `digest cee9d363f497`.
+
+**Befund zur Kopfregel selbst (neu, gemeldet):** derselbe DB-Stand,
+zweimal exportiert (Worktree 22:13, Hauptcheckout 22:16), ergibt
+**verschiedene Digests** — die beiden Wurzeln unterscheiden sich in
+genau einer Datei und genau einem Feld, `manifest.json.exported_at`,
+und messen identisch (0,109218 / 0,148198 auf beiden). Der
+`root_digest` identifiziert also einen **Export**, nicht einen
+DB-Stand. Für `--expect-root` heißt das: es ist der Digest der Wurzel zu
+zitieren, auf der wirklich gemessen wurde; ein Neu-Export derselben
+Daten verlangt einen neuen Digest, ohne dass sich eine Zahl bewegt.
+Die Zeile im Hauptcheckout trägt `6cbab9d5c092` / `965ab3c57ebd`.
+
+**Stand danach.** Die 22 Laufform-Zeilen der Sütterlin-1922-Hand sind
+Spline-Basis-Mediane; `aggregate_instances` medianisiert weiterhin je
+Anker — die Adoption betrifft die DATEN, nicht den Default des
+Aggregators (der Weg dorthin ist ein eigener Arm, wenn er je gebraucht
+wird). Der Golden bleibt unberührt. **Die öffentlichen
+`/write/word`-Antworten liegen bis zu 24 h im Edge-Cache; der Wechsel
+auf die glatten Zeilen wird dort erst mit Ablauf sichtbar — kein Purge
+(Entscheid des Autors).**

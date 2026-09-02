@@ -382,6 +382,51 @@ Meldungen wirklich trafen, war die **Naht** zwischen Buchstabe und Verbindung.
 Eine These, die einen Befund wegerklärt, muss auch erklären, warum sie die
 Nicht-Befunde nicht wegerklärt.
 
+### 3.6b Ein Federzug ist EIN Pfad — Binnenflächen bleiben offen
+
+Die zweitteuerste Regel, und sie kam auf demselben Weg wie 3.6a: nicht
+aus dem Nachdenken, sondern aus einer laufenden Runde, die sie gekostet
+hat.
+
+Die Silhouette eines Federzugs ist ein Außenring **plus** die Ringe
+seiner Binnenflächen — die Innenfläche einer Schleife, das Auge eines
+`e`, der Bauch eines `o`. Die Wort-Seite der ersten LF11-Runde füllte
+jeden dieser Ringe **einzeln**. Das Ergebnis: jede Schleife lief voll,
+das `Z` von „Zorn" stand als massiver Tropfen auf dem Blatt. Behoben in
+PR #492, indem die Ringe einer Silhouette als EINE Pfadgruppe mit
+`fill-rule: evenodd` gezeichnet werden — dann schneidet der innere Ring
+den äußeren aus, statt ihn zuzumalen.
+
+Der Schaden war nicht kosmetisch. Der Defekt trifft **genau die
+Merkmale, über die geurteilt werden soll**: Schleifenweite,
+Binnenraum, die Rundung eines Bogens — bei zugefüllten Ringen sehen
+beide Arme an der entscheidenden Stelle gleich aus, und der Beurteiler
+antwortet ehrlich „kein Unterschied". Sichtbar wurde das erst in den
+Zahlen: auf den 27 Bildschirmen der defekten Fassung lag der
+Unentschieden-Anteil bei 48 %, auf den 48 der reparierten bei 22,9 %
+(§14 „Laufform LF11 — humanbench-Wortrunde"). Ein Anzeigefehler
+erzeugt hier also kein Rauschen in beide Richtungen, sondern **einen
+gerichteten Zug zur Mitte** — er lässt einen echten Unterschied als
+Unentschieden erscheinen und würde damit jeden Kandidaten
+kleinreden.
+
+Zwei Regeln folgen daraus:
+
+1. **Vor der ersten Runde eine Form mit Binnenfläche gegenprüfen** —
+   ein `Z`, ein `e`, ein `o`, im Zweifel als PNG neben die Vorlage
+   gelegt. Das ist derselbe Satz wie in 3.6a, eine Ebene tiefer: was
+   gezeigt wird, muss deckungsgleich sein mit dem, worüber geurteilt
+   werden soll.
+2. **Ein Anzeigefehler, der mitten in einer Runde behoben wird, teilt
+   die Runde.** Die Grenze liegt im Zeitstempel der Urteile, nicht in
+   ihrem Inhalt — sie ist damit unabhängig vom Ergebnis feststellbar,
+   und nur deshalb ist der Ausschluss der defekten Hälfte kein
+   Rosinenpicken. Er bleibt trotzdem POST-HOC und wird in beiden
+   Lesarten berichtet: die Runde als Ganzes UND die bereinigte Menge,
+   in einer Tabelle nebeneinander, mit dem Entscheid des Autors
+   darunter. Wer nur die günstigere Hälfte zeigt, hat die Regel nicht
+   befolgt.
+
 ### 3.7 Ein Marker je Bild — und ein fehlender Marker ist kein Datum
 
 Der Marker ist der einzige Teil des Urteils, der **unabhängig von der eigenen

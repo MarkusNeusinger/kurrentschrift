@@ -35,7 +35,7 @@
 > die Korrekturen sind eingearbeitet und unter „Verworfen / korrigierte
 > Annahmen" festgehalten.
 
-## Stand der Kampagne (2026-09-01)
+## Stand der Kampagne (2026-09-03)
 
 Eine Seite, damit der aktuelle Stand nicht erst aus 6 200 Zeilen §14
 zusammengelesen werden muss. **Jede Zahl hier ist ein datiertes Zitat**
@@ -44,9 +44,9 @@ Verfahrensseite; geändert wird sie nie hier.
 
 > **Lineal.** `tools/tracebench` auf dem eingefrorenen dev-19-Satz
 > (append-never), Strukturzähler **v2.1** (`aug16`), Marken-Kappe
-> **1,5 xh** seit L-U (`aug26`). Wort-Lineal: Wörter **0,109255** ·
-> Paare **0,148433** (Re-Baseline `sep01`, §15; Headline-Ledger im Kopf
-> von §14).
+> **1,5 xh** seit L-U (`aug26`). Wort-Lineal: Wörter **0,109218** ·
+> Paare **0,148198** (Re-Baseline `sep02` nach dem LF11-Write;
+> Headline-Ledger im Kopf von §14).
 >
 > **Duell, dev-19, Lineal-Kappe 1,5.** Kette **v5** (`aug26`) dtw
 > **0,0446** med · p90 0,0861 · aiou 0,7608 · 63er-Soll-Abstand 79 ·
@@ -75,12 +75,15 @@ Verfahrensseite; geändert wird sie nie hier.
 > K-E1/K-E2 · LF1/LF2/LF3/LF5/LF6/LF7/LF10 · J1/J2/J3 · J4/J4b. K-D
 > wurde gegenstandslos, nicht verworfen.
 >
-> **Bestanden, aber noch nicht adoptiert.** LF11 „glatte Zeile"
-> (`sep02`, Sprosse Δs 0,16): alle vier Trocken-Gates grün, die
-> Kandidaten-Karte liegt als 22 volle Fixture-Zeilen vor, geschrieben
-> ist nichts. Die Adoption hängt an der humanbench-Wort-Runde und
-> danach am Autor-Go — das Wort-Lineal belohnt den Zickzack
-> stellenweise, also entscheidet hier das Auge.
+> **Adoptiert `sep02`.** LF11 „glatte Zeile" (Sprosse Δs 0,16): alle
+> vier Trocken-Gates grün, danach die erste humanbench-WORT-Runde —
+> auf den 48 Bildschirmen der reparierten Seite **36 : 1 für LF11**
+> (97,3 %, Ties 22,9 %), 27 Bildschirme als Instrumentdefekt „gefüllte
+> Ringe" ausgeschlossen (POST-HOC, Autor-Entscheid). Autor-Go, Snapshot
+> `2026-09-02T21-58-16Z`, 22 Zeilen geschrieben, Readback 22/22. Die
+> Laufform-Zeilen der 1922er Hand sind seither Spline-Basis-Mediane.
+> Das war der Fall, für den das Auge gebaut wurde: das Wort-Lineal
+> belohnt den Zickzack stellenweise und konnte nicht entscheiden.
 >
 > **Offen (§7.11).** KI-messbar: LF4 (p) ·
 > Abstandsterm/Schleifen-Halteterm für die 13 v5-Rückweisungen ·
@@ -90,9 +93,11 @@ Verfahrensseite; geändert wird sie nie hier.
 > Runde) · die zwei J4-Konversionen (nur die Ankunftsseite · eine
 > ausdehnungs-normierte Formdistanz als neuer Sensor).
 > Autorenschritte: Bestätigungssatz
-> A/B · humanbench-WORT-Runde · Prod-Re-Harvest der `traced`-Zeilen mit
+> A/B · Prod-Re-Harvest der `traced`-Zeilen mit
 > Kette v5 · St-Ligatur im Wizard · Laufform-Lücke G/W/K/ue/F/ae/b ·
-> die Herkunft der `aug30`-Fixture-Wurzel.
+> die Herkunft der `aug30`-Fixture-Wurzel. Die humanbench-WORT-Runde
+> ist seit `sep02` kein offener Autorenschritt mehr, sondern ein
+> gefahrenes Instrument.
 >
 > **Regeln.** Zahlen wohnen in §14, die Verfahrensseiten sind das
 > Routen-Register, jede Re-Baseline ist datiert und nennt seit `sep02`
@@ -1115,7 +1120,6 @@ Registerzeile und, wenn sie ein Negativ war, mit ihrer §7.9-Zeile.
 | Arm | Herkunft | Auslöser / Lage | Stand |
 |---|---|---|---|
 | **LF4 — die p-Laufform** | §14 „Laufform LF3b-W `aug26`" | die 13er-Schreib-Karte ist geschrieben, p blieb an EINER Kreuzung draußen | drei benannte Sprossen: Init-Wächter gegen das Kompositions-Soll · Stamm-Freigabe am Bogen-Rücklauf (K1-Familie) · Ring-Regel-Sensor (`CROSS_PARTNER_MIN_HITS`); je eigene Pre-Reg |
-| **LF11 „glatte Zeile" — Adoption** | §14 „Laufform LF11 `sep02` — gemessen" | die Sprosse Δs 0,16 besteht alle vier Trocken-Gates, die Kandidaten-Karte liegt vor, geschrieben ist nichts | wartet auf die humanbench-Wort-Runde, dann Autor-Go → `dbsnapshot` → PUT je Glyph → Neuexport als deklarierte Re-Baseline |
 | **Die drei LF10-Konversionen** | §14 „Laufform LF10 `sep01` — gemessen", §7.9 | der Form-Abstand als Betrag ist verworfen (P liegt unter τ_form), das Auge sieht an v/E/P/k trotzdem etwas | offen: (1) Richtungs-Abstand statt Lage-Abstand · (2) Tinten-Evidenz der Zeile gegen ihre Masken · (3) humanbench-Zeilen-Runde; je eigene Pre-Reg |
 | **Die zwei J4-Konversionen** | §14 „Übergänge J4/J4b `sep02`", §7.9 | der Naht-Knick ist beseitigbar, aber `dconn` kann per Konstruktion nicht darüber urteilen | offen: (1) nur die Ankunftsseite als eigener Arm · (2) SENSOR zuerst — eine ausdehnungs-normierte Formdistanz bauen und einfrieren, dann neu vorregistrieren |
 | **Abstandsterm · Schleifen-Halteterm** | §14 „Kette v5 `aug26`" | 13 Wörter wirft auch v5 in Runde 1 auf den Init zurück | offen; ausdrücklich PRÄVENTIVE Terme im Abstieg, nie Annahme-Regeln |
@@ -1131,7 +1135,7 @@ davon liegt zusätzlich als Todoist-Aufgabe im Projekt „Kurrentschrift"):
 | Schritt | Herkunft | Warum er hängt | Stand |
 |---|---|---|---|
 | **Bestätigungssatz A, dann B** | §2.5, verfahren-lotse.md | Schlussstein vor jeder Adoption jenseits der Routen-Konstanten; er sperrt außerdem den referenzfreien Auswähler „Vier Augen" | offen |
-| **humanbench-WORT-Runde** | §14 „Methodik-Lücke `aug16`", K-E1/K-E2 | der einzige benannte Tie-Breaker für ruler-indifferente Fälle | offen; das Instrument entsteht gerade |
+| **humanbench-WORT-Runde** | §14 „Methodik-Lücke `aug16`", K-E1/K-E2 | der einzige benannte Tie-Breaker für ruler-indifferente Fälle | **erste Runde gefahren `sep02`** (Basis vs. LF11, Fassung A2): das Instrument steht und hat entschieden, wo das Lineal blind war — §14 „Laufform LF11 — humanbench-Wortrunde". Für K-E1/K-E2 weiter offen, aber nicht mehr mangels Instrument |
 | **Prod-Re-Harvest der `traced`-Zeilen mit Kette v5** | §14 K-B · v4 · LF3b-W | seit `aug19` viermal vertagt („hinter Autor-Go + dbsnapshot"); die gespeicherten Bahnen stammen noch aus älteren Ketten-Ständen | offen |
 | **St-Ligatur im Wizard nachfahren** | §14 „Übergänge Korb-Runde `aug30`" (Korb #9) | bis dahin greift der Ligatur-Zerfall, und `Stube` fällt aus dem Quiz-Pool | offen |
 | **Laufform-Lücke G · W · K · ue · F · ae · b** | §14 „Lotse v0.15 `aug19`" (dritter Nachtrag), LF8/LF9 | 43 von 62 Glyphen komponieren aus der rohen Chart-Form, weil ihnen die Laufform fehlt oder sie ein Gate nicht bestand | offen; der Weg dorthin ist die Eigenhand-Ernte |
