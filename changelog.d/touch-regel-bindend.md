@@ -11,19 +11,31 @@
 ### Added
 
 - **`npm run touch-targets` measures the touch rule instead of asserting it.**
-  It does not sweep the site — most small targets there are legitimate, and a
-  blanket check would be a wall of false positives nobody reads. It guards the
-  mechanism: the seven controls that are deliberately drawn small and get their
-  44px from the invisible `hitArea()` pseudo-element. For each axis where a
-  control is drawn under 44px it asks `document.elementFromPoint` at the edge of
-  the 44px square and requires the control itself to answer. That catches the one
-  way this rule breaks silently — an `overflow: hidden` clips the pseudo-element,
-  the drawing is unchanged and the target shrinks back unnoticed — which a
-  computed-size check would sail past. Verified against a deliberately broken
-  control: removing `hitArea()` from the replay button is reported, and only that
-  one (#504).
+  It sweeps every interactive element on every public route — 217 of them — and
+  skips exactly the rule's one exception, recognised the way §9.2 marks it on the
+  page: an underlined `<a>` is running-prose text, while chrome that only looks
+  like a link sets `textDecoration: none` and is measured like everything else.
+  For each axis where a control is drawn under 44px it asks
+  `document.elementFromPoint` at the edge of the 44px square and requires the
+  control itself to answer. That catches the way this rule breaks silently — an
+  `overflow: hidden` clips the `hitArea()` pseudo-element, the drawing is
+  unchanged and the target shrinks back unnoticed — which a computed-size check
+  would sail past. Verified against a deliberately broken control: removing
+  `hitArea()` from the replay button is reported, and only that one (#504).
 
 ### Fixed
+
+- **Twelve controls were under the binding 44px floor.** The sweep found them
+  once it stopped consulting a list: the four Lesart example chips, the Tafel
+  step buttons, „Lesetafel als PDF", „Als PDF herunterladen", „Zur Startseite",
+  the landing hero's „Schreiben →" and its replay line, the wordmark and the two
+  footer links. All fixed without moving a pixel of the drawing, except the
+  header area links, which take the floor from real padding — on phones the bar
+  stacks into two rows whose centres sit 28px apart, and an invisible overlay
+  there would have made adjacent targets overlap by 16px. Wrapped chip rows
+  needed their `rowGap` raised for the same reason: 28px chip plus 12px gap is a
+  40px pitch, so the lower row reached over the upper one and won its taps
+  (#504).
 
 - **The quiz setup hint sat at 13px, under the binding 14px floor.** It renders
   only for settings that actually offer a choice, which is why the measuring pass
