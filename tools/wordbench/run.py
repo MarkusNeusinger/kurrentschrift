@@ -414,11 +414,36 @@ def build_parser() -> argparse.ArgumentParser:
         "{glyph_key: {anchors, n_occurrences}} or full fixture rows); keys it does not name keep "
         "their frozen row — an overlay run is a SEPARATE measurement, never comparable to the headline",
     )
+    parser.add_argument(
+        "--exit-trim",
+        action="store_true",
+        help="compose with the opt-in exit-side collinearity rule (core.compose EXIT_TRIM_WINDOW, "
+        'pre-registered under the heading "Übergänge J4" in qualitaetsmetrik.md §14): a sawtooth '
+        "exit's chart stub is cut back to where the "
+        "straight to the unchanged coupling point continues the letter's own direction — a CANDIDATE "
+        "arm, its own measurement, never the headline",
+    )
+    parser.add_argument(
+        "--exit-trim-min-kink",
+        type=float,
+        default=0.0,
+        metavar="DEG",
+        help="narrow --exit-trim to the joins whose departure kinks by AT LEAST DEG (the post-hoc "
+        "J4b arm; core.compose EXIT_TRIM_MIN_KINK_DEG, 0 = the full pre-registered J4 class)",
+    )
     return parser
 
 
 def main() -> None:
-    args = build_parser().parse_args()
+    parser = build_parser()
+    args = parser.parse_args()
+    # A narrowing knob that is silently ignored is the worst kind: the run
+    # would report the BASELINE under the name of a candidate arm. Same
+    # doctrine as --expect-root — a number must never lie about its origin.
+    if args.exit_trim_min_kink and not args.exit_trim:
+        parser.error("--exit-trim-min-kink narrows --exit-trim; pass --exit-trim too (or drop it)")
+    if args.exit_trim_min_kink < 0:
+        parser.error("--exit-trim-min-kink is a kink in degrees and cannot be negative")
 
     overrides_by_base: dict[tuple[str, str], dict] = {}
     if args.overrides:
@@ -430,6 +455,12 @@ def main() -> None:
     if args.laufform:
         laufform_payload = load_laufform_payload(args.laufform)
         print(f"laufform: {len(laufform_payload)} rows from {args.laufform} (own number - never the headline)")
+    if args.exit_trim:
+        # The header is provenance: it names the arm the run actually measured,
+        # so a narrowed run never files itself under the full class's name.
+        narrowed = f" min_kink={args.exit_trim_min_kink:g}deg" if args.exit_trim_min_kink else ""
+        arm = "J4b" if args.exit_trim_min_kink else "J4"
+        print(f"exit_trim: on{narrowed} (candidate arm {arm} - own number, never the headline)")
 
     t0 = time.perf_counter()
     style_root = args.fixtures / args.style
@@ -550,6 +581,8 @@ def main() -> None:
                     provenance=True,
                     pair_overrides=_slot_overrides(slots, overrides_by_base) or None,
                     laufform_by_key=laufform_by_key or None,
+                    exit_trim=args.exit_trim,
+                    exit_trim_min_kink_deg=args.exit_trim_min_kink,
                 )
                 report = score_word(
                     composed,
@@ -666,6 +699,12 @@ def main() -> None:
         result["laufform"] = str(args.laufform)
     if args.no_laufform:
         result["laufform"] = False
+    if args.exit_trim:
+        # One key, one type: the flag stays a bool and the narrowing angle gets
+        # its own numeric key, so a reader never has to type-check the arm.
+        result["exit_trim"] = True
+        if args.exit_trim_min_kink:
+            result["exit_trim_min_kink_deg"] = args.exit_trim_min_kink
     for kind in ("word", "pair"):
         kind_reports = [r for r in reports if r["kind"] == kind]
         kind_skipped = [s for s in skipped if s["kind"] == kind]

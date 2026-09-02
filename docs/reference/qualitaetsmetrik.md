@@ -10314,3 +10314,231 @@ Schlüsselmenge „genau die 22 gespeicherten Zeilen". Werkzeug:
 Schätzer `core/aggregate.py::spline_basis_median` —
 `aggregate_instances` bleibt unverändert beim Per-Anker-Median, bis
 eine Adoption etwas anderes sagt.
+
+### Übergänge J4 `sep02` — Vorregistrierung: die Austritts-Kollinearität (`exit_trim`)
+
+Geschrieben und committet VOR der ersten Zahl mit eingeschaltetem
+Schalter. Arm zu Befund 19 des Audits vom 2026-09-02; der Sensor dazu
+(`seam_deg`, `tools/wordbench/seam.py`) steht seit PR #478.
+
+**Basis.** Root `suetterlin-1922` `exported_at=2026-09-02T08:00:29+00:00`
+Digest `28ba1afebc53`, Root `suetterlin-1922-pairs` gleicher Zeitstempel,
+Digest `f0cf3d53414c`; BLAS auf einen Thread gepinnt. Reproduziert:
+Wörter **0,109255** · Paare **0,148433** (§15), Naht-Block der Worttafel
+`seam_dep_median +12,52` · `seam_arr_median −3,40` über 207/214 Joins.
+
+**Der Gegenstand, nachgemessen.** Die Klasse „Sägezahn-Austritt"
+(Austrittstangente im `ALIGN_TAN_DEG`-Band 25–55°, Austritt unter
+`HIGH_COUPLE_EXIT_Y` = 0,7) umfasst auf der Worttafel **156 der 207
+gemessenen Joins**, angeführt von `e` (44), `i` (18), `u` (15), `a` (15),
+`n` (14). Ihr `seam_dep`-Median ist +12,52° — die Klasse IST der Befund,
+nicht ein Teil davon. Die Autopsie der Stummel-Geometrie benennt die
+Ursache genauer als der Audit-Text: der Chart-Stummel endet mit einem
+**Abschluss-Flick**. Beim `e` läuft er über 0,4 xh geradlinig bei ~40°
+und dreht auf den letzten 0,05 xh auf 41° → 20° → 9° ab; beim `i` dreht
+er sogar nach UNTEN (letzte Segmente −10°, −29°, −37°, Richtung über
+0,05 xh: −4,1°). Der Komponist misst seine Austrittstangente über
+`TANGENT_WINDOW` = 0,12 xh (`e` 37,3° · `i` 26,9°) und richtet den
+Verbinder daran aus — die Tinte, die das Auge am Saum liest, läuft also
+13–42° flacher als der abgehende Verbinder. Das ist Tafelform, genau wie
+der Schleifen-, Kringel- und Balken-Stummel, für die es die A-seitigen
+Schnittregeln `LOOP_EXIT`/`KRINGEL_EXIT`/`BAR_EXIT` längst gibt.
+
+**Mechanismus (`exit_trim`, Spiegel von `entry_trim`).** In gebundenem
+Kontext wird der Austritts-Stummel von der Spitze her zurückgeschnitten
+— Centerline UND Silhouette (`erase_silhouette_piece`) — bis zu der
+Stelle, an der die **Gerade zum bestehenden Kopplungspunkt kollinear**
+mit der eigenen Laufrichtung des Stummels ist; der Verbinder ist dann
+diese Gerade. Formal: gesucht wird der von der Spitze aus ERSTE Sample
+`k`, dessen Richtung über `EXIT_TRIM_WINDOW` = 0,05 xh Bogen (das
+Fenster, das das Auge am Saum liest — bewusst NICHT die 0,12 xh, auf die
+der Komponist ohnehin ausrichtet) mit der Sehne von `line[k]` zum
+Kopplungspunkt bis auf `EXIT_TRIM_TOL_DEG` = 3,0° übereinstimmt. Der
+Suchboden ist die **Fußwende**: das letzte lokale y-Minimum des Zuges;
+weiter zurück wird nie geschnitten, und findet die Suche bis dorthin
+nichts, feuert die Regel nicht (der Buchstabenkörper bleibt in jedem Fall
+unberührt — geschnitten wird ausschließlich der Stummel über der
+Fußwende).
+
+**Vier bewusst getroffene Entscheidungen** (Routine im Track-Scope,
+hier dokumentiert statt zurückgefragt):
+
+1. **Nach der Platzierung, nicht davor.** Anders als die drei bestehenden
+   Austrittsregeln greift `exit_trim` NICHT in den Platzierungslöser: er
+   liest `prev.exit`, `prev.tangent_deg`, `prev.ink_profile` und
+   `ink_max_x` unverändert am ungetrimmten Buchstaben. Grund ist die
+   Vorregistrierung selbst — „Platzierung unangetastet" ist die
+   experimentelle Kontrolle: bewegte sich das Wort zugleich in der
+   Spationierung, misst das Wort-Lineal eine Abstandsänderung und nicht
+   den Saum. Technisch heißt das: der Schnitt wird auf dem bereits
+   emittierten Item des letzten Körperzuges nachgezogen.
+2. **Der Suchboden ist die Fußwende, kein zusätzlicher Bogen-Deckel.**
+   Ein Deckel wäre ein Knopf ohne Begründung; die Fußwende ist die
+   Struktur, die der Audit benennt. Gemessen bleibt der Schnitt damit
+   klein: Median 0,185 xh Bogen (0,26 des Stummels), p90 0,469, Maximum
+   0,504.
+3. **Die Toleranz ist 3,0°, nicht die 5,0° des Gates.** Sonst prüfte das
+   Gate seine eigene Konstruktion; mit 3° gegen ein 5°-Gate bleibt die
+   Messung eine echte Prüfung über Trefferquote × Wirkung.
+4. **Der Verbinder wird eine Gerade** — die Form, die die Platte für
+   diese Klasse zeigt (`cmp/zoom_unter_nt_specimen.png`) und die die
+   Align-/Flanken-Grammatik über `_straight_connector` bereits kennt.
+
+**Ein Knopf: `compose_word(..., exit_trim=True)`, Standard aus.** Mit
+Standard bleibt jede Komposition byte-identisch, das Golden-Fixture
+`tests/fixtures/compose_golden.json.gz` hält unverändert. Die Adoption
+(Schalter als Default an + deklariertes Neu-Backen des Golden) ist
+Autor-Entscheid und ausdrücklich NICHT Teil dieses Arms; er endet bei der
+gemessenen Zahl. Der Bench schaltet ihn mit `--exit-trim` ein; ein
+solcher Lauf ist wie ein `--overrides`/`--laufform`-Lauf eine EIGENE
+Messung, nie die Headline.
+
+**Gates.** (a) `word_loss`/`pair_loss` ≤ +0,002 gegen 0,109255 /
+0,148433. (b) `dconn` fällt in ≥ 60 % der Klassen-Joins. (c) Die
+Platzierung bleibt byte-gleich. (d) Kompositions-Soll ohne Verlust —
+keine neue `words_failed`/`pairs_failed`, keine Klasse verliert ihren
+Verbinder. (e) `seam_dep`-Median der Klasse < 5° (Basis +12,52).
+
+*Zu (c) — eine Präzisierung der Audit-Formulierung, gemacht VOR der
+ersten Zahl.* Der Audit schreibt „`doff` byte-gleich". `doff` ist aber
+`|(body_entry_x − body_exit_x) − offset_x|`, und `body_exit_x` ist der
+letzte Sample des linken Körperzuges — den verschiebt jeder A-seitige
+Trim per Konstruktion. `doff` KANN also nicht byte-gleich sein; das ist
+exakt der Vorbehalt, den `tools/wordbench/pairmeas.py` für `entry_trim`
+schon dokumentiert („a composition change that moves it moves the
+composed body start against a frozen measurement"). Gemessen wird darum
+die GEMEINTE Größe: `body_entry_x` (die Platzierung des rechten
+Buchstabens) byte-gleich; die Verschiebung von `doff` wird als erwartetes
+Rahmen-Artefakt mit Betrag berichtet, nicht als Gate gewertet.
+
+**Kill.** `dconn` steigt (in der Mehrheit der Klassen-Joins) oder ein
+Gate ist rot → verworfen, keine Adoption, `compose.py` behält den
+Schalter auf Standard aus. Rettungsweg dann als EIGENER Arm: **nur die
+Ankunftsseite** (`seam_arr_median` −3,40, |Δ| 10,54) — dort liegt der
+Spiegel-Defekt, und die Ankunft hat mit `entry_trim`/`ENTRY_COUPLE_Y`
+bereits eine Trimm-Maschinerie, die nur nach Richtung, nicht nach Höhe
+koppelt. Zeile in `tintenfolger.md` §7.9 im selben PR.
+
+**Erwartung (aus der Simulation vor dem Bau, damit sie falsifizierbar
+ist).** Trefferquote 139/156 (89 %) der Klasse; `seam_dep`-Median der
+Klasse +12,52 → **−1,32** (|Δ| 1,96), Joins über 10° von 105 auf 15. Die
+17 Nicht-Treffer sind strukturell und richtig so: bei ihnen liegt der
+Kopplungspunkt UNTER der eigenen Steiggeraden des Stummels (`n` 13 von
+14, `l` 7 von 7 — Platzierungen `nested_fall`/`align_floor`), da schafft
+kein Rückschnitt Kollinearität.
+
+**Gemessen `sep02` — (b) rot: NICHT adoptiert.** Vier der fünf Gates
+grün, das fünfte klar rot; strikt nach Vorregistrierung ist das eine
+Ablehnung. Basis und Kandidat auf derselben Wurzel
+(`28ba1afebc53` / `f0cf3d53414c`, `exported_at=2026-09-02T08:00:29+00:00`),
+BLAS auf einen Thread, Schalter aus reproduziert die Basis bit-genau.
+
+| Gate | Soll | Gemessen | |
+|---|---|---|---|
+| (a) `word_loss` | ≤ +0,002 | 0,109255 → **0,108720** (−0,000535) | grün |
+| (a) `pair_loss` | ≤ +0,002 | 0,148433 → **0,148433** (±0) | grün |
+| (b) `dconn` fällt | ≥ 60 % | **20 %** (24 von 121 gefeuerten) | **rot** |
+| (c) Platzierung | byte-gleich | **0** von 344 Buchstaben-Anfängen bewegt (Wörter + Paare) | grün |
+| (d) Kompositions-Soll | ohne Verlust | 63/63 Wörter, 33/33 Paare, 0 `failed` | grün |
+| (e) `seam_dep`-Median | < 5° | +12,52 → **−1,39** (\|Δ\| 12,52 → 2,00) | grün |
+
+Die Vorhersage traf: 137 von 155 Klassen-Joins feuern (88 %, vorhergesagt
+89 %), `seam_dep` der Klasse geht auf −1,39 (vorhergesagt −1,32), die
+Joins über 10° fallen von 103 auf 15 (vorhergesagt 15), und die
+Nicht-Treffer sind genau die vorhergesagten Klassen (`l` 7/7, `a` 6,
+`n` 1, `k` 2). Der Paar-Satz bewegt sich um NULL, weil seine Klasse LEER
+ist: die 33 Abb.-20-Drills beginnen sämtlich mit Buchstaben außerhalb des
+Sägezahn-Bandes. Wort-Ebene: 60 Proben bewegt, 27 besser : 33 schlechter,
+in der Summe die −0,000535 (`Zaum` −0,0375 · `Sprünge` −0,0173 ·
+`Zügel` −0,0153 gegen `mit-2` +0,0228 · `einer` +0,0181 · `kann`
++0,0126).
+
+**Das rote Gate, ehrlich zerlegt — es bleibt rot.** `dconn` steigt im
+Median von 0,105 auf 0,148. Ein Teil davon ist der Rahmen-Artefakt, den
+die Vorregistrierung für `doff` schon benannt hat, hier in seiner
+`dconn`-Variante: der komponierte Verbinder ist nach dem Trim LÄNGER (er
+zeichnet das Stück mit, das der Buchstabe nicht mehr schreibt), während
+der gemessene aus der Platte den alten, kürzeren Abschnitt umfasst — zwei
+start-ausgerichtete Kurven verschiedener Ausdehnung liegen mechanisch
+weiter auseinander. Nachgerechnet auf dem GEMEINSAMEN Stück (Kandidat am
+alten Abgang abgeschnitten, damit beide Kurven dieselbe Strecke
+überdecken): 0,102 → **0,099**, fällt in **51 %** der Joins. Also: rund
+zwei Drittel des Anstiegs sind Artefakt (Median +0,051 der Differenz) —
+aber auch die artefaktbereinigte Lesung erreicht die 60 % nicht. Die
+Hand-Nachfahrungen sagen über die Form dieser Naht schlicht nichts
+Positives; sie ist danach weder näher noch ferner. Das Gate fällt nicht
+an einer schiefen Messung, sondern an fehlender Evidenz. `doff` stieg wie
+vorhergesagt (0,125 → 0,160), berichtet, nicht gewertet.
+
+**Nebenwirkung, berichtet:** die ANKUNFT wird leicht schlechter
+(`seam_arr_median` −3,40 → −6,53, |Δ| 9,63 → 12,46, Joins über 10° von 76
+auf 85). Die Gerade kommt anders an als die taute Kubik — ein weiteres
+Argument dafür, dass die Ankunftsseite ihren eigenen Arm braucht.
+
+**Nachtrag zur Vorregistrierung, offengelegt:** die Formulierung „`doff`
+byte-gleich" war nicht haltbar und wurde VOR der ersten Zahl auf die
+gemeinte Größe präzisiert (Platzierung des rechten Buchstabens
+byte-gleich). Die Präzisierung hat das Ergebnis nicht gerettet — das Gate,
+an dem der Arm scheitert, ist `dconn`, und es wurde nicht angefasst.
+
+### Übergänge J4b `sep02` — POST-HOC: die enge Klasse (nur die Joins, die wirklich knicken)
+
+**Ausdrücklich post-hoc**, nach dem J4-Negativ auf denselben Zahlen
+gewählt — kein vorregistrierter Arm, und die Zahlen unten zählen nicht
+als Bestätigung. Grund für die Messung: die Owner-Direktive
+„asymmetrische Befunde nutzen" verlangt, die Verlierer erst in Klassen zu
+zerlegen, bevor ein Negativ geschlossen wird.
+
+**Die Zerlegung.** Auf der artefaktbereinigten `dconn`-Lesung trägt
+genau eine Teilklasse ein Signal: die Joins, deren Abgang im Basiszustand
+stark knickt. Nach Basis-Knick |dep₀| (n = gefeuert, Fallquote der
+bereinigten `dconn`): > 20° **70 %** (21/30) · 10–20° 45 % · 5–10° 47 % ·
+≤ 5° 43 %. Nach Buchstabe: `i` 82 %, `h` 80 %, `m`/`g`/`G` 100 % (n ≤ 4),
+gegen `c` 0 % (n=6), `a` 22 %, `n` 23 %. Nach Platzierung ohne Muster
+(`connect_gap` 65 %, `clearance_floor` 52 %, `align` 50 %). Der Schnitt
+„nur wo es knickt" ist damit der einzige, der nicht nach
+Kurvenanpassung aussieht — er ist auch inhaltlich der bessere Satz:
+repariere den Defekt, lass in Ruhe, was schon läuft.
+
+**Gemessen** (`EXIT_TRIM_MIN_KINK_DEG` = 20, `--exit-trim-min-kink 20`,
+gleiche Wurzel, gleiche Umgebung): 34 von 155 Klassen-Joins feuern
+(22 %). `word_loss` 0,109255 → 0,109175 (−0,000080), `pair_loss`
+unverändert, Platzierung byte-gleich, 0 `failed`. **Aber beide
+Ziel-Gates verfehlt:** `dconn` fällt in 43 % der gefeuerten Joins (13 von
+30, Gate ≥ 60 %), und `seam_dep` der Klasse kommt nur auf +8,02 (|Δ|
+9,11, Joins über 10° von 103 auf 69 — Gate < 5°). Die enge Klasse rettet
+den Arm also NICHT: sie halbiert den Schaden am `dconn` und verliert
+dafür fast die ganze Wirkung auf die Naht.
+
+**Verdikt beider Arme.** Der Naht-Knick ist real, messbar und mit dem
+Austritts-Trim praktisch vollständig zu beseitigen (+12,52° → −1,39°);
+das Wort-Lineal ist leicht dafür; die einzige Instanz, die die FORM der
+Naht gegen die Hand hält, ist indifferent. Damit fehlt der Adoption die
+Evidenz, und `compose.py` behält den Schalter auf Standard aus — das
+Golden bleibt unangetastet. Der Schalter, seine Konstanten und die Tests
+bleiben im Baum, damit der nächste Arm nicht bei null anfängt.
+
+**Rettungswege** (Register: `tintenfolger.md` §7.9):
+
+1. **Nur die Ankunftsseite** (der vorregistrierte Kill-Rettungsweg, jetzt
+   zusätzlich motiviert: J4 verschlechtert die Ankunft von −3,40 auf
+   −6,53). Eigener Arm, eigene Vorregistrierung.
+2. **Neuer Sensor statt neuer Knopf: eine ausdehnungs-normierte
+   Formdistanz.** `dconn` kann per Konstruktion nicht über eine Naht
+   urteilen, die die Grenze zwischen Buchstabe und Verbinder verschiebt —
+   dieselbe Blindstelle, die `pairmeas.py` für `doff` schon notiert. Ein
+   Maß, das den GEMEINSAMEN Abschnitt vergleicht (die Rechnung oben ist
+   der Prototyp, 0,102 → 0,099), wäre das Instrument, mit dem diese
+   Klasse von Regeln überhaupt beurteilbar wird. Bauen, einfrieren, DANN
+   den Arm neu vorregistrieren — nicht umgekehrt.
+3. **Menschliches Urteil statt Lineal.** Der Knick ist unter der
+   Auflösung des Wort-Lineals (Befund 19 sagt es selbst) und `dconn` ist
+   für ihn ungeeignet — die humanbench-Wortrunde mit der Echtheitsfrage
+   (T4, `menschliche-bewertung.md` §8) ist das einzige vorhandene
+   Instrument, das den Saum sieht. J4 ist ein fertiges Kandidatenpaar
+   dafür: identische Platzierung, EIN veränderter Freiheitsgrad.
+4. **Die Ursache eine Stufe tiefer beheben.** Der Flick ist Tafelform in
+   der Vorlage. Statt ihn beim Komponieren wegzuschneiden, könnte die
+   Laufform-Ableitung ihn gar nicht erst lernen (Endblende-Familie LF5/LF6
+   arbeitet an derselben Stelle) — dann bräuchte die Grammatik die Regel
+   nicht.
