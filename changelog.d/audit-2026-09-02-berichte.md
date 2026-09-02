@@ -8,4 +8,4 @@
   untracked working copy that the next `git clean` would take with it. Both
   are Befund-Journale: dated snapshots, never continued. The synthesis is the
   synthesising auditor's proposal, not a decision — what the author decides
-  arrives in the PRs that follow it.
+  arrives in the PRs that follow it (#475).
