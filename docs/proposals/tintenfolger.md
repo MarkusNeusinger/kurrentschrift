@@ -1,16 +1,26 @@
 # Tintenfolger: der Prüfstand und die zwei Routen zur Wortbahn
 
-> **Status (2026-08-15): Das Duell ist komplett, der Optimierungsplan
-> steht in §7.** Alle Stufen der Leiter sind gemergt (#337–#356): die
+> **Status (2026-09-01): teil-umgesetzt.** Das Duell ist komplett
+> gemessen und §7 in Arbeit; adoptiert sind Kette **v5** (`aug26`),
+> Lotse **v0.17** (`aug20`) und die Lineal-Stände **v2.1** (`aug16`) /
+> **L-U** (`aug26`). Der Ist-Stand mit Zahlen steht im nächsten
+> Abschnitt „Stand der Kampagne“, die stehenden Rettungswege in §7.9,
+> die offenen Arme und Autorenschritte in §7.11. Zahlen und
+> Vorregistrierungen wohnen ausschließlich in
+> [`../reference/qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md)
+> §14 (Register im Kopf der Sektion), die Routen-Ledger in
+> [`../reference/verfahren.md`](../reference/verfahren.md).
+> Historischer Kopf (2026-08-15): Alle Stufen der Leiter sind gemergt
+> (#337–#356): die
 > Baseline eingefroren (`dtw_xh` 0,062 med, Strukturzähler v2.1),
 > die Arme ①⑤⑥⑥b⑨ gemessen (alle ehrliche Negative; Route-A-Fazit
 > aus Arm ⑨: der Kettenfit steht am struktur-sicheren Optimum DIESER
 > Formulierung), Route G als prior-freie Kontrolle (dtw 0,82 = 13×
 > Kette — was der Duktus-Prior kauft), InkSight-T0 roh gemessen
 > (derender 0,096 = 1,5× Kette, Kreuzungen sauberer, Retraces
-> verloren). Kein `FOLLOW_*`-Default adoptiert. Die nächste Kampagne
-> ist §7: der Optimierungsplan je Verfahren (Befund-Matrix +
-> Recherche-Runde 2026-08-15, vier parallele Agenten).
+> verloren). Kein `FOLLOW_*`-Default adoptiert — dieser Satz galt bis
+> Kette v4 (`aug21`) und ist seit v5 (`aug26`) überholt: der ganze
+> Wächter-Stack IST der Default.
 > Ursprünglicher Plan-Kopf: Dieses
 > Doc ist der fortschreibbare Plan zum §6-Nachtrag „Tintenfolger" in
 > [`../research/bildsynthese-und-stiftbahn.md`](../research/bildsynthese-und-stiftbahn.md):
@@ -24,6 +34,70 @@
 > (2026-08-14, vier parallele Web-Agenten) gegen die Primärquellen geprüft;
 > die Korrekturen sind eingearbeitet und unter „Verworfen / korrigierte
 > Annahmen" festgehalten.
+
+## Stand der Kampagne (2026-09-01)
+
+Eine Seite, damit der aktuelle Stand nicht erst aus 6 200 Zeilen §14
+zusammengelesen werden muss. **Jede Zahl hier ist ein datiertes Zitat**
+— ihr Beleg wohnt im genannten §14-Eintrag, ihr Routen-Ledger auf der
+Verfahrensseite; geändert wird sie nie hier.
+
+> **Lineal.** `tools/tracebench` auf dem eingefrorenen dev-19-Satz
+> (append-never), Strukturzähler **v2.1** (`aug16`), Marken-Kappe
+> **1,5 xh** seit L-U (`aug26`). Wort-Lineal: Wörter **0,109255** ·
+> Paare **0,148433** (Re-Baseline `sep01`, §15; Headline-Ledger im Kopf
+> von §14).
+>
+> **Duell, dev-19, Lineal-Kappe 1,5.** Kette **v5** (`aug26`) dtw
+> **0,0446** med · p90 0,0861 · aiou 0,7608 · 63er-Soll-Abstand 79 ·
+> Netto-Kreuzungsdefekte 19. Lotse **v0.17** (`aug20`, Zahlen `aug26`)
+> dtw **0,0545** · p90 0,1164 · Netto-Kreuzungsdefekte 6 · aiou 0,740.
+> InkSight **T0** (`aug17`) dtw 0,0951 auf der ALTEN Kappe 0,8, 5 von 19
+> failed — auf 1,5 unvermessen, die Zahlen sind archiviert und nicht
+> vergleichbar. Nullprobe dtw **0,8198** auf den 10 der 19 Wörter, die
+> die gespeicherte Kontrolle abdeckt (`aug26`).
+>
+> **Adoptiert seit `aug14`.** Kette: v2 `marks_last` · v3
+> `trace_repair` · v4 `ink_evidence` · v5 Kompositions-Soll + Ratsche +
+> Zone 0,55 (der Marken-Nachfit A1 bleibt opt-in). Lotse:
+> Schienen-Auslauf 1,0 · v0.5 Ritt-Doppelzonen · v0.7 Zonen-Ausweitung ·
+> v0.9 gepinnte Fenster · v0.11 „windows“ · v0.13 Entdrillung 0,5 ·
+> v0.16 „bridges“ + Lineal-Soll-Budget · v0.17 Reservierungs-Veto ·
+> v0.19 Re-Denominierung. Komposition: K1 · K1b · P1/P1b Vorschub ·
+> P2-Floor · B-Kringel (`aug30`). Laufform: LF3b-W — 13 geschriebene
+> Zeilen ohne p (`aug26`) · LF8 Sprung-Gate τ 2,95 · LF9 Kopf-Gate
+> τ 15°. Lineal: Strukturzähler v2.1 · L-U.
+>
+> **Verworfen, mit Rettungsweg (§7.9).** Folger-Arme ①⑤⑥⑥b⑨ · B1
+> Best-of-N · P3-K1/K2/K3 · O2-Trim-Jitter · Lotse v0.2/v0.3/v0.4/v0.6/
+> v0.8/v0.10/v0.12/v0.14/v0.15/v0.18 und die Auflösungs-Familie ·
+> K0-Z/K0-Z-R (als K0-S wiedervorgelegt und in v5 aufgegangen) ·
+> K-E1/K-E2 · LF1/LF2/LF3/LF5/LF6/LF7/LF10 · J1/J2/J3 · J4/J4b. K-D
+> wurde gegenstandslos, nicht verworfen.
+>
+> **Bestanden, aber noch nicht adoptiert.** LF11 „glatte Zeile"
+> (`sep02`, Sprosse Δs 0,16): alle vier Trocken-Gates grün, die
+> Kandidaten-Karte liegt als 22 volle Fixture-Zeilen vor, geschrieben
+> ist nichts. Die Adoption hängt an der humanbench-Wort-Runde und
+> danach am Autor-Go — das Wort-Lineal belohnt den Zickzack
+> stellenweise, also entscheidet hier das Auge.
+>
+> **Offen (§7.11).** KI-messbar: LF4 (p) ·
+> Abstandsterm/Schleifen-Halteterm für die 13 v5-Rückweisungen ·
+> Distanzfeld-NUR-Claim · Lotse-Zonen-Stufe · InkSight B2 und die
+> Nachmessung auf Kappe 1,5 · die drei LF10-Konversionen
+> (Richtungs-Abstand · Tinten-Evidenz der Zeile · humanbench-Zeilen-
+> Runde) · die zwei J4-Konversionen (nur die Ankunftsseite · eine
+> ausdehnungs-normierte Formdistanz als neuer Sensor).
+> Autorenschritte: Bestätigungssatz
+> A/B · humanbench-WORT-Runde · Prod-Re-Harvest der `traced`-Zeilen mit
+> Kette v5 · St-Ligatur im Wizard · Laufform-Lücke G/W/K/ue/F/ae/b ·
+> die Herkunft der `aug30`-Fixture-Wurzel.
+>
+> **Regeln.** Zahlen wohnen in §14, die Verfahrensseiten sind das
+> Routen-Register, jede Re-Baseline ist datiert und nennt seit `sep02`
+> `exported_at` und Digest ihrer Fixture-Wurzel. Das CI-Gate dazu ist
+> `tools.docs_register check`.
 
 ## 1 Ausgangslage
 
@@ -886,22 +960,48 @@ oder neuer SENSOR mit frischer Vorregistrierung — nie derselbe Knopf
 mit weicheren Gates (das wäre genau das Nachstimmen, das die
 Disziplin verhindert).
 
+**Nachtrag 2026-09-02 — ein Sensor für die Naht.** Mehrere Rettungswege
+dieser Tabelle (J1 · J2 · J3 und „Verbinder-FORM statt gerader
+Balken-Linie“) zielen auf denselben, bis dahin unvermessenen Ort: den
+Knick, mit dem ein generierter Verbinder den Buchstaben verlässt und den
+nächsten erreicht. Seit PR #478 misst ihn `seam_deg` als reine
+Report-Spalte (Glossar „Naht-Winkel“, `tools/wordbench/seam.py`);
+das Fenster ist mit 0,05 xh Bogenlänge bewusst kleiner als die 0,12 xh,
+auf die der Composer seine Verbinder-Tangenten ausrichtet. Erste Zahl auf
+der eingefrorenen Worttafel 1922: Abgang **+12,52°**, Ankunft
+**−3,40°** im Median über 207 der 214 Joins (Fixture-Wurzel `sep02`);
+auf der `aug14`-Wurzel derselben Platte +11,87° / −3,26° über 206 der
+214 — der Unterschied liegt an der Wurzel, nicht am Sensor. Der
+Verbinder geht also systematisch STEILER ab, als der Buchstabe zuletzt
+lief, und kommt nur wenig flacher an. Damit hatte der Rettungsweg
+„Verbinder-Form“ erstmals ein Maß — und noch am selben Tag seinen Arm:
+J4 (`exit_trim`) beseitigt den Knick fast vollständig (+12,52° →
+−1,39°), scheitert aber an Gate (b), weil `dconn` über eine Naht, die
+die Grenze zwischen Buchstabe und Verbinder verschiebt, konstruktiv gar
+nicht urteilen kann. Der Sensor hat also gehalten, was er sollte: er
+hat den Defekt sichtbar gemacht UND die Blindstelle des Lineals. Die
+Zeile dazu steht unten (J4/J4b), die Konversionen in §7.11.
+
 | Verworfen (§14) | Fund / gemessene Decke | Rettungsweg | Auslöser |
 |---|---|---|---|
 | B1 Best-of-N (`aug15`) | Orakel −0,0124 in denselben N Antworten bewiesen; Ranker ist ordnungs-blind | ordnungs-bewusstes Auswahlsignal („Chor", Ziel +0,0067) | Welle 3 |
 | P3-K1 Balken→Rund (`aug16`) | +126°-Ankunftsfehler bleibt real; verworfen wurde nur der HÖHEN-Knopf | Verbinder-FORM: gekrümmter Einfall statt gerader Balken-Linie | eigene Pre-Reg |
-| P3-K3 Arkaden-Lift (`aug16`) | Wort/Drill-Split desselben Joins; Nebenfund: Spline-Jitter deaktiviert den generischen O2-Trim für Arkaden-Köpfe | (a) O2-Trim-Jitter-Bugfix als eigener Gewinnkandidat; (b) Kontext-Regel statt Uniform-Konstante | (a) sofort pre-registrierbar; (b) Bestätigungssatz |
+| P3-K3 Arkaden-Lift (`aug16`) | Wort/Drill-Split desselben Joins; Nebenfund: Spline-Jitter deaktiviert den generischen O2-Trim für Arkaden-Köpfe | (a) O2-Trim-Jitter-Bugfix als eigener Gewinnkandidat → **GEMESSEN `aug16` (§14 „O2-Trim-Jitter"), Ausgang (b): der Bugfix verliert und wird verworfen** — der Jitter war keine Schlamperei, sondern eine zufällig entstandene KLASSENREGEL (`n` profitiert von hoher Toleranz, `r` von tiefer); die Toleranz bleibt deklariert 0. Stehender Nachfolger: dieselbe Trennung ABSICHTLICH als Klassenregel formuliert, mit frischer Vorregistrierung; (b) Kontext-Regel statt Uniform-Konstante | (a) erledigt — verworfen, Klassenregel-Nachfolger offen; (b) Bestätigungssatz |
 | P3-K2 d-Abgangswinkel (`aug16`) | beide Lineale monoton dagegen, kein Split | nur Nachkalibrierung (Klassen-n 8/18) | Bestätigungssatz |
 | Arm ⑨ Topologie-Wächter (`aug16`) | Tinten-Gewinn und Struktur-Erfindung in DIESER Formulierung untrennbar; `structure_guard` bleibt Werkzeug | Route „Lotse" (§7.8): Skelett fahren, Duktus als Karte | eigene Pre-Reg |
 | Arm ⑥/⑥b Landmark-Gewicht (`aug14`) | Korrespondenz-Kappe gelöst (classed punktweise kostenlos), Gewicht trotzdem nutzlos im Folger-Setting | klassenbewusste Ziele stehen bereit für ein Setting, in dem die Kreuzung wirklich wandern kann (Lotse) | mit der Lotse-Runde |
 | P2a Arkaden-Luft · P1 Diagonalen-Trim (`aug15`) | Beleg-Varianz ±0,1 xh, Ruler monoton dagegen | Dissektions-Forderung im Nachkalibrierungs-Protokoll (§7.7) | Bestätigungssatz |
 | Methodik-Lücke (quer, `aug16`) | drei Kills wurden von Netto-Deltas ≤ 0,0007 entschieden — das Lineal ZUCKT dort nur, die Gates machen daraus ein Nein | humanbench-WORT-Runde als vorregistrierter Tie-Breaker für ruler-indifferente Fälle (\|Netto-Δ\| < ε bei starker Dissektions-Evidenz) | eigene Pre-Reg + Runde |
+| Lotse v0.2 (A5) Parallel-Versatz (`aug16`) | `DOUBLE_PASS_OFFSET_FRACTION` aus der Breiten-Evidenz bringt keine Kreuzung zurück: fast-parallele Züge kreuzen einander nie transversal, ein Versatz verschiebt sie nur | Knoten-Sehne statt Parallel-Versatz (als v0.3 versucht, s. u.); die Klasse selbst ist mit der Karten-Geometrie in den Ritt-Doppelzonen gelöst → **UMGESETZT als v0.5, adoptiert** | **erledigt** |
+| Lotse v0.3 Knoten-Sehne (`aug16`) | `JUNCTION_CHORD_RADIUS_FRACTION` — aiou-Kill; der Fund darunter ist real und trug die ganze weitere Route: lange GETEILTE Schienen, auf denen beide Pässe denselben Korridor fahren | (a) Karten-Vorfahrt genau in diesen Zonen — als v0.4 am falschen Trigger versucht, als v0.5/v0.9 richtig getroffen und adoptiert; (b) Sub-Strich-Trennung der geteilten Schiene | (a) **erledigt**; (b) offen, geringer Leidensdruck |
+| Lotse v0.4 Karten-Vorfahrt in Retrace-Zonen (`aug16`) | `MAP_PRIORITY_IN_RETRACE` — nicht der Mechanismus war falsch, sondern der TRIGGER: Karten-Retrace-Zonen sind nicht die Orte, an denen der Ritt die Karte braucht | derselbe Mechanismus am Ritt-Doppelzonen-Trigger → **UMGESETZT als v0.5, adoptiert** (dtw 0,101 → 0,085, fünf Kreuzungen zurück) | **erledigt** |
+| Lotse v0.6 Feinschliff (`aug16`) | `SMOOTH_ITERATIONS` — das Wort-Lineal ist für den Zickzack der Route blind (dtw/aiou indifferent), eine Glättung kann sich darauf also nie belegen | Glättung ist eine DARSTELLUNGS-Stufe beim Konsumenten, keine im Kandidaten; als Kandidaten-Knopf `aug20` endgültig geschlossen (Glättungs-Proben: auch am Betriebspunkt kein Fenster ohne Verlierer). Soll der Zickzack zählen, braucht er einen eigenen SENSOR — die humanbench-WORT-Runde ist der benannte | Sensor-Weg: eigene Runde |
 | Lotse v0.10 Punkt-Knoten (`aug19`) | Anker-Offsets als Punkt-Knoten scheren das Feld an der Kreuzung (Merge/Oskulation in dichten Clustern); Gewinnseite real (aiou +0,027, Ortsfehler halbiert, Spurious-Heilung) | Plateau-Feld = starre Cluster-Translation → **UMGESETZT als v0.11, adoptiert** | erledigt |
 | Lotse v0.11 Stufe "all" (`aug19`) | Zonen-Rides/Brücken-Pinning scheitert um genau EIN Galoppieren-Doppel-X (Netto 8 > 7); die Doppel-X-Duplikate sind 4 der 6 Rest-Spurious | EIN X je Knoten-Cluster — als v0.12 Plateau-Sehne versucht und VERWORFEN (s. u.); wartet auf einen Mechanismus, der Duplikate schließt, ohne das X zu kosten | wartet |
 | Lotse v0.12 Plateau-Sehne (`aug19`) | der Wackel WAR das X: an Schleifenschlüssen laufen beide Pässe tangential, ihre Sehnen sind parallel und schneiden sich gar nicht (missing 1 → 8, Retraces zerstört); die Duplikate sind zugleich KEINE Topologie-Erfindung (das X ist real, nur doppelt) | (a) Entdrillung des kleineren Wiggle-Bogens zwischen Duplikat-Paaren; (b) asymmetrische Sehne (nur der spätere Pass) | je eigene Pre-Reg, geringer Leidensdruck |
-| K0-Wächter „strikt besser" (`aug16` zweiseitig · `aug19` soll-bewusst) | die Struktur friert beide Male (104=104 bzw. 107=107); das aug19-Protokoll beweist die Ursache: die runden-ATOMARE Rückweisung verwirft eine gebündelte Soll-Reparatur (unter: overlap 3→2 erlaubt, touch 3→6 verboten — beides in EINEM Solve) | **zonale Rückweisung** → **GEMESSEN `aug20` (K0-Z + Ratsche K0-Z-R): beide per Gate verworfen, die Substanz ist enorm** (Ratsche+0,55: Soll 107 → 99, null aiou-Verlierer, Tinten-Gewinne bis +0,15, dev-dtw-Median-Bestwert; Zone 0 byte-identisch) — der letzte Riss (daß 2 → 3) autopsiert zu ZWEI DIVERGIERENDEN SOLL-QUELLEN (Guard `structure_zones` = 2 Retrace am daß-Init, Metrik `ductus_soll` = 1) | **Soll-Quellen-Autopsie** (welche Zählung der daß-Komposition stimmt?), dann Wiedervorlage mit EINER Pipeline für Budget/Guard-Soll/Counts/Metrik; der zwei-Trade (dtw +0,014 gegen aiou +0,092) ggf. per humanbench-Tie-Breaker. **Autopsie ERLEDIGT `aug21` (§14 „Kette K0-S"): die Metrik hatte recht** — die zusätzliche Wächter-Zone ist ein plattgezogener Init-Splitter am daß-d-Kopf (Chart-Anker + Verbinder drücken den Schleifenschluss zusammen), die Komposition kreuzt sauber; das aug19-Soll las die Init-Nachbildung statt der kanonischen Quelle. Wiedervorlage vorregistriert: `soll_source=composition` (geteilter Kompositions-Builder aus `ductus_soll`), Leiter Divergenz-Karte → Soll-Stack → Ratsche+0,55, Gates unverändert. **GEMESSEN `aug21` (K0-S): ALLE Gates bestehen auf beiden Sprossen** — Divergenz-Karte: 40/63 Runs, jedes d-Wort trägt die daß-Signatur; Ratsche+0,55 auf Kompositions-Soll: Soll 85 → 77 bei 0 schlechter, dev-aiou-Median +0,0216, schlechtester dtw +0,0014, der alte zwei-Trade INVERTIERT (−0,0100 dtw) — beide aug20-Risse als gelöst gemessen; **ADOPTIERT `aug26` als Kette v5** (§14 „Kette v5"): Autor-Go 25.08., gegen die vorregistrierte Soll-Stack-Basis nachgemessen — 63er-Soll 86 → 79 (7 besser · 0 schlechter), aiou-Median der bewegten +0,073, null Verlierer; der Mechanismus per `guard_outcome`-Spalte sichtbar (26 von 31 bewegten Wörtern waren in der Basis ein Runde-1-Rollback auf den Init, die Zone rettet sie). Offen bleiben die 13 Wörter, die auch v5 auf den Init zurückwirft — Rettungswege dafür sind PRÄVENTIVE Terme im Abstieg (Abstandsterm gegen erfundene Berührungen, Schleifen-Halteterm gegen Kreuzungskollaps), nie Annahme-Regeln; „Fallback auf das ungewächterte Ergebnis" ist geprüft und verworfen (= Abschaffung des Wächters, Soll ~107 > Init 86) | **erledigt — adoptiert** |
+| K0-Wächter „strikt besser" (`aug16` zweiseitig · `aug19` soll-bewusst) | die Struktur friert beide Male (104=104 bzw. 107=107); das aug19-Protokoll beweist die Ursache: die runden-ATOMARE Rückweisung verwirft eine gebündelte Soll-Reparatur (unter: overlap 3→2 erlaubt, touch 3→6 verboten — beides in EINEM Solve) | **zonale Rückweisung** → **GEMESSEN `aug20` (K0-Z + Ratsche K0-Z-R): beide per Gate verworfen, die Substanz ist enorm** (Ratsche+0,55: Soll 107 → 99, null aiou-Verlierer, Tinten-Gewinne bis +0,15, dev-dtw-Median-Bestwert; Zone 0 byte-identisch) — der letzte Riss (daß 2 → 3) autopsiert zu ZWEI DIVERGIERENDEN SOLL-QUELLEN (Guard `structure_zones` = 2 Retrace am daß-Init, Metrik `ductus_soll` = 1) · **Soll-Quellen-Autopsie** (welche Zählung der daß-Komposition stimmt?), dann Wiedervorlage mit EINER Pipeline für Budget/Guard-Soll/Counts/Metrik; der zwei-Trade (dtw +0,014 gegen aiou +0,092) ggf. per humanbench-Tie-Breaker. **Autopsie ERLEDIGT `aug21` (§14 „Kette K0-S"): die Metrik hatte recht** — die zusätzliche Wächter-Zone ist ein plattgezogener Init-Splitter am daß-d-Kopf (Chart-Anker + Verbinder drücken den Schleifenschluss zusammen), die Komposition kreuzt sauber; das aug19-Soll las die Init-Nachbildung statt der kanonischen Quelle. Wiedervorlage vorregistriert: `soll_source=composition` (geteilter Kompositions-Builder aus `ductus_soll`), Leiter Divergenz-Karte → Soll-Stack → Ratsche+0,55, Gates unverändert. **GEMESSEN `aug21` (K0-S): ALLE Gates bestehen auf beiden Sprossen** — Divergenz-Karte: 40/63 Runs, jedes d-Wort trägt die daß-Signatur; Ratsche+0,55 auf Kompositions-Soll: Soll 85 → 77 bei 0 schlechter, dev-aiou-Median +0,0216, schlechtester dtw +0,0014, der alte zwei-Trade INVERTIERT (−0,0100 dtw) — beide aug20-Risse als gelöst gemessen; **ADOPTIERT `aug26` als Kette v5** (§14 „Kette v5"): Autor-Go 25.08., gegen die vorregistrierte Soll-Stack-Basis nachgemessen — 63er-Soll 86 → 79 (7 besser · 0 schlechter), aiou-Median der bewegten +0,073, null Verlierer; der Mechanismus per `guard_outcome`-Spalte sichtbar (26 von 31 bewegten Wörtern waren in der Basis ein Runde-1-Rollback auf den Init, die Zone rettet sie). Offen bleiben die 13 Wörter, die auch v5 auf den Init zurückwirft — Rettungswege dafür sind PRÄVENTIVE Terme im Abstieg (Abstandsterm gegen erfundene Berührungen, Schleifen-Halteterm gegen Kreuzungskollaps), nie Annahme-Regeln; „Fallback auf das ungewächterte Ergebnis" ist geprüft und verworfen (= Abschaffung des Wächters, Soll ~107 > Init 86) | **erledigt — adoptiert** |
 | Lotse v0.13 Stufe 0,8 (`aug19`) | das weite Entdrillungs-Fenster tötet auch GENUIN nahe echte Paare (mits t-Doppel 0,07 xh) — Geometrie allein kann Gewebe-Duplikat und echtes enges Doppel nicht trennen. **Autopsie-Nachmessung `aug20`:** auch MIT Lineal-Soll-Budget bleibt 0,8 tot — Galoppieren würde komplett heilen (Netto 2 → 0), aber unter verliert ALLE drei X, weil die Karte unters Kreuzungs-ORTE nicht kennt (vierte Platzierungs-Bestätigung); der Punkt-Abstand trennt die Klassen nicht (0,27–0,29 gegen 0,17–0,32 xh, überlappend) | **präzisiert `aug20` (Karten-Soll-Autopsie):** die Platzierungskarte matcht 40/41 Hand-X (median 0,150 xh) — der 0,8-Blocker ist Soll-VOLLSTÄNDIGKEIT, nicht Platzierung (unters t-Stamm-Doppel: Hand 2 X — Abstieg + versetzter Rückpass —, Karte 1; jedes Zähl-Veto fällt am 12-Events-über-1-Soll-Cluster als Commons-Problem; das Reservierungs-Veto v0.17 rettet ein X, das ungedeckte fällt weiter) → erst der **Karten-Soll-Vollständigkeits-Arm** (Composer: Join- und Rückpass-Schleifen, „Hand 34 > Komposition 25"), dann das Fenster wiedervorlegen. **Weiter präzisiert (`aug20` spät, t-Stamm-Autopsie): der Composer ist unschuldig** — die rohe Komposition führt 41/41 Hand-X; die „Lücke" ist die 0,12-xh-Abtastung (Auflösungs-Grenze, v0.18) | schritt-invariante Reskalierung (v0.18-Weg b), dann Fenster + Leiter |
-| Lotse v0.18 Auflösungs-Leiter (`aug20`) | Struktur-These exakt bestätigt (Netto 5 → 3, unters letzter missing heilt, ein Galoppieren-Gewebe fällt) — aber die Ritt-ÖKONOMIE ist sample-denominiert (`RIDE_DOUBLE_MIN_GAP` in Samples, Brücken-Preis pro Sample): dtw bis +0,035 (muß-Familie), aiou-Median −0,004, neue Retrace-Defekte; 0,04 = Drift, keine Konvergenz. Rettungsweg „feine Emission" an den Proben tot (die rohe Karte trägt Kompositions-Mikrostruktur: 32 Spurious — die 0,12-Glättung ist Teil des FILTERS) | **schritt-invariante Reskalierung**: MIN_GAP in xh, Brücken-Preis pro Arc — dann die Leiter wiedervorlegen (die Netto-3-Ernte wartet dort). **Wiedervorlage `aug20` spät (v0.19): Re-Denominierung bleibt (Sprosse 0 byte-identisch), Leiter ERNEUT verworfen** — der Drift ist Emissions-Feinheit, nicht Ökonomie: feinere Brücken emittieren die Karten-Mikrostruktur mit; Struktur und Geometrie hängen an derselben Auflösung | ~~Karten-Glättung vor Feinabtastung~~ **an den Proben verworfen (`aug20` nacht): der Drift besteht auf geglätteter Karte fort — die letzte Kopplung ist die ENTSCHEIDUNGS-GRANULARITÄT des Viterbi selbst.** Die Auflösungs-Familie ist ausgemessen und geschlossen (Ökonomie invariant ✓, Emission ✓, Karte ✓); 0,12 = Betriebspunkt, unters t-X2 = bleibende Grenze. Der Betriebspunkt-Glättungs-Kandidat wurde an der Fenster-Feinleiter ebenfalls verworfen (kein Fenster ohne Verlierer; Entscheidungs-Kipp-Punkte, keine Systematik) — **die Karten-/Abtastungs-Familie ist erschöpft, die Route sitzt in einem empfindlichen Optimum** | kein weiterer Anlauf dieser Familie; verbliebene Lotse-Wege: Zonen-Stufe (p-Oskulations-Mechanik) · anderer Solver; nächste Kampagnen-Arme: Kette K0-zonal · InkSight B2/B3 |
+| Lotse v0.18 Auflösungs-Leiter (`aug20`) | Struktur-These exakt bestätigt (Netto 5 → 3, unters letzter missing heilt, ein Galoppieren-Gewebe fällt) — aber die Ritt-ÖKONOMIE ist sample-denominiert (`RIDE_DOUBLE_MIN_GAP` in Samples, Brücken-Preis pro Sample): dtw bis +0,035 (muß-Familie), aiou-Median −0,004, neue Retrace-Defekte; 0,04 = Drift, keine Konvergenz. Rettungsweg „feine Emission" an den Proben tot (die rohe Karte trägt Kompositions-Mikrostruktur: 32 Spurious — die 0,12-Glättung ist Teil des FILTERS) | **schritt-invariante Reskalierung**: MIN_GAP in xh, Brücken-Preis pro Arc — dann die Leiter wiedervorlegen (die Netto-3-Ernte wartet dort). **Wiedervorlage `aug20` spät (v0.19): Re-Denominierung bleibt (Sprosse 0 byte-identisch), Leiter ERNEUT verworfen** — der Drift ist Emissions-Feinheit, nicht Ökonomie: feinere Brücken emittieren die Karten-Mikrostruktur mit; Struktur und Geometrie hängen an derselben Auflösung · ~~Karten-Glättung vor Feinabtastung~~ **an den Proben verworfen (`aug20` nacht): der Drift besteht auf geglätteter Karte fort — die letzte Kopplung ist die ENTSCHEIDUNGS-GRANULARITÄT des Viterbi selbst.** Die Auflösungs-Familie ist ausgemessen und geschlossen (Ökonomie invariant ✓, Emission ✓, Karte ✓); 0,12 = Betriebspunkt, unters t-X2 = bleibende Grenze. Der Betriebspunkt-Glättungs-Kandidat wurde an der Fenster-Feinleiter ebenfalls verworfen (kein Fenster ohne Verlierer; Entscheidungs-Kipp-Punkte, keine Systematik) — **die Karten-/Abtastungs-Familie ist erschöpft, die Route sitzt in einem empfindlichen Optimum** | kein weiterer Anlauf dieser Familie; verbliebene Lotse-Wege: Zonen-Stufe (p-Oskulations-Mechanik) · anderer Solver; nächste Kampagnen-Arme: Kette K0-zonal · InkSight B2/B3 |
 | Lotse v0.14 „all"+Entdrillung (`aug19`) | Tinten-Gewinne real (aiou +0,012, G erstmals fast hand-gleich geritten — Sichtbeweis), aber die Struktur kippt in GENAU den zwei schlimmsten Karten-Form-Regionen (G-Kopf-X stirbt an der formfremden G-Karte, p erfindet eines) — Netto 8 > 6. **Wiedervorlage `aug19` spät auf der LF3b-Karte: erneut verworfen (Netto 7 > 5), und die Karten-Form-These ist damit WIDERLEGT** — dieselbe Galoppieren-Bruchstelle auf topologie-sauberer Chart-G-Karte; die Tinten-Gewinne bestätigen sich (aiou +0,004, p90 −0,001, kein dtw-Verlierer) | (a) G-Kopf-Ritt-Autopsie unter „all" → **ERLEDIGT `aug20`**: der Riss ist die parität-blinde ENTDRILLUNG, nicht die Pinnung (vor der Entdrillung hat „all" das X und den saubersten Ritt); (b) selektive Pinn-Stufe → **UMGESETZT als v0.16-Leiter**: „bridges"+Lineal-Soll-Budget ADOPTIERT (reiner Tinten-Gewinn, Struktur stellen-identisch), „zones"/„all" scheitern nur noch an der p-Oskulation (+1, Platzierungs-Familie) — das G-Kopf-X überlebt dort unter Budget | Zonen-Stufe: nach dem K1-p-Platzierungs-Arm wiedervorlegen |
 | Lotse v0.15 soll-budgetierte Entdrillung (`aug19`) | das Budget erbt die Karten-Platzierungsfehler (unters e→r-Soll liegt neben der Tinte → echtes Paar stirbt trotz Budget) und die Radius-Zählung vetiert wills Fix (benachbartes echtes X in der Gewebe-Nachbarschaft) — dritte unabhängige Bestätigung der Karten-Form-Decke | Wiedervorlage GEMEINSAM mit v0.14 nach den Laufform-Armen → **UMGESETZT `aug20` als Lineal-Soll-Budget (v0.16), ADOPTIERT**: die Autopsie fand die Wurzel — die rohe Soll-Zählung listet jeden Karten-Schnitt ~doppelt (wills falsches Veto: 6 „Soll" gegen wahre 4); mit dem gefrorenen Kreuzungs-Detektor als Soll-Quelle löst sich wills Veto und das G-Kopf-Veto feuert korrekt | erledigt |
 | Lotse v0.8 Selbstschnitt-Fenster (`aug17`) | Topologie vollständig bestätigt (Netto-Defekte 32 → 4, dtw erstmals unter der Kette), aber die ROHE Karten-Geometrie der Fenster kostet Tinten-Deckung (aiou-Kill um 0,003 bzw. 0,075) | v0.9: dieselben Fenster ans Ink GEPINNT (Topologie/Winkel von der Karte, Lage von den Board-Punkten) | eigene Pre-Reg, gemessen in derselben Runde |
@@ -998,3 +1098,41 @@ Messdisziplin unverändert (§7.7): Lotse-Arme messen auf dem
 19er-Dev-Satz gegen die `aug17`-Ketten-Baseline, Gates wie v0.1
 plus die aiou-Zusatz-Kill-Schranke; Komposition/Kette bleiben in
 dieser Runde unberührt (kein compose-golden-Bruch).
+
+### 7.11 Offene Arme (angelegt 2026-09-02)
+
+Was aus einer geschlossenen Runde als NÄCHSTER Schritt benannt wurde,
+stand bisher nur im Fließtext des jeweiligen §14-Eintrags — wer die
+Kampagne fortsetzen wollte, musste die Sätze dafür wieder
+zusammensuchen. Diese Tabelle sammelt sie. Sie trägt **keine Zahlen**
+(die wohnen in §14) und ist **kein Plan**: ein Arm ist erst ein Arm,
+wenn er seine eigene Vorregistrierung hat. Eine Zeile verschwindet
+hier, sobald ihr Arm gemessen ist — dann steht sie als §14-Eintrag mit
+Registerzeile und, wenn sie ein Negativ war, mit ihrer §7.9-Zeile.
+
+**KI-messbar** (nichts davon braucht die Hand des Autors):
+
+| Arm | Herkunft | Auslöser / Lage | Stand |
+|---|---|---|---|
+| **LF4 — die p-Laufform** | §14 „Laufform LF3b-W `aug26`" | die 13er-Schreib-Karte ist geschrieben, p blieb an EINER Kreuzung draußen | drei benannte Sprossen: Init-Wächter gegen das Kompositions-Soll · Stamm-Freigabe am Bogen-Rücklauf (K1-Familie) · Ring-Regel-Sensor (`CROSS_PARTNER_MIN_HITS`); je eigene Pre-Reg |
+| **LF11 „glatte Zeile" — Adoption** | §14 „Laufform LF11 `sep02` — gemessen" | die Sprosse Δs 0,16 besteht alle vier Trocken-Gates, die Kandidaten-Karte liegt vor, geschrieben ist nichts | wartet auf die humanbench-Wort-Runde, dann Autor-Go → `dbsnapshot` → PUT je Glyph → Neuexport als deklarierte Re-Baseline |
+| **Die drei LF10-Konversionen** | §14 „Laufform LF10 `sep01` — gemessen", §7.9 | der Form-Abstand als Betrag ist verworfen (P liegt unter τ_form), das Auge sieht an v/E/P/k trotzdem etwas | offen: (1) Richtungs-Abstand statt Lage-Abstand · (2) Tinten-Evidenz der Zeile gegen ihre Masken · (3) humanbench-Zeilen-Runde; je eigene Pre-Reg |
+| **Die zwei J4-Konversionen** | §14 „Übergänge J4/J4b `sep02`", §7.9 | der Naht-Knick ist beseitigbar, aber `dconn` kann per Konstruktion nicht darüber urteilen | offen: (1) nur die Ankunftsseite als eigener Arm · (2) SENSOR zuerst — eine ausdehnungs-normierte Formdistanz bauen und einfrieren, dann neu vorregistrieren |
+| **Abstandsterm · Schleifen-Halteterm** | §14 „Kette v5 `aug26`" | 13 Wörter wirft auch v5 in Runde 1 auf den Init zurück | offen; ausdrücklich PRÄVENTIVE Terme im Abstieg, nie Annahme-Regeln |
+| **Distanzfeld-NUR-Claim** | §14 „Kette K-E2 `aug21`" | die Claim-Familie ist geschlossen, dieser Ein-Kanal-Schnitt aber nie versucht | offen, frische Pre-Reg |
+| **Lotse-Zonen-Stufe** | §14 „Lotse v0.16 `aug20`" | „zones"/„all" scheitern nur noch an der Galoppieren-p-Oskulation | wiedervorlegen NACH dem p-Platzierungs-Arm |
+| **InkSight B2 (Tiling)** | §14 „Welle 1 · B1 `aug15`", verfahren-inksight.md | Galoppieren liegt jenseits der Trainingsfiltergrenze und ist der gemessene Probestein | offen seit `aug15` |
+| **InkSight-Nachmessung auf Marken-Kappe 1,5** | §14 „Lineal L-U `aug26`" | ohne sie ist die vierte Route mit den anderen dreien nicht vergleichbar | offen; braucht das isolierte Python-3.11-TF-venv |
+| **Folger-Arme ②③④⑦⑧** | §14 „Vorregistrierung der Folger-Arme `aug14`" | nie einzeln gemessen; die Schließung „durch ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet" steht nur auf verfahren-kette.md | offen: entweder messen oder vom Autor formal abschreiben lassen |
+
+**Autorenschritte** (nur der Autor kann sie tun oder freigeben; jeder
+davon liegt zusätzlich als Todoist-Aufgabe im Projekt „Kurrentschrift"):
+
+| Schritt | Herkunft | Warum er hängt | Stand |
+|---|---|---|---|
+| **Bestätigungssatz A, dann B** | §2.5, verfahren-lotse.md | Schlussstein vor jeder Adoption jenseits der Routen-Konstanten; er sperrt außerdem den referenzfreien Auswähler „Vier Augen" | offen |
+| **humanbench-WORT-Runde** | §14 „Methodik-Lücke `aug16`", K-E1/K-E2 | der einzige benannte Tie-Breaker für ruler-indifferente Fälle | offen; das Instrument entsteht gerade |
+| **Prod-Re-Harvest der `traced`-Zeilen mit Kette v5** | §14 K-B · v4 · LF3b-W | seit `aug19` viermal vertagt („hinter Autor-Go + dbsnapshot"); die gespeicherten Bahnen stammen noch aus älteren Ketten-Ständen | offen |
+| **St-Ligatur im Wizard nachfahren** | §14 „Übergänge Korb-Runde `aug30`" (Korb #9) | bis dahin greift der Ligatur-Zerfall, und `Stube` fällt aus dem Quiz-Pool | offen |
+| **Laufform-Lücke G · W · K · ue · F · ae · b** | §14 „Lotse v0.15 `aug19`" (dritter Nachtrag), LF8/LF9 | 43 von 62 Glyphen komponieren aus der rohen Chart-Form, weil ihnen die Laufform fehlt oder sie ein Gate nicht bestand | offen; der Weg dorthin ist die Eigenhand-Ernte |
+| **Herkunft der `aug30`-Fixture-Wurzel** | §14 Headline-Ledger, Nachtrag `sep02` | ohne die Auskunft bleiben alle Zahlen ab `aug30` nur untereinander vergleichbar | offen |

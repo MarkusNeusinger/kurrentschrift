@@ -1,6 +1,6 @@
 # Qualitätsmetrik & Glyph-Bench
 
-> **Status (2026-08-12): lebend.** Fortlaufend gepflegte Messlatte und
+> **Status (2026-09-02): lebend.** Fortlaufend gepflegte Messlatte und
 > Baseline-Journal — jeder Bench-Lauf und jedes bewusste Re-Baseline
 > schreibt hier einen datierten Abschnitt fort; aktuelle Headlines:
 > Wörter 0,109255 · Paare 0,148433 (Re-Baseline `sep01`, §15 — sieben
@@ -17,9 +17,13 @@ liegt in `core/quality.py`, das Werkzeug in `tools/glyphbench/`
 (englisches README mit Fixture-Format und Output-Contract).
 
 Stand: fortlaufend gepflegtes Journal — Grundfassung 2026-06-11 (nach den
-PRs #63–#71), seither mit jedem Lauf/Befund fortgeschrieben; letzter
-Eintrag 2026-08-02 (Lauf `aug02`, PR #268: Report-Spalte `meas`, Headlines
-Wörter 0,116886 · Paare 0,164506).
+PRs #63–#71), seither mit jedem Lauf/Befund fortgeschrieben. Die
+**aktuellen Headlines stehen an genau EINER Stelle**, im Status-Blockquote
+oben; ihre Historie samt Fixture-Wurzeln führt der **Headline-Ledger** am
+Kopf von §14, und daneben dort das **Register aller Journal-Einträge**.
+Wer den Stand der Mess-Kampagne sucht, fängt bei diesen beiden Tabellen
+an — und für die Routen bei
+[`verfahren.md`](verfahren.md).
 
 > **Zwei Metriken, eine pro Schrift (Stand 2026-06-18).** Kurrent und
 > Sütterlin nutzen verschiedene Schreibgeräte (Spitzfeder/Schwellzug vs.
@@ -3480,6 +3484,181 @@ Split, Kriterien und Kill-Kriterien stehen hier, BEVOR irgendein
 Kandidat gemessen wurde. Plan und Begründungen:
 [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md); die
 Werkzeuge: `tools/tracebench/`.
+
+### Register der Einträge (Index, keine Zahl-Heimat)
+
+Diese Sektion trägt 80 datierte Abschnitte und ist die eine Heimat der
+Kampagnen-Zahlen; die Tabelle hier ist ihr **Index** — sie wiederholt
+keine Zahl, sie zeigt, wo eine steht. Ihre Reihenfolge ist die der
+Datei, also die Reihenfolge, in der die Abschnitte angehängt wurden; die
+Datums-Spalte macht dort, wo das von der Chronologie abweicht (LF9 vor
+LF7/LF8), genau diese Abweichung sichtbar.
+
+Das Journal endet **nicht** an der §15-Überschrift: §15 ist selbst ein
+datierter Eintrag (das Rechteck-Re-Baseline), und eine Runde hängt ihren
+Abschnitt ans Dateiende — also hinter §15. Die vier `sep02`-Einträge
+(LF11, J4, J4b) stehen deshalb physisch nach §15 und sind trotzdem
+Journal-Einträge; das Register führt sie mit, und das Gate liest von
+`## 14.` bis Dateiende. Ob sie besser vor §15 stünden, ist eine Frage an
+den Autor — umsortiert wird hier nichts.
+
+**Nachzieh-Pflicht: jeder neue `###`-Abschnitt dieser Sektion ergänzt im
+selben PR seine Registerzeile**, und jeder Eintrag, der einen Arm einer
+Duell-Route misst, zusätzlich die Ledger-Zeile seiner Verfahrensseite
+([`verfahren.md`](verfahren.md)). Das Gate dazu ist
+`uv run python -m tools.docs_register check --base origin/main`, in der
+CI der Job „Docs-Register“.
+
+Titel und Anker werden **nicht** umgeschrieben — sie werden außerhalb
+dieser Datei rund 350-mal zitiert; ein Eintrag wird nie gelöscht oder
+umsortiert, sondern nur durch einen späteren datierten Nachtrag ergänzt.
+
+**Typ · Verdikt** benutzt ein kleines Vokabular: **Pre-Reg**
+(Vorregistrierung vor der ersten Zahl) · **gemessen** · **Autopsie**
+(Ursachensuche ohne eigenen Arm) · **Adoption** (der Mechanismus wird
+Default) · **Re-Baseline** (deklarierte Verschiebung der
+Vergleichsbasis); dahinter das Verdikt — **adoptiert** · **nicht
+adoptiert** · **verworfen** · **gegenstandslos** · **geschrieben** (in
+die DB) — mit seiner Bedingung.
+
+| Datum | Route | Arm (Link → Abschnitt) | Typ · Verdikt | Befund in einer Zeile |
+|---|---|---|---|---|
+| aug14 | Lineal | [Rahmen](#was-gemessen-wird--und-in-welchem-rahmen) | Pre-Reg | Bench-Frame definiert (Registrierung je Bahn, xh aus word.json) |
+| aug14 | Lineal | [Maße](#die-maße-definitionen-verbatim-keine-referenziert-publizierte-zahlen) | Pre-Reg | dtw_xh · aiou · Chamfer beidseitig · Marken/Kreuzungs-/Retrace-Zähler definiert |
+| aug14 | Lineal | [Split](#split-append-never) | Pre-Reg | TRACEBENCH_DEV_IDS = 10 Wörter, append-never |
+| aug14 | Lineal | [Kriterien](#kriterien-relativ-gepaart-je-wort-gegen-die-chain-baseline) | Pre-Reg | Primär dtw ≥ 20 % Fall; Co-Primär Marken/Kreuzungen; Struktur vetot Distanz |
+| aug14 | Lineal | [Kill-Kriterien](#kill-kriterien) | Pre-Reg | Struktur schlägt Distanz; Bestätigungssatz; Identitäts-Gate |
+| aug14 | Lineal | [Freeze-Deklaration](#freeze-deklaration) | Pre-Reg | Metrik-Module + Fixture-Roots frieren mit erster Baseline |
+| aug14 | Lineal | [Grenze](#was-der-bench-nicht-beantwortet) | Pre-Reg | Duktus-Wahrheit sieht kein Bahnmaß; humanbench bleibt Endkriterium |
+| aug14 | Kette | [Baseline (Freeze-Akt)](#baseline-aug14--der-kettenfit-gegen-die-hand-freeze-akt) | gemessen | Kette dtw 0,062 med, p90 0,262, 19 erfundene Kreuzungen (v1-Zähler); Schritt 0,02 gepinnt |
+| aug14 | Kette | [Folger-Arme ①–⑧](#vorregistrierung-der-folger-arme-aug14-vor-dem-ersten-sweep) | Pre-Reg | Arm-Reihenfolge + Kill-Kriterien; ②③④⑦⑧ nie gemessen — die Schließung steht nur auf der Kette-Seite (`tintenfolger.md` §7.11) |
+| aug14 | Kette | [Arm ① λ_prox](#arm-①-aug14--die-λ_prox-leiter-formulierung-v1-verworfen-der-tinten-zug-validiert) | gemessen · verworfen | Struktur-Veto auf jeder Sprosse (26→43–66); Tinten-Zug +0,10 aiou validiert |
+| aug14 | Kette | [Arme ⑤+⑥](#arme-⑤--⑥-aug14--overlap-freigesprochen-die-korrespondenz-kappe-gefunden) | gemessen · verworfen | Overlap freigesprochen; Korrespondenz-Kappe (12/21 Ziele ohne Kreuzung) |
+| aug14 | Kette | [Arm ⑥b](#arm-⑥b-aug14--vorregistrierung-klassenbewusste-korrespondenz) | Pre-Reg | Klassenbewusste Korrespondenz (Touch/T-Junction Gewicht 0) |
+| aug15 | Kette | [Arm ⑥b](#arm-⑥b-aug15--die-kappe-war-die-schranke-klassenbewusst-ist-der-term-punktweise-kostenlos-adoptiert-wird-trotzdem-nichts) | gemessen · nicht adoptiert | Hypothese bestätigt (punktweise kostenlos), Struktur-Veto vs. Baseline bleibt |
+| aug16 | Lineal | [Struktur-Zähler v2 / v2.1](#struktur-zähler-v2-aug16--vorregistrierung--re-baseline-deklaration) | Re-Baseline (Lineal) | Durchstoß-/Retrace-Regeln; Kette m+s 26→18→11; Berührung/Überlagerung als Klassen |
+| aug15 | InkSight | [Route B T0](#route-b-t0-aug15--inksight-small-p-roh-auf-den-dev-wörtern) | gemessen | derender 0,0956 = 1,5× Kette; text schlechter; Retraces verloren, Kreuzungen sauber |
+| aug16 | Kette | [Arm ⑨ Topologie-Wächter](#arm-⑨-aug16--vorregistrierung-der-topologie-wächter) | Pre-Reg + gemessen · verworfen | Kontrakt hält, dtw-Δ exakt 0 → Route-A-Fazit; Nachtrag datiert aug15 (vor Abschnitt) |
+| aug14 | Nullprobe | [Route G](#route-g-aug14--die-prior-freie-kontrolle-was-der-duktus-prior-kauft) | gemessen | 0,820 = 13× Kette; 15/23 Kreuzungen, alle Retraces verloren; aiou 0,833 (Skelett-Mitte) |
+| aug15 | Komposition | [Welle 1 · K1 Balken-Überstand](#welle-1--k1-aug15--vorregistrierung-t-balken-schnitt-mit-überstand) | Pre-Reg + gemessen · adoptiert | Erwartung widerlegt, Attribution-Argument; wordbench 0,110703→0,110992 |
+| aug15 | InkSight | [Welle 1 · B1 Best-of-N](#welle-1--b1-aug15--vorregistrierung-best-of-n-über-input-augmentierungen-inksight) | Pre-Reg + gemessen · verworfen | Δ +0,0000; Orakel −0,0124 bewiesen, Ranker ordnungs-blind → „Chor“ |
+| aug15 | Kette | [Welle 1 · A1 Marken-Nachfit](#welle-1--a1-aug15--vorregistrierung-der-marken-nachfit) | Pre-Reg + gemessen · adoptiert (opt-in) | Marken-Ortsfehler −55 %; Nachtrag aug19: −73 % auf dev-19 |
+| aug15 | Komposition | [Welle 1 · K1b Stamm-Rückpass](#welle-1--k1b-aug15--vorregistrierung-der-versetzte-stamm-rückpass-des-t) | Pre-Reg + gemessen · adoptiert | soll_cross unter 2→3, mit 1→2 = Hand; wordbench 0,110983 |
+| aug15 | Komposition | [Welle 2 · P1/P1b Vorschub](#welle-2--p1-aug15--vorregistrierung-die-vorschub-kalibrierung-aus-den-gemessenen-joins) | Pre-Reg + gemessen · 3 adoptiert, 1 verworfen | Bowl-Tuck · w/v-Rückwärts · Balken-Steigung; Arkaden-Luft verworfen; words 0,108446, pairs 0,146602 |
+| aug15 | Komposition | [Welle 2 · P2 align-Klasse](#welle-2--p2-aug15--vorregistrierung-die-align-klasse-und-der-arkaden-varianz-befund) | Pre-Reg + gemessen · Floor adoptiert, Trim neutral | words 0,108091; Arkaden-Luft = Beleg-Varianz (geschlossen) |
+| aug16 | Komposition | [Welle 2 · P3 Koartikulation K1/K3/K2](#welle-2--p3-aug16--vorregistrierung-kopf-koartikulation-als-entry-klassenregeln) | Pre-Reg + gemessen · 3× verworfen | Alle drei Entry-Regeln negativ; Verbinderform-Hypothese + O2-Jitter stehend |
+| aug16/aug19 | Kette | [Wächter als Produktions-Kette (einseitig · zweiseitig · soll-bewusst)](#wächter-als-produktions-kette-aug16--vorregistrierung-die-gewachte-bahn-wird-die-gespeicherte) | Pre-Reg + gemessen · nicht adoptiert | BLAS-Reproduzierbarkeits-Fund; 107=107 Struktur friert; Owner-Abwägung → zonale Rückweisung |
+| aug16 | Lotse | [Route Lotse v0.1 · v0.2 (A5) · v0.3 · v0.4 · Schienen-Auslauf](#route-lotse-aug16--vorregistrierung-skelett-fahren-duktus-als-karte) | Pre-Reg + gemessen | v0.1 verworfen (unter −0,386); v0.2/v0.3/v0.4 verworfen; Auslauf 1,0 adoptiert (0,1192→0,1007) |
+| aug16 | Lotse | [v0.5 Ritt-Doppelzonen](#route-lotse-v05-aug16--vorregistrierung-karten-geometrie-in-ritt-doppelzonen) | Pre-Reg + gemessen · adoptiert | 0,1007→0,0853; Fusions-Orakel 0,0563; Auswähler-Diagnostik ohne Ergebnis |
+| aug16 | Lotse | [v0.6 Feinschliff](#route-lotse-v06-aug16--vorregistrierung-der-feinschliff) | Pre-Reg + gemessen · verworfen | Lineal blind für Zickzack; Glättung ist Darstellungsstufe beim Konsumenten |
+| aug16 | Komposition | [O2-Trim-Jitter](#o2-trim-jitter-aug16--vorregistrierung-der-bugfix-der-auch-verlieren-darf) | Pre-Reg + gemessen · Toleranz bleibt 0 | Bug = zufällige Klassenregel (n hoch, r tief); Klassenregel als Pre-Reg stehend |
+| aug17 | alle Routen | [Re-Baseline 19er-Dev-Satz](#re-baseline-aug17--der-19er-dev-satz-dev-erweiterung-aktiviert-alle-stehenden-routen-neu-vermessen) | Re-Baseline | Kette 0,0579 · Lotse 0,0850 · Nullprobe 0,619 · InkSight 0,0951 (5 failed) · Orakel 0,0491 |
+| aug17 | Lotse | [v0.7 Zonen-Ausweitung](#route-lotse-v07-aug17--vorregistrierung-die-zonen-ausweitung-der-kartenfahrt-l1) | Pre-Reg + gemessen · adoptiert 0,35 | Defekte 35→32; nur Punkt-Pinch-Klasse |
+| aug17 | Lotse | [v0.8 Karten-Selbstschnitt roh](#route-lotse-v08-aug17--vorregistrierung-karten-vorfahrt-an-karten-selbstschnitten-l1b) | Pre-Reg + gemessen · verworfen | Defekte 32→4, dtw unter Kette – aiou-Kill um 0,003 |
+| aug17 | Lotse | [v0.9 gepinnte Fenster](#route-lotse-v09-aug17--vorregistrierung-gepinnte-selbstschnitt-fenster-l1c) | Pre-Reg + gemessen · adoptiert 0,35 | dtw 0,0578, gepaart −24 %, Netto 7 – „stärkste Zahl der Kampagne“ |
+| aug19 | Lotse | [v0.10 Punkt-Knoten-Pinnung](#route-lotse-v010-aug19--vorregistrierung-knoten-anker-pinnung-der-karten-läufe-l1d) | Pre-Reg + gemessen · verworfen | Offset-Feld schert; aiou +0,027, Ortsfehler halbiert |
+| aug19 | Lotse | [v0.11 Plateau-Anker](#route-lotse-v011-aug19--vorregistrierung-plateau-anker-stückweise-starre-fenster-l1e) | Pre-Reg + gemessen · adoptiert „windows“ | missing 3→1, Ortsfehler −43 %; „all“ um ein Doppel-X verworfen |
+| aug19 | Lotse | [v0.12 Plateau-Sehne](#route-lotse-v012-aug19--vorregistrierung-die-plateau-sehne-doppel-x-begradigung-l1f) | Pre-Reg + gemessen · verworfen | Der Wackel WAR das X (missing 1→8) |
+| aug19 | Kette | [L2-Rest-Autopsie](#l2-rest-autopsie-aug19--die-kollaps-klasse-unter--muß3-ist-ordnungs-dominiert-der-deckbogen-sitzt-in-der-ketten-assembly-an-der-falschen-sequenz-position) | Autopsie | Kollaps-Klasse = Assembly-Ordnung (unter 0,450→0,085 per Permutation); Referenzen sauber |
+| aug19 | Kette | [K-A marken-endständige Assembly](#kette-k-a-aug19--vorregistrierung-die-marken-endständige-assembly-owner-go-weiter-optimieren) | Pre-Reg + gemessen · adoptiert v2 | unter −0,365, muß-Familie −0,11…−0,13; Geometrie byte-gleich |
+| aug19 | Kette | [K-B Zacken-Reparatur + Re-Baseline v2/v3](#kette-k-b-aug19--vorregistrierung-die-zacken-reparatur-im-trace) | Pre-Reg + gemessen · adoptiert v3 · Re-Baseline | Galoppieren 0,233→0,040; v3 dtw 0,0491 / p90 0,0894 |
+| aug19 | Lotse | [v0.13 Entdrillung / v0.14 „all“](#route-lotse-v013v014-aug19--vorregistrierung-die-entdrillung-dann-die-all-stufe-owner-go-weiter-mit-lotse-neben-ink) | Pre-Reg + gemessen | v0.13 0,5 adoptiert (Netto 7→6), 0,8 verworfen; v0.14 verworfen (G-Kopf-X) |
+| aug19 | Lotse/Laufform | [v0.15 soll-budgetierte Entdrillung + 3 Nachträge](#route-lotse-v015-aug19--vorregistrierung-die-soll-budgetierte-entdrillung-l1h) | Pre-Reg + gemessen · verworfen · Autopsie | Budget erbt Karten-Fehler; Nachträge: 43/62 Glyphen ohne Laufform, W/p auf Laufform-Schicht |
+| aug19 | Laufform | [LF1 Lücken-Schluss](#laufform-lf1-aug19--vorregistrierung-der-lücken-schluss-evidenz-boden-der-scan-fits) | Pre-Reg + gemessen · verworfen | wordbench −0,0024 (n=1) aber G verliert 2. Kreuzung |
+| aug19 | Laufform | [LF2 Topologie-Wächter](#laufform-lf2-aug19--vorregistrierung-der-topologie-wächter-h--p) | Pre-Reg + gemessen · verworfen | Galoppieren-Soll 6→8 erreicht, aber Marken-Gate (i-Punkt kippt) |
+| aug19 | Laufform | [LF3 Topologie-Reparatur (Buchstaben-Orakel)](#laufform-lf3-aug19--vorregistrierung-die-topologie-reparatur-lokale-chart-rückblendung) | Pre-Reg + gemessen · nicht adoptiert | Mechanismus richtig, Orakel zu schwach (Komp.-Soll bleibt 6) |
+| aug19 | Laufform | [LF3b Kompositions-Orakel](#laufform-lf3b-aug19--vorregistrierung-die-topologie-reparatur-am-kompositions-orakel) | Pre-Reg + gemessen · adoptiert (Kandidaten-Karte, trocken) | p t=0,578; Galoppieren-Soll 8; Lotse aiou 0,7484 |
+| aug19 | Lotse | [Wiedervorlage v0.14 auf LF3b-Karte](#wiedervorlage-v014-aug19--vorregistrierung-die-all-stufe-auf-der-lf3b-karte) | Pre-Reg + gemessen · verworfen | Karten-Form-These widerlegt (Netto 7 > 5) |
+| aug20 | Lotse | [G-Kopf-Ritt-Autopsie](#lotse-g-kopf-ritt-autopsie-aug20--der-riss-ist-die-parität-blinde-entdrillung-nicht-die-pinnung) | Autopsie | Riss = parität-blinde Entdrillung; v0.15-Soll doppelt gezählt; Fenster 0,8 tot |
+| aug20 | Lotse | [v0.16 selektive Pinn-Leiter + Lineal-Soll-Budget](#lotse-v016-l1i-aug20--vorregistrierung-selektive-pinn-leiter-mit-lineal-soll-budget-77-wiedervorlage) | Pre-Reg + gemessen · adoptiert „bridges“ | p90 0,1129→0,1122, kein Verlierer; zones/all an p-Oskulation |
+| aug20 | Lotse | [Karten-Soll-Autopsie](#lotse-karten-soll-autopsie-aug20--die-platzierungs-decke-ist-präziser-eine-soll-vollständigkeits-lücke) | Autopsie | 40/41 Hand-X gematcht; Reservierungs-Semantik; Blocker = Soll-Vollständigkeit |
+| aug20 | Lotse | [v0.17 Reservierungs-Veto](#lotse-v017-l1j-aug20--vorregistrierung-das-reservierungs-veto) | Pre-Reg + gemessen · adoptiert (Parität) | zähler-identisch, Spiegelungen 15→11 |
+| aug20 | Lotse | [t-Stamm-Ritt-Autopsie](#lotse-t-stamm-ritt-autopsie-aug20--die-vollständigkeits-lücke-ist-eine-auflösungs-grenze) | Autopsie | 0,12-Abtastung kollabiert 0,06-X-Doppel; Komposition führt 41/41 |
+| aug20 | Lotse | [v0.18 Auflösungs-Leiter](#lotse-v018-l1k-aug20--vorregistrierung-die-auflösungs-leiter) | Pre-Reg + gemessen · verworfen | Netto 3 (Bestwert), aber Ökonomie sample-denominiert (dtw +0,035) |
+| aug20 | Lotse | [v0.19 schritt-invariante Ökonomie + Glättungs-Proben](#lotse-v019-l1l-aug20--vorregistrierung-die-schritt-invariante-ökonomie--wiedervorlage-der-auflösungs-leiter) | Pre-Reg + gemessen · Refactor bleibt, Leiter verworfen | Familie geschlossen: Entscheidungs-Granularität des Viterbi; Betriebspunkt-Kandidat verworfen |
+| aug20 | Kette | [K0-Z zonale Rückweisung](#kette-k0-z-aug20--vorregistrierung-die-zonale-rückweisung) | Pre-Reg + gemessen · verworfen per Gate | Soll 107→102, dev 0,0494→0,0472; Risse daß 2→3, ein −0,0049 |
+| aug20 | Kette | [K0-Z-R Ratschen-Budget](#kette-k0-z-r-aug20--vorregistrierung-das-ratschen-budget) | Pre-Reg + gemessen · verworfen per Gate | Soll 107→99, null aiou-Verlierer; Fund: ZWEI Soll-Quellen |
+| aug20 | Kette | [K-C Tinten-Evidenz-Maske (Autopsie „Flecken“)](#kette-k-c-aug20--vorregistrierung-die-tinten-evidenz-maske-autor-fund-flecken) | Autopsie + Pre-Reg + gemessen · alle Gates grün | Soll 107→86, dev 0,0494→0,0453, Galoppieren −83 %; Adoption wartet Autor-Go |
+| aug21 | Kette | [Kette v4 Adoption K-C](#kette-v4-aug21--adoption-k-c-die-tinten-evidenz-maske-wird-default-datierte-re-baseline) | Adoption · Re-Baseline | Soll 103→85; Folger dev 0,0491→0,0448, aiou 0,7481; chain-Provider 0,0491/0,0891 |
+| aug21 | Kette | [K-E1 Marken-Claim-Trennung](#kette-k-e-aug21--vorregistrierung-tinten-zuweisung-per-strecke-stufe-1-die-marken-claim-trennung) | Pre-Reg + gemessen · verworfen (Gate 3) | die-2 heilt (Soll 4→1, dtw −0,028); 4 diffuse aiou-Risse |
+| aug21 | Kette | [K-E2 ohne Breitenfeld-Split](#kette-k-e2-aug21--vorregistrierung-die-marken-claim-trennung-ohne-breitenfeld-split-ein-faktor-konversion) | Pre-Reg + gemessen · verworfen | Breiten-Hypothese widerlegt (55/63 byte-gleich); Familie geschlossen |
+| aug21 | Kette | [K0-S Soll-Quellen-Autopsie + EINE Soll-Pipeline](#kette-k0-s-aug21--soll-quellen-autopsie-daß--vorregistrierung-eine-soll-pipeline-und-die-k0-z-r-wiedervorlage) | Autopsie + Pre-Reg + gemessen · alle Gates grün | daß-Riss = Init-Splitter; 40/63 Runs divergieren; Soll 85→77, dev-aiou +0,0216; wartet Autor-Go |
+| aug21 | Kette | [K-D Tinten-Korridor](#kette-k-d-aug21--vorregistrierung-der-tinten-korridor-mit-dem-gegenstands-test-zuerst) | Pre-Reg + Gegenstands-Test · gegenstandslos | Exkursions-Inventar max 0,33 xh; Sensor excursions.py bleibt |
+| aug25 | Lineal | [L-U u-Bogen als Marke](#lineal-l-u-aug25--vorregistrierung-der-u-bogen-als-marke-autor-entscheid-zur-bogen-klassifikation) | Pre-Reg (Lineal) | Kappe 0,8→1,5 aus Breitenmodell; 6 Gates, keines ein Routen-Ergebnis |
+| aug26 | Lineal | [L-U gemessen](#lineal-l-u-aug26--gemessen-alle-sechs-gates-bestanden-der-gewinn-liegt-auf-einer-route) | gemessen · adoptiert · Re-Baseline (Lineal) | Kette p90 0,2355→0,0896, unter 0,450→0,088; Lotse/Nullprobe leicht schlechter; InkSight NICHT nachgemessen |
+| aug26 | Kette | [Kette v5 Adoption K0-S Sprosse 2](#kette-v5-aug26--adoption-k0-s-sprosse-2-kompositions-soll--ratsche--zone-055-wird-default-datierte-re-baseline) | Adoption · Re-Baseline | dtw 0,0446 / p90 0,0861 / aiou 0,7608 / Soll 79; Umweg falsche Basis → Stack-Sensor; 13 Rückweisungen offen |
+| aug26 | Laufform | [LF3b-W Schreib-Karte](#laufform-lf3b-w-aug26--vorregistrierung-die-schreib-karte-neuableitung-unter-kette-v4-und-lineal-15) | Pre-Reg + gemessen · 14er verworfen, 13er geschrieben | Kette cross_missing 13→14 (eine Kreuzung); 13 Zeilen ohne p geschrieben (Snapshot 2026-08-26T11-13-38Z); p → LF4 |
+| aug29 | Laufform | [LF5 Endblende + K0](#laufform-lf5-aug29--vorregistrierung-die-endblende-chart-rückblendung-an-den-freien-strichenden-korb-7) | Pre-Reg + gemessen · verworfen; K0 geschrieben | wordbench +0,0114/+0,0220 (Breite ist Hand); K-Zeile in Prod gelöscht; Wurzel 2026-08-29: 0,106720/0,146506 |
+| aug29 | Laufform | [LF6 Quer-Endblende](#laufform-lf6-aug29--vorregistrierung-die-quer-endblende-nur-der-quer-anteil-der-end-drift-geht-zurück) | Pre-Reg + gemessen · verworfen | +0,0132/+0,0286; globale Endregel falscher Ort |
+| aug29 | Übergänge | [J1 Prior-Landerichtung](#übergänge-j1-aug29--vorregistrierung-die-prior-landerichtung-korb-7-t-nach-n) | Pre-Reg + gemessen · nicht adoptiert | (a) −0,0010 grün, (c) rot: ALIGN_MAX_ENTRY_Y sperrt t |
+| aug29 | Übergänge | [J2 Anstrich-Verlängerung](#übergänge-j2-aug29--vorregistrierung-die-anstrich-verlängerung-in-den-schaft) | Pre-Reg + gemessen · verworfen | +0,0041; Hand kommt auf Fußhöhe an (Dissektionen) |
+| aug29 | Übergänge | [J3 tiefe Schaft-Kopplung](#übergänge-j3-aug29--vorregistrierung-die-tiefe-schaft-kopplung-korb-7-t-nach-n-zweiter-arm) | Pre-Reg + gemessen · nicht adoptiert | (d) rot dconn 7/7; Haken ist die Zeile (t-Kopf 104° vs 37°) |
+| aug29 | Laufform | [LF9 Kopf-Gate](#laufform-lf9-aug29--vorregistrierung-das-kopf-gate-auf-der-zeile-korb-7-der-t-haken) | Pre-Reg + gemessen · adoptiert (τ 15°, gerendert) | Anker-Sensor stirbt an Kill; t/E/f/v/k in Prod gelöscht (Autor); Neuexport = erklärte Re-Baseline (Vorschau 0,107995) |
+| aug29 | Laufform | [LF7 Zeilen-Gate (Natürlichkeits-Lücke)](#laufform-lf7-aug29--vorregistrierung-das-zeilen-gate-aufnahme-einer-laufform-zeile) | Pre-Reg + gemessen · verworfen | τ 0,31 verfehlt K (+0,237); Sprung-Ratio trennt |
+| aug29 | Laufform | [LF8 Sprung-Gate](#laufform-lf8-aug29--vorregistrierung-das-sprung-gate-auf-der-zeile) | Pre-Reg + gemessen · adoptiert τ 2,95 | ue/F/ae/b in Prod gelöscht; v/E/P/k bleiben (Form-Abstand-Arm offen) |
+| aug30 | Übergänge | [Korb-Runde B-Kringel (#8) + St-Ligatur (#9)](#übergänge-korb-runde-aug30--b-verlässt-die-restart-klasse-korb-8--st-ligatur-korb-9) | gemessen · adoptiert (join_rule); St → Autor | Wörter 0,106400 „unverändert“ (Wurzel undeklariert), Paare 0,146580→0,148467 |
+| sep01 | Laufform | [LF10 Form-Abstand auf der Zeile](#laufform-lf10-sep01--vorregistrierung-der-form-abstand-auf-der-zeile) | Pre-Reg | Form-Drift ohne Sprung in Nib-Radien messen; Kill-Klausel: P muss über τ_form liegen |
+| sep01 | Laufform | [LF10 gemessen](#laufform-lf10-sep01--gemessen-die-vorhersage-i-ist-falsch-der-form-abstand-wird-nicht-adoptiert) | gemessen · nicht adoptiert | Vorhersage (i) falsch: τ_form 1,40 (w), P nur 1,01 — Rang 5 von 22; sechs Empfindlichkeitsprüfungen kehren nichts um |
+| sep02 | Laufform | [LF11 glatte Zeile (Spline-Basis-Median)](#laufform-lf11-sep02--vorregistrierung-die-glatte-zeile-spline-basis-median-statt-per-anker-median) | Pre-Reg | Zeile als Median in glatter B-Spline-Basis statt je Anker; Leiter über die Knotenweite Δs |
+| sep02 | Laufform | [LF11 gemessen](#laufform-lf11-sep02--gemessen-eine-sprosse-besteht-alle-gates-und-sie-repariert-die-zeilen-gates-gleich-mit) | Pre-Reg + gemessen · Sprosse Δs 0,16 besteht alle Gates; Adoption offen | Zacken/xh 6,86→0,45, Wörter 0,109218 · Paare 0,148198, keine Kreuzung verloren; Karte trocken, wartet auf die humanbench-Wort-Runde |
+| sep02 | Übergänge | [J4 Austritts-Kollinearität (`exit_trim`)](#übergänge-j4-sep02--vorregistrierung-die-austritts-kollinearität-exit_trim) | Pre-Reg + gemessen · verworfen | 4 von 5 Gates grün (Wörter −0,000535, seam_dep +12,52→−1,39), (b) rot: `dconn` fällt nur in 20 % statt 60 % |
+| sep02 | Übergänge | [J4b enge Klasse](#übergänge-j4b-sep02--post-hoc-die-enge-klasse-nur-die-joins-die-wirklich-knicken) | POST-HOC · verworfen | Schnitt bei 20° Knick rettet den Arm nicht: `dconn` 43 %, seam_dep der Klasse nur +8,02 — Rettungswege in §7.9 |
+
+### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
+
+Die Wordbench-Headline (`word_loss` über 63 Wortproben · `pair_loss`
+über 33 Paar-Drills) wandert seit `aug14` nur noch im Fließtext dieser
+Sektion; §6 endet bei der `aug14`-Zeile, die dort angekündigte
+Nachführung blieb aus. Hier steht die Kette am Stück — die Belege
+bleiben in den verlinkten Abschnitten, diese Tabelle zitiert sie nur.
+
+**Kopfregel seit `sep02`:** jeder Eintrag, der eine Headline bewegt,
+nennt das `exported_at` seiner Fixture-Wurzel und die ersten zwölf
+Stellen ihres `root_digest`. Die Wurzeln sind gitignored — ohne diese
+zwei Angaben hinterlässt ein Neu-Export keine Spur, und genau daran ist
+die `aug30`-Zeile unten gescheitert. Beides druckt jeder Lauf von
+`tools.wordbench.run` und `fetch_fixtures --verify` vor der ersten
+Komposition; `--expect-root <präfix>` macht die erwartete Basis zur
+Vorbedingung (Glossar „Wurzel-Digest“, `tools/wordbench/README.md`).
+
+| Datum | PR | Wurzel / Re-Baseline | Wörter | Paare | Beleg |
+|---|---|---|---|---|---|
+| aug14 | #337 | Voll-Re-Export nach #334/#336 — deklarierte Doppel-Re-Baseline (wordbench + tracebench) | 0,110703 | 0,165688 | §6, Absatz „Headline gegen den dokumentierten `aug07`-Stand“ |
+| aug15 | #358 | dieselbe Wurzel | 0,110992 | 0,165688 | §14 „Welle 1 · K1“ |
+| aug15 | #359 | dieselbe Wurzel | 0,110983 | 0,165725 | §14 „Welle 1 · K1b“ |
+| aug15 | #361 | dieselbe Wurzel | 0,108991 | 0,146602 | §14 „Welle 2 · P1“ |
+| aug15 | #361 | dieselbe Wurzel | 0,108446 | 0,146602 | §14 „Welle 2 · P1“ (P1b) |
+| aug15 | #363 | dieselbe Wurzel — Stand bis `aug26` | 0,108091 | 0,146602 | §14 „Welle 2 · P2“ |
+| aug29 | #443 | Neu-Export nach dem LF3b-W-Write (Wurzel 2026-08-29, `--set all --verify`), Vergleich läuft wurzel-intern | 0,106720 | 0,146506 | §14 „Laufform LF5“, Absatz „Basis“ |
+| aug30 | #463 | **undeklariert** — kein Eintrag nennt den Wechsel von der `aug29`-Wurzel | 0,106400 | 0,146580 | §14 „Übergänge Korb-Runde“; Nachtrag unten |
+| aug30 | #463 | dieselbe undeklarierte Wurzel, nach B-Kringel + Nachschärfung | 0,106400 | 0,148467 | §14 „Übergänge Korb-Runde“ |
+| sep01 | #472 | **Re-Baseline**: sieben reparierte Wort-Rechtecke, Bahnen nachgezogen, Wurzeln neu gebaut | 0,109255 | 0,148433 | §15 |
+| sep02 | dieser PR | Wurzeln neu gebaut (`fetch_fixtures --set all --verify`), `exported_at` 2026-09-02T08:00:29+00:00, `root_digest` `28ba1afebc53…` (`suetterlin-1922`) / `f0cf3d53414c…` (`suetterlin-1922-pairs`) — **keine** Re-Baseline: §15 wird exakt reproduziert | 0,109255 | 0,148433 | dieser Ledger-Eintrag |
+
+**Nachtrag `sep02` — die `aug30`-Wurzel ist eine undeklarierte
+Re-Baseline.** Zwischen der `aug29`-Wurzel (0,106720 / 0,146506, im
+LF5-Eintrag datiert deklariert) und dem `aug30`-Messstand (0,106400 /
+0,146580) liegt ein Wurzelwechsel, den kein Abschnitt nennt — obwohl
+LF8/LF9 den fälligen Neu-Export nach den Prod-Löschungen ausdrücklich
+als „erklärte Re-Baseline“ ankündigen (Vorschau 0,107995) und §2 wie
+`tintenfolger.md` §6 einen datierten Eintrag verlangen. Rekonstruieren
+lässt er sich nicht: die Wurzeln sind gitignored, und bis `sep02` trug
+keine Kennzahl die Identität ihrer Basis. **Bis zur Antwort des Autors
+gilt: undeklarierte Re-Baseline — Zahlen ab `aug30` sind nur
+untereinander vergleichbar**, nicht gegen `aug29` und früher. Der
+`aug30`-Eintrag selbst bleibt unverändert stehen (append-only); was sich
+ändert, ist ihre Lesart. Verhindert wird die Wiederholung durch die
+Kopfregel oben.
+
+**Nachtrag `sep02` — die lokal liegende Wurzel war nicht die der
+Headline.** Die Fixture-Wurzeln, die bis heute in dieser Arbeitskopie
+lagen, tragen `exported_at` 2026-08-14, also den Stand VOR den
+Rechteck-Reparaturen (#471) und dem Re-Baseline (#472); auf ihnen misst
+der Bench 0,108091 / 0,148489 — die `aug15`-Wortzahl und eine
+Paar-Zahl, die in keinem Eintrag steht. Wer die §15-Headline
+reproduzieren will, baut die Wurzeln zuerst neu; die `sep02`-Zeile oben
+ist genau dieser Lauf. Auch das ist ein Argument für die Kopfregel: eine
+Zahl ohne `exported_at` sagt nicht, welche Platte sie gemessen hat.
 
 ### Was gemessen wird — und in welchem Rahmen
 

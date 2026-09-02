@@ -1,6 +1,10 @@
 # Bildbasierte Synthese und der Weg zurück zur Stiftbahn
 
-> **Status (2026-08-14): Tintenfolger-Weg in Umsetzung.** Der §6-Nachtrag
+> **Status (2026-09-01): Befund-Journal.** Momentaufnahme der Recherche;
+> fortgeschrieben wird sie nicht, abgelöst hat sie die Kampagne in
+> [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) (Zahlen:
+> [`../reference/qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md)
+> §14). Der §6-Nachtrag
 > ist als Plan konkretisiert und wird gebaut — Referenzsatz, Prüfstand und
 > die zwei Routen stehen in
 > [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md); der

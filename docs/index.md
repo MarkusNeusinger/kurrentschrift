@@ -95,16 +95,16 @@ docs/
 │   ├── htr-integration.md        # Transkribus-API + TrOCR-Fallback, PAGE-XML, Free-Tier
 │   ├── animation-rendering.md    # stroke-dashoffset (MVP), Canvas-2D-Stroker (post-MVP), WAAPI
 │   ├── styleanalyse.md           # Per-Hand-Aggregation, Hinge-Features, Heatmap-Layouts
-│   ├── qualitaetsmetrik.md       # Zwei Metriken (Kurrent-Schwellzug §1–4 · Sütterlin-Natürlichkeit §5), bench/Referenzen, Baseline-Historie, Loop-Erkenntnisse + Verworfen
+│   ├── qualitaetsmetrik.md       # Zwei Metriken (Kurrent-Schwellzug §1–4 · Sütterlin-Natürlichkeit §5), bench/Referenzen, Baseline-Historie, Loop-Erkenntnisse + Verworfen; §14 Tintenfolger-Journal mit Eintrags-Register + Headline-Ledger im Kopf
 │   ├── menschliche-bewertung.md  # Blinder Urteilsdurchgang über die Fits (tools/humanbench): Fehler-Taxonomie, Instrumentregeln, Vorregistrierung, Aufbewahrung
 │   ├── quiz-wortbank.md          # Lese-Quiz-Wortbank: Quellen (Kaeding, Genealogie-Felder), Pin+Runtime-Distraktoren, Fugen-Marker
 │   ├── write-api.md              # Öffentliche Render-Endpunkte /write/glyphs + /write/word: Shaping → Komposition → Payload
-│   ├── werkzeuge.md              # Dev-Tools unter tools/: Inspektions-Labs + pairlab-Einstiegsskripte, Ernte-Werkzeuge, humanbench/fitview, dbsnapshot, Benches, quizgen
+│   ├── werkzeuge.md              # Dev-Tools unter tools/: Inspektions-Labs + pairlab-Einstiegsskripte, Ernte-Werkzeuge, humanbench/fitview, dbsnapshot, Benches, Duell-Kandidaten (inkpilot · routeg · inksight), quizgen, docs_register
 │   ├── verfahren.md              # Verfahrensseiten-Übersicht: Versions-Konvention der Duell-Routen, Register-Regel (Zahlen wohnen in §14)
-│   ├── verfahren-kette.md        # Kette: Steckbrief, Stand v4 (Tinten-Evidenz), Arm-Ledger ①–⑨/A1/K-A…K-C/K0-Z, v5-Anwärter
-│   ├── verfahren-lotse.md        # Lotse: Steckbrief, Stand v0.11, Versions-Ledger v0.1–v0.12 + Schienen-Auslauf, offene Blöcke
-│   ├── verfahren-inksight.md     # InkSight: Steckbrief, Stand T0, Ledger (T0 · B1), stehende Maßnahmen B2–B5
-│   ├── verfahren-nullprobe.md    # Nullprobe: Steckbrief, Kontroll-Doktrin (bewusst unversioniert), Mess-Ledger
+│   ├── verfahren-kette.md        # Kette: Steckbrief, Stand v5 (K0-S-Wächter-Stack), Arm-Ledger ①–⑨/A1/K-A…K-E2/K0-Z/K0-S/K-D, v6-Anwärter
+│   ├── verfahren-lotse.md        # Lotse: Steckbrief, Stand v0.17 (Reservierungs-Veto), Versions-Ledger v0.1–v0.19 + Schienen-Auslauf, offene Blöcke
+│   ├── verfahren-inksight.md     # InkSight: Steckbrief, Stand T0 (auf Lineal-Kappe 1,5 unvermessen), Ledger (T0 · B1), stehende Maßnahmen B2–B5
+│   ├── verfahren-nullprobe.md    # Nullprobe: Steckbrief, Kontroll-Doktrin (bewusst unversioniert), Mess-Ledger bis L-U aug26
 │   ├── crawler-richtlinie.md     # Wer die Seite lesen darf: offen für Suche, KI-Abruf und KI-Training (der Vorbehalt liegt am API-Gate), robots.txt/llms.txt, Cloudflare
 │   └── frontend-stack.md         # React+Vite+MUI Build, Deploy auf Cloud Run, i18n, Auth-Routen
 ├── schriftkunde/                 # Quellengesicherte Fakten zu den Schriften (wächst inkrementell)
@@ -125,7 +125,8 @@ docs/
 │   ├── schreibsystem-redesign.md # Entscheid 2026-07-17: eine Form pro Glyphe (Positions-Rückbau), Paar-Matrix, geerntete Paar-Overrides, Schräglagen-Befund (R1–R5)
 │   ├── handmodell-stufenplan.md  # Vorschlag 2026-07-31: Statistik-Schicht füllen (H0–H5) — Instances/Aggregates, Paar-Statistik, Konstanten→Hand-Parameter, eigene Hand
 │   ├── optimierungs-werkbank.md  # Entscheid 2026-07-31: EINE Werkbank-Seite + Stufen-/Rollen-Doktrin + work_items-Auftragskorb (W1–W5)
-│   └── tintenfolger.md           # Plan 2026-08-14: Prüfstand (tracebench), nachgefahrener Referenzsatz + Split, Routen-Duell (Kette · Lotse · InkSight · Nullprobe), Optimierungsplan §7
+│   ├── tintenfolger.md           # Plan 2026-08-14: Prüfstand (tracebench), nachgefahrener Referenzsatz + Split, Routen-Duell (Kette · Lotse · InkSight · Nullprobe), Optimierungsplan §7, Rettungswege §7.9, offene Arme §7.11
+│   └── eigenhand-erfassung.md    # Vorschlag 2026-08-22 (H5-Erfassungsweg): Wortvorrat → Streifenplan → Bögen → Siebung → Streifenkartei/Bestand, DB-Buchführung + Streifen in der DB (§7.1/§7.2)
 ├── research/                     # Externe Recherche/Literatur — liefert Ideen, folgt dem Code nie
 │   ├── bildsynthese-und-stiftbahn.md     # Recherche 2026-08: Offline-HTG auf Kurrent fein-tunen → Trajektorien-Rückgewinnung → Plotter; Datenlage/Lizenzen, Prüfsteine T0–T4
 │   ├── graves-handschrift-synthese.md    # Literatur-Report: Graves-2013-Mechanik, Priming/Biasing, Plotter-Pipeline, GAN/Transformer/ScribeTokens, 54 Quellen
@@ -174,13 +175,13 @@ Regeln stehen, die noch nicht implementiert sind.
 | [`concepts/design-system.md`](concepts/design-system.md) | Änderungen an `app/src/styles/paper.ts`, `theme/typography.ts`, `components/PageContainer · Prose · PageHeader · HeaderBar · PublicHeader · PublicFooter`, an der Werkbank-Kopfleiste (`sections/admin/shell/AdminHeader`) oder an der öffentlichen Routen-/Bereichsstruktur (`routes/paths.ts`) |
 | [`reference/glossar.md`](reference/glossar.md) | jedem Doc und jedem PR, der einen neuen Fachbegriff, eine neue Kennzahl oder eine neue Redewendung prägt — der Eintrag entsteht im selben PR (Regel auch in `CLAUDE.md` § „Working guardrails“, `.github/copilot-instructions.md` und den Skills `/write-docs` + `/open-pr`) |
 | [`reference/write-api.md`](reference/write-api.md) | jeder Änderung an einer `/write/*`-Route (`api/routers/write.py` inkl. `compose_word_payload`), an `core/shaping.py`, `core/compose.py`, `core/pipeline.py::render_payload_for_template`, `api/rendering.py` oder den Cache-Headern in `api/http.py` |
-| [`reference/qualitaetsmetrik.md`](reference/qualitaetsmetrik.md) | jeder Änderung an `core/quality.py`, `core/quality_suetterlin.py`, `core/geometry.py`, `core/word_metric.py`, jedem Re-Baseline der eingefrorenen Fixtures und jedem Bench-/Loop-Lauf, der eine Headline bewegt (neuer datierter Abschnitt) |
+| [`reference/qualitaetsmetrik.md`](reference/qualitaetsmetrik.md) | jeder Änderung an `core/quality.py`, `core/quality_suetterlin.py`, `core/geometry.py`, `core/word_metric.py`, jedem Re-Baseline der eingefrorenen Fixtures und jedem Bench-/Loop-Lauf, der eine Headline bewegt (neuer datierter Abschnitt). **Im selben PR:** der neue §14-Abschnitt bekommt seine Zeile in der Registertabelle am Kopf von §14, eine bewegte Headline ihre Zeile im Headline-Ledger daneben (mit `exported_at` und Digest der Fixture-Wurzel) — erzwungen von `uv run python -m tools.docs_register check` (CI-Job „Docs-Register“) |
 | [`reference/menschliche-bewertung.md`](reference/menschliche-bewertung.md) | jeder Änderung am Instrument `tools/humanbench` (Kategorien in `page.py::CATEGORIES`, Stichproben- und Wiederholungsregeln in `build.py`, Darstellung, neue Modi, CLI) und jeder Runde, deren Aufbau vom beschriebenen Verfahren abweicht — die Befunde selbst gehören nach `reference/qualitaetsmetrik.md` |
 | [`reference/frontend-stack.md`](reference/frontend-stack.md) | Stack-Versionen (`app/package.json`), Routenkarte (`app/src/routes/paths.ts`), Build/Deploy (`app/cloudbuild.yaml`, `api/cloudbuild.yaml`, `app/Dockerfile`, `app/nginx.conf`, Cloud-Run-Parameter) oder Admin-Gate (`api/auth.py`, `core/config.py`, Cloudflare Access) |
 | [`reference/werkzeuge.md`](reference/werkzeuge.md) | jedem neuen, umbenannten oder entfernten Verzeichnis/Einstiegsskript unter `tools/` und jeder geänderten CLI (Flags, Modulpfade, `viz`-Extra, `--live`) |
 | [`reference/quiz-wortbank.md`](reference/quiz-wortbank.md) | Änderungen an `tools/quizgen/corpus.py`/`similarity.py`/`build.py` (inkl. Neuberechnung von `quiz_words.json` → Wortzahl und Era-Verteilung im Kopf nachziehen), am TS-Zwilling `app/src/sections/quiz/wordBank.ts`/`useQuizEngine.ts` und bei jeder Re-Seed-Migration nach dem Muster `0011_quiz_words_reseed.py` |
 | [`reference/crawler-richtlinie.md`](reference/crawler-richtlinie.md) | jeder Änderung an `app/public/robots.txt` oder `app/public/llms.txt` (Gruppen, Content-Signals, Reihenfolge, `Disallow`-Pfade) und an den AI-Crawl-Control-/Bot-Regeln der Cloudflare-Zone |
-| [`reference/verfahren.md`](reference/verfahren.md) samt den vier Verfahrensseiten (`verfahren-kette.md` · `verfahren-lotse.md` · `verfahren-inksight.md` · `verfahren-nullprobe.md`) | jedem §14-Eintrag, der einen Arm oder eine Stufe eines Duell-Verfahrens misst (adoptiert oder verworfen) — Ledger-Zeile im selben PR; bei Adoption zusätzlich „Aktueller Stand“ der betroffenen Seite und die Stand-Spalte der Übersicht |
+| [`reference/verfahren.md`](reference/verfahren.md) samt den vier Verfahrensseiten (`verfahren-kette.md` · `verfahren-lotse.md` · `verfahren-inksight.md` · `verfahren-nullprobe.md`) | jedem §14-Eintrag, der einen Arm oder eine Stufe eines Duell-Verfahrens misst (adoptiert oder verworfen) — Ledger-Zeile im selben PR; bei Adoption zusätzlich „Aktueller Stand“ der betroffenen Seite und die Stand-/„seit“-Spalte der Übersicht. Erzwungen von `tools.docs_register check` (CI-Job „Docs-Register“) |
 
 Drei weitere Dokumente sind **abschnittsweise** pflichtig, obwohl sie als
 Ganzes nicht lebend sind:
@@ -411,7 +412,9 @@ auseinanderfallen.
   beziffert, was der Duktus-Prior kauft — Referenz-Code ist MATLAB,
   darum eigene Minimalfassung); Anzeige-Namen aller Verfahren im
   Glossar-Eintrag „Duell-Namen" —
-  *Status: Duell komplett gemessen, Optimierungsplan §7 in Arbeit*
+  *Status: teil-umgesetzt (Duell komplett gemessen; adoptiert sind Kette
+  v5, Lotse v0.17 und die Lineal-Stände v2.1/L-U; Optimierungsplan §7 in
+  Arbeit, offene Arme in §7.11)*
 - **[Planänderungen](proposals/planaenderungen.md)** — vier Vorschläge:
   §2/§4 systematische Bigramm-Extraktion aus Beispieltext; §3/§6.1
   Positions-Verteilung datengetrieben; M4+-Modul `core/orthography.py`
@@ -469,8 +472,9 @@ Idee mit Bauoption, `Befund-Journal` = Literatur-Momentaufnahme).
   Lücke), die Offline→Online-Rückgewinnung (InkSight, TRACE, Kettenfit
   als prior-geführte Route; `word_instances` als einzige
   Online-Kurrent-Ground-Truth) und die kleinen Prüfsteine T0–T4 bis zur
-  geplotteten Postkarte — *Status: offen (Recherche mit Bauoption,
-  nichts gebaut)*
+  geplotteten Postkarte — *Status: Befund-Journal (Literatur-Momentaufnahme
+  vom 2026-08-13 samt Nachtrag 2026-08-14; fortgeschrieben wird sie nicht —
+  abgelöst hat sie die Kampagne in `proposals/tintenfolger.md`)*
 - **[Kurrent: Writer → Recognizer](research/kurrent-writer-and-recognizer.md)** —
   Recherche-Notiz (Englisch): warum Graves 2013 (RNN-Handschrift-Synthese)
   der Anker für den generativen Writer ist, und wie derselbe Writer als

@@ -1,10 +1,11 @@
 # Verfahrensseite Nullprobe
 
-> **Status (2026-08-18): lebend.** Register-Seite des Verfahrens
+> **Status (2026-09-01): lebend.** Register-Seite des Verfahrens
 > „Nullprobe“ (Konvention: [`verfahren.md`](verfahren.md)).
 > Nachzieh-Pflicht: Jede §14-Messung, in der die Nullprobe mitläuft
 > (Re-Baselines), ergänzt hier ihre Ledger-Zeile — Optimierungs-Arme
-> gibt es für dieses Verfahren per Doktrin nicht.
+> gibt es für dieses Verfahren per Doktrin nicht. Das Gate dazu ist
+> `tools.docs_register check` (CI-Job „Docs-Register“).
 
 ## Steckbrief
 
@@ -35,6 +36,7 @@ damit niemand die Lücke im Register für ein Versäumnis hält.
 |---|---|---|---|
 | aug14 | Kontrolllauf (10er-Dev) | dtw 0,8198 med = 13× Kette; aiou 0,833 (beste Tinten-Deckung — Skelett-Mitte); der Prior-Wert erstmals beziffert | „Route G aug14“ |
 | aug17 | Re-Baseline (19er-Dev) | dtw 0,619 med, alle 19 Wörter schlechter als die Kette (Sign 19:0), rel. Median +1092 %; Galoppieren ohne Prior 1,906 | „Re-Baseline aug17“ |
+| aug26 | L-U Lineal-Re-Baseline (Marken-Kappe 0,8 → 1,5) | auf den 10 der 19 dev-Wörter, die die gespeicherte Nullprobe abdeckt: dtw **0,8198 → 0,8198**, p90 **1,0267 → 1,0267**, 3 Zeilen bewegt (bis +0,374 bei `und`) — die Kontrolle hat keine Strichordnung, die an einer Marken-Regel kippen könnte. Die neun nicht abgedeckten dev-Wörter bleiben unvermessen | „Lineal L-U `aug26`“ |
 
 Nebenrolle: ihr Skelettgraph (`tools/routeg/graph.py`) ist der
 Wasserweg des Lotsen — Bausteine wandern, die Kontroll-Rolle nicht.

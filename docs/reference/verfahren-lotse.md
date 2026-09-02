@@ -1,9 +1,10 @@
 # Verfahrensseite Lotse
 
-> **Status (2026-08-18): lebend.** Register-Seite des Verfahrens „Lotse“
+> **Status (2026-09-01): lebend.** Register-Seite des Verfahrens „Lotse“
 > (Konvention: [`verfahren.md`](verfahren.md)). Nachzieh-Pflicht: Jeder
 > §14-Eintrag zu einem Lotse-Arm (adoptiert oder verworfen) ergänzt hier
-> seine Ledger-Zeile; eine Adoption aktualisiert „Aktueller Stand“.
+> seine Ledger-Zeile; eine Adoption aktualisiert „Aktueller Stand“. Das
+> Gate dazu ist `tools.docs_register check` (CI-Job „Docs-Register“).
 
 ## Steckbrief
 
@@ -33,10 +34,20 @@ Kreuzungs-Detektor auf der Karte) · `UNTWIST_SOLL_MATCHING` =
 "reserve" (v0.17 — **Reservierungs-Veto**: das Soll wird je Pass
 eins-zu-eins auf die Events gematcht, reservierte Events sind
 unpaarbar; adoptiert bei Zähler-Parität per vorregistrierter
-Konstruktions-Regel). Zahlen (dev-19, gefrorener Root,
-§14 „Lotse v0.16/v0.17 aug20"): dtw 0,0585 med · p90 **0,1122** ·
-**Netto-Kreuzungsdefekte 6** (missing 1 — nur unters letzter
-Ritt-Rest) · Kreuzungs-Ortsfehler-Median **0,066 xh** ·
+Konstruktions-Regel). Zahlen (dev-19, gefrorener Root) — **zwei
+Lineal-Stände, beide mit Datum**: auf der alten Marken-Kappe 0,8
+(§14 „Lotse v0.16/v0.17 `aug20`") dtw 0,0585 med · p90 **0,1122**;
+auf der heutigen Kappe 1,5 (§14 „Lineal L-U `aug26`") dtw **0,0545**
+med · p90 **0,1164** · worst muß-2 0,1457. **Der Sprung 0,0585 →
+0,0545 ist ungeklärt:** zwischen `aug20` und `aug26` steht kein
+Lotse-Eintrag und kein Re-Baseline-Hinweis, und die L-U-Tabelle
+selbst misst die Zahl auf BEIDEN Kappen gleich (0,0545 → 0,0545) —
+die Kappe kann es also nicht gewesen sein. Bis zur Klärung
+(Umgebung? Refill der `word_instances`? Ketten-v4-Root?) stehen beide
+Zahlen mit ihrem Datum nebeneinander, keine allein.
+Unverändert über beide Stände: **Netto-Kreuzungsdefekte 6**
+(missing 1 — nur unters letzter Ritt-Rest) ·
+Kreuzungs-Ortsfehler-Median **0,066 xh** ·
 `marks_missing` 0 · aiou 0,740 — Struktur WORTGLEICH zu v0.13,
 kein Wort verliert (beste dtw-Gewinne −0,0035..−0,0059: muß-2,
 Galoppieren, mit, muß-3; aiou bis +0,0117). Rest-Spurious:
@@ -79,6 +90,8 @@ Kreuzungs-Ortsfehler (0,066 gegen 0,083 xh).
 | aug20 | v0.18 (L1k) | **Auflösungs-Leiter** `SAMPLE_STEP_UNITS` {0,06 · 0,04} | verworfen per Gate — die Struktur-These bestätigt sich exakt (Netto 5 → **3**, unters missing heilt, ein Galoppieren-Gewebe fällt: die beste Netto-Zahl der Route), aber der Schritt ist kein freier Knopf: die Ritt-ÖKONOMIE ist sample-denominiert (`RIDE_DOUBLE_MIN_GAP` in Samples, Brücken-Preis pro Sample) → dtw-Verlierer bis +0,035 (muß-Familie), aiou-Median −0,004, neue Retrace-Defekte; 0,04 verschärft (Ökonomie-Drift, keine Konvergenz). Rettungsweg (a) „feine Emission" an den Proben verworfen (rohe Karte trägt Mikrostruktur: 32 Spurious); stehend bleibt (b) **schritt-invariante Reskalierung**, dann Wiedervorlage |
 | aug20 | v0.19 (L1l) | **schritt-invariante Ökonomie** (Emissions-Skala `Schritt/0,12` · `MAX_RIDE_UNITS` 0,96 · `RIDE_DOUBLE_MIN_GAP_UNITS` 0,48) + §7.7-Wiedervorlage der Leiter {0,06 · 0,04} | **Re-Denominierung BLEIBT** (Sprosse 0 byte-identisch zu v0.17 auf beiden Roots — bewiesen neutraler Grundlagen-Refactor); **Leiter erneut verworfen**: der Drift ist umverteilt, nicht beseitigt (Wer +0,031, muß-2 +0,022; Galoppieren gewinnt diesmal einen Spurious) — die letzte Kopplung ist die EMISSIONS-Feinheit selbst (feinere Brücken emittieren Karten-Mikrostruktur; Struktur-Gewinn und Geometrie-Verlust hängen an derselben Auflösung). 0,12 bleibt der Betriebspunkt; Rettungsweg: **Karten-Glättung auf Zähler-Skala vor der Feinabtastung** |
 | aug20 | Glättungs-Proben *(Befund, kein Arm)* | `smooth_map_strokes` (Box entlang der Bahn, Endpunkte exakt, deklariert-off) an 5 Proben-Worten, Fenster × Schritt | **die Auflösungs-Familie ist GESCHLOSSEN**: der Feinschritt-Drift besteht auf geglätteter Karte fort (Wer +0,033, Fenster egal) — die letzte Kopplung ist die ENTSCHEIDUNGS-GRANULARITÄT des Viterbi (mehr Samples = mehr Umsteigepunkte); kein weiterer Leiter-Anlauf ohne anderen Solver. Nebenbefund: Glättung AM Betriebspunkt gemischt-groß (mit aiou +0,097, muß-2-Retraces heilen, unters t-X2 erscheint · Wer +0,031 dtw, Galoppieren tauscht ein X) → eigener Kandidat mit eigener Pre-Reg. **Zweiter Nachtrag: auch dieser Kandidat an der Fenster-Feinleiter verworfen** — kein Fenster ohne Verlierer (die 3-Punkte-Box-Stufe „Kernel-3", auf die alle Fenster < 0,06 quantisieren: Galoppieren/mit zahlen; 0,06: Wer kippt), die Effekte sind Entscheidungs-Kipp-Punkte; die Karten-/Abtastungs-Familie ist ERSCHÖPFT, die Route sitzt in einem empfindlichen Optimum |
+| aug26 | **L-U Lineal-Nachmessung** *(Lineal-Re-Baseline, kein Lotse-Arm)* | Marken-Kappe `MARK_MAX_ARC_UNITS` 0,8 → 1,5 — der u-Bogen zählt nicht mehr als Marke (§14 „Lineal L-U `aug26`") | Route selbst unberührt, aber ihre Zahlen wandern: dtw **0,0545 → 0,0545**, p90 **0,1122 → 0,1164**, worst muß-2 0,1404 → 0,1457; 16 Struktur-Spalten byte-gleich. Der L-U-Gewinn liegt auf der Kette (p90 0,2355 → 0,0896), der Lotse verliert minimal — das ist der vorregistrierte, akzeptierte Preis einer Instrumenten-Reparatur |
+| aug26 | **LF3b-W Schreib-Karte** *(Laufform-Arm, hier nur die Wirkung)* | die 13 topologie-reparierten Laufform-Zeilen ohne p, geschrieben (§14 „Laufform LF3b-W `aug26`") | Gate (c) PASS: dtw 0,0545 / p90 0,1164 unverändert, **aiou 0,7398 → 0,7484**, spurious 5 → 4 (Galoppieren 3 → 2), `retrace_missing` 5 → 3, missing 1 = 1, Marken unverändert; bewegt nur die drei Schreib-Glyph-Wörter (das, linken, Galoppieren). Zahlengleich mit der trockenen LF3b-Karte vom `aug19` |
 
 Benannter Fehlermodus der Route: **Junction-Pinch** (Glossar) — die
 v0.7/v0.8/v0.9-Kette ist seine vollständige Abarbeitung; seit v0.11
