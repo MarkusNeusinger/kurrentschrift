@@ -35,8 +35,9 @@
   fold, the tag on the merge commit and the condensed-notes rule.
   `/dependabot` covers the weekly batch and the `update-branch` trap (#NNN).
 - **`tests/test_agent_instructions.py` pins the agent guides against drift.**
-  136 backticked paths must resolve, 42 `§N` references must hit a real
-  heading, and 22 rules must be present in BOTH `CLAUDE.md` and
+  136 backticked paths must resolve, 48 `§N` references must hit a real
+  heading (a range like `§3–§6` asserts every section in it), and 22 rules
+  must be present in BOTH `CLAUDE.md` and
   `copilot-instructions.md` — the two files claim to stay in sync, and until
   now nothing checked it (#NNN).
 

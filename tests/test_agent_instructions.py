@@ -70,7 +70,27 @@ _FILE_SUFFIXES = {
 # basename ("architektur.md §8"); both forms are resolved against docs/. The
 # gap is kept tiny on purpose — a wider one starts matching a § that belongs
 # to a different document mentioned earlier in the same sentence.
-_SECTION_REF = re.compile(r"([\w-]+\.md)`?\s?§\s?(\d+)")
+#
+# A reference may be a RANGE ("architektur.md §3–§6"), and a range asserts
+# every section in it. Capturing only the first number would let a
+# renumbering at the far end pass unnoticed while this file claims each §
+# reference is pinned.
+_SECTION_REF = re.compile(r"([\w-]+\.md)`?\s?§\s?(\d+)(?:\s?[–—-]\s?§?\s?(\d+))?")
+
+
+def _cited_sections(text: str) -> list[tuple[str, str]]:
+    """(document, section number) for every § reference, ranges expanded."""
+    cited: list[tuple[str, str]] = []
+    for doc_name, first, last in _SECTION_REF.findall(text):
+        start = int(first)
+        end = int(last) if last else start
+        # A descending or absurd range is a typo, not a claim about sections;
+        # fall back to the single number rather than inventing assertions.
+        if not start <= end <= start + 40:
+            end = start
+        cited.extend((doc_name, str(n)) for n in range(start, end + 1))
+    return cited
+
 
 # Paths the guides name deliberately although they are absent: a gitignored
 # local file, one named precisely to say it does not exist, and the two
@@ -146,7 +166,7 @@ def test_section_references_resolve(agent_file: Path) -> None:
     docs = {p.name: p for p in (REPO_ROOT / "docs").rglob("*.md")}
 
     broken: list[str] = []
-    for doc_name, number in _SECTION_REF.findall(text):
+    for doc_name, number in _cited_sections(text):
         doc = docs.get(doc_name)
         if doc is None:
             continue  # not a docs/ file; the path pin covers its existence
@@ -171,7 +191,9 @@ MIRRORED_RULES = {
     "prod-touching needs confirmation": ["cloud sql ddl"],
     "never echo secrets": ["never echo secret"],
     "archive snapshots are create-only": ["create freely, never destroy"],
-    "no heredoc/sed edits to tracked files": ["--no-verify"],
+    # "heredoc" and not "--no-verify": the latter also appears in the
+    # pre-commit paragraph, so it would stay green if this rule vanished.
+    "no heredoc/sed edits to tracked files": ["heredoc"],
     "perfect result over fast one": ["the perfect result"],
     "rejected measures name rescue paths": ["rescue path"],
     "pin BLAS threads": ["openblas_num_threads"],
