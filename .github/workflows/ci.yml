@@ -212,6 +212,45 @@ jobs:
       - name: Fragment present and well-formed
         run: uv run --no-project python -m tools.changelog check --base "origin/${{ github.base_ref }}"
 
+  docs-register:
+    name: Docs-Register (§14 index)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # The campaign journal (qualitaetsmetrik.md §14) carries three "same PR"
+    # duties in prose: index the new entry, ledger the moved headline, bring the
+    # route's process page along. The audit of 2026-09-02 found all three lagging
+    # — process pages two adoptions behind, the headline history only in running
+    # text, one headline pair whose fixture root nobody could reconstruct. This
+    # job is the same shape as the changelog gate: it reads the committed files,
+    # so an entry added together with its register row passes, and an entry
+    # without one fails wherever it came from.
+    #
+    # It runs on pushes too: the rules hold for the tree, not just for a diff.
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # `--base` names the entries a PR adds, which a shallow checkout lacks.
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+
+      - name: Set up Python
+        run: uv python install
+
+      # Standard library only, like the changelog gate; no extras are synced.
+      # `--base` only enriches the message (it names the entries the branch adds),
+      # so a push run without a base branch checks exactly the same rules.
+      - name: Every §14 entry indexed, every headline ledgered
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ -n "$BASE_REF" ]; then
+            uv run --no-project python -m tools.docs_register check --base "origin/$BASE_REF"
+          else
+            uv run --no-project python -m tools.docs_register check
+          fi
+
   image:
     name: Image (build + container smoke)
     runs-on: ubuntu-latest
