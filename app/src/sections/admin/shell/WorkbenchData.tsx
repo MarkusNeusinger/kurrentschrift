@@ -58,14 +58,22 @@ function statsContextOf<T>(
   rows: T[] | null,
   handId: string | null,
   handsMixed: boolean,
+  // True once all three occurrence lists are IN and all three are empty — the
+  // first-run state. Distinguishing it from `!handId` is the whole point: a hand
+  // is derived FROM occurrences, so with none there is nothing that could have
+  // named one, and „Keine Hand an den Vorkommen hinterlegt" names a cause that
+  // cannot exist yet.
+  noOccurrences: boolean,
 ): StatsContext {
-  const status: StatsStatus = !handId
-    ? 'no-hand'
-    : layer.handId === handId && layer.error
-      ? 'unavailable'
-      : rows === null
-        ? 'loading'
-        : 'ready';
+  const status: StatsStatus = noOccurrences
+    ? 'no-occurrences'
+    : !handId
+      ? 'no-hand'
+      : layer.handId === handId && layer.error
+        ? 'unavailable'
+        : rows === null
+          ? 'loading'
+          : 'ready';
   return { status, handId, handsMixed, layerEmpty: rows !== null && rows.length === 0 };
 }
 
@@ -196,6 +204,17 @@ export function WorkbenchDataProvider({ children }: { children: ReactNode }) {
     }
     return { handId: best, handsMixed: counts.size > 1 };
   }, [instances, pairInstances, wordRows]);
+
+  // The first-run state: every occurrence list has ARRIVED (not null) and every
+  // one of them is empty. `null` means still loading, so this stays false while
+  // anything is in flight — a spinner must never turn into "there is nothing".
+  const noOccurrences =
+    instances !== null &&
+    pairInstances !== null &&
+    wordRows !== null &&
+    instances.length === 0 &&
+    pairInstances.length === 0 &&
+    wordRows.length === 0;
 
   // Deliberately NOT part of the occurrence Promise.all, and one effect per
   // layer: these reads are admin-gated and secondary, and a per-layer rebuild
@@ -336,8 +355,8 @@ export function WorkbenchDataProvider({ children }: { children: ReactNode }) {
       pairAggregateByKey,
       allAggregates: aggregates ?? [],
       handId,
-      letterStats: statsContextOf(letterLayer, aggregates, handId, handsMixed),
-      pairStats: statsContextOf(pairLayer, pairAggregates, handId, handsMixed),
+      letterStats: statsContextOf(letterLayer, aggregates, handId, handsMixed, noOccurrences),
+      pairStats: statsContextOf(pairLayer, pairAggregates, handId, handsMixed, noOccurrences),
       rebuildLetterStats: handId ? rebuildLetterStats : undefined,
       rebuildPairStats: handId ? rebuildPairStats : undefined,
       refreshLetterStats,
@@ -357,6 +376,7 @@ export function WorkbenchDataProvider({ children }: { children: ReactNode }) {
       pairAggregateByKey,
       handId,
       handsMixed,
+      noOccurrences,
       letterLayer,
       pairLayer,
       aggregates,

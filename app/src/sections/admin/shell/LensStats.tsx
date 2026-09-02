@@ -39,9 +39,16 @@ import {
 // Same height as the chart-crop thumbnail the old lens showed above it.
 const SKETCH_H = 90;
 
-// Why the block can have nothing to show: the lists are still in flight, the
-// occurrences name no hand at all, or the admin-gated read failed.
-export type StatsStatus = 'loading' | 'ready' | 'unavailable' | 'no-hand';
+// Why the block can have nothing to show: the lists are still in flight, there
+// are no occurrences at all, the occurrences name no hand, or the admin-gated
+// read failed.
+//
+// `no-occurrences` and `no-hand` were one state until the audit of 2026-09-02
+// found a freshly seeded Vorlage claiming „Keine Hand an den Vorkommen
+// hinterlegt" on every card — a cause that cannot exist when there are no
+// occurrences to carry a hand. Two different silences, two different sentences:
+// the first names the next step (harvest), the second names a data gap.
+export type StatsStatus = 'loading' | 'ready' | 'unavailable' | 'no-hand' | 'no-occurrences';
 
 // Where a block's numbers come from, so it can say so instead of implying a
 // hand: `handId` is derived from the loaded occurrences (never a constant),
@@ -140,6 +147,7 @@ const mixedHandsWarning = (stats: StatsContext): string | null =>
 function statusCaption(status: StatsStatus): string | null {
   const t = de.admin.werkbank;
   if (status === 'loading') return t.statsLoading;
+  if (status === 'no-occurrences') return t.statsNoOccurrences;
   if (status === 'no-hand') return t.statsNoHand;
   if (status === 'unavailable') return t.statsUnavailable;
   return null;

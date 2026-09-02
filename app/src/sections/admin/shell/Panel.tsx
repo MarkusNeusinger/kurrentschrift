@@ -61,6 +61,7 @@ export function EvidenceState({
 export function ViewHeader({
   eyebrow,
   title,
+  titleText,
   intro,
   chips,
   children,
@@ -70,6 +71,13 @@ export function ViewHeader({
   // uppercase in sepia).
   eyebrow?: string;
   title: ReactNode;
+  // The heading as PLAIN TEXT, for the detail views whose visible head is a
+  // ReactNode (paging arrows around a glyph chip). A string `title` becomes the
+  // h1 itself; a node used to drop the heading level entirely, which left
+  // /admin/buchstaben?g=a with six h2 and no h1 at all. Rendering the text as a
+  // visually hidden h1 keeps the document outline whole without touching the
+  // designed head.
+  titleText?: string;
   intro?: string;
   // Status of the subject (authored? locked? how many occurrences?).
   chips?: ReactNode;
@@ -89,6 +97,27 @@ export function ViewHeader({
             {eyebrow}
           </Typography>
         </Box>
+      )}
+      {/* The hidden h1 for a node title. `clip` rather than display:none —
+          hidden text is skipped by screen readers, and the heading is exactly
+          what has to reach them. */}
+      {typeof title !== 'string' && titleText && (
+        <Typography
+          component="h1"
+          sx={{
+            position: 'absolute',
+            width: 1,
+            height: 1,
+            p: 0,
+            m: -1,
+            overflow: 'hidden',
+            clip: 'rect(0 0 0 0)',
+            whiteSpace: 'nowrap',
+            border: 0,
+          }}
+        >
+          {titleText}
+        </Typography>
       )}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
         {typeof title === 'string' ? (

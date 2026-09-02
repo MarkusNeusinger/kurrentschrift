@@ -138,8 +138,13 @@ export function aggregateLayerState(
   layer: Layer<PairAggregateOut, string | null>,
   handId: string | null,
   occurrencesLoaded: boolean,
+  // The occurrences came back and there are none. Checked BEFORE the hand,
+  // because the hand is read off those very rows: with none, „no hand" would
+  // report a cause that cannot exist yet (audit 2026-09-02, finding 20).
+  occurrencesEmpty = false,
 ): AggregateLayerState {
   if (!occurrencesLoaded) return { status: 'loading', layerEmpty: false };
+  if (occurrencesEmpty) return { status: 'no-occurrences', layerEmpty: false };
   if (!handId) return { status: 'no-hand', layerEmpty: false };
   // Rows of a previous hand are not this hand's: the read is still pending.
   if (layer.key !== handId) return { status: 'loading', layerEmpty: false };
@@ -226,7 +231,7 @@ export function usePairMeasurements(sourceId: string, enabled: boolean): PairMea
     status: loadedOccurrences?.error ? 'error' : occurrences === null ? 'loading' : 'ready',
     handId,
     handsMixed,
-    aggregates: aggregateLayerState(aggLayer, handId, occurrences !== null),
+    aggregates: aggregateLayerState(aggLayer, handId, occurrences !== null, occurrences?.length === 0),
     occurrencesByKey,
     aggregateByKey,
   };

@@ -23,7 +23,7 @@ import {
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { InfoHint } from '@/components/InfoHint';
-import { de } from '@/locales/admin';
+import { de, fmt } from '@/locales/admin';
 import type { BboxIn, BboxOut, StrokePoint, TracePreviewOut } from '@/lib/api';
 import { HintHeading } from './HintHeading';
 import { WegPreview } from './WegPreview';
@@ -55,6 +55,10 @@ export function TraceStep({
   preview,
   previewBusy,
   computePreview,
+  locked,
+  draft,
+  restoreDraft,
+  dismissDraft,
 }: {
   bbox: BboxOut;
   strokes: StrokePoint[][];
@@ -80,6 +84,15 @@ export function TraceStep({
   preview: TracePreviewOut | null;
   previewBusy: boolean;
   computePreview: (nAnchors: number) => Promise<void>;
+  // The bbox's lock, said out loud on the step where it decides the outcome.
+  // Drawing stays possible on purpose — whether a locked glyph may be offered
+  // for tracing at all is the author's call (audit 2026-09-02, finding 13);
+  // this only replaces the English 423 AFTER the work with a warning BEFORE it.
+  locked: boolean;
+  // A Weg the last visit closed on, offered back rather than restored silently.
+  draft: StrokePoint[][] | null;
+  restoreDraft: () => void;
+  dismissDraft: () => void;
 }) {
   // n_anchors edits buffer in a local draft and commit on blur/Enter (or via the
   // buttons): a field controlled straight by the server value can never be
@@ -131,6 +144,31 @@ export function TraceStep({
         {de.wizard.trace.lead}
       </Typography>
 
+      {/* Before the work, not after it: a locked glyph refuses the save with a
+          423, and the only thing worse than that refusal is meeting it once the
+          Weg is already drawn. */}
+      {locked && <Alert severity="warning">{de.wizard.lock.warning}</Alert>}
+
+      {/* The rescue offer. Only while nothing new is drawn — a restore that
+          replaced live strokes would be the very loss this exists to prevent. */}
+      {draft && strokes.length === 0 && (
+        <Alert
+          severity="info"
+          action={
+            <Stack direction="row" spacing={1}>
+              <Button size="small" onClick={restoreDraft}>
+                {de.wizard.draft.restore}
+              </Button>
+              <Button size="small" color="inherit" onClick={dismissDraft}>
+                {de.wizard.draft.dismiss}
+              </Button>
+            </Stack>
+          }
+        >
+          {fmt(de.wizard.draft.offer, { count: draft.length })}
+        </Alert>
+      )}
+
       <ToggleButtonGroup
         size="small"
         exclusive
@@ -151,7 +189,14 @@ export function TraceStep({
             </Typography>
             <InfoHint title={de.wizard.trace.toolAdjust}>{de.wizard.trace.adjustHint}</InfoHint>
           </Box>
-          <Slider size="small" min={3} max={40} value={nudgeRadius} onChange={(_e, v) => typeof v === 'number' && setNudgeRadius(v)} />
+          <Slider
+            size="small"
+            min={3}
+            max={40}
+            value={nudgeRadius}
+            onChange={(_e, v) => typeof v === 'number' && setNudgeRadius(v)}
+            aria-label={de.wizard.trace.nudgeRadius}
+          />
         </Box>
       )}
 
@@ -166,7 +211,17 @@ export function TraceStep({
           {de.wizard.trace.save}
         </Button>
       </Stack>
-      {hasCanonical && strokes.length === 0 && <Alert severity="success" variant="outlined">{de.wizard.trace.saved}</Alert>}
+      {/* A standing fact, not an event. This used to be a green success Alert —
+          which MUI renders as role="alert"/aria-live="assertive" — so opening a
+          glyph traced months ago announced „Weg gespeichert." as if it had just
+          happened, and it stood exactly as green on a locked glyph where saving
+          is guaranteed to fail. The EVENT keeps its own channel: the alert bar
+          says „Weg gespeichert · n Anker" once, when it is true. */}
+      {hasCanonical && strokes.length === 0 && (
+        <Typography variant="caption" color="text.secondary">
+          {de.wizard.trace.hasSaved}
+        </Typography>
+      )}
       {hasCanonical && (
         <FormControlLabel
           control={<Switch size="small" checked={showSaved} onChange={(_e, v) => setShowSaved(v)} />}

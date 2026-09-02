@@ -35,7 +35,6 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
-  ApiError,
   fetchEigenhandSheetPdf,
   fetchEigenhandStackPdf,
   getEigenhandBestand,
@@ -43,9 +42,14 @@ import {
   printEigenhandSheets,
 } from '@/lib/api';
 import type { EigenhandBestand, EigenhandBucket, EigenhandStripFilter } from '@/lib/api';
+import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
+import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
+import { glyphOf } from '@/sections/admin/eigenhand/coverageLabels';
 import { SetupPanel } from '@/sections/admin/eigenhand/SetupPanel';
 import { StripsPanel } from '@/sections/admin/eigenhand/StripsPanel';
+import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
+import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { paper } from '@/styles/paper';
 
@@ -57,34 +61,10 @@ const BUCKET_LABELS: Record<string, string> = {
   zeichen: de.admin.eigenhand.bucketZeichen,
 };
 
-// The glyph_keys the shaping layer spells out (`longs`, `paren-open`) get their
-// character back for the grid — a wall of words would hide the shape of the
-// coverage, which is the whole point of showing every key.
-const KEY_GLYPHS: Record<string, string> = {
-  longs: 'ſ',
-  longst: 'ſt',
-  sz: 'ß',
-  ae: 'ä',
-  oe: 'ö',
-  ue: 'ü',
-  Ae: 'Ä',
-  Oe: 'Ö',
-  Ue: 'Ü',
-  period: '.',
-  comma: ',',
-  colon: ':',
-  hyphen: '-',
-  exclam: '!',
-  question: '?',
-  apostrophe: '’',
-  'quote-low': '„',
-  'quote-high': '“',
-  'paren-open': '(',
-  'paren-close': ')',
-  section: '§',
-};
-
-const glyphOf = (key: string): string => KEY_GLYPHS[key] ?? key;
+// `glyphOf` moved to coverageLabels.ts, where the key-to-character map is
+// DERIVED from the glyph registry instead of hand-written a second time. It had
+// drifted by two entries, which is why the grid printed the literal word
+// "semicolon" among twelve characters — the reason is recorded there.
 
 // A coverage item as the view names it: `a>b` → „a › b", `a@medial` → „a
 // (medial)", a bare key → its glyph.
@@ -181,13 +161,18 @@ export function EigenhandView() {
   const [hands, setHands] = useState<string[]>([]);
   const [hand, setHand] = useState('');
   const [bestand, setBestand] = useState<EigenhandBestand | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<ApiErrorText | null>(null);
   const [loading, setLoading] = useState(false);
   const [sheets, setSheets] = useState(1);
   const [repeat, setRepeat] = useState(1);
   const [printing, setPrinting] = useState(false);
   const [printed, setPrinted] = useState<string[]>([]);
-  const [printError, setPrintError] = useState<string | null>(null);
+  // The print block reports two different failures — the Bogen could not be
+  // generated, or its PDF could not be fetched — so the lead sentence travels
+  // WITH the error instead of being fixed at the render site. Before this both
+  // arrived under „Der Bogen konnte nicht erzeugt werden.", the PDF case with
+  // its own lead pasted in front of the raw line on top of that.
+  const [printError, setPrintError] = useState<{ prefix: string; error: ApiErrorText } | null>(null);
   const [openOnly, setOpenOnly] = useState(true);
   // What the strips panel shows: a word, an item, or everything. A cell of
   // the coverage grid sets the item and brings the panel into view.
@@ -212,7 +197,7 @@ export function EigenhandView() {
         // empty.
         setHand((current) => current || data.hands[0] || `mn-${data.styles[1] ?? 'suetterlin'}`);
       })
-      .catch((err: unknown) => !cancelled && setLoadError(String(err)));
+      .catch((err: unknown) => !cancelled && setLoadError(apiErrorText(err)));
     return () => {
       cancelled = true;
     };
@@ -227,9 +212,13 @@ export function EigenhandView() {
         .then((data) => setBestand(data))
         .catch((err: unknown) => {
           setBestand(null);
-          // A hand that has never been printed for simply has no rows — that is
-          // an empty Bestand, not an error worth an alert.
-          setLoadError(err instanceof ApiError && err.status === 400 ? String(err) : String(err));
+          // The 400 branch that used to stand here read
+          // `… === 400 ? String(err) : String(err)` — both arms identical, so
+          // whatever it once meant to spare the reader, it never did. The German
+          // layer covers the case properly now: a malformed hand id (the only
+          // 400 this route raises) gets the „Angaben stimmen nicht" sentence and
+          // the server's own line underneath.
+          setLoadError(apiErrorText(err));
         })
         .finally(() => setLoading(false));
     },
@@ -253,7 +242,7 @@ export function EigenhandView() {
         setPrinted(res.sheets.map((s) => s.sheet));
         reload(hand);
       })
-      .catch((err: unknown) => setPrintError(String(err)))
+      .catch((err: unknown) => setPrintError({ prefix: t.printError, error: apiErrorText(err) }))
       .finally(() => setPrinting(false));
   };
 
@@ -269,7 +258,7 @@ export function EigenhandView() {
     try {
       showPdf(await fetchEigenhandSheetPdf(hand, sheet));
     } catch (err: unknown) {
-      setPrintError(`${t.pdfError} ${String(err)}`);
+      setPrintError({ prefix: t.pdfError, error: apiErrorText(err) });
     }
   };
 
@@ -279,7 +268,7 @@ export function EigenhandView() {
     try {
       showPdf(await fetchEigenhandStackPdf(hand, printed));
     } catch (err: unknown) {
-      setPrintError(`${t.pdfError} ${String(err)}`);
+      setPrintError({ prefix: t.pdfError, error: apiErrorText(err) });
     }
   };
 
@@ -316,7 +305,7 @@ export function EigenhandView() {
 
       {loadError && !bestand && (
         <Alert severity="warning" sx={{ mb: 3 }}>
-          {t.loadError} {loadError}
+          <ErrorText error={loadError} prefix={t.loadError} />
         </Alert>
       )}
 
@@ -423,7 +412,7 @@ export function EigenhandView() {
 
             {printError && (
               <Alert severity="warning" sx={{ mt: 2 }}>
-                {t.printError} {printError}
+                <ErrorText error={printError.error} prefix={printError.prefix} />
               </Alert>
             )}
 
@@ -443,14 +432,17 @@ export function EigenhandView() {
                       </Button>
                     ))}
                 </Stack>
-                <Typography variant="caption" sx={{ display: 'block', mt: 1.5, color: paper.inkSoft }}>
-                  {fmt(t.localHint, { hand, sheet: printed[0] })}
-                </Typography>
+                <Box sx={{ mt: 1.5 }}>
+                  <TerminalCommand
+                    lead={t.localHint}
+                    command={fmt(t.localHintCommand, { hand, sheet: printed[0] })}
+                  />
+                </Box>
               </Box>
             )}
           </Panel>
 
-          <Panel title={t.quotenTitle} caption={bestand.quoten ? undefined : t.quotenTitle}>
+          <Panel title={t.quotenTitle} caption={t.quotenCaption}>
             {bestand.quoten ? (
               <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', rowGap: 2 }}>
                 <Stat
@@ -463,9 +455,7 @@ export function EigenhandView() {
                 />
               </Stack>
             ) : (
-              <Typography variant="caption" sx={{ color: paper.inkSoft }}>
-                {fmt(t.quotenNone, { hand })}
-              </Typography>
+              <TerminalCommand lead={fmt(t.quotenNone, { hand })} command={t.quotenNoneCommand} />
             )}
           </Panel>
         </Stack>

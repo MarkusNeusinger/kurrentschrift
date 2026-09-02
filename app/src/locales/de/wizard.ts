@@ -22,6 +22,7 @@ export const wizard = {
   canvas: {
     panTooltip: 'Schwenken — Ausschnitt verschieben',
     pan: 'Schwenken',
+    zoom: 'Vergrößerung',
     zoomOut: 'herauszoomen',
     zoomIn: 'hineinzoomen',
     fitTooltip: 'Anpassen — ganzen Ausschnitt zeigen',
@@ -139,7 +140,14 @@ export const wizard = {
     undoStroke: 'Letzter Strich',
     discardAll: 'Alles verwerfen',
     save: 'Weg speichern',
+    // Two states that used to share one green box. `saved` is the EVENT — it
+    // belongs to the alert bar, which announces it once. `hasSaved` is the
+    // standing condition, written in the present tense and set quietly: it
+    // showed on every opening of a glyph traced months ago, so a screen reader
+    // called out „Weg gespeichert" as fresh news, and it stood just as green on
+    // a locked glyph where saving is guaranteed to fail.
     saved: 'Weg gespeichert. Vorschau unten · weiter zur Übersicht.',
+    hasSaved: 'Ein Weg ist gespeichert — er wird unten eingeblendet; neu zeichnen überschreibt ihn.',
     showSaved: 'Gespeicherten Weg & Anker einblenden',
     anchorsLabel: 'Anker (n_anchors)',
     resample: 'Neu abtasten',
@@ -204,13 +212,44 @@ export const wizard = {
     lockCaption:
       'Mit „Abschließen & sperren“ wird der Glyph gesperrt (🔒) und ist erst nach Entsperren wieder änderbar.',
   },
+  // Every message that reaches the wizard's alert bar. It carries a severity of
+  // its own now: a failed write is red, a refused gesture amber, a saved Weg
+  // green — before, all of them rendered as the same blue-grey `info`, so a 423
+  // Locked looked exactly like a confirmation.
   snack: {
-    // Followed by the error in the snackbar message.
-    saveFailed: 'Speichern fehlgeschlagen:',
+    saveFailed: 'Die Änderung konnte nicht gespeichert werden.',
     baselineBelowMidband: 'Grundlinie muss unter der Mittellinie liegen.',
     traceSaved: 'Weg gespeichert · {{count}} Anker',
+    traceFailed: 'Der Weg konnte nicht gespeichert werden.',
     resampled: 'neu abgetastet · {{count}} Anker',
-    // Followed by the error in the snackbar message.
-    finishFailed: 'Abschließen fehlgeschlagen:',
+    resampleFailed: 'Das neue Abtasten ist fehlgeschlagen.',
+    previewFailed: 'Die Vorschau konnte nicht gerechnet werden.',
+    finishFailed: 'Abschließen fehlgeschlagen.',
+  },
+  // Leaving with an undrawn Weg still on the canvas. The Weg is the one thing
+  // in this dialog that is NOT live-committed, and nobody but the author can
+  // draw it again — so Escape, a backdrop click and „Schließen" all ask first.
+  confirmClose: {
+    title: 'Gezeichneten Weg verwerfen?',
+    body:
+      'Der gezeichnete Weg ist noch nicht gespeichert. Alles andere in diesem Fenster — Ausschluss, Tinte, Lineatur und Schräglage — steht bereits in der Datenbank; nur der Weg ginge verloren.',
+    // Followed by the stroke count.
+    strokes: 'Ungespeichert: {{count}} Strich(e).',
+    keep: 'Zurück zum Zeichnen',
+    discard: 'Verwerfen und schließen',
+  },
+  // The rescued draft, offered on the Weg step when the last visit was closed
+  // with strokes on the canvas (sessionStorage — the tab's own memory).
+  draft: {
+    // Followed by the stroke count.
+    offer: 'Nicht gespeicherter Weg von vorhin — {{count}} Strich(e).',
+    restore: 'Wiederherstellen',
+    dismiss: 'Verwerfen',
+  },
+  // The lock, shown BEFORE the work rather than as a 423 after it.
+  lock: {
+    chip: '🔒 gesperrt',
+    warning:
+      'Diese Glyphe ist gesperrt — ein „Weg speichern“ wird abgelehnt. Zum Überschreiben erst in der Tafel entsperren (Schloss in der Werkzeugleiste), dann hierher zurück.',
   },
 } as const;

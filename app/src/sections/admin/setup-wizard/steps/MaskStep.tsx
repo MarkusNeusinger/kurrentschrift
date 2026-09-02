@@ -144,7 +144,14 @@ export function MaskStep({
             <Typography variant="caption">
               {de.wizard.mask.brushSize} {maskRadius}px
             </Typography>
-            <Slider size="small" min={1} max={30} value={maskRadius} onChange={(_e, v) => typeof v === 'number' && setMaskRadius(v)} />
+            <Slider
+              size="small"
+              min={1}
+              max={30}
+              value={maskRadius}
+              onChange={(_e, v) => typeof v === 'number' && setMaskRadius(v)}
+              aria-label={de.wizard.mask.brushSize}
+            />
           </Box>
           <Button size="small" startIcon={<UndoIcon />} disabled={undoCount === 0} onClick={isInk ? undoInk : undoMask}>
             {de.wizard.mask.undo} ({undoCount})
@@ -169,6 +176,7 @@ export function MaskStep({
           value={fill}
           onChange={(_e, v) => typeof v === 'number' && setFill(v)}
           onChangeCommitted={(_e, v) => typeof v === 'number' && setFillHoles(v)}
+          aria-label={de.wizard.mask.fillHoles}
         />
       </Box>
 
