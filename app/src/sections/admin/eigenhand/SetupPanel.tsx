@@ -15,11 +15,11 @@ import { useEffect, useState } from 'react';
 
 import { getEigenhandSetup, putEigenhandSetup } from '@/lib/api';
 import type { EigenhandSetup } from '@/lib/api';
-import { apiFehlertext } from '@/sections/admin/shell/apiFehlertext';
-import type { ApiFehler } from '@/sections/admin/shell/apiFehlertext';
+import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
+import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
 import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
-import { FehlerText } from '@/sections/admin/shell/FehlerText';
+import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { Panel } from '@/sections/admin/shell/Panel';
 import { paper } from '@/styles/paper';
 
@@ -44,7 +44,7 @@ export function SetupPanel({ hand }: { hand: string }) {
   const [setup, setSetup] = useState<EigenhandSetup | null>(null);
   const [draft, setDraft] = useState<Draft>(EMPTY);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<ApiFehler | null>(null);
+  const [error, setError] = useState<ApiErrorText | null>(null);
 
   // `loaded` gates the form on the hand it belongs to. Without it a failed or
   // in-flight load left the PREVIOUS hand's values on screen under the new
@@ -65,7 +65,7 @@ export function SetupPanel({ hand }: { hand: string }) {
         setDraft(toDraft(data));
         setLoaded(hand);
       })
-      .catch((err: unknown) => !cancelled && setError(apiFehlertext(err)));
+      .catch((err: unknown) => !cancelled && setError(apiErrorText(err)));
     return () => {
       cancelled = true;
     };
@@ -85,7 +85,7 @@ export function SetupPanel({ hand }: { hand: string }) {
       note: draft.note || null,
     })
       .then((data) => setSetup(data))
-      .catch((err: unknown) => setError(apiFehlertext(err)))
+      .catch((err: unknown) => setError(apiErrorText(err)))
       .finally(() => setSaving(false));
   };
 
@@ -130,7 +130,7 @@ export function SetupPanel({ hand }: { hand: string }) {
 
       {error && (
         <Alert severity="warning" sx={{ mt: 2 }}>
-          <FehlerText fehler={error} prefix={t.setupError} />
+          <ErrorText error={error} prefix={t.setupError} />
         </Alert>
       )}
 

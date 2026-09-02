@@ -6,8 +6,13 @@
 // which says nothing about what to DO and reads as an internals leak on the one
 // page that is entirely in German. But the raw line is also the only diagnostic
 // the author has when something unexpected happens, so it is never dropped: the
-// sentence is the answer, the detail is the evidence, and `FehlerText` renders
+// sentence is the answer, the detail is the evidence, and `ErrorText` renders
 // the detail inside a collapsed <details>.
+//
+// The OUTPUT is German (Fehlerschicht in the glossary); the identifiers are
+// English, per sprachregelung.md §1 — §3 of that doc explicitly rejects German
+// identifiers even for German Fachbegriffe: "Begriff gehört in den Kommentar,
+// nicht in den Bezeichner".
 //
 // It lives HERE and not beside the client in `lib/api/` because it reads the
 // admin message catalog, and `no-restricted-imports` keeps those ~66 kB out of
@@ -18,14 +23,14 @@
 import { ApiError } from '@/lib/api/client';
 import { de } from '@/locales/admin';
 
-export interface ApiFehler {
+export interface ApiErrorText {
   // The HTTP status, or null when the call never reached a response (offline,
   // DNS, a cold start that outlasted the retries). Call sites that branch on a
   // specific case — a 404 that means "not authored yet", not "broken" — read
   // this instead of sniffing the message for "404".
   status: number | null;
   // The German sentence: what happened and what to do about it.
-  satz: string;
+  sentence: string;
   // The raw line as the server (or the browser) phrased it, unchanged.
   detail: string;
 }
@@ -33,8 +38,8 @@ export interface ApiFehler {
 // Status → sentence. Only the statuses this API actually raises get their own
 // wording; everything else falls back to the class (4xx = the request, 5xx =
 // the server), so a status added later is still explained, just less sharply.
-function satzFor(status: number | null): string {
-  const t = de.admin.fehler;
+function sentenceFor(status: number | null): string {
+  const t = de.admin.errors;
   switch (status) {
     case null:
       return t.offline;
@@ -60,7 +65,7 @@ function satzFor(status: number | null): string {
   }
 }
 
-export function apiFehlertext(err: unknown): ApiFehler {
+export function apiErrorText(err: unknown): ApiErrorText {
   const status = err instanceof ApiError ? err.status : null;
-  return { status, satz: satzFor(status), detail: String(err) };
+  return { status, sentence: sentenceFor(status), detail: String(err) };
 }

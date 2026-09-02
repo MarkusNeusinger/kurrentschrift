@@ -41,7 +41,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
-- **F** — Fassung (Eigenhand) §5 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiFehlertext`) §5 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1
+- **F** — Fassung (Eigenhand) §5 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1
 - **G** — G1-/G2-Stetigkeit §6 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
@@ -2212,7 +2212,7 @@ und `[Unreleased]`), `check_pr` (die PR-Regel), `plan_release`/`apply_release`
 (der Schnitt); CI-Job `changelog` in `.github/workflows/ci.yml`.
 → werkzeuge.md § Der Changelog-Schnitt · `changelog.d/README.md`
 
-**Fehlerschicht (`apiFehlertext`)** — die deutsche Antwort der Werkbank
+**Fehlerschicht (`apiErrorText`)** — die deutsche Antwort der Werkbank
 auf einen fehlgeschlagenen API-Aufruf: aus dem HTTP-Status wird **ein
 Satz, der den nächsten Schritt nennt** („Diese Glyphe ist gesperrt — erst
 in der Tafel entsperren"), und die englische Rohzeile des Servers bleibt
@@ -2225,8 +2225,13 @@ Diagnose weggeworfen, die es gibt. **Der Satz antwortet, das Detail
 beweist.** Der Rückgabewert trägt zusätzlich den `status`, damit
 Aufrufer einen Sonderfall (404 = „noch nicht angelegt", kein Fehler) am
 Typ erkennen statt die Meldung nach „404" zu durchsuchen.
-*Technisch:* `app/src/sections/admin/shell/apiFehlertext.ts` +
-`FehlerText.tsx`; die Sätze in `app/src/locales/de/admin.ts` (`admin.fehler`).
+Der **Name** ist englisch, die **Ausgabe** deutsch — sprachregelung.md §1
+verlangt englische Bezeichner, und §3 verwirft deutsche Identifier
+ausdrücklich auch für deutsche Fachbegriffe („Begriff gehört in den
+Kommentar, nicht in den Bezeichner"). Der Begriff steht also hier im
+Glossar, nicht im Code.
+*Technisch:* `app/src/sections/admin/shell/apiErrorText.ts` +
+`ErrorText.tsx`; die Sätze in `app/src/locales/de/admin.ts` (`admin.errors`).
 Liegt bewusst unter `sections/admin/` und nicht bei `lib/api/`: der
 Katalog darf das öffentliche Bundle nicht erreichen (`no-restricted-imports`).
 

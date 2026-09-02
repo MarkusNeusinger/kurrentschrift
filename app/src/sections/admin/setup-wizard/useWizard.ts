@@ -11,8 +11,8 @@ import { bboxInFromOut } from '@/lib/bbox';
 import { knownGlyph } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
 import { de, fmt } from '@/locales/admin';
-import { apiFehlertext } from '@/sections/admin/shell/apiFehlertext';
-import type { ApiFehler } from '@/sections/admin/shell/apiFehlertext';
+import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
+import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { flattenStrokes, savablePointCount } from './strokeUtils';
 import { readDraft, writeDraft } from './wizardDraft';
 import { STEPS } from './wizardTypes';
@@ -35,12 +35,12 @@ export interface SavedTraceOverlay {
 // One message in the wizard's alert bar, WITH its severity. Every message used
 // to render as `info`, so "423 Locked: glyph 'longs' is locked" appeared in the
 // same blue-grey box as "Weg gespeichert" — the one surface where a failed
-// write must not look like a confirmation. `fehler` rides along when the message
+// write must not look like a confirmation. `error` rides along when the message
 // came from a failed call, so the raw server line stays one click away.
 export interface WizardSnack {
   kind: 'success' | 'info' | 'warning' | 'error';
   text: string;
-  fehler?: ApiFehler;
+  error?: ApiErrorText;
 }
 
 const summaryOf = (g: { glyph_key: string; glyph: string; variant: number; advance: number }): GlyphSummary => ({
@@ -183,7 +183,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
           bboxesByKeyRef.current = { ...bboxesByKeyRef.current, [glyphKey]: saved };
           upsertBbox(glyphKey, saved);
         } catch (err) {
-          setSnack({ kind: 'error', text: de.wizard.snack.saveFailed, fehler: apiFehlertext(err) });
+          setSnack({ kind: 'error', text: de.wizard.snack.saveFailed, error: apiErrorText(err) });
         }
       };
       const next = bboxWriteQueue.current.then(run);
@@ -360,7 +360,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
       setDraft(null);
       void refreshSavedTrace();
     } catch (err) {
-      setSnack({ kind: 'error', text: de.wizard.snack.traceFailed, fehler: apiFehlertext(err) });
+      setSnack({ kind: 'error', text: de.wizard.snack.traceFailed, error: apiErrorText(err) });
     } finally {
       setBusy(false);
     }
@@ -377,7 +377,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
       try {
         rawPath = (await getGlyph(sourceId, glyphKey)).raw_path; // the saved Weg
       } catch (err) {
-        setSnack({ kind: 'error', text: de.wizard.snack.previewFailed, fehler: apiFehlertext(err) });
+        setSnack({ kind: 'error', text: de.wizard.snack.previewFailed, error: apiErrorText(err) });
         return;
       }
     }
@@ -393,7 +393,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
       if (previewEpoch.current === epoch) setPreview(p);
     } catch (err) {
       if (previewEpoch.current === epoch) {
-        setSnack({ kind: 'error', text: de.wizard.snack.previewFailed, fehler: apiFehlertext(err) });
+        setSnack({ kind: 'error', text: de.wizard.snack.previewFailed, error: apiErrorText(err) });
       }
     } finally {
       if (previewEpoch.current === epoch) setPreviewBusy(false);
@@ -410,7 +410,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
       setSnack({ kind: 'success', text: fmt(de.wizard.snack.resampled, { count: g.anchors.length }) });
       void refreshSavedTrace();
     } catch (err) {
-      setSnack({ kind: 'error', text: de.wizard.snack.resampleFailed, fehler: apiFehlertext(err) });
+      setSnack({ kind: 'error', text: de.wizard.snack.resampleFailed, error: apiErrorText(err) });
     } finally {
       setBusy(false);
     }
@@ -426,7 +426,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
       writeDraft(sourceId, glyphKey, []);
       onClose();
     } catch (err) {
-      setSnack({ kind: 'error', text: de.wizard.snack.finishFailed, fehler: apiFehlertext(err) });
+      setSnack({ kind: 'error', text: de.wizard.snack.finishFailed, error: apiErrorText(err) });
     } finally {
       setBusy(false);
     }

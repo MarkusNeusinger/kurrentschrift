@@ -1,5 +1,5 @@
 // How the workbench prints a failed call: the German sentence from
-// `apiFehlertext` on the line, the raw server line folded away underneath.
+// `apiErrorText` on the line, the raw server line folded away underneath.
 //
 // The fold is the point. Before this, every admin surface rendered `String(err)`
 // verbatim, so a locked glyph reported itself as
@@ -14,22 +14,22 @@
 import { Box } from '@mui/material';
 
 import { de } from '@/locales/admin';
-import type { ApiFehler } from './apiFehlertext';
+import type { ApiErrorText } from './apiErrorText';
 
-export function FehlerText({ fehler, prefix }: { fehler: ApiFehler; prefix?: string }) {
+export function ErrorText({ error, prefix }: { error: ApiErrorText; prefix?: string }) {
   return (
     <>
       {prefix ? `${prefix} ` : null}
-      {fehler.satz}
+      {error.sentence}
       <Box component="details" sx={{ mt: 0.5, fontSize: '0.8125rem' }}>
         <Box component="summary" sx={{ cursor: 'pointer', opacity: 0.8 }}>
-          {de.admin.fehler.detailSummary}
+          {de.admin.errors.detailSummary}
         </Box>
         <Box
           component="code"
           sx={{ display: 'block', mt: 0.5, fontFamily: 'monospace', wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
         >
-          {fehler.detail}
+          {error.detail}
         </Box>
       </Box>
     </>

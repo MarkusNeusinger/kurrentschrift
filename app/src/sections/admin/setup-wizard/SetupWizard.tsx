@@ -54,7 +54,7 @@ import {
 import { useState } from 'react';
 
 import { de, fmt } from '@/locales/admin';
-import { FehlerText } from '@/sections/admin/shell/FehlerText';
+import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { useCropView } from './useCropView';
 import { useWizard } from './useWizard';
 import { WizardCanvas } from './WizardCanvas';
@@ -254,7 +254,7 @@ export function SetupWizard({ glyphKey, open, onClose }: { glyphKey: string; ope
       </Box>
       {snack && (
         <Alert severity={snack.kind} onClose={() => setSnack(null)} sx={{ mx: 2 }}>
-          {snack.fehler ? <FehlerText fehler={snack.fehler} prefix={snack.text} /> : snack.text}
+          {snack.error ? <ErrorText error={snack.error} prefix={snack.text} /> : snack.text}
         </Alert>
       )}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, borderTop: 1, borderColor: 'divider' }}>

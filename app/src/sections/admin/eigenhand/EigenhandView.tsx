@@ -42,14 +42,14 @@ import {
   printEigenhandSheets,
 } from '@/lib/api';
 import type { EigenhandBestand, EigenhandBucket, EigenhandStripFilter } from '@/lib/api';
-import { apiFehlertext } from '@/sections/admin/shell/apiFehlertext';
-import type { ApiFehler } from '@/sections/admin/shell/apiFehlertext';
+import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
+import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
 import { glyphOf } from '@/sections/admin/eigenhand/coverageLabels';
 import { SetupPanel } from '@/sections/admin/eigenhand/SetupPanel';
 import { StripsPanel } from '@/sections/admin/eigenhand/StripsPanel';
 import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
-import { FehlerText } from '@/sections/admin/shell/FehlerText';
+import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { paper } from '@/styles/paper';
 
@@ -161,7 +161,7 @@ export function EigenhandView() {
   const [hands, setHands] = useState<string[]>([]);
   const [hand, setHand] = useState('');
   const [bestand, setBestand] = useState<EigenhandBestand | null>(null);
-  const [loadError, setLoadError] = useState<ApiFehler | null>(null);
+  const [loadError, setLoadError] = useState<ApiErrorText | null>(null);
   const [loading, setLoading] = useState(false);
   const [sheets, setSheets] = useState(1);
   const [repeat, setRepeat] = useState(1);
@@ -172,7 +172,7 @@ export function EigenhandView() {
   // WITH the error instead of being fixed at the render site. Before this both
   // arrived under „Der Bogen konnte nicht erzeugt werden.", the PDF case with
   // its own lead pasted in front of the raw line on top of that.
-  const [printError, setPrintError] = useState<{ prefix: string; fehler: ApiFehler } | null>(null);
+  const [printError, setPrintError] = useState<{ prefix: string; error: ApiErrorText } | null>(null);
   const [openOnly, setOpenOnly] = useState(true);
   // What the strips panel shows: a word, an item, or everything. A cell of
   // the coverage grid sets the item and brings the panel into view.
@@ -197,7 +197,7 @@ export function EigenhandView() {
         // empty.
         setHand((current) => current || data.hands[0] || `mn-${data.styles[1] ?? 'suetterlin'}`);
       })
-      .catch((err: unknown) => !cancelled && setLoadError(apiFehlertext(err)));
+      .catch((err: unknown) => !cancelled && setLoadError(apiErrorText(err)));
     return () => {
       cancelled = true;
     };
@@ -218,7 +218,7 @@ export function EigenhandView() {
           // layer covers the case properly now: a malformed hand id (the only
           // 400 this route raises) gets the „Angaben stimmen nicht" sentence and
           // the server's own line underneath.
-          setLoadError(apiFehlertext(err));
+          setLoadError(apiErrorText(err));
         })
         .finally(() => setLoading(false));
     },
@@ -242,7 +242,7 @@ export function EigenhandView() {
         setPrinted(res.sheets.map((s) => s.sheet));
         reload(hand);
       })
-      .catch((err: unknown) => setPrintError({ prefix: t.printError, fehler: apiFehlertext(err) }))
+      .catch((err: unknown) => setPrintError({ prefix: t.printError, error: apiErrorText(err) }))
       .finally(() => setPrinting(false));
   };
 
@@ -258,7 +258,7 @@ export function EigenhandView() {
     try {
       showPdf(await fetchEigenhandSheetPdf(hand, sheet));
     } catch (err: unknown) {
-      setPrintError({ prefix: t.pdfError, fehler: apiFehlertext(err) });
+      setPrintError({ prefix: t.pdfError, error: apiErrorText(err) });
     }
   };
 
@@ -268,7 +268,7 @@ export function EigenhandView() {
     try {
       showPdf(await fetchEigenhandStackPdf(hand, printed));
     } catch (err: unknown) {
-      setPrintError({ prefix: t.pdfError, fehler: apiFehlertext(err) });
+      setPrintError({ prefix: t.pdfError, error: apiErrorText(err) });
     }
   };
 
@@ -305,7 +305,7 @@ export function EigenhandView() {
 
       {loadError && !bestand && (
         <Alert severity="warning" sx={{ mb: 3 }}>
-          <FehlerText fehler={loadError} prefix={t.loadError} />
+          <ErrorText error={loadError} prefix={t.loadError} />
         </Alert>
       )}
 
@@ -412,7 +412,7 @@ export function EigenhandView() {
 
             {printError && (
               <Alert severity="warning" sx={{ mt: 2 }}>
-                <FehlerText fehler={printError.fehler} prefix={printError.prefix} />
+                <ErrorText error={printError.error} prefix={printError.prefix} />
               </Alert>
             )}
 

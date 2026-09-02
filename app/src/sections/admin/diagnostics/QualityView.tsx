@@ -15,11 +15,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAdmin } from '@/context/AdminContext';
 import { getQuality, postResample } from '@/lib/api';
 import type { QualityComparison, QualityData } from '@/lib/api';
-import { apiFehlertext } from '@/sections/admin/shell/apiFehlertext';
-import type { ApiFehler } from '@/sections/admin/shell/apiFehlertext';
+import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
+import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de } from '@/locales/admin';
 import { ScoreBreakdown, ScoreChip } from '@/sections/admin/quality/scoreParts';
-import { FehlerText } from '@/sections/admin/shell/FehlerText';
+import { ErrorText } from '@/sections/admin/shell/ErrorText';
 
 interface Props {
   glyphKey: string;
@@ -78,14 +78,14 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
   const [loading, setLoading] = useState(false);
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
-  const [error, setError] = useState<ApiFehler | null>(null);
+  const [error, setError] = useState<ApiErrorText | null>(null);
 
   const fetchQuality = useCallback(() => {
     setLoading(true);
     setError(null);
     getQuality(sourceId, glyphKey)
       .then((d) => setData(d))
-      .catch((e: unknown) => setError(apiFehlertext(e)))
+      .catch((e: unknown) => setError(apiErrorText(e)))
       .finally(() => setLoading(false));
   }, [sourceId, glyphKey]);
 
@@ -106,7 +106,7 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
         // one) refetches against the freshly stored canonical.
         refreshCrop();
       })
-      .catch((e: unknown) => setError(apiFehlertext(e)))
+      .catch((e: unknown) => setError(apiErrorText(e)))
       .finally(() => setApplying(false));
   }, [sourceId, glyphKey, refreshCrop]);
 
@@ -127,7 +127,7 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
         {/* No canonical yet is a state, not a failure — the typed status says
             so without sniffing the message. */}
         <Alert severity={error.status === 404 ? 'info' : 'error'}>
-          {error.status === 404 ? de.admin.diagnostics.noCanonicalShort : <FehlerText fehler={error} />}
+          {error.status === 404 ? de.admin.diagnostics.noCanonicalShort : <ErrorText error={error} />}
         </Alert>
         <Button size="small" startIcon={<RefreshIcon />} onClick={fetchQuality} sx={{ mt: 1 }}>
           {de.admin.diagnostics.reload}
@@ -144,7 +144,7 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
     <Stack spacing={1.5}>
       {error && (
         <Alert severity="error">
-          <FehlerText fehler={error} />
+          <ErrorText error={error} />
         </Alert>
       )}
       {applied && <Alert severity="success">{t.applied}</Alert>}

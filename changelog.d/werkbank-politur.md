@@ -13,7 +13,7 @@
   in a blue-grey `info` box. The lock is now a chip in the wizard title and a
   warning on the Weg step, and the failure is red (#487).
 - **The workbench answers in German, keeping the server's own line.** All 18
-  admin surfaces rendered `String(err)` verbatim; `apiFehlertext` turns a status
+  admin surfaces rendered `String(err)` verbatim; `apiErrorText` turns a status
   into one sentence that names the next step, with the raw English detail folded
   into a „Technische Meldung" `<details>` underneath — the sentence answers, the
   detail proves. The 404 branches read the typed status instead of sniffing the

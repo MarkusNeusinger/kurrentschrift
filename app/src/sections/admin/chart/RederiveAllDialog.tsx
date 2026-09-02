@@ -30,7 +30,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useAdmin } from '@/context/AdminContext';
 import { knownGlyph } from '@/domain/glyphs';
 import { getQuality, postResample } from '@/lib/api';
-import { apiFehlertext } from '@/sections/admin/shell/apiFehlertext';
+import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
 
 interface Props {
@@ -120,11 +120,11 @@ export function RederiveAllDialog({ open, onClose }: Props) {
         applied += 1;
         updateRow(i, { status: 'done' });
       } catch (err) {
-        const fehler = apiFehlertext(err);
+        const errorText = apiErrorText(err);
         // The cell itself only says „fehlgeschlagen" — the tooltip is the whole
         // report, so it carries the German sentence AND the server's own line
         // (the table has no room for a fold-out).
-        updateRow(i, { status: 'failed', error: `${fehler.satz}\n${fehler.detail}` });
+        updateRow(i, { status: 'failed', error: `${errorText.sentence}\n${errorText.detail}` });
       }
     }
     if (applied > 0) refreshCrop();

@@ -6,12 +6,12 @@ export const admin = {
   layout: {
     openMenu: 'Menü öffnen',
   },
-  // The German error layer (sections/admin/shell/apiFehlertext.ts, rendered by
-  // FehlerText.tsx beside it): one sentence per HTTP status, each naming the
+  // The German error layer (sections/admin/shell/apiErrorText.ts, rendered by
+  // ErrorText.tsx beside it): one sentence per HTTP status, each naming the
   // next step rather than the failure. The raw English line stays reachable
   // under `detailSummary` — the sentence is the answer, the detail is the
   // evidence.
-  fehler: {
+  errors: {
     offline: 'Keine Verbindung zur API — läuft der Server noch?',
     badRequest: 'Die Anfrage passt nicht zu den Daten — die Angaben stimmen so nicht.',
     noAdmin: 'Kein Admin-Zugang — Anmeldung bzw. Token prüfen.',
