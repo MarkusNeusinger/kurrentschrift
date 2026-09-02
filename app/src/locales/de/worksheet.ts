@@ -21,11 +21,17 @@ export const worksheet = {
     practiceRows: 'Leerzeilen je Vorschrift',
     loading: 'Der Text wird geschrieben …',
     error: 'Der Text konnte nicht gesetzt werden — der Server ist gerade nicht erreichbar.',
-    tooWide: 'Zeile {{no}} ist mit {{chars}} Zeichen zu breit für {{xh}} mm Mittellänge — höchstens {{fits}} passen.',
+    // „etwa“, and not „höchstens“: the count comes from this line's own width
+    // per character, which is a good guide but still an average — a line of m
+    // holds fewer, one of i more.
+    tooWide: 'Zeile {{no}} ist mit {{chars}} Zeichen zu breit für {{xh}} mm Mittellänge — es passen etwa {{fits}}.',
     // Only reachable with an x-height so large that even one letter overruns
     // the row; naming a count of 0 would read like a riddle.
     tooWideNone: 'Zeile {{no}} passt bei {{xh}} mm Mittellänge in keiner Länge in die Breite — eine kleinere Mittellänge schafft Raum.',
     noRow: 'Für {{lines}} ist auf dem Blatt kein Platz mehr — weniger Leerzeilen oder eine kleinere Mittellänge schaffen welchen.',
+    // The text field's own two caps. They used to take their share in
+    // silence; a sheet that says what it leaves out has to own these too.
+    tooLong: 'Zeile {{no}} ist auf {{max}} Zeichen gekürzt — eingegeben waren {{typed}}.',
     lineNo: 'Zeile {{no}}',
     missing: 'Noch nicht nachgeschrieben, bleibt frei: {{letters}}',
     scriptMismatch: 'Die Vorschrift wird in Sütterlin gesetzt — {{script}} ist noch nicht nachgeschrieben. Die Lineatur bleibt {{script}}.',

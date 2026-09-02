@@ -61,7 +61,12 @@ const opts = { xHeightMm: 6, trace: false, practiceRows: 2, left: 15, right: 195
 
 // A text-field line, numbered as typed: the tests read easier when the row
 // number is implicit, so `line('a', 1)` is spelled only where it matters.
-const line = (text: string, composed: TextLine['composed'], no = 1): TextLine => ({ no, text, composed });
+const line = (text: string, composed: TextLine['composed'], no = 1): TextLine => ({
+  no,
+  text,
+  typed: text.length,
+  composed,
+});
 
 // Byte-preserving decode (see lesetafel.test.ts for why not TextDecoder).
 async function latin1(blob: Blob): Promise<string> {
@@ -73,13 +78,24 @@ async function latin1(blob: Blob): Promise<string> {
 
 describe('textLines', () => {
   it('trims, normalises and drops empty lines, capped in count and length', () => {
-    expect(textLines('  Guten Morgen \n\n\r\nlesen\n')).toEqual([
-      { no: 1, text: 'Guten Morgen' },
-      { no: 4, text: 'lesen' },
+    expect(textLines('  Guten Morgen \n\n\r\nlesen\n').lines).toEqual([
+      { no: 1, text: 'Guten Morgen', typed: 12 },
+      { no: 4, text: 'lesen', typed: 5 },
     ]);
-    expect(textLines('über')).toEqual([{ no: 1, text: 'über' }]); // NFC composes the umlaut, like the server
-    expect(textLines(Array.from({ length: MAX_LINES + 3 }, (_, i) => `z${i}`).join('\n'))).toHaveLength(MAX_LINES);
-    expect(textLines('x'.repeat(MAX_LINE_LEN + 10))[0].text).toHaveLength(MAX_LINE_LEN);
+    expect(textLines('über').lines).toEqual([{ no: 1, text: 'über', typed: 4 }]); // NFC composes the umlaut, like the server
+  });
+
+  it('reports both of its own caps instead of applying them in silence', () => {
+    // Rows past the cap are handed back, numbered, so the status can name
+    // them — they used to be sliced off and never mentioned again.
+    const many = textLines(Array.from({ length: MAX_LINES + 3 }, (_, i) => `z${i}`).join('\n'));
+    expect(many.lines).toHaveLength(MAX_LINES);
+    expect(many.overflow.map((l) => l.no)).toEqual([MAX_LINES + 1, MAX_LINES + 2, MAX_LINES + 3]);
+    // A shortened row keeps the length it was typed at, which is what makes
+    // the difference sayable.
+    const long = textLines('x'.repeat(MAX_LINE_LEN + 10)).lines[0];
+    expect(long.text).toHaveLength(MAX_LINE_LEN);
+    expect(long.typed).toBe(MAX_LINE_LEN + 10);
   });
 });
 
@@ -141,13 +157,13 @@ describe('placeText', () => {
       rows,
       opts,
     );
-    expect(placed.tooWide).toEqual([{ no: 1, text: 'weit', chars: 4, fits: 2 }]);
+    expect(placed.tooWide).toEqual([{ no: 1, text: 'weit', typed: 4, chars: 4, fits: 2 }]);
     expect(placed.placed).toEqual([]);
     // Row 0 is held open for the too-wide line and marked over its Mittelband;
     // the pending line takes row 3, so 'ok' lands on row 6 — which this page
     // does not have.
     expect(placed.marks).toEqual([{ no: 1, y: rows[0].waist, height: rows[0].baseline - rows[0].waist, x: 18, width: 174 }]);
-    expect(placed.noRow).toEqual([{ no: 3, text: 'ok' }]);
+    expect(placed.noRow).toEqual([{ no: 3, text: 'ok', typed: 2 }]);
     // A line with nothing writable (every letter missing) keeps its rows too,
     // and its missing letters are named.
     const blank = placeText(
@@ -168,21 +184,21 @@ describe('placeText', () => {
     // OWN composition, not from an average, so the sentence under the field
     // holds for this line rather than for a typical one.
     const placed = placeText([line('zehnzeilig', composed(19.5), 2)], rows, { ...opts, xHeightMm: 12 });
-    expect(placed.tooWide).toEqual([{ no: 2, text: 'zehnzeilig', chars: 10, fits: 7 }]);
+    expect(placed.tooWide).toEqual([{ no: 2, text: 'zehnzeilig', typed: 10, chars: 10, fits: 7 }]);
   });
 
   it('reports the lines without a row left and the union of the missing letters', () => {
     const lines = Array.from({ length: 4 }, (_, i) => line(`l${i}`, composed(1, [`k${i}`]), i + 1));
     const placed = placeText(lines, rows, { ...opts, practiceRows: 1 });
     expect(placed.placed).toEqual(['l0', 'l1', 'l2']);
-    expect(placed.noRow).toEqual([{ no: 4, text: 'l3' }]);
+    expect(placed.noRow).toEqual([{ no: 4, text: 'l3', typed: 2 }]);
     expect(placed.missing).toEqual(['k0', 'k1', 'k2', 'k3']);
   });
 
   it('puts nothing on a page without rows; a cleared practice count counts as none', () => {
-    expect(placeText([line('a', composed(1))], [], opts).noRow).toEqual([{ no: 1, text: 'a' }]);
+    expect(placeText([line('a', composed(1))], [], opts).noRow).toEqual([{ no: 1, text: 'a', typed: 1 }]);
     // A pending line without a row left is reported too — it can never be placed.
-    expect(placeText([line('wartet', null)], [], opts).noRow).toEqual([{ no: 1, text: 'wartet' }]);
+    expect(placeText([line('wartet', null)], [], opts).noRow).toEqual([{ no: 1, text: 'wartet', typed: 6 }]);
     // Nor is a too-wide line given a mark it has no row to sit on.
     const noRows = placeText([line('weit', composed(40))], [], opts);
     expect(noRows.marks).toEqual([]);

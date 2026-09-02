@@ -6,13 +6,20 @@
   Sütterlin preset, and the only hint sat in a closed „Mehr dazu“ popover that
   named a different number (website audit 2026-09-02). Now the line keeps its
   row, the row is marked in the preview with its number, and the field says
-  „Zeile 1 ist mit 37 Zeichen zu breit für 6 mm Mittellänge — höchstens 23
-  passen.“ The Lineatur itself stays untouched: no scaling, no re-wrapping at a
+  „Zeile 1 ist mit 37 Zeichen zu breit für 6 mm Mittellänge — es passen etwa
+  23.“ The Lineatur itself stays untouched: no scaling, no re-wrapping at a
   word boundary (author's decision 2026-09-02) — a Vorschrift that no longer
   sits exactly between its lines has stopped being a Vorschrift. The counts are
   measured, not guessed: how many characters fit comes from that line's own
   composition, and the help text's estimate from `AVG_ADVANCE_UNITS`, the
-  composer's own average over a–z (#499).
+  composer's own average over a–z. Both stay honest about being estimates —
+  a line of m holds fewer than one of i (#499).
+- **The text field's own two caps stop taking their share in silence.** A row
+  longer than 60 characters was cut and rows past the twelfth were dropped, both
+  without a word — the same defect the too-wide line had, one layer up. Now
+  „Zeile 1 ist auf 60 Zeichen gekürzt — eingegeben waren 68.“ and the rows past
+  the cap are named with the ones the sheet has no space for, in the order of
+  the field and with consecutive runs collapsed to „Zeile 4 bis 15“ (#499).
 - **The help text promises what the sheet can keep.** „Höchstens 12 Zeilen mit
   je 60 Zeichen“ quoted the text field's cap while 20 characters already ran off
   the row; it now computes from the chosen Mittellänge and page margin — 18

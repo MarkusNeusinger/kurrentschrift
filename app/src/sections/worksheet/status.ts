@@ -9,7 +9,7 @@
 
 import { lettersFromKeys } from '@/domain/glyphs';
 import type { LineatureConfig } from '@/lib/lineatur';
-import type { InputLine, PlacedText } from '@/lib/uebungstext';
+import { MAX_LINE_LEN, type InputLine, type PlacedText } from '@/lib/uebungstext';
 import { de, fmt } from '@/locales';
 
 import type { WorksheetText } from './useWorksheetText';
@@ -29,12 +29,25 @@ export interface TextStatus {
 export const mmLabel = (v: number): string =>
   (Number.isFinite(v) ? v : 0).toLocaleString('de-DE', { maximumFractionDigits: 2 });
 
-/** "Zeile 3", "Zeile 3 und 4", "Zeile 3, 4 und 5" — a list a person reads
- * aloud, not a comma-separated dump. */
+/** "Zeile 3", "Zeile 3 und 4", "Zeile 3, 4 und 7", "Zeile 4 bis 15" — a list a
+ * person reads aloud, not a comma-separated dump. Three or more consecutive
+ * rows collapse into a range: a full sheet leaves a dozen rows over, and
+ * naming each of them turns the sentence into a wall of numbers. */
 export function lineList(lines: readonly InputLine[]): string {
-  const nos = lines.map((l) => String(l.no));
-  const head = nos.slice(0, -1).join(', ');
-  const joined = nos.length > 1 ? `${head} und ${nos[nos.length - 1]}` : nos[0];
+  const nos = [...lines].map((l) => l.no).sort((a, b) => a - b);
+  const parts: string[] = [];
+  for (let i = 0; i < nos.length; ) {
+    let end = i;
+    while (end + 1 < nos.length && nos[end + 1] === nos[end] + 1) end++;
+    if (end - i >= 2) {
+      parts.push(`${nos[i]} bis ${nos[end]}`);
+      i = end + 1;
+    } else {
+      parts.push(String(nos[i]));
+      i++;
+    }
+  }
+  const joined = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} und ${parts[parts.length - 1]}` : parts[0];
   return fmt(de.worksheet.text.lineNo, { no: joined });
 }
 
@@ -48,29 +61,57 @@ export function textStatusOf(written: WorksheetText, placed: PlacedText, xHeight
   const notes: string[] = [];
   if (written.failed.length) notes.push(t.error);
   else if (written.loading) notes.push(t.loading);
-  // The per-line complaints are read in the order of the field, whichever
-  // kind they are — „Zeile 2 …“ before „Für Zeile 1 …“ reads like a slip.
-  const perLine: Array<{ no: number; text: string }> = placed.tooWide.map((line) => ({
-    no: line.no,
-    text:
-      line.fits > 0
-        ? fmt(t.tooWide, { no: line.no, chars: line.chars, xh: mm, fits: line.fits })
-        : fmt(t.tooWideNone, { no: line.no, xh: mm }),
-  }));
-  if (placed.noRow.length) {
+
+  // Every complaint carries the row it is about, so the whole list can be read
+  // in the order of the field whatever kind each one is — „Zeile 2 …“ before
+  // „Für Zeile 1 …“ reads like a slip. The no-row lines are grouped only AFTER
+  // sorting, and only where they are neighbours: rows 1 and 3 with a too-wide
+  // row 2 between them stay three separate sentences in row order.
+  const perLine: Array<{ no: number; kind: 'wide' | 'noRow' | 'cut'; line: InputLine; text: string }> = [];
+  for (const line of placed.tooWide) {
     perLine.push({
-      no: Math.min(...placed.noRow.map((l) => l.no)),
-      text: fmt(t.noRow, { lines: lineList(placed.noRow) }),
+      no: line.no,
+      kind: 'wide',
+      line,
+      text:
+        line.fits > 0
+          ? fmt(t.tooWide, { no: line.no, chars: line.chars, xh: mm, fits: line.fits })
+          : fmt(t.tooWideNone, { no: line.no, xh: mm }),
     });
   }
-  perLine.sort((a, b) => a.no - b.no);
-  notes.push(...perLine.map((n) => n.text));
+  for (const line of placed.noRow) perLine.push({ no: line.no, kind: 'noRow', line, text: '' });
+  // The field's own two caps: a row shortened to MAX_LINE_LEN, and the rows
+  // past MAX_LINES that never reached the sheet at all.
+  for (const line of [...written.lines, ...written.overflow]) {
+    if (line.typed > line.text.length) {
+      perLine.push({
+        no: line.no,
+        kind: 'cut',
+        line,
+        text: fmt(t.tooLong, { no: line.no, typed: line.typed, max: MAX_LINE_LEN }),
+      });
+    }
+  }
+  for (const line of written.overflow) perLine.push({ no: line.no, kind: 'noRow', line, text: '' });
+  perLine.sort((a, b) => a.no - b.no || a.kind.localeCompare(b.kind));
+
+  for (let i = 0; i < perLine.length; i++) {
+    const entry = perLine[i];
+    if (entry.kind !== 'noRow') {
+      notes.push(entry.text);
+      continue;
+    }
+    const run = [entry.line];
+    while (i + 1 < perLine.length && perLine[i + 1].kind === 'noRow') run.push(perLine[++i].line);
+    notes.push(fmt(t.noRow, { lines: lineList(run) }));
+  }
+
   const letters = lettersFromKeys(placed.missing);
   if (letters) notes.push(fmt(t.missing, { letters }));
   if (!notes.length) return null;
-  // Pending and missing letters are news; a dropped line is a defect the
-  // writer has to answer, and wears the field's error colour for it.
-  const error = written.failed.length > 0 || placed.tooWide.length > 0 || placed.noRow.length > 0;
+  // Pending and missing letters are news; a line the sheet drops or shortens
+  // is a defect the writer has to answer, and wears the field's error colour.
+  const error = written.failed.length > 0 || perLine.length > 0;
   return { text: notes.join(' · '), error };
 }
 

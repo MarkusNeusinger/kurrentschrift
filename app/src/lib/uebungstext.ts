@@ -62,16 +62,31 @@ export interface InputLine {
    * the number in a message names the row the writer sees. */
   no: number;
   text: string;
+  /** The row's length as typed, before the `MAX_LINE_LEN` cut. Greater than
+   * `text.length` exactly when the row was shortened. */
+  typed: number;
 }
 
-/** The non-empty lines of the text field, trimmed and NFC-normalised like the
- * server, capped in count and length, each keeping its own row number. */
-export function textLines(text: string): InputLine[] {
-  return text
+/** What the text field holds, read the way the sheet uses it. Both caps report
+ * what they take away instead of applying it behind the writer's back — the
+ * same rule the too-wide line follows. */
+export interface TextFieldRead {
+  /** The rows the sheet works with: non-empty, trimmed, NFC-normalised like
+   * the server, at most `MAX_LINES` of them, each at most `MAX_LINE_LEN`. */
+  lines: InputLine[];
+  /** Non-empty rows past `MAX_LINES` — not written, and named for it. */
+  overflow: InputLine[];
+}
+
+export function textLines(text: string): TextFieldRead {
+  const all = text
     .split(/\r?\n/)
-    .map((line, i) => ({ no: i + 1, text: line.normalize('NFC').trim().slice(0, MAX_LINE_LEN).trim() }))
-    .filter((line) => line.text.length > 0)
-    .slice(0, MAX_LINES);
+    .map((line, i) => {
+      const trimmed = line.normalize('NFC').trim();
+      return { no: i + 1, text: trimmed.slice(0, MAX_LINE_LEN).trim(), typed: trimmed.length };
+    })
+    .filter((line) => line.text.length > 0);
+  return { lines: all.slice(0, MAX_LINES), overflow: all.slice(MAX_LINES) };
 }
 
 export interface TextLine extends InputLine {
@@ -98,8 +113,10 @@ export interface PlaceOptions {
 export interface TooWideLine extends InputLine {
   /** The line's length, the figure the writer can act on. */
   chars: number;
-  /** How many characters of THIS line fit — from its own composed width, not
-   * from an average. 0 when even one character is too wide. */
+  /** Roughly how many characters of THIS line fit: its own composed width per
+   * character, which is a far better guide than a global average but still an
+   * average — a line that opens on m m m holds fewer, one on i i i more. The
+   * message says „etwa“ for that reason. 0 when not even one fits. */
   fits: number;
 }
 
@@ -153,7 +170,7 @@ export function placeText(lines: readonly TextLine[], rows: readonly RowMetrics[
       // missing-letter note names what stays blank. Without a row left it
       // is reported like any other line — it can never be placed.
       if (rows[next]) next += step;
-      else out.noRow.push({ no: line.no, text: line.text });
+      else out.noRow.push({ no: line.no, text: line.text, typed: line.typed });
       continue;
     }
     const lineWidth = (c.bounds.max_x - c.bounds.min_x) * s;
@@ -161,11 +178,12 @@ export function placeText(lines: readonly TextLine[], rows: readonly RowMetrics[
       // Too wide for the ruling. The line is not scaled and not re-wrapped —
       // it would no longer sit in its rows — but it does not disappear
       // either: it keeps its row, the row is marked in the preview, and the
-      // report says how many of its characters would have fitted.
+      // report says roughly how many of its characters would have fitted.
       const perChar = lineWidth / line.text.length;
       out.tooWide.push({
         no: line.no,
         text: line.text,
+        typed: line.typed,
         chars: line.text.length,
         fits: perChar > 0 ? Math.floor(width / perChar) : 0,
       });
@@ -184,7 +202,7 @@ export function placeText(lines: readonly TextLine[], rows: readonly RowMetrics[
     }
     const row = rows[next];
     if (!row) {
-      out.noRow.push({ no: line.no, text: line.text });
+      out.noRow.push({ no: line.no, text: line.text, typed: line.typed });
       continue;
     }
     // The trace row is skipped silently at the page's end — the model line
