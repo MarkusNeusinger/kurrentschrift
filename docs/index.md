@@ -291,9 +291,10 @@ Policy- und Technik-Dokumente.
   sechsteilige Fehler-Taxonomie mit operativen Definitionen, die
   Konstruktionsregeln des Instruments samt ihrer Begründung (geschichtete
   Stichprobe, blinde Wiederholungen, Rückhaltemenge, Marker-Regeln), die
-  Vorregistrierung des Auswerteplans, Ablauf einer Runde, Provenienz-Stempel
-  und der paarige Vorher/Nachher-Durchgang — die Methode, die Befunde stehen
-  in der Qualitätsmetrik
+  Vorregistrierung des Auswerteplans, Ablauf einer Runde, Provenienz-Stempel,
+  der paarige Vorher/Nachher-Durchgang und die Wortrunde auf der
+  Echtheitsfrage (§8a) — die Methode, die Befunde stehen in der
+  Qualitätsmetrik
 - **[Werkzeuge](reference/werkzeuge.md)** — Einstieg in die Dev-Tools
   unter `tools/`: die Inspektions-Labs glyphlab/wordlab/pairlab
   (matplotlib-Overlays, `--extra viz`, Ausgabe nach `temp/`) samt der

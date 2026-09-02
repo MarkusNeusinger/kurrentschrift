@@ -24,25 +24,42 @@ from collections import Counter
 
 import numpy as np
 import pytest
+from PIL import Image
 
 from tools.humanbench.build import (
     REPEAT_JITTER,
     REPEAT_MIN_GLYPH_COUNT,
+    SIDE_BASE,
+    SIDE_CANDIDATE,
+    WORD_MIN_REPEAT_GAP,
+    WORD_ZOOM,
+    ArmStroke,
+    ArmWord,
     Occurrence,
+    WordCase,
+    arm_gap,
+    build_word,
+    check_arm_scope,
+    clipped_words,
     context_strokes,
     crop_window,
     identities_from,
     insert_repeats,
+    load_arm,
     match_pairs,
     occurrence_rows,
     parse_args,
     pick_repeats,
+    pick_word_repeats,
     polyline_strokes,
     provenance,
     rank_rows,
     render_item,
+    render_word_item,
     slim_key,
     stratify,
+    to_crop,
+    word_cases,
     word_trace_context,
 )
 
@@ -508,3 +525,362 @@ def test_a_context_free_round_still_renders():
     """A word of one letter has no connectors; that is a round, not a failure."""
     assert context_strokes([], (0, 0, 10, 10), 2) == []
     assert context_strokes([np.array([[1.0, 1.0]])], (0, 0, 10, 10), 2) == []
+
+
+# ------------------------------------------------------------------ the word mode
+#
+# The third mode judges two COMPOSITIONS of one specimen word against each other
+# on the authenticity question. It is the only one that can see the defects
+# every frozen ruler resamples away, so what is guarded here is that it draws
+# the ink it claims to draw, in the frame it claims to draw it in, and that the
+# arms cannot leak which side is which.
+
+
+def arm_word(xh: float = 20.0, tx: float = 0.0, ty: float = 0.0, *, dy: float = 0.0, width: float = 0.15) -> ArmWord:
+    line = np.array([[0.0, 0.0 + dy], [1.0, 1.0 + dy], [2.0, 0.0 + dy]])
+    ring = np.array([[0.0, 0.0], [1.0, 0.2], [1.0, -0.2], [0.0, -0.2]])
+    return ArmWord(xh=xh, tx=tx, ty=ty, strokes=(ArmStroke(line, width),), fills=(ring,))
+
+
+def word_case(entry_id: str = "unter", **arms) -> WordCase:
+    drawn = {SIDE_BASE: arm_word(), SIDE_CANDIDATE: arm_word(dy=0.1), **arms}
+    return WordCase(
+        entry_id=entry_id,
+        text=entry_id,
+        crop=np.zeros((60, 120), dtype=np.uint8),
+        baseline_row=40.0,
+        xh=20.0,
+        arms=drawn,
+        peak=0.1,
+    )
+
+
+def fixture_root(tmp_path, ids=("unter", "das", "lesen")):
+    """A minimal word bench fixture root — manifest, word.json, crop.png.
+
+    Written here rather than copied: the real roots are gitignored learned data
+    (quellen-und-rechte.md §5), so a test that needed one could not run in CI at
+    all — and the builder only ever reads these three things.
+    """
+    root = tmp_path / "suetterlin-1922"
+    root.mkdir(parents=True)
+    (root / "manifest.json").write_text(
+        json.dumps({"source_id": "suetterlin-1922", "words": [{"id": i, "word": i, "scorable": True} for i in ids]})
+    )
+    for entry_id in ids:
+        word_dir = root / entry_id
+        word_dir.mkdir()
+        (word_dir / "word.json").write_text(
+            json.dumps({"id": entry_id, "word": entry_id, "rect": [0, 0, 120, 60], "baseline_y": 40, "midband_y": 20})
+        )
+        Image.fromarray(np.full((60, 120), 200, dtype=np.uint8), "L").save(word_dir / "crop.png")
+    return root
+
+
+def arm_file(tmp_path, name, ids, *, dy=0.0, width=0.15, xh=20.0):
+    path = tmp_path / f"{name}.json"
+    path.write_text(
+        json.dumps(
+            {
+                "arm": name,
+                "words": {
+                    entry_id: {
+                        "registration": {"xh_px": xh, "tx": 1.0, "ty": 0.0},
+                        "strokes": [{"points": [[0.0, dy], [1.0, 1.0 + dy], [2.0, dy]], "width": width}],
+                        "fills": [[[0.0, 0.0], [1.0, 0.2], [1.0, -0.2]]],
+                    }
+                    for entry_id in ids
+                },
+            }
+        )
+    )
+    return path
+
+
+def test_load_arm_reads_the_contract_and_stamps_the_bytes(tmp_path):
+    """The digest is not decoration: an arm is produced outside this tool, and
+    without it a round names a file that may since have been rewritten."""
+    arm = load_arm(arm_file(tmp_path, "LF11", ["unter"]))
+    assert arm.name == "LF11" and len(arm.digest) == 16
+    drawn = arm.words["unter"]
+    assert drawn.xh == 20.0 and drawn.tx == 1.0
+    assert len(drawn.strokes) == 1 and drawn.strokes[0].width == 0.15
+    assert len(drawn.fills) == 1
+
+
+@pytest.mark.parametrize(
+    "payload, message",
+    [
+        ({"arm": "x"}, "needs a 'words' object"),
+        ({"words": {"a": {"strokes": [{"points": [[0, 0], [1, 1]]}]}}}, "numeric xh_px"),
+        ({"words": {"a": {"registration": {"xh_px": 20}, "strokes": [], "fills": []}}}, "nothing drawable"),
+        ({"words": {"a": {"registration": {"xh_px": 20}, "strokes": [{"points": [[0, 0]]}]}}}, "at least two"),
+    ],
+)
+def test_load_arm_refuses_what_would_draw_half_a_word(tmp_path, payload, message):
+    path = tmp_path / "broken.json"
+    path.write_text(json.dumps(payload))
+    with pytest.raises(SystemExit, match=message):
+        load_arm(path)
+
+
+def test_to_crop_maps_the_word_frame_the_way_the_word_bench_draws_it():
+    """px = x·xh + tx, py = baseline_row + ty − y·xh (wordbench/run.py::_overlay).
+
+    Restating the formula across a module boundary is unavoidable and getting it
+    wrong is not subtle — the composition then misses the specimen by whole
+    x-heights — but it IS silent, so it is pinned here.
+    """
+    arm = arm_word(xh=30.0, tx=12.0, ty=-2.0)
+    points = np.array([[0.0, 0.0], [1.0, 1.0]])
+    # baseline row 40 + ty −2 = 38; y = 1 is one x-height ABOVE it, y counted down.
+    assert to_crop(points, arm, 40.0).tolist() == [[12.0, 38.0], [42.0, 8.0]]
+
+
+def test_arm_gap_is_symmetric_and_measured_in_x_heights():
+    """The word mode's severity key: how far the candidate MOVED the word."""
+    left = [np.array([[0.0, 0.0], [10.0, 0.0]])]
+    right = [np.array([[0.0, 4.0], [10.0, 4.0]])]
+    assert arm_gap(left, right, 20.0) == pytest.approx(0.2)
+    assert arm_gap(right, left, 20.0) == pytest.approx(0.2)
+
+
+def test_word_cases_discard_and_count_a_word_only_one_arm_draws(tmp_path):
+    """§8's rule, one layer up: a change that quietly stops composing a word is
+    a RESULT, and must not vanish into a shorter round that looks complete."""
+    root = fixture_root(tmp_path, ids=("unter", "das", "lesen", "keins"))
+    base = load_arm(arm_file(tmp_path, "base", ["unter", "das", "lesen"]))
+    candidate = load_arm(arm_file(tmp_path, "cand", ["unter", "lesen"], dy=0.1))
+    dropped: Counter = Counter()
+    cases = word_cases(root, base, candidate, dropped=dropped)
+    assert [c.entry_id for c in cases] == ["unter", "lesen"]
+    # Counted apart: a word the CANDIDATE lost is a result, one neither arm
+    # composed says nothing about the candidate at all.
+    assert dict(dropped) == {"only_base": 1, "neither_arm": 1}
+    assert cases[0].baseline_row == 40.0 and cases[0].xh == 20.0
+    assert cases[0].peak > 0  # the arms differ, so the severity key is non-zero
+
+
+def scoped_arm(tmp_path, name, **meta):
+    path = tmp_path / f"{name}.json"
+    payload = {
+        "arm": name,
+        **meta,
+        "words": {"unter": {"registration": {"xh_px": 20.0}, "strokes": [{"points": [[0, 0], [1, 1]]}]}},
+    }
+    path.write_text(json.dumps(payload))
+    return load_arm(path)
+
+
+def test_two_arms_from_the_same_reference_pass_the_scope_check(tmp_path):
+    scope = {"style": "suetterlin", "source_id": "suetterlin-1922", "settings": {"exported_at": "2026-08-14T06:02"}}
+    base = scoped_arm(tmp_path, "base", **scope)
+    candidate = scoped_arm(tmp_path, "cand", **scope)
+    assert check_arm_scope(base, candidate, style="suetterlin", source_id="suetterlin-1922") == []
+    # An arm that declares nothing cannot be checked — and is not refused for it.
+    assert check_arm_scope(scoped_arm(tmp_path, "bare"), base, style="suetterlin", source_id="suetterlin-1922") == []
+
+
+@pytest.mark.parametrize(
+    "left, right, message",
+    [
+        ({"style": "suetterlin"}, {"style": "kurrent"}, "style: base says"),
+        ({"source_id": "suetterlin-1922"}, {"source_id": "suetterlin-1922-abb22"}, "source_id: base says"),
+        ({"fixture_root": "/a"}, {"fixture_root": "/b"}, "fixture_root: base says"),
+        (
+            {"settings": {"exported_at": "2026-08-14"}},
+            {"settings": {"exported_at": "2026-09-01"}},
+            "a re-exported root is a re-baseline",
+        ),
+    ],
+)
+def test_arms_from_different_references_are_refused(tmp_path, left, right, message):
+    """The round's whole claim is that the two panels differ in the composition
+    and in nothing else. Two fixture roots carry different crops, slots and
+    registrations — and the round would still build, cleanly, over two things
+    that were never the same measurement."""
+    problems = check_arm_scope(
+        scoped_arm(tmp_path, "base", **left),
+        scoped_arm(tmp_path, "cand", **right),
+        style="suetterlin",
+        source_id="suetterlin-1922",
+    )
+    assert any(message in p for p in problems), problems
+
+
+def test_an_arm_that_disagrees_with_the_round_itself_is_refused(tmp_path):
+    problems = check_arm_scope(
+        scoped_arm(tmp_path, "base", style="kurrent"),
+        scoped_arm(tmp_path, "cand", style="kurrent"),
+        style="suetterlin",
+        source_id="suetterlin-1922",
+    )
+    assert len(problems) == 2  # both arms named, both wrong for this round
+    assert all("the round builds 'suetterlin'" in p for p in problems)
+
+
+def test_word_cases_take_the_declared_suspicion_class(tmp_path):
+    root = fixture_root(tmp_path, ids=("unter",))
+    base = load_arm(arm_file(tmp_path, "base", ["unter"]))
+    candidate = load_arm(arm_file(tmp_path, "cand", ["unter"], dy=0.1))
+    cases = word_cases(root, base, candidate, strata={"unter": "naht"})
+    assert cases[0].stratum == "naht"
+
+
+def test_a_word_screen_shares_one_crop_and_inks_both_arms():
+    """One image, one window, two panels — the shared frame is what keeps the
+    comparison blind, and the ink is what makes stroke weight judgeable."""
+    case = word_case()
+    item, window = render_word_item("S001", case, [SIDE_BASE, SIDE_CANDIDATE], zoom=2, pad_xh=0.4)
+    assert set(item) == {"id", "w", "h", "img", "panels"}
+    assert [sorted(panel) for panel in item["panels"]] == [["fills", "strokes", "widths"]] * 2
+    assert item["panels"][0]["strokes"] != item["panels"][1]["strokes"]
+    # The stroke width reaches the screen in panel pixels: 0.15 xh · 20 px · 2×.
+    assert item["panels"][0]["widths"] == [pytest.approx(6.0)]
+    assert base64.b64decode(item["img"])[:8] == b"\x89PNG\r\n\x1a\n"
+    assert window[2] - window[0] > 0 and window[3] - window[1] > 0
+
+
+def test_both_panels_of_a_word_screen_are_cut_from_the_SAME_window():
+    """Separate windows would give the sides different pixel dimensions — the
+    tell §8 rules out, and here it would also change the apparent letter size."""
+    case = word_case()
+    forward, window_a = render_word_item("S001", case, [SIDE_BASE, SIDE_CANDIDATE], zoom=2, pad_xh=0.4)
+    mirrored, window_b = render_word_item("R01", case, [SIDE_CANDIDATE, SIDE_BASE], zoom=2, pad_xh=0.4)
+    assert window_a == window_b
+    assert (forward["w"], forward["h"], forward["img"]) == (mirrored["w"], mirrored["h"], mirrored["img"])
+    assert forward["panels"][0] == mirrored["panels"][1]  # the same arm, the other side
+
+
+def test_clipped_words_names_a_composition_that_runs_past_its_own_crop():
+    """§3.4 with a word-sized failure: the crop IS the frozen fixture rect, so
+    nothing can be padded into existence beyond it — a composition that overruns
+    it is shown truncated and the judge would be asked about writing they cannot
+    see. Reported by name rather than quietly drawn."""
+    inside = word_case("unter")
+    outside = word_case("weit", **{SIDE_CANDIDATE: arm_word(tx=400.0)})
+    assert clipped_words([inside], 0.4) == []
+    assert clipped_words([inside, outside], 0.4) == ["weit"]
+
+
+def word_round(n=60, repeats=6, strata=None, seed=4711):
+    # 60 words, because a repeat may only be drawn from a screen that still has
+    # `min_gap + REPEAT_JITTER` room after it — the same arithmetic that decides
+    # how many repeats a real 63-word round can place.
+    cases = [
+        WordCase(
+            entry_id=f"w{i}",
+            text=f"w{i}",
+            crop=np.zeros((40, 80), dtype=np.uint8),
+            baseline_row=30.0,
+            xh=20.0,
+            arms={SIDE_BASE: arm_word(), SIDE_CANDIDATE: arm_word(dy=0.02 * i)},
+            peak=0.02 * i,
+            stratum=(strata or {}).get(f"w{i}", "-"),
+        )
+        for i in range(n)
+    ]
+    args = parse_args(
+        ["--round", "4", "--word-arms", "a.json", "b.json", "--repeats", str(repeats), "--zoom", "1", "--bands", "5"]
+    )
+    return build_word(cases, args, random.Random(seed))
+
+
+def test_a_word_round_mirrors_its_repeats_and_says_so_only_in_the_key():
+    """The identical screen could be answered with „I picked left last time";
+    mirrored, the verdict has to be made about the writing again — and a
+    systematic side preference then shows up as disagreement instead of hiding
+    inside the agreement rate (§8)."""
+    items, key, _reserve, report = word_round()
+    by_uid = {entry["uid"]: entry for entry in key}
+    repeats = [entry for entry in key if entry["repeat_of"]]
+    assert repeats and report["n_repeats"] == len(repeats)
+    for entry in repeats:
+        first = by_uid[entry["repeat_of"]]
+        assert entry["order"] == list(reversed(first["order"]))
+        assert entry["mirrored"] is True and first["mirrored"] is False
+    # Nothing in the drawn payload says which panel is which.
+    assert all(set(item) == {"id", "w", "h", "img", "panels"} for item in items)
+
+
+def test_word_repeats_are_dealt_over_the_suspicion_classes():
+    """The construction lesson §3.2 wrote down after round 01 and then failed to
+    apply twice: repeats drawn by frequency measure whatever is common, and the
+    classes the round is about end up with one pair or none."""
+    strata = {f"w{i}": ["naht", "zickzack", "breite"][i % 3] for i in range(60)}
+    _items, key, _reserve, report = word_round(strata=strata, repeats=6)
+    assert set(report["strata"]) == {"naht", "zickzack", "breite"}
+    assert report["n_repeats"] == 6
+
+
+def test_without_declared_classes_the_severity_bands_stand_in():
+    _items, key, _reserve, report = word_round()
+    assert {entry["stratum"] for entry in key} <= {f"band-{i}" for i in range(5)}
+    assert len(report["strata"]) > 1
+
+
+def test_pick_word_repeats_leaves_room_for_the_gap_it_promises():
+    cases = [
+        WordCase(f"w{i}", f"w{i}", np.zeros((4, 4), np.uint8), 2.0, 2.0, {}, peak=0.0, stratum="a", uid=f"S{i:03d}")
+        for i in range(40)
+    ]
+    picks = pick_word_repeats(cases, n_repeats=99, min_gap=5, exclude=(), rng=random.Random(1))
+    positions = {case.uid: i for i, case in enumerate(cases)}
+    assert picks and all(positions[p.uid] < 40 - 5 - REPEAT_JITTER for p in picks)
+    # Exhausted rather than raising: a round with too few repeats has to be
+    # visible as such, and the builder says so out loud.
+    assert len(picks) == 10
+    assert (
+        pick_word_repeats(cases, n_repeats=3, min_gap=5, exclude=(f"w{i}" for i in range(40)), rng=random.Random(1))
+        == []
+    )
+
+
+def test_a_word_round_is_reproducible_from_the_seed():
+    """Sides, sequence and repeats all come out of one seeded generator, so a
+    round can be rebuilt exactly from its stamp."""
+    first = [(e["uid"], e["entry"], tuple(e["order"] or ())) for e in word_round(seed=4711)[1]]
+    again = [(e["uid"], e["entry"], tuple(e["order"] or ())) for e in word_round(seed=4711)[1]]
+    other = [(e["uid"], e["entry"], tuple(e["order"] or ())) for e in word_round(seed=4712)[1]]
+    assert first == again
+    assert other != first
+
+
+def test_the_sides_are_drawn_from_the_seed_and_not_all_the_same():
+    _items, key, _reserve, _report = word_round()
+    orders = Counter(tuple(entry["order"]) for entry in key if not entry["repeat_of"])
+    assert set(orders) == {(SIDE_BASE, SIDE_CANDIDATE), (SIDE_CANDIDATE, SIDE_BASE)}
+    # A judge who quietly prefers one panel spreads that bias over both arms.
+    assert min(orders.values()) >= 15
+
+
+def test_the_slim_key_of_a_word_round_carries_the_entry_and_its_class():
+    """What a uid MEANS may be archived; what it measured may not. The class
+    travels because a per-class reading of the verdict is part of the plan."""
+    _items, key, _reserve, _report = word_round(strata={f"w{i}": "naht" for i in range(60)})
+    slim = slim_key(key)
+    assert set(slim[0]) == {"uid", "entry", "text", "stratum", "repeat_of"}
+    assert "arm_gap" not in slim[0] and "rank" not in slim[0]
+
+
+def test_parse_args_gives_the_word_mode_its_own_zoom_and_repeat_gap():
+    """A word set is a quarter the size of a letter round and its crops four
+    times the pixels, so two defaults follow the mode rather than the flag."""
+    word = parse_args(["--round", "4", "--word-arms", "a.json", "b.json"])
+    letter = parse_args(["--round", "2"])
+    assert (word.zoom, word.min_repeat_gap) == (WORD_ZOOM, WORD_MIN_REPEAT_GAP)
+    assert (letter.zoom, letter.min_repeat_gap) == (4, 40)
+    # The letter default excludes the capital S by GLYPH key; in a word round
+    # the same list would name a fixture entry.
+    assert word.repeat_exclude == [] and letter.repeat_exclude == ["S"]
+    assert parse_args(["--round", "4", "--word-arms", "a.json", "b.json", "--zoom", "3"]).zoom == 3
+
+
+def test_the_stamp_of_a_word_round_names_the_arms_it_drew(tmp_path):
+    args = parse_args(["--round", "4", "--word-arms", str(tmp_path / "a.json"), str(tmp_path / "b.json")])
+    arms = [{"side": SIDE_BASE, "name": "Basis", "sha256_16": "abc"}]
+    stamp = provenance(args, mode="word", seed=1, counts={}, repeats={}, api_used=False, arms=arms)
+    assert stamp["arms"] == arms
+    assert stamp["inputs"]["word_arms"] == [str(tmp_path / "a.json"), str(tmp_path / "b.json")]
+    assert stamp["inputs"]["fixtures"] is not None
+    assert json.dumps(stamp)  # the stamp is written as JSON, so it has to be serialisable

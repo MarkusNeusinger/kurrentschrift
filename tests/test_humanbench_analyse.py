@@ -15,13 +15,22 @@ import math
 import pytest
 
 from tools.humanbench.analyse import (
+    ADOPT_CANDIDATE_SHARE,
+    ADOPT_MAX_TIE_SHARE,
     DRIFT_BLOCKS,
+    MIN_PAIRED_PER_CLASS,
+    MIN_PAIRED_REPEATS,
     MIN_POSITIVES,
     ResultFormatError,
     analyse,
+    analyse_paired,
+    arm_of,
     drift,
+    format_paired_report,
     hanley_mcneil_se,
+    looks_paired,
     parse_gate,
+    parse_paired_result,
     parse_result,
     parse_union,
     roc_auc,
@@ -359,3 +368,209 @@ def test_drop_unsure_removes_those_verdicts_from_every_step():
     assert with_unsure["occupancy"]["per_category"]["A"]["n"] == 2
     assert without["occupancy"]["per_category"]["A"]["n"] == 1
     assert without["pass"]["dropped_unsure"] == ["S002"]
+
+
+# ==================================================================== the paired plan
+#
+# A paired round asks a preference, not a category, and its plan was written
+# BEFORE any round existed: reliability first, then the side balance, then the
+# pre-registered decision, then the per-class split. What is guarded here is
+# that the thresholds cannot drift and that the precondition actually bites —
+# a share computed from answers given by position is not a verdict.
+
+
+def paired_round(answers, *, strata=None, repeats=(), mirrored=True, tag="ECHTHEIT/4"):
+    """A paired round written as {uid: (order, choice)}, plus mirrored repeats.
+
+    `repeats` names (repeat_uid, first_uid, choice) triples; their order is the
+    reversed order of the first showing, which is what the builder does.
+    """
+    key, lines = {}, []
+    for uid, (order, choice) in answers.items():
+        key[uid] = {"uid": uid, "repeat_of": None, "order": list(order), "mirrored": False, "entry": uid, "text": uid}
+        if strata:
+            key[uid]["stratum"] = strata.get(uid, "-")
+        lines.append(f"{uid}:{choice}@5s")
+    for uid, first, choice in repeats:
+        order = list(reversed(key[first]["order"])) if mirrored else list(key[first]["order"])
+        key[uid] = {**key[first], "uid": uid, "repeat_of": first, "order": order, "mirrored": mirrored}
+        lines.append(f"{uid}:{choice}@5s")
+    text = f"{tag} geprueft={len(lines)} von {len(lines)}\n" + "\n".join(lines) + "\n"
+    return parse_paired_result(text), key
+
+
+BC = ["base", "candidate"]
+CB = ["candidate", "base"]
+FLIP = {"L": "R", "R": "L", "N": "N"}
+
+
+def wins(n_candidate, n_base, n_tie=0, *, strata=None, repeats=0, by="arm"):
+    """A round in which the candidate wins `n_candidate` of the decided screens.
+
+    Sides alternate so the verdict cannot be read off a side preference — the
+    point of drawing them from the seed in the first place. `repeats` mirrored
+    repeats are appended, answered either consistently by ARM (`by="arm"`, the
+    letters flip because the panels did) or consistently by SIDE (`by="side"`,
+    the judge answering by position).
+    """
+    answers, i = {}, 0
+    for count, arm in ((n_candidate, "candidate"), (n_base, "base"), (n_tie, None)):
+        for _ in range(count):
+            i += 1
+            order = BC if i % 2 else CB
+            choice = "N" if arm is None else ("L" if order[0] == arm else "R")
+            answers[f"S{i:03d}"] = (order, choice)
+    uids = list(answers)[: min(repeats, len(answers))]
+    pairs = tuple(
+        (f"R{n + 1:02d}", uid, FLIP[answers[uid][1]] if by == "arm" else answers[uid][1]) for n, uid in enumerate(uids)
+    )
+    return paired_round(answers, strata=strata, repeats=pairs)
+
+
+def test_looks_paired_reads_the_vocabulary_off_the_file():
+    """The kind of round is a property of the text, not of a flag somebody has
+    to remember months later."""
+    assert looks_paired("ECHTHEIT/4 geprueft=1 von 1\nS001:L@4s\n")
+    assert not looks_paired(RESULT)
+    assert not looks_paired("BEFUND geprueft=0 von 0\n")
+
+
+def test_parse_paired_result_reads_either_question_s_tally_block():
+    parsed = parse_paired_result(
+        'ECHTHEIT/4 geprueft=3 von 3\nS001:L\nS002:R@7s\nS003:N "beide gleich"\n'
+        "Links echter: 1\nRechts echter: 1\nKein Unterschied: 1\n"
+    )
+    assert [p.choice for p in parsed.preferences] == ["L", "R", "N"]
+    assert parsed.preferences[1].seconds == 7
+    assert parsed.preferences[2].note == "beide gleich"
+    # The accuracy question's own labels read back just as well.
+    assert parse_paired_result("VERGLEICH geprueft=1 von 1\nS001:L\nLinks besser: 1\n").judged == 1
+
+
+@pytest.mark.parametrize(
+    "text, message",
+    [
+        ("ECHTHEIT geprueft=1 von 1\nS001:G\n", "is not one of"),
+        ("ECHTHEIT geprueft=1 von 1\nS001:LR\n", "is not one of"),
+        ("ECHTHEIT geprueft=1 von 1\nS001:L#4,5\n", "category round"),
+        ("ECHTHEIT geprueft=2 von 2\nS001:L\nS001:R\n", "judged twice"),
+        ("ECHTHEIT geprueft=5 von 5\nS001:L\n", "header claims"),
+        ("ECHTHEIT geprueft=1 von 1\nS001:L\nLinks echter: 4\n", "counted 4"),
+    ],
+)
+def test_parse_paired_result_rejects_broken_input(text, message):
+    with pytest.raises(ResultFormatError, match=message):
+        parse_paired_result(text)
+
+
+def test_arm_of_reads_the_mirrored_order_out_of_the_key():
+    """The panel order is the ONLY record of the assignment, and a repeat carries
+    its own swapped one — so the same lookup serves both showings."""
+    assert arm_of({"order": BC}, "L") == "base"
+    assert arm_of({"order": CB}, "L") == "candidate"
+    assert arm_of({"order": BC}, "N") is None
+    assert arm_of({}, "L") is None
+
+
+def test_side_reliability_separates_arm_agreement_from_side_agreement():
+    """On a mirrored pair the two are almost exclusive: naming the same ARM means
+    the letters flipped, naming the same SIDE means they did not."""
+    parsed, key = paired_round(
+        {"S001": (BC, "L"), "S002": (BC, "R")}, repeats=(("R01", "S001", "R"), ("R02", "S002", "R"))
+    )
+    rel = analyse_paired(parsed, key)["reliability"]
+    assert rel["pairs"] == 2 and rel["mirrored"] == 2
+    assert rel["arm_agree"] == 1  # S001 L then R = base twice
+    assert rel["side_agree"] == 1  # S002 R then R = two different arms
+    assert rel["too_few_pairs"] is True and rel["carries_a_verdict"] is False
+
+
+def test_the_verdict_uses_the_pre_registered_thresholds():
+    parsed, key = wins(40, 10, 5, repeats=8)
+    result = analyse_paired(parsed, key)
+    ver = result["verdict"]
+    assert ver["candidate"] == "candidate"
+    assert ver["per_arm"] == {"base": 10, "candidate": 40}
+    assert ver["candidate_share"] == pytest.approx(40 / 50)
+    assert ver["tie_share"] == pytest.approx(5 / 55)
+    assert ver["meets_thresholds"] is True
+    assert result["reliability"]["carries_a_verdict"] is True
+    assert ver["adopt"] is True
+    assert "ADOPT" in format_paired_report(result)
+
+
+def test_a_candidate_below_the_share_is_not_adopted():
+    parsed, key = wins(29, 21, 0, repeats=8)
+    ver = analyse_paired(parsed, key)["verdict"]
+    assert ver["candidate_share"] == pytest.approx(0.58)  # just under 60 %
+    assert ver["meets_thresholds"] is False and ver["adopt"] is False
+
+
+def test_too_many_ties_block_adoption_even_when_the_candidate_wins():
+    """The second condition asks a different question — is the difference
+    visible often enough to be worth changing what everybody renders?"""
+    parsed, key = wins(30, 5, 20, repeats=8)
+    ver = analyse_paired(parsed, key)["verdict"]
+    assert ver["candidate_share"] == pytest.approx(30 / 35)  # far past the share
+    assert ver["tie_share"] > ADOPT_MAX_TIE_SHARE
+    assert ver["adopt"] is False
+
+
+def test_unreliable_answers_block_adoption_at_any_share():
+    """A per-arm share built from answers given by POSITION is a coin toss with
+    a percentage sign; the mirrored repeats are what catches that."""
+    parsed, key = wins(40, 10, 5, repeats=8, by="side")
+    result = analyse_paired(parsed, key)
+    assert result["reliability"]["band"] == "coin flip"
+    assert result["verdict"]["meets_thresholds"] is True
+    assert result["verdict"]["adopt"] is False
+    assert "decide nothing" in format_paired_report(result)
+
+
+def test_too_few_repeats_block_adoption_however_clean_they_are():
+    parsed, key = wins(40, 10, 5, repeats=2)
+    result = analyse_paired(parsed, key)
+    assert result["reliability"]["pairs"] < MIN_PAIRED_REPEATS
+    assert result["verdict"]["adopt"] is False
+
+
+def test_the_class_table_splits_the_verdict_and_names_thin_classes():
+    """Pre-registered, not fished for: a candidate that loses overall while
+    carrying one class is the normal shape of a result, and partial adoption is
+    legitimate — but only if the split existed before the numbers."""
+    strata = {f"S{i:03d}": ("naht" if i <= 20 else "breite") for i in range(1, 41)}
+    parsed, key = wins(20, 20, 0, strata=strata, repeats=8)
+    classes = analyse_paired(parsed, key)["classes"]
+    assert set(classes) == {"naht", "breite"}
+    assert sum(cell["n"] for cell in classes.values()) == 40
+    assert all(cell["too_few"] is False for cell in classes.values())
+    thin = analyse_paired(*wins(2, 2, 0, strata={"S001": "naht"}, repeats=8))["classes"]
+    assert thin["naht"]["too_few"] is True
+
+
+def test_repeats_never_enter_the_verdict():
+    """They measure the judge, not the arms — counting them would weight a
+    dozen words twice."""
+    parsed, key = wins(40, 10, 5, repeats=8)
+    result = analyse_paired(parsed, key)
+    assert result["verdict"]["n"] == 55  # not 63
+    assert sum(b["n"] for b in result["drift"]["blocks"]) == 55
+
+
+def test_side_balance_is_reported_and_never_decisive():
+    parsed, key = wins(40, 10, 5, repeats=8)
+    sides = analyse_paired(parsed, key)["sides"]
+    assert sides["left"] + sides["right"] + sides["tie"] == 55
+    assert sides["lopsided"] is False
+
+
+def test_an_unknown_screen_in_a_paired_result_is_an_error():
+    parsed, key = wins(2, 2)
+    with pytest.raises(ResultFormatError, match="the key does not know"):
+        analyse_paired(parsed, {uid: entry for uid, entry in key.items() if uid != "S001"})
+
+
+def test_the_paired_thresholds_are_the_pre_registered_ones():
+    """Pinned so a later round cannot quietly soften the bar it failed."""
+    assert (ADOPT_CANDIDATE_SHARE, ADOPT_MAX_TIE_SHARE) == (0.60, 0.25)
+    assert (MIN_PAIRED_REPEATS, MIN_PAIRED_PER_CLASS) == (6, 8)

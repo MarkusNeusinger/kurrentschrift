@@ -2,8 +2,9 @@
 
     uv run python -m tools.humanbench.build --round 2 --n-label 150 --repeats 12
     uv run python -m tools.humanbench.build --round 3 --paired old.json new.json
+    uv run python -m tools.humanbench.build --round 4 --word-arms basis.json lf11.json
 
-The generalised form of the round-2 scratchpad builder. Two modes:
+The generalised form of the round-2 scratchpad builder. Three modes:
 
 * **single** (default) — one occurrence per screen; the judge names the defect.
   Writes `payload.json`, `key.json`, `vorkommen.json`, `reserve.json`,
@@ -15,6 +16,33 @@ The generalised form of the round-2 scratchpad builder. Two modes:
   the payload contains no marking of any kind, and the two panels differ in
   nothing but the drawn line. That is the point of the mode: a before/after the
   fix's own author cannot read the answer off.
+* **word** (`--word-arms BASE CANDIDATE`) — the same WHOLE specimen word with
+  two compositions drawn over it as INK, judged on the authenticity question
+  („welche sieht echter geschrieben aus?", menschliche-bewertung.md §8). It is
+  the only mode that can see the three defects every frozen ruler is blind to
+  (the anchor-median zigzag of a Laufform row, the too-thin stroke, the kink at
+  a connector's seam): the first two are invisible to a per-letter centerline
+  screen, and the third sits behind the letter's own window.
+
+The word mode composes NOTHING itself. Both arms arrive as files, exactly the
+way the paired mode takes two instance snapshots — an instrument that computed
+its own candidate could drift away from the ruler that has to confirm it later,
+and the round would then compare two things nobody else can reproduce.
+``tools/humanbench/wordarm.py`` is the reference producer; any arm (a candidate
+Laufform card, a different nib, a connector trim) writes the same file:
+
+    {"arm": "LF11", "style": "suetterlin", "set": "words",
+     "source_id": "suetterlin-1922", "fixture_root": "suetterlin-1922",
+     "words": {"<entry id>": {
+         "registration": {"xh_px": 33.0, "tx": 12.0, "ty": -1.0},
+         "strokes": [{"points": [[x, y], ...], "width": 0.14}],
+         "fills":   [[[x, y], ...]]}}}
+
+Coordinates are the composer's own WORD FRAME (x to the right in x-heights,
+y UP in x-heights from the baseline, i.e. ``composed["items"][*]["centerline"]``
+and ``["rings"]``); ``width`` is a stroke width in x-heights. The registration
+maps that frame onto the fixture crop and is the arm's OWN — see
+``word_cases`` for why, and for when to pin it instead.
 
 Every safeguard below cost a round to learn and is kept here so the next round
 does not have to rediscover it. The reason each exists sits next to it in the
@@ -42,14 +70,18 @@ Inputs. The occurrences come from stored fits: either from files
 (`--instances`, or the two files of `--paired`) or, absent those, over the
 deployed read API. Stroke starts come from the templates (`--starts` or the
 admin-gated single-template read). Chart bytes are read from `--source` on
-disk. Outputs land under `temp/` — a payload is occurrence geometry and stays
-out of the repository (quellen-und-rechte.md §5).
+disk. The word mode reads neither: its specimen crops come from a frozen word
+bench fixture root (`--fixtures`), so a word round is scored against exactly
+the reference the automatic ruler uses. Outputs land under `temp/` — a payload
+is occurrence geometry and stays out of the repository
+(quellen-und-rechte.md §5).
 """
 
 from __future__ import annotations
 
 import argparse
 import base64
+import hashlib
 import io
 import json
 import os
@@ -66,6 +98,7 @@ from urllib.parse import quote
 import numpy as np
 from PIL import Image
 from scipy.ndimage import distance_transform_edt
+from scipy.spatial import cKDTree
 
 from core.chart import load_chart_grayscale, load_word_samples
 from core.word_metric import skeleton_for_sample
@@ -75,6 +108,10 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SOURCE = "data/sources/suetterlin-1922"
 DEFAULT_OUT_ROOT = "temp/humanbench"
 DEFAULT_API = "https://api.kurrentschrift.ink"
+# The word mode judges against the SAME frozen references the word bench scores
+# against, so a human verdict and the ruler can never be about different pixels.
+DEFAULT_FIXTURES = "tools/wordbench/fixtures"
+DEFAULT_STYLE = "suetterlin"
 
 # Bumped whenever the payload shape changes, so a page built for an older round
 # fails loudly instead of drawing nothing. v2 replaced the single `strokes`
@@ -105,6 +142,27 @@ REPEAT_PREFIX = "R"
 # Snapshot labels of the paired mode. They appear in the KEY, never in the payload.
 SIDE_OLD = "old"
 SIDE_NEW = "new"
+
+# Arm labels of the word mode — same rule: key and stamp only.
+SIDE_BASE = "base"
+SIDE_CANDIDATE = "candidate"
+
+# The word mode's own defaults. A word set is ~63 entries against the letter
+# mode's 245, so the repeat distance cannot be the letter mode's 40 and stay
+# placeable: `pick_word_repeats` may only draw from screens that still have
+# `min_gap + REPEAT_JITTER` room after them, and 40 + 25 leaves none. That is
+# affordable HERE and nowhere else, because a word repeat is shown MIRRORED
+# (menschliche-bewertung.md §8) — the mirroring, not the distance, is what
+# forces the verdict to be made again; the distance only keeps the two showings
+# from sitting next to each other.
+WORD_MIN_REPEAT_GAP = 15
+# A word crop is a whole word rather than one letter, so it carries four times
+# the pixels; at the letter mode's 4× a 75-screen round would not fit under the
+# Artifact ceiling (page.py::SIZE_WARN_MB). At 2× the x-height of the Sütterlin
+# plate is still ~66 screen pixels.
+WORD_ZOOM = 2
+NO_STRATUM = "-"
+WORD_ARM_FORMAT = 1
 
 # One screen, and the key fields a mode adds to a repeat of it.
 Renderer = Callable[[str, "Occurrence", dict], dict]
@@ -621,13 +679,20 @@ def slim_key(key: list[dict]) -> list[dict]:
     Written by the builder rather than hand-derived per round, so the archived
     key is a COPY of the key that was judged against instead of a second,
     slightly different artefact assembled months later.
+
+    A word round has no glyph and no slot: its identity is the fixture entry,
+    and what a uid means is that entry plus the word it spells. The declared
+    suspicion class travels with it, because a per-class reading of the verdict
+    is part of the pre-registered plan and would otherwise need the full key.
     """
     return [
         {
             "uid": entry["uid"],
-            "glyph": entry["glyph"],
-            "word": entry["word"],
-            "slot": entry["slot"],
+            **(
+                {"entry": entry["entry"], "text": entry["text"], "stratum": entry["stratum"]}
+                if "entry" in entry
+                else {"glyph": entry["glyph"], "word": entry["word"], "slot": entry["slot"]}
+            ),
             "repeat_of": entry["repeat_of"],
         }
         for entry in key
@@ -656,6 +721,448 @@ def _repeat_report(picks: list[Occurrence], gaps: list[int]) -> dict:
         "gap_max": max(gaps) if gaps else None,
         "glyphs": sorted({row.glyph_key for row in picks}),
     }
+
+
+# ------------------------------------------------------------------ the word mode
+
+
+@dataclass(frozen=True)
+class ArmStroke:
+    """One drawn stroke of an arm, in the composer's word frame."""
+
+    points: np.ndarray
+    width: float  # stroke width in x-heights; 0 draws as the page's hairline
+
+
+@dataclass(frozen=True)
+class ArmWord:
+    """One arm's composition of one specimen word, plus where it sits."""
+
+    xh: float  # x-height in crop pixels
+    tx: float
+    ty: float
+    strokes: tuple[ArmStroke, ...]
+    fills: tuple[np.ndarray, ...]  # silhouette rings — the INK, not a centerline
+
+
+@dataclass(frozen=True)
+class Arm:
+    """One side of a word round: a named composition over a fixture set."""
+
+    name: str
+    path: Path
+    digest: str
+    words: dict[str, ArmWord]
+    meta: dict
+
+
+@dataclass
+class WordCase:
+    """One specimen word with both arms drawn into its own crop."""
+
+    entry_id: str
+    text: str
+    crop: np.ndarray  # the FROZEN fixture crop, 8-bit grayscale
+    baseline_row: float
+    xh: float  # the specimen's measured lineature, crop pixels
+    arms: dict[str, ArmWord]
+    peak: float  # how far the two arms part, in x-heights — the severity key
+    stratum: str = NO_STRATUM
+    rank: int = -1
+    uid: str = ""
+
+    @property
+    def identity(self) -> tuple[str]:
+        """What joins one word round to the next: the fixture entry id."""
+        return (self.entry_id,)
+
+
+def load_arm(path: Path) -> Arm:
+    """Read one arm file (see the module docstring for the contract).
+
+    Validated here rather than at draw time: a malformed arm is a round that
+    cannot be built, and the alternative is a page that silently draws half a
+    word. The file's SHA-256 goes into the stamp — an arm is a candidate
+    somebody produced, and a round is only reproducible if it says which bytes
+    it drew.
+    """
+    raw = path.read_bytes()
+    try:
+        payload = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"{path}: not readable as JSON ({exc})") from exc
+    if not isinstance(payload, dict) or not isinstance(payload.get("words"), dict):
+        raise SystemExit(f"{path}: an arm file needs a 'words' object keyed by fixture entry id")
+    words: dict[str, ArmWord] = {}
+    for entry_id, drawing in payload["words"].items():
+        words[str(entry_id)] = _arm_word(drawing, f"{path}:{entry_id}")
+    if not words:
+        raise SystemExit(f"{path}: the arm draws no word")
+    meta = {k: v for k, v in payload.items() if k != "words"}
+    return Arm(
+        name=str(payload.get("arm") or path.stem),
+        path=path,
+        digest=hashlib.sha256(raw).hexdigest()[:16],
+        words=words,
+        meta=meta,
+    )
+
+
+def _arm_word(drawing: Any, where: str) -> ArmWord:
+    if not isinstance(drawing, dict):
+        raise SystemExit(f"{where}: each word must be an object")
+    registration = drawing.get("registration") or {}
+    try:
+        xh = float(registration["xh_px"])
+        tx = float(registration.get("tx", 0.0))
+        ty = float(registration.get("ty", 0.0))
+    except (KeyError, TypeError, ValueError) as exc:
+        raise SystemExit(f"{where}: registration needs a numeric xh_px ({exc})") from exc
+    strokes = tuple(_arm_stroke(s, where) for s in drawing.get("strokes") or [])
+    fills = tuple(np.asarray(ring, dtype=float) for ring in drawing.get("fills") or [])
+    fills = tuple(ring for ring in fills if ring.ndim == 2 and ring.shape[0] >= 3 and ring.shape[1] >= 2)
+    if not strokes and not fills:
+        raise SystemExit(f"{where}: nothing drawable — an empty panel is a broken screen, not a round")
+    return ArmWord(xh=xh, tx=tx, ty=ty, strokes=strokes, fills=fills)
+
+
+def _arm_stroke(raw: Any, where: str) -> ArmStroke:
+    points = raw.get("points") if isinstance(raw, dict) else raw
+    width = float(raw.get("width", 0.0)) if isinstance(raw, dict) else 0.0
+    array = np.asarray(points, dtype=float)
+    if array.ndim != 2 or array.shape[0] < 2 or array.shape[1] < 2:
+        raise SystemExit(f"{where}: a stroke needs at least two [x, y] points")
+    return ArmStroke(points=array[:, :2], width=width)
+
+
+def to_crop(points: np.ndarray, arm: ArmWord, baseline_row: float) -> np.ndarray:
+    """Word frame → crop pixels: ``px = x·xh + tx``, ``py = baseline_row + ty − y·xh``.
+
+    The same mapping the word bench draws its overlays with
+    (``tools/wordbench/run.py::_overlay``). Restating it across a module
+    boundary is unavoidable; getting it wrong is not silent, because the
+    composition then misses the specimen by whole x-heights instead of the
+    fraction it lands within when the frame is right.
+    """
+    return np.column_stack([points[:, 0] * arm.xh + arm.tx, baseline_row + arm.ty - points[:, 1] * arm.xh])
+
+
+def arm_paths_px(arm: ArmWord, baseline_row: float) -> list[np.ndarray]:
+    """Every drawn path of one arm, in crop pixels — strokes and fills alike."""
+    return [to_crop(s.points, arm, baseline_row) for s in arm.strokes] + [
+        to_crop(ring, arm, baseline_row) for ring in arm.fills
+    ]
+
+
+def arm_gap(left: list[np.ndarray], right: list[np.ndarray], xh: float) -> float:
+    """How far the two arms part on this word, in x-heights (symmetric, worst point).
+
+    The word mode's severity key, and the analogue of the letter mode's
+    „largest distance from the ink": there the bands are cut by how bad a fit
+    is, here by how much the candidate MOVED — because a screen on which the
+    two arms are identical is exactly where a silent side preference shows up,
+    and §3.1's prefix rule needs those screens reachable from the start.
+    """
+    a, b = np.vstack(left), np.vstack(right)
+    tree_a, tree_b = cKDTree(a), cKDTree(b)
+    return float(max(tree_b.query(a)[0].max(), tree_a.query(b)[0].max()) / xh)
+
+
+def load_fixture_words(root: Path) -> list[dict]:
+    """The scorable entries of a frozen word bench fixture root, in export order."""
+    manifest_path = root / "manifest.json"
+    if not manifest_path.exists():
+        raise SystemExit(f"{root}: no manifest.json — point --fixtures at a word bench fixture root")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    entries = []
+    for entry in manifest.get("words") or []:
+        entry_id = str(entry.get("id") or entry["word"])
+        if entry.get("scorable", not entry.get("missing_at_export")):
+            entries.append({**entry, "id": entry_id})
+    return entries
+
+
+def word_cases(
+    root: Path,
+    base: Arm,
+    candidate: Arm,
+    *,
+    strata: dict[str, str] | None = None,
+    only: set[str] | None = None,
+    dropped: Counter | None = None,
+) -> list[WordCase]:
+    """Join both arms onto the frozen fixture words they were composed from.
+
+    A word only ONE arm draws is discarded and counted, for the reason §8 gives
+    for the paired mode: a change that quietly stops producing a composition is
+    a result, and it must not vanish into a shorter round that still looks
+    complete.
+
+    Each arm is drawn at its OWN registration, the one its producer measured.
+    That is right for the authenticity question — a translation is not what is
+    being judged — but it is also the one place where blindness can leak: an
+    arm that sits systematically lower is readable as a group even though the
+    seed randomises the sides. A producer whose mechanism does not move the
+    placement therefore pins both arms to one registration
+    (``wordarm.py --registration-from``), and the stamp records whether it did.
+    """
+    cases: list[WordCase] = []
+    for entry in load_fixture_words(root):
+        entry_id = entry["id"]
+        if only is not None and entry_id not in only:
+            _count(dropped, "not_in_entries")
+            continue
+        left, right = base.words.get(entry_id), candidate.words.get(entry_id)
+        if left is None or right is None:
+            # Counted apart, because they mean different things: a word only
+            # the base draws is a composition the candidate LOST, one neither
+            # draws was never in the fixture set's reach at all.
+            _count(
+                dropped,
+                "neither_arm"
+                if left is None and right is None
+                else ("only_base" if right is None else "only_candidate"),
+            )
+            continue
+        word_dir = root / entry_id
+        meta = json.loads((word_dir / "word.json").read_text(encoding="utf-8"))
+        crop = np.asarray(Image.open(word_dir / "crop.png").convert("L"))
+        baseline_row = float(meta["baseline_y"] - meta["rect"][1])
+        xh = float(meta["baseline_y"] - meta["midband_y"])
+        cases.append(
+            WordCase(
+                entry_id=entry_id,
+                text=str(meta.get("word") or entry.get("word") or entry_id),
+                crop=crop,
+                baseline_row=baseline_row,
+                xh=xh,
+                arms={SIDE_BASE: left, SIDE_CANDIDATE: right},
+                peak=arm_gap(arm_paths_px(left, baseline_row), arm_paths_px(right, baseline_row), xh),
+                stratum=(strata or {}).get(entry_id, NO_STRATUM),
+            )
+        )
+    return cases
+
+
+def screen_path(points: np.ndarray, window: tuple[int, int, int, int], zoom: int) -> list[list[float]]:
+    """Crop pixels → the panel's own pixel frame, at display precision."""
+    local = (points - np.array([window[0], window[1]])) * zoom
+    return [[round(float(p[0]), 1), round(float(p[1]), 1)] for p in local]
+
+
+def render_word_item(
+    uid: str, case: WordCase, sides: list[str], *, zoom: int, pad_xh: float
+) -> tuple[dict, tuple[int, int, int, int]]:
+    """One word screen: the specimen crop ONCE, plus one inked panel per arm.
+
+    Both panels share the image AND the window — the window is cut around the
+    union of both arms, never around each arm's own extent. Two windows would
+    give the sides different pixel dimensions and a different view of the
+    neighbouring ink, which is the tell §8 rules out.
+
+    Unlike the letter modes this draws the INK, not a centerline: filled
+    silhouette rings for the letter bodies, capsules of their own width for the
+    generated connectors. That is the whole reason the mode exists — a stroke
+    that is a quarter too thin is invisible on a hairline, and the authenticity
+    question is about how the writing looks, not where its middle runs.
+    """
+    drawn = [case.arms[side] for side in sides]
+    everything = np.vstack([path for arm in drawn for path in arm_paths_px(arm, case.baseline_row)])
+    window = crop_window(everything, case.xh, case.crop.shape, pad_xh)
+    x0, y0, x1, y1 = window
+    width, height = (x1 - x0) * zoom, (y1 - y0) * zoom
+
+    buffer = io.BytesIO()
+    Image.fromarray(case.crop[y0:y1, x0:x1], "L").resize((width, height), Image.LANCZOS).save(
+        buffer, format="PNG", optimize=True
+    )
+    item = {
+        "id": uid,
+        "w": width,
+        "h": height,
+        "img": base64.b64encode(buffer.getvalue()).decode(),
+        "panels": [_word_panel(arm, case, window, zoom) for arm in drawn],
+    }
+    return item, window
+
+
+def _word_panel(arm: ArmWord, case: WordCase, window: tuple[int, int, int, int], zoom: int) -> dict:
+    panel: dict[str, list] = {"strokes": [], "widths": [], "fills": []}
+    for stroke in arm.strokes:
+        path = screen_path(to_crop(stroke.points, arm, case.baseline_row), window, zoom)
+        panel["strokes"].append(path)
+        # A width of 0 means „the producer had none" and falls back to the
+        # page's hairline; anything else is the composed stroke width, carried
+        # to the screen in panel pixels so a nib change is visible as one.
+        panel["widths"].append(round(stroke.width * arm.xh * zoom, 1))
+    for ring in arm.fills:
+        panel["fills"].append(screen_path(to_crop(ring, arm, case.baseline_row), window, zoom))
+    return {key: value for key, value in panel.items() if value}
+
+
+def clipped_words(cases: list[WordCase], pad_xh: float) -> list[str]:
+    """Words whose composition runs outside its own crop, and is therefore cut.
+
+    §3.4's rule with a word-sized failure: the crop is the frozen fixture rect,
+    so nothing can be padded INTO existence beyond it. A composition that runs
+    past the plate's own word box is shown truncated, and the judge would then
+    be asked about writing they cannot see — reported by name rather than
+    quietly drawn.
+    """
+    cut = []
+    for case in cases:
+        points = np.vstack([p for arm in case.arms.values() for p in arm_paths_px(arm, case.baseline_row)])
+        pad = max(6.0, pad_xh * case.xh)
+        height, width = case.crop.shape[:2]
+        if (
+            points[:, 0].min() < -pad
+            or points[:, 1].min() < -pad
+            or points[:, 0].max() > width + pad
+            or points[:, 1].max() > height + pad
+        ):
+            cut.append(case.entry_id)
+    return cut
+
+
+def pick_word_repeats(
+    label: list[WordCase], *, n_repeats: int, min_gap: int, exclude: tuple[str, ...], rng: random.Random
+) -> list[WordCase]:
+    """Choose the blind repeats of a word round — dealt round-robin over STRATA.
+
+    This is the construction lesson §3.2 wrote down after round 01 and then
+    failed to apply twice: repeats drawn by frequency measure the reliability
+    of whatever happens to be common, and the categories the round is actually
+    about end up with one positive pair or none. A word round cannot draw by
+    frequency at all (every word appears once), so the pool is dealt over the
+    suspected-defect classes the round declared — and where none were declared,
+    over the severity bands, which is what `stratum` falls back to.
+
+    What the repeats measure here is NOT a category's reliability but the
+    judge's side preference (§8): a mirrored second showing of the same word
+    answered the same way names the same ARM, answered by position names the
+    same SIDE. Spreading them over the classes only makes sure that preference
+    is measured across the round rather than inside one class of words.
+    """
+    early = {case.uid for case in label[: max(0, len(label) - min_gap - REPEAT_JITTER)]}
+    pool = [case for case in label if case.uid in early and case.entry_id not in exclude]
+    rng.shuffle(pool)
+    by_stratum: dict[str, list[WordCase]] = {}
+    for case in pool:
+        by_stratum.setdefault(case.stratum, []).append(case)
+
+    picks: list[WordCase] = []
+    while len(picks) < n_repeats:
+        added = False
+        for stratum in sorted(by_stratum):
+            if len(picks) < n_repeats and by_stratum[stratum]:
+                picks.append(by_stratum[stratum].pop())
+                added = True
+        if not added:  # exhausted — fewer repeats, reported, never silently
+            break
+    return picks
+
+
+def build_word(
+    cases: list[WordCase], args: argparse.Namespace, rng: random.Random
+) -> tuple[list[dict], list[dict], list[dict], dict]:
+    """The authenticity round: one specimen word, two compositions, blind."""
+    rank_rows(cases)
+    label, reserve, band_size = stratify(cases, args.bands, args.n_label, rng)
+    for i, case in enumerate(label):
+        case.uid = f"{ITEM_PREFIX}{i + 1:03d}"
+        if case.stratum == NO_STRATUM:
+            # No declared classes: the severity bands stand in, so the repeats
+            # still span the round instead of clustering where nothing moved.
+            case.stratum = f"band-{min(case.rank // band_size, args.bands - 1)}"
+
+    order = {
+        case.uid: ([SIDE_BASE, SIDE_CANDIDATE] if rng.random() < 0.5 else [SIDE_CANDIDATE, SIDE_BASE]) for case in label
+    }
+
+    def render(uid: str, case: WordCase, extra: dict | None = None) -> dict:
+        sides = (extra or {}).get("order") or order[case.uid]
+        item, _window = render_word_item(uid, case, sides, zoom=args.zoom, pad_xh=args.pad_xh)
+        return item
+
+    items = [render(case.uid, case) for case in label]
+    key = [_word_key_entry(case, order[case.uid]) for case in label]
+    picks = pick_word_repeats(
+        label, n_repeats=args.repeats, min_gap=args.min_repeat_gap, exclude=tuple(args.repeat_exclude), rng=rng
+    )
+
+    def mirror(entry: dict) -> dict:
+        return {"order": list(reversed(entry["order"])), "mirrored": True}
+
+    gaps = insert_repeats(items, key, picks, render, min_gap=args.min_repeat_gap, rng=rng, patch=mirror)
+    reserve_rows = [_word_key_entry(case, None, display=False) for case in reserve]
+    report = {
+        "n_repeats": len(picks),
+        "gap_min": min(gaps) if gaps else None,
+        "gap_max": max(gaps) if gaps else None,
+        "strata": sorted({case.stratum for case in picks}),
+    }
+    return items, key, reserve_rows, report
+
+
+def _word_key_entry(case: WordCase, order: list[str] | None, *, display: bool = True) -> dict:
+    entry = {
+        "entry": case.entry_id,
+        "text": case.text,
+        "stratum": case.stratum,
+        "arm_gap": round(case.peak, 4),
+        "rank": case.rank,
+    }
+    if not display:
+        return {"identity": list(case.identity), **entry}
+    return {
+        "uid": case.uid,
+        "identity": list(case.identity),
+        "repeat_of": None,
+        "order": order,  # panels[0], panels[1] — the ONLY record of which is which
+        "mirrored": False,
+        **entry,
+    }
+
+
+# What an arm may declare about the reference it was composed against. All of
+# it is optional — a third-party arm is allowed to carry nothing — but whatever
+# IS there has to agree, on pain of aborting the build.
+ARM_SCOPE = ("style", "source_id", "fixture_root")
+
+
+def check_arm_scope(base: Arm, candidate: Arm, *, style: str, source_id: str) -> list[str]:
+    """Refuse two arms that were not composed against the same reference.
+
+    A word round's whole claim is that the two panels differ in the composition
+    and in NOTHING else. Arms from two fixture roots — a different style, a
+    different plate, or the same plate re-exported — carry different crops,
+    different frozen slots and different registrations, and the round would
+    still build: 63 screens, a clean verdict, and a comparison of two things
+    that were never the same measurement. Silent is the dangerous part, so this
+    aborts rather than warns.
+
+    Only what an arm actually declares is checked, and the settings' export
+    timestamp is checked too — a re-exported root is a re-baseline, and two
+    arms across one of those are the same trap wearing the same name. An arm
+    that declares nothing cannot be checked and is reported as such.
+    """
+    problems = []
+    for name in ARM_SCOPE:  # the two arms against each other
+        left, right = base.meta.get(name), candidate.meta.get(name)
+        if left is not None and right is not None and str(left) != str(right):
+            problems.append(f"{name}: base says {left!r}, candidate says {right!r}")
+    for name, expected in (("style", style), ("source_id", source_id)):  # and against the round
+        for arm in (base, candidate):
+            value = arm.meta.get(name)
+            if value is not None and str(value) != str(expected):
+                problems.append(f"{name}: arm {arm.name!r} says {value!r}, the round builds {expected!r}")
+    exports = [(arm.meta.get("settings") or {}).get("exported_at") for arm in (base, candidate)]
+    if all(exports) and exports[0] != exports[1]:
+        problems.append(
+            f"fixture export: base {exports[0]!r} vs candidate {exports[1]!r} — "
+            f"a re-exported root is a re-baseline, so the two arms are not one measurement"
+        )
+    return problems
 
 
 # ----------------------------------------------------------------- the inputs
@@ -786,9 +1293,18 @@ def git_short_sha(repo_root: Path, *args: str) -> str:
     return done.stdout.strip() if done.returncode == 0 else ""
 
 
-def provenance(args: argparse.Namespace, *, mode: str, seed: int, counts: dict, repeats: dict, api_used: bool) -> dict:
+def provenance(
+    args: argparse.Namespace,
+    *,
+    mode: str,
+    seed: int,
+    counts: dict,
+    repeats: dict,
+    api_used: bool,
+    arms: list[dict] | None = None,
+) -> dict:
     """The stamp: what this payload is, and against which state of the code."""
-    return {
+    stamp = {
         "format": PAYLOAD_FORMAT,
         "round": args.round,
         "mode": mode,
@@ -818,12 +1334,22 @@ def provenance(args: argparse.Namespace, *, mode: str, seed: int, counts: dict, 
             "starts": str(args.starts) if args.starts else None,
             "word_instances": str(args.word_instances) if args.word_instances else None,
             "paired": [str(p) for p in args.paired] if args.paired else None,
+            "word_arms": [str(p) for p in args.word_arms] if args.word_arms else None,
+            "fixtures": str(args.fixtures) if args.word_arms else None,
+            "strata": str(args.strata) if args.strata else None,
             "only": str(args.only) if args.only else None,
             "api": args.api if api_used else None,
         },
         "counts": counts,
         "repeats": repeats,
     }
+    if arms is not None:
+        # WHICH bytes were drawn on which side. An arm is a candidate somebody
+        # produced outside this tool; without its digest a word round names a
+        # file that may since have been rewritten, and „the candidate won" would
+        # point at nothing.
+        stamp["arms"] = arms
+    return stamp
 
 
 # --------------------------------------------------------------------- the run
@@ -869,10 +1395,17 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("--source-id", default=None, help="API source id [derived from --source]")
     parser.add_argument("--n-label", type=int, default=150, help="occurrences to be judged; the rest is reserved [150]")
     parser.add_argument("--repeats", type=int, default=12, help="blind repeats for test-retest reliability [12]")
-    parser.add_argument("--min-repeat-gap", type=int, default=40, help="minimum screens between the two showings [40]")
+    parser.add_argument(
+        "--min-repeat-gap",
+        type=int,
+        default=None,
+        help=f"minimum screens between the two showings [40, word mode {WORD_MIN_REPEAT_GAP}]",
+    )
     parser.add_argument("--bands", type=int, default=5, help="severity bands the sequence is dealt from [5]")
     parser.add_argument("--seed", type=int, default=None, help=f"shuffle seed [{SEED_BASE} + round]")
-    parser.add_argument("--zoom", type=int, default=4, help="pixel magnification of the crop [4]")
+    parser.add_argument(
+        "--zoom", type=int, default=None, help=f"pixel magnification of the crop [4, word mode {WORD_ZOOM}]"
+    )
     parser.add_argument("--pad-xh", type=float, default=0.4, help="crop padding in x-heights [0.4]")
     parser.add_argument(
         "--repeat-exclude",
@@ -889,6 +1422,26 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
         default=None,
         help="two instance snapshots — builds a blind before/after round instead of a category round",
     )
+    parser.add_argument(
+        "--word-arms",
+        nargs=2,
+        metavar=("BASE", "CANDIDATE"),
+        default=None,
+        help="two composed-word arm files — builds the WORD round on the authenticity question",
+    )
+    parser.add_argument(
+        "--fixtures",
+        default=DEFAULT_FIXTURES,
+        help=f"word bench fixture root the specimen crops come from [{DEFAULT_FIXTURES}]",
+    )
+    parser.add_argument("--style", default=DEFAULT_STYLE, help=f"fixture style directory [{DEFAULT_STYLE}]")
+    parser.add_argument(
+        "--strata",
+        default=None,
+        help="entry id → suspected-defect class as JSON; the repeats are dealt over these classes "
+        "[the severity bands, with a warning]",
+    )
+    parser.add_argument("--entries", default=None, help="comma-separated fixture entry ids the word round is cut to")
     parser.add_argument("--instances", default=None, help="instance rows as JSON [fetched from the API]")
     parser.add_argument("--starts", default=None, help="glyph_key → stroke starts as JSON [fetched from the API]")
     parser.add_argument(
@@ -915,13 +1468,105 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     args.source_id = args.source_id or args.source.name
     args.out = Path(args.out) if args.out else REPO_ROOT / DEFAULT_OUT_ROOT / f"runde-{args.round}"
     args.paired = [Path(p) for p in args.paired] if args.paired else None
+    args.word_arms = [Path(p) for p in args.word_arms] if args.word_arms else None
+    args.fixtures = Path(args.fixtures) if Path(args.fixtures).is_absolute() else REPO_ROOT / args.fixtures
+    args.entries = {e.strip() for e in args.entries.split(",") if e.strip()} if args.entries else None
+    # Two defaults follow the mode rather than the flag, because the word set is
+    # a quarter the size of a letter round: at 40 screens' distance no repeat is
+    # placeable at all, and at 4× a word round outgrows the Artifact ceiling.
+    if args.min_repeat_gap is None:
+        args.min_repeat_gap = WORD_MIN_REPEAT_GAP if args.word_arms else 40
+    if args.zoom is None:
+        args.zoom = WORD_ZOOM if args.word_arms else 4
+    # `--repeat-exclude` names glyph keys in the letter modes and fixture entry
+    # ids in the word one; the letter default („never repeat the capital S")
+    # would be an entry id there and is dropped unless the caller asked for it.
+    if args.word_arms and args.repeat_exclude == list(DEFAULT_REPEAT_EXCLUDE):
+        args.repeat_exclude = []
     return args
+
+
+def run_word_round(args: argparse.Namespace, seed: int, rng: random.Random) -> int:
+    """The authenticity round: two composed arms over the frozen specimen words."""
+    root = args.fixtures / args.style / args.source_id
+    base, candidate = (load_arm(path) for path in args.word_arms)
+    mismatched = check_arm_scope(base, candidate, style=args.style, source_id=args.source_id)
+    if mismatched:
+        raise SystemExit(
+            "the two arms were not composed against the same reference — a round over them would compare two "
+            "different measurements:\n  " + "\n  ".join(mismatched)
+        )
+    if not any(arm.meta.get(field) for arm in (base, candidate) for field in ARM_SCOPE):
+        print("  WARNING: neither arm declares its style/source/fixture root — nothing to check them against")
+    strata = json.loads(Path(args.strata).read_text(encoding="utf-8")) if args.strata else None
+    if isinstance(strata, dict) and isinstance(strata.get("strata"), dict):
+        strata = strata["strata"]
+
+    dropped: Counter = Counter()
+    cases = word_cases(root, base, candidate, strata=strata, only=args.entries, dropped=dropped)
+    if not cases:
+        raise SystemExit(f"{root}: the two arms share no scorable fixture word — nothing to compare")
+
+    counts: dict[str, Any] = {
+        "words": len(cases),
+        "dropped": dict(sorted(dropped.items())),
+        "fixture_entries": len(load_fixture_words(root)),
+    }
+    if strata:
+        counts["strata_declared"] = len({case.stratum for case in cases if case.stratum != NO_STRATUM})
+
+    items, key, reserve, repeats = build_word(cases, args, rng)
+    counts.update({"screens": len(items), "labelled": len(items) - repeats["n_repeats"], "reserved": len(reserve)})
+    arms = [
+        {"side": side, "name": arm.name, "file": str(arm.path), "sha256_16": arm.digest, "meta": arm.meta}
+        for side, arm in ((SIDE_BASE, base), (SIDE_CANDIDATE, candidate))
+    ]
+    stamp = provenance(args, mode="word", seed=seed, counts=counts, repeats=repeats, api_used=False, arms=arms)
+    stamp["question"] = "authentic"  # §8: the question belongs in the record, not only in the plan
+    stamp["fixture_root"] = str(root)
+    write_round(args.out, Round(items, key, reserve, stamp), force=args.force)
+
+    shown = [entry for entry in key if not entry["repeat_of"]]
+    ranks = [entry["rank"] for entry in shown[:100]]
+    print(f"round {args.round} · word · seed {seed} · {len(cases)} words · {base.name} vs {candidate.name}")
+    print(f"  {counts['labelled']} to judge · {len(reserve)} reserved as held-out · {len(items)} screens")
+    if counts["dropped"]:
+        print(f"  not eligible: {counts['dropped']}")
+    if ranks:
+        print(f"  prefix check — first {len(ranks)} span ranks {min(ranks)}–{max(ranks)} of 0–{len(cases) - 1}")
+    print(
+        f"  {repeats['n_repeats']} repeats, gaps {repeats['gap_min']}–{repeats['gap_max']} positions, "
+        f"strata {repeats['strata']}"
+    )
+    if not strata:
+        print(
+            "  WARNING: no --strata — the repeats are dealt over the SEVERITY bands, not over the suspected "
+            "defect classes. The round then measures the side preference across the arm-gap range; a per-class "
+            "reading of the verdict has no repeats under it (menschliche-bewertung.md §3.2)."
+        )
+    cut = clipped_words(cases, args.pad_xh)
+    if cut:
+        print(
+            f"  WARNING: {len(cut)} word(s) compose past their own fixture crop and are shown TRUNCATED: "
+            f"{', '.join(cut[:8])}"
+        )
+    if repeats["n_repeats"] < args.repeats:
+        print(
+            f"  WARNING: {repeats['n_repeats']} of {args.repeats} repeats placed — too few early screens for "
+            f"--min-repeat-gap {args.min_repeat_gap} in {counts['labelled']} words"
+        )
+    print(f"  wrote {args.out} ({sum(len(i['img']) for i in items) / 1e6:.1f} MB of crops)")
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     seed = args.seed if args.seed is not None else SEED_BASE + args.round
     rng = random.Random(seed)
+    if args.word_arms:
+        if args.paired or args.instances:
+            raise SystemExit("--word-arms builds a word round; --paired/--instances belong to the letter modes")
+        return run_word_round(args, seed, rng)
 
     specimens = Specimens(args.source)
     samples = {str(entry["id"]): entry for entry in load_word_samples(specimens.chart_path)}
