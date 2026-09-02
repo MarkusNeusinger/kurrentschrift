@@ -8,7 +8,12 @@
   by path: a path exemption would wave through a NEW dump written to the same
   place, which is the mistake being guarded against. `data/` is scanned like
   anything else — it holds data by definition and is the likeliest home for
-  such a file. Two batched `cat-file` calls put the whole sweep at about three
+  such a file. It covers every reserved wire shape, not just templates:
+  occurrences (`anchors`, `half_widths`, `strokes`) and aggregates
+  (`cluster_center`, `connector_center`) too. Only a missing `git` or a
+  shallow clone lets it skip; an error from `rev-list` or `cat-file` fails it,
+  because a guard that skips on its own errors keeps CI green without ever
+  looking. Two batched `cat-file` calls put the whole sweep at about three
   seconds (#NNN).
 
 ### Changed
@@ -23,10 +28,9 @@
   the blob's identity and the net that enforces it are in
   `docs/reference/quellen-und-rechte.md` §5, and `/audit-licenses` now reports
   it as settled instead of re-raising it (#NNN).
-- **Four further payload blobs surfaced and are recorded as an open
-  question.** The 2026-09-02 audit set `mvp/canonical/*_v0.json` aside as
-  "0.9–1.1 KB hand seeds"; measured, each is ~39 KB carrying 50
-  `pixel_anchors` plus `half_widths_px` — the same class of authored geometry
-  as the accepted blob. They are pinned as known so the alarm for new finds
-  stays sharp, and named in §5 as still awaiting the author's call rather than
-  quietly treated as settled (#NNN).
+- **Four further payload blobs surfaced, and were accepted too** (author's
+  decision, 2026-09-03, same reasoning). The 2026-09-02 audit had set
+  `mvp/canonical/*_v0.json` aside as "0.9–1.1 KB hand seeds"; measured, they
+  are 6.5–53 KB carrying 50 `pixel_anchors` plus `half_widths_px` each — the
+  same class of authored geometry as the first blob, not stubs. The error
+  only showed once the net checked content instead of trusting a size (#NNN).

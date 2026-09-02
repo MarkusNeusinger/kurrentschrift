@@ -7,17 +7,15 @@ MIT grant (README "License", `docs/reference/quellen-und-rechte.md` §5), so a
 rendered template dump committed anywhere outside the code trees is a leak
 that a later `git rm` does not undo.
 
-History already holds such payloads, and they are pinned by content hash in
-two maps below. `ACCEPTED_BLOBS` is what the author DECIDED to accept on
-2026-09-02 rather than purge — `.design-sync/previews/_writtenGlyphData.ts`,
-added 2026-06-20 and untracked again on 2026-07-31. `PENDING_AUTHOR_DECISION`
-is what this net surfaced afterwards and nobody has ruled on yet.
+History already holds five such payloads, pinned by content hash in
+`ACCEPTED_BLOBS` below. The author decided to accept rather than purge them:
+the design-sync preview dump on 2026-09-02, and the four pre-DB prototype
+canonicals this net then surfaced on 2026-09-03, on the same reasoning.
 
-Pinning both is what keeps the alarm meaningful rather than muting it: the
-recorded blobs stay quiet, they are named in §5 for what they are (settled or
-open), and any payload that is not one of them turns this test red the day it
-lands. The decision was to accept what is already public, NOT to accept the
-class.
+Pinning them is what keeps the alarm meaningful rather than muting it: the
+recorded blobs stay quiet, they are named in §5 with their reasoning, and any
+payload that is not one of them turns this test red the day it lands. The
+decision was to accept what is already public, NOT to accept the class.
 
 Why by blob hash and not by path: a path allowlist would wave through a NEW
 dump written to the same path, which is exactly the mistake this guards
@@ -47,8 +45,26 @@ import pytest
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# Identifiers that only a rendered template payload carries.
-PAYLOAD_KEYS = (b"skeleton_polyline_px", b"pixel_anchors", b"half_widths_px", b"anchors_template", b"outline_paths")
+# Identifiers that only a reserved payload carries — every wire shape §5
+# reserves, not just the canonical templates: templates and their renders
+# (`skeleton_polyline_px`, `anchors_template`, `half_widths_template`,
+# `centerlines_template`, `outline_paths`), per-occurrence instances
+# (`anchors`, `half_widths`, `strokes`) and per-hand aggregates
+# (`cluster_center`, `connector_center`). The short forms are deliberate:
+# `anchors` subsumes `pixel_anchors` and `anchors_template`, `half_widths`
+# subsumes `half_widths_px`. Measured against the whole history, widening the
+# list this far adds no false positive — it still flags exactly the five
+# recorded blobs.
+PAYLOAD_KEYS = (
+    b"skeleton_polyline",
+    b"anchors",
+    b"half_widths",
+    b"centerlines",
+    b"outline_paths",
+    b"strokes",
+    b"cluster_center",
+    b"connector_center",
+)
 
 # A key alone is not a leak: CHANGELOG.md, CLAUDE.md and the generator scripts
 # all NAME these fields, and prose about the format is explicitly allowed. What
@@ -85,28 +101,21 @@ CODE_TREES = (
 # purge. Adding a line here is a licensing decision, never a way to get a test
 # green: it belongs to the author, and the reasoning goes in
 # `docs/reference/quellen-und-rechte.md` §5 in the same PR.
-ACCEPTED_BLOBS = {"4e02e1a7be720d34c3f161c17afe821a1032df1b": ".design-sync/previews/_writtenGlyphData.ts"}
-
-# Payloads this net found in the existing history that the author has NOT yet
-# ruled on. They are pinned, not blessed: recording them is what keeps the
-# alarm honest — the accepted blob is quiet, these are documented as an open
-# question (`quellen-und-rechte.md` §5), and anything NOT in either map is a
-# fresh leak that fails the test the day it lands.
-#
-# These three glyphs are the pre-DB hand-traced canonicals of the very first
-# prototype, deleted from HEAD long before the DB existed. The 2026-09-02 audit
-# recorded them as "0,9–1,1 KB hand seeds" and set them aside on that basis;
-# measured, each blob is ~39 KB and carries 50 `pixel_anchors` plus
-# `half_widths_px` — the same class of authored geometry as the accepted blob,
-# not a stub. That correction is why they are listed here instead of dismissed.
-PENDING_AUTHOR_DECISION = {
+ACCEPTED_BLOBS = {
+    # Decision of 2026-09-02: the design-sync preview dump.
+    "4e02e1a7be720d34c3f161c17afe821a1032df1b": ".design-sync/previews/_writtenGlyphData.ts",
+    # Decision of 2026-09-03, same reasoning: the pre-DB hand-traced canonicals
+    # of the very first prototype, added 2026-05-20 (4dc98c7) and gone from
+    # HEAD since 2026-05-22 (9365b65), when /mvp/ moved to /core/ + Postgres.
+    # The 2026-09-02 audit had set them aside as "0,9–1,1 KB hand seeds";
+    # measured they are 6.5–53 KB and carry 50 anchors plus half widths each,
+    # the same class of authored geometry as the blob above. This net is what
+    # corrected that, which is why they are listed rather than dismissed.
     "0625420282bb2bf4ff6d4b9ce1a7a37e896667e2": "mvp/canonical/e-medial_v0.json",
     "5592aa6840ed79a34804e5c6c910b4a2751bcff1": "mvp/canonical/e-medial_v0.json",
     "c9ffc7a207a1d9ed89712dc0d5fa279964e5d5b3": "mvp/canonical/s-final_v0.json",
     "bfd13c3c568dfdb8a44e04df1e13e43c82a3eaf6": "mvp/canonical/s-medial_v0.json",
 }
-
-KNOWN_BLOBS = {**ACCEPTED_BLOBS, **PENDING_AUTHOR_DECISION}
 
 
 def _git(*args: str) -> bytes:
@@ -184,8 +193,12 @@ def payload_blobs() -> dict[str, str]:
         if _git("rev-parse", "--is-shallow-repository").strip() == b"true":
             pytest.skip("shallow clone: no history to scan (CI uses fetch-depth: 0)")
         return _blobs_carrying_payload(_candidate_blobs())
-    except (subprocess.CalledProcessError, FileNotFoundError) as exc:
-        pytest.skip(f"git history not available here: {exc}")
+    except FileNotFoundError as exc:
+        # No git executable at all — a genuinely unavailable environment, not a
+        # verdict about the history. Everything else is deliberately NOT caught:
+        # a failing `rev-list` or `cat-file` must turn this red, because a guard
+        # that skips on its own errors lets CI stay green without ever looking.
+        pytest.skip(f"git executable not available here: {exc}")
 
 
 @pytest.mark.parametrize(
@@ -217,7 +230,7 @@ def test_no_new_reserved_blob_in_history(payload_blobs: dict[str, str]) -> None:
     from now on lands here as a red test on the day it lands, while a `git rm`
     later would not undo it.
     """
-    unexpected = {sha: path for sha, path in payload_blobs.items() if sha not in KNOWN_BLOBS}
+    unexpected = {sha: path for sha, path in payload_blobs.items() if sha not in ACCEPTED_BLOBS}
     assert not unexpected, (
         "NEW reserved template payload(s) in the public git history: "
         + ", ".join(f"{path} ({sha[:12]})" for sha, path in sorted(unexpected.items(), key=lambda kv: kv[1]))
@@ -233,6 +246,6 @@ def test_recorded_blobs_still_describe_reality(payload_blobs: dict[str, str]) ->
     the line must go or be corrected, rather than sit there granting an
     exemption to nothing.
     """
-    for sha, path in sorted(KNOWN_BLOBS.items()):
+    for sha, path in sorted(ACCEPTED_BLOBS.items()):
         assert sha in payload_blobs, f"recorded blob {sha[:12]} ({path}) is no longer in history — drop the entry"
         assert payload_blobs[sha] == path, f"recorded blob {sha[:12]} now lives at {payload_blobs[sha]}, not {path}"

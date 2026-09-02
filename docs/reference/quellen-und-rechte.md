@@ -288,16 +288,24 @@ losschreiben" kann, gilt technisch:
   bleibt unverändert der Vorbehalt im README („License") — der gilt
   unabhängig davon, ob Bytes irgendwo abrufbar sind; technisch verhindert
   wird nur die WIEDERHOLUNG.
-- **Offen, Entscheid des Autors steht aus:** `mvp/canonical/{e-medial,
-  s-final,s-medial}_v0.json` (vier Blobs, ebenfalls nur aus HEAD entfernt).
-  Es sind die handnachgefahrenen Kanonischen des ersten Prototyps aus der
-  Zeit vor der Datenbank. Das Audit vom 2026-09-02 hatte sie als
-  „0,9–1,1 KB große Hand-Seeds" beiseitegelegt; nachgemessen sind es je
-  ~39 KB mit 50 `pixel_anchors` und `half_widths_px` — dieselbe Klasse
-  autorierter Geometrie wie oben, kein Stummel. Damit ist dieselbe Frage
-  wie beim Blob darüber zu beantworten (annehmen oder purgen); bis dahin
-  sind sie in `tests/test_reserved_history.py` als bekannt vermerkt, damit
-  der Alarm für NEUE Funde scharf bleibt.
+- **Ebenfalls angenommen** (Entscheid des Autors 2026-09-03, dieselbe
+  Begründung wie oben): die handnachgefahrenen Kanonischen des ersten
+  Prototyps aus der Zeit vor der Datenbank, hinzugefügt am 2026-05-20 mit
+  Commit `4dc98c7`, aus HEAD verschwunden am 2026-05-22 mit `9365b65`
+  (Umzug `/mvp/` → `/core/` + Postgres). Vier Blobs:
+
+  | Blob | Pfad | Größe |
+  |---|---|---|
+  | `0625420282bb2bf4ff6d4b9ce1a7a37e896667e2` | `mvp/canonical/e-medial_v0.json` | 39 293 B |
+  | `5592aa6840ed79a34804e5c6c910b4a2751bcff1` | `mvp/canonical/e-medial_v0.json` | 6 539 B |
+  | `c9ffc7a207a1d9ed89712dc0d5fa279964e5d5b3` | `mvp/canonical/s-final_v0.json` | 53 438 B |
+  | `bfd13c3c568dfdb8a44e04df1e13e43c82a3eaf6` | `mvp/canonical/s-medial_v0.json` | 49 211 B |
+
+  Das Audit vom 2026-09-02 hatte sie als „0,9–1,1 KB große Hand-Seeds"
+  beiseitegelegt; nachgemessen sind es 6,5–53 KB mit je 50 `pixel_anchors`
+  und `half_widths_px` — dieselbe Klasse autorierter Geometrie wie der Blob
+  darüber, kein Stummel. Aufgefallen ist die Fehlangabe erst, als das
+  Nachweis-Netz unten sie als Inhalt statt als Dateigröße prüfte.
 
   **Das Nachweis-Netz** dazu ist `tests/test_reserved_history.py`: Es geht
   alle je committeten Blobs außerhalb der Code-Bäume durch und meldet
@@ -312,7 +320,17 @@ losschreiben" kann, gilt technisch:
   (`anchors_template: [[x, y], …]`) wie flach; ein reines Komma-Muster bräche
   an jedem `],[` und ließe einen Dump aus lauter Koordinatenpaaren durch.
   `data/` wird mitgeprüft und ist ausdrücklich KEIN Code-Baum — dort läge
-  eine autorierte Payload am naheliegendsten.
+  eine autorierte Payload am naheliegendsten. Die Schlüsselliste deckt
+  ALLE hier vorbehaltenen Wire-Formen ab, nicht nur die Tafel-Templates:
+  Templates und ihre Renders (`skeleton_polyline`, `anchors*`,
+  `half_widths*`, `centerlines*`, `outline_paths`), die Vorkommen
+  (`anchors`, `half_widths`, `strokes`) und die Hand-Aggregate
+  (`cluster_center`, `connector_center`) — gemessen ohne einen einzigen
+  Fehlalarm über die gesamte Historie. Und der Test **überspringt sich
+  nicht selbst**: nur ein fehlendes `git` (oder ein flacher Klon) gilt als
+  „hier nicht prüfbar", jeder Fehler von `rev-list`/`cat-file` macht ihn
+  rot — ein Wächter, der bei eigenen Fehlern schweigt, hielte CI grün,
+  ohne je hingesehen zu haben.
 - **Seit 2026-09-02 liegt eine Schicht DAVOR: das Origin-Geheimnis.** Alle
   bisherigen Punkte beschreiben, was die API einem Aufrufer antwortet. Sie
   galten aber nur, solange man die API überhaupt nur über den Edge erreicht —
