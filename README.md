@@ -2,7 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![CI](https://img.shields.io/github/actions/workflow/status/MarkusNeusinger/kurrentschrift/ci.yml?branch=main&label=CI)](https://github.com/MarkusNeusinger/kurrentschrift/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/github/MarkusNeusinger/kurrentschrift/graph/badge.svg)](https://codecov.io/github/MarkusNeusinger/kurrentschrift)
+[![Backend coverage (core + api)](https://codecov.io/gh/MarkusNeusinger/kurrentschrift/branch/main/graph/badge.svg?flag=backend)](https://codecov.io/gh/MarkusNeusinger/kurrentschrift/flags)
+[![Frontend coverage (app/src)](https://codecov.io/gh/MarkusNeusinger/kurrentschrift/branch/main/graph/badge.svg?flag=frontend)](https://codecov.io/gh/MarkusNeusinger/kurrentschrift/flags)
 [![Status](https://img.shields.io/badge/status-in--progress%20MVP-orange.svg)](docs/concepts/architektur.md)
 
 > Reading and re-inking historical German Kurrent script via ductus-model template fitting on scans.
