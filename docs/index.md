@@ -131,6 +131,8 @@ docs/
 │   ├── graves-handschrift-synthese.md    # Literatur-Report: Graves-2013-Mechanik, Priming/Biasing, Plotter-Pipeline, GAN/Transformer/ScribeTokens, 54 Quellen
 │   └── kurrent-writer-and-recognizer.md  # Recherche-Notiz (EN): generativer Writer (Graves 2013) als synthetische Datenquelle → billiger Recognizer
 └── notes/                        # Operative, datierte Journale (nicht Designkern)
+    ├── audit-2026-09-02-rohbefunde.md  # Vollaudit 2026-09-01/02: Rohberichte der 20 Prüfer (Repo · Website · Werkzeuge · das Geschriebene)
+    ├── audit-2026-09-02-synthese.md  # Vollaudit 2026-09-01/02: Rangliste, Parallelplan T1–T14, Fragen an den Autor F1–F11
     ├── quellen-recherche-2026-07.md  # Recherche Juli 2026: geschriebene Wortvorlagen & echte Hände — Rangliste, Absteiger, mögliche Anfragen
     └── stifte-fuer-unterwegs.md  # Stift-/Hardware-Recherche fürs Schreiben unterwegs
 ```
@@ -490,6 +492,15 @@ Idee mit Bauoption, `Befund-Journal` = Literatur-Momentaufnahme).
 Operative, datierte Journale außerhalb des Designkerns — nie
 fortgeschrieben, nur durch eine neue Runde abgelöst.
 
+- **[Vollaudit 2026-09-01/02 — Rohbefunde](notes/audit-2026-09-02-rohbefunde.md)**
+  — die Rohberichte der 20 unabhängigen Prüfer (Repo · Doku · Skills · API ·
+  core · Werkzeuge · Frontend · Inhalte · Live-Seite · das Geschriebene · CI ·
+  Sicherheit · Aufgaben-Rückstand); jeder Befund mit Schwere, Kategorie,
+  Aufwand, Beleg und Vorschlag
+- **[Vollaudit 2026-09-01/02 — Synthese](notes/audit-2026-09-02-synthese.md)** —
+  Gesamtbild und Stärken, 39 gereihte Befunde, Parallelplan T1–T14 und die
+  Fragen an den Autor F1–F11; der Vorschlag des Synthese-Prüfers — die
+  Entscheidungen stehen nicht dort, sondern in den PRs, die daraus folgen
 - **[Quellen-Recherche Juli 2026](notes/quellen-recherche-2026-07.md)** —
   Recherche-Runde 30./31.07.2026 zu geschriebenen Wortvorlagen und
   echten Händen: Rangliste (SUB-Leitfaden ✅ committet, Berger-Reihe,
