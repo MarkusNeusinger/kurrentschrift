@@ -4,7 +4,7 @@
 > `/write/*`-Endpunkte; jede Änderung an `api/routers/write.py` (inkl.
 > `compose_word_payload`), `core/shaping.py`, `core/compose.py`, dem
 > Render-Payload oder den Cache-Headern muss hier nachgezogen werden.
-> Der Abschnitt [„Ratenbegrenzung"](#ratenbegrenzung--zwei-buckets-eng-vor-weit)
+> Der Abschnitt [„Ratenbegrenzung“](#ratenbegrenzung--zwei-buckets-eng-vor-weit)
 > beschreibt seit dem 2026-09-02 die Buckets der GANZEN API, nicht nur die des
 > Kompositionspfads — er ist die eine Stelle, an der das Limit dokumentiert
 > ist, und gehört zu `api/rate_limit.py`.
@@ -60,7 +60,7 @@ ein 155-Zeichen-Text kostete am 2026-09-01 live 0,80 s TTFB und 1.653.798 Bytes.
 
 Der **weite** Bucket (Owner-Entscheid 2026-09-02: „soll nur extreme Nutzung
 blocken, damit mir keine riesigen Kosten entstehen können oder jemand alles
-lahmlegen kann") schließt den Rest der Fläche: `/write/glyphs` batcht bis zu 80
+lahmlegen kann“) schließt den Rest der Fläche: `/write/glyphs` batcht bis zu 80
 Keys, jeder Katalog-Read geht an die DB, und nichts hinderte ein Skript daran,
 die API in einer Schleife abzugehen. 600/min mit Burst 120 ist eine
 Größenordnung über dem, was das Blättern auf der Website erzeugt — ein

@@ -14,10 +14,10 @@ one unique 155-character request. With `--concurrency=15 --max-instances=3` a
 scripted caller with random texts saturates an instance, scales the service and
 pays out ~1.6 MB of egress per request.
 
-**Wide — every other route, GET and HEAD included** (600/min, burst 120,
-owner decision 2026-09-02: "soll nur extreme Nutzung blocken, damit mir keine
-riesigen Kosten entstehen können oder jemand alles lahmlegen kann"). The narrow
-bucket left the rest of the surface open: `/write/glyphs` batches up to 80
+**Wide — every other route, GET and HEAD included** (600/min, burst 120; the
+author's decision of 2026-09-02 was to block extreme use only, so that sheer
+request volume can neither run up the bill nor take the service down). The
+narrow bucket left the rest of the surface open: `/write/glyphs` batches up to 80
 keys, `/diagnostic`-shaped reads and every catalogue read hit the DB, and
 nothing stopped a script from walking the whole API in a loop. The wide budget
 sits an order of magnitude above what a person browsing the site produces — a

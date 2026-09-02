@@ -112,6 +112,23 @@ async def _seed_word(api: Harness) -> str:
     return source_id
 
 
+def _freeze(monkeypatch, *limiters_and_bursts: tuple[TokenBucketLimiter, float]) -> FakeClock:
+    """Give the process-wide limiters a small burst AND a stopped clock.
+
+    Shrinking the burst alone is not enough: the wide bucket refills at 10
+    tokens per second (the narrow one at 1), so on a loaded runner enough real
+    time can pass between two awaited requests to hand one back and the
+    assertion flips (Copilot review, PR #490). With the clock frozen nothing
+    refills unless a test advances it on purpose.
+    """
+    clock = FakeClock()
+    for limiter, burst in limiters_and_bursts:
+        monkeypatch.setattr(limiter, "_now", clock)
+        monkeypatch.setattr(limiter, "burst", burst)
+        limiter.reset()
+    return clock
+
+
 async def test_write_word_answers_429_with_retry_after(api: Harness, monkeypatch):
     source_id = await _seed_word(api)
     clock = FakeClock()
@@ -145,8 +162,7 @@ async def test_glyph_reads_are_exempt_from_the_word_limit(api: Harness, monkeypa
     is throttled — the Tafel and the quiz ride on `/write/glyphs`."""
     source_id = await _seed_word(api)
     # A bucket that never holds a whole token: every word request is over.
-    monkeypatch.setattr(write_limiter, "burst", 0.5)
-    write_limiter.reset()
+    _freeze(monkeypatch, (write_limiter, 0.5))
 
     assert (await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nn"})).status == 429
     assert (await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": "n"})).status == 200
@@ -158,13 +174,12 @@ async def test_glyph_reads_are_exempt_from_the_word_limit(api: Harness, monkeypa
 
 
 async def test_the_wide_bucket_covers_plain_reads(api: Harness, monkeypatch):
-    """Owner decision 2026-09-02: extreme use must be blocked everywhere, not
+    """The author's decision of 2026-09-02: extreme use must be blocked everywhere, not
     only on the compose path. Before this, nothing stopped a script from
     walking the catalogue and the batch reads in a loop."""
     style_id, source_id = await api.seed_style_and_source()
     await api.seed_template(style_id, source_id, "n", "n")
-    monkeypatch.setattr(public_limiter, "burst", 2.0)
-    public_limiter.reset()
+    _freeze(monkeypatch, (public_limiter, 2.0))
 
     assert (await api.client.request("GET", "/styles")).status == 200
     assert (await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": "n"})).status == 200
@@ -185,8 +200,7 @@ async def test_head_spends_a_token_like_the_get_it_stands_for(api: Harness, monk
     """`HeadAsGetMiddleware` answers HEAD from the GET route, so an unlimited
     HEAD would be a limit one header away from being evaded."""
     await api.seed_style_and_source()
-    monkeypatch.setattr(public_limiter, "burst", 2.0)
-    public_limiter.reset()
+    _freeze(monkeypatch, (public_limiter, 2.0))
 
     assert (await api.client.request("HEAD", "/styles")).status == 200
     assert (await api.client.request("HEAD", "/styles")).status == 200
@@ -199,8 +213,7 @@ async def test_health_and_the_prerendered_pages_stay_exempt(api: Harness, monkey
     to punish a busy client would turn a rate limit into an outage. The
     `/seo-proxy` pages all arrive through the site's nginx and therefore share
     ONE key, so a bucket would throttle the whole crawler funnel at once."""
-    monkeypatch.setattr(public_limiter, "burst", 0.5)  # never holds a whole token
-    public_limiter.reset()
+    _freeze(monkeypatch, (public_limiter, 0.5))  # never holds a whole token
 
     assert (await api.client.request("GET", "/styles")).status == 429
     for _ in range(3):
@@ -222,10 +235,7 @@ async def test_the_narrow_bucket_answers_before_the_wide_one(api: Harness, monke
     the limit it actually broke, and the refused request does not also spend a
     token of the wide budget."""
     source_id = await _seed_word(api)
-    monkeypatch.setattr(write_limiter, "burst", 1.0)
-    monkeypatch.setattr(public_limiter, "burst", 10.0)
-    write_limiter.reset()
-    public_limiter.reset()
+    _freeze(monkeypatch, (write_limiter, 1.0), (public_limiter, 10.0))
 
     assert (await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nn"})).status == 200
     res = await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nn"})
@@ -289,8 +299,7 @@ async def test_the_bucket_keys_on_the_rightmost_forwarded_entry(api: Harness, mo
     """The leftmost `x-forwarded-for` entry is client-controlled: trusting it
     would let a caller both evade its own limit and lock someone else out."""
     source_id = await _seed_word(api)
-    monkeypatch.setattr(write_limiter, "burst", 1.0)
-    write_limiter.reset()
+    _freeze(monkeypatch, (write_limiter, 1.0))
 
     async def word(headers: dict[str, str]) -> int:
         res = await api.client.request(
@@ -314,8 +323,7 @@ async def test_a_forged_cf_connecting_ip_cannot_reach_a_victims_bucket(api: Harn
     let that caller burn a victim's bucket; joined with the unforgeable last
     hop it can only scatter its own requests (Copilot review, PR #481)."""
     source_id = await _seed_word(api)
-    monkeypatch.setattr(write_limiter, "burst", 1.0)
-    write_limiter.reset()
+    _freeze(monkeypatch, (write_limiter, 1.0))
 
     async def word(headers: dict[str, str]) -> int:
         res = await api.client.request(
