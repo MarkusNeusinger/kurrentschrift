@@ -58,7 +58,10 @@ jobs:
             --rawfile list urls.txt \
             '{host: $host, key: $key, keyLocation: $loc,
               urlList: ($list | split("\n") | map(select(length > 0)))}')
+          # Bounded like the other curl calls in this repo: a slow or flaky
+          # api.indexnow.org must not burn the job timeout or fail a push.
           code=$(curl -sS -o response.txt -w '%{http_code}' \
+            --max-time 30 --retry 3 --retry-delay 5 --retry-all-errors \
             -X POST "https://api.indexnow.org/indexnow" \
             -H "Content-Type: application/json; charset=utf-8" \
             --data "$body")
