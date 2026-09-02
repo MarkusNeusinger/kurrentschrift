@@ -166,7 +166,9 @@ def test_a_panel_may_draw_only_fills_but_never_nothing():
     fills_only = [{"id": "S001", "w": 40, "h": 30, "img": PNG, "panels": [{"fills": [[[0, 0], [4, 0], [4, 4]]]}] * 2}]
     items, _ = normalise(fills_only)
     assert [sorted(p) for p in items[0]["panels"]] == [["fills"]] * 2
-    with pytest.raises(ValueError, match="no drawable stroke"):
+    # And the refusal names BOTH counts, because a ring too short to enclose
+    # anything looks from the outside exactly like a missing stroke.
+    with pytest.raises(ValueError, match=r"a stroke \(2\+ points\) or a ring \(3\+ points\)"):
         normalise([{"id": "S001", "w": 40, "h": 30, "img": PNG, "panels": [{"fills": [[[0, 0], [4, 0]]]}] * 2}])
 
 
@@ -287,7 +289,7 @@ def test_inline_script_cannot_be_closed_early_by_the_payload():
         ([{"w": 1, "h": 1, "img": PNG, "strokes": [[[0, 0], [1, 1]]]}], "needs a non-empty 'id'"),
         ([SINGLE[0], SINGLE[0]], "duplicate id"),
         ([{**SINGLE[0], "img": "https://example.invalid/x.png"}], "must not load anything external"),
-        ([{**SINGLE[0], "strokes": [[[0, 0]]]}], "no drawable stroke"),
+        ([{**SINGLE[0], "strokes": [[[0, 0]]]}], "nothing drawable"),
         ([{**SINGLE[0], "w": 0}], "not drawable"),
         ([SINGLE[0], {**PAIRED[0], "id": "S002"}], "mixes one-panel and two-panel"),
     ],

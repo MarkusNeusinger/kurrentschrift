@@ -344,7 +344,10 @@ def _panel(raw: Any, where: str, shared: dict[str, Any]) -> dict[str, Any]:
     # legitimately carry no polyline at all — but never neither.
     fills = _paths(merged.get("fills", []), where, "fills", 3)
     if not strokes and not fills:
-        raise ValueError(f"{where}: no drawable stroke (each needs at least two points)")
+        # Both counts named, because the two ways to be empty look identical
+        # from the outside: a stroke set whose polylines are all single points,
+        # and a fill set whose rings are all too short to enclose anything.
+        raise ValueError(f"{where}: nothing drawable — a panel needs a stroke (2+ points) or a ring (3+ points)")
     return {
         "w": width,
         "h": height,
