@@ -22,11 +22,11 @@ subrequest to a host in the SAME zone skips that zone's Transform Rules
 source now lives).
 
 **The check is OFF unless `ORIGIN_SECRET` is set.** That is the rollback: take
-the variable off the Cloud Run service, and promote the revision that creates
-(this service pins traffic to a named revision, so the new one serves nothing
-until it is promoted). Local development and the test suite therefore never see
-the gate, and the rollout could put the code in production long before the rule
-and the secret existed.
+the variable off the Cloud Run service, then promote the resulting revision —
+this service pins traffic to a named revision, so a new one serves nothing until
+it is promoted. Local development and the test suite therefore never see the
+gate, and the rollout could put the code in production long before the rule and
+the secret existed.
 
 Exempt by path, and only these two:
 

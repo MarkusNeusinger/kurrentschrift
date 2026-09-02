@@ -1,6 +1,6 @@
 # Frontend-Stack
 
-> **Status (2026-08-28): lebend.** Ist-Stand von Stack, Routen, i18n-Soll,
+> **Status (2026-09-02): lebend.** Ist-Stand von Stack, Routen, i18n-Soll,
 > Deploy, Admin-Gate und Crawler-Prerender; jede Änderung an
 > `app/package.json`, `app/src/routes/paths.ts`, den Cloudbuild-/nginx-Dateien,
 > `api/auth.py`, `api/origin_gate.py`, `infra/cloudflare/` (der Apex-Worker —
@@ -12,6 +12,9 @@
 > Am 2026-08-16 um die aus `CLAUDE.md` hierher verschobenen Detailregeln
 > ergänzt (Vier-Gesichter-Übersicht, Registrierungs-Regel, Kostenbudget,
 > Cloud-Session-Betrieb u. a.) — Beschreibungsstand dieser Punkte: 2026-08-16.
+> Am 2026-09-02 um §5 „Origin-Geheimnis" ergänzt und beim Rollout korrigiert:
+> der Apex-Worker stempelt selbst, weil ein Worker-Subrequest die
+> Transform-Rules der eigenen Zone umgeht (`infra/cloudflare/`).
 
 Technische Spezifikation des Endnutzer-Frontends aus Vision §1 (Einstieg),
 §2 (Lineatur-Konfigurator), §3 (Animation), §4 (Lesen üben), §5 (Lese-Hilfe

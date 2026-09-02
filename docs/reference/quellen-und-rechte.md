@@ -4,7 +4,8 @@
 > nur über eine neue Entscheidung.
 > Ausnahme §5 „Open-Core-Absicherung“: die dort aufgezählte technische
 > Gating-Oberfläche ist Ist-Stand und muss bei jeder Änderung an Admin-Gates
-> auf Lese-Endpunkten, an den gitignorten Bench-Fixtures oder an committeten
+> auf Lese-Endpunkten, am Origin-Gate davor (`api/origin_gate.py`,
+> `infra/cloudflare/`), an den gitignorten Bench-Fixtures oder an committeten
 > gerenderten Artefakten nachgezogen werden.
 
 Begleitdokument zu [`architektur.md`](../concepts/architektur.md) und
