@@ -294,7 +294,10 @@ def main(argv: list[str] | None = None) -> int:
         "arm": args.arm,
         "style": args.style,
         "source_id": args.source_id,
-        "fixture_root": str(root),
+        # Relative to the repo where it can be: the builder holds two arms
+        # against each other on this field, and an absolute path would make two
+        # arms produced on two machines look like two different references.
+        "fixture_root": str(root.relative_to(REPO_ROOT)) if root.is_relative_to(REPO_ROOT) else str(root),
         "tool": "tools.humanbench.wordarm",
         "built_at": args.stamp or datetime.now(UTC).isoformat(timespec="seconds"),
         "settings": settings,

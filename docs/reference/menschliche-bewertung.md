@@ -1004,6 +1004,20 @@ Der Stempel führt je Arm Name, Datei und **SHA-256** — ohne den benennt eine
 Runde eine Datei, die seither umgeschrieben sein kann, und „der Kandidat hat
 gewonnen“ zeigt auf nichts.
 
+**Und der Bau bricht ab, wenn die beiden Arme nicht gegen dieselbe Referenz
+komponiert wurden** (`build.py::check_arm_scope`: Stil, `source_id`,
+Fixture-Wurzel und der Export-Zeitstempel der Wurzel, jeweils gegeneinander und
+gegen die gebaute Runde). Die ganze Behauptung einer Wortrunde ist, dass sich
+die beiden Bilder in der Komposition unterscheiden und **in nichts sonst** —
+zwei Fixture-Wurzeln tragen aber andere Ausschnitte, andere eingefrorene Slots
+und andere Registrierungen. Ohne die Prüfung baut die Runde trotzdem: 63
+Bildschirme, ein sauberes Verdikt, und ein Vergleich zweier Dinge, die nie
+dieselbe Messung waren. Der gefährlichste Fall ist dabei nicht hypothetisch —
+ein Arm über `suetterlin-1922-abb22` ist eine **andere Hand**, die die
+Same-Hand-Disziplin ohnehin nie in denselben Satz lässt. Ein Arm, der gar
+nichts über seine Referenz sagt, kann nicht geprüft werden und wird dafür auch
+nicht abgelehnt — er wird gemeldet.
+
 ### Bänder, Klassen und Wiederholungen
 
 Die Schwere-Achse des Kategorien-Modus („wie weit liegt der Fit von seiner

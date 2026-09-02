@@ -1124,6 +1124,47 @@ def _word_key_entry(case: WordCase, order: list[str] | None, *, display: bool = 
     }
 
 
+# What an arm may declare about the reference it was composed against. All of
+# it is optional — a third-party arm is allowed to carry nothing — but whatever
+# IS there has to agree, on pain of aborting the build.
+ARM_SCOPE = ("style", "source_id", "fixture_root")
+
+
+def check_arm_scope(base: Arm, candidate: Arm, *, style: str, source_id: str) -> list[str]:
+    """Refuse two arms that were not composed against the same reference.
+
+    A word round's whole claim is that the two panels differ in the composition
+    and in NOTHING else. Arms from two fixture roots — a different style, a
+    different plate, or the same plate re-exported — carry different crops,
+    different frozen slots and different registrations, and the round would
+    still build: 63 screens, a clean verdict, and a comparison of two things
+    that were never the same measurement. Silent is the dangerous part, so this
+    aborts rather than warns.
+
+    Only what an arm actually declares is checked, and the settings' export
+    timestamp is checked too — a re-exported root is a re-baseline, and two
+    arms across one of those are the same trap wearing the same name. An arm
+    that declares nothing cannot be checked and is reported as such.
+    """
+    problems = []
+    for name in ARM_SCOPE:  # the two arms against each other
+        left, right = base.meta.get(name), candidate.meta.get(name)
+        if left is not None and right is not None and str(left) != str(right):
+            problems.append(f"{name}: base says {left!r}, candidate says {right!r}")
+    for name, expected in (("style", style), ("source_id", source_id)):  # and against the round
+        for arm in (base, candidate):
+            value = arm.meta.get(name)
+            if value is not None and str(value) != str(expected):
+                problems.append(f"{name}: arm {arm.name!r} says {value!r}, the round builds {expected!r}")
+    exports = [(arm.meta.get("settings") or {}).get("exported_at") for arm in (base, candidate)]
+    if all(exports) and exports[0] != exports[1]:
+        problems.append(
+            f"fixture export: base {exports[0]!r} vs candidate {exports[1]!r} — "
+            f"a re-exported root is a re-baseline, so the two arms are not one measurement"
+        )
+    return problems
+
+
 # ----------------------------------------------------------------- the inputs
 
 
@@ -1449,6 +1490,14 @@ def run_word_round(args: argparse.Namespace, seed: int, rng: random.Random) -> i
     """The authenticity round: two composed arms over the frozen specimen words."""
     root = args.fixtures / args.style / args.source_id
     base, candidate = (load_arm(path) for path in args.word_arms)
+    mismatched = check_arm_scope(base, candidate, style=args.style, source_id=args.source_id)
+    if mismatched:
+        raise SystemExit(
+            "the two arms were not composed against the same reference — a round over them would compare two "
+            "different measurements:\n  " + "\n  ".join(mismatched)
+        )
+    if not any(arm.meta.get(field) for arm in (base, candidate) for field in ARM_SCOPE):
+        print("  WARNING: neither arm declares its style/source/fixture root — nothing to check them against")
     strata = json.loads(Path(args.strata).read_text(encoding="utf-8")) if args.strata else None
     if isinstance(strata, dict) and isinstance(strata.get("strata"), dict):
         strata = strata["strata"]

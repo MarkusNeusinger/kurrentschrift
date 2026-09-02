@@ -112,7 +112,6 @@ TALLY_CODE: dict[str, str] = {c.tally: c.code for c in CATEGORIES}
 # paste from either page reads back — and the LABEL is not thrown away, because
 # it is the one place a result file says which question was answered.
 CHOICE_TALLY_CODE: dict[str, str] = {c.tally: c.code for choices in QUESTIONS.values() for c in choices}
-CHOICE_LABEL: dict[str, str] = {c.code: c.tally for c in CHOICES}
 
 GOOD = "G"  # the verdict that says nothing is wrong
 UNRATABLE = "K"  # „komplett daneben" — excluded from every other category
@@ -368,13 +367,20 @@ def parse_paired_result(text: str) -> ParsedPaired:
     preferences: list[Preference] = []
     seen: set[str] = set()
     tallies: dict[str, int] = {}
+    # The label AS IT STOOD IN THE FILE, so a mismatch is reported in the words
+    # the judge saw. The two question sets write the same codes under different
+    # labels („Links besser" against „Links echter"), and naming one set's
+    # wording in the other set's error would send the reader looking for a line
+    # that is not there.
+    labels: dict[str, str] = {}
     for position, line in enumerate(lines[1:]):
         tally = TALLY_LINE.match(line)
         if tally and tally.group("label").strip() in CHOICE_TALLY_CODE:
-            code = CHOICE_TALLY_CODE[tally.group("label").strip()]
+            label = tally.group("label").strip()
+            code = CHOICE_TALLY_CODE[label]
             if code in tallies:
                 raise ResultFormatError(f"line {position + 2}: the tally for {code} is given twice")
-            tallies[code] = int(tally.group("count"))
+            tallies[code], labels[code] = int(tally.group("count")), label
             continue
         if tallies:
             raise ResultFormatError(f"line {position + 2}: verdict line behind the tally block: {line!r}")
@@ -401,7 +407,7 @@ def parse_paired_result(text: str) -> ParsedPaired:
         counted = sum(1 for p in preferences if p.choice == code)
         if counted != claimed:
             raise ResultFormatError(
-                f'the page counted {claimed} × „{CHOICE_LABEL[code]}", the verdict lines carry {counted}'
+                f"the page counted {claimed} × „{labels[code]}“ ({code}), the verdict lines carry {counted}"
             )
     return ParsedPaired(head.group("tag"), int(head.group("judged")), int(head.group("total")), tuple(preferences))
 

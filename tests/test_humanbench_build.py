@@ -39,6 +39,7 @@ from tools.humanbench.build import (
     WordCase,
     arm_gap,
     build_word,
+    check_arm_scope,
     clipped_words,
     context_strokes,
     crop_window,
@@ -658,6 +659,64 @@ def test_word_cases_discard_and_count_a_word_only_one_arm_draws(tmp_path):
     assert dict(dropped) == {"only_base": 1, "neither_arm": 1}
     assert cases[0].baseline_row == 40.0 and cases[0].xh == 20.0
     assert cases[0].peak > 0  # the arms differ, so the severity key is non-zero
+
+
+def scoped_arm(tmp_path, name, **meta):
+    path = tmp_path / f"{name}.json"
+    payload = {
+        "arm": name,
+        **meta,
+        "words": {"unter": {"registration": {"xh_px": 20.0}, "strokes": [{"points": [[0, 0], [1, 1]]}]}},
+    }
+    path.write_text(json.dumps(payload))
+    return load_arm(path)
+
+
+def test_two_arms_from_the_same_reference_pass_the_scope_check(tmp_path):
+    scope = {"style": "suetterlin", "source_id": "suetterlin-1922", "settings": {"exported_at": "2026-08-14T06:02"}}
+    base = scoped_arm(tmp_path, "base", **scope)
+    candidate = scoped_arm(tmp_path, "cand", **scope)
+    assert check_arm_scope(base, candidate, style="suetterlin", source_id="suetterlin-1922") == []
+    # An arm that declares nothing cannot be checked — and is not refused for it.
+    assert check_arm_scope(scoped_arm(tmp_path, "bare"), base, style="suetterlin", source_id="suetterlin-1922") == []
+
+
+@pytest.mark.parametrize(
+    "left, right, message",
+    [
+        ({"style": "suetterlin"}, {"style": "kurrent"}, "style: base says"),
+        ({"source_id": "suetterlin-1922"}, {"source_id": "suetterlin-1922-abb22"}, "source_id: base says"),
+        ({"fixture_root": "/a"}, {"fixture_root": "/b"}, "fixture_root: base says"),
+        (
+            {"settings": {"exported_at": "2026-08-14"}},
+            {"settings": {"exported_at": "2026-09-01"}},
+            "a re-exported root is a re-baseline",
+        ),
+    ],
+)
+def test_arms_from_different_references_are_refused(tmp_path, left, right, message):
+    """The round's whole claim is that the two panels differ in the composition
+    and in nothing else. Two fixture roots carry different crops, slots and
+    registrations — and the round would still build, cleanly, over two things
+    that were never the same measurement."""
+    problems = check_arm_scope(
+        scoped_arm(tmp_path, "base", **left),
+        scoped_arm(tmp_path, "cand", **right),
+        style="suetterlin",
+        source_id="suetterlin-1922",
+    )
+    assert any(message in p for p in problems), problems
+
+
+def test_an_arm_that_disagrees_with_the_round_itself_is_refused(tmp_path):
+    problems = check_arm_scope(
+        scoped_arm(tmp_path, "base", style="kurrent"),
+        scoped_arm(tmp_path, "cand", style="kurrent"),
+        style="suetterlin",
+        source_id="suetterlin-1922",
+    )
+    assert len(problems) == 2  # both arms named, both wrong for this round
+    assert all("the round builds 'suetterlin'" in p for p in problems)
 
 
 def test_word_cases_take_the_declared_suspicion_class(tmp_path):

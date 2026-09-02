@@ -27,7 +27,11 @@
   form, `--nib` a different pen, `--registration-from` pins the placement so a
   systematically shifted arm cannot become a tell. The builder composes
   nothing itself — an instrument that computed its own candidate could drift
-  away from the ruler that has to confirm it.
+  away from the ruler that has to confirm it — and it refuses two arms that
+  were not composed against the same fixture root, style or export: those
+  carry different crops, slots and registrations, and the round would still
+  build a clean-looking verdict over two measurements that were never the same
+  one.
 
 ### Changed
 
