@@ -14,7 +14,7 @@
   `style-src` keeps `'unsafe-inline'` because Emotion has no other path. HSTS
   is 180 days without `includeSubDomains` and without `preload`. The policy
   ships as `Content-Security-Policy-Report-Only` for one week and is switched
-  by shortening the header name (#NNN).
+  by shortening the header name (#497).
 
 - **The API host stamps `nosniff` and a `Referrer-Policy` on everything it
   answers.** `api.kurrentschrift.ink` is a second public host — SVG renders,
@@ -22,14 +22,14 @@
   (`api/security_headers.py`) sits outside both gates, so the origin gate's 403
   and the rate limiter's 429 get them too. Deliberately no CSP there: `/docs`
   and `/redoc` load their bundles from a CDN and run inline scripts, so a
-  policy worth setting would break the API's own documentation (#NNN).
+  policy worth setting would break the API's own documentation (#497).
 
 - **Nothing named `.env` can reach a build context or a source upload any
   more.** `.dockerignore` listed `.env`, `.env.local` and `.env.*.local` — a
   `.env.staging` or `.env.production` fell straight through, and `app/` had no
   `.dockerignore` at all, so `COPY . .` carried the app's `.env` (which holds
   `VITE_ADMIN_TOKEN`) into an image layer. All three ignore files now say
-  `.env*` (#NNN).
+  `.env*` (#497).
 
 ### Added
 
@@ -46,7 +46,7 @@
   repeated, the body capped at 64 KB, and the memo bounded — it is the one
   public write operation of this API, so it is named and argued in
   `tests/test_api_public_surface.py::PUBLIC_WRITES` rather than simply added
-  (#NNN).
+  (#497).
 
 ### Fixed
 
@@ -57,12 +57,12 @@
   `location = /index.html` now sets `no-cache` — deliberately not the sister
   project's `no-store`, so the measured 304-with-zero-bytes path survives; the
   reason stands as a comment, because the next sync will want to "fix" it back
-  (#NNN).
+  (#497).
 
 - **`npm ci || npm install` in the app image is gone.** The fallback turned the
   one thing `npm ci` exists to catch — a missing or out-of-step lockfile — into
   a silent re-resolve, so the image could ship dependency versions no checkout
-  and no CI run had ever seen (#NNN).
+  and no CI run had ever seen (#497).
 
 ### Changed
 
@@ -77,4 +77,4 @@
   `UV_PYTHON_DOWNLOADS=never`) — the resolver was the last unpinned input of
   an otherwise fully pinned image. The cold-start comment in
   `api/cloudbuild.yaml` says what `min=1` did and did not fix, instead of
-  implying the cold start is gone (#NNN).
+  implying the cold start is gone (#497).
