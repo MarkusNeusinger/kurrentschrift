@@ -9774,3 +9774,115 @@ jede Code-Änderung eine andere Zahl. Das ist die richtige Richtung:
 vorher wurde gegen einen Buchstaben gemessen, der auf der Referenz gar
 nicht ganz da war — `regieren` ist mit 0,2338 der teuerste der sieben,
 und genau bei ihm fehlte am meisten (der halbe letzte Buchstabe).
+
+### Übergänge J4 `sep02` — Vorregistrierung: die Austritts-Kollinearität (`exit_trim`)
+
+Geschrieben und committet VOR der ersten Zahl mit eingeschaltetem
+Schalter. Arm zu Befund 19 des Audits vom 2026-09-02; der Sensor dazu
+(`seam_deg`, `tools/wordbench/seam.py`) steht seit PR #478.
+
+**Basis.** Root `suetterlin-1922` `exported_at=2026-09-02T08:00:29+00:00`
+Digest `28ba1afebc53`, Root `suetterlin-1922-pairs` gleicher Zeitstempel,
+Digest `f0cf3d53414c`; BLAS auf einen Thread gepinnt. Reproduziert:
+Wörter **0,109255** · Paare **0,148433** (§15), Naht-Block der Worttafel
+`seam_dep_median +12,52` · `seam_arr_median −3,40` über 207/214 Joins.
+
+**Der Gegenstand, nachgemessen.** Die Klasse „Sägezahn-Austritt"
+(Austrittstangente im `ALIGN_TAN_DEG`-Band 25–55°, Austritt unter
+`HIGH_COUPLE_EXIT_Y` = 0,7) umfasst auf der Worttafel **156 der 207
+gemessenen Joins**, angeführt von `e` (44), `i` (18), `u` (15), `a` (15),
+`n` (14). Ihr `seam_dep`-Median ist +12,52° — die Klasse IST der Befund,
+nicht ein Teil davon. Die Autopsie der Stummel-Geometrie benennt die
+Ursache genauer als der Audit-Text: der Chart-Stummel endet mit einem
+**Abschluss-Flick**. Beim `e` läuft er über 0,4 xh geradlinig bei ~40°
+und dreht auf den letzten 0,05 xh auf 41° → 20° → 9° ab; beim `i` dreht
+er sogar nach UNTEN (letzte Segmente −10°, −29°, −37°, Richtung über
+0,05 xh: −4,1°). Der Komponist misst seine Austrittstangente über
+`TANGENT_WINDOW` = 0,12 xh (`e` 37,3° · `i` 26,9°) und richtet den
+Verbinder daran aus — die Tinte, die das Auge am Saum liest, läuft also
+13–42° flacher als der abgehende Verbinder. Das ist Tafelform, genau wie
+der Schleifen-, Kringel- und Balken-Stummel, für die es die A-seitigen
+Schnittregeln `LOOP_EXIT`/`KRINGEL_EXIT`/`BAR_EXIT` längst gibt.
+
+**Mechanismus (`exit_trim`, Spiegel von `entry_trim`).** In gebundenem
+Kontext wird der Austritts-Stummel von der Spitze her zurückgeschnitten
+— Centerline UND Silhouette (`erase_silhouette_piece`) — bis zu der
+Stelle, an der die **Gerade zum bestehenden Kopplungspunkt kollinear**
+mit der eigenen Laufrichtung des Stummels ist; der Verbinder ist dann
+diese Gerade. Formal: gesucht wird der von der Spitze aus ERSTE Sample
+`k`, dessen Richtung über `EXIT_TRIM_WINDOW` = 0,05 xh Bogen (das
+Fenster, das das Auge am Saum liest — bewusst NICHT die 0,12 xh, auf die
+der Komponist ohnehin ausrichtet) mit der Sehne von `line[k]` zum
+Kopplungspunkt bis auf `EXIT_TRIM_TOL_DEG` = 3,0° übereinstimmt. Der
+Suchboden ist die **Fußwende**: das letzte lokale y-Minimum des Zuges;
+weiter zurück wird nie geschnitten, und findet die Suche bis dorthin
+nichts, feuert die Regel nicht (der Buchstabenkörper bleibt in jedem Fall
+unberührt — geschnitten wird ausschließlich der Stummel über der
+Fußwende).
+
+**Vier bewusst getroffene Entscheidungen** (Routine im Track-Scope,
+hier dokumentiert statt zurückgefragt):
+
+1. **Nach der Platzierung, nicht davor.** Anders als die drei bestehenden
+   Austrittsregeln greift `exit_trim` NICHT in den Platzierungslöser: er
+   liest `prev.exit`, `prev.tangent_deg`, `prev.ink_profile` und
+   `ink_max_x` unverändert am ungetrimmten Buchstaben. Grund ist die
+   Vorregistrierung selbst — „Platzierung unangetastet" ist die
+   experimentelle Kontrolle: bewegte sich das Wort zugleich in der
+   Spationierung, misst das Wort-Lineal eine Abstandsänderung und nicht
+   den Saum. Technisch heißt das: der Schnitt wird auf dem bereits
+   emittierten Item des letzten Körperzuges nachgezogen.
+2. **Der Suchboden ist die Fußwende, kein zusätzlicher Bogen-Deckel.**
+   Ein Deckel wäre ein Knopf ohne Begründung; die Fußwende ist die
+   Struktur, die der Audit benennt. Gemessen bleibt der Schnitt damit
+   klein: Median 0,185 xh Bogen (0,26 des Stummels), p90 0,469, Maximum
+   0,504.
+3. **Die Toleranz ist 3,0°, nicht die 5,0° des Gates.** Sonst prüfte das
+   Gate seine eigene Konstruktion; mit 3° gegen ein 5°-Gate bleibt die
+   Messung eine echte Prüfung über Trefferquote × Wirkung.
+4. **Der Verbinder wird eine Gerade** — die Form, die die Platte für
+   diese Klasse zeigt (`cmp/zoom_unter_nt_specimen.png`) und die die
+   Align-/Flanken-Grammatik über `_straight_connector` bereits kennt.
+
+**Ein Knopf: `compose_word(..., exit_trim=True)`, Standard aus.** Mit
+Standard bleibt jede Komposition byte-identisch, das Golden-Fixture
+`tests/fixtures/compose_golden.json.gz` hält unverändert. Die Adoption
+(Schalter als Default an + deklariertes Neu-Backen des Golden) ist
+Autor-Entscheid und ausdrücklich NICHT Teil dieses Arms; er endet bei der
+gemessenen Zahl. Der Bench schaltet ihn mit `--exit-trim` ein; ein
+solcher Lauf ist wie ein `--overrides`/`--laufform`-Lauf eine EIGENE
+Messung, nie die Headline.
+
+**Gates.** (a) `word_loss`/`pair_loss` ≤ +0,002 gegen 0,109255 /
+0,148433. (b) `dconn` fällt in ≥ 60 % der Klassen-Joins. (c) Die
+Platzierung bleibt byte-gleich. (d) Kompositions-Soll ohne Verlust —
+keine neue `words_failed`/`pairs_failed`, keine Klasse verliert ihren
+Verbinder. (e) `seam_dep`-Median der Klasse < 5° (Basis +12,52).
+
+*Zu (c) — eine Präzisierung der Audit-Formulierung, gemacht VOR der
+ersten Zahl.* Der Audit schreibt „`doff` byte-gleich". `doff` ist aber
+`|(body_entry_x − body_exit_x) − offset_x|`, und `body_exit_x` ist der
+letzte Sample des linken Körperzuges — den verschiebt jeder A-seitige
+Trim per Konstruktion. `doff` KANN also nicht byte-gleich sein; das ist
+exakt der Vorbehalt, den `tools/wordbench/pairmeas.py` für `entry_trim`
+schon dokumentiert („a composition change that moves it moves the
+composed body start against a frozen measurement"). Gemessen wird darum
+die GEMEINTE Größe: `body_entry_x` (die Platzierung des rechten
+Buchstabens) byte-gleich; die Verschiebung von `doff` wird als erwartetes
+Rahmen-Artefakt mit Betrag berichtet, nicht als Gate gewertet.
+
+**Kill.** `dconn` steigt (in der Mehrheit der Klassen-Joins) oder ein
+Gate ist rot → verworfen, keine Adoption, `compose.py` behält den
+Schalter auf Standard aus. Rettungsweg dann als EIGENER Arm: **nur die
+Ankunftsseite** (`seam_arr_median` −3,40, |Δ| 10,54) — dort liegt der
+Spiegel-Defekt, und die Ankunft hat mit `entry_trim`/`ENTRY_COUPLE_Y`
+bereits eine Trimm-Maschinerie, die nur nach Richtung, nicht nach Höhe
+koppelt. Zeile in `tintenfolger.md` §7.9 im selben PR.
+
+**Erwartung (aus der Simulation vor dem Bau, damit sie falsifizierbar
+ist).** Trefferquote 139/156 (89 %) der Klasse; `seam_dep`-Median der
+Klasse +12,52 → **−1,32** (|Δ| 1,96), Joins über 10° von 105 auf 15. Die
+17 Nicht-Treffer sind strukturell und richtig so: bei ihnen liegt der
+Kopplungspunkt UNTER der eigenen Steiggeraden des Stummels (`n` 13 von
+14, `l` 7 von 7 — Platzierungen `nested_fall`/`align_floor`), da schafft
+kein Rückschnitt Kollinearität.
