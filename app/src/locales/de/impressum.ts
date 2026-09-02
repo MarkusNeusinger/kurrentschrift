@@ -75,8 +75,12 @@ export const impressum = {
   },
   sources: {
     heading: 'Quellen & Lizenzen',
+    // All FOUR public-domain plates the project works from, not two: the API's
+    // /sources lists koch-1928, loth-1866, petzendorfer-1889 and
+    // suetterlin-1922, and the Tafel shows the Koch plate (website audit
+    // 2026-09-02). Keep this list and llms.txt in step.
     geometry:
-      'Die Gestalt der Buchstaben folgt gemeinfreien Schreibvorlagen: der Sütterlin-Ausgangsschrift (Leitfaden 1922) und der Kurrent-Tafel von Loth (1866). Der Duktus — Strichfolge und Schreibrichtung — ist meine eigene, handkuratierte Arbeit darüber. Historische Quellen behalten ihre eigene Lizenz; gemeinfreie Vorlagen bleiben gemeinfrei.',
+      'Die Gestalt der Buchstaben folgt gemeinfreien Schreibvorlagen: der Sütterlin-Ausgangsschrift von 1922, den Kurrent-Tafeln von Loth (1866) und Petzendorfer (1889) und der Offenbacher-Tafel von Rudolf Koch (1928). Der Duktus — Strichfolge und Schreibrichtung — ist meine eigene, handkuratierte Arbeit darüber. Historische Quellen behalten ihre eigene Lizenz; gemeinfreie Vorlagen bleiben gemeinfrei.',
     fonts:
       'Schriften: EB Garamond und Playfair Display (SIL Open Font License) sowie GL-GermanCursive (Gutenberg-Labo, freie Lizenz) und die Sütterlin-Schrift von H. J. Zinken (Freeware, Verbreitung gestattet).',
     // The repository is public now — the paragraph names and links it

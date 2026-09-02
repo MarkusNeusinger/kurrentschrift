@@ -70,9 +70,17 @@ export function QuizView() {
         <Box sx={{ maxWidth: 760, mx: onSetup ? 0 : 'auto' }}>
         {onSetup && (
           <PageHeader eyebrow={de.common.nav.read} title={de.quiz.heading}>
-            {de.quiz.setup.introLead}
-            <Box component="span" sx={{ color: 'text.secondary' }}>
-              {de.quiz.setup.introRest}
+            {/* The explanatory paragraph first (what a round looks like, what
+                is explained after a miss, which script is drilled today), then
+                the warm invitation right above the options. */}
+            <Box component="p" sx={{ m: 0, mb: 1.5 }}>
+              {de.quiz.about}
+            </Box>
+            <Box component="p" sx={{ m: 0 }}>
+              {de.quiz.setup.introLead}
+              <Box component="span" sx={{ color: 'text.secondary' }}>
+                {de.quiz.setup.introRest}
+              </Box>
             </Box>
           </PageHeader>
         )}
