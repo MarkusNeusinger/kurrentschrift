@@ -330,12 +330,17 @@ losschreiben" kann, gilt technisch:
   (`anchors_template: [[x, y], …]`) wie flach; ein reines Komma-Muster bräche
   an jedem `],[` und ließe einen Dump aus lauter Koordinatenpaaren durch.
   `data/` wird mitgeprüft und ist ausdrücklich KEIN Code-Baum — dort läge
-  eine autorierte Payload am naheliegendsten. Die Schlüsselliste deckt
-  ALLE hier vorbehaltenen Wire-Formen ab, nicht nur die Tafel-Templates:
-  Templates und ihre Renders (`skeleton_polyline`, `anchors*`,
-  `half_widths*`, `centerlines*`, `outline_paths`), die Vorkommen
-  (`anchors`, `half_widths`, `strokes`) und die Hand-Aggregate
-  (`cluster_center`, `connector_center`) — gemessen ohne einen einzigen
+  eine autorierte Payload am naheliegendsten. Die Schlüsselliste ist Feld
+  für Feld gegen `api/schemas.py` durchgegangen und deckt ALLE hier
+  vorbehaltenen Wire-Formen ab, nicht nur die Tafel-Templates: Templates und
+  ihre Renders (`skeleton_polyline`, `anchors*`, `half_widths*`,
+  `centerlines*`, `outline_paths`, `outline_polygon`, `silhouette_px`,
+  `fitted_outline_px`), die Glyphen- und Wort-Vorkommen (`anchors`,
+  `half_widths`, `strokes`), die **Paar-Overrides und Paar-Vorkommen**
+  (`connector` aus `PairGeometry`, das auch `PairInstanceItem.geometry`
+  trägt), die Aggregate (`cluster_center`, `laufform_anchors`,
+  `offset_center`) und die Bbox-Autorenarbeit (`points` der Masken-Striche,
+  `slant_xs` der Schräglagen-Linien) — gemessen ohne einen einzigen
   Fehlalarm über die gesamte Historie. Und der Test **überspringt sich
   nicht selbst**: nur ein fehlendes `git` (oder ein flacher Klon) gilt als
   „hier nicht prüfbar", jeder Fehler von `rev-list`/`cat-file` macht ihn

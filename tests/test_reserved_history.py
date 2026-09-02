@@ -47,22 +47,34 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # Reserved identifier → the fewest numbers that key can legitimately carry.
-# Every wire shape §5 reserves is here, not just the canonical templates:
-# templates and their renders (`skeleton_polyline_px`, `anchors_template`,
-# `half_widths_template`, `centerlines_template`, `outline_paths`), the render
-# geometry (`silhouette_px`, `outline_polygon(s)`, `fitted_outline_px` from
-# `core/pipeline.py` and `core/fit.py`), per-occurrence instances (`anchors`,
-# `half_widths`, `strokes`) and per-hand aggregates (`cluster_center`,
-# `connector_center`). Short forms are deliberate: `anchors` subsumes
-# `pixel_anchors` and `anchors_template`, `half_widths` subsumes
-# `half_widths_px`, `outline_polygon` subsumes `outline_polygons`.
+#
+# The list was walked against `api/schemas.py` field by field so that every
+# reserved wire shape is represented, not just the ones a review happened to
+# name:
+#
+#   templates + renders  `skeleton_polyline`, `anchors`, `half_widths`,
+#                        `centerlines`, `outline_paths`, `outline_polygon`,
+#                        `silhouette_px`, `fitted_outline_px`
+#   glyph occurrences    `anchors`, `half_widths`      (InstanceItem/Out)
+#   word occurrences     `strokes`                     (WordInstanceItem/Out)
+#   pair overrides       `connector`                   (PairGeometry, and via
+#                        it PairInstanceItem.geometry)
+#   aggregates           `cluster_center`, `laufform_anchors` (AggregateOut),
+#                        `connector`/`offset_center`   (PairAggregateOut)
+#   bbox authoring       `points` (MaskStroke), `slant_xs` (GuideConfig)
+#
+# Short forms are deliberate and do the subsuming: `anchors` covers
+# `pixel_anchors`, `anchors_template` and `laufform_anchors`; `half_widths`
+# covers `half_widths_px`/`_template`; `outline_polygon` covers
+# `outline_polygons`; `connector` covers `connector_center`.
 #
 # The floor is PER KEY because the schemas differ: `InstanceItem.anchors` has
-# min_length 4, i.e. eight coordinates, while a `WordInstanceItem.strokes` is
-# schema-valid at a single two-point stroke — four numbers. One global floor
-# would either miss the small shapes or invite false positives on the large
-# ones. Measured over the whole history these floors produce no false
-# positive: they flag exactly the recorded blobs and nothing else.
+# min_length 4, i.e. eight coordinates, while `PairGeometry.connector` is
+# schema-valid as a two-point join and `WordInstanceItem.strokes` as a single
+# two-point stroke — four numbers each. One global floor would either miss the
+# small shapes or invite false positives on the large ones. Measured over the
+# whole history these floors produce no false positive: they flag exactly the
+# recorded blobs and nothing else.
 PAYLOAD_KEYS: dict[bytes, int] = {
     b"skeleton_polyline": 8,
     b"anchors": 8,
@@ -73,8 +85,11 @@ PAYLOAD_KEYS: dict[bytes, int] = {
     b"silhouette_px": 8,
     b"fitted_outline_px": 8,
     b"strokes": 4,
+    b"connector": 4,
+    b"offset_center": 4,
     b"cluster_center": 4,
-    b"connector_center": 4,
+    b"points": 6,
+    b"slant_xs": 4,
 }
 
 
@@ -264,6 +279,9 @@ def payload_blobs() -> dict[str, str]:
         ("minimal strokes", b'{"strokes": [[[1.0, 2.0], [3.0, 4.0]]], "word": "das"}', True),
         # Render geometry from the fit path, which the key list missed at first.
         ("fitted outline", b'"fitted_outline_px": [' + b", ".join(b"[1.0, 2.0]" for _ in range(6)) + b"]", True),
+        # The SMALLEST reserved pair override: PairGeometry needs only an
+        # offset and a two-point connector — four numbers in the connector.
+        ("minimal pair override", b'{"offset": [0.5, 0.0], "connector": [[0.0, 0.0], [0.4, 0.1]]}', True),
         # Numbers far from the key are not the key's payload.
         ("key far from numbers", b'"half_widths" is a field.' + b"x" * 400 + b"1, 2, 3, 4, 5, 6, 7, 8, 9,", False),
     ],

@@ -10,8 +10,11 @@
   anything else — it holds data by definition and is the likeliest home for
   such a file. It covers every reserved wire shape, not just templates:
   occurrences (`anchors`, `half_widths`, `strokes`) and aggregates
-  (`cluster_center`, `connector_center`) too, plus the render geometry
-  (`silhouette_px`, `outline_polygon`, `fitted_outline_px`). It looks for the
+  (`cluster_center`, `offset_center`) too, plus the render geometry
+  (`silhouette_px`, `outline_polygon`, `fitted_outline_px`), the pair
+  overrides (`connector`, which `PairInstanceItem` carries as well) and the
+  bbox authoring data (`points`, `slant_xs`) — the list was walked field by
+  field against `api/schemas.py` rather than grown one review at a time. It looks for the
   numbers next to the key rather than anywhere in the blob, with a minimum
   count PER key, because the schemas differ: four anchor points is eight
   coordinates, while a word occurrence is schema-valid at a single two-point
