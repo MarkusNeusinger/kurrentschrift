@@ -55,7 +55,7 @@ uv run uvicorn api.main:app --reload --port 8000
 ```
 
 ```bash
-cd app && npm install && npm run dev
+cd app && npm install --no-audit --no-fund && npm run dev
 ```
 
 Expected: `{"status":"healthy","database_configured":true}` and
@@ -230,18 +230,29 @@ scroll-into-view behave the same through Playwright.
 
 ## 3 · Style fidelity & legibility check
 
-Judge every screenshot against `docs/concepts/style-guide.md` (and the
-binding Leitsatz: **Lesbarkeit vor Epoche** — no broken/unreadable type
-in UI, headlines or body; historic forms only as marked specimens):
+**`docs/concepts/design-system.md` is the BINDING spec for public
+styling** — read it, not a memory of it: the colour tokens, the 19 px type
+ladder (its variants plus the Playfair-600 heading rule), the PageContainer
+width system (760 / 1152 / 1280) with the Prose ~66-character reading
+measure, the surface rule (identity surfaces = paper, work surfaces =
+white), and the navigation/IA of the three areas. `style-guide.md` sits
+beside it for **rationale and history** (the closed rounds R1–R9) and says
+so itself: numbers and tokens are not maintained there any more. Judging a
+screenshot against the style guide alone means never seeing the ladder, the
+width system or the surface rule.
 
-Don't restate the style guide's facts (palette values, font names) —
-read them fresh each run: the prose decisions live in the style guide,
-the tokens in `app/src/styles/paper.ts` (single source for palette and
-type voices). What the skill prescribes is the **method**:
+The binding Leitsatz applies on top: **Lesbarkeit vor Epoche** — no
+broken/unreadable type in UI, headlines or body; historic forms only as
+marked specimens.
 
-- Compare each screenshot against what guide + tokens prescribe
+Don't restate either document's facts (palette values, font names) — read
+them fresh each run: the tokens live in `app/src/styles/paper.ts` (single
+source for palette and type voices). What the skill prescribes is the
+**method**:
+
+- Compare each screenshot against what design system + tokens prescribe
   (paper ground, ink text, display vs. body voice, the showpiece
-  script never as UI chrome).
+  script never as UI chrome, the container width for the page's kind).
 - To check which type voice an element actually uses, computed styles
   beat squinting at pixels: `evaluate_script` with
   `() => { const h1 = document.querySelector('h1'); return getComputedStyle(h1).fontFamily; }`
@@ -254,6 +265,48 @@ type voices). What the skill prescribes is the **method**:
 Style questions you find are **findings to report**, not things to
 silently "fix" — the style decisions R1–R9 are recorded in the style
 guide and must not be re-litigated.
+
+## 3a · Static gates (what CI checks)
+
+Driving the browser does not cover the checks that fail the pipeline. Run
+these too, from `app/` — they are the same three the CI „Frontend (build)"
+job runs after `npm ci`:
+
+```bash
+cd app && npm run lint && npm run test && npm run build
+```
+
+`lint` is ESLint, `test` is the Vitest run that pins the `shaping.ts` ↔
+`core/shaping.py` twin against `tests/fixtures/shaping_cases.json`, and
+`build` is `tsc && vite build`, so it carries the type-check (a bare
+`npm run type-check` exists too). A clean click-through with a red ESLint
+or a red Vitest still fails in Actions.
+
+## 3b · Focus rings and the type floor (a11y)
+
+Both checks below have already produced a false negative once, on
+2026-09-02 — measure them the way this section says, not the obvious way.
+
+- **`element.focus()` from a script does NOT trigger `:focus-visible`.**
+  The browser only sets that state for input it considers keyboard-driven,
+  so a scripted focus leaves the ring unstyled and a screenshot then
+  "proves" a missing focus ring that is perfectly present for a real user.
+  The first focus-ring measurement of the audit was a false negative for
+  exactly this reason. **Drive focus with real key events**: a Tab walk via
+  chrome-devtools `press_key` (or CDP `Input.dispatchKeyEvent` directly),
+  then read the ring off the element that actually holds focus —
+  `document.activeElement` plus its computed `outline`/`box-shadow`.
+  Walking with Tab has a second payoff: it shows the focus ORDER, which a
+  per-element `focus()` never can.
+- **A type-floor sweep may only count elements that carry their own text.**
+  A MUI switch hides a real `<input>` under the rendered track at
+  `opacity: 0`; it measures ~13.33 px and trips a naive "below the 13 px
+  floor" scan, while nobody can read it either way because it is invisible
+  by design. Counting such nodes buries the genuine findings in noise.
+  Restrict the sweep to elements with non-empty visible text, and skip
+  anything at `opacity: 0`, `visibility: hidden` or zero size. The scan is
+  checked in as `app/scripts/type-floor.mjs` (added by PR #485) — use it
+  rather than re-deriving the selector logic per session.
 
 ## 4 · Performance trace
 

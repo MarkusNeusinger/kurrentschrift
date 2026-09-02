@@ -151,8 +151,18 @@ contradicts a Verworfen entry, stop and surface it to the user.
   rules), update both in the same commit. Quick drift check:
 
   ```bash
-  git diff main -- CLAUDE.md .github/copilot-instructions.md
+  git diff origin/main -- CLAUDE.md .github/copilot-instructions.md
   ```
+
+  Since 2026-09-02 the pair is also pinned mechanically by
+  `tests/test_agent_instructions.py`: every backticked repo path in either
+  file must resolve, every `<doc>.md §N` reference must hit a real heading,
+  and the rules listed in its `MIRRORED_RULES` table must be present in
+  BOTH files. **Renumbering a `## N.` heading in a design doc breaks that
+  test** — that is the point: it used to break both agent files silently.
+  A genuinely one-sided rule is fine; a rule that belongs to both and
+  reaches only one is what the table catches, so add new shared rules to
+  it in the same PR.
 
 - **New terms ↔ `docs/reference/glossar.md`** (see the section above) —
   after writing, sweep your own diff for words a stranger could not

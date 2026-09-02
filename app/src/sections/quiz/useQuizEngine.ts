@@ -16,7 +16,9 @@ import { knownGlyph, quizKeysFromLocked, type KnownGlyph } from '@/domain/glyphs
 import { glyphKeysOf, shapeText } from '@/domain/shaping';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { confusablesOf } from '@/sections/quiz/lesefallen';
-import { type Difficulty } from '@/sections/quiz/quizTypes';
+// From quizOptions, not quizTypes: the option tables type-import QuizMode from
+// here, and going through the re-export would close a needless module cycle.
+import { type Difficulty } from '@/sections/quiz/quizOptions';
 import { similarity, WORD_BANK, type WordEntry } from '@/sections/quiz/wordBank';
 import { getQuizWords, type QuizWordOut } from '@/lib/api';
 import type { QuizSourceData } from '@/sections/quiz/useQuizSource';
