@@ -52,10 +52,17 @@ autorisierten Bestand begrenzt (~30 Zeilen, alle im Payload-Memo) und deshalb
 gilt dem Aufrufer, nicht der URL, und darf nicht für den nächsten Besucher
 gecacht werden.
 
-Der Schlüssel ist der **rechteste** `x-forwarded-for`-Eintrag bzw.
-`cf-connecting-ip` (`api/request_context.py::client_ip`, anyplot-Muster) — der
-linkeste ist client-gesteuert und erlaubte sowohl das Umgehen des eigenen Limits
-als auch das Vergiften eines fremden Buckets. Der Bucket wirkt **pro Prozess**:
+Der Schlüssel (`api/request_context.py::rate_limit_key`) verbindet ZWEI Header,
+weil keiner allein auf beiden erreichbaren Wegen zugleich fälschungssicher und
+pro-Client ist: den **rechtesten gültigen** `x-forwarded-for`-Eintrag (der Hop,
+der die Verbindung wirklich angenommen hat — nicht fälschbar, hinter Cloudflare
+aber eine von vielen geteilte Edge-Adresse) und `cf-connecting-ip` (auf dem
+Cloudflare-Weg der echte Besucher, auf der `run.app`-URL vom Aufrufer selbst
+geschrieben). Verbunden schließt jeder das Loch des anderen: wer über `run.app`
+eine fremde `cf-connecting-ip` fälscht, trägt seine EIGENE Adresse in der ersten
+Hälfte des Schlüssels und landet nie im Bucket des Opfers. Der linkeste
+XFF-Eintrag wird nie benutzt — er ist client-gesteuert. Der Bucket wirkt
+**pro Prozess**:
 bei `--max-instances=3` liegt die effektive Decke entsprechend höher, und er
 misst nicht exakt, sondern begrenzt, was ein Aufrufer aus EINEM Container
 ziehen kann. Das ist Absicht — beide Cloud-Run-Dienste stehen mit `ingress=all`

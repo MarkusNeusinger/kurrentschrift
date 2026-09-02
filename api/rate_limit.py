@@ -1,11 +1,15 @@
 """In-process token bucket for the compose path (`/write/word*`).
 
+Keyed per client by `api.request_context.rate_limit_key`, which joins the
+unforgeable last hop with `cf-connecting-ip` — see there for why neither header
+alone is safe on both of this service's reachable paths.
+
 Why this route and no other: `/write/word` shapes, composes and serialises a
 whole line server-side. A unique text is a guaranteed edge-cache MISS, and the
-audit of 2026-09-01 measured 0,80 s TTFB and 1.653.798 bytes for one unique
+audit of 2026-09-01 measured 0.80 s TTFB and 1,653,798 bytes for one unique
 155-character request. With `--concurrency=15 --max-instances=3` a scripted
 caller with random texts saturates an instance, scales the service and pays out
-~1,6 MB of egress per request. The batch read `/write/glyphs` and the single
+~1.6 MB of egress per request. The batch read `/write/glyphs` and the single
 glyph reads are bounded by the authored inventory (~30 rows, all warm in the
 payload memo) and stay exempt.
 
@@ -31,7 +35,7 @@ from collections.abc import Callable
 from fastapi import HTTPException, Request, status
 
 from api.http import NO_STORE
-from api.request_context import client_ip
+from api.request_context import rate_limit_key
 from core.config import settings
 
 
@@ -114,7 +118,7 @@ async def limit_word_composition(request: Request) -> None:
     as the header requires) and `no-store`: a rejection is about the caller,
     never about the URL, and must not be cached for the next visitor.
     """
-    wait = write_limiter.check(client_ip(request))
+    wait = write_limiter.check(rate_limit_key(request))
     if wait is None:
         return
     raise HTTPException(

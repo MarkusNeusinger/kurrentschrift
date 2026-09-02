@@ -160,17 +160,49 @@ async def test_the_bucket_keys_on_the_rightmost_forwarded_entry(api: Harness, mo
     monkeypatch.setattr(write_limiter, "burst", 1.0)
     write_limiter.reset()
 
-    spend = {"x-forwarded-for": "9.9.9.9, 203.0.113.7"}
-    assert (
-        await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nn"}, headers=spend)
-    ).status == 200
+    async def word(headers: dict[str, str]) -> int:
+        res = await api.client.request(
+            "GET", f"/sources/{source_id}/write/word", params={"text": "nn"}, headers=headers
+        )
+        return res.status
+
+    assert await word({"x-forwarded-for": "9.9.9.9, 203.0.113.7"}) == 200
     # Same trusted hop, a different forged leftmost entry: still the same bucket.
-    forged = {"x-forwarded-for": "1.1.1.1, 203.0.113.7"}
-    assert (
-        await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nn"}, headers=forged)
-    ).status == 429
+    assert await word({"x-forwarded-for": "1.1.1.1, 203.0.113.7"}) == 429
     # A genuinely different last hop is a different bucket.
-    other = {"x-forwarded-for": "9.9.9.9, 198.51.100.4"}
-    assert (
-        await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nn"}, headers=other)
-    ).status == 200
+    assert await word({"x-forwarded-for": "9.9.9.9, 198.51.100.4"}) == 200
+    # Garbage a proxy inserted is skipped rather than becoming a shared bucket
+    # everyone lands in — `203.0.113.7` is still the last REAL address.
+    assert await word({"x-forwarded-for": "9.9.9.9, 203.0.113.7, unknown"}) == 429
+
+
+async def test_a_forged_cf_connecting_ip_cannot_reach_a_victims_bucket(api: Harness, monkeypatch):
+    """Both Cloud Run services stand with `ingress=all`, so a caller on the
+    `run.app` URL writes `cf-connecting-ip` itself. Keying on it alone would
+    let that caller burn a victim's bucket; joined with the unforgeable last
+    hop it can only scatter its own requests (Copilot review, PR #481)."""
+    source_id = await _seed_word(api)
+    monkeypatch.setattr(write_limiter, "burst", 1.0)
+    write_limiter.reset()
+
+    async def word(headers: dict[str, str]) -> int:
+        res = await api.client.request(
+            "GET", f"/sources/{source_id}/write/word", params={"text": "nn"}, headers=headers
+        )
+        return res.status
+
+    # The attacker reaches the origin directly and claims the victim's address.
+    attacker = {"x-forwarded-for": "198.51.100.66", "cf-connecting-ip": "203.0.113.9"}
+    assert await word(attacker) == 200
+    assert await word(attacker) == 429  # its own bucket is spent
+
+    # The victim arrives through Cloudflare — different last hop, so a bucket
+    # of its own, untouched.
+    victim = {"x-forwarded-for": "203.0.113.9, 172.71.0.1", "cf-connecting-ip": "203.0.113.9"}
+    assert await word(victim) == 200
+
+    # …and behind one Cloudflare edge two visitors still get one bucket each,
+    # which is what `cf-connecting-ip` is in the key for.
+    neighbour = {"x-forwarded-for": "203.0.113.10, 172.71.0.1", "cf-connecting-ip": "203.0.113.10"}
+    assert await word(neighbour) == 200
+    assert await word(victim) == 429

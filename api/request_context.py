@@ -2,8 +2,8 @@
 
 Mirrors `api/request_context.py` in the sister project anyplot. Two functions
 that answer OPPOSITE questions about the same request and must never be merged:
-`client_ip` keys the `/write/word` rate limit (`api/rate_limit.py`) and takes
-the RIGHTMOST forwarded entry, `visitor_ip` keys analytics and takes the
+`rate_limit_key` keys the `/write/word` bucket (`api/rate_limit.py`) and builds
+from the RIGHTMOST forwarded entry, `visitor_ip` keys analytics and takes the
 leftmost. Each docstring says why.
 """
 
@@ -12,34 +12,54 @@ import ipaddress
 from fastapi import Request
 
 
-def client_ip(request: Request) -> str:
-    """Resolve the client IP for rate-limit keying — deliberately not `visitor_ip`.
+def rate_limit_key(request: Request) -> str:
+    """The bucket key for rate limiting — deliberately not `visitor_ip`, and
+    deliberately not a single header either.
 
-    Trust order (client → Cloudflare → Cloud Run), anyplot's verbatim:
+    Two headers, joined, because neither alone is both trustworthy AND
+    per-client on both paths this service is reachable on:
 
-    1. `cf-connecting-ip` — Cloudflare overwrites any client-supplied value on
-       proxied traffic, so a browser on kurrentschrift.ink cannot spoof it.
-    2. Rightmost non-empty `x-forwarded-for` entry — appended by the trusted
-       infrastructure hop. The LEFTMOST entry is client-controlled: trusting it
-       lets a caller both evade its own limit and poison a victim's bucket to
-       lock them out. Empty entries from malformed headers ("1.2.3.4, ") are
-       skipped so nobody can force everyone into one shared empty-string bucket.
-    3. `request.client.host` as the last resort.
+    1. **The rightmost VALID `x-forwarded-for` entry** — appended by the hop
+       that actually accepted the TCP connection, so it cannot be forged: a
+       client-supplied prefix stays to its left. Behind Cloudflare that is a
+       Cloudflare edge address, shared by many visitors, which is why it cannot
+       be the whole key. Non-addresses (`unknown`, empty entries from a
+       malformed "1.2.3.4, ") are skipped, so nobody can force everyone into
+       one shared bucket by sending garbage. `request.client.host` is the last
+       resort when there is no forwarded header at all.
+    2. **`cf-connecting-ip`** — on proxied traffic Cloudflare overwrites
+       whatever the client sent, so it is the real visitor and gives the key
+       its per-client resolution. On its own it is NOT safe: both Cloud Run
+       services stand with `ingress=all`, and a caller reaching the `run.app`
+       URL directly writes that header itself.
 
-    A caller bypassing Cloudflare via the `run.app` URL can still forge
-    `cf-connecting-ip`, but that only scatters its OWN requests across buckets
-    — no better than rotating source IPs, and it can no longer impersonate
-    someone else's. Closing that door needs the edge (a Cloudflare rate-limit
-    rule, or a shared origin secret); this limiter is the layer that works on
-    both paths.
+    Joined, each closes the other's hole. A caller on the `run.app` path who
+    forges `cf-connecting-ip` to a victim's address still carries its OWN
+    address in the first half of the key, and the victim's requests (which come
+    through Cloudflare and therefore carry a Cloudflare edge address there) can
+    never land in the same bucket. Impersonation is out; all that is left is
+    scattering one's own requests across buckets, which is no better than
+    rotating source IPs and is what the bucket table's eviction is sized for.
+
+    This is where the sister project's `client_ip` is deliberately NOT copied:
+    anyplot returns `cf-connecting-ip` first and argues the forgery only
+    scatters the caller's own requests. That holds only where the origin cannot
+    be reached without the edge — here it can, so the same forgery lands in a
+    victim's bucket (Copilot review, PR #481). Transfer candidate back to
+    anyplot if its origin is ever reachable directly.
     """
+    hop = _rightmost_valid_forwarded(request) or (request.client.host if request.client else "")
     cf_ip = request.headers.get("cf-connecting-ip", "").strip()
-    if cf_ip:
-        return cf_ip
+    return f"{hop}|{cf_ip}" if _is_ip(cf_ip) else hop
+
+
+def _rightmost_valid_forwarded(request: Request) -> str:
+    """The last real address in `x-forwarded-for`, or "" if there is none."""
     for entry in reversed(request.headers.get("x-forwarded-for", "").split(",")):
-        if entry.strip():
-            return entry.strip()
-    return request.client.host if request.client else ""
+        candidate = entry.strip()
+        if _is_ip(candidate):
+            return candidate
+    return ""
 
 
 def visitor_ip(request: Request) -> str:

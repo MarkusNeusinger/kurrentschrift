@@ -74,9 +74,11 @@ def _geometry_response(content: dict) -> Response:
     rounds what it stores, but composition multiplies those inputs apart again,
     so a third of `/write/word`'s numbers carried float64 noise below the
     contract's own resolution — 46,440 identity / 13,864 gzip bytes for `lesen`
-    against 30,570 / 10,840 rounded. `core/compose.py` and the golden parity
-    fixture stay untouched; `/write/glyphs` is already rounded and the walk is
-    idempotent, so its bytes do not move.
+    against 30,570 / 10,840 rounded. `core/compose.py`, the golden parity
+    fixture and the word-sample score (which reads the composition, not the
+    wire payload) stay untouched; `/write/glyphs` was already inside the
+    contract except for the fluent widening's two values, and moved by 24 bytes
+    in 61,064.
     """
     return Response(
         content=orjson.dumps(round_wire_numbers(content)),

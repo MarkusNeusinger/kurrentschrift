@@ -17,9 +17,11 @@ import `core`; `core` and `api` must never import `tools`
 (`tests/test_imports.py`).
 
 Serialisation only: nothing here touches `core/compose.py`, the golden parity
-fixture or a stored row. Rounding an already-rounded value is a no-op, so the
-walk is idempotent and `/write/glyphs` (rounded by the pipeline already) goes
-over the wire byte for byte as before.
+fixture, a stored row or the word-sample score (which reads the composition
+directly, not the wire payload — so the frozen ruler measures full precision as
+before). Rounding an already-rounded value is a no-op, so the walk is
+idempotent: `/write/glyphs` was already inside the contract except for the
+fluent widening's `advance`/`exit_pt`, and moved by 24 bytes in 61,064.
 """
 
 from __future__ import annotations

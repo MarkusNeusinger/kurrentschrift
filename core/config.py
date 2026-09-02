@@ -63,7 +63,7 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------ Rate limit
     # The compose path `/write/word*` is the one public read whose cost is set
     # by the CALLER's input: a unique text misses every cache and, at the
-    # 160-character maximum, costs ~0,8 s of CPU and ~1,6 MB of egress. The
+    # 160-character maximum, costs ~0.8 s of CPU and ~1.6 MB of egress. The
     # in-process token bucket (api/rate_limit.py) bounds what one client can
     # pull out of one container; `/write/glyphs` and the single reads are
     # bounded by the authored inventory and stay exempt. 60/min sustained with
