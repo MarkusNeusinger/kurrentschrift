@@ -16,13 +16,14 @@
   what the dry measurement predicted, down to every component and diagnostic
   line. Public `/write/word` responses carry up to 24 h of edge cache, so the
   change appears there as that expires; no purge (#501).
-- **The measurement journal records the round it could not have decided
-  alone.** `docs/reference/qualitaetsmetrik.md` §14 carries the adoption entry —
-  the round, the instrument defect that split it, both readings of the verdict
-  side by side, the author's post-hoc exclusion decision, and the write with its
-  snapshot timestamp and read-back — plus the re-baseline row in the headline
-  ledger with the new root digests. `tintenfolger.md` moves LF11 from open to
-  adopted (#501).
+- **The journal records a decision no number could have made, and says whose it
+  was.** `docs/reference/qualitaetsmetrik.md` §14 carries the entry — the round,
+  the display fault that split it, all three tallies side by side under the
+  binding analysis plan, why none of them clears the tie bar, the author's
+  post-hoc exclusion and release, and the write with its snapshot timestamp and
+  read-back — plus the re-baseline row in the headline ledger with the new root
+  digests. `tintenfolger.md` marks LF11 adopted on the author's decision and
+  opens the repeat round that would replace it with a real verdict (#501).
 
 ### Fixed
 

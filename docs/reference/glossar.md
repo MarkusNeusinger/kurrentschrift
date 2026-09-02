@@ -1581,9 +1581,16 @@ vergleichbar** und werden im Journal ausdrücklich als solche markiert.
 Fixture-Wurzel, damit man einer Kennzahl ansieht, **worauf** sie gemessen
 wurde: SHA-256 über die *sortierte* Liste aus (relativem Pfad, Größe,
 SHA-256 der Bytes) aller Dateien der Wurzel. Deterministisch (die
-Sortierung ist die einzige Reihenfolge), blind für Zeitstempel und Rechte
-(eine kopierte Wurzel behält ihre Identität), empfindlich schon gegen ein
-einzelnes gekipptes Byte oder eine bloß hinzugefügte Datei. Weil die
+Sortierung ist die einzige Reihenfolge), blind für DATEISYSTEM-Zeitstempel
+und Rechte (eine kopierte Wurzel behält ihre Identität), empfindlich schon
+gegen ein einzelnes gekipptes Byte oder eine bloß hinzugefügte Datei.
+**Der Digest identifiziert damit einen EXPORT, nicht einen DB-Stand**
+(Befund `sep02`, §14 „Laufform LF11 — humanbench-Wortrunde"): das
+`exported_at` im `manifest.json` ist Inhalt und geht mit ein, also
+bekommen zwei Exporte derselben unveränderten Daten verschiedene Digests
+und messen trotzdem identisch. Zu zitieren ist der Digest der Wurzel, auf
+der wirklich gemessen wurde; ein Neu-Export verlangt einen neuen Digest,
+ohne dass sich eine Zahl bewegt. Weil die
 Wurzeln gitignored sind, hinterlässt ein Neu-Export sonst keine Spur — die
 Prüfung vom 2026-09-02 fand ein Zahlenpaar, dessen Grundlage niemand mehr
 rekonstruieren konnte (die **undeklarierte Re-Baseline**). Hausregel:
