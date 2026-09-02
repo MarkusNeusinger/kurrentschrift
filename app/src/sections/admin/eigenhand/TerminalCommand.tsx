@@ -11,7 +11,7 @@
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DoneIcon from '@mui/icons-material/Done';
 import { Box, IconButton, Tooltip, Typography } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { de } from '@/locales/admin';
 import { paper } from '@/styles/paper';
@@ -19,6 +19,12 @@ import { paper } from '@/styles/paper';
 export function TerminalCommand({ command, lead }: { command: string; lead?: string }) {
   const t = de.admin.eigenhand;
   const [copied, setCopied] = useState(false);
+  // Same handling as ScribeView's copy-link button: one timer in a ref, cleared
+  // before each new one and on unmount, so repeated copies cannot stack pending
+  // timeouts and a copy right before a re-render cannot setState on a gone
+  // component.
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(copyTimer.current), []);
 
   const copy = () => {
     // No clipboard permission prompt is worth an error box here: the command is
@@ -28,7 +34,8 @@ export function TerminalCommand({ command, lead }: { command: string; lead?: str
       ?.writeText(command)
       .then(() => {
         setCopied(true);
-        window.setTimeout(() => setCopied(false), 2000);
+        clearTimeout(copyTimer.current);
+        copyTimer.current = setTimeout(() => setCopied(false), 2000);
       })
       .catch(() => {});
   };

@@ -7,13 +7,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { getDiagnostic, getGlyph, postResample, postTrace, postTracePreview, putBbox } from '@/lib/api';
-import { apiFehlertext } from '@/sections/admin/shell/apiFehlertext';
-import type { ApiFehler } from '@/sections/admin/shell/apiFehlertext';
 import { bboxInFromOut } from '@/lib/bbox';
 import { knownGlyph } from '@/domain/glyphs';
 import { useAdmin } from '@/context/AdminContext';
 import { de, fmt } from '@/locales/admin';
+import { apiFehlertext } from '@/sections/admin/shell/apiFehlertext';
+import type { ApiFehler } from '@/sections/admin/shell/apiFehlertext';
 import { flattenStrokes, savablePointCount } from './strokeUtils';
+import { readDraft, writeDraft } from './wizardDraft';
 import { STEPS } from './wizardTypes';
 import type { CalibField, GuideValues } from './wizardTypes';
 import type { BboxIn, BboxOut, GlyphSummary, GuideConfig, MaskStroke, Patch, StrokePoint, TracePreviewOut } from '@/lib/api';
@@ -40,37 +41,6 @@ export interface WizardSnack {
   kind: 'success' | 'info' | 'warning' | 'error';
   text: string;
   fehler?: ApiFehler;
-}
-
-// The rescued Weg lives in sessionStorage — the tab's own memory, gone when the
-// tab is, which is the right lifetime for "you drew this a minute ago". Scoped
-// by source AND glyph so one glyph's draft can never be offered on another.
-const draftKeyFor = (sourceId: string, glyphKey: string): string => `kurrentschrift.wizard.${sourceId}.${glyphKey}`;
-
-function readDraft(sourceId: string, glyphKey: string): StrokePoint[][] | null {
-  try {
-    const raw = window.sessionStorage.getItem(draftKeyFor(sourceId, glyphKey));
-    if (!raw) return null;
-    const parsed: unknown = JSON.parse(raw);
-    // Anything that is not a non-empty list of strokes is treated as absent:
-    // a half-written or hand-edited entry must never break the step it lands on.
-    if (!Array.isArray(parsed) || parsed.length === 0) return null;
-    return parsed as StrokePoint[][];
-  } catch {
-    // Private mode, a quota refusal, unparsable JSON — all the same answer.
-    return null;
-  }
-}
-
-function writeDraft(sourceId: string, glyphKey: string, strokes: StrokePoint[][]): void {
-  try {
-    const key = draftKeyFor(sourceId, glyphKey);
-    if (strokes.length === 0) window.sessionStorage.removeItem(key);
-    else window.sessionStorage.setItem(key, JSON.stringify(strokes));
-  } catch {
-    // The draft is a net, not a feature: if the browser refuses to hold it, the
-    // confirmation dialog still stands between the author and the loss.
-  }
 }
 
 const summaryOf = (g: { glyph_key: string; glyph: string; variant: number; advance: number }): GlyphSummary => ({
