@@ -10252,6 +10252,23 @@ und (c) ohnehin rot.
 **Gate (e)** lief wie vorregistriert nicht: Lotse/Kette dev-19 messen
 die Karte, die geschrieben wird, und diese Runde schreibt nichts.
 
+**Nachtrag nach dem Merge von LF10 (#474): entfernt die Glättung
+Rauschen oder Form?** Die Frage war bis dahin nicht beantwortbar — es
+gab keine Kennzahl für „Abstand zur Tafelform". LF10 liefert genau die,
+und da beide Arme dieselbe Wurzel und dieselben 22 Zeilen benutzen,
+lassen sie sich direkt gegeneinander lesen. Ergebnis (Kandidat Δs 0,16
+gegen die Kontrolle, also der isolierte Glättungsanteil): der
+Glätte-Sensor fällt um den Faktor 15 (Median 6,695 → 0,449
+Zacken/xh), während der **Form-Abstand sich praktisch nicht bewegt und
+im Median sogar SINKT — Median-Δ des `form`-p90 −0,012 Nib-Radien, Spanne
+−0,102 bis +0,036; 7 von 22 Zeilen liegen minimal höher.** Die geglättete
+Zeile liegt also nicht weiter von ihrer Tafelform entfernt als die
+zappelnde, sondern eher näher. Das ist die unabhängige Bestätigung, dass
+LF11 das Rauschen des Schätzers wegnimmt und nicht die Form der Hand —
+gemessen mit einem Instrument, das dieser Arm nicht gebaut hat und nicht
+kannte, als er vorregistriert wurde. (`form` bleibt dabei LF10s
+Berichts-Spalte, kein Gate; τ_form ist nicht adoptiert.)
+
 **Verdikt: Δs 0,16 xh besteht (a), (b), (c) und (d).** Die
 Kandidaten-Karte liegt als 22 volle Fixture-Zeilen vor und wird NICHT
 geschrieben. Nächster Schritt ist die humanbench-Wort-Runde (PR #480,
