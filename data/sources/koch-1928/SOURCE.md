@@ -52,10 +52,36 @@
             öffentlichen Schreibtafel als Original-Scan gezeigt (noch nicht
             nachgeschrieben).
 
-## Abgeleitetes Specimen — app/src/assets/specimens/offenbacher-koch-1928.jpg
+## Abgeleitetes Specimen — app/src/assets/specimens/offenbacher-koch-1928-excerpt.jpg
 
-- Zweck:     Markiertes historisches Specimen auf der öffentlichen Seite
-            /schriftkunde (Offenbacher-Karte) — kein Geometrie-Vorlagenbild.
+- Zweck:     Das TATSÄCHLICH ausgelieferte Specimen: markiertes historisches
+            Schriftbeispiel auf der öffentlichen Seite /schriftkunde
+            (Offenbacher-Karte). Einziger Konsument im Repo ist
+            `app/src/sections/schriftkunde/SchriftkundeView.tsx` — kein
+            Geometrie-Vorlagenbild.
+- Ableitung: Engerer Ausschnitt derselben Kleinbuchstaben-Zeile aus
+            `chart.jpg` wie die 900-px-Fassung unten, auf 522 px Breite
+            gebracht und als JPEG re-encodiert. Rein mechanische Reproduktion
+            gemeinfreier Geometrie — kein neues Schutzrecht, derselbe
+            PD-Status wie chart.jpg. Die exakten Werkzeugparameter
+            (Skalierungsfilter, JPEG-Qualität) wurden beim Erzeugen nicht
+            protokolliert und sind hier bewusst nicht behauptet; die
+            Rückführbarkeit auf die gemeinfreie Quelle hängt nicht an ihnen.
+- Maße:     522 × 120 px, 18 101 Bytes
+- SHA256:   d72ddc786621d54c8107a2c3248f2fa3d4242a2664e06d8492a065accde8c62c
+- Hinweis:  Liegt aus Build-Gründen im App-Asset-Baum, nicht unter `data/`;
+            die Provenienz wird hier geführt, damit der Lizenz-Audit die
+            ausgelieferten Bytes auf diese gemeinfreie Quelle zurückführen
+            kann. Nachgetragen 2026-09-02 — bis dahin war ausgerechnet die
+            ausgelieferte Datei die einzige ohne Eintrag.
+
+## Abgeleitetes Specimen (Reserve, aktuell nicht eingebunden) — app/src/assets/specimens/offenbacher-koch-1928.jpg
+
+- Zweck:     Weitere Fassung desselben Ausschnitts in 900 px. **Wird von
+            nichts referenziert** (Stand 2026-09-02); als Reserve behalten,
+            nicht stillschweigend liegen gelassen. Wenn sie nicht gebraucht
+            wird, ist das Löschen ein Einzeiler — dieser Block ist die
+            Entscheidung, sie vorerst zu behalten.
 - Ableitung: Inhaltlicher Ausschnitt der ersten Kleinbuchstaben-Zeile (a–i) aus
             `chart.jpg`, auf 900 px Breite herunterskaliert (Lanczos), als JPEG
             q90 re-encodiert. Rein mechanische Reproduktion gemeinfreier

@@ -249,10 +249,9 @@ Verworfen in diesen Runden: die grüne **Rubrizierung des ganzen Titels** (zu
 - Lizenz: **frei** — „Unlimited permission … use, copy, distribute, with
   or without modification, commercially and noncommercially. AS IS." →
   Eintrag in `THIRD_PARTY_NOTICES.md` analog zu EB Garamond.
-- Format: TTF → **WOFF2** (24 KB) konvertiert; liegt in
-  `src/assets/fonts/gl-germancursive.woff2`, `@font-face` via
-  `<GlobalStyles>` in `PaperBackground.tsx` (geteilte Papier-Schicht —
-  Identität überall, §8).
+- Format: TTF → **WOFF2** (24 KB) konvertiert; liegt seit 2026-08-27 in
+  `app/public/fonts/gl-germancursive.woff2`, `@font-face` direkt in
+  `app/index.html` (Familie `GLKurrent`).
 - Zeichenumfang geprüft: enthält langes **ſ** (U+017F), **ß** und alle
   Umlaute — kein Tofu bei deutschem Text.
 - Abgrenzung: ist ein **Font**, nicht der Duktus-Renderer. Genau die
@@ -375,9 +374,16 @@ Historie (§2/§2a), nicht die Zahlen.
 |---|---|---|
 | Code | MIT | Repo |
 | Kanonische Glyph-Daten | Public Domain / CC0 | Open-Data-Paket (Roadmap) |
-| EB Garamond | SIL OFL 1.1 | `@fontsource`, `THIRD_PARTY_NOTICES.md` |
-| Playfair Display | SIL OFL 1.1 | `@fontsource`, `THIRD_PARTY_NOTICES.md`, Lizenztext unter `app/public/fonts/` |
-| GL-GermanCursive | frei (Gutenberg-Labo) | `src/assets/fonts/`, `THIRD_PARTY_NOTICES.md` |
+| EB Garamond | SIL OFL 1.1 | `app/public/fonts/` (verbatim aus `@fontsource` v5.3.0, `npm run fonts:sync`), `THIRD_PARTY_NOTICES.md`, OFL-Text daneben |
+| Playfair Display | SIL OFL 1.1 | `app/public/fonts/` (verbatim aus `@fontsource` v5.3.0, `npm run fonts:sync`), `THIRD_PARTY_NOTICES.md`, OFL-Text daneben |
+| GL-GermanCursive | frei (Gutenberg-Labo) | `app/public/fonts/`, `THIRD_PARTY_NOTICES.md` |
+| Suetterlin HJZ 1911 | Freeware, Verbreitung gestattet, KEINE Bearbeitung | `app/public/fonts/` (unverändertes TTF), `THIRD_PARTY_NOTICES.md` |
+
+Stand 2026-09-02: 20 getrackte Dateien unter `app/public/fonts/` — 16
+@fontsource-woff2 (byte-identisch zur Paketfassung; die Byte-Gleichheit IST
+hier die Lizenzbedingung), die beiden Schau-Schriften und zwei OFL-Texte.
+Seit dem Umzug am 2026-08-27 sind die `@fontsource`-Pakete nur noch
+devDependency-Quelle, nicht mehr der Auslieferungspfad.
 
 ---
 

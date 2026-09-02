@@ -81,9 +81,13 @@ updates its owning doc in the same PR.
   fixture roots stay frozen during optimization runs; solver comparisons pin
   BLAS threads.
 
-**Local dev** (three steps): `uv run alembic upgrade head` · `uv run uvicorn
-api.main:app --reload --port 8000` · `cd app && npm install && npm run dev`
-(`/api` proxy on :3000; `.claude/commands/start.md`). Admin writes locally need
+**Local dev** (two steps): `uv run uvicorn
+api.main:app --reload --port 8000` · `cd app && npm install --no-audit --no-fund && npm run dev`
+(`/api` proxy on :3000; `.claude/commands/start.md`). **Never `alembic upgrade
+head` as a setup step** — there is no local DB, so that runs DDL against the
+shared Cloud SQL instance (`alembic/env.py` calls `load_dotenv()`); schema
+changes ride the `kurrentschrift-migrate` job, verified first via
+`/verify-migrations`. Admin writes locally need
 `ADMIN_TOKEN` + matching `VITE_ADMIN_TOKEN`. Against the DEPLOYED API the
 header works ONLY via `https://api.kurrentschrift.ink` (the apex 302s at the
 Access edge); never create a secret version with `echo` (trailing newline).
@@ -93,6 +97,12 @@ only admin path there; fixture roots rebuild over HTTPS via
 `uv sync --all-extras` FIRST: the verify path imports matplotlib from the
 `viz` extra and fails on a fresh cloud venv without it (2026-08-21)
 (details: `docs/reference/werkzeuge.md`).
+
+**Pre-commit hooks exist** (`.pre-commit-config.yaml`, since #204): a local
+ruff `check` + `format` gate running THROUGH uv, so the version is always the
+one `uv.lock` pins. Install once with `uvx pre-commit install`;
+`uvx pre-commit run --all-files` is the same gate on demand. ESLint and Vitest
+stay deliberately CI-only. Never bypass with `--no-verify`.
 
 ## Read these before substantive work
 
@@ -136,7 +146,11 @@ the manual and loads when invoked; route by what the diff touches:
 | `/data`, binaries, licenses | `/audit-licenses` |
 | commit/push/PR requests | `/open-pr` (mandatory routing, never hand-rolled) |
 | glyph-pipeline experiments | `/optimize-glyphs` (frozen bench discipline) |
+| Tintenfolger measurement rounds | `/verify-trace` (BLAS pinned, same stack but one knob, §14 + ledger afterwards) |
 | Auftragskorb work | `/work-basket` (protocol enforced by the API) |
+| anything that can overwrite geometry | `/dbsnapshot` (create freely, never destroy) |
+| cutting a release | `/release` (fold fragments, tag the merge commit, condensed notes) |
+| the weekly dependency batch | `/dependabot` (never update-branch a bot PR) |
 | session retros | `/optimize-skills` |
 
 Known gaps without a loop: admin write flows against the LIVE DB (HTTP suites
@@ -146,6 +160,10 @@ cover them on SQLite; see `admin-write-repro-harness` pattern). Dev tools
 ## Working guardrails (from session retros)
 
 - **Never commit on `main`** — branch first, even for a quick "commit and push" outside `/open-pr`.
+- **A PR that finishes an issue closes it** — `Fixes #N` (or `Closes #N`) on its own line in the PR body (author directive, 2026-08-16). A bare mention closes nothing, and the author merges live: without the keyword the issue is left open behind the merge.
+- **Carry a good solution straight to the sibling repo** (author directive, 2026-09-01): kurrentschrift and anyplot share stack, deploy pattern and cloud account, so any asymmetry is a defect that gets noticed once and then rots in the weaker repo. Transfer in the same round, one PR per repo, each following its own conventions (here a `changelog.d/` fragment, there a bullet under `[Unreleased]`). It holds in both directions — anyplot is the reference for stack and deploy patterns.
+- **Use an asymmetric finding, don't discard it** (author directive, 2026-08-26): the more lopsided better:worse is (chain v5: 32 words better, 2 worse), the more the loser is a decomposition task rather than a rejection. Decompose the losers into classes first, pre-register a rescue path per class, and treat partial adoption as legitimate; the gates stay immovable — they say "not like this", not "not at all". Before the FIRST comparison, verify base and arm are the same stack but for the one registered knob (`k0eval` prints it and warns), and get a second opinion before booking any asymmetric result as a negative.
+- **The author authors in the PROD admin, so admin-UI reports are against `origin/main`** — which can be AHEAD of your branch (author's working habit, 2026-07-25). Before diagnosing one: `git fetch && git log --oneline main..origin/main`, and check whether the report is simply a stale long-lived tab (the SPA keeps its old bundle until a reload). Cut the fix branch from `origin/main`, and never unlock or modify his authored glyphs for testing.
 - **Every PR adds a changelog fragment** — `changelog.d/<slug>.md` in the CHANGELOG's own format (`### Category` over bold-titled English bullets like the existing entries; `changelog.d/README.md`), NEVER a bullet in `CHANGELOG.md` itself: that shared spot is where every sibling merge used to conflict (audit series 2026-08-29/30; the union driver healed only the local rebase, GitHub's own mergeability check ignores it), and since 2026-08-30 the CI job „Changelog (fragment)" refuses both a PR without a fragment and a bullet written into `[Unreleased]` directly — `uv run python -m tools.changelog check --base origin/main` is the same gate locally. Data-only commits (chart sources, authored templates) are exempt — their provenance lives in `SOURCE.md`; a PR with truly nothing to tell gets the `skip-changelog` label; Dependabot's PRs skip the job by author (a bot writes neither fragment nor label, and its bumps are what the release notes leave out anyway — #468, 2026-08-31). The release is one command, `uv run python -m tools.changelog release X.Y.Z --title "…"` (folds the fragments newest-first under the new heading, bumps `pyproject.toml`/`uv.lock`/`CITATION.cff`, deletes the fragments; `preview` shows the pending section first). **A GitHub release is that section condensed, never copied** (owner rule, 2026-08-28): same headings, one bullet per NOTABLE entry (chores, dependency bumps and small fixes are left out; no fixed count), at most two lines each — bold title, one clause, PR reference — under an intro line (merge count, PR range, link to the file) and over a compare link; the full text stays in the CHANGELOG. The union merge driver on `CHANGELOG.md` stays as the net under the cut PR itself.
 - **New terms coined by a PR get a glossary entry in the same PR** — any new Fachbegriff, metric, named failure mode or repo idiom (`gen_chamfer`, „Cusp-Connector“, „like-for-like Gate“) is added to `docs/reference/glossar.md`, themed section plus alphabetical Schnellindex, so the vocabulary never outruns the place people look it up. Format and scope: `/write-docs` § "New terms go in the glossary".
 - **Don't re-request a Copilot review after every push** (owner, 2026-08-23; PR #406 collected ~15 requests in a day). Each request is a full re-read of the whole diff, and the bot then surfaces „previously missed" findings in files the push never touched — a one-line docstring fix draws a finding somewhere else, which draws another push, which draws another request. Request a fresh review only after a SUBSTANTIVE change (new behaviour, a reworked mechanism), and stop re-requesting once a round yields no new inline comments but only carried-over suppressed items: the field is grazed. A PR that is green with no open threads needs no further round — say so and let the owner merge.
@@ -174,6 +192,18 @@ cover them on SQLite; see `admin-write-repro-harness` pattern). Dev tools
 - **No AI-development disclosure on the public site** (owner directive): legal/about pages carry no „KI-gestützt entwickelt" notices; strip AI credits inherited from anyplot templates.
 - **Legibility over period authenticity in UI** (owner Leitsatz): no broken type in navigation, headlines or body copy; historic letterforms appear only as clearly marked specimens.
 
+## Code standards
+
+Mirrored with `.github/copilot-instructions.md` § "Code Standards", which carries the long form.
+
+- **Python:** type hints on every function; imports stdlib → third-party → local; comments explain WHY, never WHAT (identifiers carry that); ruff is the formatter and CI-gates both `check` and `format --check`.
+- **TypeScript/React:** types over interfaces; shared constants live in `app/src/domain/glyphs.ts` (there is no `app/src/constants.ts`); **no state-management framework** — Context + local state are sufficient, so don't introduce Redux or Zustand.
+- **Tests:** flat `tests/test_<module>.py`, named after the module. Prefer a pure core extracted from DB/async wrappers — those are the cheap, high-value tests; DB/HTTP-only lines are covered by the API sweep instead.
+- **Codecov is a reviewer, not a hard gate:** uncovered NEW logic a unit test can reach cheaply gets a test in the same PR; lines only a live DB/HTTP flow exercises don't.
+- **A `core/` PR that changes extraction, composition or rendering quotes before/after bench numbers** in its body. Standing invariants: benches never touch the DB, rulers and fixture roots stay frozen during a run, unauthored templates are reported not averaged in, an override run is its own number and never the headline, and the cross-hand Abb.-22 set (`--set abb22`) is NEVER part of a same-hand headline.
+- **Never merge a PR yourself.** Open it, get it green and review-clean; merging is the author's call (he merges live). Merge only on an explicit request in the same session.
+- **Never silently diverge from a settled doc.** A decision that contradicts one is written down — a `docs/proposals/` entry or an explicit `docs/concepts/` update — in the same PR.
+
 ## Language conventions (strict)
 
 From `docs/reference/sprachregelung.md`:
@@ -190,7 +220,7 @@ Characters themselves are *data, not code* — schema keys stay English, but val
 
 ## The core architectural commitment
 
-**Analysis-by-synthesis with a ductus prior.** The image supplies geometry + ink width; the canonical ductus template supplies stroke order and crossing resolution. A canonical template's key is `(style, glyph, variant)` — `style` is the Grundvorlage/script family (Kurrent · Sütterlin · Offenbacher; `templates.style_id`), the rest is the library unit within a style, not just glyph. Since the R2 position removal (schreibsystem-redesign.md, migration `0017`) glyph_keys are bare base keys (`a`, `longs`, `ch`) — ONE authored form per glyph, no initial/medial/final triplication; the word position is assigned per slot by `core/shaping.py` as RENDER context only (Anstrich/Auslauf, long-vs-round s choice). Allographs (e.g. long ſ = `longs` vs. round s = `s`) are *separate glyphs* with separate ductus, not one glyph with variants. Positionally-sanctioned form variants (the "A = A" on teaching charts) are separate templates (`variant`), not parameter deviations — the positional connection strokes are *generated* from `entry`/`exit` tangents.
+**Analysis-by-synthesis with a ductus prior.** The image supplies geometry + ink width; the canonical ductus template supplies stroke order and crossing resolution. A canonical template's key is `(style, glyph, variant)` — `style` is the Grundvorlage/script family (Kurrent · Sütterlin · Offenbacher; `templates.style_id`), the rest is the library unit within a style, not just glyph. Since the R2 position removal (`docs/proposals/schreibsystem-redesign.md`, migration `0017`) glyph_keys are bare base keys (`a`, `longs`, `ch`) — ONE authored form per glyph, no initial/medial/final triplication; the word position is assigned per slot by `core/shaping.py` as RENDER context only (Anstrich/Auslauf, long-vs-round s choice). Allographs (e.g. long ſ = `longs` vs. round s = `s`) are *separate glyphs* with separate ductus, not one glyph with variants. Positionally-sanctioned form variants (the "A = A" on teaching charts) are separate templates (`variant`), not parameter deviations — the positional connection strokes are *generated* from `entry`/`exit` tangents.
 
 The closed ligature set (`ch`, `ck`, `tz`, `ſt`, `qu`, `ß` — plus `St`, the one CASED cluster: the 1922 plate writes capital S into t without a lift) are first-class library entries, not exit→entry chains. Enumerate, don't generate. Arbitrary letter pairs *are* generated from `exit`/`entry` tangents + coupling height — that's the whole point of avoiding a bigram explosion.
 
@@ -203,7 +233,7 @@ Code is MIT. **Data is not covered by the code license** — each source carries
 Three commit classes, kept strictly separate (see `docs/reference/datenablage.md` §1):
 
 1. **Committable:** `/data/sources/` (public-domain only, e.g. Loth 1866 SVG) and `/data/samples/own-hand/` (author's own copyright). Each gets a `SOURCE.md` with permalink, license, attribution, retrieval date. Exception (owner decision 2026-08-22): the own-hand STRIP SCANS stay gitignored despite the owner's copyright — they are part of the reserved dataset, backed up to the private archive; only `SOURCE.md` + `README.md` are committed (`docs/proposals/eigenhand-erfassung.md` §8).
-2. **Gitignored:** `/data/corpora/` — only `SOURCE.md` + `fetch_corpus.py` are committed, never the data files. Pin DOI versions.
+2. **Gitignored:** `/data/corpora/` — only `SOURCE.md` + `fetch_*.py` are committed, never the data files. Pin DOI versions.
 3. **Mixed:** `/data/derived/from-cc-by/` is committable; `/data/derived/from-nc-sa/` is gitignored (NC-SA collides with MIT).
 
 Hard rules:
@@ -211,6 +241,7 @@ Hard rules:
 - **Süß' Lehrbuch and similar copyrighted works never enter the repo** — not as scans, not as redrawn glyphs, not as derived images. Bibliographic reference in prose is fine.
 - A scan is not automatically free under German law (§72 UrhG). Prefer in order: own hand → explicit PD/CC0 → own photo of a PD original.
 - "Script-downloaded" ≠ "license-free." The license of the bytes follows the bytes, not the fetch mechanism.
+- **Copyleft word lists are server data, never repo content** (author's decision 2026-08-30): the GPL German dictionary (`data/corpora/igerman98`) lives only in the shared DB (`lesart_forms`, loaded by `tools.lesarten.sync`); `GET /lesarten?text=` answers a handful of words per request, never the list — no bytes in the repo, the image or the bundle (`docs/reference/quellen-und-rechte.md` §5).
 - **The LEARNED dataset stays out of the repo (open-core moat).** The authored ductus templates, Laufformen and occurrence statistics — the DB contents — are reserved outside the MIT grant (README "License"). Technically enforced: bench fixtures stay gitignored, harvest artefacts are never committed, and the raw single-template API read is admin-gated; the public `/write` payloads are deliberate product surface under the README reservation + crawler policy. A public dataset only ever happens as a deliberate Ziel-7 release (architektur.md §17). See quellen-und-rechte.md §5 „Open-Core-Absicherung".
 - Variant 0 (`v0-loth-1866`) is the canonical geometry baseline for first tests. The ductus prior is *the author's own contribution layered over* this PD geometry — Loth supplies shapes, not stroke order.
 
@@ -218,14 +249,7 @@ Before any data commit: *is this my expression or the expression of a protected 
 
 ## MVP gates
 
-Four gates in `architektur.md` §8 — all four required for the kernel to count as validated:
-
-1. **Stability** — ≥10 fits per core glyph cluster cleanly (`ſ`-med, `s`-final, `e`-med).
-2. **Allograph separation** — cross-fit between medial ſ and final s separates per hand.
-3. **Word rendering** — majority of seven MVP words reconstructed *and* `denen` rendered from aggregated per-glyph stats in the same hand.
-4. **Animation (slim)** — one MVP glyph plays back with correct stroke order via `stroke-dashoffset` on the centerline (no Schwellzug yet; full Canvas-2D stroker is post-MVP §11).
-
-If gates 1–4 hold, kernel is validated; otherwise valuable negative result in days.
+Four gates in `docs/concepts/architektur.md` §8 — stability, allograph separation, word rendering, slim animation. All four required for the kernel to count as validated; the wording and the thresholds live in §8, not here.
 
 ## Test words
 
