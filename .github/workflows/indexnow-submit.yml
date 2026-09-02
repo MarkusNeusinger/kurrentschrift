@@ -1,0 +1,98 @@
+name: "SEO: IndexNow submit"
+run-name: "IndexNow: submit the sitemap"
+
+# Tells the IndexNow engines (Bing, Yandex, Seznam, Naver, Yep) that the site's
+# pages changed, instead of waiting for their next crawl. Google does not take
+# part; it keeps reading the sitemap (docs/reference/crawler-richtlinie.md §3).
+#
+# The site has ten public pages, all prerendered at build time and listed in
+# app/public/sitemap.xml, so every deploy-worthy push submits the whole
+# sitemap — well under the protocol's 10,000 URLs per request, and simpler
+# than mapping a diff onto routes. The trigger mirrors the Cloud Build
+# deploy-app trigger (app/**), so a submission never precedes the deploy by
+# more than the build takes.
+#
+# The key is public by design: it only proves the submitter controls the host,
+# and the engines verify it by fetching https://kurrentschrift.ink/<key>.txt,
+# which nginx serves straight from app/public (the `*.txt` location). Keep the
+# key here and the file name in app/public/ in sync when rotating it.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: indexnow-submit
+  cancel-in-progress: false
+
+env:
+  HOST: kurrentschrift.ink
+  INDEXNOW_KEY: kurrentschrift-indexnow-5d1c9b2e7a4f8c31
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Submit the sitemap URLs to IndexNow
+        run: |
+          set -euo pipefail
+          # The repo copy, not the live one: the push that triggered this run
+          # is what the deploy is about to serve.
+          grep -oE '<loc>[^<]+</loc>' app/public/sitemap.xml \
+            | sed -E 's#</?loc>##g' | sort -u > urls.txt
+          n=$(wc -l < urls.txt)
+          echo "::notice::${n} URL(s) from app/public/sitemap.xml"
+          cat urls.txt
+          # This run starts with the push; the Cloud Build deploy that serves
+          # the key file (and the new pages) finishes minutes later. Wait for
+          # the key file (up to ~8 min) so a first rollout or a key rotation
+          # is not rejected — but submit either way: a runner behind
+          # Cloudflare's bot management may see a 403 that Bing's own fetch
+          # does not, and IndexNow verifies the key itself.
+          for i in $(seq 1 16); do
+            status=$(curl -sS --max-time 15 -o /dev/null -w '%{http_code}' \
+              "https://${HOST}/${INDEXNOW_KEY}.txt" || echo 000)
+            case "$status" in
+              200) echo "::notice::key file reachable"; break ;;
+              # Deployed, but this runner is blocked at the edge: no point in
+              # waiting — Bing's own fetch is not subject to that block.
+              403) echo "::notice::key file answers 403 to this runner (edge bot management); treating as deployed"; break ;;
+            esac
+            if [ "$i" -eq 16 ]; then
+              echo "::warning::key file not confirmed reachable after 8 min (last status ${status}); submitting anyway"
+            else
+              sleep 30
+            fi
+          done
+          body=$(jq -n --arg host "$HOST" --arg key "$INDEXNOW_KEY" \
+            --arg loc "https://${HOST}/${INDEXNOW_KEY}.txt" \
+            --rawfile list urls.txt \
+            '{host: $host, key: $key, keyLocation: $loc,
+              urlList: ($list | split("\n") | map(select(length > 0)))}')
+          # Bounded like the other curl calls in this repo: a slow or flaky
+          # api.indexnow.org must not burn the job timeout. A transport error
+          # after the retries yields code 000 and falls into the "transient"
+          # branch below instead of aborting under `set -e`.
+          code=$(curl -sS -o response.txt -w '%{http_code}' \
+            --max-time 30 --retry 3 --retry-delay 5 --retry-all-errors \
+            -X POST "https://api.indexnow.org/indexnow" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            --data "$body") || code="000"
+          case "$code" in
+            200|202) echo "::notice::IndexNow accepted ${n} URL(s) (HTTP ${code})" ;;
+            # 4xx is a key or payload problem on our side; make it visible.
+            4*) echo "::error::IndexNow rejected the submission (HTTP ${code}): $(head -c 300 response.txt 2>/dev/null)"; exit 1 ;;
+            # 5xx / no response: their side. The next deploy resubmits the
+            # whole sitemap anyway, so a warning is the right weight.
+            *) echo "::warning::IndexNow unavailable (HTTP ${code}); will be resubmitted on the next deploy" ;;
+          esac
