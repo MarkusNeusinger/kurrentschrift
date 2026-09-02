@@ -1,3 +1,10 @@
+Scope: this license covers the source code in this repository. Data under
+/data/ is separately licensed per source — see data/DATA_PROVENANCE.md and the
+SOURCE.md next to each source. The learned dataset this project produces —
+authored ductus templates, Laufformen, occurrence statistics and trained
+reading models — is reserved outside this grant; see the "License" section of
+README.md.
+
 MIT License
 
 Copyright (c) 2026 Markus Neusinger

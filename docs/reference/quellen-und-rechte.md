@@ -156,6 +156,16 @@ Originale werden **referenziert, nicht reproduziert**:
 - Code: MIT (wie in Naming-Setup §3 entschieden).
 - Daten/Samples: eigene Lizenzzeile je Eintrag — Code-Lizenz deckt
   Daten **nicht** automatisch ab.
+- **`LICENSE` sagt diesen Geltungsbereich selbst** (Autor-Entscheid
+  2026-09-03): ein kurzer Absatz ÜBER dem unveränderten MIT-Text —
+  MIT deckt den Code, `/data/` ist je Quelle lizenziert, der gelernte
+  Datensatz ist vorbehalten. Bis dahin stand der Vorbehalt nur in
+  README-Prosa, während `LICENSE` und `CITATION.cff` maschinenlesbar
+  „alles MIT" meldeten — und genau die werden automatisiert gelesen
+  (GitHub-Lizenzerkennung, SPDX-Scanner, Zitations-Werkzeuge). Der
+  MIT-Text bleibt unangetastet, damit GitHub weiter „MIT License"
+  erkennt; `CITATION.cff` trägt zusätzlich `license-url` auf ebendiese
+  Datei.
 - Gebündelte Drittanbieter-Assets im Frontend (Fonts etc.): Eintrag in
   `app/THIRD_PARTY_NOTICES.md` + Lizenztext unter `app/public/fonts/`
   (siehe [`style-guide.md`](../concepts/style-guide.md)) — die dritte
