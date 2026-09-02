@@ -8,7 +8,7 @@
   and it stayed invisible to every green number because the word bench and
   the ink follower both resample it away before they score. A defect no
   instrument can see is a defect nobody can fix, so the instrument came
-  first (#NNN).
+  first (#486).
 - **A median that cannot carry that wobble.** `spline_basis_median` in
   `core/aggregate.py` projects each occurrence onto a clamped cubic B-spline
   over the chart row's own arc length — the chart's corners entering as
@@ -17,7 +17,7 @@
   median it stands beside medians all 120 anchors independently, so nothing
   couples a neighbour and the estimator's own noise reaches the page.
   `tools/laufform/smoothrow.py` builds candidate maps from it without
-  touching the database (#NNN).
+  touching the database (#486).
 
 ### Changed
 
@@ -30,4 +30,4 @@
   repairs all five row gates the fresh per-anchor median breaks. It is a
   candidate and nothing more: adoption waits on the humanbench word round
   and the author's go, because a ruler that cannot see the defect cannot
-  approve its removal either (#NNN).
+  approve its removal either (#486).
