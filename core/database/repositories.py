@@ -7,11 +7,14 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
 
 from sqlalchemy import delete, func, or_, select, tuple_
+from sqlalchemy.dialects.postgresql import Insert as PgInsert
 from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.dialects.sqlite import Insert as SqliteInsert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer
@@ -80,7 +83,7 @@ def _other_generations(keep: int):
     return or_(LesartForm.gen < keep, LesartForm.gen > keep)
 
 
-def _insert_for(session: AsyncSession):
+def _insert_for(session: AsyncSession) -> Callable[..., PgInsert | SqliteInsert]:
     """The bound dialect's INSERT construct. `ON CONFLICT` is dialect-specific
     syntax and SQLAlchemy models it per dialect — PostgreSQL in production,
     SQLite (aiosqlite) under the HTTP test harness."""
