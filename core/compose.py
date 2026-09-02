@@ -348,8 +348,9 @@ ARM_ROLL_MAX_DX = 0.16
 ALIGN_TAN_DEG = (25.0, 55.0)
 ALIGN_MIN_RISE = 0.02  # entry must sit above the exit for a pass-through
 # Exit-side collinearity (`exit_trim`, the A-side mirror of ENTRY_COUPLE_Y's
-# entry_trim; audit 2026-09-02 Befund 19, pre-registered as Übergänge J4 in
-# qualitaetsmetrik.md §14). A sawtooth exit keeps its CHART stub, and that
+# entry_trim; audit 2026-09-02 finding 19, pre-registered under the heading
+# „Übergänge J4" in qualitaetsmetrik.md §14). A sawtooth exit keeps its stub
+# from the CHART cell, and that
 # stub ends in a finishing flick: measured on the frozen 1922 word plate, e
 # runs 0.4 xh straight at ~40 degrees and then turns 41 -> 20 -> 9 over its
 # last 0.05 xh, i even turns DOWNWARD (-4.1 over that window). The composer
@@ -1739,9 +1740,10 @@ def compose_word(
     switches on the exit-side collinearity rule — see EXIT_TRIM_WINDOW: a
     sawtooth exit's chart stub is cut back to where the straight to the
     UNCHANGED coupling point continues the letter's own direction, and the
-    join is drawn as that straight. An opt-in candidate arm (pre-registered as
-    Übergänge J4, qualitaetsmetrik.md §14); adopting it as the default is a
-    declared re-baseline of the golden fixture and the author's call.
+    join is drawn as that straight. An opt-in candidate arm, pre-registered
+    under the heading „Übergänge J4" in qualitaetsmetrik.md §14; adopting it as
+    the default is a declared re-baseline of the golden fixture and the
+    author's call.
     ``exit_trim_min_kink_deg`` narrows that class to the joins whose departure
     actually kinks (see EXIT_TRIM_MIN_KINK_DEG) — the J4b arm's knob; it does
     nothing while ``exit_trim`` is off.
