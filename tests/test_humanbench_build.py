@@ -647,13 +647,15 @@ def test_arm_gap_is_symmetric_and_measured_in_x_heights():
 def test_word_cases_discard_and_count_a_word_only_one_arm_draws(tmp_path):
     """§8's rule, one layer up: a change that quietly stops composing a word is
     a RESULT, and must not vanish into a shorter round that looks complete."""
-    root = fixture_root(tmp_path)
+    root = fixture_root(tmp_path, ids=("unter", "das", "lesen", "keins"))
     base = load_arm(arm_file(tmp_path, "base", ["unter", "das", "lesen"]))
     candidate = load_arm(arm_file(tmp_path, "cand", ["unter", "lesen"], dy=0.1))
     dropped: Counter = Counter()
     cases = word_cases(root, base, candidate, dropped=dropped)
     assert [c.entry_id for c in cases] == ["unter", "lesen"]
-    assert dict(dropped) == {"only_base": 1}
+    # Counted apart: a word the CANDIDATE lost is a result, one neither arm
+    # composed says nothing about the candidate at all.
+    assert dict(dropped) == {"only_base": 1, "neither_arm": 1}
     assert cases[0].baseline_row == 40.0 and cases[0].xh == 20.0
     assert cases[0].peak > 0  # the arms differ, so the severity key is non-zero
 

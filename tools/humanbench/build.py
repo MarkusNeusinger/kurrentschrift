@@ -914,7 +914,15 @@ def word_cases(
             continue
         left, right = base.words.get(entry_id), candidate.words.get(entry_id)
         if left is None or right is None:
-            _count(dropped, "only_base" if right is None else "only_candidate")
+            # Counted apart, because they mean different things: a word only
+            # the base draws is a composition the candidate LOST, one neither
+            # draws was never in the fixture set's reach at all.
+            _count(
+                dropped,
+                "neither_arm"
+                if left is None and right is None
+                else ("only_base" if right is None else "only_candidate"),
+            )
             continue
         word_dir = root / entry_id
         meta = json.loads((word_dir / "word.json").read_text(encoding="utf-8"))
