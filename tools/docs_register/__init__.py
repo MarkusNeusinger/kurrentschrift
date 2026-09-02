@@ -312,6 +312,12 @@ def _git(root: Path, *args: str) -> str:
 
 
 def added_entries(base: str, *, root: Path = REPO_ROOT) -> list[str]:
-    """Titles of §14 entries this branch adds against `base` — for the summary line."""
+    """Titles of §14 entries this branch adds against `base` — for the summary line.
+
+    Approximate on purpose: it reads added `###` lines out of the diff, so a
+    section moved within the file counts as added. The rules above are the gate;
+    this only names what the author should check twice.
+    """
     diff = _git(root, "diff", "--unified=0", f"{base}...HEAD", "--", str(JOURNAL))
-    return [line[5:].strip() for line in diff.split("\n") if line.startswith("+### ")]
+    titles = [line[5:].strip() for line in diff.split("\n") if line.startswith("+### ")]
+    return [title for title in titles if title not in INDEX_HEADINGS]

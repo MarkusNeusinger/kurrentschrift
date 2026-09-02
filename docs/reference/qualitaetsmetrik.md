@@ -1,6 +1,6 @@
 # Qualitätsmetrik & Glyph-Bench
 
-> **Status (2026-08-12): lebend.** Fortlaufend gepflegte Messlatte und
+> **Status (2026-09-02): lebend.** Fortlaufend gepflegte Messlatte und
 > Baseline-Journal — jeder Bench-Lauf und jedes bewusste Re-Baseline
 > schreibt hier einen datierten Abschnitt fort; aktuelle Headlines:
 > Wörter 0,109255 · Paare 0,148433 (Re-Baseline `sep01`, §15 — sieben
@@ -17,9 +17,13 @@ liegt in `core/quality.py`, das Werkzeug in `tools/glyphbench/`
 (englisches README mit Fixture-Format und Output-Contract).
 
 Stand: fortlaufend gepflegtes Journal — Grundfassung 2026-06-11 (nach den
-PRs #63–#71), seither mit jedem Lauf/Befund fortgeschrieben; letzter
-Eintrag 2026-08-02 (Lauf `aug02`, PR #268: Report-Spalte `meas`, Headlines
-Wörter 0,116886 · Paare 0,164506).
+PRs #63–#71), seither mit jedem Lauf/Befund fortgeschrieben. Die
+**aktuellen Headlines stehen an genau EINER Stelle**, im Status-Blockquote
+oben; ihre Historie samt Fixture-Wurzeln führt der **Headline-Ledger** am
+Kopf von §14, und daneben dort das **Register aller Journal-Einträge**.
+Wer den Stand der Mess-Kampagne sucht, fängt bei diesen beiden Tabellen
+an — und für die Routen bei
+[`verfahren.md`](verfahren.md).
 
 > **Zwei Metriken, eine pro Schrift (Stand 2026-06-18).** Kurrent und
 > Sütterlin nutzen verschiedene Schreibgeräte (Spitzfeder/Schwellzug vs.
