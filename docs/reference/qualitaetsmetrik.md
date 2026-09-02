@@ -9774,3 +9774,177 @@ jede Code-Änderung eine andere Zahl. Das ist die richtige Richtung:
 vorher wurde gegen einen Buchstaben gemessen, der auf der Referenz gar
 nicht ganz da war — `regieren` ist mit 0,2338 der teuerste der sieben,
 und genau bei ihm fehlte am meisten (der halbe letzte Buchstabe).
+
+### Laufform LF11 `sep02` — Vorregistrierung: die glatte Zeile (Spline-Basis-Median statt Per-Anker-Median)
+
+Geschrieben und committet VOR der ersten Zahl dieses Arms. Basis:
+Wörter-Root `suetterlin-1922` `exported_at=2026-09-02T08:00:29+00:00`
+`digest=28ba1afebc53`, Paar-Root `suetterlin-1922-pairs` gleicher
+Zeitstempel `digest=f0cf3d53414c`; in dieser Umgebung frisch gerechnet
+mit `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1` und `--expect-root`:
+**Wörter 0,109255 · Paare 0,148433** — die §15-Kopfzahl, exakt
+reproduziert. Die Root wird in dieser Runde NICHT neu exportiert und
+`core/word_metric.py` nicht angefasst.
+
+**Namenskollision, benannt:** LF10 ist durch PR #474 („Form-Abstand
+einer Laufform-Zeile") belegt, der beim Schreiben dieser
+Vorregistrierung offen war. Dieser Arm heißt darum LF11. Die beiden
+Arme sind inhaltlich verschieden — LF10 misst den ABSTAND einer Zeile
+zur Tafel, LF11 ändert den SCHÄTZER, der die Zeile erzeugt — und
+berühren sich nur darin, dass beide auf `core/laufform.py` arbeiten.
+
+**Befund (Audit 2026-09-02, Rang 4).** Die gespeicherten
+Laufform-Zeilen zittern: auf 0,02 xh resampelte Centerlines,
+Krümmungs-Vorzeichenwechsel über 3°, gezählt je x-Höhe Bogenlänge —
+n 0,46 → 2,81 · o 0,00 → 11,25 · i 0,89 → 10,34 · e 0,00 → 2,74
+(Tafel → Zeile). Ursache ist der Schätzer selbst:
+`core/aggregate.py::_median_and_mad` medianisiert jeden der 120 Anker
+UNABHÄNGIG, und nichts im Modell koppelt Nachbarn — der Kommentar an
+`LAUFFORM_MIN_OCCURRENCES` sagt es seit jeher („neighbouring anchors
+are medianed independently"). Gerendert wird die Zeile in jedem Lauf
+≥ `ASCENDER_LEAN_MIN_RUN` = 3 (`core/compose.py`), also in praktisch
+jedem öffentlichen Wort. Kein Lineal sieht es: Wort- und Tinten-Bench
+resampeln den Zickzack weg (§14 „Feinschliff"). Das ist der größte
+Einzelunterschied zwischen „geschrieben" und „gerechnet" im Produkt.
+
+**Mechanismus (LF11).** Der Median wandert aus dem Ankerraum in eine
+GLATTE BASIS. Je Pen-Zug (Grenzen aus `trace_meta.stroke_starts` der
+Tafelzeile, also dem Duktus-Prior — ein Federabsatz ist keine
+Unstetigkeit der Linie, sondern ein anderer Zug und wird einzeln
+gefittet):
+
+1. **Gemeinsamer Parameter.** Die kumulierte Bogenlänge der TAFELZEILE
+   entlang des Zuges, in x-Höhen. Sie ist vorkommensunabhängig, also
+   projizieren alle Vorkommen auf dieselbe Basis — die Voraussetzung
+   dafür, dass ein Median über Kontrollpunkte überhaupt definiert ist.
+   Die Vorkommen sind zulässig gestapelt, weil die Ernte sie zentriert
+   auf die Tafel ablegt („shapes, not placements") und alle die
+   Ankerzahl der Tafel tragen.
+2. **Basis.** Geklammerte kubische B-Spline (Grad 3 — der niedrigste
+   Grad mit stetiger Krümmung, und die Krümmung ist genau die Größe,
+   deren Vorzeichenwechsel der Sensor zählt). Innere Knoten in
+   gleichem Bogenabstand Δs; die Ecken der Tafelzeile
+   (`trace_meta.corner_anchors`) kommen als Knoten mit Vielfachheit 3
+   dazu, damit die Basis dort eine C⁰-Ecke DARSTELLEN kann statt sie
+   wegzuglätten.
+3. **Projektion.** Jedes Vorkommen wird in x und y getrennt per
+   kleinster Quadrate auf diese Basis projiziert → Kontrollpunkte.
+4. **Median.** Komponentenweiser Median über die Vorkommen je
+   Kontrollpunkt — dieselbe Robustheit wie heute, nur eine Ebene
+   höher.
+5. **Rückweg.** Auswertung des Median-Kontrollpolygons an den
+   Parameterwerten der Tafelanker → exakt wieder 120 Anker, gleiche
+   Ankerzahl, gleiche Topologie. Danach läuft die Zeile durch dieselbe
+   Kanonisierung wie jede andere (`build_laufform_canonical` über
+   `laufform_row_from_payload`), also ohne zweite Sonderbehandlung.
+
+Ein Zug, der für nicht einmal eine Spanne reicht (< 2·Δs Bogen) oder
+weniger als Grad+1 Anker hat, fällt auf den heutigen Per-Anker-Median
+zurück — die Karte ist damit total, und der Rückfall wird je Zeile
+berichtet. Die Enden werden NICHT festgehalten: die Endanker tragen
+Entry/Exit-Tangente, aber ob die Projektion sie bewegt, ist genau die
+Frage, die das Kopf-Gate (LF9) beantwortet — ein zweiter Endmechanismus
+neben LF5/LF6 würde die Messung verwischen. Kopf- und Schwanzbewegung
+werden je Zeile berichtet.
+
+**EIN Knopf: der Knotenabstand Δs, Leiter {0,08 · 0,16 · 0,32} xh.**
+0,08 ist der im Audit vorgeschlagene Wert; die Leiter muss über ihn
+hinausreichen, weil die gemessene Zickzack-Rate des o (11,25/xh) einer
+Periode von ~0,09 xh entspricht — eine Basis mit Knoten alle 0,08 xh
+kann eine Schwingung dieser Periode noch tragen. 0,32 xh liegt bei
+einem Fünftel des LF3-Fensters (0,5 xh) und beim Fünffachen des
+Nib-Radius (0,064 xh); jenseits davon wäre nicht mehr Rauschen,
+sondern Form entfernt. Jede Sprosse wird berichtet, adoptiert wird
+höchstens eine.
+
+**Drei Arme, damit der Effekt isoliert ist.** Der Schätzer braucht die
+Vorkommen, also einen frischen Harvest — und ein frischer Harvest ist
+schon für sich eine andere Ableitung als die gespeicherten Zeilen
+(Kette v5, reparierte Rechtecke, andere n). Gemessen wird darum:
+
+- **Basis** — die gespeicherten Zeilen der eingefrorenen Root (22
+  Zeilen), die Produktionswirklichkeit, Kopfzahl oben.
+- **LF11-M (Kontrolle)** — Per-Anker-Median über DIE GLEICHEN frisch
+  geernteten Vorkommen. Trägt die Ableitungsdrift und sonst nichts.
+- **LF11-K (Kandidat)** — Spline-Basis-Median über dieselben
+  Vorkommen, je Sprosse der Leiter.
+
+Der Glättungseffekt ist der Kontrast M → K; die Drift ist Basis → M.
+Beide Karten nennen **exakt die 22 Schlüssel, für die die Root eine
+Zeile hat** — eine Karte, die zusätzliche Zeilen einführte, komponierte
+einen anderen Buchstabensatz als die Basis, und der Vergleich wäre
+keiner. Harvest: `tools.laufform.harvest --path chain --sets words
+--min-n 1 --jobs 4`, BLAS gepinnt (237 Vorkommen über 34 Schlüssel,
+alle 22 darunter).
+
+**Der Glätte-Sensor, definiert (neue Größe, `core/laufform.py`).**
+`zigzag_rate(anchors, …)` — die Zeile wird durch den Sample-Plan der
+Tafelzeile gerendert (`multi_stroke_centerlines`, dieselben 240
+Samples, Strichanfänge und Ecken vom Duktus-Prior, wie
+`_rendered_first_stroke` es für LF9 tut), jeder Zug auf gleichmäßige
+Schritte von 0,02 xh resampelt, der Drehwinkel je Schritt gebildet und
+gezählt, wie oft sein VORZEICHEN wechselt, wobei nur Wechsel zählen,
+bei denen mindestens eine der beiden beteiligten Drehungen über 3°
+liegt (das trennt die Zacke vom numerischen Rauschen um null).
+Normiert auf die Bogenlänge in x-Höhen: Zacken je xh. Das ist die
+Größe des Audits; ihre Zahlen (Tafel n 0,46 · o 0,00 · i 0,89 ·
+e 0,00) dienen als KALIBRIERUNG — der Sensor wird zuerst gegen sie
+gehalten, und eine Abweichung ist ein berichteter Befund, keine
+verschobene Latte.
+
+**Messung (alles TROCKEN, kein DB-Write, kein `apply-laufform`, BLAS
+gepinnt).**
+
+(a) **Lineal.** `wordbench.run --set all --laufform <Karte>
+--expect-root 28ba1afebc53,f0cf3d53414c`: `bench_loss` ≤ 0,109255 +
+0,002 UND `pair_loss` ≤ 0,148433 + 0,002. Erwartung ≈ neutral, das
+Lineal ist für den Zickzack blind; der Gate steht da, damit die
+Glättung keine Form kostet. Zusätzlich berichtet: K gegen M, also der
+isolierte Glättungsanteil.
+
+(b) **Glätte.** Median der Zacken-Rate über die 22 Zeilen: der
+Kandidat schließt ≥ 50 % der Lücke zur Tafel (Median über dieselben
+22 Tafelzeilen), UND je Zeile gilt Zacken(K) ≤ Zacken(Tafel) + 1.
+
+(c) **Zeilen-Gates.** Keine Zeile der Kandidaten-Karte verletzt das
+Sprung-Gate (LF8, τ = 2,95) oder das Kopf-Gate (LF9, 15°), die ihre
+eigene Kontroll-Zeile (LF11-M) besteht. Formuliert als „nicht NEU
+brechen", weil die Root selbst Zeilen über dem Kopf-Gate trägt (t, E,
+f, v, k — §14 `aug29`) und ein frischer Harvest sie erbt; jede
+vorbestehende Verletzung wird namentlich berichtet, nicht dem Schätzer
+angelastet.
+
+(d) **Kompositions-Soll.** `tools.tracebench.soll.ductus_soll` über
+alle 63 Wörter, Kandidaten-Root gegen Basis-Root (Kopie der Root im
+Scratchpad, nur `templates_laufform.json` getauscht — die eingefrorene
+Root bleibt schreibgeschützt): kein Wort verliert eine Kreuzung. Jede
+Bewegung wird berichtet.
+
+(e) **Lotse/Kette dev-19** laufen NICHT in dieser Runde — aus dem
+Grund, den LF5 `aug29` festgehalten hat: sie gehören zum
+Schreib-Schritt, weil sie die Karte messen, DIE GESCHRIEBEN WIRD.
+Diese Runde schreibt nichts.
+
+**Kill-Kriterium:** ein rotes Gate = keine Adoption der Sprosse. Rot
+auf allen drei Sprossen = der Arm ist gescheitert; die dann benannten
+Rettungswege (Regel „jedes ehrliche Negativ nennt seine
+Konversionswege", §7.9 in `tintenfolger.md`): (1) Glättung nur der
+Zeilen mit n ≥ 5 — der Schätzer braucht Vorkommen, und eine n=1-Zeile
+ist eine Projektion, kein Median; (2) krümmungsregularisierter
+L1-Median im Ankerraum statt einer Basis (anderer Mechanismus, gleiche
+Größe); (3) Regularisierung im Fit selbst, nicht in der Aggregation
+(Kette/M4 — dann zittert schon das Vorkommen nicht). Nie derselbe
+Knopf mit weicheren Gates.
+
+**Adoption.** Eine Karte, die alle Gates besteht, wird NICHT
+geschrieben. Die Adoption hängt an drei Dingen in dieser Reihenfolge:
+der humanbench-Wort-Runde (Echtheitsfrage, PR #480 — `wordarm.py
+--laufform <Karte>` nimmt genau diese Karte), dem Autor-Go und dann
+erst `dbsnapshot` → PUT je Glyph → GET-Verify → Neuexport der Root als
+deklarierte Re-Baseline. Der Golden bleibt in jedem Fall unberührt:
+LF11 ändert Daten, keinen Code im Chart-Pfad.
+
+**Asymmetrie-Regel (Owner-Direktive `aug26`) gilt auch hier:** fällt
+die Karte als Ganzes, wird die Verlierer-Menge in Klassen zerlegt
+(n-Klasse, Ecken-Zahl, Zug-Zahl) und eine Teil-Adoption geprüft, statt
+den Befund zu verwerfen.
