@@ -3,6 +3,7 @@ the public read that answers a bucket of real words, never the list."""
 
 from __future__ import annotations
 
+from core.lesarten import WORD_MAX
 from tests.api_harness import Harness
 
 
@@ -95,6 +96,60 @@ async def test_load_is_admin_gated_and_validates(api: Harness):
         "POST", f"/lesarten/dictionary/generations/{gen + 2}/commit", json_body=BUILD, headers=api.admin_headers()
     )
     assert ahead_commit.status == 409
+
+
+async def test_a_repeated_batch_inserts_once(api: Harness):
+    """The load is `INSERT … ON CONFLICT DO NOTHING`, so a batch sent twice —
+    a retried request, an overlapping chunk — adds nothing and says so."""
+    opened = await api.client.request(
+        "POST", "/lesarten/dictionary/generations", json_body=BUILD, headers=api.admin_headers()
+    )
+    gen = opened.json()["generation"]
+
+    async def post(words):
+        res = await api.client.request(
+            "POST",
+            f"/lesarten/dictionary/generations/{gen}/forms",
+            json_body={"words": words},
+            headers=api.admin_headers(),
+        )
+        assert res.status == 200, res.body
+        return res.json()
+
+    first = await post(WORDS)
+    assert first["inserted"] == len(WORDS) and first["total"] == len(WORDS)
+    again = await post(WORDS)
+    assert again["inserted"] == 0 and again["total"] == len(WORDS)
+    # A batch straddling the two: only the words not already stored count.
+    mixed = await post(WORDS[-2:] + [["Wittib", True], ["Wittiv", False]])
+    assert mixed["inserted"] == 2 and mixed["total"] == len(WORDS) + 2
+    # The same word twice inside ONE batch is one row, not a conflict.
+    twice = await post([["Muhne", False], ["Muhne", False]])
+    assert twice["inserted"] == 1 and twice["total"] == len(WORDS) + 3
+
+
+async def test_an_unusable_word_fails_the_whole_batch(api: Harness):
+    """Blank, whitespace-carrying and overlong words are refused, not skipped —
+    the loader drops them visibly instead (tools.lesarten.sync.drop_overlong)."""
+    opened = await api.client.request(
+        "POST", "/lesarten/dictionary/generations", json_body=BUILD, headers=api.admin_headers()
+    )
+    gen = opened.json()["generation"]
+    for word in ("zwei Wörter", "   ", "a" * (WORD_MAX + 1)):
+        res = await api.client.request(
+            "POST",
+            f"/lesarten/dictionary/generations/{gen}/forms",
+            json_body={"words": [["Muhme", False], [word, False]]},
+            headers=api.admin_headers(),
+        )
+        assert res.status == 400, f"{word!r} was accepted"
+    at_the_bound = await api.client.request(
+        "POST",
+        f"/lesarten/dictionary/generations/{gen}/forms",
+        json_body={"words": [["a" * WORD_MAX, False]]},
+        headers=api.admin_headers(),
+    )
+    assert at_the_bound.status == 200 and at_the_bound.json()["inserted"] == 1
 
 
 async def test_text_is_bounded(api: Harness):

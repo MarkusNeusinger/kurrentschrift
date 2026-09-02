@@ -12,6 +12,7 @@ from typing import Any
 
 from sqlalchemy import delete, func, or_, select, tuple_
 from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import defer
 
@@ -79,10 +80,23 @@ def _other_generations(keep: int):
     return or_(LesartForm.gen < keep, LesartForm.gen > keep)
 
 
+def _insert_for(session: AsyncSession):
+    """The bound dialect's INSERT construct. `ON CONFLICT` is dialect-specific
+    syntax and SQLAlchemy models it per dialect — PostgreSQL in production,
+    SQLite (aiosqlite) under the HTTP test harness."""
+    return sqlite_insert if session.get_bind().dialect.name == "sqlite" else pg_insert
+
+
 class LesartRepository:
     """The Lesart vocabulary: generation-switched bulk loads, keyed reads."""
 
     DICTIONARY_ID = 1
+
+    # One row binds four columns and asyncpg binds at most 32 767 parameters
+    # per statement, so a batch wider than this is paged in `add_forms` — the
+    # endpoint's own batch size stays a question of request size, not of the
+    # driver.
+    INSERT_CHUNK = 8_000
 
     def __init__(self, session: AsyncSession):
         self.session = session
@@ -113,25 +127,33 @@ class LesartRepository:
         return live + 1
 
     async def add_forms(self, gen: int, rows: list[tuple[str, str, bool]]) -> int:
-        """Insert (key, word, bank) rows into a generation. Rows are deduplicated
-        here so a repeated batch cannot violate the primary key."""
+        """Insert (key, word, bank) rows into a generation, skipping the ones it
+        already holds. Returns how many rows the call actually added — a
+        repeated batch therefore reports 0.
+
+        One `INSERT … ON CONFLICT DO NOTHING` per chunk, with no read first.
+        The earlier shape asked `SELECT … WHERE gen = ? AND (key, word) IN
+        (<batch>)` before every insert, which scanned the generation as it
+        grew: the load measured 0.4 s for the first 5 000-word batch and 16 s
+        once 80 000 rows were in, so the full 718 000-word vocabulary could
+        never finish inside Cloudflare's 100 s origin timeout. The dedupe
+        inside the batch stays in Python: the same (key, word) twice in ONE
+        statement is not a conflict the database can resolve.
+        """
         if not rows:
             return 0
         unique = {(key, word): bank for key, word, bank in rows}
-        existing = await self.session.execute(
-            select(LesartForm.key, LesartForm.word).where(
-                LesartForm.gen == gen, tuple_(LesartForm.key, LesartForm.word).in_(list(unique.keys()))
-            )
-        )
-        present = {(row[0], row[1]) for row in existing.all()}
-        payload = [
-            {"gen": gen, "key": key, "word": word, "bank": bank}
-            for (key, word), bank in unique.items()
-            if (key, word) not in present
-        ]
-        if payload:
-            await self.session.execute(LesartForm.__table__.insert(), payload)
-        return len(payload)
+        payload = [{"gen": gen, "key": key, "word": word, "bank": bank} for (key, word), bank in unique.items()]
+        insert = _insert_for(self.session)
+        inserted = 0
+        for start in range(0, len(payload), self.INSERT_CHUNK):
+            stmt = insert(LesartForm).values(payload[start : start + self.INSERT_CHUNK])
+            # rowcount after DO NOTHING is the count actually inserted on both
+            # dialects (Postgres reports it in the command tag, SQLite through
+            # sqlite3_changes) — pinned by tests/test_api_lesarten.py.
+            result = await self.session.execute(stmt.on_conflict_do_nothing(index_elements=["gen", "key", "word"]))
+            inserted += max(int(result.rowcount or 0), 0)
+        return inserted
 
     async def count_forms(self, gen: int) -> int:
         result = await self.session.execute(select(func.count()).select_from(LesartForm).where(LesartForm.gen == gen))

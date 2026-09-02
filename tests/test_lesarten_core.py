@@ -6,7 +6,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from core.lesarten import LOOKALIKES, MAX_TEXT_LEN, lesart_key, rank_readings, swap_cost
+from core.lesarten import LOOKALIKES, MAX_TEXT_LEN, WORD_MAX, lesart_key, rank_readings, swap_cost
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -55,6 +55,15 @@ def test_rank_prefers_cheap_swaps_then_bank_then_short() -> None:
     assert words[:2] == ["Mühme", "Nuhme"]  # cost 1 each, alphabetical
     assert readings[0].swaps[0].index == 1 and readings[0].swaps[0].from_ == "u" and readings[0].swaps[0].to == "ü"
     assert rank_readings("Muhme", candidates, limit=1) == readings[:1]
+
+
+def test_word_bound_is_the_column_it_stands_for() -> None:
+    """WORD_MAX is the load's cap because the column cannot hold more — the two
+    must never drift apart."""
+    from core.database.models import LesartForm
+
+    assert WORD_MAX == LesartForm.__table__.c.word.type.length
+    assert WORD_MAX > MAX_TEXT_LEN  # a guess is always short enough to have readings
 
 
 def test_text_bound_is_shared_with_the_page() -> None:

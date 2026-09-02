@@ -61,6 +61,14 @@ LOOKALIKES: dict[str, tuple[str, ...]] = {
 MAX_TEXT_LEN = 32
 DEFAULT_LIMIT = 8
 
+# The longest word the vocabulary can hold: `LesartForm.word` is String(64),
+# so anything longer cannot be stored at all. Nothing is lost by the cap — a
+# reading is only ever offered for a guess of at most MAX_TEXT_LEN characters,
+# and the handful of forms the igerman98 expansion produces above it are
+# administrative compounds (67 characters and up). The loader
+# (`tools.lesarten.sync`) drops them; the API refuses them.
+WORD_MAX = 64
+
 
 def _components() -> tuple[dict[str, str], dict[tuple[str, str], int]]:
     """Connected components of the look-alike graph → (letter → class
