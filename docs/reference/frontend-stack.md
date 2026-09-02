@@ -3,6 +3,7 @@
 > **Status (2026-09-02): lebend.** Ist-Stand von Stack, Routen, i18n-Soll,
 > Deploy, Admin-Gate und Crawler-Prerender; jede Änderung an
 > `app/package.json`, `app/src/routes/paths.ts`, den Cloudbuild-/nginx-Dateien,
+> `app/security-headers.conf`, `api/security_headers.py`, `api/routers/csp.py`,
 > `api/auth.py`, `api/origin_gate.py`, `infra/cloudflare/` (der Apex-Worker —
 > §5 hängt seit 2026-09-02 an seiner Konfiguration) oder
 > `app/src/lib/seo/prerender.ts` zieht hier nach.
@@ -668,6 +669,103 @@ Fehler. `kind` ist die Eigenschaft, nach der man filtert:
   `immutable`); wird je eine Datei wirklich getauscht, muss der DATEINAME
   mitversioniert werden und `index.html` mitziehen. Die gehashten
   `/assets/`-Bundles cachen `immutable`/1 Jahr (`app/nginx.conf`).
+
+### Sicherheits-Header und Cache-Control (seit 2026-09-02)
+
+Bis zum Audit vom 2026-09-02 lieferte `kurrentschrift.ink` **keinen einzigen**
+der sechs üblichen Sicherheits-Header und auch kein `Cache-Control` auf der
+SPA-Hülle aus; das Schwesterprojekt trug beides schon. Seither stehen sie in
+`app/security-headers.conf` — eine eigene Datei, weil nginx `add_header`
+**nicht über Ebenen hinweg vererbt**: Sobald ein `location`-Block einen eigenen
+`add_header` setzt, fallen sämtliche geerbten weg. Die Datei wird darum im
+Server-Block UND in jedem solchen `location` per `include` gezogen; wer irgendwo
+einen `add_header` ergänzt, ergänzt die `include`-Zeile daneben.
+`tests/test_csp_policy.py` hält genau das fest.
+
+| Header | Wert | Warum |
+|---|---|---|
+| `Content-Security-Policy-Report-Only` | siehe unten | Erlaubt-Liste der tatsächlichen Quellen der Seite |
+| `Strict-Transport-Security` | `max-age=15552000` | 180 Tage, **ohne** `includeSubDomains`, **ohne** `preload` (Autor-Entscheid 2026-09-02, wie anyplot) |
+| `X-Content-Type-Options` | `nosniff` | |
+| `X-Frame-Options` | `SAMEORIGIN` | die alte Hälfte von `frame-ancestors` |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` | |
+| `Permissions-Policy` | Geo/Kamera/Mikro/Payment/USB/MIDI/Serial aus | alles Ungenannte behält seine Vorgabe — u. a. `clipboard-write`, das „Link kopieren" braucht. `bluetooth` steht bewusst NICHT drin: Chromium kennt das Token nicht und schreibt dafür „Unrecognized feature" in jede Besucher-Konsole (im Durchgang vom 2026-09-02 gesehen) |
+
+**Die CSP nennt die gemessenen Quellen, nicht die vermuteten.** `script-src`
+kommt **ohne** `'unsafe-inline'` aus: Die beiden Inline-Skripte in
+`app/index.html` (Hero-Vorwärmer und Plausible-Stub) stehen als sha256-Hashes
+in der Policy, der Plausible-Loader `/js/script.js` und das Vite-Modul sind
+`'self'`. Das ist der einzige Punkt, an dem die Datei mit anyplot bewusst
+auseinandergeht. Der Preis: Ein Hash gilt für die **Bytes** — jede Änderung an
+einem Inline-Skript, und sei es die Einrückung, macht ihn ungültig; deshalb
+rechnet `tests/test_csp_policy.py` die Hashes aus `app/index.html` neu und
+vergleicht sie mit der Policy. `style-src` behält `'unsafe-inline'`: Emotion
+(MUI) injiziert seine Regeln zur Laufzeit, und ein Nonce müsste pro Antwort
+erzeugt werden, was ein nginx mit vorgebautem `index.html` nicht kann.
+
+**Die Report-Only-Woche.** Die Policy geht als
+`Content-Security-Policy-Report-Only` live und blockiert damit nichts, sondern
+meldet nur — ein Fehler in ihr würde sonst die Werkbank unbenutzbar machen, und
+die Werkbank ist genau die Fläche, die kein automatischer Durchgang öffnen kann.
+Gemeldet wird an `POST /csp-report` auf dem API-Host (`api/routers/csp.py`):
+zählt und loggt, schreibt nichts, kennt beide Wire-Formate (`report-uri` schickt
+ein Objekt, die Reporting-API ein Array mit camelCase-Feldern) und ist die
+einzige öffentliche Schreiboperation dieser API — als solche in
+`tests/test_api_public_surface.py::PUBLIC_WRITES` benannt und begründet. Vom
+Rate-Limiter ist sie **nicht** ausgenommen (der weite Eimer ist genau das Netz,
+das eine offene POST-Route braucht), vom Origin-Gate ebenfalls nicht: Reports
+laufen wie jeder Browser-Aufruf über den Edge, der den Header stempelt.
+
+**Gemeldet wird ausschließlich per `report-uri` — gemessen, nicht vermutet.**
+Die naheliegende Fassung deklariert beide Kanäle, `report-uri` für Firefox und
+Safari, `report-to` samt `Reporting-Endpoints` für Chromium. Im Browser-Durchgang
+vom 2026-09-02 kostete genau das jede Chromium-Meldung: Mit `report-to` in der
+Policy ignoriert Chromium `report-uri` (so ist es spezifiziert) und lieferte
+dann **gar nichts** — in 200 Sekunden erreichte keine Anfrage den Endpunkt.
+Ohne `report-to` kam dieselbe Verletzung in unter einer Sekunde an. Ein Kanal,
+der den funktionierenden stilllegt, ohne ihn zu ersetzen, ist schlechter als
+keiner; `report-to` kommt zurück, sobald eine Meldung nachweislich über HTTPS
+darüber ankommt. Der Endpunkt versteht das Reporting-API-Format trotzdem
+schon — dann ändert sich nur der Header.
+
+**Kommt in der Woche nichts an, ist das zuerst zu prüfen** — eine Sonde, die den
+Weg eines echten Reports geht:
+
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' -X POST \
+  -H 'Content-Type: application/csp-report' \
+  --data '{"csp-report":{"document-uri":"https://kurrentschrift.ink/","effective-directive":"probe","blocked-uri":"probe"}}' \
+  https://api.kurrentschrift.ink/csp-report      # erwartet: 204
+```
+
+`403` heißt: Die Cloudflare-Transform-Rule stempelt `X-Origin-Secret` nicht auf
+POST-Anfragen (§5). Die Meldungen selbst stehen als `WARNING` im Log der API,
+eine Zeile je *verschiedener* Verletzung (Wiederholungen werden gezählt, nicht
+erneut geloggt).
+
+**Scharfschalten ist eine Zeile:** In `app/security-headers.conf` den
+Header-Namen `Content-Security-Policy-Report-Only` zu `Content-Security-Policy`
+ändern und deployen. `report-uri`/`report-to` bleiben stehen, damit auch danach
+gemeldet wird.
+
+**`Cache-Control` auf der Hülle.** `location = /index.html` setzt `no-cache` —
+bewusst nicht anyplots `no-store, must-revalidate`. Ohne Header trug die Antwort
+nur `Last-Modified`, der Browser cachte die Hülle heuristisch mit ~10 % ihres
+Alters und verlangte nach einem Deploy `/assets/`-Hashes, die es nicht mehr gibt:
+weiße Seite. `no-cache` heißt „vor Gebrauch nachfragen", die Kopie bleibt liegen
+und der gemessene Weg endet in einem 304 mit null Bytes; `no-store` würde die
+Hülle bei jeder Navigation neu laden. Der nächste Abgleich mit der Schwesterdatei
+wird das „reparieren" wollen — der Grund steht als Kommentar daneben.
+
+**Der API-Host hat seine eigenen zwei.** `api.kurrentschrift.ink` ist ein
+zweiter öffentlicher Host mit eigenen Antworten; `api/security_headers.py`
+hängt `nosniff` und `Referrer-Policy` an jede von ihnen — auch an die 403 des
+Origin-Gates und die 429 des Limiters, denn die Middleware sitzt außerhalb
+beider. Keine CSP dort: `/docs` und `/redoc` laden Swagger UI bzw. ReDoc von
+`cdn.jsdelivr.net` und führen Inline-Skripte aus; eine Policy, die streng genug
+wäre, um etwas zu taugen, würde die eigene API-Dokumentation zerlegen. Kein
+HSTS: Der Header gehört zu dem Host, der für Browser TLS terminiert, und
+Cloudflare steht vor beiden Namen.
 
 ### Reverse-Proxy / Routing
 
