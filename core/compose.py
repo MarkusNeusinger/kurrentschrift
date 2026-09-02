@@ -347,6 +347,39 @@ ARM_ROLL_MAX_DX = 0.16
 # their tangent is not a diagonal.
 ALIGN_TAN_DEG = (25.0, 55.0)
 ALIGN_MIN_RISE = 0.02  # entry must sit above the exit for a pass-through
+# Exit-side collinearity (`exit_trim`, the A-side mirror of ENTRY_COUPLE_Y's
+# entry_trim; audit 2026-09-02 Befund 19, pre-registered as Übergänge J4 in
+# qualitaetsmetrik.md §14). A sawtooth exit keeps its CHART stub, and that
+# stub ends in a finishing flick: measured on the frozen 1922 word plate, e
+# runs 0.4 xh straight at ~40 degrees and then turns 41 -> 20 -> 9 over its
+# last 0.05 xh, i even turns DOWNWARD (-4.1 over that window). The composer
+# reads its departure over TANGENT_WINDOW (0.12 xh, e 37.3 / i 26.9) and
+# aims the connector there, so the ink the eye reads at the seam runs 13-42
+# degrees flatter than the connector leaving it. Table form, exactly like
+# the loop / Kringel / bar stubs that LOOP_EXIT, KRINGEL_EXIT and BAR_EXIT
+# already cut in bound context — this is the fourth member of that family.
+# The cut walks back from the tip to the FIRST sample whose own direction
+# over EXIT_TRIM_WINDOW agrees with the chord to the (unchanged) coupling
+# point within EXIT_TRIM_TOL_DEG; the connector is then that chord, drawn
+# straight. The floor of the walk is the foot turn (the stroke's last local
+# y-minimum): the body of the letter is never touched, only the stub above
+# it, and a stub that reaches no such sample keeps its chart form.
+# The window is deliberately NOT TANGENT_WINDOW: 0.12 xh is what the
+# composer aligns on anyway, so trimming against it would chase its own
+# construction. 0.05 xh is the arc the eye reads at the seam — the same
+# scale the report-only seam sensor uses (tools/wordbench/seam.py keeps its
+# own constant on purpose: a sensor must not import the rule it measures).
+EXIT_TRIM_WINDOW = 0.05
+EXIT_TRIM_TOL_DEG = 3.0
+# Minimum kink the rule demands before it intervenes, in degrees: how far the
+# connector the composer WOULD have drawn leaves the letter's own last stretch
+# (both read over EXIT_TRIM_WINDOW). 0.0 = the class as pre-registered (J4 —
+# every sawtooth exit). A positive value narrows it to "fix the defect, leave
+# alone what already runs on": the post-hoc J4b arm found the hand's dissected
+# joins support only the joins whose kink is large, so the threshold is the
+# knob that arm varies. It is NOT a calibrated constant — read the J4/J4b
+# entries in qualitaetsmetrik.md §14 before moving it.
+EXIT_TRIM_MIN_KINK_DEG = 0.0
 # Shared by the sawtooth pass-through AND the R4 "nested fall" placement (a
 # rising mid-band exit whose neighbour enters below it — t's bar, f's flag —
 # nests over the next letter instead of clearing its full ink column; the
@@ -500,6 +533,12 @@ FORK_APEX_MAX_Y = 1.05
 # genuine crossing form like x, whose crossing stroke is a real letter
 # part.
 BAR_EXIT_BASES = frozenset({"t", "f"})
+# Exit-side collinearity (see EXIT_TRIM_WINDOW) skips the bases that already
+# have an A-side departure rule — by NAME, not by geometry: after its own cut
+# a d / o / b / t / f exit can land inside the sawtooth band, and the class
+# this rule addresses is the one the plate writes as a sawtooth (e/n/m/u/i
+# and their kin), not a re-cut of the three enumerated stub forms.
+EXIT_TRIM_EXCLUDED_BASES = LOOP_EXIT_BASES | KRINGEL_EXIT_BASES | BAR_EXIT_BASES
 BAR_CROSS_MIN_Y = 0.2  # a plausible bar/flag crossing sits mid-band
 BAR_CROSS_MAX_Y = 0.7
 # P3-K1 (pre-registered aug16, qualitaetsmetrik §14 Welle 2 P3): after a
@@ -1118,6 +1157,126 @@ def _loop_return_foot(line: list[Point]) -> int | None:
     return foot
 
 
+def _foot_turn_index(line: list[Point]) -> int | None:
+    """Index of the FOOT TURN: the stroke's last local y-minimum before its end.
+
+    Where the pen finished its downstroke and turned up into the exit stub —
+    the floor of the ``exit_trim`` walk (see EXIT_TRIM_WINDOW). Unlike
+    ``_loop_return_foot`` this asks nothing about loops or stub height: it is
+    a pure "where does the last rise begin". ``None`` when the stroke has no
+    rise at its end (it ends going down, or is too short to tell).
+    """
+    if len(line) < 3:
+        return None
+    for i in range(len(line) - 2, 0, -1):
+        if line[i][1] <= line[i - 1][1] and line[i][1] <= line[i + 1][1]:
+            return i
+    return None
+
+
+def _window_direction(line: list[Point], index: int, window: float) -> float | None:
+    """Travel direction (degrees, y up) INTO ``index``, over ``window`` of arc.
+
+    The twin of ``_endpoint_tangent(at_end=True)`` for an interior sample, and
+    it walks the same way — back from the sample until the accumulated arc
+    reaches ``window``, then takes the chord. ``None`` when the walk finds no
+    length at all (a degenerate head).
+    """
+    acc = 0.0
+    far = index
+    for i in range(index, 0, -1):
+        acc += math.hypot(line[i][0] - line[i - 1][0], line[i][1] - line[i - 1][1])
+        far = i - 1
+        if acc >= window:
+            break
+    if acc <= 1e-12:
+        return None
+    return math.degrees(math.atan2(line[index][1] - line[far][1], line[index][0] - line[far][0]))
+
+
+def _start_direction(line: list[Point], window: float) -> float | None:
+    """Travel direction (degrees, y up) OUT OF a polyline's first sample.
+
+    ``_window_direction``'s mirror for the head of a line — the same walk, run
+    forward. ``None`` for a degenerate head.
+    """
+    acc = 0.0
+    far = 0
+    for i in range(len(line) - 1):
+        acc += math.hypot(line[i + 1][0] - line[i][0], line[i + 1][1] - line[i][1])
+        far = i + 1
+        if acc >= window:
+            break
+    if acc <= 1e-12:
+        return None
+    return math.degrees(math.atan2(line[far][1] - line[0][1], line[far][0] - line[0][0]))
+
+
+def _exit_trim_index(line: list[Point], couple_pt: Point) -> int | None:
+    """Where to cut a sawtooth exit stub so the join leaves it collinearly.
+
+    Walks back from the stroke's tip to the foot turn and returns the FIRST
+    sample whose own direction (over EXIT_TRIM_WINDOW of arc) agrees with the
+    chord to ``couple_pt`` within EXIT_TRIM_TOL_DEG — the least cut that makes
+    the straight to the UNCHANGED coupling point continue the letter's own
+    stroke instead of kinking off it. ``None`` = no such sample above the foot
+    turn, so the stub keeps its chart form (the coupling point then lies below
+    the stub's own rise line — the n/l case, where no cut can help).
+
+    ``line`` and ``couple_pt`` are in the same frame (word coordinates).
+    """
+    foot = _foot_turn_index(line)
+    if foot is None or foot >= len(line) - 1:
+        return None
+    for k in range(len(line) - 2, foot - 1, -1):
+        if not (couple_pt[0] > line[k][0] and couple_pt[1] > line[k][1]):
+            continue  # a join that no longer progresses up-and-right from here
+        own = _window_direction(line, k, EXIT_TRIM_WINDOW)
+        if own is None:
+            continue
+        chord = math.degrees(math.atan2(couple_pt[1] - line[k][1], couple_pt[0] - line[k][0]))
+        if abs(_wrap_deg(chord - own)) <= EXIT_TRIM_TOL_DEG:
+            return k
+    return None
+
+
+def _wrap_deg(deg: float) -> float:
+    """An angle difference folded into (−180, 180]."""
+    return -((180.0 - deg) % 360.0 - 180.0)
+
+
+def _straight_to(p0: Point, target: Point) -> list[Point]:
+    """``_straight_connector``'s line, for a target already in word coordinates."""
+    return [
+        (p0[0] + (target[0] - p0[0]) * i / CONNECT_SAMPLES, p0[1] + (target[1] - p0[1]) * i / CONNECT_SAMPLES)
+        for i in range(CONNECT_SAMPLES + 1)
+    ]
+
+
+def _cut_exit_stub(item: dict, line: list[Point], cut: int, half: float) -> None:
+    """Cut an already emitted body item back to ``cut`` — centerline AND rings.
+
+    The A-side twin of the ``entry_trim`` cut the glyph loop applies to B's
+    lead-in (see EXIT_TRIM_WINDOW for why this one happens after emission).
+    Both work the same way: the piece the letter no longer writes is erased
+    from the silhouette around its own centerline, with the KEPT line spared
+    so the surviving stroke never loses ink where the two cross. Everything
+    here is in WORD coordinates — the item's own frame — so nothing round-trips
+    through the glyph frame. Mutates ``item`` in place.
+    """
+    kept = line[: cut + 1]
+    item["centerline"] = [list(p) for p in kept]
+    rings = item.get("rings")
+    if rings:
+        erased = erase_silhouette_piece(
+            [[list(p) for p in ring] for ring in rings], line[cut:], half * ERASE_MARGIN_FACTOR, keep=kept
+        )
+        if erased:
+            item["rings"] = [[list(p) for p in ring] for ring in erased]
+        else:
+            item.pop("rings", None)
+
+
 def _apply_pen(item: dict, centerline: list[Point], default_width: float, pen: PenStyle | None) -> None:
     """Ink a GENERATED stroke (connector, Endstrich) with the style's pen.
 
@@ -1509,7 +1668,14 @@ class _PrevGlyph:
     join), ``stem_launch`` (bar exit → stem-anchored rise) and ``cap_retrace``
     (capital ornament → retrace prefix + restart grammar). ``end_swing``
     writes ``ink_max_x`` back after the Endstrich — the swing's ink is what a
-    detached mark placed next must clear."""
+    detached mark placed next must clear.
+
+    ``exit_item`` is the ALREADY EMITTED draw item of the last body stroke.
+    ``exit_trim`` (see EXIT_TRIM_WINDOW) needs it: its cut depends on the
+    coupling point, which exists only once the NEXT slot has been placed — so
+    unlike the three chart-stub rules it cuts after the fact, precisely so the
+    placement it must not disturb has already been solved. None when the glyph
+    emitted no body item."""
 
     exit: Point
     tangent_deg: float
@@ -1523,6 +1689,7 @@ class _PrevGlyph:
     slot_index: int
     joins: bool
     base: str
+    exit_item: dict | None = None
 
 
 def compose_word(
@@ -1533,6 +1700,8 @@ def compose_word(
     provenance: bool = False,
     pair_overrides: dict[tuple[str, str], dict] | None = None,
     laufform_by_key: dict[str, dict] | None = None,
+    exit_trim: bool = False,
+    exit_trim_min_kink_deg: float = EXIT_TRIM_MIN_KINK_DEG,
 ) -> dict:
     """Compose shaped slots + per-glyph render payloads into draw items.
 
@@ -1569,6 +1738,17 @@ def compose_word(
     LAUFFORM_SX width factor is suppressed for that slot — the stored form
     carries its own width. None/missing keys → chart behaviour,
     byte-identical.
+
+    ``exit_trim`` (default False = byte-identical, the golden fixture holds)
+    switches on the exit-side collinearity rule — see EXIT_TRIM_WINDOW: a
+    sawtooth exit's chart stub is cut back to where the straight to the
+    UNCHANGED coupling point continues the letter's own direction, and the
+    join is drawn as that straight. An opt-in candidate arm (pre-registered as
+    Übergänge J4, qualitaetsmetrik.md §14); adopting it as the default is a
+    declared re-baseline of the golden fixture and the author's call.
+    ``exit_trim_min_kink_deg`` narrows that class to the joins whose departure
+    actually kinks (see EXIT_TRIM_MIN_KINK_DEG) — the J4b arm's knob; it does
+    nothing while ``exit_trim`` is off.
 
     ``pair_overrides`` (redesign R3 / Vorschlag B) maps an adjacent joined
     key pair ``(left_key, right_key)`` to a stored override geometry (the
@@ -2303,6 +2483,37 @@ def compose_word(
                 arcade_lift_idx=arcade_lift_idx,
                 loop_rotate_deg=loop_rotate_deg,
             )
+            # Exit-side collinearity (see EXIT_TRIM_WINDOW), opt-in. The
+            # connector always ENDS at the coupling point, whichever branch
+            # built it, so the cut is searched against ``centerline[-1]`` and
+            # the placement that produced it stays untouched by construction.
+            exit_anchor: Point = prev.exit
+            if (
+                exit_trim
+                and prev.cap_retrace is None
+                and prev.stem_launch is None
+                and prev.base not in EXIT_TRIM_EXCLUDED_BASES
+                and prev.exit_item is not None
+                and ALIGN_TAN_DEG[0] <= prev.tangent_deg <= ALIGN_TAN_DEG[1]
+                and prev.exit[1] < HIGH_COUPLE_EXIT_Y
+                and len(centerline) >= 2
+            ):
+                stub = [(float(x), float(y)) for x, y in prev.exit_item["centerline"]]
+                cut = _exit_trim_index(stub, centerline[-1]) if len(stub) >= 3 else None
+                if cut is not None and exit_trim_min_kink_deg > 0.0:
+                    # Intervene only where the join the composer would draw
+                    # actually kinks off the letter (see EXIT_TRIM_MIN_KINK_DEG).
+                    own = _window_direction(stub, len(stub) - 1, EXIT_TRIM_WINDOW)
+                    out = _start_direction(centerline, EXIT_TRIM_WINDOW)
+                    if own is None or out is None or abs(_wrap_deg(out - own)) < exit_trim_min_kink_deg:
+                        cut = None
+                if cut is not None:
+                    centerline = _straight_to(stub[cut], centerline[-1])
+                    _cut_exit_stub(prev.exit_item, stub, cut, prev.width)
+                    # The join now departs at the cut, so that is the exit the
+                    # provenance states — otherwise every trimmed join would
+                    # read as a prefixed retrace to a downstream sensor.
+                    exit_anchor = stub[cut]
             if prev.cap_retrace:
                 # The retrace ends AT the departure the connector starts
                 # from — drop the duplicate so the seam has no zero-length
@@ -2322,7 +2533,7 @@ def compose_word(
                 # _overlap_extend perturbs its first sample and a capital
                 # retrace prepends points — so the measured-vs-composed
                 # comparison (handmodell H2 read surfaces) needs them stated.
-                connector["exit"] = [prev.exit[0], prev.exit[1]]
+                connector["exit"] = [exit_anchor[0], exit_anchor[1]]
                 connector["entry"] = [entry_xy[0] + dx, entry_xy[1]]
             items.append(connector)
             track(centerline)
@@ -2332,6 +2543,7 @@ def compose_word(
         # connector precedes (a detached boundary on either side), the pen
         # visibly lifts into this glyph's first stroke.
         detached_entry = prev is not None and not joined
+        exit_item: dict | None = None
         glyph_mask_width = 2.2 * max_half
         if pen is not None and pen.kind == "broad_nib" and pen.nib is not None:
             # The stamped nib's diagonal extent can exceed the widest width the
@@ -2399,6 +2611,11 @@ def compose_word(
                 pending_diacritics.append(item)
             else:
                 items.append(item)
+                if si == last_body_idx:
+                    # Handed to the NEXT slot so its join can cut this stub
+                    # back (see EXIT_TRIM_WINDOW) once the coupling point the
+                    # cut is measured against exists.
+                    exit_item = item
 
         exit_abs: Point = (exit_xy[0] + dx, exit_xy[1])
         prev = _PrevGlyph(
@@ -2419,6 +2636,7 @@ def compose_word(
             slot_index=slot_index,
             joins=slot.joins,
             base=_key_base(slot.key, slot.position),
+            exit_item=exit_item,
         )
         cursor_x = max(exit_abs[0], ink_max_x + dx) if not slot.joins else exit_abs[0]
 

@@ -14,16 +14,23 @@ from core.compose import (
     ALIGN_MAX_ENTRY_Y,
     ALIGN_MIN_RISE,
     CONNECT_GAP,
+    EXIT_TRIM_TOL_DEG,
+    EXIT_TRIM_WINDOW,
     GARLAND_MERGE_EPS,
     GARLAND_MIN_DX,
     SWING_DEEP_MAX_RUN,
     SWING_MAX_EXIT_Y,
     SWING_TOP_Y,
+    _cut_exit_stub,
     _flank_couple_index,
     _flank_couple_steepest,
+    _foot_turn_index,
     _fused_flank_placement,
     _garland_centerline,
+    _start_direction,
     _unit,
+    _window_direction,
+    _wrap_deg,
     compose_word,
 )
 from core.shaping import GlyphSlot
@@ -355,3 +362,153 @@ def test_kringel_stub_survives_word_finally_on_the_capital_b() -> None:
     glyph = composed["items"][0]["centerline"]
     # Unbound, the capital keeps its full chart form like the lowercase bases.
     assert glyph[-1][1] > 0.9
+
+
+# --- Exit-side collinearity (`exit_trim`, see EXIT_TRIM_WINDOW) --------------
+#
+# A sawtooth exit that ends in the chart cell's finishing flick: a steep
+# descent to the foot turn at (0.15, 0.0), a ~50° rise, then three nearly flat
+# samples. Read the way the composer reads it, the stroke leaves at 29.5°
+# (TANGENT_WINDOW); read the way the eye reads the seam it leaves at 8.5°
+# (EXIT_TRIM_WINDOW) — the 21° gap this rule is about.
+_SAWTOOTH_RISE = [(0.15 + 0.02 * i, 0.02 * i * 1.19) for i in range(1, 21)]
+_SAWTOOTH_EXIT = (
+    [(0.0, 0.9), (0.08, 0.45), (0.15, 0.0)]
+    + _SAWTOOTH_RISE
+    + [(0.55 + 0.02 * i, _SAWTOOTH_RISE[-1][1] + 0.003 * i) for i in range(1, 4)]
+)
+# A lead-in that starts ABOVE that exit, so the join actually climbs.
+_HIGH_LEAD_IN = [(0.0, 0.6), (0.08, 0.85), (0.16, 1.0), (0.22, 0.5), (0.28, 0.0)]
+# … and one that starts below it, where no cut can make the join collinear.
+_LOW_LEAD_IN = [(0.0, 0.1), (0.15, 0.4), (0.3, 0.7)]
+
+
+def _compose_sawtooth(
+    *, exit_trim: bool = False, left: str = "e", lead_in: list[tuple[float, float]] | None = None, min_kink: float = 0.0
+) -> dict:
+    slots = [
+        GlyphSlot(key=left, text=left, position="initial", ligature=False, space=False),
+        GlyphSlot(key="n", text="n", position="final", ligature=False, space=False),
+    ]
+    return compose_word(
+        slots,
+        {left: _payload(_SAWTOOTH_EXIT), "n": _payload(lead_in or _HIGH_LEAD_IN)},
+        provenance=True,
+        exit_trim=exit_trim,
+        exit_trim_min_kink_deg=min_kink,
+    )
+
+
+def test_exit_trim_is_off_by_default() -> None:
+    # The switch defaults to off, and the fixture really does exercise the
+    # rule — otherwise every assertion below would pass vacuously.
+    assert compose_word(
+        [
+            GlyphSlot(key="e", text="e", position="initial", ligature=False, space=False),
+            GlyphSlot(key="n", text="n", position="final", ligature=False, space=False),
+        ],
+        {"e": _payload(_SAWTOOTH_EXIT), "n": _payload(_HIGH_LEAD_IN)},
+        provenance=True,
+    ) == _compose_sawtooth(exit_trim=False)
+    assert _compose_sawtooth(exit_trim=True) != _compose_sawtooth(exit_trim=False)
+
+
+def test_exit_trim_leaves_the_letter_collinearly() -> None:
+    off = _compose_sawtooth(exit_trim=False)
+    on = _compose_sawtooth(exit_trim=True)
+    # Before: the connector shoots off the flick — a kink well past tolerance.
+    kink_off = abs(
+        _wrap_deg(
+            _start_direction([tuple(p) for p in off["items"][1]["centerline"]], EXIT_TRIM_WINDOW)
+            - _window_direction(_SAWTOOTH_EXIT, len(_SAWTOOTH_EXIT) - 1, EXIT_TRIM_WINDOW)
+        )
+    )
+    assert kink_off > 4 * EXIT_TRIM_TOL_DEG
+    # After: the join continues the letter's own last stretch.
+    glyph, connector = [tuple(p) for p in on["items"][0]["centerline"]], on["items"][1]["centerline"]
+    kink_on = abs(
+        _wrap_deg(
+            _start_direction([tuple(p) for p in connector], EXIT_TRIM_WINDOW)
+            - _window_direction(glyph, len(glyph) - 1, EXIT_TRIM_WINDOW)
+        )
+    )
+    assert kink_on <= EXIT_TRIM_TOL_DEG
+    # … as a straight line (the overlap tuck at each end excluded).
+    (x0, y0), (x1, y1) = connector[1], connector[-2]
+    span = math.hypot(x1 - x0, y1 - y0)
+    assert span > 0
+    for x, y in connector[1:-1]:
+        assert abs(-(y1 - y0) * (x - x0) + (x1 - x0) * (y - y0)) / span < 1e-9
+
+
+def test_exit_trim_cuts_the_stub_and_stops_at_the_foot_turn() -> None:
+    off = [tuple(p) for p in _compose_sawtooth(exit_trim=False)["items"][0]["centerline"]]
+    on = [tuple(p) for p in _compose_sawtooth(exit_trim=True)["items"][0]["centerline"]]
+    assert len(on) < len(off)  # the flick is gone
+    assert on == off[: len(on)]  # nothing but the tail was touched
+    # The body of the letter survives: the cut never reaches the foot turn,
+    # so the whole descent plus a real piece of the rise is still written.
+    foot = _foot_turn_index(off)
+    assert foot is not None
+    assert len(on) - 1 > foot
+    assert on[-1][1] > off[foot][1]
+
+
+def test_exit_trim_leaves_the_placement_untouched() -> None:
+    # The pre-registered experimental control: the right glyph must land in
+    # exactly the same place, byte for byte.
+    off = _compose_sawtooth(exit_trim=False)["items"][2]["centerline"]
+    on = _compose_sawtooth(exit_trim=True)["items"][2]["centerline"]
+    assert off == on
+
+
+def test_exit_trim_states_the_departure_it_actually_uses() -> None:
+    # The provenance ``exit`` must move with the cut — a downstream sensor
+    # recognises a prefixed retrace by exactly this point not matching.
+    on = _compose_sawtooth(exit_trim=True)
+    glyph, connector = on["items"][0], on["items"][1]
+    # centerline[0] is the CONNECT_OVERLAP tuck; the join proper starts next.
+    assert connector["centerline"][1] == connector["exit"]
+    assert connector["exit"] == glyph["centerline"][-1]
+
+
+def test_exit_trim_skips_the_bases_with_their_own_exit_rule() -> None:
+    # d / b / t already cut their chart stub their own way — the same geometry
+    # under those bases stays exactly as it was.
+    for base in ("d", "b", "t"):
+        assert (
+            _compose_sawtooth(exit_trim=True, left=base)["items"][0]["centerline"]
+            == _compose_sawtooth(exit_trim=False, left=base)["items"][0]["centerline"]
+        )
+
+
+def test_exit_trim_declines_a_coupling_point_below_the_rise() -> None:
+    # The n/l case: the join arrives below the stub's own rise line, so no cut
+    # can make it collinear — the rule leaves the letter alone.
+    assert (
+        _compose_sawtooth(exit_trim=True, lead_in=_LOW_LEAD_IN)["items"][0]["centerline"]
+        == _compose_sawtooth(exit_trim=False, lead_in=_LOW_LEAD_IN)["items"][0]["centerline"]
+    )
+
+
+def test_exit_trim_min_kink_narrows_the_class() -> None:
+    # The J4b knob: a threshold above this fixture's ~21° kink switches the
+    # rule off for it, one below leaves it firing.
+    assert (
+        _compose_sawtooth(exit_trim=True, min_kink=30.0)["items"][0]["centerline"]
+        == _compose_sawtooth(exit_trim=False)["items"][0]["centerline"]
+    )
+    assert (
+        _compose_sawtooth(exit_trim=True, min_kink=10.0)["items"][0]["centerline"]
+        == _compose_sawtooth(exit_trim=True)["items"][0]["centerline"]
+    )
+
+
+def test_cut_exit_stub_takes_the_silhouette_with_the_centerline() -> None:
+    # The silhouette must lose the same piece as the centerline, or the
+    # trimmed stub still renders as ink (the LOOP/KRINGEL/BAR lesson).
+    line = [(0.1 * i, 0.0) for i in range(11)]
+    item = {"centerline": [list(p) for p in line], "rings": [[[0.0, -0.1], [1.0, -0.1], [1.0, 0.1], [0.0, 0.1]]]}
+    _cut_exit_stub(item, line, 5, 0.1)
+    assert item["centerline"] == [[0.1 * i, 0.0] for i in range(6)]
+    assert max(x for ring in item["rings"] for x, _ in ring) < 0.9

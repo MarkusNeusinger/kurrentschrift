@@ -414,6 +414,22 @@ def build_parser() -> argparse.ArgumentParser:
         "{glyph_key: {anchors, n_occurrences}} or full fixture rows); keys it does not name keep "
         "their frozen row — an overlay run is a SEPARATE measurement, never comparable to the headline",
     )
+    parser.add_argument(
+        "--exit-trim",
+        action="store_true",
+        help="compose with the opt-in exit-side collinearity rule (core.compose EXIT_TRIM_WINDOW, "
+        "pre-registered as Übergänge J4): a sawtooth exit's chart stub is cut back to where the "
+        "straight to the unchanged coupling point continues the letter's own direction — a CANDIDATE "
+        "arm, its own measurement, never the headline",
+    )
+    parser.add_argument(
+        "--exit-trim-min-kink",
+        type=float,
+        default=0.0,
+        metavar="DEG",
+        help="narrow --exit-trim to the joins whose departure kinks by more than DEG "
+        "(core.compose EXIT_TRIM_MIN_KINK_DEG; 0 = the full pre-registered class)",
+    )
     return parser
 
 
@@ -430,6 +446,9 @@ def main() -> None:
     if args.laufform:
         laufform_payload = load_laufform_payload(args.laufform)
         print(f"laufform: {len(laufform_payload)} rows from {args.laufform} (own number - never the headline)")
+    if args.exit_trim:
+        narrowed = f" min_kink={args.exit_trim_min_kink:g}deg" if args.exit_trim_min_kink else ""
+        print(f"exit_trim: on{narrowed} (candidate arm J4 - own number, never the headline)")
 
     t0 = time.perf_counter()
     style_root = args.fixtures / args.style
@@ -550,6 +569,8 @@ def main() -> None:
                     provenance=True,
                     pair_overrides=_slot_overrides(slots, overrides_by_base) or None,
                     laufform_by_key=laufform_by_key or None,
+                    exit_trim=args.exit_trim,
+                    exit_trim_min_kink_deg=args.exit_trim_min_kink,
                 )
                 report = score_word(
                     composed,
@@ -666,6 +687,8 @@ def main() -> None:
         result["laufform"] = str(args.laufform)
     if args.no_laufform:
         result["laufform"] = False
+    if args.exit_trim:
+        result["exit_trim"] = args.exit_trim_min_kink or True
     for kind in ("word", "pair"):
         kind_reports = [r for r in reports if r["kind"] == kind]
         kind_skipped = [s for s in skipped if s["kind"] == kind]
