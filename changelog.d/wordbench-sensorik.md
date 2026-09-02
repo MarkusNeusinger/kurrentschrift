@@ -11,7 +11,7 @@
   `page_sha256` is now re-checked by the measuring run instead of only by the
   rebuild path. The frozen Sütterlin roots as of this change are
   `suetterlin-1922` `219182189b93` and `suetterlin-1922-pairs` `9f94ba7523f5`,
-  both `exported_at=2026-08-14T06:02:45+00:00`.
+  both `exported_at=2026-08-14T06:02:45+00:00` (#478).
 - **`seam_deg`: the kink where a connector meets its letters is now a number.**
   A report-only column per join — `dep` how far the generated connector leaves
   the letter's own last direction, `arr` how far the next letter starts off the
@@ -23,4 +23,4 @@
   carrying a capital's prefixed ornament retrace are excluded and counted,
   genuine ſ/w/r/v reversals are kept. Both headlines stay byte-identical across
   the introduction (`bench_loss` 0.108091, `pair_loss` 0.148489), as the report
-  column rule requires.
+  column rule requires (#478).
