@@ -112,6 +112,22 @@ def test_cors_allow_origin_regex_splits_by_environment(monkeypatch):
     assert settings.cors_allow_origin_regex == r"^https://example\.org$"
 
 
+def test_a_renamed_starlette_constant_fails_the_run():
+    """The module-independent `filterwarnings` rule in pyproject.toml.
+
+    Starlette warns about its renamed status constants with `stacklevel=3`, so
+    the warning is attributed to `fastapi.routing` and the three
+    module-anchored rules (`…:api(\\.|$)` and friends) look straight past it —
+    which is how five deprecated constants lived in the error paths until the
+    2026-09-02 audit counted them. This asserts the behaviour, not the config
+    line: under the configured filters, reading one raises.
+    """
+    from starlette import status as starlette_status
+
+    with pytest.raises(DeprecationWarning):
+        getattr(starlette_status, "HTTP_422_UNPROCESSABLE_ENTITY")  # noqa: B009 — the read IS the assertion
+
+
 async def test_require_db_503_detail_distinguishes_init_failure(monkeypatch):
     """`DATABASE_URL is set but the connection failed` must not be answered
     with `Set DATABASE_URL...` — that detail is for the unconfigured case."""
