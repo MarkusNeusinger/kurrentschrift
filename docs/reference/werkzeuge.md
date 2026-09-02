@@ -1,6 +1,6 @@
 # Werkzeuge — die Dev-Tools unter `tools/`
 
-> **Status (2026-08-23): lebend.** Index über die Dev-Tools unter `tools/`;
+> **Status (2026-09-01): lebend.** Index über die Dev-Tools unter `tools/`;
 > jedes neue, umbenannte oder entfernte Werkzeug und jede geänderte CLI
 > (Flags, Modulpfade, `viz`-Extra, `--live`) gehört hier hinein.
 
@@ -600,5 +600,38 @@ denen es stammt.
   Python-3.11-TF-venv → Kandidaten-JSON im Trace-Frame), Gewichte und
   venv bleiben untracked; reine Messschicht — die Ausgabe erreicht nie
   `core/`, die DB oder das Rendering.
+- **`tools/inkpilot`** — der Kandidat der Route **Lotse**
+  ([`verfahren-lotse.md`](verfahren-lotse.md)): drei Schichten — die
+  **Karte** (die komponierte Bahn als Duktus-Auskunft), der **Wasserweg**
+  (der Skelettgraph aus `tools/routeg/graph.py`) und der **Ritt** (ein
+  Viterbi über die Sample-Kette, der zwischen Tinten-Mitte und Karte
+  umsteigt). Aufruf `uv run python -m tools.inkpilot`; die adoptierten
+  Konstanten stehen gesammelt in `pilot.py` (Schienen-Auslauf,
+  Ritt-Doppelzonen, gepinnte Fenster, Knoten-Plateaus, Entdrillung mit
+  Lineal-Soll-Budget und Reservierungs-Veto) und sind auf der
+  Verfahrensseite je Version belegt. Der Duell-Kandidat läuft über den
+  File-Provider des Tracebench (`--candidate file --candidate-file`).
+  Reine Messschicht: keine DB, kein `core/`-Schreibzugriff.
+- **`tools/routeg`** — der Kandidat der Kontrolle **Nullprobe**
+  ([`verfahren-nullprobe.md`](verfahren-nullprobe.md)): Skelett →
+  Segmentgraph (`graph.py`) → Greedy-Traversierung per Gute-Fortsetzung,
+  in den Stufen `prepare.py` → `recover.py` → `to_candidate.py`; eigene
+  Minimalfassung der Writing-Order-Recovery nach Diaz et al. 2022, weil
+  die MATLAB-Referenz hier nicht lauffähig ist (Begründung und
+  Reduktions-Liste: `tools/routeg/README.md`, eigene
+  `requirements.txt`). **Dieses Werkzeug wird per Doktrin nie
+  optimiert** — eine Nulllinie, die mitlernt, ist keine mehr
+  ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.6);
+  Änderungen jenseits von Bugfixes wären eine Doktrin-Entscheidung. Sein
+  Skelettgraph ist zugleich der Wasserweg des Lotsen — Bausteine wandern,
+  die Kontroll-Rolle nicht.
+- **`tools/docs_register`** — das Gate über den Registern der Kampagne
+  (`uv run python -m tools.docs_register check [--base origin/main]`,
+  CI-Job „Docs-Register“): jeder `###`-Eintrag in
+  [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §14 braucht seine
+  Registerzeile, jede Ledger-Zeile eine Zahl, die das Journal schon
+  trägt, und jeder Eintrag einer Duell-Route die Ledger-Zeile seines
+  Datums auf der Verfahrensseite. Standardbibliothek only, wie
+  `tools/changelog`; liest nur committete Dateien und schreibt nichts.
 - **`tools/quizgen`** — generiert die Lese-Quiz-Wortbank (~500 Wörter);
   Quellen + Distraktor-Modell in [`quiz-wortbank.md`](quiz-wortbank.md).

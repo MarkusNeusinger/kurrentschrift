@@ -95,16 +95,16 @@ docs/
 │   ├── htr-integration.md        # Transkribus-API + TrOCR-Fallback, PAGE-XML, Free-Tier
 │   ├── animation-rendering.md    # stroke-dashoffset (MVP), Canvas-2D-Stroker (post-MVP), WAAPI
 │   ├── styleanalyse.md           # Per-Hand-Aggregation, Hinge-Features, Heatmap-Layouts
-│   ├── qualitaetsmetrik.md       # Zwei Metriken (Kurrent-Schwellzug §1–4 · Sütterlin-Natürlichkeit §5), bench/Referenzen, Baseline-Historie, Loop-Erkenntnisse + Verworfen
+│   ├── qualitaetsmetrik.md       # Zwei Metriken (Kurrent-Schwellzug §1–4 · Sütterlin-Natürlichkeit §5), bench/Referenzen, Baseline-Historie, Loop-Erkenntnisse + Verworfen; §14 Tintenfolger-Journal mit Eintrags-Register + Headline-Ledger im Kopf
 │   ├── menschliche-bewertung.md  # Blinder Urteilsdurchgang über die Fits (tools/humanbench): Fehler-Taxonomie, Instrumentregeln, Vorregistrierung, Aufbewahrung
 │   ├── quiz-wortbank.md          # Lese-Quiz-Wortbank: Quellen (Kaeding, Genealogie-Felder), Pin+Runtime-Distraktoren, Fugen-Marker
 │   ├── write-api.md              # Öffentliche Render-Endpunkte /write/glyphs + /write/word: Shaping → Komposition → Payload
-│   ├── werkzeuge.md              # Dev-Tools unter tools/: Inspektions-Labs + pairlab-Einstiegsskripte, Ernte-Werkzeuge, humanbench/fitview, dbsnapshot, Benches, quizgen
+│   ├── werkzeuge.md              # Dev-Tools unter tools/: Inspektions-Labs + pairlab-Einstiegsskripte, Ernte-Werkzeuge, humanbench/fitview, dbsnapshot, Benches, Duell-Kandidaten (inkpilot · routeg · inksight), quizgen, docs_register
 │   ├── verfahren.md              # Verfahrensseiten-Übersicht: Versions-Konvention der Duell-Routen, Register-Regel (Zahlen wohnen in §14)
-│   ├── verfahren-kette.md        # Kette: Steckbrief, Stand v4 (Tinten-Evidenz), Arm-Ledger ①–⑨/A1/K-A…K-C/K0-Z, v5-Anwärter
-│   ├── verfahren-lotse.md        # Lotse: Steckbrief, Stand v0.11, Versions-Ledger v0.1–v0.12 + Schienen-Auslauf, offene Blöcke
-│   ├── verfahren-inksight.md     # InkSight: Steckbrief, Stand T0, Ledger (T0 · B1), stehende Maßnahmen B2–B5
-│   ├── verfahren-nullprobe.md    # Nullprobe: Steckbrief, Kontroll-Doktrin (bewusst unversioniert), Mess-Ledger
+│   ├── verfahren-kette.md        # Kette: Steckbrief, Stand v5 (K0-S-Wächter-Stack), Arm-Ledger ①–⑨/A1/K-A…K-E2/K0-Z/K0-S/K-D, v6-Anwärter
+│   ├── verfahren-lotse.md        # Lotse: Steckbrief, Stand v0.17 (Reservierungs-Veto), Versions-Ledger v0.1–v0.19 + Schienen-Auslauf, offene Blöcke
+│   ├── verfahren-inksight.md     # InkSight: Steckbrief, Stand T0 (auf Lineal-Kappe 1,5 unvermessen), Ledger (T0 · B1), stehende Maßnahmen B2–B5
+│   ├── verfahren-nullprobe.md    # Nullprobe: Steckbrief, Kontroll-Doktrin (bewusst unversioniert), Mess-Ledger bis L-U aug26
 │   ├── crawler-richtlinie.md     # Wer die Seite lesen darf: offen für Suche, KI-Abruf und KI-Training (der Vorbehalt liegt am API-Gate), robots.txt/llms.txt, Cloudflare
 │   └── frontend-stack.md         # React+Vite+MUI Build, Deploy auf Cloud Run, i18n, Auth-Routen
 ├── schriftkunde/                 # Quellengesicherte Fakten zu den Schriften (wächst inkrementell)
@@ -125,7 +125,8 @@ docs/
 │   ├── schreibsystem-redesign.md # Entscheid 2026-07-17: eine Form pro Glyphe (Positions-Rückbau), Paar-Matrix, geerntete Paar-Overrides, Schräglagen-Befund (R1–R5)
 │   ├── handmodell-stufenplan.md  # Vorschlag 2026-07-31: Statistik-Schicht füllen (H0–H5) — Instances/Aggregates, Paar-Statistik, Konstanten→Hand-Parameter, eigene Hand
 │   ├── optimierungs-werkbank.md  # Entscheid 2026-07-31: EINE Werkbank-Seite + Stufen-/Rollen-Doktrin + work_items-Auftragskorb (W1–W5)
-│   └── tintenfolger.md           # Plan 2026-08-14: Prüfstand (tracebench), nachgefahrener Referenzsatz + Split, Routen-Duell (Kette · Lotse · InkSight · Nullprobe), Optimierungsplan §7
+│   ├── tintenfolger.md           # Plan 2026-08-14: Prüfstand (tracebench), nachgefahrener Referenzsatz + Split, Routen-Duell (Kette · Lotse · InkSight · Nullprobe), Optimierungsplan §7, Rettungswege §7.9, offene Arme §7.11
+│   └── eigenhand-erfassung.md    # Vorschlag 2026-08-22 (H5-Erfassungsweg): Wortvorrat → Streifenplan → Bögen → Siebung → Streifenkartei/Bestand, DB-Buchführung + Streifen in der DB (§7.1/§7.2)
 ├── research/                     # Externe Recherche/Literatur — liefert Ideen, folgt dem Code nie
 │   ├── bildsynthese-und-stiftbahn.md     # Recherche 2026-08: Offline-HTG auf Kurrent fein-tunen → Trajektorien-Rückgewinnung → Plotter; Datenlage/Lizenzen, Prüfsteine T0–T4
 │   ├── graves-handschrift-synthese.md    # Literatur-Report: Graves-2013-Mechanik, Priming/Biasing, Plotter-Pipeline, GAN/Transformer/ScribeTokens, 54 Quellen
@@ -410,7 +411,9 @@ auseinanderfallen.
   beziffert, was der Duktus-Prior kauft — Referenz-Code ist MATLAB,
   darum eigene Minimalfassung); Anzeige-Namen aller Verfahren im
   Glossar-Eintrag „Duell-Namen" —
-  *Status: Duell komplett gemessen, Optimierungsplan §7 in Arbeit*
+  *Status: teil-umgesetzt (Duell komplett gemessen; adoptiert sind Kette
+  v5, Lotse v0.17 und die Lineal-Stände v2.1/L-U; Optimierungsplan §7 in
+  Arbeit, offene Arme in §7.11)*
 - **[Planänderungen](proposals/planaenderungen.md)** — vier Vorschläge:
   §2/§4 systematische Bigramm-Extraktion aus Beispieltext; §3/§6.1
   Positions-Verteilung datengetrieben; M4+-Modul `core/orthography.py`
@@ -468,8 +471,9 @@ Idee mit Bauoption, `Befund-Journal` = Literatur-Momentaufnahme).
   Lücke), die Offline→Online-Rückgewinnung (InkSight, TRACE, Kettenfit
   als prior-geführte Route; `word_instances` als einzige
   Online-Kurrent-Ground-Truth) und die kleinen Prüfsteine T0–T4 bis zur
-  geplotteten Postkarte — *Status: offen (Recherche mit Bauoption,
-  nichts gebaut)*
+  geplotteten Postkarte — *Status: Befund-Journal (Literatur-Momentaufnahme
+  vom 2026-08-13 samt Nachtrag 2026-08-14; fortgeschrieben wird sie nicht —
+  abgelöst hat sie die Kampagne in `proposals/tintenfolger.md`)*
 - **[Kurrent: Writer → Recognizer](research/kurrent-writer-and-recognizer.md)** —
   Recherche-Notiz (Englisch): warum Graves 2013 (RNN-Handschrift-Synthese)
   der Anker für den generativen Writer ist, und wie derselbe Writer als

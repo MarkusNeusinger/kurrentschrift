@@ -1,10 +1,11 @@
 # Verfahrensseite Kette
 
-> **Status (2026-08-18): lebend.** Register-Seite des Verfahrens „Kette“
+> **Status (2026-09-01): lebend.** Register-Seite des Verfahrens „Kette“
 > (Konvention: [`verfahren.md`](verfahren.md)). Nachzieh-Pflicht: Jeder
 > §14-Eintrag zu einem Kette-Arm (adoptiert oder verworfen) ergänzt hier
 > seine Ledger-Zeile; eine adoptierte Formulierungsänderung bumpt die
-> Version und aktualisiert „Aktueller Stand“.
+> Version und aktualisiert „Aktueller Stand“. Das Gate dazu ist
+> `tools.docs_register check` (CI-Job „Docs-Register“).
 
 ## Steckbrief
 
@@ -105,7 +106,6 @@ Gewichts-Arme werden nicht rückwirkend nummeriert (Konvention Nr. 3).
 | aug21 | K-E2 Marken-Claim ohne Breitenfeld-Split (Ein-Faktor-Konversion) | derselbe `mark_claim`, die Breitenfelder bleiben ungeteilt (Breite = Messziel, kein Anziehungsfeld) | verworfen per Gate (3) — **die Breiten-Hypothese sauber widerlegt**: 55/63 Kandidaten byte-gleich zu K-E1, darunter auch/muß-2 (zwei der vier Verlierer — der Breiten-Kanal war für sie inert); die Heilungen bleiben (die-2 Soll 4 → 2, dtw −0,0282, netto-Kreuzungen 22 → 19, 63er-Soll 85 → 81), die Risse bleiben in gleicher Höhe. Treiber = die Distanzfeld-/Coverage-Umverteilung selbst — Gewinn und Verlust dieser Formulierung untrennbar (das Arm-⑨-Muster eine Schicht tiefer); Familie geschlossen nach eigener Pre-Reg, Stufe 2 (Kringel) nicht eröffnet; Wege: humanbench-Tie-Breaker · Distanzfeld-NUR-Claim (frische Pre-Reg) | „Kette K-E2 `aug21`“ |
 | aug21 | **K0-S EINE Soll-Pipeline + K0-Z-R-Wiedervorlage** | `soll_source` — das Wächter-Soll aus dem geteilten Kompositions-Builder (`composition_strokes` aus `ductus_soll` faktorisiert, je Run); Leiter Divergenz-Karte → Soll-Stack → Ratsche+0,55 | **ALLE GATES bestehen auf beiden Sprossen; Adoption wartet auf Autor-Go (v5-Stack).** Die daß-Autopsie fand den Wurzel-Fund: das aug19-Wächter-Soll las die Init-Nachbildung statt der kanonischen Komposition — ein plattgezogener Init-Splitter am d-Kopf zählte als Duktus-Wahrheit, und die Divergenz-Karte zeigt das Muster in 40/63 Runs (jedes d-Wort). Ratsche+0,55 auf Kompositions-Soll: **Soll 85 → 77 bei 0 schlechter, dev-aiou-Median +0,0216 (größter dev-Tintengewinn der Kampagne), schlechtester dtw +0,0014, netto-Kreuzungen 22 → 19, Marken/Retrace unverändert; der aug20-zwei-Trade INVERTIERT (−0,0100 dtw)** — beide K0-Z-R-Risse als gelöst gemessen | „Kette K0-S `aug21`“ |
 | aug21 | K-D Tinten-Korridor (A8, Autor-Idee aug20) | vorregistrierter Gegenstands-Test ZUERST: Exkursions-Inventar auf den existierenden Kandidaten (kein Solve), Barriere nur bei substanzieller Ziel-Klasse | **GEGENSTANDSLOS NACH v4 geschlossen, ohne Implementierung** — kein Wort über 0,35 xh Papier-Exkursion auf v4-Basis oder v5-Anwärter (Set-Maximum 0,33; die aug20-Nadel-Klasse lag bei 0,5–0,83 xh): die Wurzelbehandlung K-C war schneller als das Symptom-Verbot; Wiedervorlage-Auslöser in §7.9, das Inventar-Skript bleibt als Sensor | „Kette K-D `aug21`“ |
-
 | aug26 | **Kette v5 — Adoption K0-S Sprosse 2** (Autor-Go 25.08., nach der L-U-Re-Baseline sequenziert) | Defaults geflippt: `soll_source="composition"`, `structure_guard_soll`, `structure_guard_ratchet`, `structure_guard_zone_units=0.55`; Archäologie `--no-structure-guard-ratchet --structure-guard-zone 0 --soll-source init` = Soll-Stack-Basis (strich-identisch), `--no-structure-guard` = Kette-frei | **ADOPTIERT.** Gegen die vorregistrierte Soll-Stack-Basis in EINER Umgebung: 63er-Soll **86 → 79** (7 besser · 0 schlechter), aiou der 31 bewegten min −0,0004 / Median **+0,073**, null Verlierer; dev-19-Lineal dtw 0,0453 → 0,0446, aiou 0,7468 → 0,7608, schlechtestes Wort-Delta +0,0016, Marken 0/0/0, Kreuzungsdefekte 19 = 19. Mechanismus je Wort (`guard_outcome`): 26 von 31 bewegten waren in der Basis `revert-init`, v5 macht sie `zonal`. **Der Umweg:** die erste Messung des Tages paarte gegen den Folger OHNE Wächter — 36 Scheinverlierer, drei Gates scheinbar verletzt; der Autor lehnte das Verwerfen ab, Fables Zweitmeinung fand den Basis-Fehler, seither Stack-Sensor in `k0eval`. Offen: 13 Wörter, die auch v5 auf den Init zurückwirft (24/25 freie Endzustände strukturell illegal) — Rettungswege als präventive Terme im Abstieg, nie Annahme-Regeln | „Kette v5 `aug26`“ |
 
 ## Stehende v6-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
@@ -122,7 +122,15 @@ Breiten-Evidenz) · A4 (Barriere statt Veto) · A6 (GNC-Schedule) ·
 ~~zonale Rückweisung des K0-Wächters~~ (gemessen `aug20`: K0-Z/K0-Z-R —
 beide per Gate verworfen; **Wiedervorlage `aug21` als K0-S mit EINER
 Soll-Pipeline: ALLE Gates bestehen** — Soll 85 → 77 bei 0 schlechter,
-dev-aiou +0,0216, der zwei-Trade invertiert; **Adoption als v5-Stack
-wartet auf das Autor-Go**, §14 „Kette K0-S"). NICHT wieder
+dev-aiou +0,0216, der zwei-Trade invertiert; **`aug26` als v5-Stack
+ADOPTIERT** — Autor-Go 25.08., §14 „Kette K0-S" + „Kette v5", Ledger-
+Zeile `aug26` oben; der Anwärter ist damit erledigt). NICHT wieder
 aufgenommen werden Gewichts-Sweeps der alten Formulierung — durch
 ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet.
+
+Die Folger-Arme **②③④⑦⑧** der Vorregistrierung vom `aug14` wurden nie
+einzeln gemessen; ihre Schließung „durch ①⑤⑥⑥b⑨ erschöpfend negativ
+beantwortet" steht bis heute nur hier und in keinem §14-Eintrag. Sie
+sind darum in [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md)
+§7.11 als offener Punkt geführt, bis der Autor die formale Abschreibung
+bestätigt.

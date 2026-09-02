@@ -1,10 +1,11 @@
 # Verfahrensseite InkSight
 
-> **Status (2026-08-18): lebend.** Register-Seite des Verfahrens
+> **Status (2026-09-01): lebend.** Register-Seite des Verfahrens
 > „InkSight“ (Konvention: [`verfahren.md`](verfahren.md)).
 > Nachzieh-Pflicht: Jeder §14-Eintrag zu einer InkSight-Stufe oder
 > -Maßnahme ergänzt hier seine Ledger-Zeile; eine adoptierte Stufe
-> aktualisiert „Aktueller Stand“.
+> aktualisiert „Aktueller Stand“. Das Gate dazu ist
+> `tools.docs_register check` (CI-Job „Docs-Register“).
 
 ## Steckbrief
 
@@ -24,7 +25,16 @@
   Trainingscode); der gelernte Nachfolger ist die eigene Route
   „Zögling“ (§7.5).
 
-## Aktueller Stand: T0 (2026-08-17)
+## Aktueller Stand: T0 (2026-08-17) — auf Lineal-Kappe 1,5 unvermessen
+
+**Lineal-Stand der Zahlen unten: Marken-Kappe 0,8.** Seit der
+L-U-Re-Baseline (`aug26`, §14 „Lineal L-U“) misst der Bench mit Kappe
+**1,5**; InkSight ist als einzige stehende Route NICHT nachgemessen —
+seine Inferenz braucht das isolierte Python-3.11-TF-venv
+([`werkzeuge.md`](werkzeuge.md)), und das über Nacht unbeaufsichtigt
+aufzusetzen wäre nicht seriös gewesen. Die Zahlen sind damit **gültig,
+archiviert und NICHT mit den anderen drei Routen vergleichbar**, bis der
+Lauf nachgeholt ist (offener Arm: `../proposals/tintenfolger.md` §7.11).
 
 Zahlen (dev-19, §14 „Re-Baseline aug17“, InkSight-Absatz):
 **14/19 gescort, 5 failed** am Ein-Punkt-Strich-Kontraktbruch (die
@@ -44,6 +54,7 @@ Chamfer ~3× Satz-Median, +13 Lifts.
 | aug15 | T0 (10er-Dev) | Small-p roh, `derender`/`text` | gemessen: 0,0956 med = 1,5× Kette; `text` schlechter als `derender`; Retraces verloren | „Route B T0 aug15“ |
 | aug15 | B1 Best-of-N | Ensemble über Input-Augmentierungen, Ranker gegen die Tinte | verworfen (ehrliches Negativ: Orakel −0,0124 bewiesen, Ranker ordnungs-blind → Rettungsweg „Chor“, Welle 3) | „Welle 1 · B1 aug15“ |
 | aug17 | T0 (19er-Dev) | wie T0, neue Crops | gemessen: Zahlen oben; B2-Prüffall Galoppieren bestätigt | „Re-Baseline aug17“ |
+| aug26 | **nicht nachgemessen** | L-U hebt die Marken-Kappe 0,8 → 1,5; die anderen drei Routen laufen neu | **offen** — der Lauf braucht das isolierte TF-venv und wurde bewusst nicht über Nacht angesetzt; alte Zahlen gültig, archiviert und nicht vergleichbar | „Lineal L-U `aug26`“ (Absatz „Offen: InkSight“) |
 
 ## Stehende Maßnahmen (tintenfolger.md §7.4)
 
