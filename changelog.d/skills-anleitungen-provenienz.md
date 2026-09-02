@@ -43,6 +43,17 @@
 
 ### Changed
 
+- **`/verify-frontend` now judges against the binding spec, and measures
+  a11y the only way that works.** Style checks pointed at
+  `style-guide.md`, which says itself that tokens are no longer maintained
+  there, while the binding `design-system.md` appeared in no skill at all;
+  the skill also never named the three static gates CI runs. It now carries
+  both, plus two measurement gotchas that each produced a false negative:
+  a scripted `element.focus()` does not trigger `:focus-visible`, so focus
+  rings must be driven with real key events (a Tab walk), and a type-floor
+  sweep must count only elements with their own visible text — an invisible
+  MUI switch input measures ~13.33 px and is not a legibility problem
+  (#484).
 - **The rules now reach both audiences.** Five rules lived only in
   `copilot-instructions.md` (never merge a PR yourself, `core/` PRs quote
   bench numbers, the code standards, never silently diverge, Codecov as

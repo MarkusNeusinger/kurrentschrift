@@ -282,6 +282,32 @@ cd app && npm run lint && npm run test && npm run build
 `npm run type-check` exists too). A clean click-through with a red ESLint
 or a red Vitest still fails in Actions.
 
+## 3b · Focus rings and the type floor (a11y)
+
+Both checks below have already produced a false negative once, on
+2026-09-02 — measure them the way this section says, not the obvious way.
+
+- **`element.focus()` from a script does NOT trigger `:focus-visible`.**
+  The browser only sets that state for input it considers keyboard-driven,
+  so a scripted focus leaves the ring unstyled and a screenshot then
+  "proves" a missing focus ring that is perfectly present for a real user.
+  The first focus-ring measurement of the audit was a false negative for
+  exactly this reason. **Drive focus with real key events**: a Tab walk via
+  chrome-devtools `press_key` (or CDP `Input.dispatchKeyEvent` directly),
+  then read the ring off the element that actually holds focus —
+  `document.activeElement` plus its computed `outline`/`box-shadow`.
+  Walking with Tab has a second payoff: it shows the focus ORDER, which a
+  per-element `focus()` never can.
+- **A type-floor sweep may only count elements that carry their own text.**
+  A MUI switch hides a real `<input>` under the rendered track at
+  `opacity: 0`; it measures ~13.33 px and trips a naive "below the 13 px
+  floor" scan, while nobody can read it either way because it is invisible
+  by design. Counting such nodes buries the genuine findings in noise.
+  Restrict the sweep to elements with non-empty visible text, and skip
+  anything at `opacity: 0`, `visibility: hidden` or zero size. The scan is
+  checked in as `app/scripts/type-floor.mjs` (added by PR #485) — use it
+  rather than re-deriving the selector logic per session.
+
 ## 4 · Performance trace
 
 Only when the change can plausibly move performance (data loading,
