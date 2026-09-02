@@ -14,6 +14,14 @@
 # UA-spoofed "Googlebot", which only passes verified-bot checks from real
 # Google IPs. The origin is also exactly the layer that broke in the incident
 # above; Cloudflare-edge issues are out of this monitor's reach by design.
+#
+# The expectations are DERIVED from the committed app/prerender/*.html, never
+# written out here. Between #451 (which changed three page titles) and this
+# rewrite the hard-coded literals had gone stale and the job sat red for three
+# nights on a healthy site — an alarm nobody could trust, which is worse than
+# no alarm. Deriving them turns the check into what it is meant to assert
+# ("what is served == what is committed"), covers every page the moment it
+# lands under app/prerender/, and can never drift on a copy change again.
 
 name: Bot Serving Check
 
@@ -22,20 +30,33 @@ on:
     - cron: "41 6 * * *" # daily 06:41 UTC
   workflow_dispatch:
 
+# issues: write is the alarm path. Without it the job could only go red in a
+# tab nobody subscribes to — which is how the three red nights above stayed
+# unnoticed. The failure step opens (or comments on) one fixed-title issue and
+# the success step closes it again.
 permissions:
   contents: read
+  issues: write
 
 jobs:
   bot-serving:
     runs-on: ubuntu-latest
-    # ~23 check() calls x (--retry 2 -> up to 3 attempts x --max-time 30) can
-    # reach ~35 min worst-case, plus three non-retried probes (charset,
-    # trailing slash, 404 — 30s each); 40 leaves room to report a clean
+    # 31 check calls x (--retry 2 -> up to 3 attempts x --max-time 30) can
+    # reach ~47 min worst-case, plus three non-retried probes (charset,
+    # trailing slash, og.png — 30s each); 55 leaves room to report a clean
     # failure rather than dying to the job timeout, which reports nothing
-    # useful. Recompute this when adding checks: the ceiling is check() calls
-    # x 90s, plus margin.
-    timeout-minutes: 40
+    # useful. Recompute this when adding checks: the ceiling is check calls
+    # x 90s, plus margin. The page sweep grows with app/prerender/, so a new
+    # public route adds 90s to that ceiling.
+    timeout-minutes: 55
     steps:
+      # The expected titles come from the committed prerender files, so the
+      # repo has to be here before the first request goes out.
+      - name: Check out the repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+
       - name: Crawler UAs must get the prerendered pages
         run: |
           set -uo pipefail
@@ -70,13 +91,67 @@ jobs:
             fi
           }
 
-          # Bot path: prerendered per-route HTML from the seo-proxy. The
-          # marker proves the prerender; the per-route title proves the ROUTE
-          # (the SPA shell carries the home title on every URL).
-          check "$GOOGLEBOT"  "$ORIGIN/"                       "$MARKER"
-          check "$GOOGLEBOT"  "$ORIGIN/schriftkunde"           "<title>Schriftkunde · kurrentschrift.ink</title>"
-          check "$GOOGLEBOT"  "$ORIGIN/schreiben/uebungsblatt" "<title>Übungsblatt · kurrentschrift.ink</title>"
-          check "$TWITTERBOT" "$ORIGIN/quiz"                   "<title>Lese-Quiz · kurrentschrift.ink</title>"
+          # One fetch, two assertions: the MARKER proves the prerender hop ran
+          # at all, the per-route TITLE proves the right page came back (the
+          # SPA shell carries the home title on every URL, so the marker alone
+          # would not separate the routes and the title alone would not
+          # separate "/" from the shell).
+          check_page() {
+            local url="$1" title="$2" want="${3:-200}"
+            local code
+            code=$(curl -sS --retry 2 --max-time 30 -A "$GOOGLEBOT" -o body.html -w '%{http_code}' "$url") || code="000"
+            if [ "$code" != "$want" ]; then
+              echo "::error::$url returned HTTP $code (expected $want)"
+              fail=1
+            elif ! grep -qF "$MARKER" body.html; then
+              echo "::error::$url returned $want but is not a prerendered page (marker missing)"
+              fail=1
+            elif ! grep -qF "$title" body.html; then
+              echo "::error::$url served a prerendered page whose title is not the committed $title"
+              fail=1
+            else
+              echo "OK: $url -> $title"
+            fi
+          }
+
+          # Bot path, one probe per committed prerendered page. Route from the
+          # file path, expected title from the file itself.
+          pages=0
+          while IFS= read -r file; do
+            rel="${file#app/prerender/}"
+            title=$(grep -o '<title>[^<]*</title>' "$file" | head -1)
+            if [ -z "$title" ]; then
+              echo "::error::$file carries no <title> — nothing to assert against"
+              fail=1
+              continue
+            fi
+            pages=$((pages + 1))
+            if [ "$rel" = "404.html" ]; then
+              # The 404 page is no route: ask for a URL that is no page and
+              # require the prerendered 404 WITH status 404 — the SPA shell
+              # used to answer 200 here (a soft-404).
+              check_page "$ORIGIN/gibt-es-nicht" "$title" 404
+              continue
+            fi
+            route="/${rel%.html}"
+            if [ "$route" = "/index" ]; then
+              route="/"
+            fi
+            check_page "$ORIGIN$route" "$title"
+          done < <(find app/prerender -name '*.html' | sort)
+
+          # A checkout that silently produced nothing would otherwise pass the
+          # whole page sweep by checking zero pages.
+          if [ "$pages" -lt 1 ]; then
+            echo "::error::no prerendered pages found under app/prerender/ — the sweep asserted nothing"
+            fail=1
+          else
+            echo "swept $pages prerendered page(s)"
+          fi
+
+          # Preview bots take the same hop; Twitterbot is the one that renders
+          # the card, so probe the route it is most often pointed at.
+          check "$TWITTERBOT" "$ORIGIN/quiz" "$MARKER"
 
           # AI assistants take the same prerendered path (nginx $is_bot). These
           # checks hit the ORIGIN, so they verify the nginx map independently of
@@ -105,10 +180,6 @@ jobs:
           do
             check "$ua" "$ORIGIN/schriftkunde" "$MARKER"
           done
-
-          # A crawler asking for a URL that is no page gets the prerendered 404
-          # WITH status 404 — the SPA shell used to answer 200 (soft-404).
-          check "$GOOGLEBOT" "$ORIGIN/gibt-es-nicht" 'content="noindex,follow"' 404
 
           # The machine files must be served directly, never proxied to the
           # seo backend — including for a mapped crawler UA, which is the whole
@@ -154,3 +225,66 @@ jobs:
           check "$HUMAN" "$ORIGIN/schriftkunde" '<div id="root">'
 
           exit $fail
+
+      # The alarm. One issue with a fixed title carries the whole history of
+      # this monitor: a first failure opens it, every further failure comments
+      # on it (so a long outage is one thread, not one issue per night), and
+      # the first green run closes it again.
+      - name: Raise the alarm
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          ALARM_TITLE: Bot serving check is red
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          # env.ALARM_TITLE inside the jq filter, not string interpolation:
+          # the title travels as data and never as jq syntax.
+          num=$(gh issue list --state open --limit 100 --json number,title \
+            --jq '[.[] | select(.title == env.ALARM_TITLE)] | .[0].number // empty')
+          if [ -n "$num" ]; then
+            echo "alarm issue #$num is already open — appending this run"
+            gh issue comment "$num" --body "Still red: $RUN_URL"
+            exit 0
+          fi
+          # printf over one argument per line: a YAML block scalar cannot carry
+          # unindented lines, and a leading run of spaces inside the body would
+          # render as a markdown code block on the issue.
+          body=$(printf '%s\n' \
+            "The daily bot-serving monitor failed: $RUN_URL" \
+            "" \
+            "Crawlers may be getting the SPA shell or an error page while the site" \
+            "looks healthy to humans — the failure mode that went unnoticed for four" \
+            "weeks in the sister project (see the header of the workflow file)." \
+            "" \
+            "Two causes are worth separating before anything else:" \
+            "" \
+            '- **The serving path broke** — `app/nginx.conf` (the `$is_bot` map, the' \
+            '  `@seo_proxy` upstream) or the API `/seo-proxy` route. A real incident.' \
+            '- **The deployed pages are behind the repo** — the expected titles come' \
+            '  from the committed `app/prerender/*.html`, so a merged copy change that' \
+            '  has not been deployed yet reads as a mismatch. Check for a pending deploy.' \
+            "" \
+            "This issue closes itself on the next green run.")
+          echo "opening the alarm issue"
+          gh issue create --title "$ALARM_TITLE" --label bug --body "$body"
+
+      - name: Stand the alarm down
+        if: success()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          ALARM_TITLE: Bot serving check is red
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          num=$(gh issue list --state open --limit 100 --json number,title \
+            --jq '[.[] | select(.title == env.ALARM_TITLE)] | .[0].number // empty')
+          if [ -n "$num" ]; then
+            echo "closing alarm issue #$num"
+            gh issue comment "$num" --body "Green again: $RUN_URL"
+            gh issue close "$num"
+          else
+            echo "no open alarm issue — nothing to close"
+          fi
