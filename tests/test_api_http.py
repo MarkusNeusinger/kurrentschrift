@@ -32,9 +32,13 @@ from tests.api_harness import Harness
 
 # ------------------------------------------------------------------ admin gate
 
-# Every admin-gated endpoint (method, path template, JSON body or None). /fit,
-# /quality and /diagnostic are compute-heavy read endpoints gated like the
-# writes (each re-runs the image pipeline per request).
+# A SAMPLE of admin-gated endpoints (method, path template, JSON body or None),
+# exercised here against a missing token, a wrong token and a fail-closed 503.
+# COMPLETENESS is not this list's job and never was — it covered 11 of the 33
+# write operations: `tests/test_api_public_surface.py` walks the router table
+# and pins every non-GET operation plus every reserved GET. /fit, /quality and
+# /diagnostic are compute-heavy read endpoints gated like the writes (each
+# re-runs the image pipeline per request).
 WRITE_ENDPOINTS = [
     ("PUT", "/sources/{src}/bboxes/a", {}),
     ("DELETE", "/sources/{src}/bboxes/a", None),
