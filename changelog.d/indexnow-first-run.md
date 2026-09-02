@@ -8,4 +8,4 @@
   URLs fit either way, but anyplot's full sitemap did not: ~260 KB against
   Linux's 128 KB cap per argument, and curl never ran); and the key-file
   readiness probe records the real HTTP status — curl already prints `000` on
-  a transport failure, so the previous `|| echo 000` logged `000000` (#NNN).
+  a transport failure, so the previous `|| echo 000` logged `000000` (#494).
