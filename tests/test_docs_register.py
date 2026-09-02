@@ -154,7 +154,9 @@ def test_alle_routen_needs_the_date_on_every_page(repo: Path) -> None:
     assert not any("verfahren-nullprobe.md" in p for p in problems)
 
 
-def test_a_missing_register_heading_is_reported_not_raised(repo: Path) -> None:
+def test_a_missing_register_heading_stops_the_check(repo: Path) -> None:
+    # A renamed or deleted register heading is not one finding among others —
+    # nothing downstream can be judged, so the check raises instead of listing.
     _write(repo, dr.JOURNAL, JOURNAL.replace("### Register der Einträge (Index, keine Zahl-Heimat)", "### Weg"))
     with pytest.raises(dr.RegisterError):
         dr.check_all(root=repo)
