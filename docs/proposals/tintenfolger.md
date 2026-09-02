@@ -1,16 +1,26 @@
 # Tintenfolger: der Prüfstand und die zwei Routen zur Wortbahn
 
-> **Status (2026-08-15): Das Duell ist komplett, der Optimierungsplan
-> steht in §7.** Alle Stufen der Leiter sind gemergt (#337–#356): die
+> **Status (2026-09-01): teil-umgesetzt.** Das Duell ist komplett
+> gemessen und §7 in Arbeit; adoptiert sind Kette **v5** (`aug26`),
+> Lotse **v0.17** (`aug20`) und die Lineal-Stände **v2.1** (`aug16`) /
+> **L-U** (`aug26`). Der Ist-Stand mit Zahlen steht im nächsten
+> Abschnitt „Stand der Kampagne“, die stehenden Rettungswege in §7.9,
+> die offenen Arme und Autorenschritte in §7.11. Zahlen und
+> Vorregistrierungen wohnen ausschließlich in
+> [`../reference/qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md)
+> §14 (Register im Kopf der Sektion), die Routen-Ledger in
+> [`../reference/verfahren.md`](../reference/verfahren.md).
+> Historischer Kopf (2026-08-15): Alle Stufen der Leiter sind gemergt
+> (#337–#356): die
 > Baseline eingefroren (`dtw_xh` 0,062 med, Strukturzähler v2.1),
 > die Arme ①⑤⑥⑥b⑨ gemessen (alle ehrliche Negative; Route-A-Fazit
 > aus Arm ⑨: der Kettenfit steht am struktur-sicheren Optimum DIESER
 > Formulierung), Route G als prior-freie Kontrolle (dtw 0,82 = 13×
 > Kette — was der Duktus-Prior kauft), InkSight-T0 roh gemessen
 > (derender 0,096 = 1,5× Kette, Kreuzungen sauberer, Retraces
-> verloren). Kein `FOLLOW_*`-Default adoptiert. Die nächste Kampagne
-> ist §7: der Optimierungsplan je Verfahren (Befund-Matrix +
-> Recherche-Runde 2026-08-15, vier parallele Agenten).
+> verloren). Kein `FOLLOW_*`-Default adoptiert — dieser Satz galt bis
+> Kette v4 (`aug21`) und ist seit v5 (`aug26`) überholt: der ganze
+> Wächter-Stack IST der Default.
 > Ursprünglicher Plan-Kopf: Dieses
 > Doc ist der fortschreibbare Plan zum §6-Nachtrag „Tintenfolger" in
 > [`../research/bildsynthese-und-stiftbahn.md`](../research/bildsynthese-und-stiftbahn.md):
@@ -24,6 +34,60 @@
 > (2026-08-14, vier parallele Web-Agenten) gegen die Primärquellen geprüft;
 > die Korrekturen sind eingearbeitet und unter „Verworfen / korrigierte
 > Annahmen" festgehalten.
+
+## Stand der Kampagne (2026-09-01)
+
+Eine Seite, damit der aktuelle Stand nicht erst aus 6 200 Zeilen §14
+zusammengelesen werden muss. **Jede Zahl hier ist ein datiertes Zitat**
+— ihr Beleg wohnt im genannten §14-Eintrag, ihr Routen-Ledger auf der
+Verfahrensseite; geändert wird sie nie hier.
+
+> **Lineal.** `tools/tracebench` auf dem eingefrorenen dev-19-Satz
+> (append-never), Strukturzähler **v2.1** (`aug16`), Marken-Kappe
+> **1,5 xh** seit L-U (`aug26`). Wort-Lineal: Wörter **0,109255** ·
+> Paare **0,148433** (Re-Baseline `sep01`, §15; Headline-Ledger im Kopf
+> von §14).
+>
+> **Duell, dev-19, Lineal-Kappe 1,5.** Kette **v5** (`aug26`) dtw
+> **0,0446** med · p90 0,0861 · aiou 0,7608 · 63er-Soll-Abstand 79 ·
+> Netto-Kreuzungsdefekte 19. Lotse **v0.17** (`aug20`, Zahlen `aug26`)
+> dtw **0,0545** · p90 0,1164 · Netto-Kreuzungsdefekte 6 · aiou 0,740.
+> InkSight **T0** (`aug17`) dtw 0,0951 auf der ALTEN Kappe 0,8, 5 von 19
+> failed — auf 1,5 unvermessen, die Zahlen sind archiviert und nicht
+> vergleichbar. Nullprobe dtw **0,8198** auf den 10 der 19 Wörter, die
+> die gespeicherte Kontrolle abdeckt (`aug26`).
+>
+> **Adoptiert seit `aug14`.** Kette: v2 `marks_last` · v3
+> `trace_repair` · v4 `ink_evidence` · v5 Kompositions-Soll + Ratsche +
+> Zone 0,55 (der Marken-Nachfit A1 bleibt opt-in). Lotse:
+> Schienen-Auslauf 1,0 · v0.5 Ritt-Doppelzonen · v0.7 Zonen-Ausweitung ·
+> v0.9 gepinnte Fenster · v0.11 „windows“ · v0.13 Entdrillung 0,5 ·
+> v0.16 „bridges“ + Lineal-Soll-Budget · v0.17 Reservierungs-Veto ·
+> v0.19 Re-Denominierung. Komposition: K1 · K1b · P1/P1b Vorschub ·
+> P2-Floor · B-Kringel (`aug30`). Laufform: LF3b-W — 13 geschriebene
+> Zeilen ohne p (`aug26`) · LF8 Sprung-Gate τ 2,95 · LF9 Kopf-Gate
+> τ 15°. Lineal: Strukturzähler v2.1 · L-U.
+>
+> **Verworfen, mit Rettungsweg (§7.9).** Folger-Arme ①⑤⑥⑥b⑨ · B1
+> Best-of-N · P3-K1/K2/K3 · O2-Trim-Jitter · Lotse v0.2/v0.3/v0.4/v0.6/
+> v0.8/v0.10/v0.12/v0.14/v0.15/v0.18 und die Auflösungs-Familie ·
+> K0-Z/K0-Z-R (als K0-S wiedervorgelegt und in v5 aufgegangen) ·
+> K-E1/K-E2 · LF1/LF2/LF3/LF5/LF6/LF7 · J1/J2/J3. K-D wurde
+> gegenstandslos, nicht verworfen.
+>
+> **Offen (§7.11).** KI-messbar: LF4 (p) · Form-Abstand-Arm ·
+> Abstandsterm/Schleifen-Halteterm für die 13 v5-Rückweisungen ·
+> Distanzfeld-NUR-Claim · Lotse-Zonen-Stufe · InkSight B2 und die
+> Nachmessung auf Kappe 1,5 · Austritts-Kollinearität (Sensor
+> `seam_deg` steht seit `sep02`). Autorenschritte: Bestätigungssatz
+> A/B · humanbench-WORT-Runde · Prod-Re-Harvest der `traced`-Zeilen mit
+> Kette v5 · St-Ligatur im Wizard · Laufform-Lücke G/W/K/ue/F/ae/b ·
+> die Herkunft der `aug30`-Fixture-Wurzel.
+>
+> **Regeln.** Zahlen wohnen in §14, die Verfahrensseiten sind das
+> Routen-Register, jede Re-Baseline ist datiert und nennt seit `sep02`
+> `exported_at` und Digest ihrer Fixture-Wurzel. Das CI-Gate dazu ist
+> `tools.docs_register check`.
 
 ## 1 Ausgangslage
 
@@ -886,16 +950,37 @@ oder neuer SENSOR mit frischer Vorregistrierung — nie derselbe Knopf
 mit weicheren Gates (das wäre genau das Nachstimmen, das die
 Disziplin verhindert).
 
+**Nachtrag 2026-09-02 — ein Sensor für die Naht.** Mehrere Rettungswege
+dieser Tabelle (J1 · J2 · J3 und „Verbinder-FORM statt gerader
+Balken-Linie“) zielen auf denselben, bis dahin unvermessenen Ort: den
+Knick, mit dem ein generierter Verbinder den Buchstaben verlässt und den
+nächsten erreicht. Seit PR #478 misst ihn `seam_deg` als reine
+Report-Spalte (Glossar „Naht-Winkel“, `tools/wordbench/seam.py`);
+das Fenster ist mit 0,05 xh Bogenlänge bewusst kleiner als die 0,12 xh,
+auf die der Composer seine Verbinder-Tangenten ausrichtet. Erste Zahl auf
+der eingefrorenen Worttafel 1922: Abgang **+12,52°**, Ankunft
+**−3,40°** im Median über 207 der 214 Joins (Fixture-Wurzel `sep02`);
+auf der `aug14`-Wurzel derselben Platte +11,87° / −3,26° über 206 der
+214 — der Unterschied liegt an der Wurzel, nicht am Sensor. Der
+Verbinder geht also systematisch STEILER ab, als der Buchstabe zuletzt
+lief, und kommt nur wenig flacher an. Damit hat der Rettungsweg
+„Verbinder-Form“ erstmals ein Maß; ein Arm daraus braucht wie jeder
+andere seine eigene Vorregistrierung (§7.11 „Austritts-Kollinearität“).
+
 | Verworfen (§14) | Fund / gemessene Decke | Rettungsweg | Auslöser |
 |---|---|---|---|
 | B1 Best-of-N (`aug15`) | Orakel −0,0124 in denselben N Antworten bewiesen; Ranker ist ordnungs-blind | ordnungs-bewusstes Auswahlsignal („Chor", Ziel +0,0067) | Welle 3 |
 | P3-K1 Balken→Rund (`aug16`) | +126°-Ankunftsfehler bleibt real; verworfen wurde nur der HÖHEN-Knopf | Verbinder-FORM: gekrümmter Einfall statt gerader Balken-Linie | eigene Pre-Reg |
-| P3-K3 Arkaden-Lift (`aug16`) | Wort/Drill-Split desselben Joins; Nebenfund: Spline-Jitter deaktiviert den generischen O2-Trim für Arkaden-Köpfe | (a) O2-Trim-Jitter-Bugfix als eigener Gewinnkandidat; (b) Kontext-Regel statt Uniform-Konstante | (a) sofort pre-registrierbar; (b) Bestätigungssatz |
+| P3-K3 Arkaden-Lift (`aug16`) | Wort/Drill-Split desselben Joins; Nebenfund: Spline-Jitter deaktiviert den generischen O2-Trim für Arkaden-Köpfe | (a) O2-Trim-Jitter-Bugfix als eigener Gewinnkandidat → **GEMESSEN `aug16` (§14 „O2-Trim-Jitter"), Ausgang (b): der Bugfix verliert und wird verworfen** — der Jitter war keine Schlamperei, sondern eine zufällig entstandene KLASSENREGEL (`n` profitiert von hoher Toleranz, `r` von tiefer); die Toleranz bleibt deklariert 0. Stehender Nachfolger: dieselbe Trennung ABSICHTLICH als Klassenregel formuliert, mit frischer Vorregistrierung; (b) Kontext-Regel statt Uniform-Konstante | (a) erledigt — verworfen, Klassenregel-Nachfolger offen; (b) Bestätigungssatz |
 | P3-K2 d-Abgangswinkel (`aug16`) | beide Lineale monoton dagegen, kein Split | nur Nachkalibrierung (Klassen-n 8/18) | Bestätigungssatz |
 | Arm ⑨ Topologie-Wächter (`aug16`) | Tinten-Gewinn und Struktur-Erfindung in DIESER Formulierung untrennbar; `structure_guard` bleibt Werkzeug | Route „Lotse" (§7.8): Skelett fahren, Duktus als Karte | eigene Pre-Reg |
 | Arm ⑥/⑥b Landmark-Gewicht (`aug14`) | Korrespondenz-Kappe gelöst (classed punktweise kostenlos), Gewicht trotzdem nutzlos im Folger-Setting | klassenbewusste Ziele stehen bereit für ein Setting, in dem die Kreuzung wirklich wandern kann (Lotse) | mit der Lotse-Runde |
 | P2a Arkaden-Luft · P1 Diagonalen-Trim (`aug15`) | Beleg-Varianz ±0,1 xh, Ruler monoton dagegen | Dissektions-Forderung im Nachkalibrierungs-Protokoll (§7.7) | Bestätigungssatz |
 | Methodik-Lücke (quer, `aug16`) | drei Kills wurden von Netto-Deltas ≤ 0,0007 entschieden — das Lineal ZUCKT dort nur, die Gates machen daraus ein Nein | humanbench-WORT-Runde als vorregistrierter Tie-Breaker für ruler-indifferente Fälle (\|Netto-Δ\| < ε bei starker Dissektions-Evidenz) | eigene Pre-Reg + Runde |
+| Lotse v0.2 (A5) Parallel-Versatz (`aug16`) | `DOUBLE_PASS_OFFSET_FRACTION` aus der Breiten-Evidenz bringt keine Kreuzung zurück: fast-parallele Züge kreuzen einander nie transversal, ein Versatz verschiebt sie nur | Knoten-Sehne statt Parallel-Versatz (als v0.3 versucht, s. u.); die Klasse selbst ist mit der Karten-Geometrie in den Ritt-Doppelzonen gelöst → **UMGESETZT als v0.5, adoptiert** | **erledigt** |
+| Lotse v0.3 Knoten-Sehne (`aug16`) | `JUNCTION_CHORD_RADIUS_FRACTION` — aiou-Kill; der Fund darunter ist real und trug die ganze weitere Route: lange GETEILTE Schienen, auf denen beide Pässe denselben Korridor fahren | (a) Karten-Vorfahrt genau in diesen Zonen — als v0.4 am falschen Trigger versucht, als v0.5/v0.9 richtig getroffen und adoptiert; (b) Sub-Strich-Trennung der geteilten Schiene | (a) **erledigt**; (b) offen, geringer Leidensdruck |
+| Lotse v0.4 Karten-Vorfahrt in Retrace-Zonen (`aug16`) | `MAP_PRIORITY_IN_RETRACE` — nicht der Mechanismus war falsch, sondern der TRIGGER: Karten-Retrace-Zonen sind nicht die Orte, an denen der Ritt die Karte braucht | derselbe Mechanismus am Ritt-Doppelzonen-Trigger → **UMGESETZT als v0.5, adoptiert** (dtw 0,101 → 0,085, fünf Kreuzungen zurück) | **erledigt** |
+| Lotse v0.6 Feinschliff (`aug16`) | `SMOOTH_ITERATIONS` — das Wort-Lineal ist für den Zickzack der Route blind (dtw/aiou indifferent), eine Glättung kann sich darauf also nie belegen | Glättung ist eine DARSTELLUNGS-Stufe beim Konsumenten, keine im Kandidaten; als Kandidaten-Knopf `aug20` endgültig geschlossen (Glättungs-Proben: auch am Betriebspunkt kein Fenster ohne Verlierer). Soll der Zickzack zählen, braucht er einen eigenen SENSOR — die humanbench-WORT-Runde ist der benannte | Sensor-Weg: eigene Runde |
 | Lotse v0.10 Punkt-Knoten (`aug19`) | Anker-Offsets als Punkt-Knoten scheren das Feld an der Kreuzung (Merge/Oskulation in dichten Clustern); Gewinnseite real (aiou +0,027, Ortsfehler halbiert, Spurious-Heilung) | Plateau-Feld = starre Cluster-Translation → **UMGESETZT als v0.11, adoptiert** | erledigt |
 | Lotse v0.11 Stufe "all" (`aug19`) | Zonen-Rides/Brücken-Pinning scheitert um genau EIN Galoppieren-Doppel-X (Netto 8 > 7); die Doppel-X-Duplikate sind 4 der 6 Rest-Spurious | EIN X je Knoten-Cluster — als v0.12 Plateau-Sehne versucht und VERWORFEN (s. u.); wartet auf einen Mechanismus, der Duplikate schließt, ohne das X zu kosten | wartet |
 | Lotse v0.12 Plateau-Sehne (`aug19`) | der Wackel WAR das X: an Schleifenschlüssen laufen beide Pässe tangential, ihre Sehnen sind parallel und schneiden sich gar nicht (missing 1 → 8, Retraces zerstört); die Duplikate sind zugleich KEINE Topologie-Erfindung (das X ist real, nur doppelt) | (a) Entdrillung des kleineren Wiggle-Bogens zwischen Duplikat-Paaren; (b) asymmetrische Sehne (nur der spätere Pass) | je eigene Pre-Reg, geringer Leidensdruck |
@@ -996,3 +1081,40 @@ Messdisziplin unverändert (§7.7): Lotse-Arme messen auf dem
 19er-Dev-Satz gegen die `aug17`-Ketten-Baseline, Gates wie v0.1
 plus die aiou-Zusatz-Kill-Schranke; Komposition/Kette bleiben in
 dieser Runde unberührt (kein compose-golden-Bruch).
+
+### 7.11 Offene Arme (angelegt 2026-09-02)
+
+Was aus einer geschlossenen Runde als NÄCHSTER Schritt benannt wurde,
+stand bisher nur im Fließtext des jeweiligen §14-Eintrags — wer die
+Kampagne fortsetzen wollte, musste die Sätze dafür wieder
+zusammensuchen. Diese Tabelle sammelt sie. Sie trägt **keine Zahlen**
+(die wohnen in §14) und ist **kein Plan**: ein Arm ist erst ein Arm,
+wenn er seine eigene Vorregistrierung hat. Eine Zeile verschwindet
+hier, sobald ihr Arm gemessen ist — dann steht sie als §14-Eintrag mit
+Registerzeile und, wenn sie ein Negativ war, mit ihrer §7.9-Zeile.
+
+**KI-messbar** (nichts davon braucht die Hand des Autors):
+
+| Arm | Herkunft | Auslöser / Lage | Stand |
+|---|---|---|---|
+| **LF4 — die p-Laufform** | §14 „Laufform LF3b-W `aug26`" | die 13er-Schreib-Karte ist geschrieben, p blieb an EINER Kreuzung draußen | drei benannte Sprossen: Init-Wächter gegen das Kompositions-Soll · Stamm-Freigabe am Bogen-Rücklauf (K1-Familie) · Ring-Regel-Sensor (`CROSS_PARTNER_MIN_HITS`); je eigene Pre-Reg |
+| **Form-Abstand-Arm (v · E · P · k)** | §14 „Laufform LF7/LF8 `aug29`" | das Sprung-Gate trennt nur Zeilen MIT Sprung; Form-Drift ohne Sprung bleibt ungefiltert | offen — Form-Abstand zur Tafel je Anker in Nib-Radien, gegen die vertraute Population |
+| **Abstandsterm · Schleifen-Halteterm** | §14 „Kette v5 `aug26`" | 13 Wörter wirft auch v5 in Runde 1 auf den Init zurück | offen; ausdrücklich PRÄVENTIVE Terme im Abstieg, nie Annahme-Regeln |
+| **Distanzfeld-NUR-Claim** | §14 „Kette K-E2 `aug21`" | die Claim-Familie ist geschlossen, dieser Ein-Kanal-Schnitt aber nie versucht | offen, frische Pre-Reg |
+| **Lotse-Zonen-Stufe** | §14 „Lotse v0.16 `aug20`" | „zones"/„all" scheitern nur noch an der Galoppieren-p-Oskulation | wiedervorlegen NACH dem p-Platzierungs-Arm |
+| **InkSight B2 (Tiling)** | §14 „Welle 1 · B1 `aug15`", verfahren-inksight.md | Galoppieren liegt jenseits der Trainingsfiltergrenze und ist der gemessene Probestein | offen seit `aug15` |
+| **InkSight-Nachmessung auf Marken-Kappe 1,5** | §14 „Lineal L-U `aug26`" | ohne sie ist die vierte Route mit den anderen dreien nicht vergleichbar | offen; braucht das isolierte Python-3.11-TF-venv |
+| **Austritts-Kollinearität** | Prüfung 2026-09-02; Sensor `seam_deg` (#478, §7.9-Nachtrag) | der Sensor misst den Abgangsknick, ein Arm ist noch nicht vorregistriert | Sensor steht, Arm offen |
+| **Folger-Arme ②③④⑦⑧** | §14 „Vorregistrierung der Folger-Arme `aug14`" | nie einzeln gemessen; die Schließung „durch ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet" steht nur auf verfahren-kette.md | offen: entweder messen oder vom Autor formal abschreiben lassen |
+
+**Autorenschritte** (nur der Autor kann sie tun oder freigeben; jeder
+davon liegt zusätzlich als Todoist-Aufgabe im Projekt „Kurrentschrift"):
+
+| Schritt | Herkunft | Warum er hängt | Stand |
+|---|---|---|---|
+| **Bestätigungssatz A, dann B** | §2.5, verfahren-lotse.md | Schlussstein vor jeder Adoption jenseits der Routen-Konstanten; er sperrt außerdem den referenzfreien Auswähler „Vier Augen" | offen |
+| **humanbench-WORT-Runde** | §14 „Methodik-Lücke `aug16`", K-E1/K-E2 | der einzige benannte Tie-Breaker für ruler-indifferente Fälle | offen; das Instrument entsteht gerade |
+| **Prod-Re-Harvest der `traced`-Zeilen mit Kette v5** | §14 K-B · v4 · LF3b-W | seit `aug19` viermal vertagt („hinter Autor-Go + dbsnapshot"); die gespeicherten Bahnen stammen noch aus älteren Ketten-Ständen | offen |
+| **St-Ligatur im Wizard nachfahren** | §14 „Übergänge Korb-Runde `aug30`" (Korb #9) | bis dahin greift der Ligatur-Zerfall, und `Stube` fällt aus dem Quiz-Pool | offen |
+| **Laufform-Lücke G · W · K · ue · F · ae · b** | §14 „Lotse v0.15 `aug19`" (dritter Nachtrag), LF8/LF9 | 43 von 62 Glyphen komponieren aus der rohen Chart-Form, weil ihnen die Laufform fehlt oder sie ein Gate nicht bestand | offen; der Weg dorthin ist die Eigenhand-Ernte |
+| **Herkunft der `aug30`-Fixture-Wurzel** | §14 Headline-Ledger, Nachtrag `sep02` | ohne die Auskunft bleiben alle Zahlen ab `aug30` nur untereinander vergleichbar | offen |
