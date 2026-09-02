@@ -696,7 +696,11 @@ def main() -> None:
     if args.no_laufform:
         result["laufform"] = False
     if args.exit_trim:
-        result["exit_trim"] = args.exit_trim_min_kink or True
+        # One key, one type: the flag stays a bool and the narrowing angle gets
+        # its own numeric key, so a reader never has to type-check the arm.
+        result["exit_trim"] = True
+        if args.exit_trim_min_kink:
+            result["exit_trim_min_kink_deg"] = args.exit_trim_min_kink
     for kind in ("word", "pair"):
         kind_reports = [r for r in reports if r["kind"] == kind]
         kind_skipped = [s for s in skipped if s["kind"] == kind]
