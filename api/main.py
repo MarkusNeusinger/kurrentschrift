@@ -121,7 +121,7 @@ app = FastAPI(
 
 
 @app.exception_handler(Exception)
-async def unhandled_exception(_request: Request, exc: Exception) -> JSONResponse:
+async def unhandled_exception(_request: Request, _exc: Exception) -> JSONResponse:
     """The one response `SecurityHeadersMiddleware` can never reach.
 
     Starlette builds `ServerErrorMiddleware` OUTSIDE every user middleware, so
@@ -132,12 +132,14 @@ async def unhandled_exception(_request: Request, exc: Exception) -> JSONResponse
     lifts the handler out of the table and hands it to that very middleware.
 
     The exception is still re-raised afterwards by `ServerErrorMiddleware`, so
-    the traceback reaches the log exactly as before. Only the body changes, and
-    it changes toward the rest of this API: a JSON `detail`, like the 401, the
-    403 and the 429, instead of a bare text line. `no-store` because a failure
-    is about one request and must never be served to the next visitor.
+    the traceback reaches the log exactly as before — which is also why this
+    handler logs NOTHING itself: a `logger.exception` here would put a second
+    full traceback beside uvicorn's for every 500, doubling what an error-count
+    alert sees (Copilot review, PR #497). Only the body changes, and it changes
+    toward the rest of this API: a JSON `detail`, like the 401, the 403 and the
+    429, instead of a bare text line. `no-store` because a failure is about one
+    request and must never be served to the next visitor.
     """
-    logger.exception("unhandled error on a request", exc_info=exc)
     return JSONResponse(
         {"detail": "internal server error"},
         status_code=500,
