@@ -104,14 +104,33 @@ class Settings(BaseSettings):
     # to authorize anyone.
     admin_allowed_emails_raw: str = ""
 
+    # ------------------------------------------------------------------ Origin gate
+    # Shared secret between the Cloudflare edge and this service: a Transform
+    # Rule stamps `X-Origin-Secret` onto every request it proxies for
+    # api.kurrentschrift.ink, and `api/origin_gate.py` refuses anything else
+    # with 403. That closes the direct `*.run.app` door, which otherwise
+    # bypasses the Cloudflare rate-limiting rule, the WAF and the cache —
+    # `ingress=all` on both services, no load balancer (it would cost more per
+    # month than the project).
+    #
+    # UNSET MEANS OFF, and that is the rollback: remove the variable from the
+    # Cloud Run service and the gate is gone without a deploy. Local dev and
+    # the test suite never set it. `/health` and `/seo-proxy/…` are exempt even
+    # when it is set — see origin_gate.py for why each one has to be.
+    origin_secret: str | None = None
+
     # Secret Manager stores whatever bytes the version was created with, and a
     # value piped in via `echo` carries a trailing newline. Cloud Run injects
     # those bytes verbatim (`--set-secrets`), so the setting would keep the
     # newline while an HTTP header physically cannot transport one — the
     # X-Admin-Token break-glass path then rejects every request with 401 and no
     # token value can ever fix it. Strip at the source rather than at each use
-    # site; whitespace is meaningless in all four Secret-Manager-backed values.
-    @field_validator("database_url", "cf_access_team_domain", "cf_access_aud", "admin_token", mode="after")
+    # site; whitespace is meaningless in all five Secret-Manager-backed values,
+    # and `origin_secret` is compared against a header for exactly the same
+    # reason the ADMIN_TOKEN incident of 2026-08 happened.
+    @field_validator(
+        "database_url", "cf_access_team_domain", "cf_access_aud", "admin_token", "origin_secret", mode="after"
+    )
     @classmethod
     def _strip_secret(cls, value: str | None) -> str | None:
         if value is None:

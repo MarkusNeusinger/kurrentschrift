@@ -318,6 +318,59 @@ CI / Break-Glass): `ADMIN_TOKEN` im API-Env, das passende
 beantwortet das Gate jeden geschützten Request mit **503** — ein
 fehlkonfiguriertes Prod-Deploy schlägt geschlossen fehl statt offen.
 
+### Davor: das Origin-Geheimnis (seit 2026-09-02)
+
+Beide Cloud-Run-Dienste stehen mit `ingress=all` im Netz — es gibt keinen
+Load Balancer, und einer würde mehr im Monat kosten als das ganze Projekt. Der
+API-Dienst antwortet damit auf ZWEI Adressen: `https://api.kurrentschrift.ink`
+(von Cloudflare proxied) und die rohe `*.run.app`-URL (nicht). Alles, was
+Cloudflare durchsetzt — die Rate-Limiting-Regel, die WAF, der Cache — war über
+die zweite Adresse umgehbar; das Audit vom 2026-09-02 hat genau das gemessen
+(die `run.app`-Antwort trug keinen einzigen `cf-`-Header).
+
+Eine **Cloudflare-Transform-Rule** stempelt deshalb auf jeden Request, den sie
+für `api.kurrentschrift.ink` weiterreicht, den Header
+`X-Origin-Secret: <Geheimnis>`. `api/origin_gate.py` verlangt ihn und antwortet
+sonst **403** — vor dem Limiter, vor der Auth, vor jeder Datenbankabfrage. Das
+ist **keine Authentifizierung**: der Header sagt „ich kam durch die Vordertür",
+nichts darüber, wer da kommt. Wer etwas darf, entscheidet weiterhin
+`api/auth.py`.
+
+- **Unset heißt aus.** Ohne `ORIGIN_SECRET` in der Cloud-Run-Env ist die Prüfung
+  komplett inaktiv — das ist zugleich der Rollback und der Grund, warum lokale
+  Entwicklung und Testsuite sie nie sehen. **Achtung beim Rollback:** eine
+  Änderung an Secrets oder Env legt eine NEUE Revision an, und der Dienst hängt
+  nach jedem Deploy an einer namentlich festgenagelten Revision
+  (`update-traffic --to-revisions=…`, `api/cloudbuild.yaml`) — die neue bekommt
+  also erst Verkehr, wenn sie ausdrücklich promotet wird. Scharfschalten und
+  Zurücknehmen sind deshalb je ZWEI Befehle: `services update …`, dann
+  `services update-traffic --to-revisions=<neue Revision>=100`. Kein neuer
+  Build, aber auch kein Selbstläufer.
+- **Ausgenommen sind `/health` und `/seo-proxy/…`.** `/health` erreicht der
+  Deploy-Smoke auf der `run.app`-Tag-URL der Kandidaten-Revision, die
+  definitionsgemäß nie am Edge vorbeikommt — ein Gate davor ließe jeden Deploy
+  geschlossen fehlschlagen. `/seo-proxy/…` ist Gürtel-und-Hosenträger: das
+  nginx der Website holt die Prerender-Seiten über `api.kurrentschrift.ink`
+  (`app/nginx.conf` `@seo_proxy`), kommt also durch den Edge und trägt den
+  Header — aber der Preis eines Irrtums wären 403 für jeden Crawler.
+- **Der Admin-Weg ist unverändert:** die Apex `/api/*` läuft über den
+  Cloudflare-Worker auf `api.kurrentschrift.ink`, also ebenfalls durch den Edge.
+  nginx kennt kein `/api` und ruft nichts direkt auf.
+- **`/health` meldet das Urteil** für den Request, mit dem es gefragt wurde:
+  `origin_gate` = `off` · `off-seen` · `ok` · `missing` · `mismatch` (nie der
+  Wert). Damit lässt sich JEDER Weg in den Dienst — `api.`-Host, Apex hinter
+  Access, nginx, rohe `run.app` — prüfen, BEVOR das Gate scharf geschaltet
+  wird: Transform-Rule anlegen, dann muss jeder Weg, der weiterlaufen soll,
+  `off-seen` melden; erst danach die Env setzen. Der riskanteste Unbekannte
+  dabei ist der Admin-Weg, denn die Apex `/api/*` erreicht den Dienst über
+  einen Cloudflare-Worker, und ob dessen Subrequest die Transform-Rule
+  derselben Zone durchläuft, ist nichts, was man raten sollte.
+- **Break-Glass braucht jetzt beide Header.** Der dokumentierte Notweg über die
+  direkte `run.app`-URL mit `X-Admin-Token` läuft ins 403, solange nicht
+  zusätzlich `X-Origin-Secret` mitgeschickt wird — beide Werte liegen im Secret
+  Manager, wer den einen holen kann, holt auch den anderen. Wer die Tür ganz
+  aufmachen will, entfernt für die Dauer des Notfalls die Env-Variable.
+
 **Gegen die deployte API: nur über `api.kurrentschrift.ink`.** Die
 Apex-Route `kurrentschrift.ink/api/*` liegt hinter Cloudflare Access und
 antwortet schon an der Edge mit 302 auf den Login — der `X-Admin-Token`
@@ -607,7 +660,10 @@ Fehler. `kind` ist die Eigenschaft, nach der man filtert:
 
 - `/api/*` → der Cloudflare-Worker vor dem App-Service leitet auf
   `api.kurrentschrift.ink` (FastAPI) um; nginx im App-Container kennt
-  kein `/api` (siehe Kopfkommentar `app/nginx.conf`).
+  kein `/api` (siehe Kopfkommentar `app/nginx.conf`). Weil dieser Umweg
+  ebenfalls über den Edge läuft, trägt er das Origin-Geheimnis aus §5 — nginx
+  selbst muss nichts mitschicken, sein einziger Ausgang (`@seo_proxy`) geht
+  auch über `api.kurrentschrift.ink`.
 - `/admin/*` → React-SPA (Auth-Gate am Edge via Cloudflare Access, §5).
 - alles andere → React-SPA mit Fallback `index.html` (nginx).
 

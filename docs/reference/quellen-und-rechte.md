@@ -265,6 +265,23 @@ losschreiben" kann, gilt technisch:
   Entscheidung selbst bleibt unangetastet. Folgeaufgabe unverändert: das
   Golden auf synthetische Test-Templates umstellen, dann verschwindet auch
   das.
+- **Seit 2026-09-02 liegt eine Schicht DAVOR: das Origin-Geheimnis.** Alle
+  bisherigen Punkte beschreiben, was die API einem Aufrufer antwortet. Sie
+  galten aber nur, solange man die API überhaupt nur über den Edge erreicht —
+  und beide Cloud-Run-Dienste stehen mit `ingress=all` im Netz, die rohe
+  `*.run.app`-Adresse antwortete also an Cloudflare vorbei: ohne
+  Rate-Limiting-Regel, ohne WAF, ohne Cache. Eine Transform-Rule stempelt
+  jetzt `X-Origin-Secret` auf jeden Request, den Cloudflare für
+  `api.kurrentschrift.ink` weiterreicht, und `api/origin_gate.py` beantwortet
+  alles andere mit **403** — vor dem Limiter, vor `require_admin`, vor jeder
+  DB-Abfrage. Das ändert an der öffentlich/reserviert-Trennung NICHTS (der
+  Header sagt nur „durch die Vordertür", nicht wer da kommt); es sorgt dafür,
+  dass die Trennung überhaupt an der einzigen Stelle greift, an der sie
+  gemessen wird. Ausgenommen bleiben `/health` (sonst schlägt jeder Deploy-
+  Smoke geschlossen fehl, er probt die `run.app`-Tag-URL) und `/seo-proxy/…`
+  (Crawler-Pfad; Details und Rollout in
+  [`frontend-stack.md`](frontend-stack.md) §5). Ohne gesetzte
+  `ORIGIN_SECRET`-Env ist die Prüfung aus — das ist der Rollback.
 - Ein öffentlicher Datensatz entsteht nur als **bewusster
   Ziel-7-Release** (architektur.md §17, eigene Lizenz, Zenodo) — nie
   implizit über Repo oder API.

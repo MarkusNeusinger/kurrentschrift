@@ -50,7 +50,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nullprobe §4
-- **O** — Offenbacher §1 · Open-Core-Moat §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
+- **O** — Offenbacher §1 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
@@ -733,6 +733,27 @@ Paar-Overrides, Hände, Statistik-Schicht, Eigenhand; die Trennlinie
 GET-Route fest. Die Crawler-Politik der Seite ist davon unabhängig offen
 (`ai-train=yes`): Der Moat ist die Datenbank, nicht die Webseite.
 → quellen-und-rechte.md §5, crawler-richtlinie.md §2
+
+**Origin-Geheimnis** — der gemeinsame Wert zwischen dem Cloudflare-Edge und
+dem API-Dienst, der die direkte `*.run.app`-Adresse zumacht. Beide
+Cloud-Run-Dienste stehen mit `ingress=all` im Netz (kein Load Balancer — er
+kostete mehr im Monat als das Projekt), die API antwortete also auf zwei
+Adressen: über Cloudflare und daran vorbei. Alles, was am Edge durchgesetzt
+wird — Rate-Limiting-Regel, WAF, Cache —, war damit über eine URL umgehbar.
+Eine **Transform-Rule** stempelt seit 2026-09-02 den Header
+`X-Origin-Secret` auf jeden Request, den Cloudflare für
+`api.kurrentschrift.ink` weiterreicht; alles ohne ihn bekommt **403** —
+vor dem Limiter, vor `require_admin`, vor jeder DB-Abfrage. Es ist
+**keine Authentifizierung**: der Header sagt „durch die Vordertür", nicht
+wer da kommt. Ohne gesetzte `ORIGIN_SECRET`-Env ist die Prüfung aus, und
+genau das ist der Rollback; ausgenommen bleiben `/health` (der Deploy-Smoke
+probt die `run.app`-Tag-URL) und `/seo-proxy/…` (Crawler-Pfad). `/health`
+meldet als `origin_gate` das Urteil für den fragenden Request (`off` ·
+`off-seen` · `ok` · `missing` · `mismatch`, nie den Wert); `off-seen` heißt
+„Regel liefert, Prüfung noch aus" und ist das Messmittel, mit dem jeder Weg
+in den Dienst bestätigt wird, bevor scharf geschaltet wird. *Technisch:*
+`api/origin_gate.py`, `core/config.py::origin_secret`.
+→ frontend-stack.md §5, quellen-und-rechte.md §5
 
 **Prerender-Pfad (Crawler)** — Crawler und KI-Agenten (kein JavaScript)
 bekommen je öffentliche Route eine zur Build-Zeit aus dem Locale-Katalog
