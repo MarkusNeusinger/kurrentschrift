@@ -109,6 +109,9 @@ export const common = {
     title: 'Da ist etwas schiefgegangen.',
     body: 'Vermutlich ist die Seite veraltet (neue Version veröffentlicht). Ein Neuladen behebt das in der Regel.',
     reload: 'Seite neu laden',
+    // Shown for the blink between recognising a stale chunk and the automatic
+    // reload — the visitor should see a reason, not an empty page.
+    reloading: 'Die Seite war veraltet — die neue Fassung wird geladen …',
   },
   // 404 surface (NotFoundPage).
   notFound: {
@@ -125,5 +128,10 @@ export const common = {
   // into the DOM (the quiz prompt before the answer).
   writtenWord: {
     ariaLabelNeutral: 'Geschriebenes Wort',
+  },
+  // BackToTop — the floating return on the long content pages (/schriftkunde
+  // runs ~20 screens on a phone).
+  backToTop: {
+    label: 'Zurück zum Seitenanfang',
   },
 } as const;

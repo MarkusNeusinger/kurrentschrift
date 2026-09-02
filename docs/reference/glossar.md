@@ -55,7 +55,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftkunde (Seite) §7 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
-- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Triage-Pflicht §5
+- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
 - **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschrift §1
@@ -2260,6 +2260,29 @@ Dependabot) und weist direkt in `[Unreleased]` geschriebene Bullets ab. *Technis
 und `[Unreleased]`), `check_pr` (die PR-Regel), `plan_release`/`apply_release`
 (der Schnitt); CI-Job `changelog` in `.github/workflows/ci.yml`.
 → werkzeuge.md § Der Changelog-Schnitt · `changelog.d/README.md`
+
+**Typo-Boden** — die bindende Untergrenze der Schriftgrößen des öffentlichen
+Auftritts: Fließtext ≥ 19 px, Caption ≥ 14 px, ohne Ad-hoc-Größen (design-system.md
+§9). „Boden" statt „Richtwert", weil er MESSBAR ist: `app/scripts/type-floor.mjs`
+fährt alle öffentlichen Routen in einem echten Browser an, liest die *berechnete*
+Schriftgröße jedes Elements mit eigenem Text und schlägt unter 14 px fehl. Genau
+eine Ausnahme ist sanktioniert, der 13-px-`overline` der Typo-Leiter (§3). Der
+Boden wurde am 02.09.2026 an 17 Stellen unterschritten — durchweg
+MUI-`size="small"`-Vorgaben und Ad-hoc-`fontSize`-Werte, keine Absicht; deshalb
+sitzt die Korrektur im Theme und die Kontrolle im Skript.
+→ concepts/design-system.md §9 · `app/scripts/type-floor.mjs`
+
+**Trefferfläche** *(`hitArea`)* — die unsichtbare Vergrößerung eines
+Bedienelements auf das 44-px-Touch-Ziel, ohne seine Optik anzufassen: ein
+zentriertes `::after` mit `max(100%, 44px)` in beiden Kanten
+(`app/src/styles/hitArea.ts`). Sie ist die Antwort auf den Konflikt zwischen
+Plattformempfehlung (Apple HIG 44 pt, Material 48 dp) und einem Entwurf, dessen
+kleine Marken — das Wiederholen-↻ über der Tinte, das Kurrent-i des `InfoHint`,
+das leise „beenden" — absichtlich leise sind: **eine unsichtbare Trefferfläche
+statt einer kleineren Wahrheit.** WCAG 2.2 SC 2.5.8 (24 × 24 px) hielt die Seite
+schon vorher über die Abstandsausnahme; die 44-px-Regel selbst ist bis zur
+Freigabe des Autors ein Vorschlag (design-system.md §9.3).
+→ concepts/design-system.md §9.3 · `app/src/styles/hitArea.ts`
 
 ### Eigenhand-Erfassung
 

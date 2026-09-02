@@ -43,7 +43,11 @@ export function PublicFooter() {
         sx={{
           borderTop: `1px solid ${paper.line}`,
           mt: { xs: 8, md: 11 },
-          py: 3,
+          pt: 3,
+          // The footer is the last thing on the page, so it is what ends up
+          // under the home indicator on a `viewport-fit=cover` phone: 24px of
+          // padding plus whatever the device reserves below it.
+          pb: 'calc(24px + env(safe-area-inset-bottom))',
           display: 'flex',
           flexDirection: 'row',
           // If the link row doesn't fit beside the tagline (narrow phones), it

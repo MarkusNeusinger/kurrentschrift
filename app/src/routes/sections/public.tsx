@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { Navigate, type RouteObject } from 'react-router-dom';
 
+import { NotFoundPage } from '@/pages/NotFoundPage';
 import { paths } from '@/routes/paths';
 
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
@@ -13,7 +14,11 @@ const TafelPage = lazy(() => import('@/pages/TafelPage'));
 const QuizPage = lazy(() => import('@/pages/QuizPage'));
 const VergleichenPage = lazy(() => import('@/pages/VergleichenPage'));
 const ImpressumPage = lazy(() => import('@/pages/ImpressumPage'));
-const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
+// NotFoundPage is imported EAGERLY (above), unlike every other page: the router's
+// error boundary renders it for a thrown 404, and that boundary also catches
+// failing lazy imports — a code-split 404 could fail exactly the same way. Since
+// RouteError pulls it into the entry chunk regardless, a `lazy()` here would only
+// have been an ineffective dynamic import.
 
 export const publicRoutes: RouteObject[] = [
   { path: paths.home, element: <LandingPage /> },

@@ -94,12 +94,15 @@ export function LandingView() {
                   >
                     {s.cta}
                   </Typography>
-                  <Box
+                  {/* `caption` (14px) rather than an ad-hoc .85rem: the status
+                      marks used to render at 13.6px, under the §9 floor. */}
+                  <Typography
                     component="span"
-                    sx={{ fontStyle: 'italic', fontSize: '.85rem', color: s.written ? paper.viridianText : paper.sepia, whiteSpace: 'nowrap' }}
+                    variant="caption"
+                    sx={{ fontStyle: 'italic', color: s.written ? paper.viridianText : paper.sepia, whiteSpace: 'nowrap' }}
                   >
                     {s.status}
-                  </Box>
+                  </Typography>
                 </Box>
               </PaperCardLink>
             </Reveal>
@@ -162,16 +165,16 @@ export function LandingView() {
                     <Typography variant="h6" component="h3" sx={{ fontFamily: display, fontWeight: 600, color: paper.ink, minWidth: { sm: 210 } }}>
                       {r.title}
                     </Typography>
-                    <Box component="span" sx={{ display: { xs: 'inline', sm: 'none' }, fontStyle: 'italic', fontSize: '.85rem', color: paper.sepia, whiteSpace: 'nowrap' }}>
+                    <Typography component="span" variant="caption" sx={{ display: { xs: 'inline', sm: 'none' }, fontStyle: 'italic', color: paper.sepia, whiteSpace: 'nowrap' }}>
                       {de.common.soon}
-                    </Box>
+                    </Typography>
                   </Box>
                   <Typography variant="body2" sx={{ color: paper.inkSoft, flex: 1 }}>
                     {r.desc}
                   </Typography>
-                  <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' }, fontStyle: 'italic', fontSize: '.85rem', color: paper.sepia, whiteSpace: 'nowrap' }}>
+                  <Typography component="span" variant="caption" sx={{ display: { xs: 'none', sm: 'inline' }, fontStyle: 'italic', color: paper.sepia, whiteSpace: 'nowrap' }}>
                     {de.common.soon}
-                  </Box>
+                  </Typography>
                 </Box>
               </Reveal>
             ))}
