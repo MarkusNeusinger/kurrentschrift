@@ -292,26 +292,31 @@ losschreiben" kann, gilt technisch:
   Begründung wie oben): die handnachgefahrenen Kanonischen des ersten
   Prototyps aus der Zeit vor der Datenbank, hinzugefügt am 2026-05-20 mit
   Commit `4dc98c7`, aus HEAD verschwunden am 2026-05-22 mit `9365b65`
-  (Umzug `/mvp/` → `/core/` + Postgres). Vier Blobs:
-
-  | Blob | Pfad | Größe |
-  |---|---|---|
-  | `0625420282bb2bf4ff6d4b9ce1a7a37e896667e2` | `mvp/canonical/e-medial_v0.json` | 39 293 B |
-  | `5592aa6840ed79a34804e5c6c910b4a2751bcff1` | `mvp/canonical/e-medial_v0.json` | 6 539 B |
-  | `c9ffc7a207a1d9ed89712dc0d5fa279964e5d5b3` | `mvp/canonical/s-final_v0.json` | 53 438 B |
-  | `bfd13c3c568dfdb8a44e04df1e13e43c82a3eaf6` | `mvp/canonical/s-medial_v0.json` | 49 211 B |
+  (Umzug `/mvp/` → `/core/` + Postgres). Der Entscheid gilt den drei
+  DATEIEN `e-medial_v0.json`, `s-final_v0.json`, `s-medial_v0.json` und
+  damit allen ihren Fassungen — je vier Revisionen, zusammen zwölf Blobs.
+  Namentlich per Hash gepinnt sind sie in `tests/test_reserved_history.py`;
+  dort steht die maßgebliche Liste, nicht hier, damit die beiden nicht
+  auseinanderlaufen können.
 
   Das Audit vom 2026-09-02 hatte sie als „0,9–1,1 KB große Hand-Seeds"
-  beiseitegelegt; nachgemessen sind es 6,5–53 KB mit je 50 `pixel_anchors`
-  und `half_widths_px` — dieselbe Klasse autorierter Geometrie wie der Blob
-  darüber, kein Stummel. Aufgefallen ist die Fehlangabe erst, als das
-  Nachweis-Netz unten sie als Inhalt statt als Dateigröße prüfte.
+  beiseitegelegt; nachgemessen reichen sie bis über 50 KB mit je 50
+  `pixel_anchors` und `half_widths_px` — dieselbe Klasse autorierter
+  Geometrie wie der Blob darüber, kein Stummel. Aufgefallen ist die
+  Fehlangabe erst, als das Nachweis-Netz unten sie als INHALT statt als
+  Dateigröße prüfte; und die vier Revisionen je Datei wurden erst sichtbar,
+  als es den Zahlenlauf schlüsselnah statt global suchte.
 
   **Das Nachweis-Netz** dazu ist `tests/test_reserved_history.py`: Es geht
   alle je committeten Blobs außerhalb der Code-Bäume durch und meldet
   jeden, der einen Render-Payload trägt (Payload-Schlüssel **plus** einen
-  langen Zahlenlauf — eine bloße Erwähnung des Feldnamens in Prosa oder in
-  einem Generator-Skript ist ausdrücklich erlaubt). Die oben genannten
+  Zahlenlauf DIREKT dahinter — eine bloße Erwähnung des Feldnamens in Prosa
+  oder in einem Generator-Skript ist ausdrücklich erlaubt). Schlüsselnah und
+  kurz (acht Zahlen im Umkreis von 300 Bytes) statt global und lang: ein
+  Vorkommen darf aus nur vier Ankerpunkten bestehen, und zwischen zwei
+  Einträgen brechen JSON-Schlüssel jeden längeren Lauf — eine globale
+  40-Zahlen-Schwelle ließe kleine Vorkommens-Dumps also durch, während sie
+  behauptet, sie abzudecken. Die oben genannten
   Blobs sind per Hash gepinnt, alles andere lässt den Test rot werden.
   Gepinnt wird per Blob-Hash und nicht per Pfad: Eine Pfad-Ausnahme ließe
   einen NEUEN Dump unter demselben Pfad durch — genau den Fall, den das

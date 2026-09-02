@@ -10,7 +10,10 @@
   anything else — it holds data by definition and is the likeliest home for
   such a file. It covers every reserved wire shape, not just templates:
   occurrences (`anchors`, `half_widths`, `strokes`) and aggregates
-  (`cluster_center`, `connector_center`) too. Only a missing `git` or a
+  (`cluster_center`, `connector_center`) too, and it looks for the numbers
+  next to the key rather than anywhere in the blob — an occurrence may be as
+  small as four anchor points, which no global run-length floor would catch.
+  Only a missing `git` or a
   shallow clone lets it skip; an error from `rev-list` or `cat-file` fails it,
   because a guard that skips on its own errors keeps CI green without ever
   looking. Two batched `cat-file` calls put the whole sweep at about three
@@ -28,9 +31,12 @@
   the blob's identity and the net that enforces it are in
   `docs/reference/quellen-und-rechte.md` §5, and `/audit-licenses` now reports
   it as settled instead of re-raising it (#NNN).
-- **Four further payload blobs surfaced, and were accepted too** (author's
-  decision, 2026-09-03, same reasoning). The 2026-09-02 audit had set
-  `mvp/canonical/*_v0.json` aside as "0.9–1.1 KB hand seeds"; measured, they
-  are 6.5–53 KB carrying 50 `pixel_anchors` plus `half_widths_px` each — the
-  same class of authored geometry as the first blob, not stubs. The error
-  only showed once the net checked content instead of trusting a size (#NNN).
+- **The prototype canonicals surfaced too, and were accepted** (author's
+  decision, 2026-09-03, same reasoning): the three `mvp/canonical/*_v0.json`
+  files and all four revisions of each, twelve blobs. The 2026-09-02 audit had
+  set them aside as "0.9–1.1 KB hand seeds"; measured, they run past 50 KB
+  carrying 50 `pixel_anchors` plus `half_widths_px` — the same class of
+  authored geometry as the first blob, not stubs. That only showed once the
+  net checked content instead of trusting a size, and the extra revisions only
+  once it looked for numbers next to the key instead of anywhere in the
+  file (#NNN).

@@ -7,10 +7,11 @@ MIT grant (README "License", `docs/reference/quellen-und-rechte.md` §5), so a
 rendered template dump committed anywhere outside the code trees is a leak
 that a later `git rm` does not undo.
 
-History already holds five such payloads, pinned by content hash in
+History already holds 13 such blobs, pinned by content hash in
 `ACCEPTED_BLOBS` below. The author decided to accept rather than purge them:
-the design-sync preview dump on 2026-09-02, and the four pre-DB prototype
-canonicals this net then surfaced on 2026-09-03, on the same reasoning.
+the design-sync preview dump on 2026-09-02, and every revision of the three
+pre-DB prototype canonicals this net then surfaced, on 2026-09-03, on the
+same reasoning.
 
 Pinning them is what keeps the alarm meaningful rather than muting it: the
 recorded blobs stay quiet, they are named in §5 with their reasoning, and any
@@ -53,8 +54,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # (`cluster_center`, `connector_center`). The short forms are deliberate:
 # `anchors` subsumes `pixel_anchors` and `anchors_template`, `half_widths`
 # subsumes `half_widths_px`. Measured against the whole history, widening the
-# list this far adds no false positive — it still flags exactly the five
-# recorded blobs.
+# list this far adds no false positive — it flags exactly the recorded blobs
+# and nothing else.
 PAYLOAD_KEYS = (
     b"skeleton_polyline",
     b"anchors",
@@ -68,15 +69,21 @@ PAYLOAD_KEYS = (
 
 # A key alone is not a leak: CHANGELOG.md, CLAUDE.md and the generator scripts
 # all NAME these fields, and prose about the format is explicitly allowed. What
-# distinguishes a dump is that the numbers travel with the key — so a blob only
-# counts when it also carries a long run of numeric literals. Without this the
-# net cries wolf on every release note that mentions a field name, and a net
-# that always fires is one nobody reads.
-# The separator has to tolerate brackets, not just commas: dense geometry is
-# just as often nested (`anchors_template: [[x, y], …]`, `outline_paths`) as
-# flat, and a comma-only run breaks at every `],[` — so a dump made only of
-# coordinate PAIRS would have slipped through while looking guarded.
-_NUMBER_RUN = re.compile(rb"(?:-?\d+(?:\.\d+)?[\s,\[\]]+){40,}")
+# distinguishes a dump is that the numbers travel WITH the key — so the run is
+# looked for right after each key, not anywhere in the blob.
+#
+# Key-local and short (8 numbers) rather than global and long: an occurrence
+# may legitimately be as small as four anchor points, i.e. eight coordinates,
+# and between two items sit JSON keys that break any longer run — a global
+# 40-number floor therefore passed small occurrence dumps while claiming to
+# cover them. The separator tolerates brackets because dense geometry is as
+# often nested (`[[x, y], …]`) as flat, and a comma-only run breaks at `],[`.
+#
+# Measured over the whole history this pair (key + 8 numbers within 300 bytes)
+# produces no false positive: prose that names a field does not follow it with
+# coordinates.
+_NUMBER_RUN = re.compile(rb"(?:-?\d+(?:\.\d+)?[\s,\[\]]+){8,}")
+_KEY_WINDOW = 300
 
 # Trees whose contents are source, tests, tooling or documentation about the
 # format. `/audit-licenses` states the same rule in prose.
@@ -108,14 +115,36 @@ ACCEPTED_BLOBS = {
     # of the very first prototype, added 2026-05-20 (4dc98c7) and gone from
     # HEAD since 2026-05-22 (9365b65), when /mvp/ moved to /core/ + Postgres.
     # The 2026-09-02 audit had set them aside as "0,9–1,1 KB hand seeds";
-    # measured they are 6.5–53 KB and carry 50 anchors plus half widths each,
+    # measured they run to tens of KB and carry 50 anchors plus half widths,
     # the same class of authored geometry as the blob above. This net is what
     # corrected that, which is why they are listed rather than dismissed.
+    # Four revisions of each of the three files: the decision names the files,
+    # and every version of them is the same authored geometry. The key-local
+    # detector below sees revisions the earlier coarse one missed.
     "0625420282bb2bf4ff6d4b9ce1a7a37e896667e2": "mvp/canonical/e-medial_v0.json",
+    "32577587ee768f37588e264848299238358b8829": "mvp/canonical/e-medial_v0.json",
     "5592aa6840ed79a34804e5c6c910b4a2751bcff1": "mvp/canonical/e-medial_v0.json",
+    "8f027feb34d73976243e8594b264b2ffa2141cc4": "mvp/canonical/e-medial_v0.json",
+    "2064f13f3c508ee129e1387a5ad113a328a7fb8c": "mvp/canonical/s-final_v0.json",
+    "56e9069a92b764407eafb951597c6d2051c3efc6": "mvp/canonical/s-final_v0.json",
     "c9ffc7a207a1d9ed89712dc0d5fa279964e5d5b3": "mvp/canonical/s-final_v0.json",
+    "e63a328c738f61b9ad250529cbf93b3ff2fe81e3": "mvp/canonical/s-final_v0.json",
+    "43ca615760b026555fb4e7f2d9a85e8c453263c7": "mvp/canonical/s-medial_v0.json",
+    "700eab8caeffd0c6214f28b05cf1e6329c3c35f1": "mvp/canonical/s-medial_v0.json",
     "bfd13c3c568dfdb8a44e04df1e13e43c82a3eaf6": "mvp/canonical/s-medial_v0.json",
+    "c1db86ec15a47922710179d6c0746d12bda1a873": "mvp/canonical/s-medial_v0.json",
 }
+
+
+def carries_payload(body: bytes) -> bool:
+    """True when a reserved key is followed by coordinates rather than prose."""
+    for key in PAYLOAD_KEYS:
+        start = 0
+        while (found_at := body.find(key, start)) != -1:
+            if _NUMBER_RUN.search(body[found_at : found_at + _KEY_WINDOW]):
+                return True
+            start = found_at + 1
+    return False
 
 
 def _git(*args: str) -> bytes:
@@ -174,7 +203,7 @@ def _blobs_carrying_payload(blobs: dict[str, str]) -> dict[str, str]:
             continue
         sha, size = header[0].decode(), int(header[2])
         body = stream[header_end + 1 : header_end + 1 + size]
-        if any(key in body for key in PAYLOAD_KEYS) and _NUMBER_RUN.search(body):
+        if carries_payload(body):
             found[sha] = blobs[sha]
         pos = header_end + 1 + size + 1  # trailing newline after the body
     return found
@@ -214,12 +243,18 @@ def payload_blobs() -> dict[str, str]:
         ("prose mention", b"The payload carries `half_widths_px` and `outline_paths` per glyph.", False),
         # Numbers without a payload key are not a template dump.
         ("bare numbers", b"[" + b", ".join(b"3" for _ in range(200)) + b"]", False),
+        # The SMALLEST reserved occurrence: `InstanceItem.anchors` allows four
+        # points, so eight coordinates, and the next item's JSON keys break the
+        # run. A global 40-number floor let this through while claiming to
+        # cover occurrences; key-local detection catches it.
+        ("minimal occurrence", b'{"anchors": [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0], [7.0, 8.0]], "glyph": "e"}', True),
+        # Numbers far from the key are not the key's payload.
+        ("key far from numbers", b'"half_widths" is a field.' + b"x" * 400 + b"1, 2, 3, 4, 5, 6, 7, 8, 9,", False),
     ],
 )
 def test_detector_matches_payload_shapes_not_mentions(shape: str, body: bytes, expected: bool) -> None:
     """The detector needs a payload key AND numbers travelling with it."""
-    detected = any(key in body for key in PAYLOAD_KEYS) and bool(_NUMBER_RUN.search(body))
-    assert detected is expected, f"{shape}: expected detected={expected}"
+    assert carries_payload(body) is expected, f"{shape}: expected detected={expected}"
 
 
 def test_no_new_reserved_blob_in_history(payload_blobs: dict[str, str]) -> None:
