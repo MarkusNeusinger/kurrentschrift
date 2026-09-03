@@ -27,8 +27,416 @@ cannot judge a line that BOTH sides changed, so never rewrite existing lines in 
 
 ## [Unreleased]
 
+## [0.28.0] — 2026-09-04 — The Schreibtafel in detail, the site hardened on every route, the smooth running forms adopted
+
 ### Added
 
+- **The privacy section says what permits the processing, and what a visitor
+  may do about it.** It listed purposes, retention and recipients but never the
+  ground for any of it, and neither the right to object nor the right to
+  complain appeared at all. Six short paragraphs now cover it: who is
+  responsible, what the server records and why — including the per-address
+  request counting and the security reports the browser sends — the count
+  without cookies, where it runs, the legitimate interest that permits it under
+  the Swiss data protection act and, for visitors from the EU, the GDPR, and
+  the rights with the supervisory authority named (#507).
+- **The Schriftkunde explains why „wenn" reads as „weu".** The doubling stroke
+  over n and the bow over u are both marks above the letter, which is exactly
+  where a first-time reader slips — the author hit it in his own reading. The
+  Reduplikationsstrich entry now names the collision and the shape that
+  resolves it: the doubling stroke is straight, the u-bow is curved. Both
+  halves are documented in `docs/schriftkunde/` (#511).
+- **The 2026-09-02 audit now says what became of it.** The synthesis grew one
+  appended section, `Erledigungsstand (2026-09-03)`: a row per finding, per
+  track and per author question, each carrying either the PR and date that
+  settle it or the decision still outstanding. The report above and below it is
+  untouched — it is a Befund-Journal, a dated snapshot
+  that is never rewritten, so the state belongs beside it rather than inside
+  its findings. The raw-findings document points at that section from its head
+  (#509).
+- **`npm run touch-targets` measures the touch rule instead of asserting it.**
+  It sweeps every interactive element on every public route — 217 of them — and
+  skips exactly the rule's one exception, recognised the way §9.2 marks it on the
+  page: an underlined `<a>` is running-prose text, while chrome that only looks
+  like a link sets `textDecoration: none` and is measured like everything else.
+  For each axis where a control is drawn under 44px it asks
+  `document.elementFromPoint` at the edge of the 44px square and requires the
+  control itself to answer. That catches the way this rule breaks silently — an
+  `overflow: hidden` clips the `hitArea()` pseudo-element, the drawing is
+  unchanged and the target shrinks back unnoticed — which a computed-size check
+  would sail past. Verified against a deliberately broken control: removing
+  `hitArea()` from the replay button is reported, and only that one (#504).
+- **A test now guards the public history against reserved-data leaks.**
+  `tests/test_reserved_history.py` walks every blob ever committed outside
+  the code trees and fails on any that carries a render payload — a payload
+  key AND a long run of numbers, so prose or a generator script that merely
+  names a field does not fire. Known blobs are pinned by content hash, never
+  by path: a path exemption would wave through a NEW dump written to the same
+  place, which is the mistake being guarded against. `data/` is scanned like
+  anything else — it holds data by definition and is the likeliest home for
+  such a file. It covers every reserved wire shape, not just templates:
+  occurrences (`anchors`, `half_widths`, `strokes`) and aggregates
+  (`cluster_center`, `offset_center`) too, plus the render geometry
+  (`silhouette_px`, `outline_polygon`, `fitted_outline_px`), the pair
+  overrides (`connector`, which `PairInstanceItem` carries as well) and the
+  bbox authoring data (`points`, `slant_xs`) — the list was walked field by
+  field against `api/schemas.py` rather than grown one review at a time. It looks for the
+  numbers next to the key rather than anywhere in the blob, with a minimum
+  count PER key, because the schemas differ: four anchor points is eight
+  coordinates, while a word occurrence is schema-valid at a single two-point
+  stroke — four numbers. No global floor covers both. Only a missing `git` or a
+  shallow clone lets it skip; an error from `rev-list` or `cat-file` fails it,
+  because a guard that skips on its own errors keeps CI green without ever
+  looking. Two batched `cat-file` calls put the whole sweep at about three
+  seconds (#500).
+- **A „So geht es“ three-step on the landing, between the hero and the three
+  scripts.** The page answered what this is in ten seconds but never where to
+  start: five tool cards of equal rank and no path through them. The step
+  carries one sentence and one link per area, in the order the top nav names
+  them — Nachschlagen, Lesen, Schreiben — and points at each area's entry
+  rather than repeating the inventory the cards below already hold. Built from
+  the existing `PaperCardLink`, so the focus ring, the link colour and the
+  touch target come from the theme instead of a new component (#503).
+- **`POST /csp-report` — where the report-only week's findings land.** It
+  counts and logs; it writes nothing, touches no table and returns no body. It
+  understands both wire formats — `report-uri` posts one object, the Reporting
+  API posts an array with camelCase fields — although only the first is
+  declared: a browser walk measured that adding `report-to` makes Chromium
+  ignore `report-uri` and then deliver nothing at all (200 s, no request), while
+  without it the same violation arrived in under a second. A channel that
+  silences the working one without replacing it is worse than no channel, so
+  `report-to` waits until a report is seen arriving through it over HTTPS. One
+  log line per *distinct* violation and one per hundredth repeat — a violation
+  that fires ten thousand times is a different finding from one that fires
+  twice, and the running count is where that shows. Every logged value is
+  sanitised (the fields are attacker-controlled, so a newline would otherwise
+  forge log entries), the body is capped at 64 KB and the memo is bounded. It
+  is the one public write operation of this API, so it is named and argued in
+  `tests/test_api_public_surface.py::PUBLIC_WRITES` rather than simply added
+  (#497).
+- **The Cloudflare Worker in front of the admin route is in the repo.** The
+  apex `kurrentschrift.ink/api/*` reaches the API through a Worker
+  (`kurrentschrift-api-proxy`) that existed only in the Cloudflare dashboard:
+  nothing in the repo said it was there, what it did, or that the whole admin
+  UI depends on it. `infra/cloudflare/kurrentschrift-api-proxy.js` is now its
+  source — a mirror of the deployed bytes, so a `diff` against the running
+  script stays meaningful — beside a README with the route, the `secret_text`
+  binding, `compatibility_date`, both deploy paths (dashboard and the multipart
+  script `PUT`) and the `off`/`off-seen`/`ok` measurement that verifies a path
+  before the origin gate is armed (#495).
+- **IndexNow: every deploy tells Bing, Yandex, Seznam, Naver and Yep which
+  pages changed.** Bing Webmaster Tools' first recommendation for the site. A
+  public key file (`app/public/kurrentschrift-indexnow-….txt`, served by nginx
+  like the other machine files) proves control of the host, and the new
+  `.github/workflows/indexnow-submit.yml` POSTs the ten sitemap URLs to
+  `api.indexnow.org` on every push to `main` that touches `app/**` — the same
+  paths that trigger the Cloud Build deploy — or on demand. Ten pages make the
+  whole sitemap the natural unit; a diff-to-route mapping would be more code
+  than the site has routes. Google does not take part and keeps reading the
+  sitemap; the protocol is free (#491).
+- **An index over the campaign journal.** `qualitaetsmetrik.md` §14 opens
+  with two tables: one row per dated entry (date, route, arm, type and
+  verdict, linked to the section) and the headline ledger the running text
+  never got — every wordbench headline since `aug14` with the fixture root
+  it was measured on. 80 entries and ~47,000 words were previously
+  navigable only by reading them. The journal runs from `## 14.` to the end
+  of the file, because a round appends its section there and that lands
+  after the §15 heading, as LF11, J4 and J4b did (#489).
+- **`tools/docs_register`, the gate that keeps the registers current.**
+  `uv run python -m tools.docs_register check` requires a register row for
+  every §14 entry, a number the journal already carries behind every ledger
+  row, and a process-page ledger row for every duel-route entry; the CI job
+  „Docs-Register" runs it beside the changelog gate. Three "same PR" duties
+  written only in prose had decayed at once — a duty without a gate decays
+  exactly that way (#489).
+- **`tintenfolger.md` §7.11 „Offene Arme".** The next steps a closed round
+  named used to live only in the running text of the entry that named them;
+  they are now collected as a table, split into what a session can measure
+  and what only the author can do. No numbers — those stay in §14 (#489).
+- **The exit-side collinearity rule, opt-in and measured — and rejected.**
+  `compose_word(exit_trim=True)` cuts a sawtooth exit's chart stub back to the
+  point where the straight to the unchanged coupling point continues the
+  letter's own direction, centerline and silhouette both, and draws the join as
+  that straight — the A-side mirror of `entry_trim`, the class rule the audit
+  of 2026-09-02 asked for. The autopsy behind it is sharper than the finding
+  was: the chart stub ends in a finishing flick (`e` turns from 45° to 9° over
+  its last 0.05 xh, `i` turns downward), while the composer reads its departure
+  over 0.12 xh and aims the connector there. The cut walks back no further than
+  the foot turn, so the letter body is never touched, and it happens after the
+  next glyph has been placed, so the placement stays byte-identical — the
+  experimental control the pre-registration demanded. It does what it promised:
+  the class seam angle goes from +12.52° to −1.39°, joins kinking past 10° from
+  103 to 15, `bench_loss` 0.109255 → 0.108720, pairs untouched. It is still not
+  adopted: `dconn` against the hand's dissected joins falls in only 20% of them
+  (51% once the length artifact is taken out, still short of the 60% gate), so
+  the switch defaults to off, the golden fixture is untouched, and the numbers,
+  the post-hoc narrow-class arm and four named rescue paths are recorded in
+  `qualitaetsmetrik.md` §14 „Übergänge J4/J4b" (#488).
+- **`--exit-trim` on the word bench**, with `--exit-trim-min-kink` to narrow the
+  rule to the joins that actually kink. A candidate arm's own measurement, never
+  the headline — the same discipline `--overrides` and `--laufform` carry, and
+  the run says so in its header (#488).
+- **A sensor for the wobble no ruler was looking at.** `zigzag_rate` in
+  `core/laufform.py` counts how often a rendered Laufform row reverses its
+  curvature per x-height, and the Laufform inventory prints it beside every
+  row's own chart form. The stored running forms reverse 6.9 times per
+  x-height against the chart's 0.2, which is visible in every bound word —
+  and it stayed invisible to every green number because the word bench and
+  the ink follower both resample it away before they score. A defect no
+  instrument can see is a defect nobody can fix, so the instrument came
+  first (#486).
+- **A median that cannot carry that wobble.** `spline_basis_median` in
+  `core/aggregate.py` projects each occurrence onto a clamped cubic B-spline
+  over the chart row's own arc length — the chart's corners entering as
+  knots so a corner stays a corner — takes the median over the control
+  points, and evaluates back onto the original anchors. The per-anchor
+  median it stands beside medians all 120 anchors independently, so nothing
+  couples a neighbour and the estimator's own noise reaches the page.
+  `tools/laufform/smoothrow.py` builds candidate maps from it without
+  touching the database (#486).
+- **The form distance of a Laufform row (LF10) — pre-registered, measured,
+  not adopted.** `core.laufform.form_distance` measures how far a running-form
+  row leaves its chart's path: per anchor the distance to the other side's
+  rendered centerline of the same stroke, in chart nib radii, in both
+  directions; the pre-registered gate quantity is the worse directional p90,
+  because the defects it was built for (a flat segment instead of the v's
+  diagonal, the E's cross stroke sitting sideways, the P's bow beside the
+  chart) are local while the hand's legitimate deviation is global and
+  smooth. The inventory (`tools/laufform/inventory.py`) gains the columns
+  `form`/`f-med`/`f-max`, a data-derived τ_form with the pre-registered
+  sensitivity variants in its footer, black markers in `--png` for the anchors
+  at or above the row's own p90 (on the side the worse direction measures
+  from), and `--laufform FILE` to measure
+  candidate rows (harvest drafts, row backups) over the root's charts without
+  any DB write. Measured on the 2026-09-01 export: τ_form 1.40 (the w), the
+  stored reference row P sits at 1.01 — the pre-registered kill fired, so no
+  write path reads the quantity and no row was touched; the entry, the
+  autopsy and the rescue paths are in `qualitaetsmetrik.md` §14 („Laufform
+  LF10") and `tintenfolger.md` §7.9 (#474).
+- **`hitArea()` — an invisible 44px touch target that leaves the optics
+  alone.** The replay ↻ over the ink, the Kurrent-i of `InfoHint`, the quiet
+  „beenden" and the Federprobe chips are deliberately small marks; making them
+  physically bigger would shout where the design whispers. A centred `::after`
+  of `max(100%, 44px)` gives the thumb what it needs instead
+  (`app/src/styles/hitArea.ts`); toggle groups grow to 44px below `sm` via the
+  theme. design-system.md §9.3 carries the rule — marked as a proposal until the
+  author adopts the 44px floor, since WCAG itself is already met (#485).
+- **`app/scripts/type-floor.mjs` — the standing grid under the type floor.** It
+  walks every public route in a real browser, reads the computed font size of
+  every element rendering text of its own and fails under 14px. No new
+  dependency: it drives Chrome over the DevTools protocol using Node 22's
+  built-in WebSocket. `npm run type-floor`; against the live site it reports the
+  17 places above, against this branch none (#485).
+- **A back-to-top button on the three long content pages.** /schriftkunde is
+  about twenty phone screens tall and its only inner navigation is the jump list
+  at the very top, unreachable after the first screen. The button appears after
+  two screens of scrolling, is 44×44, and jumps rather than glides under
+  `prefers-reduced-motion` (#485).
+- **The page gutter now includes the safe area.** `index.html` opts into
+  `viewport-fit=cover`, so on a notched phone in landscape the first ~47px of
+  each edge sat under the cutout while nothing in the app compensated.
+  `PageContainer` and `PublicFooter` state their padding as
+  `max(designed, env(safe-area-inset-*))`, which keeps the designed gutter
+  everywhere and yields only where the device asks for more (#485).
+- **A word mode for the human judgement pass, on the authenticity question.**
+  `tools/humanbench/build.py --word-arms BASE CANDIDATE` builds a round that
+  shows one whole specimen word from a frozen word-bench fixture root with two
+  compositions drawn over it as INK — filled silhouettes for the letter
+  bodies, capsules of their own width for the generated connectors — and
+  `page.py --question authentic` asks „Welche Zeile sieht echter geschrieben
+  aus?“ instead of the accuracy question. It is the only instrument in the
+  project that can see the three defects every frozen ruler resamples away or
+  never measured: the anchor-median zigzag of a Laufform row, the too-thin
+  stroke, and the kink at a connector's seam. Until it existed, every
+  improvement to the ductus was unprovable and every adoption a matter of
+  taste (`docs/reference/menschliche-bewertung.md` §8a).
+- **A pre-registered decision for paired rounds, written before the first one
+  was run.** `analyse.py` gained the five-step paired plan — side reliability
+  from the mirrored repeats, side balance, the verdict, the per-class split,
+  drift — and adopts a candidate only at ≥ 60 % of the decided screens with
+  ≤ 25 % „kein Unterschied", and only when the repeats show the judge was not
+  answering by position. Both denominators are printed, because the two
+  conditions ask different questions and putting the ties in both would count
+  the same fact twice.
+- **`tools/humanbench/wordarm.py`, the reference producer of the arm files.**
+  It composes one arm from the frozen fixtures by importing the word bench's
+  own composition and placement, so a human verdict and the automatic ruler
+  can never be about different pixels; `--laufform` feeds a candidate running
+  form, `--nib` a different pen, `--registration-from` pins the placement so a
+  systematically shifted arm cannot become a tell. The builder composes
+  nothing itself — an instrument that computed its own candidate could drift
+  away from the ruler that has to confirm it — and it refuses two arms that
+  were not composed against the same fixture root, style or export: those
+  carry different crops, slots and registrations, and the round would still
+  build a clean-looking verdict over two measurements that were never the same
+  one.
+- **A rootless path for the migrations gate, verified end to end.**
+  `/verify-migrations` now leads with the `pgserver` wheel (no Docker, no
+  root), gains the `.env` trap as §0 — `alembic/env.py` calls `load_dotenv()`,
+  so an un-exported `DATABASE_URL` silently aims at production — a single-head
+  check as the fourth check, and the snapshot precondition before any
+  DROP/rewrite revision (#484).
+- **Four new skills for procedures that had none.** `/verify-trace` turns the
+  five-step Tintenfolger measurement liturgy into a checklist with the BLAS
+  pinning in the command line rather than in prose, and the "base and arm are
+  the same stack but one knob" rule as an abort condition — the failure that
+  produced two wrong measurements in two days. `/dbsnapshot` carries the
+  create-only archive rules and the correct entry point. `/release` covers the
+  fold, the tag on the merge commit and the condensed-notes rule.
+  `/dependabot` covers the weekly batch and the `update-branch` trap (#484).
+- **`tests/test_agent_instructions.py` pins the agent guides against drift.**
+  136 backticked paths must resolve, 48 `§N` references must hit a real
+  heading (a range like `§3–§6` asserts every section in it), and 22 rules
+  must be present in BOTH `CLAUDE.md` and
+  `copilot-instructions.md` — the two files claim to stay in sync, and until
+  now nothing checked it (#484).
+- **Explanatory paragraphs on /quiz and /federprobe, and a guard that keeps
+  the sitemap honest.** The two tool pages carried 111 and 129 words of main
+  content; they now open like the hubs do, in the SPA and in the prerender.
+  Each `<lastmod>` is a page's visible „Stand“ line, so `npm run prerender`
+  runs `scripts/check-sitemap-lastmod.mjs`, which holds every date against
+  the git history of the files that page renders (`PageSpec.sources`) and
+  steps aside on a shallow clone (#483).
+- **A glossary section for the public product names.** Schreibtafel,
+  Lesetafel and Grundtafel meant three different things with no entry
+  anywhere, and „Tafel · Chart“ is a fourth; §7 names them, with Federprobe,
+  Lese-Quiz, Lesart prüfen, Übungsblatt and the „Zug um Zug“ motif — which is
+  a promise, not decoration: what it labels must be a real composition, never
+  the fallback font (#483).
+- **The word bench now states which base it measured.** Every run prints two
+  header lines per fixture root — `root: <name> exported_at=…` and
+  `digest=<12 hex>` — from a new `root_digest()`: SHA-256 over the sorted list
+  of (relative path, size, SHA-256 of the bytes) of every file under the root.
+  The roots are gitignored, so a re-export used to leave no trace at all; the
+  audit of 2026-09-02 found a headline pair whose base nobody could
+  reconstruct. `--expect-root <prefix>[,…]` turns the expected base into a
+  precondition and aborts before composing anything, and the manifest's
+  `page_sha256` is now re-checked by the measuring run instead of only by the
+  rebuild path. The frozen Sütterlin roots as of this change are
+  `suetterlin-1922` `219182189b93` and `suetterlin-1922-pairs` `9f94ba7523f5`,
+  both `exported_at=2026-08-14T06:02:45+00:00` (#478).
+- **`seam_deg`: the kink where a connector meets its letters is now a number.**
+  A report-only column per join — `dep` how far the generated connector leaves
+  the letter's own last direction, `arr` how far the next letter starts off the
+  connector's arrival — read over 0.05 xh of arc, deliberately smaller than the
+  0.12 xh window the composer aligns its tangents on, since measuring the
+  residual kink on the construction's own window would return zero by
+  definition. On the frozen 1922 word plate the composer departs +11.87°
+  (|Δ| 13.10) and arrives −3.26° (|Δ| 11.18) over 206 of 214 joins; connectors
+  carrying a capital's prefixed ornament retrace are excluded and counted,
+  genuine ſ/w/r/v reversals are kept. Both headlines stay byte-identical across
+  the introduction (`bench_loss` 0.108091, `pair_loss` 0.148489), as the report
+  column rule requires (#478).
+- **CI builds the shipped API image and smokes it before the merge.** A fifth,
+  parallel `image` job builds `api/Dockerfile` without pushing (GHA-cached) and
+  runs a container smoke that needs no database: `/health` answers, the OpenAPI
+  `info.version` must equal the `pyproject.toml` version — the exact assert
+  that would have caught the missing `pyproject.toml` COPY of #473, which a
+  reviewer found and no gate did — and the files the runtime stage is expected
+  to serve or run must be present, pinning the COPY list against a future stage
+  rebuild. hadolint runs over both Dockerfiles at threshold `warning` with the
+  four current findings named and excepted, so a new warning blocks while the
+  deliberate ones do not.
+- **The app deploy runs the candidate chain the API already ran.**
+  `app/cloudbuild.yaml` deploys with `--no-traffic --tag=candidate
+  --revision-suffix=b$BUILD_ID`, smokes the candidate URL (a human UA gets the
+  SPA shell, Googlebot gets the prerender marker through `@seo_proxy`,
+  `/robots.txt` still carries the Bytespider rule, `/llms.txt` declares a utf-8
+  charset) and only then shifts traffic. That service carries the whole crawler
+  path in `app/nginx.conf` — the file whose breakage served every bot an HTTP
+  502 for four weeks in the sister project — and went live unchecked until now.
+- **A code of conduct and a pull-request template.** Contributor Covenant 2.1
+  with the same contact address as `SECURITY.md`, and a template naming this
+  repo's three actual PR duties: a fragment under `changelog.d/`, a glossary
+  entry for a new Fachbegriff, and the matching `/verify-*` skill.
+- **The full audit of 2026-09-01/02 is on record.** Twenty independent
+  auditors swept repo, docs, skills, API, core, tools, frontend, content,
+  live site, written output, CI, security and the task backlog. The synthesis
+  over their reports is the synthesising auditor's proposal rather than a
+  decision: what the author settles arrives later, each in its own PR. Both
+  documents are Befund-Journale, dated snapshots that are never continued —
+  the raw reports and the synthesis (39 ranked findings, 14 parallel tracks,
+  11 questions for the author) now live under `docs/notes/` instead of an
+  untracked working copy that the next `git clean` would take with it (#475).
+- **`tools/wordbench/repair_boxes.py`, the repair as a repeatable
+  measurement.** It re-measures on the raw binarised plate and lifts only
+  the edges whose clearance fell below the plate's standard — 169 of the
+  202 specimens sit at exactly that 3 px and are left byte for byte alone,
+  because every rect it touches is a fixture and a stored trace
+  registration that has to move with it. What counts as the word's own ink
+  is decided by the line's own lineature rather than a pixel count:
+  components outside ±1.35 x-heights belong to the neighbouring line,
+  punctuation hangs entirely below the Mittellinie and is never pulled in
+  (every right-edge candidate of the first pass was a comma), pale
+  bleed-through fails a darkness comparison against the word's own stroke.
+  An edge that would grow by more than two x-heights is reported instead of
+  applied, as a backstop behind those rules rather than a rule of its own:
+  at one x-height it refused `regieren`, whose last letter really is cut.
+- **`tools/wordbench/shift_registrations.py` for the other half.** A stored
+  trace registers in crop-local pixels, so a moved rect origin leaves it
+  beside its own ink — vertically that shows as „Rahmen veraltet", and
+  horizontally nothing catches it at all. The correction is exactly that
+  origin shift, no re-tracing. Which crop a row currently counts from is
+  recorded rather than guessed: a shifted row carries its origin as
+  `measurements.rect_origin`, and a row without that stamp belongs to the
+  `--baseline` sidecar. That makes the run exact and repeatable on both
+  axes; a `baseline_row` comparison alone cannot see a repair that moved
+  only `x0`, and two of the real ones are exactly that. It writes to the
+  shared database, so it is dry-run by default (#471).
+- **A tracing-status filter over the admin word specimens.** The Wörter
+  overview gets a status select beside the search field — Alle · Offen ·
+  Nachgefahren · Unvollständig — so "what is still to trace?" is a choice
+  rather than a scroll through the whole list hunting for a missing chip.
+  A specimen counts as done only on a stored hand-drawn trace: an automatic
+  fit is what the manual pass exists to replace, so it stays open.
+- **`incomplete` specimens in the words.json sidecar.** Some word specimens
+  can never be traced by hand because their own ink is clipped — a cut-off
+  i-dot, a last letter running off the plate rect. Flagging the entry
+  (`"incomplete": true`, the reason in its `note`) takes it out of the open
+  work list and out of the tracing tally's denominator, where it would
+  otherwise sit forever as an unreachable "still open", and shows it as a
+  chip on the card and in the word detail. It stays a specimen: the intact
+  part is still measurable. The flag is data rather than a click because
+  the rect corners are frozen bench fixtures — re-cutting a clipped
+  specimen larger would re-baseline the word bench. `/word-samples` now
+  carries `incomplete` and `note` (#470).
+- **`tools/ogcard` rebuilds that card on command.** A card bound to a template
+  instead of a font has to be re-buildable when the template is re-traced, so the
+  composition is a tool rather than a one-off image:
+  `uv run python -m tools.ogcard`. One public GET, no database, no admin token;
+  it renders with the headless Chromium Playwright already installs for
+  `/verify-frontend` and checks the result before writing (right size, paper in
+  all four corners — the silent failure when a browser sizes the window instead
+  of the viewport). The composed geometry is fetched and never committed; only
+  the published raster lands in the repo.
+- **`St` joins the closed ligature set as its one cased member.** The 1922
+  plate writes capital S into t without a lift (Korb #9), unlike `Sc` and
+  friends, which correctly restart at the baseline. Both shaping twins now
+  fold exactly `S`+`t` into the new `St` glyph key (`STEIN`/`sT` never
+  fold, a Fuge blocks the cluster), the decompose fallback keeps the
+  capital S so words render exactly as before until the author traces the
+  St chart form in the wizard, and the shared shaping fixture pins
+  `Stein`/`Straße`/`Stube` on the new key (#463).
+- **Changelog fragments: one file per PR under `changelog.d/`, folded in at
+  the release cut (`tools/changelog`).** Every PR used to add its bullets
+  under `[Unreleased]` of the one shared file, and every sibling merge
+  conflicted the others exactly there — the union merge driver of #461
+  heals the local rebase, but GitHub's mergeability check ignores it, and a
+  branch that moves changelog lines came out of the rebase duplicated. Now a
+  PR adds `changelog.d/<slug>.md` in the changelog's own format
+  (`### Category` over bold-titled bullets) and touches nothing else. The
+  new CI job „Changelog (fragment)" runs
+  `uv run python -m tools.changelog check --base origin/main`: a fragment
+  per PR except data-only PRs and the `skip-changelog` label, and no bullet
+  written into `[Unreleased]` directly; `preview` prints the pending
+  section; `release X.Y.Z --title …` folds the fragments (newest first
+  within a category, by the commit that added them) plus whatever
+  `[Unreleased]` still holds under the new heading, bumps `pyproject.toml`,
+  `uv.lock` and `CITATION.cff` and deletes the fragments — the cut the
+  header used to describe as hand steps. Standard library only, pinned by
+  `tests/test_changelog_tool.py` including the gate against a throwaway git
+  repository; the union driver stays as the net under the cut PR itself
+  (#462).
 - **A letter of the Schreibtafel in detail (`/tafel?g=<key>`).** Tapping a
   written letter on the Sütterlin sheet still re-writes it in place — and
   now opens it below the sheet: the stroke order as numbered starts on the
@@ -285,6 +693,465 @@ cannot judge a line that BOTH sides changed, so never rewrite existing lines in 
 
 ### Changed
 
+- **The ESLint parking lot is empty, and the gate now holds it there.** Issue
+  #227 parked 45 warnings; by the audit of 2026-09-02 the lot had grown to 69,
+  and it stood at 68 when this work began — 35
+  `react-hooks/set-state-in-effect`, 25
+  `react-refresh/only-export-components`, 4 `react-hooks/refs` and 4
+  `react-hooks/exhaustive-deps`. All 68 are gone, rule by rule, and no new
+  suppression was written for any of them; the seven
+  `eslint-disable-next-line react-hooks/exhaustive-deps` directives already in
+  the tree (five files, each with its reason beside it) are untouched. The
+  three `warn` downgrades in `eslint.config.js` are deleted, so those rules sit
+  at `error` from the react-hooks preset, and `npm run lint` runs with
+  `--max-warnings 0`: the next warning of any rule fails CI instead of joining
+  a list.
+- **State that belongs to a prop is now adjusted during render, not after
+  it.** Every "reset when the input changes" effect became React's documented
+  render-phase guard (`if (shownFor !== key) { setShownFor(key); …reset… }`).
+  This is not only quieter but more correct: the reset lands in the SAME paint
+  as the change, so a reused instance no longer shows one frame of the previous
+  glyph's error line, the previous word's ink, or the previous source's
+  workbench rows.
+- **Contexts, route tables and shared constants are their own modules.** A file
+  that exports a provider next to its hook — or a route table next to the
+  components it names — takes no Fast-Refresh update, so editing the workbench
+  provider reloaded the whole admin. `adminState.ts`, `korbState.ts`,
+  `workbenchState.ts`, `publicPages.tsx`, `adminPages.tsx`, `RootBoundary.tsx`,
+  `PageContainer/widths.ts` and `inkReveal/inkGroupSx.ts` split those apart; no
+  behaviour moved with them.
+- **The `/tafel` layout shift is measured, and it is not the font.** The
+  website audit read the jump as the late GLKurrent section initial and left a
+  `font-display` question open behind it. Six production runs (real Chrome over
+  CDP, Slow 4G + 4× CPU) put it at 0.095 mobile and 0.112 desktop — and in
+  every one of them the show font is already loaded when the shift happens.
+  The whole value is the page growing from 844 px to 3132 px in one step when
+  `/sources` answers, which pushes the footer out of the viewport; the three
+  chart scans contribute nothing, having carried their `chart_size` aspect
+  ratio since #476. `frontend-stack.md` records the numbers, the method and
+  what follows: reserving the sections' height would move this number, the
+  font setting would not.
+- **Declared re-baseline of the glyph-bench fixture roots, which were nearly
+  three months old.** They still held the June export, from before migration
+  `0017` and before any Laufform existed. Re-exported, both scripts measured one
+  per run with BLAS pinned: Sütterlin 0.182809 → 0.212277 and Kurrent 0.125104 →
+  0.121916. Neither move is a pipeline change — every glyph present in both the
+  old and the new root scores bit-identically, and the whole difference is the
+  population: 28 glyphs authored since June joined the Sütterlin set (mean loss
+  0.246530 against the old set's 0.184069), and one Kurrent glyph swapped out
+  for another. The word bench was re-exported in the same pass and reproduces
+  0.109218 / 0.148198 exactly, so only its root digests moved. Numbers either
+  side of this line are not comparable; `qualitaetsmetrik.md` §3, §5 and the
+  headline ledger carry the entries (#516).
+- **§14 is a closed section again.** Five `sep02` rounds had appended their
+  sections at the end of the file, which by then landed after the `## 15.`
+  heading, and the register gate had been widened to read to the end of the
+  file so their entries stayed indexed. On the author's decision the sections
+  moved in front of §15 instead — not one word changed inside them, the anchors
+  the docs cite about 350 times are untouched — and the gate reads a section
+  again. Whoever writes the next round places it before §15, and the gate looks
+  past the section boundary to say so: a `###` heading behind §14 is reported as
+  a misplaced entry rather than quietly falling outside the window. It does not
+  guess from the heading's shape — the file already carries 26 dated headings
+  outside §14 — so a later section that earns its own subheading declares it in
+  one reviewed line (#512).
+- **The follower arms ②③④⑦⑧ are formally written off.** Five of the eight arms
+  pre-registered on `aug14` were never measured, and on the author's decision
+  they will not be: all five are weight arms of the formulation that ①⑤⑥⑥b⑨
+  answered exhaustively in the negative, and everything that has moved the
+  route since was formulation and evidence, not weights. The write-off had
+  lived only on the process page; it now stands in the journal itself as a
+  dated Nachtrag, in the register row, in the rescue-path table with the one
+  route back (a new formulation in which a weight can do something else), and
+  as the status in §7.11 (#512).
+- **The Schreibtafel's narrow cells are a decided exception to the 44px touch
+  rule, not an open question.** Fourteen of the sheet's 62 cells — i, l, ſ, t, z,
+  the capitals I, J, O, Ö, P, S, T, Z and the digit 0 — stay under the floor in
+  width, because a cell is as wide as its letter's ink plus half a gap on each
+  side (`cellW = glyphW + gap`), which is what makes the row read as a written
+  line rather than a type case. The author decided to leave them (audit finding 21):
+  the cells are not a primary target, the same letter is reachable at full size
+  through the letter detail, and both remedies cost more than they buy — an
+  invisible hit area would reach into the neighbouring letter and steal its tap,
+  and widening reflows the very lookup grid the page exists for. §9.3 now records
+  which cells, why they are narrow, why that is accepted, and the condition that
+  ends the exception: the next time the sheet is re-laid out, the 44px width is
+  part of that design rather than something to buy back afterwards (#514).
+- **The Cloudflare location claim now says only what is known.** „Alle Dienste
+  laufen in EU-Rechenzentren" was not defensible for a worldwide Anycast
+  network — the promise holds only with Regional Services, which are not
+  available on the plan in use. The site's own stack is named with its region,
+  Plausible is named as the separate EU-hosted service it is, and for Cloudflare
+  the text says European locations are used as a rule and stops there (#507).
+- **A locked glyph can be overwritten from the wizard, deliberately.** The lock
+  used to send the author to the Tafel to unlock, back into the wizard to draw,
+  and back again to re-lock — four steps for one decision, and the glyph was
+  left unlocked in between. It now stays fully offered and visibly marked (chip
+  in the title, hint on the Weg step, and the save button says „gesperrt"), and
+  overwriting costs one confirmation. The gate is unchanged where it matters:
+  the server still refuses without `force` (423), and within the wizard only
+  that dialog sends it — the two deliberate re-derive surfaces in the
+  diagnostics keep the force they always had
+  (`docs/proposals/optimierungs-werkbank.md` §6) (#513).
+- **The coverage deduction is called „Deckungslücke".** The diagnosis panel
+  printed „Deckung (IoU): 0.105", „Deckungs-Gate: 0.01" and „Deckung 0.99"
+  within three lines — the same quantity once as a result and once as a
+  deduction, under one word, so the 0.99 read as excellent coverage while being
+  the largest possible penalty. Only the deduction is renamed — `1 − gate`, the
+  composite gate deduction over overlap, boundary distance and centerline
+  position; the two positive readings keep their word.
+  The one-line breakdown on the letter cards also gained the „Abzüge:" prefix
+  that the bar chart states under its bars, so a bare number can no longer be
+  read as a score (#513).
+- **The sitemap `<lastmod>` guard measures the rendered page, not a list of
+  its ingredients.** `scripts/check-sitemap-lastmod.mjs` held each route's
+  date against the git history of a hand-kept `PageSpec.sources` list, which
+  drifted in both directions — a shared file such as `seo.ts` marked pages
+  stale whose text had not moved, while a body reaching for an unlisted module
+  changed the page unseen. It now reads the history of
+  `app/prerender/<page>.html`, which is the literal answer to "when did this
+  page change" and needs no bookkeeping to stay true. The comparison itself
+  moved into `staleLastmods()` beside the renderer, where a unit test drives
+  its four cases (committed, uncommitted, no history, the route-less 404).
+- **`/open-pr` retires the "add the PR number to the fragment" step.**
+  `tools.changelog` never required a `(#NNN)`, and the number is unknowable
+  until the PR exists, so the step meant a follow-up commit carrying one token
+  — which three agents in one day did with `sed -i`, against the rule that
+  repo files are edited with Edit/Write only. The fragment may now be written
+  without a number, and the skill and `changelog.d/README.md` say so. The
+  skill's merge section also states the wait that #504 taught: the
+  `copilot-pull-request-reviewer` check must be `completed` on the current
+  head SHA and all review threads resolved, and a draft is made ready first —
+  a draft is never reviewed at all.
+- **A control wrapped in a `<label>` is measured at the label.** That is where
+  the tap lands, and it is what makes MUI's transparent Switch and Checkbox
+  inputs measurable at all instead of reporting the geometry of an invisible
+  overlay. `MuiFormControlLabel` carries the floor as `minHeight`, so the
+  control's own drawing stays untouched (#505).
+- **The guardrail rationale moved out of the file every session loads.**
+  `CLAUDE.md` is read on every turn, so its cost is paid on every turn — and
+  its guardrail section had grown into retro narratives: the incident, the
+  recipe, the numbers, inline. Each rule is now one binding line with its
+  shortest reason and its date, and the stories moved to
+  `.claude/guardrails.md`, which a session reads when it actually hits the
+  situation. Condensing did quietly drop two triggers on the first pass — the
+  snapshot owed AFTER an authoring session, and the re-read owed after a
+  formatter or codegen rewrites a tracked file — and review caught both; they
+  are back in their one-liners, which is what the correspondence test now
+  exists to enforce. Otherwise no rule was dropped, softened or merged;
+  `CLAUDE.md` shrank from
+  34,546 to 29,132 bytes (−16 %). `.github/copilot-instructions.md` keeps its
+  guardrails spelled out in full on purpose — Copilot Code Review reads that
+  file and does not follow links — and now says so (#506).
+- **`tests/test_agent_instructions.py` pins the split mechanically.** The new
+  file joins the path and section checks, and every `##` section of the
+  companion file must map to a phrase that actually appears in `CLAUDE.md` —
+  both directions, so an unregistered section fails and a registration
+  covering nothing fails too. That is what stops a rule from coming to rest
+  where no session loads it; a disclaimer sentence alone would not have
+  caught it. The mirrored-rule list also gained the two shared rules it was
+  missing, the Copilot re-review and Todoist ones (#506).
+- **The running forms of the 1922 hand are smooth now.** All 22 Laufform rows
+  of `suetterlin-1922` were rewritten as spline-basis medians (LF11, knot
+  spacing 0.16 x-heights) on the author's decision, informed by the first
+  humanbench word round, which came out 40 judgements to 1 for the candidate and
+  reliable on its repeat pairs. The round carries no formal verdict — the
+  "no difference" share is 34.9 % against a pre-registered ceiling of 25 % — so
+  the journal records an author decision rather than an instrument verdict.
+  The rows had been reversing their curvature a
+  median of 6.9 times per x-height against their chart rows' 0.2 — the worst of
+  them, the `c`, 21.8 times — and every bound word rendered one, which made it
+  the single largest difference between "written" and "computed" in the product.
+  Across the 22 rows production serves, the mean rate falls from 8.570 to 0.627.
+  The frozen word bench moves from
+  0.109255 to 0.109218 and the pairs from 0.148433 to 0.148198, which is exactly
+  what the dry measurement predicted, down to every component and diagnostic
+  line. Public `/write/word` responses carry up to 24 h of edge cache, so the
+  change appears there as that expires; no purge (#501).
+- **The journal records a decision no number could have made, and says whose it
+  was.** `docs/reference/qualitaetsmetrik.md` §14 carries the entry — the round,
+  all three tallies side by side under the binding analysis plan, why none of
+  them clears the tie bar, the unresolved question of whether a display fault
+  reached any of the judgements, and the write with its snapshot timestamp and
+  read-back — plus the re-baseline row in the headline ledger with the new root
+  digests. `tintenfolger.md` marks LF11 adopted on the author's decision and
+  opens the repeat round that would replace it with a real verdict (#501).
+- **The judging method learned two rules from its first real round.**
+  `menschliche-bewertung.md` gains construction rule 3.6b beside the loop-fill
+  fault that #492 fixed: check a form with an interior before the first round,
+  because filling a loop erases exactly the features the question asks about and
+  pulls answers toward "no difference" rather than adding noise in both
+  directions. And the part this PR's own first draft got wrong: a split round is
+  a weaker round, its cleaned half is counted under the same plan (mirrored
+  repeats never vote), and below six complete repeat pairs it is diagnostic
+  rather than adoption-carrying (#501).
+- **The 44px touch rule is binding, not a proposal.** design-system.md §9.3 went
+  in as a suggestion because it goes beyond WCAG — SC 2.5.8 asks for 24×24 and
+  the site already met it through the spacing exception. The author decided on
+  2026-09-03 to hold the platform recommendation (Apple HIG 44 pt, Material
+  48 dp) instead, so the section and the glossary entry now read as a rule. The
+  companion decision, that links in running prose stay underlined, needed no
+  change: §9.2 was already binding.
+- **The reserved blob in the public history is accepted, not purged**
+  (author's decision, 2026-09-02). `.design-sync/previews/_writtenGlyphData.ts`
+  — added 2026-06-20, untracked again 2026-07-31, never removed from history —
+  stays. Rewriting a public `main` would not unmake the copies that clones and
+  forks already hold, so a purge lowers findability at the cost of breaking
+  every existing clone; the README reservation remains the legal boundary
+  either way, and what is actually prevented is the repetition. The reasoning,
+  the blob's identity and the net that enforces it are in
+  `docs/reference/quellen-und-rechte.md` §5, and `/audit-licenses` now reports
+  it as settled instead of re-raising it (#500).
+- **The prototype canonicals surfaced too, and were accepted** (author's
+  decision, 2026-09-03, same reasoning): the three `mvp/canonical/*_v0.json`
+  files and all four revisions of each, twelve blobs. The 2026-09-02 audit had
+  set them aside as "0.9–1.1 KB hand seeds"; measured, they run past 50 KB
+  carrying 50 `pixel_anchors` plus `half_widths_px` — the same class of
+  authored geometry as the first blob, not stubs. That only showed once the
+  net checked content instead of trusting a size, and the extra revisions only
+  once it looked for numbers next to the key instead of anywhere in the
+  file (#500).
+- **The landing lead now says who this is for.** „Für wen" was only implicit in
+  „unsere Vorfahren", while family research is the audience the site is built
+  around. The Kirchenbucheintrag joins the letters and deeds, and the reasons —
+  Familienforschung, Archiv, Neugier — sit as an aside between dashes, so the
+  sentence keeps the tone of a preface around 1900 rather than turning into a
+  pitch (#503).
+- **`LICENSE` now states its own scope** (author's decision, 2026-09-03). A
+  short paragraph above the untouched MIT text says what MIT covers: the code.
+  Data under `/data/` is licensed per source, and the learned dataset —
+  authored ductus templates, Laufformen, occurrence statistics, trained
+  reading models — is reserved outside the grant. Until now that reservation
+  lived only in README prose while `LICENSE` and `CITATION.cff` reported
+  "MIT" machine-readably for the whole repository, and those are exactly the
+  files that get read automatically: GitHub's licence detection, SPDX
+  scanners, citation tooling. The MIT text itself is unchanged so GitHub
+  still detects "MIT License", `CITATION.cff` gains a `license-url` pointing
+  at the file (still valid against schema 1.2.0), and the README and
+  `quellen-und-rechte.md` §5 both point at it (#502).
+- **The API image ships bytecode, which is ~2.2 s off every cold start.**
+  `uv sync` ran without `--compile-bytecode` and `.dockerignore` excludes
+  `__pycache__`, so every start compiled ~1,550 modules from source.
+  `UV_COMPILE_BYTECODE=1` covers the venv and a `compileall` pass in the
+  runtime stage covers `api/`, `core/` and `alembic/`. Measured with
+  `-X importtime` on CPython 3.13, three runs each: 3,081–3,230 ms to import
+  `api.main` without a bytecode cache against 909–1,038 ms with one. The
+  builder now also pins uv itself and names its interpreter (`UV_PYTHON`,
+  `UV_PYTHON_DOWNLOADS=never`) — the resolver was the last unpinned input of
+  an otherwise fully pinned image. The cold-start comment in
+  `api/cloudbuild.yaml` says what `min=1` did and did not fix, instead of
+  implying the cold start is gone (#497).
+- **The README shows coverage per flag instead of one blended number.** The
+  single Codecov badge reported a repo total that mixed a well-tested backend
+  with a barely-tested SPA; since the frontend re-baseline it would have read
+  as one uninformative middle figure. Two flag badges — backend (`core/` +
+  `api/`) and frontend (`app/src/`) — say which half is which, so the strong
+  number is not diluted and the gap is named rather than averaged away
+  (audit question F8, author's decision).
+- **The deploy smoke carries the origin header, and checks that it is the right
+  one.** `api/cloudbuild.yaml` reads `ORIGIN_SECRET` from Secret Manager inside
+  the step rather than through `availableSecrets`, which resolves at build start
+  and would fail every build until the secret exists. A missing secret or a
+  missing `secretAccessor` leaves the probes bare — correct while the gate is
+  off, and loud at the first `/styles` once it is on. The smoke additionally
+  asserts that the secret the BUILD can read is the one the SERVICE was given,
+  so a rotation applied to only one side surfaces there instead of as a
+  mysterious 403 after the promote. The deploy also switched from
+  `--set-secrets` to `--update-secrets`: the former replaces the whole binding
+  set and would have stripped the hand-attached `ORIGIN_SECRET` from every
+  revision the pipeline creates, silently disarming the gate on the next deploy
+  (#493).
+- **The LF11 arm is pre-registered, measured and left unwritten.**
+  `docs/reference/qualitaetsmetrik.md` §14 carries the pre-registration
+  written before the first number and the result of the ladder that
+  followed: at a knot spacing of 0.16 x-heights the candidate closes 96.7 %
+  of the smoothness gap to the chart, moves the frozen word and pair rulers
+  by −0.000037 and −0.000235, loses no crossing in any of the 63 words, and
+  repairs all five row gates the fresh per-anchor median breaks. It is a
+  candidate and nothing more: adoption waits on the humanbench word round
+  and the author's go, because a ruler that cannot see the defect cannot
+  approve its removal either (#486).
+- **The workbench is reachable by heading and by name.** The three detail views
+  had no `h1` at all (their visible head is a ReactNode), nine of ten sliders and
+  both chart-zoom buttons had no accessible name, 63 buttons were called „Öffnen"
+  with no subject, and the Korb toggle was named after the heading beside it
+  rather than its own effect. `ViewHeader` takes a `titleText`, the controls carry
+  their labels, and the toggle reports `aria-expanded` (#487).
+- **Eigenhand's terminal commands can be copied.** The three shell lines sat
+  inside running sentences in a proportional antiqua, where `--`, `-m` and `.`
+  are exactly what slips while typing; each is now a monospace block with a copy
+  button (#487).
+- **A stale chunk after a deploy now recovers by itself.** `RouteError` existed
+  for exactly that failure but asked the visitor to press a reload button for
+  something they neither caused nor can understand. It now recognises the four
+  browser wordings for a failed dynamic import and reloads once, guarded by a
+  `sessionStorage` flag so a genuinely broken `index.html` cannot loop the tab;
+  a thrown 404 renders the real 404 page. The guard fails toward the manual
+  button: where `sessionStorage` throws, no automatic reload happens at all,
+  because an unguarded one is the case that could spin the tab. Pattern taken
+  from the sibling repo (#485).
+- **The paired page carries its question into the result file's header.** A
+  round on the accuracy question is tagged `VERGLEICH/n`, one on the
+  authenticity question `ECHTHEIT/n`. The two measure different properties and
+  their rounds are not comparable, so a text whose analysis plan is lost can
+  still be filed under the right question.
+- **`/health` reports the running version, and the deploy asserts it.** The
+  pre-traffic smoke in `api/cloudbuild.yaml` now compares it against the version
+  in the build's own checkout — without it a smoke passes just as happily
+  against an image this build did not produce. The same smoke stopped probing
+  `n-medial`, a glyph key gone since migration 0017 that only ever passed
+  because the admin gate answers 401 before the 404 (#481).
+- **HEAD is answered everywhere, not only on `/seo-proxy`.** FastAPI's
+  `@router.get` is GET-only, so link checkers and the assistants that preflight
+  the two SVG assets `llms.txt` advertises got a 405 from the origin; they only
+  looked healthy because the edge answers HEAD from a cached GET. anyplot's
+  `HeadAsGetMiddleware` now does it app-wide, wrapped innermost so the crawler
+  counter above it still sees the real method and does not book a probe as a
+  read (#481).
+- **`app/.nvmrc` and `engine-strict` name the Node version the build needs.**
+  `package.json` has declared `engines.node >= 22` all along and nothing
+  enforced it, so a Node 20 machine installed happily and then failed deep
+  inside the build with `node: bad option: --experimental-strip-types` and no
+  mention of a version (#481).
+- **`/work-basket` states what a second round after a rejection costs.**
+  The skill said only "re-read the row before you close it", which no
+  longer describes the API: closing now reads `stage` and `resolution`
+  from the PATCH itself, never from the stored row, so a bare
+  `{"status":"done"}` answers 422 instead of quietly reinstating the
+  restatement the author had just rejected (#484).
+- **`/verify-frontend` now judges against the binding spec, and measures
+  a11y the only way that works.** Style checks pointed at
+  `style-guide.md`, which says itself that tokens are no longer maintained
+  there, while the binding `design-system.md` appeared in no skill at all;
+  the skill also never named the three static gates CI runs. It now carries
+  both, plus two measurement gotchas that each produced a false negative:
+  a scripted `element.focus()` does not trigger `:focus-visible`, so focus
+  rings must be driven with real key events (a Tab walk), and a type-floor
+  sweep must count only elements with their own visible text — an invisible
+  MUI switch input measures ~13.33 px and is not a legibility problem
+  (#484).
+- **The rules now reach both audiences.** Five rules lived only in
+  `copilot-instructions.md` (never merge a PR yourself, `core/` PRs quote
+  bench numbers, the code standards, never silently diverge, Codecov as
+  reviewer) and four author directives lived only in a machine-local memory
+  that no cloud session and no Copilot ever sees (`Fixes #N` in the PR body,
+  the sibling-repo transfer rule, using asymmetric findings instead of
+  discarding them, and that the author authors in the PROD admin so admin-UI
+  reports are against `origin/main`). All nine are now in both files, the
+  pre-commit section states what is actually configured, and rotting file
+  lists became pointers. `prime.md` shed the repository map it duplicated out
+  of date (#484).
+- **Two licence nets that had stopped working.** The hidden-payload sweep
+  matched a bare `;base64,` and needed an exclusion list that had fallen five
+  files behind, so its OK branch could never fire; it now matches the payload
+  class itself — a long literal blob — and reports nothing repo-wide while
+  still catching a synthetic embedding. The history sweep only ever saw binary
+  extensions, so the reserved-data blob committed in June as a `.ts` file was
+  invisible to it; a content pickaxe over the payload keys now names it
+  (#484).
+- **Data provenance closed at four gaps.** `igerman98` — the one source with
+  real copyleft obligations — was missing from the provenance index and its
+  server-data-only rule from both agent guides; the specimen actually shipped
+  on /schriftkunde had no provenance while a documented 900 px variant is
+  referenced by nothing; `chart.svg` and `words.json` carried no SHA256; and
+  §5 described the compose golden as "no templates" when it holds the full
+  render payloads of 27 glyph keys. All corrected against measurement, and the
+  audit battery now also sweeps `data/corpora`, `data/samples` and the shipped
+  specimens (#484).
+- **Meta descriptions are capped at 155 characters, not 200.** Google
+  truncates a longer one mid-sentence and the clause it drops is usually the
+  promise; five descriptions had grown to 190 under the old gate. Shortened
+  and pinned in `seoCoverage.test.ts` (#483).
+- **One name per thing in the public copy.** „langes ſ / rundes s“ instead of
+  „Lang-s, Schluss-s“, „die Feder“ in prose with „Synthese“ kept for the
+  provenance captions, one spelling of the 1922 source, the spaced ratio
+  „2 : 1 : 2“ everywhere, „Lese-Quiz“ in llms.txt and its two straight quotes
+  closed. The Impressum's source list now names all four public-domain plates
+  the site actually writes from, not two (#483).
+- **The bot-serving watcher derives its expectations from the repo.** It checks
+  out the repo and reads route and expected `<title>` per page out of the
+  committed `app/prerender/*.html` instead of carrying hard-coded literals. All
+  11 prerendered pages are covered instead of 4, and a copy change can never
+  drift the watcher again. A failure now opens one fixed-title issue (or
+  comments on it) and the next green run closes it — the job had
+  `permissions: contents: read` and no alarm path at all.
+- **Frontend coverage measures the whole SPA source.** `app/vite.config.ts`
+  gains a `test.coverage` block (provider v8, `include: ['src/**/*.{ts,tsx}']`
+  — Vitest 4's replacement for `all: true`). The reported figure drops from
+  82.7 % to the honest 19.2 %, because Vitest was measuring only the modules a
+  test happened to import. `codecov.yml` swaps `project: auto` for fixed floors
+  per flag so the one-time re-baselining does not red every open PR.
+- **Every CI job has a `timeout-minutes` and every action is pinned to a commit
+  SHA.** GitHub's 360-minute default let a hung job burn six hours and report
+  nothing; the caps sit generously over the measured maximum of 491 s. The
+  movable action tags were a write handle into runners that hand
+  `CODECOV_TOKEN` to the environment.
+- **`:latest` moves only after the promote step** in both cloudbuild files.
+  Pushed before the rollout, the tag named an image that a failing migrate or
+  smoke may have stopped from ever serving a request.
+- **Project metadata says what the project is.** `app/package.json` no longer
+  describes the SPA as an admin UI for stylus input, and `pyproject.toml` gains
+  trove classifiers and the Documentation/Changelog/Issues URLs.
+- **The Schreibtafel reserves each plate's box before its bytes arrive.**
+  The three scans carried no dimensions while their sizes were known all
+  along, so the page jumped by up to 1145 px per plate as they landed
+  (desktop CLS 0.47, the route's only Lighthouse failure). The ratio comes
+  from the source's own `chart_size` rather than a copied constant, so it
+  cannot drift from the file the API serves (#476).
+- **The quiz results lead somewhere.** „Häufig verwechselt" and „Machte
+  Mühe" showed the forms and stopped there — the whole results screen held
+  not one link. Each letter card is now a link to that letter on the
+  Schreibtafel (`/tafel?g=<key>`), which writes it stroke by stroke beside
+  its look-alikes; word tallies stay plain, having no single letter to look
+  at. Quiz → Tafel → Federprobe is one loop instead of three tools standing
+  next to each other (#476).
+- **The Lesen hub and `llms.txt` no longer promise readings unconditionally.**
+  Both described the list of look-alike words as a given; they now name what
+  the page always does and make the readings conditional on a loaded
+  dictionary, and `llms.txt` says what the API answers while there is none
+  (#476).
+- **The API image is built in two stages and drops two thirds of its weight.**
+  `api/Dockerfile` now installs into a builder stage and copies only the
+  finished venv into a clean runtime stage, mirroring the shape `app/Dockerfile`
+  has always used. Two layers carried the bulk: an apt layer of 638 MB unpacked
+  holding `build-essential`, which never compiled anything because all 88
+  packages in `uv.lock` ship wheels, and `libgl1`, installed for an OpenCV this
+  project deliberately does not depend on; and a second copy of the whole venv
+  made by a `chown -R` that ran after the venv was already in place, where
+  `COPY --chown` sets the ownership while the layer is written. Measured in
+  Cloud Build with the same tool for both images, the old one pulled from the
+  registry rather than estimated: 1.61 GB unpacked before, 531 MB after. That
+  is less Artifact Registry growth per deploy and a shorter deploy rollout; the
+  user-visible cold start was already bought away by the min-instance, so this
+  is a cost and rollout change, not a latency one (#473).
+- **Word bench re-baselined after the repaired specimen rects: 0.106400 →
+  0.109255.** Seven of the 63 word references now show ink their crop used
+  to cut off, so the composition has more to hit and the headline rises —
+  the predicted direction, and the point of the repair: until now those
+  words were measured against a letter that was not fully on the reference.
+  Numbers do not compare across this line (`qualitaetsmetrik.md` §2). Pairs
+  are unmoved at 0.148433, as expected — no rect on the pairs plate was
+  touched. The dated entry with the per-word losses and the order the three
+  steps had to run in is `qualitaetsmetrik.md` §15.
+- **A clipped specimen is repaired first and flagged `incomplete` second.**
+  The flag stays for ink that ends on the plate itself, where no rect can
+  enclose it. The frozen fixture is a reason for a declared re-baseline,
+  not a reason to leave the defect standing — `qualitaetsmetrik.md` §15
+  carries the dated entry and the re-export the repair falls due for.
+- **`propose_boxes.py` imports its mask helpers from `core.word_metric`
+  again.** They moved there and the tool had been failing on import ever
+  since.
+- **The share card is written by the engine, not set in the show font.** The
+  1200×630 Open-Graph card (`app/public/og.png`) used to spell the brand word in
+  GL-GermanCursive — which contradicted the page it advertises, where the hero
+  writes "Kurrentſchrift" with the synthesis engine and touches that font only
+  when the backend fails. It now takes the hero's own route,
+  `GET /sources/{id}/write/word.svg`, and quotes the rest of the identity from
+  where it lives: the viridian swash is `HeroWritten`'s `Flourish` path, the
+  corner mark is the header `Wordmark` (minus its dot — the swash and the ".ink"
+  already carry the accent), the lead is the landing page's own H1. `og:image:alt`
+  and `twitter:image:alt` now say what the card shows and that it is written in
+  Sütterlin, the same honesty the hero caption keeps.
 - **The changelog merges by union — a sibling merge no longer costs a
   hand-resolved rebase.** Every merge of one open PR used to turn the
   others `DIRTY` on `CHANGELOG.md` (four rebases with hand-resolved
@@ -356,6 +1223,513 @@ cannot judge a line that BOTH sides changed, so never rewrite existing lines in 
 
 ### Fixed
 
+- **The API build context carried 451 MB it never used.** A `.dockerignore`
+  pattern without a separator is matched against the path relative to the
+  CONTEXT ROOT — Go's `filepath.Match`, not gitignore semantics — so the bare
+  `node_modules` in the repo-root list covered only a top-level one, of which
+  there is none. The 451 MB in `app/node_modules` travelled with every API
+  build, and so did 216 `__pycache__` directories, `app/dist`, and the
+  InkSight venv and weights under `tools/` (3.4 GB on a machine that has run
+  route B). Every generated directory now carries `**/`: measured 339 MiB of
+  context before, 44 MiB after, in a checkout without those weights. Beside
+  them, the local-only payloads none of which the API Dockerfile copies — the
+  corpora (up to 7.8 GB), the reserved own-hand strips, the NC-SA derivatives,
+  the human-bench rounds and both benches' fixture and run trees. The same
+  block goes into `.gcloudignore`, which runs BEFORE Docker sees anything: a
+  manual `gcloud builds submit` would otherwise upload them regardless. Its
+  syntax needed no `**/` — it is gitignore-shaped, where a bare name already
+  matches at any depth.
+- **The CSP hash extractor reads HTML with a tokenizer now, not a regex.** It
+  decides which sha256 hashes the shipped policy must carry, and it was wrong
+  in four ways that each put a wrong hash in: `</script>` as a literal misses
+  the legal `</script >` and hashes two scripts as one (CodeQL's
+  `py/bad-tag-filter`); `<script([^>]*)>` ends the start tag at a `>` inside a
+  quoted attribute value; `"src=" in attrs` calls `data-src=` external and
+  `SRC = "…"` inline; and a commented-out `<script>` earned a hash for code
+  that never runs. `html.parser` settles all four, and a test pins them. The
+  two hashes `app/index.html` actually produces are unchanged, so the shipped
+  policy is untouched.
+- **The latest-ref writes moved out of the render phase.** Four hooks kept a
+  callback or a snapshot current with `ref.current = value` during render,
+  which is unsound under concurrent rendering. Each now writes in an effect —
+  safe in every case, because the only readers are async continuations and DOM
+  event handlers, which cannot run between render and commit.
+- **`useElementSize` no longer measures twice.** The explicit first
+  `setSize` beside `observe()` duplicated the initial callback a
+  ResizeObserver delivers on its own for a rendered element, still before
+  paint.
+- **Two memoised lists stopped invalidating themselves every render.** The
+  letter and join views built their `occurrences` array with `?? []`, handing
+  the dependent `useMemo`s a fresh identity on each pass; the workbench context
+  value omitted two callbacks it reads.
+- **The replay button no longer sits on the writing.** A line that hits its
+  width cap collapses the box to the aspect of the ink — at 390 px a
+  29-character sentence is 25 px tall — and the ↺ hanging bottom-right inside
+  that box landed on the last letters, on the Federprobe and on the Lesart
+  check alike. The box now reserves the height its caller asked for wherever
+  the button exists, so the writing keeps its ground and the button gets its
+  own; measured on the live page, the button sits 39 px (Federprobe) and 28 px
+  (Lesart) below the ink instead of inside it. Nothing else moves: a surface
+  without the button still hugs the writing exactly as before.
+- **The glyph bench's fixture export let a Laufform overwrite the chart row it
+  was supposed to sit beside.** Every variant of a key was written into the same
+  `<glyph_key>/` directory, and because the rows come back ordered by
+  `(glyph_key, variant)` the Laufform (variant 100) ran last and won. A Laufform
+  is a median over word occurrences — no chart cell, no stylus path — so the
+  bench could not re-derive it: the first re-export after the LF11 write came
+  back with 44 crashes out of 84 index entries. The export now takes only rows
+  that carry a stylus path, which is the property the bench actually needs and
+  catches an untraced form variant too, and it names each row it left behind
+  instead of shrinking quietly (#516).
+- **The same export merged into its output directory instead of replacing it.**
+  Glyph keys changed shape when migration `0017` dropped the position suffixes,
+  so the June root's `A-final` directories had been sitting beside current ones
+  ever since, indistinguishable from live fixtures — 136 directories serving 84
+  index entries. The root is replaced on every export — built in a staging
+  sibling and swapped in at the end, so a failure partway through costs neither
+  the old baseline nor a usable new one — and the index now records each row's
+  `variant` so a second row on one key is visible (#516).
+- **Two glyphlab tests were asserting against glyph keys that no longer exist.**
+  They loaded `i-initial` and `longs-final`, suffixes migration `0017` dropped,
+  and passed only because the June fixture root still carried them — in CI they
+  never ran at all, since the fixtures are gitignored and the module skips
+  without them. They now use `i` and `longs` and name their source, because
+  those keys live in both roots since `0017` and a bare lookup was resolving to
+  the wrong script (#516).
+- **The bench run directory is ignored where the benches actually write it.**
+  Both bench READMEs are invoked from the repo root and write to `runs/dev/…`,
+  which resolves to `<root>/runs/` — a path neither of the two package-scoped
+  ignore rules (`tools/wordbench/runs/`, `tools/glyphbench/runs/`) ever
+  covered, so a full run left its whole output tree sitting in `git status`.
+- **The InkSight and route-G development split is reproducible again.**
+  `dev_ids()` turned the frozen `TRACEBENCH_DEV_IDS` frozenset into a tuple
+  without sorting on the InkSight side, so the key order of `frames.json` and
+  the run log differed between two runs over identical inputs — a measurement
+  artifact that was not byte-reproducible. Both routes now sort, and both are
+  pinned to the same order by a test, because the two are compared word by
+  word. The guarded import that silently fell back to a ten-id literal (the
+  split has nineteen) is gone with it: it dated from before `tools/tracebench`
+  existed and could only ever fire as a run that measured half the words
+  without saying so.
+- **Jumped-to headings hid under the taller mobile header.** #504 grew the phone
+  bar from 82 to 121px when its two nav rows took the 44px touch floor, but the
+  fragment targets kept a 100px scroll margin — so a jump-list entry on
+  /schriftkunde, or a `?g=` deep link into the Tafel, could land its heading
+  behind the sticky bar. The margins now clear the real bar and switch at `sm`,
+  where the nav collapses to one row, instead of at `md` (#505).
+- **The touch sweep claimed more coverage than it had.** Four holes, each of
+  which let a real violation pass unseen: it skipped every `opacity: 0` element,
+  which is exactly how MUI lays a native input over a Switch; it measured the
+  quiz only mid-round, so the setup chips and the whole results screen were
+  never seen; it excused any interactive SVG group as the known Schreibtafel
+  shortfall rather than the tiled letter cells alone; and it treated every
+  underlined link as running prose, which silently exempted the Schriftkunde
+  jump list — navigation, not prose. Closing them raised the swept population
+  from 217 to 255 and turned up 18 controls under the floor (#505).
+- **Eighteen more controls were under the 44px floor**, found once the sweep
+  stopped lying to itself: the fourteen jump-list entries on /schriftkunde, the
+  two quiz setup chips, the worksheet's switch rows and the results screen's
+  confusion pills. The jump list and the switch rows grew real height — an
+  invisible target would have overlapped the row above in a wrapping list, and a
+  switch is tapped by its label; the rest keep their drawing and take the floor
+  from `hitArea()` (#505).
+- **Three ways the sweep could still report green while blind.** The results
+  screen was reached by answering at random, so a lucky correct pick left the
+  confusion pills unrendered and unmeasured — it now forces a wrong answer
+  first. The Schreibtafel exception covered every failed probe on a matching
+  cell, so a cell that lost its height would have stayed "known"; it is now
+  scoped to the shortfall §9.3 actually excuses (narrow width, full height,
+  above the 24px WCAG baseline). And a declared screen state that could not be
+  reached was logged and skipped while the run still exited 0; it now fails
+  (#505).
+- **The run could contradict itself in its last two lines**, printing the count
+  of known shortfalls and then „all reach the floor". It now says all *other*
+  targets do (#505).
+- **Twelve controls were under the binding 44px floor.** The sweep found them
+  once it stopped consulting a list: the four Lesart example chips, the Tafel
+  step buttons, „Lesetafel als PDF", „Als PDF herunterladen", „Zur Startseite",
+  the landing hero's „Schreiben →" and its replay line, the wordmark and the two
+  footer links. All fixed without moving a pixel of the drawing, except the
+  header area links, which take the floor from real padding — on phones the bar
+  stacks into two rows whose centres sit 28px apart, and an invisible overlay
+  there would have made adjacent targets overlap by 16px. Wrapped chip rows
+  needed their `rowGap` raised for the same reason: 28px chip plus 12px gap is a
+  40px pitch, so the lower row reached over the upper one and won its taps
+  (#504).
+- **The quiz setup hint sat at 13px, under the binding 14px floor.** It renders
+  only for settings that actually offer a choice, which is why the measuring pass
+  of the previous round walked past it and reported the site clear; the run that
+  makes the sibling rule binding caught it. Now `variant="caption"` like every
+  other hint (#504).
+- **`npm run build` was failing on `main`.** The sitemap `lastmod` for
+  `/schreiben/uebungsblatt` still read 2026-09-02 while its copy changed on
+  2026-09-03, and the guard that holds those two together is part of `prebuild` —
+  so every branch cut from `main` inherited a red frontend build. Bumped, with
+  the prerendered „Stand" line that follows from it (#504).
+- **The Übungsblatt page's sitemap date was left behind by its own change.**
+  #499 rewrote `worksheet.ts` but not the `<lastmod>` that the prerender prints
+  as that page's visible „Stand" line. The guard added in #483 caught it on the
+  next build, which is what it is for (#503).
+- **A deploy no longer hands returning visitors a white page.** The SPA shell
+  carried no `Cache-Control` at all, only `Last-Modified`, so browsers cached
+  it heuristically at ~10 % of its age; after a deploy that stale shell asked
+  for `/assets/` hashes which `try_files … =404` no longer knows.
+  `location = /index.html` now sets `no-cache` — deliberately not the sister
+  project's `no-store`, so the measured 304-with-zero-bytes path survives; the
+  reason stands as a comment, because the next sync will want to "fix" it back
+  (#497).
+- **`npm ci || npm install` in the app image is gone.** The fallback turned the
+  one thing `npm ci` exists to catch — a missing or out-of-step lockfile — into
+  a silent re-resolve, so the image could ship dependency versions no checkout
+  and no CI run had ever seen (#497).
+- **A Vorschrift line the ruling is too narrow for no longer vanishes without a
+  word.** An ordinary German sentence — „heute schreibe ich Dir aus
+  Straßburg.“, 37 characters — produced a completely blank A4 sheet at the
+  Sütterlin preset, and the only hint sat in a closed „Mehr dazu“ popover that
+  named a different number (website audit 2026-09-02). Now the line keeps its
+  row, the row is marked in the preview with its number, and the field says
+  „Zeile 1 ist mit 37 Zeichen zu breit für 6 mm Mittellänge — es passen etwa
+  23.“ The Lineatur itself stays untouched: no scaling, no re-wrapping at a
+  word boundary (author's decision 2026-09-02) — a Vorschrift that no longer
+  sits exactly between its lines has stopped being a Vorschrift. The counts are
+  measured, not guessed: how many characters fit comes from that line's own
+  composition, and the help text's estimate from `AVG_ADVANCE_UNITS`, the
+  composer's own average over a–z. Both stay honest about being estimates —
+  a line of m holds fewer than one of i (#499).
+- **The text field's own two caps stop taking their share in silence.** A row
+  longer than 60 characters was cut and rows past the twelfth were dropped, both
+  without a word — the same defect the too-wide line had, one layer up. Now
+  „Zeile 1 ist auf 60 Zeichen gekürzt — eingegeben waren 68.“ and the rows past
+  the cap are named with the ones the sheet has no space for, in the order of
+  the field and with consecutive runs collapsed to „Zeile 4 bis 15“ (#499).
+- **The help text promises what the sheet can keep.** „Höchstens 12 Zeilen mit
+  je 60 Zeichen“ quoted the text field's cap while 20 characters already ran off
+  the row; it now computes from the chosen Mittellänge and page margin — 18
+  characters at 6 mm, 44 at the Kurrent preset's 2,5 mm — and the prerendered
+  crawler page states the same figure instead of a placeholder (#499).
+- **An empty sheet says why, and cannot be downloaded.** 99 parts of Oberlänge
+  fit no row on A4 and produced a blank but eagerly downloadable page. The three
+  ratio fields now carry a `max` of 6 and clamp on blur (typing past a number
+  input's `max` is accepted by every browser), and a page without a single row
+  explains itself over the preview and holds the PDF button (#499).
+- **A printed sheet explains its own mixed script.** With Kurrent or Offenbacher
+  chosen, the Vorschrift is still set in Sütterlin — the only script written out
+  so far. A line under the text field says so, and the sheet's footer prints
+  „Kurrent · 2 : 1 : 2 · Vorschrift in Sütterlin“, so a printout on the table
+  needs no popover to be understood (#499).
+- **The ratio heading stops breaking after its first colon.** „Verhältnis ·
+  Oberlänge : Mittellänge : Unterlänge“ wrapped mid-ratio in the 340 px panel
+  and left a dangling colon at 360 px; it is now an overline plus its own
+  caption line, the colons bound with non-breaking spaces (#499).
+- **The origin gate's documentation said the admin route was covered by the
+  Transform Rule. It was not.** A Worker subrequest to a host in the SAME zone
+  skips that zone's Transform Rules, so the rule that stamps `X-Origin-Secret`
+  for `api.kurrentschrift.ink` never reached the `fetch()` inside the Worker —
+  `/api/health` still answered `off` after the rule went live. The Worker now
+  stamps the header itself from a secret binding (`off-seen`, then `ok` once
+  armed), and `frontend-stack.md` §5 records the finding instead of the
+  assumption. This is what the `off-seen` verdict was built for: the measurement
+  caught it before arming the gate could have taken the admin down (#495).
+- **The IndexNow workflow survives its first run.** Three findings from the
+  rollout in both repos: IndexNow verifies a new key file asynchronously and
+  answers `403 SiteVerificationNotCompleted` for a while — the submission is
+  now retried for up to ten minutes before the run fails visibly; the
+  submission body goes through a file instead of a command-line argument (ten
+  URLs fit either way, but anyplot's full sitemap did not: ~260 KB against
+  Linux's 128 KB cap per argument, and curl never ran); and the key-file
+  readiness probe records the real HTTP status — curl already prints `000` on
+  a transport failure, so the previous `|| echo 000` logged `000000` (#494).
+- **The word round drew every loop interior solid.** A pen stroke's silhouette
+  is an exterior ring plus the counters it encloses — the `Z` of "Zorn" ships
+  155 + 36 + 16 points — and the arm file flattened them into independent
+  shapes, so the page filled each one and the writing came out a blob wherever
+  it has a loop. The rings now stay grouped per pen stroke and are drawn as one
+  `fill-rule="evenodd"` path, the same contract the SPA has always used
+  (`app/src/lib/svg.ts::ringsToPathD`). Caught by the author on the first page
+  he opened, before any round was judged.
+- **A flat ring list is refused rather than read as a single-ring shape.** That
+  is the shape of the bug above, and it parses perfectly — it would have failed
+  silently on every screen with a loop, which is the one thing a judging
+  session cannot afford. The arm format is now 2 and names the old one in the
+  error, so an arm gets re-produced instead of judged.
+- **The process pages were two adoptions and up to twelve days behind.**
+  `verfahren.md` carried the chain as v3 and the index tree as v4 while the
+  page itself said v5; the Lotse ledger knew neither the L-U ruler
+  re-baseline nor the written Laufform map, and InkSight and Nullprobe had
+  no row for either. All four pages now say what they measured and on which
+  ruler cap, and the overview gains a „seit" column (#489).
+- **Two headline pairs whose base nobody could name.** The root behind the
+  `aug30` numbers was never declared a re-baseline, so it is marked as one:
+  numbers from `aug30` on compare only with each other until the author can
+  say where that export came from. A second dated note records that the
+  roots lying in a working tree are the `aug14` export and do not reproduce
+  the standing headline. From now on every headline names its `exported_at`
+  and root digest (#489).
+- **Five adopted mechanisms had no glossary entry.** Zonal rejection and
+  the ratchet have been the chain's default since v5, the tail runout is
+  the Lotse's first adopted constant, and the advance calibration carried
+  the largest single drop of the word ruler — none of them was looked up
+  anywhere. The Klassenregel entry listed six classes where
+  `core/compose.py` carries fourteen; it now indexes the constants and
+  names them as the source (#489).
+- **Stale status headers and index rows.** `tintenfolger.md` still claimed
+  no `FOLLOW_*` default had been adopted, two chain versions after the whole
+  guard stack became the default; two docs used status words outside the
+  small vocabulary; `eigenhand-erfassung.md` was missing from the structure
+  tree and `tools/routeg`, `tools/inkpilot` from the tool inventory (#489).
+- **An unsaved Weg no longer vanishes without a word.** Escape, a backdrop
+  click and „Schließen" all went straight through the Einrichten wizard and
+  dropped whatever was drawn — the one step in the whole project where manual
+  work creates ground truth and nobody else can repeat it. All three now ask
+  first, naming what is lost and what is not (everything but the Weg
+  live-commits), and even a deliberate discard tucks the strokes into
+  sessionStorage so the next opening offers them back (#487).
+- **A locked glyph says so before the work, not after it.** Tracing on a locked
+  glyph ran to completion and then failed with a literal
+  `Error: 423 Locked: glyph 'longs' is locked; pass force=true to overwrite`
+  in a blue-grey `info` box. The lock is now a chip in the wizard title and a
+  warning on the Weg step, and the failure is red (#487).
+- **The workbench answers in German, keeping the server's own line.** All 18
+  admin surfaces rendered `String(err)` verbatim; `apiErrorText` turns a status
+  into one sentence that names the next step, with the raw English detail folded
+  into a „Technische Meldung" `<details>` underneath — the sentence answers, the
+  detail proves. The 404 branches read the typed status instead of sniffing the
+  message for "404" (#487).
+- **„Keine Hand an den Vorkommen hinterlegt" no longer greets a fresh Vorlage.**
+  With zero occurrences there is nothing that could name a hand, so the sentence
+  blamed an impossible cause on every card; `no-occurrences` is now its own state
+  naming the next step (harvest) (#487).
+- **A join with no authored letters explains itself.** `/admin/uebergaenge?l=x&r=y`
+  showed a mute white box although the API reports `missing` — the panel now
+  carries the same „fehlend:" chip the word cards have, and a full sentence when
+  neither letter exists (#487).
+- **„Weg gespeichert." stopped announcing itself on every visit.** The green
+  alert stood whenever a canonical existed and nothing was drawn, so opening a
+  glyph traced months ago replayed it as fresh news through an assertive live
+  region — and stood just as green on a locked glyph. The standing state is a
+  quiet present-tense caption now; the event keeps the alert bar (#487).
+- **„Tafel öffnen" scrolls the plate into view.** It added ~650px below the fold
+  and changed nothing on screen but its own label — on a letter without a crop,
+  that button is the only way in (#487).
+- **Step 4 no longer sits under a horizontal scrollbar.** A fractional cell width
+  rounded up over the edge and clipped „Überlagert", the one cell that answers
+  the step's question (#487).
+- **Eigenhand: `semicolon` was printed as a word.** The view kept its own copy of
+  the key-to-character map and had drifted by two entries; it is derived from the
+  glyph registry now, so the class of bug is gone rather than patched. The
+  „Quoten" panel also printed its own title as its caption (#487).
+- **The Auftragskorb protocol can no longer be re-enacted after a rejection.**
+  `check_transition` fell back to the stored fields, so a rejected row — which
+  keeps its old `understanding`/`stage`/`resolution` on purpose — accepted a bare
+  `{"status":"done"}` and put the just-rejected restatement back in force. Every
+  required field is now read from the PATCH alone
+  (`docs/proposals/optimierungs-werkbank.md` §5.1) (#487).
+- **Every focusable control on the public site now shows where the keyboard
+  is.** MUI's `ButtonBase` sets `outline: 0`, so quiz answers, chips and icon
+  buttons were pixel-identical focused and unfocused — the quiz simply could
+  not be played from a keyboard, and Lighthouse cannot see it (`focusable-controls`
+  is a manual audit). One theme rule on `MuiButtonBase`, `MuiChip` and `MuiLink`
+  draws the 2px viridian ring that `PaperCardLink` and the header nav already
+  had, instead of twelve per-component fixes. Measured over a real Tab walk of
+  /quiz, /federprobe, /schreiben/uebungsblatt and /tafel?g=n: 4 of 38 stops
+  showed a ring before, 30 of 38 after — the rest carry MUI's own focused field
+  border or the Schreibtafel's cell-fill rule (#485).
+- **Links in running prose are recognisable as links again.** They differed
+  from the surrounding text by colour alone, and by 1.35:1 at that, with the
+  underline appearing on hover — i.e. never for keyboard or touch (WCAG 1.4.1).
+  `MuiLink` now underlines always and runs in the contrast-derived
+  `viridianText` (5.15:1 on the paper ground); the three prose pages gave up
+  their private `proseLink` constants so the rule cannot drift again. Header and
+  footer keep their own undecorated chrome (#485).
+- **Seventeen places under the binding 14px type floor.** Specimen captions
+  rendered at 12.16px, the landing status marks at 13.6px, and every MUI
+  `size="small"` chip, button and toggle at 13px. Lifted centrally in the theme
+  plus two ad-hoc `fontSize` values turned into `variant="caption"`; the
+  sanctioned 13px overline stays. The landing's „Lesen" CTA — the only
+  Lighthouse contrast failure of the start page at 3.72:1 — now sets its label
+  in 600, which makes 19.2px count as large text and clears AA without leaving
+  the period tone #40826d (#485).
+- **The 404 page had no footer and reported nothing.** A dead end is exactly
+  where a visitor needs the Impressum link and the three areas, so the footer is
+  back; and the page now sends a `page_not_found` event with its path, the only
+  way to notice that something on the web links here wrongly (#485).
+- **`/write/word` keeps the 4-decimal contract it documents.** The pipeline
+  rounds what it stores, but composition multiplies those inputs apart again, so
+  1,363 of the 3,777 numbers in `?text=lesen` shipped as
+  `0.015600000000000001` — noise below the contract's own resolution, paid for
+  in wire bytes on the API's most-requested origin route. A recursive walk at
+  the serialisation boundary (`core/rounding.py`, called where the Cache-Control
+  header is already set) puts it back: identity 46,440 → 30,570 bytes (−34.2 %),
+  gzip-6 13,864 → 10,840 (−21.8 %), for 0.96 ms median over that payload against
+  a ~52 ms compose. `core/compose.py`, the stored rows and the golden parity
+  fixture are untouched, and the fixture rebuild's bit-exact gate rounds through
+  the same function so it measures the row, never the serialisation (#481).
+- **`apiFetch` gives up on a request that never answers.** It retried a
+  502/503/504 and a thrown `TypeError` and nothing else, so a stalled connection
+  or a Cloud Run boot past a minute produced neither — the spinner in
+  `BootStatus` and `WrittenWord` span forever and the retry button never
+  appeared. Every attempt now carries its own `AbortSignal.timeout` (20 s, 30 s
+  for `/write/word`, overridable); an abort retries like a network error and,
+  once the attempts are spent, surfaces as `ApiError(408)` instead of a raw
+  `TimeoutError` (#481).
+- **Five status constants Starlette renamed, and the warning filter that should
+  have caught them.** Four `HTTP_422_UNPROCESSABLE_ENTITY` and one
+  `HTTP_413_REQUEST_ENTITY_TOO_LARGE` sat in error paths although
+  `filterwarnings` turns our own deprecations into errors: Starlette warns with
+  `stacklevel=3`, so the warning is attributed to `fastapi.routing` and every
+  module-anchored rule looks past it. A fourth rule matches on the message and
+  pins neither module nor category — starlette 1.6 promptly moved the warning
+  off `DeprecationWarning` onto its own class, which a category-pinned rule
+  would have gone blind to. The 413 branch also gained the test it never had
+  (#481).
+- **Four skills that were unusable as written.** `/verify-api` swept `/hands`
+  and `/diagnostic` as public reads (both answer 401 since they were placed
+  behind the open-core gate) and drove five lines with the positional
+  `n-medial` key that migration `0017` removed; `/verify-migrations` offered
+  only Docker and a web-container path, neither of which exists on the
+  author's machine, so the gate CLAUDE.md calls mandatory before every
+  Alembic push could not actually be run; `/optimize-glyphs` crashed on its
+  own spot-check command (`KeyError: no fixture 't-medial'`) and invited a
+  silent re-export of the frozen fixture root; `/start` recommended
+  `alembic upgrade head` against what is the shared production DB. Each fix
+  was verified by running it (#484).
+- **A raw NUL byte made a TypeScript file binary to git and grep.**
+  `SpecimenStrip/payloads.ts` joined its cache signature on a literal NUL, so
+  `file` reported the source as `application/octet-stream`, every diff on it
+  read `Bin 0 -> 2722 bytes`, and the licence audit's payload sweep skipped
+  it entirely. The separator is now a comma — same job, and the file is text
+  again (#484).
+- **The crawler's quiz page no longer offers scripts and difficulty levels
+  the site does not have.** Its option list advertised Kurrent, Offenbacher
+  and three handwriting levels that the setup panel has hidden since #447,
+  so bots and AI answers read a Kurrent quiz with three levels — against the
+  page's own title. The option tables moved into `sections/quiz/
+  quizOptions.ts`, which the React-free prerender now reads too: one
+  `offersChoice` rule, one set of facts, for the SPA and the crawler alike
+  (#483).
+- **Erlass and Rundschreiben of 1941 were swapped on the Schriftkunde page.**
+  The Normalschrifterlass of 3 January was Bormann's circular ending the
+  broken PRINT types; the school ban on Kurrent came as a decree of the
+  education ministry to 1 September. The page claims every statement is
+  sourced and its own timeline said it correctly three paragraphs down. Two
+  further claims now follow `docs/schriftkunde/` as well: groundwood paper
+  from the MIDDLE of the 19th century, and the Sütterlin as a simplified
+  Ausgangsschrift — same look-alikes, not the same proportions (#483).
+- **The Lesen hub promised an explanation for every miss.** The quiz explains
+  the documented look-alike pairs and never a whole word („no explanation is
+  better than an invented one“), so the paragraph now names the pairs it
+  really covers (#483).
+- **The README described a data model that migration 0017 removed.** It called
+  the library unit `(glyph, position, variant)`; the key is `(style, glyph,
+  variant)` and the word position has been pure render context since the R2
+  position removal. It was the only document saying otherwise.
+- **The Lesart vocabulary can be loaded at all.** The batch endpoint read
+  before it wrote — a `SELECT … WHERE gen = ? AND (key, word) IN (<batch>)`
+  over the generation as it grew — so the load got slower the more of it was
+  done: 0.42 s for the first 5 000 words, 16.2 s once 80 000 were in, which
+  extrapolates to minutes per batch and hours in total against Cloudflare's
+  100 s origin cut. It is now one `INSERT … ON CONFLICT DO NOTHING` per chunk,
+  dialect-aware and paged under asyncpg's 32 767 bind parameters, and the
+  reported `inserted` count is what the statement actually added. The whole
+  718 665-word vocabulary now loads in 144 flat batches — 0.21 s the first,
+  0.27 s the last, 0.18–0.41 s across the run, 34 s in total (#477).
+- **A 67-character compound no longer kills the run.** Two words the igerman98
+  expansion produces are longer than the `lesart_forms.word` column, and the
+  API refuses the entire batch that carries one — batch 17 of the first
+  production attempt died on it. The bound now lives once, as
+  `core.lesarten.WORD_MAX`, the loader drops what exceeds it and says how
+  many, and the server keeps its 400 as the defence for every other client
+  (#477).
+- **The loader prints the seconds each batch took.** The number that grew is
+  the one the first two attempts had no way to see (#477).
+- **The Lesart page called a reading „wohl eindeutig" while it had no
+  dictionary to look in.** Live, `GET /lesarten?text=Muhme` answers
+  `{"readings": [], "dictionary": null}`, and the page printed „Kein Wort im
+  Wörterbuch sieht dieser Lesart zum Verwechseln ähnlich — sie ist wohl
+  eindeutig" with the note that the dictionary was not loaded right
+  underneath it — a conclusion drawn from an empty shelf, and worse than a
+  visible outage because a genealogist would have believed it. The two
+  states are exclusive now: without a dictionary the page says so once and
+  points at what it can still do (write the guess, show the confusable
+  pairs), and the provenance line appears only where words actually came
+  from. The decision is a pure function with its own test over all five
+  states, so „no dictionary" can never fall back into „nothing looks like
+  it" again. Loading the vocabulary itself remains the author's step
+  (`tools.lesarten.sync` against the shared database) (#476).
+- **„Lesetafel als PDF" produced no PDF at all.** The page showed each chart
+  as a plain `<img>` while `useLesetafelPdf` rasterised the same URL with
+  `crossOrigin='anonymous'`. A browser keys its HTTP cache by CORS mode, so
+  the display image filed a no-CORS entry, the PDF's CORS-mode request was
+  answered from it, found no `Access-Control-Allow-Origin` and was blocked —
+  the printable sheet to lay beside an old letter, which is what most
+  visitors come for, ended in „Das PDF konnte gerade nicht erstellt werden."
+  The display image now loads in CORS mode itself, so both share one cache
+  entry. A test pins the attribute on the rendered image, and the comment in
+  the PDF hook names why it has to live over there (#476).
+- **More than half the letters had no „im Wort sehen" link.** The example
+  word came from the modern layer of the quiz word bank alone, which left j
+  k p q v x y z ä ö ü ß and 19 capitals without the bridge into the
+  Federprobe. It is a ladder now: modern bank word, else a historic one
+  (marked as such in the link, so „Magd" is not passed off as everyday
+  German), else a checked constant. Whether a word shows the letter is asked
+  of the shaper instead of the spelling, which is what makes „sein" a ſ-word
+  but „Fenster" an ſt-word, and „Buch" no h-word at all — the h there is
+  written inside the ch ligature, where nobody can point at it. A test holds
+  every letter, capital and ligature to having an example (#476).
+- **`shift_registrations` could not reach the deployed API.** It built its
+  own HTTP client, and the edge answers a bare `Python-urllib` User-Agent
+  with a 403. Reads now go through `fetch_fixtures.ApiClient` — the
+  read-only client the archive tool already shares for exactly this reason
+  — and the one write borrows its redirect and TLS handling rather than
+  restating it. `ApiClient` keeps having no write verb: that is what makes
+  it safe to share.
+- **The batch write would have renamed the writer.** Its `hand` is a
+  get-or-create that overwrites `label`/`era`/`note` with whatever the body
+  carries, and `label` is required — so the tool now reads the stored hand
+  back and echoes it instead of inventing one.
+- **`shift_registrations --api` defaults to the deployed host.** Its old
+  `http://localhost:8000` default became unusable the moment the tool
+  adopted the https-only shared client, which is right: the admin token
+  travels in a header. Same default and `API_BASE_URL` override as
+  `fetch_fixtures` and `dbsnapshot`, and nothing is lost — the dev server
+  writes the same shared database anyway (#472).
+- **Seven word specimens whose rect sat too tight around their word, four of
+  them cutting it.** The i-Strich of `einer` and the u-Bogen of `zum` were
+  sliced by the top edge of their crop, the last `n` of `regieren` was cut
+  by 37 px on the right, and `das` lost the d's entry stroke; `und`, `Wer`
+  and `zwei` merely sat below the plate's own clearance. The rects now
+  enclose that ink with air, and the comma
+  that came in beside `regieren`'s exit stroke is covered by an `exclude` —
+  the sidecar's own answer to punctuation at a box edge.
+- **`zum`'s crop showed a white block.** Its `exclude` was anchored to the
+  old top edge, where it hid the stub of the u-Bogen the rect cut through.
+  Over the repaired crop it painted clean paper white and clipped the mark
+  the repair had just rescued. An exclude that hides only the word's own
+  ink is now dropped with the repair; one that still covers foreign ink
+  always stays, even where it grazes the word.
+  The cause was the standard itself: `propose_boxes` cuts with a 3 px pad
+  measured on the DESPECKLED mask, and a thin Sütterlin diacritic falls
+  under the despeckle floor or lands on the border.
+- **The changelog gate no longer sits red on every Dependabot batch.** Since the
+  fragment rule landed, the CI job „Changelog (fragment)" failed on each of
+  Monday's bumps (#468: `no changelog fragment`) — a bot can neither write
+  `changelog.d/<slug>.md` nor reach for the `skip-changelog` label, so the one
+  way out of the gate was closed to exactly the PRs that have nothing to say.
+  The job now skips by PR author (`dependabot[bot]`) the same way it skips a
+  labelled PR, because a routine version bump is precisely what the release
+  notes leave out anyway; a bump that DOES deserve a line (the peer-dep override
+  of #235) still reaches the changelog through the human PR carrying the fix.
+- **B writes on instead of restarting at the baseline.** The capital B sat
+  in the composer's restart class (`CAP_RESTART_BASES`), so its join
+  retraced the bowl and set down again at the Grundlinie — but B closes
+  its lower bowl in a b-like Kringel and the plate writes straight on
+  from there (Korb #8 plus the author's same-day follow-up: no wave). B
+  leaves the restart class and joins `KRINGEL_EXIT_BASES` instead: the
+  chart's ~49° coupling stub is cut at the knot as table form, and the
+  join runs level from the Kringel into the next letter's upper point.
+  Word bench unchanged; the chart-near `Bi` drill pays on the measured
+  stub it still writes — the same drill-vs-word tension the b/o Kringel
+  round documented (#463).
 - **The landing page's scroll-reveal no longer hides sections in print or in
   a browser without IntersectionObserver.** `Reveal` shows its content at
   once where the observer is missing and under `@media print`, so a printed
@@ -378,6 +1752,137 @@ cannot judge a line that BOTH sides changed, so never rewrite existing lines in 
   gap, last among the xAI patterns so the specific ones keep winning;
   mirrored verbatim from anyplot #10808, as the shared taxonomy requires
   (#442).
+
+### Security
+
+- **The site answers with security headers again — starting with a
+  report-only CSP.** `kurrentschrift.ink` served none of the six usual headers
+  (measured live: no `strict-transport-security`, no
+  `content-security-policy`, no `x-content-type-options`, no
+  `x-frame-options`, no `referrer-policy`), while the sister project carried
+  all of them. `app/security-headers.conf` now holds them, written against the
+  sources this site actually has — every one of them justified in the file.
+  `script-src` gets by **without** `'unsafe-inline'`: the two inline scripts in
+  `index.html` (the hero preload warmer and the Plausible stub) are allowed by
+  sha256, and `tests/test_csp_policy.py` recomputes those hashes from
+  `index.html` so the policy cannot silently drift from the page it protects.
+  `style-src` keeps `'unsafe-inline'` because Emotion has no other path. HSTS
+  is 180 days without `includeSubDomains` and without `preload`. The policy
+  ships as `Content-Security-Policy-Report-Only` for one week and is switched
+  by shortening the header name (#497).
+- **The API host stamps `nosniff`, a `Referrer-Policy` and HSTS on everything
+  it answers.** `api.kurrentschrift.ink` is a second public host — SVG renders,
+  crop images, JSON — and it carried none of them. A lean ASGI middleware
+  (`api/security_headers.py`) sits outside both gates, so the origin gate's 403
+  and the rate limiter's 429 get them too, and an `Exception` handler covers
+  the one response Starlette writes outside every user middleware: the
+  unhandled 500. HSTS has to be repeated here precisely *because* the apex
+  policy leaves `includeSubDomains` off — the header is keyed to the hostname
+  of the response that carried it, so the apex says nothing about this host.
+  Deliberately no CSP there: `/docs` and `/redoc` load their bundles from a CDN
+  and run inline scripts, so a policy worth setting would break the API's own
+  documentation (#497).
+- **A CSP report never carries a visitor's text into the log.** The public
+  pages put what was typed into the URL — `/federprobe?text=…` is shareable by
+  design — and a violation report quotes `document-uri` verbatim. Query and
+  fragment are cut off before anything is logged or memoised, so a security
+  measure does not become a transcript of what strangers wrote (#497).
+- **Nothing named `.env` can reach a build context or a source upload any
+  more.** `.dockerignore` listed `.env`, `.env.local` and `.env.*.local` — a
+  `.env.staging` or `.env.production` fell straight through, and `app/` had no
+  `.dockerignore` at all, so `COPY . .` carried the app's `.env` (which holds
+  `VITE_ADMIN_TOKEN`) into an image layer. All three ignore files now say
+  `.env*` (#497).
+- **The apex Worker no longer forwards a caller's own `X-Origin-Secret`.** Its
+  headers are cloned from the incoming request, so while the secret binding was
+  unset a client could supply that header and have it passed to the API — which
+  made the documented "unset binding stamps nothing" untrue and, worse, would
+  have let an unarmed `/health` probe report a spurious `off-seen`, corrupting
+  the one measurement the whole rollout hangs on. The header is deleted before
+  the binding is applied. **The Worker needs a redeploy for this line to take
+  effect**; the repo copy is otherwise the deployed bytes (#495).
+- **The direct `*.run.app` address no longer bypasses the edge.** Both Cloud Run
+  services stand with `ingress=all` — there is no load balancer, and one would
+  cost more per month than the project — so the API answered on two addresses,
+  and everything Cloudflare enforces (the rate-limiting rule, the WAF, the
+  cache) was one URL away from being skipped; the 2026-09-02 audit measured a
+  `run.app` response without a single `cf-` header. A Cloudflare Transform Rule
+  now stamps `X-Origin-Secret` onto every request it proxies for
+  `api.kurrentschrift.ink`, and `api/origin_gate.py` answers everything else
+  with 403 — before the rate limiter, before `require_admin`, before any
+  database query. It is not authentication: the header says "you came through
+  the front door", nothing about who you are, and `api/auth.py` still decides
+  what a caller may do. **Unset means off**: without `ORIGIN_SECRET` in the
+  Cloud Run environment the check is inert, which is what lets the code ship
+  before the rule and the secret exist and is also the rollback — take the
+  variable off the service, then promote the resulting revision, because
+  traffic is pinned to a named one: no new build, but two commands, and
+  `api/origin_gate.py` and `frontend-stack.md` §5 carry them. `/health`
+  stays exempt because the deploy's
+  pre-traffic smoke probes the candidate revision on its `run.app` tag URL,
+  which by definition never passes the edge, and `/seo-proxy/…` stays exempt as
+  belt and braces on the crawler path. `/health` also reports `origin_gate`
+  (`off` · `off-seen` · `ok` · `missing` · `mismatch`, never the value), so
+  every route into the service — the `api.` host, the apex `/api/*` behind
+  Cloudflare Access, the site's nginx, the raw `run.app` — can be checked
+  BEFORE the gate is armed: with the Transform Rule live but the gate still
+  off, each path that must keep working has to answer `off-seen` first.
+  Break-glass over the direct URL now needs both `X-Admin-Token` and the origin
+  header; both live in Secret Manager (#493).
+- **The rate limit now covers every route, not only the compose path.** A
+  second, much wider token bucket per client (600 requests per minute, burst
+  120, `PUBLIC_RATE_LIMIT_PER_MIN`) sits in front of the whole API — GET and
+  HEAD included — beside the narrow one that guards `/write/word*` (60/min,
+  burst 20). The narrow bucket left the rest of the surface open: `/write/glyphs`
+  batches up to 80 keys, every catalogue read hits the DB, and nothing stopped a
+  script from walking the API in a loop and running up the bill or saturating
+  the three instances (owner decision, 2026-09-02). Both are checked by one
+  middleware, narrow first, so a request the narrow bucket refuses does not also
+  spend a wide token, and the 429 names the limit the caller actually broke.
+  A middleware rather than route dependencies because a dependency reaches only
+  the routes it is written on, runs after routing (so a flood of 404s would cost
+  nothing to produce), and never sees HEAD — which must spend a token exactly
+  like the GET it stands for, or the limit is one header away from being evaded.
+  `/health` stays exempt so throttling a busy client can never turn into a
+  failing uptime probe, and `/seo-proxy/…` stays exempt because every
+  prerendered crawler page arrives through the site's nginx and therefore shares
+  ONE key — a bucket there would throttle the entire crawler funnel and the
+  daily bot-serving guard as if they were a single abusive client. Measured
+  against a local server: 40 parallel reads of a cached route stay 200; 700
+  requests fired in 2 s give 130 × 200 and 570 × 429, the first refusal on
+  request 121, exactly the burst. Nothing about a 200 changes — the limiter
+  counts at the origin, so edge-cached responses never reach it and only cache
+  misses spend a token, and no header, `Vary` or cache class of a response it
+  lets through is touched (#490).
+- **Four runtime packages of the API image were lifted out of 29 advisories.**
+  `pip-audit` over `uv export --no-dev` — exactly the set `uv sync --frozen`
+  installs in the image — reported starlette 1.0.0 (7, among them an
+  unvalidated Host header before `request.url` and `request.form()` without
+  `max_fields`/`max_part_size`), cryptography 48.0.0 (4, including exponential
+  blowup on certificate chains, on the path that verifies the Access JWT),
+  aiohttp 3.13.5 (14, among them an SNI bypass) and pyasn1 0.6.3 (4). Now
+  starlette 1.6.0, cryptography 50.0.1, aiohttp 3.14.3, pyasn1 0.6.4;
+  `pip-audit` after: 0. Exploitability here was limited — no `UploadFile`,
+  `request.url` only ever `.path` — but a web framework six minor versions
+  behind its fix is not something to argue case by case (#481).
+- **`/write/word` is rate limited per client.** It is the one public read whose
+  cost the caller sets: a unique text misses every cache by construction, and a
+  unique 155-character request was measured at 0.80 s TTFB and 1,653,798 bytes,
+  which with `--concurrency=15` saturates an instance and scales the service. An
+  in-process token bucket (60 per minute, burst 20, `WRITE_RATE_LIMIT_PER_MIN`)
+  answers 429 with `Retry-After` and `no-store`; `/write/glyphs` and the single
+  glyph reads are bounded by the authored inventory and stay exempt. Keyed on
+  the rightmost forwarded entry, because the leftmost is client-controlled and
+  would let a caller both evade its own limit and poison a victim's bucket. In
+  the process rather than at the edge on purpose: both Cloud Run services stand
+  with `ingress=all`, so a Cloudflare rule is one `run.app` URL away from being
+  bypassed while this one is not (#481).
+- **The admin gate is pinned on every write operation, not on a sample.**
+  `tests/test_api_public_surface.py` walked GET routes only, so a new POST, PUT,
+  PATCH or DELETE that forgot `require_admin` fell through no net — the
+  hand-kept list covered 11 of the 33. All 33 are now held against an explicitly
+  EMPTY list of public write paths, so opening one has to be argued and named
+  rather than forgotten (#481).
 
 ## [0.27.0] — 2026-08-28 — Lotse + chain v5 in the tracing duel, the Eigenhand capture chain, the site opened to machines
 

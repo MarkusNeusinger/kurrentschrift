@@ -15,8 +15,8 @@ authors:
     email: admin@kurrentschrift.ink
 license: MIT
 license-url: "https://github.com/MarkusNeusinger/kurrentschrift/blob/main/LICENSE"
-version: 0.27.0
-date-released: "2026-08-28"
+version: 0.28.0
+date-released: "2026-09-04"
 repository-code: "https://github.com/MarkusNeusinger/kurrentschrift"
 url: "https://kurrentschrift.ink"
 keywords:
