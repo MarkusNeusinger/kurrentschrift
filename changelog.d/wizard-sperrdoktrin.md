@@ -8,7 +8,7 @@
   overwriting costs one confirmation that names what is replaced. The gate is
   unchanged where it matters: the server still refuses without `force` (423),
   and only that dialog ever sends it — no button sets the flag on its own
-  (`docs/proposals/optimierungs-werkbank.md` §6).
+  (`docs/proposals/optimierungs-werkbank.md` §6) (#513).
 - **The coverage deduction is called „Deckungslücke".** The diagnosis panel
   printed „Deckung (IoU): 0.105", „Deckungs-Gate: 0.01" and „Deckung 0.99"
   within three lines — the same quantity once as a result and once as a
@@ -17,4 +17,4 @@
   share of the ink the form misses); the two positive readings keep their word.
   The one-line breakdown on the letter cards also gained the „Abzüge:" prefix
   that the bar chart states under its bars, so a bare number can no longer be
-  read as a score.
+  read as a score (#513).
