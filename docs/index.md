@@ -133,7 +133,7 @@ docs/
 │   └── kurrent-writer-and-recognizer.md  # Recherche-Notiz (EN): generativer Writer (Graves 2013) als synthetische Datenquelle → billiger Recognizer
 └── notes/                        # Operative, datierte Journale (nicht Designkern)
     ├── audit-2026-09-02-rohbefunde.md  # Vollaudit 2026-09-01/02: Rohberichte der 20 Prüfer (Repo · Website · Werkzeuge · das Geschriebene)
-    ├── audit-2026-09-02-synthese.md  # Vollaudit 2026-09-01/02: Rangliste, Parallelplan T1–T14, Fragen an den Autor F1–F11
+    ├── audit-2026-09-02-synthese.md  # Vollaudit 2026-09-01/02: Rangliste, Parallelplan T1–T14, Fragen an den Autor F1–F11, Erledigungsstand 2026-09-03
     ├── quellen-recherche-2026-07.md  # Recherche Juli 2026: geschriebene Wortvorlagen & echte Hände — Rangliste, Absteiger, mögliche Anfragen
     └── stifte-fuer-unterwegs.md  # Stift-/Hardware-Recherche fürs Schreiben unterwegs
 ```
@@ -507,7 +507,9 @@ fortgeschrieben, nur durch eine neue Runde abgelöst.
 - **[Vollaudit 2026-09-01/02 — Synthese](notes/audit-2026-09-02-synthese.md)** —
   Gesamtbild und Stärken, 39 gereihte Befunde, Parallelplan T1–T14 und die
   Fragen an den Autor F1–F11; der Vorschlag des Synthese-Prüfers — die
-  Entscheidungen stehen nicht dort, sondern in den PRs, die daraus folgen
+  Entscheidungen stehen nicht dort, sondern in den PRs, die daraus folgen.
+  Nachgetragen am 2026-09-03: ein Abschnitt „Erledigungsstand“ mit dem Stand
+  je Befund, je Track und je Frage, samt Beleg-PRs
 - **[Quellen-Recherche Juli 2026](notes/quellen-recherche-2026-07.md)** —
   Recherche-Runde 30./31.07.2026 zu geschriebenen Wortvorlagen und
   echten Händen: Rangliste (SUB-Leitfaden ✅ committet, Berger-Reihe,

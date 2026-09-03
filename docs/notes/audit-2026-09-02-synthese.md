@@ -6,6 +6,99 @@
 
 Zwanzig Prüfer haben ein Repository vermessen, das handwerklich deutlich besser dasteht, als eine Momentaufnahme der offenen Punkte vermuten lässt: die Doktrin ist nicht nur aufgeschrieben, sondern an den entscheidenden Stellen technisch erzwungen (Korb-Protokoll, öffentlich/reserviert-Pin, Pre-Reg vor der ersten Zahl, Prerender-Drift-Guard), die Deploy-Kette der API ist mit Migrate-Job, Kandidaten-Revision und Smoke besser als in den meisten Häusern, 467 Doku-Links sind tot-frei, und die Website macht auf einen sorgfältigen Erstbesucher einen sehr guten Eindruck — bis er eines der Werkzeuge anfasst. Genau dort liegt der Bruch: drei ausgelieferte Werkzeuge sind kaputt oder unehrlich. `/lesen/vergleichen` hat in Produktion kein Wörterbuch (live nachgeprüft: `readings: []`, `dictionary: null`) und schreibt trotzdem „sie ist wohl eindeutig“ direkt über den Hinweis, dass das Wörterbuch fehlt; „Lesetafel als PDF“ erzeugt seit einer CORS-Cache-Kollision gar kein PDF mehr; das Übungsblatt lässt Vorschrift-Zeilen ab etwa 18 Zeichen kommentarlos weg, obwohl der eigene Hilfetext 60 verspricht. Das ist der erste Hebel und zugleich der billigste: die Seite darf nichts behaupten, was sie nicht kann. Der zweite Hebel liegt beim Geschriebenen — und er ist ein Messproblem, kein Rechenproblem: die drei sichtbarsten Defekte (der Anker-Median-Zickzack jeder Laufform-Zeile, der um 25 % zu dünne Strich, der 13,6°-Knick an jedem Verbinder-Austritt) sind für JEDES eingefrorene Lineal unsichtbar, und die dafür vorregistrierte humanbench-Wortrunde mit der Echtheitsfrage wurde nie gefahren; solange sie fehlt, ist jede Verbesserung am Duktus unbeweisbar und jede Adoption Geschmackssache. Verschärfend kommt hinzu, dass die Messgrundlage selbst nicht mehr identifizierbar ist: die Wurzel hinter den aug30-Zahlen ist nie als Re-Baseline deklariert worden, der Wordbench druckt seine Fixture-Wurzel nirgends, und `tools/pairlab`s „exakte Mathematik des Produktions-Connectors“ ist seit dem 11. Juli eingefroren, während der echte Join-Block dreimal umgebaut wurde — in der Girlanden-Klasse liegen beide Kurven 0,12 xh auseinander. Der dritte Hebel ist die Vorzeige-Fläche für Fremde: kein einziger Sicherheits-Header und kein `Cache-Control` auf der SPA-Hülle (anyplot hat beides seit seinem Audit), 26 Advisories in vier Laufzeitpaketen des ausgelieferten Images, alle fünf GitHub-Sicherheitsschalter aus (im Schwesterrepo alle an), ein Codecov-Badge, der 87 % zeigt, wo ehrlich ~59 % stehen, 121 Altlast-Branches gemergter PRs neben dem README, und ein Bot-Serving-Wächter, der seit drei Nächten rot ist, ohne dass es jemand erfahren kann. Dazu ein Fund, der nirgends sonst auftauchen konnte: in der öffentlichen Git-Historie liegt seit dem 20. Juni ein 32-KB-Blob mit den Diagnose-Payloads zweier reservierter Templates — ausgerechnet von dem PR entfernt, der „den Moat härtet“, aber nie aus der Historie, und das Netz des Lizenz-Skills kann so etwas gar nicht finden. Ehrlich dazugesagt: nichts davon ist Architektur. Es gibt keinen Modul-Split, keinen Umbau, keine Neuerfindung in dieser Liste — die Grenzen liegen in einem Schätzer, einem Render-Parameter, einer fehlenden Klassenregel, drei Tafelformen, ein paar Schaltern und in Texten, die mehr versprechen als die Sache hält.
 
+## Erledigungsstand (2026-09-03)
+
+Nachgetragen am 2026-09-03, und der einzige nachgetragene Abschnitt: der Bericht bleibt, was er ist — ein Befundprotokoll vom 2026-09-02, dessen Titel, Nummern und Zeilen nicht fortgeschrieben werden. Hier steht nur, was seither daraus geworden ist, damit ein Leser den Stand nicht aus 39 Befunden, 14 Tracks und drei Dutzend PRs zusammensuchen muss. Alle genannten PR-Nummern sind gegen `gh pr view` geprüft; gemergt ist jede davon außer #507, die als Entwurf offen liegt. Von den 39 Befunden sind 23 erledigt, 11 teilweise erledigt, einer gemessen und ehrlich verworfen, zwei warten auf einen Entscheid des Autors, einer ist noch nachzuprüfen, und genau einer ist unangetastet geblieben.
+
+### Die 39 Befunde
+
+| Nr | Status | Beleg |
+|---|---|---|
+| 1 | erledigt | Lesart-Ehrlichkeit in #476; das Wörterbuch ist am 2026-09-02 direkt geladen worden, der Ladeweg dafür steht in #477 |
+| 2 | erledigt | #476 — das Anzeigebild und der PDF-Bauer teilen wieder denselben Cache-Eintrag |
+| 3 | erledigt | #499; nach dem Entscheid zu F4 bleibt die Lineatur unantastbar, die Seite weist stattdessen sichtbar hin |
+| 4 | erledigt | #486 misst den glatten Zeilen-Schätzer trocken, #501 adoptiert ihn als Autor-Entscheid (2026-09-03): die humanbench-Runde steht 40:1 für den Kandidaten, verfehlt die vorregistrierte Tie-Schranke aber knapp; keine Wiederholung, und der PR hält fest, dass die Adoption der Entscheid des Autors ist und nicht das Verdikt des Instruments |
+| 5 | erledigt | #484 schließt das Netz (Inhalts-Pickaxe im Lizenz-Skill), #500 nimmt den Blob dokumentiert an (F9) und führt die 13 Blobs namentlich per Hash |
+| 6 | teilweise | #497 liefert alle Header aus; die CSP läuft als `Report-Only`, scharf frühestens 2026-09-10 |
+| 7 | erledigt | #481 — 29 Advisories auf 0, plus der Audit-Job in der CI |
+| 8 | erledigt | am 2026-09-02 per API gesetzt: die fünf Sicherheitsschalter, Squash-only, Branch-Löschen beim Merge und Pflicht-Checks über alle sechs CI-Jobs |
+| 9 | erledigt | #478 gibt dem Wordbench Wurzel-Digest und `--expect-root`, die Wurzel ist am 2026-09-02 aufgefrischt, #489 trägt den Headline-Ledger nach |
+| 10 | erledigt | #480 baut den Wortmodus mit der Echtheitsfrage, die erste Runde ist am 2026-09-02 gefahren worden |
+| 11 | erledigt | #479 — Erwartungen aus `app/prerender/` abgeleitet, Alarmpfad über ein Issue |
+| 12 | erledigt | #479 macht die Frontend-Messung ehrlich, #498 stellt zwei Flag-Badges nebeneinander (F8) |
+| 13 | teilweise | #487 bringt Dirty-Guard, Sperrzustand und die deutsche Fehlerschicht; die Sperr-Doktrin selbst (A12) ist noch nicht entschieden |
+| 14 | erledigt | #490 (Limiter über alle Routen), #493 (Origin-Gate gegen die direkte `run.app`-Tür), dazu die Cloudflare-Regeln — Rate-Limit und Transform-Rule — und der Worker als Quelle im Repo in #495 |
+| 15 | erledigt | #484 |
+| 16 | erledigt | #475 — beide Audit-Dokumente sind seither getrackt |
+| 17 | teilweise | #489 gibt §14 sein Register und einen CI-Gate dazu; offen bleiben die Herkunft der aug30-Wurzel (A16) und das Verschieben der drei jüngsten Abschnitte vor §15 (A17) |
+| 18 | offen | kein Track, kein PR — der pairlab-Spiegel ist weiterhin der Stand vom 2026-07-11 |
+| 19 | gemessen & verworfen | #488 — der Austritts-Trim (Arm J4) ist gegen die Hand gemessen und als ehrliches Negativ verworfen, die Rettungswege stehen in §7.9 |
+| 20 | teilweise | F5 ist mit „ja“ beantwortet; die eigene humanbench-Runde für den Platten-Nib steht nach LF11 noch aus (A3) |
+| 21 | erledigt | #485 (Fokus, Kontrast, Typo-Boden, Trefferflächen), #504 macht die 44-px-Regel in `design-system.md` §9 bindend, #505 zieht den vollen Sweep über 255 Ziele nach |
+| 22 | erledigt | #483 |
+| 23 | offen: prüfen | #479 macht den Bot-Wächter driftfest, er MELDET also, wenn die ausgelieferten Seiten dem Repo hinterherhinken; die Pfadliste des `deploy-api`-Triggers selbst ist unangetastet und noch nachzusehen |
+| 24 | erledigt | Ruleset gesetzt und die Bot-Zweige am 2026-09-02 per `@dependabot rebase` entblockt; #466, #467 und #496 sind gemergt |
+| 25 | teilweise | `delete_branch_on_merge` ist an, der Altbestand der 121 Zweige aber nicht gelöscht |
+| 26 | erledigt | #481 — der 4-Dezimal-Vertrag gilt jetzt auch für die Antwort |
+| 27 | erledigt | #497 — Bytecode im Builder und im Runtime-Stage |
+| 28 | teilweise | #485 hebt Trefferfläche und Typo-Boden; die Federprobe auf dem Handy ist damit nicht abschließend nachgemessen |
+| 29 | teilweise | #476 verlinkt die Quiz-Auswertung auf die Tafel; „im Wort sehen“ fehlt weiter bei einem Teil der Buchstaben |
+| 30 | erledigt | #476 setzt die Maße an die Tafelscans; die Live-Nachmessung des CLS steht noch aus |
+| 31 | erledigt | #479 — README-Schlüsseltupel korrigiert, Community-Health-Dateien ergänzt |
+| 32 | erledigt | #479 plus das Ruleset: Image-Job, Migrations als Pflicht-Check, App-Deploy über die Kandidatenkette |
+| 33 | offen: Entscheid | F6 ist offen — ob t, ſ, k, d und r nachgefahren werden oder der Anstrich per Klassenregel absorbiert wird, entscheidet A4 |
+| 34 | teilweise | #484 bringt die Copilot-only-Regeln und die Gedächtnis-Direktiven in beide Anleitungen und pinnt sie per Test, #506 lagert die Begründungen aus; die Variante zu F11 (Import-Dedup statt Hand-Sync, A8) ist offen |
+| 35 | teilweise | das Loch im Korb-Protokoll ist mit #487 geschlossen; die zwei Laufform-Zeilen mit n = 1 liegen weiter unter dem Beweis-Boden |
+| 36 | offen: Entscheid | #507 liegt als Entwurf; der Wortlaut des Datenschutztextes wartet auf die Freigabe des Autors |
+| 37 | teilweise | #489 und #484 räumen `werkzeuge.md` und die Skill-Lücke; `dev_ids()` ist weiterhin nicht reproduzierbar |
+| 38 | erledigt | #484 (Provenienz, igerman98 im Index) und #502 (Geltungsbereich in LICENSE) |
+| 39 | teilweise | der `apiFetch`-Timeout steckt in #481; der Lint-Parkplatz aus #227 ist unangetastet |
+
+### Die 14 Tracks
+
+| Track | Gegenstand | PRs |
+|---|---|---|
+| T1 | Laufform LF11 „Glatte Zeile“ | #486 (trockene Messung), #501 (Adoption) |
+| T2 | Wordbench-Sensorik: Naht-Winkel und Wurzel-Identität | #478 |
+| T3 | Austritts-Kollinearität | #488 (gemessen und verworfen) |
+| T4 | humanbench-Wortmodus mit der Echtheitsfrage | #480, #492 |
+| T5 | Journal-, Verfahrens- und Kampagnen-Register | #489 |
+| T6 | Die zwei toten Werkzeuge | #476, dazu #477 für den Ladeweg des Wörterbuchs |
+| T7 | Übungsblatt-Robustheit | #499 |
+| T8 | Öffentliche Bedienbarkeit | #485, #504, #505 |
+| T9 | Auslieferung und Image härten | #497 |
+| T10 | Inhalt und SEO-Ehrlichkeit | #483, #503 |
+| T11 | Werkbank-Politur | #487 |
+| T12 | Repo-Vorzeige und CI-Wächter | #479, #498 |
+| T13 | API-Hygiene, Zulieferkette und Client-Robustheit | #481, #490, #493, #495 |
+| T14 | Skills, Agent-Anleitungen und Daten-Provenienz | #484, #500, #502, #506 |
+
+### Die elf Fragen an den Autor
+
+| Frage | Antwort |
+|---|---|
+| F1 | Ja — das Wörterbuch ist am 2026-09-02 direkt geladen worden (Ladeweg #477) |
+| F2 | Ja, gesetzt — die acht Repo-Einstellungen sind am 2026-09-02 per API umgelegt |
+| F3 | Ja — CSP erst eine Woche `Report-Only`, HSTS 180 Tage ohne Preload wie in anyplot (#497) |
+| F4 | Hinweis — die Lineatur bleibt unantastbar, die Seite sagt sichtbar, was sie weglässt (#499) |
+| F5 | Ja — der Platten-Nib, aber erst nach der humanbench-Runde, die auf LF11 folgt |
+| F6 | Offen — Tafelformen und d-Auslauf sind noch nicht entschieden |
+| F7 | Erledigt — die Runde ist am 2026-09-02 gefahren worden (Instrument: #480, #492) |
+| F8 | Zwei Flag-Badges statt einer verrechneten Zahl (#498) |
+| F9 | Annehmen — der Blob bleibt in der Historie, dokumentiert und gegen den nächsten Fall abgesichert (#500) |
+| F10 | Ja, nach LF11 — mit dessen Adoption ist der Prod-Re-Harvest jetzt fällig |
+| F11 | Hand-Sync plus Pin-Test (#484, #506); das Import-Dedup bleibt offen |
+
+### Schwesterrepo anyplot
+
+Die Schwesterregel — was in einem Repo gut gelöst ist, geht sofort ins andere — ist in derselben Bewegung eingelöst worden: sechs PRs in `anyplot`, alle am 2026-09-02/03 gemergt. #11205 baut das API-Image in der CI und smoked den Container vor dem Merge, #11207 schickt den Frontend-Deploy über eine gesmokte Kandidaten-Revision, #11209 gibt dem Bot-Wächter den Alarmpfad und leitet seine Erwartungen ab statt sie einzubetonieren, #11206 schließt PYSEC-2026-2132 und pinnt die Node-Version des Builds, #11210 pinnt die Agenten-Anleitungen per Test und repariert die Drift, die der Pin findet, und #11208 schließt die direkte `run.app`-Tür mit demselben geteilten Origin-Geheimnis — dort seit 2026-09-03 scharf. Die Cloudflare-Rate-Limiting-Regel steht in anyplot ebenfalls. Was in diese Richtung noch offen ist — Bytecode im API-Image und die CSP-Härtung —, liegt als eigene Aufgabe vor.
+
+### Was offen bleibt
+
+Sechs Entscheidungen hängen am Autor und stehen in der Todoist-Aufgabe „Abend-Entscheidungen 2026-09-02: Audit-Tracks“ (`6hQFPQJ8j9f6J25r`): A3 (Platten-Nib nach der humanbench-Runde, Befund 20), A4 (Tafelformen und d-Auslauf, Befund 33 / F6 — die vermessene Vorarbeit dazu liegt in der Aufgabe „Modellentscheidung d-Auslauf“, `6hFvQgG3H88R6vmr`), A8 (Import-Dedup statt Hand-Sync, Befund 34 / F11), A12 (Sperr-Doktrin im Wizard, Befund 13), A16 (Herkunft der aug30-Wurzel, Befund 17) und A17 (die drei jüngsten §14-Abschnitte vor §15 verschieben). Der Datenschutz-Wortlaut zu Befund 36 steht in derselben Aufgabe unter den manuellen Schritten und hält #507 im Entwurf. Die CSP führt zwei eigene Aufgaben: die Werkbank in der Report-Only-Woche mit offener Konsole durchgehen (`6hQMgxPG8pFvF4gr`) und danach scharf schalten, mit vorher geprüftem Melde-Weg (`6hQMgxQGXm23877r`, frühestens 2026-09-10). Dazu kommen die drei Entscheidungen zur `/write`-Absicherung (`6hQFFx9VrpjGJMJr`, Befund 14), der Blick auf die Werkbank-Dichte nach dem angehobenen Typo-Boden (`6hQG36Jf6GH2V5VJ`, Befund 21) und der Rücktransfer nach anyplot (`6hQMgxQfGqXcCr4J`).
+
+Ohne PR und ohne Aufgabe stehen heute noch sechs Befunde: der eingefrorene pairlab-Spiegel (18), die Pfadliste des `deploy-api`-Triggers (23), der Altbestand der 121 Remote-Zweige (25), die zwei Laufform-Zeilen mit n = 1 (35), die Reproduzierbarkeit von `dev_ids()` (37) und der Lint-Parkplatz aus #227 (39). Fünf davon kann eine KI-Sitzung ohne Entscheid abräumen; nur die beiden Laufform-Zeilen brauchen zuerst mehr nachgefahrene Vorkommen und damit Handarbeit des Autors.
+
 ## Stärken
 
 - Das Auftragskorb-Protokoll ist nicht nur Doktrin, sondern API-erzwungen UND wird eingehalten: alle fünf Live-Zeilen tragen `understanding`, `reproduced`, `stage` und `resolution`, jede `done`-Zeile nennt ihre PR, und alle fünf zugehörigen PR-Bodies nennen umgekehrt „Korb #N“ — die Quer-Verweis-Pflicht aus §5.3 ist zu 100 % erfüllt.
