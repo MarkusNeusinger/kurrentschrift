@@ -74,7 +74,9 @@ Verfahrensseite; geändert wird sie nie hier.
 > v0.8/v0.10/v0.12/v0.14/v0.15/v0.18 und die Auflösungs-Familie ·
 > K0-Z/K0-Z-R (als K0-S wiedervorgelegt und in v5 aufgegangen) ·
 > K-E1/K-E2 · LF1/LF2/LF3/LF5/LF6/LF7/LF10 · J1/J2/J3 · J4/J4b. K-D
-> wurde gegenstandslos, nicht verworfen.
+> wurde gegenstandslos, nicht verworfen. **Abgeschrieben `sep03`** (nie
+> gemessen, Autor-Entscheid): die Folger-Arme ②③④⑦⑧ — Gewichts-Arme der
+> Formulierung, die ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet haben.
 >
 > **Adoptiert `sep02` auf Autor-Entscheid.** LF11 „glatte Zeile"
 > (Sprosse Δs 0,16): alle vier Trocken-Gates grün, danach die erste
@@ -1001,6 +1003,7 @@ Zeile dazu steht unten (J4/J4b), die Konversionen in §7.11.
 | P3-K2 d-Abgangswinkel (`aug16`) | beide Lineale monoton dagegen, kein Split | nur Nachkalibrierung (Klassen-n 8/18) | Bestätigungssatz |
 | Arm ⑨ Topologie-Wächter (`aug16`) | Tinten-Gewinn und Struktur-Erfindung in DIESER Formulierung untrennbar; `structure_guard` bleibt Werkzeug | Route „Lotse" (§7.8): Skelett fahren, Duktus als Karte | eigene Pre-Reg |
 | Arm ⑥/⑥b Landmark-Gewicht (`aug14`) | Korrespondenz-Kappe gelöst (classed punktweise kostenlos), Gewicht trotzdem nutzlos im Folger-Setting | klassenbewusste Ziele stehen bereit für ein Setting, in dem die Kreuzung wirklich wandern kann (Lotse) | mit der Lotse-Runde |
+| Folger-Arme ②③④⑦⑧, **abgeschrieben 2026-09-03** (Autor-Entscheid; §14 „Vorregistrierung der Folger-Arme `aug14`", Nachtrag `sep03`) | Kein eigenes Negativ, sondern ein geerbtes: alle fünf sind GEWICHTS-Arme derselben Formulierung, und die hat Arm ⑨ mit dem Route-A-Fazit geschlossen (der Kettenfit steht am struktur-sicheren Optimum DIESER Formulierung, dtw-Δ exakt 0). Was die Route seit `aug14` bewegt hat, waren Formulierung und Evidenz (K-A · K-B · K-C · K0-S), kein Gewicht | Kein Rettungsweg innerhalb der Gewichts-Familie — das wäre derselbe Knopf mit weicheren Gates. Der einzige benannte Weg zurück ist eine **neue Formulierung, in der ein Gewicht überhaupt etwas anderes tun kann** (die Wächter-Schicht ist der Präzedenzfall: sie hat den Fit nicht neu gewichtet, sondern ihm eine Annahmeregel gegeben); dann frische Vorregistrierung, neue Arm-Nummer, nie die alte wieder aufmachen | keine Wiederaufnahme ohne neue Formulierung |
 | P2a Arkaden-Luft · P1 Diagonalen-Trim (`aug15`) | Beleg-Varianz ±0,1 xh, Ruler monoton dagegen | Dissektions-Forderung im Nachkalibrierungs-Protokoll (§7.7) | Bestätigungssatz |
 | Methodik-Lücke (quer, `aug16`) | drei Kills wurden von Netto-Deltas ≤ 0,0007 entschieden — das Lineal ZUCKT dort nur, die Gates machen daraus ein Nein | humanbench-WORT-Runde als vorregistrierter Tie-Breaker für ruler-indifferente Fälle (\|Netto-Δ\| < ε bei starker Dissektions-Evidenz) | eigene Pre-Reg + Runde |
 | Lotse v0.2 (A5) Parallel-Versatz (`aug16`) | `DOUBLE_PASS_OFFSET_FRACTION` aus der Breiten-Evidenz bringt keine Kreuzung zurück: fast-parallele Züge kreuzen einander nie transversal, ein Versatz verschiebt sie nur | Knoten-Sehne statt Parallel-Versatz (als v0.3 versucht, s. u.); die Klasse selbst ist mit der Karten-Geometrie in den Ritt-Doppelzonen gelöst → **UMGESETZT als v0.5, adoptiert** | **erledigt** |
@@ -1133,7 +1136,7 @@ Registerzeile und, wenn sie ein Negativ war, mit ihrer §7.9-Zeile.
 | **Lotse-Zonen-Stufe** | §14 „Lotse v0.16 `aug20`" | „zones"/„all" scheitern nur noch an der Galoppieren-p-Oskulation | wiedervorlegen NACH dem p-Platzierungs-Arm |
 | **InkSight B2 (Tiling)** | §14 „Welle 1 · B1 `aug15`", verfahren-inksight.md | Galoppieren liegt jenseits der Trainingsfiltergrenze und ist der gemessene Probestein | offen seit `aug15` |
 | **InkSight-Nachmessung auf Marken-Kappe 1,5** | §14 „Lineal L-U `aug26`" | ohne sie ist die vierte Route mit den anderen dreien nicht vergleichbar | offen; braucht das isolierte Python-3.11-TF-venv |
-| **Folger-Arme ②③④⑦⑧** | §14 „Vorregistrierung der Folger-Arme `aug14`" | nie einzeln gemessen; die Schließung „durch ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet" steht nur auf verfahren-kette.md | offen: entweder messen oder vom Autor formal abschreiben lassen |
+| ~~**Folger-Arme ②③④⑦⑧**~~ | §14 „Vorregistrierung der Folger-Arme `aug14`" (Nachtrag `sep03`) | nie einzeln gemessen; Gewichts-Arme derselben Formulierung, die ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet haben | **abgeschrieben 2026-09-03** (Autor-Entscheid) — keine Messung mehr; Wiederaufnahme nur mit frischer Vorregistrierung und einer neuen Formulierung, in der ein Gewicht etwas anderes tun kann (§7.9) |
 
 **Autorenschritte** (nur der Autor kann sie tun oder freigeben; jeder
 davon liegt zusätzlich als Todoist-Aufgabe im Projekt „Kurrentschrift"):

@@ -110,14 +110,37 @@ def test_an_entry_without_a_register_row_fails(repo: Path) -> None:
     assert any("has no register row" in p for p in problems)
 
 
-def test_an_entry_appended_after_the_next_heading_still_counts(repo: Path) -> None:
-    # Rounds append at the END of the file, which lands after §15 rather than
-    # inside §14 — LF11, J4 and J4b did on 2026-09-02. Such an entry is a
-    # journal entry and needs its register row like any other.
-    text = JOURNAL + "\n### Kette K-Z `sep02` — nach §15 angehängt\n\nGemessen.\n"
+def test_the_journal_ends_at_the_next_section(repo: Path) -> None:
+    # §14 is a section again since 2026-09-03: four `sep02` rounds had appended
+    # after the `## 15.` heading, and rather than widen the window forever the
+    # author had them moved in front of §15. An entry appended at the file end
+    # now lands OUTSIDE §14 — which is the signal to place it, not to index it
+    # where it fell.
+    text = JOURNAL + "\n### Kette K-Z `sep02` — hinter §15 angehängt\n\nGemessen.\n"
     _write(repo, dr.JOURNAL, text)
-    assert "Kette K-Z `sep02` — nach §15 angehängt" in [e.title for e in dr.entries(text)]
-    assert any("has no register row" in p for p in dr.check_all(root=repo))
+    assert "Kette K-Z `sep02` — hinter §15 angehängt" not in [e.title for e in dr.entries(text)]
+    # …and it is REPORTED rather than ignored: a truncating window that stays
+    # quiet about the misplaced entry would be the same silent hole the gate
+    # exists to close.
+    assert any("sits AFTER §14" in p for p in dr.check_all(root=repo))
+
+
+def test_a_dated_subheading_behind_the_journal_is_reported_too(repo: Path) -> None:
+    # Shape cannot decide this: the real file already carries 26 dated `###`
+    # headings outside §14 (`Re-Baseline jul05`, `Nachtrag aug26` …), so a date
+    # tag proves nothing. Everything behind §14 is reported by default.
+    text = JOURNAL + "\n### Nachtrag `sep05` — was die Reparatur gekostet hat\n\nProsa.\n"
+    _write(repo, dr.JOURNAL, text)
+    assert any("sits AFTER §14" in p for p in dr.check_all(root=repo))
+
+
+def test_a_declared_subheading_behind_the_journal_passes(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # …and the escape is a declaration, not a guess: one reviewed line lets a
+    # later section keep its own subheading.
+    title = "Nachtrag `sep05` — was die Reparatur gekostet hat"
+    monkeypatch.setattr(dr, "POST_JOURNAL_SUBHEADINGS", (title,))
+    _write(repo, dr.JOURNAL, JOURNAL + f"\n### {title}\n\nProsa.\n")
+    assert dr.check_all(root=repo) == []
 
 
 def test_a_register_row_pointing_nowhere_fails(repo: Path) -> None:

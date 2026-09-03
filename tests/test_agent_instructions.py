@@ -210,6 +210,9 @@ MIRRORED_RULES = {
     "no state-management framework": ["redux"],
     "do not silently diverge": ["silently diverge"],
     "codecov is a reviewer": ["codecov"],
+    # A §14 entry goes in FRONT of `## 15.`; appending at the file end is how
+    # five sep02 rounds fell out of the journal (repaired 2026-09-03).
+    "§14 entries go before §15": ["before `## 15.`", "closed section"],
 }
 
 
