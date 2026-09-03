@@ -47,13 +47,26 @@ const TOUCH_TARGET = 44;
 // moment the round starts, and its results screen is three states further on —
 // sweeping only the middle state would leave two whole control sets unmeasured
 // while the run still claimed to have covered the site.
+// Every phase declares `ready`: the state it is supposed to measure, as a
+// predicate. `goto()` only waits for <main> to mount, and a phase's own action
+// may take a while to have an effect, so sweeping after a fixed delay would let
+// a slow API leave the screen empty while the run still reported it measured —
+// the exact "claims coverage it does not have" failure this file exists to
+// prevent. A phase whose `ready` never comes true fails the run.
 const PHASES = {
   '/quiz': [
-    { name: 'Einrichtung' },
+    {
+      name: 'Einrichtung',
+      // Wait for the start button WITHOUT clicking it: its presence is what
+      // says the word bank arrived and the setup chips are on screen.
+      ready: "[...document.querySelectorAll('button')].some((b) => /Quiz starten/.test(b.innerText))",
+    },
     {
       name: 'Runde',
       action:
         "(() => { const b = [...document.querySelectorAll('button')].find((x) => /Quiz starten/.test(x.innerText)); if (!b) return false; b.click(); return true; })()",
+      // The play panel is up once its „beenden" affordance exists.
+      ready: "[...document.querySelectorAll('button')].some((b) => b.innerText.trim() === 'beenden')",
     },
     {
       name: 'Auswertung',
@@ -61,6 +74,9 @@ const PHASES = {
       // long as a round takes. Retrying it from out here would multiply a
       // 40-second play-out by the retry budget and look like a hang.
       attempts: 1,
+      // Results are only worth measuring once they carry the pills — an empty
+      // evaluation would sweep a screen without the targets this round is for.
+      ready: "[...document.querySelectorAll('button')].some((b) => /Einstellungen ändern/.test(b.innerText)) && /verwechselt|Mühe/.test(document.body.innerText)",
       // A round has no fixed length — it runs until „beenden", and `finish()`
       // only shows results once at least one question has been seen. So:
       // answer, then quit. (Playing to an end that does not exist was the
@@ -256,9 +272,25 @@ async function main() {
             console.log(`  FAIL  ${route} · ${phase.name} — Zustand nicht erreicht, NICHT gemessen`);
             continue;
           }
-          await sleep(1200);
         }
-        // Engine-written surfaces (replay buttons, tafel cells) arrive late.
+
+        // Wait for the state ITSELF, not for a fixed delay: `goto()` returns as
+        // soon as <main> exists, and a slow API can leave the screen's controls
+        // absent long past any sleep we would pick.
+        if (phase.ready) {
+          let up = false;
+          for (let attempt = 0; !up && attempt < 40; attempt += 1) {
+            up = await cdp.evaluate(phase.ready);
+            if (!up) await sleep(500);
+          }
+          if (!up) {
+            unreachable.push(`${route} · ${phase.name}`);
+            console.log(`  FAIL  ${route} · ${phase.name} — Zustand nicht bereit, NICHT gemessen`);
+            continue;
+          }
+        }
+        // Engine-written surfaces (replay buttons, tafel cells) arrive late and
+        // have no single readiness marker; this settles them.
         await sleep(1200);
 
         const rows = JSON.parse(await cdp.evaluate(SWEEP(TOUCH_TARGET)));
