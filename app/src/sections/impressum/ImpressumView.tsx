@@ -131,7 +131,12 @@ export function ImpressumView() {
         <Section heading={t.privacy.heading}>
           <Typography sx={prose}>{t.privacy.intro}</Typography>
 
-          <Typography sx={subTitle}>{t.privacy.analyticsTitle}</Typography>
+          {/* Six short paragraphs, no sub-headings: the section reads as prose
+              again (author's call, 2026-09-03). The service table went with
+              them — „Google Cloud in den Niederlanden, Cloudflare davor" is
+              the whole of what it said. */}
+          <Typography sx={prose}>{t.privacy.data}</Typography>
+
           <Typography sx={prose}>
             {t.privacy.analyticsBeforeLink}
             <Link href={t.privacy.analyticsUrl} target="_blank" rel="noopener noreferrer">
@@ -140,39 +145,8 @@ export function ImpressumView() {
             {t.privacy.analyticsAfterLink}
           </Typography>
 
-          <Typography sx={subTitle}>{t.privacy.logsTitle}</Typography>
-          <Typography sx={prose}>{t.privacy.logs}</Typography>
-
-          <Typography sx={subTitle}>{t.privacy.hostingTitle}</Typography>
-          <Typography sx={{ ...prose, mb: 1 }}>{t.privacy.hostingIntro}</Typography>
-          <Box sx={{ mb: 1.5 }}>
-            {t.privacy.hosting.map((row) => (
-              <Box
-                key={row.label}
-                sx={{
-                  display: 'flex',
-                  flexDirection: { xs: 'column', sm: 'row' },
-                  gap: { xs: 0, sm: 2 },
-                  py: 0.9,
-                  borderBottom: `1px solid ${paper.line}`,
-                }}
-              >
-                <Typography sx={{ ...prose, mb: 0, color: paper.sepia, minWidth: { sm: 170 } }}>{row.label}</Typography>
-                <Typography sx={{ ...prose, mb: 0 }}>{row.value}</Typography>
-              </Box>
-            ))}
-          </Box>
-
-          <Typography sx={subTitle}>{t.privacy.notCollectedTitle}</Typography>
-          <Box component="ul" sx={{ m: 0, mb: 1.5, pl: 3 }}>
-            {t.privacy.notCollected.map((item) => (
-              <Typography key={item} component="li" sx={{ ...prose, mb: 0.25 }}>
-                {item}
-              </Typography>
-            ))}
-          </Box>
-
-          <Typography sx={subTitle}>{t.privacy.rightsTitle}</Typography>
+          <Typography sx={prose}>{t.privacy.hosting}</Typography>
+          <Typography sx={prose}>{t.privacy.basis}</Typography>
           <Typography sx={{ ...prose, mb: 0 }}>{t.privacy.rights}</Typography>
         </Section>
 
