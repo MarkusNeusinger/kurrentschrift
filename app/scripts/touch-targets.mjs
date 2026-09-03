@@ -149,14 +149,16 @@ const KNOWN_SHORTFALL = {
   // inherit this exception. Must evaluate to a BOOLEAN; returning the element
   // would put a React fiber in the result and break serialisation.
   //
-  // WHICH shortfall: only the documented one. What §9.3 excuses is the narrow
-  // WIDTH of a cell that is otherwise generous — 73px tall and well past the
-  // 24px WCAG 2.2 SC 2.5.8 baseline. A cell that lost its height, or shrank
-  // under that baseline, is a new defect and must fail; otherwise this flag
-  // would quietly cover regressions the author never agreed to.
+  // WHICH shortfall: only the documented one. What §9.3 excuses — the author
+  // decided this on 2026-09-03 — is the narrow WIDTH of a cell that is
+  // otherwise generous: 57–64px tall and well past the 24px WCAG 2.2 SC 2.5.8
+  // baseline. A cell that lost its height, or shrank under that baseline, is a
+  // new defect and must fail; otherwise this flag would quietly cover
+  // regressions nobody agreed to. The exception lapses when the sheet is
+  // re-laid out (see §9.3 „Wann die Ausnahme fällt").
   match: "el.tagName.toLowerCase() === 'g' && !!el.querySelector(':scope > rect.cellbg')",
   envelope: (floor) => `r.height >= ${floor} && r.width >= 24`,
-  why: 'Schreibtafel-Zellen: schmale Breite bei voller Höhe — Autor-Entscheid offen',
+  why: 'Schreibtafel-Zellen: schmale Breite bei voller Höhe — bewusst so (design-system.md §9.3)',
 };
 
 const SWEEP = (floor) => `(() => {
