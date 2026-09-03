@@ -7,7 +7,7 @@
   moved in front of §15 instead — not one word changed inside them, the anchors
   the docs cite about 350 times are untouched — and the gate reads a section
   again. Whoever writes the next round places it before §15; the gate reports
-  an entry that lands outside §14 as a missing register row (#NNN).
+  an entry that lands outside §14 as a missing register row (#512).
 - **The follower arms ②③④⑦⑧ are formally written off.** Five of the eight arms
   pre-registered on `aug14` were never measured, and on the author's decision
   they will not be: all five are weight arms of the formulation that ①⑤⑥⑥b⑨
@@ -16,4 +16,4 @@
   lived only on the process page; it now stands in the journal itself as a
   dated Nachtrag, in the register row, in the rescue-path table with the one
   route back (a new formulation in which a weight can do something else), and
-  as the status in §7.11 (#NNN).
+  as the status in §7.11 (#512).
