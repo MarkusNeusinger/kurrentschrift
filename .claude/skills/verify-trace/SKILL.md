@@ -107,7 +107,12 @@ uv run python -m tools.tracebench.view                     # the duel / eyeball 
 ## 6 · File the round (part of the round, not paperwork)
 
 - A **§14 entry** in `docs/reference/qualitaetsmetrik.md` with the
-  pre-registration, the measured numbers and the verdict.
+  pre-registration, the measured numbers and the verdict. **Insert it
+  BEFORE the `## 15.` heading, not at the end of the file** — §14 is a
+  closed section, and appending is how five `sep02` rounds ended up
+  outside it (repaired 2026-09-03). Add its row to the register table at
+  the head of §14 in the same PR; `uv run python -m tools.docs_register
+  check` reports both the misplaced section and the missing row.
 - The **ledger line** on the affected `docs/reference/verfahren-*.md` page
   in the SAME PR; on adoption also its „Aktueller Stand" and the Stand
   column in `verfahren.md` (`docs/index.md` § Dokument-Status).

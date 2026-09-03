@@ -119,6 +119,18 @@ def test_the_journal_ends_at_the_next_section(repo: Path) -> None:
     text = JOURNAL + "\n### Kette K-Z `sep02` — hinter §15 angehängt\n\nGemessen.\n"
     _write(repo, dr.JOURNAL, text)
     assert "Kette K-Z `sep02` — hinter §15 angehängt" not in [e.title for e in dr.entries(text)]
+    # …and it is REPORTED rather than ignored: a truncating window that stays
+    # quiet about the misplaced entry would be the same silent hole the gate
+    # exists to close.
+    assert any("sits AFTER §14" in p for p in dr.check_all(root=repo))
+
+
+def test_a_later_sections_own_subheading_is_not_a_stray_entry(repo: Path) -> None:
+    # §15 and its successors may carry ordinary subheadings; only the journal's
+    # own date tag marks a heading as a misplaced ENTRY.
+    text = JOURNAL + "\n### Was die Reparatur gekostet hat\n\nProsa.\n"
+    _write(repo, dr.JOURNAL, text)
+    assert dr.stray_entries(text) == []
     assert dr.check_all(root=repo) == []
 
 

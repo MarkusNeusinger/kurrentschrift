@@ -129,15 +129,41 @@ def journal_section(text: str) -> tuple[list[str], int]:
     index them without moving anyone's text. The author decided on 2026-09-03
     that §14 should be closed again, so the sections moved in front of §15 and
     the window is a section again. A round that appends at the file end now has
-    to place its section, and the gate says so: its entry would sit outside §14
-    and the missing register row is what reports it.
+    to place its section — and because a truncating window would simply IGNORE
+    a misplaced entry rather than complain about it, `stray_entries` looks at
+    the tail and `check_register` reports what it finds.
     """
     lines = text.split("\n")
+    start, end = _journal_bounds(lines)
+    return lines[start:end], start
+
+
+def _journal_bounds(lines: list[str]) -> tuple[int, int]:
+    """Where §14 starts and where the next `## ` section takes over."""
     start = next((i for i, line in enumerate(lines) if line.startswith(SECTION_HEADING)), None)
     if start is None:
         raise RegisterError(f"{JOURNAL}: no '{SECTION_HEADING.strip()}' heading — the journal moved?")
     end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("## ")), len(lines))
-    return lines[start:end], start
+    return start, end
+
+
+def stray_entries(text: str) -> list[Entry]:
+    """Journal entries that landed AFTER §14 — the append-at-the-file-end slip.
+
+    A round writes its section at the end of the file, which is how five `sep02`
+    entries ended up behind the `## 15.` heading. What identifies one is the
+    journal's own date tag in the heading (`aug14`, `sep02`), so a later section's
+    ordinary `###` subheading is not mistaken for a misplaced entry. Anchors are
+    not computed here — the finding is "this belongs inside §14", not "index it
+    where it fell".
+    """
+    lines = text.split("\n")
+    _, end = _journal_bounds(lines)
+    return [
+        Entry(title=line[4:].strip(), anchor="", line=i + 1)
+        for i, line in enumerate(lines)
+        if i >= end and line.startswith("### ") and _DATE_TAG.search(line)
+    ]
 
 
 def entries(text: str) -> list[Entry]:
@@ -256,6 +282,12 @@ def check_register(text: str) -> list[str]:
                 f"{JOURNAL}:{entry.line}: §14 entry '{entry.title}' has no register row — "
                 f"add one to '{INDEX_HEADINGS[0]}' in this PR (link target: #{anchor})"
             )
+    for stray in stray_entries(text):
+        problems.append(
+            f"{JOURNAL}:{stray.line}: '{stray.title}' reads as a journal entry but sits AFTER §14 — "
+            "a round appends at the end of the file, and §14 is a closed section: move it in front of "
+            "the next `## ` heading, then give it its register row"
+        )
     return problems
 
 

@@ -755,7 +755,7 @@ cannot invoke them, but the gate each one stands for still applies:
 | `/data`, binaries, licenses | `/audit-licenses` — provenance battery |
 | commit/push/PR requests | `/open-pr` — the local gates, then CI + review to green |
 | glyph-pipeline experiments | `/optimize-glyphs` — frozen bench discipline |
-| Tintenfolger measurement rounds | `/verify-trace` — BLAS pinned, base and arm the same stack but one knob, §14 + ledger afterwards |
+| Tintenfolger measurement rounds | `/verify-trace` — BLAS pinned, base and arm the same stack but one knob; afterwards the §14 entry (inserted BEFORE `## 15.`, §14 is a closed section), its register row and the ledger line |
 | Auftragskorb work | `/work-basket` — the protocol the API enforces |
 | anything that can overwrite geometry | `/dbsnapshot` — create freely, never destroy |
 | cutting a release | `/release` — fold fragments, tag the merge commit, condensed notes |
