@@ -679,6 +679,43 @@ Fehler. `kind` ist die Eigenschaft, nach der man filtert:
   mitversioniert werden und `index.html` mitziehen. Die gehashten
   `/assets/`-Bundles cachen `immutable`/1 Jahr (`app/nginx.conf`).
 
+### CLS auf `/tafel`: gemessen, und nicht die Schrift (2026-09-03)
+
+Der Website-Audit vom 2026-09-02 hat den Layout-Sprung auf `/tafel` der
+nachgeladenen GLKurrent-Initiale zugeschrieben und daraus die offene
+`font-display`-Frage abgeleitet. Die Nachmessung in **Produktion** widerlegt
+das: der Sprung passiert, **nachdem** die Schrift geladen ist.
+
+Aufbau — echtes Chrome über CDP (nicht headless; seit dem 2026-09-03 steht
+Cloudflare Bot Fight Mode vor der Zone, eine Challenge wäre also möglich, die
+ausgelieferte Seite wurde je Lauf gegengeprüft), `ignoreCache`, Slow 4G +
+4× CPU, je drei Läufe, gemessen mit einem `PerformanceObserver` auf
+`layout-shift`:
+
+| Ansicht | CLS | Ursache |
+|---|---|---|
+| Mobil 390×844 | 0,0948 · 0,0948 · 0,0979 | ein einziger Shift bei ~1,9–2,3 s |
+| Desktop 1280×800 | 0,112 · 0,112 · 0,112 | derselbe Shift |
+
+Ursachenanteil, aus den Shift-Quellen und einer Zeitreihe der Dokumenthöhe:
+
+- **Tafelscans: 0.** Sie tragen seit #476 ihr `chart_size` als
+  `aspect-ratio` (1633/1869 · 1614/1300 · 2190/1029) und reservieren ihren
+  Platz, bevor ein Byte Bild da ist.
+- **Geschriebene Initiale (GLKurrent): 0.** `document.fonts.check('40px
+  GLKurrent')` ist in JEDEM Lauf schon `true`, bevor der Shift eintritt.
+- **Später Aufbau der drei Schrift-Abschnitte: alles.** Bis ~1,4 s ist das
+  Dokument 844 px hoch (Kopf + Einleitung), dann springt es in EINEM Schritt
+  auf 3132 px (mobil) bzw. 4494 px (Desktop), sobald `/sources` beantwortet
+  ist. Die Fußzeile, die bis dahin bei y≈649 im Sichtfeld stand, verlässt es —
+  genau dieser eine Shift IST der CLS.
+
+Folge für die offene Entscheidung: `font-display: optional` für die Initiale
+würde diese Zahl **nicht** bewegen. Wer den CLS senken will, reserviert die
+Höhe der drei Abschnitte (Skelett), solange die Quellen laden — das ist eine
+Gestaltungsfrage (eine hohe leere Fläche statt einer kurzen Seite) und keine
+Schriftfrage.
+
 ### Sicherheits-Header und Cache-Control (seit 2026-09-02)
 
 Bis zum Audit vom 2026-09-02 lieferte `kurrentschrift.ink` **keinen einzigen**

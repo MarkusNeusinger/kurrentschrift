@@ -188,7 +188,21 @@ export function WrittenWord({
   const maskId = `word-${uid.replace(/[^a-zA-Z0-9_-]/g, '_')}-${run}`;
 
   return (
-    <Box sx={{ position: 'relative', display: 'inline-flex' }}>
+    <Box
+      sx={{
+        position: 'relative',
+        display: 'inline-flex',
+        // The ↺ hangs bottom-right INSIDE this box. A long line is capped by
+        // `maxWidth`, so its box collapses to the aspect of the writing — at
+        // 390 px a 29-character sentence is 25 px of ink, and the button then
+        // sat on the last letters (website audit 2026-09-02, measured on the
+        // live page). Reserving the height the caller asked for gives the
+        // button its own ground under the line without moving the ink, which
+        // stays centred. Only where the button exists: everywhere else the box
+        // keeps hugging the writing, so no other surface's layout moves.
+        ...(showReplay ? { minHeight: height, alignItems: 'center' } : {}),
+      }}
+    >
       <svg
         width={displayW}
         height={finalH}
