@@ -22,6 +22,7 @@ import { de, fmt } from '@/locales';
 import { paths } from '@/routes/paths';
 import { InkButton, QuietButton, QuizEyebrow } from '@/sections/quiz/quizUi';
 import { type ConfusionMap, type MissMap, type TallyRef } from '@/sections/quiz/useQuizEngine';
+import { hitArea } from '@/styles/hitArea';
 import { cardSurface, display, garamond, paper, pigment, quiz, quizRadius } from '@/styles/paper';
 
 interface ResultsProps {
@@ -102,6 +103,9 @@ function ResultCard({
       aria-label={fmt(de.quiz.results.tafelLinkAria, { form: label })}
       sx={{
         ...sx,
+        // The pill is drawn 42px tall — two short of the §9.3 floor — and it is
+        // a link to the Tafel, so it takes the rest from an invisible hit area.
+        ...hitArea(),
         color: 'inherit',
         textDecoration: 'none',
         transition: 'border-color .2s',

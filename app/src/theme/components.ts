@@ -55,6 +55,15 @@ export const components: Components<Theme> = {
       { props: { variant: 'text', color: 'primary' }, style: { color: paper.viridianText } },
     ],
   },
+  MuiFormControlLabel: {
+    styleOverrides: {
+      // A switch or checkbox wrapped in a label is tapped ANYWHERE on the
+      // label, so the label is the real target — and it measured 38px, under
+      // the §9.3 floor, on the worksheet's three switches. The control's own
+      // geometry stays untouched: MUI centres it inside the taller label.
+      root: { minHeight: TOUCH_TARGET },
+    },
+  },
   MuiChip: {
     styleOverrides: {
       // Chip is not a ButtonBase, so it needs the ring spelled out again.

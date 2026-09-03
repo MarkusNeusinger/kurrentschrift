@@ -412,22 +412,40 @@ das Element allein steht.
 
 **Offen — Autor-Entscheid: die Zellen der Schreibtafel.** Die geschriebene Tafel
 setzt das Alphabet als SVG-Zellen, die ihre Zeile lückenlos kacheln (bei 390 px
-gemessen: 41–98 px breit, Lücke 0, Höhe 73 px). Die schmalsten reißen den Boden
+gemessen: 32–98 px breit je nach Buchstabe und Ansicht, Lücke 0, 57–73 px hoch).
+Die schmalsten reißen den Boden
 in der Breite. Beide Auswege kosten etwas: eine unsichtbare Fläche griffe in den
 Nachbarbuchstaben und nähme ihm den Tipp, eine Verbreiterung baut das
 Nachschlage-Raster um, dessentwegen die Seite existiert. WCAG 2.2 SC 2.5.8 ist
-mit 41 × 73 px deutlich erfüllt. Bis zur Entscheidung stehen die Zellen als
+mit mindestens 32 × 57 px deutlich erfüllt. Die Ausnahme im Skript gilt
+ausdrücklich NUR für diese schmale Breite bei voller Höhe: eine Zelle, die ihre
+Höhe verlöre oder unter die 24-px-Linie fiele, meldet der Sweep als echten
+Verstoß. Bis zur Entscheidung stehen die Zellen als
 benannte Ausnahme in `touch-targets.mjs` — sichtbar gezählt, nicht stillschweigend
 übersprungen.
 
 **Messbar statt behauptet**, wie der Typo-Boden: `npm run touch-targets`
 (`app/scripts/touch-targets.mjs`) fährt **alle** öffentlichen Routen an und misst
-**jedes** interaktive Element — 217 sind es heute. Ausgenommen ist genau die eine
-Ausnahme der Regel, und zwar an dem Merkmal, das §9.2 ihr gibt: ein `<a>` mit
-Unterstreichung ist ein Fließtext-Link (84 Stück); Chrome, das nur wie ein Link
-aussieht, setzt `textDecoration: none` und wird mitgemessen. Eine gepflegte
-Liste stand vorher hier und war die falsche Form — sie bestand, während die
-Lesart-Chips und die Tafel-Schrittknöpfe den Boden rissen.
+**jedes** interaktive Element — 255 sind es heute, über alle Bildschirmzustände
+(das Quiz zählt dreimal: Einrichtung, Runde, Auswertung, weil jeder Zustand
+andere Bedienelemente zeigt). Ausgenommen ist genau die eine Ausnahme der Regel,
+und sie braucht ZWEI Merkmale: unterstrichen **und** außerhalb von `<nav>`.
+Die Unterstreichung allein genügt nicht — die Sprungliste der Schriftkunde ist
+ebenfalls unterstrichen, ist aber Navigation und schuldet den Boden (sie trägt
+ihn seit 2026-09-03 über `minHeight`, was ihre Zeilen zugleich auseinanderrückt).
+Chrome, das nur wie ein Link aussieht, setzt `textDecoration: none` und wird
+ohnehin mitgemessen.
+
+Zwei Feinheiten, die das Messen erst ehrlich machen: Ein in ein `<label>`
+gewickeltes Bedienelement wird **am Label** gemessen — dort tippt man hin, und
+MUIs Switch legt nur einen durchsichtigen `<input>` darüber (deshalb prüft der
+Sweep auch keine Deckkraft: unsichtbar heißt nicht unbedienbar, das entscheidet
+der Treffertest). Und die benannte Ausnahme der Tafel-Zellen hängt am Merkmal
+`rect.cellbg` der Zelle, nicht an „ist eine SVG-Gruppe" — sonst erbte das nächste
+zu kleine SVG-Element die Ausnahme, statt aufzufallen.
+
+Eine gepflegte Liste stand hier zuerst und war die falsche Form: sie bestand,
+während die Lesart-Chips und die Tafel-Schrittknöpfe den Boden rissen.
 
 Geprüft wird die echte Trefferfläche statt einer berechneten Größe: für jede
 Achse, auf der ein Element kleiner als 44 px GEZEICHNET ist, fragt das Skript per
