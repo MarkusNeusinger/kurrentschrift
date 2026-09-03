@@ -357,7 +357,14 @@ export const schriftkunde = {
     },
     {
       term: 'Reduplikationsstrich',
-      desc: 'Ein gerader Strich über n oder m verdoppelt den Buchstaben: n̄ steht für nn.',
+      // The straight doubling stroke and the curved u-bow are both marks ABOVE
+      // the letter, and that is where they collide: „wenn" reads as „weu" on
+      // the first pass (author's own reading note, 2026-09-03). Both halves
+      // are documented — the straight stroke over n/m in
+      // docs/schriftkunde/kurrent.md §Reduplikationsstrich, the u-bow in the
+      // Buchstaben-Besonderheiten above — so the sentence names the shape
+      // difference rather than a feel.
+      desc: 'Ein gerader Strich über n oder m verdoppelt den Buchstaben: n̄ steht für nn. Weil auch das u ein Zeichen über sich trägt, geraten die beiden leicht durcheinander — „wenn“ liest sich beim ersten Blick gern als „weu“. Der Unterschied liegt in der Form: Der Verdopplungsstrich ist gerade, der u-Bogen ist gebogen.',
     },
   ],
   lettersSources: [SRC.kurrent, SRC.langesS],
