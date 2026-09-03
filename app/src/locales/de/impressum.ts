@@ -67,7 +67,13 @@ export const impressum = {
     // so they are named rather than left to be discovered in the code.
     securityTitle: 'Was die Seite zu ihrem Schutz tut',
     security: [
-      'Damit niemand die Seite durch schiere Menge lahmlegt oder Kosten auftürmt, wird gezählt, wie viele Anfragen von einer Adresse kommen — am Rand des Netzes und noch einmal auf dem Server. Diese Zähler leben im Arbeitsspeicher, für Minuten, und werden nirgends gespeichert.',
+      // No lifetime is promised: the origin buckets live in `_buckets` until
+      // the process restarts, and are only evicted once the map passes
+      // MAX_TRACKED_CLIENTS (api/rate_limit.py). What IS true is that nothing
+      // is written to disk or database — so that is what the sentence says.
+      // The edge counter is Cloudflare's, not this server's; naming it that
+      // way keeps the two apart (Copilot review, #507).
+      'Damit niemand die Seite durch schiere Menge lahmlegt oder Kosten auftürmt, wird gezählt, wie viele Anfragen von einer Adresse kommen — am Rand des Netzes durch Cloudflare und noch einmal auf dem Server. Der Zähler auf dem Server steht allein im Arbeitsspeicher: nichts davon wird auf eine Festplatte oder in die Datenbank geschrieben, und mit jedem Neustart ist er fort.',
       'Der Browser darf melden, wenn auf einer Seite etwas geladen würde, das die Sicherheitsregeln der Seite verbieten. Solche Meldungen nehmen wir entgegen, um Fehler in eben diesen Regeln zu finden; die gemeldete Adresse wird dabei um alles hinter „?“ und „#“ gekürzt, damit kein eingegebener Text mitkommt.',
       'Ein technischer Schlüssel zwischen Schutznetz und Server stellt sicher, dass Anfragen den vorgesehenen Weg nehmen. Er enthält keine Angaben über Besucher.',
     ],
@@ -81,7 +87,12 @@ export const impressum = {
     hosting: [
       { label: 'Hosting', value: 'Google Cloud Run (Niederlande, europe-west4)' },
       { label: 'Datenbank', value: 'Google Cloud SQL (Niederlande)' },
-      { label: 'Schutz & Zwischenspeicher', value: 'Cloudflare (weltweites Netz, europäische Standorte für Besucher aus Europa)' },
+      {
+        label: 'Schutz & Zwischenspeicher',
+        // Same qualification as `hostingIntro` — otherwise the page gives two
+        // different Cloudflare guarantees (Copilot review, #507).
+        value: 'Cloudflare (weltweites Netz, in aller Regel europäische Standorte für Besucher aus Europa; die Region ist dort nicht verbürgt)',
+      },
       {
         label: 'Statistik',
         value:
@@ -101,8 +112,13 @@ export const impressum = {
     // because the site is subject to both.
     rights:
       'Auskunft, Berichtigung, Löschung, Widerspruch: Über die nach dreißig Tagen gelöschten Server-Logs hinaus ist nichts über dich gespeichert — es gibt also fast nie etwas auszuhändigen oder zu tilgen. Bei Fragen genügen ein paar Zeilen per E-Mail.',
+    // Art. 21 Abs. 1, not Abs. 2: an objection to legitimate-interest
+    // processing rests on grounds arising from the person's particular
+    // situation. The reasons-free objection belongs to direct marketing
+    // (Abs. 2), which this site does not do — the earlier draft overstated
+    // the right it cited (Copilot review, #507).
     rightsObjection:
-      'Gegen die Verarbeitung, die sich auf das berechtigte Interesse stützt, kannst du jederzeit Widerspruch einlegen (Art. 21 DSGVO) — eine Nachricht genügt, Gründe brauchst du nicht zu nennen.',
+      'Gegen die Verarbeitung, die sich auf das berechtigte Interesse stützt, kannst du Widerspruch einlegen (Art. 21 Abs. 1 DSGVO) — aus Gründen, die sich aus deiner besonderen Lage ergeben. Eine Nachricht genügt; Werbung wird hier ohnehin keine verschickt.',
     rightsComplaint:
       'Und wer sich beschweren möchte, kann das tun, ohne mich zu fragen: in der Schweiz beim Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten (EDÖB), in der EU bei der Aufsichtsbehörde des eigenen Wohnsitzes oder Arbeitsplatzes (Art. 77 DSGVO).',
   },
@@ -128,8 +144,12 @@ export const impressum = {
   },
   transparency: {
     heading: 'Transparenz',
+    // Was still promising „EU-Rechenzentren" flatly, which this revision
+    // withdrew three paragraphs above — two answers on one page (Copilot
+    // review, #507). Now it names what runs where and leaves the edge to the
+    // Hosting section.
     text:
-      'kurrentschrift.ink ist das Werk eines Einzelnen, offen für alle. Die Website läuft in EU-Rechenzentren — React im Browser, Python und PostgreSQL auf Google Cloud in den Niederlanden; Google und Cloudflare sind US-Anbieter, zertifiziert nach dem EU-US Data Privacy Framework. Fragen, Hinweise und Berichtigungen sind jederzeit willkommen — ich freue mich über Post.',
+      'kurrentschrift.ink ist das Werk eines Einzelnen, offen für alle. Server und Datenbank stehen in den Niederlanden — React im Browser, Python und PostgreSQL auf Google Cloud; davor liegt Cloudflares weltweites Netz, wie oben beschrieben. Google und Cloudflare sind US-Anbieter, zertifiziert nach dem EU-US Data Privacy Framework. Fragen, Hinweise und Berichtigungen sind jederzeit willkommen — ich freue mich über Post.',
   },
   lastUpdated: 'Visp, im September 2026',
 } as const;
