@@ -227,8 +227,13 @@ vom Symptom zur Änderung und zurück.
   die Glyphe obendrein offen zurück. Der Boden bleibt der Server: ohne
   `force` antwortet er weiter mit 423 (`api/routers/templates.py`
   `_reject_locked_unless_forced`), gepinnt in
-  `tests/test_api_admin_writes.py`. **Kein Knopf außer der Rückfrage
-  setzt das Flag.**
+  `tests/test_api_admin_writes.py`. Die Regel dahinter gilt für die
+  ganze Werkbank: **`force` setzt nur eine Fläche, die vorher
+  ausdrücklich danach fragt.** Das sind genau drei — die Rückfrage im
+  Wizard (neu), das „Neu ableiten & speichern" der Diagnose und der
+  Bulk-Dialog „Alle neu ableiten"; die beiden letzten sind schon immer
+  bewusst aufgerufene Aktionen und sagen es in ihrem Hinweistext. Ein
+  Knopf, der nebenbei schreibt, bekommt das Flag nicht.
 - Manuelle Beiträge (`authored`-Traces, Overrides) gehen **nie** in die
   eingefrorenen Metrik-Referenzen ein — die Messlatte bleibt die Platte
   (qualitaetsmetrik.md).
