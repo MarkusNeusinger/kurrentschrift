@@ -29,6 +29,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import re
+from html.parser import HTMLParser
 from pathlib import Path
 
 from api.routers.csp import router as csp_router
@@ -41,26 +42,63 @@ NGINX_CONF = ROOT / "app" / "nginx.conf"
 
 INCLUDE_LINE = "include /etc/nginx/security-headers.conf;"
 
-_SCRIPT = re.compile(r"<script(?P<attrs>[^>]*)>(?P<body>.*?)</script>", re.DOTALL | re.IGNORECASE)
-_TYPE = re.compile(r"""type\s*=\s*["']?([^"'\s>]+)""", re.IGNORECASE)
 # A <script> whose type is none of these is a DATA BLOCK (the JSON-LD in
 # index.html): the browser never executes it, and CSP never asks for a hash.
 _EXECUTABLE_TYPES = {"", "module", "text/javascript", "application/javascript"}
 
 
+class _InlineScripts(HTMLParser):
+    """Collects the body of every executable inline `<script>`, in document order.
+
+    A real tokenizer rather than a regex, and the reason is that every regex
+    attempt here was wrong in a way that would put the WRONG hash into the
+    shipped policy:
+
+    * `</script>` as a literal misses the legal `</script >`, reads on to the
+      next closing tag and hashes two scripts as one — CodeQL's
+      `py/bad-tag-filter`. The first script then has no hash and stops running.
+    * `<script([^>]*)>` ends the start tag at a `>` inside a quoted attribute
+      value (`<script data-note=">">run()</script>`), so the body becomes
+      `">run()` where the browser executes `run()`.
+    * `"src=" in attrs` calls `data-src=` external and `SRC = "…"` inline.
+
+    `html.parser` settles all three: it is quote-aware, it lowercases attribute
+    names, it treats `<script>` content as raw text (no entity decoding, so the
+    bytes hashed are the bytes served), and it hands comments to
+    `handle_comment` — a `<script>` inside `<!-- -->` never reaches
+    `handle_starttag` at all, which is right, because commented-out code never
+    runs and must never earn a standing permission.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=False)
+        self.bodies: list[str] = []
+        self._collecting = False
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag != "script":
+            return
+        named = dict(attrs)
+        declared = (named.get("type") or "").lower()
+        self._collecting = "src" not in named and declared in _EXECUTABLE_TYPES
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "script":
+            self._collecting = False
+
+    def handle_data(self, data: str) -> None:
+        if self._collecting:
+            self.bodies.append(data)
+
+
 def inline_script_hashes(html: str) -> list[str]:
     """`sha256-…` for every executable inline script, in document order."""
-    out = []
-    for match in _SCRIPT.finditer(html):
-        attrs = match.group("attrs")
-        if "src=" in attrs:
-            continue
-        declared = _TYPE.search(attrs)
-        if (declared.group(1).lower() if declared else "") not in _EXECUTABLE_TYPES:
-            continue
-        digest = hashlib.sha256(match.group("body").encode("utf-8")).digest()
-        out.append(f"sha256-{base64.b64encode(digest).decode('ascii')}")
-    return out
+    parser = _InlineScripts()
+    parser.feed(html)
+    parser.close()
+    return [
+        f"sha256-{base64.b64encode(hashlib.sha256(b.encode('utf-8')).digest()).decode('ascii')}" for b in parser.bodies
+    ]
 
 
 def csp_directives() -> dict[str, list[str]]:
@@ -117,6 +155,41 @@ def test_script_src_allows_exactly_the_inline_scripts_of_index_html():
         f"  in index.html: {sorted(expected)}\n"
         "Recompute after ANY edit to an inline <script> — even whitespace."
     )
+
+
+def test_the_script_scanner_reads_html_the_way_a_browser_does():
+    """The extractor decides which hashes the policy must carry, so its blind
+    spots become policy holes. Four of them, each with its own way of lying —
+    and each one a regex could not see, which is why this reads HTML with a
+    tokenizer now:
+
+    * `</script >` — legal HTML. A literal `</script>` pattern reads past it to
+      the next closing tag and hashes TWO scripts as one, so the real first
+      script gets no hash and stops running (CodeQL `py/bad-tag-filter`).
+    * `>` inside a quoted attribute value — `<script([^>]*)>` ends the start tag
+      there, so the hashed body begins mid-attribute while the browser executes
+      only the code.
+    * `SRC = "…"` / `data-src=` — an external script read as inline earns a
+      hash for its empty body; an inline one read as external loses its hash.
+    * a commented-out `<script>` — never runs, so its hash is a standing
+      permission for code that is not in the page.
+    """
+    plain = inline_script_hashes("<script>run()</script>")
+
+    only = inline_script_hashes("<script>x()</script >\n<script>y()</script>")
+    assert len(only) == 2, "a space before the closing bracket swallowed the next script"
+
+    assert inline_script_hashes('<script data-note=">">run()</script>') == plain
+
+    assert inline_script_hashes('<script SRC = "/a.js"></script>') == []
+    assert inline_script_hashes('<script data-src="x">run()</script>') == plain
+
+    assert inline_script_hashes("<!-- <script>ghost()</script> -->") == []
+    # …and the comment must not eat what follows it either.
+    assert inline_script_hashes("<!-- note --><script>run()</script>") == plain
+
+    # The JSON-LD block is data, not code: no hash, and the policy has none.
+    assert inline_script_hashes('<script type="application/ld+json">{}</script>') == []
 
 
 def test_script_src_never_falls_back_to_unsafe_inline():
