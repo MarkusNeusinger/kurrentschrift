@@ -8,7 +8,7 @@ Zwanzig Prüfer haben ein Repository vermessen, das handwerklich deutlich besser
 
 ## Erledigungsstand (2026-09-03)
 
-Nachgetragen am 2026-09-03, und der einzige nachgetragene Abschnitt: der Bericht bleibt, was er ist — ein Befundprotokoll vom 2026-09-02, dessen Titel, Nummern und Zeilen nicht fortgeschrieben werden. Hier steht nur, was seither daraus geworden ist, damit ein Leser den Stand nicht aus 39 Befunden, 14 Tracks und drei Dutzend PRs zusammensuchen muss. Alle genannten PR-Nummern sind gegen `gh pr view` geprüft; gemergt ist jede davon außer #507, die als Entwurf offen liegt. Von den 39 Befunden sind 23 erledigt, 11 teilweise erledigt, einer gemessen und ehrlich verworfen, zwei warten auf einen Entscheid des Autors, einer ist noch nachzuprüfen, und genau einer ist unangetastet geblieben.
+Nachgetragen am 2026-09-03, und der einzige nachgetragene Abschnitt: der Bericht bleibt, was er ist — ein Befundprotokoll vom 2026-09-02, dessen Titel, Nummern und Zeilen nicht fortgeschrieben werden. Hier steht nur, was seither daraus geworden ist, damit ein Leser den Stand nicht aus 39 Befunden, 14 Tracks und drei Dutzend PRs zusammensuchen muss. Alle genannten PR-Nummern sind gegen `gh pr view` geprüft; gemergt sind alle bis auf #507, die als Entwurf offen liegt. Von den 39 Befunden sind 23 erledigt, 11 teilweise erledigt, einer gemessen und ehrlich verworfen, zwei warten auf einen Entscheid des Autors, einer ist noch nachzuprüfen, und genau einer ist unangetastet geblieben.
 
 ### Die 39 Befunde
 
@@ -30,7 +30,7 @@ Nachgetragen am 2026-09-03, und der einzige nachgetragene Abschnitt: der Bericht
 | 14 | erledigt | #490 (Limiter über alle Routen), #493 (Origin-Gate gegen die direkte `run.app`-Tür), dazu die Cloudflare-Regeln — Rate-Limit und Transform-Rule — und der Worker als Quelle im Repo in #495 |
 | 15 | erledigt | #484 |
 | 16 | erledigt | #475 — beide Audit-Dokumente sind seither getrackt |
-| 17 | teilweise | #489 gibt §14 sein Register und einen CI-Gate dazu; offen bleiben die Herkunft der aug30-Wurzel (A16) und das Verschieben der drei jüngsten Abschnitte vor §15 (A17) |
+| 17 | teilweise | #489 gibt §14 sein Register und ein CI-Gate dazu; offen bleiben die Herkunft der aug30-Wurzel (A16) und das Verschieben der drei jüngsten Abschnitte vor §15 (A17) |
 | 18 | offen | kein Track, kein PR — der pairlab-Spiegel ist weiterhin der Stand vom 2026-07-11 |
 | 19 | gemessen & verworfen | #488 — der Austritts-Trim (Arm J4) ist gegen die Hand gemessen und als ehrliches Negativ verworfen, die Rettungswege stehen in §7.9 |
 | 20 | teilweise | F5 ist mit „ja“ beantwortet; die eigene humanbench-Runde für den Platten-Nib steht nach LF11 noch aus (A3) |
@@ -91,7 +91,7 @@ Nachgetragen am 2026-09-03, und der einzige nachgetragene Abschnitt: der Bericht
 
 ### Schwesterrepo anyplot
 
-Die Schwesterregel — was in einem Repo gut gelöst ist, geht sofort ins andere — ist in derselben Bewegung eingelöst worden: sechs PRs in `anyplot`, alle am 2026-09-02/03 gemergt. #11205 baut das API-Image in der CI und smoked den Container vor dem Merge, #11207 schickt den Frontend-Deploy über eine gesmokte Kandidaten-Revision, #11209 gibt dem Bot-Wächter den Alarmpfad und leitet seine Erwartungen ab statt sie einzubetonieren, #11206 schließt PYSEC-2026-2132 und pinnt die Node-Version des Builds, #11210 pinnt die Agenten-Anleitungen per Test und repariert die Drift, die der Pin findet, und #11208 schließt die direkte `run.app`-Tür mit demselben geteilten Origin-Geheimnis — dort seit 2026-09-03 scharf. Die Cloudflare-Rate-Limiting-Regel steht in anyplot ebenfalls. Was in diese Richtung noch offen ist — Bytecode im API-Image und die CSP-Härtung —, liegt als eigene Aufgabe vor.
+Die Schwesterregel — was in einem Repo gut gelöst ist, geht sofort ins andere — ist in derselben Bewegung eingelöst worden: sechs PRs in `anyplot`, alle am 2026-09-02/03 gemergt. #11205 baut das API-Image in der CI und fährt vor dem Merge einen Container-Smoke, #11207 schickt den Frontend-Deploy über eine Kandidaten-Revision mit eigenem Smoke, #11209 gibt dem Bot-Wächter den Alarmpfad und leitet seine Erwartungen ab statt sie einzubetonieren, #11206 schließt PYSEC-2026-2132 und pinnt die Node-Version des Builds, #11210 pinnt die Agenten-Anleitungen per Test und repariert die Drift, die der Pin findet, und #11208 schließt die direkte `run.app`-Tür mit demselben geteilten Origin-Geheimnis — dort seit 2026-09-03 scharf. Die Cloudflare-Rate-Limiting-Regel steht in anyplot ebenfalls. Was in diese Richtung noch offen ist — Bytecode im API-Image und die CSP-Härtung —, liegt als eigene Aufgabe vor.
 
 ### Was offen bleibt
 
