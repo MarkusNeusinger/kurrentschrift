@@ -12,7 +12,7 @@ import { Box, Button, CircularProgress, Stack, Typography } from '@mui/material'
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { WrittenGlyph } from '@/components/WrittenGlyph';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { cropUrl } from '@/lib/api';
 import type { TracePreviewOut } from '@/lib/api';
 import { de } from '@/locales/admin';

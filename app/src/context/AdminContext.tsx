@@ -10,49 +10,15 @@
 // per-source subtree via the React key below, so bboxes, glyph status,
 // visibility, viewport and open modals reset without hand-written cleanup.
 
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 
+import { AdminCtx, type AdminState } from '@/context/adminState';
 import { CONFIG } from '@/global-config';
 import { ApiError, getBboxes, getGlyphs, getSource, getSources } from '@/lib/api';
 import { de } from '@/locales';
 import type { BboxOut, GlyphSummary, SourceOut } from '@/lib/api';
 
 const SOURCE_STORAGE_KEY = 'kurrentschrift.admin.sourceId';
-
-interface AdminState {
-  sourceId: string;
-  source: SourceOut | null;
-  // All chart sources, for the sidebar switcher.
-  sources: SourceOut[];
-  switchSource: (id: string) => void;
-  bboxesByKey: Record<string, BboxOut>;
-  glyphsByKey: Record<string, GlyphSummary>;
-  loadError: string | null;
-  // True while the boot load is retrying through a Cloud Run cold start.
-  waking: boolean;
-  activeGlyph: string | null;
-  visibleGlyphs: Set<string>;
-  cropCacheBust: number;
-  setActiveGlyph: (key: string | null) => void;
-  toggleVisible: (key: string) => void;
-  setOnlyVisible: (keys: string[]) => void;
-  upsertBbox: (key: string, bbox: BboxOut) => void;
-  removeBbox: (key: string) => void;
-  markGlyphTraced: (key: string, summary: GlyphSummary) => void;
-  removeGlyph: (key: string) => void;
-  refreshCrop: () => void;
-  // Glyph currently open in the Einrichtungs-Wizard / the Diagnose modal, or
-  // null when closed. Both modals are mounted once in AppLayout and driven from
-  // here so any surface (chart toolbar, sidebar) can open them by glyph key.
-  wizardGlyph: string | null;
-  openWizard: (key: string) => void;
-  closeWizard: () => void;
-  diagnoseGlyph: string | null;
-  openDiagnose: (key: string) => void;
-  closeDiagnose: () => void;
-}
-
-const Ctx = createContext<AdminState | null>(null);
 
 export function AdminProvider({
   children,
@@ -290,11 +256,5 @@ function SourceScopedProvider({
     ],
   );
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
-}
-
-export function useAdmin(): AdminState {
-  const v = useContext(Ctx);
-  if (!v) throw new Error('useAdmin must be used inside <AdminProvider>');
-  return v;
+  return <AdminCtx.Provider value={value}>{children}</AdminCtx.Provider>;
 }

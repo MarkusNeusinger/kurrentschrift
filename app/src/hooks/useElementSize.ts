@@ -9,9 +9,14 @@ export function useElementSize(el: HTMLElement | null): { w: number; h: number }
   const [size, setSize] = useState({ w: 0, h: 0 });
   useLayoutEffect(() => {
     if (!el) return;
+    // No explicit first measurement: `observe()` delivers one of its own for an
+    // element that is being rendered (Resize Observer §"Observation will fire
+    // when observation starts if Element is being rendered"), still before
+    // paint. The hand-rolled `setSize` next to it was therefore a duplicate —
+    // and the one synchronous setState in this effect body
+    // (react-hooks/set-state-in-effect).
     const ro = new ResizeObserver(() => setSize({ w: el.clientWidth, h: el.clientHeight }));
     ro.observe(el);
-    setSize({ w: el.clientWidth, h: el.clientHeight });
     return () => ro.disconnect();
   }, [el]);
   return size;

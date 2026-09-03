@@ -27,7 +27,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { WrittenGlyph } from '@/components/WrittenGlyph';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { LETTER_BY_KEY } from '@/domain/glyphs';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { cropUrl } from '@/lib/api';
@@ -38,8 +38,8 @@ import { LaufformApplyDialog } from '@/sections/admin/letters/LaufformApplyDialo
 import { LetterStats } from '@/sections/admin/shell/LensStats';
 import { LetterPicker } from '@/sections/admin/shell/LetterPicker';
 import { OccurrenceThumb } from '@/sections/admin/shell/OccurrenceThumb';
-import { useFileMark } from '@/sections/admin/shell/KorbContext';
-import { useWorkbench } from '@/sections/admin/shell/WorkbenchData';
+import { useFileMark } from '@/sections/admin/shell/korbState';
+import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { joinsUrl, neighbourLetters, readLetterFocus, wordsUrl } from '@/sections/admin/shell/focus';
 import { EvidenceState, Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { garamond } from '@/styles/paper';
@@ -84,6 +84,15 @@ export function LetterView() {
   // The Laufform face reports itself unavailable when the letter has no
   // variant-100 row — most letters do not, and that is information, not a gap.
   const [noLaufform, setNoLaufform] = useState(false);
+  // The verdict belongs to ONE letter, so the next letter starts without it —
+  // decided during render, React's "adjusting state when a prop changes"
+  // (react-hooks/set-state-in-effect), so the face is never briefly hidden
+  // behind the previous letter's „keine Laufform" note.
+  const [laufformFor, setLaufformFor] = useState(glyphKey);
+  if (laufformFor !== glyphKey) {
+    setLaufformFor(glyphKey);
+    setNoLaufform(false);
+  }
 
   // Everything that acts on "the active glyph" — the wizard, the Diagnose
   // modal, the chart's bbox tools — reads it from the admin context. The URL is
@@ -92,13 +101,15 @@ export function LetterView() {
     if (glyphKey) setActiveGlyph(glyphKey);
   }, [glyphKey, setActiveGlyph]);
 
-  useEffect(() => {
-    setNoLaufform(false);
-  }, [glyphKey]);
-
   const focus = (key: string | null) => setParams(key ? { g: key } : {}, { replace: false });
 
-  const occurrences = glyphKey ? (workbench.instancesByKey.get(glyphKey) ?? []) : [];
+  // Memoised for its identity, not for the lookup: the `?? []` produced a fresh
+  // empty array on every render, which invalidated the `relatedWords` memo below
+  // each time (react-hooks/exhaustive-deps).
+  const occurrences = useMemo(
+    () => (glyphKey ? (workbench.instancesByKey.get(glyphKey) ?? []) : []),
+    [glyphKey, workbench.instancesByKey],
+  );
   const aggregate = glyphKey ? workbench.aggregatesByKey.get(glyphKey) : undefined;
 
   // The joins this letter takes part in, as the harvest actually saw them —

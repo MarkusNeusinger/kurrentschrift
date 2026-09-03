@@ -12,7 +12,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { Alert, Box, Button, CircularProgress, Stack, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { getQuality, postResample } from '@/lib/api';
 import type { QualityComparison, QualityData } from '@/lib/api';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
@@ -75,24 +75,46 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
   const { sourceId, refreshCrop } = useAdmin();
   const t = de.admin.quality;
   const [data, setData] = useState<QualityComparison | null>(null);
-  const [loading, setLoading] = useState(false);
+  // Starts true: the first render already waits for the scores the effect below
+  // requests, so the spinner is the honest first frame.
+  const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
   const [applied, setApplied] = useState(false);
   const [error, setError] = useState<ApiErrorText | null>(null);
 
+  // The request only; the flags it used to raise belong to whoever triggers it —
+  // the render guard below on a key change, the retry button in its handler. A
+  // setState in an effect body is the violation (set-state-in-effect); in the
+  // promise continuation it is not.
   const fetchQuality = useCallback(() => {
-    setLoading(true);
-    setError(null);
     getQuality(sourceId, glyphKey)
       .then((d) => setData(d))
       .catch((e: unknown) => setError(apiErrorText(e)))
       .finally(() => setLoading(false));
   }, [sourceId, glyphKey]);
 
-  useEffect(() => {
+  // React's "adjusting state when a prop changes" — the key carries exactly the
+  // effect's inputs (`fetchQuality` is itself derived from source + glyph), so a
+  // refetch and the flags it resets happen in one render.
+  const loadKey = `${sourceId} ${glyphKey} ${cropCacheBust ?? ''}`;
+  const [shownFor, setShownFor] = useState(loadKey);
+  if (shownFor !== loadKey) {
+    setShownFor(loadKey);
     setApplied(false);
+    setLoading(true);
+    setError(null);
+  }
+
+  useEffect(() => {
     fetchQuality();
   }, [fetchQuality, cropCacheBust]);
+
+  // The retry path sets its own flags: an event handler may, an effect may not.
+  const retry = () => {
+    setLoading(true);
+    setError(null);
+    fetchQuality();
+  };
 
   const apply = useCallback(() => {
     setApplying(true);
@@ -129,7 +151,7 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
         <Alert severity={error.status === 404 ? 'info' : 'error'}>
           {error.status === 404 ? de.admin.diagnostics.noCanonicalShort : <ErrorText error={error} />}
         </Alert>
-        <Button size="small" startIcon={<RefreshIcon />} onClick={fetchQuality} sx={{ mt: 1 }}>
+        <Button size="small" startIcon={<RefreshIcon />} onClick={retry} sx={{ mt: 1 }}>
           {de.admin.diagnostics.reload}
         </Button>
       </Box>

@@ -13,7 +13,7 @@
 
 import { Box, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 
 import { WrittenGlyph } from '@/components/WrittenGlyph';
@@ -40,10 +40,16 @@ function ResultForm({ refr, height }: { refr: TallyRef; height: number }) {
   // to plain type instead of letting the pill spin forever. Post-answer surface,
   // so plain text gives nothing away.
   const [failed, setFailed] = useState(false);
-  useEffect(() => {
+  // Cleared DURING RENDER when the pill is reused for another entry — React's
+  // "adjusting state when a prop changes" (react-hooks/set-state-in-effect);
+  // as an effect the reset arrived one commit after the new form was already
+  // being asked for.
+  const [shownFor, setShownFor] = useState(refr.renderKey);
+  if (shownFor !== refr.renderKey) {
+    setShownFor(refr.renderKey);
     setUnavailable(false);
     setFailed(false);
-  }, [refr.renderKey]);
+  }
 
   if (!refr.renderKey || unavailable || failed) {
     return (

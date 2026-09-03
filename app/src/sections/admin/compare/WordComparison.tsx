@@ -12,7 +12,7 @@ import { Alert, Box, Button, Chip, CircularProgress, Tooltip, Typography } from 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
 import { WrittenWord } from '@/components/WrittenWord';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { useInView } from '@/hooks/useInView';
 import { getWordSamples, getWordSampleScore, wordSampleCropUrl } from '@/lib/api';
 import type { ComposedWordOut, WordInstanceOut, WordSampleOut, WordSampleScoreOut } from '@/lib/api';
@@ -29,7 +29,7 @@ import {
   type TraceFilter,
   type TraceStatus,
 } from '@/sections/admin/shell/model';
-import { useWorkbench } from '@/sections/admin/shell/WorkbenchData';
+import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { garamond } from '@/styles/paper';
 
 import { PairMeasuredChips } from './PairMeasuredChips';
@@ -356,14 +356,27 @@ export function WordComparison({
     refreshCrop();
   }, [samples, sourceId, refreshCrop]);
 
-  useEffect(() => {
-    let cancelled = false;
+  // Drop everything the previous source produced DURING RENDER instead of in
+  // the effect below — React's "adjusting state when a prop changes"
+  // (react-hooks/set-state-in-effect). The guard carries the effect's inputs, so
+  // the list never paints one frame of the old source's words and scores. The
+  // run counter stays in the effect: bumping a ref during render is its own
+  // violation (react-hooks/refs), and invalidating the sweep one commit later
+  // is early enough — the sweep only ever writes from an async continuation.
+  const loadKey = `${sourceId} ${cropCacheBust}`;
+  const [shownFor, setShownFor] = useState(loadKey);
+  if (shownFor !== loadKey) {
+    setShownFor(loadKey);
     setSamples(null);
     setError(false);
     setScores({});
     setScoring(null);
     setScoreError(false);
     setEditing(null); // an open pair editor must not outlive its source
+  }
+
+  useEffect(() => {
+    let cancelled = false;
     scoringRun.current += 1; // invalidate an in-flight score sweep of the old source
     getWordSamples(sourceId, { retries: 2 }, cropCacheBust)
       .then((rows) => {

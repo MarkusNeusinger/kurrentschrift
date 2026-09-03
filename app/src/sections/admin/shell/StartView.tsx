@@ -20,7 +20,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { de, fmt, styleLabel } from '@/locales/admin';
 import { paths } from '@/routes/paths';
 import { display, letterpress, paper } from '@/styles/paper';

@@ -12,7 +12,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { Box, CircularProgress, Stack, ToggleButton, Tooltip, Typography } from '@mui/material';
 import { useEffect, useRef } from 'react';
 
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { cropUrl } from '@/lib/api';
 import type { TracePreviewOut } from '@/lib/api';
 import { de } from '@/locales/admin';

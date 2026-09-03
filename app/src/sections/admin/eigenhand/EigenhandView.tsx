@@ -42,6 +42,7 @@ import {
   printEigenhandSheets,
 } from '@/lib/api';
 import type { EigenhandBestand, EigenhandBucket, EigenhandStripFilter } from '@/lib/api';
+import { latestRequestGate } from '@/lib/latestRequest';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
@@ -203,14 +204,41 @@ export function EigenhandView() {
     };
   }, []);
 
+  // Which hand the Bestand on screen belongs to. Arming the spinner and
+  // clearing the error happens DURING RENDER on a switch — React's "adjusting
+  // state when a prop changes" (react-hooks/set-state-in-effect) — which is why
+  // `reload` below carries the request alone: an effect that called it would
+  // otherwise be setting state synchronously through the callback.
+  const [loadingFor, setLoadingFor] = useState(hand);
+  if (loadingFor !== hand) {
+    setLoadingFor(hand);
+    // The Bestand on screen belongs to the hand just left. Dropping it here is
+    // the whole point of the switch: otherwise the new hand's name stands over
+    // the previous hand's Streifen, Fassungen and open joins — numbers that
+    // look authoritative and are simply someone else's.
+    setBestand(null);
+    // Guarded like `reload` itself: no hand means no request, so nothing to
+    // wait for either.
+    if (hand) {
+      setLoading(true);
+      setLoadError(null);
+    }
+  }
+
+  // Only the newest Bestand request may write. Two switches in quick succession
+  // (or a switch while a slow load is in flight) otherwise let the OLDER
+  // response land last and stick — the panel would then show hand A's numbers
+  // under hand B's name until the next reload, with no error to hint at it.
+  const beginBestand = useRef(latestRequestGate()).current;
+
   const reload = useCallback(
     (target: string) => {
       if (!target) return;
-      setLoading(true);
-      setLoadError(null);
+      const isCurrent = beginBestand();
       getEigenhandBestand(target, { retries: 2 })
-        .then((data) => setBestand(data))
+        .then((data) => isCurrent() && setBestand(data))
         .catch((err: unknown) => {
+          if (!isCurrent()) return;
           setBestand(null);
           // The 400 branch that used to stand here read
           // `… === 400 ? String(err) : String(err)` — both arms identical, so
@@ -220,9 +248,14 @@ export function EigenhandView() {
           // the server's own line underneath.
           setLoadError(apiErrorText(err));
         })
-        .finally(() => setLoading(false));
+        .finally(() => {
+          // The spinner belongs to the newest request too: an outdated one
+          // clearing it would uncover an empty panel while the current load is
+          // still running.
+          if (isCurrent()) setLoading(false);
+        });
     },
-    [],
+    [beginBestand],
   );
 
   useEffect(() => {
@@ -240,6 +273,10 @@ export function EigenhandView() {
     printEigenhandSheets({ hand, sheets, repeat })
       .then((res) => {
         setPrinted(res.sheets.map((s) => s.sheet));
+        // The hand has not changed, so the render guard above says nothing —
+        // a refresh sets its own flags, which an event continuation may.
+        setLoading(true);
+        setLoadError(null);
         reload(hand);
       })
       .catch((err: unknown) => setPrintError({ prefix: t.printError, error: apiErrorText(err) }))

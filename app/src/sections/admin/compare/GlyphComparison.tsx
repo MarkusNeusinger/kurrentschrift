@@ -44,7 +44,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { WrittenGlyph } from '@/components/WrittenGlyph';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { glyphKeyFor, LETTERS } from '@/domain/glyphs';
 import { useInView } from '@/hooks/useInView';
 import { ApiError, cropUrl, fetchRenderGlyphs, getDiagnostic, getTemplateQuality } from '@/lib/api';
@@ -54,7 +54,7 @@ import { de, fmt } from '@/locales/admin';
 import { ScoreBreakdownInline, ScoreChip } from '@/sections/admin/quality/scoreParts';
 import { AggregateSketch } from '@/sections/admin/shell/AggregateSketch';
 import { isPoint, letterSketchAnchors, occurrenceChainsOf } from '@/sections/admin/shell/sketchGeometry';
-import { useWorkbench } from '@/sections/admin/shell/WorkbenchData';
+import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { garamond } from '@/styles/paper';
 
 // px — four faces have to fit beside each other on a laptop, so each is about
@@ -225,10 +225,20 @@ function OverlayFace({
   // real load error. Branching on the typed status avoids parsing String(e).
   const [error, setError] = useState<{ notFound: boolean } | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  // Drop the previous glyph's diagnostic DURING RENDER instead of in the effect
+  // below — React's "adjusting state when a prop changes"
+  // (react-hooks/set-state-in-effect). The guard carries the effect's inputs, so
+  // a card swap never paints one frame of the old letter's rings.
+  const loadKey = `${sourceId} ${glyphKey} ${cropCacheBust} ${reloadKey}`;
+  const [shownFor, setShownFor] = useState(loadKey);
+  if (shownFor !== loadKey) {
+    setShownFor(loadKey);
     setData(null);
     setError(null);
+  }
+
+  useEffect(() => {
+    let cancelled = false;
     getDiagnostic(sourceId, glyphKey)
       .then((d) => {
         if (!cancelled) setData(d);
@@ -489,13 +499,23 @@ export function GlyphComparison({ onPick }: { onPick?: (glyphKey: string) => voi
     }
   }, [tiles, sourceId, cropCacheBust, reloadKey]);
 
+  // Drop the previous source's scores DURING RENDER instead of in the effect
+  // below — React's "adjusting state when a prop changes"
+  // (react-hooks/set-state-in-effect). The guard carries the effect's inputs, so
+  // no card shows another source's score chip for a frame.
+  const scoreKey = `${sourceId} ${cropCacheBust} ${reloadKey}`;
+  const [scoresShownFor, setScoresShownFor] = useState(scoreKey);
+  if (scoresShownFor !== scoreKey) {
+    setScoresShownFor(scoreKey);
+    setQuality(null);
+  }
+
   // The stored score of every template in ONE admin read. Only variant 0 is
   // kept: a Laufform row inherits the chart row's trace_meta, so its stamped
   // score is a COPY of the chart form's — never a measurement of the median
   // geometry, and showing it as one would be a lie.
   useEffect(() => {
     let cancelled = false;
-    setQuality(null);
     getTemplateQuality(sourceId, { retries: 1 })
       .then((rows) => {
         if (cancelled) return;

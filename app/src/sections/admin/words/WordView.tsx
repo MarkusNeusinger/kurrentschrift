@@ -29,17 +29,17 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { WrittenWord } from '@/components/WrittenWord';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { fetchRenderWord, getWordSampleScore } from '@/lib/api';
 import type { ComposedWordOut, WordSampleScoreOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { WordComparison, type WordCompareMode } from '@/sections/admin/compare/WordComparison';
 import { WordTraceEditorDialog } from '@/sections/admin/belege/WordTraceEditorDialog';
-import { useFileMark } from '@/sections/admin/shell/KorbContext';
+import { useFileMark } from '@/sections/admin/shell/korbState';
 import { LayerDot } from '@/sections/admin/shell/LayerDot';
 import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
-import { useWorkbench } from '@/sections/admin/shell/WorkbenchData';
+import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { joinsOfText, joinsUrl, keysOfText, lettersUrl, readWordFocus, wordsUrl } from '@/sections/admin/shell/focus';
 import { badness, type TraceFilter } from '@/sections/admin/shell/model';
 import { garamond } from '@/styles/paper';
@@ -85,21 +85,35 @@ export function WordView() {
   const [editing, setEditing] = useState<string | null>(null);
   const [scores, setScores] = useState<Record<string, WordSampleScoreOut | 'busy' | 'error'>>({});
 
-  useEffect(() => {
+  // The field mirrors the focused word: a navigation (a link, the back button)
+  // re-seeds the draft and drops the previous word's missing-glyph list. Done
+  // DURING RENDER — React's "adjusting state when a prop changes"
+  // (react-hooks/set-state-in-effect) — so the field never shows the old word
+  // for a frame. `text` is compared raw rather than through a key, because
+  // „nothing focused" (null) is a state of its own here.
+  const [mirrored, setMirrored] = useState(text);
+  if (mirrored !== text) {
+    setMirrored(text);
     setDraft(text ?? '');
     setMissing([]);
-  }, [text]);
+  }
+
+  // Same, for the overlay's composition: it must not outlive the word or the
+  // source it was composed for.
+  const loadKey = `${sourceId} ${text ?? ''}`;
+  const [composedFor, setComposedFor] = useState(loadKey);
+  if (composedFor !== loadKey) {
+    setComposedFor(loadKey);
+    setComposed(null);
+  }
 
   // The composed payload for the evidence overlay. WrittenWord keeps its own
   // internally, so this goes through the SAME shared render cache — one
   // request per text for the panel above and the overlay below.
   useEffect(() => {
-    if (!text) {
-      setComposed(null);
-      return;
-    }
+    // Nothing focused: the guard above has already cleared the payload.
+    if (!text) return;
     let cancelled = false;
-    setComposed(null);
     fetchRenderWord(sourceId, text)
       .then((c) => {
         if (!cancelled) setComposed(c);

@@ -21,7 +21,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { InfoHint } from '@/components/InfoHint';
 import { de } from '@/locales/admin';
@@ -69,9 +69,16 @@ export function MaskStep({
   removePatch: (index: number) => void | Promise<void>;
 }) {
   // Live slider value, synced from the stored bbox; committed (PUT) only on
-  // release so dragging doesn't spam the server.
+  // release so dragging doesn't spam the server. The re-sync happens during
+  // render — React's "adjusting state when a prop changes"
+  // (react-hooks/set-state-in-effect) — so the slider never shows the previous
+  // glyph's threshold for a frame.
   const [fill, setFill] = useState(bbox.fill_holes_max_area);
-  useEffect(() => setFill(bbox.fill_holes_max_area), [bbox.fill_holes_max_area]);
+  const [syncedFrom, setSyncedFrom] = useState(bbox.fill_holes_max_area);
+  if (syncedFrom !== bbox.fill_holes_max_area) {
+    setSyncedFrom(bbox.fill_holes_max_area);
+    setFill(bbox.fill_holes_max_area);
+  }
   const [pickerOpen, setPickerOpen] = useState(false);
 
   const isInk = tool === 'ink';

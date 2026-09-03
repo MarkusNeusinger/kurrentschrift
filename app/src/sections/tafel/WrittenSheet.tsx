@@ -43,7 +43,8 @@ import {
   SHEET_SETTLE_MS,
   SHEET_WRITE_MS,
 } from '@/lib/strokeTiming';
-import { RevealMask, inkGroupSx } from '@/components/inkReveal';
+import { RevealMask } from '@/components/inkReveal';
+import { inkGroupSx } from '@/components/inkReveal/inkGroupSx';
 import { ringsToPathD, type Ring } from '@/lib/svg';
 import { de } from '@/locales';
 import { paper, schulheft } from '@/styles/paper';
@@ -381,12 +382,22 @@ export function WrittenSheet({ rows, ratio, selectedKey = null, onSelect }: Prop
     [rows],
   );
 
+  // Back to "loading" DURING RENDER when the letter set or the retry nonce
+  // moves — React's "adjusting state when a prop changes"
+  // (react-hooks/set-state-in-effect). As effect lines these two resets landed
+  // one commit late, so a script switch briefly re-showed the previous script's
+  // letters on the new ruling.
+  const [shownFor, setShownFor] = useState<{ keys: readonly string[]; nonce: number }>({ keys, nonce: fetchNonce });
+  if (shownFor.keys !== keys || shownFor.nonce !== fetchNonce) {
+    setShownFor({ keys, nonce: fetchNonce });
+    setDataByKey(null);
+    setLoadError(false);
+  }
+
   // Fetch every written letter's render payload — one batch request through the
   // shared render cache (gaps need no fetch, missing letters resolve to null).
   useEffect(() => {
     let cancelled = false;
-    setDataByKey(null);
-    setLoadError(false);
     fetchRenderGlyphs(CONFIG.sourceId, keys)
       .then((m) => {
         if (!cancelled) setDataByKey(m);

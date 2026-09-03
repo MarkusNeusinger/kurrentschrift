@@ -27,7 +27,7 @@ import {
 } from '@mui/material';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { knownGlyph } from '@/domain/glyphs';
 import { getQuality, postResample } from '@/lib/api';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';

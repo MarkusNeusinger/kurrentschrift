@@ -94,15 +94,32 @@ function useStripImage(
   ohneLineatur: boolean,
 ) {
   const [url, setUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  // A tile that is asked for its pixels right away shows the spinner from the
+  // first frame, the way the effect below used to arrange one frame later.
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<ApiErrorText | null>(null);
+
+  // The spinner and the cleared error move to render time — React's "adjusting
+  // state when a prop changes" (react-hooks/set-state-in-effect). The key
+  // carries exactly the effect's inputs; the free-form word never enters it,
+  // so no separator can be mistaken for a value.
+  const loadKey = `${hand} ${strip} ${fassung} ${box ?? ''} ${enabled} ${ohneLineatur}`;
+  const [shownFor, setShownFor] = useState(loadKey);
+  if (shownFor !== loadKey) {
+    setShownFor(loadKey);
+    // `enabled`, not `true`: a tile being CLOSED has no request to wait for,
+    // and the in-flight one it leaves behind can no longer clear the spinner
+    // itself — the effect's cleanup disarms its `finally`. Written here, the
+    // closed tile never keeps a spinner (or the previous cut's error) standing
+    // behind it.
+    setLoading(enabled);
+    setError(null);
+  }
 
   useEffect(() => {
     if (!enabled) return undefined;
     let alive = true;
     let objectUrl: string | null = null;
-    setLoading(true);
-    setError(null);
     fetchEigenhandStrip(hand, strip, fassung, box ?? undefined, ohneLineatur)
       .then((blob) => {
         if (!alive) return;
@@ -129,18 +146,20 @@ function useStripImage(
  * some test runners) everything counts as in view.
  */
 function useNearViewport(ref: RefObject<HTMLElement | null>): boolean {
-  const [near, setNear] = useState(false);
+  // The fallback is DERIVED rather than written into state from an effect
+  // (react-hooks/set-state-in-effect): whether the browser can observe at all
+  // is not something that happens later, so with no observer every tile counts
+  // as in view from its very first render.
+  const observable = typeof IntersectionObserver !== 'undefined';
+  const [seen, setSeen] = useState(false);
+  const near = !observable || seen;
   useEffect(() => {
     const node = ref.current;
     if (!node || near) return undefined;
-    if (typeof IntersectionObserver === 'undefined') {
-      setNear(true);
-      return undefined;
-    }
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          setNear(true);
+          setSeen(true);
           observer.disconnect();
         }
       },
@@ -389,7 +408,9 @@ export function StripsPanel({
   const t = de.admin.eigenhand;
   const [strips, setStrips] = useState<EigenhandStrip[]>([]);
   const [error, setError] = useState<ApiErrorText | null>(null);
-  const [loading, setLoading] = useState(false);
+  // The listing runs on the first render too, so the panel starts in its
+  // loading state instead of flashing the „nothing here yet" line for a frame.
+  const [loading, setLoading] = useState(true);
   const [zoom, setZoom] = useState<Zoom>(0.25);
   // The rulings are dropped by default — what one wants to look at is the
   // hand, not the print. The stored strip keeps them (and its colour).
@@ -411,16 +432,29 @@ export function StripsPanel({
   // A word filter cleared from OUTSIDE (the parent resets on a hand switch)
   // empties the box too — otherwise the debounce above would put the old
   // term straight back. Only the transition to „no word" is mirrored, so
-  // typing is never overwritten by a lagging filter value.
-  useEffect(() => {
+  // typing is never overwritten by a lagging filter value; watching for that
+  // transition during render is React's "adjusting state when a prop changes"
+  // (react-hooks/set-state-in-effect).
+  const [mirroredWort, setMirroredWort] = useState(filter.wort);
+  if (mirroredWort !== filter.wort) {
+    setMirroredWort(filter.wort);
     if (filter.wort === undefined) setQuery('');
-  }, [filter.wort]);
+  }
 
-  useEffect(() => {
-    let cancelled = false;
+  // Same move for the listing's own resets: the key holds exactly the effect's
+  // inputs, with the free-form search term last so no value can straddle a
+  // separator.
+  const listKey = `${hand} ${version ?? ''} ${filter.item ?? ''} ${filter.wort ?? ''}`;
+  const [listedFor, setListedFor] = useState(listKey);
+  if (listedFor !== listKey) {
+    setListedFor(listKey);
     setLoading(true);
     setError(null);
     setShownCount(PAGE);
+  }
+
+  useEffect(() => {
+    let cancelled = false;
     getEigenhandStrips(hand, { wort: filter.wort, item: filter.item }, { retries: 2 })
       .then((data) => !cancelled && setStrips(data.strips))
       .catch((err: unknown) => !cancelled && setError(apiErrorText(err)))

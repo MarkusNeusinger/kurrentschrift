@@ -52,12 +52,21 @@ export function SetupPanel({ hand }: { hand: string }) {
   // into that hand's record, or blanked it with nulls.
   const [loaded, setLoaded] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  // Emptying the form for the next hand happens DURING RENDER — React's
+  // "adjusting state when a prop changes" (react-hooks/set-state-in-effect) —
+  // so the previous hand's values never reach the screen under the new name,
+  // not even for the frame between the render and the effect below.
+  const [shownFor, setShownFor] = useState(hand);
+  if (shownFor !== hand) {
+    setShownFor(hand);
     setError(null);
     setLoaded(null);
     setSetup(null);
     setDraft(EMPTY);
+  }
+
+  useEffect(() => {
+    let cancelled = false;
     getEigenhandSetup(hand)
       .then((data) => {
         if (cancelled) return;

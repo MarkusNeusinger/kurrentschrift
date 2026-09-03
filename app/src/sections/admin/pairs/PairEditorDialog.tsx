@@ -121,13 +121,27 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
       .catch(() => setPreview(null));
   }, [sourceId, pairText]);
 
+  // The scene is emptied for the next pair DURING RENDER — React's "adjusting
+  // state when a prop changes" (react-hooks/set-state-in-effect) — so the
+  // dialog never paints the previous join's row or preview under the new
+  // heading. `pairText` stands in for the `loadPreview` dependency below: that
+  // callback's identity is nothing but (sourceId, pairText).
+  const loadKey = `${open} ${sourceId} ${leftKey} ${rightKey} ${pairText}`;
+  const [shownFor, setShownFor] = useState(loadKey);
+  if (shownFor !== loadKey) {
+    setShownFor(loadKey);
+    // Closed means no load, exactly as the effect's early return has it.
+    if (open) {
+      setLoaded(false);
+      setError(null);
+      setRow(null);
+      setPreview(null);
+    }
+  }
+
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    setLoaded(false);
-    setError(null);
-    setRow(null);
-    setPreview(null);
     Promise.all([
       fetchRenderGlyphs(sourceId, [leftKey, rightKey]),
       getPair(sourceId, leftKey, rightKey).catch((e) => {

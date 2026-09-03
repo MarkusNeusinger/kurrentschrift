@@ -11,7 +11,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { Alert, Box, Button, Chip, CircularProgress, Slider, Stack, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { cropUrl, getFit } from '@/lib/api';
 import type { FitData } from '@/lib/api';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
@@ -48,14 +48,18 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
   const COL_W = useColumnWidth(colWidth);
   const COL_H_PX = colHeight ?? COL_H;
   const [data, setData] = useState<FitData | null>(null);
-  const [loading, setLoading] = useState(false);
+  // Starts true: the first render already waits for the fit the effect below
+  // requests, so the spinner is the honest first frame.
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ApiErrorText | null>(null);
   const [lambda, setLambda] = useState(1.0);
 
+  // The request only; the flags it used to raise belong to whoever triggers it —
+  // the render guard below on a key change, the slider and the retry button in
+  // their handlers. A setState in an effect body is the violation
+  // (set-state-in-effect); in the promise continuation it is not.
   const fetchFit = useCallback(
     (lambdaReg: number) => {
-      setLoading(true);
-      setError(null);
       getFit(sourceId, glyphKey, lambdaReg)
         .then((d) => setData(d))
         .catch((e: unknown) => setError(apiErrorText(e)))
@@ -63,6 +67,25 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
     },
     [sourceId, glyphKey],
   );
+
+  // Same handler for both user-driven re-fits: an event handler may set the
+  // flags itself, which is what keeps them out of the effect.
+  const refit = (lambdaReg: number) => {
+    setLoading(true);
+    setError(null);
+    fetchFit(lambdaReg);
+  };
+
+  // React's "adjusting state when a prop changes" — the key carries exactly the
+  // effect's deps below, so a glyph swap or a crop edit raises the spinner in
+  // the same render that schedules the re-fit.
+  const loadKey = `${glyphKey} ${cropCacheBust ?? ''}`;
+  const [shownFor, setShownFor] = useState(loadKey);
+  if (shownFor !== loadKey) {
+    setShownFor(loadKey);
+    setLoading(true);
+    setError(null);
+  }
 
   useEffect(() => {
     fetchFit(lambda);
@@ -88,7 +111,7 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
         <Alert severity={error.status === 404 ? 'info' : 'error'}>
           {error.status === 404 ? de.admin.diagnostics.noCanonicalShort : <ErrorText error={error} />}
         </Alert>
-        <Button size="small" startIcon={<RefreshIcon />} onClick={() => fetchFit(lambda)} sx={{ mt: 1 }}>
+        <Button size="small" startIcon={<RefreshIcon />} onClick={() => refit(lambda)} sx={{ mt: 1 }}>
           {de.admin.diagnostics.reload}
         </Button>
       </Box>
@@ -193,7 +216,7 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
           step={0.01}
           value={lambda}
           onChange={(_e, v) => setLambda(v as number)}
-          onChangeCommitted={(_e, v) => fetchFit(v as number)}
+          onChangeCommitted={(_e, v) => refit(v as number)}
           valueLabelDisplay="auto"
           aria-label={de.admin.fit.regularization}
         />

@@ -20,7 +20,7 @@ import { Alert, Box, Snackbar } from '@mui/material';
 import { useCallback, useState } from 'react';
 
 import { chartUrl } from '@/lib/api';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { overlay } from '@/sections/admin/overlayColors';
 import { BboxOverlay } from './BboxOverlay';
 import { ChartToolbar } from './ChartToolbar';
