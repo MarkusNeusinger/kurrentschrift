@@ -10,7 +10,7 @@ and a §-renumbering in a design doc would have broken both files silently.
 
 Three cheap pins, none of which needs the DB or the network:
 
-1. every backtick-quoted repo path in the four agent-facing files resolves;
+1. every backtick-quoted repo path in the five agent-facing files resolves;
 2. every `file.md` §N reference resolves to a `## N.` heading in that file;
 3. the rules that are supposed to be mirrored are present on BOTH sides.
 
@@ -258,6 +258,22 @@ def _guardrail_sections() -> list[str]:
     return re.findall(r"^## (.+)$", GUARDRAILS_MD.read_text(encoding="utf-8"), re.M)
 
 
+def _claude_guardrail_bullets() -> str:
+    """The "Working guardrails" section of CLAUDE.md, flattened.
+
+    The anchors below are searched HERE and not in the whole file, because
+    several of these phrases also occur elsewhere in CLAUDE.md — "create
+    freely, never destroy" appears in the skill-routing table too, so a
+    whole-file search would stay green even if the binding bullet were
+    deleted. The pin is only worth something if it proves the rule is still
+    in the list of rules.
+    """
+    text = CLAUDE_MD.read_text(encoding="utf-8")
+    start = text.index("## Working guardrails")
+    end = text.index("\n## ", start + 1)
+    return _flat(text[start:end])
+
+
 def test_every_companion_section_is_registered() -> None:
     """A new section in the companion file must be registered, both ways.
 
@@ -272,12 +288,12 @@ def test_every_companion_section_is_registered() -> None:
 
 @pytest.mark.parametrize("section", sorted(GUARDRAIL_SECTION_ANCHORS), ids=lambda s: s[:40])
 def test_companion_section_has_a_binding_rule(section: str) -> None:
-    """Each rationale section maps to a rule that is stated in CLAUDE.md."""
+    """Each rationale section maps to a rule stated in CLAUDE.md's guardrails."""
     anchor = GUARDRAIL_SECTION_ANCHORS[section]
-    claude = _flat(CLAUDE_MD.read_text(encoding="utf-8"))
-    assert anchor.lower() in claude, (
-        f"guardrails.md § {section!r} has no binding counterpart in CLAUDE.md "
-        f"(looked for {anchor!r}) — the rule would live only in the companion file"
+    assert anchor.lower() in _claude_guardrail_bullets(), (
+        f"guardrails.md § {section!r} has no binding counterpart in CLAUDE.md's "
+        f"Working guardrails (looked for {anchor!r}) — the rule would live only "
+        "in the companion file, which no session loads"
     )
 
 

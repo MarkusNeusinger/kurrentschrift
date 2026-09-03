@@ -6,7 +6,12 @@
   recipe, the numbers, inline. Each rule is now one binding line with its
   shortest reason and its date, and the stories moved to
   `.claude/guardrails.md`, which a session reads when it actually hits the
-  situation. No rule was dropped, softened or merged; `CLAUDE.md` shrank from
+  situation. Condensing did quietly drop two triggers on the first pass — the
+  snapshot owed AFTER an authoring session, and the re-read owed after a
+  formatter or codegen rewrites a tracked file — and review caught both; they
+  are back in their one-liners, which is what the correspondence test now
+  exists to enforce. Otherwise no rule was dropped, softened or merged;
+  `CLAUDE.md` shrank from
   34,546 to 29,132 bytes (−16 %). `.github/copilot-instructions.md` keeps its
   guardrails spelled out in full on purpose — Copilot Code Review reads that
   file and does not follow links — and now says so (#NNN).
