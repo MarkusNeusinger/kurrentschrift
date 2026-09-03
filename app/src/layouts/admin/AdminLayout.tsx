@@ -10,11 +10,12 @@ import { Outlet } from 'react-router-dom';
 
 import { BootStatus } from '@/components/BootStatus';
 import { PaperBackground } from '@/components/PaperBackground';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { AdminModals } from '@/layouts/admin/AdminModals';
 import { de } from '@/locales/admin';
 import { AdminHeader } from '@/sections/admin/shell/AdminHeader';
-import { KorbProvider, useKorb } from '@/sections/admin/shell/KorbContext';
+import { KorbProvider } from '@/sections/admin/shell/KorbContext';
+import { useKorb } from '@/sections/admin/shell/korbState';
 import { WorkbenchDataProvider } from '@/sections/admin/shell/WorkbenchData';
 
 // Split out so it can call useKorb() — the provider has to sit above it.

@@ -1,18 +1,17 @@
-import { lazy } from 'react';
 import { Navigate, type RouteObject } from 'react-router-dom';
 
 import { AdminProvider } from '@/context/AdminContext';
 import { paths } from '@/routes/paths';
-
-// The layout is a named export; lazy() needs a default-shaped module.
-const AdminLayout = lazy(() =>
-  import('@/layouts/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })),
-);
-const StartPage = lazy(() => import('@/pages/admin/StartPage'));
-const LettersPage = lazy(() => import('@/pages/admin/LettersPage'));
-const JoinsPage = lazy(() => import('@/pages/admin/JoinsPage'));
-const WordsPage = lazy(() => import('@/pages/admin/WordsPage'));
-const EigenhandPage = lazy(() => import('@/pages/admin/EigenhandPage'));
+// The `lazy()` wrappers live in adminPages.tsx so this file exports route data
+// and nothing else — see the comment there.
+import {
+  AdminLayout,
+  EigenhandPage,
+  JoinsPage,
+  LettersPage,
+  StartPage,
+  WordsPage,
+} from '@/routes/sections/adminPages';
 
 export const adminRoutes: RouteObject[] = [
   {

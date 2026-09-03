@@ -105,9 +105,18 @@ export function TraceStep({
 
   const [anchorsDraft, setAnchorsDraft] = useState(String(bbox.n_anchors));
   const committedAnchors = useRef(bbox.n_anchors);
+  // The draft follows a server-side change of n_anchors DURING RENDER — React's
+  // "adjusting state when a prop changes" (react-hooks/set-state-in-effect). The
+  // ref stays in an effect: a render-phase ref write is its own violation
+  // (react-hooks/refs), and its only reader is commitAnchors, which runs from a
+  // handler long after effects have flushed.
+  const [syncedFrom, setSyncedFrom] = useState(bbox.n_anchors);
+  if (syncedFrom !== bbox.n_anchors) {
+    setSyncedFrom(bbox.n_anchors);
+    setAnchorsDraft(String(bbox.n_anchors));
+  }
   useEffect(() => {
     committedAnchors.current = bbox.n_anchors;
-    setAnchorsDraft(String(bbox.n_anchors));
   }, [bbox.n_anchors]);
 
   // Commit the draft (clamped to ≥MIN_ANCHORS) and return the effective count;

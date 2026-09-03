@@ -11,7 +11,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import { Box, ButtonBase, Popover, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { LETTERS, glyphKeyFor } from '@/domain/glyphs';
 import type { Letter, LetterGroup } from '@/domain/glyphs';
 import { de } from '@/locales/admin';

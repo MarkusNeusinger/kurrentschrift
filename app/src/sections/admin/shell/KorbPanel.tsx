@@ -221,12 +221,23 @@ export function KorbPanel({
   const [noteText, setNoteText] = useState('');
   const [savingNote, setSavingNote] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
+  // Clear what belonged to the previous list DURING RENDER instead of in the
+  // effect below — React's "adjusting state when a prop changes"
+  // (react-hooks/set-state-in-effect). The guard carries the effect's inputs.
+  // `items` deliberately stays: the old rows are held until the fresh ones
+  // arrive, so a refresh does not blink the panel empty.
+  const loadKey = `${sourceId} ${refreshKey}`;
+  const [shownFor, setShownFor] = useState(loadKey);
+  if (shownFor !== loadKey) {
+    setShownFor(loadKey);
     setError(false);
     setWriteError(null);
     // A question about a row of the previous list must not outlive it.
     setConfirming(null);
+  }
+
+  useEffect(() => {
+    let cancelled = false;
     listWorkItems(sourceId, undefined, { retries: 2 })
       .then((rows) => {
         if (!cancelled) setItems(rows);

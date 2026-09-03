@@ -14,7 +14,7 @@ import { Alert, Box, Button, Chip, CircularProgress, FormControlLabel, Switch, T
 import { useMemo, useState } from 'react';
 
 import { useInView } from '@/hooks/useInView';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { wordSampleCropUrl } from '@/lib/api';
 import type { WordInstanceOut, WordSampleOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
@@ -22,7 +22,7 @@ import { frameStale, traceRegistration } from '@/sections/admin/belege/registrat
 import { WordTraceEditorDialog } from '@/sections/admin/belege/WordTraceEditorDialog';
 import { isDevSetSpecimen } from '@/sections/admin/belege/tracebenchDevSet';
 import { WERKBANK_COLORS, traceFrameOf, traceMatrix } from '@/sections/admin/shell/model';
-import { useWorkbench } from '@/sections/admin/shell/WorkbenchData';
+import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { garamond } from '@/styles/paper';
 
 // Taller than the compare cards' 220 px: judging one's own line needs room —

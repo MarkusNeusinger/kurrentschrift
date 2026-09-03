@@ -11,15 +11,16 @@
 // (lib/strokeTiming + hooks/useStrokeReveal) are the shared core; a surface
 // still owns its filled-ink group (glyph fills, word fills + strokes connectors,
 // sheet fills) because what gets filled differs, but the settle sx is shared via
-// `inkGroupSx`.
+// `inkGroupSx` — which sits in its own module beside this one, being the only
+// non-component export of the set.
 
 import ReplayIcon from '@mui/icons-material/Replay';
-import { IconButton, keyframes, type SxProps, type Theme } from '@mui/material';
+import { IconButton } from '@mui/material';
 import type { MutableRefObject } from 'react';
 
 import { de } from '@/locales';
 import { hitArea } from '@/styles/hitArea';
-import { inkState, schulheft } from '@/styles/paper';
+import { schulheft } from '@/styles/paper';
 import { polylineToPathD, type Ring } from '@/lib/svg';
 
 // ── Ink-bleed filter ───────────────────────────────────────────────────────
@@ -93,38 +94,6 @@ export function RevealMask({ id, bounds, strokes, pathRefs, animate, runKey }: R
       ))}
     </mask>
   );
-}
-
-// ── Iron-gall settle ───────────────────────────────────────────────────────
-// German school ink wrote blue-black and oxidized to near-black (Reichs-
-// Tintenprüfung 1888/1912) — compressed here from weeks to seconds after the
-// write-in completes. Knowingly expressive synthesis. Two keyframes: glyph/sheet
-// age only their fill; a word also ages the stroke (its connectors are stroked).
-const inkSettleFill = keyframes`from { fill: ${inkState.fresh}; } to { fill: ${inkState.oxidized}; }`;
-const inkSettleFillStroke = keyframes`
-  from { fill: ${inkState.fresh}; stroke: ${inkState.fresh}; }
-  to { fill: ${inkState.oxidized}; stroke: ${inkState.oxidized}; }
-`;
-
-// The `sx` for the filled-ink group: hold the fresh (or fixed inkColor) tone,
-// then play the settle once, `writeEndMs` after mount. A fixed `inkColor` (the
-// quiz comparison's red/black) skips the settle and holds one tone.
-export function inkGroupSx(opts: {
-  animate: boolean;
-  writeEndMs: number;
-  settleMs: number;
-  inkColor?: string;
-  // Age the stroke too (word connectors), not just the fill.
-  withStroke?: boolean;
-}): SxProps<Theme> {
-  const { animate, writeEndMs, settleMs, inkColor, withStroke } = opts;
-  const tone = inkColor ?? (animate ? inkState.fresh : inkState.oxidized);
-  const kf = withStroke ? inkSettleFillStroke : inkSettleFill;
-  return {
-    fill: tone,
-    ...(withStroke ? { stroke: tone } : {}),
-    animation: animate && !inkColor ? `${kf} ${settleMs}ms ease ${writeEndMs}ms forwards` : undefined,
-  };
 }
 
 // ── Baseline + midband guides ──────────────────────────────────────────────

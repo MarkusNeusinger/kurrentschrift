@@ -27,7 +27,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { WrittenWord } from '@/components/WrittenWord';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { getPairs, getWordSampleScore } from '@/lib/api';
 import type { ComposedWordOut, GlyphPairOut, InstanceOut, WordInstanceOut, WordSampleOut, WordSampleScoreOut } from '@/lib/api';
 import { fetchRenderWord } from '@/lib/api/renderCache';
@@ -39,9 +39,9 @@ import { PairStats } from '@/sections/admin/shell/LensStats';
 import { LayerDot } from '@/sections/admin/shell/LayerDot';
 import { LetterPicker } from '@/sections/admin/shell/LetterPicker';
 import { CropThumb } from '@/sections/admin/shell/OccurrenceThumb';
-import { useFileMark } from '@/sections/admin/shell/KorbContext';
+import { useFileMark } from '@/sections/admin/shell/korbState';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
-import { useWorkbench } from '@/sections/admin/shell/WorkbenchData';
+import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import {
   lettersUrl,
   pairKeysOfText,
@@ -89,9 +89,20 @@ function DrillSpecimenCard({
   const [composed, setComposed] = useState<ComposedWordOut | null>(null);
   const [score, setScore] = useState<WordSampleScoreOut | 'busy' | 'error' | null>(null);
 
+  // Dropping the previous card's engine face happens DURING RENDER — React's
+  // "adjusting state when a prop changes" (react-hooks/set-state-in-effect) —
+  // so a re-keyed card never shows the old join's ink while the new
+  // composition is on its way. The word goes last in the key: it is the only
+  // free-form part, so no value can straddle a separator.
+  const loadKey = `${sourceId} ${bust} ${row.word}`;
+  const [shownFor, setShownFor] = useState(loadKey);
+  if (shownFor !== loadKey) {
+    setShownFor(loadKey);
+    setComposed(null);
+  }
+
   useEffect(() => {
     let cancelled = false;
-    setComposed(null);
     fetchRenderWord(sourceId, row.word, bust)
       .then((c) => {
         if (!cancelled) setComposed(c);
@@ -177,14 +188,23 @@ export function JoinView() {
   const focus = (left: string | null, right: string | null) =>
     setParams(left && right ? { l: left, r: right } : {}, { replace: false });
 
+  // Leaving the detail drops the row it belonged to, during render rather than
+  // in the effect below (react-hooks/set-state-in-effect). Keyed on „is a join
+  // focused" and not on the pair itself, because a SWITCH deliberately leaves
+  // the previous row standing until the new one lands — clearing it there
+  // would flip the „generiert/Entwurf" chip on every hop.
+  const joinFocused = Boolean(leftKey && rightKey);
+  const [rowFocused, setRowFocused] = useState(joinFocused);
+  if (rowFocused !== joinFocused) {
+    setRowFocused(joinFocused);
+    if (!joinFocused) setOverrideRow(null);
+  }
+
   // The override row of exactly this join (drafts included — the admin fetch
   // carries the auth header), so the view can say whether the engine is still
   // generating this join or a stored row replaced it.
   useEffect(() => {
-    if (!leftKey || !rightKey) {
-      setOverrideRow(null);
-      return;
-    }
+    if (!leftKey || !rightKey) return;
     let cancelled = false;
     getPairs(sourceId, { all: true }, { retries: 1 })
       .then((rows) => {
@@ -216,7 +236,13 @@ export function JoinView() {
 
   const pairText = leftKey && rightKey ? textForPair(leftKey, rightKey) : '';
   const missing = missingFor.text === pairText ? missingFor.keys : [];
-  const occurrences = leftKey && rightKey ? (workbench.pairsByKey.get(pairKeyOf(leftKey, rightKey)) ?? []) : [];
+  // Memoised for its identity, not for the lookup: the `?? []` produced a fresh
+  // empty array on every render, which invalidated the two memos below each
+  // time (react-hooks/exhaustive-deps).
+  const occurrences = useMemo(
+    () => (leftKey && rightKey ? (workbench.pairsByKey.get(pairKeyOf(leftKey, rightKey)) ?? []) : []),
+    [leftKey, rightKey, workbench.pairsByKey],
+  );
   const aggregate = leftKey && rightKey ? workbench.pairAggregateByKey.get(pairKeyOf(leftKey, rightKey)) : undefined;
 
   // The traced drill plates of exactly this pair (usually one) — identified by

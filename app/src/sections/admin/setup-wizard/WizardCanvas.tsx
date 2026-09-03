@@ -318,9 +318,10 @@ export function WizardCanvas({
   // step and blocked the ductus).
   const grip: Grip = useRef<number | null>(null);
 
-  // Drop every in-flight gesture, pointer grip included.
-  const resetGestures = useCallback(() => {
-    grip.current = null;
+  // Drop the VALUE of every in-flight gesture. Kept apart from the grip so the
+  // boundary guard below can run it during render, where a ref write would be a
+  // violation of its own (react-hooks/refs).
+  const clearGestureValues = useCallback(() => {
     setDrawing(false);
     setMaskDraft(null);
     setHoverPt(null);
@@ -329,7 +330,13 @@ export function WizardCanvas({
     setNudge(null);
     setPanDrag(null);
     setPatchDrag(null);
-  }, [grip]);
+  }, []);
+
+  // Drop every in-flight gesture, pointer grip included.
+  const resetGestures = useCallback(() => {
+    grip.current = null;
+    clearGestureValues();
+  }, [grip, clearGestureValues]);
 
   // A different glyph (or a reopened dialog) drops any in-flight gesture — mirrors
   // the wizard-level reset, so one glyph's draft never leaks onto the next. A STEP
@@ -341,10 +348,22 @@ export function WizardCanvas({
   // trip early here; that beats carrying the gesture into a step where it does not
   // belong.) Clearing traceEpoch is safe on both: pointer-down re-derives it from
   // the last stored sample when a Weg draft is still on the canvas.
+  //
+  // The gesture VALUES go during render — React's "adjusting state when a prop
+  // changes" (react-hooks/set-state-in-effect) — so no frame of the new step ever
+  // shows the old step's preview. The two refs follow in the effect, because a
+  // render-phase ref write is its own violation (react-hooks/refs); both are read
+  // only from pointer handlers, which cannot run before effects have flushed.
+  const boundaryKey = `${glyphKey} ${open} ${stepId}`;
+  const [gesturesFor, setGesturesFor] = useState(boundaryKey);
+  if (gesturesFor !== boundaryKey) {
+    setGesturesFor(boundaryKey);
+    clearGestureValues();
+  }
   useEffect(() => {
-    resetGestures();
+    grip.current = null;
     traceEpoch.current = null;
-  }, [glyphKey, open, stepId, resetGestures]);
+  }, [glyphKey, open, stepId, grip]);
 
   // ------------------------------------------------------------- pointer routing
   const onSvgPointerDown = useCallback(

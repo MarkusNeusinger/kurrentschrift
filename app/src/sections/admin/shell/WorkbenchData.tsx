@@ -13,9 +13,9 @@
 // (optimierungs-werkbank.md §6 "genau eine Quelle/Hand"), and `handsMixed` is
 // the honesty flag for the day a second writer is harvested.
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import {
   getWordSamples,
   listAggregates,
@@ -38,6 +38,7 @@ import { de, fmt } from '@/locales/admin';
 
 import type { StatsContext, StatsStatus } from './LensStats';
 import { pairKeyOf } from './model';
+import { WorkbenchCtx, type WorkbenchState } from './workbenchState';
 
 // One loaded statistics layer, tagged with the hand it was loaded FOR. Tagging
 // instead of resetting is what makes the two behaviours coexist: a hand switch
@@ -77,43 +78,6 @@ function statsContextOf<T>(
   return { status, handId, handsMixed, layerEmpty: rows !== null && rows.length === 0 };
 }
 
-interface WorkbenchState {
-  loading: boolean;
-  error: boolean;
-  // The stored occurrences of the active source.
-  wordRows: WordInstanceOut[];
-  samples: WordSampleOut[];
-  sampleById: Map<string, WordSampleOut>;
-  // Letter occurrences grouped by glyph_key, worst fit residual first.
-  instancesByKey: Map<string, InstanceOut[]>;
-  // Letter occurrences grouped by specimen, ascending by composer slot.
-  boxesBySpecimen: Map<string, InstanceOut[]>;
-  // Join occurrences grouped by "left→right".
-  pairsByKey: Map<string, PairInstanceOut[]>;
-  // The hand's statistics, one row per key (lowest variant wins for letters).
-  aggregatesByKey: Map<string, AggregateOut>;
-  pairAggregateByKey: Map<string, PairAggregateOut>;
-  // Every loaded letter aggregate, unfiltered — what the Laufform apply step
-  // previews, since it acts on the hand as a whole rather than on one key.
-  allAggregates: AggregateOut[];
-  handId: string | null;
-  letterStats: StatsContext;
-  pairStats: StatsContext;
-  // Recompute ONE statistics layer and report the outcome as a caption;
-  // undefined without a hand to rebuild for.
-  rebuildLetterStats?: () => Promise<string>;
-  rebuildPairStats?: () => Promise<string>;
-  // Refetch the letter statistics without recomputing them — after an apply,
-  // which changed the rows' freshness numbers but not the aggregates.
-  refreshLetterStats: () => void;
-  // Refetch ONLY the word traces (uncached read) — the word editor's save
-  // replaces one row, and the evidence views must show the stored state, not
-  // the load-time snapshot.
-  refreshWordTraces: () => void;
-}
-
-const Ctx = createContext<WorkbenchState | null>(null);
-
 export function WorkbenchDataProvider({ children }: { children: ReactNode }) {
   const { sourceId } = useAdmin();
   const t = de.admin.werkbank;
@@ -136,13 +100,23 @@ export function WorkbenchDataProvider({ children }: { children: ReactNode }) {
   // whole occurrence bundle (samples/instances are untouched by that save).
   const [wordTick, setWordTick] = useState(0);
 
-  useEffect(() => {
-    let cancelled = false;
+  // Retire the previous source's evidence DURING RENDER instead of in the effect
+  // below — React's "adjusting state when a prop changes"
+  // (react-hooks/set-state-in-effect). The guard carries the effect's input, so
+  // every lens goes back to `loading` in the same paint that switches the source
+  // rather than showing the old hand's rows for one frame.
+  const [shownFor, setShownFor] = useState(sourceId);
+  if (shownFor !== sourceId) {
+    setShownFor(sourceId);
     setWordRows(null);
     setSamples(null);
     setInstances(null);
     setPairInstances(null);
     setError(false);
+  }
+
+  useEffect(() => {
+    let cancelled = false;
     Promise.all([
       listWordInstances(sourceId, undefined, { retries: 2 }),
       getWordSamples(sourceId, { retries: 2 }),
@@ -383,14 +357,13 @@ export function WorkbenchDataProvider({ children }: { children: ReactNode }) {
       pairAggregates,
       rebuildLetterStats,
       rebuildPairStats,
+      // Both are `useCallback(…, [])` and therefore never change — listed
+      // anyway, because a dependency array that omits a value the memo reads
+      // is only ever accidentally right (react-hooks/exhaustive-deps).
+      refreshLetterStats,
+      refreshWordTraces,
     ],
   );
 
-  return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
-}
-
-export function useWorkbench(): WorkbenchState {
-  const value = useContext(Ctx);
-  if (!value) throw new Error('useWorkbench must be used inside <WorkbenchDataProvider>');
-  return value;
+  return <WorkbenchCtx.Provider value={value}>{children}</WorkbenchCtx.Provider>;
 }

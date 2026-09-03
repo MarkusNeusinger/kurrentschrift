@@ -1,19 +1,21 @@
-import { lazy } from 'react';
 import { Navigate, type RouteObject } from 'react-router-dom';
 
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { paths } from '@/routes/paths';
-
-const LandingPage = lazy(() => import('@/pages/LandingPage'));
-const SchriftkundePage = lazy(() => import('@/pages/SchriftkundePage'));
-const LesenPage = lazy(() => import('@/pages/LesenPage'));
-const SchreibenPage = lazy(() => import('@/pages/SchreibenPage'));
-const WorksheetPage = lazy(() => import('@/pages/WorksheetPage'));
-const ScribePage = lazy(() => import('@/pages/ScribePage'));
-const TafelPage = lazy(() => import('@/pages/TafelPage'));
-const QuizPage = lazy(() => import('@/pages/QuizPage'));
-const VergleichenPage = lazy(() => import('@/pages/VergleichenPage'));
-const ImpressumPage = lazy(() => import('@/pages/ImpressumPage'));
+import {
+  ImpressumPage,
+  LandingPage,
+  LesenPage,
+  QuizPage,
+  SchreibenPage,
+  SchriftkundePage,
+  ScribePage,
+  TafelPage,
+  VergleichenPage,
+  WorksheetPage,
+} from '@/routes/sections/publicPages';
+// The `lazy()` wrappers live in publicPages.tsx so this file exports route data
+// and nothing else — see the comment there.
 // NotFoundPage is imported EAGERLY (above), unlike every other page: the router's
 // error boundary renders it for a thrown 404, and that boundary also catches
 // failing lazy imports — a code-split 404 could fail exactly the same way. Since

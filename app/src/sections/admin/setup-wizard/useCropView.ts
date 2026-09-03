@@ -64,15 +64,20 @@ export function useCropView(bbox: BboxOut | null, glyphKey: string, open: boolea
 
   // Mounted once and reused for every glyph: when a different glyph opens (or the
   // dialog reopens), drop the view state so one glyph's zoom never leaks onto the
-  // next.
-  useEffect(() => {
-    // Fresh letter → re-centre at fit-to-view (zoom 1). Every step stays
-    // fit-to-view; the user zooms in or out by hand (wheel/slider) if they want.
+  // next. Fresh letter → re-centre at fit-to-view (zoom 1); every step stays
+  // fit-to-view and the user zooms in or out by hand (wheel/slider) if they want.
+  // Done DURING RENDER, not in an effect — React's "adjusting state when a prop
+  // changes" (react-hooks/set-state-in-effect), so the next glyph never shows up
+  // for a frame under the previous one's zoom.
+  const viewKey = `${glyphKey} ${open}`;
+  const [shownFor, setShownFor] = useState(viewKey);
+  if (shownFor !== viewKey) {
+    setShownFor(viewKey);
     setPanX(0);
     setPanY(0);
     setPanning(false);
     setUserZoom(1);
-  }, [glyphKey, open]);
+  }
 
   const cropW = bbox ? bbox.x1 - bbox.x0 : 0;
   const cropH = bbox ? bbox.y1 - bbox.y0 : 0;
@@ -119,12 +124,17 @@ export function useCropView(bbox: BboxOut | null, glyphKey: string, open: boolea
     fitZoom();
   }, [stepId, fitZoom]);
 
-  // Live view geometry for the wheel handler. Refreshed every render so the
-  // once-attached listener always reads current values, and rewritten within a
-  // wheel burst so several ticks before React re-renders compound (each anchors
-  // on the previous tick's zoom/pan) instead of all snapping off one stale frame.
+  // Live view geometry for the wheel handler. Refreshed after every commit so
+  // the once-attached listener always reads current values, and rewritten
+  // within a wheel burst so several ticks before React re-renders compound
+  // (each anchors on the previous tick's zoom/pan) instead of all snapping off
+  // one stale frame. The refresh is an effect, not a render-phase write
+  // (react-hooks/refs): only the DOM wheel handler reads this, and a wheel
+  // event cannot land between render and commit.
   const viewRef = useRef({ userZoom, panX, panY, baseScale, cropW, cropH });
-  viewRef.current = { userZoom, panX, panY, baseScale, cropW, cropH };
+  useEffect(() => {
+    viewRef.current = { userZoom, panX, panY, baseScale, cropW, cropH };
+  });
 
   // Mouse-wheel zoom, anchored on the cursor so the point under it stays put
   // (mirrors the chart). Needs a non-passive listener to preventDefault the page

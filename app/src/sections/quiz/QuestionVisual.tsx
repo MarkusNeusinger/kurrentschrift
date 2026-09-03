@@ -17,7 +17,7 @@
 
 import { Box, Button, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { WrittenWord } from '@/components/WrittenWord';
@@ -74,10 +74,16 @@ function WrittenForm({
   // card would spin forever; the nonce remounts WrittenWord to kick a fresh fetch.
   const [failed, setFailed] = useState(false);
   const [retryNonce, setRetryNonce] = useState(0);
-  useEffect(() => {
+  // A new question clears both flags DURING RENDER — React's "adjusting state
+  // when a prop changes" (react-hooks/set-state-in-effect). As an effect the
+  // reset landed one commit late, so the next question could paint a frame of
+  // the previous one's fallback before the written form returned.
+  const [shownFor, setShownFor] = useState(renderKey);
+  if (shownFor !== renderKey) {
+    setShownFor(renderKey);
     setUnavailable(false);
     setFailed(false);
-  }, [renderKey]);
+  }
 
   const fallback = (
     <Typography

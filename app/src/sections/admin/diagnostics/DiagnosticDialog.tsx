@@ -9,11 +9,11 @@
 
 import CloseIcon from '@mui/icons-material/Close';
 import { Alert, Box, CircularProgress, Dialog, Divider, IconButton, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { knownGlyph } from '@/domain/glyphs';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import type { DiagnosticData } from '@/lib/api';
 import { de } from '@/locales/admin';
 import { DiagnosticView } from './DiagnosticView';
@@ -48,9 +48,16 @@ export function DiagnosticDialog() {
   // The diagnostic payload fetched by DiagnosticView, shared with the
   // "Fertig geschrieben" stage so the same data isn't fetched twice per open.
   const [diag, setDiag] = useState<DiagnosticData | null>(null);
-  useEffect(() => {
+  // Dropped DURING RENDER rather than in an effect — React's "adjusting state
+  // when a prop changes" (react-hooks/set-state-in-effect). The guard carries the
+  // inputs that make the payload stale, so the "Fertig geschrieben" stage never
+  // paints one frame of the previous glyph before the spinner takes over.
+  const loadKey = `${glyphKey} ${cropCacheBust ?? ''}`;
+  const [shownFor, setShownFor] = useState(loadKey);
+  if (shownFor !== loadKey) {
+    setShownFor(loadKey);
     setDiag(null);
-  }, [glyphKey, cropCacheBust]);
+  }
 
   return (
     <Dialog open={open} onClose={closeDiagnose} fullWidth maxWidth="xl" slotProps={{ paper: { sx: { height: '92vh' } } }}>

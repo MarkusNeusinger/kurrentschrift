@@ -203,11 +203,25 @@ export function EigenhandView() {
     };
   }, []);
 
+  // Which hand the Bestand on screen belongs to. Arming the spinner and
+  // clearing the error happens DURING RENDER on a switch — React's "adjusting
+  // state when a prop changes" (react-hooks/set-state-in-effect) — which is why
+  // `reload` below carries the request alone: an effect that called it would
+  // otherwise be setting state synchronously through the callback.
+  const [loadingFor, setLoadingFor] = useState(hand);
+  if (loadingFor !== hand) {
+    setLoadingFor(hand);
+    // Guarded like `reload` itself: no hand means no request, so nothing to
+    // wait for either.
+    if (hand) {
+      setLoading(true);
+      setLoadError(null);
+    }
+  }
+
   const reload = useCallback(
     (target: string) => {
       if (!target) return;
-      setLoading(true);
-      setLoadError(null);
       getEigenhandBestand(target, { retries: 2 })
         .then((data) => setBestand(data))
         .catch((err: unknown) => {
@@ -240,6 +254,10 @@ export function EigenhandView() {
     printEigenhandSheets({ hand, sheets, repeat })
       .then((res) => {
         setPrinted(res.sheets.map((s) => s.sheet));
+        // The hand has not changed, so the render guard above says nothing —
+        // a refresh sets its own flags, which an event continuation may.
+        setLoading(true);
+        setLoadError(null);
         reload(hand);
       })
       .catch((err: unknown) => setPrintError({ prefix: t.printError, error: apiErrorText(err) }))

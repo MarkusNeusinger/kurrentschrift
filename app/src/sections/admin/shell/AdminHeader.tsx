@@ -19,7 +19,7 @@ import { Badge, Box, Chip, IconButton, Tooltip } from '@mui/material';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 
 import { HeaderBar, HeaderNavLink, Wordmark } from '@/components/HeaderBar';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { de, styleLabel } from '@/locales/admin';
 import { paths } from '@/routes/paths';
 

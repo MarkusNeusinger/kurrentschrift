@@ -1,6 +1,6 @@
 import { DiagnosticDialog } from '@/sections/admin/diagnostics/DiagnosticDialog';
 import { SetupWizard } from '@/sections/admin/setup-wizard';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 
 // The Einrichtungs-Wizard and the Diagnose modal are mounted once here — driven
 // by `wizardGlyph` / `diagnoseGlyph` in the admin context — so the chart

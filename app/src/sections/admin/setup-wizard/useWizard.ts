@@ -9,7 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getDiagnostic, getGlyph, postResample, postTrace, postTracePreview, putBbox } from '@/lib/api';
 import { bboxInFromOut } from '@/lib/bbox';
 import { knownGlyph } from '@/domain/glyphs';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { de, fmt } from '@/locales/admin';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
@@ -55,9 +55,15 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   const { sourceId, source, bboxesByKey, glyphsByKey, cropCacheBust, upsertBbox, markGlyphTraced, refreshCrop, openDiagnose } = useAdmin();
   const bbox = bboxesByKey[glyphKey] ?? null;
   // Always-current bbox map, read (not subscribed) by the queued bbox writes so
-  // rapid-fire commits never build on a stale snapshot.
+  // rapid-fire commits never build on a stale snapshot. Refreshed in an effect
+  // rather than during render (react-hooks/refs): the only reader is the async
+  // write queue below, which runs long after the commit, and the queue's own
+  // optimistic write into this ref stays valid until the context update it
+  // triggers arrives here.
   const bboxesByKeyRef = useRef(bboxesByKey);
-  bboxesByKeyRef.current = bboxesByKey;
+  useEffect(() => {
+    bboxesByKeyRef.current = bboxesByKey;
+  });
   const known = knownGlyph(glyphKey);
   const hasCanonical = glyphsByKey[glyphKey]?.has_data === true;
 
@@ -104,20 +110,32 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
 
   // Mounted once and reused for every glyph: when a different glyph opens (or the
   // dialog reopens), drop transient state so one glyph's draft never leaks onto
-  // the next.
-  useEffect(() => {
+  // the next. Done DURING RENDER — React's "adjusting state when a prop changes"
+  // (react-hooks/set-state-in-effect) — so the next glyph is never shown for a
+  // frame with the previous one's step, tool and strokes. `readDraft` only reads
+  // sessionStorage, which is safe to repeat on a re-render.
+  const openKey = `${sourceId} ${glyphKey} ${open}`;
+  const [shownFor, setShownFor] = useState(openKey);
+  if (shownFor !== openKey) {
+    setShownFor(openKey);
     setStep(0);
     setTool('eraser');
     setWegTool('draw');
     setShowMask(true);
     setStrokes([]);
     setSnack(null);
-    previewEpoch.current++;
     setPreview(null);
     setPreviewBusy(false);
     // Look for a Weg the last visit closed on. Only while OPENING: reading it
     // on the way out would offer back the draft that was just discarded.
     setDraft(open ? readDraft(sourceId, glyphKey) : null);
+  }
+
+  // The epoch bump stays in an effect: writing a ref during render is its own
+  // violation (react-hooks/refs), and its only reader is the preview request's
+  // continuation, which lands well after effects flush.
+  useEffect(() => {
+    previewEpoch.current++; // discard a preview still in flight for the previous glyph
   }, [glyphKey, open, sourceId]);
 
   // Savable points (strokes with ≥2 points; stray taps excluded) — gates "save".
@@ -131,19 +149,32 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   // mounted once and reused, so a stale setState would otherwise paint glyph A's
   // Weg over glyph B's canvas.
   const overlayEpoch = useRef(0);
-  const refreshSavedTrace = useCallback(async () => {
+  // A promise chain rather than async/await, like every other fetch here: the
+  // effect below calls this, and set-state-in-effect reads an awaited body as if
+  // it ran in the effect itself — the callback boundary is what makes the
+  // deferral legible to it.
+  const refreshSavedTrace = useCallback(() => {
     const epoch = ++overlayEpoch.current;
-    try {
-      const [tpl, diag] = await Promise.all([getGlyph(sourceId, glyphKey), getDiagnostic(sourceId, glyphKey)]);
-      if (overlayEpoch.current === epoch) setSavedTrace({ rawPath: tpl.raw_path, anchorsPx: diag.anchors_px });
-    } catch {
-      // 404 (no canonical) or transient error → no overlay.
-      if (overlayEpoch.current === epoch) setSavedTrace(null);
-    }
+    return Promise.all([getGlyph(sourceId, glyphKey), getDiagnostic(sourceId, glyphKey)])
+      .then(([tpl, diag]) => {
+        if (overlayEpoch.current === epoch) setSavedTrace({ rawPath: tpl.raw_path, anchorsPx: diag.anchors_px });
+      })
+      .catch(() => {
+        // 404 (no canonical) or transient error → no overlay.
+        if (overlayEpoch.current === epoch) setSavedTrace(null);
+      });
   }, [sourceId, glyphKey]);
+  // The overlay of the glyph being left goes DURING RENDER (react-hooks/
+  // set-state-in-effect); the key carries what `refreshSavedTrace` is built from,
+  // so it moves exactly when the effect's deps do.
+  const overlayKey = `${sourceId} ${glyphKey} ${open} ${hasCanonical}`;
+  const [overlayShownFor, setOverlayShownFor] = useState(overlayKey);
+  if (overlayShownFor !== overlayKey) {
+    setOverlayShownFor(overlayKey);
+    setSavedTrace(null);
+  }
   useEffect(() => {
     overlayEpoch.current++; // invalidate any in-flight fetch for the previous glyph
-    setSavedTrace(null);
     if (open && hasCanonical) void refreshSavedTrace();
   }, [open, hasCanonical, refreshSavedTrace]);
 

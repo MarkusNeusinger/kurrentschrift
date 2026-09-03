@@ -13,25 +13,16 @@
 
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Drawer, IconButton, Typography } from '@mui/material';
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { listWorkItems } from '@/lib/api';
 import { de } from '@/locales/admin';
 
+import { KorbCtx, type KorbState } from './korbState';
 import { KorbPanel } from './KorbPanel';
 import { MarkDialog } from './MarkDialog';
 import { markKey, type Mark } from './model';
-
-interface KorbState {
-  // Open + returned items of the active source; null while unknown or when the
-  // admin-gated read failed.
-  openCount: number | null;
-  fileMark: (mark: Mark) => void;
-  openKorb: () => void;
-}
-
-const Ctx = createContext<KorbState | null>(null);
 
 export function KorbProvider({ children }: { children: ReactNode }) {
   const { sourceId, openWizard } = useAdmin();
@@ -42,9 +33,19 @@ export function KorbProvider({ children }: { children: ReactNode }) {
   // refetch — the panel keeps its own optimistic state, this only re-syncs.
   const [tick, setTick] = useState(0);
 
+  // Retire the previous source's badge DURING RENDER instead of in the effect
+  // below — React's "adjusting state when a prop changes"
+  // (react-hooks/set-state-in-effect). The guard carries the effect's inputs, so
+  // the header never shows a count that belongs to the source just left.
+  const loadKey = `${sourceId} ${tick}`;
+  const [shownFor, setShownFor] = useState(loadKey);
+  if (shownFor !== loadKey) {
+    setShownFor(loadKey);
+    setOpenCount(null);
+  }
+
   useEffect(() => {
     let cancelled = false;
-    setOpenCount(null);
     listWorkItems(sourceId, undefined, { retries: 1 })
       .then((rows) => {
         if (!cancelled) setOpenCount(rows.filter((i) => i.status === 'open' || i.status === 'returned').length);
@@ -67,7 +68,7 @@ export function KorbProvider({ children }: { children: ReactNode }) {
   );
 
   return (
-    <Ctx.Provider value={value}>
+    <KorbCtx.Provider value={value}>
       {children}
       <Drawer
         anchor="right"
@@ -102,20 +103,6 @@ export function KorbProvider({ children }: { children: ReactNode }) {
           onOpenWizard={openWizard}
         />
       )}
-    </Ctx.Provider>
+    </KorbCtx.Provider>
   );
 }
-
-export function useKorb(): KorbState {
-  const value = useContext(Ctx);
-  if (!value) throw new Error('useKorb must be used inside <KorbProvider>');
-  return value;
-}
-
-// The ⚑ affordance every view files with, so the wording and the icon stay the
-// same wherever a complaint is raised.
-export function useFileMark(): (mark: Mark) => void {
-  return useKorb().fileMark;
-}
-
-export const useOpenCount = (): number | null => useKorb().openCount;

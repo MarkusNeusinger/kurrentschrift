@@ -32,7 +32,8 @@ import {
   WORD_MIN_ITEM_MS,
   WORD_WRITE_MS,
 } from '@/lib/strokeTiming';
-import { InkBleedFilter, InkGuides, RevealMask, ReplayButton, inkGroupSx } from '@/components/inkReveal';
+import { InkBleedFilter, InkGuides, RevealMask, ReplayButton } from '@/components/inkReveal';
+import { inkGroupSx } from '@/components/inkReveal/inkGroupSx';
 import { polylineToPathD, ringsToPathD } from '@/lib/svg';
 
 // Composition happens server-side and is cached in the shared render cache
@@ -79,6 +80,12 @@ interface Props {
   bust?: number;
 }
 
+// What a word starts out showing: nothing (the spinner) while its composition
+// is fetched, or — for empty text, which the server 422s on — a settled empty
+// composition, so a caller reads `missing: []` instead of waiting forever.
+const startState = (normalized: string): ComposedWordOut | null =>
+  normalized ? null : { text: '', items: [], bounds: { min_x: 0, max_x: 1, min_y: 0, max_y: 1 }, guides: null, missing: [] };
+
 export function WrittenWord({
   text,
   sourceId = CONFIG.sourceId,
@@ -99,18 +106,26 @@ export function WrittenWord({
   const uid = useId();
   // Mirror the server's normalisation so equal words share one cache/URL entry.
   const normalized = useMemo(() => text.normalize('NFC').trim(), [text]);
-  const [composed, setComposed] = useState<ComposedWordOut | null>(null);
+  const [composed, setComposed] = useState<ComposedWordOut | null>(() => startState(normalized));
   const [run, setRun] = useState(0);
+
+  // Drop the previous word's composition DURING RENDER instead of in the effect
+  // below — React's "adjusting state when a prop changes"
+  // (react-hooks/set-state-in-effect). The guard carries the effect's inputs, so
+  // a word swap no longer paints one frame of the old ink before the spinner.
+  const loadKey = `${sourceId} ${bust ?? ''} ${normalized}`;
+  const [shownFor, setShownFor] = useState(loadKey);
+  if (shownFor !== loadKey) {
+    setShownFor(loadKey);
+    setComposed(startState(normalized));
+  }
 
   useEffect(() => {
     let cancelled = false;
-    setComposed(null);
-    if (!normalized) {
-      // Nothing to write (the server 422s on empty text) — settle on an empty
-      // composition so callers see `missing: []` instead of a spinner forever.
-      setComposed({ text: '', items: [], bounds: { min_x: 0, max_x: 1, min_y: 0, max_y: 1 }, guides: null, missing: [] });
-      return;
-    }
+    // Nothing to write (the server 422s on empty text): `startState` has already
+    // settled on the empty composition, so callers see `missing: []` rather
+    // than a spinner forever.
+    if (!normalized) return;
     fetchRenderWord(sourceId, normalized, bust)
       .then((c) => {
         if (!cancelled) setComposed(c);

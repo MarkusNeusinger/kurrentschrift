@@ -40,21 +40,21 @@ export default tseslint.config(
     rules: {
       // eslint-plugin-react-hooks v7 folded the stabilised React Compiler rule
       // set into `recommended` — 16 rules where v5 shipped two. The preset is
-      // adopted as-is: 11 rules land at error (v5 enforced only
-      // `rules-of-hooks`), and all of them are clean on the current tree except
-      // the two below.
+      // adopted as-is, with no downgrades: `react-hooks/refs` and
+      // `react-hooks/set-state-in-effect` used to sit at `warn` because the
+      // tree carried 39 long-standing sites of the latest-ref render write and
+      // the "reset transient state when the input prop changes" effect (issue
+      // #227). Those are cleared — the resets moved into React's render-phase
+      // guard, the ref writes into effects — so the preset's own severity
+      // stands and the parking lot cannot be re-opened by adding to it.
       ...reactHooks.configs.recommended.rules,
-      // These two fire on long-standing patterns — the latest-ref
-      // `ref.current = prop` write during render (4×) and the "reset transient
-      // state when the input prop changes" effects (21×). Both need a
-      // behavioural refactor of the component tree, which is its own change,
-      // not a dependency bump — so they stay visible as warnings until then
-      // rather than being switched off. Every site is listed in issue #227;
-      // clearing them means deleting these two lines.
-      'react-hooks/refs': 'warn',
-      'react-hooks/set-state-in-effect': 'warn',
       ...jsxA11y.configs.recommended.rules,
-      'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      // At `error` for the same reason: the 25 sites it found were real
+      // Fast-Refresh boundaries (a provider beside its hook, a route table
+      // beside the components it names), and splitting them cost one import
+      // each. `npm run lint` additionally runs with `--max-warnings 0`, so a
+      // rule that only warns still fails the gate.
+      'react-refresh/only-export-components': ['error', { allowConstantExport: true }],
       // Honour the `_`-prefix convention for intentionally-unused bindings.
       '@typescript-eslint/no-unused-vars': [
         'error',

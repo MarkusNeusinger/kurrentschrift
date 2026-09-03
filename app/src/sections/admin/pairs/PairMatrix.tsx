@@ -14,7 +14,7 @@ import { Alert, Box, ButtonBase, Chip, Typography } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { WrittenWord } from '@/components/WrittenWord';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { glyphKeyFor, LETTERS } from '@/domain/glyphs';
 import type { Letter } from '@/domain/glyphs';
 import { useInView } from '@/hooks/useInView';

@@ -11,7 +11,7 @@
     "prerender": "node --experimental-strip-types scripts/build-prerender.mjs && node --experimental-strip-types scripts/check-sitemap-lastmod.mjs",
     "preview": "vite preview --host",
     "type-check": "tsc --noEmit",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
     "fonts:sync": "node scripts/sync-fonts.mjs",
     "type-floor": "node scripts/type-floor.mjs",

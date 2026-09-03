@@ -8,7 +8,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { Alert, Box, Button, CircularProgress, Typography } from '@mui/material';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { cropUrl, getDiagnostic } from '@/lib/api';
 import type { DiagnosticData } from '@/lib/api';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
@@ -38,14 +38,24 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
   const COL_W = useColumnWidth(colWidth);
   const COL_H_PX = colHeight ?? COL_H;
   const [data, setData] = useState<DiagnosticData | null>(null);
-  const [loading, setLoading] = useState(false);
+  // Starts true: the first render is already waiting for the request the effect
+  // below fires, so the spinner is the honest first frame.
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ApiErrorText | null>(null);
+  // Latest-callback ref, so a fresh `onData` closure does not restart the
+  // fetch. Written in an effect, not during render (react-hooks/refs): the
+  // render-phase write is unsound under concurrent rendering, and the ref is
+  // only read from the request's continuation, well after effects flush.
   const onDataRef = useRef(onData);
-  onDataRef.current = onData;
+  useEffect(() => {
+    onDataRef.current = onData;
+  });
 
+  // The request only; the flags it used to raise are set by whoever triggers it —
+  // the render guard below on a key change, the retry button in its handler.
+  // A setState in an effect body is the rule violation (set-state-in-effect); in
+  // the promise continuation it is not.
   const fetch = useCallback(() => {
-    setLoading(true);
-    setError(null);
     getDiagnostic(sourceId, glyphKey)
       .then((d) => {
         setData(d);
@@ -55,9 +65,28 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
       .finally(() => setLoading(false));
   }, [sourceId, glyphKey]);
 
+  // React's "adjusting state when a prop changes": the key carries exactly the
+  // effect's inputs, so a glyph swap or a crop edit raises the spinner in the
+  // same render that schedules the refetch. `data` deliberately stays put — the
+  // previous columns keep standing until the new payload lands.
+  const loadKey = `${sourceId} ${glyphKey} ${cropCacheBust ?? ''}`;
+  const [shownFor, setShownFor] = useState(loadKey);
+  if (shownFor !== loadKey) {
+    setShownFor(loadKey);
+    setLoading(true);
+    setError(null);
+  }
+
   useEffect(() => {
     fetch();
   }, [fetch, cropCacheBust]);
+
+  // The retry path sets its own flags: an event handler may, an effect may not.
+  const retry = () => {
+    setLoading(true);
+    setError(null);
+    fetch();
+  };
 
   if (loading && !data) {
     return (
@@ -79,7 +108,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
         <Alert severity={error.status === 404 ? 'info' : 'error'}>
           {error.status === 404 ? de.admin.diagnostics.noCanonicalShort : <ErrorText error={error} />}
         </Alert>
-        <Button size="small" startIcon={<RefreshIcon />} onClick={fetch} sx={{ mt: 1 }}>
+        <Button size="small" startIcon={<RefreshIcon />} onClick={retry} sx={{ mt: 1 }}>
           {de.admin.diagnostics.reload}
         </Button>
       </Box>

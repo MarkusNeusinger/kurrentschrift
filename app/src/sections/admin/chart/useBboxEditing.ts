@@ -9,7 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { deleteBbox, deleteGlyph, putBbox } from '@/lib/api';
 import { bboxInFromOut } from '@/lib/bbox';
 import { knownGlyph } from '@/domain/glyphs';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/adminState';
 import { de, fmt } from '@/locales/admin';
 import { applyHandle, editedBbox, hitHandle } from './bboxGeometry';
 import {

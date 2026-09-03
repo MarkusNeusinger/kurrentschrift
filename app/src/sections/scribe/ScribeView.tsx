@@ -67,7 +67,14 @@ export function ScribeView() {
   }, [input]);
 
   // A new text starts a fresh compose — clear a stale error from the last one.
-  useEffect(() => setComposeError(false), [text]);
+  // Done during render, not in an effect (react-hooks/set-state-in-effect): the
+  // error line would otherwise survive one commit into the new text, which is
+  // exactly the frame in which the retry button was already gone.
+  const [errorFor, setErrorFor] = useState(text);
+  if (errorFor !== text) {
+    setErrorFor(text);
+    setComposeError(false);
+  }
 
   // State → URL: mirror the debounced text into ?text= so the page is
   // shareable. `replace` keeps typing from flooding the history; the default

@@ -11,12 +11,12 @@ import type { ElementType, ReactNode } from 'react';
 import { Box } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 
-export const PAGE_WIDTHS = { narrow: 760, text: 1152, wide: 1280 } as const;
+import { PAGE_WIDTHS, type PageWidth } from './widths';
 
 export interface PageContainerProps {
   children: ReactNode;
   /** Max content width: a named step (default `text`) or an explicit px value. */
-  width?: keyof typeof PAGE_WIDTHS | number;
+  width?: PageWidth | number;
   /** Rendered element/landmark (e.g. `'section'`). Defaults to `div`. */
   component?: ElementType;
   sx?: SxProps<Theme>;
