@@ -271,8 +271,14 @@ export const wizard = {
   // dialog below ever sends it.
   lock: {
     chip: '🔒 gesperrt',
+    // Deliberately says nothing about WHAT the save will do. A locked bbox may
+    // or may not hold a Weg (the lock is a bbox column an import or a direct
+    // PUT can set before anything was traced), and a static banner that claims
+    // „der bestehende Weg" would be wrong in exactly the state the confirmation
+    // below was fixed for. One place owns the state-dependent sentence — the
+    // dialog, which reads `hasCanonical`; this one states what holds in both.
     warning:
-      'Diese Glyphe ist gesperrt — sie gilt als fertig. Zeichnen darfst du trotzdem; beim Speichern fragt die Werkbank noch einmal nach, bevor der bestehende Weg überschrieben wird.',
+      'Diese Glyphe ist gesperrt — sie gilt als fertig. Zeichnen darfst du trotzdem; vor dem Speichern fragt die Werkbank noch einmal nach.',
     // The save button's label while the glyph is locked, so the click never
     // comes as a surprise.
     saveLocked: 'Weg speichern (gesperrt)',
