@@ -8,15 +8,21 @@
   build, and so did 216 `__pycache__` directories, `app/dist`, and the
   InkSight venv and weights under `tools/` (3.4 GB on a machine that has run
   route B). Every generated directory now carries `**/`: measured 339 MiB of
-  context before, 44 MiB after, in a checkout without those weights.
-  `.gcloudignore` needs no such fix — it uses gitignore semantics, where a bare
-  name already matches at any depth.
-- **The CSP hash extractor now reads HTML the way a browser does.** Its
-  `</script>` pattern had no whitespace tolerance, so a legal `</script >`
-  would have made it read on to the next closing tag and hash two scripts as
-  one — the real first script would then have lost its hash and stopped
-  running (CodeQL's `py/bad-tag-filter`). Alongside it, `"src=" in attrs`
-  called `data-src=` external and `SRC = "…"` inline, and a commented-out
-  `<script>` earned a hash for code that never runs. All three are fixed and
-  pinned by a test; the two hashes `app/index.html` actually produces are
-  unchanged, so the shipped policy is untouched.
+  context before, 44 MiB after, in a checkout without those weights. Beside
+  them, the local-only payloads none of which the API Dockerfile copies — the
+  corpora (up to 7.8 GB), the reserved own-hand strips, the NC-SA derivatives,
+  the human-bench rounds and both benches' fixture and run trees. The same
+  block goes into `.gcloudignore`, which runs BEFORE Docker sees anything: a
+  manual `gcloud builds submit` would otherwise upload them regardless. Its
+  syntax needed no `**/` — it is gitignore-shaped, where a bare name already
+  matches at any depth.
+- **The CSP hash extractor reads HTML with a tokenizer now, not a regex.** It
+  decides which sha256 hashes the shipped policy must carry, and it was wrong
+  in four ways that each put a wrong hash in: `</script>` as a literal misses
+  the legal `</script >` and hashes two scripts as one (CodeQL's
+  `py/bad-tag-filter`); `<script([^>]*)>` ends the start tag at a `>` inside a
+  quoted attribute value; `"src=" in attrs` calls `data-src=` external and
+  `SRC = "…"` inline; and a commented-out `<script>` earned a hash for code
+  that never runs. `html.parser` settles all four, and a test pins them. The
+  two hashes `app/index.html` actually produces are unchanged, so the shipped
+  policy is untouched.

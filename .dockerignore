@@ -39,10 +39,29 @@
 **/build
 **/coverage
 
-# The InkSight route's local half: a 3.4 GB venv + checkpoint tree that is
-# gitignored, so a CI clone never has it — but a local `docker build` does.
+# Local-only payloads: every one of these is gitignored, so a CI clone never
+# has them and only a build from the author's checkout pays for them — which is
+# exactly the build nobody watches the numbers on. None is copied by
+# api/Dockerfile. Sizes are the ones the repo's own docs quote.
+#
+# The InkSight route's local half — a 3.4 GB venv + checkpoint tree:
 tools/inksight/weights
 tools/inksight/out
+# The corpora (up to 7.8 GB; only SOURCE.md and fetch_*.py are committed) and
+# the NC-SA derivatives that may not mix with MIT at all:
+data/corpora
+data/derived/from-nc-sa
+# The reserved own-hand dataset — the strips are admin-gated and must not sit
+# in an image layer even by accident (quellen-und-rechte.md §5):
+data/samples/own-hand
+# Human-bench rounds and the two benches' fixture/run trees, all regenerable:
+data/humanbench
+tools/glyphbench/fixtures
+tools/glyphbench/runs
+tools/wordbench/fixtures
+tools/wordbench/runs
+runs
+temp
 
 # `.env*`, not the three names that happen to exist: .env holds DATABASE_URL
 # and ADMIN_TOKEN, and a variant nobody thought of (.env.staging) fell straight

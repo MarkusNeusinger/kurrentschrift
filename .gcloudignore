@@ -1,6 +1,17 @@
 # Honored by `gcloud builds submit` when uploading the source tarball. Without
 # this, .gitignore is used — but .gitignore doesn't cover JS build artefacts,
 # so the upload bloats with node_modules.
+#
+# This list runs BEFORE .dockerignore: what it lets through is already uploaded
+# by the time Docker starts filtering the context. So the local-only payloads
+# that .dockerignore keeps out of the image are named here too, or a manual
+# `gcloud builds submit` from the author's checkout ships them anyway. The
+# triggers do not go through this path (they build from the GitHub commit), and
+# that is precisely why the manual route is the one that goes unnoticed.
+#
+# Syntax note, in case this file and .dockerignore ever look inconsistent: this
+# one is gitignore-shaped, where a bare name matches at ANY depth — which is why
+# `node_modules` here needs no `**/` while its twin in .dockerignore does.
 
 .git
 .gitignore
@@ -34,6 +45,22 @@ build
 # Editor / OS
 .DS_Store
 *.swp
+
+# Local-only payloads, none of them copied by api/Dockerfile and every one of
+# them gitignored — so a CI clone has none and only an upload from the author's
+# checkout carries them. Mirrors the block in .dockerignore.
+tools/inksight/weights
+tools/inksight/out
+data/corpora
+data/derived/from-nc-sa
+data/samples/own-hand
+data/humanbench
+tools/glyphbench/fixtures
+tools/glyphbench/runs
+tools/wordbench/fixtures
+tools/wordbench/runs
+runs
+temp
 
 # Repo-local artefacts we never want in the image
 docs
