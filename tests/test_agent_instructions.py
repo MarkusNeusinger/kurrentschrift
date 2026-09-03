@@ -34,9 +34,12 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 CLAUDE_MD = REPO_ROOT / "CLAUDE.md"
 COPILOT_MD = REPO_ROOT / ".github" / "copilot-instructions.md"
 
+GUARDRAILS_MD = REPO_ROOT / ".claude" / "guardrails.md"
+
 AGENT_FILES = [
     CLAUDE_MD,
     COPILOT_MD,
+    GUARDRAILS_MD,
     REPO_ROOT / ".claude" / "commands" / "prime.md",
     REPO_ROOT / ".claude" / "commands" / "start.md",
 ]
@@ -206,6 +209,25 @@ MIRRORED_RULES = {
     "do not silently diverge": ["silently diverge"],
     "codecov is a reviewer": ["codecov"],
 }
+
+
+def test_guardrails_split_stays_subordinate() -> None:
+    """The rationale file must stay a companion, never become the rule.
+
+    Two ways this split rots, both cheap to pin: CLAUDE.md loses the pointer,
+    so nobody finds the rationale; or `.claude/guardrails.md` starts reading
+    like the authority, so a rule ends up living only there — where no session
+    loads it. The binding one-liners themselves are pinned by
+    `MIRRORED_RULES` below, which searches CLAUDE.md.
+    """
+    claude = _flat(CLAUDE_MD.read_text(encoding="utf-8"))
+    guardrails = _flat(GUARDRAILS_MD.read_text(encoding="utf-8"))
+
+    assert ".claude/guardrails.md" in claude, "CLAUDE.md no longer points at the rationale file"
+    assert "is the rule and this is the commentary" in guardrails, (
+        ".claude/guardrails.md must state that CLAUDE.md wins — without it the "
+        "companion file starts reading like the authority"
+    )
 
 
 @pytest.mark.parametrize("rule", sorted(MIRRORED_RULES), ids=lambda r: r.replace(" ", "-"))
