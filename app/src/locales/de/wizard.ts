@@ -178,11 +178,13 @@ export const wizard = {
     breakdownInlinePrefix: 'Abzüge:',
     // Short category labels mirroring the naturalness metric's components.
     // Every one of them is an ABZUG — höher = schlechter. `coverage` therefore
-    // reads „Deckungslücke", not „Deckung": the value is `1 − gate`, the share
-    // of the original ink the form MISSES. Under the old label the same panel
-    // printed „Deckung (IoU): 0.105" and „Deckung 0.99" three lines apart, and
-    // the 0.99 read like an excellent result while being the maximum possible
-    // deduction (author decision 2026-09-03).
+    // reads „Deckungslücke", not „Deckung": the value is `1 − gate`, and the
+    // gate is the COMPOSITE `dice · q_chamfer · q_geo`
+    // (`core/quality_suetterlin.py`) — overlap, boundary distance and
+    // centerline position together, not the missed-ink share alone. Under the
+    // old label the same panel printed „Deckung (IoU): 0.105" and „Deckung
+    // 0.99" three lines apart, and the 0.99 read like an excellent result
+    // while being the maximum possible deduction (author decision 2026-09-03).
     cat: {
       smoothness: 'Glätte',
       verticality: 'Senkrechte',
@@ -197,7 +199,7 @@ export const wizard = {
       corner: 'Umkehrpunkte sauber spitz',
       collinearity: 'Strich bleibt durch eine Kreuzung gerade',
       retrace: 'Hin- und Rückzug laufen parallel',
-      coverage: 'Anteil der Originaltinte, den die Form verfehlt (aus dem Deckungs-Gate)',
+      coverage: 'Abzug aus dem Deckungs-Gate — Überlappung, Randabstand und Mittellinien-Lage zusammen',
     },
   },
   overview: {
@@ -220,8 +222,13 @@ export const wizard = {
       'kannst du das Ergebnis groß ansehen: der reine Crop, das Skelett mit Ankern und die kanonische Vorlage nebeneinander (plus den M4-Fit).',
     openDiagnose: 'Diagnose öffnen',
     noTraceYet: 'Noch kein Weg gezeichnet — Schritt „Weg“ zuerst.',
+    // Says what the lock does AFTER the doctrine change (2026-09-03): it marks
+    // the glyph as finished and puts a confirmation in front of the next write
+    // — it no longer makes the wizard refuse until someone unlocks in the Tafel.
+    // The old wording („erst nach Entsperren wieder änderbar") promised exactly
+    // that, two steps away from the step that now contradicts it.
     lockCaption:
-      'Mit „Abschließen & sperren“ wird der Glyph gesperrt (🔒) und ist erst nach Entsperren wieder änderbar.',
+      'Mit „Abschließen & sperren“ gilt der Glyph als fertig (🔒). Ändern bleibt möglich — der Wizard fragt dann vor dem Überschreiben noch einmal nach.',
   },
   // Every message that reaches the wizard's alert bar. It carries a severity of
   // its own now: a failed write is red, a refused gesture amber, a saved Weg
@@ -273,10 +280,19 @@ export const wizard = {
       title: 'Gesperrten Weg überschreiben?',
       body:
         'Für diese Glyphe liegt bereits ein abgeschlossener Weg. „Überschreiben“ ersetzt ihn durch den soeben gezeichneten — die alte Fassung ist danach nicht mehr abrufbar.',
+      // A bbox can carry the lock WITHOUT a stored Weg — the lock is a column
+      // on the bbox, and an import or a direct PUT can set it before anything
+      // was traced. Then „ersetzt die alte Fassung" would be a plain untruth,
+      // so that state gets its own sentence.
+      titleFirst: 'Auf gesperrter Glyphe speichern?',
+      bodyFirst:
+        'Diese Glyphe ist als fertig gesperrt, es liegt aber noch kein Weg vor. Gespeichert wird also der erste — überschrieben wird nichts.',
       // Shown under the body, so what is at stake is a fact and not a memory.
       hint: 'Die Sperre bleibt danach bestehen; nur der Weg wechselt.',
+      hintFirst: 'Die Sperre bleibt danach bestehen.',
       cancel: 'Abbrechen',
       confirm: 'Trotzdem überschreiben',
+      confirmFirst: 'Trotzdem speichern',
     },
     // Same question for the second write on the Weg step.
     confirmResample: {

@@ -117,6 +117,29 @@ export function TraceStep({
   // both ask the same question — with the wording of the write they belong to.
   const [confirmWrite, setConfirmWrite] = useState<'trace' | 'resample' | null>(null);
 
+  // What that confirmation actually says. Three cases, because the lock and the
+  // stored Weg are two different things: re-sampling always has a canonical (its
+  // button needs one), a locked glyph WITH one is a real overwrite, and a locked
+  // glyph WITHOUT one — reachable through a direct bbox PUT or an import — would
+  // otherwise be told its „alte Fassung" is about to be replaced when there is
+  // none.
+  const lockPrompt =
+    confirmWrite === 'resample'
+      ? { ...de.wizard.lock.confirmResample, confirm: de.wizard.lock.confirm.confirm }
+      : hasCanonical
+        ? {
+            title: de.wizard.lock.confirm.title,
+            body: de.wizard.lock.confirm.body,
+            hint: de.wizard.lock.confirm.hint,
+            confirm: de.wizard.lock.confirm.confirm,
+          }
+        : {
+            title: de.wizard.lock.confirm.titleFirst,
+            body: de.wizard.lock.confirm.bodyFirst,
+            hint: de.wizard.lock.confirm.hintFirst,
+            confirm: de.wizard.lock.confirm.confirmFirst,
+          };
+
   const [anchorsDraft, setAnchorsDraft] = useState(String(bbox.n_anchors));
   const committedAnchors = useRef(bbox.n_anchors);
   useEffect(() => {
@@ -288,20 +311,18 @@ export function TraceStep({
         />
       )}
 
-      {/* THE only place `force` is ever set. The lock stays a real gate — the
-          server refuses without it (423) — but the gate is now one deliberate
-          answer here rather than a detour through the Tafel's lock toggle. */}
+      {/* The only place in the WIZARD that sets `force`. (Repository-wide there
+          are two more, both long-standing and both deliberate by construction:
+          the diagnostics' „Neu ableiten & speichern" and the bulk „Alle neu
+          ableiten" — don't remove those on the strength of this comment.) The
+          lock stays a real gate: the server refuses without the flag (423), and
+          the gate is now one deliberate answer here rather than a detour
+          through the Tafel's lock toggle. */}
       <Dialog open={confirmWrite !== null} onClose={() => setConfirmWrite(null)} maxWidth="xs">
-        <DialogTitle>
-          {confirmWrite === 'resample' ? de.wizard.lock.confirmResample.title : de.wizard.lock.confirm.title}
-        </DialogTitle>
+        <DialogTitle>{lockPrompt.title}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            {confirmWrite === 'resample' ? de.wizard.lock.confirmResample.body : de.wizard.lock.confirm.body}
-          </DialogContentText>
-          <DialogContentText sx={{ mt: 1 }}>
-            {confirmWrite === 'resample' ? de.wizard.lock.confirmResample.hint : de.wizard.lock.confirm.hint}
-          </DialogContentText>
+          <DialogContentText>{lockPrompt.body}</DialogContentText>
+          <DialogContentText sx={{ mt: 1 }}>{lockPrompt.hint}</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmWrite(null)}>{de.wizard.lock.confirm.cancel}</Button>
@@ -315,7 +336,7 @@ export function TraceStep({
               else void saveTrace(n, true);
             }}
           >
-            {de.wizard.lock.confirm.confirm}
+            {lockPrompt.confirm}
           </Button>
         </DialogActions>
       </Dialog>

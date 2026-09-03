@@ -1,10 +1,13 @@
 # Optimierungs-Werkbank 2026-07-31 — eine Admin-Fläche, Stufen-Doktrin, Auftragskorb
 
-> **Status (2026-08-12): bindend.** W1–W5 sind umgesetzt
-> (PR #252 · #255 · #261 · #264 · #266); §3–§5 sind bindende Doktrin
-> und werden seit W4 von der API erzwungen (`check_transition`) —
-> deshalb „bindend" und nicht „umgesetzt-historisch": dieses Doc bleibt
-> Pflichtlektüre vor jeder Korb-Arbeit (`/work-basket`).
+> **Status (2026-09-03): bindend.** W1–W5 sind umgesetzt
+> (PR #252 · #255 · #261 · #264 · #266); §3–§5 **und §6** sind bindende
+> Doktrin, §3–§5 werden seit W4 von der API erzwungen
+> (`check_transition`) — deshalb „bindend" und nicht
+> „umgesetzt-historisch": dieses Doc bleibt Pflichtlektüre vor jeder
+> Korb-Arbeit (`/work-basket`). Jüngster Zusatz: die Sperr-Doktrin in §6
+> (Autor-Entscheid 2026-09-03) — die Sperre ist eine Warnung mit
+> Rückfrage, kein Riegel.
 > Das in §2/§6 angekündigte Aufgehen von `/admin/vergleich`, `/admin/paare`
 > und `/admin/belege` in der Werkbank ist mit dem Admin-Redesign
 > („aus einem Guss", 2026-08) vollzogen: der ganze Admin IST jetzt die

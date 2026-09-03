@@ -890,9 +890,15 @@ Template) und `e_wid` (Breiten); Konvergenz-Schwellen
 `MAX_COVERAGE_POINTS` (300 pro Glyphe).
 
 **Deckungslücke** — der **Abzug**, den die Sütterlin-Natürlichkeitsmetrik
-aus dem Deckungs-Gate bildet: `components.coverage = 1 − gate`, also der
-Anteil der Originaltinte, den die Form **verfehlt**. Höher = schlechter,
-genau umgekehrt zur → Deckung und zum `gate` selbst. Der eigene Name
+aus dem Deckungs-Gate bildet: `components.coverage = 1 − gate`. Höher =
+schlechter, genau umgekehrt zur → Deckung und zum `gate` selbst.
+**Wichtig für die Deutung:** Das Gate ist ein Produkt aus drei Faktoren
+(`gate = dice · q_chamfer · q_geo`), die Lücke also ein
+**zusammengesetzter** Abzug aus Überlappung (Dice), Randabstand
+(Chamfer) und Mittellinien-Lage (Geo-RMSE) — **nicht** allein der Anteil
+verfehlter Tinte. Ein hoher Wert sagt „das Tor ist zu", nicht welcher
+der drei Faktoren es zugezogen hat; dafür stehen die Einzelmaße im
+Diagnose-Block. Der eigene Name
 (Autor-Entscheid 2026-09-03) löst eine Falle in der Werkbank auf: Im
 Diagnose-Block standen „Deckung (IoU): 0.105“, „Deckungs-Gate: 0.01“ und
 „Deckung 0.99“ drei Zeilen auseinander — dieselbe Größe einmal positiv
