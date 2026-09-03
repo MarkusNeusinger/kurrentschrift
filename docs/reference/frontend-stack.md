@@ -1,6 +1,6 @@
 # Frontend-Stack
 
-> **Status (2026-09-02): lebend.** Ist-Stand von Stack, Routen, i18n-Soll,
+> **Status (2026-09-04): lebend.** Ist-Stand von Stack, Routen, i18n-Soll,
 > Deploy, Admin-Gate und Crawler-Prerender; jede Änderung an
 > `app/package.json`, `app/src/routes/paths.ts`, den Cloudbuild-/nginx-Dateien,
 > `app/security-headers.conf`, `api/security_headers.py`, `api/routers/csp.py`,
