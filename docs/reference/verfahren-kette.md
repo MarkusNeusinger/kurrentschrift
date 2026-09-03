@@ -129,8 +129,12 @@ aufgenommen werden Gewichts-Sweeps der alten Formulierung — durch
 ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet.
 
 Die Folger-Arme **②③④⑦⑧** der Vorregistrierung vom `aug14` wurden nie
-einzeln gemessen; ihre Schließung „durch ①⑤⑥⑥b⑨ erschöpfend negativ
-beantwortet" steht bis heute nur hier und in keinem §14-Eintrag. Sie
-sind darum in [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md)
-§7.11 als offener Punkt geführt, bis der Autor die formale Abschreibung
-bestätigt.
+einzeln gemessen und sind am **2026-09-03 per Autor-Entscheid
+abgeschrieben**: Gewichts-Arme derselben Formulierung, die ①⑤⑥⑥b⑨
+erschöpfend negativ beantwortet haben. Die Schließung stand bis dahin nur
+hier; sie steht jetzt im Journal selbst (§14 „Vorregistrierung der
+Folger-Arme `aug14`", Nachtrag `sep03`), mit Registerzeile, Rettungsweg
+in [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.9 und
+Status in §7.11. Wiederaufnahme nur mit frischer Vorregistrierung unter
+einer NEUEN Formulierung — ein weiterer Gewichts-Sweep der alten ist
+ausdrücklich keine.

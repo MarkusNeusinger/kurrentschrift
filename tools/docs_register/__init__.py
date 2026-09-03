@@ -120,22 +120,24 @@ def _read(root: Path, path: Path) -> str:
 
 
 def journal_section(text: str) -> tuple[list[str], int]:
-    """The journal's lines and the file offset they start at (0-based).
+    """The lines of §14 and the file offset they start at (0-based).
 
-    The journal opens at `## 14.` and runs to the END OF THE FILE, not to the
-    next `## `. §15 is itself a dated journal entry (the rect-repair
-    re-baseline), and a round that appends its section at the file end — which
-    is what every round does — lands after that heading rather than inside §14:
-    LF11, J4 and J4b did exactly that on 2026-09-02. Stopping at the next `## `
-    would leave those entries unindexed and their register rows dangling, which
-    is the opposite of what this gate is for. Nothing is moved to make this
-    true; the window simply matches where the rounds actually write.
+    §14 ends where the next `## ` begins, the way a section normally does. For
+    a while this window ran to the end of the file instead: four `sep02` rounds
+    had appended their sections after the `## 15.` heading — appending at the
+    file end is what a round does — and widening the window was the way to
+    index them without moving anyone's text. The author decided on 2026-09-03
+    that §14 should be closed again, so the sections moved in front of §15 and
+    the window is a section again. A round that appends at the file end now has
+    to place its section, and the gate says so: its entry would sit outside §14
+    and the missing register row is what reports it.
     """
     lines = text.split("\n")
     start = next((i for i, line in enumerate(lines) if line.startswith(SECTION_HEADING)), None)
     if start is None:
         raise RegisterError(f"{JOURNAL}: no '{SECTION_HEADING.strip()}' heading — the journal moved?")
-    return lines[start:], start
+    end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("## ")), len(lines))
+    return lines[start:end], start
 
 
 def entries(text: str) -> list[Entry]:
