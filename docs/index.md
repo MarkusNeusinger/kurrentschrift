@@ -371,10 +371,15 @@ auseinanderfallen.
   Tabs, plus die **bindende Stufen-/Rollen-Doktrin** — manuell hinzufügen
   nur bei Ground Truth (Tafel-Duktus, Wort-Nachfahrung), alles Generierte
   wird bemängelt — und das `work_items`-Protokoll (Triage-Pflicht der KI,
-  Regel-Fix vor Override, `resolution`-Format, Rückgabe an den Autor) —
-  *Status: bindend (W1–W5 gebaut, §3–§5 von der API erzwungene Doktrin;
-  die Alt-Seiten sind mit dem Admin-Redesign 2026-08 in den drei
-  Ansichten Buchstaben · Übergänge · Wörter aufgegangen)*
+  Regel-Fix vor Override, `resolution`-Format, Rückgabe an den Autor);
+  dazu seit 2026-09-03 die **Sperr-Doktrin** in §6: die Sperre ist eine
+  Warnung mit Rückfrage, kein Riegel — eine gesperrte Glyphe bleibt
+  angeboten, sichtbar markiert, und wird nach einer ausdrücklichen
+  Bestätigung überschrieben —
+  *Status: bindend (W1–W5 gebaut; §3–§5 von der API erzwungene Doktrin,
+  §6 bindend und von der Review getragen; die Alt-Seiten sind mit dem
+  Admin-Redesign 2026-08 in den drei Ansichten Buchstaben · Übergänge ·
+  Wörter aufgegangen)*
 
 **teil-umgesetzt** — aktive Pläne mit offenem Rest:
 

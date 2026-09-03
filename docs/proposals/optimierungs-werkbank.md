@@ -1,10 +1,13 @@
 # Optimierungs-Werkbank 2026-07-31 — eine Admin-Fläche, Stufen-Doktrin, Auftragskorb
 
-> **Status (2026-08-12): bindend.** W1–W5 sind umgesetzt
-> (PR #252 · #255 · #261 · #264 · #266); §3–§5 sind bindende Doktrin
-> und werden seit W4 von der API erzwungen (`check_transition`) —
-> deshalb „bindend" und nicht „umgesetzt-historisch": dieses Doc bleibt
-> Pflichtlektüre vor jeder Korb-Arbeit (`/work-basket`).
+> **Status (2026-09-03): bindend.** W1–W5 sind umgesetzt
+> (PR #252 · #255 · #261 · #264 · #266); §3–§5 **und §6** sind bindende
+> Doktrin, §3–§5 werden seit W4 von der API erzwungen
+> (`check_transition`) — deshalb „bindend" und nicht
+> „umgesetzt-historisch": dieses Doc bleibt Pflichtlektüre vor jeder
+> Korb-Arbeit (`/work-basket`). Jüngster Zusatz: die Sperr-Doktrin in §6
+> (Autor-Entscheid 2026-09-03) — die Sperre ist eine Warnung mit
+> Rückfrage, kein Riegel.
 > Das in §2/§6 angekündigte Aufgehen von `/admin/vergleich`, `/admin/paare`
 > und `/admin/belege` in der Werkbank ist mit dem Admin-Redesign
 > („aus einem Guss", 2026-08) vollzogen: der ganze Admin IST jetzt die
@@ -213,6 +216,27 @@ vom Symptom zur Änderung und zurück.
 
 ## 6. Leitplanken
 
+- **Die Sperre ist eine Warnung, kein Riegel** (Autor, 2026-09-03). Eine
+  gesperrte Glyphe bleibt im Wizard **vollständig angeboten** und trägt
+  das Schloss sichtbar — im Titel als Chip, auf dem Weg-Schritt als
+  Hinweis, und der Speichern-Knopf sagt es in seiner Beschriftung. Wer
+  überschreiben will, beantwortet **eine** Rückfrage („Trotzdem
+  überschreiben"); erst diese Antwort schickt `force=true` an die
+  bestehende Route. Grund: Die Sperre soll vor dem *versehentlichen*
+  Überschreiben eines fertigen Wegs schützen, nicht vor dem gewollten —
+  der alte Weg (erst in der Tafel entsperren, zurück in den Wizard,
+  zeichnen, danach wieder sperren) kostete vier Schritte für eine
+  Entscheidung, die in einem Satz steht, und die Tafel-Entsperrung ließ
+  die Glyphe obendrein offen zurück. Der Boden bleibt der Server: ohne
+  `force` antwortet er weiter mit 423 (`api/routers/templates.py`
+  `_reject_locked_unless_forced`), gepinnt in
+  `tests/test_api_admin_writes.py`. Die Regel dahinter gilt für die
+  ganze Werkbank: **`force` setzt nur eine Fläche, die vorher
+  ausdrücklich danach fragt.** Das sind genau drei — die Rückfrage im
+  Wizard (neu), das „Neu ableiten & speichern" der Diagnose und der
+  Bulk-Dialog „Alle neu ableiten"; die beiden letzten sind schon immer
+  bewusst aufgerufene Aktionen und sagen es in ihrem Hinweistext. Ein
+  Knopf, der nebenbei schreibt, bekommt das Flag nicht.
 - Manuelle Beiträge (`authored`-Traces, Overrides) gehen **nie** in die
   eingefrorenen Metrik-Referenzen ein — die Messlatte bleibt die Platte
   (qualitaetsmetrik.md).
