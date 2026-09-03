@@ -228,7 +228,7 @@ export const wizard = {
     // The old wording („erst nach Entsperren wieder änderbar") promised exactly
     // that, two steps away from the step that now contradicts it.
     lockCaption:
-      'Mit „Abschließen & sperren“ gilt der Glyph als fertig (🔒). Ändern bleibt möglich — der Wizard fragt dann vor dem Überschreiben noch einmal nach.',
+      'Mit „Abschließen & sperren“ gilt die Glyphe als fertig (🔒). Ändern bleibt möglich — der Wizard fragt dann vor dem Überschreiben noch einmal nach.',
   },
   // Every message that reaches the wizard's alert bar. It carries a severity of
   // its own now: a failed write is red, a refused gesture amber, a saved Weg
