@@ -232,10 +232,19 @@ def test_to_image_polarity_is_explicit() -> None:
         to_image(mask, "grey")
 
 
-def test_dev_ids_match_the_bench_split() -> None:
+def test_dev_ids_match_the_bench_split_in_a_fixed_order() -> None:
+    """Membership AND order: the ids become `frames.json` keys and the run log.
+
+    A `frozenset`'s iteration order changes with the process, so asserting the
+    set alone let one route write a different artifact for the same inputs on
+    every run (audit 2026-09-02).
+    """
+    from tools.inksight.prepare import dev_ids as inksight_dev_ids
     from tools.tracebench.sets import TRACEBENCH_DEV_IDS
 
-    assert set(dev_ids()) == set(TRACEBENCH_DEV_IDS)
+    assert dev_ids() == tuple(sorted(TRACEBENCH_DEV_IDS))
+    # The two routes are compared word by word — they cannot disagree here.
+    assert inksight_dev_ids() == dev_ids()
 
 
 def _write_entry(root, entry_id: str, skel: np.ndarray) -> None:

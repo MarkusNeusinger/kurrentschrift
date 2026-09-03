@@ -255,9 +255,18 @@ indexiert. Regel seitdem (`app/src/locales/de/seo.ts`, gepinnt von
   (`prerender.ts` liest sie von dort), nicht bloß Buchhaltung. Wer Copy
   ändert, zieht das Datum der betroffenen Route mit;
   `scripts/check-sitemap-lastmod.mjs` läuft im `npm run prerender` und
-  hält jedes Datum gegen die Git-Historie der Dateien, die die Seite
-  rendert (`PageSpec.sources`). Bei flacher Klonung (kein `git log`)
-  überspringt der Wächter still, statt zehn Fehlalarme zu werfen.
+  hält jedes Datum gegen die Git-Historie der gerenderten Seite selbst
+  (`app/prerender/<seite>.html`) — die Datei IST die Antwort auf „wann hat
+  sich diese Seite geändert". Bis 2026-09-03 war der Vergleichsmaßstab eine
+  handgepflegte Quellenliste je Seite (`PageSpec.sources`); die driftete in
+  beide Richtungen — eine geteilte Datei wie `seo.ts` meldete Seiten stale,
+  deren Text sich nicht bewegt hatte, und ein Body, der ein nicht gelistetes
+  Modul las, änderte die Seite unbemerkt. Eine Folge ist einzukalkulieren:
+  eine Änderung am Seitenrahmen (Nav-Beschriftung, Rechtehinweis) schreibt
+  alle zehn Dateien neu und verlangt entsprechend alle zehn Daten — was den
+  Crawler-Seiten tatsächlich passiert ist. Bei flacher Klonung (kein `git
+  log`) überspringt der Wächter die Historien-Hälfte still, statt zehn
+  Fehlalarme zu werfen; die Arbeitsbaum-Hälfte greift weiter.
 - **`/seo-proxy` beantwortet HEAD** wie GET ohne Body (vorher 405 — für
   einen Link-Checker eine tote Seite).
 - Der Prerender nimmt die Breadcrumb-Bezeichnung des letzten Glieds aus

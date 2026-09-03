@@ -1,6 +1,5 @@
 // Holds app/public/sitemap.xml's <lastmod> dates against the git history of
-// the files each page actually renders (PageSpec.sources in
-// src/lib/seo/prerender.ts).
+// the page a crawler is actually served — the rendered `app/prerender/*.html`.
 //
 // Why this is not mere bookkeeping: prerender.ts reads <lastmod> as the
 // crawler page's visible "Stand" line. A date left behind therefore tells every
@@ -10,11 +9,21 @@
 // this right after writing the files, so the bump is demanded at the moment the
 // stale page is produced, not in review.
 //
+// The evidence used to be a hand-kept list per page (PageSpec.sources: the
+// locale and data modules a body reads). That list drifted in both directions —
+// a shared file like seo.ts marked pages stale whose text had not moved, and a
+// body reaching for an unlisted module changed the page unseen. The rendered
+// file needs no list: it IS the page. One consequence to expect: a change to
+// the site chrome (a nav label, the rights note) rewrites all ten files and
+// therefore asks for all ten dates — which is what did happen to the pages a
+// crawler reads, so the ask is right rather than noise.
+//
 // Two sources of truth for "when did this page last change":
-//   * the working tree — a modified/added source file counts as TODAY, which is
-//     what makes the check bite while you are still editing;
+//   * the working tree — the build just rewrote the files, so a page whose
+//     bytes moved counts as TODAY, which is what makes the check bite while
+//     you are still editing;
 //   * git history — the newest commit date (%cs, committer date, YYYY-MM-DD)
-//     over the page's source files.
+//     of that one file.
 // A shallow clone has no usable history (every file looks like it changed in
 // the single fetched commit), so there the git half is skipped rather than
 // turned into ten false alarms; the working-tree half still runs.
@@ -23,10 +32,10 @@ import { readFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const { PAGES, ORIGIN, standFromSitemap } = await import('../src/lib/seo/prerender.ts');
+const { PAGES, ORIGIN, staleLastmods } = await import('../src/lib/seo/prerender.ts');
 
 const appDir = fileURLToPath(new URL('../', import.meta.url));
-const sitemap = readFileSync(new URL('../public/sitemap.xml', import.meta.url), 'utf8');
+const sitemapXml = readFileSync(new URL('../public/sitemap.xml', import.meta.url), 'utf8');
 
 const git = (args) => execFileSync('git', args, { cwd: appDir, encoding: 'utf8' }).trim();
 // `git status --porcelain` lines are "XY PATH" and X is a SPACE for a change
@@ -48,14 +57,15 @@ try {
     history = false;
     console.log('sitemap-lastmod — flache Klonung ohne Historie, nur der Arbeitsbaum wird geprüft');
   }
-  // PageSpec.sources are relative to app/, so every reported path has to land
-  // in that frame. `--porcelain` reports repo-root-relative paths and ignores
-  // status.relativePaths (verified: `git -c status.relativePaths=true status
-  // --porcelain` still answers "app/src/…" from inside app/) — but the
-  // translation does not rely on that. A path is read from the repo root
-  // first, and anything that does not resolve under app/ is retried as
-  // already-app-relative, because the failure this guard exists to prevent is
-  // a SILENT one: a frame mismatch would empty `dirty` and quietly disarm it.
+  // The paths the guard compares are relative to app/, so every reported path
+  // has to land in that frame. `--porcelain` reports repo-root-relative paths
+  // and ignores status.relativePaths (verified: `git -c
+  // status.relativePaths=true status --porcelain` still answers "app/src/…"
+  // from inside app/) — but the translation does not rely on that. A path is
+  // read from the repo root first, and anything that does not resolve under
+  // app/ is retried as already-app-relative, because the failure this guard
+  // exists to prevent is a SILENT one: a frame mismatch would empty `dirty`
+  // and quietly disarm it.
   const repoRoot = git(['rev-parse', '--show-toplevel']);
   const appAbs = resolve(appDir);
   const toAppRelative = (path) => {
@@ -79,39 +89,23 @@ try {
   console.log('sitemap-lastmod — keine Git-Historie verfügbar, Prüfung übersprungen');
 }
 
-const newestCommit = (files) => {
+const newestCommit = (file) => {
   if (!history) return null;
-  const dates = files
-    .map((file) => {
-      try {
-        return git(['log', '-1', '--format=%cs', '--', file]);
-      } catch {
-        return '';
-      }
-    })
-    .filter(Boolean)
-    .sort();
-  return dates.length ? dates[dates.length - 1] : null;
+  try {
+    return git(['log', '-1', '--format=%cs', '--', file]) || null;
+  } catch {
+    return null;
+  }
 };
 
 const today = new Date().toISOString().slice(0, 10);
-const stale = [];
-for (const page of PAGES) {
-  // The 404 has no <loc> of its own; it carries the file's newest date.
-  if (page.route === null) continue;
-  const lastmod = standFromSitemap(sitemap, page.route);
-  const touched = page.sources.filter((file) => dirty.has(file));
-  const changed = touched.length ? today : newestCommit(page.sources);
-  if (changed && changed > lastmod) {
-    const why = touched.length ? `${touched.join(', ')} (ungespeichert geändert)` : page.sources.join(', ');
-    stale.push({ route: page.route, lastmod, changed, why });
-  }
-}
+const stale = staleLastmods(PAGES, { sitemapXml, dirty, newestCommit, today });
 
 if (stale.length) {
   console.error('\nsitemap.xml — <lastmod> ist älter als der Inhalt der Seite:\n');
   for (const s of stale) {
-    console.error(`  ${ORIGIN}${s.route}\n    <lastmod> ${s.lastmod}, Inhalt vom ${s.changed}\n    ${s.why}`);
+    const why = s.uncommitted ? `${s.file} (ungespeichert geändert)` : s.file;
+    console.error(`  ${ORIGIN}${s.route}\n    <lastmod> ${s.lastmod}, Inhalt vom ${s.changed}\n    ${why}`);
   }
   console.error(
     '\nJedes <lastmod> steht als „Stand“-Zeile auf der Crawler-Seite — bitte in app/public/sitemap.xml' +

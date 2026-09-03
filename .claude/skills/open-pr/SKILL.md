@@ -88,8 +88,18 @@ refuses both a PR without a fragment and a bullet written into
 `[Unreleased]`. Run the same gate locally before the push:
 `uv run python -m tools.changelog check --base origin/main`. Data-only
 commits (chart sources, authored templates) are exempt; their provenance
-lives in `SOURCE.md`. Add the PR number to the fragment's bullets once
-the PR exists (a follow-up commit is fine).
+lives in `SOURCE.md`.
+
+**The PR number in the fragment is optional — do not go back for it.**
+`tools.changelog` neither requires nor checks a `(#NNN)`, and the number
+is not knowable until the PR exists, so fetching it meant a second commit
+whose whole content was one token. That step is retired: write the
+fragment without a number and leave it. (Three agents in one day on
+2026-09-02 reached for `sed -i` to make that one-token edit — the
+Edit/Write rule has no "but it is only one word" clause, so the cheapest
+fix is not to have the step.) If a number does go in — because a later
+push exists anyway and you want the reference — it goes in with **Edit**,
+never `sed`, never a heredoc, never `>>`.
 
 Then the local CI equivalents — the same commands the pipeline runs,
 without the round trip (backend always; frontend build only if `app/`
@@ -232,6 +242,24 @@ merge, first re-fetch the live state — local
 `gh pr view <num> --json state,mergeStateStatus`, cloud
 `mcp__github__pull_request_read` — the user merges live and the PR may
 already be gone.
+
+**Merging on request: wait for the review, not just for green** (lesson
+from #504, 2026-09-03). Three conditions, all on the CURRENT head SHA:
+
+1. A draft is not reviewable — `gh pr ready <num>` first. Copilot does
+   not review a draft, so a draft merged "green" was never reviewed.
+2. The `copilot-pull-request-reviewer` check on the head SHA is
+   `completed`, not `queued`/`in_progress`. A push restarts it, so
+   re-read the SHA after the last push:
+   ```bash
+   gh api repos/MarkusNeusinger/kurrentschrift/commits/$(gh pr view <num> --json headRefOid --jq .headRefOid)/check-runs \
+     --jq '.check_runs[] | select(.name | test("copilot"; "i")) | "\(.name): \(.status) \(.conclusion // "")"'
+   ```
+   (`gh pr checks --json` does not exist in this `gh`; the check-runs
+   API is the way. Poll it with `Monitor`, never a foreground `sleep`.)
+   The review can still legitimately never arrive — §3b's "cancelled or
+   silent" gotcha applies, and one re-request is the whole budget.
+3. Zero unresolved review threads (step c), outdated ones included.
 
 ## 4 · After the merge: watch the deploy
 

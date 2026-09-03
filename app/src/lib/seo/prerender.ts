@@ -96,6 +96,58 @@ export function latestStand(sitemapXml: string): string {
   return dates[dates.length - 1];
 }
 
+export interface StaleRoute {
+  readonly route: string;
+  readonly lastmod: string;
+  /** The date the rendered page last changed, YYYY-MM-DD. */
+  readonly changed: string;
+  /** The rendered file that carries that date, app-relative. */
+  readonly file: string;
+  /** True when the date comes from the working tree, not from a commit. */
+  readonly uncommitted: boolean;
+}
+
+export interface LastmodEvidence {
+  readonly sitemapXml: string;
+  /** App-relative paths that differ from HEAD right now. */
+  readonly dirty: ReadonlySet<string>;
+  /** Newest commit date of an app-relative path, or null when history is unusable. */
+  readonly newestCommit: (file: string) => string | null;
+  /** YYYY-MM-DD, passed in so the check is a pure function of its inputs. */
+  readonly today: string;
+}
+
+/**
+ * Every route whose <lastmod> is older than the page a crawler is served.
+ *
+ * The evidence is the RENDERED file, `app/prerender/<page>.html` — which is
+ * the literal answer to "when did this page change", and the only one that
+ * cannot drift: the guard used to hold each route against a hand-kept list of
+ * locale and data modules, which failed in both directions. A shared file
+ * (seo.ts, landing.ts) marked pages stale whose text had not moved, while a
+ * body reaching for a module nobody had listed changed the page with the
+ * guard none the wiser.
+ *
+ * The build writes the files immediately before this runs, so an edit that
+ * reaches the crawler page shows up as a dirty file and counts as today —
+ * that is what makes the check bite while the change is still in the working
+ * tree. `<lastmod>` itself is printed into the page as its Stand line, so
+ * bumping the date rewrites the file again and lands on changed == lastmod.
+ */
+export function staleLastmods(pages: readonly PageSpec[], evidence: LastmodEvidence): StaleRoute[] {
+  const stale: StaleRoute[] = [];
+  for (const page of pages) {
+    // The 404 has no <loc> of its own; it carries the file's newest date.
+    if (page.route === null) continue;
+    const file = prerenderPath(page);
+    const uncommitted = evidence.dirty.has(file);
+    const changed = uncommitted ? evidence.today : evidence.newestCommit(file);
+    const lastmod = standFromSitemap(evidence.sitemapXml, page.route);
+    if (changed && changed > lastmod) stale.push({ route: page.route, lastmod, changed, file, uncommitted });
+  }
+  return stale;
+}
+
 // ---------------------------------------------------------------- fragments
 
 const abs = (route: string) => `${ORIGIN}${route}`;
@@ -164,16 +216,10 @@ export interface PageSpec {
   readonly breadcrumbs?: readonly { readonly route: string; readonly label: string }[];
   readonly jsonLd?: object; // page-specific structured data, beside the site/breadcrumb node
   readonly body: () => string;
-  // The app-relative files whose CONTENT this page renders — the input of the
-  // sitemap-lastmod guard (scripts/check-sitemap-lastmod.mjs): when one of them
-  // is newer than the route's <lastmod>, the page's visible "Stand" line lies.
-  // Content only, therefore: each page's own locale namespace plus seo.ts (its
-  // title/description, which the body prints), and the data modules a body
-  // walks. NOT common.ts or paths.ts — site chrome is not the page's date.
-  readonly sources: readonly string[];
 }
 
-const SEO_TS = 'src/locales/de/seo.ts';
+/** The rendered page, app-relative — what a crawler is actually served. */
+export const prerenderPath = (spec: PageSpec): string => `prerender/${spec.file}`;
 
 // ---------------------------------------------------------------- Kennwerte
 
@@ -640,7 +686,7 @@ const notFoundBody = () =>
   );
 
 export const PAGES: readonly PageSpec[] = [
-  { route: '/', file: 'index.html', ...seo.home, body: landingBody, sources: ['src/locales/de/landing.ts', SEO_TS] },
+  { route: '/', file: 'index.html', ...seo.home, body: landingBody },
   {
     route: paths.schriftkunde,
     file: 'schriftkunde.html',
@@ -648,12 +694,6 @@ export const PAGES: readonly PageSpec[] = [
     breadcrumbs: [crumbHome],
     jsonLd: kennwerteLd(),
     body: schriftkundeBody,
-    sources: [
-      'src/locales/de/schriftkunde.ts',
-      'src/sections/schriftkunde/sections.ts',
-      'src/sections/schriftkunde/tryTargets.ts',
-      SEO_TS,
-    ],
   },
   {
     route: paths.lesen,
@@ -661,7 +701,6 @@ export const PAGES: readonly PageSpec[] = [
     ...seo.lesen,
     breadcrumbs: [crumbHome],
     body: hubBody(hub.lesen, { quiz: paths.quiz, tafel: paths.tafel, vergleichen: paths.vergleichen }),
-    sources: ['src/locales/de/hub.ts', SEO_TS],
   },
   {
     route: paths.quiz,
@@ -669,9 +708,6 @@ export const PAGES: readonly PageSpec[] = [
     ...seo.quiz,
     breadcrumbs: [crumbHome, crumbLesen],
     body: quizBody,
-    // quizOptions decides which rows the body shows at all — a flipped
-    // `available` changes this page's text without touching its locale.
-    sources: ['src/locales/de/quiz.ts', 'src/sections/quiz/quizOptions.ts', SEO_TS],
   },
   {
     route: paths.tafel,
@@ -679,9 +715,6 @@ export const PAGES: readonly PageSpec[] = [
     ...seo.tafel,
     breadcrumbs: [crumbHome, crumbLesen],
     body: tafelBody,
-    // landing.scripts carries the per-script „written vs. original" status the
-    // Tafel body prints.
-    sources: ['src/locales/de/tafel.ts', 'src/locales/de/landing.ts', SEO_TS],
   },
   {
     route: paths.vergleichen,
@@ -689,7 +722,6 @@ export const PAGES: readonly PageSpec[] = [
     ...seo.vergleichen,
     breadcrumbs: [crumbHome, crumbLesen],
     body: vergleichenBody,
-    sources: ['src/locales/de/vergleichen.ts', 'src/lib/lesarten.ts', SEO_TS],
   },
   {
     route: paths.schreiben,
@@ -697,7 +729,6 @@ export const PAGES: readonly PageSpec[] = [
     ...seo.schreiben,
     breadcrumbs: [crumbHome],
     body: hubBody(hub.schreiben, { worksheet: paths.worksheet, federprobe: paths.scribe }),
-    sources: ['src/locales/de/hub.ts', SEO_TS],
   },
   {
     route: paths.worksheet,
@@ -705,7 +736,6 @@ export const PAGES: readonly PageSpec[] = [
     ...seo.worksheet,
     breadcrumbs: [crumbHome, crumbSchreiben],
     body: worksheetBody,
-    sources: ['src/locales/de/worksheet.ts', SEO_TS],
   },
   {
     route: paths.scribe,
@@ -713,7 +743,6 @@ export const PAGES: readonly PageSpec[] = [
     ...seo.federprobe,
     breadcrumbs: [crumbHome, crumbSchreiben],
     body: scribeBody,
-    sources: ['src/locales/de/scribe.ts', SEO_TS],
   },
   {
     route: paths.impressum,
@@ -721,18 +750,16 @@ export const PAGES: readonly PageSpec[] = [
     ...seo.impressum,
     breadcrumbs: [crumbHome],
     body: impressumBody,
-    sources: ['src/locales/de/impressum.ts', SEO_TS],
   },
   {
+    // No route, so no <lastmod> of its own — it carries the newest date in the
+    // file (latestStand) and the lastmod guard skips it.
     route: null,
     file: '404.html',
     title: seo.notFound.title,
     description: seo.notFound.description,
     noindex: true,
     body: notFoundBody,
-    // No route, so no <lastmod> of its own — it carries the newest date in the
-    // file (latestStand) and the guard skips it.
-    sources: ['src/locales/de/common.ts', SEO_TS],
   },
 ];
 
