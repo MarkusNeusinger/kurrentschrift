@@ -124,7 +124,7 @@ den Zeilen darüber nicht vergleichbar (§5, „Re-Baseline 2026-09-03"):
 | 2026-06-11 | #64 | Corner-Knoten + Boundary-Refine | 0.1488 | 85.1 |
 | 2026-06-11 | #68 | Ankerdichte 50 → 120 | 0.1339 | 86.6 |
 | 2026-06-11 | #71 | Druckkegel-Prior + Refine-Tuning (Lauf `jun11`) | 0.1251 | 87.5 |
-| 2026-09-03 | dieser PR | **Re-Baseline**: Wurzel nach knapp drei Monaten neu exportiert (Audit A15) — andere Referenzmenge, siehe §5 | 0.1219 | — |
+| 2026-09-03 | #516 | **Re-Baseline**: Wurzel nach knapp drei Monaten neu exportiert (Audit A15) — andere Referenzmenge, siehe §5 | 0.1219 | — |
 
 Ankerdichte-Sweep (#68, alle 12 Glyphen): 50 → 0.1488 · 80 → 0.1363 ·
 120 → 0.1339 · 160 → 0.1321 · **240 → 0.1563 (Regression!)**. 120 ist
@@ -3724,7 +3724,7 @@ Vorbedingung (Glossar „Wurzel-Digest“, `tools/wordbench/README.md`).
 | sep01 | #472 | **Re-Baseline**: sieben reparierte Wort-Rechtecke, Bahnen nachgezogen, Wurzeln neu gebaut | 0,109255 | 0,148433 | §15 |
 | sep02 | dieser PR | Wurzeln neu gebaut (`fetch_fixtures --set all --verify`), `exported_at` 2026-09-02T08:00:29+00:00, `root_digest` `28ba1afebc53…` (`suetterlin-1922`) / `f0cf3d53414c…` (`suetterlin-1922-pairs`) — **keine** Re-Baseline: §15 wird exakt reproduziert | 0,109255 | 0,148433 | dieser Ledger-Eintrag |
 | sep02 | #501 | **Re-Baseline nach dem LF11-Write**: 22 Laufform-Zeilen auf Spline-Basis-Mediane umgestellt (Snapshot `2026-09-02T21-58-16Z`, Readback 22/22), Wurzeln neu gebaut: `suetterlin-1922` `exported_at` 2026-09-02T22:13:54+00:00 `root_digest` `2e3581287bed…`, `suetterlin-1922-pairs` `exported_at` 2026-09-02T22:13:53+00:00 `root_digest` `cee9d363f497…`; trifft die trockene LF11-Vorhersage exakt | 0,109218 | 0,148198 | §14 „Laufform LF11 — humanbench-Wortrunde, Instrumentdefekt und Adoption“ |
-| sep03 | dieser PR | Wurzeln neu gebaut (`fetch_fixtures --set all --verify`, 12/12 bit-exakt) im Zuge der Glyph-Bench-Re-Baseline (Audit A15): `suetterlin-1922` `exported_at` 2026-09-03T21:28:30+00:00 `root_digest` `57402ae7dd41…`, `suetterlin-1922-pairs` gleicher Zeitstempel `f176e191d4bf…` — **keine** Re-Baseline der Wort-Zahlen: beide reproduzieren exakt, nur die Wurzel-Identität ist neu | 0,109218 | 0,148198 | §5 „Re-Baseline 2026-09-03“ |
+| sep03 | #516 | Wurzeln neu gebaut (`fetch_fixtures --set all --verify`, 12/12 bit-exakt) im Zuge der Glyph-Bench-Re-Baseline (Audit A15): `suetterlin-1922` `exported_at` 2026-09-03T21:28:30+00:00 `root_digest` `57402ae7dd41…`, `suetterlin-1922-pairs` gleicher Zeitstempel `f176e191d4bf…` — **keine** Re-Baseline der Wort-Zahlen: beide reproduzieren exakt, nur die Wurzel-Identität ist neu | 0,109218 | 0,148198 | §5 „Re-Baseline 2026-09-03“ |
 
 **Nachtrag `sep02` — die `aug30`-Wurzel ist eine undeklarierte
 Re-Baseline.** Zwischen der `aug29`-Wurzel (0,106720 / 0,146506, im

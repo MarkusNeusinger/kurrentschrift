@@ -9,20 +9,20 @@
   back with 44 crashes out of 84 index entries. The export now takes only rows
   that carry a stylus path, which is the property the bench actually needs and
   catches an untraced form variant too, and it names each row it left behind
-  instead of shrinking quietly (#NNN).
+  instead of shrinking quietly (#516).
 - **The same export merged into its output directory instead of replacing it.**
   Glyph keys changed shape when migration `0017` dropped the position suffixes,
   so the June root's `A-final` directories had been sitting beside current ones
   ever since, indistinguishable from live fixtures — 136 directories serving 84
   index entries. The root is replaced on every export, and the index now records
-  each row's `variant` so a second row on one key is visible (#NNN).
+  each row's `variant` so a second row on one key is visible (#516).
 - **Two glyphlab tests were asserting against glyph keys that no longer exist.**
   They loaded `i-initial` and `longs-final`, suffixes migration `0017` dropped,
   and passed only because the June fixture root still carried them — in CI they
   never ran at all, since the fixtures are gitignored and the module skips
   without them. They now use `i` and `longs` and name their source, because
   those keys live in both roots since `0017` and a bare lookup was resolving to
-  the wrong script (#NNN).
+  the wrong script (#516).
 
 ### Changed
 
@@ -37,4 +37,4 @@
   for another. The word bench was re-exported in the same pass and reproduces
   0.109218 / 0.148198 exactly, so only its root digests moved. Numbers either
   side of this line are not comparable; `qualitaetsmetrik.md` §3, §5 and the
-  headline ledger carry the entries (#NNN).
+  headline ledger carry the entries (#516).
