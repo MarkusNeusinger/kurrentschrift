@@ -63,21 +63,40 @@ const PHASES = {
       attempts: 1,
       // A round has no fixed length — it runs until „beenden", and `finish()`
       // only shows results once at least one question has been seen. So:
-      // answer one, then quit. (Playing to an end that does not exist was the
+      // answer, then quit. (Playing to an end that does not exist was the
       // earlier version's mistake; it timed out and skipped the screen.)
+      //
+      // It must answer WRONGLY at least once. The answer grid is shuffled, so
+      // picking the first button is a coin toss, and a CORRECT pick
+      // auto-advances after 650ms — quitting then leaves `misses`/`confusions`
+      // empty and the results screen renders without the very pills this round
+      // is here to measure. So: keep answering until a wrong pick registers
+      // (the grid marks it with ✕), and only then quit.
       action: `(async () => {
         const nap = (ms) => new Promise((r) => setTimeout(r, ms));
         const byText = (re) => [...document.querySelectorAll('button')].find((b) => re.test(b.innerText));
+        const missMarked = () => [...document.querySelectorAll('main button')].some((b) => b.innerText.includes('✕'));
         if (byText(/Einstellungen ändern/)) return true;
-        const answer = [...document.querySelectorAll('main button')].find(
-          (b) => !b.disabled && b.innerText.trim().length > 0 && b.innerText.trim().length <= 12 && !/beenden|Weiter/.test(b.innerText),
-        );
-        if (answer) { answer.click(); await nap(800); }
+
+        let missed = false;
+        for (let question = 0; question < 12 && !missed; question += 1) {
+          const answer = [...document.querySelectorAll('main button')].find(
+            (b) => !b.disabled && b.innerText.trim().length > 0 && b.innerText.trim().length <= 12 && !/beenden|Weiter/.test(b.innerText),
+          );
+          if (!answer) { await nap(400); continue; }
+          answer.click();
+          await nap(900);
+          if (missMarked()) { missed = true; break; }
+          // Right answer: the panel has already auto-advanced to the next one.
+        }
+        if (!missed) return false;
+
         const quit = byText(/^beenden$/);
         if (!quit) return false;
         quit.click();
         await nap(900);
-        return !!byText(/Einstellungen ändern/);
+        // Results are only useful to this sweep if they actually carry pills.
+        return !!byText(/Einstellungen ändern/) && /verwechselt|Mühe/.test(document.body.innerText);
       })()`,
     },
   ],
@@ -107,12 +126,21 @@ const DEFAULT_ROUTES = [
 // show. That is an author's call on the tafel's layout, not a fix to make in
 // passing, so it is listed here where it stays visible. See §9.3 „Offen".
 const KNOWN_SHORTFALL = {
-  // Narrow on purpose: matched by the cell's own `rect.cellbg` background, not
-  // by "is an SVG group". A future undersized SVG control must FAIL the sweep
-  // rather than inherit this exception. Must evaluate to a BOOLEAN — returning
-  // the element would put a React fiber in the result and break serialisation.
+  // Narrow on purpose, on two axes at once.
+  //
+  // WHICH elements: matched by the cell's own `rect.cellbg` background, not by
+  // "is an SVG group" — a future undersized SVG control must FAIL rather than
+  // inherit this exception. Must evaluate to a BOOLEAN; returning the element
+  // would put a React fiber in the result and break serialisation.
+  //
+  // WHICH shortfall: only the documented one. What §9.3 excuses is the narrow
+  // WIDTH of a cell that is otherwise generous — 73px tall and well past the
+  // 24px WCAG 2.2 SC 2.5.8 baseline. A cell that lost its height, or shrank
+  // under that baseline, is a new defect and must fail; otherwise this flag
+  // would quietly cover regressions the author never agreed to.
   match: "el.tagName.toLowerCase() === 'g' && !!el.querySelector(':scope > rect.cellbg')",
-  why: 'Schreibtafel-Zellen (SVG, kacheln lückenlos) — Autor-Entscheid offen',
+  envelope: (floor) => `r.height >= ${floor} && r.width >= 24`,
+  why: 'Schreibtafel-Zellen: schmale Breite bei voller Höhe — Autor-Entscheid offen',
 };
 
 const SWEEP = (floor) => `(() => {
@@ -145,7 +173,9 @@ const SWEEP = (floor) => `(() => {
     const r = el.getBoundingClientRect();
     if (!r.width || !r.height) continue;
 
-    const known = ${KNOWN_SHORTFALL.match};
+    // The exception applies only to elements it names AND only within the
+    // geometry §9.3 actually excuses (see KNOWN_SHORTFALL.envelope).
+    const known = (${KNOWN_SHORTFALL.match}) && (${KNOWN_SHORTFALL.envelope(floor)});
     const label = (el.innerText || el.getAttribute('aria-label') || el.tagName).trim().slice(0, 30).replace(/\\s+/g, ' ');
     const drawn = [Math.round(r.width * 10) / 10, Math.round(r.height * 10) / 10];
     if (Math.min(r.width, r.height) >= ${floor}) { rows.push({ label, drawn, ok: true, known }); continue; }
@@ -200,6 +230,7 @@ async function main() {
   let checked = 0;
   let known = 0;
   const failures = [];
+  const unreachable = [];
 
   try {
     const cdp = await openPage(port, opts);
@@ -218,7 +249,11 @@ async function main() {
             if (!done && attempt + 1 < attempts) await sleep(500);
           }
           if (!done) {
-            console.log(`  ??    ${route} · ${phase.name} — Zustand nicht erreicht, übersprungen`);
+            // A declared phase that cannot be reached is a FAILED run, not a
+            // skipped one: silently passing here is exactly how the sweep used
+            // to claim full coverage while a whole screen went unmeasured.
+            unreachable.push(`${route} · ${phase.name}`);
+            console.log(`  FAIL  ${route} · ${phase.name} — Zustand nicht erreicht, NICHT gemessen`);
             continue;
           }
           await sleep(1200);
@@ -251,17 +286,20 @@ async function main() {
 
   console.log(`\n${checked} interaktive Ziele geprüft (Fließtext-Links nach §9.2 ausgenommen).`);
   if (known) console.log(`${known} benannte Ausnahme(n) darunter: ${KNOWN_SHORTFALL.why}`);
+  if (unreachable.length) {
+    console.log(`${unreachable.length} deklarierte(r) Zustand/Zustände nicht erreicht: ${unreachable.join(', ')}`);
+  }
   // Never claim "all reach the floor" while a known shortfall was just counted —
   // the two lines together would contradict each other.
-  const allGood = failures.length === 0 && known === 0;
+  const allGood = failures.length === 0 && known === 0 && unreachable.length === 0;
   console.log(
     allGood
       ? `Alle erreichen den ${TOUCH_TARGET}px-Boden.`
-      : failures.length === 0
+      : failures.length === 0 && unreachable.length === 0
         ? `Alle ÜBRIGEN erreichen den ${TOUCH_TARGET}px-Boden.`
         : `${failures.length} unter dem ${TOUCH_TARGET}px-Boden — design-system.md §9.3.`,
   );
-  process.exitCode = failures.length === 0 ? 0 : 1;
+  process.exitCode = failures.length === 0 && unreachable.length === 0 ? 0 : 1;
 }
 
 main().catch((error) => {

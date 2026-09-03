@@ -22,6 +22,15 @@
   invisible target would have overlapped the row above in a wrapping list, and a
   switch is tapped by its label; the rest keep their drawing and take the floor
   from `hitArea()` (#505).
+- **Three ways the sweep could still report green while blind.** The results
+  screen was reached by answering at random, so a lucky correct pick left the
+  confusion pills unrendered and unmeasured — it now forces a wrong answer
+  first. The Schreibtafel exception covered every failed probe on a matching
+  cell, so a cell that lost its height would have stayed "known"; it is now
+  scoped to the shortfall §9.3 actually excuses (narrow width, full height,
+  above the 24px WCAG baseline). And a declared screen state that could not be
+  reached was logged and skipped while the run still exited 0; it now fails
+  (#505).
 - **The run could contradict itself in its last two lines**, printing the count
   of known shortfalls and then „all reach the floor". It now says all *other*
   targets do (#505).

@@ -412,11 +412,15 @@ das Element allein steht.
 
 **Offen — Autor-Entscheid: die Zellen der Schreibtafel.** Die geschriebene Tafel
 setzt das Alphabet als SVG-Zellen, die ihre Zeile lückenlos kacheln (bei 390 px
-gemessen: 41–98 px breit, Lücke 0, Höhe 73 px). Die schmalsten reißen den Boden
+gemessen: 32–98 px breit je nach Buchstabe und Ansicht, Lücke 0, 57–73 px hoch).
+Die schmalsten reißen den Boden
 in der Breite. Beide Auswege kosten etwas: eine unsichtbare Fläche griffe in den
 Nachbarbuchstaben und nähme ihm den Tipp, eine Verbreiterung baut das
 Nachschlage-Raster um, dessentwegen die Seite existiert. WCAG 2.2 SC 2.5.8 ist
-mit 41 × 73 px deutlich erfüllt. Bis zur Entscheidung stehen die Zellen als
+mit mindestens 32 × 57 px deutlich erfüllt. Die Ausnahme im Skript gilt
+ausdrücklich NUR für diese schmale Breite bei voller Höhe: eine Zelle, die ihre
+Höhe verlöre oder unter die 24-px-Linie fiele, meldet der Sweep als echten
+Verstoß. Bis zur Entscheidung stehen die Zellen als
 benannte Ausnahme in `touch-targets.mjs` — sichtbar gezählt, nicht stillschweigend
 übersprungen.
 
