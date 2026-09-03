@@ -257,7 +257,6 @@ export const wizard = {
     restore: 'Wiederherstellen',
     dismiss: 'Verwerfen',
   },
-  // The lock, shown BEFORE the work rather than as a 423 after it.
   // The lock, as the author decided it should behave (2026-09-03): a locked
   // glyph stays fully offered and is marked with the lock; overwriting is one
   // deliberate confirmation away, not a trip to the Tafel and back. The gate
