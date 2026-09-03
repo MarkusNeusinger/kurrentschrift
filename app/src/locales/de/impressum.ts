@@ -44,83 +44,26 @@ export const impressum = {
     heading: 'Datenschutz',
     intro:
       'Wer diese Seiten besucht, bleibt unbehelligt: kein Konto, keine Cookies, kein Verzeichnis der Besucher. Verantwortlich für die Datenverarbeitung ist der oben genannte Betreiber.',
-    analyticsTitle: 'Besucherstatistik',
+    // Six short paragraphs, no sub-headings and no article numbers in the
+    // prose (author's call, 2026-09-03: the first draft read like a legal
+    // filing, which is not how this page speaks). The facts behind each
+    // sentence are unchanged and still verifiable — logs and their thirty
+    // days, the per-IP counting and the browser's security reports, the
+    // cookieless count over the site's own path, the Netherlands and
+    // Cloudflare in front of them — only the apparatus is gone.
+    data:
+      'Zweierlei fällt beim Besuch trotzdem an. Der Server schreibt jeden Abruf mit: IP-Adresse, Seite, Browser-Kennung. Das braucht es, um die Seite vor Überlastung und Missbrauch zu schützen — dazu zählt er auch mit, wie viele Anfragen von einer Adresse kommen, und nimmt die Sicherheitsmeldungen entgegen, die der Browser schickt, wenn auf einer Seite etwas Unerlaubtes geladen würde. Diese Aufzeichnungen löschen sich nach dreißig Tagen von selbst.',
     analyticsBeforeLink:
-      'Gezählt wird nur, was sich ohne Namen zählen lässt: Seitenaufrufe, nicht Personen. Dafür sorgt Plausible Analytics — ohne Cookies, ohne Verfolgung über fremde Seiten hinweg. Die Zählung steht ',
+      'Und gezählt wird, was sich ohne Namen zählen lässt: Seitenaufrufe, nicht Personen. Dafür sorgt Plausible — ohne Cookies, ohne Verfolgung über fremde Seiten hinweg, eingebunden über einen eigenen Zwischenweg auf dieser Domain, damit kein fremdes Script mitlädt. Die Zählung steht ',
     analyticsLinkText: 'jedermann offen',
     analyticsUrl: 'https://plausible.io/kurrentschrift.ink',
     analyticsAfterLink: ' — wer mag, sieht genau das, was ich sehe.',
-    logsTitle: 'Server-Logs',
-    logs:
-      'Was die Technik beim Besuch nebenher notiert — IP-Adresse, abgerufene Seite, Browser-Kennung —, dient allein der Sicherheit und Fehlersuche und verschwindet nach dreißig Tagen von selbst (Google Cloud Logging, Standard-Aufbewahrung).',
-    // Added by the website audit 2026-09-02 (finding 36): the page named
-    // purposes, retention and recipients, but never the legal ground. The
-    // operator sits in Visp (Schweiz), so the Swiss revDSG applies and the
-    // GDPR reaches the site through Art. 3(2) for visitors from the EU —
-    // both are named because both are true, and a visitor should not have to
-    // work out which one covers them.
-    basisTitle: 'Worauf sich das stützt',
+    hosting:
+      'Das alles läuft auf Google Cloud in den Niederlanden; davor liegt Cloudflare als Schutzschicht — ein weltweites Netz, das Besucher aus Europa in aller Regel über europäische Standorte bedient.',
     basis:
-      'Betrieben wird die Seite aus der Schweiz; für sie gilt das revidierte Schweizer Datenschutzgesetz, und weil sie sich auch an Leserinnen und Leser in der EU richtet, daneben die europäische Datenschutz-Grundverordnung. Beides erlaubt, was hier geschieht, aus demselben schlichten Grund: dem berechtigten Interesse, die Seite sicher, erreichbar und in Ordnung zu halten (Art. 6 Abs. 1 lit. f DSGVO). Eine Einwilligung wird nicht eingeholt, weil nichts erhoben wird, das eine bräuchte — keine Cookies, keine Konten, keine Profile.',
-    // The three technical defences added on 2026-09-02/03 (rate limiting,
-    // the CSP report endpoint, the origin guard). They touch an IP or a URL,
-    // so they are named rather than left to be discovered in the code.
-    securityTitle: 'Was die Seite zu ihrem Schutz tut',
-    security: [
-      // No lifetime is promised: the origin buckets live in `_buckets` until
-      // the process restarts, and are only evicted once the map passes
-      // MAX_TRACKED_CLIENTS (api/rate_limit.py). What IS true is that nothing
-      // is written to disk or database — so that is what the sentence says.
-      // The edge counter is Cloudflare's, not this server's; naming it that
-      // way keeps the two apart (Copilot review, #507).
-      'Damit niemand die Seite durch schiere Menge lahmlegt oder Kosten auftürmt, wird gezählt, wie viele Anfragen von einer Adresse kommen — am Rand des Netzes durch Cloudflare und noch einmal auf dem Server. Der Zähler auf dem Server steht allein im Arbeitsspeicher: nichts davon wird auf eine Festplatte oder in die Datenbank geschrieben, und mit jedem Neustart ist er fort.',
-      'Der Browser darf melden, wenn auf einer Seite etwas geladen würde, das die Sicherheitsregeln der Seite verbieten. Solche Meldungen nehmen wir entgegen, um Fehler in eben diesen Regeln zu finden; die gemeldete Adresse wird dabei um alles hinter „?“ und „#“ gekürzt, damit kein eingegebener Text mitkommt.',
-      'Ein technischer Schlüssel zwischen Schutznetz und Server stellt sicher, dass Anfragen den vorgesehenen Weg nehmen. Er enthält keine Angaben über Besucher.',
-    ],
-    hostingTitle: 'Hosting & Dienste',
-    // Honest about Cloudflare: it is a worldwide Anycast network, and the
-    // promise „EU-Rechenzentren" only holds with Regional Services switched
-    // on, which nothing in this repo documents (audit finding 36). So the
-    // sentence says what is known and stops there.
-    hostingIntro:
-      'Hosting, Datenbank und Statistik liegen in europäischen Rechenzentren; der Server steht in den Niederlanden (Google Cloud, Region europe-west4). Cloudflare, das der Seite als Schutzschild und Zwischenspeicher vorgelagert ist, betreibt ein weltweites Netz und bedient Besucher aus Europa in aller Regel über europäische Standorte — verbürgt ist die Region dort nicht. Google und Cloudflare sind US-Anbieter, zertifiziert nach dem EU-US Data Privacy Framework:',
-    hosting: [
-      { label: 'Hosting', value: 'Google Cloud Run (Niederlande, europe-west4)' },
-      { label: 'Datenbank', value: 'Google Cloud SQL (Niederlande)' },
-      {
-        label: 'Schutz & Zwischenspeicher',
-        // Same qualification as `hostingIntro` — otherwise the page gives two
-        // different Cloudflare guarantees (Copilot review, #507).
-        value: 'Cloudflare (weltweites Netz, in aller Regel europäische Standorte für Besucher aus Europa; die Region ist dort nicht verbürgt)',
-      },
-      {
-        label: 'Statistik',
-        value:
-          'Plausible Analytics (Server in der EU, über einen eigenen Zwischenweg auf dieser Domain eingebunden, damit kein Fremd-Script geladen wird)',
-      },
-    ],
-    notCollectedTitle: 'Was hier nicht gesammelt wird',
-    notCollected: [
-      'keine Konten, keine Profile',
-      'keine Cookies',
-      'keine personenbezogenen Daten über die nach dreißig Tagen gelöschten Server-Logs hinaus, keine Weitergabe an Dritte',
-      'kein Training von KI-Modellen mit Besucherdaten',
-    ],
-    rightsTitle: 'Deine Rechte',
-    // Art. 21 (Widerspruch) and Art. 13 Abs. 2 lit. d (Beschwerde) were both
-    // missing (audit finding 36). Named for the EU and for Switzerland,
-    // because the site is subject to both.
+      'Wir tun das, weil ein Betreiber seine Seite schützen und wissen darf, wie oft sie gelesen wird; es gilt das Schweizer Datenschutzgesetz, für Besucher aus der EU zusätzlich die DSGVO.',
     rights:
-      'Auskunft, Berichtigung, Löschung, Widerspruch: Über die nach dreißig Tagen gelöschten Server-Logs hinaus ist nichts über dich gespeichert — es gibt also fast nie etwas auszuhändigen oder zu tilgen. Bei Fragen genügen ein paar Zeilen per E-Mail.',
-    // Art. 21 Abs. 1, not Abs. 2: an objection to legitimate-interest
-    // processing rests on grounds arising from the person's particular
-    // situation. The reasons-free objection belongs to direct marketing
-    // (Abs. 2), which this site does not do — the earlier draft overstated
-    // the right it cited (Copilot review, #507).
-    rightsObjection:
-      'Gegen die Verarbeitung, die sich auf das berechtigte Interesse stützt, kannst du Widerspruch einlegen (Art. 21 Abs. 1 DSGVO) — aus Gründen, die sich aus deiner besonderen Lage ergeben. Eine Nachricht genügt; Werbung wird hier ohnehin keine verschickt.',
-    rightsComplaint:
-      'Und wer sich beschweren möchte, kann das tun, ohne mich zu fragen: in der Schweiz beim Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten (EDÖB), in der EU bei der Aufsichtsbehörde des eigenen Wohnsitzes oder Arbeitsplatzes (Art. 77 DSGVO).',
+      'Du kannst jederzeit fragen, was gespeichert ist, der Verarbeitung widersprechen und dich bei der Aufsicht beschweren — in der Schweiz beim Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten, in der EU bei der Behörde an deinem Wohnort. Ein paar Zeilen per E-Mail genügen.',
   },
   sources: {
     heading: 'Quellen & Lizenzen',
