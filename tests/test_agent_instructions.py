@@ -10,7 +10,7 @@ and a §-renumbering in a design doc would have broken both files silently.
 
 Three cheap pins, none of which needs the DB or the network:
 
-1. every backtick-quoted repo path in the four agent-facing files resolves;
+1. every backtick-quoted repo path in the five agent-facing files resolves;
 2. every `file.md` §N reference resolves to a `## N.` heading in that file;
 3. the rules that are supposed to be mirrored are present on BOTH sides.
 
@@ -34,9 +34,12 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 CLAUDE_MD = REPO_ROOT / "CLAUDE.md"
 COPILOT_MD = REPO_ROOT / ".github" / "copilot-instructions.md"
 
+GUARDRAILS_MD = REPO_ROOT / ".claude" / "guardrails.md"
+
 AGENT_FILES = [
     CLAUDE_MD,
     COPILOT_MD,
+    GUARDRAILS_MD,
     REPO_ROOT / ".claude" / "commands" / "prime.md",
     REPO_ROOT / ".claude" / "commands" / "start.md",
 ]
@@ -189,6 +192,8 @@ MIRRORED_RULES = {
     "use asymmetric findings": ["asymmetric finding"],
     "author authors in the prod admin": ["prod admin"],
     "prod-touching needs confirmation": ["cloud sql ddl"],
+    "don't re-request a Copilot review": ["re-request a copilot review"],
+    "manual author tasks go to Todoist": ["todoist"],
     "never echo secrets": ["never echo secret"],
     "archive snapshots are create-only": ["create freely, never destroy"],
     # "heredoc" and not "--no-verify": the latter also appears in the
@@ -206,6 +211,90 @@ MIRRORED_RULES = {
     "do not silently diverge": ["silently diverge"],
     "codecov is a reviewer": ["codecov"],
 }
+
+
+def test_guardrails_split_stays_subordinate() -> None:
+    """The rationale file must stay a companion, never become the rule.
+
+    Two ways this split rots: CLAUDE.md loses the pointer, so nobody finds the
+    rationale; or `.claude/guardrails.md` starts reading like the authority,
+    so a rule ends up living only there — where no session loads it.
+    """
+    claude = _flat(CLAUDE_MD.read_text(encoding="utf-8"))
+    guardrails = _flat(GUARDRAILS_MD.read_text(encoding="utf-8"))
+
+    assert ".claude/guardrails.md" in claude, "CLAUDE.md no longer points at the rationale file"
+    assert "is the rule and this is the commentary" in guardrails, (
+        ".claude/guardrails.md must state that CLAUDE.md wins — without it the "
+        "companion file starts reading like the authority"
+    )
+
+
+# Every `##` section of `.claude/guardrails.md` → a phrase that must appear in
+# CLAUDE.md, where the binding one-liner lives. The map is explicit on purpose:
+# adding a section to the companion file fails the test until its rule is
+# registered here, and registering it forces you to name the CLAUDE.md line it
+# belongs to. A disclaimer sentence alone would not have caught that.
+GUARDRAIL_SECTION_ANCHORS = {
+    "Fixes #N in the PR body": "fixes #n",
+    "Carry a good solution to the sibling repo": "sibling repo",
+    "Use an asymmetric finding, don't discard it": "asymmetric finding",
+    "The author authors in the PROD admin": "prod admin",
+    "Changelog fragments": "changelog.d/",
+    "Don't re-request a Copilot review after every push": "re-request a copilot review",
+    "Archive snapshots: create freely, never destroy": "create freely, never destroy",
+    "Edit repo files with Edit/Write, never heredocs or sed": "heredoc",
+    "Manual author tasks go to Todoist": "todoist",
+    "The perfect result, not the fast one": "the perfect result",
+    "Every rejected measure names its rescue paths": "rescue path",
+    "The author merges PRs live": "merges prs live",
+    "Restarting a mandated branch after its squash-merge": "restarting a mandated branch",
+    "Delegated agents run on Opus by default": "opus by default",
+    "Pin BLAS threads for solver measurement runs": "openblas_num_threads",
+}
+
+
+def _guardrail_sections() -> list[str]:
+    return re.findall(r"^## (.+)$", GUARDRAILS_MD.read_text(encoding="utf-8"), re.M)
+
+
+def _claude_guardrail_bullets() -> str:
+    """The "Working guardrails" section of CLAUDE.md, flattened.
+
+    The anchors below are searched HERE and not in the whole file, because
+    several of these phrases also occur elsewhere in CLAUDE.md — "create
+    freely, never destroy" appears in the skill-routing table too, so a
+    whole-file search would stay green even if the binding bullet were
+    deleted. The pin is only worth something if it proves the rule is still
+    in the list of rules.
+    """
+    text = CLAUDE_MD.read_text(encoding="utf-8")
+    start = text.index("## Working guardrails")
+    end = text.index("\n## ", start + 1)
+    return _flat(text[start:end])
+
+
+def test_every_companion_section_is_registered() -> None:
+    """A new section in the companion file must be registered, both ways.
+
+    Unregistered section → a rule could live only where no session loads it.
+    Registered but absent section → the map grants cover to nothing and rots.
+    """
+    sections = set(_guardrail_sections())
+    registered = set(GUARDRAIL_SECTION_ANCHORS)
+    assert not sections - registered, f"unregistered sections in guardrails.md: {sorted(sections - registered)}"
+    assert not registered - sections, f"registered but missing from guardrails.md: {sorted(registered - sections)}"
+
+
+@pytest.mark.parametrize("section", sorted(GUARDRAIL_SECTION_ANCHORS), ids=lambda s: s[:40])
+def test_companion_section_has_a_binding_rule(section: str) -> None:
+    """Each rationale section maps to a rule stated in CLAUDE.md's guardrails."""
+    anchor = GUARDRAIL_SECTION_ANCHORS[section]
+    assert anchor.lower() in _claude_guardrail_bullets(), (
+        f"guardrails.md § {section!r} has no binding counterpart in CLAUDE.md's "
+        f"Working guardrails (looked for {anchor!r}) — the rule would live only "
+        "in the companion file, which no session loads"
+    )
 
 
 @pytest.mark.parametrize("rule", sorted(MIRRORED_RULES), ids=lambda r: r.replace(" ", "-"))

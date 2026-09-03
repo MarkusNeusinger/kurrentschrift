@@ -59,7 +59,11 @@ names rots with every PR, a pointer does not.
 ## Working Guardrails
 
 These operational rules mirror `CLAUDE.md`'s guardrails and apply to any
-agent working in this repo:
+agent working in this repo. They are spelled out in full here on purpose:
+Copilot Code Review reads this file and does not follow links, so everything
+a reviewer needs stays physically in it. `CLAUDE.md` states the same rules as
+one-liners and keeps the incident histories in `.claude/guardrails.md`; that
+file is commentary, never a rule of its own.
 
 - **Never commit on `main`.** Branch first, even for a quick
   "commit and push". `main` is protected; land changes via a PR.
