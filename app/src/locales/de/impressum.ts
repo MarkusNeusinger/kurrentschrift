@@ -82,7 +82,12 @@ export const impressum = {
     basis:
       'Wir tun das, weil ein Betreiber seine Seite schützen und wissen darf, wie oft sie gelesen wird — ein berechtigtes Interesse, wie das Gesetz es nennt; es gilt das Schweizer Datenschutzgesetz, für Besucher aus der EU zusätzlich die DSGVO.',
     rights:
-      'Du kannst jederzeit fragen, was gespeichert ist, der Verarbeitung widersprechen und dich bei der Aufsicht beschweren — in der Schweiz beim Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten, in der EU bei der Behörde an deinem Wohnort. Ein paar Zeilen per E-Mail genügen.',
+      // The full set the preceding paragraph's GDPR reference implies, in one
+      // sentence and without article numbers: Auskunft, Berichtigung,
+      // Löschung, Einschränkung, Widerspruch — and the objection keeps its
+      // condition („aus Gründen deiner besonderen Lage"), which the condensed
+      // version had dropped a second time (Copilot review, #507).
+      'Du kannst jederzeit fragen, was gespeichert ist, es berichtigen, löschen oder in seiner Verwendung einschränken lassen, der Verarbeitung aus Gründen deiner besonderen Lage widersprechen und dich bei einer Aufsichtsbehörde beschweren — in der Schweiz beim Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten, in der EU bei der Behörde an deinem Wohnort. Ein paar Zeilen per E-Mail genügen.',
   },
   sources: {
     heading: 'Quellen & Lizenzen',
