@@ -209,6 +209,17 @@ hoch scoren. Chamfer und Geo-RMSE laufen mit einem **Pixel-Totband**
 kostet nichts — Sub-Pixel-Treue zum jagged Scan wird weder belohnt noch
 bestraft.
 
+**Richtungsregel: `gate` ist positiv, `components.*` sind Abzüge.** Der
+Rückgabewert führt beide Richtungen nebeneinander — `gate` (höher =
+besser) und darunter `components`, in denen jeder Term den **Verlust**
+angibt (höher = schlechter), einschließlich `components.coverage =
+1 − gate`. Wer die Reihe ohne diese Regel liest, hält den maximalen
+Abzug für ein hervorragendes Ergebnis; genau das ist in der Werkbank
+passiert, bis der Abzug seinen eigenen Namen bekam
+(→ Glossar „Deckungslücke“, Autor-Entscheid 2026-09-03). In der
+Oberfläche heißt deshalb nur der Abzug „Deckungslücke“; „Deckung (IoU)“
+und „Deckungs-Gate“ bleiben die positiven Größen.
+
 **Natürlichkeitsterme (referenzfrei, am gerenderten Centerline, je 0–1):**
 
 | Term | Gewicht | Misst | Anwendbar wenn |

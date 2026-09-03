@@ -39,7 +39,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
 - **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
-- **D** — dconn §4 · Deckung §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
+- **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
@@ -888,6 +888,24 @@ Template) und `e_wid` (Breiten); Konvergenz-Schwellen
 `core/fit.py::CONVERGED_GEO_RMSE_UNITS` (0,08 xh) und
 `CONVERGED_COVERAGE_RMSE_UNITS` (0,10 xh); Punktbudget
 `MAX_COVERAGE_POINTS` (300 pro Glyphe).
+
+**Deckungslücke** — der **Abzug**, den die Sütterlin-Natürlichkeitsmetrik
+aus dem Deckungs-Gate bildet: `components.coverage = 1 − gate`, also der
+Anteil der Originaltinte, den die Form **verfehlt**. Höher = schlechter,
+genau umgekehrt zur → Deckung und zum `gate` selbst. Der eigene Name
+(Autor-Entscheid 2026-09-03) löst eine Falle in der Werkbank auf: Im
+Diagnose-Block standen „Deckung (IoU): 0.105“, „Deckungs-Gate: 0.01“ und
+„Deckung 0.99“ drei Zeilen auseinander — dieselbe Größe einmal positiv
+und einmal als Abzug, unter einem Wort; die 0.99 las sich wie eine
+hervorragende Deckung und war der maximal mögliche Abzug. Seither heißt
+**nur der Abzug** „Deckungslücke“; „Deckung (IoU)“ und „Deckungs-Gate“
+behalten ihr Wort, weil sie die positive Richtung messen. Die Kurzform
+auf den Buchstabenkarten trägt zusätzlich das Präfix „Abzüge:“, damit die
+Zahlenreihe auch ohne die Balkenlegende ihre Richtung nennt.
+*Technisch:* `core/quality_suetterlin.py` (`gate` → `components.coverage`);
+Beschriftung `app/src/locales/de/wizard.ts` (`optimize.cat.coverage`),
+Kurzform `app/src/sections/admin/quality/scoreParts.tsx`
+(`ScoreBreakdownInline`). → qualitaetsmetrik.md §5
 
 **Warp** — das elastische Verbiegen einer Form beim Fit (im Gegensatz zum
 bloßen Verschieben). Merksatz aus der Ernte: **„shapes, not placements“**

@@ -145,6 +145,12 @@ export function ScoreBreakdownInline({ quality }: { quality: QualityData }) {
   }
   return (
     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.25, alignItems: 'baseline' }}>
+      {/* The direction, which the bar-chart variant states under its bars and
+          this one had nowhere to put: without it a bare „0.99" beside a
+          category name reads as a score, not as the deduction it is. */}
+      <Typography variant="caption" color="text.disabled">
+        {t.breakdownInlinePrefix}
+      </Typography>
       {rows.map((r) => {
         const color = penaltyColor(r.val);
         return (

@@ -171,14 +171,25 @@ export const wizard = {
     breakdownHeading: 'Abzüge nach Kategorie (optimiert)',
     breakdownHint: 'Wo die optimierte Form Punkte verliert — höher = mehr Abzug, wie im Glyph-Bench.',
     breakdownNone: 'Keine nennenswerten Abzüge — die Form ist sauber.',
+    // Prefix on the one-line variant (ScoreBreakdownInline, letter overview).
+    // The full breakdown carries `breakdownHint` under its bars to say which
+    // way the numbers run; the short form had no room for it and so showed a
+    // bare „Deckung 0.99", which reads as a result rather than as a deduction.
+    breakdownInlinePrefix: 'Abzüge:',
     // Short category labels mirroring the naturalness metric's components.
+    // Every one of them is an ABZUG — höher = schlechter. `coverage` therefore
+    // reads „Deckungslücke", not „Deckung": the value is `1 − gate`, the share
+    // of the original ink the form MISSES. Under the old label the same panel
+    // printed „Deckung (IoU): 0.105" and „Deckung 0.99" three lines apart, and
+    // the 0.99 read like an excellent result while being the maximum possible
+    // deduction (author decision 2026-09-03).
     cat: {
       smoothness: 'Glätte',
       verticality: 'Senkrechte',
       corner: 'Ecken',
       collinearity: 'Kreuzung',
       retrace: 'Doppelzug',
-      coverage: 'Deckung',
+      coverage: 'Deckungslücke',
     },
     catHint: {
       smoothness: 'Bögen ohne Zacken',
@@ -186,7 +197,7 @@ export const wizard = {
       corner: 'Umkehrpunkte sauber spitz',
       collinearity: 'Strich bleibt durch eine Kreuzung gerade',
       retrace: 'Hin- und Rückzug laufen parallel',
-      coverage: 'Form deckt die Originaltinte (Gate)',
+      coverage: 'Anteil der Originaltinte, den die Form verfehlt (aus dem Deckungs-Gate)',
     },
   },
   overview: {
@@ -247,9 +258,33 @@ export const wizard = {
     dismiss: 'Verwerfen',
   },
   // The lock, shown BEFORE the work rather than as a 423 after it.
+  // The lock, as the author decided it should behave (2026-09-03): a locked
+  // glyph stays fully offered and is marked with the lock; overwriting is one
+  // deliberate confirmation away, not a trip to the Tafel and back. The gate
+  // is still real — the server refuses without `force` (423), and only the
+  // dialog below ever sends it.
   lock: {
     chip: '🔒 gesperrt',
     warning:
-      'Diese Glyphe ist gesperrt — ein „Weg speichern“ wird abgelehnt. Zum Überschreiben erst in der Tafel entsperren (Schloss in der Werkzeugleiste), dann hierher zurück.',
+      'Diese Glyphe ist gesperrt — sie gilt als fertig. Zeichnen darfst du trotzdem; beim Speichern fragt die Werkbank noch einmal nach, bevor der bestehende Weg überschrieben wird.',
+    // The save button's label while the glyph is locked, so the click never
+    // comes as a surprise.
+    saveLocked: 'Weg speichern (gesperrt)',
+    confirm: {
+      title: 'Gesperrten Weg überschreiben?',
+      body:
+        'Für diese Glyphe liegt bereits ein abgeschlossener Weg. „Überschreiben“ ersetzt ihn durch den soeben gezeichneten — die alte Fassung ist danach nicht mehr abrufbar.',
+      // Shown under the body, so what is at stake is a fact and not a memory.
+      hint: 'Die Sperre bleibt danach bestehen; nur der Weg wechselt.',
+      cancel: 'Abbrechen',
+      confirm: 'Trotzdem überschreiben',
+    },
+    // Same question for the second write on the Weg step.
+    confirmResample: {
+      title: 'Gesperrte Glyphe neu abtasten?',
+      body:
+        'Neu abtasten schreibt die gespeicherte Vorlage neu — aus demselben Roh-Weg, aber mit der eingestellten Ankerzahl. Die bisherige Fassung wird dabei ersetzt.',
+      hint: 'Die Sperre bleibt danach bestehen; nur die Abtastung wechselt.',
+    },
   },
 } as const;

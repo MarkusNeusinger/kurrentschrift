@@ -213,6 +213,22 @@ vom Symptom zur Änderung und zurück.
 
 ## 6. Leitplanken
 
+- **Die Sperre ist eine Warnung, kein Riegel** (Autor, 2026-09-03). Eine
+  gesperrte Glyphe bleibt im Wizard **vollständig angeboten** und trägt
+  das Schloss sichtbar — im Titel als Chip, auf dem Weg-Schritt als
+  Hinweis, und der Speichern-Knopf sagt es in seiner Beschriftung. Wer
+  überschreiben will, beantwortet **eine** Rückfrage („Trotzdem
+  überschreiben"); erst diese Antwort schickt `force=true` an die
+  bestehende Route. Grund: Die Sperre soll vor dem *versehentlichen*
+  Überschreiben eines fertigen Wegs schützen, nicht vor dem gewollten —
+  der alte Weg (erst in der Tafel entsperren, zurück in den Wizard,
+  zeichnen, danach wieder sperren) kostete vier Schritte für eine
+  Entscheidung, die in einem Satz steht, und die Tafel-Entsperrung ließ
+  die Glyphe obendrein offen zurück. Der Boden bleibt der Server: ohne
+  `force` antwortet er weiter mit 423 (`api/routers/templates.py`
+  `_reject_locked_unless_forced`), gepinnt in
+  `tests/test_api_admin_writes.py`. **Kein Knopf außer der Rückfrage
+  setzt das Flag.**
 - Manuelle Beiträge (`authored`-Traces, Overrides) gehen **nie** in die
   eingefrorenen Metrik-Referenzen ein — die Messlatte bleibt die Platte
   (qualitaetsmetrik.md).
