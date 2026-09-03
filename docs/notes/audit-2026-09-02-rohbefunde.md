@@ -1,9 +1,9 @@
 # Vollaudit 2026-09-01/02 — Rohbefunde der Prüfer
 
+> **Status (2026-09-02): Befund-Journal, wird nicht fortgeschrieben.** Rohberichte der 20 unabhängigen Prüfer des Vollaudits (Owner-Auftrag 2026-09-01: Vorzeige-Repository, Website, Werkzeuge, Inhalte, das Geschriebene). Alle zwanzig Berichte stehen unten: acht aus dem Fable-Lauf vom 2026-09-01 (Journal des Workflows `wf_bcb501e3-ee9`), zwölf aus dem Opus-Lauf vom 2026-09-02. Jeder Befund trägt Schwere, Kategorie, Aufwand, Beleg und Vorschlag; „KI jetzt“ heißt: ohne Owner-Entscheid und ohne Autoren-Handarbeit erledigbar. Die Synthese (Rangliste, Parallelplan, Owner-Fragen) steht in `audit-2026-09-02-synthese.md`.
+
 > **Erledigungsstand:** siehe `audit-2026-09-02-synthese.md` § „Erledigungsstand“.
 > Hier steht nur der Rohbefund, nicht sein weiterer Weg.
-
-> **Status (2026-09-02): Befund-Journal, wird nicht fortgeschrieben.** Rohberichte der 20 unabhängigen Prüfer des Vollaudits (Owner-Auftrag 2026-09-01: Vorzeige-Repository, Website, Werkzeuge, Inhalte, das Geschriebene). Alle zwanzig Berichte stehen unten: acht aus dem Fable-Lauf vom 2026-09-01 (Journal des Workflows `wf_bcb501e3-ee9`), zwölf aus dem Opus-Lauf vom 2026-09-02. Jeder Befund trägt Schwere, Kategorie, Aufwand, Beleg und Vorschlag; „KI jetzt“ heißt: ohne Owner-Entscheid und ohne Autoren-Handarbeit erledigbar. Die Synthese (Rangliste, Parallelplan, Owner-Fragen) steht in `audit-2026-09-02-synthese.md`.
 
 
 ## 1. api/ (FastAPI, 19 Router, 85 Operationen) + Deploy-Konfig (api/Dockerfile Zweistufen-Version auf Branch slim-api-image, api/cloudbuild.yaml), Vergleich mit /home/tirao/anyplot/api
