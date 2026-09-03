@@ -16,12 +16,21 @@ A fragment is a slice of the changelog in the changelog's own format:
 
 - **The thing, named as the reader will meet it.** One clause on what it
   does and where, then why it is the right shape — the rationale a diff
-  cannot carry. Ends with the PR reference once known (#NNN).
+  cannot carry.
 
 ### Fixed
 
-- **What was wrong, as a title.** What it did, what it does now (#NNN).
+- **What was wrong, as a title.** What it did, what it does now.
 ```
+
+**The `(#NNN)` reference is optional.** Nothing checks it, and the number
+does not exist until the PR does — so chasing it meant a second commit
+carrying one token, which is how three `sed -i` edits slipped past the
+Edit/Write rule in a single day (2026-09-02). Write the fragment without
+one. The link is not lost either way: `git log --diff-filter=A -- <fragment>`
+names the squash commit, whose subject ends in the PR number. Where a
+number IS present — every fragment written before 2026-09-03 has one — it
+stays; this is forward-only, not a sweep.
 
 Rules, all enforced by `uv run python -m tools.changelog check`:
 

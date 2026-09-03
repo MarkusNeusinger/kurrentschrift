@@ -37,7 +37,10 @@ import {
   PRERENDER_MARKER,
   PUBLIC_API,
   PUBLIC_SOURCE_ID,
+  prerenderPath,
   renderAll,
+  staleLastmods,
+  standFromSitemap,
   UNIT_PEN_ANGLE,
   UNIT_SLANT,
 } from './prerender.ts';
@@ -174,19 +177,57 @@ describe('crawler prerender', () => {
     }
   });
 
-  it('names, per page, the files whose date its Stand line must follow', () => {
+  it('measures every page against the rendered file a crawler is served', () => {
     // scripts/check-sitemap-lastmod.mjs holds every <lastmod> against the git
-    // history of these files; a page without them (or with a path that has
-    // since moved) would silently drop out of that guard.
+    // history of exactly this path — a page whose rendered file is missing
+    // would silently drop out of that guard.
     for (const spec of PAGES) {
-      expect(spec.sources.length, spec.file).toBeGreaterThan(0);
-      for (const file of spec.sources) {
-        expect(existsSync(join(appDir, file)), `${spec.file}: ${file}`).toBe(true);
-      }
-      // Its own locale namespace is the minimum — a page that named only
-      // seo.ts would follow the wrong file's date.
-      expect(spec.sources.some((f) => f !== 'src/locales/de/seo.ts'), spec.file).toBe(true);
+      expect(prerenderPath(spec), spec.file).toBe(`prerender/${spec.file}`);
+      expect(existsSync(join(appDir, prerenderPath(spec))), spec.file).toBe(true);
     }
+  });
+
+  it('calls a <lastmod> stale only when the rendered page is newer', () => {
+    const routed = PAGES.filter((p) => p.route !== null);
+    const clean = { sitemapXml: sitemap, dirty: new Set<string>(), today: '2026-09-03' };
+    // The committed state: every date sits at or above its file's own history.
+    expect(staleLastmods(PAGES, { ...clean, newestCommit: () => '2000-01-01' })).toEqual([]);
+    // The date the sitemap already carries is never "newer than" itself —
+    // otherwise every bump would have to be re-bumped the next day.
+    const own = (file: string) =>
+      standFromSitemap(sitemap, routed.find((p) => prerenderPath(p) === file)!.route!);
+    expect(staleLastmods(PAGES, { ...clean, newestCommit: own })).toEqual([]);
+    // One committed page moved past its date: reported, and named by the file.
+    const tafel = routed.find((p) => p.route === paths.tafel)!;
+    const oneMoved = staleLastmods(PAGES, {
+      ...clean,
+      newestCommit: (file) => (file === prerenderPath(tafel) ? '2099-01-01' : own(file)),
+    });
+    expect(oneMoved).toEqual([
+      {
+        route: paths.tafel,
+        lastmod: standFromSitemap(sitemap, paths.tafel),
+        changed: '2099-01-01',
+        file: prerenderPath(tafel),
+        uncommitted: false,
+      },
+    ]);
+    // An unsaved edit counts as today and outranks the history — that is what
+    // makes the check bite in the same `npm run prerender` that produced it.
+    const unsaved = staleLastmods(PAGES, {
+      sitemapXml: sitemap,
+      dirty: new Set([prerenderPath(tafel)]),
+      newestCommit: own,
+      today: '2099-12-31',
+    });
+    expect(unsaved.map((s) => [s.route, s.changed, s.uncommitted])).toEqual([[paths.tafel, '2099-12-31', true]]);
+    // Without history (a shallow clone, an unpacked tarball) the guard keeps
+    // only the working-tree half instead of raising ten false alarms.
+    expect(staleLastmods(PAGES, { ...clean, newestCommit: () => null })).toEqual([]);
+    // The 404 has no <loc>, so it can never be reported.
+    expect(staleLastmods(PAGES, { ...clean, newestCommit: () => '2099-01-01' }).map((s) => s.route)).toEqual(
+      routed.map((p) => p.route),
+    );
   });
 
   it('offers the crawler no quiz option the setup keeps hidden', () => {

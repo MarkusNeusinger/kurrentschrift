@@ -20,6 +20,7 @@ from tools.inksight.prepare import (
     MODEL_SIZE,
     Affine,
     crop_to_model,
+    dev_ids,
     grid_step_crop_px,
     model_to_crop,
     pad_to_model_frame,
@@ -122,6 +123,21 @@ def test_grid_step_is_clamped_at_one_crop_pixel() -> None:
     # effective step must be >= the nominal one, never finer.
     _, odd = pad_to_model_frame(Image.new("RGB", (305, 60), (0, 0, 0)))
     assert grid_step_crop_px(odd) >= 305 / 224 - 1e-9
+
+
+def test_dev_ids_are_the_whole_split_in_a_fixed_order() -> None:
+    """The ids become `frames.json`'s key order, so they must not move per run.
+
+    Until 2026-09-02 this returned `tuple(<frozenset>)`, whose order changes
+    with the process hash seed — two runs over identical inputs wrote
+    different bytes. The nineteen-vs-ten half matters just as much: the
+    guarded import that used to sit here fell back to a ten-id literal
+    without a word.
+    """
+    from tools.tracebench.sets import TRACEBENCH_DEV_IDS
+
+    assert dev_ids() == tuple(sorted(TRACEBENCH_DEV_IDS))
+    assert len(dev_ids()) == len(TRACEBENCH_DEV_IDS)
 
 
 def test_prepare_entry_writes_the_input_and_its_frame_record(tmp_path) -> None:

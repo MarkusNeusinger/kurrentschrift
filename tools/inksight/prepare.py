@@ -32,6 +32,8 @@ from pathlib import Path
 
 from PIL import Image
 
+from tools.tracebench.sets import TRACEBENCH_DEV_IDS
+
 
 # The model frame. 224 px is InkSight's input resolution; the ink tokens
 # quantise it into 225 levels per dimension (see `tokens.py`).
@@ -40,20 +42,23 @@ MODEL_SIZE = 224
 DEFAULT_FIXTURES_ROOT = Path("tools/wordbench/fixtures/suetterlin/suetterlin-1922")
 DEFAULT_OUT = Path("tools/inksight/out")
 
-# The frozen tracebench development set (tintenfolger.md §1): the 10 Abb.-19
-# words the author re-traced by hand on 2026-08-13. Kept as a literal fallback
-# because `tools/tracebench` (stage B/C) does not exist yet — once it does, its
-# constant is the single source of truth and this list must not drift from it.
-FALLBACK_DEV_IDS = ("die", "laden", "linken", "mit", "muß", "und", "unter", "Wer", "will", "zwei")
-
 
 def dev_ids() -> tuple[str, ...]:
-    """`TRACEBENCH_DEV_IDS` when the bench is importable, else the literal set."""
-    try:
-        from tools.tracebench.sets import TRACEBENCH_DEV_IDS  # type: ignore[import-not-found]
-    except ImportError:
-        return FALLBACK_DEV_IDS
-    return tuple(TRACEBENCH_DEV_IDS)
+    """The frozen tracebench development split (tintenfolger.md §1), in a fixed order.
+
+    `sorted`, not the set's iteration order: the caller writes the ids as the
+    key order of `frames.json` and as the console log, so an unordered source
+    made the artifact of a measurement differ between two runs over identical
+    inputs. The split itself is a `frozenset` — this is the one place that
+    turns it into a sequence, so it is the one place that has to decide.
+
+    The import is top-level and unguarded on purpose. It used to be a
+    `try/except ImportError` over a ten-id literal, from the days before
+    `tools/tracebench` existed; the bench has been importable since
+    2026-08-14, and the fallback could only ever fire as a run that silently
+    measured 10 of the 19 words and said so nowhere.
+    """
+    return tuple(sorted(TRACEBENCH_DEV_IDS))
 
 
 @dataclass(frozen=True)
