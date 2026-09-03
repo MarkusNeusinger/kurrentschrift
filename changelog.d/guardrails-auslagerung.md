@@ -10,10 +10,11 @@
   34,546 to 29,132 bytes (−16 %). `.github/copilot-instructions.md` keeps its
   guardrails spelled out in full on purpose — Copilot Code Review reads that
   file and does not follow links — and now says so (#NNN).
-- **`tests/test_agent_instructions.py` pins the split.** The new file joins
-  the path and section checks, and one test guards the two ways this
-  arrangement rots: `CLAUDE.md` losing the pointer, so nobody finds the
-  rationale, or the companion file starting to read like the authority, so a
-  rule ends up living only where no session loads it. The existing
-  mirrored-rule pin already keeps every binding keyword in both guides
-  (#NNN).
+- **`tests/test_agent_instructions.py` pins the split mechanically.** The new
+  file joins the path and section checks, and every `##` section of the
+  companion file must map to a phrase that actually appears in `CLAUDE.md` —
+  both directions, so an unregistered section fails and a registration
+  covering nothing fails too. That is what stops a rule from coming to rest
+  where no session loads it; a disclaimer sentence alone would not have
+  caught it. The mirrored-rule list also gained the two shared rules it was
+  missing, the Copilot re-review and Todoist ones (#NNN).
