@@ -143,6 +143,16 @@ export function ImpressumView() {
           <Typography sx={subTitle}>{t.privacy.logsTitle}</Typography>
           <Typography sx={prose}>{t.privacy.logs}</Typography>
 
+          <Typography sx={subTitle}>{t.privacy.basisTitle}</Typography>
+          <Typography sx={prose}>{t.privacy.basis}</Typography>
+
+          <Typography sx={subTitle}>{t.privacy.securityTitle}</Typography>
+          {t.privacy.security.map((line) => (
+            <Typography key={line} sx={prose}>
+              {line}
+            </Typography>
+          ))}
+
           <Typography sx={subTitle}>{t.privacy.hostingTitle}</Typography>
           <Typography sx={{ ...prose, mb: 1 }}>{t.privacy.hostingIntro}</Typography>
           <Box sx={{ mb: 1.5 }}>
@@ -173,7 +183,9 @@ export function ImpressumView() {
           </Box>
 
           <Typography sx={subTitle}>{t.privacy.rightsTitle}</Typography>
-          <Typography sx={{ ...prose, mb: 0 }}>{t.privacy.rights}</Typography>
+          <Typography sx={prose}>{t.privacy.rights}</Typography>
+          <Typography sx={prose}>{t.privacy.rightsObjection}</Typography>
+          <Typography sx={{ ...prose, mb: 0 }}>{t.privacy.rightsComplaint}</Typography>
         </Section>
 
         {/* Quellen & Lizenzen */}

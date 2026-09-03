@@ -44,14 +44,22 @@
 <h3>Besucherstatistik</h3>
 <p>Gezählt wird nur, was sich ohne Namen zählen lässt: Seitenaufrufe, nicht Personen. Dafür sorgt Plausible Analytics — ohne Cookies, ohne Verfolgung über fremde Seiten hinweg. Die Zählung steht <a href="https://plausible.io/kurrentschrift.ink">jedermann offen</a> — wer mag, sieht genau das, was ich sehe.</p>
 <h3>Server-Logs</h3>
-<p>Was die Technik beim Besuch nebenher notiert — IP-Adresse, abgerufene Seite, Browser-Kennung —, dient allein der Sicherheit und Fehlersuche und verschwindet nach dreißig Tagen von selbst (Google Cloud Logging).</p>
+<p>Was die Technik beim Besuch nebenher notiert — IP-Adresse, abgerufene Seite, Browser-Kennung —, dient allein der Sicherheit und Fehlersuche und verschwindet nach dreißig Tagen von selbst (Google Cloud Logging, Standard-Aufbewahrung).</p>
+<h3>Worauf sich das stützt</h3>
+<p>Betrieben wird die Seite aus der Schweiz; für sie gilt das revidierte Schweizer Datenschutzgesetz, und weil sie sich auch an Leserinnen und Leser in der EU richtet, daneben die europäische Datenschutz-Grundverordnung. Beides erlaubt, was hier geschieht, aus demselben schlichten Grund: dem berechtigten Interesse, die Seite sicher, erreichbar und in Ordnung zu halten (Art. 6 Abs. 1 lit. f DSGVO). Eine Einwilligung wird nicht eingeholt, weil nichts erhoben wird, das eine bräuchte — keine Cookies, keine Konten, keine Profile.</p>
+<h3>Was die Seite zu ihrem Schutz tut</h3>
+<p>Damit niemand die Seite durch schiere Menge lahmlegt oder Kosten auftürmt, wird gezählt, wie viele Anfragen von einer Adresse kommen — am Rand des Netzes und noch einmal auf dem Server. Diese Zähler leben im Arbeitsspeicher, für Minuten, und werden nirgends gespeichert.</p>
+<p>Der Browser darf melden, wenn auf einer Seite etwas geladen würde, das die Sicherheitsregeln der Seite verbieten. Solche Meldungen nehmen wir entgegen, um Fehler in eben diesen Regeln zu finden; die gemeldete Adresse wird dabei um alles hinter „?“ und „#“ gekürzt, damit kein eingegebener Text mitkommt.</p>
+<p>Ein technischer Schlüssel zwischen Schutznetz und Server stellt sicher, dass Anfragen den vorgesehenen Weg nehmen. Er enthält keine Angaben über Besucher.</p>
 <h3>Hosting &amp; Dienste</h3>
-<p>Alle Dienste laufen in EU-Rechenzentren. Google und Cloudflare sind US-Anbieter, zertifiziert nach dem EU-US Data Privacy Framework:</p>
-<ul><li><strong>Hosting:</strong> Google Cloud Run (Niederlande)</li><li><strong>Datenbank:</strong> Google Cloud SQL (Niederlande)</li><li><strong>CDN / Schutz:</strong> Cloudflare (EU-Rechenzentren für EU-Besucher)</li><li><strong>Statistik:</strong> Plausible Analytics (EU)</li></ul>
+<p>Hosting, Datenbank und Statistik liegen in europäischen Rechenzentren; der Server steht in den Niederlanden (Google Cloud, Region europe-west4). Cloudflare, das der Seite als Schutzschild und Zwischenspeicher vorgelagert ist, betreibt ein weltweites Netz und bedient Besucher aus Europa in aller Regel über europäische Standorte — verbürgt ist die Region dort nicht. Google und Cloudflare sind US-Anbieter, zertifiziert nach dem EU-US Data Privacy Framework:</p>
+<ul><li><strong>Hosting:</strong> Google Cloud Run (Niederlande, europe-west4)</li><li><strong>Datenbank:</strong> Google Cloud SQL (Niederlande)</li><li><strong>Schutz &amp; Zwischenspeicher:</strong> Cloudflare (weltweites Netz, europäische Standorte für Besucher aus Europa)</li><li><strong>Statistik:</strong> Plausible Analytics (Server in der EU, über einen eigenen Zwischenweg eingebunden)</li></ul>
 <h3>Was hier nicht gesammelt wird</h3>
 <ul><li>keine Konten, keine Profile</li><li>keine Cookies</li><li>keine personenbezogenen Daten über die nach dreißig Tagen gelöschten Server-Logs hinaus, keine Weitergabe an Dritte</li><li>kein Training von KI-Modellen mit Besucherdaten</li></ul>
 <h3>Deine Rechte</h3>
-<p>Auskunft, Berichtigung, Löschung: Über die nach dreißig Tagen gelöschten Server-Logs hinaus ist nichts über dich gespeichert — es gibt also fast nie etwas auszuhändigen oder zu tilgen. Bei Fragen genügen ein paar Zeilen per E-Mail.</p>
+<p>Auskunft, Berichtigung, Löschung, Widerspruch: Über die nach dreißig Tagen gelöschten Server-Logs hinaus ist nichts über dich gespeichert — es gibt also fast nie etwas auszuhändigen oder zu tilgen. Bei Fragen genügen ein paar Zeilen per E-Mail.</p>
+<p>Gegen die Verarbeitung, die sich auf das berechtigte Interesse stützt, kannst du jederzeit Widerspruch einlegen (Art. 21 DSGVO) — eine Nachricht genügt, Gründe brauchst du nicht zu nennen.</p>
+<p>Und wer sich beschweren möchte, kann das tun, ohne mich zu fragen: in der Schweiz beim Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten (EDÖB), in der EU bei der Aufsichtsbehörde des eigenen Wohnsitzes oder Arbeitsplatzes (Art. 77 DSGVO).</p>
 <h2>Quellen &amp; Lizenzen</h2>
 <p>Die Gestalt der Buchstaben folgt gemeinfreien Schreibvorlagen: der Sütterlin-Ausgangsschrift von 1922, den Kurrent-Tafeln von Loth (1866) und Petzendorfer (1889) und der Offenbacher-Tafel von Rudolf Koch (1928). Der Duktus — Strichfolge und Schreibrichtung — ist meine eigene, handkuratierte Arbeit darüber. Historische Quellen behalten ihre eigene Lizenz; gemeinfreie Vorlagen bleiben gemeinfrei.</p>
 <p>Schriften: EB Garamond und Playfair Display (SIL Open Font License) sowie GL-GermanCursive (Gutenberg-Labo, freie Lizenz) und die Sütterlin-Schrift von H. J. Zinken (Freeware, Verbreitung gestattet).</p>
@@ -59,7 +67,7 @@
 <p>Die hier gelernten Daten dagegen — die kuratierten Glyph-Vorlagen, der Duktus und die Schrift-Statistik, die im Hintergrund entstehen und die Grundlage der Synthese bilden, ebenso die daraus trainierten Lese-Modelle zur Buchstabenerkennung — bleiben meine eigene, vorbehaltene Arbeit. Sie sind nicht Teil der MIT-Lizenz, auch wenn das Repository offen einsehbar ist; eine Nachnutzung nur nach Rücksprache.</p>
 <h2>Transparenz</h2>
 <p>kurrentschrift.ink ist das Werk eines Einzelnen, offen für alle. Die Website läuft in EU-Rechenzentren — React im Browser, Python und PostgreSQL auf Google Cloud in den Niederlanden; Google und Cloudflare sind US-Anbieter, zertifiziert nach dem EU-US Data Privacy Framework. Fragen, Hinweise und Berichtigungen sind jederzeit willkommen — ich freue mich über Post.</p>
-<p><em>Visp, im Juli 2026</em></p>
+<p><em>Visp, im September 2026</em></p>
 </main>
 <nav aria-label="Bereiche"><a href="https://kurrentschrift.ink/schriftkunde">Schriftkunde</a>
 <a href="https://kurrentschrift.ink/lesen">Lesen</a>
@@ -70,6 +78,6 @@
 <a href="https://kurrentschrift.ink/schreiben/uebungsblatt">Übungsblatt</a>
 <a href="https://kurrentschrift.ink/federprobe">Federprobe</a>
 <a href="https://kurrentschrift.ink/impressum">Impressum</a></nav>
-<footer><p>Eine private Liebhaberei — quelloffen. <a href="https://github.com/MarkusNeusinger/kurrentschrift">GitHub</a> · <a href="https://kurrentschrift.ink/llms.txt">llms.txt</a> · <a href="https://kurrentschrift.ink/impressum">Impressum &amp; Datenschutz</a></p><p>Stand: 2026-09-02 · Kanonische Fassung: <a href="https://kurrentschrift.ink/impressum">https://kurrentschrift.ink/impressum</a></p><p>Text und Zusammenstellung © Markus Neusinger, kurrentschrift.ink. Abruf, Zitat mit Quellenangabe und Verlinkung sind ausdrücklich erwünscht; die Seite ist auch als Trainingsmaterial für KI-Modelle freigegeben (ai-train=yes, siehe robots.txt). Der Quellcode des Projekts steht unter MIT-Lizenz; die kuratierten Schriftdaten hinter der API (Duktus, Vorlagen, Statistik) sind gesondert vorbehalten und nur mit Admin-Zugang lesbar.</p></footer>
+<footer><p>Eine private Liebhaberei — quelloffen. <a href="https://github.com/MarkusNeusinger/kurrentschrift">GitHub</a> · <a href="https://kurrentschrift.ink/llms.txt">llms.txt</a> · <a href="https://kurrentschrift.ink/impressum">Impressum &amp; Datenschutz</a></p><p>Stand: 2026-09-03 · Kanonische Fassung: <a href="https://kurrentschrift.ink/impressum">https://kurrentschrift.ink/impressum</a></p><p>Text und Zusammenstellung © Markus Neusinger, kurrentschrift.ink. Abruf, Zitat mit Quellenangabe und Verlinkung sind ausdrücklich erwünscht; die Seite ist auch als Trainingsmaterial für KI-Modelle freigegeben (ai-train=yes, siehe robots.txt). Der Quellcode des Projekts steht unter MIT-Lizenz; die kuratierten Schriftdaten hinter der API (Duktus, Vorlagen, Statistik) sind gesondert vorbehalten und nur mit Admin-Zugang lesbar.</p></footer>
 </body>
 </html>

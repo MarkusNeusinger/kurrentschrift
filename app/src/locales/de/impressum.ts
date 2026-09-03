@@ -52,15 +52,37 @@ export const impressum = {
     analyticsAfterLink: ' — wer mag, sieht genau das, was ich sehe.',
     logsTitle: 'Server-Logs',
     logs:
-      'Was die Technik beim Besuch nebenher notiert — IP-Adresse, abgerufene Seite, Browser-Kennung —, dient allein der Sicherheit und Fehlersuche und verschwindet nach dreißig Tagen von selbst (Google Cloud Logging).',
+      'Was die Technik beim Besuch nebenher notiert — IP-Adresse, abgerufene Seite, Browser-Kennung —, dient allein der Sicherheit und Fehlersuche und verschwindet nach dreißig Tagen von selbst (Google Cloud Logging, Standard-Aufbewahrung).',
+    // Added by the website audit 2026-09-02 (finding 36): the page named
+    // purposes, retention and recipients, but never the legal ground. The
+    // operator sits in Visp (Schweiz), so the Swiss revDSG applies and the
+    // GDPR reaches the site through Art. 3(2) for visitors from the EU —
+    // both are named because both are true, and a visitor should not have to
+    // work out which one covers them.
+    basisTitle: 'Worauf sich das stützt',
+    basis:
+      'Betrieben wird die Seite aus der Schweiz; für sie gilt das revidierte Schweizer Datenschutzgesetz, und weil sie sich auch an Leserinnen und Leser in der EU richtet, daneben die europäische Datenschutz-Grundverordnung. Beides erlaubt, was hier geschieht, aus demselben schlichten Grund: dem berechtigten Interesse, die Seite sicher, erreichbar und in Ordnung zu halten (Art. 6 Abs. 1 lit. f DSGVO). Eine Einwilligung wird nicht eingeholt, weil nichts erhoben wird, das eine bräuchte — keine Cookies, keine Konten, keine Profile.',
+    // The three technical defences added on 2026-09-02/03 (rate limiting,
+    // the CSP report endpoint, the origin guard). They touch an IP or a URL,
+    // so they are named rather than left to be discovered in the code.
+    securityTitle: 'Was die Seite zu ihrem Schutz tut',
+    security: [
+      'Damit niemand die Seite durch schiere Menge lahmlegt oder Kosten auftürmt, wird gezählt, wie viele Anfragen von einer Adresse kommen — am Rand des Netzes und noch einmal auf dem Server. Diese Zähler leben im Arbeitsspeicher, für Minuten, und werden nirgends gespeichert.',
+      'Der Browser darf melden, wenn auf einer Seite etwas geladen würde, das die Sicherheitsregeln der Seite verbieten. Solche Meldungen nehmen wir entgegen, um Fehler in eben diesen Regeln zu finden; die gemeldete Adresse wird dabei um alles hinter „?“ und „#“ gekürzt, damit kein eingegebener Text mitkommt.',
+      'Ein technischer Schlüssel zwischen Schutznetz und Server stellt sicher, dass Anfragen den vorgesehenen Weg nehmen. Er enthält keine Angaben über Besucher.',
+    ],
     hostingTitle: 'Hosting & Dienste',
+    // Honest about Cloudflare: it is a worldwide Anycast network, and the
+    // promise „EU-Rechenzentren" only holds with Regional Services switched
+    // on, which nothing in this repo documents (audit finding 36). So the
+    // sentence says what is known and stops there.
     hostingIntro:
-      'Alle Dienste laufen in EU-Rechenzentren. Google und Cloudflare sind US-Anbieter, zertifiziert nach dem EU-US Data Privacy Framework:',
+      'Hosting, Datenbank und Statistik liegen in europäischen Rechenzentren; der Server steht in den Niederlanden (Google Cloud, Region europe-west4). Cloudflare, das der Seite als Schutzschild und Zwischenspeicher vorgelagert ist, betreibt ein weltweites Netz und bedient Besucher aus Europa in aller Regel über europäische Standorte — verbürgt ist die Region dort nicht. Google und Cloudflare sind US-Anbieter, zertifiziert nach dem EU-US Data Privacy Framework:',
     hosting: [
-      { label: 'Hosting', value: 'Google Cloud Run (Niederlande)' },
+      { label: 'Hosting', value: 'Google Cloud Run (Niederlande, europe-west4)' },
       { label: 'Datenbank', value: 'Google Cloud SQL (Niederlande)' },
-      { label: 'CDN / Schutz', value: 'Cloudflare (EU-Rechenzentren für EU-Besucher)' },
-      { label: 'Statistik', value: 'Plausible Analytics (EU)' },
+      { label: 'Schutz & Zwischenspeicher', value: 'Cloudflare (weltweites Netz, europäische Standorte für Besucher aus Europa)' },
+      { label: 'Statistik', value: 'Plausible Analytics (Server in der EU, über einen eigenen Zwischenweg eingebunden)' },
     ],
     notCollectedTitle: 'Was hier nicht gesammelt wird',
     notCollected: [
@@ -70,8 +92,15 @@ export const impressum = {
       'kein Training von KI-Modellen mit Besucherdaten',
     ],
     rightsTitle: 'Deine Rechte',
+    // Art. 21 (Widerspruch) and Art. 13 Abs. 2 lit. d (Beschwerde) were both
+    // missing (audit finding 36). Named for the EU and for Switzerland,
+    // because the site is subject to both.
     rights:
-      'Auskunft, Berichtigung, Löschung: Über die nach dreißig Tagen gelöschten Server-Logs hinaus ist nichts über dich gespeichert — es gibt also fast nie etwas auszuhändigen oder zu tilgen. Bei Fragen genügen ein paar Zeilen per E-Mail.',
+      'Auskunft, Berichtigung, Löschung, Widerspruch: Über die nach dreißig Tagen gelöschten Server-Logs hinaus ist nichts über dich gespeichert — es gibt also fast nie etwas auszuhändigen oder zu tilgen. Bei Fragen genügen ein paar Zeilen per E-Mail.',
+    rightsObjection:
+      'Gegen die Verarbeitung, die sich auf das berechtigte Interesse stützt, kannst du jederzeit Widerspruch einlegen (Art. 21 DSGVO) — eine Nachricht genügt, Gründe brauchst du nicht zu nennen.',
+    rightsComplaint:
+      'Und wer sich beschweren möchte, kann das tun, ohne mich zu fragen: in der Schweiz beim Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten (EDÖB), in der EU bei der Aufsichtsbehörde des eigenen Wohnsitzes oder Arbeitsplatzes (Art. 77 DSGVO).',
   },
   sources: {
     heading: 'Quellen & Lizenzen',
@@ -98,5 +127,5 @@ export const impressum = {
     text:
       'kurrentschrift.ink ist das Werk eines Einzelnen, offen für alle. Die Website läuft in EU-Rechenzentren — React im Browser, Python und PostgreSQL auf Google Cloud in den Niederlanden; Google und Cloudflare sind US-Anbieter, zertifiziert nach dem EU-US Data Privacy Framework. Fragen, Hinweise und Berichtigungen sind jederzeit willkommen — ich freue mich über Post.',
   },
-  lastUpdated: 'Visp, im Juli 2026',
+  lastUpdated: 'Visp, im September 2026',
 } as const;
