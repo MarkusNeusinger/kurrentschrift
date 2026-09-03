@@ -58,10 +58,17 @@ export const impressum = {
     analyticsLinkText: 'jedermann offen',
     analyticsUrl: 'https://plausible.io/kurrentschrift.ink',
     analyticsAfterLink: ' — wer mag, sieht genau das, was ich sehe.',
+    // „Das alles" would have swept Plausible into this project's own stack;
+    // it is a separate managed service the API sends events to, EU-hosted but
+    // not in europe-west4 (Copilot review, #507).
     hosting:
-      'Das alles läuft auf Google Cloud in den Niederlanden; davor liegt Cloudflare als Schutzschicht — ein weltweites Netz, das Besucher aus Europa in aller Regel über europäische Standorte bedient.',
+      'Die Seite selbst läuft auf Google Cloud in den Niederlanden; davor liegt Cloudflare als Schutzschicht — ein weltweites Netz, das Besucher aus Europa in aller Regel über europäische Standorte bedient. Plausible ist ein eigener Dienst und zählt auf seinen eigenen Servern in der EU.',
+    // The author's own sentence, with the basis NAMED rather than only implied:
+    // „berechtigtes Interesse" is the ground the GDPR asks for, and saying it
+    // in plain words costs nothing and keeps the article number out (Copilot
+    // review, #507).
     basis:
-      'Wir tun das, weil ein Betreiber seine Seite schützen und wissen darf, wie oft sie gelesen wird; es gilt das Schweizer Datenschutzgesetz, für Besucher aus der EU zusätzlich die DSGVO.',
+      'Wir tun das, weil ein Betreiber ein berechtigtes Interesse daran hat, seine Seite zu schützen und zu wissen, wie oft sie gelesen wird; es gilt das Schweizer Datenschutzgesetz, für Besucher aus der EU zusätzlich die DSGVO.',
     rights:
       'Du kannst jederzeit fragen, was gespeichert ist, der Verarbeitung widersprechen und dich bei der Aufsicht beschweren — in der Schweiz beim Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten, in der EU bei der Behörde an deinem Wohnort. Ein paar Zeilen per E-Mail genügen.',
   },
