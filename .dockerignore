@@ -12,8 +12,10 @@
 # that has run route B. Measured on 2026-09-04: 339 MiB of context before,
 # 44 MiB after, in a checkout WITHOUT those weights.
 #
-# `.gcloudignore` next to this file needs no such treatment: it uses gitignore
-# semantics, where a bare name already matches at any depth.
+# `.gcloudignore` next to this file needs no `**/`: it uses gitignore
+# semantics, where a bare name already matches at any depth. It does carry the
+# same LIST of local-only payloads, though — it governs the upload, which
+# happens before Docker ever reads this file.
 
 .git
 .gitignore
