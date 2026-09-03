@@ -113,8 +113,10 @@ Befehle, Fixture-Layout und der greppbare Output-Contract stehen im
 
 ## 3. Baseline-Historie
 
-Alle Werte auf denselben eingefrorenen Referenzen (12 gesperrte
-Loth-Glyphen, Positions-Fan-out dedupliziert):
+Alle Werte bis einschließlich `jun11` auf denselben eingefrorenen
+Referenzen (12 gesperrte Loth-Glyphen, Positions-Fan-out dedupliziert);
+die `sep03`-Zeile steht auf einer NEU exportierten Wurzel und ist mit
+den Zeilen darüber nicht vergleichbar (§5, „Re-Baseline 2026-09-03"):
 
 | Datum | PR | Änderung | bench_loss | Ø-Score |
 |---|---|---|---|---|
@@ -122,6 +124,7 @@ Loth-Glyphen, Positions-Fan-out dedupliziert):
 | 2026-06-11 | #64 | Corner-Knoten + Boundary-Refine | 0.1488 | 85.1 |
 | 2026-06-11 | #68 | Ankerdichte 50 → 120 | 0.1339 | 86.6 |
 | 2026-06-11 | #71 | Druckkegel-Prior + Refine-Tuning (Lauf `jun11`) | 0.1251 | 87.5 |
+| 2026-09-03 | #516 | **Re-Baseline**: Wurzel nach knapp drei Monaten neu exportiert (Audit A15) — andere Referenzmenge, siehe §5 | 0.1219 | — |
 
 Ankerdichte-Sweep (#68, alle 12 Glyphen): 50 → 0.1488 · 80 → 0.1363 ·
 120 → 0.1339 · 160 → 0.1321 · **240 → 0.1563 (Regression!)**. 120 ist
@@ -208,6 +211,17 @@ hoch scoren. Chamfer und Geo-RMSE laufen mit einem **Pixel-Totband**
 (`DEAD_BAND_PX = 0.75`): Abweichung unterhalb der Scan-Quantisierung
 kostet nichts — Sub-Pixel-Treue zum jagged Scan wird weder belohnt noch
 bestraft.
+
+**Richtungsregel: `gate` ist positiv, `components.*` sind Abzüge.** Der
+Rückgabewert führt beide Richtungen nebeneinander — `gate` (höher =
+besser) und darunter `components`, in denen jeder Term den **Verlust**
+angibt (höher = schlechter), einschließlich `components.coverage =
+1 − gate`. Wer die Reihe ohne diese Regel liest, hält den maximalen
+Abzug für ein hervorragendes Ergebnis; genau das ist in der Werkbank
+passiert, bis der Abzug seinen eigenen Namen bekam
+(→ Glossar „Deckungslücke“, Autor-Entscheid 2026-09-03). In der
+Oberfläche heißt deshalb nur der Abzug „Deckungslücke“; „Deckung (IoU)“
+und „Deckungs-Gate“ bleiben die positiven Größen.
 
 **Natürlichkeitsterme (referenzfrei, am gerenderten Centerline, je 0–1):**
 
@@ -362,6 +376,92 @@ Glätte/Ecken-Thema (der Term belohnt das Weglassen einer echten Kehre) für ein
 lokale Totband den legitimen Kantenversatz auch an Schlaufen-Kreuzungen (b/d/g/o…) nicht mehr
 bestraft. Tests: `tests/test_quality_components.py` pinnt jetzt **Treue füllt > unterfüllt** statt
 parallel > divergent. `core/quality_suetterlin.py` + `core/geometry.py` bleiben im Loop eingefroren.
+
+### Re-Baseline 2026-09-03 — die Glyph-Bench-Wurzeln waren knapp drei Monate alt (Audit A15)
+
+**Bewusste, deklarierte Re-Baseline; Zahlen über diese Grenze sind nicht
+vergleichbar.** Anlass: nach dem LF11-Schreiben (22 Laufform-Zeilen, §14
+„Laufform LF11 — humanbench-Wortrunde") und den Audit-Befunden vom
+2026-09-02 stand die Frage, ob die eingefrorenen Fixture-Wurzeln
+überhaupt noch den Prod-Stand zeigen. Für die WORT-Bench ja (sie wurde
+beim LF11-Write mit-exportiert), für die GLYPH-Bench nicht: ihre Wurzeln
+trugen `exported_at` **2026-06-18** (Sütterlin) und **2026-06-11**
+(Kurrent) — und damit noch die Positions-Suffixe (`A-final`, `a-final`),
+die mit Migration `0017` abgeschafft wurden.
+
+**Der Export war defekt, und der Defekt war unsichtbar, solange keine
+Laufform existierte.** `tools/glyphbench/export_fixtures.py` las ALLE
+Varianten einer `glyph_key` und schrieb jede in dasselbe Verzeichnis
+`<glyph_key>/`. Sortiert nach `(glyph_key, variant)` lief die
+Laufform-Zeile (Variante 100) zuletzt und **überschrieb die Tafelzeile**.
+Eine Laufform ist ein Median über Wortvorkommen: kein Tafel-Ausschnitt,
+kein `raw_path` — die Bench kann sie nicht ableiten. Ergebnis des ersten
+Neuexports: 84 Index-Einträge, davon **44 Abstürze** („stylus path needs
+at least 2 points"), `bench_loss` 0,634630. Das sind genau die 22
+betroffenen Schlüssel × 2 Einträge (der Index führte sie doppelt, ohne
+die Variante zu nennen, also war das Paar nicht unterscheidbar).
+Dazu lagen im Baum noch **136 Verzeichnisse für 84 Einträge** — die
+Reste der Juni-Wurzel, die der Export nie entfernt hatte.
+
+Behoben, alles drei in `export_fixtures.py`: exportiert wird nur, was die
+Bench ableiten kann (Zeile mit Stylus-Pfad — das Kriterium ist der Pfad,
+nicht die Variantennummer, denn es fängt auch das nie nachgefahrene
+`i`#1 mit), die Wurzel wird bei jedem Export ERSETZT statt beschrieben —
+über ein Staging-Geschwister mit Tausch am Ende, damit ein Abbruch
+mittendrin weder die alte Basis noch eine brauchbare neue kostet (eine
+eingefrorene Wurzel ist die Referenz, auf der jede zitierte Zahl steht)
+— und der Index nennt die `variant`.
+
+**Die Zahlen. Kein einziger geteilter Glyph hat sich bewegt** — die
+gesamte Verschiebung der Kopfzahl ist Populations-Wechsel, keine
+Pipeline-Änderung:
+
+| Bench (ein Skript je Lauf, BLAS gepinnt) | vorher | nachher | geteilte Glyphen |
+|---|---|---|---|
+| Glyph-Bench Sütterlin | 0,182809 (35 Einträge / 34 Schlüssel) | **0,212277** (62) | 34, Mittel 0,184069 → 0,184069 (**Δ 0,000000**, jeder einzeln bit-gleich) |
+| Glyph-Bench Kurrent | 0,125104 (12) | **0,121916** (12) | 11, **0 verändert**; `a` fällt raus, `M` kommt dazu |
+| Wort-Bench Wörter | 0,109218 | **0,109218** | unverändert |
+| Wort-Bench Paare | 0,148198 | **0,148198** | unverändert |
+
+Sütterlin steigt also um +0,0295, weil **28 Glyphen neu dazukommen**, die
+im Juni noch nicht gesperrt/autoriert waren; ihr Mittel liegt bei
+**0,246530** gegen 0,184069 der alten Menge. Das ist die erwartete
+Richtung — die später autorierten Formen sind die schwereren. Kurrent
+sinkt um −0,0032 aus demselben Grund in die andere Richtung: ein Glyph
+wird getauscht (`a` hat heute keine gesperrte Bbox mehr, `M` schon).
+Die stehende Doku-Zahl **0,1865** (2026-06-20, oben) ist noch einmal
+etwas anderes: sie wurde mit dem Code von damals gemessen; derselbe
+Juni-Fixture-Satz ergibt mit heutigem Code 0,182809. Alle drei Zahlen
+stehen hier nebeneinander, damit niemand sie gegeneinander rechnet.
+
+**Wurzel-Kennungen nach dem Export** (Kopfregel §14): Wort-Bench
+`suetterlin-1922` `exported_at 2026-09-03T21:28:30+00:00`
+`root_digest 57402ae7dd41`, `suetterlin-1922-pairs` gleicher Zeitstempel
+`f176e191d4bf` (vorher `2e3581287bed` / `cee9d363f497`). Die
+Glyph-Bench-Wurzeln tragen keinen `root_digest` — ihr `manifest.json`
+nennt `exported_at` **2026-09-03T21:28:xx+00:00** und den
+`chart_sha256`, der über beide Exporte unverändert blieb.
+
+**Mitgefallen: `tests/test_glyphlab.py` prüfte gegen tote Schlüssel.**
+Die Tests luden `i-initial` und `longs-final` — Positions-Suffixe, die es
+seit Migration `0017` nicht mehr gibt. Sie liefen nur deshalb grün, weil
+die Juni-Wurzel sie noch enthielt, und in CI gar nicht (die Fixtures sind
+gitignored, der Modul-`skipif` übersprang sie dort). Auf den neuen
+Schlüsseln `i`/`longs` fielen sie sofort — und zwar zweimal: erst am
+fehlenden Schlüssel, dann daran, dass `i` seit `0017` in BEIDEN Wurzeln
+liegt und die bloße Suche die Kurrent-Zeile zog, wo der Test die
+Sütterlin-Zeile meinte. Beide Fälle benennen jetzt ihre Quelle.
+Lehre für die Bench-Familie: ein `skipif` auf gitignorte Fixtures heißt,
+dass diese Tests nur lokal je laufen — sie altern still mit dem
+Fixture-Satz, an dem sie hängen.
+
+**Ein Befund, der aus der Neuaufnahme fällt und NICHT hier behoben
+wird:** die Umlaut-Kleinbuchstaben `oe` (0,9197) und `ue` (0,8561) sind
+die schlechtesten Glyphen der neuen Menge, und zwar allein über die
+Deckung (0,992 bzw. 0,977 bei guter Natürlichkeit 0,091/0,049) — die
+Form ist glatt, sie liegt nur fast nicht auf der Tinte. `Oe`/`Ue` liegen
+mit 0,399/0,365 dazwischen. Das ist eine Autoring- oder
+Ausschnitt-Frage, keine Metrik-Frage, und gehört in eine eigene Runde.
 
 ### Der gespeicherte Score ist der Stand der Ableitung (gilt für beide Skript-Metriken)
 
@@ -3489,20 +3589,30 @@ Werkzeuge: `tools/tracebench/`.
 
 ### Register der Einträge (Index, keine Zahl-Heimat)
 
-Diese Sektion trägt 80 datierte Abschnitte und ist die eine Heimat der
+Diese Sektion trägt 81 datierte Abschnitte und ist die eine Heimat der
 Kampagnen-Zahlen; die Tabelle hier ist ihr **Index** — sie wiederholt
 keine Zahl, sie zeigt, wo eine steht. Ihre Reihenfolge ist die der
 Datei, also die Reihenfolge, in der die Abschnitte angehängt wurden; die
 Datums-Spalte macht dort, wo das von der Chronologie abweicht (LF9 vor
 LF7/LF8), genau diese Abweichung sichtbar.
 
-Das Journal endet **nicht** an der §15-Überschrift: §15 ist selbst ein
-datierter Eintrag (das Rechteck-Re-Baseline), und eine Runde hängt ihren
-Abschnitt ans Dateiende — also hinter §15. Die vier `sep02`-Einträge
-(LF11, J4, J4b) stehen deshalb physisch nach §15 und sind trotzdem
-Journal-Einträge; das Register führt sie mit, und das Gate liest von
-`## 14.` bis Dateiende. Ob sie besser vor §15 stünden, ist eine Frage an
-den Autor — umsortiert wird hier nichts.
+**§14 ist eine geschlossene Sektion** und endet an der §15-Überschrift.
+Das war eine Zeit lang nicht so: eine Runde hängt ihren Abschnitt ans
+Dateiende, und seit §15 dort steht, landeten die vier `sep02`-Einträge
+(LF11 ×2, J4, J4b) und später die LF11-Adoption dahinter. Der Autor hat
+am 2026-09-03 entschieden, §14 wieder zu schließen — die Abschnitte
+stehen seither vor §15, Wort für Wort unverändert und mit ihren Ankern.
+Wer die nächste Runde schreibt, hängt sie also nicht ans Dateiende,
+sondern vor §15. Das Gate schaut dafür über die Sektionsgrenze hinaus:
+**jede** `###`-Überschrift hinter §14 wird als verrutschter Eintrag
+gemeldet („sits AFTER §14“) — sie fällt nicht still aus dem Fenster. Ob
+eine Überschrift „nach Journal aussieht“, entscheidet das Gate bewusst
+nicht: diese Datei trägt schon 26 datierte `###`-Überschriften außerhalb
+von §14, das Datum trennt also nichts. Bekommt eine spätere Sektion
+einmal eine eigene Unterüberschrift, wird sie in
+`tools/docs_register` (`POST_JOURNAL_SUBHEADINGS`) eingetragen — eine
+Zeile, die im Review sichtbar ist. Die fehlende Registerzeile ist die
+andere, eigene Meldung und greift für Abschnitte INNERHALB von §14.
 
 **Nachzieh-Pflicht: jeder neue `###`-Abschnitt dieser Sektion ergänzt im
 selben PR seine Registerzeile**, und jeder Eintrag, der einen Arm einer
@@ -3533,7 +3643,7 @@ die DB) — mit seiner Bedingung.
 | aug14 | Lineal | [Freeze-Deklaration](#freeze-deklaration) | Pre-Reg | Metrik-Module + Fixture-Roots frieren mit erster Baseline |
 | aug14 | Lineal | [Grenze](#was-der-bench-nicht-beantwortet) | Pre-Reg | Duktus-Wahrheit sieht kein Bahnmaß; humanbench bleibt Endkriterium |
 | aug14 | Kette | [Baseline (Freeze-Akt)](#baseline-aug14--der-kettenfit-gegen-die-hand-freeze-akt) | gemessen | Kette dtw 0,062 med, p90 0,262, 19 erfundene Kreuzungen (v1-Zähler); Schritt 0,02 gepinnt |
-| aug14 | Kette | [Folger-Arme ①–⑧](#vorregistrierung-der-folger-arme-aug14-vor-dem-ersten-sweep) | Pre-Reg | Arm-Reihenfolge + Kill-Kriterien; ②③④⑦⑧ nie gemessen — die Schließung steht nur auf der Kette-Seite (`tintenfolger.md` §7.11) |
+| aug14 | Kette | [Folger-Arme ①–⑧](#vorregistrierung-der-folger-arme-aug14-vor-dem-ersten-sweep) | Pre-Reg · ②③④⑦⑧ abgeschrieben (`sep03`) | Arm-Reihenfolge + Kill-Kriterien; fünf Arme nie gemessen und am 2026-09-03 per Autor-Entscheid abgeschrieben — Gewichts-Sweeps derselben Formulierung, die ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet haben (Nachtrag im Abschnitt, §7.9/§7.11) |
 | aug14 | Kette | [Arm ① λ_prox](#arm-①-aug14--die-λ_prox-leiter-formulierung-v1-verworfen-der-tinten-zug-validiert) | gemessen · verworfen | Struktur-Veto auf jeder Sprosse (26→43–66); Tinten-Zug +0,10 aiou validiert |
 | aug14 | Kette | [Arme ⑤+⑥](#arme-⑤--⑥-aug14--overlap-freigesprochen-die-korrespondenz-kappe-gefunden) | gemessen · verworfen | Overlap freigesprochen; Korrespondenz-Kappe (12/21 Ziele ohne Kreuzung) |
 | aug14 | Kette | [Arm ⑥b](#arm-⑥b-aug14--vorregistrierung-klassenbewusste-korrespondenz) | Pre-Reg | Klassenbewusste Korrespondenz (Touch/T-Junction Gewicht 0) |
@@ -3638,6 +3748,7 @@ Vorbedingung (Glossar „Wurzel-Digest“, `tools/wordbench/README.md`).
 | sep01 | #472 | **Re-Baseline**: sieben reparierte Wort-Rechtecke, Bahnen nachgezogen, Wurzeln neu gebaut | 0,109255 | 0,148433 | §15 |
 | sep02 | dieser PR | Wurzeln neu gebaut (`fetch_fixtures --set all --verify`), `exported_at` 2026-09-02T08:00:29+00:00, `root_digest` `28ba1afebc53…` (`suetterlin-1922`) / `f0cf3d53414c…` (`suetterlin-1922-pairs`) — **keine** Re-Baseline: §15 wird exakt reproduziert | 0,109255 | 0,148433 | dieser Ledger-Eintrag |
 | sep02 | #501 | **Re-Baseline nach dem LF11-Write**: 22 Laufform-Zeilen auf Spline-Basis-Mediane umgestellt (Snapshot `2026-09-02T21-58-16Z`, Readback 22/22), Wurzeln neu gebaut: `suetterlin-1922` `exported_at` 2026-09-02T22:13:54+00:00 `root_digest` `2e3581287bed…`, `suetterlin-1922-pairs` `exported_at` 2026-09-02T22:13:53+00:00 `root_digest` `cee9d363f497…`; trifft die trockene LF11-Vorhersage exakt | 0,109218 | 0,148198 | §14 „Laufform LF11 — humanbench-Wortrunde, Instrumentdefekt und Adoption“ |
+| sep03 | #516 | Wurzeln neu gebaut (`fetch_fixtures --set all --verify`, 12/12 bit-exakt) im Zuge der Glyph-Bench-Re-Baseline (Audit A15): `suetterlin-1922` `exported_at` 2026-09-03T21:28:30+00:00 `root_digest` `57402ae7dd41…`, `suetterlin-1922-pairs` gleicher Zeitstempel `f176e191d4bf…` — **keine** Re-Baseline der Wort-Zahlen: beide reproduzieren exakt, nur die Wurzel-Identität ist neu | 0,109218 | 0,148198 | §5 „Re-Baseline 2026-09-03“ |
 
 **Nachtrag `sep02` — die `aug30`-Wurzel ist eine undeklarierte
 Re-Baseline.** Zwischen der `aug29`-Wurzel (0,106720 / 0,146506, im
@@ -3916,6 +4027,24 @@ jeder anderen Zahl.
 **Was ein Arm-Lauf abliefert:** die `--compare`-Paartabelle gegen
 `temp/tracebench-baseline-chain.json`, die Kostenspalten des Arms, und
 einen datierten Eintrag HIER — auch (gerade) bei einem Negativ.
+
+**Nachtrag 2026-09-03 — die Arme ②③④⑦⑧ sind abgeschrieben
+(Autor-Entscheid).** Von den acht hier vorregistrierten Armen wurden fünf
+nie einzeln gemessen: ② · ③ · ④ · ⑦ · ⑧. Sie bleiben es auch. Der Grund
+ist kein Zeitmangel, sondern ein Ergebnis: die fünf sind allesamt
+GEWICHTS-Arme derselben Formulierung, und genau diese Formulierung haben
+①⑤⑥⑥b⑨ erschöpfend negativ beantwortet — Arm ⑨ schloss die Reihe mit dem
+Route-A-Fazit ab, dass der Kettenfit am struktur-sicheren Optimum DIESER
+Formulierung steht (dtw-Δ exakt 0). Ein weiterer Gewichts-Sweep könnte
+das nur bestätigen; was die Route seither bewegt hat, waren
+Formulierungs- und Evidenz-Änderungen (K-A · K-B · K-C · K0-S), nicht
+Gewichte. Die Abschreibung stand bis heute nur auf
+[`verfahren-kette.md`](verfahren-kette.md) und ist damit hier im Journal
+angekommen; die Registerzeile oben trägt sie, die Rettungswege
+`tintenfolger.md` §7.9, der Status §7.11. **Wiederaufnahme nur mit einer
+frischen Vorregistrierung**, und die bräuchte einen Grund, den die
+Gewichts-Familie bisher nicht geliefert hat — eine neue Formulierung, in
+der ein Gewicht überhaupt etwas anderes tun kann.
 
 ### Arm ① `aug14` — die λ_prox-Leiter: Formulierung v1 verworfen, der Tinten-Zug validiert
 
@@ -10041,110 +10170,6 @@ Klassen-Bestätigung, kein Gate-Kandidat. Datenaktion: keine; P bleibt
 (Autor-Entscheid), kein Schreibpfad liest den Form-Abstand, die
 Inventar-Spalte `form` bleibt Berichts-Spalte.
 
----
-
-## 15. Sieben angeschnittene Wortproben repariert — angekündigtes Re-Baseline des Wort-Benchs (`aug31`)
-
-**Befund (Autor, aus der Werkbank).** Wortproben, die sich nicht
-nachfahren lassen, weil der i-Punkt fehlt oder der letzte Buchstabe
-halb ist. Nachgemessen auf der ROHEN binarisierten Platte (ohne
-Despeckle — genau dort verschwindet ein dünner Sütterlin-i-Strich):
-von den 202 committeten Proben liegen **169 auf exakt 3 px Luft**, dem
-Standardrand von `propose_boxes` (`BOX_PAD_PX`), und **sieben unter
-diesem Standard**, vier davon mit tatsächlich angeschnittener Tinte
-(negative Luft — die übrigen drei liegen knapp darunter):
-
-| Probe | Fehler | Reparatur |
-|---|---|---|
-| `regieren` | −37 px rechts (letztes `n` durchgeschnitten) | rechts +43, Komma per `exclude` |
-| `zum` | −13 px oben (u-Bogen durchgeschnitten) | oben +19, obsolete `exclude` entfernt |
-| `einer` | −5 px oben (i-Strich durchgeschnitten) | oben +11 |
-| `das` | −4 px links (Anstrich) | links +10 |
-| `und` | 1 px links | links +5 |
-| `Wer` | 2 px oben | oben +4 |
-| `zwei` | 2 px unten | unten +3 |
-
-Die Ursache ist der Standard selbst, nicht die einzelne Zeile: 3 px auf
-der **despeckelten** Maske gemessen sind zu wenig für eine Marke, die
-unter der Despeckle-Schwelle (24 px) liegt. `tools/wordbench/repair_boxes.py`
-misst darum roh nach und hebt nur, was unter dem Standard liegt, auf 6 px;
-die 169 Standard-Rechtecke bleiben Byte für Byte stehen — jedes
-angefasste Rechteck ist ein Fixture und eine Bahn-Registrierung, die
-mitwandern muss.
-
-**Zwei Befunde kamen aus der Sichtprüfung des Autors, nicht aus dem
-Code** — beide waren Fehler der ersten Fassung dieses Werkzeugs:
-
-**`regieren` war rechts wirklich abgeschnitten.** Die erste Fassung
-verweigerte die Reparatur mit einem Deckel von einer x-Höhe und der
-Begründung, jenseits der Kante liege das Komma. Nachgemessen: die 37 px
-sind der **Auslauf des letzten `n` selbst**; das Komma ist eine eigene
-Komponente (Schwärze 0,454 gegen 0,392 des Wortes) und beginnt erst
-dahinter. Ein Deckel von einer x-Höhe verweigert damit eine echte
-Reparatur — die schlimmere der beiden Fehlerarten, denn die Regeln, die
-tatsächlich über Zugehörigkeit entscheiden (Lineatur-Zone, Schwärze,
-Interpunktion), stehen davor. Der Deckel sitzt jetzt bei 2 xh und ist
-nur noch Rückfallebene. Das mitgewachsene Komma bekommt eine
-`exclude`-Box — genau der im Sidecar dokumentierte Fall („punctuation
-overlapping a box edge"): sie deckt 198 von 198 Komma-Pixeln und **0**
-Pixel des Wortes.
-
-**`zum` zeigte einen weißen Block im Ausschnitt.** Seine `exclude`-Box
-war am ALTEN Oberrand verankert und verdeckte dort den Stummel des
-u-Bogens, durch den das alte Rechteck schnitt. Über dem reparierten
-Ausschnitt malt sie einen weißen Kasten auf sauberes Papier und
-beschneidet genau die Marke, die die Reparatur gerettet hat. Regel
-daraus: eine `exclude`-Box, die nur noch EIGENE Tinte verdeckt und keine
-fremde mehr, wird entfernt. Bewusst eng — deckt sie weiter Fremdtinte,
-bleibt sie stehen, auch wenn sie das Wort streift: das ist ein
-handgesetztes Urteil über eine Nachbarzeile, und das überstimmt dieses
-Werkzeug nicht (eine weitere Fassung wollte 12 handgesetzte Boxen
-löschen).
-
-**Das Re-Baseline, ausgeführt (`sep01`).** Die Rechtecke sind
-eingefrorene Referenzgeometrie: sieben veränderte Crops heißen sieben
-veränderte Referenzmasken. Die drei fälligen Schritte sind gelaufen, in
-dieser Reihenfolge — die Reihenfolge ist keine Kosmetik, denn der
-Fixture-Bau liest die Registrierungen, die Schritt 1 erst geraderückt:
-
-1. **Bahnen nachgezogen** (`shift_registrations --baseline <words.json vor
-   der Reparatur>`, gegen die deployte API mit Autoren-Zusage). Fünf
-   Proben hatten ihren Ursprung bewegt und ihre Bahnen entsprechend
-   daneben: `das` tx +10 · `und` tx +5 (beide `authored`) · `Wer` tx +0
-   baseline_row +4 (`authored`) · `einer` +11 · `zum` +19 (beide
-   `traced`). 5 von 96 Zeilen geschrieben, kein Nachfahren. Kontrolle
-   danach: jede der fünf trägt `rect_origin` gleich dem Sidecar-Rechteck,
-   Restdrift zur Crop-Grundlinie ≤ 1 px (Gate: 4 px), und ein zweiter
-   Lauf findet **0 to correct** — die Stempel-Idempotenz trägt.
-2. **Fixture-Roots neu gebaut**, in der Cloud über den lesenden Zwilling
-   `fetch_fixtures --set all --verify`: „verify ok: every rebuilt row
-   renders identically and 12 compositions match /write/word (12
-   bit-exact)". Entscheidend für Schritt 1: **0 frame-stale** in allen
-   drei Sets, und der Wörter-Satz behält alle 29 `authored` + 34 `traced`
-   Wortbahnen. Ohne die Korrektur wären die fünf reparierten Proben hier
-   als veralteter Rahmen aus dem Bench gefallen.
-3. **Gemessen** (BLAS auf einen Thread gepinnt):
-
-| Satz | vorher | jetzt |
-|---|---|---|
-| Wörter (`bench_loss`, 63 Proben) | 0,106400 | **0,109255** |
-| Paare (`pair_loss`, 33 Proben) | 0,148467 | **0,148433** |
-
-Die Wörter steigen um +0,0029 — **die vorhergesagte Richtung**. Der Loss
-der reparierten Proben: `regieren` 0,2338 · `Wer` 0,1499 · `und` 0,0882 ·
-`zwei` 0,0780 · `das` 0,0731 · `einer` 0,0627 · `zum` 0,0594. Die Paare
-bewegen sich um −0,00003, also gar nicht: auf Abb. 20 wurde kein
-Rechteck angefasst, und dass die Zahl trotzdem nicht exakt steht, ist der
-gemeinsame Fixture-Neubau, nicht die Reparatur.
-
-**Zahlen über diese Grenze sind nicht vergleichbar** (§2 „Re-Baseline ist
-eine bewusste menschliche Entscheidung"). Sieben von 63 Wort-Referenzen
-zeigen ab jetzt mehr Tinte als vorher, und mehr Tinte im Soll heißt ohne
-jede Code-Änderung eine andere Zahl. Das ist die richtige Richtung:
-vorher wurde gegen einen Buchstaben gemessen, der auf der Referenz gar
-nicht ganz da war — `regieren` ist mit 0,2338 der teuerste der sieben,
-und genau bei ihm fehlte am meisten (der halbe letzte Buchstabe).
-
 ### Laufform LF11 `sep02` — Vorregistrierung: die glatte Zeile (Spline-Basis-Median statt Per-Anker-Median)
 
 Geschrieben und committet VOR der ersten Zahl dieses Arms. Basis:
@@ -10919,3 +10944,107 @@ wird). Der Golden bleibt unberührt. **Die öffentlichen
 `/write/word`-Antworten liegen bis zu 24 h im Edge-Cache; der Wechsel
 auf die glatten Zeilen wird dort erst mit Ablauf sichtbar — kein Purge
 (Entscheid des Autors).**
+
+---
+
+## 15. Sieben angeschnittene Wortproben repariert — angekündigtes Re-Baseline des Wort-Benchs (`aug31`)
+
+**Befund (Autor, aus der Werkbank).** Wortproben, die sich nicht
+nachfahren lassen, weil der i-Punkt fehlt oder der letzte Buchstabe
+halb ist. Nachgemessen auf der ROHEN binarisierten Platte (ohne
+Despeckle — genau dort verschwindet ein dünner Sütterlin-i-Strich):
+von den 202 committeten Proben liegen **169 auf exakt 3 px Luft**, dem
+Standardrand von `propose_boxes` (`BOX_PAD_PX`), und **sieben unter
+diesem Standard**, vier davon mit tatsächlich angeschnittener Tinte
+(negative Luft — die übrigen drei liegen knapp darunter):
+
+| Probe | Fehler | Reparatur |
+|---|---|---|
+| `regieren` | −37 px rechts (letztes `n` durchgeschnitten) | rechts +43, Komma per `exclude` |
+| `zum` | −13 px oben (u-Bogen durchgeschnitten) | oben +19, obsolete `exclude` entfernt |
+| `einer` | −5 px oben (i-Strich durchgeschnitten) | oben +11 |
+| `das` | −4 px links (Anstrich) | links +10 |
+| `und` | 1 px links | links +5 |
+| `Wer` | 2 px oben | oben +4 |
+| `zwei` | 2 px unten | unten +3 |
+
+Die Ursache ist der Standard selbst, nicht die einzelne Zeile: 3 px auf
+der **despeckelten** Maske gemessen sind zu wenig für eine Marke, die
+unter der Despeckle-Schwelle (24 px) liegt. `tools/wordbench/repair_boxes.py`
+misst darum roh nach und hebt nur, was unter dem Standard liegt, auf 6 px;
+die 169 Standard-Rechtecke bleiben Byte für Byte stehen — jedes
+angefasste Rechteck ist ein Fixture und eine Bahn-Registrierung, die
+mitwandern muss.
+
+**Zwei Befunde kamen aus der Sichtprüfung des Autors, nicht aus dem
+Code** — beide waren Fehler der ersten Fassung dieses Werkzeugs:
+
+**`regieren` war rechts wirklich abgeschnitten.** Die erste Fassung
+verweigerte die Reparatur mit einem Deckel von einer x-Höhe und der
+Begründung, jenseits der Kante liege das Komma. Nachgemessen: die 37 px
+sind der **Auslauf des letzten `n` selbst**; das Komma ist eine eigene
+Komponente (Schwärze 0,454 gegen 0,392 des Wortes) und beginnt erst
+dahinter. Ein Deckel von einer x-Höhe verweigert damit eine echte
+Reparatur — die schlimmere der beiden Fehlerarten, denn die Regeln, die
+tatsächlich über Zugehörigkeit entscheiden (Lineatur-Zone, Schwärze,
+Interpunktion), stehen davor. Der Deckel sitzt jetzt bei 2 xh und ist
+nur noch Rückfallebene. Das mitgewachsene Komma bekommt eine
+`exclude`-Box — genau der im Sidecar dokumentierte Fall („punctuation
+overlapping a box edge"): sie deckt 198 von 198 Komma-Pixeln und **0**
+Pixel des Wortes.
+
+**`zum` zeigte einen weißen Block im Ausschnitt.** Seine `exclude`-Box
+war am ALTEN Oberrand verankert und verdeckte dort den Stummel des
+u-Bogens, durch den das alte Rechteck schnitt. Über dem reparierten
+Ausschnitt malt sie einen weißen Kasten auf sauberes Papier und
+beschneidet genau die Marke, die die Reparatur gerettet hat. Regel
+daraus: eine `exclude`-Box, die nur noch EIGENE Tinte verdeckt und keine
+fremde mehr, wird entfernt. Bewusst eng — deckt sie weiter Fremdtinte,
+bleibt sie stehen, auch wenn sie das Wort streift: das ist ein
+handgesetztes Urteil über eine Nachbarzeile, und das überstimmt dieses
+Werkzeug nicht (eine weitere Fassung wollte 12 handgesetzte Boxen
+löschen).
+
+**Das Re-Baseline, ausgeführt (`sep01`).** Die Rechtecke sind
+eingefrorene Referenzgeometrie: sieben veränderte Crops heißen sieben
+veränderte Referenzmasken. Die drei fälligen Schritte sind gelaufen, in
+dieser Reihenfolge — die Reihenfolge ist keine Kosmetik, denn der
+Fixture-Bau liest die Registrierungen, die Schritt 1 erst geraderückt:
+
+1. **Bahnen nachgezogen** (`shift_registrations --baseline <words.json vor
+   der Reparatur>`, gegen die deployte API mit Autoren-Zusage). Fünf
+   Proben hatten ihren Ursprung bewegt und ihre Bahnen entsprechend
+   daneben: `das` tx +10 · `und` tx +5 (beide `authored`) · `Wer` tx +0
+   baseline_row +4 (`authored`) · `einer` +11 · `zum` +19 (beide
+   `traced`). 5 von 96 Zeilen geschrieben, kein Nachfahren. Kontrolle
+   danach: jede der fünf trägt `rect_origin` gleich dem Sidecar-Rechteck,
+   Restdrift zur Crop-Grundlinie ≤ 1 px (Gate: 4 px), und ein zweiter
+   Lauf findet **0 to correct** — die Stempel-Idempotenz trägt.
+2. **Fixture-Roots neu gebaut**, in der Cloud über den lesenden Zwilling
+   `fetch_fixtures --set all --verify`: „verify ok: every rebuilt row
+   renders identically and 12 compositions match /write/word (12
+   bit-exact)". Entscheidend für Schritt 1: **0 frame-stale** in allen
+   drei Sets, und der Wörter-Satz behält alle 29 `authored` + 34 `traced`
+   Wortbahnen. Ohne die Korrektur wären die fünf reparierten Proben hier
+   als veralteter Rahmen aus dem Bench gefallen.
+3. **Gemessen** (BLAS auf einen Thread gepinnt):
+
+| Satz | vorher | jetzt |
+|---|---|---|
+| Wörter (`bench_loss`, 63 Proben) | 0,106400 | **0,109255** |
+| Paare (`pair_loss`, 33 Proben) | 0,148467 | **0,148433** |
+
+Die Wörter steigen um +0,0029 — **die vorhergesagte Richtung**. Der Loss
+der reparierten Proben: `regieren` 0,2338 · `Wer` 0,1499 · `und` 0,0882 ·
+`zwei` 0,0780 · `das` 0,0731 · `einer` 0,0627 · `zum` 0,0594. Die Paare
+bewegen sich um −0,00003, also gar nicht: auf Abb. 20 wurde kein
+Rechteck angefasst, und dass die Zahl trotzdem nicht exakt steht, ist der
+gemeinsame Fixture-Neubau, nicht die Reparatur.
+
+**Zahlen über diese Grenze sind nicht vergleichbar** (§2 „Re-Baseline ist
+eine bewusste menschliche Entscheidung"). Sieben von 63 Wort-Referenzen
+zeigen ab jetzt mehr Tinte als vorher, und mehr Tinte im Soll heißt ohne
+jede Code-Änderung eine andere Zahl. Das ist die richtige Richtung:
+vorher wurde gegen einen Buchstaben gemessen, der auf der Referenz gar
+nicht ganz da war — `regieren` ist mit 0,2338 der teuerste der sieben,
+und genau bei ihm fehlte am meisten (der halbe letzte Buchstabe).

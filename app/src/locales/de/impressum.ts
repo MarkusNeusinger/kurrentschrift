@@ -44,34 +44,50 @@ export const impressum = {
     heading: 'Datenschutz',
     intro:
       'Wer diese Seiten besucht, bleibt unbehelligt: kein Konto, keine Cookies, kein Verzeichnis der Besucher. Verantwortlich für die Datenverarbeitung ist der oben genannte Betreiber.',
-    analyticsTitle: 'Besucherstatistik',
+    // Six short paragraphs, no sub-headings and no article numbers in the
+    // prose (author's call, 2026-09-03: the first draft read like a legal
+    // filing, which is not how this page speaks). The facts behind each
+    // sentence are unchanged and still verifiable — logs and their thirty
+    // days, the per-IP counting and the browser's security reports, the
+    // cookieless count over the site's own path, the Netherlands and
+    // Cloudflare in front of them — only the apparatus is gone.
+    // One retention promise per store, because they differ: the Cloud Logging
+    // bucket drops entries after thirty days, the rate-limit buckets are
+    // in-memory and survive only until the process restarts (api/rate_limit.py
+    // — no expiry, eviction only above MAX_TRACKED_CLIENTS), and a CSP report
+    // is written to the log and follows the log's thirty days. A blanket
+    // „nach dreißig Tagen" would have covered two stores it does not fit
+    // (Copilot review, #507).
+    data:
+      'Zweierlei fällt beim Besuch trotzdem an. Der Server schreibt jeden Abruf mit: IP-Adresse, Seite, Browser-Kennung. Diese Protokolle löschen sich nach dreißig Tagen von selbst. Damit die Seite nicht durch schiere Menge lahmgelegt wird, zählt er außerdem mit, wie viele Anfragen von einer Adresse kommen — dieser Zähler steht allein im Arbeitsspeicher und ist mit dem nächsten Neustart fort. Und er nimmt die Sicherheitsmeldungen entgegen, die der Browser schickt, wenn auf einer Seite etwas Unerlaubtes geladen würde; sie landen im selben Protokoll und verschwinden mit ihm.',
+    // NOT „kein fremdes Script": `/js/script.js` IS Plausible's script, only
+    // served from this domain (app/index.html, security-headers.conf). The
+    // proxy changes the request's origin, not the script's provenance — so the
+    // sentence names the property that is actually true, which is the one that
+    // matters for privacy anyway (Copilot review, #507).
     analyticsBeforeLink:
-      'Gezählt wird nur, was sich ohne Namen zählen lässt: Seitenaufrufe, nicht Personen. Dafür sorgt Plausible Analytics — ohne Cookies, ohne Verfolgung über fremde Seiten hinweg. Die Zählung steht ',
+      'Und gezählt wird, was sich ohne Namen zählen lässt: Seitenaufrufe, nicht Personen. Dafür sorgt Plausible — ohne Cookies, ohne Kennung, die dich über fremde Seiten hinweg wiedererkennt, und ohne dass deine IP-Adresse dort gespeichert würde. Eingebunden ist es über einen eigenen Weg auf dieser Domain: Dein Browser spricht nur mit uns, nicht mit einem fremden Server. Die Zählung steht ',
     analyticsLinkText: 'jedermann offen',
     analyticsUrl: 'https://plausible.io/kurrentschrift.ink',
     analyticsAfterLink: ' — wer mag, sieht genau das, was ich sehe.',
-    logsTitle: 'Server-Logs',
-    logs:
-      'Was die Technik beim Besuch nebenher notiert — IP-Adresse, abgerufene Seite, Browser-Kennung —, dient allein der Sicherheit und Fehlersuche und verschwindet nach dreißig Tagen von selbst (Google Cloud Logging).',
-    hostingTitle: 'Hosting & Dienste',
-    hostingIntro:
-      'Alle Dienste laufen in EU-Rechenzentren. Google und Cloudflare sind US-Anbieter, zertifiziert nach dem EU-US Data Privacy Framework:',
-    hosting: [
-      { label: 'Hosting', value: 'Google Cloud Run (Niederlande)' },
-      { label: 'Datenbank', value: 'Google Cloud SQL (Niederlande)' },
-      { label: 'CDN / Schutz', value: 'Cloudflare (EU-Rechenzentren für EU-Besucher)' },
-      { label: 'Statistik', value: 'Plausible Analytics (EU)' },
-    ],
-    notCollectedTitle: 'Was hier nicht gesammelt wird',
-    notCollected: [
-      'keine Konten, keine Profile',
-      'keine Cookies',
-      'keine personenbezogenen Daten über die nach dreißig Tagen gelöschten Server-Logs hinaus, keine Weitergabe an Dritte',
-      'kein Training von KI-Modellen mit Besucherdaten',
-    ],
-    rightsTitle: 'Deine Rechte',
+    // „Das alles" would have swept Plausible into this project's own stack;
+    // it is a separate managed service the API sends events to, EU-hosted but
+    // not in europe-west4 (Copilot review, #507).
+    hosting:
+      'Die Seite selbst läuft auf Google Cloud in den Niederlanden; davor liegt Cloudflare als Schutzschicht — ein weltweites Netz, das Besucher aus Europa in aller Regel über europäische Standorte bedient. Plausible ist ein eigener Dienst und zählt auf seinen eigenen Servern in der EU.',
+    // The author's sentence VERBATIM, with the legal basis added as a short
+    // aside rather than rewritten into it — the first attempt reworded his
+    // line, which the PR body still claimed was untouched (Copilot review,
+    // #507). No article number: „berechtigtes Interesse" is the ground itself.
+    basis:
+      'Wir tun das, weil ein Betreiber seine Seite schützen und wissen darf, wie oft sie gelesen wird — ein berechtigtes Interesse, wie das Gesetz es nennt; es gilt das Schweizer Datenschutzgesetz, für Besucher aus der EU zusätzlich die DSGVO.',
     rights:
-      'Auskunft, Berichtigung, Löschung: Über die nach dreißig Tagen gelöschten Server-Logs hinaus ist nichts über dich gespeichert — es gibt also fast nie etwas auszuhändigen oder zu tilgen. Bei Fragen genügen ein paar Zeilen per E-Mail.',
+      // The full set the preceding paragraph's GDPR reference implies, in one
+      // sentence and without article numbers: Auskunft, Berichtigung,
+      // Löschung, Einschränkung, Widerspruch — and the objection keeps its
+      // condition („aus Gründen deiner besonderen Lage"), which the condensed
+      // version had dropped a second time (Copilot review, #507).
+      'Du kannst jederzeit fragen, was gespeichert ist, es berichtigen, löschen oder in seiner Verwendung einschränken lassen, der Verarbeitung aus Gründen deiner besonderen Lage widersprechen und dich bei einer Aufsichtsbehörde beschweren — in der Schweiz beim Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten, in der EU bei der Behörde an deinem Wohnort. Ein paar Zeilen per E-Mail genügen.',
   },
   sources: {
     heading: 'Quellen & Lizenzen',
@@ -95,8 +111,12 @@ export const impressum = {
   },
   transparency: {
     heading: 'Transparenz',
+    // Was still promising „EU-Rechenzentren" flatly, which this revision
+    // withdrew three paragraphs above — two answers on one page (Copilot
+    // review, #507). Now it names what runs where and leaves the edge to the
+    // Hosting section.
     text:
-      'kurrentschrift.ink ist das Werk eines Einzelnen, offen für alle. Die Website läuft in EU-Rechenzentren — React im Browser, Python und PostgreSQL auf Google Cloud in den Niederlanden; Google und Cloudflare sind US-Anbieter, zertifiziert nach dem EU-US Data Privacy Framework. Fragen, Hinweise und Berichtigungen sind jederzeit willkommen — ich freue mich über Post.',
+      'kurrentschrift.ink ist das Werk eines Einzelnen, offen für alle. Server und Datenbank stehen in den Niederlanden — React im Browser, Python und PostgreSQL auf Google Cloud; davor liegt Cloudflares weltweites Netz, wie oben beschrieben. Google und Cloudflare sind US-Anbieter, zertifiziert nach dem EU-US Data Privacy Framework. Fragen, Hinweise und Berichtigungen sind jederzeit willkommen — ich freue mich über Post.',
   },
-  lastUpdated: 'Visp, im Juli 2026',
+  lastUpdated: 'Visp, im September 2026',
 } as const;

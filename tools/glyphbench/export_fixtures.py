@@ -9,6 +9,14 @@ export time, so a pipeline experiment cannot "improve" the metric by moving
 the target (e.g. by loosening the binarization). Re-running the export is an
 explicit human re-baseline.
 
+Only rows the bench can actually re-derive are exported: a template needs a
+stylus path, so the Laufform variant (a median over word occurrences, no chart
+cell) and any untraced form variant are skipped and named in the run's output.
+The root is REPLACED on every export, never merged into — glyph_keys change
+shape between schemas, and a stray directory from an older one is invisible.
+The replacement runs through a staging sibling and a final swap, so a failed
+export leaves the previous root intact rather than half of a new one.
+
 Fixture layout (gitignored — regenerate at will):
 
     fixtures/<style_id>/<source_id>/
@@ -31,6 +39,8 @@ import argparse
 import asyncio
 import hashlib
 import json
+import shutil
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -107,6 +117,127 @@ def _dedupe_templates(entries: list[tuple[dict, dict]]) -> tuple[list[tuple[dict
     return kept, len(entries) - len(kept)
 
 
+def select_exportable(
+    templates: Sequence, bboxes: Mapping[str, object], include_unlocked: bool
+) -> tuple[list[tuple[dict, dict]], int, list[str]]:
+    """The rows the bench can actually score, plus what was left behind and why.
+
+    Two filters, and the second one is the reason this function exists. A
+    template needs a bbox and (unless `include_unlocked`) a locked one — that
+    has always been true. It ALSO needs a stylus path: the bench re-derives
+    every canonical from the chart bytes plus that path, and every row lands in
+    the shared per-key directory `<glyph_key>/`, so a row without a path both
+    fails to score and OVERWRITES the chart row that would have.
+
+    That is what the Laufform rows (variant 100) did once the 1922 source
+    acquired them. A Laufform is a median over word occurrences — no chart
+    cell, no trace — and because the export walks templates ordered by
+    `(glyph_key, variant)` it ran last and won. The first re-export after the
+    LF11 write came back with 22 keys whose `template.json` was the Laufform
+    and 44 crashes (each such key appeared twice in the index).
+
+    The test is the PATH, not the variant number: an authored form variant that
+    was never traced is just as underivable, and the 1922 `i` at variant 1 is
+    exactly that case.
+
+    Returns the (template, bbox) dicts to export, how many rows were skipped as
+    unlocked, and a `glyph_key#variant` label for every row skipped for want of
+    a trace — named rather than counted, because a silently shrinking export is
+    the failure this whole function guards against.
+    """
+    entries: list[tuple[dict, dict]] = []
+    skipped_unlocked = 0
+    skipped_no_trace: list[str] = []
+    for template in templates:
+        bbox = bboxes.get(template.glyph_key)
+        if bbox is None:
+            continue
+        if not bbox.locked and not include_unlocked:
+            skipped_unlocked += 1
+            continue
+        if len(template.raw_path or []) < 2:
+            skipped_no_trace.append(f"{template.glyph_key}#{template.variant}")
+            continue
+        entries.append((_template_dict(template), _bbox_dict(bbox)))
+    return entries, skipped_unlocked, skipped_no_trace
+
+
+def write_fixture_root(
+    fixture_root: Path, kept: list[tuple[dict, dict, list[str]]], chart_gray, manifest_base: dict
+) -> list[dict]:
+    """Serialise the whole root into a staging sibling, then swap it in.
+
+    Replace rather than merge: glyph_keys change shape over time (the position
+    suffixes of `A-final` died with migration `0017`), and a directory left
+    behind from an older schema sits in the tree looking exactly like a current
+    one — the June 2026 root still carried 52 such strays when this was written.
+
+    But replacing cannot mean deleting first. A frozen root IS the reference
+    every quoted number stands on, so a crop, binarisation or write failure
+    halfway through must not leave the tree with neither the old baseline nor a
+    usable new one. Everything is built beside the root and moved into place at
+    the end; a failure removes the staging directory and leaves the previous
+    root exactly as it was.
+
+    The manifest is written last, so a staging directory that somehow survives
+    is visibly incomplete rather than plausible.
+
+    Returns the glyph index that went into the manifest.
+    """
+    staging = fixture_root.with_name(f"{fixture_root.name}.staging")
+    if staging.exists():
+        shutil.rmtree(staging)
+    staging.mkdir(parents=True)
+
+    try:
+        glyph_index: list[dict] = []
+        for template, bbox, positions in kept:
+            glyph_dir = staging / template["glyph_key"]
+            glyph_dir.mkdir(exist_ok=True)
+
+            crop = crop_with_mask(chart_gray, bbox, fill=1.0)
+            mask = binarize_adaptive(crop)
+            skel, width_map = skeleton_and_width(mask)
+
+            (glyph_dir / "template.json").write_text(json.dumps(template, ensure_ascii=False))
+            (glyph_dir / "bbox.json").write_text(json.dumps(bbox, ensure_ascii=False))
+            Image.fromarray((np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8), mode="L").save(glyph_dir / "crop.png")
+            Image.fromarray((mask * 255).astype(np.uint8), mode="L").save(glyph_dir / "ref_mask.png")
+            np.savez_compressed(glyph_dir / "ref_skel.npz", skel=skel, width_map=width_map.astype(np.float32))
+
+            glyph_index.append(
+                {
+                    "glyph_key": template["glyph_key"],
+                    "glyph": template["glyph"],
+                    # Carried so a second row on the same key is VISIBLE in the
+                    # index; without it the two entries a key with a Laufform
+                    # produced were indistinguishable, and the bench dutifully
+                    # scored the same directory twice.
+                    "variant": template["variant"],
+                    "positions": sorted(positions),
+                    "n_anchors": bbox["n_anchors"],
+                    "locked": bbox["locked"],
+                    "updated_at": template["updated_at"],
+                }
+            )
+
+        manifest = {
+            "exported_at": datetime.now(UTC).isoformat(timespec="seconds"),
+            **manifest_base,
+            "glyphs": glyph_index,
+        }
+        (staging / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1))
+    except BaseException:
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
+
+    # From here only two directory operations remain.
+    if fixture_root.exists():
+        shutil.rmtree(fixture_root)
+    staging.rename(fixture_root)
+    return glyph_index
+
+
 async def export(source_id: str, out_dir: Path, include_unlocked: bool, dedupe: bool) -> None:
     # Imported here, after load_dotenv(): the connection module reads env at import time.
     from core.database.connection import get_db_context
@@ -120,16 +251,7 @@ async def export(source_id: str, out_dir: Path, include_unlocked: bool, dedupe: 
         bboxes = {b.glyph_key: b for b in await BboxRepository(session).list(source_id)}
         templates = await TemplateRepository(session).list(source.style_id)
 
-    entries: list[tuple[dict, dict]] = []
-    skipped_unlocked = 0
-    for template in templates:
-        bbox = bboxes.get(template.glyph_key)
-        if bbox is None:
-            continue
-        if not bbox.locked and not include_unlocked:
-            skipped_unlocked += 1
-            continue
-        entries.append((_template_dict(template), _bbox_dict(bbox)))
+    entries, skipped_unlocked, skipped_no_trace = select_exportable(templates, bboxes, include_unlocked)
 
     if dedupe:
         kept, n_deduped = _dedupe_templates(entries)
@@ -142,36 +264,7 @@ async def export(source_id: str, out_dir: Path, include_unlocked: bool, dedupe: 
     chart_gray = load_chart_grayscale(source.chart_path)
 
     fixture_root = out_dir / source.style_id / source_id
-    fixture_root.mkdir(parents=True, exist_ok=True)
-
-    glyph_index = []
-    for template, bbox, positions in kept:
-        glyph_dir = fixture_root / template["glyph_key"]
-        glyph_dir.mkdir(exist_ok=True)
-
-        crop = crop_with_mask(chart_gray, bbox, fill=1.0)
-        mask = binarize_adaptive(crop)
-        skel, width_map = skeleton_and_width(mask)
-
-        (glyph_dir / "template.json").write_text(json.dumps(template, ensure_ascii=False))
-        (glyph_dir / "bbox.json").write_text(json.dumps(bbox, ensure_ascii=False))
-        Image.fromarray((np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8), mode="L").save(glyph_dir / "crop.png")
-        Image.fromarray((mask * 255).astype(np.uint8), mode="L").save(glyph_dir / "ref_mask.png")
-        np.savez_compressed(glyph_dir / "ref_skel.npz", skel=skel, width_map=width_map.astype(np.float32))
-
-        glyph_index.append(
-            {
-                "glyph_key": template["glyph_key"],
-                "glyph": template["glyph"],
-                "positions": sorted(positions),
-                "n_anchors": bbox["n_anchors"],
-                "locked": bbox["locked"],
-                "updated_at": template["updated_at"],
-            }
-        )
-
-    manifest = {
-        "exported_at": datetime.now(UTC).isoformat(timespec="seconds"),
+    manifest_base = {
         "source_id": source_id,
         "style_id": source.style_id,
         "chart_path": source.chart_path,
@@ -179,13 +272,16 @@ async def export(source_id: str, out_dir: Path, include_unlocked: bool, dedupe: 
         "style_ratio": source.style_ratio or (style.default_style_ratio if style else None),
         "slant_deg": source.slant_deg or (style.default_slant_deg if style else None),
         "width_resolver": style.width_resolver if style else None,
-        "glyphs": glyph_index,
     }
-    (fixture_root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1))
+    glyph_index = write_fixture_root(fixture_root, kept, chart_gray, manifest_base)
 
     print(f"exported {len(glyph_index)} glyphs to {fixture_root}")
     print(f"  deduped fan-out copies: {n_deduped}")
     print(f"  skipped unlocked:       {skipped_unlocked}" + ("" if not include_unlocked else " (included)"))
+    print(
+        f"  skipped without trace:  {len(skipped_no_trace)}"
+        + (f" ({', '.join(skipped_no_trace)})" if skipped_no_trace else "")
+    )
 
 
 def main() -> None:

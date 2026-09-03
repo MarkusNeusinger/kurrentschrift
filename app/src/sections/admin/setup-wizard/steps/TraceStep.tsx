@@ -11,6 +11,11 @@ import {
   Alert,
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   FormControlLabel,
   Slider,
   Stack,
@@ -68,8 +73,10 @@ export function TraceStep({
   busy: boolean;
   showSaved: boolean;
   setShowSaved: (v: boolean) => void;
-  saveTrace: (nAnchors: number) => Promise<void>;
-  resample: (nAnchors: number) => Promise<void>;
+  // `force` overrides the server's lock guard and is passed ONLY by the
+  // confirmation dialog below — never straight from a button.
+  saveTrace: (nAnchors: number, force?: boolean) => Promise<void>;
+  resample: (nAnchors: number, force?: boolean) => Promise<void>;
   updateBboxField: (patch: Partial<BboxIn>) => Promise<void>;
   wegTool: 'draw' | 'adjust';
   setWegTool: (t: 'draw' | 'adjust') => void;
@@ -84,10 +91,12 @@ export function TraceStep({
   preview: TracePreviewOut | null;
   previewBusy: boolean;
   computePreview: (nAnchors: number) => Promise<void>;
-  // The bbox's lock, said out loud on the step where it decides the outcome.
-  // Drawing stays possible on purpose — whether a locked glyph may be offered
-  // for tracing at all is the author's call (audit 2026-09-02, finding 13);
-  // this only replaces the English 423 AFTER the work with a warning BEFORE it.
+  // The bbox's lock. The author settled the doctrine on 2026-09-03 (audit
+  // finding 13): a locked glyph stays fully OFFERED and carries the lock
+  // visibly, and overwriting it is a deliberate confirmation here rather than
+  // a detour to the Tafel's lock toggle. So `locked` changes two things on this
+  // step — the warning and the button's label — and routes both writes through
+  // the dialog that is allowed to send `force`.
   locked: boolean;
   // A Weg the last visit closed on, offered back rather than restored silently.
   draft: StrokePoint[][] | null;
@@ -102,6 +111,34 @@ export function TraceStep({
   useEffect(() => {
     if (wegTool === 'adjust' && savablePoints < 2) setWegTool('draw');
   }, [wegTool, savablePoints, setWegTool]);
+
+  // Which write is waiting for the lock confirmation, if any. Both writes on
+  // this step rewrite the stored canonical and both meet the server's 423, so
+  // both ask the same question — with the wording of the write they belong to.
+  const [confirmWrite, setConfirmWrite] = useState<'trace' | 'resample' | null>(null);
+
+  // What that confirmation actually says. Three cases, because the lock and the
+  // stored Weg are two different things: re-sampling always has a canonical (its
+  // button needs one), a locked glyph WITH one is a real overwrite, and a locked
+  // glyph WITHOUT one — reachable through a direct bbox PUT or an import — would
+  // otherwise be told its „alte Fassung" is about to be replaced when there is
+  // none.
+  const lockPrompt =
+    confirmWrite === 'resample'
+      ? { ...de.wizard.lock.confirmResample, confirm: de.wizard.lock.confirm.confirm }
+      : hasCanonical
+        ? {
+            title: de.wizard.lock.confirm.title,
+            body: de.wizard.lock.confirm.body,
+            hint: de.wizard.lock.confirm.hint,
+            confirm: de.wizard.lock.confirm.confirm,
+          }
+        : {
+            title: de.wizard.lock.confirm.titleFirst,
+            body: de.wizard.lock.confirm.bodyFirst,
+            hint: de.wizard.lock.confirm.hintFirst,
+            confirm: de.wizard.lock.confirm.confirmFirst,
+          };
 
   const [anchorsDraft, setAnchorsDraft] = useState(String(bbox.n_anchors));
   const committedAnchors = useRef(bbox.n_anchors);
@@ -153,9 +190,10 @@ export function TraceStep({
         {de.wizard.trace.lead}
       </Typography>
 
-      {/* Before the work, not after it: a locked glyph refuses the save with a
-          423, and the only thing worse than that refusal is meeting it once the
-          Weg is already drawn. */}
+      {/* Before the work, not after it. The lock no longer blocks the step —
+          it announces that a finished Weg is at stake, and the save button
+          below says so too, so the confirmation is expected rather than a
+          surprise at the end of a trace. */}
       {locked && <Alert severity="warning">{de.wizard.lock.warning}</Alert>}
 
       {/* The rescue offer. Only while nothing new is drawn — a restore that
@@ -216,16 +254,23 @@ export function TraceStep({
         <Button size="small" color="inherit" disabled={strokes.length === 0} onClick={() => setStrokes([])}>
           {de.wizard.trace.discardAll}
         </Button>
-        <Button size="small" variant="contained" disabled={savablePoints < 2 || busy} onClick={() => void saveTrace(commitAnchors())}>
-          {de.wizard.trace.save}
+        {/* On a locked glyph the click ASKS instead of writing; only the
+            dialog's confirm re-enters with force. Everything else is the
+            unchanged path. */}
+        <Button
+          size="small"
+          variant="contained"
+          disabled={savablePoints < 2 || busy}
+          onClick={() => (locked ? setConfirmWrite('trace') : void saveTrace(commitAnchors()))}
+        >
+          {locked ? de.wizard.lock.saveLocked : de.wizard.trace.save}
         </Button>
       </Stack>
       {/* A standing fact, not an event. This used to be a green success Alert —
           which MUI renders as role="alert"/aria-live="assertive" — so opening a
           glyph traced months ago announced „Weg gespeichert." as if it had just
-          happened, and it stood exactly as green on a locked glyph where saving
-          is guaranteed to fail. The EVENT keeps its own channel: the alert bar
-          says „Weg gespeichert · n Anker" once, when it is true. */}
+          happened. The EVENT keeps its own channel: the alert bar says „Weg
+          gespeichert · n Anker" once, when it is true. */}
       {hasCanonical && strokes.length === 0 && (
         <Typography variant="caption" color="text.secondary">
           {de.wizard.trace.hasSaved}
@@ -251,7 +296,13 @@ export function TraceStep({
           slotProps={{ htmlInput: { min: MIN_ANCHORS, max: MAX_ANCHORS } }}
           sx={{ flex: 1 }}
         />
-        <Button size="small" variant="outlined" startIcon={<RefreshIcon />} disabled={!hasCanonical || busy} onClick={() => void resample(commitAnchors())}>
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<RefreshIcon />}
+          disabled={!hasCanonical || busy}
+          onClick={() => (locked ? setConfirmWrite('resample') : void resample(commitAnchors()))}
+        >
           {de.wizard.trace.resample}
         </Button>
         <InfoHint title={de.wizard.trace.anchorsLabel}>{de.wizard.trace.anchorsHint}</InfoHint>
@@ -268,6 +319,36 @@ export function TraceStep({
           computePreview={computePreview}
         />
       )}
+
+      {/* The only place in the WIZARD that sets `force`. (Repository-wide there
+          are two more, both long-standing and both deliberate by construction:
+          the diagnostics' „Neu ableiten & speichern" and the bulk „Alle neu
+          ableiten" — don't remove those on the strength of this comment.) The
+          lock stays a real gate: the server refuses without the flag (423), and
+          the gate is now one deliberate answer here rather than a detour
+          through the Tafel's lock toggle. */}
+      <Dialog open={confirmWrite !== null} onClose={() => setConfirmWrite(null)} maxWidth="xs">
+        <DialogTitle>{lockPrompt.title}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{lockPrompt.body}</DialogContentText>
+          <DialogContentText sx={{ mt: 1 }}>{lockPrompt.hint}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmWrite(null)}>{de.wizard.lock.confirm.cancel}</Button>
+          <Button
+            color="warning"
+            onClick={() => {
+              const pending = confirmWrite;
+              setConfirmWrite(null);
+              const n = commitAnchors();
+              if (pending === 'resample') void resample(n, true);
+              else void saveTrace(n, true);
+            }}
+          >
+            {lockPrompt.confirm}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }

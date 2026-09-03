@@ -28,16 +28,19 @@ pytestmark = pytest.mark.skipif(
 
 
 def test_fixture_case_loads_constant_and_pressure() -> None:
-    suet = fixture_case("i-initial")
-    assert suet.glyph == "i" and suet.key == "i-initial"
+    # Both keys name the source: since migration 0017 dropped the position
+    # suffixes, `i` and `longs` exist in BOTH fixture roots, so a bare lookup
+    # resolves by source preference rather than by the script the test means.
+    suet = fixture_case("i", source_id="suetterlin-1922")
+    assert suet.glyph == "i" and suet.key == "i"
     assert suet.is_constant  # Sütterlin Gleichzug
     assert len(suet.raw_path) > 2
-    loth = fixture_case("longs-final", source_id="loth-1866")  # Kurrent ſ (pressure); ſ now exists in both sets
+    loth = fixture_case("longs", source_id="loth-1866")  # Kurrent ſ (pressure); ſ now exists in both sets
     assert not loth.is_constant
 
 
 def test_derive_produces_aligned_arrays() -> None:
-    res = derive(fixture_case("i-initial"))
+    res = derive(fixture_case("i", source_id="suetterlin-1922"))
     n = len(res.anchors_px)
     assert n > 2
     assert res.anchors_px.shape == (n, 2)
@@ -51,7 +54,7 @@ def test_derive_produces_aligned_arrays() -> None:
 
 
 def test_derive_stages_match_production() -> None:
-    case = fixture_case("i-initial")
+    case = fixture_case("i", source_id="suetterlin-1922")
     stages = derive_stages(case)
     assert [s.name for s in stages] == ["1 snapped", "2 smoothed", "3 resampled", "4 verticalized"]
     final = np.concatenate(stages[-1].strokes)
@@ -62,11 +65,11 @@ def test_derive_stages_match_production() -> None:
 
 def test_derive_stages_rejects_pressure() -> None:
     with pytest.raises(ValueError, match="Gleichzug-only"):
-        derive_stages(fixture_case("longs-final", source_id="loth-1866"))  # Kurrent (pressure) → rejected
+        derive_stages(fixture_case("longs", source_id="loth-1866"))  # Kurrent (pressure) → rejected
 
 
 def test_overlay_figure_and_save(tmp_path) -> None:
-    res = derive(fixture_case("i-initial"))
+    res = derive(fixture_case("i", source_id="suetterlin-1922"))
     fig = overlay(res, title="i")
     assert fig.get_axes()  # at least one panel axes
     grid = figure([panel(res, title="spline"), panel(res, style="dots", title="dots")])
@@ -76,7 +79,7 @@ def test_overlay_figure_and_save(tmp_path) -> None:
 
 
 def test_stage_panels_build(tmp_path) -> None:
-    case = fixture_case("i-initial")
+    case = fixture_case("i", source_id="suetterlin-1922")
     res = derive(case)
     panels = stage_panels(res, derive_stages(case))
     assert len(panels) == 4
@@ -98,6 +101,6 @@ def test_fixture_case_source_preference_avoids_collision() -> None:
     """A glyph_key shared by the Kurrent and Sütterlin sets resolves to the requested
     source, not the first manifest alphabetically (kurrent < suetterlin) — the old
     silent-collision bug that rendered the Kurrent glyph for a Sütterlin key."""
-    case = fixture_case("longs-final", source_id="suetterlin-1922")
+    case = fixture_case("longs", source_id="suetterlin-1922")
     assert case.origin.endswith("suetterlin-1922")
     assert case.width_resolver == "constant"  # Gleichzug → the Sütterlin ſ, not the Kurrent one

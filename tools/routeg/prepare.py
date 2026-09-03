@@ -39,6 +39,8 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
+from tools.tracebench.sets import TRACEBENCH_DEV_IDS
+
 
 DEFAULT_FIXTURES_ROOT = Path("tools/wordbench/fixtures/suetterlin/suetterlin-1922")
 DEFAULT_OUT = Path("tools/routeg/out")
@@ -50,17 +52,17 @@ INK_MASK_FILE = "ref_mask.png"
 SKELETON_FILE = "ref_skel.npz"
 ENTRY_FILE = "word.json"
 
-# The frozen tracebench development set, mirrored the way `tools/inksight`
-# mirrors it: the bench's own constant when it is importable, else this literal.
-FALLBACK_DEV_IDS = ("die", "laden", "linken", "mit", "muß", "und", "unter", "Wer", "will", "zwei")
-
 
 def dev_ids() -> tuple[str, ...]:
-    """`TRACEBENCH_DEV_IDS` when the bench is importable, else the literal set."""
-    try:
-        from tools.tracebench.sets import TRACEBENCH_DEV_IDS  # noqa: PLC0415
-    except ImportError:
-        return FALLBACK_DEV_IDS
+    """The frozen tracebench development split (tintenfolger.md §1), in a fixed order.
+
+    Same contract as `tools.inksight.prepare.dev_ids` — the two routes must be
+    fed the same words in the same order, or their artifacts are not
+    comparable file by file. The guarded import over a ten-id literal that
+    both packages carried is gone: it dated from before `tools/tracebench`
+    existed and could only ever fire as a run that measured 10 of 19 words
+    without saying so.
+    """
     return tuple(sorted(TRACEBENCH_DEV_IDS))
 
 

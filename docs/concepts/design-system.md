@@ -410,19 +410,34 @@ statt am Polster. Die Leiste wächst dadurch auf schmalen Geräten von 82 auf
 121 px, auf `sm+` bleibt sie unverändert. Faustregel: Überlagerung nur dort, wo
 das Element allein steht.
 
-**Offen — Autor-Entscheid: die Zellen der Schreibtafel.** Die geschriebene Tafel
-setzt das Alphabet als SVG-Zellen, die ihre Zeile lückenlos kacheln (bei 390 px
-gemessen: 32–98 px breit je nach Buchstabe und Ansicht, Lücke 0, 57–73 px hoch).
-Die schmalsten reißen den Boden
-in der Breite. Beide Auswege kosten etwas: eine unsichtbare Fläche griffe in den
-Nachbarbuchstaben und nähme ihm den Tipp, eine Verbreiterung baut das
+**Benannte Ausnahme: die schmalen Zellen der Schreibtafel** (Entscheid des
+Autors, 2026-09-03 — Audit-Befund 21). Die geschriebene Tafel (`WrittenSheet`)
+setzt das Alphabet als SVG-Zellen, die ihre Zeile lückenlos kacheln; die Breite
+einer Zelle ist die Ink-Breite ihres Buchstabens plus eine halbe Lücke je Seite
+(`cellW = glyphW + gap`), damit die Reihe wie geschriebene Zeile läuft und nicht
+wie ein Setzkasten. Damit sind schmale Zeichen auch schmale Zellen: **14 der 62
+bleiben unter 44 px in der Breite** — i, l, ſ, t, z, die Versalien I, J, O, Ö,
+P, S, T, Z und die Ziffer 0 (bei 390 px gemessen: 32,3–77,2 px breit, Lücke 0,
+57,2–64,2 px hoch; auf breiteren Geräten wächst der Maßstab und die Zahl sinkt,
+bei 500 px sind es noch zwei).
+
+**Das bleibt so.** Die Zellen sind kein primäres Ziel: die Tafel ist zum
+Nachschlagen da, das Antippen spielt den Duktus nur noch einmal ab, und dasselbe
+Zeichen ist über die Buchstaben-Detailseite (`/tafel?g=…`) mit vollem Ziel
+erreichbar — das Ziel der Handlung bleibt also erreichbar, nur nicht auf diesem
+Weg. Beide Auswege kosten mehr, als sie brächten: eine unsichtbare Trefferfläche
+griffe in den Nachbarbuchstaben und nähme ihm den Tipp (oben: „Überlagerung nur
+dort, wo das Element allein steht"), eine Verbreiterung baut genau das
 Nachschlage-Raster um, dessentwegen die Seite existiert. WCAG 2.2 SC 2.5.8 ist
-mit mindestens 32 × 57 px deutlich erfüllt. Die Ausnahme im Skript gilt
-ausdrücklich NUR für diese schmale Breite bei voller Höhe: eine Zelle, die ihre
-Höhe verlöre oder unter die 24-px-Linie fiele, meldet der Sweep als echten
-Verstoß. Bis zur Entscheidung stehen die Zellen als
-benannte Ausnahme in `touch-targets.mjs` — sichtbar gezählt, nicht stillschweigend
-übersprungen.
+mit mindestens 32 × 57 px deutlich erfüllt.
+
+**Wann die Ausnahme fällt:** sobald die Tafel neu gelegt wird — ein anderes
+Zellenmodell, gleichmäßiger Pitch, ein anderer Umbruch. Dann ist die 44-px-Breite
+Teil des neuen Entwurfs und nicht mehr nachträglich zu erkaufen. Unabhängig davon
+gilt sie nur für die schmale BREITE bei voller Höhe: eine Zelle, die ihre Höhe
+verlöre oder unter die 24-px-Linie fiele, meldet der Sweep als echten Verstoß.
+Die Zellen stehen als benannte Ausnahme in `touch-targets.mjs` — bei jedem Lauf
+sichtbar gezählt, nie stillschweigend übersprungen.
 
 **Messbar statt behauptet**, wie der Typo-Boden: `npm run touch-targets`
 (`app/scripts/touch-targets.mjs`) fährt **alle** öffentlichen Routen an und misst

@@ -372,7 +372,12 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   // stored canonical is the optimized one; the inline WegPreview then visualises
   // raw vs optimized. `nAnchors` comes from the TraceStep's just-committed field
   // so the call never races the PUT that persists it.
-  const saveTrace = useCallback(async (nAnchors: number) => {
+  // `force` overrides the server's lock guard (423). It is NEVER passed from a
+  // plain click: the Weg step routes a locked glyph through its confirmation
+  // dialog and only that dialog's "Trotzdem überschreiben" calls in with true,
+  // so the lock still costs one deliberate decision — it just no longer sends
+  // the author to the Tafel and back (author decision 2026-09-03).
+  const saveTrace = useCallback(async (nAnchors: number, force = false) => {
     const rawPath = flattenStrokes(strokes);
     if (rawPath.length < 2 || !known || !bbox) return;
     setBusy(true);
@@ -381,6 +386,7 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
         glyph: known.glyph,
         raw_path: rawPath,
         n_anchors: nAnchors,
+        force,
       });
       markGlyphTraced(glyphKey, summaryOf(g));
       setSnack({ kind: 'success', text: fmt(de.wizard.snack.traceSaved, { count: g.anchors.length }) });
@@ -432,11 +438,14 @@ export function useWizard(glyphKey: string, open: boolean, onClose: () => void) 
   }, [sourceId, strokes, known, bbox, hasCanonical, glyphKey]);
 
   // Re-sample the stored canonical to the given n_anchors without re-drawing.
-  const resample = useCallback(async (nAnchors: number) => {
+  // Re-sampling rewrites the stored canonical too, so it meets the same lock
+  // guard and takes `force` on the same terms as saveTrace: only ever from the
+  // confirmation dialog.
+  const resample = useCallback(async (nAnchors: number, force = false) => {
     if (!bbox || !hasCanonical) return;
     setBusy(true);
     try {
-      const g = await postResample(sourceId, glyphKey, { nAnchors });
+      const g = await postResample(sourceId, glyphKey, { nAnchors, force });
       markGlyphTraced(glyphKey, summaryOf(g));
       setSnack({ kind: 'success', text: fmt(de.wizard.snack.resampled, { count: g.anchors.length }) });
       void refreshSavedTrace();

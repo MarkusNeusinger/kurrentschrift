@@ -238,6 +238,13 @@ cython_debug/
 /tools/wordbench/fixtures/
 /tools/wordbench/runs/
 
+# …and the run directory the bench READMEs actually produce. Both benches are
+# invoked from the repo root (`uv run python -m tools.wordbench.run --json
+# runs/dev/report.json`), so their artifacts land in `<root>/runs/`, which the
+# two package-scoped rules above never covered — a full bench run left the
+# whole output tree untracked-but-visible in `git status` (audit 2026-09-02).
+/runs/
+
 # Abstra
 #   Abstra is an AI-powered process automation framework.
 #   Ignore directories containing user credentials, local state, and settings.

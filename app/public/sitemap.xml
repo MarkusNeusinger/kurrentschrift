@@ -12,7 +12,7 @@
      older than it is (four routes had drifted up to two weeks by the website
      audit 2026-09-02). `npm run prerender` therefore runs
      scripts/check-sitemap-lastmod.mjs, which holds every date against the git
-     history of the files that page renders — see PageSpec.sources. -->
+     history of the rendered page itself, app/prerender/<page>.html. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://kurrentschrift.ink/</loc>
@@ -22,7 +22,7 @@
   </url>
   <url>
     <loc>https://kurrentschrift.ink/schriftkunde</loc>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-09-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -70,7 +70,7 @@
   </url>
   <url>
     <loc>https://kurrentschrift.ink/impressum</loc>
-    <lastmod>2026-09-02</lastmod>
+    <lastmod>2026-09-03</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

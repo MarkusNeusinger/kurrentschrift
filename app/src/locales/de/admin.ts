@@ -809,6 +809,12 @@ export const admin = {
     candidate: 'Neu ableitbar',
     noCandidate: 'Kein Roh-Weg gespeichert — Neuableitung nicht möglich.',
     // Composed metric labels (values + units stay in the component).
+    //
+    // `iou` and `gate` below keep the word „Deckung" on purpose: both are the
+    // POSITIVE quantity, higher = better. Only the per-category ABZUG in the
+    // breakdown is „Deckungslücke" (de/wizard.ts `optimize.cat.coverage`) —
+    // that one is `1 − gate`. Two names because they run in opposite
+    // directions and used to stand three lines apart under one word.
     score: 'Score',
     iou: 'Deckung (IoU):',
     chamfer: 'Randabstand:',

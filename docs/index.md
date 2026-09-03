@@ -175,7 +175,7 @@ Regeln stehen, die noch nicht implementiert sind.
 | [`concepts/design-system.md`](concepts/design-system.md) | Änderungen an `app/src/styles/paper.ts`, `theme/typography.ts`, `components/PageContainer · Prose · PageHeader · HeaderBar · PublicHeader · PublicFooter`, an der Werkbank-Kopfleiste (`sections/admin/shell/AdminHeader`) oder an der öffentlichen Routen-/Bereichsstruktur (`routes/paths.ts`) |
 | [`reference/glossar.md`](reference/glossar.md) | jedem Doc und jedem PR, der einen neuen Fachbegriff, eine neue Kennzahl oder eine neue Redewendung prägt — der Eintrag entsteht im selben PR (Regel auch in `CLAUDE.md` § „Working guardrails“, `.github/copilot-instructions.md` und den Skills `/write-docs` + `/open-pr`) |
 | [`reference/write-api.md`](reference/write-api.md) | jeder Änderung an einer `/write/*`-Route (`api/routers/write.py` inkl. `compose_word_payload`), an `core/shaping.py`, `core/compose.py`, `core/pipeline.py::render_payload_for_template`, `api/rendering.py` oder den Cache-Headern in `api/http.py` |
-| [`reference/qualitaetsmetrik.md`](reference/qualitaetsmetrik.md) | jeder Änderung an `core/quality.py`, `core/quality_suetterlin.py`, `core/geometry.py`, `core/word_metric.py`, jedem Re-Baseline der eingefrorenen Fixtures und jedem Bench-/Loop-Lauf, der eine Headline bewegt (neuer datierter Abschnitt). **Im selben PR:** der neue §14-Abschnitt bekommt seine Zeile in der Registertabelle am Kopf von §14, eine bewegte Headline ihre Zeile im Headline-Ledger daneben (mit `exported_at` und Digest der Fixture-Wurzel) — erzwungen von `uv run python -m tools.docs_register check` (CI-Job „Docs-Register“) |
+| [`reference/qualitaetsmetrik.md`](reference/qualitaetsmetrik.md) | jeder Änderung an `core/quality.py`, `core/quality_suetterlin.py`, `core/geometry.py`, `core/word_metric.py`, jedem Re-Baseline der eingefrorenen Fixtures und jedem Bench-/Loop-Lauf, der eine Headline bewegt (neuer datierter Abschnitt). **Im selben PR:** der neue §14-Abschnitt wird VOR §15 eingefügt (§14 ist eine geschlossene Sektion — nicht ans Dateiende anhängen) und bekommt seine Zeile in der Registertabelle am Kopf von §14, eine bewegte Headline ihre Zeile im Headline-Ledger daneben (mit `exported_at` und Digest der Fixture-Wurzel) — erzwungen von `uv run python -m tools.docs_register check` (CI-Job „Docs-Register“) |
 | [`reference/menschliche-bewertung.md`](reference/menschliche-bewertung.md) | jeder Änderung am Instrument `tools/humanbench` (Kategorien in `page.py::CATEGORIES`, Stichproben- und Wiederholungsregeln in `build.py`, Darstellung, neue Modi, CLI) und jeder Runde, deren Aufbau vom beschriebenen Verfahren abweicht — die Befunde selbst gehören nach `reference/qualitaetsmetrik.md` |
 | [`reference/frontend-stack.md`](reference/frontend-stack.md) | Stack-Versionen (`app/package.json`), Routenkarte (`app/src/routes/paths.ts`), Build/Deploy (`app/cloudbuild.yaml`, `api/cloudbuild.yaml`, `app/Dockerfile`, `app/nginx.conf`, Cloud-Run-Parameter), Auslieferungs-Header (`app/security-headers.conf`, `api/security_headers.py`, `api/routers/csp.py`), Admin-Gate (`api/auth.py`, `core/config.py`, Cloudflare Access) oder Origin-Gate (`api/origin_gate.py`, `infra/cloudflare/` — der Apex-Worker, an dessen Konfiguration §5 hängt) |
 | [`reference/werkzeuge.md`](reference/werkzeuge.md) | jedem neuen, umbenannten oder entfernten Verzeichnis/Einstiegsskript unter `tools/` und jeder geänderten CLI (Flags, Modulpfade, `viz`-Extra, `--live`) |
@@ -371,10 +371,15 @@ auseinanderfallen.
   Tabs, plus die **bindende Stufen-/Rollen-Doktrin** — manuell hinzufügen
   nur bei Ground Truth (Tafel-Duktus, Wort-Nachfahrung), alles Generierte
   wird bemängelt — und das `work_items`-Protokoll (Triage-Pflicht der KI,
-  Regel-Fix vor Override, `resolution`-Format, Rückgabe an den Autor) —
-  *Status: bindend (W1–W5 gebaut, §3–§5 von der API erzwungene Doktrin;
-  die Alt-Seiten sind mit dem Admin-Redesign 2026-08 in den drei
-  Ansichten Buchstaben · Übergänge · Wörter aufgegangen)*
+  Regel-Fix vor Override, `resolution`-Format, Rückgabe an den Autor);
+  dazu seit 2026-09-03 die **Sperr-Doktrin** in §6: die Sperre ist eine
+  Warnung mit Rückfrage, kein Riegel — eine gesperrte Glyphe bleibt
+  angeboten, sichtbar markiert, und wird nach einer ausdrücklichen
+  Bestätigung überschrieben —
+  *Status: bindend (W1–W5 gebaut; §3–§5 von der API erzwungene Doktrin,
+  §6 bindend und von der Review getragen; die Alt-Seiten sind mit dem
+  Admin-Redesign 2026-08 in den drei Ansichten Buchstaben · Übergänge ·
+  Wörter aufgegangen)*
 
 **teil-umgesetzt** — aktive Pläne mit offenem Rest:
 

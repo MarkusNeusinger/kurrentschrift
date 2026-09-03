@@ -134,13 +134,15 @@ const DEFAULT_ROUTES = [
 ];
 
 // The one KNOWN shortfall, named rather than silently skipped: the Schreibtafel
-// renders the alphabet as SVG cells that tile their row edge to edge (measured
-// at 390px: 41–98px wide, gaps of 0). They are 73px tall, so they clear WCAG 2.2
-// SC 2.5.8 comfortably, but the narrowest are ~41px wide. Neither remedy is
-// free — an invisible overlay would reach into the neighbouring letter and steal
-// its tap, and widening the cells reflows the reference grid the page exists to
-// show. That is an author's call on the tafel's layout, not a fix to make in
-// passing, so it is listed here where it stays visible. See §9.3 „Offen".
+// renders the alphabet as SVG cells that tile their row edge to edge, each as
+// wide as its letter's ink plus half a gap per side. 14 of the 62 therefore stay
+// under the floor in width (measured at 390px: 32.3–77.2px wide, gaps of 0,
+// 57.2–64.2px tall) — well past the 24px WCAG 2.2 SC 2.5.8 baseline. Neither
+// remedy is free: an invisible overlay would reach into the neighbouring letter
+// and steal its tap, and widening the cells reflows the reference grid the page
+// exists to show. The author decided on 2026-09-03 to leave them and write the
+// reason down; they are listed here so every run still counts them out loud.
+// See design-system.md §9.3 „Benannte Ausnahme".
 const KNOWN_SHORTFALL = {
   // Narrow on purpose, on two axes at once.
   //
@@ -149,14 +151,16 @@ const KNOWN_SHORTFALL = {
   // inherit this exception. Must evaluate to a BOOLEAN; returning the element
   // would put a React fiber in the result and break serialisation.
   //
-  // WHICH shortfall: only the documented one. What §9.3 excuses is the narrow
-  // WIDTH of a cell that is otherwise generous — 73px tall and well past the
-  // 24px WCAG 2.2 SC 2.5.8 baseline. A cell that lost its height, or shrank
-  // under that baseline, is a new defect and must fail; otherwise this flag
-  // would quietly cover regressions the author never agreed to.
+  // WHICH shortfall: only the documented one. What §9.3 excuses — the author
+  // decided this on 2026-09-03 — is the narrow WIDTH of a cell that is
+  // otherwise generous: 57–64px tall and well past the 24px WCAG 2.2 SC 2.5.8
+  // baseline. A cell that lost its height, or shrank under that baseline, is a
+  // new defect and must fail; otherwise this flag would quietly cover
+  // regressions nobody agreed to. The exception lapses when the sheet is
+  // re-laid out (see §9.3 „Wann die Ausnahme fällt").
   match: "el.tagName.toLowerCase() === 'g' && !!el.querySelector(':scope > rect.cellbg')",
   envelope: (floor) => `r.height >= ${floor} && r.width >= 24`,
-  why: 'Schreibtafel-Zellen: schmale Breite bei voller Höhe — Autor-Entscheid offen',
+  why: 'Schreibtafel-Zellen: schmale Breite bei voller Höhe — bewusst so (design-system.md §9.3)',
 };
 
 const SWEEP = (floor) => `(() => {
