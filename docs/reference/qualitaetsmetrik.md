@@ -3503,8 +3503,11 @@ Dateiende, und seit §15 dort steht, landeten die vier `sep02`-Einträge
 am 2026-09-03 entschieden, §14 wieder zu schließen — die Abschnitte
 stehen seither vor §15, Wort für Wort unverändert und mit ihren Ankern.
 Wer die nächste Runde schreibt, hängt sie also nicht ans Dateiende,
-sondern vor §15; das Gate merkt es sonst, weil der neue Eintrag außerhalb
-von §14 läge und seine Registerzeile fehlte.
+sondern vor §15. Das Gate schaut dafür über die Sektionsgrenze hinaus:
+eine `###`-Überschrift hinter §14, die das Datums-Tag des Journals trägt,
+wird als verrutschter Eintrag gemeldet („sits AFTER §14“) — sie fällt
+nicht still aus dem Fenster. Die fehlende Registerzeile ist die andere,
+eigene Meldung und greift für Abschnitte INNERHALB von §14.
 
 **Nachzieh-Pflicht: jeder neue `###`-Abschnitt dieser Sektion ergänzt im
 selben PR seine Registerzeile**, und jeder Eintrag, der einen Arm einer

@@ -111,8 +111,10 @@ uv run python -m tools.tracebench.view                     # the duel / eyeball 
   BEFORE the `## 15.` heading, not at the end of the file** — §14 is a
   closed section, and appending is how five `sep02` rounds ended up
   outside it (repaired 2026-09-03). Add its row to the register table at
-  the head of §14 in the same PR; `uv run python -m tools.docs_register
-  check` reports both the misplaced section and the missing row.
+  the head of §14 in the same PR. `uv run python -m tools.docs_register
+  check` catches both slips, with a different message each: a section
+  behind §14 is named as a misplaced journal entry, and a section inside
+  §14 without its row as a missing register row.
 - The **ledger line** on the affected `docs/reference/verfahren-*.md` page
   in the SAME PR; on adoption also its „Aktueller Stand" and the Stand
   column in `verfahren.md` (`docs/index.md` § Dokument-Status).

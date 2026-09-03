@@ -6,8 +6,10 @@
   file so their entries stayed indexed. On the author's decision the sections
   moved in front of §15 instead — not one word changed inside them, the anchors
   the docs cite about 350 times are untouched — and the gate reads a section
-  again. Whoever writes the next round places it before §15; the gate reports
-  an entry that lands outside §14 as a missing register row (#512).
+  again. Whoever writes the next round places it before §15, and the gate now
+  looks past the section boundary to say so: a `###` heading behind §14 that
+  carries the journal's own date tag is reported as a misplaced entry rather
+  than quietly falling outside the window (#512).
 - **The follower arms ②③④⑦⑧ are formally written off.** Five of the eight arms
   pre-registered on `aug14` were never measured, and on the author's decision
   they will not be: all five are weight arms of the formulation that ①⑤⑥⑥b⑨
