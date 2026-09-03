@@ -8,7 +8,7 @@ Zwanzig Prüfer haben ein Repository vermessen, das handwerklich deutlich besser
 
 ## Erledigungsstand (2026-09-03)
 
-Nachgetragen am 2026-09-03, und der einzige nachgetragene Abschnitt: der Bericht bleibt, was er ist — ein Befundprotokoll vom 2026-09-02, dessen Titel, Nummern und Zeilen nicht fortgeschrieben werden. Hier steht nur, was seither daraus geworden ist, damit ein Leser den Stand nicht aus 39 Befunden, 14 Tracks und drei Dutzend PRs zusammensuchen muss. Alle genannten PR-Nummern sind gegen `gh pr view` geprüft; gemergt sind alle bis auf #507, die als Entwurf offen liegt. Von den 39 Befunden sind 23 erledigt, 11 teilweise erledigt, einer gemessen und ehrlich verworfen, zwei warten auf einen Entscheid des Autors, einer ist noch nachzuprüfen, und genau einer ist unangetastet geblieben.
+Nachgetragen am 2026-09-03, und der einzige nachgetragene Abschnitt: der Bericht bleibt, was er ist — ein Befundprotokoll vom 2026-09-02, dessen Titel, Nummern und Zeilen nicht fortgeschrieben werden. Hier steht nur, was seither daraus geworden ist, damit ein Leser den Stand nicht aus 39 Befunden, 14 Tracks und drei Dutzend PRs zusammensuchen muss. Alle genannten PR-Nummern sind gegen `gh pr view` geprüft; gemergt sind alle bis auf #507, die als Entwurf offen liegt. Von den 39 Befunden sind 22 erledigt, 12 teilweise erledigt, einer gemessen und ehrlich verworfen, zwei warten auf einen Entscheid des Autors, einer ist noch nachzuprüfen, und genau einer ist unangetastet geblieben.
 
 ### Die 39 Befunde
 
@@ -43,7 +43,7 @@ Nachgetragen am 2026-09-03, und der einzige nachgetragene Abschnitt: der Bericht
 | 27 | erledigt | #497 — Bytecode im Builder und im Runtime-Stage |
 | 28 | teilweise | #485 hebt Trefferfläche und Typo-Boden; die Federprobe auf dem Handy ist damit nicht abschließend nachgemessen |
 | 29 | teilweise | #476 verlinkt die Quiz-Auswertung auf die Tafel; „im Wort sehen“ fehlt weiter bei einem Teil der Buchstaben |
-| 30 | erledigt | #476 setzt die Maße an die Tafelscans; die Live-Nachmessung des CLS steht noch aus |
+| 30 | teilweise | #476 gibt den drei Tafelscans ihre Maße aus `chart_size`; die zweite Ursache — die geschriebene Initiale der Abschnittsüberschriften — hängt an einem `font-display`-Entscheid des Autors, und der CLS ist in Produktion nie nachgemessen worden |
 | 31 | erledigt | #479 — README-Schlüsseltupel korrigiert, Community-Health-Dateien ergänzt |
 | 32 | erledigt | #479 plus das Ruleset: Image-Job, Migrations als Pflicht-Check, App-Deploy über die Kandidatenkette |
 | 33 | offen: Entscheid | F6 ist offen — ob t, ſ, k, d und r nachgefahren werden oder der Anstrich per Klassenregel absorbiert wird, entscheidet A4 |
