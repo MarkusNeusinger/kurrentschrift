@@ -113,8 +113,10 @@ Befehle, Fixture-Layout und der greppbare Output-Contract stehen im
 
 ## 3. Baseline-Historie
 
-Alle Werte auf denselben eingefrorenen Referenzen (12 gesperrte
-Loth-Glyphen, Positions-Fan-out dedupliziert):
+Alle Werte bis einschließlich `jun11` auf denselben eingefrorenen
+Referenzen (12 gesperrte Loth-Glyphen, Positions-Fan-out dedupliziert);
+die `sep03`-Zeile steht auf einer NEU exportierten Wurzel und ist mit
+den Zeilen darüber nicht vergleichbar (§5, „Re-Baseline 2026-09-03"):
 
 | Datum | PR | Änderung | bench_loss | Ø-Score |
 |---|---|---|---|---|
@@ -122,6 +124,7 @@ Loth-Glyphen, Positions-Fan-out dedupliziert):
 | 2026-06-11 | #64 | Corner-Knoten + Boundary-Refine | 0.1488 | 85.1 |
 | 2026-06-11 | #68 | Ankerdichte 50 → 120 | 0.1339 | 86.6 |
 | 2026-06-11 | #71 | Druckkegel-Prior + Refine-Tuning (Lauf `jun11`) | 0.1251 | 87.5 |
+| 2026-09-03 | dieser PR | **Re-Baseline**: Wurzel nach knapp drei Monaten neu exportiert (Audit A15) — andere Referenzmenge, siehe §5 | 0.1219 | — |
 
 Ankerdichte-Sweep (#68, alle 12 Glyphen): 50 → 0.1488 · 80 → 0.1363 ·
 120 → 0.1339 · 160 → 0.1321 · **240 → 0.1563 (Regression!)**. 120 ist
@@ -362,6 +365,89 @@ Glätte/Ecken-Thema (der Term belohnt das Weglassen einer echten Kehre) für ein
 lokale Totband den legitimen Kantenversatz auch an Schlaufen-Kreuzungen (b/d/g/o…) nicht mehr
 bestraft. Tests: `tests/test_quality_components.py` pinnt jetzt **Treue füllt > unterfüllt** statt
 parallel > divergent. `core/quality_suetterlin.py` + `core/geometry.py` bleiben im Loop eingefroren.
+
+### Re-Baseline 2026-09-03 — die Glyph-Bench-Wurzeln waren knapp drei Monate alt (Audit A15)
+
+**Bewusste, deklarierte Re-Baseline; Zahlen über diese Grenze sind nicht
+vergleichbar.** Anlass: nach dem LF11-Schreiben (22 Laufform-Zeilen, §14
+„Laufform LF11 — humanbench-Wortrunde") und den Audit-Befunden vom
+2026-09-02 stand die Frage, ob die eingefrorenen Fixture-Wurzeln
+überhaupt noch den Prod-Stand zeigen. Für die WORT-Bench ja (sie wurde
+beim LF11-Write mit-exportiert), für die GLYPH-Bench nicht: ihre Wurzeln
+trugen `exported_at` **2026-06-18** (Sütterlin) und **2026-06-11**
+(Kurrent) — und damit noch die Positions-Suffixe (`A-final`, `a-final`),
+die mit Migration `0017` abgeschafft wurden.
+
+**Der Export war defekt, und der Defekt war unsichtbar, solange keine
+Laufform existierte.** `tools/glyphbench/export_fixtures.py` las ALLE
+Varianten einer `glyph_key` und schrieb jede in dasselbe Verzeichnis
+`<glyph_key>/`. Sortiert nach `(glyph_key, variant)` lief die
+Laufform-Zeile (Variante 100) zuletzt und **überschrieb die Tafelzeile**.
+Eine Laufform ist ein Median über Wortvorkommen: kein Tafel-Ausschnitt,
+kein `raw_path` — die Bench kann sie nicht ableiten. Ergebnis des ersten
+Neuexports: 84 Index-Einträge, davon **44 Abstürze** („stylus path needs
+at least 2 points"), `bench_loss` 0,634630. Das sind genau die 22
+betroffenen Schlüssel × 2 Einträge (der Index führte sie doppelt, ohne
+die Variante zu nennen, also war das Paar nicht unterscheidbar).
+Dazu lagen im Baum noch **136 Verzeichnisse für 84 Einträge** — die
+Reste der Juni-Wurzel, die der Export nie entfernt hatte.
+
+Behoben, alles drei in `export_fixtures.py`: exportiert wird nur, was die
+Bench ableiten kann (Zeile mit Stylus-Pfad — das Kriterium ist der Pfad,
+nicht die Variantennummer, denn es fängt auch das nie nachgefahrene
+`i`#1 mit), die Wurzel wird bei jedem Export ERSETZT statt beschrieben,
+und der Index nennt die `variant`.
+
+**Die Zahlen. Kein einziger geteilter Glyph hat sich bewegt** — die
+gesamte Verschiebung der Kopfzahl ist Populations-Wechsel, keine
+Pipeline-Änderung:
+
+| Bench (ein Skript je Lauf, BLAS gepinnt) | vorher | nachher | geteilte Glyphen |
+|---|---|---|---|
+| Glyph-Bench Sütterlin | 0,182809 (35 Einträge / 34 Schlüssel) | **0,212277** (62) | 34, Mittel 0,184069 → 0,184069 (**Δ 0,000000**, jeder einzeln bit-gleich) |
+| Glyph-Bench Kurrent | 0,125104 (12) | **0,121916** (12) | 11, **0 verändert**; `a` fällt raus, `M` kommt dazu |
+| Wort-Bench Wörter | 0,109218 | **0,109218** | unverändert |
+| Wort-Bench Paare | 0,148198 | **0,148198** | unverändert |
+
+Sütterlin steigt also um +0,0295, weil **28 Glyphen neu dazukommen**, die
+im Juni noch nicht gesperrt/autoriert waren; ihr Mittel liegt bei
+**0,246530** gegen 0,184069 der alten Menge. Das ist die erwartete
+Richtung — die später autorierten Formen sind die schwereren. Kurrent
+sinkt um −0,0032 aus demselben Grund in die andere Richtung: ein Glyph
+wird getauscht (`a` hat heute keine gesperrte Bbox mehr, `M` schon).
+Die stehende Doku-Zahl **0,1865** (2026-06-20, oben) ist noch einmal
+etwas anderes: sie wurde mit dem Code von damals gemessen; derselbe
+Juni-Fixture-Satz ergibt mit heutigem Code 0,182809. Alle drei Zahlen
+stehen hier nebeneinander, damit niemand sie gegeneinander rechnet.
+
+**Wurzel-Kennungen nach dem Export** (Kopfregel §14): Wort-Bench
+`suetterlin-1922` `exported_at 2026-09-03T21:28:30+00:00`
+`root_digest 57402ae7dd41`, `suetterlin-1922-pairs` gleicher Zeitstempel
+`f176e191d4bf` (vorher `2e3581287bed` / `cee9d363f497`). Die
+Glyph-Bench-Wurzeln tragen keinen `root_digest` — ihr `manifest.json`
+nennt `exported_at` **2026-09-03T21:28:xx+00:00** und den
+`chart_sha256`, der über beide Exporte unverändert blieb.
+
+**Mitgefallen: `tests/test_glyphlab.py` prüfte gegen tote Schlüssel.**
+Die Tests luden `i-initial` und `longs-final` — Positions-Suffixe, die es
+seit Migration `0017` nicht mehr gibt. Sie liefen nur deshalb grün, weil
+die Juni-Wurzel sie noch enthielt, und in CI gar nicht (die Fixtures sind
+gitignored, der Modul-`skipif` übersprang sie dort). Auf den neuen
+Schlüsseln `i`/`longs` fielen sie sofort — und zwar zweimal: erst am
+fehlenden Schlüssel, dann daran, dass `i` seit `0017` in BEIDEN Wurzeln
+liegt und die bloße Suche die Kurrent-Zeile zog, wo der Test die
+Sütterlin-Zeile meinte. Beide Fälle benennen jetzt ihre Quelle.
+Lehre für die Bench-Familie: ein `skipif` auf gitignorte Fixtures heißt,
+dass diese Tests nur lokal je laufen — sie altern still mit dem
+Fixture-Satz, an dem sie hängen.
+
+**Ein Befund, der aus der Neuaufnahme fällt und NICHT hier behoben
+wird:** die Umlaut-Kleinbuchstaben `oe` (0,9197) und `ue` (0,8561) sind
+die schlechtesten Glyphen der neuen Menge, und zwar allein über die
+Deckung (0,992 bzw. 0,977 bei guter Natürlichkeit 0,091/0,049) — die
+Form ist glatt, sie liegt nur fast nicht auf der Tinte. `Oe`/`Ue` liegen
+mit 0,399/0,365 dazwischen. Das ist eine Autoring- oder
+Ausschnitt-Frage, keine Metrik-Frage, und gehört in eine eigene Runde.
 
 ### Der gespeicherte Score ist der Stand der Ableitung (gilt für beide Skript-Metriken)
 
@@ -3638,6 +3724,7 @@ Vorbedingung (Glossar „Wurzel-Digest“, `tools/wordbench/README.md`).
 | sep01 | #472 | **Re-Baseline**: sieben reparierte Wort-Rechtecke, Bahnen nachgezogen, Wurzeln neu gebaut | 0,109255 | 0,148433 | §15 |
 | sep02 | dieser PR | Wurzeln neu gebaut (`fetch_fixtures --set all --verify`), `exported_at` 2026-09-02T08:00:29+00:00, `root_digest` `28ba1afebc53…` (`suetterlin-1922`) / `f0cf3d53414c…` (`suetterlin-1922-pairs`) — **keine** Re-Baseline: §15 wird exakt reproduziert | 0,109255 | 0,148433 | dieser Ledger-Eintrag |
 | sep02 | #501 | **Re-Baseline nach dem LF11-Write**: 22 Laufform-Zeilen auf Spline-Basis-Mediane umgestellt (Snapshot `2026-09-02T21-58-16Z`, Readback 22/22), Wurzeln neu gebaut: `suetterlin-1922` `exported_at` 2026-09-02T22:13:54+00:00 `root_digest` `2e3581287bed…`, `suetterlin-1922-pairs` `exported_at` 2026-09-02T22:13:53+00:00 `root_digest` `cee9d363f497…`; trifft die trockene LF11-Vorhersage exakt | 0,109218 | 0,148198 | §14 „Laufform LF11 — humanbench-Wortrunde, Instrumentdefekt und Adoption“ |
+| sep03 | dieser PR | Wurzeln neu gebaut (`fetch_fixtures --set all --verify`, 12/12 bit-exakt) im Zuge der Glyph-Bench-Re-Baseline (Audit A15): `suetterlin-1922` `exported_at` 2026-09-03T21:28:30+00:00 `root_digest` `57402ae7dd41…`, `suetterlin-1922-pairs` gleicher Zeitstempel `f176e191d4bf…` — **keine** Re-Baseline der Wort-Zahlen: beide reproduzieren exakt, nur die Wurzel-Identität ist neu | 0,109218 | 0,148198 | §5 „Re-Baseline 2026-09-03“ |
 
 **Nachtrag `sep02` — die `aug30`-Wurzel ist eine undeklarierte
 Re-Baseline.** Zwischen der `aug29`-Wurzel (0,106720 / 0,146506, im

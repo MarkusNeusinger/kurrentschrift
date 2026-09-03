@@ -9,6 +9,12 @@ export time, so a pipeline experiment cannot "improve" the metric by moving
 the target (e.g. by loosening the binarization). Re-running the export is an
 explicit human re-baseline.
 
+Only rows the bench can actually re-derive are exported: a template needs a
+stylus path, so the Laufform variant (a median over word occurrences, no chart
+cell) and any untraced form variant are skipped and named in the run's output.
+The root is REPLACED on every export, never merged into — glyph_keys change
+shape between schemas, and a stray directory from an older one is invisible.
+
 Fixture layout (gitignored — regenerate at will):
 
     fixtures/<style_id>/<source_id>/
@@ -31,6 +37,8 @@ import argparse
 import asyncio
 import hashlib
 import json
+import shutil
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -107,6 +115,51 @@ def _dedupe_templates(entries: list[tuple[dict, dict]]) -> tuple[list[tuple[dict
     return kept, len(entries) - len(kept)
 
 
+def select_exportable(
+    templates: Sequence, bboxes: Mapping[str, object], include_unlocked: bool
+) -> tuple[list[tuple[dict, dict]], int, list[str]]:
+    """The rows the bench can actually score, plus what was left behind and why.
+
+    Two filters, and the second one is the reason this function exists. A
+    template needs a bbox and (unless `include_unlocked`) a locked one — that
+    has always been true. It ALSO needs a stylus path: the bench re-derives
+    every canonical from the chart bytes plus that path, and every row lands in
+    the shared per-key directory `<glyph_key>/`, so a row without a path both
+    fails to score and OVERWRITES the chart row that would have.
+
+    That is what the Laufform rows (variant 100) did once the 1922 source
+    acquired them. A Laufform is a median over word occurrences — no chart
+    cell, no trace — and because the export walks templates ordered by
+    `(glyph_key, variant)` it ran last and won. The first re-export after the
+    LF11 write came back with 22 keys whose `template.json` was the Laufform
+    and 44 crashes (each such key appeared twice in the index).
+
+    The test is the PATH, not the variant number: an authored form variant that
+    was never traced is just as underivable, and the 1922 `i` at variant 1 is
+    exactly that case.
+
+    Returns the (template, bbox) dicts to export, how many rows were skipped as
+    unlocked, and a `glyph_key#variant` label for every row skipped for want of
+    a trace — named rather than counted, because a silently shrinking export is
+    the failure this whole function guards against.
+    """
+    entries: list[tuple[dict, dict]] = []
+    skipped_unlocked = 0
+    skipped_no_trace: list[str] = []
+    for template in templates:
+        bbox = bboxes.get(template.glyph_key)
+        if bbox is None:
+            continue
+        if not bbox.locked and not include_unlocked:
+            skipped_unlocked += 1
+            continue
+        if len(template.raw_path or []) < 2:
+            skipped_no_trace.append(f"{template.glyph_key}#{template.variant}")
+            continue
+        entries.append((_template_dict(template), _bbox_dict(bbox)))
+    return entries, skipped_unlocked, skipped_no_trace
+
+
 async def export(source_id: str, out_dir: Path, include_unlocked: bool, dedupe: bool) -> None:
     # Imported here, after load_dotenv(): the connection module reads env at import time.
     from core.database.connection import get_db_context
@@ -120,16 +173,7 @@ async def export(source_id: str, out_dir: Path, include_unlocked: bool, dedupe: 
         bboxes = {b.glyph_key: b for b in await BboxRepository(session).list(source_id)}
         templates = await TemplateRepository(session).list(source.style_id)
 
-    entries: list[tuple[dict, dict]] = []
-    skipped_unlocked = 0
-    for template in templates:
-        bbox = bboxes.get(template.glyph_key)
-        if bbox is None:
-            continue
-        if not bbox.locked and not include_unlocked:
-            skipped_unlocked += 1
-            continue
-        entries.append((_template_dict(template), _bbox_dict(bbox)))
+    entries, skipped_unlocked, skipped_no_trace = select_exportable(templates, bboxes, include_unlocked)
 
     if dedupe:
         kept, n_deduped = _dedupe_templates(entries)
@@ -141,8 +185,15 @@ async def export(source_id: str, out_dir: Path, include_unlocked: bool, dedupe: 
     chart_sha256 = hashlib.sha256(chart_abs.read_bytes()).hexdigest()
     chart_gray = load_chart_grayscale(source.chart_path)
 
+    # Replace the root rather than write into it: glyph_keys change shape over
+    # time (the position suffixes of `A-final` died with migration 0017), and a
+    # left-behind directory from an older schema sits in the tree looking exactly
+    # like a current one. The June 2026 root still carried 52 such strays when
+    # this re-baseline was taken.
     fixture_root = out_dir / source.style_id / source_id
-    fixture_root.mkdir(parents=True, exist_ok=True)
+    if fixture_root.exists():
+        shutil.rmtree(fixture_root)
+    fixture_root.mkdir(parents=True)
 
     glyph_index = []
     for template, bbox, positions in kept:
@@ -163,6 +214,11 @@ async def export(source_id: str, out_dir: Path, include_unlocked: bool, dedupe: 
             {
                 "glyph_key": template["glyph_key"],
                 "glyph": template["glyph"],
+                # Carried so a second row on the same key is VISIBLE in the
+                # index; without it the two entries a key with a Laufform
+                # produced were indistinguishable, and the bench dutifully
+                # scored the same directory twice.
+                "variant": template["variant"],
                 "positions": sorted(positions),
                 "n_anchors": bbox["n_anchors"],
                 "locked": bbox["locked"],
@@ -186,6 +242,10 @@ async def export(source_id: str, out_dir: Path, include_unlocked: bool, dedupe: 
     print(f"exported {len(glyph_index)} glyphs to {fixture_root}")
     print(f"  deduped fan-out copies: {n_deduped}")
     print(f"  skipped unlocked:       {skipped_unlocked}" + ("" if not include_unlocked else " (included)"))
+    print(
+        f"  skipped without trace:  {len(skipped_no_trace)}"
+        + (f" ({', '.join(skipped_no_trace)})" if skipped_no_trace else "")
+    )
 
 
 def main() -> None:

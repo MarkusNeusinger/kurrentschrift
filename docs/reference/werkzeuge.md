@@ -533,7 +533,15 @@ denen es stammt.
 
 - **`tools/glyphbench`** — bewertet jeden autorisierten Buchstaben gegen
   eingefrorene Referenzen, EIN Skript pro Lauf; Metrik + Baseline-Historie
-  in [`qualitaetsmetrik.md`](qualitaetsmetrik.md).
+  in [`qualitaetsmetrik.md`](qualitaetsmetrik.md). `export_fixtures.py`
+  (der einzige DB-Zugriff, rein lesend) exportiert nur Zeilen MIT
+  Stylus-Pfad — die Bench leitet jede Kanonische daraus neu ab, eine
+  Laufform-Zeile hat keinen — und **ersetzt** die Wurzel bei jedem Lauf,
+  statt in sie hineinzuschreiben. Beides seit der Re-Baseline `sep03`:
+  vorher überschrieb die Laufform-Zeile im gemeinsamen Verzeichnis
+  `<glyph_key>/` die Tafelzeile (44 Abstürze), und Verzeichnisse aus einem
+  älteren Schema blieben unsichtbar liegen
+  ([`qualitaetsmetrik.md`](qualitaetsmetrik.md) §5).
 - **`tools/wordbench`** — bewertet KOMPONIERTE Wörter/Paare gegen die
   Abb.-19/-20-Vorlagen (gleiche Hand); Metrik + Doku in
   [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §6. Drei Module hängen
