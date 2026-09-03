@@ -10,9 +10,14 @@ stops it — the defect the re-baseline of 2026-09-03 uncovered
 
 from __future__ import annotations
 
+import json
 from types import SimpleNamespace
 
-from tools.glyphbench.export_fixtures import select_exportable
+import numpy as np
+import pytest
+
+from tools.glyphbench import export_fixtures
+from tools.glyphbench.export_fixtures import select_exportable, write_fixture_root
 
 
 def _template(glyph_key: str, variant: int = 0, *, traced: bool = True):
@@ -99,3 +104,85 @@ def test_a_row_without_a_bbox_is_skipped_silently():
     a defect worth naming, so it stays out of both counters."""
     entries, unlocked, no_trace = select_exportable([_template("z")], {}, False)
     assert (entries, unlocked, no_trace) == ([], 0, [])
+
+
+# --------------------------------------------------------------- the swap
+
+CHART = np.full((40, 40), 0.9, dtype=float)
+MANIFEST_BASE = {"source_id": "s", "style_id": "st", "chart_path": "c.jpg", "chart_sha256": "abc"}
+
+
+def _kept(*glyph_keys: str):
+    return [(_template_dict_for(k), _bbox_dict_for(k), [k]) for k in glyph_keys]
+
+
+def _template_dict_for(glyph_key: str) -> dict:
+    t = _template(glyph_key)
+    return {k: getattr(t, k) for k in ("glyph_key", "glyph", "variant", "raw_path", "updated_at")}
+
+
+def _bbox_dict_for(glyph_key: str) -> dict:
+    b = _bbox(glyph_key)
+    return {
+        k: getattr(b, k)
+        for k in ("y0", "y1", "x0", "x1", "mask_strokes", "baseline_y", "midband_y", "n_anchors", "locked")
+    }
+
+
+def _stale_root(tmp_path):
+    """A previous export, including a directory whose key died with 0017."""
+    root = tmp_path / "suetterlin-1922"
+    (root / "i-initial").mkdir(parents=True)
+    (root / "i-initial" / "template.json").write_text("{}")
+    (root / "manifest.json").write_text(json.dumps({"exported_at": "2026-06-18T20:51:32+00:00"}))
+    return root
+
+
+def test_the_swap_replaces_the_root_rather_than_merging_into_it(tmp_path):
+    """The stale-directory half of the defect: a key from an older schema must
+    not survive into the new root looking like a live fixture."""
+    root = _stale_root(tmp_path)
+
+    write_fixture_root(root, _kept("a", "b"), CHART, MANIFEST_BASE)
+
+    assert sorted(p.name for p in root.iterdir() if p.is_dir()) == ["a", "b"]
+    assert not (root / "i-initial").exists()
+    assert json.loads((root / "manifest.json").read_text())["source_id"] == "s"
+
+
+def test_a_failure_mid_loop_leaves_the_previous_root_untouched(tmp_path):
+    """The reason the swap exists. A frozen root is the reference every quoted
+    number stands on, so a crop or write failure partway through must cost
+    nothing — not the old baseline, and not a half-written new one."""
+    root = _stale_root(tmp_path)
+    before = json.loads((root / "manifest.json").read_text())
+
+    calls = {"n": 0}
+
+    def explode(*args, **kwargs):
+        calls["n"] += 1
+        if calls["n"] > 1:  # the first glyph writes, the second dies
+            raise RuntimeError("binarization blew up")
+        return export_fixtures.binarize_adaptive(*args, **kwargs)
+
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr(export_fixtures, "binarize_adaptive", explode)
+        with pytest.raises(RuntimeError, match="binarization blew up"):
+            write_fixture_root(root, _kept("a", "b"), CHART, MANIFEST_BASE)
+
+    assert (root / "i-initial").exists(), "the old root was destroyed by a failed export"
+    assert json.loads((root / "manifest.json").read_text()) == before
+    assert not root.with_name(f"{root.name}.staging").exists(), "staging left behind"
+
+
+def test_a_leftover_staging_directory_does_not_poison_the_next_export(tmp_path):
+    """A hard kill (SIGKILL, full disk) can strand a staging directory that no
+    `except` ever ran for. The next export must clear it, not merge into it."""
+    root = tmp_path / "suetterlin-1922"
+    staging = root.with_name(f"{root.name}.staging")
+    (staging / "ghost").mkdir(parents=True)
+
+    write_fixture_root(root, _kept("a"), CHART, MANIFEST_BASE)
+
+    assert sorted(p.name for p in root.iterdir() if p.is_dir()) == ["a"]
+    assert not staging.exists()

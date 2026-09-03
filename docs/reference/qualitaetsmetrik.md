@@ -395,8 +395,11 @@ Reste der Juni-Wurzel, die der Export nie entfernt hatte.
 Behoben, alles drei in `export_fixtures.py`: exportiert wird nur, was die
 Bench ableiten kann (Zeile mit Stylus-Pfad — das Kriterium ist der Pfad,
 nicht die Variantennummer, denn es fängt auch das nie nachgefahrene
-`i`#1 mit), die Wurzel wird bei jedem Export ERSETZT statt beschrieben,
-und der Index nennt die `variant`.
+`i`#1 mit), die Wurzel wird bei jedem Export ERSETZT statt beschrieben —
+über ein Staging-Geschwister mit Tausch am Ende, damit ein Abbruch
+mittendrin weder die alte Basis noch eine brauchbare neue kostet (eine
+eingefrorene Wurzel ist die Referenz, auf der jede zitierte Zahl steht)
+— und der Index nennt die `variant`.
 
 **Die Zahlen. Kein einziger geteilter Glyph hat sich bewegt** — die
 gesamte Verschiebung der Kopfzahl ist Populations-Wechsel, keine

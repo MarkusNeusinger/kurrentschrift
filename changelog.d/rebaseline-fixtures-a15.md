@@ -14,8 +14,10 @@
   Glyph keys changed shape when migration `0017` dropped the position suffixes,
   so the June root's `A-final` directories had been sitting beside current ones
   ever since, indistinguishable from live fixtures — 136 directories serving 84
-  index entries. The root is replaced on every export, and the index now records
-  each row's `variant` so a second row on one key is visible (#516).
+  index entries. The root is replaced on every export — built in a staging
+  sibling and swapped in at the end, so a failure partway through costs neither
+  the old baseline nor a usable new one — and the index now records each row's
+  `variant` so a second row on one key is visible (#516).
 - **Two glyphlab tests were asserting against glyph keys that no longer exist.**
   They loaded `i-initial` and `longs-final`, suffixes migration `0017` dropped,
   and passed only because the June fixture root still carried them — in CI they

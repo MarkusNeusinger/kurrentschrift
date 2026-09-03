@@ -14,6 +14,8 @@ stylus path, so the Laufform variant (a median over word occurrences, no chart
 cell) and any untraced form variant are skipped and named in the run's output.
 The root is REPLACED on every export, never merged into — glyph_keys change
 shape between schemas, and a stray directory from an older one is invisible.
+The replacement runs through a staging sibling and a final swap, so a failed
+export leaves the previous root intact rather than half of a new one.
 
 Fixture layout (gitignored — regenerate at will):
 
@@ -160,6 +162,82 @@ def select_exportable(
     return entries, skipped_unlocked, skipped_no_trace
 
 
+def write_fixture_root(
+    fixture_root: Path, kept: list[tuple[dict, dict, list[str]]], chart_gray, manifest_base: dict
+) -> list[dict]:
+    """Serialise the whole root into a staging sibling, then swap it in.
+
+    Replace rather than merge: glyph_keys change shape over time (the position
+    suffixes of `A-final` died with migration `0017`), and a directory left
+    behind from an older schema sits in the tree looking exactly like a current
+    one — the June 2026 root still carried 52 such strays when this was written.
+
+    But replacing cannot mean deleting first. A frozen root IS the reference
+    every quoted number stands on, so a crop, binarisation or write failure
+    halfway through must not leave the tree with neither the old baseline nor a
+    usable new one. Everything is built beside the root and moved into place at
+    the end; a failure removes the staging directory and leaves the previous
+    root exactly as it was.
+
+    The manifest is written last, so a staging directory that somehow survives
+    is visibly incomplete rather than plausible.
+
+    Returns the glyph index that went into the manifest.
+    """
+    staging = fixture_root.with_name(f"{fixture_root.name}.staging")
+    if staging.exists():
+        shutil.rmtree(staging)
+    staging.mkdir(parents=True)
+
+    try:
+        glyph_index: list[dict] = []
+        for template, bbox, positions in kept:
+            glyph_dir = staging / template["glyph_key"]
+            glyph_dir.mkdir(exist_ok=True)
+
+            crop = crop_with_mask(chart_gray, bbox, fill=1.0)
+            mask = binarize_adaptive(crop)
+            skel, width_map = skeleton_and_width(mask)
+
+            (glyph_dir / "template.json").write_text(json.dumps(template, ensure_ascii=False))
+            (glyph_dir / "bbox.json").write_text(json.dumps(bbox, ensure_ascii=False))
+            Image.fromarray((np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8), mode="L").save(glyph_dir / "crop.png")
+            Image.fromarray((mask * 255).astype(np.uint8), mode="L").save(glyph_dir / "ref_mask.png")
+            np.savez_compressed(glyph_dir / "ref_skel.npz", skel=skel, width_map=width_map.astype(np.float32))
+
+            glyph_index.append(
+                {
+                    "glyph_key": template["glyph_key"],
+                    "glyph": template["glyph"],
+                    # Carried so a second row on the same key is VISIBLE in the
+                    # index; without it the two entries a key with a Laufform
+                    # produced were indistinguishable, and the bench dutifully
+                    # scored the same directory twice.
+                    "variant": template["variant"],
+                    "positions": sorted(positions),
+                    "n_anchors": bbox["n_anchors"],
+                    "locked": bbox["locked"],
+                    "updated_at": template["updated_at"],
+                }
+            )
+
+        manifest = {
+            "exported_at": datetime.now(UTC).isoformat(timespec="seconds"),
+            **manifest_base,
+            "glyphs": glyph_index,
+        }
+        (staging / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1))
+    except BaseException:
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
+
+    # From here only two directory operations remain.
+    if fixture_root.exists():
+        shutil.rmtree(fixture_root)
+    staging.rename(fixture_root)
+    return glyph_index
+
+
 async def export(source_id: str, out_dir: Path, include_unlocked: bool, dedupe: bool) -> None:
     # Imported here, after load_dotenv(): the connection module reads env at import time.
     from core.database.connection import get_db_context
@@ -185,49 +263,8 @@ async def export(source_id: str, out_dir: Path, include_unlocked: bool, dedupe: 
     chart_sha256 = hashlib.sha256(chart_abs.read_bytes()).hexdigest()
     chart_gray = load_chart_grayscale(source.chart_path)
 
-    # Replace the root rather than write into it: glyph_keys change shape over
-    # time (the position suffixes of `A-final` died with migration 0017), and a
-    # left-behind directory from an older schema sits in the tree looking exactly
-    # like a current one. The June 2026 root still carried 52 such strays when
-    # this re-baseline was taken.
     fixture_root = out_dir / source.style_id / source_id
-    if fixture_root.exists():
-        shutil.rmtree(fixture_root)
-    fixture_root.mkdir(parents=True)
-
-    glyph_index = []
-    for template, bbox, positions in kept:
-        glyph_dir = fixture_root / template["glyph_key"]
-        glyph_dir.mkdir(exist_ok=True)
-
-        crop = crop_with_mask(chart_gray, bbox, fill=1.0)
-        mask = binarize_adaptive(crop)
-        skel, width_map = skeleton_and_width(mask)
-
-        (glyph_dir / "template.json").write_text(json.dumps(template, ensure_ascii=False))
-        (glyph_dir / "bbox.json").write_text(json.dumps(bbox, ensure_ascii=False))
-        Image.fromarray((np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8), mode="L").save(glyph_dir / "crop.png")
-        Image.fromarray((mask * 255).astype(np.uint8), mode="L").save(glyph_dir / "ref_mask.png")
-        np.savez_compressed(glyph_dir / "ref_skel.npz", skel=skel, width_map=width_map.astype(np.float32))
-
-        glyph_index.append(
-            {
-                "glyph_key": template["glyph_key"],
-                "glyph": template["glyph"],
-                # Carried so a second row on the same key is VISIBLE in the
-                # index; without it the two entries a key with a Laufform
-                # produced were indistinguishable, and the bench dutifully
-                # scored the same directory twice.
-                "variant": template["variant"],
-                "positions": sorted(positions),
-                "n_anchors": bbox["n_anchors"],
-                "locked": bbox["locked"],
-                "updated_at": template["updated_at"],
-            }
-        )
-
-    manifest = {
-        "exported_at": datetime.now(UTC).isoformat(timespec="seconds"),
+    manifest_base = {
         "source_id": source_id,
         "style_id": source.style_id,
         "chart_path": source.chart_path,
@@ -235,9 +272,8 @@ async def export(source_id: str, out_dir: Path, include_unlocked: bool, dedupe: 
         "style_ratio": source.style_ratio or (style.default_style_ratio if style else None),
         "slant_deg": source.slant_deg or (style.default_slant_deg if style else None),
         "width_resolver": style.width_resolver if style else None,
-        "glyphs": glyph_index,
     }
-    (fixture_root / "manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=1))
+    glyph_index = write_fixture_root(fixture_root, kept, chart_gray, manifest_base)
 
     print(f"exported {len(glyph_index)} glyphs to {fixture_root}")
     print(f"  deduped fan-out copies: {n_deduped}")

@@ -537,7 +537,9 @@ denen es stammt.
   (der einzige DB-Zugriff, rein lesend) exportiert nur Zeilen MIT
   Stylus-Pfad — die Bench leitet jede Kanonische daraus neu ab, eine
   Laufform-Zeile hat keinen — und **ersetzt** die Wurzel bei jedem Lauf,
-  statt in sie hineinzuschreiben. Beides seit der Re-Baseline `sep03`:
+  statt in sie hineinzuschreiben: gebaut wird in einem
+  Staging-Geschwister, getauscht wird am Ende, ein Abbruch lässt die
+  vorherige Wurzel unangetastet. Beides seit der Re-Baseline `sep03`:
   vorher überschrieb die Laufform-Zeile im gemeinsamen Verzeichnis
   `<glyph_key>/` die Tafelzeile (44 Abstürze), und Verzeichnisse aus einem
   älteren Schema blieben unsichtbar liegen
