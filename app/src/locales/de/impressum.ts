@@ -51,10 +51,22 @@ export const impressum = {
     // days, the per-IP counting and the browser's security reports, the
     // cookieless count over the site's own path, the Netherlands and
     // Cloudflare in front of them — only the apparatus is gone.
+    // One retention promise per store, because they differ: the Cloud Logging
+    // bucket drops entries after thirty days, the rate-limit buckets are
+    // in-memory and survive only until the process restarts (api/rate_limit.py
+    // — no expiry, eviction only above MAX_TRACKED_CLIENTS), and a CSP report
+    // is written to the log and follows the log's thirty days. A blanket
+    // „nach dreißig Tagen" would have covered two stores it does not fit
+    // (Copilot review, #507).
     data:
-      'Zweierlei fällt beim Besuch trotzdem an. Der Server schreibt jeden Abruf mit: IP-Adresse, Seite, Browser-Kennung. Das braucht es, um die Seite vor Überlastung und Missbrauch zu schützen — dazu zählt er auch mit, wie viele Anfragen von einer Adresse kommen, und nimmt die Sicherheitsmeldungen entgegen, die der Browser schickt, wenn auf einer Seite etwas Unerlaubtes geladen würde. Diese Aufzeichnungen löschen sich nach dreißig Tagen von selbst.',
+      'Zweierlei fällt beim Besuch trotzdem an. Der Server schreibt jeden Abruf mit: IP-Adresse, Seite, Browser-Kennung. Diese Protokolle löschen sich nach dreißig Tagen von selbst. Damit die Seite nicht durch schiere Menge lahmgelegt wird, zählt er außerdem mit, wie viele Anfragen von einer Adresse kommen — dieser Zähler steht allein im Arbeitsspeicher und ist mit dem nächsten Neustart fort. Und er nimmt die Sicherheitsmeldungen entgegen, die der Browser schickt, wenn auf einer Seite etwas Unerlaubtes geladen würde; sie landen im selben Protokoll und verschwinden mit ihm.',
+    // NOT „kein fremdes Script": `/js/script.js` IS Plausible's script, only
+    // served from this domain (app/index.html, security-headers.conf). The
+    // proxy changes the request's origin, not the script's provenance — so the
+    // sentence names the property that is actually true, which is the one that
+    // matters for privacy anyway (Copilot review, #507).
     analyticsBeforeLink:
-      'Und gezählt wird, was sich ohne Namen zählen lässt: Seitenaufrufe, nicht Personen. Dafür sorgt Plausible — ohne Cookies, ohne Verfolgung über fremde Seiten hinweg, eingebunden über einen eigenen Zwischenweg auf dieser Domain, damit kein fremdes Script mitlädt. Die Zählung steht ',
+      'Und gezählt wird, was sich ohne Namen zählen lässt: Seitenaufrufe, nicht Personen. Dafür sorgt Plausible — ohne Cookies, ohne Kennung, die dich über fremde Seiten hinweg wiedererkennt, und ohne dass deine IP-Adresse dort gespeichert würde. Eingebunden ist es über einen eigenen Weg auf dieser Domain: Dein Browser spricht nur mit uns, nicht mit einem fremden Server. Die Zählung steht ',
     analyticsLinkText: 'jedermann offen',
     analyticsUrl: 'https://plausible.io/kurrentschrift.ink',
     analyticsAfterLink: ' — wer mag, sieht genau das, was ich sehe.',
@@ -63,12 +75,12 @@ export const impressum = {
     // not in europe-west4 (Copilot review, #507).
     hosting:
       'Die Seite selbst läuft auf Google Cloud in den Niederlanden; davor liegt Cloudflare als Schutzschicht — ein weltweites Netz, das Besucher aus Europa in aller Regel über europäische Standorte bedient. Plausible ist ein eigener Dienst und zählt auf seinen eigenen Servern in der EU.',
-    // The author's own sentence, with the basis NAMED rather than only implied:
-    // „berechtigtes Interesse" is the ground the GDPR asks for, and saying it
-    // in plain words costs nothing and keeps the article number out (Copilot
-    // review, #507).
+    // The author's sentence VERBATIM, with the legal basis added as a short
+    // aside rather than rewritten into it — the first attempt reworded his
+    // line, which the PR body still claimed was untouched (Copilot review,
+    // #507). No article number: „berechtigtes Interesse" is the ground itself.
     basis:
-      'Wir tun das, weil ein Betreiber ein berechtigtes Interesse daran hat, seine Seite zu schützen und zu wissen, wie oft sie gelesen wird; es gilt das Schweizer Datenschutzgesetz, für Besucher aus der EU zusätzlich die DSGVO.',
+      'Wir tun das, weil ein Betreiber seine Seite schützen und wissen darf, wie oft sie gelesen wird — ein berechtigtes Interesse, wie das Gesetz es nennt; es gilt das Schweizer Datenschutzgesetz, für Besucher aus der EU zusätzlich die DSGVO.',
     rights:
       'Du kannst jederzeit fragen, was gespeichert ist, der Verarbeitung widersprechen und dich bei der Aufsicht beschweren — in der Schweiz beim Eidgenössischen Datenschutz- und Öffentlichkeitsbeauftragten, in der EU bei der Behörde an deinem Wohnort. Ein paar Zeilen per E-Mail genügen.',
   },
