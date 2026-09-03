@@ -82,7 +82,11 @@ export const impressum = {
       { label: 'Hosting', value: 'Google Cloud Run (Niederlande, europe-west4)' },
       { label: 'Datenbank', value: 'Google Cloud SQL (Niederlande)' },
       { label: 'Schutz & Zwischenspeicher', value: 'Cloudflare (weltweites Netz, europäische Standorte für Besucher aus Europa)' },
-      { label: 'Statistik', value: 'Plausible Analytics (Server in der EU, über einen eigenen Zwischenweg eingebunden)' },
+      {
+        label: 'Statistik',
+        value:
+          'Plausible Analytics (Server in der EU, über einen eigenen Zwischenweg auf dieser Domain eingebunden, damit kein Fremd-Script geladen wird)',
+      },
     ],
     notCollectedTitle: 'Was hier nicht gesammelt wird',
     notCollected: [
