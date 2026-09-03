@@ -41,19 +41,37 @@ NGINX_CONF = ROOT / "app" / "nginx.conf"
 
 INCLUDE_LINE = "include /etc/nginx/security-headers.conf;"
 
-_SCRIPT = re.compile(r"<script(?P<attrs>[^>]*)>(?P<body>.*?)</script>", re.DOTALL | re.IGNORECASE)
+# `</script\s*>`, not `</script>`: HTML lets whitespace stand before the closing
+# angle bracket, so a browser ends the element at `</script >` while a literal
+# pattern reads on to the NEXT closing tag — and then hashes two scripts as one
+# (CodeQL's `py/bad-tag-filter`). The same class of mismatch is why the comment
+# strip below exists.
+_SCRIPT = re.compile(r"<script(?P<attrs>[^>]*)>(?P<body>.*?)</script\s*>", re.DOTALL | re.IGNORECASE)
 _TYPE = re.compile(r"""type\s*=\s*["']?([^"'\s>]+)""", re.IGNORECASE)
+# `src=` as a substring matched `data-src=` too, and missed `SRC = "…"` — an
+# EXTERNAL script read as inline gets a hash for its (empty) body, and an
+# INLINE one read as external loses the hash it needs. The boundary is a space
+# or a closing quote rather than `\b`, because `\b` sits inside `data-src` as
+# well (the hyphen is a non-word character).
+_SRC_ATTR = re.compile(r"""(?:^|[\s"'])src\s*=""", re.IGNORECASE)
+_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
 # A <script> whose type is none of these is a DATA BLOCK (the JSON-LD in
 # index.html): the browser never executes it, and CSP never asks for a hash.
 _EXECUTABLE_TYPES = {"", "module", "text/javascript", "application/javascript"}
 
 
 def inline_script_hashes(html: str) -> list[str]:
-    """`sha256-…` for every executable inline script, in document order."""
+    """`sha256-…` for every executable inline script, in document order.
+
+    Commented-out markup is removed first: a `<script>` inside `<!-- -->` never
+    runs, so hashing it would put a permanent phantom into the policy — and the
+    day someone deletes the comment, the hash would still be there, allowing a
+    script nobody can see any more (this is what bit anyplot's index.html).
+    """
     out = []
-    for match in _SCRIPT.finditer(html):
+    for match in _SCRIPT.finditer(_COMMENT.sub("", html)):
         attrs = match.group("attrs")
-        if "src=" in attrs:
+        if _SRC_ATTR.search(attrs):
             continue
         declared = _TYPE.search(attrs)
         if (declared.group(1).lower() if declared else "") not in _EXECUTABLE_TYPES:
@@ -116,6 +134,31 @@ def test_script_src_allows_exactly_the_inline_scripts_of_index_html():
         f"  in the policy: {sorted(allowed)}\n"
         f"  in index.html: {sorted(expected)}\n"
         "Recompute after ANY edit to an inline <script> — even whitespace."
+    )
+
+
+def test_the_script_scanner_reads_html_the_way_a_browser_does():
+    """The extractor decides which hashes the policy must carry, so its blind
+    spots become policy holes. Three of them, each with its own way of lying:
+
+    * `</script >` — legal HTML. A literal `</script>` pattern reads past it to
+      the next closing tag and hashes TWO scripts as one, so the real first
+      script gets no hash and stops running (CodeQL `py/bad-tag-filter`).
+    * `SRC = "…"` / `data-src=` — an external script read as inline earns a
+      hash for its empty body; an inline one read as external loses its hash.
+    * a commented-out `<script>` — never runs, so its hash is a standing
+      permission for code that is not in the page.
+    """
+    only = inline_script_hashes("<script>x()</script >\n<script>y()</script>")
+    assert len(only) == 2, "a space before the closing bracket swallowed the next script"
+
+    assert inline_script_hashes('<script SRC = "/a.js"></script>') == []
+    assert inline_script_hashes('<script data-src="x">z()</script>') == inline_script_hashes("<script>z()</script>")
+
+    assert inline_script_hashes("<!-- <script>ghost()</script> -->") == []
+    # …and the comment must not eat what follows it either.
+    assert inline_script_hashes("<!-- note --><script>real()</script>") == inline_script_hashes(
+        "<script>real()</script>"
     )
 
 
