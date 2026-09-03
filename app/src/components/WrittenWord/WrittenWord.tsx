@@ -186,6 +186,10 @@ export function WrittenWord({
     displayW = maxWidth;
   }
   const maskId = `word-${uid.replace(/[^a-zA-Z0-9_-]/g, '_')}-${run}`;
+  // Exactly the condition the button itself renders under (below): a reader who
+  // prefers reduced motion gets no replay button, so reserving ground for one
+  // would be empty space with nothing in it.
+  const hasReplay = animate && showReplay;
 
   return (
     <Box
@@ -200,7 +204,7 @@ export function WrittenWord({
         // button its own ground under the line without moving the ink, which
         // stays centred. Only where the button exists: everywhere else the box
         // keeps hugging the writing, so no other surface's layout moves.
-        ...(showReplay ? { minHeight: height, alignItems: 'center' } : {}),
+        ...(hasReplay ? { minHeight: height, alignItems: 'center' } : {}),
       }}
     >
       <svg
@@ -258,7 +262,7 @@ export function WrittenWord({
         </Box>
       </svg>
 
-      {animate && showReplay && <ReplayButton onClick={replay} />}
+      {hasReplay && <ReplayButton onClick={replay} />}
     </Box>
   );
 }
