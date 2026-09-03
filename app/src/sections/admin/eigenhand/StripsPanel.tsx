@@ -107,12 +107,13 @@ function useStripImage(
   const [shownFor, setShownFor] = useState(loadKey);
   if (shownFor !== loadKey) {
     setShownFor(loadKey);
-    // Only a load arms the spinner: a tile being closed has no request to
-    // wait for, exactly as the effect's early return had it.
-    if (enabled) {
-      setLoading(true);
-      setError(null);
-    }
+    // `enabled`, not `true`: a tile being CLOSED has no request to wait for,
+    // and the in-flight one it leaves behind can no longer clear the spinner
+    // itself — the effect's cleanup disarms its `finally`. Written here, the
+    // closed tile never keeps a spinner (or the previous cut's error) standing
+    // behind it.
+    setLoading(enabled);
+    setError(null);
   }
 
   useEffect(() => {

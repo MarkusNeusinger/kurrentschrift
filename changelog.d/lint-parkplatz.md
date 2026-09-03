@@ -1,13 +1,18 @@
 ### Changed
 
-- **The ESLint parking lot is empty, and the gate now holds it there.** The 69
-  warnings issue #227 parked — 35 `react-hooks/set-state-in-effect`, 25
-  `react-refresh/only-export-components`, 4 `react-hooks/refs`, 4
-  `react-hooks/exhaustive-deps` — are gone, rule by rule and without a single
-  `eslint-disable`. The three `warn` downgrades in `eslint.config.js` are
-  deleted, so those rules sit at `error` from the react-hooks preset, and
-  `npm run lint` runs with `--max-warnings 0`: the next warning of any rule
-  fails CI instead of joining a list.
+- **The ESLint parking lot is empty, and the gate now holds it there.** Issue
+  #227 parked 45 warnings; by the audit of 2026-09-02 the lot had grown to 69,
+  and it stood at 68 when this work began — 35
+  `react-hooks/set-state-in-effect`, 25
+  `react-refresh/only-export-components`, 4 `react-hooks/refs` and 4
+  `react-hooks/exhaustive-deps`. All 68 are gone, rule by rule, and no new
+  suppression was written for any of them; the seven
+  `eslint-disable-next-line react-hooks/exhaustive-deps` directives already in
+  the tree (five files, each with its reason beside it) are untouched. The
+  three `warn` downgrades in `eslint.config.js` are deleted, so those rules sit
+  at `error` from the react-hooks preset, and `npm run lint` runs with
+  `--max-warnings 0`: the next warning of any rule fails CI instead of joining
+  a list.
 - **State that belongs to a prop is now adjusted during render, not after
   it.** Every "reset when the input changes" effect became React's documented
   render-phase guard (`if (shownFor !== key) { setShownFor(key); …reset… }`).
