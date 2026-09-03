@@ -7,4 +7,4 @@
   untouched — it is a Befund-Journal, a dated snapshot
   that is never rewritten, so the state belongs beside it rather than inside
   its findings. The raw-findings document points at that section from its head
-  (#508).
+  (#509).
