@@ -3504,10 +3504,15 @@ am 2026-09-03 entschieden, §14 wieder zu schließen — die Abschnitte
 stehen seither vor §15, Wort für Wort unverändert und mit ihren Ankern.
 Wer die nächste Runde schreibt, hängt sie also nicht ans Dateiende,
 sondern vor §15. Das Gate schaut dafür über die Sektionsgrenze hinaus:
-eine `###`-Überschrift hinter §14, die das Datums-Tag des Journals trägt,
-wird als verrutschter Eintrag gemeldet („sits AFTER §14“) — sie fällt
-nicht still aus dem Fenster. Die fehlende Registerzeile ist die andere,
-eigene Meldung und greift für Abschnitte INNERHALB von §14.
+**jede** `###`-Überschrift hinter §14 wird als verrutschter Eintrag
+gemeldet („sits AFTER §14“) — sie fällt nicht still aus dem Fenster. Ob
+eine Überschrift „nach Journal aussieht“, entscheidet das Gate bewusst
+nicht: diese Datei trägt schon 26 datierte `###`-Überschriften außerhalb
+von §14, das Datum trennt also nichts. Bekommt eine spätere Sektion
+einmal eine eigene Unterüberschrift, wird sie in
+`tools/docs_register` (`POST_JOURNAL_SUBHEADINGS`) eingetragen — eine
+Zeile, die im Review sichtbar ist. Die fehlende Registerzeile ist die
+andere, eigene Meldung und greift für Abschnitte INNERHALB von §14.
 
 **Nachzieh-Pflicht: jeder neue `###`-Abschnitt dieser Sektion ergänzt im
 selben PR seine Registerzeile**, und jeder Eintrag, der einen Arm einer

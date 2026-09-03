@@ -48,6 +48,16 @@ INDEX_HEADINGS = (
     "Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)",
 )
 
+# `###` headings that legitimately sit BEHIND §14 — an allowlist, and empty on
+# purpose: §15 has none today. It is a declaration rather than a shape test
+# because shape cannot decide the question. The file carries 26 dated `###`
+# headings outside §14 already (`Re-Baseline jul05`, `Nachtrag aug26` …), so
+# "has a date tag" would flag a §15 subsection the day someone writes one, while
+# a journal entry that fell out of §14 looks like any other heading. Defaulting
+# to "report it" makes the append-at-the-file-end slip loud and costs a
+# legitimate subheading one reviewed line here.
+POST_JOURNAL_SUBHEADINGS: tuple[str, ...] = ()
+
 # Route name in the register ⇒ the process page that owns its ledger.
 ROUTE_PAGES = {
     "Kette": Path("docs/reference/verfahren-kette.md"),
@@ -148,21 +158,21 @@ def _journal_bounds(lines: list[str]) -> tuple[int, int]:
 
 
 def stray_entries(text: str) -> list[Entry]:
-    """Journal entries that landed AFTER §14 — the append-at-the-file-end slip.
+    """`###` headings behind §14 that nobody declared — the append-at-the-end slip.
 
     A round writes its section at the end of the file, which is how five `sep02`
-    entries ended up behind the `## 15.` heading. What identifies one is the
-    journal's own date tag in the heading (`aug14`, `sep02`), so a later section's
-    ordinary `###` subheading is not mistaken for a misplaced entry. Anchors are
-    not computed here — the finding is "this belongs inside §14", not "index it
-    where it fell".
+    entries ended up behind the `## 15.` heading. Nothing in a heading says
+    whether it was meant for the journal, so this does not guess: everything
+    behind §14 is reported unless it stands in `POST_JOURNAL_SUBHEADINGS`.
+    Anchors are not computed — the finding is "this belongs inside §14", not
+    "index it where it fell".
     """
     lines = text.split("\n")
     _, end = _journal_bounds(lines)
     return [
         Entry(title=line[4:].strip(), anchor="", line=i + 1)
         for i, line in enumerate(lines)
-        if i >= end and line.startswith("### ") and _DATE_TAG.search(line)
+        if i >= end and line.startswith("### ") and line[4:].strip() not in POST_JOURNAL_SUBHEADINGS
     ]
 
 
@@ -284,9 +294,10 @@ def check_register(text: str) -> list[str]:
             )
     for stray in stray_entries(text):
         problems.append(
-            f"{JOURNAL}:{stray.line}: '{stray.title}' reads as a journal entry but sits AFTER §14 — "
-            "a round appends at the end of the file, and §14 is a closed section: move it in front of "
-            "the next `## ` heading, then give it its register row"
+            f"{JOURNAL}:{stray.line}: '{stray.title}' sits AFTER §14 — a round appends at the end of "
+            "the file, and §14 is a closed section: move it in front of the next `## ` heading and "
+            "give it its register row. If it really belongs to a later section, declare it in "
+            "tools/docs_register POST_JOURNAL_SUBHEADINGS"
         )
     return problems
 

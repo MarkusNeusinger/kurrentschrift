@@ -125,12 +125,21 @@ def test_the_journal_ends_at_the_next_section(repo: Path) -> None:
     assert any("sits AFTER §14" in p for p in dr.check_all(root=repo))
 
 
-def test_a_later_sections_own_subheading_is_not_a_stray_entry(repo: Path) -> None:
-    # §15 and its successors may carry ordinary subheadings; only the journal's
-    # own date tag marks a heading as a misplaced ENTRY.
-    text = JOURNAL + "\n### Was die Reparatur gekostet hat\n\nProsa.\n"
+def test_a_dated_subheading_behind_the_journal_is_reported_too(repo: Path) -> None:
+    # Shape cannot decide this: the real file already carries 26 dated `###`
+    # headings outside §14 (`Re-Baseline jul05`, `Nachtrag aug26` …), so a date
+    # tag proves nothing. Everything behind §14 is reported by default.
+    text = JOURNAL + "\n### Nachtrag `sep05` — was die Reparatur gekostet hat\n\nProsa.\n"
     _write(repo, dr.JOURNAL, text)
-    assert dr.stray_entries(text) == []
+    assert any("sits AFTER §14" in p for p in dr.check_all(root=repo))
+
+
+def test_a_declared_subheading_behind_the_journal_passes(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # …and the escape is a declaration, not a guess: one reviewed line lets a
+    # later section keep its own subheading.
+    title = "Nachtrag `sep05` — was die Reparatur gekostet hat"
+    monkeypatch.setattr(dr, "POST_JOURNAL_SUBHEADINGS", (title,))
+    _write(repo, dr.JOURNAL, JOURNAL + f"\n### {title}\n\nProsa.\n")
     assert dr.check_all(root=repo) == []
 
 
