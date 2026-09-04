@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-04): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **78
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **79
 > Begriffe**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars. Nachzieh-Anlass: ein Begriff wandert
 > hierher, sobald er die Zwei-von-drei-Schwelle unten erreicht und in
@@ -460,6 +460,13 @@ angenommenen Fassungen einer Hand; die Zähleinheit des Bestandsberichts.
 **Federprobe** *(`/federprobe`)* — die Schreibfläche für beliebigen Text,
 live in Sütterlin mit den generierten Übergängen. Die öffentliche
 Kostprobe der Komposition.
+→ [§7](glossar.md#7-öffentliche-seiten--die-produktnamen)
+
+**Tintenboden** — 14 px x-Höhe: die Untergrenze, unter der eine
+geschriebene Zeile nicht kleiner gesetzt, sondern umgebrochen wird
+(`lib/lineWrap.ts` `MIN_XHEIGHT_PX`). Beim **Umbruch der Federprobe** ist
+dann jede Zeile eine eigene Komposition und ein eigener durchgehender
+Federzug — „Zug um Zug“ gilt je Zeile.
 → [§7](glossar.md#7-öffentliche-seiten--die-produktnamen)
 
 **Schreibtafel** *(`/tafel`)* — die Alphabet-Seite: die drei Grundtafeln

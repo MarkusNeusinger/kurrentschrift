@@ -154,6 +154,12 @@ export function sequenceReveal(
 // stall the write-in.
 export const PEN_PAUSE_MS = 130;
 
+// The beat at a line break, when a text is wrapped into several written lines
+// (WrittenWord's Umbruch). Longer than an in-word Absetzen because the hand
+// travels the whole way back to the left margin — at the pen-lift value the two
+// lines read as one run with a wide gap in it.
+export const LINE_BREAK_PAUSE_MS = 320;
+
 // Iron-gall settle (fresh blue-black → oxidized) after the write-in completes.
 export const SETTLE_MS = 1800; // WrittenGlyph / WrittenWord
 export const SHEET_SETTLE_MS = 1500; // WrittenSheet's slightly quicker settle

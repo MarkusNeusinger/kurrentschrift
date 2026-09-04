@@ -1,16 +1,17 @@
 # Design-System — kurrentschrift.ink
 
-> **Status (2026-08-03): lebend.** Beschreibt den Ist-Zustand des
+> **Status (2026-09-04): lebend.** Beschreibt den Ist-Zustand des
 > Frontends und ist am 2026-08-03 gegen den Code geprüft
 > (Tokens, 19-px-Leiter samt Gewichten, Breiten 760/1152/1280, Kopfleiste,
-> Routenliste).
+> Routenliste); am 2026-09-04 um den Tintenboden geschriebener Zeilen
+> ergänzt (§9, §7 `WrittenWord`).
 > **Mitziehen bei jeder Änderung an `app/src/styles/paper.ts`,
 > `theme/typography.ts`,
 > `components/PageContainer|Prose|PageHeader|HeaderBar|PublicHeader|PublicFooter`,
 > an der Werkbank-Kopfleiste (`sections/admin/shell/AdminHeader`) oder
 > an der öffentlichen Routen-/Bereichsstruktur** — sonst driftet die
 > Bauvorschrift von dem, was ausgeliefert wird.
-
+>
 > **Was dieses Dokument ist:** die *verbindliche, aktuelle* Bauvorschrift der
 > öffentlichen Website — Tokens, Typo-Skala, Breiten, Flächen, Navigation,
 > Komponenten, Bewegung, Lesbarkeit. Es beschreibt den **Ist-Zustand des Codes**
@@ -305,7 +306,7 @@ eigenen drei Bereichen (Buchstaben · Übergänge · Wörter) — §7 `HeaderBar
 | `HeroWritten` | einspaltiger Landing-Hero: Markenwort wird von der Engine geschrieben | Engine-first (`WrittenWord`, seit 2026-08-27); die Engine bekommt beliebig lange (Geduld-Zeile nach ~3 s, Autor-Entscheid 2026-08-27) — GLKurrent-Wort (Specimen) mit Wisch + Federspitze nur bei echtem Scheitern (Fetch-Fehler, fehlende Glyphen), Caption wechselt mit dem Modus |
 | `WrittenGlyph` | ein Glyph „wie geschrieben" (Ductus-Playback) | weiße Arbeitsfläche; `showReplay=false` für kleine Specimens mit eigener Replay-Geste |
 | `SpecimenStrip` | Buchstaben „wie geschrieben" als **markiertes Specimen** (§9): eigene Haarlinien-Fläche in `paper.hi`, Antiqua-Beschriftung darunter, Klick schreibt neu | `specimens[{key,label}]`, `payloads` (EIN Batch je Seite über `useSpecimenPayloads`), `height`; montiert erst in Sichtweite, zieht sich zurück, wenn nichts schreibbar ist — Schriftkunde-Besonderheiten, Lesart-Verwechsler |
-| `WrittenWord` | ganzes Wort/Zeile aus Per-Glyph-Diagnostik + Übergängen | Engine-Pfad; Font-Specimen ist Fallback |
+| `WrittenWord` | ganzes Wort/Zeile aus Per-Glyph-Diagnostik + Übergängen | Engine-Pfad; Font-Specimen ist Fallback. Größe und Zeilenzahl kommen aus der **gemessenen** Rahmenbreite, nie aus der Aufrufer-Konstante `maxWidth` (die bleibt Obergrenze): Unterschreitet der Text den **Tintenboden von 14 px x-Höhe** (§9, `lib/lineWrap.ts`), bricht er an Wortgrenzen um — **jede Zeile eine eigene Komposition und ein eigener durchgehender Federzug**, alle Zeilen in einer x-Höhe und links bündig (Autor-Entscheid 2026-09-04; verworfen: Maßstab-Boden mit Scrollfläche, viewportgekoppelte Zeichengrenze). Ein einzelnes zu breites Wort wird nicht getrennt und bleibt unter dem Boden |
 | `BootStatus` | Vollseiten-Boot-/Cold-Start-Zustand | Quiz, Admin |
 | `BackToTop` | schwebende Rückkehr an den Seitenanfang, erscheint ab zwei Bildschirmen Scrollweg | nur auf den langen Inhaltsseiten (`/schriftkunde` ≈ 20 Handy-Bildschirme, `/impressum`, `/lesen/vergleichen`); 44 × 44, Papierfläche mit Haarlinie (§5), `prefers-reduced-motion` springt statt zu gleiten |
 
@@ -343,6 +344,15 @@ Untergrenzen: Body ≥ 19 px, Caption ≥ 14 px — **auch in der Werkbank** (ei
 Beleg-Kachel beschriftet mit `variant="caption"`, nicht mit 10 px). Kontrast:
 Tinte/Sepia auf Papier, nie blass auf blass. Diese Regel hat Vorrang vor jeder
 Epochen-Anmutung.
+
+**Der Boden gilt auch für geschriebene Zeilen** („Tintenboden“, seit
+2026-09-04): Die **x-Höhe** einer geschriebenen Zeile — eine Template-Einheit,
+Grundlinie = 0, Mittelband = 1 — fällt nicht unter dieselben **14 px**.
+Geschriebene Formen bekommen mindestens, was die kleinste gesetzte Schrift
+bekommt, und brauchen eher mehr: Was ein Sütterlin-u vom n trennt, sitzt
+*innerhalb* des Mittelbands und ist ein Bruchteil davon. Statt kleiner zu
+setzen, bricht `WrittenWord` den Text um (§7). Belegt: Der Audit vom
+2026-09-02 maß auf 360 px einen 29-Zeichen-Satz bei 7,1 px je Einheit.
 
 **Messbar statt behauptet.** Der Typo-Boden hat ein eincheckbares Gitter:
 `node app/scripts/type-floor.mjs` fährt alle öffentlichen Routen in einem echten

@@ -138,6 +138,11 @@ export function OverviewVerify({
                   height={CELL_H - 12}
                   maxWidth={cellW * 2}
                   surfaceBg="#fff"
+                  // The cell has its own „Neu schreiben" above it, and it is a
+                  // FIXED-size cell: the glyph's own ↺ would have to take its
+                  // clear ground out of the cell's height (replayGround), which
+                  // is what `showReplay={false}` exists for.
+                  showReplay={false}
                 />
               </Box>
             </Cell>
