@@ -135,6 +135,7 @@ docs/
     ├── audit-2026-09-02-rohbefunde.md  # Vollaudit 2026-09-01/02: Rohberichte der 20 Prüfer (Repo · Website · Werkzeuge · das Geschriebene)
     ├── audit-2026-09-02-synthese.md  # Vollaudit 2026-09-01/02: Rangliste, Parallelplan T1–T14, Fragen an den Autor F1–F11, Erledigungsstand 2026-09-03
     ├── quellen-recherche-2026-07.md  # Recherche Juli 2026: geschriebene Wortvorlagen & echte Hände — Rangliste, Absteiger, mögliche Anfragen
+    ├── serve-image-importgraph-2026-09-04.md  # Nachmessung: was scipy/skimage/numpy den Prozessstart der API kosten (8 ms bzw. 46 ms von 910 ms), Paketgrößen, zwei Wege mit Preis
     └── stifte-fuer-unterwegs.md  # Stift-/Hardware-Recherche fürs Schreiben unterwegs
 ```
 
