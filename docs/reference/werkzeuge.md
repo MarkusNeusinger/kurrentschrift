@@ -733,9 +733,9 @@ denen es stammt.
      Arm müssen bis auf den EINEN vorregistrierten Knopf derselbe
      Stack sein**; `k0eval` druckt beide Stacks und warnt bei
      Abweichung — zweimal in zwei Tagen (`aug25` L-U, `aug26` v5)
-     wurde sonst gegen den falschen Folger gemessen. Die Arm-Flags
-     (`--mark-claim` …) stehen im `--help` und je Arm in seinem
-     §14-Eintrag.
+     wurde sonst gegen den falschen Folger gemessen (er liest die
+     sechs Wächter-Flaggen). Die Arm-Flags (`--connector-init` …)
+     stehen im `--help` und je Arm in seinem §14-Eintrag.
   3. **dev-19-Scoring**: `uv run python -m tools.tracebench --split dev
      --candidate file --candidate-file <cand.json> --json …
      --compare <basis-report.json>` — gepaarte Deltas, Zähler, Gates.

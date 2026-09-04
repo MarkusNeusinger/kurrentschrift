@@ -49,16 +49,18 @@ Verfahrensseite; geändert wird sie nie hier.
 > Paare **0,148198** (Re-Baseline `sep02` nach dem LF11-Write;
 > Headline-Ledger im Kopf von §14).
 >
-> **Duell, dev-19, Lineal-Kappe 1,5.** Kette **v5** (`aug26`) dtw
-> **0,0446** med · p90 0,0861 · aiou 0,7608 · 63er-Soll-Abstand 79 ·
-> Netto-Kreuzungsdefekte 19. Lotse **v0.17** (`aug20`, Zahlen `sep04`)
-> dtw **0,056080** · p90 0,1155 · aiou 0,7527 — frisch auf der
-> heutigen Wurzel geritten (§14 „Lotse-Sprung `sep04`"; die
-> `aug26`-Zahl 0,0545 war eine Transkription, richtig ist dort
-> 0,058522, und sie stand auf einer drei Neu-Exporte alten Wurzel).
-> **Die beiden Duell-Zahlen sind damit NICHT auf derselben Wurzel
-> gemessen** — die Kette steht noch auf `aug26` und wartet auf ihre
-> Nachmessung (§7.11).
+> **Duell, dev-19, Lineal-Kappe 1,5 — seit `sep04` beide Zahlen auf
+> DERSELBEN Wurzel** (`suetterlin-1922` `exported_at`
+> 2026-09-04T12:22:29+00:00, `root_digest` `9f124f78cc9f…`). Kette
+> **v5** (`aug26`), Zahlen re-baselined `sep04` (§14 „Kette K-F"):
+> dtw **0,045830** med · p90 0,094197 · aiou 0,7694 ·
+> 63er-Soll-Abstand 76 · Netto-Kreuzungsdefekte 19. Lotse **v0.17**
+> (`aug20`, Zahlen `sep04`) dtw **0,056080** · p90 0,1155 · aiou
+> 0,7527 (§14 „Lotse-Sprung `sep04`"; die `aug26`-Zahl 0,0545 war eine
+> Transkription, richtig ist dort 0,058522). Die alten Kette-Zahlen
+> (`aug26`: 0,0446 · 0,0861 · 0,7608 · Soll 79) bleiben gültig und
+> archiviert, sind aber über die `sep01`-Rechteck-Reparatur hinweg mit
+> diesen nicht vergleichbar.
 > InkSight **T0** (`aug17`) dtw 0,0951 auf der ALTEN Kappe 0,8, 5 von 19
 > failed — auf 1,5 unvermessen, die Zahlen sind archiviert und nicht
 > vergleichbar. Nullprobe dtw **0,8198** auf den 10 der 19 Wörter, die
@@ -79,7 +81,8 @@ Verfahrensseite; geändert wird sie nie hier.
 > Best-of-N · P3-K1/K2/K3 · O2-Trim-Jitter · Lotse v0.2/v0.3/v0.4/v0.6/
 > v0.8/v0.10/v0.12/v0.14/v0.15/v0.18 und die Auflösungs-Familie ·
 > K0-Z/K0-Z-R (als K0-S wiedervorgelegt und in v5 aufgegangen) ·
-> K-E1/K-E2 · LF1/LF2/LF3/LF5/LF6/LF7/LF10 · J1/J2/J3 · J4/J4b. K-D
+> K-E1/K-E2 · **K-F Produktions-Init** (`sep04`) ·
+> LF1/LF2/LF3/LF5/LF6/LF7/LF10 · J1/J2/J3 · J4/J4b. K-D
 > wurde gegenstandslos, nicht verworfen. **Abgeschrieben `sep03`** (nie
 > gemessen, Autor-Entscheid): die Folger-Arme ②③④⑦⑧ — Gewichts-Arme der
 > Formulierung, die ①⑤⑥⑥b⑨ erschöpfend negativ beantwortet haben.
@@ -107,8 +110,11 @@ Verfahrensseite; geändert wird sie nie hier.
 > Runde) · von den zwei J4-Konversionen noch die Ankunftsseite (der
 > Sensor `dspan` ist seit `sep04` gebaut und abgenommen, §14
 > „Übergänge S1 gemessen" — er rettet J4 nicht, macht die Klasse aber
-> beurteilbar) · Duell-Nachmessung auf der heutigen Wurzel · formtreue
-> Fenster-Pinnung.
+> beurteilbar) · der **Rausch-Boden des Folgers** und die zwei Arme
+> dahinter (§14 „Kette K-F `sep04`") · formtreue Fenster-Pinnung. **Erledigt
+> `sep04`:** die Duell-Nachmessung auf der heutigen Wurzel — die Kette
+> ist im Rahmen von K-F frisch gemessen, beide Duell-Zahlen stehen
+> jetzt auf derselben Wurzel.
 > Autorenschritte: Bestätigungssatz
 > A/B · Prod-Re-Harvest der `traced`-Zeilen mit
 > Kette v5 · St-Ligatur im Wizard · Laufform-Lücke G/W/K/ue/F/ae/b ·
@@ -1046,6 +1052,7 @@ Zeile dazu steht unten (J4/J4b), die Konversionen in §7.11.
 | Lotse **Karten-Abdrift** (`sep04`, Absprung-Forensik — kein verworfener Arm, sondern eine benannte Fehlerklasse) | Die Zonen-Vorfahrt (v0.5/v0.7) reicht die Karte WÖRTLICH durch: über die 11 geerbten Zonen-Absprünge ist der Überschuss des Stifts über die Karte im Median exakt **+0,0000** — in allen 11 lag die Karte schon außerhalb des Tintenkörpers. Die Klasse trägt die tiefsten (bis 0,269 xh, `muß-2`) und längsten (Bogen bis 0,84 xh) Absprünge der Runde und ist per Konstruktion ungepinnt (`MAP_RUN_PIN_KNOTS` = „bridges"). Die Ursache liegt damit nicht im Folger, sondern in der PLATZIERUNG der Komposition | (1) **neue EVIDENZ** — die 11 Ereignisse sind eine lokalisierte Platzierungskarte (Ort, Tiefe, Bogenlänge, Knotengrad je Ereignis) und gehören als Eingabe in die offenen Platzierungs-Arme LF4-p / K1-p, nicht in den Lotsen; (2) **bekannter MECHANISMUS** — die in §7.11 offene Zonen-Stufe (`MAP_RUN_PIN_KNOTS` = „zones") holt genau diese Läufe an die Tinte zurück und bekommt hier ihre zweite, unabhängige Begründung | (1) Eingabe für LF4/K1, keine eigene Pre-Reg; (2) Wiedervorlage nach dem p-Platzierungs-Arm |
 | Lotse **Fenster-Versatz** (`sep04`, Absprung-Forensik — benannte Fehlerklasse) | In 11 von 15 Fällen lag die KARTE auf der Tinte und der Stift trotzdem daneben: die starre Verschiebung von `_pin_map_runs`/`_pin_forced_runs` zieht die ENDEN des Fenster-Laufs auf die Bord-Punkte und trägt den Bauch mit hinaus (Median-Überschuss **+0,0928 xh**, max +0,2146 bei `Galoppieren`). Der einzige Absprung-Mechanismus, den die Route selbst herstellt — und zweischneidig: in 12 anderen Fenstern zieht dieselbe Pinnung um −0,0165 xh ZURÜCK, weshalb sie in der Summe unauffällig blieb und die v0.9/v0.11-Gates bestand | (1) **neuer MECHANISMUS: formtreue statt starre Pinnung** — Enden auf die Bord-Punkte, Inneres auf den Tintenkörper projiziert (Ähnlichkeits- statt Translations-Fit); (2) **neuer SENSOR: `map_slack_xh`** (`tools/inkpilot/forensics.py`) als Budget in der Form des v0.16-Soll-Budgets — eine Pinnung darf den Tintenkörper-Abstand eines Laufs nicht ERHÖHEN; das erste Gate, das den Defekt je ORT trifft statt in der Summe | je eigene Pre-Reg; Sensor steht bereits |
 | K-D Tinten-Korridor (`aug21`) | GEGENSTANDSLOS NACH v4 — das vorregistrierte Exkursions-Inventar (Sprosse 0, ohne Solve) findet auf v4-Basis und v5-Anwärter KEIN Wort über 0,35 xh Papier-Exkursion (Set-Maximum zum 0,33; die aug20-Nadel-Klasse lag bei 0,5–0,83 xh): K-C hat die Wurzel (Fremdtinten-Magneten) geheilt, bevor das Symptom-Verbot gebaut war; kein Negativ der Mechanik | Wiedervorlage-Auslöser: ein künftiges Inventar (`tools/tracebench/excursions.py`, Minuten je Kandidat) oder ein neuer Arm zeigt eine neue Papier-Nadel-Klasse → Barriere mit frischer Pre-Reg, unter-Risiko unverändert benannt | Sensor steht; kein Anlauf ohne neue Klasse |
+| **Kette K-F Produktions-Init** (`sep04`, Autor-Entscheid A34) | Verworfen, zurechenbar an Gate 2 (63er-Soll 76 → 77) und Gate 4 (`Galoppieren` +0,0055 dtw, Kreuzungsdefekte 19 → 20); Gate 1 und 5 bestehen. **Der eigentliche Befund ist eine Nullprobe, die die Runde selbst produziert hat:** für 23 der 63 Wörter weicht das Anker-Array des Inits um höchstens **1,78·10⁻¹⁵** ab (nächste Klasse ab 0,00346) — auf dieser bedeutungslosen Störung kippen **9 Wächter-Verdikte**, aiou −0,0298 … **+0,0800**, **4 Verlierer unter der −0,003-Schranke von Gate 3**, Soll netto ±0. 8 der 19 dev-Wörter sind Nullklasse. Gate 3 fällt damit schon gegen eine Null-Änderung: **ein Arm auf der Init-Ebene ist mit dieser Gate-Form nicht entscheidbar**, und die Aussage „der Init kippt Verdikte" ist widerlegt — 1,8·10⁻¹⁵ tut dasselbe. Die Majuskel-Klasse ist die einzige negative Teilmenge (n = 11, Mittel −0,0177; Mechanismus: Produktion startet bis 1,998 xh vom Körperende entfernt, die Naht gehört aber dem Buchstaben), unter dem Rausch-Boden aber nicht separierbar | (1) **sperrend: der Rausch-Boden** — den Folger gegen einen nachweislich bedeutungslos gestörten Init laufen lassen (die 10⁻¹⁵-Umordnung dieser Runde oder ein erklärter 10⁻¹²-Jitter) und die Streuung je Wort als BODEN veröffentlichen; jedes künftige Init-Gate wird in Vielfachen davon formuliert; (2) **naht-verankertes Abspielen** — Grammatik aus der Produktion, Enden auf die Naht der Kette (`prodconn.replay` mit dem Versatz Austritt→Körper-Endpunkt), gegen den Boden aus (1) gemessen; (3) **das Wächter-Verdikt zur Messgröße machen** — eine Stabilitäts-Kennzahl auf Rundenebene (Abstand zur Budget-Grenze) macht aus dem Münzwurf eine Ablesung und ist zugleich das Instrument für den Abstandsterm/Schleifen-Halteterm (§7.11). Ausdrücklich KEIN Weg: derselbe Knopf mit weicheren Gates — (1) ist ein eigener Messakt, keine nachträgliche Lockerung | (1) zuerst, eigene Pre-Reg; (2)/(3) danach, je eigene Pre-Reg |
 
 ### 7.10 Runde aug17: die Befund-Matrix des 19er-Dev-Satzes und der Maßnahmenplan
 
@@ -1144,10 +1151,10 @@ Registerzeile und, wenn sie ein Negativ war, mit ihrer §7.9-Zeile.
 | **LF4 — die p-Laufform** | §14 „Laufform LF3b-W `aug26`" | die 13er-Schreib-Karte ist geschrieben, p blieb an EINER Kreuzung draußen | drei benannte Sprossen: Init-Wächter gegen das Kompositions-Soll · Stamm-Freigabe am Bogen-Rücklauf (K1-Familie) · Ring-Regel-Sensor (`CROSS_PARTNER_MIN_HITS`); je eigene Pre-Reg |
 | **Die drei LF10-Konversionen** | §14 „Laufform LF10 `sep01` — gemessen", §7.9 | der Form-Abstand als Betrag ist verworfen (P liegt unter τ_form), das Auge sieht an v/E/P/k trotzdem etwas | offen: (1) Richtungs-Abstand statt Lage-Abstand · (2) Tinten-Evidenz der Zeile gegen ihre Masken · (3) humanbench-Zeilen-Runde; je eigene Pre-Reg |
 | **Die zwei J4-Konversionen** | §14 „Übergänge J4/J4b `sep02`", §7.9 | der Naht-Knick ist beseitigbar, aber `dconn` kann per Konstruktion nicht darüber urteilen | (2) **erledigt `sep04`**: `dspan` gebaut und an J4 abgenommen (§14 „Übergänge S1 gemessen") — der Artefakt ist weg (Δ +0,0036 statt +0,0615), die Fallquote steigt von 19,8 % auf 48,8 % und landet damit bei der handbereinigten Lesung (51 %), und J4 verfehlt die 60 % des eigenen Gates trotzdem: Instrument gewonnen, Arm nicht. (1) nur die Ankunftsseite bleibt offen, jetzt mit `dspan`-Gates von Anfang an; der dritte Weg der §7.9-Zeile **läuft**: die humanbench-Wortrunde ist vorregistriert und gebaut (§14 „Übergänge J4 `sep04`"), das Urteil liegt beim Autor |
-| **Abstandsterm · Schleifen-Halteterm** | §14 „Kette v5 `aug26`" | 13 Wörter wirft auch v5 in Runde 1 auf den Init zurück | offen; ausdrücklich PRÄVENTIVE Terme im Abstieg, nie Annahme-Regeln |
+| **Abstandsterm · Schleifen-Halteterm** | §14 „Kette v5 `aug26`", jetzt auch „Kette K-F `sep04`" | 13 Wörter wirft auch v5 in Runde 1 auf den Init zurück — und K-F hat denselben Mechanismus von der anderen Seite gemessen: die Annahmeschwelle ist so empfindlich, dass eine Störung von 1,8·10⁻¹⁵ neun Verdikte kippt | offen; ausdrücklich PRÄVENTIVE Terme im Abstieg, nie Annahme-Regeln. Seit `sep04` zusätzlich die **Vorbedingung** dafür, dass ein Init- oder Startpunkt-Arm überhaupt entscheidbar wird |
 | **Distanzfeld-NUR-Claim** | §14 „Kette K-E2 `aug21`" | die Claim-Familie ist geschlossen, dieser Ein-Kanal-Schnitt aber nie versucht | offen, frische Pre-Reg |
 | **Lotse-Zonen-Stufe** | §14 „Lotse v0.16 `aug20`", jetzt auch „Lotse Absprung-Forensik `sep04`" | „zones"/„all" scheitern nur noch an der Galoppieren-p-Oskulation — und die Forensik gibt der Stufe eine zweite, unabhängige Begründung: die ungepinnten Zonen-Läufe sind die tiefste Absprung-Klasse (Karten-Abdrift) | wiedervorlegen NACH dem p-Platzierungs-Arm |
-| **Duell-Nachmessung auf der heutigen Wurzel** | §14 „Lotse-Sprung `sep04`" | die beiden Duell-Zahlen stammen von verschiedenen Wurzeln: der Lotse ist auf `sep04` nachgemessen (0,056080), die Kette steht auf `aug26` — und die `sep01`-Rechteck-Reparatur bewegt vier der 19 Referenzen, sodass ein Vergleich über diese Grenze nicht trägt | offen, keine eigene Pre-Reg nötig: ein Lauf der stehenden Kette v5 auf der aktuellen Wurzel, dann beide Zahlen im Stand-Block datiert gleichziehen |
+| **Rausch-Boden des Folgers** (sperrt jeden weiteren Init-Arm) | §14 „Kette K-F `sep04`" | K-F hat unfreiwillig eine Nullprobe gefahren: 23 Wörter bekamen einen Init, der um höchstens 1,8·10⁻¹⁵ abwich, und trotzdem kippten 9 Wächter-Verdikte mit aiou −0,0298 … +0,0800 und 4 Verlierern unter der 0,003-Schranke. Solange dieser Boden nicht beziffert ist, kann kein Init- oder Startpunkt-Arm entschieden werden | offen und ZUERST fällig: den Boden mit einer erklärten Null-Störung messen und veröffentlichen; danach (a) naht-verankertes Abspielen (`prodconn.replay` mit dem Versatz auf den Körper-Endpunkt), (b) das Wächter-Verdikt als Messgröße statt Etikett, (c) die Wiedervorlage von K-F; je eigene Pre-Reg |
 | **Formtreue Fenster-Pinnung** | §14 „Lotse Absprung-Forensik `sep04`", §7.9 | die starre Pin-Translation trägt den Bauch des Fenster-Laufs aus der Tinte (11 von 15 Ereignissen mit der Karte AUF der Tinte, Median +0,0928 xh) — und repariert in 12 anderen Fenstern, ist also nicht abzuschalten, sondern zu ersetzen | offen: Ähnlichkeits- statt Translations-Fit · dazu das Budget „eine Pinnung darf `map_slack_xh` nicht erhöhen"; je eigene Pre-Reg |
 | **InkSight B2 (Tiling)** | §14 „Welle 1 · B1 `aug15`", verfahren-inksight.md | Galoppieren liegt jenseits der Trainingsfiltergrenze und ist der gemessene Probestein | offen seit `aug15` |
 | **InkSight-Nachmessung auf Marken-Kappe 1,5** | §14 „Lineal L-U `aug26`" | ohne sie ist die vierte Route mit den anderen dreien nicht vergleichbar | offen; braucht das isolierte Python-3.11-TF-venv |

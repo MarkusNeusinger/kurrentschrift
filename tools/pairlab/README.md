@@ -24,7 +24,14 @@ pairs) it reports and draws:
   Befund 18, numbers in `docs/reference/messjournal.md` §14 „Übergänge
   P-Spiegel `sep04`"). `analyze._generate_connector` survives as that frozen
   2026-07-11 curve for the chain solver's initialisation and the parity test —
-  it is no longer the production connector and no longer claims to be;
+  it is no longer the production connector and no longer claims to be. Whether
+  the chain should move too was then measured, not assumed: arm K-F
+  (`follow --connector-init production`, §14 „Kette K-F `sep04`") was rejected,
+  and it turned up something bigger than itself — on 23 of the 63 specimens the
+  two inits differ by at most 1.8e-15, and nine of those words still flip the
+  structure guard's verdict, with ink swings up to +0.08. A start-point arm is
+  not decidable against the chain arms' ±0.003 gate until that noise floor is
+  measured. `mirror` stays the default; the switch stays for the named arms;
 - the specimen's own connecting stroke (skeleton tracked column-by-column
   through the inter-letter gap) with its end tangents;
 - **tail/head adaptation**: deviation of A's last / B's first stroke from the

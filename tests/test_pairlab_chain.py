@@ -50,7 +50,10 @@ from tools.pairlab.chain import (
     CHAIN_LANDMARK_TARGET_MARGIN_UNITS,
     CHAIN_LANDMARK_TARGET_RADIUS_UNITS,
     CONNECT_SAMPLES,
+    CONNECTOR_INIT_MIRROR,
+    CONNECTOR_INIT_PRODUCTION,
     ChainSegmentSpec,
+    _connector_spec,
     _coverage_huber,
     _letter_cut_anchors,
     _second_difference_operator,
@@ -62,6 +65,7 @@ from tools.pairlab.chain import (
     regularise_connector_anchors,
 )
 from tools.pairlab.landmarks import landmark_crossings
+from tools.pairlab.prodconn import JoinCall
 from tools.wordlab.cases import WordCase
 from tools.wordlab.derive import WordDeriveResult
 
@@ -1351,6 +1355,116 @@ def test_word_chain_needs_a_coverage_window() -> None:
     diagnosis decides the fallback, this function does not invent one."""
     case, result, _windows, _ = _synthetic_word([(0.0, 0.0), (0.0, 0.0)])
     assert fit_word_chain(case, [0, 1], result=result, windows_px={}) is None
+
+
+# ------------------------------------------- the connector init source (A34)
+#
+# `_connector_spec` draws the chain's START POINT either from the frozen
+# 2026-07-11 mirror or from the join production actually drew. The recorded
+# call is a plain dataclass, so the routing is testable without composing
+# anything: hand it a curve and assert that curve comes back out.
+
+
+def _join_call(centerline: np.ndarray) -> JoinCall:
+    """A recorded production call carrying `centerline` and nothing else real."""
+    return JoinCall(
+        exit_pt=(0.0, 0.0),
+        exit_tangent_deg=0.0,
+        first_line=((0.0, 0.0),),
+        dx=0.0,
+        flags={},
+        centerline=tuple((float(x), float(y)) for x, y in centerline),
+        entry_trim=0,
+    )
+
+
+def test_connector_spec_without_a_call_is_the_frozen_mirror() -> None:
+    _case, result, _windows, _ = _synthetic_word([(0.0, 0.0), (0.0, 0.0)])
+    spec = _connector_spec(result, 0)
+    assert spec is not None
+    a_line = [tuple(p) for p in result.composed["items"][0]["centerline"]]
+    b_line = [tuple(p) for p in result.composed["items"][1]["centerline"]]
+    mirror = np.asarray(
+        _generate_connector(
+            a_line[-1], _endpoint_tangent(a_line, at_end=True), b_line[0], _endpoint_tangent(b_line, at_end=False)
+        ),
+        dtype=float,
+    ).reshape(-1, 2)
+    assert np.array_equal(spec.anchors, regularise_connector_anchors(mirror))
+
+
+def test_connector_spec_with_a_call_is_the_recorded_curve() -> None:
+    """The recorded centerline goes in verbatim — only the discretisation
+    repair may touch it, and the seams stay the two endpoint indices."""
+    _case, result, _windows, _ = _synthetic_word([(0.0, 0.0), (0.0, 0.0)])
+    recorded = np.column_stack([np.linspace(1.0, 1.6, 7), np.linspace(0.2, 0.35, 7)])
+    spec = _connector_spec(result, 0, join_call=_join_call(recorded))
+    assert spec is not None
+    assert np.array_equal(spec.anchors, regularise_connector_anchors(recorded))
+    assert (spec.seam_in, spec.seam_out) == (0, len(spec.anchors) - 1)
+
+
+def test_an_unknown_connector_init_is_rejected_loudly() -> None:
+    case, result, windows, _ = _synthetic_word([(0.0, 0.0), (0.0, 0.0)])
+    with pytest.raises(ValueError, match="connector_init"):
+        fit_word_chain(case, [0, 1], result=result, windows_px=windows, connector_init="bezier")
+
+
+def test_the_default_connector_init_is_the_mirror_and_leaves_no_trace() -> None:
+    """Naming the default explicitly must change nothing at all — neither the
+    geometry nor the meta, so every artefact measured before A34 stays
+    comparable byte for byte."""
+    case, result, windows, _ = _synthetic_word([(0.05, 0.0), (-0.04, 0.02)])
+    default = fit_word_chain(case, [0, 1], result=result, windows_px=windows)
+    named = fit_word_chain(case, [0, 1], result=result, windows_px=windows, connector_init=CONNECTOR_INIT_MIRROR)
+    assert default is not None and named is not None
+    for a, b in zip(default.segments, named.segments, strict=True):
+        assert np.array_equal(a.polyline_px, b.polyline_px)
+    assert "connector_init" not in default.fit_meta
+
+
+def test_the_production_init_routes_the_recorded_join_into_the_chain(monkeypatch: pytest.MonkeyPatch) -> None:
+    """With the recorder handing back the mirror's own curve, the production
+    arm must reproduce the mirror fit exactly — proof that the switch changes
+    WHICH curve initialises the chain and nothing else about the solve."""
+    case, result, windows, _ = _synthetic_word([(0.05, 0.0), (-0.04, 0.02)])
+    mirror_fit = fit_word_chain(case, [0, 1], result=result, windows_px=windows)
+    assert mirror_fit is not None
+    mirror_spec = _connector_spec(result, 0)
+    assert mirror_spec is not None
+
+    monkeypatch.setattr(chain_mod, "joins_for", lambda _result: {0: _join_call(mirror_spec.anchors)})
+    arm = fit_word_chain(case, [0, 1], result=result, windows_px=windows, connector_init=CONNECTOR_INIT_PRODUCTION)
+    assert arm is not None
+    assert arm.fit_meta["connector_init"] == CONNECTOR_INIT_PRODUCTION
+    for a, b in zip(mirror_fit.segments, arm.segments, strict=True):
+        assert np.array_equal(a.polyline_px, b.polyline_px)
+
+
+def test_a_join_production_never_drew_fails_the_fit_instead_of_falling_back(monkeypatch: pytest.MonkeyPatch) -> None:
+    """An approved pair override draws its stored centerline, so the generator
+    is never called for it. Silently initialising that join from the mirror
+    would put two initialisations in one candidate; the fit says None."""
+    case, result, windows, _ = _synthetic_word([(0.0, 0.0), (0.0, 0.0)])
+    monkeypatch.setattr(chain_mod, "joins_for", lambda _result: {})
+    assert (
+        fit_word_chain(case, [0, 1], result=result, windows_px=windows, connector_init=CONNECTOR_INIT_PRODUCTION)
+        is None
+    )
+
+
+def test_a_one_slot_run_never_asks_for_a_recorded_join(monkeypatch: pytest.MonkeyPatch) -> None:
+    """No join, no composition to record — the production arm must not pay for
+    one, and a lone letter must fit under it exactly as under the mirror."""
+
+    def _boom(_result: object) -> dict:
+        raise AssertionError("joins_for must not run for a run without a join")
+
+    case, result, windows, _ = _synthetic_word([(0.0, 0.0)])
+    monkeypatch.setattr(chain_mod, "joins_for", _boom)
+    fit = fit_word_chain(case, [0], result=result, windows_px=windows, connector_init=CONNECTOR_INIT_PRODUCTION)
+    assert fit is not None
+    assert [s.kind for s in fit.segments] == ["letter"]
 
 
 # ------------------------------------------------- fit_pair_chain as a wrapper

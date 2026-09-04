@@ -120,6 +120,8 @@ from tools.pairlab.chain import (
     CHAIN_LANDMARK_WEIGHT,
     CHAIN_MAX_ITER,
     CHAIN_OVERLAP_WEIGHT,
+    CONNECTOR_INIT_MIRROR,
+    CONNECTOR_INIT_SOURCES,
     ChainSegment,
     ChainWordFit,
     _ChainProblem,
@@ -509,6 +511,28 @@ class FollowWeights:
     init at x0 = 0 through the assembler and counters; the K0-S ladder's
     base. Budget and round counts stay what they are; only the TARGET moves
     to the composition."""
+    connector_init: str = CONNECTOR_INIT_MIRROR
+    """A34 (§14 `sep04`): which generator draws the chain's connector START
+    POINT. `"mirror"` (default) is `analyze._generate_connector`, the taut
+    cubic frozen on 2026-07-11 — the init behind every Kette number so far.
+    `"production"` replays the join `compose_word` actually drew for this word
+    (`tools.pairlab.prodconn`), so the descent begins on the curve the render
+    path emits, with the garland, fork and Absatz branches the mirror never
+    grew (audit Befund 18, §14 „Übergänge P-Spiegel `sep04`"). It moves the
+    START POINT and the connector's discretisation, never a penalty term: the
+    connector carries no Tikhonov weight in either case, and nothing measures
+    the fitted curve against the generated one. **Measured and rejected** —
+    `"mirror"` stays the default. What the arm actually established is about
+    the instrument: for 23 of the 63 specimens the two inits differ by at most
+    1.8e-15 (last-bit arithmetic ordering, the same curve), and on that null
+    change nine words still flip the structure guard's verdict, with aiou
+    swings from −0.0298 to +0.0800. A start-point arm is therefore not
+    decidable against the chain arms' ±0.003 gate until that noise floor is
+    measured (§14 „Kette K-F `sep04`"); the switch stays for the arms named
+    there. Like every other field here it rides into each artefact's
+    `weights` block through `asdict`, so files written from now on carry
+    `connector_init` even on a default run — the JSON gains a key, the
+    geometry does not move (Gate 1: stroke-identical 63/63)."""
     provisional: bool = True
 
 
@@ -1825,7 +1849,9 @@ def follow_word_chain(
     weights = weights or FollowWeights()
     started = time.perf_counter()
     if fit is None:
-        fit = fit_word_chain(case, slots, result=result, windows_px=windows_px, keep_solve=True)
+        fit = fit_word_chain(
+            case, slots, result=result, windows_px=windows_px, keep_solve=True, connector_init=weights.connector_init
+        )
     if fit is None:
         return None
     if fit.problem is None or fit.params is None:
@@ -2093,6 +2119,7 @@ def follow_derived(
             slot_shift_init=seeds,
             keep_solve=True,
             mark_claim=weights.mark_claim,
+            connector_init=weights.connector_init,
         )
         if chain_fit is None:
             n_failed += 1
@@ -2273,6 +2300,7 @@ def calibrate_case(
             slot_shift_init=seeds,
             keep_solve=True,
             mark_claim=weights.mark_claim,
+            connector_init=weights.connector_init,
         )
         if chain_fit is None:
             continue
@@ -2623,6 +2651,15 @@ def build_parser() -> argparse.ArgumentParser:
         "ruler's 0.6-xh mark radius — the component leaves the body's fields and coverage pot, the "
         "mark's samples read only their component; words without a firing claim are byte-identical",
     )
+    parser.add_argument(
+        "--connector-init",
+        choices=list(CONNECTOR_INIT_SOURCES),
+        default=FollowWeights.connector_init,
+        help="A34 (sep04): which generator draws the chain's connector start point — the frozen "
+        "2026-07-11 mirror (default, every Kette number so far) or the join compose_word actually "
+        "draws (production). Start point and discretisation only; no penalty term measures the "
+        "fitted connector against either",
+    )
     parser.add_argument("--sweep", help="NAME=v1,v2 — one arm per value of a FollowWeights field")
     parser.add_argument("--jobs", type=int, default=1, help="worker processes, pooled over CASES")
     parser.add_argument("--json", type=Path, help="write the full report here")
@@ -2659,6 +2696,7 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         ink_evidence_paper_fraction=float(args.ink_evidence_paper_fraction),
         mark_claim=bool(args.mark_claim),
         soll_source=str(args.soll_source),
+        connector_init=str(args.connector_init),
     )
 
 
