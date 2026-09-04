@@ -298,9 +298,22 @@ Specimen-Wort aus einer eingefrorenen Wordbench-Wurzel, darüber zwei
 Kompositionen **als Tinte** — der einzige Aufbau, in dem Zickzack,
 Strichstärke und Naht-Knick überhaupt sichtbar sind. `wordarm.py` ist der
 Referenz-Erzeuger der beiden Arme (`--laufform` für eine Kandidatenkarte,
-`--nib` für einen anderen Federmodus, `--registration-from` zum Pinnen der
-Platzierung); er komponiert per Import wie `tools/wordbench/run.py` und
-platziert mit demselben Lineal.
+`--nib` für einen anderen Federmodus, `--apex-handover`/`--stem-depart` für
+die beiden Übergangsregeln der Klassenregel J5, `--registration-from` zum
+Pinnen der Platzierung); er komponiert per Import wie `tools/wordbench/run.py`
+und platziert mit demselben Lineal. Jede Armdatei schreibt ihre
+`join_rules` in die Einstellungen — eine Runde erbt nie stillschweigend
+einen Default.
+
+Zwei Konstruktions-Hinweise aus der J5-Runde, damit die nächste sie nicht
+neu lernt: eine **blinde Wiederholung** braucht mehr als
+`--min-repeat-gap` + 25 Bildschirme (im Wortmodus-Default 15 also mehr als
+40), eine Runde von zehn Wörtern kann also gar keine tragen; und
+**Nullproben** — Wörter, die der Kandidat gar nicht
+berührt, deren beide Tafeln also bit-identisch sind — kosten wenig, heben
+die Runde über diesen Boden und messen nebenbei, wie der Richter „kein
+Unterschied" überhaupt benutzt: genau die Größe, an der das LF11-Verdikt
+hing.
 
 Geschrieben wird nirgends — weder in die Datenbank noch über die API.
 `page.py` und `analyse.py` sehen beides überhaupt nicht: Die Seite ist ein
@@ -322,6 +335,9 @@ uv run python -m tools.humanbench.build --round 3 \
 uv run python -m tools.humanbench.wordarm --arm Basis --out temp/basis.json
 uv run python -m tools.humanbench.wordarm --arm LF11 --laufform temp/lf11-karte.json \
     --registration-from temp/basis.json --out temp/lf11.json
+# … oder ein Übergangsregel-Arm gegen dieselbe Basis (J5)
+uv run python -m tools.humanbench.wordarm --arm J5 --apex-handover --stem-depart \
+    --registration-from temp/basis.json --out temp/j5.json
 uv run python -m tools.humanbench.build --round 5 \
     --word-arms temp/basis.json temp/lf11.json --strata temp/klassen.json
 uv run python -m tools.humanbench.page --question authentic \
@@ -643,7 +659,13 @@ denen es stammt.
   oder volle Fixture-Zeile; Overlay — unbenannte Glyphen behalten die
   eingefrorene Zeile) und `--no-laufform` komponiert chart-treu ohne
   jede Laufform. Beide liefern per Doktrin §6 eine
-  OFF-HEADLINE-Kandidatenzahl, nie die Headline.
+  OFF-HEADLINE-Kandidatenzahl, nie die Headline. Dieselbe Disziplin gilt für
+  die drei **Übergangs-Schalter**, die im Composer standardmäßig aus stehen
+  und hier einzeln zugeschaltet werden: `--exit-trim` (Arm J4, mit
+  `--exit-trim-min-kink` als J4b-Verengung), `--apex-handover` und
+  `--stem-depart` (die beiden Arme der Klassenregel J5). Jeder gesetzte
+  Schalter nennt sich im Kopf des Laufs und im `--json`-Bericht, damit eine
+  Leitersprosse sich nie unter dem Namen der Basis ablegt.
 - **`tools/wordbench/repair_boxes.py` + `shift_registrations.py`** (`aug31`)
   — die Reparatur eines Rechtecks, das die EIGENE Tinte seiner Probe
   anschneidet (der abgeschnittene i-Strich, der halbe letzte Buchstabe).

@@ -191,6 +191,8 @@ die DB) — mit seiner Bedingung.
 | sep02 | Übergänge | [J4 Austritts-Kollinearität (`exit_trim`)](#übergänge-j4-sep02--vorregistrierung-die-austritts-kollinearität-exit_trim) | Pre-Reg + gemessen · verworfen | 4 von 5 Gates grün (Wörter −0,000535, seam_dep +12,52→−1,39), (b) rot: `dconn` fällt nur in 20 % statt 60 % |
 | sep02 | Übergänge | [J4b enge Klasse](#übergänge-j4b-sep02--post-hoc-die-enge-klasse-nur-die-joins-die-wirklich-knicken) | POST-HOC · verworfen | Schnitt bei 20° Knick rettet den Arm nicht: `dconn` 43 %, seam_dep der Klasse nur +8,02 — Rettungswege in §7.9 |
 | sep02 | Laufform | [LF11 humanbench-Runde und Adoption](#laufform-lf11-sep02--humanbench-wortrunde-instrumentdefekt-und-adoption-prod-write--re-baseline) | **ADOPTIERT auf Autor-Entscheid** (kein formales Instrument-Verdikt) · Prod-Write + Re-Baseline | Runde verlässlich (10/12 Arm) und Richtung erdrückend (40 : 1), aber die Tie-Schranke fällt in JEDER Lesart (34,9 % gesamt, 25,6 % in der günstigsten Teilmenge, gegen ≤ 25 %) — `adopt: false`; ob ein Teil der Runde auf der defekten Anzeige „gefüllte Ringe" lief, ist zwischen Protokoll und Bestand ungeklärt (offener Punkt); Write nach Snapshot `2026-09-02T21-58-16Z`, Readback 22/22; Wörter 0,109218 · Paare 0,148198 |
+| sep04 | Übergänge | [J5 Apex-Übergabe + Säulenabgang](#übergänge-j5-sep04--vorregistrierung-die-tafelform-klassenregel-apex-übergabe-und-der-d-säulenabgang) | Pre-Reg | Autor-Entscheid A4: EINE Klassenregel für den langen ungeschlungenen Anstrich (t/ſ/k **und ß**) + der d-Auslauf als Generator; r passt messbar nicht und bleibt Autorenfall |
+| sep04 | Übergänge | [J5 gemessen](#übergänge-j5-sep04--gemessen-der-säulenabgang-besteht-alles-die-apex-übergabe-fällt-an-zwei-gates) | Pre-Reg + gemessen · Säulenabgang alle Gates grün (Adoption = Autor-Ja), Apex-Übergabe verworfen | Säule −0,000100/−0,001441, Abgang 1,139→0,945 (10/10 + 8/8 im Platten-Band); Apex +0,001808/**+0,002420**, Zacken 13→17 — Verengung auf ß/ſſ macht ihn RÖTER (3:8); Golden unberührt, Runde 6 ungerichtet |
 | sep04 | Übergänge | [P-Spiegel: pairlab auf den Produktions-Verbinder](#übergänge-p-spiegel-sep04--pairlab-misst-wieder-den-produktions-verbinder-werkzeug-re-baseline-kein-arm) | Werkzeug-Re-Baseline · kein Arm | Audit-Befund 18 beziffert und behoben: 89 von 248 Nähten wichen ab (Median 0,0562 xh, Majuskeln 1,0365), `gen_chamfer` 0,0434 → 0,0392; Kette-Init bleibt auf dem eingefrorenen Spiegel (Autor-Frage) |
 | sep04 | Übergänge | [S1 `dspan` (ausdehnungs-normierte Formdistanz)](#übergänge-s1-sep04--vorregistrierung-dspan-die-ausdehnungs-normierte-formdistanz) | Pre-Reg | Rettungsweg 2 von #488: gemeinsamer Abschnitt statt Start-Ausrichtung; Gates P1/P2/P3(a,b) und Nullproben N1/N2 vor der ersten Zahl |
 | sep04 | Übergänge | [S1 gemessen](#übergänge-s1-sep04--gemessen-der-sensor-ist-validiert-und-er-rettet-j4-trotzdem-nicht) | gemessen · Sensor validiert, J4 bleibt verworfen | Δ`dspan` +0,0036 (Gate ≤ 0,010), Fallquote 48,8 % (Gate ≥ 40 %) gegen 19,8 % roh und 51 % handbereinigt — aber die 60 % des J4-Gates erreicht auch die saubere Lesung nicht |
@@ -7428,6 +7430,461 @@ wird). Der Golden bleibt unberührt. **Die öffentlichen
 `/write/word`-Antworten liegen bis zu 24 h im Edge-Cache; der Wechsel
 auf die glatten Zeilen wird dort erst mit Ablauf sichtbar — kein Purge
 (Entscheid des Autors).**
+
+### Übergänge J5 `sep04` — Vorregistrierung: die Tafelform-Klassenregel (Apex-Übergabe) und der d-Säulenabgang
+
+Geschrieben und committet VOR der ersten Kandidatenzahl. Umsetzung des
+**Autor-Entscheids A4** vom 2026-09-03 zu Befund 33 / Frage F6 des Audits
+(`../notes/audit-2026-09-02-synthese.md`): die Tafelformen t, ſ, k, d und r
+bekommen eine **Klassenregel** statt einer Wizard-Nachfahrung, und der
+d-Auslauf nimmt Weg **(b)**, den Übergangsgenerator — nicht (a), die
+Variantentrennung verbunden/terminal. Die Regel lebt im Code; es wird nichts
+in die Datenbank geschrieben.
+
+**Basis (Identitätsschritt 0).** Wurzeln frisch über HTTPS gebaut
+(`tools.wordbench.fetch_fixtures --set all --verify`, 12/12 bit-genau gegen
+`/write/word`): `suetterlin-1922` `exported_at=2026-09-04T08:29:01+00:00`
+Digest `6ca95e1c7be0`, `suetterlin-1922-pairs` gleicher Zeitstempel, Digest
+`ce643499940e`. BLAS auf einen Thread gepinnt. Reproduziert die
+`sep02`-Headline **exakt**: Wörter **0,109218** · Paare **0,148198**. Der
+Digest ist neu (er identifiziert einen Export, nicht einen DB-Stand — der
+Befund des LF11-Abschnitts), die Zahlen sind es nicht.
+
+#### Der Gegenstand, nachgemessen: was die fünf Tafelformen teilen — und was nicht
+
+Dissektion der Strich-0-Geometrie aller 34 Chart-Zeilen und aller 22
+LF11-Zeilen der Hand (Anstrich vom Strichanfang bis zum Scheitel; Auslauf vom
+letzten Struktur-Wendepunkt bis zur Spitze). Der Befund trennt die fünf
+sauber in **zwei Gruppen und einen Einzelfall**:
+
+**(A) Der lange, ungeschlungene Anstrich — t, ſ, k und ß.** Vier Zeilen der
+Tafel steigen in EINEM Zug von einem tiefen Fuß bis in die Oberlänge, ohne
+dabei eine Schleife zu schreiben, und tun das **konkav**:
+
+| Zeile | Hub | Scheitel | Anlauf in den Scheitel | Bogen zur Sehne | Bogenlänge |
+|---|---|---|---|---|---|
+| t | 1,234 | 1,938 | 79,4° | **0,1804** | 1,402 |
+| ſ (`longs`) | 1,254 | 1,937 | 85,1° | **0,1360** | 1,386 |
+| k | 1,171 | 1,978 | 98,4° | **0,1871** | 1,372 |
+| ß (`sz`) | 1,272 | 1,949 | 92,2° | **0,1746** | 1,417 |
+
+Die Klasse trennt sich auf **zwei unabhängigen Achsen** vom Rest des
+Alphabets. Nach oben schneidet der Hub ab: der größte Hub außerhalb ist
+`s` mit **0,467** (Chart) bzw. 0,464 (LF11) — ein Faktor 2,5 unter dem
+kleinsten Mitglied. Nach unten schneidet der Anlaufwinkel die
+**geschlungenen** Oberlängen weg, deren Aufstieg im Schleifenkopf nach LINKS
+umschlägt: h 175,3° · l 180,0° · b 171,5° · f 163,1° (Chart), h 174,5° ·
+l 174,3° (LF11) — 65° Abstand zum größten Mitglied. Der Bogen selbst ist
+nicht das Kriterium, sondern der Befund: 0,136–0,187 xh gegen 0,098 (`s`),
+0,058 (`n`), 0,017 (`e`). Die Platte schreibt hier EINE Gerade vom Fuß des
+Vorgängers bis zum Scheitel.
+
+**ß ist ein Fund dieser Dissektion.** Das Audit nennt t, ſ und k; ß trägt
+denselben Anstrich (Hub 1,272, Bogen 0,1746) und fällt in dieselbe Klasse. Es
+kommt in der Worttafel fünfmal gebunden vor (`muß`, `muß-2`, `muß-3`, `daß`,
+`schießen`) — mehr als k. Eine Klassenregel nimmt es automatisch mit; fünf
+Sonderfälle hätten es übersehen.
+
+**(B) Der d-Auslauf.** Der d-Zug endet nach der Schleifenrückkehr in einem
+Zierstummel: letztes lokales y-Minimum (die Selbstkreuzung) bei
+(1,096 | 1,169), von dort 0,480 xh Bogen hinauf zur Spitze (1,531 | 1,359);
+LF11 (1,052 | 1,139) → (1,331 | 1,361). `LOOP_EXIT` schneidet diesen Stummel
+in gebundenem Kontext bereits ab und lässt den Verbinder an der Kreuzung
+abgehen — gemessen fällt er von dort mit **−33,8°** ins nächste Wort
+(`json/word_das.json` des Audits, Bogen 0,000). Die Platte verlässt die
+d-Tinte **tiefer und steigend**: y 0,82–1,12, Median **0,96**
+(`qualitaetsmetrik.md` §12, 17 pairlab-Vorkommen). Zwischen Kreuzung und
+Abgang liegt also ein Stück Säule, das die Tafel nicht schreibt und das die
+Hand schreibt — genau das, was ein Übergangsgenerator erzeugen kann und eine
+gespeicherte Bigramm-Tabelle erzeugen müsste.
+
+**(C) r passt in keine der beiden Klassen — und das ist der Befund, nicht
+eine Lücke.** Die Fahne des r ist in der LF11-Zeile bereits *flach
+eingeschmolzen*: hinter ihrem letzten Scheitel bleiben **0,072 xh** Bogen,
+und die Spitze liegt **0,004 xh** unter dem Scheitel (Chart: 0,411 xh Bogen,
+Spitze 0,094 unter dem Scheitel). Die Austrittstangente über 0,12 xh ist im
+Chart +25,9°, in der LF11-Zeile **−0,2°**. Es gibt in der Zeile, die in jedem
+gebundenen Lauf ≥ 3 wirklich rendert, **keinen Stummel mehr, den ein
+Übergang übernehmen könnte** — eine Absorption würde die Fahne löschen, nicht
+in die steigende Welle der Platte verwandeln. Die Fahne ist dort Buchstabenform
+geworden, keine Tafel-Zier. **r bleibt damit ein Autorenfall** (Wizard-
+Nachfahrung mit Wellen-Fahne, danach Neu-Ernte der r-Laufform aus n = 7
+Vorkommen); der Rückgabe-Satz und die Todoist-Aufgabe stehen im PR. Ein
+Sonderfall im Code wäre hier genau das, was A4 vermeiden wollte.
+
+#### Der Mechanismus: EINE Regel, zwei benannte Klassen
+
+**Regel „Apex-Übergabe" (`apex_handover`).** In gebundenem Kontext übergibt
+der Übergang an den **Scheitel** des Anstrichs, nicht an dessen Fuß: der
+Verbinder ist die Gerade vom Austritt des Vorgängers zum Scheitelanker, und
+der gespeicherte Anstrich unterhalb wird — Centerline UND Silhouette, über
+die vorhandene `entry_trim`-Maschinerie — fallengelassen. Klassenprädikat,
+rein geometrisch, zwei benannte Konstanten:
+
+* `APEX_HANDOVER_MIN_RISE = 1.00` — der Anstrich muss mindestens so weit
+  steigen (Mitglieder 1,171–1,296; nächster Nichtmitglied-Hub 0,467).
+* `APEX_HANDOVER_MAX_APPROACH_DEG = 120.0` — er muss den Scheitel noch
+  STEIGEND erreichen (Mitglieder ≤ 98,4°; geschlungene Oberlängen ≥ 163,1°).
+
+Kein Buchstabenset: das Prädikat liest die Geometrie der Zeile, die gerade
+rendert. Damit greift die Regel auf der Tafelform wie auf einer künftigen
+Laufform-Zeile und auf jeder anderen Hand, die denselben Anstrich schreibt.
+
+**Klasse „Säulenabgang" (`stem_depart`).** Der d-Auslauf wird GENERIERT wie
+jeder andere Übergang — aus Austritts- und Eintrittstangente, nie als
+gespeichertes Bigramm: nach der Schleifenrückkehr fällt der Übergang an der
+d-eigenen **Säule** auf `STEM_DEPART_Y` und steigt von dort in die Kopplung.
+Das ist die schon vorhandene „fall + ride"-Konstruktion des
+`descender_ride`-Zweigs, auf eine zweite Klasse angewandt.
+
+* `STEM_DEPART_BASES = frozenset({"d"})` — eine geschlossene, aufgezählte
+  A-Menge wie `LOOP_EXIT_BASES`/`BAR_EXIT_BASES`: die 0,96 sind an d gemessen,
+  und Geometrie allein unterscheidet die d-Schleife nicht von der des runden
+  s, das dieselbe Schleife OHNE diesen Abgang schreibt.
+* `STEM_DEPART_Y = 0.96` — der Median der 17 vermessenen Platten-Abgänge
+  (Band 0,82–1,12, §12).
+* `STEM_DEPART_MIN_DROP = 0.05` — unter diesem Abstand zwischen Kreuzung und
+  Abgangshöhe lohnt der Umweg nicht; die Regel feuert dann nicht.
+
+**Vier bewusst getroffene Entscheidungen** (Routine im Track-Scope, hier
+dokumentiert statt zurückgefragt):
+
+1. **Die Platzierung bleibt unangetastet** — dieselbe experimentelle
+   Kontrolle wie bei J4. Beide Regeln lesen die Anker, die der
+   Platzierungslöser ohnehin berechnet hat, und verschieben keinen
+   Buchstabenanfang. Bewegte sich das Wort zugleich in der Spationierung,
+   misst das Wort-Lineal eine Abstandsänderung statt der Naht.
+2. **`dconn` ist KEIN Gate dieses Arms.** Beide Regeln verschieben die Grenze
+   zwischen Buchstabe und Verbinder, und `dconn` vergleicht zwei
+   start-ausgerichtete Kurven verschiedener Ausdehnung — genau die
+   Blindstelle, die J4b als Rettungsweg 2 notiert hat („ein Maß, das den
+   GEMEINSAMEN Abschnitt vergleicht … bauen, einfrieren, DANN den Arm neu
+   vorregistrieren"). Dieses Maß gibt es nicht; ein Arm auf einem Sensor zu
+   gaten, den sein eigener Autor für diese Regelklasse für ungeeignet erklärt
+   hat, wäre eine Scheinprüfung. `dconn` und `doff` werden mit Betrag
+   **berichtet**, nicht gewertet.
+3. **Zwei Schalter, eine Regel.** `apex_handover` und `stem_depart` sind
+   getrennt schaltbar, weil die Doktrin einen Knopf pro Messung verlangt: die
+   Leiter unten misst Basis → Arm A → Arm B → beide. Ausgeliefert werden sie
+   als EIN Entscheid (A4), gemessen einzeln.
+4. **Beide Schalter stehen auf AN** — anders als bei J4, das ein Experiment
+   war. A4 ist ein Modell-Entscheid des Autors: die Klassenregel IST das
+   Modell. Der Golden bricht deshalb absichtlich und wird als **deklarierte
+   Re-Baseline** neu gebacken (`REGEN_GOLDEN=1`); die Wortliste steht unten
+   VOR dem ersten Lauf. Fällt ein Gate rot, gehen beide Schalter auf Standard
+   aus und der Golden bleibt, wie er ist.
+
+#### Gates (vor der ersten Zahl)
+
+| # | Gate | Soll |
+|---|---|---|
+| (a) | `word_loss` / `pair_loss` | ≤ +0,002 gegen 0,109218 / 0,148198 |
+| (b) | Kompositions-Soll | 63/63 Wörter, 33/33 Paare, 0 `failed`, keine Klasse verliert ihren Verbinder |
+| (c) | Platzierung | byte-gleich: 0 bewegte Buchstabenanfänge in Wörtern + Paaren |
+| (d) | Golden | bricht GENAU auf den unten gelisteten Wörtern und auf keinem anderen |
+| (e) | Glyph-Bench | unverändert (`--style suetterlin`, byte-gleicher `bench_loss`) — die Regel ist eine Übergangsregel, die Glyphen selbst werden nicht angefasst |
+| (f) | Gleichzug-Audit | `gleichzug_doublings` steigt nicht (13 Wörter / 3 Paare) — eine Gerade zum Scheitel darf keinen zweiten Strich neben die Säule legen |
+| (g) | Mechanismus d | die Abgangshöhe der gebundenen d-Joins liegt in ≥ 80 % im gemessenen Platten-Band 0,824–1,118 (§12, 17 Vorkommen), und der Abgangswinkel wandert bei ≥ 80 % der Klasse Richtung eben (Basis −33,8°) |
+| (h) | Instrument | die humanbench-Wortseiten für die zehn am stärksten betroffenen Wörter sind gebaut und reproduzierbar (Urteil des Autors, NICHT dieses Arms) |
+
+*Präzisierung zu (g), gemacht VOR der ersten Zahl und offengelegt.* Die erste
+Fassung dieses Gates verlangte „der Abgangswinkel ist nicht mehr fallend"
+(≥ 0°). Das gatet gegen eine Zahl, die es nicht gibt: §12 hat die
+**Abgangshöhe** über 17 Vorkommen gemessen, den **Abgangswinkel der Platte**
+nie. Ein absoluter Winkel-Soll wäre damit erfunden, und die gemessenen
+Ankunftshöhen in Rundkörper (y 0,58–0,70, §6/O2) sagen ohnehin, dass die
+Hand aus 0,96 nicht steigend, sondern flach fallend ankommt. Gegatet wird
+deshalb die Höhe (gemessen) und die RICHTUNG der Winkeländerung
+(vorzeichenfrei prüfbar); der absolute Winkel steht als falsifizierbare
+Erwartung (3) unten und wird berichtet, nicht gewertet.
+
+*Was dieser Arm ausdrücklich NICHT repariert.* §13a hat gemessen, dass die
+d-Schleifenkreuzung der Platte gebunden bei **0,968** und am Wortende bei
+**1,211** liegt (Δ 0,243, p = 0,005, 19× das Wiederholungsrauschen), während
+Tafel und Laufform sie starr bei 1,176/1,177 tragen. Die Kreuzungshöhe ist
+Buchstabenform — `chart_ductus`, der Wizard-Fall, den §12 („die
+Schlingenflanke bleibt der `chart_ductus`-Fall") und Befund 33 dem Autor
+zuweisen. Der Säulenabgang verlegt den **Abgang** auf die gemessene Höhe; die
+**Kreuzung** bleibt, wo die Tafel sie schreibt. Wer die Zahlen unten liest,
+soll das nicht verwechseln.
+
+**Kill.** (a), (b), (c), (e) oder (f) rot → keine Adoption, beide Schalter auf
+Standard aus, Golden unberührt, Rettungswege benannt und in
+`tintenfolger.md` §7.9 eingetragen. (d) rot heißt: die Regel feuert, wo die
+Vorregistrierung sie nicht erwartet hat — dann ist die Klasse falsch
+geschnitten und der Arm wird zurückgestellt, nicht die Liste nachgezogen.
+(g) rot heißt: der Säulenabgang wird zurückgenommen, die Apex-Übergabe kann
+für sich bestehen.
+
+#### Was die Regel treffen DARF — die Listen, vor dem ersten Lauf
+
+**Golden (11 Wörter, `suetterlin-1922`).** Die Regel kann genau **sieben**
+berühren; die anderen vier bleiben byte-gleich.
+
+* Apex-Übergabe: `lesen` (ſ@2) · `sitzen` (t@2, nach der `tz`-Zerlegung) ·
+  `Glück` (k@4, nach der `ck`-Zerlegung) · `das Glück` (k@8)
+* Säulenabgang: `das` (d→a) · `denen` (d→e) · `dann` (d→a) ·
+  `das Glück` (d→a)
+* **unberührt:** `üben` · `Schule` · `wovon` · `Morgen`
+
+**Worttafel (63 Wörter) — 22 betroffen.** Apex-Übergabe 15 Vorkommen in 14
+Wörtern: t in `unter`, `mit`, `mit-2`, `Soldaten`, `Seiten`, `streiten`
+(2×), `fechten`, `macht`; k in `linken`; ß in `muß`, `muß-2`, `muß-3`,
+`daß`, `schießen`. Säulenabgang 10 gebundene d-Joins: `die`, `das`, `laden`,
+`Soldaten`, `der`, `der-2`, `der-3`, `daß`, `die-2`, `Feinde`. (`Soldaten`
+und `daß` tragen beide Arme.) Die vier wortfinalen d (`und`, `und-2`,
+`und-3`, `und-4`) bleiben unberührt — ohne gebundenen Nachbarn behält die
+Tafelform ihr Schleifenfinal, wie bei `LOOP_EXIT`.
+
+**Paar-Drills (33) — 9 betroffen.** Apex-Übergabe: `dt`, `dk`, `ssi`.
+Säulenabgang: `ds`, `df`, `do`, `dp`, `dt`, `dk`, `dx`, `dz`.
+
+**Abb. 22 (`--set abb22`) wird berichtet, nie als Headline** — der
+Cross-Hand-Satz gehört nach stehender Regel in keine Same-Hand-Zahl. Dort
+lägen 30 Apex-Vorkommen und 20 gebundene d-Joins.
+
+#### Erwartung (aus der Dissektion vor dem Bau, damit sie falsifizierbar ist)
+
+1. **Trefferquote 15/15** der Apex-Vorkommen und **10/10** der gebundenen
+   d-Joins auf der Worttafel; jedes Nicht-Feuern ist ein Befund und wird
+   einzeln erklärt.
+2. Der **Anstrichbogen am Saum** der Klasse fällt von 0,136–0,187 xh auf
+   **0,000** (der Verbinder ist per Konstruktion eine Gerade).
+3. Der **d-Abgangswinkel** steigt von −33,8° auf ≥ 0°; die Abgangshöhe fällt
+   von 1,17 auf 0,96 ± 0,03.
+4. Das **Wort-Lineal bewegt sich wenig und die Richtung ist offen**: die
+   `comp_transition`-Komponente sollte auf den 22 Wörtern fallen (die
+   Übergänge werden länger und gerader, näher an der Platte), die
+   `comp_coverage`-Komponente kann steigen, weil die Regel Tinte VERSCHIEBT
+   (vom Buchstaben in den Verbinder) und die Deckung beides zusammen misst.
+   Erwartet wird ein Nettoeffekt im Band ±0,001 — das Gate ist deshalb eine
+   Schranke gegen Schaden, kein Erfolgsnachweis.
+5. **`seam_arr` der Klasse springt** und ist KEIN Schaden: nach dem Schnitt
+   ist die Naht der Scheitel selbst, und dort dreht die Hand per Konstruktion
+   von +65° auf die Säule (−85°). Diese Ecke steht auch auf der Platte; heute
+   liegt sie nur im Buchstaben statt an der Naht. Berichtet, nicht gewertet.
+6. `dconn`/`doff` der betroffenen Joins **steigen** (Rahmen-Artefakt, siehe
+   Entscheidung 2). Berichtet mit Betrag.
+
+Der Beweis der Natürlichkeit liegt bei keinem dieser Lineale, sondern bei der
+humanbench-Wortrunde mit der Echtheitsfrage — Gate (h) baut sie, das Urteil
+fällt der Autor.
+
+### Übergänge J5 `sep04` — gemessen: der Säulenabgang besteht alles, die Apex-Übergabe fällt an zwei Gates
+
+Basis und alle drei Sprossen auf derselben Wurzel
+(`6ca95e1c7be0` / `ce643499940e`, `exported_at=2026-09-04T08:29:01+00:00`),
+BLAS auf einen Thread. Sprosse 0 — beide Schalter aus, der ausgelieferte
+Standard — reproduziert die `sep02`-Headline **bit-genau**: 0,109218 /
+0,148198. Die Leiter der Vorregistrierung, Basis → Arm A → Arm B → beide:
+
+| Sprosse | `word_loss` | Δ | `pair_loss` | Δ | Zacken W/P |
+|---|---|---|---|---|---|
+| 0 Basis (Standard) | 0,109218 | — | 0,148198 | — | 13 / 3 |
+| 1 nur Apex-Übergabe | 0,111026 | **+0,001808** | 0,150618 | **+0,002420** | **17 / 5** |
+| 2 nur Säulenabgang | **0,109118** | **−0,000100** | **0,146757** | **−0,001441** | 13 / 3 |
+| 3 beide | 0,110832 | +0,001614 | 0,148665 | +0,000467 | **17 / 5** |
+
+Kommandos (opt-in, wie `--exit-trim`; jede Sprosse ist eine EIGENE Messung und
+nie die Headline):
+`uv run python -m tools.wordbench.run --set all [--apex-handover] [--stem-depart]`.
+
+#### Die Gates, Sprosse für Sprosse
+
+| Gate | Soll | Sprosse 1 (Apex) | Sprosse 2 (Säule) | Sprosse 3 (beide) |
+|---|---|---|---|---|
+| (a) `word_loss` | ≤ +0,002 | +0,001808 grün | −0,000100 grün | +0,001614 grün |
+| (a) `pair_loss` | ≤ +0,002 | **+0,002420 ROT** | −0,001441 grün | +0,000467 grün¹ |
+| (b) Soll ohne Verlust | 63/63 · 33/33 · 0 `failed`, keine Klasse ohne Verbinder | grün (335/335 Verbinder) | grün | grün |
+| (c) Platzierung | byte-gleich | 0 von 248 bewegt | 0 von 248 | 0 von 248 |
+| (d) Golden | genau die gelisteten Wörter | — | — | **genau 7 von 11**, kein achtes |
+| (e) Glyph-Bench | unverändert | unerreichbar | unerreichbar | unerreichbar² |
+| (f) `gleichzug_doublings` | steigt nicht | **13→17 / 3→5 ROT** | 13 / 3 grün | **ROT** |
+| (g) Mechanismus d | Höhe im Band, Winkel Richtung eben | — | **10/10 + 8/8** | grün |
+| (h) Instrument | Seiten gebaut | — | — | grün (Runde 6, 38 Bildschirme) |
+
+¹ **grün durch Aufhebung, so gelesen und nicht anders.** Die +0,002420 des
+Apex-Arms werden von den −0,001441 des Säulenabgangs aufgehoben; die Summe
+kostet den Paar-Satz fast nichts, aber KEINER der beiden Mechanismen ist für
+sich harmlos. Genau dafür stand die Leiter in der Vorregistrierung.
+
+² **Statisches Argument, kein Neulauf**, offen so benannt — aber gelaufen,
+nicht behauptet: der transitive Importgraph von `tools.glyphbench.run` innerhalb
+des Repos umfasst **13 Module**, darunter `core.pipeline`, `core.quality`,
+`core.quality_suetterlin`, `core.suetterlin`, `core.geometry`, `core.template`,
+`core.widths`, `core.fit`, `core.extract`, `core.chart`, `core.config` — und
+`core.compose` ist auf keinem Pfad. Der Diff kann den Glyph-Bench nicht
+erreichen. Ein Neulauf wäre hier zusätzlich irreführend, weil seine Fixtures
+gitignoriert sind (Wurzeln re-baselined `sep03`) — er würde die Wurzel prüfen,
+nicht die Regel.
+
+Zu (g) im Detail: die Abgangshöhe der gebundenen d-Joins fällt von 1,139 auf
+**0,945** (Wörter, 10/10 im gemessenen Platten-Band 0,824–1,118) und von 1,169
+auf **0,948** (Paar-Drills, 8/8); der Abgangswinkel geht von −32,6 … −41,1°
+auf −20,2 … −30,5° (10/10 Richtung eben; in `dt`/`dk`, wo der Apex-Arm
+danebensteht, auf +56,5 / +55,3°).
+
+#### Was traf und was nicht
+
+Getroffen: **Trefferquote 15/15** der Apex-Vorkommen und **10/10** der
+gebundenen d-Joins auf der Worttafel (3/3 bzw. 8/8 auf den Drills); die
+Golden-Liste stimmt auf das Wort — die sieben vorher genannten brechen, `üben`,
+`Schule`, `wovon` und `Morgen` bleiben byte-gleich. Das ist der stärkste Beleg
+des ganzen Laufs dafür, dass die Klasse VOR den Zahlen geschnitten wurde.
+
+Falsifiziert: **Erwartung 3** — der d-Abgangswinkel erreicht die
+vorhergesagten ≥ 0° NICHT, er bleibt bei −20 … −30° flach fallend. Der Grund
+stand schon in der Präzisierung: die gemessenen Ankünfte in Rundkörper liegen
+bei y 0,58–0,70, aus 0,96 kommt die Hand dorthin nur fallend. Die Vorhersage
+war falsch, das Gate war es nicht.
+
+Berichtet, nicht gewertet: `doff` 0,131 → 0,144 (Paare 0,172 → 0,177),
+`dconn` 0,113 → 0,116 (Paare 0,199 → 0,217) — das Rahmen-Artefakt aus
+Entscheidung 2, in beiden Armen. `seam_arr_median` −2,31 → −7,02: die
+Scheitel-Ecke, die vorher im Buchstaben lag, liegt jetzt an der Naht.
+`seam_dep_median` steht bei +7,99 auf jeder Sprosse — keiner der beiden Arme
+rührt an die Sägezahn-Austritte, die J4 gemessen hat.
+
+#### Die Zerlegung des roten Arms — und warum das Verengen ihn RÖTER macht
+
+Die Owner-Direktive verlangt, die Verlierer zu zerlegen, bevor ein Negativ
+geschlossen wird. Auf Wortebene bewegt der Apex-Arm 17 Proben, **5 besser :
+12 schlechter**. Die Gewinner sind die langen Wörter (`Soldaten` −0,0068 ·
+`schießen` −0,0056 · `fechten` −0,0031 · `muß-2` −0,0026 · `linken` −0,0023),
+die Verlierer die kurzen und die Drills (`dk` +0,0305 · `daß` +0,0284 ·
+`ssi` +0,0276 · `mit-2` +0,0252 · `muß-3` +0,0220 · `dt` +0,0218 ·
+`macht` +0,0178 · `mit` +0,0170).
+
+Die beiden roten Gates haben **verschiedene Träger**, und das entscheidet den
+Fall:
+
+* Die vier neuen Zacken-Ereignisse sitzen ausschließlich auf **ß**
+  (`muß`, `muß-2`, `muß-3`, `daß`) und auf dem Drill **ſſi** — keines auf t
+  oder k. Gemessen: Abstand 0,165–0,172 xh bei einem Nib von 0,145, also
+  gut eine Federbreite Weiß zwischen zwei Strichen, 0,26–0,37 xh lang.
+* Der Verlust am Paar-Lineal sitzt auf **t und k** (`dk`, `mit-2`, `dt`,
+  `macht`, `mit`) — dort doppelt nichts.
+
+Schneidet man also ß und ſſ heraus — die naheliegende Verengung, die Gate (f)
+einlädt —, bleibt der Rest **3 besser : 8 schlechter** mit klar positiver
+Summe: der Arm wird RÖTER, nicht grüner. Es gibt keine Teilklasse, deren
+Entfernung ihn rettet; die Verengung ist damit kein Rettungsweg, sondern ein
+zusätzlicher Beleg. `muß-2` besiegelt es: dieselbe Probe trägt eine
+Verdopplung UND ist ein Gewinner (−0,0026) — Zacke und Verlust sind sogar
+innerhalb von ß entkoppelt.
+
+**Der Rauschboden dieses Laufs, damit die Einzelzahlen oben nicht mehr
+behaupten, als sie können.** Dieselbe Zeichenkette, mehrfach auf der Platte:
+`muß`/`muß-2`/`muß-3` (bit-identisch komponiert) spreizen unter dem Apex-Arm
+−0,0026 / +0,0106 / +0,0220; unter dem Säulenabgang spreizen `der`/`der-2`/
+`der-3` 0,009 und `die`/`die-2` 0,011. Der Beleg-Varianz-Boden liegt also bei
+rund **±0,01 je Wort** — genau die Lesart, die die Arkaden-Luft und
+`wenn`/`wenn-2` schon einmal geschlossen hat. Einzel-Deltas darunter sind
+nicht lesbar. Die Verlierer des Apex-Arms liegen deutlich darüber und stimmen
+im Vorzeichen, wo ein Wort sich wiederholt (`mit` +0,0170 / `mit-2` +0,0252)
+— der Schaden ist real.
+
+#### Verdikt
+
+**Der Säulenabgang (`stem_depart`, der d-Auslauf-Generator, Weg (b)) besteht
+jedes Gate** und verbessert beide Headline-Zahlen (−0,000100 / −0,001441,
+14 besser : 4 schlechter, alle acht Drills darunter). **Empfehlung: Ja.**
+
+**Die Apex-Übergabe (`apex_handover`) ist ein ehrliches Negativ** — (a) auf
+dem Paar-Satz und (f) rot, die Zerlegung macht es nicht besser. Kein Default.
+
+**Beide Schalter bleiben auf Standard AUS, und das Golden bleibt unberührt** —
+auch der grüne Arm. Den Default von `compose_word` umzulegen ändert JEDE
+öffentliche `/write/word`-Antwort; das ist ein rendering-wirksamer Schreibakt
+und damit nach stehender Direktive eine Autoren-Entscheidung, kein
+Bench-Ergebnis. Der Umschlag ist eine Zeile plus ein deklariertes Neu-Backen
+des Goldens auf den vier d-Wörtern (`das`, `dann`, `denen`, `das Glück`), die
+Todoist-Aufgabe liegt beim Autor. Schalter, Konstanten und Tests bleiben im
+Baum — die J4-Regel: der nächste Arm fängt nicht bei null an.
+
+**Scope-Fund, den A4 nicht entschieden hat:** ß ist `sz`, ein Mitglied des
+GESCHLOSSENEN Ligaturensatzes, kein schlichter Tafelbuchstabe. Das
+geometrische Prädikat hat von sich aus dorthin gegriffen, und die vier
+ß-Feuerungen sind die schlechtesten des Arms. Solange der Arm aus ist, ist das
+gegenstandslos; wird er je neu vorregistriert, ist die Mitgliedschaft von ß
+eine Frage an den Autor und keine geometrische Tatsache.
+
+#### r: der Tafelform-Fall, der NICHT in die Klasse passt
+
+Rückgabe an den Autor, mit der Messung. In der LF11-Zeile, die in jedem
+gebundenen Lauf ≥ 3 wirklich rendert, bleiben hinter dem letzten Scheitel des
+r **0,072 xh** Bogen, und die Spitze liegt **0,004 xh** darunter
+(Chart: 0,411 xh und 0,094). Die Austrittstangente über 0,12 xh ist im Chart
++25,9°, in der Laufform **−0,2°**. Es gibt dort keinen Stummel mehr, den ein
+Übergang übernehmen könnte: eine Absorption würde die Fahne löschen statt sie
+in die steigende Welle der Platte zu verwandeln. Die Fahne ist Buchstabenform
+geworden. **r bleibt Autorenfall** — Wizard-Nachfahrung mit Wellen-Fahne,
+danach Neu-Ernte der r-Laufform (n = 7 Vorkommen ≥ Boden 3). Ein Sonderfall im
+Code wäre genau das, was A4 vermeiden wollte.
+
+#### Das Instrument (Gate h), gebaut und ungerichtet
+
+**Runde 6** (`temp/humanbench/runde-6`, für den Autor abgelegt unter
+`temp/runden-sep04/humanbench/runde-6-j5-klassenregel.html` neben den beiden
+Runden desselben Tages) — Wortmodus, Echtheitsfrage („welche sieht echter
+geschrieben aus?", `menschliche-bewertung.md` §8), Saat 20260006,
+**38 Bildschirme**: die 22 Wörter, die die Regel bewegt (die zehn am stärksten
+bewegten stehen nach Severity vorn), **plus zwölf Nullproben**, in denen beide
+Tafeln bit-identisch sind. Die Nullprobe ist Absicht: „kein Unterschied" ist
+dort die einzige richtige Antwort, und damit misst die Runde, wie der Richter
+diese Option überhaupt benutzt — genau die Größe, an der das LF11-Verdikt
+gescheitert ist. Sie hebt die Runde außerdem über den Wiederholungs-Boden des
+Builders (eine blinde Wiederholung braucht mehr als `min_gap` + 25
+Bildschirme — im Wortmodus-Default `min_gap` 15 also mehr als 40; diese Runde
+läuft auf `--min-repeat-gap 5`, und selbst dort trügen die 22 bewegten Wörter
+allein keine einzige); so liegen **4 blinde Wiederholungen** über die
+Schichten apex/stem/nullprobe, Abstand 14–30. Die Konstruktionsregel dazu
+steht in `menschliche-bewertung.md` §8a.
+
+Zwei Dinge, die der Richter wissen muss: die Arme sind
+`apex_handover`+`stem_depart` GEMEINSAM gegen die Basis — das Urteil gilt der
+Klassenregel als Ganzem, nicht je Arm; und drei Wörter (`schießen`,
+`Soldaten`, `Gaul`) laufen über ihren eigenen Referenz-Ausschnitt hinaus und
+werden abgeschnitten gezeigt, in BEIDEN Tafeln gleich. **Die Runde wurde nicht
+gefahren** — sie liegt fertig, das Urteil ist Autorensache.
+
+Reproduzierbar:
+
+```
+uv run python -m tools.humanbench.wordarm --arm "Basis (ohne J5)" \
+    --entries <22+12> --no-apex-handover --no-stem-depart --out temp/j5_basis.json
+uv run python -m tools.humanbench.wordarm --arm "J5 Klassenregel" \
+    --entries <22+12> --apex-handover --stem-depart \
+    --registration-from temp/j5_basis.json --out temp/j5_kandidat.json
+uv run python -m tools.humanbench.build --round 6 \
+    --word-arms temp/j5_basis.json temp/j5_kandidat.json \
+    --entries <22+12> --strata <klassen.json> --repeats 6 --min-repeat-gap 5
+uv run python -m tools.humanbench.page --payload temp/humanbench/runde-6/payload.json \
+    --out temp/humanbench/runde-6/echtheit.html --round 6 --question authentic
+```
+
+#### Rettungswege (Register: `tintenfolger.md` §7.9)
+
+1. **Die Aktion, nicht die Klasse.** „Die Platte schreibt EINE Gerade zum
+   Scheitel" ist aus dem Bogen der TAFEL (0,136–0,187) und einer Lupe
+   behauptet, nie an der Probe gemessen. Das Lineal sagt jetzt, dass eine
+   gerade Übergabe auch auf t und k falsch ist. Zuerst den eigenen
+   Anstrichbogen der Probe an den 15 feuernden Vorkommen aus `ref_skel`
+   messen; liegt er bei ≈ 0,06 statt 0,00, war die Klasse richtig und die
+   FORM falsch — dann ist eine leicht gebogene Übergabe der nächste Arm, mit
+   eigener Vorregistrierung.
+2. **Die Sensorfrage vor der Regeländerung.** Zeigt die ß der Platte dieselbe
+   fast-parallele Spitze, die der Detektor meldet? Eine Spitze, deren beide
+   Schenkel < `PARALLEL_DEG` (22°) auseinanderliegen, löst ihn aus, gleich ob
+   die Tinte von uns oder von der Platte stammt. Löst die Platte ihn auch aus,
+   gehört das Band des Detektors für gespitzte Scheitel auf den Prüfstand —
+   eine eingefrorene Report-Spalten-Definition, also eigene Vorregistrierung,
+   keine stille Änderung.
+3. **Menschliches Urteil statt Lineal** (J4b-Rettungsweg 3, wörtlich): die
+   Runde aus Gate (h) liegt fertig — identische Platzierung, ein veränderter
+   Freiheitsgrad. Sie ist die einzige Instanz, die den Saum sieht.
+4. **Für den grünen Arm:** die Adoption des Säulenabgangs ist keine Messfrage
+   mehr, sondern der Ja/Nein-Satz des Autors samt deklariertem Golden-Bake.
 
 **Zur Reihenfolge der `sep04`-Abschnitte.** Die drei Übergänge-Abschnitte
 direkt hier (P-Spiegel · S1 ×2) wurden ans damalige Dateiende angehängt,

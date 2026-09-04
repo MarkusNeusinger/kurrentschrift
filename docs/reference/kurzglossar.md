@@ -42,8 +42,10 @@ mindestens zwei der drei Quellen vor — das ist die Kandidatenliste.
    `Karten-Soll-Vollständigkeit`, `Marken-endständige Assembly`,
    `zonale Rückweisung`, `Lineal-Soll-Budget`, `Deckungslücke`,
    `Austritts-Trim`, `Spike-Verhältnis`, `Sprung-Gate`,
-   `Nachbarbindung`, `Vorkommensschranke`, `like-for-like Gate`). Sie
-   gehören ins volle Glossar, nicht in den Einstieg.
+   `Nachbarbindung`, `Vorkommensschranke`, `like-for-like Gate`,
+   `Apex-Übergabe`, `Säulenabgang`). Sie gehören ins volle Glossar, nicht
+   in den Einstieg — auch dann, wenn ihr Identifier in `core/` steht:
+   `Austritts-Trim` (`exit_trim`) ist der Präzedenzfall.
 
 Dazu kommen die Begriffe, die `CLAUDE.md` namentlich als
 nachschlagenswert ausweist (Duktus-Prior, Schwellzug,

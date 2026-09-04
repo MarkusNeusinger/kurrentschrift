@@ -5,16 +5,18 @@
         --registration-from temp/basis.json --out temp/lf11.json
     uv run python -m tools.humanbench.wordarm --arm Platten-Nib --nib 0.097 --out temp/nib.json
     uv run python -m tools.humanbench.wordarm --arm J4 --exit-trim --out temp/j4.json
+    uv run python -m tools.humanbench.wordarm --arm J5 --apex-handover --stem-depart \\
+        --out temp/j5.json
 
 The reference producer of the arm-file contract that
 ``tools/humanbench/build.py`` draws a word round from. It is a producer and
 not a part of the instrument: the builder never composes anything itself, so
 an arm can equally be written by whatever tool a candidate lives in — the file
 is the interface, this module is the one that covers the arms available today
-(a candidate Laufform card, a different nib, the composer's own `exit_trim`
-switch — every one of them a knob the composition path already has, so a
-candidate never needs a core change to be judged) plus the base they are
-measured against.
+(a candidate Laufform card, a different nib, and the composer's own join-rule
+switches `exit_trim`, `apex_handover` and `stem_depart` — every one of them a
+knob the composition path already has, so a candidate never needs a core change
+to be judged) plus the base they are measured against.
 
 Composition mirrors ``tools/wordbench/run.py`` line for line and by IMPORT, not
 by restatement: same frozen templates, same Laufform overlay, same
@@ -38,6 +40,7 @@ candidate: a defect somebody injected is not a change anybody proposed.
 from __future__ import annotations
 
 import argparse
+import inspect
 import json
 from datetime import UTC, datetime
 from pathlib import Path
@@ -59,6 +62,14 @@ DEFAULT_SOURCE_ID = "suetterlin-1922"
 # anchor-median jitter of a Laufform row measures a few hundredths of an
 # x-height, which is exactly the range every frozen ruler resamples away.
 ZIGZAG_AMPLITUDE = 0.02
+
+# What an omitted J5 flag resolves to, read from the composer's own signature at
+# IMPORT — before any test can substitute a stand-in — so the arm file records
+# the boolean that really drew it and no later default change can rewrite what
+# an old round meant.
+JOIN_RULE_DEFAULTS: dict[str, bool] = {
+    name: bool(inspect.signature(compose_word).parameters[name].default) for name in ("apex_handover", "stem_depart")
+}
 
 
 def load_json(path: Path) -> Any:
@@ -85,6 +96,8 @@ def compose_arm(
     nib: float | None = None,
     exit_trim: bool = False,
     entries: set[str] | None = None,
+    apex_handover: bool | None = None,
+    stem_depart: bool | None = None,
 ) -> tuple[dict[str, dict], dict]:
     """Compose every scorable fixture word once, and place it the ruler's way.
 
@@ -93,6 +106,12 @@ def compose_arm(
     rest on their frozen rows — the word bench's ``--laufform`` discipline,
     because an overlay that silently dropped the unnamed keys would compose a
     different letter set from the base and the round would compare two things.
+
+    ``apex_handover``/``stem_depart`` are the join-grammar arms of „Übergänge
+    J5" (core.compose APEX_HANDOVER_MIN_RISE / STEM_DEPART_BASES). None means
+    „take the composer's default", and that default is RESOLVED here to the
+    boolean the settings then report — an arm file says what actually drew it,
+    never a placeholder that a later default change would silently redefine.
     """
     manifest = load_json(root / "manifest.json")
     templates = load_json(root / "templates.json")
@@ -107,6 +126,15 @@ def compose_arm(
 
     payload_for = _payload_cache(templates, ratio, resolver, used_nib)
     laufform_for = _payload_cache(rows, ratio, resolver, used_nib)
+    # Resolved to concrete booleans HERE, once, and the same values are both
+    # passed and recorded. Leaving a None for the composer to fill in would
+    # store "whatever the default was that day": two arms could then carry
+    # identical metadata and different ink, which is the one thing this field
+    # exists to prevent.
+    join_rules = {
+        name: JOIN_RULE_DEFAULTS[name] if value is None else bool(value)
+        for name, value in (("apex_handover", apex_handover), ("stem_depart", stem_depart))
+    }
 
     words: dict[str, dict] = {}
     failed: list[str] = []
@@ -124,6 +152,7 @@ def compose_arm(
                 {s.key: payload_for(s.key) for s in slots if s.key},
                 laufform_by_key={s.key: lf for s in slots if s.key and (lf := laufform_for(s.key)) is not None} or None,
                 exit_trim=exit_trim,
+                **join_rules,
             )
             report = score_word(
                 composed,
@@ -144,7 +173,10 @@ def compose_arm(
         "nib_overridden": nib is not None,
         "laufform": "none" if no_laufform else ("overlay" if laufform else "frozen"),
         "laufform_overlay_keys": sorted(laufform) if laufform else [],
+        # Stated, never inherited: an arm file has to say which join rules drew
+        # it, or two rounds built weeks apart cannot be held against each other.
         "exit_trim": exit_trim,
+        "join_rules": dict(join_rules),
         "exported_at": manifest.get("exported_at"),
         "failed": failed,
     }
@@ -265,6 +297,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="compose with the exit-collinearity rule (arm J4) — the composer's own switch, default off",
     )
     parser.add_argument(
+        "--apex-handover",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="the J5 apex handover (core.compose APEX_HANDOVER_MIN_RISE) [the composer's default]",
+    )
+    parser.add_argument(
+        "--stem-depart",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="the J5 d stem departure (core.compose STEM_DEPART_BASES) [the composer's default]",
+    )
+    parser.add_argument(
         "--registration-from",
         type=Path,
         default=None,
@@ -297,7 +341,14 @@ def main(argv: list[str] | None = None) -> int:
     laufform = load_laufform_draft(args.laufform) if args.laufform else None
 
     words, settings = compose_arm(
-        root, laufform=laufform, no_laufform=args.no_laufform, nib=args.nib, exit_trim=args.exit_trim, entries=entries
+        root,
+        laufform=laufform,
+        no_laufform=args.no_laufform,
+        nib=args.nib,
+        exit_trim=args.exit_trim,
+        entries=entries,
+        apex_handover=args.apex_handover,
+        stem_depart=args.stem_depart,
     )
     if not words:
         raise SystemExit(f"{root}: nothing composed — {settings['failed'][:5]}")
@@ -340,6 +391,8 @@ def main(argv: list[str] | None = None) -> int:
         f"  laufform {settings['laufform']} · exit_trim {settings['exit_trim']}"
         f" · registration {settings['registration']}"
     )
+    rules = settings["join_rules"]
+    print(f"  join rules: apex_handover {rules['apex_handover']} · stem_depart {rules['stem_depart']}")
     if settings["failed"]:
         print(f"  WARNING: {len(settings['failed'])} word(s) did not compose: {', '.join(settings['failed'][:8])}")
     if args.synthetic_defect:

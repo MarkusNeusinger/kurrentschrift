@@ -57,7 +57,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
-- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
+- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
 - **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
@@ -75,7 +75,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Same-Hand-Disziplin §4 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftkunde (Seite) §7 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftkunde (Seite) §7 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Unantastbare Lineatur §7 · Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
@@ -567,7 +567,7 @@ Leitprinzip der Optimierung: **eine Klassenregel hebt viele Paare, ein
 Override repariert eine Stelle.** Die Klassen sind im Code als
 Buchstabenmengen ausbuchstabiert, und diese Konstanten sind die Quelle —
 die Liste hier ist ihr Inhaltsverzeichnis (`core/compose.py`, Stand
-2026-09-02: 14 positive Mengen plus eine Ausschlussmenge):
+2026-09-04: 15 positive Mengen plus eine Ausschlussmenge):
 
 | Klasse | Konstante | gilt für |
 |---|---|---|
@@ -576,6 +576,7 @@ die Liste hier ist ihr Inhaltsverzeichnis (`core/compose.py`, Stand
 | hohe Kopplung | `HIGH_COUPLE_BASES` | e · a · o · c · d · g · q · ae · oe |
 | Oberlängen-Neigung | `ASCENDER_LEAN_BASES` | d |
 | Schleifen-Exit | `LOOP_EXIT_BASES` | d · s |
+| Säulenabgang (opt-in) | `STEM_DEPART_BASES` | d |
 | Kringel-Exit | `KRINGEL_EXIT_BASES` | b · o · B |
 | Arm-Fusion | `ARM_FUSE_BASES` | die hohe Kopplung + r · i |
 | gleichschräge Kopplung | `SAMESLANT_COUPLE_BASES` | n · m · i · u |
@@ -589,7 +590,46 @@ die Liste hier ist ihr Inhaltsverzeichnis (`core/compose.py`, Stand
 
 Dazu die Klassen ohne eigene Buchstabenmenge, weil ihre Bedingung
 geometrisch ist: Girlande · Gabel-Join · Cusp-Connector ·
-Kapital-Übergabe · Arkaden-Diagonale.
+Kapital-Übergabe · Arkaden-Diagonale · **Apex-Übergabe**.
+
+**Apex-Übergabe** *(`apex_handover`, `APEX_HANDOVER_MIN_RISE` /
+`APEX_HANDOVER_MAX_APPROACH_DEG`)* — die Klassenregel für den langen
+**ungeschlungenen Anstrich**: ein Buchstabe, dessen erster Zug in EINEM
+Strich vom tiefen Fuß bis in die Oberlänge steigt, ohne dabei eine
+Schleife zu schreiben, übergibt den Übergang in gebundener Stellung an
+seinem **Scheitel** statt an seinem Anstrichfuß — der Verbinder ist die
+Gerade dorthin, der gespeicherte Anstrich darunter fällt weg
+(Centerline und Silhouette, über die `ENTRY_COUPLE_Y`-Maschinerie). Die
+Klasse ist geometrisch und nicht als Buchstabenmenge ausbuchstabiert,
+damit sie auf einer Laufform-Zeile und auf einer anderen Hand ebenso
+greift: gemessen auf der Tafel 1922 fallen t, ſ, k **und ß** hinein
+(Hub 1,171–1,296 gegen 0,467 für den größten Nichtmitglied-Anstrich;
+Anlauf in den Scheitel ≤ 98° gegen ≥ 163° für die geschlungenen
+Oberlängen h/l/b/f). Umsetzung des Autor-Entscheids A4 zu Befund 33 des
+Audits — **gemessen `sep04` und verworfen** (Paar-Lineal +0,002420,
+Verdopplungen 13 → 17); der Schalter steht standardmäßig aus, die
+Zahlen und die Rettungswege stehen in `messjournal.md` §14 „Übergänge
+J5". Nicht zu verwechseln mit der **Arm-Fusion**, die ebenfalls am
+Scheitel koppelt, aber an dem des kurzen Deckstrich-Kamms.
+
+**Säulenabgang** *(`stem_depart`, `STEM_DEPART_BASES`,
+`STEM_DEPART_Y`)* — die Exit-Klasse des **d**, und die Umsetzung von
+Weg (b) des Auslauf-Entscheids A4: der Übergang wird GENERIERT statt
+gespeichert. Nach der Schleifenrückkehr hört der Übergang nicht an der
+Selbstkreuzung auf (die die Tafel bei 1,17 schreibt), sondern reitet
+die **Säule** des d — dessen eigene, schon geschriebene Tinte — bis auf
+die gemessene Abgangshöhe 0,96 hinunter und startet dort. 0,96 ist der
+Median der 17 von pairlab verfolgten Platten-Abgänge (Band 0,824–1,118,
+elf verschiedene Folger); dass er über alle Folger konstant ist, ist
+das Argument für den Generator und gegen eine Variantentrennung
+verbunden/terminal — eine gespeicherte Bigramm-Tabelle müsste elf
+Folger aufzählen, um dasselbe zu sagen. **Gemessen `sep04`: alle Gates
+grün** (Wörter −0,000100 · Paare −0,001441, Abgangshöhe 10/10 und 8/8
+im Platten-Band); der Schalter steht bis zum Autor-Ja trotzdem aus, weil
+ein geänderter `compose_word`-Default jede öffentliche
+`/write/word`-Antwort ändert. Was der Säulenabgang NICHT repariert: die
+**Kreuzungshöhe** selbst (Platte gebunden 0,968, wortfinal 1,211; Tafel
+starr 1,176) ist Buchstabenform und bleibt der Wizard-Fall.
 
 **Restart-Klasse** *(`CAP_RESTART_BASES`)* — die Versalien, deren
 Verbinder mit einem vorangestellten **Rückzug** beginnt: die Feder fährt
