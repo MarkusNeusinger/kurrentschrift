@@ -7427,6 +7427,16 @@ wird). Der Golden bleibt unberührt. **Die öffentlichen
 auf die glatten Zeilen wird dort erst mit Ablauf sichtbar — kein Purge
 (Entscheid des Autors).**
 
+**Zur Reihenfolge der `sep04`-Abschnitte.** Die drei Übergänge-Abschnitte
+direkt hier (P-Spiegel · S1 ×2) wurden ans damalige Dateiende angehängt,
+wie die Regel es verlangt; die fünf `sep04`-Abschnitte dahinter (Feder
+A3, Übergänge J4, Lotse ×2) kamen aus Zweigen, die am selben Tag
+parallel liefen und vorher gemergt wurden. Die Reihenfolge im
+Register ist die dieser Datei, beide sind konsistent, und alle acht
+tragen dasselbe Datum — umsortiert wurde nichts (das verbietet die
+Regel oben ausdrücklich). Der Hinweis steht hier, damit niemand die
+Position als Zeitfolge liest.
+
 ### Übergänge P-Spiegel `sep04` — pairlab misst wieder den Produktions-Verbinder (Werkzeug-Re-Baseline, kein Arm)
 
 **Kein Arm, keine Hypothese, keine Adoption.** Dieser Eintrag verschiebt
