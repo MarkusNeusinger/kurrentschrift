@@ -113,6 +113,41 @@ def test_paired_pages_tag_themselves_differently():
     assert config_of(build_page(PAIRED, round_label="3"), "tag") == "VERGLEICH/3"
 
 
+# ------------------------------------------- one resume namespace, and it says so
+
+
+def test_two_rounds_over_the_same_words_do_not_share_a_resume_key():
+    """Two word rounds over one fixture set draw the same words in the same
+    order under the same display ids. On ids alone they would share a
+    localStorage key, and the second would open part-answered on the first
+    one's verdicts — the resume half of the defect §3.6b was written for."""
+    six = config_of(build_page(PAIRED, round_label="6"), "store")
+    seven = config_of(build_page(PAIRED, round_label="7"), "store")
+    assert six != seven
+    assert six == config_of(build_page(PAIRED, round_label="6"), "store"), "a rebuild must still resume"
+    # The ids survive a change to the DRAWING, so they cannot be the whole key:
+    # a page rebuilt after a renderer fix would otherwise replay the old
+    # verdicts by index onto screens that no longer show the same thing.
+    redrawn = copy.deepcopy(PAIRED)
+    redrawn[0]["panels"][0]["strokes"] = [[[0, 0], [11, 11]]]
+    assert config_of(build_page(redrawn, round_label="6"), "store") != six
+    # And a builder that hands in its own namespace wins over the derived one.
+    assert config_of(build_page({"round": 6, "store": "humanbench-r6-abc", "items": PAIRED}), "store") == (
+        "humanbench-r6-abc"
+    )
+
+
+def test_the_page_says_which_round_it_is():
+    """A tab left open from an earlier round is indistinguishable otherwise —
+    and after the LF11 round nobody could settle which page had been judged."""
+    html = build_page(PAIRED, round_label="6")
+    assert "Runde 6" in html
+    # Not doubled when the builder already put the round into its own eyebrow.
+    once = build_page(PAIRED, round_label="6", eyebrow="Blindvergleich · Runde 6")
+    assert once.count("Runde 6") == 1
+    assert "Runde" not in config_of(build_page(PAIRED), "tag")
+
+
 # ------------------------------------------------------- the two paired questions
 #
 # „welche Linie folgt der Tinte besser?" and „welche sieht echter geschrieben

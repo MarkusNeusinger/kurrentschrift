@@ -40,26 +40,18 @@ Lineal-Stände, beide mit Datum**: auf der alten Marken-Kappe 0,8
 auf der heutigen Kappe 1,5 (§14 „Lineal L-U `aug26`") dtw **0,0545**
 med · p90 **0,1164** · worst muß-2 0,1457.
 
-**Der „Sprung" 0,0585 → 0,0545 ist am `sep04` aufgelöst und war
-keiner** (§14 „Lotse-Sprung `sep04`"): 0,0545 ist der dtw-Wert des
-Wortes `laden` — Rang 9 der 19, während der Median Rang 10 ist
-(`will`, 0,0585). Die `aug20`-Artefakte liegen noch vor, kein
-Lotse-Report jenes Abends misst 0,0545, und das einzige Wort, das den
-Median hätte verschieben können (`will`), ist zwischen den beiden
-Daten beweisbar unbewegt. Die L-U-Zahl ist also ein Rang-Griff
-daneben beim Übertragen. **Gültig für `aug26` ist 0,058522 auf Kappe
-0,8**, wie am `aug20`; die Kappe verschiebt weiterhin nur p90 und
-worst.
+**Der „Sprung" 0,0585 → 0,0545 war keiner** (`sep04`, §14
+„Lotse-Sprung"): 0,0545 ist `laden`, Rang 9 der 19, wo der Median
+Rang 10 ist — ein Rang-Griff daneben beim Übertragen. Gültig für
+`aug26` ist **0,058522** auf Kappe 0,8, wie am `aug20`.
 
-**Die Zahlen dieses Abschnitts sind damit trotzdem nicht die
-heutigen.** Sie stammen von der `aug14`-Wurzel, hinter der inzwischen
-drei Neu-Exporte liegen (`sep01` §15-Rechteck-Reparatur, `sep02`
-LF11-Write, `sep03` Neubau). Frisch geritten misst der Lotse am
-`sep04` dtw-Median **0,056080** (auf beiden Kappen), p90 0,111440 /
-**0,115527**, worst muß-2 0,151524 / **0,157229**, aiou **0,7527**,
-`cross_spurious` **1**. Bis eine Duell-Runde beide Routen auf
-derselben heutigen Wurzel nachmisst, sind die `aug26`-Zahlen nur
-untereinander vergleichbar.
+**Diese Zahlen sind nicht die heutigen.** Sie stammen von der
+`aug14`-Wurzel, hinter der drei Neu-Exporte liegen (`sep01`, `sep02`,
+`sep03`). Frisch geritten misst der Lotse am `sep04` dtw-Median
+**0,056080** (beide Kappen), p90 0,1114/**0,1155**, aiou **0,7527**,
+`cross_spurious` **1**. Bis eine Duell-Runde beide Routen auf der
+heutigen Wurzel nachmisst, sind die `aug26`-Zahlen nur untereinander
+vergleichbar.
 Unverändert über beide Stände: **Netto-Kreuzungsdefekte 6**
 (missing 1 — nur unters letzter Ritt-Rest) ·
 Kreuzungs-Ortsfehler-Median **0,066 xh** ·
@@ -107,18 +99,15 @@ Kreuzungs-Ortsfehler (0,066 gegen 0,083 xh).
 | aug20 | Glättungs-Proben *(Befund, kein Arm)* | `smooth_map_strokes` (Box entlang der Bahn, Endpunkte exakt, deklariert-off) an 5 Proben-Worten, Fenster × Schritt | **die Auflösungs-Familie ist GESCHLOSSEN**: der Feinschritt-Drift besteht auf geglätteter Karte fort (Wer +0,033, Fenster egal) — die letzte Kopplung ist die ENTSCHEIDUNGS-GRANULARITÄT des Viterbi (mehr Samples = mehr Umsteigepunkte); kein weiterer Leiter-Anlauf ohne anderen Solver. Nebenbefund: Glättung AM Betriebspunkt gemischt-groß (mit aiou +0,097, muß-2-Retraces heilen, unters t-X2 erscheint · Wer +0,031 dtw, Galoppieren tauscht ein X) → eigener Kandidat mit eigener Pre-Reg. **Zweiter Nachtrag: auch dieser Kandidat an der Fenster-Feinleiter verworfen** — kein Fenster ohne Verlierer (die 3-Punkte-Box-Stufe „Kernel-3", auf die alle Fenster < 0,06 quantisieren: Galoppieren/mit zahlen; 0,06: Wer kippt), die Effekte sind Entscheidungs-Kipp-Punkte; die Karten-/Abtastungs-Familie ist ERSCHÖPFT, die Route sitzt in einem empfindlichen Optimum |
 | aug26 | **L-U Lineal-Nachmessung** *(Lineal-Re-Baseline, kein Lotse-Arm)* | Marken-Kappe `MARK_MAX_ARC_UNITS` 0,8 → 1,5 — der u-Bogen zählt nicht mehr als Marke (§14 „Lineal L-U `aug26`") | Route selbst unberührt, aber ihre Zahlen wandern: dtw **0,0545 → 0,0545**, p90 **0,1122 → 0,1164**, worst muß-2 0,1404 → 0,1457; 16 Struktur-Spalten byte-gleich. Der L-U-Gewinn liegt auf der Kette (p90 0,2355 → 0,0896), der Lotse verliert minimal — das ist der vorregistrierte, akzeptierte Preis einer Instrumenten-Reparatur |
 | aug26 | **LF3b-W Schreib-Karte** *(Laufform-Arm, hier nur die Wirkung)* | die 13 topologie-reparierten Laufform-Zeilen ohne p, geschrieben (§14 „Laufform LF3b-W `aug26`") | Gate (c) PASS: dtw 0,0545 / p90 0,1164 unverändert, **aiou 0,7398 → 0,7484**, spurious 5 → 4 (Galoppieren 3 → 2), `retrace_missing` 5 → 3, missing 1 = 1, Marken unverändert; bewegt nur die drei Schreib-Glyph-Wörter (das, linken, Galoppieren). Zahlengleich mit der trockenen LF3b-Karte vom `aug19` |
-| sep04 | **Absprung-Forensik** *(Autopsie, kein Arm)* | Herkunfts-Sensor je emittiertem Punkt + Tintenkörper-Abstand (`tools/inkpilot/forensics.py`), gegen `pilot_word` bit-gleich gespiegelt **`bridge_no_rail` kommt auf dev-19 kein einziges Mal vor** (die Karte hat überall eine Schiene in Bord-Reichweite), und der Schienen-Auslauf liegt in 201 Punkten NIE daneben. Was danebenliegt, ist Karten-Vorfahrt — und die Ritt-Doppelzone ist mit 1,3 % Weganteil in **49,5 %** ihrer Punkte außerhalb der Tinte (Fenster: 8,9 %, gewöhnlicher Ritt: 0,03 %). Von den 39 Ereignissen sind 23 GEERBT (Karten-Abdrift; bei der Zonen-Klasse ist der Überschuss über die Karte im Median exakt +0,0000 — der Folger ist ein treuer Bote, die Ursache liegt in der Komposition), 15 macht die starre Pinnung selbst (Fenster-Versatz, Median +0,0928 xh, max +0,2146 — und dieselbe Pinnung zieht in 12 anderen Fenstern um −0,0165 zurück) |
-| sep04 | **Lotse-Sprung** *(Autopsie, kein Arm)* | Nachmessung der `aug20`-Artefakte + der `aug20`-Kandidatenbytes auf der heutigen Wurzel | **gegenstandslos** — 0,0545 ist `laden` (Rang 9), der Median ist Rang 10 = 0,058522; kein `aug20`-Report misst 0,0545 und `will` ist zwischen den Daten beweisbar unbewegt. Zweitbefund: 15 der 19 Wörter reproduzieren aus `aug20`-Bytes ziffergleich, vier nicht (`das` 0,0307 → 0,2504, `und`, `Wer`, `zwei`) — die `sep01`-Rechteck-Reparatur, also ist keine dev-19-Zahl von vor `sep01` mit einer danach vergleichbar |
+| sep04 | **Absprung-Forensik** *(Autopsie, kein Arm)* | Herkunfts-Sensor je emittiertem Punkt + Tintenkörper-Abstand (`tools/inkpilot/forensics.py`), gegen `pilot_word` bit-gleich gespiegelt | **`bridge_no_rail` = 0** auf dev-19, Schienen-Auslauf 0 daneben; die Ritt-Doppelzone liegt in **49,5 %** ihrer Punkte außerhalb der Tinte (Fenster 8,9 %, Ritt 0,03 %). Von 39 Ereignissen 23 GEERBT (Karten-Abdrift, Überschuss über die Karte median **+0,0000** → Ursache in der Komposition), 15 von der starren Pinnung gemacht (Fenster-Versatz, **+0,0928 xh**, max +0,2146; dieselbe Pinnung zieht in 12 Fenstern −0,0165 zurück) |
+| sep04 | **Lotse-Sprung** *(Autopsie, kein Arm)* | Nachmessung der `aug20`-Artefakte + der `aug20`-Kandidatenbytes auf der heutigen Wurzel | **gegenstandslos** — 0,0545 ist `laden` (Rang 9), der Median ist Rang 10 = 0,058522; `will` beweisbar unbewegt. Zweitbefund: die `aug20`-Bytes reproduzieren heute 15 von 19 Wörtern ziffergleich, vier nicht (`das` 0,0307 → 0,2504, `und`, `Wer`, `zwei`) — die `sep01`-Rechteck-Reparatur; keine dev-19-Zahl von vor `sep01` ist mit einer danach vergleichbar |
 
 Benannter Fehlermodus der Route: **Junction-Pinch** (Glossar) — die
 v0.7/v0.8/v0.9-Kette ist seine vollständige Abarbeitung; seit v0.11
 ist das **Doppel-X-Duplikat** (Glossar) die dominante
-Rest-Spurious-Klasse. Seit der `sep04`-Forensik sind zusätzlich die
-beiden Klassen benannt, in denen die Route die TINTE verlässt:
-**Karten-Abdrift** (geerbt, die Zonen-Vorfahrt reicht die
-Platzierungsfehler der Karte wörtlich durch) und **Fenster-Versatz**
-(selbst gemacht, die starre Pinnung trägt den Bauch des
-Fenster-Laufs hinaus) — beide im Glossar.
+Rest-Spurious-Klasse. Seit `sep04` sind die beiden Klassen benannt, in
+denen die Route die TINTE verlässt: **Karten-Abdrift** (geerbt) und
+**Fenster-Versatz** (selbst gemacht) — beide im Glossar.
 
 ## Offene Blöcke
 

@@ -118,8 +118,11 @@ DEFAULT_STYLE = "suetterlin"
 
 # Bumped whenever the payload shape changes, so a page built for an older round
 # fails loudly instead of drawing nothing. v2 replaced the single `strokes`
-# array with `panels[]`, which is what makes the paired mode possible at all.
-PAYLOAD_FORMAT = 2
+# array with `panels[]`, which is what makes the paired mode possible at all;
+# v3 wrapped the item list in an ENVELOPE carrying the round, the question and
+# the round's own resume namespace, so a page no longer depends on the caller
+# repeating on the command line what the round already knows about itself.
+PAYLOAD_FORMAT = 3
 
 # Seeds are per round by default: two rounds drawing the same permutation would
 # silently correlate their fatigue and order effects. The resolved integer is
@@ -1394,13 +1397,59 @@ class Round:
     stamp: dict = field(default_factory=dict)
 
 
+# Stamp fields that move without changing WHICH round this is: the clock, and
+# the state of the tree the round was built from.
+VOLATILE_STAMP_FIELDS = ("built_at", "code_commit", "code_branch", "code_dirty")
+
+
+def round_store(stamp: dict, items: list[dict]) -> str:
+    """The browser-storage namespace of THIS round.
+
+    Two word rounds over one fixture set draw the same words in the same order
+    under the same display ids, so a key derived from the ids alone is SHARED —
+    and the second round then opens on the first one's answers, silently, with
+    its progress bar already part-full. That is the resume half of the defect
+    §3.6b was written for: what could not be settled afterwards about the LF11
+    round was not only what the page had drawn but WHICH page the judge had in
+    front of him.
+
+    Keyed on the round's own identity instead — mode, number, seed and the
+    inputs it drew, i.e. the stamp minus the clock and the commit — a rebuild of
+    the same round still resumes where the judge left off, and a different round
+    never can.
+
+    And keyed on WHAT IS DRAWN as well, not only on the round's inputs. The
+    commit is deliberately not part of the identity, so a renderer fix mid-round
+    would otherwise rebuild different screens under the same key and `restore()`
+    would replay the old verdicts BY INDEX onto them — the LF11 defect one layer
+    up, and worse, because it would look like an intact round. Byte-identical
+    rebuilds still resume; a page whose drawing moved starts clean.
+    """
+    identity = {key: value for key, value in stamp.items() if key not in VOLATILE_STAMP_FIELDS}
+    digest = hashlib.sha256(json.dumps(identity, sort_keys=True, default=str).encode())
+    digest.update(json.dumps(items, sort_keys=True, separators=(",", ":"), default=str).encode())
+    return f"humanbench-r{stamp.get('round')}-{digest.hexdigest()[:10]}"
+
+
 def write_round(out: Path, built: Round, *, force: bool) -> None:
     if out.exists() and any(out.iterdir()) and not force:
         raise SystemExit(f"{out} is not empty — a round is written once; pass --force to overwrite")
     out.mkdir(parents=True, exist_ok=True)
     # Compact payload, readable key: the payload is machine input for one HTML
     # page, the key and stamp are read by humans doing the evaluation.
-    (out / "payload.json").write_text(json.dumps(built.items, separators=(",", ":")), encoding="utf-8")
+    # The payload is an ENVELOPE, so the page knows which round it is drawing
+    # without being told twice on the command line: the round number heads its
+    # result file and is said on the page, the question picks the wording, and
+    # the store is this round's own resume namespace.
+    envelope = {
+        "round": built.stamp.get("round"),
+        "question": built.stamp.get("question"),
+        "store": round_store(built.stamp, built.items),
+        "items": built.items,
+    }
+    (out / "payload.json").write_text(
+        json.dumps({k: v for k, v in envelope.items() if v is not None}, separators=(",", ":")), encoding="utf-8"
+    )
     for name, rows in (
         ("key.json", built.key),
         ("vorkommen.json", slim_key(built.key)),  # the committable half — see `slim_key`
