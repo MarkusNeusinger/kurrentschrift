@@ -2570,9 +2570,16 @@ Konflikt schickte (Audit-Serie 2026-08-29/30); der Union-Merge-Treiber
 heilte nur den lokalen Rebase, GitHubs eigene Mergebarkeitsprüfung
 ignoriert ihn. Der CI-Job „Changelog (fragment)" verlangt je PR ein
 Fragment (Ausnahmen: reine `data/`-PRs, Label `skip-changelog`, PRs von
-Dependabot) und weist direkt in `[Unreleased]` geschriebene Bullets ab. *Technisch:*
+Dependabot) und weist direkt in `[Unreleased]` HINZUGEFÜGTE Bullets ab —
+hinzugefügt, nicht bloß verändert: ein Bullet wird über seinen fetten Titel
+identifiziert (seit 2026-09-04), also darf der Wortlaut eines dort schon
+stehenden Eintrags korrigiert werden, und nur ein NEUER Titel (oder eine
+weitere Kopie eines vorhandenen) ist ein hinzugefügtes Bullet. Ebenfalls
+abgewiesen: der unausgefüllte Platzhalter `(#NNN)` — die PR-Nummer bleibt
+optional, der Platzhalter nicht. *Technisch:*
 `tools/changelog/__init__.py` — `parse_entries` (ein Parser für Fragmente
-und `[Unreleased]`), `check_pr` (die PR-Regel), `plan_release`/`apply_release`
+und `[Unreleased]`), `bullet_title`/`_added_bullets` (die Titel-Identität),
+`check_placeholder`, `check_pr` (die PR-Regel), `plan_release`/`apply_release`
 (der Schnitt); CI-Job `changelog` in `.github/workflows/ci.yml`.
 → werkzeuge.md § Der Changelog-Schnitt · `changelog.d/README.md`
 
