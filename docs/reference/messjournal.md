@@ -7775,10 +7775,10 @@ x-Höhen):
 | o | 4 | 4 | 0,0031 | 0,0082 | |
 | z | 3 | 3 | 0,0021 | 0,0070 | |
 | Z | 3 | 3 | 0,0038 | 0,0221 | |
-| **p** | **3** | **2** | (0,0120) | (0,0511) | **unter den Boden gefallen — Zeile bleibt stehen** |
-| **S** | **2** | **0** | — | — | **keine brauchbaren Fits — Zeile bleibt stehen** |
-| **P** | **1** | **1** | (0,0022) | (0,0188) | **unter dem Boden geblieben — Zeile bleibt stehen** |
-| **s** | **1** | **1** | (0,0008) | (0,0045) | **unter dem Boden geblieben — Zeile bleibt stehen** |
+| **p** | **3** | **2** | (0,0120) | (0,0511) | **unter den Boden gefallen — nicht in der Karte** |
+| **S** | **2** | **0** | — | — | **keine brauchbaren Fits — nicht in der Karte** |
+| **P** | **1** | **1** | (0,0022) | (0,0188) | **unter dem Boden geblieben — nicht in der Karte** |
+| **s** | **1** | **1** | (0,0008) | (0,0045) | **unter dem Boden geblieben — nicht in der Karte** |
 
 Die Bewegung ist durchweg klein: über die 18 wirklich neu abgeleiteten
 Zeilen liegt der RMS im Median bei **0,0022 xh**, das Maximum bei
@@ -7787,6 +7787,20 @@ Re-Harvest verschiebt die Form also nicht, er erneuert die Evidenz
 darunter. Die eingeklammerten Zahlen der vier letzten Zeilen sind
 Diagnose: so weit WÜRDE sich die Zeile bewegen, wenn man sie ohne Boden
 neu ableitete.
+
+**Zwei Artefakte, nicht eines** (Copilot-Fund in PR #529, nachgezogen).
+Die Karte, die geschrieben würde, nennt **18 Zeilen** — die vier
+zurückgehaltenen stehen gar nicht darin. Das ist kein
+Darstellungsdetail: eine Karte, die eine n=1-Zeile mitführt, lädt dazu
+ein, „PUT je Glyph" darüber laufen zu lassen, und der Endpunkt weist
+sie mit 422 ab. Für das Patchen einer Fixture-Wurzel (Gates c und d)
+braucht es dagegen die VOLLE Zeilenliste, weil `templates_laufform.json`
+kein Overlay ist; die liefert `--keep-stored` als 22-Zeilen-Abzug, in
+dem die vier Zeilen wörtlich aus der Wurzel kopiert sind. **Beide messen
+identisch** — 0,108107 / 0,148231 auf beiden, byte-gleich, weil
+`wordbench.run --laufform` ein Overlay ist und jeden nicht genannten
+Schlüssel ohnehin auf seiner eingefrorenen Zeile lässt. Alle Zahlen
+dieses Eintrags gelten damit für beide Fassungen.
 
 **Der Beweis-Boden, gemessen (Gate e) — grün, und größer als der Audit
 gedacht hat.** Befund 35 nannte zwei Live-Zeilen unter dem Boden, `P`
@@ -7891,10 +7905,10 @@ innerhalb des Paars.
 **Vor dem Write geprüft.** Zweierlei, beides ohne einen Schreibvorgang:
 
 1. Die serverseitige Kanonisierung (`build_laufform_canonical`, die der
-   PUT erneut ausführt) ist auf allen 22 Zeilen der Karte ein
-   verifizierter **No-op** — größte Bewegung eines zweiten Durchlaufs
-   0,000000000 xh. Die Karte, die gemessen wurde, wäre also die Karte,
-   die geschrieben wird.
+   PUT erneut ausführt) ist auf allen Zeilen der Karte ein verifizierter
+   **No-op** — größte Bewegung eines zweiten Durchlaufs 0,000000000 xh.
+   Die Karte, die gemessen wurde, wäre also die Karte, die geschrieben
+   wird.
 2. Gegen die **lebende API** nachgezählt
    (`GET …/templates/{key}?variant=100`, nur lesend): alle 22 Live-Zeilen
    sind byte-identisch mit der eingefrorenen Wurzel — nichts in Prod ist
@@ -7916,10 +7930,11 @@ Buchstabensatz und ist damit ein eigener Arm mit eigener
 Vorregistrierung; hier steht sie als Inventar, nicht als Vorschlag.
 
 **Verdikt: die Karte besteht (a), (b), (c), (d) und (e) und wird NICHT
-geschrieben.** Sie liegt als 22 volle Fixture-Zeilen vor, von denen 18
-neu abgeleitet sind. Der Write hängt an `dbsnapshot` → Autor-Go → PUT je
-Glyph → GET-Verify → Neu-Export beider Wurzeln als deklarierte
-Re-Baseline; die Ledger-Zeile entsteht dort und nicht hier.
+geschrieben.** Sie liegt als 18 neu abgeleitete Fixture-Zeilen vor (plus
+den 22-Zeilen-Abzug für das Wurzel-Patchen). Der Write hängt an
+`dbsnapshot` → Autor-Go → PUT je Glyph → GET-Verify → Neu-Export beider
+Wurzeln als deklarierte Re-Baseline; die Ledger-Zeile entsteht dort und
+nicht hier.
 
 **Kein §7.9-Eintrag fällig** — die Rettungswege-Regel gilt dem ehrlichen
 Negativ, und dieser Arm ist keines.
@@ -7928,7 +7943,13 @@ Negativ, und dieser Arm ist keines.
 Kontroll-Karte `--knots 0` als dritter Arm (sie beantwortet „Schätzer
 oder Ernte?" und hätte sonst niemand gestellt); die Bestandsaufnahme der
 elf neuen Schlüssel; der No-op-Nachweis der Kanonisierung vor dem Write.
-Werkzeuge unverändert außer `tools/laufform/smoothrow.py` (`--floor`,
-in der Vorregistrierung angekündigt) und der Boden-Spalte in
-`tools/laufform/inventory.py` — die Umsetzung von Befund 35 (a), die
-diese Runde gebraucht hat, um ihre eigene vierte Zeile zu sehen.
+Werkzeuge unverändert außer `tools/laufform/smoothrow.py` (`--floor` +
+`--keep-stored`, der Boden in der Vorregistrierung angekündigt) und der
+Boden-Spalte in `tools/laufform/inventory.py` — die Umsetzung von Befund
+35 (a), die diese Runde gebraucht hat, um ihre eigene vierte Zeile zu
+sehen.
+
+**Genauigkeits-Nachtrag zum Boden.** Der Audit vom 2026-09-02 fand ZWEI
+Zeilen unter dem Boden (`P` und `s`); dass `S` die dritte ist, stellt
+erst diese Runde fest. Wo eine Quelle „drei" sagt, meint sie den Stand
+von heute, nicht den Befund 35.
