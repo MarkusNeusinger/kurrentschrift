@@ -95,7 +95,7 @@ file is commentary, never a rule of its own.
   never unlock or modify authored glyphs for testing.
 - **Every PR adds a changelog fragment** — `changelog.d/<slug>.md` in the
   CHANGELOG's own format (`### Category` over bold-titled English bullets
-  like the existing entries; `changelog.d/README.md`), NEVER a bullet in
+  like the existing entries; `changelog.d/README.md`), NEVER a new bullet in
   `CHANGELOG.md` itself: that shared spot is where every sibling merge
   used to conflict, and since 2026-08-30 the CI job „Changelog (fragment)"
   refuses both a PR without a fragment and a bullet ADDED to
@@ -691,8 +691,10 @@ impl-generate pipelines. Conventions:
   optional (`docs:`, `feat:`, `fix:`, `refactor:`).
 - **Changelog:** every PR adds a fragment `changelog.d/<slug>.md`
   (Keep-a-Changelog categories as `### Category` headings, English,
-  bold-titled bullets like the existing entries — `changelog.d/README.md`)
-  and never edits `CHANGELOG.md`; the CI job „Changelog (fragment)"
+  bold-titled bullets like the existing entries, no bare `(#NNN)` —
+  `changelog.d/README.md`) and adds nothing to `CHANGELOG.md`; correcting
+  the wording of a bullet already under `[Unreleased]` is allowed, since a
+  bullet is identified by its bold title. The CI job „Changelog (fragment)"
   enforces it. Data-only commits (chart sources, authored templates) are
   exempt — provenance lives in their `SOURCE.md`. The release cut is
   `uv run python -m tools.changelog release X.Y.Z --title "…"`. A GitHub
