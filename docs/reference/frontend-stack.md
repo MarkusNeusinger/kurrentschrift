@@ -716,6 +716,44 @@ Höhe der drei Abschnitte (Skelett), solange die Quellen laden — das ist eine
 Gestaltungsfrage (eine hohe leere Fläche statt einer kurzen Seite) und keine
 Schriftfrage.
 
+#### Das Skelett, gebaut und gegengemessen (2026-09-04)
+
+Genau diese Reservierung steht jetzt: `TafelSkeleton` zeichnet vom ersten Bild
+an den eigenen Seitenkopf und die drei Abschnitte in ihrer fertigen Höhe, statt
+eine Bildschirmhöhe „lade Vorlage …" zu zeigen. Reserviert wird, was sich sonst
+bewegt — die echten Schriftnamen und Feder-Zeilen (feste Texte, also von Anfang
+an richtig), ein Kasten in Größe des Status-Chips, die Tafel im eigenen
+Seitenverhältnis (`RESERVED_CHART_RATIO` in `useGrundtafeln.ts`, Spiegel von
+`sources.chart_size`) und die Herkunftskarte. Die Ratios sind **nur
+Reservierung**: `OriginalScan` nimmt sein `aspect-ratio` weiterhin aus der
+Antwort, eine ausgetauschte Tafel kostet also einen kleinen Shift, nie ein
+falsch geformtes Bild.
+
+Gegengemessen mit demselben Aufbau wie oben (echtes Chrome über CDP, Slow 4G +
+4× CPU, Cache aus, je drei Läufe). Beide Stände als lokaler `preview`-Build
+gegen `https://api.kurrentschrift.ink` — die Zone hat Bot Fight Mode, und der
+Basis-Build reproduziert die Produktionszahl auf zwei Stellen genau (0,0969 vs.
+0,0948–0,0979 mobil; 0,1125 vs. 0,112 Desktop), samt identischer Dokumenthöhe
+3132/4494 px:
+
+| Ansicht | vorher | nachher | Rest |
+|---|---|---|---|
+| Mobil 390×844 | 0,0969 · 0,0969 · 0,0969 | 0,0007 · 0,0007 · 0,0007 | Kopfzeilen-Fontswap |
+| Desktop 1280×800 | 0,1125 · 0,1125 · 0,1125 | 0,0004 · 0,0004 · 0,0004 | derselbe |
+
+Der Beitrag der Seite selbst ist damit 0: was übrig bleibt, ist der Schriftwechsel
+in der Navigation des gemeinsamen Seitenkopfs (0,00073 mobil / 0,00033 Desktop) —
+den hatte die alte Seite genauso, er gehört nicht `/tafel`.
+
+Genauigkeit der Reservierung, gemessen als Höhe des reservierten gegen den
+fertigen Abschnitt: Kurrent und Offenbacher 0–1 px, Sütterlin 39 px (mobil) bzw.
+57 px (Desktop). Diese Differenz ist die Original/Geschrieben-Umschaltung, die es
+nur auf der nachgeschriebenen Schrift gibt — welche das ist, weiß erst
+`/sources`, und sie liegt auf beiden Ansichten unter der Falzkante, wo eine
+Verschiebung nichts kostet. Der Schimmer läuft unter
+`prefers-reduced-motion: reduce` gar nicht (`animation={false}`, geprüft: keine
+`MuiSkeleton-wave`-Klasse, `animation: none`).
+
 ### Sicherheits-Header und Cache-Control (seit 2026-09-02)
 
 Bis zum Audit vom 2026-09-02 lieferte `kurrentschrift.ink` **keinen einzigen**

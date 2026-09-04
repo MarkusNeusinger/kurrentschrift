@@ -24,7 +24,26 @@ import { de } from '@/locales';
 import { styleLabel } from '@/locales/de/common';
 
 // Canonical teaching order (oldest → newest), matching the landing + Schriftkunde.
-const STYLE_ORDER = ['kurrent', 'suetterlin', 'offenbacher'] as const;
+export const STYLE_ORDER = ['kurrent', 'suetterlin', 'offenbacher'] as const;
+
+// Height reservation for the loading skeleton (TafelSkeleton), one CSS
+// `aspect-ratio` per script. The page's whole measured CLS is the moment the
+// three sections mount at once: until then the document is exactly one viewport
+// tall and the footer stands INSIDE it, then the sections arrive and push it out
+// (frontend-stack.md, „CLS auf /tafel"). Reserving the plates' boxes up front is
+// what removes that, and the box can only be reserved from the plate's aspect —
+// which arrives with `/sources`, i.e. with the very payload we are waiting for.
+//
+// So these mirror `sources.chart_size` of the plate each script resolves to
+// today (kurrent → loth-1866, suetterlin → suetterlin-1922, offenbacher →
+// koch-1928). They are a RESERVATION, never a render input: `OriginalScan`
+// always takes its `aspect-ratio` from the payload it was handed, so a replaced
+// plate costs one small shift here and can never show a wrongly-shaped picture.
+export const RESERVED_CHART_RATIO: Record<string, string> = {
+  kurrent: '1633 / 1869',
+  suetterlin: '1614 / 1300',
+  offenbacher: '2190 / 1029',
+};
 
 // One marked-letter slot on the Schreibtafel sheet, in the chart's own layout.
 // `key` is set only when the letter has a locked canonical (it renders); a

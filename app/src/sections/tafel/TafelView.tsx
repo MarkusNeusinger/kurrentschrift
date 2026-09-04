@@ -20,6 +20,7 @@ import { CategoryHeading } from '@/components/CategoryHeading';
 import { PageContainer } from '@/components/PageContainer';
 import { PageHeader } from '@/components/PageHeader';
 import { LetterDetail } from '@/sections/tafel/LetterDetail';
+import { TafelSkeleton } from '@/sections/tafel/TafelSkeleton';
 import { WrittenSheet } from '@/sections/tafel/WrittenSheet';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { chartUrl } from '@/lib/api';
@@ -425,8 +426,11 @@ export function TafelView() {
     return stop;
   }, [tafeln, hash]);
 
-  // Boot/error states render inside PublicLayout so the header nav and footer
-  // stay usable during a cold start instead of vanishing with the page.
+  // The error state renders inside PublicLayout so the header nav and footer stay
+  // usable instead of vanishing with the page. The LOADING state does not use
+  // BootStatus at all any more: a short spinner page left the footer standing
+  // inside the viewport, and the whole route's CLS was that footer being pushed
+  // out when the sections mounted. TafelSkeleton reserves their height instead.
   if (loadError) {
     return (
       <PublicLayout footer>
@@ -436,17 +440,6 @@ export function TafelView() {
           message={loadError}
           onRetry={() => window.location.reload()}
           retryLabel={de.common.boot.retry}
-        />
-      </PublicLayout>
-    );
-  }
-
-  if (!tafeln) {
-    return (
-      <PublicLayout footer>
-        <BootStatus
-          variant="loading"
-          message={waking ? de.common.boot.sourceColdStart : de.common.boot.loadingTemplate}
         />
       </PublicLayout>
     );
@@ -462,17 +455,29 @@ export function TafelView() {
         {/* The printable Lesetafel — built in the browser from the same data
             the page shows (useLesetafelPdf); the hint says what the file holds. */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, mt: -1.5, mb: { xs: 4, sm: 5 } }}>
-          <Button variant="outlined" size="small" onClick={pdf.build} disabled={pdf.state === 'building'} sx={[hitArea(), { flexShrink: 0 }]}>
+          {/* Disabled until the sources are in — the sheet is built from them.
+              A disabled button is the same box, so the row never moves. */}
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={pdf.build}
+            disabled={!tafeln || pdf.state === 'building'}
+            sx={[hitArea(), { flexShrink: 0 }]}
+          >
             {pdf.state === 'building' ? de.tafel.pdf.building : de.tafel.pdf.button}
           </Button>
           <Typography variant="body2" sx={{ color: pdf.state === 'error' ? 'error.main' : paper.inkSoft, maxWidth: '60ch' }}>
             {pdf.state === 'error' ? de.tafel.pdf.error : de.tafel.pdf.hint}
           </Typography>
         </Box>
-        <Stack spacing={{ xs: 5, sm: 7 }}>
-          {tafeln.map((t) => (
-            <GrundtafelSection key={t.styleId} tafel={t} selectedKey={selectedKey} onSelect={selectLetter} />
-          ))}
+        <Stack spacing={{ xs: 5, sm: 7 }} aria-busy={!tafeln}>
+          {tafeln ? (
+            tafeln.map((t) => (
+              <GrundtafelSection key={t.styleId} tafel={t} selectedKey={selectedKey} onSelect={selectLetter} />
+            ))
+          ) : (
+            <TafelSkeleton waking={waking} />
+          )}
         </Stack>
       </PageContainer>
     </PublicLayout>
