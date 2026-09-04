@@ -463,10 +463,16 @@ verfehlt das K, weil der Anker-Median-Jitter der vertrauten Zeilen den
 Glätte-Term stärker trifft als große Wellen); sie bleibt Berichts-Spalte
 der Bestandsaufnahme (`tools/laufform/inventory.py`). τ ist
 datengetrieben: Maximum der vertrauten Zeilen (n ≥ 3) auf der Root,
-aufgerundet — nie von Hand gesetzt. *Technisch:* `core/laufform.py`
+aufgerundet — nie von Hand gesetzt. Der Boden galt bis `sep04` nur im
+Moment des Schreibens: eine Karte durfte eine zu dünne Zeile bis vor den
+PUT tragen, und eine Zeile, die einmal drin war, prüfte niemand nach.
+Seit LF12 zieht ihn `tools/laufform/smoothrow.py --floor` schon beim
+Bauen der Karte, und die Bestandsaufnahme flaggt ihn („unter dem Boden")
+— gefunden hat die Lücke der Audit vom 2026-09-02 (Befund 35).
+*Technisch:* `core/laufform.py`
 (`anchor_spike_ratio`, `spike_gate`, `row_naturalness`), Skip-Grund
 `anchor_spike` mit `spike_ratio`/`spike_max` → messjournal.md §14
-(„Laufform LF7"/„LF8")
+(„Laufform LF7"/„LF8"/„LF12")
 
 **Schreib-Karte** — die Laufform-Kandidaten-Karte in GENAU der
 Gestalt, die ein DB-Write erzeugen würde: die zu schreibenden Zeilen
