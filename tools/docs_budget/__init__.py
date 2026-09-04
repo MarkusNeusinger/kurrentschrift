@@ -21,6 +21,16 @@ Three rules, all read off the committed files:
    most `STAND_BLOCK_MAX_AGE_DAYS` old. A doc that says „this is the current
    state" and has not been looked at in a month is the failure this catches —
    the reader trusts the summary instead of the file.
+
+   This is the one rule that fires on the CALENDAR rather than on a change, and
+   that is deliberate: what goes stale is the doc's claim about the CODE, and
+   the code moves without the doc being touched. The price is that a month
+   after the last pass the gate asks for a re-read, on whatever PR happens to
+   be open. The alternative — comparing the block's date against the file's own
+   last commit — was considered and dropped: it fires on every typo fix and
+   stays silent exactly when the code moved and the doc did not, which is the
+   case worth catching. If the cadence turns out wrong, the honest fix is this
+   constant with a reason, never a bumped date without a re-read.
 3. **The map has one row per file.** `docs/index.md` promises exactly one row
    per `.md` under `docs/`; a row that disappears makes a doc invisible, a row
    that stays behind sends a reader at a file that is gone. Both are cheap to
