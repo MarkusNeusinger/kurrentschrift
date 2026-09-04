@@ -529,7 +529,10 @@ class FollowWeights:
     swings from −0.0298 to +0.0800. A start-point arm is therefore not
     decidable against the chain arms' ±0.003 gate until that noise floor is
     measured (§14 „Kette K-F `sep04`"); the switch stays for the arms named
-    there."""
+    there. Like every other field here it rides into each artefact's
+    `weights` block through `asdict`, so files written from now on carry
+    `connector_init` even on a default run — the JSON gains a key, the
+    geometry does not move (Gate 1: stroke-identical 63/63)."""
     provisional: bool = True
 
 

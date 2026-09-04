@@ -2334,8 +2334,13 @@ def fit_word_chain(
             # the key's absence keeps every default artefact byte-identical.
             **({"mark_claims": mark_claims or []} if mark_claim else {}),
             # …and the same rule for the connector init: the key appears only
-            # on a non-default arm, so a default artefact stays byte-identical
-            # to every one measured before A34 existed.
+            # on a non-default arm, so this dict keeps the shape it had before
+            # A34. That is a statement about `fit_meta` alone. A FOLLOWER
+            # artefact does gain one key on every run, default included,
+            # because `follow.py` serialises the whole `FollowWeights` with
+            # `asdict` — as it did for `mark_claim` and `soll_source` before.
+            # What stays identical is the GEOMETRY, and that is the claim the
+            # arm's Gate 1 actually tests: stroke-identical 63/63.
             **({"connector_init": connector_init} if connector_init != CONNECTOR_INIT_MIRROR else {}),
             # How many crossing landmarks got an ink target and how many were
             # refused, per reason — a term with nothing assigned is inert for a
