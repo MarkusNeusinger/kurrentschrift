@@ -98,10 +98,12 @@ file is commentary, never a rule of its own.
   like the existing entries; `changelog.d/README.md`), NEVER a bullet in
   `CHANGELOG.md` itself: that shared spot is where every sibling merge
   used to conflict, and since 2026-08-30 the CI job „Changelog (fragment)"
-  refuses both a PR without a fragment and a bullet written into
-  `[Unreleased]` directly —
+  refuses both a PR without a fragment and a bullet ADDED to
+  `[Unreleased]` directly (a bullet is identified by its bold title, so
+  correcting the wording of one already there passes) —
   `uv run python -m tools.changelog check --base origin/main` is the same
-  gate locally. Data-only commits (chart sources, authored templates) are
+  gate locally. A fragment leaves the PR reference out or fills the number
+  in; a bare `(#NNN)` placeholder is refused. Data-only commits (chart sources, authored templates) are
   exempt; their provenance lives in `SOURCE.md`; a PR with truly nothing
   to tell gets the `skip-changelog` label, and Dependabot's PRs skip the
   job by author. The release is one command,

@@ -23,14 +23,18 @@ A fragment is a slice of the changelog in the changelog's own format:
 - **What was wrong, as a title.** What it did, what it does now.
 ```
 
-**The `(#NNN)` reference is optional.** Nothing checks it, and the number
-does not exist until the PR does — so chasing it meant a second commit
+**The `(#NNN)` reference is optional; the unfilled placeholder is not.** The
+number does not exist until the PR does — so chasing it meant a second commit
 carrying one token, which is how three `sed -i` edits slipped past the
 Edit/Write rule in a single day (2026-09-02). Write the fragment without
 one. The link is not lost either way: `git log --diff-filter=A -- <fragment>`
 names the squash commit, whose subject ends in the PR number. Where a
 number IS present — every fragment written before 2026-09-03 has one — it
-stays; this is forward-only, not a sweep.
+stays; this is forward-only, not a sweep. What `check` refuses is the letter
+N left standing where a number was meant to go: `(#NNN)` shipped as written
+reads as a reference in the released section and points nowhere. So: a
+number, or nothing. (Quoted in backticks it is prose ABOUT the placeholder —
+this paragraph included — and passes.)
 
 Rules, all enforced by `uv run python -m tools.changelog check`:
 
@@ -40,15 +44,22 @@ Rules, all enforced by `uv run python -m tools.changelog check`:
 - A bullet opens with its bold title and wraps with two-space indentation,
   exactly like the entries already in `CHANGELOG.md`; English
   (sprachregelung.md §1 — GitHub-facing text), written like the existing
-  entries: what, where, why.
+  entries: what, where, why. The closing `**` may sit on the continuation
+  line — a long title is allowed to wrap — but it has to be there.
+- No bare `(#NNN)`: fill the number in or leave the reference out.
 - Nothing else in the file — no prose above the first heading, no `##`.
 
 The CI job „Changelog (fragment)" requires a fragment in every PR — except
 data-only PRs (everything under `data/`, covered by `SOURCE.md`), PRs
 labelled `skip-changelog` and Dependabot's own PRs (a bot writes neither a
 fragment nor a label, and its routine bumps are what the release notes leave
-out anyway) — and refuses bullets written into `[Unreleased]`
-directly. `uv run python -m tools.changelog check --base origin/main` is the
+out anyway) — and refuses bullets ADDED to `[Unreleased]` directly.
+
+Added, not merely different: a bullet is identified by its bold title, so
+correcting the wording of an entry `[Unreleased]` already carries — a typo in
+a shipped line, a sharper clause — passes, and only a title the base does not
+have counts as a new entry that belongs in a fragment.
+`uv run python -m tools.changelog check --base origin/main` is the
 same check locally; `uv run python -m tools.changelog preview` prints the
 pending section.
 

@@ -21,9 +21,11 @@ CI gate runs it without the project's extras.
 
 Three verbs (`python -m tools.changelog …`, see `__main__`):
 
-* `check [--base REF]` — every fragment parses; with `--base`, the diff against
-  REF must carry a fragment (or be a release cut, or data-only) and must not
-  add bullets to `[Unreleased]` directly.
+* `check [--base REF]` — every fragment parses and carries no unfilled `(#NNN)`
+  placeholder; with `--base`, the diff against REF must carry a fragment (or be
+  a release cut, or data-only) and must not ADD bullets to `[Unreleased]`
+  directly (correcting one that is already there is fine — a bullet is
+  identified by its bold title, not by its full text).
 * `preview` — the merged `[Unreleased]` as the next cut would write it.
 * `release VERSION --title …` — the cut itself.
 """
@@ -53,6 +55,13 @@ SKIP_LABEL = "skip-changelog"
 
 _VERSION_HEADING = re.compile(r"^## \[(\d+\.\d+\.\d+)\]")
 _CATEGORY_LINE = re.compile(r"^### (\S+)\s*$")
+# The bold title, over the WHOLE bullet: it regularly runs onto the continuation
+# line before its closing `**`, so DOTALL and the non-greedy body are both load-bearing.
+_BOLD_TITLE = re.compile(r"- \*\*.+?\*\*", re.DOTALL)
+# The unfilled reference placeholder, in any width of N. Quoted in backticks it
+# is a fragment TALKING about the placeholder (this rule's own entry does), which
+# is prose like any other — only a bare one is a reference nobody filled in.
+_PLACEHOLDER = re.compile(r"(?<!`)\(#N+\)(?!`)")
 _SEMVER = re.compile(r"\d+\.\d+\.\d+")
 _DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 
@@ -87,11 +96,27 @@ def parse_entries(text: str, *, where: str) -> Entries:
     entries: Entries = {}
     current: list[str] | None = None
     bullet: list[str] | None = None
+    opened_at = 0
 
     def close() -> None:
+        """Finish the bullet in hand, checking the one thing only the WHOLE
+        bullet can answer: that its bold title is closed.
+
+        Not checkable on the opening line — a title regularly runs onto the
+        continuation line before its `**`, as the entries in CHANGELOG.md do.
+        Left unchecked, `- **unterminated title` parses as well-formed, the
+        release publishes it unchanged, and the bullet has no identity for the
+        gate below to recognise it by.
+        """
         nonlocal bullet
         if bullet is not None and current is not None:
-            current.append("\n".join(bullet).rstrip())
+            text = "\n".join(bullet).rstrip()
+            if not _BOLD_TITLE.match(text):
+                raise ChangelogError(
+                    f"{where}:{opened_at}: the bullet's bold title is never closed — "
+                    "it opens with '- **' and needs the matching '**'"
+                )
+            current.append(text)
         bullet = None
 
     for n, line in enumerate(text.splitlines(), 1):
@@ -110,6 +135,7 @@ def parse_entries(text: str, *, where: str) -> Entries:
             if not line.startswith("- **"):
                 raise ChangelogError(f"{where}:{n}: a bullet opens with its bold title: '- **Title.** …'")
             bullet = [line]
+            opened_at = n
         elif not line.strip():
             if bullet is not None:
                 bullet.append("")
@@ -122,6 +148,18 @@ def parse_entries(text: str, *, where: str) -> Entries:
             )
     close()
     return entries
+
+
+def bullet_title(bullet: str) -> str:
+    """The bold title, whitespace-collapsed — a bullet's identity across edits.
+
+    Two bullets are the same entry when they open with the same title, whatever
+    the body behind it now says. That is what lets the gate below tell a
+    CORRECTED bullet from an ADDED one, and the collapse is what makes it hold
+    when the correction rewraps the lines the title itself runs over.
+    """
+    match = _BOLD_TITLE.match(bullet)
+    return " ".join((match.group(0) if match else bullet).split())
 
 
 @dataclass(frozen=True)
@@ -186,6 +224,23 @@ def _added_at(root: Path, path: Path) -> float:
     return float(stamp) if stamp else float("inf")
 
 
+def check_placeholder(text: str, *, where: str) -> None:
+    """Refuse `(#NNN)` left standing where a number was meant to go.
+
+    The reference itself is optional — the number does not exist until the PR
+    does, and going back for it is the retired step (`changelog.d/README.md`).
+    What is never right is the placeholder shipped as written: it reads as a
+    reference in the released section and points nowhere. So: a number, or
+    nothing, but not the letter N.
+    """
+    for n, line in enumerate(text.splitlines(), 1):
+        if match := _PLACEHOLDER.search(line):
+            raise ChangelogError(
+                f"{where}:{n}: '{match.group(0)}' is the unfilled placeholder — put the PR number in, "
+                "or take the reference out (it is optional)"
+            )
+
+
 def load_fragments(root: Path = REPO_ROOT) -> list[Fragment]:
     """Every `changelog.d/*.md` but the README, newest first.
 
@@ -200,9 +255,11 @@ def load_fragments(root: Path = REPO_ROOT) -> list[Fragment]:
         if path.name == "README.md":
             continue
         where = str(path.relative_to(root))
-        entries = parse_entries(path.read_text(encoding="utf-8"), where=where)
+        text = path.read_text(encoding="utf-8")
+        entries = parse_entries(text, where=where)
         if not any(entries.values()):
             raise ChangelogError(f"{where}: no bullets")
+        check_placeholder(text, where=where)
         fragments.append(Fragment(path, entries))
     return sorted(fragments, key=lambda f: (-_added_at(root, f.path), f.path.name))
 
@@ -310,8 +367,13 @@ def _changed_files(root: Path, base: str) -> dict[str, str]:
     return changed
 
 
-def _bullets(section: str) -> set[str]:
-    return {b for bullets in parse_entries(section, where=f"{CHANGELOG_NAME} [Unreleased]").values() for b in bullets}
+def _bullets(section: str) -> dict[str, str]:
+    """`title → bullet` for the section, keyed by the identity `bullet_title` gives it."""
+    return {
+        bullet_title(b): b
+        for bullets in parse_entries(section, where=f"{CHANGELOG_NAME} [Unreleased]").values()
+        for b in bullets
+    }
 
 
 def check_pr(base: str, *, root: Path = REPO_ROOT) -> list[str]:
@@ -321,8 +383,15 @@ def check_pr(base: str, *, root: Path = REPO_ROOT) -> list[str]:
     one corrected), when it is the release cut (a version heading the base
     lacks — the cut moves bullets OUT and needs no fragment of its own), or
     when everything it touches is exempt (data-only). Fails when it carries no
-    fragment, and — independently — when it writes bullets into `[Unreleased]`
-    directly: that is the shared spot the fragments exist to retire.
+    fragment, and — independently — when it ADDS a bullet to `[Unreleased]`:
+    that is the shared spot the fragments exist to retire.
+
+    Added, not merely different. A bullet is identified by its bold title
+    (`bullet_title`), so re-wording the body of an entry the base already
+    carries — a typo in a shipped line, a sharper clause — is a change and
+    passes; only a title the base does not have is a new entry and is refused
+    into a fragment. Set-of-bullets identity could not tell the two apart and
+    refused both.
     """
     changed = _changed_files(root, base)
     problems: list[str] = []
@@ -332,9 +401,9 @@ def check_pr(base: str, *, root: Path = REPO_ROOT) -> list[str]:
         before = split_changelog(_git(root, "show", f"{merge_base}:{CHANGELOG_NAME}", required=True))
         after = split_changelog((root / CHANGELOG_NAME).read_text(encoding="utf-8"))
         release_cut = after.newest_version != before.newest_version
-        gained = _bullets(after.unreleased) - _bullets(before.unreleased)
-        for bullet in sorted(gained):
-            title = bullet.split("\n", 1)[0][:72]
+        gained = _bullets(after.unreleased)
+        for key in sorted(gained.keys() - _bullets(before.unreleased).keys()):
+            title = gained[key].split("\n", 1)[0][:72]
             problems.append(f"{CHANGELOG_NAME} [Unreleased] gained a bullet — it belongs in a fragment: {title}…")
     touches_fragments = any(p.startswith(f"{FRAGMENT_DIR_NAME}/") for p in changed)
     exempt = bool(changed) and all(p.startswith(EXEMPT_PREFIXES) for p in changed)
