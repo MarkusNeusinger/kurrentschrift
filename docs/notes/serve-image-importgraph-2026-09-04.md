@@ -62,9 +62,11 @@ morphology), `core.fit` (scipy.interpolate/ndimage/optimize/spatial, shapely) un
 `core.quality` (skimage.draw) den ganzen Rest nach.
 
 Ein AST-Lauf über `api/` und `core/` zählt **38 Importe schwerer Pakete auf
-Modulebene** (alle in `core/`) und **4 funktionslokale** — `_png_size` in
-`api/routers/eigenhand.py` und drei in `core/eigenhand/crop.py`. In `api/` selbst
-steht kein einziger direkter Import eines schweren Pakets; die API erbt sie alle.
+Modulebene** — alle in `core/` — gegen **5 funktionslokale**:
+`core/aggregate.py::spline_basis_median` (`scipy.interpolate`), zweimal
+`core/eigenhand/crop.py::without_rulings` (numpy, PIL), einmal `::cut_png` (PIL)
+und `api/routers/eigenhand.py::_png_size` (PIL). In `api/` steht sonst kein
+einziger direkter Import eines schweren Pakets; die API erbt sie alle.
 
 Wichtig für jeden Umbau: eine Verlagerung in `core/pipeline.py` **allein bringt
 nichts**, weil weitere Router dieselben Module auf Modulebene ziehen —

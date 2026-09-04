@@ -4,8 +4,10 @@
   The 2026-09-02 audit proposed splitting `core/pipeline.py` so `/write` would
   stop dragging scipy, scikit-image and the rest into every start, and put the
   saving at „another ~0.5–0.8 s". The observation holds — nothing is deferred,
-  and `import api.main` loads 1540 modules, 637 of them from numpy, scipy,
-  scikit-image, shapely and Pillow — but the estimate does not: the render path
+  `import api.main` loads 1540 modules, 637 of them from numpy, scipy,
+  scikit-image, shapely and Pillow, and 38 module-level imports of those
+  packages stand against 5 function-local ones — but the estimate does not: the
+  render path
   needs `scipy.interpolate` and `shapely` itself (`core/template.py` splines the
   anchors and unions the silhouette), and importing `scipy.interpolate` already
   brings 355 of scipy's 375 modules. Min-of-15 runs with a warm bytecode cache
