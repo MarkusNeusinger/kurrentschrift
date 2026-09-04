@@ -37,7 +37,11 @@ deliberately duplicates none of it:
 - **Where a module sits and what it does** — `docs/concepts/architektur.md`
   (§1 indexes all sections) and the pipeline walk-through in
   `docs/concepts/vom-scan-zum-schreiben.md`.
-- **A single term** — `docs/reference/glossar.md`.
+- **A single term** — `docs/reference/kurzglossar.md` (the 77 that occur in
+  code and PRs), `docs/reference/glossar.md` for the full entry with its
+  module anchor.
+- **Which sections a given kind of work needs** — the reading-path table in
+  `CLAUDE.md` § „Read these before substantive work“.
 - **The public-UI build spec** — `docs/concepts/design-system.md` (binding).
 - **Data and licensing** — `docs/reference/quellen-und-rechte.md` +
   `docs/reference/datenablage.md`.
