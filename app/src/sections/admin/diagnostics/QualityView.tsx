@@ -100,9 +100,20 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
   const [shownFor, setShownFor] = useState(loadKey);
   if (shownFor !== loadKey) {
     setShownFor(loadKey);
-    setApplied(false);
     setLoading(true);
     setError(null);
+  }
+
+  // The success note is adjusted on the SELECTION, not on the load key: apply()
+  // bumps cropCacheBust itself, so a reset on `loadKey` cleared `applied` in the
+  // very render pass that apply's own refetch triggered — the confirmation of a
+  // write to the shared production DB was never on screen for a single frame.
+  // Only a different glyph (or source) makes the note stale.
+  const selectionKey = `${sourceId} ${glyphKey}`;
+  const [appliedFor, setAppliedFor] = useState(selectionKey);
+  if (appliedFor !== selectionKey) {
+    setAppliedFor(selectionKey);
+    setApplied(false);
   }
 
   useEffect(() => {
@@ -119,6 +130,10 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
   const apply = useCallback(() => {
     setApplying(true);
     setError(null);
+    // A second attempt starts without the first one's note: since it now
+    // survives the refetch, a failing re-run would otherwise report success and
+    // failure side by side.
+    setApplied(false);
     // force: the diagnostics' re-derive is the one deliberate write that may
     // touch a locked glyph — exactly what the server-side lock flag is for.
     postResample(sourceId, glyphKey, { force: true })
