@@ -7708,12 +7708,15 @@ Apex-Arms werden von den −0,001441 des Säulenabgangs aufgehoben; die Summe
 kostet den Paar-Satz fast nichts, aber KEINER der beiden Mechanismen ist für
 sich harmlos. Genau dafür stand die Leiter in der Vorregistrierung.
 
-² **Statisches Argument, kein Neulauf**, offen so benannt: weder
-`core.pipeline` noch `core.quality`, `core.quality_suetterlin`,
-`core.suetterlin` oder `tools/glyphbench` importieren `core.compose`, direkt
-oder transitiv — der Diff kann den Glyph-Bench nicht erreichen. Ein Neulauf
-wäre hier zusätzlich irreführend, weil seine Fixtures gitignoriert sind
-(Wurzeln re-baselined `sep03`).
+² **Statisches Argument, kein Neulauf**, offen so benannt — aber gelaufen,
+nicht behauptet: der transitive Importgraph von `tools.glyphbench.run` innerhalb
+des Repos umfasst **13 Module**, darunter `core.pipeline`, `core.quality`,
+`core.quality_suetterlin`, `core.suetterlin`, `core.geometry`, `core.template`,
+`core.widths`, `core.fit`, `core.extract`, `core.chart`, `core.config` — und
+`core.compose` ist auf keinem Pfad. Der Diff kann den Glyph-Bench nicht
+erreichen. Ein Neulauf wäre hier zusätzlich irreführend, weil seine Fixtures
+gitignoriert sind (Wurzeln re-baselined `sep03`) — er würde die Wurzel prüfen,
+nicht die Regel.
 
 Zu (g) im Detail: die Abgangshöhe der gebundenen d-Joins fällt von 1,139 auf
 **0,945** (Wörter, 10/10 im gemessenen Platten-Band 0,824–1,118) und von 1,169
