@@ -528,12 +528,12 @@ The design is already settled in the docs; do not re-litigate decisions that hav
 
 | Track | Read | ≈ tokens |
 |---|---|---|
-| Mess-Runde (`/verify-trace`) | `messjournal.md` head — Stand block + register + headline ledger, **not** the entries — · `qualitaetsmetrik.md` Stand block + §2 (frozen references) · `tintenfolger.md` Stand block + §7.11 (open arms) · `verfahren.md` | ≈ 15k, plus the route's own `verfahren-*.md` (1–6k) and the one entry you cite (2–3.5k each) |
+| Mess-Runde (`/verify-trace`) | `messjournal.md` head — Stand block + register + headline ledger, **not** the entries — · `qualitaetsmetrik.md` Stand block + §2 (frozen references) · `tintenfolger.md` Stand block + §7.11 (open arms) · `verfahren.md` | ≈ 15k, plus the route's own `verfahren-*.md` (≤ 5.6k) and the one entry you cite (≤ 4.1k) — worst case ≈ 25k |
 | Glyph-Optimierung | `qualitaetsmetrik.md` Stand block + §1 (score) + §2 (frozen references) + §3 (baseline history) + §5 (Sütterlin metric) | ≈ 8k |
 | Komposition / Rendering (`core/`) | `architektur.md` Stand block + §3 (schema) + §4 (ligature exception) + §5 (Schwellzug vs ink) + §6 (quality pipeline) · `write-api.md` | ≈ 8.5k |
 | Frontend (`app/`) | `design-system.md` (binding, whole) · `frontend-stack.md` Stand block + §2 (routes); + §5 (auth) when the diff touches a gate | ≈ 13k (+2k) |
 | Werkbank / Auftragskorb | `optimierungs-werkbank.md` §3 (Stufen-Doktrin) + §5 (triage duty, `resolution`) · `frontend-stack.md` §2 for the admin routes | ≈ 4.5k |
-| Werkzeug bauen oder ändern | `werkzeuge.md` Stand block + the one section of that tool | ≈ 2k |
+| Werkzeug bauen oder ändern | `werkzeuge.md` Stand block + the one section of that tool (≤ 3.7k) | ≈ 1–4.5k |
 | Doku- und Repo-Pflege | `docs/index.md` (the map) · `docs/dokument-status.md` (lifecycle + Nachzieh-Pflichten) | ≈ 6k |
 
 **Read situatively** (only when working on the respective section):

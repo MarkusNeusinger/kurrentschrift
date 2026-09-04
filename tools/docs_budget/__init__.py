@@ -14,7 +14,10 @@ Three rules, all read off the committed files:
 1. **The mandatory list stays inside its budget**, and so does every reading
    path named in `CLAUDE.md`. The list is not duplicated here — it is PARSED
    out of `CLAUDE.md`, so adding a doc to it raises the measured sum and this
-   gate is what notices.
+   gate is what notices. Three paths end in „and the one you need" — a route
+   page, a journal entry, a tool's section — and those halves are budgeted at
+   their WORST case (`WIDEST`), because an unbudgeted half is an unbounded
+   path however small the fixed half stays.
 2. **A large `lebend` doc carries a fresh Stand block.** Over
    `STAND_BLOCK_MIN_TOKENS` a status blockquote is not enough: the head has to
    be a Stand block (at least `STAND_BLOCK_MIN_LINES` lines) and its date at
@@ -162,16 +165,67 @@ PATHS: dict[str, tuple[Piece, ...]] = {
     "doku": (_piece("docs/index.md"), _piece("docs/dokument-status.md")),
 }
 
+
+# Three of the reading paths end in „and the one you need": the route's own
+# `verfahren-*.md`, the journal entry a round cites, the section of the tool
+# being changed. Which one is not knowable here — but the WORST one is, and a
+# path whose variable half is unbudgeted is not a bounded path. Each of these
+# is measured as the largest candidate and budgeted like everything else, so
+# the gate's „every reading path inside its budget" is true of the whole read.
+def widest_route(root: Path) -> int:
+    """The largest duel-route page — the variable half of the Mess-Runde path."""
+    pages = sorted((root / DOCS / "reference").glob("verfahren-*.md"))
+    if not pages:
+        raise BudgetError("no docs/reference/verfahren-*.md pages — the duel routes moved?")
+    return max(proxy_tokens(page.read_text(encoding="utf-8")) for page in pages)
+
+
+def widest_journal_entry(root: Path) -> int:
+    """The largest `###` entry of the journal — the entry a round jumps to.
+
+    The two index headings are excluded: the register and the headline ledger
+    are already counted whole, in the `register` piece of the same path.
+    """
+    lines = _read(root, Path("docs/reference/messjournal.md")).split("\n")
+    starts = [i for i, line in enumerate(lines) if line.startswith("### ")]
+    if not starts:
+        raise BudgetError("docs/reference/messjournal.md carries no `###` entries")
+    sizes = [
+        proxy_tokens("\n".join(lines[a:b]))
+        for a, b in zip(starts, starts[1:] + [len(lines)], strict=True)
+        if not lines[a].startswith(("### Register", "### Headline"))
+    ]
+    return max(sizes)
+
+
+def widest_tool_section(root: Path) -> int:
+    """The largest section of `werkzeuge.md` — the one tool a change is about."""
+    lines = _read(root, Path("docs/reference/werkzeuge.md")).split("\n")
+    starts = [i for i, line in enumerate(lines) if line.startswith("## ")]
+    if not starts:
+        raise BudgetError("docs/reference/werkzeuge.md carries no `## ` sections")
+    return max(proxy_tokens("\n".join(lines[a:b])) for a, b in zip(starts, starts[1:] + [len(lines)], strict=True))
+
+
+WIDEST = {
+    "mess-runde-route": widest_route,
+    "mess-runde-eintrag": widest_journal_entry,
+    "werkzeug-abschnitt": widest_tool_section,
+}
+
 # Measured 2026-09-04 plus 10 %. A budget is not a target: the headroom is
 # there so that a paragraph does not fail a PR, and a rewrite does.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
     "mess-runde": 16_530,
+    "mess-runde-route": 6_177,
+    "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,
     "komposition": 9_680,
     "frontend": 14_437,
     "werkbank": 5_166,
     "werkzeug": 713,
+    "werkzeug-abschnitt": 4_073,
     "doku": 7_937,
 }
 
@@ -287,6 +341,8 @@ def measure(root: Path = REPO_ROOT) -> dict[str, int]:
     out = {"mandatory": sum(proxy_tokens(_read(root, doc)) for doc in mandatory_docs(root))}
     for name, pieces in PATHS.items():
         out[name] = cost(root, pieces)
+    for name, widest in WIDEST.items():
+        out[name] = widest(root)
     return out
 
 

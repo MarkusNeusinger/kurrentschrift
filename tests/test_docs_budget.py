@@ -89,6 +89,7 @@ def test_a_doc_named_only_in_a_bullets_description_is_not_on_the_list(repo: Path
 
 def test_a_blown_budget_fails(repo: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(db, "PATHS", {})
+    monkeypatch.setattr(db, "WIDEST", {})
     monkeypatch.setattr(db, "BUDGETS", {"mandatory": 10})
     problems = db.check_budgets(repo)
     assert any("over its budget" in p for p in problems)
@@ -98,8 +99,24 @@ def test_a_budget_without_a_path_is_reported(repo: Path, monkeypatch: pytest.Mon
     # A renamed path would otherwise stop being measured in silence — the budget
     # would stay green while nothing behind it is counted.
     monkeypatch.setattr(db, "PATHS", {})
+    monkeypatch.setattr(db, "WIDEST", {})
     monkeypatch.setattr(db, "BUDGETS", {"mandatory": 10_000, "weg": 1})
     assert any("measures nothing" in p for p in db.check_budgets(repo))
+
+
+def test_the_variable_half_of_a_path_is_budgeted_too() -> None:
+    """„Plus the one you need" must be bounded, or the path is not.
+
+    Three reading paths end in a pick — the route's page, the entry a round
+    cites, the section of the tool being changed. Measuring only the fixed half
+    would let the variable half grow without ever tripping the gate, while the
+    success line claims every path is inside its budget.
+    """
+    measured = db.measure()
+    for name in db.WIDEST:
+        assert name in measured, f"{name} is declared but never measured"
+        assert name in db.BUDGETS, f"{name} is measured but has no budget"
+        assert measured[name] > 0
 
 
 def test_the_proxy_is_deterministic_and_scales_with_length() -> None:
