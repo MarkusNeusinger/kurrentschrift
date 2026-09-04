@@ -51,8 +51,14 @@ Verfahrensseite; geändert wird sie nie hier.
 >
 > **Duell, dev-19, Lineal-Kappe 1,5.** Kette **v5** (`aug26`) dtw
 > **0,0446** med · p90 0,0861 · aiou 0,7608 · 63er-Soll-Abstand 79 ·
-> Netto-Kreuzungsdefekte 19. Lotse **v0.17** (`aug20`, Zahlen `aug26`)
-> dtw **0,0545** · p90 0,1164 · Netto-Kreuzungsdefekte 6 · aiou 0,740.
+> Netto-Kreuzungsdefekte 19. Lotse **v0.17** (`aug20`, Zahlen `sep04`)
+> dtw **0,056080** · p90 0,1155 · aiou 0,7527 — frisch auf der
+> heutigen Wurzel geritten (§14 „Lotse-Sprung `sep04`"; die
+> `aug26`-Zahl 0,0545 war eine Transkription, richtig ist dort
+> 0,058522, und sie stand auf einer drei Neu-Exporte alten Wurzel).
+> **Die beiden Duell-Zahlen sind damit NICHT auf derselben Wurzel
+> gemessen** — die Kette steht noch auf `aug26` und wartet auf ihre
+> Nachmessung (§7.11).
 > InkSight **T0** (`aug17`) dtw 0,0951 auf der ALTEN Kappe 0,8, 5 von 19
 > failed — auf 1,5 unvermessen, die Zahlen sind archiviert und nicht
 > vergleichbar. Nullprobe dtw **0,8198** auf den 10 der 19 Wörter, die
@@ -1136,6 +1142,7 @@ Registerzeile und, wenn sie ein Negativ war, mit ihrer §7.9-Zeile.
 | **Abstandsterm · Schleifen-Halteterm** | §14 „Kette v5 `aug26`" | 13 Wörter wirft auch v5 in Runde 1 auf den Init zurück | offen; ausdrücklich PRÄVENTIVE Terme im Abstieg, nie Annahme-Regeln |
 | **Distanzfeld-NUR-Claim** | §14 „Kette K-E2 `aug21`" | die Claim-Familie ist geschlossen, dieser Ein-Kanal-Schnitt aber nie versucht | offen, frische Pre-Reg |
 | **Lotse-Zonen-Stufe** | §14 „Lotse v0.16 `aug20`", jetzt auch „Lotse Absprung-Forensik `sep04`" | „zones"/„all" scheitern nur noch an der Galoppieren-p-Oskulation — und die Forensik gibt der Stufe eine zweite, unabhängige Begründung: die ungepinnten Zonen-Läufe sind die tiefste Absprung-Klasse (Karten-Abdrift) | wiedervorlegen NACH dem p-Platzierungs-Arm |
+| **Duell-Nachmessung auf der heutigen Wurzel** | §14 „Lotse-Sprung `sep04`" | die beiden Duell-Zahlen stammen von verschiedenen Wurzeln: der Lotse ist auf `sep04` nachgemessen (0,056080), die Kette steht auf `aug26` — und die `sep01`-Rechteck-Reparatur bewegt vier der 19 Referenzen, sodass ein Vergleich über diese Grenze nicht trägt | offen, keine eigene Pre-Reg nötig: ein Lauf der stehenden Kette v5 auf der aktuellen Wurzel, dann beide Zahlen im Stand-Block datiert gleichziehen |
 | **Formtreue Fenster-Pinnung** | §14 „Lotse Absprung-Forensik `sep04`", §7.9 | die starre Pin-Translation trägt den Bauch des Fenster-Laufs aus der Tinte (11 von 15 Ereignissen mit der Karte AUF der Tinte, Median +0,0928 xh) — und repariert in 12 anderen Fenstern, ist also nicht abzuschalten, sondern zu ersetzen | offen: Ähnlichkeits- statt Translations-Fit · dazu das Budget „eine Pinnung darf `map_slack_xh` nicht erhöhen"; je eigene Pre-Reg |
 | **InkSight B2 (Tiling)** | §14 „Welle 1 · B1 `aug15`", verfahren-inksight.md | Galoppieren liegt jenseits der Trainingsfiltergrenze und ist der gemessene Probestein | offen seit `aug15` |
 | **InkSight-Nachmessung auf Marken-Kappe 1,5** | §14 „Lineal L-U `aug26`" | ohne sie ist die vierte Route mit den anderen dreien nicht vergleichbar | offen; braucht das isolierte Python-3.11-TF-venv |
