@@ -6,7 +6,9 @@ LF12 (`messjournal.md` §14 `sep04`) it applies the write path's own floor,
 thinner than the floor is not re-derived from too little evidence, and drops
 out of the map entirely, so „PUT je Glyph" over the file can never meet a row
 the endpoint refuses with a 422. `--keep-stored` puts the copies back for a map
-that is meant as a snapshot rather than a write list.
+that is meant as a snapshot rather than a write list, and `write_blockers`
+answers which of the two a finished map is — against all THREE gates the
+endpoint stands on, since a row can clear the floor and still carry a spike.
 
 Pure: hand-built chart/laufform dicts under `tmp_path`, no fixtures, no DB, no
 network. The estimator is pinned to the per-anchor median (`knot_spacing=0`) —
@@ -22,7 +24,7 @@ from pathlib import Path
 import pytest
 
 from core.aggregate import LAUFFORM_MIN_OCCURRENCES
-from tools.laufform.smoothrow import build_candidates, occurrences_by_key
+from tools.laufform.smoothrow import build_candidates, occurrences_by_key, write_blockers
 
 
 CHART_ROW = {
@@ -110,6 +112,37 @@ def test_an_unstored_key_under_the_floor_is_left_out_entirely(tmp_path: Path):
 
     assert rows == {}, "nothing to keep and not enough to derive — the key stays out of the card"
     assert any("left out of the map" in line for line in report)
+
+
+def test_write_blockers_names_the_floor_and_the_row_gates(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    root = _root(tmp_path)
+
+    # A row that satisfies the floor can still be refused by a row gate, so the
+    # floor alone must never be reported as "writable".
+    thin = {"anchors": CHART_ROW["anchors"], "trace_meta": {"laufform": {"n_occurrences": 1}}}
+    spiked = {"anchors": CHART_ROW["anchors"], "trace_meta": {"laufform": {"n_occurrences": 9}}}
+    monkeypatch.setattr("tools.laufform.smoothrow.spike_gate", lambda *_: {"exceeded": True, "ratio": 3.9, "max": 2.95})
+    monkeypatch.setattr(
+        "tools.laufform.smoothrow.head_gate", lambda *_: {"exceeded": False, "deviation": 1.0, "max": 15}
+    )
+
+    blocked = write_blockers(root, {"a": thin, "e": spiked}, LAUFFORM_MIN_OCCURRENCES)
+
+    assert any(b.startswith("a (") and "floor" in b for b in blocked)
+    assert any(b.startswith("e (") and "spike" in b for b in blocked)
+
+
+def test_write_blockers_is_empty_when_every_gate_is_clean(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    root = _root(tmp_path)
+    row = {"anchors": CHART_ROW["anchors"], "trace_meta": {"laufform": {"n_occurrences": 9}}}
+    monkeypatch.setattr(
+        "tools.laufform.smoothrow.spike_gate", lambda *_: {"exceeded": False, "ratio": 1.0, "max": 2.95}
+    )
+    monkeypatch.setattr(
+        "tools.laufform.smoothrow.head_gate", lambda *_: {"exceeded": False, "deviation": 1.0, "max": 15}
+    )
+
+    assert write_blockers(root, {"a": row}, LAUFFORM_MIN_OCCURRENCES) == []
 
 
 def test_occurrences_of_a_deviating_anchor_count_are_dropped():

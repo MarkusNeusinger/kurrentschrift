@@ -38,16 +38,21 @@ not care how thin the stack under it is. `--floor 1` is that author statement,
 spelled out.
 
 **A key the run does not derive is left OUT of the map**, whether the floor
-stopped it or the harvest produced no usable fit. That is what keeps the map
-writable: every row in it is one the write path accepts, so „PUT je Glyph" over
-the file can never hit a 422. It costs nothing in measurement, because the file
-is an OVERLAY — `wordbench.run --laufform` and its siblings leave every key the
-map does not name on its frozen row, which is exactly the row a carried-over
-entry would have repeated. The report names each omitted key with its reason,
-and `--keep-stored` puts the copies back for a run that wants the map to be a
-complete 22-row snapshot rather than a write list (`--floor 1 --keep-stored` is
-the behaviour this tool had before either argument existed, and reproduces the
-LF11 card of `sep02`).
+stopped it or the harvest produced no usable fit. It costs nothing in
+measurement, because the file is an OVERLAY — `wordbench.run --laufform` and
+its siblings leave every key the map does not name on its frozen row, which is
+exactly the row a carried-over entry would have repeated. The report names each
+omitted key with its reason, and `--keep-stored` puts the copies back for a run
+that wants the map to be a complete snapshot rather than a write list
+(`--floor 1 --keep-stored` is the behaviour this tool had before either
+argument existed, and reproduces the LF11 card of `sep02`).
+
+Every run closes by saying whether the map can be walked with a PUT per key,
+measured against ALL THREE gates the endpoint stands on — the floor and the two
+row gates, spike (LF8) and head (LF9). The floor alone would not answer the
+question: the `--knots 0` control arm carries spikes the spline basis does not,
+and a map that called itself writable on the strength of the floor would hand
+those to the endpoint as 422s.
 
 Never writes to the DB or the fixture root.
 """
@@ -98,6 +103,37 @@ def occurrences_by_key(occurrences: list[dict]) -> dict[str, list[list[list[floa
         modal = max(counts.items(), key=lambda kv: (kv[1], kv[0]))[0]
         out[key] = [a for a in anchor_sets if len(a) == modal]
     return out
+
+
+def write_blockers(root: Path, rows: dict[str, dict], floor: int) -> list[str]:
+    """Every row of a map that `PUT …/templates/{key}/laufform` would refuse.
+
+    The endpoint stands on THREE gates, not one: the evidence floor and the two
+    row gates, spike (LF8) and head (LF9). Reporting only the floor would let a
+    map claim it is writable while a row waits to come back as a 422 — the
+    `--knots 0` control arm is exactly that case, since the per-anchor median
+    carries spikes the spline basis does not.
+    """
+    templates = json.loads((root / "templates.json").read_text())
+    blocked: list[str] = []
+    for key in sorted(rows):
+        chart = templates.get(key)
+        if chart is None:
+            continue
+        row = rows[key]
+        n = int(((row.get("trace_meta") or {}).get("laufform") or {}).get("n_occurrences") or 0)
+        view = _chart_view(chart)
+        spike, head = spike_gate(view, row["anchors"]), head_gate(view, row["anchors"])
+        reasons = []
+        if n < floor:
+            reasons.append(f"n={n} < floor {floor}")
+        if spike["exceeded"]:
+            reasons.append(f"spike {spike['ratio']:.2f} > {spike['max']:.2f}")
+        if head["exceeded"]:
+            reasons.append(f"head {head['deviation']:.1f}° > {head['max']:.0f}°")
+        if reasons:
+            blocked.append(f"{key} ({'; '.join(reasons)})")
+    return blocked
 
 
 def build_candidates(
@@ -230,20 +266,16 @@ def main() -> None:
     arm = "per-anchor median (control)" if args.knots == 0.0 else f"spline basis, knots {args.knots} xh"
     print(f"LF11 {arm} · root={args.root.name} · floor {args.floor}: {len(rows)} candidate rows → {args.out}")
     print("\n".join(report))
-    # A copied row can sit under the floor even though this run never derived
-    # one that did — the floor guards writes, never the existing stock (audit
-    # 2026-09-02, Befund 35). Without `--keep-stored` the count is 0 by
-    # construction, and saying so is what makes the map's writability readable
-    # off the run instead of trusted.
-    thin = sorted(
-        key
-        for key, row in rows.items()
-        if int(((row.get("trace_meta") or {}).get("laufform") or {}).get("n_occurrences") or 0) < args.floor
-    )
-    print(
-        f"rows in the map under the floor of {args.floor}: {len(thin)}"
-        + (f" ({', '.join(thin)}) — this map is NOT a write list" if thin else " — every row is writable")
-    )
+    # Whether the map can be walked with a PUT per key is a property of the
+    # FILE, so it is stated on the file rather than inferred from the arguments:
+    # a copied row can sit under the floor, and an arm like `--knots 0` can
+    # carry a spike the endpoint refuses even where the floor is satisfied.
+    blocked = write_blockers(args.root, rows, args.floor)
+    if blocked:
+        print(f"rows the write path would refuse: {len(blocked)} — {', '.join(blocked)}")
+        print("this map is NOT a write list")
+    else:
+        print(f"rows the write path would refuse: none — all {len(rows)} rows pass floor, spike and head")
 
 
 if __name__ == "__main__":
