@@ -219,11 +219,23 @@ def replay(call: JoinCall, *, exit_shift: Point = (0.0, 0.0), entry_shift: Point
     join's shape: the retrace is ink the LETTER already drew, and the extension
     is an inking allowance so the round cap tucks under the neighbouring stroke.
     Every consumer here wants the bare join — the dissection measures the
-    generated curve against the specimen, ``spanmeas`` anchors on its real
-    endpoint, and ``chain._connector_spec`` says so in as many words. That the
-    two post-processing steps are the ONLY difference is asserted against the
-    emitted item in ``tests/test_pairlab_connector_parity.py``, so the parity
-    proof is not self-referential.
+    generated curve against the specimen, and ``chain._connector_spec`` says so
+    in as many words. That the two dressings are the ONLY difference is asserted
+    against the emitted item in ``tests/test_pairlab_connector_parity.py``, so
+    the parity proof is not self-referential.
+
+    **The one standing blind spot, named so it cannot rot.** Not every decision
+    about a join happens inside ``_connector_centerline``. The exit trim
+    (``exit_trim``, arm J4) REPLACES the returned centerline afterwards, in
+    ``compose_word``'s own block — so a replay reproduces the join as it would
+    be WITHOUT that rule, and any future rule that post-processes the connector
+    the same way would be invisible here too. Harmless today: the switch is off
+    by default, so on every headline run the replay is the whole story. Should
+    such a rule ever become the default, this function has to grow the same
+    post-processing or the dissection will quietly measure the wrong curve.
+    ``spanmeas`` sidesteps the question entirely by reading the DRAWN join and
+    undoing only the two dressings (``spanmeas.drawn_join``), which is why the
+    J4 arm moves there and would not move here.
     """
     flags = dict(call.flags)
     if exit_shift != (0.0, 0.0):

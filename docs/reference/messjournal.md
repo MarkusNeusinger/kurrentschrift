@@ -7516,6 +7516,19 @@ die `gen_chamfer`-Spalte eines KÜNFTIGEN `pairlab.harvest`-Laufs (die
 GESPEICHERTEN Werte bleiben, wie sie sind) und die
 `base_gen_*`-Spalten der chainbench-Stufe-A-Zeilen.
 
+**Ein blinder Fleck, benannt statt entdeckt.** Nicht jede Entscheidung
+über eine Naht fällt INNERHALB von `_connector_centerline`. Der
+Austritts-Trim (`exit_trim`, Arm J4) ERSETZT die zurückgegebene
+Mittellinie danach, im Block von `compose_word` selbst — ein Abspielen
+gibt also die Naht ohne diese Regel wieder, und jede künftige Regel, die
+den Verbinder ebenso nachbearbeitet, wäre hier ebenso unsichtbar. Heute
+folgenlos: der Schalter ist Standard aus, auf jedem Headline-Lauf ist das
+Abspielen die ganze Geschichte. Wird eine solche Regel je Default, muss
+`replay` dieselbe Nachbearbeitung mitbekommen, sonst misst die
+Dissektion still die falsche Kurve. Der Sensor `dspan` umgeht die Frage
+von vornherein, indem er den GEZEICHNETEN Zug liest und nur die zwei
+Tinten-Zugaben zurücknimmt (§14 „Übergänge S1").
+
 **Was ausdrücklich unberührt bleibt.** `core/` und `core/word_metric.py`
 (keine Zeile), der Golden, `word_loss`/`pair_loss`, `doff`/`dconn` in
 `tools/wordbench/pairmeas.py`, die gespeicherten Vorkommen — und der
