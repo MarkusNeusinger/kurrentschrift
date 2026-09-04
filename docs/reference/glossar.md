@@ -1528,13 +1528,20 @@ Formunterschied. `dspan` misst stattdessen den **gemeinsamen Abschnitt**:
 beide Kurven enden am selben Ereignis, der Ankunft des Stifts auf B, also
 werden sie von dort um dieselbe Bogenlänge `min(arc)` zurückgeschnitten
 (Schnittpunkt interpoliert), auf dieselben 24 Punkte abgetastet und je auf
-ihren eigenen ersten Punkt gelegt. Damit ist `dspan` **blind gegen eine
-reine Kopf-Verlängerung** — genau der Artefakt, der bei J4 zwei Drittel
-des gemessenen Anstiegs ausmachte — und weiter translationsfrei. Abnahme
-an J4 (§14 „Übergänge S1"): Δ +0,0040 gegen `dconn`s +0,0665, Fallquote
-46,3 % statt 19,8 %. Report-only wie `doff`/`dconn`; ersetzt `dconn`
-nicht, sondern beantwortet die engere Frage, ob das gemeinsame Stück
-dieselbe Form hat.
+ihren eigenen ersten Punkt gelegt. Der Anker muss dafür der ECHTE sein:
+die komponierte Seite ist `spanmeas.drawn_join` — der gezeichnete Zug
+ohne seine zwei Tinten-Zugaben (die `CONNECT_OVERLAP`-Verlängerung über
+beide Enden hinaus und der Rücklauf-Präfix einer Majuskel), aber MIT
+jeder Änderung, die die Komposition an der Naht selbst vorgenommen hat.
+Damit ist `dspan` **blind gegen eine reine Kopf-Verlängerung** — genau
+der Artefakt, der bei J4 zwei Drittel des gemessenen Anstiegs ausmachte —
+und weiter translationsfrei. Abnahme an J4 (§14 „Übergänge S1"): Δ
++0,0036 gegen +0,0615 bei Start-Ausrichtung derselben Kurven; die
+Fallquote steigt von 19,8 % (Bench-`dconn`) über 31,4 % (bereinigt, aber
+start-ausgerichtet) auf 48,8 % und landet damit bei der Handbereinigung
+des Eintrags (51 %), die dafür einen Basislauf brauchte. Report-only wie
+`doff`/`dconn`; ersetzt `dconn` nicht, sondern beantwortet die engere
+Frage, ob das gemeinsame Stück dieselbe Form hat.
 
 **Verbinder-Mitschnitt** *(`tools/pairlab/prodconn.py`, `JoinCall`, seit
 `sep04`)* — wie eine Messschicht den Produktions-Verbinder an einer

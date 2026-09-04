@@ -212,6 +212,18 @@ def replay(call: JoinCall, *, exit_shift: Point = (0.0, 0.0), entry_shift: Point
     not touched: which branch fires at the shifted geometry is production's own
     decision, evaluated on the moved inputs, exactly as it would be for a
     composition that had placed the letters there.
+
+    What this is NOT is the drawn stroke. ``compose_word`` still prepends a
+    capital's ornament retrace and overlap-extends both ends by
+    ``CONNECT_OVERLAP`` before emitting the item, and neither belongs to the
+    join's shape: the retrace is ink the LETTER already drew, and the extension
+    is an inking allowance so the round cap tucks under the neighbouring stroke.
+    Every consumer here wants the bare join — the dissection measures the
+    generated curve against the specimen, ``spanmeas`` anchors on its real
+    endpoint, and ``chain._connector_spec`` says so in as many words. That the
+    two post-processing steps are the ONLY difference is asserted against the
+    emitted item in ``tests/test_pairlab_connector_parity.py``, so the parity
+    proof is not self-referential.
     """
     flags = dict(call.flags)
     if exit_shift != (0.0, 0.0):

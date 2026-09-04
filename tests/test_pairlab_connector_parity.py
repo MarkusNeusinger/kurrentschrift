@@ -128,6 +128,30 @@ def test_replay_at_zero_shift_is_the_production_curve(entry: dict) -> None:
 
 
 @pytest.mark.parametrize("entry", _entries(), ids=lambda e: e["text"])
+def test_the_replayed_curve_is_the_emitted_item_minus_its_two_dressings(entry: dict) -> None:
+    """Ties the recorded curve to what production actually DREW, so the parity
+    above is not self-referential.
+
+    ``compose_word`` emits ``_overlap_extend(cap_retrace[:-1] + connector)``.
+    Undo the extension — it inserts exactly one sample at each end — and the
+    replayed curve must be the tail of what remains, with the head left over
+    being the capital's ornament retrace (empty for every lowercase exit).
+    Neither dressing belongs to the join's shape, which is why ``replay``
+    returns neither; that they are the ONLY difference is what this asserts.
+    """
+    composed, joins = _compose_recorded(entry)
+    items = {int(it["from_slot"]): it for it in composed["items"] if it.get("pair") and it["pair"][1] is not None}
+    for slot_a, call in joins.items():
+        emitted = [tuple(p) for p in items[slot_a]["centerline"]]
+        undressed = emitted[1:-1]  # the two CONNECT_OVERLAP samples
+        raw = [tuple(p) for p in replay(call)]
+        assert len(undressed) >= len(raw)
+        assert undressed[len(undressed) - len(raw) :] == raw
+        retrace = undressed[: len(undressed) - len(raw)]
+        assert bool(retrace) == bool(call.flags.get("cap_restart"))
+
+
+@pytest.mark.parametrize("entry", _entries(), ids=lambda e: e["text"])
 def test_replay_labels_every_generated_join(entry: dict) -> None:
     composed, joins = _compose_recorded(entry)
     generated = [it for it in composed["items"] if it.get("pair") and it["pair"][1] is not None]

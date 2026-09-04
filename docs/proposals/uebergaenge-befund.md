@@ -1,6 +1,6 @@
 # Übergangs-Befund 2026-07-11 — unabhängige Paar-Sektion (pairlab)
 
-> **Status (2026-08-12): Befund-Journal.** Momentaufnahme aus `tools/pairlab`
+> **Status (2026-09-04): Befund-Journal.** Momentaufnahme aus `tools/pairlab`
 > vom 2026-07-11, nicht fortgeschrieben — mit der EINEN benannten
 > Ausnahme §5c (s. u.): O1 und O2 (B-Seite) sind
 > umgesetzt (Lauf `jul11`, PR #179), der A-seitige d-Stub-Trim wurde zweimal

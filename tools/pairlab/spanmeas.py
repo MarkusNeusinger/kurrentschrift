@@ -29,8 +29,11 @@ to happen inside the measure.
 The measure
 -----------
 Both connectors of a join end at the same event: the pen's arrival on B. So the
-arrival is the anchor, and the shared stretch is the last ``L = min(arc)`` of
-each curve:
+arrival is the anchor — and it has to be the REAL one, which is why the composed
+side is ``drawn_join`` rather than the emitted item: the drawn stroke carries
+0.05 xh of overlap extension past each end (an inking allowance, not part of the
+join) and, after a capital, a prefix of the letter's own ink. The shared stretch
+is then the last ``L = min(arc)`` of each curve:
 
 1. clip both curves from their END back to arc length ``L`` (the cut point is
    interpolated, so a coarse sample step cannot move it);
@@ -58,6 +61,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import statistics
 from collections.abc import Iterable, Sequence
 from pathlib import Path
@@ -66,7 +70,7 @@ from typing import Any
 import numpy as np
 
 from core.aggregate import PAIR_CONNECTOR_POINTS, _resample_polyline
-from core.compose import compose_word
+from core.compose import CONNECT_OVERLAP, compose_word
 from tools.wordbench.pairmeas import body_lines, join_pair_keys, load_measured, rows_for_entry
 from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, WordCase, _root_for, iter_fixture_word_cases
 from tools.wordlab.derive import laufform_payloads_for, payloads_for
@@ -127,19 +131,70 @@ def dspan(composed: np.ndarray, measured: np.ndarray, *, points: int = PAIR_CONN
 
 
 def dconn(composed: np.ndarray, measured: np.ndarray, *, points: int = PAIR_CONNECTOR_POINTS) -> float:
-    """``pairmeas``'s start-aligned shape distance, recomputed here for the split.
+    """``pairmeas``'s start alignment, applied to the SAME curves as ``dspan``.
 
-    Same formula, same budget — quoted next to ``dspan`` so a run can report how
-    much of a move was extension and how much was shape. The frozen column in
-    `tools/wordbench/pairmeas.py` stays the one the bench prints.
+    Same formula and same budget as the bench's column, but fed ``drawn_join``
+    rather than the emitted item — so the pair of numbers in a row isolates the
+    ONE thing that differs between them, the anchor, instead of mixing in the
+    inking dressings. It is therefore a control for ``dspan``, not a copy of the
+    bench's reading: the frozen column in `tools/wordbench/pairmeas.py` measures
+    the drawn stroke and stays the one a headline quotes.
     """
     a = _resample_polyline(np.asarray(composed, dtype=float), points)
     b = _resample_polyline(np.asarray(measured, dtype=float), points)
     return float(np.linalg.norm((a - a[0]) - (b - b[0]), axis=1).mean())
 
 
+def drawn_join(item: dict) -> list[tuple[float, float]] | None:
+    """The join as production DREW it, minus its two inking dressings.
+
+    The emitted connector item is
+    ``_overlap_extend(cap_retrace[:-1] + centerline)``, and neither dressing is
+    part of the join's shape — but the difference matters twice as much for a
+    sensor that anchors at the END:
+
+    * the **overlap extension** adds ``CONNECT_OVERLAP`` = 0.05 xh past both
+      ends so the stroke's round cap tucks under the neighbouring ink, while
+      the harvested measured connector stops exactly at B's entry. Anchoring on
+      it would offset the two spans by precisely the word ruler's floor —
+      the artifact this sensor exists to remove, reintroduced at its own anchor.
+      (``dconn`` carries the same extension; it start-aligns, so `pairmeas`
+      records it as an accepted caveat instead.) It is undone exactly, not
+      heuristically: ``_overlap_extend`` appends a sample at distance
+      ``CONNECT_OVERLAP`` from the previous one, so a tail segment of exactly
+      that length is the dressing and nothing else is touched.
+    * the **capital retrace** prefixes ink the LETTER already drew. The join
+      starts at the departure anchor `compose_word` states under provenance
+      (``exit``) — which is also where an exit trim moves it to — so the prefix
+      is found by that anchor rather than guessed.
+
+    What is deliberately KEPT is every change the composition made to the join
+    itself, the exit trim included: the trim replaces the whole centerline after
+    the generator returned it, so a sensor reading the generator's own return
+    would report that arm as moving nothing at all.
+
+    ``None`` when the item carries no usable anchor — counted by the caller,
+    never silently treated as a join of zero length.
+    """
+    pts = [(float(x), float(y)) for x, y in item.get("centerline", [])]
+    anchor = item.get("exit")
+    if len(pts) < 3 or anchor is None:
+        return None
+    if abs(math.dist(pts[-1], pts[-2]) - CONNECT_OVERLAP) < 1e-9:
+        pts = pts[:-1]
+    target = (float(anchor[0]), float(anchor[1]))
+    start = next((i for i, p in enumerate(pts) if p == target), None)
+    if start is None or len(pts) - start < 2:
+        return None
+    return pts[start:]
+
+
 def compare_joins(composed: dict, slots: Sequence[Any], measured: Iterable[dict]) -> list[dict]:
     """One row per join that has a comparable measured occurrence.
+
+    The composed side is ``drawn_join`` — the emitted stroke without its two
+    inking dressings — not the emitted item and not the generator's raw return;
+    see there for why each of those would be wrong for an end-anchored measure.
 
     The exclusions are ``pairmeas.compare_joins``'s, for the same reasons: an
     approved override is its own source specimen, a dissection the harvest
@@ -165,7 +220,10 @@ def compare_joins(composed: dict, slots: Sequence[Any], measured: Iterable[dict]
             continue
         if not bodies.get(item.get("from_slot")) or not bodies.get(item.get("to_slot")):
             continue
-        c = np.asarray(item["centerline"], dtype=float)
+        drawn = drawn_join(item)
+        if drawn is None:
+            continue
+        c = np.asarray(drawn, dtype=float)
         m = np.asarray(row["geometry"]["connector"], dtype=float)
         if len(c) < 2 or len(m) < 2:
             continue
@@ -192,7 +250,8 @@ def _compose_case(case: WordCase, *, exit_trim: bool, exit_trim_min_kink_deg: fl
 
     Same inputs `tools/wordbench/run.py` composes with on a headline run
     (provenance on, Laufform rows applied, no overrides), so a row measured here
-    describes the same join the bench scores.
+    describes the same join the bench scores. Provenance is load-bearing rather
+    than diagnostic here: ``drawn_join`` reads the departure anchor off it.
     """
     return compose_word(
         case.slots,
@@ -243,16 +302,30 @@ def summarise(rows: list[dict]) -> dict:
     }
 
 
+def _fired(base_row: dict, arm_row: dict) -> bool:
+    """Did the arm change this join's connector at all?
+
+    The population must NOT be defined by the sensor under test. ``dspan`` is
+    blind to a pure head extension by construction (control P1), so an arm whose
+    whole effect is such an extension would report "nothing moved" and its fall
+    share would have no denominator. The firing signal is the composed curve
+    itself: its arc length, and either shape column.
+    """
+    return any(abs(arm_row[key] - base_row[key]) > 0.0 for key in ("arc_composed", "dconn", "dspan"))
+
+
 def compare_runs(base: list[dict], arm: list[dict]) -> dict:
     """Per-join change between two runs of the same set — the arm's own number.
 
     Joins are matched on ``(id, slot)``; a join present in only one run is
     counted, never silently dropped, because an arm that changes WHICH joins are
-    comparable has changed its population, not its numbers.
+    comparable has changed its population, not its numbers. Both sensors' fall
+    shares are computed over the SAME population — the joins the arm actually
+    fired on (see ``_fired``) — so the two columns stay comparable.
     """
     by_key = {(r["id"], r["slot"]): r for r in base}
     paired = [(by_key[k], r) for r in arm if (k := (r["id"], r["slot"])) in by_key]
-    moved = [(b, a) for b, a in paired if abs(a["dspan"] - b["dspan"]) > 1e-9]
+    moved = [(b, a) for b, a in paired if _fired(b, a)]
     return {
         "n_base": len(base),
         "n_arm": len(arm),

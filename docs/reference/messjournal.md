@@ -193,7 +193,7 @@ die DB) — mit seiner Bedingung.
 | sep02 | Laufform | [LF11 humanbench-Runde und Adoption](#laufform-lf11-sep02--humanbench-wortrunde-instrumentdefekt-und-adoption-prod-write--re-baseline) | **ADOPTIERT auf Autor-Entscheid** (kein formales Instrument-Verdikt) · Prod-Write + Re-Baseline | Runde verlässlich (10/12 Arm) und Richtung erdrückend (40 : 1), aber die Tie-Schranke fällt in JEDER Lesart (34,9 % gesamt, 25,6 % in der günstigsten Teilmenge, gegen ≤ 25 %) — `adopt: false`; ob ein Teil der Runde auf der defekten Anzeige „gefüllte Ringe" lief, ist zwischen Protokoll und Bestand ungeklärt (offener Punkt); Write nach Snapshot `2026-09-02T21-58-16Z`, Readback 22/22; Wörter 0,109218 · Paare 0,148198 |
 | sep04 | Übergänge | [P-Spiegel: pairlab auf den Produktions-Verbinder](#übergänge-p-spiegel-sep04--pairlab-misst-wieder-den-produktions-verbinder-werkzeug-re-baseline-kein-arm) | Werkzeug-Re-Baseline · kein Arm | Audit-Befund 18 beziffert und behoben: 89 von 248 Nähten wichen ab (Median 0,0562 xh, Majuskeln 1,0365), `gen_chamfer` 0,0434 → 0,0392; Kette-Init bleibt auf dem eingefrorenen Spiegel (Autor-Frage) |
 | sep04 | Übergänge | [S1 `dspan` (ausdehnungs-normierte Formdistanz)](#übergänge-s1-sep04--vorregistrierung-dspan-die-ausdehnungs-normierte-formdistanz) | Pre-Reg | Rettungsweg 2 von #488: gemeinsamer Abschnitt statt Start-Ausrichtung; Gates P1/P2/P3(a,b) und Nullproben N1/N2 vor der ersten Zahl |
-| sep04 | Übergänge | [S1 gemessen](#übergänge-s1-sep04--gemessen-der-sensor-ist-validiert-und-er-rettet-j4-trotzdem-nicht) | gemessen · Sensor validiert, J4 bleibt verworfen | Δ`dspan` +0,0040 gegen `dconn` +0,0665, Fallquote 46,3 % statt 19,8 % (Gate ≥ 40 %) — aber die 60 % des J4-Gates erreicht auch die saubere Lesung nicht |
+| sep04 | Übergänge | [S1 gemessen](#übergänge-s1-sep04--gemessen-der-sensor-ist-validiert-und-er-rettet-j4-trotzdem-nicht) | gemessen · Sensor validiert, J4 bleibt verworfen | Δ`dspan` +0,0036 (Gate ≤ 0,010), Fallquote 48,8 % (Gate ≥ 40 %) gegen 19,8 % roh und 51 % handbereinigt — aber die 60 % des J4-Gates erreicht auch die saubere Lesung nicht |
 | sep04 | Feder | [Platten-Nib A3 (Wortrunde)](#platten-nib-a3-sep04--vorregistrierung-die-wortrunde-über-die-strichbreite) | Pre-Reg · Runde gebaut, Urteil offen | Halbbreite 0,097 statt 0,07251. Das Lineal ist nicht blind, sondern EINSEITIG: dem Lineal die breitere Feder nennen senkt bei unveränderter Geometrie 0,109218 → 0,101560. Nebenbedingung des Audits schon trocken gerissen (`gleichzug_doublings` 13 → 21) — ein ≥ 60 % lizenziert nur den Folgearm „Ink-Clearance an die Feder koppeln", nicht den Write |
 | sep04 | Übergänge | [J4 Wortrunde (Rettungsweg 3)](#übergänge-j4-sep04--vorregistrierung-die-wortrunde-als-benannter-rettungsweg) | Pre-Reg · Runde gebaut, Urteil offen | Der §7.9-Rettungsweg zum `dconn`-Negativ; auf der LF11-Wurzel neu vermessen: `seam_dep` +7,99 → +0,02, Wörter +0,000248 (Vorzeichen gedreht), Paare byte-gleich |
 
@@ -7554,7 +7554,17 @@ verdeckt; er lässt sich nicht abschneiden, er muss aus dem Maß heraus.
 
 **Was `dspan` ist.** Beide Verbinder einer Naht enden am selben Ereignis
 — der Ankunft des Stifts auf B. Also ist die Ankunft der Anker, und der
-gemeinsame Abschnitt ist die letzte `L = min(Bogenlänge)` beider Kurven:
+gemeinsame Abschnitt ist die letzte `L = min(Bogenlänge)` beider Kurven.
+Der Anker muss dafür der ECHTE sein: die komponierte Seite ist der
+gezeichnete Zug **ohne seine zwei Tinten-Zugaben** — ohne die
+Überlappungs-Verlängerung von `CONNECT_OVERLAP` = 0,05 xh, mit der
+`compose_word` beide Enden über die Naht hinausschiebt, damit die runde
+Kappe unter die Nachbartinte rutscht, und ohne den Rücklauf-Präfix einer
+Majuskel, der Tinte des BUCHSTABENS ist. Beides gehört nicht zur Form der
+Naht, und für ein Maß, das am Ende ankert, ist die Verlängerung genau der
+Betrag, den das Wort-Lineal gerade noch nicht sieht. Der Austritts-Trim
+selbst bleibt dagegen drin — er ist die Wirkung des Arms
+(`spanmeas.drawn_join`). Der Rest:
 (1) beide vom Ende her auf `L` zurückschneiden, den Schnittpunkt
 interpoliert, damit eine grobe Abtastung ihn nicht verschiebt; (2) beide
 bogengleich auf `PAIR_CONNECTOR_POINTS` abtasten — dasselbe Budget, das
@@ -7631,55 +7641,91 @@ um null** (dort: „seine Klasse ist LEER"). Der Bench-Lauf desselben Arms
 liefert dazu `seam_dep_median` **+12,52 → −1,39** — Ziffer für Ziffer der
 Wert des Eintrags.
 
+**Ein Instrument-Defekt, VOR der Veröffentlichung gefunden und behoben —
+offengelegt, weil er die Zahlen bewegt hat.** Die erste Fassung des
+Sensors ankerte auf dem EMITTIERTEN Zug. Der trägt aber an beiden Enden
+die Überlappungs-Zugabe von `CONNECT_OVERLAP` = 0,05 xh, während der
+geerntete gemessene Verbinder exakt an B's Eintritt endet — der
+End-Anker lag also um genau den Betrag daneben, den das Wort-Lineal
+gerade noch nicht auflöst, und das ausgerechnet bei einem Maß, das
+gegen diesen Betrag gebaut ist. Der Review-Durchgang des PR hat es
+gesehen. Behoben durch `spanmeas.drawn_join`: die Zugabe wird exakt
+zurückgenommen (`_overlap_extend` hängt einen Punkt im Abstand
+`CONNECT_OVERLAP` an — ein Schluss-Segment genau dieser Länge ist die
+Zugabe und sonst nichts), der Rücklauf-Präfix einer Majuskel entfällt
+über den Abgangs-Anker aus der Provenance, und der Austritts-Trim bleibt
+drin, weil er die Wirkung des Arms ist. **Kein Gate wurde angefasst**;
+die Vorregistrierung stand vorher und steht unverändert. Die Zahlen
+unten sind die des korrigierten Sensors — und der Befund dreht sich
+nicht: die Gates waren in beiden Fassungen grün (vorher Δ +0,0040 und
+46,3 %).
+
 **P1/P2 · N1/N2 — grün.** Die vier synthetischen Kontrollen stehen als
 Tests (`tests/test_pairlab_spanmeas.py`): eine nur am Kopf um 0,05/0,2/0,5
 verlängerte Kurve liest `dspan` = 0,000, während `dconn` monoton mitsteigt;
 eine um δ verzogene Kurve liest δ/2 ± 0,005 und wächst monoton in δ.
-Zusätzlich auf ECHTEN Zeilen, über alle 218 vergleichbaren Nähte beider
-Sätze: der gemessene Verbinder als komponierter eingespeist ergibt
-`dspan` = 0,000000 (N1, max über alle), eine Translation des komponierten
-um (+1,7 / −0,9) xh bewegt ihn um 0,000000 (N2, max über alle).
+Zusätzlich auf ECHTEN Zeilen beider Sätze: der gemessene Verbinder als
+komponierter eingespeist ergibt `dspan` = 0,000000 (N1, Maximum über die
+185 Nähte, deren gemessene Kurve genug Punkte für den Schnitt hat), eine
+Translation des komponierten um (+1,7 / −0,9) xh bewegt ihn um 0,000000
+(N2, Maximum über alle 218).
 
 **P3 — die Abnahme am bekannten Defekt.** Medianwerte über die 121
-bewegten Nähte, und daneben über alle 188 vergleichbaren:
+gefeuerten Nähte, und daneben über alle 188 vergleichbaren. Beide
+Spalten laufen auf DENSELBEN Kurven (`drawn_join`), sodass zwischen
+ihnen nur der Anker verschieden ist — `dconn` hier ist also die
+Kontrolle für den Anker, nicht die Spalte, die der Bench druckt:
 
 | Spalte | Basis | Kandidat (`--exit-trim`) | Δ | Fallquote |
 |---|---|---|---|---|
-| `dconn` (Kontrolle), 121 bewegte | 0,1018 | 0,1683 | +0,0665 | 24/121 = **19,8 %** |
-| **`dspan`**, 121 bewegte | **0,0352** | **0,0392** | **+0,0040** | 56/121 = **46,3 %** |
-| `dconn`, alle 188 | 0,1109 | 0,1432 | +0,0323 | — |
-| `dspan`, alle 188 | 0,0477 | 0,0540 | +0,0063 | — |
+| `dconn` (Anker-Kontrolle), 121 gefeuerte | 0,0814 | 0,1429 | +0,0615 | 38/121 = 31,4 % |
+| **`dspan`**, 121 gefeuerte | **0,0331** | **0,0367** | **+0,0036** | 59/121 = **48,8 %** |
+| `dconn`, alle 188 | 0,0884 | 0,1242 | +0,0358 | — |
+| `dspan`, alle 188 | 0,0394 | 0,0446 | +0,0052 | — |
 
-**Gate (a) grün:** |Δ `dspan`| = **0,0040** (0,0063 über alle) gegen die
-vorregistrierte Schranke 0,010 — und gegen `dconn`s +0,0665 auf genau
-denselben Nähten. **Gate (b) grün:** `dspan` fällt in **46,3 %** der
-bewegten Nähte gegen die vorregistrierten ≥ 40 % — die Lesung liegt
-damit auf der Seite der handbereinigten (51 %) und nicht der rohen
-(19,8 %). **Der Sensor ist validiert.**
+**Gate (a) grün:** |Δ `dspan`| = **0,0036** (0,0052 über alle) gegen die
+vorregistrierte Schranke 0,010 — und gegen +0,0615 derselben Kurven bei
+Start-Ausrichtung. **Gate (b) grün:** `dspan` fällt in **48,8 %** der
+gefeuerten Nähte gegen die vorregistrierten ≥ 40 %. **Der Sensor ist
+validiert.**
 
-Wie groß der Unterschied ist, den er macht: bei **52 der 121** bewegten
-Nähte geben `dconn` und `dspan` die ENTGEGENGESETZTE Richtung an. Und die
-Größe des Artefakts, den er entfernt: der komponierte Verbinder wächst je
-gefeuerter Naht am Kopf um **0,2482 xh im Median** (p90 0,4549, max
-0,4621) — mehr als die Decke des Lineal-Fensters (0,12), also genau die
-Größenordnung, die der Vorregistrierungs-Absatz als unabschneidbar
-benannt hat.
+Die Leiter, die dabei sichtbar wird, ist der eigentliche Beleg — vier
+Lesungen derselben 121 Nähte, nach zunehmender Bereinigung:
+
+| Lesung | Fallquote |
+|---|---|
+| `dconn` des Benchs, auf dem gezeichneten Zug samt Zugaben | 19,8 % |
+| start-ausgerichtet auf dem bereinigten Zug | 31,4 % |
+| **`dspan`** (End-Anker + Ausdehnungs-Normierung) | **48,8 %** |
+| die Handbereinigung von #488, ad hoc gegen die Basis geschnitten | 51 % |
+
+Der generische Sensor landet also da, wo die Handrechnung landete, ohne
+ihre Zutat zu brauchen (sie schnitt den Kandidaten am alten Abgang der
+BASIS ab und braucht dafür einen Basislauf; `dspan` braucht nur die
+gemessene Kurve). Wie groß der Unterschied zum Bisherigen ist: bei **51
+der 121** gefeuerten Nähte geben die beiden Anker die ENTGEGENGESETZTE
+Richtung an. Und die Größe des Artefakts, den er entfernt: der
+komponierte Verbinder wächst je gefeuerter Naht am Kopf um **0,2482 xh
+im Median** (p90 0,4549, max 0,4621) — mehr als die Decke des
+Lineal-Fensters (0,12), also genau die Größenordnung, die der
+Vorregistrierungs-Absatz als unabschneidbar benannt hat.
 
 **Und jetzt der Teil, der nicht gefällt: J4 ist damit NICHT gerettet.**
 Das Gate, an dem der Arm gescheitert ist, verlangte eine Fallquote von
-**≥ 60 %**. `dspan` kommt auf 46,3 %. Der Sensor beseitigt den
+**≥ 60 %**. `dspan` kommt auf 48,8 %. Der Sensor beseitigt den
 Rahmen-Artefakt vollständig — die Regel wird beurteilbar —, und die
 Antwort der Hand bleibt trotzdem: **indifferent**. Was hier gewonnen
 wurde, ist das Instrument, nicht der Arm. Ein neuer Austritts-Arm ist
 möglich, aber er braucht eine eigene Vorregistrierung mit `dspan`-Gates
 von Anfang an; `exit_trim` bleibt Standard aus, `compose.py` unberührt,
-der Golden unberührt.
+der Golden unberührt. (Die humanbench-Wortrunde, Rettungsweg 3 derselben
+Zeile, ist unabhängig davon gebaut — §14 „Übergänge J4 `sep04`".)
 
 **Basis-Lesung auf der HEUTE eingefrorenen Wurzel** (`suetterlin-1922`
 `2e3581287bed` / `suetterlin-1922-pairs` `cee9d363f497`, die
 LF11-Wurzel), damit der Sensor an der aktuellen Basis verankert ist:
-Wörter `dspan` **0,0490** (n = 188, `dconn` 0,1109), Paare `dspan`
-**0,1161** (n = 30, `dconn` 0,2035). Die Paar-Drills stehen erwartbar
+Wörter `dspan` **0,0407** (n = 188, `dconn` 0,0868), Paare `dspan`
+**0,1054** (n = 30, `dconn` 0,1609). Die Paar-Drills stehen erwartbar
 schlechter — sie sind Einzelnähte ohne Wortkontext.
 
 **Nebenbefund, gemeldet und NICHT stillschweigend korrigiert:** drei

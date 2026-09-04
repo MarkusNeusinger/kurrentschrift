@@ -26,7 +26,18 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from tools.pairlab.spanmeas import arc_length, clip_tail, common_span, compare_joins, dconn, dspan, summarise
+from core.compose import CONNECT_OVERLAP
+from tools.pairlab.spanmeas import (
+    arc_length,
+    clip_tail,
+    common_span,
+    compare_joins,
+    compare_runs,
+    dconn,
+    drawn_join,
+    dspan,
+    summarise,
+)
 from tools.wordlab.cases import DEFAULT_FIXTURES_DIR
 
 
@@ -138,11 +149,17 @@ def test_a_degenerate_curve_yields_nan_not_a_crash() -> None:
 # ----------------------------------------------------------------- row layer
 
 
-def _composed(centerline: list[list[float]]) -> dict:
+def _composed(centerline: list[list[float]], *, exit_anchor: list[float] | None = None) -> dict:
     return {
         "items": [
             {"slot_index": 0, "centerline": [[0.0, 0.0], [0.3, 0.0]]},
-            {"pair": ["n", "e"], "from_slot": 0, "to_slot": 1, "centerline": centerline},
+            {
+                "pair": ["n", "e"],
+                "from_slot": 0,
+                "to_slot": 1,
+                "centerline": centerline,
+                "exit": exit_anchor if exit_anchor is not None else list(centerline[0]),
+            },
             {"slot_index": 1, "centerline": [[0.6, 0.0], [0.9, 0.0]]},
         ]
     }
@@ -166,18 +183,65 @@ def _measured_row(connector: list[list[float]], *, fit_ok: bool = True) -> dict:
 
 def test_compare_joins_reports_both_columns_and_the_clip() -> None:
     measured = [[0.0, 0.0], [0.5, 0.0], [1.0, 0.0]]
-    composed = _composed([[-0.4, 0.0], [0.0, 0.0], [0.5, 0.0], [1.0, 0.0]])
-    rows = compare_joins(composed, [_Slot("n"), _Slot("e")], [_measured_row(measured)])
+    drawn = [[-0.4, 0.0], [0.0, 0.0], [0.5, 0.0], [1.0, 0.0]]
+    rows = compare_joins(_composed(drawn), [_Slot("n"), _Slot("e")], [_measured_row(measured)])
     assert len(rows) == 1
     assert rows[0]["dspan"] == 0.0  # the head is all that differs
     assert rows[0]["dconn"] > 0.0
     assert rows[0]["clipped"] == pytest.approx(0.4, abs=1e-9)
 
 
+def test_drawn_join_undoes_the_overlap_extension() -> None:
+    """The sensor anchors at the END, so the 0.05 xh inking allowance past B
+    would offset the two spans by exactly the word ruler's floor."""
+    join = [[0.0, 0.0], [0.5, 0.0], [1.0, 0.0]]
+    emitted = [[-CONNECT_OVERLAP, 0.0], *join, [1.0 + CONNECT_OVERLAP, 0.0]]
+    item = _composed(emitted, exit_anchor=[0.0, 0.0])["items"][1]
+    assert drawn_join(item) == [(0.0, 0.0), (0.5, 0.0), (1.0, 0.0)]
+
+
+def test_drawn_join_drops_a_capital_retrace_prefix() -> None:
+    """The prefix is ink the LETTER already drew; the join starts at the
+    departure anchor compose states under provenance."""
+    emitted = [[-CONNECT_OVERLAP, 1.4], [0.0, 1.4], [0.0, 0.6], [0.5, 0.8], [0.5 + CONNECT_OVERLAP, 0.8]]
+    item = _composed(emitted, exit_anchor=[0.0, 0.6])["items"][1]
+    assert drawn_join(item) == [(0.0, 0.6), (0.5, 0.8)]
+
+
+def test_drawn_join_keeps_a_stroke_that_was_never_extended() -> None:
+    join = [[0.0, 0.0], [0.5, 0.0], [1.0, 0.0]]
+    item = _composed(join, exit_anchor=[0.0, 0.0])["items"][1]
+    assert drawn_join(item) == [(0.0, 0.0), (0.5, 0.0), (1.0, 0.0)]
+
+
+def test_drawn_join_refuses_an_item_whose_anchor_it_cannot_find() -> None:
+    item = _composed([[0.0, 0.0], [0.5, 0.0], [1.0, 0.0]], exit_anchor=[9.0, 9.0])["items"][1]
+    assert drawn_join(item) is None
+
+
 def test_compare_joins_drops_a_distrusted_dissection() -> None:
     measured = [[0.0, 0.0], [1.0, 0.0]]
-    composed = _composed([[0.0, 0.0], [1.0, 0.0]])
+    composed = _composed([[0.0, 0.0], [0.5, 0.0], [1.0, 0.0]])
     assert compare_joins(composed, [_Slot("n"), _Slot("e")], [_measured_row(measured, fit_ok=False)]) == []
+
+
+def test_compare_runs_population_is_the_arm_not_the_sensor() -> None:
+    """P1 makes `dspan` blind to a head extension — so an arm whose whole effect
+    is one must still count as moved, or its fall share has no denominator."""
+    base = [{"id": "w", "slot": 0, "dspan": 0.02, "dconn": 0.02, "arc_composed": 1.0}]
+    arm = [{"id": "w", "slot": 0, "dspan": 0.02, "dconn": 0.09, "arc_composed": 1.4}]
+    out = compare_runs(base, arm)
+    assert out["n_paired"] == 1
+    assert out["n_moved"] == 1
+    assert out["dspan_fall_share"] == 0.0
+    assert out["dconn_fall_share"] == 0.0
+
+
+def test_compare_runs_leaves_an_unfired_join_out_of_the_share() -> None:
+    base = [{"id": "w", "slot": 0, "dspan": 0.02, "dconn": 0.02, "arc_composed": 1.0}]
+    out = compare_runs(base, [dict(base[0])])
+    assert out["n_moved"] == 0
+    assert out["dspan_fall_share"] is None
 
 
 def test_summarise_of_nothing_is_empty_not_zero() -> None:

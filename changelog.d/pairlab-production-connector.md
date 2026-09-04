@@ -23,6 +23,8 @@
   reads as a shape change; two thirds of that arm's failing number were this
   artifact. `tools/pairlab/spanmeas.py` compares only the stretch both curves
   share, clipped back from their common arrival, which removes the artifact by
-  construction instead of by a threshold nobody could place: the arm's move
-  drops from +0.0665 to +0.0040 xh and its fall share rises from 20 % to 46 %.
-  A new sensor beside the frozen ruler, never an edit of it.
+  construction instead of by a threshold nobody could place: on the arm's own
+  121 joins the move drops from +0.0615 to +0.0036 xh and the fall share rises
+  from 20 % to 49 %, landing where that entry's hand-cleaned reading landed
+  (51 %) without needing its ad-hoc baseline run. A new sensor beside the
+  frozen ruler, never an edit of it.
