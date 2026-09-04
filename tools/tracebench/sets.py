@@ -13,7 +13,7 @@ the §2.5 repetition rule (repeat occurrences split as a WORD, never across
 the boundary) — every repeat occurrence of a dev word (`die-2`, `mit-2`,
 `muß-2/-3`, `und-2/-3/-4`): 19 specimen rows in total. Activated 2026-08-17
 as a declared ruler change with a dated re-baseline of all standing routes
-(qualitaetsmetrik.md §14), on the owner's in-session go — the dev words were
+(messjournal.md §14), on the owner's in-session go — the dev words were
 fully authored at that point, the confirmation sets were not yet.
 
 The rule remains APPEND-NEVER: every word outside this list is CONFIRMATION

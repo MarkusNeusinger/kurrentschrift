@@ -222,7 +222,7 @@ jobs:
     name: Docs-Register (§14 index)
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # The campaign journal (qualitaetsmetrik.md §14) carries three "same PR"
+    # The campaign journal (messjournal.md §14) carries three "same PR"
     # duties in prose: index the new entry, ledger the moved headline, bring the
     # route's process page along. The audit of 2026-09-02 found all three lagging
     # — process pages two adoptions behind, the headline history only in running

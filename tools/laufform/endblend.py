@@ -16,7 +16,7 @@ chart payload either way; LAUFFORM_SX has no entry for these keys) — the K0 ar
 of the LF5/LF6 pre-registrations. `--window 0` copies the stored rows VERBATIM
 (so a K0 map moves nothing but the fallback keys); `--full-blend` selects the
 LF5 full cross-fade instead of the LF6 transverse-only default. Both rungs of
-both modes were REJECTED on the frozen word ruler (qualitaetsmetrik.md §14
+both modes were REJECTED on the frozen word ruler (messjournal.md §14
 `aug29`) — the tool stays so the arms remain reproducible. Never writes to the
 DB or the fixture root.
 """

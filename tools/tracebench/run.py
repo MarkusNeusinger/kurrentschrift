@@ -10,7 +10,7 @@ the candidate is either a stored row, a recomputed chain fit or a file.
         [--json report.json] [--csv rows.csv] [--compare baseline.json]
         [--resample-step 0.02] [--mark-refit]
 
-Three rules the CLI enforces rather than trusts (qualitaetsmetrik.md §14):
+Three rules the CLI enforces rather than trusts (messjournal.md §14):
 
 * **The dev split is frozen and append-never.** `TRACEBENCH_DEV_IDS` are the ten
   words the author re-traced on 2026-08-13; every id must be present as an

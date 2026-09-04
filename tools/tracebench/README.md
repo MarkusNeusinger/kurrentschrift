@@ -11,7 +11,7 @@ author re-traced ten Abb.-19 words by hand in the word editor; those rows
 
 Plan, routes and the pre-registered acceptance criteria live in
 `docs/proposals/tintenfolger.md`; baseline tables live in
-`docs/reference/qualitaetsmetrik.md` §14.
+`docs/reference/messjournal.md` §14.
 
 ## What this package is, and what it is not
 
@@ -102,5 +102,5 @@ open-core reservation keeps out of the repository.
 
 Stage C: the harness is complete and the ruler is testable end to end. The first
 BASELINE table — and with it the freeze declaration of
-`docs/reference/qualitaetsmetrik.md` §14 — is written from a run over the real
+`docs/reference/messjournal.md` §14 — is written from a run over the real
 fixture roots, which are gitignored and therefore never CI's business.

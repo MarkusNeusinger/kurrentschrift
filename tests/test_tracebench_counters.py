@@ -267,7 +267,7 @@ def test_a_wobbly_out_and_back_is_a_retrace_not_a_crossing() -> None:
     assert len(mids) == 1 and arc > 1.5
 
 
-# ---- the §14 v2 owner verdicts, pinned (qualitaetsmetrik.md `aug16`) --------
+# ---- the §14 v2 owner verdicts, pinned (messjournal.md `aug16`) ------------
 
 
 def test_a_tangential_dip_is_not_a_crossing() -> None:

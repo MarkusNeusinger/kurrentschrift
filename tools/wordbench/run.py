@@ -418,7 +418,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--exit-trim",
         action="store_true",
         help="compose with the opt-in exit-side collinearity rule (core.compose EXIT_TRIM_WINDOW, "
-        'pre-registered under the heading "Übergänge J4" in qualitaetsmetrik.md §14): a sawtooth '
+        'pre-registered under the heading "Übergänge J4" in messjournal.md §14): a sawtooth '
         "exit's chart stub is cut back to where the "
         "straight to the unchanged coupling point continues the letter's own direction — a CANDIDATE "
         "arm, its own measurement, never the headline",

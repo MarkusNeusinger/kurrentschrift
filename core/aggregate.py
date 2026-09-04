@@ -73,7 +73,7 @@ def _median_and_mad(stack: np.ndarray) -> tuple[list[list[float]], list[list[flo
     return (median.round(_GEOMETRY_DECIMALS).tolist(), mad.round(_GEOMETRY_DECIMALS).tolist())
 
 
-# Spline-basis median (LF11, qualitaetsmetrik.md §14 `sep02`). The degree is
+# Spline-basis median (LF11, messjournal.md §14 `sep02`). The degree is
 # the lowest one with continuous curvature — and curvature is exactly the
 # quantity whose sign changes the smoothness sensor counts, so a lower degree
 # would leave the defect representable in the basis meant to exclude it.

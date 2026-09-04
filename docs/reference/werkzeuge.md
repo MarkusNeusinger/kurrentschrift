@@ -219,7 +219,7 @@ Seitenzuordnung nur im Schlüssel steht. `analyse.py` wertet den emittierten
 Ergebnistext in der Reihenfolge aus, die der vorregistrierte Plan **vor** den
 Labels festgelegt hat. Verfahren, Fehler-Taxonomie und Aufbewahrungsregeln
 stehen in [`menschliche-bewertung.md`](menschliche-bewertung.md), die Befunde
-einer Runde in [`qualitaetsmetrik.md`](qualitaetsmetrik.md).
+einer Runde in [`messjournal.md`](messjournal.md).
 
 Seit 2026-09-02 kommt ein dritter Modus dazu, die **Wortrunde auf der
 Echtheitsfrage** (`--word-arms BASIS KANDIDAT`,
@@ -620,7 +620,7 @@ denen es stammt.
   Mess-Kandidat des Tintenfolger-Duells
   ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md);
   Zahlen und Vorregistrierungen in
-  [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §14). Die stehende
+  [`messjournal.md`](messjournal.md) §14). Die stehende
   Mess-Liturgie einer Runde, wie sie die §14-Einträge seit `aug19`
   fahren:
   1. **Erster Akt** (Cloud-Session): `uv sync --all-extras`, dann
@@ -701,7 +701,7 @@ denen es stammt.
 - **`tools/docs_register`** — das Gate über den Registern der Kampagne
   (`uv run python -m tools.docs_register check [--base origin/main]`,
   CI-Job „Docs-Register“): jeder `###`-Eintrag in
-  [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §14 braucht seine
+  [`messjournal.md`](messjournal.md) §14 braucht seine
   Registerzeile, jede Ledger-Zeile eine Zahl, die das Journal schon
   trägt, und jeder Eintrag einer Duell-Route die Ledger-Zeile seines
   Datums auf der Verfahrensseite. Standardbibliothek only, wie

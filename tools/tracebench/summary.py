@@ -1,7 +1,7 @@
 """One word's row, the run's block, and the paired comparison between two runs.
 
 This is the layer that turns the ruler (`metric`, `frames`, `counters`) into the
-columns `docs/reference/qualitaetsmetrik.md` §14 pre-registered — and it holds
+columns `docs/reference/messjournal.md` §14 pre-registered — and it holds
 to that list rather than inventing a folded score. There is deliberately no
 `trace_loss`: a weight between "0.02 xh of body error" and "one missing i-dot"
 is a number nobody has measured, so `dtw_xh` is the headline, missing marks and

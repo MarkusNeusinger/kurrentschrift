@@ -1,4 +1,4 @@
-"""The gates in front of a Laufform write (qualitaetsmetrik.md §14 LF7/LF8/LF9).
+"""The gates in front of a Laufform write (messjournal.md §14 LF7/LF8/LF9).
 
 Same aiosqlite HTTP stack as the other API suites. The manual
 `PUT …/templates/{key}/laufform` and `POST …/aggregates/apply-laufform` share

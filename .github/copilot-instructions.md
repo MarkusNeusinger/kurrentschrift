@@ -172,14 +172,14 @@ file is commentary, never a rule of its own.
   valid outcome. CPU time on offline measurement runs is not a reason to
   cut a corner.
 - **Every rejected measure names its rescue paths** (owner directive,
-  2026-08-16): a `qualitaetsmetrik.md` §14 entry that closes as an honest
+  2026-08-16): a `messjournal.md` §14 entry that closes as an honest
   negative ends with the named ways it could still reach the goal (new
   mechanism, new evidence, new sensor — each with a fresh pre-registration;
   never the same knob re-run with softer gates), and the standing table
   `docs/proposals/tintenfolger.md` §7.9 gets its row in the same PR.
 - **Solver measurement runs must pin BLAS threads**
   (`OPENBLAS_NUM_THREADS`/`OMP_NUM_THREADS`; finding of 2026-08-16,
-  `qualitaetsmetrik.md` §14): the chain solve is not bit-reproducible across
+  `messjournal.md` §14): the chain solve is not bit-reproducible across
   thread environments, so cross-run comparisons are only valid within one
   pinned setting.
 - **Don't re-request a Copilot review after every push** (owner,
@@ -373,7 +373,7 @@ updates its owning doc in the same PR.
   `data/samples/own-hand/` bytes stay gitignored — reserved dataset,
   backed up to the private archive): inventory + operation in
   `docs/reference/werkzeuge.md`,
-  method + numbers in `docs/reference/qualitaetsmetrik.md` (esp. §14) and
+  method + numbers in `docs/reference/messjournal.md` (esp. §14) and
   `docs/reference/menschliche-bewertung.md`, vocabulary in
   `docs/reference/glossar.md`. Invariants: measurement layer only — no DB
   writes, no `core/` edits from tools; **and never the reverse import —
@@ -526,12 +526,13 @@ The design is already settled in the docs; do not re-litigate decisions that hav
 
 **Read situatively** (only when working on the respective section):
 - `docs/proposals/optimierungs-werkbank.md` — the Werkbank direction (ONE admin page: word spine + context lenses + Auftragskorb) and the BINDING stage/role doctrine: manual input only where it creates ground truth (chart ductus in the wizard, word re-tracing where the auto-fit fails, pair overrides as last resort); everything GENERATED (Laufform, join grammar, placement) gets flagged, never hand-patched. MUST-read before working off any `work_items` Auftrag — §5 defines the AI's triage duty (chart → Laufform/fit → class rule → placement → only then override), rule-fix-before-override, the `resolution` format and the "Rückgabe an Autor" path. Since W4 that protocol is enforced by the API (restate the task and say whether it reproduced BEFORE working; diagnosed stage + resolution to close).
-- `docs/proposals/tintenfolger.md` — the word-tracing campaign: the frozen reference set, routes (Kette · Lotse · InkSight · Nullprobe, display names in the glossary's „Duell-Namen"), the per-method optimization plan (§7) and the standing rescue-path register (§7.9); numbers and pre-registrations live in `qualitaetsmetrik.md` §14
+- `docs/proposals/tintenfolger.md` — the word-tracing campaign: the frozen reference set, routes (Kette · Lotse · InkSight · Nullprobe, display names in the glossary's „Duell-Namen"), the per-method optimization plan (§7) and the standing rescue-path register (§7.9); numbers and pre-registrations live in `messjournal.md` §14
 - `docs/reference/htr-integration.md` — Transkribus API + TrOCR fallback details, PAGE-XML, free-tier logic
 - `docs/reference/animation-rendering.md` — stroke-dashoffset (MVP) and Canvas-2D-stroker (post-MVP) algorithms
 - `docs/reference/styleanalyse.md` — per-instance/per-hand/Hinge-feature layers, heatmap layouts
-- `docs/reference/qualitaetsmetrik.md` — score/bench_loss definition, frozen-reference rule, baseline history, experiment learnings incl. verworfen items (read BEFORE any bench run or metric question). **Two metrics, one per script** (different writing instruments): §1–§4 = Kurrent/Schwellzug (`core/quality.py`, pixel/width); §5 = Sütterlin/Gleichzug naturalness (`core/quality_suetterlin.py` on `core/geometry.py` — smoothness/verticality/corner/collinearity/retrace, gated by a tolerant coverage). The bench runs ONE script per run (`--style suetterlin` default · `--style kurrent`), no combined `bench_loss`.
-- `docs/reference/menschliche-bewertung.md` — the method of the blind human judgement pass over the fits (`tools/humanbench`): the six-category defect taxonomy, the instrument's construction rules each next to the failure it was added for, the pre-registered analysis plan, what is kept and what is not; read it before building or evaluating a round — the findings of a round live in `qualitaetsmetrik.md`, not here
+- `docs/reference/qualitaetsmetrik.md` — score/bench_loss definition, frozen-reference rule, baseline history, experiment learnings incl. verworfen items (read BEFORE any bench run or metric question). Rules only: since 2026-09-04 the campaign journal §14 lives in `docs/reference/messjournal.md`. **Two metrics, one per script** (different writing instruments): §1–§4 = Kurrent/Schwellzug (`core/quality.py`, pixel/width); §5 = Sütterlin/Gleichzug naturalness (`core/quality_suetterlin.py` on `core/geometry.py` — smoothness/verticality/corner/collinearity/retrace, gated by a tolerant coverage). The bench runs ONE script per run (`--style suetterlin` default · `--style kurrent`), no combined `bench_loss`.
+- `docs/reference/messjournal.md` — the campaign journal (§14, until 2026-09-04 a section of `qualitaetsmetrik.md`): 81 dated entries with every pre-registration, measurement and verdict of the Tintenfolger/Laufform rounds. Enter through the **register table** at the head — one row per entry with date, route, type · verdict and the finding in one line — and jump to the one entry you need instead of reading the file
+- `docs/reference/menschliche-bewertung.md` — the method of the blind human judgement pass over the fits (`tools/humanbench`): the six-category defect taxonomy, the instrument's construction rules each next to the failure it was added for, the pre-registered analysis plan, what is kept and what is not; read it before building or evaluating a round — the findings of a round live in `messjournal.md`, not here
 - `docs/reference/write-api.md` — the public render endpoints `/write/glyphs`, `/write/glyphs/{glyph_key}` + `/write/word` (shaping → composition → payload, cache behaviour, `missing` semantics); anyone changing a `/write/*` route must update it
 - `docs/reference/quiz-wortbank.md` — the reading-quiz word bank: sources, the pin+runtime distractor model, Fugen-marker rules, extension workflow
 - `docs/reference/frontend-stack.md` — React+Vite+MUI build, deploy, auth, route map
@@ -732,7 +733,8 @@ impl-generate pipelines. Conventions:
   (`--set abb22`) tracks generalisation and is NEVER part of a same-hand
   headline. Inventory and operation of the whole bench/lab family:
   `docs/reference/werkzeuge.md`; method, pre-registrations and numbers:
-  `docs/reference/qualitaetsmetrik.md` (esp. §11–§14) and
+  `docs/reference/qualitaetsmetrik.md` (esp. §11–§13),
+  `docs/reference/messjournal.md` (§14, the campaign journal) and
   `docs/reference/menschliche-bewertung.md`.
 - **Never merge a PR yourself** — open it, get it green and
   review-clean (address Copilot review comments, then resolve the
@@ -759,7 +761,7 @@ cannot invoke them, but the gate each one stands for still applies:
 | `/data`, binaries, licenses | `/audit-licenses` — provenance battery |
 | commit/push/PR requests | `/open-pr` — the local gates, then CI + review to green |
 | glyph-pipeline experiments | `/optimize-glyphs` — frozen bench discipline |
-| Tintenfolger measurement rounds | `/verify-trace` — BLAS pinned, base and arm the same stack but one knob; afterwards the §14 entry (inserted BEFORE `## 15.`, §14 is a closed section), its register row and the ledger line |
+| Tintenfolger measurement rounds | `/verify-trace` — BLAS pinned, base and arm the same stack but one knob; afterwards the §14 entry appended to `docs/reference/messjournal.md` (§14 is a closed section and the only one in that file), its register row and the ledger line |
 | Auftragskorb work | `/work-basket` — the protocol the API enforces |
 | anything that can overwrite geometry | `/dbsnapshot` — create freely, never destroy |
 | cutting a release | `/release` — fold fragments, tag the merge commit, condensed notes |

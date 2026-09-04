@@ -7,7 +7,7 @@ distance gain (§2.4). So each counter follows the same contract as the mark
 gate — detect on both sides with the SAME detector, match with refusal, report
 `ref/cand/matched/missing/spurious/ambiguous/pos_err_xh`.
 
-Since the v2 re-baseline (`qualitaetsmetrik.md` §14, `aug16` — the owner's
+Since the v2 re-baseline (`messjournal.md` §14, `aug16` — the owner's
 manual audit of the dev words) the counters carry the DUCTUS semantics rather
 than raw geometry thresholds:
 
@@ -72,7 +72,7 @@ RETRACE_MIN_PAIRS = MIN_RETRACE_PAIRS
 # in the word", and giving them separate radii would be two invented numbers.
 RETRACE_MATCH_RADIUS_UNITS = CROSSING_MATCH_RADIUS_UNITS
 
-# ---- the v2 constants (qualitaetsmetrik.md §14 `aug16`, all MEASURED on the
+# ---- the v2 constants (messjournal.md §14 `aug16`, all MEASURED on the
 # ---- owner's named dev-word examples, never chosen by analogy)
 #
 # The pierce test's local window each side of an intersection, per pass, never

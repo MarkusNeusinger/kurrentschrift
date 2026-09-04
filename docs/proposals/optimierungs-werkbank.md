@@ -245,7 +245,7 @@ vom Symptom zur Änderung und zurück.
 - Die Werkbank ersetzt die Alt-Seiten erst, wenn ihre Funktion dort
   vollständig angekommen ist — bis dahin koexistieren sie.
 - **Eine Laufform-Zeile wird nur über das Zeilen-Gate aufgenommen**
-  (qualitaetsmetrik.md §14 LF7/LF8, Glossar „Zeilen-Gate (Laufform)"):
+  (messjournal.md §14 LF7/LF8, Glossar „Zeilen-Gate (Laufform)"):
   Boden n ≥ 3 — oder die ausdrückliche Autor-Aussage
   `?min_occurrences=N` in der Anfrage — UND Sprung-Ratio unter
   `LAUFFORM_SPIKE_RATIO_MAX`, auf beiden Schreibpfaden, ohne Override.
@@ -365,4 +365,4 @@ vom Symptom zur Änderung und zurück.
   Rechteck-Ecken sind eingefrorene Bench-Fixtures: eine angeschnittene
   Probe wird darum markiert, nicht stillschweigend größer geschnitten —
   ein anderes Rechteck wäre ein Re-Baseline des Wort-Benchs
-  (`qualitaetsmetrik.md` §14) und braucht dessen Verfahren.
+  (`messjournal.md` §14) und braucht dessen Verfahren.

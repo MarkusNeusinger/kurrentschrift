@@ -16,12 +16,19 @@ import pytest
 from tools import docs_register as dr
 
 
-JOURNAL = """# Titel
+METRIC = """# Qualitätsmetrik
 
-> **Status (2026-09-02): lebend.** Aktuelle Headlines:
+> **Status (2026-09-04): lebend.** Aktuelle Headlines:
 > Wörter 0,109255 · Paare 0,148433 (Re-Baseline `sep01`).
 
-## 13. Etwas anderes
+## 15. Danach
+
+Die Regeln, nicht die Läufe.
+"""
+
+JOURNAL = """# Messjournal
+
+Vorspann.
 
 ### Ein Abschnitt davor
 
@@ -48,11 +55,12 @@ Kette dtw 0,062 med.
 
 ### Lotse v0.17 `aug20` — das Reservierungs-Veto
 
-Zähler-identisch.
+Zähler-identisch. Wörter 0,109255 · Paare 0,148433 im Fließtext.
+"""
 
-## 15. Danach
+ARCHIV = """# Messjournal-Archiv
 
-Wörter 0,109255 · Paare 0,148433 im Fließtext.
+> **Status (2026-09-04): lebend.** Noch kein Eintrag.
 """
 
 KETTE = """# Verfahrensseite Kette
@@ -75,9 +83,11 @@ NULLPROBE = "# Nullprobe\n\n| Datum | Messung |\n|---|---|\n| aug14 | Kontrollla
 
 @pytest.fixture()
 def repo(tmp_path: Path) -> Path:
-    """A throwaway tree with just the five files the gate reads."""
+    """A throwaway tree with just the seven files the gate reads."""
     (tmp_path / "docs" / "reference").mkdir(parents=True)
     _write(tmp_path, dr.JOURNAL, JOURNAL)
+    _write(tmp_path, dr.METRIC, METRIC)
+    _write(tmp_path, dr.ARCHIVE_PAGE, ARCHIV)
     _write(tmp_path, dr.ROUTE_PAGES["Kette"], KETTE)
     _write(tmp_path, dr.ROUTE_PAGES["Lotse"], LOTSE)
     _write(tmp_path, dr.ROUTE_PAGES["InkSight"], INKSIGHT)
@@ -103,33 +113,60 @@ def test_a_section_before_14_is_not_an_entry(repo: Path) -> None:
 
 
 def test_an_entry_without_a_register_row_fails(repo: Path) -> None:
-    # The new section must land INSIDE §14, so splice it in before §15.
-    text = JOURNAL.replace("## 15. Danach", "### Kette K-Z `sep02` — ein neuer Arm\n\nGemessen.\n\n## 15. Danach")
+    # §14 is the last section of its own file since 2026-09-04, so a round that
+    # appends at the file end is placing it right — what stays owed is the row.
+    text = JOURNAL + "\n### Kette K-Z `sep02` — ein neuer Arm\n\nGemessen.\n"
     _write(repo, dr.JOURNAL, text)
     problems = dr.check_all(root=repo)
     assert any("has no register row" in p for p in problems)
 
 
 def test_the_journal_ends_at_the_next_section(repo: Path) -> None:
-    # §14 is a section again since 2026-09-03: four `sep02` rounds had appended
-    # after the `## 15.` heading, and rather than widen the window forever the
-    # author had them moved in front of §15. An entry appended at the file end
-    # now lands OUTSIDE §14 — which is the signal to place it, not to index it
-    # where it fell.
-    text = JOURNAL + "\n### Kette K-Z `sep02` — hinter §15 angehängt\n\nGemessen.\n"
+    # §14 was reopened to the end of the file once, when four `sep02` rounds had
+    # appended after the `## 15.` heading; rather than widen the window forever
+    # the author had them moved in front of §15 (2026-09-03). The window is a
+    # section, and a `###` heading behind it is REPORTED rather than ignored —
+    # a truncating window that stays quiet about the misplaced entry would be
+    # the same silent hole the gate exists to close.
+    text = JOURNAL + "\n## 99. Eine zweite Sektion\n\n### Kette K-Z `sep02` — hier verrutscht\n\nGemessen.\n"
     _write(repo, dr.JOURNAL, text)
-    assert "Kette K-Z `sep02` — hinter §15 angehängt" not in [e.title for e in dr.entries(text)]
-    # …and it is REPORTED rather than ignored: a truncating window that stays
-    # quiet about the misplaced entry would be the same silent hole the gate
-    # exists to close.
+    assert "Kette K-Z `sep02` — hier verrutscht" not in [e.title for e in dr.entries(text)]
     assert any("sits AFTER §14" in p for p in dr.check_all(root=repo))
 
 
+def test_an_archived_entry_is_still_an_entry(repo: Path) -> None:
+    # Archiving must not drop a section out of the gate: it stays an entry, its
+    # anchor is unchanged, and its register row only gains the file name.
+    _write(repo, dr.ARCHIVE_PAGE, ARCHIV + "\n### Lotse v0.17 `aug20` — das Reservierungs-Veto\n\nZähler-identisch.\n")
+    _write(
+        repo,
+        dr.JOURNAL,
+        JOURNAL.replace("### Lotse v0.17 `aug20` — das Reservierungs-Veto\n\nZähler-identisch. ", "").replace(
+            "[v0.17](#lotse-v017-aug20--das-reservierungs-veto)",
+            "[v0.17](messjournal-archiv.md#lotse-v017-aug20--das-reservierungs-veto)",
+        ),
+    )
+    assert dr.check_all(root=repo) == []
+
+
+def test_an_archived_entry_without_a_register_row_fails(repo: Path) -> None:
+    _write(repo, dr.ARCHIVE_PAGE, ARCHIV + "\n### Kette K-Z `aug14` — längst fertig\n\nAbgelegt.\n")
+    problems = dr.check_all(root=repo)
+    assert any("has no register row" in p and "messjournal-archiv.md" in p for p in problems)
+
+
+def test_a_register_row_into_a_third_file_fails(repo: Path) -> None:
+    text = JOURNAL.replace("[v0.17](#lotse-v017", "[v0.17](qualitaetsmetrik.md#lotse-v017")
+    _write(repo, dr.JOURNAL, text)
+    assert any("nothing else" in p for p in dr.check_all(root=repo))
+
+
 def test_a_dated_subheading_behind_the_journal_is_reported_too(repo: Path) -> None:
-    # Shape cannot decide this: the real file already carries 26 dated `###`
-    # headings outside §14 (`Re-Baseline jul05`, `Nachtrag aug26` …), so a date
-    # tag proves nothing. Everything behind §14 is reported by default.
-    text = JOURNAL + "\n### Nachtrag `sep05` — was die Reparatur gekostet hat\n\nProsa.\n"
+    # Shape cannot decide this: before the move the file already carried 26
+    # dated `###` headings outside §14 (`Re-Baseline jul05`, `Nachtrag aug26`
+    # …), so a date tag proves nothing. Everything behind §14 is reported by
+    # default.
+    text = JOURNAL + "\n## 99. Anhang\n\n### Nachtrag `sep05` — was die Reparatur gekostet hat\n\nProsa.\n"
     _write(repo, dr.JOURNAL, text)
     assert any("sits AFTER §14" in p for p in dr.check_all(root=repo))
 
@@ -139,7 +176,7 @@ def test_a_declared_subheading_behind_the_journal_passes(repo: Path, monkeypatch
     # later section keep its own subheading.
     title = "Nachtrag `sep05` — was die Reparatur gekostet hat"
     monkeypatch.setattr(dr, "POST_JOURNAL_SUBHEADINGS", (title,))
-    _write(repo, dr.JOURNAL, JOURNAL + f"\n### {title}\n\nProsa.\n")
+    _write(repo, dr.JOURNAL, JOURNAL + f"\n## 99. Anhang\n\n### {title}\n\nProsa.\n")
     assert dr.check_all(root=repo) == []
 
 
@@ -162,11 +199,40 @@ def test_a_headline_the_journal_never_names_fails(repo: Path) -> None:
     assert any("appears nowhere else in the journal" in p for p in problems)
 
 
+def test_an_archived_section_is_evidence_for_its_ledger_value(repo: Path) -> None:
+    """Archiving the section that measured a number must not orphan its ledger row.
+
+    The number lives in the section, so moving the section moves the evidence.
+    A scan that reads only the active journal would call a correct archive move
+    a number invented in a table — the one way this rule can be wrong.
+    """
+    _write(
+        repo,
+        dr.ARCHIVE_PAGE,
+        ARCHIV + "\n### Lotse v0.17 `aug20` — das Reservierungs-Veto\n\nWörter 0,109255 · Paare 0,148433.\n",
+    )
+    _write(
+        repo,
+        dr.JOURNAL,
+        JOURNAL.replace(
+            "### Lotse v0.17 `aug20` — das Reservierungs-Veto\n\n"
+            "Zähler-identisch. Wörter 0,109255 · Paare 0,148433 im Fließtext.\n",
+            "",
+        ).replace(
+            "[v0.17](#lotse-v017-aug20--das-reservierungs-veto)",
+            "[v0.17](messjournal-archiv.md#lotse-v017-aug20--das-reservierungs-veto)",
+        ),
+    )
+    assert dr.check_all(root=repo) == []
+
+
 def test_the_newest_ledger_row_must_be_the_status_headline(repo: Path) -> None:
-    text = JOURNAL.replace("> Wörter 0,109255 · Paare 0,148433", "> Wörter 0,106400 · Paare 0,146580")
-    _write(repo, dr.JOURNAL, text)
+    # The headline pair stays in the METRIC document even though the ledger
+    # moved with the journal — that blockquote is the one promised home.
+    text = METRIC.replace("> Wörter 0,109255 · Paare 0,148433", "> Wörter 0,106400 · Paare 0,146580")
+    _write(repo, dr.METRIC, text)
     problems = dr.check_all(root=repo)
-    assert any("is not the status blockquote's headline" in p for p in problems)
+    assert any("is not the headline of" in p for p in problems)
 
 
 @pytest.mark.parametrize("tag", ["jan07", "feb28", "mrz12", "mär12", "apr01", "mai31", "jun11", "dez24"])

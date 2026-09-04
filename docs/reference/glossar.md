@@ -48,7 +48,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — k0-Protokoll §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
-- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Mindestbelegung (Eigenhand) §5
+- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
@@ -316,7 +316,7 @@ Stand `aug19`: 15 der 34 Fixture-Glyphen der Sütterlin-1922-Root
 diagnostizierte Haupt-Anteil der „Karten-Form-Decke" der Lotse-Route
 (G-Kopf, W-Apexe, k-Kringel liegen alle in der Lücke). *Technisch:*
 Glyph ohne `variant=100`-Zeile; Lücken-Schluss-Arm LF1 →
-qualitaetsmetrik.md §14 („Laufform LF1")
+messjournal.md §14 („Laufform LF1")
 
 **Endblende (Laufform)** — die Chart-Rückblendung an den FREIEN
 STRICHENDEN einer Laufform-Zeile: über ein Bogen-Fenster W vom
@@ -331,7 +331,7 @@ am Wort-Lineal verworfen (`aug29`):** bei gut belegten Buchstaben sind
 die Laufform-Enden die Hand, nicht Drift. *Technisch:*
 `core/laufform.py::blend_stroke_ends`, Knopf `LAUFFORM_END_WINDOW`
 (0 = aus), Stempel `trace_meta.laufform.end_window`/`end_mode`;
-Kandidaten-Karten: `tools/laufform/endblend.py` → qualitaetsmetrik.md
+Kandidaten-Karten: `tools/laufform/endblend.py` → messjournal.md
 §14 („Laufform LF5"/„LF6"), Rettungswege tintenfolger.md §7.9
 
 **Prior-Landerichtung** — die Regel-Idee (Übergänge J1, `aug29`),
@@ -343,7 +343,7 @@ Duktus-Prior. Gemessen (a) grün (−0,0010), aber die Zielstelle (n→t)
 unverändert, weil die Kopplung das t nicht erreicht
 (`ALIGN_MAX_ENTRY_Y`, Haken-Segment im Kandidaten-Scan) — nicht
 adoptiert, wird in J2 („Anstrich-Verlängerung in den Schaft")
-mitgemessen. → qualitaetsmetrik.md §14 („Übergänge J1"/„J2")
+mitgemessen. → messjournal.md §14 („Übergänge J1"/„J2")
 
 **Kopf-Gate (Laufform)** — die dritte Prüfung des Zeilen-Gates (§14
 LF9, `aug29`): der KOPF einer Laufform-Zeile — die Landerichtung ihres
@@ -365,7 +365,7 @@ der Rückwärts-Schlenker im Wort, den das Sprung-Gate nicht sieht (t
 knappste vertraute Zeile darunter.
 *Technisch:* `core/laufform.py` (`head_deviation`, `head_gate`),
 Skip-Grund `head_deviation` mit `head_deviation`/`head_max`,
-Inventar-Spalte `head°` → qualitaetsmetrik.md §14 („Laufform LF9")
+Inventar-Spalte `head°` → messjournal.md §14 („Laufform LF9")
 
 **Glätte-Sensor** — die Kennzahl, die das Zittern einer Laufform-Zeile
 zum ersten Mal benennt (§14 LF11, `sep02`): wie oft die GERENDERTE
@@ -381,7 +381,7 @@ gegen 0,2 der Tafel, ohne dass eine Zahl je darauf reagiert hätte.
 Berichtsspalte, kein Gate. *Technisch:* `core/laufform.py`
 (`zigzag_rate`, `smoothness_gap`, `ZIGZAG_STEP_UNITS`,
 `ZIGZAG_TURN_MIN_DEG`), Inventar-Spalte `zig` →
-qualitaetsmetrik.md §14 („Laufform LF11")
+messjournal.md §14 („Laufform LF11")
 
 **Spline-Basis-Median** — die glatte Zwillingsform des Per-Anker-Medians
 (§14 LF11, `sep02`): statt jeden der 120 Anker einzeln zu medianisieren
@@ -398,7 +398,7 @@ Ein Knopf: der Knotenabstand Δs; gemessen auf {0,08 · 0,16 · 0,32} xh,
 bestanden hat 0,16. *Technisch:*
 `core/aggregate.py::spline_basis_median`, Kandidaten-Karten trocken über
 `tools/laufform/smoothrow.py`; `aggregate_instances` bleibt bis zu einer
-Adoption beim Per-Anker-Median → qualitaetsmetrik.md §14 („Laufform LF11")
+Adoption beim Per-Anker-Median → messjournal.md §14 („Laufform LF11")
 
 **Form-Abstand (Laufform)** — der vierte, GEMESSENE und (Stand
 `sep01`) NICHT adoptierte Sensor der Zeilen-Gate-Familie (§14 LF10):
@@ -420,7 +420,7 @@ Zeilen; was das Auge an P liest, ist kein Abstandsbetrag. Bleibt
 Berichts-Spalte der Bestandsaufnahme, kein Schreibpfad liest sie.
 *Technisch:* `core/laufform.py::form_distance`, Inventar-Spalten
 `form`/`f-med`/`f-max` + τ_form, `--laufform DATEI.json` für
-Kandidaten-Zeilen → qualitaetsmetrik.md §14 („Laufform LF10"),
+Kandidaten-Zeilen → messjournal.md §14 („Laufform LF10"),
 tintenfolger.md §7.9
 
 **Zeilen-Gate (Laufform)** — die drei Prüfungen, die eine
@@ -444,7 +444,7 @@ der Bestandsaufnahme (`tools/laufform/inventory.py`). τ ist
 datengetrieben: Maximum der vertrauten Zeilen (n ≥ 3) auf der Root,
 aufgerundet — nie von Hand gesetzt. *Technisch:* `core/laufform.py`
 (`anchor_spike_ratio`, `spike_gate`, `row_naturalness`), Skip-Grund
-`anchor_spike` mit `spike_ratio`/`spike_max` → qualitaetsmetrik.md §14
+`anchor_spike` mit `spike_ratio`/`spike_max` → messjournal.md §14
 („Laufform LF7"/„LF8")
 
 **Schreib-Karte** — die Laufform-Kandidaten-Karte in GENAU der
@@ -458,7 +458,7 @@ wird" — eine neu gerechnete Karte ist nicht automatisch die
 freigegebene. *Technisch:* gepatchte Fixture-Root
 (`templates_laufform.json` ersetzt, sonst byte-gleich) + Payload
 `{glyph_key: {anchors, n_occurrences}}` für `PUT
-…/templates/{key}/laufform` → qualitaetsmetrik.md §14 („Laufform
+…/templates/{key}/laufform` → messjournal.md §14 („Laufform
 LF3b-W")
 
 **Instance** *(Vorkommen / occurrence)* — **ein** beobachtetes Auftreten
@@ -576,7 +576,7 @@ sinnlos zurück (Korb #8). Die Naht-Winkel-Spalte zählt Verbinder dieser
 Klasse aus und meldet sie getrennt, weil ihr „Abgang“ eine gewollte
 180°-Kehre ist.
 *Technisch:* `core/compose.py::CAP_RESTART_BASES`, `cap_retrace` in
-`compose_word` → qualitaetsmetrik.md §14 „Übergänge Korb-Runde `aug30`“
+`compose_word` → messjournal.md §14 „Übergänge Korb-Runde `aug30`“
 
 **Vorschub-Kalibrierung** *(advance calibration)* — die Runde, in der
 die Abstände zwischen zwei Buchstaben nicht mehr geraten, sondern aus
@@ -589,7 +589,7 @@ Folgerunde; die „Arkaden-Luft“ fiel als Beleg-Varianz durch. Die Runde
 ist der Grund, warum das Wort-Lineal von 0,110983 auf 0,108091 fiel —
 der größte Einzelsprung der Kompositions-Arbeit.
 *Technisch:* `core/compose.py` (Welle 2, PR #361/#363) →
-qualitaetsmetrik.md §14 „Welle 2 · P1“ und „Welle 2 · P2“
+messjournal.md §14 „Welle 2 · P1“ und „Welle 2 · P2“
 
 **Girlande** — die tief durchhängende Verbindung, die von einem Exit in
 den nächsten Arkaden-Eintritt (n, m, i, u) fällt — das rhythmische
@@ -627,7 +627,7 @@ unberührt bleibt. **Status: opt-in, Standard aus, nicht adoptiert** —
 `seam_dep` der Klasse geht von +12,52° auf −1,39° und das Wort-Lineal ist
 leicht dafür, aber `dconn` gegen die dissezierten Hand-Verbindungen fällt
 nur in 20 % (artefaktbereinigt 51 %) der Joins; Gate (b) rot
-(qualitaetsmetrik.md §14 „Übergänge J4/J4b").
+(messjournal.md §14 „Übergänge J4/J4b").
 *Technisch:* `EXIT_TRIM_WINDOW`, `EXIT_TRIM_TOL_DEG`,
 `EXIT_TRIM_MIN_KINK_DEG`, `_exit_trim_index`, `_cut_exit_stub` in
 `core/compose.py`; Bench-Schalter `--exit-trim`.
@@ -652,7 +652,7 @@ Wörtern). Schwester-Befund, ehrlich NICHT adoptiert: die
 Arkaden-Luft (n/m brauchen laut Dissektion +0,18 mehr Raum, die
 Wordbench widerspricht).
 *Technisch:* `BOWL_EXIT_TUCK_BASES`/`BOWL_EXIT_CLEARANCE` in
-`core/compose.py`; Messung qualitaetsmetrik.md §14 „Welle 2 · P1".
+`core/compose.py`; Messung messjournal.md §14 „Welle 2 · P1".
 
 **Stamm-Rückpass (versetzt)** — die generierte Brücke, mit der die
 Komposition den t-Deckstrich OHNE Absetzen anschließt (Welle 1 · K1b,
@@ -665,7 +665,7 @@ unverändert. Der Balkenstrich verliert seinen Lift; der Auslauf
 durchsticht Abstrich UND Rückpass, womit `unter`/`mit` ihre
 Hand-Zählungen erreichen.
 *Technisch:* `BAR_RETRACE_BULGE_UNITS` (+ `_MAX_DX`/`_MIN_RISE`) in
-`core/compose.py`; Messung qualitaetsmetrik.md §14 „Welle 1 · K1b".
+`core/compose.py`; Messung messjournal.md §14 „Welle 1 · K1b".
 
 **Override** *(Paar-Override, `glyph_pairs`)* — eine für genau *ein*
 Buchstabenpaar hinterlegte, wörtlich übernommene Verbindung, die den
@@ -965,7 +965,7 @@ von echten Marken, DUNKELHEIT trennt vollständig (rel 0,74–0,92 gegen
 0,01–0,38). Nicht zu verwechseln mit der **eigenen Marke** als Magnet
 (die-2: der i-Punkt zieht die Körperbahn) — dunkel, echt, und vom
 Darkness-Filter bewusst behalten. *Technisch:*
-`tools/pairlab/ink_evidence.py` → qualitaetsmetrik.md §14 „Kette K-C"
+`tools/pairlab/ink_evidence.py` → messjournal.md §14 „Kette K-C"
 
 **Tinten-Evidenz-Maske** *(ink-evidence mask, Kette K-C)* — die Maßnahme
 gegen Fremdtinte: vor Seed-Fenstern und Solve wird jede Nicht-Haupt-
@@ -983,7 +983,7 @@ adoptiert (`aug21`): `FollowWeights.ink_evidence` und
 bzw. `ink_evidence=False` = der Vor-v4-Stand, byte-identisch.
 Drop-Liste je Wort in `meta.ink_evidence`. *Technisch:*
 `tools/pairlab/ink_evidence.py`, Einsatz in `follow_derived` und
-`harvest.chain_word_strokes` → qualitaetsmetrik.md §14 „Kette K-C"
+`harvest.chain_word_strokes` → messjournal.md §14 „Kette K-C"
 (Messung) + „Kette v4" (Re-Baseline)
 
 **Tinten-Zuweisung per Strecke** *(per-stroke ink assignment, Kette
@@ -1003,7 +1003,7 @@ weg), aber vier diffuse Körper-Deckungs-Risse hängen an denselben
 Kanälen wie die Heilung; Stufe 2 nicht eröffnet, Wege §7.9
 (humanbench · Distanzfeld-NUR-Claim). *Technisch:*
 `tools/pairlab/chain.py` (Feld-Aufbau in
-`fit_word_chain`/`_prepare_fields`) → qualitaetsmetrik.md §14
+`fit_word_chain`/`_prepare_fields`) → messjournal.md §14
 „Kette K-E"/„Kette K-E2", tintenfolger.md §7.3 A9/K-E
 
 **Marken-Claim-Trennung** *(mark-claim separation, K-E Stufe 1)* —
@@ -1021,7 +1021,7 @@ Körper-Evidenz. EIN Knopf `mark_claim` (`--mark-claim`), nach den
 per aiou-Gate bei spektakulärer die-2-Heilung; der Code trägt die
 K-E2-Form (Breitenfelder ungeteilt). *Technisch:*
 `tools/pairlab/chain.py`, Knopf in `FollowWeights`/`HarvestOptions`
-→ qualitaetsmetrik.md §14 „Kette K-E"/„Kette K-E2"
+→ messjournal.md §14 „Kette K-E"/„Kette K-E2"
 
 **Topologie-Wächter** *(structure guard)* — Arm ⑨ des Tintenfolgers:
 eine Runden-AKZEPTANZREGEL statt einer Kraft. Vor der ersten Runde
@@ -1037,7 +1037,7 @@ Veto scheitern zu lassen; der Owner-Satz dahinter: Kringel, Kreuzungen
 und Retraces sind duktus-fix. *Technisch:*
 `tools/pairlab/follow.py::structure_class_counts` +
 `FollowWeights.structure_guard` (default False = byte-identisch),
-`STRUCTURE_GUARD_MAX_RETRIES` → qualitaetsmetrik.md §14 (Arm ⑨).
+`STRUCTURE_GUARD_MAX_RETRIES` → messjournal.md §14 (Arm ⑨).
 Nicht zu verwechseln mit dem **Laufform-Topologie-Wächter** (unten) —
 gleicher Geist (Duktus-Topologie ist unantastbar), andere Schicht.
 
@@ -1055,7 +1055,7 @@ Runde-1-Rollback auf den Init. Radius 0 reproduziert das alte
 Verhalten byte-identisch. *Technisch:*
 `tools/pairlab/follow.py`, `--structure-guard-zone <xh>`,
 `FollowWeights.structure_guard_zone_units` (Default 0,55 seit Kette v5)
-→ qualitaetsmetrik.md §14 „Kette K0-Z `aug20`“ und „Kette v5 `aug26`“
+→ messjournal.md §14 „Kette K0-Z `aug20`“ und „Kette v5 `aug26`“
 
 **Ratsche** *(Ratschen-Budget, `structure_guard_ratchet`, K0-Z-R)* —
 die zweite Reparatur derselben Schicht: das Struktur-Budget des
@@ -1068,7 +1068,7 @@ die neue Obergrenze. Zusammen mit der zonalen Rückweisung und dem
 Kompositions-Soll bildet sie den Wächter-Stack, der seit Kette v5
 (`aug26`) der Default ist. *Technisch:*
 `tools/pairlab/follow.py`, `--no-structure-guard-ratchet` schaltet sie
-ab → qualitaetsmetrik.md §14 „Kette K0-Z-R `aug20`“ und „Kette K0-S
+ab → messjournal.md §14 „Kette K0-Z-R `aug20`“ und „Kette K0-S
 `aug21`“
 
 **Schienen-Auslauf** *(tail runout)* — die erste adoptierte Konstante
@@ -1080,7 +1080,7 @@ Tinten-Sample noch der Karte folgen darf. Adoptiert bei **1,0** —
 er allein senkte den dtw-Median der Route von 0,119 auf 0,101 und ein
 Einzelwort von 0,343 auf 0,087. *Technisch:*
 `tools/inkpilot/pilot.py::TAIL_RUNOUT_MAX_UNITS` →
-qualitaetsmetrik.md §14 „Route Lotse `aug16`“, Ledger:
+messjournal.md §14 „Route Lotse `aug16`“, Ledger:
 verfahren-lotse.md
 
 **Laufform-Topologie-Wächter** *(LF2)* — die Schichtungs-Regel auf der
@@ -1093,7 +1093,7 @@ der rohe Anker-Median bügelt Schleifenschlüsse glatt
 („Median-Verengung": der Annäherungs-Spalt der Schenkel schrumpft,
 und der v2.1-Retrace-Filter kippt das tangentiale X). Als
 Voll-Entfernung gemessen und verworfen (Tinten-Preis, Marken-Kipp);
-als WRITE-PATH-Prinzip bleibt er stehen. → qualitaetsmetrik.md §14
+als WRITE-PATH-Prinzip bleibt er stehen. → messjournal.md §14
 („Laufform LF2"), Nachfolger: Topologie-Reparatur (LF3)
 
 **Topologie-Reparatur** *(Chart-Rückblendung, LF3)* — die Konversion
@@ -1104,7 +1104,7 @@ um die verlorene Kreuzung minimal zur Chart-Geometrie zurück —
 `t` per Bisektion als kleinstes t ∈ [0, 1], das die Zählung
 wiederherstellt (linearer Falloff, deterministisch); scheitert auch
 t = 1, fällt das Glyph auf die Chart-Form zurück. Breite bleibt
-Laufform, Topologie bleibt Chart. → qualitaetsmetrik.md §14
+Laufform, Topologie bleibt Chart. → messjournal.md §14
 („Laufform LF3")
 
 **Junction-Verschiebung** *(junction displacement)* — der dokumentierte
@@ -1131,7 +1131,7 @@ Kreuzungsziele — auf den Dev-Wörtern sind das 12 von 21
 Korrespondenzen (→ die Korrespondenz-Kappe), die Kappe jedes
 Landmark-Effekts, solange die Korrespondenz nicht klassenbewusst wird.
 *Technisch:* `tools/pairlab/follow.py::extrapolated_targets`
-→ qualitaetsmetrik.md §14 (Arm ⑥)
+→ messjournal.md §14 (Arm ⑥)
 
 **Korrespondenz-Kappe** — der Befund, der die Arme ⑤/⑥ des
 Tintenfolgers überragt: 12 der 21 Landmark-Korrespondenzen der
@@ -1141,7 +1141,7 @@ berührt sich nur. Solange die Korrespondenz diese Klassen nicht kennt,
 zieht jeder Landmark-Zug an der Hälfte der Ziele in eine Struktur, die
 es nicht gibt; das deckelt jeden möglichen Effekt des Terms, wie stark
 er auch gewichtet wird. → die klassenbewusste Korrespondenz.
-*Technisch:* qualitaetsmetrik.md §14 (Arme ⑤+⑥, `aug14`)
+*Technisch:* messjournal.md §14 (Arme ⑤+⑥, `aug14`)
 
 **klassenbewusste Korrespondenz** — die vorregistrierte Antwort auf die
 Korrespondenz-Kappe (Arm ⑥b): die Landmark-Korrespondenz kennt die
@@ -1156,7 +1156,7 @@ die Tinte eine Kreuzung tragen. Folger-seitig; `chain.py` und die
 eingefrorene `landmarks.py` bleiben unberührt. *Technisch:*
 `tools/pairlab/follow.py::classed_targets` (Modus
 `extrapolated_classed`), `LANDMARK_NONCROSSING_REASONS`
-→ qualitaetsmetrik.md §14 (Arm ⑥b)
+→ messjournal.md §14 (Arm ⑥b)
 
 **Retrace-Guard** — die Ausnahme im Tintenfolger, die dessen blinden
 Fleck deckt: Über doppelt beschriebener Tinte belohnen BEIDE Datenterme
@@ -1426,7 +1426,8 @@ werden **nie** gemittelt. Der aktuelle Stand steht bewusst **nicht hier**:
 eine Zahl in zwei Docs veraltet in einem davon (dieser Satz nannte bis
 2026-09-02 noch den Lauf `aug02`). Er wohnt im Status-Blockquote von
 qualitaetsmetrik.md, seine Historie samt Fixture-Wurzeln im
-Headline-Ledger am Kopf von §14. → qualitaetsmetrik.md §6/§14
+Headline-Ledger am Kopf von §14. → qualitaetsmetrik.md §6 ·
+messjournal.md §14
 
 **Chamfer-Distanz** — ein Standardmaß für „wie weit sind zwei Formen
 auseinander“: für jeden Punkt der einen Form der Abstand zum nächsten
@@ -1746,7 +1747,7 @@ Tintenfolger, InkSight, später Fusion) gegen den nachgefahrenen
 Referenzsatz — Punktdistanz (`dtw_xh`), papertreues AIoU gegen die
 Tintenmaske, Richtungs-Chamfer, Fehlerzähler an Kreuzungen/Marken/
 Retraces. Ein Kandidat ist wörtlich eine `word_instances`-Zeile; die
-Kriterien sind vorregistriert (qualitaetsmetrik.md §14), ein
+Kriterien sind vorregistriert (messjournal.md §14), ein
 Strukturdefekt vetot jeden Distanzgewinn. *Technisch:* die Mess-Module
 `tools/tracebench/{metric,frames,counters,sets}.py` (Stufe B); Harness +
 Provider folgen als Stufe C → proposals/tintenfolger.md §2
@@ -1765,7 +1766,7 @@ aiou-Verlierer-Schwelle je Wort ist −0,003 (Messrauschen). Bis
 `aug21` je Runde als Scratch-Skript neu gebaut, seither
 `tools/tracebench/k0eval.py`. *Technisch:* Zähler aus
 `tools/tracebench/counters.py`, Soll aus `soll.py` →
-qualitaetsmetrik.md §14 „Kette K0-Z" (Erstform), werkzeuge.md
+messjournal.md §14 „Kette K0-Z" (Erstform), werkzeuge.md
 (Mess-Liturgie)
 
 **`dtw_xh`** — die Headline-Distanz des tracebench: unconstrained DTW
@@ -1813,7 +1814,7 @@ verlöre. `--mark-arc-cap` reproduziert jeden alten Wert. *Technisch:*
 EIGENE Kappe (`tools/pairlab/marks.py::MARK_MAX_INK_ARC_UNITS`, 1,6) —
 früher davon abgeleitet, entkoppelt, damit eine Lineal-Änderung nicht
 still die Kandidatenseite mitbewegt.
-→ qualitaetsmetrik.md §14 „Lineal L-U"
+→ messjournal.md §14 „Lineal L-U"
 
 **Retrace-Segment** — zweimal beschriebene Tinte als GEZÄHLTE Zone:
 zusammenhängende antiparallele Sample-Paare (Detektor
@@ -1823,7 +1824,7 @@ Aus-und-zurück-Bewegung zu einer Zone fusionieren (über die
 Partner-Indizes des Detektors — sonst verweigert das Zentroid-Matching
 eine Bahn gegen sich selbst, und das authored-Identitäts-Gate schlüge
 auf jedem Deckstrich-Wort an). Seit den Struktur-Zählern v2
-(qualitaetsmetrik §14 `aug16`) zählt ein Pass nur als Retrace, wenn
+(messjournal §14 `aug16`) zählt ein Pass nur als Retrace, wenn
 sein Partner BOGEN-NAH liegt (Lücke ≤ 1,0 xh) und der Pass keine
 Spitzen-Graze ist (Arc ≥ 0,30 xh); ferne Antiparallel-Nähe ist eine
 → Berührung, ein Partner im anderen Strich eine Überlagerung.
@@ -1844,7 +1845,7 @@ Schiene genau auf Kreuzungshöhe, es gibt keine Wiederbelegung —
 erreichbar nur über Karten-Vorfahrt an Karten-Selbstschnitten,
 v0.8/v0.9). *Technisch:* `tools/inkpilot/pilot.py`
 (`RIDE_DOUBLE_ZONE_MARGIN_UNITS`, `MAP_CROSSING_WINDOW_UNITS`,
-`MAP_CROSSING_PIN`) → qualitaetsmetrik.md §14 „Lotse v0.7–v0.9",
+`MAP_CROSSING_PIN`) → messjournal.md §14 „Lotse v0.7–v0.9",
 proposals/tintenfolger.md §7.10
 
 **Plateau-Anker** — der `aug19` adoptierte Pinnungs-Mechanismus der
@@ -1863,7 +1864,7 @@ Anker-Identitäten) zu einem Cluster mit einem gemeinsamen
 Mittel-Offset — der dichte Cluster verschiebt sich als Ganzes.
 *Technisch:* `tools/inkpilot/pilot.py` (`MAP_RUN_PIN_KNOTS`,
 `PIN_KNOT_PLATEAU_UNITS`, `map_crossing_knots`, `_pin_map_runs`) →
-qualitaetsmetrik.md §14 „Lotse v0.10/v0.11 `aug19`"
+messjournal.md §14 „Lotse v0.10/v0.11 `aug19`"
 
 **Marken-endständige Assembly** — die `aug19` als **Kette v2**
 adoptierte Formulierungsänderung (K-A): der Ketten-Kandidat emittiert
@@ -1879,7 +1880,7 @@ datierte Re-Baseline eines Duell-Kandidaten (alle gepaarten
 Vergleiche rechnen seither gegen v2). *Technisch:*
 `tools/laufform/harvest.py` (`HarvestOptions.marks_last`,
 `chain_word_strokes`), `tools/pairlab/trace.py::
-diacritic_stroke_units` → qualitaetsmetrik.md §14 „Kette K-A `aug19`"
+diacritic_stroke_units` → messjournal.md §14 „Kette K-A `aug19`"
 
 **Entdrillung** *(untwist)* — der `aug19` adoptierte
 Lotse-Mechanismus (v0.13, `UNTWIST_WINDOW_UNITS` = 0,5) gegen die
@@ -1897,7 +1898,7 @@ Paar-Entfernung ist PARITÄT-BLIND — die `aug20`-Autopsie zeigt sie
 am Galoppieren-G-Kopf das echte X mitsamt seinem Duplikat fressen
 (2 → 0, wo die Hand 1 schreibt); der benannte Diskriminator ist das
 Lineal-Soll-Budget (eigener Eintrag). *Technisch:*
-`tools/inkpilot/pilot.py::untwist_strokes` → qualitaetsmetrik.md §14
+`tools/inkpilot/pilot.py::untwist_strokes` → messjournal.md §14
 „Lotse v0.13/v0.14 `aug19`", „G-Kopf-Ritt-Autopsie `aug20`"
 
 **Lineal-Soll-Budget** *(ruler-soll budget)* — die `aug20`-Korrektur
@@ -1921,7 +1922,7 @@ Kaskade räumt die Stelle trotzdem leer). *Technisch:*
 `tools/inkpilot/pilot.py::map_self_intersections` (Soll-Quelle),
 `::pin_run_mask` (Stufen), `UNTWIST_SOLL_BUDGET` ·
 `UNTWIST_SOLL_MATCHING` →
-qualitaetsmetrik.md §14 „Lotse v0.16/v0.17 `aug20`"
+messjournal.md §14 „Lotse v0.16/v0.17 `aug20`"
 
 **Karten-Soll-Vollständigkeit** — die `aug20` gestellte Frage
 nach den Kreuzungen, die die Karte GAR NICHT führt (Wächter
@@ -1935,7 +1936,7 @@ Abstieg + 0,07-xh-versetzter Rückpass, der K1b-Befund) war die
 Auflösungs-Grenze (v0.18), keine Kompositions-Lücke. Was
 karten-seitig bleibt, sind Soll-X ohne Hand-Partner (mit-2,
 linken: die Karte kreuzt, wo DIESE Hand nicht kreuzt) —
-Beleg-Varianz, kein Fehler. *Technisch:* qualitaetsmetrik.md §14
+Beleg-Varianz, kein Fehler. *Technisch:* messjournal.md §14
 „Karten-Soll-Autopsie"/„t-Stamm-Ritt-Autopsie `aug20`",
 tintenfolger.md §7.9
 
@@ -1948,7 +1949,7 @@ einer matcht und der andere als unecht zählt. Kein
 Topologie-Erfindungs-Fehler (das X ist real, nur doppelt); benannter
 nächster Mechanismus: EIN X je Knoten-Cluster (Begradigung der
 Fenster-Teilbahn je Pass durch den Knoten). *Technisch:*
-qualitaetsmetrik.md §14 „Lotse v0.11 `aug19`",
+messjournal.md §14 „Lotse v0.11 `aug19`",
 proposals/tintenfolger.md §7.9
 
 **Durchstoß-Kriterium** *(pierce test)* — die v2-Definition der
@@ -1971,7 +1972,7 @@ effektive Boden damit bei der Detektor-Toleranz 25°. Gezählt werden
 Kreuzungs-ORTE, nicht -Ereignisse. *Technisch:*
 `tools/tracebench/counters.py::_pierces`, Konstanten
 `PIERCE_WINDOW_UNITS`/`PIERCE_MARGIN_UNITS`/`CROSS_PARTNER_NEAR_UNITS`
-→ qualitaetsmetrik.md §14 (Struktur-Zähler v2 + Nachtrag v2.1)
+→ messjournal.md §14 (Struktur-Zähler v2 + Nachtrag v2.1)
 
 **Berührung (Struktur-Zähler)** *(touch)* — Vorbeischreiben statt
 Retrace: zwei Passagen derselben Bahn laufen nahe und entgegengesetzt
@@ -1984,7 +1985,7 @@ Retraces" der Kette waren überwiegend erfundene Berührungen — die
 Komposition schreibt Buchstaben zu eng aneinander vorbei.
 *Technisch:* `tools/tracebench/counters.py::structure_zones`,
 `RETRACE_MAX_PARTNER_GAP_UNITS`
-→ qualitaetsmetrik.md §14 (Struktur-Zähler v2)
+→ messjournal.md §14 (Struktur-Zähler v2)
 
 **Duell-Ansicht** — die Sichtbarmachung des Tintenfolger-Duells: ein
 selbst-enthaltenes HTML, das je Wort ALLE Bahn-Kandidaten als
@@ -2011,7 +2012,7 @@ Fenster das SCHLECHTESTE Sample (ein Ausreißer kann nicht
 weggeglättet werden), und Hover setzt eine Sonde an die entsprechende
 Wortstelle. *Technisch:* `tools/tracebench/view.py::residual_values`
 (über den Warping-Pfad `metric.DtwResult.pairs` — Anzeige-Zugang zur
-Zuordnung, zahlenneutral) → reference/qualitaetsmetrik.md §14
+Zuordnung, zahlenneutral) → reference/messjournal.md §14
 
 **Chronik (tracebench)** — die create-only Rundenhistorie des Duells:
 jeder Optimierungs-/Mess-Lauf wird als zeitgestempeltes Verzeichnis
@@ -2041,7 +2042,7 @@ die Abhängigkeit. *Technisch:* `tools/routeg` (`graph.py` baut,
 `recover.py` läuft, `to_candidate.py` rahmt um; Kandidaten-Label
 `routeg-graph`, nie `routeg-wor`). *Anzeige-Name auf der Duell-Seite
 seit 2026-08-16:* **Nullprobe** (→ Duell-Namen).
-→ proposals/tintenfolger.md §4b, qualitaetsmetrik.md §14
+→ proposals/tintenfolger.md §4b, messjournal.md §14
 
 **Duell-Namen** *(display names of the tracing duel)* — die lesbaren
 Verfahrensnamen der Duell-Seite und der späteren öffentlichen
@@ -2080,7 +2081,7 @@ bewegten Wörtern `revert-init`, v5 macht daraus `zonal`. Daneben der
 warnt bei Abweichung — zweimal in zwei Tagen wurde sonst gegen den
 falschen Folger gemessen. *Technisch:*
 `tools/tracebench/k0eval.py::guard_outcome`/`guard_stack`
-→ qualitaetsmetrik.md §14 „Kette v5"
+→ messjournal.md §14 „Kette v5"
 
 **Verfahrensseite** — die Register-Seite eines Duell-Verfahrens unter
 `docs/reference/` (`verfahren-kette.md` · `verfahren-lotse.md` ·
@@ -2091,7 +2092,7 @@ Versionsnummer je vorregistriertem Arm; Stand = Menge der adoptierten
 Mechanismen; keine rückwirkende Umnummerierung; die Nullprobe bewusst
 unversioniert) steht in der Übersicht. Register, keine zweite
 Wahrheit: jede Zahl dort ist ein datiertes Zitat, der Beleg wohnt in
-qualitaetsmetrik.md §14. *Technisch:*
+messjournal.md §14. *Technisch:*
 `docs/reference/verfahren.md` (Übersicht + Konvention),
 Nachzieh-Pflicht in docs/index.md § „Dokument-Status“
 → reference/verfahren.md
@@ -2157,7 +2158,7 @@ wird, teilt das die Runde: die Grenze liegt im Zeitstempel, die
 bereinigte Menge wird nach demselben Auswerteplan gezählt (Wiederholungen
 stimmen nie mit) und trägt unter sechs vollständigen Paaren keinen
 Adoptionsanspruch; berichtet werden beide Lesarten.
-→ menschliche-bewertung.md §3.6b, qualitaetsmetrik.md §14 („Laufform
+→ menschliche-bewertung.md §3.6b, messjournal.md §14 („Laufform
 LF11 — humanbench-Wortrunde")
 
 **Fehler-Taxonomie** — die sechs Kategorien, in denen ein
@@ -2548,7 +2549,7 @@ NEUER Mechanismus, neue Evidenz (Bestätigungssatz) oder ein neuer Sensor
 Vorregistrierung — nie derselbe Knopf mit weicheren Gates. Verhältnis zu
 „Verworfen": das Verdikt bleibt geschlossen; der Rettungsweg ist die
 separat vorregistrierte NÄCHSTE Hypothese, nicht seine Wiedereröffnung.
-→ proposals/tintenfolger.md §7.9 · qualitaetsmetrik.md §14
+→ proposals/tintenfolger.md §7.9 · messjournal.md §14
 
 **Status-Vokabular der Docs** — jedes Doc trägt unter der Überschrift einen
 Status mit absolutem Datum: **bindend** (entschieden) · **lebend**
@@ -2557,6 +2558,23 @@ Status mit absolutem Datum: **bindend** (entschieden) · **lebend**
 **Befund-Journal** (datierte Momentaufnahme, wird nie fortgeschrieben, nur
 abgelöst) · **statisch** (quellenbelegtes Nachschlagematerial).
 → docs/index.md § Dokument-Status
+
+**Messjournal** *(measurement journal)* — die Datei
+[`messjournal.md`](messjournal.md), seit 2026-09-04 die Heimat von §14, dem
+Kampagnen-Journal: 81 datierte Abschnitte, je einer pro Mess-Runde, mit
+Vorregistrierung, gemessenen Zahlen und Verdikt. Vorher stand die Sektion in
+`qualitaetsmetrik.md` und machte dort zwei Drittel der Datei aus, sodass jede
+Frage nach einer Metrik-REGEL das ganze Journal mitlud; der Umzug ist Wort für
+Wort und lässt Überschriften wie Anker unangetastet, weshalb die Nummer **§14**
+als Zitierschlüssel bleibt (rund 350 Zitate im Repo). Einstieg ist das
+**Register** im Kopf: eine Zeile je Abschnitt mit Datum, Route, Typ · Verdikt
+und Befund — erst der Sprung aus dem Register lädt einen Abschnitt. Ein
+abgeschlossener Arm zieht in
+[`messjournal-archiv.md`](messjournal-archiv.md) (Verdikt gebucht ·
+Rettungswege eingetragen · ≥ 4 Wochen unberührt), behält dabei seinen Anker,
+und seine Registerzeile bekommt nur den Dateinamen vor das `#`-Fragment.
+*Technisch:* `tools/docs_register` (`JOURNAL`, `ARCHIVE_PAGE`, `METRIC`),
+CI-Job „Docs-Register“. → messjournal.md · qualitaetsmetrik.md
 
 **Changelog-Fragment** *(`changelog.d/<slug>.md`)* — der Changelog-Beitrag
 einer PR als EIGENE Datei statt als Bullet unter `[Unreleased]` der
