@@ -4,7 +4,8 @@
 > Frontends und ist am 2026-08-03 gegen den Code geprüft
 > (Tokens, 19-px-Leiter samt Gewichten, Breiten 760/1152/1280, Kopfleiste,
 > Routenliste); am 2026-09-04 um den Tintenboden geschriebener Zeilen
-> ergänzt (§9, §7 `WrittenWord`).
+> ergänzt (§9, §7 `WrittenWord`) und um die Postkarten-Federprobe samt
+> Schriftgrößen-Leiter (§7.1).
 > **Mitziehen bei jeder Änderung an `app/src/styles/paper.ts`,
 > `theme/typography.ts`,
 > `components/PageContainer|Prose|PageHeader|HeaderBar|PublicHeader|PublicFooter`,
@@ -306,9 +307,65 @@ eigenen drei Bereichen (Buchstaben · Übergänge · Wörter) — §7 `HeaderBar
 | `HeroWritten` | einspaltiger Landing-Hero: Markenwort wird von der Engine geschrieben | Engine-first (`WrittenWord`, seit 2026-08-27); die Engine bekommt beliebig lange (Geduld-Zeile nach ~3 s, Autor-Entscheid 2026-08-27) — GLKurrent-Wort (Specimen) mit Wisch + Federspitze nur bei echtem Scheitern (Fetch-Fehler, fehlende Glyphen), Caption wechselt mit dem Modus |
 | `WrittenGlyph` | ein Glyph „wie geschrieben" (Ductus-Playback) | weiße Arbeitsfläche; `showReplay=false` für kleine Specimens mit eigener Replay-Geste |
 | `SpecimenStrip` | Buchstaben „wie geschrieben" als **markiertes Specimen** (§9): eigene Haarlinien-Fläche in `paper.hi`, Antiqua-Beschriftung darunter, Klick schreibt neu | `specimens[{key,label}]`, `payloads` (EIN Batch je Seite über `useSpecimenPayloads`), `height`; montiert erst in Sichtweite, zieht sich zurück, wenn nichts schreibbar ist — Schriftkunde-Besonderheiten, Lesart-Verwechsler |
-| `WrittenWord` | ganzes Wort/Zeile aus Per-Glyph-Diagnostik + Übergängen | Engine-Pfad; Font-Specimen ist Fallback. Größe und Zeilenzahl kommen aus der **gemessenen** Rahmenbreite, nie aus der Aufrufer-Konstante `maxWidth` (die bleibt Obergrenze): Unterschreitet der Text den **Tintenboden von 14 px x-Höhe** (§9, `lib/lineWrap.ts`), bricht er an Wortgrenzen um — **jede Zeile eine eigene Komposition und ein eigener durchgehender Federzug**, alle Zeilen in einer x-Höhe und links bündig (Autor-Entscheid 2026-09-04; verworfen: Maßstab-Boden mit Scrollfläche, viewportgekoppelte Zeichengrenze). Ein einzelnes zu breites Wort wird nicht getrennt und bleibt unter dem Boden |
+| `WrittenWord` | ganzes Wort/Zeile aus Per-Glyph-Diagnostik + Übergängen | Engine-Pfad; Font-Specimen ist Fallback. Größe und Zeilenzahl kommen aus der **gemessenen** Rahmenbreite, nie aus der Aufrufer-Konstante `maxWidth` (die bleibt Obergrenze): Unterschreitet der Text den **Tintenboden von 14 px x-Höhe** (§9, `lib/lineWrap.ts`), bricht er an Wortgrenzen um — **jede Zeile eine eigene Komposition und ein eigener durchgehender Federzug**, alle Zeilen in einer x-Höhe und links bündig (Autor-Entscheid 2026-09-04; verworfen: Maßstab-Boden mit Scrollfläche, viewportgekoppelte Zeichengrenze). Ein einzelnes zu breites Wort wird nicht getrennt und bleibt unter dem Boden. Seit 2026-09-04 bricht der Text auch an **getippten** Umbrüchen (`planParagraphs`), und die Federprobe gibt über `targetXHeightPx` eine gewünschte x-Höhe vor (§7.1) |
 | `BootStatus` | Vollseiten-Boot-/Cold-Start-Zustand | Quiz, Admin |
 | `BackToTop` | schwebende Rückkehr an den Seitenanfang, erscheint ab zwei Bildschirmen Scrollweg | nur auf den langen Inhaltsseiten (`/schriftkunde` ≈ 20 Handy-Bildschirme, `/impressum`, `/lesen/vergleichen`); 44 × 44, Papierfläche mit Haarlinie (§5), `prefers-reduced-motion` springt statt zu gleiten |
+
+### 7.1 Federprobe — Postkarte und Schriftgrößen-Leiter
+
+Autor-Entscheide vom 2026-09-04, umgesetzt in `sections/scribe/ScribeView.tsx`
+und `sections/scribe/size.ts`.
+
+**Postkarte statt Wort:** **480 Zeichen** = acht geschriebene Zeilen zu sechzig
+— dieselbe Zeilenlänge, die das Übungsblatt druckt (`MAX_LINE_LEN`,
+`lib/uebungstext.ts`), und zugleich die harte Obergrenze des Umbruchplaners
+(`MAX_CHARS_PER_LINE`), damit keine Anfrage der 160-Zeichen-Grenze der Route
+nahekommt. Der Zähler `n/480` zählt getippte Umbrüche mit, weil sie im Feld auch
+Zeichen sind.
+
+**Ein getippter Umbruch ist immer ein Umbruch.** Das Feld ist mehrzeilig,
+`planParagraphs` teilt ZUERST an den getippten Umbrüchen und bricht dann jeden
+Absatz wie bisher um (eine zu lange getippte Zeile bricht also trotzdem). Eine
+Leerzeile ist **ein** Absatzabstand; mehrere fallen darauf zusammen, führende
+und abschließende entfallen. **Nie geht ein `\n` an die API** — jede Zeile ist
+eine eigene `/write/word`-Anfrage, und `core.shaping.shape_text` liest ein `\n`
+als gewöhnliches Leerzeichen, schriebe den Umbruch also als Lücke mitten in die
+Zeile. Der Teilen-Link trägt Umbrüche als `%0A`.
+
+**Schriftgröße statt Zoom**, drei Stufen als Umschaltgruppe, Vorgabe `mittel`
+(ein eigener Zoom ist **verworfen**: `app/index.html` lässt das Pinch-Zoom des
+Browsers unangetastet, kein `user-scalable=no`). Eine Stufe ist eine
+**Ziel-x-Höhe in px je Template-Einheit**, nach der `lib/lineWrap` die Zeilen
+plant — eine größere Stufe kauft weniger Zeichen je Zeile und bringt mehr
+Zeilen, der akzeptierte Preis größerer Schrift.
+
+| Stufe | px je Einheit | = |
+|---|---|---|
+| `klein` | **20** | 14 · √2 |
+| `mittel` | **28** | 14 · 2 (Vorgabe) |
+| `groß` | **40** | 14 · 2√2 |
+
+Anker ist der **Tintenboden von 14 px** (§9) — die Größe, bei der eine Zeile
+gerade noch lesbar ist, nicht die, bei der sie bequem ist —, und die Leiter
+steigt in √2-Schritten darüber, damit jede Stufe eine sichtbare Änderung ist.
+`klein` trifft damit genau, was eine volle Desktop-Zeile vorher schrieb
+(gemessen 20,8 px je Einheit auf 1440 px), `mittel` liegt 1,4× darüber.
+
+**Der Boden gewinnt, wo der Rahmen die Stufe nicht trägt.** Ein Wort wird nie
+getrennt, also kappt der Planer das Ziel auf die x-Höhe, bei der das breiteste
+Wort noch passt — nie unter den Boden. Gemessen (464 Zeichen, 2026-09-04): auf
+**1440 px** 19 · 32 · 57 Zeilen bei exakt 20 · 28 · 40 px je Einheit; auf
+**360 px** (Rahmen 286 px) fallen alle drei Stufen auf **14,1 px** und 49 Zeilen
+zusammen — deutsche Wörter von 9–11 Buchstaben lassen dort nicht mehr zu. Das
+ist die ehrliche Antwort, nicht ein Fehler; Scrollfläche und Silbentrennung sind
+beide verworfen.
+
+Die Wahl **überlebt den Besuch** (`localStorage`, in `try`/`catch`, die Seite
+rendert auch ohne) und **reist im Link** (`?size=klein|mittel|gross`), wobei die
+**URL den Speicher schlägt**, damit ein geteilter Link das Bild des Absenders
+zeigt; ein Link ohne `?size=` lässt die eigene Wahl in Ruhe. Die Stufe gilt
+**nur der Federprobe**: `targetXHeightPx` ist ein Prop, ohne das `height` die
+Größe bemisst wie zuvor (Tafel, Quiz, Vergleichen, Schriftkunde unverändert).
 
 ---
 
@@ -353,6 +410,7 @@ bekommt, und brauchen eher mehr: Was ein Sütterlin-u vom n trennt, sitzt
 *innerhalb* des Mittelbands und ist ein Bruchteil davon. Statt kleiner zu
 setzen, bricht `WrittenWord` den Text um (§7). Belegt: Der Audit vom
 2026-09-02 maß auf 360 px einen 29-Zeichen-Satz bei 7,1 px je Einheit.
+Er ist zugleich der Anker der Schriftgrößen-Leiter (§7.1).
 
 **Messbar statt behauptet.** Der Typo-Boden hat ein eincheckbares Gitter:
 `node app/scripts/type-floor.mjs` fährt alle öffentlichen Routen in einem echten
@@ -407,7 +465,10 @@ bindend.
 Angewandt auf `ReplayButton`, `InfoHint`, die Quiz-Nebenknöpfe („beenden",
 „Einstellungen ändern"), das Detail-Schließen der Tafel, die Federprobe-Chips und
 „Link kopieren"; die Umschaltgruppen wachsen unter `sm` per Theme auf
-`minHeight: 44`.
+`minHeight: 44` **und `minWidth: 44`** (die Breite seit 2026-09-04, als
+„klein" mit 42,2 px den Sweep reißen ließ; eine Umschaltgruppe ist der
+Nachbarschaftsfall unten — ihre Schaltflächen stoßen aneinander, also wächst
+das Element statt seiner unsichtbaren Fläche).
 
 **Wo Nachbarn dicht stehen, wächst das Element statt seiner Trefferfläche.** Die
 drei Bereichslinks der Kopfleiste sind der Fall: auf dem Handy bricht die Leiste

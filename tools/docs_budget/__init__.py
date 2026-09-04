@@ -225,6 +225,13 @@ WIDEST = {
 # rows in and given the same 10 % headroom as every other path. What this does
 # NOT license is prose: if the Stand blocks or §7.11 grow, that is the rewrite
 # the gate is for.
+#
+# `frontend` raised on 2026-09-04 for a comparable reason: design-system.md
+# gained §7.1, the Federprobe's binding numbers (postcard 480/60, the size
+# ladder 20 · 28 · 40, the rule that no newline reaches the composer). They are
+# READ-PATH content by construction — a frontend agent that does not see them
+# rebuilds the page wrong — and the section was condensed to about two thirds
+# of its first draft before this raise. Re-measured plus the usual headroom.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
     "mess-runde": 18_644,
@@ -232,7 +239,7 @@ BUDGETS: dict[str, int] = {
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,
     "komposition": 9_680,
-    "frontend": 14_437,
+    "frontend": 15_018,
     "werkbank": 5_166,
     "werkzeug": 713,
     "werkzeug-abschnitt": 4_073,

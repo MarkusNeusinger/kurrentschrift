@@ -17,6 +17,14 @@ export const scribe = {
     'Die Federprobe ist die Schreibhand dieses Projekts: Aus den Buchstaben der gemeinfreien Sütterlin-Ausgangsschrift von 1922, jeder einzeln nachgeschrieben, setzt sie deinen Text Zug um Zug zusammen — nicht als Schriftart, sondern als Bewegung der Feder, mit Ansatz, Auslauf und den Übergängen von Buchstabe zu Buchstabe. So siehst du, wie ein Wort aus deinem Brief geschrieben worden wäre, und kannst es neben das Original halten. Die Sütterlin ist bislang die einzige Schrift, die hier schreibt; Kurrent und Offenbacher sollen folgen. Den Link auf eine Schreibprobe kannst du kopieren und weitergeben.',
   inputLabel: 'Dein Text',
   inputPlaceholder: 'lesen und schreiben',
+  // Under the field, left of the counter: the one thing about the field a
+  // visitor cannot see (Enter writes a break instead of sending).
+  inputHint: 'Mit Enter beginnst du eine neue Zeile.',
+  // The Schriftgröße switch — three steps instead of a zoom (the browser's own
+  // pinch zoom stays untouched).
+  sizeLabel: 'Schriftgröße:',
+  sizeAria: 'Schriftgröße der Schreibprobe',
+  sizes: { klein: 'klein', mittel: 'mittel', gross: 'groß' },
   replay: '↻ noch einmal schreiben',
   // Examples the user can drop into the field.
   examplesLabel: 'Beispiele:',
