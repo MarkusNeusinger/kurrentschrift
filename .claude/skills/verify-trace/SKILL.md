@@ -119,7 +119,7 @@ uv run python -m tools.tracebench.view                     # the duel / eyeball 
   section inside §14 without its row as a missing register row.
 - The **ledger line** on the affected `docs/reference/verfahren-*.md` page
   in the SAME PR; on adoption also its „Aktueller Stand" and the Stand
-  column in `verfahren.md` (`docs/index.md` § Dokument-Status).
+  column in `verfahren.md` (`docs/dokument-status.md`).
 - On an honest negative, the **rescue paths**: named ways the goal could
   still be reached (new mechanism, new evidence, new sensor — each with a
   fresh pre-registration, never the same knob re-run with softer gates),

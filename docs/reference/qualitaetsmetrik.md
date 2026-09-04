@@ -1,14 +1,45 @@
 # Qualitätsmetrik & Glyph-Bench
 
-> **Status (2026-09-04): lebend.** Die Messlatte und ihre Regeln. Das
+> **Status (2026-09-04): lebend.** Die Messlatte und ihre **Regeln**. Das
 > Journal der Läufe ist am 2026-09-04 in eine eigene Datei gezogen —
-> [`messjournal.md`](messjournal.md), dort weiterhin §14; hier stehen
-> §1–§13 und §15. Aktuelle Headlines:
-> Wörter 0,109218 · Paare 0,148198 (Re-Baseline `sep02` — die 22
-> Laufform-Zeilen sind seit dem LF11-Write Spline-Basis-Mediane,
-> `messjournal.md` §14 „Laufform LF11 — humanbench-Wortrunde,
-> Instrumentdefekt und Adoption“); das Journal reicht bis `sep02`. Die
-> Verworfen-Listen (§4, §5, §6) bleiben geschlossen.
+> [`messjournal.md`](messjournal.md), dort weiterhin §14; hier §1–§13, §15.
+> **Aktuelle Headlines: Wörter 0,109218 · Paare 0,148198** (Re-Baseline
+> `sep02` — die 22 Laufform-Zeilen sind seit dem LF11-Write
+> Spline-Basis-Mediane, `messjournal.md` §14 „Laufform LF11 —
+> humanbench-Wortrunde, Instrumentdefekt und Adoption“). Sie stehen an
+> genau dieser einen Stelle; ihre Historie samt Fixture-Wurzeln führt der
+> Headline-Ledger im Messjournal.
+>
+> **Was gilt.** **Zwei Metriken, eine pro Schrift, nie gemittelt** — die
+> Schreibgeräte sind verschieden. Kurrent/Schwellzug:
+> [§1](#1-die-metrik-score-0100-rein-geometrisch)–[§4](#4-erkenntnisse-aus-lauf-jun11-71)
+> (`core/quality.py`). Sütterlin/Gleichzug-Natürlichkeit:
+> [§5](#5-sütterlin-natürlichkeitsmetrik-re-baseline-2026-06-18)
+> (`core/quality_suetterlin.py` auf `core/geometry.py`). Der Glyph-Bench
+> läuft **eine Schrift pro Lauf** (`--style suetterlin` Default ·
+> `--style kurrent`); einen gemeinsamen `bench_loss` gibt es nicht. Der
+> Wort-/Paar-Bench misst komponierte Wörter gegen Vorlagen **derselben
+> Hand** ([§6](#6-wort-bench-übergänge-gegen-echte-wortproben-2026-07-02)).
+>
+> **Was offen ist.** Die Verworfen-Listen (§4, §5, §6) bleiben
+> **geschlossen** — ein dort abgelehnter Mechanismus ist eine
+> Wiederholung, keine Hypothese. Offene Arme, Autorenschritte und
+> Rettungswege der laufenden Kampagne stehen nicht hier, sondern in
+> [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.9/§7.11.
+>
+> **Wo die Details stehen.** Eingefrorene Referenzen und die
+> Frozen-Reference-Regel: [§2](#2-der-bench-eingefrorene-referenzen).
+> Baseline-Historie des Glyph-Benchs: [§3](#3-baseline-historie). Das
+> letzte deklarierte Wort-Bench-Re-Baseline:
+> [§15](#15-sieben-angeschnittene-wortproben-repariert--angekündigtes-re-baseline-des-wort-benchs-aug31).
+> Die Läufe selbst: [`messjournal.md`](messjournal.md), Einstieg über sein
+> Register.
+>
+> **Nachzieh-Anlass.** Jede Änderung an `core/quality.py`,
+> `core/quality_suetterlin.py`, `core/geometry.py`, `core/word_metric.py`
+> und jedes Re-Baseline der eingefrorenen Fixtures. Ein Lauf, der eine
+> Zahl hervorbringt, schreibt seinen datierten Abschnitt ins Messjournal
+> — nicht hierhin.
 
 Wie die Qualität einer kanonischen Glyphe gemessen wird, wie der
 hermetische Benchmark (`tools/glyphbench`) und der Experiment-Loop

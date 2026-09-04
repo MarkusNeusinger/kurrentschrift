@@ -1,10 +1,42 @@
 # Architektur-Referenz
 
-> **Status (2026-08-12): bindend.** Entschiedene Architektur; die
-> Verworfen-Listen (§2, §4) sind geschlossen, §3/§12 werden bei
-> Schema-Änderungen nachgezogen (zuletzt Handmodell H1/H2, PR #250/#265).
-> §8/§10 beschreiben die geplante Reihenfolge, nicht den Ist-Stand — der
-> steht in [`mvp-roadmap.md`](mvp-roadmap.md).
+> **Status (2026-09-04): bindend.** Die entschiedene Architektur. Die
+> Verworfen-Listen (§2, §4) sind **geschlossen**: ein dort abgelehnter
+> Weg wird nicht neu verhandelt, neue Argumente gehen nach
+> `docs/proposals/`.
+>
+> **Was gilt.** Der Kern ist **Analysis-by-Synthesis mit Duktus-Prior**
+> ([§2](#2-architekturentscheidung-duktus-modellbasierte-extraktion)):
+> das Bild liefert Geometrie und Tintenbreite, der autorisierte Duktus
+> liefert Strichfolge und Kreuzungsauflösung. Die Bibliothekseinheit ist
+> `(style, glyph, variant)`
+> ([§3](#3-die-bibliothekseinheit-schema)), Übergänge sind **Konsequenz,
+> keine Daten** — außer dem geschlossenen Ligatursatz
+> ([§4](#4-übergänge-sind-konsequenz-keine-daten)). Breite und Schwärzung
+> bleiben zwei getrennte Kanäle
+> ([§5](#5-schwellzug-vs-tinte--zwei-getrennte-kanäle)), die Qualität
+> läuft dreistufig
+> ([§6](#6-qualitätspipeline-dreistufig-jede-stufe-nachvollziehbar)).
+> [§1](#1-problemaufteilung) ist der Index über alle Sektionen und
+> ordnet jede Vision-Säule ihren Abschnitten zu.
+>
+> **Was offen ist.** [§8](#8-der-mvp-kleinster-lauffähiger-renderkern)
+> (vier MVP-Gates) und [§10](#10-reihenfolge--post-mvp-roadmap)
+> beschreiben die geplante **Reihenfolge**, nicht den Ist-Stand — der
+> steht in [`mvp-roadmap.md`](mvp-roadmap.md). Die Sektionen §11–§17 sind
+> gemischt: **teilweise gebaut** sind §11 (die MVP-Animation als
+> `WrittenGlyph`), §12 (die Statistik-Schichten H1/H2), §15 (das
+> clientseitige Übungsblatt) und §16 (der laufende Frontend-Stack);
+> **Entwurf** bleiben §13 (HTR), §14 (Lese-Lupe), §17 (Open-Data) und die
+> jeweils benannten Ausbaustufen der ersten vier. Jede dieser Sektionen
+> sagt in ihrem eigenen Kopf, welcher Teil steht. Das eine echte
+> Forschungsrisiko benennt [§7](#7-offener-forschungskern--das-risiko).
+>
+> **Nachzieh-Anlass.** §3 und §12 bei Schema-Änderungen (zuletzt
+> Handmodell H1/H2, PR #250/#265). **Sektionsnummern werden nie
+> umnummeriert, nur angehängt** — andere Docs, `CLAUDE.md` und
+> Commit-Messages zitieren sie, und `tests/test_agent_instructions.py`
+> pinnt das.
 
 Zusammenfassung der bisher getroffenen Entscheidungen und ihrer Begründung.
 Sprache: Deutsch (Prosa) / Englisch (Code, Schema, Identifier).

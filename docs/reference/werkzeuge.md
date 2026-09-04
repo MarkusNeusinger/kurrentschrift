@@ -1,8 +1,41 @@
 # Werkzeuge — die Dev-Tools unter `tools/`
 
-> **Status (2026-09-01): lebend.** Index über die Dev-Tools unter `tools/`;
-> jedes neue, umbenannte oder entfernte Werkzeug und jede geänderte CLI
-> (Flags, Modulpfade, `viz`-Extra, `--live`) gehört hier hinein.
+> **Status (2026-09-04): lebend.** Der Index über die Dev-Tools unter
+> `tools/` — was es gibt, wie man es aufruft, und welche Invariante daran
+> hängt.
+>
+> **Was gilt.** Drei Gattungen, streng getrennt. **Labs** zeigen
+> (matplotlib-PNGs nach `temp/`, immer `uv run --extra viz`):
+> [Inspektions-Labs](#die-drei-inspektions-labs-sehen-nicht-nur-messen).
+> **Benches** messen gegen eingefrorene Referenzen:
+> [Benches und Generator](#benches-und-generator-verweise) — glyphbench
+> (Buchstabe) · wordbench (komponiertes Wort/Paar) · tracebench
+> (Wortbahn). **Schreibende** Werkzeuge gibt es genau drei Gattungen:
+> die [Ernte-Werkzeuge](#die-zwei-ernte-werkzeuge-vorlage--db-über-die-admin-api)
+> (über die Admin-API), das
+> [Lesart-Wörterbuch](#das-lesart-wörterbuch-toolslesarten) und die
+> [Eigenhand-Erfassung](#die-eigenhand-erfassung-toolseigenhand); Labs und
+> Benches schreiben **nie** in die DB, `--live` liest nur.
+> Der [Archiv-Schnappschuss](#der-archiv-schnappschuss-toolsdbsnapshot)
+> ist create-only, der
+> [Changelog-Schnitt](#der-changelog-schnitt-toolschangelog) und die
+> [Teilen-Karte](#die-teilen-karte-toolsogcard) fassen nur den Arbeitsbaum
+> an.
+>
+> **Zwei Invarianten, die nicht verhandelbar sind.** `core/`, `api/` und
+> `alembic/` importieren **nie** `tools` (das API-Image liefert es nicht
+> aus; gepinnt von `tests/test_imports.py`), und ein Bench ändert während
+> eines Laufs weder Lineal noch Fixture-Wurzel.
+>
+> **Was offen ist.** Die Werkzeuge sind kein Skill: es gibt keinen
+> `/verify-*`-Loop für Labs und Ernte, die Prüfung ist der Bench-Lauf und
+> das Auge. Die Methode und die Zahlen eines Laufs stehen nicht hier,
+> sondern in [`qualitaetsmetrik.md`](qualitaetsmetrik.md) (Regeln) und
+> [`messjournal.md`](messjournal.md) (Läufe).
+>
+> **Nachzieh-Anlass.** Jedes neue, umbenannte oder entfernte
+> Werkzeug/Einstiegsskript unter `tools/` und jede geänderte CLI (Flags,
+> Modulpfade, `viz`-Extra, `--live`).
 
 Einstiegspunkt für die Entwickler-Werkzeuge, die bislang nur in den
 Agenten-Guides (`CLAUDE.md`, `.github/copilot-instructions.md`)

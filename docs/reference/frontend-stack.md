@@ -1,21 +1,43 @@
 # Frontend-Stack
 
 > **Status (2026-09-04): lebend.** Ist-Stand von Stack, Routen, i18n-Soll,
-> Deploy, Admin-Gate und Crawler-Prerender; jede Änderung an
-> `app/package.json`, `app/src/routes/paths.ts`, den Cloudbuild-/nginx-Dateien,
-> `app/security-headers.conf`, `api/security_headers.py`, `api/routers/csp.py`,
-> `api/auth.py`, `api/origin_gate.py`, `infra/cloudflare/` (der Apex-Worker —
-> §5 hängt seit 2026-09-02 an seiner Konfiguration) oder
-> `app/src/lib/seo/prerender.ts` zieht hier nach.
-> Am 2026-08-03 gegen den Code geprüft und deckungsgleich (Admin-Routen nach
-> dem Redesign „aus einem Guss": `/admin` Vorlagen-Auswahl + die drei
-> Ansichten Buchstaben · Übergänge · Wörter; Admin-Token-Regeln, PR #263).
-> Am 2026-08-16 um die aus `CLAUDE.md` hierher verschobenen Detailregeln
-> ergänzt (Vier-Gesichter-Übersicht, Registrierungs-Regel, Kostenbudget,
-> Cloud-Session-Betrieb u. a.) — Beschreibungsstand dieser Punkte: 2026-08-16.
-> Am 2026-09-02 um §5 „Origin-Geheimnis" ergänzt und beim Rollout korrigiert:
-> der Apex-Worker stempelt selbst, weil ein Worker-Subrequest die
-> Transform-Rules der eigenen Zone umgeht (`infra/cloudflare/`).
+> Deploy, Admin-Gate und Crawler-Prerender.
+>
+> **Was gilt.** React 19 + Vite + MUI + React Router, EINE SPA für
+> Endnutzer und Admin ([§1](#1-stack)). Öffentlich sind drei Bereiche
+> plus Landing, der Admin ist die Werkbank in drei Ansichten
+> ([§2](#2-routenstruktur) — die Routenkarte ist `app/src/routes/paths.ts`,
+> nicht diese Liste). Das Admin-Gate ist Cloudflare Access in Prod und
+> `ADMIN_TOKEN`/`X-Admin-Token` lokal; davor liegt seit 2026-09-02 das
+> **Origin-Geheimnis**, das der Apex-Worker selbst stempelt, weil ein
+> Worker-Subrequest die Transform-Rules der eigenen Zone umgeht
+> ([§5](#5-auth-für-admin-routen), `infra/cloudflare/`). Gebaut und
+> deployt wird auf Cloud Run: **Min-Instanzen API 1 · App 0**, Max je 3 —
+> die eine warme API-Instanz seit 2026-08-30, weil ein Kaltstart gemessen
+> 9,4 s p50 kostet, und `max=3`, damit ein Deploy die warme Instanz nicht
+> ersetzen muss ([§6](#6-build--deploy)). Crawler bekommen vorgerenderte Seiten über den
+> `$is_bot`-Pfad der nginx-Config. Was bewusst NICHT gemacht wird, steht
+> in [§8](#8-was-wir-nicht-machen).
+>
+> **Was offen ist.** i18n ist als **Soll** beschrieben
+> ([§3](#3-i18n)) — die Website ist v1 deutsch, Englisch folgt; die
+> Komponenten-Map ([§7](#7-komponenten-map)) ist eine Beschreibung des
+> Codes und veraltet zuerst, wenn eine Komponente umzieht.
+>
+> **Beschreibungsstände.** Die Detailregeln aus `CLAUDE.md`
+> (Vier-Gesichter-Übersicht, Registrierungs-Regel, Kostenbudget,
+> Cloud-Session-Betrieb) tragen den Stand **2026-08-16**; die Admin-Routen
+> wurden am 2026-08-03 gegen den Code geprüft (PR #263), §5 am 2026-09-02
+> beim Rollout korrigiert.
+>
+> **Nachzieh-Anlass.** Jede Änderung an `app/package.json`,
+> `app/src/routes/paths.ts`, den Cloudbuild-/nginx-Dateien,
+> `app/security-headers.conf`, `api/security_headers.py`,
+> `api/routers/csp.py`, `api/auth.py`, `api/origin_gate.py`,
+> `infra/cloudflare/` oder `app/src/lib/seo/prerender.ts`. Für die
+> öffentliche Gestaltung ist
+> [`design-system.md`](../concepts/design-system.md) die bindende
+> Vorschrift, nicht diese Datei.
 
 Technische Spezifikation des Endnutzer-Frontends aus Vision §1 (Einstieg),
 §2 (Lineatur-Konfigurator), §3 (Animation), §4 (Lesen üben), §5 (Lese-Hilfe
