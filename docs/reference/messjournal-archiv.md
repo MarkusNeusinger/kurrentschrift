@@ -36,3 +36,19 @@ zweiten Datei. Das Gate
 (`uv run python -m tools.docs_register check`) liest beide Dateien und
 verlangt für jeden Abschnitt hier dieselbe Registerzeile wie für einen
 im Journal.
+
+**Was der Umzug zusätzlich nachzieht: die Zitate, die die DATEI nennen.**
+Rund 120 Stellen im Repo schreiben `messjournal.md §14 …`, und für einen
+umgezogenen Abschnitt zeigt der Dateiname danach ins Leere. Wer einen
+Abschnitt herunterzieht, sucht im selben PR nach seinen dateibenannten
+Zitaten und stellt sie auf `messjournal-archiv.md` um — der Titel ist der
+Suchschlüssel, das Datums-Tag der zweite:
+
+```bash
+grep -rn "messjournal.md §14" --include='*.py' --include='*.ts' \
+  --include='*.tsx' --include='*.md' . | grep -i '<Titel oder Datums-Tag>'
+```
+
+Zitate, die **nur** „§14 «Titel»“ schreiben (die Mehrzahl, gerade in
+`core/` und `tools/`), bleiben unberührt — sie nennen keine Datei und
+sind darum vom Umzug gar nicht betroffen.

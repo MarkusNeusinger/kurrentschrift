@@ -21,11 +21,13 @@ numbers but never the goalposts.
 ## 0 · Hard rules (read first)
 
 - **Read `docs/reference/qualitaetsmetrik.md` BEFORE the first run.** It
-  carries the score/`bench_loss` definition, the frozen-reference rule, the
-  baseline history a new number has to be comparable against, and §14's
-  experiment learnings including the *verworfen* items — a mechanism already
-  rejected there is not a hypothesis, it is a repeat. CLAUDE.md makes this
-  reading mandatory for this skill.
+  carries the score/`bench_loss` definition, the frozen-reference rule and the
+  baseline history a new number has to be comparable against, plus the
+  *verworfen* items of §1–§13 — a mechanism already rejected there is not a
+  hypothesis, it is a repeat. The experiment learnings of §14 moved to
+  `docs/reference/messjournal.md` on 2026-09-04; enter that file through its
+  register rather than reading it. CLAUDE.md makes this reading mandatory for
+  this skill.
 - **Never touch the DB.** The loop runs only on local fixtures; the
   one-time export is the single read-only DB access; write-back to
   templates is a separate explicit admin action in the UI — never part

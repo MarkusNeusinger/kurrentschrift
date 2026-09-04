@@ -1426,7 +1426,8 @@ werden **nie** gemittelt. Der aktuelle Stand steht bewusst **nicht hier**:
 eine Zahl in zwei Docs veraltet in einem davon (dieser Satz nannte bis
 2026-09-02 noch den Lauf `aug02`). Er wohnt im Status-Blockquote von
 qualitaetsmetrik.md, seine Historie samt Fixture-Wurzeln im
-Headline-Ledger am Kopf von §14. → qualitaetsmetrik.md §6/§14
+Headline-Ledger am Kopf von §14. → qualitaetsmetrik.md §6 ·
+messjournal.md §14
 
 **Chamfer-Distanz** — ein Standardmaß für „wie weit sind zwei Formen
 auseinander“: für jeden Punkt der einen Form der Abstand zum nächsten

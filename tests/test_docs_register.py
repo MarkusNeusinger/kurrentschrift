@@ -199,6 +199,33 @@ def test_a_headline_the_journal_never_names_fails(repo: Path) -> None:
     assert any("appears nowhere else in the journal" in p for p in problems)
 
 
+def test_an_archived_section_is_evidence_for_its_ledger_value(repo: Path) -> None:
+    """Archiving the section that measured a number must not orphan its ledger row.
+
+    The number lives in the section, so moving the section moves the evidence.
+    A scan that reads only the active journal would call a correct archive move
+    a number invented in a table — the one way this rule can be wrong.
+    """
+    _write(
+        repo,
+        dr.ARCHIVE_PAGE,
+        ARCHIV + "\n### Lotse v0.17 `aug20` — das Reservierungs-Veto\n\nWörter 0,109255 · Paare 0,148433.\n",
+    )
+    _write(
+        repo,
+        dr.JOURNAL,
+        JOURNAL.replace(
+            "### Lotse v0.17 `aug20` — das Reservierungs-Veto\n\n"
+            "Zähler-identisch. Wörter 0,109255 · Paare 0,148433 im Fließtext.\n",
+            "",
+        ).replace(
+            "[v0.17](#lotse-v017-aug20--das-reservierungs-veto)",
+            "[v0.17](messjournal-archiv.md#lotse-v017-aug20--das-reservierungs-veto)",
+        ),
+    )
+    assert dr.check_all(root=repo) == []
+
+
 def test_the_newest_ledger_row_must_be_the_status_headline(repo: Path) -> None:
     # The headline pair stays in the METRIC document even though the ledger
     # moved with the journal — that blockquote is the one promised home.

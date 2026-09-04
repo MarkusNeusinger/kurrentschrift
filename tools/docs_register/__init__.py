@@ -28,10 +28,11 @@ Three rules, all read off the committed files:
    in the archive page (the two index headings excepted) ⇒ exactly one row in
    the entry table whose link resolves to that heading's anchor. Rows may not
    point at headings that do not exist, and no heading may be claimed twice.
-2. **Every headline ledger row cites a number the journal already carries**, and
-   the newest row is the pair in `METRIC`'s status blockquote. The ledger is
-   an index, not a second home for the numbers — a value that appears nowhere
-   else in the file is a number invented in a table.
+2. **Every headline ledger row cites a number the journal already carries** —
+   in either part, the section or the archive — and the newest row is the pair
+   in `METRIC`'s status blockquote. The ledger is an index, not a second home
+   for the numbers: a value that appears nowhere else is a number invented in a
+   table.
 3. **Every duel-route entry reaches its process page.** A register row on Kette ·
    Lotse · InkSight · Nullprobe needs its date in that page's ledger; a row on
    "alle Routen" needs it on all four.
@@ -365,16 +366,19 @@ def check_register(text: str, archive_text: str) -> list[str]:
     return problems
 
 
-def check_ledger(text: str, metric_text: str) -> list[str]:
+def check_ledger(text: str, metric_text: str, archive_text: str = "") -> list[str]:
     problems: list[str] = []
     rows = ledger_rows(text)
     table_lines = {row.line for row in rows}
+    # The evidence for a ledger value is the journal in BOTH its parts. An
+    # archived section keeps carrying the number it measured, so leaving the
+    # archive out would turn a correct archive move into "invented in a table".
     elsewhere = {
         value
         for i, line in enumerate(text.split("\n"), start=1)
         if i not in table_lines
         for value in _LOSS.findall(line)
-    }
+    } | set(_LOSS.findall(archive_text))
     for row in rows:
         if len(row.cells) != 6:
             problems.append(f"{JOURNAL}:{row.line}: ledger row has {len(row.cells)} columns, expected 6")
@@ -386,7 +390,7 @@ def check_ledger(text: str, metric_text: str) -> list[str]:
             elif value.group(0) not in elsewhere:
                 problems.append(
                     f"{JOURNAL}:{row.line}: ledger cites {label} {value.group(0)}, which appears nowhere else in "
-                    "the journal — the ledger indexes numbers, it does not mint them"
+                    "the journal or its archive — the ledger indexes numbers, it does not mint them"
                 )
     headline = status_headline(metric_text)
     if headline is None:
@@ -424,9 +428,10 @@ def check_verfahren(text: str, *, root: Path = REPO_ROOT) -> list[str]:
 
 def check_all(*, root: Path = REPO_ROOT) -> list[str]:
     text = _read(root, JOURNAL)
+    archive_text = _read(root, ARCHIVE_PAGE)
     return (
-        check_register(text, _read(root, ARCHIVE_PAGE))
-        + check_ledger(text, _read(root, METRIC))
+        check_register(text, archive_text)
+        + check_ledger(text, _read(root, METRIC), archive_text)
         + check_verfahren(text, root=root)
     )
 
