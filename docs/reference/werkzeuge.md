@@ -739,5 +739,23 @@ denen es stammt.
   trägt, und jeder Eintrag einer Duell-Route die Ledger-Zeile seines
   Datums auf der Verfahrensseite. Standardbibliothek only, wie
   `tools/changelog`; liest nur committete Dateien und schreibt nichts.
+- **`tools/docs_budget`** — das Gate über den **Lesekosten**
+  (`uv run python -m tools.docs_budget check`, CI-Job „Docs-Budget“;
+  `… report` druckt die Tabelle). Vier Regeln: (1) die Pflichtlektüre und
+  jeder in `CLAUDE.md` benannte Lesepfad bleiben unter ihrem Budget — die
+  Liste wird **aus `CLAUDE.md` gelesen**, nicht dort abgeschrieben, also
+  hebt ein neuer Listenpunkt die gemessene Summe; (2) ein `lebend`-Doc über
+  10 000 Token trägt einen Stand-Block (mindestens 12 Zeilen), dessen Datum
+  höchstens 30 Tage alt ist; (3) die Karte in
+  [`../index.md`](../index.md) trägt genau eine Zeile je `.md`-Datei unter
+  `docs/`; (4) jeder relative Markdown-Link und jeder `#`-Anker im Repo
+  löst auf. Zählt **ohne Tokenizer**: ein eigener, deterministischer Proxy
+  (Wortstücke, lange deutsche Komposita alle vier Zeichen geteilt, mal
+  einem Kalibrierungsfaktor), damit der Job wie die anderen Doc-Gates in
+  der Standardbibliothek läuft und nicht bei jedem Lauf die BPE-Tabelle von
+  `tiktoken` herunterlädt. Die Budgets stehen in **Proxy**-Einheiten, also
+  vergleicht das Gate Gleiches mit Gleichem; der Abgleich gegen `tiktoken`
+  `o200k_base` vom 2026-09-04 steht im Modul-Docstring. Ein Budget wird
+  bewusst gehoben, mit Begründung im PR — nie stillschweigend.
 - **`tools/quizgen`** — generiert die Lese-Quiz-Wortbank (~500 Wörter);
   Quellen + Distraktor-Modell in [`quiz-wortbank.md`](quiz-wortbank.md).
