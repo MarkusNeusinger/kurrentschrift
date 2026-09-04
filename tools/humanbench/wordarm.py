@@ -4,13 +4,16 @@
     uv run python -m tools.humanbench.wordarm --arm LF11 --laufform temp/lf11.json \\
         --registration-from temp/basis.json --out temp/lf11.json
     uv run python -m tools.humanbench.wordarm --arm Platten-Nib --nib 0.097 --out temp/nib.json
+    uv run python -m tools.humanbench.wordarm --arm J4 --exit-trim --out temp/j4.json
 
 The reference producer of the arm-file contract that
 ``tools/humanbench/build.py`` draws a word round from. It is a producer and
 not a part of the instrument: the builder never composes anything itself, so
 an arm can equally be written by whatever tool a candidate lives in — the file
-is the interface, this module is the one that covers the two arms available
-today (a candidate Laufform card and a different nib) plus the base they are
+is the interface, this module is the one that covers the arms available today
+(a candidate Laufform card, a different nib, the composer's own `exit_trim`
+switch — every one of them a knob the composition path already has, so a
+candidate never needs a core change to be judged) plus the base they are
 measured against.
 
 Composition mirrors ``tools/wordbench/run.py`` line for line and by IMPORT, not
@@ -80,6 +83,7 @@ def compose_arm(
     laufform: dict[str, dict] | None = None,
     no_laufform: bool = False,
     nib: float | None = None,
+    exit_trim: bool = False,
     entries: set[str] | None = None,
 ) -> tuple[dict[str, dict], dict]:
     """Compose every scorable fixture word once, and place it the ruler's way.
@@ -119,6 +123,7 @@ def compose_arm(
                 slots,
                 {s.key: payload_for(s.key) for s in slots if s.key},
                 laufform_by_key={s.key: lf for s in slots if s.key and (lf := laufform_for(s.key)) is not None} or None,
+                exit_trim=exit_trim,
             )
             report = score_word(
                 composed,
@@ -139,6 +144,7 @@ def compose_arm(
         "nib_overridden": nib is not None,
         "laufform": "none" if no_laufform else ("overlay" if laufform else "frozen"),
         "laufform_overlay_keys": sorted(laufform) if laufform else [],
+        "exit_trim": exit_trim,
         "exported_at": manifest.get("exported_at"),
         "failed": failed,
     }
@@ -254,6 +260,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--nib", type=float, default=None, help="constant nib half-width in x-heights [the frozen pooled one]"
     )
     parser.add_argument(
+        "--exit-trim",
+        action="store_true",
+        help="compose with the exit-collinearity rule (arm J4) — the composer's own switch, default off",
+    )
+    parser.add_argument(
         "--registration-from",
         type=Path,
         default=None,
@@ -285,7 +296,9 @@ def main(argv: list[str] | None = None) -> int:
     entries = {e.strip() for e in args.entries.split(",") if e.strip()} if args.entries else None
     laufform = load_laufform_draft(args.laufform) if args.laufform else None
 
-    words, settings = compose_arm(root, laufform=laufform, no_laufform=args.no_laufform, nib=args.nib, entries=entries)
+    words, settings = compose_arm(
+        root, laufform=laufform, no_laufform=args.no_laufform, nib=args.nib, exit_trim=args.exit_trim, entries=entries
+    )
     if not words:
         raise SystemExit(f"{root}: nothing composed — {settings['failed'][:5]}")
     if args.registration_from:
@@ -323,7 +336,10 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"arm {args.arm}: {len(words)} words from {root.name} → {args.out} ({args.out.stat().st_size / 1e6:.1f} MB)")
     print(f"  nib {settings['nib_units']:.5f}{' (overridden)' if settings['nib_overridden'] else ''}")
-    print(f"  laufform {settings['laufform']} · registration {settings['registration']}")
+    print(
+        f"  laufform {settings['laufform']} · exit_trim {settings['exit_trim']}"
+        f" · registration {settings['registration']}"
+    )
     if settings["failed"]:
         print(f"  WARNING: {len(settings['failed'])} word(s) did not compose: {', '.join(settings['failed'][:8])}")
     if args.synthetic_defect:
