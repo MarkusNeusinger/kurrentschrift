@@ -1,11 +1,32 @@
 # Glossar — Fachbegriffe und Repo-Redewendungen
 
-> **Status (2026-09-01): lebend.** Nachschlagewerk über die Begriffe, die
-> in `docs/`, in Issues/PRs und in der Admin-Oberfläche vorkommen.
-> Nachzieh-Pflicht: **jedes Doc und jeder PR, der einen neuen Fachbegriff
+> **Status (2026-09-04): lebend.** Nachschlagewerk über die Begriffe, die
+> in `docs/`, in Issues/PRs und in der Admin-Oberfläche vorkommen — über
+> 300 Einträge, rund 57 000 Token.
+>
+> **Diese Datei liest man nicht am Stück.** Sie ist die
+> **Nachschlage-Instanz**: Einstieg ist der alphabetische
+> [Schnellindex](#schnellindex-alphabetisch), der jeden Begriff seinem
+> Themenblock zuordnet (**§1** Schrift · **§2** Architektur & Datenmodell
+> · **§3** Mess- und Fit-Vokabular · **§4** Metriken & Benchmarks · **§5**
+> Werkbank & Prozess · **§6** Extern/Forschung · **§7** Öffentliche
+> Seiten). Für den Einstieg in eine Sitzung steht seit 2026-09-04 die
+> Kurzfassung [`kurzglossar.md`](kurzglossar.md) auf der Pflichtlektüre —
+> 77 Begriffe, je ein bis zwei Sätze, jeder mit dem Sprung hierher; sie
+> ersetzt dieses Glossar nicht, sie ersetzt nur das Am-Stück-Lesen.
+>
+> **Was ein Eintrag verspricht.** Einen allgemeinverständlichen Teil ohne
+> Vorkenntnisse und, wo es etwas zu verankern gibt, den Modul-, Formel-
+> oder Konstantennamen zum Weitergraben. Kein API-Verzeichnis: aufgenommen
+> ist, was ein Leser in Prosa, Issue oder UI antrifft.
+>
+> **Nachzieh-Pflicht: jedes Doc und jeder PR, der einen neuen Fachbegriff
 > oder eine neue Kennzahl prägt, legt im selben Zug einen Eintrag hier an**
-> (Regel auch in `CLAUDE.md` § „Working guardrails“, `.github/copilot-instructions.md`
-> und den Skills `/write-docs` + `/open-pr`).
+> — Themenblock **und** Schnellindex (Regel auch in `CLAUDE.md`
+> § „Working guardrails“, `.github/copilot-instructions.md` und den Skills
+> `/write-docs` + `/open-pr`). Erreicht der Begriff danach Code, die
+> Agenten-Dateien oder PR-Beschreibungen, folgt der Kurzeintrag im
+> Kurzglossar (Schwelle und Ausschlüsse stehen in dessen Kopf).
 
 Dieses Projekt hat über die Läufe hinweg eine eigene Sprache entwickelt —
 teils Paläografie („Schwellzug“, „Duktus“), teils Architektur („Laufform“,
@@ -47,7 +68,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — k0-Protokoll §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kurzglossar §5
-- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
+- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
@@ -2631,6 +2652,22 @@ dieses Glossar kostet über 56 000 Token und stand damit als Pflichtlektüre
 in `CLAUDE.md`; die Kurzfassung ist die Pflichtlektüre, das volle Glossar
 bleibt die Nachschlage-Instanz und behält seinen Schnellindex.
 → kurzglossar.md · glossar.md
+
+**Lese-Budget** *(reading budget)* — die Obergrenze dessen, was eine Sitzung
+laden muss, **bevor** sie mit der eigentlichen Aufgabe anfängt: die
+Pflichtlektüre aus `CLAUDE.md` und jeder dort benannte Lesepfad haben je eine
+Zahl, gemessen am 2026-09-04 plus 10 % Luft. Das Gate dazu ist
+`uv run python -m tools.docs_budget check` (CI-Job „Docs-Budget“); es liest
+die Pflichtliste **aus `CLAUDE.md`**, statt sie abzuschreiben, also hebt ein
+neuer Listenpunkt die gemessene Summe und fällt auf. Gezählt wird ohne
+Tokenizer, mit einem eigenen deterministischen **Proxy** (Wortstücke, lange
+Komposita geteilt, mal einem Kalibrierungsfaktor) — die Budgets stehen in
+Proxy-Einheiten, damit Gleiches mit Gleichem verglichen wird; der Abgleich
+gegen `tiktoken` `o200k_base` steht im Modul-Docstring. Ein Budget wird
+bewusst gehoben, mit Begründung im PR, nie stillschweigend. Dasselbe Gate
+prüft Stand-Blöcke, die eine Zeile je Datei in der Karte und jeden Anker.
+*Technisch:* `tools/docs_budget` (`BUDGETS`, `PATHS`, `proxy_tokens`).
+→ werkzeuge.md § docs_budget · docs/index.md
 
 **Stand-Block** *(standing block)* — der erweiterte Status-Blockquote eines
 großen Docs (ab rund 10 000 Token): bis zu 40 datierte Zeilen, die sagen,

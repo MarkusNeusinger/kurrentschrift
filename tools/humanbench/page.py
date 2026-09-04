@@ -499,13 +499,26 @@ def normalise(payload: Any) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     return items, meta
 
 
-def _fingerprint(mode: str, items: list[dict[str, Any]]) -> str:
-    """Short stable digest of what this page asks, for the resume key."""
+def _fingerprint(tag: str, items: list[dict[str, Any]]) -> str:
+    """Short stable digest of what this page asks, for the resume key.
+
+    Two things beyond the mode go in, each for its own failure:
+
+    * the TAG, because two word rounds over the same fixture set draw the same
+      63 words in the same order under the same display ids — on ids alone they
+      would share a resume key and the second round would open on the first
+      one's answers. The tag carries the round number.
+    * what is actually DRAWN, because the ids survive a change to the drawing.
+      A page rebuilt after a renderer fix keeps every id, and `restore()` would
+      replay the old verdicts BY INDEX onto screens that no longer show the
+      same thing — an intact-looking round about two different drawings. An
+      exact rebuild still resumes; a corrected page starts clean.
+    """
     digest = hashlib.sha256()
-    digest.update(mode.encode())
+    digest.update(tag.encode())
     for item in items:
         digest.update(b"\x00")
-        digest.update(item["id"].encode())
+        digest.update(json.dumps(item, sort_keys=True, separators=(",", ":")).encode())
     return digest.hexdigest()[:10]
 
 
@@ -598,15 +611,22 @@ def _resolve_meta(items: list[dict[str, Any]], payload_meta: dict[str, Any], ove
     # emit `BEFUND/2 (nachtrag) geprueft=…` and no header would parse.
     if not full_tag or full_tag.split() != [full_tag]:
         raise ValueError(f"tag {full_tag!r} must be one whitespace-free token — it heads the result file")
+    # The round is SAID on the page, not only in the emitted result text: the
+    # judge has to be able to tell at a glance that the tab in front of him is
+    # today's round and not a page he left open before a fix — the doubt the
+    # LF11 round could not resolve afterwards (§3.6b).
+    eyebrow = pick("eyebrow")
+    if round_label and round_label not in eyebrow:
+        eyebrow = f"{eyebrow} · Runde {round_label}"
     return PageMeta(
         mode=mode,
         question=question,
         tag=full_tag,
-        eyebrow=pick("eyebrow"),
+        eyebrow=eyebrow,
         headline=headline,
         lede=pick("lede"),
         lede_fine=pick("lede_fine"),
-        store=pick("store") or f"humanbench-{_fingerprint(mode, items)}",
+        store=pick("store") or f"humanbench-{_fingerprint(full_tag, items)}",
         title=pick("title") or headline,
         items=items,
     )

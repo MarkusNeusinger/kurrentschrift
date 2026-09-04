@@ -120,7 +120,7 @@ The design is already settled in the docs; do not re-litigate decisions that hav
 - `docs/concepts/architektur.md` — architecture. §1 (problem split, indexes all sections), §2 (analysis-by-synthesis), §3 (library schema), §4 (ligature exception), §5 (Schwellzug vs ink + width-profile resolver), §6 (3-stage quality pipeline), §7 (the one real research risk), §8 (MVP — four gates), §9 (test words), §10 (build order, post-MVP phases P1–P5). Post-MVP sections: §11 (animation render path), §12 (style analysis pipeline), §13 (HTR integration), §14 (Lese-Lupe), §15 (print pipeline), §16 (frontend architecture), §17 (open-data export).
 - `docs/concepts/mvp-roadmap.md` — actionable breakdown of §8 into Schritt 0 + M0–M7 milestones (M7 = abgespeckte animation, MVP gate 4)
 - `docs/concepts/naming-und-setup.md` — repo/name/license/layout/frontend-stack/hosting decisions
-- `docs/reference/kurzglossar.md` — the 77 terms that actually occur in code identifiers, this file, the skills and recent PR bodies (Duktus-Prior, Laufform, Schwellzug, `gen_chamfer`/`doff`/`dconn`, Bézier-Handle-Floor, Cusp-Connector, the Stage-A metrics M1–M4, AIoU/LDTW …), one or two sentences each. Look a term up here instead of reverse-engineering it. The FULL vocabulary with module and constant anchors stays `docs/reference/glossar.md` — read it per term, not per session; **a PR that coins a new term or metric adds its entry there in the same PR**, and adds the short entry here once the term reaches code or an agent file
+- `docs/reference/kurzglossar.md` — the 78 terms that actually occur in code identifiers, this file, the skills and recent PR bodies (Duktus-Prior, Laufform, Schwellzug, `gen_chamfer`/`doff`/`dconn`, Bézier-Handle-Floor, Cusp-Connector, the Stage-A metrics M1–M4, AIoU/LDTW …), one or two sentences each. Look a term up here instead of reverse-engineering it. The FULL vocabulary with module and constant anchors stays `docs/reference/glossar.md` — read it per term, not per session; **a PR that coins a new term or metric adds its entry there in the same PR**, and adds the short entry here once the term reaches code or an agent file
 - `docs/reference/sprachregelung.md` — language rules (see below)
 - `docs/reference/quellen-und-rechte.md` + `docs/reference/datenablage.md` — data/licensing rules (see below)
 
@@ -128,12 +128,12 @@ The design is already settled in the docs; do not re-litigate decisions that hav
 
 | Track | Read | ≈ tokens |
 |---|---|---|
-| Mess-Runde (`/verify-trace`) | `messjournal.md` head — Stand block + register + headline ledger, **not** the entries — · `qualitaetsmetrik.md` Stand block + §2 (frozen references) · `tintenfolger.md` Stand block + §7.11 (open arms) · the route's `verfahren-*.md` | ≈ 15k + the one entry you cite (2–3.5k each) |
+| Mess-Runde (`/verify-trace`) | `messjournal.md` head — Stand block + register + headline ledger, **not** the entries — · `qualitaetsmetrik.md` Stand block + §2 (frozen references) · `tintenfolger.md` Stand block + §7.11 (open arms) · `verfahren.md` | ≈ 15k, plus the route's own `verfahren-*.md` (≤ 5.6k) and the one entry you cite (≤ 4.1k) — worst case ≈ 25k |
 | Glyph-Optimierung (`/optimize-glyphs`) | `qualitaetsmetrik.md` Stand block + §1 (score) + §2 (frozen references) + §3 (baseline history) + §5 (Sütterlin metric) | ≈ 8k |
 | Komposition / Rendering (`core/`) | `architektur.md` Stand block + §3 (schema) + §4 (ligature exception) + §5 (Schwellzug vs ink) + §6 (quality pipeline) · `write-api.md` | ≈ 8.5k |
 | Frontend (`app/`) | `design-system.md` (binding, whole) · `frontend-stack.md` Stand block + §2 (routes); + §5 (auth) when the diff touches a gate | ≈ 13k (+2k) |
 | Werkbank / Auftragskorb (`/work-basket`) | `optimierungs-werkbank.md` §3 (Stufen-Doktrin) + §5 (triage duty, `resolution`) · `frontend-stack.md` §2 for the admin routes | ≈ 4.5k |
-| Werkzeug bauen oder ändern | `werkzeuge.md` Stand block + the one section of that tool | ≈ 2k |
+| Werkzeug bauen oder ändern | `werkzeuge.md` Stand block + the one section of that tool (≤ 3.7k) | ≈ 1–4.5k |
 | Doku- und Repo-Pflege (`/write-docs`) | `docs/index.md` (the map) · `docs/dokument-status.md` (lifecycle + Nachzieh-Pflichten) | ≈ 6k |
 
 **Read situatively** (only when working on the respective section):
