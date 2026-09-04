@@ -508,7 +508,13 @@ Neues.
 - **Scharfschalten ist ein Block, kein Flag.** Auch dieser Dienst nagelt
   Verkehr namentlich fest (`app/cloudbuild.yaml` promotet mit
   `--to-revisions=…=100`), ein `services update` allein legt also eine
-  armierte Revision an, die nichts ausliefert. Dazu: das Image der
+  armierte Revision an, die nichts ausliefert — beim API-Rollout (#493)
+  gemessen, nicht angenommen. Der Block schickt trotzdem `--no-traffic` mit:
+  Er liest `status.traffic`, prüft aber nie die Verkehrs-*Spezifikation*, und
+  ein Dienst, den zuletzt ein blankes `gcloud run deploy` außerhalb der
+  Pipeline angefasst hat, trägt dort `latestRevision: true` — dann wäre die
+  Änderung sofort scharf, bevor irgendetwas gemessen ist. Wo der Verkehr
+  ohnehin namentlich hängt, ist das Flag wirkungslos. Dazu: das Image der
   **ausliefernden** Revision pinnen (nicht die letzte), die Secret-Version als
   **Nummer** setzen (nie `:latest` — Cloud Run löst sie beim Instanz-Start
   auf, sonst gibt es sporadische 403 innerhalb einer Revision) und keinen Lauf

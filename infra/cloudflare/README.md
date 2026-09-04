@@ -371,12 +371,25 @@ VERSION=$(gcloud secrets versions list ORIGIN_SECRET --project=kurrentschrift \
   --filter="state=ENABLED" --sort-by=~createTime --limit=1 --format="value(name)")
 test -n "$VERSION" || { echo "no ENABLED version of ORIGIN_SECRET"; exit 1; }
 
-# 3. Update, then promote BY NAME. `--to-latest` would hand traffic to whatever
-#    the pipeline last built.
+# 3. Update DARK, then promote BY NAME. `--to-latest` would hand traffic to
+#    whatever the pipeline last built.
+#
+#    `--no-traffic` is belt and braces, and it is worth saying which half is
+#    which. The braces: after every build this service's traffic block names a
+#    REVISION (`app/cloudbuild.yaml` promotes with `--to-revisions=…=100`), and
+#    a new revision therefore serves nothing until it is named — measured, not
+#    assumed, during the API gate's own rollout (#493), where `services update`
+#    alone produced a revision that answered no request at all. The belt: this
+#    block reads `status.traffic` to find the SERVING revision but never
+#    inspects the traffic SPEC, and a service that was last touched by a plain
+#    `gcloud run deploy` outside the pipeline carries `latestRevision: true`
+#    instead — where the update would arm production immediately, before step 4
+#    could measure anything. Passing the flag makes the block right in both
+#    shapes; where traffic is already by name it is a no-op.
 SUFFIX="arm-$(date -u +%Y%m%d%H%M)"
 gcloud run services update "$SERVICE" $LOC --image="$IMAGE" \
   --update-secrets="ORIGIN_SECRET=ORIGIN_SECRET:$VERSION" \
-  --update-env-vars="ORIGIN_GATE=on" --revision-suffix="$SUFFIX"
+  --update-env-vars="ORIGIN_GATE=on" --revision-suffix="$SUFFIX" --no-traffic
 gcloud run services update-traffic "$SERVICE" $LOC --to-revisions="$SERVICE-$SUFFIX=100"
 
 # 4. Confirm, and confirm which revision answered. A build that promoted over
@@ -408,9 +421,14 @@ SERVING=$(gcloud run services describe "$SERVICE" $LOC --format=json \
 IMAGE=$(gcloud run revisions describe "$SERVING" $LOC --format="value(spec.containers[0].image)")
 test -n "$IMAGE" || { echo "could not resolve the serving image"; exit 1; }
 
+# `--no-traffic` here for the same reason as in the arm block, and it costs a
+# rollback nothing: the disarmed revision has to become READY before it is worth
+# promoting, and a revision that cannot start (a bad image pin, a quota) must
+# not take traffic off a working one on its way to failing. The promotion below
+# is the step that ends the incident.
 SUFFIX="disarm-$(date -u +%Y%m%d%H%M)"
 gcloud run services update "$SERVICE" $LOC --image="$IMAGE" \
-  --remove-env-vars=ORIGIN_GATE --revision-suffix="$SUFFIX"
+  --remove-env-vars=ORIGIN_GATE --revision-suffix="$SUFFIX" --no-traffic
 gcloud run services update-traffic "$SERVICE" $LOC --to-revisions="$SERVICE-$SUFFIX=100"
 
 curl -sI https://kurrentschrift.ink/_health | grep -i x-origin-gate   # expect "off" or "off-seen"

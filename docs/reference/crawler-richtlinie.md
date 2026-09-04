@@ -170,8 +170,9 @@ hätte, aus dem Repository-Secret `ORIGIN_SECRET`, und fragt vorab
 `/_health` nach dem Urteil. Er ist zugleich der Grund, warum das Gate
 kein `Host`-Kriterium sein kann: Er kann den Host ebenso wenig fälschen,
 und jede Ausnahme auf etwas Öffentliches — ein selbst erfundener Header,
-ein User-Agent — wäre mit diesem Repository öffentlich. Der Wächter
-schreibt keine Erwartung
+ein User-Agent — wäre mit diesem Repository öffentlich.
+
+Der Wächter schreibt keine Erwartung
 selbst hin: Er checkt das Repo aus und liest Route **und** Titel je
 Seite aus den committeten Dateien unter `app/prerender/` (Route aus dem
 Pfad, Titel per `grep` aus der Datei). Eine Copy-Änderung zieht ihn
