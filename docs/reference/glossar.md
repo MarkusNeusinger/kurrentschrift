@@ -3331,6 +3331,11 @@ unterscheidet. Gemessen: Der Website-Audit 2026-09-02 fand einen
 29-Zeichen-Satz auf 360 px bei **7,1 px** je Einheit (22,5 px Tinte für den
 ganzen Satz) und nannte ihn unlesbar. Fällt eine Zeile unter den Boden,
 bricht `WrittenWord` den Text an Leerzeichen um (→ Umbruch der Federprobe).
+Der Boden ist eine Zusage über das ERGEBNIS, nicht über die Schätzung: Der
+Umbruch wird aus dem Durchschnittsvorschub des ganzen Textes geplant, und
+eine Zeile, die aus dem Komponisten dichter zurückkommt als dieser Schnitt
+(sie hat die breiten Buchstaben eingesammelt), wird mit ihrer GEMESSENEN
+Breite neu geplant — so bleibt keine umbrechbare Zeile unter dem Boden.
 `app/src/lib/lineWrap.ts` `MIN_XHEIGHT_PX`.
 
 **Umbruch der Federprobe** — der Autor-Entscheid vom 2026-09-04 für lange

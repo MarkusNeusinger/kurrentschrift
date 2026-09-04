@@ -8,7 +8,11 @@
   to its Auslauf and "Zug um Zug" holds per line rather than per text. On a
   360 px phone the audit's 29-character sentence goes from 7.1 px per
   template unit on one line to 16.2 px over three; on the desktop nothing
-  moves. Owner decision 2026-09-04: the two alternatives — a scale floor
+  moves. The floor is a promise about the RESULT: the split is planned from
+  the text's average advance, and a line that comes back from the composer
+  denser than that average is re-planned with its measured width, so a
+  breakable line never stays under the floor. Owner decision 2026-09-04:
+  the two alternatives — a scale floor
   with a horizontally scrolling surface, and a viewport-coupled character
   cap — are rejected. A single word too wide for the frame is not
   hyphenated; it stays one line below the floor.

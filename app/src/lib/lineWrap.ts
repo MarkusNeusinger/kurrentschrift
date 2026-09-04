@@ -47,6 +47,12 @@ export interface LinePlan {
   // this budget in mm. Here the number comes per text, because the text has
   // already been composed by the time the question is asked.
   unitsPerChar: number;
+  // Template units the renderer spends on air around a line rather than on
+  // letters (WrittenWord frames each line with a hairline on both sides). They
+  // scale with the writing, so they come out of the budget: a plan that ignores
+  // them promises the line more room than it gets and lands just under the
+  // floor — /lesen/vergleichen's "Muhme Wittib" did, at 13.9 px.
+  padUnits?: number;
   minXHeightPx?: number;
 }
 
@@ -55,16 +61,21 @@ export interface LinePlan {
 // hyphenated Sütterlin word would be a claim about the script the project has
 // not made. The honest consequence: a SINGLE word wider than the frame stays
 // one line and is written below the floor; there is nothing to break.
-export function planLines(text: string, { availPx, unitsPerChar, minXHeightPx = MIN_XHEIGHT_PX }: LinePlan): string[] {
+export function planLines(
+  text: string,
+  { availPx, unitsPerChar, padUnits = 0, minXHeightPx = MIN_XHEIGHT_PX }: LinePlan,
+): string[] {
   const words = text.split(/\s+/).filter(Boolean);
   // Nothing to break at, or nothing measured yet (a frame of 0 px is "not
   // measured", not "no room"): leave the text alone.
   if (words.length < 2 || !(availPx > 0) || !(unitsPerChar > 0) || !(minXHeightPx > 0)) return [text];
 
   // How many characters a line may carry before its x-height drops under the
-  // floor. Below one character even a single letter sits under the floor —
-  // breaking cannot rescue that, so say so by not breaking.
-  const budget = Math.floor(availPx / (minXHeightPx * unitsPerChar));
+  // floor: the frame is worth `availPx / floor` template units at the floor,
+  // the renderer's air comes off the top, the rest buys characters. Below one
+  // character even a single letter sits under the floor — breaking cannot
+  // rescue that, so say so by not breaking.
+  const budget = Math.floor((availPx / minXHeightPx - padUnits) / unitsPerChar);
   if (budget < 1 || budget >= text.length) return [text];
 
   const lines: string[] = [];

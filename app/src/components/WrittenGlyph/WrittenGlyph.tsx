@@ -293,7 +293,7 @@ export function WrittenGlyph({ glyphKey, sourceId = CONFIG.sourceId, durationMs 
   // letter's box is 62.5 px wide, and the button read like a part of the form on
   // the very page that asks the reader to tell forms apart (audit 2026-09-02,
   // finding 28). The card around it is far wider, so the box steps aside into it.
-  const ground = animate && showReplay ? replayGround(displayW, finalH, frameW, { floor: false }) : null;
+  const ground = animate && showReplay ? replayGround(displayW, finalH, frameW) : null;
 
   return (
     <Box

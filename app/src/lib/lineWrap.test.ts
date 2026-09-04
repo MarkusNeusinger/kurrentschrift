@@ -9,6 +9,13 @@ const AUDIT_TEXT = 'Der Schreiber grüßt ergebenst';
 const AUDIT_UNITS_PER_CHAR = 44.5 / AUDIT_TEXT.length;
 const PHONE_PX = 286;
 const DESKTOP_PX = 728;
+// What WrittenWord's viewBox keeps free at both ends of a line.
+const PAD = 0.3;
+
+// The x-height a line of `chars` characters is written at — the promise the
+// floor makes, measured the way the renderer computes it.
+const xHeightPx = (chars: number, availPx = PHONE_PX, padUnits = 0) =>
+  availPx / (chars * AUDIT_UNITS_PER_CHAR + padUnits);
 
 describe('planLines', () => {
   it('leaves a line that clears the floor unbroken', () => {
@@ -19,8 +26,20 @@ describe('planLines', () => {
     const lines = planLines(AUDIT_TEXT, { availPx: PHONE_PX, unitsPerChar: AUDIT_UNITS_PER_CHAR });
     expect(lines.length).toBeGreaterThan(1);
     for (const line of lines) {
-      expect(PHONE_PX / (line.length * AUDIT_UNITS_PER_CHAR)).toBeGreaterThanOrEqual(MIN_XHEIGHT_PX);
+      expect(xHeightPx(line.length)).toBeGreaterThanOrEqual(MIN_XHEIGHT_PX);
     }
+  });
+
+  it('spends the padding around a line before it spends characters', () => {
+    const withPad = planLines(AUDIT_TEXT, { availPx: PHONE_PX, unitsPerChar: AUDIT_UNITS_PER_CHAR, padUnits: PAD });
+    for (const line of withPad) {
+      // The floor holds against the width the line is ACTUALLY given, air
+      // included — ignoring the pad is what put "Muhme Wittib" at 13.9 px.
+      expect(xHeightPx(line.length, PHONE_PX, PAD)).toBeGreaterThanOrEqual(MIN_XHEIGHT_PX);
+    }
+    // And it never buys a longer line than the padless plan would.
+    const padless = planLines(AUDIT_TEXT, { availPx: PHONE_PX, unitsPerChar: AUDIT_UNITS_PER_CHAR });
+    expect(Math.max(...withPad.map((l) => l.length))).toBeLessThanOrEqual(Math.max(...padless.map((l) => l.length)));
   });
 
   it('keeps the words and their order', () => {

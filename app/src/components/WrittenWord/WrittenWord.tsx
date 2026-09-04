@@ -38,7 +38,7 @@ import {
   WORD_MIN_ITEM_MS,
   WORD_WRITE_MS,
 } from '@/lib/strokeTiming';
-import { planLines } from '@/lib/lineWrap';
+import { MIN_XHEIGHT_PX, planLines } from '@/lib/lineWrap';
 import { ReplayButton } from '@/components/inkReveal';
 import { replayGround } from '@/components/inkReveal/replayGround';
 import { WrittenLine, type LineGeom } from './WrittenLine';
@@ -54,6 +54,11 @@ import { WrittenLine, type LineGeom } from './WrittenLine';
 // scales with the writing, which is what keeps a phone's three lines reading as
 // one hand rather than as three stacked pictures.
 const LINE_GAP_UNITS = 0.3;
+
+// Air the viewBox keeps at each end of a line so the first Anstrich and the
+// last Auslauf are not clipped. It is part of what the frame has to hold, so
+// the line plan spends it before it spends characters (lib/lineWrap).
+const VIEWBOX_PAD_UNITS = 0.15;
 
 interface Props {
   text: string;
@@ -103,7 +108,7 @@ const startState = (normalized: string): ComposedWordOut | null =>
 // Viewbox of one composed line in template units.
 function lineGeom(composed: ComposedWordOut, showLineature: boolean): LineGeom {
   const { bounds, guides, items } = composed;
-  const pad = 0.15;
+  const pad = VIEWBOX_PAD_UNITS;
   const yHi = showLineature && guides ? Math.max(guides.ascender, bounds.max_y) : bounds.max_y + pad;
   const yLo = showLineature && guides ? Math.min(guides.descender, bounds.min_y, 0) : bounds.min_y - pad;
   return {
@@ -177,14 +182,29 @@ export function WrittenWord({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [normalized, sourceId, bust]);
 
-  // Does the text clear the legibility floor as ONE line in this frame? The
-  // composition of the whole text is what answers it: its width in template
-  // units per character is this hand's real advance, not an assumed average.
-  const plan = useMemo(() => {
-    if (!composed || !composed.items.length || !normalized) return [normalized];
+  // What one character of THIS text runs, in template units. The whole text's
+  // composition answers it first — a real advance rather than an assumed
+  // average — but only on average: a line that happens to collect the wide
+  // letters is denser than the text it came from, and would land under the
+  // floor although breaking it again was possible. `denser` carries what a
+  // composed line has since shown, and only ever grows (below), so the re-plan
+  // it triggers terminates: a larger advance means a smaller character budget,
+  // and the budget is bounded below.
+  const [denser, setDenser] = useState({ key: loadKey, units: 0 });
+  const unitsPerChar = useMemo(() => {
+    if (!composed || !composed.items.length || !normalized) return 0;
     const { min_x, max_x } = composed.bounds;
-    return planLines(normalized, { availPx: capPx, unitsPerChar: (max_x - min_x) / normalized.length });
-  }, [composed, normalized, capPx]);
+    return Math.max((max_x - min_x) / normalized.length, denser.key === loadKey ? denser.units : 0);
+  }, [composed, normalized, denser, loadKey]);
+
+  // Does the text clear the legibility floor as ONE line in this frame?
+  const plan = useMemo(
+    () =>
+      unitsPerChar > 0
+        ? planLines(normalized, { availPx: capPx, unitsPerChar, padUnits: 2 * VIEWBOX_PAD_UNITS })
+        : [normalized],
+    [normalized, capPx, unitsPerChar],
+  );
   // Identity of the split, so a one-pixel frame change that breaks the text the
   // same way does not restart the fetch below (or the animation with it).
   const planKey = plan.join('\n');
@@ -218,9 +238,21 @@ export function WrittenWord({
     return wrapped?.key === `${loadKey}|${planKey}` ? wrapped.lines : null;
   }, [composed, wrapped, plan.length, planKey, loadKey]);
 
+  // The text each rendered composition carries, kept beside it: the floor check
+  // below needs to know how many words a line holds before it can say whether
+  // breaking it again is even possible.
+  const texts = useMemo(() => (plan.length < 2 ? [normalized] : plan), [plan, normalized]);
+
   const layout = useMemo(() => {
     if (!rendered) return null;
-    const lines = rendered.map((c) => lineGeom(c, showLineature)).filter((g) => g.items.length);
+    const lines = rendered
+      .map((c, i) => ({
+        ...lineGeom(c, showLineature),
+        text: texts[i] ?? '',
+        // The line's own composed width — what the split only estimated.
+        spanUnits: c.bounds.max_x - c.bounds.min_x,
+      }))
+      .filter((g) => g.items.length);
     if (!lines.length) return null;
 
     // ONE scale for the whole block, taken from its widest line — a hand keeps
@@ -265,12 +297,35 @@ export function WrittenWord({
     });
     return {
       lines: perLine,
+      unitPx,
+      // The line the shared scale comes from: if it is still under the floor,
+      // this is the only line whose break would lift the whole block.
+      widest: lines.reduce((a, b) => (b.vbW > a.vbW ? b : a)),
       gap,
       writeEndMs,
       inkW: Math.max(...sizes.map((s) => s.w)),
       inkH: sizes.reduce((sum, s) => sum + s.h, 0) + gap * (sizes.length - 1),
     };
-  }, [rendered, showLineature, durationMs, height, capPx]);
+  }, [rendered, texts, showLineature, durationMs, height, capPx]);
+
+  // The floor is a promise about the RESULT, not about the estimate that got
+  // there. The split is planned from the whole text's AVERAGE advance, so a
+  // line that collected the wide letters can come back under the floor even
+  // though it holds several words — the estimate was fine, the line was denser.
+  // Then the measurement replaces the estimate and the text is re-planned;
+  // adjusting state during render is React's own "adjusting state when a prop
+  // changes", and the guards make it a one-shot per split (a re-plan that does
+  // not move the split yields the same measurement, which no longer passes
+  // `>`). What stays under the floor after that is the case no break can fix:
+  // a single word wider than the frame, which is also the widest line and so
+  // sets the scale for the whole block.
+  if (denser.key !== loadKey) {
+    setDenser({ key: loadKey, units: 0 });
+  } else if (layout && layout.unitPx < MIN_XHEIGHT_PX) {
+    const { text, spanUnits } = layout.widest;
+    const measured = text.length ? spanUnits / text.length : 0;
+    if (/\s/.test(text.trim()) && measured > denser.units) setDenser({ key: loadKey, units: measured });
+  }
 
   useEffect(() => {
     // `layout` is derived from `rendered` in this same render, so reading it
@@ -306,8 +361,6 @@ export function WrittenWord({
   return (
     <Box
       ref={setFrameEl}
-      role={layout ? 'img' : undefined}
-      aria-label={layout ? (ariaLabel ?? text) : undefined}
       sx={{
         position: 'relative',
         display: 'inline-flex',
@@ -324,7 +377,15 @@ export function WrittenWord({
         // stack of ragged lines reads as an inscription, not as writing. The
         // column hugs its widest line and the frame centres IT, so a single
         // line sits exactly where it always did.
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: `${layout.gap}px` }}>
+        //
+        // The image role sits HERE and not on the frame: `role="img"` makes its
+        // subtree one graphic to assistive tech, and the frame also holds the ↺
+        // — which a screen reader would then never reach.
+        <Box
+          role="img"
+          aria-label={ariaLabel ?? text}
+          sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: `${layout.gap}px` }}
+        >
           {layout.lines.map((line, i) => (
             <WrittenLine
               key={i}
