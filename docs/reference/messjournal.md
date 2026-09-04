@@ -194,6 +194,8 @@ die DB) — mit seiner Bedingung.
 | sep04 | Übergänge | [P-Spiegel: pairlab auf den Produktions-Verbinder](#übergänge-p-spiegel-sep04--pairlab-misst-wieder-den-produktions-verbinder-werkzeug-re-baseline-kein-arm) | Werkzeug-Re-Baseline · kein Arm | Audit-Befund 18 beziffert und behoben: 89 von 248 Nähten wichen ab (Median 0,0562 xh, Majuskeln 1,0365), `gen_chamfer` 0,0434 → 0,0392; Kette-Init bleibt auf dem eingefrorenen Spiegel (Autor-Frage) |
 | sep04 | Übergänge | [S1 `dspan` (ausdehnungs-normierte Formdistanz)](#übergänge-s1-sep04--vorregistrierung-dspan-die-ausdehnungs-normierte-formdistanz) | Pre-Reg | Rettungsweg 2 von #488: gemeinsamer Abschnitt statt Start-Ausrichtung; Gates P1/P2/P3(a,b) und Nullproben N1/N2 vor der ersten Zahl |
 | sep04 | Übergänge | [S1 gemessen](#übergänge-s1-sep04--gemessen-der-sensor-ist-validiert-und-er-rettet-j4-trotzdem-nicht) | gemessen · Sensor validiert, J4 bleibt verworfen | Δ`dspan` +0,0036 (Gate ≤ 0,010), Fallquote 48,8 % (Gate ≥ 40 %) gegen 19,8 % roh und 51 % handbereinigt — aber die 60 % des J4-Gates erreicht auch die saubere Lesung nicht |
+| sep04 | Lotse | [Absprung-Forensik](#lotse-absprung-forensik-sep04--jeder-absprung-ist-karten-vorfahrt-und-die-mehrheit-erbt-die-karte) | Autopsie | `bridge_no_rail` = 0 Punkte, Schienen-Auslauf 0 daneben; die Ritt-Doppelzone liegt in 49,5 % ihrer Punkte außerhalb der Tinte. Von 39 Ereignissen 23 geerbt (Karten-Abdrift, Überschuss +0,0000 = Kompositions-Platzierung), 15 von der starren Pinnung gemacht (Fenster-Versatz, +0,0928 xh) — neuer Sensor `tools/inkpilot/forensics.py` |
+| sep04 | Lotse | [Lotse-Sprung aufgelöst](#lotse-sprung-sep04--der-ungeklärte-sprung-ist-eine-transkription-keine-messung) | Autopsie · gegenstandslos | 0,0545 ist `laden` (Rang 9), der Median ist Rang 10 = 0,058522; `will` beweisbar unbewegt → kein Sprung. Zweitbefund: die stehende Basis ist drei Wurzeln alt, heute 0,056080 |
 | sep04 | Feder | [Platten-Nib A3 (Wortrunde)](#platten-nib-a3-sep04--vorregistrierung-die-wortrunde-über-die-strichbreite) | Pre-Reg · Runde gebaut, Urteil offen | Halbbreite 0,097 statt 0,07251. Das Lineal ist nicht blind, sondern EINSEITIG: dem Lineal die breitere Feder nennen senkt bei unveränderter Geometrie 0,109218 → 0,101560. Nebenbedingung des Audits schon trocken gerissen (`gleichzug_doublings` 13 → 21) — ein ≥ 60 % lizenziert nur den Folgearm „Ink-Clearance an die Feder koppeln", nicht den Write |
 | sep04 | Übergänge | [J4 Wortrunde (Rettungsweg 3)](#übergänge-j4-sep04--vorregistrierung-die-wortrunde-als-benannter-rettungsweg) | Pre-Reg · Runde gebaut, Urteil offen | Der §7.9-Rettungsweg zum `dconn`-Negativ; auf der LF11-Wurzel neu vermessen: `seam_dep` +7,99 → +0,02, Wörter +0,000248 (Vorzeichen gedreht), Paare byte-gleich |
 
@@ -7755,6 +7757,291 @@ FALLQUOTE, und die reproduziert auf die Naht genau. Der Eintrag bleibt
 nach der Append-only-Regel unverändert stehen; hier steht, was heute
 gemessen wurde. **Frage an den Autor**, ob die drei Werte nachgetragen
 oder erklärt werden sollen.
+
+---
+
+### Lotse Absprung-Forensik `sep04` — jeder Absprung ist Karten-Vorfahrt, und die Mehrheit erbt die Karte
+
+**Autopsie, kein Arm.** Keine Konstante von `tools/inkpilot/pilot.py`
+ist angefasst, kein Kandidat entstanden, kein Gate bewegt. Die Frage
+ist die, die die Verfahrensseite als Fehlermodus führt, ohne sie je
+lokalisiert zu haben: **wo und warum verlässt der Lotse die Tinte?**
+Der Ritt fährt das gemessene Skelett per Konstruktion — also muss
+jeder Punkt seiner Ausgabe, der AUSSERHALB des Tintenkörpers liegt,
+von einem benannten Mechanismus dorthin gesetzt worden sein. Diese
+Runde baut den Sensor, der sagt, von welchem.
+
+**Der Sensor** (`tools/inkpilot/forensics.py`, neu). Drei Teile:
+
+1. **Der Tintenkörper.** Die Fixtures tragen Skelett und `width_map`
+   (die EDT-Halbbreite je Skelettpixel — der Schwellzug-Kanal), der
+   Körper ist also die Vereinigung der Scheiben mit Radius
+   `width_map[p]` um jedes Skelettpixel. In der üblichen
+   Medialachsen-Näherung (ein Punkt wird an seinem NÄCHSTEN
+   Skelettpixel gemessen) hat diese Vereinigung die geschlossene Form
+   `slack = edt − width_map[nächstes]`: negativ in der Tinte, positiv
+   daneben. **Absprung** = maximaler Lauf von ≥ 2 Punkten mit
+   `slack > 0`.
+2. **Die Herkunft je Punkt.** `traced_pilot_word` spiegelt die
+   Orchestrierung von `pilot_word` Schritt für Schritt und hängt an
+   jeden emittierten Punkt das Label des Mechanismus, der ihn gesetzt
+   hat. Der Folger selbst bleibt unberührt — die Doppelung ist durch
+   `assert_matches_pilot` abgesichert, das die gespiegelten Striche
+   Bit für Bit gegen die echten hält. **Auf allen 19 Wörtern
+   identisch.**
+3. **Die Schuldfrage.** Zusätzlich wird der `slack` der KARTE an
+   derselben Stelle gemessen (`map_slack_xh`). Lag die Karte dort
+   schon draußen, ist der Absprung GEERBT; lag sie auf der Tinte und
+   der Stift nicht, hat ihn der Ritt GEMACHT. Die Schwelle ist
+   0,02 xh.
+
+**Basis.** dev-19, Wurzel `suetterlin-1922`
+`exported_at 2026-09-02T22:16:06+00:00`, Lotse-Default-Stack (v0.17
+mit der v0.19-Re-Denominierung), `OPENBLAS_NUM_THREADS=1
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1`. Artefakte: `runs/`, Ereignis-CSV
+und ein Bild je Absprung.
+
+**Der erste Befund ist eine Null.** Über alle 19 Wörter hat **kein
+einziges** der 3 350 Karten-Samples eine leere Bord-Umgebung: für
+jedes liegt eine Schiene innerhalb von `BOARD_RADIUS_UNITS`. Die Karte
+führt den Folger also nie über blankes Papier. Das ist keine
+Statistik, sondern eine gemessene Null.
+
+Wichtig für die Beweiskraft: die Schienen-Verfügbarkeit wird je Sample
+**unabhängig vom Ursachen-Label** erhoben und ist im Sensor ein
+eigenes Merkmal, kein Ursachen-Wert. Ein Fenster-Sample wird per
+Konstruktion in den Brücken-Zustand gezwungen und trägt deshalb IMMER
+das Label `forced_window`; hätte man „keine Schiene" nur am Label
+abgelesen, wären die Fenster nie geprüft worden und die Null hätte nur
+für die ungezwungenen Brücken gegolten (Copilot-Befund auf PR #528,
+vor der Zahl repariert).
+
+**Der zweite Befund ist eine Quote.** Was ein Mechanismus am Weg
+AUSMACHT und was er ANRICHTET, sind zwei sehr verschiedene Zahlen:
+
+| Mechanismus | Punkte | Anteil am Weg | davon daneben | Quote |
+|---|---|---|---|---|
+| `rail` (gewöhnlicher Ritt) | 6 872 | 86,35 % | 2 | 0,0 % |
+| `forced_window` (v0.8/v0.9) | 773 | 9,71 % | 69 | 8,9 % |
+| `tail_runout` (Schienen-Auslauf) | 201 | 2,53 % | 0 | **0,0 %** |
+| `double_zone` (v0.5/v0.7) | 101 | 1,27 % | 50 | **49,5 %** |
+| `bridge_priced_out` | 11 | 0,14 % | 3 | 27,3 % |
+| `bridge_no_rail` | 0 | 0,00 % | 0 | — |
+
+Der Schienen-Auslauf ist damit freigesprochen: 201 Punkte, keiner
+daneben — er fährt per Konstruktion die Schiene bis zu einem
+Grad-1-Ende. Der gewöhnliche Ritt ebenso (2 von 6 872, 0,03 %). Die
+**Ritt-Doppelzone dagegen liegt in jedem zweiten ihrer Punkte
+außerhalb der Tinte** und stellt mit 1,3 % Weganteil 40 % aller
+Absprung-Punkte — die fünffache Quote des Fensters.
+
+Entsprechend sind alle 39 Absprung-EREIGNISSE (124 Punkte in 12 der
+19 Wörter) von Karten-Vorfahrt dominiert: den zwei Mechanismen, in
+denen der Folger die Schiene per Konstruktion loslässt und die
+komponierte Karte fährt — `double_zone`
+(`RIDE_DOUBLE_MAP_PRIORITY` + `RIDE_DOUBLE_ZONE_MARGIN_UNITS`) und
+`forced_window` (`MAP_CROSSING_WINDOW_UNITS` + `MAP_CROSSING_PIN`).
+Die drei danebenliegenden `bridge_priced_out`-Punkte sind in
+Zonen-Ereignisse eingebettet und dominieren keines.
+
+Das ist ein struktureller Satz über die Route, keine Statistik: der
+Lotse springt nur dort ab, wo seine eigenen ADOPTIERTEN Mechanismen
+ihn dazu ermächtigen. Die Kandidatenmenge des Viterbi wird im Fenster
+auf einen einzigen Zustand reduziert (`states[k] = [(None, 0.0)]` in
+`_assign_stroke`) — die Schienen werden dort gar nicht erst
+angeboten; in der Zone ist es kein Kostenterm, sondern ein harter
+Vorrang beim Zusammenbau (`map_mask` in `_assemble_ride`).
+
+**Die Schuld-Aufteilung, und sie ist scharf:**
+
+| Ursache | Schuld | n | Tiefe med | Überschuss über die Karte med | Bogen med | Karte lag auf der Tinte |
+|---|---|---|---|---|---|---|
+| `double_zone` | geerbt | 11 | 0,0994 xh | **+0,0000** | 0,510 xh | 0/11 |
+| `forced_window` | Pinnung | 15 | 0,0669 xh | **+0,0928** | 0,221 xh | 11/15 |
+| `forced_window` | geerbt | 12 | 0,0394 xh | −0,0165 | 0,143 xh | 1/12 |
+| `double_zone` | Entdrillung | 1 | 0,0535 xh | +0,1213 | 0,142 xh | 1/1 |
+
+Daraus zwei benannte Klassen (Glossar) und eine Randnotiz:
+
+**Karten-Abdrift** (`double_zone` · geerbt, 11 Ereignisse). Die
+Zonen-Vorfahrt reicht die Karte WÖRTLICH durch: der Überschuss über
+die Karte ist im Median exakt **+0,0000** — der Folger fügt nichts
+hinzu, er ist ein treuer Bote. In allen 11 Fällen lag die Karte schon
+draußen. Diese Klasse trägt die tiefsten und längsten Absprünge der
+Runde (bis **0,269 xh** bei `muß-2`, Bogen bis 0,84 xh bei
+`Galoppieren`). Ein Knotenphänomen ist sie NICHT: nur 5 der 11 sitzen
+wirklich an einem Skelettknoten vom Grad ≥ 3 (gemessen mit der
+Lokalitäts-Schranke 0,35 xh), bei 5 weiteren liegt überhaupt kein
+Knoten so nah — passend zur Bogenlänge, sie ist ein LAUF entlang der
+Zone. (Eine frühere Fassung dieses Abschnitts las „9 von 11": die
+Knoten-Suche reichte damals über eine volle x-Höhe, sodass ein
+Ereignis auf gewöhnlicher Kante den Grad einer Verzweigung erbte, die
+es nie berührt hat — Copilot-Befund auf PR #528, korrigiert samt
+Sensor.) Sie ist per Konstruktion ungepinnt: `MAP_RUN_PIN_KNOTS` steht
+seit v0.16 auf `"bridges"`, Zonen-Ritte werden also nicht an die Tinte
+zurückgeholt (nur 4 von 12 Zonen-Ereignissen tragen überhaupt ein
+Pin-Flag, und die aus dem Brücken-Anteil). **Die Ursache dieser Klasse
+liegt nicht im Folger, sondern in der Komposition** — Platzierung der
+Laufform bzw. `core/compose.py`. Der Lotse macht sie nur sichtbar.
+
+**Fenster-Versatz** (`forced_window` · Pinnung, 15 Ereignisse). Hier
+ist es umgekehrt: in **11 von 15** Fällen lag die Karte AUF der Tinte
+und der Stift trotzdem daneben. Der Mechanismus ist die starre
+Verschiebung von `_pin_map_runs`/`_pin_forced_runs` — sie zieht den
+Fenster-Lauf so, dass seine ENDEN die Bord-Punkte treffen, und trägt
+dabei den Bauch des Laufs mit hinaus. Median-Überschuss über die Karte
+**+0,0928 xh**, im schlimmsten Fall **+0,2146 xh** (`Galoppieren`,
+Punkte 542–543; die Karte liegt dort 0,121 xh INNEN, der Stift
+0,093 xh draußen). Das ist der einzige Absprung-Mechanismus, den der
+Lotse selbst herstellt.
+
+**Und die Pinnung ist zweischneidig, nicht schlecht.** Die zwölf
+`forced_window`-Ereignisse der geerbten Klasse haben einen
+Median-Überschuss von **−0,0165 xh**: dort zieht dieselbe Pinnung den
+Lauf ein Stück ZURÜCK zur Tinte. Über alle 27 Fenster gerechnet
+repariert sie also etwa in der Hälfte der Fälle und beschädigt in der
+anderen — was erklärt, warum v0.9 und v0.11 ihre Gates bestanden
+haben und der Defekt trotzdem stehen blieb: er ist in der Summe
+unauffällig und nur je Ort sichtbar.
+
+**Randnotiz Entdrillungs-Spiegel** (1 Ereignis, `Galoppieren`
+876–879): die v0.13-Paar-Spiegelung schiebt einen Lauf um +0,121 xh
+über die Karte hinaus. Eine Beobachtung, kein Befund — n = 1.
+
+**Minimal-Reproduktionen** — die beiden Klassen nebeneinander:
+
+![Zwei Ausschnitte nebeneinander, je mit Tintenrand, komponierter Karte, Ritt und rot markiertem Absprung](../assets/lotse-absprung-klassen.png)
+
+* **Links, Karten-Abdrift** — `muß-2`, Punkte 7–12, Tiefe 0,269 xh,
+  Überschuss 0,000. Der Anstrich des m: die Karte läuft links an der
+  Tinte vorbei, der Ritt folgt ihr wörtlich hinaus.
+* **Rechts, Fenster-Versatz** — `will`, Punkte 118–119, Tiefe
+  0,055 xh, Karte −0,070 xh (also innen). Der Austritt des i: die
+  Karte liegt mitten in der Tinte, der gepinnte Fenster-Lauf hakt
+  trotzdem heraus.
+
+Erzeugt mit `uv run --extra viz python -m tools.inkpilot.forensics
+muß-2 will --panel "muß-2:7,will:118" --panel-out
+docs/assets/lotse-absprung-klassen.png`; die Ausschnitte stammen von
+der gemeinfreien Tafel Abb. 19 (`data/sources/suetterlin-1922/`, PD,
+schon im Repo). Ein Bild je Ereignis liefert `--png-dir`.
+
+**Was der Befund NICHT sagt.** Er ordnet keine dtw-Differenz zu. Die
+vier Wörter mit den meisten Absprüngen sind nicht die vier
+schlechtesten; `muß` (0 Ereignisse) ist schlechter als `zwei`
+(5 Ereignisse). Der Absprung ist ein ORT-Maß, kein Bahn-Maß — dafür
+ist er das erste, das die Ursache mitliefert.
+
+**Rettungswege** (§7.9, je eigene Vorregistrierung — keiner davon ist
+ein weicheres Gate):
+
+* Karten-Abdrift, neue EVIDENZ: die 11 geerbten Zonen-Ereignisse sind
+  eine lokalisierte Platzierungskarte mit Ort, Tiefe und Bogenlänge —
+  Eingabe für die offenen Platzierungs-Arme (LF4-p, K1-p), nicht für
+  den Lotsen.
+* Karten-Abdrift, bekannter MECHANISMUS: die in §7.11 offene
+  **Zonen-Stufe** (`MAP_RUN_PIN_KNOTS = "zones"`) würde genau diese
+  Läufe an die Tinte zurückholen; sie scheitert heute nur an der
+  Galoppieren-p-Oskulation. Der Befund gibt ihr eine zweite,
+  unabhängige Begründung.
+* Fenster-Versatz, neuer MECHANISMUS: eine **formtreue statt starre**
+  Pinnung — Enden auf die Bord-Punkte, Inneres auf den Tintenkörper
+  projiziert (Ähnlichkeits- statt Translations-Fit).
+* Fenster-Versatz, neuer SENSOR: `map_slack_xh` ist dieser Sensor. Ein
+  **Nie-schlechter-als-die-Karte-Budget** in der Form des
+  v0.16-Soll-Budgets — eine Pinnung darf den `slack` eines Laufs nicht
+  erhöhen — wäre der erste Gate-Kandidat, der den Defekt je Ort trifft
+  statt in der Summe.
+
+### Lotse-Sprung `sep04` — der ungeklärte Sprung ist eine Transkription, keine Messung
+
+**Autopsie, kein Arm.** Die Verfahrensseite führt seit `aug26` einen
+offenen Punkt: „Der Sprung 0,0585 → 0,0545 ist ungeklärt" — zwischen
+dem `aug20`-Eintrag und der L-U-Nachmessung steht kein Lotse-Eintrag
+und kein Re-Baseline-Hinweis, und die L-U-Tabelle misst die Zahl auf
+BEIDEN Marken-Kappen gleich (0,0545 → 0,0545), die Kappe kann es also
+nicht gewesen sein. Der Audit vom `sep02` hat ihn als nicht auflösbar
+notiert, weil die Artefakte in Session-Scratchpads lägen. **Sie liegen
+noch da** (`temp/tb-aug20/`, 107 Dateien), und damit ist der Punkt
+entscheidbar.
+
+**Was die `aug20`-Artefakte sagen.** `lotse-v17-frozen.report`:
+dtw-Median **0,058522**, p90 **0,112186**, worst `muß-2`
+**0,140410**, aiou 0,7398 — die Zahlen des `aug20`-Eintrags, exakt.
+Alle 24 Reports jenes Abends durchgesehen: **kein einziger
+Lotse-Median ist 0,0545.** Die nächsten sind 0,057255 (die
+LF3b-Karte), 0,056635 und 0,056728 (v0.18/v0.19-Sprossen, beide per
+Gate verworfen). Nebenbefund, unabhängig bestätigt:
+`lotse-v19-r0-frozen` misst **0,058522**, Ziffer für Ziffer wie
+v0.17 — die Byte-Identität der v0.19-Re-Denominierung hält.
+
+**Wo 0,0545 herkommt.** Es steht im `aug20`-Report — als der
+dtw-Wert des Wortes **`laden`**. Sortiert man die 19 Wörter, ist
+`laden` Rang 9 und `will` (0,0585) Rang 10; der Median von 19 Werten
+IST Rang 10. **0,0545 ist der Nachbarrang des Medians.**
+
+**Warum es keine Messung sein kann.** Die beiden anderen
+Lotse-Zahlen der L-U-Tabelle auf Kappe 0,8 stimmen mit `aug20` exakt
+überein (p90 0,1122, worst `muß-2` 0,1404). p90 wird über die lineare
+Interpolation bei Index 16,2 von `muß` (0,1103) und `muß-3` (0,1197)
+festgelegt, worst vom Maximum — beide unbewegt. Ein Kandidat, der
+diese zwei reproduziert, aber den Median auf 0,0545 zieht, müsste
+GENAU EIN Wort über den Median geschoben haben, und zwar `will` unter
+0,0545. Das ist ausgeschlossen:
+
+* Der `aug20`-Kandidat, heute auf der aktuellen Wurzel nachgemessen,
+  liefert `will` weiterhin **0,0585** — kein Wurzelwechsel bewegt
+  dieses Wort.
+* Die Fixture-Wurzel wechselte erst am `aug29` (Headline-Ledger); am
+  `aug26` lag noch die `aug14`-Wurzel.
+* Der LF3b-W-Write vom `aug26` bewegt laut eigener Ledger-Zeile nur
+  `das`, `linken`, `Galoppieren`.
+* Die letzte Lotse-Code-Änderung vor `aug26` ist v0.19 Sprosse 0 —
+  byte-identisch zu v0.17, oben erneut bestätigt.
+
+**Verdikt: gegenstandslos.** Der Lotse-Median am `aug26` war auf
+Kappe 0,8 **0,058522**, wie am `aug20`. Die sparsamste Erklärung für
+die Tabellenzahl ist ein Rang-Griff daneben (Index 9 statt 10) beim
+Übertragen; ein Sprung hat nicht stattgefunden. Die Zeile der
+Verfahrensseite wird entsprechend aufgelöst — der Eintrag vom `aug26`
+selbst bleibt append-only stehen, was sich ändert, ist seine Lesart.
+
+**Der zweite Befund: die stehende Basis ist veraltet.** Heute frisch
+geritten, auf der aktuellen Wurzel, misst der Lotse:
+
+| | Kappe 0,8 | Kappe 1,5 (Default) |
+|---|---|---|
+| dtw-Median | **0,056080** | **0,056080** |
+| dtw p90 | 0,111440 | 0,115527 |
+| worst | `muß-2` 0,151524 | `muß-2` 0,157229 |
+
+dazu aiou-Median **0,7527** (von 0,7398), `cross_spurious` **1** (von
+5), `retrace_missing` 5, `marks_uncertain` 0. Der Stand-Block führt
+für den Lotsen 0,0545 / 0,1164 — das ist doppelt falsch: die Zahl ist
+die transkribierte, und sie wurde auf einer Wurzel gemessen, die
+seither DREI Neu-Exporte hinter sich hat (`sep01` §15
+Rechteck-Reparatur, `sep02` LF11-Write, `sep03` Neubau).
+
+**Wie weit die Wurzel trägt — eine saubere Kontrolle.** Die
+`aug20`-Kandidatenbytes, unverändert, gegen die HEUTIGE Wurzel
+gescort: **15 der 19 Wörter reproduzieren bis auf die letzte Ziffer**,
+vier bewegen sich, und drei davon dramatisch:
+
+| Wort | `aug20` | `aug20`-Bytes auf der `sep04`-Wurzel |
+|---|---|---|
+| `das` | 0,0307 | **0,2504** (aiou 0,808 → 0,279) |
+| `und` | 0,0484 | **0,1360** (aiou 0,757 → 0,398) |
+| `Wer` | 0,0751 | **0,1282** (aiou 0,693 → 0,427) |
+| `zwei` | 0,0617 | 0,0535 |
+
+Das ist kein Referenz-Schaden, sondern die `sep01`-Rechteck-Reparatur
+(§15), die durchschlägt: ein alter Kandidat trägt seine EIGENE
+Registrierung, und auf einem reparierten Rechteck teilen Kandidat und
+Referenz den Rahmen nicht mehr. **Folge, und sie gilt für die ganze
+Kampagne: keine dev-19-Zahl von vor `sep01` ist mit einer danach
+vergleichbar — und beide Duell-Zahlen des Stand-Blocks sind
+`aug26`.** Die Nachmessung der Kette gehört in ihre eigene Runde;
+diese hier bewegt nur die Lotse-Zeile.
 
 ---
 

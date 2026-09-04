@@ -57,17 +57,17 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
-- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
+- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
 - **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
-- **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
+- **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
-- **K** — k0-Protokoll §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kurzglossar §5
+- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kurzglossar §5
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nullprobe §4
@@ -1911,6 +1911,65 @@ v0.8/v0.9). *Technisch:* `tools/inkpilot/pilot.py`
 (`RIDE_DOUBLE_ZONE_MARGIN_UNITS`, `MAP_CROSSING_WINDOW_UNITS`,
 `MAP_CROSSING_PIN`) → messjournal.md §14 „Lotse v0.7–v0.9",
 proposals/tintenfolger.md §7.10
+
+**Absprung** *(Lotse)* — ein maximaler Lauf von mindestens zwei
+Punkten der Lotse-Bahn, die AUSSERHALB des Tintenkörpers liegen.
+Der Körper ist die Vereinigung der Scheiben mit Radius
+`width_map[p]` um jedes Skelettpixel `p`; in der
+Medialachsen-Näherung ist der Abstand davon `slack = edt −
+width_map[nächstes]`, negativ in der Tinte, positiv daneben, gemessen
+in x-Höhen. Weil der Ritt das Skelett per Konstruktion fährt, ist
+jeder Absprung von einem benannten Mechanismus gesetzt. Die
+`sep04`-Forensik misst auf dev-19: **keines** der 3 350
+Karten-Samples hat eine leere Bord-Umgebung (je Sample erhoben,
+unabhängig vom Ursachen-Label — Fenster-Samples werden per
+Konstruktion in den Brücken-Zustand gezwungen), der Schienen-Auslauf
+liegt in 201 Punkten nie daneben, der gewöhnliche Ritt in 2 von
+6 872 — was danebenliegt, ist **Karten-Vorfahrt**, und die
+Ritt-Doppelzone in 49,5 % ihrer Punkte. Zwei Klassen tragen ihn:
+Karten-Abdrift und Fenster-Versatz (beide unten). *Technisch:*
+`tools/inkpilot/forensics.py` (`ink_slack_field`, `jump_events`,
+`traced_pilot_word`, `blame`) → messjournal.md §14 „Lotse
+Absprung-Forensik `sep04`"
+
+**Karten-Abdrift** — die `sep04` benannte GEERBTE Absprung-Klasse der
+Lotse-Route: In einer Ritt-Doppelzone gilt Karten-Vorfahrt
+(`RIDE_DOUBLE_MAP_PRIORITY` seit v0.5, ausgeweitet um
+`RIDE_DOUBLE_ZONE_MARGIN_UNITS` seit v0.7), und weil
+`MAP_RUN_PIN_KNOTS` seit v0.16 auf „bridges" steht, wird der Lauf
+NICHT an die Tinte zurückgepinnt — der Folger reicht die komponierte
+Karte wörtlich durch. Messbar daran, dass der Überschuss des Stifts
+über die Karte im Median exakt **+0,0000** ist: der Lotse fügt nichts
+hinzu. Die Klasse trägt die tiefsten (bis 0,269 xh) und längsten
+(Bogen bis 0,84 xh) Absprünge, ist aber KEIN Knotenphänomen: nur 5 der
+11 sitzen an einem Skelettknoten vom Grad ≥ 3 (Lokalitäts-Schranke
+0,35 xh), 5 haben gar keinen Knoten so nah — sie ist ein Lauf entlang
+der Zone. **Ihre Ursache liegt in der
+PLATZIERUNG der Komposition, nicht im Folger** — der Lotse macht sie
+nur sichtbar; die Rettungswege stehen darum bei den Platzierungs-Armen
+(§7.9). *Technisch:* `tools/inkpilot/pilot.py`
+(`RIDE_DOUBLE_MAP_PRIORITY`, `RIDE_DOUBLE_ZONE_MARGIN_UNITS`,
+`_assemble_ride`s `map_mask`) → messjournal.md §14 „Lotse
+Absprung-Forensik `sep04`", proposals/tintenfolger.md §7.9
+
+**Fenster-Versatz** — die `sep04` benannte SELBST GEMACHTE
+Absprung-Klasse der Lotse-Route und der einzige Mechanismus, mit dem
+die Route die Tinte aus eigenem Antrieb verlässt: In einem gepinnten
+Kreuzungs-Fenster wird die Kandidatenmenge des Viterbi auf den
+Karten-Zustand allein reduziert (`states[k] = [(None, 0.0)]`), und
+`_pin_map_runs`/`_pin_forced_runs` verschieben den Lauf danach STARR,
+bis seine Enden die Bord-Punkte treffen — der Bauch des Laufs wird
+dabei mit hinausgetragen. In 11 von 15 Ereignissen lag die Karte
+selbst auf der Tinte; Median-Überschuss über die Karte **+0,0928 xh**,
+maximal +0,2146. Zweischneidig und darum lange unsichtbar: in 12
+weiteren Fenstern zieht dieselbe Pinnung um −0,0165 xh ZURÜCK zur
+Tinte, sodass die Summe unauffällig bleibt und die v0.9/v0.11-Gates
+bestanden wurden. Benannte Konversionen: formtreue statt starrer
+Pinnung, und `map_slack_xh` als Nie-schlechter-als-die-Karte-Budget.
+*Technisch:* `tools/inkpilot/pilot.py` (`MAP_CROSSING_WINDOW_UNITS`,
+`MAP_CROSSING_PIN`, `_pin_map_runs`, `_pin_forced_runs`) →
+messjournal.md §14 „Lotse Absprung-Forensik `sep04`",
+proposals/tintenfolger.md §7.9
 
 **Plateau-Anker** — der `aug19` adoptierte Pinnungs-Mechanismus der
 Lotse-Route (v0.11, L1e): Jeder Karten-Selbstschnitt in einem
