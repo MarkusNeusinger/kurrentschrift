@@ -841,9 +841,18 @@ meldet als `origin_gate` das Urteil für den fragenden Request (`off` ·
 „Header kommt an, Prüfung noch aus" und ist das Messmittel, mit dem jeder Weg
 in den Dienst bestätigt wird, bevor scharf geschaltet wird — es ist der
 Grund, warum der Worker-Befund vor und nicht nach dem Scharfschalten auffiel.
+**Zweite Tür, seit 2026-09-04 im Repo (noch aus):** Der App-Dienst steht
+ebenso offen und reicht auf der `run.app`-URL jeden Crawler-UA über
+`@seo_proxy` an die API weiter, wo der Edge rechtmäßig stempelt — das
+API-Gate kann den Umweg also gar nicht sehen. `app/origin-gate.conf.template`
+ist dieselbe Mechanik in nginx (`map`-Ketten → `$origin_gate_status`,
+`if ($origin_gate_deny) { return 421; }` → eigene 403-Seite); ausgenommen ist
+allein `/_health`, das das Urteil im Header `X-Origin-Gate` meldet. Der Worker
+braucht dort nichts, weil er jeden Pfad an den API-Host schickt.
 *Technisch:* `api/origin_gate.py`, `core/config.py::origin_secret`,
-`infra/cloudflare/kurrentschrift-api-proxy.js`.
-→ frontend-stack.md §5, quellen-und-rechte.md §5
+`infra/cloudflare/kurrentschrift-api-proxy.js`,
+`app/origin-gate.conf.template`, `tests/test_app_origin_gate.py`.
+→ frontend-stack.md §5, quellen-und-rechte.md §5, infra/cloudflare/README.md
 
 **Report-Only-Woche** — die Woche, in der eine neue
 Content-Security-Policy als `Content-Security-Policy-Report-Only`

@@ -15,6 +15,13 @@
 # Google IPs. The origin is also exactly the layer that broke in the incident
 # above; Cloudflare-edge issues are out of this monitor's reach by design.
 #
+# Skipping the edge is exactly what the app's origin gate refuses
+# (app/origin-gate.conf.template), so every probe below carries the header the
+# edge would have stamped, out of the ORIGIN_SECRET repository secret. This
+# monitor is the reason that gate could not be a Host rule: it cannot spoof the
+# Host either, and anything else it might present as an exception would be
+# public with this repository.
+#
 # The expectations are DERIVED from the committed app/prerender/*.html, never
 # written out here. Between #451 (which changed three page titles) and this
 # rewrite the hard-coded literals had gone stale and the job sat red for three
@@ -43,13 +50,13 @@ jobs:
     runs-on: ubuntu-latest
     # 32 check calls (11 pages + 15 crawler UAs + 4 machine files + 2 human
     # controls) x (--retry 2 -> up to 3 attempts x --max-time 30) can reach
-    # ~48 min worst-case, plus three non-retried probes (charset,
-    # trailing slash, og.png — 30s each); 55 leaves room to report a clean
-    # failure rather than dying to the job timeout, which reports nothing
-    # useful. Recompute this when adding checks: the ceiling is check calls
-    # x 90s, plus margin. The page sweep grows with app/prerender/, so a new
-    # public route adds 90s to that ceiling.
-    timeout-minutes: 55
+    # ~48 min worst-case, plus the retried /_health gate probe (90s) and three
+    # non-retried probes (charset, trailing slash, og.png — 30s each); 57 leaves
+    # room to report a clean failure rather than dying to the job timeout, which
+    # reports nothing useful. Recompute this when adding checks: the ceiling is
+    # check calls x 90s, plus margin. The page sweep grows with app/prerender/,
+    # so a new public route adds 90s to that ceiling.
+    timeout-minutes: 57
     steps:
       # The expected titles come from the committed prerender files, so the
       # repo has to be here before the first request goes out.
@@ -59,6 +66,18 @@ jobs:
           fetch-depth: 1
 
       - name: Crawler UAs must get the prerendered pages
+        env:
+          # The header the Cloudflare Transform Rule stamps on everything it
+          # proxies for kurrentschrift.ink. These checks target the Cloud Run
+          # ORIGIN on purpose (see the file header: Cloudflare 403s runner IPs
+          # even for a UA-spoofed Googlebot), so they skip the edge and have to
+          # stamp their own — the same value the app service is given. It
+          # reaches curl through the environment and this step runs without
+          # `set -x`, so it is never echoed. An exception keyed on anything
+          # else — a header this workflow invents, a user agent — would be
+          # public with this repository, which is why the shared secret is the
+          # only exception the gate can afford.
+          ORIGIN_SECRET: ${{ secrets.ORIGIN_SECRET }}
         run: |
           set -uo pipefail
           # Cloud Run origin of the kurrentschrift-app service (see header
@@ -75,12 +94,46 @@ jobs:
           MARKER='<!-- kurrentschrift.ink prerender -->'
           fail=0
 
+          # Absent secret => no header at all. Sending an empty one instead
+          # would read as a mismatch, i.e. as a half-applied rotation rather
+          # than as the missing secret it is.
+          HDR=()
+          if [ -n "${ORIGIN_SECRET}" ]; then HDR=(-H "X-Origin-Secret: ${ORIGIN_SECRET}"); fi
+
+          # Ask the gate before anything else. /_health is its one exempt path,
+          # so it answers whatever the gate is doing, and it reports the verdict
+          # for the request it was asked with — never the value. Without this,
+          # an armed gate plus a missing repository secret would red all 32
+          # checks below with 403s and open an incident that reads "every
+          # crawler page is broken" — the wrong thing to be woken up for, and
+          # the wrong thing to go looking for.
+          gate=$(curl -sS --retry 2 --max-time 30 -o /dev/null -D - "${HDR[@]}" "$ORIGIN/_health" \
+            | tr -d '\r' | sed -n 's/^[Xx]-[Oo]rigin-[Gg]ate: //p') || gate=""
+          case "$gate" in
+            ok|off-seen)
+              echo "origin gate: $gate — the probes below carry the header" ;;
+            off)
+              echo "::warning::the origin gate is not armed AND this run sent no X-Origin-Secret. Set the ORIGIN_SECRET repository secret to the value the kurrentschrift-app service will be given, before it is armed." ;;
+            missing)
+              echo "::error::the origin gate is armed and this run has no ORIGIN_SECRET repository secret — every check below would be a 403. Set it to the same value as the ORIGIN_SECRET on the kurrentschrift-app Cloud Run service."
+              exit 1 ;;
+            mismatch)
+              echo "::error::the origin gate is armed and the ORIGIN_SECRET repository secret is not the value the kurrentschrift-app service was given — a half-applied rotation. Roll the gate back, finish the rotation, arm again."
+              exit 1 ;;
+            *)
+              # No header at all: the running revision predates the gate. That
+              # is deploy lag, not a serving fault, and every check below still
+              # means exactly what it always meant — so it is said out loud and
+              # the run continues.
+              echo "::warning::$ORIGIN/_health carries no X-Origin-Gate header, so the deployed revision predates the origin gate. Check for a pending deploy." ;;
+          esac
+
           check() {
             local ua="$1" url="$2" expect="$3" want="${4:-200}"
             local code
             # On curl failure REPLACE the code — a failing curl can still have
             # printed a partial -w code; appending would yield e.g. "200000".
-            code=$(curl -sS --retry 2 --max-time 30 -A "$ua" -o body.html -w '%{http_code}' "$url") || code="000"
+            code=$(curl -sS --retry 2 --max-time 30 "${HDR[@]}" -A "$ua" -o body.html -w '%{http_code}' "$url") || code="000"
             if [ "$code" != "$want" ]; then
               echo "::error::$url with UA '$ua' returned HTTP $code (expected $want)"
               fail=1
@@ -100,7 +153,7 @@ jobs:
           check_page() {
             local url="$1" title="$2" want="${3:-200}"
             local code
-            code=$(curl -sS --retry 2 --max-time 30 -A "$GOOGLEBOT" -o body.html -w '%{http_code}' "$url") || code="000"
+            code=$(curl -sS --retry 2 --max-time 30 "${HDR[@]}" -A "$GOOGLEBOT" -o body.html -w '%{http_code}' "$url") || code="000"
             if [ "$code" != "$want" ]; then
               echo "::error::$url returned HTTP $code (expected $want)"
               fail=1
@@ -190,7 +243,7 @@ jobs:
           check "$CHATGPTUSER" "$ORIGIN/llms.txt"   "# kurrentschrift.ink"
           check "$GOOGLEBOT"   "$ORIGIN/sitemap.xml" "<urlset"
           # The site card must be the FILE for a preview bot, not the proxy.
-          code=$(curl -sS --max-time 30 -A "$TWITTERBOT" -o /dev/null -w '%{http_code} %{content_type}' "$ORIGIN/og.png") || code="000"
+          code=$(curl -sS --max-time 30 "${HDR[@]}" -A "$TWITTERBOT" -o /dev/null -w '%{http_code} %{content_type}' "$ORIGIN/og.png") || code="000"
           case "$code" in
             "200 image/png"*) echo "OK: og.png served as image to a preview bot" ;;
             *) echo "::error::og.png for a preview bot: $code (expected 200 image/png)"; fail=1 ;;
@@ -198,7 +251,7 @@ jobs:
 
           # llms.txt carries UTF-8 punctuation; without an explicit charset a
           # strict client decodes it as Latin-1 mojibake.
-          ct=$(curl -sS --max-time 30 -A "$GOOGLEBOT" -o /dev/null -w '%{content_type}' "$ORIGIN/llms.txt")
+          ct=$(curl -sS --max-time 30 "${HDR[@]}" -A "$GOOGLEBOT" -o /dev/null -w '%{content_type}' "$ORIGIN/llms.txt")
           case "$ct" in
             *charset=utf-8*) echo "OK: llms.txt content-type: $ct" ;;
             *)
@@ -208,7 +261,7 @@ jobs:
 
           # A trailing slash must normalise to the canonical URL on THIS host,
           # relative, never an internal path, plain http or the container port.
-          slash_target=$(curl -sS --max-time 30 -o /dev/null -A "$GOOGLEBOT" \
+          slash_target=$(curl -sS --max-time 30 -o /dev/null "${HDR[@]}" -A "$GOOGLEBOT" \
             -w '%{redirect_url}' "$ORIGIN/quiz/")
           case "$slash_target" in
             "")
