@@ -40,6 +40,7 @@ candidate: a defect somebody injected is not a change anybody proposed.
 from __future__ import annotations
 
 import argparse
+import inspect
 import json
 from datetime import UTC, datetime
 from pathlib import Path
@@ -61,6 +62,14 @@ DEFAULT_SOURCE_ID = "suetterlin-1922"
 # anchor-median jitter of a Laufform row measures a few hundredths of an
 # x-height, which is exactly the range every frozen ruler resamples away.
 ZIGZAG_AMPLITUDE = 0.02
+
+# What an omitted J5 flag resolves to, read from the composer's own signature at
+# IMPORT — before any test can substitute a stand-in — so the arm file records
+# the boolean that really drew it and no later default change can rewrite what
+# an old round meant.
+JOIN_RULE_DEFAULTS: dict[str, bool] = {
+    name: bool(inspect.signature(compose_word).parameters[name].default) for name in ("apex_handover", "stem_depart")
+}
 
 
 def load_json(path: Path) -> Any:
@@ -99,9 +108,10 @@ def compose_arm(
     different letter set from the base and the round would compare two things.
 
     ``apex_handover``/``stem_depart`` are the join-grammar arms of „Übergänge
-    J5" (core.compose APEX_HANDOVER_MIN_RISE / STEM_DEPART_BASES). None leaves
-    each on the composer's own default, so an arm file always says what it
-    composed and never inherits a default silently.
+    J5" (core.compose APEX_HANDOVER_MIN_RISE / STEM_DEPART_BASES). None means
+    „take the composer's default", and that default is RESOLVED here to the
+    boolean the settings then report — an arm file says what actually drew it,
+    never a placeholder that a later default change would silently redefine.
     """
     manifest = load_json(root / "manifest.json")
     templates = load_json(root / "templates.json")
@@ -116,10 +126,14 @@ def compose_arm(
 
     payload_for = _payload_cache(templates, ratio, resolver, used_nib)
     laufform_for = _payload_cache(rows, ratio, resolver, used_nib)
+    # Resolved to concrete booleans HERE, once, and the same values are both
+    # passed and recorded. Leaving a None for the composer to fill in would
+    # store "whatever the default was that day": two arms could then carry
+    # identical metadata and different ink, which is the one thing this field
+    # exists to prevent.
     join_rules = {
-        name: value
+        name: JOIN_RULE_DEFAULTS[name] if value is None else bool(value)
         for name, value in (("apex_handover", apex_handover), ("stem_depart", stem_depart))
-        if value is not None
     }
 
     words: dict[str, dict] = {}
@@ -162,10 +176,7 @@ def compose_arm(
         # Stated, never inherited: an arm file has to say which join rules drew
         # it, or two rounds built weeks apart cannot be held against each other.
         "exit_trim": exit_trim,
-        "join_rules": {
-            "apex_handover": apex_handover if apex_handover is not None else "composer default",
-            "stem_depart": stem_depart if stem_depart is not None else "composer default",
-        },
+        "join_rules": dict(join_rules),
         "exported_at": manifest.get("exported_at"),
         "failed": failed,
     }

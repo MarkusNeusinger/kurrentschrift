@@ -7827,10 +7827,11 @@ dort die einzige richtige Antwort, und damit misst die Runde, wie der Richter
 diese Option überhaupt benutzt — genau die Größe, an der das LF11-Verdikt
 gescheitert ist. Sie hebt die Runde außerdem über den Wiederholungs-Boden des
 Builders (eine blinde Wiederholung braucht mehr als `min_gap` + 25
-Bildschirme, eine Runde über die zehn bewegtesten Wörter kann also gar keine
-tragen); so liegen **4 blinde Wiederholungen** über die Schichten
-apex/stem/nullprobe, Abstand 14–30. Die Konstruktionsregel dazu steht in
-`menschliche-bewertung.md` §8a.
+Bildschirme — im Wortmodus-Default `min_gap` 15 also mehr als 40; diese Runde
+läuft auf `--min-repeat-gap 5`, und selbst dort trügen die 22 bewegten Wörter
+allein keine einzige); so liegen **4 blinde Wiederholungen** über die
+Schichten apex/stem/nullprobe, Abstand 14–30. Die Konstruktionsregel dazu
+steht in `menschliche-bewertung.md` §8a.
 
 Zwei Dinge, die der Richter wissen muss: die Arme sind
 `apex_handover`+`stem_depart` GEMEINSAM gegen die Basis — das Urteil gilt der

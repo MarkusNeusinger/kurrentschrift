@@ -15,11 +15,13 @@ draws half a word after the hours are already booked.
 
 from __future__ import annotations
 
+import inspect
 import json
 
 import numpy as np
 import pytest
 
+from core.compose import compose_word
 from tools.humanbench import wordarm
 from tools.humanbench.build import load_arm
 from tools.humanbench.wordarm import ZIGZAG_AMPLITUDE, arm_drawing, load_laufform_draft, pin_registration, zigzag
@@ -187,6 +189,44 @@ def stand_in_root(tmp_path):
     return root
 
 
+def test_join_rule_defaults_are_read_off_the_composer() -> None:
+    """The recorded default and the composer's real one are ONE source of
+    truth — read at import, before any stand-in can be substituted for it."""
+    params = inspect.signature(compose_word).parameters
+    assert wordarm.JOIN_RULE_DEFAULTS == {
+        "apex_handover": params["apex_handover"].default,
+        "stem_depart": params["stem_depart"].default,
+    }
+
+
+@pytest.mark.parametrize(
+    "switch, recorded",
+    [
+        # Omitted: the arm records the composer's real default, and hands the
+        # same concrete boolean over — never a None for the composer to fill in.
+        ({}, None),
+        ({"apex_handover": True}, {"apex_handover": True}),
+        ({"stem_depart": True}, {"stem_depart": True}),
+        ({"apex_handover": False, "stem_depart": False}, {"apex_handover": False, "stem_depart": False}),
+    ],
+)
+def test_compose_arm_resolves_and_forwards_the_join_rules(tmp_path, monkeypatch, switch, recorded):
+    calls: list[dict] = []
+
+    def fake_compose(slots, payloads, **kwargs):
+        calls.append(kwargs)
+        return {"items": COMPOSED["items"], "missing": []}
+
+    monkeypatch.setattr(wordarm, "compose_word", fake_compose)
+    monkeypatch.setattr(wordarm, "score_word", lambda *a, **k: {"registration": REGISTRATION})
+    monkeypatch.setattr(wordarm, "render_payload_for_template", lambda *a, **k: {"anchors": []})
+
+    _words, settings = wordarm.compose_arm(stand_in_root(tmp_path), **switch)
+    expected = {**wordarm.JOIN_RULE_DEFAULTS, **(recorded or {})}
+    assert settings["join_rules"] == expected
+    assert calls and {k: calls[0][k] for k in expected} == expected
+
+
 @pytest.mark.parametrize("switch, expected", [({}, False), ({"exit_trim": True}, True)])
 def test_compose_arm_hands_exit_trim_to_compose_word(tmp_path, monkeypatch, switch, expected):
     """The forwarding itself, not the parsing: delete `exit_trim=exit_trim` from
@@ -228,7 +268,7 @@ def _settings(**kwargs) -> dict:
         "laufform": "frozen",
         "exit_trim": kwargs.get("exit_trim", False),
         "join_rules": {
-            name: value if (value := kwargs.get(name)) is not None else "composer default"
+            name: wordarm.JOIN_RULE_DEFAULTS[name] if kwargs.get(name) is None else bool(kwargs[name])
             for name in ("apex_handover", "stem_depart")
         },
         "failed": [],
@@ -279,6 +319,7 @@ def test_the_arm_file_records_the_switch_it_was_composed_with(tmp_path, monkeypa
     written = json.loads(out.read_text())
     assert written["settings"]["exit_trim"] is True
     assert written["arm"] == "J4"
-    # … and an arm that did not touch a rule says so instead of staying silent:
-    # a round that inherits a default cannot be held against a later one.
-    assert written["settings"]["join_rules"] == {"apex_handover": "composer default", "stem_depart": "composer default"}
+    # … and an omitted J5 flag is recorded as the BOOLEAN the composer actually
+    # used, not as a placeholder: if the default ever moves, two arms must not
+    # be able to carry identical metadata and different ink.
+    assert written["settings"]["join_rules"] == wordarm.JOIN_RULE_DEFAULTS

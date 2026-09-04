@@ -1154,11 +1154,13 @@ Konstruktionsregel aus der J5-Runde (`sep04`), notiert neben dem Fehler, der
 sie ausgelöst hat: eine Runde, die nur die Wörter zeigt, die ein Kandidat
 bewegt, kann **keine einzige blinde Wiederholung tragen**. Der Builder zieht
 Wiederholungen ausschließlich aus dem Anfang der Folge und braucht danach
-`min_gap` + 25 Bildschirme Platz (`REPEAT_JITTER`) — unter rund 30 Wörtern
-bleibt der Kandidatentopf leer, und die Runde hat gar keine
-Verlässlichkeitsschranke mehr (§3.2). Für die J5-Klasse (22 bewegte Wörter)
-hieß das: gebaut wie geplant, gemeldet „0 von 6 platziert“, unbrauchbar als
-Reliabilitäts-Aussage.
+`min_gap` + 25 Bildschirme Platz (`REPEAT_JITTER`) — mit dem Wortmodus-Default
+`--min-repeat-gap 15` bleibt der Kandidatentopf also bis 40 Wörter leer, und
+selbst mit dem kleinsten sinnvollen Abstand liegt die Schwelle noch über 25.
+Ohne sie hat die Runde gar keine Verlässlichkeitsschranke mehr (§3.2). Für die
+J5-Klasse (22 bewegte Wörter) hieß das: gebaut wie geplant, gemeldet „0 von 6
+platziert“, unbrauchbar als Reliabilitäts-Aussage — und zwar auch nach
+`--min-repeat-gap 5`, denn 22 < 5 + 25.
 
 Der Ausweg ist keine gesenkte Schranke, sondern **Nullproben**: Wörter, die
 der Kandidat gar nicht berührt, deren beide Tafeln also **bit-identisch** sind.

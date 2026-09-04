@@ -270,8 +270,9 @@ einen Default.
 
 Zwei Konstruktions-Hinweise aus der J5-Runde, damit die nächste sie nicht
 neu lernt: eine **blinde Wiederholung** braucht mehr als
-`--min-repeat-gap` + 25 Bildschirme, eine Runde von zehn Wörtern kann also
-gar keine tragen; und **Nullproben** — Wörter, die der Kandidat gar nicht
+`--min-repeat-gap` + 25 Bildschirme (im Wortmodus-Default 15 also mehr als
+40), eine Runde von zehn Wörtern kann also gar keine tragen; und
+**Nullproben** — Wörter, die der Kandidat gar nicht
 berührt, deren beide Tafeln also bit-identisch sind — kosten wenig, heben
 die Runde über diesen Boden und messen nebenbei, wie der Richter „kein
 Unterschied" überhaupt benutzt: genau die Größe, an der das LF11-Verdikt

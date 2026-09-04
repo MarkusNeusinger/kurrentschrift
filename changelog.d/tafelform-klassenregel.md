@@ -14,7 +14,7 @@
 - **A blind word round on the authenticity question, built and unjudged.** The
   humanbench word mode can now compose an arm with either join rule
   (`tools/humanbench/wordarm --apex-handover/--stem-depart`, stated in the arm
-  file so no round inherits a default silently), and round 5 pairs the base
+  file so no round inherits a default silently), and round 6 pairs the base
   against the class rule over the 22 words it moves plus twelve null controls —
   identical panels where "no difference" is the only right answer, which is
   what makes the tie option itself measurable.

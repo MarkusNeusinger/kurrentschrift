@@ -569,6 +569,27 @@ def test_apex_handover_class_takes_the_long_unlooped_climb_only() -> None:
     assert _apex_handover_index(_SHORT_CLIMB) == 0
 
 
+def test_apex_handover_climbs_through_resampling_jitter() -> None:
+    """A sub-0.001 dip on the way up is spline noise, not a head turn. Read as
+    one, it would cut the measured rise short and DROP a qualifying row out of
+    the class — the same jitter that once disabled the 0.78 trim for arcade
+    heads, one rule over."""
+    jittered = [
+        (0.0, 0.7),
+        (0.12, 1.0),
+        (0.24, 0.9996),  # the dip
+        (0.36, 1.65),
+        (0.46, 1.95),
+        (0.48, 1.3),
+        (0.5, 0.0),
+    ]
+    apex = _apex_handover_index(jittered)
+    assert apex == 4  # the true crest, past the dip
+    assert jittered[apex][1] - jittered[0][1] >= APEX_HANDOVER_MIN_RISE
+    # A real head turn still stops the climb: the looped ascender is unmoved.
+    assert _apex_handover_index(_LOOPED_CLIMB) == 0
+
+
 def test_apex_handover_reads_the_two_axes_independently() -> None:
     # Just under the rise floor, otherwise in class.
     shy = [(0.0, 0.7), (0.2, 1.2), (0.4, 0.7 + APEX_HANDOVER_MIN_RISE - 0.01), (0.42, 0.3), (0.44, 0.0)]

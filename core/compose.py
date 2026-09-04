@@ -367,6 +367,13 @@ ENTRY_FLANK_DIP_TOL = 0.0
 # degrees against 98.4 for the widest member).
 APEX_HANDOVER_MIN_RISE = 1.00
 APEX_HANDOVER_MAX_APPROACH_DEG = 120.0
+# Drop per sample the climb tolerates before it counts as a head turn. An order
+# of magnitude above the spline-resampling jitter the lead-ins carry (~0.0004
+# xh, the same noise that silently disabled the 0.78 trim for arcade heads —
+# ENTRY_FLANK_DIP_TOL) and well under a real turn, which the P3-K3 scan puts
+# above 0.02 per sample. It never softens the rule: reading a jitter dip as the
+# crest would DROP a qualifying row out of the class, not let a wrong one in.
+APEX_HANDOVER_DIP_TOL = 0.01
 # Arm fusion (the jul30 mockup on "re"): the arm's small bow rolls DIRECTLY
 # onto the round body's top — the pair is pulled together until B's top
 # couple point (the ENTRY_COUPLE_Y trim) sits ARM_FUSE_GAP right of the
@@ -831,9 +838,24 @@ def _apex_handover_index(first_line: list[Point]) -> int:
     lead-in that climbs a full ascender's worth in ONE unlooped rise. Both
     tests read the stored geometry, so a Laufform row or another hand is
     judged by the same two numbers as the chart cell.
+
+    The climb is walked with APEX_HANDOVER_DIP_TOL of slack and the crest is
+    its HIGHEST sample, not the sample where the walk happened to stop: the
+    strict scan of ``_entry_apex_index`` reads a sub-0.001 resampling dip as a
+    head turn, and here that would not soften the rule but silently drop a
+    qualifying row out of the class — the same jitter that once disabled the
+    0.78 trim for arcade heads (see ENTRY_FLANK_DIP_TOL). The loop rejection is
+    untouched: a looped ascender still climbs to its loop top and is thrown out
+    by the approach into it.
     """
-    apex = _entry_apex_index(first_line)
-    if not apex or first_line[apex][1] - first_line[0][1] < APEX_HANDOVER_MIN_RISE:
+    if len(first_line) < 3 or first_line[1][1] < first_line[0][1]:
+        return 0
+    apex, i = 0, 1
+    while i < len(first_line) - 1 and first_line[i][1] >= first_line[i - 1][1] - APEX_HANDOVER_DIP_TOL:
+        if first_line[i][1] > first_line[apex][1]:
+            apex = i
+        i += 1
+    if apex < 1 or first_line[apex][1] - first_line[0][1] < APEX_HANDOVER_MIN_RISE:
         return 0
     approach = math.degrees(
         math.atan2(first_line[apex][1] - first_line[apex - 1][1], first_line[apex][0] - first_line[apex - 1][0])
