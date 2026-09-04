@@ -717,7 +717,18 @@ denen es stammt.
   Lineal-Soll-Budget und Reservierungs-Veto) und sind auf der
   Verfahrensseite je Version belegt. Der Duell-Kandidat läuft über den
   File-Provider des Tracebench (`--candidate file --candidate-file`).
-  Reine Messschicht: keine DB, kein `core/`-Schreibzugriff.
+  Daneben liegt seit `sep04` der **Absprung-Sensor**
+  `tools/inkpilot/forensics.py` (`uv run --extra viz python -m
+  tools.inkpilot.forensics [ids …] --csv <datei> [--png-dir <dir>]
+  [--panel WORT:INDEX,… --panel-out <png>]`): er misst je emittiertem
+  Punkt den Abstand vom TINTENKÖRPER (Skelett + `width_map`) und hängt
+  daran den Mechanismus, der ihn gesetzt hat — dazu `map_slack_xh`,
+  den Abstand der Karte an derselben Stelle, der geerbte von selbst
+  gemachten Absprüngen trennt (Glossar „Absprung", „Karten-Abdrift",
+  „Fenster-Versatz"). Er spiegelt `pilot_word`, statt es zu ändern,
+  und hält das Ergebnis bei jedem Lauf per `assert_matches_pilot`
+  bit-gleich dagegen — der Folger bleibt während einer Mess-Runde
+  unberührt. Reine Messschicht: keine DB, kein `core/`-Schreibzugriff.
 - **`tools/routeg`** — der Kandidat der Kontrolle **Nullprobe**
   ([`verfahren-nullprobe.md`](verfahren-nullprobe.md)): Skelett →
   Segmentgraph (`graph.py`) → Greedy-Traversierung per Gute-Fortsetzung,
