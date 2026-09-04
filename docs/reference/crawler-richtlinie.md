@@ -162,7 +162,17 @@ Seite als `/schriftkunde.md`) war der Vorläufer und ist in diesem Pfad
 aufgegangen. Weil der Pfad für Menschen unsichtbar ist, prüft ihn
 `.github/workflows/bot-serving-check.yml` täglich gegen den
 Cloud-Run-Origin — anyplots Alarm, der dort vier stille Wochen mit 502
-für jeden Crawler beendet hat. Der Wächter schreibt keine Erwartung
+für jeden Crawler beendet hat. Genau daran vorbei zu messen ist das, was
+das **Origin-Gate der Website** (`app/origin-gate.conf.template`, seit
+2026-09-04 im Image, ausgeschaltet ausgeliefert) verbietet: Der Wächter
+schickt deshalb auf jeder Probe den Header mit, den der Edge gestempelt
+hätte, aus dem Repository-Secret `ORIGIN_SECRET`, und fragt vorab
+`/_health` nach dem Urteil. Er ist zugleich der Grund, warum das Gate
+kein `Host`-Kriterium sein kann: Er kann den Host ebenso wenig fälschen,
+und jede Ausnahme auf etwas Öffentliches — ein selbst erfundener Header,
+ein User-Agent — wäre mit diesem Repository öffentlich.
+
+Der Wächter schreibt keine Erwartung
 selbst hin: Er checkt das Repo aus und liest Route **und** Titel je
 Seite aus den committeten Dateien unter `app/prerender/` (Route aus dem
 Pfad, Titel per `grep` aus der Datei). Eine Copy-Änderung zieht ihn

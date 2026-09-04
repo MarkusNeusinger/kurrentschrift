@@ -457,6 +457,81 @@ Cloud Run löst `latest` beim **Instanz-Start** auf — eine neue
 Secret-Version wirkt also erst mit dem nächsten Kaltstart oder Deploy,
 und häufiges Polling hält die Instanz warm und verhindert genau das.
 
+### Die zweite Tür: das nginx-Gate der Website (2026-09-04, aus ausgeliefert)
+
+`api/origin_gate.py` hat die Tür des API-Dienstes zugemacht und die des
+App-Dienstes zugleich als das benannt, was es von seiner Seite aus nicht
+schließen konnte. `kurrentschrift-app` steht ebenfalls mit `ingress=all` im
+Netz: Auf der rohen `*.run.app`-URL liefert es die ganze Website ohne
+Bot-Challenge, ohne WAF und ohne Rate-Limit aus — **und** reicht einen
+Crawler-UA über `@seo_proxy` an `https://api.kurrentschrift.ink` weiter, wo der
+Edge das API-Geheimnis rechtmäßig stempelt. Das API-Gate kann das nicht sehen:
+Der Request, den es bekommt, kam wirklich durch die Vordertür. Jeder solche
+Umweg kostet einen Prerender-Read auf der API plus das Crawler-Plausible-Event,
+das sie dafür meldet.
+
+`app/origin-gate.conf.template` ist dieselbe Mechanik in nginx — **ein**
+Geheimnis, **fünf** Urteile (`off` · `off-seen` · `ok` · `missing` ·
+`mismatch`), eine Rollout-Prozedur. Die Datei ist eine Vorlage, weil nginx die
+Umgebung nicht lesen kann; das Basis-Image bringt den Entrypoint
+`20-envsubst-on-templates.sh` bereits mit, das Geheimnis kommt also als
+gewöhnliche Cloud-Run-Env-Variable herein und beim Containerstart läuft nichts
+Neues.
+
+- **Aus, bis es jemand anschaltet.** Das Image setzt `ORIGIN_GATE=off`, der
+  Dienst deklariert bis heute gar keine Env-Variablen. `ORIGIN_GATE=on` mit
+  leerem `ORIGIN_SECRET` schlägt **geschlossen** fehl — die Map-Schlüssel sind
+  getaggt, ein vergessenes Geheimnis öffnet also nicht das ganze Internet.
+- **`/_health` meldet das Urteil** im Header `X-Origin-Gate`, für den Request,
+  mit dem es gefragt wurde (nie den Wert). Es ist der EINZIGE ausgenommene
+  Pfad, exakt und ohne Präfix. Damit ist jeder Weg messbar, bevor scharf
+  geschaltet wird: Transform-Rule auf `kurrentschrift.ink` erweitern, dann muss
+  der Edge-Weg `off-seen` melden und die rohe `run.app`-URL weiter `off`; erst
+  danach wird armiert.
+- **Zwei Aufrufer kommen legitim am Edge vorbei** und stempeln jetzt selbst:
+  der Deploy-Smoke in `app/cloudbuild.yaml` (liest `ORIGIN_SECRET` **im Schritt**
+  aus dem Secret Manager, nicht über `availableSecrets`, und fragt `/_health`
+  vor jeder Inhaltsprobe) und der tägliche Bot-Wächter
+  `.github/workflows/bot-serving-check.yml` (aus dem Repository-Secret
+  `ORIGIN_SECRET`; `missing`/`mismatch` sind dort harte Fehler mit einer
+  Meldung, die das Secret beim Namen nennt — sonst würde ein scharfes Gate
+  ohne Secret 32 rote Crawler-Checks erzeugen und ein Incident aufmachen, der
+  „jede Crawler-Seite ist kaputt" behauptet).
+- **Der Worker braucht hier nichts.** Anders als im Schwesterprojekt schickt
+  `kurrentschrift-api-proxy.js` **jeden** Pfad an `api.kurrentschrift.ink`, und
+  die Plausible-Aufrufe (`/js/script.js`, `/pa/event`) laufen über einen
+  eigenen Worker direkt zu `plausible.io` — beides erreicht diesen Container
+  nie. Das ist eine Eigenschaft des Codes, kein Naturgesetz:
+  `tests/test_app_origin_gate.py` schlägt an, sobald ein Zweig einen Pfad an
+  den eigenen Origin zurückgibt (dort wäre wieder zu stempeln, weil ein
+  Worker-Subrequest in derselben Zone an den Transform-Rules vorbeiläuft).
+- **Scharfschalten ist ein Block, kein Flag.** Auch dieser Dienst nagelt
+  Verkehr namentlich fest (`app/cloudbuild.yaml` promotet mit
+  `--to-revisions=…=100`), ein `services update` allein legt also eine
+  armierte Revision an, die nichts ausliefert — beim API-Rollout (#493)
+  gemessen, nicht angenommen. Der Block schickt trotzdem `--no-traffic` mit:
+  Er liest `status.traffic`, prüft aber nie die Verkehrs-*Spezifikation*, und
+  ein Dienst, den zuletzt ein blankes `gcloud run deploy` außerhalb der
+  Pipeline angefasst hat, trägt dort `latestRevision: true` — dann wäre die
+  Änderung sofort scharf, bevor irgendetwas gemessen ist. Wo der Verkehr
+  ohnehin namentlich hängt, ist das Flag wirkungslos. Dazu: das Image der
+  **ausliefernden** Revision pinnen (nicht die letzte), die Secret-Version als
+  **Nummer** setzen (nie `:latest` — Cloud Run löst sie beim Instanz-Start
+  auf, sonst gibt es sporadische 403 innerhalb einer Revision) und keinen Lauf
+  starten, während ein Cloud Build unterwegs ist. Der vollständige Block, die
+  Hostnamen-Tabelle und der Rollback stehen in
+  [`infra/cloudflare/README.md`](../../infra/cloudflare/README.md)
+  § „The site's own origin".
+- **Ein Längen-Deckel auf dem Geheimnis.** nginx kann keinen `map`-Schlüssel
+  hashen, der länger ist als ein Bucket; der Schlüssel ist `presented:` plus
+  das ganze Geheimnis, die Vorlage setzt deshalb `map_hash_bucket_size 512`.
+  Ab grob 500 Zeichen startet nginx nicht mehr — mit ausgeschaltetem Gate
+  dagegen einwandfrei, der Fehler erschiene also erst im Moment des
+  Scharfschaltens. Gefunden hat ihn der Container-Smoke im Schwesterprojekt;
+  hier hält ihn der Job `app-image` in `.github/workflows/ci.yml` gefangen, der
+  das echte Image mit einem produktionslangen Geheimnis dreimal fährt (aus,
+  scharf, scharf ohne Geheimnis).
+
 ### Alternative: GCP Identity-Aware Proxy (IAP)
 
 Wenn wir Cloudflare gar nicht im Stack haben wollen, ist GCP IAP die

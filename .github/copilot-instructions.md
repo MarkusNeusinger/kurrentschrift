@@ -361,7 +361,9 @@ updates its owning doc in the same PR.
   Rules. **The `.js` mirrors the deployed bytes** — change it and deploy it,
   change the dashboard and pull it back — so a `diff` stays meaningful.
   Settings, deploy path and the `off`/`off-seen`/`ok` measurement:
-  `infra/cloudflare/README.md`.
+  `infra/cloudflare/README.md`, which also carries the SITE's own gate
+  (`app/origin-gate.conf.template`, the nginx twin of `api/origin_gate.py`,
+  shipped `ORIGIN_GATE=off`) with its hostname table, arm and rollback blocks.
 - **Measurement tools** (`tools/`) — the bench/lab family (wordbench,
   glyphbench, tracebench, glyphlab/wordlab/pairlab, humanbench, inksight,
   routeg, inkpilot) plus the LOCAL half of the own-hand capture chain

@@ -1,0 +1,145 @@
+# The site container's half of the origin gate — the second door
+# `api/origin_gate.py` named and could not close from its own side.
+#
+# `kurrentschrift-app` stands with `ingress=all` and answers on two kinds of
+# address: `kurrentschrift.ink`, which Cloudflare proxies (a Cloud Run domain
+# mapping), and the raw `*.run.app` URLs, which nothing proxies. On the raw URL
+# there is no bot challenge, no WAF and no rate limit, and a crawler user agent
+# is relayed through `@seo_proxy` to `https://api.kurrentschrift.ink` — where
+# the edge stamps the API's own secret legitimately, so the API gate sees a
+# request that genuinely came through the front door. Every such relay costs a
+# prerender read on the API plus the crawler Plausible event it reports.
+#
+# A Cloudflare Transform Rule stamps `X-Origin-Secret` on what it proxies for
+# that hostname; this file turns the header into a verdict, `nginx.conf`
+# refuses on it. It is not authentication — it says "you came through the front
+# door", nothing about who you are.
+#
+# WHY A HEADER AND NOT A HOST RULE. `kurrentschrift.ink` is a Cloud Run DOMAIN
+# MAPPING, so Cloudflare forwards the original Host and `$host` would really
+# distinguish the edge from the raw URL. A host rule still cannot be the
+# mechanism: `.github/workflows/bot-serving-check.yml` probes this origin with
+# crawler user agents precisely BECAUSE Cloudflare 403s GitHub-runner IPs, it
+# cannot spoof the Host either, and any exception keyed on something public — a
+# header it invents, a user agent — is public with this repository. The
+# exception has to be the shared secret, and once the workflow carries the
+# secret the host rule buys nothing the header does not.
+#
+# WHY THIS FILE IS A TEMPLATE. nginx cannot read the environment. The base
+# image (`nginxinc/nginx-unprivileged:alpine`) ships the official entrypoint's
+# `20-envsubst-on-templates.sh`, which renders `/etc/nginx/templates/*.template`
+# into `/etc/nginx/conf.d/` before nginx starts — so the smallest mechanism is
+# already in the image and needs no start script of our own. `app/Dockerfile`
+# sets `NGINX_ENVSUBST_FILTER` so ONLY `ORIGIN_GATE` and `ORIGIN_SECRET` are
+# substituted; without it envsubst would also eat `$host`, `$uri` and every
+# other nginx variable whose name happens to exist in the environment.
+#
+# THE SECRET LANDS ON DISK HERE, and nowhere else in the container that is not
+# already the environment. Two consequences worth knowing: `nginx -T` dumps
+# every included file, so it must never be run where its output is published
+# (CI runs `nginx -t`, which validates and prints nothing), and no `log_format`,
+# `add_header` or `return` in `nginx.conf` may name `$http_x_origin_secret` —
+# `tests/test_app_origin_gate.py` pins that.
+#
+# TWO DIFFERENCES FROM `api/origin_gate.py`, both deliberate and both harmless
+# against a random 256-bit secret: nginx's `map` lowercases the source before
+# hashing, so the comparison is case-INSENSITIVE, and a hash lookup is not
+# constant-time where `secrets.compare_digest` is. nginx offers no constant-time
+# string primitive; the answer to both is the entropy of the secret, not the
+# comparison.
+#
+# Sister file: `~/anyplot/app/origin-gate.conf.template` — same mechanism, same
+# five verdicts, carried over in the same round (anyplot #11221). What differs
+# is what each site has behind it: this one has a single server block and no
+# Plausible hop in nginx at all.
+
+# nginx cannot hash a `map` key longer than one bucket, and the default bucket
+# is the processor's cache line — 64 bytes on x86-64. The tagged key below is
+# `presented:` plus the whole secret, so a 32-byte secret written as hex is 74
+# characters and nginx refuses to start with
+#
+#     [emerg] could not build map_hash, you should increase map_hash_bucket_size
+#
+# — with the gate OFF it starts fine, because the key is short; with the gate
+# armed the container never becomes ready. Cloud Run would keep the previous
+# revision serving, so the failure is safe, but it is invisible until the moment
+# of arming. Found by the container smoke in the sibling repo, which was the
+# only thing there that could have found it; the `app-image` job in
+# .github/workflows/ci.yml is the same net here. 512 leaves room for a base64 or
+# longer secret, and is a multiple of the cache line as the directive asks; the
+# cost is a slightly larger hash table for seven small maps.
+map_hash_bucket_size 512;
+
+# What the caller presented, TAGGED. The tag is what makes an unset secret fail
+# closed: `map` compares literally, so an empty `${ORIGIN_SECRET}` would produce
+# the key `""` — which is exactly what an absent header looks like, and the gate
+# would open for the whole internet the moment the variable was forgotten. With
+# the tag, an empty secret expects the key `presented:`, and a header that is
+# present but empty is reported as `absent` by the line below, so no request can
+# produce it.
+map $http_x_origin_secret $origin_gate_presented {
+    default  "presented:$http_x_origin_secret";
+    ""       "absent";
+}
+
+map $origin_gate_presented $origin_gate_seen {
+    default   1;
+    "absent"  0;
+}
+
+map $origin_gate_presented $origin_gate_match {
+    default                       0;
+    "presented:${ORIGIN_SECRET}"  1;
+}
+
+# The mode, carried in from the environment. `map` needs a variable to key on
+# and `$host` is the cheapest one; the value is the same for every request.
+# `app/Dockerfile` defaults it to `off`, so an unset variable on the service is
+# the documented safe state and the rollback.
+map $host $origin_gate_mode {
+    default  "${ORIGIN_GATE}";
+}
+
+# Case-INSENSITIVE, like every plain `map` key, so `On` and `ON` arm it too.
+# That is the direction to be wrong in and it is chosen rather than inherited:
+# nobody sets this variable to `ON` without meaning to arm, and the alternative
+# failure — an operator who armed the gate, was told nothing, and is left with
+# an origin that is still open — is the one worth avoiding. Anything that is not
+# some casing of `on` leaves the gate off.
+map $origin_gate_mode $origin_gate_armed {
+    default  0;
+    "on"     1;
+}
+
+# Exempt by EXACT path, and only this one. `/_health` is the measurement
+# endpoint in `nginx.conf` and the one path a probe must be able to reach on the
+# raw URL whatever the gate is doing; a prefix exemption is how a gate quietly
+# grows a hole, so `/_health/anything` is gated like everything else. Cloud
+# Run's startup probe on this service is a `tcpSocket` check and needs no
+# exemption at all — this is for the deploy smoke and the daily bot monitor,
+# both of which reach a `run.app` URL by definition.
+map $uri $origin_gate_exempt {
+    default     0;
+    "/_health"  1;
+}
+
+# The five verdicts of `api/origin_gate.py`, so both halves of one rollout are
+# read the same way. `off-seen` is what makes arming measurable rather than
+# brave: put the Transform Rule live while the gate is still off, ask every path
+# in turn, and arm only once each one that must keep working reports the header
+# arriving. `001` and `101` cannot occur — a match implies a header.
+map "$origin_gate_armed$origin_gate_seen$origin_gate_match" $origin_gate_status {
+    default  "off";
+    "000"    "off";
+    "010"    "off-seen";
+    "011"    "off-seen";
+    "100"    "missing";
+    "110"    "mismatch";
+    "111"    "ok";
+}
+
+map "$origin_gate_status:$origin_gate_exempt" $origin_gate_deny {
+    default       0;
+    "missing:0"   1;
+    "mismatch:0"  1;
+}
