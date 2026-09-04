@@ -103,6 +103,13 @@ def test_full_buckets_are_evicted_once_the_table_grows(monkeypatch):
 # ---------------------------------------------------------------- over HTTP
 
 
+# One WHOLE token of the narrow bucket: it meters by characters composed, and
+# a full-length text is what one token buys. The tests below that count tokens
+# ask for this text, so "one request, one token" still reads literally; the
+# metering itself is exercised by the short-text tests further down.
+FULL_LEN_TEXT = "n" * 160
+
+
 async def _seed_word(api: Harness) -> str:
     from core.shaping import glyph_keys_of, shape_text
 
@@ -138,10 +145,10 @@ async def test_write_word_answers_429_with_retry_after(api: Harness, monkeypatch
 
     for _ in range(2):
         assert (
-            await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nn"})
+            await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": FULL_LEN_TEXT})
         ).status == 200
 
-    res = await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nn"})
+    res = await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": FULL_LEN_TEXT})
     assert res.status == 429
     assert res.headers["retry-after"] == "1"
     # A rejection is about the caller, never the URL — it must not be cached
@@ -150,11 +157,13 @@ async def test_write_word_answers_429_with_retry_after(api: Harness, monkeypatch
     assert "per minute" in res.json()["detail"]
 
     # The SVG twin shares the bucket: same composition, same cost.
-    res = await api.client.request("GET", f"/sources/{source_id}/write/word.svg", params={"text": "nn"})
+    res = await api.client.request("GET", f"/sources/{source_id}/write/word.svg", params={"text": FULL_LEN_TEXT})
     assert res.status == 429
 
     clock.advance(60.0)
-    assert (await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nn"})).status == 200
+    assert (
+        await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": FULL_LEN_TEXT})
+    ).status == 200
 
 
 async def test_glyph_reads_are_exempt_from_the_word_limit(api: Harness, monkeypatch):
@@ -164,7 +173,9 @@ async def test_glyph_reads_are_exempt_from_the_word_limit(api: Harness, monkeypa
     # A bucket that never holds a whole token: every word request is over.
     _freeze(monkeypatch, (write_limiter, 0.5))
 
-    assert (await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nn"})).status == 429
+    assert (
+        await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": FULL_LEN_TEXT})
+    ).status == 429
     assert (await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": "n"})).status == 200
     assert (await api.client.request("GET", f"/sources/{source_id}/write/glyphs/n")).status == 200
     assert (await api.client.request("GET", f"/sources/{source_id}/write/glyphs/n.svg")).status == 200
@@ -237,8 +248,10 @@ async def test_the_narrow_bucket_answers_before_the_wide_one(api: Harness, monke
     source_id = await _seed_word(api)
     _freeze(monkeypatch, (write_limiter, 1.0), (public_limiter, 10.0))
 
-    assert (await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nn"})).status == 200
-    res = await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nn"})
+    assert (
+        await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": FULL_LEN_TEXT})
+    ).status == 200
+    res = await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": FULL_LEN_TEXT})
     assert res.status == 429
     # The NARROW bucket's wording, not the wide one's.
     assert "word compositions" in res.json()["detail"]
@@ -250,6 +263,70 @@ async def test_the_narrow_bucket_answers_before_the_wide_one(api: Harness, monke
     for _ in range(9):
         assert (await api.client.request("GET", "/styles")).status == 200
     assert (await api.client.request("GET", "/styles")).status == 429
+
+
+async def test_a_wrapped_text_costs_what_it_composes_not_what_it_requests(api: Harness, monkeypatch):
+    """The narrow bucket meters CHARACTERS, so splitting one composition into
+    several costs the same as sending it whole. The Federprobe's postcard
+    depends on it: a 480-character text is written as up to ~57 lines, each its
+    own compose request, and per-request metering spent more than the whole
+    burst on ONE page view.
+
+    The lines here are 40 characters — a quarter of a full-length request and
+    well clear of the eighth-token floor, so what this measures is the
+    PROPORTIONALITY and not the floor (which the next test covers)."""
+    source_id = await _seed_word(api)
+    quarter = "n" * (len(FULL_LEN_TEXT) // 4)
+
+    async def word(text: str) -> int:
+        res = await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": text})
+        return res.status
+
+    # One token buys 160 characters, whether they arrive in one request…
+    _freeze(monkeypatch, (write_limiter, 1.0))
+    assert await word(FULL_LEN_TEXT) == 200
+    assert await word(FULL_LEN_TEXT) == 429
+
+    # …or in four of forty. The fourth quarter still fits, the fifth is over:
+    # the same 160 characters, the same one token, four times the requests.
+    _freeze(monkeypatch, (write_limiter, 1.0))
+    for _ in range(4):
+        assert await word(quarter) == 200
+    assert await word(quarter) == 429
+
+
+async def test_a_short_text_is_never_cheaper_than_an_eighth_of_a_token(api: Harness, monkeypatch):
+    """The floor under `composition_cost`: metering by length must not turn
+    one-character requests into a free lane through the narrow bucket."""
+    source_id = await _seed_word(api)
+    _freeze(monkeypatch, (write_limiter, 1.0))
+
+    for _ in range(8):
+        assert (await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "n"})).status == 200
+    res = await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "n"})
+    assert res.status == 429
+    # And the 429 says what a unit is, so a caller of short texts can read it.
+    assert "up to 160 characters" in res.json()["detail"]
+
+
+def test_the_cost_unit_is_the_routes_own_text_limit():
+    """`WRITE_COST_UNIT_CHARS` is `MAX_TEXT_LEN` written out — the middleware
+    runs before routing and must not import the router, so the two numbers are
+    held equal here instead (same reason `WORD_PATHS` is pinned above)."""
+    from api.rate_limit import WRITE_COST_UNIT_CHARS
+    from api.routers.write import MAX_TEXT_LEN
+
+    assert WRITE_COST_UNIT_CHARS == MAX_TEXT_LEN
+
+
+def test_a_bucket_without_a_cost_function_charges_one_token():
+    """The wide bucket counts REQUESTS: that is its unit, and metering it by
+    text length would leave every route without a `text` param uncounted."""
+    from starlette.requests import Request
+
+    request = Request({"type": "http", "method": "GET", "path": "/styles", "query_string": b"", "headers": []})
+    assert public_limiter.cost_of(request) == 1.0
+    assert write_limiter.cost_of(request) == pytest.approx(0.125)
 
 
 async def test_the_word_path_pattern_matches_the_real_routes():
@@ -303,7 +380,7 @@ async def test_the_bucket_keys_on_the_rightmost_forwarded_entry(api: Harness, mo
 
     async def word(headers: dict[str, str]) -> int:
         res = await api.client.request(
-            "GET", f"/sources/{source_id}/write/word", params={"text": "nn"}, headers=headers
+            "GET", f"/sources/{source_id}/write/word", params={"text": FULL_LEN_TEXT}, headers=headers
         )
         return res.status
 
@@ -327,7 +404,7 @@ async def test_a_forged_cf_connecting_ip_cannot_reach_a_victims_bucket(api: Harn
 
     async def word(headers: dict[str, str]) -> int:
         res = await api.client.request(
-            "GET", f"/sources/{source_id}/write/word", params={"text": "nn"}, headers=headers
+            "GET", f"/sources/{source_id}/write/word", params={"text": FULL_LEN_TEXT}, headers=headers
         )
         return res.status
 

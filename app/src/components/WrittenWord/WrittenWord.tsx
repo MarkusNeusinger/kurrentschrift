@@ -38,7 +38,7 @@ import {
   WORD_MIN_ITEM_MS,
   WORD_WRITE_MS,
 } from '@/lib/strokeTiming';
-import { MIN_XHEIGHT_PX, planLines } from '@/lib/lineWrap';
+import { MAX_COMPOSE_CHARS, MIN_XHEIGHT_PX, planParagraphs, type PlannedLine } from '@/lib/lineWrap';
 import { ReplayButton } from '@/components/inkReveal';
 import { replayGround } from '@/components/inkReveal/replayGround';
 import { WrittenLine, type LineGeom } from './WrittenLine';
@@ -55,6 +55,11 @@ import { WrittenLine, type LineGeom } from './WrittenLine';
 // one hand rather than as three stacked pictures.
 const LINE_GAP_UNITS = 0.3;
 
+// A typed blank row is worth one EXTRA leading — a paragraph gap is a doubled
+// line gap, the way a hand skips a row. More than that and a two-paragraph
+// postcard reads as two pictures again (owner decision 2026-09-04).
+const PARAGRAPH_GAP_FACTOR = 2;
+
 // Air the viewBox keeps at each end of a line so the first Anstrich and the
 // last Auslauf are not clipped. It is part of what the frame has to hold, so
 // the line plan spends it before it spends characters (lib/lineWrap).
@@ -65,6 +70,12 @@ interface Props {
   sourceId?: string;
   // Target rendered height in px of ONE line (width follows the aspect, capped).
   height?: number;
+  // Write at THIS x-height instead — px per template unit, the Federprobe's
+  // size ladder (sections/scribe/size.ts). It replaces `height` as the scale:
+  // the block is then as tall as the text needs, not as tall as the caller
+  // guessed, and the line breaks are planned for the same number. Omitted
+  // everywhere else, where `height` goes on setting the size exactly as before.
+  targetXHeightPx?: number;
   // Total writing time across all strokes (excluding inter-stroke pauses).
   durationMs?: number;
   maxWidth?: number;
@@ -125,6 +136,7 @@ export function WrittenWord({
   text,
   sourceId = CONFIG.sourceId,
   height = 160,
+  targetXHeightPx,
   durationMs = WORD_WRITE_MS,
   maxWidth = WORD_MAX_W,
   surfaceBg = 'transparent',
@@ -140,7 +152,20 @@ export function WrittenWord({
   const reducedMotion = usePrefersReducedMotion();
   const uid = useId();
   // Mirror the server's normalisation so equal words share one cache/URL entry.
-  const normalized = useMemo(() => text.normalize('NFC').trim(), [text]);
+  // Whitespace RUNS collapse on top of it: a typed newline is whitespace, and
+  // it must never reach `/write/word`, which reads one as an ordinary space and
+  // would write the break into the middle of a line (lib/lineWrap).
+  const normalized = useMemo(() => text.normalize('NFC').replace(/\s+/g, ' ').trim(), [text]);
+  // The text the MEASURING request carries: the whole thing, or — for a
+  // postcard longer than the composer takes (`MAX_COMPOSE_CHARS`) — as many
+  // whole words as fit. An average measured over 160 characters of the text is
+  // the same kind of estimate as one measured over 480.
+  const measured = useMemo(() => {
+    if (normalized.length <= MAX_COMPOSE_CHARS) return normalized;
+    const cut = normalized.slice(0, MAX_COMPOSE_CHARS);
+    const lastSpace = cut.lastIndexOf(' ');
+    return lastSpace > 0 ? cut.slice(0, lastSpace) : cut;
+  }, [normalized]);
   const [composed, setComposed] = useState<ComposedWordOut | null>(() => startState(normalized));
   const [run, setRun] = useState(0);
 
@@ -168,7 +193,7 @@ export function WrittenWord({
     // settled on the empty composition, so callers see `missing: []` rather
     // than a spinner forever.
     if (!normalized) return;
-    fetchRenderWord(sourceId, normalized, bust)
+    fetchRenderWord(sourceId, measured, bust)
       .then((c) => {
         if (!cancelled) setComposed(c);
       })
@@ -180,44 +205,85 @@ export function WrittenWord({
     };
     // onError intentionally omitted: a fresh closure each render must not refetch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [normalized, sourceId, bust]);
+  }, [normalized, measured, sourceId, bust]);
 
-  // What one character of THIS text runs, in template units. The whole text's
-  // composition answers it first — a real advance rather than an assumed
-  // average — but only on average: a line that happens to collect the wide
-  // letters is denser than the text it came from, and would land under the
-  // floor although breaking it again was possible. `denser` carries what a
-  // composed line has since shown, and only ever grows (below), so the re-plan
-  // it triggers terminates: a larger advance means a smaller character budget,
-  // and the budget is bounded below.
-  const [denser, setDenser] = useState({ key: loadKey, units: 0 });
+  // The size the block aims for: the chosen x-height, or the floor where no
+  // step was chosen. It is what the split is planned for AND what the
+  // measurement below is judged against.
+  const aimPx = targetXHeightPx ?? MIN_XHEIGHT_PX;
+
+  // What one character of THIS text runs, in template units — a real advance
+  // from the text's own composition rather than an assumed average.
   const unitsPerChar = useMemo(() => {
-    if (!composed || !composed.items.length || !normalized) return 0;
+    if (!composed || !composed.items.length || !measured) return 0;
     const { min_x, max_x } = composed.bounds;
-    return Math.max((max_x - min_x) / normalized.length, denser.key === loadKey ? denser.units : 0);
-  }, [composed, normalized, denser, loadKey]);
+    return (max_x - min_x) / measured.length;
+  }, [composed, measured]);
 
-  // Does the text clear the legibility floor as ONE line in this frame?
+  // What a line costs BESIDES its characters, in template units, and therefore
+  // comes off the budget before a single character is bought.
+  //
+  // Two units of it are known up front: the viewBox air at both ends. The rest
+  // is learned, because it cannot be estimated from the whole text — a line
+  // pays for its own Anstrich and Auslauf, which a character in the middle of
+  // one long composition never does, and a line that happens to collect the
+  // wide letters costs more than the average promised. `extraPad` carries what
+  // a composed line has since shown and only ever grows (below), so the re-plan
+  // it triggers terminates: a larger pad means a smaller character budget, and
+  // the budget is bounded below.
+  //
+  // It is a PAD and not a bigger per-character rate on purpose: what a line
+  // pays for its own ends does not depend on how many characters stand between
+  // them, and charging it per character taxes a long line harder than a short
+  // one — the one place the estimate must not bend, since the whole question
+  // is how many characters a line can hold.
+  //
+  // The key carries the aim: what a block of short lines costs per line says
+  // nothing about a block of long ones, and keeping it would leave the smaller
+  // step rendering differently after a visit to the larger one.
+  const denserKey = `${loadKey}|${aimPx}`;
+  const [extraPad, setExtraPad] = useState({ key: denserKey, units: 0 });
+  const padUnits = 2 * VIEWBOX_PAD_UNITS + (extraPad.key === denserKey ? extraPad.units : 0);
+
+  // Where the text breaks: at the writer's own typed breaks always, and inside
+  // each paragraph wherever the chosen x-height (or, by default, the floor)
+  // runs out of frame.
   const plan = useMemo(
     () =>
-      unitsPerChar > 0
-        ? planLines(normalized, { availPx: capPx, unitsPerChar, padUnits: 2 * VIEWBOX_PAD_UNITS })
-        : [normalized],
-    [normalized, capPx, unitsPerChar],
+      planParagraphs(text, {
+        availPx: capPx,
+        unitsPerChar,
+        padUnits,
+        targetXHeightPx: aimPx,
+      }),
+    [text, capPx, unitsPerChar, padUnits, aimPx],
   );
   // Identity of the split, so a one-pixel frame change that breaks the text the
   // same way does not restart the fetch below (or the animation with it).
-  const planKey = plan.join('\n');
+  const planKey = plan.map((l) => (l.paragraphBreak ? `¶${l.text}` : l.text)).join('\n');
+
+  // Whether the block is composed per line rather than in one piece. Several
+  // lines obviously are; so is a single line the measuring request could only
+  // sample (a text past the composer's cap that has nowhere to break — one
+  // enormous word), because `composed` then holds a PREFIX and drawing it would
+  // silently write less than was typed.
+  const splitIntoLines = plan.length > 1 || (plan.length === 1 && plan[0].text !== measured);
+  // Whether the split is planned from a real advance yet, or still from the
+  // "leave it alone" placeholder every paragraph starts as.
+  const isMeasured = unitsPerChar > 0;
 
   // A wrapped text is composed line by line: each line then runs from its own
   // Anstrich to its own Auslauf (core/shaping.py assigns the word position per
   // slot), which is exactly what "one line = one continuous stroke run" means.
   const [wrapped, setWrapped] = useState<{ key: string; lines: ComposedWordOut[] } | null>(null);
   useEffect(() => {
-    if (plan.length < 2) return;
+    // Not before the text has been measured: until then `planLines` leaves
+    // every paragraph whole by design ("nothing measured yet"), and a whole
+    // postcard is longer than one composition request may carry.
+    if (!splitIntoLines || !isMeasured) return;
     let cancelled = false;
     const key = `${loadKey}|${planKey}`;
-    Promise.all(plan.map((line) => fetchRenderWord(sourceId, line, bust)))
+    Promise.all(plan.map((line) => fetchRenderWord(sourceId, line.text, bust)))
       .then((lines) => {
         if (!cancelled) setWrapped({ key, lines });
       })
@@ -229,26 +295,31 @@ export function WrittenWord({
     };
     // `plan` is `planKey`'s content and onError must not restart the fetch.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [planKey, loadKey, sourceId, bust]);
+  }, [planKey, splitIntoLines, isMeasured, loadKey, sourceId, bust]);
 
   // The compositions actually on screen: the whole text as one line, or the
   // wrapped set once it has arrived for THIS text and THIS split.
   const rendered = useMemo(() => {
-    if (plan.length < 2) return composed && composed.items.length ? [composed] : null;
+    if (!splitIntoLines) return composed && composed.items.length ? [composed] : null;
     return wrapped?.key === `${loadKey}|${planKey}` ? wrapped.lines : null;
-  }, [composed, wrapped, plan.length, planKey, loadKey]);
+  }, [composed, wrapped, splitIntoLines, planKey, loadKey]);
 
-  // The text each rendered composition carries, kept beside it: the floor check
-  // below needs to know how many words a line holds before it can say whether
-  // breaking it again is even possible.
-  const texts = useMemo(() => (plan.length < 2 ? [normalized] : plan), [plan, normalized]);
+  // The plan each rendered composition came from, kept beside it: the floor
+  // check below needs to know how many words a line holds before it can say
+  // whether breaking it again is even possible, and the layout needs to know
+  // which lines open a paragraph.
+  const planned = useMemo<PlannedLine[]>(
+    () => (splitIntoLines ? plan : [{ text: normalized, paragraphBreak: false }]),
+    [splitIntoLines, plan, normalized],
+  );
 
   const layout = useMemo(() => {
     if (!rendered) return null;
     const lines = rendered
       .map((c, i) => ({
         ...lineGeom(c, showLineature),
-        text: texts[i] ?? '',
+        text: planned[i]?.text ?? '',
+        paragraphBreak: planned[i]?.paragraphBreak ?? false,
         // The line's own composed width — what the split only estimated.
         spanUnits: c.bounds.max_x - c.bounds.min_x,
       }))
@@ -262,9 +333,15 @@ export function WrittenWord({
     // floor with it, because it is the widest line.
     const maxVbW = Math.max(...lines.map((g) => g.vbW));
     const maxVbH = Math.max(...lines.map((g) => g.vbH));
-    const unitPx = Math.min(height / maxVbH, capPx / maxVbW);
+    // Either the caller's box sets the size (everywhere but the Federprobe) or
+    // the chosen x-height does; the frame caps both, because ink that leaves
+    // the card is not a size, it is a bug.
+    const unitPx = Math.min(targetXHeightPx ?? height / maxVbH, capPx / maxVbW);
     const sizes = lines.map((g) => ({ w: unitPx * g.vbW, h: unitPx * g.vbH }));
     const gap = unitPx * LINE_GAP_UNITS;
+    // Leading BEFORE each line: none before the first, one gap between lines of
+    // a paragraph, a doubled one where the writer left a row empty.
+    const leads = lines.map((g, i) => (i === 0 ? 0 : gap * (g.paragraphBreak ? PARAGRAPH_GAP_FACTOR : 1)));
 
     // Human kinematics instead of a constant sweep (lib/strokeTiming): the
     // two-thirds power law slows the front in curves (non-linear dashoffset
@@ -293,7 +370,7 @@ export function WrittenWord({
     const perLine = lines.map((g, i) => {
       const slice = timing.slice(at, at + g.items.length);
       at += g.items.length;
-      return { geom: g, timing: slice, ...sizes[i] };
+      return { geom: g, timing: slice, lead: leads[i], ...sizes[i] };
     });
     return {
       lines: perLine,
@@ -301,30 +378,33 @@ export function WrittenWord({
       // The line the shared scale comes from: if it is still under the floor,
       // this is the only line whose break would lift the whole block.
       widest: lines.reduce((a, b) => (b.vbW > a.vbW ? b : a)),
-      gap,
       writeEndMs,
       inkW: Math.max(...sizes.map((s) => s.w)),
-      inkH: sizes.reduce((sum, s) => sum + s.h, 0) + gap * (sizes.length - 1),
+      inkH: sizes.reduce((sum, s) => sum + s.h, 0) + leads.reduce((sum, l) => sum + l, 0),
     };
-  }, [rendered, texts, showLineature, durationMs, height, capPx]);
+  }, [rendered, planned, showLineature, durationMs, height, targetXHeightPx, capPx]);
 
-  // The floor is a promise about the RESULT, not about the estimate that got
+  // The aim is a statement about the RESULT, not about the estimate that got
   // there. The split is planned from the whole text's AVERAGE advance, so a
-  // line that collected the wide letters can come back under the floor even
-  // though it holds several words — the estimate was fine, the line was denser.
-  // Then the measurement replaces the estimate and the text is re-planned;
-  // adjusting state during render is React's own "adjusting state when a prop
-  // changes", and the guards make it a one-shot per split (a re-plan that does
-  // not move the split yields the same measurement, which no longer passes
-  // `>`). What stays under the floor after that is the case no break can fix:
-  // a single word wider than the frame, which is also the widest line and so
-  // sets the scale for the whole block.
-  if (denser.key !== loadKey) {
-    setDenser({ key: loadKey, units: 0 });
-  } else if (layout && layout.unitPx < MIN_XHEIGHT_PX) {
+  // line that collected the wide letters — or simply paid for its own Anstrich
+  // and Auslauf — comes back smaller than aimed at even though it holds several
+  // words: the estimate was fine, the line was denser. Then the measurement
+  // replaces the estimate and the text is re-planned; adjusting state during
+  // render is React's own "adjusting state when a prop changes", and the guards
+  // make it a one-shot per split (a re-plan that does not move the split yields
+  // the same measurement, which no longer passes `>`). What stays under the aim
+  // after that is the case no break can fix: a word wider than the frame, which
+  // is also the widest line and so sets the scale for the whole block — under
+  // the chosen SIZE that is honest, under the FLOOR it is the Tintenboden's one
+  // documented exception (lib/lineWrap).
+  if (extraPad.key !== denserKey) {
+    setExtraPad({ key: denserKey, units: 0 });
+  } else if (layout && layout.unitPx < aimPx) {
     const { text, spanUnits } = layout.widest;
-    const measured = text.length ? spanUnits / text.length : 0;
-    if (/\s/.test(text.trim()) && measured > denser.units) setDenser({ key: loadKey, units: measured });
+    // What this line cost beyond what its characters promised — its own
+    // Anstrich and Auslauf, plus whatever the letter mix added.
+    const over = spanUnits - text.length * unitsPerChar;
+    if (/\s/.test(text.trim()) && over > extraPad.units) setExtraPad({ key: denserKey, units: over });
   }
 
   useEffect(() => {
@@ -384,7 +464,9 @@ export function WrittenWord({
         <Box
           role="img"
           aria-label={ariaLabel ?? text}
-          sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: `${layout.gap}px` }}
+          // The leading sits on the LINE, not on the column: a paragraph gap is
+          // a doubled one, and a flex `gap` can only be one number.
+          sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
         >
           {layout.lines.map((line, i) => (
             <WrittenLine
@@ -392,6 +474,7 @@ export function WrittenWord({
               geom={line.geom}
               width={line.w}
               height={line.h}
+              marginTop={line.lead}
               timing={line.timing}
               animate={animate}
               run={run}

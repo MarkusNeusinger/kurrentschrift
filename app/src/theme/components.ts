@@ -114,9 +114,15 @@ export const components: Components<Theme> = {
       // On phones the groups measured 38.8px high (audit 2026-09-02); below the
       // `sm` breakpoint they grow to the §9 touch floor. Desktop keeps the
       // tighter proportion, where a pointer is precise.
+      //
+      // The WIDTH is the same rule on the other axis, and a short label needs
+      // it: the Federprobe's „klein" and „groß" measured 42.2 and 40.8 px wide
+      // at full height. A group's buttons touch, so this is the §9.3 case where
+      // the ELEMENT grows rather than wearing an invisible hit area — two
+      // overlapping 44s inside one group would steal each other's taps.
       root: ({ theme }) => ({
         color: theme.palette.text.secondary,
-        [theme.breakpoints.down('sm')]: { minHeight: TOUCH_TARGET },
+        [theme.breakpoints.down('sm')]: { minHeight: TOUCH_TARGET, minWidth: TOUCH_TARGET },
       }),
       // ToggleButton carries its own 13px `small` size — the Ausgangsschrift,
       // Liniensystem and Tempo switches all wore it, under the §9 floor.

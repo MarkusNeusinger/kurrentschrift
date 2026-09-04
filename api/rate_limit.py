@@ -14,6 +14,24 @@ one unique 155-character request. With `--concurrency=15 --max-instances=3` a
 scripted caller with random texts saturates an instance, scales the service and
 pays out ~1.6 MB of egress per request.
 
+One token there buys ONE FULL-LENGTH composition, and **a shorter text costs
+proportionally less** (`composition_cost`, since 2026-09-04) — the numbers stay
+"60 full-length compositions per minute, burst 20", they are just no longer
+read as "60 requests". What the audit measured scales with the TEXT, not with
+the request: the same line costs the same whether it arrives whole or in four
+pieces. Metering per request made that untrue in the one direction that
+matters, and it was the Federprobe's postcard that showed it — a 480-character
+text wraps into up to ~57 written lines, each its own composition request
+because each line is its own continuous stroke run (design-system.md §7), and
+under per-request metering ONE page view spent more than the whole burst.
+Metered by length it spends **3 to 7 tokens** for the same postcard — 3 at the
+small step, whose lines run ~26 characters, and about 7 at the large one, whose
+~9-character lines each pay the eighth-token floor below rather than their
+length. Measured against the running API: 45 short line requests all pass where
+the same burst produced 429s before. The abuse case is untouched — a full-length
+request still costs exactly one token — and the WIDE bucket below is what bounds
+the request COUNT.
+
 **Wide — every other route, GET and HEAD included** (600/min, burst 120; the
 author's decision of 2026-09-02 was to block extreme use only, so that sheer
 request volume can neither run up the bill nor take the service down). The
@@ -87,6 +105,34 @@ WORD_PATHS = re.compile(r"^/sources/[^/]+/write/word(\.svg)?$")
 EXEMPT_PATHS = frozenset({"/health", "/seo-proxy"})
 EXEMPT_PREFIXES = ("/seo-proxy/",)
 
+# What one token of the narrow bucket buys, in characters composed: a
+# full-length request. It is `api.routers.write.MAX_TEXT_LEN` — not imported,
+# because a middleware that runs before routing has no business importing a
+# router, and `tests/test_api_rate_limit.py` holds the two numbers equal the
+# same way it holds `WORD_PATHS` against the real route table.
+WRITE_COST_UNIT_CHARS = 160
+
+
+def composition_cost(request: Request) -> float:
+    """Tokens one compose request spends: its text length, in full-length units.
+
+    Never more than one — the route rejects a longer text anyway — and never
+    less than an eighth, because a request has a cost of its own before a
+    single letter is composed. That floor is what keeps the change from opening
+    a lane: a caller of one-character texts gets eight times the request rate
+    out of this bucket, not a hundred and sixty times, and the wide bucket
+    bounds even that.
+
+    The floor is what a short line actually pays, so a wrapped block costs its
+    characters only while its lines stay above 20 of them. Below that it costs
+    a token per eight lines instead — which is the honest number for the
+    Federprobe's large step (~9-character lines, ~7 tokens for a postcard)
+    against a burst of 20.
+    """
+    length = len(request.query_params.get("text", ""))
+    floor = WRITE_COST_UNIT_CHARS / 8
+    return min(1.0, max(length, floor) / WRITE_COST_UNIT_CHARS)
+
 
 class TokenBucketLimiter:
     """Per-key token bucket: `burst` tokens, refilled at `per_minute`/60 per second.
@@ -97,13 +143,23 @@ class TokenBucketLimiter:
     """
 
     def __init__(
-        self, per_minute: float, burst: float, *, name: str = "requests", now: Callable[[], float] = time.monotonic
+        self,
+        per_minute: float,
+        burst: float,
+        *,
+        name: str = "requests",
+        cost: Callable[[Request], float] | None = None,
+        now: Callable[[], float] = time.monotonic,
     ) -> None:
         self.per_minute = float(per_minute)
         self.burst = float(burst)
         # What the 429 calls the thing being counted ("word compositions",
         # "requests") — the tool on the other end prints the detail.
         self.name = name
+        # What one request spends. A bucket whose unit is the REQUEST leaves
+        # this None and charges one token; the narrow bucket charges by the
+        # work it is protecting (`composition_cost`).
+        self._cost = cost
         self._now = now
         self._lock = threading.Lock()
         # key -> (tokens left, timestamp those tokens were counted at)
@@ -117,11 +173,23 @@ class TokenBucketLimiter:
     def enabled(self) -> bool:
         return self.per_minute > 0 and self.burst > 0
 
-    def check(self, key: str) -> float | None:
-        """Take one token for `key`. `None` when allowed, else the seconds to wait.
+    def cost_of(self, request: Request) -> float:
+        """What this request spends here — one token unless the bucket says otherwise.
+
+        NOT clamped to the burst: a bucket configured smaller than what one
+        request costs refuses that request forever, which is the same answer
+        the unmetered version gave for a burst under one token, and the honest
+        reading of a burst set below the unit it is counting.
+        """
+        if self._cost is None:
+            return 1.0
+        return max(0.0, self._cost(request))
+
+    def check(self, key: str, cost: float = 1.0) -> float | None:
+        """Spend `cost` tokens for `key`. `None` when allowed, else the seconds to wait.
 
         The returned wait is what `Retry-After` promises: how long until the
-        bucket holds one token again, never a rounded-down zero.
+        bucket holds enough tokens again, never a rounded-down zero.
         """
         if not self.enabled:
             return None
@@ -133,10 +201,10 @@ class TokenBucketLimiter:
             # same elapsed seconds again on the next call, and a caller
             # retrying in a tight loop would refill faster than one waiting.
             tokens = min(self.burst, tokens + (now - seen) * self.rate_per_second)
-            if tokens < 1.0:
+            if tokens < cost:
                 self._buckets[key] = (tokens, now)
-                return (1.0 - tokens) / self.rate_per_second
-            self._buckets[key] = (tokens - 1.0, now)
+                return (cost - tokens) / self.rate_per_second
+            self._buckets[key] = (tokens - cost, now)
             if len(self._buckets) > MAX_TRACKED_CLIENTS:
                 self._evict_full(now)
             return None
@@ -162,8 +230,11 @@ class TokenBucketLimiter:
         retry. `no-store` because a rejection is about the caller, never about
         the URL, and must not be served to the next visitor from any cache.
         """
+        # A metered bucket says what a unit IS, or the number reads as requests
+        # and a caller sending short texts cannot make sense of its own 429.
+        unit = f" of up to {WRITE_COST_UNIT_CHARS} characters" if self._cost is not None else ""
         detail = (
-            f"too many {self.name} — the limit is {int(self.per_minute)} per minute "
+            f"too many {self.name}{unit} — the limit is {int(self.per_minute)} per minute "
             f"per client (burst {int(self.burst)})"
         )
         return JSONResponse(
@@ -174,7 +245,7 @@ class TokenBucketLimiter:
 
 
 write_limiter = TokenBucketLimiter(
-    settings.write_rate_limit_per_min, settings.write_rate_limit_burst, name="word compositions"
+    settings.write_rate_limit_per_min, settings.write_rate_limit_burst, name="word compositions", cost=composition_cost
 )
 public_limiter = TokenBucketLimiter(
     settings.public_rate_limit_per_min, settings.public_rate_limit_burst, name="requests"
@@ -220,9 +291,10 @@ class RateLimitMiddleware:
             return
         buckets = limiters_for(scope["path"])
         if buckets:
-            key = rate_limit_key(Request(scope))
+            request = Request(scope)
+            key = rate_limit_key(request)
             for bucket in buckets:
-                wait = bucket.check(key)
+                wait = bucket.check(key, bucket.cost_of(request))
                 if wait is not None:
                     await bucket.too_many(wait)(scope, receive, send)
                     return

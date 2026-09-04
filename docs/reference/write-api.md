@@ -51,12 +51,29 @@ Token des weiten Buckets kostet.
 
 | Bucket | Gilt für | Default | Abschalten |
 |---|---|---|---|
-| **eng** | `GET /sources/{id}/write/word` + `…/word.svg` | 60/min, Burst 20 | `WRITE_RATE_LIMIT_PER_MIN=0` |
-| **weit** | **alle übrigen Routen**, GET und HEAD eingeschlossen | 600/min, Burst 120 | `PUBLIC_RATE_LIMIT_PER_MIN=0` |
+| **eng** | `GET /sources/{id}/write/word` + `…/word.svg` | 60/min, Burst 20 — **je Komposition von bis zu 160 Zeichen** | `WRITE_RATE_LIMIT_PER_MIN=0` |
+| **weit** | **alle übrigen Routen**, GET und HEAD eingeschlossen | 600/min, Burst 120 (je Anfrage) | `PUBLIC_RATE_LIMIT_PER_MIN=0` |
 
 Der **enge** Bucket sitzt vor dem einzigen öffentlichen Read, dessen Kosten der
 Aufrufer bestimmt: ein eindeutiger Text ist bauartbedingt ein Cache-MISS, und
 ein 155-Zeichen-Text kostete am 2026-09-01 live 0,80 s TTFB und 1.653.798 Bytes.
+
+Ein Token kauft dort **eine Komposition voller Länge**, ein kürzerer Text kostet
+anteilig weniger (`composition_cost`, seit 2026-09-04; Untergrenze ein Achtel
+Token, damit Ein-Zeichen-Anfragen keine freie Spur werden). Die Zahlen bleiben,
+sie lesen sich nur nicht mehr als „60 Anfragen": Was gemessen wurde, skaliert
+mit dem TEXT, nicht mit der Anfrage — dieselbe Zeile kostet gleich viel, ob sie
+am Stück oder in vier Teilen kommt. Sichtbar gemacht hat das die
+Postkarten-Federprobe: 480 Zeichen brechen in bis zu ~57 geschriebene Zeilen um,
+jede eine eigene Kompositionsanfrage (jede Zeile ein eigener durchgehender
+Federzug, design-system.md §7) — pro Anfrage gezählt sprengte **ein einziger
+Seitenaufruf** den Burst. Nach Länge gezählt kostet dieselbe Postkarte **3 bis 7
+Token**: 3 auf der kleinen Stufe (Zeilen von ~26 Zeichen), rund 7 auf der
+großen, deren ~9-Zeichen-Zeilen je die Untergrenze zahlen statt ihrer Länge.
+Gemessen an der laufenden API: 45 kurze Zeilenanfragen gehen durch, wo derselbe
+Burst vorher 429 lieferte. Der Missbrauchsfall ist unberührt (eine Anfrage
+voller Länge kostet weiter genau ein Token), und die Anzahl der Anfragen
+begrenzt weiterhin der weite Bucket.
 
 Der **weite** Bucket (Owner-Entscheid 2026-09-02: „soll nur extreme Nutzung
 blocken, damit mir keine riesigen Kosten entstehen können oder jemand alles

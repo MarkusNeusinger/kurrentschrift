@@ -17,6 +17,14 @@ export const scribe = {
     'Die Federprobe ist die Schreibhand dieses Projekts: Aus den Buchstaben der gemeinfreien Sütterlin-Ausgangsschrift von 1922, jeder einzeln nachgeschrieben, setzt sie deinen Text Zug um Zug zusammen — nicht als Schriftart, sondern als Bewegung der Feder, mit Ansatz, Auslauf und den Übergängen von Buchstabe zu Buchstabe. So siehst du, wie ein Wort aus deinem Brief geschrieben worden wäre, und kannst es neben das Original halten. Die Sütterlin ist bislang die einzige Schrift, die hier schreibt; Kurrent und Offenbacher sollen folgen. Den Link auf eine Schreibprobe kannst du kopieren und weitergeben.',
   inputLabel: 'Dein Text',
   inputPlaceholder: 'lesen und schreiben',
+  // Under the field, left of the counter: the one thing about the field a
+  // visitor cannot see (Enter writes a break instead of sending).
+  inputHint: 'Mit Enter beginnst du eine neue Zeile.',
+  // The Schriftgröße switch — three steps instead of a zoom (the browser's own
+  // pinch zoom stays untouched).
+  sizeLabel: 'Schriftgröße:',
+  sizeAria: 'Schriftgröße der Schreibprobe',
+  sizes: { klein: 'klein', mittel: 'mittel', gross: 'groß' },
   replay: '↻ noch einmal schreiben',
   // Examples the user can drop into the field.
   examplesLabel: 'Beispiele:',
@@ -24,6 +32,11 @@ export const scribe = {
   // Shown when some letters have no curated canonical yet (interpolates {{letters}}).
   missingNote: 'Diese Buchstaben sind noch nicht nachgeschrieben und bleiben darum frei: {{letters}}',
   emptyHint: 'Tippe oben etwas, um es geschrieben zu sehen.',
+  // A run of characters without a space that no single line can carry: the
+  // Feder writes each line in one Zug, and there is nothing to break at.
+  // Reported and named instead of silently cut ({{chars}}, {{max}}).
+  tooLongRun:
+    'Ein Wort ohne Leerzeichen ist mit {{chars}} Zeichen länger, als die Feder eine Zeile in einem Zug schreiben kann (höchstens {{max}}). Getrennt wird nicht — setze ein Leerzeichen, dann schreibt sie weiter.',
   // Compose fetch failed even after the cold-start retries (API unreachable).
   loadError: 'Die Feder muss gerade pausieren — der Server ist nicht erreichbar.',
   retry: 'Erneut versuchen',

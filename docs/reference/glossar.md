@@ -67,15 +67,15 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
-- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kurzglossar §5
+- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kurzglossar §5
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
-- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
+- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftkunde (Seite) §7 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
@@ -817,6 +817,23 @@ Paar-Overrides, Hände, Statistik-Schicht, Eigenhand; die Trennlinie
 GET-Route fest. Die Crawler-Politik der Seite ist davon unabhängig offen
 (`ai-train=yes`): Der Moat ist die Datenbank, nicht die Webseite.
 → quellen-und-rechte.md §5, crawler-richtlinie.md §2
+
+**Komposition voller Länge** — die Einheit, in der der ENGE Token-Bucket vor
+`/write/word` seit dem 2026-09-04 zählt (`composition_cost`,
+`api/rate_limit.py`): Ein Token kauft **160 komponierte Zeichen** — die
+Obergrenze der Route selbst —, ein kürzerer Text kostet anteilig weniger,
+mindestens ein Achtel Token. Die konfigurierten Zahlen bleiben (60/min, Burst
+20), sie lesen sich nur nicht mehr als „60 Anfragen": Was 2026-09-01 gemessen
+wurde (0,80 s TTFB, 1,65 MB für 155 Zeichen), skaliert mit dem TEXT, nicht mit
+der Anfrage — dieselbe Zeile kostet gleich viel, ob sie am Stück oder in vier
+Teilen kommt. Sichtbar wurde das an der → Postkarte (Federprobe): Sie bricht in
+bis zu ~57 geschriebene Zeilen um, jede eine eigene Kompositionsanfrage, und
+sprengte pro Anfrage gezählt mit EINEM Seitenaufruf den Burst; nach Länge
+gezählt kostet sie 3 bis 7 Token (die Untergrenze greift, sobald eine Zeile
+unter 20 Zeichen fällt). Der Missbrauchsfall bleibt unberührt (eine Anfrage
+voller Länge kostet weiter genau ein Token), die ANZAHL der Anfragen begrenzt
+weiterhin der weite Bucket.
+write-api.md „Ratenbegrenzung“.
 
 **Origin-Geheimnis** — der gemeinsame Wert zwischen dem Cloudflare-Edge und
 dem API-Dienst, der die direkte `*.run.app`-Adresse zumacht. Beide
@@ -3383,6 +3400,38 @@ der Unantastbaren Lineatur** des Übungsblatts: Dort ist ein Umbruch
 verworfen, weil die Vorschrift exakt zwischen ihre Linien gehört; die
 Federprobe schreibt auf eine freie Fläche ohne vorgedruckte Zeilen.
 `app/src/lib/lineWrap.ts` `planLines` → `components/WrittenWord`.
+
+**Schriftgrößen-Leiter** — die drei Stufen, in denen die Federprobe schreibt
+(Autor-Entscheid 2026-09-04, **klein · mittel · groß**, Vorgabe `mittel`): ein
+Umschalter, kein Zoom. Eine Stufe ist eine **Ziel-x-Höhe in px je
+Template-Einheit** — der Text wird bei dieser Größe GESCHRIEBEN, nicht ein
+fertiges Bild vergrößert, also plant `planLines` den Umbruch für sie und eine
+größere Stufe bringt mehr Zeilen. Verankert ist die Leiter am → Tintenboden:
+**14 · √2 ≈ 20 · 28 (= 2 × 14) · 40**, √2-Schritte über der Größe, bei der eine
+geschriebene Zeile gerade noch lesbar ist; `klein` trifft dabei genau das, was
+eine volle Desktop-Zeile vorher schrieb (gemessen 20,8 px je Einheit auf
+1440 px). Der Boden gewinnt, wo der Rahmen die Stufe nicht trägt: Weil ein Wort
+nie getrennt wird, kappt der Planer das Ziel auf die x-Höhe, bei der das
+breiteste Wort noch passt — auf 360 px fallen darum alle drei Stufen auf ~14 px
+zusammen. Die Wahl bleibt je Leser erhalten (`localStorage`) und reist als
+`?size=` im Teilen-Link, wobei die **URL den Speicher schlägt**, damit ein
+geteilter Link das Bild des Absenders zeigt. Gilt nur der Federprobe; ohne das
+Prop `targetXHeightPx` bemisst wie bisher `height` die Größe.
+`app/src/sections/scribe/size.ts`, design-system.md §7.1.
+
+**Postkarte (Federprobe)** — die Größe der Federprobe-Eingabe seit dem
+2026-09-04: **480 Zeichen**, gedacht als acht geschriebene Zeilen zu sechzig —
+dieselbe Zeilenlänge, die das Übungsblatt druckt (`MAX_LINE_LEN`). Der Zähler
+`n/480` zählt getippte Zeilenumbrüche mit, denn sie sind im Feld auch Zeichen.
+Ein getippter Umbruch ist immer ein Umbruch: `planParagraphs` teilt ZUERST an
+den Umbrüchen und bricht dann jeden Absatz um; eine Leerzeile ist EIN
+Absatzabstand (mehrere fallen darauf zusammen, führende und abschließende
+entfallen). **Nie geht ein `\n` an die API** — jede Zeile ist eine eigene
+`/write/word`-Anfrage, und `core.shaping.shape_text` liest ein `\n` als
+gewöhnliches Leerzeichen, schriebe den Umbruch also als Lücke mitten in die
+Zeile. Die 60 ist zugleich die harte Obergrenze des Planers
+(`MAX_CHARS_PER_LINE`), damit keine Anfrage der 160-Zeichen-Grenze der Route
+nahekommt. `app/src/sections/scribe/ScribeView.tsx`, `lib/lineWrap.ts`.
 
 **Übungsblatt** *(`/schreiben/uebungsblatt`)* — das erzeugte PDF mit der
 Lineatur der gewählten Ausgangsschrift, wahlweise mit Schräglinien,

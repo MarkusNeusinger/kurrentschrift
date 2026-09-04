@@ -37,6 +37,10 @@ interface Props {
   // block, so all lines write at the same x-height.
   width: number;
   height: number;
+  // Leading before this line, px — 0 for the first line of a block, one line
+  // gap inside a paragraph, a doubled one where the writer typed a blank row.
+  // It rides on the line because a flex `gap` can only be one number.
+  marginTop?: number;
   timing: RevealTiming[];
   animate: boolean;
   // Bumped on replay: remounts the mask paths and restarts the whole block.
@@ -53,6 +57,7 @@ export function WrittenLine({
   geom,
   width,
   height,
+  marginTop = 0,
   timing,
   animate,
   run,
@@ -75,7 +80,7 @@ export function WrittenLine({
       // The block carries the accessible name (WrittenWord's wrapper); a line is
       // a fragment of it and would only repeat the text to a screen reader.
       aria-hidden
-      style={{ display: 'block', background: surfaceBg, maxWidth: '100%', overflow: 'visible' }}
+      style={{ display: 'block', background: surfaceBg, maxWidth: '100%', overflow: 'visible', marginTop }}
     >
       <defs>
         <InkBleedFilter
