@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-04): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **77
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **78
 > Begriffe**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars. Nachzieh-Anlass: ein Begriff wandert
 > hierher, sobald er die Zwei-von-drei-Schwelle unten erreicht und in
@@ -296,6 +296,12 @@ und gemessener Verbindung, im Körper-Rahmen abgelesen. Nur x.
 **`dconn`** — *Form*: mittlerer punktweiser Abstand der beiden
 Verbindungs-Mittellinien, start-aligniert und damit translationsfrei — die
 Platzierung ist allein Sache von `doff`.
+→ [§4](glossar.md#4-metriken-und-benchmarks)
+
+**`dspan`** — dasselbe Maß, aber nur über den GEMEINSAMEN Abschnitt: beide
+Kurven vom gemeinsamen Ende auf `min(Bogenlänge)` zurückgeschnitten. Damit
+blind gegen eine Regel, die den Verbinder am Kopf verlängert, ohne seine
+Form zu ändern — der Artefakt, an dem `dconn` bei Arm J4 scheiterte.
 → [§4](glossar.md#4-metriken-und-benchmarks)
 
 **`meas`** — die Report-Spalte, die `doff` und `dconn` je komponierter

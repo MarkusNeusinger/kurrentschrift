@@ -44,8 +44,12 @@ class WordDeriveResult:
     registration: dict  # {tx, ty, xh_px} — the fitted shift (zero for a live case)
 
 
-def _payloads_for(case: WordCase) -> dict[str, dict | None]:
-    """Render every distinct slot glyph once (cache per key), None if unauthored."""
+def payloads_for(case: WordCase) -> dict[str, dict | None]:
+    """Render every distinct slot glyph once (cache per key), None if unauthored.
+
+    Public because `tools.pairlab.spanmeas` composes the same case with the J4
+    switch on, which `derive_word` deliberately does not expose.
+    """
     cache: dict[str, dict | None] = {}
     for slot in case.slots:
         if not slot.key or slot.key in cache:
@@ -57,9 +61,13 @@ def _payloads_for(case: WordCase) -> dict[str, dict | None]:
     return cache
 
 
-def _laufform_payloads_for(case: WordCase) -> dict[str, dict]:
+def laufform_payloads_for(case: WordCase) -> dict[str, dict]:
     """Rendered Laufform variants for the case's slots — compose selects them
-    per flowing run exactly like production; {} keeps chart behaviour."""
+    per flowing run exactly like production; {} keeps chart behaviour.
+
+    Public because `tools.pairlab.prodconn` recomposes an already derived case
+    from the same inputs and must not guess this half of them.
+    """
     out: dict[str, dict] = {}
     for slot in case.slots:
         if not slot.key or slot.key in out:
@@ -77,8 +85,8 @@ def derive_word(case: WordCase) -> WordDeriveResult:
     the failed dict and `segments` is None — so the panel can draw what exists
     and name the hole instead of raising.
     """
-    payloads = _payloads_for(case)
-    composed = compose_word(case.slots, payloads, provenance=True, laufform_by_key=_laufform_payloads_for(case) or None)
+    payloads = payloads_for(case)
+    composed = compose_word(case.slots, payloads, provenance=True, laufform_by_key=laufform_payloads_for(case) or None)
 
     report: dict | None = None
     segments: list[dict] | None = None
