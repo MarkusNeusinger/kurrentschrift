@@ -163,6 +163,34 @@ ASCENDER_LEAN_DEG = 4.5
 # final mostly, mid-word at a Fuge — the same departure applies.
 LOOP_EXIT_BASES = frozenset({"d", "s"})
 LOOP_EXIT_MIN_STUB = 0.1  # the tip must rise at least this above the foot
+# Stem departure (`stem_depart`, the d's own exit class; author decision A4 of
+# 2026-09-03 on audit finding 33 / question F6, pre-registered under
+# „Übergänge J5" in messjournal.md §14). LOOP_EXIT above hands the join over
+# at the loop's self-crossing, which the chart cell writes at 1.17. The hand
+# does not leave there: pairlab followed the real connecting stroke off the d
+# ink column at y 0.824–1.118, median 0.961 over 17 occurrences and eleven
+# different followers (qualitaetsmetrik.md §12) — a property of the letter's
+# END, constant across followers, which is exactly why §12 recommends path (b),
+# the transition GENERATOR, over (a), a connected/terminal variant split: a
+# stored bigram would have to enumerate the eleven followers to say what the
+# generator says once.
+# So the join keeps travelling: from the loop foot it retraces the d's own
+# ascending stem down to STEM_DEPART_Y and launches from there. The retrace
+# runs on ink the letter already carries — no stroke is added, none is cut —
+# and the launch is the generic taut/chord construction of every other join,
+# fed from the lower anchor.
+# A closed, enumerated A-set like LOOP_EXIT_BASES: the 0.961 is measured on d,
+# and the round Schluss-s closes the same loop WITHOUT this departure (it ends
+# the word or a Fuge, where the chart form keeps its finial).
+# What this does NOT repair: §13a measured the plate's loop CROSSING itself at
+# 0.968 bound vs 1.211 word-final while chart and Laufform carry it rigidly at
+# 1.176. That height is letterform — the wizard's case, not the generator's.
+STEM_DEPART_BASES = frozenset({"d"})
+STEM_DEPART_Y = 0.96
+# Below this drop from the loop foot to the departure height the detour buys
+# nothing and the rule stays out of the way (a Laufform row whose loop already
+# closes low needs no stem ride).
+STEM_DEPART_MIN_DROP = 0.05
 # Word-final d-loop Endstrich: the plates leave the crossing near-level for a
 # short run, then accelerate upward into a long tapering flick (tails end
 # 1.40–1.68 after 0.6–0.7 xh from the crossing). The generic high Auslauf
@@ -315,6 +343,30 @@ ENTRY_COUPLE_Y = 0.78
 # disabling the 0.78 trim for arcade heads (P3-K3 side find, §14 „O2-Trim-
 # Jitter"). 0.0 = the historical strict guard.
 ENTRY_FLANK_DIP_TOL = 0.0
+# Apex handover (`apex_handover`, the B-side chart-stub rule; author decision
+# A4 of 2026-09-03 on audit finding 33 / question F6, pre-registered under
+# „Übergänge J5" in messjournal.md §14). Four rows of the 1922 chart climb in
+# ONE stroke from a low foot into the ascender WITHOUT writing a loop on the
+# way — and they climb CONCAVE: measured deviation from their own chord
+# t 0.180 · ſ 0.136 · k 0.187 · ß 0.175 xh, against 0.098 for the next
+# non-member (s) and 0.017 for e. The plate writes that climb as ONE straight
+# line from the previous letter's foot to the apex, with a white wedge nearly
+# to the top; the composed word instead couples at the stub foot and then
+# draws the chart's bow into the stem, which is the hook the Korb-#7 autopsy
+# chased through J1/J2/J3 on the LINE while the chart form carried it.
+# So in bound context the join hands over AT THE APEX: the connector is the
+# straight line to the apex anchor and the lead-in below it is dropped from
+# centerline and silhouette by the ENTRY_COUPLE_Y machinery above. Word-initial
+# lead-ins stay — there the stub IS the Anstrich, the same E2 exception the
+# 0.78 trim already makes.
+# The class is GEOMETRIC, not a letter set, so it holds for a Laufform row and
+# for another hand writing the same climb. Two axes separate it, each with
+# room: the rise (members 1.171–1.296; largest non-member 0.467) and the
+# approach into the apex, which throws out the LOOPED ascenders whose climb
+# turns back left at the loop head (h 175.3 / l 180.0 / b 171.5 / f 163.1
+# degrees against 98.4 for the widest member).
+APEX_HANDOVER_MIN_RISE = 1.00
+APEX_HANDOVER_MAX_APPROACH_DEG = 120.0
 # Arm fusion (the jul30 mockup on "re"): the arm's small bow rolls DIRECTLY
 # onto the round body's top — the pair is pulled together until B's top
 # couple point (the ENTRY_COUPLE_Y trim) sits ARM_FUSE_GAP right of the
@@ -770,6 +822,52 @@ def _entry_apex_index(line: list[Point]) -> int:
         i += 1
     apex = i - 1
     return apex if 0 < apex < len(line) - 1 else 0
+
+
+def _apex_handover_index(first_line: list[Point]) -> int:
+    """Coupling index of the apex handover on B's first stroke, or 0.
+
+    The class predicate of the chart-stub rule (see APEX_HANDOVER_MIN_RISE): a
+    lead-in that climbs a full ascender's worth in ONE unlooped rise. Both
+    tests read the stored geometry, so a Laufform row or another hand is
+    judged by the same two numbers as the chart cell.
+    """
+    apex = _entry_apex_index(first_line)
+    if not apex or first_line[apex][1] - first_line[0][1] < APEX_HANDOVER_MIN_RISE:
+        return 0
+    approach = math.degrees(
+        math.atan2(first_line[apex][1] - first_line[apex - 1][1], first_line[apex][0] - first_line[apex - 1][0])
+    )
+    return apex if approach <= APEX_HANDOVER_MAX_APPROACH_DEG else 0
+
+
+def _stem_depart_ride(line: list[Point], foot: int, target_y: float) -> list[Point] | None:
+    """The d's ride down its own stem, from the loop foot to ``target_y``.
+
+    The samples the pen already wrote climbing into the ascender, walked back
+    from the stroke's top and returned in DESCENDING order — so the join
+    retraces existing ink instead of drawing a new stroke beside it (see
+    STEM_DEPART_BASES). ``None`` when the stroke carries no stem at that
+    height, when the drop stays under STEM_DEPART_MIN_DROP, or when the ride
+    would travel backwards (a stem leaning left of the loop foot).
+    """
+    if foot <= 0 or line[foot][1] - target_y < STEM_DEPART_MIN_DROP:
+        return None
+    top = max(range(len(line)), key=lambda i: line[i][1])
+    ride: list[Point] = []
+    for i in range(top, 0, -1):
+        if line[i][1] >= line[foot][1]:
+            continue
+        ride.append(line[i])
+        if line[i][1] <= target_y:
+            break
+    else:
+        return None
+    if len(ride) < 2 or ride[-1][1] > target_y:
+        return None
+    if any(p[0] < line[foot][0] for p in ride):
+        return None
+    return ride
 
 
 def _arm_fuse_apex(first_line: list[Point]) -> int:
@@ -1393,6 +1491,8 @@ def _connector_centerline(
     bar_low_couple: bool = False,
     arcade_lift_idx: int = 0,
     loop_rotate_deg: float = 0.0,
+    apex_handover: bool = False,
+    stem_depart: bool = False,
 ) -> tuple[list[Point], int]:
     """Centerline of the Übergang from A's exit into B's entry + the entry trim.
 
@@ -1409,6 +1509,11 @@ def _connector_centerline(
     re-derived, so the drawn join and the solved distance always read the same
     anchors (both are pure functions of ``first_line``; None recomputes them
     for a caller without a placement stage).
+
+    ``apex_handover`` offers B's lead-in to the chart-stub rule (see
+    APEX_HANDOVER_MIN_RISE); ``stem_depart`` says the caller has already
+    ridden A's stem down to the departure height (see STEM_DEPART_BASES), so
+    ``exit_pt`` is the bottom of that ride and the launch turns there.
     """
     if fork_couple_idx is None:
         fork_couple_idx = _fork_couple_index(first_line)
@@ -1430,6 +1535,18 @@ def _connector_centerline(
             rises = p3b[1] > p0[1] + ALIGN_MIN_RISE
             if p3b[0] > p0[0] + GARLAND_MIN_DX and (rises or bar_low_couple):
                 return [(p0[0] + (p3b[0] - p0[0]) * t / 10, p0[1] + (p3b[1] - p0[1]) * t / 10) for t in range(11)], idx
+    # Apex handover (see APEX_HANDOVER_MIN_RISE): B's long unlooped climb is
+    # chart-cell form — the plate runs ONE straight line from A's foot to the
+    # apex — so the join takes the whole climb and B keeps only its stem. The
+    # guards are the ones every coupling rule carries: the anchor must lie to
+    # the right of the exit and above it, or the pen would travel backwards or
+    # dive into the letter; there the generic path stays.
+    if apex_handover:
+        apex_idx = _apex_handover_index(first_line)
+        if apex_idx:
+            p3a: Point = (first_line[apex_idx][0] + dx, first_line[apex_idx][1])
+            if p3a[0] > p0[0] + GARLAND_MIN_DX and p3a[1] > p0[1] + ALIGN_MIN_RISE:
+                return _straight_connector(p0, first_line, dx, apex_idx), apex_idx
     # The r-arm into a round body fuses at B's crest APEX (see ARM_FUSE_GAP).
     arm_fuse = 0
     if fuse_base and p0[1] <= HIGH_EXIT_Y and 0.0 <= exit_tangent_deg < ARM_TAN_MAX_DEG:
@@ -1494,7 +1611,10 @@ def _connector_centerline(
     # the chord is truthful. A trimmed loop exit arrives here already
     # falling, so the chord continues its direction near-seamlessly.
     high_reversal = p0[1] > HIGH_EXIT_Y and p3[1] < p0[1]
-    rescued = ((p0[1] < DESCENDER_EXIT_Y and d_out[1] < 0) or backward or high_reversal) and span > 0
+    # A stem departure (see STEM_DEPART_BASES) arrives at its anchor travelling
+    # DOWN the stem and turns there — the same real corner the high reversal
+    # declares truthful, one letter lower.
+    rescued = ((p0[1] < DESCENDER_EXIT_Y and d_out[1] < 0) or backward or high_reversal or stem_depart) and span > 0
     if rescued:
         d_out = ((p3[0] - p0[0]) / span, (p3[1] - p0[1]) / span)
         # P3-K2 loop→round departure (see LOOP_ROUND_EXIT_ROT_DEG): the
@@ -1636,7 +1756,12 @@ def _connector_centerline(
     # loop exit of d/round-s falls STRAIGHT onto B's rising flank on the
     # plates) — a garland would dig a valley below that chord and leave
     # a long level run into the entry.
-    centerline = None if high_couple or cap_restart or high_reversal else _garland_centerline(p0, d_out, p3, d_in)
+    # … and a stem departure never garlands for the same reason: the pen has
+    # just dropped 0.2 xh along the stem, so a valley below that anchor would
+    # be a second dip in one join.
+    centerline = (
+        None if high_couple or cap_restart or high_reversal or stem_depart else _garland_centerline(p0, d_out, p3, d_in)
+    )
     if centerline is None:
         span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
         if high_couple and p3[1] < p0[1] and span > 0:
@@ -1687,6 +1812,12 @@ class _PrevGlyph:
     joins: bool
     base: str
     exit_item: dict | None = None
+    # Stem-departure ride (see STEM_DEPART_BASES), word coordinates: the loop
+    # foot followed by the stem samples down to the departure height. The join
+    # launches from its last point and carries the ride as its prefix, so the
+    # pen path stays continuous over ink the letter already wrote. None when
+    # the rule is off or the glyph has no such stem.
+    stem_ride: list[Point] | None = None
 
 
 def compose_word(
@@ -1699,6 +1830,8 @@ def compose_word(
     laufform_by_key: dict[str, dict] | None = None,
     exit_trim: bool = False,
     exit_trim_min_kink_deg: float = EXIT_TRIM_MIN_KINK_DEG,
+    apex_handover: bool = False,
+    stem_depart: bool = False,
 ) -> dict:
     """Compose shaped slots + per-glyph render payloads into draw items.
 
@@ -1747,6 +1880,16 @@ def compose_word(
     ``exit_trim_min_kink_deg`` narrows that class to the joins whose departure
     actually kinks (see EXIT_TRIM_MIN_KINK_DEG) — the J4b arm's knob; it does
     nothing while ``exit_trim`` is off.
+
+    ``apex_handover`` and ``stem_depart`` (both default False = byte-identical,
+    the golden fixture holds) are the two halves of the chart-form class rule
+    of author decision A4 — see APEX_HANDOVER_MIN_RISE and STEM_DEPART_BASES,
+    pre-registered and measured under „Übergänge J5" in messjournal.md §14.
+    They are separately switchable because the doctrine measures one knob at a
+    time. Measured `sep04`: ``stem_depart`` passes every gate and improves both
+    headline numbers, ``apex_handover`` fails two; making either the DEFAULT
+    changes every public ``/write/word`` render, which is a rendering-affecting
+    apply and therefore the author's call, not a bench result's.
 
     ``pair_overrides`` (redesign R3 / Vorschlag B) maps an adjacent joined
     key pair ``(left_key, right_key)`` to a stored override geometry (the
@@ -1978,6 +2121,7 @@ def compose_word(
             and bool(nxt.key)
             and bool((data_by_key.get(nxt.key) or {}).get("centerlines_template"))
         )
+        stem_ride: list[Point] | None = None
         # Loop-return departure (see LOOP_EXIT_BASES): in BOUND context the
         # chart cell's finishing stub is NOT WRITTEN at all — the loop return
         # continues without a set-down straight into the next letter ("der
@@ -2003,6 +2147,15 @@ def compose_word(
                 body_exit_line = [tuple(p) for p in centerlines[last_body_idx]]
                 exit_xy = body_exit_line[-1]
                 exit_deg = _endpoint_tangent(body_exit_line, at_end=True)
+                # Stem departure (see STEM_DEPART_BASES): the loop foot is
+                # where the chart cell stops, not where the hand leaves. The
+                # join rides the stem the letter already wrote down to the
+                # measured height and launches from there — the letter's ink
+                # is untouched, the ride is pen path over existing ink.
+                if stem_depart and _key_base(slot.key, slot.position) in STEM_DEPART_BASES:
+                    ride = _stem_depart_ride(body_exit_line, len(body_exit_line) - 1, STEM_DEPART_Y)
+                    if ride:
+                        stem_ride = [exit_xy, *ride]
 
         # Kringel-stub departure (see KRINGEL_EXIT_BASES): the bow's closing
         # loop is the knot the running hand departs from — the rising stub
@@ -2472,9 +2625,13 @@ def compose_word(
                 if prev.base == "d" and _key_base(slot.key, slot.position) in LOOP_ROUND_ENTRY_BASES
                 else 0.0
             )
+            # Stem departure (see STEM_DEPART_BASES): the previous glyph handed
+            # over a ride down its own stem, so the join is solved from the
+            # ride's END and carries the ride as its prefix.
+            ride = prev.stem_ride
             centerline, entry_trim = _connector_centerline(
-                prev.exit,
-                prev.tangent_deg,
+                ride[-1] if ride else prev.exit,
+                _endpoint_tangent(ride, at_end=True) if ride else prev.tangent_deg,
                 first_line,
                 dx,
                 high_couple=high_couple,
@@ -2490,12 +2647,19 @@ def compose_word(
                 bar_low_couple=bar_low_couple,
                 arcade_lift_idx=arcade_lift_idx,
                 loop_rotate_deg=loop_rotate_deg,
+                apex_handover=apex_handover,
+                stem_depart=bool(ride),
             )
+            if ride:
+                centerline = ride[:-1] + centerline
             # Exit-side collinearity (see EXIT_TRIM_WINDOW), opt-in. The
             # connector always ENDS at the coupling point, whichever branch
             # built it, so the cut is searched against ``centerline[-1]`` and
             # the placement that produced it stays untouched by construction.
-            exit_anchor: Point = prev.exit
+            # A stem departure states its DEPARTURE, not the loop foot, for the
+            # same reason J4's cut does: otherwise the ride reads to every
+            # downstream sensor as a retrace prefixed to the join.
+            exit_anchor: Point = ride[-1] if ride else prev.exit
             if (
                 exit_trim
                 and prev.cap_retrace is None
@@ -2646,6 +2810,7 @@ def compose_word(
             joins=slot.joins,
             base=_key_base(slot.key, slot.position),
             exit_item=exit_item,
+            stem_ride=[(x + dx, y) for x, y in stem_ride] if stem_ride else None,
         )
         cursor_x = max(exit_abs[0], ink_max_x + dx) if not slot.joins else exit_abs[0]
 

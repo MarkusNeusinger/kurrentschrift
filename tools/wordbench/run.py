@@ -431,6 +431,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="narrow --exit-trim to the joins whose departure kinks by AT LEAST DEG (the post-hoc "
         "J4b arm; core.compose EXIT_TRIM_MIN_KINK_DEG, 0 = the full pre-registered J4 class)",
     )
+    parser.add_argument(
+        "--apex-handover",
+        action="store_true",
+        help="compose with the opt-in apex handover (core.compose APEX_HANDOVER_MIN_RISE, pre-registered "
+        'under the heading "Übergänge J5" in messjournal.md §14): a long unlooped lead-in hands the join '
+        "over at its apex — a CANDIDATE arm, its own measurement, never the headline",
+    )
+    parser.add_argument(
+        "--stem-depart",
+        action="store_true",
+        help="compose with the opt-in d stem departure (core.compose STEM_DEPART_BASES, same J5 entry): "
+        "the join rides the d's stem down to the measured departure height — the other arm of that "
+        "ladder, likewise its own measurement",
+    )
     return parser
 
 
@@ -461,6 +475,11 @@ def main() -> None:
         narrowed = f" min_kink={args.exit_trim_min_kink:g}deg" if args.exit_trim_min_kink else ""
         arm = "J4b" if args.exit_trim_min_kink else "J4"
         print(f"exit_trim: on{narrowed} (candidate arm {arm} - own number, never the headline)")
+    if args.apex_handover or args.stem_depart:
+        # Same provenance duty: a rung of the J5 ladder must never file itself
+        # under the baseline's name.
+        on = [n for n, v in (("apex_handover", args.apex_handover), ("stem_depart", args.stem_depart)) if v]
+        print(f"J5: {' + '.join(on)} on (candidate arm - own number, never the headline)")
 
     t0 = time.perf_counter()
     style_root = args.fixtures / args.style
@@ -583,6 +602,8 @@ def main() -> None:
                     laufform_by_key=laufform_by_key or None,
                     exit_trim=args.exit_trim,
                     exit_trim_min_kink_deg=args.exit_trim_min_kink,
+                    apex_handover=args.apex_handover,
+                    stem_depart=args.stem_depart,
                 )
                 report = score_word(
                     composed,
@@ -705,6 +726,10 @@ def main() -> None:
         result["exit_trim"] = True
         if args.exit_trim_min_kink:
             result["exit_trim_min_kink_deg"] = args.exit_trim_min_kink
+    if args.apex_handover:
+        result["apex_handover"] = True
+    if args.stem_depart:
+        result["stem_depart"] = True
     for kind in ("word", "pair"):
         kind_reports = [r for r in reports if r["kind"] == kind]
         kind_skipped = [s for s in skipped if s["kind"] == kind]

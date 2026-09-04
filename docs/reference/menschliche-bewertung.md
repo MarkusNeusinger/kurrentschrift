@@ -1116,7 +1116,39 @@ derselbe Rahmen, den das automatische Lineal misst.
 
 Der Stempel führt je Arm Name, Datei und **SHA-256** — ohne den benennt eine
 Runde eine Datei, die seither umgeschrieben sein kann, und „der Kandidat hat
-gewonnen“ zeigt auf nichts.
+gewonnen“ zeigt auf nichts. Seit `sep04` schreibt jeder Arm zusätzlich seine
+**`join_rules`** in die Einstellungen (welche Übergangsregeln beim Komponieren
+an waren): eine Runde soll nie einen Composer-Default stillschweigend erben,
+sonst vergleichen zwei Runden aus verschiedenen Wochen Dinge, die gleich
+heißen.
+
+### Eine Runde über eine schmale Klasse — der Wiederholungs-Boden und die Nullprobe
+
+Konstruktionsregel aus der J5-Runde (`sep04`), notiert neben dem Fehler, der
+sie ausgelöst hat: eine Runde, die nur die Wörter zeigt, die ein Kandidat
+bewegt, kann **keine einzige blinde Wiederholung tragen**. Der Builder zieht
+Wiederholungen ausschließlich aus dem Anfang der Folge und braucht danach
+`min_gap` + 25 Bildschirme Platz (`REPEAT_JITTER`) — unter rund 30 Wörtern
+bleibt der Kandidatentopf leer, und die Runde hat gar keine
+Verlässlichkeitsschranke mehr (§3.2). Für die J5-Klasse (22 bewegte Wörter)
+hieß das: gebaut wie geplant, gemeldet „0 von 6 platziert“, unbrauchbar als
+Reliabilitäts-Aussage.
+
+Der Ausweg ist keine gesenkte Schranke, sondern **Nullproben**: Wörter, die
+der Kandidat gar nicht berührt, deren beide Tafeln also **bit-identisch** sind.
+Sie kosten fast nichts, heben die Runde über den Boden — und messen dabei
+etwas, das keine andere Schicht misst: **ob der Beurteiler „kein Unterschied
+erkennbar“ überhaupt benutzt.** Genau daran hing das LF11-Verdikt, dessen
+Unentschieden-Anteil in jeder Lesart über der Schranke lag, ohne dass jemand
+sagen konnte, wie viel davon die Antwortgewohnheit ist und wie viel die Sache.
+Eine Nullprobe beantwortet das direkt: wer dort „links“ oder „rechts“ sagt,
+antwortet auf einen Unterschied, den es nicht gibt.
+
+Also: **eine Runde über eine schmale Klasse mischt Nullproben unter**, deklariert
+sie als eigene Schicht in `--strata` (damit die Wiederholungen über die Klassen
+UND die Nullprobe verteilt werden), und ihre Auswertung liest zwei Zahlen
+nebeneinander — den Kandidatenanteil auf den bewegten Wörtern und die
+Unentschieden-Quote auf den unbewegten.
 
 **Und der Bau bricht ab, wenn die beiden Arme nicht gegen dieselbe Referenz
 komponiert wurden** (`build.py::check_arm_scope`: Stil, `source_id`,

@@ -15,14 +15,19 @@ import pytest
 from core.compose import (
     ALIGN_MAX_ENTRY_Y,
     ALIGN_MIN_RISE,
+    APEX_HANDOVER_MAX_APPROACH_DEG,
+    APEX_HANDOVER_MIN_RISE,
     CONNECT_GAP,
     EXIT_TRIM_TOL_DEG,
     EXIT_TRIM_WINDOW,
     GARLAND_MERGE_EPS,
     GARLAND_MIN_DX,
+    STEM_DEPART_MIN_DROP,
+    STEM_DEPART_Y,
     SWING_DEEP_MAX_RUN,
     SWING_MAX_EXIT_Y,
     SWING_TOP_Y,
+    _apex_handover_index,
     _cut_exit_stub,
     _flank_couple_index,
     _flank_couple_steepest,
@@ -30,6 +35,7 @@ from core.compose import (
     _fused_flank_placement,
     _garland_centerline,
     _start_direction,
+    _stem_depart_ride,
     _unit,
     _window_direction,
     _wrap_deg,
@@ -538,3 +544,144 @@ def test_exit_trim_min_kink_rejects_a_negative_angle() -> None:
     # a caller passing one has a bug, and the CLI already refuses it.
     with pytest.raises(ValueError, match="cannot be negative"):
         _compose_sawtooth(exit_trim=True, min_kink=-1.0)
+
+
+# --- The chart-form class rule („Übergänge J5", both arms off by default) ----
+#
+# The apex-handover class: a lead-in that climbs a full ascender in ONE stroke
+# and reaches its apex still travelling up, then turns down its own stem — the
+# t/ſ/k/ß shape measured on the 1922 chart (rise 1.17–1.30, approach ≤ 98°).
+_LONG_CLIMB = [(0.0, 0.7), (0.12, 1.0), (0.24, 1.32), (0.36, 1.65), (0.46, 1.95), (0.48, 1.3), (0.5, 0.0)]
+# The looped ascender the class must NOT take: the same climb, but the top
+# turns back LEFT through the loop (h/l/b/f approach 163–180°).
+_LOOPED_CLIMB = [(0.0, 0.7), (0.2, 1.2), (0.4, 1.7), (0.5, 1.88), (0.42, 1.95), (0.25, 1.9), (0.4, 1.2), (0.5, 0.0)]
+# A short lead-in — every other letter of the alphabet (largest 0.47).
+_SHORT_CLIMB = [(0.0, 0.5), (0.15, 0.72), (0.3, 0.93), (0.34, 0.5), (0.38, 0.0)]
+
+
+def test_apex_handover_class_takes_the_long_unlooped_climb_only() -> None:
+    apex = _apex_handover_index(_LONG_CLIMB)
+    assert apex == 4  # the crest, before the stem turns down
+    assert _LONG_CLIMB[apex][1] - _LONG_CLIMB[0][1] >= APEX_HANDOVER_MIN_RISE
+    # A loop head turns back past the cap; a short lead-in never reaches the
+    # rise floor. Both keep the generic coupling.
+    assert _apex_handover_index(_LOOPED_CLIMB) == 0
+    assert _apex_handover_index(_SHORT_CLIMB) == 0
+
+
+def test_apex_handover_reads_the_two_axes_independently() -> None:
+    # Just under the rise floor, otherwise in class.
+    shy = [(0.0, 0.7), (0.2, 1.2), (0.4, 0.7 + APEX_HANDOVER_MIN_RISE - 0.01), (0.42, 0.3), (0.44, 0.0)]
+    assert _apex_handover_index(shy) == 0
+    # Tall enough, but the apex is approached past the cap.
+    steep = [(0.0, 0.0), (0.4, 0.9), (0.5, 1.7), (0.35, 1.9), (0.5, 1.0), (0.6, 0.0)]
+    approach = math.degrees(math.atan2(1.9 - 1.7, 0.35 - 0.5))
+    assert approach > APEX_HANDOVER_MAX_APPROACH_DEG
+    assert _apex_handover_index(steep) == 0
+
+
+def test_apex_handover_is_off_by_default_and_takes_the_whole_lead_in() -> None:
+    slots = [
+        GlyphSlot(key="n", text="n", position="initial", ligature=False, space=False),
+        GlyphSlot(key="t", text="t", position="final", ligature=False, space=False),
+    ]
+    data = {"n": _payload(_SAWTOOTH_EXIT), "t": _payload(_LONG_CLIMB)}
+    off = compose_word(slots, data, provenance=True)
+    assert off == compose_word(slots, data, provenance=True, apex_handover=False)
+    on = compose_word(slots, data, provenance=True, apex_handover=True)
+    assert on != off
+    # B keeps only its stem: the climb below the apex is gone from the letter …
+    assert len(on["items"][2]["centerline"]) < len(off["items"][2]["centerline"])
+    assert on["items"][2]["centerline"][0][1] == pytest.approx(_LONG_CLIMB[4][1])
+    # … and the join draws it instead, as ONE straight line.
+    connector = on["items"][1]["centerline"]
+    (x0, y0), (x1, y1) = connector[1], connector[-2]
+    span = math.hypot(x1 - x0, y1 - y0)
+    assert span > 0
+    for x, y in connector[1:-1]:
+        assert abs(-(y1 - y0) * (x - x0) + (x1 - x0) * (y - y0)) / span < 1e-9
+
+
+def test_apex_handover_leaves_the_placement_untouched() -> None:
+    # The pre-registered experimental control, as for exit_trim: the join may
+    # redraw the lead-in, it may not move where the letter sits.
+    slots = [
+        GlyphSlot(key="n", text="n", position="initial", ligature=False, space=False),
+        GlyphSlot(key="t", text="t", position="final", ligature=False, space=False),
+    ]
+    data = {"n": _payload(_SAWTOOTH_EXIT), "t": _payload(_LONG_CLIMB)}
+    off = compose_word(slots, data, provenance=True)
+    on = compose_word(slots, data, provenance=True, apex_handover=True)
+    assert on["items"][1]["entry"] == off["items"][1]["entry"]
+
+
+# The loop-and-stub shape after LOOP_EXIT has already cut the finishing flick:
+# a stem climbing past the departure height into an ascender loop and back down
+# to the crossing, which the d writes a touch LEFT of its own stem.
+_LOOP_STROKE = (
+    [(0.0, 0.0), (0.3, 0.5)]
+    + [(0.62, 0.60 + 0.15 * i) for i in range(6)]
+    + [(0.55, 1.7), (0.40, 1.95), (0.25, 1.8), (0.35, 1.45), (0.48, 1.20), (0.55, 1.16)]
+)
+
+
+def test_stem_depart_ride_walks_the_stem_down_to_the_departure_height() -> None:
+    ride = _stem_depart_ride(_LOOP_STROKE, len(_LOOP_STROKE) - 1, STEM_DEPART_Y)
+    assert ride is not None
+    assert [p[1] for p in ride] == sorted((p[1] for p in ride), reverse=True)  # descending
+    assert ride[-1][1] <= STEM_DEPART_Y
+    assert all(p in _LOOP_STROKE for p in ride)  # ink the letter already wrote
+
+
+def test_stem_depart_ride_declines_a_loop_that_already_closes_low() -> None:
+    # Foot within STEM_DEPART_MIN_DROP of the target: the detour buys nothing.
+    low = [(0.0, 0.0), (0.3, 1.5), (0.5, STEM_DEPART_Y + STEM_DEPART_MIN_DROP / 2), (0.6, 1.2)]
+    assert _stem_depart_ride(low, 2, STEM_DEPART_Y) is None
+
+
+def test_stem_depart_ride_refuses_to_send_the_pen_backwards() -> None:
+    # A stem leaning LEFT of the crossing: riding it would travel away from
+    # the next letter, so the rule stays out and LOOP_EXIT's foot stands.
+    back = [(0.3, 0.4), (0.3, 0.8), (0.3, 1.0), (0.3, 1.5), (0.45, 1.95), (0.7, 1.6), (0.9, 1.25)]
+    assert _stem_depart_ride(back, len(back) - 1, STEM_DEPART_Y) is None
+
+
+def _compose_d(*, stem_depart: bool) -> dict:
+    slots = [
+        GlyphSlot(key="d", text="d", position="initial", ligature=False, space=False),
+        GlyphSlot(key="a", text="a", position="final", ligature=False, space=False),
+    ]
+    # The full chart cell: the shape above plus the finishing flick LOOP_EXIT
+    # cuts in bound context.
+    stroke = [*_LOOP_STROKE, (0.7, 1.24), (0.85, 1.36)]
+    return compose_word(
+        slots, {"d": _payload(stroke), "a": _payload(_SHORT_CLIMB)}, provenance=True, stem_depart=stem_depart
+    )
+
+
+def test_stem_depart_is_off_by_default_and_lowers_the_d_departure() -> None:
+    off, on = _compose_d(stem_depart=False), _compose_d(stem_depart=True)
+    assert off == _compose_d(stem_depart=False)
+    assert on != off
+    # The letter's own ink is untouched — the ride is pen path over it.
+    assert on["items"][0]["centerline"] == off["items"][0]["centerline"]
+    # The join now states, and starts from, the lower departure.
+    assert on["items"][1]["exit"][1] < off["items"][1]["exit"][1]
+    assert on["items"][1]["exit"][1] <= STEM_DEPART_Y
+    # … and the placement of the next letter is byte-identical.
+    assert on["items"][1]["entry"] == off["items"][1]["entry"]
+
+
+def test_stem_depart_keeps_the_pen_path_continuous_from_the_loop_foot() -> None:
+    on = _compose_d(stem_depart=True)
+    glyph_end = tuple(on["items"][0]["centerline"][-1])
+    connector = [tuple(p) for p in on["items"][1]["centerline"]]
+    # The ride is prefixed, so the join still leaves where the letter stopped
+    # (CONNECT_OVERLAP tucks the very first sample back into the letter).
+    assert math.dist(connector[0], glyph_end) < CONNECT_GAP
+    # It rides DOWN and turns at the departure height — an interior low point,
+    # which the base join (one fall out of the crossing) does not have.
+    turns = [i for i in range(1, len(connector) - 1) if connector[i][1] < min(connector[i - 1][1], connector[i + 1][1])]
+    assert turns and connector[turns[0]][1] <= STEM_DEPART_Y
+    base = [tuple(p) for p in _compose_d(stem_depart=False)["items"][1]["centerline"]]
+    assert not [i for i in range(1, len(base) - 1) if base[i][1] < min(base[i - 1][1], base[i + 1][1])]

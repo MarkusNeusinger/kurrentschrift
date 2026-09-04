@@ -81,6 +81,8 @@ def compose_arm(
     no_laufform: bool = False,
     nib: float | None = None,
     entries: set[str] | None = None,
+    apex_handover: bool | None = None,
+    stem_depart: bool | None = None,
 ) -> tuple[dict[str, dict], dict]:
     """Compose every scorable fixture word once, and place it the ruler's way.
 
@@ -89,6 +91,11 @@ def compose_arm(
     rest on their frozen rows — the word bench's ``--laufform`` discipline,
     because an overlay that silently dropped the unnamed keys would compose a
     different letter set from the base and the round would compare two things.
+
+    ``apex_handover``/``stem_depart`` are the join-grammar arms of „Übergänge
+    J5" (core.compose APEX_HANDOVER_MIN_RISE / STEM_DEPART_BASES). None leaves
+    each on the composer's own default, so an arm file always says what it
+    composed and never inherits a default silently.
     """
     manifest = load_json(root / "manifest.json")
     templates = load_json(root / "templates.json")
@@ -103,6 +110,11 @@ def compose_arm(
 
     payload_for = _payload_cache(templates, ratio, resolver, used_nib)
     laufform_for = _payload_cache(rows, ratio, resolver, used_nib)
+    join_rules = {
+        name: value
+        for name, value in (("apex_handover", apex_handover), ("stem_depart", stem_depart))
+        if value is not None
+    }
 
     words: dict[str, dict] = {}
     failed: list[str] = []
@@ -119,6 +131,7 @@ def compose_arm(
                 slots,
                 {s.key: payload_for(s.key) for s in slots if s.key},
                 laufform_by_key={s.key: lf for s in slots if s.key and (lf := laufform_for(s.key)) is not None} or None,
+                **join_rules,
             )
             report = score_word(
                 composed,
@@ -139,6 +152,12 @@ def compose_arm(
         "nib_overridden": nib is not None,
         "laufform": "none" if no_laufform else ("overlay" if laufform else "frozen"),
         "laufform_overlay_keys": sorted(laufform) if laufform else [],
+        # Stated, never inherited: an arm file has to say which join rules drew
+        # it, or two rounds built weeks apart cannot be held against each other.
+        "join_rules": {
+            "apex_handover": apex_handover if apex_handover is not None else "composer default",
+            "stem_depart": stem_depart if stem_depart is not None else "composer default",
+        },
         "exported_at": manifest.get("exported_at"),
         "failed": failed,
     }
@@ -254,6 +273,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--nib", type=float, default=None, help="constant nib half-width in x-heights [the frozen pooled one]"
     )
     parser.add_argument(
+        "--apex-handover",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="the J5 apex handover (core.compose APEX_HANDOVER_MIN_RISE) [the composer's default]",
+    )
+    parser.add_argument(
+        "--stem-depart",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="the J5 d stem departure (core.compose STEM_DEPART_BASES) [the composer's default]",
+    )
+    parser.add_argument(
         "--registration-from",
         type=Path,
         default=None,
@@ -285,7 +316,15 @@ def main(argv: list[str] | None = None) -> int:
     entries = {e.strip() for e in args.entries.split(",") if e.strip()} if args.entries else None
     laufform = load_laufform_draft(args.laufform) if args.laufform else None
 
-    words, settings = compose_arm(root, laufform=laufform, no_laufform=args.no_laufform, nib=args.nib, entries=entries)
+    words, settings = compose_arm(
+        root,
+        laufform=laufform,
+        no_laufform=args.no_laufform,
+        nib=args.nib,
+        entries=entries,
+        apex_handover=args.apex_handover,
+        stem_depart=args.stem_depart,
+    )
     if not words:
         raise SystemExit(f"{root}: nothing composed — {settings['failed'][:5]}")
     if args.registration_from:
@@ -324,6 +363,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"arm {args.arm}: {len(words)} words from {root.name} → {args.out} ({args.out.stat().st_size / 1e6:.1f} MB)")
     print(f"  nib {settings['nib_units']:.5f}{' (overridden)' if settings['nib_overridden'] else ''}")
     print(f"  laufform {settings['laufform']} · registration {settings['registration']}")
+    rules = settings["join_rules"]
+    print(f"  join rules: apex_handover {rules['apex_handover']} · stem_depart {rules['stem_depart']}")
     if settings["failed"]:
         print(f"  WARNING: {len(settings['failed'])} word(s) did not compose: {', '.join(settings['failed'][:8])}")
     if args.synthetic_defect:
