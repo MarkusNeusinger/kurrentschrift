@@ -11,7 +11,11 @@
   the API — the composer reads one as an ordinary space and would write the
   break as a gap mid-line — and the wrap planner keeps 60 characters as the
   hard cap per composition request. The counter under the field says
-  `n/480`, newlines included, and the share link carries them as `%0A`.
+  `n/480`, newlines included, and the share link carries them as `%0A`. The
+  one input no line plan can rescue — a run of 160+ characters without a
+  space, which breaks at nothing and which the composer refuses — is
+  reported and named instead of written or cut, the way the practice sheet
+  reports a row its ruling is too narrow for.
 - **A Schriftgröße switch instead of a zoom: klein · mittel · groß.** A step
   sets the x-height the text is WRITTEN at — 20 · 28 · 40 px per template
   unit — so the pen writes larger rather than a finished picture being
@@ -38,5 +42,7 @@
   matters, and the postcard showed it — a 480-character text wraps into up
   to ~57 written lines, each its own composition because each line is its
   own continuous pen stroke, and one page view spent more than the whole
-  burst. It now spends three tokens. A full-length request still costs
-  exactly one token, and the wide bucket still bounds the request count.
+  burst. It now spends 3 to 7 tokens of 20 — 3 at the small step, ~7 at the
+  large one, whose short lines pay the eighth-token floor rather than their
+  length. A full-length request still costs exactly one token, and the wide
+  bucket still bounds the request count.

@@ -267,22 +267,32 @@ async def test_the_narrow_bucket_answers_before_the_wide_one(api: Harness, monke
 
 async def test_a_wrapped_text_costs_what_it_composes_not_what_it_requests(api: Harness, monkeypatch):
     """The narrow bucket meters CHARACTERS, so splitting one composition into
-    several short ones costs the same. The Federprobe's postcard depends on it:
-    a 480-character text is written as up to ~35 lines, each its own compose
-    request, and per-request metering spent more than the whole burst on ONE
-    page view."""
+    several costs the same as sending it whole. The Federprobe's postcard
+    depends on it: a 480-character text is written as up to ~57 lines, each its
+    own compose request, and per-request metering spent more than the whole
+    burst on ONE page view.
+
+    The lines here are 40 characters — a quarter of a full-length request and
+    well clear of the eighth-token floor, so what this measures is the
+    PROPORTIONALITY and not the floor (which the next test covers)."""
     source_id = await _seed_word(api)
-    _freeze(monkeypatch, (write_limiter, 1.0))
+    quarter = "n" * (len(FULL_LEN_TEXT) // 4)
 
     async def word(text: str) -> int:
         res = await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": text})
         return res.status
 
-    # One token, spent eight lines at a time rather than in one go: the eighth
-    # line still fits, the ninth is over — a whole token, no more and no less.
-    for _ in range(8):
-        assert await word("nn") == 200
-    assert await word("nn") == 429
+    # One token buys 160 characters, whether they arrive in one request…
+    _freeze(monkeypatch, (write_limiter, 1.0))
+    assert await word(FULL_LEN_TEXT) == 200
+    assert await word(FULL_LEN_TEXT) == 429
+
+    # …or in four of forty. The fourth quarter still fits, the fifth is over:
+    # the same 160 characters, the same one token, four times the requests.
+    _freeze(monkeypatch, (write_limiter, 1.0))
+    for _ in range(4):
+        assert await word(quarter) == 200
+    assert await word(quarter) == 429
 
 
 async def test_a_short_text_is_never_cheaper_than_an_eighth_of_a_token(api: Harness, monkeypatch):

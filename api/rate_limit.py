@@ -21,12 +21,16 @@ read as "60 requests". What the audit measured scales with the TEXT, not with
 the request: the same line costs the same whether it arrives whole or in four
 pieces. Metering per request made that untrue in the one direction that
 matters, and it was the Federprobe's postcard that showed it — a 480-character
-text wraps into up to ~35 written lines, each its own composition request
+text wraps into up to ~57 written lines, each its own composition request
 because each line is its own continuous stroke run (design-system.md §7), and
 under per-request metering ONE page view spent more than the whole burst.
-Per-character it spends three tokens, which is what 480 characters cost. The
-abuse case is untouched: a full-length request still costs exactly one token,
-and the WIDE bucket below is what bounds the request COUNT.
+Metered by length it spends **3 to 7 tokens** for the same postcard — 3 at the
+small step, whose lines run ~26 characters, and about 7 at the large one, whose
+~9-character lines each pay the eighth-token floor below rather than their
+length. Measured against the running API: 45 short line requests all pass where
+the same burst produced 429s before. The abuse case is untouched — a full-length
+request still costs exactly one token — and the WIDE bucket below is what bounds
+the request COUNT.
 
 **Wide — every other route, GET and HEAD included** (600/min, burst 120; the
 author's decision of 2026-09-02 was to block extreme use only, so that sheer
@@ -117,8 +121,13 @@ def composition_cost(request: Request) -> float:
     single letter is composed. That floor is what keeps the change from opening
     a lane: a caller of one-character texts gets eight times the request rate
     out of this bucket, not a hundred and sixty times, and the wide bucket
-    bounds even that. The Federprobe's own lines sit at ~20 characters, i.e.
-    right at the floor, so a wrapped postcard costs about what it composes.
+    bounds even that.
+
+    The floor is what a short line actually pays, so a wrapped block costs its
+    characters only while its lines stay above 20 of them. Below that it costs
+    a token per eight lines instead — which is the honest number for the
+    Federprobe's large step (~9-character lines, ~7 tokens for a postcard)
+    against a burst of 20.
     """
     length = len(request.query_params.get("text", ""))
     floor = WRITE_COST_UNIT_CHARS / 8

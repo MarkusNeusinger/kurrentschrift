@@ -15,6 +15,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { WrittenWord } from '@/components/WrittenWord';
 import { lettersFromKeys } from '@/domain/glyphs';
 import { PublicLayout } from '@/layouts/public/PublicLayout';
+import { MAX_COMPOSE_CHARS, tooLongRun } from '@/lib/lineWrap';
 import { de, fmt } from '@/locales';
 import {
   DEFAULT_SCRIBE_SIZE,
@@ -150,6 +151,9 @@ export function ScribeView() {
   };
 
   const missingLetters = useMemo(() => lettersFromKeys(missing), [missing]);
+  // The one input no line plan can rescue: a run without a space, longer than
+  // one composition request may carry.
+  const unwritable = useMemo(() => tooLongRun(text), [text]);
 
   return (
     <PublicLayout footer minHeight="100vh">
@@ -232,7 +236,7 @@ export function ScribeView() {
             ToggleButtons carry a real 44 px height under `sm` from the theme
             (design-system.md §9.3), so the row needs no invisible hit area. */}
         <Stack direction="row" sx={{ flexWrap: 'wrap', alignItems: 'center', columnGap: 1.5, rowGap: 1.5, mb: 3 }}>
-          <Typography component="span" variant="body2" id="scribe-size-label" sx={{ color: paper.inkSoft }}>
+          <Typography component="span" variant="body2" sx={{ color: paper.inkSoft }}>
             {de.scribe.sizeLabel}
           </Typography>
           <ToggleButtonGroup
@@ -267,7 +271,17 @@ export function ScribeView() {
             overflow: 'hidden',
           }}
         >
-          {text && composeError ? (
+          {/* A run without a space that no line can carry is REPORTED, not
+              written and not cut — the practice sheet's own rule for a row its
+              ruling is too narrow for. Checked before the composition is asked
+              for, so the 480-character field cannot hand the composer a text it
+              answers with a 422 and land the reader in the server-error card
+              for something the input did. */}
+          {text && unwritable ? (
+            <Typography sx={{ color: paper.sepia, textAlign: 'center', px: 2 }}>
+              {fmt(de.scribe.tooLongRun, { chars: unwritable.length, max: MAX_COMPOSE_CHARS })}
+            </Typography>
+          ) : text && composeError ? (
             <Stack spacing={1.5} sx={{ alignItems: 'center', textAlign: 'center', px: 2 }}>
               <Typography sx={{ color: paper.inkSoft }}>{de.scribe.loadError}</Typography>
               <Button

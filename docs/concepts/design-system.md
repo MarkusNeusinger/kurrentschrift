@@ -332,6 +332,12 @@ eine eigene `/write/word`-Anfrage, und `core.shaping.shape_text` liest ein `\n`
 als gewöhnliches Leerzeichen, schriebe den Umbruch also als Lücke mitten in die
 Zeile. Der Teilen-Link trägt Umbrüche als `%0A`.
 
+**Was keine Zeilenplanung retten kann, wird gemeldet statt geschrieben:** ein
+Zug ohne Leerzeichen, länger als eine Kompositionsanfrage trägt (160 Zeichen),
+bricht an nichts und wird von der Route abgelehnt. Die Federprobe benennt ihn
+(`tooLongRun`), statt ihn zu senden oder zu kürzen — dieselbe Regel, mit der das
+Übungsblatt eine zu breite Zeile meldet.
+
 **Schriftgröße statt Zoom**, drei Stufen als Umschaltgruppe, Vorgabe `mittel`
 (ein eigener Zoom ist **verworfen**: `app/index.html` lässt das Pinch-Zoom des
 Browsers unangetastet, kein `user-scalable=no`). Eine Stufe ist eine

@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { MAX_CHARS_PER_LINE, MIN_XHEIGHT_PX, planLines, planParagraphs } from './lineWrap';
+import {
+  MAX_CHARS_PER_LINE,
+  MAX_COMPOSE_CHARS,
+  MIN_XHEIGHT_PX,
+  planLines,
+  planParagraphs,
+  tooLongRun,
+} from './lineWrap';
 
 // The audit's own case (finding 28): "Der Schreiber grüßt ergebenst" on a
 // 360 px phone. The measured composition was ~44.5 template units wide for 29
@@ -185,5 +192,30 @@ describe('planParagraphs', () => {
 
   it('has nothing to plan for an empty text', () => {
     expect(planParagraphs('   \n\n  ', OPTS)).toEqual([]);
+  });
+});
+
+describe('tooLongRun', () => {
+  // The one input a plan cannot rescue: breaking happens at spaces, so a run
+  // without any stays whole however narrow the frame — and past the composer's
+  // cap it is refused outright. The 480-character field can hold one, so the
+  // Federprobe has to say so rather than send a request that 422s.
+  const long = 'n'.repeat(MAX_COMPOSE_CHARS + 1);
+
+  it('finds a run the composer cannot take, and names it', () => {
+    expect(tooLongRun(`vor ${long} nach`)).toBe(long);
+  });
+
+  it('says nothing about text every line plan can carry', () => {
+    expect(tooLongRun('Liebe Großmutter, heute schreibe ich Dir.')).toBeNull();
+    // Exactly at the cap is still writable — the route takes 160.
+    expect(tooLongRun('n'.repeat(MAX_COMPOSE_CHARS))).toBeNull();
+    // Long in TOTAL is fine; only an unbroken run is not.
+    expect(tooLongRun(Array.from({ length: 40 }, () => 'wort').join(' '))).toBeNull();
+  });
+
+  it('counts a run per whitespace, newlines included', () => {
+    expect(tooLongRun(`kurz\n${long}`)).toBe(long);
+    expect(tooLongRun(`${long.slice(0, 80)}\n${long.slice(80)}`)).toBeNull();
   });
 });

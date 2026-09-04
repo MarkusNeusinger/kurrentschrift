@@ -67,7 +67,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
-- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Komposition voller Länge §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kurzglossar §5
+- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kurzglossar §5
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nullprobe §4
@@ -828,9 +828,11 @@ wurde (0,80 s TTFB, 1,65 MB für 155 Zeichen), skaliert mit dem TEXT, nicht mit
 der Anfrage — dieselbe Zeile kostet gleich viel, ob sie am Stück oder in vier
 Teilen kommt. Sichtbar wurde das an der → Postkarte (Federprobe): Sie bricht in
 bis zu ~57 geschriebene Zeilen um, jede eine eigene Kompositionsanfrage, und
-sprengte pro Anfrage gezählt mit EINEM Seitenaufruf den Burst. Der
-Missbrauchsfall bleibt unberührt (eine Anfrage voller Länge kostet weiter genau
-ein Token), die ANZAHL der Anfragen begrenzt weiterhin der weite Bucket.
+sprengte pro Anfrage gezählt mit EINEM Seitenaufruf den Burst; nach Länge
+gezählt kostet sie 3 bis 7 Token (die Untergrenze greift, sobald eine Zeile
+unter 20 Zeichen fällt). Der Missbrauchsfall bleibt unberührt (eine Anfrage
+voller Länge kostet weiter genau ein Token), die ANZAHL der Anfragen begrenzt
+weiterhin der weite Bucket.
 write-api.md „Ratenbegrenzung“.
 
 **Origin-Geheimnis** — der gemeinsame Wert zwischen dem Cloudflare-Edge und

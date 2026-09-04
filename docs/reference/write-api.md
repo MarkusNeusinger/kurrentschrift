@@ -64,12 +64,16 @@ Token, damit Ein-Zeichen-Anfragen keine freie Spur werden). Die Zahlen bleiben,
 sie lesen sich nur nicht mehr als „60 Anfragen": Was gemessen wurde, skaliert
 mit dem TEXT, nicht mit der Anfrage — dieselbe Zeile kostet gleich viel, ob sie
 am Stück oder in vier Teilen kommt. Sichtbar gemacht hat das die
-Postkarten-Federprobe: 480 Zeichen brechen in bis zu ~35 geschriebene Zeilen um,
+Postkarten-Federprobe: 480 Zeichen brechen in bis zu ~57 geschriebene Zeilen um,
 jede eine eigene Kompositionsanfrage (jede Zeile ein eigener durchgehender
 Federzug, design-system.md §7) — pro Anfrage gezählt sprengte **ein einziger
-Seitenaufruf** den Burst, pro Zeichen kostet er drei Token. Der Missbrauchsfall
-ist unberührt (eine Anfrage voller Länge kostet weiter genau ein Token), und die
-Anzahl der Anfragen begrenzt weiterhin der weite Bucket.
+Seitenaufruf** den Burst. Nach Länge gezählt kostet dieselbe Postkarte **3 bis 7
+Token**: 3 auf der kleinen Stufe (Zeilen von ~26 Zeichen), rund 7 auf der
+großen, deren ~9-Zeichen-Zeilen je die Untergrenze zahlen statt ihrer Länge.
+Gemessen an der laufenden API: 45 kurze Zeilenanfragen gehen durch, wo derselbe
+Burst vorher 429 lieferte. Der Missbrauchsfall ist unberührt (eine Anfrage
+voller Länge kostet weiter genau ein Token), und die Anzahl der Anfragen
+begrenzt weiterhin der weite Bucket.
 
 Der **weite** Bucket (Owner-Entscheid 2026-09-02: „soll nur extreme Nutzung
 blocken, damit mir keine riesigen Kosten entstehen können oder jemand alles

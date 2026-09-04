@@ -47,6 +47,26 @@ export const MIN_XHEIGHT_PX = 14;
 // does; the cap is the guarantee, not the mechanism.
 export const MAX_CHARS_PER_LINE = 60;
 
+// The composer's own per-request cap (`MAX_TEXT_LEN`, api/routers/write.py):
+// the longest text one `GET /write/word` accepts, over which it answers 422.
+export const MAX_COMPOSE_CHARS = 160;
+
+// The first run of non-space characters too long for ONE composition request,
+// or null. It is the one input a line plan cannot rescue: breaking happens at
+// spaces, so a run without any stays whole however narrow the frame — and past
+// this length the composer refuses it outright.
+//
+// Reported rather than split, the way the practice sheet reports a row its
+// ruling is too narrow for (`TooWideLine`, lib/uebungstext.ts): splitting a
+// word without a hyphen invents a break the script never had, and splitting it
+// WITH one is the claim about Sütterlin this project has not made. So the
+// caller says what it cannot write and names it, instead of sending a request
+// that is answered with an error.
+export function tooLongRun(text: string, maxChars = MAX_COMPOSE_CHARS): string | null {
+  for (const run of text.split(/\s+/)) if (run.length > maxChars) return run;
+  return null;
+}
+
 export interface LinePlan {
   // Width available for the ink in px: the measured frame, capped by the
   // caller's own maxWidth.

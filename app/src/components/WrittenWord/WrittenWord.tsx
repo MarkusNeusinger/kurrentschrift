@@ -38,7 +38,7 @@ import {
   WORD_MIN_ITEM_MS,
   WORD_WRITE_MS,
 } from '@/lib/strokeTiming';
-import { MIN_XHEIGHT_PX, planParagraphs, type PlannedLine } from '@/lib/lineWrap';
+import { MAX_COMPOSE_CHARS, MIN_XHEIGHT_PX, planParagraphs, type PlannedLine } from '@/lib/lineWrap';
 import { ReplayButton } from '@/components/inkReveal';
 import { replayGround } from '@/components/inkReveal/replayGround';
 import { WrittenLine, type LineGeom } from './WrittenLine';
@@ -59,14 +59,6 @@ const LINE_GAP_UNITS = 0.3;
 // line gap, the way a hand skips a row. More than that and a two-paragraph
 // postcard reads as two pictures again (owner decision 2026-09-04).
 const PARAGRAPH_GAP_FACTOR = 2;
-
-// The composer's own per-request cap (`MAX_TEXT_LEN`, api/routers/write.py).
-// The lines that get WRITTEN are far shorter than this (lib/lineWrap's
-// `MAX_CHARS_PER_LINE`); what can exceed it is the one request that asks the
-// whole text "how wide does this hand run?" — so that one carries a
-// word-boundary prefix instead. An average measured over 160 characters of the
-// text is the same kind of estimate as one measured over 480.
-const MAX_COMPOSE_CHARS = 160;
 
 // Air the viewBox keeps at each end of a line so the first Anstrich and the
 // last Auslauf are not clipped. It is part of what the frame has to hold, so
@@ -165,7 +157,9 @@ export function WrittenWord({
   // would write the break into the middle of a line (lib/lineWrap).
   const normalized = useMemo(() => text.normalize('NFC').replace(/\s+/g, ' ').trim(), [text]);
   // The text the MEASURING request carries: the whole thing, or — for a
-  // postcard longer than the composer takes — as many whole words as fit.
+  // postcard longer than the composer takes (`MAX_COMPOSE_CHARS`) — as many
+  // whole words as fit. An average measured over 160 characters of the text is
+  // the same kind of estimate as one measured over 480.
   const measured = useMemo(() => {
     if (normalized.length <= MAX_COMPOSE_CHARS) return normalized;
     const cut = normalized.slice(0, MAX_COMPOSE_CHARS);
