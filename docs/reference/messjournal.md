@@ -7574,8 +7574,29 @@ dokumentiert statt zurückgefragt):
 | (d) | Golden | bricht GENAU auf den unten gelisteten Wörtern und auf keinem anderen |
 | (e) | Glyph-Bench | unverändert (`--style suetterlin`, byte-gleicher `bench_loss`) — die Regel ist eine Übergangsregel, die Glyphen selbst werden nicht angefasst |
 | (f) | Gleichzug-Audit | `gleichzug_doublings` steigt nicht (13 Wörter / 3 Paare) — eine Gerade zum Scheitel darf keinen zweiten Strich neben die Säule legen |
-| (g) | Mechanismus d | die Abgangshöhe der gebundenen d-Joins liegt in ≥ 80 % im Platten-Band 0,82–1,12, und der Abgangswinkel ist nicht mehr fallend (Basis −33,8°) |
+| (g) | Mechanismus d | die Abgangshöhe der gebundenen d-Joins liegt in ≥ 80 % im gemessenen Platten-Band 0,824–1,118 (§12, 17 Vorkommen), und der Abgangswinkel wandert bei ≥ 80 % der Klasse Richtung eben (Basis −33,8°) |
 | (h) | Instrument | die humanbench-Wortseiten für die zehn am stärksten betroffenen Wörter sind gebaut und reproduzierbar (Urteil des Autors, NICHT dieses Arms) |
+
+*Präzisierung zu (g), gemacht VOR der ersten Zahl und offengelegt.* Die erste
+Fassung dieses Gates verlangte „der Abgangswinkel ist nicht mehr fallend"
+(≥ 0°). Das gatet gegen eine Zahl, die es nicht gibt: §12 hat die
+**Abgangshöhe** über 17 Vorkommen gemessen, den **Abgangswinkel der Platte**
+nie. Ein absoluter Winkel-Soll wäre damit erfunden, und die gemessenen
+Ankunftshöhen in Rundkörper (y 0,58–0,70, §6/O2) sagen ohnehin, dass die
+Hand aus 0,96 nicht steigend, sondern flach fallend ankommt. Gegatet wird
+deshalb die Höhe (gemessen) und die RICHTUNG der Winkeländerung
+(vorzeichenfrei prüfbar); der absolute Winkel steht als falsifizierbare
+Erwartung (3) unten und wird berichtet, nicht gewertet.
+
+*Was dieser Arm ausdrücklich NICHT repariert.* §13a hat gemessen, dass die
+d-Schleifenkreuzung der Platte gebunden bei **0,968** und am Wortende bei
+**1,211** liegt (Δ 0,243, p = 0,005, 19× das Wiederholungsrauschen), während
+Tafel und Laufform sie starr bei 1,176/1,177 tragen. Die Kreuzungshöhe ist
+Buchstabenform — `chart_ductus`, der Wizard-Fall, den §12 („die
+Schlingenflanke bleibt der `chart_ductus`-Fall") und Befund 33 dem Autor
+zuweisen. Der Säulenabgang verlegt den **Abgang** auf die gemessene Höhe; die
+**Kreuzung** bleibt, wo die Tafel sie schreibt. Wer die Zahlen unten liest,
+soll das nicht verwechseln.
 
 **Kill.** (a), (b), (c), (e) oder (f) rot → keine Adoption, beide Schalter auf
 Standard aus, Golden unberührt, Rettungswege benannt und in
