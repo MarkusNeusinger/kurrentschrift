@@ -84,22 +84,25 @@ glossary“.
 in the CHANGELOG's own format (`### Category` over bold-titled English
 bullets matching the existing entries; `changelog.d/README.md`) — never
 a bullet in `CHANGELOG.md` itself; the CI job „Changelog (fragment)"
-refuses both a PR without a fragment and a bullet written into
-`[Unreleased]`. Run the same gate locally before the push:
+refuses both a PR without a fragment and a bullet ADDED to `[Unreleased]`
+(correcting the wording of one already there is fine — the bullet's bold
+title is its identity). Run the same gate locally before the push:
 `uv run python -m tools.changelog check --base origin/main`. Data-only
 commits (chart sources, authored templates) are exempt; their provenance
 lives in `SOURCE.md`.
 
 **The PR number in the fragment is optional — do not go back for it.**
-`tools.changelog` neither requires nor checks a `(#NNN)`, and the number
-is not knowable until the PR exists, so fetching it meant a second commit
-whose whole content was one token. That step is retired: write the
-fragment without a number and leave it. (Three agents in one day on
-2026-09-02 reached for `sed -i` to make that one-token edit — the
-Edit/Write rule has no "but it is only one word" clause, so the cheapest
-fix is not to have the step.) If a number does go in — because a later
-push exists anyway and you want the reference — it goes in with **Edit**,
-never `sed`, never a heredoc, never `>>`.
+`tools.changelog` does not require a `(#NNN)`, and the number is not
+knowable until the PR exists, so fetching it meant a second commit whose
+whole content was one token. That step is retired: write the fragment
+without a number and leave it. (Three agents in one day on 2026-09-02
+reached for `sed -i` to make that one-token edit — the Edit/Write rule
+has no "but it is only one word" clause, so the cheapest fix is not to
+have the step.) What the gate DOES refuse is the placeholder left
+standing: write no reference at all, never a bare `(#NNN)`. If a number
+does go in — because a later push exists anyway and you want the
+reference — it goes in with **Edit**, never `sed`, never a heredoc,
+never `>>`.
 
 Then the local CI equivalents — the same commands the pipeline runs,
 without the round trip (backend always; frontend build only if `app/`

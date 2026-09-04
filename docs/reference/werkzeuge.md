@@ -461,10 +461,14 @@ ohne Projekt-Extras läuft; kein Netz, keine DB — es schreibt ausschließlich 
 den Arbeitsbaum.
 
 - **`check [--base origin/main]`** — jedes Fragment ist wohlgeformt (bekannte
-  Kategorie, fett betitelte Bullets, sonst nichts). Mit `--base` die PR-Regel
+  Kategorie, fett betitelte Bullets — der schließende `**` darf auf der
+  Folgezeile stehen, muss aber da sein —, kein unausgefüllter `(#NNN)`,
+  sonst nichts). Mit `--base` die PR-Regel
   des CI-Jobs „Changelog (fragment)": das Diff trägt ein Fragment (oder ist
   ein Release-Schnitt, der Fragmente löscht, oder rein `data/`), und
-  `[Unreleased]` hat keinen direkt geschriebenen Bullet dazubekommen.
+  `[Unreleased]` hat keinen Bullet dazubekommen — dazubekommen heißt einen
+  neuen fetten Titel (oder eine weitere Kopie eines vorhandenen); den
+  Wortlaut eines dort schon stehenden Eintrags zu korrigieren ist erlaubt.
   Ausnahmen laufen über den Job, nicht über das Werkzeug: Label
   `skip-changelog` und Dependabot als PR-Autor — in beiden Fällen läuft der
   Job gar nicht erst.

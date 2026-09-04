@@ -22,8 +22,9 @@ docs/ or CLAUDE.md -> /write-docs · data or licenses -> /audit-licenses.
 
 ## Checklist
 
-- [ ] Changelog fragment added under `changelog.d/<slug>.md` (never a bullet in
-      `CHANGELOG.md` itself), or the PR carries the `skip-changelog` label
+- [ ] Changelog fragment added under `changelog.d/<slug>.md` (never a NEW bullet in
+      `CHANGELOG.md` itself — correcting one already under `[Unreleased]` is fine),
+      or the PR carries the `skip-changelog` label
 - [ ] Any new Fachbegriff, metric or named failure mode has its entry in
       `docs/reference/glossar.md` (themed section + alphabetical Schnellindex)
 - [ ] The matching `/verify-*` skill was run for what this diff touches
