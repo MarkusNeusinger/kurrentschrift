@@ -76,8 +76,8 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftkunde (Seite) §7 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
-- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
-- **U** — Unantastbare Lineatur §7 · Unvollständige Wortprobe §5
+- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
+- **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
 - **V** — Variante §2 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschub-Kalibrierung §2 · Vorschrift §1
 - **W** — W1–W6 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
@@ -3319,6 +3319,39 @@ Verwechslerpaaren unterscheiden (→ Lesart §1, `GET /lesarten`).
 **Federprobe** *(`/federprobe`)* — die Schreibfläche für beliebigen Text:
 eingetippt, live in Sütterlin geschrieben, mit den generierten Übergängen.
 Die öffentliche Kostprobe der Komposition (§2). `sections/scribe/`.
+
+**Tintenboden** — die Untergrenze, unter der eine geschriebene Zeile nicht
+mehr klein gesetzt, sondern umgebrochen wird: **14 px x-Höhe**, also 14 px
+je Template-Einheit (Grundlinie = 0, Mittelband = 1). Der Wert ist der
+Typo-Boden des Design-Systems (§9: „Caption ≥ 14 px“) — geschriebene Formen
+bekommen mindestens, was gesetzte Schrift bekommt, und brauchen eher mehr:
+Was ein Sütterlin-u vom n trennt, sitzt *innerhalb* des Mittelbands und ist
+ein Bruchteil davon, während eine gedruckte Letter sich als Ganzes
+unterscheidet. Gemessen: Der Website-Audit 2026-09-02 fand einen
+29-Zeichen-Satz auf 360 px bei **7,1 px** je Einheit (22,5 px Tinte für den
+ganzen Satz) und nannte ihn unlesbar. Fällt eine Zeile unter den Boden,
+bricht `WrittenWord` den Text an Leerzeichen um (→ Umbruch der Federprobe).
+`app/src/lib/lineWrap.ts` `MIN_XHEIGHT_PX`.
+
+**Umbruch der Federprobe** — der Autor-Entscheid vom 2026-09-04 für lange
+Texte auf schmalen Geräten: Der Text wird an **Wortgrenzen** in mehrere
+Zeilen gebrochen, und **jede Zeile ist eine eigene Komposition** — ein
+eigener `GET /write/word`, ein eigener durchgehender Federzug von ihrem
+Anstrich bis zu ihrem Auslauf. „Zug um Zug“ gilt damit je ZEILE, nicht je
+Text; der Zeilenanfang bekommt seinen richtigen Anstrich, weil
+`core/shaping.py` die Wortposition ohnehin je Slot vergibt. Alle Zeilen
+teilen sich **eine** x-Höhe (die der breitesten), wie eine Hand über einen
+Absatz hinweg; die Schrift läuft links bündig, und die Feder hält am
+Zeilenbruch einen längeren Takt als beim Absetzen (`LINE_BREAK_PAUSE_MS`).
+Verworfen wurden dabei: Maßstab-Boden mit horizontal scrollender Fläche und
+eine viewportgekoppelte Zeichenobergrenze mit Hinweis. Ehrlich benannte
+Grenze: Ein einzelnes Wort, das breiter ist als der Rahmen, wird **nicht**
+getrennt — es bleibt eine Zeile unter dem Tintenboden und zieht (als
+breiteste Zeile) den ganzen Block mit hinunter. **Nicht zu verwechseln mit
+der Unantastbaren Lineatur** des Übungsblatts: Dort ist ein Umbruch
+verworfen, weil die Vorschrift exakt zwischen ihre Linien gehört; die
+Federprobe schreibt auf eine freie Fläche ohne vorgedruckte Zeilen.
+`app/src/lib/lineWrap.ts` `planLines` → `components/WrittenWord`.
 
 **Übungsblatt** *(`/schreiben/uebungsblatt`)* — das erzeugte PDF mit der
 Lineatur der gewählten Ausgangsschrift, wahlweise mit Schräglinien,
