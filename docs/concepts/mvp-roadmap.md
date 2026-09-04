@@ -612,7 +612,8 @@ nicht entschieden. Ganze Wörter sind seit dem Wort-Quiz drin
 Regel-Erklärung bei Fehlern seit 2026-08-29: `sections/quiz/lesefallen.ts`
 zeigt unter dem Urteil, was die gezeigte Form vom geratenen Buchstaben
 trennt — meist ein Merkmal, bei ſ/f zwei (die Schleife des f gegen die
-Spitze des ſ, dazu der Querstrich; u-Bogen, e ≈ n, ſ/s-Positionsregel,
+Spitze des ſ, dazu der Querstrich; u-Bogen, e ≈ n, g/p an der
+Unterlänge, ſ/s-Positionsregel,
 ß = ſʒ, Umlautzeichen, die Versalien-Cluster aus
 [`orthographie-regeln.md`](../schriftkunde/orthographie-regeln.md) §3) —
 nur dokumentierte Merkmale, für andere Paare keine Erklärung statt einer

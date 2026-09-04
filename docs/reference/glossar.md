@@ -68,7 +68,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kurzglossar §5
-- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
+- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
@@ -120,10 +120,27 @@ dahinter (Autor, 2026-08-30). Im Repo: `core/lesarten` (Schlüssel
 `lesart_key` = jeder Buchstabe durch seine Verwechsler-Klasse ersetzt,
 `rank_readings`), Tabelle `lesart_forms`, `GET /lesarten?text=`.
 
+**Lesart-Schlüsselversion** *(key version)* — die Versionsnummer der
+Verwechsler-Tabelle, mit der die Wörter in `lesart_forms` einsortiert
+wurden. Ein Wort ist nur unter dem Schlüssel auffindbar, unter dem es
+gespeichert wurde: Kommt ein Paar hinzu (zuletzt `g`/`p`, 2026-09-04),
+liegen alle davon betroffenen Wörter der lebenden Generation im falschen
+Eimer, bis das Wörterbuch neu geladen ist. Die Version erzwingt genau
+das — sie geht in den Inhalts-Hash des Builds ein, den der Server gegen
+den lebenden vergleicht, also ist derselbe Wortbestand unter geänderter
+Tabelle ein *neuer* Build und wird nicht mehr als „schon live" (409)
+abgewiesen. *Technisch:* `core/lesarten::LESART_KEY_VERSION` mit
+`key_signature()` (Version + Tabelle, geht in den sha256 von
+`tools.lesarten.sync`) und `key_marker()` (steht im Quell-Label des
+Builds; die API vergleicht ihn mit dem eigenen und meldet eine ältere
+Generation als `stale` in `GET /lesarten/dictionary`). → Lesefalle §1 ·
+orthographie-regeln.md §3
+
 **Lesefalle** — ein Buchstabenpaar, das sich in der deutschen
 Schreibschrift so ähnelt, dass Leseanfänger es regelmäßig vertauschen,
 und das ein benennbares Merkmal trennt — meist ein einziges: n und u
-nur der u-Bogen, e und n die Enge der Züge, i und j die Unterlänge; bei
+nur der u-Bogen, e und n die Enge der Züge, i und j die Unterlänge,
+g und p die geschlossene Schleife gegen den geraden Abstrich; bei
 ſ und f sind es zwei: oben die Schleife des f gegen die Spitze des ſ,
 dann der Querstrich, den nur das f hat;
 dazu die Positionsregel des runden s (Silben-/Wortende) und die

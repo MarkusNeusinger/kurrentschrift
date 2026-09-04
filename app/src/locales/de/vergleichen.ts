@@ -34,7 +34,7 @@ export const vergleichen = {
   // Real words only (owner decision 2026-08-30): the API answers with the
   // dictionary words that differ from the guess by look-alike letters alone.
   lesartenHeading: 'Wörter, die genauso aussehen könnten',
-  lesartenIntro: 'Echte Wörter, die sich von deiner Lesart nur in Verwechslern unterscheiden — n und u, e und n, f und ſ, die Umlautzeichen. Welches passt zu deinem Original? Ein Klick macht es zur neuen Lesart.',
+  lesartenIntro: 'Echte Wörter, die sich von deiner Lesart nur in Verwechslern unterscheiden — n und u, e und n, f und ſ, g und p, die Umlautzeichen. Welches passt zu deinem Original? Ein Klick macht es zur neuen Lesart.',
   // Caption under a reading card (interpolates the swapped letters).
   swapNote: '{{to}} statt {{from}}',
   takeOver: 'als Lesart übernehmen',
@@ -112,6 +112,16 @@ export const vergleichen = {
         { key: 'n', label: 'n' },
       ],
       desc: 'Das m hat drei Züge, das n zwei — in flüchtiger Schrift hilft nur Zählen.',
+    },
+    {
+      // The pair the look-alike table above gained on 2026-09-04; the sentence
+      // is the owner-approved wording, the same two facts the quiz shows.
+      term: 'g und p',
+      specimens: [
+        { key: 'g', label: 'g' },
+        { key: 'p', label: 'p' },
+      ],
+      desc: 'Das g schließt unten eine runde Schleife, das p geht mit geradem Abstrich unter die Zeile und trägt seinen Bogen rechts oben.',
     },
   ],
 

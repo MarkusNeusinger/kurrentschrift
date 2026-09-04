@@ -12,7 +12,9 @@ igerman98 dictionary ∪ the quiz bank by `tools.lesarten.sync`, see
 data/corpora/igerman98/SOURCE.md); this module is the pure half both sides
 share — the same `lesart_key` buckets the words at load time and finds the
 bucket at query time, so a word can only ever be found by the key it was
-stored under.
+stored under. That is why the fold carries a version (`LESART_KEY_VERSION`):
+changing the look-alike table re-buckets the whole vocabulary, so the stored
+generation has to be reloaded before the new pair can be found.
 
 The look-alike table is the Python twin of `app/src/lib/lesarten.ts`
 (LOOKALIKES); tests/test_lesarten_core.py pins the two together.
@@ -27,7 +29,7 @@ from typing import Iterable
 
 # Typed letter → the letters it can be read as. Lowercase pairs from the
 # reading-trap catalogue (n/u, e/n, n/m, m/w, v/w, i/j, i/e, t/l, f/h, f/t,
-# ſ/f as s ↔ f), umlaut ↔ base letter, the capital confusion clusters
+# g/p, ſ/f as s ↔ f), umlaut ↔ base letter, the capital confusion clusters
 # (L/K/R, N/M, B/V). Symmetric by construction (pinned by the tests).
 LOOKALIKES: dict[str, tuple[str, ...]] = {
     "n": ("u", "e", "m"),
@@ -43,6 +45,8 @@ LOOKALIKES: dict[str, tuple[str, ...]] = {
     "f": ("s", "h", "t"),
     "h": ("f",),
     "s": ("f",),
+    "g": ("p",),
+    "p": ("g",),
     "a": ("ä",),
     "ä": ("a",),
     "o": ("ö",),
@@ -56,6 +60,15 @@ LOOKALIKES: dict[str, tuple[str, ...]] = {
     "B": ("V",),
     "V": ("B",),
 }
+
+# The fold's version. A word is only ever findable under the key it was stored
+# with, so a changed table silently strands every word it re-buckets: after the
+# g/p pair was added (v2, 2026-09-04) the stored p rows of a v1 generation sat
+# in the g-less bucket the read no longer asks for. Bump it whenever LOOKALIKES
+# changes — `key_signature` carries the bump into the build's content hash, and
+# `key_marker` into its source label, so the vocabulary must be reloaded and a
+# generation still bucketed by the old fold is visible in `GET /lesarten`.
+LESART_KEY_VERSION = 2
 
 # The longest reading the API answers for — the page caps its field there too.
 MAX_TEXT_LEN = 32
@@ -116,6 +129,23 @@ def lesart_key(text: str) -> str:
     share a key iff they have the same length and every position holds
     letters that can be read as one another (or the same letter)."""
     return "".join(_REP.get(ch, ch) for ch in text)
+
+
+def key_marker(version: int = LESART_KEY_VERSION) -> str:
+    """The token `tools.lesarten.sync` stamps into a build's source label. The
+    API compares it against the running code, so `GET /lesarten/dictionary`
+    says whether the live vocabulary was bucketed by today's fold."""
+    return f"lesart-key/v{version}"
+
+
+def key_signature() -> str:
+    """Everything `lesart_key` folds together, as one line: the version and the
+    table behind it. The loader mixes this into the content hash of a build, so
+    the same word list under a changed fold is a DIFFERENT build — the server
+    cannot refuse it as already live, and a forgotten version bump changes the
+    hash all the same."""
+    table = ";".join(f"{a}>{''.join(sorted(tos))}" for a, tos in sorted(LOOKALIKES.items()))
+    return f"{key_marker()} {table}"
 
 
 def swap_cost(a: str, b: str) -> int | None:

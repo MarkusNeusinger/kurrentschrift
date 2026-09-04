@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import pytest
 
-from core.lesarten import WORD_MAX
+from core.lesarten import WORD_MAX, key_marker
 from tools.lesarten import sync
 
 
@@ -36,6 +36,27 @@ def test_build_drops_overlong_words_and_reports_them(monkeypatch, capsys) -> Non
     # different build from one that would have carried it.
     monkeypatch.setattr(sync, "load_forms", lambda: {"Muhme", "lesen"})
     assert sync.build()[1] == digest
+
+
+def test_build_hash_follows_the_fold_as_well_as_the_words(monkeypatch) -> None:
+    """A changed look-alike table re-buckets the vocabulary, so the same word
+    list has to arrive as a NEW build: the server refuses a hash that is
+    already live, and the words the new pair moved would stay unfindable in
+    the stored generation."""
+    monkeypatch.setattr(sync, "load_forms", lambda: {"Muhme", "lesen"})
+    monkeypatch.setattr(sync, "bank_words", lambda: set())
+    words, digest = sync.build()
+
+    monkeypatch.setattr(sync, "key_signature", lambda: "lesart-key/v99 a>b")
+    changed_words, changed_digest = sync.build()
+
+    assert changed_words == words  # not a single word moved …
+    assert changed_digest != digest  # … and it is a different build all the same
+
+
+def test_source_label_names_the_fold_it_was_bucketed_with() -> None:
+    """The API reads the marker back off the live build to flag a stale one."""
+    assert key_marker() in sync.SOURCE_LABEL
 
 
 @pytest.mark.parametrize("words", [[], ["kurz"]])

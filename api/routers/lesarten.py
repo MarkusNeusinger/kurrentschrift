@@ -10,6 +10,11 @@ generation, post the words in batches — the server computes each bucket key
 with the same function the read uses — then commit, which switches the live
 generation in one step and drops the old one. An abandoned load is dropped
 by DELETE or by the next `begin`.
+
+A build's source label names the look-alike fold it was bucketed with
+(`core.lesarten.key_marker`), and its content hash covers that fold, so a
+changed table can neither be refused as already live nor stay live unnoticed:
+the `dictionary` block reports such a generation as `stale`.
 """
 
 from __future__ import annotations
@@ -31,7 +36,7 @@ from api.schemas import (
     LesartSwapOut,
 )
 from core.database import LesartDictionary, LesartRepository
-from core.lesarten import DEFAULT_LIMIT, MAX_TEXT_LEN, WORD_MAX, lesart_key, rank_readings
+from core.lesarten import DEFAULT_LIMIT, MAX_TEXT_LEN, WORD_MAX, key_marker, lesart_key, rank_readings
 
 
 router = APIRouter(prefix="/lesarten", tags=["lesarten"])
@@ -52,7 +57,15 @@ async def _require_open(repo: LesartRepository, gen: int) -> None:
 def _dictionary_out(meta: LesartDictionary | None) -> LesartDictionaryOut | None:
     if meta is None:
         return None
-    return LesartDictionaryOut(source=meta.source, forms=meta.forms, sha256=meta.sha256, updated_at=meta.updated_at)
+    # The loader stamps the fold it bucketed with into the source label; a build
+    # carrying an older one answers from buckets this code no longer computes.
+    return LesartDictionaryOut(
+        source=meta.source,
+        forms=meta.forms,
+        sha256=meta.sha256,
+        stale=key_marker() not in meta.source,
+        updated_at=meta.updated_at,
+    )
 
 
 @router.get("", response_model=LesartenOut, response_model_by_alias=True)

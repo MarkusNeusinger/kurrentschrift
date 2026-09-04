@@ -3,7 +3,7 @@ the public read that answers a bucket of real words, never the list."""
 
 from __future__ import annotations
 
-from core.lesarten import WORD_MAX
+from core.lesarten import WORD_MAX, key_marker
 from tests.api_harness import Harness
 
 
@@ -61,6 +61,24 @@ async def test_same_build_is_refused_and_a_new_build_replaces_the_old(api: Harne
     assert res.json()["readings"] == []  # the old generation is gone
     meta = await api.client.request("GET", "/lesarten/dictionary")
     assert meta.json()["forms"] == 1 and meta.json()["source"] == "second build"
+
+
+async def test_a_build_from_an_older_fold_reports_itself_stale(api: Harness):
+    """The words of a generation are only findable under the keys they were
+    stored with, so after the look-alike table changes the live build has to be
+    reloaded. The read says whether that has happened: the loader stamps the
+    fold into the source label, and the API compares it with its own."""
+    await _load(api)  # „test build" — no marker, so an older fold by definition
+    stale = await api.client.request("GET", "/lesarten/dictionary")
+    assert stale.json()["stale"] is True
+
+    current = {"source": f"reloaded ({key_marker()})", "sha256": "e" * 64}
+    await _load(api, build=current)
+    fresh = await api.client.request("GET", "/lesarten/dictionary")
+    assert fresh.json()["stale"] is False
+    # The flag rides along on the public read too, where the page gets it.
+    read = await api.client.request("GET", "/lesarten", params={"text": "Muhme"})
+    assert read.json()["dictionary"]["stale"] is False
 
 
 async def test_load_is_admin_gated_and_validates(api: Harness):

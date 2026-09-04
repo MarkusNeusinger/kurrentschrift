@@ -1,6 +1,6 @@
 # Orthographie-Regeln (Kurrent, ca. 1850–1941)
 
-> **Status (2026-08-03): statisch.** Quellenbelegter Regel-Katalog, im Code
+> **Status (2026-09-04): statisch.** Quellenbelegter Regel-Katalog, im Code
 > erst teilweise implementiert: §1.1 (Lang-ſ/Rund-s nach Position) und §2
 > (Ligatur-Satz) sind in `core/shaping.py` umgesetzt; §1.2 bislang NUR über
 > den manuellen Fuge-Marker `|` als Zwischenlösung, §1.3 und §4 gar nicht —
@@ -8,7 +8,10 @@
 > 2026-08-29 speist §1.1 zusammen mit §3 den Lesefallen-Katalog des
 > Lese-Quiz (`app/src/sections/quiz/lesefallen.ts`): nach einem Fehlgriff
 > nennt das Quiz das Merkmal, das die gezeigte Form vom geratenen
-> Buchstaben trennt — nur für Paare mit dokumentiertem Merkmal.
+> Buchstaben trennt — nur für Paare mit dokumentiertem Merkmal. Dieselben
+> Paare bilden die Verwechsler-Klassen der Lesart-Suche (`core/lesarten`);
+> ein neues Paar hier heißt darum: Klasse dort, Schlüsselversion hoch,
+> Wörterbuch neu laden (zuletzt `g`/`p`, 2026-09-04).
 > §7 ist überholt: `templates.position` wurde mit dem Positions-Rückbau R2
 > entfernt (Migration `0017`, PR #214); die Wort-Position ist heute
 > Render-Kontext in `core/shaping.py`, keine gespeicherte Form.
@@ -112,6 +115,10 @@ Verwechslungspaare in flüchtiger Schrift:
 - `n` / `u` — bei zügiger Schrift formgleich; nur Kontext entscheidet.
 - `D` / `u` — der kleine Bogen über `D` und der spitze Fuß bei `u`
   liefern manchmal die einzigen Unterscheidungsmerkmale.
+- `g` / `p` — beide reichen unter die Zeile; die Unterlänge trennt sie:
+  Das `g` schließt unten eine runde Schleife, das `p` geht mit geradem
+  Abstrich unter die Zeile und trägt seinen Bogen rechts oben
+  (Autor-Entscheid 2026-09-04).
 - `B` / `V` — beide mit ähnlicher Schleifen-Topologie.
 - `L`, `K`, `R` sowie `N`, `M` — als Verwechslungs-Cluster bekannt.
 
