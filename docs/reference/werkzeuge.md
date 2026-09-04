@@ -745,8 +745,9 @@ denen es stammt.
   jeder in `CLAUDE.md` benannte Lesepfad bleiben unter ihrem Budget — die
   Liste wird **aus `CLAUDE.md` gelesen**, nicht dort abgeschrieben, also
   hebt ein neuer Listenpunkt die gemessene Summe; (2) ein `lebend`-Doc über
-  10 000 Token trägt einen Stand-Block (mindestens 12 Zeilen), dessen Datum
-  höchstens 30 Tage alt ist; (3) die Karte in
+  10 000 Token trägt einen Stand-Block von 12 bis 40 Zeilen, dessen Datum
+  höchstens 30 Tage alt ist — die Obergrenze zählt so viel wie die untere, ein
+  Block über 40 Zeilen ist eine zweite Kopie des Docs; (3) die Karte in
   [`../index.md`](../index.md) trägt genau eine Zeile je `.md`-Datei unter
   `docs/`; (4) jeder relative Markdown-Link und jeder `#`-Anker im Repo
   löst auf. Zählt **ohne Tokenizer**: ein eigener, deterministischer Proxy

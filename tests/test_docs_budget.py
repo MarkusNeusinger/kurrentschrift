@@ -133,6 +133,14 @@ def test_a_fresh_stand_block_passes(repo: Path) -> None:
     assert db.check_stand_blocks(repo, today=dt.date(2026, 9, 4)) == []
 
 
+def test_a_stand_block_that_grew_into_an_essay_fails(repo: Path) -> None:
+    # The cap is the point of the exercise: a block read INSTEAD of the file
+    # stops helping the moment it becomes a second copy of it.
+    (repo / "docs" / "reference" / "gross.md").write_text(_big(stand_lines=60), encoding="utf-8")
+    problems = db.check_stand_blocks(repo, today=dt.date(2026, 9, 4))
+    assert any("over the 40-line cap" in p for p in problems)
+
+
 def test_only_lebend_docs_owe_a_fresh_date(repo: Path) -> None:
     # A `bindend` decision is as true as the day it was written; demanding a
     # monthly date bump on it would train everyone to bump dates without reading.

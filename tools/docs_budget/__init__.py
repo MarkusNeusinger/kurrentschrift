@@ -179,6 +179,10 @@ BUDGETS: dict[str, int] = {
 
 STAND_BLOCK_MIN_TOKENS = 10_000
 STAND_BLOCK_MIN_LINES = 12
+# The upper bound matters as much as the lower one: a Stand block is read
+# INSTEAD of the file, so one that grows into an essay is a second copy of the
+# doc — the thing this whole package removed.
+STAND_BLOCK_MAX_LINES = 40
 STAND_BLOCK_MAX_AGE_DAYS = 30
 
 # Only `lebend` docs owe a fresh date: they are the ones claiming to describe
@@ -327,6 +331,12 @@ def check_stand_blocks(root: Path = REPO_ROOT, today: dt.date | None = None) -> 
             problems.append(
                 f"{rel}: {len(block)} status lines — a `{FRESH_STATUS}` doc this large owes a Stand block "
                 f"of at least {STAND_BLOCK_MIN_LINES} (what holds · what is open · where the detail lives)"
+            )
+        elif len(block) > STAND_BLOCK_MAX_LINES:
+            problems.append(
+                f"{rel}: {len(block)} status lines, over the {STAND_BLOCK_MAX_LINES}-line cap — a Stand block "
+                "is read instead of the file, so past that length it becomes a second copy of it. Move the "
+                "detail into a section and leave the anchor"
             )
         age = (today - dt.date.fromisoformat(match.group("date"))).days
         if age > STAND_BLOCK_MAX_AGE_DAYS:
