@@ -20,3 +20,15 @@
   is enough for markup facts — but the bug above only exists across a click and
   the refetch that click triggers, so no markup assertion could have caught it,
   and both cases in the new file fail against the unfixed component.
+
+### Changed
+
+- **`engines.node` says `>=22.22.2`, the floor the install actually applies.**
+  `.npmrc` has `engine-strict=true`, so the manifest's range is enforced at
+  install time — and jsdom wants `^22.22.2`, which made the declared `>=22` a
+  promise the tree could not keep: a Node 22.5 machine passed the manifest and
+  was then refused by the dependency, with the version buried in an
+  `EBADENGINE` line. `>=22` had in fact been understated since Vite 8
+  (`>=22.12.0`); the floor now names what `npm ci` enforces. Nothing moves for
+  the paths that build this app — `.nvmrc`, CI's `node-version: 22` and
+  `node:22-alpine` all resolve to the newest 22.x.
