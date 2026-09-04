@@ -173,8 +173,11 @@ def drawn_join(item: dict) -> list[tuple[float, float]] | None:
     the generator returned it, so a sensor reading the generator's own return
     would report that arm as moving nothing at all.
 
-    ``None`` when the item carries no usable anchor — counted by the caller,
-    never silently treated as a join of zero length.
+    ``None`` when the item carries no usable anchor or too few samples to hold
+    one — the caller then skips that join rather than measuring a curve whose
+    ends it cannot place. It happens for a real reason and is not rare: a
+    two-point stroke has no room for the dressings, which is why the identity
+    control reaches 185 of the 218 comparable joins and not all of them.
     """
     pts = [(float(x), float(y)) for x, y in item.get("centerline", [])]
     anchor = item.get("exit")
