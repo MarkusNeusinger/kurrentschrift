@@ -1877,8 +1877,10 @@ Medialachsen-Näherung ist der Abstand davon `slack = edt −
 width_map[nächstes]`, negativ in der Tinte, positiv daneben, gemessen
 in x-Höhen. Weil der Ritt das Skelett per Konstruktion fährt, ist
 jeder Absprung von einem benannten Mechanismus gesetzt. Die
-`sep04`-Forensik misst auf dev-19: `bridge_no_rail` kommt in 7 958
-emittierten Punkten **kein einziges Mal** vor, der Schienen-Auslauf
+`sep04`-Forensik misst auf dev-19: **keines** der 3 350
+Karten-Samples hat eine leere Bord-Umgebung (je Sample erhoben,
+unabhängig vom Ursachen-Label — Fenster-Samples werden per
+Konstruktion in den Brücken-Zustand gezwungen), der Schienen-Auslauf
 liegt in 201 Punkten nie daneben, der gewöhnliche Ritt in 2 von
 6 872 — was danebenliegt, ist **Karten-Vorfahrt**, und die
 Ritt-Doppelzone in 49,5 % ihrer Punkte. Zwei Klassen tragen ihn:
@@ -1896,8 +1898,10 @@ NICHT an die Tinte zurückgepinnt — der Folger reicht die komponierte
 Karte wörtlich durch. Messbar daran, dass der Überschuss des Stifts
 über die Karte im Median exakt **+0,0000** ist: der Lotse fügt nichts
 hinzu. Die Klasse trägt die tiefsten (bis 0,269 xh) und längsten
-(Bogen bis 0,84 xh) Absprünge und sitzt zu 9 von 11 an einem
-Skelettknoten vom Grad ≥ 3. **Ihre Ursache liegt in der
+(Bogen bis 0,84 xh) Absprünge, ist aber KEIN Knotenphänomen: nur 5 der
+11 sitzen an einem Skelettknoten vom Grad ≥ 3 (Lokalitäts-Schranke
+0,35 xh), 5 haben gar keinen Knoten so nah — sie ist ein Lauf entlang
+der Zone. **Ihre Ursache liegt in der
 PLATZIERUNG der Komposition, nicht im Folger** — der Lotse macht sie
 nur sichtbar; die Rettungswege stehen darum bei den Platzierungs-Armen
 (§7.9). *Technisch:* `tools/inkpilot/pilot.py`

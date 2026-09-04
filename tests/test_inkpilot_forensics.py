@@ -12,7 +12,16 @@ import pytest
 
 pytest.importorskip("scipy")
 
-from tools.inkpilot.forensics import JumpEvent, blame, ink_slack_field, sample_field
+from tools.inkpilot.forensics import (
+    CAUSE_FORCED,
+    CAUSE_RAIL,
+    JumpEvent,
+    _assemble_traced,
+    blame,
+    ink_slack_field,
+    sample_field,
+)
+from tools.inkpilot.pilot import PilotGraph
 
 
 def bar_skeleton(size: int = 41) -> np.ndarray:
@@ -57,6 +66,37 @@ def test_sample_field_reads_points_and_penalises_leaving_the_crop() -> None:
     # A point well off the crop is scored as off the ink, not clamped to it.
     far = sample_field(field, np.asarray([[20.0, -30.0]]))[0]
     assert far > outside
+
+
+def test_rail_availability_survives_a_forced_window_label() -> None:
+    """The reason `no_rail` is a flag and not a cause.
+
+    A forced-window sample is pushed into the bridge state by construction and
+    always carries the `forced_window` cause. Its rail availability therefore
+    has to be recorded separately, or a sample the map placed over blank paper
+    inside a window would be invisible to the count.
+    """
+    pg = PilotGraph(bar_skeleton())
+    samples = np.asarray([[20.0, 20.0], [20.0, 5.0]])  # on the bar, then far off it
+    seq = [None, None]  # forced windows ride the map: both are bridge states
+    causes, pinned = [CAUSE_FORCED, CAUSE_FORCED], np.zeros(2, dtype=bool)
+    no_rail_in = np.asarray([False, True])
+
+    _, out_causes, _, out_no_rail = _assemble_traced(pg, samples, seq, None, causes, pinned, no_rail_in)
+
+    assert out_causes == [CAUSE_FORCED, CAUSE_FORCED]  # the cause still names the mechanism
+    assert out_no_rail == [False, True]  # and the empty boarding neighbourhood survives it
+
+
+def test_ride_points_are_never_flagged_as_railless() -> None:
+    pg = PilotGraph(bar_skeleton())
+    loc = pg.locs[0]
+    samples = np.asarray([[20.0, 20.0], [21.0, 20.0]])
+    _, out_causes, _, out_no_rail = _assemble_traced(
+        pg, samples, [loc, loc], None, [CAUSE_RAIL, CAUSE_RAIL], np.zeros(2, dtype=bool), np.ones(2, dtype=bool)
+    )
+    assert set(out_causes) == {CAUSE_RAIL}
+    assert not any(out_no_rail)  # a point ON a rail cannot lack one
 
 
 def _event(**kw) -> JumpEvent:

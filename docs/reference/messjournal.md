@@ -7465,11 +7465,20 @@ mit der v0.19-Re-Denominierung), `OPENBLAS_NUM_THREADS=1
 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1`. Artefakte: `runs/`, Ereignis-CSV
 und ein Bild je Absprung.
 
-**Der erste Befund ist eine Null.** Über alle 19 Wörter emittiert der
-Lotse 7 958 Punkte; **`bridge_no_rail` kommt kein einziges Mal vor.**
-Die Karte hat also überall eine Schiene in Bord-Reichweite — der
-Folger wird nie über blankes Papier geführt. Das ist keine Statistik,
-sondern eine gemessene Null.
+**Der erste Befund ist eine Null.** Über alle 19 Wörter hat **kein
+einziges** der 3 350 Karten-Samples eine leere Bord-Umgebung: für
+jedes liegt eine Schiene innerhalb von `BOARD_RADIUS_UNITS`. Die Karte
+führt den Folger also nie über blankes Papier. Das ist keine
+Statistik, sondern eine gemessene Null.
+
+Wichtig für die Beweiskraft: die Schienen-Verfügbarkeit wird je Sample
+**unabhängig vom Ursachen-Label** erhoben und ist im Sensor ein
+eigenes Merkmal, kein Ursachen-Wert. Ein Fenster-Sample wird per
+Konstruktion in den Brücken-Zustand gezwungen und trägt deshalb IMMER
+das Label `forced_window`; hätte man „keine Schiene" nur am Label
+abgelesen, wären die Fenster nie geprüft worden und die Null hätte nur
+für die ungezwungenen Brücken gegolten (Copilot-Befund auf PR #528,
+vor der Zahl repariert).
 
 **Der zweite Befund ist eine Quote.** Was ein Mechanismus am Weg
 AUSMACHT und was er ANRICHTET, sind zwei sehr verschiedene Zahlen:
@@ -7524,8 +7533,15 @@ die Karte ist im Median exakt **+0,0000** — der Folger fügt nichts
 hinzu, er ist ein treuer Bote. In allen 11 Fällen lag die Karte schon
 draußen. Diese Klasse trägt die tiefsten und längsten Absprünge der
 Runde (bis **0,269 xh** bei `muß-2`, Bogen bis 0,84 xh bei
-`Galoppieren`) und 9 von 11 sitzen an einem Skelettknoten vom Grad
-≥ 3. Sie ist per Konstruktion ungepinnt: `MAP_RUN_PIN_KNOTS` steht
+`Galoppieren`). Ein Knotenphänomen ist sie NICHT: nur 5 der 11 sitzen
+wirklich an einem Skelettknoten vom Grad ≥ 3 (gemessen mit der
+Lokalitäts-Schranke 0,35 xh), bei 5 weiteren liegt überhaupt kein
+Knoten so nah — passend zur Bogenlänge, sie ist ein LAUF entlang der
+Zone. (Eine frühere Fassung dieses Abschnitts las „9 von 11": die
+Knoten-Suche reichte damals über eine volle x-Höhe, sodass ein
+Ereignis auf gewöhnlicher Kante den Grad einer Verzweigung erbte, die
+es nie berührt hat — Copilot-Befund auf PR #528, korrigiert samt
+Sensor.) Sie ist per Konstruktion ungepinnt: `MAP_RUN_PIN_KNOTS` steht
 seit v0.16 auf `"bridges"`, Zonen-Ritte werden also nicht an die Tinte
 zurückgeholt (nur 4 von 12 Zonen-Ereignissen tragen überhaupt ein
 Pin-Flag, und die aus dem Brücken-Anteil). **Die Ursache dieser Klasse

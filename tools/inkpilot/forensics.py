@@ -29,11 +29,11 @@ Three pieces:
 The cause vocabulary is the follower's own, one label per mechanism that can
 put a point somewhere other than a rail:
 
-* `bridge_no_rail` — the Viterbi's BRIDGE state where the map has NO rail
-  within `BOARD_RADIUS_UNITS`. The pilot did not choose to leave the ink;
-  the map led it over blank paper. This is a composition placement finding,
-  not a follower finding.
-* `bridge_priced_out` — the BRIDGE state WITH rails in reach: the ride was
+* `bridge_no_rail` — an UNFORCED bridge where the map has no rail within
+  `BOARD_RADIUS_UNITS`. The pilot did not choose to leave the ink; the map
+  led it over blank paper. A composition placement finding, not a follower
+  finding.
+* `bridge_priced_out` — an unforced bridge WITH rails in reach: the ride was
   dearer than the bridge's per-sample price, or `MAX_RIDE_UNITS` cut the
   walk. This one is the follower's economy.
 * `forced_window` — v0.8/v0.9 map right-of-way in a pinned crossing window.
@@ -41,9 +41,16 @@ put a point somewhere other than a rail:
 * `tail_runout` — v0.16 rail continuation past the map's end.
 * `rail` — an ordinary ride point, on the skeleton by construction.
 
-Two mechanisms MOVE points rather than emitting them, so they are recorded as
-modifiers next to the cause: `pin` (v0.9/v0.11 window and knot pinning) and
-`untwist` (v0.13 pairwise mirroring).
+Three flags MODIFY a point rather than emitting it, so they are recorded
+beside the cause: `pin` (v0.9/v0.11 window and knot pinning), `untwist`
+(v0.13 pairwise mirroring) and `no_rail`.
+
+`no_rail` is deliberately NOT a cause. A forced-window sample is pushed into
+the bridge state by construction and therefore always carries the
+`forced_window` label, so reading rail availability off the cause would only
+ever inspect the UNFORCED bridges — it could never support a statement about
+the map as a whole. Availability is measured per sample regardless of what
+emitted it, and `detail["no_rail_samples"]` counts it over every sample.
 
 Measurement layer only: reads the frozen fixtures, writes CSV and PNG. No DB,
 no `core/` write, no candidate.
@@ -91,6 +98,11 @@ CAUSE_RAIL = "rail"
 
 MAP_CAUSES = (CAUSE_FORCED, CAUSE_ZONE, CAUSE_NO_RAIL, CAUSE_PRICED)
 
+# How close a skeleton node must be before an event counts as sitting AT it.
+# The route's own zone margin is the natural scale — anything wider and a
+# plain-edge event inherits the degree of a junction it never reached.
+NODE_LOCAL_UNITS = RIDE_DOUBLE_ZONE_MARGIN_UNITS
+
 
 @dataclass
 class JumpEvent:
@@ -111,7 +123,13 @@ class JumpEvent:
     entry_dir_deg: float = 0.0  # heading before the run
     exit_dir_deg: float = 0.0  # heading after it
     turn_deg: float = 0.0  # the direction change across the run
-    near_degree: int = 0  # skeleton node degree at the deepest point
+    # Skeleton-node degree at the deepest point — but ONLY when a node is
+    # actually within `NODE_LOCAL_UNITS`, because graph nodes are endpoints and
+    # junctions alone: without the locality test an event on an ordinary edge
+    # would inherit the degree of a branch it never touched. 0 means "no node
+    # that close", and `near_node_xh` always says how far the nearest one is.
+    near_degree: int = 0
+    near_node_xh: float = 0.0
     local_halfwidth_xh: float = 0.0  # ink half width where it left
     map_selfcross_xh: float = 0.0  # distance to the nearest map self-crossing
     # The composed MAP's own slack at the same place. It splits the blame:
@@ -157,29 +175,33 @@ def _assemble_traced(
     map_mask: np.ndarray | None,
     sample_cause: list[str],
     sample_pinned: np.ndarray,
-) -> tuple[np.ndarray, list[str], list[bool]]:
-    """`pilot._assemble_ride` with a cause and a pin flag per emitted point."""
+    sample_no_rail: np.ndarray,
+) -> tuple[np.ndarray, list[str], list[bool], list[bool]]:
+    """`pilot._assemble_ride` with cause, pin flag and rail availability per point."""
     out: list[np.ndarray] = []
     causes: list[str] = []
     pinned: list[bool] = []
+    no_rail: list[bool] = []
     prev = None
     for k, (s, loc) in enumerate(zip(samples, seq, strict=True)):
         if loc is None or (map_mask is not None and map_mask[k]):
             out.append(s)
             causes.append(sample_cause[k])
             pinned.append(bool(sample_pinned[k]))
+            no_rail.append(bool(sample_no_rail[k]))
             prev = None
             continue
         chain = [pg.px_of(loc)] if prev is None else list(pg.ride(prev, loc)[1:])
         out.extend(chain)
         causes.extend([CAUSE_RAIL] * len(chain))
         pinned.extend([False] * len(chain))
+        no_rail.extend([False] * len(chain))  # a ride point sits ON a rail
         prev = loc
     pts = np.asarray(out, dtype=float).reshape(-1, 2)
     keep = np.ones(len(pts), dtype=bool)
     keep[1:] = np.hypot(*np.diff(pts, axis=0).T) > 1e-9
     kept = np.flatnonzero(keep)
-    return pts[keep], [causes[i] for i in kept], [pinned[i] for i in kept]
+    return (pts[keep], [causes[i] for i in kept], [pinned[i] for i in kept], [no_rail[i] for i in kept])
 
 
 def traced_pilot_word(case: WordCase) -> tuple[list[np.ndarray], list[list[str]], list[list[set]], dict]:
@@ -250,37 +272,54 @@ def traced_pilot_word(case: WordCase) -> tuple[list[np.ndarray], list[list[str]]
             assignments.append((pilot._pin_map_runs(pg, samples, seq, run_mask, knot_rows[si]), seq))
             pin_flags.append(np.asarray(run_mask, dtype=bool))
 
+    no_rail_total = 0
     strokes: list[np.ndarray] = []
     causes: list[list[str]] = []
     mods: list[list[set]] = []
     for si, ((samples, seq), (raw_samples, _, forced_mask)) in enumerate(zip(assignments, raw, strict=True)):
         fm = np.asarray(forced_mask, dtype=bool)
         zone = masks[si] if masks is not None else np.zeros(len(samples), dtype=bool)
-        # A sample's cause is the mechanism that made it emit the MAP point.
-        # Rails within boarding radius separate the two bridge classes: the
-        # map over blank paper is a composition finding, a bridge next to a
-        # usable rail is the follower's own price.
+        # Rail availability is measured for EVERY sample, independently of
+        # which mechanism ended up emitting it. It has to be: a forced-window
+        # sample is pushed into the bridge state by construction, so reading
+        # "no rail" off the cause label would only ever see the UNFORCED
+        # bridges and could never support a statement about the map as a
+        # whole. `no_rail` is therefore an orthogonal flag, not a cause.
         near = (
             pg.tree.query_ball_point(raw_samples, r=board_radius)
             if pg.tree is not None
             else [[] for _ in range(len(raw_samples))]
         )
+        no_rail = [not near[k] for k in range(len(seq))]
+        no_rail_total += sum(no_rail)
+        # A sample's CAUSE is the mechanism that made it emit the map point.
         sample_cause: list[str] = []
         for k, loc in enumerate(seq):
             if fm[k]:
                 sample_cause.append(CAUSE_FORCED)
             elif loc is None:
-                sample_cause.append(CAUSE_NO_RAIL if not near[k] else CAUSE_PRICED)
+                sample_cause.append(CAUSE_NO_RAIL if no_rail[k] else CAUSE_PRICED)
             elif zone[k]:
                 sample_cause.append(CAUSE_ZONE)
             else:
                 sample_cause.append(CAUSE_RAIL)
-        pts, cs, pinned = _assemble_traced(
-            pg, samples, seq, masks[si] if masks is not None else None, sample_cause, pin_flags[si]
+        pts, cs, pinned, no_rail_pts = _assemble_traced(
+            pg,
+            samples,
+            seq,
+            masks[si] if masks is not None else None,
+            sample_cause,
+            pin_flags[si],
+            np.asarray(no_rail, dtype=bool),
         )
         strokes.append(pts)
         causes.append(cs)
-        mods.append([{"pin"} if p else set() for p in pinned])
+        mods.append(
+            [
+                ({"pin"} if p else set()) | ({"no_rail"} if nr else set())
+                for p, nr in zip(pinned, no_rail_pts, strict=True)
+            ]
+        )
 
     keep = [i for i, s in enumerate(strokes) if len(s) >= 2]
     strokes = [strokes[i] for i in keep]
@@ -319,6 +358,10 @@ def traced_pilot_word(case: WordCase) -> tuple[list[np.ndarray], list[list[str]]
         "registration": result.registration,
         "baseline_row": result.baseline_row,
         "untwisted": untwisted,
+        # Samples with NO rail within the boarding radius, counted over every
+        # sample of the word regardless of which mechanism emitted it.
+        "no_rail_samples": no_rail_total,
+        "samples": int(sum(len(s) for s in samples_per)),
         "map_selfcross": map_self_intersections(samples_per, xh_px),
         "map_samples": samples_per,
     }
@@ -429,7 +472,10 @@ def jump_events(
                     entry_dir_deg=entry,
                     exit_dir_deg=exit_,
                     turn_deg=turn,
-                    near_degree=int(node_deg[near_i]) if len(node_xy) and d_node[near_i] < xh else 0,
+                    near_degree=(
+                        int(node_deg[near_i]) if len(node_xy) and d_node[near_i] <= NODE_LOCAL_UNITS * xh else 0
+                    ),
+                    near_node_xh=float(d_node[near_i]) / xh if len(node_xy) else float("inf"),
                     local_halfwidth_xh=hw,
                     map_selfcross_xh=d_cross,
                     map_slack_xh=float(map_slack[int(np.argmin(np.hypot(*(map_pts - pts[deep]).T)))]),
@@ -455,6 +501,7 @@ CSV_COLUMNS = [
     "exit_dir_deg",
     "turn_deg",
     "near_degree",
+    "near_node_xh",
     "local_halfwidth_xh",
     "map_selfcross_xh",
     "map_slack_xh",
@@ -486,6 +533,7 @@ def write_csv(events: list[JumpEvent], out: Path) -> None:
                     f"{e.exit_dir_deg:.1f}",
                     f"{e.turn_deg:.1f}",
                     e.near_degree,
+                    "" if e.near_node_xh == float("inf") else f"{e.near_node_xh:.3f}",
                     f"{e.local_halfwidth_xh:.4f}",
                     "" if e.map_selfcross_xh == float("inf") else f"{e.map_selfcross_xh:.3f}",
                     f"{e.map_slack_xh:.4f}",
@@ -615,6 +663,8 @@ def main(argv: list[str] | None = None) -> int:
     panel_keys = [k for k in args.panel.split(",") if k]
     panels: dict[str, tuple] = {}
     events: list[JumpEvent] = []
+    no_rail_samples = 0
+    samples_seen = 0
     for case in iter_fixture_word_cases(which=args.which, style=args.style):
         if not case.scorable or case.skel is None or case.id not in wanted:
             continue
@@ -627,6 +677,8 @@ def main(argv: list[str] | None = None) -> int:
         events.extend(found)
         total = sum(len(s) for s in strokes)
         off = sum(e.last - e.first + 1 for e in found)
+        no_rail_samples += int(detail["no_rail_samples"])
+        samples_seen += int(detail["samples"])
         print(f"  {case.id:14} events {len(found):3d}  off-ink points {off:4d}/{total:5d}", flush=True)
         if args.png_dir is not None:
             for e in found:
@@ -648,6 +700,10 @@ def main(argv: list[str] | None = None) -> int:
             plot_panel([panels[k] for k in panel_keys], args.panel_out)
             print(f"wrote {args.panel_out}")
     print(f"\nwrote {args.csv} ({len(events)} events)")
+    print(
+        f"map samples with NO rail in boarding reach: {no_rail_samples}/{samples_seen} "
+        "(every sample, forced windows included)"
+    )
     print(f"{'cause':<16}{'blame':<12}{'n':>4}  {'depth med':>10}{'excess med':>12}")
     grouped: dict[tuple[str, str], list[JumpEvent]] = {}
     for e in events:
