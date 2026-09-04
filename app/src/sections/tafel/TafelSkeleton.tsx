@@ -23,7 +23,6 @@
 
 import { Box, Paper, Skeleton, Stack, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { visuallyHidden } from '@mui/utils';
 
 import { CategoryHeading } from '@/components/CategoryHeading';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
@@ -58,7 +57,7 @@ const PROVENANCE_LINES = [
 
 type PlaceholderProps = {
   styleId: string;
-  /** The first section carries the page's one spoken status and the cold-start line. */
+  /** Only the first section shows the cold-start line — one page, one notice. */
   lead?: boolean;
   waking?: boolean;
 };
@@ -67,19 +66,13 @@ function GrundtafelPlaceholder({ styleId, lead = false, waking = false }: Placeh
   const reduced = usePrefersReducedMotion();
   const animation = reduced ? (false as const) : ('wave' as const);
   const ratio = RESERVED_CHART_RATIO[styleId] ?? '4 / 3';
+  // Visible only; the SPOKEN status lives in TafelView, outside the aria-busy
+  // region — a live region nested in a busy subtree has its updates deferred.
   const notice = lead && waking ? de.common.boot.sourceColdStart : null;
 
   return (
     <Stack component="section" spacing={2} aria-label={styleLabel(styleId)}>
-      <Box sx={{ position: 'relative' }}>
-        {/* One spoken status for the whole page, parked in the first section's
-            heading block: `visuallyHidden` is absolutely positioned, so it takes
-            no room in the Stack that spaces the sections. */}
-        {lead && (
-          <Box component="p" role="status" sx={visuallyHidden}>
-            {notice ?? de.common.boot.loadingTemplate}
-          </Box>
-        )}
+      <Box>
         <CategoryHeading>{styleLabel(styleId)}</CategoryHeading>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
           <Typography variant="body2" sx={{ color: paper.inkSoft }}>
@@ -100,8 +93,10 @@ function GrundtafelPlaceholder({ styleId, lead = false, waking = false }: Placeh
             animation={animation}
             sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', bgcolor: TINT }}
           />
-          {/* The cold-start line lives INSIDE the reserved box, so saying it
-              costs no layout at all. Cloud Run can take ~a minute to wake. */}
+          {/* The cold-start line lives INSIDE the reserved box, so showing it
+              costs no layout at all. Cloud Run can take ~a minute to wake.
+              `aria-hidden`: the same sentence is already spoken by the status
+              region in TafelView, and saying it twice helps nobody. */}
           {notice ? (
             <Box
               sx={{

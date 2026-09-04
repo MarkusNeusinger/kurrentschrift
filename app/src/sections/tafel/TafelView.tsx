@@ -11,6 +11,7 @@
 // useGrundtafeln fetches all chart sources read-only and groups them by style.
 
 import { Box, Button, Chip, Link, Paper, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { visuallyHidden } from '@mui/utils';
 import { useEffect, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
@@ -469,6 +470,16 @@ export function TafelView() {
           <Typography variant="body2" sx={{ color: pdf.state === 'error' ? 'error.main' : paper.inkSoft, maxWidth: '60ch' }}>
             {pdf.state === 'error' ? de.tafel.pdf.error : de.tafel.pdf.hint}
           </Typography>
+        </Box>
+        {/* The page's one spoken status, OUTSIDE the aria-busy region below:
+            assistive technology defers live-region updates inside a busy
+            subtree, so a status nested in there could stay silent for exactly
+            the wait it exists to narrate. Always mounted and empty once loaded,
+            because a live region announces a CHANGE — text appearing in a region
+            that was already there. `visuallyHidden` is absolutely positioned, so
+            it costs no layout in either state. */}
+        <Box component="p" role="status" sx={visuallyHidden}>
+          {tafeln ? '' : waking ? de.common.boot.sourceColdStart : de.common.boot.loadingTemplate}
         </Box>
         <Stack spacing={{ xs: 5, sm: 7 }} aria-busy={!tafeln}>
           {tafeln ? (
