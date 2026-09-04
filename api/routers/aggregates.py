@@ -351,7 +351,7 @@ async def apply_laufform(
                 )
             )
             continue
-        # Row gate (qualitaetsmetrik.md §14 LF8), last of all: a median that
+        # Row gate (messjournal.md §14 LF8), last of all: a median that
         # carries an anchor spike („Anker im leeren Papier" — the harvest's own
         # detector, here on the ROW) is fit noise the statistics could not
         # outvote — reported with its ratio, never written, no override (more

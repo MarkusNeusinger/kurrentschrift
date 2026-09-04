@@ -1,6 +1,6 @@
 """The §14 register gate: an entry without its index line does not ship.
 
-Why. `docs/reference/qualitaetsmetrik.md` §14 is the campaign journal — 74 dated
+Why. `docs/reference/messjournal.md` §14 is the campaign journal — 81 dated
 sections, ~47 000 words, and the one home of the numbers. Three registers were
 built on top of it so a reader can find the current state without reading all of
 it: the entry table and the headline ledger at the head of §14, and the four
@@ -11,14 +11,25 @@ and one headline pair whose fixture root nobody could name. A duty that only
 exists in prose decays exactly this way, so it gets a gate, in the shape the
 changelog fragments already use (`tools/changelog`).
 
+The journal moved out of `qualitaetsmetrik.md` on 2026-09-04 — same section,
+same headings, same anchors, its own file — so the metric rules can be read
+without the 7 366 lines of journal behind them. The section KEEPS the number
+14: its entries are cited as „§14 «Titel»“ roughly 350 times, so the number is
+a citation key, not a position. Three things follow for this module. The
+journal is read from `JOURNAL`; the headline pair comes from the status
+blockquote of `METRIC`, still the one place the current headlines are stated;
+and an entry may also stand in `ARCHIVE_PAGE`, the second file that takes an
+arm once it is finished — a register row reaches it by naming the file in
+front of the `#` fragment.
+
 Three rules, all read off the committed files:
 
-1. **Every §14 entry has a register row.** One `###` heading under `## 14.` (the
-   two index headings excepted) ⇒ exactly one row in the entry table whose link
-   resolves to that heading's anchor. Rows may not point at headings that do not
-   exist, and no heading may be claimed twice.
+1. **Every §14 entry has a register row.** One `###` heading under `## 14.` or
+   in the archive page (the two index headings excepted) ⇒ exactly one row in
+   the entry table whose link resolves to that heading's anchor. Rows may not
+   point at headings that do not exist, and no heading may be claimed twice.
 2. **Every headline ledger row cites a number the journal already carries**, and
-   the newest row is the pair in the document's status blockquote. The ledger is
+   the newest row is the pair in `METRIC`'s status blockquote. The ledger is
    an index, not a second home for the numbers — a value that appears nowhere
    else in the file is a number invented in a table.
 3. **Every duel-route entry reaches its process page.** A register row on Kette ·
@@ -38,7 +49,13 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-JOURNAL = Path("docs/reference/qualitaetsmetrik.md")
+JOURNAL = Path("docs/reference/messjournal.md")
+# The metric rules, and the one place the current headlines are stated.
+METRIC = Path("docs/reference/qualitaetsmetrik.md")
+# Where an entry goes once its arm is finished. It stays an entry — same
+# heading, same anchor, same register row, only the row's link gains the file
+# name in front of the `#`.
+ARCHIVE_PAGE = Path("docs/reference/messjournal-archiv.md")
 SECTION_HEADING = "## 14. "
 
 # The two headings that ARE the registers; they index the section and are not
@@ -48,14 +65,15 @@ INDEX_HEADINGS = (
     "Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)",
 )
 
-# `###` headings that legitimately sit BEHIND §14 — an allowlist, and empty on
-# purpose: §15 has none today. It is a declaration rather than a shape test
-# because shape cannot decide the question. The file carries 26 dated `###`
-# headings outside §14 already (`Re-Baseline jul05`, `Nachtrag aug26` …), so
-# "has a date tag" would flag a §15 subsection the day someone writes one, while
-# a journal entry that fell out of §14 looks like any other heading. Defaulting
-# to "report it" makes the append-at-the-file-end slip loud and costs a
-# legitimate subheading one reviewed line here.
+# `###` headings of the journal file that are neither a §14 entry nor an
+# archived one — an allowlist, and empty on purpose: there is no such heading
+# today. It is a declaration rather than a shape test because shape cannot
+# decide the question. Before the move, the file carried 26 dated `###` headings
+# outside §14 (`Re-Baseline jul05`, `Nachtrag aug26` …), so "has a date tag"
+# would have flagged a legitimate subsection the day someone wrote one, while a
+# journal entry that fell out of §14 looks like any other heading. Defaulting to
+# "report it" makes the append-at-the-file-end slip loud and costs a legitimate
+# subheading one reviewed line here.
 POST_JOURNAL_SUBHEADINGS: tuple[str, ...] = ()
 
 # Route name in the register ⇒ the process page that owns its ledger.
@@ -76,7 +94,9 @@ ALL_ROUTES = "alle Routen"
 # themselves by writing `okt`/`nov`/`dez` rather than oct/nov/dec; `mär` is
 # accepted beside `mrz` because both spellings are current in German.
 _DATE_TAG = re.compile(r"\b((?:jan|feb|mrz|mär|apr|mai|jun|jul|aug|sep|okt|nov|dez)\d{2})\b")
-_LINK = re.compile(r"\[(?P<text>[^\]]*)\]\(#(?P<anchor>[^)]+)\)")
+# A register row links either into this file (`#anchor`) or into the archive
+# page (`messjournal-archiv.md#anchor`) — the file part is what says which.
+_LINK = re.compile(r"\[(?P<text>[^\]]*)\]\((?P<file>[^)#]*)#(?P<anchor>[^)]+)\)")
 # German decimals as the docs write them: 0,109255 — three digits or more, so a
 # stray "1,5 xh" cannot pass for a headline.
 _LOSS = re.compile(r"\b0,\d{4,}\b")
@@ -138,10 +158,12 @@ def journal_section(text: str) -> tuple[list[str], int]:
     file end is what a round does — and widening the window was the way to
     index them without moving anyone's text. The author decided on 2026-09-03
     that §14 should be closed again, so the sections moved in front of §15 and
-    the window is a section again. A round that appends at the file end now has
-    to place its section — and because a truncating window would simply IGNORE
-    a misplaced entry rather than complain about it, `stray_entries` looks at
-    the tail and `check_register` reports what it finds.
+    the window is a section again. Since the 2026-09-04 move §14 is the only
+    section of its own file, so a round that appends at the file end is placing
+    it correctly and the slip cannot recur — but the window stays a section and
+    `stray_entries` keeps looking at the tail, because the day someone opens a
+    second `## ` section here the old hole would be back, and a truncating
+    window does not reject a misplaced entry, it simply cannot see one.
     """
     lines = text.split("\n")
     start, end = _journal_bounds(lines)
@@ -204,6 +226,28 @@ def entries(text: str) -> list[Entry]:
     return found
 
 
+def archive_entries(text: str) -> list[Entry]:
+    """Every `###` heading of the archive page, with its anchor.
+
+    The archive is a page rather than a trailing section on purpose: §14 is then
+    the only section of the journal, so appending a round at the file end is
+    RIGHT again and the `sep02` misplacement cannot recur. The price is that the
+    register row of an archived entry has to name the file — one word per move.
+    """
+    seen: dict[str, int] = {}
+    found: list[Entry] = []
+    for i, line in enumerate(text.split("\n")):
+        if not line.startswith("#"):
+            continue
+        title = line.lstrip("#").strip()
+        slug = github_slug(title)
+        n = seen.get(slug, 0)
+        seen[slug] = n + 1
+        if line.startswith("### "):
+            found.append(Entry(title=title, anchor=slug if not n else f"{slug}-{n}", line=i + 1))
+    return found
+
+
 def table_after(section: list[str], offset: int, heading: str) -> list[Row]:
     """The first markdown table under `heading`, without its header and separator."""
     try:
@@ -245,7 +289,13 @@ def ledger_rows(text: str) -> list[Row]:
 
 
 def status_headline(text: str) -> tuple[str, str] | None:
-    """The `Wörter x · Paare y` pair from the document's status blockquote."""
+    """The `Wörter x · Paare y` pair from `METRIC`'s status blockquote.
+
+    The headlines stay in the metric document even though the ledger moved with
+    the journal: that blockquote is where `qualitaetsmetrik.md` promises them at
+    exactly ONE place, and splitting the promise would be the defect this gate
+    exists against.
+    """
     head = "\n".join(text.split("\n")[:20])
     match = re.search(r"Wörter\s+(0,\d+)\s*·\s*Paare\s+(0,\d+)", head)
     return (match.group(1), match.group(2)) if match else None
@@ -266,10 +316,14 @@ def ledger_dates(page_text: str) -> set[str]:
 # --- the three rules ---------------------------------------------------------
 
 
-def check_register(text: str) -> list[str]:
+def check_register(text: str, archive_text: str) -> list[str]:
     problems: list[str] = []
-    known = {entry.anchor: entry for entry in entries(text)}
-    claimed: dict[str, int] = {}
+    archive_name = ARCHIVE_PAGE.name
+    # Keyed by (file, anchor) so an archived entry and a journal entry can never
+    # be confused for one another, however similar their titles.
+    known = {("", entry.anchor): entry for entry in entries(text)}
+    known.update({(archive_name, entry.anchor): entry for entry in archive_entries(archive_text)})
+    claimed: dict[tuple[str, str], int] = {}
     for row in register_rows(text):
         if len(row.cells) != 5:
             problems.append(f"{JOURNAL}:{row.line}: register row has {len(row.cells)} columns, expected 5")
@@ -278,31 +332,40 @@ def check_register(text: str) -> list[str]:
         if link is None:
             problems.append(f"{JOURNAL}:{row.line}: register row's Arm cell carries no anchor link: {row.cells[2]}")
             continue
-        anchor = link.group("anchor")
-        if anchor not in known:
-            problems.append(f"{JOURNAL}:{row.line}: register row points at #{anchor}, which is no §14 heading")
-            continue
-        if anchor in claimed:
-            problems.append(f"{JOURNAL}:{row.line}: #{anchor} already has a register row at line {claimed[anchor]}")
-            continue
-        claimed[anchor] = row.line
-    for anchor, entry in known.items():
-        if anchor not in claimed:
+        target = (link.group("file"), link.group("anchor"))
+        if target[0] not in ("", archive_name):
             problems.append(
-                f"{JOURNAL}:{entry.line}: §14 entry '{entry.title}' has no register row — "
-                f"add one to '{INDEX_HEADINGS[0]}' in this PR (link target: #{anchor})"
+                f"{JOURNAL}:{row.line}: register row links into '{target[0]}' — a row reaches this file "
+                f"or '{archive_name}', nothing else"
+            )
+            continue
+        if target not in known:
+            problems.append(
+                f"{JOURNAL}:{row.line}: register row points at {target[0]}#{target[1]}, which is no §14 heading"
+            )
+            continue
+        if target in claimed:
+            problems.append(f"{JOURNAL}:{row.line}: #{target[1]} already has a register row at line {claimed[target]}")
+            continue
+        claimed[target] = row.line
+    for target, entry in known.items():
+        if target not in claimed:
+            page = ARCHIVE_PAGE if target[0] else JOURNAL
+            problems.append(
+                f"{page}:{entry.line}: §14 entry '{entry.title}' has no register row — "
+                f"add one to '{INDEX_HEADINGS[0]}' in this PR (link target: {target[0]}#{target[1]})"
             )
     for stray in stray_entries(text):
         problems.append(
-            f"{JOURNAL}:{stray.line}: '{stray.title}' sits AFTER §14 — a round appends at the end of "
-            "the file, and §14 is a closed section: move it in front of the next `## ` heading and "
-            "give it its register row. If it really belongs to a later section, declare it in "
+            f"{JOURNAL}:{stray.line}: '{stray.title}' sits AFTER §14 — §14 is a closed section and the "
+            f"only one in this file: move it inside, or into '{archive_name}' if its arm is finished, and "
+            "give it its register row. If it is no journal entry at all, declare it in "
             "tools/docs_register POST_JOURNAL_SUBHEADINGS"
         )
     return problems
 
 
-def check_ledger(text: str) -> list[str]:
+def check_ledger(text: str, metric_text: str) -> list[str]:
     problems: list[str] = []
     rows = ledger_rows(text)
     table_lines = {row.line for row in rows}
@@ -325,16 +388,16 @@ def check_ledger(text: str) -> list[str]:
                     f"{JOURNAL}:{row.line}: ledger cites {label} {value.group(0)}, which appears nowhere else in "
                     "the journal — the ledger indexes numbers, it does not mint them"
                 )
-    headline = status_headline(text)
+    headline = status_headline(metric_text)
     if headline is None:
-        problems.append(f"{JOURNAL}: the status blockquote names no 'Wörter … · Paare …' headline")
+        problems.append(f"{METRIC}: the status blockquote names no 'Wörter … · Paare …' headline")
     elif rows and len(rows[-1].cells) == 6:
         newest = (_LOSS.search(rows[-1].cells[3]), _LOSS.search(rows[-1].cells[4]))
         if all(newest) and tuple(m.group(0) for m in newest) != headline:  # type: ignore[union-attr]
             problems.append(
                 f"{JOURNAL}:{rows[-1].line}: the newest ledger row "
-                f"({newest[0].group(0)} / {newest[1].group(0)}) is not the status blockquote's headline "  # type: ignore[union-attr]
-                f"({headline[0]} / {headline[1]}) — a run that moves the headline adds its row"
+                f"({newest[0].group(0)} / {newest[1].group(0)}) is not the headline of {METRIC}'s status "  # type: ignore[union-attr]
+                f"blockquote ({headline[0]} / {headline[1]}) — a run that moves the headline adds its row"
             )
     return problems
 
@@ -361,7 +424,11 @@ def check_verfahren(text: str, *, root: Path = REPO_ROOT) -> list[str]:
 
 def check_all(*, root: Path = REPO_ROOT) -> list[str]:
     text = _read(root, JOURNAL)
-    return check_register(text) + check_ledger(text) + check_verfahren(text, root=root)
+    return (
+        check_register(text, _read(root, ARCHIVE_PAGE))
+        + check_ledger(text, _read(root, METRIC))
+        + check_verfahren(text, root=root)
+    )
 
 
 # --- what a PR added (message only; the rules above are the gate) -------------

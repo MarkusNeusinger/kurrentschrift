@@ -4,7 +4,7 @@ Measurement layer only (docs/reference/werkzeuge.md): reads the per-occurrence
 fits a harvest wrote (`--occ-out laufform_occurrences.json`) plus the chart rows
 of ONE frozen fixture root, and writes the rows the write path WOULD produce if
 the running form were medianed in a smooth basis instead of anchor by anchor
-(`core.aggregate.spline_basis_median`, qualitaetsmetrik.md §14 `sep02`). Output
+(`core.aggregate.spline_basis_median`, messjournal.md §14 `sep02`). Output
 is full fixture rows, so `wordbench.run --laufform`, `wordlab --laufform` and
 `humanbench.wordarm --laufform` take them verbatim.
 

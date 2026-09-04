@@ -15,7 +15,7 @@
 
 Die Tintenfolger-Kampagne ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md))
 lässt mehrere Verfahren gegeneinander antreten; ihre Historie wächst als
-datierte Einträge in [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §14.
+datierte Einträge in [`messjournal.md`](messjournal.md) §14.
 Diese Seiten sind das **Register darüber**: je Verfahren ein Steckbrief
 (was es ist, wo es wohnt, was heute adoptiert ist) plus ein
 **Versions-Ledger** (welcher Arm wann gemessen wurde, mit welchem

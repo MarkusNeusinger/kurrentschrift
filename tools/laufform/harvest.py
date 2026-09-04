@@ -292,7 +292,7 @@ class CaseHarvest:
 
 
 # `anchor_spike_ratio` — the „Anker im leeren Papier" detector — lives in
-# `core/laufform.py` since LF8 (qualitaetsmetrik.md §14 `aug29`) and is imported
+# `core/laufform.py` since LF8 (messjournal.md §14 `aug29`) and is imported
 # above: the same function scores every single fit here (against
 # MAX_ANCHOR_SPIKE_RATIO) and the ROW about to be written at the API's row gate
 # (against LAUFFORM_SPIKE_RATIO_MAX). Its per-stroke design and the measured

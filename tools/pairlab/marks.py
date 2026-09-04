@@ -1,7 +1,7 @@
 """The mark refit: the i-dot and the u-bow put back on their own ink.
 
 Measure A1 of `docs/proposals/tintenfolger.md` §7.3, and nothing else. The
-measured defect (`qualitaetsmetrik.md` §14, the duel campaign): the chain fit
+measured defect (`messjournal.md` §14, the duel campaign): the chain fit
 leaves a word's MARKS — the delayed strokes, i-dot / umlaut / u-bow — a median
 0.129 xh beside the hand's own, and on `muß`/`und`/`unter`/`zwei` no mark of the
 reference matches at all, while the prior-free control (`tools/routeg`, which

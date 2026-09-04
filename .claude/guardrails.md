@@ -195,7 +195,7 @@ offline measurement runs is not a reason to cut a corner.
 
 Author directive, 2026-08-16.
 
-A `qualitaetsmetrik.md` §14 entry that closes as an honest negative ends with
+A `messjournal.md` §14 entry that closes as an honest negative ends with
 the named ways the goal could still be reached: a new mechanism, new evidence,
 a new sensor — each with a fresh pre-registration. Never the same knob re-run
 with softer gates. The standing table in `docs/proposals/tintenfolger.md` §7.9
@@ -247,7 +247,7 @@ be expensive to redo. Prompts to delegated agents state this split explicitly
 
 ## Pin BLAS threads for solver measurement runs
 
-Finding of 2026-08-16, recorded in `docs/reference/qualitaetsmetrik.md` §14
+Finding of 2026-08-16, recorded in `docs/reference/messjournal.md` §14
 under „Wächter als Produktions-Kette".
 
 The chain solve is not bit-reproducible across thread environments, so

@@ -167,7 +167,7 @@ Schlusssatz: „in Tagen statt Monaten geklärt").
 
 Aufwand: ein bis zwei Wochenenden — bewusst klein gehalten. *(Schätzung
 von 2026-05; real trägt der Kern seit Juni 2026 eine monatelange Mess-
-und Optimierungskampagne — Verlauf in `../reference/qualitaetsmetrik.md`
+und Optimierungskampagne — Verlauf in `../reference/messjournal.md`
 §14.)*
 
 ---

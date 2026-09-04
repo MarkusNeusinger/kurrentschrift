@@ -225,7 +225,7 @@ model actually produced; the moment this stage edits a path, the number stops
 being InkSight's.
 
 **Scoring runs come after the pre-registration, not before.** The B1
-infrastructure is measured only once its own `docs/reference/qualitaetsmetrik.md`
+infrastructure is measured only once its own `docs/reference/messjournal.md`
 §14 entry is written (hypothesis, the frozen dev set, the kill criteria) —
 including the honest note that the selection target (ink) and the bench's
 chamfer columns (hand trace) are different targets but correlated ones.
@@ -274,7 +274,7 @@ reached the 1024-token ceiling (max 441, `linken`). Bench results and the
 reading (raw Small-p at 1.5× the chain fit's dtw and 8.6× ahead of the
 prior-free control; crossings cleaner than the chain, retraces lost; the
 `text` prompt WORSE than plain `derender` on this out-of-distribution script)
-live in `docs/reference/qualitaetsmetrik.md` §14 „Route B T0".
+live in `docs/reference/messjournal.md` §14 „Route B T0".
 
 ## Measured on the smoke run (2026-08-14)
 

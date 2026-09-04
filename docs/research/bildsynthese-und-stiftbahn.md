@@ -3,7 +3,7 @@
 > **Status (2026-09-01): Befund-Journal.** Momentaufnahme der Recherche;
 > fortgeschrieben wird sie nicht, abgelöst hat sie die Kampagne in
 > [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) (Zahlen:
-> [`../reference/qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md)
+> [`../reference/messjournal.md`](../reference/messjournal.md)
 > §14). Der §6-Nachtrag
 > ist als Plan konkretisiert und wird gebaut — Referenzsatz, Prüfstand und
 > die zwei Routen stehen in
@@ -394,7 +394,7 @@ Nachtrag oben zum Bau ist als fortschreibbares Proposal konkretisiert:
 [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) trägt
 Prüfstand (`tools/tracebench`), Route A (Verfeinerungsstufe auf dem
 Kettenfit) und Route B (InkSight T0), samt vorregistrierten Kriterien in
-qualitaetsmetrik.md §14. Zwei Annahmen dieses Journals hat die
+messjournal.md §14. Zwei Annahmen dieses Journals hat die
 Challenge-Recherche (2026-08-14, Primärquellen) korrigiert:
 
 1. **Ein Kurrent-Fine-Tuning von InkSight Small-p ist nicht möglich** —

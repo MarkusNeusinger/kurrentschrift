@@ -179,7 +179,7 @@ the composer departs `+11.87°` (|Δ| 13.10) and arrives `−3.26°` (|Δ| 11.18
 over 206 of 214 joins — the number the "Austritts-Kollinearität" class rule
 is meant to move. It moves it: `--exit-trim` takes the departure median to
 `−1.39°` on the `sep01` roots. The arm was still rejected — `dconn` does not
-follow (qualitaetsmetrik.md §14 „Übergänge J4/J4b"), so the switch stays off
+follow (messjournal.md §14 „Übergänge J4/J4b"), so the switch stays off
 by default.
 - `width` — |log| of the total-ink-width ratio: spacing/rhythm errors that
   per-point chamfer barely sees. For PAIRS this component carries a constant

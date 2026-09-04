@@ -512,7 +512,7 @@ class AggregateApplySkip(BaseModel):
     row disagree, so the topology would not carry over) and
     `below_min_occurrences` (fewer occurrences than the median needs to reject
     a bad anchor — see `core.aggregate.LAUFFORM_MIN_OCCURRENCES`) and
-    `anchor_spike` (the row gate, qualitaetsmetrik.md §14 LF8: the median
+    `anchor_spike` (the row gate, messjournal.md §14 LF8: the median
     carries an anchor spike — „Anker im leeren Papier", the harvest's own
     reason code — over `core.laufform.LAUFFORM_SPIKE_RATIO_MAX`) and
     `head_deviation` (the head gate, §14 LF9: the median's first stroke lands

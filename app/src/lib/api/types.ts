@@ -348,7 +348,7 @@ export interface AggregateApplySkip {
   // Filled for `below_min_occurrences`, where the count IS the reason; null for
   // the reasons no number took part in.
   n_instances?: number | null;
-  // Filled for `anchor_spike` (the row gate, qualitaetsmetrik.md §14 LF8): the
+  // Filled for `anchor_spike` (the row gate, messjournal.md §14 LF8): the
   // row's anchor spike ratio („Anker im leeren Papier") and the gate it
   // exceeded.
   spike_ratio?: number | null;

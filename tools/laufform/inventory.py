@@ -1,5 +1,5 @@
 """Inventory of the stored Laufform rows against their chart forms (LF7–LF11) —
-the stock-taking pass (Bestandsaufnahme) of qualitaetsmetrik.md §14.
+the stock-taking pass (Bestandsaufnahme) of messjournal.md §14.
 
 Measurement layer only (docs/reference/werkzeuge.md): reads `templates.json`
 (chart rows) + `templates_laufform.json` (the stored running forms) of ONE
@@ -63,7 +63,7 @@ from core.laufform import (
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_ROOT = REPO_ROOT / "tools" / "wordbench" / "fixtures" / "suetterlin" / "suetterlin-1922"
 
-# The pre-registered sensitivity checks of LF10 (qualitaetsmetrik.md §14
+# The pre-registered sensitivity checks of LF10 (messjournal.md §14
 # `sep01`), each a variant of the gate quantity — reported with its own τ,
 # never a gate: (a) median · (b) maximum · (c) one direction only · (d) the
 # index-wise correspondence distance · (e) any stroke · (f) anchor polyline.

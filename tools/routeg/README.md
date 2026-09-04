@@ -227,7 +227,7 @@ entry).
 ## Measured on the dev split (2026-08-14)
 
 Ten words, `--split dev`, `--resample-step 0.02`, against the author's hand
-re-tracings. Numbers and reading in `docs/reference/qualitaetsmetrik.md` §14;
+re-tracings. Numbers and reading in `docs/reference/messjournal.md` §14;
 the short version is that the control does exactly what a control should:
 
 * `aiou_median` **0.833** — *higher* than the hand references score against

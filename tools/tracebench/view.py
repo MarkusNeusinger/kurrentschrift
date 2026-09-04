@@ -561,7 +561,7 @@ _JS = r"""
     });
   }
   // Feinschliff — a pure DISPLAY stage at the consumer, per the v0.6 verdict
-  // (qualitaetsmetrik §14: the ruler never sees the pixel zigzag, so smoothing
+  // (messjournal §14: the ruler never sees the pixel zigzag, so smoothing
   // belongs to the renderer, never into the measured candidate). Candidates
   // only; the hand reference and the mark dots stay raw.
   function smoothD(d, iters) {
@@ -983,7 +983,7 @@ def render_html(sections: list[str], tabs: list[tuple[str, str]], *, title: str,
 <div class="hint">Die Seite öffnet mit der FERTIGEN Bahn; „Schreiben abspielen“ schreibt alle
 eingeschalteten Verfahren gleichzeitig in Schreibreihenfolge — Strichdauer proportional zur Bogenlänge
 (konstante Federgeschwindigkeit), jedes Absetzen eine echte Pause. Pfeiltasten ←/→ wechseln das Wort.
-„Struktur“ zeigt je Ebene die DETEKTIERTEN Strukturen der v2-Zähler (qualitaetsmetrik §14):
+„Struktur“ zeigt je Ebene die DETEKTIERTEN Strukturen der v2-Zähler (messjournal §14):
 Ringe = DURCHSTOSS-Kreuzungen (eine Linie kommt auf einer Seite herein und auf der anderen
 heraus), breite Bänder = Retrace-Zonen (ein Strich schreibt dieselbe Tinte zweimal, bogen-nah),
 gestrichelt = ÜBERLAGERUNG zweier Striche (z.&nbsp;B. der t-Querstrich über dem Körper),

@@ -8,7 +8,7 @@
 > Abschnitt „Stand der Kampagne“, die stehenden Rettungswege in §7.9,
 > die offenen Arme und Autorenschritte in §7.11. Zahlen und
 > Vorregistrierungen wohnen ausschließlich in
-> [`../reference/qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md)
+> [`../reference/messjournal.md`](../reference/messjournal.md)
 > §14 (Register im Kopf der Sektion), die Routen-Ledger in
 > [`../reference/verfahren.md`](../reference/verfahren.md).
 > Historischer Kopf (2026-08-15): Alle Stufen der Leiter sind gemergt
@@ -218,7 +218,7 @@ referenziert publizierte Zahlen**.
 - **Strich-Behandlung:** Marken (i-Punkt/-Strich, Umlaut, u-Deckstrich —
   Klassifikation via `DIACRITIC_MIN_Y` + Bogen-Kappe ≤ 1,5 xh; bis
   `aug26` 0,8, was den u-Deckstrich entgegen dieser Aufzählung zum
-  Körper machte, siehe qualitaetsmetrik.md §14 „Lineal L-U") werden vor
+  Körper machte, siehe messjournal.md §14 „Lineal L-U") werden vor
   dem Body-DTW herausgelöst (Delayed-Strokes-Praxis; entschärft zugleich
   die Deferred-Diakritika-Ordnungsfalle der Engine) und per Zentroid mit
   Refusal gematcht: **`marks_missing` ist Co-Primär-Gate**, mit gutem
@@ -254,7 +254,7 @@ Konstante, append-never; `--split confirm` verweigert unter 5 Wörtern;
 Startup-Assertion: jede Dev-Id muss authored und nicht-frame-stale im
 Artefakt sein, sonst harter Fehler.
 
-**Kriterien (relativ, vorregistriert in qualitaetsmetrik §14 VOR der
+**Kriterien (relativ, vorregistriert in messjournal §14 VOR der
 ersten Zahl):** Primär `dtw_xh`-Median der gepaarten Differenzen vs.
 Chain-Baseline ≥ 20 % Fall; Co-Primär-Gates `marks_missing` und
 `cross_missing+spurious` ohne Netto-Anstieg; Kosten-Wächter (p90 ≤ +10 %,
@@ -317,7 +317,7 @@ selbst war seit 2026-08-16 fixiert, Galoppieren/das waren nie
 gebencht, und der Weg Dev → Bestätigung existiert nicht — vorgezogen
 wird nur der Messbeginn, nicht die Wahl. Die Versiegelung von A/B
 gilt unverändert. Der datierte Re-Baseline-Lauf der stehenden Routen
-auf dem 19er-Dev-Satz steht in `qualitaetsmetrik.md` §14
+auf dem 19er-Dev-Satz steht in `messjournal.md` §14
 („Re-Baseline `aug17`").
 
 **Benannter Notausgang.** Wird die Kapital-Join-Klasse Tuning-Fokus,
@@ -477,7 +477,7 @@ publizierte Abstimmung und Auswertung von WOR ist durchweg auf
 Unterschriften, und das Papier nennt die Dünnungsqualität selbst als
 begrenzenden Faktor — verbundene deutsche Kurrent ist härter als alles
 dort Gemessene. Zahlen des Kontrollaufs in
-[`../reference/qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md)
+[`../reference/messjournal.md`](../reference/messjournal.md)
 §14, Rezept und Provenienz in `tools/routeg/README.md`.
 
 ### 4c Duell-Ansicht + Chronik (Owner-Wunsch 2026-08-14)
@@ -928,7 +928,7 @@ eine Register-Seite Steckbrief + Versions-Ledger —
 [`../reference/verfahren.md`](../reference/verfahren.md) (Übersicht +
 Versions-Konvention) mit den Seiten Kette · Lotse · InkSight ·
 Nullprobe. Diese Tabelle bleibt die Übersetzungstabelle der Namen;
-Zahlen wohnen weiter in qualitaetsmetrik.md §14.
+Zahlen wohnen weiter in messjournal.md §14.
 
 **„Kette+ ist die einzige Kette."** Owner-Entscheid nach der
 Kreuzungs-Frage: es gibt KEIN Beispiel, wo eine vom Fit ERFUNDENE
@@ -1037,7 +1037,7 @@ Zeile dazu steht unten (J4/J4b), die Konversionen in §7.11.
 ### 7.10 Runde aug17: die Befund-Matrix des 19er-Dev-Satzes und der Maßnahmenplan
 
 Grundlage: die Re-Baseline aller stehenden Routen auf dem
-aktivierten 19er-Dev-Satz (qualitaetsmetrik.md §14 „Re-Baseline
+aktivierten 19er-Dev-Satz (messjournal.md §14 „Re-Baseline
 `aug17`") plus die Autopsien derselben Session (Kreuzungs-
 Positionskarten Hand/Kette/Lotse, Ritt-Instrumentierung `will`,
 Fenster-Bilder will/die/muß, Kompositions-Soll-Abgleich

@@ -7,7 +7,7 @@ ductus prior, the written words are the form model. The row builder
 anchors from the chart; THIS module owns what happens to the anchors before
 they become a row.
 
-End blend (LF5/LF6, qualitaetsmetrik.md §14 `aug29`): the free ends of a
+End blend (LF5/LF6, messjournal.md §14 `aug29`): the free ends of a
 fitted stroke are its least constrained anchors — the fit pulls them toward
 neighbouring ink (the t's first anchor toward its Kringel, the K's last anchor
 onto the following Anstrich), and a per-anchor median cannot outvote a drift
@@ -52,7 +52,7 @@ from core.template import build_sample_plan, multi_stroke_centerlines, sample_wi
 
 Point = tuple[float, float]
 
-# Row gate (LF8, qualitaetsmetrik.md §14 `aug29`): the largest anchor spike
+# Row gate (LF8, messjournal.md §14 `aug29`): the largest anchor spike
 # ratio (`anchor_spike_ratio` — the harvest's own „Anker im leeren Papier"
 # detector, measured on the ROW) a running-form row may carry and still be
 # written. Data-derived, never hand-set: the worst ratio among the rows the
@@ -63,7 +63,7 @@ Point = tuple[float, float]
 # the gate off. The naturalness GAP of LF7 was measured first and rejected —
 # it misses the K — and stays a report column (`row_naturalness`).
 LAUFFORM_SPIKE_RATIO_MAX: float | None = 2.95
-# Head gate (LF9, qualitaetsmetrik.md §14 `aug29`): how far the direction of a
+# Head gate (LF9, messjournal.md §14 `aug29`): how far the direction of a
 # running-form row's HEAD — its first stroke's landing over the grammar's own
 # arc window (`head_deviation`) — may leave the chart's before the row is
 # refused. Doctrine-derived, not data-derived: half the ALIGN band (25–55°) of
@@ -77,7 +77,7 @@ LAUFFORM_SPIKE_RATIO_MAX: float | None = 2.95
 # see a head that turns, and no other trusted row comes near (m 15°, w 14°).
 # None turns the gate off.
 LAUFFORM_HEAD_DEVIATION_MAX: float | None = 15.0
-# Smoothness sensor (LF11, qualitaetsmetrik.md §14 `sep02`): the step the
+# Smoothness sensor (LF11, messjournal.md §14 `sep02`): the step the
 # rendered centerline is resampled onto before its turn angles are read, and the
 # turn below which a sign change is numerical noise rather than a zigzag.
 #
@@ -540,7 +540,7 @@ def _resample_uniform(points: np.ndarray, step: float) -> np.ndarray:
 def zigzag_rate(chart_row: Any, anchors: Sequence[Sequence[float]]) -> float:
     """How often the rendered row reverses its curvature, per x-height of arc.
 
-    The Glätte-Sensor of LF11 (qualitaetsmetrik.md §14 `sep02`) and the one
+    The Glätte-Sensor of LF11 (messjournal.md §14 `sep02`) and the one
     quantity that names the defect the audit of 2026-09-02 put first: a stored
     running form wanders left-right-left along its own path 2–11 times per
     x-height where the chart row it was derived from wanders zero times, and
@@ -665,7 +665,7 @@ def form_distance(
     chart_row: Any, anchors: Sequence[Sequence[float]], *, same_stroke: bool = True, rendered: bool = True
 ) -> dict[str, Any]:
     """The form distance of a candidate row to its chart row (LF10,
-    qualitaetsmetrik.md §14 `sep01`): how far the running form leaves the
+    messjournal.md §14 `sep01`): how far the running form leaves the
     chart's path, per anchor, in chart nib radii.
 
     Both rows are rendered with the chart's sample plan (`_sampled_strokes`,

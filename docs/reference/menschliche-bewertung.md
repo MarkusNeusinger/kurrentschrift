@@ -11,7 +11,7 @@
 > (§8a). **Die erste Wortrunde ist gefahren** (`sep02`, Basis gegen LF11):
 > sie hat entschieden, wo das Wort-Lineal blind war, und dem Dokument die
 > Konstruktionsregel §3.6b eingetragen. Zahlen und Verdikt wohnen in
-> `qualitaetsmetrik.md` §14 („Laufform LF11 — humanbench-Wortrunde“).
+> `messjournal.md` §14 („Laufform LF11 — humanbench-Wortrunde“).
 
 Diese Datei existiert, damit eine Wiederholung ein **Nachbau** ist und keine
 Neuplanung. Jede Regel hier hat eine Runde gekostet; sie steht mit ihrer
@@ -971,7 +971,7 @@ Kategorien-Durchgang mit den alten Fits, und die gelabelten Vorkommen paarig.
 > vorregistrierten Schranke von 25 %, und auch die günstigste Teilmenge
 > bleibt mit 25,6 % darüber. Die Richtung war eindeutig, der
 > Autor hat auf dieser Grundlage freigegeben. Die Zahlen gehören nach
-> [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §14 („Laufform LF11 —
+> [`messjournal.md`](messjournal.md) §14 („Laufform LF11 —
 > humanbench-Wortrunde“); hier steht nur, wie sie zustande kommen.
 
 ### Warum ein dritter Modus

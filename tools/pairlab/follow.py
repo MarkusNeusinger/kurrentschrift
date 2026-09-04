@@ -235,7 +235,7 @@ FOLLOW_LANDMARK_WEIGHT = float(os.environ.get(FOLLOW_LANDMARK_WEIGHT_ENV) or CHA
 #   the dev words' 21 correspondences aim at ink that carries NO crossing at
 #   all — the path crosses itself where the ink merely touches — which caps any
 #   effect the term can have; this mode is the pre-registered answer
-#   (qualitaetsmetrik.md §14 arm ⑥b): those classes are not crossing targets.
+#   (messjournal.md §14 arm ⑥b): those classes are not crossing targets.
 #
 # NOTHING here is calibrated, and no weight is proposed: at `landmark == 0` the
 # whole block is skipped and every solve stays byte-identical (the term's own

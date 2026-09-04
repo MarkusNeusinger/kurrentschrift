@@ -1,4 +1,4 @@
-"""The head gate on a Laufform row (qualitaetsmetrik.md §14 LF9): how far the
+"""The head gate on a Laufform row (messjournal.md §14 LF9): how far the
 row's first stroke lands from the chart's landing direction, over the join
 grammar's own arc window on the RENDERED centerline — the Korb #7 t, whose
 fitted head starts up-left where the chart rises, and which the spike gate

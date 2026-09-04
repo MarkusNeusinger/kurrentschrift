@@ -210,9 +210,11 @@ MIRRORED_RULES = {
     "no state-management framework": ["redux"],
     "do not silently diverge": ["silently diverge"],
     "codecov is a reviewer": ["codecov"],
-    # A §14 entry goes in FRONT of `## 15.`; appending at the file end is how
-    # five sep02 rounds fell out of the journal (repaired 2026-09-03).
-    "§14 entries go before §15": ["before `## 15.`", "closed section"],
+    # A §14 entry goes into `messjournal.md`, where §14 is the only section:
+    # appending at the file end is right again. It was not while a `## 15.`
+    # stood behind it — five sep02 rounds fell out of the journal that way
+    # (repaired 2026-09-03, journal moved into its own file 2026-09-04).
+    "§14 entries go into the journal file": ["messjournal.md", "closed section"],
 }
 
 

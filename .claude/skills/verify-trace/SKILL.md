@@ -6,7 +6,7 @@ description: Run one round of the Tintenfolger word-tracing measurement — fixt
 # Run a Tintenfolger round (the standing measurement liturgy)
 
 The word-tracing duel (`docs/proposals/tintenfolger.md`; numbers and
-pre-registrations in `docs/reference/qualitaetsmetrik.md` §14) has a
+pre-registrations in `docs/reference/messjournal.md` §14) has a
 five-step liturgy that `werkzeuge.md` records and that §14 entries have
 followed since `aug19`. It is the most error-prone standing procedure in the
 repo — twice in two days (`aug25` L-U, `aug26` v5) a round was measured
@@ -18,7 +18,7 @@ changes. Frozen rulers and fixture roots stay frozen for the whole round.
 
 ## 0 · Before the first number: pre-register
 
-Read `docs/reference/qualitaetsmetrik.md` §14 and
+Read `docs/reference/messjournal.md` §14 and
 `docs/proposals/tintenfolger.md` §7 first — a mechanism already rejected
 there is a repeat, not a hypothesis, and §7.9 lists which rescue paths are
 still open for each closed arm.
@@ -106,15 +106,17 @@ uv run python -m tools.tracebench.view                     # the duel / eyeball 
 
 ## 6 · File the round (part of the round, not paperwork)
 
-- A **§14 entry** in `docs/reference/qualitaetsmetrik.md` with the
-  pre-registration, the measured numbers and the verdict. **Insert it
-  BEFORE the `## 15.` heading, not at the end of the file** — §14 is a
-  closed section, and appending is how five `sep02` rounds ended up
-  outside it (repaired 2026-09-03). Add its row to the register table at
-  the head of §14 in the same PR. `uv run python -m tools.docs_register
-  check` catches both slips, with a different message each: a section
-  behind §14 is named as a misplaced journal entry, and a section inside
-  §14 without its row as a missing register row.
+- A **§14 entry** in `docs/reference/messjournal.md` with the
+  pre-registration, the measured numbers and the verdict. **Append it at
+  the end of that file** — §14 is a closed section and, since the journal
+  moved into its own file on 2026-09-04, the only one there, so appending
+  is placing it right. It was not always: five `sep02` rounds landed
+  behind a `## 15.` heading (repaired 2026-09-03), which is why the gate
+  still reports a `###` heading that falls outside §14. Add its row to the
+  register table at the head of §14 in the same PR. `uv run python -m
+  tools.docs_register check` catches both slips, with a different message
+  each: a section behind §14 is named as a misplaced journal entry, and a
+  section inside §14 without its row as a missing register row.
 - The **ledger line** on the affected `docs/reference/verfahren-*.md` page
   in the SAME PR; on adoption also its „Aktueller Stand" and the Stand
   column in `verfahren.md` (`docs/index.md` § Dokument-Status).

@@ -72,7 +72,7 @@ CONNECT_GAP = 0.16
 # such exits, while exit≈ink-edge words (das, mit) were already sized right.
 INK_CLEARANCE = 0.14
 # Class-aware clearance (wave-2 P1, calibrated on the 218 dissected joins of
-# the 1922 hand — qualitaetsmetrik §14 "Welle 2 · P1"): the one uniform floor
+# the 1922 hand — messjournal §14 "Welle 2 · P1"): the one uniform floor
 # carried both class errors with opposite signs. After a CLOSED-BOWL exit
 # (b/o/c/d) the hand tucks the next letter toward the bowl's counter — the
 # measured surplus was +0.20 xh median (b +0.42 · o +0.30 · c +0.25 ·
@@ -349,7 +349,7 @@ ALIGN_TAN_DEG = (25.0, 55.0)
 ALIGN_MIN_RISE = 0.02  # entry must sit above the exit for a pass-through
 # Exit-side collinearity (`exit_trim`, the A-side mirror of ENTRY_COUPLE_Y's
 # entry_trim; audit 2026-09-02 finding 19, pre-registered under the heading
-# „Übergänge J4" in qualitaetsmetrik.md §14). A sawtooth exit keeps its stub
+# „Übergänge J4" in messjournal.md §14). A sawtooth exit keeps its stub
 # from the CHART cell, and that
 # stub ends in a finishing flick: measured on the frozen 1922 word plate, e
 # runs 0.4 xh straight at ~40 degrees and then turns 41 -> 20 -> 9 over its
@@ -379,7 +379,7 @@ EXIT_TRIM_TOL_DEG = 3.0
 # alone what already runs on": the post-hoc J4b arm found the hand's dissected
 # joins support only the joins whose kink is large, so the threshold is the
 # knob that arm varies. It is NOT a calibrated constant — read the J4/J4b
-# entries in qualitaetsmetrik.md §14 before moving it.
+# entries in messjournal.md §14 before moving it.
 EXIT_TRIM_MIN_KINK_DEG = 0.0
 # Shared by the sawtooth pass-through AND the R4 "nested fall" placement (a
 # rising mid-band exit whose neighbour enters below it — t's bar, f's flag —
@@ -519,7 +519,7 @@ FORK_APEX_MAX_Y = 1.05
 # y ≈ 0.34–0.53 and rising at 16–27° into the next letter's apex
 # (0.88–1.00) at +1.16–1.52 xh from the stem. f's LOW flag instead
 # crosses the stem and CONTINUES as that very join. The authored hand
-# reference (aug15, qualitaetsmetrik §14 Welle 1 K1) settles the
+# reference (aug15, messjournal §14 Welle 1 K1) settles the
 # TOPOLOGY of that ink: the exit pass runs THROUGH the stem (crossing
 # it) and continues as the join without a stop — so in bound context
 # t's rendered bar is cut a short measured overrun PAST its stem
@@ -542,7 +542,7 @@ BAR_EXIT_BASES = frozenset({"t", "f"})
 EXIT_TRIM_EXCLUDED_BASES = LOOP_EXIT_BASES | KRINGEL_EXIT_BASES | BAR_EXIT_BASES
 BAR_CROSS_MIN_Y = 0.2  # a plausible bar/flag crossing sits mid-band
 BAR_CROSS_MAX_Y = 0.7
-# P3-K1 (pre-registered aug16, qualitaetsmetrik §14 Welle 2 P3): after a
+# P3-K1 (pre-registered aug16, messjournal §14 Welle 2 P3): after a
 # bar exit into a ROUND BODY the hand couples LOW on the rising flank
 # (measured arrival y ~0.56 vs. the apex/high-flank couple the generic
 # path targets — the composed arrival angle sat +126 deg off) and the
@@ -554,7 +554,7 @@ BAR_CROSS_MAX_Y = 0.7
 # OPPOSITE directions (fechten's t→e halves, streiten's worsens); the
 # knob stays for the confirmation-set re-calibration (K1 rests on n=7).
 BAR_ENTRY_COUPLE_Y: float | None = None
-# P3-K3 (pre-registered aug16, qualitaetsmetrik §14 Welle 2 P3): after a
+# P3-K3 (pre-registered aug16, messjournal §14 Welle 2 P3): after a
 # cover-bow exit (o/b Kringel, w/v bow) the hand meets an arcade letter's
 # Anstrich ABOVE its mid-height chart foot (measured arrival y 0.685 vs
 # the composed 0.58-0.63 foot coupling). The lift raises the couple point
@@ -569,7 +569,7 @@ BAR_ENTRY_COUPLE_Y: float | None = None
 COVER_ARCADE_EXIT_BASES = frozenset({"o", "b", "v", "w"})
 COVER_ARCADE_ENTRY_BASES = frozenset({"n", "m", "i", "r"})
 COVER_ARCADE_ENTRY_LIFT = 0.0
-# P3-K2 (pre-registered aug16, qualitaetsmetrik §14 Welle 2 P3): the hand
+# P3-K2 (pre-registered aug16, messjournal §14 Welle 2 P3): the hand
 # departs d's trimmed loop exit ROTATED off the straight chord the
 # high-reversal rescue declares (measured compose-relative departure
 # error +48.0° ± 0.8, with the reach growing in 0 of 18 occurrences —
@@ -1741,7 +1741,7 @@ def compose_word(
     sawtooth exit's chart stub is cut back to where the straight to the
     UNCHANGED coupling point continues the letter's own direction, and the
     join is drawn as that straight. An opt-in candidate arm, pre-registered
-    under the heading „Übergänge J4" in qualitaetsmetrik.md §14; adopting it as
+    under the heading „Übergänge J4" in messjournal.md §14; adopting it as
     the default is a declared re-baseline of the golden fixture and the
     author's call.
     ``exit_trim_min_kink_deg`` narrows that class to the joins whose departure

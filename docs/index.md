@@ -47,6 +47,7 @@ und liest bereits echte Bögen ein
 | Animation-Render-Algorithmus nachschlagen | [Animation-Rendering](reference/animation-rendering.md) |
 | Stil-Analyse-Pipeline nachschlagen | [Stil-Analyse](reference/styleanalyse.md) |
 | Qualitätsmetrik, Glyph-Bench & Loop-Erkenntnisse nachschlagen | [Qualitätsmetrik](reference/qualitaetsmetrik.md) |
+| Eine Zahl, eine Vorregistrierung oder ein Verdikt einer Mess-Runde suchen | [Messjournal](reference/messjournal.md) — erst das Register im Kopf, dann der eine Eintrag |
 | Den blinden Bewertungsdurchgang (Fehler-Taxonomie, Instrument, Vorregistrierung) nachschlagen | [Menschliche Bewertung](reference/menschliche-bewertung.md) |
 | Frontend-Stack & Deploy nachschlagen | [Frontend-Stack](reference/frontend-stack.md) |
 | Quiz-Wortbank (Quellen, Distraktoren, Fugen-Marker) nachschlagen | [Quiz-Wortbank](reference/quiz-wortbank.md) |
@@ -95,7 +96,9 @@ docs/
 │   ├── htr-integration.md        # Transkribus-API + TrOCR-Fallback, PAGE-XML, Free-Tier
 │   ├── animation-rendering.md    # stroke-dashoffset (MVP), Canvas-2D-Stroker (post-MVP), WAAPI
 │   ├── styleanalyse.md           # Per-Hand-Aggregation, Hinge-Features, Heatmap-Layouts
-│   ├── qualitaetsmetrik.md       # Zwei Metriken (Kurrent-Schwellzug §1–4 · Sütterlin-Natürlichkeit §5), bench/Referenzen, Baseline-Historie, Loop-Erkenntnisse + Verworfen; §14 Tintenfolger-Journal mit Eintrags-Register + Headline-Ledger im Kopf
+│   ├── qualitaetsmetrik.md       # Zwei Metriken (Kurrent-Schwellzug §1–4 · Sütterlin-Natürlichkeit §5), bench/Referenzen, Baseline-Historie, Loop-Erkenntnisse + Verworfen — die REGELN
+│   ├── messjournal.md            # §14, das Kampagnen-Journal: 81 datierte Einträge (Vorregistrierung · Messung · Verdikt) mit Eintrags-Register + Headline-Ledger im Kopf — die LÄUFE
+│   ├── messjournal-archiv.md     # Abgelegte §14-Einträge: Verdikt gebucht, Rettungswege eingetragen, ≥ 4 Wochen unberührt
 │   ├── menschliche-bewertung.md  # Blinder Urteilsdurchgang über die Fits (tools/humanbench): Fehler-Taxonomie, Instrumentregeln, Vorregistrierung, Aufbewahrung
 │   ├── quiz-wortbank.md          # Lese-Quiz-Wortbank: Quellen (Kaeding, Genealogie-Felder), Pin+Runtime-Distraktoren, Fugen-Marker
 │   ├── write-api.md              # Öffentliche Render-Endpunkte /write/glyphs + /write/word: Shaping → Komposition → Payload
@@ -175,8 +178,10 @@ Regeln stehen, die noch nicht implementiert sind.
 | [`concepts/design-system.md`](concepts/design-system.md) | Änderungen an `app/src/styles/paper.ts`, `theme/typography.ts`, `components/PageContainer · Prose · PageHeader · HeaderBar · PublicHeader · PublicFooter`, an der Werkbank-Kopfleiste (`sections/admin/shell/AdminHeader`) oder an der öffentlichen Routen-/Bereichsstruktur (`routes/paths.ts`) |
 | [`reference/glossar.md`](reference/glossar.md) | jedem Doc und jedem PR, der einen neuen Fachbegriff, eine neue Kennzahl oder eine neue Redewendung prägt — der Eintrag entsteht im selben PR (Regel auch in `CLAUDE.md` § „Working guardrails“, `.github/copilot-instructions.md` und den Skills `/write-docs` + `/open-pr`) |
 | [`reference/write-api.md`](reference/write-api.md) | jeder Änderung an einer `/write/*`-Route (`api/routers/write.py` inkl. `compose_word_payload`), an `core/shaping.py`, `core/compose.py`, `core/pipeline.py::render_payload_for_template`, `api/rendering.py` oder den Cache-Headern in `api/http.py` |
-| [`reference/qualitaetsmetrik.md`](reference/qualitaetsmetrik.md) | jeder Änderung an `core/quality.py`, `core/quality_suetterlin.py`, `core/geometry.py`, `core/word_metric.py`, jedem Re-Baseline der eingefrorenen Fixtures und jedem Bench-/Loop-Lauf, der eine Headline bewegt (neuer datierter Abschnitt). **Im selben PR:** der neue §14-Abschnitt wird VOR §15 eingefügt (§14 ist eine geschlossene Sektion — nicht ans Dateiende anhängen) und bekommt seine Zeile in der Registertabelle am Kopf von §14, eine bewegte Headline ihre Zeile im Headline-Ledger daneben (mit `exported_at` und Digest der Fixture-Wurzel) — erzwungen von `uv run python -m tools.docs_register check` (CI-Job „Docs-Register“) |
-| [`reference/menschliche-bewertung.md`](reference/menschliche-bewertung.md) | jeder Änderung am Instrument `tools/humanbench` (Kategorien in `page.py::CATEGORIES`, Stichproben- und Wiederholungsregeln in `build.py`, Darstellung, neue Modi, CLI) und jeder Runde, deren Aufbau vom beschriebenen Verfahren abweicht — die Befunde selbst gehören nach `reference/qualitaetsmetrik.md` |
+| [`reference/qualitaetsmetrik.md`](reference/qualitaetsmetrik.md) | jeder Änderung an `core/quality.py`, `core/quality_suetterlin.py`, `core/geometry.py`, `core/word_metric.py` und jedem Re-Baseline der eingefrorenen Fixtures; die aktuellen Headlines im Status-Blockquote bleiben hier, das Journal der Läufe steht seit 2026-09-04 in `reference/messjournal.md` |
+| [`reference/messjournal.md`](reference/messjournal.md) | jedem Bench-/Loop-/Folger-Lauf, der eine Zahl oder ein Verdikt hervorbringt (neuer datierter §14-Abschnitt, ans Dateiende — §14 ist die einzige Sektion dieser Datei). **Im selben PR:** die Zeile in der Registertabelle am Kopf von §14, eine bewegte Headline zusätzlich ihre Zeile im Headline-Ledger daneben (mit `exported_at` und Digest der Fixture-Wurzel) — erzwungen von `uv run python -m tools.docs_register check` (CI-Job „Docs-Register“) |
+| [`reference/messjournal-archiv.md`](reference/messjournal-archiv.md) | jedem Abschnitt, dessen Arm abgeschlossen ist (Verdikt gebucht · Rettungswege eingetragen · ≥ 4 Wochen unberührt): Abschnitt Wort für Wort herüberziehen, Registerzeile im Journal auf `messjournal-archiv.md#anker` umstellen |
+| [`reference/menschliche-bewertung.md`](reference/menschliche-bewertung.md) | jeder Änderung am Instrument `tools/humanbench` (Kategorien in `page.py::CATEGORIES`, Stichproben- und Wiederholungsregeln in `build.py`, Darstellung, neue Modi, CLI) und jeder Runde, deren Aufbau vom beschriebenen Verfahren abweicht — die Befunde selbst gehören nach `reference/messjournal.md` |
 | [`reference/frontend-stack.md`](reference/frontend-stack.md) | Stack-Versionen (`app/package.json`), Routenkarte (`app/src/routes/paths.ts`), Build/Deploy (`app/cloudbuild.yaml`, `api/cloudbuild.yaml`, `app/Dockerfile`, `app/nginx.conf`, Cloud-Run-Parameter), Auslieferungs-Header (`app/security-headers.conf`, `api/security_headers.py`, `api/routers/csp.py`), Admin-Gate (`api/auth.py`, `core/config.py`, Cloudflare Access) oder Origin-Gate (`api/origin_gate.py`, `infra/cloudflare/` — der Apex-Worker, an dessen Konfiguration §5 hängt) |
 | [`reference/werkzeuge.md`](reference/werkzeuge.md) | jedem neuen, umbenannten oder entfernten Verzeichnis/Einstiegsskript unter `tools/` und jeder geänderten CLI (Flags, Modulpfade, `viz`-Extra, `--live`) |
 | [`reference/quiz-wortbank.md`](reference/quiz-wortbank.md) | Änderungen an `tools/quizgen/corpus.py`/`similarity.py`/`build.py` (inkl. Neuberechnung von `quiz_words.json` → Wortzahl und Era-Verteilung im Kopf nachziehen), am TS-Zwilling `app/src/sections/quiz/wordBank.ts`/`useQuizEngine.ts` und bei jeder Re-Seed-Migration nach dem Muster `0011_quiz_words_reseed.py` |
@@ -288,6 +293,11 @@ Policy- und Technik-Dokumente.
   (Kurrent-Schwellzug §1–§4 · Sütterlin-Natürlichkeit §5), Frozen-
   Reference-Regel, Baseline-Historie, Loop-Erkenntnisse + Verworfen —
   Pflichtlektüre vor jedem `/optimize-glyphs`-Lauf
+- **[Messjournal](reference/messjournal.md)** — §14, das Journal der
+  Mess-Kampagne: 81 datierte Einträge, jeder mit Vorregistrierung,
+  gemessenen Zahlen und Verdikt. Einstieg ist das **Register** im Kopf
+  (eine Zeile je Eintrag) samt Headline-Ledger; abgeschlossene Arme
+  liegen im [Archiv](reference/messjournal-archiv.md)
 - **[Menschliche Bewertung](reference/menschliche-bewertung.md)** — der
   blinde Urteilsdurchgang über die Fits (`tools/humanbench`): die
   sechsteilige Fehler-Taxonomie mit operativen Definitionen, die
@@ -311,7 +321,7 @@ Policy- und Technik-Dokumente.
   [Lotse](reference/verfahren-lotse.md) ·
   [InkSight](reference/verfahren-inksight.md) ·
   [Nullprobe](reference/verfahren-nullprobe.md); die Zahlen selbst
-  wohnen ausschließlich in der Qualitätsmetrik §14
+  wohnen ausschließlich im [Messjournal](reference/messjournal.md) §14
 - **[Crawler-Richtlinie](reference/crawler-richtlinie.md)** — wer die
   Seite lesen darf: offen — Suche, KI-Abruf/Zitat und KI-Training erlaubt
   (`ai-train=yes`, Entscheid 2026-08-28; der Open-Core-Vorbehalt liegt am

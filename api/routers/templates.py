@@ -282,7 +282,7 @@ async def put_laufform(
     advance shift with their end anchors. `/write/word` picks the row up for
     glyphs in a flowing run; solo renders stay chart-true.
 
-    Two gates stand in front of the write (qualitaetsmetrik.md §14 LF7/LF8),
+    Two gates stand in front of the write (messjournal.md §14 LF7/LF8),
     the same two `apply-laufform` applies: the evidence floor
     `LAUFFORM_MIN_OCCURRENCES` — a thinner draft is refused unless the request
     lowers the floor itself (`?min_occurrences=1`, the explicit author
