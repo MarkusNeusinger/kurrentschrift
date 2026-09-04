@@ -1,17 +1,38 @@
 # Menschliche Bewertung — der blinde Urteilsdurchgang über die Fits
 
-> **Status (2026-09-03): lebend.** Beschreibt das Instrument
+> **Status (2026-09-04): lebend.** Beschreibt das Instrument
 > ([`tools/humanbench`](../../tools/humanbench)) und das Verfahren eines
-> Bewertungsdurchgangs — die Methode, nicht die Ergebnisse. Nachzuziehen bei
-> jeder Änderung am Instrument (Kategorien, Stichproben- und
-> Wiederholungsregeln, Darstellung, neue Modi in
-> `tools/humanbench/build.py` bzw. `page.py`) und bei jeder Runde, deren
-> Aufbau von dem hier beschriebenen abweicht. Seit 2026-09-02 hat das
-> Instrument einen dritten Modus — den **Wortmodus auf der Echtheitsfrage**
-> (§8a). **Die erste Wortrunde ist gefahren** (`sep02`, Basis gegen LF11):
-> sie hat entschieden, wo das Wort-Lineal blind war, und dem Dokument die
-> Konstruktionsregel §3.6b eingetragen. Zahlen und Verdikt wohnen in
-> `messjournal.md` §14 („Laufform LF11 — humanbench-Wortrunde“).
+> Bewertungsdurchgangs — **die Methode, nicht die Ergebnisse**. Zahlen und
+> Verdikte einer Runde wohnen in
+> [`messjournal.md`](messjournal.md) §14.
+>
+> **Was gilt.** Drei Modi: der Einzelbuchstaben-Durchgang, der **paarige
+> Vorher/Nachher-Durchgang**
+> ([§8](#8-der-paarige-folgedurchgang)) und seit 2026-09-02 der
+> **Wortmodus auf der Echtheitsfrage**
+> ([§8a](#8a-der-wortmodus--die-echtheitsfrage)). Geurteilt wird **blind**
+> gegen die sechsteilige Fehler-Taxonomie
+> ([§2](#2-die-fehler-taxonomie)); die Konstruktionsregeln des Instruments
+> stehen jeweils neben dem Fehlerfall, für den sie eingeführt wurden
+> ([§3](#3-die-konstruktionsregeln-des-instruments)), und der Auswerteplan
+> wird vor den Labels festgeschrieben
+> ([§4](#4-die-vorregistrierung)). Aufbewahrt wird nur, was §6 nennt.
+>
+> **Was seither passiert ist.** Die erste Wortrunde ist gefahren
+> (`sep02`, Basis gegen LF11): sie hat entschieden, wo das Wort-Lineal
+> blind war, und dem Dokument die Konstruktionsregel §3.6b eingetragen —
+> Zahlen und Verdikt in `messjournal.md` §14 („Laufform LF11 —
+> humanbench-Wortrunde“).
+>
+> **Was offen ist.** Die bekannten Grenzen des Verfahrens — was ein
+> blinder Durchgang grundsätzlich nicht entscheidet — stehen in
+> [§9](#9-bekannte-grenzen). Eine Runde, deren Aufbau davon abweicht,
+> gehört vorher hierhin, nicht hinterher.
+>
+> **Nachzieh-Anlass.** Jede Änderung am Instrument (Kategorien in
+> `page.py::CATEGORIES`, Stichproben- und Wiederholungsregeln in
+> `build.py`, Darstellung, neue Modi, CLI) und jede Runde, deren Aufbau
+> vom hier beschriebenen abweicht.
 
 Diese Datei existiert, damit eine Wiederholung ein **Nachbau** ist und keine
 Neuplanung. Jede Regel hier hat eine Runde gekostet; sie steht mit ihrer

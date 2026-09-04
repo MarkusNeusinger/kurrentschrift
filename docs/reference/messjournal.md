@@ -3,19 +3,38 @@
 > **Status (2026-09-04): lebend.** Das Journal der Mess-Kampagne. Seit
 > 2026-09-04 eine eigene Datei; bis dahin war es §14 von
 > [`qualitaetsmetrik.md`](qualitaetsmetrik.md), Wort für Wort dieselbe
-> Sektion. Nachzieh-Anlass: jede Runde (`tracebench`, `wordbench`,
-> Laufform, Übergänge) hängt ihren datierten `###`-Abschnitt an und
-> ergänzt im selben PR ihre Registerzeile; das Gate dazu ist
+> Sektion.
+>
+> **Diese Datei liest man nicht.** Sie trägt 81 datierte Abschnitte und
+> rund 143 000 Token. Der Einstieg ist das **Register** direkt unter der
+> nächsten Überschrift — eine Zeile je Abschnitt mit Datum, Route, Typ ·
+> Verdikt und dem Befund in einer Zeile —, und daneben der
+> **Headline-Ledger** mit der Zahlen-Historie samt Fixture-Wurzeln.
+> Beide zusammen kosten rund 10 000 Token; ein einzelner Abschnitt
+> 2 000–3 500. Wer aus dem Register springt, lädt also ein Fünfzehntel
+> statt der ganzen Datei — dafür ist sie geteilt.
+>
+> **Was gilt (Stand `sep02`).** Der Duell-Stand: Kette **v5** (`aug26`,
+> Kompositions-Soll + Ratsche + Zone 0,55 sind der Default) · Lotse
+> **v0.17** (`aug20`) · Lineal **v2.1**/**L-U** (`aug16`/`aug26`) ·
+> Laufform **LF11** („glatte Zeile“, `sep02`, geschrieben). Die
+> Headline-Zahlen selbst stehen an genau EINER Stelle, im
+> Status-Blockquote von [`qualitaetsmetrik.md`](qualitaetsmetrik.md); der
+> Ledger hier indexiert sie, er mintet sie nicht.
+>
+> **Was offen ist.** Die offenen Arme, die Autorenschritte und die
+> stehenden Rettungswege der Kampagne führt
+> [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) (§7.9
+> Rettungswege, §7.11 offene Arme) — nicht dieses Journal. Die
+> Routen-Ledger mit Verdikt je Version stehen auf den Verfahrensseiten
+> ([`verfahren.md`](verfahren.md)). Das Archiv der abgeschlossenen Arme
+> ist [`messjournal-archiv.md`](messjournal-archiv.md) und heute leer.
+>
+> **Nachzieh-Anlass.** Jede Runde (`tracebench`, `wordbench`, Laufform,
+> Übergänge) hängt ihren datierten `###`-Abschnitt ans Dateiende und
+> ergänzt im selben PR ihre Registerzeile, eine bewegte Headline
+> zusätzlich die Ledger-Zeile und die Zeile ihrer Verfahrensseite. Gate:
 > `uv run python -m tools.docs_register check`.
-
-Wer hier landet, sucht eine Zahl oder ein Verdikt. Der Einstieg ist das
-**Register** gleich unter der nächsten Überschrift: eine Zeile je
-Abschnitt mit Datum, Route, Typ · Verdikt und dem Befund in einer Zeile.
-Erst der Sprung aus dem Register lädt einen Abschnitt — das ist der Punkt
-der Trennung. Die **Regeln** der Metrik stehen weiter in
-[`qualitaetsmetrik.md`](qualitaetsmetrik.md) (§1–§13 und §15), die
-**Läufe** hier, die abgeschlossenen Arme in
-[`messjournal-archiv.md`](messjournal-archiv.md).
 
 **Warum die Sektionsnummer mitgezogen ist.** Titel und Anker der
 Abschnitte werden im Repo rund 350-mal zitiert, fast immer als „§14

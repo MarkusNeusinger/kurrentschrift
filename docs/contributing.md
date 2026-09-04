@@ -1,7 +1,7 @@
 # Contributing
 
 > **Status (2026-08-03): lebend.** (The status tokens are a fixed German
-> vocabulary — see `index.md` „Dokument-Status".) Written in English by the
+> vocabulary — see `dokument-status.md`.) Written in English by the
 > `sprachregelung.md` §1 exception (linked from the README for an external
 > audience). Paragraph 1 (what is live, where the MVP stands) and "Not yet
 > useful" must be updated whenever a public page ships or an MVP gate

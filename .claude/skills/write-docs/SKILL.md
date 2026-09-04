@@ -49,11 +49,13 @@ Checklist for adding or renaming a doc:
    operational state or dated journal → `notes/`, implementation
    proposal (open or worked off — status lives in its header) →
    `proposals/`.
-2. **Add it to the structure tree and its layer's prose section in
-   `docs/index.md`** — all six layers are indexed there; keep both in
-   sync with the file system. A Quick-Links row only where a reader
-   would look the doc up (practice: `concepts/`/`reference/`/
-   `schriftkunde/` docs get one, `research/`/`notes/` usually not).
+2. **Add its row to the layer's table in `docs/index.md`** — since
+   2026-09-04 the index is a MAP: one row per file, two or three columns
+   (*Wofür* · *Wann aufmachen*), nothing that repeats what the doc itself
+   says. All six layers have their table; keep them in sync with the file
+   system. Prose descriptions, a tree and a separate quick-links table
+   used to live there too and were removed — do not bring them back, the
+   map is the point.
 3. If it records a decision, include a „Verworfen“ section for the
    rejected alternatives — that is what makes the decision binding
    (see below).
@@ -61,7 +63,13 @@ Checklist for adding or renaming a doc:
    below) — a new doc without one is incomplete. The only exception is a
    `schriftkunde/` factsheet, which stays header-free and carries its own
    „Stand:“ line instead. If the status is `lebend`, also add the file and
-   its update trigger to the table in `docs/index.md` § „Dokument-Status“.
+   its update trigger to the table in `docs/dokument-status.md`.
+5. **Over ~10 000 tokens the status blockquote becomes a Stand block** —
+   up to 40 lines, dated, saying what currently holds, what is open and
+   where the detail lives, with every summary sentence carrying the anchor
+   of its source section. `docs/proposals/tintenfolger.md` and
+   `docs/reference/qualitaetsmetrik.md` are the pattern. It is what a
+   session reads instead of the file.
 
 ## Status headers (the lifecycle duty)
 
@@ -88,23 +96,23 @@ Vocabulary (small on purpose — do not invent new words):
 
 Rules:
 
-1. **Implementing part of a proposal updates its header and its status tag in
-   `docs/index.md` — in the SAME PR as the code.** A shipped stage that still
-   reads „offen“ is how a reader plans work that already exists.
-2. **A new proposal starts at `offen`** and gets its entry (plus tag) in the
-   index in the same commit.
+1. **Implementing part of a proposal updates its header and its Status cell
+   in `docs/index.md` — in the SAME PR as the code.** A shipped stage that
+   still reads „offen“ is how a reader plans work that already exists.
+2. **A new proposal starts at `offen`** and gets its row (with that status)
+   in the index in the same commit.
 3. **Absolute dates only** in the header — bump the date whenever you touch
    the status, never write „aktuell“ or „zuletzt“.
-4. The `schriftkunde/` factsheets stay header-free: the „Dokument-Status“
-   section in `docs/index.md` covers that layer as a whole (they carry their
+4. The `schriftkunde/` factsheets stay header-free:
+   `docs/dokument-status.md` covers that layer as a whole (they carry their
    own „Stand:“ line). The one exception is `orthographie-regeln.md`, which
    documents rules that are not implemented yet.
 5. `docs/contributing.md` keeps an **English** header — it is the
    `sprachregelung.md` §1 exception (linked from the README); all other
    headers are German like the docs they sit in.
 6. When a status flips to `lebend`, add the file and its trigger to the table
-   in `docs/index.md` § „Dokument-Status“; when it stops being `lebend`,
-   remove it there.
+   in `docs/dokument-status.md`; when it stops being `lebend`, remove it
+   there.
 
 ## New terms go in the glossary (same PR)
 
@@ -173,8 +181,8 @@ contradicts a Verworfen entry, stop and surface it to the user.
   grep -n 'TERM' docs/reference/glossar.md          # is it there?
   ```
 
-- `docs/index.md` quick-links table ↔ the actual file tree. List the
-  tree to compare against the index:
+- `docs/index.md`'s per-layer tables ↔ the actual file tree, one row per
+  file. List the tree to compare against the map:
 
   ```bash
   find docs -name '*.md' | sort
