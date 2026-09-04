@@ -1,14 +1,17 @@
 # Dokumentation
 
-> **Status (2026-09-04): lebend.** Die **Karte** über `docs/`: eine Zeile
-> je Datei — wofür sie da ist und wann man sie aufmacht. Mehr steht hier
-> bewusst nicht; jede Aussage über ein Doc gehört in dieses Doc, sonst
-> veraltet sie hier zuerst. Am 2026-09-04 von ~12 000 auf rund 3 000 Token
-> gekürzt: das Lifecycle-Vokabular und die Tabelle der Nachzieh-Pflichten
-> sind nach [`dokument-status.md`](dokument-status.md) gezogen, die
-> ausführlichen Doc-Beschreibungen sind entfallen.
+> **Status (2026-09-04): lebend.** Die **Karte** über `docs/`. Die
+> Invariante: **genau eine Zeile je `.md`-Datei unter `docs/`**, mit ihrer
+> Aufgabe und dem Anlass, sie aufzumachen — heute 59 Zeilen für 59
+> Dateien, gegen den Dateibaum prüfbar. Mehr steht hier bewusst nicht;
+> jede Aussage über ein Doc gehört in dieses Doc, sonst veraltet sie hier
+> zuerst. Am 2026-09-04 von ~12 500 auf rund 4 100 Token gekürzt: das
+> Lifecycle-Vokabular und die Tabelle der Nachzieh-Pflichten sind nach
+> [`dokument-status.md`](dokument-status.md) gezogen, die ausführlichen
+> Doc-Beschreibungen, der Verzeichnisbaum und der Schnellzugriff sind
+> entfallen — sie sagten dreimal dasselbe.
 > Nachzieh-Anlass: jedes neue, umbenannte oder gelöschte Doc unter `docs/`
-> bekommt hier seine Zeile.
+> bekommt hier seine Zeile, beziehungsweise verliert sie.
 
 Interne Design-Docs für das Kurrentschrift-Projekt. Sprache: Deutsch
 (Begründung in [`reference/sprachregelung.md`](reference/sprachregelung.md)).
@@ -60,7 +63,11 @@ Policy- und Technik-Dokumente, Status je Doc.
 | [messjournal.md](reference/messjournal.md) | Die **Läufe**: §14, 81 datierte Abschnitte mit Vorregistrierung, Zahlen und Verdikt | Wenn eine Zahl oder ein Verdikt gesucht wird — **über das Register im Kopf**, nie die ganze Datei |
 | [messjournal-archiv.md](reference/messjournal-archiv.md) | Abgelegte §14-Abschnitte und die Regel, wann einer hierher zieht | Wenn ein Abschnitt im Journal fehlt, oder beim Ablegen eines fertigen Arms |
 | [menschliche-bewertung.md](reference/menschliche-bewertung.md) | Die **Methode** des blinden Urteilsdurchgangs (`tools/humanbench`): Taxonomie, Instrumentregeln, Vorregistrierung | Bevor eine Bewertungsrunde gebaut oder ausgewertet wird (die Befunde stehen im Messjournal) |
-| [verfahren.md](reference/verfahren.md) | Register der Duell-Routen: je Verfahren Steckbrief + Versions-/Arm-Ledger — [Kette](reference/verfahren-kette.md) · [Lotse](reference/verfahren-lotse.md) · [InkSight](reference/verfahren-inksight.md) · [Nullprobe](reference/verfahren-nullprobe.md) | Wenn der Stand einer Route gefragt ist; die Zahlen selbst wohnen im Messjournal |
+| [verfahren.md](reference/verfahren.md) | Die Übersicht der Duell-Routen samt Versions-Konvention und der Regel, dass eine Verfahrensseite Register ist und keine zweite Wahrheit | Bevor man eine der vier Routenseiten liest oder eine Ledger-Zeile schreibt |
+| [verfahren-kette.md](reference/verfahren-kette.md) | Kette: Steckbrief, Stand v5 (Wächter-Stack), Arm-Ledger ①–⑨ / K-A…K-E2 / K0-Z / K0-S / K-D | Wenn ein Kette-Arm gemessen, adoptiert oder zitiert wird |
+| [verfahren-lotse.md](reference/verfahren-lotse.md) | Lotse: Steckbrief, Stand v0.17 (Reservierungs-Veto), Versions-Ledger v0.1–v0.19, offene Blöcke | Dasselbe für den Lotsen |
+| [verfahren-inksight.md](reference/verfahren-inksight.md) | InkSight: Steckbrief, Stand T0, Ledger (T0 · B1), stehende Maßnahmen B2–B5 | Dasselbe für InkSight |
+| [verfahren-nullprobe.md](reference/verfahren-nullprobe.md) | Nullprobe: Steckbrief, die Kontroll-Doktrin (bewusst unversioniert), Mess-Ledger | Dasselbe für die prior-freie Kontrolle |
 | [werkzeuge.md](reference/werkzeuge.md) | Der Index über `tools/`: Labs, Benches, Ernte, Eigenhand, Snapshot, Changelog-Schnitt | Bevor man ein Werkzeug aufruft oder ein neues anlegt |
 | [write-api.md](reference/write-api.md) | Die öffentlichen Render-Endpunkte `/write/glyphs` + `/write/word`: Shaping → Komposition → Payload, Cache, `missing` | Bei jeder Änderung an einer `/write/*`-Route |
 | [frontend-stack.md](reference/frontend-stack.md) | Stack, Routenkarte, i18n-Soll, Deploy, Admin- und Origin-Gate, Crawler-Prerender | Bei Build-, Deploy-, Auth- oder Routing-Fragen |
@@ -82,10 +89,13 @@ werden muss.
 |---|---|
 | [allgemein.md](schriftkunde/allgemein.md) | Lineatur, Schräglage (90° = senkrecht), Striche, Federtypen, Chronologie, DACH |
 | [orthographie-regeln.md](schriftkunde/orthographie-regeln.md) | Lese-Regeln: Rund-s wortintern, Ligaturen, Mischschrift — teils noch nicht implementiert |
-| [kurrent.md](schriftkunde/kurrent.md) · [suetterlin.md](schriftkunde/suetterlin.md) · [offenbacher.md](schriftkunde/offenbacher.md) | Die drei Schriften einzeln, inkl. der gemessenen Loth-1866-Schräglage (~50°) |
+| [kurrent.md](schriftkunde/kurrent.md) | Kurrent: Merkmale und Chronologie, inkl. der gemessenen Loth-1866-Schräglage (~50°) vs. 60–70° um 1900 |
+| [suetterlin.md](schriftkunde/suetterlin.md) | Sütterlin: 1911, senkrecht, Zonen 1:1:1, Gleichzugfeder |
+| [offenbacher.md](schriftkunde/offenbacher.md) | Offenbacher: Koch 1927, 75–80°, Zonen 2:3:2, Bandzugfeder |
 | [zahlen-und-zeichen.md](schriftkunde/zahlen-und-zeichen.md) | Ziffern, Doppelbindestrich, Abkürzungen, ₰/ℳ, genealogische Zeichen |
 | [tinte-und-material.md](schriftkunde/tinte-und-material.md) | Eisengallustinte (inkl. Repo-Farben), Federn, Papier, Schulmaterial |
-| [druckschriften.md](schriftkunde/druckschriften.md) · [lateinische-und-englische-schreibschrift.md](schriftkunde/lateinische-und-englische-schreibschrift.md) | Abgrenzungen: Fraktur/Schwabacher/Textura, Kanzleischrift, Copperplate, Zweischriftigkeit |
+| [druckschriften.md](schriftkunde/druckschriften.md) | Fraktur, Schwabacher, Textura und Kanzleischrift gegen die Kurrent abgegrenzt |
+| [lateinische-und-englische-schreibschrift.md](schriftkunde/lateinische-und-englische-schreibschrift.md) | Abgrenzung zur lateinischen und englischen Schreibschrift, Zweischriftigkeit |
 | [digital.md](schriftkunde/digital.md) | Unicode-Lage (ſ, ß, Ligaturen ohne Codepoint), UNZ/MUFI, Fonts, Transkription |
 
 ---
@@ -126,13 +136,15 @@ Nachschlagequellen, keine Pläne.
 
 ---
 
-## Querschnitt
+## Querschnitt — die Dateien direkt unter `docs/`
 
-- [dokument-status.md](dokument-status.md) — das Lifecycle-Vokabular
-  (bindend · lebend · offen …) und die Tabelle, welches Doc bei welcher
-  Code-Änderung nachgezogen wird
-- [contributing.md](contributing.md) (EN) — was aktuell hilfreich ist und
-  was noch zu früh ist; vom README fürs externe Publikum verlinkt
-- [README](../README.md) — der öffentliche Projekt-Pitch (Englisch) ·
-  [CITATION.cff](../CITATION.cff) — Zitations-Metadaten ·
-  [CLAUDE.md](../CLAUDE.md) — die Anweisungen für Claude Code
+| Doc | Wofür | Wann aufmachen |
+|---|---|---|
+| [index.md](index.md) | Diese Karte | Beim Suchen eines Docs |
+| [dokument-status.md](dokument-status.md) | Das Lifecycle-Vokabular (bindend · lebend · offen …), die Stand-Block-Regel und die Tabelle der Nachzieh-Pflichten je Doc | Beim Anlegen oder Umstufen eines Docs, und wenn ein Code-Diff ein Doc mitzieht |
+| [contributing.md](contributing.md) | (EN) Was aktuell hilfreich ist und was noch zu früh ist; vom README fürs externe Publikum verlinkt | Wenn eine öffentliche Route oder ein MVP-Gate fällt |
+
+Außerhalb von `docs/`: [README](../README.md) (der öffentliche Pitch,
+Englisch) · [CITATION.cff](../CITATION.cff) (Zitations-Metadaten) ·
+[CLAUDE.md](../CLAUDE.md) (die Anweisungen für Claude Code, mit der
+Pflichtlektüre und den Lesepfaden).

@@ -2582,11 +2582,15 @@ CI-Job „Docs-Register“. → messjournal.md · qualitaetsmetrik.md
 **Kurzglossar** *(short glossary)* — die Datei
 [`kurzglossar.md`](kurzglossar.md) (seit 2026-09-04): 77 Begriffe zu je ein
 bis zwei Sätzen, je mit dem Sprung in den Themenblock dieses Glossars.
-Ausgewählt nicht nach Gefühl, sondern **gezählt** — ein Eintragstitel kommt
-hinein, wenn er mit Wortgrenzen in mindestens zwei von drei Quellen
-vorkommt: Code (`core/`, `api/`, `tools/`, `alembic/`, `app/src/`), die
-Agenten-Dateien (`CLAUDE.md`, `.github/copilot-instructions.md`,
-`.claude/**`) und die Beschreibungen der letzten 40 gemergten PRs. Grund:
+Ausgewählt in zwei nachvollziehbaren Schritten: **gezählt** — ein
+Eintragstitel wird Kandidat, wenn er mit Wortgrenzen in mindestens zwei von
+drei Quellen vorkommt (Code in `core/`, `api/`, `tools/`, `alembic/`,
+`app/src/`; die Agenten-Dateien; die letzten 40 gemergten PR-Beschreibungen)
+— das ergab 92 Kandidaten —, und daraus **ausgeschlossen** entlang dreier
+benannter Klassen: Wortfalle (der Treffer stammt aus gewöhnlicher Prosa),
+schon abgedeckt (der Inhalt steht dort unter einem anderen Eintrag) und
+Ein-Arm-Etikett (ein Messname, den genau ein §14-Abschnitt benutzt). Die
+Klassen mit ihren Titeln stehen im Kopf des Kurzglossars; 77 bleiben. Grund:
 dieses Glossar kostet über 56 000 Token und stand damit als Pflichtlektüre
 in `CLAUDE.md`; die Kurzfassung ist die Pflichtlektüre, das volle Glossar
 bleibt die Nachschlage-Instanz und behält seinen Schnellindex.

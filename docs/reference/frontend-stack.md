@@ -12,8 +12,10 @@
 > **Origin-Geheimnis**, das der Apex-Worker selbst stempelt, weil ein
 > Worker-Subrequest die Transform-Rules der eigenen Zone umgeht
 > ([§5](#5-auth-für-admin-routen), `infra/cloudflare/`). Gebaut und
-> deployt wird auf Cloud Run, `min=0`/`max=1`
-> ([§6](#6-build--deploy)); Crawler bekommen vorgerenderte Seiten über den
+> deployt wird auf Cloud Run: **Min-Instanzen API 1 · App 0**, Max je 3 —
+> die eine warme API-Instanz seit 2026-08-30, weil ein Kaltstart gemessen
+> 9,4 s p50 kostet, und `max=3`, damit ein Deploy die warme Instanz nicht
+> ersetzen muss ([§6](#6-build--deploy)). Crawler bekommen vorgerenderte Seiten über den
 > `$is_bot`-Pfad der nginx-Config. Was bewusst NICHT gemacht wird, steht
 > in [§8](#8-was-wir-nicht-machen).
 >

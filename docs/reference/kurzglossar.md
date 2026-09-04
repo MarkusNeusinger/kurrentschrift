@@ -4,9 +4,9 @@
 > [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **77
 > Begriffe**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars. Nachzieh-Anlass: ein Begriff wandert
-> hierher, sobald er in Code-Identifiern, `CLAUDE.md`, den Skills oder
-> PR-Beschreibungen auftaucht — und ein Begriff, den keine dieser Quellen
-> mehr nennt, wandert wieder heraus. Das volle Glossar bleibt die
+> hierher, sobald er die Zwei-von-drei-Schwelle unten erreicht und in
+> keine der drei Ausschluss-Klassen fällt — und wieder heraus, sobald er
+> unter die Schwelle fällt. Das volle Glossar bleibt die
 > Nachschlage-Instanz und behält seinen alphabetischen Schnellindex; hier
 > steht **nichts**, was dort nicht ausführlicher stünde.
 
@@ -17,18 +17,39 @@ Projekts, sondern die Wörter, die ihm in der nächsten halben Stunde
 begegnen: in einem Modulkommentar, in einer Auftragszeile, in einer
 Skill-Anweisung. Genau die stehen hier.
 
-**Wie die Auswahl entstanden.** Nicht nach Gefühl, sondern gezählt: für
-jeden Eintragstitel des vollen Glossars (samt seiner Zweitnamen und der
-Identifier in seiner ersten Zeile) wurde mit Wortgrenzen gezählt, wie oft
-er in drei Quellen vorkommt — (1) `core/`, `api/`, `tools/`, `alembic/`,
-`app/src/` (`.py`/`.ts`/`.tsx`, Identifier und Kommentare), (2) die
-Agenten-Dateien `CLAUDE.md`, `.github/copilot-instructions.md` und
-`.claude/**`, (3) die Beschreibungen der letzten 40 gemergten PRs. 92
-Einträge kommen in mindestens zwei der drei Quellen vor; daraus die
-Begriffe, die eine Sitzung wirklich trifft, plus die, die `CLAUDE.md`
-namentlich als nachschlagenswert ausweist (Duktus-Prior, Schwellzug,
+**Wie die Auswahl entstanden.** In zwei Schritten, beide nachvollziehbar.
+
+**Schritt 1 — gezählt.** Für jeden Eintragstitel des vollen Glossars (samt
+seiner Zweitnamen und der Identifier in seiner ersten Zeile) wurde mit
+Wortgrenzen gezählt, wie oft er in drei Quellen vorkommt: (1) `core/`,
+`api/`, `tools/`, `alembic/`, `app/src/` (`.py`/`.ts`/`.tsx`, Identifier
+und Kommentare), (2) die Agenten-Dateien `CLAUDE.md`,
+`.github/copilot-instructions.md` und `.claude/**`, (3) die
+Beschreibungen der letzten 40 gemergten PRs. **92 Einträge** kommen in
+mindestens zwei der drei Quellen vor — das ist die Kandidatenliste.
+
+**Schritt 2 — drei benannte Ausschlüsse.** Aus den 92 fallen heraus:
+
+1. **Wortfalle** — Titel, deren Trefferzahl aus gewöhnlicher deutscher
+   Prosa stammt statt aus dem Fachgebrauch (`einen`, `Quelle`,
+   `Register`, `Bogen`, `Schriftkunde`, `Offenbacher`).
+2. **schon abgedeckt** — Titel, deren Inhalt hier unter einem anderen
+   Eintrag steht (`tracebench` in der Bench-Familie, `Oberlinie ·
+   Mittellinie · …` in **Lineatur**, `Anker` in **Anker · Sample ·
+   Schritt**, `glyph_key` mit Backticks geschrieben).
+3. **Ein-Arm-Etiketten** — Messnamen, die genau ein §14-Abschnitt
+   benutzt (`Plateau-Anker`, `Entdrillung`, `Stack-Sensor`,
+   `Karten-Soll-Vollständigkeit`, `Marken-endständige Assembly`,
+   `zonale Rückweisung`, `Lineal-Soll-Budget`, `Deckungslücke`,
+   `Austritts-Trim`, `Spike-Verhältnis`, `Sprung-Gate`,
+   `Nachbarbindung`, `Vorkommensschranke`, `like-for-like Gate`). Sie
+   gehören ins volle Glossar, nicht in den Einstieg.
+
+Dazu kommen die Begriffe, die `CLAUDE.md` namentlich als
+nachschlagenswert ausweist (Duktus-Prior, Schwellzug,
 `gen_chamfer`/`doff`/`dconn`, Bézier-Handle-Floor, Cusp-Connector, M1–M4,
-AIoU/LDTW).
+AIoU/LDTW). Ergebnis: **77 Einträge**. Wer die Zählung wiederholt, prüft
+jeden fehlenden Kandidaten gegen eine dieser drei Klassen.
 
 ---
 
@@ -399,8 +420,10 @@ Neue Argumente gehen nach `docs/proposals/`.
 
 **Status-Vokabular der Docs** — jedes Doc trägt unter der Überschrift
 einen Status mit absolutem Datum: bindend · lebend · teil-umgesetzt ·
-umgesetzt-historisch · offen · Befund-Journal · statisch.
-→ [§5](glossar.md#5-werkbank-und-prozess) · [index.md](../index.md)
+umgesetzt-historisch · offen · Befund-Journal · statisch. Ab rund 10 000
+Token wird der Kopf zum **Stand-Block** (bis zu 40 datierte Zeilen).
+→ [§5](glossar.md#5-werkbank-und-prozess) ·
+[dokument-status.md](../dokument-status.md)
 
 **Changelog-Fragment** *(`changelog.d/<slug>.md`)* — der
 Changelog-Beitrag einer PR als eigene Datei statt als Bullet unter

@@ -23,10 +23,13 @@
 > **Was offen ist.** [§8](#8-der-mvp-kleinster-lauffähiger-renderkern)
 > (vier MVP-Gates) und [§10](#10-reihenfolge--post-mvp-roadmap)
 > beschreiben die geplante **Reihenfolge**, nicht den Ist-Stand — der
-> steht in [`mvp-roadmap.md`](mvp-roadmap.md). Die Sektionen §11–§17
-> (Animation · Stil-Analyse · HTR · Lese-Lupe · Print ·
-> Frontend-Architektur · Open-Data) sind Post-MVP-Entwürfe: sie sagen,
-> wie es gebaut würde, nicht dass es gebaut ist. Das eine echte
+> steht in [`mvp-roadmap.md`](mvp-roadmap.md). Die Sektionen §11–§17 sind
+> gemischt: **teilweise gebaut** sind §11 (die MVP-Animation als
+> `WrittenGlyph`), §12 (die Statistik-Schichten H1/H2), §15 (das
+> clientseitige Übungsblatt) und §16 (der laufende Frontend-Stack);
+> **Entwurf** bleiben §13 (HTR), §14 (Lese-Lupe), §17 (Open-Data) und die
+> jeweils benannten Ausbaustufen der ersten vier. Jede dieser Sektionen
+> sagt in ihrem eigenen Kopf, welcher Teil steht. Das eine echte
 > Forschungsrisiko benennt [§7](#7-offener-forschungskern--das-risiko).
 >
 > **Nachzieh-Anlass.** §3 und §12 bei Schema-Änderungen (zuletzt
