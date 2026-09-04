@@ -42,7 +42,9 @@ describe('letterDetail', () => {
     expect(lookalikeKeys('a')).toEqual(['ae']);
     expect(lookalikeKeys('ae')).toEqual(['a']);
     expect(lookalikeKeys('L')).toEqual(['K', 'R']);
-    expect(lookalikeKeys('g')).toEqual([]);
+    expect(lookalikeKeys('g')).toEqual(['p']); // the descender pair, documented 2026-09-04
+    expect(lookalikeKeys('p')).toEqual(['g']);
+    expect(lookalikeKeys('q')).toEqual([]);
     expect(lookalikeKeys('0')).toEqual([]);
   });
 

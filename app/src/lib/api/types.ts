@@ -65,6 +65,10 @@ export interface LesartDictionaryOut {
   source: string;
   forms: number;
   sha256: string;
+  // True while the live vocabulary is still bucketed by an older look-alike
+  // fold than the server folds a guess with — an operational flag for the
+  // reload (tools.lesarten.sync), not something the page acts on.
+  stale?: boolean;
   updated_at?: string | null;
 }
 

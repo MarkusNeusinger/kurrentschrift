@@ -99,6 +99,10 @@ export const quiz = {
       tAsF: 'Das t hat keine Unterlänge — das f würde unter die Grundlinie reichen.',
       vAsW: 'Das v hat zwei Züge, das w drei.',
       wAsV: 'Drei Züge — das v hätte nur zwei.',
+      // The two halves of one owner-approved sentence (2026-09-04), each
+      // direction leading with the form on the card.
+      gAsP: 'Das g schließt unten eine runde Schleife — das p geht mit geradem Abstrich unter die Zeile und trägt seinen Bogen rechts oben.',
+      pAsG: 'Das p geht mit geradem Abstrich unter die Zeile und trägt seinen Bogen rechts oben — das g schließt unten eine runde Schleife.',
       szAsS: 'Das ß ist eine Ligatur aus langem ſ und z (ſʒ) — daher der Name Eszett.',
       umlautShown:
         'Über dem Buchstaben stehen die Umlautzeichen — aus dem klein übergeschriebenen e entstanden: ein {{letter}}.',

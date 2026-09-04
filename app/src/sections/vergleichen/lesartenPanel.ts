@@ -19,6 +19,11 @@ export type LesartenState =
   | 'error'
   /** The server has no dictionary loaded, so it cannot name words at all. */
   | 'noDictionary'
+  /** A dictionary answered, but it was bucketed by an older look-alike fold
+   * than the one the server now folds a guess with — so for exactly the pairs
+   * the fold gained (g/p since 2026-09-04), it looks in a bucket the words are
+   * not in. An empty answer then says nothing about the reading. */
+  | 'staleDictionary'
   /** A dictionary answered, and nothing in it looks like this reading. */
   | 'noReadings'
   /** Readings to show. */
@@ -32,7 +37,11 @@ export function lesartenState(
   if (failed) return 'error';
   if (readings === null) return 'loading';
   if (readings.length > 0) return 'readings';
-  return dictionary ? 'noReadings' : 'noDictionary';
+  if (!dictionary) return 'noDictionary';
+  // Same rule as the empty shelf above, one step further in: a vocabulary the
+  // server can no longer search by today's classes may not be quoted as
+  // evidence that nothing looks like the guess.
+  return dictionary.stale ? 'staleDictionary' : 'noReadings';
 }
 
 /** The provenance line („Wortformen aus … igerman98") belongs under the grid

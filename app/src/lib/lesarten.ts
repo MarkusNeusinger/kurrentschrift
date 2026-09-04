@@ -2,7 +2,7 @@
 // letters a reader can mistake for one another (orthographie-regeln.md §3,
 // the Schriftkunde's Buchstaben-Besonderheiten, the quiz's Lesefallen
 // catalogue). Lowercase pairs (n/u, e/n, n/m, m/w, v/w, i/j, i/e, t/l, f/h,
-// f/t, ſ/f as s ↔ f — the long ſ is typed `s`), umlaut ↔ base letter (the
+// f/t, g/p, ſ/f as s ↔ f — the long ſ is typed `s`), umlaut ↔ base letter (the
 // marks are the whole difference), the capital confusion clusters (L/K/R,
 // N/M, B/V). Symmetric: if n reads as u, u reads as n (pinned by the test).
 //
@@ -28,6 +28,8 @@ export const LOOKALIKES: Readonly<Record<string, readonly string[]>> = {
   f: ['s', 'h', 't'],
   h: ['f'],
   s: ['f'],
+  g: ['p'],
+  p: ['g'],
   a: ['ä'],
   ä: ['a'],
   o: ['ö'],

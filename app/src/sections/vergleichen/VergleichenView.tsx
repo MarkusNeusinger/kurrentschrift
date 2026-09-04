@@ -240,6 +240,8 @@ export function VergleichenView() {
             </Box>
           ) : state === 'noDictionary' ? (
             <Typography sx={{ ...prose, fontStyle: 'italic' }}>{t.noDictionary}</Typography>
+          ) : state === 'staleDictionary' ? (
+            <Typography sx={{ ...prose, fontStyle: 'italic' }}>{t.staleDictionary}</Typography>
           ) : state === 'noReadings' ? (
             <Typography sx={{ ...prose, fontStyle: 'italic' }}>{t.noLesarten}</Typography>
           ) : (

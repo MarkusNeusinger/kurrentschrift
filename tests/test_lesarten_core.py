@@ -6,7 +6,19 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from core.lesarten import LOOKALIKES, MAX_TEXT_LEN, WORD_MAX, lesart_key, rank_readings, swap_cost
+import core.lesarten as lesarten
+from core.lesarten import (
+    LESART_KEY_VERSION,
+    LOOKALIKES,
+    MAX_TEXT_LEN,
+    WORD_MAX,
+    is_current_fold,
+    key_marker,
+    key_signature,
+    lesart_key,
+    rank_readings,
+    swap_cost,
+)
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -37,6 +49,39 @@ def test_key_buckets_readable_variants_together() -> None:
     # Case matters: capital clusters are their own classes.
     assert lesart_key("Nuhme") != lesart_key("nuhme")
     assert len(lesart_key("ß.,")) == 3  # letters outside the table map to themselves
+
+
+def test_g_and_p_are_one_class() -> None:
+    """The descender pair (owner 2026-09-04, orthographie-regeln.md §3): the g
+    closes a round loop below the line, the p goes down straight. It is a class
+    of its own — the fold must not drag it into the n/u component."""
+    assert swap_cost("g", "p") == 1 and swap_cost("p", "g") == 1
+    assert lesart_key("Rappe") == lesart_key("Ragge")
+    assert swap_cost("g", "n") is None and swap_cost("p", "u") is None
+
+
+def test_key_signature_names_the_version_and_the_whole_table() -> None:
+    """What the loader hashes into a build: change either half and the build is
+    a different one, so the server cannot refuse the reload as already live."""
+    sig = key_signature()
+    assert sig.startswith(key_marker()) and f"v{LESART_KEY_VERSION}" in key_marker()
+    assert "g>p" in sig and "p>g" in sig
+    assert key_marker(LESART_KEY_VERSION - 1) != key_marker()
+
+
+def test_the_stale_check_compares_whole_markers() -> None:
+    """The stale check compares whole markers: a much later `v20` table must not
+    read as today's `v2` just because one spells a prefix of the other."""
+    assert is_current_fold(f"igerman98 + quiz bank ({key_marker()})")
+    assert not is_current_fold(f"igerman98 + quiz bank ({key_marker(LESART_KEY_VERSION * 10)})")
+    assert not is_current_fold(f"igerman98 + quiz bank ({key_marker(LESART_KEY_VERSION - 1)})")
+    assert not is_current_fold("igerman98/de_DE_frami@32b006a + quiz bank")  # the label before v2
+
+
+def test_key_signature_follows_a_changed_table(monkeypatch) -> None:
+    before = key_signature()
+    monkeypatch.setitem(lesarten.LOOKALIKES, "x", ("y",))
+    assert key_signature() != before
 
 
 def test_swap_cost_is_graph_distance() -> None:

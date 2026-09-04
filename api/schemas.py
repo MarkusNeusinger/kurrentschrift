@@ -69,11 +69,16 @@ class LesartReadingOut(BaseModel):
 
 
 class LesartDictionaryOut(BaseModel):
-    """Which vocabulary build answers: its source label and size."""
+    """Which vocabulary build answers: its source label and size. `stale` is
+    true when the build was bucketed by an older look-alike fold than the one
+    the read now folds a guess with (`core.lesarten.key_marker`) — the words
+    are still there, but a guess whose bucket the newer pair changed cannot
+    reach them until `tools.lesarten.sync` has loaded a fresh generation."""
 
     source: str
     forms: int
     sha256: str
+    stale: bool = False
     updated_at: datetime | None = None
 
 

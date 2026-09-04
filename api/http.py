@@ -25,3 +25,11 @@ NO_STORE = "private, no-store"
 # on the edge cache, and their assistant counts are understood as cache
 # misses (first fetch per asset per edge TTL), not every fetch.
 BROWSER_ONLY_CACHE = "private, max-age=300"
+
+# A read whose whole value is being current: the live Lesart vocabulary's
+# metadata, which says which fold bucketed it and therefore whether a reload
+# has landed. Under CACHE_CONTROL the answer to that question could be a day
+# old at the edge and a week old under stale-while-revalidate — an operational
+# signal that arrives after the window it describes is no signal. One row, so
+# the origin can afford the misses.
+STATUS_CACHE = "public, max-age=30"

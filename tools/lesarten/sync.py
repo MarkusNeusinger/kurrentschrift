@@ -8,9 +8,11 @@ bucket key itself (core.lesarten.lesart_key).
 
 Generation-switched, like the Übergangsraum push: open a generation, post the
 words in batches, commit — the live vocabulary changes in one step, the old
-one is dropped. Idempotent: the content hash of the sorted word list is sent
-first, and a build that is already live is refused by the server (409), which
-this tool reports as „nothing to do".
+one is dropped. Idempotent: the content hash of the fold plus the sorted word
+list is sent first, and a build that is already live is refused by the server
+(409), which this tool reports as „nothing to do" — so a changed look-alike
+table (`core.lesarten.LESART_KEY_VERSION`) forces a fresh load even when not a
+single word moved.
 
     ADMIN_TOKEN=… uv run python -m tools.lesarten.sync            # build + push
     ADMIN_TOKEN=… uv run python -m tools.lesarten.sync --dry-run  # counts only
@@ -28,13 +30,15 @@ import urllib.error
 from collections.abc import Iterable
 from pathlib import Path
 
-from core.lesarten import WORD_MAX
+from core.lesarten import WORD_MAX, key_marker, key_signature
 from tools.eigenhand.apiclient import admin_token, api_base, request_json
 from tools.lesarten.expand import REPO_ROOT, load_forms
 
 
 QUIZ_WORDS = REPO_ROOT / "tools" / "quizgen" / "quiz_words.json"
-SOURCE_LABEL = "igerman98/de_DE_frami@32b006a + quiz bank"
+# The marker names the fold the words were bucketed with, so the live build says
+# on its face which look-alike table it can still be searched by.
+SOURCE_LABEL = f"igerman98/de_DE_frami@32b006a + quiz bank ({key_marker()})"
 BATCH = 20_000
 
 
@@ -64,17 +68,21 @@ def drop_overlong(words: Iterable[str]) -> tuple[list[str], list[str]]:
 
 
 def build() -> tuple[list[tuple[str, bool]], str]:
-    """(sorted [word, bank] pairs, sha256 of the sorted words).
+    """(sorted [word, bank] pairs, sha256 of the fold plus the sorted words).
 
     The hash covers what is actually pushed, so it changes with the cap — a
-    build filtered differently is a different build."""
+    build filtered differently is a different build. It covers the FOLD too
+    (`core.lesarten.key_signature`), because the server refuses a build whose
+    hash is already live: the same word list under a changed look-alike table
+    would otherwise be rejected as „nothing to do" while every word the new
+    pair re-buckets sat unfindable in the stored generation."""
     forms = load_forms()
     bank = bank_words()
     words, dropped = drop_overlong(sorted(forms | bank))
     if dropped:
         print(f"dropped {len(dropped):,} words longer than {WORD_MAX} characters (e.g. {dropped[0]!r})")
     pairs = [(w, w in bank) for w in words]
-    digest = hashlib.sha256("\n".join(words).encode("utf-8")).hexdigest()
+    digest = hashlib.sha256("\n".join([key_signature(), *words]).encode("utf-8")).hexdigest()
     return pairs, digest
 
 
@@ -83,7 +91,10 @@ def push(pairs: list[tuple[str, bool]], digest: str, api: str, token: str, batch
     try:
         opened = request_json("POST", f"{api}/lesarten/dictionary/generations", token, body)
     except SystemExit as exc:
-        if "409" in str(exc):
+        # Match the server's words, not the status: a fold mismatch answers 409
+        # too, and „nothing to do" would be exactly the wrong thing to print
+        # when the API is still bucketing with the previous look-alike table.
+        if "already live" in str(exc):
             print("this build is already live — nothing to do")
             return
         raise

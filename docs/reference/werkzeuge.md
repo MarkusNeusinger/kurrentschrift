@@ -532,7 +532,16 @@ lokal bauen, über die admin-gesicherte API laden, nie direkt in die DB.
   nur die Zahlen. Braucht `ADMIN_TOKEN`
   (`ADMIN_TOKEN=… uv run python -m tools.lesarten.sync`). Nach einem
   Wörterbuch-Update (neuer Pin in `fetch_igerman98.py` + `SOURCE.md`)
-  oder einer Bank-Erweiterung einmal laufen lassen.
+  oder einer Bank-Erweiterung einmal laufen lassen — **und nach jeder
+  Änderung der Verwechsler-Tabelle** (→ Lesart-Schlüsselversion,
+  `glossar.md` §1): Der Schlüssel steckt seit 2026-09-04 im Inhalts-Hash,
+  derselbe Wortbestand unter neuer Tabelle ist also ein neuer Bau, und
+  das Quell-Label trägt die Version (`lesart-key/vN`). Reihenfolge:
+  erst deployen, dann laden — eine API mit älterer Tabelle weist den
+  Bau mit 409 ab und nennt beide Versionen, weil sie die Schlüssel
+  selbst berechnet. Bis zum Nachladen meldet
+  `GET /lesarten/dictionary` `stale: true`, und die Seite sagt statt
+  „wohl eindeutig", dass das Wörterbuch gerade umgestellt wird.
 
 ## Der Changelog-Schnitt (`tools/changelog`)
 

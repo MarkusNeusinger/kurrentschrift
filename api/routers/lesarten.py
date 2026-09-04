@@ -10,6 +10,11 @@ generation, post the words in batches — the server computes each bucket key
 with the same function the read uses — then commit, which switches the live
 generation in one step and drops the old one. An abandoned load is dropped
 by DELETE or by the next `begin`.
+
+A build's source label names the look-alike fold it was bucketed with
+(`core.lesarten.is_current_fold`), and its content hash covers that fold, so a
+changed table can neither be refused as already live nor stay live unnoticed:
+the `dictionary` block reports such a generation as `stale`.
 """
 
 from __future__ import annotations
@@ -19,7 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
 from api.dependencies import require_db
-from api.http import CACHE_CONTROL
+from api.http import CACHE_CONTROL, STATUS_CACHE
 from api.schemas import (
     LesartDictionaryOut,
     LesartenOut,
@@ -31,7 +36,16 @@ from api.schemas import (
     LesartSwapOut,
 )
 from core.database import LesartDictionary, LesartRepository
-from core.lesarten import DEFAULT_LIMIT, MAX_TEXT_LEN, WORD_MAX, lesart_key, rank_readings
+from core.lesarten import (
+    DEFAULT_LIMIT,
+    MAX_TEXT_LEN,
+    WORD_MAX,
+    fold_marker_in,
+    is_current_fold,
+    key_marker,
+    lesart_key,
+    rank_readings,
+)
 
 
 router = APIRouter(prefix="/lesarten", tags=["lesarten"])
@@ -49,10 +63,37 @@ async def _require_open(repo: LesartRepository, gen: int) -> None:
         )
 
 
+def _require_our_fold(source: str) -> None:
+    """Refuse a build that names a DIFFERENT look-alike fold than this server
+    folds with — deploy first, then load.
+
+    The bucket keys are computed HERE (`add_forms`), not by the loader, so a
+    newer loader pushed at an older API would fill the table with the OLD
+    buckets and label them with the new fold: `stale` would then report a
+    vocabulary as current that no reader can reach through the new pair. A
+    label carrying no marker at all is a pre-version build and stays allowed —
+    it reads as stale, which is the truth about it.
+    """
+    marker = fold_marker_in(source)
+    if marker is not None and marker != key_marker():
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail=f"this API buckets with {key_marker()}, the build says {marker} — deploy the new fold first",
+        )
+
+
 def _dictionary_out(meta: LesartDictionary | None) -> LesartDictionaryOut | None:
     if meta is None:
         return None
-    return LesartDictionaryOut(source=meta.source, forms=meta.forms, sha256=meta.sha256, updated_at=meta.updated_at)
+    # The loader stamps the fold it bucketed with into the source label; a build
+    # carrying an older one answers from buckets this code no longer computes.
+    return LesartDictionaryOut(
+        source=meta.source,
+        forms=meta.forms,
+        sha256=meta.sha256,
+        stale=not is_current_fold(meta.source),
+        updated_at=meta.updated_at,
+    )
 
 
 @router.get("", response_model=LesartenOut, response_model_by_alias=True)
@@ -88,7 +129,7 @@ async def get_lesarten(
 @router.get("/dictionary", response_model=LesartDictionaryOut | None)
 async def get_dictionary(response: Response, db: AsyncSession = Depends(require_db)) -> LesartDictionaryOut | None:
     """Which vocabulary build is live (null until the first load)."""
-    response.headers["Cache-Control"] = CACHE_CONTROL
+    response.headers["Cache-Control"] = STATUS_CACHE
     return _dictionary_out(await LesartRepository(db).dictionary())
 
 
@@ -100,7 +141,9 @@ async def get_dictionary(response: Response, db: AsyncSession = Depends(require_
 )
 async def begin_generation(body: LesartGenerationIn, db: AsyncSession = Depends(require_db)) -> LesartGenerationOut:
     """Open a new generation to load into. Idempotent per build: the same
-    content hash as the live build is refused with 409 — nothing to load."""
+    content hash as the live build is refused with 409 — nothing to load; so is
+    a build bucketed by another fold than this server's."""
+    _require_our_fold(body.source)
     repo = LesartRepository(db)
     meta = await repo.dictionary()
     if meta is not None and meta.sha256 == body.sha256:
@@ -149,6 +192,7 @@ async def commit_generation(
     gen: int, body: LesartGenerationIn, db: AsyncSession = Depends(require_db)
 ) -> LesartDictionaryOut:
     """Make the open generation live and drop every other one."""
+    _require_our_fold(body.source)
     repo = LesartRepository(db)
     await _require_open(repo, gen)
     if await repo.count_forms(gen) == 0:

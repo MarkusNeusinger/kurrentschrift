@@ -23,6 +23,14 @@ describe('explainMiss', () => {
     expect(explainMiss(question('n'), 'u')).not.toBe(explainMiss(question('u'), 'n'));
   });
 
+  it('separates g and p by the descender, in both directions', () => {
+    expect(explainMiss(question('g'), 'p')).toBe(de.quiz.play.rules.gAsP);
+    expect(explainMiss(question('p'), 'g')).toBe(de.quiz.play.rules.pAsG);
+    // Each sentence opens with the form on the card.
+    expect(explainMiss(question('g'), 'p')).toMatch(/^Das g/);
+    expect(explainMiss(question('p'), 'g')).toMatch(/^Das p/);
+  });
+
   it('keeps the two s-allographs apart: the round s gets its position rule against any guess', () => {
     expect(explainMiss(question('s'), 'r')).toBe(de.quiz.play.rules.roundS);
     expect(explainMiss(question('s'), 'e')).toBe(de.quiz.play.rules.roundS);
@@ -83,10 +91,11 @@ describe('confusablesOf', () => {
 
   it('never lists the shown letter itself, and nothing for undocumented forms', () => {
     for (const key of ['n', 'L', 'ae', 'sz']) expect(confusablesOf(question(key))).not.toContain(question(key).kg.answer);
-    expect(confusablesOf(question('g'))).toEqual([]);
+    expect(confusablesOf(question('g'))).toEqual(['p']); // documented since 2026-09-04
+    expect(confusablesOf(question('q'))).toEqual([]);
     expect(confusablesOf(question('0'))).toEqual([]);
     // Every listed confusable round-trips to a sentence.
-    for (const key of ['n', 'u', 'longs', 'f', 'ae', 'L', 'B']) {
+    for (const key of ['n', 'u', 'longs', 'f', 'ae', 'L', 'B', 'g', 'p']) {
       for (const guess of confusablesOf(question(key))) expect(explainMiss(question(key), guess)).not.toBeNull();
     }
   });
