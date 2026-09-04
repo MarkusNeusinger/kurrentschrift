@@ -3,7 +3,7 @@
 Every PR that changes code adds ONE file here instead of editing
 `CHANGELOG.md`: `changelog.d/<slug>.md`, the slug naming the change (the
 branch name minus its prefix does fine — `tafel-detail.md`,
-`lesarten-dictionary.md`). Nothing else touches `CHANGELOG.md` between
+`lesarten-dictionary.md`). Nothing else is ADDED to `CHANGELOG.md` between
 releases, so two PRs never meet at the same line again — the reason this
 directory exists (2026-08-30; before it, every sibling merge conflicted the
 others under `[Unreleased]`, and the union merge driver healed only the
