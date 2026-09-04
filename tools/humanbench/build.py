@@ -118,8 +118,11 @@ DEFAULT_STYLE = "suetterlin"
 
 # Bumped whenever the payload shape changes, so a page built for an older round
 # fails loudly instead of drawing nothing. v2 replaced the single `strokes`
-# array with `panels[]`, which is what makes the paired mode possible at all.
-PAYLOAD_FORMAT = 2
+# array with `panels[]`, which is what makes the paired mode possible at all;
+# v3 wrapped the item list in an ENVELOPE carrying the round, the question and
+# the round's own resume namespace, so a page no longer depends on the caller
+# repeating on the command line what the round already knows about itself.
+PAYLOAD_FORMAT = 3
 
 # Seeds are per round by default: two rounds drawing the same permutation would
 # silently correlate their fatigue and order effects. The resolved integer is
@@ -1399,7 +1402,7 @@ class Round:
 VOLATILE_STAMP_FIELDS = ("built_at", "code_commit", "code_branch", "code_dirty")
 
 
-def round_store(stamp: dict) -> str:
+def round_store(stamp: dict, items: list[dict]) -> str:
     """The browser-storage namespace of THIS round.
 
     Two word rounds over one fixture set draw the same words in the same order
@@ -1414,10 +1417,18 @@ def round_store(stamp: dict) -> str:
     inputs it drew, i.e. the stamp minus the clock and the commit — a rebuild of
     the same round still resumes where the judge left off, and a different round
     never can.
+
+    And keyed on WHAT IS DRAWN as well, not only on the round's inputs. The
+    commit is deliberately not part of the identity, so a renderer fix mid-round
+    would otherwise rebuild different screens under the same key and `restore()`
+    would replay the old verdicts BY INDEX onto them — the LF11 defect one layer
+    up, and worse, because it would look like an intact round. Byte-identical
+    rebuilds still resume; a page whose drawing moved starts clean.
     """
     identity = {key: value for key, value in stamp.items() if key not in VOLATILE_STAMP_FIELDS}
-    digest = hashlib.sha256(json.dumps(identity, sort_keys=True, default=str).encode()).hexdigest()
-    return f"humanbench-r{stamp.get('round')}-{digest[:10]}"
+    digest = hashlib.sha256(json.dumps(identity, sort_keys=True, default=str).encode())
+    digest.update(json.dumps(items, sort_keys=True, separators=(",", ":"), default=str).encode())
+    return f"humanbench-r{stamp.get('round')}-{digest.hexdigest()[:10]}"
 
 
 def write_round(out: Path, built: Round, *, force: bool) -> None:
@@ -1433,7 +1444,7 @@ def write_round(out: Path, built: Round, *, force: bool) -> None:
     envelope = {
         "round": built.stamp.get("round"),
         "question": built.stamp.get("question"),
-        "store": round_store(built.stamp),
+        "store": round_store(built.stamp, built.items),
         "items": built.items,
     }
     (out / "payload.json").write_text(

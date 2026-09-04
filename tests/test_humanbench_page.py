@@ -125,6 +125,12 @@ def test_two_rounds_over_the_same_words_do_not_share_a_resume_key():
     seven = config_of(build_page(PAIRED, round_label="7"), "store")
     assert six != seven
     assert six == config_of(build_page(PAIRED, round_label="6"), "store"), "a rebuild must still resume"
+    # The ids survive a change to the DRAWING, so they cannot be the whole key:
+    # a page rebuilt after a renderer fix would otherwise replay the old
+    # verdicts by index onto screens that no longer show the same thing.
+    redrawn = copy.deepcopy(PAIRED)
+    redrawn[0]["panels"][0]["strokes"] = [[[0, 0], [11, 11]]]
+    assert config_of(build_page(redrawn, round_label="6"), "store") != six
     # And a builder that hands in its own namespace wins over the derived one.
     assert config_of(build_page({"round": 6, "store": "humanbench-r6-abc", "items": PAIRED}), "store") == (
         "humanbench-r6-abc"

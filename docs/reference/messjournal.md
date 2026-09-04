@@ -191,7 +191,7 @@ die DB) — mit seiner Bedingung.
 | sep02 | Übergänge | [J4 Austritts-Kollinearität (`exit_trim`)](#übergänge-j4-sep02--vorregistrierung-die-austritts-kollinearität-exit_trim) | Pre-Reg + gemessen · verworfen | 4 von 5 Gates grün (Wörter −0,000535, seam_dep +12,52→−1,39), (b) rot: `dconn` fällt nur in 20 % statt 60 % |
 | sep02 | Übergänge | [J4b enge Klasse](#übergänge-j4b-sep02--post-hoc-die-enge-klasse-nur-die-joins-die-wirklich-knicken) | POST-HOC · verworfen | Schnitt bei 20° Knick rettet den Arm nicht: `dconn` 43 %, seam_dep der Klasse nur +8,02 — Rettungswege in §7.9 |
 | sep02 | Laufform | [LF11 humanbench-Runde und Adoption](#laufform-lf11-sep02--humanbench-wortrunde-instrumentdefekt-und-adoption-prod-write--re-baseline) | **ADOPTIERT auf Autor-Entscheid** (kein formales Instrument-Verdikt) · Prod-Write + Re-Baseline | Runde verlässlich (10/12 Arm) und Richtung erdrückend (40 : 1), aber die Tie-Schranke fällt in JEDER Lesart (34,9 % gesamt, 25,6 % in der günstigsten Teilmenge, gegen ≤ 25 %) — `adopt: false`; ob ein Teil der Runde auf der defekten Anzeige „gefüllte Ringe" lief, ist zwischen Protokoll und Bestand ungeklärt (offener Punkt); Write nach Snapshot `2026-09-02T21-58-16Z`, Readback 22/22; Wörter 0,109218 · Paare 0,148198 |
-| sep04 | Feder | [Platten-Nib A3 (Wortrunde)](#platten-nib-a3-sep04--vorregistrierung-die-wortrunde-über-die-strichbreite) | Pre-Reg · Runde gebaut, Urteil offen | Halbbreite 0,097 statt 0,07251; das Lineal kennt die Federbreite nur über `stroke_px`. Nebenbedingung des Audits schon trocken gerissen (`gleichzug_doublings` 13 → 21) — ein ≥ 60 % lizenziert nur den Folgearm „Ink-Clearance an die Feder koppeln", nicht den Write |
+| sep04 | Feder | [Platten-Nib A3 (Wortrunde)](#platten-nib-a3-sep04--vorregistrierung-die-wortrunde-über-die-strichbreite) | Pre-Reg · Runde gebaut, Urteil offen | Halbbreite 0,097 statt 0,07251. Das Lineal ist nicht blind, sondern EINSEITIG: dem Lineal die breitere Feder nennen senkt bei unveränderter Geometrie 0,109218 → 0,101560. Nebenbedingung des Audits schon trocken gerissen (`gleichzug_doublings` 13 → 21) — ein ≥ 60 % lizenziert nur den Folgearm „Ink-Clearance an die Feder koppeln", nicht den Write |
 | sep04 | Übergänge | [J4 Wortrunde (Rettungsweg 3)](#übergänge-j4-sep04--vorregistrierung-die-wortrunde-als-benannter-rettungsweg) | Pre-Reg · Runde gebaut, Urteil offen | Der §7.9-Rettungsweg zum `dconn`-Negativ; auf der LF11-Wurzel neu vermessen: `seam_dep` +7,99 → +0,02, Wörter +0,000248 (Vorzeichen gedreht), Paare byte-gleich |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
@@ -7439,17 +7439,34 @@ schreibt dieselben 63 Wortproben mit diesem Nib und sonst unverändert
 (`wordarm.py --nib 0.097`, `constant_nib_units` im Resolver — kein
 Core-Eingriff, der Schalter ist der bestehende).
 
-**Warum das kein Lineal entscheiden kann.** Das Wort-Lineal ist
-gegenüber der Strichstärke fast blind, und zwar nachweisbar aus seiner
-Konstruktion: `transition` und `coverage` sind Chamfer-Abstände zwischen
-MITTELLINIEN und dem Skelett, `width` vergleicht die x-AUSDEHNUNG der
-komponierten Mittellinien mit der der Probe — keiner dieser drei Terme
-kennt die Federbreite. Sie betritt `score_word` an genau einer Stelle:
-`stroke_px` beim Rastern der Komposition für den Rück-Chamfer. Ein
-Kandidat, der nur die Feder wechselt, bewegt das Lineal deshalb aus dem
-falschen Grund oder gar nicht — die Frage „welche sieht echter
-geschrieben aus?" ist hier nicht ein Tie-Breaker, sondern das einzige
-Instrument, das den Gegenstand überhaupt anfasst.
+**Warum das kein Lineal entscheiden kann — und der Grund ist schlimmer
+als Blindheit.** Die Federbreite betritt `score_word` an genau einer
+Stelle: `stroke_px` beim Rastern der Komposition für den Rück-Chamfer.
+Von dort wirkt sie aber auf ZWEI der drei Terme — `edt_composed` speist
+`coverage` (`core/word_metric.py`, `rev`) und `transition` (`t_rev`);
+nur `width` kennt sie nicht, denn es vergleicht die x-AUSDEHNUNG der
+Mittellinien. Und die Wirkung ist **einseitig**: ein breiterer Strich
+rastert eine Obermenge, das Distanzfeld wird punktweise kleiner, beide
+Terme können nur fallen.
+
+Gemessen, mit der Geometrie festgehalten und nur der dem Lineal
+genannten Feder verändert (63 Wortproben, dieselbe Wurzel):
+
+| | loss | `coverage` | `transition` | `width` |
+|---|---|---|---|---|
+| Geometrie 0,0725, Lineal 0,0725 | 0,109218 | 0,101559 | 0,091429 | 0,162645 |
+| Geometrie 0,0725, **Lineal 0,097** | **0,101560** | 0,091857 | 0,081958 | 0,162645 |
+| Geometrie 0,097, Lineal 0,097 | 0,100833 | 0,092061 | 0,085154 | 0,151460 |
+
+Die mittlere Zeile ist der Beleg: **−0,0077, ohne dass sich ein Punkt
+der Komposition bewegt hat** — zwanzigmal die Größenordnung, an der in
+dieser Kampagne ganze Arme gestorben sind, und `width` bleibt
+byte-gleich. **Das Lineal belohnt die dickere Feder, gleich ob die Probe
+so dick ist.** Ein Maß, das den Kandidaten konstruktionsbedingt
+bevorzugt, kann diese Frage nicht entscheiden; die Menschenrunde ist
+deshalb hier nicht ein Tie-Breaker, sondern das einzige Instrument, das
+den Gegenstand unvoreingenommen anfasst. (Die dritte Zeile — der volle
+Kandidat, 0,100833 — ist aus demselben Grund **keine** Evidenz für ihn.)
 
 **Basis.** Wurzel `suetterlin-1922` `exported_at
 2026-09-02T22:16:06+00:00` Digest `6cbab9d5c092`, Paar-Wurzel

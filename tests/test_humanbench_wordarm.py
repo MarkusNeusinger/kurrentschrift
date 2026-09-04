@@ -143,8 +143,81 @@ def test_load_laufform_draft_accepts_both_shapes_the_word_bench_accepts(tmp_path
 # already has. The failure mode of adding one is not that it computes the wrong
 # thing — it is that the flag is parsed, printed into the settings, and never
 # handed to `compose_word`, so the round compares the base against itself and
-# says „kein Unterschied" 63 times. The fixtures the real call needs are
-# gitignored (quellen-und-rechte.md §5), so what is pinned here is the wiring.
+# says „kein Unterschied" 63 times, and nothing about the run looks wrong.
+#
+# Two levels, because one alone would not catch it. The CLI test below stops at
+# `compose_arm`; the ones after it run the REAL `compose_arm` over a stand-in
+# root and capture the call `compose_word` actually receives. The real roots are
+# gitignored learned data (quellen-und-rechte.md §5), so the root is synthetic —
+# but the forwarding under test is not.
+
+
+def stand_in_root(tmp_path):
+    """The three files `compose_arm` reads, and nothing else.
+
+    `compose_word` and `score_word` are captured by the caller, so the geometry
+    in here never has to be real — only the shape has to be.
+    """
+    root = tmp_path / "suetterlin-1922"
+    (root / "unter").mkdir(parents=True)
+    (root / "manifest.json").write_text(
+        json.dumps(
+            {
+                "style_ratio": [1, 1, 1],
+                "width_resolver": "constant",
+                "constant_nib_units": 0.07251,
+                "exported_at": "2026-09-02T22:16:06+00:00",
+                "words": [{"id": "unter", "word": "unter", "scorable": True}],
+            }
+        )
+    )
+    (root / "templates.json").write_text(json.dumps({"u": {"anchors": [[0, 0]]}}))
+    (root / "templates_laufform.json").write_text(json.dumps({}))
+    (root / "unter" / "word.json").write_text(
+        json.dumps(
+            {
+                "rect": [0, 0, 120, 60],
+                "baseline_y": 40,
+                "midband_y": 20,
+                "slots": [{"key": "u", "text": "u", "position": "initial", "ligature": False, "space": False}],
+            }
+        )
+    )
+    np.savez(root / "unter" / "ref_skel.npz", skel=np.zeros((60, 120), dtype=bool))
+    return root
+
+
+@pytest.mark.parametrize("switch, expected", [({}, False), ({"exit_trim": True}, True)])
+def test_compose_arm_hands_exit_trim_to_compose_word(tmp_path, monkeypatch, switch, expected):
+    """The forwarding itself, not the parsing: delete `exit_trim=exit_trim` from
+    the `compose_word` call and this is the test that goes red."""
+    calls: list[dict] = []
+
+    def fake_compose(slots, payloads, **kwargs):
+        calls.append(kwargs)
+        return {"items": COMPOSED["items"], "missing": []}
+
+    monkeypatch.setattr(wordarm, "compose_word", fake_compose)
+    monkeypatch.setattr(wordarm, "score_word", lambda *a, **k: {"registration": REGISTRATION})
+    monkeypatch.setattr(wordarm, "render_payload_for_template", lambda *a, **k: {"anchors": []})
+
+    words, settings = wordarm.compose_arm(stand_in_root(tmp_path), **switch)
+    assert list(words) == ["unter"], settings["failed"]
+    assert calls and calls[0]["exit_trim"] is expected
+    assert settings["exit_trim"] is expected
+
+
+def test_compose_arm_hands_the_nib_to_the_resolver(tmp_path, monkeypatch):
+    """The nib reaches the payloads, not just the settings line."""
+    seen: list = []
+    monkeypatch.setattr(wordarm, "compose_word", lambda *a, **k: {"items": COMPOSED["items"], "missing": []})
+    monkeypatch.setattr(wordarm, "score_word", lambda *a, **k: {"registration": REGISTRATION})
+    monkeypatch.setattr(
+        wordarm, "render_payload_for_template", lambda row, ratio, resolver, nib: seen.append(nib) or {"anchors": []}
+    )
+    _words, settings = wordarm.compose_arm(stand_in_root(tmp_path), nib=0.097)
+    assert seen and set(seen) == {0.097}
+    assert settings["nib_units"] == 0.097 and settings["nib_overridden"] is True
 
 
 def _settings(**kwargs) -> dict:

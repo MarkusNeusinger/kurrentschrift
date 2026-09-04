@@ -502,18 +502,23 @@ def normalise(payload: Any) -> tuple[list[dict[str, Any]], dict[str, Any]]:
 def _fingerprint(tag: str, items: list[dict[str, Any]]) -> str:
     """Short stable digest of what this page asks, for the resume key.
 
-    The TAG is folded in, not just the mode and the item ids: two word rounds
-    over the same fixture set draw the same 63 words in the same order under
-    the same display ids, so on ids alone they would share a resume key and the
-    second round would open on the first one's answers. The tag carries the
-    round number, which is the one thing that always differs — and when it does
-    not, the builder hands in an explicit `store` (see `build.py`).
+    Two things beyond the mode go in, each for its own failure:
+
+    * the TAG, because two word rounds over the same fixture set draw the same
+      63 words in the same order under the same display ids — on ids alone they
+      would share a resume key and the second round would open on the first
+      one's answers. The tag carries the round number.
+    * what is actually DRAWN, because the ids survive a change to the drawing.
+      A page rebuilt after a renderer fix keeps every id, and `restore()` would
+      replay the old verdicts BY INDEX onto screens that no longer show the
+      same thing — an intact-looking round about two different drawings. An
+      exact rebuild still resumes; a corrected page starts clean.
     """
     digest = hashlib.sha256()
     digest.update(tag.encode())
     for item in items:
         digest.update(b"\x00")
-        digest.update(item["id"].encode())
+        digest.update(json.dumps(item, sort_keys=True, separators=(",", ":")).encode())
     return digest.hexdigest()[:10]
 
 
