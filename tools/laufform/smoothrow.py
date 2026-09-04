@@ -30,6 +30,16 @@ letter set from the base it is measured against, and the comparison would be
 none. `--keys harvested` lifts that for a diagnostic run. A stored key the
 harvest produced no fits for keeps its stored row verbatim.
 
+`--floor` is the evidence floor of the write path (`LAUFFORM_MIN_OCCURRENCES`,
+the same number `PUT …/templates/{key}/laufform` refuses below): a key whose
+FRESH harvest carries fewer occurrences keeps its stored row verbatim instead
+of being re-derived from too little evidence, and the report names it. The
+default is the server floor, so a map built here can no longer silently carry a
+row the write path would reject with 422 — the audit of 2026-09-02 (Befund 35)
+found three such rows live, and the estimator does not care how thin the stack
+under it is. `--floor 1` is the explicit author statement and reproduces the
+LF11 card of `sep02`, which was built before this argument existed.
+
 Never writes to the DB or the fixture root.
 """
 
@@ -44,7 +54,7 @@ from types import SimpleNamespace
 
 import numpy as np
 
-from core.aggregate import spline_basis_median
+from core.aggregate import LAUFFORM_MIN_OCCURRENCES, spline_basis_median
 from core.laufform import head_gate, smoothness_gap, spike_gate
 from tools.wordbench.fetch_fixtures import laufform_row_from_payload
 
@@ -82,12 +92,20 @@ def occurrences_by_key(occurrences: list[dict]) -> dict[str, list[list[list[floa
 
 
 def build_candidates(
-    root: Path, occurrences: list[dict], knot_spacing: float, *, keys: str = "stored"
+    root: Path,
+    occurrences: list[dict],
+    knot_spacing: float,
+    *,
+    keys: str = "stored",
+    floor: int = LAUFFORM_MIN_OCCURRENCES,
 ) -> tuple[dict[str, dict], list[str]]:
     """Every eligible key's running form, medianed in the chosen basis.
 
-    `knot_spacing` of 0 selects the per-anchor median (the control arm). Returns
-    the candidate rows keyed by glyph_key and one report line per key.
+    `knot_spacing` of 0 selects the per-anchor median (the control arm).
+    `floor` is the evidence floor: a key with fewer fresh occurrences is not
+    re-derived at all — it keeps its stored row if it has one, and is left out
+    of the map otherwise. Returns the candidate rows keyed by glyph_key and one
+    report line per key.
     """
     templates = json.loads((root / "templates.json").read_text())
     stored = json.loads((root / "templates_laufform.json").read_text())
@@ -102,12 +120,18 @@ def build_candidates(
             report.append(f"  skip {key}: no chart row in the root")
             continue
         anchor_sets = grouped.get(key) or []
-        if not anchor_sets or len(anchor_sets[0]) != len(chart["anchors"]):
+        usable = bool(anchor_sets) and len(anchor_sets[0]) == len(chart["anchors"])
+        if not usable or len(anchor_sets) < floor:
+            # Two different reasons, one behaviour: the row the write path would
+            # produce here is not one it would accept, so the map must not offer
+            # it. Saying WHICH reason is the point — "no fits" is a gap in the
+            # harvest, "under the floor" is a gap in the evidence.
+            why = f"no usable fits: n={len(anchor_sets)}" if not usable else f"n={len(anchor_sets)} < floor {floor}"
             if key in stored:
                 rows[key] = stored[key]
-                report.append(f"  {key:6s} stored row kept verbatim (no usable fits: n={len(anchor_sets)})")
+                report.append(f"  {key:6s} stored row kept verbatim ({why})")
             else:
-                report.append(f"  skip {key}: no usable fits")
+                report.append(f"  skip {key}: {why}")
             continue
         stack = np.asarray(anchor_sets, dtype=float)
         meta = chart.get("trace_meta") or {}
@@ -160,6 +184,13 @@ def main() -> None:
         default="stored",
         help="which keys the map names (default: exactly the root's stored rows)",
     )
+    ap.add_argument(
+        "--floor",
+        type=int,
+        default=LAUFFORM_MIN_OCCURRENCES,
+        help=f"evidence floor for a re-derived row (default: the write path's {LAUFFORM_MIN_OCCURRENCES}); "
+        "a thinner key keeps its stored row. Pass 1 as an explicit author statement",
+    )
     ap.add_argument("--out", type=Path, required=True, help="candidate map (glyph_key -> full fixture row)")
     args = ap.parse_args()
     if args.knots < 0.0:
@@ -168,13 +199,26 @@ def main() -> None:
         # the command that produced it is not a measurement.
         raise SystemExit(f"--knots must be 0 (control arm) or a positive spacing, got {args.knots}")
 
+    if args.floor < 1:
+        raise SystemExit(f"--floor must be at least 1, got {args.floor}")
+
     occurrences = json.loads(args.occurrences.read_text())
-    rows, report = build_candidates(args.root, occurrences, args.knots, keys=args.keys)
+    rows, report = build_candidates(args.root, occurrences, args.knots, keys=args.keys, floor=args.floor)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(rows, ensure_ascii=False))
     arm = "per-anchor median (control)" if args.knots == 0.0 else f"spline basis, knots {args.knots} xh"
-    print(f"LF11 {arm} · root={args.root.name}: {len(rows)} candidate rows → {args.out}")
+    print(f"LF11 {arm} · root={args.root.name} · floor {args.floor}: {len(rows)} candidate rows → {args.out}")
     print("\n".join(report))
+    # A row that came out of the ROOT rather than out of this harvest can still
+    # sit under the floor — the floor guards writes, never the existing stock
+    # (audit 2026-09-02, Befund 35). The map carries it either way, so it is
+    # named here instead of being discovered by the next audit.
+    thin = sorted(
+        key
+        for key, row in rows.items()
+        if int(((row.get("trace_meta") or {}).get("laufform") or {}).get("n_occurrences") or 0) < args.floor
+    )
+    print(f"rows in the map under the floor of {args.floor}: {len(thin)}" + (f" ({', '.join(thin)})" if thin else ""))
 
 
 if __name__ == "__main__":
