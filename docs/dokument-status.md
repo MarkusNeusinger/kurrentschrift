@@ -3,10 +3,13 @@
 > **Status (2026-09-04): lebend.** Das Lifecycle-Vokabular der Docs und
 > die Tabelle, welche Datei bei welcher Code-Änderung nachgezogen wird.
 > Stand 2026-09-04 aus [`index.md`](index.md) hierher gezogen, damit die
-> Startseite eine Karte bleibt und nicht zugleich das Pflichtenheft ist —
-> Wort für Wort dieselbe Tabelle. Nachzieh-Anlass: jedes Doc, dessen
-> Status auf `lebend` wechselt (Zeile ergänzen) oder das es verlässt
-> (Zeile entfernen), und jede geänderte Nachzieh-Bedingung.
+> Startseite eine Karte bleibt und nicht zugleich das Pflichtenheft ist.
+> Die vorhandenen Zeilen sind unverändert übernommen; neu sind allein die
+> beiden Zeilen für diese Datei und für das Kurzglossar, und die
+> `index.md`-Zeile nennt jetzt die Kartenzeilen statt Baum und
+> Schnellzugriff. Nachzieh-Anlass: jedes Doc, dessen Status auf `lebend`
+> wechselt (Zeile ergänzen) oder das es verlässt (Zeile entfernen), und
+> jede geänderte Nachzieh-Bedingung.
 
 Jedes Doc unter `docs/` trägt seit 2026-08-03 direkt unter der Überschrift
 einen Status-Blockquote nach demselben Muster
