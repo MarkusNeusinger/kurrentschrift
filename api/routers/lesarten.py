@@ -12,7 +12,7 @@ generation in one step and drops the old one. An abandoned load is dropped
 by DELETE or by the next `begin`.
 
 A build's source label names the look-alike fold it was bucketed with
-(`core.lesarten.key_marker`), and its content hash covers that fold, so a
+(`core.lesarten.is_current_fold`), and its content hash covers that fold, so a
 changed table can neither be refused as already live nor stay live unnoticed:
 the `dictionary` block reports such a generation as `stale`.
 """
@@ -36,7 +36,7 @@ from api.schemas import (
     LesartSwapOut,
 )
 from core.database import LesartDictionary, LesartRepository
-from core.lesarten import DEFAULT_LIMIT, MAX_TEXT_LEN, WORD_MAX, key_marker, lesart_key, rank_readings
+from core.lesarten import DEFAULT_LIMIT, MAX_TEXT_LEN, WORD_MAX, is_current_fold, lesart_key, rank_readings
 
 
 router = APIRouter(prefix="/lesarten", tags=["lesarten"])
@@ -63,7 +63,7 @@ def _dictionary_out(meta: LesartDictionary | None) -> LesartDictionaryOut | None
         source=meta.source,
         forms=meta.forms,
         sha256=meta.sha256,
-        stale=key_marker() not in meta.source,
+        stale=not is_current_fold(meta.source),
         updated_at=meta.updated_at,
     )
 

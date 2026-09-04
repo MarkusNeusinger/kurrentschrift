@@ -131,10 +131,10 @@ den lebenden vergleicht, also ist derselbe Wortbestand unter geänderter
 Tabelle ein *neuer* Build und wird nicht mehr als „schon live" (409)
 abgewiesen. *Technisch:* `core/lesarten::LESART_KEY_VERSION` mit
 `key_signature()` (Version + Tabelle, geht in den sha256 von
-`tools.lesarten.sync`) und `key_marker()` (steht im Quell-Label des
-Builds; die API vergleicht ihn mit dem eigenen und meldet eine ältere
-Generation als `stale` in `GET /lesarten/dictionary`). → Lesefalle §1 ·
-orthographie-regeln.md §3
+`tools.lesarten.sync`) und `key_marker()` (steht als eigenes Wort im
+Quell-Label des Builds; `is_current_fold()` vergleicht es mit dem
+eigenen, und die API meldet eine ältere Generation als `stale` in
+`GET /lesarten/dictionary`). → Lesefalle §1 · orthographie-regeln.md §3
 
 **Lesefalle** — ein Buchstabenpaar, das sich in der deutschen
 Schreibschrift so ähnelt, dass Leseanfänger es regelmäßig vertauschen,

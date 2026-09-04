@@ -138,6 +138,15 @@ def key_marker(version: int = LESART_KEY_VERSION) -> str:
     return f"lesart-key/v{version}"
 
 
+def is_current_fold(source: str) -> bool:
+    """Whether a build's source label was stamped by the fold this code uses.
+
+    Token-wise, not as a substring: `lesart-key/v2` must not answer yes for the
+    `lesart-key/v20` of a much later table. The loader writes the marker as its
+    own parenthesised word, which is what makes that comparison exact."""
+    return key_marker() in source.replace("(", " ").replace(")", " ").split()
+
+
 def key_signature() -> str:
     """Everything `lesart_key` folds together, as one line: the version and the
     table behind it. The loader mixes this into the content hash of a build, so

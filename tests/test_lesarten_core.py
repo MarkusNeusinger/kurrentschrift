@@ -12,6 +12,7 @@ from core.lesarten import (
     LOOKALIKES,
     MAX_TEXT_LEN,
     WORD_MAX,
+    is_current_fold,
     key_marker,
     key_signature,
     lesart_key,
@@ -66,6 +67,15 @@ def test_key_signature_names_the_version_and_the_whole_table() -> None:
     assert sig.startswith(key_marker()) and f"v{LESART_KEY_VERSION}" in key_marker()
     assert "g>p" in sig and "p>g" in sig
     assert key_marker(LESART_KEY_VERSION - 1) != key_marker()
+
+
+def test_the_stale_check_compares_whole_markers() -> None:
+    """The stale check compares whole markers: a much later `v20` table must not
+    read as today's `v2` just because one spells a prefix of the other."""
+    assert is_current_fold(f"igerman98 + quiz bank ({key_marker()})")
+    assert not is_current_fold(f"igerman98 + quiz bank ({key_marker(LESART_KEY_VERSION * 10)})")
+    assert not is_current_fold(f"igerman98 + quiz bank ({key_marker(LESART_KEY_VERSION - 1)})")
+    assert not is_current_fold("igerman98/de_DE_frami@32b006a + quiz bank")  # the label before v2
 
 
 def test_key_signature_follows_a_changed_table(monkeypatch) -> None:
