@@ -799,15 +799,35 @@ einen `add_header` ergänzt, ergänzt die `include`-Zeile daneben.
 
 **Die CSP nennt die gemessenen Quellen, nicht die vermuteten.** `script-src`
 kommt **ohne** `'unsafe-inline'` aus: Die beiden Inline-Skripte in
-`app/index.html` (Hero-Vorwärmer und Plausible-Stub) stehen als sha256-Hashes
-in der Policy, der Plausible-Loader `/js/script.js` und das Vite-Modul sind
-`'self'`. Das ist der einzige Punkt, an dem die Datei mit anyplot bewusst
-auseinandergeht. Der Preis: Ein Hash gilt für die **Bytes** — jede Änderung an
-einem Inline-Skript, und sei es die Einrückung, macht ihn ungültig; deshalb
-rechnet `tests/test_csp_policy.py` die Hashes aus `app/index.html` neu und
-vergleicht sie mit der Policy. `style-src` behält `'unsafe-inline'`: Emotion
-(MUI) injiziert seine Regeln zur Laufzeit, und ein Nonce müsste pro Antwort
-erzeugt werden, was ein nginx mit vorgebautem `index.html` nicht kann.
+`app/index.html` (Hero-Vorwärmer und Plausible-Stub) laufen über ein **Nonce
+pro Antwort**, der Plausible-Loader `/js/script.js` und das Vite-Modul sind
+`'self'`.
+
+Bis 2026-09-04 standen dort zwei sha256-Hashes, und der Tausch hat einen
+gemessenen Grund. Ein Hash gilt für die **Bytes** — und ein *drittes*
+Inline-Skript kommt hinzu, das dieses Repository nicht schreibt: Cloudflares
+JavaScript Detections spritzt es an der Kante in jede HTML-Antwort ein, mit
+Ray-ID und Zeitstempel pro Antwort im Rumpf. Dafür kann es keinen Hash geben,
+und eine reine Hash-Policy blockiert genau dieses eine Skript (im
+Schwesterprojekt gemessen, anyplot #11213) — auf einer Free-Plan-Zone, auf der
+JavaScript Detections bei aktivem Bot Fight Mode nicht einmal abschaltbar ist.
+
+Das Nonce ist Cloudflares eigene Empfehlung: Die Kante liest den
+**Response-Header** und stempelt ihr eingespritztes Skript damit — am
+2026-09-04 auf anyplot.ai live nachgemessen, inklusive der beiden Skripte, die
+Cloudflare in seinem versteckten iframe erzeugt. Erzeugt wird es von nginx als
+`$request_id` (16 Zufallsbytes, 32 Hex-Ziffern); `sub_filter` stempelt
+dieselbe Variable auf jedes `<script`-Tag der Shell, und
+`tests/test_csp_policy.py` lässt die beiden Hälften nicht auseinanderlaufen.
+Ein Nebeneffekt, der in `app/nginx.conf` steht: `sub_filter` löscht
+`Last-Modified` und `ETag`, deshalb bringt das frühere `no-cache` auf der Shell
+kein 304 mehr und der Header heißt jetzt `no-store` — gleiche Bytes, aber die
+Zusage, dass kein genonctes Dokument im Cache liegt.
+
+`style-src` behält `'unsafe-inline'`, und zwar nicht mehr mangels Nonce —
+nginx kann eines erzeugen, siehe oben —, sondern weil die Theme-Tokens auf
+inline-`style`-**Attributen** reiten, die ein Nonce grundsätzlich nicht deckt,
+und weil Emotion (MUI) sein Stylesheet zur Laufzeit weiterschreibt.
 
 **Die Report-Only-Woche.** Die Policy geht als
 `Content-Security-Policy-Report-Only` live und blockiert damit nichts, sondern
@@ -858,14 +878,24 @@ Header-Namen `Content-Security-Policy-Report-Only` zu `Content-Security-Policy`
 ändern und deployen. `report-uri` bleibt stehen, damit auch danach gemeldet
 wird — eine tatsächlich blockierte Quelle will man erst recht erfahren.
 
-**`Cache-Control` auf der Hülle.** `location = /index.html` setzt `no-cache` —
-bewusst nicht anyplots `no-store, must-revalidate`. Ohne Header trug die Antwort
-nur `Last-Modified`, der Browser cachte die Hülle heuristisch mit ~10 % ihres
-Alters und verlangte nach einem Deploy `/assets/`-Hashes, die es nicht mehr gibt:
-weiße Seite. `no-cache` heißt „vor Gebrauch nachfragen", die Kopie bleibt liegen
-und der gemessene Weg endet in einem 304 mit null Bytes; `no-store` würde die
-Hülle bei jeder Navigation neu laden. Der nächste Abgleich mit der Schwesterdatei
-wird das „reparieren" wollen — der Grund steht als Kommentar daneben.
+**`Cache-Control` auf der Hülle.** `location = /index.html` setzt `no-store`
+(seit 2026-09-04; davor `no-cache`). Ohne Header trug die Antwort nur
+`Last-Modified`, der Browser cachte die Hülle heuristisch mit ~10 % ihres
+Alters und verlangte nach einem Deploy `/assets/`-Hashes, die es nicht mehr
+gibt: weiße Seite. Das war der ursprüngliche Anlass.
+
+`no-cache` war danach die bewusst *engere* Wahl gegenüber anyplots `no-store`:
+„vor Gebrauch nachfragen", die Kopie bleibt liegen, der gemessene Weg endet in
+einem 304 mit null Bytes. Diese Ersparnis gibt es seit dem Nonce nicht mehr —
+`sub_filter` schreibt die Hülle pro Antwort um und nginx löscht dabei
+`Last-Modified` und `ETag`, sonst könnte ein 304 einen frischen Header über
+einen gespeicherten Rumpf mit altem `nonce="…"` legen. Gegengemessen an genau
+dieser Konfiguration: kein `Last-Modified` im Kopf, und ein bedingter GET
+antwortet 200 mit vollen 17 287 Bytes statt 304. `no-cache` hieß damit „behalte
+eine Kopie, die du nie revalidieren kannst, und lade sie trotzdem jedes Mal neu"
+— gleiche Bytes wie `no-store`, ohne dessen Zusage. Das ist **nicht** der
+Schwesterdatei-Abgleich, vor dem der Kommentar dort gewarnt hat; die Zahlen
+stehen als Kommentar daneben.
 
 **Der API-Host hat seine eigenen drei.** `api.kurrentschrift.ink` ist ein
 zweiter öffentlicher Host mit eigenen Antworten; `api/security_headers.py`

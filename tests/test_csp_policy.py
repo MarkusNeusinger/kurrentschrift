@@ -1,15 +1,16 @@
 """The delivery-side security policy — `app/security-headers.conf` held against
 the files it actually describes.
 
-Three things here can drift silently, and each has cost someone a day
+Four things here can drift silently, and each has cost someone a day
 somewhere:
 
-1. **The inline-script hashes.** The policy allows `app/index.html`'s two
-   inline scripts by sha256 instead of `'unsafe-inline'`, which is the whole
-   point of having a `script-src` at all. A hash is computed over the exact
-   bytes between `<script>` and `</script>`, so a single re-indent of that
-   block silently stops the Plausible stub and the hero preload from running.
-   The report-only week would catch it — once. This catches it before merge.
+1. **The nonce, which lives in two files at once.** `script-src` names
+   `'nonce-$request_id'`; `app/nginx.conf` stamps that same `$request_id` onto
+   every `<script` tag with `sub_filter`. Nothing but agreement makes them one
+   mechanism. Until 2026-09-04 this was a pair of sha256 hashes, and the whole
+   tokenizer that recomputed them from `app/index.html` went with them — a
+   hash cannot cover the inline script Cloudflare injects at the edge, whose
+   body carries a per-response ray id (the reasoning is in the conf).
 
 2. **nginx's `add_header` inheritance.** A location with any `add_header` of
    its own drops every inherited one. `app/nginx.conf` therefore re-includes
@@ -20,85 +21,31 @@ somewhere:
 3. **The report endpoint.** The policy names a URL on the API host; if the
    route moves, reports stop arriving and nothing says so.
 
+4. **The shell's cacheability.** A nonced body that a client may keep and
+   replay under a fresh header is the classic way a nonce policy takes a site
+   down.
+
+None of it is enforced yet — the policy is Report-Only — which is exactly why
+these have to be tests: a broken half is invisible in a browser today and
+takes the workbench down on the day the header is renamed.
+
 The nginx parse is deliberately crude — a brace counter over one file we write
 ourselves, not a config parser. It only has to be right about this file.
 """
 
 from __future__ import annotations
 
-import base64
-import hashlib
 import re
-from html.parser import HTMLParser
 from pathlib import Path
 
 from api.routers.csp import router as csp_router
 
 
 ROOT = Path(__file__).resolve().parent.parent
-INDEX_HTML = ROOT / "app" / "index.html"
 HEADERS_CONF = ROOT / "app" / "security-headers.conf"
 NGINX_CONF = ROOT / "app" / "nginx.conf"
 
 INCLUDE_LINE = "include /etc/nginx/security-headers.conf;"
-
-# A <script> whose type is none of these is a DATA BLOCK (the JSON-LD in
-# index.html): the browser never executes it, and CSP never asks for a hash.
-_EXECUTABLE_TYPES = {"", "module", "text/javascript", "application/javascript"}
-
-
-class _InlineScripts(HTMLParser):
-    """Collects the body of every executable inline `<script>`, in document order.
-
-    A real tokenizer rather than a regex, and the reason is that every regex
-    attempt here was wrong in a way that would put the WRONG hash into the
-    shipped policy:
-
-    * `</script>` as a literal misses the legal `</script >`, reads on to the
-      next closing tag and hashes two scripts as one — CodeQL's
-      `py/bad-tag-filter`. The first script then has no hash and stops running.
-    * `<script([^>]*)>` ends the start tag at a `>` inside a quoted attribute
-      value (`<script data-note=">">run()</script>`), so the body becomes
-      `">run()` where the browser executes `run()`.
-    * `"src=" in attrs` calls `data-src=` external and `SRC = "…"` inline.
-
-    `html.parser` settles all three: it is quote-aware, it lowercases attribute
-    names, it treats `<script>` content as raw text (no entity decoding, so the
-    bytes hashed are the bytes served), and it hands comments to
-    `handle_comment` — a `<script>` inside `<!-- -->` never reaches
-    `handle_starttag` at all, which is right, because commented-out code never
-    runs and must never earn a standing permission.
-    """
-
-    def __init__(self) -> None:
-        super().__init__(convert_charrefs=False)
-        self.bodies: list[str] = []
-        self._collecting = False
-
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        if tag != "script":
-            return
-        named = dict(attrs)
-        declared = (named.get("type") or "").lower()
-        self._collecting = "src" not in named and declared in _EXECUTABLE_TYPES
-
-    def handle_endtag(self, tag: str) -> None:
-        if tag == "script":
-            self._collecting = False
-
-    def handle_data(self, data: str) -> None:
-        if self._collecting:
-            self.bodies.append(data)
-
-
-def inline_script_hashes(html: str) -> list[str]:
-    """`sha256-…` for every executable inline script, in document order."""
-    parser = _InlineScripts()
-    parser.feed(html)
-    parser.close()
-    return [
-        f"sha256-{base64.b64encode(hashlib.sha256(b.encode('utf-8')).digest()).decode('ascii')}" for b in parser.bodies
-    ]
 
 
 def csp_directives() -> dict[str, list[str]]:
@@ -123,11 +70,8 @@ def _without_comments(text: str) -> str:
     return "\n".join(line for line in text.splitlines() if not line.lstrip().startswith("#"))
 
 
-def locations_with_add_header() -> list[str]:
-    """Every `location …{ … }` block of app/nginx.conf that sets a header itself.
-
-    Returned as the raw block text, so the caller can check what is inside it.
-    """
+def _all_location_blocks() -> list[str]:
+    """Every `location …{ … }` block of app/nginx.conf, as raw text."""
     conf = NGINX_CONF.read_text(encoding="utf-8")
     blocks = []
     for match in re.finditer(r"^\s*location\s[^{]*\{", conf, re.MULTILINE):
@@ -141,65 +85,103 @@ def locations_with_add_header() -> list[str]:
                 if depth == 0:
                     blocks.append(conf[start : i + 1])
                     break
-    return [b for b in blocks if _ADD_HEADER.search(_without_comments(b))]
+    return blocks
 
 
-def test_script_src_allows_exactly_the_inline_scripts_of_index_html():
-    """Every inline script is hashed, and no hash outlives the script it was for."""
-    expected = inline_script_hashes(INDEX_HTML.read_text(encoding="utf-8"))
-    assert expected, "app/index.html has no inline scripts — did the extraction break?"
-    allowed = [t.strip("'") for t in csp_directives()["script-src"] if t.startswith("'sha256-")]
-    assert sorted(allowed) == sorted(expected), (
-        "script-src hashes and app/index.html's inline scripts disagree.\n"
-        f"  in the policy: {sorted(allowed)}\n"
-        f"  in index.html: {sorted(expected)}\n"
-        "Recompute after ANY edit to an inline <script> — even whitespace."
+def locations_with_add_header() -> list[str]:
+    """Every location block that sets a header itself, and so drops the rest."""
+    return [b for b in _all_location_blocks() if _ADD_HEADER.search(_without_comments(b))]
+
+
+# The nonce as the stamp spells it. Its counterpart in the header is read out
+# of the PARSED directive, never out of the raw file: security-headers.conf
+# explains itself at length and quotes `'nonce-…'` in its own prose, so a regex
+# over the whole file would happily report a nonce the policy no longer carries.
+_STAMP = re.compile(r"""sub_filter\s+'<script'\s+'<script nonce="(\$[A-Za-z_][A-Za-z0-9_]*)"'\s*;""")
+_HEADER_NONCE = re.compile(r"^'nonce-(\$[A-Za-z_][A-Za-z0-9_]*)'$")
+
+
+def header_nonce_variable() -> str | None:
+    """The nginx variable `script-src` reads its nonce from, if any."""
+    for token in csp_directives().get("script-src", []):
+        match = _HEADER_NONCE.match(token)
+        if match:
+            return match.group(1)
+    return None
+
+
+def test_script_src_takes_its_nonce_from_a_per_request_variable():
+    """A nonce is only a nonce if it is fresh per response.
+
+    A literal would be a constant baked into an image and reused for the life
+    of a revision, which is `'unsafe-inline'` with extra syllables.
+    `$request_id` is nginx's own 16 random bytes as 32 hex digits: hex is
+    inside the base64-value charset the CSP nonce grammar accepts, and 16 bytes
+    is the 128 bits of entropy CSP recommends.
+    """
+    script_src = csp_directives()["script-src"]
+    nonces = [t for t in script_src if t.startswith("'nonce-")]
+    assert nonces == ["'nonce-$request_id'"], (
+        f"script-src carries {nonces or 'no nonce'}; expected exactly one, 'nonce-$request_id'."
     )
 
 
-def test_the_script_scanner_reads_html_the_way_a_browser_does():
-    """The extractor decides which hashes the policy must carry, so its blind
-    spots become policy holes. Four of them, each with its own way of lying —
-    and each one a regex could not see, which is why this reads HTML with a
-    tokenizer now:
+def test_the_header_and_the_stamp_name_the_same_variable():
+    """The failure with no symptom until every inline script is dead.
 
-    * `</script >` — legal HTML. A literal `</script>` pattern reads past it to
-      the next closing tag and hashes TWO scripts as one, so the real first
-      script gets no hash and stops running (CodeQL `py/bad-tag-filter`).
-    * `>` inside a quoted attribute value — `<script([^>]*)>` ends the start tag
-      there, so the hashed body begins mid-attribute while the browser executes
-      only the code.
-    * `SRC = "…"` / `data-src=` — an external script read as inline earns a
-      hash for its empty body; an inline one read as external loses its hash.
-    * a commented-out `<script>` — never runs, so its hash is a standing
-      permission for code that is not in the page.
+    The policy promises a nonce; `sub_filter` writes one onto the tags. Nothing
+    connects the two files but this equality. While the policy is Report-Only a
+    mismatch is invisible — the page still works and the reports look like
+    noise — and on the day the header is renamed to the enforcing one it takes
+    the workbench down, which is the surface no automated pass can open.
     """
-    plain = inline_script_hashes("<script>run()</script>")
+    stamps = _STAMP.findall(NGINX_CONF.read_text(encoding="utf-8"))
+    assert stamps, (
+        "app/nginx.conf stamps no CSP nonce onto <script> tags. Report-Only hides "
+        "that today and the enforcing switch would not."
+    )
+    assert set(stamps) == {header_nonce_variable()}, (
+        f"the stamp writes {sorted(set(stamps))} but script-src reads "
+        f"{header_nonce_variable()!r} — the tags would carry a nonce the policy does not allow."
+    )
 
-    only = inline_script_hashes("<script>x()</script >\n<script>y()</script>")
-    assert len(only) == 2, "a space before the closing bracket swallowed the next script"
 
-    assert inline_script_hashes('<script data-note=">">run()</script>') == plain
+def test_the_stamp_sits_at_server_level():
+    """Both routes to the shell, not one of them.
 
-    assert inline_script_hashes('<script SRC = "/a.js"></script>') == []
-    assert inline_script_hashes('<script data-src="x">run()</script>') == plain
-
-    assert inline_script_hashes("<!-- <script>ghost()</script> -->") == []
-    # …and the comment must not eat what follows it either.
-    assert inline_script_hashes("<!-- note --><script>run()</script>") == plain
-
-    # The JSON-LD block is data, not code: no hash, and the policy has none.
-    assert inline_script_hashes('<script type="application/ld+json">{}</script>') == []
+    `location = /index.html` answers a direct request and `location /`'s
+    `try_files … /index.html` fallback reaches it by internal redirect, so a
+    stamp placed inside either location is a stamp missing from some path the
+    site actually serves. Searching the whole file would be satisfied by a
+    stamp buried in one location, which is exactly the regression this refuses,
+    so the locations are cut out first.
+    """
+    conf = NGINX_CONF.read_text(encoding="utf-8")
+    outside = conf
+    for block in _all_location_blocks():
+        outside = outside.replace(block, "")
+    outside = _without_comments(outside)
+    assert _STAMP.search(outside), (
+        "the CSP nonce stamp is not at server level — a location that serves the shell "
+        "without it hands out tags the policy will refuse."
+    )
+    assert "sub_filter_once off;" in outside, (
+        "sub_filter replaces only the FIRST match without `sub_filter_once off`; "
+        "index.html has more than one <script> tag."
+    )
 
 
 def test_script_src_never_falls_back_to_unsafe_inline():
-    """'unsafe-inline' would make the hashes decoration.
+    """'unsafe-inline' would make the nonce decoration.
 
-    It is also silently ignored by browsers as soon as a hash is present, so a
-    well-meant "safety margin" here would be a no-op in Chromium and a hole in
-    whatever reads the policy leniently.
+    It is also silently ignored by browsers as soon as a nonce or hash is
+    present, so a well-meant "safety margin" here would be a no-op in Chromium
+    and a hole in whatever reads the policy leniently.
     """
-    assert "'unsafe-inline'" not in csp_directives()["script-src"]
+    assert "'unsafe-inline'" not in csp_directives()["script-src"], (
+        "script-src allows 'unsafe-inline' beside a nonce. Browsers ignore it, so this "
+        "only tells the next reader there is a fallback where there is none."
+    )
 
 
 def test_style_src_keeps_unsafe_inline_and_says_so():
@@ -235,17 +217,27 @@ def test_server_block_includes_the_snippet_too():
     assert INCLUDE_LINE in outside
 
 
-def test_the_spa_shell_is_never_cached_by_its_age():
-    """`location = /index.html` with `no-cache` — the white-page fix.
+def test_the_spa_shell_is_never_stored():
+    """`location = /index.html` with `no-store` — two fixes in one header.
 
-    Without a Cache-Control the shell carried only Last-Modified, so browsers
-    cached it heuristically and, after a deploy, asked for asset hashes that
-    `try_files … =404` no longer knows.
+    The original one: without a Cache-Control the shell carried only
+    Last-Modified, so browsers cached it heuristically and, after a deploy,
+    asked for asset hashes that `try_files … =404` no longer knows.
+
+    The second, since the nonce: a stored shell pairs yesterday's `nonce="…"`
+    in the body with today's header, and a 304 is worse still, because HTTP
+    says the 304's headers REPLACE the stored ones. `no-cache` used to buy a
+    zero-byte 304 here and no longer can — `sub_filter` clears `Last-Modified`
+    and `ETag` on any response it rewrites, measured against this config as a
+    200 with the full body for a conditional request. Same bytes as `no-store`,
+    without the guarantee; the conf carries the numbers.
     """
     conf = NGINX_CONF.read_text(encoding="utf-8")
     block = re.search(r"location\s*=\s*/index\.html\s*\{(.*?)\}", conf, re.DOTALL)
     assert block, "no `location = /index.html` block in app/nginx.conf"
-    assert re.search(r'add_header\s+Cache-Control\s+"no-cache"', block.group(1))
+    assert re.search(r'add_header\s+Cache-Control\s+"no-store"', block.group(1)), (
+        "the shell carries a per-request CSP nonce and must not be storable"
+    )
 
 
 def test_report_to_stays_out_until_it_is_seen_delivering():
