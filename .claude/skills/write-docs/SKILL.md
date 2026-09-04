@@ -204,6 +204,21 @@ contradicts a Verworfen entry, stop and surface it to the user.
   works never enter the repo — not as scans, not as redrawn glyphs,
   not as derived images; bibliographic references in prose are fine.
 
+## Run the docs gate before the PR
+
+```bash
+uv run python -m tools.docs_budget check     # the gate (CI job „Docs-Budget")
+uv run python -m tools.docs_budget report    # what each reading path costs today
+```
+
+It is the mechanical half of everything above: the mandatory list and every
+reading path stay inside their budget (the list is read out of `CLAUDE.md`, so
+a new bullet raises the measured sum), a `lebend` doc over ~10 000 tokens
+carries a Stand block of 12 to 40 lines dated within 30 days, `docs/index.md`
+has exactly one row per file, and every relative link and `#anchor` resolves. A red budget is a
+decision, not a nuisance: move the growth out of the read path, or raise the
+number in `tools/docs_budget` and say why in the PR.
+
 ## Gotchas
 
 - **Relative dates rot.** Docs under `notes/`
