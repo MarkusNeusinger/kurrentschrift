@@ -191,6 +191,8 @@ die DB) — mit seiner Bedingung.
 | sep02 | Übergänge | [J4 Austritts-Kollinearität (`exit_trim`)](#übergänge-j4-sep02--vorregistrierung-die-austritts-kollinearität-exit_trim) | Pre-Reg + gemessen · verworfen | 4 von 5 Gates grün (Wörter −0,000535, seam_dep +12,52→−1,39), (b) rot: `dconn` fällt nur in 20 % statt 60 % |
 | sep02 | Übergänge | [J4b enge Klasse](#übergänge-j4b-sep02--post-hoc-die-enge-klasse-nur-die-joins-die-wirklich-knicken) | POST-HOC · verworfen | Schnitt bei 20° Knick rettet den Arm nicht: `dconn` 43 %, seam_dep der Klasse nur +8,02 — Rettungswege in §7.9 |
 | sep02 | Laufform | [LF11 humanbench-Runde und Adoption](#laufform-lf11-sep02--humanbench-wortrunde-instrumentdefekt-und-adoption-prod-write--re-baseline) | **ADOPTIERT auf Autor-Entscheid** (kein formales Instrument-Verdikt) · Prod-Write + Re-Baseline | Runde verlässlich (10/12 Arm) und Richtung erdrückend (40 : 1), aber die Tie-Schranke fällt in JEDER Lesart (34,9 % gesamt, 25,6 % in der günstigsten Teilmenge, gegen ≤ 25 %) — `adopt: false`; ob ein Teil der Runde auf der defekten Anzeige „gefüllte Ringe" lief, ist zwischen Protokoll und Bestand ungeklärt (offener Punkt); Write nach Snapshot `2026-09-02T21-58-16Z`, Readback 22/22; Wörter 0,109218 · Paare 0,148198 |
+| sep04 | Feder | [Platten-Nib A3 (Wortrunde)](#platten-nib-a3-sep04--vorregistrierung-die-wortrunde-über-die-strichbreite) | Pre-Reg · Runde gebaut, Urteil offen | Halbbreite 0,097 statt 0,07251; das Lineal kennt die Federbreite nur über `stroke_px`. Nebenbedingung des Audits schon trocken gerissen (`gleichzug_doublings` 13 → 21) — ein ≥ 60 % lizenziert nur den Folgearm „Ink-Clearance an die Feder koppeln", nicht den Write |
+| sep04 | Übergänge | [J4 Wortrunde (Rettungsweg 3)](#übergänge-j4-sep04--vorregistrierung-die-wortrunde-als-benannter-rettungsweg) | Pre-Reg · Runde gebaut, Urteil offen | Der §7.9-Rettungsweg zum `dconn`-Negativ; auf der LF11-Wurzel neu vermessen: `seam_dep` +7,99 → +0,02, Wörter +0,000248 (Vorzeichen gedreht), Paare byte-gleich |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -7419,3 +7421,183 @@ wird). Der Golden bleibt unberührt. **Die öffentlichen
 `/write/word`-Antworten liegen bis zu 24 h im Edge-Cache; der Wechsel
 auf die glatten Zeilen wird dort erst mit Ablauf sichtbar — kein Purge
 (Entscheid des Autors).**
+
+---
+
+### Platten-Nib A3 `sep04` — Vorregistrierung: die Wortrunde über die Strichbreite
+
+Geschrieben und committet VOR der Runde. Arm zu Befund 20 / Frage F5 des
+Audits vom 2026-09-02, entschieden vom Autor am 2026-09-04. Die Runde
+selbst führt der Autor; dieser Eintrag legt fest, was sie beantworten
+darf.
+
+**Der Gegenstand.** Die öffentliche Schrift setzt heute den
+chart-gepoolten Gleichzug-Nib: Halbbreite **0,07251 xh**, also ein Strich
+von 0,145 xh. Aus den Wortproben derselben Hand ist eine Halbbreite von
+**0,097 xh** gemessen — Strich 0,194, rund ein Drittel mehr. Der Arm
+schreibt dieselben 63 Wortproben mit diesem Nib und sonst unverändert
+(`wordarm.py --nib 0.097`, `constant_nib_units` im Resolver — kein
+Core-Eingriff, der Schalter ist der bestehende).
+
+**Warum das kein Lineal entscheiden kann.** Das Wort-Lineal ist
+gegenüber der Strichstärke fast blind, und zwar nachweisbar aus seiner
+Konstruktion: `transition` und `coverage` sind Chamfer-Abstände zwischen
+MITTELLINIEN und dem Skelett, `width` vergleicht die x-AUSDEHNUNG der
+komponierten Mittellinien mit der der Probe — keiner dieser drei Terme
+kennt die Federbreite. Sie betritt `score_word` an genau einer Stelle:
+`stroke_px` beim Rastern der Komposition für den Rück-Chamfer. Ein
+Kandidat, der nur die Feder wechselt, bewegt das Lineal deshalb aus dem
+falschen Grund oder gar nicht — die Frage „welche sieht echter
+geschrieben aus?" ist hier nicht ein Tie-Breaker, sondern das einzige
+Instrument, das den Gegenstand überhaupt anfasst.
+
+**Basis.** Wurzel `suetterlin-1922` `exported_at
+2026-09-02T22:16:06+00:00` Digest `6cbab9d5c092`, Paar-Wurzel
+`965ab3c57ebd`; BLAS auf einen Thread gepinnt. Reproduziert: Wörter
+**0,109218** · Paare **0,148198** — der Stand NACH der LF11-Adoption,
+also die Kompositionen, die Prod heute schreibt.
+
+**Die Nebenbedingung des Audits ist schon trocken gerissen — und das
+steht hier, bevor ein Urteil fällt.** Der Audit-Vorschlag nennt eine
+Nebenprüfung: `gleichzug_doublings` darf mit dem breiteren Strich nicht
+steigen (die Platzierung hält `INK_CLEARANCE` = 0,14 ein, gemessen am
+alten Nib). Gemessen über die 63 Wortproben: **13 → 21 Verdopplungen,
+7 Wörter bekommen eine neue.** Zwei Dinge gehören dazu, und beide
+gegen die eigene Bequemlichkeit:
+
+* Der Detektor ist **nib-relativ konstruiert** — sein Band läuft von
+  `max(0,035; 0,5·nib)` bis `1,35·nib` perpendikularen Abstands
+  (`tools/wordbench/gleichzug.py`). Ein Teil des Anstiegs ist also die
+  Definition, die der Feder folgt. Das ist kein Artefakt, sondern der
+  Zweck: ob zwei Striche als ein Klecks gelesen werden, IST eine Frage
+  an die Federbreite.
+* Wie auch immer man es liest: **die Bedingung, wie sie im Audit steht,
+  ist nicht erfüllt.**
+
+**Was die Runde deshalb entscheiden darf — vorab festgelegt.** Ein
+Ergebnis ≥ 60 % für den Kandidaten lizenziert **nicht** den Wechsel des
+ausgelieferten Nibs, sondern ausschließlich den **Folgearm**: die
+Ink-Clearance an die Feder koppeln (`INK_CLEARANCE` in Nib-Radien statt
+als Konstante) und den Nib danach neu vorlegen. Ein Ergebnis < 60 %
+schließt den Arm — dann ist die breitere Feder weder schöner noch
+verträglich, und die gemessene Plattenbreite bleibt ein Befund über die
+Platte, keine Vorgabe für die Ausgabe. Diese Zuordnung steht hier, weil
+sie hinterher nicht mehr glaubwürdig zu treffen wäre.
+
+**Aufbau.** `ECHTHEIT/4`, 75 Bildschirme = 63 Wortproben + 12 blinde
+gespiegelte Wiederholungen, Saat 20260004, Zoom 2×, Frage
+„Welche Zeile sieht echter geschrieben aus?". Arme: Basis
+`sha256 8538513b46fbd10c`, Kandidat `243f87a4135cb17c`.
+
+**Der Kandidat ist an die Registrierung der Basis gepinnt**, und das ist
+hier keine Formalie: ungepinnt wandert er **systematisch nach links** —
+51 von 63 Wörtern negativ, nur 2 positiv, Mittel −1,56 px bei 31 px
+x-Höhe. Der Grund ist mechanisch (der breitere Strich verbreitert das
+gerasterte Wort, die beschränkte Suche zentriert nach), die Wirkung
+wäre eine über die Runde lesbare Gruppen-Eigenschaft — genau das Leck,
+gegen das die Pinn-Regel steht. Gepinnt unterscheiden sich die beiden
+Seiten nur noch in der Feder.
+
+**Verdachtsklassen** (`--strata`, deklariert vor der Runde):
+
+| Klasse | n | Warum |
+|---|---|---|
+| `dicht` | 13 | Unter einem der beiden Arme läuft in diesem Wort Tinte zusammen (`gleichzug_doublings` > 0). Hier hat der schwerere Strich etwas zu verderben; welche 7 die Verdopplung erst unter dem breiten Nib bekommen, steht je Wort im Klassen-Vorschlag. |
+| `frei` | 50 | Keine Verdopplung in beiden Armen. Wenn die breitere Feder allein schon echter aussieht, dann hier. |
+
+Feiner geschnitten wären die beiden Hälften von `dicht` (7 neu, 6 schon
+vorher) je unter `MIN_PAIRED_PER_CLASS` = 8 geblieben und trügen keinen
+Anteil; zusammen sind sie eine ehrliche Klasse.
+
+**Auswerteplan.** Unverändert der bindende aus
+[`menschliche-bewertung.md`](menschliche-bewertung.md) („Der
+Auswerteplan"): Verlässlichkeit zuerst (≥ 6 vollständige
+Wiederholungspaare, Arm-Übereinstimmung über dem Münzwurf), dann die
+Seitenbilanz, dann **Adoption bei ≥ 60 % Kandidat unter den
+ENTSCHIEDENEN Bildschirmen und ≤ 25 % „kein Unterschied" über alle**,
+dann die Klassen, dann Drift. **Gespiegelte Wiederholungen messen die
+Verlässlichkeit und stimmen nie mit** — gezählt werden 63, nicht 75.
+
+**Was die Runde nicht beantwortet.** Ob 0,097 der richtige Wert ist
+(gemessen wird EIN Paar, nicht eine Leiter), ob der breitere Strich am
+Bildschirm besser lesbar ist (eine andere Frage als „echter"), und
+nichts über Kurrent oder Offenbacher — die Zahl stammt aus den
+Sütterlin-Wortproben und gilt für diese Hand.
+
+---
+
+### Übergänge J4 `sep04` — Vorregistrierung: die Wortrunde als benannter Rettungsweg
+
+Geschrieben und committet VOR der Runde. Sie ist nicht ein neuer Arm,
+sondern **Rettungsweg (3) der J4-Zeile in `tintenfolger.md` §7.9**,
+wörtlich dort vorgemerkt: „der Knick liegt unter der Auflösung des
+Wort-Lineals und J4 ist ein fertiges Kandidatenpaar mit EINEM
+Freiheitsgrad". Der Arm selbst ist gemessen und verworfen (§14
+„Übergänge J4 `sep02`"); **keine Zahl dort wird angefasst.**
+
+**Warum die Runde und nicht noch eine Zahl.** J4 fiel an Gate (b):
+`dconn` sank nur in 20 % der gefeuerten Joins statt in 60 %. Die
+Autopsie desselben Eintrags nennt den Grund, und er ist konstruktiv:
+`dconn` misst die Form des Verbinders start-ausgerichtet, der Trim
+verschiebt aber die GRENZE zwischen Buchstabe und Verbinder — das
+getrimmte Stück ist länger, und zwei Drittel des Anstiegs sind
+Rahmen-Artefakt. Ein Maß, das über eine verschobene Grenze nicht
+urteilen kann, kann den Arm weder freisprechen noch verurteilen. Der
+zweite Rettungsweg (ein ausdehnungs-normierter Formsensor) ist zu bauen
+und einzufrieren, bevor er zählt; die Menschenrunde ist heute verfügbar.
+
+**Basis, neu — der Arm steht heute anders da als am 2. September.**
+Wurzel `suetterlin-1922` `exported_at 2026-09-02T22:16:06+00:00` Digest
+`6cbab9d5c092`, Paar-Wurzel `965ab3c57ebd`, BLAS gepinnt. Auf dieser
+Wurzel (LF11 adoptiert) gemessen:
+
+| | Wörter | Paare | `seam_dep_median` |
+|---|---|---|---|
+| Basis | **0,109218** | 0,148198 | **+7,99°** |
+| J4 (`--exit-trim`) | 0,109466 (**+0,000248**) | 0,148198 (byte-gleich) | **+0,02°** |
+
+Zwei Verschiebungen gegenüber `sep02` und beide gehören genannt: LF11
+hat den Abgangsknick schon von +12,52 auf +7,99 halbiert, J4 hat also
+weniger zu tun als damals — und der Wort-Verlust dreht das Vorzeichen
+(damals −0,000535, heute +0,000248). Der Knick verschwindet trotzdem
+praktisch vollständig. **Die Runde entscheidet damit genau die Frage,
+die übrig ist: ist ein Saum ohne Knick das wert, was er auf dem Lineal
+kostet?**
+
+**Aufbau.** `ECHTHEIT/5`, 75 Bildschirme = 63 + 12 gespiegelte
+Wiederholungen, Saat 20260005, Zoom 2×. Arme: Basis
+`sha256 8538513b46fbd10c`, Kandidat `404abd38fa2ef59b`
+(`wordarm.py --exit-trim`, der Schalter des Komponisten, Standard aus —
+kein Core-Eingriff, das Golden bleibt unberührt).
+
+**Registrierung gepinnt**, hier fast wirkungslos und deshalb billig: von
+63 Wörtern bewegt die Regel die beschränkte Suche in 3 überhaupt, in x
+wie in y. Gepinnt ist sie in 0 — womit „Platzierung unangetastet", die
+experimentelle Kontrolle der J4-Vorregistrierung, auch auf dem
+Bildschirm buchstäblich gilt.
+
+**Verdachtsklassen** (`--strata`, geschnitten daran, wie weit die Regel
+die Zeichnung bewegt — symmetrischer Abstand der beiden Arme in
+x-Höhen):
+
+| Klasse | n | Warum |
+|---|---|---|
+| `naht-stark` | 31 | Δ ≥ 0,106 xh (Median der bewegten Wörter). Wenn der Trim irgendwo sichtbar hilft, dann hier. |
+| `naht-schwach` | 29 | Bewegt, aber unter dem Median. |
+| `unberuehrt` | 3 | Δ ≤ 0,005 xh — die Regel feuert nicht. **Die Kontrolle:** wer hier einen Unterschied sieht, sieht nicht den Trim. Mit n = 3 unter `MIN_PAIRED_PER_CLASS` = 8 und damit **beschreibend, kein prüfbarer Anteil** — das ist der Preis dafür, dass die Regel auf 60 von 63 Wörtern feuert. |
+
+**Auswerteplan.** Derselbe bindende Plan wie in der Runde davor,
+einschließlich der Schwellen (≥ 60 % / ≤ 25 %) und der Vorbedingung aus
+den Wiederholungen; Wiederholungen stimmen nie mit, gezählt werden 63.
+
+**Was ein Ergebnis auslösen darf.** Die Adoption von J4 hieße:
+`exit_trim` als Default an und das Golden-Fixture deklariert neu backen
+— eine rendernde Änderung, also Autor-Entscheid, nicht Automatik. Ein
+Ergebnis ≥ 60 % legt sie ihm vor; ein Ergebnis < 60 % schließt den
+Rettungsweg (3) der §7.9-Zeile, und übrig bleiben (1) nur die
+Ankunftsseite und (2) der Sensor.
+
+**Was die Runde nicht beantwortet.** Ob der Trim auf der ANKUNFTSSEITE
+richtig ist — J4 verschlechtert sie messbar (−3,40 → −6,53 auf der
+`sep02`-Wurzel), und das bleibt ein eigener Arm. Und nichts über
+`dconn`: das Maß ist dafür konstruktiv ungeeignet, das war der Anlass.

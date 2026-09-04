@@ -20,6 +20,7 @@ import json
 import numpy as np
 import pytest
 
+from tools.humanbench import wordarm
 from tools.humanbench.build import load_arm
 from tools.humanbench.wordarm import ZIGZAG_AMPLITUDE, arm_drawing, load_laufform_draft, pin_registration, zigzag
 
@@ -134,3 +135,63 @@ def test_load_laufform_draft_accepts_both_shapes_the_word_bench_accepts(tmp_path
     broken.write_text(json.dumps([1, 2, 3]))
     with pytest.raises(SystemExit, match="mapping glyph_key"):
         load_laufform_draft(broken)
+
+
+# ------------------------------------------------- the arm switches reach compose
+#
+# Every candidate the instrument can judge today is a knob the composition path
+# already has. The failure mode of adding one is not that it computes the wrong
+# thing — it is that the flag is parsed, printed into the settings, and never
+# handed to `compose_word`, so the round compares the base against itself and
+# says „kein Unterschied" 63 times. The fixtures the real call needs are
+# gitignored (quellen-und-rechte.md §5), so what is pinned here is the wiring.
+
+
+def _settings(**kwargs) -> dict:
+    """What `compose_arm` reports back, as the CLI's summary line expects it."""
+    return {
+        "nib_units": kwargs.get("nib") or 0.07251,
+        "nib_overridden": kwargs.get("nib") is not None,
+        "laufform": "frozen",
+        "exit_trim": kwargs.get("exit_trim", False),
+        "failed": [],
+    }
+
+
+def _capture_compose_arm(monkeypatch):
+    seen: dict = {}
+
+    def fake(root, **kwargs):
+        seen.update(kwargs)
+        seen["root"] = root
+        return ({"unter": arm_drawing(COMPOSED, REGISTRATION)}, _settings(**kwargs))
+
+    monkeypatch.setattr(wordarm, "compose_arm", fake)
+    return seen
+
+
+@pytest.mark.parametrize(
+    "argv, expected",
+    [
+        ([], {"exit_trim": False, "nib": None, "no_laufform": False}),
+        (["--exit-trim"], {"exit_trim": True}),
+        (["--nib", "0.097"], {"nib": 0.097}),
+        (["--no-laufform"], {"no_laufform": True}),
+    ],
+)
+def test_every_arm_switch_reaches_the_composer(tmp_path, monkeypatch, argv, expected):
+    seen = _capture_compose_arm(monkeypatch)
+    wordarm.main(["--arm", "X", "--out", str(tmp_path / "arm.json"), *argv])
+    for key, value in expected.items():
+        assert seen[key] == value, f"--{key.replace('_', '-')} never reached compose_word"
+
+
+def test_the_arm_file_records_the_switch_it_was_composed_with(tmp_path, monkeypatch):
+    """The stamp copies the arm's settings, and „which knob was on" is the one
+    thing a round cannot reconstruct from the drawn geometry afterwards."""
+    _capture_compose_arm(monkeypatch)
+    out = tmp_path / "j4.json"
+    wordarm.main(["--arm", "J4", "--exit-trim", "--out", str(out)])
+    written = json.loads(out.read_text())
+    assert written["settings"]["exit_trim"] is True
+    assert written["arm"] == "J4"

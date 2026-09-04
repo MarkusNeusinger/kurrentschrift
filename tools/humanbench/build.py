@@ -1394,13 +1394,51 @@ class Round:
     stamp: dict = field(default_factory=dict)
 
 
+# Stamp fields that move without changing WHICH round this is: the clock, and
+# the state of the tree the round was built from.
+VOLATILE_STAMP_FIELDS = ("built_at", "code_commit", "code_branch", "code_dirty")
+
+
+def round_store(stamp: dict) -> str:
+    """The browser-storage namespace of THIS round.
+
+    Two word rounds over one fixture set draw the same words in the same order
+    under the same display ids, so a key derived from the ids alone is SHARED —
+    and the second round then opens on the first one's answers, silently, with
+    its progress bar already part-full. That is the resume half of the defect
+    §3.6b was written for: what could not be settled afterwards about the LF11
+    round was not only what the page had drawn but WHICH page the judge had in
+    front of him.
+
+    Keyed on the round's own identity instead — mode, number, seed and the
+    inputs it drew, i.e. the stamp minus the clock and the commit — a rebuild of
+    the same round still resumes where the judge left off, and a different round
+    never can.
+    """
+    identity = {key: value for key, value in stamp.items() if key not in VOLATILE_STAMP_FIELDS}
+    digest = hashlib.sha256(json.dumps(identity, sort_keys=True, default=str).encode()).hexdigest()
+    return f"humanbench-r{stamp.get('round')}-{digest[:10]}"
+
+
 def write_round(out: Path, built: Round, *, force: bool) -> None:
     if out.exists() and any(out.iterdir()) and not force:
         raise SystemExit(f"{out} is not empty — a round is written once; pass --force to overwrite")
     out.mkdir(parents=True, exist_ok=True)
     # Compact payload, readable key: the payload is machine input for one HTML
     # page, the key and stamp are read by humans doing the evaluation.
-    (out / "payload.json").write_text(json.dumps(built.items, separators=(",", ":")), encoding="utf-8")
+    # The payload is an ENVELOPE, so the page knows which round it is drawing
+    # without being told twice on the command line: the round number heads its
+    # result file and is said on the page, the question picks the wording, and
+    # the store is this round's own resume namespace.
+    envelope = {
+        "round": built.stamp.get("round"),
+        "question": built.stamp.get("question"),
+        "store": round_store(built.stamp),
+        "items": built.items,
+    }
+    (out / "payload.json").write_text(
+        json.dumps({k: v for k, v in envelope.items() if v is not None}, separators=(",", ":")), encoding="utf-8"
+    )
     for name, rows in (
         ("key.json", built.key),
         ("vorkommen.json", slim_key(built.key)),  # the committable half — see `slim_key`
