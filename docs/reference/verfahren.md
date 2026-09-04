@@ -52,7 +52,7 @@ Zahl hier ist ein datiertes Zitat, der Beleg wohnt im benannten
 
 | Anzeige-Name | Seite | Stand (2026-09-01, dev-19, Lineal-Kappe 1,5 seit L-U `aug26`) | seit |
 |---|---|---|---|
-| **Kette** | [`verfahren-kette.md`](verfahren-kette.md) | **v5** (`aug26`, K0-S-Wächter-Stack: Kompositions-Soll + Ratsche + Zone 0,55) — dtw 0,0446 med · p90 0,0861 · worst muß 0,106 · marks 0 · aiou 0,7608 · 63er-Soll-Abstand 79 | 2026-08-26 |
+| **Kette** | [`verfahren-kette.md`](verfahren-kette.md) | **v5** (`aug26`, K0-S-Wächter-Stack: Kompositions-Soll + Ratsche + Zone 0,55) — Zahlen re-baselined `sep04` auf der Wurzel `9f124f78cc9f…`: dtw 0,045830 med · p90 0,094197 · worst `unter` 0,113919 · marks 0 · aiou 0,7694 · 63er-Soll-Abstand 76 | 2026-08-26 (Zahlen 2026-09-04) |
 | **Lotse** | [`verfahren-lotse.md`](verfahren-lotse.md) | **v0.17** (`aug20`, Reservierungs-Veto) — dtw 0,0545 med · p90 0,1164 · Netto-Kreuzungsdefekte 6 (missing 1) · Kreuzungs-Ortsfehler 0,066 xh · aiou 0,740 | 2026-08-20 (Zahlen `aug26`) |
 | **InkSight** | [`verfahren-inksight.md`](verfahren-inksight.md) | T0 (roh) — dtw 0,0951 med · 5/19 failed · Galoppieren-B2-Kollaps; **auf Lineal-Kappe 1,5 unvermessen**, die Zahlen sind archiviert und nicht vergleichbar | 2026-08-17 (Lineal 0,8) |
 | **Nullprobe** | [`verfahren-nullprobe.md`](verfahren-nullprobe.md) | unversioniert (Kontrolle) — dtw 0,8198 med · p90 1,0267 auf den 10 von 19 dev-Wörtern, die die gespeicherte Nullprobe abdeckt | 2026-08-26 |

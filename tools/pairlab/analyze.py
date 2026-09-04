@@ -253,9 +253,15 @@ def _generate_connector(p0: Point, exit_deg: float, p3: Point, entry_deg: float)
     consumers, both of which want the 2026-07-11 curve and not today's:
 
     * ``chain._connector_spec`` — the chain solver's INITIALISATION, never a
-      target (its own docstring says so). Moving it would move the starting
-      basin of every chain fit, i.e. a declared re-baseline of the Kette, which
-      is the author's call and not this function's business.
+      target (its own docstring says so). Moving it moves the starting basin of
+      every chain fit, so it was measured rather than assumed: arm K-F
+      (``--connector-init production``, §14 „Kette K-F `sep04`") ran the whole
+      63-word set on the production join and was rejected — soll 76 → 77 and
+      one dev word over the dtw gate. The lasting result is about the bench,
+      not the curve: on 23 of those words the two inits differ by at most
+      1.8e-15 and nine of them still flip the structure guard's verdict, so a
+      start-point arm cannot be decided against a ±0.003 gate. This stays the
+      init, now with a number behind it.
     * ``tests/test_pairlab_connector_parity.py`` — the historical reference the
       divergence is measured against, so Befund 18 stays a number instead of a
       claim.

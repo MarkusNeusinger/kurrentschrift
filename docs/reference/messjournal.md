@@ -202,6 +202,8 @@ die DB) — mit seiner Bedingung.
 | sep04 | Übergänge | [J4 Wortrunde (Rettungsweg 3)](#übergänge-j4-sep04--vorregistrierung-die-wortrunde-als-benannter-rettungsweg) | Pre-Reg · Runde gebaut, Urteil offen | Der §7.9-Rettungsweg zum `dconn`-Negativ; auf der LF11-Wurzel neu vermessen: `seam_dep` +7,99 → +0,02, Wörter +0,000248 (Vorzeichen gedreht), Paare byte-gleich |
 | sep04 | Laufform | [LF12 Prod-Re-Harvest mit Kette v5](#laufform-lf12-sep04--vorregistrierung-der-prod-re-harvest-der-laufform-zeilen-mit-kette-v5) | Pre-Reg | Zeilen aus den Vorkommen des heutigen Ketten-Stands neu bilden, Schätzer und Schlüsselmenge unverändert; der Beweis-Boden gilt ab hier auch für den Bestand |
 | sep04 | Laufform | [LF12 gemessen (trocken)](#laufform-lf12-sep04--gemessen-trocken-alle-fünf-gates-grün-und-der-boden-fängt-vier-zeilen-ab) | Pre-Reg + gemessen · alle Gates grün, Karte trocken; Write wartet auf Autor-Go | 18 von 22 Zeilen neu (RMS-Median 0,0022 xh), Wörter 0,108107 · Paare 0,148231, kein Kreuzungsverlust, dev-19 `cross_missing` 13→12; der Boden fängt `P`/`S`/`p`/`s` ab — `S` steht seit dem LF11-Write bei n=2 und hat heute NULL Fits |
+| sep04 | Kette | [K-F Produktions-Init (A34)](#kette-k-f-sep04--vorregistrierung-der-produktions-init-autor-entscheid-a34-und-die-fällige-kette-nachmessung) | Pre-Reg | EIN Knopf `connector_init` mirror→production (der Verbraucher, den der P-Spiegel stehen ließ); Basis = frischer v5-Lauf auf der heutigen Wurzel = deklarierte Kette-Re-Baseline, weil seit `sep01` keine dev-19-Zahl über die Rechteck-Reparatur trägt |
+| sep04 | Kette | [K-F gemessen](#kette-k-f-sep04--gemessen-der-init-bewegt-sich-die-gefolgte-bahn-kaum--und-die-kette-steht-heute-anders-als-am-aug26) | gemessen · **verworfen** (Gate 2/4 zurechenbar) · **Re-Baseline (Kette)** · **Instrument-Befund** | Kette auf der heutigen Wurzel: dtw 0,045830 · p90 0,094197 · aiou 0,7694 · 63er-Soll 76 (Duell jetzt wurzel-gleich gegen Lotse 0,056080). Der Arm: Soll 76→77, `Galoppieren` +0,0055 dtw, Kreuzungsdefekte 19→20. **Die Nullprobe ist das Ergebnis:** 23 der 63 Wörter bekommen einen Init, der um höchstens 1,8·10⁻¹⁵ abweicht — auf dieser NULL-Änderung kippen 9 Wächter-Verdikte, aiou −0,0298 … +0,0800, 4 Verlierer unter der 0,003-Schranke. Gate 3 fällt gegen eine bedeutungslose Störung; ein Init-Arm ist auf diesem Instrument nicht entscheidbar |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -9041,3 +9043,463 @@ sehen.
 Zeilen unter dem Boden (`P` und `s`); dass `S` die dritte ist, stellt
 erst diese Runde fest. Wo eine Quelle „drei" sagt, meint sie den Stand
 von heute, nicht den Befund 35.
+
+---
+
+### Kette K-F `sep04` — Vorregistrierung: der Produktions-Init (Autor-Entscheid A34) und die fällige Kette-Nachmessung
+
+**Der Anlass, in zwei Sätzen.** Der P-Spiegel-Eintrag (`sep04`) hat den
+gemessenen Gegenstand der Übergänge-Sektion vom eingefrorenen Spiegel
+auf den Produktions-Verbinder umgestellt und dabei **einen** Verbraucher
+ausdrücklich stehen gelassen: den **Init der Kette**
+(`chain._connector_spec` ruft weiter `analyze._generate_connector`, die
+taute Kubik vom 2026-07-11, drei Umbauten hinter der heutigen
+Join-Grammatik). Das war als offene Frage an den Autor notiert, nicht als
+Nebenbefund. Der Autor hat sie am 2026-09-04 mit **Entscheid A34**
+beantwortet: EIN vorregistrierter Arm, der (1) den Init umstellt und (2)
+die Kette bei der Gelegenheit auf der heutigen Wurzel nachmisst — denn
+seit der Rechteck-Reparatur (`sep01`, §15) ist laut §14
+„Lotse-Sprung `sep04`" **keine** dev-19-Zahl von vor `sep01` mit einer
+danach vergleichbar, und die stehende Kette-Zahl ist `aug26`.
+
+**Der EINE Knopf.** `connector_init`: `"mirror"` → `"production"`.
+`"mirror"` ist die historische Initialisierung (der eingefrorene
+Spiegel, aus den beiden Körper-Endpunkten neu gezogen); `"production"`
+spielt die Kurve ab, die `core.compose._connector_centerline` für genau
+diese Naht beim Komponieren des Wortes ZURÜCKGEGEBEN hat
+(`tools.pairlab.prodconn.joins_for` — ein Mitschnitt je Fit, kein
+zweiter Grammatik-Nachbau). Sonst ist nichts anders: Kette-v5-Defaults
+(Wächter-Stack, Kompositions-Soll, Ratsche, Zone 0,55, `ink_evidence`,
+`mark_claim`), `--jobs 4`, BLAS auf einen Thread, dieselbe Wurzel,
+dieselbe Session.
+
+**Warum das ein START PUNKT ist und keine Zielfunktion** (die Frage, die
+der Auftrag ausdrücklich zurückgemeldet haben will). Drei Nachweise, alle
+im Code verankert:
+
+1. Der Verbinder trägt **keinen Tikhonov-Term**: `build_chain_problem`
+   setzt `reg_w` auf 1 an Buchstaben-Ankern und **0** an
+   Verbinder-Innenankern (bindende Bedingung 3 des Moduls). Kein Term
+   misst die gefittete Naht gegen die generierte — genau deshalb bleibt
+   `gen_chamfer` eine Audit-Zahl.
+2. Die beiden **Endanker** des Verbinders sind gar keine freien
+   Parameter: `_seam_ownership` lässt die Buchstabenseite die Naht
+   besitzen, der Verbinder leiht sich beide Enden. Der Init liefert also
+   ausschließlich die INNEREN Startpositionen.
+3. Der Glättungsterm ist ein **Krümmungs-ÄNDERUNGS**-Operator
+   (`_second_difference_operator`): eine kollineare Kette kostet bei
+   jeder Abtastung exakt null; er kennt die erzeugte Bézier nicht.
+
+**Was der Init trotzdem mitbewegt — benannt, nicht versteckt.** Die
+Anker-ANZAHL und ihre Abstände. `_second_difference_operator` friert
+seine `ds` an den Startankern ein (damit der Operator linear und der
+Gradient exakt bleibt), und `n_samples` skaliert mit der Ankerzahl. Ein
+Produktions-Zweig, der 11 statt 24 Punkte liefert (der Balken-Abgang tut
+das), ändert damit die Diskretisierung dieses Blocks. Das ist keine neue
+Zielfunktion, sondern die unvermeidliche Eigenschaft JEDER
+Init-Änderung in einem diskretisierten Löser — sie gilt für den Spiegel
+genauso — und sie wird in Sprosse 0 beziffert statt behauptet.
+
+**Basis: ein FRISCHER Lauf der heutigen Kette, in derselben Umgebung.**
+Nicht die `aug26`-Zahlen. Die Basis ist `pairlab.follow` ohne Flags
+(= Kette v5) auf der heutigen Wurzel, gefahren in dieser Session mit
+denselben Pins. Sie ist damit selbst eine **deklarierte Re-Baseline** der
+Kette: seit dem `aug26`-Stand haben sich BEIDE Vergleichsseiten bewegt —
+die Wurzel (drei Neu-Exporte, davon die `sep01`-Rechteck-Reparatur, die
+vier der 19 Referenzen verschiebt) und, im Arm, der Init. Die
+`aug26`-Zahlen bleiben gültig und archiviert; vergleichbar sind sie mit
+nichts von heute.
+
+**Die Basis-Prüfung, vor ihrer Zahl.** Eine Nachmessung, die selbst
+kaputt ist, darf keinen Arm bewerten. Die frische Basis muss darum
+(a) alle 63 Wörter ohne `failed` durchlaufen und (b) mit ihrem
+dev-19-dtw-Median in der Nachbarschaft des `aug26`-Standes landen —
+als Band **0,035 … 0,075** vorregistriert, also grob ±50 % um 0,0446.
+Liegt sie außerhalb, ist die Wurzel- oder Werkzeug-Lage das Thema und
+NICHT der Init: die Runde hält an, der Arm wird nicht gemessen, und der
+Befund geht so zurück. Innerhalb des Bandes ist die Abweichung von
+`aug26` erwartet (die Rechteck-Reparatur bewegt vier der 19
+Referenzen) und wird als Betrag berichtet, nicht weggeschrieben.
+
+**Die Wurzel dieser Runde** (`fetch_fixtures --set all --verify`, 12/12
+bit-exakt gegen die lebende API): `suetterlin-1922` `exported_at`
+2026-09-04T12:22:29+00:00 `root_digest` `9f124f78cc9f…`,
+`suetterlin-1922-pairs` gleicher Zeitstempel `cf5aa308a865…`. Sie
+reproduziert die stehende Wort-Headline **0,109218 / 0,148198** Ziffer
+für Ziffer — inhaltlich also die `sep03`-Wurzel, nur mit eigener
+Identität. **Keine** Wort-Re-Baseline; die Kette-Re-Baseline oben ist
+eine des dev-19-Lineals, nicht der Wordbench.
+
+#### Sprosse 0 — Gegenstands-Test VOR dem ersten Solve
+
+Über alle 63 Wortproben, an der komponierten Platzierung, beide
+Init-Kurven bogenlängen-gleich abgetastet: wie viele Nähte bewegen sich,
+um wie viel (Median/p90/max in xh), wie ändert sich die Ankerzahl, und
+wie viele Nähte haben GAR KEINEN mitgeschnittenen Generator-Aufruf (eine
+freigegebene Paar-Übersteuerung zeichnet ihre gespeicherte Mittellinie,
+der Generator läuft dort nie).
+
+**Gate 0 (Gegenstand):** mindestens eine dev-19-Naht muss sich bewegen.
+Bewegt sich auf dem dev-19-Satz nichts, ist der Arm **gegenstandslos**
+und schließt ohne Solve — das K-D-Muster (`aug21`), und die richtige
+Antwort auf die P-Spiegel-Frage wäre dann „der Spiegel darf stehen
+bleiben, gemessen".
+
+**Vorentscheid zur Übersteuerungs-Klasse, vor der Zahl:** eine Naht ohne
+Mitschnitt bekommt KEINEN Ersatz-Init aus dem Spiegel. Der Fit meldet für
+diesen Run `None`, so wie er es für einen entarteten Verbinder tut. Ein
+stiller Rückfall würde zwei Initialisierungen in einen Kandidaten mischen
+und jede Zahl des Arms zu einem Gemisch machen. Erhöht das die Zahl der
+nicht gefitteten Runs gegenüber der Basis, ist das ein Kill (Gate 5).
+
+#### Gates (vor der ersten Zahl)
+
+Gemessen wird gepaart je Wort, Basis gegen Arm, in EINER gepinnten
+Umgebung.
+
+1. **Identität.** `--connector-init mirror` reproduziert die Basis
+   **strich-identisch** (der Default-Pfad darf sich durch die Existenz
+   des Arms nicht bewegt haben).
+2. **Struktur (ko-primär, mit Veto).** Der 63er-Soll-Abstand
+   (`k0eval`) darf **netto nicht steigen**. Struktur schlägt Distanz —
+   die stehende Regel der Kette-Arme seit `aug14`.
+3. **Tinte.** Kein Wort unter der stehenden Schranke
+   `AIOU_LOSER_GATE` = **−0,003** aiou.
+4. **dev-19-Lineal.** Kein Wort über **+0,003** dtw; Marken
+   (`marks_missing`/`marks_spurious`) nicht schlechter; `reversed` 0;
+   Netto-Kreuzungsdefekte ≤ Basis.
+5. **Fitbarkeit.** Die Zahl der Wörter/Runs, die der Fit nicht bauen
+   kann, steigt nicht (siehe Sprosse-0-Vorentscheid).
+
+**Adoption** (alle Gates grün UND mindestens ein strikter Gewinn unter
+{63er-Soll niedriger · dev-19-dtw-Median niedriger · dev-19-aiou-Median
+höher}): der Produktions-Init wird der **Default des WERKZEUGS**
+(`FollowWeights.connector_init = "production"`), `--connector-init
+mirror` bleibt eine Release lang als Archäologie-Pfad stehen. Das ist
+eine Werkzeug-Änderung: `core/` bewegt sich nicht, keine `/write`-Route,
+kein Render ändert sich, keine DB-Schreibung. Der Prod-Re-Harvest der
+`traced`-Zeilen bleibt, wie er ist, ein eigener Autorenschritt.
+
+**Nicht adoptiert, kein Kill:** Gates grün, aber kein strikter Gewinn →
+der Init ist auf diesem Satz **inert**; der Spiegel bleibt Default, und
+die P-Spiegel-Frage schließt mit einer Zahl statt mit einer Vermutung.
+
+**Kill-Kriterien:** Gate 2, 3, 4 oder 5 verletzt. Dann bleibt der
+Spiegel Default, der Eintrag schließt als ehrliches Negativ und benennt
+seine Rettungswege (§7.9-Zeile im selben PR).
+
+#### Der Stack-Sensor, ausdrücklich
+
+`k0eval`s `STACK_FLAGS` führen die SECHS Wächter-Flaggen und
+**bewusst nicht** `connector_init`. Zwei Gründe, beide vorregistriert:
+das Lineal (`tools/tracebench`) bleibt während der Runde eingefroren,
+und eine Warnung des Sensors bricht die Runde per Liturgie ab — ein
+Flag, das GENAU der registrierte Knopf ist, würde also die Runde durch
+ihre eigene Regel töten. Für diese Runde gilt darum: die sechs Flaggen
+müssen für Basis und Arm **identisch** gedruckt werden (Schweigen des
+Sensors heißt „die Wächter stimmen überein", nicht „nichts ist
+anders"), und der eine Knopf steht in jedem Artefakt unter
+`weights.connector_init`. **Bei Adoption** wandert `connector_init` im
+selben PR in `STACK_FLAGS` — nach den gebuchten Zahlen, und ohne eine
+davon zu bewegen.
+
+#### Erwartung (damit sie falsifizierbar ist)
+
+Aus dem P-Spiegel-Befund (89 von 248 Nähten bewegt, Median 0,0562 xh,
+Majuskeln 1,0365; `gen_chamfer` 13 % besser) folgt: (i) der Init bewegt
+sich auf der Mehrheit der dev-19-Wörter; (ii) die Wirkung auf die
+GEFOLGTE Bahn ist klein, weil der Folger ein re-linearisierender
+Restart ist, der seinen Start weitgehend vergisst; (iii) wo etwas
+passiert, dann an den Girlanden- und Gabel-Nähten und in Richtung
+besser, weil die Produktionskurve der Platte im Mittel näher steht.
+Trifft (ii) nicht zu — bewegt sich die gefolgte Bahn STARK —, ist das
+selbst ein Befund über den Anteil des Inits an der Kette-Zahl und wird
+berichtet, nicht geglättet.
+
+#### Was die Runde nicht anfasst
+
+`core/` (keine Zeile), `core/word_metric.py`, `tools/tracebench`
+(Lineal + `k0eval`), die Fixture-Wurzeln, die gespeicherten Vorkommen,
+die DB. `analyze._generate_connector` bleibt stehen — er ist nach diesem
+Arm entweder weiter der Init oder nur noch die historische Referenz des
+Paritäts-Tests.
+
+---
+
+### Kette K-F `sep04` — gemessen: der Init bewegt sich, die gefolgte Bahn kaum — und die Kette steht heute anders als am `aug26`
+
+**Verdikt in einem Satz: der Produktions-Init wird NICHT adoptiert** (Gate
+2 und 4 fallen an zurechenbaren Zahlen), und die Runde hinterlässt zwei
+Ergebnisse, die mehr wert sind als der Arm — die **Kette auf der
+heutigen Wurzel** (deklarierte Re-Baseline) und einen **Befund über das
+Instrument**: 23 der 63 Wörter bekommen unter dem Arm einen Init, der
+sich vom alten um höchstens **1,8·10⁻¹⁵** unterscheidet — bedeutungslos,
+letzte Bits einer anderen Rechenreihenfolge — und auf genau dieser
+NULL-Änderung kippen **9 Wörter ihr Wächter-Verdikt**, mit aiou-Werten
+von −0,0298 bis **+0,0800** und **4 Verlierern unter der −0,003-Schranke
+von Gate 3**. Gate 3 fällt also schon gegen eine nachweislich
+bedeutungslose Störung. Ein Arm auf der Init-Ebene ist auf diesem
+Instrument **nicht entscheidbar**, und das ist der Satz, der von dieser
+Runde bleibt.
+
+#### Die Basis: die Kette, heute gemessen (deklarierte Re-Baseline)
+
+Frischer `pairlab.follow`-Lauf ohne Flags (= Kette v5), BLAS gepinnt,
+`--jobs 4`, Wurzel `9f124f78cc9f` / `cf5aa308a865` vom 2026-09-04,
+63 von 63 Wörtern `ok`, kein `failed`, Laufzeit 690,6 s.
+
+| dev-19, Lineal-Kappe 1,5 | `aug26` (alte Wurzel) | **`sep04` (heutige Wurzel)** |
+|---|---|---|
+| dtw-Median | 0,0446 | **0,045830** |
+| dtw p90 | 0,0861 | **0,094197** |
+| schlechtestes Wort | `muß` 0,1059 | **`unter` 0,113919** |
+| aiou-Median | 0,7608 | **0,7694** |
+| Marken fehlend/überzählig | 0 / 0 | **0 / 0** |
+| Kreuzungsdefekte (fehlend + überzählig) | 13 + 6 = 19 | **13 + 6 = 19** |
+| 63er-Soll-Abstand | 79 | **76** |
+
+Die **Basis-Prüfung besteht**: keine Fehlschläge, und der dtw-Median
+liegt mit 0,045830 im vorregistrierten Band 0,035 … 0,075. Die
+Abweichung gegen `aug26` ist erwartet — die `sep01`-Rechteck-Reparatur
+bewegt vier der 19 Referenzen (§14 „Lotse-Sprung `sep04`") — und
+bemerkenswert klein: das schlechteste Wort wechselt von `muß` auf
+`unter`, die Kreuzungsdefekte stehen Ziffer für Ziffer wie am `aug26`,
+der Soll-Abstand FÄLLT von 79 auf 76, und **13 Wörter wirft der Wächter
+weiterhin in Runde 1 auf den Init zurück** — dieselbe Zahl, dieselbe
+offene Klasse.
+
+**Damit stehen die beiden Duell-Zahlen erstmals seit `aug26` wieder auf
+DERSELBEN Wurzel:** Kette dtw **0,045830** · p90 0,094197 · aiou 0,7694
+gegen Lotse **0,056080** · p90 0,1155 · aiou 0,7527 (§14 „Lotse-Sprung
+`sep04`"). Die Kette führt das Duell weiter, jetzt vergleichbar. Der
+offene §7.11-Punkt „Duell-Nachmessung auf der heutigen Wurzel" ist damit
+erledigt.
+
+#### Sprosse 0 — der Gegenstand existiert
+
+Über alle 214 Nähte der 63 Wortproben, an der komponierten Platzierung,
+beide Kurven auf 64 bogenlängen-gleiche Punkte abgetastet. **Gemessen
+wird hier die FORM**, nicht das Anker-Array: „identisch" heißt
+punktweise ≤ 10⁻⁹, nicht bit-gleich — ein Unterschied, der weiter unten
+die ganze Runde trägt.
+
+| | Nähte |
+|---|---|
+| formgleich (≤ 10⁻⁹) | 156 |
+| bewegt | **58 (27 %)** — je Naht der Median der punktweisen Distanz: Median 0,0158 xh, p90 0,50, max 1,0832 (die größte EINZELdistanz einer Naht ist 1,9981) |
+| ohne mitgeschnittenen Generator-Aufruf (Übersteuerung) | **0** |
+| Anker-Anzahl geändert | 8 (alle 25 → 11, der Balken-Abgang) |
+| davon auf dev-19 | 55 Nähte, **12 bewegt** |
+
+**Gate 0 besteht.** Die größte Klasse sind die Majuskel-Nähte
+(`S→p`, `S→ae`, `S→i`, `S→e`, `S→o`) mit rund **1,08 xh** Median: die
+Produktion startet am Arbeits-Austritt hinter dem Ornament-Rücklauf, der
+Spiegel am Körperende — derselbe Befund, den der P-Spiegel an der
+unabhängigen Platzierung mit 1,0365 xh gemessen hat. Danach `ſ→c`
+0,2653, `ſ→t` 0,2610. Die 27 % liegen unter den 36 % des P-Spiegels,
+und das ist erwartet: an der KOMPONIERTEN Platzierung ist die
+Endpunkt-Rekonstruktion des Spiegels exakt, es bleibt allein der
+Grammatik-Unterschied.
+
+#### Die Gates, einer nach dem anderen
+
+**Gate 1 (Identität) — bestanden.** `--connector-init mirror` über alle
+63 Wörter gegen die Basis: **strich-identisch 63/63**, Soll 76 = 76,
+null aiou-Verlierer, `guard_outcome` Wort für Wort gleich. Der
+Default-Pfad hat sich durch die Existenz des Arms nicht bewegt.
+
+**Gate 5 (Fitbarkeit) — bestanden.** Arm: 63 von 63 `ok`, kein `failed`,
+kein Wort ohne Generator-Aufruf (Sprosse 0 hatte es angekündigt), 63
+Zeilen im Kandidaten, 0 ausgeschlossen. Laufzeit 740,0 s gegen 690,6 s
+der Basis — der Mitschnitt kostet rund 7 % und nicht mehr.
+
+**Gate 2 (Struktur) — VERLETZT.** 63er-Soll-Abstand **76 → 77**
+(5 besser · 51 gleich · 7 schlechter). Die Regel ist „netto nicht
+steigen"; er steigt.
+
+**Gate 3 (Tinte) — VERLETZT, deutlich.** **18 aiou-Verlierer** unter
+−0,003 (Schranke: null). Die schlimmsten: `Kugel` −0,1267, `schwer`
+−0,0984, `Galoppieren` −0,0669, `daß` −0,0403, `scharfen` −0,0368,
+`Pulver` −0,0298, `Sporn` −0,0295. Dem stehen 17 Gewinner über +0,003
+gegenüber, die größten `Säbel` +0,1069, `fechten` +0,0830, `wenn`
++0,0800, `von` +0,0537, `Zorn` +0,0517. Über alle 63 bewegten Wörter:
+min −0,1267 · **Median −0,0003** · max +0,1069.
+
+**Gate 4 (dev-19-Lineal) — VERLETZT, an zwei Stellen.**
+`Galoppieren` **+0,0055 dtw** (Schranke +0,003), und die
+Netto-Kreuzungsdefekte steigen **19 → 20** (`cross_spurious` 6 → 7 bei
+gleichem `cross_missing` 13). Nicht verletzt: Marken 0/0/0 unverändert,
+`reversed` 0. Die dev-19-Aggregate selbst bewegen sich kaum und teils
+zugunsten des Arms — dtw-Median 0,045830 → **0,044235**, p90 0,094197 →
+**0,093116**, schlechtestes Wort `unter` 0,11392 → 0,11428 —, der
+GEPAARTE Median ist +0,000040 und der Vorzeichentest n = 19, 11 : 8,
+p = 0,65. Das Lineal sieht also, ehrlich gesagt, nichts; was es sieht,
+ist die aiou-Spalte: **Median 0,7694 → 0,7531 (−0,0162)**.
+
+#### Die Nullprobe, die niemand vorregistriert hatte — und die die Runde trägt
+
+Zwei Zahlen dieser Runde widersprechen einander: `k0eval` meldet
+**strich-identisch 0 von 63**, Sprosse 0 meldet für **23 Wörter keine
+einzige bewegte Naht**. Beides kann nicht dieselbe Sache beschreiben —
+und die Auflösung ist der eigentliche Befund.
+
+Nachgerechnet wurde nicht die Form, sondern das **Anker-Array, das der
+Ketten-Löser tatsächlich bekommt** (`_connector_spec` unter beiden
+Inits, Join für Join, inklusive `regularise_connector_anchors`). Für
+jene 23 Wörter ist die Ankerzahl gleich und die größte Abweichung eines
+Ankers **1,78·10⁻¹⁵** — die letzten Bits, weil zwei Funktionen dieselbe
+Kurve auf verschiedenen Wegen ausrechnen. Der Abstand zur nächsten
+Klasse lässt beim Schnitt keinen Ermessensspielraum: das kleinste
+Anker-Delta der übrigen 40 Wörter ist **0,00346**, zwölf
+Größenordnungen darüber.
+
+Und der Folger ist in EINER gepinnten Umgebung bit-deterministisch —
+Gate 1 hat es gerade bewiesen (Basis gegen expliziten Spiegel:
+strich-identisch 63/63). Für diese 23 Wörter ist eine
+Fließkomma-Rundung an der fünfzehnten Stelle also **die einzige
+Eingabeänderung, die es überhaupt gibt**. Was daraus wird:
+
+| | Nullklasse (23 Wörter, max. Anker-Δ 1,8·10⁻¹⁵) | Realklasse (40 Wörter) |
+|---|---|---|
+| Wächter-Verdikt gekippt | **9** | 15 |
+| aiou min / Median / max | **−0,0298** / −0,0001 / **+0,0800** | −0,1267 / −0,0005 / +0,1069 |
+| aiou-Verlierer (≤ −0,003) | **4** | 14 |
+| aiou-Gewinner (≥ +0,003) | 5 | 12 |
+| Soll netto | **±0** | +1 |
+
+Die vier Verlierer der Nullklasse: `Pulver` −0,0298, `han` −0,0191,
+`haben` −0,0080, `Einen` −0,0030. Ihre fünf Gewinner: `wenn` +0,0800,
+`von` +0,0537, `Gewehr` +0,0452, `Wer` +0,0163, `und` +0,0039. Auf
+dev-19 fallen **8 der 19 Wörter** in die Nullklasse (`Wer`, `die`,
+`die-2`, `und`, `und-2`, `und-3`, `und-4`, `will`) — 42 % des
+Entwicklungssatzes messen an diesem Arm Rundung.
+
+**Damit fällt Gate 3 schon gegen eine nachweislich bedeutungslose
+Störung.** Die vorregistrierte Schranke ist −0,003 je Wort; der
+Rausch-Boden des Instruments unter einer Null-Störung des Starts liegt
+bei −0,0298 … +0,0800 — eine Größenordnung darüber. Ein Arm auf der
+Init-Ebene ist mit dieser Gate-Form **nicht entscheidbar**. Das ist
+kein Grund, das Gate nachträglich weichzustellen (das wäre genau das
+verbotene Nachstimmen), sondern der Grund, warum vor dem nächsten
+Init-Arm eine Rausch-Boden-Kontrolle vorregistriert gehört —
+Rettungsweg 1.
+
+**Was trotzdem zurechenbar bleibt.** Die Nullklasse bewegt den
+Soll-Abstand netto um **±0**; die +1 von Gate 2 kommt vollständig aus
+der Realklasse. Und `Galoppieren`, das Gate 4 mit +0,0055 dtw reißt,
+ist Realklasse. Das Nicht-Adoptieren steht also auf zurechenbaren
+Zahlen, auch ohne Gate 3.
+
+**Der Mechanismus, jetzt richtig benannt.** Über beide Klassen kippen
+24 der 63 Wörter ihr `guard_outcome` und tragen 17 der 24 Bewegungen
+über 0,01; alle fünf größten Gewinner und Verlierer sind Kipper
+(`Säbel` revert-init→zonal +0,1069, `fechten` +0,0830, `wenn` +0,0800
+gegen `Kugel` zonal→revert-init −0,1267, `schwer` −0,0984,
+`Galoppieren` clean→revert-init −0,0669). **Falsch** wäre der Satz „der
+Produktions-Init stört den Abstieg gerade genug, um das Verdikt zu
+kippen" — 1,8·10⁻¹⁵ tut dasselbe, neunmal. **Richtig** ist: der Folger
+ist an der Annahmeschwelle des Wächters chaotisch, und dieser Arm hat
+das gemessen, ohne es zu wollen.
+
+#### Was der Arm zeigt, ohne dass es zählt
+
+Drei dev-19-Zahlen stehen zugunsten des Arms und gehören keinem Gate:
+`touch_cand` **23 → 20**, `overlap_cand` **6 → 4** (weniger erfundene
+Berührungen und Überlagerungen — die seit §7.1 teuerste Klasse des
+Kettenfits) und `retrace_missing` **7 → 6**; dagegen
+`retrace_spurious` **6 → 8**. Nach der Nullprobe ist davon nichts
+zurechenbar: diese Aggregate laufen über einen dev-Satz, der zu 42 %
+Nullklasse ist. Sie bleiben ein Grund, die Rettungswege ernst zu
+nehmen, kein Beleg.
+
+#### Warum keine Teil-Adoption
+
+Naheliegend wäre „Produktions-Init nur für Minuskel-Nähte". Die
+Majuskel-Klasse ist tatsächlich die einzige negative Teilmenge (n = 11,
+Mittel −0,0177, Median −0,0068, gegen n = 29 Minuskel-Wörter der
+Realklasse mit Mittel +0,0019), und sie hat sogar einen sauberen
+Mechanismus: die Produktion startet am Ornament-Arbeitsaustritt, bis zu
+**1,998 xh** vom Körperende des Spiegels entfernt, während
+`_seam_ownership` beide Verbinder-Enden den Buchstaben gibt — die
+Innenanker starten also auf einer Kurve, deren Enden die Naht gar nicht
+treffen, an die sie geschweißt werden. Trotzdem **keine Teil-Adoption**:
+bei einem Rausch-Boden von ±0,03 je Wort ist ein Mittel von −0,018 über
+11 Wörter nicht vom Rauschen trennbar. Der Mechanismus verdient einen
+eigenen Arm (Rettungsweg 2), keine Adoption. Und „nur Wörter, die nicht
+kippen" wäre keine Regel, sondern eine Auswahl nach dem Ergebnis.
+
+#### Rettungswege (Register: `tintenfolger.md` §7.9)
+
+1. **Der Rausch-Boden, vor jedem weiteren Init-Arm** (der sperrende
+   Weg, neuer SENSOR). Den Folger gegen einen Init laufen lassen, der
+   nachweislich bedeutungslos gestört ist — die 10⁻¹⁵-Umordnung, die
+   diese Runde geschenkt bekommen hat, oder ein erklärter Jitter von
+   10⁻¹² —, und die entstehende Streuung je Wort (aiou, Soll,
+   `guard_outcome`) als BODEN des Instruments veröffentlichen. Die
+   Gates jedes künftigen Init-Arms werden dann in Vielfachen dieses
+   Bodens formuliert statt in absoluten 0,003. Ohne ihn ist Gate 3 für
+   diese Klasse von Änderungen kein Gate. Eigene Pre-Reg.
+2. **Naht-verankertes Abspielen (neuer MECHANISMUS).** Die Grammatik aus
+   der Produktion nehmen, die ENDEN aber dorthin legen, wo die Kette
+   ihre Naht hat: `prodconn.replay` mit dem Versatz, der den
+   Produktions-Austritt auf den Körper-Endpunkt des Buchstabens schiebt.
+   Damit fällt die Majuskel-Verschiebung (Median 1,08 xh, max 1,998 xh)
+   weg, ohne dass eine Zeile Grammatik nach `tools/` wandert. Eigene
+   Pre-Reg, gegen den Boden aus (1) gemessen; Gegenstands-Test zuerst.
+3. **Das Wächter-Verdikt zur MESSGRÖSSE machen (neue EVIDENZ).** Die
+   ganze Wirkung dieses Arms läuft über Annahme/Rückweisung; solange
+   die nur als Etikett existiert, ist jede Bewegung ein Münzwurf. Eine
+   Stabilitäts-Kennzahl auf Rundenebene — wie nah ein Wort an seiner
+   Budget-Grenze steht — macht daraus eine Ablesung. Sie ist zugleich
+   das Instrument, an dem der stehende §7.11-Arm „Abstandsterm ·
+   Schleifen-Halteterm" seinen Erfolg zeigen könnte: er ist ab heute
+   nicht mehr nur der Weg für die 13 Rückweisungen, sondern auch die
+   Vorbedingung dafür, dass ein Init-Arm überhaupt entscheidbar wird.
+   Reihenfolge: (1) → (3) → Term → K-F wiedervorlegen. Eigene Pre-Reg.
+
+Ausdrücklich KEIN Rettungsweg: derselbe Knopf mit weicheren Gates. Der
+Rausch-Boden aus (1) ist genau deshalb ein eigener, vorregistrierter
+Messakt und keine nachträgliche Lockerung der 0,003.
+
+#### Was stehen bleibt
+
+`analyze._generate_connector` bleibt der Ketten-Init und damit der
+Verbraucher, den der P-Spiegel-Eintrag richtig hat stehen lassen — die
+offene Autor-Frage von dort ist beantwortet, und zwar **gemessen**:
+umzuziehen bringt auf diesem Instrument keine ablesbare Verbesserung,
+und ob es überhaupt eine gäbe, kann der heutige Prüfstand nicht sagen.
+`--connector-init production` bleibt als
+vorregistrierter Arm im Werkzeug stehen (Default `mirror`), damit
+Rettungsweg 1 und 3 ihn nicht neu bauen müssen. `connector_init` wandert
+NICHT in `k0eval`s `STACK_FLAGS`: das war an die Adoption geknüpft, und
+die findet nicht statt.
+
+**Offen geblieben und benannt:** `pairlab.follow` und `tracebench` haben
+kein eigenes `--expect-root`. Diese Runde hat ihre Wurzel dadurch
+festgenagelt, dass `wordbench.run --expect-root 9f124f78cc9f,cf5aa308a865`
+in derselben Session auf demselben Verzeichnis lief und die stehende
+Wort-Headline 0,109218 / 0,148198 Ziffer für Ziffer reproduzierte. Das
+ist eine Vorbedingung über Bande; die beiden Werkzeuge sollten sie
+selbst tragen (eigener PR, kein Arm — `tracebench` ist Lineal und wird
+nicht während einer Runde angefasst).
+
+**Die Zweitmeinung hat die Runde gedreht.** Nach der Direktive „vor
+jedem gebuchten Negativ eine zweite Meinung" lief eine adversariale
+Nachprüfung auf denselben Artefakten. Sie hat die Paarung bestätigt
+(genau ein Gewichts-Schlüssel von 27 unterscheidet Basis und Arm) und
+die Zerlegung nachgerechnet — und dann den Widerspruch zwischen
+„strich-identisch 0/63" und „23 Wörter ohne bewegte Naht" verfolgt, den
+diese Runde selbst produziert und übersehen hatte. Die erste Fassung
+dieses Eintrags erklärte die Kipper mit dem Produktions-Init; das war
+falsch, und die Nullklasse beweist es. Der Befund ist damit stärker
+geworden, nicht schwächer: aus „der Init kippt Verdikte" wurde „das
+Instrument kann Init-Arme nicht entscheiden".
+
+**Selbst entschieden (Routine im Rahmen der Vorregistrierung):** die
+Zerlegung nach `guard_outcome` und die Nullklassen-Kontrolle (beide
+nicht vorregistriert, beide die Antwort auf die vorregistrierte Frage
+„ist die Verlierer-Menge eine Klasse?"); die Vorentscheidung, eine Naht
+ohne Mitschnitt scheitern statt auf den Spiegel zurückfallen zu lassen
+(Sprosse 0 zeigt: sie tritt auf diesem Satz nie auf); der dritte Lauf
+für Gate 1 über alle 63 statt über dev-19 — ohne ihn wäre die
+Bit-Determinismus-Prämisse der Nullklasse unbewiesen geblieben.

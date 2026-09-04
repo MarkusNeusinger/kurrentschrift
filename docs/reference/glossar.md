@@ -72,7 +72,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
-- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
+- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftkunde (Seite) §7 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
@@ -1606,6 +1606,32 @@ gekürzt, auf 35 % der Nähte), und der Austritt einer Majuskel ist der
 Ornament-Rücklaufpunkt. Gegenbegriff: der **eingefrorene Spiegel**
 (`analyze._generate_connector`), die taute Einzel-Kubik vom 2026-07-11,
 die heute nur noch der Kettenfit-Init und der Paritätstest benutzen.
+
+**Produktions-Init** *(`connector_init`, `chain._connector_spec`, Arm
+K-F `sep04`)* — WELCHER Generator den START PUNKT des Kettenfit-
+Verbinders zeichnet. `"mirror"` ist der historische Init: der
+eingefrorene Spiegel, aus den beiden Körper-Endpunkten neu gezogen;
+`"production"` nimmt die Kurve, die `core.compose._connector_centerline`
+beim Komponieren DIESES Wortes zurückgegeben hat (Verbinder-Mitschnitt,
+`prodconn.joins_for`) — mit Girlande, Gabel und Absatz-Ritt, die der
+Spiegel nie bekommen hat. Warum das nur ein Startpunkt ist und keine
+Zielfunktion: der Verbinder trägt `reg_w` = 0 (kein Tikhonov-Term,
+bindende Bedingung 3 von `chain.py`), seine beiden Endanker gehören per
+`_seam_ownership` den Nachbarbuchstaben, und der Glättungsterm misst
+Krümmungs-ÄNDERUNG, nicht Abstand zur erzeugten Bézier. Was der Init
+mitbewegt und was darum in jedem Vergleich mitgenannt wird: die
+Anker-ANZAHL des Verbinder-Blocks und damit seine Diskretisierung
+(`_second_difference_operator` friert seine `ds` am Start ein) — dieselbe
+Eigenschaft hat der Spiegel, sie ist keine Zielfunktions-Änderung. Der
+Ernte-Pfad (`laufform.harvest --path chain`) behält seinen eigenen
+Default, damit keine gespeicherte Bahn sich still mitbewegt. **Gemessen
+und verworfen** (§14 „Kette K-F `sep04`"): `"mirror"` bleibt Default.
+Der bleibende Befund ist dabei nicht der Verbinder, sondern der
+Prüfstand — für 23 der 63 Wörter weicht das Anker-Array der beiden
+Inits um höchstens 1,8·10⁻¹⁵ ab, und auf dieser Null-Änderung kippen
+neun Wächter-Verdikte mit aiou-Ausschlägen bis +0,0800; das
+0,003-Gate der Kettenarme entscheidet auf dieser Ebene also nichts
+mehr.
 
 **Anker · Sample · Schritt** — die drei Sorten Punkt, die im Fit alle wie
 Punkte aussehen und ständig verwechselt werden. **Anker** sind die

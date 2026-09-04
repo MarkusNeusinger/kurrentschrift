@@ -78,6 +78,7 @@ from tools.pairlab.analyze import (
     _generate_connector,
 )
 from tools.pairlab.landmarks import landmark_crossings, nearest_unique_point, skeleton_branch_points
+from tools.pairlab.prodconn import JoinCall, joins_for
 from tools.pairlab.trace import diacritic_stroke_units
 from tools.wordlab.cases import WordCase
 from tools.wordlab.derive import WordDeriveResult, derive_word
@@ -301,6 +302,20 @@ CHAIN_CONNECTOR_MIN_SPAN_UNITS = 0.20
 # smoothness weight above was calibrated at (a normal connector's ~0.30 xh chord
 # over its ~23 sample intervals).
 CHAIN_CONNECTOR_ANCHOR_SPACING_UNITS = 0.013
+
+# Where the chain's connector START POINT comes from (`_connector_spec`).
+# `"mirror"` is the historical initialisation: `analyze._generate_connector`,
+# the taut cubic frozen on 2026-07-11, re-derived from the two body endpoints.
+# `"production"` replays the join `compose_word` actually drew for this word
+# (`tools.pairlab.prodconn`), so the descent starts at the curve the render
+# path emits instead of at a copy that stopped being it — audit 2026-09-02
+# Befund 18, §14 „Übergänge P-Spiegel `sep04`". Both are INITIALISATIONS: no
+# penalty term measures the fitted connector against either (binding
+# constraint 3), and the connector's two endpoint anchors are owned by the
+# neighbouring letters (`_seam_ownership`) in both cases.
+CONNECTOR_INIT_MIRROR = "mirror"
+CONNECTOR_INIT_PRODUCTION = "production"
+CONNECTOR_INIT_SOURCES = (CONNECTOR_INIT_MIRROR, CONNECTOR_INIT_PRODUCTION)
 
 # Anchor count `core.fit.DEFAULT_N_SAMPLES` was tuned against, so the chain's
 # sample budget keeps the same ~1.5 samples per anchor at any chain length.
@@ -1801,15 +1816,27 @@ def _letter_spec(case: WordCase, result: WordDeriveResult, slot_index: int) -> t
     return spec, offset
 
 
-def _connector_spec(result: WordDeriveResult, slot_a: int) -> ChainSegmentSpec | None:
+def _connector_spec(
+    result: WordDeriveResult, slot_a: int, *, join_call: JoinCall | None = None
+) -> ChainSegmentSpec | None:
     """The generated join between slots `slot_a` and `slot_a + 1` as a segment.
 
-    `analyze._generate_connector` at the COMPOSED placement, read in the same
-    body-endpoint frame `analyze.dissect_occurrence` and
-    `tools.wordbench.pairmeas._body_lines` use, with NO overlap extension, NO
-    capital retrace prefix and NO entry trim — the trimmed lead-in stub is
+    Without `join_call`: `analyze._generate_connector` at the COMPOSED
+    placement, read in the same body-endpoint frame `analyze.dissect_occurrence`
+    and `tools.wordbench.pairmeas._body_lines` use, with NO overlap extension,
+    NO capital retrace prefix and NO entry trim — the trimmed lead-in stub is
     exactly the ownership question the seam calibration measures, so the chain
-    must see it. The generated SHAPE is used verbatim; only the point COUNT is
+    must see it.
+
+    With `join_call` (arm A34, `--connector-init production`): the centerline
+    `core.compose._connector_centerline` RETURNED for this very join while the
+    word composed (`tools.pairlab.prodconn.joins_for`), which is the same bare
+    curve in the same frame — `compose_word` adds the overlap extension and the
+    capital retrace prefix only afterwards, when it emits the item. What changes
+    is the grammar: garland, fork retrace and Absatz ride reach the chain, and
+    the 2026-07-11 mirror never had them.
+
+    Either way the generated SHAPE is used verbatim; only the point COUNT is
     repaired where the chord leaves no room for all of them
     (`regularise_connector_anchors`). This is the INITIALISATION, never a
     target: no penalty term ever measures the fitted connector against it.
@@ -1821,13 +1848,16 @@ def _connector_spec(result: WordDeriveResult, slot_a: int) -> ChainSegmentSpec |
     b_items = _body_items(result, slot_a + 1)
     if not a_items or not b_items:
         return None
-    a_line = a_items[-1]["centerline"]
-    b_line = b_items[0]["centerline"]
-    exit_deg = _endpoint_tangent([tuple(p) for p in a_line], at_end=True)
-    entry_deg = _endpoint_tangent([tuple(p) for p in b_line], at_end=False)
-    conn = np.asarray(
-        _generate_connector(tuple(a_line[-1]), exit_deg, tuple(b_line[0]), entry_deg), dtype=float
-    ).reshape(-1, 2)
+    if join_call is not None:
+        conn = np.asarray(join_call.centerline, dtype=float).reshape(-1, 2)
+    else:
+        a_line = a_items[-1]["centerline"]
+        b_line = b_items[0]["centerline"]
+        exit_deg = _endpoint_tangent([tuple(p) for p in a_line], at_end=True)
+        entry_deg = _endpoint_tangent([tuple(p) for p in b_line], at_end=False)
+        conn = np.asarray(
+            _generate_connector(tuple(a_line[-1]), exit_deg, tuple(b_line[0]), entry_deg), dtype=float
+        ).reshape(-1, 2)
     if len(conn) < 3:
         return None
     conn = regularise_connector_anchors(conn)
@@ -2033,6 +2063,7 @@ def fit_word_chain(
     bind_weight: float | None = None,
     landmark_weight: float | None = None,
     mark_claim: bool = False,
+    connector_init: str = CONNECTOR_INIT_MIRROR,
 ) -> ChainWordFit | None:
     """Fit a run of consecutive slots as ONE chain `[L, C, L, C, …]`.
 
@@ -2051,6 +2082,17 @@ def fit_word_chain(
       placement (`_letter_spec`, including its known Laufform wrinkle, preserved
       on purpose so chain and baseline share one init) and the generated
       connectors at that same placement (`_connector_spec`).
+    * **`connector_init`** picks WHICH generator draws those connectors —
+      `"mirror"` (the default and every historical number) the frozen
+      2026-07-11 cubic, `"production"` the join `compose_word` actually drew
+      (arm A34). It moves the START POINT only: the connector carries no
+      Tikhonov term either way (binding constraint 3), and no penalty measures
+      the fitted curve against the generated one. What it does move besides the
+      start is the connector's DISCRETISATION — a production join may hand the
+      chain a different anchor count, hence a different `smooth_op` spacing and
+      a different sample budget. That is inherent to any initialisation change
+      in a discretised solve, it applies to the mirror in exactly the same way,
+      and `fit_meta["connector_init"]` records which one a fit ran under.
     * **Seams.** Per join: the last anchor of the left letter's last
       NON-diacritic stroke and the first anchor of the right letter's first
       non-diacritic stroke (`_letter_cut_anchors`, the diacritic rule of
@@ -2083,6 +2125,8 @@ def fit_word_chain(
     is a caller bug and raises.
     """
     started = time.perf_counter()
+    if connector_init not in CONNECTOR_INIT_SOURCES:
+        raise ValueError(f"connector_init must be one of {CONNECTOR_INIT_SOURCES}, got {connector_init!r}")
     run = [int(s) for s in slots]
     if not run or any(b != a + 1 for a, b in zip(run[:-1], run[1:], strict=True)):
         raise ValueError(f"fit_word_chain needs a run of CONSECUTIVE slots, got {list(slots)!r}")
@@ -2099,6 +2143,16 @@ def fit_word_chain(
     baseline_y_px = float(result.baseline_row) + ty
 
     # ---- the chain in writing order: letter, join, letter, join, letter … ----
+    # One recorded composition per FIT, not per join: `joins_for` costs a single
+    # `compose_word` and hands back every generated join of the word keyed by
+    # its left slot. A join the generator never drew (an APPROVED pair override
+    # draws its stored centerline instead) is absent from the mapping and gets
+    # no production init — the fit then reports None rather than silently
+    # falling back to the mirror, which would put two initialisations in one
+    # candidate and make the arm's numbers a mixture.
+    join_calls: dict[int, JoinCall] = (
+        joins_for(result) if connector_init == CONNECTOR_INIT_PRODUCTION and len(run) > 1 else {}
+    )
     specs: list[ChainSegmentSpec] = []
     offsets: dict[int, float] = {}
     for n, slot_index in enumerate(run):
@@ -2109,7 +2163,12 @@ def fit_word_chain(
         window = windows_px.get(slot_index)
         spec.cov_window_px = None if window is None else (float(window[0]), float(window[1]))
         if n:
-            conn = _connector_spec(result, run[n - 1])
+            call = None
+            if connector_init == CONNECTOR_INIT_PRODUCTION:
+                call = join_calls.get(run[n - 1])
+                if call is None:
+                    return None
+            conn = _connector_spec(result, run[n - 1], join_call=call)
             if conn is None:
                 return None
             specs.append(conn)
@@ -2274,6 +2333,10 @@ def fit_word_chain(
             # without a firing claim says so instead of staying silent), and
             # the key's absence keeps every default artefact byte-identical.
             **({"mark_claims": mark_claims or []} if mark_claim else {}),
+            # …and the same rule for the connector init: the key appears only
+            # on a non-default arm, so a default artefact stays byte-identical
+            # to every one measured before A34 existed.
+            **({"connector_init": connector_init} if connector_init != CONNECTOR_INIT_MIRROR else {}),
             # How many crossing landmarks got an ink target and how many were
             # refused, per reason — a term with nothing assigned is inert for a
             # reason that has to be readable, not inferred from a flat energy.
