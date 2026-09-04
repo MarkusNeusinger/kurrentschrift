@@ -105,7 +105,9 @@ Verfahrensseite; geändert wird sie nie hier.
 > Nachmessung auf Kappe 1,5 · die drei LF10-Konversionen
 > (Richtungs-Abstand · Tinten-Evidenz der Zeile · humanbench-Zeilen-
 > Runde) · die zwei J4-Konversionen (nur die Ankunftsseite · eine
-> ausdehnungs-normierte Formdistanz als neuer Sensor).
+> ausdehnungs-normierte Formdistanz als neuer Sensor) ·
+> Duell-Nachmessung auf der heutigen Wurzel · formtreue
+> Fenster-Pinnung.
 > Autorenschritte: Bestätigungssatz
 > A/B · Prod-Re-Harvest der `traced`-Zeilen mit
 > Kette v5 · St-Ligatur im Wizard · Laufform-Lücke G/W/K/ue/F/ae/b ·
