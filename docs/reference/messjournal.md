@@ -7888,11 +7888,20 @@ Stand-Blocks (dtw 0,0446 / p90 0,0861 / aiou 0,7608), weil dazwischen
 der LF11-Write und zwei Wurzel-Exporte liegen. Verglichen wird nur
 innerhalb des Paars.
 
-**Vor dem Write geprüft.** Die serverseitige Kanonisierung
-(`build_laufform_canonical`, die der PUT erneut ausführt) ist auf allen
-22 Zeilen der Karte ein verifizierter **No-op** — größte Bewegung eines
-zweiten Durchlaufs 0,000000000 xh. Die Karte, die gemessen wurde, wäre
-also die Karte, die geschrieben wird.
+**Vor dem Write geprüft.** Zweierlei, beides ohne einen Schreibvorgang:
+
+1. Die serverseitige Kanonisierung (`build_laufform_canonical`, die der
+   PUT erneut ausführt) ist auf allen 22 Zeilen der Karte ein
+   verifizierter **No-op** — größte Bewegung eines zweiten Durchlaufs
+   0,000000000 xh. Die Karte, die gemessen wurde, wäre also die Karte,
+   die geschrieben wird.
+2. Gegen die **lebende API** nachgezählt
+   (`GET …/templates/{key}?variant=100`, nur lesend): alle 22 Live-Zeilen
+   sind byte-identisch mit der eingefrorenen Wurzel — nichts in Prod ist
+   jünger als die Ernte dieser Karte. 18 Zeilen würden sich bewegen, und
+   ihre Beträge stimmen anchor-genau mit der Tabelle oben überein; `P`,
+   `S`, `p` und `s` meldet der Trockenlauf als „unchanged", weil die
+   Karte für sie die gespeicherte Zeile trägt.
 
 **Bestandsaufnahme der neuen Schlüssel (kein Kandidat).** Die Ernte
 liefert Fits für 11 Schlüssel ohne gespeicherte Zeile — die
