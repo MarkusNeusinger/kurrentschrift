@@ -601,9 +601,9 @@ def test_dissect_occurrence_reuses_a_passed_in_result(monkeypatch: pytest.Monkey
     run `derive_word` five times."""
 
     def _boom(_case):
-        raise AssertionError("derive_word must not run when a result is passed in")
+        raise AssertionError("derive_with_joins must not run when a result is passed in")
 
-    monkeypatch.setattr(analyze, "derive_word", _boom)
+    monkeypatch.setattr(analyze, "derive_with_joins", _boom)
     case = _stub_case()
     assert analyze.dissect_occurrence(case, 0, trace=False, result=_stub_result(case)) is None
 
@@ -614,9 +614,9 @@ def test_dissect_occurrence_derives_by_default(monkeypatch: pytest.MonkeyPatch) 
 
     def _record(case):
         calls.append(case)
-        return _stub_result(case)
+        return _stub_result(case), {}
 
-    monkeypatch.setattr(analyze, "derive_word", _record)
+    monkeypatch.setattr(analyze, "derive_with_joins", _record)
     case = _stub_case()
     assert analyze.dissect_occurrence(case, 0, trace=False) is None
     assert calls == [case]

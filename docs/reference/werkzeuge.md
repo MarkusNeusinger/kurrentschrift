@@ -162,6 +162,43 @@ Feder Schwanz/Kopf der Glyphen für den Join umformt. Befund + Optionen in
 uv run --extra viz python -m tools.pairlab re [longs,a] [--set words|pairs|all]
 ```
 
+**Datierter Hinweis 2026-09-04 — was die Übergänge-Sektion seither misst.**
+Bis zum 2026-09-04 zeichnete `analyze.py::_generate_connector` den
+Verbinder selbst nach: 22 Zeilen, die im Docstring behaupteten, „die
+exakte Mathematik" des Produktions-Join-Blocks zu sein, zuletzt angefasst
+am 2026-07-11 — während `core/compose.py::_connector_centerline` dreimal
+umgebaut wurde (Audit-Befund 18). Seither ruft pairlab den
+**Produktions-Verbinder selbst** auf: `prodconn.py` schneidet den Aufruf
+mit, den `compose_word` für diese Naht macht, und spielt ihn an der
+unabhängigen Platzierung erneut ab. In `tools/` steht damit keine Zeile
+Join-Grammatik mehr; ein Umbau in `core/` erreicht pairlab beim nächsten
+Lauf. **Zahlen, die sich dadurch verschieben:** `gen_chamfer`/`gen_px` der
+Dissektion (89 von 248 Nähten wichen ab, Median 0,0562 xh, Majuskeln
+1,0365; `gen_chamfer` im Median 0,0434 → 0,0392), die Overlays, die
+`gen_chamfer`-Spalte eines künftigen `pairlab.harvest`-Laufs und die
+`base_gen_*`-Spalten von `chainbench`. **Unberührt:** `core/`, der
+Golden, die Headlines, `doff`/`dconn` — und der Init des Kettenfits, der
+weiter den eingefrorenen Spiegel benutzt (per Docstring Initialisierung,
+nie Ziel; ihn nachzuziehen wäre eine deklarierte Re-Baseline der Kette).
+Belege: [`messjournal.md`](messjournal.md) §14 „Übergänge P-Spiegel
+`sep04`", Parität gepinnt von `tests/test_pairlab_connector_parity.py`.
+
+**`tools/pairlab/spanmeas.py`** — der Sensor `dspan`, die
+ausdehnungs-normierte Formdistanz einer Naht: komponierter gegen
+gemessenen Verbinder, aber nur über den GEMEINSAMEN Abschnitt (beide vom
+gemeinsamen Ende auf `min(Bogenlänge)` zurückgeschnitten), dann
+bogengleich abgetastet und start-ausgerichtet. Antwort auf den blinden
+Fleck von `dconn`, das eine Regel, die die Grenze Buchstabe/Verbinder
+verschiebt, als Formunterschied bucht (Rettungsweg 2 des #488-Negativs;
+Pre-Reg und Abnahme: [`messjournal.md`](messjournal.md) §14 „Übergänge
+S1"). Report-only, kein DB-Zugriff, `core/word_metric.py` und
+`tools/wordbench/pairmeas.py` unberührt.
+
+```bash
+uv run python -m tools.pairlab.spanmeas --set words --json temp/base.json
+uv run python -m tools.pairlab.spanmeas --set words --exit-trim --base temp/base.json
+```
+
 Um `pairlab` herum sind messende Einstiegsskripte gewachsen (keines
 schreibt in DB oder Rendering): `chain.py`/`chainbench.py` — der
 Kettenfit (ein durchgehender Schreibpfad statt unabhängiger Einzelfits)

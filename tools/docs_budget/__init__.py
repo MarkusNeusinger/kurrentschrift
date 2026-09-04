@@ -215,9 +215,19 @@ WIDEST = {
 
 # Measured 2026-09-04 plus 10 %. A budget is not a target: the headroom is
 # there so that a paragraph does not fail a PR, and a rewrite does.
+#
+# `mess-runde` raised the same day, deliberately and for one reason: its
+# growing piece is the §14 REGISTER, which carries exactly one row per journal
+# entry. Six rounds were booked on 2026-09-04, and a register that may not grow
+# by a row per round is an index that cannot index — the headroom would have to
+# be bought by deleting rows, which is the one thing the register forbids
+# ("ein Eintrag wird nie gelöscht oder umsortiert"). Re-measured with those
+# rows in and given the same 10 % headroom as every other path. What this does
+# NOT license is prose: if the Stand blocks or §7.11 grow, that is the rewrite
+# the gate is for.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
-    "mess-runde": 16_530,
+    "mess-runde": 18_644,
     "mess-runde-route": 6_177,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,

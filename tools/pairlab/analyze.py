@@ -10,9 +10,11 @@ in the Abb.-19 words / Abb.-20 pairs it
 2. re-fits EVERY letter independently — a small bounded translation grid per
    glyph, minimising the mean skeleton distance of its own body strokes — so
    each letter sits where THIS specimen actually wrote it,
-3. regenerates the connector between the two independently placed letters with
-   the production connector maths (same constants and guards as
-   ``core.compose``), and
+3. regenerates the connector between the two independently placed letters by
+   REPLAYING the production join grammar itself — `core.compose`'s own
+   ``_connector_centerline`` call for this join, run again with the two fit
+   shifts applied (``tools.pairlab.prodconn``; before 2026-09-04 this was a
+   hand-written copy frozen at 2026-07-11, audit Befund 18) — and
 4. dissects the join: the specimen's own connecting stroke (skeleton pixels in
    the inter-letter gap, ordered into a polyline), the tangents at both of its
    ends, and — the core question — the DEVIATION PROFILE along the first
@@ -29,6 +31,7 @@ or the frozen bench metric.
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 import numpy as np
@@ -47,8 +50,9 @@ from core.compose import (
     _unit,
 )
 from core.fit import fit_template_to_instance
+from tools.pairlab.prodconn import JoinCall, derive_with_joins, joins_for, replay
 from tools.wordlab.cases import WordCase, iter_fixture_word_cases
-from tools.wordlab.derive import WordDeriveResult, derive_word
+from tools.wordlab.derive import WordDeriveResult
 
 
 # Independent-fit bounds per letter (x-height units): wide enough to absorb the
@@ -140,7 +144,7 @@ class JoinDissection:
     entry_px: Point  # B's template entry at optimal placement
     exit_deg: float  # rendered tangents (composed units, y up)
     entry_deg: float
-    gen_px: np.ndarray  # the regenerated connector polyline (crop px)
+    gen_px: np.ndarray  # production join replayed at the two fits (crop px)
     gen_chamfer: float  # mean skeleton distance of its samples (xh units)
     # --- the specimen's own connecting stroke ---
     real_px: np.ndarray  # ordered skeleton polyline in the inter-letter gap (may be empty)
@@ -235,10 +239,29 @@ def _fit_letter(edt: np.ndarray, strokes_px: list[np.ndarray], xh: float) -> tup
 
 
 def _generate_connector(p0: Point, exit_deg: float, p3: Point, entry_deg: float) -> list[Point]:
-    """The production connector between two endpoints — the exact maths of
-    ``core.compose.compose_word``'s join block (same constants, same guards),
-    lifted out so it can run between INDEPENDENTLY placed letters. Composed
-    units in, composed units out."""
+    """FROZEN historical mirror: the taut cubic, the join block as it stood on
+    2026-07-11 — before the garland grammar (#308), the fork/Absatz rebuild
+    (#358) and the crest roll (#366). **Not the production connector.**
+
+    It was written as one, and its docstring said so until 2026-09-04. The
+    2026-09-02 audit (Befund 18) measured what that claim had become: against
+    today's ``core.compose._connector_centerline`` — 18 parameters, branching
+    into garland, fork and Absatz — the two curves sit 0.12 xh apart in the
+    median and 0.30 xh at worst on garland geometry, against a word-ruler
+    sensitivity window of 0.05–0.12 xh. The dissection now calls the production
+    function through ``tools.pairlab.prodconn``; this stays for exactly two
+    consumers, both of which want the 2026-07-11 curve and not today's:
+
+    * ``chain._connector_spec`` — the chain solver's INITIALISATION, never a
+      target (its own docstring says so). Moving it would move the starting
+      basin of every chain fit, i.e. a declared re-baseline of the Kette, which
+      is the author's call and not this function's business.
+    * ``tests/test_pairlab_connector_parity.py`` — the historical reference the
+      divergence is measured against, so Befund 18 stays a number instead of a
+      claim.
+
+    Composed units in, composed units out.
+    """
     span = math.hypot(p3[0] - p0[0], p3[1] - p0[1])
     hspan = abs(p3[0] - p0[0])
     handle = max(0.05, min(span * 0.4, hspan * 0.5))
@@ -480,7 +503,12 @@ def _ink_extent_x(strokes_px: list[np.ndarray], baseline_row: float, xh: float) 
 
 
 def dissect_occurrence(
-    case: WordCase, slot_a: int, *, trace: bool = True, result: WordDeriveResult | None = None
+    case: WordCase,
+    slot_a: int,
+    *,
+    trace: bool = True,
+    result: WordDeriveResult | None = None,
+    joins: Mapping[int, JoinCall] | None = None,
 ) -> JoinDissection | None:
     """Independent-fit dissection of the join between slots ``slot_a`` and
     ``slot_a + 1``. ``trace`` additionally warps the two letters' templates
@@ -492,10 +520,18 @@ def dissect_occurrence(
     a caller walking every join of a word composes it ONCE instead of once per
     join. Default None keeps the existing behaviour (and every existing caller)
     unchanged: the composition is derived here.
+
+    ``joins`` are the recorded production join calls of the SAME composition
+    (``prodconn.derive_with_joins``), replayed at the independent placement to
+    regenerate the connector. Passing them alongside ``result`` saves the extra
+    composition the default path pays; omitting both keeps every existing call
+    site working.
     """
     if not case.has_specimen:
         raise ValueError(f"case {case.id!r} has no specimen (live case?) — pairlab dissects fixture occurrences only")
-    result = result if result is not None else derive_word(case)
+    if result is None:
+        result, recorded = derive_with_joins(case)
+        joins = recorded if joins is None else joins
     if result.composed["missing"] or result.report is None or result.report.get("failed"):
         return None
 
@@ -544,7 +580,18 @@ def dissect_occurrence(
     b_shift = (b.ddx_px / xh, -b.ddy_px / xh)
     p0 = (a_exit_line[-1][0] + a_shift[0], a_exit_line[-1][1] + a_shift[1])
     p3 = (b_first_line[0][0] + b_shift[0], b_first_line[0][1] + b_shift[1])
-    gen_units = _generate_connector(p0, exit_deg, p3, entry_deg)
+    # The connector the PRODUCTION grammar draws between the two independently
+    # placed letters: its own call for this join, replayed with the two shifts
+    # (see tools/pairlab/prodconn.py). `p0`/`p3` stay the BODY endpoints — the
+    # frame the harvest stores its offsets in (tools/wordbench/pairmeas.py
+    # explains why it must not be the coupling anchors) — while the replayed
+    # join legitimately departs from and arrives at production's own anchors.
+    if joins is None:
+        joins = joins_for(result)
+    call = joins.get(slot_a)
+    if call is None:
+        return None  # an approved override drew this join: nothing was generated
+    gen_units = replay(call, exit_shift=a_shift, entry_shift=b_shift)
     gen_px = to_px(gen_units)
     gen_chamfer = float(_edt_at(edt, gen_px).mean()) / xh
 

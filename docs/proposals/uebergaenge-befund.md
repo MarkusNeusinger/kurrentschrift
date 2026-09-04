@@ -1,6 +1,6 @@
 # Übergangs-Befund 2026-07-11 — unabhängige Paar-Sektion (pairlab)
 
-> **Status (2026-08-12): Befund-Journal.** Momentaufnahme aus `tools/pairlab`
+> **Status (2026-09-04): Befund-Journal.** Momentaufnahme aus `tools/pairlab`
 > vom 2026-07-11, nicht fortgeschrieben — mit der EINEN benannten
 > Ausnahme §5c (s. u.): O1 und O2 (B-Seite) sind
 > umgesetzt (Lauf `jul11`, PR #179), der A-seitige d-Stub-Trim wurde zweimal
@@ -14,6 +14,21 @@
 > Die Ausnahme — **§5c (2026-08-03)**: die Kettenfit-Messung zu Issue #278
 > Stufe A setzt den §5b-Duktus-Trace direkt fort und ist deshalb hier und
 > nicht in einem eigenen Dokument abgelegt.
+>
+> **Datierte Fußnote 2026-09-04 — der gemessene Verbinder ist ein anderer
+> als der dieses Dokuments.** Alle Zahlen hier, die den GENERIERTEN
+> Verbinder betreffen (`gen_chamfer`, die Overlays, §4 und §5c), sind mit
+> `analyze._generate_connector` entstanden — der tauten Einzel-Kubik, dem
+> Stand des Join-Blocks vom 2026-07-11 vor der Girlanden-Grammatik. Seit
+> dem 2026-09-04 ruft pairlab den Produktions-Verbinder selbst auf
+> (`tools/pairlab/prodconn.py`, Audit-Befund 18). Auf den eingefrorenen
+> Sütterlin-Sätzen weichen beide Kurven bei **89 von 248 Nähten** ab, im
+> Median 0,0562 xh, bei den Majuskel-Nähten 1,0365 xh; `gen_chamfer` fällt
+> im Median von 0,0434 auf 0,0392. Wer eine `gen_*`-Zahl aus diesem
+> Dokument gegen einen heutigen Lauf hält, vergleicht also zwei
+> verschiedene Gegenstände. Belege:
+> [`../reference/messjournal.md`](../reference/messjournal.md) §14
+> „Übergänge P-Spiegel `sep04`".
 
 O1 und O2 (B-Seite) sind umgesetzt — Compose-Loop `jul11`,
 [`qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md) §6 (Wort-Headline
