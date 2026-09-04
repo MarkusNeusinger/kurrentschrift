@@ -520,6 +520,13 @@ fortgeschrieben, nur durch eine neue Runde abgelöst.
   echten Händen: Rangliste (SUB-Leitfaden ✅ committet, Berger-Reihe,
   Dressel, Erker …), Absteiger mit Rechte-Begründung, festgehaltene
   mögliche Anfragen (nicht beauftragt)
+- **[Serve-only API-Image? Der Import-Graph, nachgemessen](notes/serve-image-importgraph-2026-09-04.md)**
+  — Nachmessung zum Audit-Vorschlag, die Bild-Pipeline aus dem Prozessstart zu
+  nehmen: was `import api.main` wirklich lädt, was die Pakete komprimiert
+  wiegen, und warum die Trace-Hälfte nur 46 ms von 910 ms kostet (der
+  Render-Pfad braucht `scipy.interpolate` und `shapely` selbst). Zwei Wege
+  (funktionslokale Importe · Zwei-Image-Split) mit ihrem gemessenen Preis;
+  geändert wurde nichts
 - **[Stifte für unterwegs](notes/stifte-fuer-unterwegs.md)** — Stift-/
   Hardware-Recherche fürs Kurrent-Schreiben unterwegs
 
