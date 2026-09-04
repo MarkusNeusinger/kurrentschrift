@@ -46,6 +46,15 @@ Header prose.
 """
 
 
+def test_a_title_that_closes_on_the_continuation_line_is_accepted() -> None:
+    """The reason the closing `**` is checked over the whole bullet, not the
+    opening line: the entries in CHANGELOG.md wrap their titles like this."""
+    wrapped = "### Added\n\n- **A title long enough to run\n  onto the next line** — and then the body (#1).\n"
+    assert cl.parse_entries(wrapped, where="f.md")["Added"] == [
+        "- **A title long enough to run\n  onto the next line** — and then the body (#1)."
+    ]
+
+
 def test_a_fragment_parses_into_categories_with_wrapped_bullets() -> None:
     entries = cl.parse_entries(FRAGMENT, where="f.md")
     assert list(entries) == ["Added", "Fixed"]
@@ -261,6 +270,19 @@ def test_a_bullet_written_into_unreleased_directly_is_refused(repo: Path) -> Non
     (repo / "CHANGELOG.md").write_text(text, encoding="utf-8")
     (repo / "changelog.d" / "topic.md").write_text(FRAGMENT, encoding="utf-8")
     _commit_all(repo, "both")
+    (problem,) = cl.check_pr("main", root=repo)
+    assert "belongs in a fragment" in problem
+    assert "Sneaked in" in problem
+
+
+def test_a_second_bullet_under_a_title_unreleased_already_holds_is_refused(repo: Path) -> None:
+    """Identity by title has to COUNT: a copy of an entry already there is added too."""
+    old = "- **An old-style entry.** Written before the fragments existed (#0).\n"
+    text = (repo / "CHANGELOG.md").read_text(encoding="utf-8")
+    text = text.replace(old, old + "- **An old-style entry.** Sneaked in under a title already there.\n")
+    (repo / "CHANGELOG.md").write_text(text, encoding="utf-8")
+    (repo / "changelog.d" / "topic.md").write_text(FRAGMENT, encoding="utf-8")
+    _commit_all(repo, "a second bullet under the same title")
     (problem,) = cl.check_pr("main", root=repo)
     assert "belongs in a fragment" in problem
     assert "Sneaked in" in problem

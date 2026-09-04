@@ -93,14 +93,24 @@ the same shared DB in parallel.
 
 ## Changelog fragments
 
-`changelog.d/<slug>.md` per PR, never a bullet in `CHANGELOG.md`.
+`changelog.d/<slug>.md` per PR, never a NEW bullet in `CHANGELOG.md`.
 
 `[Unreleased]` in `CHANGELOG.md` is one shared spot, and before the fragments
 existed every sibling merge conflicted there (audit series 2026-08-29/30).
 The union merge driver healed only the local rebase — GitHub's own
 mergeability check ignores it — so the conflict still blocked merges. Since
 2026-08-30 the CI job „Changelog (fragment)" refuses both a PR without a
-fragment and a bullet written into `[Unreleased]` directly.
+fragment and a bullet ADDED to `[Unreleased]` directly.
+
+Added, not merely different (2026-09-04). A bullet is identified by its bold
+title, so correcting the wording of an entry `[Unreleased]` already carries —
+a typo in a shipped line, a claim a later PR made false — is a change and
+passes; a title the base does not have, or one more copy of a title it has,
+is an added bullet and belongs in a fragment. The set-of-bullets comparison
+before that could not tell the two apart and refused a correction that added
+nothing. A fragment also may not carry the unfilled `(#NNN)`: the reference is
+optional, the placeholder is not — it reads as a reference in the released
+section and points nowhere.
 
 Exempt: data-only commits (their provenance lives in `SOURCE.md`), a PR
 labelled `skip-changelog`, and Dependabot's own PRs — a bot writes neither

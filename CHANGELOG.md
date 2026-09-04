@@ -6,8 +6,11 @@ All notable changes to this project are documented here. The format is based on
 
 Every PR adds ONE fragment under `changelog.d/` (`<slug>.md`, in this file's own format —
 `changelog.d/README.md`; since 2026-08-30, enforced by the CI job „Changelog (fragment)")
-and leaves this file alone: `[Unreleased]` holds only what was written before the fragments
+and adds nothing to this file: `[Unreleased]` holds only what was written before the fragments
 existed, and `uv run python -m tools.changelog preview` shows the whole pending section.
+Correcting an entry `[Unreleased]` already carries is allowed — a bullet is identified by
+its bold title, so a re-worded body is a change, and only a NEW title (or one more copy of
+a title already there) is an added bullet the gate sends to a fragment.
 A release is one command, `uv run python -m tools.changelog release X.Y.Z --title "…"`:
 it folds the fragments under the new version heading (newest first within a category),
 bumps `pyproject.toml` (`project.version` — `/docs` reads it at runtime), `uv.lock` and
