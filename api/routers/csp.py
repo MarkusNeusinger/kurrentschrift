@@ -159,7 +159,20 @@ def _reports(payload: Any) -> list[dict[str, Any]]:
 
 
 def _record(report: dict[str, Any]) -> None:
-    """Log a violation the first time it is seen, then every hundredth time."""
+    """Log a violation the first time it is seen, then every hundredth time.
+
+    `script-sample` is logged but deliberately NOT part of the dedupe key. It is
+    the only field that says WHICH inline script a `script-src-elem` report is
+    about — with a nonce policy the directive/blocked/document tuple collapses
+    every inline violation onto the same row, and "an inline script was
+    reported" is not an answer to "which one". It is a browser-truncated
+    prefix (~40 characters) and it arrives only because `script-src` carries
+    `'report-sample'`; it goes through `_field` like every other value, so the
+    same sanitising and the same length cap apply.
+
+    Out of the key on purpose: a sample differing by one character would
+    otherwise open a new tracked row and could be used to fill `_MAX_TRACKED`.
+    """
     global _overflow
     directive = _field(report, "effective-directive", "effectiveDirective", "violated-directive", "violatedDirective")
     blocked = _path_only(_field(report, "blocked-uri", "blockedURL", "blockedURI"))
@@ -185,7 +198,7 @@ def _record(report: dict[str, Any]) -> None:
         return
     if count == 1 or count % _REPEAT_INTERVAL == 0:
         logger.warning(
-            "CSP report (#%d): %s blocked %s on %s — disposition=%s, source=%s:%s",
+            "CSP report (#%d): %s blocked %s on %s — disposition=%s, source=%s:%s, sample=%r",
             count,
             directive,
             blocked,
@@ -193,6 +206,7 @@ def _record(report: dict[str, Any]) -> None:
             _field(report, "disposition"),
             _path_only(_field(report, "source-file", "sourceFile")),
             _field(report, "line-number", "lineNumber"),
+            _field(report, "script-sample", "scriptSample", "sample"),
         )
 
 

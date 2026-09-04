@@ -114,6 +114,31 @@ steps:
         GOOGLEBOT="Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
         # Humans get the SPA shell.
         curl -fsS $$RETRY -A "$$HUMAN" "$$URL/" | grep -q '<div id="root">'
+        # …and every <script> tag in that shell carries the CSP nonce from its
+        # own response header. The two halves are one `$$request_id` read twice
+        # — `add_header` in security-headers.conf, `sub_filter` in nginx.conf —
+        # and the static tests can only prove the config TEXT agrees, never that
+        # the built image's response does. Losing the stamp leaves a page that
+        # passes every probe above and, on the day the policy is switched from
+        # Report-Only to enforcing, runs no inline script at all. Ported from
+        # the sibling (anyplot #11220) with its two corrections already in:
+        #
+        #   --compressed, because plain curl sends no Accept-Encoding and a
+        #   precompressed shell would sail past the check while every browser
+        #   got the untouched file; and the 32-hex-digit match, because
+        #   `nonce-[0-9a-f]*` accepts a bare `nonce-` that `test -n` calls
+        #   non-empty, so an empty nonce would agree with `nonce=""` tags all
+        #   the way through.
+        curl -fsS $$RETRY --compressed -A "$$HUMAN" -D head.out -o body.out "$$URL/" \
+          || { echo "candidate did not serve the shell for the nonce probe"; exit 1; }
+        NONCE=$$(grep -i '^content-security-policy' head.out | grep -oE 'nonce-[0-9a-f]{32}' | head -1)
+        test -n "$$NONCE" || { echo "the shell's CSP carries no 32-hex-digit nonce"; exit 1; }
+        TAGS=$$(grep -o '<script[^>]*>' body.out | wc -l)
+        MATCHING=$$(grep -o "<script nonce=\"$${NONCE#nonce-}\"" body.out | wc -l)
+        test "$$TAGS" -gt 0 || { echo "the shell served no <script> tag at all"; exit 1; }
+        test "$$MATCHING" = "$$TAGS" \
+          || { echo "$$MATCHING of $$TAGS <script> tag(s) carry the header's $$NONCE — the rest would be blocked once enforcing"; exit 1; }
+        echo "OK: all $$TAGS script tags of the shell carry the header's nonce"
         # Crawlers get the prerendered page through @seo_proxy. The marker is
         # the one string that separates it from the shell.
         curl -fsS $$RETRY -A "$$GOOGLEBOT" "$$URL/" | grep -q '<!-- kurrentschrift.ink prerender -->'

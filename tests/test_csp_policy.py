@@ -146,6 +146,22 @@ def test_the_header_and_the_stamp_name_the_same_variable():
     )
 
 
+def test_script_src_asks_for_a_sample():
+    """Without `'report-sample'` the report-only week cannot answer its question.
+
+    A nonce policy collapses every inline violation onto one
+    directive/blocked/document tuple, so the sample is the only field that says
+    WHICH inline script was reported — and the week exists to find out whether
+    that script is the one Cloudflare injects at the edge. Measured on the live
+    site before this change: the report arrived with an EMPTY sample, because
+    the directive did not ask for one.
+    """
+    assert "'report-sample'" in csp_directives()["script-src"], (
+        "script-src does not ask for a sample, so every inline violation reports as an "
+        "anonymous 'inline' and the report week cannot name the script it is about."
+    )
+
+
 def test_the_stamp_sits_at_server_level():
     """Both routes to the shell, not one of them.
 

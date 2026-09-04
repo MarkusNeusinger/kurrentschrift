@@ -228,6 +228,47 @@ async def test_the_reporting_api_body_shape_is_understood_too(api: Harness, capl
     assert "https://example.invalid/tracker.gif" in caplog.text
 
 
+async def test_the_script_sample_is_logged_and_stays_out_of_the_dedupe_key(api: Harness, caplog):
+    """With a nonce policy the sample is the only field that names the culprit.
+
+    Every inline `script-src-elem` violation carries the same directive, the
+    same `blocked-uri` ("inline") and the same document, so without the sample
+    the log says "an inline script was reported" and nothing more — which is
+    not an answer to the one question the report-only week asks, namely whether
+    the script Cloudflare injects at the edge is the one being reported.
+
+    It is logged but NOT part of the key: samples differ by a character, and a
+    keyed sample would open a fresh tracked row for each and could be used to
+    fill `_MAX_TRACKED`.
+    """
+    inline = {
+        "csp-report": {
+            "document-uri": "https://kurrentschrift.ink/",
+            "effective-directive": "script-src-elem",
+            "blocked-uri": "inline",
+            "disposition": "report",
+            "script-sample": "window.__CF$cv$params={r:'a35d",
+        }
+    }
+    with caplog.at_level(logging.WARNING, logger="api.routers.csp"):
+        assert (await api.client.request("POST", "/csp-report", json_body=inline)).status == 204
+        variant = {"csp-report": {**inline["csp-report"], "script-sample": "window.__CF$cv$params={r:'ffff"}}
+        assert (await api.client.request("POST", "/csp-report", json_body=variant)).status == 204
+
+    assert "__CF$cv$params" in caplog.text, "the sample never reached the log line"
+    assert caplog.text.count("CSP report") == 1, (
+        "a differing sample opened a second tracked violation — it must not be part of the key"
+    )
+    assert list(csp_module._seen.values()) == [2]
+
+
+async def test_a_report_without_a_sample_still_logs(api: Harness, caplog):
+    """Older clients and any directive that carries no sample must not break it."""
+    with caplog.at_level(logging.WARNING, logger="api.routers.csp"):
+        assert (await api.client.request("POST", "/csp-report", json_body=REPORT_URI_BODY)).status == 204
+    assert "sample='?'" in caplog.text
+
+
 async def test_a_repeated_violation_is_counted_but_not_logged_again(api: Harness, caplog):
     with caplog.at_level(logging.WARNING, logger="api.routers.csp"):
         for _ in range(5):

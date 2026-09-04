@@ -15,6 +15,14 @@
   and the report week now also measures whether the edge honours the nonce
   here.
 
+- **The report week can now name the script it is reporting.** `script-src`
+  asks for `'report-sample'` and `POST /csp-report` logs the sample beside the
+  rest, through the same sanitiser and deliberately outside the dedupe key.
+  Without it a browser sends an empty sample — measured on the live site — and
+  a nonce policy collapses every inline violation onto one
+  directive/blocked/document row, so the log could only say "an inline script
+  was reported", which is not an answer to the question the week exists to ask.
+
 ### Changed
 
 - **The SPA shell is `no-store` instead of `no-cache`.** Not the sister-file
@@ -24,6 +32,13 @@
   gone either way — a conditional request now answers 200 with the full 17,287
   bytes. Same bytes as `no-store`, without its guarantee that no nonced
   document sits in a cache.
+
+- **The frontend deploy smoke checks the nonce before promoting.** Ported from
+  the sibling with its two corrections already in: `--compressed`, so a
+  precompressed shell cannot sail past, and a 32-hex-digit match, so an empty
+  nonce cannot agree with empty `nonce=""` tags. The static tests can only
+  prove the config text agrees; this proves the candidate image's response
+  does.
 
 ### Removed
 
