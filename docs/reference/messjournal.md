@@ -192,7 +192,7 @@ die DB) — mit seiner Bedingung.
 | sep02 | Übergänge | [J4b enge Klasse](#übergänge-j4b-sep02--post-hoc-die-enge-klasse-nur-die-joins-die-wirklich-knicken) | POST-HOC · verworfen | Schnitt bei 20° Knick rettet den Arm nicht: `dconn` 43 %, seam_dep der Klasse nur +8,02 — Rettungswege in §7.9 |
 | sep02 | Laufform | [LF11 humanbench-Runde und Adoption](#laufform-lf11-sep02--humanbench-wortrunde-instrumentdefekt-und-adoption-prod-write--re-baseline) | **ADOPTIERT auf Autor-Entscheid** (kein formales Instrument-Verdikt) · Prod-Write + Re-Baseline | Runde verlässlich (10/12 Arm) und Richtung erdrückend (40 : 1), aber die Tie-Schranke fällt in JEDER Lesart (34,9 % gesamt, 25,6 % in der günstigsten Teilmenge, gegen ≤ 25 %) — `adopt: false`; ob ein Teil der Runde auf der defekten Anzeige „gefüllte Ringe" lief, ist zwischen Protokoll und Bestand ungeklärt (offener Punkt); Write nach Snapshot `2026-09-02T21-58-16Z`, Readback 22/22; Wörter 0,109218 · Paare 0,148198 |
 | sep04 | Übergänge | [J5 Apex-Übergabe + Säulenabgang](#übergänge-j5-sep04--vorregistrierung-die-tafelform-klassenregel-apex-übergabe-und-der-d-säulenabgang) | Pre-Reg | Autor-Entscheid A4: EINE Klassenregel für den langen ungeschlungenen Anstrich (t/ſ/k **und ß**) + der d-Auslauf als Übergangsgenerator; r passt messbar nicht in die Klasse und bleibt Autorenfall |
-| sep04 | Übergänge | [J5 gemessen](#übergänge-j5-sep04--gemessen-der-säulenabgang-besteht-alles-die-apex-übergabe-fällt-an-zwei-gates) | Pre-Reg + gemessen · Säulenabgang alle Gates grün (Adoption = Autor-Ja), Apex-Übergabe verworfen | Säule −0,000100/−0,001441, d-Abgang 1,139→0,945 (10/10 + 8/8 im Platten-Band); Apex +0,001808/**+0,002420** und Zacken 13→17 — Verengung auf ß/ſſ macht ihn RÖTER (3:8); Golden unberührt, humanbench-Runde 5 gebaut und ungerichtet |
+| sep04 | Übergänge | [J5 gemessen](#übergänge-j5-sep04--gemessen-der-säulenabgang-besteht-alles-die-apex-übergabe-fällt-an-zwei-gates) | Pre-Reg + gemessen · Säulenabgang alle Gates grün (Adoption = Autor-Ja), Apex-Übergabe verworfen | Säule −0,000100/−0,001441, d-Abgang 1,139→0,945 (10/10 + 8/8 im Platten-Band); Apex +0,001808/**+0,002420** und Zacken 13→17 — Verengung auf ß/ſſ macht ihn RÖTER (3:8); Golden unberührt, humanbench-Runde 6 gebaut und ungerichtet |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -7692,7 +7692,7 @@ nie die Headline):
 | (e) Glyph-Bench | unverändert | unerreichbar | unerreichbar | unerreichbar² |
 | (f) `gleichzug_doublings` | steigt nicht | **13→17 / 3→5 ROT** | 13 / 3 grün | **ROT** |
 | (g) Mechanismus d | Höhe im Band, Winkel Richtung eben | — | **10/10 + 8/8** | grün |
-| (h) Instrument | Seiten gebaut | — | — | grün (Runde 5, 38 Bildschirme) |
+| (h) Instrument | Seiten gebaut | — | — | grün (Runde 6, 38 Bildschirme) |
 
 ¹ **grün durch Aufhebung, so gelesen und nicht anders.** Die +0,002420 des
 Apex-Arms werden von den −0,001441 des Säulenabgangs aufgehoben; die Summe
@@ -7812,8 +7812,10 @@ Code wäre genau das, was A4 vermeiden wollte.
 
 #### Das Instrument (Gate h), gebaut und ungerichtet
 
-`temp/humanbench/runde-5` — Wortmodus, Echtheitsfrage („welche sieht echter
-geschrieben aus?", `menschliche-bewertung.md` §8), Saat 20260005,
+**Runde 6** (`temp/humanbench/runde-6`, für den Autor abgelegt unter
+`temp/runden-sep04/humanbench/runde-6-j5-klassenregel.html` neben den beiden
+Runden desselben Tages) — Wortmodus, Echtheitsfrage („welche sieht echter
+geschrieben aus?", `menschliche-bewertung.md` §8), Saat 20260006,
 **38 Bildschirme**: die 22 Wörter, die die Regel bewegt (die zehn am stärksten
 bewegten stehen nach Severity vorn), **plus zwölf Nullproben**, in denen beide
 Tafeln bit-identisch sind. Die Nullprobe ist Absicht: „kein Unterschied" ist
@@ -7821,8 +7823,10 @@ dort die einzige richtige Antwort, und damit misst die Runde, wie der Richter
 diese Option überhaupt benutzt — genau die Größe, an der das LF11-Verdikt
 gescheitert ist. Sie hebt die Runde außerdem über den Wiederholungs-Boden des
 Builders (eine blinde Wiederholung braucht mehr als `min_gap` + 25
-Bildschirme); so liegen **4 blinde Wiederholungen** über die Schichten
-apex/stem/nullprobe, Abstand 7–27.
+Bildschirme, eine Runde über die zehn bewegtesten Wörter kann also gar keine
+tragen); so liegen **4 blinde Wiederholungen** über die Schichten
+apex/stem/nullprobe, Abstand 14–30. Die Konstruktionsregel dazu steht in
+`menschliche-bewertung.md` §8a.
 
 Zwei Dinge, die der Richter wissen muss: die Arme sind
 `apex_handover`+`stem_depart` GEMEINSAM gegen die Basis — das Urteil gilt der
@@ -7839,11 +7843,11 @@ uv run python -m tools.humanbench.wordarm --arm "Basis (ohne J5)" \
 uv run python -m tools.humanbench.wordarm --arm "J5 Klassenregel" \
     --entries <22+12> --apex-handover --stem-depart \
     --registration-from temp/j5_basis.json --out temp/j5_kandidat.json
-uv run python -m tools.humanbench.build --round 5 \
+uv run python -m tools.humanbench.build --round 6 \
     --word-arms temp/j5_basis.json temp/j5_kandidat.json \
     --entries <22+12> --strata <klassen.json> --repeats 6 --min-repeat-gap 5
-uv run python -m tools.humanbench.page --payload temp/humanbench/runde-5/payload.json \
-    --out temp/humanbench/runde-5/echtheit.html --round 5 --question authentic
+uv run python -m tools.humanbench.page --payload temp/humanbench/runde-6/payload.json \
+    --out temp/humanbench/runde-6/echtheit.html --round 6 --question authentic
 ```
 
 #### Rettungswege (Register: `tintenfolger.md` §7.9)
