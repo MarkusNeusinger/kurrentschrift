@@ -60,7 +60,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anstrich/Auslauf §1 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
 - **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
-- **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
+- **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
@@ -79,7 +79,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Unantastbare Lineatur §7 · Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
-- **V** — Variante §2 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschub-Kalibrierung §2 · Vorschrift §1
+- **V** — Variante §2 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschub-Kalibrierung §2 · Vorschrift §1
 - **W** — W1–W6 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zeichenbreiten-Mittel (`AVG_ADVANCE_UNITS`) §7 · Zeilen-Gate (Laufform) §2 · Zeilenmarke §7 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · zonale Rückweisung (`zonal`) §3 · „Zug um Zug“ §7 · Zwei Stillen (Leerzustands-Regel) §5 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
@@ -1517,6 +1517,49 @@ eigenen ersten Punkt gelegt. **Start-aligniert, also translationsfrei** —
 die Platzierung ist allein Sache von `doff`. Kein kalibrierter
 Absolutabstand, sondern ein monotones Signal: gleiche Verbindung, kleinere
 Zahl = näher an der Vorlage.
+
+**`dspan`** *(ausdehnungs-normierte Formdistanz,
+`tools/pairlab/spanmeas.py`, seit `sep04`)* — `dconn`s Antwort auf seinen
+eigenen blinden Fleck. `dconn` legt beide Verbinder auf ihren START; wenn
+eine Regel die Grenze zwischen Buchstabe und Verbinder verschiebt (der
+Austritts-Trim von Arm J4), wird der komponierte Verbinder am KOPF länger,
+ohne dass sich seine Form ändert — und `dconn` bucht die Verlängerung als
+Formunterschied. `dspan` misst stattdessen den **gemeinsamen Abschnitt**:
+beide Kurven enden am selben Ereignis, der Ankunft des Stifts auf B, also
+werden sie von dort um dieselbe Bogenlänge `min(arc)` zurückgeschnitten
+(Schnittpunkt interpoliert), auf dieselben 24 Punkte abgetastet und je auf
+ihren eigenen ersten Punkt gelegt. Der Anker muss dafür der ECHTE sein:
+die komponierte Seite ist `spanmeas.drawn_join` — der gezeichnete Zug
+ohne seine zwei Tinten-Zugaben (die `CONNECT_OVERLAP`-Verlängerung über
+beide Enden hinaus und der Rücklauf-Präfix einer Majuskel), aber MIT
+jeder Änderung, die die Komposition an der Naht selbst vorgenommen hat.
+Damit ist `dspan` **blind gegen eine reine Kopf-Verlängerung** — genau
+der Artefakt, der bei J4 zwei Drittel des gemessenen Anstiegs ausmachte —
+und weiter translationsfrei. Abnahme an J4 (§14 „Übergänge S1"): Δ
++0,0036 gegen +0,0615 bei Start-Ausrichtung derselben Kurven; die
+Fallquote steigt von 19,8 % (Bench-`dconn`) über 31,4 % (bereinigt, aber
+start-ausgerichtet) auf 48,8 % und landet damit bei der Handbereinigung
+des Eintrags (51 %), die dafür einen Basislauf brauchte. Report-only wie
+`doff`/`dconn`; ersetzt `dconn` nicht, sondern beantwortet die engere
+Frage, ob das gemeinsame Stück dieselbe Form hat.
+
+**Verbinder-Mitschnitt** *(`tools/pairlab/prodconn.py`, `JoinCall`, seit
+`sep04`)* — wie eine Messschicht den Produktions-Verbinder an einer
+Platzierung aufruft, die der Komponist nie gewählt hat, ohne seine
+Grammatik zu kopieren: `recording()` tauscht
+`core.compose._connector_centerline` für die Dauer EINER Komposition gegen
+einen weiterreichenden Mitschneider (die Komposition bleibt dabei Item für
+Item dieselbe), `replay()` ruft dieselbe Funktion mit den
+mitgeschnittenen Argumenten erneut auf und verschiebt nur die Geometrie —
+A's Austritt und die zwei Wort-Koordinaten-Flaggen `fork_line`/
+`stem_launch` um A's Fit, B's Anlauf um B's (y auf der Linie, x auf `dx`).
+Der Grund für den Mitschnitt statt einer Rekonstruktion: zwei Eingaben
+sind in der Komposition nicht ablesbar — `first_line` ist B's
+UNGETRIMMTER erster Zug (das emittierte Item ist schon um `entry_trim`
+gekürzt, auf 35 % der Nähte), und der Austritt einer Majuskel ist der
+Ornament-Rücklaufpunkt. Gegenbegriff: der **eingefrorene Spiegel**
+(`analyze._generate_connector`), die taute Einzel-Kubik vom 2026-07-11,
+die heute nur noch der Kettenfit-Init und der Paritätstest benutzen.
 
 **Anker · Sample · Schritt** — die drei Sorten Punkt, die im Fit alle wie
 Punkte aussehen und ständig verwechselt werden. **Anker** sind die

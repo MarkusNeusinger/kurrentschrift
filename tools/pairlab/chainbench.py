@@ -67,6 +67,7 @@ import json
 import math
 import time
 from collections import Counter, defaultdict
+from collections.abc import Mapping
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 from typing import Any, Iterable, Sequence
@@ -87,8 +88,9 @@ from tools.pairlab.analyze import (
 )
 from tools.pairlab.connector_qc import connector_degenerate
 from tools.pairlab.harvest import _adjacent_joined, _px_to_units, connector_points
+from tools.pairlab.prodconn import JoinCall, derive_with_joins
 from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, REPO_ROOT, WordCase, _root_for, iter_fixture_word_cases
-from tools.wordlab.derive import WordDeriveResult, derive_word
+from tools.wordlab.derive import WordDeriveResult
 
 
 # Points both fitted centerlines are arc-length-resampled to before the
@@ -736,7 +738,9 @@ def _fill_connector_metrics(row: dict, d: JoinDissection, fit: Any, conn: Any) -
         row["chain_head_share"] = _r(arc_share(conn.polyline_px, b_min_x, keep_left=False, xh=xh))
 
 
-def occurrence_row(case: WordCase, slot_a: int, result: WordDeriveResult, mad_table: dict) -> dict:
+def occurrence_row(
+    case: WordCase, slot_a: int, result: WordDeriveResult, mad_table: dict, joins: Mapping[int, JoinCall] | None = None
+) -> dict:
     """Run both paths on ONE occurrence and flatten everything into one row."""
     left = _key_base(case.slots[slot_a].key, case.slots[slot_a].position)
     right = _key_base(case.slots[slot_a + 1].key, case.slots[slot_a + 1].position)
@@ -754,7 +758,7 @@ def occurrence_row(case: WordCase, slot_a: int, result: WordDeriveResult, mad_ta
         "detail": "",
         "chain_status": "skipped",
     }
-    d = dissect_occurrence(case, slot_a, trace=True, result=result)
+    d = dissect_occurrence(case, slot_a, trace=True, result=result, joins=joins)
     if d is None:
         row["status"] = "skipped"
         row["detail"] = "dissection returned None (missing template / unscorable)"
@@ -787,12 +791,14 @@ def case_rows(job: tuple[WordCase, list[int]], mad_table: dict) -> list[dict]:
 
     This is the ProcessPoolExecutor unit of work: a word with five joins runs
     `derive_word` ONCE (the `result=` kwarg on `dissect_occurrence` and
-    `fit_pair_chain`) instead of ten times. Nothing raised inside can end the
-    run — a failure is a row.
+    `fit_pair_chain`) instead of ten times. The production join calls come out
+    of that same composition (`prodconn.derive_with_joins`), so the dissection
+    replays them instead of recomposing per join. Nothing raised inside can end
+    the run — a failure is a row.
     """
     case, slots = job
     try:
-        result = derive_word(case)
+        result, joins = derive_with_joins(case)
     except Exception as exc:  # noqa: BLE001
         detail = f"{type(exc).__name__}: {exc}"[:200]
         return [
@@ -802,7 +808,7 @@ def case_rows(job: tuple[WordCase, list[int]], mad_table: dict) -> list[dict]:
     rows = []
     for slot_a in slots:
         try:
-            rows.append(occurrence_row(case, slot_a, result, mad_table))
+            rows.append(occurrence_row(case, slot_a, result, mad_table, joins))
         except Exception as exc:  # noqa: BLE001
             rows.append(
                 {

@@ -191,6 +191,9 @@ die DB) — mit seiner Bedingung.
 | sep02 | Übergänge | [J4 Austritts-Kollinearität (`exit_trim`)](#übergänge-j4-sep02--vorregistrierung-die-austritts-kollinearität-exit_trim) | Pre-Reg + gemessen · verworfen | 4 von 5 Gates grün (Wörter −0,000535, seam_dep +12,52→−1,39), (b) rot: `dconn` fällt nur in 20 % statt 60 % |
 | sep02 | Übergänge | [J4b enge Klasse](#übergänge-j4b-sep02--post-hoc-die-enge-klasse-nur-die-joins-die-wirklich-knicken) | POST-HOC · verworfen | Schnitt bei 20° Knick rettet den Arm nicht: `dconn` 43 %, seam_dep der Klasse nur +8,02 — Rettungswege in §7.9 |
 | sep02 | Laufform | [LF11 humanbench-Runde und Adoption](#laufform-lf11-sep02--humanbench-wortrunde-instrumentdefekt-und-adoption-prod-write--re-baseline) | **ADOPTIERT auf Autor-Entscheid** (kein formales Instrument-Verdikt) · Prod-Write + Re-Baseline | Runde verlässlich (10/12 Arm) und Richtung erdrückend (40 : 1), aber die Tie-Schranke fällt in JEDER Lesart (34,9 % gesamt, 25,6 % in der günstigsten Teilmenge, gegen ≤ 25 %) — `adopt: false`; ob ein Teil der Runde auf der defekten Anzeige „gefüllte Ringe" lief, ist zwischen Protokoll und Bestand ungeklärt (offener Punkt); Write nach Snapshot `2026-09-02T21-58-16Z`, Readback 22/22; Wörter 0,109218 · Paare 0,148198 |
+| sep04 | Übergänge | [P-Spiegel: pairlab auf den Produktions-Verbinder](#übergänge-p-spiegel-sep04--pairlab-misst-wieder-den-produktions-verbinder-werkzeug-re-baseline-kein-arm) | Werkzeug-Re-Baseline · kein Arm | Audit-Befund 18 beziffert und behoben: 89 von 248 Nähten wichen ab (Median 0,0562 xh, Majuskeln 1,0365), `gen_chamfer` 0,0434 → 0,0392; Kette-Init bleibt auf dem eingefrorenen Spiegel (Autor-Frage) |
+| sep04 | Übergänge | [S1 `dspan` (ausdehnungs-normierte Formdistanz)](#übergänge-s1-sep04--vorregistrierung-dspan-die-ausdehnungs-normierte-formdistanz) | Pre-Reg | Rettungsweg 2 von #488: gemeinsamer Abschnitt statt Start-Ausrichtung; Gates P1/P2/P3(a,b) und Nullproben N1/N2 vor der ersten Zahl |
+| sep04 | Übergänge | [S1 gemessen](#übergänge-s1-sep04--gemessen-der-sensor-ist-validiert-und-er-rettet-j4-trotzdem-nicht) | gemessen · Sensor validiert, J4 bleibt verworfen | Δ`dspan` +0,0036 (Gate ≤ 0,010), Fallquote 48,8 % (Gate ≥ 40 %) gegen 19,8 % roh und 51 % handbereinigt — aber die 60 % des J4-Gates erreicht auch die saubere Lesung nicht |
 | sep04 | Lotse | [Absprung-Forensik](#lotse-absprung-forensik-sep04--jeder-absprung-ist-karten-vorfahrt-und-die-mehrheit-erbt-die-karte) | Autopsie | `bridge_no_rail` = 0 Punkte, Schienen-Auslauf 0 daneben; die Ritt-Doppelzone liegt in 49,5 % ihrer Punkte außerhalb der Tinte. Von 39 Ereignissen 23 geerbt (Karten-Abdrift, Überschuss +0,0000 = Kompositions-Platzierung), 15 von der starren Pinnung gemacht (Fenster-Versatz, +0,0928 xh) — neuer Sensor `tools/inkpilot/forensics.py` |
 | sep04 | Lotse | [Lotse-Sprung aufgelöst](#lotse-sprung-sep04--der-ungeklärte-sprung-ist-eine-transkription-keine-messung) | Autopsie · gegenstandslos | 0,0545 ist `laden` (Rang 9), der Median ist Rang 10 = 0,058522; `will` beweisbar unbewegt → kein Sprung. Zweitbefund: die stehende Basis ist drei Wurzeln alt, heute 0,056080 |
 | sep04 | Feder | [Platten-Nib A3 (Wortrunde)](#platten-nib-a3-sep04--vorregistrierung-die-wortrunde-über-die-strichbreite) | Pre-Reg · Runde gebaut, Urteil offen | Halbbreite 0,097 statt 0,07251. Das Lineal ist nicht blind, sondern EINSEITIG: dem Lineal die breitere Feder nennen senkt bei unveränderter Geometrie 0,109218 → 0,101560. Nebenbedingung des Audits schon trocken gerissen (`gleichzug_doublings` 13 → 21) — ein ≥ 60 % lizenziert nur den Folgearm „Ink-Clearance an die Feder koppeln", nicht den Write |
@@ -7423,6 +7426,349 @@ wird). Der Golden bleibt unberührt. **Die öffentlichen
 `/write/word`-Antworten liegen bis zu 24 h im Edge-Cache; der Wechsel
 auf die glatten Zeilen wird dort erst mit Ablauf sichtbar — kein Purge
 (Entscheid des Autors).**
+
+**Zur Reihenfolge der `sep04`-Abschnitte.** Die drei Übergänge-Abschnitte
+direkt hier (P-Spiegel · S1 ×2) wurden ans damalige Dateiende angehängt,
+wie die Regel es verlangt; die fünf `sep04`-Abschnitte dahinter (Feder
+A3, Übergänge J4, Lotse ×2) kamen aus Zweigen, die am selben Tag
+parallel liefen und vorher gemergt wurden. Die Reihenfolge im
+Register ist die dieser Datei, beide sind konsistent, und alle acht
+tragen dasselbe Datum — umsortiert wurde nichts (das verbietet die
+Regel oben ausdrücklich). Der Hinweis steht hier, damit niemand die
+Position als Zeitfolge liest.
+
+### Übergänge P-Spiegel `sep04` — pairlab misst wieder den Produktions-Verbinder (Werkzeug-Re-Baseline, kein Arm)
+
+**Kein Arm, keine Hypothese, keine Adoption.** Dieser Eintrag verschiebt
+kein Gate und keine Headline; er hält fest, dass der GEMESSENE
+Gegenstand der Übergänge-Sektion ausgetauscht wurde — und um wie viel er
+danebenlag. Anlass ist Befund 18 des Vollaudits vom 2026-09-02.
+
+**Der Befund.** `tools/pairlab/analyze.py::_generate_connector` erklärte
+im eigenen Docstring, „the exact maths of `core.compose.compose_word`'s
+join block (same constants, same guards)" zu sein. Diese Zeilen wurden
+zuletzt am 2026-07-11 angefasst; `core/compose.py::_connector_centerline`
+wurde danach dreimal umgebaut (#308, #358, #366), trägt heute 18
+Parameter und verzweigt nach Girlande, Gabel und Absatz-Ritt. Der
+Spiegel hatte 22 Zeilen und keinen dieser Zweige. Zwei Verbraucher: die
+Dissektion (`gen_px`/`gen_chamfer` — der gemessene Gegenstand) und der
+Init der Kette.
+
+**Der Umbau, in einem Satz.** Der Spiegel wird nicht nachgezogen, er
+wird ERSETZT: `tools/pairlab/prodconn.py` schneidet den Produktionsaufruf
+mit, während `compose_word` läuft, und spielt ihn an der unabhängigen
+Platzierung erneut ab — dieselbe Funktion aus `core`, nur mit
+verschobener Geometrie (A-Austritt und die zwei Wort-Koordinaten-Flaggen
+`fork_line`/`stem_launch` um A's Fit, B's Anlauf um B's: y auf der Linie,
+x auf `dx`). In `tools/` steht damit **keine einzige Zeile
+Join-Grammatik** mehr; ein vierter Umbau des Join-Blocks erreicht pairlab
+beim nächsten Lauf von selbst. Das ist die Eigenschaft, die ein Spiegel
+prinzipiell nicht haben kann.
+
+**Warum Mitschnitt und nicht Rekonstruktion der Aufrufargumente.** Zwei
+Eingaben sind in der Komposition nicht ablesbar. `first_line` ist B's
+UNGETRIMMTER erster Zug, das emittierte Item ist aber bereits um
+`entry_trim` gekürzt — den Rückgabewert des Verbinders selbst —, und das
+feuert auf den eingefrorenen Sütterlin-Sätzen bei **88 von 248 Nähten
+(35 %)**. Der Austritt einer Majuskel wiederum ist der
+Ornament-Rücklaufpunkt, nicht das Körperende. Beides ließe sich nur
+rekonstruieren, indem die Glyphen-Vorbereitung (Ascender-Lean,
+Laufform-Breite) außerhalb von `core` nachgebaut wird — der
+Spiegel-Fehler eine Etage tiefer.
+
+**Der Paritäts-Beweis** (`tests/test_pairlab_connector_parity.py`, auf
+dem committeten Golden, ohne DB und ohne Wurzel): der Mitschnitt ändert
+die Komposition nicht (Item für Item identisch), ein Abspielen mit
+Verschiebung null liefert die Produktionskurve **Punkt für Punkt**, und
+eine gemeinsame Horizontal-Verschiebung beider Buchstaben verschiebt die
+ganze Naht um genau diesen Betrag. Eine Vertikal-Verschiebung wird
+bewusst NICHT als Invariante behauptet: die Schwellen der Grammatik
+(`HIGH_EXIT_Y`, `DESCENDER_EXIT_Y`, die Grundlinie) sind absolute Höhen,
+ein y-Versatz darf einen anderen Zweig wählen.
+
+**Wie weit lag der Spiegel daneben.** Gemessen auf der eingefrorenen
+Wurzel `suetterlin-1922` `exported_at 2026-09-02T22:13:54+00:00`
+`digest 2e3581287bed` / `suetterlin-1922-pairs` `22:13:53+00:00`
+`cee9d363f497` (die Wurzel des `sep02`-Re-Baselines; die `sep03`-Wurzel
+`57402ae7dd41` ist dateiweise dieselbe bis auf `exported_at`), BLAS auf
+einen Thread. Über alle **248** Nähte der Wort- und Paar-Sätze, an der
+unabhängigen Platzierung, beide Kurven bogenlängen-gleich abgetastet:
+
+| | Nähte | Median der punktweisen Distanz |
+|---|---|---|
+| identisch | 159 | 0 |
+| verändert | **89** (36 %) | 0,0562 xh (p90 0,2333, max 1,0833) |
+| davon über dem Lineal-Fenster (> 0,12 xh) | 23 | — |
+| davon im Fenster (0,05–0,12) | 25 | — |
+| davon darunter | 41 | — |
+
+Die Klasse mit dem größten Abstand sind die **Majuskel-Nähte** (11 Stück:
+`S→…`, `O→f`, `K→u`, `B→i`, `I→n`, `D→u`) mit einem Median von **1,0365
+xh** — der Spiegel startete am Körperende, die Produktion am
+Arbeits-Austritt hinter dem Ornament-Rücklauf. Die 78 Minuskel-Nähte
+liegen bei 0,0450 xh im Median, maximal 0,2785 (`p→r`); danach
+`ſ→i` 0,2420, `ſ→c` 0,1974, `b→e` 0,1861.
+
+**Und der Spiegel war nicht nur anders, er war schlechter.** `gen_chamfer`
+(mittlerer Skelettabstand des generierten Verbinders zur Vorlage) über
+alle 248 Nähte: Median **0,0434 → 0,0392**, Mittel **0,0601 → 0,0523**.
+Über die 89 bewegten Nähte: Median 0,0645 → 0,0460, Mittel 0,0785 →
+0,0569, **60 besser : 27 schlechter : 2 gleich**. Die Übergänge-Sektion
+hat also seit dem 10.07. einen Verbinder vermessen, der der Platte im
+Mittel rund 13 % ferner steht als der, den die Produktion zeichnet.
+
+Zur Einordnung, hermetisch nachprüfbar: auf den Golden-Wörtern (44
+Nähte) liegen 6 auf oder über dem 0,05-Boden des Lineal-Fensters, zwei
+über seiner 0,12-Decke — `sitzen` ſ→i 0,1774 Median / 0,3980 max und
+`lesen` ſ→e 0,1734 / 0,3968.
+
+**Was sich dadurch bewegt** (alles report-only, keine Headline):
+`gen_chamfer` und `gen_px` der Dissektion, damit die Übergänge-Overlays,
+die `gen_chamfer`-Spalte eines KÜNFTIGEN `pairlab.harvest`-Laufs (die
+GESPEICHERTEN Werte bleiben, wie sie sind) und die
+`base_gen_*`-Spalten der chainbench-Stufe-A-Zeilen.
+
+**Ein blinder Fleck, benannt statt entdeckt.** Nicht jede Entscheidung
+über eine Naht fällt INNERHALB von `_connector_centerline`. Der
+Austritts-Trim (`exit_trim`, Arm J4) ERSETZT die zurückgegebene
+Mittellinie danach, im Block von `compose_word` selbst — ein Abspielen
+gibt also die Naht ohne diese Regel wieder, und jede künftige Regel, die
+den Verbinder ebenso nachbearbeitet, wäre hier ebenso unsichtbar. Heute
+folgenlos: der Schalter ist Standard aus, auf jedem Headline-Lauf ist das
+Abspielen die ganze Geschichte. Wird eine solche Regel je Default, muss
+`replay` dieselbe Nachbearbeitung mitbekommen, sonst misst die
+Dissektion still die falsche Kurve. Der Sensor `dspan` umgeht die Frage
+von vornherein, indem er den GEZEICHNETEN Zug liest und nur die zwei
+Tinten-Zugaben zurücknimmt (§14 „Übergänge S1").
+
+**Was ausdrücklich unberührt bleibt.** `core/` und `core/word_metric.py`
+(keine Zeile), der Golden, `word_loss`/`pair_loss`, `doff`/`dconn` in
+`tools/wordbench/pairmeas.py`, die gespeicherten Vorkommen — und der
+**Init der Kette**: `chain._connector_spec` ruft weiter den
+eingefrorenen Spiegel. Sein Docstring erklärt ihn seit jeher zur
+INITIALISIERUNG und nie zum Ziel; ihn nachzuziehen verschöbe das
+Startbecken jedes Kettenfits und wäre damit eine deklarierte
+Re-Baseline der Kette. **Das ist eine offene Frage an den Autor, kein
+Nebenbefund dieses Eintrags.** Der Spiegel bleibt darum stehen, jetzt
+aber mit ehrlichem Docstring: „die taute Kubik, der Stand vor der
+Girlanden-Grammatik", mit seinen zwei erlaubten Verbrauchern.
+
+### Übergänge S1 `sep04` — Vorregistrierung: `dspan`, die ausdehnungs-normierte Formdistanz
+
+Der zweite Rettungsweg des #488-Negativs (§14 „Übergänge J4b",
+Rettungswege, Punkt 2): **bauen, einfrieren, DANN den Arm neu
+vorregistrieren — nicht umgekehrt.** Dieser Eintrag ist der Bau und
+seine Abnahme; er registriert KEINEN Arm und bewegt keine Regel.
+
+**Der blinde Fleck, den der Sensor schließen soll.** `dconn` legt den
+komponierten und den gemessenen Verbinder je auf den EIGENEN ersten Punkt
+und vergleicht Punkt i mit Punkt i. Solange beide dieselbe Strecke Pen-Weg
+überdecken, ist das richtig. Verschiebt eine Regel die Grenze zwischen
+Buchstabe und Verbinder, ist es falsch: J4s Austritts-Trim nimmt dem
+Buchstaben seinen Stummel, der Verbinder zeichnet das Stück mit, wird am
+KOPF länger — und `dconn` bucht die Verlängerung als Formunterschied. §14
+„Übergänge J4" hat das nachgerechnet: von den +0,043 xh, an denen das
+Gate scheiterte, waren rund zwei Drittel (Median +0,051 der Differenz)
+genau dieser Rahmen-Artefakt.
+
+**Empfindlichkeitsfenster gegen Defektgröße — warum keine Schwelle das
+löst.** Das Wort-Lineal ist zwischen **0,05 und 0,12 xh** empfindlich.
+Die Trimm-Länge selbst liegt im Median bei **0,185 xh** (p90 0,469,
+max 0,504). Der Artefakt ist also GRÖSSER als der Defekt, den er
+verdeckt; er lässt sich nicht abschneiden, er muss aus dem Maß heraus.
+
+**Was `dspan` ist.** Beide Verbinder einer Naht enden am selben Ereignis
+— der Ankunft des Stifts auf B. Also ist die Ankunft der Anker, und der
+gemeinsame Abschnitt ist die letzte `L = min(Bogenlänge)` beider Kurven.
+Der Anker muss dafür der ECHTE sein: die komponierte Seite ist der
+gezeichnete Zug **ohne seine zwei Tinten-Zugaben** — ohne die
+Überlappungs-Verlängerung von `CONNECT_OVERLAP` = 0,05 xh, mit der
+`compose_word` beide Enden über die Naht hinausschiebt, damit die runde
+Kappe unter die Nachbartinte rutscht, und ohne den Rücklauf-Präfix einer
+Majuskel, der Tinte des BUCHSTABENS ist. Beides gehört nicht zur Form der
+Naht, und für ein Maß, das am Ende ankert, ist die Verlängerung genau der
+Betrag, den das Wort-Lineal gerade noch nicht sieht. Der Austritts-Trim
+selbst bleibt dagegen drin — er ist die Wirkung des Arms
+(`spanmeas.drawn_join`). Der Rest:
+(1) beide vom Ende her auf `L` zurückschneiden, den Schnittpunkt
+interpoliert, damit eine grobe Abtastung ihn nicht verschiebt; (2) beide
+bogengleich auf `PAIR_CONNECTOR_POINTS` abtasten — dasselbe Budget, das
+`dconn` und die Paar-Aggregation benutzen; (3) jede auf ihren eigenen
+ersten Punkt DIESES Abschnitts legen (start-ausgerichtet, also
+translationsfrei — die Platzierung bleibt allein `doff`s Spalte);
+(4) mittlere punktweise Distanz, Einheit xh. Modul:
+`tools/pairlab/spanmeas.py`, report-only, `core/word_metric.py` und
+`pairmeas.py` unberührt.
+
+**Zwei Eigenschaften, vorab genannt, damit sie später nicht als
+Entdeckung durchgehen.** `dspan` ist BLIND gegen eine reine
+Kopf-Verlängerung — dafür ist er gebaut; ob eine Naht länger laufen
+SOLL, ist eine Frage an den Abgangspunkt und an die Platzierung, nicht
+an diese Spalte. Und `dspan` ist nicht „`dconn` mit Korrekturterm": wo
+die Ausdehnungen ohnehin gleich sind, sind beide dasselbe; wo nicht,
+beantwortet `dspan` die engere Frage (ist das gemeinsame Stück dieselbe
+Form?) und beantwortet sie sauber.
+
+**Was „der Sensor sieht den Defekt" heißt — die Gates, vor der ersten
+Zahl.**
+
+- **P1 — blind gegen die Ausdehnung** (synthetisch, deterministisch):
+  eine Kurve, die nur am Kopf um `e` verlängert wurde, hat über den
+  gemeinsamen Abschnitt dieselbe Form → `dspan` = 0,000 für
+  `e` ∈ {0,05; 0,2; 0,5}, während `dconn` mit `e` monoton steigt.
+- **P2 — empfindlich auf die Form** (synthetisch): derselbe Abschnitt um
+  eine Rampe der Höhe δ verzogen → `dspan` = δ/2 ± 0,005, und monoton
+  wachsend in δ.
+- **P3 — der bekannte Defekt aus #488** (die eigentliche Abnahme, auf der
+  Wurzel, auf der #488 gemessen wurde: `suetterlin-1922`
+  `digest 28ba1afebc53` / `suetterlin-1922-pairs` `f0cf3d53414c`,
+  `exported_at 2026-09-02T08:00:29+00:00`): Basis gegen
+  `--exit-trim`-Kandidat, gepaart je `(id, slot)`.
+  **(a)** Der Artefakt muss verschwinden: |Δ `dspan`| ≤ **0,010**, gegen
+  `dconn`s +0,043 auf denselben Nähten. **(b)** Die Fallquote muss auf
+  der Seite der handbereinigten Lesung liegen, nicht der rohen:
+  `dspan` fällt in ≥ **40 %** der bewegten Nähte (roh `dconn` 20 %,
+  handbereinigt 51 %).
+  Die absoluten Niveaus des Eintrags (0,102 → 0,099) werden daneben
+  BERICHTET, aber ausdrücklich nicht als Gate gesetzt: die
+  Handbereinigung von #488 hat den Kandidaten am alten Abgang der BASIS
+  geschnitten, `dspan` schneidet gegen die GEMESSENE Kurve — eine andere
+  Normierungsreferenz, deren exakte Übereinstimmung niemand versprechen
+  kann.
+- **N1 — Nullprobe Identität**: der gemessene Verbinder selbst als
+  komponierter eingespeist → `dspan` = 0,000. Ein Sensor, der auf
+  Identität feuert, misst seine eigene Verrohrung.
+- **N2 — Nullprobe Platzierung**: eine reine Translation des
+  komponierten Verbinders → `dspan` unverändert (|Δ| < 1e-9).
+
+**Kill.** Verfehlt P3 (a) oder (b), ist der Sensor NICHT validiert; der
+Eintrag schließt dann als ehrliches Negativ, `spanmeas.py` bleibt als
+Instrument im Baum, und der Rettungsweg 2 des #488-Eintrags gilt als
+gegangen und gescheitert — mit eigenem Rettungsweg, nicht mit einer
+nachgezogenen Schwelle.
+
+### Übergänge S1 `sep04` — gemessen: der Sensor ist validiert, und er rettet J4 trotzdem nicht
+
+**Umgebung.** Gemessen auf der Wurzel, auf der #488 gemessen hat —
+`suetterlin-1922` `digest 28ba1afebc53`, `suetterlin-1922-pairs`
+`f0cf3d53414c`, beide `exported_at 2026-09-02T08:00:29+00:00` —, BLAS auf
+einen Thread (`OPENBLAS_NUM_THREADS=1`, `OMP_NUM_THREADS=1`), eine
+Schrift pro Lauf (`suetterlin`), Basis und Kandidat derselbe Stack mit
+genau einem Knopf Unterschied (`--exit-trim`). `core/compose.py` ist seit
+#488 unverändert (nur Kommentar-Verweise auf den Journal-Umzug).
+
+**Zuerst der Nachweis, dass es DERSELBE Arm ist.** Vier Kennzahlen des
+#488-Eintrags reproduzieren exakt: 188 von 214 Nähten vergleichbar
+(11 durch das `fit_ok`-Gate ausgeschlossen), **121 Nähte bewegen sich**
+unter dem Trim („121 gefeuerte"), `dconn` fällt in **24** davon
+(**19,8 %**, dort „20 % — 24 von 121"), und der **Paar-Satz bewegt sich
+um null** (dort: „seine Klasse ist LEER"). Der Bench-Lauf desselben Arms
+liefert dazu `seam_dep_median` **+12,52 → −1,39** — Ziffer für Ziffer der
+Wert des Eintrags.
+
+**Ein Instrument-Defekt, VOR der Veröffentlichung gefunden und behoben —
+offengelegt, weil er die Zahlen bewegt hat.** Die erste Fassung des
+Sensors ankerte auf dem EMITTIERTEN Zug. Der trägt aber an beiden Enden
+die Überlappungs-Zugabe von `CONNECT_OVERLAP` = 0,05 xh, während der
+geerntete gemessene Verbinder exakt an B's Eintritt endet — der
+End-Anker lag also um genau den Betrag daneben, den das Wort-Lineal
+gerade noch nicht auflöst, und das ausgerechnet bei einem Maß, das
+gegen diesen Betrag gebaut ist. Der Review-Durchgang des PR hat es
+gesehen. Behoben durch `spanmeas.drawn_join`: die Zugabe wird exakt
+zurückgenommen (`_overlap_extend` hängt einen Punkt im Abstand
+`CONNECT_OVERLAP` an — ein Schluss-Segment genau dieser Länge ist die
+Zugabe und sonst nichts), der Rücklauf-Präfix einer Majuskel entfällt
+über den Abgangs-Anker aus der Provenance, und der Austritts-Trim bleibt
+drin, weil er die Wirkung des Arms ist. **Kein Gate wurde angefasst**;
+die Vorregistrierung stand vorher und steht unverändert. Die Zahlen
+unten sind die des korrigierten Sensors — und der Befund dreht sich
+nicht: die Gates waren in beiden Fassungen grün (vorher Δ +0,0040 und
+46,3 %).
+
+**P1/P2 · N1/N2 — grün.** Die vier synthetischen Kontrollen stehen als
+Tests (`tests/test_pairlab_spanmeas.py`): eine nur am Kopf um 0,05/0,2/0,5
+verlängerte Kurve liest `dspan` = 0,000, während `dconn` monoton mitsteigt;
+eine um δ verzogene Kurve liest δ/2 ± 0,005 und wächst monoton in δ.
+Zusätzlich auf ECHTEN Zeilen beider Sätze: der gemessene Verbinder als
+komponierter eingespeist ergibt `dspan` = 0,000000 (N1, Maximum über die
+185 Nähte, deren gemessene Kurve genug Punkte für den Schnitt hat), eine
+Translation des komponierten um (+1,7 / −0,9) xh bewegt ihn um 0,000000
+(N2, Maximum über alle 218).
+
+**P3 — die Abnahme am bekannten Defekt.** Medianwerte über die 121
+gefeuerten Nähte, und daneben über alle 188 vergleichbaren. Beide
+Spalten laufen auf DENSELBEN Kurven (`drawn_join`), sodass zwischen
+ihnen nur der Anker verschieden ist — `dconn` hier ist also die
+Kontrolle für den Anker, nicht die Spalte, die der Bench druckt:
+
+| Spalte | Basis | Kandidat (`--exit-trim`) | Δ | Fallquote |
+|---|---|---|---|---|
+| `dconn` (Anker-Kontrolle), 121 gefeuerte | 0,0814 | 0,1429 | +0,0615 | 38/121 = 31,4 % |
+| **`dspan`**, 121 gefeuerte | **0,0331** | **0,0367** | **+0,0036** | 59/121 = **48,8 %** |
+| `dconn`, alle 188 | 0,0884 | 0,1242 | +0,0358 | — |
+| `dspan`, alle 188 | 0,0394 | 0,0446 | +0,0052 | — |
+
+**Gate (a) grün:** |Δ `dspan`| = **0,0036** (0,0052 über alle) gegen die
+vorregistrierte Schranke 0,010 — und gegen +0,0615 derselben Kurven bei
+Start-Ausrichtung. **Gate (b) grün:** `dspan` fällt in **48,8 %** der
+gefeuerten Nähte gegen die vorregistrierten ≥ 40 %. **Der Sensor ist
+validiert.**
+
+Die Leiter, die dabei sichtbar wird, ist der eigentliche Beleg — vier
+Lesungen derselben 121 Nähte, nach zunehmender Bereinigung:
+
+| Lesung | Fallquote |
+|---|---|
+| `dconn` des Benchs, auf dem gezeichneten Zug samt Zugaben | 19,8 % |
+| start-ausgerichtet auf dem bereinigten Zug | 31,4 % |
+| **`dspan`** (End-Anker + Ausdehnungs-Normierung) | **48,8 %** |
+| die Handbereinigung von #488, ad hoc gegen die Basis geschnitten | 51 % |
+
+Der generische Sensor landet also da, wo die Handrechnung landete, ohne
+ihre Zutat zu brauchen (sie schnitt den Kandidaten am alten Abgang der
+BASIS ab und braucht dafür einen Basislauf; `dspan` braucht nur die
+gemessene Kurve). Wie groß der Unterschied zum Bisherigen ist: bei **51
+der 121** gefeuerten Nähte geben die beiden Anker die ENTGEGENGESETZTE
+Richtung an. Und die Größe des Artefakts, den er entfernt: der
+komponierte Verbinder wächst je gefeuerter Naht am Kopf um **0,2482 xh
+im Median** (p90 0,4549, max 0,4621) — mehr als die Decke des
+Lineal-Fensters (0,12), also genau die Größenordnung, die der
+Vorregistrierungs-Absatz als unabschneidbar benannt hat.
+
+**Und jetzt der Teil, der nicht gefällt: J4 ist damit NICHT gerettet.**
+Das Gate, an dem der Arm gescheitert ist, verlangte eine Fallquote von
+**≥ 60 %**. `dspan` kommt auf 48,8 %. Der Sensor beseitigt den
+Rahmen-Artefakt vollständig — die Regel wird beurteilbar —, und die
+Antwort der Hand bleibt trotzdem: **indifferent**. Was hier gewonnen
+wurde, ist das Instrument, nicht der Arm. Ein neuer Austritts-Arm ist
+möglich, aber er braucht eine eigene Vorregistrierung mit `dspan`-Gates
+von Anfang an; `exit_trim` bleibt Standard aus, `compose.py` unberührt,
+der Golden unberührt. (Die humanbench-Wortrunde, Rettungsweg 3 derselben
+Zeile, ist unabhängig davon gebaut — §14 „Übergänge J4 `sep04`".)
+
+**Basis-Lesung auf der HEUTE eingefrorenen Wurzel** (`suetterlin-1922`
+`2e3581287bed` / `suetterlin-1922-pairs` `cee9d363f497`, die
+LF11-Wurzel), damit der Sensor an der aktuellen Basis verankert ist:
+Wörter `dspan` **0,0407** (n = 188, `dconn` 0,0868), Paare `dspan`
+**0,1054** (n = 30, `dconn` 0,1609). Die Paar-Drills stehen erwartbar
+schlechter — sie sind Einzelnähte ohne Wortkontext.
+
+**Nebenbefund, gemeldet und NICHT stillschweigend korrigiert:** drei
+Zahlen des #488-Eintrags ließen sich in dieser Sitzung nicht
+reproduzieren, obwohl Wurzel, Code und Flags dieselben sind und die
+Kernzahlen (121/24/20 %, `seam_dep` +12,52 → −1,39, Paare null) exakt
+stimmen. Der Bench-Lauf des Arms liest `meas_dconn_median` **0,169**
+(Eintrag: 0,148), `meas_doff_median` **0,177** (Eintrag: 0,160) und
+`seam_arr_median` **−5,85** (Eintrag: −6,53); der BASIS-Lauf liest
+`meas_dconn_median` 0,106 und `meas_doff_median` 0,128 gegen die dort
+genannten 0,105 und 0,125. Die Abweichung betrifft ausschließlich die
+Kandidaten-Spalten und ändert das Verdikt von #488 nicht: rot war die
+FALLQUOTE, und die reproduziert auf die Naht genau. Der Eintrag bleibt
+nach der Append-only-Regel unverändert stehen; hier steht, was heute
+gemessen wurde. **Frage an den Autor**, ob die drei Werte nachgetragen
+oder erklärt werden sollen.
+
+---
 
 ### Lotse Absprung-Forensik `sep04` — jeder Absprung ist Karten-Vorfahrt, und die Mehrheit erbt die Karte
 

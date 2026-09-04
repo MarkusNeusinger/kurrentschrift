@@ -15,9 +15,16 @@ pairs) it reports and draws:
   large values = the composition put the letter in the wrong place, not the
   connector;
 - the production connector REGENERATED between the two independently placed
-  letters (`_generate_connector` mirrors `core.compose`'s join block — same
-  constants and guards) and its chamfer to the specimen skeleton — high
-  values = the connector's shape/coupling is wrong even at perfect placement;
+  letters and its chamfer to the specimen skeleton — high values = the
+  connector's shape/coupling is wrong even at perfect placement. Since
+  2026-09-04 this is `core.compose`'s own join call, recorded during the
+  composition and replayed with the two fit shifts (`prodconn.py`); the
+  hand-written mirror it replaced had been frozen since 2026-07-11 while the
+  join block was rebuilt three times, and differed on 89 of 248 joins (audit
+  Befund 18, numbers in `docs/reference/messjournal.md` §14 „Übergänge
+  P-Spiegel `sep04`"). `analyze._generate_connector` survives as that frozen
+  2026-07-11 curve for the chain solver's initialisation and the parity test —
+  it is no longer the production connector and no longer claims to be;
 - the specimen's own connecting stroke (skeleton tracked column-by-column
   through the inter-letter gap) with its end tangents;
 - **tail/head adaptation**: deviation of A's last / B's first stroke from the
