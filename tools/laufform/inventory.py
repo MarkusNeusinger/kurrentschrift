@@ -22,7 +22,10 @@ rounded up to 0.01, the doctrine-derived head gate
 LAUFFORM_HEAD_DEVIATION_MAX, and τ_form = the largest form p90 among the same
 trusted rows, rounded up to 0.01 (LF10 — measured, not adopted: no write path
 reads it); every row over any of them is listed — those are the rows the author
-decides about.
+decides about. The evidence floor is listed the same way („unter dem Boden"
+plus its own summary line): a stored row below it got there on an author
+statement the row itself does not record, so the survey names it instead of
+quietly counting it out of the τ selection.
 
     uv run python -m tools.laufform.inventory [--root DIR] [--json out.json]
     uv run --extra viz python -m tools.laufform.inventory --png inventory.png [--only K,t,E]
@@ -181,6 +184,14 @@ def _flags(r: dict, taus: dict) -> list[str]:
         flags.append("Kopf")
     if taus["form"] is not None and r["form"]["p90"] > taus["form"]:
         flags.append("Form")
+    # The floor is the one gate this table used to keep to itself: it picked the
+    # trusted rows for τ and said nothing about the rows it left out. A stored
+    # row under it passed the write path once, on an author statement nobody can
+    # read off the row — so it is flagged, not silently trusted (audit
+    # 2026-09-02, Befund 35; the survey found two such rows, a third had joined
+    # them by `sep04` without anything reporting it).
+    if not r["candidate"] and r["n_occurrences"] < LAUFFORM_MIN_OCCURRENCES:
+        flags.append("unter dem Boden")
     return flags
 
 
@@ -217,6 +228,12 @@ def print_table(rows: list[dict], taus: dict) -> None:
     if head_max is not None:
         turned = [f"{r['glyph_key']} {r['head_deviation']:.1f}°" for r in rows if r["head_deviation"] > head_max]
         print(f"rows over the head gate ({head_max:.0f}°, LF9): {', '.join(turned) if turned else 'none'}")
+    thin = [
+        f"{r['glyph_key']} n={r['n_occurrences']}"
+        for r in rows
+        if not r["candidate"] and r["n_occurrences"] < LAUFFORM_MIN_OCCURRENCES
+    ]
+    print(f"stored rows under the floor (n < {LAUFFORM_MIN_OCCURRENCES}): {', '.join(thin) if thin else 'none'}")
     tau_form = taus["form"]
     if tau_form is not None:
         setter = max(trusted, key=lambda r: r["form"]["p90"])

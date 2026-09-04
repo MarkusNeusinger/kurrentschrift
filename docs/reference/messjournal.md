@@ -194,6 +194,7 @@ die DB) — mit seiner Bedingung.
 | sep04 | Feder | [Platten-Nib A3 (Wortrunde)](#platten-nib-a3-sep04--vorregistrierung-die-wortrunde-über-die-strichbreite) | Pre-Reg · Runde gebaut, Urteil offen | Halbbreite 0,097 statt 0,07251. Das Lineal ist nicht blind, sondern EINSEITIG: dem Lineal die breitere Feder nennen senkt bei unveränderter Geometrie 0,109218 → 0,101560. Nebenbedingung des Audits schon trocken gerissen (`gleichzug_doublings` 13 → 21) — ein ≥ 60 % lizenziert nur den Folgearm „Ink-Clearance an die Feder koppeln", nicht den Write |
 | sep04 | Übergänge | [J4 Wortrunde (Rettungsweg 3)](#übergänge-j4-sep04--vorregistrierung-die-wortrunde-als-benannter-rettungsweg) | Pre-Reg · Runde gebaut, Urteil offen | Der §7.9-Rettungsweg zum `dconn`-Negativ; auf der LF11-Wurzel neu vermessen: `seam_dep` +7,99 → +0,02, Wörter +0,000248 (Vorzeichen gedreht), Paare byte-gleich |
 | sep04 | Laufform | [LF12 Prod-Re-Harvest mit Kette v5](#laufform-lf12-sep04--vorregistrierung-der-prod-re-harvest-der-laufform-zeilen-mit-kette-v5) | Pre-Reg | Zeilen aus den Vorkommen des heutigen Ketten-Stands neu bilden, Schätzer und Schlüsselmenge unverändert; der Beweis-Boden gilt ab hier auch für den Bestand |
+| sep04 | Laufform | [LF12 gemessen (trocken)](#laufform-lf12-sep04--gemessen-trocken-alle-fünf-gates-grün-und-der-boden-fängt-vier-zeilen-ab) | Pre-Reg + gemessen · alle Gates grün, Karte trocken; Write wartet auf Autor-Go | 18 von 22 Zeilen neu (RMS-Median 0,0022 xh), Wörter 0,108107 · Paare 0,148231, kein Kreuzungsverlust, dev-19 `cross_missing` 13→12; der Boden fängt `P`/`S`/`p`/`s` ab — `S` steht seit dem LF11-Write bei n=2 und hat heute NULL Fits |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -7732,3 +7733,193 @@ Schlüssel auf: der Harvest liefert Fits für Schlüssel ohne gespeicherte
 Zeile, aber eine zusätzliche Zeile ändert den komponierten
 Buchstabensatz und braucht ihre eigene Vorregistrierung. Was dabei
 anfällt, wird als Bestandsaufnahme berichtet, nicht als Kandidat.
+
+### Laufform LF12 `sep04` — gemessen (trocken): alle fünf Gates grün, und der Boden fängt vier Zeilen ab
+
+Umgebung wie vorregistriert: Wurzeln `57402ae7dd41` /
+`f176e191d4bf` (`exported_at` 2026-09-03T21:28:30+00:00), jeder Lauf mit
+`--expect-root` und `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`. **Es
+wurde nichts geschrieben.**
+
+**Die Ernte.** `--path chain --sets words --min-n 1 --jobs 4`:
+**230 Vorkommen über 32 Schlüssel**, 230 von 277 Buchstaben-Slots
+angenommen (83 %). Zum Vergleich die LF11-Ernte vom `sep02`: 237
+Vorkommen über 34 Schlüssel — die Ernte läuft heute auf der
+LF11-Wurzel, deren Zeilen den komponierten Init stellen, aus dem der
+Ketten-Fit startet. Die abgewiesenen 47 Slots verteilen sich auf
+`connector_degenerate` 30 · `not_converged_local` 7 · `anchor_spike` 7 ·
+`geo_rmse` 3.
+
+**Der Bestand gegen die frische Ernte.** Die 22 Schlüssel der Wurzel,
+`n` vorher/nachher und die Ankerbewegung der neu abgeleiteten Zeile
+gegen die gespeicherte (RMS und Maximum über die 120 Anker, in
+x-Höhen):
+
+| Zeile | n vorher | n nachher | RMS | max | |
+|---|---|---|---|---|---|
+| e | 32 | 32 | 0,0009 | 0,0022 | |
+| n | 33 | 32 | 0,0014 | 0,0045 | |
+| r | 18 | 18 | 0,0019 | 0,0142 | |
+| i | 16 | 17 | 0,0018 | 0,0053 | |
+| u | 16 | 16 | 0,0018 | 0,0057 | |
+| a | 14 | 13 | 0,0060 | 0,0208 | |
+| d | 12 | 12 | 0,0054 | 0,0164 | |
+| l | 12 | 12 | 0,0010 | 0,0019 | |
+| h | 10 | 10 | 0,0022 | 0,0061 | |
+| m | 9 | 9 | 0,0032 | 0,0259 | |
+| c | 7 | 7 | 0,0008 | 0,0021 | |
+| w | 6 | 6 | 0,0042 | 0,0143 | |
+| sz | 5 | 5 | 0,0038 | 0,0162 | |
+| g | 4 | 4 | 0,0032 | 0,0123 | |
+| longs | 4 | 4 | 0,0019 | 0,0067 | |
+| o | 4 | 4 | 0,0031 | 0,0082 | |
+| z | 3 | 3 | 0,0021 | 0,0070 | |
+| Z | 3 | 3 | 0,0038 | 0,0221 | |
+| **p** | **3** | **2** | (0,0120) | (0,0511) | **unter den Boden gefallen — Zeile bleibt stehen** |
+| **S** | **2** | **0** | — | — | **keine brauchbaren Fits — Zeile bleibt stehen** |
+| **P** | **1** | **1** | (0,0022) | (0,0188) | **unter dem Boden geblieben — Zeile bleibt stehen** |
+| **s** | **1** | **1** | (0,0008) | (0,0045) | **unter dem Boden geblieben — Zeile bleibt stehen** |
+
+Die Bewegung ist durchweg klein: über die 18 wirklich neu abgeleiteten
+Zeilen liegt der RMS im Median bei **0,0022 xh**, das Maximum bei
+0,0259 xh (`m`) — alles weit unter dem Nib-Radius 0,064 xh. Der
+Re-Harvest verschiebt die Form also nicht, er erneuert die Evidenz
+darunter. Die eingeklammerten Zahlen der vier letzten Zeilen sind
+Diagnose: so weit WÜRDE sich die Zeile bewegen, wenn man sie ohne Boden
+neu ableitete.
+
+**Der Beweis-Boden, gemessen (Gate e) — grün, und größer als der Audit
+gedacht hat.** Befund 35 nannte zwei Live-Zeilen unter dem Boden, `P`
+und `s` mit je n = 1. Heute sind es **drei**: `S` trägt seit dem
+LF11-Write n = 2 (der Write hat die frisch geerntete Zahl mitgeschrieben
+und `P`/`S`/`s` mit `?min_occurrences=1` durchgereicht; die Zeile war
+vorher mit n = 3 gebucht). Das ist genau der Fall, den der Kommentar an
+`LAUFFORM_MIN_OCCURRENCES` seit jeher als Beispiel führt — das
+Sütterlin-`S` aus zwei Vorkommen, dessen Anker 113 als sichtbare Zacke
+im geschriebenen S landete. Dazu kommt aus dieser Runde:
+
+- **`p` fällt von n = 3 auf n = 2** und ist damit die vierte Zeile, die
+  nicht neu abgeleitet werden darf. Sie behält ihre gespeicherte
+  Fassung; ihre Diagnose-Bewegung (max 0,0511 xh) ist zugleich die
+  größte der ganzen Karte — ein dünner Stapel bewegt am meisten, was
+  der Boden genau verhindern soll.
+- **`S` hat in dieser Ernte NULL brauchbare Fits.** Alle sechs
+  S-Vorkommen (`Soldaten`, `Seiten`, `Säbel`, `Silber`, `Sporn`,
+  `Sprünge`) fallen am Gate `connector_degenerate` — die S-Anschlüsse
+  stellen ein Fünftel der größten Ablehnungsklasse der Runde. Die
+  Evidenz hinter der lautesten Warnung des Bodens wird also nicht
+  dicker, sondern dünner.
+- Keine der 18 neu abgeleiteten Zeilen trägt n < 3. **Gate (e) grün.**
+
+Die vier stehen gelassenen Zeilen sind damit ein offener Autorenschritt
+und keine stille Ausnahme mehr: `P` (n = 1) · `S` (n = 2, heute ohne
+Fits) · `p` (n = 3 gebucht, 2 gemessen) · `s` (n = 1). Die drei Wege
+sind unverändert die des Audits — löschen (Rückfall auf die Tafelform),
+aus mehr Vorkommen neu ableiten (der Weg dorthin ist die
+Eigenhand-Ernte), oder als erklärte Ausnahme mit Vermerk behalten.
+
+**Das Lineal (Gate a) — grün.**
+
+| | `bench_loss` | Δ Basis | `pair_loss` | Δ Basis | Gate (a) |
+|---|---|---|---|---|---|
+| Basis (gespeichert) | 0,109218 | — | 0,148198 | — | — |
+| **Re-Harvest-Karte** | **0,108107** | **−0,001110** | **0,148231** | **+0,000033** | **grün** |
+
+Die Erwartung „≈ neutral" ist eingetroffen, mit einer leichten Neigung
+zugunsten der frischeren Evidenz: 37 Einträge besser gegen 21
+schlechter (38 unbewegt, im Wesentlichen die Paar-Drills), Summe der
+Gewinne −0,1303 gegen Summe der Verluste +0,0615 über 96 Einträge.
+Größte Gewinner `Sprünge` −0,0163 · `der-2` −0,0114 · `Wer` −0,0100;
+größte Verlierer `einen` +0,0099 · `zum` +0,0095 · `schießen` +0,0072.
+`worst_word` wandert von `regieren` 0,234335 auf `han` 0,232609. Alle
+drei Komponenten sinken (`comp_transition` −0,002034 ·
+`comp_coverage` −0,000227 · `comp_width` −0,000578), der Naht-Abgang
+`seam_dep_median` von +7,99 auf +7,59. **Die Karte ist ein
+Overlay-Lauf und damit eine eigene Messung — sie bewegt die Headline
+nicht und bekommt keine Ledger-Zeile.** Die bekäme erst der Write, als
+deklarierte Re-Baseline.
+
+**Die Zeilen-Gates (Gate b) — grün, und die Kontrolle zeigt, warum der
+Schätzer nicht zur Debatte steht.** Keine der 22 Zeilen der Karte
+verletzt ein Gate: schlimmster Sprung 2,85 (`longs`, τ = 2,95),
+schlimmster Kopf 13,4° (`w`, Grenze 15°). Die gespeicherte Wurzel liegt
+gleichauf (2,80 / 14,4°) — ein Erbfall tritt wie vorhergesagt nicht auf.
+
+Zur Kontrolle wurde dieselbe Ernte zusätzlich durch den PER-ANKER-Median
+gelegt (`smoothrow --knots 0`, der Default des Aggregators, den LF11
+NICHT umgestellt hat). Diese Karte **bricht drei Gates**: Sprung `i`
+3,86 und `longs` 3,48, Kopf `z` 16,1°. Das ist dieselbe Beobachtung wie
+bei LF11 und sie ist hier die eigentliche Warnung: **ein Re-Harvest
+über den Werkzeug-Default würde die LF11-Adoption zurücknehmen und dabei
+drei Zeilen ins Rote schieben.** Der Schätzer gehört zur Karte, nicht
+zum Aufruf — wer diese Runde wiederholt, nimmt `--knots 0.16`.
+
+**Das Kompositions-Soll (Gate c) — grün.** Über alle 63 Wörter,
+Kandidaten-Wurzel gegen Basis-Wurzel: **kein Wort verliert eine
+Kreuzung**, und keines gewinnt eine. Eine einzige Bewegung überhaupt,
+wie versprochen berichtet: `Wer` gewinnt eine Zone (1 → 2).
+
+**dev-19 (Gate d) — grün.** Kette auf beiden Wurzeln
+(`pairlab.follow --all --set words --jobs 4`, BLAS gepinnt), gescoret je
+mit der Soll-Wurzel des eigenen Laufs (`tracebench --split dev
+--candidate file`, die LF3b-W-Regel):
+
+| | Basis-Wurzel | Kandidaten-Wurzel | Δ | Kriterium |
+|---|---|---|---|---|
+| `dtw_xh_median` | 0,045830 | 0,045606 | −0,000224 | (Bericht) |
+| `dtw_xh_p90` | 0,094197 | 0,089271 | −0,004926 | (Bericht) |
+| `aiou_median` | 0,7694 | 0,7583 | **−0,0111** | ≥ −0,02 → **grün** |
+| `cross_missing` | 13 | **12** | −1 | ≤ Basis → **grün** |
+| `cross_spurious` | 6 | 6 | 0 | (Bericht) |
+| Marken (missing/spurious/ambiguous) | 0/0/0 | 0/0/0 | — | unverändert → **grün** |
+| `retrace_missing` / `retrace_spurious` | 7 / 6 | 7 / 7 | 0 / +1 | (Bericht) |
+| `soll_zones_agree` | 18/19 | **19/19** | +1 | (Bericht) |
+| `soll_cross_agree` | 16/19 | 16/19 | 0 | (Bericht) |
+| schlechtestes Wort | `unter` 0,1139 | `muß` 0,1070 | | |
+
+Die drei Kriterien der Vorregistrierung sind damit erfüllt. Zwei
+Bewegungen, die nicht unter ein Gate fallen, stehen trotzdem hier: eine
+zusätzliche erfundene Retrace, und `touch_cand` fällt von 23 auf 18.
+**Nicht gelaufen** ist das 63-Wort-k0-Protokoll (`k0eval`) — es steht
+weder in der Vorregistrierung noch verlangt die LF3b-W-Regel es; wer den
+Write vorbereitet, kann es nachziehen. Die Basiszahlen dieser Tabelle
+sind ausdrücklich DIESES Paars: sie liegen neben den `aug26`-Zahlen des
+Stand-Blocks (dtw 0,0446 / p90 0,0861 / aiou 0,7608), weil dazwischen
+der LF11-Write und zwei Wurzel-Exporte liegen. Verglichen wird nur
+innerhalb des Paars.
+
+**Vor dem Write geprüft.** Die serverseitige Kanonisierung
+(`build_laufform_canonical`, die der PUT erneut ausführt) ist auf allen
+22 Zeilen der Karte ein verifizierter **No-op** — größte Bewegung eines
+zweiten Durchlaufs 0,000000000 xh. Die Karte, die gemessen wurde, wäre
+also die Karte, die geschrieben wird.
+
+**Bestandsaufnahme der neuen Schlüssel (kein Kandidat).** Die Ernte
+liefert Fits für 11 Schlüssel ohne gespeicherte Zeile — die
+Laufform-Lücke, die seit `aug19` als Autorenschritt geführt wird. Durch
+Boden UND beide Zeilen-Gates käme davon **genau einer: `G`** (n = 3,
+Sprung 1,52, Kopf 8,4°). Alle übrigen scheitern: `E` 41,6° · `K` 54,2° ·
+`t` 46,1° · `f` 21,6° · `k` 16,8° am Kopf-Gate (dieselben Buchstaben,
+die die LF9-Datenaktion `aug29` in Prod gelöscht hat — der Befund
+reproduziert sich), `ue` mit Sprung 5,41, und `F`, `W`, `b`, `v` am
+Boden (n = 1 bzw. 2). Eine zusätzliche Zeile ändert den komponierten
+Buchstabensatz und ist damit ein eigener Arm mit eigener
+Vorregistrierung; hier steht sie als Inventar, nicht als Vorschlag.
+
+**Verdikt: die Karte besteht (a), (b), (c), (d) und (e) und wird NICHT
+geschrieben.** Sie liegt als 22 volle Fixture-Zeilen vor, von denen 18
+neu abgeleitet sind. Der Write hängt an `dbsnapshot` → Autor-Go → PUT je
+Glyph → GET-Verify → Neu-Export beider Wurzeln als deklarierte
+Re-Baseline; die Ledger-Zeile entsteht dort und nicht hier.
+
+**Kein §7.9-Eintrag fällig** — die Rettungswege-Regel gilt dem ehrlichen
+Negativ, und dieser Arm ist keines.
+
+**Selbst entschieden (Routine im Rahmen der Vorregistrierung):** die
+Kontroll-Karte `--knots 0` als dritter Arm (sie beantwortet „Schätzer
+oder Ernte?" und hätte sonst niemand gestellt); die Bestandsaufnahme der
+elf neuen Schlüssel; der No-op-Nachweis der Kanonisierung vor dem Write.
+Werkzeuge unverändert außer `tools/laufform/smoothrow.py` (`--floor`,
+in der Vorregistrierung angekündigt) und der Boden-Spalte in
+`tools/laufform/inventory.py` — die Umsetzung von Befund 35 (a), die
+diese Runde gebraucht hat, um ihre eigene vierte Zeile zu sehen.
