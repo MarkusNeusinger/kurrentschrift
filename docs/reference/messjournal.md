@@ -193,6 +193,10 @@ die DB) — mit seiner Bedingung.
 | sep02 | Laufform | [LF11 humanbench-Runde und Adoption](#laufform-lf11-sep02--humanbench-wortrunde-instrumentdefekt-und-adoption-prod-write--re-baseline) | **ADOPTIERT auf Autor-Entscheid** (kein formales Instrument-Verdikt) · Prod-Write + Re-Baseline | Runde verlässlich (10/12 Arm) und Richtung erdrückend (40 : 1), aber die Tie-Schranke fällt in JEDER Lesart (34,9 % gesamt, 25,6 % in der günstigsten Teilmenge, gegen ≤ 25 %) — `adopt: false`; ob ein Teil der Runde auf der defekten Anzeige „gefüllte Ringe" lief, ist zwischen Protokoll und Bestand ungeklärt (offener Punkt); Write nach Snapshot `2026-09-02T21-58-16Z`, Readback 22/22; Wörter 0,109218 · Paare 0,148198 |
 | sep04 | Übergänge | [J5 Apex-Übergabe + Säulenabgang](#übergänge-j5-sep04--vorregistrierung-die-tafelform-klassenregel-apex-übergabe-und-der-d-säulenabgang) | Pre-Reg | Autor-Entscheid A4: EINE Klassenregel für den langen ungeschlungenen Anstrich (t/ſ/k **und ß**) + der d-Auslauf als Übergangsgenerator; r passt messbar nicht in die Klasse und bleibt Autorenfall |
 | sep04 | Übergänge | [J5 gemessen](#übergänge-j5-sep04--gemessen-der-säulenabgang-besteht-alles-die-apex-übergabe-fällt-an-zwei-gates) | Pre-Reg + gemessen · Säulenabgang alle Gates grün (Adoption = Autor-Ja), Apex-Übergabe verworfen | Säule −0,000100/−0,001441, d-Abgang 1,139→0,945 (10/10 + 8/8 im Platten-Band); Apex +0,001808/**+0,002420** und Zacken 13→17 — Verengung auf ß/ſſ macht ihn RÖTER (3:8); Golden unberührt, humanbench-Runde 6 gebaut und ungerichtet |
+| sep04 | Lotse | [Absprung-Forensik](#lotse-absprung-forensik-sep04--jeder-absprung-ist-karten-vorfahrt-und-die-mehrheit-erbt-die-karte) | Autopsie | `bridge_no_rail` = 0 Punkte, Schienen-Auslauf 0 daneben; die Ritt-Doppelzone liegt in 49,5 % ihrer Punkte außerhalb der Tinte. Von 39 Ereignissen 23 geerbt (Karten-Abdrift, Überschuss +0,0000 = Kompositions-Platzierung), 15 von der starren Pinnung gemacht (Fenster-Versatz, +0,0928 xh) — neuer Sensor `tools/inkpilot/forensics.py` |
+| sep04 | Lotse | [Lotse-Sprung aufgelöst](#lotse-sprung-sep04--der-ungeklärte-sprung-ist-eine-transkription-keine-messung) | Autopsie · gegenstandslos | 0,0545 ist `laden` (Rang 9), der Median ist Rang 10 = 0,058522; `will` beweisbar unbewegt → kein Sprung. Zweitbefund: die stehende Basis ist drei Wurzeln alt, heute 0,056080 |
+| sep04 | Feder | [Platten-Nib A3 (Wortrunde)](#platten-nib-a3-sep04--vorregistrierung-die-wortrunde-über-die-strichbreite) | Pre-Reg · Runde gebaut, Urteil offen | Halbbreite 0,097 statt 0,07251. Das Lineal ist nicht blind, sondern EINSEITIG: dem Lineal die breitere Feder nennen senkt bei unveränderter Geometrie 0,109218 → 0,101560. Nebenbedingung des Audits schon trocken gerissen (`gleichzug_doublings` 13 → 21) — ein ≥ 60 % lizenziert nur den Folgearm „Ink-Clearance an die Feder koppeln", nicht den Write |
+| sep04 | Übergänge | [J4 Wortrunde (Rettungsweg 3)](#übergänge-j4-sep04--vorregistrierung-die-wortrunde-als-benannter-rettungsweg) | Pre-Reg · Runde gebaut, Urteil offen | Der §7.9-Rettungsweg zum `dconn`-Negativ; auf der LF11-Wurzel neu vermessen: `seam_dep` +7,99 → +0,02, Wörter +0,000248 (Vorzeichen gedreht), Paare byte-gleich |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -7872,3 +7876,483 @@ uv run python -m tools.humanbench.page --payload temp/humanbench/runde-6/payload
    Freiheitsgrad. Sie ist die einzige Instanz, die den Saum sieht.
 4. **Für den grünen Arm:** die Adoption des Säulenabgangs ist keine Messfrage
    mehr, sondern der Ja/Nein-Satz des Autors samt deklariertem Golden-Bake.
+
+### Lotse Absprung-Forensik `sep04` — jeder Absprung ist Karten-Vorfahrt, und die Mehrheit erbt die Karte
+
+**Autopsie, kein Arm.** Keine Konstante von `tools/inkpilot/pilot.py`
+ist angefasst, kein Kandidat entstanden, kein Gate bewegt. Die Frage
+ist die, die die Verfahrensseite als Fehlermodus führt, ohne sie je
+lokalisiert zu haben: **wo und warum verlässt der Lotse die Tinte?**
+Der Ritt fährt das gemessene Skelett per Konstruktion — also muss
+jeder Punkt seiner Ausgabe, der AUSSERHALB des Tintenkörpers liegt,
+von einem benannten Mechanismus dorthin gesetzt worden sein. Diese
+Runde baut den Sensor, der sagt, von welchem.
+
+**Der Sensor** (`tools/inkpilot/forensics.py`, neu). Drei Teile:
+
+1. **Der Tintenkörper.** Die Fixtures tragen Skelett und `width_map`
+   (die EDT-Halbbreite je Skelettpixel — der Schwellzug-Kanal), der
+   Körper ist also die Vereinigung der Scheiben mit Radius
+   `width_map[p]` um jedes Skelettpixel. In der üblichen
+   Medialachsen-Näherung (ein Punkt wird an seinem NÄCHSTEN
+   Skelettpixel gemessen) hat diese Vereinigung die geschlossene Form
+   `slack = edt − width_map[nächstes]`: negativ in der Tinte, positiv
+   daneben. **Absprung** = maximaler Lauf von ≥ 2 Punkten mit
+   `slack > 0`.
+2. **Die Herkunft je Punkt.** `traced_pilot_word` spiegelt die
+   Orchestrierung von `pilot_word` Schritt für Schritt und hängt an
+   jeden emittierten Punkt das Label des Mechanismus, der ihn gesetzt
+   hat. Der Folger selbst bleibt unberührt — die Doppelung ist durch
+   `assert_matches_pilot` abgesichert, das die gespiegelten Striche
+   Bit für Bit gegen die echten hält. **Auf allen 19 Wörtern
+   identisch.**
+3. **Die Schuldfrage.** Zusätzlich wird der `slack` der KARTE an
+   derselben Stelle gemessen (`map_slack_xh`). Lag die Karte dort
+   schon draußen, ist der Absprung GEERBT; lag sie auf der Tinte und
+   der Stift nicht, hat ihn der Ritt GEMACHT. Die Schwelle ist
+   0,02 xh.
+
+**Basis.** dev-19, Wurzel `suetterlin-1922`
+`exported_at 2026-09-02T22:16:06+00:00`, Lotse-Default-Stack (v0.17
+mit der v0.19-Re-Denominierung), `OPENBLAS_NUM_THREADS=1
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1`. Artefakte: `runs/`, Ereignis-CSV
+und ein Bild je Absprung.
+
+**Der erste Befund ist eine Null.** Über alle 19 Wörter hat **kein
+einziges** der 3 350 Karten-Samples eine leere Bord-Umgebung: für
+jedes liegt eine Schiene innerhalb von `BOARD_RADIUS_UNITS`. Die Karte
+führt den Folger also nie über blankes Papier. Das ist keine
+Statistik, sondern eine gemessene Null.
+
+Wichtig für die Beweiskraft: die Schienen-Verfügbarkeit wird je Sample
+**unabhängig vom Ursachen-Label** erhoben und ist im Sensor ein
+eigenes Merkmal, kein Ursachen-Wert. Ein Fenster-Sample wird per
+Konstruktion in den Brücken-Zustand gezwungen und trägt deshalb IMMER
+das Label `forced_window`; hätte man „keine Schiene" nur am Label
+abgelesen, wären die Fenster nie geprüft worden und die Null hätte nur
+für die ungezwungenen Brücken gegolten (Copilot-Befund auf PR #528,
+vor der Zahl repariert).
+
+**Der zweite Befund ist eine Quote.** Was ein Mechanismus am Weg
+AUSMACHT und was er ANRICHTET, sind zwei sehr verschiedene Zahlen:
+
+| Mechanismus | Punkte | Anteil am Weg | davon daneben | Quote |
+|---|---|---|---|---|
+| `rail` (gewöhnlicher Ritt) | 6 872 | 86,35 % | 2 | 0,0 % |
+| `forced_window` (v0.8/v0.9) | 773 | 9,71 % | 69 | 8,9 % |
+| `tail_runout` (Schienen-Auslauf) | 201 | 2,53 % | 0 | **0,0 %** |
+| `double_zone` (v0.5/v0.7) | 101 | 1,27 % | 50 | **49,5 %** |
+| `bridge_priced_out` | 11 | 0,14 % | 3 | 27,3 % |
+| `bridge_no_rail` | 0 | 0,00 % | 0 | — |
+
+Der Schienen-Auslauf ist damit freigesprochen: 201 Punkte, keiner
+daneben — er fährt per Konstruktion die Schiene bis zu einem
+Grad-1-Ende. Der gewöhnliche Ritt ebenso (2 von 6 872, 0,03 %). Die
+**Ritt-Doppelzone dagegen liegt in jedem zweiten ihrer Punkte
+außerhalb der Tinte** und stellt mit 1,3 % Weganteil 40 % aller
+Absprung-Punkte — die fünffache Quote des Fensters.
+
+Entsprechend sind alle 39 Absprung-EREIGNISSE (124 Punkte in 12 der
+19 Wörter) von Karten-Vorfahrt dominiert: den zwei Mechanismen, in
+denen der Folger die Schiene per Konstruktion loslässt und die
+komponierte Karte fährt — `double_zone`
+(`RIDE_DOUBLE_MAP_PRIORITY` + `RIDE_DOUBLE_ZONE_MARGIN_UNITS`) und
+`forced_window` (`MAP_CROSSING_WINDOW_UNITS` + `MAP_CROSSING_PIN`).
+Die drei danebenliegenden `bridge_priced_out`-Punkte sind in
+Zonen-Ereignisse eingebettet und dominieren keines.
+
+Das ist ein struktureller Satz über die Route, keine Statistik: der
+Lotse springt nur dort ab, wo seine eigenen ADOPTIERTEN Mechanismen
+ihn dazu ermächtigen. Die Kandidatenmenge des Viterbi wird im Fenster
+auf einen einzigen Zustand reduziert (`states[k] = [(None, 0.0)]` in
+`_assign_stroke`) — die Schienen werden dort gar nicht erst
+angeboten; in der Zone ist es kein Kostenterm, sondern ein harter
+Vorrang beim Zusammenbau (`map_mask` in `_assemble_ride`).
+
+**Die Schuld-Aufteilung, und sie ist scharf:**
+
+| Ursache | Schuld | n | Tiefe med | Überschuss über die Karte med | Bogen med | Karte lag auf der Tinte |
+|---|---|---|---|---|---|---|
+| `double_zone` | geerbt | 11 | 0,0994 xh | **+0,0000** | 0,510 xh | 0/11 |
+| `forced_window` | Pinnung | 15 | 0,0669 xh | **+0,0928** | 0,221 xh | 11/15 |
+| `forced_window` | geerbt | 12 | 0,0394 xh | −0,0165 | 0,143 xh | 1/12 |
+| `double_zone` | Entdrillung | 1 | 0,0535 xh | +0,1213 | 0,142 xh | 1/1 |
+
+Daraus zwei benannte Klassen (Glossar) und eine Randnotiz:
+
+**Karten-Abdrift** (`double_zone` · geerbt, 11 Ereignisse). Die
+Zonen-Vorfahrt reicht die Karte WÖRTLICH durch: der Überschuss über
+die Karte ist im Median exakt **+0,0000** — der Folger fügt nichts
+hinzu, er ist ein treuer Bote. In allen 11 Fällen lag die Karte schon
+draußen. Diese Klasse trägt die tiefsten und längsten Absprünge der
+Runde (bis **0,269 xh** bei `muß-2`, Bogen bis 0,84 xh bei
+`Galoppieren`). Ein Knotenphänomen ist sie NICHT: nur 5 der 11 sitzen
+wirklich an einem Skelettknoten vom Grad ≥ 3 (gemessen mit der
+Lokalitäts-Schranke 0,35 xh), bei 5 weiteren liegt überhaupt kein
+Knoten so nah — passend zur Bogenlänge, sie ist ein LAUF entlang der
+Zone. (Eine frühere Fassung dieses Abschnitts las „9 von 11": die
+Knoten-Suche reichte damals über eine volle x-Höhe, sodass ein
+Ereignis auf gewöhnlicher Kante den Grad einer Verzweigung erbte, die
+es nie berührt hat — Copilot-Befund auf PR #528, korrigiert samt
+Sensor.) Sie ist per Konstruktion ungepinnt: `MAP_RUN_PIN_KNOTS` steht
+seit v0.16 auf `"bridges"`, Zonen-Ritte werden also nicht an die Tinte
+zurückgeholt (nur 4 von 12 Zonen-Ereignissen tragen überhaupt ein
+Pin-Flag, und die aus dem Brücken-Anteil). **Die Ursache dieser Klasse
+liegt nicht im Folger, sondern in der Komposition** — Platzierung der
+Laufform bzw. `core/compose.py`. Der Lotse macht sie nur sichtbar.
+
+**Fenster-Versatz** (`forced_window` · Pinnung, 15 Ereignisse). Hier
+ist es umgekehrt: in **11 von 15** Fällen lag die Karte AUF der Tinte
+und der Stift trotzdem daneben. Der Mechanismus ist die starre
+Verschiebung von `_pin_map_runs`/`_pin_forced_runs` — sie zieht den
+Fenster-Lauf so, dass seine ENDEN die Bord-Punkte treffen, und trägt
+dabei den Bauch des Laufs mit hinaus. Median-Überschuss über die Karte
+**+0,0928 xh**, im schlimmsten Fall **+0,2146 xh** (`Galoppieren`,
+Punkte 542–543; die Karte liegt dort 0,121 xh INNEN, der Stift
+0,093 xh draußen). Das ist der einzige Absprung-Mechanismus, den der
+Lotse selbst herstellt.
+
+**Und die Pinnung ist zweischneidig, nicht schlecht.** Die zwölf
+`forced_window`-Ereignisse der geerbten Klasse haben einen
+Median-Überschuss von **−0,0165 xh**: dort zieht dieselbe Pinnung den
+Lauf ein Stück ZURÜCK zur Tinte. Über alle 27 Fenster gerechnet
+repariert sie also etwa in der Hälfte der Fälle und beschädigt in der
+anderen — was erklärt, warum v0.9 und v0.11 ihre Gates bestanden
+haben und der Defekt trotzdem stehen blieb: er ist in der Summe
+unauffällig und nur je Ort sichtbar.
+
+**Randnotiz Entdrillungs-Spiegel** (1 Ereignis, `Galoppieren`
+876–879): die v0.13-Paar-Spiegelung schiebt einen Lauf um +0,121 xh
+über die Karte hinaus. Eine Beobachtung, kein Befund — n = 1.
+
+**Minimal-Reproduktionen** — die beiden Klassen nebeneinander:
+
+![Zwei Ausschnitte nebeneinander, je mit Tintenrand, komponierter Karte, Ritt und rot markiertem Absprung](../assets/lotse-absprung-klassen.png)
+
+* **Links, Karten-Abdrift** — `muß-2`, Punkte 7–12, Tiefe 0,269 xh,
+  Überschuss 0,000. Der Anstrich des m: die Karte läuft links an der
+  Tinte vorbei, der Ritt folgt ihr wörtlich hinaus.
+* **Rechts, Fenster-Versatz** — `will`, Punkte 118–119, Tiefe
+  0,055 xh, Karte −0,070 xh (also innen). Der Austritt des i: die
+  Karte liegt mitten in der Tinte, der gepinnte Fenster-Lauf hakt
+  trotzdem heraus.
+
+Erzeugt mit `uv run --extra viz python -m tools.inkpilot.forensics
+muß-2 will --panel "muß-2:7,will:118" --panel-out
+docs/assets/lotse-absprung-klassen.png`; die Ausschnitte stammen von
+der gemeinfreien Tafel Abb. 19 (`data/sources/suetterlin-1922/`, PD,
+schon im Repo). Ein Bild je Ereignis liefert `--png-dir`.
+
+**Was der Befund NICHT sagt.** Er ordnet keine dtw-Differenz zu. Die
+vier Wörter mit den meisten Absprüngen sind nicht die vier
+schlechtesten; `muß` (0 Ereignisse) ist schlechter als `zwei`
+(5 Ereignisse). Der Absprung ist ein ORT-Maß, kein Bahn-Maß — dafür
+ist er das erste, das die Ursache mitliefert.
+
+**Rettungswege** (§7.9, je eigene Vorregistrierung — keiner davon ist
+ein weicheres Gate):
+
+* Karten-Abdrift, neue EVIDENZ: die 11 geerbten Zonen-Ereignisse sind
+  eine lokalisierte Platzierungskarte mit Ort, Tiefe und Bogenlänge —
+  Eingabe für die offenen Platzierungs-Arme (LF4-p, K1-p), nicht für
+  den Lotsen.
+* Karten-Abdrift, bekannter MECHANISMUS: die in §7.11 offene
+  **Zonen-Stufe** (`MAP_RUN_PIN_KNOTS = "zones"`) würde genau diese
+  Läufe an die Tinte zurückholen; sie scheitert heute nur an der
+  Galoppieren-p-Oskulation. Der Befund gibt ihr eine zweite,
+  unabhängige Begründung.
+* Fenster-Versatz, neuer MECHANISMUS: eine **formtreue statt starre**
+  Pinnung — Enden auf die Bord-Punkte, Inneres auf den Tintenkörper
+  projiziert (Ähnlichkeits- statt Translations-Fit).
+* Fenster-Versatz, neuer SENSOR: `map_slack_xh` ist dieser Sensor. Ein
+  **Nie-schlechter-als-die-Karte-Budget** in der Form des
+  v0.16-Soll-Budgets — eine Pinnung darf den `slack` eines Laufs nicht
+  erhöhen — wäre der erste Gate-Kandidat, der den Defekt je Ort trifft
+  statt in der Summe.
+
+### Lotse-Sprung `sep04` — der ungeklärte Sprung ist eine Transkription, keine Messung
+
+**Autopsie, kein Arm.** Die Verfahrensseite führt seit `aug26` einen
+offenen Punkt: „Der Sprung 0,0585 → 0,0545 ist ungeklärt" — zwischen
+dem `aug20`-Eintrag und der L-U-Nachmessung steht kein Lotse-Eintrag
+und kein Re-Baseline-Hinweis, und die L-U-Tabelle misst die Zahl auf
+BEIDEN Marken-Kappen gleich (0,0545 → 0,0545), die Kappe kann es also
+nicht gewesen sein. Der Audit vom `sep02` hat ihn als nicht auflösbar
+notiert, weil die Artefakte in Session-Scratchpads lägen. **Sie liegen
+noch da** (`temp/tb-aug20/`, 107 Dateien), und damit ist der Punkt
+entscheidbar.
+
+**Was die `aug20`-Artefakte sagen.** `lotse-v17-frozen.report`:
+dtw-Median **0,058522**, p90 **0,112186**, worst `muß-2`
+**0,140410**, aiou 0,7398 — die Zahlen des `aug20`-Eintrags, exakt.
+Alle 24 Reports jenes Abends durchgesehen: **kein einziger
+Lotse-Median ist 0,0545.** Die nächsten sind 0,057255 (die
+LF3b-Karte), 0,056635 und 0,056728 (v0.18/v0.19-Sprossen, beide per
+Gate verworfen). Nebenbefund, unabhängig bestätigt:
+`lotse-v19-r0-frozen` misst **0,058522**, Ziffer für Ziffer wie
+v0.17 — die Byte-Identität der v0.19-Re-Denominierung hält.
+
+**Wo 0,0545 herkommt.** Es steht im `aug20`-Report — als der
+dtw-Wert des Wortes **`laden`**. Sortiert man die 19 Wörter, ist
+`laden` Rang 9 und `will` (0,0585) Rang 10; der Median von 19 Werten
+IST Rang 10. **0,0545 ist der Nachbarrang des Medians.**
+
+**Warum es keine Messung sein kann.** Die beiden anderen
+Lotse-Zahlen der L-U-Tabelle auf Kappe 0,8 stimmen mit `aug20` exakt
+überein (p90 0,1122, worst `muß-2` 0,1404). p90 wird über die lineare
+Interpolation bei Index 16,2 von `muß` (0,1103) und `muß-3` (0,1197)
+festgelegt, worst vom Maximum — beide unbewegt. Ein Kandidat, der
+diese zwei reproduziert, aber den Median auf 0,0545 zieht, müsste
+GENAU EIN Wort über den Median geschoben haben, und zwar `will` unter
+0,0545. Das ist ausgeschlossen:
+
+* Der `aug20`-Kandidat, heute auf der aktuellen Wurzel nachgemessen,
+  liefert `will` weiterhin **0,0585** — kein Wurzelwechsel bewegt
+  dieses Wort.
+* Die Fixture-Wurzel wechselte erst am `aug29` (Headline-Ledger); am
+  `aug26` lag noch die `aug14`-Wurzel.
+* Der LF3b-W-Write vom `aug26` bewegt laut eigener Ledger-Zeile nur
+  `das`, `linken`, `Galoppieren`.
+* Die letzte Lotse-Code-Änderung vor `aug26` ist v0.19 Sprosse 0 —
+  byte-identisch zu v0.17, oben erneut bestätigt.
+
+**Verdikt: gegenstandslos.** Der Lotse-Median am `aug26` war auf
+Kappe 0,8 **0,058522**, wie am `aug20`. Die sparsamste Erklärung für
+die Tabellenzahl ist ein Rang-Griff daneben (Index 9 statt 10) beim
+Übertragen; ein Sprung hat nicht stattgefunden. Die Zeile der
+Verfahrensseite wird entsprechend aufgelöst — der Eintrag vom `aug26`
+selbst bleibt append-only stehen, was sich ändert, ist seine Lesart.
+
+**Der zweite Befund: die stehende Basis ist veraltet.** Heute frisch
+geritten, auf der aktuellen Wurzel, misst der Lotse:
+
+| | Kappe 0,8 | Kappe 1,5 (Default) |
+|---|---|---|
+| dtw-Median | **0,056080** | **0,056080** |
+| dtw p90 | 0,111440 | 0,115527 |
+| worst | `muß-2` 0,151524 | `muß-2` 0,157229 |
+
+dazu aiou-Median **0,7527** (von 0,7398), `cross_spurious` **1** (von
+5), `retrace_missing` 5, `marks_uncertain` 0. Der Stand-Block führt
+für den Lotsen 0,0545 / 0,1164 — das ist doppelt falsch: die Zahl ist
+die transkribierte, und sie wurde auf einer Wurzel gemessen, die
+seither DREI Neu-Exporte hinter sich hat (`sep01` §15
+Rechteck-Reparatur, `sep02` LF11-Write, `sep03` Neubau).
+
+**Wie weit die Wurzel trägt — eine saubere Kontrolle.** Die
+`aug20`-Kandidatenbytes, unverändert, gegen die HEUTIGE Wurzel
+gescort: **15 der 19 Wörter reproduzieren bis auf die letzte Ziffer**,
+vier bewegen sich, und drei davon dramatisch:
+
+| Wort | `aug20` | `aug20`-Bytes auf der `sep04`-Wurzel |
+|---|---|---|
+| `das` | 0,0307 | **0,2504** (aiou 0,808 → 0,279) |
+| `und` | 0,0484 | **0,1360** (aiou 0,757 → 0,398) |
+| `Wer` | 0,0751 | **0,1282** (aiou 0,693 → 0,427) |
+| `zwei` | 0,0617 | 0,0535 |
+
+Das ist kein Referenz-Schaden, sondern die `sep01`-Rechteck-Reparatur
+(§15), die durchschlägt: ein alter Kandidat trägt seine EIGENE
+Registrierung, und auf einem reparierten Rechteck teilen Kandidat und
+Referenz den Rahmen nicht mehr. **Folge, und sie gilt für die ganze
+Kampagne: keine dev-19-Zahl von vor `sep01` ist mit einer danach
+vergleichbar — und beide Duell-Zahlen des Stand-Blocks sind
+`aug26`.** Die Nachmessung der Kette gehört in ihre eigene Runde;
+diese hier bewegt nur die Lotse-Zeile.
+
+---
+
+### Platten-Nib A3 `sep04` — Vorregistrierung: die Wortrunde über die Strichbreite
+
+Geschrieben und committet VOR der Runde. Arm zu Befund 20 / Frage F5 des
+Audits vom 2026-09-02, entschieden vom Autor am 2026-09-04. Die Runde
+selbst führt der Autor; dieser Eintrag legt fest, was sie beantworten
+darf.
+
+**Der Gegenstand.** Die öffentliche Schrift setzt heute den
+chart-gepoolten Gleichzug-Nib: Halbbreite **0,07251 xh**, also ein Strich
+von 0,145 xh. Aus den Wortproben derselben Hand ist eine Halbbreite von
+**0,097 xh** gemessen — Strich 0,194, rund ein Drittel mehr. Der Arm
+schreibt dieselben 63 Wortproben mit diesem Nib und sonst unverändert
+(`wordarm.py --nib 0.097`, `constant_nib_units` im Resolver — kein
+Core-Eingriff, der Schalter ist der bestehende).
+
+**Warum das kein Lineal entscheiden kann — und der Grund ist schlimmer
+als Blindheit.** Die Federbreite betritt `score_word` an genau einer
+Stelle: `stroke_px` beim Rastern der Komposition für den Rück-Chamfer.
+Von dort wirkt sie aber auf ZWEI der drei Terme — `edt_composed` speist
+`coverage` (`core/word_metric.py`, `rev`) und `transition` (`t_rev`);
+nur `width` kennt sie nicht, denn es vergleicht die x-AUSDEHNUNG der
+Mittellinien. Und die Wirkung ist **einseitig**: ein breiterer Strich
+rastert eine Obermenge, das Distanzfeld wird punktweise kleiner, beide
+Terme können nur fallen.
+
+Gemessen, mit der Geometrie festgehalten und nur der dem Lineal
+genannten Feder verändert (63 Wortproben, dieselbe Wurzel):
+
+| | loss | `coverage` | `transition` | `width` |
+|---|---|---|---|---|
+| Geometrie 0,0725, Lineal 0,0725 | 0,109218 | 0,101559 | 0,091429 | 0,162645 |
+| Geometrie 0,0725, **Lineal 0,097** | **0,101560** | 0,091857 | 0,081958 | 0,162645 |
+| Geometrie 0,097, Lineal 0,097 | 0,100833 | 0,092061 | 0,085154 | 0,151460 |
+
+Die mittlere Zeile ist der Beleg: **−0,0077, ohne dass sich ein Punkt
+der Komposition bewegt hat** — zwanzigmal die Größenordnung, an der in
+dieser Kampagne ganze Arme gestorben sind, und `width` bleibt
+byte-gleich. **Das Lineal belohnt die dickere Feder, gleich ob die Probe
+so dick ist.** Ein Maß, das den Kandidaten konstruktionsbedingt
+bevorzugt, kann diese Frage nicht entscheiden; die Menschenrunde ist
+deshalb hier nicht ein Tie-Breaker, sondern das einzige Instrument, das
+den Gegenstand unvoreingenommen anfasst. (Die dritte Zeile — der volle
+Kandidat, 0,100833 — ist aus demselben Grund **keine** Evidenz für ihn.)
+
+**Basis.** Wurzel `suetterlin-1922` `exported_at
+2026-09-02T22:16:06+00:00` Digest `6cbab9d5c092`, Paar-Wurzel
+`965ab3c57ebd`; BLAS auf einen Thread gepinnt. Reproduziert: Wörter
+**0,109218** · Paare **0,148198** — der Stand NACH der LF11-Adoption,
+also die Kompositionen, die Prod heute schreibt.
+
+**Die Nebenbedingung des Audits ist schon trocken gerissen — und das
+steht hier, bevor ein Urteil fällt.** Der Audit-Vorschlag nennt eine
+Nebenprüfung: `gleichzug_doublings` darf mit dem breiteren Strich nicht
+steigen (die Platzierung hält `INK_CLEARANCE` = 0,14 ein, gemessen am
+alten Nib). Gemessen über die 63 Wortproben: **13 → 21 Verdopplungen,
+7 Wörter bekommen eine neue.** Zwei Dinge gehören dazu, und beide
+gegen die eigene Bequemlichkeit:
+
+* Der Detektor ist **nib-relativ konstruiert** — sein Band läuft von
+  `max(0,035; 0,5·nib)` bis `1,35·nib` perpendikularen Abstands
+  (`tools/wordbench/gleichzug.py`). Ein Teil des Anstiegs ist also die
+  Definition, die der Feder folgt. Das ist kein Artefakt, sondern der
+  Zweck: ob zwei Striche als ein Klecks gelesen werden, IST eine Frage
+  an die Federbreite.
+* Wie auch immer man es liest: **die Bedingung, wie sie im Audit steht,
+  ist nicht erfüllt.**
+
+**Was die Runde deshalb entscheiden darf — vorab festgelegt.** Ein
+Ergebnis ≥ 60 % für den Kandidaten lizenziert **nicht** den Wechsel des
+ausgelieferten Nibs, sondern ausschließlich den **Folgearm**: die
+Ink-Clearance an die Feder koppeln (`INK_CLEARANCE` in Nib-Radien statt
+als Konstante) und den Nib danach neu vorlegen. Ein Ergebnis < 60 %
+schließt den Arm — dann ist die breitere Feder weder schöner noch
+verträglich, und die gemessene Plattenbreite bleibt ein Befund über die
+Platte, keine Vorgabe für die Ausgabe. Diese Zuordnung steht hier, weil
+sie hinterher nicht mehr glaubwürdig zu treffen wäre.
+
+**Aufbau.** `ECHTHEIT/4`, 75 Bildschirme = 63 Wortproben + 12 blinde
+gespiegelte Wiederholungen, Saat 20260004, Zoom 2×, Frage
+„Welche Zeile sieht echter geschrieben aus?". Arme: Basis
+`sha256 8538513b46fbd10c`, Kandidat `243f87a4135cb17c`.
+
+**Der Kandidat ist an die Registrierung der Basis gepinnt**, und das ist
+hier keine Formalie: ungepinnt wandert er **systematisch nach links** —
+51 von 63 Wörtern negativ, nur 2 positiv, Mittel −1,56 px bei 31 px
+x-Höhe. Der Grund ist mechanisch (der breitere Strich verbreitert das
+gerasterte Wort, die beschränkte Suche zentriert nach), die Wirkung
+wäre eine über die Runde lesbare Gruppen-Eigenschaft — genau das Leck,
+gegen das die Pinn-Regel steht. Gepinnt unterscheiden sich die beiden
+Seiten nur noch in der Feder.
+
+**Verdachtsklassen** (`--strata`, deklariert vor der Runde):
+
+| Klasse | n | Warum |
+|---|---|---|
+| `dicht` | 13 | Unter einem der beiden Arme läuft in diesem Wort Tinte zusammen (`gleichzug_doublings` > 0). Hier hat der schwerere Strich etwas zu verderben; welche 7 die Verdopplung erst unter dem breiten Nib bekommen, steht je Wort im Klassen-Vorschlag. |
+| `frei` | 50 | Keine Verdopplung in beiden Armen. Wenn die breitere Feder allein schon echter aussieht, dann hier. |
+
+Feiner geschnitten wären die beiden Hälften von `dicht` (7 neu, 6 schon
+vorher) je unter `MIN_PAIRED_PER_CLASS` = 8 geblieben und trügen keinen
+Anteil; zusammen sind sie eine ehrliche Klasse.
+
+**Auswerteplan.** Unverändert der bindende aus
+[`menschliche-bewertung.md`](menschliche-bewertung.md) („Der
+Auswerteplan"): Verlässlichkeit zuerst (≥ 6 vollständige
+Wiederholungspaare, Arm-Übereinstimmung über dem Münzwurf), dann die
+Seitenbilanz, dann **Adoption bei ≥ 60 % Kandidat unter den
+ENTSCHIEDENEN Bildschirmen und ≤ 25 % „kein Unterschied" über alle**,
+dann die Klassen, dann Drift. **Gespiegelte Wiederholungen messen die
+Verlässlichkeit und stimmen nie mit** — gezählt werden 63, nicht 75.
+
+**Was die Runde nicht beantwortet.** Ob 0,097 der richtige Wert ist
+(gemessen wird EIN Paar, nicht eine Leiter), ob der breitere Strich am
+Bildschirm besser lesbar ist (eine andere Frage als „echter"), und
+nichts über Kurrent oder Offenbacher — die Zahl stammt aus den
+Sütterlin-Wortproben und gilt für diese Hand.
+
+---
+
+### Übergänge J4 `sep04` — Vorregistrierung: die Wortrunde als benannter Rettungsweg
+
+Geschrieben und committet VOR der Runde. Sie ist nicht ein neuer Arm,
+sondern **Rettungsweg (3) der J4-Zeile in `tintenfolger.md` §7.9**,
+wörtlich dort vorgemerkt: „der Knick liegt unter der Auflösung des
+Wort-Lineals und J4 ist ein fertiges Kandidatenpaar mit EINEM
+Freiheitsgrad". Der Arm selbst ist gemessen und verworfen (§14
+„Übergänge J4 `sep02`"); **keine Zahl dort wird angefasst.**
+
+**Warum die Runde und nicht noch eine Zahl.** J4 fiel an Gate (b):
+`dconn` sank nur in 20 % der gefeuerten Joins statt in 60 %. Die
+Autopsie desselben Eintrags nennt den Grund, und er ist konstruktiv:
+`dconn` misst die Form des Verbinders start-ausgerichtet, der Trim
+verschiebt aber die GRENZE zwischen Buchstabe und Verbinder — das
+getrimmte Stück ist länger, und zwei Drittel des Anstiegs sind
+Rahmen-Artefakt. Ein Maß, das über eine verschobene Grenze nicht
+urteilen kann, kann den Arm weder freisprechen noch verurteilen. Der
+zweite Rettungsweg (ein ausdehnungs-normierter Formsensor) ist zu bauen
+und einzufrieren, bevor er zählt; die Menschenrunde ist heute verfügbar.
+
+**Basis, neu — der Arm steht heute anders da als am 2. September.**
+Wurzel `suetterlin-1922` `exported_at 2026-09-02T22:16:06+00:00` Digest
+`6cbab9d5c092`, Paar-Wurzel `965ab3c57ebd`, BLAS gepinnt. Auf dieser
+Wurzel (LF11 adoptiert) gemessen:
+
+| | Wörter | Paare | `seam_dep_median` |
+|---|---|---|---|
+| Basis | **0,109218** | 0,148198 | **+7,99°** |
+| J4 (`--exit-trim`) | 0,109466 (**+0,000248**) | 0,148198 (byte-gleich) | **+0,02°** |
+
+Zwei Verschiebungen gegenüber `sep02` und beide gehören genannt: LF11
+hat den Abgangsknick schon von +12,52 auf +7,99 halbiert, J4 hat also
+weniger zu tun als damals — und der Wort-Verlust dreht das Vorzeichen
+(damals −0,000535, heute +0,000248). Der Knick verschwindet trotzdem
+praktisch vollständig. **Die Runde entscheidet damit genau die Frage,
+die übrig ist: ist ein Saum ohne Knick das wert, was er auf dem Lineal
+kostet?**
+
+**Aufbau.** `ECHTHEIT/5`, 75 Bildschirme = 63 + 12 gespiegelte
+Wiederholungen, Saat 20260005, Zoom 2×. Arme: Basis
+`sha256 8538513b46fbd10c`, Kandidat `404abd38fa2ef59b`
+(`wordarm.py --exit-trim`, der Schalter des Komponisten, Standard aus —
+kein Core-Eingriff, das Golden bleibt unberührt).
+
+**Registrierung gepinnt**, hier fast wirkungslos und deshalb billig: von
+63 Wörtern bewegt die Regel die beschränkte Suche in 3 überhaupt, in x
+wie in y. Gepinnt ist sie in 0 — womit „Platzierung unangetastet", die
+experimentelle Kontrolle der J4-Vorregistrierung, auch auf dem
+Bildschirm buchstäblich gilt.
+
+**Verdachtsklassen** (`--strata`, geschnitten daran, wie weit die Regel
+die Zeichnung bewegt — symmetrischer Abstand der beiden Arme in
+x-Höhen):
+
+| Klasse | n | Warum |
+|---|---|---|
+| `naht-stark` | 31 | Δ ≥ 0,106 xh (Median der bewegten Wörter). Wenn der Trim irgendwo sichtbar hilft, dann hier. |
+| `naht-schwach` | 29 | Bewegt, aber unter dem Median. |
+| `unberuehrt` | 3 | Δ ≤ 0,005 xh — die Regel feuert nicht. **Die Kontrolle:** wer hier einen Unterschied sieht, sieht nicht den Trim. Mit n = 3 unter `MIN_PAIRED_PER_CLASS` = 8 und damit **beschreibend, kein prüfbarer Anteil** — das ist der Preis dafür, dass die Regel auf 60 von 63 Wörtern feuert. |
+
+**Auswerteplan.** Derselbe bindende Plan wie in der Runde davor,
+einschließlich der Schwellen (≥ 60 % / ≤ 25 %) und der Vorbedingung aus
+den Wiederholungen; Wiederholungen stimmen nie mit, gezählt werden 63.
+
+**Was ein Ergebnis auslösen darf.** Die Adoption von J4 hieße:
+`exit_trim` als Default an und das Golden-Fixture deklariert neu backen
+— eine rendernde Änderung, also Autor-Entscheid, nicht Automatik. Ein
+Ergebnis ≥ 60 % legt sie ihm vor; ein Ergebnis < 60 % schließt den
+Rettungsweg (3) der §7.9-Zeile, und übrig bleiben (1) nur die
+Ankunftsseite und (2) der Sensor.
+
+**Was die Runde nicht beantwortet.** Ob der Trim auf der ANKUNFTSSEITE
+richtig ist — J4 verschlechtert sie messbar (−3,40 → −6,53 auf der
+`sep02`-Wurzel), und das bleibt ein eigener Arm. Und nichts über
+`dconn`: das Maß ist dafür konstruktiv ungeeignet, das war der Anlass.

@@ -20,6 +20,7 @@ import json
 import numpy as np
 import pytest
 
+from tools.humanbench import wordarm
 from tools.humanbench.build import load_arm
 from tools.humanbench.wordarm import ZIGZAG_AMPLITUDE, arm_drawing, load_laufform_draft, pin_registration, zigzag
 
@@ -134,3 +135,150 @@ def test_load_laufform_draft_accepts_both_shapes_the_word_bench_accepts(tmp_path
     broken.write_text(json.dumps([1, 2, 3]))
     with pytest.raises(SystemExit, match="mapping glyph_key"):
         load_laufform_draft(broken)
+
+
+# ------------------------------------------------- the arm switches reach compose
+#
+# Every candidate the instrument can judge today is a knob the composition path
+# already has. The failure mode of adding one is not that it computes the wrong
+# thing — it is that the flag is parsed, printed into the settings, and never
+# handed to `compose_word`, so the round compares the base against itself and
+# says „kein Unterschied" 63 times, and nothing about the run looks wrong.
+#
+# Two levels, because one alone would not catch it. The CLI test below stops at
+# `compose_arm`; the ones after it run the REAL `compose_arm` over a stand-in
+# root and capture the call `compose_word` actually receives. The real roots are
+# gitignored learned data (quellen-und-rechte.md §5), so the root is synthetic —
+# but the forwarding under test is not.
+
+
+def stand_in_root(tmp_path):
+    """The three files `compose_arm` reads, and nothing else.
+
+    `compose_word` and `score_word` are captured by the caller, so the geometry
+    in here never has to be real — only the shape has to be.
+    """
+    root = tmp_path / "suetterlin-1922"
+    (root / "unter").mkdir(parents=True)
+    (root / "manifest.json").write_text(
+        json.dumps(
+            {
+                "style_ratio": [1, 1, 1],
+                "width_resolver": "constant",
+                "constant_nib_units": 0.07251,
+                "exported_at": "2026-09-02T22:16:06+00:00",
+                "words": [{"id": "unter", "word": "unter", "scorable": True}],
+            }
+        )
+    )
+    (root / "templates.json").write_text(json.dumps({"u": {"anchors": [[0, 0]]}}))
+    (root / "templates_laufform.json").write_text(json.dumps({}))
+    (root / "unter" / "word.json").write_text(
+        json.dumps(
+            {
+                "rect": [0, 0, 120, 60],
+                "baseline_y": 40,
+                "midband_y": 20,
+                "slots": [{"key": "u", "text": "u", "position": "initial", "ligature": False, "space": False}],
+            }
+        )
+    )
+    np.savez(root / "unter" / "ref_skel.npz", skel=np.zeros((60, 120), dtype=bool))
+    return root
+
+
+@pytest.mark.parametrize("switch, expected", [({}, False), ({"exit_trim": True}, True)])
+def test_compose_arm_hands_exit_trim_to_compose_word(tmp_path, monkeypatch, switch, expected):
+    """The forwarding itself, not the parsing: delete `exit_trim=exit_trim` from
+    the `compose_word` call and this is the test that goes red."""
+    calls: list[dict] = []
+
+    def fake_compose(slots, payloads, **kwargs):
+        calls.append(kwargs)
+        return {"items": COMPOSED["items"], "missing": []}
+
+    monkeypatch.setattr(wordarm, "compose_word", fake_compose)
+    monkeypatch.setattr(wordarm, "score_word", lambda *a, **k: {"registration": REGISTRATION})
+    monkeypatch.setattr(wordarm, "render_payload_for_template", lambda *a, **k: {"anchors": []})
+
+    words, settings = wordarm.compose_arm(stand_in_root(tmp_path), **switch)
+    assert list(words) == ["unter"], settings["failed"]
+    assert calls and calls[0]["exit_trim"] is expected
+    assert settings["exit_trim"] is expected
+
+
+def test_compose_arm_hands_the_nib_to_the_resolver(tmp_path, monkeypatch):
+    """The nib reaches the payloads, not just the settings line."""
+    seen: list = []
+    monkeypatch.setattr(wordarm, "compose_word", lambda *a, **k: {"items": COMPOSED["items"], "missing": []})
+    monkeypatch.setattr(wordarm, "score_word", lambda *a, **k: {"registration": REGISTRATION})
+    monkeypatch.setattr(
+        wordarm, "render_payload_for_template", lambda row, ratio, resolver, nib: seen.append(nib) or {"anchors": []}
+    )
+    _words, settings = wordarm.compose_arm(stand_in_root(tmp_path), nib=0.097)
+    assert seen and set(seen) == {0.097}
+    assert settings["nib_units"] == 0.097 and settings["nib_overridden"] is True
+
+
+def _settings(**kwargs) -> dict:
+    """What `compose_arm` reports back, as the CLI's summary line expects it."""
+    return {
+        "nib_units": kwargs.get("nib") or 0.07251,
+        "nib_overridden": kwargs.get("nib") is not None,
+        "laufform": "frozen",
+        "exit_trim": kwargs.get("exit_trim", False),
+        "join_rules": {
+            name: value if (value := kwargs.get(name)) is not None else "composer default"
+            for name in ("apex_handover", "stem_depart")
+        },
+        "failed": [],
+    }
+
+
+def _capture_compose_arm(monkeypatch):
+    seen: dict = {}
+
+    def fake(root, **kwargs):
+        seen.update(kwargs)
+        seen["root"] = root
+        return ({"unter": arm_drawing(COMPOSED, REGISTRATION)}, _settings(**kwargs))
+
+    monkeypatch.setattr(wordarm, "compose_arm", fake)
+    return seen
+
+
+@pytest.mark.parametrize(
+    "argv, expected",
+    [
+        # The J5 switches are tri-state on purpose: None means "leave the
+        # composer's own default", which is the only value that keeps an arm
+        # file honest about what it did NOT decide.
+        ([], {"exit_trim": False, "nib": None, "no_laufform": False, "apex_handover": None, "stem_depart": None}),
+        (["--exit-trim"], {"exit_trim": True}),
+        (["--nib", "0.097"], {"nib": 0.097}),
+        (["--no-laufform"], {"no_laufform": True}),
+        (["--apex-handover"], {"apex_handover": True}),
+        (["--no-apex-handover"], {"apex_handover": False}),
+        (["--stem-depart"], {"stem_depart": True}),
+        (["--no-stem-depart"], {"stem_depart": False}),
+    ],
+)
+def test_every_arm_switch_reaches_the_composer(tmp_path, monkeypatch, argv, expected):
+    seen = _capture_compose_arm(monkeypatch)
+    wordarm.main(["--arm", "X", "--out", str(tmp_path / "arm.json"), *argv])
+    for key, value in expected.items():
+        assert seen[key] == value, f"--{key.replace('_', '-')} never reached compose_word"
+
+
+def test_the_arm_file_records_the_switch_it_was_composed_with(tmp_path, monkeypatch):
+    """The stamp copies the arm's settings, and „which knob was on" is the one
+    thing a round cannot reconstruct from the drawn geometry afterwards."""
+    _capture_compose_arm(monkeypatch)
+    out = tmp_path / "j4.json"
+    wordarm.main(["--arm", "J4", "--exit-trim", "--out", str(out)])
+    written = json.loads(out.read_text())
+    assert written["settings"]["exit_trim"] is True
+    assert written["arm"] == "J4"
+    # … and an arm that did not touch a rule says so instead of staying silent:
+    # a round that inherits a default cannot be held against a later one.
+    assert written["settings"]["join_rules"] == {"apex_handover": "composer default", "stem_depart": "composer default"}

@@ -36,6 +36,7 @@ from tools.humanbench.build import (
     ArmStroke,
     ArmWord,
     Occurrence,
+    Round,
     WordCase,
     arm_gap,
     build_word,
@@ -56,11 +57,13 @@ from tools.humanbench.build import (
     rank_rows,
     render_item,
     render_word_item,
+    round_store,
     slim_key,
     stratify,
     to_crop,
     word_cases,
     word_trace_context,
+    write_round,
 )
 
 
@@ -924,3 +927,51 @@ def test_the_stamp_of_a_word_round_names_the_arms_it_drew(tmp_path):
     assert stamp["inputs"]["word_arms"] == [str(tmp_path / "a.json"), str(tmp_path / "b.json")]
     assert stamp["inputs"]["fixtures"] is not None
     assert json.dumps(stamp)  # the stamp is written as JSON, so it has to be serialisable
+
+
+# ------------------------------------------------- one resume namespace per round
+
+
+def test_two_rounds_over_one_fixture_set_get_DIFFERENT_resume_keys():
+    """The same 63 words in the same order carry the same display ids, so a key
+    built from the ids alone is shared — and the second round opens on the
+    first one's answers, silently, part-answered. That is the resume half of
+    the defect §3.6b was written for."""
+    six = provenance(
+        parse_args(["--round", "6", "--word-arms", "a.json", "b.json"]),
+        mode="word",
+        seed=20260006,
+        counts={"words": 63},
+        repeats={},
+        api_used=False,
+        arms=[{"side": SIDE_CANDIDATE, "name": "Platten-Nib", "sha256_16": "aaaa"}],
+    )
+    seven = {**six, "round": 7, "seed": 20260007, "arms": [{"name": "J4", "sha256_16": "bbbb"}]}
+    items = [{"id": "S001", "panels": [{"strokes": [[[0, 0], [1, 1]]]}]}]
+    assert round_store(six, items) != round_store(seven, items)
+    assert round_store(six, items).startswith("humanbench-r6-")
+    assert round_store(seven, items).startswith("humanbench-r7-")
+    # Same round, same screens, built again: the judge keeps his place.
+    assert round_store(six, items) == round_store(dict(six), list(items))
+    # ... and the clock and the commit are not part of "which round is this".
+    volatile = {**six, "built_at": "2099-01-01", "code_commit": "ffff", "code_dirty": True}
+    assert round_store(volatile, items) == round_store(six, items)
+    # Two rounds that differ ONLY in the arm they draw still separate.
+    assert round_store({**six, "arms": [{"name": "other", "sha256_16": "cccc"}]}, items) != round_store(six, items)
+    # And a page whose DRAWING moved starts clean, even at the same identity:
+    # the commit is deliberately not part of it, so a renderer fix would
+    # otherwise replay old verdicts by index onto different screens.
+    moved = [{"id": "S001", "panels": [{"strokes": [[[0, 0], [2, 2]]]}]}]
+    assert round_store(six, moved) != round_store(six, items)
+
+
+def test_the_written_payload_tells_the_page_which_round_it_is(tmp_path):
+    """So the page does not depend on the caller repeating `--round` and
+    `--question` — and so a tab left open from another round is recognisable."""
+    stamp = {"round": 6, "question": "authentic", "seed": 20260006, "built_at": "now"}
+    items = [{"id": "S001", "w": 4, "h": 4, "img": "", "panels": [{"strokes": []}]}]
+    write_round(tmp_path / "runde-6", Round(items=items, stamp=stamp), force=False)
+    payload = json.loads((tmp_path / "runde-6" / "payload.json").read_text())
+    assert payload["round"] == 6 and payload["question"] == "authentic"
+    assert payload["store"] == round_store(stamp, items)
+    assert [item["id"] for item in payload["items"]] == ["S001"]

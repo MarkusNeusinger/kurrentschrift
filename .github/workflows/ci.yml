@@ -257,6 +257,39 @@ jobs:
             uv run --no-project python -m tools.docs_register check
           fi
 
+  docs-budget:
+    name: Docs-Budget (reading cost)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # What a session must load before it starts working is a number, and on
+    # 2026-09-04 that number was 110 997 tokens — grown one paragraph at a time,
+    # noticed only when somebody measured it. #521 and #524 brought it to 53 865;
+    # this job is what keeps it there. It also checks the three things that make
+    # the cheap path actually cheap: a large `lebend` doc carries a Stand block
+    # with a date no older than a month, the map in docs/index.md has exactly one
+    # row per file, and every relative link and `#anchor` in the repo resolves.
+    #
+    # Standard library only (it ships its own token proxy rather than pulling
+    # tiktoken, which would download its BPE table on every run), so nothing is
+    # synced. Runs on pushes too: the rules hold for the tree, not just a diff.
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+
+      - name: Set up Python
+        run: uv python install
+
+      - name: Reading paths inside their budget, Stand blocks fresh, every jump landing
+        run: uv run --no-project python -m tools.docs_budget check
+
+      # Printed unconditionally: the table is what someone reads when the gate
+      # goes red, and it is three lines of output.
+      - name: What each reading path costs today
+        if: always()
+        run: uv run --no-project python -m tools.docs_budget report
+
   image:
     name: Image (build + container smoke)
     runs-on: ubuntu-latest

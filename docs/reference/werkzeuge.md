@@ -738,7 +738,18 @@ denen es stammt.
   Lineal-Soll-Budget und Reservierungs-Veto) und sind auf der
   Verfahrensseite je Version belegt. Der Duell-Kandidat läuft über den
   File-Provider des Tracebench (`--candidate file --candidate-file`).
-  Reine Messschicht: keine DB, kein `core/`-Schreibzugriff.
+  Daneben liegt seit `sep04` der **Absprung-Sensor**
+  `tools/inkpilot/forensics.py` (`uv run --extra viz python -m
+  tools.inkpilot.forensics [ids …] --csv <datei> [--png-dir <dir>]
+  [--panel WORT:INDEX,… --panel-out <png>]`): er misst je emittiertem
+  Punkt den Abstand vom TINTENKÖRPER (Skelett + `width_map`) und hängt
+  daran den Mechanismus, der ihn gesetzt hat — dazu `map_slack_xh`,
+  den Abstand der Karte an derselben Stelle, der geerbte von selbst
+  gemachten Absprüngen trennt (Glossar „Absprung", „Karten-Abdrift",
+  „Fenster-Versatz"). Er spiegelt `pilot_word`, statt es zu ändern,
+  und hält das Ergebnis bei jedem Lauf per `assert_matches_pilot`
+  bit-gleich dagegen — der Folger bleibt während einer Mess-Runde
+  unberührt. Reine Messschicht: keine DB, kein `core/`-Schreibzugriff.
 - **`tools/routeg`** — der Kandidat der Kontrolle **Nullprobe**
   ([`verfahren-nullprobe.md`](verfahren-nullprobe.md)): Skelett →
   Segmentgraph (`graph.py`) → Greedy-Traversierung per Gute-Fortsetzung,
@@ -760,5 +771,24 @@ denen es stammt.
   trägt, und jeder Eintrag einer Duell-Route die Ledger-Zeile seines
   Datums auf der Verfahrensseite. Standardbibliothek only, wie
   `tools/changelog`; liest nur committete Dateien und schreibt nichts.
+- **`tools/docs_budget`** — das Gate über den **Lesekosten**
+  (`uv run python -m tools.docs_budget check`, CI-Job „Docs-Budget“;
+  `… report` druckt die Tabelle). Vier Regeln: (1) die Pflichtlektüre und
+  jeder in `CLAUDE.md` benannte Lesepfad bleiben unter ihrem Budget — die
+  Liste wird **aus `CLAUDE.md` gelesen**, nicht dort abgeschrieben, also
+  hebt ein neuer Listenpunkt die gemessene Summe; (2) ein `lebend`-Doc über
+  10 000 Token trägt einen Stand-Block von 12 bis 40 Zeilen, dessen Datum
+  höchstens 30 Tage alt ist — die Obergrenze zählt so viel wie die untere, ein
+  Block über 40 Zeilen ist eine zweite Kopie des Docs; (3) die Karte in
+  [`../index.md`](../index.md) trägt genau eine Zeile je `.md`-Datei unter
+  `docs/`; (4) jeder relative Markdown-Link und jeder `#`-Anker im Repo
+  löst auf. Zählt **ohne Tokenizer**: ein eigener, deterministischer Proxy
+  (Wortstücke, lange deutsche Komposita alle vier Zeichen geteilt, mal
+  einem Kalibrierungsfaktor), damit der Job wie die anderen Doc-Gates in
+  der Standardbibliothek läuft und nicht bei jedem Lauf die BPE-Tabelle von
+  `tiktoken` herunterlädt. Die Budgets stehen in **Proxy**-Einheiten, also
+  vergleicht das Gate Gleiches mit Gleichem; der Abgleich gegen `tiktoken`
+  `o200k_base` vom 2026-09-04 steht im Modul-Docstring. Ein Budget wird
+  bewusst gehoben, mit Begründung im PR — nie stillschweigend.
 - **`tools/quizgen`** — generiert die Lese-Quiz-Wortbank (~500 Wörter);
   Quellen + Distraktor-Modell in [`quiz-wortbank.md`](quiz-wortbank.md).

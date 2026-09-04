@@ -4,14 +4,19 @@
     uv run python -m tools.humanbench.wordarm --arm LF11 --laufform temp/lf11.json \\
         --registration-from temp/basis.json --out temp/lf11.json
     uv run python -m tools.humanbench.wordarm --arm Platten-Nib --nib 0.097 --out temp/nib.json
+    uv run python -m tools.humanbench.wordarm --arm J4 --exit-trim --out temp/j4.json
+    uv run python -m tools.humanbench.wordarm --arm J5 --apex-handover --stem-depart \\
+        --out temp/j5.json
 
 The reference producer of the arm-file contract that
 ``tools/humanbench/build.py`` draws a word round from. It is a producer and
 not a part of the instrument: the builder never composes anything itself, so
 an arm can equally be written by whatever tool a candidate lives in — the file
-is the interface, this module is the one that covers the two arms available
-today (a candidate Laufform card and a different nib) plus the base they are
-measured against.
+is the interface, this module is the one that covers the arms available today
+(a candidate Laufform card, a different nib, and the composer's own join-rule
+switches `exit_trim`, `apex_handover` and `stem_depart` — every one of them a
+knob the composition path already has, so a candidate never needs a core change
+to be judged) plus the base they are measured against.
 
 Composition mirrors ``tools/wordbench/run.py`` line for line and by IMPORT, not
 by restatement: same frozen templates, same Laufform overlay, same
@@ -80,6 +85,7 @@ def compose_arm(
     laufform: dict[str, dict] | None = None,
     no_laufform: bool = False,
     nib: float | None = None,
+    exit_trim: bool = False,
     entries: set[str] | None = None,
     apex_handover: bool | None = None,
     stem_depart: bool | None = None,
@@ -131,6 +137,7 @@ def compose_arm(
                 slots,
                 {s.key: payload_for(s.key) for s in slots if s.key},
                 laufform_by_key={s.key: lf for s in slots if s.key and (lf := laufform_for(s.key)) is not None} or None,
+                exit_trim=exit_trim,
                 **join_rules,
             )
             report = score_word(
@@ -154,6 +161,7 @@ def compose_arm(
         "laufform_overlay_keys": sorted(laufform) if laufform else [],
         # Stated, never inherited: an arm file has to say which join rules drew
         # it, or two rounds built weeks apart cannot be held against each other.
+        "exit_trim": exit_trim,
         "join_rules": {
             "apex_handover": apex_handover if apex_handover is not None else "composer default",
             "stem_depart": stem_depart if stem_depart is not None else "composer default",
@@ -273,6 +281,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--nib", type=float, default=None, help="constant nib half-width in x-heights [the frozen pooled one]"
     )
     parser.add_argument(
+        "--exit-trim",
+        action="store_true",
+        help="compose with the exit-collinearity rule (arm J4) — the composer's own switch, default off",
+    )
+    parser.add_argument(
         "--apex-handover",
         action=argparse.BooleanOptionalAction,
         default=None,
@@ -321,6 +334,7 @@ def main(argv: list[str] | None = None) -> int:
         laufform=laufform,
         no_laufform=args.no_laufform,
         nib=args.nib,
+        exit_trim=args.exit_trim,
         entries=entries,
         apex_handover=args.apex_handover,
         stem_depart=args.stem_depart,
@@ -362,7 +376,10 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"arm {args.arm}: {len(words)} words from {root.name} → {args.out} ({args.out.stat().st_size / 1e6:.1f} MB)")
     print(f"  nib {settings['nib_units']:.5f}{' (overridden)' if settings['nib_overridden'] else ''}")
-    print(f"  laufform {settings['laufform']} · registration {settings['registration']}")
+    print(
+        f"  laufform {settings['laufform']} · exit_trim {settings['exit_trim']}"
+        f" · registration {settings['registration']}"
+    )
     rules = settings["join_rules"]
     print(f"  join rules: apex_handover {rules['apex_handover']} · stem_depart {rules['stem_depart']}")
     if settings["failed"]:

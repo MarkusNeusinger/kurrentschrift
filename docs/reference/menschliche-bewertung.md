@@ -648,7 +648,7 @@ Geschrieben wird nach `temp/humanbench/runde-<n>/`:
 
 | Datei | Inhalt | archivierbar |
 |---|---|---|
-| `payload.json` | was die Seite zeichnet — Crop-Bild + Polylinien, sonst nichts | nein |
+| `payload.json` | was die Seite zeichnet — Crop-Bild + Polylinien, sonst nichts; dazu der Umschlag, den die Runde über sich selbst kennt: Nummer, Frage und ihr eigener Speicher-Namensraum (Format 3) | nein |
 | `key.json` | was sie nicht wissen darf — Glyph, Wort, Slot, Schwere, Rang, im paarigen Modus die Seitenzuordnung | nein |
 | `vorkommen.json` | der **schmale Schlüssel**: uid → Glyph, Wort, Slot, `repeat_of` — was ein Kürzel *meint*, ohne jede Messung | **ja** |
 | `reserve.json` | die Rückhaltemenge (§3.3), ungelabelt | nein |
@@ -678,10 +678,26 @@ uv run python -m tools.humanbench.page \
 ```
 
 Der Modus folgt dem Payload, nicht einem Flag: ein Panel je Bild ergibt den
-Kategorien-Durchgang, zwei den paarigen Vergleich. Nur die **Frage** ist eine
-Angabe des Aufrufers (`--question authentic` für die Wortrunde), weil sie
-nicht aus der Geometrie folgt. Die Seite ist in sich geschlossen — Crops als
-`data:`-URIs, Stil und Skript inline, kein Font, kein CDN, kein Netzzugriff.
+Kategorien-Durchgang, zwei den paarigen Vergleich. Seit Payload-Format 3 gilt
+das auch für **Rundennummer und Frage**: der Builder schreibt sie in den
+Umschlag, `--round`/`--question` sind nur noch da, um sie zu überschreiben. Das
+ist keine Bequemlichkeit — eine Runde, deren Nummer auf der Kommandozeile
+wiederholt werden muss, ist eine Runde, deren Nummer man beim Rendern
+verwechseln kann, und die Nummer steht sowohl in der Kopfzeile des
+Ergebnistextes als auch über der Frage. Die Seite ist in sich geschlossen —
+Crops als `data:`-URIs, Stil und Skript inline, kein Font, kein CDN, kein
+Netzzugriff.
+
+**Jede Runde hat ihren eigenen Speicher-Namensraum** (auch im Umschlag). Zwei
+Wortrunden über derselben Fixture-Wurzel zeigen dieselben Wörter in derselben
+Reihenfolge unter denselben Anzeige-IDs; ein Schlüssel aus den IDs allein wäre
+also GETEILT, und die zweite Runde öffnete stumm auf den Urteilen der ersten,
+Fortschrittsbalken schon halb voll. Der Namensraum wird deshalb aus der
+Identität der Runde gebildet UND aus dem, was gezeichnet wird: ein
+byte-gleicher Nachbau setzt fort, eine nach einer Anzeige-Reparatur neu gebaute
+Seite fängt sauber an — sonst spielte `restore()` die alten Urteile über den
+Index auf Bildschirme, die etwas anderes zeigen (§3.6b, die andere Hälfte
+desselben Defekts).
 
 ### Schritt 3 — Veröffentlichen
 
@@ -1002,8 +1018,18 @@ eingefrorene Lineal des Projekts übersieht**:
 
 * den **Anker-Median-Zickzack** jeder Laufform-Zeile — das Wort-Lineal
   resampelt ihn weg, bevor es misst;
-* den **um rund ein Viertel zu dünnen Strich** — keine einzige Kennzahl trägt
-  die Strichbreite überhaupt;
+* den **um rund ein Viertel zu dünnen Strich** — keine Kennzahl beurteilt die
+  Strichbreite. Blind ist das Wort-Lineal deshalb nicht: die Federbreite
+  betritt `score_word` an genau einer Stelle (`stroke_px` beim Rastern der
+  Komposition für den Rück-Chamfer) und wirkt von dort auf `coverage` UND
+  `transition`. Die Wirkung ist aber einseitig — ein breiterer Strich malt eine
+  Obermenge, das Distanzfeld wird punktweise kleiner, beide Terme können nur
+  fallen. **Das Lineal belohnt die dickere Feder, gleich ob die Probe so dick
+  ist** (gemessen, §14 „Platten-Nib A3 `sep04`": bei unveränderter Geometrie
+  0,109218 → 0,101560, nur weil dem Lineal die breitere Feder genannt wurde).
+  Ein Maß, das den Kandidaten konstruktionsbedingt bevorzugt, kann die Frage
+  nicht entscheiden — das ist ein stärkerer Grund für die Menschenrunde als
+  Blindheit, nicht ein schwächerer;
 * den **Knick an der Naht** jedes Verbinder-Austritts — er sitzt unter dem
   0,05–0,12-xh-Fenster, in dem das Wort-Lineal arbeitet.
 
