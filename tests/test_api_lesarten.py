@@ -81,6 +81,31 @@ async def test_a_build_from_an_older_fold_reports_itself_stale(api: Harness):
     assert read.json()["dictionary"]["stale"] is False
 
 
+async def test_a_build_from_another_fold_is_refused(api: Harness):
+    """The bucket keys are computed by the SERVER, so a loader running ahead of
+    the deployed API would fill the table with the old buckets under the new
+    fold's label — and `stale` would call that vocabulary current. The label is
+    checked before a single word is sent, and again at the commit."""
+    ahead = {"source": f"build ({key_marker(999)})", "sha256": "f" * 64}
+    refused = await api.client.request(
+        "POST", "/lesarten/dictionary/generations", json_body=ahead, headers=api.admin_headers()
+    )
+    assert refused.status == 409 and key_marker() in refused.json()["detail"]
+
+    gen = await _load(api)  # a label without any marker still loads (pre-version build)
+    commit_ahead = await api.client.request(
+        "POST", f"/lesarten/dictionary/generations/{gen + 1}/commit", json_body=ahead, headers=api.admin_headers()
+    )
+    assert commit_ahead.status == 409
+
+
+async def test_the_dictionary_meta_read_is_not_cached_for_a_day(api: Harness):
+    """Its whole value is being current — under the render cache the answer to
+    „has the reload landed?" could be a day old at the edge."""
+    res = await api.client.request("GET", "/lesarten/dictionary")
+    assert res.headers["cache-control"] == "public, max-age=30"
+
+
 async def test_load_is_admin_gated_and_validates(api: Harness):
     res = await api.client.request("POST", "/lesarten/dictionary/generations", json_body=BUILD)
     assert res.status == 401

@@ -91,7 +91,10 @@ def push(pairs: list[tuple[str, bool]], digest: str, api: str, token: str, batch
     try:
         opened = request_json("POST", f"{api}/lesarten/dictionary/generations", token, body)
     except SystemExit as exc:
-        if "409" in str(exc):
+        # Match the server's words, not the status: a fold mismatch answers 409
+        # too, and „nothing to do" would be exactly the wrong thing to print
+        # when the API is still bucketing with the previous look-alike table.
+        if "already live" in str(exc):
             print("this build is already live — nothing to do")
             return
         raise

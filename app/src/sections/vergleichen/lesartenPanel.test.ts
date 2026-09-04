@@ -13,6 +13,7 @@ const copy: Record<string, string | null> = {
   loading: t.lesartenLoading,
   error: t.lesartenError,
   noDictionary: t.noDictionary,
+  staleDictionary: t.staleDictionary,
   noReadings: t.noLesarten,
   readings: null, // the grid, no sentence
 };
@@ -34,6 +35,18 @@ describe('lesartenPanel', () => {
     expect(lesartenState([], DICTIONARY, false)).toBe('noReadings');
     expect(copy.noReadings).toBe(t.noLesarten);
     expect(showsDictionaryNote(DICTIONARY)).toBe(true);
+  });
+
+  it('does not call a reading unique while the vocabulary is sorted by the old classes', () => {
+    // Between the deploy of a new look-alike pair and the reload, the server
+    // looks for the guess in a bucket the stored words are not in — the same
+    // „empty shelf" mistake as above, one step further in.
+    const stale: LesartDictionaryOut = { ...DICTIONARY, stale: true };
+    const state = lesartenState([], stale, false);
+    expect(state).toBe('staleDictionary');
+    expect(copy[state]).not.toMatch(/eindeutig/);
+    // Readings that DID come back are real words and stay on the page.
+    expect(lesartenState([READING], stale, false)).toBe('readings');
   });
 
   it('shows the readings when there are any', () => {

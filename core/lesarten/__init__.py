@@ -131,20 +131,32 @@ def lesart_key(text: str) -> str:
     return "".join(_REP.get(ch, ch) for ch in text)
 
 
+MARKER_PREFIX = "lesart-key/v"
+
+
 def key_marker(version: int = LESART_KEY_VERSION) -> str:
     """The token `tools.lesarten.sync` stamps into a build's source label. The
     API compares it against the running code, so `GET /lesarten/dictionary`
     says whether the live vocabulary was bucketed by today's fold."""
-    return f"lesart-key/v{version}"
+    return f"{MARKER_PREFIX}{version}"
+
+
+def fold_marker_in(source: str) -> str | None:
+    """The fold marker a build's source label carries, or None when it names no
+    fold at all (a label written before the version existed).
+
+    Read token-wise, not as a substring: `lesart-key/v2` must not match the
+    `lesart-key/v20` of a much later table. The loader writes the marker as its
+    own parenthesised word, which is what makes that comparison exact."""
+    for token in source.replace("(", " ").replace(")", " ").split():
+        if token.startswith(MARKER_PREFIX):
+            return token
+    return None
 
 
 def is_current_fold(source: str) -> bool:
-    """Whether a build's source label was stamped by the fold this code uses.
-
-    Token-wise, not as a substring: `lesart-key/v2` must not answer yes for the
-    `lesart-key/v20` of a much later table. The loader writes the marker as its
-    own parenthesised word, which is what makes that comparison exact."""
-    return key_marker() in source.replace("(", " ").replace(")", " ").split()
+    """Whether a build's source label was stamped by the fold this code uses."""
+    return fold_marker_in(source) == key_marker()
 
 
 def key_signature() -> str:

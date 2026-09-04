@@ -18,4 +18,7 @@
   and can no longer be refused as already live — and into the build's source
   label, so `GET /lesarten/dictionary` reports a generation bucketed by an
   older fold as `stale`. Bumping the table without reloading is now visible
-  instead of silent.
+  instead of silent: the API refuses a build from another fold outright (it
+  computes the buckets itself, so a loader running ahead of the deploy would
+  store the old ones under the new label), and the Lesart page says the
+  vocabulary is being switched over rather than calling a reading unique.
