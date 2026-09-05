@@ -152,7 +152,12 @@ Cloudflare-Regel wäre über die `run.app`-URL umgehbar, diese Buckets nicht.
    Platzierung, generierte Übergänge aus `exit`/`entry`-Tangenten +
    Koppelhöhe, Diakritika-Deferral, Ink-Clearance für nicht-joinende
    Glyphen; optionaler `pen`-Parameter färbt GENERIERTE Striche pro
-   Schrift ein. DIE einzige Kompositionsquelle — gepinnt durch das
+   Schrift ein. Die **Wortlücke** ist dabei eine Lücke zwischen TINTE:
+   das erste Zeichen nach einem Leerzeichen steht am weiter rechts
+   liegenden von Anker-Vorschub (`SPACE_ADV`) und Tintenboden
+   (`WORD_INK_GAP` hinter der rechtesten Tinte des Vorwortes), sonst
+   schriebe eine linkslastige Majuskel (K/C/F/G/Q/O/A/I/X) in das Wort
+   davor hinein. DIE einzige Kompositionsquelle — gepinnt durch das
    Golden-Fixture `tests/fixtures/compose_golden.json.gz`.
    **Laufform-Varianten** (jul31): `/write/word` lädt zusätzlich die
    `templates`-Zeilen mit `variant=100` (`LAUFFORM_VARIANT` seit PR #247;

@@ -80,7 +80,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
 - **V** — Variante §2 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschub-Kalibrierung §2 · Vorschrift §1
-- **W** — W1–W6 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
+- **W** — W1–W6 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Tintenlücke §2 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zeichenbreiten-Mittel (`AVG_ADVANCE_UNITS`) §7 · Zeilen-Gate (Laufform) §2 · Zeilenmarke §7 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · zonale Rückweisung (`zonal`) §3 · „Zug um Zug“ §7 · Zwei Stillen (Leerzustands-Regel) §5 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
 
@@ -564,6 +564,23 @@ fürs Quiz); ein gemeinsames Fixture hält beide synchron.
 Grundlinie setzen, Abstände wählen, Übergänge erzeugen, Diakritika
 zurückstellen. `core/compose.py` ist die **einzige** Kompositionsquelle,
 gepinnt durch das goldene Paritäts-Fixture `tests/fixtures/compose_golden.json.gz`.
+
+**Wort-Tintenlücke** *(word ink gap)* — die Regel, dass der Abstand
+zwischen zwei Wörtern zwischen der **Tinte** gemessen wird und nicht
+zwischen den Ankern. Der Wortvorschub `SPACE_ADV` rückt nur den Cursor
+(Ende des Endstrichs → Eintrittspunkt des nächsten Buchstabens) weiter;
+mehrere Sütterlin-Majuskeln tragen ihren Bogen aber weit LINKS ihres
+eigenen Ursprungs (K −1,64 · C −1,42 · F −1,16 · G/Q/O/A ≈ −0,8 ·
+I −0,45 · X −0,18 xh, im Join-Band gemessen), und ein Wortende auf w/v
+lässt seinen Bogen rechts des Cursors stehen. „Die Federprobe“ schrieb
+das F deshalb IN das „Die“ hinein (Autorenmeldung 2026-09-05). Der
+Composer nimmt am Wortanfang darum den weiter rechts liegenden der
+beiden Werte: Anker-Vorschub oder Tintenboden. Der Boden 0,43 xh liegt
+unter jeder Grenze, die der Anker-Vorschub heute schon breit genug
+schreibt (die engste ist 0,4395 nach einem End-t, der Regelfall 0,4777)
+— nur die Grenzen darunter bewegen sich.
+*Technisch:* `core/compose.py::WORD_INK_GAP` neben `SPACE_ADV`,
+Guards in `tests/test_compose_spacing.py`. → write-api.md
 
 **Übergang · Konnektor** *(connector)* — der Verbindungsstrich zwischen
 zwei Buchstaben. Doktrin: **„Übergänge sind Konsequenz, keine Daten“** —
