@@ -988,13 +988,15 @@ crawler-richtlinie.md §3
 seiner Endpunkte abweicht: der größte Abstand eines Punktes des Zuges zu
 seiner **Sehne**, in x-Höhen. Das Verhältnis Pfeilhöhe/Sehne ist damit ein
 maßstabsfreies Maß für „wie gebogen“ — 0 heißt Lineal-Strich. Zwei Stellen
-im Projekt lesen es: die Tafelzelle beschreibt so den konkaven Anstrich der
-Apex-Klasse (t 0,180 · ſ 0,136 · k 0,187 · ß 0,175 xh, `APEX_HANDOVER_MIN_RISE`
-in `core/compose.py`), und die humanbench-Wortrunde `sep05` hat damit
-beziffert, was das Auge an der **Apex-Übergabe** verworfen hat (die erzeugte
-Übergabe kommt auf 0,001–0,002 xh bei 1,67–1,84 xh Sehne). Als eingefrorene
-Report-Spalte ist sie ein benannter Rettungsweg, noch nicht gebaut
-(`tintenfolger.md` §7.9).
+im Projekt beziffern sie — beide von Hand, **kein Code rechnet sie**: die
+Dissektion der Tafelzellen für den konkaven Anstrich der Apex-Klasse (t 0,180 ·
+ſ 0,136 · k 0,187 · ß 0,175 xh; die Werte stehen als gemessene Zahlen im
+Kommentarblock über `APEX_HANDOVER_MIN_RISE` in `core/compose.py` — die
+Konstante selbst prüft den ANSTIEG des Zuges, nicht seine Pfeilhöhe), und die
+humanbench-Wortrunde `sep05`, die damit beziffert hat, was das Auge an der
+**Apex-Übergabe** verworfen hat (die erzeugte Übergabe kommt auf 0,001–0,002 xh
+bei 1,67–1,84 xh Sehne). Als eingefrorene Report-Spalte ist die Pfeilhöhe ein
+benannter Rettungsweg, noch nicht gebaut (`tintenfolger.md` §7.9).
 
 **M4-Fit** — die elastische Anpassung eines Templates an echte Tinte:
 Das kanonische Template wird auf das Skelett eines Vorkommens *gewarpt*,
@@ -2844,7 +2846,7 @@ dem Anker seiner Quelle.
 
 **Messjournal** *(measurement journal)* — die Datei
 [`messjournal.md`](messjournal.md), seit 2026-09-04 die Heimat von §14, dem
-Kampagnen-Journal: 81 datierte Abschnitte, je einer pro Mess-Runde, mit
+Kampagnen-Journal: 88 datierte Abschnitte, je einer pro Mess-Runde, mit
 Vorregistrierung, gemessenen Zahlen und Verdikt. Vorher stand die Sektion in
 `qualitaetsmetrik.md` und machte dort zwei Drittel der Datei aus, sodass jede
 Frage nach einer Metrik-REGEL das ganze Journal mitlud; der Umzug ist Wort für

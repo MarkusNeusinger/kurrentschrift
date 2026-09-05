@@ -5,7 +5,7 @@
 > [`qualitaetsmetrik.md`](qualitaetsmetrik.md), Wort für Wort dieselbe
 > Sektion.
 >
-> **Diese Datei liest man nicht.** Sie trägt 81 datierte Abschnitte und
+> **Diese Datei liest man nicht.** Sie trägt 88 datierte Abschnitte und
 > rund 143 000 Token. Der Einstieg ist das **Register** direkt unter der
 > nächsten Überschrift — eine Zeile je Abschnitt mit Datum, Route, Typ ·
 > Verdikt und dem Befund in einer Zeile —, und daneben der
@@ -64,7 +64,7 @@ Werkzeuge: `tools/tracebench/`.
 
 ### Register der Einträge (Index, keine Zahl-Heimat)
 
-Diese Sektion trägt 81 datierte Abschnitte und ist die eine Heimat der
+Diese Sektion trägt 88 datierte Abschnitte und ist die eine Heimat der
 Kampagnen-Zahlen; die Tabelle hier ist ihr **Index** — sie wiederholt
 keine Zahl, sie zeigt, wo eine steht. Ihre Reihenfolge ist die der
 Datei, also die Reihenfolge, in der die Abschnitte angehängt wurden; die
@@ -9541,16 +9541,24 @@ feuert **nur** `stem_depart`, auf den zwölf `apex`-Wörtern **nur**
 | `beide` | 2 | 2 | 0 | 0 | unter `MIN_PAIRED_PER_CLASS` = 8, also „zu wenig" statt Anteil |
 | `nullprobe` (bit-identische Tafeln) | 12 | 0 | — | **12 (100 %)** | die Instrumentprüfung, siehe unten |
 
-**Die Nullprobe beweist das Instrument, und sie räumt die Tie-Schranke ab.**
-Zwölf Bildschirme zeigten links und rechts dasselbe Bild; zwölfmal lautete die
-Antwort „kein Unterschied erkennbar" — 12/12 richtig, kein einziges „links"
-oder „rechts" auf einen Unterschied, den es nicht gibt. Damit ist die Frage
-beantwortet, an der das LF11-Verdikt gescheitert ist (`sep02`: 34,9 %
-Unentschiedene, ohne dass jemand sagen konnte, wie viel davon Antwortgewohnheit
-ist): **der Beurteiler benutzt die Option, und zwar dort, wo sie stimmt.** Die
-38,2 % dieser Runde sind deshalb kein Zaudern — **12 der 13 Unentschiedenen
-sind die 12 Nullproben.** Unter den 22 wirklich bewegten Wörtern bleibt genau
-EINES unentschieden; 21 von 22 sind entschieden, und 20 davon für die Basis.
+**Die Nullprobe beweist das Instrument, und sie erklärt die Tie-Quote DIESER
+Runde.** Zwölf Bildschirme zeigten links und rechts dasselbe Bild; zwölfmal
+lautete die Antwort „kein Unterschied erkennbar" — 12/12 richtig, kein einziges
+„links" oder „rechts" auf einen Unterschied, den es nicht gibt. **Der
+Beurteiler benutzt die Option also, und zwar dort, wo sie stimmt** — sie ist
+kein toter Knopf. Die 38,2 % dieser Runde sind deshalb kein Zaudern: **12 der
+13 Unentschiedenen sind die 12 Nullproben.** Unter den 22 wirklich bewegten
+Wörtern bleibt genau EINES unentschieden; 21 von 22 sind entschieden, und 20
+davon für die Basis.
+
+**Was das über die LF11-Runde NICHT sagt.** Dort lagen 34,9 % Unentschiedene
+auf Bildschirmen, deren Tafeln sich sehr wohl unterschieden — und ob das
+Unsichtbarkeit war oder eine milde Schwelle des Beurteilers, entscheidet eine
+Nullprobe nicht: wer identische Bilder richtig als gleich erkennt, kann
+trotzdem bei feinen Unterschieden zu oft „kein Unterschied" sagen. Die
+LF11-Frage bleibt offen und mit ihr die dort benannte Wiederholungsrunde
+(§7.11); was diese Runde beisteuert, ist nur die schwächere, aber saubere
+Aussage: die Option ist benutzbar und wurde benutzt.
 
 #### Was der Beurteiler gesehen hat
 

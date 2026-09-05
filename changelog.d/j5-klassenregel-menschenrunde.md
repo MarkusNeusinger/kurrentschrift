@@ -30,6 +30,8 @@
   repeats, got a reported four, and could never have carried an adoption claim
   — `menschliche-bewertung.md` §8a carries the arithmetic and the corollary
   that a round supporting the status quo does not need that floor at all. The
-  same round closed the doubt left over from the LF11 verdict: twelve
-  bit-identical pairs, twelve correct "no difference" answers, so that round's
-  tie rate was not an answering habit.
+  same round is also the first to carry null controls: twelve bit-identical
+  pairs, twelve correct "no difference" answers, which establishes that the tie
+  option is live and used where it belongs — and not, as an earlier draft of
+  this text claimed, why the LF11 round tied so often on panels that were not
+  identical. That question stays open.

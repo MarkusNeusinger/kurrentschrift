@@ -1014,10 +1014,11 @@ Kategorien-Durchgang mit den alten Fits, und die gelabelten Vorkommen paarig.
 > bleibt mit 25,6 % darüber. Die Richtung war eindeutig, der
 > Autor hat auf dieser Grundlage freigegeben. Die zweite Runde
 > (`sep05`, Basis gegen die J5-Klassenregel) hat als erste Nullproben
-> mitgeführt — 12 von 12 richtig als „kein Unterschied“ erkannt — und
-> damit die Frage geschlossen, die über dem ersten Verdikt hing; ihr
-> eigener Adoptionsanspruch fiel an den 4 statt 6 Wiederholungspaaren
-> (Rechnung unten). Die Zahlen gehören nach
+> mitgeführt — 12 von 12 richtig als „kein Unterschied“ erkannt, die
+> Antwortoption ist also benutzbar und wurde benutzt (was die
+> LF11-Tie-Quote auf NICHT identischen Tafeln nicht erklärt, siehe
+> unten); ihr eigener Adoptionsanspruch fiel an den 4 statt 6
+> Wiederholungspaaren (Rechnung unten). Die Zahlen gehören nach
 > [`messjournal.md`](messjournal.md) §14 („Laufform LF11 —
 > humanbench-Wortrunde“ und „Übergänge J5 `sep05`“); hier steht nur, wie
 > sie zustande kommen.
@@ -1198,8 +1199,12 @@ bewegte Wörter plus 12 Nullproben, bat um 6 Wiederholungen und bekam gemeldete
 **4** — genau 34 − 5 − 25. Sie war damit von der ersten Zeile an eine Runde
 **ohne Adoptionsanspruch** (Auswerteplan unten, Schritt 1: unter
 `MIN_PAIRED_REPEATS` = 6). Die Nullproben haben getan, wofür sie da sind (12
-von 12 richtig als „kein Unterschied“ erkannt — die Antwortgewohnheit, an der
-das LF11-Verdikt hing, ist damit ausgeschlossen), nur eben zu wenige. Wer eine
+von 12 richtig als „kein Unterschied“ erkannt), nur eben zu wenige. Was sie
+dabei zeigen, ist genau eine Sache und keine zweite: **die Antwortoption ist
+benutzbar und wurde benutzt.** Ob ein Beurteiler sie bei FEINEN Unterschieden
+zu oft wählt — die Frage, an der das LF11-Verdikt hing —, prüft eine
+bit-identische Tafel nicht; wer identische Bilder richtig als gleich erkennt,
+kann daneben eine milde Schwelle haben. Wer eine
 Adoption aus einer schmalen Klasse heraus WILL, rechnet vorher:
 **`bewegte + Nullproben ≥ MIN_PAIRED_REPEATS + min_gap + REPEAT_JITTER`**, bei
 `--min-repeat-gap 5` also ≥ 36 Einträge; für die 22 bewegten Wörter der
