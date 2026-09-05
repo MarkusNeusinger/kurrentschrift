@@ -247,6 +247,7 @@ GUARDRAIL_SECTION_ANCHORS = {
     "The author authors in the PROD admin": "prod admin",
     "Changelog fragments": "changelog.d/",
     "Don't re-request a Copilot review after every push": "re-request a copilot review",
+    "Prod-touching actions need explicit in-session confirmation first": "prod-touching",
     "Archive snapshots: create freely, never destroy": "create freely, never destroy",
     "Edit repo files with Edit/Write, never heredocs or sed": "heredoc",
     "Manual author tasks go to Todoist": "todoist",

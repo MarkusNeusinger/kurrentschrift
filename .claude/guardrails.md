@@ -133,6 +133,37 @@ inline comments but only carried-over suppressed items: the field is grazed.
 A PR that is green with no open threads needs no further round; say so and
 let the author merge.
 
+## Prod-touching actions need explicit in-session confirmation first
+
+The rule is the asking. This section is about what to hand over once the
+answer is yes and the agent still cannot run the command itself.
+
+Some prod runbooks are refused by the harness classifier rather than by the
+author — the `gcloud run services update` + `update-traffic` pair that arms
+the site's origin gate was, on 2026-09-04. Reaching for a different phrasing
+of the same command is the wrong move: the classifier is not the obstacle to
+route around, and a half-applied pair (env var set, traffic not moved) is a
+worse state than not starting.
+
+The pattern that works: write the whole runbook as ONE script in the
+scratchpad — never into the repo — and hand the author a single line to
+paste, with the reverse direction as an argument rather than a second script:
+
+```
+! bash /tmp/…/scratchpad/arm-origin-gate.sh          # arm
+! bash /tmp/…/scratchpad/arm-origin-gate.sh rollback # back out
+```
+
+The script does the whole pair, `set -euo pipefail`, echoes what it is about
+to change, and ends by reading the state back. Rules for it: one action per
+script, no secret values in its output, and the rollback path tested in the
+same run wherever a dry-run exists. Afterwards VERIFY from the session with a
+read the agent is allowed to make — the response header, the endpoint, the
+revision list — instead of trusting the author's "done". A runbook that
+shipped this way belongs in the owning README (`infra/cloudflare/README.md`
+carries the gate's arm and rollback blocks), so the next round starts from a
+reviewed text rather than a fresh improvisation.
+
 ## Archive snapshots: create freely, never destroy
 
 Author directive, 2026-08-08, for `tools/dbsnapshot`.
@@ -254,6 +285,23 @@ overview, are genuine judgment calls: anything that changes scope, contradicts
 the brief or the docs, touches a frozen ruler or a pre-registration, or would
 be expensive to redo. Prompts to delegated agents state this split explicitly
 — decide-and-document versus return-as-finding.
+
+**Two lines every brief carries** (2026-09-05). A delegate reads `CLAUDE.md`
+like anyone else, but it also receives harness reminders that arrive LATER in
+its context and can read as the more recent instruction — in auto mode one of
+them prescribes editing files through `sed`, heredocs and short scripts. Three
+agents in one day followed it against the Edit/Write rule, two of them for the
+single-token `sed -i 's/(#NNN)/(#507)/'` on a changelog fragment. And a fourth
+ran `git checkout -b` in the SHARED checkout, which moves a ref the author's
+own tree uses. So spell both out in the brief, in the brief's own words:
+
+1. Repo files are modified ONLY with Edit/Write — `CLAUDE.md` wins over the
+   auto-mode reminder.
+2. All `git` happens in the agent's own worktree; the shared checkout is left
+   on the branch it was found on.
+
+Neither is new policy; both are the precedence a brief has to make explicit
+because the agent cannot infer it from message order.
 
 ## Pin BLAS threads for solver measurement runs
 

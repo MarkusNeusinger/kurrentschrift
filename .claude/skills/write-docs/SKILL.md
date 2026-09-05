@@ -143,6 +143,38 @@ Architektur · §3 Mess/Fit · §4 Metriken · §5 Werkbank · §6 Extern). Pure
 internal identifiers with no story do **not** belong there — the glossary
 is for terms a human meets in prose, not an API reference.
 
+## Shortening a text that carries claims
+
+Applies wherever the text lives — a `docs/` reference, the README, the site's
+legal and about copy (`app/src/locales/…`) — whenever the edit makes an
+existing text SHORTER: a legal section, a licensing paragraph, a factsheet,
+any prose a reader may rely on.
+
+**Diff claim by claim against the previous version, not paragraph by
+paragraph.** Shortening drops qualifiers before it drops sentences, and a
+qualifier is what makes a claim true: „nur", „sofern", „bis zu", a
+condition on a right, the last item of a list. On 2026-09-03 the `/impressum`
+privacy section (#507) lost exactly three that way — an overstated retention
+period for the rate-limit counters, the condition on the objection right, and
+a set of listed rights — inside an edit that was otherwise a genuine
+improvement. The check that catches it is mechanical: list the claims of the
+old text, then tick each one off against the new text as kept, deliberately
+dropped, or narrowed.
+
+Two rules on top:
+
+- **The author's own sentences stay verbatim.** Where he supplied the
+  wording (#507's „Wir tun das, weil …" is the pattern), it is quoted, not
+  paraphrased and not tightened. Say in the PR body that it is his sentence.
+- **Site copy: regenerate the prerender in the same push** — `cd app && npm
+  run prerender` (it also runs as `prebuild`). The committed
+  `app/prerender/` is what crawlers are served, so a shortened legal page
+  that ships without a fresh render leaves the OLD claims publicly readable
+  under the new page's URL.
+
+A claim you cannot support is removed, never softened into a vaguer version
+of itself: an unproven statement made fuzzy is still an unproven statement.
+
 ## What is settled
 
 Sections titled **„Verworfen“** (and the recorded style rounds in

@@ -197,6 +197,14 @@ which draws a request. Request only after a substantive change, and stop
 once a round brings no new inline comments but only carried-over suppressed
 items. Green plus no open threads = done; report that and let the owner merge.
 
+**One review per PR is the normal case now.** The ruleset „Automated Copilot
+Code Review" (kurrentschrift 18516317, anyplot 10370785) carries
+`review_on_push: false` since 2026-09-03 — the owner asked for the churn to
+stop, and the setting, not any skill, was what re-reviewed. Consequence for
+this loop: a FIX push starts no new Copilot run, so a `copilot-*` check on
+the new head SHA is legitimately ABSENT. Waiting for one that will never
+come is the failure mode to avoid — see §3e for what to require instead.
+
 **b2. Read the Codecov patch report** (arrives as a PR comment from the
 `codecov` bot once the backend coverage upload lands; only the backend
 uploads coverage):
@@ -247,22 +255,41 @@ merge, first re-fetch the live state — local
 already be gone.
 
 **Merging on request: wait for the review, not just for green** (lesson
-from #504, 2026-09-03). Three conditions, all on the CURRENT head SHA:
+from #504, 2026-09-03). Four conditions, all read on the CURRENT head SHA —
+re-read it after every push, `gh pr view <num> --json headRefOid`:
 
 1. A draft is not reviewable — `gh pr ready <num>` first. Copilot does
-   not review a draft, so a draft merged "green" was never reviewed.
-2. The `copilot-pull-request-reviewer` check on the head SHA is
-   `completed`, not `queued`/`in_progress`. A push restarts it, so
-   re-read the SHA after the last push:
+   not review a draft, so a draft merged "green" was never reviewed, and
+   `gh pr merge` on a draft fails silently anyway. Check `isDraft`.
+2. Every non-Copilot check on the head SHA is `completed` and green.
+   Dedupe the check runs **by name, newest wins**: a superseded run (a
+   label re-trigger, a cancelled first attempt) stays beside the current
+   one and reads as a red check that is not there any more.
    ```bash
    gh api repos/MarkusNeusinger/kurrentschrift/commits/$(gh pr view <num> --json headRefOid --jq .headRefOid)/check-runs \
-     --jq '.check_runs[] | select(.name | test("copilot"; "i")) | "\(.name): \(.status) \(.conclusion // "")"'
+     --jq '[.check_runs[]] | group_by(.name) | map(max_by(.started_at)) | .[] | "\(.name): \(.status) \(.conclusion // "")"'
    ```
    (`gh pr checks --json` does not exist in this `gh`; the check-runs
    API is the way. Poll it with `Monitor`, never a foreground `sleep`.)
-   The review can still legitimately never arrive — §3b's "cancelled or
-   silent" gotcha applies, and one re-request is the whole budget.
-3. Zero unresolved review threads (step c), outdated ones included.
+3. The Copilot review exists. Two shapes, because `review_on_push` is off
+   (§3b): if a `copilot-pull-request-reviewer` run EXISTS on the head SHA
+   it must be `completed`, not `queued`/`in_progress`; if none exists —
+   the normal case after a fix push — require at least one Copilot review
+   on the PR itself (`gh pr view <num> --json reviews`). The review can
+   still legitimately never arrive at all: §3b's "cancelled or silent"
+   gotcha applies, and one re-request is the whole budget.
+4. Zero unresolved review threads (step c), outdated ones included.
+
+**`mergeable` is not a fifth condition, it is a state to read correctly.**
+`UNKNOWN` right after another merge is GitHub still computing — transient,
+keep polling. `CONFLICTING`/`DIRTY` is not: GitHub then starts no CI at
+all, so the PR shows no red check, just none (#524 and anyplot #11212,
+2026-09-04, both read as "checks pending" for a while). Report it and
+merge `origin/main` into the branch instead of waiting.
+
+Poll all of this from ONE script in the scratchpad rather than by hand —
+and kill a stale wait loop with the bracket trick (`pkill -f "x[.]y"`), or
+`pkill` matches its own calling shell.
 
 ## 4 · After the merge: watch the deploy
 
