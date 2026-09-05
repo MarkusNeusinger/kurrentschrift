@@ -102,9 +102,13 @@ auf fremder Hardware — und dort steht an der Spitze der Selbstzeiten
 `api.routers.pairs` mit **74,5 ms** bei **vier** Routen, während
 `api.routers.eigenhand` mit 30,6 ms auf Platz sieben liegt. Ein Router mit vier
 Routen kann nicht das teuerste Modul eines 1468-Modul-Graphen sein; der Block
-ist derselbe und hat nur wieder die Adresse gewechselt. (Nebenbei geklärt, was
-die Vorrunde als ungeprüft notierte: der Interpreter im Image ist **CPython
-3.13.15**, hier lief 3.13.12.)
+ist derselbe und hat nur wieder die Adresse gewechselt. Der Schritt fährt seine
+Modul-Rangliste **seit diesem Lauf mit `gc.disable()`** — er hatte den Fehler
+reproduziert, den er dokumentiert —, die Wanduhr-Summen weiterhin mit
+Collector, weil ein Kaltstart den bezahlt. Wer die 74,5 ms nachstellen will,
+braucht also den Stand vor jener Korrektur. (Nebenbei geklärt, was die Vorrunde
+als ungeprüft notierte: der Interpreter im Image ist **CPython 3.13.15**, hier
+lief 3.13.12.)
 
 Warum ausgerechnet dort: die Router werden alphabetisch importiert
 (`api/routers/__init__.py`), `eigenhand` ist der fünfte. Bis dahin haben
