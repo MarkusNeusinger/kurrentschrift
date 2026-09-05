@@ -367,6 +367,33 @@ jobs:
           docker exec api test -d /app/data/sources
           echo "COPY list OK"
 
+      # The measurement the two local rounds of 2026-09-04/05 named as their one
+      # remaining gap: `import api.main` timed in the REAL image — same layers,
+      # same interpreter patch level, same precompiled bytecode — instead of in a
+      # venv shaped like it (docs/notes/serve-image-importtime-2026-09-05.md
+      # §„Grenzen dieser Runde"). The image is already built and loaded here, so
+      # it costs one `docker run` and no infrastructure.
+      #
+      # Deliberately OUTPUT ONLY: no threshold, no gate, `continue-on-error` on
+      # top. Import time on a shared runner swings by more than any threshold
+      # worth setting, so a gate here would be noise holding a veto. The number
+      # is for a later round to quote, not for this PR to pass.
+      #
+      # The script travels over stdin rather than living in the image, because
+      # the image deliberately does not ship `tools/` and a measurement has no
+      # business inside the artefact it measures. A fresh `docker run` rather
+      # than `docker exec api`: the smoke container is still serving, and its
+      # uvicorn would sit in the same CPU budget as the thing being timed.
+      - name: Import weight of api.main, measured in the image
+        continue-on-error: true
+        timeout-minutes: 3
+        run: |
+          set -euo pipefail
+          docker run --rm -i \
+            -e OPENBLAS_NUM_THREADS=1 -e OMP_NUM_THREADS=1 \
+            kurrentschrift-api:ci /app/.venv/bin/python - \
+            < .github/scripts/importtime_report.py
+
       - name: Container logs on failure
         if: failure()
         run: docker logs api || true
