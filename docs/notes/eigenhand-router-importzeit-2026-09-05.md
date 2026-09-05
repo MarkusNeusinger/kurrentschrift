@@ -96,6 +96,16 @@ während `api.main` importiert wird:
    **15–17 ms**; `api.routers.templates` bleibt bei 22–27 ms und wird damit zum
    teuersten Router des Repos.
 
+Und eine dritte, ungeplante: der **erste Lauf des neuen CI-Schritts** (derselbe
+PR, „Import weight of api.main, measured in the image") misst im echten Image
+auf fremder Hardware — und dort steht an der Spitze der Selbstzeiten
+`api.routers.pairs` mit **74,5 ms** bei **vier** Routen, während
+`api.routers.eigenhand` mit 30,6 ms auf Platz sieben liegt. Ein Router mit vier
+Routen kann nicht das teuerste Modul eines 1468-Modul-Graphen sein; der Block
+ist derselbe und hat nur wieder die Adresse gewechselt. (Nebenbei geklärt, was
+die Vorrunde als ungeprüft notierte: der Interpreter im Image ist **CPython
+3.13.15**, hier lief 3.13.12.)
+
 Warum ausgerechnet dort: die Router werden alphabetisch importiert
 (`api/routers/__init__.py`), `eigenhand` ist der fünfte. Bis dahin haben
 `api.schemas`, die SQLAlchemy-Modelle und die vier Router davor die
@@ -133,12 +143,14 @@ irgendetwas anderes allokiert.
 
 ## Grenzen dieser Runde
 
-- Gemessen in der Arbeits-venv dieses Rechners, nicht im Container. Die Runde
-  vom 2026-09-05 hat gezeigt, dass die Extras für `MAIN` etwa 1 ms ausmachen;
-  der GC-Effekt ist um den Faktor 35 größer und hängt an Allokationszahlen, die
-  von den Extras nicht berührt werden. Die Zahlen im echten Image liefert ab
-  jetzt der CI-Schritt „Import weight of api.main, measured in the image"
-  (Job „Image (build + container smoke)", Skript
+- Die **GC-Gegenprobe** lief in der Arbeits-venv dieses Rechners, nicht im
+  Container. Die Runde vom 2026-09-05 hat gezeigt, dass die Extras für `MAIN`
+  etwa 1 ms ausmachen; der GC-Effekt ist um den Faktor 35 größer und hängt an
+  Allokationszahlen, die von den Extras nicht berührt werden. Die dritte
+  Gegenprobe oben kommt bereits aus dem echten Image, aber ohne
+  `gc.disable()`-Arm — sie zeigt das Wandern, nicht die Differenz. Laufende
+  Zahlen im Image liefert ab jetzt der CI-Schritt „Import weight of api.main,
+  measured in the image" (Job „Image (build + container smoke)", Skript
   `.github/scripts/importtime_report.py`) — Ausgabe ohne Schwelle.
 - Gemessen wurde wieder der **Import**, nicht der erste Request.
 - Nicht gemessen: ob die GC-Pause bei kleinerem Speicher (Cloud Run 512 MB)
