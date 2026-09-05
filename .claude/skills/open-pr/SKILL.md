@@ -174,7 +174,8 @@ downgrade-roundtrip sequence against a throwaway Postgres; run
 If a check fails: read the run log, fix, push — the loop restarts.
 
 **b. Wait for the Copilot review.** It arrives asynchronously a few
-minutes after push. The bot's login has two spellings and a filter that
+minutes after the PR is OPENED — not after each push; see „One review per
+PR" below. The bot's login has two spellings and a filter that
 knows only one will silently miss it: `copilot-pull-request-reviewer` in
 `gh pr view --json reviews`, `copilot-pull-request-reviewer[bot]` in the
 REST API and in `requested_reviewers`.
@@ -271,21 +272,29 @@ re-read it after every push, `gh pr view <num> --json headRefOid`:
    ```
    (`gh pr checks --json` does not exist in this `gh`; the check-runs
    API is the way. Poll it with `Monitor`, never a foreground `sleep`.)
-3. The Copilot review exists. Two shapes, because `review_on_push` is off
-   (§3b): if a `copilot-pull-request-reviewer` run EXISTS on the head SHA
-   it must be `completed`, not `queued`/`in_progress`; if none exists —
-   the normal case after a fix push — require at least one Copilot review
-   on the PR itself (`gh pr view <num> --json reviews`). The review can
-   still legitimately never arrive at all: §3b's "cancelled or silent"
-   gotcha applies, and one re-request is the whole budget.
+3. **A Copilot review actually exists on the PR** —
+   `gh pr view <num> --json reviews`, author `copilot-pull-request-reviewer`.
+   The head-SHA check run does not prove one: a run reaches `completed`
+   with conclusion `cancelled` and delivers nothing (§3b's "silent" gotcha).
+   So read the check run only to learn whether a round is still RUNNING —
+   `queued`/`in_progress` means wait — and read the review list to learn
+   whether one was ever delivered. Since `review_on_push` is off (§3b) the
+   normal state after a fix push is no run on the head at all and the
+   review from the first round standing; that is reviewed, not unreviewed.
+   If no review exists and the run was cancelled, one re-request is the
+   whole budget; after that report green-and-unreviewed and let the author
+   decide, never loop.
 4. Zero unresolved review threads (step c), outdated ones included.
 
-**`mergeable` is not a fifth condition, it is a state to read correctly.**
-`UNKNOWN` right after another merge is GitHub still computing — transient,
-keep polling. `CONFLICTING`/`DIRTY` is not: GitHub then starts no CI at
-all, so the PR shows no red check, just none (#524 and anyplot #11212,
-2026-09-04, both read as "checks pending" for a while). Report it and
-merge `origin/main` into the branch instead of waiting.
+**Merge state is two different fields; read each by its own name.**
+`mergeable` (`gh pr view --json mergeable`) is `MERGEABLE`, `CONFLICTING`
+or `UNKNOWN` — `UNKNOWN` right after another merge is GitHub still
+computing, so keep polling. `mergeStateStatus` is the richer enum, where
+the conflicting case is `DIRTY`. A conflict is not transient and has a
+symptom worth knowing: GitHub starts no CI at all, so the PR shows no red
+check, just none (#524 and anyplot #11212, 2026-09-04, both read as
+"checks pending" for a while). Report it and merge `origin/main` into the
+branch instead of waiting.
 
 Poll all of this from ONE script in the scratchpad rather than by hand —
 and kill a stale wait loop with the bracket trick (`pkill -f "x[.]y"`), or
@@ -332,11 +341,12 @@ running it**, or simply hand the author the two lines to run. Never
   fresh PR from the same head instead, retarget to `main`, and clear
   the duplicated base diff via `git merge origin/main` resolved with
   `--ours`.
-- **Copilot reviews every push round.** A fix-push can spawn new
-  threads on the changed lines; that's the loop working, not noise —
-  but don't chase it more than a couple of rounds for cosmetic nits;
-  surface stalemates to the user. And don't feed the loop by
-  re-requesting after every push (see §3b).
+- **A fix push no longer starts a review round.** `review_on_push` is
+  `false` since 2026-09-03 (§3b), so only an explicit — and substantive —
+  re-request opens another round. When one does run, a fix-push round can
+  raise new threads on the changed lines; that is the loop working, not
+  noise, but don't chase it more than a couple of rounds for cosmetic
+  nits and surface stalemates to the user.
 - **Copilot runs can die silently.** The
   `copilot-pull-request-reviewer` check can end `cancelled` without
   delivering a review, and a re-request may spawn no new run at all

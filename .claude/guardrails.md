@@ -142,27 +142,31 @@ Some prod runbooks are refused by the harness classifier rather than by the
 author — the `gcloud run services update` + `update-traffic` pair that arms
 the site's origin gate was, on 2026-09-04. Reaching for a different phrasing
 of the same command is the wrong move: the classifier is not the obstacle to
-route around, and a half-applied pair (env var set, traffic not moved) is a
-worse state than not starting.
+route around. Stopping half-way is not the danger either, when the runbook is
+built for it — that pair stages the new revision `--no-traffic`, so a failed
+promotion leaves traffic on the old revision, which
+`infra/cloudflare/README.md` calls a safe failure and the reason its step 4
+is not optional. The danger is reading the STAGED revision as the finished
+one and reporting an arm that never took traffic.
 
-The pattern that works: write the whole runbook as ONE script in the
-scratchpad — never into the repo — and hand the author a single line to
-paste, with the reverse direction as an argument rather than a second script:
+The pattern that works: write the runbook as ONE script in the scratchpad —
+never into the repo — and hand the author a single line to paste:
 
 ```
-! bash /tmp/…/scratchpad/arm-origin-gate.sh          # arm
-! bash /tmp/…/scratchpad/arm-origin-gate.sh rollback # back out
+! bash /tmp/…/scratchpad/arm-origin-gate.sh
 ```
 
 The script does the whole pair, `set -euo pipefail`, echoes what it is about
-to change, and ends by reading the state back. Rules for it: one action per
-script, no secret values in its output, and the rollback path tested in the
-same run wherever a dry-run exists. Afterwards VERIFY from the session with a
-read the agent is allowed to make — the response header, the endpoint, the
-revision list — instead of trusting the author's "done". A runbook that
-shipped this way belongs in the owning README (`infra/cloudflare/README.md`
-carries the gate's arm and rollback blocks), so the next round starts from a
-reviewed text rather than a fresh improvisation.
+to change, and ends by reading the state back — for that gate, the
+`x-origin-gate` response header AND `status.traffic`, because only the second
+says which revision answered. Rules for it: one action per script, no secret
+values in its output. **The reverse direction is its own script, not the same
+one with a flag** — the README is explicit about why: a rollback has to run
+in the worst state the service can be in, including a secret disabled during
+the incident, so it looks nothing up. Afterwards VERIFY from the session with
+a read the agent is allowed to make instead of trusting the author's "done".
+A runbook that shipped this way belongs in the owning README, so the next
+round starts from a reviewed text rather than a fresh improvisation.
 
 ## Archive snapshots: create freely, never destroy
 
