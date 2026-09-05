@@ -865,7 +865,7 @@ einen `add_header` ergänzt, ergänzt die `include`-Zeile daneben.
 
 | Header | Wert | Warum |
 |---|---|---|
-| `Content-Security-Policy-Report-Only` | siehe unten | Erlaubt-Liste der tatsächlichen Quellen der Seite |
+| `Content-Security-Policy` | siehe unten | Erlaubt-Liste der tatsächlichen Quellen der Seite; **scharf seit 2026-09-05**, davor einen Tag `-Report-Only` |
 | `Strict-Transport-Security` | `max-age=15552000` | 180 Tage, **ohne** `includeSubDomains`, **ohne** `preload` (Autor-Entscheid 2026-09-02, wie anyplot) |
 | `X-Content-Type-Options` | `nosniff` | |
 | `X-Frame-Options` | `SAMEORIGIN` | die alte Hälfte von `frame-ancestors` |
@@ -904,10 +904,27 @@ nginx kann eines erzeugen, siehe oben —, sondern weil die Theme-Tokens auf
 inline-`style`-**Attributen** reiten, die ein Nonce grundsätzlich nicht deckt,
 und weil Emotion (MUI) sein Stylesheet zur Laufzeit weiterschreibt.
 
-**Die Report-Only-Woche.** Die Policy geht als
-`Content-Security-Policy-Report-Only` live und blockiert damit nichts, sondern
-meldet nur — ein Fehler in ihr würde sonst die Werkbank unbenutzbar machen, und
-die Werkbank ist genau die Fläche, die kein automatischer Durchgang öffnen kann.
+**Report-Only ab dem 2026-09-02, scharf seit dem 2026-09-05** (Autor-Entscheid).
+Die Policy ging zuerst als `Content-Security-Policy-Report-Only` live und
+blockierte damit nichts, sondern meldete nur — ein Fehler in ihr macht die
+Werkbank unbenutzbar, und die Werkbank ist genau die Fläche, die kein
+automatischer Durchgang öffnen kann. Diese Zeit — davon 40 Stunden auf dem
+Nonce-Pfad, also seit #532 am 2026-09-04 gegen 15:00Z — hat **keine einzige
+Meldung aus dem Code der Seite** erzeugt: Angekommen sind nur die absichtliche
+Sonde vom 2026-09-04T15:29Z (`CSP_PROBE_2026_09_04`) und, einmal, am
+2026-09-05T12:58Z zwei Meldungen eines einzelnen Clients, dessen
+eingespritztes Cloudflare-JavaScript-Detections-Skript
+(`window.__CF$cv$params…`, Quellzeile 61 von `/`, samt dessen verstecktem
+iframe) kein Nonce trug. Jeder Abruf seither — mit Chrome-UA wie mit `curl` —
+zeigt alle fünf Skript-Tags inklusive Cloudflares mit dem Nonce des Headers;
+und scharf führt so ein Client schlicht Cloudflares Bot-Skript nicht aus, die
+Seite selbst bleibt unberührt. Was ein Melde-Kanal nicht sehen kann, wurde
+stattdessen im Code nachgelesen: keine Worker, kein WebAssembly, kein `eval`
+und kein `new Function`, und `createObjectURL` nur für Downloads und Bilder —
+was `blob:` in `img-src` ohnehin erlaubt. anyplot.ai fährt dieselbe Policy seit
+dem 2026-09-04 scharf, ohne eine eigene Meldung. Der Entscheid, fünf Tage vor
+dem ursprünglich geplanten Termin scharf zu schalten, steht damit auf gemessener
+Stille plus gelesenem Code, nicht auf Zuversicht.
 Gemeldet wird an `POST /csp-report` auf dem API-Host (`api/routers/csp.py`):
 zählt und loggt, schreibt nichts, kennt beide Wire-Formate (`report-uri` schickt
 ein Objekt, die Reporting-API ein Array mit camelCase-Feldern) und ist die
@@ -929,8 +946,9 @@ keiner; `report-to` kommt zurück, sobald eine Meldung nachweislich über HTTPS
 darüber ankommt. Der Endpunkt versteht das Reporting-API-Format trotzdem
 schon — dann ändert sich nur der Header.
 
-**Kommt in der Woche nichts an, ist das zuerst zu prüfen** — eine Sonde, die den
-Weg eines echten Reports geht:
+**Kommt nichts an, ist zuerst der Kanal zu prüfen** — Stille ist zweideutig:
+Sie kann heißen, dass niemand die Policy verletzt, oder dass niemand den
+Endpunkt erreicht. Die Sonde geht den Weg eines echten Reports:
 
 ```bash
 curl -sS -o /dev/null -w '%{http_code}\n' -X POST \
@@ -948,10 +966,21 @@ an der man das sieht. Jeder geloggte Wert wird entschärft: Die Felder kommen
 aus einer anonymen POST-Anfrage, ein Zeilenumbruch darin würde sonst weitere
 Log-Einträge erfinden.
 
-**Scharfschalten ist eine Zeile:** In `app/security-headers.conf` den
-Header-Namen `Content-Security-Policy-Report-Only` zu `Content-Security-Policy`
-ändern und deployen. `report-uri` bleibt stehen, damit auch danach gemeldet
-wird — eine tatsächlich blockierte Quelle will man erst recht erfahren.
+`report-uri` steht auch in der scharfen Policy — eine tatsächlich blockierte
+Quelle will man erst recht erfahren. Auseinanderhalten lassen sich die beiden
+Modi am Feld `disposition`, das jede Log-Zeile mitführt: `report`, solange eine
+Policy nur zusah, `enforce`, sobald sie handelt.
+
+**Zurückrollen ist dieselbe eine Zeile:** In `app/security-headers.conf` den
+Header-Namen wieder zu `Content-Security-Policy-Report-Only` ändern und
+deployen — oder, schneller als ein Build, den Verkehr auf die vorige Revision
+zurücklegen:
+
+```bash
+gcloud run services update-traffic kurrentschrift-app \
+  --region=europe-west4 --project=kurrentschrift \
+  --to-revisions=<vorige>=100
+```
 
 **`Cache-Control` auf der Hülle.** `location = /index.html` setzt `no-store`
 (seit 2026-09-04; davor `no-cache`). Ohne Header trug die Antwort nur

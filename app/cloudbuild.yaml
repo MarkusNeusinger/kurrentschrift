@@ -156,8 +156,9 @@ steps:
         # — `add_header` in security-headers.conf, `sub_filter` in nginx.conf —
         # and the static tests can only prove the config TEXT agrees, never that
         # the built image's response does. Losing the stamp leaves a page that
-        # passes every probe above and, on the day the policy is switched from
-        # Report-Only to enforcing, runs no inline script at all. Ported from
+        # passes every probe above and runs no inline script at all — since the
+        # policy went enforcing on 2026-09-05, that is a live page, not a
+        # someday. Ported from
         # the sibling (anyplot #11220) with its two corrections already in:
         #
         #   --compressed, because plain curl sends no Accept-Encoding and a

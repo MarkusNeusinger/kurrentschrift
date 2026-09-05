@@ -109,7 +109,7 @@ RESERVED = {
 # `POST /csp-report` is the first exception and does not touch that argument:
 # it accepts a browser's account of the SITE's own Content-Security-Policy,
 # writes nothing anywhere (api/routers/csp.py logs and counts in process), and
-# must answer anonymously or the report-only week produces nothing at all. It
+# must answer anonymously or the report channel delivers nothing at all. It
 # reads no data and returns none — its 204 carries no body.
 PUBLIC_WRITES: set[tuple[str, str]] = {("POST", "/csp-report")}
 

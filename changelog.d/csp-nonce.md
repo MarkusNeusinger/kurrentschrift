@@ -11,9 +11,9 @@
   can cover it, because Cloudflare reads the response header and stamps its own
   script with what it finds; verified live on the sister site first, including
   the two scripts Cloudflare creates inside its hidden iframe. **The policy
-  stays `Report-Only`** — the enforcing switch is still the one-word rename,
-  and the report week now also measures whether the edge honours the nonce
-  here.
+  shipped `Report-Only`** so that the report channel could measure whether the
+  edge honours the nonce here. It answered within two days, and the enforcing
+  switch of 2026-09-05 is what that answer bought.
 
 - **The report week can now name the script it is reporting.** `script-src`
   asks for `'report-sample'` and `POST /csp-report` logs the sample beside the
