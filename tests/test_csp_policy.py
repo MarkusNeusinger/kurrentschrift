@@ -192,7 +192,7 @@ def test_script_src_asks_for_a_sample():
     """
     assert "'report-sample'" in csp_directives()["script-src"], (
         "script-src does not ask for a sample, so every inline violation reports as an "
-        "anonymous 'inline' and the report week cannot name the script it is about."
+        "anonymous 'inline' and no report can name the script it is about."
     )
 
 
