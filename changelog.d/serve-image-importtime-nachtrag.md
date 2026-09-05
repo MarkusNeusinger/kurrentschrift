@@ -14,5 +14,6 @@
   The split also shows what the estimate never looked at: the web/DB/API frame is
   **47.9 %** of the import, and `api.routers.eigenhand` alone (64.9 ms) costs more
   than `scipy.ndimage` and scikit-image together. The extras turned out not to
-  matter, the conclusion stands, and nothing was moved — the note carries the
-  dated addendum.
+  matter, the conclusion stands, and nothing was moved — the round is its own
+  dated note beside the first one, because a `Befund-Journal` is superseded by a
+  new round rather than continued.
