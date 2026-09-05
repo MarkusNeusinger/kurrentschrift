@@ -1,10 +1,12 @@
 # Tintenfolger: der Prüfstand und die zwei Routen zur Wortbahn
 
-> **Status (2026-09-04): teil-umgesetzt.** Das Duell ist komplett
+> **Status (2026-09-05): teil-umgesetzt.** Das Duell ist komplett
 > gemessen und §7 in Arbeit; adoptiert sind Kette **v5** (`aug26`),
 > Lotse **v0.17** (`aug20`), die Lineal-Stände **v2.1** (`aug16`) /
 > **L-U** (`aug26`) und die Laufform **LF11** („glatte Zeile", `sep02`,
-> auf Autor-Entscheid nach der ersten humanbench-Wortrunde). Der Ist-Stand mit Zahlen steht im nächsten
+> auf Autor-Entscheid nach der ersten humanbench-Wortrunde) — deren
+> Zeilen seit dem **LF12**-Write (`sep05`) aus den Vorkommen des
+> heutigen Ketten-Stands stammen. Der Ist-Stand mit Zahlen steht im nächsten
 > Abschnitt „Stand der Kampagne“, die stehenden Rettungswege in §7.9,
 > die offenen Arme und Autorenschritte in §7.11. Zahlen und
 > Vorregistrierungen wohnen ausschließlich in
@@ -45,22 +47,22 @@ Verfahrensseite; geändert wird sie nie hier.
 
 > **Lineal.** `tools/tracebench` auf dem eingefrorenen dev-19-Satz
 > (append-never), Strukturzähler **v2.1** (`aug16`), Marken-Kappe
-> **1,5 xh** seit L-U (`aug26`). Wort-Lineal: Wörter **0,109218** ·
-> Paare **0,148198** (Re-Baseline `sep02` nach dem LF11-Write;
+> **1,5 xh** seit L-U (`aug26`). Wort-Lineal: Wörter **0,108444** ·
+> Paare **0,148236** (Re-Baseline `sep05` nach dem LF12-Write;
 > Headline-Ledger im Kopf von §14).
 >
-> **Duell, dev-19, Lineal-Kappe 1,5 — seit `sep04` beide Zahlen auf
-> DERSELBEN Wurzel** (`suetterlin-1922` `exported_at`
-> 2026-09-04T12:22:29+00:00, `root_digest` `9f124f78cc9f…`). Kette
-> **v5** (`aug26`), Zahlen re-baselined `sep04` (§14 „Kette K-F"):
-> dtw **0,045830** med · p90 0,094197 · aiou 0,7694 ·
-> 63er-Soll-Abstand 76 · Netto-Kreuzungsdefekte 19. Lotse **v0.17**
-> (`aug20`, Zahlen `sep04`) dtw **0,056080** · p90 0,1155 · aiou
-> 0,7527 (§14 „Lotse-Sprung `sep04`"; die `aug26`-Zahl 0,0545 war eine
-> Transkription, richtig ist dort 0,058522). Die alten Kette-Zahlen
-> (`aug26`: 0,0446 · 0,0861 · 0,7608 · Soll 79) bleiben gültig und
-> archiviert, sind aber über die `sep01`-Rechteck-Reparatur hinweg mit
-> diesen nicht vergleichbar.
+> **Duell, dev-19, Lineal-Kappe 1,5 — beide Zahlen auf DERSELBEN
+> Wurzel** (`suetterlin-1922` `exported_at` 2026-09-05T21:33:12+00:00,
+> `root_digest` `eaa195aa7c84…`, gebaut nach dem LF12-Write). Kette
+> **v5** (`aug26`), Zahlen re-baselined `sep05` (§14 „Laufform LF12
+> `sep05` — geschrieben"): dtw **0,045384** med · p90 0,087826 · aiou
+> 0,7583 · 63er-Soll-Abstand 80 · Netto-Kreuzungsdefekte 19. Lotse
+> **v0.17** (`aug20`, Zahlen `sep05`) dtw **0,053393** · p90 0,116199 ·
+> aiou 0,7493 · `cross_spurious` 5. Die Zahlen der `sep04`-Wurzel
+> (Kette 0,045830 · Lotse 0,056080) und die der `aug26`-Wurzel
+> (Kette 0,0446 · 0,0861 · 0,7608 · Soll 79) bleiben gültig und
+> archiviert, sind aber mit diesen nicht vergleichbar — jede Wurzel
+> trägt ihre eigene Registrierung und ihr eigenes Kompositions-Soll.
 > InkSight **T0** (`aug17`) dtw 0,0951 auf der ALTEN Kappe 0,8, 5 von 19
 > failed — auf 1,5 unvermessen, die Zahlen sind archiviert und nicht
 > vergleichbar. Nullprobe dtw **0,8198** auf den 10 der 19 Wörter, die
@@ -110,6 +112,15 @@ Verfahrensseite; geändert wird sie nie hier.
 > benutzt. Warum LF11 auf NICHT identischen Tafeln so oft unentschieden
 > war, sagt das nicht; die Wiederholungsrunde bleibt fällig.
 >
+> **Geschrieben `sep05`: LF12** (§14 „Laufform LF12 `sep05` —
+> geschrieben"). Derselbe Schätzer, neue Evidenz: 18 Zeilen aus den
+> Vorkommen des heutigen Ketten-Stands neu abgeleitet, die Zeile `S`
+> gelöscht (Autor-Entscheid A35 — n = 2 und in der frischen Ernte ohne
+> einen brauchbaren Fit; `S` komponiert seither aus der Tafelform).
+> Der Neubau beider Wurzeln danach ist die Re-Baseline, die die Zahlen
+> dieses Blocks trägt; unter dem Beweis-Boden stehen nur noch `P` und
+> `s` (je n = 1).
+>
 > **Offen (§7.11).** KI-messbar: LF4 (p) ·
 > Abstandsterm/Schleifen-Halteterm für die 13 v5-Rückweisungen ·
 > Distanzfeld-NUR-Claim · Lotse-Zonen-Stufe · InkSight B2 und die
@@ -123,15 +134,16 @@ Verfahrensseite; geändert wird sie nie hier.
 > Krümmung eines Aufstrichs überhaupt sieht) · der **Rausch-Boden des
 > Folgers** und die zwei Arme
 > dahinter (§14 „Kette K-F `sep04`") · formtreue Fenster-Pinnung. **Erledigt
-> `sep04`:** die Duell-Nachmessung auf der heutigen Wurzel — die Kette
-> ist im Rahmen von K-F frisch gemessen, beide Duell-Zahlen stehen
-> jetzt auf derselben Wurzel.
+> `sep04`:** die Duell-Nachmessung auf der heutigen Wurzel — beide
+> Duell-Zahlen stehen auf derselben Wurzel, und der LF12-Write vom
+> `sep05` hat sie dort gehalten, weil er den Lotsen mitgemessen hat.
 > Autorenschritte: Bestätigungssatz
-> A/B · Prod-Re-Harvest der `traced`-Zeilen mit
-> Kette v5 · St-Ligatur im Wizard · Laufform-Lücke G/W/K/ue/F/ae/b ·
-> die Herkunft der `aug30`-Fixture-Wurzel. Die humanbench-WORT-Runde
-> ist seit `sep02` kein offener Autorenschritt mehr, sondern ein
-> gefahrenes Instrument.
+> A/B · St-Ligatur im Wizard · Laufform-Lücke G/W/K/ue/F/ae/b, seit
+> `sep05` zusätzlich `S` · die Herkunft der `aug30`-Fixture-Wurzel.
+> Der **Prod-Re-Harvest der `traced`-Zeilen mit Kette v5** ist seit
+> `sep05` erledigt (LF12, geschrieben), die humanbench-WORT-Runde seit
+> `sep02` kein offener Autorenschritt mehr, sondern ein gefahrenes
+> Instrument.
 >
 > **Regeln.** Zahlen wohnen in §14, die Verfahrensseiten sind das
 > Routen-Register, jede Re-Baseline ist datiert und nennt seit `sep02`
@@ -1181,7 +1193,7 @@ davon liegt zusätzlich als Todoist-Aufgabe im Projekt „Kurrentschrift"):
 | **Bestätigungssatz A, dann B** | §2.5, verfahren-lotse.md | Schlussstein vor jeder Adoption jenseits der Routen-Konstanten; er sperrt außerdem den referenzfreien Auswähler „Vier Augen" | offen |
 | **humanbench-WORT-Runde** | §14 „Methodik-Lücke `aug16`", K-E1/K-E2 | der einzige benannte Tie-Breaker für ruler-indifferente Fälle | **erste Runde gefahren `sep02`** (Basis vs. LF11, Fassung A2): das Instrument steht und war verlässlich (10/12), ein formales Verdikt trug die Runde aber nicht — der Unentschieden-Anteil lag mit 34,9 % über der Schranke von 25 % (§14 „Laufform LF11 — humanbench-Wortrunde"). Für K-E1/K-E2 weiter offen, aber nicht mehr mangels Instrument |
 | **LF11-Wiederholungsrunde auf der sicher reparierten Anzeige** | §14 „Laufform LF11 — humanbench-Wortrunde" | zwei gemessene Gate-Fehlschläge: der Unentschieden-Anteil liegt bei 34,9 % (ganze Runde) bzw. 25,6 % (günstigste Teilmenge) gegen ≤ 25 %, und jene Teilmenge hätte nur 3 der nötigen 6 Wiederholungspaare. Ungeklärt bleibt daneben, ob die Anzeige „gefüllte Ringe" überhaupt Urteile erreicht hat | offen: ~10 min Urteilszeit, gleiche Karten — sie ersetzt den Autor-Entscheid durch ein Instrument-Verdikt und klärt den Anzeige-Zweifel gleich mit. **Teil-Auskunft seit `sep05`:** Runde 6 hat 12 Nullproben mitgeführt und alle zwölf wurden richtig als „kein Unterschied" erkannt — die Antwortoption ist benutzbar und wurde benutzt. Die LF11-Quote erklärt das NICHT (dort waren die Tafeln verschieden; ein Beurteiler kann Nullproben richtig treffen und bei feinen Unterschieden trotzdem zu oft unentschieden sein), beide Fragen bleiben offen |
-| **Prod-Re-Harvest der `traced`-Zeilen mit Kette v5** | §14 K-B · v4 · LF3b-W | seit `aug19` viermal vertagt („hinter Autor-Go + dbsnapshot"); die gespeicherten Bahnen stammen noch aus älteren Ketten-Ständen | **trocken gemessen `sep04`** als Arm LF12 (§14): alle Gates grün, 18 der 22 Zeilen bewegen sich, die Karte liegt vor. Offen bleibt nur noch der Autorenschritt selbst — `dbsnapshot`, Go, PUT je Glyph, Neu-Export als deklarierte Re-Baseline |
+| ~~**Prod-Re-Harvest der `traced`-Zeilen mit Kette v5**~~ | §14 K-B · v4 · LF3b-W | seit `aug19` viermal vertagt; die gespeicherten Bahnen stammten noch aus älteren Ketten-Ständen | **erledigt `sep05`** (§14 „Laufform LF12 `sep05`"): 18 Zeilen neu abgeleitet, Readback identisch, `S` auf Entscheid A35 gelöscht, beide Wurzeln neu gebaut als deklarierte Re-Baseline. Nachfolger ist die Eigenhand-Ernte für `P`/`s`/`p`/`S` |
 | **St-Ligatur im Wizard nachfahren** | §14 „Übergänge Korb-Runde `aug30`" (Korb #9) | bis dahin greift der Ligatur-Zerfall, und `Stube` fällt aus dem Quiz-Pool | offen |
-| **Laufform-Lücke G · W · K · ue · F · ae · b** | §14 „Lotse v0.15 `aug19`" (dritter Nachtrag), LF8/LF9 | 43 von 62 Glyphen komponieren aus der rohen Chart-Form, weil ihnen die Laufform fehlt oder sie ein Gate nicht bestand | offen; der Weg dorthin ist die Eigenhand-Ernte |
+| **Laufform-Lücke G · W · K · ue · F · ae · b**, seit `sep05` auch `S` | §14 „Lotse v0.15 `aug19`" (dritter Nachtrag), LF8/LF9, LF12 | 43 von 62 Glyphen komponieren aus der rohen Chart-Form, weil ihnen die Laufform fehlt oder sie ein Gate nicht bestand; `S` kam mit dem LF12-Write dazu (Zeile gelöscht, A35), `P`/`s` (je n = 1) stehen unter dem Beweis-Boden | offen; der Weg dorthin ist für alle dieselbe Eigenhand-Ernte |
 | **Herkunft der `aug30`-Fixture-Wurzel** | §14 Headline-Ledger, Nachtrag `sep02` | ohne die Auskunft bleiben alle Zahlen ab `aug30` nur untereinander vergleichbar | offen |

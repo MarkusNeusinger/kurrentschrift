@@ -1,6 +1,6 @@
 # Verfahrensseite Kette
 
-> **Status (2026-09-01): lebend.** Register-Seite des Verfahrens „Kette“
+> **Status (2026-09-05): lebend.** Register-Seite des Verfahrens „Kette“
 > (Konvention: [`verfahren.md`](verfahren.md)). Nachzieh-Pflicht: Jeder
 > §14-Eintrag zu einem Kette-Arm (adoptiert oder verworfen) ergänzt hier
 > seine Ledger-Zeile; eine adoptierte Formulierungsänderung bumpt die
@@ -60,16 +60,20 @@ WÄCHTER-Schicht: gegen die Soll-Stack-Basis 63er-Soll **86 → 79** bei
 0 schlechter, aiou-Median der bewegten Wörter **+0,073**, null
 Verlierer — weil der rundenatomare Wächter 26 von 31 bewegten Wörtern
 in Runde 1 auf den Init zurückwarf und die Zone genau diese rettet.
-Zahlen (dev-19, Lineal Kappe 1,5 seit L-U), **Re-Baseline `sep04`
-(§14 „Kette K-F"): dtw 0,045830 med · p90 0,094197 · worst `unter`
-0,113919 · marks 0 fehlend · aiou 0,7694**; 63er-Soll-Abstand **76**.
+Zahlen (dev-19, Lineal Kappe 1,5 seit L-U), **Re-Baseline `sep05`
+(§14 „Laufform LF12 `sep05` — geschrieben"): dtw 0,045384 med · p90
+0,087826 · worst `muß` 0,107134 · marks 0 fehlend · aiou 0,7583**;
+Netto-Kreuzungsdefekte 12 + 7 = **19**, 63er-Soll-Abstand **80**.
 Gemessen auf der Wurzel `suetterlin-1922` `exported_at`
-2026-09-04T12:22:29+00:00 `root_digest` `9f124f78cc9f…` — die
-Formulierung ist unverändert v5, bewegt hat sich die Wurzel (die
-`sep01`-Rechteck-Reparatur plus zwei Neu-Exporte), weshalb die
-`aug26`-Zahlen (dtw 0,0446 · p90 0,0861 · worst `muß` 0,106 · aiou
-0,7608 · Soll 79) gültig, archiviert und mit diesen NICHT vergleichbar
-sind. Archäologie: `--no-structure-guard-ratchet
+2026-09-05T21:33:12+00:00 `root_digest` `eaa195aa7c84…` — die
+Formulierung ist unverändert v5, bewegt hat sich wieder nur die
+Wurzel, diesmal durch den LF12-Write (18 Laufform-Zeilen neu
+abgeleitet, die `S`-Zeile gelöscht). Die `sep04`-Zahlen (dtw 0,045830 ·
+p90 0,094197 · worst `unter` 0,113919 · aiou 0,7694 · Soll 76, Wurzel
+`9f124f78cc9f…`) und die `aug26`-Zahlen (dtw 0,0446 · p90 0,0861 ·
+worst `muß` 0,106 · aiou 0,7608 · Soll 79) bleiben gültig und
+archiviert, sind mit diesen aber NICHT vergleichbar — jede Wurzel
+trägt ihre eigene Registrierung und ihr eigenes Kompositions-Soll. Archäologie: `--no-structure-guard-ratchet
 --structure-guard-zone 0 --soll-source init` = die v4-Soll-Stack-Basis
 (strich-identisch), `--no-structure-guard` = Kette-frei (Diagnose-Arm:
 Init 86 → frei 125 Soll-Punkte, nie Duell). Bekannte Klassen-Defekte:
@@ -116,6 +120,7 @@ Gewichts-Arme werden nicht rückwirkend nummeriert (Konvention Nr. 3).
 | aug26 | **Kette v5 — Adoption K0-S Sprosse 2** (Autor-Go 25.08., nach der L-U-Re-Baseline sequenziert) | Defaults geflippt: `soll_source="composition"`, `structure_guard_soll`, `structure_guard_ratchet`, `structure_guard_zone_units=0.55`; Archäologie `--no-structure-guard-ratchet --structure-guard-zone 0 --soll-source init` = Soll-Stack-Basis (strich-identisch), `--no-structure-guard` = Kette-frei | **ADOPTIERT.** Gegen die vorregistrierte Soll-Stack-Basis in EINER Umgebung: 63er-Soll **86 → 79** (7 besser · 0 schlechter), aiou der 31 bewegten min −0,0004 / Median **+0,073**, null Verlierer; dev-19-Lineal dtw 0,0453 → 0,0446, aiou 0,7468 → 0,7608, schlechtestes Wort-Delta +0,0016, Marken 0/0/0, Kreuzungsdefekte 19 = 19. Mechanismus je Wort (`guard_outcome`): 26 von 31 bewegten waren in der Basis `revert-init`, v5 macht sie `zonal`. **Der Umweg:** die erste Messung des Tages paarte gegen den Folger OHNE Wächter — 36 Scheinverlierer, drei Gates scheinbar verletzt; der Autor lehnte das Verwerfen ab, Fables Zweitmeinung fand den Basis-Fehler, seither Stack-Sensor in `k0eval`. Offen: 13 Wörter, die auch v5 auf den Init zurückwirft (24/25 freie Endzustände strukturell illegal) — Rettungswege als präventive Terme im Abstieg, nie Annahme-Regeln | „Kette v5 `aug26`“ |
 
 | sep04 | **K-F Produktions-Init** (Autor-Entscheid A34) + Nachmessung auf der heutigen Wurzel | `connector_init` — der Ketten-Init zieht den Verbinder nicht mehr aus dem eingefrorenen Spiegel (`analyze._generate_connector`, 2026-07-11), sondern spielt die Kurve ab, die `core.compose._connector_centerline` beim Komponieren dieses Wortes zurückgegeben hat (`prodconn.joins_for`) | **VERWORFEN** — zurechenbar an Gate 2 (63er-Soll 76 → 77) und Gate 4 (`Galoppieren` +0,0055 dtw, Kreuzungsdefekte 19 → 20); Gate 1 (Identität: `--connector-init mirror` strich-identisch 63/63) und Gate 5 (63/63 `ok`) bestehen. **Das eigentliche Ergebnis ist eine Nullprobe:** für 23 der 63 Wörter unterscheidet sich das Anker-Array des Inits um höchstens **1,78·10⁻¹⁵** (die nächste Klasse beginnt bei 0,00346) — auf dieser bedeutungslosen Störung kippen **9 Wächter-Verdikte**, die aiou-Spanne reicht von −0,0298 bis +0,0800 und **4 Wörter reißen die −0,003-Schranke von Gate 3**. Gate 3 fällt also schon gegen eine Null-Änderung, 8 der 19 dev-Wörter sind Nullklasse: **ein Arm auf der Init-Ebene ist mit dieser Gate-Form nicht entscheidbar**, und der Rausch-Boden gehört vor den nächsten (§7.9). Zurechenbar bleiben Gate 2 (Nullklasse netto ±0) und `Galoppieren` (Realklasse). **Im selben Lauf die Re-Baseline der Kette auf der `sep04`-Wurzel** (siehe „Aktueller Stand") | „Kette K-F `sep04`" (Vorregistrierung + gemessen) |
+| sep05 | **Re-Baseline auf der LF12-Wurzel** *(kein Kette-Arm — die Route ist unberührt, die Basis ist es nicht)* | kein Knopf: der LF12-Write hat 18 Laufform-Zeilen neu abgeleitet und die `S`-Zeile gelöscht, danach wurden beide Wurzeln neu gebaut (`eaa195aa7c84…` / `0fbde2d72b64…`) | dev-19 frisch geritten, BLAS gepinnt, 63/63 `ok`: dtw **0,045384** med · p90 **0,087826** · worst `muß` 0,107134 · aiou **0,7583** · Marken 0/0/0 · `cross_missing` 13 → **12** bei `cross_spurious` 6 → 7, Netto-Kreuzungsdefekte **19 = 19** · `touch_cand` 23 → 19 · `soll_zones_agree` 19/19 · 63er-Soll-Abstand **80** (von 76, beide Seiten des Betrags sind mitgewandert). Gegen die `sep04`-Zahlen NICHT gepaart vergleichbar — `--compare` lehnt einen Bericht anderer Wurzel per Konstruktion ab | „Laufform LF12 `sep05` — geschrieben" |
 
 ## Stehende v6-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
 

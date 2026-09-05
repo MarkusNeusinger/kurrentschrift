@@ -1,12 +1,12 @@
 # Qualitätsmetrik & Glyph-Bench
 
-> **Status (2026-09-04): lebend.** Die Messlatte und ihre **Regeln**. Das
+> **Status (2026-09-05): lebend.** Die Messlatte und ihre **Regeln**. Das
 > Journal der Läufe ist am 2026-09-04 in eine eigene Datei gezogen —
 > [`messjournal.md`](messjournal.md), dort weiterhin §14; hier §1–§13, §15.
-> **Aktuelle Headlines: Wörter 0,109218 · Paare 0,148198** (Re-Baseline
-> `sep02` — die 22 Laufform-Zeilen sind seit dem LF11-Write
-> Spline-Basis-Mediane, `messjournal.md` §14 „Laufform LF11 —
-> humanbench-Wortrunde, Instrumentdefekt und Adoption“). Sie stehen an
+> **Aktuelle Headlines: Wörter 0,108444 · Paare 0,148236** (Re-Baseline
+> `sep05` nach dem LF12-Write — 18 Laufform-Zeilen neu abgeleitet, `S`
+> gelöscht, Wurzeln `eaa195aa7c84…` / `0fbde2d72b64…`;
+> `messjournal.md` §14 „Laufform LF12 `sep05` — geschrieben“). Sie stehen an
 > genau dieser einen Stelle; ihre Historie samt Fixture-Wurzeln führt der
 > Headline-Ledger im Messjournal.
 >

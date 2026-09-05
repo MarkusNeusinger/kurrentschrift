@@ -1,6 +1,6 @@
 # Messjournal — Tintenfolger-Bench (§14)
 
-> **Status (2026-09-04): lebend.** Das Journal der Mess-Kampagne. Seit
+> **Status (2026-09-05): lebend.** Das Journal der Mess-Kampagne. Seit
 > 2026-09-04 eine eigene Datei; bis dahin war es §14 von
 > [`qualitaetsmetrik.md`](qualitaetsmetrik.md), Wort für Wort dieselbe
 > Sektion.
@@ -14,10 +14,11 @@
 > 2 000–3 500. Wer aus dem Register springt, lädt also ein Fünfzehntel
 > statt der ganzen Datei — dafür ist sie geteilt.
 >
-> **Was gilt (Stand `sep02`).** Der Duell-Stand: Kette **v5** (`aug26`,
+> **Was gilt (Stand `sep05`).** Der Duell-Stand: Kette **v5** (`aug26`,
 > Kompositions-Soll + Ratsche + Zone 0,55 sind der Default) · Lotse
 > **v0.17** (`aug20`) · Lineal **v2.1**/**L-U** (`aug16`/`aug26`) ·
-> Laufform **LF11** („glatte Zeile“, `sep02`, geschrieben). Die
+> Laufform **LF11** („glatte Zeile“, `sep02`), seit dem
+> **LF12**-Write (`sep05`) auf frischer Evidenz und ohne `S`. Die
 > Headline-Zahlen selbst stehen an genau EINER Stelle, im
 > Status-Blockquote von [`qualitaetsmetrik.md`](qualitaetsmetrik.md); der
 > Ledger hier indexiert sie, er mintet sie nicht.
@@ -205,6 +206,7 @@ die DB) — mit seiner Bedingung.
 | sep04 | Kette | [K-F Produktions-Init (A34)](#kette-k-f-sep04--vorregistrierung-der-produktions-init-autor-entscheid-a34-und-die-fällige-kette-nachmessung) | Pre-Reg | EIN Knopf `connector_init` mirror→production (der Verbraucher, den der P-Spiegel stehen ließ); Basis = frischer v5-Lauf auf der heutigen Wurzel = deklarierte Kette-Re-Baseline, weil seit `sep01` keine dev-19-Zahl über die Rechteck-Reparatur trägt |
 | sep04 | Kette | [K-F gemessen](#kette-k-f-sep04--gemessen-der-init-bewegt-sich-die-gefolgte-bahn-kaum--und-die-kette-steht-heute-anders-als-am-aug26) | gemessen · **verworfen** (Gate 2/4 zurechenbar) · **Re-Baseline (Kette)** · **Instrument-Befund** | Kette auf der heutigen Wurzel: dtw 0,045830 · p90 0,094197 · aiou 0,7694 · 63er-Soll 76 (Duell jetzt wurzel-gleich gegen Lotse 0,056080). Der Arm: Soll 76→77, `Galoppieren` +0,0055 dtw, Kreuzungsdefekte 19→20. **Die Nullprobe ist das Ergebnis:** 23 der 63 Wörter bekommen einen Init, der um höchstens 1,8·10⁻¹⁵ abweicht — auf dieser NULL-Änderung kippen 9 Wächter-Verdikte, aiou −0,0298 … +0,0800, 4 Verlierer unter der 0,003-Schranke. Gate 3 fällt gegen eine bedeutungslose Störung; ein Init-Arm ist auf diesem Instrument nicht entscheidbar |
 | sep05 | Übergänge | [J5 Runde 6 gemessen](#übergänge-j5-sep05--runde-6-gemessen-ein-ehrliches-negativ-gegen-grüne-gates) | Menschenrunde · **ehrliches Negativ** · **Autor-Entscheid A36** | Basis 20 : Kandidat 1 von 21 entschiedenen (4,8 % gegen ≥ 60 %), je Klasse `apex` 1/12 und `stem` **0/7 — bei ALLEN grünen Gates**; 12/12 Nullproben richtig als „kein Unterschied" erkannt (12 der 13 Ties sind sie), Verlässlichkeit 4/4 gleicher Arm bei 1/4 gleicher Seite, aber 4 < 6 Paare → kein Adoptionsanspruch. Das Auge verwirft, was das Lineal belohnt: die 5 Apex-Gewinner des Wort-Lineals gehen 5 : 0 an die Basis. Gemessener Grund im Payload: die Übergabe ist auf 1,67–1,84 xh schnurgerade (Pfeilhöhe 0,001–0,002 xh) statt den Anstrich-Bogen zu tragen. **A36: `stem_depart` wird NICHT Default**, Golden-Bake gegenstandslos |
+| sep05 | Laufform | [LF12 geschrieben + Re-Baseline](#laufform-lf12-sep05--geschrieben-prod-write-der-18-zeilen--löschung-s-deklarierte-re-baseline) | **geschrieben** (Autor) · **Re-Baseline** (Wörter/Paare + beide Duell-Routen) | 18 Zeilen geschrieben, Readback identisch, `S` gelöscht (A35), Live-Zeilen anker-exakt die gemessene Karte. Neue Wurzeln `eaa195aa7c84…` / `0fbde2d72b64…`: Wörter **0,108444**, Paare **0,148236**, Kette dtw **0,045384**, Lotse dtw **0,053393**. Boden am Bestand: nur noch `P`/`s` (je n = 1) darunter, alle Zeilen-Gates grün |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -238,6 +240,7 @@ Vorbedingung (Glossar „Wurzel-Digest“, `tools/wordbench/README.md`).
 | sep02 | dieser PR | Wurzeln neu gebaut (`fetch_fixtures --set all --verify`), `exported_at` 2026-09-02T08:00:29+00:00, `root_digest` `28ba1afebc53…` (`suetterlin-1922`) / `f0cf3d53414c…` (`suetterlin-1922-pairs`) — **keine** Re-Baseline: §15 wird exakt reproduziert | 0,109255 | 0,148433 | dieser Ledger-Eintrag |
 | sep02 | #501 | **Re-Baseline nach dem LF11-Write**: 22 Laufform-Zeilen auf Spline-Basis-Mediane umgestellt (Snapshot `2026-09-02T21-58-16Z`, Readback 22/22), Wurzeln neu gebaut: `suetterlin-1922` `exported_at` 2026-09-02T22:13:54+00:00 `root_digest` `2e3581287bed…`, `suetterlin-1922-pairs` `exported_at` 2026-09-02T22:13:53+00:00 `root_digest` `cee9d363f497…`; trifft die trockene LF11-Vorhersage exakt | 0,109218 | 0,148198 | §14 „Laufform LF11 — humanbench-Wortrunde, Instrumentdefekt und Adoption“ |
 | sep03 | #516 | Wurzeln neu gebaut (`fetch_fixtures --set all --verify`, 12/12 bit-exakt) im Zuge der Glyph-Bench-Re-Baseline (Audit A15): `suetterlin-1922` `exported_at` 2026-09-03T21:28:30+00:00 `root_digest` `57402ae7dd41…`, `suetterlin-1922-pairs` gleicher Zeitstempel `f176e191d4bf…` — **keine** Re-Baseline der Wort-Zahlen: beide reproduzieren exakt, nur die Wurzel-Identität ist neu | 0,109218 | 0,148198 | §5 „Re-Baseline 2026-09-03“ |
+| sep05 | dieser PR | **Re-Baseline nach dem LF12-Write**: 18 Laufform-Zeilen aus den Vorkommen des heutigen Ketten-Stands neu abgeleitet, die Zeile `S` gelöscht (Autor-Entscheid A35), Wurzeln neu gebaut: `suetterlin-1922` `exported_at` 2026-09-05T21:33:12+00:00 `root_digest` `eaa195aa7c84…`, `suetterlin-1922-pairs` gleicher Lauf `0fbde2d72b64…`. Trifft die trockene LF12-Vorhersage (0,108107) auf 3·10⁻⁵, sobald man die Löschung herausrechnet | 0,108444 | 0,148236 | §14 „Laufform LF12 `sep05` — geschrieben“ |
 
 **Nachtrag `sep02` — die `aug30`-Wurzel ist eine undeklarierte
 Re-Baseline.** Zwischen der `aug29`-Wurzel (0,106720 / 0,146506, im
@@ -9690,3 +9693,216 @@ Wiederholungs-Boden, aber nicht automatisch bis 6 — die Zahl der Wiederholunge
 ist `n − min_gap − REPEAT_JITTER` und damit vor dem Bau ausrechenbar. Diese
 Runde bat um 6, bekam gemeldete 4 und hat damit von Anfang an keinen
 Adoptionsanspruch tragen können.
+---
+
+### Laufform LF12 `sep05` — geschrieben: Prod-Write der 18 Zeilen + Löschung `S`, deklarierte Re-Baseline
+
+Der Abschluss des Arms, den die beiden LF12-Einträge oben trocken
+gemessen und ausdrücklich NICHT geschrieben haben. Der Autor hat die
+Karte am 2026-09-05 gegen 23:30 CEST geschrieben; dieser Eintrag hält
+den Write fest und misst die Wurzel neu, die er erzeugt hat. Der Write
+ist ein Autorenvorgang, die Messung eine Bench-Runde — nichts hier
+fasst die DB an.
+
+#### Der Write
+
+- **Snapshots:** davor `2026-09-05T21-25-59Z`, danach
+  `2026-09-05T21-31-23Z`. Beide angelegt, keiner angefasst.
+- **18 Zeilen** per PUT auf `suetterlin-1922`, Variante 100:
+  `Z a c d e g h i l longs m n o r sz u w z` — genau die Karte des
+  Trocken-Eintrags. Readback identisch; die Bewegung gegen die vorher
+  gespeicherten Zeilen liegt bei max **0,026 xh** und RMS ≤ 0,006 —
+  anker-genau das, was die trockene Tabelle vorhergesagt hat.
+- **`S` gelöscht** (Autor-Entscheid A35, HTTP 204). Die Zeile stand
+  seit dem LF11-Write bei n = 2 und hatte in der LF12-Ernte NULL
+  brauchbare Fits; `S` komponiert seither aus der Tafelform. `P`, `s`
+  und `p` bleiben unberührt — ihr Weg ist die Eigenhand-Ernte, nicht
+  die 63 Wortproben.
+- **Die Karte, die gemessen wurde, IST die Karte, die live steht.** Die
+  21 Laufform-Zeilen der neuen Wurzel gegen die 22-Zeilen-Karte, Anker
+  für Anker: größte Abweichung **exakt 0** über alle 21 gemeinsamen
+  Schlüssel, und `S` ist der einzige fehlende. Live nachgezählt (nur
+  lesend, `GET …/templates/{key}?variant=100`): `S` → **404**, die
+  anderen 21 → 200.
+
+#### Die neue Wurzel (deklarierte Re-Baseline)
+
+`fetch_fixtures --set all --verify` über HTTPS, danach jeder Lauf mit
+`--expect-root` und `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`:
+
+| Wurzel | `exported_at` | `root_digest` |
+|---|---|---|
+| `suetterlin-1922` | 2026-09-05T21:33:12+00:00 | `eaa195aa7c84…` |
+| `suetterlin-1922-pairs` | 2026-09-05T21:33:11+00:00 | `0fbde2d72b64…` |
+
+Der Export meldet **21** statt 22 gespeicherte Laufform-Zeilen — der
+Löschbeleg im Artefakt selbst. `--verify` ist grün: jede neu gebaute
+Zeile rendert identisch gegen `/write/glyphs`, 12 von 12 Kompositionen
+sind bit-exakt gegen `/write/word` (schlimmste Buchstabenform 0,
+schlimmste Platzierung 0 xh). Die `abb22`-Wurzel ist mitgebaut und
+bleibt, was sie ist: Cross-Hand, nie Teil einer Same-Hand-Headline.
+
+**Eine zweite Größe ist mitgewandert, und sie gehört genannt:** der
+quellen-gepoolte Gleichzug-Nib steht in der neuen Wurzel bei
+**0,0724326** gegen **0,07251** in der `sep03`/`sep04`-Wurzel — beide
+als `nib_precision: "exact"` von `/sources/…/render-context` gelesen,
+also kein Ablese-Artefakt. Der Pool läuft über ALLE Templates der
+Quelle, Variantenzeilen eingeschlossen; ein Write, der 18 davon
+ersetzt und eine löscht, bewegt ihn. Sein Beitrag zur Headline ist
+unten beziffert und liegt bei 3·10⁻⁵.
+
+#### Die Headline
+
+| | Wörter | Paare |
+|---|---|---|
+| Basis: `sep03`-Wurzel `57402ae7dd41` / `f176e191d4bf` (= `sep04` `9f124f78cc9f` / `cf5aa308a865`, Ziffer für Ziffer) | 0,109218 | 0,148198 |
+| **neue Wurzel `eaa195aa7c84` / `0fbde2d72b64`** | **0,108444** | **0,148236** |
+| Δ | **−0,000774** | **+0,000038** |
+
+63 von 63 Wörtern und 33 von 33 Paar-Drills gescoret, keiner
+übersprungen, keiner gefallen. `worst_word` wandert wie vorhergesagt
+von `regieren` 0,234335 auf **`han` 0,232609**, `worst_pair` bleibt
+`In` 0,283819. Komponenten `comp_transition` 0,089804 ·
+`comp_coverage` 0,101580 · `comp_width` 0,162397, Naht-Abgang
+`seam_dep_median` **+7,59** (Basis +7,99) — genau der Wert, den der
+Trocken-Eintrag für die Karte gemessen hat.
+
+#### Warum die Zahl nicht die trockene ist — die Zerlegung
+
+Der Trocken-Eintrag sagte für die Karte **0,108107 / 0,148231**
+voraus, gemessen sind 0,108444 / 0,148236. Die Differenz ist die
+LÖSCHUNG, die in der trockenen Karte noch nicht steckte: dort trug
+`S` seine gespeicherte Zeile. Nachgerechnet mit einem
+Ein-Schlüssel-Overlay, das die `S`-Zeile von vor dem Write auf die
+neue Wurzel zurücklegt (Overlay-Lauf, eigene Zahl, nie die Headline):
+
+| Fassung | Wörter | Paare |
+|---|---|---|
+| Basis, vor dem Write | 0,109218 | 0,148198 |
+| trockene Karte auf der `sep03`-Wurzel | 0,108107 | 0,148231 |
+| neue Wurzel + `S`-Zeile zurückgelegt | **0,108137** | 0,148236 |
+| **neue Wurzel, wie sie steht** | **0,108444** | **0,148236** |
+
+Die trockene Vorhersage ist damit auf **3·10⁻⁵** reproduziert — und
+diese 3·10⁻⁵ sind zugleich die Obergrenze für den Nib-Versatz oben
+plus die Rekonstruktion der Overlay-Zeile. Der Re-Harvest der 18
+Zeilen bringt **−0,001081**, die Löschung gibt **+0,000307** zurück,
+netto −0,000774. Die Paare sind von der Löschung unberührt: `S` kommt
+in den 33 Drills nicht vor.
+
+**Dass die Löschung am Lineal etwas kostet, ist kein Einwand gegen
+sie.** Es ist derselbe Fall, für den LF11 das Auge gebaut hat — das
+Wort-Lineal belohnt eine Zeile aus zwei Vorkommen stellenweise, und
+der Kommentar an `LAUFFORM_MIN_OCCURRENCES` (`core/aggregate.py`)
+beschreibt am Sütterlin-`S` genau den Schaden, den das Lineal nicht
+sieht. Der Entscheid A35 ist gegen das Lineal gefallen; hier steht
+er beziffert.
+
+#### Der Beweis-Boden am Bestand (Befund 35)
+
+`tools.laufform.inventory` auf der neuen Wurzel, 21 Zeilen:
+
+- **Unter dem Boden stehen nur noch `P` (n = 1) und `s` (n = 1)** —
+  genau die beiden, die der Entscheid stehen ließ. Aus den drei Zeilen
+  des Trocken-Eintrags sind zwei geworden: `S` hat keine Zeile mehr.
+- **`p` steht mit der gebuchten n = 3 ÜBER dem Boden.** Die frische
+  Ernte hatte 2 gemessen, deshalb wurde die Zeile nicht neu
+  abgeleitet, sondern behielt ihre gespeicherte Fassung — samt ihrer
+  gebuchten Zahl. Der Boden schützt NEUSCHREIBUNGEN; er korrigiert
+  keine Buchung. Wer `p` als dünne Zeile sucht, findet sie hier und
+  nicht in der Boden-Zeile des Werkzeugs.
+- **Die Zeilen-Gates am Bestand sind grün:** τ = 2,86 über die 19
+  Zeilen mit n ≥ 3, keine darüber; Kopf-Gate 15° — schlimmster Kopf
+  `w` 13,4°, keine darüber; τ_form 1,46 (gesetzt von `w`), keine
+  darüber.
+
+#### dev-19: die Folger auf der neuen Wurzel
+
+Das **Identitäts-Gate** zuerst (`tracebench --split dev --candidate
+authored`): **PASS** — dtw 0, Chamfer beidseitig 0, jeder Zähler
+gepaart. Das Lineal misst auf dieser Wurzel, was es messen soll.
+
+Dann die Kette (`pairlab.follow --all --set words --jobs 4`, BLAS
+gepinnt, 63/63 `ok`, kein `failed`, 1 138,5 s) und der Lotse
+(`inkpilot --all --set words`, 63/63), beide auf dev-19 gescoret:
+
+| dev-19, Kappe 1,5 | Kette `sep04` | **Kette `sep05`** | Lotse `sep04` | **Lotse `sep05`** |
+|---|---|---|---|---|
+| dtw-Median | 0,045830 | **0,045384** | 0,056080 | **0,053393** |
+| dtw p90 | 0,094197 | **0,087826** | 0,115527 | **0,116199** |
+| schlechtestes Wort | `unter` 0,113919 | **`muß` 0,107134** | `muß-2` 0,157229 | **`muß-2` 0,149918** |
+| aiou-Median | 0,7694 | **0,7583** | 0,7527 | **0,7493** |
+| Marken f/ü/unklar | 0/0/0 | 0/0/0 | 0/0/0 | 0/0/0 |
+| `cross_missing` | 13 | **12** | — | 0 |
+| `cross_spurious` | 6 | **7** | 1 | **5** |
+| `retrace_missing` / `_spurious` | 7 / 6 | 7 / 8 | 5 / — | 7 / 2 |
+| `touch_cand` | 23 | **19** | — | 19 |
+| `soll_zones_agree` | 18/19 | **19/19** | — | 19/19 |
+| 63er-Soll-Abstand (`k0eval`) | 76 | **80** | — | — |
+
+**Die Kette führt das Duell weiter** — 0,045384 gegen 0,053393 —, und
+beide Zahlen stehen wieder auf DERSELBEN Wurzel. Der §7.11-Punkt, den
+die K-F-Runde am `sep04` erledigt hat, wäre durch diesen Write sonst
+wieder aufgegangen; deshalb ist der Lotse hier mitgemessen. Die
+Netto-Kreuzungsdefekte der Kette stehen mit 12 + 7 = **19** Ziffer für
+Ziffer wie am `sep04`.
+
+**Ein gepaartes Delta ist das ausdrücklich nicht.** `--compare` gegen
+den `sep04`-Bericht wird per Konstruktion abgelehnt (andere Wurzel) —
+und genau deshalb heißt das hier Re-Baseline. Die Bewegungen liegen
+zudem in der Größenordnung, für die K-F den Rausch-Boden angemeldet
+hat: dort kippten 9 von 63 Wächter-Verdikten auf einer Störung von
+1,8·10⁻¹⁵, mit aiou −0,0298 … +0,0800. Dass die Kette hier 0,0004 im
+Median und 0,011 im aiou wandert, ist mit diesem Instrument nicht in
+„besser" oder „schlechter" aufzulösen. Was zählt, sind die drei
+LF3b-W-Kriterien der Vorregistrierung, und die sind eingehalten:
+`cross_missing` ≤ Basis (13 → 12), Marken unverändert, aiou-Median-Δ
+−0,0111 ≥ −0,02.
+
+**Der 63er-Soll-Abstand steht bei 80 gegen 76 am `sep04`**
+(`k0eval` über alle 63 Wörter, Stack als Kette v5 bestätigt). Auch
+diese Zahl ist wurzel-intern zu lesen, und zwar auf BEIDEN Seiten des
+Betrags: das Kompositions-Soll wird aus denselben Laufform-Zeilen
+gebildet, die dieser Write ersetzt hat — es misst also nicht dasselbe
+Ziel wie am `sep04`. Ein „+4 schlechter" wäre die falsche Lesart;
+richtig ist „80 ist die neue Zahl, gegen die ein künftiger Arm
+gemessen wird".
+
+**Der Lotse bewegt sich strukturell mehr als die Kette, und das hat
+einen Mechanismus:** seine Karte IST die komponierte Bahn, also genau
+das, was dieser Write geändert hat (§14 „Lotse Absprung-Forensik
+`sep04`" — die Karten-Abdrift ist eine Platzierungs-, keine
+Folger-Eigenschaft). `cross_spurious` 1 → 5 bei unveränderten Marken
+ist die sichtbare Folge, während die Distanz gleichzeitig um 0,0027
+im Median fällt. Beides ist Re-Baseline und kein Arm: der Lotse hat
+in dieser Runde keinen Knopf bekommen.
+
+#### Was das für die gebauten Runden heißt
+
+Die gebaute, aber noch nicht geurteilte **humanbench-Runde 5**
+(`temp/runden-sep04/humanbench/runde-5-j4-austritts-trim`, der
+J4-Rettungsweg) ist an die `sep04`-Wurzeldateien gepinnt und bleibt
+gültig: sie vergleicht zwei Arme auf DIESEN Karten und nicht die
+heutige Wurzel gegen sich selbst.
+
+#### Was offen bleibt
+
+`P` (n = 1) und `s` (n = 1) stehen weiter unter dem Boden, `S` hat gar
+keine Zeile mehr, und `p` trägt eine gebuchte 3 gegen eine gemessene
+2. Alle vier hängen am selben Autorenschritt: die Eigenhand-Ernte,
+über die die Vorkommenszahl dieser Buchstaben überhaupt erst dick
+werden kann (`../proposals/eigenhand-erfassung.md`). Die
+Laufform-Lücke der Glyphen ganz ohne Zeile ist davon unberührt und
+bleibt, wo sie steht (`../proposals/tintenfolger.md` §7.11).
+
+**Kein §7.9-Eintrag fällig** — die Rettungswege-Regel gilt dem
+ehrlichen Negativ, und dieser Eintrag ist keines.
+
+**Selbst entschieden (Routine im Rahmen der Vorregistrierung):** das
+Ein-Schlüssel-`S`-Overlay als Zerlegung gegen die trockene Vorhersage
+(ohne sie stünde hier eine Zahl, die der Vorhersage widerspricht, und
+niemand wüsste warum); der Anker-Vergleich der Live-Zeilen gegen die
+Karte; die **Nachmessung des Lotsen**, weil die Verfahrensseite seit
+`sep04` „beide Duell-Zahlen auf derselben Wurzel" behauptet und diese
+Runde den Satz sonst falsch gemacht hätte; das Nachtragen des
+gepoolten Nibs als zweite bewegte Größe.
