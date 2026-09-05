@@ -830,7 +830,12 @@ Urteile, Plan, Auswertung und Stempel sichern (§6), die Befunde nach
   welcher Buchstabe in welchem Wort einer gemeinfreien Tafel steht, ist keine
   gelernte Geometrie — die Klasse steht mit drin, weil die klassenweise
   Lesart des Verdikts zum Plan gehört und sonst den vollen Schlüssel bräuchte.
-* **der Auswerteplan und die Auswertung** — Methode und Zahlen.
+* **der Auswerteplan und die Auswertung** — Methode und Zahlen. In einer
+  Wortrunde ist die Auswertung die einzige Stelle, an der das VERDIKT
+  aufbewahrt ist: die Seitenzuordnung steht nur im vollen `key.json`, der
+  draußen bleibt, also rechnet `analyse.py` aus dem committeten Schlüssel
+  Bilanz, Unentschieden-Quote und Klassenbesetzung nach — aber nicht, welcher
+  Arm gewonnen hat. Ihre `--json`-Ausgabe gehört deshalb mit ins Archiv.
 * **der Stempel** (`provenance.json`) — Parameter und Zählungen, keine
   Geometrie.
 * **diese Methodendoku**; die Befunde in `qualitaetsmetrik.md` §9.

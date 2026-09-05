@@ -194,14 +194,16 @@ wertlos, sondern zum **Vorher-Zustand**.
              vier Klassen und die Drift-Blöcke — Zählungen und Anteile.
              Keine Geometrie, kein Vorkommen, kein Wort.
 - Warum hier: §6 der Methodendoku zählt „der Auswerteplan und die Auswertung"
-             zum Aufzubewahrenden. Für die Kategorien-Runden 01/02 erfüllt das
-             `qualitaetsmetrik.md` §9 im Fließtext; eine Wortrunde bucht ihre
-             Zahlen in `messjournal.md` §14, und die Werkzeug-Ausgabe daneben
-             macht nachprüfbar, welche Zahl aus dem Werkzeug kam und welche
-             aus der Auslegung.
+             zum Aufzubewahrenden — und in einer Wortrunde ist das die einzige
+             Stelle, an der das VERDIKT überlebt. Der schmale Schlüssel nennt
+             die Seitenzuordnung nicht (das tut nur der volle `key.json`, der
+             draußen bleibt), also rechnet `analyse.py` aus dem Committeten
+             zwar Bilanz, Ties und Klassenbesetzung nach, aber nicht „Basis 20
+             : Kandidat 1". Ohne diese Datei wäre die Runde im Repo eine
+             Messung ohne Ergebnis.
 - Nachbau:   `uv run python -m tools.humanbench.analyse --result
              data/humanbench/runde-06-urteile.txt --key <key.json> --json …`
-             reproduziert sie byte-gleich.
+             reproduziert sie byte-gleich (geprüft am 2026-09-05).
 
 ## Warum die Nummern 03–05 hier fehlen
 

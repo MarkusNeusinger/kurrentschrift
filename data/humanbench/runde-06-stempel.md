@@ -130,14 +130,24 @@ Aus dem Provenienz-Stempel des Bauwerkzeugs
   Verdikt gegen die vorregistrierten Schranken, die vier Klassen, Drift). Sie
   trägt Zählungen und Anteile, keine Geometrie und kein Vorkommen.
 
-Damit ist die Runde jederzeit nachrechenbar — der Schlüssel unten reicht dafür
-aus, weil `analyse.py` die Seitenzuordnung nur für die Wiederholungspaare
-braucht und sie aus `repeat_of` liest:
+**Wie weit der committete Schlüssel trägt — nachgeprüft, nicht behauptet.**
+Mit `runde-06-vorkommen.json` rechnet `analyse.py` die Vollständigkeitsprüfung,
+die Seitenbilanz (16 · 5 · 13), die Unentschieden-Quote und die
+Klassenbesetzung nach. Was es damit **nicht** kann, ist das Verdikt: welcher
+Arm auf welcher Seite stand, steht nur im vollen `key.json`, und ohne `order`
+meldet das Werkzeug ausdrücklich „neither arm is named as the candidate in the
+key". Genau deshalb liegt `runde-06-auswertung.json` mit im Archiv — es hält
+die Zahlen fest, die der schmale Schlüssel nicht wieder hergeben kann.
 
 ```bash
+# mit dem committeten Schlüssel: Bilanz, Ties, Klassen
 uv run python -m tools.humanbench.analyse \
     --result data/humanbench/runde-06-urteile.txt \
-    --key    <key.json der Runde>
+    --key    data/humanbench/runde-06-vorkommen.json
+# mit dem vollen Schlüssel (außerhalb des Repos): zusätzlich das Verdikt
+uv run python -m tools.humanbench.analyse \
+    --result data/humanbench/runde-06-urteile.txt \
+    --key    <key.json der Runde> --json auswertung.json
 ```
 
 **Nicht dabei:** der volle `key.json` (zusätzlich `arm_gap`, Rang und vor
