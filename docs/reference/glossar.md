@@ -72,7 +72,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
-- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Plateau-Anker §4 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
+- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
@@ -983,6 +983,20 @@ crawler-richtlinie.md §3
 ---
 
 ## §3 Mess- und Fit-Vokabular
+
+**Pfeilhöhe** *(sagitta)* — wie weit ein Zug von der geraden Verbindung
+seiner Endpunkte abweicht: der größte Abstand eines Punktes des Zuges zu
+seiner **Sehne**, in x-Höhen. Das Verhältnis Pfeilhöhe/Sehne ist damit ein
+maßstabsfreies Maß für „wie gebogen“ — 0 heißt Lineal-Strich. Zwei Stellen
+im Projekt beziffern sie — beide von Hand, **kein Code rechnet sie**: die
+Dissektion der Tafelzellen für den konkaven Anstrich der Apex-Klasse (t 0,180 ·
+ſ 0,136 · k 0,187 · ß 0,175 xh; die Werte stehen als gemessene Zahlen im
+Kommentarblock über `APEX_HANDOVER_MIN_RISE` in `core/compose.py` — die
+Konstante selbst prüft den ANSTIEG des Zuges, nicht seine Pfeilhöhe), und die
+humanbench-Wortrunde `sep05`, die damit beziffert hat, was das Auge an der
+**Apex-Übergabe** verworfen hat (die erzeugte Übergabe kommt auf 0,001–0,002 xh
+bei 1,67–1,84 xh Sehne). Als eingefrorene Report-Spalte ist die Pfeilhöhe ein
+benannter Rettungsweg, noch nicht gebaut (`tintenfolger.md` §7.9).
 
 **M4-Fit** — die elastische Anpassung eines Templates an echte Tinte:
 Das kanonische Template wird auf das Skelett eines Vorkommens *gewarpt*,
@@ -2832,7 +2846,7 @@ dem Anker seiner Quelle.
 
 **Messjournal** *(measurement journal)* — die Datei
 [`messjournal.md`](messjournal.md), seit 2026-09-04 die Heimat von §14, dem
-Kampagnen-Journal: 81 datierte Abschnitte, je einer pro Mess-Runde, mit
+Kampagnen-Journal: 88 datierte Abschnitte, je einer pro Mess-Runde, mit
 Vorregistrierung, gemessenen Zahlen und Verdikt. Vorher stand die Sektion in
 `qualitaetsmetrik.md` und machte dort zwei Drittel der Datei aus, sodass jede
 Frage nach einer Metrik-REGEL das ganze Journal mitlud; der Umzug ist Wort für

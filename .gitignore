@@ -219,6 +219,13 @@ cython_debug/
 # plates, not learned geometry. Committing the judgements without it would file
 # two hours of human work in a form nothing can ever read back.
 !/data/humanbench/*-vorkommen.json
+# …and the round's own evaluation. For the two category rounds it was prose in
+# qualitaetsmetrik.md §9, so `*.md` covered it; a WORD round books its numbers
+# in messjournal.md §14 and its evaluation IS the tool's JSON (round-level
+# counts and shares — reliability, side balance, verdict against the
+# pre-registered thresholds, the classes, drift). No occurrence, no geometry,
+# no word: the same class of fact as the result text it summarises.
+!/data/humanbench/*-auswertung.json
 # Eigenhand-Erfassung: the own-hand strips ARE the reserved dataset (owner
 # decision 2026-08-22 — a deliberate deviation from datenablage §4's
 # "committable"; rationale in data/samples/own-hand/SOURCE.md, backup lives

@@ -1,6 +1,6 @@
 """The §14 register gate: an entry without its index line does not ship.
 
-Why. `docs/reference/messjournal.md` §14 is the campaign journal — 81 dated
+Why. `docs/reference/messjournal.md` §14 is the campaign journal — 88 dated
 sections, ~47 000 words, and the one home of the numbers. Three registers were
 built on top of it so a reader can find the current state without reading all of
 it: the entry table and the headline ledger at the head of §14, and the four

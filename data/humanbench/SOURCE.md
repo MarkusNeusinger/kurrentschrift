@@ -1,13 +1,16 @@
 # Source: humanbench
 
 - Title:     Menschliche Bewertungsdurchgänge über die gefitteten Vorkommen
-             („Befund-Durchgang" — was stimmt hier nicht?)
+             („Befund-Durchgang" — was stimmt hier nicht?) und über zwei
+             Kompositionen desselben Wortes („Echtheits-Durchgang" — welche
+             sieht echter geschrieben aus?)
 - Author:    Projektautor (eigene Urteile, im Alleingang gefällt)
-- Year:      2026 (Runde 01: erhoben am 2026-08-08 · Runde 02: 2026-08-09)
+- Year:      2026 (Runde 01: erhoben am 2026-08-08 · Runde 02: 2026-08-09 ·
+             Runde 06: 2026-09-05)
 - License:   Eigenes Urheberrecht des Projektautors. Kein fremdes Werk und
              kein fremder Scan enthalten — die Dateien bestehen aus
-             Kategoriekürzeln, einem Bildpunkt je Bildschirm, Sekunden und
-             sechs handgeschriebenen Notizsätzen.
+             Kategoriekürzeln bzw. Seitenwahlen, einem Bildpunkt je Bildschirm,
+             Sekunden und sechs handgeschriebenen Notizsätzen.
 - License-Rationale: Klasse 1 nach `docs/reference/datenablage.md` §1
              (committierbar wie `/data/samples/own-hand`): eigene Aussage des
              Autors, keine Reproduktion einer geschützten Vorlage. Die
@@ -19,28 +22,41 @@
              weder Anker, noch Vorkommens-Geometrie, noch Kennzahlen je
              Vorkommen. Was ein Kürzel *meint*, steht erst im Schlüssel
              (`key.json`), und der bleibt außerhalb des Repos.
-- Retrieved: 2026-08-08 (Runde 01) · 2026-08-09 (Runde 02) — „retrieved" =
-             erhoben, die Daten entstehen hier statt abgerufen zu werden
+- Retrieved: 2026-08-08 (Runde 01) · 2026-08-09 (Runde 02) · 2026-09-05
+             (Runde 06) — „retrieved" = erhoben, die Daten entstehen hier
+             statt abgerufen zu werden
 
 ## Worauf sich die Urteile beziehen
 
-Beurteilt wurde je Bildschirm **ein gefittetes Vorkommen**: der Ausschnitt
-einer Sütterlin-Schriftplatte mit der darüber gezeichneten, aus dem M4-Fit
-stammenden Mittellinie des Buchstabens. Die Frage lautet nicht „ist der
-Buchstabe schön", sondern „folgt die berechnete Linie der Tinte" — und wenn
-nicht, **auf welche Art** sie danebenliegt.
+**Runden 01 und 02 (Kategorien-Modus).** Beurteilt wurde je Bildschirm **ein
+gefittetes Vorkommen**: der Ausschnitt einer Sütterlin-Schriftplatte mit der
+darüber gezeichneten, aus dem M4-Fit stammenden Mittellinie des Buchstabens.
+Die Frage lautet nicht „ist der Buchstabe schön", sondern „folgt die berechnete
+Linie der Tinte" — und wenn nicht, **auf welche Art** sie danebenliegt.
 
-Die Urteile gelten damit gegen **einen** Stand des Fits. Welcher das war —
-Quelle, Vorkommens-Bestand, Saat, Bau-Parameter und Code-Commit — steht je
-Runde im zugehörigen Stempel (`runde-<n>-stempel.md`). Ohne ihn wäre eine
-zweite Runde keine Fortsetzung, sondern eine neue, unvergleichbare Messung.
+**Runde 06 (Wortmodus, Echtheitsfrage).** Beurteilt wurde je Bildschirm **ein
+Wort in zwei Kompositionen** — Basis und Kandidat, nebeneinander in EINEM
+Ausschnitt, als gefüllte Tinte statt als Mittellinie —, mit einer einzigen
+Frage: „Welche Zeile sieht echter geschrieben aus?" und drei gleichwertigen
+Antworten (links · rechts · kein Unterschied erkennbar). Welche Seite welcher
+Arm war, steht ausschließlich im Schlüssel, und der bleibt draußen.
+**Eine Wortrunde ist mit den Buchstabenrunden nicht vergleichbar** — andere
+Frage, andere Darstellung, anderes Objekt (`menschliche-bewertung.md` §8a).
+
+Die Urteile gelten damit gegen **einen** Stand — des Fits (01/02) bzw. der
+Komposition (06). Welcher das war — Quelle, Bestand bzw. Fixture-Wurzel, Saat,
+Bau-Parameter, Arm-Prüfsummen und Code-Commit — steht je Runde im zugehörigen
+Stempel (`runde-<nn>-stempel.md`). Ohne ihn wäre eine zweite Runde keine
+Fortsetzung, sondern eine neue, unvergleichbare Messung.
 
 Verfahren, Kategorien und Auswerteregeln:
 [`docs/reference/menschliche-bewertung.md`](../../docs/reference/menschliche-bewertung.md).
 Instrument: [`tools/humanbench`](../../tools/humanbench). Die Befunde einer
 Runde stehen nicht hier, sondern in
 [`docs/reference/qualitaetsmetrik.md`](../../docs/reference/qualitaetsmetrik.md)
-§9.
+§9 (Kategorien-Runden) bzw. in
+[`docs/reference/messjournal.md`](../../docs/reference/messjournal.md) §14
+(Wortrunden — dort, wo ihr Arm vorregistriert wurde).
 
 ## Zweck
 
@@ -132,16 +148,86 @@ wertlos, sondern zum **Vorher-Zustand**.
              Runde 01 den **Schwere-Rang**. Verbunden wird über
              `identity` = (Glyph, Wort, Slot), nie über die Id.
 
+## runde-06-urteile.txt — 38 Zeilen Urteil, 0,4 KB
+
+- Origin:    Ausgabetext der Echtheits-Seite (`tools/humanbench/page.py`,
+             Modus `word`, `--question authentic`), unverändert übernommen,
+             wie die Seite ihn am 2026-09-05 ausgegeben hat.
+- Processing: keine.
+- Stempel:   [`runde-06-stempel.md`](runde-06-stempel.md)
+- Format:    Kopfzeile `ECHTHEIT/6 geprueft=38 von 38`, danach je Bildschirm
+             eine Zeile `<uid>:<L|R|N>[@Sekunden]`.
+  - `L`/`R` — die gewählte **Seite**, nicht der Arm. Welcher Arm dort stand,
+    sagt allein der Schlüssel; ohne ihn ist die Datei zur Adoptionsfrage
+    stumm, und das ist Absicht.
+  - `N` — „kein Unterschied erkennbar". Ein Ergebnis, keine Ausrede: in
+    dieser Runde ist es auf den zwölf Nullproben die einzige richtige
+    Antwort.
+  - `R…` — eine blinde, **gespiegelte** Wiederholung eines früheren
+    Bildschirms; sie misst den Beurteiler gegen sich selbst und stimmt beim
+    Verdikt nie mit.
+  - `@Sekunden` — Abstand zum vorherigen Weiterklick, für Ermüdung und Drift.
+- Note:      Keine Notizzeilen — die Seite hat in dieser Runde kein Notizfeld
+             ausgegeben. Der freie Satz des Beurteilers fiel mündlich und
+             steht wörtlich im §14-Eintrag des Journals, neben den Zahlen,
+             die er erklärt.
+
+## runde-06-vorkommen.json — der schmale Schlüssel, 38 Einträge
+
+- Origin:    von `tools/humanbench/build.py` selbst geschrieben (Format 3),
+             nicht rekonstruiert.
+- Inhalt:    `uid` → `entry` (Fixture-Eintrag), `text` (Worttext), `stratum`
+             (**Verdachtsklasse**: `apex` · `stem` · `beide` · `nullprobe`),
+             `repeat_of`. Sonst nichts: keine Registrierung, keine Strichzüge,
+             keine `arm_gap`, kein Rang — und **keine Seitenzuordnung**.
+- Zweck:     die Klasse gehört dazu, weil die klassenweise Lesart des Verdikts
+             zum vorregistrierten Auswerteplan gehört und sonst den vollen
+             Schlüssel bräuchte; sie ist zugleich die einzige Aufbewahrung der
+             `--strata`-Zuordnung dieser Runde.
+
+## runde-06-auswertung.json — die Auswertung des Werkzeugs, 2,3 KB
+
+- Origin:    `tools/humanbench/analyse.py --json`, gerechnet am 2026-09-05 aus
+             dem Ergebnistext und dem vollen Schlüssel.
+- Inhalt:    Verlässlichkeit (Paare, Arm-/Seiten-Übereinstimmung),
+             Seitenbilanz, Verdikt gegen die vorher gesetzten Schranken, die
+             vier Klassen und die Drift-Blöcke — Zählungen und Anteile.
+             Keine Geometrie, kein Vorkommen, kein Wort.
+- Warum hier: §6 der Methodendoku zählt „der Auswerteplan und die Auswertung"
+             zum Aufzubewahrenden — und in einer Wortrunde ist das die einzige
+             Stelle, an der das VERDIKT überlebt. Der schmale Schlüssel nennt
+             die Seitenzuordnung nicht (das tut nur der volle `key.json`, der
+             draußen bleibt), also rechnet `analyse.py` aus dem Committeten
+             zwar Bilanz, Ties und Klassenbesetzung nach, aber nicht „Basis 20
+             : Kandidat 1". Ohne diese Datei wäre die Runde im Repo eine
+             Messung ohne Ergebnis.
+- Nachbau:   `uv run python -m tools.humanbench.analyse --result
+             data/humanbench/runde-06-urteile.txt --key <key.json> --json …`
+             reproduziert sie byte-gleich (geprüft am 2026-09-05).
+
+## Warum die Nummern 03–05 hier fehlen
+
+Die Archivnummer zählt die **Runde**, und Runde 06 heißt in Werkzeug,
+Kopfzeile und Journal übereinstimmend 6. Runde 03 ist die LF11-Wortrunde vom
+2026-09-02 — gefahren und in `messjournal.md` §14 ausgewertet, aber nie hier
+abgelegt; Runde 04 (Platten-Nib) und Runde 05 (Übergänge J4) sind gebaut und
+**ungeurteilt**. Die Lücke ist damit eine Aussage über den Bestand, kein
+Ablagefehler.
+
 ## Was hier nicht liegt
 
 Nicht committet, weil gelernter Datensatz bzw. Vorkommens-Statistik
 (`quellen-und-rechte.md` §5) — es bleibt unter `temp/humanbench/runde-<n>/`
-und ist git-ignoriert:
+bzw. `temp/runden-sep04/humanbench/runde-6-j5-klassenregel/` und ist
+git-ignoriert:
 
 - `payload.json` — die Crops und die Vorkommens-Geometrie, die die Seite
-  zeichnet.
+  zeichnet; im Wortmodus zusätzlich **beide Kompositionen** je Wort.
 - `key.json` — die Zuordnung `uid` → Glyph, Wort, Schwere, Rang und, im
-  paarigen Modus, die Seitenzuordnung.
+  paarigen Modus wie im Wortmodus, die **Seitenzuordnung**.
+- die beiden Arm-Dateien einer Wortrunde (Strichzüge und Silhouetten je Wort);
+  ihre `sha256` stehen im Stempel, damit die Runde trotzdem auf genau die
+  Bytes zeigt, die sie gezeigt hat.
 - `reserve.json` — die ungelabelte Rückhaltemenge.
 - jede daraus abgeleitete Kennzahlentabelle je Vorkommen.
 

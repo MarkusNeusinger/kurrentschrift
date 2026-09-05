@@ -1,0 +1,268 @@
+[
+ {
+  "uid": "S001",
+  "entry": "Seiten",
+  "text": "Seiten",
+  "stratum": "apex",
+  "repeat_of": null
+ },
+ {
+  "uid": "S002",
+  "entry": "muß",
+  "text": "muß",
+  "stratum": "apex",
+  "repeat_of": null
+ },
+ {
+  "uid": "S003",
+  "entry": "die-2",
+  "text": "die",
+  "stratum": "stem",
+  "repeat_of": null
+ },
+ {
+  "uid": "S004",
+  "entry": "Gewehr",
+  "text": "Gewehr",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S005",
+  "entry": "Zorn",
+  "text": "Zorn",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S006",
+  "entry": "mit-2",
+  "text": "mit",
+  "stratum": "apex",
+  "repeat_of": null
+ },
+ {
+  "uid": "S007",
+  "entry": "linken",
+  "text": "linken",
+  "stratum": "apex",
+  "repeat_of": null
+ },
+ {
+  "uid": "S008",
+  "entry": "die",
+  "text": "die",
+  "stratum": "stem",
+  "repeat_of": null
+ },
+ {
+  "uid": "S009",
+  "entry": "regieren",
+  "text": "regieren",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S010",
+  "entry": "Kugel",
+  "text": "Kugel",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S011",
+  "entry": "macht",
+  "text": "macht",
+  "stratum": "apex",
+  "repeat_of": null
+ },
+ {
+  "uid": "S012",
+  "entry": "fechten",
+  "text": "fechten",
+  "stratum": "apex",
+  "repeat_of": null
+ },
+ {
+  "uid": "S013",
+  "entry": "das",
+  "text": "das",
+  "stratum": "stem",
+  "repeat_of": null
+ },
+ {
+  "uid": "S014",
+  "entry": "einer",
+  "text": "einer",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S015",
+  "entry": "Gaul",
+  "text": "Gaul",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "R04",
+  "entry": "muß",
+  "text": "muß",
+  "stratum": "apex",
+  "repeat_of": "S002"
+ },
+ {
+  "uid": "S016",
+  "entry": "unter",
+  "text": "unter",
+  "stratum": "apex",
+  "repeat_of": null
+ },
+ {
+  "uid": "S017",
+  "entry": "muß-2",
+  "text": "muß",
+  "stratum": "apex",
+  "repeat_of": null
+ },
+ {
+  "uid": "S018",
+  "entry": "der-2",
+  "text": "der",
+  "stratum": "stem",
+  "repeat_of": null
+ },
+ {
+  "uid": "S019",
+  "entry": "Wer",
+  "text": "Wer",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S020",
+  "entry": "kann",
+  "text": "kann",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S021",
+  "entry": "streiten",
+  "text": "streiten",
+  "stratum": "apex",
+  "repeat_of": null
+ },
+ {
+  "uid": "S022",
+  "entry": "muß-3",
+  "text": "muß",
+  "stratum": "apex",
+  "repeat_of": null
+ },
+ {
+  "uid": "S023",
+  "entry": "der-3",
+  "text": "der",
+  "stratum": "stem",
+  "repeat_of": null
+ },
+ {
+  "uid": "S024",
+  "entry": "wenn",
+  "text": "wenn",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S025",
+  "entry": "Zaum",
+  "text": "Zaum",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S026",
+  "entry": "schießen",
+  "text": "schießen",
+  "stratum": "apex",
+  "repeat_of": null
+ },
+ {
+  "uid": "R03",
+  "entry": "die-2",
+  "text": "die",
+  "stratum": "stem",
+  "repeat_of": "S003"
+ },
+ {
+  "uid": "S027",
+  "entry": "Soldaten",
+  "text": "Soldaten",
+  "stratum": "beide",
+  "repeat_of": null
+ },
+ {
+  "uid": "R02",
+  "entry": "Gewehr",
+  "text": "Gewehr",
+  "stratum": "nullprobe",
+  "repeat_of": "S004"
+ },
+ {
+  "uid": "R01",
+  "entry": "Seiten",
+  "text": "Seiten",
+  "stratum": "apex",
+  "repeat_of": "S001"
+ },
+ {
+  "uid": "S028",
+  "entry": "laden",
+  "text": "laden",
+  "stratum": "stem",
+  "repeat_of": null
+ },
+ {
+  "uid": "S029",
+  "entry": "Feinde",
+  "text": "Feinde",
+  "stratum": "stem",
+  "repeat_of": null
+ },
+ {
+  "uid": "S030",
+  "entry": "Sporn",
+  "text": "Sporn",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S031",
+  "entry": "mit",
+  "text": "mit",
+  "stratum": "apex",
+  "repeat_of": null
+ },
+ {
+  "uid": "S032",
+  "entry": "daß",
+  "text": "daß",
+  "stratum": "beide",
+  "repeat_of": null
+ },
+ {
+  "uid": "S033",
+  "entry": "der",
+  "text": "der",
+  "stratum": "stem",
+  "repeat_of": null
+ },
+ {
+  "uid": "S034",
+  "entry": "Pulver",
+  "text": "Pulver",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ }
+]

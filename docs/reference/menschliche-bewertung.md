@@ -830,7 +830,12 @@ Urteile, Plan, Auswertung und Stempel sichern (§6), die Befunde nach
   welcher Buchstabe in welchem Wort einer gemeinfreien Tafel steht, ist keine
   gelernte Geometrie — die Klasse steht mit drin, weil die klassenweise
   Lesart des Verdikts zum Plan gehört und sonst den vollen Schlüssel bräuchte.
-* **der Auswerteplan und die Auswertung** — Methode und Zahlen.
+* **der Auswerteplan und die Auswertung** — Methode und Zahlen. In einer
+  Wortrunde ist die Auswertung die einzige Stelle, an der das VERDIKT
+  aufbewahrt ist: die Seitenzuordnung steht nur im vollen `key.json`, der
+  draußen bleibt, also rechnet `analyse.py` aus dem committeten Schlüssel
+  Bilanz, Unentschieden-Quote und Klassenbesetzung nach — aber nicht, welcher
+  Arm gewonnen hat. Ihre `--json`-Ausgabe gehört deshalb mit ins Archiv.
 * **der Stempel** (`provenance.json`) — Parameter und Zählungen, keine
   Geometrie.
 * **diese Methodendoku**; die Befunde in `qualitaetsmetrik.md` §9.
@@ -1000,16 +1005,23 @@ Kategorien-Durchgang mit den alten Fits, und die gelabelten Vorkommen paarig.
 
 ## 8a. Der Wortmodus — die Echtheitsfrage
 
-> **Stand 2026-09-03: gebaut, synthetisch abgenommen — und einmal
+> **Stand 2026-09-05: gebaut, synthetisch abgenommen — und zweimal
 > gefahren.** Die erste Runde (`sep02`, Basis gegen die LF11-Karte) hat
 > den Modus getragen und dem Instrument die Konstruktionsregel §3.6b
 > („gefüllte Ringe“) eingetragen. Ein **formales** Verdikt hat sie nicht
 > geliefert: der Unentschieden-Anteil liegt mit 34,9 % über der
 > vorregistrierten Schranke von 25 %, und auch die günstigste Teilmenge
 > bleibt mit 25,6 % darüber. Die Richtung war eindeutig, der
-> Autor hat auf dieser Grundlage freigegeben. Die Zahlen gehören nach
+> Autor hat auf dieser Grundlage freigegeben. Die zweite Runde
+> (`sep05`, Basis gegen die J5-Klassenregel) hat als erste Nullproben
+> mitgeführt — 12 von 12 richtig als „kein Unterschied“ erkannt, die
+> Antwortoption ist also benutzbar und wurde benutzt (was die
+> LF11-Tie-Quote auf NICHT identischen Tafeln nicht erklärt, siehe
+> unten); ihr eigener Adoptionsanspruch fiel an den 4 statt 6
+> Wiederholungspaaren (Rechnung unten). Die Zahlen gehören nach
 > [`messjournal.md`](messjournal.md) §14 („Laufform LF11 —
-> humanbench-Wortrunde“); hier steht nur, wie sie zustande kommen.
+> humanbench-Wortrunde“ und „Übergänge J5 `sep05`“); hier steht nur, wie
+> sie zustande kommen.
 
 ### Warum ein dritter Modus
 
@@ -1177,6 +1189,34 @@ sie als eigene Schicht in `--strata` (damit die Wiederholungen über die Klassen
 UND die Nullprobe verteilt werden), und ihre Auswertung liest zwei Zahlen
 nebeneinander — den Kandidatenanteil auf den bewegten Wörtern und die
 Unentschieden-Quote auf den unbewegten.
+
+**Nachtrag aus der gefahrenen Runde (`sep05`): wie viele Nullproben es sein
+müssen, ist eine Rechnung und keine Geste.** Die Zahl der Wiederholungen, die
+eine Runde überhaupt tragen kann, ist der Umfang des Zieltopfs von
+`pick_word_repeats` — und der ist **`n − min_gap − REPEAT_JITTER`**, mit `n` =
+alle beurteilten Einträge (bewegte plus Nullproben). Die J5-Runde nahm 22
+bewegte Wörter plus 12 Nullproben, bat um 6 Wiederholungen und bekam gemeldete
+**4** — genau 34 − 5 − 25. Sie war damit von der ersten Zeile an eine Runde
+**ohne Adoptionsanspruch** (Auswerteplan unten, Schritt 1: unter
+`MIN_PAIRED_REPEATS` = 6). Die Nullproben haben getan, wofür sie da sind (12
+von 12 richtig als „kein Unterschied“ erkannt), nur eben zu wenige. Was sie
+dabei zeigen, ist genau eine Sache und keine zweite: **die Antwortoption ist
+benutzbar und wurde benutzt.** Ob ein Beurteiler sie bei FEINEN Unterschieden
+zu oft wählt — die Frage, an der das LF11-Verdikt hing —, prüft eine
+bit-identische Tafel nicht; wer identische Bilder richtig als gleich erkennt,
+kann daneben eine milde Schwelle haben. Wer eine
+Adoption aus einer schmalen Klasse heraus WILL, rechnet vorher:
+**`bewegte + Nullproben ≥ MIN_PAIRED_REPEATS + min_gap + REPEAT_JITTER`**, bei
+`--min-repeat-gap 5` also ≥ 36 Einträge; für die 22 bewegten Wörter der
+J5-Klasse wären das 14 Nullproben gewesen statt 12. Zwei kosten nichts, und die
+Kürzung nachträglich zu bemerken kostet die ganze Runde.
+
+Für ein Ergebnis, das den bestehenden Zustand **stützt**, ist der Boden
+dagegen nicht bindend: die Schranke verhindert, dass auf Münzwurf-Antworten
+etwas UMGESTELLT wird, sie verlangt nichts dafür, es zu lassen. Eine solche
+Runde wird als das gebucht, was sie ist — Evidenz, kein Instrument-Verdikt —
+und stützt sich dabei auf die Prüfungen, die sie doch bestanden hat
+(Arm-Übereinstimmung der Spiegelpaare, Nullproben, Drift).
 
 **Und der Bau bricht ab, wenn die beiden Arme nicht gegen dieselbe Referenz
 komponiert wurden** (`build.py::check_arm_scope`: Stil, `source_id`,
