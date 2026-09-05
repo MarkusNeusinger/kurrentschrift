@@ -75,6 +75,66 @@ export const WORD_BANK: WordEntry[] = [
   { word: 'Buch', distractors: ['Bach', 'Bruch', 'Busch'], era: 'modern' },
   { word: 'Wasser', distractors: ['Messer', 'Wesen', 'Wasen'], era: 'modern' },
 
+  // ——— Letter coverage: one everyday word per letter the frequency core
+  // never reaches ———
+  //
+  // The high-frequency core above is drawn from the commonest words, and the
+  // commonest words simply do not contain a j, an x or a capital Q. The DB
+  // bank closed that hole for the quiz on 2026-08-29 (quiz-wortbank.md §1,
+  // „Lückenschluss“); these are the same curated entries, copied into the
+  // bundled bank so the OFFLINE half covers the alphabet too. The Schreibtafel
+  // reads this bank for its „im Wort sehen“ example (sections/tafel/
+  // letterDetail.ts), so a letter missing here is a detail page without the
+  // bridge into the Federprobe — website audit 2026-09-02, finding 29.
+  //
+  // Each word is the shortest curated one that SHOWS its letter the way the
+  // letter is written: a capital opens the word, a lowercase letter sits
+  // inside it, and no letter folds into a ligature that would hide it
+  // („Nacht“ is not an N-word — ch is one glyph). The trailing comment names
+  // the letter the word was brought in for; most cover several.
+  // Brought in for a lowercase letter (the word itself may be a noun — what
+  // matters is that the letter sits inside it).
+  { word: 'jung', distractors: ['lang'], era: 'modern' }, // j
+  { word: 'kalt', distractors: ['kahl'], era: 'modern' }, // k
+  { word: 'Kopf', distractors: ['Knopf'], era: 'modern' }, // p
+  { word: 'viel', distractors: ['fiel'], era: 'modern' }, // v
+  { word: 'Axt', distractors: ['Art'], era: 'modern' }, // x, A
+  { word: 'Bayern', distractors: ['Bauern'], era: 'modern' }, // y
+  { word: 'Salz', distractors: ['Satz'], era: 'modern' }, // z, S
+  { word: 'Käse', distractors: ['Käfer'], era: 'modern' }, // ä
+  { word: 'Löwe', distractors: ['Möwe'], era: 'modern' }, // ö
+  { word: 'Tür', distractors: ['Tier'], era: 'modern' }, // ü
+  // Brought in for a capital, which therefore opens the word.
+  { word: 'Chef', distractors: ['Chor'], era: 'modern' }, // C
+  { word: 'Dame', distractors: ['Name'], era: 'modern' }, // D
+  { word: 'Ehre', distractors: ['Ähre'], era: 'modern' }, // E
+  { word: 'Fuß', distractors: ['Fluß'], era: 'modern' }, // F, ß
+  { word: 'Geld', distractors: ['Gold'], era: 'modern' }, // G
+  { word: 'Insel', distractors: ['Pinsel'], era: 'modern' }, // I
+  { word: 'Luft', distractors: ['Lust'], era: 'modern' }, // L
+  { word: 'Mann', distractors: ['Bann'], era: 'modern' }, // M
+  { word: 'Not', distractors: ['Mut'], era: 'modern' }, // N
+  { word: 'Ohr', distractors: ['Uhr'], era: 'modern' }, // O
+  { word: 'Paar', distractors: ['Haar'], era: 'modern' }, // P
+  { word: 'Quark', distractors: ['Quarz'], era: 'modern' }, // Q
+  { word: 'Rad', distractors: ['Rat'], era: 'modern' }, // R
+  { word: 'Uhr', distractors: ['Ohr'], era: 'modern' }, // U
+  { word: 'Vieh', distractors: ['Reh'], era: 'modern' }, // V
+  { word: 'Xylophon', distractors: ['Xylofon'], era: 'modern' }, // X
+  { word: 'Yacht', distractors: ['Jacht'], era: 'modern' }, // Y
+  { word: 'Ähre', distractors: ['Ehre'], era: 'modern' }, // Ä
+  { word: 'Öl', distractors: ['Öle'], era: 'modern' }, // Ö
+  { word: 'Übel', distractors: ['Übung'], era: 'modern' }, // Ü
+  // The closed ligature set: here the cluster IS the letter, so the word must
+  // contain it. No Fugen marker on any of them — every s below is
+  // syllable-initial or morpheme-internal, where the automatic long ſ is right
+  // (Obſt, Stadt).
+  { word: 'Rock', distractors: ['Bock'], era: 'modern' }, // ck
+  { word: 'Blitz', distractors: ['Blick'], era: 'modern' }, // tz
+  { word: 'Obst', distractors: ['Ost'], era: 'modern' }, // ſt
+  { word: 'Stadt', distractors: ['Staat'], era: 'modern' }, // St
+  { word: 'bequem', distractors: ['bequemer'], era: 'modern' }, // qu
+
   // ——— Vocabulary of old letters (around 1900) — glossed ———
   { word: 'Muhme', distractors: ['Mütze', 'Mulde', 'Mähne'], era: 'historic', note: 'veraltet für Tante oder weibliche Verwandte' },
   { word: 'Base', distractors: ['Hase', 'Vase', 'Nase'], era: 'historic', note: 'veraltet für Cousine' },
