@@ -14,6 +14,7 @@ import { Box, Chip, LinearProgress, Stack, Tooltip, Typography } from '@mui/mate
 
 import type { QualityData } from '@/lib/api';
 import { de } from '@/locales/admin';
+import { labelColumnChars } from './labelColumn';
 
 // Module-private on purpose: a score reaches the screen through ScoreChip, so
 // there is exactly one place where a threshold can be changed.
@@ -48,6 +49,20 @@ const COMPONENT_KEYS: ComponentKey[] = ['smoothness', 'verticality', 'corner', '
 const NOTABLE_PENALTY = 0.15; // mirrors glyphlab's _SCORE_HI — a deduction worth flagging
 const PENALTY_EPS = 0.005; // below this a category is effectively perfect / not applicable
 const BAR_FULL_PENALTY = 0.3; // penalty mapped to a full bar (penalties rarely exceed this)
+
+// The bar starts where the LONGEST label ends. A fixed 78 px column fitted
+// about nine characters, so „Deckungslücke" ran 32 px past its box and painted
+// over its own bar (author report on PR #533). The labels are set in a
+// monospace face, so one `ch` is one character and the widest label's character
+// count IS the column width — measured from the strings themselves, so a
+// renamed category re-measures itself. The extra pixel absorbs the subpixel
+// rounding of a fractional advance: the box must round UP, or the longest label
+// clips by a pixel.
+//
+// Sized over ALL categories, not just the rows on screen: a category below
+// `PENALTY_EPS` drops out, and a column that shrank with it would put the two
+// cards' bars at different x.
+const LABEL_COL_WIDTH = `calc(${labelColumnChars(COMPONENT_KEYS.map((key) => de.wizard.optimize.cat[key]))}ch + 1px)`;
 
 function penaltyColor(val: number): 'error' | 'warning' | 'primary' {
   if (val >= 0.25) return 'error';
@@ -99,7 +114,7 @@ export function ScoreBreakdown({
                 <Typography
                   variant="caption"
                   tabIndex={0}
-                  sx={{ width: 78, flexShrink: 0, fontFamily: 'monospace', cursor: 'help' }}
+                  sx={{ width: LABEL_COL_WIDTH, flexShrink: 0, fontFamily: 'monospace', cursor: 'help' }}
                 >
                   {t.cat[r.key]}
                 </Typography>

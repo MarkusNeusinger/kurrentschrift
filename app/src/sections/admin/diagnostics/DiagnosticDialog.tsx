@@ -8,7 +8,17 @@
 // the admin context.
 
 import CloseIcon from '@mui/icons-material/Close';
-import { Alert, Box, CircularProgress, Dialog, Divider, IconButton, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  CircularProgress,
+  Dialog,
+  Divider,
+  IconButton,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from '@mui/material';
 import { useState } from 'react';
 
 import { WrittenGlyph } from '@/components/WrittenGlyph';
@@ -41,6 +51,11 @@ function Section({ title, intro, children }: { title: string; intro: string; chi
 
 export function DiagnosticDialog() {
   const { diagnoseGlyph, closeDiagnose, glyphsByKey, cropCacheBust, sourceId } = useAdmin();
+  // Same rule as the setup wizard: below `md` the 32 px margins on either side
+  // are width the processing stages cannot spare, so the modal takes the whole
+  // screen instead.
+  const theme = useTheme();
+  const compact = useMediaQuery(theme.breakpoints.down('md'));
   const open = diagnoseGlyph != null;
   const glyphKey = diagnoseGlyph ?? '';
   const known = glyphKey ? knownGlyph(glyphKey) : null;
@@ -60,7 +75,14 @@ export function DiagnosticDialog() {
   }
 
   return (
-    <Dialog open={open} onClose={closeDiagnose} fullWidth maxWidth="xl" slotProps={{ paper: { sx: { height: '92vh' } } }}>
+    <Dialog
+      open={open}
+      onClose={closeDiagnose}
+      fullScreen={compact}
+      fullWidth
+      maxWidth="xl"
+      slotProps={{ paper: { sx: { height: compact ? '100%' : '92vh' } } }}
+    >
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, pt: 1.5, pb: 1 }}>
         <Typography variant="h6" sx={{ flex: 1 }}>
           {de.admin.diagnostics.title} {known?.label ?? glyphKey}

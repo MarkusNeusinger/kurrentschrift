@@ -35,7 +35,7 @@ const COL_H = 360;
 
 export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, onData }: Props) {
   const { sourceId } = useAdmin();
-  const COL_W = useColumnWidth(colWidth);
+  const [colContainer, COL_W] = useColumnWidth(colWidth);
   const COL_H_PX = colHeight ?? COL_H;
   const [data, setData] = useState<DiagnosticData | null>(null);
   // Starts true: the first render is already waiting for the request the effect
@@ -135,7 +135,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
   const tplViewBox = `${tplX0} ${-tpl.ascender - 0.3} ${tplX1 - tplX0} ${tplViewH + 0.6}`;
 
   return (
-    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+    <Box ref={colContainer} sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
       {/* Column 1 — Crop pur */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxWidth: Math.max(cropDisplayW, 180) }}>
         <Typography variant="caption" color="text.secondary">
