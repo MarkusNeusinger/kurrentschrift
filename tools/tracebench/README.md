@@ -74,6 +74,22 @@ held-out number. Every run starts by asserting that all ten development words
 are present as `authored`, non-`frame_stale` rows — a ruler that lost a word
 would report a better number for the rest.
 
+**Which base it measured.** Before that assertion, every entry point here
+(`run`, `k0eval`, `view`, `excursions`) prints the two lines the word bench has
+printed since #478 — `root: <name> exported_at=…` and `digest=<12 hex>`, from
+the shared `tools/wordbench/roots.py` — and takes `--expect-root <prefix>` to
+make the expected base a precondition: on a mismatch the run aborts BEFORE
+scoring anything, naming both digests. The fixture roots are gitignored, so an
+undeclared re-export leaves no other trace; `run --json` carries the full digest
+under `roots`. A round pins every one of its calls to the same prefix
+(`docs/reference/werkzeuge.md`, Mess-Liturgie).
+
+**And which base it is compared against.** `run --compare` and `view --rows`
+read a stored report's own `roots` block and refuse a baseline measured on
+another export — before scoring, so a run that cannot be paired never spends the
+minutes. A report written before the sensor existed carries no `roots` and gets
+a warning instead: it stays readable, it just cannot vouch for itself.
+
 ## Seeing it, and keeping what was seen
 
 ```

@@ -47,7 +47,8 @@ from scipy.ndimage import distance_transform_edt
 from core.compose import _key_base
 from core.shaping import is_registry_glyph_key
 from tools.pairlab.analyze import JoinDissection, _edt_at, dissect_occurrence
-from tools.wordlab.cases import WordCase, _load_dotenv, iter_fixture_word_cases
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
+from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, WordCase, _load_dotenv, _root_for, iter_fixture_word_cases
 
 
 # A harvested connector is stored downsampled: enough points for a faithful
@@ -299,10 +300,15 @@ def main() -> None:
     parser.add_argument("--hand-id", default="suetterlin-1922-norm")
     parser.add_argument("--hand-label", default="Suetterlin norm hand (Leitfaden 1922, Abb. 19/20)")
     parser.add_argument("--approve", help="left:right pairs to approve in the same write (e.g. B:i,D:u)")
+    add_expect_root_argument(parser)
     args = parser.parse_args()
 
     sets = tuple(s.strip() for s in args.sets.split(",") if s.strip())
     only_ids = {s.strip() for s in args.ids.split(",")} if args.ids else None
+    # The harvest reads the same frozen roots and, with --apply, writes what it
+    # read into the DB — so which export it read is part of the record, and
+    # --expect-root can make it a precondition of a write.
+    announce_roots([_root_for(DEFAULT_FIXTURES_DIR, args.style, which) for which in sets], args.expect_root)
     harvested, occurrences = harvest_all(args.style, sets, only_ids)
 
     for (left, right), entry in harvested.items():

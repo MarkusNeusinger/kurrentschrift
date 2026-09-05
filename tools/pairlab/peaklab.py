@@ -38,7 +38,8 @@ import numpy as np
 from tools.laufform.harvest import _chainable_runs, _grid_fits, anchor_spike_ratio
 from tools.pairlab.anchors import STRANDED_STEP_RATIO, repair_stranded_anchors
 from tools.pairlab.chain import fit_word_chain
-from tools.wordlab.cases import iter_fixture_word_cases
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
+from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, _root_for, iter_fixture_word_cases
 from tools.wordlab.derive import derive_word
 
 
@@ -203,9 +204,12 @@ def main() -> None:
     parser.add_argument("--style", default="suetterlin")
     parser.add_argument("--compare", action="store_true", help="draw fitted and repaired side by side")
     parser.add_argument("--png", type=Path, default=None)
+    add_expect_root_argument(parser)
     args = parser.parse_args()
 
     ids = tuple(c.strip() for c in args.cases.split(",") if c.strip())
+    # The lab prints per-anchor numbers, so it belongs to a base like a bench.
+    announce_roots([_root_for(DEFAULT_FIXTURES_DIR, args.style, "words")], args.expect_root)
     print(f"working set: {', '.join(ids)}")
     rows = measure(ids, args.style)
     if not rows:

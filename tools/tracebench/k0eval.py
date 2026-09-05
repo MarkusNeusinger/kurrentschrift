@@ -18,6 +18,11 @@ form. Reads fixtures and candidate files only — no DB, no network, no solve.
 
     uv run python -m tools.tracebench.k0eval base-cand.json
     uv run python -m tools.tracebench.k0eval base-cand.json arm-cand.json --json out.json
+        [--fixtures <root>] [--expect-root <digest-prefix>]
+
+The run states its fixture root before it scores (``root:`` / ``digest=`` from
+``tools/wordbench/roots.py``) and ``--expect-root`` aborts on a base nobody
+asked for — the same guard the word bench has carried since #478.
 """
 
 from __future__ import annotations
@@ -33,6 +38,7 @@ from tools.tracebench.metric import aiou
 from tools.tracebench.reference import DEFAULT_FIXTURES_DIR, Reference, load_reference
 from tools.tracebench.run import find_fixture_root
 from tools.tracebench.soll import SollRow, ductus_soll
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
 
 
 STYLE = "suetterlin"
@@ -214,9 +220,13 @@ def main() -> None:
         "A candidate solved on a patched root (a Laufform candidate map, §14 LF3b-W) is scored against "
         "THAT root's soll — the soll moves with the map, so the frozen root's would be the wrong ruler.",
     )
+    add_expect_root_argument(parser)
     args = parser.parse_args()
 
     root = find_fixture_root(args.fixtures, STYLE, WHICH)
+    # A patched candidate root is exactly the case this sensor exists for: the
+    # header names the base the soll comes from, --expect-root pins it.
+    announce_roots([root], args.expect_root)
     reference = load_reference(root)
     soll_rows, warnings = ductus_soll(reference.order, which=WHICH, style=STYLE, fixtures_root=args.fixtures)
     for warning in warnings:

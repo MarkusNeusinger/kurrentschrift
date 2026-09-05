@@ -56,7 +56,8 @@ from tools.pairlab.chain import (
     gradient_decomposition,
     sample_slice_of_anchor,
 )
-from tools.wordlab.cases import iter_fixture_word_cases
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
+from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, _root_for, iter_fixture_word_cases
 from tools.wordlab.derive import derive_word
 
 
@@ -256,9 +257,13 @@ def main() -> None:
     parser.add_argument("--max-cases", type=int, default=0, help="cut the case list (a smoke run)")
     parser.add_argument("--jobs", type=int, default=1, help="worker processes, pooled over CASES")
     parser.add_argument("--out", type=Path, default=Path("temp/gradlab"))
+    add_expect_root_argument(parser)
     args = parser.parse_args()
 
     sets = ("words", "pairs") if args.sets == "all" else (args.sets,)
+    # The gradient decomposition is a measurement (qualitaetsmetrik.md §11), so
+    # it names its base before it measures like the benches do.
+    announce_roots([_root_for(DEFAULT_FIXTURES_DIR, args.style, which) for which in sets], args.expect_root)
     rows, meta = run(sets, args.style, args.max_cases, jobs=args.jobs)
     if not rows:
         raise SystemExit("no anchors measured — are the frozen fixtures present?")

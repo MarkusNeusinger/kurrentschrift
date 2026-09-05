@@ -41,7 +41,8 @@ import numpy as np
 
 from tools.laufform.harvest import _chainable_runs, _connector_diag, _grid_fits, anchor_spike_ratio, letter_gate
 from tools.pairlab.chain import _ChainProblem, _slots_join, fit_word_chain
-from tools.wordlab.cases import WordCase, iter_fixture_word_cases
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
+from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, WordCase, _root_for, iter_fixture_word_cases
 from tools.wordlab.derive import WordDeriveResult, derive_word
 
 
@@ -397,11 +398,14 @@ def main() -> None:
     parser.add_argument("--only", default="", help="comma-separated case ids; default = every case containing a `d`")
     parser.add_argument("--jobs", type=int, default=1)
     parser.add_argument("--out", type=Path, default=Path("temp/landmarklab"))
+    add_expect_root_argument(parser)
     args = parser.parse_args()
 
     weights = (0.0,) if args.calibrate else tuple(float(w) for w in args.weights.split(","))
     if weights[0] != 0.0:
         raise SystemExit("the first weight must be 0.0 — the baseline arm is re-fitted in the SAME run")
+    # A calibration ladder is a measurement: it names its base first.
+    announce_roots([_root_for(DEFAULT_FIXTURES_DIR, args.style, args.which)], args.expect_root)
     only = [s for s in args.only.split(",") if s] or None
     cases = [
         c

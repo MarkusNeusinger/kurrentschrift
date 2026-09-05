@@ -1833,9 +1833,22 @@ rekonstruieren konnte (die **undeklarierte Re-Baseline**). Hausregel:
 **jede genannte Headline nennt `exported_at` + die ersten 12 Hex daneben**;
 `--expect-root <Präfix>` macht die erwartete Grundlage zur Vorbedingung und
 bricht *vor* dem Messen ab.
-*Technisch:* `tools/wordbench/run.py::root_digest`, Kopfzeilen `root:` /
-`digest=`, volle Digests im `--json`-Report unter `roots`; im selben Zug
-prüft der Messlauf das `page_sha256` des Manifests gegen die Tafel-Bytes.
+*Technisch:* `tools/wordbench/roots.py` — EINE Umsetzung für alle Bänke
+(`root_digest`, `check_expected_roots`, `announce_roots`, der Flag-Helfer
+`add_expect_root_argument`), Kopfzeilen `root:` / `digest=`, volle Digests
+im `--json`-Report unter `roots`; im Wordbench prüft derselbe Vorspann
+zusätzlich das `page_sha256` des Manifests gegen die Tafel-Bytes.
+Seit `sep05` tragen den Sensor **alle** Messeinstiege, die eine
+Fixture-Wurzel lesen: `tools.wordbench.run`, `tools.tracebench.run` ·
+`.k0eval` · `.view` · `.excursions`, `tools.pairlab` selbst sowie
+`.follow` · `.spanmeas` · `.chainbench` · `.bindab` · `.gradlab` ·
+`.peaklab` · `.landmarklab` · `.harvest` — vorher maßen die
+Duell-Werkzeuge stumm gegen die Wurzel, die gerade auf der Platte lag.
+Dazu die zweite Hälfte, `check_compared_roots`: der Kopf nagelt den Lauf
+fest, nicht das, wogegen verglichen wird — `--compare`, `--rows` und
+`--base` lesen darum den `roots`-Block der gespeicherten Datei und
+verweigern eine fremde Basis, bevor gemessen wird (eine Datei ohne
+`roots` bekommt eine Warnung statt einer Verweigerung).
 → tools/wordbench/README.md
 
 **MAD** *(median absolute deviation)* — die robuste Streuung: Median der

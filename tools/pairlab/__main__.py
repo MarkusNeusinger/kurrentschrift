@@ -13,8 +13,13 @@ Examples:
     # whole-word overlays instead of the default join close-up
     uv run --extra viz python -m tools.pairlab re --full-word
 
+    # pinned to the base a quoted median belongs to
+    uv run --extra viz python -m tools.pairlab re --expect-root 9f124f78,cf5aa308
+
 Output goes to $PAIRLAB_OUT (else the project temp/ dir); paths are printed.
 One PNG per pair: rows = occurrences, columns = overlay + deviation profile.
+Every run states the fixture roots it dissects first (``root:`` / ``digest=``
+from ``tools/wordbench/roots.py``) — the gitignored roots leave no other trace.
 """
 
 from __future__ import annotations
@@ -26,7 +31,8 @@ from pathlib import Path
 
 import numpy as np
 
-from tools.wordlab.cases import REPO_ROOT
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
+from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, REPO_ROOT, _root_for
 
 from .analyze import dissect_occurrence, find_occurrences, pair_bases, summary_row
 from .render import overlay_panel, profile_panel, save, tile
@@ -95,9 +101,17 @@ def main() -> None:
     p.add_argument("--json", type=Path, help="write all summary rows here")
     p.add_argument("--dpi", type=int, default=140, help="output resolution (default 140)")
     p.add_argument("--out-dir", default=None, help="output directory (default: $PAIRLAB_OUT or project temp/)")
+    add_expect_root_argument(p)
     args = p.parse_args()
 
     sets = ("words", "pairs") if args.which == "all" else (args.which,)
+    # The dissection prints medians (tail/head/gen), so it belongs to a base
+    # like any other measurement — named first, pinnable with --expect-root.
+    try:
+        roots = [_root_for(DEFAULT_FIXTURES_DIR, args.style, which) for which in sets]
+    except KeyError as exc:
+        raise SystemExit(f"{exc} — pairlab needs the frozen word-bench fixtures") from exc
+    announce_roots(roots, args.expect_root)
     out_dir = Path(args.out_dir) if args.out_dir else _default_out_dir()
     all_rows: list[dict] = []
 

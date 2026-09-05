@@ -16,6 +16,11 @@ no DB, no network, no solve.
 
     uv run python -m tools.tracebench.excursions temp/candidate.json
     uv run python -m tools.tracebench.excursions a.json b.json --top 12
+        [--expect-root <digest-prefix>]
+
+The inventory reads the frozen words root, so it names it (``root:`` /
+``digest=``) before the first distance and accepts ``--expect-root`` to make
+that base a precondition — the sensor of #478, applied to the sensors.
 """
 
 from __future__ import annotations
@@ -31,6 +36,7 @@ from tools.tracebench.candidates import file_provider
 from tools.tracebench.counters import RESAMPLE_STEP_UNITS, resampled_strokes
 from tools.tracebench.reference import DEFAULT_FIXTURES_DIR, Reference, load_reference
 from tools.tracebench.run import find_fixture_root
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
 
 
 # The pre-registered inventory thresholds (§14 „Kette K-D `aug21`"), in
@@ -95,9 +101,13 @@ def main() -> None:
     parser.add_argument("candidates", nargs="+", type=Path, help="tracebench file-provider candidate JSONs")
     parser.add_argument("--top", type=int, default=12, help="rows to print per candidate (default 12)")
     parser.add_argument("--json", type=Path, help="write the full inventory here")
+    add_expect_root_argument(parser)
     args = parser.parse_args()
 
     root = find_fixture_root(DEFAULT_FIXTURES_DIR, "suetterlin", "words")
+    # The sensor reads the evidence ink of a root, so its numbers belong to
+    # that root — named before the first distance, pinnable like every bench.
+    announce_roots([root], args.expect_root)
     reference = load_reference(root)
     dist_cache: dict[str, np.ndarray | None] = {}
     out: dict[str, dict[str, dict[str, float]]] = {}
