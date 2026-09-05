@@ -7,16 +7,18 @@
     uv run python -m tools.humanbench.wordarm --arm J4 --exit-trim --out temp/j4.json
     uv run python -m tools.humanbench.wordarm --arm J5 --apex-handover --stem-depart \\
         --out temp/j5.json
+    uv run python -m tools.humanbench.wordarm --arm Nib-Clearance --nib 0.097 \\
+        --nib-clearance --out temp/nibclear.json
 
 The reference producer of the arm-file contract that
 ``tools/humanbench/build.py`` draws a word round from. It is a producer and
 not a part of the instrument: the builder never composes anything itself, so
 an arm can equally be written by whatever tool a candidate lives in — the file
 is the interface, this module is the one that covers the arms available today
-(a candidate Laufform card, a different nib, and the composer's own join-rule
-switches `exit_trim`, `apex_handover` and `stem_depart` — every one of them a
-knob the composition path already has, so a candidate never needs a core change
-to be judged) plus the base they are measured against.
+(a candidate Laufform card, a different nib, and the composer's own opt-in
+switches `exit_trim`, `apex_handover`, `stem_depart` and `nib_clearance` —
+every one of them a knob the composition path already has, so a candidate never
+needs a core change to be judged) plus the base they are measured against.
 
 Composition mirrors ``tools/wordbench/run.py`` line for line and by IMPORT, not
 by restatement: same frozen templates, same Laufform overlay, same
@@ -98,6 +100,7 @@ def compose_arm(
     entries: set[str] | None = None,
     apex_handover: bool | None = None,
     stem_depart: bool | None = None,
+    nib_clearance: bool = False,
 ) -> tuple[dict[str, dict], dict]:
     """Compose every scorable fixture word once, and place it the ruler's way.
 
@@ -112,6 +115,11 @@ def compose_arm(
     „take the composer's default", and that default is RESOLVED here to the
     boolean the settings then report — an arm file says what actually drew it,
     never a placeholder that a later default change would silently redefine.
+
+    ``nib_clearance`` is the „Ink-Clearance an die Feder" arm (core.compose
+    CLEARANCE_REF_HALF): the ink clearances read in nib radii. It only ever
+    does anything together with a ``nib`` heavier than the calibration pen,
+    which is exactly the pairing it was built for.
     """
     manifest = load_json(root / "manifest.json")
     templates = load_json(root / "templates.json")
@@ -152,6 +160,7 @@ def compose_arm(
                 {s.key: payload_for(s.key) for s in slots if s.key},
                 laufform_by_key={s.key: lf for s in slots if s.key and (lf := laufform_for(s.key)) is not None} or None,
                 exit_trim=exit_trim,
+                nib_clearance=nib_clearance,
                 **join_rules,
             )
             report = score_word(
@@ -176,6 +185,7 @@ def compose_arm(
         # Stated, never inherited: an arm file has to say which join rules drew
         # it, or two rounds built weeks apart cannot be held against each other.
         "exit_trim": exit_trim,
+        "nib_clearance": nib_clearance,
         "join_rules": dict(join_rules),
         "exported_at": manifest.get("exported_at"),
         "failed": failed,
@@ -309,6 +319,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="the J5 d stem departure (core.compose STEM_DEPART_BASES) [the composer's default]",
     )
     parser.add_argument(
+        "--nib-clearance",
+        action="store_true",
+        help="read the ink clearances in nib radii (core.compose CLEARANCE_REF_HALF) — the measured and NOT "
+        "adopted arm of „Ink-Clearance an die Feder“; without --nib it changes nothing",
+    )
+    parser.add_argument(
         "--registration-from",
         type=Path,
         default=None,
@@ -349,6 +365,7 @@ def main(argv: list[str] | None = None) -> int:
         entries=entries,
         apex_handover=args.apex_handover,
         stem_depart=args.stem_depart,
+        nib_clearance=args.nib_clearance,
     )
     if not words:
         raise SystemExit(f"{root}: nothing composed — {settings['failed'][:5]}")
@@ -389,6 +406,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  nib {settings['nib_units']:.5f}{' (overridden)' if settings['nib_overridden'] else ''}")
     print(
         f"  laufform {settings['laufform']} · exit_trim {settings['exit_trim']}"
+        f" · nib_clearance {settings['nib_clearance']}"
         f" · registration {settings['registration']}"
     )
     rules = settings["join_rules"]

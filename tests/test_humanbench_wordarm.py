@@ -267,6 +267,7 @@ def _settings(**kwargs) -> dict:
         "nib_overridden": kwargs.get("nib") is not None,
         "laufform": "frozen",
         "exit_trim": kwargs.get("exit_trim", False),
+        "nib_clearance": kwargs.get("nib_clearance", False),
         "join_rules": {
             name: wordarm.JOIN_RULE_DEFAULTS[name] if kwargs.get(name) is None else bool(kwargs[name])
             for name in ("apex_handover", "stem_depart")
@@ -293,8 +294,19 @@ def _capture_compose_arm(monkeypatch):
         # The J5 switches are tri-state on purpose: None means "leave the
         # composer's own default", which is the only value that keeps an arm
         # file honest about what it did NOT decide.
-        ([], {"exit_trim": False, "nib": None, "no_laufform": False, "apex_handover": None, "stem_depart": None}),
+        (
+            [],
+            {
+                "exit_trim": False,
+                "nib": None,
+                "no_laufform": False,
+                "apex_handover": None,
+                "stem_depart": None,
+                "nib_clearance": False,
+            },
+        ),
         (["--exit-trim"], {"exit_trim": True}),
+        (["--nib-clearance"], {"nib_clearance": True}),
         (["--nib", "0.097"], {"nib": 0.097}),
         (["--no-laufform"], {"no_laufform": True}),
         (["--apex-handover"], {"apex_handover": True}),

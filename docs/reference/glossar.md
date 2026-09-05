@@ -70,7 +70,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kurzglossar §5
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5
-- **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nullprobe §4
+- **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nullprobe §4
 - **O** — Offenbacher §1 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
@@ -754,6 +754,25 @@ Arkaden-Luft (n/m brauchen laut Dissektion +0,18 mehr Raum, die
 Wordbench widerspricht).
 *Technisch:* `BOWL_EXIT_TUCK_BASES`/`BOWL_EXIT_CLEARANCE` in
 `core/compose.py`; Messung messjournal.md §14 „Welle 2 · P1".
+
+**Nib-gekoppelte Clearance** — jede Tinten-Clearance der Platzierung
+nicht als x-Höhen-Betrag gelesen, sondern in **Nib-Radien** der Feder,
+die gerade schreibt: `scale = max(1; half / 0,07251)`, wobei 0,07251 die
+chart-gepoolte Halbbreite ist, AN der jede dieser Konstanten kalibriert
+wurde. Der Gedanke: eine schwerere Feder füllt denselben Skelett-Abstand
+mit mehr Tinte, ein fester x-Höhen-Betrag schrumpft also in Nib-Radien,
+sobald die Feder wächst. Die Klemmung nach unten ist Absicht — was eine
+LEICHTERE Feder mit dem Abstandsrhythmus der Hand tun sollte, hat nie
+jemand gemessen. **Vorregistriert, gemessen und NICHT adoptiert**
+(`sep05`): bei Halbbreite 0,097 bleiben die Gleichzug-Verdopplungen bei
+21, weil die neuen Stellen der Deckungs-Join NEBEN dem Körper sind, in
+den er landet — Platzierung verschiebt beide gemeinsam. Bleibt als
+ausgeschalteter Schalter stehen, weil die Regel für einen künftigen
+Feder-Wechsel die richtige Form hat.
+*Technisch:* `CLEARANCE_REF_HALF` + `_clearance_scale` und der Parameter
+`nib_clearance` von `compose_word` (`core/compose.py`), Schalter
+`--nib-clearance` an `tools/humanbench/wordarm.py`; Messung
+messjournal.md §14 „Ink-Clearance an die Feder `sep05`".
 
 **Stamm-Rückpass (versetzt)** — die generierte Brücke, mit der die
 Komposition den t-Deckstrich OHNE Absetzen anschließt (Welle 1 · K1b,

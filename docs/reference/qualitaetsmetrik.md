@@ -608,7 +608,13 @@ Prod-Audits tragen den Gewinn: `wenn` 0.263→0.202, `zwei` 0.244→0.178,
    rechtesten Tinte → Folgebuchstabe startete in der Tinte). Kerning-Prinzip:
    Ober-/Unterlängen außerhalb des Bands dürfen die Nachbarspalte überlappen
    wie auf der Lehrtafel (heilte das/die/regieren nach dem ersten Versuch mit
-   Ganzhöhen-Extents).
+   Ganzhöhen-Extents). **Nachtrag 2026-09-05:** die 0.14 sind an der
+   chart-gepoolten Feder (Halbbreite 0,07251) kalibriert. Sie in
+   NIB-RADIEN zu lesen, damit eine schwerere Feder mehr Raum bekommt, ist
+   vorregistriert, gemessen und NICHT adoptiert — der abgeschaltete
+   Schalter `nib_clearance` (Glossar „Nib-gekoppelte Clearance",
+   messjournal.md §14 „Ink-Clearance an die Feder `sep05`"); am heutigen
+   Nib ändert er nichts, und die Konstante hier bleibt, wie sie steht.
 3. **Handle-Clamp an der Horizontaldistanz** (`min(0.4·span, 0.5·hspan)`):
    steile Abstiege (d/t hoch → tiefe Entry) beulten die Kubik als S-Bogen aus.
 4. **Hoch-Exit-Chord** (`HIGH_EXIT_Y` 1.05): das hohe d kehrt sichtbar in den
