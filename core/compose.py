@@ -125,9 +125,11 @@ LONGS_BACKWARD_CLEARANCE = 0.30
 # nib radii instead is the OPT-IN arm ``nib_clearance`` (default off), measured
 # and NOT adopted: messjournal §14 „Ink-Clearance an die Feder `sep05`". At the
 # CALIBRATED scale (1.338 at half 0.097) the frozen word set's Gleichzug
-# doublings stay at 21 — one site repaired, one re-split — and coverage rises;
-# the sites the heavy pen opens are the join's APPROACH alongside the body it
-# lands on, and a placement distance only slides them. Widening far past the
+# doublings stay at 21 — one site repaired, one re-split — and coverage rises.
+# Eight of the nine sites the heavy pen opens are the join's APPROACH alongside
+# the body it lands on, and a placement distance slides join and body together;
+# the ninth is an intended ARM FUSION (body against body), which takes the
+# minimum and sits below every clearance by design. Widening far past the
 # calibration does move the count (21 → 8 at scale 2.0), but at four times the
 # coverage cost, still leaving sites the chart nib never had, and creating one
 # (`regieren`) — so „turn the scale up" is not the fix either. Kept as a

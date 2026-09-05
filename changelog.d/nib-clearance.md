@@ -10,9 +10,11 @@
   says it does not do what it was licensed for: at the plates' own pen
   (half 0.097) the frozen word set's Gleichzug doublings stay at 21, and
   coverage rises. The reason is geometric rather than numeric, which is the
-  finding worth keeping: the doublings a heavy pen opens are the covering
-  join lying alongside the very body it lands on, and a placement distance
-  moves the join and that body together. The switch survives because the rule
+  finding worth keeping: eight of the nine doublings a heavy pen opens are
+  the covering join lying alongside the very body it lands on, and a
+  placement distance moves the join and that body together — the ninth is an
+  intended arm fusion, body against body, which sits below every clearance by
+  design. The switch survives because the rule
   is the right shape for the day the delivered nib changes; below the
   calibration pen it is a strict no-op, so the golden fixture and both bench
   headlines are byte-identical. `tools/humanbench/wordarm.py` gains the

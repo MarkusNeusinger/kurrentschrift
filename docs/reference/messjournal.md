@@ -207,8 +207,8 @@ die DB) — mit seiner Bedingung.
 | sep04 | Kette | [K-F gemessen](#kette-k-f-sep04--gemessen-der-init-bewegt-sich-die-gefolgte-bahn-kaum--und-die-kette-steht-heute-anders-als-am-aug26) | gemessen · **verworfen** (Gate 2/4 zurechenbar) · **Re-Baseline (Kette)** · **Instrument-Befund** | Kette auf der heutigen Wurzel: dtw 0,045830 · p90 0,094197 · aiou 0,7694 · 63er-Soll 76 (Duell jetzt wurzel-gleich gegen Lotse 0,056080). Der Arm: Soll 76→77, `Galoppieren` +0,0055 dtw, Kreuzungsdefekte 19→20. **Die Nullprobe ist das Ergebnis:** 23 der 63 Wörter bekommen einen Init, der um höchstens 1,8·10⁻¹⁵ abweicht — auf dieser NULL-Änderung kippen 9 Wächter-Verdikte, aiou −0,0298 … +0,0800, 4 Verlierer unter der 0,003-Schranke. Gate 3 fällt gegen eine bedeutungslose Störung; ein Init-Arm ist auf diesem Instrument nicht entscheidbar |
 | sep05 | Übergänge | [J5 Runde 6 gemessen](#übergänge-j5-sep05--runde-6-gemessen-ein-ehrliches-negativ-gegen-grüne-gates) | Menschenrunde · **ehrliches Negativ** · **Autor-Entscheid A36** | Basis 20 : Kandidat 1 von 21 entschiedenen (4,8 % gegen ≥ 60 %), je Klasse `apex` 1/12 und `stem` **0/7 — bei ALLEN grünen Gates**; 12/12 Nullproben richtig als „kein Unterschied" erkannt (12 der 13 Ties sind sie), Verlässlichkeit 4/4 gleicher Arm bei 1/4 gleicher Seite, aber 4 < 6 Paare → kein Adoptionsanspruch. Das Auge verwirft, was das Lineal belohnt: die 5 Apex-Gewinner des Wort-Lineals gehen 5 : 0 an die Basis. Gemessener Grund im Payload: die Übergabe ist auf 1,67–1,84 xh schnurgerade (Pfeilhöhe 0,001–0,002 xh) statt den Anstrich-Bogen zu tragen. **A36: `stem_depart` wird NICHT Default**, Golden-Bake gegenstandslos |
 | sep05 | Laufform | [LF12 geschrieben + Re-Baseline](#laufform-lf12-sep05--geschrieben-prod-write-der-18-zeilen--löschung-s-deklarierte-re-baseline) | **geschrieben** (Autor) · **Re-Baseline** (Wörter/Paare + beide Duell-Routen) | 18 Zeilen geschrieben, Readback identisch, `S` gelöscht (A35), Live-Zeilen anker-exakt die gemessene Karte. Neue Wurzeln `eaa195aa7c84…` / `0fbde2d72b64…`: Wörter **0,108444**, Paare **0,148236**, Kette dtw **0,045384**, Lotse dtw **0,053393**. Boden am Bestand: nur noch `P`/`s` (je n = 1) darunter, alle Zeilen-Gates grün |
-| sep05 | Feder | [Ink-Clearance an die Feder (Nib-gekoppelte Clearance)](#ink-clearance-an-die-feder-sep05--vorregistrierung-die-clearance-in-nib-radien) | Pre-Reg | Folgearm des Platten-Nibs, lizenziert per Autor-Entscheid statt per Runde. Diagnose zuerst: alle 9 neuen Verdopplungen liegen DAZWISCHEN (Verbinder × Körper), keine innerhalb — die Kringel des Autors kann `gleichzug_doublings` konstruktionsbedingt nicht sehen; separat gemessen schließen 9 Glyphen ihre Binnenfläche (31 der 63 Wörter betroffen), weil sie um genau `2·Δhalf` = 0,04898 xh schrumpft. Mechanismus: jede Tinten-Clearance in Nib-Radien, am Kalibrierwert geklemmt (`scale = max(1, half/0,07251)`) → am Chart-Nib byte-gleich per Konstruktion |
-| sep05 | Feder | [Ink-Clearance an die Feder gemessen](#ink-clearance-an-die-feder-sep05--gemessen-der-arm-fällt-und-er-sagt-genau-wo-das-problem-nicht-sitzt) | Pre-Reg + gemessen · **verworfen** (Gate 1 + 2) | Gate 1 21 → **21** (`Wer` −1, `Seiten` re-segmentiert), Gate 2 `coverage` 0,101516 → 0,105761; Golden byte-gleich und Chart-Nib ziffernweise 0,109218 · 0,148198. Der Grund ist geometrisch: die Verdopplung ist der Deckungs-Join NEBEN dem Körper, in den er landet — Platzierung verschiebt beide gemeinsam (`sep` 0,176 → 0,178, das Band zu verlassen bräuchte Skala ≈ 20). Empfindlichkeits-Leiter (nicht vorregistriert): Skala 2,0 drückt die Zahl auf 8, fabriziert dabei aber `regieren` neu und vervierfacht den Deckungspreis — kein Punkt der Leiter besteht Gate 1. Schalter bleibt AUS im Repo; Schritt 2 (Nib-Wechsel) empfiehlt die Spalte `sources.constant_nib_units` und wartet auf den Autor |
+| sep05 | Feder | [Ink-Clearance an die Feder (Nib-gekoppelte Clearance)](#ink-clearance-an-die-feder-sep05--vorregistrierung-die-clearance-in-nib-radien) | Pre-Reg | Folgearm des Platten-Nibs, per Autor-Entscheid lizenziert. Diagnose zuerst: alle 9 neuen Verdopplungen liegen DAZWISCHEN (8× Verbinder × Körper, 1× Arm-Fusion), keine INNERHALB — die Kringel des Autors sieht `gleichzug_doublings` konstruktionsbedingt nicht; separat gemessen schließen 9 Glyphen ihre Binnenfläche (31 der 63 Wörter), weil sie um genau `2·Δhalf` = 0,04898 xh schrumpft. Mechanismus: Tinten-Clearance in Nib-Radien, am Kalibrierwert geklemmt (`scale = max(1, half/0,07251)`) → Chart-Nib byte-gleich per Konstruktion |
+| sep05 | Feder | [Ink-Clearance an die Feder gemessen](#ink-clearance-an-die-feder-sep05--gemessen-der-arm-fällt-und-er-sagt-genau-wo-das-problem-nicht-sitzt) | Pre-Reg + gemessen · **verworfen** (Gate 1 + 2) | Gate 1 21 → **21** (`Wer` −1, `Seiten` re-segmentiert), Gate 2 `coverage` 0,101516 → 0,105761; Golden byte-gleich, Chart-Nib ziffernweise 0,109218 · 0,148198. Geometrischer Grund: 8 der 9 Stellen sind der Deckungs-Join NEBEN seinem Landekörper — Platzierung verschiebt beide gemeinsam (`sep` 0,176 → 0,178, Bandaustritt bräuchte Skala ≈ 20); die 9. ist die gewollte Arm-Fusion `Galoppieren` r × e. Leiter (nicht vorregistriert): Skala 2,0 drückt die Zahl auf 8, fabriziert dabei `regieren` neu und vervierfacht den Deckungspreis — kein Punkt besteht Gate 1. Schalter bleibt AUS; Schritt 2 (Nib-Wechsel) empfiehlt die Spalte `sources.constant_nib_units` und wartet auf den Autor |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -9944,7 +9944,7 @@ breitere Feder zu NENNEN senkt 0,109218 → 0,101560, ohne dass sich ein
 Punkt bewegt); **keine Zahl dieses Eintrags ist ein Beleg FÜR die
 Feder.**
 
-#### Diagnose 1: die acht Verdopplungen sind alle DAZWISCHEN
+#### Diagnose 1: die neun neuen Verdopplungen liegen alle DAZWISCHEN
 
 `gleichzug_doublings` über die 63 Wortproben der `sep04`-Wurzel
 (`exported_at 2026-09-02T22:16:06+00:00`, Digest `6cbab9d5c092`),
@@ -10171,13 +10171,21 @@ verfolgt:
 
 Der senkrechte Versatz wächst um rund 0,004 je Skalenpunkt gegen eine
 Bandobergrenze von 1,35 · 0,194 = 0,262: das Band zu verlassen bräuchte
-eine Skala um 20. **Der Grund ist geometrisch, nicht numerisch.** Die
+eine Skala um 20. **Der Grund ist geometrisch, nicht numerisch.** Diese
 Verdopplung ist der Deckungs-Join, der neben dem Körper liegt, in den er
 LANDET. Eine Platzierungs-Clearance schiebt A und B auseinander — und
 verschiebt damit den Join und seinen Landekörper gemeinsam. Die
 Anflug-Geometrie ist gegen diese Verschiebung invariant. **Kein
 Abstandsmaß der Welt öffnet diese Stelle**; das ist eine Aussage über
 die Klasse, nicht über den gewählten Wert.
+
+Das gilt für ACHT der neun Stellen (die sechs e-Köpfe und die beiden
+ß-Rückwege). Die neunte, `Galoppieren` r × e, ist keine
+Verbinder-Stelle, sondern zwei Buchstaben-Körper an einer **gewollten**
+Arm-Fusion: `arm_fuse` nimmt das MINIMUM und liegt bewusst unter jeder
+Clearance, weil sich die Striche dort berühren sollen. Auch sie bewegt
+sich nicht — aber aus dem umgekehrten Grund, und deshalb ist sie unten
+als eigener Fall geführt statt in derselben Klasse.
 
 `Seiten` 2 → 3 ist keine neue Stelle, sondern eine Re-Segmentierung: die
 Chart-Feder hat dort selbst zwei S-Ereignisse (x 1,02 / 1,19), die

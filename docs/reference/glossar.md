@@ -765,8 +765,9 @@ sobald die Feder wächst. Die Klemmung nach unten ist Absicht — was eine
 LEICHTERE Feder mit dem Abstandsrhythmus der Hand tun sollte, hat nie
 jemand gemessen. **Vorregistriert, gemessen und NICHT adoptiert**
 (`sep05`): bei Halbbreite 0,097 bleiben die Gleichzug-Verdopplungen bei
-21, weil die neuen Stellen der Deckungs-Join NEBEN dem Körper sind, in
-den er landet — Platzierung verschiebt beide gemeinsam. Bleibt als
+21, weil acht der neun neuen Stellen der Deckungs-Join NEBEN dem Körper
+sind, in den er landet — Platzierung verschiebt beide gemeinsam —, und
+die neunte eine gewollte Arm-Fusion ist, die unter jeder Clearance liegt. Bleibt als
 ausgeschalteter Schalter stehen, weil die Regel für einen künftigen
 Feder-Wechsel die richtige Form hat.
 *Technisch:* `CLEARANCE_REF_HALF` + `_clearance_scale` und der Parameter
