@@ -204,6 +204,7 @@ die DB) — mit seiner Bedingung.
 | sep04 | Laufform | [LF12 gemessen (trocken)](#laufform-lf12-sep04--gemessen-trocken-alle-fünf-gates-grün-und-der-boden-fängt-vier-zeilen-ab) | Pre-Reg + gemessen · alle Gates grün, Karte trocken; Write wartet auf Autor-Go | 18 von 22 Zeilen neu (RMS-Median 0,0022 xh), Wörter 0,108107 · Paare 0,148231, kein Kreuzungsverlust, dev-19 `cross_missing` 13→12; der Boden fängt `P`/`S`/`p`/`s` ab — `S` steht seit dem LF11-Write bei n=2 und hat heute NULL Fits |
 | sep04 | Kette | [K-F Produktions-Init (A34)](#kette-k-f-sep04--vorregistrierung-der-produktions-init-autor-entscheid-a34-und-die-fällige-kette-nachmessung) | Pre-Reg | EIN Knopf `connector_init` mirror→production (der Verbraucher, den der P-Spiegel stehen ließ); Basis = frischer v5-Lauf auf der heutigen Wurzel = deklarierte Kette-Re-Baseline, weil seit `sep01` keine dev-19-Zahl über die Rechteck-Reparatur trägt |
 | sep04 | Kette | [K-F gemessen](#kette-k-f-sep04--gemessen-der-init-bewegt-sich-die-gefolgte-bahn-kaum--und-die-kette-steht-heute-anders-als-am-aug26) | gemessen · **verworfen** (Gate 2/4 zurechenbar) · **Re-Baseline (Kette)** · **Instrument-Befund** | Kette auf der heutigen Wurzel: dtw 0,045830 · p90 0,094197 · aiou 0,7694 · 63er-Soll 76 (Duell jetzt wurzel-gleich gegen Lotse 0,056080). Der Arm: Soll 76→77, `Galoppieren` +0,0055 dtw, Kreuzungsdefekte 19→20. **Die Nullprobe ist das Ergebnis:** 23 der 63 Wörter bekommen einen Init, der um höchstens 1,8·10⁻¹⁵ abweicht — auf dieser NULL-Änderung kippen 9 Wächter-Verdikte, aiou −0,0298 … +0,0800, 4 Verlierer unter der 0,003-Schranke. Gate 3 fällt gegen eine bedeutungslose Störung; ein Init-Arm ist auf diesem Instrument nicht entscheidbar |
+| sep05 | Übergänge | [J5 Runde 6 gemessen](#übergänge-j5-sep05--runde-6-gemessen-ein-ehrliches-negativ-gegen-grüne-gates) | Menschenrunde · **ehrliches Negativ** · **Autor-Entscheid A36** | Basis 20 : Kandidat 1 von 21 entschiedenen (4,8 % gegen ≥ 60 %), je Klasse `apex` 1/12 und `stem` **0/7 — bei ALLEN grünen Gates**; 12/12 Nullproben richtig als „kein Unterschied" erkannt (12 der 13 Ties sind sie), Verlässlichkeit 4/4 gleicher Arm bei 1/4 gleicher Seite, aber 4 < 6 Paare → kein Adoptionsanspruch. Das Auge verwirft, was das Lineal belohnt: die 5 Apex-Gewinner des Wort-Lineals gehen 5 : 0 an die Basis. Gemessener Grund im Payload: die Übergabe ist auf 1,67–1,84 xh schnurgerade (Pfeilhöhe 0,001–0,002 xh) statt den Anstrich-Bogen zu tragen. **A36: `stem_depart` wird NICHT Default**, Golden-Bake gegenstandslos |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -9503,3 +9504,181 @@ ohne Mitschnitt scheitern statt auf den Spiegel zurückfallen zu lassen
 (Sprosse 0 zeigt: sie tritt auf diesem Satz nie auf); der dritte Lauf
 für Gate 1 über alle 63 statt über dev-19 — ohne ihn wäre die
 Bit-Determinismus-Prämisse der Nullklasse unbewiesen geblieben.
+
+### Übergänge J5 `sep05` — Runde 6 gemessen: ein ehrliches Negativ gegen grüne Gates
+
+Die Menschenrunde aus Gate (h) des J5-Eintrags ist gefahren (2026-09-05,
+Beurteiler = Autor, 38 Bildschirme in einem Zug). **Keine Zahl der beiden
+J5-Abschnitte oben ist angefasst** — das Lineal hat gesagt, was es gesagt hat;
+hier steht, was das Auge dazu sagt. Ablage der Runde:
+[`data/humanbench/runde-06-*`](../../data/humanbench/runde-06-stempel.md)
+(Urteile, schmaler Schlüssel, Auswertung, Stempel); Schlüssel, Payload und die
+beiden Arm-Dateien bleiben draußen (Open-Core-Vorbehalt).
+
+**Ein Freiheitsgrad, und er ist die Regel als GANZES.** Beide Schalter liefen
+gemeinsam gegen die Basis (Arme `35a8ffe5c77fc012` / `619576595cef6014`,
+Registrierung des Kandidaten an die Basis gepinnt, Wurzel-Export
+`2026-09-04T08:29:01+00:00`, sonst identische Einstellungen). Trennen lässt es
+sich über die vorregistrierten Verdachtsklassen: auf den acht `stem`-Wörtern
+feuert **nur** `stem_depart`, auf den zwölf `apex`-Wörtern **nur**
+`apex_handover`, auf `Soldaten`/`daß` beide.
+
+#### Der Auswerteplan, Schritt für Schritt
+
+| Schritt | Zahl | Schranke | Lesung |
+|---|---|---|---|
+| 1 Verlässlichkeit | **4/4 Paare gleicher Arm**, 1/4 gleiche Seite (1 Paar beidseits „kein Unterschied") | ≥ 6 Paare · > 7/12 Arm | Geurteilt wurde nach dem **Bild**, nicht nach der Position — aber **4 < 6**: die Runde trägt **keinen Adoptionsanspruch** |
+| 2 Seitenbilanz | links 16 · rechts 5 · unentschieden 13 (76,2 % der entschiedenen links) | berichtet, nie entscheidend | über der 65-%-Meldeschwelle; die Saat verteilt die Arme, eine Neigung verbreitert das Ergebnis, sie dreht es nicht |
+| 3 Verdikt | **Basis 20 : Kandidat 1** von 21 entschiedenen → Kandidat **4,8 %**; unentschieden 13 von 34 = **38,2 %** | ≥ 60 % · ≤ 25 % | beide Schranken gerissen — die Kandidaten-Schranke um 55 Punkte nach UNTEN; `adopt: false` |
+| 5 Drift | Basis 7 · 7 · 6, Ties 4 · 4 · 5, Mediandauer 10 · 4,5 · 5 s | — | keine Ermüdung, kein Kippen; nur der erste Bildschirm zählt 42 s (Einlesen), der Rest liegt bei 2–14 s |
+
+#### Schritt 4 — je Verdachtsklasse
+
+| Klasse | n | entschieden | Kandidat | unentschieden | Lesung |
+|---|---|---|---|---|---|
+| `apex` (nur `apex_handover`) | 12 | 12 | **1** (8,3 %) | 0 | einziger Kandidaten-Bildschirm der Runde: `unter` |
+| `stem` (nur `stem_depart`) | 8 | 7 | **0** (0 %) | 1 (`Feinde`) | **7 : 0 gegen den Arm, dessen Gates ALLE grün waren** |
+| `beide` | 2 | 2 | 0 | 0 | unter `MIN_PAIRED_PER_CLASS` = 8, also „zu wenig" statt Anteil |
+| `nullprobe` (bit-identische Tafeln) | 12 | 0 | — | **12 (100 %)** | die Instrumentprüfung, siehe unten |
+
+**Die Nullprobe beweist das Instrument, und sie räumt die Tie-Schranke ab.**
+Zwölf Bildschirme zeigten links und rechts dasselbe Bild; zwölfmal lautete die
+Antwort „kein Unterschied erkennbar" — 12/12 richtig, kein einziges „links"
+oder „rechts" auf einen Unterschied, den es nicht gibt. Damit ist die Frage
+beantwortet, an der das LF11-Verdikt gescheitert ist (`sep02`: 34,9 %
+Unentschiedene, ohne dass jemand sagen konnte, wie viel davon Antwortgewohnheit
+ist): **der Beurteiler benutzt die Option, und zwar dort, wo sie stimmt.** Die
+38,2 % dieser Runde sind deshalb kein Zaudern — **12 der 13 Unentschiedenen
+sind die 12 Nullproben.** Unter den 22 wirklich bewegten Wörtern bleibt genau
+EINES unentschieden; 21 von 22 sind entschieden, und 20 davon für die Basis.
+
+#### Was der Beurteiler gesehen hat
+
+Der freie Satz des Autors, wörtlich (mündlich in derselben Sitzung, die Seite
+gab in dieser Runde kein Notizfeld aus):
+
+> „die Aufstriche beim scharfen s oder t waren unnatürlich gerade Linien,
+> obwohl die einen leichten Bogen nach oben hin haben sollten."
+
+**Das ist genau der Diff, an den Payloads nachgemessen.** Die Übergabe ersetzt
+den kurzen Kopplungs-Verbinder der Basis (Sehne 0,35–0,47 xh) **plus den
+eigenen Anstrich des Buchstabens** durch EINEN geraden Zug zum Scheitel:
+
+| | Sehne | Pfeilhöhe | Pfeilhöhe/Sehne |
+|---|---|---|---|
+| Kandidat, die neue Übergabe (14 der 15 Feuerungen) | 1,67–1,84 xh | **0,0010–0,0020 xh** | **0,0005–0,0011** |
+| Basis, der gelöschte Teil des Anstrichs (an 10 Feuerungen aus dem Silhouetten-Diff messbar) | 0,70–0,83 xh | 0,015–0,040 xh | 0,022–0,050 |
+| Tafelzelle, zum Vergleich (`core/compose.py`) | — | t 0,180 · ſ 0,136 · k 0,187 · ß 0,175 xh | — |
+
+Die Übergabe ist auf drei Nachkommastellen ein Lineal-Strich, und sie ist
+lang: knapp zwei x-Höhen, in `streiten` sogar **3,30 xh** in einem Zug (dort
+feuert die Regel zweimal und die erste Übergabe ersetzt einen stark gebogenen
+Zug von 2,06 xh Sehne bei 0,60 xh Pfeilhöhe). Der Bogen, der verschwindet, ist
+im komponierten Wort schon deutlich flacher als in der Tafelzelle — und das
+Auge hält trotzdem an ihm fest. Alle gemessenen Anstrich-Pfeilhöhen liegen auf
+**derselben** Seite der Sehne: es ist eine Richtung, kein Rauschen.
+
+**Welches „scharfe s"?** Gefeuert hat die Klasse in dieser Runde auf **t**
+(`Seiten`, `mit`, `mit-2`, `macht`, `fechten`, `unter`, `streiten`,
+`Soldaten`), auf **k** (`linken`) und auf **ß** = `sz` (`muß`, `muß-2`,
+`muß-3`, `schießen`, `daß`) — fünf der vierzehn Wörter, in denen sie feuert
+(15 Feuerungen: in `streiten` greift die Regel zweimal — einmal am ſt-Anfang,
+einmal am freistehenden t). Das lange **ſ**
+steht in dieser Runde nie gebunden: `streiten` bringt `longst` und `schießen`
+`longs`, beide wortinitial, wo die Regel den Anstrich per Konstruktion in Ruhe
+lässt. „Scharfes s" meint hier also das **ß**; die eine Stelle, an der sichtbar
+eine Gerade von einem langen ſ ausgeht, ist `streiten`, wo die 3,30-xh-Übergabe
+am Fuß des ſ beginnt.
+
+**Und der grüne Arm sieht anders aus, als seine Zahlen klingen.** `stem_depart`
+lässt den d-Auslauf 0,023–0,031 xh tiefer und mit **−2,6°** statt −33 … −42°
+abgehen und legt dann 0,87–0,90 xh Weg über eine Sehne von 0,72–0,74 xh
+zurück: aus der geraden Verbindung der Basis (Pfeilhöhe 0,0009–0,0014 xh) wird
+ein flach ansetzender, dann abtauchender Bogen von **0,095–0,109 xh** — auf der
+anderen Seite der Sehne. Nur `die`/`die-2` bogen schon vorher (0,133) und
+werden vom Kandidaten flacher (0,109). Sieben von acht dieser Wörter gehen an
+die Basis.
+
+#### Verdikt und Autor-Entscheid A36
+
+**Das Lineal war grün und das Auge sagt nein — bei `stem_depart` ohne jede
+Einschränkung.** Der Arm bestand jedes Gate (`word_loss` −0,000100,
+`pair_loss` −0,001441, 14 besser : 4 schlechter, Platzierung byte-gleich) und
+verliert die Klasse, in der er allein feuert, mit **0 : 7**. Beim Apex-Arm
+zeigt die Runde in dieselbe Richtung wie das Lineal, jetzt aber mit einer
+zweiten Schärfe: **die fünf Wörter, die das Wort-Lineal dem Apex-Arm
+gutgeschrieben hat** (`Soldaten` −0,0068 · `schießen` −0,0056 · `fechten`
+−0,0031 · `muß-2` −0,0026 · `linken` −0,0023), **gehen 5 : 0 an die Basis.**
+Wo das Lineal den Kandidaten belohnt, verwirft das Auge ihn — die Kennzahl
+misst hier nachweislich etwas anderes als das, worüber entschieden wird.
+
+**Was die Vorregistrierung auslösen durfte — und was daraus folgt.** `adopt`
+verlangt beide Schwellen UND die Vorbedingung aus Schritt 1; keines davon liegt
+vor, die Runde **kann** also keine Adoption tragen. Sie braucht es auch nicht:
+die Richtung, in die sie zeigt, ist der **Standard, der ohnehin gilt** — beide
+Schalter sind `False`. Der Wiederholungs-Boden schützt davor, auf
+Münzwurf-Antworten etwas UMZUSTELLEN; er verlangt keine Schranke dafür, es zu
+lassen. Und die Antworten waren keine Münzwürfe: 4/4 Arm-Übereinstimmung bei
+1/4 Seiten-Übereinstimmung und 12/12 korrekt erkannte Nullproben. Das Negativ
+ist damit glaubwürdig, obwohl die Runde unter dem Wiederholungs-Boden liegt —
+und genau so und nicht als Instrument-Verdikt wird es hier gebucht.
+
+**Autor-Entscheid A36 (2026-09-05): `stem_depart` wird NICHT Default.** Er
+bleibt aus, wie heute. Die „Empfehlung: Ja" des J5-Abschnitts oben bleibt als
+Messaussage stehen — sie war ausdrücklich ein Bench-Ergebnis und ausdrücklich
+keine Umschaltung, die dort schon als Autorenfrage benannt wurde. Damit ist
+auch das angekündigte Neu-Backen des Goldens auf `das`/`dann`/`denen`/
+`das Glück` **gegenstandslos**; Golden, Prod und jede `/write/word`-Antwort
+bleiben unberührt. `apex_handover` war schon `sep04` verworfen und bleibt es.
+Schalter, Konstanten und Tests bleiben im Baum — die J4-Regel: der nächste Arm
+fängt nicht bei null an.
+
+#### Rettungswege (Register: `tintenfolger.md` §7.9)
+
+1. **Eine Übergabe, die den Bogen TRÄGT** (neuer Mechanismus). Die Klasse ist
+   sauber geschnitten und trifft, was sie treffen soll — falsch ist die
+   AKTION: eine Sehne statt eines Anstrichs. Der nächste Arm gibt der erzeugten
+   Übergabe die gemessene Pfeilhöhe ihres Zielbuchstabens mit (t 0,180 ·
+   ſ 0,136 · k 0,187 · ß 0,175 xh, Richtung wie in der Tafelzelle) statt sie
+   geradezuziehen. Vorregistrierung: dieselbe Leiter wie J5, dazu (i) die 14
+   Wörter dieser Runde, in denen die Regel feuert, als benannte Zielmenge,
+   (ii) ein Gate „Pfeilhöhe/Sehne der neuen Übergabe liegt im Band der
+   Tafelzelle ±25 %", (iii) die Wiedervorlage-Bedingung, dass
+   `gleichzug_doublings` nicht steigt — der Bogen vergrößert den Weißkeil, an
+   dem `sep04` vier Verdopplungen hingen.
+2. **Ein Sensor, der sieht, was das Auge gesehen hat** (neuer Sensor). Kein
+   eingefrorenes Lineal misst heute die Krümmung eines Aufstrichs; deshalb
+   konnte `stem_depart` alle Gates bestehen. Erst als reine Report-Spalte
+   bauen und einfrieren: Pfeilhöhe über Sehne des letzten Zugs vor einem
+   Scheitel bzw. des ersten Zugs nach einem Austritt, je Join. Abnahme wie bei
+   `dspan` (`sep04`): Nullproben, eine Trennschärfe-Prüfung an genau den 21
+   entschiedenen Bildschirmen dieser Runde (trennt die Spalte Basis von
+   Kandidat?), dann — und nur dann — als Gate in einer eigenen
+   Vorregistrierung. Ohne ihn bleibt jeder Anstrichs-Arm auf ein Menschenurteil
+   angewiesen.
+3. **Die Tafelform selbst nachfahren** (neue Evidenz, Autorenweg — schon von A4
+   als Alternative zur Regel benannt). Wenn t/ſ/k im Wizard einen
+   verbindungsfähigen Anstrich bekommen, muss kein Generator einen Bogen
+   erfinden. Der Preis ist der, den A4 vermeiden wollte (fünf Nachfahrungen
+   statt einer Regel), der Nutzen liegt aber quer zur Übergabe: die
+   nachgefahrene Form wirkt auch dort, wo gar kein Join steht. Todoist-Aufgabe
+   beim Autor, zusammen mit dem r-Fall aus dem J5-Abschnitt.
+4. **Die Klasse noch einmal, mit ≥ 6 Wiederholungspaaren** (dieselbe Frage,
+   höherer Boden — ausdrücklich KEINE weicheren Gates). Erst dann kann eine
+   Runde über diese Klasse auch etwas UMSTELLEN. Rezept steht in der
+   Arithmetik: `pick_word_repeats` zieht nur aus den ersten
+   `n − min_gap − REPEAT_JITTER` Bildschirmen, bei `--min-repeat-gap 5` braucht
+   ein Boden von 6 also **≥ 36 Einträge**; die 22 bewegten Wörter tragen das
+   nur mit **14** Nullproben statt der 12 dieser Runde. Vorregistriert würde
+   die Runde als Bestätigung des Negativs (Erwartung: Kandidatenanteil bleibt
+   unter 25 %) — und sie ist erst fällig, wenn Weg 1 einen neuen Kandidaten
+   liefert; dieselbe Regel zweimal vorlegen misst den Beurteiler, nicht die
+   Regel.
+
+**Was die Runde dem INSTRUMENT eingetragen hat** steht in
+[`menschliche-bewertung.md`](menschliche-bewertung.md) §8a, neben der Regel,
+die sie präzisiert: Nullproben heben eine schmale Klasse über den
+Wiederholungs-Boden, aber nicht automatisch bis 6 — die Zahl der Wiederholungen
+ist `n − min_gap − REPEAT_JITTER` und damit vor dem Bau ausrechenbar. Diese
+Runde bat um 6, bekam gemeldete 4 und hat damit von Anfang an keinen
+Adoptionsanspruch tragen können.
