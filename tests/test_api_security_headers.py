@@ -8,9 +8,11 @@ Starlette OUTSIDE every user middleware, so it is covered from `api.main`'s
 `Exception` handler instead. Each of those four paths is driven below, because
 each reaches the wire by a different route.
 
-`api/routers/csp.py` is the other half of the report-only week: it is the one
-POST on this API that anybody may call, so the tests below pin what it accepts,
-what it refuses, and that it still answers 204 with no credential at all.
+`api/routers/csp.py` is where the site's policy reports land — it outlived the
+report-only hours, because `report-uri` stayed in the enforcing policy. It is
+the one POST on this API that anybody may call, so the tests below pin what it
+accepts, what it refuses, and that it still answers 204 with no credential at
+all.
 """
 
 from __future__ import annotations
@@ -234,8 +236,9 @@ async def test_the_script_sample_is_logged_and_stays_out_of_the_dedupe_key(api: 
     Every inline `script-src-elem` violation carries the same directive, the
     same `blocked-uri` ("inline") and the same document, so without the sample
     the log says "an inline script was reported" and nothing more — which is
-    not an answer to the one question the report-only week asks, namely whether
-    the script Cloudflare injects at the edge is the one being reported.
+    not an answer to the question the report channel exists for, namely which
+    inline script — the one Cloudflare injects at the edge, or one of ours — is
+    being reported.
 
     It is logged but NOT part of the key: samples differ by a character, and a
     keyed sample would open a fresh tracked row for each and could be used to

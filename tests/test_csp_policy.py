@@ -25,9 +25,10 @@ somewhere:
    replay under a fresh header is the classic way a nonce policy takes a site
    down.
 
-None of it is enforced yet — the policy is Report-Only — which is exactly why
-these have to be tests: a broken half is invisible in a browser today and
-takes the workbench down on the day the header is renamed.
+All of it is enforced since 2026-09-05, which is exactly why these have to be
+tests: while the policy was Report-Only a broken half was invisible in a
+browser, and it is the workbench — the surface no automated pass can open —
+that a broken half now takes down.
 
 The nginx parse is deliberately crude — a brace counter over one file we write
 ourselves, not a config parser. It only has to be right about this file.
@@ -46,6 +47,18 @@ HEADERS_CONF = ROOT / "app" / "security-headers.conf"
 NGINX_CONF = ROOT / "app" / "nginx.conf"
 
 INCLUDE_LINE = "include /etc/nginx/security-headers.conf;"
+
+
+def csp_header_name() -> str:
+    """The name the policy is delivered under — enforcing or report-only.
+
+    Read separately from the value, because it is the ONE token that decides
+    whether a mistake anywhere else in this file is a log line or an outage.
+    """
+    conf = HEADERS_CONF.read_text(encoding="utf-8")
+    match = re.search(r"^add_header\s+(Content-Security-Policy(?:-Report-Only)?)\s", conf, re.MULTILINE)
+    assert match, "no Content-Security-Policy header found in app/security-headers.conf"
+    return match.group(1)
 
 
 def csp_directives() -> dict[str, list[str]]:
@@ -110,6 +123,26 @@ def header_nonce_variable() -> str | None:
     return None
 
 
+def test_the_policy_is_delivered_enforcing():
+    """The header name, which is the whole difference between a log and an outage.
+
+    Report-Only from 2026-09-02, enforcing since 2026-09-05 by the author's
+    decision: that time — 40 hours of it on the nonce path — produced no report
+    from the site's own code, only the deliberate probe and once two reports
+    from a single client whose injected Cloudflare script had not been stamped
+    (see the conf for the evidence and the rollback).
+
+    This test is the record of that state, not a ban on ever going back. A
+    deliberate return to Report-Only — a source turns up that nothing found —
+    changes the header and this line together, and that is the point: the
+    repository should never disagree with what the edge is serving.
+    """
+    assert csp_header_name() == "Content-Security-Policy", (
+        f"the policy is delivered as {csp_header_name()!r}. Enforcing is the state of "
+        "2026-09-05; a deliberate rollback to Report-Only updates this test with the header."
+    )
+
+
 def test_script_src_takes_its_nonce_from_a_per_request_variable():
     """A nonce is only a nonce if it is fresh per response.
 
@@ -130,15 +163,15 @@ def test_the_header_and_the_stamp_name_the_same_variable():
     """The failure with no symptom until every inline script is dead.
 
     The policy promises a nonce; `sub_filter` writes one onto the tags. Nothing
-    connects the two files but this equality. While the policy is Report-Only a
-    mismatch is invisible — the page still works and the reports look like
-    noise — and on the day the header is renamed to the enforcing one it takes
-    the workbench down, which is the surface no automated pass can open.
+    connects the two files but this equality. While the policy was Report-Only a
+    mismatch was invisible — the page still worked and the reports looked like
+    noise — and since it went enforcing the same mismatch takes the workbench
+    down, which is the surface no automated pass can open.
     """
     stamps = _STAMP.findall(NGINX_CONF.read_text(encoding="utf-8"))
     assert stamps, (
-        "app/nginx.conf stamps no CSP nonce onto <script> tags. Report-Only hides "
-        "that today and the enforcing switch would not."
+        "app/nginx.conf stamps no CSP nonce onto <script> tags. Report-Only used to "
+        "hide that; the enforcing policy does not."
     )
     assert set(stamps) == {header_nonce_variable()}, (
         f"the stamp writes {sorted(set(stamps))} but script-src reads "
@@ -147,18 +180,19 @@ def test_the_header_and_the_stamp_name_the_same_variable():
 
 
 def test_script_src_asks_for_a_sample():
-    """Without `'report-sample'` the report-only week cannot answer its question.
+    """Without `'report-sample'` a report cannot name the script it is about.
 
     A nonce policy collapses every inline violation onto one
     directive/blocked/document tuple, so the sample is the only field that says
-    WHICH inline script was reported — and the week exists to find out whether
-    that script is the one Cloudflare injects at the edge. Measured on the live
-    site before this change: the report arrived with an EMPTY sample, because
-    the directive did not ask for one.
+    WHICH inline script was reported — which is how the report-only hours could
+    tell Cloudflare's injected script apart from one of ours, and how an
+    enforced block will be read the same way. Measured on the live site before
+    this change: the report arrived with an EMPTY sample, because the directive
+    did not ask for one.
     """
     assert "'report-sample'" in csp_directives()["script-src"], (
         "script-src does not ask for a sample, so every inline violation reports as an "
-        "anonymous 'inline' and the report week cannot name the script it is about."
+        "anonymous 'inline' and no report can name the script it is about."
     )
 
 
@@ -207,6 +241,9 @@ def test_style_src_keeps_unsafe_inline_and_says_so():
 
 
 def test_policy_reports_to_a_route_this_api_serves():
+    """And it keeps reporting under enforcement — `report-uri` survived the
+    switch on purpose, because a source that is actually being BLOCKED is worth
+    hearing about more, not less."""
     directives = csp_directives()
     reported_to = directives["report-uri"][0]
     assert reported_to.endswith("/csp-report")

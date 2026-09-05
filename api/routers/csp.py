@@ -1,12 +1,17 @@
 """`POST /csp-report` — where the site's Content-Security-Policy reports land.
 
-The site ships its policy as `Content-Security-Policy-Report-Only` for one week
-before it is switched to enforcing (`app/security-headers.conf`). A report-only
-policy blocks nothing, so the week is worth exactly as much as the reports it
-produces — hence this endpoint. It **counts and logs; it writes nothing**. No
-table, no row, no reserved data: a violation report is a browser's account of
-the SITE's own configuration, and the only thing anyone will ever do with it is
-read a log line and add a source to the policy.
+The site shipped its policy as `Content-Security-Policy-Report-Only` on
+2026-09-02 and switched to the enforcing header on 2026-09-05
+(`app/security-headers.conf` carries the evidence). A report-only policy blocks
+nothing, so those hours were worth exactly as much as the reports they produced
+— hence this endpoint; and it outlives them, because `report-uri` stays in the
+enforcing policy and a source that is actually being blocked is worth hearing
+about more, not less. The `disposition` field on every logged line is what
+separates the two: `"report"` while a policy only watched, `"enforce"` once it
+acts. It **counts and logs; it writes nothing**. No table, no row, no reserved
+data: a violation report is a browser's account of the SITE's own
+configuration, and the only thing anyone will ever do with it is read a log
+line and add a source to the policy.
 
 **Why it lives on the API host.** A report endpoint has to answer anonymously,
 and the apex `/api/*` is gated by Cloudflare Access — an anonymous POST there
@@ -48,8 +53,9 @@ magnitude below that. The one thing a limiter cannot bound is a single huge
 body, so the read is capped here instead.
 
 **Deliberately NOT exempt from the origin gate** either — reports come through
-the edge like everything else. If the week produces no reports at all, that is
-the first thing to check, with the probe in
+the edge like everything else. Silence here is ambiguous by construction: no
+reports can mean a policy nobody violates or a channel nobody reaches, so the
+first thing to check is the channel, with the probe in
 `docs/reference/frontend-stack.md` §6.
 """
 
@@ -79,7 +85,7 @@ MAX_BODY_BYTES = 64 * 1024
 # fires ten thousand times is also not the same finding as one that fires
 # twice, and the every-hundredth line is where that difference shows.
 # The dict is per process and lost on restart, which is correct: the point is
-# to name the distinct violations of the report-only week, not to be a meter.
+# to name the distinct violations a deploy produces, not to be a meter.
 _REPEAT_INTERVAL = 100
 # Above this many distinct violations the counter stops growing. A policy with
 # 200 distinct violations does not need the 201st to be understood, and an

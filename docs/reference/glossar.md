@@ -903,7 +903,12 @@ Verletzung ist ein Befund, der vor dem Scharfschalten in die Policy gehört
 (oder abgestellt wird). Gemeldet wird per `report-uri`, und **nur** so: Die
 naheliegende Fassung deklariert daneben `report-to` (Reporting-API) — und
 genau das ließ Chromium im Durchgang vom 2026-09-02 `report-uri` ignorieren
-und dann gar nichts liefern. *Technisch:*
+und dann gar nichts liefern. *Für diese Seite ist sie vorbei:* Sie lief vom
+2026-09-02 bis zum 2026-09-05 (davon 40 Stunden auf dem Nonce-Pfad), erzeugte
+keine Meldung aus dem eigenen Code, und die Policy ist seit dem 2026-09-05
+scharf — `report-uri` blieb stehen, das Feld `disposition` trennt seither
+`report` von `enforce`.
+*Technisch:*
 `app/security-headers.conf`, `api/routers/csp.py`,
 `tests/test_csp_policy.py`. → frontend-stack.md §6
 
