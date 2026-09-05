@@ -101,12 +101,12 @@ Von den sechs Befunden, die am 2026-09-02 ohne PR und ohne Aufgabe standen, sind
 
 ### Nachzug 2026-09-04/05: was aus der A-Liste dazukam
 
-Die Audit-Arbeit selbst hat neue A-Punkte aufgeworfen, die keiner der 39 Befunden-Zeilen zugeordnet sind, aber aus derselben Runde stammen und hier mitgeführt werden, statt in einer eigenen Momentaufnahme zu verschwinden. Je eine Zeile, PR-Nummer als Beleg:
+Die Audit-Arbeit selbst hat neue A-Punkte aufgeworfen, die keiner der 39 Befundzeilen zugeordnet sind, aber aus derselben Runde stammen und hier mitgeführt werden, statt in einer eigenen Momentaufnahme zu verschwinden. Je eine Zeile, PR-Nummer als Beleg:
 
 - **A28** — g/p als Lesefalle im Quiz plus der Verwechsler-Fold im Lesart-Wörterbuch → #534 (versionierter Lesart-Schlüssel, `LESART_KEY_VERSION` v2, Generation 2 der Ladung).
 - **A30** — der Site-Container (`kurrentschrift-app`) bekommt ein Origin-Gate wie zuvor die API → #536, Übertrag aus dem Schwesterrepo (anyplot #11221, dort am 2026-09-04 scharf); hier ausdrücklich mit `ORIGIN_GATE=off` ausgeliefert, das Scharfschalten ist ein eigener, noch offener Rollout-Schritt.
 - **A29b** — CSP-Hashes durch ein Nonce ersetzt, weil Cloudflares JavaScript Detections kein Hash erfassen kann → #532, Übertrag aus anyplot #11220; Policy bleibt `Report-Only`.
-- **A39** — die „Vorlage neu abgeleitet“-Bestätigung im Diagnose-Dialog war nie sichtbar (Render-Phasen-Fehler, ein Frame lang) → #533.
+- **A39** — die „Vorlage neu abgeleitet“-Bestätigung im Diagnose-Dialog war nie sichtbar: ein Render-Phasen-Guard setzte das Flag in derselben Render-Passage zurück, in der es gesetzt wurde → #533.
 - Folgearbeit aus #533: die Label-Spalte des Score-Breakdowns lief in den eigenen Balken, und der Dialog scrollte bei 390 px seitwärts → #541.
 - Die Spur-Werkzeuge bekommen dieselbe Wurzel-Absicherung wie der Wordbench (`--expect-root`, Digest vor der ersten Messung) → #540.
 - Die Image-Importmessung aus `docs/notes/serve-image-importgraph-2026-09-04.md` (#523) wurde im image-geformten venv wiederholt und bestätigt: kein Code geändert → #542.

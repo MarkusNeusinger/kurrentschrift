@@ -3,7 +3,7 @@
 - **The 2026-09-02 audit's register brought up to the 2026-09-05 state.** The
   synthesis note's `Erledigungsstand` table is its one living part — the 39
   findings and their ranked write-up stay frozen. Verified against `gh pr
-  view` and the merged commits since 2026-09-03: thirteen more rows close
+  view` and the merged commits since 2026-09-03: eleven more rows close
   (Sperr-Doktrin #513, the campaign journal's move to `messjournal.md` #521,
   the pairlab production-connector re-measure #527, the deploy-api trigger's
   `app/prerender/**` include checked live, the 121 stale branches deleted, the
