@@ -6,12 +6,15 @@ description: Run one round of the Tintenfolger word-tracing measurement — fixt
 # Run a Tintenfolger round (the standing measurement liturgy)
 
 The word-tracing duel (`docs/proposals/tintenfolger.md`; numbers and
-pre-registrations in `docs/reference/messjournal.md` §14) has a
-five-step liturgy that `werkzeuge.md` records and that §14 entries have
-followed since `aug19`. It is the most error-prone standing procedure in the
-repo — twice in two days (`aug25` L-U, `aug26` v5) a round was measured
-against the WRONG follower — and this skill exists so the steps come from a
-checklist instead of from memory.
+pre-registrations in `docs/reference/messjournal.md` §14) has a five-step
+liturgy that §14 entries have followed since `aug19`. **This file is its
+only copy** — `werkzeuge.md` kept a second one until `sep05`, both had to
+receive the same `--expect-root` change, and it now points here and stays
+the tool INVENTORY (entry points, flags, file locations). It is the most
+error-prone standing procedure in the repo — twice in two days (`aug25`
+L-U, `aug26` v5) a round was measured against the WRONG follower — and
+this skill exists so the steps come from a checklist instead of from
+memory.
 
 This is measurement only: no DB writes, no `core/` edits, no rendering
 changes. Frozen rulers and fixture roots stay frozen for the whole round.

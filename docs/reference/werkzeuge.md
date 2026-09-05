@@ -1,8 +1,9 @@
 # Werkzeuge — die Dev-Tools unter `tools/`
 
-> **Status (2026-09-04): lebend.** Der Index über die Dev-Tools unter
+> **Status (2026-09-05): lebend.** Der Index über die Dev-Tools unter
 > `tools/` — was es gibt, wie man es aufruft, und welche Invariante daran
-> hängt.
+> hängt. **Nicht** der Ablauf einer Mess-Runde: der steht in
+> `/verify-trace` und nur dort.
 >
 > **Was gilt.** Drei Gattungen, streng getrennt. **Labs** zeigen
 > (matplotlib-PNGs nach `temp/`, immer `uv run --extra viz`):
@@ -27,10 +28,11 @@
 > aus; gepinnt von `tests/test_imports.py`), und ein Bench ändert während
 > eines Laufs weder Lineal noch Fixture-Wurzel.
 >
-> **Was offen ist.** Die Werkzeuge sind kein Skill: es gibt keinen
-> `/verify-*`-Loop für Labs und Ernte, die Prüfung ist der Bench-Lauf und
-> das Auge. Die Methode und die Zahlen eines Laufs stehen nicht hier,
-> sondern in [`qualitaetsmetrik.md`](qualitaetsmetrik.md) (Regeln) und
+> **Was offen ist.** Für Labs und Ernte gibt es keinen `/verify-*`-Loop,
+> die Prüfung ist der Bench-Lauf und das Auge; einen Skill hat nur die
+> Tintenfolger-Runde (`/verify-trace`). Die Methode und die Zahlen eines
+> Laufs stehen nicht hier, sondern in
+> [`qualitaetsmetrik.md`](qualitaetsmetrik.md) (Regeln) und
 > [`messjournal.md`](messjournal.md) (Läufe).
 >
 > **Nachzieh-Anlass.** Jedes neue, umbenannte oder entfernte
@@ -747,57 +749,33 @@ Warnung versehen. Begriff und Hausregel:
   Mess-Kandidat des Tintenfolger-Duells
   ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md);
   Zahlen und Vorregistrierungen in
-  [`messjournal.md`](messjournal.md) §14). Die stehende
-  Mess-Liturgie einer Runde, wie sie die §14-Einträge seit `aug19`
-  fahren:
-  1. **Erster Akt** (Cloud-Session): `uv sync --all-extras`, dann
-     `uv run python -m tools.wordbench.fetch_fixtures --set all
-     --verify` (bit-exakte Abnahme der Fixture-Roots).
-  2. **Folger-Lauf** (der Duell-Kette-Kandidat). **Seit Kette v5
-     (`aug26`) ist der Duell-Stack der DEFAULT** — Kompositions-Soll,
-     Ratsche, Zone 0,55 —, ein Lauf ohne Flags IST die Kette: BLAS
-     gepinnt und `--jobs 4`, z. B. `OPENBLAS_NUM_THREADS=1
-     OMP_NUM_THREADS=1 uv run python -m tools.pairlab.follow --all
-     --set words --jobs 4 --expect-root <digest> --json …
-     --candidate-out …`. Die
-     Archäologie-Flags reproduzieren jede ältere Basis:
-     `--no-structure-guard-ratchet --structure-guard-zone 0
-     --soll-source init` = der K0-Z-Soll-Stack (Basis von K0-S und
-     L-U), `--no-structure-guard` = der Folger ohne Wächter
-     („Kette-frei", NUR Diagnose-Arm — er deckt mehr Tinte, indem er
-     Struktur zerstört, Init 86 → frei 125 Soll-Punkte). **Basis und
-     Arm müssen bis auf den EINEN vorregistrierten Knopf derselbe
-     Stack sein**; `k0eval` druckt beide Stacks und warnt bei
-     Abweichung — zweimal in zwei Tagen (`aug25` L-U, `aug26` v5)
-     wurde sonst gegen den falschen Folger gemessen (er liest die
-     sechs Wächter-Flaggen). Die Arm-Flags (`--connector-init` …)
-     stehen im `--help` und je Arm in seinem §14-Eintrag.
-  3. **dev-19-Scoring**: `uv run python -m tools.tracebench --split dev
-     --candidate file --candidate-file <cand.json> --expect-root
-     <digest> --json … --compare <basis-report.json>` — gepaarte Deltas,
-     Zähler, Gates.
-  4. **63er-k0-Protokoll**: `uv run python -m tools.tracebench.k0eval
-     <basis-cand.json> <arm-cand.json> --expect-root <digest>` —
-     referenzfrei über alle
-     Wörter: Soll-Abstand je Wort (Kompositions-Soll durch
-     `ductus_soll`), `aiou` gegen die eingefrorene Maske,
-     Strich-Identitäts-Klassen (verglichen werden die geparsten
-     Strichzüge, nicht die Datei-Bytes); ersetzt die bis `aug21` je
-     Runde neu geschriebenen Scratch-Skripte. Ein Kandidat, der auf
-     einer GEPATCHTEN Root gelöst wurde (Laufform-Kandidaten-Karte,
-     §14 LF3b-W), wird mit `--fixtures <root>` gegen das Soll DIESER
-     Root gewertet — das Kompositions-Soll wandert mit der Karte, das
-     der eingefrorenen Root wäre dort das falsche Lineal; je Root ein
-     eigener Aufruf, der Abstand wird von Hand nebeneinandergelegt.
-  5. **Sensoren/Augenschein nach Bedarf**:
-     `uv run python -m tools.tracebench.excursions <cand.json>
-     --expect-root <digest>` (das Papier-Exkursions-Inventar, der
-     stehende K-D-Sensor) und `uv run python -m tools.tracebench.view
-     --expect-root <digest>` (die Duell-/Augenschein-Seite).
-  Invarianten: alles reine Messschicht (nie DB/`core/`/Rendering);
-  gepaarte Vergleiche gelten nur innerhalb EINER gepinnten Umgebung
-  (aug16-Lehre) und EINER Wurzel (`--expect-root`, siehe oben); der
-  Dev-Split ist eingefroren und append-never.
+  [`messjournal.md`](messjournal.md) §14). Einstiegspunkte:
+  `tools.pairlab.follow` (Folger-Lauf → Kandidaten-JSON),
+  `tools.tracebench` (dev-19-Wertung gegen die authored Wortbahnen),
+  `.k0eval` (referenzfreies 63er-Protokoll), `.excursions`
+  (Papier-Exkursions-Inventar, der stehende K-D-Sensor) und `.view`
+  (Duell-/Augenschein-Seite). Alle fünf nennen ihre Wurzel im Kopf und
+  nehmen `--expect-root` (siehe oben); die Arm- und Archäologie-Flags
+  stehen im jeweiligen `--help` und je Arm in seinem §14-Eintrag.
+  Invarianten: reine Messschicht (nie DB/`core/`/Rendering), der
+  Dev-Split ist eingefroren und append-never, und gepaarte Vergleiche
+  gelten nur innerhalb EINER gepinnten Umgebung und EINER Wurzel.
+
+  **Die Reihenfolge dieser Aufrufe steht hier nicht mehr, sondern in
+  [`/verify-trace`](../../.claude/skills/verify-trace/SKILL.md).** Der
+  Skill ist die ausführbare Form der stehenden Mess-Liturgie, die die
+  §14-Einträge seit `aug19` fahren: Vorregistrierung, Fixture-Abnahme,
+  Folger-Lauf mit gepinntem BLAS, dev-19-Scoring, 63er-k0-Protokoll,
+  Sensoren — und die Ablage der Runde (§14-Eintrag, Register-Zeile,
+  Ledger-Zeile, bei einem Negativ die Rettungswege). Er wird **vor**
+  einer Mess-Runde aufgerufen, nicht nachgeschlagen, und lädt sich dann
+  als Checkliste; das ist der Punkt, denn zweimal in zwei Tagen
+  (`aug25` L-U, `aug26` v5) wurde gegen den falschen Folger gemessen,
+  weil die Schritte aus dem Gedächtnis kamen. Diese Doku bleibt das
+  Inventar — was es gibt, wie es heißt, welche Invariante daran hängt;
+  der Ablauf einer Runde hat genau eine Quelle. (Bis `sep05` stand er
+  hier ein zweites Mal, und beide Kopien mussten dieselbe
+  `--expect-root`-Änderung erhalten.)
 - **`tools/inksight`** — die Route-B-Pipeline des Tintenfolger-Duells
   ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §4):
   drei Stufen (Crop-Vorbereitung → Inferenz im ISOLIERTEN

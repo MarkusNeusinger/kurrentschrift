@@ -233,18 +233,19 @@ WIDEST = {
 # rebuilds the page wrong — and the section was condensed to about two thirds
 # of its first draft before this raise. Re-measured plus the usual headroom.
 #
-# `werkzeug-abschnitt` raised on 2026-09-05 because its headroom was gone, not
-# because a section earned more room: „Benches und Generator" — the widest, and
-# therefore the measured one — stood at 4066 of 4073 the day after the budget
-# was set, so ANY addition failed and the gate had stopped separating a
-# paragraph from a rewrite. What it failed here was `--expect-root` in the five
-# copy-paste command lines of the Mess-Liturgie, which is read-path by
-# definition: a round that does not pass the flag cannot show which base it
-# measured. Re-measured with those in, plus the usual 10 %. The real fix is
-# older than this raise and belongs to its own PR: those five steps are a
-# second copy of `.claude/skills/verify-trace/SKILL.md` (both had to be edited
-# with the same flag here), and collapsing them to a pointer would give the
-# section back ~700 tokens and remove the drift risk with them.
+# `werkzeug-abschnitt` was raised to 4538 on 2026-09-05 and is back at its
+# measured 4073 the same day. The raise was honest but a stopgap: „Benches und
+# Generator" — the widest section, and therefore the measured one — stood at
+# 4066 of 4073, so ANY addition failed and the gate had stopped separating a
+# paragraph from a rewrite; what it failed was `--expect-root` in the five
+# copy-paste command lines of the Mess-Liturgie, read-path by definition. The
+# raise itself named the real fix: those five steps were a second copy of
+# `.claude/skills/verify-trace/SKILL.md`, both copies had to receive the same
+# flag, and collapsing them to a pointer would give the section its room back.
+# That is now done, and the section measures 3704 — two tokens off the 3702 that
+# set this budget on 2026-09-04. So the number returns unchanged rather than
+# being re-derived: the growth was moved out of the read path, which is what the
+# gate asks for, and a budget re-measured to the same value is the proof.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
     "mess-runde": 18_644,
@@ -255,7 +256,7 @@ BUDGETS: dict[str, int] = {
     "frontend": 15_018,
     "werkbank": 5_166,
     "werkzeug": 713,
-    "werkzeug-abschnitt": 4_538,
+    "werkzeug-abschnitt": 4_073,
     "doku": 7_937,
 }
 
