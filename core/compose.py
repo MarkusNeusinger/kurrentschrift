@@ -117,11 +117,18 @@ ARCADE_ENTRY_CLEARANCE = INK_CLEARANCE  # declared-but-neutral by construction
 # re-checks this exception.
 BACKWARD_INK_CLEARANCE = 0.11
 LONGS_BACKWARD_CLEARANCE = 0.30
-# The nib radius every ink clearance above was calibrated AT: the chart-pooled
-# Gleichzug half-width of the 1922 hand. The clearances are stated in x-heights,
-# but each of them came out of a measurement made with THIS pen, so held at a
-# fixed x-height they shrink in NIB RADII as the pen grows — a heavier pen fills
-# the same skeleton gap with more ink and the placement crowds. Reading them in
+# The nib radius every ink clearance above was calibrated AT: the 1922 hand's
+# chart-pooled Gleichzug half-width AS IT STOOD when those measurements were
+# made. A FROZEN number on purpose, never a lookup of today's pool — the pool
+# runs over every template of the source, variant rows included, so each
+# authoring write moves it (the LF12 write of 2026-09-05 shifted it 0.07251 →
+# 0.0724326), and a reference that drifted along would silently reinterpret
+# older calibrations. That drift is also the argument for making the DELIVERED
+# nib a declared per-source value rather than a pool; see the §14 entry.
+# The clearances are stated in x-heights, but each of them came out of a
+# measurement made with THIS pen, so held at a fixed x-height they shrink in
+# NIB RADII as the pen grows — a heavier pen fills the same skeleton gap with
+# more ink and the placement crowds. Reading them in
 # nib radii instead is the OPT-IN arm ``nib_clearance`` (default off), measured
 # and NOT adopted: messjournal §14 „Ink-Clearance an die Feder `sep05`". At the
 # CALIBRATED scale (1.338 at half 0.097) the frozen word set's Gleichzug

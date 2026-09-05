@@ -10130,6 +10130,18 @@ Runde-4-Vorregistrierung (Geometrie 0,097 / Lineal 0,097: 0,100833 ·
 0,092061 · 0,085154 · 0,151460) ebenso. Der Prüfstand misst also, was er
 zu messen behauptet.
 
+**Die Wurzel ist die vorregistrierte, und sie ist seit heute nicht mehr
+die aktuelle.** Der LF12-Write (Eintrag oben, 2026-09-05T21:33Z) hat neue
+Wurzeln erzeugt — `eaa195aa7c84…` / `0fbde2d72b64…` mit Wörtern 0,108444
+· Paaren 0,148236. Dieser Arm bleibt bewusst auf `6cbab9d5c092` /
+`965ab3c57ebd`: er war dort vorregistriert, seine Diagnose ist dort
+gezählt, und die Runde-4-Vergleichszahlen, gegen die er antritt, stehen
+ebenfalls dort. **Folge, und sie steht hier statt in einer Fußnote:
+keine Zahl dieses Eintrags ist mit der neuen Headline vergleichbar.** Wer
+den Arm wiedervorlegt, misst ihn auf der dann aktuellen Wurzel neu — die
+Aussage über den MECHANISMUS (unten) hängt an der Geometrie der
+Verbinder, nicht an der Wurzel, aber jede Zahl tut es.
+
 #### Die Gates, der Reihe nach
 
 | Gate | Soll | Gemessen | |
@@ -10274,10 +10286,24 @@ Heute leitet die API den Gleichzug-Nib rein rechnerisch ab:
 Quelle den Median je Profil und mittelt sie
 (`resolve_half_widths('constant')` setzt den Wert dann auf jedes
 Halbbreiten-Feld), memoisiert je `(style_id, source_id)`. Für
-`suetterlin-1922` sind das die 0,07251. `tools/wordbench/export_fixtures.py`
+`suetterlin-1922` waren das die 0,07251. `tools/wordbench/export_fixtures.py`
 rechnet dieselben drei Zeilen ein zweites Mal nach und friert das
 Ergebnis als `manifest.constant_nib_units` ein — der Bench misst also
 per Konstruktion die Feder, die die Seite schreibt.
+
+**Und genau das ist das Argument, das dieser Runde in die Hände fiel.**
+„Waren", nicht „sind": der LF12-Write vom selben Abend — 18 Laufform-
+Zeilen geschrieben, `S` gelöscht — hat den gepoolten Nib auf **0,0724326**
+verschoben (beide Exporte `nib_precision: "exact"`). Der Pool läuft über
+ALLE Templates der Quelle, Varianten-Zeilen eingeschlossen; **jeder
+Authoring-Write ändert damit die ausgelieferte Strichbreite**, ohne dass
+irgendjemand eine Feder gewechselt hätte. Das ist keine Kleinigkeit für
+diesen Eintrag: die 0,07251 in `CLEARANCE_REF_HALF` sind deshalb als
+eingefrorener KALIBRIERWERT geschrieben und nicht als Nachschlag auf den
+Pool — die Konstanten, die sie skaliert, wurden an jener Feder gemessen,
+und eine Referenz, die mit jedem Write mitwandert, würde alte Messungen
+rückwirkend umdeuten. (Der Arm bleibt davon unberührt: 0,0724326 liegt
+UNTER der Referenz, die Skala ist also weiterhin exakt 1,0.)
 
 Zwei Wege, den ausgelieferten Nib auf die gemessene Wortfeder zu setzen:
 
@@ -10287,13 +10313,23 @@ Zwei Wege, den ausgelieferten Nib auf die gemessene Wortfeder zu setzen:
 | Default | `NULL` = heutiger Pool, byte-gleich | Code-Wert, gilt sofort für alles |
 | Zurücknehmen | Admin-Write, ohne Deploy | Deploy |
 | Fixture-Export | liest die Zeile, die er schon hat — eine Zeile | zweite Stelle, die die Konstante kennen muss |
+| Stabilität | ein DEKLARIERTER Wert — driftet nicht | Code-Wert, driftet auch nicht |
 | Kosten | Migration + `/verify-migrations` + Prod-Write | ein PR |
 
-**Empfehlung: A.** Die Federbreite IST eine Messung an dieser Hand, kein
-Merkmal des Skripts; sie gehört zu den Daten der Quelle. Und nur A hält
-Auslieferung und Bench automatisch synchron, weil beide dieselbe Zeile
-lesen — B müsste die Konstante an zwei Stellen bekannt machen und würde
-beim ersten Vergessen auseinanderlaufen.
+**Empfehlung: A.** Drei Gründe, in dieser Reihenfolge. (i) Die
+Federbreite IST eine Messung an dieser Hand, kein Merkmal des Skripts;
+sie gehört zu den Daten der Quelle, und `suetterlin` trägt bald auch die
+Eigenhand. (ii) Nur A hält Auslieferung und Bench automatisch synchron,
+weil beide dieselbe Zeile lesen — B müsste die Konstante an zwei Stellen
+bekannt machen und würde beim ersten Vergessen auseinanderlaufen.
+(iii) **Und der eigentliche Grund, den erst der LF12-Write sichtbar
+gemacht hat:** solange der ausgelieferte Nib ein POOL ist, ist die
+Strichbreite der öffentlichen Schrift eine Funktion des Bestands — sie
+hat sich heute Abend um 0,0000774 xh bewegt, weil der Autor Laufformen
+geschrieben und ein `S` gelöscht hat, und sie wird sich beim nächsten
+Authoring wieder bewegen. Ob die Feder 0,0725 oder 0,097 sein soll, ist
+eine Entscheidung; dass sie überhaupt ENTSCHIEDEN und nicht abgeleitet
+ist, ist die eigentliche Reparatur. A liefert beides, B nur die halbe.
 
 **Was nur der Autor tun kann** (jeder Punkt prod-berührend, jeder
 einzeln zu bestätigen):

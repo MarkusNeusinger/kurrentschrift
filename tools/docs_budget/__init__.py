@@ -246,9 +246,21 @@ WIDEST = {
 # set this budget on 2026-09-04. So the number returns unchanged rather than
 # being re-derived: the growth was moved out of the read path, which is what the
 # gate asks for, and a budget re-measured to the same value is the proof.
+#
+# `mess-runde` raised again on 2026-09-05, same reason as the first time and
+# with the numbers this time: the path measured 18 625 of 18 644 on `main` —
+# nineteen tokens of room — and „Ink-Clearance an die Feder" adds its two
+# register rows, a pre-registration and its result, which is the standard shape
+# of a booked arm (LF10, LF11, LF12, J5, S1 and K-F all carry the pair). 518
+# tokens for the two, the rows already tightened once. Deleting a row to buy the
+# room is the one move the register forbids, and shortening a finding until it
+# fits is how a register stops being readable — so: re-measured at 19 143 and
+# given the documented 10 % headroom, like every other path. Still no licence
+# for prose: the Stand blocks, §7.11 and `verfahren.md` are the pieces this
+# gate is actually watching, and they did not move.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
-    "mess-runde": 18_644,
+    "mess-runde": 21_057,
     "mess-runde-route": 6_177,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,
