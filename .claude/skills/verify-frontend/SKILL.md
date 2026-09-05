@@ -282,10 +282,24 @@ cd app && npm run lint && npm run test && npm run build
 `npm run type-check` exists too). A clean click-through with a red ESLint
 or a red Vitest still fails in Actions.
 
-## 3b · Focus rings and the type floor (a11y)
+## 3b · Numeric rules: focus rings, the type floor, any floor or cap
 
-Both checks below have already produced a false negative once, on
-2026-09-02 — measure them the way this section says, not the obvious way.
+Every check below has already produced a wrong answer once — measure them
+the way this section says, not the obvious way.
+
+**The general rule: a numeric UI rule is verified against the MEASURED
+result in the browser, never against the planned one.** A floor, a minimum
+size, a cap, a hit-target — the verification names the rule and the number
+it measured, on every surface the rule reaches, at both viewports. PR #535
+shipped a 14 px x-height floor for written lines whose planner sized lines
+from the average advance per character; the plan met the floor and the
+widest real line did not, because the ink frame's own padding scales with
+the writing and was not in the budget. `/lesen/vergleichen` came out at
+**13.9 px** — a rule broken by the code that enforces it, and only the
+measurement on the page could say so. The fix was to re-plan from the
+measured line (`padUnits` in `app/src/lib/lineWrap.ts`), and the honest
+consequence is written next to it: a single unbreakable word still falls
+below the floor.
 
 - **`element.focus()` from a script does NOT trigger `:focus-visible`.**
   The browser only sets that state for input it considers keyboard-driven,

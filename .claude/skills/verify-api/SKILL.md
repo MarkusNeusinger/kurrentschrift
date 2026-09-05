@@ -102,6 +102,25 @@ shared Cloud SQL data that the admin UI authored. Only exercise an
 authorized write when the task explicitly is about that endpoint, and
 prefer a glyph key the user designates as scratch.
 
+**A tool that writes shared state carries its contract version, and the
+SERVER refuses a stale one.** The rule is a design duty for any new
+admin-write path, not just a check: whenever the API and the pushing tool
+must agree on how the data is computed, the payload carries a marker of that
+agreement and the route answers `409` on a mismatch. `tools.lesarten.sync` is
+the worked example (#534): the bucket keys are computed in `add_forms` on the
+server, so a newer loader pushed at an older API would fill the table with
+the OLD buckets while labelling them with the new fold — a vocabulary that
+reports itself current and no reader can reach. `api/routers/lesarten.py`
+compares `core.lesarten.LESART_KEY_VERSION` against the marker in the build's
+source label and answers „deploy the new fold first". Version-free legacy
+labels stay allowed and simply read as stale, which is the truth about them.
+
+Two properties to keep when you add such a path: the refusal is the
+SERVER's (a tool that checks itself is a tool that can be run with an old
+copy), and the mismatch message names both versions and the direction to
+fix. The probe is cheap — push a payload with a bumped marker at a server
+that has not been deployed yet and expect a 409, never a silent 200.
+
 ## 4 · Tests
 
 The API/compute test suite (synthetic fixtures, no DB or network

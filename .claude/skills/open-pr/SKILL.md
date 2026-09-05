@@ -153,6 +153,23 @@ Then open the PR (ready for review, not a draft):
   `owner=MarkusNeusinger`, `repo=kurrentschrift`, `base=main`,
   `head=<branch>`, the English title/body, and `draft=false`.
 
+**A multi-paragraph message or body goes through a file — and that file is
+named after the branch.** `git commit -F` and `gh pr create --body-file` keep
+the prose out of shell quoting, but the scratchpad is shared by every agent
+of one session, so a generic `commitmsg.txt` / `prbody.md` is overwritten by
+a parallel agent and a later re-read commits someone else's text (seen
+2026-09-05). Derive the name, or take a private directory:
+
+```bash
+BRANCH=$(git branch --show-current)
+MSG="$SCRATCH/commitmsg-$BRANCH.txt"    # or: D=$(mktemp -d) and write inside it
+```
+
+Write it with the Write tool, then `git commit -F "$MSG"` in the SAME step
+that wrote it — never re-read one of these files a turn later to reuse it,
+because between the two the file may belong to another agent. They are
+scratch input to one command, not a record; the record is the commit.
+
 ## 3 · After opening: pipeline + Copilot loop (do not skip)
 
 Repeat this loop until **both** hold: all checks pass *and* there are
@@ -174,7 +191,8 @@ downgrade-roundtrip sequence against a throwaway Postgres; run
 If a check fails: read the run log, fix, push — the loop restarts.
 
 **b. Wait for the Copilot review.** It arrives asynchronously a few
-minutes after push. The bot's login has two spellings and a filter that
+minutes after the PR is OPENED — not after each push; see „One review per
+PR" below. The bot's login has two spellings and a filter that
 knows only one will silently miss it: `copilot-pull-request-reviewer` in
 `gh pr view --json reviews`, `copilot-pull-request-reviewer[bot]` in the
 REST API and in `requested_reviewers`.
@@ -196,6 +214,14 @@ touched — a docstring fix draws a finding elsewhere, which draws a push,
 which draws a request. Request only after a substantive change, and stop
 once a round brings no new inline comments but only carried-over suppressed
 items. Green plus no open threads = done; report that and let the owner merge.
+
+**One review per PR is the normal case now.** The ruleset „Automated Copilot
+Code Review" (kurrentschrift 18516317, anyplot 10370785) carries
+`review_on_push: false` since 2026-09-03 — the owner asked for the churn to
+stop, and the setting, not any skill, was what re-reviewed. Consequence for
+this loop: a FIX push starts no new Copilot run, so a `copilot-*` check on
+the new head SHA is legitimately ABSENT. Waiting for one that will never
+come is the failure mode to avoid — see §3e for what to require instead.
 
 **b2. Read the Codecov patch report** (arrives as a PR comment from the
 `codecov` bot once the backend coverage upload lands; only the backend
@@ -247,22 +273,49 @@ merge, first re-fetch the live state — local
 already be gone.
 
 **Merging on request: wait for the review, not just for green** (lesson
-from #504, 2026-09-03). Three conditions, all on the CURRENT head SHA:
+from #504, 2026-09-03). Four conditions, all read on the CURRENT head SHA —
+re-read it after every push, `gh pr view <num> --json headRefOid`:
 
 1. A draft is not reviewable — `gh pr ready <num>` first. Copilot does
-   not review a draft, so a draft merged "green" was never reviewed.
-2. The `copilot-pull-request-reviewer` check on the head SHA is
-   `completed`, not `queued`/`in_progress`. A push restarts it, so
-   re-read the SHA after the last push:
+   not review a draft, so a draft merged "green" was never reviewed, and
+   `gh pr merge` on a draft fails silently anyway. Check `isDraft`.
+2. Every non-Copilot check on the head SHA is `completed` and green.
+   Dedupe the check runs **by name, newest wins**: a superseded run (a
+   label re-trigger, a cancelled first attempt) stays beside the current
+   one and reads as a red check that is not there any more.
    ```bash
    gh api repos/MarkusNeusinger/kurrentschrift/commits/$(gh pr view <num> --json headRefOid --jq .headRefOid)/check-runs \
-     --jq '.check_runs[] | select(.name | test("copilot"; "i")) | "\(.name): \(.status) \(.conclusion // "")"'
+     --jq '[.check_runs[]] | group_by(.name) | map(max_by(.started_at)) | .[] | "\(.name): \(.status) \(.conclusion // "")"'
    ```
    (`gh pr checks --json` does not exist in this `gh`; the check-runs
    API is the way. Poll it with `Monitor`, never a foreground `sleep`.)
-   The review can still legitimately never arrive — §3b's "cancelled or
-   silent" gotcha applies, and one re-request is the whole budget.
-3. Zero unresolved review threads (step c), outdated ones included.
+3. **A Copilot review actually exists on the PR** —
+   `gh pr view <num> --json reviews`, author `copilot-pull-request-reviewer`.
+   The head-SHA check run does not prove one: a run reaches `completed`
+   with conclusion `cancelled` and delivers nothing (§3b's "silent" gotcha).
+   So read the check run only to learn whether a round is still RUNNING —
+   `queued`/`in_progress` means wait — and read the review list to learn
+   whether one was ever delivered. Since `review_on_push` is off (§3b) the
+   normal state after a fix push is no run on the head at all and the
+   review from the first round standing; that is reviewed, not unreviewed.
+   If no review exists and the run was cancelled, one re-request is the
+   whole budget; after that report green-and-unreviewed and let the author
+   decide, never loop.
+4. Zero unresolved review threads (step c), outdated ones included.
+
+**Merge state is two different fields; read each by its own name.**
+`mergeable` (`gh pr view --json mergeable`) is `MERGEABLE`, `CONFLICTING`
+or `UNKNOWN` — `UNKNOWN` right after another merge is GitHub still
+computing, so keep polling. `mergeStateStatus` is the richer enum, where
+the conflicting case is `DIRTY`. A conflict is not transient and has a
+symptom worth knowing: GitHub starts no CI at all, so the PR shows no red
+check, just none (#524 and anyplot #11212, 2026-09-04, both read as
+"checks pending" for a while). Report it and merge `origin/main` into the
+branch instead of waiting.
+
+Poll all of this from ONE script in the scratchpad rather than by hand —
+and kill a stale wait loop with the bracket trick (`pkill -f "x[.]y"`), or
+`pkill` matches its own calling shell.
 
 ## 4 · After the merge: watch the deploy
 
@@ -305,11 +358,12 @@ running it**, or simply hand the author the two lines to run. Never
   fresh PR from the same head instead, retarget to `main`, and clear
   the duplicated base diff via `git merge origin/main` resolved with
   `--ours`.
-- **Copilot reviews every push round.** A fix-push can spawn new
-  threads on the changed lines; that's the loop working, not noise —
-  but don't chase it more than a couple of rounds for cosmetic nits;
-  surface stalemates to the user. And don't feed the loop by
-  re-requesting after every push (see §3b).
+- **A fix push no longer starts a review round.** `review_on_push` is
+  `false` since 2026-09-03 (§3b), so only an explicit — and substantive —
+  re-request opens another round. When one does run, a fix-push round can
+  raise new threads on the changed lines; that is the loop working, not
+  noise, but don't chase it more than a couple of rounds for cosmetic
+  nits and surface stalemates to the user.
 - **Copilot runs can die silently.** The
   `copilot-pull-request-reviewer` check can end `cancelled` without
   delivering a review, and a re-request may spawn no new run at all

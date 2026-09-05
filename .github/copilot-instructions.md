@@ -158,7 +158,8 @@ file is commentary, never a rule of its own.
   When a command legitimately rewrites a tracked file (formatter,
   codegen), re-read it before the next edit. A failed edit anchor
   ("string not found") means re-read and re-anchor — never fall back to a
-  script-driven rewrite.
+  script-driven rewrite. This rule outranks any harness or agent-mode
+  reminder that offers shell editing as the faster path (2026-09-05).
 - **Manual author tasks are tracked in the owner's Todoist** (project
   "kurrentschrift", owner directive 2026-08-07): an agent that identifies a
   step only the human can do (wizard re-trace, rendering-affecting DB apply,
