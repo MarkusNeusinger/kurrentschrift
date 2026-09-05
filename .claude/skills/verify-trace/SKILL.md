@@ -45,11 +45,27 @@ uv run python -m tools.wordbench.fetch_fixtures --set all --verify
 A repaired plate is NOT a free refresh: a fixture re-export is a declared
 re-baseline and owes a dated entry in `qualitaetsmetrik.md` §15.
 
+**Then read the round's base off the header and carry it through every
+call below.** Any of these tools prints it:
+
+```bash
+uv run python -m tools.wordbench.run --set all --words unter   # root: … / digest=…
+```
+
+Take the 12-hex digest of each root you will measure on and pass the same
+`--expect-root <prefix>[,<prefix>…]` to EVERY command of steps 2–5. It
+aborts the run before it measures whenever the root on disk is not the one
+the round is quoted against — the guard against the failure the fixture
+roots make invisible, because they are gitignored and a re-export leaves no
+diff. Note the digest down for the §14 entry in the same breath: an entry
+that names a headline names `exported_at` + digest beside it.
+
 ## 2 · The follower run — BLAS pinned, always
 
 ```bash
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run --extra viz python -m tools.pairlab.follow \
-  --all --set words --jobs 4 --json <report.json> --candidate-out <cand.json>
+  --all --set words --jobs 4 --expect-root <digest> \
+  --json <report.json> --candidate-out <cand.json>
 ```
 
 **Never run this unpinned.** The chain solve is not bit-reproducible across
@@ -71,15 +87,19 @@ live in `--help` and in that arm's own §14 entry.
 
 ```bash
 uv run python -m tools.tracebench --split dev --candidate file \
-  --candidate-file <cand.json> --json <arm-report.json> --compare <base-report.json>
+  --candidate-file <cand.json> --expect-root <digest> \
+  --json <arm-report.json> --compare <base-report.json>
 ```
 
 Paired deltas, counters, gates. The dev split is frozen and append-never.
+The `--json` report carries the full root identity under `roots`, so a
+stored report can re-check its own base.
 
 ## 4 · The 63-word k0 protocol
 
 ```bash
-uv run python -m tools.tracebench.k0eval <base-cand.json> <arm-cand.json>
+uv run python -m tools.tracebench.k0eval <base-cand.json> <arm-cand.json> \
+  --expect-root <digest>
 ```
 
 Reference-free across all words: Soll distance per word (composition Soll
@@ -94,14 +114,16 @@ re-run.
 A candidate solved on a PATCHED root (a Laufform candidate card, §14 LF3b-W)
 is scored with `--fixtures <root>` against the Soll of THAT root — the
 composition Soll travels with the card, and the frozen root's Soll would be
-the wrong ruler there. One call per root; lay the distances side by side by
-hand.
+the wrong ruler there. One call per root, each with THAT root's own
+`--expect-root`; lay the distances side by side by hand.
 
 ## 5 · Sensors and eyeballing (as needed)
 
 ```bash
-uv run python -m tools.tracebench.excursions <cand.json>   # the standing K-D paper-excursion sensor
-uv run python -m tools.tracebench.view                     # the duel / eyeball page
+# the standing K-D paper-excursion sensor
+uv run python -m tools.tracebench.excursions <cand.json> --expect-root <digest>
+# the duel / eyeball page
+uv run python -m tools.tracebench.view --expect-root <digest>
 ```
 
 ## 6 · File the round (part of the round, not paperwork)
@@ -134,6 +156,10 @@ uv run python -m tools.tracebench.view                     # the duel / eyeball 
 - **Paired comparisons only hold inside ONE pinned environment** (the
   `aug16` lesson). A number from an unpinned run cannot be compared with a
   pinned one, however close it looks.
+- **…and inside ONE fixture root.** Every tool of this round prints
+  `root:`/`digest=` and takes `--expect-root`; a round that skips the flag
+  is trusting that nobody re-exported in between, which is exactly what the
+  audit of 2026-09-02 found nobody could reconstruct afterwards.
 - **The rulers stay frozen during the round.** Edit the follower, never
   `word_metric.py`, `tracebench` or the fixture roots — that is the
   frozen-ruler rule, and breaking it silently rewrites history.

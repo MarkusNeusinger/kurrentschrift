@@ -89,6 +89,7 @@ from tools.pairlab.analyze import (
 from tools.pairlab.connector_qc import connector_degenerate
 from tools.pairlab.harvest import _adjacent_joined, _px_to_units, connector_points
 from tools.pairlab.prodconn import JoinCall, derive_with_joins
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
 from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, REPO_ROOT, WordCase, _root_for, iter_fixture_word_cases
 from tools.wordlab.derive import WordDeriveResult
 
@@ -1307,11 +1308,20 @@ def main() -> None:
     p.add_argument("--json", type=Path, help="write the flat rows here (e.g. temp/stage_a.json)")
     p.add_argument("--csv", type=Path, help="write the flat rows here as CSV (e.g. temp/stage_a.csv)")
     p.add_argument("--aggregates", type=Path, help="aggregates JSON supplying the M4 MAD floor (default: fixture root)")
+    add_expect_root_argument(p)
     args = p.parse_args()
 
     sets = ("words", "pairs") if args.which == "all" else (args.which,)
     pairs = parse_pair_filter(args.pairs) if args.pairs else None
     ids = {s.strip() for s in args.ids.split(",") if s.strip()} if args.ids else None
+
+    # The Stage-A numbers belong to the roots they were read from — named
+    # before the first fit, pinnable with --expect-root.
+    try:
+        roots = [_root_for(DEFAULT_FIXTURES_DIR, args.style, which) for which in sets]
+    except KeyError as exc:
+        raise SystemExit(f"{exc} — chainbench needs the frozen word-bench fixtures") from exc
+    announce_roots(roots, args.expect_root)
 
     try:
         jobs = plan_occurrences(sets, args.style, pairs=pairs, ids=ids, max_occ=args.max_occ)

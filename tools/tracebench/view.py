@@ -60,6 +60,7 @@ from tools.tracebench.reference import DEFAULT_FIXTURES_DIR, Reference, Referenc
 from tools.tracebench.run import find_fixture_root
 from tools.tracebench.sets import TRACEBENCH_DEV_IDS
 from tools.tracebench.soll import SollRow, ductus_soll
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
 
 
 # The crop `tools/wordbench/export_fixtures.py` freezes beside `word.json` —
@@ -1138,6 +1139,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--style", default="suetterlin")
     parser.add_argument("--set", dest="which", default="words", help="fixture set (words | pairs | a custom set name)")
     parser.add_argument("--fixtures", type=Path, default=DEFAULT_FIXTURES_DIR, help="fixture root")
+    add_expect_root_argument(parser)
     parser.add_argument("--split", default="dev", choices=("dev", "confirm", "all"))
     parser.add_argument("--words", help="comma-separated id/word list — overrides --split")
     parser.add_argument(
@@ -1162,6 +1164,9 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     root = find_fixture_root(args.fixtures, args.style, args.which)
+    # The eyeball page carries numbers too (the --rows columns), so it names
+    # its base like every other run — and can be pinned to it.
+    announce_roots([root], args.expect_root)
     try:
         reference = load_reference(root)
     except FileNotFoundError as exc:

@@ -232,6 +232,19 @@ WIDEST = {
 # READ-PATH content by construction — a frontend agent that does not see them
 # rebuilds the page wrong — and the section was condensed to about two thirds
 # of its first draft before this raise. Re-measured plus the usual headroom.
+#
+# `werkzeug-abschnitt` raised on 2026-09-05 because its headroom was gone, not
+# because a section earned more room: „Benches und Generator" — the widest, and
+# therefore the measured one — stood at 4066 of 4073 the day after the budget
+# was set, so ANY addition failed and the gate had stopped separating a
+# paragraph from a rewrite. What it failed here was `--expect-root` in the five
+# copy-paste command lines of the Mess-Liturgie, which is read-path by
+# definition: a round that does not pass the flag cannot show which base it
+# measured. Re-measured with those in, plus the usual 10 %. The real fix is
+# older than this raise and belongs to its own PR: those five steps are a
+# second copy of `.claude/skills/verify-trace/SKILL.md` (both had to be edited
+# with the same flag here), and collapsing them to a pointer would give the
+# section back ~700 tokens and remove the drift risk with them.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
     "mess-runde": 18_644,
@@ -242,7 +255,7 @@ BUDGETS: dict[str, int] = {
     "frontend": 15_018,
     "werkbank": 5_166,
     "werkzeug": 713,
-    "werkzeug-abschnitt": 4_073,
+    "werkzeug-abschnitt": 4_538,
     "doku": 7_937,
 }
 

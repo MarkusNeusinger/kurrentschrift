@@ -8,7 +8,13 @@ the candidate is either a stored row, a recomputed chain fit or a file.
         [--split dev|confirm|all] [--words die,mit] [--candidate chain]
         [--candidate-file follow.json] [--label follow-v1] [--jobs 4]
         [--json report.json] [--csv rows.csv] [--compare baseline.json]
-        [--resample-step 0.02] [--mark-refit]
+        [--resample-step 0.02] [--mark-refit] [--expect-root <digest-prefix>]
+
+Like the word bench, every run states WHICH BASE it measured before it measures
+anything — ``root: <name> exported_at=…`` / ``digest=<12 hex>`` from the shared
+``tools/wordbench/roots.py``, with ``--expect-root`` to make that base a
+precondition rather than a hope. The roots are gitignored, so an undeclared
+re-export would otherwise leave no trace in a quoted number.
 
 Three rules the CLI enforces rather than trusts (messjournal.md §14):
 
@@ -71,6 +77,7 @@ from tools.tracebench.summary import (
     score_word,
     summarize,
 )
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
 
 
 STYLES = ("suetterlin", "kurrent", "offenbacher")
@@ -239,6 +246,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--fixtures", type=Path, default=DEFAULT_FIXTURES_DIR, help="fixture root (default: the frozen set)"
     )
+    add_expect_root_argument(parser)
     parser.add_argument(
         "--split",
         default="dev",
@@ -287,6 +295,9 @@ def main() -> None:
     started = time.perf_counter()
 
     root = find_fixture_root(args.fixtures, args.style, args.which)
+    # WHICH BASE this run measures — stated and checked before the ruler ever
+    # reads a stroke, the same sensor the word bench states its base with.
+    root_meta = announce_roots([root], args.expect_root)
     try:
         reference = load_reference(root)
     except FileNotFoundError as exc:
@@ -381,6 +392,9 @@ def main() -> None:
         # 1.5), so "the default" is not a value a stored file can rely on.
         "mark_arc_cap": args.mark_arc_cap,
         "hand_id": reference.hand_id,
+        # The FULL digest (the header prints 12 hex to stay readable): a stored
+        # report has to be enough to re-check its own base.
+        "roots": root_meta,
         "summary": summary,
         "rows": rows,
     }

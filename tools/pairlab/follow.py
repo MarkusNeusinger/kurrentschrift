@@ -73,6 +73,12 @@ residual this solve minimises itself.
     uv run python -m tools.pairlab.follow die --sweep prox=1.0,0.1,0.0
     uv run python -m tools.pairlab.follow --all --landmark-calibrate --json temp/lm-calib.json
     uv run python -m tools.pairlab.follow --all --landmark <w> --landmark-targets extrapolated
+    uv run python -m tools.pairlab.follow --all --set words --expect-root 9f124f78
+
+Every run names the fixture root it solves on before the first case (``root:``
+/ ``digest=`` from ``tools/wordbench/roots.py``, the full digest also in
+``--json``), and ``--expect-root`` aborts on a base nobody asked for — the
+candidate this writes is scored against that root's ruler and soll.
 """
 
 from __future__ import annotations
@@ -136,7 +142,8 @@ from tools.pairlab.landmarks import LANDMARK_MIN_ANGLE_DEG
 from tools.pairlab.trace import assemble_word_strokes, cap_word_strokes
 from tools.tracebench.counters import crossing_points, structure_zones
 from tools.tracebench.soll import composition_strokes
-from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, WordCase, iter_fixture_word_cases
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
+from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, WordCase, _root_for, iter_fixture_word_cases
 from tools.wordlab.derive import WordDeriveResult, derive_word
 
 
@@ -2473,6 +2480,20 @@ def _source_id_of(fixtures_root: Path, style: str, which: str) -> str:
     return ""
 
 
+def _announce_fixture_root(args: argparse.Namespace) -> list[dict[str, str]]:
+    """State (and with ``--expect-root`` pin) the root this run solves on.
+
+    A root that cannot be resolved is deliberately silent here: `_load_cases`
+    right after produces the readable exit for exactly that case, and two
+    messages about one missing export help nobody.
+    """
+    try:
+        root = _root_for(Path(args.fixtures), args.style, args.which)
+    except (KeyError, OSError):
+        return []
+    return announce_roots([root], args.expect_root)
+
+
 def _load_cases(ids: list[str], *, which: str, style: str, fixtures_root: Path) -> list[WordCase]:
     """The frozen cases, or a readable exit — the labs' shared skip behaviour."""
     try:
@@ -2554,6 +2575,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--set", dest="which", default="words", choices=["words", "pairs"])
     parser.add_argument("--style", default="suetterlin")
     parser.add_argument("--fixtures", type=Path, default=DEFAULT_FIXTURES_DIR)
+    add_expect_root_argument(parser)
     parser.add_argument("--chain-seed", default="composed", choices=["composed", "grid"])
     parser.add_argument("--rounds", type=int, help=f"re-linearising rounds (default {FOLLOW_ROUNDS})")
     parser.add_argument("--prox", type=float, help=f"proximal weight (default {FOLLOW_PROX_WEIGHT})")
@@ -2705,6 +2727,10 @@ def main() -> None:
     if not args.ids and not args.all:
         raise SystemExit("name at least one case id, or pass --all")
     started = time.perf_counter()
+    # WHICH BASE this solve runs on, before the first case is loaded: the
+    # candidate file it writes is scored against this root's ruler and soll, so
+    # a silent re-export would move a duel number nobody could attribute.
+    root_meta = _announce_fixture_root(args)
     cases = _load_cases(list(args.ids), which=args.which, style=args.style, fixtures_root=args.fixtures)
     if not cases:
         raise SystemExit(f"no case matched {args.ids!r} in the {args.which!r} set")
@@ -2731,6 +2757,7 @@ def main() -> None:
                         "style": args.style,
                         "set": args.which,
                         "mode": "landmark-calibrate",
+                        "roots": root_meta,
                         "weights": asdict(replace(base, landmark=0.0)),
                         "provisional": True,
                         "summary": report,
@@ -2755,6 +2782,9 @@ def main() -> None:
         "style": args.style,
         "set": args.which,
         "chain_seed": args.chain_seed,
+        # The FULL digest (the header prints 12 hex): a stored report has to be
+        # enough to re-check the base its rows were solved on.
+        "roots": root_meta,
         "arms": [],
     }
     last_infos: list[dict] = []

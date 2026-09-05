@@ -107,7 +107,7 @@ root: suetterlin-1922 exported_at=2026-08-14T06:02:45+00:00
 digest=219182189b93
 ```
 
-- **`root_digest(root)`** (`run.py`) — SHA-256 over the **sorted** list of
+- **`root_digest(root)`** (`roots.py`) — SHA-256 over the **sorted** list of
   `(relative POSIX path, size, SHA-256 of the bytes)` of every file under the
   root. Deterministic (the sort is the only ordering), blind to mtimes and
   permissions (copying a root keeps its identity), and sensitive to a single
@@ -124,6 +124,15 @@ digest=219182189b93
   page a set was frozen from; the measuring run now re-checks it against
   `data/sources/<source_id>/<page>` and aborts on a mismatch. Previously only
   the rebuild path (`fetch_fixtures.py`) ever looked.
+- **The same sensor everywhere.** `roots.py` holds the one implementation
+  (`root_digest`, `check_expected_roots`, `announce_roots` and the flag helper
+  `add_expect_root_argument`), and since `sep05` every entry point that reads a
+  fixture root prints those two lines and takes `--expect-root`:
+  `tools.wordbench.run`, `tools.tracebench.run` / `.k0eval` / `.view` /
+  `.excursions`, `tools.pairlab.follow` / `.spanmeas` / `.chainbench` and
+  `tools.pairlab` itself. A round pins them ALL to one prefix — otherwise the
+  acceptance, the follower and the two scorings cannot be shown to have run on
+  one base (`docs/reference/werkzeuge.md`, Mess-Liturgie).
 
 ## Scoring (see metric.py for the precise definitions)
 

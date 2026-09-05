@@ -18,11 +18,12 @@ an authored entry still counts 1.0.
 
 Every run states WHICH BASE it measured before it measures anything: two header
 lines per fixture root (``root: <name> exported_at=…`` and ``digest=<12 hex>``,
-see ``root_digest``), the manifest's own ``page_sha256`` re-checked against the
-committed page bytes, and ``--expect-root`` to make the expected base a
-precondition rather than a hope. The roots are gitignored, so a silent
-re-export used to be invisible — an undeclared re-baseline is exactly what the
-audit of 2026-09-02 could no longer trace.
+from the shared ``tools/wordbench/roots.py`` that the trace tools use too), the
+manifest's own ``page_sha256`` re-checked against the committed page bytes, and
+``--expect-root`` to make the expected base a precondition rather than a hope.
+The roots are gitignored, so a silent re-export used to be invisible — an
+undeclared re-baseline is exactly what the audit of 2026-09-02 could no longer
+trace.
 
 Usage:
     uv run python -m tools.wordbench.run [--style suetterlin]
@@ -87,6 +88,7 @@ from core.shaping import GlyphSlot
 from tools.wordbench.gleichzug import audit_composed
 from tools.wordbench.metric import score_word
 from tools.wordbench.pairmeas import compare_joins, load_measured, rows_for_entry
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
 from tools.wordbench.seam import seam_angles
 from tools.wordbench.slant import composed_raster, slant_deg
 
@@ -98,40 +100,6 @@ STYLES = ("suetterlin", "kurrent", "offenbacher")
 # the frozen rows carry the apply-step's (or the fetcher's). Nothing in the
 # render path reads it; it keeps an artifact traceable to its overlay run.
 LAUFFORM_OVERLAY_META = {"derived_from": "laufform-overlay", "via": "wordbench.run"}
-
-
-def root_digest(root: Path) -> str:
-    """The identity of a fixture root: SHA-256 over its complete file listing.
-
-    The digest is taken over the SORTED list of ``(relative POSIX path, size in
-    bytes, SHA-256 of the bytes)`` of every regular file under ``root``: one
-    ``"<relpath>\\0<size>\\0<sha256>\\n"`` record per file, sorted by the
-    relative path, concatenated into a single SHA-256. Properties that make it
-    usable as a citable base identity:
-
-    * deterministic — the sort is the only ordering, so the filesystem's walk
-      order, the machine and the export's own dict order cannot move it;
-    * blind to metadata — mtimes, ownership and permissions are not hashed, so
-      copying a root between checkouts (which the bench does) keeps it stable;
-    * sensitive to one flipped byte anywhere, including a file merely ADDED or
-      REMOVED, because the path list itself is hashed.
-
-    Its purpose: a wordbench headline is only comparable to another headline
-    measured on the same base. The roots are gitignored, so nothing in the repo
-    records a re-export — quoting ``exported_at`` plus the first 12 hex of this
-    digest next to a number makes an undeclared re-baseline visible at once
-    instead of at the next audit.
-    """
-    outer = hashlib.sha256()
-    files = sorted((p for p in root.rglob("*") if p.is_file()), key=lambda p: p.relative_to(root).as_posix())
-    for path in files:
-        inner = hashlib.sha256()
-        with path.open("rb") as fh:
-            for chunk in iter(lambda: fh.read(1 << 20), b""):
-                inner.update(chunk)
-        rel = path.relative_to(root).as_posix()
-        outer.update(f"{rel}\0{path.stat().st_size}\0{inner.hexdigest()}\n".encode())
-    return outer.hexdigest()
 
 
 def page_hash_problems(manifest: dict, repo_root: Path = REPO_ROOT) -> list[str]:
@@ -155,30 +123,6 @@ def page_hash_problems(manifest: dict, repo_root: Path = REPO_ROOT) -> list[str]
         if actual != expected:
             problems.append(f"{page}: manifest {expected[:12]} vs file {actual[:12]}")
     return problems
-
-
-def check_expected_roots(expect: str, digests: dict[str, str]) -> None:
-    """Abort unless every selected root — and every stated prefix — is accounted for.
-
-    ``expect`` is a comma-separated list of digest prefixes (``--set all``
-    selects two roots and therefore needs two). BOTH directions are required:
-    an unmatched root would let the run measure a base nobody asked for, and an
-    unmatched prefix is a stale or mistyped expectation that must not pass
-    silently just because the other half happened to match.
-    """
-    prefixes = [p.strip().lower() for p in expect.split(",") if p.strip()]
-    if not prefixes:
-        raise SystemExit("--expect-root: no digest prefix given")
-    unmatched_roots = [n for n, d in sorted(digests.items()) if not any(d.startswith(p) for p in prefixes)]
-    unmatched_prefixes = [p for p in prefixes if not any(d.startswith(p) for d in digests.values())]
-    if unmatched_roots or unmatched_prefixes:
-        actual = "\n  ".join(f"{n} digest={d}" for n, d in sorted(digests.items()))
-        raise SystemExit(
-            "--expect-root does not match the fixture roots this run would measure"
-            + (f"\n  unmatched roots: {', '.join(unmatched_roots)}" if unmatched_roots else "")
-            + (f"\n  unmatched prefixes: {', '.join(unmatched_prefixes)}" if unmatched_prefixes else "")
-            + f"\n  {actual}"
-        )
 
 
 def _overlay(word_dir: Path, word_meta: dict, composed: dict, report: dict, out_path: Path) -> None:
@@ -381,12 +325,7 @@ def build_parser() -> argparse.ArgumentParser:
         "named explicitly so it can never mix into the same-hand headlines.",
     )
     parser.add_argument("--fixtures", type=Path, default=FIXTURES, help="fixture root (default: the frozen set)")
-    parser.add_argument(
-        "--expect-root",
-        help="comma-separated digest prefixes (see root_digest) the selected fixture roots MUST start "
-        "with; the run aborts BEFORE measuring on any mismatch, so it can never silently score a "
-        "different base than the one a result is quoted against",
-    )
+    add_expect_root_argument(parser)
     parser.add_argument("--words", help="comma-separated id/word filter")
     parser.add_argument("--artifacts", type=Path, help="write overlay PNGs here")
     parser.add_argument("--json", type=Path, help="write the full report here")
@@ -498,21 +437,7 @@ def main() -> None:
     # WHICH BASE this run measures — stated, checked and only then scored.
     # Everything here happens before the first composition so a run can never
     # produce a number against fixtures it was not asked for.
-    root_meta: list[dict] = []
-    for root, manifest in selected:
-        digest = root_digest(root)
-        root_meta.append(
-            {
-                "name": root.name,
-                "set": manifest.get("set", "words"),
-                "exported_at": manifest.get("exported_at") or "unknown",
-                "digest": digest,
-            }
-        )
-        print(f"root: {root.name} exported_at={root_meta[-1]['exported_at']}")
-        print(f"digest={digest[:12]}")
-    if args.expect_root:
-        check_expected_roots(args.expect_root, {m["name"]: m["digest"] for m in root_meta})
+    root_meta = announce_roots([root for root, _ in selected], args.expect_root)
     page_problems = [f"{root.name}: {p}" for root, manifest in selected for p in page_hash_problems(manifest)]
     if page_problems:
         raise SystemExit("specimen pages do not match the manifest's page_sha256:\n  " + "\n  ".join(page_problems))

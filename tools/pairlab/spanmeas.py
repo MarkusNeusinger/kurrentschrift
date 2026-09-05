@@ -55,6 +55,13 @@ Two consequences, both deliberate and both stated before the first number:
 
 Report-only, like ``doff``/``dconn``: a monotone signal per join — same join,
 smaller number = closer to the specimen — never a calibrated absolute.
+
+    uv run python -m tools.pairlab.spanmeas --set words --json temp/base.json
+        [--expect-root <digest-prefix>]
+
+The run names its fixture root before it measures (``root:`` / ``digest=`` from
+``tools/wordbench/roots.py``) and ``--expect-root`` pins it: a ``--base``
+comparison only holds within ONE base.
 """
 
 from __future__ import annotations
@@ -72,6 +79,7 @@ import numpy as np
 from core.aggregate import PAIR_CONNECTOR_POINTS, _resample_polyline
 from core.compose import CONNECT_OVERLAP, compose_word
 from tools.wordbench.pairmeas import body_lines, join_pair_keys, load_measured, rows_for_entry
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
 from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, WordCase, _root_for, iter_fixture_word_cases
 from tools.wordlab.derive import laufform_payloads_for, payloads_for
 
@@ -361,8 +369,12 @@ def main() -> None:
     )
     p.add_argument("--json", type=Path, help="write the per-join rows here")
     p.add_argument("--base", type=Path, help="a rows JSON of the same set to compare against (the arm's own number)")
+    add_expect_root_argument(p)
     args = p.parse_args()
 
+    # A `--base` comparison only holds within ONE base, so the run names the
+    # root before it measures and `--expect-root` makes it a precondition.
+    announce_roots([_root_for(Path(args.fixtures), args.style, args.which)], args.expect_root)
     rows = run_set(
         args.which,
         style=args.style,

@@ -160,6 +160,7 @@ Feder Schwanz/Kopf der Glyphen für den Join umformt. Befund + Optionen in
 
 ```bash
 uv run --extra viz python -m tools.pairlab re [longs,a] [--set words|pairs|all]
+    [--expect-root <digest>]
 ```
 
 **Datierter Hinweis 2026-09-04 — was die Übergänge-Sektion seither misst.**
@@ -195,8 +196,8 @@ S1"). Report-only, kein DB-Zugriff, `core/word_metric.py` und
 `tools/wordbench/pairmeas.py` unberührt.
 
 ```bash
-uv run python -m tools.pairlab.spanmeas --set words --json temp/base.json
-uv run python -m tools.pairlab.spanmeas --set words --exit-trim --base temp/base.json
+uv run python -m tools.pairlab.spanmeas --set words --expect-root <digest> --json temp/base.json
+uv run python -m tools.pairlab.spanmeas --set words --expect-root <digest> --exit-trim --base temp/base.json
 ```
 
 Um `pairlab` herum sind messende Einstiegsskripte gewachsen (keines
@@ -628,6 +629,24 @@ denen es stammt.
   — danach `npm run prerender`, sonst tragen die ausgelieferten
   Prerender-Seiten weiter die alte Beschreibung.
 
+## Die Wurzel-Angabe jedes Messlaufs (`--expect-root`)
+
+Jeder Einstieg, der eine Fixture-Wurzel liest, nennt sie **vor** der ersten
+Messung — `root: <name> exported_at=…` und `digest=<12 hex>` — und
+`--expect-root <präfix>[,<präfix>…]` macht die erwartete Grundlage zur
+Vorbedingung: passt eine Wurzel nicht, oder passt ein genanntes Präfix zu
+keiner Wurzel, bricht der Lauf ab, bevor er misst. Die Wurzeln sind
+gitignored, ein Neu-Export hinterlässt sonst keine Spur (Prüfung
+`sep02`). **Wer eine Zahl aus der Sitzung trägt, läuft mit
+`--expect-root`** — und eine Runde nimmt denselben Präfix in *jeden* ihrer
+Aufrufe, sonst ist nicht belegt, dass Abnahme, Folger und Wertungen
+dieselbe Grundlage gesehen haben. Eine Umsetzung für alle:
+`tools/wordbench/roots.py`, getragen seit `sep05` von
+`tools.wordbench.run`, `tools.tracebench.run` · `.k0eval` · `.view` ·
+`.excursions` und `tools.pairlab.follow` · `.spanmeas` · `.chainbench` ·
+`tools.pairlab`; volle Digests im `--json` unter `roots`. Begriff und
+Hausregel: [Wurzel-Digest](glossar.md#4-metriken-und-benchmarks).
+
 ## Benches und Generator (Verweise)
 
 - **`tools/glyphbench`** — bewertet jeden autorisierten Buchstaben gegen
@@ -732,7 +751,8 @@ denen es stammt.
      Ratsche, Zone 0,55 —, ein Lauf ohne Flags IST die Kette: BLAS
      gepinnt und `--jobs 4`, z. B. `OPENBLAS_NUM_THREADS=1
      OMP_NUM_THREADS=1 uv run python -m tools.pairlab.follow --all
-     --set words --jobs 4 --json … --candidate-out …`. Die
+     --set words --jobs 4 --expect-root <digest> --json …
+     --candidate-out …`. Die
      Archäologie-Flags reproduzieren jede ältere Basis:
      `--no-structure-guard-ratchet --structure-guard-zone 0
      --soll-source init` = der K0-Z-Soll-Stack (Basis von K0-S und
@@ -746,10 +766,12 @@ denen es stammt.
      sechs Wächter-Flaggen). Die Arm-Flags (`--connector-init` …)
      stehen im `--help` und je Arm in seinem §14-Eintrag.
   3. **dev-19-Scoring**: `uv run python -m tools.tracebench --split dev
-     --candidate file --candidate-file <cand.json> --json …
-     --compare <basis-report.json>` — gepaarte Deltas, Zähler, Gates.
+     --candidate file --candidate-file <cand.json> --expect-root
+     <digest> --json … --compare <basis-report.json>` — gepaarte Deltas,
+     Zähler, Gates.
   4. **63er-k0-Protokoll**: `uv run python -m tools.tracebench.k0eval
-     <basis-cand.json> <arm-cand.json>` — referenzfrei über alle
+     <basis-cand.json> <arm-cand.json> --expect-root <digest>` —
+     referenzfrei über alle
      Wörter: Soll-Abstand je Wort (Kompositions-Soll durch
      `ductus_soll`), `aiou` gegen die eingefrorene Maske,
      Strich-Identitäts-Klassen (verglichen werden die geparsten
@@ -761,13 +783,14 @@ denen es stammt.
      der eingefrorenen Root wäre dort das falsche Lineal; je Root ein
      eigener Aufruf, der Abstand wird von Hand nebeneinandergelegt.
   5. **Sensoren/Augenschein nach Bedarf**:
-     `uv run python -m tools.tracebench.excursions <cand.json>` (das
-     Papier-Exkursions-Inventar, der stehende K-D-Sensor) und
-     `uv run python -m tools.tracebench.view` (die
-     Duell-/Augenschein-Seite).
+     `uv run python -m tools.tracebench.excursions <cand.json>
+     --expect-root <digest>` (das Papier-Exkursions-Inventar, der
+     stehende K-D-Sensor) und `uv run python -m tools.tracebench.view
+     --expect-root <digest>` (die Duell-/Augenschein-Seite).
   Invarianten: alles reine Messschicht (nie DB/`core/`/Rendering);
   gepaarte Vergleiche gelten nur innerhalb EINER gepinnten Umgebung
-  (aug16-Lehre); der Dev-Split ist eingefroren und append-never.
+  (aug16-Lehre) und EINER Wurzel (`--expect-root`, siehe oben); der
+  Dev-Split ist eingefroren und append-never.
 - **`tools/inksight`** — die Route-B-Pipeline des Tintenfolger-Duells
   ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §4):
   drei Stufen (Crop-Vorbereitung → Inferenz im ISOLIERTEN

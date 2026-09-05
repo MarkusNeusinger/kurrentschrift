@@ -350,7 +350,8 @@ menschliche-bewertung.md §4
 
 **Wurzel-Digest** *(`root_digest`)* — SHA-256 über die sortierte Liste
 aus (Pfad, Größe, Byte-Hash) aller Dateien einer Fixture-Wurzel: man sieht
-einer Kennzahl an, worauf sie gemessen wurde.
+einer Kennzahl an, worauf sie gemessen wurde. Jeder Messeinstieg druckt
+`root:`/`digest=`, `--expect-root <Präfix>` bricht vor dem Messen ab.
 → [§4](glossar.md#4-metriken-und-benchmarks)
 
 **glyphbench · wordbench · tracebench · pairlab · chainbench ·
