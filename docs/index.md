@@ -2,7 +2,7 @@
 
 > **Status (2026-09-04): lebend.** Die **Karte** über `docs/`. Die
 > Invariante: **genau eine Zeile je `.md`-Datei unter `docs/`**, mit ihrer
-> Aufgabe und dem Anlass, sie aufzumachen — heute 59 Zeilen für 59
+> Aufgabe und dem Anlass, sie aufzumachen — heute 60 Zeilen für 60
 > Dateien, gegen den Dateibaum prüfbar. Mehr steht hier bewusst nicht;
 > jede Aussage über ein Doc gehört in dieses Doc, sonst veraltet sie hier
 > zuerst. Am 2026-09-04 von ~12 500 auf rund 4 100 Token gekürzt: das
@@ -130,7 +130,8 @@ Nachschlagequellen, keine Pläne.
 | [research/kurrent-writer-and-recognizer.md](research/kurrent-writer-and-recognizer.md) | (EN) Generativer Writer als synthetische Datenquelle für einen billigen Recognizer |
 | [notes/audit-2026-09-02-synthese.md](notes/audit-2026-09-02-synthese.md) | Vollaudit 2026-09-01/02: 39 gereihte Befunde, Parallelplan T1–T14, Fragen F1–F11, Erledigungsstand |
 | [notes/audit-2026-09-02-rohbefunde.md](notes/audit-2026-09-02-rohbefunde.md) | Dieselbe Runde als Rohberichte der 20 Prüfer, jeder Befund mit Beleg |
-| [notes/serve-image-importgraph-2026-09-04.md](notes/serve-image-importgraph-2026-09-04.md) | Nachmessung zum Serve-only-Image: was `import api.main` lädt, was die Pakete wiegen, zwei Wege mit ihrem Preis — geändert wurde nichts |
+| [notes/serve-image-importgraph-2026-09-04.md](notes/serve-image-importgraph-2026-09-04.md) | Nachmessung zum Serve-only-Image: was `import api.main` lädt, was die Pakete wiegen, zwei Wege mit ihrem Preis — geändert wurde nichts (die eine offene Messung löst die Runde vom 2026-09-05 ein) |
+| [notes/serve-image-importtime-2026-09-05.md](notes/serve-image-importtime-2026-09-05.md) | Zweite Runde dazu: dieselben Sätze in einer image-förmigen venv (ohne Extras, Bytecode vorkompiliert) plus die Aufteilung des Imports nach Modulen — das Urteil vom 2026-09-04 hält |
 | [notes/quellen-recherche-2026-07.md](notes/quellen-recherche-2026-07.md) | Geschriebene Wortvorlagen und echte Hände: Rangliste, Absteiger, mögliche Anfragen |
 | [notes/stifte-fuer-unterwegs.md](notes/stifte-fuer-unterwegs.md) | Stift- und Hardware-Recherche fürs Schreiben unterwegs |
 
