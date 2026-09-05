@@ -9,15 +9,15 @@
   rests on what the report channel said rather than on confidence: Report-Only
   since 2026-09-02, 40 hours of it on the nonce path, produced no report from
   the site's own code — only the deliberate probe, and once two reports from a
-  single client whose injected
-  Cloudflare JavaScript Detections script had not been stamped, where every
-  fetch since shows all five script tags including Cloudflare's carrying the
-  header's nonce. Under enforcement such a client runs Cloudflare's bot script
-  and nothing else changes for it. What a report channel cannot see was read
-  out of the code instead: no Workers, no WebAssembly, no `eval` and no
-  `new Function`, and `createObjectURL` only for downloads and images, which
-  `blob:` in `img-src` already allows. The sister site has run the same policy
-  enforcing since 2026-09-04 without a report of its own.
+  single client whose injected Cloudflare JavaScript Detections script had not
+  been stamped, where every fetch since shows all five script tags including
+  Cloudflare's carrying the header's nonce. Under enforcement such a client
+  simply does not run Cloudflare's bot script, and the page is unaffected. What
+  a report channel cannot see was read out of the code instead: no Workers, no
+  WebAssembly, no `eval` and no `new Function`, and `createObjectURL` only for
+  downloads and images, which `blob:` in `img-src` already allows. The sister
+  site has run the same policy enforcing since 2026-09-04 without a report of
+  its own.
 
 - **The rollback is written down where the switch is.** `app/security-headers.conf`
   now carries both halves: rename the header back and deploy, or — faster than
