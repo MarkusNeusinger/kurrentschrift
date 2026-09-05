@@ -1,6 +1,6 @@
 # Verfahrensseite Lotse
 
-> **Status (2026-09-01): lebend.** Register-Seite des Verfahrens „Lotse“
+> **Status (2026-09-05): lebend.** Register-Seite des Verfahrens „Lotse“
 > (Konvention: [`verfahren.md`](verfahren.md)). Nachzieh-Pflicht: Jeder
 > §14-Eintrag zu einem Lotse-Arm (adoptiert oder verworfen) ergänzt hier
 > seine Ledger-Zeile; eine Adoption aktualisiert „Aktueller Stand“. Das
@@ -34,39 +34,34 @@ Kreuzungs-Detektor auf der Karte) · `UNTWIST_SOLL_MATCHING` =
 "reserve" (v0.17 — **Reservierungs-Veto**: das Soll wird je Pass
 eins-zu-eins auf die Events gematcht, reservierte Events sind
 unpaarbar; adoptiert bei Zähler-Parität per vorregistrierter
-Konstruktions-Regel). Zahlen (dev-19, gefrorener Root) — **zwei
-Lineal-Stände, beide mit Datum**: auf der alten Marken-Kappe 0,8
-(§14 „Lotse v0.16/v0.17 `aug20`") dtw 0,0585 med · p90 **0,1122**;
-auf der heutigen Kappe 1,5 (§14 „Lineal L-U `aug26`") dtw **0,0545**
-med · p90 **0,1164** · worst muß-2 0,1457.
+Konstruktions-Regel). Zahlen (dev-19, Marken-Kappe 1,5), **Stand
+`sep05`** auf der Wurzel `eaa195aa7c84…` (§14 „Laufform LF12
+`sep05`"): dtw-Median **0,053393** · p90 **0,116199** · worst
+`muß-2` **0,149918** · aiou **0,7493** · `cross_missing` **0** /
+`cross_spurious` **5** · `retrace_missing` 7 · Marken 0/0/0.
 
-**Der „Sprung" 0,0585 → 0,0545 war keiner** (`sep04`, §14
-„Lotse-Sprung"): 0,0545 ist `laden`, Rang 9 der 19, wo der Median
-Rang 10 ist — ein Rang-Griff daneben beim Übertragen. Gültig für
-`aug26` ist **0,058522** auf Kappe 0,8, wie am `aug20`.
+**Ältere Zahlen bleiben gültig, sind aber nur untereinander
+vergleichbar** — jede Wurzel trägt ihre eigene Registrierung, und
+zwischen `aug14` und heute liegen vier Neu-Exporte. Die früheren
+Stände (`aug20`/`aug26` **0,058522** med auf Kappe 0,8 · `sep04`
+**0,056080** med) und die Auflösung der Transkription 0,0545 (§14
+„Lotse-Sprung `sep04`": `laden`, Rang 9 statt des Medians — kein
+Sprung) stehen in den Ledger-Zeilen unten.
 
-**Diese Zahlen sind nicht die heutigen.** Sie stammen von der
-`aug14`-Wurzel, hinter der drei Neu-Exporte liegen (`sep01`, `sep02`,
-`sep03`). Frisch geritten misst der Lotse am `sep04` dtw-Median
-**0,056080** (beide Kappen), p90 0,1114/**0,1155**, aiou **0,7527**,
-`cross_spurious` **1**. Bis eine Duell-Runde beide Routen auf der
-heutigen Wurzel nachmisst, sind die `aug26`-Zahlen nur untereinander
-vergleichbar.
-Unverändert über beide Stände: **Netto-Kreuzungsdefekte 6**
-(missing 1 — nur unters letzter Ritt-Rest) ·
-Kreuzungs-Ortsfehler-Median **0,066 xh** ·
-`marks_missing` 0 · aiou 0,740 — Struktur WORTGLEICH zu v0.13,
-kein Wort verliert (beste dtw-Gewinne −0,0035..−0,0059: muß-2,
-Galoppieren, mit, muß-3; aiou bis +0,0117). Rest-Spurious:
-Gewebe-Duplikate über dem 0,5-Fenster — warten auf die
-Platzierungs-Reparatur der Karte (dann Fenster-Wiedervorlage). **Paarung seit den
-Kette-v2/v3-Re-Baselines (`aug19`, Assembly-Ordnung +
-Trace-Reparatur): die Kette führt knapp auf Median (0,0491 gegen
-0,0585) und p90 (0,089 gegen 0,112 nach v0.16)** (der
-−24-%/−18-%-Vorsprung gegen v1 bestand fast vollständig aus
-deren Kandidaten-Schicht-Artefakten); der Lotse behält Struktur
-(6 gegen 21 Netto-Defekte), aiou (0,743 gegen 0,699) und den
-Kreuzungs-Ortsfehler (0,066 gegen 0,083 xh).
+Die Struktur ist seit v0.13 wortgleich, kein Wort verliert, und die
+Rest-Spurious sind Gewebe-Duplikate über dem 0,5-Fenster — sie warten
+auf die Platzierungs-Reparatur der Karte (dann
+Fenster-Wiedervorlage); die v0.16/v0.17-Zahlen der `aug14`-Wurzel
+(Netto-Defekte 6, missing 1 · Ortsfehler-Median 0,066 xh · aiou
+0,740) stehen in den Ledger-Zeilen unten.
+
+**Die Paarung gegen die Kette steht qualitativ seit `aug19`
+(Kette v2/v3):** die Kette führt knapp auf Median und p90, der Lotse
+behält Struktur, aiou und den Kreuzungs-Ortsfehler — der frühere
+−24-%/−18-%-Vorsprung gegen die Kette v1 bestand fast vollständig aus
+deren Kandidaten-Schicht-Artefakten. Die jeweils gültigen Zahlen
+beider Routen stehen im Stand-Block von
+[`../proposals/tintenfolger.md`](../proposals/tintenfolger.md).
 
 ## Ledger (Versionen; Belege in §14 „Route Lotse …“)
 
@@ -101,6 +96,7 @@ Kreuzungs-Ortsfehler (0,066 gegen 0,083 xh).
 | aug26 | **LF3b-W Schreib-Karte** *(Laufform-Arm, hier nur die Wirkung)* | die 13 topologie-reparierten Laufform-Zeilen ohne p, geschrieben (§14 „Laufform LF3b-W `aug26`") | Gate (c) PASS: dtw 0,0545 / p90 0,1164 unverändert, **aiou 0,7398 → 0,7484**, spurious 5 → 4 (Galoppieren 3 → 2), `retrace_missing` 5 → 3, missing 1 = 1, Marken unverändert; bewegt nur die drei Schreib-Glyph-Wörter (das, linken, Galoppieren). Zahlengleich mit der trockenen LF3b-Karte vom `aug19` |
 | sep04 | **Absprung-Forensik** *(Autopsie, kein Arm)* | Herkunfts-Sensor je emittiertem Punkt + Tintenkörper-Abstand (`tools/inkpilot/forensics.py`), gegen `pilot_word` bit-gleich gespiegelt | **Keines der 3 350 Karten-Samples** hat eine leere Bord-Umgebung (je Sample erhoben, nicht am Ursachen-Label), Schienen-Auslauf 0 daneben; die Ritt-Doppelzone liegt in **49,5 %** ihrer Punkte außerhalb der Tinte (Fenster 8,9 %, Ritt 0,03 %). Von 39 Ereignissen 23 GEERBT (Karten-Abdrift, Überschuss über die Karte median **+0,0000** → Ursache in der Komposition), 15 von der starren Pinnung gemacht (Fenster-Versatz, **+0,0928 xh**, max +0,2146; dieselbe Pinnung zieht in 12 Fenstern −0,0165 zurück) |
 | sep04 | **Lotse-Sprung** *(Autopsie, kein Arm)* | Nachmessung der `aug20`-Artefakte + der `aug20`-Kandidatenbytes auf der heutigen Wurzel | **gegenstandslos** — 0,0545 ist `laden` (Rang 9), der Median ist Rang 10 = 0,058522; `will` beweisbar unbewegt. Zweitbefund: die `aug20`-Bytes reproduzieren heute 15 von 19 Wörtern ziffergleich, vier nicht (`das` 0,0307 → 0,2504, `und`, `Wer`, `zwei`) — die `sep01`-Rechteck-Reparatur; keine dev-19-Zahl von vor `sep01` ist mit einer danach vergleichbar |
+| sep05 | **Re-Baseline auf der LF12-Wurzel** *(kein Lotse-Arm)* | kein Knopf: der LF12-Write hat 18 Laufform-Zeilen neu abgeleitet und `S` gelöscht — die komponierte Bahn IST die Karte des Lotsen | dev-19 frisch geritten, 63/63: dtw **0,053393** med (von 0,056080) · aiou **0,7493** · `cross_spurious` **5** (von 1) — strukturell mehr Bewegung als bei der Kette, wie die Karten-Abdrift der `sep04`-Forensik es erwarten lässt; die Kette führt weiter (0,045384) | „Laufform LF12 `sep05`" |
 
 Benannter Fehlermodus der Route: **Junction-Pinch** (Glossar) — die
 v0.7/v0.8/v0.9-Kette ist seine vollständige Abarbeitung; seit v0.11
