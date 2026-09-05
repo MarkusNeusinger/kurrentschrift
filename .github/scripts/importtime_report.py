@@ -23,13 +23,19 @@ Three things get printed:
 
 * the total, as the minimum of N fresh interpreters (a minimum, not a mean: on
   a loaded machine the mean measures the machine, the minimum measures the
-  import);
-* the ten most expensive modules by SELF time — only self time is additive,
-  the cumulative column counts every nested import again;
+  import), with the collector ON — that is what a cold start pays;
+* the ten most expensive modules by SELF time, measured with the collector OFF
+  — only self time is additive, and a GC pause is billed to whichever module it
+  interrupts, which is how one router came to look like the graph's most
+  expensive module (`docs/notes/eigenhand-router-importzeit-2026-09-05.md`);
 * the SERVE-vs-BOTH split, using the module sets that
   `docs/notes/serve-image-importgraph-2026-09-04.md` §(c) fixed verbatim, so
   the difference stays comparable across rounds. Change a set here and the
   comparison with those two rounds is gone.
+
+The sets are sampled INTERLEAVED, one of each per round, for the reason the
+2026-09-05 round gives: a block of runs takes long enough that machine drift
+lands on one set and not on the other, and their difference is the finding.
 """
 
 from __future__ import annotations
@@ -59,6 +65,17 @@ MAIN = "import api.main"
 
 SETS = (("BARE", BARE), ("SERVE", SERVE), ("BOTH", BOTH), ("MAIN", MAIN))
 
+# The per-module split runs with the collector OFF. A generation-2 collection
+# lands on whichever module happens to be executing, and `-X importtime` bills
+# it there — on 2026-09-05 that made `api.routers.eigenhand` look like the most
+# expensive module in the graph at 64.9 ms, where its own body costs 15
+# (docs/notes/eigenhand-router-importzeit-2026-09-05.md). This very step
+# reproduced the artefact on its first run, with the block sitting on
+# `api.routers.pairs` — four routes. So a ranking meant to compare MODULES
+# measures them without the collector; the totals above keep it on, because
+# that is what a cold start actually pays.
+MAIN_NO_GC = "import gc; gc.disable(); " + MAIN
+
 # `-X importtime` writes `import time: self | cumulative | nested.module.name`,
 # the leading blanks of the third column encoding the import depth. Only the
 # self time is additive — the cumulative column counts every nested import again.
@@ -73,21 +90,34 @@ def _child_env() -> dict[str, str]:
     return env
 
 
-def min_wall_ms(statement: str, runs: int = RUNS) -> float:
-    """Wall clock of a fresh interpreter running `statement`, minimum of `runs`."""
-    best = float("inf")
+def min_wall_ms(runs: int = RUNS) -> dict[str, float]:
+    """Wall clock per set, minimum of `runs` fresh interpreters each.
+
+    The sets are INTERLEAVED — one sample of every set per round — rather than
+    run in blocks. A block of runs takes long enough that machine drift lands on
+    one set and not on the other, and the differences between them are the whole
+    finding; that is the protocol of
+    `docs/notes/serve-image-importtime-2026-09-05.md` § „Aufbau", and a shared
+    runner is exactly where it matters.
+    """
+    best = dict.fromkeys((name for name, _ in SETS), float("inf"))
     env = _child_env()
     for _ in range(runs):
-        start = time.perf_counter()
-        subprocess.run([sys.executable, "-c", statement], check=True, env=env)
-        best = min(best, (time.perf_counter() - start) * 1000)
+        for name, statement in SETS:
+            start = time.perf_counter()
+            subprocess.run([sys.executable, "-c", statement], check=True, env=env)
+            best[name] = min(best[name], (time.perf_counter() - start) * 1000)
     return best
 
 
 def self_times() -> tuple[list[tuple[int, str]], int]:
-    """Per-module self time (µs) of one `-X importtime` run, and their sum."""
+    """Per-module self time (µs) of one GC-free `-X importtime` run, and its sum."""
     proc = subprocess.run(
-        [sys.executable, "-X", "importtime", "-c", MAIN], check=True, env=_child_env(), capture_output=True, text=True
+        [sys.executable, "-X", "importtime", "-c", MAIN_NO_GC],
+        check=True,
+        env=_child_env(),
+        capture_output=True,
+        text=True,
     )
     rows = []
     for line in proc.stderr.splitlines():
@@ -98,19 +128,21 @@ def self_times() -> tuple[list[tuple[int, str]], int]:
 
 
 def main() -> int:
-    print(f"python {sys.version.split()[0]} · {sys.executable} · minimum of {RUNS} fresh interpreters")
+    print(f"python {sys.version.split()[0]} · {sys.executable} · minimum of {RUNS} interleaved fresh interpreters")
     print("BLAS pinned (OPENBLAS_NUM_THREADS=1, OMP_NUM_THREADS=1). Numbers only — nothing here gates.\n")
 
-    measured = {name: min_wall_ms(statement) for name, statement in SETS}
+    measured = min_wall_ms()
 
-    print("(a) total")
+    print("(a) total — collector ON, because that is what a cold start pays")
     print(f"    import api.main   {measured['MAIN']:7.1f} ms wall clock, interpreter start included")
     print(
         f"    bare interpreter  {measured['BARE']:7.1f} ms  → the import itself ≈ {measured['MAIN'] - measured['BARE']:.1f} ms\n"
     )
 
     rows, total_self_us = self_times()
-    print(f"(b) the ten most expensive modules by SELF time ({total_self_us / 1000:.1f} ms over {len(rows)} modules)")
+    print("(b) the ten most expensive modules by SELF time, GC DISABLED for this run")
+    print(f"    ({total_self_us / 1000:.1f} ms over {len(rows)} modules; with the collector on, its pauses would be")
+    print("    billed to whichever module they interrupt — see the note named below)")
     for self_us, module in rows[:10]:
         print(f"    {self_us / 1000:7.1f} ms  {module}")
     print()
@@ -122,7 +154,8 @@ def main() -> int:
     share = 100 * trace_half / measured["MAIN"] if measured["MAIN"] else 0.0
     print(f"    BOTH - SERVE                {trace_half:7.1f} ms  = {share:.1f} % of import api.main")
     print("\n    Module sets verbatim from docs/notes/serve-image-importgraph-2026-09-04.md §(c);")
-    print("    local comparison values in docs/notes/serve-image-importtime-2026-09-05.md.")
+    print("    local comparison values in docs/notes/serve-image-importtime-2026-09-05.md;")
+    print("    why (b) runs GC-free in docs/notes/eigenhand-router-importzeit-2026-09-05.md.")
     return 0
 
 

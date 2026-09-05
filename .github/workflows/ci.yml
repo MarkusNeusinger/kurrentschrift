@@ -381,14 +381,18 @@ jobs:
       #
       # The script travels over stdin rather than living in the image, because
       # the image deliberately does not ship `tools/` and a measurement has no
-      # business inside the artefact it measures. A fresh `docker run` rather
-      # than `docker exec api`: the smoke container is still serving, and its
-      # uvicorn would sit in the same CPU budget as the thing being timed.
+      # business inside the artefact it measures.
+      #
+      # The smoke container is STOPPED first: it is still serving from the step
+      # above, and its uvicorn would sit in the same CPU budget as the thing
+      # being timed. Stopping is enough — `docker logs api` still works on a
+      # stopped container, so the failure step below keeps its output.
       - name: Import weight of api.main, measured in the image
         continue-on-error: true
         timeout-minutes: 3
         run: |
           set -euo pipefail
+          docker stop api >/dev/null
           docker run --rm -i \
             -e OPENBLAS_NUM_THREADS=1 -e OMP_NUM_THREADS=1 \
             kurrentschrift-api:ci /app/.venv/bin/python - \
