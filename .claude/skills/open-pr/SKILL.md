@@ -153,6 +153,23 @@ Then open the PR (ready for review, not a draft):
   `owner=MarkusNeusinger`, `repo=kurrentschrift`, `base=main`,
   `head=<branch>`, the English title/body, and `draft=false`.
 
+**A multi-paragraph message or body goes through a file — and that file is
+named after the branch.** `git commit -F` and `gh pr create --body-file` keep
+the prose out of shell quoting, but the scratchpad is shared by every agent
+of one session, so a generic `commitmsg.txt` / `prbody.md` is overwritten by
+a parallel agent and a later re-read commits someone else's text (seen
+2026-09-05). Derive the name, or take a private directory:
+
+```bash
+BRANCH=$(git branch --show-current)
+MSG="$SCRATCH/commitmsg-$BRANCH.txt"    # or: D=$(mktemp -d) and write inside it
+```
+
+Write it with the Write tool, then `git commit -F "$MSG"` in the SAME step
+that wrote it — never re-read one of these files a turn later to reuse it,
+because between the two the file may belong to another agent. They are
+scratch input to one command, not a record; the record is the commit.
+
 ## 3 · After opening: pipeline + Copilot loop (do not skip)
 
 Repeat this loop until **both** hold: all checks pass *and* there are
