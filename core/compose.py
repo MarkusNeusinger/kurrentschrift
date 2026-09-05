@@ -117,6 +117,38 @@ ARCADE_ENTRY_CLEARANCE = INK_CLEARANCE  # declared-but-neutral by construction
 # re-checks this exception.
 BACKWARD_INK_CLEARANCE = 0.11
 LONGS_BACKWARD_CLEARANCE = 0.30
+# The nib radius every ink clearance above was calibrated AT: the 1922 hand's
+# chart-pooled Gleichzug half-width AS IT STOOD when those measurements were
+# made. A FROZEN number on purpose, never a lookup of today's pool — the pool
+# runs over every template of the source, variant rows included, so each
+# authoring write moves it (the LF12 write of 2026-09-05 shifted it 0.07251 →
+# 0.0724326), and a reference that drifted along would silently reinterpret
+# older calibrations. That drift is also the argument for making the DELIVERED
+# nib a declared per-source value rather than a pool; see the §14 entry.
+# The clearances are stated in x-heights, but each of them came out of a
+# measurement made with THIS pen, so held at a fixed x-height they shrink in
+# NIB RADII as the pen grows — a heavier pen fills the same skeleton gap with
+# more ink and the placement crowds. Reading them in
+# nib radii instead is the OPT-IN arm ``nib_clearance`` (default off), measured
+# and NOT adopted: messjournal §14 „Ink-Clearance an die Feder `sep05`". At the
+# CALIBRATED scale (1.338 at half 0.097) the frozen word set's Gleichzug
+# doublings stay at 21 — one site repaired, one re-split — and coverage rises.
+# Eight of the nine sites the heavy pen opens are the join's APPROACH alongside
+# the body it lands on, and a placement distance slides join and body together;
+# the ninth is an intended ARM FUSION (body against body), which takes the
+# minimum and sits below every clearance by design. Widening far past the
+# calibration does move the count (21 → 8 at scale 2.0), but at four times the
+# coverage cost, still leaving sites the chart nib never had, and creating one
+# (`regieren`) — so „turn the scale up" is not the fix either. Kept as a
+# switch, not deleted, because the rule is still the right shape for the day
+# the delivered nib changes.
+# The scale is FLOORED at 1.0 (a lighter pen is not evidence that the hand's
+# spacing should tighten), so even switched ON nothing moves at or below the
+# reference pen. The two zero clearances (ALIGN_MIN_CLEARANCE,
+# BOWL_EXIT_CLEARANCE) are covered by the rule and neutral under it by
+# arithmetic; CONNECT_GAP and ARM_FUSE_GAP are deliberately NOT ink clearances
+# (an anchor gap and an intended touch) and stay in x-heights.
+CLEARANCE_REF_HALF = 0.07251
 # The y-band the ink clearance is measured in: where connectors travel and the
 # next letter's body sits. Ink above it (ascender loops) or below (descenders)
 # may overlap the neighbour's column like on the teaching plates.
@@ -776,6 +808,14 @@ def _lean_stroke(pts: list, shear: float, pivot_y: float) -> list[Point]:
 
 def _nonjoin_clearance(base: str) -> float:
     return NONJOIN_CLEARANCE.get(base, NONJOIN_CLEARANCE_DEFAULT)
+
+
+def _clearance_scale(half: float, enabled: bool) -> float:
+    """How far the ink clearances open for a pen of radius ``half`` (see
+    CLEARANCE_REF_HALF). 1.0 when the arm is off, and 1.0 at or below the
+    calibration pen even when it is on — never below it, because nothing has
+    ever measured what a LIGHTER pen should do to the hand's spacing."""
+    return max(1.0, half / CLEARANCE_REF_HALF) if enabled else 1.0
 
 
 def _endpoint_tangent(line: list[Point], at_end: bool = False) -> float:
@@ -1869,6 +1909,7 @@ def compose_word(
     exit_trim_min_kink_deg: float = EXIT_TRIM_MIN_KINK_DEG,
     apex_handover: bool = False,
     stem_depart: bool = False,
+    nib_clearance: bool = False,
 ) -> dict:
     """Compose shaped slots + per-glyph render payloads into draw items.
 
@@ -1927,6 +1968,15 @@ def compose_word(
     headline numbers, ``apex_handover`` fails two; making either the DEFAULT
     changes every public ``/write/word`` render, which is a rendering-affecting
     apply and therefore the author's call, not a bench result's.
+
+    ``nib_clearance`` (default False = byte-identical, the golden fixture
+    holds) reads every ink clearance in NIB RADII instead of x-heights — see
+    CLEARANCE_REF_HALF. Pre-registered and measured under „Ink-Clearance an
+    die Feder" in messjournal.md §14 and NOT adopted; it survives as a switch
+    because the rule is the right shape for the day the delivered nib changes,
+    and because the rescue paths named there need it. Even switched on it
+    changes nothing while the pen is at or below the reference radius, so no
+    default render can move by flipping it alone.
 
     ``pair_overrides`` (redesign R3 / Vorschlag B) maps an adjacent joined
     key pair ``(left_key, right_key)`` to a stored override geometry (the
@@ -2388,6 +2438,11 @@ def compose_word(
         # detached pairing (either side non-joining) is placed by ink
         # clearance alone — the tighter of the two clearances wins.
         joined = bool(prev) and prev.joins and slot.joins
+        # Every ink clearance below is read in nib radii (see
+        # CLEARANCE_REF_HALF). Two glyphs meet at this boundary, so the HEAVIER
+        # of the two pens sets the room: the thicker stroke is the one that
+        # would run into its neighbour.
+        clearance_scale = _clearance_scale(max(prev.width, med_half) if prev else med_half, nib_clearance)
         # Coupling index of a straight-fit flank placement (the "ne" case) —
         # set by the nested-fall branch, consumed by the connector.
         flank_couple = 0
@@ -2449,7 +2504,9 @@ def compose_word(
                 else:
                     clearance = INK_CLEARANCE
                 gap_term = prev.exit[0] + CONNECT_GAP - tuck
-                floor_term = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], clearance)
+                floor_term = _profile_clearance_x(
+                    prev.ink_profile, ink_min_profile, entry_xy[0], clearance * clearance_scale
+                )
                 desired_entry_x = max(gap_term, floor_term)
                 placement_rule = "clearance_floor" if floor_term > gap_term else "connect_gap"
             else:
@@ -2458,7 +2515,9 @@ def compose_word(
                 # can fall into the next entry (calibrated jul-11; the jul30
                 # gap measurement still has w→e WIDER on the plate, so the
                 # bins must not tighten it).
-                backward_clearance = LONGS_BACKWARD_CLEARANCE if prev.base == "longs" else BACKWARD_INK_CLEARANCE
+                backward_clearance = (
+                    LONGS_BACKWARD_CLEARANCE if prev.base == "longs" else BACKWARD_INK_CLEARANCE
+                ) * clearance_scale
                 desired_entry_x = max(
                     prev.exit[0] + CONNECT_GAP - tuck, prev.ink_max_x + backward_clearance - (ink_min_x - entry_xy[0])
                 )
@@ -2519,7 +2578,9 @@ def compose_word(
                         # point (short lead-in) must not crowd B into the
                         # stem (over-tightening showed as a +0.5 xh word
                         # registration shift on schwer/scharfen).
-                        floor_x = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], INK_CLEARANCE)
+                        floor_x = _profile_clearance_x(
+                            prev.ink_profile, ink_min_profile, entry_xy[0], INK_CLEARANCE * clearance_scale
+                        )
                         desired_entry_x = max(fork_desired, floor_x)
                         placement_rule = "fork_floor" if floor_x > fork_desired else "fork"
                         fork_placed = True
@@ -2534,7 +2595,9 @@ def compose_word(
                     lx, ly = prev.stem_launch
                     if couple_y > ly + ALIGN_MIN_RISE:
                         bar_desired = lx + (couple_y - ly) / BAR_RISE_SLOPE + (entry_xy[0] - first_line[couple_idx][0])
-                        floor_x = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], INK_CLEARANCE)
+                        floor_x = _profile_clearance_x(
+                            prev.ink_profile, ink_min_profile, entry_xy[0], INK_CLEARANCE * clearance_scale
+                        )
                         desired_entry_x = max(bar_desired, floor_x)
                         placement_rule = "bar_rise_floor" if floor_x > bar_desired else "bar_rise"
                         fork_placed = True
@@ -2561,7 +2624,9 @@ def compose_word(
                 align_entry_x = (
                     prev.exit[0] + rise / mean_slope + (entry_xy[0] - first_line[0][0]) - ALIGN_ADVANCE_TRIM_UNITS
                 )
-                floor_x = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE)
+                floor_x = _profile_clearance_x(
+                    prev.ink_profile, ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE * clearance_scale
+                )
                 if align_entry_x < desired_entry_x:
                     desired_entry_x = max(align_entry_x, floor_x)
                     placement_rule = "align_floor" if floor_x > align_entry_x else "align"
@@ -2574,7 +2639,9 @@ def compose_word(
                 # enters BELOW it cannot pass through — on the plate the next
                 # letter nests under the exit ink (t's bar, f's flag) instead
                 # of clearing it, so the ink floor relaxes to the align floor.
-                floor_x = _profile_clearance_x(prev.ink_profile, ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE)
+                floor_x = _profile_clearance_x(
+                    prev.ink_profile, ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE * clearance_scale
+                )
                 desired_entry_x = max(prev.exit[0] + CONNECT_GAP - tuck, floor_x)
                 placement_rule = "nested_fall_floor" if floor_x > prev.exit[0] + CONNECT_GAP - tuck else "nested_fall"
                 # Straight-fit flank coupling (the "ne" case, see the ALIGN_*
@@ -2610,7 +2677,11 @@ def compose_word(
                             placement_rule = "flank_fuse"
                     if not fused:
                         floor_couple = _profile_clearance_x(
-                            prev.ink_profile, ink_min_profile, entry_xy[0], ALIGN_MIN_CLEARANCE, stub_relaxed=True
+                            prev.ink_profile,
+                            ink_min_profile,
+                            entry_xy[0],
+                            ALIGN_MIN_CLEARANCE * clearance_scale,
+                            stub_relaxed=True,
                         )
                         if math.isfinite(floor_couple) and floor_couple <= desired_entry_x:
                             steepest = _flank_couple_steepest(first_line, floor_couple - entry_xy[0], prev.exit)
@@ -2621,7 +2692,7 @@ def compose_word(
             gap = _nonjoin_clearance(_key_base(slot.key, slot.position)) if not slot.joins else math.inf
             if not prev.joins:
                 gap = min(gap, _nonjoin_clearance(prev.base))
-            desired_entry_x = prev.ink_max_x + gap - (ink_min_x - entry_xy[0])
+            desired_entry_x = prev.ink_max_x + gap * clearance_scale - (ink_min_x - entry_xy[0])
         else:
             desired_entry_x = cursor_x
             if prev_word_ink_max is not None:
@@ -2630,7 +2701,9 @@ def compose_word(
                 # two different marks — take whichever pushes further right, so
                 # a left-reaching capital cannot write back into the word
                 # before it.
-                desired_entry_x = max(desired_entry_x, prev_word_ink_max + WORD_INK_GAP - (ink_min_x - entry_xy[0]))
+                desired_entry_x = max(
+                    desired_entry_x, prev_word_ink_max + WORD_INK_GAP * clearance_scale - (ink_min_x - entry_xy[0])
+                )
             prev_word_ink_max = None
         dx = desired_entry_x - entry_xy[0]
 

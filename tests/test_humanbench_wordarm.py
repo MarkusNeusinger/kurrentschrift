@@ -247,6 +247,28 @@ def test_compose_arm_hands_exit_trim_to_compose_word(tmp_path, monkeypatch, swit
     assert settings["exit_trim"] is expected
 
 
+@pytest.mark.parametrize("switch, expected", [({}, False), ({"nib_clearance": True}, True)])
+def test_compose_arm_hands_nib_clearance_to_compose_word(tmp_path, monkeypatch, switch, expected):
+    """Same contract for the „Ink-Clearance an die Feder" arm: delete either
+    `nib_clearance=nib_clearance` in the `compose_word` call or the settings
+    line, and one of these two assertions goes red. The CLI test above cannot
+    catch that — it stops at a mocked `compose_arm`."""
+    calls: list[dict] = []
+
+    def fake_compose(slots, payloads, **kwargs):
+        calls.append(kwargs)
+        return {"items": COMPOSED["items"], "missing": []}
+
+    monkeypatch.setattr(wordarm, "compose_word", fake_compose)
+    monkeypatch.setattr(wordarm, "score_word", lambda *a, **k: {"registration": REGISTRATION})
+    monkeypatch.setattr(wordarm, "render_payload_for_template", lambda *a, **k: {"anchors": []})
+
+    words, settings = wordarm.compose_arm(stand_in_root(tmp_path), **switch)
+    assert list(words) == ["unter"], settings["failed"]
+    assert calls and calls[0]["nib_clearance"] is expected
+    assert settings["nib_clearance"] is expected
+
+
 def test_compose_arm_hands_the_nib_to_the_resolver(tmp_path, monkeypatch):
     """The nib reaches the payloads, not just the settings line."""
     seen: list = []
@@ -267,6 +289,7 @@ def _settings(**kwargs) -> dict:
         "nib_overridden": kwargs.get("nib") is not None,
         "laufform": "frozen",
         "exit_trim": kwargs.get("exit_trim", False),
+        "nib_clearance": kwargs.get("nib_clearance", False),
         "join_rules": {
             name: wordarm.JOIN_RULE_DEFAULTS[name] if kwargs.get(name) is None else bool(kwargs[name])
             for name in ("apex_handover", "stem_depart")
@@ -293,8 +316,19 @@ def _capture_compose_arm(monkeypatch):
         # The J5 switches are tri-state on purpose: None means "leave the
         # composer's own default", which is the only value that keeps an arm
         # file honest about what it did NOT decide.
-        ([], {"exit_trim": False, "nib": None, "no_laufform": False, "apex_handover": None, "stem_depart": None}),
+        (
+            [],
+            {
+                "exit_trim": False,
+                "nib": None,
+                "no_laufform": False,
+                "apex_handover": None,
+                "stem_depart": None,
+                "nib_clearance": False,
+            },
+        ),
         (["--exit-trim"], {"exit_trim": True}),
+        (["--nib-clearance"], {"nib_clearance": True}),
         (["--nib", "0.097"], {"nib": 0.097}),
         (["--no-laufform"], {"no_laufform": True}),
         (["--apex-handover"], {"apex_handover": True}),
@@ -319,6 +353,10 @@ def test_the_arm_file_records_the_switch_it_was_composed_with(tmp_path, monkeypa
     written = json.loads(out.read_text())
     assert written["settings"]["exit_trim"] is True
     assert written["arm"] == "J4"
+    # An arm file says what did NOT draw it too: a round built before the
+    # nib-clearance switch existed and one built with it off must not be
+    # distinguishable only by the field's absence.
+    assert written["settings"]["nib_clearance"] is False
     # … and an omitted J5 flag is recorded as the BOOLEAN the composer actually
     # used, not as a placeholder: if the default ever moves, two arms must not
     # be able to carry identical metadata and different ink.
