@@ -1958,8 +1958,8 @@ aiou-Verlierer-Schwelle je Wort ist −0,003 (Messrauschen). Bis
 `aug21` je Runde als Scratch-Skript neu gebaut, seither
 `tools/tracebench/k0eval.py`. *Technisch:* Zähler aus
 `tools/tracebench/counters.py`, Soll aus `soll.py` →
-messjournal.md §14 „Kette K0-Z" (Erstform), werkzeuge.md
-(Mess-Liturgie)
+messjournal.md §14 „Kette K0-Z" (Erstform), `/verify-trace`
+(Mess-Liturgie), werkzeuge.md (Werkzeug-Inventar)
 
 **`dtw_xh`** — die Headline-Distanz des tracebench: unconstrained DTW
 (euklidisch, in xh, symmetric-1-Schritte, beide Enden verankert, kein
