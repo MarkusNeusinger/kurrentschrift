@@ -199,7 +199,7 @@ die DB) — mit seiner Bedingung.
 | sep04 | Übergänge | [S1 gemessen](#übergänge-s1-sep04--gemessen-der-sensor-ist-validiert-und-er-rettet-j4-trotzdem-nicht) | gemessen · Sensor validiert, J4 bleibt verworfen | Δ`dspan` +0,0036 (Gate ≤ 0,010), Fallquote 48,8 % (Gate ≥ 40 %) gegen 19,8 % roh und 51 % handbereinigt — aber die 60 % des J4-Gates erreicht auch die saubere Lesung nicht |
 | sep04 | Lotse | [Absprung-Forensik](#lotse-absprung-forensik-sep04--jeder-absprung-ist-karten-vorfahrt-und-die-mehrheit-erbt-die-karte) | Autopsie | `bridge_no_rail` = 0 Punkte, Schienen-Auslauf 0 daneben; die Ritt-Doppelzone liegt in 49,5 % ihrer Punkte außerhalb der Tinte. Von 39 Ereignissen 23 geerbt (Karten-Abdrift, Überschuss +0,0000 = Kompositions-Platzierung), 15 von der starren Pinnung gemacht (Fenster-Versatz, +0,0928 xh) — neuer Sensor `tools/inkpilot/forensics.py` |
 | sep04 | Lotse | [Lotse-Sprung aufgelöst](#lotse-sprung-sep04--der-ungeklärte-sprung-ist-eine-transkription-keine-messung) | Autopsie · gegenstandslos | 0,0545 ist `laden` (Rang 9), der Median ist Rang 10 = 0,058522; `will` beweisbar unbewegt → kein Sprung. Zweitbefund: die stehende Basis ist drei Wurzeln alt, heute 0,056080 |
-| sep04 | Feder | [Platten-Nib A3 (Wortrunde)](#platten-nib-a3-sep04--vorregistrierung-die-wortrunde-über-die-strichbreite) | Pre-Reg · Runde gebaut, Urteil offen | Halbbreite 0,097 statt 0,07251. Das Lineal ist nicht blind, sondern EINSEITIG: dem Lineal die breitere Feder nennen senkt bei unveränderter Geometrie 0,109218 → 0,101560. Nebenbedingung des Audits schon trocken gerissen (`gleichzug_doublings` 13 → 21) — ein ≥ 60 % lizenziert nur den Folgearm „Ink-Clearance an die Feder koppeln", nicht den Write |
+| sep04 | Feder | [Platten-Nib A3 (Wortrunde)](#platten-nib-a3-sep04--vorregistrierung-die-wortrunde-über-die-strichbreite) | Pre-Reg · **Runde nicht gefahren — Autor-Entscheid 2026-09-05: Zielfeder = gemessene Wortfeder; Folgearm gestartet** | Halbbreite 0,097 statt 0,07251. Das Lineal ist nicht blind, sondern EINSEITIG: dem Lineal die breitere Feder nennen senkt bei unveränderter Geometrie 0,109218 → 0,101560. Nebenbedingung des Audits schon trocken gerissen (`gleichzug_doublings` 13 → 21) — ein ≥ 60 % lizenziert nur den Folgearm „Ink-Clearance an die Feder koppeln", nicht den Write |
 | sep04 | Übergänge | [J4 Wortrunde (Rettungsweg 3)](#übergänge-j4-sep04--vorregistrierung-die-wortrunde-als-benannter-rettungsweg) | Pre-Reg · Runde gebaut, Urteil offen | Der §7.9-Rettungsweg zum `dconn`-Negativ; auf der LF11-Wurzel neu vermessen: `seam_dep` +7,99 → +0,02, Wörter +0,000248 (Vorzeichen gedreht), Paare byte-gleich |
 | sep04 | Laufform | [LF12 Prod-Re-Harvest mit Kette v5](#laufform-lf12-sep04--vorregistrierung-der-prod-re-harvest-der-laufform-zeilen-mit-kette-v5) | Pre-Reg | Zeilen aus den Vorkommen des heutigen Ketten-Stands neu bilden, Schätzer und Schlüsselmenge unverändert; der Beweis-Boden gilt ab hier auch für den Bestand |
 | sep04 | Laufform | [LF12 gemessen (trocken)](#laufform-lf12-sep04--gemessen-trocken-alle-fünf-gates-grün-und-der-boden-fängt-vier-zeilen-ab) | Pre-Reg + gemessen · alle Gates grün, Karte trocken; Write wartet auf Autor-Go | 18 von 22 Zeilen neu (RMS-Median 0,0022 xh), Wörter 0,108107 · Paare 0,148231, kein Kreuzungsverlust, dev-19 `cross_missing` 13→12; der Boden fängt `P`/`S`/`p`/`s` ab — `S` steht seit dem LF11-Write bei n=2 und hat heute NULL Fits |
@@ -207,6 +207,7 @@ die DB) — mit seiner Bedingung.
 | sep04 | Kette | [K-F gemessen](#kette-k-f-sep04--gemessen-der-init-bewegt-sich-die-gefolgte-bahn-kaum--und-die-kette-steht-heute-anders-als-am-aug26) | gemessen · **verworfen** (Gate 2/4 zurechenbar) · **Re-Baseline (Kette)** · **Instrument-Befund** | Kette auf der heutigen Wurzel: dtw 0,045830 · p90 0,094197 · aiou 0,7694 · 63er-Soll 76 (Duell jetzt wurzel-gleich gegen Lotse 0,056080). Der Arm: Soll 76→77, `Galoppieren` +0,0055 dtw, Kreuzungsdefekte 19→20. **Die Nullprobe ist das Ergebnis:** 23 der 63 Wörter bekommen einen Init, der um höchstens 1,8·10⁻¹⁵ abweicht — auf dieser NULL-Änderung kippen 9 Wächter-Verdikte, aiou −0,0298 … +0,0800, 4 Verlierer unter der 0,003-Schranke. Gate 3 fällt gegen eine bedeutungslose Störung; ein Init-Arm ist auf diesem Instrument nicht entscheidbar |
 | sep05 | Übergänge | [J5 Runde 6 gemessen](#übergänge-j5-sep05--runde-6-gemessen-ein-ehrliches-negativ-gegen-grüne-gates) | Menschenrunde · **ehrliches Negativ** · **Autor-Entscheid A36** | Basis 20 : Kandidat 1 von 21 entschiedenen (4,8 % gegen ≥ 60 %), je Klasse `apex` 1/12 und `stem` **0/7 — bei ALLEN grünen Gates**; 12/12 Nullproben richtig als „kein Unterschied" erkannt (12 der 13 Ties sind sie), Verlässlichkeit 4/4 gleicher Arm bei 1/4 gleicher Seite, aber 4 < 6 Paare → kein Adoptionsanspruch. Das Auge verwirft, was das Lineal belohnt: die 5 Apex-Gewinner des Wort-Lineals gehen 5 : 0 an die Basis. Gemessener Grund im Payload: die Übergabe ist auf 1,67–1,84 xh schnurgerade (Pfeilhöhe 0,001–0,002 xh) statt den Anstrich-Bogen zu tragen. **A36: `stem_depart` wird NICHT Default**, Golden-Bake gegenstandslos |
 | sep05 | Laufform | [LF12 geschrieben + Re-Baseline](#laufform-lf12-sep05--geschrieben-prod-write-der-18-zeilen--löschung-s-deklarierte-re-baseline) | **geschrieben** (Autor) · **Re-Baseline** (Wörter/Paare + beide Duell-Routen) | 18 Zeilen geschrieben, Readback identisch, `S` gelöscht (A35), Live-Zeilen anker-exakt die gemessene Karte. Neue Wurzeln `eaa195aa7c84…` / `0fbde2d72b64…`: Wörter **0,108444**, Paare **0,148236**, Kette dtw **0,045384**, Lotse dtw **0,053393**. Boden am Bestand: nur noch `P`/`s` (je n = 1) darunter, alle Zeilen-Gates grün |
+| sep05 | Feder | [Ink-Clearance an die Feder (Nib-gekoppelte Clearance)](#ink-clearance-an-die-feder-sep05--vorregistrierung-die-clearance-in-nib-radien) | Pre-Reg | Folgearm des Platten-Nibs, lizenziert per Autor-Entscheid statt per Runde. Diagnose zuerst: alle 9 neuen Verdopplungen liegen DAZWISCHEN (Verbinder × Körper), keine innerhalb — die Kringel des Autors kann `gleichzug_doublings` konstruktionsbedingt nicht sehen; separat gemessen schließen 10 Glyphenformen ihre Binnenfläche, weil sie um genau `2·Δhalf` = 0,04898 xh schrumpft. Mechanismus: jede Tinten-Clearance in Nib-Radien, am Kalibrierwert geklemmt (`scale = max(1, half/0,07251)`) → am Chart-Nib byte-gleich per Konstruktion |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -9693,6 +9694,7 @@ Wiederholungs-Boden, aber nicht automatisch bis 6 — die Zahl der Wiederholunge
 ist `n − min_gap − REPEAT_JITTER` und damit vor dem Bau ausrechenbar. Diese
 Runde bat um 6, bekam gemeldete 4 und hat damit von Anfang an keinen
 Adoptionsanspruch tragen können.
+
 ---
 
 ### Laufform LF12 `sep05` — geschrieben: Prod-Write der 18 Zeilen + Löschung `S`, deklarierte Re-Baseline
@@ -9907,3 +9909,207 @@ Karte; die **Nachmessung des Lotsen**, weil die Verfahrensseite seit
 `sep04` „beide Duell-Zahlen auf derselben Wurzel" behauptet und diese
 Runde den Satz sonst falsch gemacht hätte; das Nachtragen des
 gepoolten Nibs als zweite bewegte Größe.
+
+### Ink-Clearance an die Feder `sep05` — Vorregistrierung: die Clearance in Nib-Radien
+
+Geschrieben und committet VOR der ersten Zahl DIESES Arms. Die Diagnose
+weiter unten steht davor, weil sie den Gegenstand definiert und nicht den
+Arm bewertet: sie beschreibt den Zustand, gegen den er antritt.
+
+**Die Lizenz ist ein Autor-Entscheid, nicht ein Rundenergebnis.** Die
+vorregistrierte Wortrunde 4 („Platten-Nib A3 `sep04`") ist **nicht
+gefahren** worden. Der Autor hat am 2026-09-05 stattdessen direkt
+entschieden:
+
+> „Wir sollten die Strichdicke nehmen, die aus den ganzen Wörtern
+> ausgemessen wurde … der dicke Strich hat das Problem, dass bei kleinen
+> Kringeln kein Loch mehr in der Mitte ist … aber generell sollte die
+> Dicke einfach die aus den Vorgabewörtern sein."
+
+Damit ist die **Zielfeder die gemessene Wortfeder** — Halbbreite
+0,097 xh, Strich 0,194 — statt des chart-gepoolten 0,07251/0,145, und
+der Folgearm, den ein ≥ 60 %-Ergebnis lizenziert hätte, ist ohne die
+Runde lizenziert. Der Runde-4-Eintrag bleibt **wörtlich unverändert**
+stehen: er hat seine Zuordnung vor dem Ergebnis getroffen, und ein
+Autor-Entscheid ersetzt das Instrument, er korrigiert es nicht
+rückwirkend. Nur seine Registerzeile trägt den Stand nach.
+
+**Was das für die Beweislast dieses Eintrags heißt.** Der Arm steht ohne
+das Menschenurteil, das die Feder selbst hätte rechtfertigen sollen. Er
+darf deshalb genau EINE Frage beantworten — ob die Platzierung die
+schwerere Feder verträgt — und keine über ihre Schönheit. Das Lineal
+bleibt für die Feder einseitig (Runde-4-Vorregistrierung: dem Lineal die
+breitere Feder zu NENNEN senkt 0,109218 → 0,101560, ohne dass sich ein
+Punkt bewegt); **keine Zahl dieses Eintrags ist ein Beleg FÜR die
+Feder.**
+
+#### Diagnose 1: die acht Verdopplungen sind alle DAZWISCHEN
+
+`gleichzug_doublings` über die 63 Wortproben der `sep04`-Wurzel
+(`exported_at 2026-09-02T22:16:06+00:00`, Digest `6cbab9d5c092`),
+Geometrie und Lineal unverändert, nur die Feder von 0,07251 auf 0,097:
+**13 → 21**. Die Bilanz ist genauer als die Differenz — **neun Stellen
+kommen dazu, eine fällt weg**:
+
+| # | Wort | Stelle (x / y, xh) | Paarung | Herkunft | Lage | Platzierungsregel | `sep` ⌀ / min |
+|---|---|---|---|---|---|---|---|
+| 1 | `unter` | 5,98–6,20 / 0,77 | Verbinder t→e × Körper `e` | Laufform | dazwischen | `bar_rise_floor` | 0,176 / 0,138 |
+| 2 | `Soldaten` | 9,14–9,36 / 0,77 | Verbinder t→e × Körper `e` | Laufform | dazwischen | `bar_rise_floor` | 0,175 / 0,139 |
+| 3 | `streiten` | 7,33–7,55 / 0,77 | Verbinder t→e × Körper `e` | Laufform | dazwischen | `bar_rise_floor` | 0,176 / 0,138 |
+| 4 | `fechten` | 6,22–6,44 / 0,77 | Verbinder t→e × Körper `e` | Laufform | dazwischen | `bar_rise_floor` | 0,176 / 0,138 |
+| 5 | `scharfen` | 8,38–8,60 / 0,78 | Verbinder f→e × Körper `e` | Laufform | dazwischen | `align_floor` | 0,179 / 0,148 |
+| 6 | `fechten` | 1,70–1,92 / 0,78 | Verbinder f→e × Körper `e` | Laufform | dazwischen | `align_floor` | 0,180 / 0,148 |
+| 7 | `schießen` | 7,04–7,34 / 0,07 | Verbinder ß→e × Körper `sz` | Laufform | dazwischen | `backward_clearance` | 0,204 / 0,131 |
+| 8 | `schießen` | 6,84–7,39 / 0,24 | Verbinder ß→e × Körper `sz` | Laufform | dazwischen | `backward_clearance` | 0,206 / 0,180 |
+| 9 | `Galoppieren` | 11,90–12,01 / 0,82 | Körper `r` × Körper `e` | Laufform × Laufform | dazwischen | `arm_fuse` | 0,168 / 0,102 |
+| − | `Wer` | 2,27–2,66 / 0,35 | Verbinder W→e × Körper `W` | Chart | dazwischen | `backward_clearance` | 0,089 — **fällt raus** |
+
+**Kein einziger neuer Fall liegt INNERHALB einer Glyphe** — und das ist
+keine Beobachtung, sondern eine Eigenschaft des Detektors: er schließt
+Paare aus, die im selben Slot liegen und beide Buchstaben-Tinte sind
+(„Buchstabenform, nicht Komposition", `tools/wordbench/gleichzug.py`).
+**Die Kringel des Autors kann `gleichzug_doublings` also gar nicht
+sehen.** Das ist der wichtigste Satz der Diagnose, und er trennt die
+beiden Hälften dieses Eintrags.
+
+Alle neun sitzen zudem auf einer **geernteten Laufform-Zeile**, nicht auf
+einer Chart-Kanonischen — trivialerweise, weil die Laufform genau in den
+gebundenen Läufen greift, in denen es Verbinder gibt
+(`_joined_run_length ≥ 3`); die Chart-Form kommt in diesen Wörtern gar
+nicht vor.
+
+Der Tinten-Spalt an der engsten Stelle jeder Stelle, gegen `2·nib_half`
+gerechnet — dieselbe Mittellinien-Distanz, zwei Federn:
+
+| Feder | `2·nib_half` | Spalt an #1 (`sep_min` 0,138) | an #9 (0,102) | an #7 (0,131) |
+|---|---|---|---|---|
+| Chart 0,07251 | 0,145 | **−0,007** | −0,043 | −0,014 |
+| Platte 0,097 | 0,194 | **−0,056** | −0,092 | −0,063 |
+
+Die Stellen berühren sich also schon heute knapp; die schwere Feder
+verdreifacht die Überlappung. Der Detektor meldet sie erst jetzt, weil
+sein Band der Feder folgt (Untergrenze `max(0,035; 0,5·nib)`, Obergrenze
+`1,35·nib`) — das ist Absicht und in der Runde-4-Vorregistrierung
+ausgeschrieben. Dieselbe Bandbewegung erklärt den Wegfall bei `Wer`: die
+engere seiner beiden Stellen (⌀ 0,089) rutscht unter die neue
+Untergrenze 0,097.
+
+#### Diagnose 2: die Kringel schließen — und dagegen hilft keine Clearance
+
+Die Beobachtung des Autors ist exakt nachrechenbar und hat nichts mit
+der Platzierung zu tun. Die Binnenfläche (das „Loch") einer Kapsel-Union
+schrumpft beim Verbreitern der Feder um **genau `2·Δhalf`**, hier
+`2·(0,097 − 0,07251) = 0,04898 xh`. Jede Binnenfläche, deren größter
+einbeschriebener Kreis darunter liegt, verschwindet. Gemessen je
+Glyphen-Zeile (Öffnungsweite = Durchmesser des größten einbeschriebenen
+Kreises, in xh):
+
+| Glyphe | Zeile | @ 0,07251 | @ 0,097 | Ergebnis |
+|---|---|---|---|---|
+| `a` | Chart / Laufform | 0,0485 / 0,0490 | — / — | **beide zu** |
+| `o` | Chart / Laufform | 0,0495 / 0,0427 | — / — | **beide zu** |
+| `sz` | Chart / Laufform | 0,0585 / 0,0608 | — / — | **beide zu** |
+| `g` (Kringel) | Chart / Laufform | 0,0474 / 0,0378 | — / — | **beide zu** |
+| `r` | Chart | 0,0428 | — | **zu** |
+| `r` | Laufform | 0,0663 | 0,0259 | offen, haarfein |
+| `p` (Kringel) | Laufform | 0,0660 | — | **zu** (Chart-`p` 0,2018 → 0,1087 bleibt) |
+| `v` | Chart | 0,0467 | — | **zu** |
+| `k` | Chart | 0,0636 | — | **zu** (zwei Binnenflächen fließen zu einer) |
+| `G` | Chart | 0,0603 | — | **zu** |
+| `f` | Chart | 0,1089 / 0,4417 | 0,0651 / 0,1974 / 0,3723 | Schleife **eingeschnürt** (2 → 3 Ringe) |
+| `b`·`z`·`w`·`ae`·`W`·`Z` | — | 0,066–0,095 | 0,026–0,050 | offen, aber ein Haar |
+
+Zehn Glyphenformen verlieren eine Binnenfläche, eine wird eingeschnürt.
+**Das ist der Befund des Autors, beziffert** — und es ist ein Befund über
+die AUTORIERTE FORM, nicht über die Komposition: keine Platzierungsregel
+kann ein Loch öffnen, das in der Glyphe selbst zuläuft. Der Arm unten
+fasst es deshalb nicht an; was daraus folgt, steht im Ergebnisteil als
+Rest mit benanntem Weg.
+
+Bemerkenswert und für den weiteren Weg wichtig: **die geernteten
+Laufform-Zeilen tragen die Binnenflächen nicht systematisch weiter** als
+die Chart-Formen. Beim `r` schon (0,0663 gegen 0,0428 — die Zeile
+überlebt, die Chart-Form nicht), beim `p` genau umgekehrt (0,0660 gegen
+0,2018), bei `a`/`o`/`sz`/`g` praktisch gleich. Die These „die
+Wortplatten wurden mit schwerer Feder geschrieben, also tragen ihre
+Zeilen offene Schleifen" hält an genau einer Stelle und fällt an einer
+anderen.
+
+#### Der Mechanismus (steht vor der ersten Zahl des Arms)
+
+Die Ink-Clearances in `core/compose.py` sind in x-Höhen kalibriert — und
+zwar AN der Feder, mit der jede Messung gemacht wurde, die sie
+hervorgebracht hat. Eine schwerere Feder füllt denselben Skelett-Abstand
+mit mehr Tinte, also schrumpft eine in x-Höhen festgehaltene Clearance
+in NIB-RADIEN, sobald die Feder wächst. Der Arm drückt sie deshalb in
+Nib-Radien aus:
+
+```
+CLEARANCE_REF_HALF = 0.07251                       # die Kalibrierfeder
+scale(half)        = max(1.0, half / CLEARANCE_REF_HALF)
+clearance          = konstante · scale(max(prev_half, half))
+```
+
+Drei Eigenschaften, alle vor der Messung festgelegt:
+
+* **Am Boden geklemmt.** Unterhalb der Kalibrierfeder ist `scale` exakt
+  1,0. Heute wird also **nichts** bewegt — und die Golden-Fixture, deren
+  eingefrorene Payloads 0,071 tragen (gerundet, unter 0,07251), fällt
+  ebenfalls in die Klemme. Byte-Gleichheit ist damit eine Eigenschaft der
+  Formel, nicht ein Messergebnis; sie wird trotzdem geprüft.
+* **Die schwerere der beiden Federn entscheidet.** An einem Übergang
+  treffen zwei Glyphen; der Raum bemisst sich am dickeren Strich.
+* **Es gilt für alle Tinten-Clearances, nicht nur `INK_CLEARANCE`** —
+  `BACKWARD_INK_CLEARANCE`, `LONGS_BACKWARD_CLEARANCE`,
+  `CAP_INK_CLEARANCE`, `ARCADE_ENTRY_CLEARANCE`, `NONJOIN_CLEARANCE`
+  (samt Default) und der Wort-Tinten-Boden `WORD_INK_GAP`. Die beiden
+  Null-Clearances `ALIGN_MIN_CLEARANCE` und `BOWL_EXIT_CLEARANCE` sind
+  von der Regel MIT ERFASST und dabei rechnerisch neutral: 0,0 mal
+  irgendetwas bleibt 0,0. Das ist kein Schlupfloch, sondern der Grund,
+  warum der Arm die Stellen #5, #6 und #9 vermutlich nicht erreicht
+  (siehe die Vorhersage).
+
+#### Die Gates (stehen vor der ersten Zahl)
+
+1. **Verdopplungen.** `gleichzug_doublings` bei Halbbreite 0,097 über die
+   63 Wortproben: **21 → ≤ 13**, also zurück auf den Chart-Nib-Stand, und
+   **keine Stelle, die der Chart-Nib nicht schon hat**. Beides muss
+   gelten; nur die Zahl zu erreichen, indem anderswo eine neue Stelle
+   entsteht, ist kein Bestehen.
+2. **Deckung.** Bei 0,097 darf `coverage` gegenüber der Komposition
+   OHNE den Arm nicht steigen — der geweitete Raum darf die Wörter nicht
+   von der Tinte schieben. (Am Chart-Nib ist der Term byte-gleich, siehe 4.)
+3. **Golden.** `tests/test_compose_golden.py` grün ohne `REGEN_GOLDEN`.
+   Ein Regen wäre eine Re-Baseline und ist hier ausdrücklich NICHT
+   vorgesehen; träte er ein, wäre das ein Scheitern der Formel und würde
+   als solches gebucht.
+4. **Wordbench am Chart-Nib.** Wörter **0,109218** · Paare **0,148198**,
+   Ziffer für Ziffer, auf der Wurzel `6cbab9d5c092` (`--expect-root`),
+   BLAS auf einen Thread gepinnt.
+5. **Die Ehrlichkeitsregel zur Feder.** Der Eintrag zitiert BEIDE
+   Wordbench-Zahlen — die mit dem Lineal auf HEUTIGER Feder (die
+   ehrliche) und die mit dem Lineal auf 0,097 — und sagt bei jeder dazu,
+   was sie ist. Die zweite darf in keiner Zusammenfassung als
+   Verbesserung auftreten.
+
+**Kill-Kriterium.** Bewegt sich am Chart-Nib irgendeine Zahl, ist das
+nicht dieser Arm, sondern eine unangemeldete Re-Baseline; der Arm wird
+dann zurückgenommen, nicht neu erklärt.
+
+**Vorhersage, vor der Messung notiert** (damit hinterher nicht die
+Erklärung zum Ergebnis wächst): der Arm kann höchstens sechs der neun
+Stellen erreichen. Vier laufen über `bar_rise_floor` und zwei über
+`backward_clearance` — dort ist ein skalierbarer Tinten-Boden aktiv.
+Zwei laufen über `align_floor`, dessen Boden `ALIGN_MIN_CLEARANCE` = 0,0
+ist, und eine über `arm_fuse`, das bewusst das MINIMUM nimmt und unter
+jeder Clearance liegt („die Striche sollen sich berühren"). Erreicht der
+Arm 21 → 15, hat er getan, was der Mechanismus kann, und Gate 1 fällt
+trotzdem. **Die Gates bleiben, wie sie hier stehen** — ein Gate auf das
+herabgesetzt, was der Mechanismus schafft, ist kein Gate.
+
+**Was der Arm ausdrücklich NICHT anfasst:** `CONNECT_GAP` und
+`ARM_FUSE_GAP` (Anker-Abstand bzw. eine gewollte Berührung, keine
+Tinten-Clearance), `ALIGN_MIN_CLEARANCE`/`BOWL_EXIT_CLEARANCE` über
+ihren Nullwert hinaus, jede Glyphengeometrie und jede Render-Regel, die
+eine Binnenfläche öffnen würde. Der ausgelieferte Nib bleibt in diesem
+PR unverändert; der Wechsel ist Schritt 2 und steht im Ergebnisteil.
