@@ -11,9 +11,8 @@
   can cover it, because Cloudflare reads the response header and stamps its own
   script with what it finds; verified live on the sister site first, including
   the two scripts Cloudflare creates inside its hidden iframe. **The policy
-  shipped `Report-Only`** so that the report channel could measure whether the
-  edge honours the nonce here. It answered within two days, and the enforcing
-  switch of 2026-09-05 is what that answer bought.
+  ships `Report-Only`** so that the report channel can measure whether the edge
+  honours the nonce here before anything is blocked on it.
 
 - **The report week can now name the script it is reporting.** `script-src`
   asks for `'report-sample'` and `POST /csp-report` logs the sample beside the
