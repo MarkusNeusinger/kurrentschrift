@@ -401,9 +401,21 @@ Die Runde vom 04. nannte die 416 ms für `fastapi`+SQLAlchemy+`jwt`+`httpx`
 
 - **Immer noch kein Lauf im Container.** Die Formfrage der venv ist geklärt (die
   Extras spielten keine Rolle: `MAIN` bewegt sich um 1 ms), die
-  Laufzeitumgebung nicht. Wer die Kaltstart-Prozente belastbar braucht, misst
-  weiterhin im Image; dieser Nachtrag macht den Stellvertreter nur so eng, wie er
-  ohne Docker werden kann.
+  Laufzeitumgebung nicht. Dieser Nachtrag macht den Stellvertreter nur so eng,
+  wie er ohne Docker werden kann.
+
+  **Der Weg dorthin ist aber benannt und kostet nichts:** der CI-Job
+  „Image (build + container smoke)" (`.github/workflows/ci.yml`) baut
+  `api/Dockerfile` bereits bei jedem PR und lädt das Ergebnis in den lokalen
+  Daemon (`load: true`), damit der Smoke-Test es starten kann. Ein einmaliger
+  Schritt mit `docker exec -i api /app/.venv/bin/python` in genau diesem Job
+  misst die acht Sätze **im echten Image** — dieselben Layer, derselbe
+  Interpreter-Patchstand, derselbe vorkompilierte Bytecode —, kostet
+  Runner-Minuten und fasst keine Infrastruktur an. Was er weiterhin nicht
+  liefert, ist die Cloud-Run-Hardware; er schließt die Image-Frage, nicht die
+  Maschinen-Frage. (In dieser Sitzung nicht gefahren: eine Änderung an einer
+  geteilten CI-Datei ist ein eigener Entscheid, kein Nebenprodukt einer
+  Messung.)
 - Der Patch-Stand des Interpreters im Image (`python:3.13-slim`) ist nicht
   geprüft; hier lief 3.13.12.
 - Die Größenzahlen aus (b) bleiben venv-gzip-Stellvertreter — Artifact Registry
