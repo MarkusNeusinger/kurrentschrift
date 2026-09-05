@@ -9761,8 +9761,9 @@ unten beziffert und liegt bei 3·10⁻⁵.
 
 63 von 63 Wörtern und 33 von 33 Paar-Drills gescoret, keiner
 übersprungen, keiner gefallen. `worst_word` wandert wie vorhergesagt
-von `regieren` 0,234335 auf **`han` 0,232609**, `worst_pair` bleibt
-`In` 0,283819. Komponenten `comp_transition` 0,089804 ·
+von `regieren` 0,234335 auf **`han` 0,232609**; `worst_pair` ist
+**`In` 0,283819** (die Basis hat keinen dokumentierten Wert dafür).
+Komponenten `comp_transition` 0,089804 ·
 `comp_coverage` 0,101580 · `comp_width` 0,162397, Naht-Abgang
 `seam_dep_median` **+7,59** (Basis +7,99) — genau der Wert, den der
 Trocken-Eintrag für die Karte gemessen hat.
