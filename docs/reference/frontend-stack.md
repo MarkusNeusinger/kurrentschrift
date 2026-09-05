@@ -865,7 +865,7 @@ einen `add_header` ergänzt, ergänzt die `include`-Zeile daneben.
 
 | Header | Wert | Warum |
 |---|---|---|
-| `Content-Security-Policy` | siehe unten | Erlaubt-Liste der tatsächlichen Quellen der Seite; **scharf seit 2026-09-05**, davor einen Tag `-Report-Only` |
+| `Content-Security-Policy` | siehe unten | Erlaubt-Liste der tatsächlichen Quellen der Seite; **scharf seit 2026-09-05**, davor seit dem 2026-09-02 `-Report-Only` |
 | `Strict-Transport-Security` | `max-age=15552000` | 180 Tage, **ohne** `includeSubDomains`, **ohne** `preload` (Autor-Entscheid 2026-09-02, wie anyplot) |
 | `X-Content-Type-Options` | `nosniff` | |
 | `X-Frame-Options` | `SAMEORIGIN` | die alte Hälfte von `frame-ancestors` |

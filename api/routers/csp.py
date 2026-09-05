@@ -1,7 +1,7 @@
 """`POST /csp-report` — where the site's Content-Security-Policy reports land.
 
 The site shipped its policy as `Content-Security-Policy-Report-Only` on
-2026-09-04 and switched to the enforcing header on 2026-09-05
+2026-09-02 and switched to the enforcing header on 2026-09-05
 (`app/security-headers.conf` carries the evidence). A report-only policy blocks
 nothing, so those hours were worth exactly as much as the reports they produced
 — hence this endpoint; and it outlives them, because `report-uri` stays in the
