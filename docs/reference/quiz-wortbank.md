@@ -1,12 +1,14 @@
 # Quiz-Wortbank — Quellen, Kuration, Distraktoren
 
-> **Status (2026-08-29): lebend.** Beschreibt Generator, Distraktor-Modell,
+> **Status (2026-09-05): lebend.** Beschreibt Generator, Distraktor-Modell,
 > Fugen-Marker und Seed-Workflow der Wortbank; jede Änderung an
 > `tools/quizgen/` oder am `similarity`-Zwilling
 > `app/src/sections/quiz/wordBank.ts` zieht hier nach.
-> Zahlen am 2026-08-29 nachgerechnet: 641 Wörter,
+> Zahlen am 2026-08-29 nachgerechnet: DB-Bank 641 Wörter,
 > 505 `modern` / 136 `historic` (vor dem Lückenschluss §1: 495,
-> 373 / 122).
+> 373 / 122). SPA-Fallback seit dem Nachzug 2026-09-05: 77 Wörter,
+> und er deckt 64 der 66 buchstabierten Glyphen mit einem modernen
+> Wort ab — nur `c` und `q` nicht, die das Deutsche allein nicht zeigt.
 
 Referenz für die Wortbank des Lese-Quiz (Wörter-Modus): woher die Wörter
 kommen, nach welchen Regeln sie kuratiert werden und wie die
@@ -70,6 +72,29 @@ Fugen-Marker …), damit die nächste Pool-Welle die Verbindungen m>ä,
 ö>ch, k>ü, ſt>ü, ö>ſ, g>ſ, f>g, n>b … aus echten Alltagswörtern bekommt.
 146 Einträge, Migration `0027` (einfügend, rückbaubar). Stand danach:
 641 Wörter.
+
+### Nachzug 2026-09-05 — der SPA-Fallback lernt dasselbe Alphabet
+
+Der Lückenschluss traf nur die DB-Bank. Der gebündelte Fallback
+`app/src/sections/quiz/wordBank.ts` blieb bei 42 Wörtern — und genau
+den liest die Schreibtafel für ihr Beispielwort „im Wort sehen“
+(`app/src/sections/tafel/letterDetail.ts`, Route `/tafel?g=<key>`), nicht
+die DB-Bank. Ergebnis: 40 der 66 buchstabierten Glyphen hatten dort kein
+modernes Bankwort, 35 gar keins — der Website-Audit 2026-09-02 (Befund 29)
+hat das gezählt. PR #476 hatte die Lücke mit einer handgeschriebenen Karte
+`exampleWords.ts` neben der Bank gestopft, nicht in ihr.
+
+Jetzt sind die 35 kuratierten Einträge, die die DB-Bank für diese
+Buchstaben ohnehin schon trägt, wortgleich in den Fallback übernommen
+(Axt, Käse, Löwe, Tür, Quark, Yacht, Ähre, Obst, Stadt …; Wort, Pin und
+`era` verbatim aus `quiz_words.json`, keine neue Kuration, keine neue
+Quelle). Der Fallback wächst von 42 auf 77 Wörter; 64 der 66 Glyphen
+bekommen ihr Beispiel aus der Bank, die Karte schrumpft von 35 auf zwei
+Einträge. Übrig bleiben `c` und `q` — und das ist keine Lücke der Bank,
+sondern des Deutschen: ein kleines q steht nur in der qu-Einheit, ein
+kleines c nur in ch/ck, also ist das Clusterwort (bequem, Buch) genau die
+Stelle, an der man ihnen begegnet. Gepinnt von
+`app/src/sections/tafel/letterDetail.test.ts`.
 
 ### Konsultierte Quellen
 
@@ -155,6 +180,14 @@ Distraktoren) und damit eigene Ausdrucksform unter der Repo-Lizenz.
    wird deshalb im `api/Dockerfile` ins Image kopiert, sonst stirbt der
    Migrate-Job des Deploys an einem FileNotFoundError (so geschehen
    beim 0011-Deploy am 2026-07-02).
+5. Schließt die Erweiterung eine **Buchstabenlücke**, den Eintrag
+   wortgleich auch in den SPA-Fallback `wordBank.ts` legen: die
+   Schreibtafel zieht ihr Beispielwort aus dem Fallback, nicht aus der
+   DB-Bank, und liefe sonst wieder auf die Notkarte `exampleWords.ts`
+   zurück (Nachzug 2026-09-05, §1). Der Test
+   `sections/tafel/letterDetail.test.ts` hält das fest — er verlangt für
+   jeden buchstabierten Glyph ein Beispielwort und lässt nur `c` und `q`
+   an der Bank vorbei.
 
 ## Verworfen
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { LETTERS } from '@/domain/glyphs';
 import type { GlyphRenderData } from '@/lib/api';
-import { WORD_BANK } from '@/sections/quiz/wordBank';
+import { WORD_BANK, type WordEntry } from '@/sections/quiz/wordBank';
 import { EXAMPLE_WORDS } from './exampleWords';
 import { exampleWord, lookalikeKeys, strokeCount, strokeStarts } from './letterDetail';
 
@@ -66,23 +66,43 @@ describe('letterDetail', () => {
   });
 
   it('falls back to a historic bank word, then to the checked constant', () => {
-    // The bank has no modern word starting with M, but a historic one — and
-    // the link says so.
-    expect(exampleWord('M', WORD_BANK)).toEqual({ word: 'Magd', historic: true });
-    // Nothing in the bank shows a ü, so the constant answers — as an ordinary
-    // modern word, not marked historic.
-    expect(exampleWord('ue', WORD_BANK)).toEqual({ word: EXAMPLE_WORDS.ue, historic: false });
-    // The bank keeps its precedence: a letter it covers never reaches the map.
-    expect(exampleWord('n', WORD_BANK)?.word).not.toBe(EXAMPLE_WORDS.n);
+    // Rung 2, on a bank built for it: with no modern word showing the letter,
+    // the historic one answers and the link is told to say so.
+    const onlyHistoric: WordEntry[] = [
+      { word: 'Magd', distractors: ['Mahd'], era: 'historic' },
+      { word: 'neu', distractors: ['nie'], era: 'modern' },
+    ];
+    expect(exampleWord('M', onlyHistoric)).toEqual({ word: 'Magd', historic: true });
+    // Rung 1 keeps precedence over rung 2 for a letter both layers show.
+    expect(exampleWord('n', onlyHistoric)).toEqual({ word: 'neu', historic: false });
+    // Rung 3, on the real bank: German writes a lowercase q only inside the qu
+    // unit and a lowercase c only inside ch/ck, so no bank word can ever show
+    // them alone — the constant answers, as an ordinary modern word.
+    expect(exampleWord('q', WORD_BANK)).toEqual({ word: EXAMPLE_WORDS.q, historic: false });
+    expect(exampleWord('c', WORD_BANK)).toEqual({ word: EXAMPLE_WORDS.c, historic: false });
+    // Those two are the only ones left: every other spelled glyph is answered
+    // by the bank itself, so the map never has to grow back.
+    expect(Object.keys(EXAMPLE_WORDS).sort()).toEqual(['c', 'q']);
   });
 
-  it('gives every letter, capital and ligature an example word', () => {
-    // Website audit 2026-09-02 (finding 29): 39 of these had none, so more
-    // than half the letter detail pages ended without the bridge into the
-    // Federprobe. Digits and punctuation are out — no word shows them.
+  it('gives every letter, capital and ligature an example word — from the bank', () => {
+    // Website audit 2026-09-02 (finding 29): 35 of these had no example word
+    // at all and 6 more only a historic one, so 41 of 66 letter detail pages
+    // ended without an everyday bridge into the Federprobe. Digits and
+    // punctuation are out of scope — no word shows them.
     const spelled = LETTERS.filter((l) => l.group === 'lower' || l.group === 'upper' || l.group === 'comb');
     const without = spelled.filter((l) => !exampleWord(l.base, WORD_BANK)).map((l) => l.base);
     expect(without).toEqual([]);
+    // And the source is the curated bank, not the map beside it: a word that
+    // stands in the bank is shared with the quiz and carries its era tag, so
+    // the ladder must only fall through for c and q. Guards the map from
+    // quietly filling up again the next time a letter goes uncovered.
+    const fromMap = spelled.filter((l) => exampleWord(l.base, WORD_BANK)?.word === EXAMPLE_WORDS[l.base]);
+    expect(fromMap.map((l) => l.base)).toEqual(['c', 'q']);
+    // Every one of them an everyday word, too — the historic layer is the
+    // second rung and today nothing needs it.
+    const historic = spelled.filter((l) => exampleWord(l.base, WORD_BANK)?.historic);
+    expect(historic.map((l) => l.base)).toEqual([]);
   });
 
   it('keeps the fallback words free of clusters that hide their own letter', () => {
