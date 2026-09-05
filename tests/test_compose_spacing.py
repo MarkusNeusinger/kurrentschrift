@@ -71,12 +71,15 @@ def _ink_x(items: list[dict]) -> tuple[float, float]:
 _WORD_A = [(0.0, 0.0), (0.3, 0.25), (0.6, 0.5)]
 
 
-def _second_word_start(overhang: float) -> dict:
+def _second_word_start(overhang: float, *, hole: bool = False) -> dict:
+    """Compose "a b" (or "a ?b", ``hole``: the slot before b has no template)."""
     stroke = [(overhang, 0.4), (0.0, 0.0), (0.35, 0.3), (0.7, 0.55)]
-    composed = compose_word(
-        _slots("a", None, "b"), {"a": _payload(_WORD_A), "b": _payload(stroke, entry=(0.0, 0.0))}, provenance=True
-    )
-    first_word, second_word = _split_at_word(composed["items"], 2)
+    keys = ("a", None, "hole", "b") if hole else ("a", None, "b")
+    payloads: dict[str, dict | None] = {"a": _payload(_WORD_A), "b": _payload(stroke, entry=(0.0, 0.0))}
+    if hole:
+        payloads["hole"] = None
+    composed = compose_word(_slots(*keys), payloads, provenance=True)
+    first_word, second_word = _split_at_word(composed["items"], len(keys) - 1)
     return {
         "prev_ink_max": _ink_x(first_word)[1],
         "next_ink_min": _ink_x(second_word)[0],
@@ -109,6 +112,15 @@ def test_overhanging_capital_is_pushed_clear_of_the_previous_word() -> None:
     assert math.isclose(got["next_ink_min"] - got["prev_ink_max"], WORD_INK_GAP, abs_tol=1e-9)
     # …and that is a real move right, not the cursor placement by luck.
     assert got["next_entry_x"] > got["prev_ink_max"] + SPACE_ADV
+
+
+def test_unrenderable_slot_after_the_gap_keeps_the_ink_anchor() -> None:
+    # "Die ?Kloster": the hole between the space and the capital only widens
+    # the gap — it draws no ink — so the K still has to clear "Die". Two
+    # advances (0.55 + 0.55) are less than the 1.64 xh a K reaches left, which
+    # is why the anchor may not be dropped at the hole.
+    got = _second_word_start(-0.8, hole=True)
+    assert math.isclose(got["next_ink_min"] - got["prev_ink_max"], WORD_INK_GAP, abs_tol=1e-9)
 
 
 def test_golden_payloads_write_das_glueck_without_collision() -> None:

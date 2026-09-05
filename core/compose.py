@@ -1956,10 +1956,14 @@ def compose_word(
     cursor_x = 0.0
     # The previous glyph's exit in the composed frame, for the next connector.
     prev: _PrevGlyph | None = None
-    # Rightmost body ink of the word BEFORE the gap (composed frame), kept only
-    # across a space so the next word's first glyph can clear it (see
-    # WORD_INK_GAP). None everywhere else: at the line start there is nothing to
-    # clear, and a missing-glyph hole is not a word gap.
+    # Rightmost body ink DRAWN so far (composed frame), Endstrich included — the
+    # left edge a word gap is measured from. It outlives `prev`, which a hole
+    # in the slot stream resets.
+    last_ink_max: float | None = None
+    # That edge, captured at a word gap and consumed by the first glyph that
+    # renders after it (see WORD_INK_GAP). None at the line start, where there
+    # is nothing to clear; an unrenderable slot BETWEEN the gap and that glyph
+    # only widens the hole, so it leaves the anchor standing.
     prev_word_ink_max: float | None = None
 
     min_x = math.inf
@@ -1993,7 +1997,7 @@ def compose_word(
 
     def end_swing() -> None:
         """Emit the word-final Endstrich (geometry in ``_endstrike_centerline``)."""
-        nonlocal cursor_x
+        nonlocal cursor_x, last_ink_max
         if not prev or not prev.joins:
             return
         centerline = _endstrike_centerline(prev.exit, prev.tangent_deg)
@@ -2013,18 +2017,20 @@ def compose_word(
         track(centerline)
         cursor_x = centerline[-1][0]
         # The swing's ink extends the word rightward — a detached mark placed
-        # next (comma, period) must clear it, not the letter body alone.
+        # next (comma, period) must clear it, not the letter body alone, and
+        # neither must the next word.
         prev.ink_max_x = max(prev.ink_max_x, centerline[-1][0])
+        last_ink_max = prev.ink_max_x if last_ink_max is None else max(last_ink_max, prev.ink_max_x)
 
     for slot_index, slot in enumerate(slots):
         if slot.space:
             end_swing()  # the pen finishes the word body before the marks and the gap
             flush_diacritics()  # the word's marks land before the gap to the next word
-            # end_swing has already grown the last glyph's ink by the Endstrich.
-            # A SECOND space in a row keeps the first one's anchor (`prev` is
-            # None by then): a wider hole must not lose the ink it clears.
-            if prev is not None:
-                prev_word_ink_max = prev.ink_max_x
+            # end_swing has already grown the ink edge by the Endstrich. Reading
+            # `last_ink_max` rather than `prev` keeps the anchor across a second
+            # space and across a word that ENDS in an unrenderable slot — in
+            # both cases `prev` is None while real ink still stands to the left.
+            prev_word_ink_max = last_ink_max
             cursor_x += SPACE_ADV
             prev = None
             continue
@@ -2069,7 +2075,10 @@ def compose_word(
             flush_diacritics()
             cursor_x += MISSING_ADV
             prev = None
-            prev_word_ink_max = None
+            # A hole right after a word gap keeps that gap's ink anchor: the
+            # advance it adds widens the hole, it does not put ink into it, so
+            # the first glyph that DOES render still has to clear the word
+            # before (a K reaches 1.64 xh left — further than two advances).
             continue
         if guides is None:
             guides = data["template_guides"]
@@ -2869,6 +2878,9 @@ def compose_word(
             stem_ride=[(x + dx, y) for x, y in stem_ride] if stem_ride else None,
         )
         cursor_x = max(exit_abs[0], ink_max_x + dx) if not slot.joins else exit_abs[0]
+        # Survives the `prev = None` of a hole or a gap (see WORD_INK_GAP); a
+        # letter tucked under its neighbour must not pull the edge back left.
+        last_ink_max = ink_max_x + dx if last_ink_max is None else max(last_ink_max, ink_max_x + dx)
 
     end_swing()  # the last word's Endstrich …
     flush_diacritics()  # … then its marks, once the body is complete
