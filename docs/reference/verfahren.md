@@ -50,7 +50,7 @@ Zahl hier ist ein datiertes Zitat, der Beleg wohnt im benannten
 
 ## Die Verfahren
 
-| Anzeige-Name | Seite | Stand (2026-09-04, dev-19, Lineal-Kappe 1,5 seit L-U `aug26`) | seit |
+| Anzeige-Name | Seite | Stand (2026-09-05, dev-19, Lineal-Kappe 1,5 seit L-U `aug26`) | seit |
 |---|---|---|---|
 | **Kette** | [`verfahren-kette.md`](verfahren-kette.md) | **v5** (`aug26`, K0-S-Wächter-Stack: Kompositions-Soll + Ratsche + Zone 0,55) — Zahlen re-baselined `sep05` auf der Wurzel `eaa195aa7c84…` (nach dem LF12-Write): dtw 0,045384 med · p90 0,087826 · worst `muß` 0,107134 · marks 0 · aiou 0,7583 · Netto-Kreuzungsdefekte 19 · 63er-Soll-Abstand 80 | 2026-08-26 (Zahlen 2026-09-05) |
 | **Lotse** | [`verfahren-lotse.md`](verfahren-lotse.md) | **v0.17** (`aug20`, Reservierungs-Veto) — Zahlen nachgemessen `sep05` auf derselben Wurzel wie die Kette (`eaa195aa7c84…`): dtw **0,053393** med · p90 0,116199 · aiou 0,7493 · `cross_missing` 0 / `cross_spurious` 5 · `retrace_missing` 7. Die `sep04`-Zeile nannte 0,056080 / 0,1155 / 0,7527 — dieselbe Route, eine Wurzel früher (§14 „Laufform LF12 `sep05`") | 2026-08-20 (Zahlen 2026-09-05) |

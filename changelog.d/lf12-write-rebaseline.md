@@ -1,13 +1,14 @@
 ### Changed
 
-- **Laufform LF12 geschrieben, und die Messlatte darauf neu gesetzt.** Der
-  Autor hat die trocken gemessene LF12-Karte in Produktion geschrieben — 18
-  Laufform-Zeilen aus den Vorkommen des heutigen Ketten-Stands neu abgeleitet,
-  die Zeile `S` auf Entscheid A35 gelöscht —, danach sind beide Fixture-Wurzeln
-  neu gebaut und alle Headlines auf ihnen nachgemessen: Wörter 0,109218 →
-  **0,108444**, Paare 0,148198 → **0,148236**, Kette dtw 0,045830 →
-  **0,045384**, Lotse 0,056080 → **0,053393**. Das ist eine deklarierte
-  Re-Baseline: Zahlen von vor dem Write sind mit diesen nicht mehr gepaart
-  vergleichbar, und `--expect-root` nagelt die neue Basis (`eaa195aa7c84…` /
-  `0fbde2d72b64…`) an jede künftige Runde. Der Lotse ist mitgemessen, damit das
-  Duell auf EINER Wurzel bleibt.
+- **The LF12 running forms are written, and every headline is re-baselined on
+  the root that write produced.** The author put the dry-measured LF12 card
+  into production — 18 Laufform rows re-derived from the occurrences of
+  today's chain, and the `S` row deleted (decision A35: it stood at n = 2 and
+  produced no usable fit at all in the fresh harvest, so `S` composes from the
+  chart form now). Both fixture roots were then rebuilt over HTTPS and every
+  headline re-measured on them with BLAS pinned: words 0.109218 → **0.108444**,
+  pairs 0.148198 → **0.148236**, Kette dtw 0.045830 → **0.045384**, Lotse
+  0.056080 → **0.053393**, all on `eaa195aa7c84…` / `0fbde2d72b64…`. This is a
+  declared re-baseline — numbers from before the write are no longer paired
+  with these, and `--expect-root` pins the new base for every future round. The
+  Lotse is measured alongside so the duel keeps both routes on ONE root.
