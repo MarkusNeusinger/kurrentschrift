@@ -45,7 +45,7 @@ function polylineSegments(pts: Array<[number, number]>, starts?: number[]): Arra
 
 export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props) {
   const { sourceId } = useAdmin();
-  const COL_W = useColumnWidth(colWidth);
+  const [colContainer, COL_W] = useColumnWidth(colWidth);
   const COL_H_PX = colHeight ?? COL_H;
   const [data, setData] = useState<FitData | null>(null);
   // Starts true: the first render already waits for the fit the effect below
@@ -128,7 +128,7 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
   const m = data.fit;
 
   return (
-    <Stack spacing={1.5}>
+    <Stack ref={colContainer} spacing={1.5}>
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-start' }}>
         {/* Overlay: crop + skeleton + canonical (grey) + fit (red) */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>

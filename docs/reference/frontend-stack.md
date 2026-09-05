@@ -1103,8 +1103,11 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
 - `sections/admin/setup-wizard/` — `SetupWizard` (Dialog-Shell) + `useWizard`
   (State + Server-Mutationen) + `useCropView` (Crop-Viewport) + `WizardCanvas`
   + `steps/{Mask,Lineatur,Slant,Trace,Overview}Step`. Einzige Autoren-Fläche.
-- `sections/admin/diagnostics/` — `DiagnosticDialog` (3-Spalten + M4-Fit),
-  `DiagnosticView`/`FitView`.
+- `sections/admin/diagnostics/` — `DiagnosticDialog` (3-Spalten + M4-Fit;
+  unter `md` Vollbild wie der Wizard), `DiagnosticView`/`FitView`. Ihre
+  Spaltenbreite kommt aus `useColumnWidth`, das den CONTAINER misst
+  (ResizeObserver) und nicht das Fenster — die Fensterbreite kennt die
+  Ränder des Dialogs nicht und ließ das Modal bei 390 px quer scrollen.
 - `sections/admin/shell/` — die Werkbank-Hülle, die alle drei Ansichten
   teilen: `AdminHeader` (drei Bereiche + Vorlagen-Chip + Korb-Badge),
   `StartView` (`/admin`, die Vorlagen-Auswahl), `LetterPicker`
@@ -1204,8 +1207,11 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   Aufschlüsselung je Kategorie; das liegt AUSSERHALB des Wizards, damit die
   Wizard-Vorschau, das Diagnose-Modal (das die Aufschlüsselung dadurch
   bekam, die es nie zeigte, obwohl sein Payload sie immer trug) und die
-  Buchstaben-Übersicht dieselbe Zahl auf dieselbe Weise lesen;
-  `setup-wizard/steps/previewParts.tsx` behält nur noch die
+  Buchstaben-Übersicht dieselbe Zahl auf dieselbe Weise lesen; die Breite der
+  Beschriftungsspalte misst das Nachbarmodul `quality/labelColumn.ts`
+  (`labelColumnChars`, in `ch`) aus den Bezeichnern selbst — eigenes Modul,
+  weil `scoreParts.tsx` unter der react-refresh-Regel nur Komponenten
+  exportieren darf. `setup-wizard/steps/previewParts.tsx` behält nur noch die
   Silhouetten-Überlagerung. Der Tooltip des Chips sagt ausdrücklich, dass
   die gespeicherte Zahl der Score ZUM ZEITPUNKT DES AUTORIERENS ist und
   keine Neubewertung mit der heutigen Metrik.
