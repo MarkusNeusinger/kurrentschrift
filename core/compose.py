@@ -38,7 +38,22 @@ from core.template import SILHOUETTE_SIMPLIFY_TOL, chisel_union_rings, erase_sil
 from core.widths import PenStyle
 
 
-SPACE_ADV = 0.55  # inter-word gap, x-height units
+SPACE_ADV = 0.55  # inter-word gap, x-height units — advanced from the CURSOR
+# Minimum INK gap between two words (x-height units). SPACE_ADV alone moves the
+# ANCHOR: the cursor after the previous word's Endstrich, and the next word's
+# entry point. Where a letter's ink reaches far past its own anchor the two
+# words collide anyway — several Sütterlin capitals carry their bow LEFT of
+# their origin (K −1.64, C −1.42, F −1.16, G/Q/O/A ≈ −0.8, I −0.45, X −0.18 xh
+# measured in the join band), so "Die Federprobe" wrote the F back INTO "Die"
+# (owner report 2026-09-05), and a word ending in w/v leaves its bow to the
+# RIGHT of its cursor, so the next word started inside that bow. The gap is
+# therefore measured between INK, and 0.43 is the floor that leaves every
+# boundary today's composition already writes wide enough alone: the hand's
+# tightest lowercase boundary is 0.4395 (after a final t), the common case
+# 0.4777 (= SPACE_ADV − the ≈0.072 xh of ordinary left overhang). Only the
+# boundaries that fall BELOW the floor move — the overhanging capitals and the
+# w/v-final words — never the ones the anchor advance already spaces.
+WORD_INK_GAP = 0.43
 # Advance reserved for an unrenderable glyph — capped at the word gap, so a
 # hole never yawns wider than an actual space.
 MISSING_ADV = 0.55
@@ -1941,6 +1956,15 @@ def compose_word(
     cursor_x = 0.0
     # The previous glyph's exit in the composed frame, for the next connector.
     prev: _PrevGlyph | None = None
+    # Rightmost body ink DRAWN so far (composed frame), Endstrich included — the
+    # left edge a word gap is measured from. It outlives `prev`, which a hole
+    # in the slot stream resets.
+    last_ink_max: float | None = None
+    # That edge, captured at a word gap and consumed by the first glyph that
+    # renders after it (see WORD_INK_GAP). None at the line start, where there
+    # is nothing to clear; an unrenderable slot BETWEEN the gap and that glyph
+    # only widens the hole, so it leaves the anchor standing.
+    prev_word_ink_max: float | None = None
 
     min_x = math.inf
     max_x = -math.inf
@@ -1973,7 +1997,7 @@ def compose_word(
 
     def end_swing() -> None:
         """Emit the word-final Endstrich (geometry in ``_endstrike_centerline``)."""
-        nonlocal cursor_x
+        nonlocal cursor_x, last_ink_max
         if not prev or not prev.joins:
             return
         centerline = _endstrike_centerline(prev.exit, prev.tangent_deg)
@@ -1993,13 +2017,20 @@ def compose_word(
         track(centerline)
         cursor_x = centerline[-1][0]
         # The swing's ink extends the word rightward — a detached mark placed
-        # next (comma, period) must clear it, not the letter body alone.
+        # next (comma, period) must clear it, not the letter body alone, and
+        # neither must the next word.
         prev.ink_max_x = max(prev.ink_max_x, centerline[-1][0])
+        last_ink_max = prev.ink_max_x if last_ink_max is None else max(last_ink_max, prev.ink_max_x)
 
     for slot_index, slot in enumerate(slots):
         if slot.space:
             end_swing()  # the pen finishes the word body before the marks and the gap
             flush_diacritics()  # the word's marks land before the gap to the next word
+            # end_swing has already grown the ink edge by the Endstrich. Reading
+            # `last_ink_max` rather than `prev` keeps the anchor across a second
+            # space and across a word that ENDS in an unrenderable slot — in
+            # both cases `prev` is None while real ink still stands to the left.
+            prev_word_ink_max = last_ink_max
             cursor_x += SPACE_ADV
             prev = None
             continue
@@ -2044,6 +2075,10 @@ def compose_word(
             flush_diacritics()
             cursor_x += MISSING_ADV
             prev = None
+            # A hole right after a word gap keeps that gap's ink anchor: the
+            # advance it adds widens the hole, it does not put ink into it, so
+            # the first glyph that DOES render still has to clear the word
+            # before (a K reaches 1.64 xh left — further than two advances).
             continue
         if guides is None:
             guides = data["template_guides"]
@@ -2589,6 +2624,14 @@ def compose_word(
             desired_entry_x = prev.ink_max_x + gap - (ink_min_x - entry_xy[0])
         else:
             desired_entry_x = cursor_x
+            if prev_word_ink_max is not None:
+                # First glyph after a word gap: the anchor advance (SPACE_ADV)
+                # and the ink floor (WORD_INK_GAP) are the same rule read on
+                # two different marks — take whichever pushes further right, so
+                # a left-reaching capital cannot write back into the word
+                # before it.
+                desired_entry_x = max(desired_entry_x, prev_word_ink_max + WORD_INK_GAP - (ink_min_x - entry_xy[0]))
+            prev_word_ink_max = None
         dx = desired_entry_x - entry_xy[0]
 
         # Connector first (writing order): the pen slides from A's exit into B's
@@ -2835,6 +2878,9 @@ def compose_word(
             stem_ride=[(x + dx, y) for x, y in stem_ride] if stem_ride else None,
         )
         cursor_x = max(exit_abs[0], ink_max_x + dx) if not slot.joins else exit_abs[0]
+        # Survives the `prev = None` of a hole or a gap (see WORD_INK_GAP); a
+        # letter tucked under its neighbour must not pull the edge back left.
+        last_ink_max = ink_max_x + dx if last_ink_max is None else max(last_ink_max, ink_max_x + dx)
 
     end_swing()  # the last word's Endstrich …
     flush_diacritics()  # … then its marks, once the body is complete
