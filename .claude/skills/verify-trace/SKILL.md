@@ -159,7 +159,11 @@ uv run python -m tools.tracebench.view --expect-root <digest>
 - **…and inside ONE fixture root.** Every tool of this round prints
   `root:`/`digest=` and takes `--expect-root`; a round that skips the flag
   is trusting that nobody re-exported in between, which is exactly what the
-  audit of 2026-09-02 found nobody could reconstruct afterwards.
+  audit of 2026-09-02 found nobody could reconstruct afterwards. The stored
+  side is checked too: `--compare` / `--rows` / `--base` refuse a report
+  from another export, and warn when a file predates the sensor and cannot
+  say which base it belongs to — that warning means the pairing is on your
+  word, not on a check.
 - **The rulers stay frozen during the round.** Edit the follower, never
   `word_metric.py`, `tracebench` or the fixture roots — that is the
   frozen-ruler rule, and breaking it silently rewrites history.

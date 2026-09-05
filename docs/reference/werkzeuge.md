@@ -641,11 +641,18 @@ gitignored, ein Neu-Export hinterlässt sonst keine Spur (Prüfung
 `--expect-root`** — und eine Runde nimmt denselben Präfix in *jeden* ihrer
 Aufrufe, sonst ist nicht belegt, dass Abnahme, Folger und Wertungen
 dieselbe Grundlage gesehen haben. Eine Umsetzung für alle:
-`tools/wordbench/roots.py`, getragen seit `sep05` von
-`tools.wordbench.run`, `tools.tracebench.run` · `.k0eval` · `.view` ·
-`.excursions` und `tools.pairlab.follow` · `.spanmeas` · `.chainbench` ·
-`tools.pairlab`; volle Digests im `--json` unter `roots`. Begriff und
-Hausregel: [Wurzel-Digest](glossar.md#4-metriken-und-benchmarks).
+`tools/wordbench/roots.py`, getragen seit `sep05` von **jedem** Einstieg,
+der eine Wurzel liest — `tools.wordbench.run`, `tools.tracebench.run` ·
+`.k0eval` · `.view` · `.excursions`, `tools.pairlab` selbst sowie
+`.follow` · `.spanmeas` · `.chainbench` · `.bindab` · `.gradlab` ·
+`.peaklab` · `.landmarklab` · `.harvest`; volle Digests im `--json` unter
+`roots`. Der Kopf nagelt den **Lauf** fest; den **Vergleich** nageln
+`--compare` (Wordbench, Tracebench), `--rows` (Duell-Seite) und `--base`
+(spanmeas) fest: sie lesen den `roots`-Block der gespeicherten Datei und
+verweigern eine Basis aus einem anderen Export, bevor gemessen wird — eine
+Datei ohne `roots` (vor dem Sensor geschrieben) wird gelesen und mit einer
+Warnung versehen. Begriff und Hausregel:
+[Wurzel-Digest](glossar.md#4-metriken-und-benchmarks).
 
 ## Benches und Generator (Verweise)
 

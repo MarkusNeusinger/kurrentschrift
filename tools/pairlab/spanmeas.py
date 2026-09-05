@@ -79,7 +79,7 @@ import numpy as np
 from core.aggregate import PAIR_CONNECTOR_POINTS, _resample_polyline
 from core.compose import CONNECT_OVERLAP, compose_word
 from tools.wordbench.pairmeas import body_lines, join_pair_keys, load_measured, rows_for_entry
-from tools.wordbench.roots import add_expect_root_argument, announce_roots
+from tools.wordbench.roots import add_expect_root_argument, announce_roots, check_compared_roots
 from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, WordCase, _root_for, iter_fixture_word_cases
 from tools.wordlab.derive import laufform_payloads_for, payloads_for
 
@@ -358,6 +358,25 @@ def compare_runs(base: list[dict], arm: list[dict]) -> dict:
     }
 
 
+def load_rows(path: Path, root_meta: Sequence[dict[str, str]] = ()) -> list[dict]:
+    """The rows of a stored `--json` run, in either shape, base checked.
+
+    Two shapes exist because this file used to be a bare row list: a run written
+    since the root sensor is `{"roots": …, "rows": …}` and can vouch for its own
+    base; an older one is the list itself and gets a warning instead of a check.
+    """
+    try:
+        payload = json.loads(Path(path).read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise SystemExit(f"--base {path}: {exc}") from None
+    if root_meta:
+        check_compared_roots(f"--base {path}", payload, root_meta)
+    rows = payload.get("rows") if isinstance(payload, dict) else payload
+    if not isinstance(rows, list):
+        raise SystemExit(f"--base {path}: no rows — this is not a spanmeas --json run")
+    return rows
+
+
 def main() -> None:
     p = argparse.ArgumentParser(prog="pairlab.spanmeas", description=__doc__.split("\n\n")[0])
     p.add_argument("--set", dest="which", choices=["words", "pairs"], default="words")
@@ -374,7 +393,12 @@ def main() -> None:
 
     # A `--base` comparison only holds within ONE base, so the run names the
     # root before it measures and `--expect-root` makes it a precondition.
-    announce_roots([_root_for(Path(args.fixtures), args.style, args.which)], args.expect_root)
+    root_meta = announce_roots([_root_for(Path(args.fixtures), args.style, args.which)], args.expect_root)
+    # …and the base file has to come from that same root, or the arm's number is
+    # measured against another export. Checked before the run, not after it.
+    base_rows = None
+    if args.base:
+        base_rows = load_rows(args.base, root_meta)
     rows = run_set(
         args.which,
         style=args.style,
@@ -383,11 +407,15 @@ def main() -> None:
         exit_trim_min_kink_deg=args.exit_trim_min_kink,
     )
     print(json.dumps(summarise(rows), indent=1))
-    if args.base:
-        print(json.dumps(compare_runs(json.loads(args.base.read_text()), rows), indent=1))
+    if base_rows is not None:
+        print(json.dumps(compare_runs(base_rows, rows), indent=1))
     if args.json:
         args.json.parent.mkdir(parents=True, exist_ok=True)
-        args.json.write_text(json.dumps(rows, indent=1, ensure_ascii=False))
+        # An OBJECT, not the bare row list this used to write: a stored run has
+        # to carry the base it was measured on, or the next `--base` comparison
+        # can only hope. `load_rows` still reads the old shape.
+        payload = {"roots": root_meta, "rows": rows}
+        args.json.write_text(json.dumps(payload, indent=1, ensure_ascii=False))
         print(f"wrote {args.json}")
 
 

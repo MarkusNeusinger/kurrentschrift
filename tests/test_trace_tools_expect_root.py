@@ -20,6 +20,7 @@ Pure: temporary directories, no fixtures, no DB, no network, no solve.
 from __future__ import annotations
 
 import importlib
+import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -43,8 +44,10 @@ class ToolCase:
     argv: tuple[str, ...]  # arguments the parser requires, expect-root aside
 
 
-# Every entry point of tools/tracebench and tools/pairlab that reads a fixture
-# root. `tools.wordbench.run` has its own suite (tests/test_wordbench_roots.py).
+# EVERY entry point of tools/tracebench and tools/pairlab that reads a fixture
+# root — the claim in the READMEs is "every one", so the list is the claim and
+# a new measuring CLI without a row here is the thing that should look missing.
+# `tools.wordbench.run` has its own suite (tests/test_wordbench_roots.py).
 TOOLS = (
     ToolCase("tools.tracebench.run", "find_fixture_root", "load_reference", ()),
     ToolCase("tools.tracebench.k0eval", "find_fixture_root", "load_reference", ("base-cand.json",)),
@@ -54,6 +57,11 @@ TOOLS = (
     ToolCase("tools.pairlab.spanmeas", "_root_for", "run_set", ()),
     ToolCase("tools.pairlab.chainbench", "_root_for", "plan_occurrences", ()),
     ToolCase("tools.pairlab.__main__", "_root_for", "find_occurrences", ("re",)),
+    ToolCase("tools.pairlab.bindab", "_root_for", "iter_fixture_word_cases", ()),
+    ToolCase("tools.pairlab.gradlab", "_root_for", "run", ()),
+    ToolCase("tools.pairlab.peaklab", "_root_for", "measure", ()),
+    ToolCase("tools.pairlab.landmarklab", "_root_for", "iter_fixture_word_cases", ()),
+    ToolCase("tools.pairlab.harvest", "_root_for", "harvest_all", ()),
 )
 
 FILES = {
@@ -124,3 +132,68 @@ def test_without_the_flag_the_run_only_states_its_base(case: ToolCase, root: Pat
         module.main()
 
     assert f"digest={root_digest(root)[:12]}" in capsys.readouterr().out
+
+
+# --------------------------------------------------------- the other half
+#
+# Announcing the root pins the RUN. It does not pin what the run is compared
+# AGAINST, and a baseline from another export produces exactly the cross-root
+# delta the sensor exists to prevent — while looking like a result.
+
+
+def test_tracebench_refuses_a_baseline_from_another_root_before_it_scores(root: Path, tmp_path, monkeypatch, capsys):
+    import tools.tracebench.run as run_mod
+
+    baseline = tmp_path / "base.json"
+    baseline.write_text(json.dumps({"roots": [{"name": "other", "digest": "b" * 64}], "rows": []}))
+
+    def _root(*_a, **_k) -> Path:
+        return root
+
+    def _measure(*_a, **_k):
+        raise _Measured("tracebench scored anyway")
+
+    monkeypatch.setattr(run_mod, "find_fixture_root", _root)
+    monkeypatch.setattr(run_mod, "load_reference", _measure)
+    monkeypatch.setattr(sys, "argv", ["tracebench", "--compare", str(baseline)])
+
+    # Not _Measured: the pairing is refused BEFORE the reference is even loaded,
+    # so a run that cannot be paired never spends the minutes either.
+    with pytest.raises(SystemExit) as excinfo:
+        run_mod.main()
+
+    assert "measured on a different fixture base" in str(excinfo.value)
+
+
+def test_the_duel_page_refuses_rows_measured_on_another_root(root: Path, tmp_path):
+    from tools.tracebench.view import load_report_rows
+
+    report = tmp_path / "arm.report"
+    report.write_text(json.dumps({"roots": [{"name": "other", "digest": "b" * 64}], "rows": [{"id": "unter"}]}))
+    meta = [{"name": root.name, "digest": root_digest(root)}]
+
+    with pytest.raises(SystemExit) as excinfo:
+        load_report_rows(report, meta)
+
+    assert "measured on a different fixture base" in str(excinfo.value)
+    # Without a root to check against (an older caller), nothing changes.
+    assert list(load_report_rows(report)) == ["unter"]
+
+
+def test_spanmeas_refuses_a_base_from_another_root_and_still_reads_the_old_shape(root: Path, tmp_path, capsys):
+    from tools.pairlab.spanmeas import load_rows
+
+    meta = [{"name": root.name, "digest": root_digest(root)}]
+    foreign = tmp_path / "foreign.json"
+    foreign.write_text(json.dumps({"roots": [{"name": "other", "digest": "b" * 64}], "rows": [{"dspan": 0.1}]}))
+
+    with pytest.raises(SystemExit):
+        load_rows(foreign, meta)
+
+    # A run stored before the sensor is a BARE list — still readable, with the
+    # warning that says its base cannot be checked.
+    legacy = tmp_path / "legacy.json"
+    legacy.write_text(json.dumps([{"dspan": 0.2}]))
+
+    assert load_rows(legacy, meta) == [{"dspan": 0.2}]
+    assert "carries no root identity" in capsys.readouterr().out

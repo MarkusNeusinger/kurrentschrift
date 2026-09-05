@@ -88,7 +88,7 @@ from core.shaping import GlyphSlot
 from tools.wordbench.gleichzug import audit_composed
 from tools.wordbench.metric import score_word
 from tools.wordbench.pairmeas import compare_joins, load_measured, rows_for_entry
-from tools.wordbench.roots import add_expect_root_argument, announce_roots
+from tools.wordbench.roots import add_expect_root_argument, announce_roots, check_compared_roots
 from tools.wordbench.seam import seam_angles
 from tools.wordbench.slant import composed_raster, slant_deg
 
@@ -438,6 +438,17 @@ def main() -> None:
     # Everything here happens before the first composition so a run can never
     # produce a number against fixtures it was not asked for.
     root_meta = announce_roots([root for root, _ in selected], args.expect_root)
+    # A baseline from ANOTHER export turns `--compare` into a comparison of
+    # exports rather than of code, which is the one thing the frozen-reference
+    # rule forbids (qualitaetsmetrik.md §2). Checked before the first
+    # composition, so a run that cannot be paired never produces the numbers.
+    compare_payload = None
+    if args.compare:
+        try:
+            compare_payload = json.loads(args.compare.read_text())
+        except (OSError, json.JSONDecodeError) as exc:
+            raise SystemExit(f"--compare {args.compare}: {exc}") from None
+        check_compared_roots(f"--compare {args.compare}", compare_payload, root_meta)
     page_problems = [f"{root.name}: {p}" for root, manifest in selected for p in page_hash_problems(manifest)]
     if page_problems:
         raise SystemExit("specimen pages do not match the manifest's page_sha256:\n  " + "\n  ".join(page_problems))
@@ -670,8 +681,8 @@ def main() -> None:
         result["skipped"] = skipped
         args.json.parent.mkdir(parents=True, exist_ok=True)
         args.json.write_text(json.dumps(result, indent=1))
-    if args.compare:
-        old = json.loads(args.compare.read_text())
+    if compare_payload is not None:
+        old = compare_payload
         old_by_id = {w.get("id", w["word"]): w for w in old["words"]}
         for label in ("bench_loss", "pair_loss"):
             if label in old and label in result:

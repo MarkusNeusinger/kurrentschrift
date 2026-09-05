@@ -8,11 +8,14 @@ that sensor lifted out of ``tools/wordbench/run.py`` so the trace tools
 (``tools/tracebench``, ``tools/pairlab``) run the SAME code rather than a
 second implementation that could drift from it.
 
-Three pieces, in the order a run uses them:
+Four pieces, in the order a run uses them:
 
 * :func:`root_digest` — the citable fingerprint of one root;
 * :func:`add_expect_root_argument` — the ``--expect-root`` flag, worded once;
-* :func:`announce_roots` — the two header lines per root, then the abort.
+* :func:`announce_roots` — the two header lines per root, then the abort;
+* :func:`check_compared_roots` — the other half: a stored ``--compare`` /
+  ``--base`` artifact must come from the same base, or the pairing compares
+  exports rather than candidates.
 
 Pure: filesystem reads and prints, no DB, no network, and it never touches a
 measured number.
@@ -23,8 +26,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Iterable
 
 
 MANIFEST_FILE = "manifest.json"
@@ -138,6 +141,58 @@ def announce_roots(roots: Iterable[Path], expect: str | None = None) -> list[dic
         meta.append(entry)
         print(f"root: {entry['name']} exported_at={entry['exported_at']}")
         print(f"digest={entry['digest'][:12]}")
-    if expect:
+    # `is not None`, not truthiness: `--expect-root "$DIGEST"` with an unset
+    # shell variable passes an EMPTY string, and treating that as "flag omitted"
+    # would turn the one command meant to pin the base into an unpinned run.
+    # An empty expectation is an error, and check_expected_roots says so.
+    if expect is not None:
         check_expected_roots(expect, {m["name"]: m["digest"] for m in meta})
     return meta
+
+
+def stored_roots(payload: object) -> list[dict] | None:
+    """The ``roots`` block of a stored report, or ``None`` if it carries none.
+
+    ``None`` is not an error: reports written before the sensor existed have no
+    root identity at all, and refusing to read them would make every archived
+    baseline unusable. It is the caller's job to say so out loud.
+    """
+    if not isinstance(payload, dict):
+        return None
+    roots = payload.get("roots")
+    if not isinstance(roots, list) or not roots:
+        return None
+    return [r for r in roots if isinstance(r, dict) and r.get("digest")]
+
+
+def check_compared_roots(label: str, stored: object, measured: Sequence[dict[str, str]]) -> None:
+    """Refuse to pair a stored artifact that was measured on a DIFFERENT base.
+
+    Announcing this run's root pins the run; it does not pin what the run is
+    compared AGAINST. A ``--compare``/``--base`` file measured on another export
+    produces exactly the cross-root delta this sensor exists to prevent, and it
+    looks like a result rather than like a mistake.
+
+    Three outcomes, in the same spirit as ``--expect-root``:
+
+    * the digests agree — silent, nothing to say;
+    * they disagree — abort naming both, because the doctrine is that numbers
+      across a re-baseline are not comparable (`qualitaetsmetrik.md` §2);
+    * the stored file carries no ``roots`` block (written before the sensor) —
+      a printed warning, never an abort: an old baseline stays readable, it
+      just cannot vouch for itself.
+    """
+    theirs = stored_roots(stored)
+    if theirs is None:
+        print(f"warning: {label} carries no root identity — its base cannot be checked against this run's")
+        return
+    ours = {m["digest"] for m in measured}
+    other = {str(r["digest"]) for r in theirs}
+    if ours == other:
+        return
+    named = ", ".join(f"{r.get('name', '?')} {str(r['digest'])[:12]}" for r in theirs)
+    mine = ", ".join(f"{m['name']} {m['digest'][:12]}" for m in measured)
+    raise SystemExit(
+        f"{label} was measured on a different fixture base — pairing them would compare exports, "
+        f"not candidates.\n  stored: {named}\n  this run: {mine}"
+    )

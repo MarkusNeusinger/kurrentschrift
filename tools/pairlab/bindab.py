@@ -44,7 +44,8 @@ from core.fit import bilinear
 from tools.laufform.harvest import _chainable_runs, _connector_diag, _grid_fits, anchor_spike_ratio, letter_gate
 from tools.pairlab.chain import _ChainProblem, fit_word_chain
 from tools.pairlab.gradlab import stranded_anchors
-from tools.wordlab.cases import WordCase, iter_fixture_word_cases
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
+from tools.wordlab.cases import DEFAULT_FIXTURES_DIR, WordCase, _root_for, iter_fixture_word_cases
 from tools.wordlab.derive import WordDeriveResult, derive_word
 
 
@@ -326,11 +327,14 @@ def main() -> None:
     parser.add_argument("--max-cases", type=int, default=0)
     parser.add_argument("--jobs", type=int, default=1)
     parser.add_argument("--out", type=Path, default=Path("temp/bindab"))
+    add_expect_root_argument(parser)
     args = parser.parse_args()
 
     weights = tuple(float(w) for w in args.weights.split(","))
     if weights[0] != 0.0:
         raise SystemExit("the first weight must be 0.0 — the baseline arm is re-fitted in the SAME run")
+    # A pre-registered A/B run states the base it measured, like every bench.
+    announce_roots([_root_for(DEFAULT_FIXTURES_DIR, args.style, args.which)], args.expect_root)
     cases = list(iter_fixture_word_cases(which=args.which, style=args.style))
     if args.max_cases:
         cases = cases[: args.max_cases]

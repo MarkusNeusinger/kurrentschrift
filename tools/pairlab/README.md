@@ -72,12 +72,19 @@ uv run --extra viz python -m tools.pairlab re --expect-root 9f124f78,cf5aa308
 ```
 
 **Which base a run measured.** Every entry point here that reads a fixture root
-— `tools.pairlab` itself, `follow`, `spanmeas`, `chainbench` — prints
+— `tools.pairlab` itself, `follow`, `spanmeas`, `chainbench`, `bindab`,
+`gradlab`, `peaklab`, `landmarklab` and `harvest` — prints
 `root: <name> exported_at=…` and `digest=<12 hex>` before it measures, and takes
 `--expect-root <prefix>[,<prefix>…]`, which aborts the run on a base nobody
 asked for. One implementation for every bench: `tools/wordbench/roots.py`
 (#478 gave the word bench the sensor; `sep05` gave it to the trace tools). The
 roots are gitignored, so nothing else records a re-export.
+
+That pins the RUN. `spanmeas --base` also pins the COMPARISON: its `--json` run
+is now an object carrying `roots` beside `rows`, and a base measured on another
+export is refused instead of silently producing a cross-root delta. A file
+stored before the sensor is still read — as a bare row list, with a warning that
+its base cannot be checked.
 
 ## Harvest (redesign R3 Erstbefüllung)
 

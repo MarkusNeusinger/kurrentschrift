@@ -84,6 +84,12 @@ undeclared re-export leaves no other trace; `run --json` carries the full digest
 under `roots`. A round pins every one of its calls to the same prefix
 (`docs/reference/werkzeuge.md`, Mess-Liturgie).
 
+**And which base it is compared against.** `run --compare` and `view --rows`
+read a stored report's own `roots` block and refuse a baseline measured on
+another export — before scoring, so a run that cannot be paired never spends the
+minutes. A report written before the sensor existed carries no `roots` and gets
+a warning instead: it stays readable, it just cannot vouch for itself.
+
 ## Seeing it, and keeping what was seen
 
 ```

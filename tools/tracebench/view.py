@@ -60,7 +60,7 @@ from tools.tracebench.reference import DEFAULT_FIXTURES_DIR, Reference, Referenc
 from tools.tracebench.run import find_fixture_root
 from tools.tracebench.sets import TRACEBENCH_DEV_IDS
 from tools.tracebench.soll import SollRow, ductus_soll
-from tools.wordbench.roots import add_expect_root_argument, announce_roots
+from tools.wordbench.roots import add_expect_root_argument, announce_roots, check_compared_roots
 
 
 # The crop `tools/wordbench/export_fixtures.py` freezes beside `word.json` —
@@ -414,8 +414,15 @@ def parse_pairs(values: Sequence[str], *, flag: str) -> list[tuple[str, Path]]:
     return pairs
 
 
-def load_report_rows(path: Path) -> dict[str, dict[str, Any]]:
-    """A tracebench `--json` report as `{specimen_id: row}`."""
+def load_report_rows(path: Path, root_meta: Sequence[dict[str, str]] = ()) -> dict[str, dict[str, Any]]:
+    """A tracebench `--json` report as `{specimen_id: row}`.
+
+    `root_meta` is this page's announced root: a report measured on ANOTHER
+    fixture export would be printed beside candidates drawn from this one, under
+    a header naming only this one — the numbers would be misattributed by the
+    page itself. Checked before the rows are used, warned about when the report
+    predates the sensor.
+    """
     try:
         payload = json.loads(Path(path).read_text())
     except (OSError, json.JSONDecodeError) as exc:
@@ -423,6 +430,8 @@ def load_report_rows(path: Path) -> dict[str, dict[str, Any]]:
     rows = payload.get("rows") if isinstance(payload, dict) else None
     if not isinstance(rows, list):
         raise SystemExit(f"--rows {path}: no 'rows' list — this is not a tracebench --json report")
+    if root_meta:
+        check_compared_roots(f"--rows {path}", payload, root_meta)
     return {str(r["id"]): r for r in rows if isinstance(r, dict) and r.get("id")}
 
 
@@ -1166,7 +1175,7 @@ def main(argv: list[str] | None = None) -> int:
     root = find_fixture_root(args.fixtures, args.style, args.which)
     # The eyeball page carries numbers too (the --rows columns), so it names
     # its base like every other run — and can be pinned to it.
-    announce_roots([root], args.expect_root)
+    root_meta = announce_roots([root], args.expect_root)
     try:
         reference = load_reference(root)
     except FileNotFoundError as exc:
@@ -1179,7 +1188,7 @@ def main(argv: list[str] | None = None) -> int:
     candidate_specs = parse_pairs(args.candidate, flag="--candidate")
     row_specs = parse_pairs(args.rows, flag="--rows")
     candidates = [(label, file_provider(path)(reference, ids)) for label, path in candidate_specs]
-    reports = {label: load_report_rows(path) for label, path in row_specs}
+    reports = {label: load_report_rows(path, root_meta) for label, path in row_specs}
     # The label ORDER is the argument order, never a set's iteration order — the
     # page has to come out byte-identical from identical inputs.
     labels = [label for label, _ in candidate_specs]

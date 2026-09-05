@@ -77,7 +77,7 @@ from tools.tracebench.summary import (
     score_word,
     summarize,
 )
-from tools.wordbench.roots import add_expect_root_argument, announce_roots
+from tools.wordbench.roots import add_expect_root_argument, announce_roots, check_compared_roots
 
 
 STYLES = ("suetterlin", "kurrent", "offenbacher")
@@ -298,6 +298,16 @@ def main() -> None:
     # WHICH BASE this run measures — stated and checked before the ruler ever
     # reads a stroke, the same sensor the word bench states its base with.
     root_meta = announce_roots([root], args.expect_root)
+    # The baseline is checked HERE and not down at the comparison: a run that
+    # cannot be paired must not spend ten minutes scoring first, and a mismatch
+    # discovered after the numbers are on screen invites reading them anyway.
+    compare_payload = None
+    if args.compare:
+        try:
+            compare_payload = json.loads(args.compare.read_text())
+        except (OSError, json.JSONDecodeError) as exc:
+            raise SystemExit(f"--compare {args.compare}: {exc}") from None
+        check_compared_roots(f"--compare {args.compare}", compare_payload, root_meta)
     try:
         reference = load_reference(root)
     except FileNotFoundError as exc:
@@ -403,9 +413,8 @@ def main() -> None:
         args.json.write_text(json.dumps(result, indent=1, ensure_ascii=False))
     if args.csv:
         write_csv(rows, args.csv)
-    if args.compare:
-        old = json.loads(args.compare.read_text())
-        print_comparison(compare(old.get("rows", []), rows), against=str(args.compare))
+    if compare_payload is not None:
+        print_comparison(compare(compare_payload.get("rows", []), rows), against=str(args.compare))
 
     # The identity gate LAST, so its verdict is the final line of the run: with
     # a FAIL nothing above it may be read (§14 Kill-Kriterien).
