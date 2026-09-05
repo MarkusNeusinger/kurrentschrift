@@ -130,7 +130,7 @@ Nachschlagequellen, keine Pläne.
 | [research/kurrent-writer-and-recognizer.md](research/kurrent-writer-and-recognizer.md) | (EN) Generativer Writer als synthetische Datenquelle für einen billigen Recognizer |
 | [notes/audit-2026-09-02-synthese.md](notes/audit-2026-09-02-synthese.md) | Vollaudit 2026-09-01/02: 39 gereihte Befunde, Parallelplan T1–T14, Fragen F1–F11, Erledigungsstand |
 | [notes/audit-2026-09-02-rohbefunde.md](notes/audit-2026-09-02-rohbefunde.md) | Dieselbe Runde als Rohberichte der 20 Prüfer, jeder Befund mit Beleg |
-| [notes/serve-image-importgraph-2026-09-04.md](notes/serve-image-importgraph-2026-09-04.md) | Nachmessung zum Serve-only-Image: was `import api.main` lädt, was die Pakete wiegen, zwei Wege mit ihrem Preis — geändert wurde nichts |
+| [notes/serve-image-importgraph-2026-09-04.md](notes/serve-image-importgraph-2026-09-04.md) | Nachmessung zum Serve-only-Image: was `import api.main` lädt, was die Pakete wiegen, zwei Wege mit ihrem Preis — geändert wurde nichts; Nachtrag `sep05` misst image-förmig nach und teilt den Import nach Modulen auf |
 | [notes/quellen-recherche-2026-07.md](notes/quellen-recherche-2026-07.md) | Geschriebene Wortvorlagen und echte Hände: Rangliste, Absteiger, mögliche Anfragen |
 | [notes/stifte-fuer-unterwegs.md](notes/stifte-fuer-unterwegs.md) | Stift- und Hardware-Recherche fürs Schreiben unterwegs |
 
