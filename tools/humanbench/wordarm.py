@@ -50,7 +50,7 @@ from typing import Any
 
 import numpy as np
 
-from core.compose import compose_word
+from core.compose import SEAM_MAX_JUMP_DEG, compose_word
 from core.pipeline import render_payload_for_template
 from core.shaping import GlyphSlot
 from core.word_metric import score_word
@@ -102,6 +102,8 @@ def compose_arm(
     apex_handover: bool | None = None,
     stem_depart: bool | None = None,
     nib_clearance: bool = False,
+    seam_negotiation: bool = False,
+    seam_negotiation_max_jump_deg: float = SEAM_MAX_JUMP_DEG,
 ) -> tuple[dict[str, dict], dict]:
     """Compose every scorable fixture word once, and place it the ruler's way.
 
@@ -121,6 +123,13 @@ def compose_arm(
     CLEARANCE_REF_HALF): the ink clearances read in nib radii. It only ever
     does anything together with a ``nib`` heavier than the calibration pen,
     which is exactly the pairing it was built for.
+
+    ``seam_negotiation`` is the „Übergänge J6" arm (core.compose
+    SEAM_NEGOTIATE_CAP_DEG): letter and connector split the turn at each seam.
+    It moves no coupling point, so it is the kind of arm ``--registration-from``
+    was built for. ``seam_negotiation_max_jump_deg`` is the J6b narrowing — the
+    arm a ≥ 60 % verdict on round 7 licenses, so a round has to be able to BUILD
+    it, and the arm file records which of the two it was.
     """
     manifest = load_json(root / "manifest.json")
     templates = load_json(root / "templates.json")
@@ -161,6 +170,8 @@ def compose_arm(
                 {s.key: payload_for(s.key) for s in slots if s.key},
                 laufform_by_key={s.key: lf for s in slots if s.key and (lf := laufform_for(s.key)) is not None} or None,
                 nib_clearance=nib_clearance,
+                seam_negotiation=seam_negotiation,
+                seam_negotiation_max_jump_deg=seam_negotiation_max_jump_deg,
                 **join_rules,
             )
             report = score_word(
@@ -189,6 +200,11 @@ def compose_arm(
         # reads an older arm must not go blank because the field moved.
         "exit_trim": join_rules["exit_trim"],
         "nib_clearance": nib_clearance,
+        "seam_negotiation": seam_negotiation,
+        # The narrowing angle only ever means something with the switch on, and
+        # it is what separates the J6 arm from J6b — so it is stated, not
+        # implied by a default a later change could redefine.
+        "seam_negotiation_max_jump_deg": seam_negotiation_max_jump_deg if seam_negotiation else None,
         "join_rules": dict(join_rules),
         "exported_at": manifest.get("exported_at"),
         "failed": failed,
@@ -330,6 +346,20 @@ def build_parser() -> argparse.ArgumentParser:
         "adopted arm of „Ink-Clearance an die Feder“; without --nib it changes nothing",
     )
     parser.add_argument(
+        "--seam-negotiation",
+        action="store_true",
+        help="compose with the seam negotiation (arm J6, core.compose SEAM_NEGOTIATE_CAP_DEG) — the "
+        "composer's own switch, default off",
+    )
+    parser.add_argument(
+        "--seam-negotiation-max-jump",
+        type=float,
+        default=SEAM_MAX_JUMP_DEG,
+        metavar="DEG",
+        help="narrow --seam-negotiation to the seams whose two sides differ by AT MOST DEG (the J6b arm; "
+        f"core.compose SEAM_MAX_JUMP_DEG, default {SEAM_MAX_JUMP_DEG:g} = the pre-registered J6 class)",
+    )
+    parser.add_argument(
         "--registration-from",
         type=Path,
         default=None,
@@ -355,7 +385,15 @@ def load_laufform_draft(path: Path) -> dict[str, dict]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    # A knob that is silently ignored, or one that WIDENS the class while the
+    # arm file records it as the narrowed J6b, would make an arm lie about what
+    # drew it — the same doctrine as the word bench's --expect-root.
+    if args.seam_negotiation_max_jump != SEAM_MAX_JUMP_DEG and not args.seam_negotiation:
+        parser.error("--seam-negotiation-max-jump narrows --seam-negotiation; pass --seam-negotiation too")
+    if not 0.0 <= args.seam_negotiation_max_jump <= SEAM_MAX_JUMP_DEG:
+        parser.error(f"--seam-negotiation-max-jump must lie between 0 and {SEAM_MAX_JUMP_DEG:g} degrees")
     fixtures = Path(args.fixtures) if Path(args.fixtures).is_absolute() else REPO_ROOT / args.fixtures
     root = fixtures / args.style / args.source_id
     entries = {e.strip() for e in args.entries.split(",") if e.strip()} if args.entries else None
@@ -371,6 +409,8 @@ def main(argv: list[str] | None = None) -> int:
         apex_handover=args.apex_handover,
         stem_depart=args.stem_depart,
         nib_clearance=args.nib_clearance,
+        seam_negotiation=args.seam_negotiation,
+        seam_negotiation_max_jump_deg=args.seam_negotiation_max_jump,
     )
     if not words:
         raise SystemExit(f"{root}: nothing composed — {settings['failed'][:5]}")

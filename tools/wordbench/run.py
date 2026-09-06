@@ -88,7 +88,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image, ImageDraw
 
-from core.compose import _key_base, compose_word
+from core.compose import SEAM_MAX_JUMP_DEG, _key_base, compose_word
 from core.pipeline import render_payload_for_template
 from core.shaping import GlyphSlot
 from tools.wordbench.continuity import continuity
@@ -421,6 +421,22 @@ def build_parser() -> argparse.ArgumentParser:
         "the join rides the d's stem down to the measured departure height — the other arm of that "
         "ladder, likewise its own measurement",
     )
+    parser.add_argument(
+        "--seam-negotiation",
+        action="store_true",
+        help="compose with the opt-in seam negotiation (core.compose SEAM_NEGOTIATE_CAP_DEG, "
+        'pre-registered under the heading "Übergänge J6" in messjournal.md §14): at each end of a '
+        "generated join the letter and the connector turn toward their compromise angle instead of one "
+        "dictating to the other — a CANDIDATE arm, its own measurement, never the headline",
+    )
+    parser.add_argument(
+        "--seam-negotiation-max-jump",
+        type=float,
+        default=SEAM_MAX_JUMP_DEG,
+        metavar="DEG",
+        help="narrow --seam-negotiation to the seams whose two sides differ by AT MOST DEG (the post-hoc "
+        f"J6b arm; core.compose SEAM_MAX_JUMP_DEG, default {SEAM_MAX_JUMP_DEG:g} = the pre-registered J6 class)",
+    )
     return parser
 
 
@@ -434,6 +450,14 @@ def main() -> None:
         parser.error("--exit-trim-min-kink narrows the exit trim; it cannot be combined with --no-exit-trim")
     if args.exit_trim_min_kink < 0:
         parser.error("--exit-trim-min-kink is a kink in degrees and cannot be negative")
+    if args.seam_negotiation_max_jump != SEAM_MAX_JUMP_DEG and not args.seam_negotiation:
+        parser.error("--seam-negotiation-max-jump narrows --seam-negotiation; pass --seam-negotiation too (or drop it)")
+    # It NARROWS: a value above the default (or a NaN, which fails both
+    # comparisons) would widen or disable the class while the header below
+    # still stamps the run as the narrowed J6b arm — a number lying about its
+    # own origin, which is exactly what --expect-root exists to prevent.
+    if not 0.0 <= args.seam_negotiation_max_jump <= SEAM_MAX_JUMP_DEG:
+        parser.error(f"--seam-negotiation-max-jump must lie between 0 and {SEAM_MAX_JUMP_DEG:g} degrees")
 
     overrides_by_base: dict[tuple[str, str], dict] = {}
     if args.overrides:
@@ -461,6 +485,12 @@ def main() -> None:
         # under the baseline's name.
         on = [n for n, v in (("apex_handover", args.apex_handover), ("stem_depart", args.stem_depart)) if v]
         print(f"J5: {' + '.join(on)} on (candidate arm - own number, never the headline)")
+    if args.seam_negotiation:
+        # Same provenance duty as J4/J5 above.
+        narrowed = args.seam_negotiation_max_jump != SEAM_MAX_JUMP_DEG
+        arm = "J6b" if narrowed else "J6"
+        suffix = f" max_jump={args.seam_negotiation_max_jump:g}deg" if narrowed else ""
+        print(f"seam_negotiation: on{suffix} (candidate arm {arm} - own number, never the headline)")
 
     t0 = time.perf_counter()
     style_root = args.fixtures / args.style
@@ -584,6 +614,8 @@ def main() -> None:
                     exit_trim_min_kink_deg=args.exit_trim_min_kink,
                     apex_handover=args.apex_handover,
                     stem_depart=args.stem_depart,
+                    seam_negotiation=args.seam_negotiation,
+                    seam_negotiation_max_jump_deg=args.seam_negotiation_max_jump,
                 )
                 report = score_word(
                     composed,
@@ -743,6 +775,12 @@ def main() -> None:
         result["apex_handover"] = True
     if args.stem_depart:
         result["stem_depart"] = True
+    if args.seam_negotiation:
+        # One key, one type — the J4 shape: the flag stays a bool and the
+        # narrowing angle gets its own numeric key only when it narrows.
+        result["seam_negotiation"] = True
+        if args.seam_negotiation_max_jump != SEAM_MAX_JUMP_DEG:
+            result["seam_negotiation_max_jump_deg"] = args.seam_negotiation_max_jump
     for kind in ("word", "pair"):
         kind_reports = [r for r in reports if r["kind"] == kind]
         kind_skipped = [s for s in skipped if s["kind"] == kind]

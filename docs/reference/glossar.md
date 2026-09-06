@@ -67,10 +67,10 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
-- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5
+- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kompromisswinkel §2 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5 · Mittellinien-Öffnungsweite (`D0`) §4
-- **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nullprobe §4
+- **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Nahtverhandlung (`seam_negotiation`) §2 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nullprobe §4
 - **O** — Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
@@ -788,6 +788,47 @@ geschnitten, sonst verlöre der Buchstabe seinen Körper statt seiner
 Tafelform.
 *Technisch:* `_foot_turn_index` in `core/compose.py` (nicht zu verwechseln
 mit `_loop_return_foot`, dem Schleifenfuß des Schleifen-Exits).
+
+**Nahtverhandlung** *(`seam_negotiation`, Übergänge J6)* — die Regel, die
+den **Naht-Winkel** nicht mehr einer Seite überlässt: an jedem Ende eines
+generierten Übergangs lesen Buchstabe und Verbinder ihre Richtung über
+dieselben 0,05 xh und drehen beide auf den **Kompromisswinkel** zu — der
+Buchstabe höchstens 8° über seine letzten bzw. ersten 0,3 xh, der Verbinder
+den REST über höchstens 45 % seines eigenen Bogens. Beide zeigen danach über
+dieses Fenster in dieselbe Richtung (beim Mittelwert, solange der Deckel die
+halbe Uneinigkeit deckt, sonst bei der gedeckelten Richtung des Buchstabens);
+gemeint ist also die Richtung auf der Augen-Skala, nicht die exakte
+Endsegment-Tangente — was auf dieser feineren Skala übrig bleibt, misst Gate
+(a1) des J6-Eintrags. Was der Deckel nicht deckt, trägt der Verbinder als
+glatte Krümmung statt als Knick. Anlass ist die Autorenregel vom
+2026-09-06 („in der letzten Kurve wird etwas weiter gedreht oder im
+Eingang, so dass sich beide Seiten auf einen Kompromiss einigen"). Gedreht
+wird als **ebener Twist um den Nahtpunkt** — Mittellinie und Silhouette
+mit demselben Feld, weil eine über die Bogenlänge gerechnete Zuordnung die
+Silhouette dort zerreißt, wo ein Zug seine eigene Tinte kreuzt (der
+Schleifenfuß des `d`). Der Nahtpunkt selbst ist der Drehpunkt: keine
+Kopplungshöhe und keine Platzierung bewegt sich, was diese Regel von den
+gescheiterten P3-Eintrittsregeln unterscheidet. Über 45° Uneinigkeit hält
+sie die Hände weg — das ist eine Kehre, die der Duktus schreibt.
+**Status: opt-in, Standard aus, nicht adoptiert** (messjournal.md §14
+„Übergänge J6").
+*Technisch:* `SEAM_NEGOTIATE_WINDOW`, `SEAM_NEGOTIATE_CAP_DEG`,
+`SEAM_NEGOTIATE_BLEND`, `SEAM_MAX_JUMP_DEG`, `SEAM_CONNECTOR_BLEND_RATIO`,
+`_negotiate_seam`, `_seam_shares`, `_twist_about_seam` in
+`core/compose.py`; Bench-Schalter `--seam-negotiation`
+(+ `--seam-negotiation-max-jump` für den engeren Arm J6b), Runden-Schalter
+gleichen Namens an `tools/humanbench/wordarm.py`.
+
+**Kompromisswinkel** — der Winkel, auf den sich die beiden Enden an einer
+Naht einigen: der zirkuläre Mittelwert der beiden Richtungen, die dort
+zusammentreffen. Kann eine Seite sich nicht bewegen (ein Zug, der kürzer
+ist als die Blendlänge, würde sonst sein anderes Ende wegschwenken; ein
+Verbinder, der zu kurz ist, um eine Drehung zu tragen), nimmt die andere
+den ganzen Betrag — gedeckelt bleibt nur der Buchstabe. Der Name ist
+wörtlich der des Autors; sein Zusatz „ob es wirklich 30, 40 oder
+vielleicht 35 Grad ist, ist nicht so wichtig" ist die Begründung dafür,
+dass der Deckel eine Schranke und keine Kalibrierung ist.
+*Technisch:* `_seam_shares` in `core/compose.py`.
 
 **Bowl-Exit-Tuck** — die klassenbewusste Clearance nach einem
 geschlossenen Rundkörper-Ausgang (b/c/d/o): die Hand rückt den

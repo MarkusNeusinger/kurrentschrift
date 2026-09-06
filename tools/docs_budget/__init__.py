@@ -306,6 +306,21 @@ WIDEST = {
 # like every other path. `mess-runde` is not raised a fifth time in the same
 # breath: the raise above already covers this round's two register rows and its
 # §7.9/§7.11 rows, which is what the headroom is for.
+#
+# NOT raised a sixth time, by „Übergänge J6" (die Nahtverhandlung) — recorded
+# because a raise that did NOT happen is the more useful precedent. That round
+# adds what the doctrine asks of an arm that closes as a negative: the standard
+# register pair, its §7.9 rescue-path row and its §7.11 open-arms row. Against
+# the pre-merge number those four wanted 616 tokens more than the room left,
+# and the branch had a raise written. Then the adoption above landed, its own
+# raise was measured with every row of four rounds in, and the merged path
+# comes out at 25 176 against 26 484 — 1 308 of room. So the raise was dropped
+# rather than stacked: a budget is measured after the merge, once, or two
+# branches each raise for the other's rows. The §7.11 side is a wash by
+# construction anyway — the J4 row's open conversion (1) is answered by this
+# arm in the same edit, so an open arm is rewritten rather than a new one
+# appended — and the round owes no route ledger line: it measures a composer
+# switch, not a Duell route.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
     "mess-runde": 26_484,
