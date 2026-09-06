@@ -271,19 +271,31 @@ WIDEST = {
 # Stand blocks this arm touches got shorter, not longer, because a walked rescue
 # path replaces an open one instead of being appended to it.
 #
-# `mess-runde-route` raised for the FIRST time on 2026-09-06, by the round that
-# landed beside S2: „Laufform LF15" measures a Kette knob (`chain_seed="chart"`),
-# so it owes `verfahren-kette.md` its ledger line — and that page is the widest
+# And a fourth time the same day, from a branch that had cut its own raise
+# against the pre-#558 number: „Kringel-Landmarke" adds ONE register row, not
+# the usual pair, because that round is a sensor rather than an arm. The row
+# costs 527 and is dense — every clause carries a number the entry owns (46
+# loops, the two class cuts, the state shares, 24 of 27, 34 of 63, 19 topology
+# losses, the two byte-identity readings) — and it was tightened twice before
+# either raise. Two raises on one day is not a licence, it is two rounds landing
+# together: the sum is measured ONCE here, after the merge (21 722 for all three
+# register rows), rather than added up from two branches that each measured
+# without the other. The entry itself needed no raise; it was trimmed to 4 500
+# against the unchanged 4 503 ceiling, which is where a growing entry belongs.
+#
+# `mess-runde-route` raised for the FIRST time, on the same day, by the third of
+# those rounds: „Laufform LF15" measures a Kette knob (`chain_seed="chart"`), so
+# it owes `verfahren-kette.md` its ledger line — and that page is the widest
 # route, with three tokens of room. A ledger line is the one thing this path
 # cannot avoid growing by: it is how a route says what was tried on it and what
 # came out, one row per arm, and the alternative is a route page that stops
-# recording. Re-measured at 6 264 and given the documented 10 % headroom, like
-# every other path. `mess-runde` is NOT raised again in the same breath: the
-# raise above already covers this round's two register rows and its §7.9/§7.11
-# rows (22 422 of 23 313), which is what the headroom is for.
+# recording. Re-measured after the merge and given the documented 10 % headroom,
+# like every other path. `mess-runde` is not raised a fifth time in the same
+# breath: the raise above already covers this round's two register rows and its
+# §7.9/§7.11 rows, which is what the headroom is for.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
-    "mess-runde": 23_313,
+    "mess-runde": 23_894,
     "mess-runde-route": 6_890,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,

@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
-> **Status (2026-09-04): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **79
+> **Status (2026-09-06): lebend.** Die Kurzfassung von
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **81
 > Begriffe**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars. Nachzieh-Anlass: ein Begriff wandert
 > hierher, sobald er die Zwei-von-drei-Schwelle unten erreicht und in
@@ -181,6 +181,14 @@ Lauf auf einer Komposition OHNE Zeilen auf und macht die Karte in einem
 Schritt byte-gleich reproduzierbar. Vor jedem Laufform-Write gilt:
 zweimal ernten (`werkzeuge.md`).
 → [§4](glossar.md#4-metriken-und-benchmarks)
+
+**Kringel-Landmarke** — die Erwartung „diese Schleife muss offen bleiben"
+je Buchstabe und je Schleife statt als eine Schwelle: Größenklasse
+(`klein` · `mittel` · `groß`, gezählt in Breiten der Plattenfeder) plus
+Zustand (`offen` · `wechselnd` · Punktkringel, aus dem Anteil der
+Vorkommen, in denen die Platte ein Loch zeigt). Eingefroren in
+`tools/tracebench/kringel_catalogue.json`, gelesen als Report-Spalte
+`kringel_lost`. → [§4](glossar.md#4-metriken-und-benchmarks)
 
 **Schleifenbereich · Schleifen-Registrierung** — der Anker-Indexbereich,
 über den die TAFELZEILE eine Schleife schließt (`loop_ranges`), und der
