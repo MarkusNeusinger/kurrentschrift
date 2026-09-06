@@ -11330,8 +11330,8 @@ Umschaltung, nicht die Klassenregel (Begründung eine Überschrift höher). Das
 ist eine rendernde Änderung: sie bewegt jede `/write/word`-Antwort und
 verlangt ein deklariertes Neu-Backen des Golden-Fixtures. **Die
 Entscheidung ist damit Autor-Sache, nicht die eines Bench-Ergebnisses**; sie
-wird, wenn sie fällt, als datierter Nachtrag hier gebucht und steht nicht in
-diesem Abschnitt.
+steht nicht in diesem Abschnitt, sondern — wenn sie fällt — in einem eigenen
+datierten Eintrag.
 
 #### Was die Runde nicht beantwortet
 
