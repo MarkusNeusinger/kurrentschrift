@@ -68,7 +68,13 @@ distance (tools/wordbench/pairmeas.py) — per row as
 ``meas_doff_median``/``meas_dconn_median`` in the block — and ``seam``
 (tools/wordbench/seam.py): the turn angle at each end of a generated
 connector, ``dep``/``arr`` per row and pooled ``seam_dep_median`` /
-``seam_arr_median`` / ``seam_*_abs_median`` in the block.
+``seam_arr_median`` / ``seam_*_abs_median`` in the block — and ``cont``
+(tools/wordbench/continuity.py, the Unstetigkeits-Sensor): how continuous the
+composed centreline is between ductus events — ``kink`` the largest tangent
+jump at a non-landmark point, ``nk`` how many, ``wob`` the mid-stroke
+oscillation, ``bow``/``bowj`` the Pfeilhöhe over the whole word and at the
+joins, ``flat`` the deepest bow that became a chord — per row and pooled as
+``cont_*`` in the block.
 """
 
 from __future__ import annotations
@@ -85,6 +91,7 @@ from PIL import Image, ImageDraw
 from core.compose import _key_base, compose_word
 from core.pipeline import render_payload_for_template
 from core.shaping import GlyphSlot
+from tools.wordbench.continuity import continuity
 from tools.wordbench.gleichzug import audit_composed
 from tools.wordbench.metric import score_word
 from tools.wordbench.pairmeas import compare_joins, load_measured, rows_for_entry
@@ -311,6 +318,37 @@ def _print_block(reports: list[dict], skipped: list[dict], kind: str) -> None:
                 if values:
                     print(f"{slant_prefix}seam_{label}_median: {float(np.median(values)):+.2f}")
                     print(f"{slant_prefix}seam_{label}_abs_median: {float(np.median(np.abs(values))):.2f}")
+        # Continuity (report-only, the Unstetigkeits-Sensor): where the pen
+        # changes direction at a place that is not a ductus event. The kink
+        # EVENTS pool like the seam joins do — a long word must not weigh the
+        # same as a short one — while the per-word statistics report their
+        # median over the words, because each is already a word-level number.
+        conts = [r["continuity"] for r in scored if r.get("continuity")]
+        if conts:
+            measured = sum(c["n_measured"] for c in conts)
+            total = sum(c["n_samples"] for c in conts)
+            print(f"{slant_prefix}cont_measured: {measured}/{total}")
+            causes = " ".join(
+                f"{cause}={sum(c['excluded'][cause] for c in conts)}"
+                for cause in ("lift", "cross", "retrace", "corner")
+            )
+            print(f"{slant_prefix}cont_excluded: {causes}")
+            print(f"{slant_prefix}cont_kink_total: {sum(c['kink_count'] for c in conts)}")
+            degrees = [k["deg"] for c in conts for k in c["kinks"]]
+            if degrees:
+                print(f"{slant_prefix}cont_kink_deg_median: {float(np.median(degrees)):.2f}")
+            # Medians OVER THE WORDS — each of these is already a word-level
+            # number, so pooling their samples would weigh a long word twice.
+            for key, label, digits in (
+                ("kink_max_deg", "kink_max_deg_median", 2),
+                ("wobble", "wobble_median", 3),
+                ("bow_median", "bow_median", 4),
+                ("bow_join", "bow_join_median", 4),
+                ("curv_loss", "curv_loss_median", 4),
+            ):
+                values = [c[key] for c in conts if c.get(key) is not None]
+                if values:
+                    print(f"{slant_prefix}cont_{label}: {float(np.median(values)):.{digits}f}")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -461,6 +499,8 @@ def main() -> None:
     pairmeas_failures: list[tuple[str, str]] = []
     # Same doctrine for the seam sensor: one run-level line, never per entry.
     seam_failures: list[tuple[str, str]] = []
+    # And for the continuity sensor.
+    cont_failures: list[tuple[str, str]] = []
     for root, manifest in selected:
         templates = json.loads((root / "templates.json").read_text())
         # The frozen Laufform variants (median running forms): production
@@ -586,6 +626,15 @@ def main() -> None:
                 except Exception as exc:
                     report["seam_error"] = f"{type(exc).__name__}: {exc}"
                     seam_failures.append((entry_id, report["seam_error"]))
+            # Continuity of the composed centreline between ductus events —
+            # same doctrine once more: REPORT columns under their OWN guard,
+            # reading only the composition, never the loss.
+            if composed is not None:
+                try:
+                    report["continuity"] = continuity(composed)
+                except Exception as exc:
+                    report["continuity_error"] = f"{type(exc).__name__}: {exc}"
+                    cont_failures.append((entry_id, report["continuity_error"]))
             report["id"] = entry_id
             report["word"] = entry["word"]
             report["kind"] = kind
@@ -601,6 +650,9 @@ def main() -> None:
     if seam_failures:
         entry_id, error = seam_failures[0]
         print(f"warning: seam columns failed on {len(seam_failures)} entries (first {entry_id}: {error})")
+    if cont_failures:
+        entry_id, error = cont_failures[0]
+        print(f"warning: cont columns failed on {len(cont_failures)} entries (first {entry_id}: {error})")
 
     for r in sorted(reports, key=lambda r: r["id"]):
         if r["failed"]:
@@ -641,10 +693,29 @@ def main() -> None:
                 seam = f"  seam n={sm['n_matched']}/{sm['n_joins']} dep={dep} arr={arr}"
             elif "seam_error" in r:
                 seam = "  seam n=-/- dep=- arr=-"
+            # Continuity between the ductus events, same stable-column rule:
+            # printed on every scored entry, '-' where a statistic has no
+            # sample, all-dash when this entry's guard fired.
+            ct = r.get("continuity")
+            cont = ""
+            if ct:
+                fields = " ".join(
+                    f"{tag}={ct[key]:{fmt}}" if ct.get(key) is not None else f"{tag}=-"
+                    for tag, key, fmt in (
+                        ("kink", "kink_max_deg", ".1f"),
+                        ("wob", "wobble", ".2f"),
+                        ("bow", "bow_median", ".4f"),
+                        ("bowj", "bow_join", ".4f"),
+                        ("flat", "curv_loss", ".4f"),
+                    )
+                )
+                cont = f"  cont n={ct['n_measured']}/{ct['n_samples']} {fields} nk={ct['kink_count']}"
+            elif "continuity_error" in r:
+                cont = "  cont n=-/- kink=- wob=- bow=- bowj=- flat=- nk=-"
             print(
                 f"word {r['id']:<15} loss {r['loss']:.6f}  "
                 f"trans {r['transition']:.3f} cover {r['coverage']:.3f} width {r['width']:.3f}  "
-                f"(tx={reg['tx']:.0f}, ty={reg['ty']:.0f}){slant}{flow}{meas}{seam}"
+                f"(tx={reg['tx']:.0f}, ty={reg['ty']:.0f}){slant}{flow}{meas}{seam}{cont}"
             )
 
     # The FULL digests go into the report (the header prints 12 hex to stay

@@ -67,7 +67,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
-- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kurzglossar §5
+- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kurzglossar §5
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5 · Mittellinien-Öffnungsweite (`D0`) §4
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nullprobe §4
@@ -77,10 +77,10 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Sehne §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
-- **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unvollständige Wortprobe §5
+- **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Sensor §4 · Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
 - **V** — Variante §2 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschub-Kalibrierung §2 · Vorschrift §1
-- **W** — W1–W6 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Tintenlücke §2 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
+- **W** — W1–W6 §5 · Wackler §4 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Tintenlücke §2 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zeichenbreiten-Mittel (`AVG_ADVANCE_UNITS`) §7 · Zeilen-Gate (Laufform) §2 · Zeilenmarke §7 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · zonale Rückweisung (`zonal`) §3 · „Zug um Zug“ §7 · Zwei Stillen (Leerzustands-Regel) §5 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
 
@@ -1063,8 +1063,10 @@ Kommentarblock über `APEX_HANDOVER_MIN_RISE` in `core/compose.py` — die
 Konstante selbst prüft den ANSTIEG des Zuges, nicht seine Pfeilhöhe), und die
 humanbench-Wortrunde `sep05`, die damit beziffert hat, was das Auge an der
 **Apex-Übergabe** verworfen hat (die erzeugte Übergabe kommt auf 0,001–0,002 xh
-bei 1,67–1,84 xh Sehne). Als eingefrorene Report-Spalte ist die Pfeilhöhe ein
-benannter Rettungsweg, noch nicht gebaut (`tintenfolger.md` §7.9).
+bei 1,67–1,84 xh Sehne). Seit `sep06` rechnet sie auch Code: als `bow_median` /
+`bow_join` des **Unstetigkeits-Sensors**, über einer Sehne von zwei
+Federbreiten — der Rettungsweg 2 der Runde 6 (`tintenfolger.md` §7.9),
+gegangen.
 
 **M4-Fit** — die elastische Anpassung eines Templates an echte Tinte:
 Das kanonische Template wird auf das Skelett eines Vorkommens *gewarpt*,
@@ -1912,7 +1914,7 @@ im Repo streng festgelegt: eigener try/except, angehängt *nach* dem
 stabilen Block, und der **Headline-Nachweis ist Pflicht** — ein Lauf vor
 und nach der Einführung muss bis zur letzten Stelle identisch sein. Die
 Linie dieser Spalten: Slant (R5) → Gleichzug (`jul30`) → `meas` (`aug02`)
-→ Naht-Winkel (`sep02`).
+→ Naht-Winkel (`sep02`) → Unstetigkeit (`sep06`).
 
 **Slant-Spalte** — Report-Spalte, die die gemessene Schräglage der Vorlage
 gegen die der komponierten Zeile stellt (90° = senkrecht), aus dem
@@ -1943,6 +1945,54 @@ Defekt. Report-Spalte, nie Teil des Loss.
 *Technisch:* `tools/wordbench/seam.py::seam_angles`, `SEAM_WINDOW`;
 Blockzeilen `seam_dep_median` / `seam_arr_median` (vorzeichenbehaftet) und
 `seam_*_abs_median`. → tools/wordbench/README.md
+
+**Unstetigkeits-Sensor** *(Report-Spalten `cont_*`, seit `sep06`)* — der
+Sensor, der als erster die Größe misst, die der Autor tatsächlich sieht:
+nicht wie WEIT die komponierte Mittellinie von einer Referenz liegt,
+sondern ob sie mit sich selbst **stetig** ist. Anlass ist sein Leitsatz
+vom 2026-09-06 — auffällig sind „die plötzlichen Änderungen an Stellen, wo
+sie nichts zu suchen haben, weil da kein Richtungswechsel ist", während
+der genaue Radius eines Bogens egal ist. Genau umgekehrt messen alle
+eingefrorenen Lineale: `bench_loss`, `dtw_xh`, `dconn`/`dspan` sind
+Abstände, und ein Knick und ein glatter Bogen durch dieselben Endpunkte
+bekommen dieselbe Zahl. Gemessen wird auf den komponierten Federzügen an
+jedem Punkt, der KEINE Landmarke ist (Federabsetzen, durchstoßende
+Kreuzung, Retrace-Zone, Umkehrecke — je eine Feder Radius, alle vier
+gezählt): **Knick**, **Wackler**, **Pfeilhöhe** (`bow_median` über das
+ganze Wort, `bow_join` in der Umgebung der generierten Verbinder) und
+`curv_loss`, die tiefste flache Stelle, die auf beiden Seiten eine
+Wölbung hat. Die Fenster sind aus der FEDER abgeleitet, nicht aus einer
+Runde: halbe Feder (0,0725 xh) für die Richtung, eine Feder (0,145) als
+Rand und Landmarken-Radius, zwei Federn (0,29) als Sehne. Report-Spalten,
+nie Teil des Loss. *Technisch:*
+`tools/wordbench/continuity.py::continuity`, `KINK_WINDOW_UNITS` ·
+`BOW_CHORD_UNITS` · `LANDMARK_RADIUS_UNITS` · `KINK_THRESHOLD_DEG` →
+messjournal.md §14 („Übergänge S2")
+
+**Knick** *(`kink_max_deg`, `kink_count`)* — eine Richtungsänderung, die
+an EINEM Punkt sitzt, obwohl dort kein Duktus-Ereignis ist: der Weg läuft
+gerade, springt von 30° auf 40° Steigung und läuft gerade weiter. Gemessen
+als die am Punkt KONZENTRIERTE Drehung, `|2·turn(W₁) − turn(2·W₁)|` über
+die rückwärtige und vorwärtige Sehne — für einen Kreisbogen jedes Radius
+exakt 0, für eine Ecke zwischen zwei Geraden exakt der Knickwinkel. Damit
+misst die Zahl Unstetigkeit, nicht Krümmung, und ein enger Bogen des
+Alphabets löst sie nicht aus. Gezählt wird ab **θ = arcsin(0,2) =
+11,537°** — der Winkel, bei dem der Weg seine glatte Fortsetzung um ein
+Zehntel der Strichbreite verlässt; das Verhältnis ist federunabhängig,
+weil das Lesefenster die halbe Federbreite ist. Nicht zu verwechseln mit
+**Knick am Rand** (`E`), der humanbench-Fehlerklasse, die derselben
+Erscheinung mit dem Auge begegnet. *Technisch:*
+`tools/wordbench/continuity.py`
+
+**Wackler** *(`wobble`)* — das Zittern MITTEN im Zug: die Laufrichtung
+schwankt hin und her, statt einem Trend zu folgen. Gemessen als Hochpass
+auf das Richtungsprofil — die Richtung über die halbe Feder, entfaltet,
+minus ihrem bogenlängen-gewichteten gleitenden Mittel über die Sehne —,
+gemeldet als RMS in Grad. Gerade und sauberer Kreisbogen lesen beide ~0,
+also zählt nur die Oszillation. Der geometrische Zwilling der
+humanbench-Fehlerklasse **Gewackel** (`W`) und der Wort-Nachbar des
+**Glätte-Sensors**, der dieselbe Größe auf einer einzelnen
+Laufform-Zeile zählt. *Technisch:* `tools/wordbench/continuity.py`
 
 **Natürlichkeitsmetrik (Sütterlin)** — die zweite, *referenzfreie* Metrik:
 Weil Sütterlin einen pixeligen Scan mit konstanter Strichbreite hat, wäre
