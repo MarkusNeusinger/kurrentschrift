@@ -276,3 +276,19 @@ def test_the_mark_refit_flag_is_refused_where_it_would_do_nothing() -> None:
     for candidate in ("authored", "traced"):
         with pytest.raises(SystemExit, match="--mark-refit"):
             build_provider(build_parser().parse_args(["--mark-refit", "--candidate", candidate]))
+
+
+# ------------------------------------------------------- the Kringel landmark
+
+
+def test_a_pen_width_that_cannot_be_measured_with_is_refused() -> None:
+    """A negative width WIDENS every aperture and a NaN makes every test false.
+
+    Either typo yields a plausible-looking Kringel column that means nothing,
+    and nothing downstream would flag it — a report-only sensor has to refuse
+    its own bad input at the door.
+    """
+    for bad in ("-0.05", "0", "nan", "inf"):
+        with pytest.raises(SystemExit):
+            build_parser().parse_args(["--kringel-half-width", bad])
+    assert build_parser().parse_args(["--kringel-half-width", "0.0724"]).kringel_half_width == 0.0724

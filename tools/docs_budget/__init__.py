@@ -270,9 +270,21 @@ WIDEST = {
 # documented 10 % headroom. The watched pieces did not move; §7.11 and the two
 # Stand blocks this arm touches got shorter, not longer, because a walked rescue
 # path replaces an open one instead of being appended to it.
+#
+# And a fourth time the same day, from a branch that had cut its own raise
+# against the pre-#558 number: „Kringel-Landmarke" adds ONE register row, not
+# the usual pair, because that round is a sensor rather than an arm. The row
+# costs 527 and is dense — every clause carries a number the entry owns (46
+# loops, the two class cuts, the state shares, 24 of 27, 34 of 63, 19 topology
+# losses, the two byte-identity readings) — and it was tightened twice before
+# either raise. Two raises on one day is not a licence, it is two rounds landing
+# together: the sum is measured ONCE here, after the merge (21 722 for all three
+# register rows), rather than added up from two branches that each measured
+# without the other. The entry itself needed no raise; it was trimmed to 4 500
+# against the unchanged 4 503 ceiling, which is where a growing entry belongs.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
-    "mess-runde": 23_313,
+    "mess-runde": 23_894,
     "mess-runde-route": 6_177,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,

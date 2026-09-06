@@ -793,8 +793,11 @@ Warnung versehen. Begriff und Hausregel:
   `tools.pairlab.follow` (Folger-Lauf → Kandidaten-JSON),
   `tools.tracebench` (dev-19-Wertung gegen die authored Wortbahnen),
   `.k0eval` (referenzfreies 63er-Protokoll), `.excursions`
-  (Papier-Exkursions-Inventar, der stehende K-D-Sensor) und `.view`
-  (Duell-/Augenschein-Seite). Alle fünf nennen ihre Wurzel im Kopf und
+  (Papier-Exkursions-Inventar, der stehende K-D-Sensor), `.kringelcat`
+  (baut den eingefrorenen Kringel-Katalog aus EINER Wurzel; `.kringel`
+  ist der Sensor, der ihn liest — Report-Spalte `kringel_lost`, §14
+  „Kringel-Landmarke `sep06`") und `.view`
+  (Duell-/Augenschein-Seite). Alle nennen ihre Wurzel im Kopf und
   nehmen `--expect-root` (siehe oben); die Arm- und Archäologie-Flags
   stehen im jeweiligen `--help` und je Arm in seinem §14-Eintrag.
   Invarianten: reine Messschicht (nie DB/`core/`/Rendering), der
