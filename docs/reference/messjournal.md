@@ -216,6 +216,8 @@ die DB) — mit seiner Bedingung.
 | sep06 | Lineal | [Kringel-Landmarke](#kringel-landmarke-sep06--katalog-und-sensor-die-erwartung-offen-ist-eine-eigenschaft-je-buchstabe-und-je-schleife) | Pre-Reg + gemessen · **Sensor**, kein Arm · Report-Spalte | Der Autor-Entwurf „große · mittlere · kleine Kringel, bei den kleinen Punktkringel oder je nach Tinte wechselnd" wird ein eingefrorener **Katalog**: 46 Schleifen über 27 Glyphen mit Größenklasse (in Breiten der Plattenfeder `W = 0,1936`: klein < 2W, mittel < 4W, groß darüber) und Zustand (Anteil der Vorkommen mit Loch: offen ≥ 0,8, punkt ≤ 0,2, sonst wechselnd) — **klein 22 · mittel 16 · groß 8**, **offen 41 · wechselnd 4 · punkt 1**. Abnahme: sechs der neun engen Glyphen ziffernweise wie #551, `w_pen` 0,0968 und 202 Binnenflächen ebenso. **Die 26 zerlegt: auf #551s Messpfad 27 Wörter, davon 24 echte `offen`-Verluste und 3 nur `wechselnd`** (`Sprünge` `Zügel` `regieren`, die `g`-Schale) — die ehrliche Zahl ist **24**. Über ALLE Schleifen korrigiert der Katalog nach oben: 34 der 63 Wörter verlieren bei 0,097 eine `offen`-Schleife, dazu **19 Topologie-Verluste** (nie gezeichnete Binnenflächen: `w` 5 · `sz` 3 · `G` 3 …) in 14 Wörtern, zusammen 36 der 63. Zwei neue Befunde: die **e-Öse** hält nur 19 % ihrer Platten-Weite (0,07 gegen 0,38) und ist trotzdem `wechselnd`, also kein Defekt; das **`t`** ist der blinde Fleck — `loop_ranges` hat für es keinen Schleifenbereich, die Platte hält dort 9 von 9 zwei Löcher, und `t`#1 (0,0517 gegen 0,3912) ist das größte Defizit und der EINZIGE Verlust, der auch bei der ausgelieferten Feder 0,0724 bleibt. Sensor `kringel_lost` report-only: Wörter/Paare 0,108444 · 0,148236 unverändert, Tintenfolger-Report 68 bzw. 56 Zeilen identisch |
 | sep06 | Übergänge | [S2 Unstetigkeits-Sensor (Pre-Reg)](#übergänge-s2-sep06--vorregistrierung-der-unstetigkeits-sensor-der-den-knick-sieht) | Pre-Reg | Rettungsweg 2 der Runde-6-Konversionen nach dem S1-Muster (bauen, einfrieren, DANN abnehmen). Anlass ist der Leitsatz des Autors: alle eingefrorenen Lineale messen ABSTAND, keines Stetigkeit. Fenster aus der FEDER, nicht aus einer Runde — halbe Feder 0,0725 · eine Feder 0,145 · zwei Federn 0,29; θ = arcsin(0,2) = 11,537°, federunabhängig. Gates P1/P2 an Runde 5, P3 an Runde 6, N1 Identität, N2 Verrohrung |
 | sep06 | Übergänge | [S2 gemessen](#übergänge-s2-sep06--gemessen-alle-gates-bestehen-und-keine-einzelne-spalte-ist-der-richter) | Pre-Reg + gemessen · **validiert** (Lineal-Bestandteil-Kandidat, kein Lineal geändert) | **Alle fünf Gates bestehen, aber keine EINZELNE Spalte ist der Richter.** N1/N2 exakt (0,000e+00 gegen die gespeicherten Verbinder; 3 + 12 identische Wörter bewegen keine Spalte). P1 `naht-stark` (Urteil Kandidat 26 : 2): `kink_max_deg` 36,89 → **27,86**, `kink_count` 28/28 fallend, `wobble` −0,531. P2 `naht-schwach`: nur 17 statt 24 von 29 Wörtern bewegt, Wackler-Median −0,083 — Faktor 6, die Klassengrenze reproduziert. P3 `apex` (Basis 11 : 1): `bow_join` 0,0066 → **0,0034 in 12/12**, dazu (nicht vorregistriert) `kink_max_deg` +15,54°. Die Klasse `stem` (Basis 7 : 0) sieht nur `curv_loss` (8/8) und `wobble` (8/8). **Ehrliche Hälfte:** `bow_join` fällt in BEIDEN Runden, hätte Runde 6 allein also falsch entschieden — der Austritts-Trim verschiebt die Grenze Buchstabe/Verbinder und damit die Population (das Rahmen-Artefakt, für das S1 `dspan` gebaut wurde). Headline 0,108444 / 0,148236 vorher wie nachher |
+| sep06 | Laufform | [LF15 Ernte-Fixpunkt (Pre-Reg)](#laufform-lf15-sep06--vorregistrierung-der-fixpunkt-der-ernte-rettungsweg-2-von-lf14) | Pre-Reg | Rettungsweg 2 von LF14, Autor-Entscheid „3 ja": der Fixpunkt VOR dem nächsten Laufform-Write. „Ernte-Fixpunkt" numerisch definiert (größte Ankerbewegung zwischen zwei Karten ab `H1` ≤ 0,002 xh, gegen die gemessene Drift 0,0025–0,0283); Iteration `H0 → H1 → H2` aus Repo-Werkzeugen (harvest → `smoothrow --knots 0 --floor 1 --keep-stored`), Schlüsselsatz über alle Runden fest. Mechanismus vorab benannt: **Chart-Saat** (`chain_seed="chart"`, Default AUS) — die vorregistrierten Kandidaten (a) und (b) fallen in eine Implementierung, (c) wird nicht gebaut. Gates (F) Fixpunkt · (G) Kette-Identität · (H) Lineal byte-gleich · (I) Golden, dazu Bericht (J) mit Entscheidregel 0,03 xh für die Frage, ob der nächste Write den Saatwechsel als EINE Re-Baseline mitnehmen darf. Definiert „Ernte-Fixpunkt" numerisch, legt die Iteration `H0 → H1 → H2` aus Repo-Werkzeugen fest (Schlüsselsatz über alle Runden fest), benennt den Mechanismus vorab (**Chart-Saat**, Default AUS; die Kandidaten (a)/(b) fallen in eine Implementierung, (c) wird nicht gebaut) und die Gates (F) Fixpunkt · (G) Kette-Identität · (H) Lineal · (I) Golden plus den Bericht (J) mit Entscheidregel für die Frage, ob ein Write den Saatwechsel mitnehmen darf. Offenlegung zur Basis: die `sep05`-Wurzeln lagen nicht mehr vor und wurden rekonstruiert |
+| sep06 | Laufform | [LF15 gemessen](#laufform-lf15-sep06--gemessen-die-iteration-läuft-weg-und-die-chart-saat-hält-sie-in-einem-schritt-an) | Pre-Reg + gemessen · alle Gates grün · **Schalter bleibt AUS** (Regel (J)) · **stehende Regel: zweimal ernten** | **Die Iteration konvergiert nicht, sie wandert:** die schlimmste Zeile bewegt sich in den drei Schritten 0,0582 → 0,0627 → 0,0627 xh, die Richtung wechselt je Zeile, der angenommene Satz wandert 235 → 232 → 239 mit — der erste Schritt ist nicht der größte, also kein Einschwingen; ein Determinismus-Doppellauf steht davor. Auch die Kringel-Ablesung wandert mit: `a` und `o` überschreiten die 0,194-Marke allein durch Weiterernten. **Die Chart-Saat** macht die Karte in EINEM Schritt zum Fixpunkt — `K1` = `K2` = `K3` byte-gleich samt Vorkommen, und `K3` startet aus einer 0,058 xh entfernten Karte, die Zeilen-Unabhängigkeit ist damit gemessen. Preis: 226 statt 235 Vorkommen (an den Gates `connector_degenerate`/`anchor_spike`, nicht an der Fitgüte), `Z` fällt unter den Beleg-Boden. Alle vier Gates grün, (G) mit einer benannten Abweichung (eine erfundene Kreuzung weniger) und einer benannten Kostenseite; Bericht (J): 8 von 21 Zeilen über 0,03 xh, der Saatwechsel geht NICHT als Beifahrer mit. **Antwort auf die Ausgangsfrage: einen Laufform-Write heute einfach zu wiederholen ist nicht sicher** |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -11668,3 +11670,322 @@ Sensor die eingefrorenen Struktur-Detektoren des Tintenfolgers je Wort
 mitlaufen lässt statt eigene zu schreiben — bewusst bezahlt. Und beide
 Runden urteilen ein einziger Beurteiler; Runde 6 trägt mit 4 Paaren
 ohnehin keinen Adoptionsanspruch (`menschliche-bewertung.md` §9).
+
+### Laufform LF15 `sep06` — Vorregistrierung: der Fixpunkt der Ernte (Rettungsweg 2 von LF14)
+
+Geschrieben und committet VOR der ersten Zahl dieses Arms. Anlass ist
+Rettungsweg 2 des LF14-Eintrags und der Autor-Entscheid
+vom 2026-09-06 („3 ja"): der Fixpunkt wird ein eigener Arm, und zwar
+VOR dem nächsten Laufform-Write. Der Nebenbefund, um den es geht: eine
+frische Ernte der `sep05`-Wurzel leitet jede Zeile **0,0025–0,0283 xh**
+neben der ab, aus der diese Wurzel geschrieben wurde. Das ist keine
+Nichtreproduzierbarkeit (`--jobs 1` = `--jobs 4` byte-gleich), sondern
+eine Rückkopplung: `derive_word` komponiert das Wort AUS den
+Laufform-Zeilen, und `chain_seed="composed"` startet den Kettenlöser auf
+genau dieser Komposition — **die Ernte liest die Zeilen, die sie ersetzen
+wird.** Solange das so ist, ist jede Re-Harvest-Karte um die
+Größenordnung unscharf, in der LF13 und LF14 überhaupt messen.
+
+**Basis.** Die `sep05`-Wurzeln des LF12-Writes: `suetterlin-1922`
+`exported_at` 2026-09-05T21:33:12+00:00 `root_digest`
+**`eaa195aa7c84…`**, `suetterlin-1922-pairs` 2026-09-05T21:33:11+00:00
+**`0fbde2d72b64…`**, jeder Lauf mit `--expect-root` und
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`. Frisch gerechnet:
+**Wörter 0,108444 · Paare 0,148236** — ziffernweise die Headline des
+LF12-Writes.
+
+**Offenlegung zur Basis, vor der ersten Zahl.** Die `sep05`-Wurzeln lagen
+in dieser Umgebung nicht mehr vor (der Arbeitsbaum, der sie hielt, ist
+fort; auf Platte stand die `sep02`-Ausfuhr). Sie wurden REKONSTRUIERT und
+die Rekonstruktion an ihrer eigenen Kennung abgenommen: ein frischer
+`fetch_fixtures --set all` gegen die ausgelieferte API liefert beide
+Wurzeln byte-gleich bis auf `exported_at`; mit den beiden
+`sep05`-Zeitstempeln eingesetzt trifft die Kennung
+`eaa195aa7c84…` / `0fbde2d72b64…` exakt. Das ist zugleich der Beleg, dass
+seit dem LF12-Write nichts in die DB geschrieben wurde. Nichts an den
+Wurzeln wurde sonst angefasst; `--expect-root` steht unter jedem Lauf.
+
+#### Was „Fixpunkt" heißt, numerisch
+
+Die Ernte ist eine Abbildung `H: Zeilen → Zeilen`. `H0` sind die
+geschriebenen Zeilen der Wurzel, `H1 = H(H0)`, `H2 = H(H1)`, `H3 = H(H2)`.
+Eine Saat heißt **Ernte-Fixpunkt-tauglich**, wenn ab `H1` gilt: die
+größte Ankerbewegung einer Zeile zwischen zwei aufeinander folgenden
+Karten ist **≤ 0,002 xh** für JEDE Zeile. Die Zahl ist gesetzt, bevor
+gemessen wird: die Zeilen werden auf 4 Nachkommastellen gerundet, ein
+echter Fixpunkt ist also byte-gleich (0,0000), und 0,002 xh lässt
+Rundungs- und Rasterboden Platz, liegt aber eine Größenordnung unter der
+gemessenen Drift von 0,0025–0,0283 xh.
+
+**Die Iteration, Schritt für Schritt** (nur Repo-Werkzeuge, keine
+DB-Schreibung, die eingefrorene Wurzel bleibt unberührt):
+
+1. `tools.laufform.harvest --path chain --sets words --min-n 1 --jobs 4`
+   auf der Wurzel, Zeilen aus dem `--laufform`-Overlay der vorigen Runde
+   (Runde 1: keins, also die Zeilen der Wurzel selbst);
+2. `tools.laufform.smoothrow --knots 0 --floor 1 --keep-stored
+   --keys stored` über die Vorkommen dieses Laufs — der Kontroll-Arm von
+   LF11, also der heutige Per-Anker-Median, als vollständige
+   21-Zeilen-Karte über genau den Schlüsseln, für die die Wurzel eine
+   Zeile hat;
+3. diese Karte ist die Saat-Grundlage der nächsten Runde.
+
+Der Schlüsselsatz bleibt damit über alle Runden derselbe — eine Karte mit
+anderen Schlüsseln komponierte einen anderen Buchstabensatz, und die
+Iteration verglich zwei Dinge statt einem.
+
+**Gemessen wird je Zeile und je Schritt:** die größte und die
+quadratisch gemittelte Ankerbewegung in xh, und für die Schleifen-Zeilen
+`a` `o` `sz` `g` `r` die Öffnungsweite `D0` auf dem eingefrorenen
+Bereichs-Lineal von LF13/LF14 (`chart_loop_ranges` / `range_aperture`,
+unverändert übernommen). Berichtet wird außerdem je Lauf die Zahl
+angenommener Vorkommen und der Median `geo_rmse_px` — eine Saat, die die
+Kette in ein schlechteres Becken setzt, muss daran sichtbar werden.
+
+#### Der Mechanismus, hinter einem Schalter mit Default AUS
+
+Eine Saat, die nicht von den Zeilen abhängt. Von den drei
+vorregistrierten Kandidaten fallen (a) „Saat aus der Chart-Kanonik" und
+(b) „Saat aus der Komposition, aber mit abgeschalteter Laufform" in EINE
+Implementierung zusammen: die Kette baut ihre Segmente ohnehin aus den
+CHART-Ankern (`_letter_spec`), von den Zeilen hängen nur Platzierung,
+Fenster und Registrierung ab — alle drei kommen aus `derive_word`. Der
+Schalter ist deshalb genau das: **`chain_seed="chart"` (die Chart-Saat)**
+lässt den Kettenlauf auf einer Komposition OHNE Laufform-Zeilen
+aufsetzen, während Fit, Gates und Ernte unverändert gegen die Tinte
+laufen. Kandidat (c) — die Saat aus dem gespeicherten Vorkommen — wird
+NICHT gebaut: er trägt eine zweite Quelle in die Ernte, ist damit nicht
+die kleinste Änderung, und er hat sein eigenes Rückkopplungsproblem
+(Vorkommen und Zeilen stammen aus demselben Lauf). Er bleibt als
+Rettungsweg stehen, falls die Chart-Saat an einem Gate fällt.
+
+Default AUS (`chain_seed="composed"`), das Muster von `LAUFFORM_END_WINDOW`,
+`LAUFFORM_LOOP_WINDOW` und `INK_CLEARANCE`. Gemessen wird dieselbe Kette
+`H0 → H1 → H2` mit der Chart-Saat, und zusätzlich — weil ein Fixpunkt
+„per Konstruktion" eine Behauptung wäre — eine Ernte mit Chart-Saat auf
+den DEUTLICH anderen Zeilen der `H1`-Karte der heutigen Saat: gibt sie
+dieselbe Karte, ist die Zeilen-Unabhängigkeit gemessen und nicht
+argumentiert.
+
+#### Die Gates, vor der ersten Zahl des Arms festgelegt
+
+**(F) Fixpunkt.** Mit der Chart-Saat bewegt sich zwischen `H1` und `H2`
+KEINE Zeile um mehr als **0,002 xh**. Rot heißt: der Mechanismus löst die
+Rückkopplung nicht.
+
+**(G) Kette-Identität.** `tracebench --split dev --candidate chain` auf
+derselben eingefrorenen Wurzel, Chart-Saat gegen heutige Saat:
+`cross_missing` und `cross_spurious` über den Split **unverändert**, und
+der Median `dtw` **≤** dem der heutigen Saat. Die Ernte muss dieselben
+Striche finden; eine Saat, die das nicht tut, ist keine Saat, sondern ein
+anderes Verfahren.
+
+**(H) Lineal.** `wordbench.run --set all --expect-root
+eaa195aa7c84,0fbde2d72b64` mit Schalter AUS und AN: **byte-gleich**
+0,108444 · 0,148236. Der Schalter sitzt in der Messschicht und die Zeilen
+der Wurzel ändern sich nicht — jede Bewegung hier wäre ein Leck.
+
+**(I) Golden.** `compose_golden` mit `pen=None` byte-gleich.
+
+**(J) Wiedergabe der geschriebenen Zeilen — Bericht mit Entscheidregel,
+kein Gate.** Berichtet wird je Zeile `max |H1(Chart-Saat) − H0|`. Die
+Regel steht vorher: liegt jede Zeile **≤ 0,03 xh** (die Bewegungsschranke,
+an der LF14s Gate (b) gemessen hat), dann ist der Saatwechsel eine
+Bewegung innerhalb des Bandes, das ein Laufform-Write ohnehin trägt, und
+der nächste Write kann ihn als EINE deklarierte Re-Baseline mitnehmen.
+Liegt eine Zeile darüber, ist der Saatwechsel ein eigener Arm mit eigener
+Vorregistrierung und geht NICHT nebenbei mit.
+
+**Kill-Kriterium:** (F) rot = der Mechanismus ist verworfen. (G), (H)
+oder (I) rot = keine Empfehlung, ehrliches Negativ mit benannten
+Rettungswegen plus §7.9-Zeile. Ein grüner Arm liefert eine Regel für die
+Ernte und eine TROCKENE Karte; der Write bleibt ein Autorenvorgang und
+findet in dieser Runde nicht statt.
+
+**Was diese Runde ausdrücklich NICHT tut.** Kein DB-Write, keine
+Wurzel-Neuausfuhr, keine Änderung an `core/`, an `word_metric.py` oder an
+`tracebench`, keine neuen Schlüssel, keine Reparatur des `p`, und keine
+Adoption des `LOOP_AWARE_REPAIR`-Schalters von LF14 (bleibt AUS).
+
+### Laufform LF15 `sep06` — gemessen: die Iteration läuft weg, und die Chart-Saat hält sie in EINEM Schritt an
+
+Umgebung wie vorregistriert: Wurzeln **`eaa195aa7c84`** /
+**`0fbde2d72b64`**, jeder Lauf mit `--expect-root` und
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`, Basis-Headline ziffernweise
+reproduziert (**0,108444 · 0,148236**) — vor und nach der Codeänderung
+dieselbe Zahl. **Es wurde nichts geschrieben und keine Wurzel neu
+ausgeführt.**
+
+Drei Abnahmen stehen vor der ersten Zahl. **(1) Die Basis.** Die
+`sep05`-Wurzeln lagen nicht mehr auf Platte; die Rekonstruktion ist an
+ihrer eigenen Kennung abgenommen — ein frischer `fetch_fixtures --set
+all` gegen die ausgelieferte API liefert beide byte-gleich bis auf
+`exported_at`, und mit den `sep05`-Zeitstempeln trifft der Digest
+`eaa195aa7c84…` / `0fbde2d72b64…` exakt. Nebenbei ist das der Beleg, dass
+seit dem LF12-Write **nichts in die DB geschrieben wurde**. **(2)
+Determinismus.** Derselbe Ernte-Befehl zweimal gefahren gibt Karte UND
+Vorkommensdatei byte-gleich — jede Bewegung unten ist also zurechenbar.
+**(3) Das Lineal.** Die `D0`-Ablesung der Schleifen-Zeilen reproduziert
+LF14s eigene Zahl (`g`-Zeile 0,1743).
+
+**Eine Abweichung bleibt offen und gehört hierher:** meine frische
+Kontrollkarte ist NICHT LF14s Kontrollkarte. Beide sind „frische Ernte
+der eingefrorenen `sep05`-Wurzel mit heutiger Saat", beide nehmen je
+Schlüssel exakt dieselbe Zahl Vorkommen an — und die Anker liegen bis zu
+**0,058 xh** (`P`) auseinander. Welche Wurzel LF14s Ernte gelesen hat,
+lässt sich nicht mehr feststellen: die Ernte hatte damals kein
+`--expect-root`, und die Sitzung führte eine nib-gepatchte Kopie derselben
+Wurzel (0,097 statt 0,0724) mit. Genau diese Klasse Zweifel schließt das
+Flag, das dieser Arm der Ernte gibt.
+
+#### Teil 1 — die Iteration konvergiert nicht, sie wandert
+
+Größte / quadratisch gemittelte Ankerbewegung je Zeile und Schritt, in xh
+(`H0` = die geschriebenen Zeilen der Wurzel):
+
+| Zeile | H0→C1 | C1→C2 | C2→C3 | | Zeile | H0→C1 | C1→C2 | C2→C3 |
+|---|---|---|---|---|---|---|---|---|
+| `P` | 0,0582/0,0114 | 0,0107/0,0023 | 0,0106/0,0019 | | `o` | 0,0526/0,0100 | 0,0266/0,0052 | 0,0309/0,0052 |
+| `Z` | 0,0534/0,0118 | 0,0126/0,0031 | 0,0160/0,0044 | | `p` | 0,0335/0,0095 | 0,0125/0,0029 | 0,0239/0,0056 |
+| `a` | 0,0167/0,0061 | 0,0161/0,0052 | 0,0225/0,0069 | | `r` | 0,0152/0,0037 | 0,0050/0,0018 | 0,0055/0,0015 |
+| `d` | 0,0405/0,0092 | **0,0627**/0,0151 | **0,0627**/0,0147 | | `s` | 0,0131/0,0043 | 0,0304/0,0044 | 0,0192/0,0037 |
+| `e` | 0,0209/0,0039 | 0,0051/0,0016 | 0,0092/0,0015 | | `sz` | 0,0391/0,0091 | 0,0173/0,0030 | 0,0203/0,0039 |
+| `g` | 0,0317/0,0089 | 0,0091/0,0030 | 0,0259/0,0088 | | `w` | 0,0399/0,0117 | 0,0305/0,0056 | 0,0443/0,0049 |
+| `i` | 0,0203/0,0044 | 0,0171/0,0031 | 0,0096/0,0022 | | `z` | 0,0370/0,0092 | 0,0133/0,0033 | 0,0114/0,0030 |
+| **schlimmste Zeile** | **0,0582** | **0,0627** | **0,0627** | | (`c` `h` `l` `longs` `m` `n` `u` alle ≤ 0,0269) |
+
+**Der erste Schritt ist nicht der größte** — das ist die Antwort. Die
+Bewegung klingt nicht ab: sie ist in Schritt 2 und 3 so groß wie in
+Schritt 1, und sie wechselt je Zeile die Richtung (`o` +0,0526, dann
+−0,0266, dann +0,0309). Auch der ANGENOMMENE Satz wandert mit:
+**235 → 232 → 239** von 277 Buchstaben. Das ist kein Einschwingen und
+kein Rauschen (Determinismus abgenommen), sondern eine Iteration ohne
+Fixpunkt. Der `sep06`-Nebenbefund von LF14 („0,0025–0,0283") war die
+UNTERE Hälfte davon; auf dieser Wurzel misst der erste Schritt
+0,0092–0,0582.
+
+Das Lineal der Kringel wandert mit. `D0` der Schleifen-Zeilen auf dem
+eingefrorenen Bereichs-Lineal von LF13:
+
+| Bereich | Tafel | `H0` | `C1` | `C2` | `C3` | `K1` (Chart-Saat) |
+|---|---|---|---|---|---|---|
+| `a`[0] | 0,1856 | 0,1858 | 0,1852 | 0,1905 | **0,1942** | **0,1960** |
+| `o`[0] | 0,1850 | 0,1767 | 0,1807 | 0,1901 | **0,2037** | 0,1879 |
+| `sz`[0] | 0,1907 | 0,1876 | 0,1861 | 0,1852 | 0,1850 | 0,1824 |
+| `g`[1] | 0,1848 | 0,1743 | 0,1736 | 0,1745 | 0,1574 | **0,1943** |
+| `r`[0] | 0,1805 | 0,2087 | 0,2125 | 0,2124 | 0,2135 | 0,2132 |
+
+Die 0,194-Marke, an der LF13/LF14 „offen" von „zu" trennen, wird in
+dieser Spalte allein durch Weiterernten überschritten (`a` bei `C3`, `o`
+bei `C3`) und anderswo unterschritten (`g` 0,1745 → 0,1574). **Eine
+Kringel-Kennzahl, die auf einer nachgeernteten Karte abgelesen wird,
+trägt also die Iteration mit.**
+
+#### Teil 2 — die Chart-Saat ist ein Fixpunkt, gemessen statt behauptet
+
+Mit `chain_seed="chart"`: `K1` (aus den Zeilen der Wurzel), `K2` (aus
+`K1`s eigener Karte) und `K3` (aus der `C1`-Karte, die 0,058 xh anders
+liegt) sind **byte-gleich — Karten UND Vorkommensdateien.** `K3` ist die
+Probe, die den Unterschied zwischen „per Konstruktion" und „gemessen"
+macht: drei sehr verschiedene Zeilensätze, eine Karte.
+
+Der Preis steht daneben und ist nicht null. Die Chart-Saat nimmt
+**226 statt 235** Vorkommen an (`e` −3 · `n` −2 · `u` `t` `Z` `d` `a` `g`
+je −1, dagegen `r` +1 · `S` +1); die verlorenen fallen an
+`connector_degenerate` (24 → 30) und `anchor_spike` (8 → 11), nicht an
+der Fitgüte — der Median `geo_rmse_px` ist mit **0,982** sogar besser als
+die 1,002 der heutigen Saat (p90 1,427 gegen 1,429). Eine Zeile fällt
+dabei unter den Beleg-Boden: **`Z` steht auf n = 2** statt 3, und
+`LAUFFORM_MIN_OCCURRENCES` ist 3 — der Schreibweg würde sie abweisen.
+Die Zahl der Zeilen, die der Schreibweg an Sprung- oder Kopf-Gate
+abweist, bleibt bei 5 (die Namen wechseln: `Z` `i` `longs` `o` `z` →
+`i` `m` `o` `sz` `z`).
+
+#### Die Gates
+
+| Gate | Soll | Gemessen | |
+|---|---|---|---|
+| **(F) Fixpunkt** | `K1`→`K2` ≤ 0,002 xh je Zeile | **0,0000** — byte-gleich, Vorkommen eingeschlossen; `K3` ebenso | **grün** |
+| **(G) Kette-Identität** | `cross_missing`/`cross_spurious` unverändert · Median `dtw` ≤ Basis | `cross_missing` **12 = 12** · `cross_spurious` **7 → 6** (bewegt, um EINE erfundene Kreuzung weniger) · dtw-Median 0,049757 → **0,048881** | grün, mit benannter Abweichung |
+| **(H) Lineal** | byte-gleich | 0,108444 · 0,148236 | **grün** |
+| **(I) Golden** | byte-gleich | byte-gleich | **grün** |
+| **(J) Wiedergabe** *(Bericht + Regel)* | jede Zeile ≤ 0,03 xh → darf mitgehen | 0,0095–**0,1774**; **8 Zeilen darüber** (`sz` 0,1774 · `P` 0,0580 · `o` 0,0546 · `Z` 0,0533 · `w` 0,0456 · `d` 0,0429 · `z` 0,0370 · `g` 0,0361) | **geht NICHT mit** |
+
+**Die Kostenseite von (G), vollständig:** gepaart über die 19 dev-Wörter
+sind 12 besser und 7 schlechter (Vorzeichentest p = 0,36), der
+dtw-Median fällt um 0,000087 — aber der Schwanz steigt (p90 0,091389 →
+0,100579), `aiou` fällt 0,7030 → **0,6981**, Chamfer steigt beidseitig um
+0,0017 / 0,0007, und drei Wörter verlieren deutlich: `Galoppieren`
++0,0280 · `die` +0,0191 · `unter` +0,0146. Auf der Habenseite steht neben
+der Kreuzung die Retrace-Lücke (0,431 → **0,307**). Die Saat ist also
+keine Verbesserung der Kette, sie ist eine andere Startlage mit
+denselben Strichen — was Gate (G) fragen sollte.
+
+#### Verdikt
+
+**Der Mechanismus ist bestätigt, die Adoption ist ein Autorenschritt.**
+Alle vier Gates grün, die Abweichung an (G) ist eine erfundene Kreuzung
+weniger, und die Ernte ist mit der Chart-Saat das, was ein Schreibweg
+braucht: eine Abbildung, deren zweiter Durchlauf die geschriebene Karte
+byte-gleich reproduziert. Der Schalter bleibt trotzdem **AUS**, weil
+Regel (J) vor der Zahl feststand: 8 von 21 Zeilen bewegen sich um mehr
+als 0,03 xh, das ist eine deklarierte Re-Baseline und kein Beifahrer.
+Die Karten liegen trocken im Sitzungs-Scratchpad.
+
+**Die unmittelbar nutzbare Ausbeute ist eine Regel, kein Knopf:**
+*zweimal ernten, bevor geschrieben wird.* Sie steht als stehender Schritt
+in `werkzeuge.md`, und die zwei Flags, die sie zu je einem Befehl machen
+(`--laufform` als Overlay, `--expect-root` als Basis-Nennung), sind Teil
+dieses Arms. Damit ist auch die Frage beantwortet, ob ein
+Laufform-Write heute einfach wiederholt werden darf: **nein.** Eine
+Wiederholung mit der heutigen Saat landet 0,009–0,058 xh neben dem
+Bestand, und die Ernte danach wandert weiter. Der nächste Write nimmt
+entweder die Chart-Saat (ein Fixpunkt, dafür eine deklarierte
+Re-Baseline und 9 Vorkommen weniger) oder er fährt mindestens die
+Selbstprüfung und bucht den Iterationsanteil getrennt.
+
+#### Rettungswege
+
+1. **Die 9 Vorkommen zurückholen** — sie fallen an `connector_degenerate`
+   (+6) und `anchor_spike` (+3), nicht an der Fitgüte. Beide Gates
+   urteilen über eine Startlage, die jetzt weiter von der Tinte weg
+   liegt; ein Zwei-Stufen-Lauf (Chart-Saat solven, dann EINMAL auf dem
+   eigenen Ergebnis nachsolven) bliebe zeilen-unabhängig und säße näher.
+   Eigene Pre-Reg.
+2. **Die Saat aus dem gespeicherten Vorkommen** (Kandidat (c) der
+   Vorregistrierung, nicht gebaut) — sie stünde noch näher an der Tinte,
+   trägt aber ihre eigene Rückkopplung (Vorkommen und Zeilen stammen aus
+   demselben Lauf) und muss sie mitmessen. Eigene Pre-Reg.
+3. **Das `Z` unter dem Boden** — mit der Chart-Saat n = 2. Entweder der
+   Weg (1) holt das dritte Vorkommen zurück, oder die Zeile bleibt beim
+   Bestand; eine Absenkung des Bodens ist ausdrücklich KEIN Weg.
+4. **Autorenweg** — die Adoption der Chart-Saat als Default ist ein
+   Re-Baseline-Write und damit eine Autorenentscheidung.
+
+**Ausdrücklich kein Weg:** die Bewegung wegdefinieren, indem eine
+Re-Harvest-Karte nur noch gegen ihre Kontrollkarte statt gegen den
+Bestand berichtet wird — die Kontrollkarte ist die richtige VERGLEICHS-
+größe, aber sie macht die Iteration nicht kleiner.
+
+**Selbst entschieden.**
+
+* **Drei Iterationsschritte statt zwei.** Zwei hätten „bewegt sich" gesagt,
+  drei sagen „wandert" — der Unterschied zwischen Einschwingen und
+  Weglaufen ist erst ab dem dritten Schritt lesbar, und er ist die
+  eigentliche Antwort.
+* **`K3` als Nullprobe gefahren**, obwohl die Vorregistrierung nur
+  `H0 → H1 → H2` verlangt. Ohne sie wäre die Zeilen-Unabhängigkeit ein
+  Argument über den Code statt eine Messung.
+* **Den Determinismus-Doppellauf vorgeschaltet.** Er kostet zehn Minuten
+  und ist der einzige Grund, warum die Tabelle in Teil 1 etwas über die
+  Rückkopplung sagt und nicht über die Maschine.
+* **Die Abweichung zu LF14s Kontrollkarte stehen gelassen statt geglättet.**
+  Sie ist nicht auflösbar, und sie ist die beste Begründung für
+  `--expect-root` an der Ernte, die dieser Arm hat.
+
+**Grenzen.** Alles auf EINER Wurzel und EINEM Wortsatz (63 Wortproben,
+`--sets words`); die Paar-Drills sind nicht mitgeerntet. Die Iteration
+ist drei Schritte tief, nicht dreißig — dass sie in Schritt 4 einschwingt,
+ist nicht ausgeschlossen, nur unwahrscheinlich gemacht. `--min-n 1` hält
+`P` und `s` mit n = 1 in der Karte; ihre Bewegungen sind Einzelfits, keine
+Mediane, und die 0,058 xh am `P` sind entsprechend zu lesen.

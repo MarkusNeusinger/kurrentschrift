@@ -278,6 +278,33 @@ def test_the_mark_refit_flag_is_refused_where_it_would_do_nothing() -> None:
             build_provider(build_parser().parse_args(["--mark-refit", "--candidate", candidate]))
 
 
+# ------------------------------------------------------- the seed (LF15)
+
+
+def test_a_non_default_seed_labels_the_run_as_the_variant_it_is() -> None:
+    """Same rule as A1: only the DEFAULT seed may answer to the frozen name.
+
+    The chart seed (§14 „Laufform LF15") starts the solve on a composition
+    without the running forms, so its rows are a different measurement — a
+    report that called itself `chain` could be compared against the baseline by
+    mistake, which is the one thing the label exists to prevent.
+    """
+    assert build_provider(build_parser().parse_args(["--chain-seed", "composed"]))[1] == "chain"
+    assert build_provider(build_parser().parse_args(["--chain-seed", "chart"]))[1] == "chain+chart"
+    assert build_provider(build_parser().parse_args(["--chain-seed", "grid"]))[1] == "chain+grid"
+    assert (
+        build_provider(build_parser().parse_args(["--chain-seed", "chart", "--mark-refit"]))[1] == "chain+marks+chart"
+    )
+    assert build_provider(build_parser().parse_args(["--chain-seed", "chart", "--label", "lf15"]))[1] == "lf15"
+
+
+def test_the_seed_flag_is_refused_where_it_would_do_nothing() -> None:
+    """A stored row and a file are read as they are — no solve to seed."""
+    for candidate in ("authored", "traced"):
+        with pytest.raises(SystemExit, match="--chain-seed"):
+            build_provider(build_parser().parse_args(["--chain-seed", "chart", "--candidate", candidate]))
+
+
 # ------------------------------------------------------- the Kringel landmark
 
 
