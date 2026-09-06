@@ -270,10 +270,21 @@ WIDEST = {
 # documented 10 % headroom. The watched pieces did not move; §7.11 and the two
 # Stand blocks this arm touches got shorter, not longer, because a walked rescue
 # path replaces an open one instead of being appended to it.
+#
+# `mess-runde-route` raised for the FIRST time on 2026-09-06, by the round that
+# landed beside S2: „Laufform LF15" measures a Kette knob (`chain_seed="chart"`),
+# so it owes `verfahren-kette.md` its ledger line — and that page is the widest
+# route, with three tokens of room. A ledger line is the one thing this path
+# cannot avoid growing by: it is how a route says what was tried on it and what
+# came out, one row per arm, and the alternative is a route page that stops
+# recording. Re-measured at 6 264 and given the documented 10 % headroom, like
+# every other path. `mess-runde` is NOT raised again in the same breath: the
+# raise above already covers this round's two register rows and its §7.9/§7.11
+# rows (22 422 of 23 313), which is what the headroom is for.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
     "mess-runde": 23_313,
-    "mess-runde-route": 6_177,
+    "mess-runde-route": 6_890,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,
     "komposition": 9_680,

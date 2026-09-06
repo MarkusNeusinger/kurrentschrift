@@ -21,6 +21,7 @@ Two halves:
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 
 import numpy as np
 import pytest
@@ -1055,3 +1056,109 @@ def test_the_harvest_ships_loop_blind_and_the_flag_reaches_the_repair(monkeypatc
     assert occurrence and all(c["loop_aware"] is True for c in occurrence)
     # …and the trace repair stays loop-blind whatever the option says.
     assert all(c["loop_aware"] is False for c in seen if not c["occurrence"])
+
+
+# ----------------------------------------- the chart seed (LF15, the fixed point)
+
+
+def _with_rows(case, rows: dict[str, dict]):
+    """The same case composing against a candidate running-form map."""
+    return replace(case, laufform=rows)
+
+
+def _row(dx: float) -> dict:
+    """A running-form row that moves the composition — the feedback's carrier."""
+    return {"anchors": (_letter_anchors() + np.array([dx, 0.0])).tolist()}
+
+
+def _seed_spy(monkeypatch: pytest.MonkeyPatch, result, *, shift_per_row: float = 0.0):
+    """Patch `derive_word` so the composition DEPENDS on the case's rows.
+
+    That dependency is the thing under test: production's `derive_word` composes
+    the word from the running forms, so a chain seeded on the composition reads
+    the rows the harvest is about to write. Here one row shifts the composed
+    placement by `shift_per_row`, and the list of cases it was called with says
+    which composition the seed actually used.
+    """
+    seen: list = []
+
+    def derive(c):
+        seen.append(c)
+        if not c.laufform or not shift_per_row:
+            return result
+        shift = shift_per_row * len(c.laufform)
+        moved = [
+            {**item, "centerline": (np.asarray(item["centerline"], dtype=float) + np.array([shift, 0.0])).tolist()}
+            for item in result.composed["items"]
+        ]
+        return replace(result, composed={**result.composed, "items": moved})
+
+    monkeypatch.setattr(harvest_mod, "derive_word", derive)
+    return seen
+
+
+def test_the_chart_seed_is_off_and_leaves_every_other_seed_alone(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Default off, and `composed`/`grid` never even reach the re-derivation."""
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    seen = _seed_spy(monkeypatch, result, shift_per_row=0.5)
+    rows = _with_rows(case, {"a": _row(0.2)})
+
+    assert HarvestOptions().chain_seed == "composed"
+    for seed in ("composed", "grid"):
+        seeded_case, seeded_result = harvest_mod._seed_composition(rows, result, HarvestOptions(chain_seed=seed))
+        assert seeded_case is rows and seeded_result is result
+    assert seen == []
+
+
+def test_the_chart_seed_composes_without_the_running_forms(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The one thing it changes: the seeding composition sees no rows."""
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    seen = _seed_spy(monkeypatch, result, shift_per_row=0.5)
+    rows = _with_rows(case, {"a": _row(0.2)})
+
+    seeded_case, seeded_result = harvest_mod._seed_composition(rows, result, HarvestOptions(chain_seed="chart"))
+    assert [c.laufform for c in seen] == [{}]
+    assert seeded_case.laufform == {} and seeded_case.templates is rows.templates
+    assert seeded_result.composed["items"] == result.composed["items"]
+
+
+def test_a_root_without_running_forms_is_untouched_by_the_chart_seed(monkeypatch: pytest.MonkeyPatch) -> None:
+    """No rows, no loop — the switch must then be a literal no-op, not a re-derive."""
+    case, result = _synthetic_word([(0.06, 0.0)])
+    seen = _seed_spy(monkeypatch, result, shift_per_row=0.5)
+    seeded_case, seeded_result = harvest_mod._seed_composition(case, result, HarvestOptions(chain_seed="chart"))
+    assert seeded_case is case and seeded_result is result and seen == []
+
+
+def test_two_harvest_iterations_converge_under_the_chart_seed(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The fixed point, as two iterations of the real chain half.
+
+    §14 „Laufform LF15": with the composed seed the solve STARTS on a
+    composition built from the rows the harvest is about to replace — the two
+    seeded compositions below differ by half an x-height. Under the chart seed
+    they are one composition, so two iterations on two different maps give one
+    pen path: „converged in one step", and there is no step 2 to run.
+
+    What this cannot pin is the other half — that a moved seed also moves the
+    SOLVED path. On this two-letter synthetic the ink is a strong enough
+    attractor to pull both starts into the same basin; on the plates it is not
+    (0.0025-0.0283 xh per row, LF14). That difference is measured in the
+    journal, not asserted here.
+    """
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    _seed_spy(monkeypatch, result, shift_per_row=0.5)
+    first = _with_rows(case, {"a": _row(0.2)})
+    second = _with_rows(case, {"a": _row(-0.2), "b": _row(0.1)})
+    opts_composed = HarvestOptions(path="chain", rmse_max=2.5)
+    opts_chart = HarvestOptions(path="chain", rmse_max=2.5, chain_seed="chart")
+
+    # What `harvest_case` hands the chain today: one composition per row map.
+    assert harvest_mod.derive_word(first).composed["items"] != harvest_mod.derive_word(second).composed["items"]
+    seeded = [harvest_mod._seed_composition(rows, result, opts_chart)[1] for rows in (first, second)]
+    assert seeded[0].composed["items"] == seeded[1].composed["items"]
+
+    chart_first, _ = harvest_mod.chain_word_strokes(first, result, opts_chart)
+    chart_second, _ = harvest_mod.chain_word_strokes(second, result, opts_chart)
+    assert chart_first == chart_second
+    # …and it is the chart-only harvest itself, so the iteration has no step 2.
+    assert chart_first == harvest_mod.chain_word_strokes(case, result, opts_composed)[0]

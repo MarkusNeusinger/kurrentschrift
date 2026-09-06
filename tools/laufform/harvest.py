@@ -65,7 +65,7 @@ import os
 import urllib.request
 from collections import defaultdict
 from concurrent.futures import ProcessPoolExecutor
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any, Sequence
 
@@ -97,7 +97,8 @@ from tools.pairlab.trace import (
     cap_word_strokes,
     diacritic_stroke_units,
 )
-from tools.wordlab.cases import iter_fixture_word_cases
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
+from tools.wordlab.cases import fixture_root_for, iter_fixture_word_cases
 from tools.wordlab.derive import WordDeriveResult, derive_word
 
 
@@ -220,7 +221,16 @@ class HarvestOptions:
     # objective is identical either way; only the entered basin changes. A grid
     # fit resting on its own search bound is NOT used as a seed (that placement
     # is itself suspect), so such slots keep the composed start.
-    chain_seed: str = "composed"  # "composed" | "grid"
+    #
+    # "chart" is the LF15 arm („Chart-Saat", §14 `sep06`), default OFF: the
+    # composition the chain starts on is built WITHOUT the running-form rows.
+    # The other two seeds inherit those rows through `derive_word`, which
+    # composes the word FROM them — so the harvest reads the very rows it is
+    # about to replace, and a fresh harvest of a written root re-derives every
+    # row 0.0025-0.0283 xh beside it (LF14's Nebenbefund „die Ernte ist kein
+    # Fixpunkt"). With the chart seed the placement, the coverage windows and the
+    # registration come from the ductus prior, which no harvest writes.
+    chain_seed: str = "composed"  # "composed" | "grid" | "chart"
     # Measure A1 (`docs/proposals/tintenfolger.md` §7.3): after the body solve,
     # refit each MARK stroke (i-dot, umlaut, u-bow) onto the ink the body did
     # not claim (`tools.pairlab.marks`). Default OFF and deliberately without a
@@ -809,6 +819,33 @@ class ChainRunFit:
     fit: Any | None
 
 
+def _seed_composition(case, result: WordDeriveResult, opts: HarvestOptions) -> tuple[Any, WordDeriveResult]:
+    """The composition the chain starts on — the case's own, or a chart-only one.
+
+    Everything the chain solve reads off `result` is a STARTING POINT: the
+    letters' composed placement (`_letter_spec`), the generated connectors, the
+    per-slot coverage windows and the registration the ink is met in. The
+    letters' geometry is the chart row's either way. So when `derive_word`
+    composes with the running-form rows — which it does, exactly as production
+    — the harvest starts on the rows it is about to replace, and its output
+    depends on its own last output. That is the LF14 Nebenbefund, measured as
+    0.0025-0.0283 xh of drift per row on a re-harvest of a written root.
+
+    `chain_seed == "chart"` cuts the loop at its one place: the seeding
+    composition is built from the chart templates alone (the ductus prior, which
+    no harvest writes), so the map the harvest produces is a function of the ink
+    and the prior only. Nothing else changes — the fit, the gates, the repair
+    and the medians are the same code on the same ink.
+
+    Returns `(case, result)` unchanged for every other seed, so a run with the
+    switch off is byte-identical to one from before it existed.
+    """
+    if opts.chain_seed != "chart" or not getattr(case, "laufform", None):
+        return case, result
+    chart_only = replace(case, laufform={})
+    return chart_only, derive_word(chart_only)
+
+
 def chain_word_strokes(case, result: WordDeriveResult, opts: HarvestOptions) -> tuple[list[list[list[float]]], dict]:
     """The chain path's TRACE half: solve every run of joined slots, weld the pen path.
 
@@ -841,6 +878,7 @@ def chain_word_strokes(case, result: WordDeriveResult, opts: HarvestOptions) -> 
     entries handed to the assembler are literally `fit.stroke_polylines_px`, in
     the same order, so nothing about the baseline changes.
     """
+    case, result = _seed_composition(case, result, opts)
     xh = result.xh_px
     registration = {
         "tx": result.registration["tx"],
@@ -1214,6 +1252,7 @@ def harvest(
     max_cases: int = 0,
     chain_seed: str = "composed",
     loop_aware_repair: bool = LOOP_AWARE_REPAIR,
+    laufform_overlay: Path | None = None,
 ) -> tuple[dict[str, dict], list[dict], list[dict], list[dict]]:
     """Per-letter median fitted anchors over the clean word occurrences, plus
     every clean fit as an occurrence record (`InstanceItem` wire shape), plus
@@ -1225,11 +1264,33 @@ def harvest(
     `jobs > 1` pools over CASES, which keeps every case's `derive_word` inside
     one worker. Iteration order — and therefore the medians — is independent of
     the job count: `ProcessPoolExecutor.map` yields in input order.
+
+    `laufform_overlay` composes against CANDIDATE running forms instead of the
+    root's own rows — the same file and the same overlay semantics
+    `wordbench.run --laufform` has, so a harvest can be run on the map a
+    previous harvest produced. That is the second step of the fixed-point
+    self-check (§14 „Laufform LF15"); the frozen root is never touched.
     """
     opts = HarvestOptions(
         style=style, rmse_max=rmse_max, path=path, chain_seed=chain_seed, loop_aware_repair=loop_aware_repair
     )
     cases = [c for which in sets for c in iter_fixture_word_cases(which=which, style=style)]
+    if laufform_overlay is not None:
+        # Deferred: `tools.wordbench.run` is the bench entry point and pulls the
+        # metric with it — the harvest imports it only when a candidate map is
+        # actually named, and reuses it rather than owning a second overlay.
+        from tools.wordbench.run import load_laufform_payload, overlay_laufform_rows  # noqa: PLC0415
+
+        payload = load_laufform_payload(laufform_overlay)
+        # One overlay per ROOT, not per case: every case of a set shares the
+        # loaded rows and templates objects, and deriving the candidate rows 63
+        # times over would only produce the same dict 63 times.
+        overlaid: dict[int, dict[str, dict]] = {}
+        for case in cases:
+            frozen_rows = case.laufform
+            if id(frozen_rows) not in overlaid:
+                overlaid[id(frozen_rows)] = overlay_laufform_rows(frozen_rows, payload, case.templates)
+            case.laufform = overlaid[id(frozen_rows)]
     if max_cases:
         cases = cases[:max_cases]
 
@@ -1348,10 +1409,18 @@ def main() -> None:
     ap.add_argument("--path", choices=["slot", "chain"], default="slot", help="per-letter M4 fits or word chains")
     ap.add_argument(
         "--chain-seed",
-        choices=["composed", "grid"],
+        choices=["composed", "grid", "chart"],
         default="composed",
-        help="where the chain's translation blocks start: the composed layout, or each letter's own grid placement",
+        help="where the chain solve starts: the composed layout, each letter's own grid placement, or "
+        "a CHART-only composition (LF15, the row-independent seed that makes the harvest a fixed point)",
     )
+    ap.add_argument(
+        "--laufform",
+        type=Path,
+        help="candidate running-form map to compose with instead of the root's own rows (same file "
+        "wordbench.run --laufform takes) — the second step of the harvest-twice self-check",
+    )
+    add_expect_root_argument(ap)
     ap.add_argument("--jobs", type=int, default=1, help="parallel worker processes over CASES (default 1)")
     ap.add_argument("--max-cases", type=int, default=0, help="cap the cases per run (0 = all)")
     ap.add_argument("--min-n", type=int, default=4)
@@ -1380,7 +1449,7 @@ def main() -> None:
     if args.jobs < 1:
         raise SystemExit(f"--jobs must be >= 1, got {args.jobs}")
     if args.chain_seed != "composed" and args.path != "chain":
-        raise SystemExit("--chain-seed grid only applies to --path chain")
+        raise SystemExit(f"--chain-seed {args.chain_seed} only applies to --path chain")
     if args.max_cases < 0:
         raise SystemExit(f"--max-cases must be >= 0 (0 = all), got {args.max_cases}")
 
@@ -1392,6 +1461,13 @@ def main() -> None:
         # Stage-B measurement round says otherwise; --apply keeps writing
         # exactly what it has always written.
         raise SystemExit("--apply is available for --path slot --sets words only (report-only otherwise)")
+    if args.apply and (args.chain_seed != "composed" or args.laufform):
+        raise SystemExit("--apply writes the DEFAULT harvest only — a seeded or overlaid run is a measurement")
+
+    # WHICH BASE this run reads, stated (and checked) before a case is composed —
+    # the harvest's output is what a Laufform write puts into production, so it
+    # owes its base's identity like every bench does.
+    announce_roots([fixture_root_for(which, style=args.style) for which in sets], args.expect_root)
 
     drafts, occurrences, word_records, diag_rows = harvest(
         args.style,
@@ -1403,6 +1479,7 @@ def main() -> None:
         max_cases=args.max_cases,
         chain_seed=args.chain_seed,
         loop_aware_repair=args.loop_aware_repair or LOOP_AWARE_REPAIR,
+        laufform_overlay=args.laufform,
     )
     for target in (args.out, args.occ_out, args.word_out):
         target.parent.mkdir(parents=True, exist_ok=True)

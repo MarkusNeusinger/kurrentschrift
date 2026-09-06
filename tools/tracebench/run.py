@@ -159,25 +159,36 @@ def select_split(reference: Reference, split: str, words: str | None) -> tuple[l
 
 def build_provider(args: argparse.Namespace) -> tuple[Provider, str]:
     """`(provider, label)` for `--candidate` — the label travels into every row."""
-    if args.mark_refit and args.candidate != "chain":
-        raise SystemExit(
-            "--mark-refit changes how the CHAIN candidate is built and does nothing for --candidate "
-            f"{args.candidate} — a stored row and a file are read as they are"
-        )
+    for flag, value in (("--mark-refit", args.mark_refit), ("--chain-seed", args.chain_seed != "composed")):
+        if value and args.candidate != "chain":
+            raise SystemExit(
+                f"{flag} changes how the CHAIN candidate is built and does nothing for --candidate "
+                f"{args.candidate} — a stored row and a file are read as they are"
+            )
     if args.candidate == "file":
         if not args.candidate_file:
             raise SystemExit("--candidate file needs --candidate-file <path>")
         return file_provider(args.candidate_file), args.label or args.candidate_file.name
     if args.candidate == "chain":
         provider = chain_provider(
-            style=args.style, which=args.which, fixtures_root=args.fixtures, mark_refit=args.mark_refit
+            style=args.style,
+            which=args.which,
+            fixtures_root=args.fixtures,
+            chain_seed=args.chain_seed,
+            mark_refit=args.mark_refit,
         )
-        # A1 is a VARIANT of the baseline, so it may not answer to the baseline's
-        # name: an unlabelled run is called `chain+marks`, and a report cannot be
-        # mistaken for the frozen `chain` number it has to be compared against.
-        # (K-A and K-B — marks-last assembly and trace repair — ARE the baseline
-        # since their aug19 adoptions as Kette v2/v3: no flag, no variant label.)
-        return provider, args.label or ("chain+marks" if args.mark_refit else "chain")
+        # A1 and a non-default seed are VARIANTS of the baseline, so they may not
+        # answer to the baseline's name: an unlabelled run is called
+        # `chain+marks` / `chain+<seed>`, and a report cannot be mistaken for the
+        # frozen `chain` number it has to be compared against. (K-A and K-B —
+        # marks-last assembly and trace repair — ARE the baseline since their
+        # aug19 adoptions as Kette v2/v3: no flag, no variant label.)
+        variants = [
+            suffix
+            for flag, suffix in ((args.mark_refit, "marks"), (args.chain_seed != "composed", args.chain_seed))
+            if flag
+        ]
+        return provider, args.label or "+".join(["chain", *variants])
     if args.candidate == "authored":
         return authored_provider, args.label or "authored"
     return traced_provider, args.label or "traced"
@@ -257,6 +268,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--words", help="comma-separated id/word filter applied on top of the split")
     parser.add_argument("--candidate", default="chain", choices=PROVIDER_NAMES)
     parser.add_argument("--candidate-file", type=Path, help="candidate JSON for --candidate file")
+    parser.add_argument(
+        "--chain-seed",
+        choices=["composed", "grid", "chart"],
+        default="composed",
+        help="where the chain solve starts (--candidate chain only): the composed layout, each letter's "
+        'own grid placement, or a CHART-only composition — the row-independent seed of §14 „Laufform LF15". '
+        "A non-default seed labels the run `chain+<seed>`, because it is a variant of the baseline",
+    )
     parser.add_argument(
         "--mark-refit",
         action="store_true",
