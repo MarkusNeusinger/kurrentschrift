@@ -173,6 +173,14 @@ Buchstabens (breiter, geneigter als die Tafelform). Liegt als
 Template-Variante 100, `LAUFFORM_VARIANT = 100`, nur in fließenden Läufen.
 → [§2](glossar.md#2-architektur-und-datenmodell)
 
+**Schleifenbereich · Schleifen-Registrierung** — der Anker-Indexbereich,
+über den die TAFELZEILE eine Schleife schließt (`loop_ranges`), und der
+Schritt, der jedes Vorkommen dort per Ähnlichkeit auf die Median-Schleife
+des Stapels holt, bevor medianisiert wird (`align_loops`), damit der
+Median nicht Form gegen Lage verrechnet. Gemessen und NICHT adoptiert;
+`LAUFFORM_LOOP_WINDOW = 0` ist aus und byte-gleich.
+→ [§2](glossar.md#2-architektur-und-datenmodell)
+
 **Slot** — eine Position im komponierten Wort (ein `glyph_key` plus
 Render-Kontext). Vorkommen und Übergänge werden über `(specimen_id,
 slot)` zugeordnet. → [§2](glossar.md#2-architektur-und-datenmodell)

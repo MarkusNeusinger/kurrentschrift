@@ -208,6 +208,265 @@ def spline_basis_median(
     return out, notes
 
 
+# ----------------------------------------------------------------- loop-faithful median (LF13)
+
+# Arc-length window (x-height units, on the chart stroke) over which a loop's
+# alignment shift fades back to nothing outside the loop — the ONE knob of the
+# LF13 pre-registration. 0.0 is OFF and returns the stack unchanged, bit for bit,
+# which is what keeps this the estimator the LF11/LF12 rows were derived with
+# until a passed gate says otherwise (the pattern of `LAUFFORM_END_WINDOW`).
+LAUFFORM_LOOP_WINDOW = 0.0
+
+# The fewest anchors a self-crossing must span to count as a loop rather than as
+# a sampling artefact of two strands running parallel.
+_LOOP_MIN_SPAN = 4
+
+
+def _segment_crossing(p0: np.ndarray, p1: np.ndarray, q0: np.ndarray, q1: np.ndarray) -> bool:
+    """Do the two closed segments cross?"""
+    r, s = p1 - p0, q1 - q0
+    denom = r[0] * s[1] - r[1] * s[0]
+    if abs(denom) < 1e-15:
+        return False
+    diff = q0 - p0
+    t = (diff[0] * s[1] - diff[1] * s[0]) / denom
+    u = (diff[0] * r[1] - diff[1] * r[0]) / denom
+    return bool(0.0 <= t <= 1.0 and 0.0 <= u <= 1.0)
+
+
+def _arc_fraction(points: np.ndarray) -> np.ndarray:
+    """Cumulative arc length of a polyline, scaled to [0, 1]."""
+    acc = np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(points, axis=0).T))])
+    total = float(acc[-1])
+    return acc / total if total > 0.0 else acc
+
+
+def loop_ranges(
+    chart_anchors: Sequence[Sequence[float]],
+    half_widths: Sequence[float],
+    stroke_starts: Sequence[int] | None = None,
+    corner_anchors: Sequence[int] | None = None,
+    *,
+    min_span: int = _LOOP_MIN_SPAN,
+) -> list[tuple[int, int]]:
+    """The anchor index ranges `[start, end)` over which the CHART row closes a loop.
+
+    Read off the RENDERED centerline, per pen-stroke, and mapped back to anchors
+    by arc length. Two decisions carry it, and both are the same one the spline
+    basis makes: the loops are located on the chart row (occurrence-independent,
+    so every occurrence is aligned on one and the same range — a range that moved
+    per occurrence would not define a median at all), and they are located on the
+    drawn spline rather than on the anchor polyline, because a coarse polyline
+    misses a loop the renderer closes and the join grammar reads the spline too.
+
+    Arc length, not proximity, carries the map from sample back to anchor: at a
+    crossing the two strands are spatially adjacent, so a nearest-sample search
+    hands a strand's anchor to the OTHER strand and the loop collapses to a span
+    of one. Arc keeps running where space folds back.
+
+    A segment crossed TWICE bounds three regions, not two — the two loops back to
+    each crossing plus the strand between them — and the third is a real Kringel
+    (the Sütterlin `p` writes one inside the span of its belly), so the pairs of
+    crossings that share a partner are emitted as well.
+
+    Args:
+        chart_anchors: The chart row's anchors, `[[x, y], …]`.
+        half_widths: The chart row's per-anchor half-widths (the sample plan's).
+        stroke_starts: The chart's `trace_meta.stroke_starts`.
+        corner_anchors: The chart's `trace_meta.corner_anchors`.
+        min_span: Fewest anchors a loop must span.
+
+    Returns:
+        The ranges in reading order, deduplicated, each `[start, end)` in anchor
+        indices of the whole row.
+    """
+    from core.template import multi_stroke_centerlines  # noqa: PLC0415 — heavy import, one call site
+
+    pts = np.asarray(chart_anchors, dtype=float).reshape(-1, 2)
+    if len(pts) < 2:
+        return []
+    widths = np.asarray(half_widths, dtype=float).reshape(-1)
+    if len(widths) != len(pts):
+        widths = np.full(len(pts), float(widths.mean()) if len(widths) else 0.05)
+    lines = [
+        np.asarray(line, dtype=float)
+        for line in multi_stroke_centerlines(pts, widths, stroke_starts, 90.0, corner_anchors=corner_anchors)
+    ]
+    bounds = _stroke_bounds(len(pts), stroke_starts)
+    if len(lines) != len(bounds):
+        return []
+
+    found: set[tuple[int, int]] = set()
+    for (lo, hi), line in zip(bounds, lines, strict=True):
+        if len(line) < 4:
+            continue
+        crossings = [
+            (i, j)
+            for i in range(len(line) - 1)
+            for j in range(i + 2, len(line) - 1)
+            if _segment_crossing(line[i], line[i + 1], line[j], line[j + 1])
+        ]
+        spans = list(crossings)
+        for shared, other in ((0, 1), (1, 0)):
+            groups: dict[int, list[int]] = {}
+            for pair in crossings:
+                groups.setdefault(pair[shared], []).append(pair[other])
+            for partners in groups.values():
+                partners.sort()
+                spans.extend(zip(partners[:-1], partners[1:], strict=True))
+        at = np.searchsorted(_arc_fraction(line), _arc_fraction(pts[lo:hi])).clip(0, len(line) - 1)
+        for i, j in spans:
+            start = int(np.searchsorted(at, i, side="left"))
+            end = int(np.searchsorted(at, j, side="right")) - 1
+            if end - start >= min_span:
+                found.add((lo + start, lo + end + 1))
+
+    # Overlapping spans are MERGED, and that is a correctness requirement rather
+    # than tidiness: the same loop is reported twice whenever the drawn curve
+    # crosses its neighbour at two nearly identical parameters, and a shift
+    # applied once per range would compound on the overlap. One loop region, one
+    # alignment. Merging also folds a nested pair into its hull — coarser than
+    # measuring them apart, but the alignment may only ever move a whole region.
+    merged: list[tuple[int, int]] = []
+    for start, end in sorted(found):
+        if merged and start < merged[-1][1]:
+            merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+        else:
+            merged.append((start, end))
+    return merged
+
+
+def align_loops(
+    stack: np.ndarray,
+    chart_anchors: Sequence[Sequence[float]],
+    ranges: Sequence[tuple[int, int]],
+    stroke_starts: Sequence[int] | None = None,
+    *,
+    window: float = LAUFFORM_LOOP_WINDOW,
+    scale: bool = True,
+) -> np.ndarray:
+    """Register every occurrence's loops on the stack's own median loop (LF13).
+
+    An elementwise median over curves that are not congruent CONTRACTS: point `i`
+    of the row is the median of point `i` of every occurrence, and where the
+    occurrences' loops disagree about where they are or how big they are, that
+    median lies further in than any one of them. On a loop the effect is not
+    cosmetic — the counter is what survives the pen, and a running form whose
+    counter has closed is read as a different letter.
+
+    The repair is to median the FORM instead of form against placement and size.
+    Per loop, each occurrence is brought onto the stack's median loop by a
+    SIMILARITY — the translation that matches the median loop centroid, and (with
+    `scale`) the isotropic factor that matches the median loop radius, the median
+    distance of the loop's anchors from their own centroid. Both are applied with
+    weight 1 inside the loop and faded linearly to nothing over `window` of arc
+    length (on the CHART stroke) on each side, the shape of `blend_stroke_ends`,
+    so a registration can never appear as a step mid-stroke.
+
+    What that does and does not guarantee, precisely — because the difference
+    was got wrong once and the data says so. The median shift is zero and the
+    median factor is one by construction, so the registration introduces no free
+    parameter and no target outside the stack: the row keeps its place, and the
+    loop keeps the stack's median radius. It does NOT bound the resulting
+    APERTURE. Radius is a scalar proxy; the pointwise median that follows can
+    still synthesise a hole wider than any single occurrence when the loops
+    disagree anisotropically (a round one against a flat one), and on the
+    Sütterlin-1922 root that happens — the `Z` row stands 0.034 xh above its
+    occurrence median, the `w` 0.024. It happens to the STORED rows too, so it
+    is a property of the elementwise median rather than of this step; a
+    two-sided bound would have to be enforced on `D0` itself, which needs the
+    aperture ruler and is not what this function does.
+
+    `window` of 0 returns the stack unchanged, bit for bit: the switch is off and
+    the caller gets the estimator LF11 adopted.
+
+    Args:
+        stack: Occurrence anchors, shape (n_occurrences, n_anchors, 2).
+        chart_anchors: The chart row's anchors — the arc-length parameter of the
+            fade, never a summand.
+        ranges: The chart's loop ranges, from `loop_ranges`.
+        stroke_starts: The chart's `trace_meta.stroke_starts`.
+        window: Fade window in x-height units; 0 disables the registration.
+        scale: Register the loop's size as well as its place (the measured
+            carrier); False is the translation-only control arm.
+
+    Returns:
+        The registered stack, same shape as `stack`.
+
+    Raises:
+        ValueError: If the stack and the chart row disagree about the anchor count.
+    """
+    pts = np.asarray(stack, dtype=float)
+    if pts.ndim != 3 or pts.shape[2] != 2:
+        raise ValueError(f"stack must be (n_occurrences, n_anchors, 2), got {pts.shape}")
+    chart = np.asarray(chart_anchors, dtype=float).reshape(-1, 2)
+    if len(chart) != pts.shape[1]:
+        raise ValueError(f"chart has {len(chart)} anchors, occurrences have {pts.shape[1]}")
+    if window <= 0.0 or not len(ranges):
+        return pts
+
+    out = pts.copy()
+    for lo, hi in _stroke_bounds(len(chart), stroke_starts):
+        segment = chart[lo:hi]
+        if len(segment) < 2:
+            continue
+        arc = np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(segment, axis=0).T))])
+        for start, end in ranges:
+            if not (lo <= start and end <= hi):
+                continue
+            inside = arc[start - lo : end - lo]
+            before, after = float(inside[0]), float(inside[-1])
+            weight = np.clip(
+                np.minimum((arc - (before - window)) / window, ((after + window) - arc) / window), 0.0, 1.0
+            )
+            loop = out[:, start:end, :]
+            centroids = loop.mean(axis=1)
+            target_centre = np.median(centroids, axis=0)
+            if scale:
+                # The loop's radius: the MEDIAN distance of its anchors from
+                # their own centroid, not the mean — one anchor pulled onto a
+                # neighbouring stroke by the fit must not resize the loop.
+                radii = np.median(np.linalg.norm(loop - centroids[:, None, :], axis=2), axis=1)
+                target_radius = float(np.median(radii))
+                factor = np.where(radii > 1e-9, target_radius / np.where(radii > 1e-9, radii, 1.0), 1.0)
+            else:
+                factor = np.ones(len(loop))
+            # Where the similarity sends each anchor, as a displacement — so the
+            # fade can carry it out of the loop instead of cutting it off.
+            moved = centroids[:, None, :] + factor[:, None, None] * (out[:, lo:hi, :] - centroids[:, None, :])
+            delta = (moved - out[:, lo:hi, :]) + (target_centre - centroids)[:, None, :]
+            out[:, lo:hi, :] += weight[None, :, None] * delta
+    return out
+
+
+def loop_faithful_median(
+    stack: np.ndarray,
+    chart_anchors: Sequence[Sequence[float]],
+    half_widths: Sequence[float],
+    stroke_starts: Sequence[int] | None = None,
+    corner_anchors: Sequence[int] | None = None,
+    *,
+    knot_spacing: float,
+    window: float = LAUFFORM_LOOP_WINDOW,
+    scale: bool = True,
+) -> tuple[np.ndarray, list[str]]:
+    """`spline_basis_median` over a stack whose loops were registered first (LF13).
+
+    The adopted estimator with one step in front of it, and nothing else changed:
+    at `window` 0 it IS `spline_basis_median`, byte for byte, which is what makes
+    the switch a switch rather than a fork.
+    """
+    ranges = loop_ranges(chart_anchors, half_widths, stroke_starts, corner_anchors) if window > 0.0 else []
+    aligned = align_loops(stack, chart_anchors, ranges, stroke_starts, window=window, scale=scale)
+    median, notes = spline_basis_median(
+        aligned, chart_anchors, stroke_starts, corner_anchors, knot_spacing=knot_spacing
+    )
+    if window > 0.0:
+        how = "place and size" if scale else "place only"
+        notes = [f"{len(ranges)} loop(s) registered on {how} over a {window} xh window", *notes]
+    return median, notes
+
+
 def _mean_stats(rows: Sequence[dict[str, Any]]) -> dict[str, Any]:
     """Pool the layer-1 statistics of one aggregation group.
 

@@ -209,6 +209,8 @@ die DB) — mit seiner Bedingung.
 | sep05 | Laufform | [LF12 geschrieben + Re-Baseline](#laufform-lf12-sep05--geschrieben-prod-write-der-18-zeilen--löschung-s-deklarierte-re-baseline) | **geschrieben** (Autor) · **Re-Baseline** (Wörter/Paare + beide Duell-Routen) | 18 Zeilen geschrieben, Readback identisch, `S` gelöscht (A35), Live-Zeilen anker-exakt die gemessene Karte. Neue Wurzeln `eaa195aa7c84…` / `0fbde2d72b64…`: Wörter **0,108444**, Paare **0,148236**, Kette dtw **0,045384**, Lotse dtw **0,053393**. Boden am Bestand: nur noch `P`/`s` (je n = 1) darunter, alle Zeilen-Gates grün |
 | sep05 | Feder | [Ink-Clearance an die Feder (Nib-gekoppelte Clearance)](#ink-clearance-an-die-feder-sep05--vorregistrierung-die-clearance-in-nib-radien) | Pre-Reg | Folgearm des Platten-Nibs, per Autor-Entscheid lizenziert. Diagnose zuerst: alle 9 neuen Verdopplungen liegen DAZWISCHEN (8× Verbinder × Körper, 1× Arm-Fusion), keine INNERHALB — die Kringel des Autors sieht `gleichzug_doublings` konstruktionsbedingt nicht; separat gemessen schließen 9 Glyphen ihre Binnenfläche (31 der 63 Wörter), weil sie um genau `2·Δhalf` = 0,04898 xh schrumpft. Mechanismus: Tinten-Clearance in Nib-Radien, am Kalibrierwert geklemmt (`scale = max(1, half/0,07251)`) → Chart-Nib byte-gleich per Konstruktion |
 | sep05 | Feder | [Ink-Clearance an die Feder gemessen](#ink-clearance-an-die-feder-sep05--gemessen-der-arm-fällt-und-er-sagt-genau-wo-das-problem-nicht-sitzt) | Pre-Reg + gemessen · **verworfen** (Gate 1 + 2) | Gate 1 21 → **21** (`Wer` −1, `Seiten` re-segmentiert), Gate 2 `coverage` 0,101516 → 0,105761; Golden byte-gleich, Chart-Nib ziffernweise 0,109218 · 0,148198. Geometrischer Grund: 8 der 9 Stellen sind der Deckungs-Join NEBEN seinem Landekörper — Platzierung verschiebt beide gemeinsam (`sep` 0,176 → 0,178, Bandaustritt bräuchte Skala ≈ 20); die 9. ist die gewollte Arm-Fusion `Galoppieren` r × e. Leiter (nicht vorregistriert): Skala 2,0 drückt die Zahl auf 8, fabriziert dabei `regieren` neu und vervierfacht den Deckungspreis — kein Punkt besteht Gate 1. Schalter bleibt AUS; Schritt 2 (Nib-Wechsel) empfiehlt die Spalte `sources.constant_nib_units` und wartet auf den Autor |
+| sep06 | Laufform | [LF13 schleifen-treue Zeile (Pre-Reg)](#laufform-lf13-sep06--vorregistrierung-die-schleifen-treue-zeile-zurechnung-r2-und-der-kandidatenschätzer) | Pre-Reg | Rettungswege (4)/(5) der Kringel-Diagnose: R1 Öffnungsweiten-Gate, R2 schleifen-treuer Median, R4 als Report-Spalte. R2s Vorbedingung ist vorab erfüllt — der LF12-Erntestapel leitet alle 18 Zeilen byte-gleich wieder ab (0,000000000 xh), ist also DER Eingangs-Stapel; `p` ausgenommen (Zeile aus älterer Ernte, n = 2 unter dem Boden). Mechanismus-Menü M1/M2/M3 mit Auswahlregel „größter Anteil" vorab festgelegt; Decke der Kennzahl vorab beziffert: 18 der 26 schließenden Wörter erreichbar, 8 hängen an `G`/`v`/`k` bzw. den Chart-Rückfällen `er`/`er-3` |
+| sep06 | Laufform | [LF13 gemessen](#laufform-lf13-sep06--gemessen-der-schätzer-war-nie-der-träger-und-der-arm-fällt-an-zwei-gates) | Pre-Reg + gemessen · **verworfen** (Gate (a) + (c)) · Teilerfolg zurechenbar | **Die Zurechnung kippt H2:** gegen den EIGENEN Stapel gemessen kostet der Schätzer nur 0,005–0,029 xh, während die ERNTE davor (Kette-Wortfit → zentriertes 120-Anker-Vorkommen) 0,016–0,057 xh kostet — H2 gehört zu drei Vierteln der Dissektion, nicht dem Median. Anteile am Rest-Verlust: Lage −22 % · Größe −1 % · Basis +21 % · Formstreuung +53 %. **Die Decke ist ein Buchstabe:** nur `sz` (0,2167) und `r` (0,2177) tragen in den Vorkommen selbst mehr als 0,194, `a`/`o`/`g` sind schon dort zu. Arm (Schleifen-Registrierung, Leiter {0,15 · 0,25 · 0,50}): Gate (a) rot (2 Bereiche statt 4 der Basis, keine Regression), Gate (c) rot (0,108444 → 0,108637), (b)/(d)/(e) grün; Kennzahl 26 → **23** Wörter (`muß`-Familie), Verdopplungen bei 0,097 22 → 21. R4-Anzeiger gebaut und geeicht (monotone Kurve 0,609 → 0,878), bleibt Report-Spalte. Schalter `LAUFFORM_LOOP_WINDOW` bleibt AUS |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -10394,3 +10396,398 @@ zusammenlaufen lassen); die Skalen-Leiter als nicht vorregistrierte
 Empfindlichkeitsprüfung zu fahren, weil die Zweitmeinung die Frage
 aufgeworfen hat, ob das Negativ am Mechanismus oder am Wert hängt — sie
 hängt am Mechanismus, aber erst die Leiter beweist es.
+
+### Laufform LF13 `sep06` — Vorregistrierung: die schleifen-treue Zeile (Zurechnung R2 und der Kandidatenschätzer)
+
+Geschrieben und committet VOR der ersten Zahl dieses Arms. Anlass ist die
+Kringel-Diagnose vom 2026-09-06
+([`../notes/kringel-binnenflaechen-2026-09-06.md`](../notes/kringel-binnenflaechen-2026-09-06.md)):
+die Platte hält ihre Binnenflächen offen, die mit derselben Feder
+gestrichene Mittelachse hält alle neun, die Kette sieben von acht — und
+sie gehen verloren, wenn aus Vorkommen eine **Zeile** wird (H2) bzw. in
+der Chart-Form (H3). Die Position des Autors: die Kringel bleiben offen,
+indem man der Tinte richtig folgt, nicht durch Autorenarbeit. Dieser Arm
+geht die Rettungswege (4) und (5) der `sep05`-Zeile in
+[`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.9 —
+R1 (Öffnungsweiten-Gate) und R2 (schleifen-treuer Median) — und baut R4
+(Verschmelzungs-Anzeiger) als reine Report-Spalte mit.
+
+**Basis.** Die `sep05`-Wurzeln des LF12-Writes, unverändert und
+nicht neu exportiert: `suetterlin-1922` `exported_at`
+2026-09-05T21:33:12+00:00 `root_digest` **`eaa195aa7c84…`**,
+`suetterlin-1922-pairs` 2026-09-05T21:33:11+00:00
+**`0fbde2d72b64…`**. In dieser Umgebung frisch gerechnet mit
+`--expect-root` und `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`:
+**Wörter 0,108444 · Paare 0,148236** — ziffernweise die Headline des
+LF12-Writes. Gepoolter Nib 0,0724326, 21 Laufform-Zeilen, `S` fehlt.
+Weder `core/word_metric.py` noch `tools/tracebench` werden angefasst.
+
+**Das Lineal dieses Arms** ist `D0`, die Öffnungsweite der
+Mittellinien-Schleife aus der Diagnose, mit deren Messcode Wort für Wort
+(`aperture.py`, eingefroren übernommen). Abgenommen ist es an der
+Kennzahl des Blatts: die Zählregel „ein Wort verliert eine
+Binnenfläche, wenn seine engste komponierte Schleife an einer
+zugeordneten Platten-Binnenfläche `D0 − 2·0,097 ≤ 0` erreicht" gibt auf
+dieser Wurzel **26 von 63** mit der Aufschlüsselung des Blatts
+(`a` 12 · `o` 5 · `sz` 4 · `G` 3 · `g` 3 · `r` 2 · `v` 2 · `k` 1).
+
+#### Teil 1 — die Zurechnung, die das Blatt schuldig blieb (R2s Vorbedingung)
+
+Das Blatt konnte H2 nur in der RICHTUNG messen, nicht im Betrag: seine
+Vergleichsmenge waren die Kette-WORTFITS, nicht der Stapel, aus dem die
+Zeile abgeleitet wurde. **Diese Lücke ist geschlossen, bevor der Arm
+beginnt:** der LF12-Erntestapel leitet auf dieser Wurzel alle 18
+gespeicherten Zeilen mit `spline_basis_median` bei Δs 0,16 xh **anker-genau
+byte-gleich** wieder ab (größte Bewegung 0,000000000 xh über alle 18) —
+er IST der Eingangs-Stapel der Zeile. **`p` ist ausgenommen und wird nur
+diagnostiziert:** seine Zeile stammt aus einer älteren Ernte (LF12 maß
+n = 2 unter dem Boden 3 und ließ sie stehen), also gibt es für sie
+keinen exakten Stapel und dieser Arm kann sie per Konstruktion nicht
+reparieren.
+
+Die Schleifen werden **an der Chart-Zeile** lokalisiert — als
+Anker-Indexbereiche zwischen den Selbstschnitten ihres Ankerzugs, je
+Federstrich. Das ist dieselbe Doktrin, die die Bogenlänge der Chart-Zeile
+zum gemeinsamen Parameter der Spline-Basis macht: nur ein
+vorkommens-UNABHÄNGIGER Bereich ist einer, auf dem ein Median über den
+Stapel überhaupt definiert ist. Ein Bereich bleibt auch dann ein
+Bereich, wenn die Schleife darin kollabiert ist — der 0,02-Boden der
+Diagnose-Zuordnung wird ausdrücklich NICHT mitgenommen (die Warnung des
+Blatts am `p`, dessen Zeile heute 0,0095 trägt).
+
+Je Schlüssel aus {`a` `o` `sz` `g` `r`} (+ `p` als Diagnose) vier
+Ablesungen auf demselben Stapel:
+
+* `D0_occ` — Median der Öffnungsweiten der EINZELNEN Vorkommen,
+* `D0_anker` — die Zeile aus dem Per-Anker-Median (`--knots 0`),
+* `D0_spline` — die Zeile aus dem Spline-Basis-Median (= die heutige),
+* `D0_ausg` — der Per-Anker-Median, nachdem jedes Vorkommen auf dem
+  Schwerpunkt SEINER Schleife ausgerichtet wurde.
+
+Daraus drei Anteile, die sich zu `D0_occ − D0_spline` addieren:
+**Fehlregistrierung** = `D0_ausg − D0_anker` · **Spline-Basis** =
+`D0_anker − D0_spline` · **Rest** = `D0_occ − D0_ausg`. Der Rest wird
+noch einmal geteilt, in den Beitrag des RENDERERS (dieselben Anker,
+`D0` am blanken Ankerzug gegen `D0` an der gerenderten Mittellinie —
+das ist der Glättungs-/Handle-Boden) und die verbleibende Formstreuung.
+
+#### Teil 2 — der Kandidatenschätzer, und wie er gewählt wird
+
+Gebaut wird in `core/aggregate.py` hinter einem deklarierten Schalter,
+Default AUS (das Muster von `LAUFFORM_END_WINDOW` und `INK_CLEARANCE`).
+**Welcher Mechanismus, entscheidet Teil 1 — nach einer hier
+festgelegten Regel: es wird der gebaut, dessen Anteil über die fünf
+zugerechneten Schlüssel im Median der größte ist.** Die Auswahl steht
+vor der ersten Zahl fest:
+
+* **(M1) Schleifen-Schwerpunkt-Ausrichtung vor dem Median**, falls die
+  Fehlregistrierung führt: jedes Vorkommen wird um
+  `Median-Schwerpunkt − eigener Schwerpunkt` verschoben, mit Gewicht 1
+  auf dem Schleifenbereich und linear auf 0 auslaufend über ein
+  Bogenlängen-Fenster außerhalb (die Form von `blend_stroke_ends`), dann
+  medianisiert. Der Median der Verschiebungen ist per Konstruktion 0, die
+  Lage der Zeile bleibt also, wo sie ist; medianisiert wird die FORM.
+* **(M2) Schleifen-treue Basis**, falls die Spline-Basis führt.
+* **(M3) Öffnungsweiten-Boden je Schleife** (R1), falls der Rest führt:
+  die Schleife wird um ihren Schwerpunkt so weit gedehnt, dass `D0` den
+  Median der Vorkommen erreicht, mit demselben Auslauf-Fenster. Der
+  schwächste der drei — er repariert das Symptom — und deshalb nur, wenn
+  die Zurechnung sagt, dass die beiden anderen es nicht können.
+
+#### Die Gates, vor der ersten Zahl des Arms festgelegt
+
+**(a) Öffnungsweite.** Jede neu abgeleitete Zeile trägt an JEDEM
+Schleifenbereich der Chart-Zeile `D0 ≥ D0_occ − 0,01 xh` — die
+Binnenfläche bleibt so offen wie die der Hand, bis auf den
+Auflösungsboden.
+
+**(b) Bewegungsmaß.** Größte Ankerbewegung einer neu abgeleiteten Zeile
+gegen ihre gespeicherte ≤ **0,03 xh** — die Größenordnung, die LF12
+gemessen hat (max 0,0259 am `m`). Ein Schätzerwechsel, der weiter
+ausschlägt, ist kein Schätzerwechsel mehr.
+
+**(c) Lineal.** `wordbench.run --set all --laufform <Karte>
+--expect-root eaa195aa7c84,0fbde2d72b64`: `bench_loss` ≤ **0,108444**
+UND `pair_loss` ≤ **0,148236**, also nicht schlechter als die Basis.
+Gemessen wird als Overlay auf einer Wurzel-Kopie im Scratchpad; die
+eingefrorene Wurzel bleibt unberührt.
+
+**(d) Kette-Identität.** `tracebench --split dev --candidate authored`
+auf der gepatchten Kandidaten-Wurzel: **PASS** (dtw 0, Chamfer beidseitig
+0). Das Lineal muss auf der Wurzel messen, auf der der Arm steht.
+
+**(e) Golden.** `compose_golden` mit `pen=None` byte-gleich. Der
+Schalter ist AUS; eine bewegte Golden-Datei hieße, dass er leckt.
+
+**Kennzahl des Arms (Bericht, kein Gate):** wie viele der **26**
+schließenden Wortproben bei Halbbreite 0,097 mit den neuen Zeilen wieder
+aufgehen. **Die Decke steht vorher fest und ist 18 von 26:** acht Wörter
+schließen an einem Buchstaben, den dieser Arm nicht erreicht — `G`, `v`
+und `k` haben gar keine Laufform-Zeile (H3), und die beiden
+`r`-Vorkommen `er`/`er-3` fallen mangels Lauflänge auf die Chart-Form
+zurück. Mitberichtet wird `gleichzug_doublings` bei Halbbreite 0,097 vor
+und nach.
+
+**(R4) als eingefrorene Report-Spalte.** Der Verschmelzungs-Anzeiger
+`(D0_skel − Platte) / (2 · w_pen)` je gemessener Platten-Binnenfläche:
+1,0 heißt „die Mittelachse ist der Federweg", deutlich unter 1,0 heißt
+„zwei Federzüge sind um das Loch herum verschmolzen und `skeletonize`
+gibt die Achse des Klumpens". Er wird gebaut, an den Binnenflächen
+abgenommen (Nullproben: Stellen ohne Verschmelzung müssen ≈ 1,0 zeigen)
+und NUR berichtet — kein Öffnungs-Term wandert in einen Fit-Loss, bevor
+dieser Sensor eingefroren ist.
+
+**Kill-Kriterium:** ein rotes Gate = keine Schreib-Empfehlung, und der
+Ergebnis-Eintrag schließt mit benannten Rettungswegen plus §7.9-Zeile.
+Ein grüner Arm liefert eine TROCKENE Schreibkarte; der Write ist ein
+Autorenvorgang (`dbsnapshot` → Autor-Go → PUT je Glyph → GET-Verify →
+Neu-Export als deklarierte Re-Baseline) und findet in dieser Runde nicht
+statt.
+
+**Was diese Runde ausdrücklich NICHT tut.** Kein DB-Write, kein
+Wurzel-Neuexport, keine Lineal-Änderung, keine neuen Schlüssel (eine
+zusätzliche Zeile komponiert einen anderen Buchstabensatz und braucht
+ihre eigene Vorregistrierung), und keine Reparatur des `p` — dessen
+Evidenz liegt unter dem Boden, sein Weg ist die Eigenhand-Ernte.
+
+### Laufform LF13 `sep06` — gemessen: der Schätzer war nie der Träger, und der Arm fällt an zwei Gates
+
+Umgebung wie vorregistriert: Wurzeln **`eaa195aa7c84`** /
+**`0fbde2d72b64`** (`exported_at` 2026-09-05T21:33:12+00:00 bzw.
+21:33:11+00:00), jeder Lauf mit `--expect-root` und
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`, Basis-Headline ziffernweise
+reproduziert (**0,108444 · 0,148236**). **Es wurde nichts geschrieben,
+keine Wurzel neu exportiert und kein Lineal angefasst.**
+
+Das Lineal des Arms ist an der Kennzahl des Blatts abgenommen: die
+Zählregel gibt auf dieser Wurzel **26 von 63** mit der Aufschlüsselung
+des Blatts, Glyphe für Glyphe (`a` 12 · `o` 5 · `sz` 4 · `G` 3 · `g` 3 ·
+`r` 2 · `v` 2 · `k` 1).
+
+#### Teil 1 — die Zurechnung: H2 gehört zu drei Vierteln der ERNTE, nicht dem Median
+
+**Die Vorbedingung steht.** Der LF12-Erntestapel leitet alle 18
+gespeicherten Zeilen bei Δs 0,16 xh wieder ab, größte Ankerbewegung
+**0,000000000 xh** über alle 18 — er IST der Eingangs-Stapel, und damit
+misst diese Zurechnung den Schätzer und nicht eine Vergleichsmenge.
+
+Und damit kippt der Betrag von H2. Das Blatt maß „Zeile gegen ihre
+Vorkommen" an den Kette-WORTFITS und fand −0,004 bis −0,082 xh. Gegen den
+eigenen Stapel gemessen ist es **ein Drittel bis ein Viertel davon**:
+
+| Glyphe | n | Kette (Blatt) | Vorkommen (Stapel) | Zeile | Kette→Ernte | Ernte→Zeile |
+|---|---|---|---|---|---|---|
+| `a` | 13 | 0,2236 | 0,1909 | 0,1858 | **−0,0327** | −0,0051 |
+| `o` | 4 | 0,1826 | 0,1654 | 0,1767 | **−0,0172** | **+0,0113** |
+| `sz` | 5 | 0,2705 | 0,2167 | 0,1876 | **−0,0538** | −0,0291 |
+| `g` | 4 | 0,2377 | 0,1809 | 0,1743 | **−0,0568** | −0,0066 |
+| `r` | 18 | 0,2332 | 0,2177 | 0,2091 | **−0,0155** | −0,0087 |
+
+Der Schritt, den das Blatt nicht sehen konnte, ist der GRÖSSTE der
+beiden: die **Ernte** — das Zerlegen eines Kette-Wortfits in ein
+zentriertes, auf 120 Chart-Anker parametrisiertes Vorkommen — kostet
+0,016–0,057 xh, der Schätzer danach 0,005–0,029 (am `o` gibt er sogar
+zurück). Paarweise je Vorkommen gerechnet, nicht aus Medianen, steht der
+Erntschritt bei `a` −0,0115 · `o` −0,0074 · `sz` −0,0436 · `r` −0,0033.
+
+**Und die Zerlegung des Rests** (Fenster 0,25 xh, über die vier Bereiche,
+die mehr als 0,005 xh verlieren; Anteile am Verlust im Median):
+
+| Bereich | gesamt | Lage | Größe | Basis | Rest | Renderer |
+|---|---|---|---|---|---|---|
+| `a` 61:80 | +0,0051 | −0,0025 | −0,0000 | +0,0043 | +0,0033 | +0,0019 |
+| `sz` 84:99 | **+0,0291** | **+0,0186** | −0,0005 | −0,0006 | +0,0115 | +0,0020 |
+| `g` 39:52 | +0,0066 | −0,0018 | −0,0007 | −0,0031 | +0,0122 | +0,0060 |
+| `r` 53:77 | +0,0087 | −0,0014 | **+0,0060** | +0,0038 | +0,0003 | +0,0011 |
+| **Median-Anteil** | | **−22 %** | **−1 %** | **+21 %** | **+53 %** | |
+
+Die Fehlregistrierung der LAGE trägt also nur beim `sz`, und dort mit
+64 % des Verlusts; über die vier Bereiche führt der **Rest** — die
+Formstreuung, die keine Registrierung fassen kann. Die vorregistrierte
+Auswahlregel („der größte Anteil") zeigt damit auf M3, den
+Öffnungsweiten-Boden — und der ist zugleich der Mechanismus, den die
+Vorregistrierung selbst als den schwächsten benannt hat. Warum er
+trotzdem nicht gebaut wurde, steht unten unter „Selbst entschieden", und
+es ist eine gemessene Begründung, keine Abwägung.
+
+**Die Zahl, an der der ganze Arm hängt.** Eine Binnenfläche ist bei
+Halbbreite 0,097 offen, wenn `D0 > 0,194`. Die Vorkommen selbst tragen:
+`a` 0,1909 · `o` 0,1654 · `g` 0,1809 — alle drei **zu**. Nur `sz`
+(0,2167) und `r` (0,2177) liegen darüber. **Die Decke JEDES
+schätzerseitigen Mechanismus, auch die eines Öffnungsweiten-Bodens am
+Vorkommens-Median, ist damit ein einziger Buchstabe.** Die
+vorregistrierte Decke von 18 Wörtern war die Decke der ERREICHBARKEIT;
+die Decke der EVIDENZ ist kleiner, und sie war vor dieser Runde nicht
+bekannt.
+
+#### Teil 2 — der Arm: Schleifen-Registrierung, Leiter {0,15 · 0,25 · 0,50} xh
+
+Gebaut als `core/aggregate.py::align_loops` / `loop_faithful_median`
+hinter `LAUFFORM_LOOP_WINDOW`, Default 0 = aus. Die Schleifen kommen aus
+`loop_ranges` (Selbstschnitte der gerenderten Tafelzeile, über die
+Bogenlänge auf Anker zurückgerechnet); gegen den unabhängigen
+Raster-Finder der Messschicht abgenommen — der leitet einen Bereich je
+tatsächlich gemessener Binnenfläche ab und ist damit per Konstruktion
+vollständig. **19 der 21 Zeilen decken jede messbare Binnenfläche
+vollständig.** Die zwei Abweichungen sind benannt und keine Lücke:
+beim `o` liegt der Kern-Bereich (83:106) einen Anker INNERHALB des
+Raster-Bereichs (82:107) — dieselbe Schleife, engere Grenze —, beim `p`
+faltet die Verschmelzung überlappender Bereiche eine geschachtelte
+Region in ihre Hülle, und `p` wird ohnehin nicht neu abgeleitet.
+
+Berichtet wird die Sprosse **0,15** (kleinster Lineal-Preis; alle drei
+Sprossen verhalten sich an den Gates gleich):
+
+| | Basis | 0,15 | 0,25 | 0,50 |
+|---|---|---|---|---|
+| `bench_loss` | **0,108444** | 0,108637 | 0,108871 | 0,108710 |
+| `pair_loss` | **0,148236** | 0,148239 | 0,148239 | 0,148239 |
+| Gate (a): Bereiche unter dem Vorkommens-Boden | **4** | **2** | 2 | 2 |
+| größte Ankerbewegung | 0 | 0,0268 | 0,0268 | 0,0257 |
+
+#### Die Gates
+
+| Gate | Ergebnis | |
+|---|---|---|
+| **(a) Öffnungsweite** | `h[68:108]` 0,5497 < 0,5617 · `z[26:46]` 0,2022 < 0,2064 | **rot** |
+| **(b) Bewegungsmaß** | max 0,0268 xh von 0,03 | grün |
+| **(c) Lineal** | 0,108444 → **0,108637** (+0,000193) · 0,148236 → 0,148239 | **rot** |
+| **(d) Kette-Identität** | `--candidate authored` auf der Kandidaten-Wurzel: **PASS** (dtw 0, Chamfer 0/0) | grün |
+| **(e) Golden** | `pen=None` byte-gleich | grün |
+
+Gate (a) ist rot, aber die Richtung gehört daneben: **die Basis verletzt
+VIER Bereiche, der Kandidat zwei, und kein Bereich wechselt von grün nach
+rot.** Repariert sind genau die zwei, die der Arm adressiert (`sz`
+0,1876 → 0,2074, `z` 50:116 0,7898 → 0,8084); stehen bleiben `h` und `z`
+26:46, beide verbessert (0,5452 → 0,5497 bzw. 0,2000 → 0,2022), beide zu
+wenig.
+
+**„Kein Wechsel nach rot" heißt nicht „nichts wird enger", und der
+Unterschied gehört hierher:** sechs der sechzehn Bereiche werden schmaler,
+ohne den Boden zu reißen — `h` 8:49 −0,0067 · `a` −0,0048 · `w` −0,0031 ·
+`g` 72:112 −0,0028 · `g` 39:52 −0,0014 · `o` −0,0011. Das `a` landet
+dabei **0,0002 xh über seinem Boden**, also innerhalb des
+Auflösungsbodens der Messung. Die Registrierung verschiebt dort Fläche,
+statt welche zu gewinnen, weil der Verlust am `a` zu zwei Dritteln
+Formstreuung ist (Tabelle oben) — ein weiterer Beleg dafür, dass der
+Mechanismus nur greift, wo die Zurechnung ihn trägt, und der Grund für
+Rettungsweg (3).
+
+**Gate (a) ist ein BODEN, keine zweiseitige Schranke, und das ist keine
+Nachlässigkeit, sondern ein Befund** (Copilot-Fund in PR #552,
+nachgemessen): die Registrierung normiert den Median-RADIUS der
+Schleife, und ein Radius ist keine Öffnungsweite. Der punktweise Median
+danach kann bei anisotrop uneinigen Schleifen ein Loch erzeugen, das
+weiter ist als jedes einzelne Vorkommen — auf dieser Wurzel steht das
+`Z` mit 0,2813 um 0,034 xh über seinem Vorkommens-Median (0,2476), das
+`w` um 0,024. **Den gespeicherten Zeilen passiert dasselbe** (`Z`
+0,2777, `w` 0,2243), es ist also eine Eigenschaft des elementweisen
+Medians und nicht dieses Schritts. Eine zweiseitige Schranke müsste auf
+`D0` selbst greifen und bräuchte das Öffnungsweiten-Lineal im
+Schätzer — das wäre R1 in seiner teuren Form und steht nicht an.
+
+**Die Kennzahl: 26 → 23.** Drei der 63 Wortproben schließen ihre
+Binnenfläche nicht mehr — `muß`, `muß-2`, `muß-3`, alle über das `sz`.
+`daß` bleibt zu, weil dort auch das `a` schließt. Genau die eine Glyphe
+also, deren Vorkommen die Öffnung überhaupt tragen; die Vorhersage aus
+Teil 1 trifft ohne Rest. `gleichzug_doublings` bei Halbbreite 0,097
+(Wurzel-Kopie mit `constant_nib_units` 0,097): **22 → 21**; bei der
+ausgelieferten Feder unverändert 14 → 14, `bench_loss` dort 0,101254 →
+0,101260.
+
+#### (R4) Der Verschmelzungs-Anzeiger — gebaut, geeicht, Report-Spalte
+
+`(D0_Skelett − Platte) / (2 · w_pen)` über die 202 gemessenen
+Binnenflächen, `w_pen` = 0,0968 xh: Median **0,689** (p10 0,531 · p90
+0,879). **Die Nullprobe ist eine Kurve, kein Schwellwert** — je weiter
+die Binnenfläche, desto weniger Platz hatten die zwei Federzüge zu
+verschmelzen, und der Anzeiger steigt über sechs Bänder monoton:
+
+| Platte (xh) | 0,00–0,12 | 0,12–0,20 | 0,20–0,30 | 0,30–0,45 | 0,45–0,60 | > 0,60 |
+|---|---|---|---|---|---|---|
+| n | 31 | 62 | 13 | 40 | 33 | 23 |
+| Anzeiger | 0,609 | 0,646 | 0,646 | 0,733 | 0,795 | **0,878** |
+
+Das `S` allein steht bei 0,970 — dort IST die Mittelachse der Federweg.
+Kein Umkehrpunkt, sechs Bänder, die Richtung des Modells: der Sensor ist
+abgenommen und bleibt **ausschließlich Report**, wie die Vorregistrierung
+verlangt.
+
+#### Verdikt
+
+**Verworfen an (a) und (c)**, mit einem zurechenbaren Teilerfolg (4 → 2
+verletzte Bereiche, 26 → 23 Wörter, Verdopplungen 22 → 21, keine
+Regression). Der Schalter bleibt AUS. Die Karte liegt trocken im
+Sitzungs-Scratchpad (`laufform-loop-card/`, 18 Zeilen, `P`/`p`/`s`
+unberührt) — als Beleg, nicht als Empfehlung.
+
+**Der eigentliche Ertrag ist Teil 1**, und er verschiebt die Arbeit: die
+Zeilen-Ableitung ist nicht der Ort, an dem die Kringel verloren gehen.
+Vor ihr liegen die Ernte (0,016–0,057 xh) und die Mittelachse selbst
+(0,035–0,104 xh, Blatt H0), und hinter allem die Chart-Form (H3). Ein
+Schätzer, dessen Evidenz schon zu ist, kann keine Öffnung liefern.
+
+#### Rettungswege
+
+1. **Die ERNTE statt des Medians** (neu, der gemessene Hebel): warum
+   verliert die Zerlegung eines Kette-Wortfits in ein zentriertes
+   120-Anker-Vorkommen 0,016–0,057 xh Öffnungsweite? Kandidaten sind die
+   Chart-Prior-Regularisierung des Dissektions-Fits und die
+   Neuparametrisierung auf die Ankerzahl der Tafel. Erst als Zerlegung
+   messen (Fit-Residuum gegen Öffnungsweite je Vorkommen), dann ein Arm.
+2. **R3 unverändert offen** — Schleifen-Geometrie aus der Evidenz statt
+   aus dem Anker-Median; die Kette hält 7 von 8 engen Stellen offen, und
+   das ist die einzige Quelle, aus der die 0,10–0,20 xh ganz zurückkommen
+   können.
+3. **Der `sz`-Teilerfolg als eigener, enger Arm**: die Registrierung nur
+   dort anwenden, wo die Zurechnung sie trägt (Lage-Anteil > 50 %), statt
+   auf allen Zeilen — die Asymmetrie-Regel `aug26` in Reinform. Das
+   Lineal verliert +0,000193 über ALLE Zeilen für einen Gewinn an EINER.
+4. **Autorenweg unverändert** (`sep05`): die engen Formen nachzeichnen
+   bzw. den Eigenhand-Bestand als zweite Quelle; das Blatt beziffert die
+   Strecke mit +0,10 bis +0,20 xh je Schleife.
+
+**Ausdrücklich kein Weg:** den Öffnungsweiten-Boden (M3) doch bauen und
+auf die Vorkommen setzen — die Decke ist gemessen und beträgt einen
+Buchstaben; und die Feder dünner rechnen, bis die Löcher aufgehen.
+
+**Selbst entschieden.**
+
+* **M3 nicht gebaut, obwohl die Auswahlregel darauf zeigt.** Die Regel
+  war „größter Anteil"; der Anteil ist der Rest, und M3 ist der einzige
+  Kandidat, der hineinreicht. Gebaut wurde er trotzdem nicht, und zwar
+  aus einer ZAHL dieser Runde: seine Decke ist der Vorkommens-Median, und
+  der liegt bei `a`, `o` und `g` unter 0,194 — M3 könnte an genau
+  derselben einen Glyphe etwas ausrichten wie die Registrierung, wäre
+  aber ein Knopf statt eines Mechanismus. Die Abweichung von der Regel
+  ist damit benannt statt still, und sie ist gemessen statt abgewogen.
+* **Die Ähnlichkeit statt der reinen Verschiebung.** Die Vorregistrierung
+  beschrieb M1 als Translation; die Zurechnung hat die Größe daneben
+  gemessen und beim `r` +0,0060 gefunden, also ist beides gebaut und
+  beides einzeln berichtet (`--no-loop-scale` ist der Kontrollarm).
+* **Zwei unabhängige Schleifen-Finder.** Der Mechanismus braucht einen
+  rasterfreien (er muss im Schreibpfad laufen können), die Messung einen,
+  der genau die Binnenflächen findet, die das Lineal misst. Sie gegen
+  einander abzunehmen war billiger als einem von beiden zu glauben.
+* **`f` weiter nicht mitgemessen**, wie im Blatt: eine Einschnürung ist
+  eine andere Messgröße.
+
+**Grenzen.** `o` steht auf n = 4, `g` und `sz` auf 4–5 — die Mediane
+kleiner Mengen sind Einzelablesungen mit Median-Etikett. Der
+Erntschritt ist an den Kette-Schleifen des Blatts gepaart, dessen
+Zuordnung Schleife↔Binnenfläche beim `p` nachweislich eine andere
+Schleife trifft; die `p`-Zeile dieser Rechnung ist deshalb nicht
+zitierfähig und steht oben nicht in der Tabelle.
+
+* **Das `p` ÜBERLIEST diese Ableselogik, und das gehört neben das Blatt.**
+  Am Bereich `25:110` meldet sie für die Laufform-Zeile 0,1748, während
+  die Ganzzeilen-Messung des Blatts denselben Kringel bei **0,0095**
+  findet. Der Grund ist die Ringschließung: der Bereich wird Ende-auf-
+  Anfang geschlossen, und beim `p` umschließt dieser Ring ein Gebiet, das
+  die volle Zeile gar nicht als Loch hat, weil andere Stränge
+  hindurchlaufen. **Kein Gate hängt daran** — `p` wird nicht neu
+  abgeleitet und steht in keiner Gate-Tabelle —, aber wer das Blatt
+  `sheets/p.png` neben den `sep06`-Befund legt, sieht zwei Zahlen für
+  dieselbe Schleife. Die des Blatts ist die richtige; die Ringschließung
+  ist für geschachtelte Fälle zu grob und wäre vor einem `p`-Arm zu
+  ersetzen.
