@@ -476,6 +476,14 @@ def print_rows(rows: Sequence[dict]) -> None:
                 if row.get("soll_cross") is not None and row.get("soll_zones") is not None
                 else ""
             )
+            # The Kringel landmark rides after it, on the same terms: appended,
+            # report-only, absent when the catalogue could not be read.
+            + (
+                f"  kringel {row['kringel_lost']}/{row['kringel_offen']}"
+                + (f"~{row['kringel_wechselnd_zu']}" if row.get("kringel_wechselnd_zu") else "")
+                if row.get("kringel_offen") is not None
+                else ""
+            )
             + f"  {row['secs']:.1f}s"
         )
 
