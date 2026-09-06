@@ -44,6 +44,33 @@ STRANDED_STEP_RATIO = 3.0
 # Below this many steps a stroke has no meaningful median to compare against.
 MIN_STROKE_STEPS = 4
 
+# LF14 (`messjournal.md` §14 „Laufform LF14 `sep06`"): skip the repair where the
+# row's own ductus writes a LOOP. Default False — off, and then this module
+# behaves exactly as it did before the switch existed, whatever a caller passes.
+#
+# Why the exception is not special pleading. The detector asks „is this one
+# anchor a lone excursion" and answers it from step lengths alone: an anchor
+# both of whose steps are three times its stroke's median step. Inside a tight
+# counter that description also fits the apex the loop is MADE of — the anchors
+# there turn through a large angle over a short arc, so the fit widening the
+# loop by a few hundredths lengthens both steps at once. The repair then chords
+# the apex to its neighbours, which lie on the two strands, and the counter
+# closes. Measured on the `sep05` root: of 235 accepted occurrences 20 are
+# repaired, 12 of them carry a measurable counter, and ALL FOUR whose repair
+# lands inside a loop range lose aperture — median 0.0410 xh, worst 0.1068 (the
+# `g` of „Sprünge", which alone drags its stored row down by 0.0883) — while the
+# eight repaired outside a loop move it by at most 0.0021.
+#
+# The exception is deliberately NARROW. It does not soften the detector, does
+# not touch the gate (which judges the unrepaired geometry either way), and does
+# not reach a single anchor outside a loop range the CHART row draws — the same
+# occurrence-independent ranges `core.aggregate.loop_ranges` hands the running
+# form. Its cost is named: a genuine excursion whose anchor happens to land
+# inside a counter now survives into the occurrence. That is the trade the
+# owner's 2026-08-10 rule already frames — the peak is the defect that must go —
+# read the other way round where the peak is the letter.
+LOOP_AWARE_REPAIR = False
+
 
 def _stroke_bounds(k: int, stroke_starts: Sequence[int] | None) -> list[tuple[int, int]]:
     bounds = sorted({0, *(int(s) for s in (stroke_starts or []) if 0 < int(s) < k), k})
@@ -74,7 +101,13 @@ def stranded_anchors(anchors: np.ndarray, stroke_starts: Sequence[int] | None) -
     return out
 
 
-def repair_stranded_anchors(anchors: np.ndarray, stroke_starts: Sequence[int] | None) -> tuple[np.ndarray, list[int]]:
+def repair_stranded_anchors(
+    anchors: np.ndarray,
+    stroke_starts: Sequence[int] | None,
+    loop_ranges: Sequence[tuple[int, int]] | None = None,
+    *,
+    loop_aware: bool = LOOP_AWARE_REPAIR,
+) -> tuple[np.ndarray, list[int]]:
     """Interpolate every stranded anchor from its unflagged stroke neighbours.
 
     Returns `(repaired copy, sorted flagged indices actually repaired)`. With
@@ -105,8 +138,18 @@ def repair_stranded_anchors(anchors: np.ndarray, stroke_starts: Sequence[int] | 
     the distance moved is readable from the two arrays), and the gate must
     judge the UNREPAIRED geometry, so a repair is a near-rejection and never a
     pass.
+
+    `loop_ranges` are the `[start, end)` anchor ranges over which the row's own
+    ductus closes a loop (`core.aggregate.loop_ranges`, passed in so that this
+    module keeps importing nothing project-side). They are read ONLY while
+    `loop_aware` is on — it defaults to the module switch `LOOP_AWARE_REPAIR`,
+    which is False — and then a flagged anchor inside one is left alone. With
+    the switch off the argument changes nothing, which is what keeps every
+    stored occurrence reproducible.
     """
     flags = sorted(stranded_anchors(anchors, stroke_starts))
+    if loop_aware and loop_ranges:
+        flags = [i for i in flags if not any(int(a) <= i < int(b) for a, b in loop_ranges)]
     if not flags:
         return anchors, []
     flagged = set(flags)
@@ -133,4 +176,10 @@ def repair_stranded_anchors(anchors: np.ndarray, stroke_starts: Sequence[int] | 
     return repaired, sorted(done)
 
 
-__all__ = ["MIN_STROKE_STEPS", "STRANDED_STEP_RATIO", "repair_stranded_anchors", "stranded_anchors"]
+__all__ = [
+    "LOOP_AWARE_REPAIR",
+    "MIN_STROKE_STEPS",
+    "STRANDED_STEP_RATIO",
+    "repair_stranded_anchors",
+    "stranded_anchors",
+]

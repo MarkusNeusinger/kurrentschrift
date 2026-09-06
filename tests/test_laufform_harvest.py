@@ -998,3 +998,60 @@ def test_harvest_pools_over_cases_in_input_order(monkeypatch: pytest.MonkeyPatch
     assert drafts["a"]["n_occurrences"] == 3
     assert [o["measurements"]["specimen_id"] for o in occurrences] == ["synthetic", "synthetic", "synthetic-b"]
     assert [w["specimen_id"] for w in word_records] == ["synthetic", "synthetic-b"]
+
+
+# ------------------------------------------ the loop-aware repair (LF14, opt-in)
+
+
+def _looped_row() -> dict:
+    """A chart row whose single stroke crosses itself once — a counter and a tail."""
+    t = np.linspace(0.0, 2.0 * np.pi, 40)
+    pts = np.column_stack([0.3 * np.sin(2.0 * t), 0.3 * np.cos(t)])
+    return {"anchors": pts.tolist(), "half_widths": [0.05] * len(pts), "trace_meta": {"stroke_starts": [0]}}
+
+
+def test_the_loop_ranges_are_skipped_entirely_while_the_switch_is_off() -> None:
+    """The geometry costs a rendered centerline plus an O(n²) crossing walk, so
+    a loop-blind harvest must not pay for it — and must not import an opinion
+    about the row either."""
+    assert harvest_mod.chart_loop_ranges(_looped_row(), False) == ()
+
+
+def test_the_loop_ranges_of_a_self_crossing_row_are_found_and_memoised() -> None:
+    ranges = harvest_mod.chart_loop_ranges(_looped_row(), True)
+    assert ranges, "a figure-eight row closes a loop"
+    assert all(0 <= a < b <= 40 for a, b in ranges)
+    # Same row, same answer — and the memo is keyed on the ROW, so a different
+    # one cannot inherit it (a second fixture root in one process would).
+    assert harvest_mod.chart_loop_ranges(_looped_row(), True) == ranges
+    straight = {"anchors": [[x, 0.0] for x in np.linspace(0.0, 1.0, 12)], "half_widths": [0.05] * 12}
+    assert harvest_mod.chart_loop_ranges(straight, True) == ()
+
+
+def test_the_harvest_ships_loop_blind_and_the_flag_reaches_the_repair(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The switch changes what the harvest MEASURES, so it follows the K-C
+    pattern: off by default, and the option is what carries it down."""
+    assert HarvestOptions().loop_aware_repair is False
+    seen: list[dict] = []
+
+    def spy(anchors, stroke_starts, ranges=None, *, loop_aware=False):
+        # The TRACE repair (K-B) calls with `stroke_starts=None` on assembled
+        # word strokes; only the OCCURRENCE repair carries anchor ranges, and it
+        # is the only one this switch may reach.
+        seen.append({"occurrence": stroke_starts is not None, "ranges": ranges, "loop_aware": loop_aware})
+        return anchors, []
+
+    case, result = _synthetic_word([(0.06, 0.0)])
+    monkeypatch.setattr(harvest_mod, "derive_word", lambda c: result)
+    monkeypatch.setattr(harvest_mod, "repair_stranded_anchors", spy)
+    harvest_case(case, HarvestOptions(path="chain", rmse_max=2.5))
+    occurrence = [call for call in seen if call["occurrence"]]
+    assert occurrence and all(c["loop_aware"] is False and c["ranges"] == () for c in occurrence)
+    assert all(c["loop_aware"] is False and c["ranges"] is None for c in seen if not c["occurrence"])
+
+    seen.clear()
+    harvest_case(case, HarvestOptions(path="chain", rmse_max=2.5, loop_aware_repair=True))
+    occurrence = [call for call in seen if call["occurrence"]]
+    assert occurrence and all(c["loop_aware"] is True for c in occurrence)
+    # …and the trace repair stays loop-blind whatever the option says.
+    assert all(c["loop_aware"] is False for c in seen if not c["occurrence"])

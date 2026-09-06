@@ -72,11 +72,12 @@ from typing import Any, Sequence
 import numpy as np
 from scipy.ndimage import distance_transform_edt
 
+from core.aggregate import loop_ranges
 from core.compose import CAP_RESTART_BASES, _key_base
 from core.fit import fit_template_to_instance
 from core.laufform import anchor_spike_ratio
 from tools.pairlab.analyze import TRACE_WINDOW_MARGIN, _body_items, _fit_letter, _ink_extent_x, _to_px
-from tools.pairlab.anchors import repair_stranded_anchors
+from tools.pairlab.anchors import LOOP_AWARE_REPAIR, repair_stranded_anchors
 from tools.pairlab.chain import chain_runs, fit_word_chain
 from tools.pairlab.connector_qc import connector_degenerate, connector_signals
 from tools.pairlab.ink_evidence import InkEvidenceOptions, ink_evidence_case
@@ -270,6 +271,16 @@ class HarvestOptions:
     # harvest (the K-C pattern: measured on the follower first; adoption
     # into what the harvest measures is its own decision).
     mark_claim: bool = False
+    # LF14 (§14 `sep06`): let the post-gate stranded-anchor repair skip the
+    # anchors that sit inside a loop the CHART row draws — the apex of a counter
+    # answers the detector's step-ratio description too, and chording it to its
+    # neighbours (which lie on the two strands) closes the counter. Default is
+    # the module switch `tools.pairlab.anchors.LOOP_AWARE_REPAIR`, which is off:
+    # this changes what the harvest MEASURES, so it follows the K-C pattern —
+    # declared off, measured, adopted only by a passed gate. Only the OCCURRENCE
+    # repair reads it; the trace repair (K-B) works on assembled word strokes,
+    # which carry no anchor ranges.
+    loop_aware_repair: bool = LOOP_AWARE_REPAIR
 
 
 @dataclass
@@ -298,6 +309,55 @@ class CaseHarvest:
 # (against LAUFFORM_SPIKE_RATIO_MAX). Its per-stroke design and the measured
 # reason for it (ue in „Zügel": 7.21 pooled, 10.61 per stroke — a needle the
 # pooled form silently kept) are documented on the function itself.
+
+
+@functools.lru_cache(maxsize=None)
+def _loop_ranges_cached(
+    anchors: tuple[float, ...],
+    half_widths: tuple[float, ...],
+    stroke_starts: tuple[int, ...] | None,
+    corner_anchors: tuple[int, ...] | None,
+) -> tuple[tuple[int, int], ...]:
+    """`core.aggregate.loop_ranges` on hashable arguments — the memo's own body.
+
+    The geometry costs a rendered centerline plus an O(n²) crossing walk per
+    glyph, and a word set hands the same chart row in dozens of times. Keyed on
+    the ROW, not on the glyph key, so a second fixture root in the same process
+    cannot inherit the first one's ranges.
+    """
+    return tuple(
+        loop_ranges(
+            np.asarray(anchors, dtype=float).reshape(-1, 2),
+            np.asarray(half_widths, dtype=float),
+            stroke_starts,
+            corner_anchors,
+        )
+    )
+
+
+def chart_loop_ranges(row: dict, enabled: bool = True) -> tuple[tuple[int, int], ...]:
+    """The anchor ranges over which THIS chart row's ductus closes a loop.
+
+    Read off the chart, never off the occurrence: the same occurrence-independent
+    ranges the running-form estimator aligns on (`core.aggregate.loop_ranges`,
+    LF13). They are what `LOOP_AWARE_REPAIR` needs to tell a counter's apex from
+    an anchor stranded in empty paper — and reading them per occurrence would
+    make the repair depend on the excursion it is judging.
+
+    `enabled` is the switch itself rather than a check at the call site: with the
+    repair loop-blind nothing reads the result, so the geometry is skipped
+    entirely and the harvest costs exactly what it cost before the switch existed.
+    """
+    if not enabled:
+        return ()
+    meta = row.get("trace_meta") or {}
+    starts, corners = meta.get("stroke_starts"), meta.get("corner_anchors")
+    return _loop_ranges_cached(
+        tuple(np.asarray(row["anchors"], dtype=float).ravel().tolist()),
+        tuple(np.asarray(row["half_widths"], dtype=float).ravel().tolist()),
+        None if starts is None else tuple(int(s) for s in starts),
+        None if corners is None else tuple(int(c) for c in corners),
+    )
 
 
 def _strokes_to_word_units(
@@ -555,7 +615,9 @@ def _harvest_case_slots(case, result: WordDeriveResult, opts: HarvestOptions) ->
         # ACCEPTED occurrence contributes onward (the centering, the stored
         # anchors, the medians) uses the interpolated array; with nothing
         # flagged it IS `fitted_raw` (identity return).
-        repaired, repaired_indices = repair_stranded_anchors(fitted_raw, stroke_starts)
+        repaired, repaired_indices = repair_stranded_anchors(
+            fitted_raw, stroke_starts, chart_loop_ranges(row, opts.loop_aware_repair), loop_aware=opts.loop_aware_repair
+        )
         shift = np.median(repaired - anchors, axis=0)
         fitted = repaired - shift  # shapes, not placements
         per_key[slot.key].append(fitted)
@@ -987,7 +1049,14 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
             # into acceptance. The interpolated array is what flows onward into
             # the centering, the stored occurrence anchors and the medians.
             repaired, repaired_indices = (
-                repair_stranded_anchors(fitted_raw, stroke_starts) if gate == "ok" else (fitted_raw, [])
+                repair_stranded_anchors(
+                    fitted_raw,
+                    stroke_starts,
+                    chart_loop_ranges(row, opts.loop_aware_repair),
+                    loop_aware=opts.loop_aware_repair,
+                )
+                if gate == "ok"
+                else (fitted_raw, [])
             )
             shift_block = fit.slot_shift_units.get(slot_index, (0.0, 0.0))
             total_shift = (fit.global_shift_units[0] + shift_block[0], fit.global_shift_units[1] + shift_block[1])
@@ -1144,6 +1213,7 @@ def harvest(
     jobs: int = 1,
     max_cases: int = 0,
     chain_seed: str = "composed",
+    loop_aware_repair: bool = LOOP_AWARE_REPAIR,
 ) -> tuple[dict[str, dict], list[dict], list[dict], list[dict]]:
     """Per-letter median fitted anchors over the clean word occurrences, plus
     every clean fit as an occurrence record (`InstanceItem` wire shape), plus
@@ -1156,7 +1226,9 @@ def harvest(
     one worker. Iteration order — and therefore the medians — is independent of
     the job count: `ProcessPoolExecutor.map` yields in input order.
     """
-    opts = HarvestOptions(style=style, rmse_max=rmse_max, path=path, chain_seed=chain_seed)
+    opts = HarvestOptions(
+        style=style, rmse_max=rmse_max, path=path, chain_seed=chain_seed, loop_aware_repair=loop_aware_repair
+    )
     cases = [c for which in sets for c in iter_fixture_word_cases(which=which, style=style)]
     if max_cases:
         cases = cases[:max_cases]
@@ -1284,6 +1356,11 @@ def main() -> None:
     ap.add_argument("--max-cases", type=int, default=0, help="cap the cases per run (0 = all)")
     ap.add_argument("--min-n", type=int, default=4)
     ap.add_argument("--rmse-max", type=float, default=2.2)
+    ap.add_argument(
+        "--loop-aware-repair",
+        action="store_true",
+        help="LF14 arm: the post-gate repair leaves anchors inside a chart loop alone (default off)",
+    )
     ap.add_argument("--out", type=Path, default=Path("laufform_drafts.json"))
     ap.add_argument("--occ-out", type=Path, default=Path("laufform_occurrences.json"))
     ap.add_argument("--word-out", type=Path, default=Path("laufform_words.json"))
@@ -1325,6 +1402,7 @@ def main() -> None:
         jobs=args.jobs,
         max_cases=args.max_cases,
         chain_seed=args.chain_seed,
+        loop_aware_repair=args.loop_aware_repair or LOOP_AWARE_REPAIR,
     )
     for target in (args.out, args.occ_out, args.word_out):
         target.parent.mkdir(parents=True, exist_ok=True)
