@@ -67,7 +67,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
-- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kurzglossar §5
+- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5 · Mittellinien-Öffnungsweite (`D0`) §4
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nullprobe §4
@@ -76,7 +76,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Sehne §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
-- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
+- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
 - **V** — Variante §2 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschub-Kalibrierung §2 · Vorschrift §1
@@ -1662,6 +1662,48 @@ vergleichbar. Fällt `D0` unter `2h`, verschwindet die Binnenfläche —
 genau der Effekt, den der Federwechsel auf 0,097 auslöst. →
 messjournal.md §14 „Ink-Clearance an die Feder `sep05`“ ·
 notes/kringel-binnenflaechen-2026-09-06.md
+
+**Kringel-Landmarke** — die Erwartung „diese Schleife muss offen bleiben"
+als Eigenschaft JE BUCHSTABE und JE SCHLEIFE statt als eine Schwelle für
+die ganze Hand (Autor-Entwurf 2026-09-06). Jede Schleife der Tafel trägt
+zwei Etiketten, beide von der Platte abgelesen und im eingefrorenen
+**Kringel-Katalog** (`tools/tracebench/kringel_catalogue.json`)
+festgeschrieben:
+
+* die **Größenklasse**, gezählt in Breiten der PLATTENFEDER
+  (`W = 2·0,0968 = 0,1936 xh`), weil die Feder das Mittellinien-Loch um
+  genau `W` erodiert und die Klasse damit eine Eigenschaft des
+  Schreibgeräts ist, nicht der Stichprobe: **klein** `D0 < 2W`
+  (weniger als eine Federbreite Loch bleibt — ob sie offen ist,
+  entscheidet das Gerät), **mittel** `2W ≤ D0 < 4W`, **groß** `D0 ≥ 4W`;
+* der **Zustand**, aus dem Anteil der Vorkommen, in denen die Platte
+  überhaupt ein Loch zeigt: **offen** (≥ 80 %), **wechselnd** (dazwischen
+  — „je nach Tinte mal zu und mal offen"), **Punktkringel** (≤ 20 %; der
+  Kringel ist bauartbedingt ein Punkt und kann nie ein Verlust sein).
+  `unbelegt` ist die vierte Marke: die Platte antwortet an dieser
+  Schleife in keinem Vorkommen, also bekommt sie keine Erwartung.
+
+Nur eine geschlossene **offen**-Schleife ist ein Defekt. Der Sensor
+(`tools/tracebench/kringel.py`, Spalte `kringel_lost` im
+Tintenfolger-Report) ist **reine Report-Spalte** wie der
+Verschmelzungs-Anzeiger.
+*Technisch:* `size_class` / `loop_state` / `loop_apertures` in
+`tools/tracebench/kringel.py`, Katalogbau
+`tools/tracebench/kringelcat.py`; der raster-freie Zwilling des
+Schleifenfinders ist `core/aggregate.py::loop_ranges`
+(→ **Schleifenbereich**). → messjournal.md §14 („Kringel-Landmarke
+`sep06`“) · notes/kringel-binnenflaechen-2026-09-06.md
+
+**Topologie-Verlust (Kringel)** — der schwerere Nachbar der zu engen
+Schleife: die Komposition zeichnet an einer Stelle GAR KEINE Schleife,
+wo die Platte eine Binnenfläche hält. Gemessen als Platten-Binnenfläche,
+die keine Schleife ihres eigenen Slots für sich beanspruchen kann; sie
+geht nie in eine Öffnungsweite ein, sondern wird je Buchstabe gezählt
+(`topology_losses_per_glyph` im Katalogkopf). Davon zu trennen ist der
+**Splitter**: eine komponierte Schleife unter 0,05 xh — entweder
+Rasterrauschen oder eine auf nichts zusammengefallene Schleife
+(`collapsed_loops_per_glyph`). → messjournal.md §14 („Kringel-Landmarke
+`sep06`“)
 
 **Verschmelzungs-Anzeiger** — die Warnung davor, das Skelett für den
 Federweg zu halten. Wo zwei Federzüge um eine enge Binnenfläche herum

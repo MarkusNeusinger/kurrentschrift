@@ -258,9 +258,21 @@ WIDEST = {
 # given the documented 10 % headroom, like every other path. Still no licence
 # for prose: the Stand blocks, §7.11 and `verfahren.md` are the pieces this
 # gate is actually watching, and they did not move.
+#
+# `mess-runde` raised a third time on 2026-09-06, for ONE register row and with
+# the arithmetic in the open: the path stood at 20 545 of 21 057 — 512 tokens of
+# room — and „Kringel-Landmarke" adds a single row, not the usual pre-reg/result
+# pair, because this round is a sensor rather than an arm. That row costs 527,
+# and it is dense: every clause carries a number the entry owns (46 loops, the
+# two class cuts, the state shares, 24 of 27, 34 of 63, 19 topology losses, the
+# two byte-identity readings). It was tightened twice before this raise. So: 15
+# tokens short, re-measured at 21 072 and given the documented 10 % headroom
+# like every other path. The entry itself needed no raise — it was trimmed to
+# 4 500 against the 4 503 ceiling instead, which is where a growing entry
+# belongs.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
-    "mess-runde": 21_057,
+    "mess-runde": 23_179,
     "mess-runde-route": 6_177,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,

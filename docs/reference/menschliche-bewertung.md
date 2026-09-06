@@ -421,6 +421,15 @@ PR #492, indem die Ringe einer Silhouette als EINE Pfadgruppe mit
 `fill-rule: evenodd` gezeichnet werden — dann schneidet der innere Ring
 den äußeren aus, statt ihn zuzumalen.
 
+Seit `sep06` ist diese Binnenfläche auch eine gemessene Landmarke: der
+**Kringel-Katalog** hält je Buchstabe und je Schleife fest, wie weit die
+Platte sie offen hält und ob sie überhaupt offen sein MUSS
+(`offen` · `wechselnd` · Punktkringel, messjournal.md §14
+„Kringel-Landmarke `sep06`"). Wer eine Runde baut, kann damit vorher
+sagen, an welchen Stellen des Blattes die Öffnung eine Aussage trägt —
+und an welchen die Platte selbst schwankt und ein Urteil darüber nichts
+misst.
+
 Der Schaden war nicht kosmetisch. Der Defekt trifft **genau die
 Merkmale, über die geurteilt werden soll**: Schleifenweite,
 Binnenraum, die Rundung eines Bogens — bei zugefüllten Ringen sehen
