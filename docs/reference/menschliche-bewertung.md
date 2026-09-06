@@ -1296,6 +1296,35 @@ rendernde Änderung braucht zusätzlich das A/B gegen die gemessene Tinte und
 die Freigabe des Autors — das Menschenurteil ersetzt es nicht, es entscheidet
 den Fall, in dem das Lineal indifferent ist.
 
+**Beobachtung aus Runde 5 (`sep06`) — die Tie-Schranke misst die
+Klassenmischung mit, und das ist ein VORSCHLAG, keine Regeländerung.** Der
+Nenner von Schritt 3 ist „alle Bildschirme"; die Klassen aus Schritt 4
+schneidet der Runden-Autor aber ausdrücklich so, dass eine davon **wenig oder
+nichts** zu sehen bekommt — die Kontrollklasse per Konstruktion, eine
+„schwache" Klasse per Vorhersage. Runde 5 hat damit 42,9 % Unentschiedene über
+alles gerissen, während dieselbe Runde in der Klasse, für die die
+Vorregistrierung Sichtbarkeit behauptet hatte, bei 9,7 % lag; 21 der 27
+Unentschiedenen kamen aus der Klasse, in der die Pre-Reg „wahrscheinlich kein
+Unterschied" geschrieben hatte. Die Gesamtquote hat dort also nicht die
+Sichtbarkeit gemessen, sondern die Mischung, die der Plan selbst gewählt hat —
+je größer man die vorhersagbar unsichtbare Klasse zieht, desto sicherer reißt
+das Gate. Der naheliegende Vorschlag lautet: **die Tie-Schranke je Klasse
+lesen und sie nur dort verlangen, wo die Vorregistrierung Sichtbarkeit
+BEHAUPTET hat**, mit der Gesamtquote weiterhin gedruckt und berichtet.
+
+Er wird hier **nicht** übernommen, und der Grund gehört daneben: eine
+Schranke, die sich an der Klassendeklaration derselben Runde ausrichtet, ist
+nachträglich weicher zu machen, indem man die Klassen anders schneidet — genau
+der Nachstimm-Mechanismus, den die Vorregistrierungs-Praxis verhindern soll.
+Wer den Vorschlag will, hebt ihn deshalb erst in einer eigenen Änderung dieses
+Dokuments und bindet ihn an eine Bedingung, die vor den Zahlen prüfbar ist
+(etwa: die Klassenschnitte und die Sichtbarkeits-Behauptung je Klasse stehen
+committet in der Pre-Reg, und die Klasse mit der behaupteten Sichtbarkeit ist
+vorab benannt). Bis dahin gilt die Schranke wie geschrieben — und eine Runde,
+die sie nur über die Mischung reißt, sagt das im Bericht und legt die
+Entscheidung dem Autor vor, statt sie sich selbst zu erteilen (so gebucht in
+`messjournal.md` §14 „Übergänge J4 `sep06`").
+
 ### Was der Modus NICHT liefert
 
 * **Keine Prävalenz und keine Fehlerrate.** Er misst eine Richtung auf

@@ -200,7 +200,7 @@ die DB) — mit seiner Bedingung.
 | sep04 | Lotse | [Absprung-Forensik](#lotse-absprung-forensik-sep04--jeder-absprung-ist-karten-vorfahrt-und-die-mehrheit-erbt-die-karte) | Autopsie | `bridge_no_rail` = 0 Punkte, Schienen-Auslauf 0 daneben; die Ritt-Doppelzone liegt in 49,5 % ihrer Punkte außerhalb der Tinte. Von 39 Ereignissen 23 geerbt (Karten-Abdrift, Überschuss +0,0000 = Kompositions-Platzierung), 15 von der starren Pinnung gemacht (Fenster-Versatz, +0,0928 xh) — neuer Sensor `tools/inkpilot/forensics.py` |
 | sep04 | Lotse | [Lotse-Sprung aufgelöst](#lotse-sprung-sep04--der-ungeklärte-sprung-ist-eine-transkription-keine-messung) | Autopsie · gegenstandslos | 0,0545 ist `laden` (Rang 9), der Median ist Rang 10 = 0,058522; `will` beweisbar unbewegt → kein Sprung. Zweitbefund: die stehende Basis ist drei Wurzeln alt, heute 0,056080 |
 | sep04 | Feder | [Platten-Nib A3 (Wortrunde)](#platten-nib-a3-sep04--vorregistrierung-die-wortrunde-über-die-strichbreite) | Pre-Reg · **Runde nicht gefahren — Autor-Entscheid 2026-09-05: Zielfeder = gemessene Wortfeder; Folgearm gestartet** | Halbbreite 0,097 statt 0,07251. Das Lineal ist nicht blind, sondern EINSEITIG: dem Lineal die breitere Feder nennen senkt bei unveränderter Geometrie 0,109218 → 0,101560. Nebenbedingung des Audits schon trocken gerissen (`gleichzug_doublings` 13 → 21) — ein ≥ 60 % lizenziert nur den Folgearm „Ink-Clearance an die Feder koppeln", nicht den Write |
-| sep04 | Übergänge | [J4 Wortrunde (Rettungsweg 3)](#übergänge-j4-sep04--vorregistrierung-die-wortrunde-als-benannter-rettungsweg) | Pre-Reg · Runde gebaut, Urteil offen | Der §7.9-Rettungsweg zum `dconn`-Negativ; auf der LF11-Wurzel neu vermessen: `seam_dep` +7,99 → +0,02, Wörter +0,000248 (Vorzeichen gedreht), Paare byte-gleich |
+| sep04 | Übergänge | [J4 Wortrunde (Rettungsweg 3)](#übergänge-j4-sep04--vorregistrierung-die-wortrunde-als-benannter-rettungsweg) | Pre-Reg · **Runde gefahren `sep06`**, Ergebnis im Eintrag „J4 `sep06`" unten | Der §7.9-Rettungsweg zum `dconn`-Negativ; auf der LF11-Wurzel neu vermessen: `seam_dep` +7,99 → +0,02, Wörter +0,000248 (Vorzeichen gedreht), Paare byte-gleich |
 | sep04 | Laufform | [LF12 Prod-Re-Harvest mit Kette v5](#laufform-lf12-sep04--vorregistrierung-der-prod-re-harvest-der-laufform-zeilen-mit-kette-v5) | Pre-Reg | Zeilen aus den Vorkommen des heutigen Ketten-Stands neu bilden, Schätzer und Schlüsselmenge unverändert; der Beweis-Boden gilt ab hier auch für den Bestand |
 | sep04 | Laufform | [LF12 gemessen (trocken)](#laufform-lf12-sep04--gemessen-trocken-alle-fünf-gates-grün-und-der-boden-fängt-vier-zeilen-ab) | Pre-Reg + gemessen · alle Gates grün, Karte trocken; Write wartet auf Autor-Go | 18 von 22 Zeilen neu (RMS-Median 0,0022 xh), Wörter 0,108107 · Paare 0,148231, kein Kreuzungsverlust, dev-19 `cross_missing` 13→12; der Boden fängt `P`/`S`/`p`/`s` ab — `S` steht seit dem LF11-Write bei n=2 und hat heute NULL Fits |
 | sep04 | Kette | [K-F Produktions-Init (A34)](#kette-k-f-sep04--vorregistrierung-der-produktions-init-autor-entscheid-a34-und-die-fällige-kette-nachmessung) | Pre-Reg | EIN Knopf `connector_init` mirror→production (der Verbraucher, den der P-Spiegel stehen ließ); Basis = frischer v5-Lauf auf der heutigen Wurzel = deklarierte Kette-Re-Baseline, weil seit `sep01` keine dev-19-Zahl über die Rechteck-Reparatur trägt |
@@ -213,6 +213,7 @@ die DB) — mit seiner Bedingung.
 | sep06 | Laufform | [LF13 gemessen](#laufform-lf13-sep06--gemessen-der-schätzer-war-nie-der-träger-und-der-arm-fällt-an-zwei-gates) | Pre-Reg + gemessen · **verworfen** (Gate (a) + (c)) · Teilerfolg zurechenbar | **Die Zurechnung kippt H2:** gegen den EIGENEN Stapel gemessen kostet der Schätzer nur 0,005–0,029 xh, während die ERNTE davor (Kette-Wortfit → zentriertes 120-Anker-Vorkommen) 0,016–0,057 xh kostet — H2 gehört zu drei Vierteln der Dissektion, nicht dem Median. Anteile am Rest-Verlust: Lage −22 % · Größe −1 % · Basis +21 % · Formstreuung +53 %. **Die Decke ist ein Buchstabe:** nur `sz` (0,2167) und `r` (0,2177) tragen in den Vorkommen selbst mehr als 0,194, `a`/`o`/`g` sind schon dort zu. Arm (Schleifen-Registrierung, Leiter {0,15 · 0,25 · 0,50}): Gate (a) rot (2 Bereiche statt 4 der Basis, keine Regression), Gate (c) rot (0,108444 → 0,108637), (b)/(d)/(e) grün; Kennzahl 26 → **23** Wörter (`muß`-Familie), Verdopplungen bei 0,097 22 → 21. R4-Anzeiger gebaut und geeicht (monotone Kurve 0,609 → 0,878), bleibt Report-Spalte. Schalter `LAUFFORM_LOOP_WINDOW` bleibt AUS |
 | sep06 | Laufform | [LF14 Ernte-Zerlegung (Pre-Reg)](#laufform-lf14-sep06--vorregistrierung-die-ernte-schritt-für-schritt-rettungsweg-1-von-lf13) | Pre-Reg | Rettungsweg 1 von LF13: die Ernte ist der gemessene Hebel, also wird sie zerlegt. Sechs Ablesungen je Vorkommen (E0 Kette-Bahn → E1 Anker nackt → E2 Anker gerendert → E3 Reparatur → E4 Zentrierung → E5 Rundung) plus die A/B-Ablesung eingefrorene gegen neu parametrisierte Spline-Basis (E2a/E2b); benannt wird der Schritt mit dem größten Median-Anteil, Mechanismus-Menü N1/N2/N3 vorab festgelegt. Decke der Kennzahl vorab beziffert: höchstens 11 der 26 Wörter, weil `o` (Kette 0,1826) schon in der Kette zu ist und `G`/`v`/`k` keine Laufform-Zeile haben |
 | sep06 | Laufform | [LF14 gemessen](#laufform-lf14-sep06--gemessen-die-ernte-verliert-nichts-und-der-eine-schritt-der-es-tut-hilft-keinem-wort) | Pre-Reg + gemessen · **verworfen** (Gate (b) + (c)) · **streicht Rettungsweg 1 von LF13** | **Die Ernte verliert die Schleife nicht:** auf EINEM chart-verankerten Bereich an beiden Enden gelesen kostet Kette-Bahn → gespeichertes Vorkommen −0,0002 bis +0,0077 xh; 40 von 44 Vorkommen bewegen sich unter 0,01, und von den vier übrigen VERLIERT genau eines. Die 0,016–0,057 xh von LF13 sind zwei verschiedene Schleifen: 21 von 39 gemeinsamen Vorkommen stimmen auf 0,0011, 18 liegen 0,0673 auseinander, weil die Zuordnung über Nähe im 0,45-xh-Fenster ein Nachbarloch trifft (`Wer` `r` 0,3500 gegen 0,2323). Beide Lineale (Bereich · Raster-Nähe) stimmen an beiden Enden auf 0,0000 überein, der Rahmen ist auf 2,3·10⁻¹⁵ xh abgenommen. **Der eine echte Schritt ist die Anker-Reparatur** („Schleifen-Sehne"): von 235 Vorkommen werden 20 repariert, 12 davon mit messbarer Binnenfläche — die 4, deren Reparatur INNERHALB einer Schleife landet, verlieren alle vier (Median 0,0410, schlimmstenfalls 0,1068 xh), die 8 außerhalb bewegen ≤ 0,0021 (saubere Nullprobe). Arm `LOOP_AWARE_REPAIR`: Gate (a) 1 → **0** Brüche von 44 (grün), (b) rot (0,0486 am `Z` für 0,0045 Öffnung), (c) rot (Paare 0,148352) — **beide Lineal-Zahlen trägt die Kontrollkarte**, der Arm bewegt sie um −0,000044 bzw. 0,000000; (d)/(e) grün. Kennzahl **26 → 26**: drei Vorkommen gehen auf, kein Wort. Nebenbefund: **die Ernte ist kein Fixpunkt** — eine frische Ernte der `sep05`-Wurzel leitet jede Zeile 0,0025–0,0283 xh neben der ab, aus der die Wurzel geschrieben wurde (`--jobs 1` = `--jobs 4` byte-gleich; Ursache ist `chain_seed="composed"` auf einer Komposition aus den Zeilen selbst) |
+| sep06 | Übergänge | [J4 Runde 5 gemessen](#übergänge-j4-sep06--runde-5-gemessen-richtung-34--2-unentschieden-gate-gerissen--durch-die-klasse-die-es-reißen-sollte) | Menschenrunde · Richtung erdrückend, `adopt: false` an der Tie-Schranke · **Adoption = Autor-Entscheid** (LF11-Präzedenz) | **Kandidat 34 : Basis 2** von 36 entschiedenen (94,4 % gegen ≥ 60 %), unentschieden 42,9 % gegen ≤ 25 %. Klassenweise löst sich der Widerspruch: `naht-stark` 26 : 2 bei **9,7 %** Ties (beide Schranken ✓), `naht-schwach` 8 : 0 bei **72,4 %** Ties — die Klasse, für die die Pre-Reg Unsichtbarkeit beschrieben hat. Instrument sauber: 3/3 Kontrollwörter als „kein Unterschied" erkannt, 10/12 Wiederholungen gleicher Arm bei 4/12 gleicher Seite (12 ≥ 6 Paare). Auf der `sep05`-Wurzel neu gemessen: Wörter 0,108444 → **0,109026** (+0,000581), Paare byte-gleich, `seam_dep` +7,59 → −0,70 (absolut 12,67 → **2,30**), Verdopplungen 14 = 14. **Der ganze Lineal-Verlust sitzt in der starken Klasse** (+0,036888 gegen −0,000262), also dort, wo das Auge 26 : 2 dagegen stimmt — von den 30 bestraften Wörtern gehen 18 : 0 an den Kandidaten. Klassenregel gemessen und verworfen: `exit_trim_min_kink_deg` trennt die Klassen bei keiner Schwelle (beide haben denselben Knick, +7,90 / +7,44), kostet zwischen 5° und 25° MEHR als der volle Trim und gibt die Naht-Reparatur zurück |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -11136,3 +11137,219 @@ E0-Spalte ist deshalb nicht zitierfähig, und das Gate (a) urteilt dort
 zugunsten des Arms, weil E5 über E0 liegt. Der `p`-Vorbehalt von LF13
 (Ringschließung bei geschachtelten Bereichen) gilt unverändert; `p` wird
 auch hier nicht neu abgeleitet.
+
+### Übergänge J4 `sep06` — Runde 5 gemessen: Richtung 34 : 2, Unentschieden-Gate gerissen — durch die Klasse, die es reißen sollte
+
+Die Menschenrunde aus der Vorregistrierung „Übergänge J4 `sep04`" ist
+gefahren (2026-09-06, Beurteiler = Autor, 75 Bildschirme in einem Zug). Sie
+ist **Rettungsweg (3)** der J4-Zeile in `../proposals/tintenfolger.md` §7.9;
+**keine Zahl der Einträge „Übergänge J4 `sep02`", „J4b `sep02`" und „S1
+`sep04`" ist angefasst** — der Arm ist dort am `dconn`-Gate gescheitert, und
+das bleibt er. Hier steht, was das Auge dazu sagt. Ablage der Runde:
+[`data/humanbench/runde-05-*`](../../data/humanbench/runde-05-stempel.md)
+(Urteile, schmaler Schlüssel, Auswertung, Stempel); Schlüssel, Payload, die
+beiden Arm-Dateien und die Klassendatei bleiben draußen (Open-Core-Vorbehalt).
+
+**Ein Freiheitsgrad, und er ist ein Schalter.** Basis `sha256`
+`8538513b46fbd10c`, Kandidat `404abd38fa2ef59b`
+(`wordarm.py --exit-trim`), Registrierung des Kandidaten an die Basis
+gepinnt, Wurzel-Export `2026-09-02T22:16:06+00:00` (Digest `6cbab9d5c092`,
+der Stand nach dem LF11-Write), sonst identische Einstellungen — `laufform`
+`frozen`, Nib 0,07251 `constant`, `apex_handover`/`stem_depart` aus,
+`exit_trim_min_kink_deg` 0 (die J4-Klasse als GANZE, nicht die
+J4b-Verengung). Die Regel feuert auf **60 von 63** Wortproben; die drei
+übrigen sind die Kontrollklasse.
+
+#### Der Auswerteplan, Schritt für Schritt
+
+| Schritt | Zahl | Schranke | Lesung |
+|---|---|---|---|
+| 1 Verlässlichkeit | **10/12 Paare gleicher Arm**, 4/12 gleiche Seite (4 Paare beidseits „kein Unterschied") | ≥ 6 Paare · > 7/12 Arm | beide Schranken genommen, Band `reliable` — geurteilt wurde nach dem **Bild**, nicht nach der Position; die Runde trägt einen Adoptionsanspruch |
+| 2 Seitenbilanz | links 17 · rechts 19 · unentschieden 27 (47,2 % der entschiedenen links) | berichtet, nie entscheidend | so ausgeglichen, wie eine Seitenbilanz werden kann; keine Meldeschwelle berührt |
+| 3 Verdikt | **Kandidat 34 : Basis 2** von 36 entschiedenen → Kandidat **94,4 %**; unentschieden 27 von 63 = **42,9 %** | ≥ 60 % · ≤ 25 % | Kandidaten-Schranke um 34 Punkte übertroffen, Tie-Schranke um 18 Punkte gerissen; `adopt: false` |
+| 5 Drift | Kandidat 12 · 9 · 13, Basis 0 · 2 · 0, Ties 9 · 10 · 8, Mediandauer 7 · 8 · 6 s | — | keine Ermüdung, kein Kippen; nur der erste Bildschirm zählt 43 s (Einlesen), der Rest liegt bei 2–20 s |
+
+#### Schritt 4 — je Verdachtsklasse
+
+Die Klassen sind vor der Runde deklariert und danach geschnitten, **wie weit
+der Kandidat die Zeichnung bewegt** (`arm_gap`, symmetrisch, in x-Höhen):
+
+| Klasse | n | entschieden | Kandidat | unentschieden | Schwellen | Lesung |
+|---|---|---|---|---|---|---|
+| `naht-stark` (Δ ≥ 0,1186 xh) | 31 | 28 | **26** (92,9 %) | 3 (**9,7 %**) | **beide ✓** | die Klasse, für die die Vorregistrierung „wenn der Trim irgendwo sichtbar hilft, dann hier" geschrieben hat — und genau das ist eingetreten |
+| `naht-schwach` (0,005 < Δ < 0,1186) | 29 | 8 | **8** (100 %) | 21 (**72,4 %**) | Kandidat ✓ · Ties ✗ | fast unsichtbar, aber nicht neutral: kein einziger Bildschirm geht an die Basis |
+| `unberuehrt` (Δ ≤ 0,005 xh) | 3 | 0 | — | **3 (100 %)** | unter `MIN_PAIRED_PER_CLASS` = 8 | die Kontrolle: dreimal dasselbe Bild, dreimal „kein Unterschied" — richtig |
+
+*Der Schnitt steht mit **0,1186 xh** so in der Klassendatei der Runde
+(`median_low` über die 60 bewegten Wörter); die Tabelle der Vorregistrierung
+nennt „≥ 0,106". Die ZUORDNUNG ist davon unberührt — zwischen `Gaul` 0,1063
+und `Gewehr` 0,1186 liegt kein Wort —, und die Vorregistrierungszahl bleibt
+stehen, wie sie geschrieben wurde. Gemeldet, weil eine Zahl, die zweimal
+verschieden dasteht, sonst beim nächsten Leser als Fehler ankommt.*
+
+**Die Gesamt-Tie-Quote ist die Summe zweier sehr verschiedener Klassen.**
+Von den 27 Unentschiedenen liegen **21 in `naht-schwach`** und 3 in der
+Kontrolle; in der Klasse, in der die Regel sichtbar arbeitet, bleiben **3 von
+31** Bildschirmen unentschieden. Die Schranke von 25 % fragt „ist der
+Unterschied oft genug sichtbar, um etwas zu ändern?" — die Antwort dieser
+Runde ist zweigeteilt und beide Teile stehen in der Vorregistrierung: **ja,
+wo die Regel viel bewegt (9,7 %), nein, wo sie wenig bewegt (72,4 %).** Die
+Klasse, an der das Gate reißt, ist die, für die es vorher als
+unwahrscheinlich beschrieben wurde, dass dort überhaupt etwas zu sehen ist.
+
+**Und das Instrument sieht.** Drei bit-nahe Kontrollwörter (die Regel feuert
+nicht) werden dreimal richtig als „kein Unterschied" erkannt; kein einziges
+„links" oder „rechts" auf einen Unterschied, den es nicht gibt. Zwölf blinde,
+gespiegelte Wiederholungen liefern zehnmal denselben ARM bei nur viermal
+derselben Seite. Die Antwortoption ist also benutzbar und wurde benutzt, und
+die Urteile hängen am Bild und nicht an der Position — dieselben zwei
+Prüfungen, die Runde 6 bestanden hat, hier mit 12 statt 4 Paaren und damit
+**über** dem Wiederholungs-Boden.
+
+#### Was das Lineal auf der HEUTIGEN Wurzel dazu sagt
+
+Der Arm wurde neu gemessen, weil die Wurzel seit dem Urteil eine andere ist:
+der LF12-Write vom `sep05` hat 18 Laufform-Zeilen ersetzt und `S` gelöscht.
+Wurzeln `suetterlin-1922` `exported_at 2026-09-05T21:33:12+00:00`
+`root_digest` **`eaa195aa7c84…`** und `suetterlin-1922-pairs`
+`0fbde2d72b64…`, jeder Lauf mit `--expect-root` und `OPENBLAS_NUM_THREADS=1
+OMP_NUM_THREADS=1`:
+
+| | Wörter | Paare | `seam_dep_median` | `seam_dep_abs_median` | `gleichzug_doublings` |
+|---|---|---|---|---|---|
+| Basis | **0,108444** | 0,148236 | **+7,59°** | 12,67 | 14 |
+| J4 (`--exit-trim`) | **0,109026** (**+0,000581**) | 0,148236 (byte-gleich) | **−0,70°** | **2,30** | 14 |
+
+Der Wort-Preis ist gegenüber der `sep04`-Messung auf der LF11-Wurzel
+gestiegen (+0,000248 → **+0,000581**) — die glattere LF12-Zeile lässt dem
+Trim andere Nachbarschaften. **Der Naht-Abgang verschwindet trotzdem
+praktisch vollständig**, und zwar nicht nur im Median: der ABSOLUTE Median
+fällt von 12,67° auf 2,30°, die Verdopplungen bleiben bei 14, die Paare sind
+byte-gleich, 63 von 63 Wörtern gescoret, keiner gefallen.
+
+**Die Zerlegung nach denselben Klassen ist der Kern dieses Eintrags:**
+
+| Klasse | n | Lineal besser | Lineal schlechter | Summe Δ`word_loss` | `seam_dep` Basis → Arm |
+|---|---|---|---|---|---|
+| `naht-stark` | 31 | 17 | 14 | **+0,036888** | +7,90° → **−0,36°** |
+| `naht-schwach` | 29 | 13 | 16 | **−0,000262** | +7,44° → **−1,18°** |
+| `unberuehrt` | 3 | 0 | 0 | 0,000000 | −5,48° → −5,48° |
+
+**Der gesamte Lineal-Verlust des Arms sitzt in der Klasse, in der das Auge
+26 : 2 für ihn stimmt.** In der schwachen Klasse ist das Lineal ein Nullsummenspiel
+(−0,000262 über 29 Wörter) — dort, wo das Auge nichts sieht, sieht das Lineal
+auch nichts. Und die Naht-Reparatur ist in BEIDEN Klassen praktisch gleich
+groß: +7,90 → −0,36 gegen +7,44 → −1,18. Die Klassen unterscheiden sich also
+nicht im Knick, sondern nur darin, wie weit sein Wegfall die Zeichnung
+verschiebt.
+
+**Wort für Wort ist die Gegenläufigkeit vollständig.** Von den 30 Wörtern,
+die das Lineal BESTRAFT, gehen am Auge **18 an den Kandidaten und 0 an die
+Basis** (12 unentschieden) — die sechs teuersten (`kann` +0,0213, `einer`
++0,0089, `daß` +0,0087, `und` +0,0085, `haben` +0,0068, `Einen` +0,0058)
+allesamt. Die beiden einzigen Basis-Stimmen der ganzen Runde (`muß-3`,
+`Seiten`) fallen auf Wörter, die das Lineal dem Kandidaten GUTSCHREIBT
+(−0,0006 und −0,0001). Das ist dieselbe Beobachtung wie in Runde 6, nur mit
+umgekehrtem Vorzeichen: die Kennzahl misst hier nachweislich etwas anderes
+als das, worüber entschieden wird — und genau dafür ist die Echtheitsfrage
+gebaut (`menschliche-bewertung.md` §8).
+
+#### Globale Umschaltung oder Klassenregel? — gemessen, nicht abgewogen
+
+Die naheliegende Verengung ist keine Idee, sondern ein fertiger Knopf:
+`exit_trim_min_kink_deg` (`core/compose.py`, der J4b-Arm) lässt den Trim nur
+dort feuern, wo der Verbinder wirklich vom Buchstaben abknickt. Die Leiter,
+auf der `sep05`-Wurzel gefahren, mit derselben Basis und BLAS gepinnt:
+
+| Schwelle | Wörter bewegt | davon `naht-stark` | davon `naht-schwach` | `word_loss` | `seam_dep_median` | `…_abs_median` |
+|---|---|---|---|---|---|---|
+| — (Basis) | 0 | 0/31 | 0/29 | 0,108444 | +7,59 | 12,67 |
+| 0° (J4, ganz) | 60 | **31/31** | **29/29** | 0,109026 | **−0,70** | **2,30** |
+| 5° | 54 | 27/31 | 27/29 | 0,109169 | −0,10 | 2,61 |
+| 10° | 39 | 22/31 | 17/29 | 0,109460 | +2,04 | 7,27 |
+| 15° | 34 | 21/31 | 13/29 | 0,109319 | +3,31 | 7,59 |
+| 20° | 19 | 12/31 | 7/29 | 0,109193 | +6,52 | 8,80 |
+| 25° | 16 | 12/31 | 4/29 | 0,109134 | +7,44 | 8,95 |
+| 30° | 5 | 4/31 | 1/29 | 0,108824 | +7,44 | 10,59 |
+
+Drei Befunde, und alle drei sprechen gegen die Klassenregel:
+
+1. **Keine Schwelle trennt die Klassen.** Sie dünnt beide aus, und `naht-stark`
+   nie schneller als `naht-schwach`: bei 20° feuert die Regel noch in 7 der
+   29 schwachen Wörter, aber schon nicht mehr in 19 der 31 starken. Das ist
+   kein Kalibrierproblem — es folgt aus der Messung darüber: **die beiden
+   Klassen haben denselben Knick** (+7,90 gegen +7,44), sie unterscheiden sich
+   im `arm_gap`. Ein `seam_dep`-Schwellwert, der die starke von der schwachen
+   Klasse trennt, existiert in diesen Daten nicht.
+2. **Die Verengung kostet MEHR, nicht weniger.** Zwischen 5° und 25° liegt
+   jede Sprosse ÜBER dem vollen Trim (0,109134–0,109460 gegen 0,109026);
+   erst 30° gibt 0,0002 der 0,00058 zurück — und feuert dann in fünf von 63
+   Wörtern. Das Lineal belohnt die Klassenregel also nirgends.
+3. **Sie gibt die Reparatur zurück, für die der Arm gebaut wurde.** Ab 10°
+   steht der absolute Naht-Abgang wieder bei 7,3°–10,6° statt bei 2,30°; bei
+   25° ist der Median mit +7,44 faktisch der der Basis. Man kauft nichts und
+   bezahlt mit dem Zweck.
+
+**Das kleinere ehrliche Mittel ist damit die globale Umschaltung.** Sie ist
+EIN bereits implementierter, bereits vorregistrierter und bereits vom Auge
+beurteilter Freiheitsgrad; die Klassenregel wäre eine zusätzliche Konstante,
+die in dieser Runde nichts trennt, am Lineal teurer ist und den gemessenen
+Nutzen zurücknimmt. Dass die schwache Klasse dabei mitgetrimmt wird, ist
+kein Preis: dort ist das Lineal neutral (−0,000262) und das Auge 8 : 0 für
+den Trim.
+
+#### Was die Vorregistrierung auslösen darf
+
+Der Plan verlangt für `adopt` **beide** Schwellen; die Tie-Schranke fällt,
+also entsteht **kein automatischer Adoptionsanspruch** — und das Werkzeug
+meldet korrekt `adopt: false`. Was die Vorregistrierung für diesen Fall
+wörtlich vorgesehen hat, steht im `sep04`-Eintrag: „Ein Ergebnis ≥ 60 % legt
+sie ihm vor" — dem Autor. Genau das tut dieser Eintrag, und mehr nicht.
+
+**Der Präzedenzfall ist die LF11-Wortrunde** (`sep02`): dort war die Richtung
+mit 40 : 1 ebenfalls erdrückend, die Tie-Schranke fiel in JEDER Lesart, ein
+formaler Anspruch entstand nicht — und der Autor hat auf dieser Grundlage
+freigegeben. Der Unterschied zu heute liegt zugunsten dieser Runde: dort
+hing über der Menge ein ungeklärter Instrumentdefekt, hier bestehen
+Wiederholungen (10/12 Arm) und Kontrollklasse (3/3) sauber, und die
+Tie-Quote ist klassenweise erklärt statt offen.
+
+**Empfehlung dieses Eintrags: `exit_trim` als Default an** — die globale
+Umschaltung, nicht die Klassenregel (Begründung eine Überschrift höher). Das
+ist eine rendernde Änderung: sie bewegt jede `/write/word`-Antwort und
+verlangt ein deklariertes Neu-Backen des Golden-Fixtures. **Die
+Entscheidung ist damit Autor-Sache, nicht die eines Bench-Ergebnisses**; sie
+wird, wenn sie fällt, als datierter Nachtrag hier gebucht und steht nicht in
+diesem Abschnitt.
+
+#### Was die Runde nicht beantwortet
+
+* **Die ANKUNFTSSEITE.** J4 verschlechtert sie messbar (`seam_arr_median`
+  −2,83° → −3,87° auf dieser Wurzel; auf der `sep02`-Wurzel −3,40 → −6,53).
+  Das bleibt ein eigener Arm mit eigener Vorregistrierung — Weg (1) der
+  §7.9-Zeile, jetzt mit `dspan`-Gates von Anfang an.
+* **`dconn`.** Das Maß ist konstruktiv ungeeignet, über eine Naht zu urteilen,
+  die die Grenze Buchstabe/Verbinder verschiebt — das war der Anlass der
+  Runde und ist mit `dspan` (`sep04`) beantwortet, nicht mit ihr.
+* **Ob der Trim auf einer ANDEREN Hand hilft.** 63 Wörter EINER Platte sind
+  die ganze Grundgesamtheit; einen Bestätigungssatz gibt es im Wortmodus
+  nicht, und `abb22` ist eine andere Hand.
+
+**Kein §7.9-Rettungsweg fällig** — die Regel gilt dem ehrlichen Negativ, und
+diese Runde ist keines. Die J4-Zeile bekommt stattdessen den
+Konversions-Stand ihres Rettungswegs (3).
+
+**Was die Runde dem INSTRUMENT eingetragen hat** steht in
+[`menschliche-bewertung.md`](menschliche-bewertung.md) §8a: die Tie-Schranke
+ist über ALLE Bildschirme definiert, eine Runde kann ihre Klassen aber so
+schneiden, dass eine davon vorhersagbar unsichtbar ist — dann misst die
+Gesamtquote die Klassenmischung mit. Als **Vorschlag**, nicht als stille
+Regeländerung, dort notiert.
+
+**Selbst entschieden (Routine im Rahmen der Vorregistrierung):** die
+Neu-Messung des Arms auf der `sep05`-Wurzel (ohne sie stünde die Empfehlung
+auf einer Zahl, die eine Wurzel alt ist); die klassenweise Zerlegung des
+Lineal-Deltas und der Naht-Reparatur (sie beantwortet die Klassenregel-Frage,
+die sonst eine Meinung geblieben wäre); die `exit_trim_min_kink_deg`-Leiter
+als Vergleichslauf — sie ist ein Report-Vergleich am bestehenden Knopf, kein
+neuer Arm, und keine ihrer Zahlen ist eine Headline.
