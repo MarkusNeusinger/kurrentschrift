@@ -11341,7 +11341,7 @@ gilt für seine neun Glyphen und fällt, sobald das `t` mitzählt.
 |---|---|---|
 | Headline Wörter/Paare | 0,108444 · 0,148236, unverändert | **grün** |
 | Tintenfolger-Report | 68 bzw. 56 Zeilen identisch, Identitäts-Gate PASS | **grün** |
-| `/verify-core` | 2501 passed, 8 skipped; `ruff` sauber | **grün** |
+| `/verify-core` | 2524 passed, 8 skipped; `ruff` sauber | **grün** |
 | Neue Tests | 26; darunter die drei Verweigerungen: fremde Hand, kaputte Zeile, unmögliche Federbreite | **grün** |
 
 #### Rettungswege
