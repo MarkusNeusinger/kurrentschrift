@@ -1,6 +1,6 @@
 # Menschliche Bewertung — der blinde Urteilsdurchgang über die Fits
 
-> **Status (2026-09-04): lebend.** Beschreibt das Instrument
+> **Status (2026-09-06): lebend.** Beschreibt das Instrument
 > ([`tools/humanbench`](../../tools/humanbench)) und das Verfahren eines
 > Bewertungsdurchgangs — **die Methode, nicht die Ergebnisse**. Zahlen und
 > Verdikte einer Runde wohnen in
@@ -17,12 +17,17 @@
 > ([§3](#3-die-konstruktionsregeln-des-instruments)), und der Auswerteplan
 > wird vor den Labels festgeschrieben
 > ([§4](#4-die-vorregistrierung)). Aufbewahrt wird nur, was §6 nennt.
+> Seit 2026-09-06 steht der **Leitsatz des Autors** dazu
+> ([§9a](#9a-der-leitsatz-das-auge-misst-stetigkeit-die-lineale-messen-abstand)):
+> das Auge liest Stetigkeit, die Lineale lesen Abstand — der Grund, warum
+> zwei Wortrunden gegen die Zahlen ausgehen konnten.
 >
 > **Was seither passiert ist.** Die erste Wortrunde ist gefahren
 > (`sep02`, Basis gegen LF11): sie hat entschieden, wo das Wort-Lineal
 > blind war, und dem Dokument die Konstruktionsregel §3.6b eingetragen —
 > Zahlen und Verdikt in `messjournal.md` §14 („Laufform LF11 —
-> humanbench-Wortrunde“).
+> humanbench-Wortrunde“). Die Runden 5 (`sep04`, J4) und 6 (`sep05`, J5)
+> sind seither dazugekommen und haben §9a ausgelöst.
 >
 > **Was offen ist.** Die bekannten Grenzen des Verfahrens — was ein
 > blinder Durchgang grundsätzlich nicht entscheidet — stehen in
@@ -1364,6 +1369,58 @@ den Fall, in dem das Lineal indifferent ist.
   Beurteiler zuverlässig erkennt, muss nicht die sein, die das geschriebene
   Wort verdirbt. Was ein Befund auslösen darf, entscheidet der Plan (§4) —
   nicht die Größe einer Kategorie.
+
+---
+
+## 9a. Der Leitsatz: das Auge misst Stetigkeit, die Lineale messen Abstand
+
+Zwei Wortrunden hintereinander sind gegen die automatischen Zahlen
+ausgegangen — Runde 5 gab 34 : 2 einem Arm, den kein Lineal bevorzugte,
+Runde 6 gab 20 : 1 der Basis gegen eine Regel, die JEDES Gate bestanden
+hatte. Danach hat der Autor benannt, worauf er beim Urteilen tatsächlich
+sieht (2026-09-06, wörtlich):
+
+> „Direkt ins Auge stechen Übergänge, die mitten im Übergang Wackler drin
+> haben oder in einem Punkt einen Knick haben, weil sie von 30° Steigung
+> plötzlich auf 40° wechseln und davor und danach eine perfekte Linie
+> haben. Es kommt nicht so auf den genauen Winkel an, ob es wirklich
+> gerade ist oder der Kreis einen Radius von x oder y hat — die
+> plötzlichen Änderungen an Stellen, wo sie nichts zu suchen haben, weil
+> da kein Richtungswechsel ist, fallen extrem als unnatürlich auf."
+
+Das ist kein Geschmacksurteil, sondern eine Aussage über die gemessene
+Größe, und sie erklärt beide Runden auf einmal. Das Auge liest die
+**Stetigkeit** von Tangente und Krümmung zwischen zwei Duktus-Ereignissen.
+Die Lineale, die ein komponiertes WORT beurteilen, lesen **Abstand**:
+`bench_loss` ist ein Chamfer gegen das Proben-Skelett, `dtw_xh` ein
+Punkt-zu-Punkt-Abstand, `dconn`/`dspan` eine Verbinder-Formdistanz. Ein
+Knick und ein glatter Bogen durch dieselben zwei Endpunkte bekommen von
+allen dieselbe Zahl. (Referenzfreie Formterme gibt es — Glätte,
+Eckenschärfe, Kollinearität der Natürlichkeitsmetrik —, aber am einzelnen
+BUCHSTABEN, nicht an der Naht zwischen zweien.)
+
+Drei Folgerungen, die für jede weitere Runde gelten:
+
+* **Ein bestandenes Gate ist kein Freibrief.** Runde 6 ist der Beleg: die
+  Apex-Übergabe ersetzte einen konkaven Anstrich durch eine Gerade und
+  verlor 0,015–0,040 xh Pfeilhöhe, während jede Distanzzahl unauffällig
+  blieb. Eine Regel, die eine Form GLÄTTET, muss vor dem Auge bestehen,
+  nicht nur vor dem Lineal.
+* **Der genaue Wert ist zweitrangig, die plötzliche Änderung nicht.** Eine
+  Runde darf ihre Klassen nicht nach Winkel- oder Radiuswerten schneiden,
+  wenn die Frage die Echtheit ist; sie muss nach dem schneiden, was die
+  Regel an Stetigkeit ändert.
+* **Die zwei Fehlerklassen `W` (Gewackel) und `E` (Knick nur am Rand)
+  sind die Taxonomie-Seite genau dieses Satzes.** Sie stehen seit Runde 01
+  im Instrument, ohne dass eine Zahl sie je gespiegelt hätte.
+
+Seit `sep06` gibt es die geometrische Gegenseite: der
+**Unstetigkeits-Sensor** (`tools/wordbench/continuity.py`) misst Knick,
+Wackler und Pfeilhöhe an jedem Punkt der komponierten Mittellinie, der
+keine Landmarke ist — als Report-Spalte, abgenommen an genau diesen beiden
+Runden. Was er dort kann und wo er blind bleibt, steht in
+[`messjournal.md`](messjournal.md) §14 („Übergänge S2"); ein Lineal ist er
+nicht, und dieser Abschnitt macht ihn zu keinem.
 
 ---
 

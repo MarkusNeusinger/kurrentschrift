@@ -258,9 +258,21 @@ WIDEST = {
 # given the documented 10 % headroom, like every other path. Still no licence
 # for prose: the Stand blocks, §7.11 and `verfahren.md` are the pieces this
 # gate is actually watching, and they did not move.
+#
+# `mess-runde` raised a third time on 2026-09-06, same shape as before and with
+# the same accounting. The path measured 20 545 of 21 057 — 512 tokens of room —
+# and „Übergänge S2" (the Unstetigkeits-Sensor) adds the standard pair: a
+# pre-registration and its result, hence two register rows. 649 tokens for the
+# two, both already condensed once after this gate refused the first draft (the
+# result row alone was 380 before the trim). The alternatives are the ones the
+# register forbids or the ones that make it useless — deleting a row, or
+# shortening a finding until it fits. So: re-measured at 21 194 and given the
+# documented 10 % headroom. The watched pieces did not move; §7.11 and the two
+# Stand blocks this arm touches got shorter, not longer, because a walked rescue
+# path replaces an open one instead of being appended to it.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
-    "mess-runde": 21_057,
+    "mess-runde": 23_313,
     "mess-runde-route": 6_177,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,
