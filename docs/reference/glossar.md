@@ -463,10 +463,18 @@ Registrierung holt jedes Vorkommen je Schleifenbereich per ÄHNLICHKEIT
 auf die Median-Schleife des Stapels (die Verschiebung auf den
 Median-Schwerpunkt, der isotrope Faktor auf den Median-Radius), mit
 Gewicht 1 auf der Schleife und linearem Auslauf über ein
-Bogenlängen-Fenster daneben — die Form von `blend_stroke_ends`. Weder
-Teil kann Öffnungsweite erfinden: Median-Verschiebung 0 und
-Median-Faktor 1 per Konstruktion, die Zeile bleibt, wo und wie groß sie
-war, und kann nie weiter werden als die Vorkommen selbst. **Gemessen
+Bogenlängen-Fenster daneben — die Form von `blend_stroke_ends`.
+Median-Verschiebung 0 und Median-Faktor 1 per Konstruktion: die
+Registrierung führt keinen freien Parameter und kein Ziel außerhalb des
+Stapels ein, die Zeile bleibt, wo sie war, und die Schleife behält den
+Median-RADIUS des Stapels. **Eine Schranke auf die ÖFFNUNGSWEITE ist das
+nicht** — der Radius ist ein skalarer Stellvertreter, und der
+nachfolgende punktweise Median kann bei anisotrop uneinigen Schleifen
+ein Loch erzeugen, das weiter ist als jedes einzelne Vorkommen; auf der
+`sep05`-Wurzel steht das `Z` 0,034 xh über seinem Vorkommens-Median, das
+`w` 0,024, und den gespeicherten Zeilen passiert dasselbe. Es ist also
+eine Eigenschaft des elementweisen Medians, nicht dieses Schritts.
+**Gemessen
 und NICHT adoptiert** (Gates (a) und (c) rot); Schalter
 `LAUFFORM_LOOP_WINDOW`, Default 0 = aus und byte-gleich. *Technisch:*
 `core/aggregate.py::align_loops` / `loop_faithful_median`,

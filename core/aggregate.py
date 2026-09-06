@@ -363,11 +363,19 @@ def align_loops(
     length (on the CHART stroke) on each side, the shape of `blend_stroke_ends`,
     so a registration can never appear as a step mid-stroke.
 
-    Neither part can invent aperture. The median shift is zero and the median
-    factor is one by construction, so the running form keeps its place and its
-    size; what changes is that the occurrences stop being medianed against each
-    other's placement and scale. The result can never be wider than the
-    occurrences' own median loop — following the ink, not opening it by hand.
+    What that does and does not guarantee, precisely — because the difference
+    was got wrong once and the data says so. The median shift is zero and the
+    median factor is one by construction, so the registration introduces no free
+    parameter and no target outside the stack: the row keeps its place, and the
+    loop keeps the stack's median radius. It does NOT bound the resulting
+    APERTURE. Radius is a scalar proxy; the pointwise median that follows can
+    still synthesise a hole wider than any single occurrence when the loops
+    disagree anisotropically (a round one against a flat one), and on the
+    Sütterlin-1922 root that happens — the `Z` row stands 0.034 xh above its
+    occurrence median, the `w` 0.024. It happens to the STORED rows too, so it
+    is a property of the elementwise median rather than of this step; a
+    two-sided bound would have to be enforced on `D0` itself, which needs the
+    aperture ruler and is not what this function does.
 
     `window` of 0 returns the stack unchanged, bit for bit: the switch is off and
     the caller gets the estimator LF11 adopted.

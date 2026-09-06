@@ -10673,6 +10673,19 @@ Formstreuung ist (Tabelle oben) — ein weiterer Beleg dafür, dass der
 Mechanismus nur greift, wo die Zurechnung ihn trägt, und der Grund für
 Rettungsweg (3).
 
+**Gate (a) ist ein BODEN, keine zweiseitige Schranke, und das ist keine
+Nachlässigkeit, sondern ein Befund** (Copilot-Fund in PR #552,
+nachgemessen): die Registrierung normiert den Median-RADIUS der
+Schleife, und ein Radius ist keine Öffnungsweite. Der punktweise Median
+danach kann bei anisotrop uneinigen Schleifen ein Loch erzeugen, das
+weiter ist als jedes einzelne Vorkommen — auf dieser Wurzel steht das
+`Z` mit 0,2813 um 0,034 xh über seinem Vorkommens-Median (0,2476), das
+`w` um 0,024. **Den gespeicherten Zeilen passiert dasselbe** (`Z`
+0,2777, `w` 0,2243), es ist also eine Eigenschaft des elementweisen
+Medians und nicht dieses Schritts. Eine zweiseitige Schranke müsste auf
+`D0` selbst greifen und bräuchte das Öffnungsweiten-Lineal im
+Schätzer — das wäre R1 in seiner teuren Form und steht nicht an.
+
 **Die Kennzahl: 26 → 23.** Drei der 63 Wortproben schließen ihre
 Binnenfläche nicht mehr — `muß`, `muß-2`, `muß-3`, alle über das `sz`.
 `daß` bleibt zu, weil dort auch das `a` schließt. Genau die eine Glyphe

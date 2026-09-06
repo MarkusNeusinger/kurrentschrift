@@ -68,7 +68,7 @@ from types import SimpleNamespace
 
 import numpy as np
 
-from core.aggregate import LAUFFORM_LOOP_WINDOW, LAUFFORM_MIN_OCCURRENCES, loop_faithful_median
+from core.aggregate import LAUFFORM_LOOP_WINDOW, LAUFFORM_MIN_OCCURRENCES, align_loops, loop_ranges, spline_basis_median
 from core.laufform import head_gate, smoothness_gap, spike_gate
 from tools.wordbench.fetch_fixtures import laufform_row_from_payload
 
@@ -190,23 +190,35 @@ def build_candidates(
         stack = np.asarray(anchor_sets, dtype=float)
         meta = chart.get("trace_meta") or {}
         notes: list[str] = []
+        # The loop registration is the step BEFORE either median, so it applies
+        # to the per-anchor control arm too. Skipping it there would have made
+        # `--knots 0 --loop-window W` print a registered-arm header over an
+        # unregistered card — the one combination in which the label and the
+        # file disagree (Copilot, PR #552).
+        registered = stack
+        if loop_window > 0.0:
+            ranges = loop_ranges(
+                chart["anchors"], chart["half_widths"], meta.get("stroke_starts"), meta.get("corner_anchors")
+            )
+            registered = align_loops(
+                stack, chart["anchors"], ranges, meta.get("stroke_starts"), window=loop_window, scale=loop_scale
+            )
+            notes.append(f"{len(ranges)} loop(s) registered over a {loop_window} xh window")
         # The per-anchor median is computed either way: for `--knots 0` it IS
         # the arm, and for a spline rung it is what the head/tail columns below
         # measure the smoothing's end movement against (the pre-registration
         # left the ends free and promised to report how far they travelled).
-        plain = np.median(stack, axis=0)
+        plain = np.median(registered, axis=0)
         median = plain
         if knot_spacing > 0.0:
-            median, notes = loop_faithful_median(
-                stack,
+            median, spline_notes = spline_basis_median(
+                registered,
                 chart["anchors"],
-                chart["half_widths"],
                 meta.get("stroke_starts"),
                 meta.get("corner_anchors"),
                 knot_spacing=knot_spacing,
-                window=loop_window,
-                scale=loop_scale,
             )
+            notes.extend(spline_notes)
         anchors = median.round(4).tolist()
         row = laufform_row_from_payload(
             chart, anchors, {"derived_from": "lf11-smoothrow", "n_occurrences": len(anchor_sets)}

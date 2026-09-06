@@ -160,6 +160,47 @@ def test_occurrences_of_a_deviating_anchor_count_are_dropped():
     assert [len(a) for a in rows["a"]] == [3, 3]
 
 
+def _loop_chart(n: int = 120, *, phase: float = 0.0, shift: float = 0.0) -> list[list[float]]:
+    """A stroke that rises, throws one full loop and leaves — something to register."""
+    import math
+
+    out = []
+    for i in range(n):
+        t = i / (n - 1)
+        if t < 1 / 3:
+            out.append([0.5 - 0.4 * (1 / 3 - t) * 3, 0.5 - 0.55 * (1 / 3 - t) * 3])
+        elif t > 2 / 3:
+            out.append([0.5 + 0.4 * (t - 2 / 3) * 3, 0.5 - 0.55 * (t - 2 / 3) * 3])
+        else:
+            angle = 2.0 * math.pi * (t - 1 / 3) * 3.0 - math.pi / 2.0 + phase
+            out.append([0.5 + 0.25 * math.cos(angle), 0.5 + 0.25 * math.sin(angle)])
+    return [[x + shift, y] for x, y in out]
+
+
+def test_the_loop_window_reaches_the_per_anchor_control_arm_too(tmp_path: Path):
+    """The registration happens BEFORE the median, so `--knots 0` must feel it.
+
+    Until PR #552 the control arm took the plain median of the RAW stack while
+    the run header announced a registered arm — the one combination in which the
+    label and the file disagreed.
+    """
+    chart = {**CHART_ROW, "anchors": _loop_chart(), "half_widths": [0.05] * 120}
+    chart["trace_meta"] = {"n_anchors": 120, "stroke_starts": [0]}
+    root = tmp_path / "loop-root"
+    root.mkdir()
+    (root / "templates.json").write_text(json.dumps({"a": chart}))
+    (root / "templates_laufform.json").write_text(json.dumps({"a": STORED}))
+    occurrences = [
+        {"glyph_key": "a", "variant": 0, "anchors": _loop_chart(phase=0.3 * i, shift=0.02 * i)} for i in range(-2, 3)
+    ]
+
+    off, _ = build_candidates(root, occurrences, 0.0, loop_window=0.0)
+    on, report = build_candidates(root, occurrences, 0.0, loop_window=0.25)
+
+    assert off["a"]["anchors"] != on["a"]["anchors"], "the control arm ignored the registration"
+    assert any("registered" in line for line in report)
+
+
 @pytest.mark.parametrize("floor", [0, -1])
 def test_a_floor_below_one_is_refused(tmp_path: Path, floor: int, monkeypatch: pytest.MonkeyPatch):
     from tools.laufform import smoothrow

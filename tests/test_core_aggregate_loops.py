@@ -112,13 +112,29 @@ def test_registering_the_size_helps_where_the_occurrences_differ_in_size():
     assert both > place_only
 
 
-def test_registration_never_exceeds_the_evidence():
-    """It follows the ink, it does not open the loop by hand: the registered
-    median may not be wider than the widest occurrence under it."""
+def test_registration_targets_the_stack_and_nothing_outside_it():
+    """What the mechanism actually guarantees, pinned as such.
+
+    NOT an aperture bound — a scalar radius is not an inscribed diameter, and
+    the pointwise median of anisotropically disagreeing loops can synthesise a
+    wider hole than any input (Copilot on PR #552; the `Z` and `w` rows do it on
+    the real root, and so do the STORED rows). What IS guaranteed: the loops are
+    brought onto the stack's OWN medians, so the registered stack's median loop
+    radius is the median radius of the stack it came from — no free parameter,
+    no target from outside.
+    """
     stack = _scattered_stack(scale_spread=0.18)
-    widest = max(_aperture(a) for a in stack)
-    registered = _aperture(np.median(align_loops(stack, CHART, RANGES, window=0.25), axis=0))
-    assert registered <= widest + 1e-9
+    # Measured over the range the mechanism actually normalises — the chart's
+    # loop range, not the test's convenience slice.
+    ring = slice(*RANGES[0])
+
+    def radius(anchors) -> float:
+        loop = np.asarray(anchors, dtype=float)[ring]
+        return float(np.median(np.linalg.norm(loop - loop.mean(axis=0), axis=1)))
+
+    target = float(np.median([radius(a) for a in stack]))
+    registered = align_loops(stack, CHART, RANGES, window=0.25)
+    assert np.allclose([radius(a) for a in registered], target, atol=1e-9)
 
 
 def test_the_running_form_keeps_its_place():
