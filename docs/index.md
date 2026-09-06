@@ -133,6 +133,7 @@ Nachschlagequellen, keine Pläne.
 | [notes/serve-image-importgraph-2026-09-04.md](notes/serve-image-importgraph-2026-09-04.md) | Nachmessung zum Serve-only-Image: was `import api.main` lädt, was die Pakete wiegen, zwei Wege mit ihrem Preis — geändert wurde nichts (die eine offene Messung löst die Runde vom 2026-09-05 ein) |
 | [notes/serve-image-importtime-2026-09-05.md](notes/serve-image-importtime-2026-09-05.md) | Zweite Runde dazu: dieselben Sätze in einer image-förmigen venv (ohne Extras, Bytecode vorkompiliert) plus die Aufteilung des Imports nach Modulen — das Urteil vom 2026-09-04 hält |
 | [notes/eigenhand-router-importzeit-2026-09-05.md](notes/eigenhand-router-importzeit-2026-09-05.md) | Warum `api.routers.eigenhand` als teuerstes Modul galt: zwei Drittel der 64,9 ms sind eine GC-Pause, die `-X importtime` dem laufenden Modul zuschreibt — nichts zu verschieben |
+| [notes/kringel-binnenflaechen-2026-09-06.md](notes/kringel-binnenflaechen-2026-09-06.md) | Warum die Kringel bei der Platten-Feder zulaufen: die Mittellinien-Schleife ist 0,10–0,20 xh enger als die der Platte — zerlegt in Skelett · Kette · Zeile, drei Hypothesen geprüft (zwei entschieden, H2 nur der Richtung nach), vier Rettungswege benannt (nichts gebaut) |
 | [notes/quellen-recherche-2026-07.md](notes/quellen-recherche-2026-07.md) | Geschriebene Wortvorlagen und echte Hände: Rangliste, Absteiger, mögliche Anfragen |
 | [notes/stifte-fuer-unterwegs.md](notes/stifte-fuer-unterwegs.md) | Stift- und Hardware-Recherche fürs Schreiben unterwegs |
 

@@ -69,9 +69,9 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kurzglossar §5
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
-- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5
+- **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5 · Mittellinien-Öffnungsweite (`D0`) §4
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nullprobe §4
-- **O** — Offenbacher §1 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
+- **O** — Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
@@ -79,7 +79,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
-- **V** — Variante §2 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschub-Kalibrierung §2 · Vorschrift §1
+- **V** — Variante §2 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger (vorgeschlagen) §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschub-Kalibrierung §2 · Vorschrift §1
 - **W** — W1–W6 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Tintenlücke §2 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zeichenbreiten-Mittel (`AVG_ADVANCE_UNITS`) §7 · Zeilen-Gate (Laufform) §2 · Zeilenmarke §7 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · zonale Rückweisung (`zonal`) §3 · „Zug um Zug“ §7 · Zwei Stillen (Leerzustands-Regel) §5 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
@@ -1604,6 +1604,39 @@ Projekts vor.
 **Dice** — das Flächenmaß daneben: doppelte Überlappung geteilt durch die
 Summe beider Flächen (1 = deckungsgleich). Beantwortet „sieht es aus wie
 der Ausschnitt“, während Chamfer „liegt die Kante auf der Kante“ misst.
+
+**Öffnungsweite · Mittellinien-Öffnungsweite (`D0`)** — wie weit ein
+„Kringel“ innen offen ist, gemessen als Durchmesser des größten Kreises,
+der in das Loch passt. Zwei Lesarten, die sauber auseinandergehalten
+gehören: die **Öffnungsweite** der fertigen TINTE (das, was man sieht) und
+`D0`, die Öffnungsweite der MITTELLINIEN-Schleife, also des Gebiets, das
+die Stiftbahn selbst umschließt. Weil eine Gleichzug-Feder der Halbbreite
+`h` die Kapsel-Union malt, ist das Tintenloch exakt die Erosion des
+Mittellinien-Lochs um `h`, und beide hängen über **`Öffnungsweite = D0 −
+2h`** zusammen. Der Nutzen von `D0`: es ist federunabhängig und macht
+Platte, Skelett, Kettenfit und gespeicherte Zeile in EINER Zahl
+vergleichbar. Fällt `D0` unter `2h`, verschwindet die Binnenfläche —
+genau der Effekt, den der Federwechsel auf 0,097 auslöst. →
+messjournal.md §14 „Ink-Clearance an die Feder `sep05`“ ·
+notes/kringel-binnenflaechen-2026-09-06.md
+
+**Verschmelzungs-Anzeiger** — die Warnung davor, das Skelett für den
+Federweg zu halten. Wo zwei Federzüge um eine enge Binnenfläche herum
+zusammenfließen, gibt `skeletonize` die Mittelachse des VERSCHMOLZENEN
+Klumpens statt der zwei Bahnen, und die liegt näher am Loch. Als Zahl:
+die Halbbreite, die der Klumpen um die Binnenfläche trägt
+(`(D0 des Skeletts − Öffnungsweite der Tinte) / 2`), geteilt durch die
+gemessene Federhalbbreite. **1,0 ist die Erwartung des Kapsel-MODELLS**, in
+dem beide einbeschriebenen Kreise denselben Mittelpunkt haben und die
+Strichbreite lokal konstant ist — real streut das Verhältnis auch ohne
+Verschmelzung, weshalb der Anzeiger vor jeder Verwendung an Stellen ohne
+Verschmelzung geeicht werden muss. Deutlich darunter heißt „hier ist die
+Mittelachse kein Federweg". Über die 202 gemessenen Binnenflächen der
+Wortplatten steht das Verhältnis bei 0,0667 zu 0,0968, also bei rund 0,69.
+**Vorgeschlagen, nicht gebaut** —
+Rettungsweg (7) der Zeile „Ink-Clearance an die Feder" in
+tintenfolger.md §7.9, ausdrücklich als eingefrorene Report-Spalte VOR
+jedem Arm. → notes/kringel-binnenflaechen-2026-09-06.md
 
 **Tintenabstand** *(`ink_max` / `ink_mean`)* — Abstand der gefitteten
 Mittellinie zur **gemessenen Tinte** (Skelett der Platte), in x-Höhen.
