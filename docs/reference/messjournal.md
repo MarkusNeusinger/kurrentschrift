@@ -10656,10 +10656,22 @@ Sprossen verhalten sich an den Gates gleich):
 | **(e) Golden** | `pen=None` byte-gleich | grün |
 
 Gate (a) ist rot, aber die Richtung gehört daneben: **die Basis verletzt
-VIER Bereiche, der Kandidat zwei, und keiner wird schlechter.** Repariert
-sind genau die zwei, die der Arm adressiert (`sz` 0,1876 → 0,2074, `z`
-50:116 0,7898 → 0,8084); stehen bleiben `h` und `z` 26:46, beide
-verbessert (0,5452 → 0,5497 bzw. 0,2000 → 0,2022), beide zu wenig.
+VIER Bereiche, der Kandidat zwei, und kein Bereich wechselt von grün nach
+rot.** Repariert sind genau die zwei, die der Arm adressiert (`sz`
+0,1876 → 0,2074, `z` 50:116 0,7898 → 0,8084); stehen bleiben `h` und `z`
+26:46, beide verbessert (0,5452 → 0,5497 bzw. 0,2000 → 0,2022), beide zu
+wenig.
+
+**„Kein Wechsel nach rot" heißt nicht „nichts wird enger", und der
+Unterschied gehört hierher:** sechs der sechzehn Bereiche werden schmaler,
+ohne den Boden zu reißen — `h` 8:49 −0,0067 · `a` −0,0048 · `w` −0,0031 ·
+`g` 72:112 −0,0028 · `g` 39:52 −0,0014 · `o` −0,0011. Das `a` landet
+dabei **0,0002 xh über seinem Boden**, also innerhalb des
+Auflösungsbodens der Messung. Die Registrierung verschiebt dort Fläche,
+statt welche zu gewinnen, weil der Verlust am `a` zu zwei Dritteln
+Formstreuung ist (Tabelle oben) — ein weiterer Beleg dafür, dass der
+Mechanismus nur greift, wo die Zurechnung ihn trägt, und der Grund für
+Rettungsweg (3).
 
 **Die Kennzahl: 26 → 23.** Drei der 63 Wortproben schließen ihre
 Binnenfläche nicht mehr — `muß`, `muß-2`, `muß-3`, alle über das `sz`.
