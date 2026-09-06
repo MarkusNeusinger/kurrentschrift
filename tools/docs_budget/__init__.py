@@ -283,6 +283,19 @@ WIDEST = {
 # without the other. The entry itself needed no raise; it was trimmed to 4 500
 # against the unchanged 4 503 ceiling, which is where a growing entry belongs.
 #
+# And a fifth time, by the branch that adopts the J4 exit trim — for ONE row,
+# the second of the standard pair whose first (the round) main's raise above
+# already absorbed. An adoption plus a declared re-baseline is exactly the shape
+# the register exists to index: which switch flipped, on which root, what the
+# two headlines did, and what a reader must not assume unchanged. The row was
+# condensed twice before this raise (487 → ~305), the §7.11 row it needs was
+# rewritten shorter than the version it replaces, and the branch DROPPED its own
+# earlier raise to 23 567 when main's landed — a value cut against the pre-#558
+# number, so keeping it would have LOWERED the budget main had just measured.
+# Measured here after that merge, with every row of all four rounds in: 24 077,
+# plus the documented 10 %. Four raises in one day is not a licence either; it
+# is four rounds landing on one register, each measured once, after the others.
+#
 # `mess-runde-route` raised for the FIRST time, on the same day, by the third of
 # those rounds: „Laufform LF15" measures a Kette knob (`chain_seed="chart"`), so
 # it owes `verfahren-kette.md` its ledger line — and that page is the widest
@@ -294,26 +307,23 @@ WIDEST = {
 # breath: the raise above already covers this round's two register rows and its
 # §7.9/§7.11 rows, which is what the headroom is for.
 #
-# `mess-runde` raised a fifth time on 2026-09-06, and the accounting is the same
-# one every raise above walks. „Übergänge J6" (die Nahtverhandlung) is an arm,
-# so it adds the standard pair — a pre-registration row and a result row — plus
-# the §7.9 rescue-path row and the §7.11 open-arms row the doctrine requires of
-# a negative. Those four cost 616 tokens over the headroom the fourth raise left,
-# and the result row is where the density sits: it carries the two seam medians,
-# the class that stayed at 18,57°, the three drills that failed gate (c) with
-# their 32,9°/31,9° and 0,117 xh, and the continuity sensor's +12/+11 with the
-# mechanical part of it named. Every one of those is a number the entry owns, and
-# the alternatives are the ones the register forbids (delete a row) or the ones
-# that make it useless (shorten a finding until it fits). The §7.11 side is a
-# wash by construction: the J4 row's open conversion (1) is marked answered by
-# this arm in the same edit, so an open arm is replaced, not appended. Re-measured
-# at 24 510 and given the documented 10 % headroom, like every other path. The
-# watched pieces did not move: the Stand blocks and `verfahren.md` are untouched,
-# and this round owes no route ledger line — it measures a composer switch, not a
-# Duell route.
+# NOT raised a sixth time, by „Übergänge J6" (die Nahtverhandlung) — recorded
+# because a raise that did NOT happen is the more useful precedent. That round
+# adds what the doctrine asks of an arm that closes as a negative: the standard
+# register pair, its §7.9 rescue-path row and its §7.11 open-arms row. Against
+# the pre-merge number those four wanted 616 tokens more than the room left,
+# and the branch had a raise written. Then the adoption above landed, its own
+# raise was measured with every row of four rounds in, and the merged path
+# comes out at 25 176 against 26 484 — 1 308 of room. So the raise was dropped
+# rather than stacked: a budget is measured after the merge, once, or two
+# branches each raise for the other's rows. The §7.11 side is a wash by
+# construction anyway — the J4 row's open conversion (1) is answered by this
+# arm in the same edit, so an open arm is rewritten rather than a new one
+# appended — and the round owes no route ledger line: it measures a composer
+# switch, not a Duell route.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
-    "mess-runde": 26_961,
+    "mess-runde": 26_484,
     "mess-runde-route": 6_890,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,

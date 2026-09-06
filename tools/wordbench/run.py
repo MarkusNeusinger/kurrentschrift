@@ -392,21 +392,20 @@ def build_parser() -> argparse.ArgumentParser:
         "their frozen row — an overlay run is a SEPARATE measurement, never comparable to the headline",
     )
     parser.add_argument(
-        "--exit-trim",
-        action="store_true",
-        help="compose with the opt-in exit-side collinearity rule (core.compose EXIT_TRIM_WINDOW, "
-        'pre-registered under the heading "Übergänge J4" in messjournal.md §14): a sawtooth '
-        "exit's chart stub is cut back to where the "
-        "straight to the unchanged coupling point continues the letter's own direction — a CANDIDATE "
-        "arm, its own measurement, never the headline",
+        "--no-exit-trim",
+        dest="exit_trim",
+        action="store_false",
+        help="compose WITHOUT the exit-side collinearity rule (core.compose EXIT_TRIM_WINDOW), "
+        "which production has applied since the A37 adoption of 2026-09-06 — the pre-adoption "
+        "base, a CANDIDATE arm like any other: its own measurement, never the headline",
     )
     parser.add_argument(
         "--exit-trim-min-kink",
         type=float,
         default=0.0,
         metavar="DEG",
-        help="narrow --exit-trim to the joins whose departure kinks by AT LEAST DEG (the post-hoc "
-        "J4b arm; core.compose EXIT_TRIM_MIN_KINK_DEG, 0 = the full pre-registered J4 class)",
+        help="narrow the exit trim to the joins whose departure kinks by AT LEAST DEG (the post-hoc "
+        "J4b arm; core.compose EXIT_TRIM_MIN_KINK_DEG, 0 = the shipped full J4 class)",
     )
     parser.add_argument(
         "--apex-handover",
@@ -448,7 +447,7 @@ def main() -> None:
     # would report the BASELINE under the name of a candidate arm. Same
     # doctrine as --expect-root — a number must never lie about its origin.
     if args.exit_trim_min_kink and not args.exit_trim:
-        parser.error("--exit-trim-min-kink narrows --exit-trim; pass --exit-trim too (or drop it)")
+        parser.error("--exit-trim-min-kink narrows the exit trim; it cannot be combined with --no-exit-trim")
     if args.exit_trim_min_kink < 0:
         parser.error("--exit-trim-min-kink is a kink in degrees and cannot be negative")
     if args.seam_negotiation_max_jump != SEAM_MAX_JUMP_DEG and not args.seam_negotiation:
@@ -470,12 +469,17 @@ def main() -> None:
     if args.laufform:
         laufform_payload = load_laufform_payload(args.laufform)
         print(f"laufform: {len(laufform_payload)} rows from {args.laufform} (own number - never the headline)")
-    if args.exit_trim:
+    if not args.exit_trim:
         # The header is provenance: it names the arm the run actually measured,
-        # so a narrowed run never files itself under the full class's name.
-        narrowed = f" min_kink={args.exit_trim_min_kink:g}deg" if args.exit_trim_min_kink else ""
-        arm = "J4b" if args.exit_trim_min_kink else "J4"
-        print(f"exit_trim: on{narrowed} (candidate arm {arm} - own number, never the headline)")
+        # so a run that turns the shipped rule OFF never files itself under the
+        # headline's name.
+        print("exit_trim: off (pre-adoption base - own number, never the headline)")
+    elif args.exit_trim_min_kink:
+        # Same duty for the narrowed class: J4b is not what production writes.
+        print(
+            f"exit_trim: on min_kink={args.exit_trim_min_kink:g}deg "
+            "(candidate arm J4b - own number, never the headline)"
+        )
     if args.apex_handover or args.stem_depart:
         # Same provenance duty: a rung of the J5 ladder must never file itself
         # under the baseline's name.
@@ -759,12 +763,14 @@ def main() -> None:
         result["laufform"] = str(args.laufform)
     if args.no_laufform:
         result["laufform"] = False
-    if args.exit_trim:
-        # One key, one type: the flag stays a bool and the narrowing angle gets
-        # its own numeric key, so a reader never has to type-check the arm.
-        result["exit_trim"] = True
-        if args.exit_trim_min_kink:
-            result["exit_trim_min_kink_deg"] = args.exit_trim_min_kink
+    # Only a DEPARTURE from what production writes is recorded — the key is
+    # absent on a headline run, present on an arm. One key, one type: the flag
+    # stays a bool and the narrowing angle gets its own numeric key, so a
+    # reader never has to type-check the arm.
+    if not args.exit_trim:
+        result["exit_trim"] = False
+    elif args.exit_trim_min_kink:
+        result["exit_trim_min_kink_deg"] = args.exit_trim_min_kink
     if args.apex_handover:
         result["apex_handover"] = True
     if args.stem_depart:

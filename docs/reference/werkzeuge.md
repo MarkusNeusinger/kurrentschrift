@@ -202,7 +202,7 @@ S1"). Report-only, kein DB-Zugriff, `core/word_metric.py` und
 
 ```bash
 uv run python -m tools.pairlab.spanmeas --set words --expect-root <digest> --json temp/base.json
-uv run python -m tools.pairlab.spanmeas --set words --expect-root <digest> --exit-trim --base temp/base.json
+uv run python -m tools.pairlab.spanmeas --set words --expect-root <digest> --no-exit-trim --base temp/base.json
 ```
 
 Um `pairlab` herum sind messende Einstiegsskripte gewachsen (keines
@@ -349,10 +349,10 @@ Kompositionen **als Tinte** — der einzige Aufbau, in dem Zickzack,
 Strichstärke und Naht-Knick überhaupt sichtbar sind. `wordarm.py` ist der
 Referenz-Erzeuger der beiden Arme (`--laufform` für eine Kandidatenkarte,
 `--nib` für einen anderen Federmodus, `--apex-handover`/`--stem-depart` für
-die beiden Übergangsregeln der Klassenregel J5, `--exit-trim` (J4) und
-`--seam-negotiation` (J6, die Nahtverhandlung — der Arm, für den
-`--registration-from` gebaut ist, weil er per Konstruktion keine Platzierung
-bewegt), `--registration-from` zum
+die beiden Übergangsregeln der Klassenregel J5, `--no-exit-trim` für die
+pre-adoption Basis des J4-Trims, `--seam-negotiation` (J6, die
+Nahtverhandlung, mit `--seam-negotiation-max-jump` für die J6b-Verengung, die
+ein Runden-Ergebnis lizenzieren kann), `--registration-from` zum
 Pinnen der Platzierung); er komponiert per Import wie `tools/wordbench/run.py`
 und platziert mit demselben Lineal. Jede Armdatei schreibt ihre
 `join_rules` in die Einstellungen — eine Runde erbt nie stillschweigend
@@ -762,15 +762,17 @@ Warnung versehen. Begriff und Hausregel:
   eingefrorene Zeile) und `--no-laufform` komponiert chart-treu ohne
   jede Laufform. Beide liefern per Doktrin §6 eine
   OFF-HEADLINE-Kandidatenzahl, nie die Headline. Dieselbe Disziplin gilt für
-  die vier **Übergangs-Schalter**, die im Composer standardmäßig aus stehen
-  und hier einzeln zugeschaltet werden: `--exit-trim` (Arm J4, mit
-  `--exit-trim-min-kink` als J4b-Verengung), `--apex-handover` und
-  `--stem-depart` (die beiden Arme der Klassenregel J5) sowie
+  die **Übergangs-Schalter**. `--apex-handover`, `--stem-depart` (J5) und
   `--seam-negotiation` (Arm J6, die **Nahtverhandlung**, mit
   `--seam-negotiation-max-jump` als J6b-Verengung auf die Nähte, deren beide
-  Seiten sich auch treffen können). Jeder gesetzte
-  Schalter nennt sich im Kopf des Laufs und im `--json`-Bericht, damit eine
-  Leitersprosse sich nie unter dem Namen der Basis ablegt.
+  Seiten sich treffen können) stehen im Composer standardmäßig aus und
+  werden hier zugeschaltet; der **Austritts-Trim ist seit dem 2026-09-06
+  Standard** (Autor-Entscheid A37), also läuft er ohne Flag mit und
+  `--no-exit-trim` misst die pre-adoption Basis — mit
+  `--exit-trim-min-kink` als J4b-Verengung, die sich mit `--no-exit-trim`
+  ausschließt. Jede Abweichung vom ausgelieferten Stand nennt sich im Kopf des
+  Laufs und im `--json`-Bericht, damit eine Leitersprosse sich nie unter dem
+  Namen der Basis ablegt.
 - **`tools/wordbench/repair_boxes.py` + `shift_registrations.py`** (`aug31`)
   — die Reparatur eines Rechtecks, das die EIGENE Tinte seiner Probe
   anschneidet (der abgeschnittene i-Strich, der halbe letzte Buchstabe).

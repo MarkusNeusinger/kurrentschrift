@@ -663,7 +663,7 @@ die Liste hier ist ihr Inhaltsverzeichnis (`core/compose.py`, Stand
 | Deckbogen-Eintritt | `COVER_ARCADE_ENTRY_BASES` | n · m · i · r |
 | Schleife in Rundform | `LOOP_ROUND_ENTRY_BASES` | e · a · o |
 | Restart-Klasse | `CAP_RESTART_BASES` | S · O · K · P |
-| Austritts-Trim (opt-in) | `EXIT_TRIM_EXCLUDED_BASES` *(Ausschluss)* | alle Basen AUSSER Schleifen-, Kringel- und Bar-Exit |
+| Austritts-Trim (adoptiert `sep06`) | `EXIT_TRIM_EXCLUDED_BASES` *(Ausschluss)* | alle Basen AUSSER Schleifen-, Kringel- und Bar-Exit |
 
 Dazu die Klassen ohne eigene Buchstabenmenge, weil ihre Bedingung
 geometrisch ist: Girlande · Gabel-Join · Cusp-Connector ·
@@ -767,14 +767,19 @@ Mittellinie UND Silhouette, Boden der Suche ist die **Fußwende**
 (das letzte lokale y-Minimum des Zuges; der Buchstabenkörper wird nie
 angeschnitten). Anders als Schleifen-, Kringel- und Balken-Exit greift sie
 NACH der Platzierung, damit die Spationierung als experimentelle Kontrolle
-unberührt bleibt. **Status: opt-in, Standard aus, nicht adoptiert** —
-`seam_dep` der Klasse geht von +12,52° auf −1,39° und das Wort-Lineal ist
-leicht dafür, aber `dconn` gegen die dissezierten Hand-Verbindungen fällt
-nur in 20 % (artefaktbereinigt 51 %) der Joins; Gate (b) rot
-(messjournal.md §14 „Übergänge J4/J4b").
+unberührt bleibt. **Status: ADOPTIERT, Standard AN seit 2026-09-06**
+(Autor-Entscheid A37) — der Weg dahin ging über beide Instrumente: am
+Lineal fiel der Arm (`dconn` gegen die dissezierten Hand-Verbindungen sank
+nur in 20 %, artefaktbereinigt 51 %, statt der geforderten 60 %; Gate (b)
+rot, messjournal.md §14 „Übergänge J4/J4b"), und die blinde Wortrunde 5
+entschied ihn mit 34 : 2 für den Trim (§14 „Übergänge J4 `sep06`"). Preis
+und Nutzen sind beziffert: `seam_dep` +7,59° → −0,70° (absolut 12,67 →
+2,30) gegen `word_loss` +0,000581, Paare byte-gleich. Ein Lauf mit
+`--no-exit-trim` ist seither die pre-adoption Basis, ein Arm wie jeder
+andere.
 *Technisch:* `EXIT_TRIM_WINDOW`, `EXIT_TRIM_TOL_DEG`,
 `EXIT_TRIM_MIN_KINK_DEG`, `_exit_trim_index`, `_cut_exit_stub` in
-`core/compose.py`; Bench-Schalter `--exit-trim`.
+`core/compose.py`; Bench-Schalter `--no-exit-trim`.
 
 **Fußwende** — das letzte lokale y-Minimum eines Zuges: die Stelle, an der
 die Feder ihren Abstrich beendet und in den Austritts-Stummel hochdreht.

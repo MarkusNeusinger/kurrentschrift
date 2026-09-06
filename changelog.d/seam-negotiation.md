@@ -20,4 +20,10 @@
   absorb 30–37° next to the `d`'s own ink. `--seam-negotiation` on
   `tools.wordbench.run` and `tools.humanbench.wordarm`, with
   `--seam-negotiation-max-jump` for the narrower post-hoc J6b arm that trades
-  the biggest arrival class for that constraint.
+  the biggest arrival class for that constraint. Side finding worth the
+  author's attention now that the exit trim ships (A37): the negotiation
+  closes the departure seam WITHOUT it and more cheaply — 12.67° → 0.02°
+  against the trim's 2.30°, at +0.000376 on the word ruler against its
+  +0.000582, and without its measured side effect on the arrival. The two
+  rules aim at the same seam from opposite sides and are alternatives rather
+  than complements.
