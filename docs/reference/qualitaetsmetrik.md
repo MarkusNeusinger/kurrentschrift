@@ -1,14 +1,14 @@
 # Qualitätsmetrik & Glyph-Bench
 
-> **Status (2026-09-05): lebend.** Die Messlatte und ihre **Regeln**. Das
+> **Status (2026-09-06): lebend.** Die Messlatte und ihre **Regeln**. Das
 > Journal der Läufe ist am 2026-09-04 in eine eigene Datei gezogen —
 > [`messjournal.md`](messjournal.md), dort weiterhin §14; hier §1–§13, §15.
-> **Aktuelle Headlines: Wörter 0,108444 · Paare 0,148236** (Re-Baseline
-> `sep05` nach dem LF12-Write — 18 Laufform-Zeilen neu abgeleitet, `S`
-> gelöscht, Wurzeln `eaa195aa7c84…` / `0fbde2d72b64…`;
-> `messjournal.md` §14 „Laufform LF12 `sep05` — geschrieben“). Sie stehen an
-> genau dieser einen Stelle; ihre Historie samt Fixture-Wurzeln führt der
-> Headline-Ledger im Messjournal.
+> **Aktuelle Headlines: Wörter 0,109026 · Paare 0,148236** (Re-Baseline
+> `sep06`: Austritts-Trim wird Default, A37 — gleiche Wurzeln `eaa195aa7c84…`
+> / `0fbde2d72b64…` wie die `sep05`-Zahl 0,108444, die Wort-Zahl steigt also
+> wissentlich um 0,000581; `messjournal.md` §14 „Übergänge J4 `sep06`“). Sie
+> stehen an genau dieser einen Stelle; ihre Historie samt Fixture-Wurzeln
+> führt der Headline-Ledger im Messjournal.
 >
 > **Was gilt.** **Zwei Metriken, eine pro Schrift, nie gemittelt** — die
 > Schreibgeräte sind verschieden. Kurrent/Schwellzug:

@@ -4,7 +4,7 @@
     uv run python -m tools.humanbench.wordarm --arm LF11 --laufform temp/lf11.json \\
         --registration-from temp/basis.json --out temp/lf11.json
     uv run python -m tools.humanbench.wordarm --arm Platten-Nib --nib 0.097 --out temp/nib.json
-    uv run python -m tools.humanbench.wordarm --arm J4 --exit-trim --out temp/j4.json
+    uv run python -m tools.humanbench.wordarm --arm "ohne J4" --no-exit-trim --out temp/base.json
     uv run python -m tools.humanbench.wordarm --arm J5 --apex-handover --stem-depart \\
         --out temp/j5.json
     uv run python -m tools.humanbench.wordarm --arm Nib-Clearance --nib 0.097 \\
@@ -70,7 +70,8 @@ ZIGZAG_AMPLITUDE = 0.02
 # the boolean that really drew it and no later default change can rewrite what
 # an old round meant.
 JOIN_RULE_DEFAULTS: dict[str, bool] = {
-    name: bool(inspect.signature(compose_word).parameters[name].default) for name in ("apex_handover", "stem_depart")
+    name: bool(inspect.signature(compose_word).parameters[name].default)
+    for name in ("apex_handover", "stem_depart", "exit_trim")
 }
 
 
@@ -96,7 +97,7 @@ def compose_arm(
     laufform: dict[str, dict] | None = None,
     no_laufform: bool = False,
     nib: float | None = None,
-    exit_trim: bool = False,
+    exit_trim: bool | None = None,
     entries: set[str] | None = None,
     apex_handover: bool | None = None,
     stem_depart: bool | None = None,
@@ -141,7 +142,7 @@ def compose_arm(
     # exists to prevent.
     join_rules = {
         name: JOIN_RULE_DEFAULTS[name] if value is None else bool(value)
-        for name, value in (("apex_handover", apex_handover), ("stem_depart", stem_depart))
+        for name, value in (("apex_handover", apex_handover), ("stem_depart", stem_depart), ("exit_trim", exit_trim))
     }
 
     words: dict[str, dict] = {}
@@ -159,7 +160,6 @@ def compose_arm(
                 slots,
                 {s.key: payload_for(s.key) for s in slots if s.key},
                 laufform_by_key={s.key: lf for s in slots if s.key and (lf := laufform_for(s.key)) is not None} or None,
-                exit_trim=exit_trim,
                 nib_clearance=nib_clearance,
                 **join_rules,
             )
@@ -184,7 +184,10 @@ def compose_arm(
         "laufform_overlay_keys": sorted(laufform) if laufform else [],
         # Stated, never inherited: an arm file has to say which join rules drew
         # it, or two rounds built weeks apart cannot be held against each other.
-        "exit_trim": exit_trim,
+        # `exit_trim` keeps its own top-level key as well as its place in
+        # `join_rules`: the round-5 arm files carry it there, and a stamp that
+        # reads an older arm must not go blank because the field moved.
+        "exit_trim": join_rules["exit_trim"],
         "nib_clearance": nib_clearance,
         "join_rules": dict(join_rules),
         "exported_at": manifest.get("exported_at"),
@@ -303,8 +306,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--exit-trim",
-        action="store_true",
-        help="compose with the exit-collinearity rule (arm J4) — the composer's own switch, default off",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="the exit-collinearity rule (core.compose EXIT_TRIM_WINDOW, shipped since the A37 "
+        "adoption) — pass --no-exit-trim for the pre-adoption base arm [the composer's default]",
     )
     parser.add_argument(
         "--apex-handover",

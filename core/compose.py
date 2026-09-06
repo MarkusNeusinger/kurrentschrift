@@ -455,7 +455,12 @@ ALIGN_TAN_DEG = (25.0, 55.0)
 ALIGN_MIN_RISE = 0.02  # entry must sit above the exit for a pass-through
 # Exit-side collinearity (`exit_trim`, the A-side mirror of ENTRY_COUPLE_Y's
 # entry_trim; audit 2026-09-02 finding 19, pre-registered under the heading
-# „Übergänge J4" in messjournal.md §14). A sawtooth exit keeps its stub
+# „Übergänge J4" in messjournal.md §14). ON since 2026-09-06 (author decision
+# A37, §14 „Übergänge J4 `sep06`"): the blind word round of 63 same-hand word
+# samples went 34 : 2 for the trim among the decided screens, and the ruler's
+# whole cost sits in the very class the eye votes 26 : 2 against it — so the
+# switch below defaults to True and the golden fixture was re-baked with it.
+# A sawtooth exit keeps its stub
 # from the CHART cell, and that
 # stub ends in a finishing flick: measured on the frozen 1922 word plate, e
 # runs 0.4 xh straight at ~40 degrees and then turns 41 -> 20 -> 9 over its
@@ -485,7 +490,15 @@ EXIT_TRIM_TOL_DEG = 3.0
 # alone what already runs on": the post-hoc J4b arm found the hand's dissected
 # joins support only the joins whose kink is large, so the threshold is the
 # knob that arm varies. It is NOT a calibrated constant — read the J4/J4b
-# entries in messjournal.md §14 before moving it.
+# entries in messjournal.md §14 before moving it. 0.0 stays the shipped value
+# after the A37 adoption, and the round that adopted the rule also measured
+# the alternative. From 10 degrees on the knob does ENRICH the strong-seam
+# class (71 % of it still firing against 59 % of the weak one), but it never
+# separates them — both carry the same seam kink, +7.90 against +7.44 degrees,
+# and differ in how far the trim moves the drawing. Every rung between 5 and 25
+# degrees costs MORE word loss than the full trim and from 10 on the seam
+# repair is handed back; only 30 pays 0.000202 of the 0.000581 back, and fires
+# on five of 63 words to do it — §14 „Übergänge J4 `sep06`".
 EXIT_TRIM_MIN_KINK_DEG = 0.0
 # Shared by the sawtooth pass-through AND the R4 "nested fall" placement (a
 # rising mid-band exit whose neighbour enters below it — t's bar, f's flag —
@@ -1905,7 +1918,7 @@ def compose_word(
     provenance: bool = False,
     pair_overrides: dict[tuple[str, str], dict] | None = None,
     laufform_by_key: dict[str, dict] | None = None,
-    exit_trim: bool = False,
+    exit_trim: bool = True,
     exit_trim_min_kink_deg: float = EXIT_TRIM_MIN_KINK_DEG,
     apex_handover: bool = False,
     stem_depart: bool = False,
@@ -1947,17 +1960,19 @@ def compose_word(
     carries its own width. None/missing keys → chart behaviour,
     byte-identical.
 
-    ``exit_trim`` (default False = byte-identical, the golden fixture holds)
-    switches on the exit-side collinearity rule — see EXIT_TRIM_WINDOW: a
+    ``exit_trim`` (default **True** since the A37 adoption of 2026-09-06)
+    applies the exit-side collinearity rule — see EXIT_TRIM_WINDOW: a
     sawtooth exit's chart stub is cut back to where the straight to the
     UNCHANGED coupling point continues the letter's own direction, and the
-    join is drawn as that straight. An opt-in candidate arm, pre-registered
-    under the heading „Übergänge J4" in messjournal.md §14; adopting it as
-    the default is a declared re-baseline of the golden fixture and the
-    author's call.
-    ``exit_trim_min_kink_deg`` narrows that class to the joins whose departure
-    actually kinks (see EXIT_TRIM_MIN_KINK_DEG) — the J4b arm's knob; it does
-    nothing while ``exit_trim`` is off.
+    join is drawn as that straight. It was an opt-in candidate arm from its
+    pre-registration („Übergänge J4", messjournal.md §14) until the blind word
+    round of `sep06` decided it; the flip is a DECLARED re-baseline — the
+    golden fixture was re-baked in the same PR, and every public
+    ``/write/word`` answer moves with it. Passing ``False`` reproduces the
+    pre-adoption base, which is what a bench arm does.
+    ``exit_trim_min_kink_deg`` narrows the class to the joins whose departure
+    actually kinks (see EXIT_TRIM_MIN_KINK_DEG) — the J4b arm's knob, measured
+    and not adopted; it does nothing while ``exit_trim`` is off.
 
     ``apex_handover`` and ``stem_depart`` (both default False = byte-identical,
     the golden fixture holds) are the two halves of the chart-form class rule

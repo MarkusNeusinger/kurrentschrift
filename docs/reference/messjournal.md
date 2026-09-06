@@ -218,7 +218,8 @@ die DB) — mit seiner Bedingung.
 | sep06 | Übergänge | [S2 gemessen](#übergänge-s2-sep06--gemessen-alle-gates-bestehen-und-keine-einzelne-spalte-ist-der-richter) | Pre-Reg + gemessen · **validiert** (Lineal-Bestandteil-Kandidat, kein Lineal geändert) | **Alle fünf Gates bestehen, aber keine EINZELNE Spalte ist der Richter.** N1/N2 exakt (0,000e+00 gegen die gespeicherten Verbinder; 3 + 12 identische Wörter bewegen keine Spalte). P1 `naht-stark` (Urteil Kandidat 26 : 2): `kink_max_deg` 36,89 → **27,86**, `kink_count` 28/28 fallend, `wobble` −0,531. P2 `naht-schwach`: nur 17 statt 24 von 29 Wörtern bewegt, Wackler-Median −0,083 — Faktor 6, die Klassengrenze reproduziert. P3 `apex` (Basis 11 : 1): `bow_join` 0,0066 → **0,0034 in 12/12**, dazu (nicht vorregistriert) `kink_max_deg` +15,54°. Die Klasse `stem` (Basis 7 : 0) sieht nur `curv_loss` (8/8) und `wobble` (8/8). **Ehrliche Hälfte:** `bow_join` fällt in BEIDEN Runden, hätte Runde 6 allein also falsch entschieden — der Austritts-Trim verschiebt die Grenze Buchstabe/Verbinder und damit die Population (das Rahmen-Artefakt, für das S1 `dspan` gebaut wurde). Headline 0,108444 / 0,148236 vorher wie nachher |
 | sep06 | Laufform | [LF15 Ernte-Fixpunkt (Pre-Reg)](#laufform-lf15-sep06--vorregistrierung-der-fixpunkt-der-ernte-rettungsweg-2-von-lf14) | Pre-Reg | Rettungsweg 2 von LF14, Autor-Entscheid „3 ja": der Fixpunkt VOR dem nächsten Laufform-Write. „Ernte-Fixpunkt" numerisch definiert (größte Ankerbewegung zwischen zwei Karten ab `H1` ≤ 0,002 xh, gegen die gemessene Drift 0,0025–0,0283); Iteration `H0 → H1 → H2` aus Repo-Werkzeugen (harvest → `smoothrow --knots 0 --floor 1 --keep-stored`), Schlüsselsatz über alle Runden fest. Mechanismus vorab benannt: **Chart-Saat** (`chain_seed="chart"`, Default AUS) — die vorregistrierten Kandidaten (a) und (b) fallen in eine Implementierung, (c) wird nicht gebaut. Gates (F) Fixpunkt · (G) Kette-Identität · (H) Lineal byte-gleich · (I) Golden, dazu Bericht (J) mit Entscheidregel 0,03 xh für die Frage, ob der nächste Write den Saatwechsel als EINE Re-Baseline mitnehmen darf. Definiert „Ernte-Fixpunkt" numerisch, legt die Iteration `H0 → H1 → H2` aus Repo-Werkzeugen fest (Schlüsselsatz über alle Runden fest), benennt den Mechanismus vorab (**Chart-Saat**, Default AUS; die Kandidaten (a)/(b) fallen in eine Implementierung, (c) wird nicht gebaut) und die Gates (F) Fixpunkt · (G) Kette-Identität · (H) Lineal · (I) Golden plus den Bericht (J) mit Entscheidregel für die Frage, ob ein Write den Saatwechsel mitnehmen darf. Offenlegung zur Basis: die `sep05`-Wurzeln lagen nicht mehr vor und wurden rekonstruiert |
 | sep06 | Laufform | [LF15 gemessen](#laufform-lf15-sep06--gemessen-die-iteration-läuft-weg-und-die-chart-saat-hält-sie-in-einem-schritt-an) | Pre-Reg + gemessen · alle Gates grün · **Schalter bleibt AUS** (Regel (J)) · **stehende Regel: zweimal ernten** | **Die Iteration konvergiert nicht, sie wandert:** die schlimmste Zeile bewegt sich in den drei Schritten 0,0582 → 0,0627 → 0,0627 xh, die Richtung wechselt je Zeile, der angenommene Satz wandert 235 → 232 → 239 mit — der erste Schritt ist nicht der größte, also kein Einschwingen; ein Determinismus-Doppellauf steht davor. Auch die Kringel-Ablesung wandert mit: `a` und `o` überschreiten die 0,194-Marke allein durch Weiterernten. **Die Chart-Saat** macht die Karte in EINEM Schritt zum Fixpunkt — `K1` = `K2` = `K3` byte-gleich samt Vorkommen, und `K3` startet aus einer 0,058 xh entfernten Karte, die Zeilen-Unabhängigkeit ist damit gemessen. Preis: 226 statt 235 Vorkommen (an den Gates `connector_degenerate`/`anchor_spike`, nicht an der Fitgüte), `Z` fällt unter den Beleg-Boden. Alle vier Gates grün, (G) mit einer benannten Abweichung (eine erfundene Kreuzung weniger) und einer benannten Kostenseite; Bericht (J): 8 von 21 Zeilen über 0,03 xh, der Saatwechsel geht NICHT als Beifahrer mit. **Antwort auf die Ausgangsfrage: einen Laufform-Write heute einfach zu wiederholen ist nicht sicher** |
-| sep06 | Übergänge | [J4 Runde 5 gemessen](#übergänge-j4-sep06--runde-5-gemessen-richtung-34--2-unentschieden-gate-gerissen--durch-die-klasse-die-es-reißen-sollte) | Menschenrunde · Richtung erdrückend, `adopt: false` an der Tie-Schranke · **Adoption = Autor-Entscheid** (LF11-Präzedenz) | **Kandidat 34 : Basis 2** von 36 entschiedenen (94,4 % gegen ≥ 60 %), unentschieden 42,9 % gegen ≤ 25 %. Klassenweise löst sich der Widerspruch: `naht-stark` 26 : 2 bei **9,7 %** Ties (beide Schranken ✓), `naht-schwach` 8 : 0 bei **72,4 %** Ties — die Klasse, für die die Pre-Reg Unsichtbarkeit beschrieben hat. Instrument sauber: 3/3 Kontrollwörter als „kein Unterschied" erkannt, 10/12 Wiederholungen gleicher Arm bei 4/12 gleicher Seite (12 ≥ 6 Paare). Auf der `sep05`-Wurzel neu gemessen: Wörter 0,108444 → **0,109026** (+0,000581), Paare byte-gleich, `seam_dep` +7,59 → −0,70 (absolut 12,67 → **2,30**), Verdopplungen 14 = 14. **Der ganze Lineal-Verlust sitzt in der starken Klasse** (+0,036888 gegen −0,000262), also dort, wo das Auge 26 : 2 dagegen stimmt — von den 30 bestraften Wörtern gehen 18 : 0 an den Kandidaten. Klassenregel gemessen und verworfen: `exit_trim_min_kink_deg` reichert `naht-stark` ab 10° an (71 % gegen 59 %), TRENNT die Klassen aber bei keiner Schwelle — beide haben denselben Knick, +7,90 / +7,44 —, kostet zwischen 5° und 25° MEHR als der volle Trim und gibt ab 10° die Naht-Reparatur zurück; nur 30° zahlt 0,000202 zurück, feuert dann aber in 5 von 63 Wörtern |
+| sep06 | Übergänge | [J4 Runde 5 gemessen](#übergänge-j4-sep06--runde-5-gemessen-richtung-34--2-unentschieden-gate-gerissen--durch-die-klasse-die-es-reißen-sollte) | Menschenrunde · Richtung erdrückend, `adopt: false` an der Tie-Schranke · **Adoption = Autor-Entscheid** (LF11-Präzedenz), gefallen als A37 — Zeile darunter | **Kandidat 34 : Basis 2** von 36 entschiedenen (94,4 % gegen ≥ 60 %), unentschieden 42,9 % gegen ≤ 25 %. Klassenweise löst sich der Widerspruch: `naht-stark` 26 : 2 bei **9,7 %** Ties (beide Schranken ✓), `naht-schwach` 8 : 0 bei **72,4 %** Ties — die Klasse, für die die Pre-Reg Unsichtbarkeit beschrieben hat. Instrument sauber: 3/3 Kontrollwörter als „kein Unterschied" erkannt, 10/12 Wiederholungen gleicher Arm bei 4/12 gleicher Seite (12 ≥ 6 Paare). Auf der `sep05`-Wurzel neu gemessen: Wörter 0,108444 → **0,109026** (+0,000581), Paare byte-gleich, `seam_dep` +7,59 → −0,70 (absolut 12,67 → **2,30**), Verdopplungen 14 = 14. **Der ganze Lineal-Verlust sitzt in der starken Klasse** (+0,036888 gegen −0,000262), also dort, wo das Auge 26 : 2 dagegen stimmt — von den 30 bestraften Wörtern gehen 18 : 0 an den Kandidaten. Klassenregel gemessen und verworfen: `exit_trim_min_kink_deg` reichert `naht-stark` ab 10° an (71 % gegen 59 %), TRENNT die Klassen aber bei keiner Schwelle — beide haben denselben Knick, +7,90 / +7,44 —, kostet zwischen 5° und 25° MEHR als der volle Trim und gibt ab 10° die Naht-Reparatur zurück; nur 30° zahlt 0,000202 zurück, feuert dann aber in 5 von 63 Wörtern |
+| sep06 | Übergänge | [J4 Adoption (A37)](#übergänge-j4-sep06--adoption-auf-autor-entscheid-a37-exit_trim-wird-default-deklarierte-re-baseline) | **Adoption** (Autor-Entscheid A37) · **Re-Baseline** (Wörter + Golden) | `exit_trim` ist Default. Auf UNVERÄNDERTER Wurzel, also gepaart: Wörter 0,108444 → **0,109026**, Paare **byte-gleich**, `seam_dep_median` +7,59 → **−0,70** (absolut 12,67 → 2,30), Verdopplungen 14 = 14. Golden deklariert neu gebacken (10 der 11 Wörter, kein Draw-Item mehr oder weniger, Solo-Glyphen 0 von 23). **S2 stimmt unabhängig zu** — am selben Tag auf der UNGETRIMMTEN Komposition abgenommen: `cont_kink_total` 402 → **337**, `cont_bow_join_median` 0,0091 → **0,0042** (Report-Spalte, kein Gate). `prodconn.replay` hat seine angekündigte Nachbearbeitung bekommen; die Kette ist per Messung ausgenommen (Kompositions-Soll 0 von 126), fällig bleiben Lotse-Karte und S2-Bezug (§7.11) |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -253,6 +254,7 @@ Vorbedingung (Glossar „Wurzel-Digest“, `tools/wordbench/README.md`).
 | sep02 | #501 | **Re-Baseline nach dem LF11-Write**: 22 Laufform-Zeilen auf Spline-Basis-Mediane umgestellt (Snapshot `2026-09-02T21-58-16Z`, Readback 22/22), Wurzeln neu gebaut: `suetterlin-1922` `exported_at` 2026-09-02T22:13:54+00:00 `root_digest` `2e3581287bed…`, `suetterlin-1922-pairs` `exported_at` 2026-09-02T22:13:53+00:00 `root_digest` `cee9d363f497…`; trifft die trockene LF11-Vorhersage exakt | 0,109218 | 0,148198 | §14 „Laufform LF11 — humanbench-Wortrunde, Instrumentdefekt und Adoption“ |
 | sep03 | #516 | Wurzeln neu gebaut (`fetch_fixtures --set all --verify`, 12/12 bit-exakt) im Zuge der Glyph-Bench-Re-Baseline (Audit A15): `suetterlin-1922` `exported_at` 2026-09-03T21:28:30+00:00 `root_digest` `57402ae7dd41…`, `suetterlin-1922-pairs` gleicher Zeitstempel `f176e191d4bf…` — **keine** Re-Baseline der Wort-Zahlen: beide reproduzieren exakt, nur die Wurzel-Identität ist neu | 0,109218 | 0,148198 | §5 „Re-Baseline 2026-09-03“ |
 | sep05 | dieser PR | **Re-Baseline nach dem LF12-Write**: 18 Laufform-Zeilen aus den Vorkommen des heutigen Ketten-Stands neu abgeleitet, die Zeile `S` gelöscht (Autor-Entscheid A35), Wurzeln neu gebaut: `suetterlin-1922` `exported_at` 2026-09-05T21:33:12+00:00 `root_digest` `eaa195aa7c84…`, `suetterlin-1922-pairs` gleicher Lauf `0fbde2d72b64…`. Trifft die trockene LF12-Vorhersage (0,108107) auf 3·10⁻⁵, sobald man die Löschung herausrechnet | 0,108444 | 0,148236 | §14 „Laufform LF12 `sep05` — geschrieben“ |
+| sep06 | dieser PR | **Re-Baseline durch Adoption, nicht durch eine Wurzel**: `exit_trim` wird Default (Autor-Entscheid A37 nach Runde 5). Wurzeln UNVERÄNDERT `eaa195aa7c84…` / `0fbde2d72b64…`, also gepaart vergleichbar — die Zeile darüber ist dieselbe Messung ohne die Regel. Das Wort-Lineal steigt bewusst, der Naht-Abgang fällt (`seam_dep_median` +7,59 → −0,70, absolut 12,67 → 2,30), `gleichzug_doublings` 14 = 14, `worst_word` `han` → `regieren` 0,233052; Golden deklariert neu gebacken | 0,109026 | 0,148236 | §14 „Übergänge J4 `sep06`“, Nachtrag „Adoption“ |
 
 **Nachtrag `sep02` — die `aug30`-Wurzel ist eine undeklarierte
 Re-Baseline.** Zwischen der `aug29`-Wurzel (0,106720 / 0,146506, im
@@ -12182,8 +12184,8 @@ Umschaltung, nicht die Klassenregel (Begründung eine Überschrift höher). Das
 ist eine rendernde Änderung: sie bewegt jede `/write/word`-Antwort und
 verlangt ein deklariertes Neu-Backen des Golden-Fixtures. **Die
 Entscheidung ist damit Autor-Sache, nicht die eines Bench-Ergebnisses**; sie
-steht nicht in diesem Abschnitt, sondern — wenn sie fällt — in einem eigenen
-datierten Eintrag.
+steht nicht in diesem Abschnitt, sondern — gefallen — im eigenen datierten
+Eintrag darunter.
 
 #### Was die Runde nicht beantwortet
 
@@ -12216,3 +12218,124 @@ Lineal-Deltas und der Naht-Reparatur (sie beantwortet die Klassenregel-Frage,
 die sonst eine Meinung geblieben wäre); die `exit_trim_min_kink_deg`-Leiter
 als Vergleichslauf — sie ist ein Report-Vergleich am bestehenden Knopf, kein
 neuer Arm, und keine ihrer Zahlen ist eine Headline.
+
+### Übergänge J4 `sep06` — Adoption auf Autor-Entscheid A37: `exit_trim` wird Default (deklarierte Re-Baseline)
+
+**Autor-Entscheid A37 (2026-09-06): „1 ja" — `exit_trim` wird Default.** Der
+Entscheid folgt der Empfehlung des Abschnitts oben und der LF11-Regel: die
+Schwellen sind eine Adoptions-AUTOMATIK, keine Erlaubnisschranke für den
+Autor, und `adopt: false` bleibt richtig gebucht. **Keine Zahl des Abschnitts
+oben ist angefasst** — hier steht nur, was der Entscheid ausgelöst hat.
+
+**Was umgestellt wurde.** `compose_word(..., exit_trim=…)` steht auf `True`
+(`core/compose.py`); `EXIT_TRIM_MIN_KINK_DEG` bleibt bei 0,0, also die volle
+J4-Klasse und nicht die in dieser Runde gemessene und verworfene
+J4b-Verengung. Die Messwerkzeuge folgen dem Standard statt ihn zu
+überschreiben: `wordbench.run`, `humanbench.wordarm` und `pairlab.spanmeas`
+kennen jetzt `--no-exit-trim` (die pre-adoption Basis) statt `--exit-trim`,
+und `wordarm` liest den Default per `inspect.signature` aus dem Composer —
+ein Arm, der nichts sagt, zeichnet damit ab heute, was Prod zeichnet. Der
+Schalter selbst bleibt: die Basis ist ein Arm wie jeder andere.
+
+**Die Re-Baseline, gemessen auf UNVERÄNDERTER Wurzel** (`eaa195aa7c84…` /
+`0fbde2d72b64…`, `--expect-root`, `OPENBLAS_NUM_THREADS=1
+OMP_NUM_THREADS=1`) — also gepaart vergleichbar, anders als bei einem
+Wurzelwechsel:
+
+| | Wörter | Paare | `seam_dep_median` | `…_abs_median` | `seam_arr_median` | `gleichzug_doublings` |
+|---|---|---|---|---|---|---|
+| vorher (`--no-exit-trim`) | 0,108444 | 0,148236 | +7,59° | 12,67 | −2,83° | 14 |
+| **nachher (Default)** | **0,109026** | **0,148236** | **−0,70°** | **2,30** | −3,87° | 14 |
+| Δ | **+0,000581** | **0,000000** | −8,29° | −10,37 | −1,04° | 0 |
+
+63 von 63 Wörtern und 33 von 33 Paar-Drills gescoret, keiner übersprungen,
+keiner gefallen. `worst_word` wandert von `han` 0,232609 auf **`regieren`
+0,233052**, `worst_pair` bleibt `In` 0,283819. Komponenten:
+`comp_transition` 0,089804 → 0,091028 · `comp_coverage` 0,101580 → 0,101667 ·
+`comp_width` 0,162397 unverändert (der Trim fasst die Naht, nicht die
+Breite). **Die Verdopplungen bei der ausgelieferten Feder bleiben bei 14** —
+der Trim macht keinen neuen Weißkeil zu, was bei einer Regel, die Tinte
+WEGNIMMT, die richtige Richtung ist, aber nicht selbstverständlich war.
+
+**Der Unstetigkeits-Sensor stimmt zu, und er hat davon nichts gewusst.** S2
+(§14 „Übergänge S2 `sep06`") ist am selben Tag gebaut, eingefroren und an den
+Runden 5 und 6 abgenommen worden — auf der Komposition OHNE den Trim, und ohne
+dass eine seiner Konstanten aus dieser Runde stammt. Auf derselben Wurzel
+gegen dieselbe Basis gemessen:
+
+| | `cont_kink_total` | `cont_kink_deg_median` | `cont_wobble_median` | `cont_bow_join_median` | `cont_curv_loss_median` |
+|---|---|---|---|---|---|
+| vorher | 402 | 19,75 | 2,707 | 0,0091 | 0,0336 |
+| **nachher** | **337** | **18,52** | **2,482** | **0,0042** | 0,0336 |
+
+**65 Unstetigkeits-Ereignisse weniger**, die verbliebenen flacher, der Wobble
+kleiner und die Pfeilhöhe IN DER NACHBARSCHAFT DER VERBINDER — die Spalte, die
+genau diese Naht misst — mehr als halbiert. Das ist eine unabhängige
+Bestätigung und kein Gate: S2 ist Report-Spalte, sein eigener Eintrag hält
+ausdrücklich fest, dass keine einzelne Spalte über alle Klassen
+richtungstreu ist, und keine seiner Zahlen hat an dieser Adoption
+mitentschieden. Sie ist trotzdem der Ort, an dem zwei Instrumente, die nichts
+voneinander wissen, dasselbe sagen: das Auge mit 34 : 2 und der Sensor mit
+−65 Knicken. Umgekehrt heißt das auch: die S2-Zahlen des Nachbar-Eintrags
+stehen ab heute auf der Komposition VOR dem Trim — sie sind dort richtig
+gebucht und werden nicht angefasst.
+
+**Das Golden-Fixture ist deklariert neu gebacken** (`REGEN_GOLDEN=1`).
+Nachgemessen, bevor der Regen lief: **10 der 11 Wörter bewegen sich**, `wovon`
+nicht (seine Austritte sind Rück-, Bogen- und Arm-Austritte, die die Klasse
+per Konstruktion ausschließt). Kein Wort gewinnt oder verliert ein Draw-Item
+— die Item-Zahlen stehen vorher wie nachher bei 6 … 18 —, es bewegen sich je
+Wort 2 bis 8 Items, nämlich die getrimmten Buchstaben und ihre Verbinder.
+**Der Satz aus `CLAUDE.md` hält:** eine EINZELNE Glyphe mit `pen=None` bleibt
+byte-identisch — über alle 23 Glyphen der Golden-Payloads geprüft, 0 bewegen
+sich, weil die Regel ohne folgenden Verbinder gar nicht feuern kann. Was sich
+ändert, ist die Komposition eines Wortes, und das ist genau die Zusage, die
+eine deklarierte Re-Baseline gibt.
+
+**Zwei Messschichten waren mitzuziehen, und die eine ist eine Reparatur.**
+
+1. `tools/pairlab/prodconn.py` hat seine eigene Ankündigung eingelöst. Ihre
+   Docstring nannte den Austritts-Trim als benannte Blindstelle: die Regel
+   ERSETZT die Rückgabe des Verbinder-Generators in `compose_word`s eigenem
+   Block, „harmlos, solange der Schalter aus ist — wird er Default, muss diese
+   Funktion dieselbe Nachbearbeitung bekommen, sonst misst die Dissektion
+   still die falsche Kurve". Genau das ist jetzt geschehen: der Rekorder
+   zeichnet zusätzlich `_cut_exit_stub` auf — die Funktion läuft genau dann,
+   wenn der Trim wirklich angewandt wurde, also trägt sie die ENTSCHEIDUNG und
+   nicht deren Nachbildung —, und `replay` verschiebt den aufgezeichneten
+   Stummel mit dem Buchstaben und ruft `_exit_trim_index`/`_straight_to`
+   erneut auf. Die Regel wird nirgends nacherzählt; welcher Sample der Schnitt
+   an der bewegten Geometrie trifft, entscheidet weiterhin `core`. Die
+   Parität-Tests sagen das jetzt in zwei Sätzen statt einem: ein ungetrimmter
+   Join reproduziert den aufgezeichneten Aufruf Punkt für Punkt, ein
+   getrimmter reproduziert die beiden Invarianten der Regel (der
+   Kopplungspunkt bleibt, der Zug ist eine Gerade).
+2. **Die Kette ist nachweislich NICHT betroffen, und das ist gemessen, nicht
+   angenommen.** Ihr Init-Default ist der eingefrorene Spiegel
+   (`CONNECTOR_INIT_MIRROR`; der Produktions-Init ist als K-F `sep04` gemessen
+   und verworfen), und ihr Wächter-Soll kommt aus der Komposition. Letzteres
+   nachgerechnet: `ductus_soll` über alle 63 Wortproben liefert **126 Zeilen,
+   von denen sich 0 bewegen** — Kreuzungen 292, Zonen 177, Züge 111,
+   Berührungen 89, Überlappungen 11, vorher wie nachher gleich. Der Trim
+   schneidet einen Stummel und begradigt einen Verbinder; die TOPOLOGIE des
+   komponierten Wortes rührt er nicht an. Damit stehen `k0eval`, der
+   Struktur-Wächter und jede Kette-Zahl auf unverändertem Boden.
+
+**Was dieser Nachtrag NICHT erledigt und was deshalb fällig ist.** Der Lotse
+fährt als Karte die KOMPONIERTE Bahn (§14 „Laufform LF12 `sep05`", Absatz
+„Der Lotse bewegt sich strukturell mehr als die Kette"), und die hat sich
+soeben geändert. Seine dev-19-Zahlen vom `sep05` (dtw 0,053393 · p90 0,116199
+· aiou 0,7493) stehen damit auf einer Komposition, die es nicht mehr gibt.
+Das ist **keine** Zahl, die dieser PR nebenbei korrigieren darf: eine
+Routen-Messung ist eine eigene Runde mit dem Protokoll aus
+`/verify-trace` (gepinnte BLAS-Threads, `--expect-root`, `--compare` gegen den
+Basisbericht). Sie ist als offener Arm in
+[`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.11
+eingetragen und vor der nächsten Lotse-Aussage fällig. Die Kette braucht
+sie nach dem Befund oben nicht.
+
+**Was der Autor davon merkt.** Jede öffentliche `/write/word`-Antwort ändert
+sich; der Edge-Cache hält sie bis zu 24 h, der Wechsel wird dort also
+verzögert sichtbar (dieselbe Lage wie beim LF11-Write, wo kein Purge
+angeordnet wurde). Die DB ist unberührt — dieser Entscheid schreibt keine
+Zeile, er schaltet eine Regel.
