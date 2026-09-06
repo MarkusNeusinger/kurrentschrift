@@ -10622,7 +10622,7 @@ bekannt.
 
 #### Teil 2 — der Arm: Schleifen-Registrierung, Leiter {0,15 · 0,25 · 0,50} xh
 
-Gebaut als `core/aggregate.py::align_loops` /`loop_faithful_median`
+Gebaut als `core/aggregate.py::align_loops` / `loop_faithful_median`
 hinter `LAUFFORM_LOOP_WINDOW`, Default 0 = aus. Die Schleifen kommen aus
 `loop_ranges` (Selbstschnitte der gerenderten Tafelzeile, über die
 Bogenlänge auf Anker zurückgerechnet); gegen den unabhängigen
