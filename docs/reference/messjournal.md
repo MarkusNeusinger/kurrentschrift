@@ -10778,3 +10778,16 @@ Erntschritt ist an den Kette-Schleifen des Blatts gepaart, dessen
 Zuordnung Schleife↔Binnenfläche beim `p` nachweislich eine andere
 Schleife trifft; die `p`-Zeile dieser Rechnung ist deshalb nicht
 zitierfähig und steht oben nicht in der Tabelle.
+
+* **Das `p` ÜBERLIEST diese Ableselogik, und das gehört neben das Blatt.**
+  Am Bereich `25:110` meldet sie für die Laufform-Zeile 0,1748, während
+  die Ganzzeilen-Messung des Blatts denselben Kringel bei **0,0095**
+  findet. Der Grund ist die Ringschließung: der Bereich wird Ende-auf-
+  Anfang geschlossen, und beim `p` umschließt dieser Ring ein Gebiet, das
+  die volle Zeile gar nicht als Loch hat, weil andere Stränge
+  hindurchlaufen. **Kein Gate hängt daran** — `p` wird nicht neu
+  abgeleitet und steht in keiner Gate-Tabelle —, aber wer das Blatt
+  `sheets/p.png` neben den `sep06`-Befund legt, sieht zwei Zahlen für
+  dieselbe Schleife. Die des Blatts ist die richtige; die Ringschließung
+  ist für geschachtelte Fälle zu grob und wäre vor einem `p`-Arm zu
+  ersetzen.
