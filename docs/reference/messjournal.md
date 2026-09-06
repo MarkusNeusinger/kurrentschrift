@@ -10279,6 +10279,30 @@ Kurz: **die Feder darf nicht gewechselt werden, bevor (B) gelöst ist.**
 Ein Wechsel heute schließt in **31 der 63 Wortproben** mindestens ein
 Loch — knapp die Hälfte des Satzes, und darunter der Pflicht-Anker `das`.
 
+**Nachtrag 2026-09-06 — die Diagnose zu (B), und zwei zusätzliche
+Rettungswege.** Auf die Frage des Autors („wenn wir richtig der Tinte
+folgen, sollten die freien Stellen frei bleiben — ziehen die Linien eher
+Richtung Mitte?") ist die Kette Platte → Skelett → Kette-Fit → Zeile je
+Vorkommen nachgemessen worden
+([`notes/kringel-binnenflaechen-2026-09-06.md`](../notes/kringel-binnenflaechen-2026-09-06.md),
+frische `sep05`-Wurzel, Headline ziffernweise 0,108444 · 0,148236).
+**Die Antwort ist ja, und der Verlust liegt an zwei Stellen:** die
+Mittellinien-Schleife der Komposition ist 0,10–0,20 xh enger als die der
+Platte (Median 0,135) — davon 0,035–0,104 xh schon in der MITTELACHSE, weil
+zwei Federzüge um ein enges Loch verschmelzen und `skeletonize` dann die
+Achse des Klumpens gibt statt der zwei Bahnen, und 0,004–0,126 xh beim Schritt
+von den Vorkommen zur ZEILE (der elementweise Median kontrahiert). Der
+Kette-Fit selbst liegt im Median nur 0,0116 xh unter dem Skelett — er
+folgt der Evidenz, die Evidenz ist an dieser Stelle das Problem. Die
+Komposition verliert danach nichts (0,000 xh gegen die Zeile). Daraus
+kommen zwei Wege hinzu, die (2) oben mechanisch machen und über den
+Autorenschritt (3) hinausgehen: **ein Öffnungsweiten-Gate im
+Laufform-Schätzer** (eine Zeile darf keine Binnenfläche verlieren, die
+ihre Vorkommen tragen — trägt sofort das `p`, dessen Laufform-Zeile ihren
+Kringel schon HEUTE verloren hat) und **ein schleifen-treuer Median statt
+des elementweisen**. Beide je eigene Vorregistrierung, hier nicht gebaut;
+die Liste steht vollständig im Blatt und in §7.9.
+
 #### Schritt 2 — der Wechsel des ausgelieferten Nibs, wartet auf den Autor
 
 Heute leitet die API den Gleichzug-Nib rein rechnerisch ab:
