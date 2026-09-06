@@ -62,8 +62,20 @@
              `tools/wordbench/export_fixtures.py`; eine reparierte Platte
              braucht Re-Export **und** einen datierten Re-Baseline-Eintrag in
              `docs/reference/qualitaetsmetrik.md`.
-- Maße:      45 961 Bytes
-- SHA256:    1942403bdbbf9567931c45cfa95a6f161f1d4509b0a2c9e4f8e786b64e1608a7
+- Maße:      46 847 Bytes
+- SHA256:    1207be7af3acc4716e3a1c8ff02a6e74c580a4f167d33d82a879e1fea6bdfca9
+- Note:      Kein Eintrag trägt `incomplete`, und das ist geprüft: eine
+             Randprüfung über alle 202 Rechtecke (2026-09-06,
+             Zusammenhangskomponenten über die ganze Platte statt einer
+             Schwelle je Ausschnitt) fand keine Probe, der ein eigener
+             Buchstabe oder ein Diakritikum fehlt. Die sieben wirklich
+             angeschnittenen Proben sind seit der Rechteck-Reparatur
+             `sep01` repariert statt markiert
+             (`qualitaetsmetrik.md` §15) — die Marke ist das zweite
+             Mittel, nicht das erste. Was heute noch einen Rechteckrand
+             überquert, ist das nachfolgende Komma, die Nachbarzeile bzw.
+             das Nachbarwort oder der eigene Anstrich-Haarstrich; die
+             Einträge stehen namentlich in der `note`-Kopfzeile der Datei.
 
 ## words-abb19.png — 1756 × 1783 px, 3,5 MB
 
