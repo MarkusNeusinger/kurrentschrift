@@ -20,7 +20,16 @@ Append-never: strips, once assigned, are immutable — an existing
 wave, and the builder refuses to renumber or rewrite anything it did not
 create. The plan is TRAINING data, not a measurement set (proposal §4).
 
+``pin`` is the exception the append-never rule leaves room for. A word the
+author wants written NOW (``corpus.PINNED_FIRST``) cannot be pushed into a
+frozen strip, so it gets its OWN appended strip, and that strip is registered
+in ``plan["pins"]`` — the block ``plan.ordered_strips`` puts at the head of
+plan order. Nothing existing moves; only what comes first changes. A pinned
+strip leaves the front of the queue the ordinary way, by being written
+(``belegt``).
+
     uv run python -m tools.eigenhand.pool build --strips 60
+    uv run python -m tools.eigenhand.pool pin
 """
 
 from __future__ import annotations
@@ -33,7 +42,7 @@ from pathlib import Path
 from core.eigenhand import coverage
 from core.eigenhand.geometry import PRESETS, pack_words_into_rows
 from core.eigenhand.plan import STREIFEN_JSON, dump_plan, empty_plan, load_plan, strip_id
-from tools.eigenhand.corpus import pool_entries, shaping_form
+from tools.eigenhand.corpus import PINNED_FIRST, pool_entries, shaping_form
 from tools.eigenhand.universe import load_universe
 
 
@@ -237,6 +246,47 @@ def build_wave(plan: dict, target_strips: int, universe_items: dict[str, float])
     return plan, stats
 
 
+def pin_words(plan: dict, words: list[str]) -> tuple[dict, dict]:
+    """Append the pinned words as leading strips (pure, deterministic).
+
+    One word cannot be added to a frozen strip, so a pin appends strips of its
+    own and registers them in ``plan["pins"]``: plan order then starts with
+    them, and the first Bogen printed after this carries them in its first
+    rows. A word already planned anywhere is skipped — a pin says "write this
+    early", not "write this again", and once it is on a strip it has a place
+    in the queue.
+
+    The pinned words must be curated pool words: the plan is the API's only
+    word source, so an unknown word would leave the sheet without a shaping
+    form and the Bestand without an entry.
+    """
+    entries = pool_entries()
+    forms = {e["word"]: shaping_form(e) for e in entries}
+    unknown = [word for word in words if word not in forms]
+    if unknown:
+        raise SystemExit(f"not in the Wortvorrat: {', '.join(unknown)} — curate it in corpus.py first")
+
+    already = _planned_word_uses(plan)
+    fresh = [word for word in dict.fromkeys(words) if not already[word]]
+    ids: list[str] = []
+    if fresh:
+        wave_no = len(plan["waves"])
+        next_number = max((int(sid[1:]) for sid in plan["strips"]), default=0) + 1
+        for row in pack_words_into_rows(fresh, PRESETS[PACKING_STYLE], forms=forms):
+            sid = strip_id(next_number)
+            next_number += 1
+            plan["strips"][sid] = {"wave": wave_no, "words": row}
+            ids.append(sid)
+        plan["waves"].append({"wave": wave_no, "strips": ids, "pin": True})
+        plan["pins"] = list(plan.get("pins", [])) + ids
+        frozen_forms = dict(plan.get("forms", {}))
+        for word in fresh:
+            if forms[word] != word:
+                frozen_forms.setdefault(word, forms[word])
+        plan["forms"] = dict(sorted(frozen_forms.items()))
+    return plan, {"strips": ids, "pinned": fresh, "skipped": [w for w in words if w not in fresh]}
+
+
 def verify_immutable(before: dict, after: dict) -> None:
     """Append-never guard: every pre-existing strip must survive verbatim."""
     for sid, strip in before["strips"].items():
@@ -251,11 +301,25 @@ def main(argv: list[str] | None = None) -> int:
     build.add_argument("--strips", type=int, default=60, help="row-sized strips this wave (default: %(default)s)")
     build.add_argument("--out", type=Path, default=STREIFEN_JSON, help="plan path (default: %(default)s)")
     build.add_argument("--universe", type=Path, default=None, help="Übergangsraum path (default: local)")
+    pin = sub.add_parser("pin", help="append the pinned words as leading strips")
+    pin.add_argument("--word", action="append", default=None, help="pin this word (default: corpus.PINNED_FIRST)")
+    pin.add_argument("--out", type=Path, default=STREIFEN_JSON, help="plan path (default: %(default)s)")
     args = ap.parse_args(argv)
 
-    universe = load_universe(args.universe)
     plan = load_plan(args.out) if args.out.exists() else empty_plan()
     before = json.loads(json.dumps(plan))
+
+    if args.cmd == "pin":
+        plan, pinned = pin_words(plan, args.word or PINNED_FIRST)
+        verify_immutable(before, plan)
+        args.out.write_text(dump_plan(plan), encoding="utf-8")
+        listed = ", ".join(f"{sid} ({' '.join(plan['strips'][sid]['words'])})" for sid in pinned["strips"])
+        print(f"wrote {args.out}: {listed or 'no new strip'}; plan order now leads with {pinned['strips'] or '—'}")
+        if pinned["skipped"]:
+            print(f"already planned, not pinned again: {', '.join(pinned['skipped'])}")
+        return 0
+
+    universe = load_universe(args.universe)
     plan, stats = build_wave(plan, args.strips, universe["items"])
     verify_immutable(before, plan)
     args.out.write_text(dump_plan(plan), encoding="utf-8")

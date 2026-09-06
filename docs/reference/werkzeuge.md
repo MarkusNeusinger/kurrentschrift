@@ -453,6 +453,11 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   vorher `tools.dbsnapshot.fetch`. Braucht `ADMIN_TOKEN`.
 - **`pool`** — baut/erweitert den committeten Streifenplan
   (`core/eigenhand/streifen.json`), deterministisch und append-never;
+  **`pool pin`** hängt die angehefteten Wörter (`corpus.PINNED_FIRST`)
+  als eigene Streifen an und stellt sie über den Planblock `pins` an die
+  Spitze der Reihenfolge — der Weg, ein Wort in einen bereits
+  eingefrorenen Plan zu bekommen (Proposal §4; `--word` für einen
+  einmaligen Pin);
   **`gaps`** listet unerreichbare Übergänge samt echter
   Trägerwort-Kandidaten für die nächste Kurationsrunde in `corpus.py`.
 - **`sheet`** — druckt einen Bogen (PDF + `layout.json`-Sidecar) aus der

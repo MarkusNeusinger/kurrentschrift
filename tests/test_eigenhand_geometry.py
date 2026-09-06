@@ -52,6 +52,33 @@ class TestPresetPins:
         assert geometry.ROLE_STYLES["slant"] == ("#D6D4CB", 0.15, (1.0, 1.6))
 
 
+class TestCaptureLineature:
+    """What a sheet actually prints: thin enough to vanish, ordered enough to read.
+
+    The numbers themselves belong to the constants; what a test can hold is
+    the doctrine behind them (owner, 2026-08-23 and 2026-09-06): the capture
+    theme is strictly fainter than the app's reading theme, and the row still
+    reads as a hierarchy — the baseline leads, the slant grid trails.
+    """
+
+    RULINGS = ("baseline", "waist", "ascender", "descender", "slant")
+
+    def test_every_ruling_is_thinner_than_the_app_prints_it(self):
+        for role in self.RULINGS:
+            assert geometry.CAPTURE_STYLES[role][1] < geometry.ROLE_STYLES[role][1], role
+
+    def test_the_hierarchy_of_the_row_survives_the_thinning(self):
+        widths = [geometry.CAPTURE_STYLES[role][1] for role in ("baseline", "waist", "ascender", "slant")]
+        assert widths == sorted(widths, reverse=True)
+        assert geometry.CAPTURE_STYLES["ascender"] == geometry.CAPTURE_STYLES["descender"]
+
+    def test_a_ruling_stays_printable(self):
+        # A line the printer cannot resolve is guidance that never reaches the
+        # paper: 0.05 mm is under one dot at 600 dpi (0.042 mm).
+        for role in self.RULINGS:
+            assert geometry.CAPTURE_STYLES[role][1] >= 0.05, role
+
+
 class TestBandMath:
     def test_suetterlin_row_is_18mm(self):
         assert geometry.row_height_mm(geometry.PRESETS["suetterlin"]) == 18.0

@@ -10,7 +10,7 @@ from core.eigenhand import coverage
 from core.eigenhand import plan as plan_mod
 from core.eigenhand.plan import STREIFEN_JSON
 from tools.eigenhand import pool, progression, universe
-from tools.eigenhand.corpus import pool_entries, shaping_form
+from tools.eigenhand.corpus import PINNED_FIRST, pool_entries, shaping_form
 
 
 class TestShapedJoins:
@@ -91,6 +91,42 @@ class TestStripPlan:
         assert all(plan["strips"][sid]["words"] for sid in ids)
         listed = [sid for wave in plan["waves"] for sid in wave["strips"]]
         assert sorted(listed) == sorted(ids)
+
+    def test_a_pin_appends_a_leading_strip_and_moves_nothing(self):
+        plan = {
+            "format": 1,
+            "waves": [{"wave": 0, "strips": ["S0001", "S0002"]}],
+            "strips": {"S0001": {"wave": 0, "words": ["lesen"]}, "S0002": {"wave": 0, "words": ["das"]}},
+            "forms": {},
+            "pins": [],
+        }
+        frozen = json.loads(json.dumps(plan["strips"]))
+        plan, pinned = pool.pin_words(plan, ["Kurrentschrift"])
+        assert pinned["strips"] and pinned["pinned"] == ["Kurrentschrift"]
+        for sid, strip in frozen.items():
+            assert plan["strips"][sid] == strip, "a pin rewrote a frozen strip"
+        new = pinned["strips"][0]
+        assert plan_mod.ordered_strips(plan)[0] == new, "the pinned strip does not lead the plan"
+        assert plan_mod.ordered_strips(plan)[1:] == sorted(frozen, key=lambda sid: int(sid[1:]))
+        assert plan["strips"][new]["words"] == ["Kurrentschrift"]
+
+    def test_a_word_already_planned_is_not_pinned_again(self):
+        plan = {"format": 1, "waves": [], "strips": {"S0001": {"wave": 0, "words": ["Kurrentschrift"]}}, "pins": []}
+        plan, pinned = pool.pin_words(plan, ["Kurrentschrift"])
+        assert pinned["strips"] == [] and pinned["skipped"] == ["Kurrentschrift"]
+        assert plan["pins"] == []
+
+    def test_pinning_a_word_the_pool_does_not_carry_is_refused(self):
+        # The plan is the API's only word source — an uncurated word would
+        # reach paper without a shaping form and the Bestand without an entry.
+        with pytest.raises(SystemExit, match="Wortvorrat"):
+            pool.pin_words({"format": 1, "waves": [], "strips": {}}, ["Kurrenzschrifd"])
+
+    def test_the_committed_plan_pins_what_the_curation_pins(self):
+        plan = plan_mod.load_plan()
+        pinned_words = [word for sid in plan_mod.pinned_strips(plan) for word in plan["strips"][sid]["words"]]
+        assert pinned_words == PINNED_FIRST
+        assert plan_mod.ordered_strips(plan)[: len(plan["pins"])] == plan["pins"]
 
     def test_the_plan_carries_every_shaping_form_it_needs(self):
         # The plan is the API's ONLY word source: a reader without the
