@@ -101,6 +101,7 @@ def compose_arm(
     apex_handover: bool | None = None,
     stem_depart: bool | None = None,
     nib_clearance: bool = False,
+    seam_negotiation: bool = False,
 ) -> tuple[dict[str, dict], dict]:
     """Compose every scorable fixture word once, and place it the ruler's way.
 
@@ -120,6 +121,11 @@ def compose_arm(
     CLEARANCE_REF_HALF): the ink clearances read in nib radii. It only ever
     does anything together with a ``nib`` heavier than the calibration pen,
     which is exactly the pairing it was built for.
+
+    ``seam_negotiation`` is the „Übergänge J6" arm (core.compose
+    SEAM_NEGOTIATE_CAP_DEG): letter and connector split the turn at each seam.
+    It moves no coupling point, so it is the kind of arm ``--registration-from``
+    was built for.
     """
     manifest = load_json(root / "manifest.json")
     templates = load_json(root / "templates.json")
@@ -161,6 +167,7 @@ def compose_arm(
                 laufform_by_key={s.key: lf for s in slots if s.key and (lf := laufform_for(s.key)) is not None} or None,
                 exit_trim=exit_trim,
                 nib_clearance=nib_clearance,
+                seam_negotiation=seam_negotiation,
                 **join_rules,
             )
             report = score_word(
@@ -186,6 +193,7 @@ def compose_arm(
         # it, or two rounds built weeks apart cannot be held against each other.
         "exit_trim": exit_trim,
         "nib_clearance": nib_clearance,
+        "seam_negotiation": seam_negotiation,
         "join_rules": dict(join_rules),
         "exported_at": manifest.get("exported_at"),
         "failed": failed,
@@ -325,6 +333,12 @@ def build_parser() -> argparse.ArgumentParser:
         "adopted arm of „Ink-Clearance an die Feder“; without --nib it changes nothing",
     )
     parser.add_argument(
+        "--seam-negotiation",
+        action="store_true",
+        help="compose with the seam negotiation (arm J6, core.compose SEAM_NEGOTIATE_CAP_DEG) — the "
+        "composer's own switch, default off",
+    )
+    parser.add_argument(
         "--registration-from",
         type=Path,
         default=None,
@@ -366,6 +380,7 @@ def main(argv: list[str] | None = None) -> int:
         apex_handover=args.apex_handover,
         stem_depart=args.stem_depart,
         nib_clearance=args.nib_clearance,
+        seam_negotiation=args.seam_negotiation,
     )
     if not words:
         raise SystemExit(f"{root}: nothing composed — {settings['failed'][:5]}")

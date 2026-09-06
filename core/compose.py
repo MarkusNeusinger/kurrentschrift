@@ -487,6 +487,52 @@ EXIT_TRIM_TOL_DEG = 3.0
 # knob that arm varies. It is NOT a calibrated constant — read the J4/J4b
 # entries in messjournal.md §14 before moving it.
 EXIT_TRIM_MIN_KINK_DEG = 0.0
+# Seam negotiation (Nahtverhandlung, `seam_negotiation` — pre-registered under
+# „Übergänge J6" in messjournal.md §14, author rule of 2026-09-06): where a
+# letter leaves at one angle and the next arrives at another, neither side gets
+# to dictate. Both ends turn a bounded amount toward the compromise angle
+# (Kompromisswinkel, their circular mean) and the connector is built to LEAVE
+# and ARRIVE at exactly those turned tangents — G1 at both seams, so the eye
+# finds no tangent step where the ductus has no event. Whatever the cap cannot
+# cover, the connector carries as smooth curvature, never as a kink.
+#
+# The window is the eye-scale arc, the same 0.05 xh EXIT_TRIM_WINDOW reads on
+# and the report-only sensor measures on: the composer's own TANGENT_WINDOW
+# (0.12) is an average over which the two rules disagree, and it is exactly the
+# gap between those two scales that the audit of 2026-09-02 measured as a
+# visible kink.
+SEAM_NEGOTIATE_WINDOW = 0.05
+# How far ONE side may be turned, in degrees. A cap, not a calibration: the
+# author's rule says the exact angle hardly matters, so the constant is set at
+# the size of the residual kinks the audit found (median arrival 10.8 degrees
+# on the frozen word set), halved because both sides move.
+SEAM_NEGOTIATE_CAP_DEG = 8.0
+# Arc length of the stroke end that carries the turn, in x-height units. The
+# rotation is CONSTANT over the first SEAM_NEGOTIATE_WINDOW of it (so the
+# direction the eye reads at the seam turns by exactly the negotiated amount)
+# and then decays along the quintic of _seam_blend_weight — the whole point
+# being that the blend must not trade a seam kink for a new one further in.
+# 0.3 xh is a third of a letter's x-height run: long enough that the turn is
+# spread, short enough that the letter's body never moves.
+SEAM_NEGOTIATE_BLEND = 0.3
+# Above this disagreement the two ends meeting at a seam are not negotiating,
+# they are writing a TURN: the descender return of ſ leaves near −180 degrees,
+# the covering join lands on a bowl's apex and the letter continues downward
+# into its counter, r's Absatz corners off the arm. The audit's residual kinks
+# sit at 7–19 degrees, the ductus events at 90–180; 45 is the empty band
+# between them, not a fitted threshold. A rule that "fixed" those would erase
+# the hand's own events, which is the opposite of the author's rule. The
+# post-hoc J6b arm varies it through ``seam_negotiation_max_jump_deg``: at twice
+# the cap the two sides can always MEET, so the connector never has to absorb a
+# turn its own 0.3 xh cannot hold — read the J6/J6b entries in messjournal.md
+# §14 before moving it.
+SEAM_MAX_JUMP_DEG = 45.0
+# Fraction of a connector's own arc each of its two ends may spend on the turn.
+# Below one half the two blends provably never meet, so the seams stay
+# independent and a short join can never be turned inside out by its own two
+# ends; a connector too short even for that keeps its shape and the letters do
+# the whole negotiation.
+SEAM_CONNECTOR_BLEND_RATIO = 0.45
 # Shared by the sawtooth pass-through AND the R4 "nested fall" placement (a
 # rising mid-band exit whose neighbour enters below it — t's bar, f's flag —
 # nests over the next letter instead of clearing its full ink column; the
@@ -1397,6 +1443,162 @@ def _start_direction(line: list[Point], window: float) -> float | None:
     return math.degrees(math.atan2(line[far][1] - line[0][1], line[far][0] - line[0][0]))
 
 
+def _seam_shares(
+    letter_deg: float, conn_deg: float, letter_movable: bool, conn_movable: bool, max_jump_deg: float
+) -> tuple[float, float] | None:
+    """How a seam's disagreement is split between the letter and the connector.
+
+    The Kompromisswinkel is the circular mean of the two directions that meet at
+    the seam: the letter turns HALF the disagreement toward the connector, up to
+    SEAM_NEGOTIATE_CAP_DEG, and the connector — a generated stroke, free to be
+    reshaped — turns whatever is left, so both ends leave the seam pointing the
+    same way. Returns ``(delta_letter, delta_connector)`` in degrees.
+
+    Where only ONE side can move it takes the whole compromise (still capped on
+    the letter side): a stroke too short to turn about one end without swinging
+    its other end away has nothing to give, and splitting a gap with a partner
+    who cannot move would leave half of it standing — which is the one outcome
+    a rule about seams must not produce.
+
+    ``None`` where neither side can move, or where the two directions differ by
+    more than ``max_jump_deg``: that is a turn the DUCTUS writes (a descender
+    return, a loop turnaround, the covering join landing on a bowl's apex), not
+    a seam that got away — and the author's rule is about angles the eye reads
+    as one flow, not about erasing the events the hand really makes.
+    """
+    gap = _wrap_deg(conn_deg - letter_deg)
+    if abs(gap) > max_jump_deg or not (letter_movable or conn_movable):
+        return None
+    share = gap / 2.0 if (letter_movable and conn_movable) else gap
+    delta_letter = max(-SEAM_NEGOTIATE_CAP_DEG, min(SEAM_NEGOTIATE_CAP_DEG, share)) if letter_movable else 0.0
+    return delta_letter, (delta_letter - gap) if conn_movable else 0.0
+
+
+def _seam_blend_weight(distance: float, hold: float, length: float) -> float:
+    """How much of the seam turn survives ``distance`` from the seam point.
+
+    1 over the first ``hold`` (so the direction the eye reads AT the seam turns
+    by the full negotiated amount, not by a window average of it), then down to
+    0 at ``length`` along the quintic 6t⁵−15t⁴+10t³, whose first AND second
+    derivatives vanish at both ends. The first derivative is what keeps the
+    turned piece free of a new tangent step; the second is why the quintic and
+    not the cubic smoothstep — the perceptual rule this whole arm serves says
+    the eye penalises sudden CURVATURE changes too, and a cubic would leave one
+    where the turn starts and where it stops.
+    """
+    if distance <= hold:
+        return 1.0
+    if distance >= length:
+        return 0.0
+    t = (distance - hold) / (length - hold)
+    return 1.0 - t * t * t * (t * (6.0 * t - 15.0) + 10.0)
+
+
+def _arc_length(line: list[Point]) -> float:
+    return sum(math.dist(a, b) for a, b in zip(line, line[1:], strict=False))
+
+
+def _twist_about_seam(points: list[Point], pivot: Point, delta_deg: float, blend: float) -> list[Point]:
+    """Turn everything around a seam point by an angle that fades out with distance.
+
+    A twist of the PLANE, not of a parameter along one line: a point at distance
+    r from the seam rotates about it by ``delta_deg`` × ``_seam_blend_weight(r)``.
+    Deliberately planar, because both a stroke's centerline AND its silhouette
+    have to move together — mapping ring points through an arc position instead
+    tears the outline wherever a stroke crosses its own ink (the d loop foot,
+    where LOOP_EXIT puts the exit exactly on the crossing), and a torn silhouette
+    is a worse defect than the seam it was meant to smooth.
+
+    The properties the rule needs all hold:
+
+    * the pivot does not move (r = 0), so the coupling point the placement was
+      solved on stays exactly where it is;
+    * the disc of radius SEAM_NEGOTIATE_WINDOW turns RIGIDLY, and the seam
+      direction is read over that same arc — whose chord is never longer — so
+      the direction at the seam turns by exactly ``delta_deg``;
+    * outside ``blend`` the map is the identity and meets it with zero
+      derivative, so the turn adds no second kink where it fades out.
+    """
+    if abs(delta_deg) < 1e-9 or blend <= SEAM_NEGOTIATE_WINDOW:
+        return points
+    out: list[Point] = []
+    for pt in points:
+        dx, dy = pt[0] - pivot[0], pt[1] - pivot[1]
+        w = _seam_blend_weight(math.hypot(dx, dy), SEAM_NEGOTIATE_WINDOW, blend)
+        if w <= 0.0:
+            out.append(pt)
+            continue
+        a = math.radians(delta_deg * w)
+        cos_a, sin_a = math.cos(a), math.sin(a)
+        out.append((pivot[0] + cos_a * dx - sin_a * dy, pivot[1] + sin_a * dx + cos_a * dy))
+    return out
+
+
+def _turn_seam_end(line: list[Point], delta_deg: float, at_end: bool, blend: float) -> list[Point]:
+    """:func:`_twist_about_seam` around one END of a polyline."""
+    if len(line) < 2:
+        return line
+    return _twist_about_seam(line, line[-1] if at_end else line[0], delta_deg, blend)
+
+
+def _turn_seam_item(item: dict, delta_deg: float, at_end: bool, blend: float) -> None:
+    """Apply a seam turn to an ALREADY EMITTED draw item, centerline and rings.
+
+    The A-side twin of ``_cut_exit_stub``, and it exists for the same reason: the
+    compromise angle needs the coupling point, which exists only once the next
+    slot has been placed — so the exit end turns after the fact, precisely so the
+    placement it must not disturb has already been solved.
+    """
+    line = [(float(x), float(y)) for x, y in item["centerline"]]
+    if len(line) < 2:
+        return
+    pivot = line[-1] if at_end else line[0]
+    item["centerline"] = [list(p) for p in _twist_about_seam(line, pivot, delta_deg, blend)]
+    rings = item.get("rings")
+    if rings:
+        item["rings"] = [
+            [list(p) for p in _twist_about_seam([(float(x), float(y)) for x, y in ring], pivot, delta_deg, blend)]
+            for ring in rings
+        ]
+
+
+def _negotiate_seam(
+    letter: list[Point], connector: list[Point], *, at_letter_end: bool, conn_blend: float, max_jump_deg: float
+) -> tuple[float, float, float] | None:
+    """One seam's negotiation: how far the letter turns, how far the connector.
+
+    ``letter`` is the letter stroke that meets the connector at this seam and
+    ``at_letter_end`` says at which of its ends. Returns
+    ``(delta_letter, delta_connector, letter_blend)`` — the two turns in degrees
+    plus the arc the letter's turn is spread over — or ``None`` when the seam is
+    a ductus event (see :func:`_seam_shares`) or too short to read.
+
+    A letter stroke shorter than the blend does NOT turn: rotating it whole
+    about one endpoint would swing its other end away from the ink it was
+    authored against. There the connector carries the whole compromise, which is
+    exactly what a generated stroke is for — and the other way round when the
+    connector is too short to hold a turn at all.
+    """
+    letter_deg = (
+        _window_direction(letter, len(letter) - 1, SEAM_NEGOTIATE_WINDOW)
+        if at_letter_end
+        else _start_direction(letter, SEAM_NEGOTIATE_WINDOW)
+    )
+    conn_deg = (
+        _start_direction(connector, SEAM_NEGOTIATE_WINDOW)
+        if at_letter_end
+        else _window_direction(connector, len(connector) - 1, SEAM_NEGOTIATE_WINDOW)
+    )
+    if letter_deg is None or conn_deg is None:
+        return None
+    movable = _arc_length(letter) >= SEAM_NEGOTIATE_BLEND
+    shares = _seam_shares(letter_deg, conn_deg, movable, conn_blend > SEAM_NEGOTIATE_WINDOW, max_jump_deg)
+    if shares is None:
+        return None
+    delta_letter, delta_conn = shares
+    return delta_letter, delta_conn, SEAM_NEGOTIATE_BLEND if movable else 0.0
+
+
 def _exit_trim_index(line: list[Point], couple_pt: Point) -> int | None:
     """Where to cut a sawtooth exit stub so the join leaves it collinearly.
 
@@ -1910,6 +2112,8 @@ def compose_word(
     apex_handover: bool = False,
     stem_depart: bool = False,
     nib_clearance: bool = False,
+    seam_negotiation: bool = False,
+    seam_negotiation_max_jump_deg: float = SEAM_MAX_JUMP_DEG,
 ) -> dict:
     """Compose shaped slots + per-glyph render payloads into draw items.
 
@@ -1969,6 +2173,21 @@ def compose_word(
     changes every public ``/write/word`` render, which is a rendering-affecting
     apply and therefore the author's call, not a bench result's.
 
+    ``seam_negotiation`` (default False = byte-identical, the golden fixture
+    holds) switches on the Nahtverhandlung — see SEAM_NEGOTIATE_CAP_DEG: at each
+    end of a generated join the letter and the connector turn toward their
+    compromise angle instead of one dictating to the other, so the pen leaves
+    and re-enters on ONE direction. Pre-registered under „Übergänge J6" in
+    messjournal.md §14 (author rule of 2026-09-06). It turns only the last/first
+    0.3 xh of the letter strokes, about the seam points themselves, so no
+    coupling point and no placement moves; ligatures and non-joining slots are
+    untouched by construction, since neither carries a generated connector.
+    Making it the DEFAULT changes every public ``/write/word`` render, which is
+    a rendering-affecting apply and therefore the author's call.
+    ``seam_negotiation_max_jump_deg`` narrows that class to the seams whose two
+    sides can actually MEET (see SEAM_MAX_JUMP_DEG) — the J6b arm's knob; it
+    does nothing while ``seam_negotiation`` is off.
+
     ``nib_clearance`` (default False = byte-identical, the golden fixture
     holds) reads every ink clearance in NIB RADII instead of x-heights — see
     CLEARANCE_REF_HALF. Pre-registered and measured under „Ink-Clearance an
@@ -1999,6 +2218,13 @@ def compose_word(
         # what 0.0 means — so a caller that passed one has a bug, not a wish.
         raise ValueError(
             f"exit_trim_min_kink_deg is a kink in degrees and cannot be negative: {exit_trim_min_kink_deg}"
+        )
+    if seam_negotiation_max_jump_deg < 0.0:
+        # Same reasoning: a negative ceiling would silently disable the rule
+        # while the caller believes it asked for a narrower one.
+        raise ValueError(
+            "seam_negotiation_max_jump_deg is a seam angle in degrees and cannot be negative: "
+            f"{seam_negotiation_max_jump_deg}"
         )
     items: list[dict] = []
     missing: list[str] = []
@@ -2034,10 +2260,11 @@ def compose_word(
     # sets the umlauts after the word body, not mid-flow. Each becomes its own
     # pen-down (lift) so the renderer pauses before placing it.
     pending_diacritics: list[dict] = []
-    # Whether any exit stub was cut back after its stroke had been tracked —
-    # the one case where the running bounds can be too LARGE (see the recompute
-    # at the end of this function). False on the default path.
-    trimmed_exits = False
+    # Whether any exit stroke was RESHAPED after it had been tracked — cut back
+    # (``exit_trim``) or turned at its seam (``seam_negotiation``). Both leave
+    # the running bounds inexact (see the recompute at the end of this
+    # function). False on the default path.
+    reshaped_exits = False
 
     def flush_diacritics() -> None:
         for it in pending_diacritics:
@@ -2820,7 +3047,7 @@ def compose_word(
                 if cut is not None:
                     centerline = _straight_to(stub[cut], centerline[-1])
                     _cut_exit_stub(prev.exit_item, stub, cut, prev.width)
-                    trimmed_exits = True
+                    reshaped_exits = True
                     # The join now departs at the cut, so that is the exit the
                     # provenance states — otherwise every trimmed join would
                     # read as a prefixed retrace to a downstream sensor.
@@ -2830,6 +3057,72 @@ def compose_word(
                 # from — drop the duplicate so the seam has no zero-length
                 # segment.
                 centerline = prev.cap_retrace[:-1] + centerline
+            # Seam negotiation (see SEAM_NEGOTIATE_CAP_DEG), opt-in. At each of
+            # the two seams the letter turns at most the cap toward the
+            # compromise angle and the GENERATED connector turns the rest, so
+            # both ends leave the seam pointing one way. The seam points are the
+            # pivots, so every coupling point the placement solved stays where
+            # it is — the reason this runs here and not in the placement stage,
+            # and the difference to the P3 entry rules that moved them.
+            seam_turns: dict | None = None
+            if seam_negotiation and len(centerline) >= 2:
+                lead_in = [(float(x), float(y)) for x, y in centerlines[0][entry_trim:]]
+                stub_line = [(float(x), float(y)) for x, y in prev.exit_item["centerline"]] if prev.exit_item else []
+                conn_blend = min(SEAM_NEGOTIATE_BLEND, SEAM_CONNECTOR_BLEND_RATIO * _arc_length(centerline))
+                # Both seams are READ off the connector as it stands and only
+                # then turned — the two blends can never overlap (each reaches
+                # at most SEAM_CONNECTOR_BLEND_RATIO of the arc), but reading
+                # first keeps that a property of the code, not of the constant.
+                out_seam = (
+                    _negotiate_seam(
+                        stub_line,
+                        centerline,
+                        at_letter_end=True,
+                        conn_blend=conn_blend,
+                        max_jump_deg=seam_negotiation_max_jump_deg,
+                    )
+                    if len(stub_line) >= 2
+                    else None
+                )
+                in_seam = (
+                    _negotiate_seam(
+                        lead_in,
+                        centerline,
+                        at_letter_end=False,
+                        conn_blend=conn_blend,
+                        max_jump_deg=seam_negotiation_max_jump_deg,
+                    )
+                    if len(lead_in) >= 2
+                    else None
+                )
+                if out_seam is not None:
+                    d_letter, d_conn, blend = out_seam
+                    _turn_seam_item(prev.exit_item, d_letter, at_end=True, blend=blend)
+                    centerline = _turn_seam_end(centerline, d_conn, at_end=False, blend=conn_blend)
+                if in_seam is not None:
+                    d_letter, d_conn, blend = in_seam
+                    # B's lead-in turns in the GLYPH frame, about the coupling
+                    # sample itself — the same twist its silhouette takes, so
+                    # ink and centerline stay one stroke.
+                    pivot = lead_in[0]
+                    centerlines[0] = list(centerlines[0][:entry_trim]) + _twist_about_seam(
+                        lead_in, pivot, d_letter, blend
+                    )
+                    if rings_by_stroke and rings_by_stroke[0]:
+                        rings_by_stroke[0] = [
+                            _twist_about_seam([(float(x), float(y)) for x, y in ring], pivot, d_letter, blend)
+                            for ring in rings_by_stroke[0]
+                        ]
+                    centerline = _turn_seam_end(centerline, d_conn, at_end=True, blend=conn_blend)
+                if out_seam is not None or in_seam is not None:
+                    # The exit item was drawn and TRACKED before its end turned,
+                    # so the running bounds are no longer exact (see the
+                    # recompute at the end of this function).
+                    reshaped_exits = True
+                    seam_turns = {
+                        "exit": list(out_seam[:2]) if out_seam else None,
+                        "entry": list(in_seam[:2]) if in_seam else None,
+                    }
             centerline = _overlap_extend(centerline)
             connector = {"centerline": [list(p) for p in centerline], "lift": False}
             _apply_pen(connector, centerline, 2 * min(prev.width, med_half), pen)
@@ -2846,6 +3139,11 @@ def compose_word(
                 # comparison (handmodell H2 read surfaces) needs them stated.
                 connector["exit"] = [exit_anchor[0], exit_anchor[1]]
                 connector["entry"] = [entry_xy[0] + dx, entry_xy[1]]
+                if seam_turns is not None:
+                    # What each side gave at each seam (degrees, letter first) —
+                    # so a report column can say WHERE the rule acted and by how
+                    # much, instead of inferring it from moved ink.
+                    connector["seam_turns"] = seam_turns
             items.append(connector)
             track(centerline)
 
@@ -2958,15 +3256,17 @@ def compose_word(
     end_swing()  # the last word's Endstrich …
     flush_diacritics()  # … then its marks, once the body is complete
 
-    if trimmed_exits:
-        # ``track`` only ever GROWS the box, and an exit trim takes ink away
-        # from a stroke that was already tracked — so a cut tip that reached
-        # past everything drawn after it would leave the box too large. On the
-        # frozen word set the connector always covers the cut tip and the box
-        # never actually moves (measured: 0.000000 xh over 96 entries), but
-        # that is a property of this geometry, not of the rule. Recomputing
-        # from the emitted items makes it exact instead of lucky. Runs only on
-        # the opt-in arm, so the default path stays byte-identical.
+    if reshaped_exits:
+        # ``track`` only ever GROWS the box, and reshaping a stroke that was
+        # already tracked can move its ink either way — an exit trim takes ink
+        # away (a cut tip that reached past everything drawn after it would
+        # leave the box too large), a seam turn swings it. On the frozen word
+        # set the connector always covers the cut tip and the box never
+        # actually moved for the trim (measured: 0.000000 xh over 96 entries),
+        # but that is a property of that geometry, not of either rule.
+        # Recomputing from the emitted items makes it exact instead of lucky.
+        # Runs only on the opt-in arms, so the default path stays
+        # byte-identical.
         min_x, max_x, min_y, max_y = math.inf, -math.inf, math.inf, -math.inf
         for item in items:  # flush_diacritics has already emptied the pending list
             track([tuple(p) for p in item["centerline"]])

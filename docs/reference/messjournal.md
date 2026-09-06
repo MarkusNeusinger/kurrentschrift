@@ -214,6 +214,8 @@ die DB) — mit seiner Bedingung.
 | sep06 | Laufform | [LF14 Ernte-Zerlegung (Pre-Reg)](#laufform-lf14-sep06--vorregistrierung-die-ernte-schritt-für-schritt-rettungsweg-1-von-lf13) | Pre-Reg | Rettungsweg 1 von LF13: die Ernte ist der gemessene Hebel, also wird sie zerlegt. Sechs Ablesungen je Vorkommen (E0 Kette-Bahn → E1 Anker nackt → E2 Anker gerendert → E3 Reparatur → E4 Zentrierung → E5 Rundung) plus die A/B-Ablesung eingefrorene gegen neu parametrisierte Spline-Basis (E2a/E2b); benannt wird der Schritt mit dem größten Median-Anteil, Mechanismus-Menü N1/N2/N3 vorab festgelegt. Decke der Kennzahl vorab beziffert: höchstens 11 der 26 Wörter, weil `o` (Kette 0,1826) schon in der Kette zu ist und `G`/`v`/`k` keine Laufform-Zeile haben |
 | sep06 | Laufform | [LF14 gemessen](#laufform-lf14-sep06--gemessen-die-ernte-verliert-nichts-und-der-eine-schritt-der-es-tut-hilft-keinem-wort) | Pre-Reg + gemessen · **verworfen** (Gate (b) + (c)) · **streicht Rettungsweg 1 von LF13** | **Die Ernte verliert die Schleife nicht:** auf EINEM chart-verankerten Bereich an beiden Enden gelesen kostet Kette-Bahn → gespeichertes Vorkommen −0,0002 bis +0,0077 xh; 40 von 44 Vorkommen bewegen sich unter 0,01, und von den vier übrigen VERLIERT genau eines. Die 0,016–0,057 xh von LF13 sind zwei verschiedene Schleifen: 21 von 39 gemeinsamen Vorkommen stimmen auf 0,0011, 18 liegen 0,0673 auseinander, weil die Zuordnung über Nähe im 0,45-xh-Fenster ein Nachbarloch trifft (`Wer` `r` 0,3500 gegen 0,2323). Beide Lineale (Bereich · Raster-Nähe) stimmen an beiden Enden auf 0,0000 überein, der Rahmen ist auf 2,3·10⁻¹⁵ xh abgenommen. **Der eine echte Schritt ist die Anker-Reparatur** („Schleifen-Sehne"): von 235 Vorkommen werden 20 repariert, 12 davon mit messbarer Binnenfläche — die 4, deren Reparatur INNERHALB einer Schleife landet, verlieren alle vier (Median 0,0410, schlimmstenfalls 0,1068 xh), die 8 außerhalb bewegen ≤ 0,0021 (saubere Nullprobe). Arm `LOOP_AWARE_REPAIR`: Gate (a) 1 → **0** Brüche von 44 (grün), (b) rot (0,0486 am `Z` für 0,0045 Öffnung), (c) rot (Paare 0,148352) — **beide Lineal-Zahlen trägt die Kontrollkarte**, der Arm bewegt sie um −0,000044 bzw. 0,000000; (d)/(e) grün. Kennzahl **26 → 26**: drei Vorkommen gehen auf, kein Wort. Nebenbefund: **die Ernte ist kein Fixpunkt** — eine frische Ernte der `sep05`-Wurzel leitet jede Zeile 0,0025–0,0283 xh neben der ab, aus der die Wurzel geschrieben wurde (`--jobs 1` = `--jobs 4` byte-gleich; Ursache ist `chain_seed="composed"` auf einer Komposition aus den Zeilen selbst) |
 | sep06 | Übergänge | [S2 Unstetigkeits-Sensor (Pre-Reg)](#übergänge-s2-sep06--vorregistrierung-der-unstetigkeits-sensor-der-den-knick-sieht) | Pre-Reg | Rettungsweg 2 der Runde-6-Konversionen nach dem S1-Muster (bauen, einfrieren, DANN abnehmen). Anlass ist der Leitsatz des Autors: alle eingefrorenen Lineale messen ABSTAND, keines Stetigkeit. Fenster aus der FEDER, nicht aus einer Runde — halbe Feder 0,0725 · eine Feder 0,145 · zwei Federn 0,29; θ = arcsin(0,2) = 11,537°, federunabhängig. Gates P1/P2 an Runde 5, P3 an Runde 6, N1 Identität, N2 Verrohrung |
+| sep06 | Übergänge | [J6 Nahtverhandlung (Pre-Reg)](#übergänge-j6-sep06--vorregistrierung-die-nahtverhandlung-als-autorenregel) | Pre-Reg | Die Autorenregel vom 2026-09-06 in Geometrie: an jedem Ende eines generierten Übergangs einigen sich Buchstabe und Verbinder auf den **Kompromisswinkel** (zirkulärer Mittelwert, gelesen über 0,05 xh) und drehen beide dorthin — der Buchstabe höchstens 8° über 0,3 xh als ebener Twist um den Nahtpunkt, der Verbinder den Rest; über 45° Uneinigkeit bleibt die Regel weg, weil das eine Kehre des Duktus ist. Nahtpunkt = Drehpunkt, also bewegt sich KEINE Kopplungshöhe und keine Platzierung — der Unterschied zu P3-K1/K2/K3. Basis = Runde-5-Stand (J4); Gates (a1) exakte G1-Residuen · (a2) Augen-Skala · (a3) keine Naht schlechter · (b) kein neuer Knick im Blend · (c) Verdopplungen · (d) Deckung · (e) Lineal nur berichtet (Runde-5-Grund) · (f) Golden · (g) Kette-Identität |
+| sep06 | Übergänge | [J6 gemessen](#übergänge-j6-sep06--gemessen-die-naht-schließt-sich-an-beiden-enden-und-die-rechnung-steht-auf-drei-übungswörtern) | Pre-Reg + gemessen · **ehrliches Negativ** (Gate (c) rot) · Runde 7 gebaut, Urteil offen | **Die Naht ist zu:** über alle 240 Nähte fällt der Betrags-Median des Abgangs 2,67° → **0,01°** und der Ankunft 10,80° → **0,01°**, keine der 240 verlässt das 3°-Band nach oben, und jede verhandelbare Klasse geht auf ≤ 0,36° (Arkade→Arkade 18,57 → 0,00, sonstige 17,24 → 0,03, Gabel 14,43 → 0,01). Die drei stehenden Zahlen sind die Duktus-Ereignisse, die die 45°-Schranke draußen hält. **Verworfen an Gate (c):** Verdopplungen der Paare 3 → 5, zurechenbar auf `dp`/`ds` — dort trägt der Verbinder die 32,9° bzw. 31,9°, die der 8°-Deckel dem Buchstaben verwehrt, und der Haken legt sich 0,117/0,119 xh neben die eigene Tinte des `d` (Nib 0,145). (b) rot nur am Maximum (an der Naht +0,14°, p90 +0,46°/+1,67°, Maxima an Vertices mit 14,6°/133° Eigendrehung), (a1) rot aus Prinzip (auf Segment-Skala ist der Rest die Spitzenkrümmung der Buchstaben; gerade Auslaufstücke waren vorab verboten), (d)/(f)/(g) grün, (e) +0,000421 / −0,000024 im vorhergesagten Band. Der neue Unstetigkeits-Sensor folgt NICHT: `cont_kink_total` 337 → 349 (W) und 81 → 92 (P), teils mechanisch (`cont_measured` +51/+86 — Punkte verlassen die Ecken-Ausnahme). Nebenbefund: **J6 löst die Austrittsseite ohne J4 und billiger** (12,67 → 0,02 gegen 2,30, +0,000376 gegen +0,000582) |
 | sep06 | Übergänge | [S2 gemessen](#übergänge-s2-sep06--gemessen-alle-gates-bestehen-und-keine-einzelne-spalte-ist-der-richter) | Pre-Reg + gemessen · **validiert** (Lineal-Bestandteil-Kandidat, kein Lineal geändert) | **Alle fünf Gates bestehen, aber keine EINZELNE Spalte ist der Richter.** N1/N2 exakt (0,000e+00 gegen die gespeicherten Verbinder; 3 + 12 identische Wörter bewegen keine Spalte). P1 `naht-stark` (Urteil Kandidat 26 : 2): `kink_max_deg` 36,89 → **27,86**, `kink_count` 28/28 fallend, `wobble` −0,531. P2 `naht-schwach`: nur 17 statt 24 von 29 Wörtern bewegt, Wackler-Median −0,083 — Faktor 6, die Klassengrenze reproduziert. P3 `apex` (Basis 11 : 1): `bow_join` 0,0066 → **0,0034 in 12/12**, dazu (nicht vorregistriert) `kink_max_deg` +15,54°. Die Klasse `stem` (Basis 7 : 0) sieht nur `curv_loss` (8/8) und `wobble` (8/8). **Ehrliche Hälfte:** `bow_join` fällt in BEIDEN Runden, hätte Runde 6 allein also falsch entschieden — der Austritts-Trim verschiebt die Grenze Buchstabe/Verbinder und damit die Population (das Rahmen-Artefakt, für das S1 `dspan` gebaut wurde). Headline 0,108444 / 0,148236 vorher wie nachher |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
@@ -11417,3 +11419,311 @@ Sensor die eingefrorenen Struktur-Detektoren des Tintenfolgers je Wort
 mitlaufen lässt statt eigene zu schreiben — bewusst bezahlt. Und beide
 Runden urteilen ein einziger Beurteiler; Runde 6 trägt mit 4 Paaren
 ohnehin keinen Adoptionsanspruch (`menschliche-bewertung.md` §9).
+
+### Übergänge J6 `sep06` — Vorregistrierung: die Nahtverhandlung als Autorenregel
+
+**Anlass.** Die Autorenregel vom 2026-09-06, wörtlich:
+
+> „Wenn wir aus dem einen Buchstaben mit 30 Grad rauskommen und in den
+> anderen mit 40 Grad reingehen, darf es keinen Knick geben, der von dem
+> einen zum anderen wechselt. Dann muss es entweder einen sanften Übergang
+> von dem einen zum anderen geben, oder — vermutlich fast besser — in der
+> letzten Kurve wird etwas weiter gedreht oder im Eingang, so dass sich
+> beide Seiten auf einen Kompromiss einigen und die Verbindungslinie in
+> einem perfekten Winkel raus- und wieder reinfließt. Ob es wirklich 30, 40
+> oder vielleicht 35 Grad ist, ist nicht so wichtig."
+
+Das Wahrnehmungsprinzip desselben Tages sagt, warum: das Auge bestraft
+plötzliche Tangenten- und Krümmungswechsel dort, wo der Duktus kein
+Ereignis hat — nicht absolute Winkel. Der Ort ist vermessen: der
+**Naht-Winkel** (`seam_deg`, seit #478) liest auf der eingefrorenen Wurzel
+`eaa195aa7c84…` einen Abgang von **12,67°** und eine Ankunft von **10,80°**
+im Betrags-Median über 207 von 214 Joins. J4 (`exit_trim`) löst davon die
+Austrittsseite (**2,30°**, Rest ist dessen 3°-Toleranz) und lässt die
+Eintrittsseite unverändert stehen.
+
+**Mechanismus (kleinste ehrliche Fassung).** An jeder der beiden Nähte
+eines generierten Übergangs treffen genau zwei Polylinien-Enden aufeinander:
+
+1. Beide Richtungen werden über `SEAM_NEGOTIATE_WINDOW` = **0,05 xh**
+   Bogenlänge gelesen — dieselbe Augen-Skala, auf der `EXIT_TRIM_WINDOW`
+   schneidet und `tools/wordbench/seam.py` misst, und bewusst nicht die
+   0,12 xh, auf die der Composer seine Tangenten ausrichtet.
+2. Übersteigt die Uneinigkeit `SEAM_MAX_JUMP_DEG` = **45°**, bleibt die
+   Regel weg: das ist eine Kehre, die der DUKTUS schreibt (ſ-Rückkehr,
+   Schleifen-Umkehr, der Deckungs-Join auf den Scheitel eines Rundkörpers,
+   r's Absatz). Die Restknicke des Audits liegen bei 7–19°, die
+   Duktus-Ereignisse bei 90–180 — 45 ist das leere Band dazwischen.
+3. Sonst ist der **Kompromisswinkel** der zirkuläre Mittelwert. Der
+   Buchstabe dreht die Hälfte dorthin, gedeckelt auf
+   `SEAM_NEGOTIATE_CAP_DEG` = **8°**; der generierte Verbinder dreht den
+   Rest. Kann eine Seite sich nicht bewegen (ein Zug kürzer als die
+   Blendlänge würde sein anderes Ende wegschwenken; ein Verbinder unter
+   `SEAM_CONNECTOR_BLEND_RATIO`·Bogen ≤ 0,05 xh trägt keine Drehung), nimmt
+   die andere den ganzen Betrag — gedeckelt bleibt nur der Buchstabe.
+4. Gedreht wird als **ebener Twist um den Nahtpunkt**: ein Punkt im Abstand
+   r dreht um δ·w(r), mit w = 1 bis `SEAM_NEGOTIATE_WINDOW` und dann per
+   Quintik 6t⁵−15t⁴+10t³ auf 0 bei `SEAM_NEGOTIATE_BLEND` = **0,3 xh**.
+   Erste UND zweite Ableitung verschwinden an beiden Enden — die Quintik
+   statt der Kubik, weil das Prinzip auch den Krümmungssprung nennt.
+   Mittellinie und Silhouette laufen durch dasselbe Feld; eine Zuordnung
+   über die Bogenlänge zerreißt die Silhouette dort, wo ein Zug seine
+   eigene Tinte kreuzt (der Schleifenfuß des `d` — im Bau gesehen und
+   verworfen, bevor eine Zahl entstand).
+5. Der Nahtpunkt ist der Drehpunkt und bewegt sich nicht. Kopplungshöhen,
+   `_entry_couple_index`, jede Platzierungsregel und `core/word_metric.py`
+   bleiben unberührt. **Das ist der Unterschied zu P3-K1/K2/K3** (aug15/16),
+   die alle drei Kopplungspunkte oder -höhen verschoben haben und deren im
+   Fit-Frame kohärente Konstanten „die Brücke in den Composer an KEINEM der
+   drei registrierten Knöpfe überlebt" haben.
+
+Ligaturen und nicht verbindende Slots sind per Konstruktion unberührt (sie
+tragen keinen generierten Verbinder), ein gespeicherter Pair-Override
+ebenso.
+
+**Basis, gemessen bevor der Arm existierte** (Wurzeln `eaa195aa7c84…` /
+`0fbde2d72b64…`, BLAS gepinnt):
+
+| | Wörter | Paare |
+|---|---|---|
+| Produktion (alles aus) | `bench_loss` **0,108444** | `pair_loss` **0,148236** |
+| Runde-5-Kandidat (`--exit-trim`) | 0,109026 | 0,148236 |
+| `seam_dep_abs_median` Produktion / J4 | 12,67 / **2,30** | 56,36 / 56,36 |
+| `seam_arr_abs_median` Produktion / J4 | 10,80 / **10,80** | 9,87 / 9,87 |
+| `gleichzug_doublings` | 14 | 3 |
+
+**Gates, fixiert vor der ersten Arm-Zahl.** Basis ist der Runde-5-Kandidat
+(J4 an), gemessen wird auf der verhandelbaren Klasse und zusätzlich
+ungefiltert.
+
+* **(a1) exakte G1-Residuen** — Richtungssprung zwischen dem letzten
+  Segment des Buchstabens und dem ersten des Verbinders (und umgekehrt an
+  der Ankunft): Median ≤ **1,0°**, kein Einzelwert über 3,0°.
+* **(a2) Augen-Skala** — `seam_dep`/`seam_arr` über 0,05 xh: Median |·| ≤
+  **1,0°** an beiden Nähten. *Vorhergesagt, bevor gemessen wird:* ein
+  gebogener Verbinder hinterlässt einen Rest von etwa (Drehung × 0,05) /
+  (2 × Spannweite) ≈ 1,5° bei 30° über 0,5 xh. **Ausdrücklich verboten:**
+  gerade Aus-/Einlaufstücke ≥ 0,05 xh einzusetzen, nur damit das Gate
+  fällt — das wäre Sensor-Trickserei und schöbe die Krümmungsunstetigkeit
+  nur 0,05 xh nach innen.
+* **(a3) keine Naht wird schlechter** — über ALLE 240 Nähte darf keine, die
+  unter 3,0° lag, danach darüber liegen.
+* **(b) kein neuer Knick im geblendeten Strichende** — Richtungssprung an
+  der Blendgrenze ≤ 0,5° im Maximum, und über den ganzen Blendbogen kein
+  Sample-zu-Sample-Sprung, der den des unveränderten Strichs an derselben
+  Stelle um mehr als 1,0° übersteigt.
+* **(c) `gleichzug_doublings` nicht schlechter** — Wörter ≤ 14, Paare ≤ 3.
+* **(d) Deckung** — `comp_coverage` ≤ 0,101667 + 0,001, `pair_comp_coverage`
+  ≤ 0,112039 + 0,001.
+* **(e) Wörter/Paare BERICHTET, nicht entscheidend.** Grund vorab, aus der
+  Runde-5-Lehre: J4 hat `seam_dep_abs_median` von 12,67 auf 2,30 gedrückt
+  und `bench_loss` dabei um **+0,000582** verschlechtert. Das Wortlineal
+  misst Deckung/Breite/Übergang auf Chamfer-Fenstern von 0,05–0,12 xh gegen
+  eine eingefrorene Referenz, die die Naht selbst nicht auflöst; eine
+  8°-Drehung über 0,3 xh bewegt darin fast nichts. **Erwartet: neutral bis
+  leicht schlechter**; über +0,002 wird als Warnsignal gebucht.
+* **(f) Golden-Parität** — `pen=None`, nur Buchstaben, byte-identisch. Der
+  Schalter ist Default AUS, also darf sich kein Golden-Eintrag bewegen;
+  eine deklarierte Re-Baseline findet in diesem PR NICHT statt.
+* **(g) Kette-Identitätsgate** — mit Default AUS muss `compose_word`
+  byte-identisch sein, geprüft als Identität über den gesamten Wortsatz
+  statt als neuer Folger-Lauf.
+
+**Runde 7** (Menschenurteil) wird gebaut, nicht geurteilt: Basis =
+Runde-5-Stand, Kandidat = derselbe Stand plus Nahtverhandlung, Platzierung
+gepinnt, 12 gespiegelte Wiederholungen, Straten nach Nahtstärke mit den
+Nullproben als EIGENER Klasse — die Runde-6-Lehre lautet, dass 12 der 13
+Unentschiedenen die 12 Nullproben waren, also wird die Tie-Quote getrennt
+berichtet und nie gepoolt.
+
+### Übergänge J6 `sep06` — gemessen: die Naht schließt sich an beiden Enden, und die Rechnung steht auf drei Übungswörtern
+
+Wurzeln `eaa195aa7c84…` / `0fbde2d72b64…` (`exported_at`
+2026-09-05T21:33:12+00:00 bzw. …:11), `--expect-root` gesetzt,
+`OPENBLAS_NUM_THREADS=OMP_NUM_THREADS=1`. Die Basiszeile reproduziert die
+Headline ziffernweise (0,108444 / 0,148236) und mit ihr JEDE Report-Spalte
+— das ist zugleich Gate (g).
+
+**Die Leiter.** „J4" ist der Runde-5-Kandidat, „J6" der vorregistrierte Arm
+darauf, „J6b" der post-hoc verengte (nur Nähte, deren beide Seiten sich
+auch treffen KÖNNEN: `max_jump` = 2 × Deckel = 16°). Die beiden unteren
+Zeilen zeigen J6 OHNE J4, weil die Verhandlung die Austrittsseite selbst
+löst.
+
+| Arm | Wörter | Paare | `seam_dep`/`seam_arr` (W) | `seam_arr` (P) | Verdopplungen W/P | `comp_coverage` W | `meas_doff`/`dconn` W |
+|---|---|---|---|---|---|---|---|
+| Produktion | **0,108444** | **0,148236** | 12,67 / 10,80 | 9,87 | 14 / 3 | 0,101580 | 0,129 / 0,113 |
+| J4 (Basis dieses Arms) | 0,109026 | 0,148236 | 2,30 / 10,80 | 9,87 | 14 / 3 | 0,101667 | 0,166 / 0,152 |
+| **J4 + J6 (vorregistriert)** | 0,109447 | 0,148212 | **0,00 / 0,01** | **0,02** | 14 / **5** | 0,101858 | 0,166 / 0,152 |
+| J4 + J6b (post-hoc) | 0,109313 | 0,148257 | 0,00 / 0,02 | 0,03 | 14 / 3 | 0,101812 | 0,166 / 0,152 |
+| J6 allein | 0,108820 | 0,148212 | 0,02 / 0,02 | 0,02 | 14 / 5 | 0,101626 | 0,129 / 0,114 |
+| J6b allein (post-hoc) | 0,108737 | 0,148257 | 0,05 / 0,02 | 0,03 | 14 / 3 | 0,101599 | 0,129 / 0,114 |
+
+**Die Gates.**
+
+| Gate | Schranke | Ergebnis (J4 + J6) | Urteil |
+|---|---|---|---|
+| (a1) exakte G1-Residuen | Median ≤ 1,0° | Abgang 5,76° → **4,70°**, Ankunft 10,16° → **3,45°** (verhandelte Klasse, n = 227) | **rot** |
+| (a2) Augen-Skala, verhandelte Klasse | Median ≤ 1,0° | Abgang 2,64° → **0,00°**, Ankunft 10,31° → **0,01°** | **grün** |
+| (a2) Augen-Skala, ungefiltert (240) | berichtet | Abgang 2,67° → 0,01°, Ankunft 10,80° → 0,01° | grün |
+| (a3) keine Naht wird schlechter | 0 Übertritte über 3,0° | **0** von 240 | **grün** |
+| (b) kein neuer Knick im Blend | max ≤ 1,0° / 0,5° am Rand | an der Naht +0,14° (Austritt) / +0,12° (Eintritt); p90 über den Blend +0,46° / +1,67°; **Maximum +4,36° / +5,74°** | **rot am Maximum** |
+| (c) `gleichzug_doublings` | W ≤ 14, P ≤ 3 | 14 / **5** | **rot (Paare)** |
+| (d) Deckung | ≤ +0,001 | Wörter +0,000191, Paare −0,000023 | **grün** |
+| (e) Wörter / Paare | berichtet | +0,000421 / −0,000024 | im vorhergesagten Band |
+| (f) Golden-Parität | byte-identisch | 2 475 Tests grün, Golden unverändert | **grün** |
+| (g) Kette-Identität | byte-identisch bei AUS | Headline und alle Report-Spalten ziffernweise reproduziert | **grün** |
+
+**Die Naht ist zu.** Über alle 240 gemessenen Nähte fällt der Betrags-Median
+des Abgangs von 2,67° auf **0,01°** und der der Ankunft von 10,80° auf
+**0,01°** — und keine einzige Naht, die vorher unter 3° lag, liegt danach
+darüber. Je Klasse (Betrags-Median, Basis → Arm):
+
+| Klasse | n (W/P) | verhandelt | `dep` Wörter | `arr` Wörter | `arr` Paare |
+|---|---|---|---|---|---|
+| sonstige | 56 / 17 | 56 / 16 | 2,63 → **0,00** | 17,24 → **0,03** | 6,19 → **0,02** |
+| Rundkörper → Arkade | 48 / 3 | 48 / 3 | 2,00 → **0,00** | 5,43 → **0,00** | 4,57 → **0,00** |
+| Arkade → Arkade | 24 / 0 | 24 | 2,14 → **0,00** | 18,57 → **0,00** | — |
+| Gabel (ſ/f/Unterlänge) | 23 / 4 | 20 / 1 | 1,56 → **0,00** | 14,43 → **0,01** | 113,54 = 113,54 |
+| Arkade → Rundkörper | 22 / 1 | 18 / 1 | 2,67 → **0,01** | 5,87 → **0,02** | 14,09 → **0,07** |
+| Rundkörper → Rundkörper | 16 / 0 | 16 | 12,67 → **0,05** | 6,09 → **0,02** | — |
+| Schleifen-Exit | 10 / 8 | 10 / 6 | 29,86 → **0,07** | 65,75 = 65,75 | 21,19 → **0,01** |
+| t-Balken | 8 / 0 | 8 | 15,13 → **0,36** | 121,69 = 121,69 | — |
+
+Die drei unveränderten Zahlen sind genau die Duktus-Ereignisse, die die
+45°-Schranke draußen hält: die Ankunft nach einem Schleifen-Exit (65,75°),
+die Ankunft des t-Balkens auf dem Scheitel des Rundkörpers (121,69°) und
+die ſ-Kehren der Paar-Übungen (113,54°). Sie bleiben stehen, weil sie die
+Hand schreibt — ein Arm, der sie „verbessert" hätte, hätte den Duktus
+gelöscht.
+
+**Was den Arm fällt.** Gate (c): auf den Zwei-Buchstaben-Übungen steigen die
+Gleichzug-Verdopplungen von 3 auf 5. Die Träger sind benannt und
+zurechenbar: `dp` und `ds` (dazu `dt` in der ersten Fassung des Twists).
+Dort muss der Verbinder den Rest tragen, den der 8°-Deckel dem Buchstaben
+verwehrt — an `dp` sind das **32,9°**, an `ds` **31,9°** über seine ersten
+0,3 xh. Der so entstehende Haken legt sich neben die eigene absteigende
+Tinte des `d`: Abstand 0,117 bzw. 0,119 xh bei Nib 0,145, also mitten im
+Doppelungsband (0,073–0,196), über 0,25–0,26 xh Bogen. Das ist kein
+Messartefakt, sondern die gemessene Grenze dieser Dosis: **ein Kompromiss,
+den eine Seite nicht erreichen kann, ist keiner.**
+
+Gate (b) fällt am Maximum, nicht in der Substanz. An der Naht selbst — dort,
+wo der Twist starr dreht — fügt der Arm höchstens **+0,14°** (Austritt) bzw.
+**+0,12°** (Eintritt) Richtungsänderung je Vertex hinzu, und das p90 über
+den ganzen Blend liegt bei +0,46° / +1,67°. Die Maxima (+4,36° an `kann`
+k→a, +5,74° an `schießen` ſ→c) sitzen an Vertices, deren eigene Drehung
+schon 14,6° bzw. 133° beträgt — das ist zusätzliche KRÜMMUNG auf einer
+Stelle, die ohnehin dreht, kein neuer Sprung. Die Schranke war als
+absoluter Vertex-Betrag formuliert und hängt damit an der Abtastdichte;
+das ist ein Formulierungsfehler der Vorregistrierung, gebucht als rot.
+
+Gate (a1) fällt aus einem Grund, der die Regel selbst betrifft und deshalb
+hier stehen bleibt: auf der Skala des einzelnen Polylinien-SEGMENTS ist der
+Rest die eigene Spitzenkrümmung der Buchstaben. Wer ihn auf null bringen
+wollte, müsste die letzten 0,05 xh der Buchstaben gerade ziehen — genau
+das, was die Vorregistrierung als Sensor-Trickserei verboten hat. Der Arm
+halbiert ihn an der Ankunft (10,16° → 3,45°) und lässt ihn am Abgang fast
+stehen (5,76° → 4,70°), weil dort der getrimmte Verbinder ohnehin gerade
+ist und der Rest allein aus der Krümmung der Buchstabenspitze kommt.
+
+**Der neue Unstetigkeits-Sensor sagt nicht ja.** Er ist am selben Tag
+gelandet (§14 „Übergänge S2") und ist das erste Lineal, das die Größe des
+Autors misst; seine Spalten bestätigen den Arm NICHT:
+
+| Spalte (Wörter / Paare) | Produktion | J4 | J4 + J6 | J4 + J6b |
+|---|---|---|---|---|
+| `cont_kink_total` | 402 / 81 | 337 / 81 | **349 / 92** | 349 / 90 |
+| `cont_kink_max_deg_median` | 39,25 | 32,73 | 35,22 | 32,73 |
+| `cont_wobble_median` | 2,707 | 2,482 | 2,538 | 2,534 |
+| `cont_bow_join_median` | 0,0091 | 0,0042 | 0,0056 | 0,0050 |
+| `cont_curv_loss_median` | 0,0336 | 0,0336 | 0,0336 | 0,0336 |
+| `cont_measured` | 44 979 / 11 281 | 43 981 / 11 281 | 44 032 / 11 367 | 44 018 / 11 277 |
+
+Ein Teil des Anstiegs ist mechanisch und muss als solcher benannt werden:
+der Arm nimmt an einigen Nähten so viel Drehung heraus, dass der Punkt die
+Ecken-Ausnahme des Sensors VERLÄSST und erstmals gemessen wird —
+`cont_measured` steigt um 51 (Wörter) bzw. 86 (Paare), während
+`cont_kink_total` um 12 bzw. 11 steigt. Eine Kink-Quote von rund einem
+Viertel unter den neu gemessenen Punkten gegen 0,77 % in der Grundgesamtheit
+sagt aber auch: diese Punkte drehen weiter scharf, nur nicht mehr scharf
+genug für die Ausnahme. Die saubere Ablesung wäre eine auf beiden Seiten
+identische Punktmenge; sie ist nicht gefahren und ist der erste benannte
+Rettungsweg.
+
+**Verdikt: ehrliches Negativ, nicht adoptiert.** Der Schalter bleibt
+Default AUS. Die Naht schließt sich an beiden Enden und über jede
+verhandelbare Klasse, die Platzierung ist beweisbar unberührt
+(`meas_doff` 0,129 = 0,129 und `meas_dconn` 0,113 → 0,114, wenn J6 ohne J4
+läuft) — und die Rechnung dafür steht auf drei Zwei-Buchstaben-Übungen und
+auf einem Sensor, der am selben Tag gebaut wurde und dem Arm nicht folgt.
+
+**Nebenbefund, für die J4-Zeile.** J6 löst die Austrittsseite ohne J4 und
+billiger als J4: `seam_dep_abs_median` 12,67 → **0,02** gegen J4s 2,30, bei
+**+0,000376** Wortlineal gegen J4s +0,000582 — und ohne J4s Nebenwirkung
+auf die Ankunft. Die beiden Arme sind darum keine Ergänzung, sondern
+Alternativen, und die Runde-7-Basis (J4 an) ist die konservativere von
+beiden.
+
+**Rettungswege** (§7.9-Zeile im selben PR):
+
+1. **J6b — nur verhandeln, wo sich beide Seiten treffen KÖNNEN.** Post-hoc
+   gemessen (`max_jump` 16° = 2 × Deckel): Verdopplungen 3 = 3 (Gate (c)
+   grün), Nähte 0,00 / 0,02, Wörter 0,109313. Der Preis ist benannt: die
+   größte Ankunftsklasse bleibt stehen — Arkade → Arkade behält ihre
+   **18,57°**, 24 Wort-Joins, weil dort die Uneinigkeit über 16° liegt. Ein
+   Adoptionsanspruch braucht eine frische Vorregistrierung.
+2. **J6c — den Anteil des Verbinders über seinen GANZEN Bogen verteilen**
+   statt über 0,45 davon. Der Haken an `dp`/`ds` entsteht, weil 33° in
+   0,3 xh liegen; über den vollen Bogen verteilt wäre dieselbe Drehung eine
+   Krümmung. Neuer Mechanismus, nicht derselbe Knopf weicher.
+3. **Der Deckel je Klasse.** Ein Schleifen-Exit darf in seiner letzten
+   Kurve mehr drehen als eine Arkade — gemessen an den Vorkommen, nicht
+   gesetzt. Damit sänke der Anteil, den der Verbinder tragen muss, genau
+   dort, wo er heute den Haken macht.
+4. **Die identische Punktmenge für den Unstetigkeits-Sensor** — die
+   Kink-Zahlen erst auf einer Population lesen, die nicht vom Arm selbst
+   definiert wird (dieselbe Regel, die `spanmeas` für `dconn` erzwungen
+   hat). Ohne sie ist der +12/+11-Befund nicht zurechenbar.
+5. **Runde 7** liegt gebaut (`temp/runden-sep06/humanbench/`): 75
+   Bildschirme, 63 Wörter + 12 gespiegelte Wiederholungen, Basis =
+   Runde-5-Stand, Kandidat = J6, Platzierung gepinnt, Straten nach
+   Tintenversatz (`naht-stark` 29 · `naht-schwach` 28 · `nullprobe` 6,
+   Schnitt Δ = 0,0221 xh, Maximum 0,0681). Vorregistriert: **ein Ergebnis
+   ≥ 60 % lizenziert NICHT den Default, sondern den engeren Arm J6b** —
+   der reißt die Nebenbedingung nicht.
+
+**Selbst entschieden** (benannt, nicht versteckt):
+
+* **Die Verhandlung läuft zwischen dem Buchstaben und dem VERBINDER**, nicht
+  direkt zwischen den beiden Buchstaben. Der Verbinder trägt an jedem Ende
+  bereits die Richtung des Buchstabens, den er dort trifft (über 0,12 xh
+  gelesen); ihn als Vermittler zu nehmen ist derselbe Kompromiss, gemessen
+  auf der Skala, auf der er sichtbar ist — und es hält die beiden Nähte
+  getrennt beurteilbar, was ein direkter Buchstabe-zu-Buchstabe-Mittelwert
+  nicht täte.
+* **Die Klassenauswahl ist geometrisch, nicht nach Zweigen.** Statt im
+  Composer aufzuzählen, welcher Verbinder-Zweig verhandelbar ist, entscheidet
+  die gemessene Uneinigkeit selbst (45°). Das schließt Kapitälchen-Rückzug,
+  Rückwärts-Austritte, Descender-Rückkehr und Deckungs-Ankunft automatisch
+  aus und braucht keine Liste, die bei der nächsten Grammatik-Änderung
+  veraltet.
+* **Der Twist ist eben, nicht über die Bogenlänge parametrisiert.** Die
+  erste Fassung ordnete jedem Silhouettenpunkt das nächste Mittellinien-
+  Sample zu — und riss die Kontur am Schleifenfuß des `d` auf (im Bild
+  gesehen, vier zusätzliche Verdopplungen). Der Fehler wurde behoben, bevor
+  eine Zahl gebucht war; die Verdopplungen fielen dadurch von 4 auf 2 neue.
+* **Die Quintik statt der Kubik**, damit auch die Krümmung an beiden Enden
+  des Blends stetig ist — das Prinzip nennt Tangente UND Krümmung.
+* **J6b wurde post-hoc gemessen und ist als post-hoc gekennzeichnet**
+  (Präzedenz J4b), weil die Asymmetrie-Regel vom `aug26` verlangt, einen
+  lopsided Befund zu zerlegen statt zu verwerfen: 227 von 240 Nähten
+  gewonnen gegen drei Übungswörter verloren ist genau so ein Fall.
+
+**Grenzen.** Die Verdopplungs-Zahl der Paare steht auf 33 Zwei-Buchstaben-
+Übungen; drei davon tragen den ganzen Gate-Fehlschlag. Der Naht-Sensor
+liest an genau zwei Punkten je Join — er kann nicht sagen, ob der Arm
+irgendwo dazwischen etwas verschlechtert; dafür ist der Unstetigkeits-
+Sensor gebaut, und dessen Population ist in dieser Runde nicht fixiert. Und
+das Wortlineal ist für diese Frage per Vorregistrierung nicht zuständig:
+seine +0,000421 sind kein Argument in beide Richtungen.
