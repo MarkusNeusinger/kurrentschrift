@@ -97,6 +97,17 @@ gepaart (Grenze 0,45 xh); die Kette-Schleife hängt sich an dieselbe
 Platten-Binnenfläche. Löcher unter 3 px Fläche gelten als Papierkorn,
 Mittellinien-Schleifen unter 0,02 xh als Raster-Splitter.
 
+**Der 0,02-Boden gilt NUR für diese Zuordnung, nicht für die
+Zeilen-Inventur.** Er hält Zwei-Pixel-Löcher aus der Paarung heraus, die
+beim Rastern zweier fast berührender Polylinien entstehen; eine Schleife
+darunter kann keiner Platten-Binnenfläche sinnvoll zugeordnet werden. Die
+Inventur der gespeicherten Zeilen (`rows.py`) meldet dagegen JEDE Schleife
+mit ihrer Weite — und genau daher kommt der `p`-Befund unten: die
+Laufform-Zeile trägt am Schaft noch eine Schleife von **0,0095 xh**, und
+dass sie unter dem Zuordnungs-Boden liegt, IST die Aussage über sie. Wer den
+Rettungsweg R1 baut, darf diesen Boden folglich nicht mitnehmen: ein
+Öffnungsweiten-Gate muss eine kollabierte Schleife sehen, nicht wegfiltern.
+
 **Die Feder-Rekonstruktion `D0(Feder) = Platte + 2 · w_pen`** (mit
 `w_pen` = 0,0968 xh, dem Median der Skelett-Halbbreite über alle 63 Wörter)
 ist die einzige MODELLIERTE Größe dieses Blatts: sie unterstellt das

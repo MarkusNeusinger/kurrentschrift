@@ -1626,10 +1626,14 @@ zusammenfließen, gibt `skeletonize` die Mittelachse des VERSCHMOLZENEN
 Klumpens statt der zwei Bahnen, und die liegt näher am Loch. Als Zahl:
 die Halbbreite, die der Klumpen um die Binnenfläche trägt
 (`(D0 des Skeletts − Öffnungsweite der Tinte) / 2`), geteilt durch die
-gemessene Federhalbbreite — 1,0 heißt „keine Verschmelzung", deutlich
-darunter heißt „hier ist die Mittelachse kein Federweg". Über die 202
-gemessenen Binnenflächen der Wortplatten steht das Verhältnis bei
-0,0667 zu 0,0968, also bei rund 0,69. **Vorgeschlagen, nicht gebaut** —
+gemessene Federhalbbreite. **1,0 ist die Erwartung des Kapsel-MODELLS**, in
+dem beide einbeschriebenen Kreise denselben Mittelpunkt haben und die
+Strichbreite lokal konstant ist — real streut das Verhältnis auch ohne
+Verschmelzung, weshalb der Anzeiger vor jeder Verwendung an Stellen ohne
+Verschmelzung geeicht werden muss. Deutlich darunter heißt „hier ist die
+Mittelachse kein Federweg". Über die 202 gemessenen Binnenflächen der
+Wortplatten steht das Verhältnis bei 0,0667 zu 0,0968, also bei rund 0,69.
+**Vorgeschlagen, nicht gebaut** —
 Rettungsweg (7) der Zeile „Ink-Clearance an die Feder" in
 tintenfolger.md §7.9, ausdrücklich als eingefrorene Report-Spalte VOR
 jedem Arm. → notes/kringel-binnenflaechen-2026-09-06.md

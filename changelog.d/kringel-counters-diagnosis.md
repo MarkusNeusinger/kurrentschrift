@@ -1,11 +1,14 @@
 ### Added
 
 - **A diagnosis of why the counters close at the plate nib, measured along
-  the whole chain.** `docs/notes/kringel-binnenflaechen-2026-09-06.md` follows
-  each of the nine loop-losing glyphs from the plate's own ink through the
-  frozen skeleton and the stored Kette v5 fit to the composed row, all stated
-  as one comparable quantity — the centerline loop aperture, from which a
-  Gleichzug counter is exactly `D0 - 2h`. The composed loop is 0.10–0.20 xh
+  the whole chain.** `docs/notes/kringel-binnenflaechen-2026-09-06.md` takes
+  every counter of the nine loop-losing glyphs that the plate's ink and the
+  composition share, and follows it from the ink through the frozen skeleton
+  and the stored Kette v5 fit to the composed row — all as one comparable
+  quantity, the centerline loop aperture, from which a Gleichzug counter is
+  exactly `D0 - 2h`. (For `p` that shared counter is the large loop; its
+  collapsed shaft loop is a separate chart-versus-Laufform finding, read off
+  the stored rows rather than matched to the plate.) The composed loop is 0.10–0.20 xh
   narrower in diameter than the plate's, and about three quarters of the
   Kette's own share of that (per matched loop, median 0.75) is inherited from
   the medial axis rather than made by the fit: where two pen passes merge
