@@ -11,7 +11,11 @@
   them per occurrence would make the repair depend on the excursion it is
   judging); with the switch on, a flagged anchor inside such a range is left
   alone. The module still imports nothing project-side: the caller passes the
-  ranges. `tools/laufform/harvest.py` wires it to the OCCURRENCE repair only
+  ranges. Measured on the `sep05` root: of 235 accepted occurrences 20 are
+  repaired, 12 of them carry a measurable counter, and all four whose repair
+  lands inside a loop lose aperture (median 0.0410 xh, worst 0.1068) while the
+  eight outside move it by at most 0.0021.
+  `tools/laufform/harvest.py` wires it to the OCCURRENCE repair only
   (the trace repair works on assembled word strokes, which carry no anchor
   ranges) and exposes it as `--loop-aware-repair`, memoising one loop-range
   computation per glyph key and skipping it entirely while the switch is off.

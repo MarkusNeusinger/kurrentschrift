@@ -1720,11 +1720,12 @@ Anker biegen dort über kurze Bogenlänge stark ab. Die Reparatur ersetzt
 die Spitze dann durch die **Sehne** zwischen ihren Nachbarn, und weil
 diese Nachbarn auf den beiden Strängen der Schleife liegen, zieht die
 Sehne quer durchs Loch: die Binnenfläche schließt. Gemessen am
-`sep05`-Bestand: von 235 angenommenen Vorkommen werden 20 repariert, fünf
-davon INNERHALB eines Schleifenbereichs, und diese fünf verlieren im
-Median 0,0142 xh Öffnungsweite, im schlimmsten Fall 0,1068 (das `g` in
-„Sprünge"); die fünfzehn Reparaturen außerhalb bewegen sie um höchstens
-0,0045. Gegenmittel ist der Schalter `LOOP_AWARE_REPAIR` (Default AUS):
+`sep05`-Bestand: von 235 angenommenen Vorkommen werden 20 repariert, 12
+davon tragen eine messbare Binnenfläche — und die VIER, deren Reparatur
+innerhalb eines Schleifenbereichs landet, verlieren alle vier
+Öffnungsweite (Median 0,0410 xh, schlimmstenfalls 0,1068 beim `g` in
+„Sprünge"), während die acht außerhalb um höchstens 0,0021 bewegen.
+Gegenmittel ist der Schalter `LOOP_AWARE_REPAIR` (Default AUS):
 ein markierter Anker innerhalb eines Schleifenbereichs der CHART-Zeile
 (`core.aggregate.loop_ranges`) bleibt stehen. Der Preis ist benannt und
 gewollt eng — ein echter Ausflug, der zufällig in einer Binnenfläche

@@ -55,9 +55,11 @@ MIN_STROKE_STEPS = 4
 # there turn through a large angle over a short arc, so the fit widening the
 # loop by a few hundredths lengthens both steps at once. The repair then chords
 # the apex to its neighbours, which lie on the two strands, and the counter
-# closes: measured on the `sep05` root, of the five repaired occurrences of the
-# five counter-carrying keys the worst loses 0.1068 xh of aperture, and the `g`
-# of „Sprünge" alone drags its stored row down by 0.0883.
+# closes. Measured on the `sep05` root: of 235 accepted occurrences 20 are
+# repaired, 12 of them carry a measurable counter, and ALL FOUR whose repair
+# lands inside a loop range lose aperture — median 0.0410 xh, worst 0.1068 (the
+# `g` of „Sprünge", which alone drags its stored row down by 0.0883) — while the
+# eight repaired outside a loop move it by at most 0.0021.
 #
 # The exception is deliberately NARROW. It does not soften the detector, does
 # not touch the gate (which judges the unrepaired geometry either way), and does
