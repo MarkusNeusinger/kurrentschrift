@@ -11,6 +11,7 @@ window 0 — byte for byte, so the rows LF11 and LF12 derived stay what they wer
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from core.aggregate import align_loops, loop_faithful_median, loop_ranges, spline_basis_median
 
@@ -153,3 +154,22 @@ def test_a_stack_that_already_agrees_is_left_alone():
     unchanged, or the mechanism adds aperture rather than recovering it."""
     stack = np.asarray([_loop_curve() for _ in range(4)], dtype=float)
     assert np.allclose(stack, align_loops(stack, CHART, RANGES, window=0.25), atol=1e-12)
+
+
+def test_a_stack_that_does_not_match_the_chart_is_refused():
+    """A shape mismatch is a wrong call, not something to median quietly."""
+    stack = _scattered_stack()
+    with pytest.raises(ValueError, match="anchors, occurrences have"):
+        align_loops(stack, CHART[:-1], RANGES, window=0.25)
+    with pytest.raises(ValueError, match="must be"):
+        align_loops(stack[0], CHART, RANGES, window=0.25)
+
+
+def test_the_faithful_median_names_the_registration_it_applied():
+    """The notes are how a card says which arm produced it — a run whose arm
+    cannot be read off its own output is not a measurement."""
+    stack = _scattered_stack()
+    _median, notes = loop_faithful_median(stack, CHART, WIDTHS, knot_spacing=0.16, window=0.25)
+    assert any("registered on place and size" in note for note in notes)
+    _median, notes = loop_faithful_median(stack, CHART, WIDTHS, knot_spacing=0.16, window=0.25, scale=False)
+    assert any("registered on place only" in note for note in notes)
