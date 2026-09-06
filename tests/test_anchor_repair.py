@@ -5,13 +5,17 @@ The detector's own behaviour (marking, pen lifts, short strokes) is pinned in
 anchor lands, that a run of flagged anchors is repaired as one piece, that a
 declared pen lift is never crossed, and that an untouched chain comes back as
 the SAME object — a caller may skip logging by identity, without comparing.
+
+The last block pins `LOOP_AWARE_REPAIR` (LF14): that it ships off, that passing
+loop ranges with the switch off changes nothing, and that with it on the
+exception reaches the flagged anchors inside a range and no others.
 """
 
 from __future__ import annotations
 
 import numpy as np
 
-from tools.pairlab.anchors import repair_stranded_anchors, stranded_anchors
+from tools.pairlab.anchors import LOOP_AWARE_REPAIR, repair_stranded_anchors, stranded_anchors
 
 
 def _even_chain(n: int = 12, step: float = 1.0) -> np.ndarray:
@@ -107,3 +111,50 @@ def test_an_excursion_at_a_stroke_edge_is_left_untouched() -> None:
     out, repaired = repair_stranded_anchors(pts, [0])
     assert repaired == []
     assert out is pts
+
+
+# --------------------------------------------------- LOOP_AWARE_REPAIR (LF14)
+
+
+def test_the_switch_ships_off_and_loop_ranges_then_change_nothing() -> None:
+    """The default is loop-BLIND, and a caller that passes ranges anyway gets
+    exactly the historical repair — the property every stored occurrence of the
+    `sep05` root rests on."""
+    assert LOOP_AWARE_REPAIR is False
+    pts = _even_chain()
+    pts[5, 1] = 6.0
+    blind, repaired_blind = repair_stranded_anchors(pts, [0])
+    passed, repaired_passed = repair_stranded_anchors(pts, [0], [(3, 8)])
+    assert repaired_blind == repaired_passed == [5]
+    np.testing.assert_array_equal(blind, passed)
+
+
+def test_loop_aware_leaves_a_flagged_anchor_inside_a_loop_range_alone() -> None:
+    pts = _even_chain()
+    pts[5, 1] = 6.0
+    out, repaired = repair_stranded_anchors(pts, [0], [(3, 8)], loop_aware=True)
+    assert repaired == []
+    assert out is pts
+
+
+def test_loop_aware_still_repairs_everything_outside_the_ranges() -> None:
+    """The exception is narrow: the same call repairs an excursion one anchor
+    past the range's end, so the switch cannot be read as softening the detector."""
+    pts = _even_chain()
+    pts[5, 1] = 6.0
+    pts[9, 1] = 6.0
+    out, repaired = repair_stranded_anchors(pts, [0], [(3, 8)], loop_aware=True)
+    assert repaired == [9]
+    np.testing.assert_allclose(out[5], pts[5], atol=1e-12)
+    np.testing.assert_allclose(out[9], 0.5 * (pts[8] + pts[10]), atol=1e-12)
+
+
+def test_loop_aware_without_ranges_is_the_historical_repair() -> None:
+    """A glyph whose ductus closes no loop hands an EMPTY range list, and must
+    then be repaired exactly as before — otherwise the arm would silently
+    disable the repair for most of the alphabet."""
+    pts = _even_chain()
+    pts[5, 1] = 6.0
+    out, repaired = repair_stranded_anchors(pts, [0], (), loop_aware=True)
+    assert repaired == [5]
+    np.testing.assert_allclose(out[5], [5.0, 0.0], atol=1e-12)

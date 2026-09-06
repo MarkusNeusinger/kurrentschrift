@@ -251,9 +251,25 @@ Schritt (→ [`../proposals/handmodell-stufenplan.md`](../proposals/handmodell-s
 Die Laufform-Zeilen wirken **sofort** auf jedes fließende `/write/word` —
 gegen Prod nur mit ausdrücklicher Freigabe.
 
+**Die Ernte ist kein Fixpunkt** (gemessen `sep06`, §14 „Laufform LF14"):
+`derive_word` komponiert das Wort AUS den Laufform-Zeilen, und
+`chain_seed="composed"` startet den Kettenlöser auf dieser Komposition —
+die Ernte liest also die Zeilen, die sie ersetzen wird. Eine frische
+Ernte der Wurzel, die ein Write erzeugt hat, leitet jede Zeile
+**0,0025–0,0283 xh** neben der gerade geschriebenen ab. Das ist keine
+Nichtreproduzierbarkeit (`--jobs 1` und `--jobs 4` sind byte-gleich),
+sondern eine Rückkopplung: wer einen Re-Harvest gegen die gespeicherten
+Zeilen misst, misst sie mit. Eine Karte gehört deshalb gegen eine
+KONTROLLKARTE aus demselben Lauf verglichen, nie nur gegen den Bestand.
+
+`--loop-aware-repair` ist der `sep06`-Arm (Default aus, verworfen an zwei
+Gates): die Nachreparatur gestrandeter Anker lässt die Anker in Ruhe, die
+innerhalb einer Schleife der Chart-Zeile liegen.
+
 ```bash
 uv run python -m tools.laufform.harvest [--style suetterlin] [--min-n 4]
-    [--rmse-max 2.2] [--apply --base-url http://localhost:8000 --source-id <id>]
+    [--rmse-max 2.2] [--loop-aware-repair]
+    [--apply --base-url http://localhost:8000 --source-id <id>]
 ```
 
 **`tools/pairlab/harvest.py`** — die Erstbefüllung der Paar-Schicht
