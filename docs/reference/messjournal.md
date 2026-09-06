@@ -10626,9 +10626,14 @@ Gebaut als `core/aggregate.py::align_loops` /`loop_faithful_median`
 hinter `LAUFFORM_LOOP_WINDOW`, Default 0 = aus. Die Schleifen kommen aus
 `loop_ranges` (Selbstschnitte der gerenderten Tafelzeile, über die
 Bogenlänge auf Anker zurückgerechnet); gegen den unabhängigen
-Raster-Finder der Messschicht abgenommen: **19 der 21 Zeilen** decken
-jede messbare Binnenfläche, die zwei Ausnahmen (`o` um einen Anker,
-`p` eine verschmolzene Hülle) betreffen keine neu abgeleitete Zeile.
+Raster-Finder der Messschicht abgenommen — der leitet einen Bereich je
+tatsächlich gemessener Binnenfläche ab und ist damit per Konstruktion
+vollständig. **19 der 21 Zeilen decken jede messbare Binnenfläche
+vollständig.** Die zwei Abweichungen sind benannt und keine Lücke:
+beim `o` liegt der Kern-Bereich (83:106) einen Anker INNERHALB des
+Raster-Bereichs (82:107) — dieselbe Schleife, engere Grenze —, beim `p`
+faltet die Verschmelzung überlappender Bereiche eine geschachtelte
+Region in ihre Hülle, und `p` wird ohnehin nicht neu abgeleitet.
 
 Berichtet wird die Sprosse **0,15** (kleinster Lineal-Preis; alle drei
 Sprossen verhalten sich an den Gates gleich):
