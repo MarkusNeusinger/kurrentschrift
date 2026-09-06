@@ -104,6 +104,12 @@ uv run python -m tools.eigenhand.redo --hand mn-suetterlin S0037 S0055 --reason 
   Ein BESCHNITTENER Druck dagegen wird gemeldet: der Bogen verlangt 6 mm
   bedruckbaren Rand (`PRINT_SAFE_MM`), und `ingest` warnt, wenn eine
   Passmarke kleiner herauskommt, als ihr gemessener Abstand es zulässt.
+- **Die Lineatur ist absichtlich sehr fein** (seit 2026-09-06: Grundlinie
+  0,12 mm, Mittellinie 0,10, Ober-/Unterlinie 0,08, Schräglagengitter
+  0,06). Ein Ausdruck, auf dem sie eben gerade zu erkennen ist, ist der
+  richtige — kein Druckerfehler und kein Grund, kräftiger nachzudrucken.
+  Sie muss nur die Hand für die Dauer einer Zeile führen und danach
+  spurlos aus dem Scan verschwinden.
 - **Ein Bogen lässt sich nicht zurücknehmen.** `sheet` vergibt bei jedem
   Lauf eine neue Bogen-ID und nimmt Streifen aus der Warteschlange; es
   gibt kein Un-Drucken, und die Kartei wird nicht von Hand editiert. Der
@@ -168,7 +174,10 @@ uv run python -m tools.eigenhand.redo --hand mn-suetterlin S0037 S0055 --reason 
   Zustände (geplant · unterwegs · belegt) werden abgeleitet, nie gespeichert.
 - **Der Wortvorrat wächst in Wellen** (`tools.eigenhand.pool build`),
   bestehende Streifen sind unantastbar (append-never). Kandidaten für
-  neue Selten-Join-Wörter liefert `tools.eigenhand.gaps`.
+  neue Selten-Join-Wörter liefert `tools.eigenhand.gaps`. Soll ein
+  bestimmtes Wort SOFORT geschrieben werden, ist `tools.eigenhand.pool
+  pin` der Weg: es bekommt einen eigenen angehängten Streifen, der die
+  Warteschlange anführt (Anheftung, Proposal §4).
 
 ## Ablage-Struktur
 

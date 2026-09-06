@@ -259,20 +259,32 @@ WIDEST = {
 # for prose: the Stand blocks, §7.11 and `verfahren.md` are the pieces this
 # gate is actually watching, and they did not move.
 #
-# `mess-runde` raised a third time on 2026-09-06, for ONE register row and with
-# the arithmetic in the open: the path stood at 20 545 of 21 057 — 512 tokens of
-# room — and „Kringel-Landmarke" adds a single row, not the usual pre-reg/result
-# pair, because this round is a sensor rather than an arm. That row costs 527,
-# and it is dense: every clause carries a number the entry owns (46 loops, the
-# two class cuts, the state shares, 24 of 27, 34 of 63, 19 topology losses, the
-# two byte-identity readings). It was tightened twice before this raise. So: 15
-# tokens short, re-measured at 21 072 and given the documented 10 % headroom
-# like every other path. The entry itself needed no raise — it was trimmed to
-# 4 500 against the 4 503 ceiling instead, which is where a growing entry
-# belongs.
+# `mess-runde` raised a third time on 2026-09-06, same shape as before and with
+# the same accounting. The path measured 20 545 of 21 057 — 512 tokens of room —
+# and „Übergänge S2" (the Unstetigkeits-Sensor) adds the standard pair: a
+# pre-registration and its result, hence two register rows. 649 tokens for the
+# two, both already condensed once after this gate refused the first draft (the
+# result row alone was 380 before the trim). The alternatives are the ones the
+# register forbids or the ones that make it useless — deleting a row, or
+# shortening a finding until it fits. So: re-measured at 21 194 and given the
+# documented 10 % headroom. The watched pieces did not move; §7.11 and the two
+# Stand blocks this arm touches got shorter, not longer, because a walked rescue
+# path replaces an open one instead of being appended to it.
+#
+# And a fourth time the same day, from a branch that had cut its own raise
+# against the pre-#558 number: „Kringel-Landmarke" adds ONE register row, not
+# the usual pair, because that round is a sensor rather than an arm. The row
+# costs 527 and is dense — every clause carries a number the entry owns (46
+# loops, the two class cuts, the state shares, 24 of 27, 34 of 63, 19 topology
+# losses, the two byte-identity readings) — and it was tightened twice before
+# either raise. Two raises on one day is not a licence, it is two rounds landing
+# together: the sum is measured ONCE here, after the merge (21 722 for all three
+# register rows), rather than added up from two branches that each measured
+# without the other. The entry itself needed no raise; it was trimmed to 4 500
+# against the unchanged 4 503 ceiling, which is where a growing entry belongs.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
-    "mess-runde": 23_179,
+    "mess-runde": 23_894,
     "mess-runde-route": 6_177,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,

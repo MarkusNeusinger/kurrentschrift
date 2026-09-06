@@ -19,7 +19,7 @@ import pytest
 from core.eigenhand import pdfgen
 from core.eigenhand.bogen import compose_sheet, compose_stack, render_pdf, render_stack_pdf, select_strips
 from core.eigenhand.kartei import empty_kartei, next_sheet_id
-from core.eigenhand.plan import load_plan, ordered_strips
+from core.eigenhand.plan import load_plan, ordered_strips, pinned_strips
 
 
 HAND = "test-suetterlin"
@@ -51,6 +51,28 @@ class TestQueue:
         first = ordered_strips(plan)[:5]
         kartei = _kartei(printed={"B0001": first}, accepted=first[:2], rejected=[first[2]])
         assert select_strips(plan, kartei, 3, 1) == first[2:5]
+
+    def test_a_pinned_strip_is_the_first_row_of_the_first_sheet(self):
+        """The one way past a frozen plan: an appended strip that leads it.
+
+        The pinned words are written first because the author wants them
+        first (proposal §4), not because the coverage argues for them — so the
+        proof is the printed sheet, and the rest of the queue must be the plan
+        as it always was.
+        """
+        plan = load_plan()
+        pinned = pinned_strips(plan)
+        rows = compose_sheet(plan=plan, kartei=_kartei(), hand=HAND, style=STYLE, date=DATE)["layout"]["rows"]
+        assert [row["strip"] for row in rows[: len(pinned)]] == pinned
+        assert "Kurrentschrift" in [box["word"] for row in rows for box in row["boxes"]]
+        assert [row["strip"] for row in rows] == ordered_strips(plan)[: len(rows)]
+
+    def test_a_written_pin_leaves_the_front_of_the_queue(self):
+        plan = load_plan()
+        pinned = pinned_strips(plan)
+        kartei = _kartei(printed={"B0001": pinned}, accepted=pinned)
+        rest = [sid for sid in ordered_strips(plan) if sid not in pinned]
+        assert select_strips(plan, kartei, 3, 1) == rest[:3]
 
     def test_the_redo_list_still_leads(self):
         plan = load_plan()

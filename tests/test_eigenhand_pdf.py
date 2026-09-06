@@ -94,7 +94,12 @@ def _fixed_layout() -> dict:
 # CUT strip says where it is from without the Kartei.
 # Re-baselined 2026-08-26: the printed verdict rule changed its wording (Haken
 # rule — „ohne Haken zählt sie nicht"); geometry untouched.
-GOLDEN_SHA256 = "7fbf5238af1ee7aacf111534af5fbc7b2669b5319038a898d36c88b16a2f7d7c"
+# Re-baselined 2026-09-06: the capture lineature was thinned by one step
+# (baseline 0.22 → 0.12 mm, waist 0.15 → 0.10, ascender/descender 0.12 → 0.08,
+# slant 0.10 → 0.06; `box` unchanged). Only the stroke WIDTHS in the content
+# stream moved — every coordinate, and with it every `cfg` stamp, is what it
+# was, which is why the layout tests below did not move with it.
+GOLDEN_SHA256 = "1e70d5b6c745c1d8ee4414828ee17d40e332de858e1de67e39c911a3bd324cf7"
 
 
 class TestRenderedPdf:

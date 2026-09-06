@@ -453,6 +453,11 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   vorher `tools.dbsnapshot.fetch`. Braucht `ADMIN_TOKEN`.
 - **`pool`** — baut/erweitert den committeten Streifenplan
   (`core/eigenhand/streifen.json`), deterministisch und append-never;
+  **`pool pin`** hängt die angehefteten Wörter (`corpus.PINNED_FIRST`)
+  als eigene Streifen an und stellt sie über den Planblock `pins` an die
+  Spitze der Reihenfolge — der Weg, ein Wort in einen bereits
+  eingefrorenen Plan zu bekommen (Proposal §4; `--word` für einen
+  einmaligen Pin);
   **`gaps`** listet unerreichbare Übergänge samt echter
   Trägerwort-Kandidaten für die nächste Kurationsrunde in `corpus.py`.
 - **`sheet`** — druckt einen Bogen (PDF + `layout.json`-Sidecar) aus der
@@ -692,13 +697,23 @@ Warnung versehen. Begriff und Hausregel:
   ([`qualitaetsmetrik.md`](qualitaetsmetrik.md) §5).
 - **`tools/wordbench`** — bewertet KOMPONIERTE Wörter/Paare gegen die
   Abb.-19/-20-Vorlagen (gleiche Hand); Metrik + Doku in
-  [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §6. Drei Module hängen
+  [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §6. Fünf Module hängen
   **Report-Spalten** an, die nie in den Loss eingehen (eigener try/except,
   hinter dem stabilen Block): `slant.py` (Schräglage Vorlage vs. komponiert,
   90° = senkrecht; R5), `gleichzug.py` (Ein-Fluss-/Ein-Breite-Audit auf der
-  komponierten Centerline, ohne Vorlagenbezug; `jul30`) und `pairmeas.py`
+  komponierten Centerline, ohne Vorlagenbezug; `jul30`), `pairmeas.py`
   („gemessen vs. komponiert“ — die komponierten Joins gegen die sezierten
-  `pair_instances` derselben Vorlagen; `aug02`). Die Fixture-Roots frieren
+  `pair_instances` derselben Vorlagen; `aug02`), `seam.py` (Naht-Winkel
+  `dep`/`arr`; `sep02`) und `continuity.py` — der **Unstetigkeits-Sensor**
+  (`cont_*`, `sep06`): Knick, Wackler und Pfeilhöhe an jedem Punkt der
+  komponierten Mittellinie, der keine Landmarke ist (Federabsetzen,
+  Kreuzung, Retrace-Zone, Umkehrecke — je eine Feder Radius, alle vier
+  gezählt). Er misst als einziger nicht ABSTAND, sondern Stetigkeit; die
+  Fenster kommen aus der Feder (halbe Feder · eine Feder · zwei Federn),
+  die Schwelle ist arcsin(0,2) = 11,537°. Abgenommen an den
+  humanbench-Runden 5 und 6 ([`messjournal.md`](messjournal.md) §14
+  „Übergänge S2"), Report-only, kein DB-Zugriff, `core/word_metric.py`
+  unberührt. Die Fixture-Roots frieren
   seit `aug14` zusätzlich `word_instances.json` ein — die gespeicherten
   Wortbahnen des Sets samt Frame-Gate (`frame_stale`), deren
   `authored`-Zeilen der Referenzsatz von `tools/tracebench` sind

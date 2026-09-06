@@ -24,6 +24,9 @@ docs/proposals/eigenhand-erfassung.md). Four curation layers, merged by
 * ``zeichen``     — digits and punctuation in real text use (years, a date,
                     a price, signs at words); detached glyphs, so they carry
                     glyph-position Soll but no joins
+* ``pin``         — words the author wants written FIRST for their own sake,
+                    not for their coverage (``PINNED_FIRST``); they skip the
+                    quota-driven fill via ``tools.eigenhand.pool pin``
 
 Frequency LISTS are never committed (quiz-wortbank.md §4 — protectable
 databases, often NC); this pool is an own, merely *informed* curation and
@@ -550,6 +553,22 @@ _ZEICHEN_ENTRIES: list[PoolEntry] = [
 ]
 
 
+# --- pinned words: written FIRST, because the author wants them early -------
+# Not a coverage argument and not pretending to be one — these words earn their
+# place by what they are, so they bypass the quota-driven fill instead of
+# waiting for it (owner, 2026-09-06). `tools.eigenhand.pool pin` puts each of
+# them on its own appended strip and marks that strip as leading the plan; the
+# frozen strips are not touched, and the words count in Bestand and coverage
+# like every other word.
+_PIN_ENTRIES: list[PoolEntry] = [
+    # Shapes as `Kurrentſchrift`: the default rules already give the long ſ at
+    # the start of the second morpheme (`-schrift`), so no fugen marker is
+    # needed and the label prints plainly.
+    {"word": "Kurrentschrift", "note": "Name des Vorhabens; steht im Hero der Seite"}
+]
+PINNED_FIRST: list[str] = [entry["word"] for entry in _PIN_ENTRIES]
+
+
 def pool_entries() -> list[PoolEntry]:
     """The merged pool: one entry per distinct word (case-sensitive), tags unioned.
 
@@ -593,6 +612,8 @@ def pool_entries() -> list[PoolEntry]:
         add(word, "english", {"lang": "en"})
     for entry in _ZEICHEN_ENTRIES:
         add(entry["word"], "zeichen", entry)
+    for entry in _PIN_ENTRIES:
+        add(entry["word"], "pin", entry)
 
     out: list[PoolEntry] = []
     for entry in sorted(merged.values(), key=lambda e: e["word"]):

@@ -194,13 +194,31 @@ ROLE_STYLES: dict[str, tuple[str, float, tuple[float, float] | None]] = {
 # The grey fallback still matters — a greyscale scan of these sheets reads the
 # rulings at 0.79-0.88 luminance, comfortably clear of INK_THRESHOLD (0.55).
 # So cyan is the better choice in BOTH capture modes, not a bet on one.
+#
+# Thinned by one step across the board on 2026-09-06 (owner: "as long as it is
+# faintly recognisable in the print, it is strong enough"): the baseline drops
+# to what the auxiliary lines used to be (0.22 → 0.12 mm) and each auxiliary
+# line goes thinner again (waist 0.15 → 0.10, ascender/descender 0.12 → 0.08,
+# slant grid 0.10 → 0.06). The lineature only has to guide the hand for the few
+# seconds a row takes; everything else it does is damage. On a colour laser a
+# faint cyan hairline still prints — 0.06 mm is 1.4 dots at 600 dpi, so the
+# device draws its thinnest line rather than nothing — while every millimetre
+# of cyan that is NOT on the paper is one the ingest cannot mistake for ink,
+# cannot leave behind in the blue channel, and cannot smear into a stroke the
+# fit measures. Thinner is the safer direction: the colour trick removes what
+# is there, and less of it is less to remove. The ORDER stays baseline > waist
+# > ascender/descender > slant, so the row still reads at a glance.
+#
+# `box` keeps 0.12: the same role draws the word-box frame AND the verdict box
+# in the right margin, and the verdict box is furniture the WRITER has to find
+# and tick — a forgotten tick discards the row (§5, §6).
 CAPTURE_STYLES: dict[str, tuple[str, float, tuple[float, float] | None]] = {
     **ROLE_STYLES,
-    "baseline": ("#7FCFE8", 0.22, None),  # the one line the hand really needs
-    "waist": ("#9BDBEF", 0.15, None),
-    "ascender": ("#B4E5F4", 0.12, (1.6, 1.6)),
-    "descender": ("#B4E5F4", 0.12, (1.6, 1.6)),
-    "slant": ("#CCEEF8", 0.10, (1.0, 1.6)),
+    "baseline": ("#7FCFE8", 0.12, None),  # the one line the hand really needs
+    "waist": ("#9BDBEF", 0.10, None),
+    "ascender": ("#B4E5F4", 0.08, (1.6, 1.6)),
+    "descender": ("#B4E5F4", 0.08, (1.6, 1.6)),
+    "slant": ("#CCEEF8", 0.06, (1.0, 1.6)),
     "box": ("#A8E0F2", 0.12, None),
 }
 
