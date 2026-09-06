@@ -41,6 +41,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import math
 import time
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
@@ -238,6 +239,20 @@ def write_csv(rows: Sequence[dict], path: Path) -> None:
         writer.writerows(rows)
 
 
+def _positive_half_width(raw: str) -> float:
+    """A pen half width, refused unless it is finite and positive.
+
+    A negative one WIDENS every computed aperture and a NaN makes every
+    comparison false, so either typo produces a plausible-looking Kringel report
+    that says nothing — the failure mode a report-only column can least afford,
+    because nothing downstream would flag it.
+    """
+    value = float(raw)
+    if not math.isfinite(value) or value <= 0.0:
+        raise argparse.ArgumentTypeError(f"half width must be finite and positive, got {raw!r}")
+    return value
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="tracebench", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
@@ -290,7 +305,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--kringel-half-width",
-        type=float,
+        type=_positive_half_width,
         default=PLATE_PEN_HALF_WIDTH_UNITS,
         help="half width the Kringel landmark judges the composed loops at, in x-heights (default "
         f"{PLATE_PEN_HALF_WIDTH_UNITS}, the PLATE's own pen — the pen the expectation was read from; "
@@ -368,10 +383,17 @@ def main() -> None:
 
     # The Kringel landmark beside it (owner's design input 2026-09-06): per word
     # how many loops the catalogue registers as `offen` and how many of those the
-    # DELIVERED pen runs shut. Report-only on the same terms as the Duktus-Soll —
-    # no scored number reads these fields, and a missing catalogue is a warning.
+    # SELECTED pen runs shut — `--kringel-half-width`, which defaults to the
+    # plate's pen and NOT to the root's delivered nib. Report-only on the same
+    # terms as the Duktus-Soll: no scored number reads these fields, and a
+    # catalogue that is missing or belongs to another hand is a warning.
     kringel, kringel_warnings = kringel_by_word(
-        ids, which=args.which, style=args.style, fixtures_root=args.fixtures, half_width=args.kringel_half_width
+        ids,
+        which=args.which,
+        style=args.style,
+        fixtures_root=args.fixtures,
+        half_width=args.kringel_half_width,
+        root_name=root.name,
     )
     for row in rows:
         fields = kringel.get(str(row.get("id")))
@@ -412,7 +434,8 @@ def main() -> None:
         print(
             f"kringel_lost:    {lost} of {sum(r['kringel_offen'] for r in scored)} `offen` loops in "
             f"{sum(1 for r in scored if r['kringel_lost'])} of {len(scored)} words "
-            f"(half width {args.kringel_half_width})"
+            f"(at half width {args.kringel_half_width}"
+            f"{', the PLATE pen, not the delivered nib' if args.kringel_half_width == PLATE_PEN_HALF_WIDTH_UNITS else ''})"
         )
         print(
             f"kringel_wechselnd_zu: {sum(r['kringel_wechselnd_zu'] for r in scored)}"

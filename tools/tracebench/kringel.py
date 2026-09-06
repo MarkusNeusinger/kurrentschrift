@@ -196,21 +196,36 @@ def loop_apertures(
     return sorted(out, key=lambda lp: (lp.cx, lp.cy))
 
 
+def body_items(items: Sequence[dict[str, Any]]) -> dict[int, list[int]]:
+    """`{slot: item indices of its BODY strokes}` — deferred marks excluded.
+
+    A delayed mark carries its slot's `slot_index` but is flushed at the END of
+    the word (`core/compose.py`, `flush_diacritics`), so a slot's index range
+    read naively spans from its body to somewhere past the last letter. Two
+    things break on that: „the item after the slot's last" then picks a foreign
+    connector instead of this letter's, and the mark itself joins the stroke set
+    a loop is measured on. Neither an i-dot nor a u-Deckstrich encloses
+    anything, so they are dropped rather than moved.
+    """
+    out: dict[int, list[int]] = {}
+    for i, item in enumerate(items):
+        slot = item.get("slot_index")
+        if slot is not None and not item.get("diacritic"):
+            out.setdefault(int(slot), []).append(i)
+    return out
+
+
 def slot_loop_lines(items: Sequence[dict[str, Any]]) -> dict[int, tuple[str | None, list[np.ndarray]]]:
-    """Per slot: `(glyph key, its strokes plus the connector each side)`.
+    """Per slot: `(glyph key, its body strokes plus the connector each side)`.
 
     The letter as the reader meets it. An entering connector can close a loop
     the isolated row does not have — `tools/tracebench/soll.py` names the same
     case for the crossing counters — so a catalogue built on the bare row would
     have no entry for exactly the loops the plate shows. Connectors carry no
-    `slot_index`, so „the item directly before the slot's first and directly
-    after its last" is the whole rule.
+    `slot_index`, so „the item directly before the slot's first BODY stroke and
+    directly after its last" is the whole rule.
     """
-    body: dict[int, list[int]] = {}
-    for i, item in enumerate(items):
-        slot = item.get("slot_index")
-        if slot is not None:
-            body.setdefault(int(slot), []).append(i)
+    body = body_items(items)
     out: dict[int, tuple[str | None, list[np.ndarray]]] = {}
     for slot, idxs in body.items():
         take = set(idxs)
@@ -224,18 +239,35 @@ def slot_loop_lines(items: Sequence[dict[str, Any]]) -> dict[int, tuple[str | No
     return out
 
 
+def catalogue_source(path: Path | None = None) -> dict[str, Any]:
+    """The `_source` header of a catalogue file: which root and style it was read on."""
+    payload = json.loads((path or CATALOGUE_FILE).read_text(encoding="utf-8"))
+    source = payload.get("_source")
+    if not isinstance(source, dict):
+        raise ValueError("kringel catalogue: no '_source' header")
+    return source
+
+
 def load_catalogue(path: Path | None = None) -> dict[str, list[dict[str, Any]]]:
     """`{glyph key: [loop row, …]}` in loop order, from the frozen catalogue file.
 
-    Raises `FileNotFoundError` / `ValueError` rather than guessing: a sensor
-    reading a half-built catalogue would report expectations nobody registered.
+    Every failure mode here is a `ValueError` — including a row with a missing
+    or misspelled field — because the caller's contract is „a catalogue that
+    cannot be read costs the column, never the run", and a `KeyError` escaping
+    this function would abort the whole bench instead.
     """
     payload = json.loads((path or CATALOGUE_FILE).read_text(encoding="utf-8"))
     rows = payload.get("loops")
     if not isinstance(rows, list):
         raise ValueError("kringel catalogue: no 'loops' array")
-    out: dict[str, list[dict[str, Any]]] = {}
-    for row in sorted(rows, key=lambda r: (r["glyph"], r["loop"])):
+    for i, row in enumerate(rows):
+        if not isinstance(row, dict):
+            raise ValueError(f"kringel catalogue: row {i} is not an object")
+        missing = [f for f in ("glyph", "loop", "size_class", "state") if f not in row]
+        if missing:
+            raise ValueError(f"kringel catalogue: row {i} lacks {', '.join(missing)}")
+        if not isinstance(row["glyph"], str) or not isinstance(row["loop"], int) or isinstance(row["loop"], bool):
+            raise ValueError(f"kringel catalogue: row {i} has a non-comparable glyph/loop key")
         # The vocabulary is checked HERE rather than trusted: a word the sensor
         # does not know silently becomes "no expectation", which reads exactly
         # like a Punktkringel and would hide a whole class of loops.
@@ -243,6 +275,8 @@ def load_catalogue(path: Path | None = None) -> dict[str, list[dict[str, Any]]]:
             raise ValueError(f"kringel catalogue: {row['glyph']}#{row['loop']} has size class {row['size_class']!r}")
         if row["state"] not in (*STATES, UNATTESTED):
             raise ValueError(f"kringel catalogue: {row['glyph']}#{row['loop']} has state {row['state']!r}")
+    out: dict[str, list[dict[str, Any]]] = {}
+    for row in sorted(rows, key=lambda r: (r["glyph"], r["loop"])):
         out.setdefault(row["glyph"], []).append(row)
     for glyph, loops in out.items():
         if [row["loop"] for row in loops] != list(range(len(loops))):
@@ -255,7 +289,10 @@ def word_kringel(
 ) -> list[dict[str, Any]]:
     """One row per composed loop of the word, with its catalogue verdict.
 
-    `honoured` is `True` when the delivered pen leaves the loop open, `False`
+    Judged at `half_width` — the pen the CALLER selected, which is not the
+    root's delivered nib unless it was asked for.
+
+    `honoured` is `True` when that pen leaves the loop open, `False`
     when it runs shut, and `None` where the catalogue registers no expectation
     (`punkt`, `unbelegt`, or a loop the catalogue does not know).
     """
@@ -286,10 +323,11 @@ def kringel_row_fields(
 ) -> dict[str, Any]:
     """The flat report fields one word contributes to a bench row.
 
-    `kringel_lost` counts ONLY the `offen` loops that the delivered pen runs
-    shut — the honest defect count. `wechselnd` closures are carried in their
-    own field because the plate itself closes those, and `punkt` loops are
-    exempt by construction, never counted anywhere.
+    `kringel_lost` counts ONLY the `offen` loops that the SELECTED pen
+    (`half_width`, not necessarily the root's delivered nib) runs shut — the
+    honest defect count. `wechselnd` closures are carried in their own field
+    because the plate itself closes those, and `punkt` loops are exempt by
+    construction, never counted anywhere.
     """
     rows = word_kringel(items, catalogue, half_width)
     lost = [r for r in rows if r["state"] == "offen" and r["honoured"] is False]
@@ -311,17 +349,32 @@ def kringel_by_word(
     style: str,
     fixtures_root: Path,
     half_width: float,
+    root_name: str | None = None,
     catalogue_path: Path | None = None,
 ) -> tuple[dict[str, dict[str, Any]], list[str]]:
     """Per word: the Kringel fields, or a warning per gap.
 
     Mirrors `tools/tracebench/soll.py::ductus_soll` — same composition source,
     same „one word must not cost the run" contract, same report-only status.
+
+    The catalogue is read off ONE hand with ONE pen, so it is applied to that
+    hand only: a run on another style or another source would otherwise publish
+    Sütterlin-1922 expectations under a foreign hand's name, and every class in
+    it is counted in the width of THIS plate's pen. On a mismatch the column is
+    omitted with a warning rather than guessed at.
     """
     try:
         catalogue = load_catalogue(catalogue_path)
+        source = catalogue_source(catalogue_path)
     except (OSError, ValueError) as exc:  # noqa: BLE001 — a sensor never fails a run
         return {}, [f"Kringel-Landmarke unavailable ({type(exc).__name__}: {exc}) — column omitted"]
+    measured = source.get("measured_on") or [{}]
+    on_root, on_style = str(measured[0].get("name", "")), str(source.get("style", ""))
+    if on_style != style or (root_name is not None and on_root != root_name):
+        return {}, [
+            f"Kringel-Landmarke was measured on {on_style}/{on_root or '?'}, this run is "
+            f"{style}/{root_name or '?'} — a catalogue belongs to ONE hand, column omitted"
+        ]
     try:
         from tools.wordlab.cases import iter_fixture_word_cases  # noqa: PLC0415
         from tools.wordlab.derive import derive_word  # noqa: PLC0415
@@ -340,11 +393,14 @@ def kringel_by_word(
             warnings.append(f"{specimen_id}: no scorable fixture case — Kringel-Landmarke omitted")
             continue
         try:
+            # The measurement stays INSIDE the boundary, not just the derive:
+            # rasterising a degenerate stroke set is as able to raise as the
+            # composition is, and „one word must not cost the run" has to cover
+            # the whole of one word's work to mean anything.
             items = derive_word(case).composed["items"]
+            out[specimen_id] = kringel_row_fields(items, catalogue, half_width)
         except Exception as exc:  # noqa: BLE001
-            warnings.append(f"{specimen_id}: derive failed ({type(exc).__name__}) — Kringel-Landmarke omitted")
-            continue
-        out[specimen_id] = kringel_row_fields(items, catalogue, half_width)
+            warnings.append(f"{specimen_id}: {type(exc).__name__} — Kringel-Landmarke omitted")
     return out, warnings
 
 

@@ -21,8 +21,10 @@
 ### Changed
 
 - **The „26 closing words" of the counter diagnosis are re-read through the
-  catalogue.** With the letters read WITH their connectors and every loop
-  measured rather than only the nine narrow glyphs, 33 of the 63 word specimens
-  close a counter the plate holds open at half width 0.097 — 30 of them a real
-  `offen` loss, 3 only a `wechselnd` one. Beside them stand 19 counters no
-  composed loop accounts for at all: a topology loss, not a narrow loop.
+  catalogue.** On that diagnosis's own path — its eight loop keys, and only
+  where the plate shows the hole in that very occurrence — 27 words close at
+  half width 0.097, of which **24 carry a real `offen` loss and 3 only a
+  `wechselnd` one**, so the honest figure replacing 26 is 24. Over ALL loops the
+  number goes the other way: **34 of the 63 word specimens** lose an `offen`
+  loop, and beside them stand 19 counters no composed loop accounts for at all —
+  a topology loss, not a narrow one.

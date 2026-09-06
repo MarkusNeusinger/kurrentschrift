@@ -4,6 +4,7 @@
   "what": "Per loop of a suetterlin-1922 glyph: how wide the plate holds it (D0), which size class that is in widths of the plate's own pen, and — read off the plate over all occurrences — whether it is offen, wechselnd or a Punktkringel. Apertures, counts and classes only; no geometry.",
   "built_by": "tools/tracebench/kringelcat.py",
   "sensor": "tools/tracebench/kringel.py",
+  "style": "suetterlin",
   "measured_on": [
    {
     "name": "suetterlin-1922",

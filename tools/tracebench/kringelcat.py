@@ -50,6 +50,7 @@ from tools.tracebench.kringel import (
     PLATE_PEN_HALF_WIDTH_UNITS,
     PLATE_PEN_WIDTH_UNITS,
     SPLITTER_FLOOR_UNITS,
+    body_items,
     loop_apertures,
     loop_state,
     size_class,
@@ -189,9 +190,13 @@ def _measure_root(root: Path) -> dict[str, Any]:
         centres = [(((c["px"][0] - tx) / xh), ((baseline_row + ty - c["px"][1]) / xh)) for c in counters]
 
         grouped = sorted(slot_loop_lines(composed["items"]).items())
+        # BODY strokes only, via the shared index: a deferred i-dot sits far to
+        # the right of its own letter in the item stream but directly ABOVE it
+        # on the page, and letting it into the span or the nearest-stroke
+        # comparison moves which glyph a plate counter is attributed to.
+        by_slot = body_items(composed["items"])
         bodies = {
-            slot: [np.asarray(it["centerline"], float) for it in composed["items"] if it.get("slot_index") == slot]
-            for slot, _ in grouped
+            slot: [np.asarray(composed["items"][i]["centerline"], float) for i in by_slot[slot]] for slot, _ in grouped
         }
         spans = {
             slot: (float(np.vstack(lines)[:, 0].min()), float(np.vstack(lines)[:, 0].max()))
@@ -336,6 +341,11 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--root", type=Path, required=True, help="the frozen fixture root to read")
     parser.add_argument("--expect-root", help="digest prefix the root MUST start with")
+    parser.add_argument(
+        "--style",
+        default="suetterlin",
+        help="the hand this catalogue belongs to; the sensor refuses to apply it to any other",
+    )
     parser.add_argument("--out", type=Path, required=True, help="where to write the catalogue")
     args = parser.parse_args(argv)
 
@@ -353,6 +363,10 @@ def main(argv: list[str] | None = None) -> None:
             ),
             "built_by": "tools/tracebench/kringelcat.py",
             "sensor": "tools/tracebench/kringel.py",
+            # The hand this catalogue belongs to. The sensor refuses to apply it
+            # to another style or root: every class in it is counted in the width
+            # of THIS plate's pen, and every state read off THIS plate's ink.
+            "style": args.style,
             "measured_on": root_meta,
             "pen_half_width_units": PLATE_PEN_HALF_WIDTH_UNITS,
             "pen_half_width_measured": round(measured["pen_half_width_measured"], 4),

@@ -203,6 +203,22 @@ losschreiben" kann, gilt technisch:
   `tools/wordbench/fixtures/` — sie enthalten die autorierten Templates;
   Regeneration braucht DB-Zugang). Ernte-Artefakte
   (`laufform_*.json`, Harvest-Reports) werden nie committet.
+- **Eine benannte Ausnahme: der Kringel-Katalog**
+  (`tools/tracebench/kringel_catalogue.json`, seit `sep06`,
+  Autor-Auftrag 2026-09-06). Er ist committet, obwohl er aus den
+  gelernten Daten abgeleitet ist, weil er ein **Erwartungs-Lineal** ist
+  und kein Bestand: je Buchstabe und je Schleife eine Größenklasse, ein
+  Zustand, die Öffnungsweiten als Median/Min/Max und die Zahl der
+  Vorkommen — 46 Zeilen für 27 Glyphen. Was ihn von einem Ernte-Artefakt
+  trennt und die Ausnahme trägt: **keine Geometrie** (keine Anker, keine
+  Mittellinien, keine Bahn), **keine Vorkommens-ZEILEN** (nur deren
+  Anzahl je Schleife) und **keine Wortprobe**. Aus ihm lässt sich kein
+  Buchstabe rekonstruieren und nichts nachschreiben; er sagt nur, welche
+  Schleife offen bleiben MUSS. Ein Test hält die Grenze
+  (`tests/test_tracebench_kringel.py`: kein `anchors`, kein
+  `centerline` in einer Zeile). **Die Ausnahme gilt für diese Form und
+  nur für sie** — ein Katalog, der je Vorkommen eine Zeile trüge, fiele
+  wieder unter die Regel darüber.
 - **Jeder API-Read, der den Bestand trägt, ist admin-gegatet — und die
   Trennlinie ist getestet.** `tests/test_api_public_surface.py`
   klassifiziert JEDE GET-Route der API als öffentlich oder reserviert

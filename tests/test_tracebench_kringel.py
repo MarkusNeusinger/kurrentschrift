@@ -24,6 +24,8 @@ from tools.tracebench.kringel import (
     SPLITTER_FLOOR_UNITS,
     STATES,
     UNATTESTED,
+    body_items,
+    catalogue_source,
     kringel_by_word,
     kringel_row_fields,
     load_catalogue,
@@ -137,6 +139,23 @@ def test_a_foreign_letter_is_never_dragged_into_a_slot() -> None:
     assert len(grouped[1][1]) == 1
 
 
+def test_a_deferred_mark_neither_joins_its_slot_nor_moves_its_span() -> None:
+    # `flush_diacritics` appends the marks after the whole word, so slot 0's
+    # index range would otherwise run from its body to past the last letter —
+    # the outgoing connector is then the wrong item and the mark itself lands in
+    # the stroke set the loops are measured on.
+    items = [
+        _item([[0.0, 0.0], [1.0, 0.0]], slot=0, key="u"),
+        _item([[1.0, 0.0], [1.5, 0.0]]),  # slot 0's outgoing connector
+        _item([[1.5, 0.0], [2.5, 0.0]], slot=1, key="n"),
+        {"centerline": [[0.2, 1.4], [0.8, 1.4]], "slot_index": 0, "glyph_key": "u", "diacritic": True},
+    ]
+    assert body_items(items) == {0: [0], 1: [2]}
+    grouped = slot_loop_lines(items)
+    assert len(grouped[0][1]) == 2  # the body and the connector after it, not the mark
+    assert all(max(p[1] for p in line) < 1.0 for line in grouped[0][1])
+
+
 # ------------------------------------------------------------ the report fields
 
 _CATALOGUE = {
@@ -208,6 +227,17 @@ def test_a_catalogue_with_a_hole_in_its_loop_numbering_is_refused(tmp_path: Path
         load_catalogue(path)
 
 
+def test_a_malformed_row_raises_the_error_the_caller_catches(tmp_path: Path) -> None:
+    # The contract is "an unreadable catalogue costs the column, never the run",
+    # and `kringel_by_word` catches ValueError only — a KeyError escaping here
+    # would abort the whole bench.
+    path = tmp_path / "cat.json"
+    for row in ({"loop": 0, "size_class": "klein", "state": "offen"}, {"glyph": "a", "loop": "0"}, "not a row"):
+        path.write_text(json.dumps({"loops": [row]}))
+        with pytest.raises(ValueError):
+            load_catalogue(path)
+
+
 def test_a_word_outside_the_vocabulary_is_refused(tmp_path: Path) -> None:
     # An unknown state would read as "no expectation" — indistinguishable from a
     # Punktkringel, and a whole class of loops would go unwatched.
@@ -241,6 +271,35 @@ def test_a_root_without_cases_degrades_to_a_warning(tmp_path: Path) -> None:
     assert out == {}
     assert len(warnings) == 1
     assert "Kringel-Landmarke" in warnings[0]
+
+
+def test_a_catalogue_of_another_hand_is_not_applied(tmp_path: Path) -> None:
+    # Every class is counted in the width of ONE plate's pen and every state read
+    # off ONE plate's ink, so a Kurrent run must not inherit Sütterlin's.
+    out, warnings = kringel_by_word(
+        ["die"], which="words", style="kurrent", fixtures_root=tmp_path, half_width=0.097, root_name="kurrent-1900"
+    )
+    assert out == {}
+    assert "ONE hand" in warnings[0]
+
+
+def test_a_catalogue_of_another_root_of_the_same_style_is_not_applied(tmp_path: Path) -> None:
+    out, warnings = kringel_by_word(
+        ["die"],
+        which="words",
+        style="suetterlin",
+        fixtures_root=tmp_path,
+        half_width=0.097,
+        root_name="suetterlin-1930",
+    )
+    assert out == {}
+    assert "suetterlin-1930" in warnings[0]
+
+
+def test_the_shipped_catalogue_names_the_hand_it_belongs_to() -> None:
+    source = catalogue_source()
+    assert source["style"] == "suetterlin"
+    assert source["measured_on"][0]["name"] == "suetterlin-1922"
 
 
 def test_the_shipped_catalogue_is_readable_and_uses_the_declared_vocabulary() -> None:
