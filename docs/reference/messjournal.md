@@ -11304,8 +11304,8 @@ Drei Befunde, und alle drei sprechen gegen die Klassenregel:
 **Das kleinere ehrliche Mittel ist damit die globale Umschaltung.** Sie ist
 EIN bereits implementierter, bereits vorregistrierter und bereits vom Auge
 beurteilter Freiheitsgrad; die Klassenregel wäre eine zusätzliche Konstante,
-die in dieser Runde nichts trennt, am Lineal teurer ist und den gemessenen
-Nutzen zurücknimmt. Dass die schwache Klasse dabei mitgetrimmt wird, ist
+die die Klassen nicht trennt, auf fünf ihrer sechs Sprossen am Lineal teurer
+ist und auf der sechsten den gemessenen Nutzen fast vollständig zurücknimmt. Dass die schwache Klasse dabei mitgetrimmt wird, ist
 kein Preis: dort ist das Lineal neutral (−0,000262) und das Auge 8 : 0 für
 den Trim.
 
