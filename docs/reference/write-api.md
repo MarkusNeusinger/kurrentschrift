@@ -157,8 +157,18 @@ Cloudflare-Regel wäre über die `run.app`-URL umgehbar, diese Buckets nicht.
    liegenden von Anker-Vorschub (`SPACE_ADV`) und Tintenboden
    (`WORD_INK_GAP` hinter der rechtesten Tinte des Vorwortes), sonst
    schriebe eine linkslastige Majuskel (K/C/F/G/Q/O/A/I/X) in das Wort
-   davor hinein. DIE einzige Kompositionsquelle — gepinnt durch das
-   Golden-Fixture `tests/fixtures/compose_golden.json.gz`.
+   davor hinein. Seit dem 2026-09-06 (Autor-Entscheid A37) läuft dabei
+   der **Austritts-Trim** mit (`exit_trim`, Standard AN): ein
+   Sägezahn-Austritt gibt seinen Chart-Flick ab und der Übergang wird die
+   Gerade von der Schnittstelle zum UNVERÄNDERTEN Kopplungspunkt — die
+   Platzierung ist davon per Konstruktion unberührt, die Antwort-Geometrie
+   nicht. DIE einzige Kompositionsquelle — gepinnt durch das
+   Golden-Fixture `tests/fixtures/compose_golden.json.gz`, das mit dieser
+   Adoption deklariert neu gebacken wurde (10 seiner 11 Wörter bewegen
+   sich, `wovon` nicht; kein Wort gewinnt oder verliert ein Draw-Item, und
+   eine EINZELNE Glyphe ohne Nachbarn bleibt byte-gleich, weil die Regel
+   ohne Verbinder nicht feuert). Zahlen und Runde: `messjournal.md` §14
+   „Übergänge J4 `sep06`".
    **Laufform-Varianten** (jul31): `/write/word` lädt zusätzlich die
    `templates`-Zeilen mit `variant=100` (`LAUFFORM_VARIANT` seit PR #247;
    Median-Laufformen aus den Specimen-Wörtern, geschrieben via

@@ -33,7 +33,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from core.compose import _endpoint_tangent, compose_word
+from core.compose import _endpoint_tangent, _exit_trim_index, compose_word
 from core.shaping import GlyphSlot
 from tools.pairlab.analyze import _generate_connector
 from tools.pairlab.prodconn import JoinCall, label_calls, recording, replay
@@ -121,10 +121,31 @@ def test_label_calls_rejects_a_composition_it_did_not_record() -> None:
 
 @pytest.mark.parametrize("entry", _entries(), ids=lambda e: e["text"])
 def test_replay_at_zero_shift_is_the_production_curve(entry: dict) -> None:
-    """Identical geometry in, identical curve out — verbatim, not approximately."""
+    """Identical geometry in, identical curve out — verbatim, not approximately.
+
+    Since the exit trim became the shipped default (A37, 2026-09-06) the
+    generator's return value is not always the drawn join: on a trimmed join
+    ``compose_word`` replaces it with the straight from the cut to the
+    UNCHANGED coupling point, and ``replay`` grows the same step. So the two
+    cases are asserted apart — an untrimmed join reproduces the recorded call
+    point for point, a trimmed one reproduces the rule's own two invariants.
+    That the replay is what production DREW either way is the next test's job.
+    """
     _, joins = _compose_recorded(entry)
     for call in joins.values():
-        assert [tuple(p) for p in replay(call)] == list(call.centerline)
+        replayed = [tuple(p) for p in replay(call)]
+        if not call.exit_trim_applied:
+            # Never eligible, or eligible with no collinear cut: the generator's
+            # curve IS what production drew, so the replay must reproduce it.
+            assert replayed == list(call.centerline)
+            continue
+        assert len(replayed) >= 2
+        assert replayed[-1] == call.centerline[-1]  # the trim never moves the coupling point
+        (x0, y0), (x1, y1) = replayed[0], replayed[-1]
+        span = float(np.hypot(x1 - x0, y1 - y0))
+        assert span > 0
+        for x, y in replayed:
+            assert abs(-(y1 - y0) * (x - x0) + (x1 - x0) * (y - y0)) / span < 1e-9
 
 
 @pytest.mark.parametrize("entry", _entries(), ids=lambda e: e["text"])
@@ -160,6 +181,33 @@ def test_replay_labels_every_generated_join(entry: dict) -> None:
         assert call.from_slot == slot_a < call.to_slot
 
 
+def test_replay_re_decides_the_trim_instead_of_freezing_production_s_answer() -> None:
+    """A join production did NOT trim can become trimmable once the letters
+    move, and the replay has to follow.
+
+    This is the failure mode of recording only the joins that were trimmed:
+    the decision would be frozen at the placement the composer chose and then
+    printed under the placement pairlab fitted. The golden set carries five
+    such joins — eligible for the rule, no collinear cut at production's
+    spacing — and moving B alone gives one of them a cut.
+    """
+    for entry in _entries():
+        _, joins = _compose_recorded(entry)
+        for call in joins.values():
+            if call.exit_stub is None or call.exit_trim_cut is not None:
+                continue  # want: eligible, but no cut where production placed it
+            assert [tuple(p) for p in replay(call)] == list(call.centerline)
+            moved = [tuple(p) for p in replay(call, entry_shift=(0.2, 0.0))]
+            stub = [tuple(p) for p in call.exit_stub]
+            cut = _exit_trim_index(stub, moved[-1])
+            if cut is None:
+                continue
+            assert moved[0] == stub[cut]  # the straight starts AT the fresh cut
+            assert moved[-1] != call.centerline[-1]  # …and B really did move
+            return
+    pytest.fail("no eligible-but-untrimmed join in the golden set — the case this pins is gone")
+
+
 @pytest.mark.parametrize("entry", _entries(), ids=lambda e: e["text"])
 def test_a_shared_horizontal_shift_moves_the_whole_join(entry: dict) -> None:
     """B's x lives on ``dx`` and B's y on the line — the one thing the shift
@@ -168,11 +216,15 @@ def test_a_shared_horizontal_shift_moves_the_whole_join(entry: dict) -> None:
     deliberately NOT asserted, because the grammar's thresholds
     (HIGH_EXIT_Y, DESCENDER_EXIT_Y, the baseline) are absolute heights and a
     y-move may legitimately pick a different branch.
+
+    The reference is the ZERO-shift replay, not the recorded call: a trimmed
+    join's drawn curve is the replay's, and a shift that translates the stub
+    with the letter has to land the cut on the same sample.
     """
     _, joins = _compose_recorded(entry)
     for call in joins.values():
         moved = np.asarray(replay(call, exit_shift=(0.37, 0.0), entry_shift=(0.37, 0.0)), dtype=float)
-        base = np.asarray(call.centerline, dtype=float)
+        base = np.asarray(replay(call), dtype=float)
         assert moved.shape == base.shape
         assert np.allclose(moved - base, [0.37, 0.0], atol=1e-9)
 

@@ -48,7 +48,7 @@ from __future__ import annotations
 import threading
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 import core.compose as compose
 from tools.wordlab.cases import WordCase
@@ -90,8 +90,18 @@ class JoinCall:
     first_line: tuple[Point, ...]
     dx: float
     flags: Mapping[str, object]
-    centerline: tuple[Point, ...]  # what production drew, in word coordinates
+    centerline: tuple[Point, ...]  # what the GENERATOR returned, in word coordinates
     entry_trim: int
+    # A's untrimmed exit stub, present whenever the exit trim was ELIGIBLE on
+    # this join — every guard passed and production searched for a cut, whether
+    # or not it found one. The trim runs AFTER the generator returns, in
+    # `compose_word`'s own block, so none of this is part of the call above.
+    # Word coordinates, like everything else here. `exit_trim_applied` says
+    # whether production actually replaced the curve, which differs from
+    # "a cut was found" only under the `EXIT_TRIM_MIN_KINK_DEG` narrowing.
+    exit_stub: tuple[Point, ...] | None = None
+    exit_trim_cut: int | None = None
+    exit_trim_applied: bool = False
     from_slot: int = -1
     to_slot: int = -1
     pair: tuple[str | None, str | None] = (None, None)
@@ -105,10 +115,26 @@ def recording() -> Iterator[list[JoinCall]]:
     recorder delegates to the real function and returns its result untouched, so
     nothing composed inside the block differs from the same composition outside
     it.
+
+    TWO more functions are recorded for the same reason the first one is: the
+    exit trim replaces the generator's return value afterwards, in
+    ``compose_word``'s own block, and since the A37 adoption of 2026-09-06 that
+    happens on every production render.
+
+    ``_exit_trim_index`` is called for every join the trim is ELIGIBLE on — the
+    guard chain sits in front of it — and returns the cut or ``None``. Both
+    outcomes are worth having: a join production did not trim can become
+    trimmable at a moved placement, and recording only the trimmed ones would
+    freeze that decision instead of replaying it. ``_cut_exit_stub`` then runs
+    if and only if the curve was really replaced, which differs from "a cut was
+    found" only under the ``EXIT_TRIM_MIN_KINK_DEG`` narrowing — recorded so a
+    narrowed composition is not replayed as an unnarrowed one.
     """
     with _RECORD_LOCK:
         calls: list[JoinCall] = []
         original = compose._connector_centerline
+        original_index = compose._exit_trim_index
+        original_cut = compose._cut_exit_stub
 
         def recorder(
             exit_pt: Point, exit_tangent_deg: float, first_line: list[Point], dx: float, **flags: object
@@ -127,11 +153,34 @@ def recording() -> Iterator[list[JoinCall]]:
             )
             return centerline, entry_trim
 
+        # Both trim recorders attach to the LAST recorded call: the trim always
+        # follows the connector call of the SAME join — one iteration of the
+        # composer's slot loop — and nothing else in `core.compose` calls
+        # either function.
+        def index_recorder(line: list[Point], couple_pt: Point) -> int | None:
+            cut = original_index(line, couple_pt)
+            if calls:
+                calls[-1] = replace(
+                    calls[-1],
+                    exit_stub=tuple((float(x), float(y)) for x, y in line),
+                    exit_trim_cut=None if cut is None else int(cut),
+                )
+            return cut
+
+        def cut_recorder(item: dict, line: list[Point], cut: int, half: float) -> None:
+            original_cut(item, line, cut, half)
+            if calls:
+                calls[-1] = replace(calls[-1], exit_trim_applied=True)
+
         compose._connector_centerline = recorder  # type: ignore[assignment]
+        compose._exit_trim_index = index_recorder  # type: ignore[assignment]
+        compose._cut_exit_stub = cut_recorder  # type: ignore[assignment]
         try:
             yield calls
         finally:
             compose._connector_centerline = original  # type: ignore[assignment]
+            compose._exit_trim_index = original_index  # type: ignore[assignment]
+            compose._cut_exit_stub = original_cut  # type: ignore[assignment]
 
 
 def label_calls(composed: dict, calls: Sequence[JoinCall]) -> dict[int, JoinCall]:
@@ -170,6 +219,9 @@ def label_calls(composed: dict, calls: Sequence[JoinCall]) -> dict[int, JoinCall
             flags=call.flags,
             centerline=call.centerline,
             entry_trim=call.entry_trim,
+            exit_stub=call.exit_stub,
+            exit_trim_cut=call.exit_trim_cut,
+            exit_trim_applied=call.exit_trim_applied,
             from_slot=from_slot,
             to_slot=int(item["to_slot"]),
             pair=(pair[0], pair[1]),
@@ -224,18 +276,32 @@ def replay(call: JoinCall, *, exit_shift: Point = (0.0, 0.0), entry_shift: Point
     against the emitted item in ``tests/test_pairlab_connector_parity.py``, so
     the parity proof is not self-referential.
 
-    **The one standing blind spot, named so it cannot rot.** Not every decision
-    about a join happens inside ``_connector_centerline``. The exit trim
-    (``exit_trim``, arm J4) REPLACES the returned centerline afterwards, in
-    ``compose_word``'s own block — so a replay reproduces the join as it would
-    be WITHOUT that rule, and any future rule that post-processes the connector
-    the same way would be invisible here too. Harmless today: the switch is off
-    by default, so on every headline run the replay is the whole story. Should
-    such a rule ever become the default, this function has to grow the same
-    post-processing or the dissection will quietly measure the wrong curve.
-    ``spanmeas`` sidesteps the question entirely by reading the DRAWN join and
-    undoing only the two dressings (``spanmeas.drawn_join``), which is why the
-    J4 arm moves there and would not move here.
+    **The post-processing this function had to grow.** Not every decision about
+    a join happens inside ``_connector_centerline``. The exit trim (``exit_trim``,
+    arm J4) REPLACES the returned centerline afterwards, in ``compose_word``'s
+    own block — and since the A37 adoption of 2026-09-06 it does so on every
+    production render, which is exactly the case the earlier version of this
+    docstring named as the one that would force this change. It is applied here
+    by calling the SAME core functions again on the moved stub, never by
+    restating the rule, and it is RE-DECIDED rather than replayed: the cut is
+    searched afresh against the shifted coupling point, so a join production
+    did not trim can be trimmed here and the other way round. That is the point
+    of a replay — the alternative would freeze one placement's answer and print
+    it under another placement's name.
+
+    Two limits, both deliberate and both shared with the flags above. The
+    ELIGIBILITY guards (base class, tangent band, exit height, no cap retrace,
+    no stem ride) are production's, evaluated where production placed the
+    letters — like ``high_couple`` or ``land_deg``, they are recorded rather
+    than re-derived, because re-deriving them means rebuilding glyph
+    preparation outside `core`. So a join that was never eligible stays
+    untrimmed here, however far it moves. And a composition recorded under the
+    ``EXIT_TRIM_MIN_KINK_DEG`` narrowing is not silently widened: where
+    production found a cut and declined it, the replay declines it too.
+
+    A rule that post-processes the connector and is NOT recorded would still be
+    invisible here — the recorder is what makes a decision visible, so a new
+    post-processing step gets its own hook in ``recording()``.
     """
     flags = dict(call.flags)
     if exit_shift != (0.0, 0.0):
@@ -260,4 +326,9 @@ def replay(call: JoinCall, *, exit_shift: Point = (0.0, 0.0), entry_shift: Point
         call.dx + entry_shift[0],
         **flags,  # type: ignore[arg-type]
     )
-    return centerline
+    narrowed_away = call.exit_trim_cut is not None and not call.exit_trim_applied
+    if call.exit_stub is None or narrowed_away or len(centerline) < 2:
+        return centerline
+    stub = [(x + exit_shift[0], y + exit_shift[1]) for x, y in call.exit_stub]
+    cut = compose._exit_trim_index(stub, centerline[-1])
+    return centerline if cut is None else compose._straight_to(stub[cut], centerline[-1])

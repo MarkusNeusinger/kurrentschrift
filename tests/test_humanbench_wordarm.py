@@ -196,6 +196,10 @@ def test_join_rule_defaults_are_read_off_the_composer() -> None:
     assert wordarm.JOIN_RULE_DEFAULTS == {
         "apex_handover": params["apex_handover"].default,
         "stem_depart": params["stem_depart"].default,
+        # `exit_trim` joined this family when it became the shipped default
+        # (A37, 2026-09-06): an arm that omits the flag must draw what
+        # production draws, whichever way the composer's default later moves.
+        "exit_trim": params["exit_trim"].default,
     }
 
 
@@ -207,6 +211,7 @@ def test_join_rule_defaults_are_read_off_the_composer() -> None:
         ({}, None),
         ({"apex_handover": True}, {"apex_handover": True}),
         ({"stem_depart": True}, {"stem_depart": True}),
+        ({"exit_trim": False}, {"exit_trim": False}),
         ({"apex_handover": False, "stem_depart": False}, {"apex_handover": False, "stem_depart": False}),
     ],
 )
@@ -227,10 +232,12 @@ def test_compose_arm_resolves_and_forwards_the_join_rules(tmp_path, monkeypatch,
     assert calls and {k: calls[0][k] for k in expected} == expected
 
 
-@pytest.mark.parametrize("switch, expected", [({}, False), ({"exit_trim": True}, True)])
+@pytest.mark.parametrize("switch, expected", [({}, True), ({"exit_trim": False}, False), ({"exit_trim": True}, True)])
 def test_compose_arm_hands_exit_trim_to_compose_word(tmp_path, monkeypatch, switch, expected):
-    """The forwarding itself, not the parsing: delete `exit_trim=exit_trim` from
-    the `compose_word` call and this is the test that goes red."""
+    """The forwarding itself, not the parsing: drop `exit_trim` out of the
+    resolved join rules and this is the test that goes red. The omitted case
+    is the load-bearing one — since the A37 adoption an arm that says nothing
+    must compose WITH the trim, the way `/write/word` does."""
     calls: list[dict] = []
 
     def fake_compose(slots, payloads, **kwargs):
@@ -288,11 +295,13 @@ def _settings(**kwargs) -> dict:
         "nib_units": kwargs.get("nib") or 0.07251,
         "nib_overridden": kwargs.get("nib") is not None,
         "laufform": "frozen",
-        "exit_trim": kwargs.get("exit_trim", False),
+        "exit_trim": (
+            wordarm.JOIN_RULE_DEFAULTS["exit_trim"] if kwargs.get("exit_trim") is None else bool(kwargs["exit_trim"])
+        ),
         "nib_clearance": kwargs.get("nib_clearance", False),
         "join_rules": {
             name: wordarm.JOIN_RULE_DEFAULTS[name] if kwargs.get(name) is None else bool(kwargs[name])
-            for name in ("apex_handover", "stem_depart")
+            for name in ("apex_handover", "stem_depart", "exit_trim")
         },
         "failed": [],
     }
@@ -313,13 +322,13 @@ def _capture_compose_arm(monkeypatch):
 @pytest.mark.parametrize(
     "argv, expected",
     [
-        # The J5 switches are tri-state on purpose: None means "leave the
+        # The join-rule switches are tri-state on purpose: None means "leave the
         # composer's own default", which is the only value that keeps an arm
         # file honest about what it did NOT decide.
         (
             [],
             {
-                "exit_trim": False,
+                "exit_trim": None,
                 "nib": None,
                 "no_laufform": False,
                 "apex_handover": None,
@@ -328,6 +337,7 @@ def _capture_compose_arm(monkeypatch):
             },
         ),
         (["--exit-trim"], {"exit_trim": True}),
+        (["--no-exit-trim"], {"exit_trim": False}),
         (["--nib-clearance"], {"nib_clearance": True}),
         (["--nib", "0.097"], {"nib": 0.097}),
         (["--no-laufform"], {"no_laufform": True}),
@@ -348,16 +358,17 @@ def test_the_arm_file_records_the_switch_it_was_composed_with(tmp_path, monkeypa
     """The stamp copies the arm's settings, and „which knob was on" is the one
     thing a round cannot reconstruct from the drawn geometry afterwards."""
     _capture_compose_arm(monkeypatch)
-    out = tmp_path / "j4.json"
-    wordarm.main(["--arm", "J4", "--exit-trim", "--out", str(out)])
+    out = tmp_path / "base.json"
+    wordarm.main(["--arm", "ohne J4", "--no-exit-trim", "--out", str(out)])
     written = json.loads(out.read_text())
-    assert written["settings"]["exit_trim"] is True
-    assert written["arm"] == "J4"
+    assert written["settings"]["exit_trim"] is False
+    assert written["settings"]["join_rules"]["exit_trim"] is False
+    assert written["arm"] == "ohne J4"
     # An arm file says what did NOT draw it too: a round built before the
     # nib-clearance switch existed and one built with it off must not be
     # distinguishable only by the field's absence.
     assert written["settings"]["nib_clearance"] is False
-    # … and an omitted J5 flag is recorded as the BOOLEAN the composer actually
-    # used, not as a placeholder: if the default ever moves, two arms must not
-    # be able to carry identical metadata and different ink.
-    assert written["settings"]["join_rules"] == wordarm.JOIN_RULE_DEFAULTS
+    # … and an omitted join-rule flag is recorded as the BOOLEAN the composer
+    # actually used, not as a placeholder: if a default ever moves, two arms
+    # must not be able to carry identical metadata and different ink.
+    assert written["settings"]["join_rules"] == {**wordarm.JOIN_RULE_DEFAULTS, "exit_trim": False}

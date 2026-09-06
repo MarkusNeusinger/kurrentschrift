@@ -283,6 +283,19 @@ WIDEST = {
 # without the other. The entry itself needed no raise; it was trimmed to 4 500
 # against the unchanged 4 503 ceiling, which is where a growing entry belongs.
 #
+# And a fifth time, by the branch that adopts the J4 exit trim — for ONE row,
+# the second of the standard pair whose first (the round) main's raise above
+# already absorbed. An adoption plus a declared re-baseline is exactly the shape
+# the register exists to index: which switch flipped, on which root, what the
+# two headlines did, and what a reader must not assume unchanged. The row was
+# condensed twice before this raise (487 → ~305), the §7.11 row it needs was
+# rewritten shorter than the version it replaces, and the branch DROPPED its own
+# earlier raise to 23 567 when main's landed — a value cut against the pre-#558
+# number, so keeping it would have LOWERED the budget main had just measured.
+# Measured here after that merge, with every row of all four rounds in: 24 077,
+# plus the documented 10 %. Four raises in one day is not a licence either; it
+# is four rounds landing on one register, each measured once, after the others.
+#
 # `mess-runde-route` raised for the FIRST time, on the same day, by the third of
 # those rounds: „Laufform LF15" measures a Kette knob (`chain_seed="chart"`), so
 # it owes `verfahren-kette.md` its ledger line — and that page is the widest
@@ -295,7 +308,7 @@ WIDEST = {
 # §7.9/§7.11 rows, which is what the headroom is for.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
-    "mess-runde": 23_894,
+    "mess-runde": 26_484,
     "mess-runde-route": 6_890,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,
