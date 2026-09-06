@@ -62,8 +62,8 @@
              `tools/wordbench/export_fixtures.py`; eine reparierte Platte
              braucht Re-Export **und** einen datierten Re-Baseline-Eintrag in
              `docs/reference/qualitaetsmetrik.md`.
-- Maße:      46 847 Bytes
-- SHA256:    1207be7af3acc4716e3a1c8ff02a6e74c580a4f167d33d82a879e1fea6bdfca9
+- Maße:      47 160 Bytes
+- SHA256:    06b8ccd1303d99c3e94e64dff2922584a84c5a804af5003d50c79857d5e7362b
 - Note:      Kein Eintrag trägt `incomplete`, und das ist geprüft: eine
              Randprüfung über alle 202 Rechtecke (2026-09-06,
              Zusammenhangskomponenten über die ganze Platte statt einer
