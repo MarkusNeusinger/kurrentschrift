@@ -282,10 +282,21 @@ WIDEST = {
 # register rows), rather than added up from two branches that each measured
 # without the other. The entry itself needed no raise; it was trimmed to 4 500
 # against the unchanged 4 503 ceiling, which is where a growing entry belongs.
+#
+# `mess-runde-route` raised for the FIRST time, on the same day, by the third of
+# those rounds: „Laufform LF15" measures a Kette knob (`chain_seed="chart"`), so
+# it owes `verfahren-kette.md` its ledger line — and that page is the widest
+# route, with three tokens of room. A ledger line is the one thing this path
+# cannot avoid growing by: it is how a route says what was tried on it and what
+# came out, one row per arm, and the alternative is a route page that stops
+# recording. Re-measured after the merge and given the documented 10 % headroom,
+# like every other path. `mess-runde` is not raised a fifth time in the same
+# breath: the raise above already covers this round's two register rows and its
+# §7.9/§7.11 rows, which is what the headroom is for.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
     "mess-runde": 23_894,
-    "mess-runde-route": 6_177,
+    "mess-runde-route": 6_890,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,
     "komposition": 9_680,

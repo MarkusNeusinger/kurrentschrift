@@ -173,6 +173,15 @@ Buchstabens (breiter, geneigter als die Tafelform). Liegt als
 Template-Variante 100, `LAUFFORM_VARIANT = 100`, nur in fließenden Läufen.
 → [§2](glossar.md#2-architektur-und-datenmodell)
 
+**Ernte-Fixpunkt · Chart-Saat** — die Ernte komponiert das Wort AUS den
+Laufform-Zeilen und startet den Kettenlöser dort, liest also die Zeilen,
+die sie ersetzen wird; die Iteration konvergiert nicht (0,005–0,063 xh je
+Schritt). Die **Chart-Saat** (`chain_seed="chart"`, Default AUS) setzt den
+Lauf auf einer Komposition OHNE Zeilen auf und macht die Karte in einem
+Schritt byte-gleich reproduzierbar. Vor jedem Laufform-Write gilt:
+zweimal ernten (`werkzeuge.md`).
+→ [§4](glossar.md#4-metriken-und-benchmarks)
+
 **Kringel-Landmarke** — die Erwartung „diese Schleife muss offen bleiben"
 je Buchstabe und je Schleife statt als eine Schwelle: Größenklasse
 (`klein` · `mittel` · `groß`, gezählt in Breiten der Plattenfeder) plus
