@@ -11970,6 +11970,20 @@ beiden.
   (Präzedenz J4b), weil die Asymmetrie-Regel vom `aug26` verlangt, einen
   lopsided Befund zu zerlegen statt zu verwerfen: 227 von 240 Nähten
   gewonnen gegen drei Übungswörter verloren ist genau so ein Fall.
+* **Der ebene Twist reicht nach ABSTAND, nicht am Zug entlang — also kann das
+  Drehen eines Eingangs das AUSTRITTSENDE derselben Glyphe mitnehmen**, wenn
+  ihr Zug in die Nähe des eigenen Anstrichs zurückläuft (die Schleife des
+  `d`/`e`). Alles, was der nächste Slot von ihr liest — Endpunkt, Tangente,
+  der dort abgehende Übergang — wird deshalb aus der Tinte neu abgeleitet, wie
+  es die Schleifen-/Kringel-/Balken-Schnitte schon tun; ohne das startete der
+  dritte Buchstabe eines Laufs auf einem Punkt, der auf keiner Tinte mehr
+  liegt (im Test 0,008 xh daneben). Auf dem eingefrorenen Satz ist die
+  Korrektur **zahlneutral** — jede Spalte jeder Sprosse reproduziert
+  ziffernweise —, sie ist ein Korrektheits-Wächter, kein Effekt. Was bewusst
+  stehen bleibt: `ink_max_x` und `ink_profile` werden vor dem Twist gelesen und
+  unverändert weitergereicht, der Clearance-Boden des nächsten Slots kann also
+  um höchstens 0,3 · sin 8° ≈ 0,042 xh danebenliegen — die Platzierung DIESER
+  Glyphe ist die experimentelle Kontrolle und muss byte-gleich bleiben.
 
 **Grenzen.** Die Verdopplungs-Zahl der Paare steht auf 33 Zwei-Buchstaben-
 Übungen; drei davon tragen den ganzen Gate-Fehlschlag. Der Naht-Sensor

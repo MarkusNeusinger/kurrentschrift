@@ -274,18 +274,64 @@ def test_turn_seam_item_moves_rings_and_centerline_together() -> None:
         "centerline": [list(p) for p in line],
         "rings": [[[x, y + 0.05] for x, y in line] + [[x, y - 0.05] for x, y in line[::-1]]],
     }
+    before = [list(p) for p in item["rings"][0]]
     _turn_seam_item(item, 8.0, at_end=True, blend=SEAM_NEGOTIATE_BLEND)
     assert item["centerline"][-1] == [line[-1][0], line[-1][1]]  # the seam point holds
     assert item["centerline"][0] == [line[0][0], line[0][1]]  # the far end holds
-    assert item["rings"][0][0] != [line[0][0], line[0][1] + 0.05] or True  # rings exist
-    # The turned tip's ink stays a half-width off the turned centerline.
+    # The ring points inside the rigid seam disc really moved — a silhouette
+    # left behind is the defect this function exists to prevent, and it would
+    # otherwise pass the proximity check below unnoticed.
+    seam = tuple(line[-1])
+    inside = [(a, b) for a, b in zip(before, item["rings"][0], strict=True) if math.dist(a, seam) <= 0.05]
+    assert inside
+    assert all(math.dist(a, b) > 1e-6 for a, b in inside if math.dist(a, seam) > 1e-9)
+    # … and the ink still sits a half-width off the TURNED centerline.
     turned = [tuple(p) for p in item["centerline"]]
     for x, y in item["rings"][0]:
         assert min(math.dist((x, y), p) for p in turned) < 0.06
 
 
-def test_seam_negotiation_max_jump_rejects_a_negative_angle() -> None:
+# A glyph whose stroke loops back near its own lead-in, so the twist — which
+# reaches by DISTANCE, not along the stroke — moves its EXIT while turning its
+# entry: the stroke ends well inside SEAM_NEGOTIATE_BLEND of the coupling
+# sample it is turned about.
+_LOOPING = [*_ramp((0.0, 0.30), 40.0, 0.35, 12), (0.32, 0.95), (0.12, 1.10), (0.02, 0.80), (0.16, 0.45), (0.10, 0.25)]
+
+
+def test_a_looped_glyph_hands_on_the_exit_it_actually_drew() -> None:
+    # The twist reaches by distance, so turning this glyph's ENTRY also moves
+    # its exit — and everything the next slot reads off it (endpoint, tangent,
+    # the join that departs there) has to follow, or the third letter's join
+    # starts on a point that is no longer on any ink.
+    slots = [
+        GlyphSlot(key="e", text="e", position="initial", ligature=False, space=False),
+        GlyphSlot(key="n", text="n", position="medial", ligature=False, space=False),
+        GlyphSlot(key="i", text="i", position="final", ligature=False, space=False),
+    ]
+    payloads = {"e": _payload(_EXIT_30), "n": _payload(_LOOPING), "i": _payload(_ENTRY_40)}
+    off = compose_word(slots, payloads, provenance=True)
+    on = compose_word(slots, payloads, provenance=True, seam_negotiation=True)
+
+    def body_of(composed: dict, slot_index: int) -> list:
+        return [it for it in composed["items"] if it.get("slot_index") == slot_index][-1]["centerline"]
+
+    def join_from(composed: dict, slot_index: int) -> dict:
+        return next(it for it in composed["items"] if it.get("from_slot") == slot_index and it.get("to_slot"))
+
+    # The fixture really does exercise it: the looped glyph's exit MOVED.
+    assert math.dist(body_of(off, 1)[-1], body_of(on, 1)[-1]) > 1e-6
+    # … and the join to the third letter departs from exactly that new point.
+    assert join_from(on, 1)["exit"] == pytest.approx(body_of(on, 1)[-1], abs=1e-12)
+
+
+def test_seam_negotiation_max_jump_must_narrow_the_class() -> None:
     # A negative ceiling would silently disable the rule while the caller
-    # believes it asked for a narrower one — the CLI refuses it too.
-    with pytest.raises(ValueError, match="cannot be negative"):
+    # believes it asked for a narrower one; one ABOVE the pre-registered class
+    # would widen it while every report still calls the run the narrowed arm.
+    # Both CLIs refuse the same range.
+    with pytest.raises(ValueError, match="must lie between"):
         _compose(seam_negotiation=True, max_jump=-1.0)
+    with pytest.raises(ValueError, match="must lie between"):
+        _compose(seam_negotiation=True, max_jump=SEAM_MAX_JUMP_DEG + 1.0)
+    with pytest.raises(ValueError, match="must lie between"):
+        _compose(seam_negotiation=True, max_jump=float("nan"))

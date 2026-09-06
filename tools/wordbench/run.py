@@ -453,8 +453,12 @@ def main() -> None:
         parser.error("--exit-trim-min-kink is a kink in degrees and cannot be negative")
     if args.seam_negotiation_max_jump != SEAM_MAX_JUMP_DEG and not args.seam_negotiation:
         parser.error("--seam-negotiation-max-jump narrows --seam-negotiation; pass --seam-negotiation too (or drop it)")
-    if args.seam_negotiation_max_jump < 0:
-        parser.error("--seam-negotiation-max-jump is a seam angle in degrees and cannot be negative")
+    # It NARROWS: a value above the default (or a NaN, which fails both
+    # comparisons) would widen or disable the class while the header below
+    # still stamps the run as the narrowed J6b arm — a number lying about its
+    # own origin, which is exactly what --expect-root exists to prevent.
+    if not 0.0 <= args.seam_negotiation_max_jump <= SEAM_MAX_JUMP_DEG:
+        parser.error(f"--seam-negotiation-max-jump must lie between 0 and {SEAM_MAX_JUMP_DEG:g} degrees")
 
     overrides_by_base: dict[tuple[str, str], dict] = {}
     if args.overrides:

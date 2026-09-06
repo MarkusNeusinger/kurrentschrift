@@ -490,11 +490,16 @@ EXIT_TRIM_MIN_KINK_DEG = 0.0
 # Seam negotiation (Nahtverhandlung, `seam_negotiation` — pre-registered under
 # „Übergänge J6" in messjournal.md §14, author rule of 2026-09-06): where a
 # letter leaves at one angle and the next arrives at another, neither side gets
-# to dictate. Both ends turn a bounded amount toward the compromise angle
-# (Kompromisswinkel, their circular mean) and the connector is built to LEAVE
-# and ARRIVE at exactly those turned tangents — G1 at both seams, so the eye
-# finds no tangent step where the ductus has no event. Whatever the cap cannot
-# cover, the connector carries as smooth curvature, never as a kink.
+# to dictate. The target is the Kompromisswinkel, the circular mean of the two;
+# the letter turns at most SEAM_NEGOTIATE_CAP_DEG toward it and the generated
+# connector turns the REMAINDER, so the two ends end up agreeing — at the mean
+# where the cap covers half the gap, at the letter's capped direction where it
+# does not. What they agree on is the direction each shows over
+# SEAM_NEGOTIATE_WINDOW of arc, not the exact endpoint tangents: that is the
+# scale the eye reads a seam on and the scale the residual kink was measured on
+# (the J6 entry's gate (a1) records what the segment-scale residual does).
+# Whatever the cap cannot cover, the connector carries as smooth curvature,
+# never as a step.
 #
 # The window is the eye-scale arc, the same 0.05 xh EXIT_TRIM_WINDOW reads on
 # and the report-only sensor measures on: the composer's own TANGENT_WINDOW
@@ -2177,7 +2182,8 @@ def compose_word(
     holds) switches on the Nahtverhandlung — see SEAM_NEGOTIATE_CAP_DEG: at each
     end of a generated join the letter and the connector turn toward their
     compromise angle instead of one dictating to the other, so the pen leaves
-    and re-enters on ONE direction. Pre-registered under „Übergänge J6" in
+    and re-enters on one direction as the eye reads it, over
+    SEAM_NEGOTIATE_WINDOW of arc. Pre-registered under „Übergänge J6" in
     messjournal.md §14 (author rule of 2026-09-06). It turns only the last/first
     0.3 xh of the letter strokes, about the seam points themselves, so no
     coupling point and no placement moves; ligatures and non-joining slots are
@@ -2219,12 +2225,15 @@ def compose_word(
         raise ValueError(
             f"exit_trim_min_kink_deg is a kink in degrees and cannot be negative: {exit_trim_min_kink_deg}"
         )
-    if seam_negotiation_max_jump_deg < 0.0:
-        # Same reasoning: a negative ceiling would silently disable the rule
-        # while the caller believes it asked for a narrower one.
+    if not 0.0 <= seam_negotiation_max_jump_deg <= SEAM_MAX_JUMP_DEG:
+        # Same reasoning, both ways: a negative ceiling would silently disable
+        # the rule while the caller believes it asked for a narrower one, and
+        # one ABOVE the pre-registered class would widen it while every report
+        # still calls the run the narrowed J6b arm. NaN fails both comparisons
+        # and lands here too.
         raise ValueError(
-            "seam_negotiation_max_jump_deg is a seam angle in degrees and cannot be negative: "
-            f"{seam_negotiation_max_jump_deg}"
+            "seam_negotiation_max_jump_deg NARROWS the pre-registered class and must lie between 0 and "
+            f"{SEAM_MAX_JUMP_DEG} degrees: {seam_negotiation_max_jump_deg}"
         )
     items: list[dict] = []
     missing: list[str] = []
@@ -3114,10 +3123,33 @@ def compose_word(
                             for ring in rings_by_stroke[0]
                         ]
                     centerline = _turn_seam_end(centerline, d_conn, at_end=True, blend=conn_blend)
+                    # The twist reaches by DISTANCE, not along the stroke, so a
+                    # glyph whose stroke loops back near its own lead-in (d, e)
+                    # can have its EXIT end moved by a turn applied at the
+                    # entry. Everything the next slot reads off this glyph is
+                    # therefore re-derived from the ink as it now stands — the
+                    # same three lines the loop/Kringel/bar cuts already write,
+                    # for the same reason.
+                    if last_body_idx == 0:
+                        body_exit_line = [tuple(p) for p in centerlines[0]]
+                        exit_xy = body_exit_line[-1]
+                        exit_deg = _endpoint_tangent(body_exit_line, at_end=True)
+                        if stem_ride is not None:
+                            ride = _stem_depart_ride(body_exit_line, len(body_exit_line) - 1, STEM_DEPART_Y)
+                            stem_ride = [exit_xy, *ride] if ride else None
                 if out_seam is not None or in_seam is not None:
                     # The exit item was drawn and TRACKED before its end turned,
                     # so the running bounds are no longer exact (see the
                     # recompute at the end of this function).
+                    #
+                    # Declared approximation, the price of turning AFTER the
+                    # placement: ``ink_max_x`` and ``ink_profile`` were read off
+                    # the untwisted ink and are handed forward as they are, so
+                    # the NEXT slot's clearance floor can be off by at most
+                    # SEAM_NEGOTIATE_BLEND × sin(SEAM_NEGOTIATE_CAP_DEG) ≈ 0.042
+                    # xh. Re-reading them would be exact, but only the forward
+                    # copies may move — this glyph's own placement is the
+                    # experimental control and must stay byte-identical.
                     reshaped_exits = True
                     seam_turns = {
                         "exit": list(out_seam[:2]) if out_seam else None,

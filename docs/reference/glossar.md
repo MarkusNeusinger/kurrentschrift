@@ -787,11 +787,14 @@ mit `_loop_return_foot`, dem Schleifenfuß des Schleifen-Exits).
 **Nahtverhandlung** *(`seam_negotiation`, Übergänge J6)* — die Regel, die
 den **Naht-Winkel** nicht mehr einer Seite überlässt: an jedem Ende eines
 generierten Übergangs lesen Buchstabe und Verbinder ihre Richtung über
-dieselben 0,05 xh, einigen sich auf den **Kompromisswinkel** und drehen
-beide dorthin — der Buchstabe höchstens 8° über seine letzten bzw. ersten
-0,3 xh, der Verbinder den Rest über höchstens 45 % seines eigenen Bogens.
-Beide verlassen die Naht danach in derselben Richtung, der Übergang ist
-dort G1-stetig, und was der Deckel nicht deckt, trägt der Verbinder als
+dieselben 0,05 xh und drehen beide auf den **Kompromisswinkel** zu — der
+Buchstabe höchstens 8° über seine letzten bzw. ersten 0,3 xh, der Verbinder
+den REST über höchstens 45 % seines eigenen Bogens. Beide zeigen danach über
+dieses Fenster in dieselbe Richtung (beim Mittelwert, solange der Deckel die
+halbe Uneinigkeit deckt, sonst bei der gedeckelten Richtung des Buchstabens);
+gemeint ist also die Richtung auf der Augen-Skala, nicht die exakte
+Endsegment-Tangente — was auf dieser feineren Skala übrig bleibt, misst Gate
+(a1) des J6-Eintrags. Was der Deckel nicht deckt, trägt der Verbinder als
 glatte Krümmung statt als Knick. Anlass ist die Autorenregel vom
 2026-09-06 („in der letzten Kurve wird etwas weiter gedreht oder im
 Eingang, so dass sich beide Seiten auf einen Kompromiss einigen"). Gedreht
