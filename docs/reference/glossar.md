@@ -59,9 +59,9 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 
 - **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
 - **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
-- **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
+- **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
-- **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
+- **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
@@ -1816,6 +1816,38 @@ ein markierter Anker innerhalb eines Schleifenbereichs der CHART-Zeile
 gewollt eng — ein echter Ausflug, der zufällig in einer Binnenfläche
 landet, überlebt jetzt ins Vorkommen.
 → messjournal.md §14 „Laufform LF14 `sep06`"
+
+**Ernte-Fixpunkt** — die Frage, ob die Ernte auf ihrer eigenen Ausgabe
+stehen bleibt. Die Ernte ist eine Abbildung „Laufform-Zeilen →
+Laufform-Zeilen": `derive_word` komponiert das Wort AUS den Zeilen, der
+Kettenlöser startet auf dieser Komposition, und die gefitteten Anker
+werden zu den neuen Zeilen — **die Ernte liest also die Zeilen, die sie
+ersetzen wird.** Eine Karte heißt Fixpunkt, wenn zwischen zwei
+aufeinander folgenden Ernten KEINE Zeile um mehr als 0,002 xh wandert
+(die Zeilen sind auf 4 Nachkommastellen gerundet, ein echter Fixpunkt ist
+also byte-gleich). Mit der heutigen Saat ist sie es nicht und wird es
+auch nicht: gemessen `sep06` wandert die Iteration in jedem Schritt um
+0,005–0,063 xh weiter, und die Zahl der angenommenen Vorkommen wandert
+235 → 232 → 239 mit. Das ist keine Nichtreproduzierbarkeit (derselbe
+Befehl gibt zweimal dieselbe Karte), sondern eine Rückkopplung, und die
+praktische Folge steht in `werkzeuge.md`: eine Re-Harvest-Karte gehört
+gegen eine KONTROLLKARTE aus demselben Lauf gehalten, nie nur gegen den
+Bestand — sonst wird die Iteration als Arm-Effekt gebucht.
+→ messjournal.md §14 „Laufform LF14/LF15 `sep06`", werkzeuge.md
+
+**Chart-Saat** *(`chain_seed="chart"`, `tools/laufform/harvest.py`)* — die
+Saat, die die Rückkopplung durchschneidet, und damit der Arm gegen den
+fehlenden **Ernte-Fixpunkt**. Die Kette baut ihre Segmente ohnehin aus
+den CHART-Ankern; von den Laufform-Zeilen hängen nur Platzierung,
+Deckungsfenster und Registrierung ab, und alle drei kommen aus
+`derive_word`. Die Chart-Saat lässt den Kettenlauf deshalb auf einer
+Komposition OHNE Laufform-Zeilen aufsetzen — auf dem Duktus-Prior, den
+keine Ernte schreibt —, während Fit, Gates, Reparatur und Median
+unverändert gegen die Tinte laufen. Die Karte ist damit eine Funktion von
+Tinte und Prior allein und in EINEM Schritt Fixpunkt (gemessen
+byte-gleich, Vorkommen eingeschlossen). Default AUS; der Preis steht
+neben dem Gewinn im §14-Eintrag.
+→ messjournal.md §14 „Laufform LF15 `sep06`"
 
 **Spike-Verhältnis** *(`anchor_spike_ratio`, Gate `anchor_spike`)* — die
 Kennzahl hinter dem **Anker im leeren Papier**: größter Schritt zwischen

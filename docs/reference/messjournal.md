@@ -200,7 +200,7 @@ die DB) — mit seiner Bedingung.
 | sep04 | Lotse | [Absprung-Forensik](#lotse-absprung-forensik-sep04--jeder-absprung-ist-karten-vorfahrt-und-die-mehrheit-erbt-die-karte) | Autopsie | `bridge_no_rail` = 0 Punkte, Schienen-Auslauf 0 daneben; die Ritt-Doppelzone liegt in 49,5 % ihrer Punkte außerhalb der Tinte. Von 39 Ereignissen 23 geerbt (Karten-Abdrift, Überschuss +0,0000 = Kompositions-Platzierung), 15 von der starren Pinnung gemacht (Fenster-Versatz, +0,0928 xh) — neuer Sensor `tools/inkpilot/forensics.py` |
 | sep04 | Lotse | [Lotse-Sprung aufgelöst](#lotse-sprung-sep04--der-ungeklärte-sprung-ist-eine-transkription-keine-messung) | Autopsie · gegenstandslos | 0,0545 ist `laden` (Rang 9), der Median ist Rang 10 = 0,058522; `will` beweisbar unbewegt → kein Sprung. Zweitbefund: die stehende Basis ist drei Wurzeln alt, heute 0,056080 |
 | sep04 | Feder | [Platten-Nib A3 (Wortrunde)](#platten-nib-a3-sep04--vorregistrierung-die-wortrunde-über-die-strichbreite) | Pre-Reg · **Runde nicht gefahren — Autor-Entscheid 2026-09-05: Zielfeder = gemessene Wortfeder; Folgearm gestartet** | Halbbreite 0,097 statt 0,07251. Das Lineal ist nicht blind, sondern EINSEITIG: dem Lineal die breitere Feder nennen senkt bei unveränderter Geometrie 0,109218 → 0,101560. Nebenbedingung des Audits schon trocken gerissen (`gleichzug_doublings` 13 → 21) — ein ≥ 60 % lizenziert nur den Folgearm „Ink-Clearance an die Feder koppeln", nicht den Write |
-| sep04 | Übergänge | [J4 Wortrunde (Rettungsweg 3)](#übergänge-j4-sep04--vorregistrierung-die-wortrunde-als-benannter-rettungsweg) | Pre-Reg · Runde gebaut, Urteil offen | Der §7.9-Rettungsweg zum `dconn`-Negativ; auf der LF11-Wurzel neu vermessen: `seam_dep` +7,99 → +0,02, Wörter +0,000248 (Vorzeichen gedreht), Paare byte-gleich |
+| sep04 | Übergänge | [J4 Wortrunde (Rettungsweg 3)](#übergänge-j4-sep04--vorregistrierung-die-wortrunde-als-benannter-rettungsweg) | Pre-Reg · **Runde gefahren `sep06`**, Ergebnis im Eintrag „J4 `sep06`" unten | Der §7.9-Rettungsweg zum `dconn`-Negativ; auf der LF11-Wurzel neu vermessen: `seam_dep` +7,99 → +0,02, Wörter +0,000248 (Vorzeichen gedreht), Paare byte-gleich |
 | sep04 | Laufform | [LF12 Prod-Re-Harvest mit Kette v5](#laufform-lf12-sep04--vorregistrierung-der-prod-re-harvest-der-laufform-zeilen-mit-kette-v5) | Pre-Reg | Zeilen aus den Vorkommen des heutigen Ketten-Stands neu bilden, Schätzer und Schlüsselmenge unverändert; der Beweis-Boden gilt ab hier auch für den Bestand |
 | sep04 | Laufform | [LF12 gemessen (trocken)](#laufform-lf12-sep04--gemessen-trocken-alle-fünf-gates-grün-und-der-boden-fängt-vier-zeilen-ab) | Pre-Reg + gemessen · alle Gates grün, Karte trocken; Write wartet auf Autor-Go | 18 von 22 Zeilen neu (RMS-Median 0,0022 xh), Wörter 0,108107 · Paare 0,148231, kein Kreuzungsverlust, dev-19 `cross_missing` 13→12; der Boden fängt `P`/`S`/`p`/`s` ab — `S` steht seit dem LF11-Write bei n=2 und hat heute NULL Fits |
 | sep04 | Kette | [K-F Produktions-Init (A34)](#kette-k-f-sep04--vorregistrierung-der-produktions-init-autor-entscheid-a34-und-die-fällige-kette-nachmessung) | Pre-Reg | EIN Knopf `connector_init` mirror→production (der Verbraucher, den der P-Spiegel stehen ließ); Basis = frischer v5-Lauf auf der heutigen Wurzel = deklarierte Kette-Re-Baseline, weil seit `sep01` keine dev-19-Zahl über die Rechteck-Reparatur trägt |
@@ -218,6 +218,9 @@ die DB) — mit seiner Bedingung.
 | sep06 | Übergänge | [J6 Nahtverhandlung (Pre-Reg)](#übergänge-j6-sep06--vorregistrierung-die-nahtverhandlung-als-autorenregel) | Pre-Reg | Die Autorenregel vom 2026-09-06 in Geometrie: an jedem Ende eines generierten Übergangs einigen sich Buchstabe und Verbinder auf den **Kompromisswinkel** (zirkulärer Mittelwert, gelesen über 0,05 xh) und drehen beide dorthin — der Buchstabe höchstens 8° über 0,3 xh als ebener Twist um den Nahtpunkt, der Verbinder den Rest; über 45° Uneinigkeit bleibt die Regel weg, weil das eine Kehre des Duktus ist. Nahtpunkt = Drehpunkt, also bewegt sich KEINE Kopplungshöhe und keine Platzierung — der Unterschied zu P3-K1/K2/K3. Basis = Runde-5-Stand (J4); Gates (a1) exakte G1-Residuen · (a2) Augen-Skala · (a3) keine Naht schlechter · (b) kein neuer Knick im Blend · (c) Verdopplungen · (d) Deckung · (e) Lineal nur berichtet (Runde-5-Grund) · (f) Golden · (g) Kette-Identität |
 | sep06 | Übergänge | [J6 gemessen](#übergänge-j6-sep06--gemessen-die-naht-schließt-sich-an-beiden-enden-und-die-rechnung-steht-auf-drei-übungswörtern) | Pre-Reg + gemessen · **ehrliches Negativ** (Gate (c) rot) · Runde 7 gebaut, Urteil offen | **Die Naht ist zu:** über alle 240 Nähte fällt der Betrags-Median des Abgangs 2,67° → **0,01°** und der Ankunft 10,80° → **0,01°**, keine der 240 verlässt das 3°-Band nach oben, und jede verhandelbare Klasse geht auf ≤ 0,36° (Arkade→Arkade 18,57 → 0,00, sonstige 17,24 → 0,03, Gabel 14,43 → 0,01). Die drei stehenden Zahlen sind die Duktus-Ereignisse, die die 45°-Schranke draußen hält. **Verworfen an Gate (c):** Verdopplungen der Paare 3 → 5, zurechenbar auf `dp`/`ds` — dort trägt der Verbinder die 32,9° bzw. 31,9°, die der 8°-Deckel dem Buchstaben verwehrt, und der Haken legt sich 0,117/0,119 xh neben die eigene Tinte des `d` (Nib 0,145). (b) rot nur am Maximum (an der Naht +0,14°, p90 +0,46°/+1,67°, Maxima an Vertices mit 14,6°/133° Eigendrehung), (a1) rot aus Prinzip (auf Segment-Skala ist der Rest die Spitzenkrümmung der Buchstaben; gerade Auslaufstücke waren vorab verboten), (d)/(f)/(g) grün, (e) +0,000421 / −0,000024 im vorhergesagten Band. Der neue Unstetigkeits-Sensor folgt NICHT: `cont_kink_total` 337 → 349 (W) und 81 → 92 (P), teils mechanisch (`cont_measured` +51/+86 — Punkte verlassen die Ecken-Ausnahme). Nebenbefund: **J6 löst die Austrittsseite ohne J4 und billiger** (12,67 → 0,02 gegen 2,30, +0,000376 gegen +0,000582) |
 | sep06 | Übergänge | [S2 gemessen](#übergänge-s2-sep06--gemessen-alle-gates-bestehen-und-keine-einzelne-spalte-ist-der-richter) | Pre-Reg + gemessen · **validiert** (Lineal-Bestandteil-Kandidat, kein Lineal geändert) | **Alle fünf Gates bestehen, aber keine EINZELNE Spalte ist der Richter.** N1/N2 exakt (0,000e+00 gegen die gespeicherten Verbinder; 3 + 12 identische Wörter bewegen keine Spalte). P1 `naht-stark` (Urteil Kandidat 26 : 2): `kink_max_deg` 36,89 → **27,86**, `kink_count` 28/28 fallend, `wobble` −0,531. P2 `naht-schwach`: nur 17 statt 24 von 29 Wörtern bewegt, Wackler-Median −0,083 — Faktor 6, die Klassengrenze reproduziert. P3 `apex` (Basis 11 : 1): `bow_join` 0,0066 → **0,0034 in 12/12**, dazu (nicht vorregistriert) `kink_max_deg` +15,54°. Die Klasse `stem` (Basis 7 : 0) sieht nur `curv_loss` (8/8) und `wobble` (8/8). **Ehrliche Hälfte:** `bow_join` fällt in BEIDEN Runden, hätte Runde 6 allein also falsch entschieden — der Austritts-Trim verschiebt die Grenze Buchstabe/Verbinder und damit die Population (das Rahmen-Artefakt, für das S1 `dspan` gebaut wurde). Headline 0,108444 / 0,148236 vorher wie nachher |
+| sep06 | Laufform | [LF15 Ernte-Fixpunkt (Pre-Reg)](#laufform-lf15-sep06--vorregistrierung-der-fixpunkt-der-ernte-rettungsweg-2-von-lf14) | Pre-Reg | Rettungsweg 2 von LF14, Autor-Entscheid „3 ja": der Fixpunkt VOR dem nächsten Laufform-Write. „Ernte-Fixpunkt" numerisch definiert (größte Ankerbewegung zwischen zwei Karten ab `H1` ≤ 0,002 xh, gegen die gemessene Drift 0,0025–0,0283); Iteration `H0 → H1 → H2` aus Repo-Werkzeugen (harvest → `smoothrow --knots 0 --floor 1 --keep-stored`), Schlüsselsatz über alle Runden fest. Mechanismus vorab benannt: **Chart-Saat** (`chain_seed="chart"`, Default AUS) — die vorregistrierten Kandidaten (a) und (b) fallen in eine Implementierung, (c) wird nicht gebaut. Gates (F) Fixpunkt · (G) Kette-Identität · (H) Lineal byte-gleich · (I) Golden, dazu Bericht (J) mit Entscheidregel 0,03 xh für die Frage, ob der nächste Write den Saatwechsel als EINE Re-Baseline mitnehmen darf. Definiert „Ernte-Fixpunkt" numerisch, legt die Iteration `H0 → H1 → H2` aus Repo-Werkzeugen fest (Schlüsselsatz über alle Runden fest), benennt den Mechanismus vorab (**Chart-Saat**, Default AUS; die Kandidaten (a)/(b) fallen in eine Implementierung, (c) wird nicht gebaut) und die Gates (F) Fixpunkt · (G) Kette-Identität · (H) Lineal · (I) Golden plus den Bericht (J) mit Entscheidregel für die Frage, ob ein Write den Saatwechsel mitnehmen darf. Offenlegung zur Basis: die `sep05`-Wurzeln lagen nicht mehr vor und wurden rekonstruiert |
+| sep06 | Laufform | [LF15 gemessen](#laufform-lf15-sep06--gemessen-die-iteration-läuft-weg-und-die-chart-saat-hält-sie-in-einem-schritt-an) | Pre-Reg + gemessen · alle Gates grün · **Schalter bleibt AUS** (Regel (J)) · **stehende Regel: zweimal ernten** | **Die Iteration konvergiert nicht, sie wandert:** die schlimmste Zeile bewegt sich in den drei Schritten 0,0582 → 0,0627 → 0,0627 xh, die Richtung wechselt je Zeile, der angenommene Satz wandert 235 → 232 → 239 mit — der erste Schritt ist nicht der größte, also kein Einschwingen; ein Determinismus-Doppellauf steht davor. Auch die Kringel-Ablesung wandert mit: `a` und `o` überschreiten die 0,194-Marke allein durch Weiterernten. **Die Chart-Saat** macht die Karte in EINEM Schritt zum Fixpunkt — `K1` = `K2` = `K3` byte-gleich samt Vorkommen, und `K3` startet aus einer 0,058 xh entfernten Karte, die Zeilen-Unabhängigkeit ist damit gemessen. Preis: 226 statt 235 Vorkommen (an den Gates `connector_degenerate`/`anchor_spike`, nicht an der Fitgüte), `Z` fällt unter den Beleg-Boden. Alle vier Gates grün, (G) mit einer benannten Abweichung (eine erfundene Kreuzung weniger) und einer benannten Kostenseite; Bericht (J): 8 von 21 Zeilen über 0,03 xh, der Saatwechsel geht NICHT als Beifahrer mit. **Antwort auf die Ausgangsfrage: einen Laufform-Write heute einfach zu wiederholen ist nicht sicher** |
+| sep06 | Übergänge | [J4 Runde 5 gemessen](#übergänge-j4-sep06--runde-5-gemessen-richtung-34--2-unentschieden-gate-gerissen--durch-die-klasse-die-es-reißen-sollte) | Menschenrunde · Richtung erdrückend, `adopt: false` an der Tie-Schranke · **Adoption = Autor-Entscheid** (LF11-Präzedenz) | **Kandidat 34 : Basis 2** von 36 entschiedenen (94,4 % gegen ≥ 60 %), unentschieden 42,9 % gegen ≤ 25 %. Klassenweise löst sich der Widerspruch: `naht-stark` 26 : 2 bei **9,7 %** Ties (beide Schranken ✓), `naht-schwach` 8 : 0 bei **72,4 %** Ties — die Klasse, für die die Pre-Reg Unsichtbarkeit beschrieben hat. Instrument sauber: 3/3 Kontrollwörter als „kein Unterschied" erkannt, 10/12 Wiederholungen gleicher Arm bei 4/12 gleicher Seite (12 ≥ 6 Paare). Auf der `sep05`-Wurzel neu gemessen: Wörter 0,108444 → **0,109026** (+0,000581), Paare byte-gleich, `seam_dep` +7,59 → −0,70 (absolut 12,67 → **2,30**), Verdopplungen 14 = 14. **Der ganze Lineal-Verlust sitzt in der starken Klasse** (+0,036888 gegen −0,000262), also dort, wo das Auge 26 : 2 dagegen stimmt — von den 30 bestraften Wörtern gehen 18 : 0 an den Kandidaten. Klassenregel gemessen und verworfen: `exit_trim_min_kink_deg` reichert `naht-stark` ab 10° an (71 % gegen 59 %), TRENNT die Klassen aber bei keiner Schwelle — beide haben denselben Knick, +7,90 / +7,44 —, kostet zwischen 5° und 25° MEHR als der volle Trim und gibt ab 10° die Naht-Reparatur zurück; nur 30° zahlt 0,000202 zurück, feuert dann aber in 5 von 63 Wörtern |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -11992,3 +11995,548 @@ irgendwo dazwischen etwas verschlechtert; dafür ist der Unstetigkeits-
 Sensor gebaut, und dessen Population ist in dieser Runde nicht fixiert. Und
 das Wortlineal ist für diese Frage per Vorregistrierung nicht zuständig:
 seine +0,000421 sind kein Argument in beide Richtungen.
+
+### Laufform LF15 `sep06` — Vorregistrierung: der Fixpunkt der Ernte (Rettungsweg 2 von LF14)
+
+Geschrieben und committet VOR der ersten Zahl dieses Arms. Anlass ist
+Rettungsweg 2 des LF14-Eintrags und der Autor-Entscheid
+vom 2026-09-06 („3 ja"): der Fixpunkt wird ein eigener Arm, und zwar
+VOR dem nächsten Laufform-Write. Der Nebenbefund, um den es geht: eine
+frische Ernte der `sep05`-Wurzel leitet jede Zeile **0,0025–0,0283 xh**
+neben der ab, aus der diese Wurzel geschrieben wurde. Das ist keine
+Nichtreproduzierbarkeit (`--jobs 1` = `--jobs 4` byte-gleich), sondern
+eine Rückkopplung: `derive_word` komponiert das Wort AUS den
+Laufform-Zeilen, und `chain_seed="composed"` startet den Kettenlöser auf
+genau dieser Komposition — **die Ernte liest die Zeilen, die sie ersetzen
+wird.** Solange das so ist, ist jede Re-Harvest-Karte um die
+Größenordnung unscharf, in der LF13 und LF14 überhaupt messen.
+
+**Basis.** Die `sep05`-Wurzeln des LF12-Writes: `suetterlin-1922`
+`exported_at` 2026-09-05T21:33:12+00:00 `root_digest`
+**`eaa195aa7c84…`**, `suetterlin-1922-pairs` 2026-09-05T21:33:11+00:00
+**`0fbde2d72b64…`**, jeder Lauf mit `--expect-root` und
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`. Frisch gerechnet:
+**Wörter 0,108444 · Paare 0,148236** — ziffernweise die Headline des
+LF12-Writes.
+
+**Offenlegung zur Basis, vor der ersten Zahl.** Die `sep05`-Wurzeln lagen
+in dieser Umgebung nicht mehr vor (der Arbeitsbaum, der sie hielt, ist
+fort; auf Platte stand die `sep02`-Ausfuhr). Sie wurden REKONSTRUIERT und
+die Rekonstruktion an ihrer eigenen Kennung abgenommen: ein frischer
+`fetch_fixtures --set all` gegen die ausgelieferte API liefert beide
+Wurzeln byte-gleich bis auf `exported_at`; mit den beiden
+`sep05`-Zeitstempeln eingesetzt trifft die Kennung
+`eaa195aa7c84…` / `0fbde2d72b64…` exakt. Das ist zugleich der Beleg, dass
+seit dem LF12-Write nichts in die DB geschrieben wurde. Nichts an den
+Wurzeln wurde sonst angefasst; `--expect-root` steht unter jedem Lauf.
+
+#### Was „Fixpunkt" heißt, numerisch
+
+Die Ernte ist eine Abbildung `H: Zeilen → Zeilen`. `H0` sind die
+geschriebenen Zeilen der Wurzel, `H1 = H(H0)`, `H2 = H(H1)`, `H3 = H(H2)`.
+Eine Saat heißt **Ernte-Fixpunkt-tauglich**, wenn ab `H1` gilt: die
+größte Ankerbewegung einer Zeile zwischen zwei aufeinander folgenden
+Karten ist **≤ 0,002 xh** für JEDE Zeile. Die Zahl ist gesetzt, bevor
+gemessen wird: die Zeilen werden auf 4 Nachkommastellen gerundet, ein
+echter Fixpunkt ist also byte-gleich (0,0000), und 0,002 xh lässt
+Rundungs- und Rasterboden Platz, liegt aber eine Größenordnung unter der
+gemessenen Drift von 0,0025–0,0283 xh.
+
+**Die Iteration, Schritt für Schritt** (nur Repo-Werkzeuge, keine
+DB-Schreibung, die eingefrorene Wurzel bleibt unberührt):
+
+1. `tools.laufform.harvest --path chain --sets words --min-n 1 --jobs 4`
+   auf der Wurzel, Zeilen aus dem `--laufform`-Overlay der vorigen Runde
+   (Runde 1: keins, also die Zeilen der Wurzel selbst);
+2. `tools.laufform.smoothrow --knots 0 --floor 1 --keep-stored
+   --keys stored` über die Vorkommen dieses Laufs — der Kontroll-Arm von
+   LF11, also der heutige Per-Anker-Median, als vollständige
+   21-Zeilen-Karte über genau den Schlüsseln, für die die Wurzel eine
+   Zeile hat;
+3. diese Karte ist die Saat-Grundlage der nächsten Runde.
+
+Der Schlüsselsatz bleibt damit über alle Runden derselbe — eine Karte mit
+anderen Schlüsseln komponierte einen anderen Buchstabensatz, und die
+Iteration verglich zwei Dinge statt einem.
+
+**Gemessen wird je Zeile und je Schritt:** die größte und die
+quadratisch gemittelte Ankerbewegung in xh, und für die Schleifen-Zeilen
+`a` `o` `sz` `g` `r` die Öffnungsweite `D0` auf dem eingefrorenen
+Bereichs-Lineal von LF13/LF14 (`chart_loop_ranges` / `range_aperture`,
+unverändert übernommen). Berichtet wird außerdem je Lauf die Zahl
+angenommener Vorkommen und der Median `geo_rmse_px` — eine Saat, die die
+Kette in ein schlechteres Becken setzt, muss daran sichtbar werden.
+
+#### Der Mechanismus, hinter einem Schalter mit Default AUS
+
+Eine Saat, die nicht von den Zeilen abhängt. Von den drei
+vorregistrierten Kandidaten fallen (a) „Saat aus der Chart-Kanonik" und
+(b) „Saat aus der Komposition, aber mit abgeschalteter Laufform" in EINE
+Implementierung zusammen: die Kette baut ihre Segmente ohnehin aus den
+CHART-Ankern (`_letter_spec`), von den Zeilen hängen nur Platzierung,
+Fenster und Registrierung ab — alle drei kommen aus `derive_word`. Der
+Schalter ist deshalb genau das: **`chain_seed="chart"` (die Chart-Saat)**
+lässt den Kettenlauf auf einer Komposition OHNE Laufform-Zeilen
+aufsetzen, während Fit, Gates und Ernte unverändert gegen die Tinte
+laufen. Kandidat (c) — die Saat aus dem gespeicherten Vorkommen — wird
+NICHT gebaut: er trägt eine zweite Quelle in die Ernte, ist damit nicht
+die kleinste Änderung, und er hat sein eigenes Rückkopplungsproblem
+(Vorkommen und Zeilen stammen aus demselben Lauf). Er bleibt als
+Rettungsweg stehen, falls die Chart-Saat an einem Gate fällt.
+
+Default AUS (`chain_seed="composed"`), das Muster von `LAUFFORM_END_WINDOW`,
+`LAUFFORM_LOOP_WINDOW` und `INK_CLEARANCE`. Gemessen wird dieselbe Kette
+`H0 → H1 → H2` mit der Chart-Saat, und zusätzlich — weil ein Fixpunkt
+„per Konstruktion" eine Behauptung wäre — eine Ernte mit Chart-Saat auf
+den DEUTLICH anderen Zeilen der `H1`-Karte der heutigen Saat: gibt sie
+dieselbe Karte, ist die Zeilen-Unabhängigkeit gemessen und nicht
+argumentiert.
+
+#### Die Gates, vor der ersten Zahl des Arms festgelegt
+
+**(F) Fixpunkt.** Mit der Chart-Saat bewegt sich zwischen `H1` und `H2`
+KEINE Zeile um mehr als **0,002 xh**. Rot heißt: der Mechanismus löst die
+Rückkopplung nicht.
+
+**(G) Kette-Identität.** `tracebench --split dev --candidate chain` auf
+derselben eingefrorenen Wurzel, Chart-Saat gegen heutige Saat:
+`cross_missing` und `cross_spurious` über den Split **unverändert**, und
+der Median `dtw` **≤** dem der heutigen Saat. Die Ernte muss dieselben
+Striche finden; eine Saat, die das nicht tut, ist keine Saat, sondern ein
+anderes Verfahren.
+
+**(H) Lineal.** `wordbench.run --set all --expect-root
+eaa195aa7c84,0fbde2d72b64` mit Schalter AUS und AN: **byte-gleich**
+0,108444 · 0,148236. Der Schalter sitzt in der Messschicht und die Zeilen
+der Wurzel ändern sich nicht — jede Bewegung hier wäre ein Leck.
+
+**(I) Golden.** `compose_golden` mit `pen=None` byte-gleich.
+
+**(J) Wiedergabe der geschriebenen Zeilen — Bericht mit Entscheidregel,
+kein Gate.** Berichtet wird je Zeile `max |H1(Chart-Saat) − H0|`. Die
+Regel steht vorher: liegt jede Zeile **≤ 0,03 xh** (die Bewegungsschranke,
+an der LF14s Gate (b) gemessen hat), dann ist der Saatwechsel eine
+Bewegung innerhalb des Bandes, das ein Laufform-Write ohnehin trägt, und
+der nächste Write kann ihn als EINE deklarierte Re-Baseline mitnehmen.
+Liegt eine Zeile darüber, ist der Saatwechsel ein eigener Arm mit eigener
+Vorregistrierung und geht NICHT nebenbei mit.
+
+**Kill-Kriterium:** (F) rot = der Mechanismus ist verworfen. (G), (H)
+oder (I) rot = keine Empfehlung, ehrliches Negativ mit benannten
+Rettungswegen plus §7.9-Zeile. Ein grüner Arm liefert eine Regel für die
+Ernte und eine TROCKENE Karte; der Write bleibt ein Autorenvorgang und
+findet in dieser Runde nicht statt.
+
+**Was diese Runde ausdrücklich NICHT tut.** Kein DB-Write, keine
+Wurzel-Neuausfuhr, keine Änderung an `core/`, an `word_metric.py` oder an
+`tracebench`, keine neuen Schlüssel, keine Reparatur des `p`, und keine
+Adoption des `LOOP_AWARE_REPAIR`-Schalters von LF14 (bleibt AUS).
+
+### Laufform LF15 `sep06` — gemessen: die Iteration läuft weg, und die Chart-Saat hält sie in EINEM Schritt an
+
+Umgebung wie vorregistriert: Wurzeln **`eaa195aa7c84`** /
+**`0fbde2d72b64`**, jeder Lauf mit `--expect-root` und
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`, Basis-Headline ziffernweise
+reproduziert (**0,108444 · 0,148236**) — vor und nach der Codeänderung
+dieselbe Zahl. **Es wurde nichts geschrieben und keine Wurzel neu
+ausgeführt.**
+
+Drei Abnahmen stehen vor der ersten Zahl. **(1) Die Basis.** Die
+`sep05`-Wurzeln lagen nicht mehr auf Platte; die Rekonstruktion ist an
+ihrer eigenen Kennung abgenommen — ein frischer `fetch_fixtures --set
+all` gegen die ausgelieferte API liefert beide byte-gleich bis auf
+`exported_at`, und mit den `sep05`-Zeitstempeln trifft der Digest
+`eaa195aa7c84…` / `0fbde2d72b64…` exakt. Nebenbei ist das der Beleg, dass
+seit dem LF12-Write **nichts in die DB geschrieben wurde**. **(2)
+Determinismus.** Derselbe Ernte-Befehl zweimal gefahren gibt Karte UND
+Vorkommensdatei byte-gleich — jede Bewegung unten ist also zurechenbar.
+**(3) Das Lineal.** Die `D0`-Ablesung der Schleifen-Zeilen reproduziert
+LF14s eigene Zahl (`g`-Zeile 0,1743).
+
+**Eine Abweichung bleibt offen und gehört hierher:** meine frische
+Kontrollkarte ist NICHT LF14s Kontrollkarte. Beide sind „frische Ernte
+der eingefrorenen `sep05`-Wurzel mit heutiger Saat", beide nehmen je
+Schlüssel exakt dieselbe Zahl Vorkommen an — und die Anker liegen bis zu
+**0,058 xh** (`P`) auseinander. Welche Wurzel LF14s Ernte gelesen hat,
+lässt sich nicht mehr feststellen: die Ernte hatte damals kein
+`--expect-root`, und die Sitzung führte eine nib-gepatchte Kopie derselben
+Wurzel (0,097 statt 0,0724) mit. Genau diese Klasse Zweifel schließt das
+Flag, das dieser Arm der Ernte gibt.
+
+#### Teil 1 — die Iteration konvergiert nicht, sie wandert
+
+Größte / quadratisch gemittelte Ankerbewegung je Zeile und Schritt, in xh
+(`H0` = die geschriebenen Zeilen der Wurzel):
+
+| Zeile | H0→C1 | C1→C2 | C2→C3 | | Zeile | H0→C1 | C1→C2 | C2→C3 |
+|---|---|---|---|---|---|---|---|---|
+| `P` | 0,0582/0,0114 | 0,0107/0,0023 | 0,0106/0,0019 | | `o` | 0,0526/0,0100 | 0,0266/0,0052 | 0,0309/0,0052 |
+| `Z` | 0,0534/0,0118 | 0,0126/0,0031 | 0,0160/0,0044 | | `p` | 0,0335/0,0095 | 0,0125/0,0029 | 0,0239/0,0056 |
+| `a` | 0,0167/0,0061 | 0,0161/0,0052 | 0,0225/0,0069 | | `r` | 0,0152/0,0037 | 0,0050/0,0018 | 0,0055/0,0015 |
+| `d` | 0,0405/0,0092 | **0,0627**/0,0151 | **0,0627**/0,0147 | | `s` | 0,0131/0,0043 | 0,0304/0,0044 | 0,0192/0,0037 |
+| `e` | 0,0209/0,0039 | 0,0051/0,0016 | 0,0092/0,0015 | | `sz` | 0,0391/0,0091 | 0,0173/0,0030 | 0,0203/0,0039 |
+| `g` | 0,0317/0,0089 | 0,0091/0,0030 | 0,0259/0,0088 | | `w` | 0,0399/0,0117 | 0,0305/0,0056 | 0,0443/0,0049 |
+| `i` | 0,0203/0,0044 | 0,0171/0,0031 | 0,0096/0,0022 | | `z` | 0,0370/0,0092 | 0,0133/0,0033 | 0,0114/0,0030 |
+| **schlimmste Zeile** | **0,0582** | **0,0627** | **0,0627** | | (`c` `h` `l` `longs` `m` `n` `u` alle ≤ 0,0269) |
+
+**Der erste Schritt ist nicht der größte** — das ist die Antwort. Die
+Bewegung klingt nicht ab: sie ist in Schritt 2 und 3 so groß wie in
+Schritt 1, und sie wechselt je Zeile die Richtung (`o` +0,0526, dann
+−0,0266, dann +0,0309). Auch der ANGENOMMENE Satz wandert mit:
+**235 → 232 → 239** von 277 Buchstaben. Das ist kein Einschwingen und
+kein Rauschen (Determinismus abgenommen), sondern eine Iteration ohne
+Fixpunkt. Der `sep06`-Nebenbefund von LF14 („0,0025–0,0283") war die
+UNTERE Hälfte davon; auf dieser Wurzel misst der erste Schritt
+0,0092–0,0582.
+
+Das Lineal der Kringel wandert mit. `D0` der Schleifen-Zeilen auf dem
+eingefrorenen Bereichs-Lineal von LF13:
+
+| Bereich | Tafel | `H0` | `C1` | `C2` | `C3` | `K1` (Chart-Saat) |
+|---|---|---|---|---|---|---|
+| `a`[0] | 0,1856 | 0,1858 | 0,1852 | 0,1905 | **0,1942** | **0,1960** |
+| `o`[0] | 0,1850 | 0,1767 | 0,1807 | 0,1901 | **0,2037** | 0,1879 |
+| `sz`[0] | 0,1907 | 0,1876 | 0,1861 | 0,1852 | 0,1850 | 0,1824 |
+| `g`[1] | 0,1848 | 0,1743 | 0,1736 | 0,1745 | 0,1574 | **0,1943** |
+| `r`[0] | 0,1805 | 0,2087 | 0,2125 | 0,2124 | 0,2135 | 0,2132 |
+
+Die 0,194-Marke, an der LF13/LF14 „offen" von „zu" trennen, wird in
+dieser Spalte allein durch Weiterernten überschritten (`a` bei `C3`, `o`
+bei `C3`) und anderswo unterschritten (`g` 0,1745 → 0,1574). **Eine
+Kringel-Kennzahl, die auf einer nachgeernteten Karte abgelesen wird,
+trägt also die Iteration mit.**
+
+#### Teil 2 — die Chart-Saat ist ein Fixpunkt, gemessen statt behauptet
+
+Mit `chain_seed="chart"`: `K1` (aus den Zeilen der Wurzel), `K2` (aus
+`K1`s eigener Karte) und `K3` (aus der `C1`-Karte, die 0,058 xh anders
+liegt) sind **byte-gleich — Karten UND Vorkommensdateien.** `K3` ist die
+Probe, die den Unterschied zwischen „per Konstruktion" und „gemessen"
+macht: drei sehr verschiedene Zeilensätze, eine Karte.
+
+Der Preis steht daneben und ist nicht null. Die Chart-Saat nimmt
+**226 statt 235** Vorkommen an (`e` −3 · `n` −2 · `u` `t` `Z` `d` `a` `g`
+je −1, dagegen `r` +1 · `S` +1); die verlorenen fallen an
+`connector_degenerate` (24 → 30) und `anchor_spike` (8 → 11), nicht an
+der Fitgüte — der Median `geo_rmse_px` ist mit **0,982** sogar besser als
+die 1,002 der heutigen Saat (p90 1,427 gegen 1,429). Eine Zeile fällt
+dabei unter den Beleg-Boden: **`Z` steht auf n = 2** statt 3, und
+`LAUFFORM_MIN_OCCURRENCES` ist 3 — der Schreibweg würde sie abweisen.
+Die Zahl der Zeilen, die der Schreibweg an Sprung- oder Kopf-Gate
+abweist, bleibt bei 5 (die Namen wechseln: `Z` `i` `longs` `o` `z` →
+`i` `m` `o` `sz` `z`).
+
+#### Die Gates
+
+| Gate | Soll | Gemessen | |
+|---|---|---|---|
+| **(F) Fixpunkt** | `K1`→`K2` ≤ 0,002 xh je Zeile | **0,0000** — byte-gleich, Vorkommen eingeschlossen; `K3` ebenso | **grün** |
+| **(G) Kette-Identität** | `cross_missing`/`cross_spurious` unverändert · Median `dtw` ≤ Basis | `cross_missing` **12 = 12** · `cross_spurious` **7 → 6** (bewegt, um EINE erfundene Kreuzung weniger) · dtw-Median 0,049757 → **0,048881** | grün, mit benannter Abweichung |
+| **(H) Lineal** | byte-gleich | 0,108444 · 0,148236 | **grün** |
+| **(I) Golden** | byte-gleich | byte-gleich | **grün** |
+| **(J) Wiedergabe** *(Bericht + Regel)* | jede Zeile ≤ 0,03 xh → darf mitgehen | 0,0095–**0,1774**; **8 Zeilen darüber** (`sz` 0,1774 · `P` 0,0580 · `o` 0,0546 · `Z` 0,0533 · `w` 0,0456 · `d` 0,0429 · `z` 0,0370 · `g` 0,0361) | **geht NICHT mit** |
+
+**Die Kostenseite von (G), vollständig:** gepaart über die 19 dev-Wörter
+sind 12 besser und 7 schlechter (Vorzeichentest p = 0,36), der
+dtw-Median fällt um 0,000087 — aber der Schwanz steigt (p90 0,091389 →
+0,100579), `aiou` fällt 0,7030 → **0,6981**, Chamfer steigt beidseitig um
+0,0017 / 0,0007, und drei Wörter verlieren deutlich: `Galoppieren`
++0,0280 · `die` +0,0191 · `unter` +0,0146. Auf der Habenseite steht neben
+der Kreuzung die Retrace-Lücke (0,431 → **0,307**). Die Saat ist also
+keine Verbesserung der Kette, sie ist eine andere Startlage mit
+denselben Strichen — was Gate (G) fragen sollte.
+
+#### Verdikt
+
+**Der Mechanismus ist bestätigt, die Adoption ist ein Autorenschritt.**
+Alle vier Gates grün, die Abweichung an (G) ist eine erfundene Kreuzung
+weniger, und die Ernte ist mit der Chart-Saat das, was ein Schreibweg
+braucht: eine Abbildung, deren zweiter Durchlauf die geschriebene Karte
+byte-gleich reproduziert. Der Schalter bleibt trotzdem **AUS**, weil
+Regel (J) vor der Zahl feststand: 8 von 21 Zeilen bewegen sich um mehr
+als 0,03 xh, das ist eine deklarierte Re-Baseline und kein Beifahrer.
+Die Karten liegen trocken im Sitzungs-Scratchpad.
+
+**Die unmittelbar nutzbare Ausbeute ist eine Regel, kein Knopf:**
+*zweimal ernten, bevor geschrieben wird.* Sie steht als stehender Schritt
+in `werkzeuge.md`, und die zwei Flags, die sie zu je einem Befehl machen
+(`--laufform` als Overlay, `--expect-root` als Basis-Nennung), sind Teil
+dieses Arms. Damit ist auch die Frage beantwortet, ob ein
+Laufform-Write heute einfach wiederholt werden darf: **nein.** Eine
+Wiederholung mit der heutigen Saat landet 0,009–0,058 xh neben dem
+Bestand, und die Ernte danach wandert weiter. Der nächste Write nimmt
+entweder die Chart-Saat (ein Fixpunkt, dafür eine deklarierte
+Re-Baseline und 9 Vorkommen weniger) oder er fährt mindestens die
+Selbstprüfung und bucht den Iterationsanteil getrennt.
+
+#### Rettungswege
+
+1. **Die 9 Vorkommen zurückholen** — sie fallen an `connector_degenerate`
+   (+6) und `anchor_spike` (+3), nicht an der Fitgüte. Beide Gates
+   urteilen über eine Startlage, die jetzt weiter von der Tinte weg
+   liegt; ein Zwei-Stufen-Lauf (Chart-Saat solven, dann EINMAL auf dem
+   eigenen Ergebnis nachsolven) bliebe zeilen-unabhängig und säße näher.
+   Eigene Pre-Reg.
+2. **Die Saat aus dem gespeicherten Vorkommen** (Kandidat (c) der
+   Vorregistrierung, nicht gebaut) — sie stünde noch näher an der Tinte,
+   trägt aber ihre eigene Rückkopplung (Vorkommen und Zeilen stammen aus
+   demselben Lauf) und muss sie mitmessen. Eigene Pre-Reg.
+3. **Das `Z` unter dem Boden** — mit der Chart-Saat n = 2. Entweder der
+   Weg (1) holt das dritte Vorkommen zurück, oder die Zeile bleibt beim
+   Bestand; eine Absenkung des Bodens ist ausdrücklich KEIN Weg.
+4. **Autorenweg** — die Adoption der Chart-Saat als Default ist ein
+   Re-Baseline-Write und damit eine Autorenentscheidung.
+
+**Ausdrücklich kein Weg:** die Bewegung wegdefinieren, indem eine
+Re-Harvest-Karte nur noch gegen ihre Kontrollkarte statt gegen den
+Bestand berichtet wird — die Kontrollkarte ist die richtige VERGLEICHS-
+größe, aber sie macht die Iteration nicht kleiner.
+
+**Selbst entschieden.**
+
+* **Drei Iterationsschritte statt zwei.** Zwei hätten „bewegt sich" gesagt,
+  drei sagen „wandert" — der Unterschied zwischen Einschwingen und
+  Weglaufen ist erst ab dem dritten Schritt lesbar, und er ist die
+  eigentliche Antwort.
+* **`K3` als Nullprobe gefahren**, obwohl die Vorregistrierung nur
+  `H0 → H1 → H2` verlangt. Ohne sie wäre die Zeilen-Unabhängigkeit ein
+  Argument über den Code statt eine Messung.
+* **Den Determinismus-Doppellauf vorgeschaltet.** Er kostet zehn Minuten
+  und ist der einzige Grund, warum die Tabelle in Teil 1 etwas über die
+  Rückkopplung sagt und nicht über die Maschine.
+* **Die Abweichung zu LF14s Kontrollkarte stehen gelassen statt geglättet.**
+  Sie ist nicht auflösbar, und sie ist die beste Begründung für
+  `--expect-root` an der Ernte, die dieser Arm hat.
+
+**Grenzen.** Alles auf EINER Wurzel und EINEM Wortsatz (63 Wortproben,
+`--sets words`); die Paar-Drills sind nicht mitgeerntet. Die Iteration
+ist drei Schritte tief, nicht dreißig — dass sie in Schritt 4 einschwingt,
+ist nicht ausgeschlossen, nur unwahrscheinlich gemacht. `--min-n 1` hält
+`P` und `s` mit n = 1 in der Karte; ihre Bewegungen sind Einzelfits, keine
+Mediane, und die 0,058 xh am `P` sind entsprechend zu lesen.
+### Übergänge J4 `sep06` — Runde 5 gemessen: Richtung 34 : 2, Unentschieden-Gate gerissen — durch die Klasse, die es reißen sollte
+
+Die Menschenrunde aus der Vorregistrierung „Übergänge J4 `sep04`" ist
+gefahren (2026-09-06, Beurteiler = Autor, 75 Bildschirme in einem Zug). Sie
+ist **Rettungsweg (3)** der J4-Zeile in `../proposals/tintenfolger.md` §7.9;
+**keine Zahl der Einträge „Übergänge J4 `sep02`", „J4b `sep02`" und „S1
+`sep04`" ist angefasst** — der Arm ist dort am `dconn`-Gate gescheitert, und
+das bleibt er. Hier steht, was das Auge dazu sagt. Ablage der Runde:
+[`data/humanbench/runde-05-*`](../../data/humanbench/runde-05-stempel.md)
+(Urteile, schmaler Schlüssel, Auswertung, Stempel); Schlüssel, Payload, die
+beiden Arm-Dateien und die Klassendatei bleiben draußen (Open-Core-Vorbehalt).
+
+**Ein Freiheitsgrad, und er ist ein Schalter.** Basis `sha256`
+`8538513b46fbd10c`, Kandidat `404abd38fa2ef59b`
+(`wordarm.py --exit-trim`), Registrierung des Kandidaten an die Basis
+gepinnt, Wurzel-Export `2026-09-02T22:16:06+00:00` (Digest `6cbab9d5c092`,
+der Stand nach dem LF11-Write), sonst identische Einstellungen — `laufform`
+`frozen`, Nib 0,07251 `constant`, `apex_handover`/`stem_depart` aus,
+`exit_trim_min_kink_deg` 0 (die J4-Klasse als GANZE, nicht die
+J4b-Verengung). Die Regel feuert auf **60 von 63** Wortproben; die drei
+übrigen sind die Kontrollklasse.
+
+#### Der Auswerteplan, Schritt für Schritt
+
+| Schritt | Zahl | Schranke | Lesung |
+|---|---|---|---|
+| 1 Verlässlichkeit | **10/12 Paare gleicher Arm**, 4/12 gleiche Seite (4 Paare beidseits „kein Unterschied") | ≥ 6 Paare · > 7/12 Arm | beide Schranken genommen, Band `reliable` — geurteilt wurde nach dem **Bild**, nicht nach der Position; die Runde trägt einen Adoptionsanspruch |
+| 2 Seitenbilanz | links 17 · rechts 19 · unentschieden 27 (47,2 % der entschiedenen links) | berichtet, nie entscheidend | so ausgeglichen, wie eine Seitenbilanz werden kann; keine Meldeschwelle berührt |
+| 3 Verdikt | **Kandidat 34 : Basis 2** von 36 entschiedenen → Kandidat **94,4 %**; unentschieden 27 von 63 = **42,9 %** | ≥ 60 % · ≤ 25 % | Kandidaten-Schranke um 34 Punkte übertroffen, Tie-Schranke um 18 Punkte gerissen; `adopt: false` |
+| 5 Drift | Kandidat 12 · 9 · 13, Basis 0 · 2 · 0, Ties 9 · 10 · 8, Mediandauer 7 · 8 · 6 s | — | keine Ermüdung, kein Kippen; nur der erste Bildschirm zählt 43 s (Einlesen), der Rest liegt bei 2–20 s |
+
+#### Schritt 4 — je Verdachtsklasse
+
+Die Klassen sind vor der Runde deklariert und danach geschnitten, **wie weit
+der Kandidat die Zeichnung bewegt** (`arm_gap`, symmetrisch, in x-Höhen):
+
+| Klasse | n | entschieden | Kandidat | unentschieden | Schwellen | Lesung |
+|---|---|---|---|---|---|---|
+| `naht-stark` (Δ ≥ 0,1186 xh) | 31 | 28 | **26** (92,9 %) | 3 (**9,7 %**) | **beide ✓** | die Klasse, für die die Vorregistrierung „wenn der Trim irgendwo sichtbar hilft, dann hier" geschrieben hat — und genau das ist eingetreten |
+| `naht-schwach` (0,005 < Δ < 0,1186) | 29 | 8 | **8** (100 %) | 21 (**72,4 %**) | Kandidat ✓ · Ties ✗ | fast unsichtbar, aber nicht neutral: kein einziger Bildschirm geht an die Basis |
+| `unberuehrt` (Δ ≤ 0,005 xh) | 3 | 0 | — | **3 (100 %)** | unter `MIN_PAIRED_PER_CLASS` = 8 | die Kontrolle: dreimal dasselbe Bild, dreimal „kein Unterschied" — richtig |
+
+*Der Schnitt steht mit **0,1186 xh** so in der Klassendatei der Runde
+(`median_low` über die 60 bewegten Wörter); die Tabelle der Vorregistrierung
+nennt „≥ 0,106". Die ZUORDNUNG ist davon unberührt — zwischen `Gaul` 0,1063
+und `Gewehr` 0,1186 liegt kein Wort —, und die Vorregistrierungszahl bleibt
+stehen, wie sie geschrieben wurde. Gemeldet, weil eine Zahl, die zweimal
+verschieden dasteht, sonst beim nächsten Leser als Fehler ankommt.*
+
+**Die Gesamt-Tie-Quote ist die Summe zweier sehr verschiedener Klassen.**
+Von den 27 Unentschiedenen liegen **21 in `naht-schwach`** und 3 in der
+Kontrolle; in der Klasse, in der die Regel sichtbar arbeitet, bleiben **3 von
+31** Bildschirmen unentschieden. Die Schranke von 25 % fragt „ist der
+Unterschied oft genug sichtbar, um etwas zu ändern?" — die Antwort dieser
+Runde ist zweigeteilt und beide Teile stehen in der Vorregistrierung: **ja,
+wo die Regel viel bewegt (9,7 %), nein, wo sie wenig bewegt (72,4 %).** Die
+Klasse, an der das Gate reißt, ist die, für die es vorher als
+unwahrscheinlich beschrieben wurde, dass dort überhaupt etwas zu sehen ist.
+
+**Und das Instrument sieht.** Drei bit-nahe Kontrollwörter (die Regel feuert
+nicht) werden dreimal richtig als „kein Unterschied" erkannt; kein einziges
+„links" oder „rechts" auf einen Unterschied, den es nicht gibt. Zwölf blinde,
+gespiegelte Wiederholungen liefern zehnmal denselben ARM bei nur viermal
+derselben Seite. Die Antwortoption ist also benutzbar und wurde benutzt, und
+die Urteile hängen am Bild und nicht an der Position — dieselben zwei
+Prüfungen, die Runde 6 bestanden hat, hier mit 12 statt 4 Paaren und damit
+**über** dem Wiederholungs-Boden.
+
+#### Was das Lineal auf der HEUTIGEN Wurzel dazu sagt
+
+Der Arm wurde neu gemessen, weil die Wurzel seit dem Urteil eine andere ist:
+der LF12-Write vom `sep05` hat 18 Laufform-Zeilen ersetzt und `S` gelöscht.
+Wurzeln `suetterlin-1922` `exported_at 2026-09-05T21:33:12+00:00`
+`root_digest` **`eaa195aa7c84…`** und `suetterlin-1922-pairs`
+`0fbde2d72b64…`, jeder Lauf mit `--expect-root` und `OPENBLAS_NUM_THREADS=1
+OMP_NUM_THREADS=1`:
+
+| | Wörter | Paare | `seam_dep_median` | `seam_dep_abs_median` | `gleichzug_doublings` |
+|---|---|---|---|---|---|
+| Basis | **0,108444** | 0,148236 | **+7,59°** | 12,67 | 14 |
+| J4 (`--exit-trim`) | **0,109026** (**+0,000581**) | 0,148236 (byte-gleich) | **−0,70°** | **2,30** | 14 |
+
+Der Wort-Preis ist gegenüber der `sep04`-Messung auf der LF11-Wurzel
+gestiegen (+0,000248 → **+0,000581**) — die glattere LF12-Zeile lässt dem
+Trim andere Nachbarschaften. **Der Naht-Abgang verschwindet trotzdem
+praktisch vollständig**, und zwar nicht nur im Median: der ABSOLUTE Median
+fällt von 12,67° auf 2,30°, die Verdopplungen bleiben bei 14, die Paare sind
+byte-gleich, 63 von 63 Wörtern gescoret, keiner gefallen.
+
+**Die Zerlegung nach denselben Klassen ist der Kern dieses Eintrags:**
+
+| Klasse | n | Lineal besser | Lineal schlechter | Summe Δ`word_loss` | `seam_dep` Basis → Arm |
+|---|---|---|---|---|---|
+| `naht-stark` | 31 | 17 | 14 | **+0,036888** | +7,90° → **−0,36°** |
+| `naht-schwach` | 29 | 13 | 16 | **−0,000262** | +7,44° → **−1,18°** |
+| `unberuehrt` | 3 | 0 | 0 | 0,000000 | −5,48° → −5,48° |
+
+**Der gesamte Lineal-Verlust des Arms sitzt in der Klasse, in der das Auge
+26 : 2 für ihn stimmt.** In der schwachen Klasse ist das Lineal ein Nullsummenspiel
+(−0,000262 über 29 Wörter) — dort, wo das Auge nichts sieht, sieht das Lineal
+auch nichts. Und die Naht-Reparatur ist in BEIDEN Klassen praktisch gleich
+groß: +7,90 → −0,36 gegen +7,44 → −1,18. Die Klassen unterscheiden sich also
+nicht im Knick, sondern nur darin, wie weit sein Wegfall die Zeichnung
+verschiebt.
+
+**Wort für Wort ist die Gegenläufigkeit vollständig.** Von den 30 Wörtern,
+die das Lineal BESTRAFT, gehen am Auge **18 an den Kandidaten und 0 an die
+Basis** (12 unentschieden) — die sechs teuersten (`kann` +0,0213, `einer`
++0,0089, `daß` +0,0087, `und` +0,0085, `haben` +0,0068, `Einen` +0,0058)
+allesamt. Die beiden einzigen Basis-Stimmen der ganzen Runde (`muß-3`,
+`Seiten`) fallen auf Wörter, die das Lineal dem Kandidaten GUTSCHREIBT
+(−0,0006 und −0,0001). Das ist dieselbe Beobachtung wie in Runde 6, nur mit
+umgekehrtem Vorzeichen: die Kennzahl misst hier nachweislich etwas anderes
+als das, worüber entschieden wird — und genau dafür ist die Echtheitsfrage
+gebaut (`menschliche-bewertung.md` §8).
+
+#### Globale Umschaltung oder Klassenregel? — gemessen, nicht abgewogen
+
+Die naheliegende Verengung ist keine Idee, sondern ein fertiger Knopf:
+`exit_trim_min_kink_deg` (`core/compose.py`, der J4b-Arm) lässt den Trim nur
+dort feuern, wo der Verbinder wirklich vom Buchstaben abknickt. Die Leiter,
+auf der `sep05`-Wurzel gefahren, mit derselben Basis und BLAS gepinnt:
+
+| Schwelle | Wörter bewegt | davon `naht-stark` | davon `naht-schwach` | `word_loss` | `seam_dep_median` | `…_abs_median` |
+|---|---|---|---|---|---|---|
+| — (Basis) | 0 | 0/31 | 0/29 | 0,108444 | +7,59 | 12,67 |
+| 0° (J4, ganz) | 60 | **31/31** | **29/29** | 0,109026 | **−0,70** | **2,30** |
+| 5° | 54 | 27/31 | 27/29 | 0,109169 | −0,10 | 2,61 |
+| 10° | 39 | 22/31 | 17/29 | 0,109460 | +2,04 | 7,27 |
+| 15° | 34 | 21/31 | 13/29 | 0,109319 | +3,31 | 7,59 |
+| 20° | 19 | 12/31 | 7/29 | 0,109193 | +6,52 | 8,80 |
+| 25° | 16 | 12/31 | 4/29 | 0,109134 | +7,44 | 8,95 |
+| 30° | 5 | 4/31 | 1/29 | 0,108824 | +7,44 | 10,59 |
+
+Drei Befunde, und alle drei sprechen gegen die Klassenregel:
+
+1. **Die Schwelle REICHERT die starke Klasse an, aber sie trennt sie nicht.**
+   Ab 10° bleibt `naht-stark` anteilig häufiger im Feuer als `naht-schwach`
+   (10°: 22/31 = 71 % gegen 17/29 = 59 %; 25°: 12/31 = 39 % gegen 4/29 =
+   14 %) — bei 5° ist es sogar umgekehrt (87 % gegen 93 %). Eine Anreicherung
+   ist aber keine Trennung: bei 20° feuert die Regel noch in 7 schwachen
+   Wörtern und schon nicht mehr in 19 starken, und keine Sprosse isoliert die
+   Klasse, um die es geht. Warum das so sein muss, sagt die Messung darüber:
+   **die beiden Klassen haben denselben Knick** (+7,90 gegen +7,44) und
+   unterscheiden sich im `arm_gap`. Ein `seam_dep`-Schwellwert, der die starke
+   von der schwachen Klasse SAUBER trennt, existiert in diesen Daten also
+   nicht; was er liefert, ist eine schiefe Teilmenge beider.
+2. **Zwischen 5° und 25° kostet die Verengung MEHR, nicht weniger** — jede
+   dieser Sprossen liegt ÜBER dem vollen Trim (0,109134–0,109460 gegen
+   0,109026). Belohnt wird genau eine: **30° gibt 0,000202 der 0,000581
+   zurück** (0,108824), und das ist ehrlich zu nennen statt wegzulassen. Nur
+   ist es keine Klassenregel mehr: dort feuert die Regel in fünf von 63
+   Wörtern, davon vier starken und einem schwachen, und der Naht-Abgang steht
+   mit +7,44° faktisch wieder auf dem Basiswert. Man kauft rund ein Drittel
+   des Lineal-Preises zurück und verzichtet dafür auf 55 der 60 Wörter, in
+   denen der Trim überhaupt feuert.
+3. **Sie gibt die Reparatur zurück, für die der Arm gebaut wurde.** Ab 10°
+   steht der absolute Naht-Abgang wieder bei 7,3°–10,6° statt bei 2,30°; bei
+   25° ist der Median mit +7,44 faktisch der der Basis. Was die Sprossen
+   zurückgeben, ist also nicht Lineal-Preis GEGEN Wirkung, sondern beides
+   gemeinsam — und in dem einen Fall, in dem das Lineal zahlt (30°), am
+   stärksten.
+
+**Das kleinere ehrliche Mittel ist damit die globale Umschaltung.** Sie ist
+EIN bereits implementierter, bereits vorregistrierter und bereits vom Auge
+beurteilter Freiheitsgrad; die Klassenregel wäre eine zusätzliche Konstante,
+die die Klassen nicht trennt, auf fünf ihrer sechs Sprossen am Lineal teurer
+ist und auf der sechsten den gemessenen Nutzen fast vollständig zurücknimmt. Dass die schwache Klasse dabei mitgetrimmt wird, ist
+kein Preis: dort ist das Lineal neutral (−0,000262) und das Auge 8 : 0 für
+den Trim.
+
+#### Was die Vorregistrierung auslösen darf
+
+Der Plan verlangt für `adopt` **beide** Schwellen; die Tie-Schranke fällt,
+also entsteht **kein automatischer Adoptionsanspruch** — und das Werkzeug
+meldet korrekt `adopt: false`. Was die Vorregistrierung für diesen Fall
+wörtlich vorgesehen hat, steht im `sep04`-Eintrag: „Ein Ergebnis ≥ 60 % legt
+sie ihm vor" — dem Autor. Genau das tut dieser Eintrag, und mehr nicht.
+
+**Der Präzedenzfall ist die LF11-Wortrunde** (`sep02`): dort war die Richtung
+mit 40 : 1 ebenfalls erdrückend, die Tie-Schranke fiel in JEDER Lesart, ein
+formaler Anspruch entstand nicht — und der Autor hat auf dieser Grundlage
+freigegeben. Der Unterschied zu heute liegt zugunsten dieser Runde: dort
+hing über der Menge ein ungeklärter Instrumentdefekt, hier bestehen
+Wiederholungen (10/12 Arm) und Kontrollklasse (3/3) sauber, und die
+Tie-Quote ist klassenweise erklärt statt offen.
+
+**Empfehlung dieses Eintrags: `exit_trim` als Default an** — die globale
+Umschaltung, nicht die Klassenregel (Begründung eine Überschrift höher). Das
+ist eine rendernde Änderung: sie bewegt jede `/write/word`-Antwort und
+verlangt ein deklariertes Neu-Backen des Golden-Fixtures. **Die
+Entscheidung ist damit Autor-Sache, nicht die eines Bench-Ergebnisses**; sie
+steht nicht in diesem Abschnitt, sondern — wenn sie fällt — in einem eigenen
+datierten Eintrag.
+
+#### Was die Runde nicht beantwortet
+
+* **Die ANKUNFTSSEITE.** J4 verschlechtert sie messbar (`seam_arr_median`
+  −2,83° → −3,87° auf dieser Wurzel; auf der `sep02`-Wurzel −3,40 → −6,53).
+  Das bleibt ein eigener Arm mit eigener Vorregistrierung — Weg (1) der
+  §7.9-Zeile, jetzt mit `dspan`-Gates von Anfang an.
+* **`dconn`.** Das Maß ist konstruktiv ungeeignet, über eine Naht zu urteilen,
+  die die Grenze Buchstabe/Verbinder verschiebt — das war der Anlass der
+  Runde und ist mit `dspan` (`sep04`) beantwortet, nicht mit ihr.
+* **Ob der Trim auf einer ANDEREN Hand hilft.** 63 Wörter EINER Platte sind
+  die ganze Grundgesamtheit; einen Bestätigungssatz gibt es im Wortmodus
+  nicht, und `abb22` ist eine andere Hand.
+
+**Kein §7.9-Rettungsweg fällig** — die Regel gilt dem ehrlichen Negativ, und
+diese Runde ist keines. Die J4-Zeile bekommt stattdessen den
+Konversions-Stand ihres Rettungswegs (3).
+
+**Was die Runde dem INSTRUMENT eingetragen hat** steht in
+[`menschliche-bewertung.md`](menschliche-bewertung.md) §8a: die Tie-Schranke
+ist über ALLE Bildschirme definiert, eine Runde kann ihre Klassen aber so
+schneiden, dass eine davon vorhersagbar unsichtbar ist — dann misst die
+Gesamtquote die Klassenmischung mit. Als **Vorschlag**, nicht als stille
+Regeländerung, dort notiert.
+
+**Selbst entschieden (Routine im Rahmen der Vorregistrierung):** die
+Neu-Messung des Arms auf der `sep05`-Wurzel (ohne sie stünde die Empfehlung
+auf einer Zahl, die eine Wurzel alt ist); die klassenweise Zerlegung des
+Lineal-Deltas und der Naht-Reparatur (sie beantwortet die Klassenregel-Frage,
+die sonst eine Meinung geblieben wäre); die `exit_trim_min_kink_deg`-Leiter
+als Vergleichslauf — sie ist ein Report-Vergleich am bestehenden Knopf, kein
+neuer Arm, und keine ihrer Zahlen ist eine Headline.
