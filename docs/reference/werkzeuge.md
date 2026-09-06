@@ -321,7 +321,10 @@ Kompositionen **als Tinte** — der einzige Aufbau, in dem Zickzack,
 Strichstärke und Naht-Knick überhaupt sichtbar sind. `wordarm.py` ist der
 Referenz-Erzeuger der beiden Arme (`--laufform` für eine Kandidatenkarte,
 `--nib` für einen anderen Federmodus, `--apex-handover`/`--stem-depart` für
-die beiden Übergangsregeln der Klassenregel J5, `--registration-from` zum
+die beiden Übergangsregeln der Klassenregel J5, `--exit-trim` (J4) und
+`--seam-negotiation` (J6, die Nahtverhandlung — der Arm, für den
+`--registration-from` gebaut ist, weil er per Konstruktion keine Platzierung
+bewegt), `--registration-from` zum
 Pinnen der Platzierung); er komponiert per Import wie `tools/wordbench/run.py`
 und platziert mit demselben Lineal. Jede Armdatei schreibt ihre
 `join_rules` in die Einstellungen — eine Runde erbt nie stillschweigend
@@ -731,10 +734,13 @@ Warnung versehen. Begriff und Hausregel:
   eingefrorene Zeile) und `--no-laufform` komponiert chart-treu ohne
   jede Laufform. Beide liefern per Doktrin §6 eine
   OFF-HEADLINE-Kandidatenzahl, nie die Headline. Dieselbe Disziplin gilt für
-  die drei **Übergangs-Schalter**, die im Composer standardmäßig aus stehen
+  die vier **Übergangs-Schalter**, die im Composer standardmäßig aus stehen
   und hier einzeln zugeschaltet werden: `--exit-trim` (Arm J4, mit
   `--exit-trim-min-kink` als J4b-Verengung), `--apex-handover` und
-  `--stem-depart` (die beiden Arme der Klassenregel J5). Jeder gesetzte
+  `--stem-depart` (die beiden Arme der Klassenregel J5) sowie
+  `--seam-negotiation` (Arm J6, die **Nahtverhandlung**, mit
+  `--seam-negotiation-max-jump` als J6b-Verengung auf die Nähte, deren beide
+  Seiten sich auch treffen können). Jeder gesetzte
   Schalter nennt sich im Kopf des Laufs und im `--json`-Bericht, damit eine
   Leitersprosse sich nie unter dem Namen der Basis ablegt.
 - **`tools/wordbench/repair_boxes.py` + `shift_registrations.py`** (`aug31`)
