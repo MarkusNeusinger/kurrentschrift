@@ -1226,7 +1226,12 @@ def harvest_case(case, opts: HarvestOptions) -> CaseHarvest:
     """One specimen word → its fits, occurrences, word record and diagnostics.
 
     The ProcessPool unit of work: ONE `derive_word` per case whichever path
-    runs, and nothing shared with its siblings.
+    runs, and nothing shared with its siblings. The one exception is the chart
+    seed (`chain_seed="chart"`, default off), which composes the SEED without
+    the running forms and therefore derives a second time inside
+    `_seed_composition`; the composition it repeats is cheap next to the chain
+    solve it seeds, and this one is still the composition that decides whether
+    the case is harvestable at all.
     """
     if not case.scorable:
         return CaseHarvest({}, [], None, [])

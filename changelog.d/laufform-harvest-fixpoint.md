@@ -2,7 +2,7 @@
 
 - **The harvest can be seeded from the chart instead of from its own last
   output.** `tools.laufform.harvest --chain-seed chart` (and the matching
-  `tools.tracebench --chain-seed`) starts the chain solve on a composition built
+  `tools.tracebench.run --chain-seed`) starts the chain solve on a composition built
   WITHOUT the running-form rows. The default seed composes the word from those
   rows, so a harvest reads the rows it is about to replace and its map depends
   on its own previous map — measured in `messjournal.md` §14 „Laufform LF15".
