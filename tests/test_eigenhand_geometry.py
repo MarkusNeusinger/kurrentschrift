@@ -68,13 +68,17 @@ class TestCaptureLineature:
             assert geometry.CAPTURE_STYLES[role][1] < geometry.ROLE_STYLES[role][1], role
 
     def test_the_hierarchy_of_the_row_survives_the_thinning(self):
+        # Strictly decreasing, not merely non-increasing: two roles at the same
+        # width would leave the row without the ladder the writer reads it by.
         widths = [geometry.CAPTURE_STYLES[role][1] for role in ("baseline", "waist", "ascender", "slant")]
-        assert widths == sorted(widths, reverse=True)
+        assert all(wider > thinner for wider, thinner in zip(widths, widths[1:], strict=False)), widths
         assert geometry.CAPTURE_STYLES["ascender"] == geometry.CAPTURE_STYLES["descender"]
 
     def test_a_ruling_stays_printable(self):
         # A line the printer cannot resolve is guidance that never reaches the
-        # paper: 0.05 mm is under one dot at 600 dpi (0.042 mm).
+        # paper. One dot at 600 dpi measures 0.042 mm, so this floor keeps
+        # every ruling at least about one dot wide — below it the device has
+        # nothing left to draw the line with.
         for role in self.RULINGS:
             assert geometry.CAPTURE_STYLES[role][1] >= 0.05, role
 

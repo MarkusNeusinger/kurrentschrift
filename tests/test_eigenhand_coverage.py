@@ -110,6 +110,15 @@ class TestStripPlan:
         assert plan_mod.ordered_strips(plan)[1:] == sorted(frozen, key=lambda sid: int(sid[1:]))
         assert plan["strips"][new]["words"] == ["Kurrentschrift"]
 
+    def test_every_pinned_word_gets_a_strip_of_its_own(self):
+        # Short pins would fit one row together — they still get a row each:
+        # a pinned word is written for its own sake and gets the full row
+        # width, and "its own strip" has to stay true beyond the first pin.
+        plan = {"format": 1, "waves": [], "strips": {}, "forms": {}, "pins": []}
+        plan, pinned = pool.pin_words(plan, ["das", "lesen"])
+        assert [plan["strips"][sid]["words"] for sid in pinned["strips"]] == [["das"], ["lesen"]]
+        assert plan["pins"] == pinned["strips"] == plan_mod.ordered_strips(plan)
+
     def test_a_word_already_planned_is_not_pinned_again(self):
         plan = {"format": 1, "waves": [], "strips": {"S0001": {"wave": 0, "words": ["Kurrentschrift"]}}, "pins": []}
         plan, pinned = pool.pin_words(plan, ["Kurrentschrift"])

@@ -249,12 +249,12 @@ def build_wave(plan: dict, target_strips: int, universe_items: dict[str, float])
 def pin_words(plan: dict, words: list[str]) -> tuple[dict, dict]:
     """Append the pinned words as leading strips (pure, deterministic).
 
-    One word cannot be added to a frozen strip, so a pin appends strips of its
-    own and registers them in ``plan["pins"]``: plan order then starts with
-    them, and the first Bogen printed after this carries them in its first
-    rows. A word already planned anywhere is skipped — a pin says "write this
-    early", not "write this again", and once it is on a strip it has a place
-    in the queue.
+    One word cannot be added to a frozen strip, so every pinned word gets a
+    strip of its own, appended and registered in ``plan["pins"]``: plan order
+    then starts with them, and the first Bogen printed after this carries them
+    in its first rows. A word already planned anywhere is skipped — a pin says
+    "write this early", not "write this again", and once it is on a strip it
+    has a place in the queue.
 
     The pinned words must be curated pool words: the plan is the API's only
     word source, so an unknown word would leave the sheet without a shaping
@@ -272,10 +272,15 @@ def pin_words(plan: dict, words: list[str]) -> tuple[dict, dict]:
     if fresh:
         wave_no = len(plan["waves"])
         next_number = max((int(sid[1:]) for sid in plan["strips"]), default=0) + 1
-        for row in pack_words_into_rows(fresh, PRESETS[PACKING_STYLE], forms=forms):
+        # ONE strip per pinned word, not the row packing a wave uses: pins are
+        # few and deliberate, and a word pinned for its own sake should get the
+        # whole row width (the box generator hands the spare width back to the
+        # words on the row). Packing two of them together would also make the
+        # promise "its own strip" untrue the moment a second pin is added.
+        for word in fresh:
             sid = strip_id(next_number)
             next_number += 1
-            plan["strips"][sid] = {"wave": wave_no, "words": row}
+            plan["strips"][sid] = {"wave": wave_no, "words": [word]}
             ids.append(sid)
         plan["waves"].append({"wave": wave_no, "strips": ids, "pin": True})
         plan["pins"] = list(plan.get("pins", [])) + ids
