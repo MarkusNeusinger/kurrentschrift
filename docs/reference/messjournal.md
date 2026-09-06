@@ -10974,7 +10974,8 @@ E2 gerendert · E3 nach der Reparatur · E5 gerundet):
 **Die Ernte kostet nichts.** 40 der 44 Vorkommen bewegen sich um weniger
 als 0,01 xh, und von den vier übrigen VERLIERT genau eines
 (`g`/Sprünge −0,0883, siehe Teil 2) — die anderen drei gewinnen
-(`a`/scharfen +0,1025 · `o`/Sporn +0,0164 · `g`/regieren +0,0140), das
+(`o`/Sporn +0,0164 · `g`/regieren +0,0140 · `a`/scharfen +0,1025, wobei
+die letzte Zahl am Auflösungsboden hängt und unter „Grenzen" steht), das
 `o` im Median an der Fluent-Weitung. Der eingefrorene Sampling-Operator
 — der Hauptverdächtige der Vorregistrierung — trägt im Median 0,0000 bis
 0,0080 (`g`) und ist damit nicht der Träger. Zentrierung und Rundung
