@@ -80,6 +80,10 @@ _BG_STRUCT = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=bool)
 
 SIZE_CLASSES = ("klein", "mittel", "gross")
 STATES = ("offen", "wechselnd", "punkt")
+# The fourth mark, for a loop the plate answers in no occurrence: it gets no
+# expectation rather than a guessed class. Not a class and not a state — the
+# absence of both.
+UNATTESTED = "unbelegt"
 
 
 @dataclass(frozen=True)
@@ -232,6 +236,13 @@ def load_catalogue(path: Path | None = None) -> dict[str, list[dict[str, Any]]]:
         raise ValueError("kringel catalogue: no 'loops' array")
     out: dict[str, list[dict[str, Any]]] = {}
     for row in sorted(rows, key=lambda r: (r["glyph"], r["loop"])):
+        # The vocabulary is checked HERE rather than trusted: a word the sensor
+        # does not know silently becomes "no expectation", which reads exactly
+        # like a Punktkringel and would hide a whole class of loops.
+        if row["size_class"] not in (*SIZE_CLASSES, UNATTESTED):
+            raise ValueError(f"kringel catalogue: {row['glyph']}#{row['loop']} has size class {row['size_class']!r}")
+        if row["state"] not in (*STATES, UNATTESTED):
+            raise ValueError(f"kringel catalogue: {row['glyph']}#{row['loop']} has state {row['state']!r}")
         out.setdefault(row["glyph"], []).append(row)
     for glyph, loops in out.items():
         if [row["loop"] for row in loops] != list(range(len(loops))):
@@ -342,10 +353,13 @@ __all__ = [
     "LoopAperture",
     "PLATE_PEN_HALF_WIDTH_UNITS",
     "PLATE_PEN_WIDTH_UNITS",
+    "SIZE_CLASSES",
     "SIZE_MEDIUM_MAX_UNITS",
     "SIZE_SMALL_MAX_UNITS",
     "SPLITTER_FLOOR_UNITS",
+    "STATES",
     "STATE_MAJORITY",
+    "UNATTESTED",
     "kringel_by_word",
     "kringel_row_fields",
     "load_catalogue",

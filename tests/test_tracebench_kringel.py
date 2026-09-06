@@ -18,9 +18,12 @@ import pytest
 
 from tools.tracebench.kringel import (
     PLATE_PEN_WIDTH_UNITS,
+    SIZE_CLASSES,
     SIZE_MEDIUM_MAX_UNITS,
     SIZE_SMALL_MAX_UNITS,
     SPLITTER_FLOOR_UNITS,
+    STATES,
+    UNATTESTED,
     kringel_by_word,
     kringel_row_fields,
     load_catalogue,
@@ -205,6 +208,18 @@ def test_a_catalogue_with_a_hole_in_its_loop_numbering_is_refused(tmp_path: Path
         load_catalogue(path)
 
 
+def test_a_word_outside_the_vocabulary_is_refused(tmp_path: Path) -> None:
+    # An unknown state would read as "no expectation" — indistinguishable from a
+    # Punktkringel, and a whole class of loops would go unwatched.
+    path = tmp_path / "cat.json"
+    path.write_text(json.dumps({"loops": [{"glyph": "a", "loop": 0, "size_class": "klein", "state": "halboffen"}]}))
+    with pytest.raises(ValueError, match="state"):
+        load_catalogue(path)
+    path.write_text(json.dumps({"loops": [{"glyph": "a", "loop": 0, "size_class": "winzig", "state": "offen"}]}))
+    with pytest.raises(ValueError, match="size class"):
+        load_catalogue(path)
+
+
 def test_a_missing_catalogue_degrades_to_a_warning(tmp_path: Path) -> None:
     out, warnings = kringel_by_word(
         ["die"],
@@ -233,7 +248,7 @@ def test_the_shipped_catalogue_is_readable_and_uses_the_declared_vocabulary() ->
     assert catalogue, "the frozen catalogue must ship with the sensor"
     for glyph, loops in catalogue.items():
         for row in loops:
-            assert row["size_class"] in {"klein", "mittel", "gross", "unbelegt"}, glyph
-            assert row["state"] in {"offen", "wechselnd", "punkt", "unbelegt"}, glyph
+            assert row["size_class"] in {*SIZE_CLASSES, UNATTESTED}, glyph
+            assert row["state"] in {*STATES, UNATTESTED}, glyph
             # Reserved dataset: apertures and classes only, never geometry.
             assert "anchors" not in row and "centerline" not in row, glyph
