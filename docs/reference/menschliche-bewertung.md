@@ -1019,7 +1019,7 @@ Kategorien-Durchgang mit den alten Fits, und die gelabelten Vorkommen paarig.
 
 ## 8a. Der Wortmodus — die Echtheitsfrage
 
-> **Stand 2026-09-05: gebaut, synthetisch abgenommen — und zweimal
+> **Stand 2026-09-06: gebaut, synthetisch abgenommen — und dreimal
 > gefahren.** Die erste Runde (`sep02`, Basis gegen die LF11-Karte) hat
 > den Modus getragen und dem Instrument die Konstruktionsregel §3.6b
 > („gefüllte Ringe“) eingetragen. Ein **formales** Verdikt hat sie nicht
@@ -1032,10 +1032,17 @@ Kategorien-Durchgang mit den alten Fits, und die gelabelten Vorkommen paarig.
 > Antwortoption ist also benutzbar und wurde benutzt (was die
 > LF11-Tie-Quote auf NICHT identischen Tafeln nicht erklärt, siehe
 > unten); ihr eigener Adoptionsanspruch fiel an den 4 statt 6
-> Wiederholungspaaren (Rechnung unten). Die Zahlen gehören nach
+> Wiederholungspaaren (Rechnung unten). Die dritte Runde (`sep06`, Basis
+> gegen den J4-Austritts-Trim) ist die erste, die den Wiederholungs-Boden
+> nimmt — 12 Paare, 10/12 gleicher Arm bei 4/12 gleicher Seite — und
+> trotzdem an der Tie-Schranke fällt (42,9 %): 21 der 27 Unentschiedenen
+> liegen in der Klasse, für die die Vorregistrierung Unsichtbarkeit
+> beschrieben hatte, während die andere bei 9,7 % steht. Was das der
+> Schranke einträgt, steht als **Vorschlag** unter „Der Auswerteplan“.
+> Die Zahlen gehören nach
 > [`messjournal.md`](messjournal.md) §14 („Laufform LF11 —
-> humanbench-Wortrunde“ und „Übergänge J5 `sep05`“); hier steht nur, wie
-> sie zustande kommen.
+> humanbench-Wortrunde“, „Übergänge J5 `sep05`“ und „Übergänge J4
+> `sep06`“); hier steht nur, wie sie zustande kommen.
 
 ### Warum ein dritter Modus
 
@@ -1309,6 +1316,35 @@ als das, was sie ist, und nicht als Adoption. Und wie überall gilt §4: eine
 rendernde Änderung braucht zusätzlich das A/B gegen die gemessene Tinte und
 die Freigabe des Autors — das Menschenurteil ersetzt es nicht, es entscheidet
 den Fall, in dem das Lineal indifferent ist.
+
+**Beobachtung aus Runde 5 (`sep06`) — die Tie-Schranke misst die
+Klassenmischung mit, und das ist ein VORSCHLAG, keine Regeländerung.** Der
+Nenner von Schritt 3 ist „alle Bildschirme"; die Klassen aus Schritt 4
+schneidet der Runden-Autor aber ausdrücklich so, dass eine davon **wenig oder
+nichts** zu sehen bekommt — die Kontrollklasse per Konstruktion, eine
+„schwache" Klasse per Vorhersage. Runde 5 hat damit 42,9 % Unentschiedene über
+alles gerissen, während dieselbe Runde in der Klasse, für die die
+Vorregistrierung Sichtbarkeit behauptet hatte, bei 9,7 % lag; 21 der 27
+Unentschiedenen kamen aus der Klasse, in der die Pre-Reg „wahrscheinlich kein
+Unterschied" geschrieben hatte. Die Gesamtquote hat dort also nicht die
+Sichtbarkeit gemessen, sondern die Mischung, die der Plan selbst gewählt hat —
+je größer man die vorhersagbar unsichtbare Klasse zieht, desto sicherer reißt
+das Gate. Der naheliegende Vorschlag lautet: **die Tie-Schranke je Klasse
+lesen und sie nur dort verlangen, wo die Vorregistrierung Sichtbarkeit
+BEHAUPTET hat**, mit der Gesamtquote weiterhin gedruckt und berichtet.
+
+Er wird hier **nicht** übernommen, und der Grund gehört daneben: eine
+Schranke, die sich an der Klassendeklaration derselben Runde ausrichtet, ist
+nachträglich weicher zu machen, indem man die Klassen anders schneidet — genau
+der Nachstimm-Mechanismus, den die Vorregistrierungs-Praxis verhindern soll.
+Wer den Vorschlag will, hebt ihn deshalb erst in einer eigenen Änderung dieses
+Dokuments und bindet ihn an eine Bedingung, die vor den Zahlen prüfbar ist
+(etwa: die Klassenschnitte und die Sichtbarkeits-Behauptung je Klasse stehen
+committet in der Pre-Reg, und die Klasse mit der behaupteten Sichtbarkeit ist
+vorab benannt). Bis dahin gilt die Schranke wie geschrieben — und eine Runde,
+die sie nur über die Mischung reißt, sagt das im Bericht und legt die
+Entscheidung dem Autor vor, statt sie sich selbst zu erteilen (so gebucht in
+`messjournal.md` §14 „Übergänge J4 `sep06`").
 
 ### Was der Modus NICHT liefert
 
