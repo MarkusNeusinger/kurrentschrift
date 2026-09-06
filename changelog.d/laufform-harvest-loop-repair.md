@@ -23,9 +23,10 @@
   the step from Kette fit to stored occurrence as a loss of 0.016–0.057 xh of
   aperture and named it the campaign's next lever. Read on ONE chart-anchored
   range at both ends — instead of a raster loop matched to a plate counter at
-  one end and the range at the other — the step is 0.0000 to +0.0077 xh over
-  the five counter-carrying keys, and 43 of 44 occurrences move by less than
-  0.01 xh. The two rulers agree occurrence by occurrence (0.0000 median
+  one end and the range at the other — the step is −0.0002 to +0.0077 xh over
+  the five counter-carrying keys, 40 of 44 occurrences move by less than
+  0.01 xh, and of the other four exactly one LOSES ground. The two rulers agree
+  occurrence by occurrence (0.0000 median
   difference at both ends), so the earlier number was a loop-identification
   difference, not a movement: 21 of 39 joined occurrences agree to 0.0011 xh and
   18 disagree by a median of 0.067, in words where a neighbour's loop falls
