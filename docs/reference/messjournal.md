@@ -211,6 +211,7 @@ die DB) — mit seiner Bedingung.
 | sep05 | Feder | [Ink-Clearance an die Feder gemessen](#ink-clearance-an-die-feder-sep05--gemessen-der-arm-fällt-und-er-sagt-genau-wo-das-problem-nicht-sitzt) | Pre-Reg + gemessen · **verworfen** (Gate 1 + 2) | Gate 1 21 → **21** (`Wer` −1, `Seiten` re-segmentiert), Gate 2 `coverage` 0,101516 → 0,105761; Golden byte-gleich, Chart-Nib ziffernweise 0,109218 · 0,148198. Geometrischer Grund: 8 der 9 Stellen sind der Deckungs-Join NEBEN seinem Landekörper — Platzierung verschiebt beide gemeinsam (`sep` 0,176 → 0,178, Bandaustritt bräuchte Skala ≈ 20); die 9. ist die gewollte Arm-Fusion `Galoppieren` r × e. Leiter (nicht vorregistriert): Skala 2,0 drückt die Zahl auf 8, fabriziert dabei `regieren` neu und vervierfacht den Deckungspreis — kein Punkt besteht Gate 1. Schalter bleibt AUS; Schritt 2 (Nib-Wechsel) empfiehlt die Spalte `sources.constant_nib_units` und wartet auf den Autor |
 | sep06 | Laufform | [LF13 schleifen-treue Zeile (Pre-Reg)](#laufform-lf13-sep06--vorregistrierung-die-schleifen-treue-zeile-zurechnung-r2-und-der-kandidatenschätzer) | Pre-Reg | Rettungswege (4)/(5) der Kringel-Diagnose: R1 Öffnungsweiten-Gate, R2 schleifen-treuer Median, R4 als Report-Spalte. R2s Vorbedingung ist vorab erfüllt — der LF12-Erntestapel leitet alle 18 Zeilen byte-gleich wieder ab (0,000000000 xh), ist also DER Eingangs-Stapel; `p` ausgenommen (Zeile aus älterer Ernte, n = 2 unter dem Boden). Mechanismus-Menü M1/M2/M3 mit Auswahlregel „größter Anteil" vorab festgelegt; Decke der Kennzahl vorab beziffert: 18 der 26 schließenden Wörter erreichbar, 8 hängen an `G`/`v`/`k` bzw. den Chart-Rückfällen `er`/`er-3` |
 | sep06 | Laufform | [LF13 gemessen](#laufform-lf13-sep06--gemessen-der-schätzer-war-nie-der-träger-und-der-arm-fällt-an-zwei-gates) | Pre-Reg + gemessen · **verworfen** (Gate (a) + (c)) · Teilerfolg zurechenbar | **Die Zurechnung kippt H2:** gegen den EIGENEN Stapel gemessen kostet der Schätzer nur 0,005–0,029 xh, während die ERNTE davor (Kette-Wortfit → zentriertes 120-Anker-Vorkommen) 0,016–0,057 xh kostet — H2 gehört zu drei Vierteln der Dissektion, nicht dem Median. Anteile am Rest-Verlust: Lage −22 % · Größe −1 % · Basis +21 % · Formstreuung +53 %. **Die Decke ist ein Buchstabe:** nur `sz` (0,2167) und `r` (0,2177) tragen in den Vorkommen selbst mehr als 0,194, `a`/`o`/`g` sind schon dort zu. Arm (Schleifen-Registrierung, Leiter {0,15 · 0,25 · 0,50}): Gate (a) rot (2 Bereiche statt 4 der Basis, keine Regression), Gate (c) rot (0,108444 → 0,108637), (b)/(d)/(e) grün; Kennzahl 26 → **23** Wörter (`muß`-Familie), Verdopplungen bei 0,097 22 → 21. R4-Anzeiger gebaut und geeicht (monotone Kurve 0,609 → 0,878), bleibt Report-Spalte. Schalter `LAUFFORM_LOOP_WINDOW` bleibt AUS |
+| sep06 | Laufform | [LF14 Ernte-Zerlegung (Pre-Reg)](#laufform-lf14-sep06--vorregistrierung-die-ernte-schritt-für-schritt-rettungsweg-1-von-lf13) | Pre-Reg | Rettungsweg 1 von LF13: die Ernte ist der gemessene Hebel, also wird sie zerlegt. Sechs Ablesungen je Vorkommen (E0 Kette-Bahn → E1 Anker nackt → E2 Anker gerendert → E3 Reparatur → E4 Zentrierung → E5 Rundung) plus die A/B-Ablesung eingefrorene gegen neu parametrisierte Spline-Basis (E2a/E2b); benannt wird der Schritt mit dem größten Median-Anteil, Mechanismus-Menü N1/N2/N3 vorab festgelegt. Decke der Kennzahl vorab beziffert: höchstens 11 der 26 Wörter, weil `o` (Kette 0,1826) schon in der Kette zu ist und `G`/`v`/`k` keine Laufform-Zeile haben |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -10791,3 +10792,142 @@ zitierfähig und steht oben nicht in der Tabelle.
   dieselbe Schleife. Die des Blatts ist die richtige; die Ringschließung
   ist für geschachtelte Fälle zu grob und wäre vor einem `p`-Arm zu
   ersetzen.
+
+### Laufform LF14 `sep06` — Vorregistrierung: die Ernte, Schritt für Schritt (Rettungsweg 1 von LF13)
+
+Geschrieben und committet VOR der ersten Zahl dieses Arms. Anlass ist
+Rettungsweg 1 des LF13-Eintrags direkt darüber: **der gemessene Hebel
+ist die ERNTE, nicht der Median.** Der Weg vom Kette-v5-Wortfit zum
+gespeicherten Vorkommen kostet an den fünf Schlüsseln
+`a` −0,0327 · `o` −0,0172 · `sz` −0,0538 · `g` −0,0568 · `r` −0,0155 xh
+Öffnungsweite (paarweise je Vorkommen −0,0033 bis −0,0436), während der
+Schätzer danach nur 0,005–0,029 kostet. LF13 hat den Schritt beziffert,
+aber nicht zerlegt: **welche Transformation der Ernte verliert die
+Schleife, und welcher Parameter tut es?** Das ist die Frage dieses Arms.
+Die Haltung des Autors bleibt die Klammer: der Tinte richtig folgen,
+dann bleiben die Kringel offen — keine Autorenarbeit.
+
+**Basis.** Die `sep05`-Wurzeln des LF12-Writes, unverändert und nicht
+neu exportiert: `suetterlin-1922` `exported_at`
+2026-09-05T21:33:12+00:00 `root_digest` **`eaa195aa7c84…`**,
+`suetterlin-1922-pairs` 2026-09-05T21:33:11+00:00
+**`0fbde2d72b64…`**. In dieser Umgebung mit `--expect-root` und
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1` frisch gerechnet:
+**Wörter 0,108444 · Paare 0,148236** — ziffernweise die Headline des
+LF12-Writes. Weder `core/word_metric.py` noch `tools/tracebench` werden
+angefasst; `LAUFFORM_LOOP_WINDOW` bleibt bei seinem Default 0 (AUS), die
+neu abgeleiteten Zeilen entstehen also mit dem heutigen Schätzer.
+
+**Das Lineal** ist unverändert `D0` samt dem Bereichs-Apparat aus LF13
+(`looplib.chart_loop_ranges` / `range_aperture`, eingefroren
+übernommen): die Schleifen werden an der Chart-Zeile lokalisiert, jede
+Ablesung läuft auf demselben Anker-Indexbereich, und eine kollabierte
+Schleife ist eine kleine Zahl statt eines fehlenden Eintrags. Offen bei
+Halbbreite 0,097 heißt `D0 > 0,194`. Die Kennzahl des Blatts —
+**26 der 63 Wortproben schließen** (`a` 12 · `o` 5 · `sz` 4 · `G` 3 ·
+`g` 3 · `r` 2 · `v` 2 · `k` 1) — ist auf dieser Wurzel abgenommen.
+
+#### Teil 1 — die Zerlegung der Ernte, je Vorkommen
+
+Für jedes echte Vorkommen der fünf Schlüssel wird der Kette-v5-Fit
+DESSELBEN Slots genommen und durch jede Transformation verfolgt, die
+die Ernte anwendet (`tools/laufform/harvest.py::_harvest_case_chain`
+hinter `chain_word_strokes`). `D0` wird nach jedem Schritt gemessen:
+
+* **E0 Kette-Bahn** — die Bahn, die der Kettenlöser für diesen
+  Buchstaben ausgibt (`seg.polyline_px`, die Scheibe des
+  Wort-Trace). Das ist die Ablesung „Kette“ aus #551/LF13.
+* **E1 Anker, nackt** — `seg.fitted_anchors` als blanker Ankerzug
+  gelesen (`rendered=False`). Trennt „was die Anker sagen“ von „was
+  eine Kurve durch sie zeichnet“.
+* **E2 Anker, gerendert** — dieselben Anker durch
+  `render_payload_for_template`, also durch die Kurve, die die
+  Auslieferung zeichnet (240 Stützstellen je Glyphe, natürlicher Spline
+  je Teilbogen, Eckknoten, Fluent-Weitung).
+* **E3 nach `repair_stranded_anchors`** — die Nachreparatur gestrandeter
+  Anker.
+* **E4 nach der Zentrierung** (`− median(repaired − chart)`) und
+  **E5 nach `round(4)`** — beides muss per Konstruktion 0 bewegen; sie
+  stehen mit, damit „per Konstruktion“ eine gemessene Aussage ist.
+
+E0 → E2 ist der Verdächtige, und er zerfällt weiter, weil beide Seiten
+denselben Ankersatz zeichnen: der Kettenlöser sampelt mit einem
+**eingefrorenen Sampling-Operator**, der an den CHART-Ankern gebaut und
+über den ganzen Lauf linear gehalten wird
+(`_sampling_operator(anchors_plan0, plan)`, `core/fit.py`), der Renderer
+parametrisiert die Sehnenlänge an den BEWEGTEN Ankern neu. Als eigene
+A/B-Ablesung auf denselben Ankern, gleiche Stützstellenzahl, gleicher
+Plan: **E2a eingefrorene Basis** gegen **E2b neu parametrisierte Basis**.
+Dazu je Vorkommen die Stützstellenzahl, die der Lauf dem Buchstaben
+zugeteilt hat, und sein Knotenbudget (Ankerzahl je Schleifenbereich) —
+damit die Zerlegung den PARAMETER benennt und nicht nur den Schritt.
+
+**Benannt wird der Schritt mit dem größten Median-Anteil am Verlust
+E0 → E5 über die fünf Schlüssel.** Diese Regel steht vor der ersten
+Zahl; weicht der Arm von ihr ab, steht der Grund als Zahl im
+Ergebnis-Eintrag, wie in LF13.
+
+#### Teil 2 — der Mechanismus, hinter einem Schalter mit Default AUS
+
+Die kleinste ehrliche Änderung an dem in Teil 1 benannten Schritt,
+gebaut hinter einem deklarierten Schalter mit Default AUS (das Muster
+von `LAUFFORM_END_WINDOW`, `LAUFFORM_LOOP_WINDOW` und
+`INK_CLEARANCE`). Welcher, entscheidet Teil 1; das Menü steht vorher
+fest:
+
+* **(N1) Schleifen-treue Stützstellen** — zusätzliche Anker an den
+  Krümmungsmaxima des Schleifenbereichs, gefunden mit dem rasterfreien
+  Schleifenfinder aus LF13 (`core/aggregate.py::loop_ranges`), falls das
+  Knotenbudget im Bereich der Verlustträger ist.
+* **(N2) Krümmungs-adaptive Neuabtastung** der Kette-Bahn vor der
+  Projektion, falls die Stützstellenzuteilung des Laufs führt.
+* **(N3) Neuparametrisierung der Basis im Schleifenbereich**, falls die
+  eingefrorene Basis (E2a gegen E2b) führt.
+
+#### Die Gates, vor der ersten Zahl des Arms festgelegt
+
+**(a) Ernte-Treue.** Für JEDES Vorkommen der fünf Schlüssel
+`D0(geerntet) ≥ D0(Kette-Bahn) − 0,01 xh` — die Ernte gibt zurück, was
+die Kette gefunden hat, bis auf den Auflösungsboden.
+
+**(b) Bewegungsmaß.** Größte Ankerbewegung einer neu abgeleiteten Zeile
+gegen ihre gespeicherte ≤ **0,03 xh**, außer wo die Öffnung der
+Schleife selbst die Bewegung IST — das wird dann je Zeile benannt und
+beziffert, nicht pauschal ausgenommen.
+
+**(c) Lineal.** `wordbench.run --set all --expect-root
+eaa195aa7c84,0fbde2d72b64` über eine trockene Wurzel-Überlagerung im
+Scratchpad (die Form, die LF12 und LF13 benutzt haben; die eingefrorene
+Wurzel bleibt unberührt): `bench_loss` ≤ **0,108444** UND `pair_loss`
+≤ **0,148236**.
+
+**(d) Kette-Identität.** `tracebench --split dev --candidate authored`
+auf der Kandidaten-Wurzel: **PASS** (dtw 0, Chamfer beidseitig 0).
+
+**(e) Golden.** `compose_golden` mit `pen=None` byte-gleich. Der
+Schalter ist AUS; eine bewegte Golden-Datei hieße, dass er leckt.
+
+**Kennzahl des Arms (Bericht, kein Gate):** wie viele der **26**
+schließenden Wortproben bei Halbbreite 0,097 wieder aufgehen (LF13 kam
+auf 23). Mitberichtet wird `gleichzug_doublings` bei 0,097 vor und nach.
+**Die Decke steht vorher fest und ist die Kette-Bahn:** von den fünf
+Schlüsseln tragen `a` (0,2236), `sz` (0,2705), `g` (0,2377) und `r`
+(0,2332) in der Kette mehr als 0,194, `o` mit 0,1826 nicht — eine
+vollständig verlustfreie Ernte erreicht also `a`, `sz`, `g`, `r` und
+nicht `o`, und `G`/`v`/`k` bleiben außerhalb (keine Laufform-Zeile,
+H3). Obergrenze damit 26 − 12(`a`) − 3(`g`) = **11**, wenn kein Wort an
+zwei Buchstaben zugleich hängt; `daß` hängt an `a` UND `sz` und zählt
+nur einmal.
+
+**Kill-Kriterium:** ein rotes Gate = keine Schreib-Empfehlung, und der
+Ergebnis-Eintrag schließt mit benannten Rettungswegen plus
+§7.9-Zeile. Ein grüner Arm liefert eine TROCKENE Schreibkarte; der
+Write ist ein Autorenvorgang (`dbsnapshot` → Autor-Go → PUT je Glyph →
+GET-Verify → Neu-Export als deklarierte Re-Baseline) und findet in
+dieser Runde nicht statt.
+
+**Was diese Runde ausdrücklich NICHT tut.** Kein DB-Write, kein
+Wurzel-Neuexport, keine Lineal-Änderung, keine neuen Schlüssel, keine
+Reparatur des `p` (Evidenz unter dem Boden), und kein
+Öffnungsweiten-Term in einem Fit-Loss — der R4-Sensor bleibt
+Report-Spalte, wie LF13 ihn abgenommen hat.
