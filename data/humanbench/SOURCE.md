@@ -268,8 +268,9 @@ Kopfzeile und Journal übereinstimmend gleich. Runde 03 ist die LF11-Wortrunde
 vom 2026-09-02 — gefahren und in `messjournal.md` §14 ausgewertet, aber nie
 hier abgelegt; Runde 04 (Platten-Nib) ist gebaut und **ungeurteilt**. Die
 Lücke ist damit eine Aussage über den Bestand, kein Ablagefehler. Dass 05 nach
-06 abgelegt wurde, ist ebenfalls keiner: beide wurden am 2026-09-04 gebaut,
-geurteilt wurde 06 am 05. und 05 am 06. September.
+06 abgelegt wurde, ist ebenfalls keiner: **alle drei** Runden 04, 05 und 06
+wurden am 2026-09-04 gebaut, geurteilt wurden aber nur 06 (am 5.) und 05
+(am 6. September).
 
 ## Was hier nicht liegt
 

@@ -21,15 +21,16 @@ Kategorien-Runden 01/02.
 | Gelabelt | 2026-09-06, in einem Zug, ohne Kennzahl daneben |
 | Beurteiler | Projektautor (allein) |
 
-> **Warum die Nummer 04 hier fehlt — und 06 vor 05 steht.** Die Archivnummer
-> zählt seit §7 die Runde, nicht den Baulauf, und diese Runde heißt in
-> Werkzeug, Kopfzeile und Journal übereinstimmend 5. Gebaut wurden 4 und 5 am
-> selben Tag, geurteilt wurde erst 6 (2026-09-05) und dann 5 (2026-09-06);
-> die Ablage folgt der Nummer, nicht dem Urteilsdatum. Runde 03 ist die
-> LF11-Wortrunde vom `sep02` (gefahren und in §14 ausgewertet, aber nie hier
-> abgelegt), Runde **04** (Platten-Nib A3) ist gebaut und **ungeurteilt**.
-> Eine Lücke in der Nummernfolge ist damit eine Aussage über den Bestand,
-> kein Ablagefehler.
+> **Warum die Nummer 04 hier fehlt — und 06 vor 05 abgelegt wurde.** Die
+> Archivnummer zählt seit §7 die Runde, nicht den Baulauf, und diese Runde
+> heißt in Werkzeug, Kopfzeile und Journal übereinstimmend 5. **Alle drei
+> Runden 04, 05 und 06 wurden am 2026-09-04 gebaut** (04 und 05 um 09:03 UTC,
+> 06 um 10:02 UTC); geurteilt wurde **06 am 2026-09-05 und 05 am 2026-09-06**,
+> Runde **04** (Platten-Nib A3) ist bis heute **ungeurteilt**. Die Ablage folgt
+> der Nummer, nicht dem Urteilsdatum — deshalb steht 05 hier nach 06. Runde 03
+> ist die LF11-Wortrunde vom `sep02` (gefahren und in §14 ausgewertet, aber nie
+> hier abgelegt). Eine Lücke in der Nummernfolge ist damit eine Aussage über
+> den Bestand, kein Ablagefehler.
 
 ## Quelle
 

@@ -32,10 +32,13 @@
   in the weak class) — the class where the eye votes 26 : 2 for the trim; of
   the 30 words the ruler punishes, 18 go to the candidate and none to the base.
   The obvious narrowing was measured rather than argued: the existing
-  `exit_trim_min_kink_deg` knob separates neither class at any rung (both carry
-  the same kink, +7.90 against +7.44), costs MORE than the full trim between 5°
-  and 25°, and gives the seam repair back. The global flip is therefore the
-  smaller honest mechanism, and the entry recommends it as such.
+  `exit_trim_min_kink_deg` knob does enrich the strong class from 10° on (71 %
+  of it still firing against 59 % of the weak one), but it never SEPARATES the
+  two — they carry the same kink, +7.90 against +7.44, and differ in
+  displacement. Between 5° and 25° every rung costs MORE than the full trim and
+  from 10° on the seam repair is handed back; only 30° pays 0.000202 of the
+  0.000581 back, and it does so by firing on five of 63 words. The global flip
+  is therefore the smaller honest mechanism, and the entry recommends it.
 - **The tie threshold now carries the observation that it also measures the
   class mix.** `menschliche-bewertung.md` §8a records, as an explicit proposal
   and not as a silent rule change, that a round which deliberately cuts a

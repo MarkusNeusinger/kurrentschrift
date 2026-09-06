@@ -213,7 +213,7 @@ die DB) — mit seiner Bedingung.
 | sep06 | Laufform | [LF13 gemessen](#laufform-lf13-sep06--gemessen-der-schätzer-war-nie-der-träger-und-der-arm-fällt-an-zwei-gates) | Pre-Reg + gemessen · **verworfen** (Gate (a) + (c)) · Teilerfolg zurechenbar | **Die Zurechnung kippt H2:** gegen den EIGENEN Stapel gemessen kostet der Schätzer nur 0,005–0,029 xh, während die ERNTE davor (Kette-Wortfit → zentriertes 120-Anker-Vorkommen) 0,016–0,057 xh kostet — H2 gehört zu drei Vierteln der Dissektion, nicht dem Median. Anteile am Rest-Verlust: Lage −22 % · Größe −1 % · Basis +21 % · Formstreuung +53 %. **Die Decke ist ein Buchstabe:** nur `sz` (0,2167) und `r` (0,2177) tragen in den Vorkommen selbst mehr als 0,194, `a`/`o`/`g` sind schon dort zu. Arm (Schleifen-Registrierung, Leiter {0,15 · 0,25 · 0,50}): Gate (a) rot (2 Bereiche statt 4 der Basis, keine Regression), Gate (c) rot (0,108444 → 0,108637), (b)/(d)/(e) grün; Kennzahl 26 → **23** Wörter (`muß`-Familie), Verdopplungen bei 0,097 22 → 21. R4-Anzeiger gebaut und geeicht (monotone Kurve 0,609 → 0,878), bleibt Report-Spalte. Schalter `LAUFFORM_LOOP_WINDOW` bleibt AUS |
 | sep06 | Laufform | [LF14 Ernte-Zerlegung (Pre-Reg)](#laufform-lf14-sep06--vorregistrierung-die-ernte-schritt-für-schritt-rettungsweg-1-von-lf13) | Pre-Reg | Rettungsweg 1 von LF13: die Ernte ist der gemessene Hebel, also wird sie zerlegt. Sechs Ablesungen je Vorkommen (E0 Kette-Bahn → E1 Anker nackt → E2 Anker gerendert → E3 Reparatur → E4 Zentrierung → E5 Rundung) plus die A/B-Ablesung eingefrorene gegen neu parametrisierte Spline-Basis (E2a/E2b); benannt wird der Schritt mit dem größten Median-Anteil, Mechanismus-Menü N1/N2/N3 vorab festgelegt. Decke der Kennzahl vorab beziffert: höchstens 11 der 26 Wörter, weil `o` (Kette 0,1826) schon in der Kette zu ist und `G`/`v`/`k` keine Laufform-Zeile haben |
 | sep06 | Laufform | [LF14 gemessen](#laufform-lf14-sep06--gemessen-die-ernte-verliert-nichts-und-der-eine-schritt-der-es-tut-hilft-keinem-wort) | Pre-Reg + gemessen · **verworfen** (Gate (b) + (c)) · **streicht Rettungsweg 1 von LF13** | **Die Ernte verliert die Schleife nicht:** auf EINEM chart-verankerten Bereich an beiden Enden gelesen kostet Kette-Bahn → gespeichertes Vorkommen −0,0002 bis +0,0077 xh; 40 von 44 Vorkommen bewegen sich unter 0,01, und von den vier übrigen VERLIERT genau eines. Die 0,016–0,057 xh von LF13 sind zwei verschiedene Schleifen: 21 von 39 gemeinsamen Vorkommen stimmen auf 0,0011, 18 liegen 0,0673 auseinander, weil die Zuordnung über Nähe im 0,45-xh-Fenster ein Nachbarloch trifft (`Wer` `r` 0,3500 gegen 0,2323). Beide Lineale (Bereich · Raster-Nähe) stimmen an beiden Enden auf 0,0000 überein, der Rahmen ist auf 2,3·10⁻¹⁵ xh abgenommen. **Der eine echte Schritt ist die Anker-Reparatur** („Schleifen-Sehne"): von 235 Vorkommen werden 20 repariert, 12 davon mit messbarer Binnenfläche — die 4, deren Reparatur INNERHALB einer Schleife landet, verlieren alle vier (Median 0,0410, schlimmstenfalls 0,1068 xh), die 8 außerhalb bewegen ≤ 0,0021 (saubere Nullprobe). Arm `LOOP_AWARE_REPAIR`: Gate (a) 1 → **0** Brüche von 44 (grün), (b) rot (0,0486 am `Z` für 0,0045 Öffnung), (c) rot (Paare 0,148352) — **beide Lineal-Zahlen trägt die Kontrollkarte**, der Arm bewegt sie um −0,000044 bzw. 0,000000; (d)/(e) grün. Kennzahl **26 → 26**: drei Vorkommen gehen auf, kein Wort. Nebenbefund: **die Ernte ist kein Fixpunkt** — eine frische Ernte der `sep05`-Wurzel leitet jede Zeile 0,0025–0,0283 xh neben der ab, aus der die Wurzel geschrieben wurde (`--jobs 1` = `--jobs 4` byte-gleich; Ursache ist `chain_seed="composed"` auf einer Komposition aus den Zeilen selbst) |
-| sep06 | Übergänge | [J4 Runde 5 gemessen](#übergänge-j4-sep06--runde-5-gemessen-richtung-34--2-unentschieden-gate-gerissen--durch-die-klasse-die-es-reißen-sollte) | Menschenrunde · Richtung erdrückend, `adopt: false` an der Tie-Schranke · **Adoption = Autor-Entscheid** (LF11-Präzedenz) | **Kandidat 34 : Basis 2** von 36 entschiedenen (94,4 % gegen ≥ 60 %), unentschieden 42,9 % gegen ≤ 25 %. Klassenweise löst sich der Widerspruch: `naht-stark` 26 : 2 bei **9,7 %** Ties (beide Schranken ✓), `naht-schwach` 8 : 0 bei **72,4 %** Ties — die Klasse, für die die Pre-Reg Unsichtbarkeit beschrieben hat. Instrument sauber: 3/3 Kontrollwörter als „kein Unterschied" erkannt, 10/12 Wiederholungen gleicher Arm bei 4/12 gleicher Seite (12 ≥ 6 Paare). Auf der `sep05`-Wurzel neu gemessen: Wörter 0,108444 → **0,109026** (+0,000581), Paare byte-gleich, `seam_dep` +7,59 → −0,70 (absolut 12,67 → **2,30**), Verdopplungen 14 = 14. **Der ganze Lineal-Verlust sitzt in der starken Klasse** (+0,036888 gegen −0,000262), also dort, wo das Auge 26 : 2 dagegen stimmt — von den 30 bestraften Wörtern gehen 18 : 0 an den Kandidaten. Klassenregel gemessen und verworfen: `exit_trim_min_kink_deg` trennt die Klassen bei keiner Schwelle (beide haben denselben Knick, +7,90 / +7,44), kostet zwischen 5° und 25° MEHR als der volle Trim und gibt die Naht-Reparatur zurück |
+| sep06 | Übergänge | [J4 Runde 5 gemessen](#übergänge-j4-sep06--runde-5-gemessen-richtung-34--2-unentschieden-gate-gerissen--durch-die-klasse-die-es-reißen-sollte) | Menschenrunde · Richtung erdrückend, `adopt: false` an der Tie-Schranke · **Adoption = Autor-Entscheid** (LF11-Präzedenz) | **Kandidat 34 : Basis 2** von 36 entschiedenen (94,4 % gegen ≥ 60 %), unentschieden 42,9 % gegen ≤ 25 %. Klassenweise löst sich der Widerspruch: `naht-stark` 26 : 2 bei **9,7 %** Ties (beide Schranken ✓), `naht-schwach` 8 : 0 bei **72,4 %** Ties — die Klasse, für die die Pre-Reg Unsichtbarkeit beschrieben hat. Instrument sauber: 3/3 Kontrollwörter als „kein Unterschied" erkannt, 10/12 Wiederholungen gleicher Arm bei 4/12 gleicher Seite (12 ≥ 6 Paare). Auf der `sep05`-Wurzel neu gemessen: Wörter 0,108444 → **0,109026** (+0,000581), Paare byte-gleich, `seam_dep` +7,59 → −0,70 (absolut 12,67 → **2,30**), Verdopplungen 14 = 14. **Der ganze Lineal-Verlust sitzt in der starken Klasse** (+0,036888 gegen −0,000262), also dort, wo das Auge 26 : 2 dagegen stimmt — von den 30 bestraften Wörtern gehen 18 : 0 an den Kandidaten. Klassenregel gemessen und verworfen: `exit_trim_min_kink_deg` reichert `naht-stark` ab 10° an (71 % gegen 59 %), TRENNT die Klassen aber bei keiner Schwelle — beide haben denselben Knick, +7,90 / +7,44 —, kostet zwischen 5° und 25° MEHR als der volle Trim und gibt ab 10° die Naht-Reparatur zurück; nur 30° zahlt 0,000202 zurück, feuert dann aber in 5 von 63 Wörtern |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -11274,21 +11274,32 @@ auf der `sep05`-Wurzel gefahren, mit derselben Basis und BLAS gepinnt:
 
 Drei Befunde, und alle drei sprechen gegen die Klassenregel:
 
-1. **Keine Schwelle trennt die Klassen.** Sie dünnt beide aus, und `naht-stark`
-   nie schneller als `naht-schwach`: bei 20° feuert die Regel noch in 7 der
-   29 schwachen Wörter, aber schon nicht mehr in 19 der 31 starken. Das ist
-   kein Kalibrierproblem — es folgt aus der Messung darüber: **die beiden
-   Klassen haben denselben Knick** (+7,90 gegen +7,44), sie unterscheiden sich
-   im `arm_gap`. Ein `seam_dep`-Schwellwert, der die starke von der schwachen
-   Klasse trennt, existiert in diesen Daten nicht.
-2. **Die Verengung kostet MEHR, nicht weniger.** Zwischen 5° und 25° liegt
-   jede Sprosse ÜBER dem vollen Trim (0,109134–0,109460 gegen 0,109026);
-   erst 30° gibt 0,0002 der 0,00058 zurück — und feuert dann in fünf von 63
-   Wörtern. Das Lineal belohnt die Klassenregel also nirgends.
+1. **Die Schwelle REICHERT die starke Klasse an, aber sie trennt sie nicht.**
+   Ab 10° bleibt `naht-stark` anteilig häufiger im Feuer als `naht-schwach`
+   (10°: 22/31 = 71 % gegen 17/29 = 59 %; 25°: 12/31 = 39 % gegen 4/29 =
+   14 %) — bei 5° ist es sogar umgekehrt (87 % gegen 93 %). Eine Anreicherung
+   ist aber keine Trennung: bei 20° feuert die Regel noch in 7 schwachen
+   Wörtern und schon nicht mehr in 19 starken, und keine Sprosse isoliert die
+   Klasse, um die es geht. Warum das so sein muss, sagt die Messung darüber:
+   **die beiden Klassen haben denselben Knick** (+7,90 gegen +7,44) und
+   unterscheiden sich im `arm_gap`. Ein `seam_dep`-Schwellwert, der die starke
+   von der schwachen Klasse SAUBER trennt, existiert in diesen Daten also
+   nicht; was er liefert, ist eine schiefe Teilmenge beider.
+2. **Zwischen 5° und 25° kostet die Verengung MEHR, nicht weniger** — jede
+   dieser Sprossen liegt ÜBER dem vollen Trim (0,109134–0,109460 gegen
+   0,109026). Belohnt wird genau eine: **30° gibt 0,000202 der 0,000581
+   zurück** (0,108824), und das ist ehrlich zu nennen statt wegzulassen. Nur
+   ist es keine Klassenregel mehr: dort feuert die Regel in fünf von 63
+   Wörtern, davon vier starken und einem schwachen, und der Naht-Abgang steht
+   mit +7,44° faktisch wieder auf dem Basiswert. Man kauft rund ein Drittel
+   des Lineal-Preises zurück und verzichtet dafür auf 55 der 60 Wörter, in
+   denen der Trim überhaupt feuert.
 3. **Sie gibt die Reparatur zurück, für die der Arm gebaut wurde.** Ab 10°
    steht der absolute Naht-Abgang wieder bei 7,3°–10,6° statt bei 2,30°; bei
-   25° ist der Median mit +7,44 faktisch der der Basis. Man kauft nichts und
-   bezahlt mit dem Zweck.
+   25° ist der Median mit +7,44 faktisch der der Basis. Was die Sprossen
+   zurückgeben, ist also nicht Lineal-Preis GEGEN Wirkung, sondern beides
+   gemeinsam — und in dem einen Fall, in dem das Lineal zahlt (30°), am
+   stärksten.
 
 **Das kleinere ehrliche Mittel ist damit die globale Umschaltung.** Sie ist
 EIN bereits implementierter, bereits vorregistrierter und bereits vom Auge
