@@ -35,12 +35,14 @@ Der Verlust entsteht **nicht an einer Stelle, sondern zweimal**:
    Loch herum VERSCHMELZEN, ist die Mittelachse des verschmolzenen Klumpens
    nicht mehr der Federweg; sie rückt zwischen Loch und Außenkante. Der Ort,
    an dem die Öffnung zuerst verloren geht, liegt damit vor jedem Fit.
-2. **Beim Übergang von Vorkommen zu ZEILE.** Die Kette folgt der Mittelachse
-   treu (Median über 183 Schleifen: **−0,0116 xh**, also praktisch auf ihr).
-   Die gespeicherte Zeile — Laufform-Median bzw. Chart-Kanonische — liegt
-   dagegen um **0,004–0,126 xh** unter dem Median ihrer eigenen Vorkommen.
-   Der elementweise Median über nicht deckungsgleiche Schleifen zieht sich
-   zusammen; das ist eine Eigenschaft des Schätzers, kein Ausreißer.
+2. **Beim Übergang von Vorkommen zu ZEILE.** Die Kette streut um die
+   Mittelachse, ohne sie systematisch nach innen zu unterbieten (signierter
+   Median über 183 Schleifen **−0,0116 xh**, Betrag |Kette − Skelett| im
+   Median **0,0329**, p75 0,0642) — sie fügt dem geerbten Defizit im Median
+   nichts hinzu, das die Größenordnung des Problems hätte. Die gespeicherte
+   Zeile liegt dagegen **durchweg** unter dem Median ihrer eigenen Vorkommen:
+   0,004–0,082 xh bei den sechs Buchstaben mit Laufform-Zeile, bis 0,126 xh
+   bei denen, die aus der Chart-Form komponieren.
 
 Die Komposition selbst verliert danach **nichts** (`komponiert − Zeile`
 höchstens 0,0008 xh über alle neun Glyphen, in beide Richtungen): die
@@ -194,17 +196,30 @@ gerechnet und deshalb nicht additiv; ihr Verhältnis ist die Aussage. Der Rest
 
 ### H1 — „der Kette-Fit sitzt auf Tinte, aber nicht auf der Mittelachse, vom Chart-Prior nach innen gezogen": **so nicht bestätigt**
 
-Über alle 183 zugeordneten Schleifen liegt die Kette **0,0116 xh** unter dem
-Skelett (Median), und in 61 % der Fälle darunter — an `a` (+0,0083) und `sz`
-(+0,0358) sogar systematisch DARÜBER. Ein Prior-Zug nach innen in der
-Größenordnung des Problems ist das nicht. Gegen die Feder-Rekonstruktion liegt
-dieselbe Kette bei **−0,0661 xh** und in 87 % darunter: **das Defizit der
-Kette ist zu rund vier Fünfteln geerbt, nicht erzeugt.**
+Über alle 183 zugeordneten Schleifen liegt die Kette im **signierten** Median
+**0,0116 xh** unter dem Skelett, in 61 % der Fälle darunter — an `a` (+0,0083)
+und `sz` (+0,0358) sogar systematisch DARÜBER. Ein systematischer Prior-Zug
+nach innen in der Größenordnung des Problems ist das nicht.
+
+**Der signierte Median ist dabei kein Abstandsmaß, und das gehört daneben:**
+der BETRAG |Kette − Skelett| liegt im Median bei **0,0329 xh** (p25 0,0132 ·
+p75 0,0642 · p90 0,0976). Die Kette liegt also nicht „auf" der Mittelachse —
+sie streut kräftig um sie, nach beiden Seiten, und nur die Summe der
+Vorzeichen ist klein. Für die Frage dieses Blatts ist genau das die Aussage:
+was die Kette dem geerbten Defizit HINZUFÜGT, ist im Mittel gering, aber je
+Vorkommen ist es nicht klein.
+
+Wie viel des Kette-Defizits geerbt ist, je Schleife statt aus Aggregaten
+gerechnet (`(D0(Feder) − D0(Skelett)) / (D0(Feder) − D0(Kette))`, nur die 154
+Schleifen mit einem Defizit über 0,02 xh): **Median 0,75**, p25 0,50, p75
+1,03. **Rund drei Viertel des Kette-Defizits stammen aus der Mittelachse, nicht
+aus dem Fit** — mit einer Spanne, die von „die Hälfte" bis „mehr als alles"
+(der Fit macht die Schleife dort WEITER als das Skelett) reicht.
 
 Ein kleiner echter Zug nach innen bleibt und ist benennbar: `r` −0,0332, `g`
-−0,0307, `p` −0,0278, `G` −0,0256 gegen das Skelett — genau die Glyphen mit
-großen Schleifen und Kreuzungen. Das ist ein Kandidat, aber kein Träger der
-Erklärung.
+−0,0307, `p` −0,0278, `G` −0,0256 gegen das Skelett (signiert) — genau die
+Glyphen mit großen Schleifen und Kreuzungen. Das ist ein Kandidat, aber kein
+Träger der Erklärung.
 
 **Was H1 ersetzt (H0, gemessen):** die Mittelachse ist an einer engen
 Binnenfläche selbst nicht der Federweg. `D0`(Skelett) liegt 0,035–0,104 xh
@@ -215,7 +230,7 @@ verschmolzen, und `skeletonize` gibt die Achse des Klumpens, nicht die zwei
 Bahnen. Für den Lotsen ist das eine Aussage über sein Zielobjekt, für die
 Kette über ihre Evidenz.
 
-### H2 — „der Per-Anker-Median der Laufform plus Glättung zieht Schleifen zusammen": **bestätigt, in Größenordnung 0,00–0,13 xh**
+### H2 — „der Per-Anker-Median der Laufform plus Glättung zieht Schleifen zusammen": **in der Richtung bestätigt, im Betrag NICHT isoliert**
 
 Zeile gegen den Median ihrer eigenen Vorkommen (Kette-Schleifen derselben
 Buchstaben), jeweils die engste Schleife:
@@ -232,16 +247,33 @@ Buchstaben), jeweils die engste Schleife:
 | `k` | 1 | 0,3108 | — | 0,1845 | **−0,1264** | Chart |
 | `G` | 3 | 0,2718 | 0,2566–0,3464 | 0,1901 | **−0,0817** | Chart |
 
-Das Vorzeichen ist **neunmal von neun** negativ. Bei `v`, `k` und `G` gibt es
-gar keine Laufform-Zeile — dort ist der Vergleich Chart gegen Vorkommen und
-gehört zu H3; die reine H2-Menge sind `a` `o` `sz` `g` `r` `p` mit einem
-Median von −0,031 xh. Der Mechanismus ist bekannt und braucht keine neue
-Vermutung: **der elementweise Median über Kurven, die nicht deckungsgleich
-sind, kontrahiert.** Anker `i` der Zeile ist der Median der Anker `i` aller
-Vorkommen; sind die Schleifen gegeneinander verdreht oder verschoben, liegt
-dieser Punkt weiter innen als jeder einzelne. Die LF11-Glättung
-(Spline-Basis-Median) arbeitet in dieselbe Richtung, weil eine enge Schleife
-die höchste Krümmung der Zeile trägt.
+Das Vorzeichen ist **neunmal von neun** negativ. **Aber nur sechs davon sind
+H2:** `v`, `k` und `G` haben gar keine Laufform-Zeile, dort ist der Vergleich
+Chart gegen Vorkommen und gehört zu H3. Die reine H2-Menge ist `a` `o` `sz`
+`g` `r` `p` mit **0,004–0,082 xh** (Median −0,031) — nicht die 0,126 des `k`,
+das hier nur der Vollständigkeit halber in der Tabelle steht.
+
+**Und der Betrag ist mit diesen Zahlen nicht dem Schätzer zurechenbar.** Was
+gemessen wurde, ist „die gespeicherte Zeile ist enger als die Kette-WORTFITS
+derselben Vorkommen". Was H2 behauptet, ist „der Schätzer zieht sie zusammen".
+Dazwischen liegen zwei Unterschiede, die dieses Blatt nicht ausräumt: die
+Wortfits sind nicht der Vorkommens-Stapel, aus dem die Zeilen abgeleitet
+wurden (unten unter „Grenzen" ausgeführt), und die Zeilen der Wurzel entstehen
+seit LF11 nicht als Per-Anker-Median mit anschließender Glättung, sondern als
+**Median über B-Spline-Kontrollpunkte** (`core/aggregate.py::spline_basis_median`)
+— ein anderer Schätzer, auch wenn er dieselbe Kontraktionsrichtung hat.
+
+Der Mechanismus, den H2 unterstellt, ist trotzdem der naheliegende und
+verlangt keine neue Vermutung: **ein elementweiser Median über Kurven, die
+nicht deckungsgleich sind, kontrahiert.** Punkt `i` der Zeile ist der Median
+der Punkte `i` aller Vorkommen; sind die Schleifen gegeneinander verdreht oder
+verschoben, liegt dieser Punkt weiter innen als jeder einzelne — und die
+Projektion auf eine Spline-Basis mildert das nicht, weil eine enge Schleife
+die höchste Krümmung der Zeile trägt. **Isolieren würde es ein Versuch, den
+dieses Blatt nicht macht und der als R2 vorregistriert gehört:** `D0` messen
+am exakten Eingangs-Stapel einer Zeile, an seinem Per-Anker-Median und an
+seinem Spline-Basis-Median — drei Zahlen auf denselben Daten, deren Differenz
+dann wirklich der Schätzer ist.
 
 **Der schärfste Einzelfall ist ein anderer und gehört genannt:** die
 Laufform-Zeile des `p` trägt **überhaupt keinen Kringel mehr**. Ihre
@@ -367,11 +399,14 @@ byte-gleich. Trägt sofort das `p` (kollabierter Kringel) und die
 Vorkommen werden vor dem Median je SCHLEIFE ausgerichtet (Prokrustes auf das
 umschlossene Gebiet oder Phasen-Ausrichtung entlang der Bogenlänge), sodass
 der Median die Form mittelt und nicht Form gegen Lage verrechnet. *Skizze:*
-Kandidatenschätzer in `tools/laufform`, gemessen als „`D0` der Zeile −
-Median der Vorkommen" über alle 21 Zeilen, Gate „Median ≥ −Auflösungsboden
-und keine Zeile schlechter als heute", Headline-Gates unverändert. Greift die
-Ursache statt des Symptoms und ist die Konversion, falls R1 zu viele Zeilen
-zurückweist.
+**erst die Zurechnung, die dieses Blatt schuldig bleibt** — je Zeile `D0` am
+exakten Eingangs-Stapel ihrer Vorkommen, an dessen Per-Anker-Median und an
+dessen Spline-Basis-Median messen, damit die Kontraktion dem Schätzer gehört
+statt einer Vergleichsmenge; DANN der Kandidatenschätzer in `tools/laufform`,
+gemessen als „`D0` der Zeile − Median des Stapels" über alle 21 Zeilen, Gate
+„Median ≥ −Auflösungsboden und keine Zeile schlechter als heute",
+Headline-Gates unverändert. Greift die Ursache statt des Symptoms und ist die
+Konversion, falls R1 zu viele Zeilen zurückweist.
 
 **(R3) Schleifen-Geometrie aus der Evidenz statt aus der Zeile.** *Mechanismus:*
 für Buchstaben mit enger Binnenfläche wird die Schleife nicht aus dem
@@ -402,8 +437,8 @@ genau das Weichspülen, das die Rettungswege-Regel verbietet.
 Der bereits stehende Autorenweg des `sep05`-Eintrags — die acht Formen
 nachzeichnen bzw. den Eigenhand-Bestand als zweite Quelle nehmen — bleibt
 unberührt und ist von R1–R4 unabhängig. Dieses Blatt beziffert nur, wie weit
-er gehen müsste: **+0,10 bis +0,15 xh Öffnungsweite je Schleife**, also rund
-eine halbe Strichbreite je Seite.
+er gehen müsste: **+0,10 bis +0,20 xh Mittellinien-Öffnungsweite je Schleife**
+(Median +0,135), also rund 0,07 xh je Seite.
 
 ## Was ich selbst entschieden habe
 
@@ -439,12 +474,20 @@ eine halbe Strichbreite je Seite.
 * **`k` steht auf n = 1**, `v` auf n = 2, `g`/`G`/`p` auf n = 3–4. Nur `r`
   (20), `a` (12) und `o` (5) tragen eine Verteilung. Die Mediane der kleinen
   Mengen sind Einzelablesungen mit Median-Etikett.
-* **Die Kette-Schleife stammt aus dem gespeicherten WORT-Fit**, nicht aus dem
-  Per-Buchstaben-M4-Fit, aus dem die Laufform-Zeilen abgeleitet wurden. Für
-  H2 heißt das: verglichen wird die Zeile gegen die Wort-Fits derselben
-  Vorkommen, nicht gegen exakt die Fits, die in den Median eingegangen sind.
-  Die Richtung (neun von neun negativ) trägt das; der Betrag je Glyphe ist
-  damit eine Schätzung.
+* **H2 ist in der Richtung gemessen, im Betrag nicht.** Zwei Lücken, beide in
+  §H2 benannt: die Kette-Schleife stammt aus dem gespeicherten WORT-Fit, nicht
+  aus dem Vorkommens-Stapel, aus dem die Laufform-Zeile abgeleitet wurde; und
+  der Schätzer der heutigen Zeilen ist seit LF11 der Spline-Basis-Median,
+  nicht der Per-Anker-Median mit nachgeschalteter Glättung, den die Hypothese
+  benennt. Die Richtung (neun von neun negativ, sechs davon in der reinen
+  H2-Menge) trägt das; der Betrag je Glyphe ist eine Schätzung und wird erst
+  durch R2 zurechenbar.
+* **Der signierte Median ist kein Abstandsmaß.** Wo dieses Blatt „Kette gegen
+  Skelett" mit einem Vorzeichen ausweist, steht der Betrag daneben (|Median|
+  0,0329 gegen signiert −0,0116) — die eine Zahl sagt „kein systematischer
+  Zug nach innen", die andere „aber je Vorkommen liegt sie nicht auf der
+  Achse". Für H1 zählen beide, und die Anteilsrechnung (Median 0,75) läuft
+  deshalb je Schleife statt über Aggregate.
 * **Kein Gate ist gefallen und keines bestanden** — dies ist eine Diagnose.
   Die Zahlen hier begründen Vorregistrierungen, sie ersetzen keine.
 

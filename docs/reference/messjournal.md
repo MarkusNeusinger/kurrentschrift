@@ -10290,11 +10290,14 @@ frische `sep05`-Wurzel, Headline ziffernweise 0,108444 · 0,148236).
 Mittellinien-Schleife der Komposition ist 0,10–0,20 xh enger als die der
 Platte (Median 0,135) — davon 0,035–0,104 xh schon in der MITTELACHSE, weil
 zwei Federzüge um ein enges Loch verschmelzen und `skeletonize` dann die
-Achse des Klumpens gibt statt der zwei Bahnen, und 0,004–0,126 xh beim Schritt
-von den Vorkommen zur ZEILE (der elementweise Median kontrahiert). Der
-Kette-Fit selbst liegt im Median nur 0,0116 xh unter dem Skelett — er
-folgt der Evidenz, die Evidenz ist an dieser Stelle das Problem. Die
-Komposition verliert danach nichts (0,000 xh gegen die Zeile). Daraus
+Achse des Klumpens gibt statt der zwei Bahnen, und 0,004–0,082 xh beim
+Schritt von den Vorkommen zur ZEILE (0,004–0,126, wenn man die drei
+Buchstaben ohne Laufform-Zeile mitzählt). Der Kette-Fit fügt dem geerbten
+Defizit im Median wenig hinzu — je Schleife gerechnet stammen **drei Viertel**
+davon aus der Mittelachse (Median 0,75, p25 0,50 · p75 1,03); dass er
+DARAUF liegt, sagt die Zahl nicht: signiert −0,0116 xh, dem Betrag nach
+0,0329. Die Evidenz ist an dieser Stelle das Problem, nicht der Fit. Die
+Komposition verliert danach nichts (≤ 0,0008 xh gegen die Zeile). Daraus
 kommen zwei Wege hinzu, die (2) oben mechanisch machen und über den
 Autorenschritt (3) hinausgehen: **ein Öffnungsweiten-Gate im
 Laufform-Schätzer** (eine Zeile darf keine Binnenfläche verlieren, die
