@@ -1953,9 +1953,13 @@ sondern ob sie mit sich selbst **stetig** ist. Anlass ist sein Leitsatz
 vom 2026-09-06 — auffällig sind „die plötzlichen Änderungen an Stellen, wo
 sie nichts zu suchen haben, weil da kein Richtungswechsel ist", während
 der genaue Radius eines Bogens egal ist. Genau umgekehrt messen alle
-eingefrorenen Lineale: `bench_loss`, `dtw_xh`, `dconn`/`dspan` sind
-Abstände, und ein Knick und ein glatter Bogen durch dieselben Endpunkte
-bekommen dieselbe Zahl. Gemessen wird auf den komponierten Federzügen an
+Lineale, die ein komponiertes WORT beurteilen: `bench_loss`, `dtw_xh`,
+`dconn`/`dspan` sind Abstände, und ein Knick und ein glatter Bogen durch
+dieselben Endpunkte bekommen dieselbe Zahl. Referenzfreie Formterme hat
+die **Natürlichkeitsmetrik** (Glätte · Eckenschärfe · Kollinearität) —
+aber am einzelnen Buchstaben; dieser Sensor ist ihr Wort-Verwandter, nimmt
+die Duktus-Ereignisse aus und liest Unstetigkeit statt Oszillation.
+Gemessen wird auf den komponierten Federzügen an
 jedem Punkt, der KEINE Landmarke ist (Federabsetzen, durchstoßende
 Kreuzung, Retrace-Zone, Umkehrecke — je eine Feder Radius, alle vier
 gezählt): **Knick**, **Wackler**, **Pfeilhöhe** (`bow_median` über das

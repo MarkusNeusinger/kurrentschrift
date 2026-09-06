@@ -1391,10 +1391,13 @@ sieht (2026-09-06, wörtlich):
 Das ist kein Geschmacksurteil, sondern eine Aussage über die gemessene
 Größe, und sie erklärt beide Runden auf einmal. Das Auge liest die
 **Stetigkeit** von Tangente und Krümmung zwischen zwei Duktus-Ereignissen.
-Die eingefrorenen Lineale lesen **Abstand**: `bench_loss` ist ein Chamfer
-gegen das Proben-Skelett, `dtw_xh` ein Punkt-zu-Punkt-Abstand,
-`dconn`/`dspan` eine Verbinder-Formdistanz. Ein Knick und ein glatter
-Bogen durch dieselben zwei Endpunkte bekommen von allen dieselbe Zahl.
+Die Lineale, die ein komponiertes WORT beurteilen, lesen **Abstand**:
+`bench_loss` ist ein Chamfer gegen das Proben-Skelett, `dtw_xh` ein
+Punkt-zu-Punkt-Abstand, `dconn`/`dspan` eine Verbinder-Formdistanz. Ein
+Knick und ein glatter Bogen durch dieselben zwei Endpunkte bekommen von
+allen dieselbe Zahl. (Referenzfreie Formterme gibt es — Glätte,
+Eckenschärfe, Kollinearität der Natürlichkeitsmetrik —, aber am einzelnen
+BUCHSTABEN, nicht an der Naht zwischen zweien.)
 
 Drei Folgerungen, die für jede weitere Runde gelten:
 

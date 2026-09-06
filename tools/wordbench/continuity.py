@@ -12,13 +12,29 @@ reads, and it is not a shape distance:
     plötzlichen Änderungen an Stellen, wo sie nichts zu suchen haben, weil
     da kein Richtungswechsel ist, fallen extrem als unnatürlich auf."
 
-Every frozen ruler in the repo measures the opposite quantity. ``bench_loss``
-is a chamfer against the specimen skeleton, ``dtw_xh`` a point-to-point
-distance, ``dconn``/``dspan`` a connector-shape distance: all of them ask HOW
-FAR the path sits from a reference, none of them asks whether the path is
-CONTINUOUS with itself. A kink and a smooth bow through the same two endpoints
-score the same, which is why `stem_depart` could pass every gate in
+Every ruler that judges a COMPOSED WORD measures the opposite quantity.
+``bench_loss`` is a chamfer against the specimen skeleton, ``dtw_xh`` a
+point-to-point distance, ``dconn``/``dspan`` a connector-shape distance: all of
+them ask HOW FAR the path sits from a reference, none of them asks whether the
+path is CONTINUOUS with itself. A kink and a smooth bow through the same two
+endpoints score the same, which is why `stem_depart` could pass every gate in
 humanbench round 6 while the judge gave 20 of 21 screens to the base arm.
+
+The repo does own reference-free shape terms — but one level DOWN, on the
+single rendered LETTER: ``core.quality_suetterlin``'s naturalness metric
+(qualitaetsmetrik.md §5) scores smoothness as the smoothed second difference
+of curvature, plus corner crispness and collinearity. This module is that
+family's word-level relative, and deliberately not a second copy of it. Three
+differences decide what it can see that §5 cannot:
+
+* it runs on the COMPOSED word, so the generated joins — where both human word
+  rounds were decided — are inside its domain at all;
+* it exempts the ductus events (crossing, retrace, lift, reversal corner)
+  rather than scoring through them, because at a join the question is whether
+  a direction change belongs there;
+* the Knick term reads a tangent DISCONTINUITY, not curvature oscillation: it
+  is zero for a circular arc of any radius AND for a clean spiral, and answers
+  only where turning concentrates at a point.
 
 This module is the sensor that names the quantity. It is REPORT-ONLY in the
 strict sense — consumed by tools/wordbench/run.py as extra columns, never part

@@ -11163,12 +11163,23 @@ tatsächlich liest:
 `suetterlin-1922-pairs` `0fbde2d72b64…`; reproduziert Wörter
 **0,108444**, Paare **0,148236**. BLAS auf einen Thread gepinnt.
 
-**Der blinde Fleck.** Jedes eingefrorene Lineal des Repos misst die
-GEGENTEILIGE Größe. `bench_loss` ist ein Chamfer gegen das Proben-Skelett,
-`dtw_xh` ein Punkt-zu-Punkt-Abstand, `dconn`/`dspan` eine
+**Der blinde Fleck.** Jedes Lineal, das ein KOMPONIERTES WORT beurteilt,
+misst die gegenteilige Größe. `bench_loss` ist ein Chamfer gegen das
+Proben-Skelett, `dtw_xh` ein Punkt-zu-Punkt-Abstand, `dconn`/`dspan` eine
 Verbinder-Formdistanz: alle fragen, wie WEIT der Weg von einer Referenz
 liegt, keines fragt, ob er mit sich selbst STETIG ist. Ein Knick und ein
-glatter Bogen durch dieselben zwei Endpunkte bekommen dieselbe Zahl. Die
+glatter Bogen durch dieselben zwei Endpunkte bekommen dieselbe Zahl.
+
+Referenzfreie Formterme HAT das Repo — aber eine Ebene tiefer, am einzelnen
+gerenderten BUCHSTABEN: die Natürlichkeitsmetrik (`core/quality_suetterlin.py`,
+§5) wertet Glätte als geglättete 2. Differenz der Krümmung, dazu Eckenschärfe
+und Kollinearität. Dieser Sensor ist deren Wort-Verwandter und ausdrücklich
+keine zweite Kopie: er läuft auf der KOMPOSITION (die generierten Nähte, an
+denen beide Wortrunden entschieden wurden, liegen überhaupt erst in seinem
+Gebiet), er NIMMT die Duktus-Ereignisse AUS, statt durch sie hindurchzuwerten,
+und sein Knick-Term liest eine Tangenten-UNSTETIGKEIT statt einer
+Krümmungs-Oszillation — null für einen Kreisbogen jedes Radius und für eine
+saubere Spirale, ungleich null nur, wo sich Drehung in einem Punkt ballt. Die
 beiden Wortrunden zeigen genau diese Lücke von zwei Seiten: Runde 5 gab
 34 : 2 dem Arm, der eine Naht glättet, und Runde 6 gab 20 : 1 der Basis
 gegen eine Regel, die JEDES Gate bestanden hatte — die Übergabe ersetzte
