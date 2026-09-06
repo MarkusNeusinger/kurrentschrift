@@ -1,14 +1,16 @@
 # Eigenhand-Erfassung: Wortvorrat, Streifen, Bögen
 
-> **Status (2026-08-27): teil-umgesetzt.** Die Werkzeugkette der Phasen 1–4
+> **Status (2026-09-06): teil-umgesetzt.** Die Werkzeugkette der Phasen 1–4
 > (`tools/eigenhand/`: Wortvorrat + Streifenplan · Bogen-Druck · Einlesen +
 > Siebung · Kartei/Bericht/Archiv) ist mit diesem Proposal im selben PR
 > gebaut und getestet (`tests/test_eigenhand_*.py`); die Ausbaustufen
 > 4a–4f (DB-Buchführung · Streifen in der DB · Sitzungs-Blocker ·
 > Übergangsraum-Gewichte · Beleg-Galerie · Farb-Streifen, §11) sind bis
-> 2026-08-27 nachgezogen. Welle 0 und Welle 1
-> des Streifenplans sind committet (Streifen 1–120: Buchstaben, Ziffern,
-> Zeichen, Mindestbelegung ≥3 je Glyphe). Zukunft ist Phase 5 (§9:
+> 2026-08-27 nachgezogen. Die Wellen 0 bis 2
+> des Streifenplans sind committet (Streifen 1–180: Buchstaben, Ziffern,
+> Zeichen, Mindestbelegung ≥3 je Glyphe), dazu seit 2026-09-06 die erste
+> Anheftung (`S0181` = „Kurrentschrift", §4). Gedruckt ist noch kein
+> Bogen. Zukunft ist Phase 5 (§9:
 > Anschluss an Fit/Ernte) sowie die ersten echten Schreibsitzungen samt
 > Kalibrier-Schleife der Kastenbreiten (§5).
 
@@ -146,6 +148,50 @@ richtig formen; mit ihr ist der committete Plan allein vollständig. Die
 Tabelle ist append-never wie die Streifen: ein einmal eingetragener Wert
 wird nie überschrieben, damit eine spätere Kurationsänderung keine
 eingefrorene Zeile umformt.
+
+**Angeheftete Wörter** (Owner, 2026-09-06). Manche Wörter sollen früh
+geschrieben sein, weil sie sind, was sie sind — nicht weil die Deckung
+sie fordert. „Kurrentschrift" ist der erste Fall: das Wort steht im Hero
+der Seite, ein geschriebenes Exemplar wird gebraucht. Der Plan war zu
+diesem Zeitpunkt bereits eingefroren (Wellen 0–2), und in einen
+bestehenden Streifen kann nichts hineingeschrieben werden. Die
+**Anheftung** löst das, ohne die Regel zu beugen: `python -m
+tools.eigenhand.pool pin` hängt für jedes Wort aus
+`corpus.PINNED_FIRST` (Kurationsschicht `pin`) einen EIGENEN Streifen an
+und trägt ihn in den neuen Planblock `pins` ein — und `pins` ist genau
+das, was `plan.ordered_strips` der Planreihenfolge voranstellt. Damit
+führt der angeheftete Streifen die Druck-Warteschlange, die
+Fortschrittssicht und den Bestand gleichermaßen an; die eingefrorenen
+Streifen bleiben Byte für Byte, was sie waren (`verify_immutable` läuft
+auch hier). Von der Spitze verschwindet eine Anheftung auf dem normalen
+Weg: sobald der Streifen `belegt` ist, ist er aus der Warteschlange.
+
+Drei Festlegungen dazu, damit die Anheftung klein bleibt:
+
+* **Der Plan bleibt hand-übergreifend.** EIN Streifenplan bedient
+  `mn-suetterlin`, `mn-kurrent` und `mn-offenbacher` (§5); eine
+  hand-eigene Pin-Liste bräuchte hand-eigene Pläne. Ein angeheftetes
+  Wort wird also in jeder Schrift zuerst geschrieben — für einen
+  Projektnamen ist das erwünscht.
+* **Ein bereits geplantes Wort wird nicht angeheftet.** Eine Anheftung
+  sagt „schreib das früh", nicht „schreib das nochmal".
+* **Ein angehefteter Streifen wird nicht mit Quotenwörtern aufgefüllt.**
+  Das Auffüllen bräuchte die Übergangsraum-Gewichte (lokal, nie
+  committet), und der Kasten-Generator gibt die freie Zeilenbreite
+  ohnehin an das eine Wort zurück: „Kurrentschrift" bekommt die vollen
+  180 mm. Format 2 bleibt: `pins` ist additiv, ein Plan ohne den Block
+  liest sich wie zuvor.
+
+Eine NEUE Welle braucht dafür nichts: `pool build` hängt wie bisher an,
+und weil das angeheftete Wort dann schon geplant ist, greift die
+Wiederholungs-Dämpfung wie bei jedem anderen Wort. Ein später
+hinzukommendes Pin-Wort ist ein weiterer `pool pin`-Lauf — der erste
+Bogen muss dafür nicht neu gedruckt werden, solange noch keiner
+gedruckt ist; ist bereits einer im Umlauf, betrifft die Anheftung den
+nächsten. Stand 2026-09-06: `S0181` = „Kurrentschrift", geschrieben
+`Kurrentſchrift` (die Standardregeln geben das lange ſ am Anfang des
+zweiten Morphems von selbst, also keine Fugen-Form und ein Label ohne
+Hinweiszeichen).
 
 **Trainingsdaten, kein Mess-Satz.** Der Wortvorrat und der Streifenplan
 wachsen; KEINE Bench-Kopfzahl liest je aus ihnen. Sollte je eine Messung
@@ -299,6 +345,36 @@ gezählt werden — auch dann nicht, wenn die Maskierung sie verfehlt. Dunkel
 bleibt nur, was der SCHREIBER lesen muss: Labels, Streifen-ID, Kopf,
 Stiftkästchen und Schnittmarken; alle liegen außerhalb des Schreibbands
 oder werden maskiert.
+
+**Und noch eine Stufe dünner** (Owner, 2026-09-06: „solange es schwach im
+Druck zu erkennen ist, ist es stark genug"). Die Grundlinie bekommt die
+Stärke, die bis dahin die Hilfslinien hatten, und die Hilfslinien gehen
+darunter — jede Rolle rückt um eine Stufe:
+
+| Rolle | vorher | jetzt |
+|---|---|---|
+| Grundlinie | 0,22 mm | **0,12 mm** |
+| Mittellinie | 0,15 mm | **0,10 mm** |
+| Ober-/Unterlinie (gestrichelt) | 0,12 mm | **0,08 mm** |
+| Schräglagengitter (gestrichelt) | 0,10 mm | **0,06 mm** |
+| Kastenkante + Stiftkästchen | 0,12 mm | 0,12 mm (unverändert) |
+
+Die Reihenfolge bleibt Grundlinie > Mittellinie > Ober-/Unterlinie >
+Gitter, die Zeile liest sich also weiter auf einen Blick. Gedruckt wird
+das noch: 0,06 mm sind bei 600 dpi 1,4 Punktbreiten, das Gerät zieht
+seine dünnste Linie statt keiner. Der Gewinn liegt stromabwärts — jeder
+Millimeter Cyan, der gar nicht erst auf dem Papier steht, ist einer, den
+der Import nicht für Tinte halten, nicht aus dem Blau-Kanal heben und
+nicht in einen gemessenen Strich verschmieren kann; das Ausblenden
+entfernt, was da ist, und weniger davon ist weniger zu entfernen. Die
+Kastenkante bleibt, wo sie war, weil dieselbe Rolle das **Stiftkästchen**
+zeichnet: das muss der Schreiber finden und ankreuzen, sonst zählt die
+Zeile nicht (§6). Positionen, Passmarken und Prüfmaße sind unberührt —
+nur Strichstärken haben sich bewegt, der `cfg`-Stempel eines Bogens
+bleibt deshalb derselbe (er hasht das Layout, und Farben und Stärken
+stehen dort nicht, siehe unten). Auf Papier ist noch nichts gedruckt
+worden, die Änderung kostet also keinen Bogen; die Druckanweisung
+(Farbdrucker, A4, 100 %, Lineal an 190,0 / 277,0 mm) gilt unverändert.
 
 **Die Lineatur wird in hellem CYAN gedruckt** (Owner, 2026-08-23). Vorher
 lag sie im `druck`-Grau der App bei Luminanz 0,10 (Grundlinie) und 0,41
