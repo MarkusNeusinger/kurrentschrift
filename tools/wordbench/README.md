@@ -198,6 +198,38 @@ is meant to move. It moves it: `--exit-trim` takes the departure median to
 `−1.39°` on the `sep01` roots. The arm was still rejected — `dconn` does not
 follow (messjournal.md §14 „Übergänge J4/J4b"), so the switch stays off
 by default.
+
+The newest member again is the **continuity sensor** (the
+Unstetigkeits-Sensor, `continuity.py`) — `cont n=<measured>/<samples>
+kink=… wob=… bow=… bowj=… flat=… nk=…`. Every column above measures how FAR
+the composition sits from a reference; this one asks whether the path is
+continuous WITH ITSELF, which is what the owner's judging principle turned
+out to be about (`menschliche-bewertung.md` §9a). Read on the composed pen
+strokes at every sample that is not a ductus event:
+
+- `kink` / `nk` — `|2·turn(W₁) − turn(2·W₁)|`, the turn CONCENTRATED at a
+  point: exactly 0 for a circular arc of any radius, exactly the kink angle
+  for a corner between two straight lines. Counted above
+  `KINK_THRESHOLD_DEG` = arcsin(0.2) = 11.537°, one event per kink.
+- `wob` — the travel heading high-passed against its own moving average,
+  RMS in degrees: the mid-stroke wobble.
+- `bow` / `bowj` — the Pfeilhöhe over a `BOW_CHORD_UNITS` = 0.29 xh chord,
+  over the whole word and in the neighbourhood of the generated connectors.
+- `flat` — the deepest bow that became a chord, bracketed by bow on both
+  sides.
+
+The scale ladder comes from the pen, not from a round: `KINK_WINDOW_UNITS`
+= 0.0725 xh is half the nib (and, like `SEAM_WINDOW`, deliberately under the
+composer's own 0.12 alignment window), one nib is the end margin and the
+landmark radius, two nibs the chord. Pen lifts, piercing crossings, retrace
+zones and reversal corners are exempt within one nib and counted
+(`cont_excluded: lift=… cross=… retrace=… corner=…`) — the corner test uses
+`core/pipeline.py`'s own window and angle, so "authored corner" and
+"detected corner" cannot drift apart. Block lines are `cont_kink_total`,
+`cont_kink_deg_median` (pooled over the events) and `cont_*_median` (over
+the words). Validated against humanbench rounds 5 and 6 in messjournal.md
+§14 („Übergänge S2"), with the standing caveat recorded there: no single
+column is direction-correct across all four decided classes.
 - `width` — |log| of the total-ink-width ratio: spacing/rhythm errors that
   per-point chamfer barely sees. For PAIRS this component carries a constant
   positive bias (the plate draws lead-in/lead-out strokes the composed
@@ -235,8 +267,8 @@ Byte-stable grep anchor: `grep "^bench_loss:" run.log`. The pairs block
 The two header lines precede everything (one pair per selected root);
 `runtime_s:` closes the run, after the last block. Elided from the example
 above, since they vary with the fixture set: the report-only medians
-(`slant_*`, `gleichzug_*`, `meas_*`, `seam_*`), which follow the component
-block inside each block and never displace it.
+(`slant_*`, `gleichzug_*`, `meas_*`, `seam_*`, `cont_*`), which follow the
+component block inside each block and never displace it.
 
 ## Overlays
 

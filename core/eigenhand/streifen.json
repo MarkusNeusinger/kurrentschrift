@@ -195,6 +195,13 @@
     "S0179",
     "S0180"
    ]
+  },
+  {
+   "wave": 3,
+   "strips": [
+    "S0181"
+   ],
+   "pin": true
   }
  ],
  "strips": {
@@ -1694,6 +1701,12 @@
    "words": [
     "Haupt"
    ]
+  },
+  "S0181": {
+   "wave": 3,
+   "words": [
+    "Kurrentschrift"
+   ]
   }
  },
  "forms": {
@@ -1713,5 +1726,8 @@
   "Wirtshaus": "Wirts|haus",
   "alsbald": "als|bald",
   "alsdann": "als|dann"
- }
+ },
+ "pins": [
+  "S0181"
+ ]
 }

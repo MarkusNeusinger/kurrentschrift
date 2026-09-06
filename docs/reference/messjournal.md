@@ -213,6 +213,9 @@ die DB) — mit seiner Bedingung.
 | sep06 | Laufform | [LF13 gemessen](#laufform-lf13-sep06--gemessen-der-schätzer-war-nie-der-träger-und-der-arm-fällt-an-zwei-gates) | Pre-Reg + gemessen · **verworfen** (Gate (a) + (c)) · Teilerfolg zurechenbar | **Die Zurechnung kippt H2:** gegen den EIGENEN Stapel gemessen kostet der Schätzer nur 0,005–0,029 xh, während die ERNTE davor (Kette-Wortfit → zentriertes 120-Anker-Vorkommen) 0,016–0,057 xh kostet — H2 gehört zu drei Vierteln der Dissektion, nicht dem Median. Anteile am Rest-Verlust: Lage −22 % · Größe −1 % · Basis +21 % · Formstreuung +53 %. **Die Decke ist ein Buchstabe:** nur `sz` (0,2167) und `r` (0,2177) tragen in den Vorkommen selbst mehr als 0,194, `a`/`o`/`g` sind schon dort zu. Arm (Schleifen-Registrierung, Leiter {0,15 · 0,25 · 0,50}): Gate (a) rot (2 Bereiche statt 4 der Basis, keine Regression), Gate (c) rot (0,108444 → 0,108637), (b)/(d)/(e) grün; Kennzahl 26 → **23** Wörter (`muß`-Familie), Verdopplungen bei 0,097 22 → 21. R4-Anzeiger gebaut und geeicht (monotone Kurve 0,609 → 0,878), bleibt Report-Spalte. Schalter `LAUFFORM_LOOP_WINDOW` bleibt AUS |
 | sep06 | Laufform | [LF14 Ernte-Zerlegung (Pre-Reg)](#laufform-lf14-sep06--vorregistrierung-die-ernte-schritt-für-schritt-rettungsweg-1-von-lf13) | Pre-Reg | Rettungsweg 1 von LF13: die Ernte ist der gemessene Hebel, also wird sie zerlegt. Sechs Ablesungen je Vorkommen (E0 Kette-Bahn → E1 Anker nackt → E2 Anker gerendert → E3 Reparatur → E4 Zentrierung → E5 Rundung) plus die A/B-Ablesung eingefrorene gegen neu parametrisierte Spline-Basis (E2a/E2b); benannt wird der Schritt mit dem größten Median-Anteil, Mechanismus-Menü N1/N2/N3 vorab festgelegt. Decke der Kennzahl vorab beziffert: höchstens 11 der 26 Wörter, weil `o` (Kette 0,1826) schon in der Kette zu ist und `G`/`v`/`k` keine Laufform-Zeile haben |
 | sep06 | Laufform | [LF14 gemessen](#laufform-lf14-sep06--gemessen-die-ernte-verliert-nichts-und-der-eine-schritt-der-es-tut-hilft-keinem-wort) | Pre-Reg + gemessen · **verworfen** (Gate (b) + (c)) · **streicht Rettungsweg 1 von LF13** | **Die Ernte verliert die Schleife nicht:** auf EINEM chart-verankerten Bereich an beiden Enden gelesen kostet Kette-Bahn → gespeichertes Vorkommen −0,0002 bis +0,0077 xh; 40 von 44 Vorkommen bewegen sich unter 0,01, und von den vier übrigen VERLIERT genau eines. Die 0,016–0,057 xh von LF13 sind zwei verschiedene Schleifen: 21 von 39 gemeinsamen Vorkommen stimmen auf 0,0011, 18 liegen 0,0673 auseinander, weil die Zuordnung über Nähe im 0,45-xh-Fenster ein Nachbarloch trifft (`Wer` `r` 0,3500 gegen 0,2323). Beide Lineale (Bereich · Raster-Nähe) stimmen an beiden Enden auf 0,0000 überein, der Rahmen ist auf 2,3·10⁻¹⁵ xh abgenommen. **Der eine echte Schritt ist die Anker-Reparatur** („Schleifen-Sehne"): von 235 Vorkommen werden 20 repariert, 12 davon mit messbarer Binnenfläche — die 4, deren Reparatur INNERHALB einer Schleife landet, verlieren alle vier (Median 0,0410, schlimmstenfalls 0,1068 xh), die 8 außerhalb bewegen ≤ 0,0021 (saubere Nullprobe). Arm `LOOP_AWARE_REPAIR`: Gate (a) 1 → **0** Brüche von 44 (grün), (b) rot (0,0486 am `Z` für 0,0045 Öffnung), (c) rot (Paare 0,148352) — **beide Lineal-Zahlen trägt die Kontrollkarte**, der Arm bewegt sie um −0,000044 bzw. 0,000000; (d)/(e) grün. Kennzahl **26 → 26**: drei Vorkommen gehen auf, kein Wort. Nebenbefund: **die Ernte ist kein Fixpunkt** — eine frische Ernte der `sep05`-Wurzel leitet jede Zeile 0,0025–0,0283 xh neben der ab, aus der die Wurzel geschrieben wurde (`--jobs 1` = `--jobs 4` byte-gleich; Ursache ist `chain_seed="composed"` auf einer Komposition aus den Zeilen selbst) |
+| sep06 | Lineal | [Kringel-Landmarke](#kringel-landmarke-sep06--katalog-und-sensor-die-erwartung-offen-ist-eine-eigenschaft-je-buchstabe-und-je-schleife) | Pre-Reg + gemessen · **Sensor**, kein Arm · Report-Spalte | Der Autor-Entwurf „große · mittlere · kleine Kringel, bei den kleinen Punktkringel oder je nach Tinte wechselnd" wird ein eingefrorener **Katalog**: 46 Schleifen über 27 Glyphen mit Größenklasse (in Breiten der Plattenfeder `W = 0,1936`: klein < 2W, mittel < 4W, groß darüber) und Zustand (Anteil der Vorkommen mit Loch: offen ≥ 0,8, punkt ≤ 0,2, sonst wechselnd) — **klein 22 · mittel 16 · groß 8**, **offen 41 · wechselnd 4 · punkt 1**. Abnahme: sechs der neun engen Glyphen ziffernweise wie #551, `w_pen` 0,0968 und 202 Binnenflächen ebenso. **Die 26 zerlegt: auf #551s Messpfad 27 Wörter, davon 24 echte `offen`-Verluste und 3 nur `wechselnd`** (`Sprünge` `Zügel` `regieren`, die `g`-Schale) — die ehrliche Zahl ist **24**. Über ALLE Schleifen korrigiert der Katalog nach oben: 34 der 63 Wörter verlieren bei 0,097 eine `offen`-Schleife, dazu **19 Topologie-Verluste** (nie gezeichnete Binnenflächen: `w` 5 · `sz` 3 · `G` 3 …) in 14 Wörtern, zusammen 36 der 63. Zwei neue Befunde: die **e-Öse** hält nur 19 % ihrer Platten-Weite (0,07 gegen 0,38) und ist trotzdem `wechselnd`, also kein Defekt; das **`t`** ist der blinde Fleck — `loop_ranges` hat für es keinen Schleifenbereich, die Platte hält dort 9 von 9 zwei Löcher, und `t`#1 (0,0517 gegen 0,3912) ist das größte Defizit und der EINZIGE Verlust, der auch bei der ausgelieferten Feder 0,0724 bleibt. Sensor `kringel_lost` report-only: Wörter/Paare 0,108444 · 0,148236 unverändert, Tintenfolger-Report 68 bzw. 56 Zeilen identisch |
+| sep06 | Übergänge | [S2 Unstetigkeits-Sensor (Pre-Reg)](#übergänge-s2-sep06--vorregistrierung-der-unstetigkeits-sensor-der-den-knick-sieht) | Pre-Reg | Rettungsweg 2 der Runde-6-Konversionen nach dem S1-Muster (bauen, einfrieren, DANN abnehmen). Anlass ist der Leitsatz des Autors: alle eingefrorenen Lineale messen ABSTAND, keines Stetigkeit. Fenster aus der FEDER, nicht aus einer Runde — halbe Feder 0,0725 · eine Feder 0,145 · zwei Federn 0,29; θ = arcsin(0,2) = 11,537°, federunabhängig. Gates P1/P2 an Runde 5, P3 an Runde 6, N1 Identität, N2 Verrohrung |
+| sep06 | Übergänge | [S2 gemessen](#übergänge-s2-sep06--gemessen-alle-gates-bestehen-und-keine-einzelne-spalte-ist-der-richter) | Pre-Reg + gemessen · **validiert** (Lineal-Bestandteil-Kandidat, kein Lineal geändert) | **Alle fünf Gates bestehen, aber keine EINZELNE Spalte ist der Richter.** N1/N2 exakt (0,000e+00 gegen die gespeicherten Verbinder; 3 + 12 identische Wörter bewegen keine Spalte). P1 `naht-stark` (Urteil Kandidat 26 : 2): `kink_max_deg` 36,89 → **27,86**, `kink_count` 28/28 fallend, `wobble` −0,531. P2 `naht-schwach`: nur 17 statt 24 von 29 Wörtern bewegt, Wackler-Median −0,083 — Faktor 6, die Klassengrenze reproduziert. P3 `apex` (Basis 11 : 1): `bow_join` 0,0066 → **0,0034 in 12/12**, dazu (nicht vorregistriert) `kink_max_deg` +15,54°. Die Klasse `stem` (Basis 7 : 0) sieht nur `curv_loss` (8/8) und `wobble` (8/8). **Ehrliche Hälfte:** `bow_join` fällt in BEIDEN Runden, hätte Runde 6 allein also falsch entschieden — der Austritts-Trim verschiebt die Grenze Buchstabe/Verbinder und damit die Population (das Rahmen-Artefakt, für das S1 `dspan` gebaut wurde). Headline 0,108444 / 0,148236 vorher wie nachher |
 | sep06 | Übergänge | [J4 Runde 5 gemessen](#übergänge-j4-sep06--runde-5-gemessen-richtung-34--2-unentschieden-gate-gerissen--durch-die-klasse-die-es-reißen-sollte) | Menschenrunde · Richtung erdrückend, `adopt: false` an der Tie-Schranke · **Adoption = Autor-Entscheid** (LF11-Präzedenz) | **Kandidat 34 : Basis 2** von 36 entschiedenen (94,4 % gegen ≥ 60 %), unentschieden 42,9 % gegen ≤ 25 %. Klassenweise löst sich der Widerspruch: `naht-stark` 26 : 2 bei **9,7 %** Ties (beide Schranken ✓), `naht-schwach` 8 : 0 bei **72,4 %** Ties — die Klasse, für die die Pre-Reg Unsichtbarkeit beschrieben hat. Instrument sauber: 3/3 Kontrollwörter als „kein Unterschied" erkannt, 10/12 Wiederholungen gleicher Arm bei 4/12 gleicher Seite (12 ≥ 6 Paare). Auf der `sep05`-Wurzel neu gemessen: Wörter 0,108444 → **0,109026** (+0,000581), Paare byte-gleich, `seam_dep` +7,59 → −0,70 (absolut 12,67 → **2,30**), Verdopplungen 14 = 14. **Der ganze Lineal-Verlust sitzt in der starken Klasse** (+0,036888 gegen −0,000262), also dort, wo das Auge 26 : 2 dagegen stimmt — von den 30 bestraften Wörtern gehen 18 : 0 an den Kandidaten. Klassenregel gemessen und verworfen: `exit_trim_min_kink_deg` reichert `naht-stark` ab 10° an (71 % gegen 59 %), TRENNT die Klassen aber bei keiner Schwelle — beide haben denselben Knick, +7,90 / +7,44 —, kostet zwischen 5° und 25° MEHR als der volle Trim und gibt ab 10° die Naht-Reparatur zurück; nur 30° zahlt 0,000202 zurück, feuert dann aber in 5 von 63 Wörtern |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
@@ -11138,6 +11141,534 @@ zugunsten des Arms, weil E5 über E0 liegt. Der `p`-Vorbehalt von LF13
 (Ringschließung bei geschachtelten Bereichen) gilt unverändert; `p` wird
 auch hier nicht neu abgeleitet.
 
+### Kringel-Landmarke `sep06` — Katalog und Sensor: die Erwartung „offen" ist eine Eigenschaft je Buchstabe und je Schleife
+
+Vorregistrierung und Messung in EINEM Eintrag, weil dies **kein Arm** ist:
+kein Kandidat, kein Schalter, keine Adoption, kein `core/`-Byte, kein
+DB-Write, kein Wurzel-Neuexport. Gebaut werden ein eingefrorener Katalog
+und eine Report-Spalte; die 26 der Kringel-Diagnose wird nicht verbessert,
+sondern zerlegt.
+
+Anlass ist der Entwurf des Autors vom 2026-09-06: die Landmarken je
+Buchstabe — Kreuzungen, Retrace, Absetzen — sollen die Kringel mitnehmen,
+„wobei man unterscheiden muss: es gibt sehr große, mittlere und kleine
+Kringel, und bei den kleinen gibt es auch noch die Punktkringel, die in
+der Kringelmitte nicht frei sind, und die anderen sehr kleinen können je
+nach Tinte mal zu und mal offen sein." Damit ist „dieser Kringel muss
+offen bleiben" keine globale Schwelle mehr (0,194 an der Plattenfeder),
+sondern eine je Schleife von der Platte abgelesene Eigenschaft.
+
+**Basis.** Die `sep05`-Wurzeln unverändert und nicht neu exportiert:
+`suetterlin-1922` `exported_at` 2026-09-05T21:33:12+00:00 `root_digest`
+**`eaa195aa7c84…`**, `suetterlin-1922-pairs` 2026-09-05T21:33:11+00:00
+**`0fbde2d72b64…`**. Mit `--expect-root` und
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1` frisch gerechnet:
+**Wörter 0,108444 · Paare 0,148236** — ziffernweise die Headline des
+LF12-Writes.
+
+#### Die Vorregistrierung (geschrieben vor der ersten Katalogzahl)
+
+Bekannt und offengelegt: #551 (die neun engen Glyphen, Platten-Öffnungsweiten
+0,096–0,480 xh), LF13, LF14. Die Schwellen unten sind deshalb ausdrücklich
+NICHT aus dieser Verteilung genommen.
+
+* **Messgröße** `D0` wie in LF13/LF14, Identität `Tinte = D0 − 2h`. Die
+  Platte liefert die Tinten-Binnenfläche direkt, ihre Federrekonstruktion
+  ist `D0_Platte = Tinte + 2·w_pen` mit dem EINGEFRORENEN `w_pen = 0,0968`
+  aus #551 — eine Konstante dieses Katalogs, keine Schätzung je Lauf.
+* **Größenklasse in Federbreiten.** Die Plattenfeder hat die volle Breite
+  `W = 2·w_pen = 0,1936 xh` und erodiert das Mittellinien-Loch um genau
+  `W`. Also **klein** `D0 < 2W` (0,3872) — weniger als eine Federbreite
+  Loch bleibt, das GERÄT entscheidet —, **mittel** `2W ≤ D0 < 4W`, **groß**
+  `D0 ≥ 4W` (0,7744): eine Eigenschaft des Schreibgeräts, nach der Messung
+  nicht verschoben.
+* **Zustand** aus dem Anteil `q` der Vorkommen, in denen die Platte
+  überhaupt ein Loch zeigt: **offen** `q ≥ 0,8`, **Punktkringel**
+  `q ≤ 0,2`, sonst **wechselnd**. Blind gegen die WEITE des Lochs — ein
+  Punktkringel ist dadurch definiert, dass die Platte ihn nie öffnet.
+* **Schleifen-Identität** `(glyph_key, Rang in Leserichtung)`, gemessen am
+  Buchstaben MIT seinen Verbindern: die e-Öse schließt erst der eintretende
+  Verbinder (`soll.py` nennt denselben Fall für die Kreuzungen), die blanke
+  Zeile hätte für sie keinen Eintrag. Der raster-freie Duktus-Finder
+  `core.aggregate.loop_ranges` (#552) läuft daneben, seine Zahl je Glyphe
+  steht im Katalogkopf. Zuordnung ohne Radius-Konstante — #553 hat gezeigt,
+  dass ein flaches 0,45-xh-Fenster das Loch des Nachbarn greift.
+* **Gates:** Headline byte-gleich (Wörter/Paare UND der Tintenfolger-Report
+  Zeile für Zeile), `/verify-core` grün, neue Tests auf Klassifikations-
+  und Zustandsregel.
+
+**Zwei Korrekturen nach dem ersten Durchlauf**, beide am Lineal, keine am
+Gegenstand, und beide hier benannt statt versteckt:
+
+1. Vorregistriert war **Enthaltensein** (Lochmittelpunkt der Platte im
+   Gebiet der komponierten Schleife). Es beansprucht nur **121 der 202**
+   Binnenflächen, weil eine verengte Schleife das Loch nicht mehr enthält —
+   es versagt also genau am Messgegenstand. Ersetzt durch das
+   **Slot-Lineal**: die Binnenfläche gehört dem Slot, dessen EIGENE Züge
+   ihr `x` überspannen, danach eins-zu-eins nach Mittelpunktsabstand
+   innerhalb des Buchstabens (der Buchstabe ist die Kappe) — **183 von
+   202**. Das dritte mitgeführte Lineal (überlappende einbeschriebene
+   Kreise) liegt mit **144** dazwischen und stimmt mit dem Slot-Lineal an
+   245 der 276 Ablesungen des Vorlaufs überein.
+2. Ein **Splitter-Boden von 0,05 xh** kam dazu, als eine 0,015-xh-Schleife
+   des `w` eine 0,59-xh-Binnenfläche beanspruchte. Ohne ihn wird eine
+   ZUSAMMENGEFALLENE Schleife als enge gebucht statt als fehlende. Darunter
+   heißt **Splitter**, die Binnenfläche dann **Topologie-Verlust**.
+
+#### Teil 1 — der Katalog: 46 Schleifen über 27 Glyphen
+
+`tools/tracebench/kringel_catalogue.json`, gebaut von
+`tools/tracebench/kringelcat.py` auf der `eaa195aa7c84`-Wurzel.
+
+| | klein | mittel | groß | Σ |
+|---|---|---|---|---|
+| **offen** | 18 | 15 | 8 | **41** |
+| **wechselnd** | 3 | 1 | – | **4** |
+| **Punktkringel** | 1 | – | – | **1** |
+| Σ | **22** | **16** | **8** | **46** |
+
+`D0_Platte` läuft von 0,2561 (`t`#2) bis 1,0775 (`W`#2), Median 0,4060.
+**Der Schnitt bei 2W liegt NICHT in einer Lücke** — zwischen 0,3049 und
+0,4787 stehen 18 Werte dicht an dicht; die Regel trennt nach der Feder,
+nicht nach einer Zweigipfligkeit der Daten. Der Schnitt bei 4W trifft
+dagegen eine echte Lücke (0,7212 → 0,8057). Beide bleiben, wo sie standen.
+
+**Abnahme gegen #551.** Von den neun engen Glyphen liest dieser Apparat
+**sechs ziffernweise gleich** (`o` `sz` `g` `r` `v` `G`, je 0,1290–0,1333),
+`a` +0,0016, `p` +0,0086, `k` +0,0396 — die letzten beiden, weil das
+Slot-Lineal je ein Vorkommen mehr zuordnet (`k` n = 1 → 2). `w_pen`
+**0,0968** und **202** Platten-Binnenflächen sind ebenfalls die Zahlen
+von #551.
+
+**Die vom Autor genannten Schleifen**, mit ihrem Defizit
+`D0_Platte − D0_komponiert`:
+
+| Schleife | Klasse | Zustand | n | `D0` Platte | `D0` komp. | Defizit |
+|---|---|---|---|---|---|---|
+| `e`#0 (Öse) | klein | **wechselnd** | 4 | 0,3822 | 0,0745 | **+0,3077** |
+| `d`#0 (Schleife) | mittel | offen | 14 | 0,6264 | 0,6436 | **−0,0172** |
+| `a`#0 | klein | offen | 15 | 0,2911 | 0,1856 | +0,1055 |
+| `o`#0 | klein | offen | 5 | 0,3226 | 0,1765 | +0,1461 |
+| `g`#0 | klein | **wechselnd** | 4 | 0,3269 | 0,1747 | +0,1522 |
+| `r`#0 | klein | offen | 21 | 0,3269 | 0,2087 | +0,1182 |
+| `sz`#0 (ß) | klein | offen | 5 | 0,3226 | 0,1877 | +0,1349 |
+| `G`#0 · #1 | klein · mittel | offen | 3 | 0,3269 · 0,7150 | 0,1902 · 0,4827 | +0,1367 · +0,2323 |
+| `k`#0 · #1 · #2 | klein · mittel · mittel | wechselnd · offen · offen | 2 | 0,3822 · 0,4207 · 0,4787 | 0,2755 · 0,1841 · 0,6083 | +0,1067 · +0,2366 · **−0,1296** |
+| `v`#0 · #1 | klein · mittel | offen | 2 | 0,2904 · 0,7212 | 0,1877 · 0,5975 | +0,1027 · +0,1237 |
+
+Zwei Ablesungen, die den Katalog rechtfertigen: die **d-Schleife ist keine
+Baustelle** (unsere Zeile zieht sie 0,017 xh WEITER als die Platte, ebenso
+`s`#0 und `k`#2), und die **e-Öse hält nur 19 % ihrer Platten-Weite** (0,07
+gegen 0,38; im ganzen Katalog liegt nur `t`#1 mit 13 % darunter) — und ist
+trotzdem **wechselnd**: die Platte zeigt sie nur in 1 von 4 Vorkommen offen,
+also kein `offen`-Defekt, sondern der Fall „je nach Tinte".
+
+**Der blinde Fleck heißt `t`.** `loop_ranges` findet für das `t` KEINEN
+Schleifenbereich (ebenso `n` `m` `i` `u` `c`), aber die Platte hält dort in
+9 von 9 Vorkommen zwei Binnenflächen, und die Komposition zeichnet nur eine
+davon als Schleife (`t`#0 0,2467) — die zweite steht bei **0,0517 gegen
+0,3912**, das größte Defizit des Katalogs. Der raster-basierte Finder sieht
+sie, der Duktus-Finder hat sie nie gehabt.
+
+**Neben den engen Schleifen stehen 19 Topologie-Verluste** — Binnenflächen,
+für die keine Schleife ihres eigenen Slots in Frage kommt: `w` 5 · `sz` 3 ·
+`G` 3 · `m` 2 · `n` 2 · `P` `S` `e` `f` je 1. Dazu 74 Splitter auf `n` 36 ·
+`w` 12 · `longs` 12 · `sz` 5 · `p` 4 · `k` 2 · `i` `r` `v` je 1. Der
+`p`-Befund von #551 (Schaftschleife auf 0,0095 kollabiert) erscheint hier
+als Splitter plus Topologie-Verlust und damit als das, was er ist: keine
+enge Schleife, sondern eine fehlende.
+
+#### Teil 2 — der Sensor „Kringel-Landmarke", Report-Spalte
+
+`tools/tracebench/kringel.py` liest den Katalog und hängt an jede Wortzeile
+`kringel <verloren>/<offen>`, an den Block `kringel_lost` und
+`kringel_wechselnd_zu`. Verlust ist NUR eine `offen`-Schleife, die die
+GEWÄHLTE Feder zulaufen lässt; `wechselnd` steht getrennt daneben,
+`punkt` ist befreit. `--kringel-half-width` wählt die Feder (Vorgabe
+0,0968, die der Erwartung).
+
+**Byte-Gleichheit, gemessen statt behauptet.**
+
+| Lauf | vorher | nachher |
+|---|---|---|
+| `wordbench.run --set all` | 0,108444 · 0,148236 | **0,108444 · 0,148236**, Report bis auf `runtime_s` identisch |
+| `tracebench --split all --candidate authored` | dtw 0,000000 · aiou 0,7308 · Identitäts-Gate PASS | **68 Zeilen Zeile für Zeile identisch** neben der neuen Spalte |
+| `tracebench --split dev --candidate chain` | dtw 0,049757 · p90 0,091389 · aiou 0,7030 | **56 Zeilen Zeile für Zeile identisch** |
+
+Preis: der Sensor komponiert die Wörter ein zweites Mal (wie das
+Duktus-Soll), Laufzeit des 29-Wort-Identitätslaufs **114,8 → 175,3 s**.
+Die Ablesung dort bei der Plattenfeder: **14 von 69 `offen`-Schleifen
+verloren, in 12 von 29 Wörtern** (Kette dev-19: 12 von 43 in 10 von 19),
+dazu 2 bzw. 1 `wechselnd`-Schließung und 3 befreite Punktkringel.
+
+#### Teil 3 — die 26 schließenden Wörter, mit dem Katalog neu gelesen
+
+Auf dem Messpfad von #551 (nur dessen acht Schleifen-Schlüssel, nur wo die
+Platte im SELBEN Vorkommen ein Loch zeigt) kommt dieser Apparat auf **27
+Wörter** statt 26 — eines mehr, weil das Slot-Lineal je ein `a`- und ein
+`k`-Vorkommen zusätzlich zuordnet. Von diesen 27:
+
+* **24 tragen einen echten `offen`-Verlust**,
+* **3 nur einen `wechselnd`-Verlust** und sind damit keine Defekte:
+  `Sprünge` · `Zügel` · `regieren`, alle drei über die `g`-Schale (und in
+  `regieren` zusätzlich die e-Öse).
+* **0 sind Punktkringel.** Die Kategorie entlastet auf diesem Satz nichts.
+
+**Die ehrliche Zahl, die die 26 ersetzt, ist 24** — nach unten nur um drei,
+während der volle Katalog nach oben korrigiert: über ALLE Schleifen
+gerechnet verlieren bei 0,097 **34 der 63 Wortproben** eine `offen`-Schleife
+(44 Vorkommen), daneben 19 Topologie-Verluste in 14 Wörtern. **36 der 63
+Wörter** tragen das eine oder das andere.
+
+| Schleife | Klasse | n Verluste (0,097) | Defizit | Rettungsweg |
+|---|---|---|---|---|
+| `a`#0 | klein | 15 | +0,1055 | **R3** — Schleifengeometrie aus der Evidenz |
+| `t`#1 | mittel | 9 | +0,3395 | **Zwei-Zug-Modell an verschmolzenen Schleifen**; erst braucht das `t` überhaupt einen Duktus-Schleifenbereich |
+| `o`#0 | klein | 5 | +0,1461 | **R3** |
+| `sz`#0 | klein | 5 | +0,1349 | **R3** |
+| `G`#0 | klein | 3 | +0,1367 | **Skelett-Schleifen für Versalien** (keine Laufform-Zeile, H3) |
+| `r`#0 | klein | 3 | +0,1182 | **Laufform-Abdeckung** — die Zeile überlebt, die Chart-Rückfälle (`er`, `er-3`) nicht (#551) |
+| `k`#1 | mittel | 2 | +0,2366 | **Skelett-Schleifen für Versalien** |
+| `v`#0 | klein | 2 | +0,1027 | **Skelett-Schleifen** / Autorenweg (keine Laufform-Zeile) |
+| Topologie: `w` `sz` `G` `m` `n` `P` `S` `e` `f` | – | 19 | – | **Mittelachsen-Term** (R4-Anzeiger) + Zwei-Zug-Modell: wo zwei Federzüge verschmolzen sind, zeichnet die Zeile einen Zug und keine Schleife |
+
+**Bei der ausgelieferten Feder (0,0724)** bleibt genau EIN Verlust übrig:
+`t`#1, in allen 9 Vorkommen, in 8 Wörtern. #551s „bei 0,0724 verliert null"
+gilt für seine neun Glyphen und fällt, sobald das `t` mitzählt.
+
+#### Die Gates
+
+| Gate | Ablesung | Urteil |
+|---|---|---|
+| Headline Wörter/Paare | 0,108444 · 0,148236, unverändert | **grün** |
+| Tintenfolger-Report | 68 bzw. 56 Zeilen identisch, Identitäts-Gate PASS | **grün** |
+| `/verify-core` | 2524 passed, 8 skipped; `ruff` sauber | **grün** |
+| Neue Tests | 26; darunter die drei Verweigerungen: fremde Hand, kaputte Zeile, unmögliche Federbreite | **grün** |
+
+#### Rettungswege
+
+1. **R3 bleibt der Träger** und bekommt eine Zielgröße je Schleife statt
+   einer globalen: `a` `o` `sz` brauchen +0,10 bis +0,15 xh.
+2. **Ein Duktus-Schleifenbereich für das `t`** (und die Prüfung der sechs
+   range-losen Glyphen) — ohne ihn ist das `t` für LF13/LF14 unsichtbar,
+   obwohl es das größte Defizit des Katalogs trägt.
+3. **Skelett-Schleifen für Versalien** — `G` `k` `v` `P` `F` `W` haben
+   keine Laufform-Zeile, ihr Verlust ist H3 und kein Schätzerproblem.
+4. **Der Topologie-Verlust ist die eigene Klasse** und gehört vor die
+   Öffnungsweite: 19 nie gezeichnete Binnenflächen holt kein Weitungsterm
+   zurück.
+5. Autorenweg unverändert.
+
+**Ausdrücklich kein Weg:** die Klassen- oder Zustandsschwellen nachziehen,
+bis eine Zahl besser aussieht. Sie stehen in Federbreiten bzw. in einem
+80-%-Anteil und sind vor der ersten Katalogzahl festgelegt.
+
+**Selbst entschieden.**
+
+* **Den Buchstaben MIT seinen Verbindern zu messen.** Ohne das hat die
+  e-Öse keinen Eintrag, und der Autor nennt sie ausdrücklich.
+* **Drei Zuordnungslineale zu fahren und das dritte zu nehmen** (121 · 144 ·
+  183 von 202). Das erste war das vorregistrierte und scheitert genau am
+  Messgegenstand — das steht oben statt in einer Fußnote.
+* **Den Splitter-Boden nachträglich einzuziehen.** Er entscheidet, ob ein
+  Verlust „enge Schleife" oder „keine Schleife" heißt — zwei verschiedene
+  Rettungswege. Dazu **`unbelegt` als vierte Marke** statt einer geratenen
+  Klasse (im ausgelieferten Katalog leer, aber ein Kollaps erzeugt sie).
+* **Die Kette-Vergleichszahl aus dem eigenen Vorher/Nachher zu nehmen**
+  (0,049757 unter DIESEM Aufruf), nicht aus der Kampagnen-Headline
+  0,045384 eines anderen Aufrufs. Für „Report-Spalte" zählt das Paar auf
+  demselben Aufruf, nicht die absolute Höhe.
+
+**Grenzen.** **20 der 46 Schleifen stehen auf n < 3** und tragen die Marke
+`thin`; ihr Zustand ist eine Einzelablesung mit Etikett. Die Platte steht
+bei 30–35 px je x-Höhe, ein Loch von 0,096 xh sind rund 3 px — ein `punkt`
+an dieser Grenze ist auch eine Aussage über die Auflösung. Der Katalog ist
+an EINER Hand und EINER Feder abgelesen; auf eine andere Hand überträgt
+sich die Klassenregel, nicht die Klasse. Das Slot-Lineal kann eine
+Binnenfläche dem falschen RANG innerhalb ihres Buchstabens zuordnen, wenn
+die Komposition eine Schleife verliert und eine andere behält — für `t`#1
+ist das nicht ausgeschlossen und wäre die einzige Alternativerklärung zum
+dortigen Defizit. Und gemessen wird, was die Komposition zeichnet: nichts
+darüber, ob Kette oder Lotse die Schleife an derselben Stelle finden.
+
+### Übergänge S2 `sep06` — Vorregistrierung: der Unstetigkeits-Sensor, der den Knick sieht
+
+Rettungsweg 2 der Runde-6-Konversionen (§7.9, „ein Sensor, der die
+Krümmung sieht") und die Konversion der Runde 5: **bauen, einfrieren,
+DANN abnehmen** — dieselbe Reihenfolge wie bei S1. Dieser Eintrag
+registriert KEINEN Arm und bewegt keine Regel; er baut ein Instrument und
+nennt vorab, woran es scheitert.
+
+Anlass ist ein Satz des Autors (2026-09-06), der sagt, was das Auge
+tatsächlich liest:
+
+> „Direkt ins Auge stechen Übergänge, die mitten im Übergang Wackler drin
+> haben oder in einem Punkt einen Knick haben, weil sie von 30° Steigung
+> plötzlich auf 40° wechseln und davor und danach eine perfekte Linie
+> haben. Es kommt nicht so auf den genauen Winkel an, ob es wirklich
+> gerade ist oder der Kreis einen Radius von x oder y hat — die
+> plötzlichen Änderungen an Stellen, wo sie nichts zu suchen haben, weil
+> da kein Richtungswechsel ist, fallen extrem als unnatürlich auf."
+
+**Basis.** Wurzeln `suetterlin-1922` `exported_at`
+2026-09-05T21:33:12+00:00 `root_digest` `eaa195aa7c84…` und
+`suetterlin-1922-pairs` `0fbde2d72b64…`; reproduziert Wörter
+**0,108444**, Paare **0,148236**. BLAS auf einen Thread gepinnt.
+
+**Der blinde Fleck.** Jedes Lineal, das ein KOMPONIERTES WORT beurteilt,
+misst die gegenteilige Größe. `bench_loss` ist ein Chamfer gegen das
+Proben-Skelett, `dtw_xh` ein Punkt-zu-Punkt-Abstand, `dconn`/`dspan` eine
+Verbinder-Formdistanz: alle fragen, wie WEIT der Weg von einer Referenz
+liegt, keines fragt, ob er mit sich selbst STETIG ist. Ein Knick und ein
+glatter Bogen durch dieselben zwei Endpunkte bekommen dieselbe Zahl.
+
+Referenzfreie Formterme HAT das Repo — aber eine Ebene tiefer, am einzelnen
+gerenderten BUCHSTABEN: die Natürlichkeitsmetrik (`core/quality_suetterlin.py`,
+§5) wertet Glätte als geglättete 2. Differenz der Krümmung, dazu Eckenschärfe
+und Kollinearität. Dieser Sensor ist deren Wort-Verwandter und ausdrücklich
+keine zweite Kopie: er läuft auf der KOMPOSITION (die generierten Nähte, an
+denen beide Wortrunden entschieden wurden, liegen überhaupt erst in seinem
+Gebiet), er NIMMT die Duktus-Ereignisse AUS, statt durch sie hindurchzuwerten,
+und sein Knick-Term liest eine Tangenten-UNSTETIGKEIT statt einer
+Krümmungs-Oszillation — null für einen Kreisbogen jedes Radius und für eine
+saubere Spirale, ungleich null nur, wo sich Drehung in einem Punkt ballt. Die
+beiden Wortrunden zeigen genau diese Lücke von zwei Seiten: Runde 5 gab
+34 : 2 dem Arm, der eine Naht glättet, und Runde 6 gab 20 : 1 der Basis
+gegen eine Regel, die JEDES Gate bestanden hatte — die Übergabe ersetzte
+einen konkaven Anstrich durch eine Gerade und verlor dabei 0,015–0,040 xh
+Pfeilhöhe, was kein Lineal sah.
+
+**Die Leiter, aus der Feder abgeleitet — nicht aus den Runden.** Die
+Wurzel schreibt mit `constant_nib_units` = 0,07243…, das ist die HALBE
+Strichbreite; die Tinte ist 0,145 xh breit. Daraus drei Zahlen und keine
+vierte:
+
+* **W₁ = 0,0725 xh** (halbe Feder) — die kürzeste Strecke, über der sich
+  überhaupt eine Richtung ablesen lässt, unterhalb verdeckt die
+  Strichdicke die Änderung. Bewusst UNTER `core.compose.TANGENT_WINDOW`
+  (0,12), dem Fenster, auf das der Komponist seine Verbinder ausrichtet —
+  sonst misst der Sensor den Komponisten an seiner eigenen Konstruktion
+  (dieselbe Begründung wie `seam.SEAM_WINDOW`).
+* **2·W₁ = 0,145 xh** (eine Feder) — Rand am Zugende, Radius um eine
+  Landmarke, und damit die Garantie, dass kein Messfenster eine Landmarke
+  oder ein Federabsetzen enthält.
+* **W₂ = 4·W₁ = 0,29 xh** (zwei Federn) — die Sehne der Pfeilhöhe.
+  Kürzer ist ein Bogen kein Bogen, sondern eine verdickte Linie.
+
+**Die Schwelle θ, ohne freien Parameter.** Ein Richtungswechsel zählt als
+Knick, sobald der Weg seine glatte Fortsetzung um ein ZEHNTEL der
+Strichbreite verlässt, gemessen über ein Lesefenster. Die Auslenkung ist
+W₁·sin θ, die Tinte ist 2·W₁ breit, also ist das Verhältnis
+0,1·(2·W₁)/W₁ = 0,2 — federunabhängig per Konstruktion. **θ = arcsin(0,2)
+= 11,537°**, als Ausdruck eingefroren, nicht als gerundete Zahl.
+
+**Was der Sensor misst.** Auf den komponierten FEDERZÜGEN
+(`composition_strokes`; ein Zug ist ein Federgang, ein Absetzen also eine
+Zuggrenze per Konstruktion), an jedem Punkt, der keine Landmarke ist:
+
+1. **Knick (Ordnung 1).** Der SIGNIERTE Drehwinkel zwischen rückwärtiger
+   und vorwärtiger Sehne, an ZWEI Fenstern genommen und verrechnet als
+   `kink = |2·turn(W₁) − turn(2·W₁)|` — die am Punkt KONZENTRIERTE
+   Drehung. Für einen Kreisbogen JEDES Radius exakt 0 (die Drehung wächst
+   linear mit dem Fenster), für eine Ecke zwischen zwei Geraden exakt der
+   Knickwinkel. Das ist der Satz des Autors als Arithmetik: der Radius
+   zählt nicht, die plötzliche Änderung zählt. Gemeldet als
+   `kink_max_deg` und `kink_count`.
+2. **Wackler (Ordnung 1).** Die Laufrichtung über W₁, entfaltet, minus
+   ihrem bogenlängen-gewichteten gleitenden Mittel über W₂ — ein Hochpass
+   auf das Richtungsprofil. Gerade und sauberer Bogen lesen beide ~0.
+   Gemeldet als `wobble` (RMS in Grad).
+3. **Bogen und Krümmungsverlust (Ordnung 2).** `bow` ist die Pfeilhöhe
+   über der Sehne W₂ — genau die Größe, die §7.9 beim Namen nennt —,
+   `bow_join` dieselbe Ablesung in der Umgebung der GENERIERTEN Verbinder,
+   `curv_loss` die tiefste flache Stelle, die auf BEIDEN Seiten eine
+   Wölbung hat.
+
+**Was ausgenommen ist — die Duktus-Ereignisse.** Ein Punkt fällt heraus,
+wenn er näher als eine Feder an einem Federabsetzen, einer durchstoßenden
+Kreuzung (`counters.crossing_points`), einer Retrace-Zone
+(`counters.structure_zones`) oder einer Umkehrecke liegt. Die Ecke wird
+mit dem EIGENEN Fenster und Winkel der Ableitung getestet
+(`core.pipeline.CORNER_WINDOW_UNITS`/`CORNER_ANGLE_DEG`, importiert statt
+nachgeschrieben), also mit derselben Prüfung, deren gespeichertes Ergebnis
+die `corner_anchors` einer Vorlage sind. Sie kann nicht verschlucken,
+was der Sensor jagt: 75° ist eine Umkehr, seine eigene Schwelle 11,5°.
+Alle vier Ausnahmen werden GEZÄHLT, nie stillschweigend fallen gelassen.
+
+**Report-only im strengen Sinn.** `core/word_metric.py` bleibt unberührt,
+nichts hiervon geht in `bench_loss`/`pair_loss` ein, und der
+Headline-Nachweis ist Pflicht.
+
+**Die Gates, vor der ersten Zahl.** Abgenommen wird an den beiden bereits
+GEURTEILTEN Wortrunden; beide Arme werden mit den in den Armdateien
+protokollierten Schaltern neu komponiert, jede Runde auf der Wurzel, auf
+der sie gebaut wurde.
+
+- **P1 — Runde 5, Klasse `naht-stark` (n = 31, Urteil Kandidat 26 : 2).**
+  Der Kandidat (J4 Austritts-Trim) muss auf dieser Klasse WENIGER Knick
+  tragen als die Basis: gepaart je Wort muss `kink_max_deg` in der
+  Mehrheit der bewegten Wörter FALLEN, und der Klassen-Median muss fallen.
+- **P2 — Runde 5, Klasse `naht-schwach` (n = 29, Urteil Kandidat 8 : 0
+  bei 21 Unentschieden).** Dieselbe Ablesung muss hier deutlich SCHWÄCHER
+  ausfallen als in P1 — der Sensor muss die Klassengrenze reproduzieren,
+  die der Mensch gesehen hat, nicht nur ein Vorzeichen.
+- **P3 — Runde 6, Klasse `apex` (n = 12, Urteil Basis 11 : 1).** Der
+  Kandidat muss auf den t/ß/k-Anstrichen SCHLECHTER lesen: `bow_join`
+  muss gegenüber der Basis fallen (die Übergabe zieht den Anstrich
+  gerade), und zwar auf der Mehrheit der Klasse.
+- **N1 — Nullprobe Identität.** Die 3 `unberuehrt`-Wörter der Runde 5 und
+  die 12 `nullprobe`-Wörter der Runde 6 sind zwischen den Armen
+  bit-identisch. Jede Sensorspalte muss dort exakt gleich sein (Δ = 0).
+  Ein Sensor, der auf Identität feuert, misst seine eigene Verrohrung.
+- **N2 — Nullprobe Verrohrung.** Die Neukomposition muss die in den
+  Armdateien GESPEICHERTEN Verbinder-Mittellinien exakt reproduzieren,
+  sonst misst der Sensor eine andere Komposition als die, die der Mensch
+  beurteilt hat.
+
+**Kill.** Verfehlt P1 oder P3, ist der Sensor NICHT validiert; er bleibt
+als Instrument im Baum, der Rettungsweg 2 der Runde 6 gilt als gegangen
+und gescheitert — mit eigenem Rettungsweg, nicht mit einer nachgezogenen
+Schwelle. Verfehlt N1 oder N2, ist die Ablesung gar keine und der Eintrag
+schließt ohne Verdikt. Besteht alles, ist der Sensor ein **Kandidat für
+einen Lineal-Bestandteil** — und mehr nicht: kein Lineal wird in diesem
+PR angefasst.
+
+### Übergänge S2 `sep06` — gemessen: alle Gates bestehen, und keine EINZELNE Spalte ist der Richter
+
+Alle fünf vorregistrierten Gates bestehen. Der Sensor reproduziert beide
+Menschenurteile — **aber nicht mit derselben Spalte**, und das ist der
+eigentliche Befund dieses Eintrags.
+
+**Headline-Nachweis (Pflicht).** Lauf vor und nach der Einführung,
+`--style suetterlin --set all --expect-root eaa195aa,0fbde2d7`:
+`bench_loss` **0,10844432573673682** und `pair_loss`
+**0,14823622296960026** vorher wie nachher, und ein Feldvergleich beider
+JSON-Berichte zeigt außerhalb der neuen `continuity`-Schlüssel **keinen
+einzigen** Unterschied. `core/word_metric.py` ist nicht angefasst.
+
+**Die Ablesung auf der Wurzel selbst** (63 Wörter): `cont_measured`
+44 979/70 659 Punkte, ausgeschlossen `lift` 1 786 · `cross` 3 975 ·
+`retrace` 2 784 · `corner` 17 135; `cont_kink_total` 402 Ereignisse,
+Median 19,75°, `cont_kink_max_deg_median` 39,25°, `cont_wobble_median`
+2,707, `cont_bow_median` 0,0087, `cont_bow_join_median` 0,0091,
+`cont_curv_loss_median` 0,0336. Rund ein Drittel der Punkte fällt heraus,
+das meiste an Umkehrecken — Sütterlin ist voll davon, und der Sensor
+misst genau dort nicht, wo eine Richtungsänderung Duktus ist.
+
+**N2 — Nullprobe Verrohrung: exakt.** Beide Arme beider Runden wurden mit
+den in ihren Armdateien protokollierten Schaltern neu komponiert, jede
+Runde auf ihrer eigenen Wurzel (Runde 5: `exported_at`
+2026-09-02T22:16:06+00:00; Runde 6: 2026-09-04T08:29:01+00:00). Gegen die
+in den Armdateien GESPEICHERTEN Verbinder-Mittellinien gehalten ist der
+größte Betragsunterschied **0,000e+00** — 63 + 63 + 34 + 34 Wörter, kein
+einziger Punkt abweichend. Der Sensor liest damit nachweislich die
+Komposition, die der Mensch beurteilt hat.
+
+**N1 — Nullprobe Identität: exakt.** Die 3 `unberuehrt`-Wörter der Runde 5
+und die 12 `nullprobe`-Wörter der Runde 6 sind zwischen den Armen
+bit-identisch; jede der sechs Spalten bewegt sich in 0 von 3 bzw. 0 von 12
+Wörtern. Der Sensor feuert nicht auf seine eigene Verrohrung.
+
+**P1 — Runde 5, `naht-stark` (n = 31, Urteil Kandidat 26 : 2): bestanden,
+und zwar auf allen drei Ordnung-1-Kanälen.**
+
+| Spalte | Basis → Kandidat | bewegt | fällt | Median Δ |
+|---|---|---|---|---|
+| `kink_max_deg` | 36,89 → **27,86** | 24/31 | **21** | −5,92 |
+| `kink_count` | 6 → **4** | 28/31 | **28** | −1,5 |
+| `wobble` | 2,786 → **2,225** | 31/31 | **28** | −0,531 |
+| `bow_join` | 0,0098 → 0,0023 | 31/31 | 31 | −0,0062 |
+
+Der Austritts-Trim nimmt der Naht den Knick: `mit` 40,03° → 11,72°,
+`haben` 52,0 → 32,37, `daß` 50,83 → 32,74, `Zaum` 41,61 → 24,23. Die
+beiden Wörter, die der Mensch der BASIS gab, sind auch für den Sensor die
+leisen: `Seiten` (40,03 → 22,39 — der Sensor widerspricht) und `muß-3`
+(28,98 → 27,86 — praktisch unbewegt).
+
+**P2 — Runde 5, `naht-schwach` (n = 29, Urteil 21 Unentschieden bei
+Kandidat 8 : 0): bestanden.** Der Sensor reproduziert die Klassengrenze,
+die der Mensch gesehen hat — nicht nur im Vorzeichen, sondern in der
+Stärke: er BEWEGT hier nur 17 bzw. 15 von 29 Wörtern (gegen 24 bzw. 28 von
+31 in der starken Klasse), und der Wackler-Median verschiebt sich um
+**−0,083** gegen **−0,531** — der Faktor 6, der die stumme Klasse von der
+lauten trennt.
+
+**P3 — Runde 6, `apex` (n = 12, Urteil Basis 11 : 1): bestanden, doppelt.**
+`bow_join` fällt 0,0066 → **0,0034 in 12 von 12 Wörtern** — die Übergabe
+zieht den Anstrich gerade, genau wie der Autor es beschrieben hat, und
+zum ersten Mal steht eine Zahl daneben. Zusätzlich, nicht vorregistriert
+und deshalb als Befund und nicht als Gate gebucht: `kink_max_deg` STEIGT
+38,46 → **50,46** in 8 von 9 bewegten Wörtern (Median Δ **+15,54°**) —
+`muß` 28,98 → 50,46, `mit` 40,03 → 55,57, `Seiten` 40,03 → 55,57. Die
+Regel tauscht einen Bogen gegen eine Gerade und handelt sich dabei an
+deren Ende einen Knick ein.
+
+**Die dritte Klasse, die niemand vorregistriert hatte.** `stem` (n = 8,
+Urteil Basis 7 : 0 bei einem Unentschieden) wird von `bow_join` gar nicht
+gesehen (Median Δ +0,0001) — die Säulen-Regel fasst den Anstrich nicht an.
+Gesehen wird sie von `curv_loss`, das in **8 von 8** Wörtern STEIGT
+(0,0336 → 0,0545, Median Δ +0,0172), und von `wobble`, das in 8 von 8
+steigt. Auch `beide` (n = 2, Urteil Basis 2 : 0) liest auf beiden Kanälen
+schlechter. Damit trägt jede der vier entschiedenen Klassen mindestens
+einen Kanal, der mit dem Menschen stimmt.
+
+**Wo der Sensor WIDERSPRICHT — die ehrliche Hälfte.** Keine EINZELNE
+Spalte ist über alle vier entschiedenen Klassen richtungstreu:
+
+| Spalte | R5 `naht-stark` | R6 `apex` | R6 `stem` | R6 `beide` |
+|---|---|---|---|---|
+| Mensch bevorzugt | Kandidat | Basis | Basis | Basis |
+| `kink_max_deg` | ✓ fällt | ✓ steigt | ✗ fällt | ✓ steigt |
+| `kink_count` | ✓ fällt | ✗ fällt | ✗ fällt | ✗ fällt |
+| `wobble` | ✓ fällt | ✗ fällt | ✓ steigt | ✓ steigt |
+| `bow_join` | ✗ fällt | ✓ fällt | – unbewegt | ✓ fällt |
+| `curv_loss` | (✓) fällt | – kaum bewegt | ✓ steigt | ✓ steigt |
+
+Der lehrreichste Fall ist `bow_join`: es FÄLLT in beiden Runden — in
+Runde 5 um −0,0062, in Runde 6 um −0,0029 —, während der Mensch einmal für
+und einmal gegen den Kandidaten entschied. Allein hätte diese Spalte auch
+Runde 6 dem Kandidaten gegeben. Zwei Gründe, beide benennbar:
+
+1. **Ein Rahmen-Artefakt, dasselbe, für das S1 `dspan` gebaut wurde.** Der
+   Austritts-Trim VERSCHIEBT die Grenze zwischen Buchstabe und Verbinder:
+   der Verbinder wird am Kopf länger, also wächst die Umgebung, in der
+   `bow_join` überhaupt misst. Die Population ist damit teilweise vom Arm
+   selbst definiert — genau die Regel, die `spanmeas` verbietet.
+2. **Ein Bogenverlust ist nur dann ein Defekt, wenn er nicht mit einem
+   gewonnenen Knick bezahlt ist.** In Runde 5 verschwindet gleichzeitig
+   der Naht-Knick; in Runde 6 kommt einer hinzu.
+
+**Was das heißt.** Der Sensor ist an seinen Gates **validiert** und damit
+ein **Kandidat für einen Lineal-Bestandteil** — aber nicht als EINE Zahl.
+Wer ihn je in ein Lineal schreibt, braucht die Kanäle getrennt und den
+Rahmen fixiert (die Umgebung, in der `bow_join` misst, darf nicht vom Arm
+abhängen). In diesem PR wird kein Lineal angefasst.
+
+**Selbst entschieden** (benannt, nicht versteckt):
+
+* **`bow_join` als sechste Spalte hinzugefügt**, über die vier der
+  Vorregistrierung hinaus. §7.9 verlangt die Pfeilhöhe „je Join"; ohne
+  eine join-bezogene Ablesung wäre P3 gar nicht prüfbar gewesen, weil
+  `curv_loss` per Konstruktion nur flache Stellen bis etwa zwei Sehnen
+  Länge sieht und der Runde-6-Anstrich 1,67–1,84 xh lang ist.
+* **Die Umkehrecke wird auf der KOMPONIERTEN Geometrie erkannt**, mit dem
+  Fenster und Winkel der Ableitung, statt die gespeicherten
+  `corner_anchors` durch die Platzierungs-Transformation zurückzurechnen —
+  das wäre eine zweite Implementierung des Komponisten im Messwerkzeug.
+* **Die Tinten-Zugabe der Verbinder wird vor der Messung entfernt**
+  (`seam.strip_overlap`, wiederverwendet). Ohne das liest jede Naht als
+  ~180°-Falte, und der lauteste „Knick" des Wortes wäre ein Renderdetail.
+* **Jede Statistik nennt den Rand, den ihre eigene Fensterkette braucht**,
+  statt einen gemeinsamen Rand aufzublähen; `wobble` braucht 3·W₁,
+  `curv_loss` W₂ + eine Feder.
+
+**Grenzen.** `curv_loss` sieht flache Stellen nur bis rund 2·W₂ = 0,58 xh
+Länge — ein längerer gerader Zug zwischen zwei Bögen ist ein gewöhnlicher
+Schaft. Die Laufzeit der Wort-Bench steigt von 31 s auf 118 s, weil der
+Sensor die eingefrorenen Struktur-Detektoren des Tintenfolgers je Wort
+mitlaufen lässt statt eigene zu schreiben — bewusst bezahlt. Und beide
+Runden urteilen ein einziger Beurteiler; Runde 6 trägt mit 4 Paaren
+ohnehin keinen Adoptionsanspruch (`menschliche-bewertung.md` §9).
 ### Übergänge J4 `sep06` — Runde 5 gemessen: Richtung 34 : 2, Unentschieden-Gate gerissen — durch die Klasse, die es reißen sollte
 
 Die Menschenrunde aus der Vorregistrierung „Übergänge J4 `sep04`" ist
