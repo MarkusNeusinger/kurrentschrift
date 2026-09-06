@@ -68,7 +68,7 @@ from types import SimpleNamespace
 
 import numpy as np
 
-from core.aggregate import LAUFFORM_MIN_OCCURRENCES, spline_basis_median
+from core.aggregate import LAUFFORM_LOOP_WINDOW, LAUFFORM_MIN_OCCURRENCES, loop_faithful_median
 from core.laufform import head_gate, smoothness_gap, spike_gate
 from tools.wordbench.fetch_fixtures import laufform_row_from_payload
 
@@ -144,6 +144,8 @@ def build_candidates(
     keys: str = "stored",
     floor: int = LAUFFORM_MIN_OCCURRENCES,
     keep_stored: bool = False,
+    loop_window: float = LAUFFORM_LOOP_WINDOW,
+    loop_scale: bool = True,
 ) -> tuple[dict[str, dict], list[str]]:
     """Every eligible key's running form, medianed in the chosen basis.
 
@@ -152,8 +154,11 @@ def build_candidates(
     re-derived at all and drops out of the map, so every row that remains is one
     the write path accepts. `keep_stored` puts the dropped keys back as verbatim
     copies of their stored rows — the same geometry an overlay would have used
-    anyway, but a map that then no longer travels as a write list. Returns the
-    candidate rows keyed by glyph_key and one report line per key.
+    anyway, but a map that then no longer travels as a write list.
+    `loop_window` (LF13) registers each loop of the stack on its median place and
+    size before the median is taken; 0 is off and reproduces the LF11/LF12 rows
+    bit for bit. Returns the candidate rows keyed by glyph_key and one report
+    line per key.
     """
     templates = json.loads((root / "templates.json").read_text())
     stored = json.loads((root / "templates_laufform.json").read_text())
@@ -192,12 +197,15 @@ def build_candidates(
         plain = np.median(stack, axis=0)
         median = plain
         if knot_spacing > 0.0:
-            median, notes = spline_basis_median(
+            median, notes = loop_faithful_median(
                 stack,
                 chart["anchors"],
+                chart["half_widths"],
                 meta.get("stroke_starts"),
                 meta.get("corner_anchors"),
                 knot_spacing=knot_spacing,
+                window=loop_window,
+                scale=loop_scale,
             )
         anchors = median.round(4).tolist()
         row = laufform_row_from_payload(
@@ -246,8 +254,20 @@ def main() -> None:
         help="copy the stored row of every key this run does not derive into the map — a complete snapshot "
         "instead of a write list (the overlay behaves identically either way)",
     )
+    ap.add_argument(
+        "--loop-window",
+        type=float,
+        default=LAUFFORM_LOOP_WINDOW,
+        help="LF13: register each loop of the stack on its median place and size before the median, fading the "
+        f"correction out over this much arc (x-heights). Default {LAUFFORM_LOOP_WINDOW} = off, byte-identical rows",
+    )
+    ap.add_argument(
+        "--no-loop-scale", action="store_true", help="LF13 control arm: register the loops on place only, not on size"
+    )
     ap.add_argument("--out", type=Path, required=True, help="candidate map (glyph_key -> full fixture row)")
     args = ap.parse_args()
+    if args.loop_window < 0.0:
+        raise SystemExit(f"--loop-window must be 0 (off) or a positive window, got {args.loop_window}")
     if args.knots < 0.0:
         # Exactly 0 is the control arm and says so in the header; a negative
         # would quietly select it too, and a run whose arm nobody can read off
@@ -259,11 +279,20 @@ def main() -> None:
 
     occurrences = json.loads(args.occurrences.read_text())
     rows, report = build_candidates(
-        args.root, occurrences, args.knots, keys=args.keys, floor=args.floor, keep_stored=args.keep_stored
+        args.root,
+        occurrences,
+        args.knots,
+        keys=args.keys,
+        floor=args.floor,
+        keep_stored=args.keep_stored,
+        loop_window=args.loop_window,
+        loop_scale=not args.no_loop_scale,
     )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(rows, ensure_ascii=False))
     arm = "per-anchor median (control)" if args.knots == 0.0 else f"spline basis, knots {args.knots} xh"
+    if args.loop_window > 0.0:
+        arm += f" + loops registered on {'place' if args.no_loop_scale else 'place and size'} ({args.loop_window} xh)"
     print(f"LF11 {arm} · root={args.root.name} · floor {args.floor}: {len(rows)} candidate rows → {args.out}")
     print("\n".join(report))
     # Whether the map can be walked with a PUT per key is a property of the

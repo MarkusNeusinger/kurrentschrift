@@ -108,7 +108,10 @@ je Zeile werden Glätte-Sensor, Sprung- und Kopf-Gate und die
 Kopf-/Schwanz-Bewegung berichtet. Standardmäßig nennt die Karte genau die
 Schlüssel, für die die Root schon eine Zeile hat (`--keys stored`) — eine
 Karte mit zusätzlichen Zeilen komponierte einen anderen Buchstabensatz als
-die Basis, gegen die sie gemessen wird. Kein DB-Write.
+die Basis, gegen die sie gemessen wird. `--loop-window` schaltet die
+Schleifen-Registrierung von LF13 davor (`--no-loop-scale` ist deren
+Kontroll-Arm, Lage ohne Größe); 0 ist aus und liefert byte-gleich die
+LF11/LF12-Zeilen. Kein DB-Write.
 
 ```bash
 uv run python -m tools.laufform.harvest --path chain --sets words --min-n 1 \

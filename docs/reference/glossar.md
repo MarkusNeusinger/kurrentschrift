@@ -75,11 +75,11 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
-- **V** — Variante §2 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger (vorgeschlagen) §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschub-Kalibrierung §2 · Vorschrift §1
+- **V** — Variante §2 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschub-Kalibrierung §2 · Vorschrift §1
 - **W** — W1–W6 §5 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Tintenlücke §2 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zeichenbreiten-Mittel (`AVG_ADVANCE_UNITS`) §7 · Zeilen-Gate (Laufform) §2 · Zeilenmarke §7 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · zonale Rückweisung (`zonal`) §3 · „Zug um Zug“ §7 · Zwei Stillen (Leerzustands-Regel) §5 · Zwei-Drittel-Gesetz §6 · Zögling (geplant) §4
@@ -437,6 +437,41 @@ bestanden hat 0,16. *Technisch:*
 `core/aggregate.py::spline_basis_median`, Kandidaten-Karten trocken über
 `tools/laufform/smoothrow.py`; `aggregate_instances` bleibt bis zu einer
 Adoption beim Per-Anker-Median → messjournal.md §14 („Laufform LF11")
+
+**Schleifenbereich** — der Anker-Indexbereich `[start, end)`, über den
+eine TAFELZEILE eine Schleife schließt: gelesen an den Selbstschnitten
+ihrer gerenderten Mittellinie (der grobe Ankerzug übersieht eine
+Schleife, die die gezeichnete Spline schließt) und über die Bogenlänge
+auf die Anker zurückgerechnet — nicht über die Nähe, denn an einer
+Kreuzung liegen die zwei Stränge nebeneinander und ein
+Nächster-Punkt-Suchlauf verwechselt sie. Er wird an der TAFEL bestimmt,
+aus demselben Grund, aus dem die Spline-Basis ihren Parameter dort
+holt: nur ein vorkommens-UNABHÄNGIGER Bereich ist einer, auf dem ein
+Median über den Stapel definiert ist. Ein zweimal gekreuztes Segment
+begrenzt drei Gebiete, nicht zwei — das dritte ist der Kringel des `p`
+—, überlappende Bereiche werden zur Hülle verschmolzen (eine Schleife,
+eine Korrektur). *Technisch:* `core/aggregate.py::loop_ranges` →
+messjournal.md §14 („Laufform LF13")
+
+**Schleifen-Registrierung · schleifen-treue Zeile** — der Schritt vor
+dem Median, der verhindert, dass Form gegen LAGE verrechnet wird (§14
+LF13, `sep06`; Rettungsweg (5) der Kringel-Diagnose). Ein elementweiser
+Median über Kurven, deren Schleifen sich uneins sind — wo sie sitzen,
+wie groß sie sind, wo entlang der Schleife welcher Anker gelandet ist
+—, liefert eine Schleife, die enger ist als jede einzelne. Die
+Registrierung holt jedes Vorkommen je Schleifenbereich per ÄHNLICHKEIT
+auf die Median-Schleife des Stapels (die Verschiebung auf den
+Median-Schwerpunkt, der isotrope Faktor auf den Median-Radius), mit
+Gewicht 1 auf der Schleife und linearem Auslauf über ein
+Bogenlängen-Fenster daneben — die Form von `blend_stroke_ends`. Weder
+Teil kann Öffnungsweite erfinden: Median-Verschiebung 0 und
+Median-Faktor 1 per Konstruktion, die Zeile bleibt, wo und wie groß sie
+war, und kann nie weiter werden als die Vorkommen selbst. **Gemessen
+und NICHT adoptiert** (Gates (a) und (c) rot); Schalter
+`LAUFFORM_LOOP_WINDOW`, Default 0 = aus und byte-gleich. *Technisch:*
+`core/aggregate.py::align_loops` / `loop_faithful_median`,
+Kandidaten-Karten über `tools/laufform/smoothrow.py --loop-window` →
+messjournal.md §14 („Laufform LF13")
 
 **Form-Abstand (Laufform)** — der vierte, GEMESSENE und (Stand
 `sep01`) NICHT adoptierte Sensor der Zeilen-Gate-Familie (§14 LF10):
@@ -1633,10 +1668,15 @@ Verschmelzung, weshalb der Anzeiger vor jeder Verwendung an Stellen ohne
 Verschmelzung geeicht werden muss. Deutlich darunter heißt „hier ist die
 Mittelachse kein Federweg". Über die 202 gemessenen Binnenflächen der
 Wortplatten steht das Verhältnis bei 0,0667 zu 0,0968, also bei rund 0,69.
-**Vorgeschlagen, nicht gebaut** —
-Rettungsweg (7) der Zeile „Ink-Clearance an die Feder" in
-tintenfolger.md §7.9, ausdrücklich als eingefrorene Report-Spalte VOR
-jedem Arm. → notes/kringel-binnenflaechen-2026-09-06.md
+**Gebaut und geeicht am `sep06`** (§14 LF13, Rettungsweg (7) der Zeile
+„Ink-Clearance an die Feder" in tintenfolger.md §7.9): die Eichung ist
+kein Schwellwert, sondern eine KURVE — je weiter die Binnenfläche, desto
+weniger Platz hatten die zwei Züge zu verschmelzen, und über sechs
+Bänder steigt der Anzeiger monoton 0,609 → 0,646 → 0,646 → 0,733 →
+0,795 → 0,878 (das `S` einzeln bei 0,970). Er bleibt **reine
+Report-Spalte**: kein Öffnungs-Term wandert in einen Fit-Loss, bevor er
+eingefroren ist. → messjournal.md §14 („Laufform LF13"),
+notes/kringel-binnenflaechen-2026-09-06.md
 
 **Tintenabstand** *(`ink_max` / `ink_mean`)* — Abstand der gefitteten
 Mittellinie zur **gemessenen Tinte** (Skelett der Platte), in x-Höhen.
