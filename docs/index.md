@@ -37,7 +37,7 @@ Entschiedene Architektur und die Grundsatz-Docs, die daraus folgen.
 
 | Doc | Wofür | Wann aufmachen |
 |---|---|---|
-| [vision.md](concepts/vision.md) | Was die Endnutzer-Website sein soll: Pitch, Zielgruppe, sieben Ziele in drei Clustern, Leitprinzipien, Nicht-Ziele | Bevor man entscheidet, ob ein Feature überhaupt dazugehört |
+| [vision.md](concepts/vision.md) | Was die Endnutzer-Website sein soll: Pitch, Zielgruppe, sieben Ziele in drei Clustern, Leitprinzipien, die Rollenteilung Tafel · Platte · Eigenhand, Nicht-Ziele | Bevor man entscheidet, ob ein Feature überhaupt dazugehört — und bei der Frage, welche Hand die Seite ausliefert |
 | [vom-scan-zum-schreiben.md](concepts/vom-scan-zum-schreiben.md) | Der Datenfluss am Stück: Tafel + Wortproben → Bibliothek → Schreiben → Maßstab → Ernte → Statistik → Schleife | Als Einstieg vor der Architektur-Referenz, und wenn unklar ist, welche Stufe ein Problem betrifft |
 | [architektur.md](concepts/architektur.md) | §1–§17, bindend: Analysis-by-Synthesis, Schema, Ligatur-Ausnahme, Schwellzug vs. Tinte, MVP-Gates, Post-MVP-Entwürfe | Bei jeder Frage „Glyphe, Variante oder Abweichung?“ — §1 ist der Index über alle Sektionen |
 | [mvp-roadmap.md](concepts/mvp-roadmap.md) | Der Ist-Stand des MVP: Schritt 0 + M0–M7 mit vier Validierungs-Gates | Wenn die Frage „ist das schon gebaut?“ lautet — architektur.md §8/§10 sagt nur die Reihenfolge |

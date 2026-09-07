@@ -1,6 +1,11 @@
 # Eigenhand-Erfassung: Wortvorrat, Streifen, Bögen
 
-> **Status (2026-09-06): teil-umgesetzt.** Die Werkzeugkette der Phasen 1–4
+> **Status (2026-09-07): teil-umgesetzt.** Seit dem Autor-Entscheid vom
+> 2026-09-07 ist der Bestand nicht mehr nur Datenquelle: die Eigenhand
+> **wird die ausgelieferte Schreibhand der Seite**, sobald sie Alphabet und
+> Übergänge deckt (§2; die bindende Rollenteilung Tafel · Platte ·
+> Eigenhand steht in [`../concepts/vision.md`](../concepts/vision.md)).
+> Am Werkzeug und am Ablauf ändert das nichts. Die Werkzeugkette der Phasen 1–4
 > (`tools/eigenhand/`: Wortvorrat + Streifenplan · Bogen-Druck · Einlesen +
 > Siebung · Kartei/Bericht/Archiv) ist mit diesem Proposal im selben PR
 > gebaut und getestet (`tests/test_eigenhand_*.py`); die Ausbaustufen
@@ -57,6 +62,54 @@ Vier Anforderungen des Autors formen das System (Sitzung 2026-08-22):
 Jedes Werkzeug ist ein eigener CLI-Einstieg unter `tools/eigenhand/`
 (humanbench-Muster); Betrieb: `data/samples/own-hand/README.md`. Alles ist
 Mess-/Autorenschicht — kein Werkzeug schreibt die Datenbank.
+
+**Wozu der Bestand da ist: die Produktionshand** (Autor-Entscheid
+2026-09-07). Dieses Proposal hat den Bestand bis hierher als Datenquelle
+beschrieben — Trainingsmaterial für H5, Zubringer zur Statistik. Der
+Entscheid vom 2026-09-07 gibt ihm ein zweites, größeres Ziel: **die
+Eigenhand wird die ausgelieferte Schreibhand der Seite** (Hero,
+Lese-Quiz, Federprobe, Übungsblatt-Vorschrift), sobald ihr Bestand
+Alphabet und Übergänge deckt. Die Tafeln bleiben der historische
+Duktus-Prior und der Schriftkunde-Beleg, die Platten-Wörter bleiben
+Ground Truth und Maßstab — die Rollenteilung samt Begründung steht in
+[`../concepts/vision.md`](../concepts/vision.md) §
+„Drei Rollen: Tafel · Platte · Eigenhand“ und ist dort die bindende
+Fassung. Für dieses Proposal ändert sich dadurch **kein Werkzeug und
+kein Ablauf**; es ändert sich, wofür die Schleife läuft — und damit,
+welche Zahl ihres Berichts man liest.
+
+**Was „deckt Alphabet und Übergänge“ operativ heißt.** Der
+Bestandsbericht (§7, `report.py`) misst genau das bereits, an zwei
+Stellen und ohne neue Kennzahl:
+
+* **Alphabet** — die **Mindestbelegung** je Glyphe. Der Plan garantiert
+  ≥ 3 GEPLANTE Belege je Registerglyphe (Phase A2, §4); die
+  Auslieferungs-Bedingung liest dieselbe Zahl auf der Ist-Seite: ≥ 3
+  ANGENOMMENE Fassungen je Glyphe, weil unterhalb davon ohnehin keine
+  Laufform abgeleitet wird (`LAUFFORM_MIN_OCCURRENCES = 3`). Eine Glyphe
+  darunter ist eine Lücke, die die Seite als fehlenden Buchstaben zeigen
+  müsste.
+* **Übergänge** — die **übergangsraum-gewichtete Erstbeleg-Quote** (§7).
+  Sie ist die ehrliche Kopfzeile, weil der seltene-aber-echte Schwanz sie
+  nur nach seiner Textrelevanz drückt; die ungewichtete Quote und die
+  größten gewichteten Fehlstellen stehen im selben Bericht daneben.
+
+**Der Schwellenwert selbst ist nicht gesetzt** — welche gewichtete Quote
+genügt, entscheidet der Autor am Bericht, nicht dieses Doc. Der Wechsel
+der ausgelieferten Hand ist entsprechend ein **eigener, späterer
+Autor-Entscheid**, und er ist kein stiller Schalter: er ist eine
+erklärte Re-Baseline der Render-Ausgabe (die Wortprobe der Seite ändert
+sich sichtbar), er zieht die öffentlichen Bildunterschriften nach, die
+heute die Platte als das benennen, was schreibt (die Liste der
+betroffenen Locale-Schlüssel steht in
+[`../concepts/vision.md`](../concepts/vision.md) §
+„Was am Rollenwechsel hängt“), und er lässt die **Benches unberührt**:
+die messen weiter gegen die Platte, und keine Kopfzahl liest je aus dem
+Eigenhand-Material, solange dafür keine eigene Teilmenge eingefroren und
+vorregistriert ist (§4, „Trainingsdaten, kein Mess-Satz“). Offen und
+ausdrücklich nicht mitentschieden: ob das **Lese-Quiz** seine
+Leseaufgaben weiter in den Formen von 1922 stellt (vision.md, dieselbe
+Liste).
 
 ## 3 Begriffe
 

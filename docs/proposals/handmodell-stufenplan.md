@@ -1,12 +1,16 @@
 # Handmodell-Stufenplan 2026-07-31 — Duktus-Prior, Laufformen, Statistik pro Glyphe und Paar, eigene Hand
 
-> **Status (2026-08-03): teil-umgesetzt.** H0–H2 sind umgesetzt
+> **Status (2026-09-07): teil-umgesetzt.** H0–H2 sind umgesetzt
 > (PR #250 · #256 · #259 · #260 · #265 · #266 · #267 · #268, ausgeliefert als
 > v0.22.0): Vorkommen persistiert, `aggregates` + `pair_aggregates` gefüllt,
 > `apply-laufform` live, lesende Flächen in Werkbank, Vergleich und Wordbench.
 > Offen bleiben H3–H5 (Konstanten → Hand-Parameter, zweite Hand, eigene
 > Hand); von §3 „Ist-Stand: die drei Lücken“ besteht nur noch Lücke 3, §5
-> (Prüfsteine) und §6 (Verworfen) bleiben bindend.
+> (Prüfsteine) und §6 (Verworfen) bleiben bindend. Nachgezogen am
+> 2026-09-07 (ohne Änderung an H0–H4): H5 ist seit dem Autor-Entscheid
+> desselben Tages nicht mehr nur ein wählbares Modell, sondern die künftig
+> **ausgelieferte** Schreibhand der Seite — Rollenteilung in
+> [`../concepts/vision.md`](../concepts/vision.md).
 
 **Richtung entschieden (Nutzer, 2026-07-31) für H1 + H2 —
 Vorkommen speichern, nicht nur Mediane, auf ALLEN drei Ebenen:** pro
@@ -315,6 +319,14 @@ Nachschub** — die Statistik-Tiefe (Varianz pro Anker, seltene Paare),
 die Abb. 19/20 mit n = 4–39 pro Buchstabe (die meisten ≤ 20, Seltenes
 fällt ganz unters n-≥-4-Gate) nie liefern können, ist hier nur eine
 Schreibsitzung entfernt.
+
+Seit dem Autor-Entscheid vom 2026-09-07 ist H5 mehr als „ein drittes
+wählbares Modell": die eigene Hand wird die **ausgelieferte Schreibhand
+der öffentlichen Seiten**, sobald ihr Bestand Alphabet und Übergänge
+deckt — die Rollenteilung Tafel · Platte · Eigenhand steht in
+[`../concepts/vision.md`](../concepts/vision.md), die Bedingung
+operativ in [`eigenhand-erfassung.md`](eigenhand-erfassung.md) §2. Für
+die Stufen H0–H4 ändert das nichts.
 
 **Erfassungsweg seit 2026-08-22:**
 [`eigenhand-erfassung.md`](eigenhand-erfassung.md) — echte Feder auf
