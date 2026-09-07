@@ -226,7 +226,7 @@ die DB) — mit seiner Bedingung.
 | sep07 | Kette | [R3c Binnenflächen-Bedingung im Solve (Pre-Reg)](#kette-r3c-binnenflächen-bedingung-im-solve-sep07--vorregistrierung-dieselbe-aussage-an-der-stelle-wo-die-glatte-bahn-entsteht) | Pre-Reg | Konversion (3) der R3-Zeile, von R3b belegt statt vermutet: dieselbe Aussage als quadratischer Hinge auf dem vorzeichenbehafteten Abstandsfeld der `offen`-Binnenflächen, in JEDER Folger-Runde — normiert wie `e_geo`, über `sampling_op` auf die Anker gefaltet, `fit_word_chain` unberührt. Zwei R3-Bestandteile entfallen begründet (Blende · Abnahmeregel „Schleifen-Schluss", die der `structure_guard` schon leistet); der Geltungsbereich bleibt R3s `offen` × `klein`/`mittel` — die weitere Fassung ist nach einem Kalibrierlauf und vor der ersten Armzahl zurückgenommen, weil eine große Schleife am stärksten bindet und nichts Messbares kauft. Leiter {1, 4, 16, 64, 256}, **Auswahl auf Gate (a) allein**; R3bs Offline-Pfad unzulässig (ein Term verändert den Solve), je Sprosse ein voller 63er-Lauf. **Die Basis ist nicht die von R3:** A37 (`exit_trim`) liegt dazwischen, dev-19 frisch geritten dtw **0,045881** · p90 0,088356 · aiou 0,7660 · `cross_missing`/`cross_spurious` **11 / 9** — womit die §7.11-Zeile „die Kette ist ausgenommen" korrigiert ist: sie galt dem Soll, nicht dem Fit |
 | sep07 | Kette | [R3c gemessen](#kette-r3c-binnenflächen-bedingung-im-solve-sep07--gemessen-die-glätte-ist-umsonst-zu-haben-die-weitung-nur-dort-wo-sie-schon-da-war) | Pre-Reg + gemessen · **nicht adoptiert**, Gate (a) rot auf JEDER Sprosse · Gegenstück zu R3 | **Die Glätte ist umsonst zu haben, die Weitung nicht.** Gate (d), an dem R3 mit 1 626 und R3b mit 462 neuen Knicken fiel, ist **grün**: `kink`-Ereignisse 2 296 → **2 258**, Median 8,08° → 7,53° — es gibt keine Blende, deren Länge zu wählen wäre, weil die Anker die Glättung sind. Gate (a) trifft dafür nur **64 von 156** (gefordert 149); die Leiter {1,4,16,64,256} → 22 · 38 · 52 · **64** · 51 hat ein INNERES Maximum, bei 256 setzt der Wächter Wörter ganz auf den Kettenfit zurück. **Die Zerlegung ist der Ertrag:** bewegt werden die 124 schon offenen Schleifen (61 Treffer, Median +0,0227), die 31 zugelaufenen **gar nicht** (3 Treffer, Median +0,0000) — der Arm hilft nicht, wo der Defekt sitzt, weil der Tinten-Term dort selbst auf der Klumpenachse liegt. (b) rot (`cross_spurious` 9 → 10), (c) rot am p90 (+0,001618) bei Median −0,000365, (e) 63er-Soll **85 → 81**, (f)/(g)/(h) grün (Determinismus 63/63 strichgleich). **Zwei Korrekturen vor der ersten Armzahl:** Geltungsbereich zurück auf R3s `klein`/`mittel`, und `kringel_lost` als Kennzahl gestrichen — der Sensor liest die KOMPOSITION, kein Folger-Arm kann ihn bewegen. Zeigt auf R3s Konversion (4): die EVIDENZ korrigieren, nicht das Objektiv |
 | sep06 | Übergänge | [J4 Adoption (A37)](#übergänge-j4-sep06--adoption-auf-autor-entscheid-a37-exit_trim-wird-default-deklarierte-re-baseline) | **Adoption** (Autor-Entscheid A37) · **Re-Baseline** (Wörter + Golden) | `exit_trim` ist Default. Auf UNVERÄNDERTER Wurzel, also gepaart: Wörter 0,108444 → **0,109026**, Paare **byte-gleich**, `seam_dep_median` +7,59 → **−0,70** (absolut 12,67 → 2,30), Verdopplungen 14 = 14. Golden deklariert neu gebacken (10 der 11 Wörter, kein Draw-Item mehr oder weniger, Solo-Glyphen 0 von 23). **S2 stimmt unabhängig zu** — am selben Tag auf der UNGETRIMMTEN Komposition abgenommen: `cont_kink_total` 402 → **337**, `cont_bow_join_median` 0,0091 → **0,0042** (Report-Spalte, kein Gate). `prodconn.replay` hat seine angekündigte Nachbearbeitung bekommen; die Kette ist per Messung ausgenommen (Kompositions-Soll 0 von 126), fällig bleiben Lotse-Karte und S2-Bezug (§7.11) |
-| sep07 | Kette | [R4 Feder-Entfaltung (Diagnose + Pre-Reg)](#kette-r4-feder-entfaltung-sep07--diagnose-und-vorregistrierung-ist-der-klumpen-tinte-oder-raster) | Diagnose + Pre-Reg | Konversion (4) von R3/R3c, und zuerst die Frage, die keiner der beiden gestellt hat: **ist die Verschmelzung Tinte oder Raster?** Vorab belegt und damit ohne Messung erledigt: der Fixture-Ausschnitt ist ein unskalierter Schnitt der Platte (`freeze_entry`), x-Höhe **30–33 px**, und `words-abb19.png` ist byte-identisch von Commons — es gibt keine höher aufgelöste Fassung, gegen die „nativ" stünde. Gemessen wird deshalb die BINARISIERUNG: dieselbe Binnenfläche als adaptive Maske 1×, als globale 50-%-Niveaulinie 1× und als 50-%-Niveaulinie auf 4× bikubischem Grau, dazu der Mittelachsen-Anzeiger bei beiden Maßstäben. Entscheidregel vor der ersten Zahl: RASTER, wenn Median(`A_grau4 − A_Maske`) ≥ +0,016 xh **oder** Median(`I@4× − I@1×`) ≥ +0,10. Der Arm dahinter: die Feder aus der EVIDENZ herausrechnen — jedes Skelettpixel näher als `w_pen` an einer `offen`-Binnenfläche fällt weg, an seine Stelle tritt die Niveaulinie `w_pen + 0,5 px` desselben Loch-Feldes, auf die Tinte beschnitten und nur im radialen Schatten des Weggefallenen. Gates (a)–(h) sind R3cs, Wort für Wort; eine Korrektur vor der ersten Armzahl: die pixelweise Fassung ist verworfen (0 von 13 Schleifen überleben den Schub, 13 von 13 die Niveaulinie) |
+| sep07 | Kette | [R4 Feder-Entfaltung (Diagnose + Pre-Reg)](#kette-r4-feder-entfaltung-sep07--diagnose-und-vorregistrierung-ist-der-klumpen-tinte-oder-raster) | Diagnose + Pre-Reg | Konversion (4) von R3/R3c, und zuerst die Frage, die keiner der beiden gestellt hat: **ist die Verschmelzung Tinte oder Raster?** Der eine Term der Frage ist strukturell: der Fixture-Ausschnitt ist ein unskalierter Schnitt der Platte (`freeze_entry`), x-Höhe **30–33 px**, `words-abb19.png` byte-identisch von Commons. Dass es keine feinere Aufnahme gibt, war in der ersten Fassung behauptet und ist nach einem Copilot-Fund **nachgemessen**: der zweite committete Scan derselben Platte (`suetterlin-leitfaden-1926/p060.jpg`, laut `SOURCE.md` druckstock-identisch) ist eine GANZSEITEN-Aufnahme und trägt für die Tafel Zeilenabstand **≈ 104 px gegen ≈ 110 px**, also ~5 % weniger. Gemessen wird deshalb die BINARISIERUNG: dieselbe Binnenfläche als adaptive Maske 1×, als globale 50-%-Niveaulinie 1× und als 50-%-Niveaulinie auf 4× bikubischem Grau, dazu der Mittelachsen-Anzeiger bei beiden Maßstäben. Entscheidregel vor der ersten Zahl: RASTER, wenn Median(`A_grau4 − A_Maske`) ≥ +0,016 xh **oder** Median(`I@4× − I@1×`) ≥ +0,10. Der Arm dahinter: die Feder aus der EVIDENZ herausrechnen — jedes Skelettpixel näher als `w_pen` an einer `offen`-Binnenfläche fällt weg, an seine Stelle tritt die Niveaulinie `w_pen + 0,5 px` desselben Loch-Feldes, auf die Tinte beschnitten und nur im radialen Schatten des Weggefallenen. Gates (a)–(h) sind R3cs, Wort für Wort; eine Korrektur vor der ersten Armzahl: die pixelweise Fassung ist verworfen (0 von 13 Schleifen überleben den Schub, 13 von 13 die Niveaulinie) |
 | sep07 | Kette | [R4 gemessen](#kette-r4-feder-entfaltung-sep07--gemessen-die-zugelaufenen-schleifen-bewegen-sich-zum-ersten-mal-und-gate-c-fällt-trotzdem) | Diagnose + gemessen · **nicht adoptiert**, Gate (c) rot (Kill) | **Diagnose-Verdikt: echte Verschmelzung.** Median(`A_grau4 − A_Maske`) **+0,0000** und Median(`I@4× − I@1×`) **+0,0109** — beide Schranken klar verfehlt: die globale Schwelle liest bei 1× ziffernweise dieselbe Binnenfläche wie die adaptive Maske, bei 4× liest das Grau eine **kleinere** (0,1118 gegen 0,1290, das halbe Plattenpixel je Seite), und die Einschnürung überlebt die schärfere Lesung (Anzeiger 0,807 → 0,790). **Der Arm bewegt zum ersten Mal die richtige Klasse:** von den 33 Schleifen, die die Basis zu zeichnet, gehen **8 auf** (7 zugelaufene, 1 kollabierte — `Feinde` `F`#1 0,0025 → 0,3184), wo R3c 0 bewegt hat; offen bei 0,097 **124 → 129**, referenzfreier 63er-Soll **85 → 70** (der größte Fall der R-Kette), `cross_spurious` **9 → 7** und `retrace_spurious` 10 → 9, also Gate (b) **grün**. Bezahlt wird mit drei Totalverlusten (`unter` `t`#1 · `Kugel` `K`#1 · `macht` `a`#0, je auf den Ableseboden 0,0025), Gate (a) **36 von 157** statt 149, Gate (c) rot unter BEIDEN Lesarten (gepaart p90 +0,000834, eigene Verteilung Median +0,000385) und Gate (d) +34 `kink`-Ereignisse (2 296 → 2 330; R3 +1 626, R3b +462). (f)/(g)/(h) grün, Determinismus 63/63 strichgleich |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
@@ -13521,16 +13521,31 @@ p90 **0,088356**, schlechtestes `muß` **0,106372**, `aiou` **0,7660**,
 ziffernweise mit R3cs Tabelle (`a`#0 0,1925 · `o`#0 0,1581 · `r`#0 0,2354
 · `sz`#0 0,2238) — Basis und Arm sind derselbe Stack.
 
-#### Teil 0 — was gar nicht erst gemessen werden musste
+#### Teil 0 — der zweite Term der Frage, und warum er keiner ist
 
 **Der Ausschnitt ist kein verkleinertes Bild, sondern die Platte selbst.**
 `export_fixtures.freeze_entry` schneidet `page[y0:y1, x0:x1]` heraus und
 skaliert nichts; die x-Höhe der 63 Wortproben liegt bei **30–33 px**
 (Median **31**), und das ist die Auflösung von `words-abb19.png`, das
-laut `SOURCE.md` byte-identisch von Commons übernommen ist. Es gibt im
-Repo also **keine höher aufgelöste Fassung dieser Platte**, gegen die
-sich „nativ" abheben ließe — die Frage „30-px-Ausschnitt gegen Original"
-hat keinen zweiten Term. Was bleibt, ist die Frage nach der
+laut `SOURCE.md` byte-identisch von Commons übernommen ist.
+
+**Nachtrag aus der Code-Review (Copilot, PR #564), und er war fällig:**
+die erste Fassung dieses Absatzes hat daraus „es gibt im Repo keine höher
+aufgelöste Fassung dieser Platte" gefolgert, **ohne nachzusehen** — und es
+gibt sehr wohl einen zweiten committeten Scan derselben Platte:
+`data/sources/suetterlin-leitfaden-1926/p060.jpg`, laut dessen `SOURCE.md`
+**druckstock-identisch mit `words-abb19.png` (verifiziert)**. Seine
+2278 × 3040 px sind aber die **ganze Buchseite** — Fraktur-Satz, dann die
+Tafel, dann die Bildunterschrift, auf dunklem Grund. Nachgemessen an dem,
+was vergleichbar ist, nämlich dem **Zeilenabstand der zwölf
+Handschriftzeilen**: `words-abb19.png` **≈ 110 px**, `p060.jpg`
+**≈ 104 px** (Zeilen bei den Kernzeilen 823–2071 des Seitenkerns, zwölf
+Bänder). Der zweite Scan trägt für die TAFEL also **etwa 5 % WENIGER**
+Auflösung, nicht mehr; seine höhere Pixelzahl gehört der Seite, nicht der
+Platte. Der Schluss bleibt damit stehen — **kein Bild im Repo zeigt diese
+Platte feiner als die Fixtures sie schneiden** —, aber er ist jetzt
+gemessen statt behauptet, und der Beleg steht hier statt in einer
+Fußnote. Was bleibt, ist die Frage nach der
 **Binarisierung**: das Grau trägt Sub-Pixel-Information, die die binäre
 Maske wegwirft.
 
@@ -13936,9 +13951,14 @@ auswählen.
 **Grenzen.** Der Katalog ist an EINER Hand und EINER Feder abgelesen; die
 Diagnose ebenso, und ihre 41 Vorkommen decken vier von 46 Katalogschleifen
 ab — sie beantwortet die Rasterfrage für die engen `offen`-Schleifen, nicht
-für die e-Öse oder das `t`. Die 4×-Lesung ist eine bikubische
-Interpolation und kein zweiter Scan: sie kann Information, die im Grau
-steht, sichtbar machen, aber keine, die die Aufnahme nicht hat. Und ob
-eine höher aufgelöste DNB-Fassung von Abb. 19 existiert, ist hier nicht
-geprüft — sie wäre ein neuer Quell-Commit und eine deklarierte
-Re-Baseline, also ein Autorenschritt und kein Arm.
+für die e-Öse oder das `t`. **Die 4×-Lesung ist eine bikubische
+Interpolation und kein zweiter Scan:** sie kann Information, die im Grau
+steht, sichtbar machen, aber keine, die die Aufnahme nicht hat — der
+Grund, warum Teil 0 die zweite Aufnahme im Repo (`p060.jpg`) MESSEN muss
+und nicht wegargumentieren darf. Was damit ausdrücklich NICHT geprüft
+ist: eine Aufnahme, die es noch gar nicht gibt. Die SUB/DNB-IIIF-Quelle,
+aus der `p060.jpg` stammt, liefert auf Anfrage größere Ableitungen; ob
+eine davon die TAFEL feiner zeigt als die 30–33 px je x-Höhe, die die
+Fixtures schneiden, ist offen. Das wäre ein neuer Quell-Commit, ein
+Re-Export und damit eine deklarierte Re-Baseline — ein Autorenschritt und
+kein Arm, aber nach dieser Runde ein benannter statt eines übersehenen.

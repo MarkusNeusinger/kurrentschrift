@@ -53,7 +53,10 @@ THREE RULES, and each is a refusal rather than a knob:
 * **Never lose the loop.** If the corrected skeleton no longer encloses the
   counter, the whole correction of that counter is reverted. That is R3's
   `REFUSAL_CLOSURE_LOST` moved to the evidence, where it costs a loop and not a
-  round — the granularity R3c's §14 entry names as its first conversion.
+  round — the granularity R3c's §14 entry names as its first conversion. The
+  guard is re-read on every counter ACCEPTED so far, not only on the current
+  one: two counters of one letter can sit within a pen width of each other,
+  and a later drop set then reaches into an earlier one's arc.
 * **Never widen what is already right.** A counter whose skeleton keeps its
   distance already carries the statement; nothing is dropped and nothing is
   painted, so the arm is inert exactly where it has nothing to say — and the
@@ -342,6 +345,13 @@ def unfold_case_evidence(
         report.reason = REFUSAL_NO_TARGET
         return skel, report
     out = np.asarray(skel, dtype=bool).copy()
+    # The counters ACCEPTED so far, so the survival guard can be re-read on all
+    # of them after every candidate. Two counters of one letter can lie within
+    # a pen width of each other (`k`#1/#2, `t`#0/#1, `h`#0/#1 in the shipped
+    # catalogue), and the later one's drop set then reaches into the arc the
+    # earlier one added — checking only the current counter would let an
+    # accepted loop fall open again and still be reported as corrected.
+    accepted: list[tuple[float, float]] = []
     for counter, entry, _centre in targets:
         unfold = by_key.get((entry.slot, entry.loop))
         if unfold is None:
@@ -354,10 +364,12 @@ def unfold_case_evidence(
         if added == 0:
             unfold.reason = REFUSAL_NO_BAND
             continue
-        if not _encloses(candidate, (counter.cx, counter.cy)):
+        centre = (counter.cx, counter.cy)
+        if not all(_encloses(candidate, seen) for seen in [centre, *accepted]):
             unfold.reason = REFUSAL_LOOP_LOST
             continue
         out = candidate
+        accepted.append(centre)
         unfold.pixels_dropped = dropped
         unfold.pixels_added = added
         unfold.band_clipped = clipped
@@ -395,8 +407,12 @@ def counter_evidence_case(
     """
     if options is None:
         return case, None
-    if case.skel is None or getattr(case, "mask", None) is None:
+    # Two separate refusals, because they mean different things to a reader: a
+    # live case has neither, a case whose skeleton failed to load has only one.
+    if getattr(case, "mask", None) is None:
         return case, CounterEvidenceReport(False, {}, reason=REFUSAL_NO_MASK)
+    if case.skel is None:
+        return case, CounterEvidenceReport(False, {}, reason=REFUSAL_NO_SKELETON)
     try:
         catalogue = load_catalogue()
         source = catalogue_source()

@@ -32,7 +32,10 @@
   ways on the same counters — the frozen adaptive mask, a global 50 % level set
   of the grey, and that level set on 4x bicubic grey — plus the medial-axis
   indicator at both scales. The crop turns out to be an unscaled slice of the
-  committed plate, the grey reads the same counter as the mask at 1x and a
-  slightly smaller one at 4x, and the indicator survives the sharper reading.
-  The fusion is ink. The numbers and the pre-registered decision rule are in
-  `docs/reference/messjournal.md` §14 "Kette R4 Feder-Entfaltung `sep07`".
+  committed plate; the repo's second committed scan of that same plate carries
+  about 5 % LESS resolution for it, because its larger pixel count belongs to a
+  whole book page and not to the plate; the grey reads the same counter as the
+  mask at 1x and a slightly smaller one at 4x; and the indicator survives the
+  sharper reading. The fusion is ink. The numbers and the pre-registered
+  decision rule are in `docs/reference/messjournal.md` §14 "Kette R4
+  Feder-Entfaltung `sep07`".

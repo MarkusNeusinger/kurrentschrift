@@ -1532,7 +1532,8 @@ Binnenfläche nicht mehr, wird DIESE Schleife zurückgenommen — R3s
 Abnahmeregel, auf die Evidenz verlegt, wo sie eine Schleife kostet und
 nicht eine Runde); **nichts weiten, was schon stimmt**. Voraus ging die
 **Raster-Diagnose** (`sep07`): der Fixture-Ausschnitt ist ein
-unskalierter Schnitt der Platte (30–33 px je x-Höhe), eine globale
+unskalierter Schnitt der Platte (30–33 px je x-Höhe) und der zweite
+committete Scan derselben Platte trägt für sie ~5 % weniger, eine globale
 50-%-Niveaulinie liest bei 1× dieselbe Binnenfläche wie die adaptive
 Maske und bei 4× bikubischem Grau eine kleinere, und der
 Verschmelzungs-Anzeiger überlebt die schärfere Lesung — die Verschmelzung

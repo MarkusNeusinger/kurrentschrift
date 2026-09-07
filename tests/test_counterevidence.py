@@ -26,6 +26,7 @@ from tools.pairlab.counterevidence import (
     REFUSAL_ALREADY_CLEAR,
     REFUSAL_NO_BAND,
     REFUSAL_NO_MASK,
+    REFUSAL_NO_SKELETON,
     REFUSAL_NO_TARGET,
     REFUSAL_NOTHING_CORRECTED,
     CounterEvidenceOptions,
@@ -259,6 +260,55 @@ def test_the_arm_off_is_the_same_object() -> None:
     out, report = counter_evidence_case(case, result, None)
     assert out is case
     assert report is None
+
+
+def test_a_missing_skeleton_and_a_missing_mask_refuse_by_their_own_name() -> None:
+    """Two refusals, not one: a live case has neither, a broken one has one."""
+    result = _Result(
+        composed={"items": _items()}, xh_px=XH_PX, baseline_row=BASELINE_ROW, registration={"tx": 0.0, "ty": 0.0}
+    )
+    no_mask = _Case(skel=_ring_skeleton(LUMP_AXIS_RADIUS), mask=None)
+    no_skel = _Case(skel=None, mask=_annulus_mask())
+    assert counter_evidence_case(no_mask, result, CounterEvidenceOptions())[1].reason == REFUSAL_NO_MASK
+    assert counter_evidence_case(no_skel, result, CounterEvidenceOptions())[1].reason == REFUSAL_NO_SKELETON
+
+
+def test_a_second_counter_may_not_reopen_the_first_ones_loop() -> None:
+    """The survival guard is re-read on every ACCEPTED counter, not just the current.
+
+    Two counters a pen width apart: correcting the second one's arc reaches
+    into the first one's, so a guard that looks only at the counter in hand
+    would accept a correction that has already broken an earlier loop.
+    """
+    cx, cy = _px(*CENTRE_UNITS)
+    yy, xx = np.mgrid[0 : CROP[0], 0 : CROP[1]]
+    second = (cx + 2.2 * LOOP_RADIUS * XH_PX, cy)
+    r2 = np.hypot(xx - second[0], yy - second[1])
+    mask = _annulus_mask() | (np.abs(r2 - LOOP_RADIUS * XH_PX) <= W_PEN * XH_PX)
+    skel = _ring_skeleton(LUMP_AXIS_RADIUS) | (np.abs(r2 - LUMP_AXIS_RADIUS * XH_PX) <= 0.75)
+    items = [
+        {"slot_index": 0, "glyph_key": "testglyph", "centerline": _circle(LOOP_RADIUS).tolist()},
+        {
+            "slot_index": 0,
+            "glyph_key": "testglyph",
+            "centerline": (_circle(LOOP_RADIUS) + [2.2 * LOOP_RADIUS, 0.0]).tolist(),
+        },
+    ]
+    catalogue = {
+        "testglyph": [
+            {"glyph": "testglyph", "loop": 0, "size_class": "mittel", "state": "offen"},
+            {"glyph": "testglyph", "loop": 1, "size_class": "mittel", "state": "offen"},
+        ]
+    }
+    corrected, report = _unfold(skel=skel, mask=mask, composed_items=items, catalogue=catalogue)
+    from tools.pairlab.zweizuege import plate_counters
+
+    _labels, holes = plate_counters(np.asarray(corrected), min_px=1)
+    for unfold, centre in zip(report.loops, (_px(*CENTRE_UNITS), second), strict=False):
+        if unfold.corrected:
+            assert any(np.hypot(h.cx - centre[0], h.cy - centre[1]) < 3.0 for h in holes), (
+                f"{unfold.glyph}#{unfold.loop} is reported corrected but its loop is gone"
+            )
 
 
 def test_a_case_from_another_hand_is_refused_by_name() -> None:
