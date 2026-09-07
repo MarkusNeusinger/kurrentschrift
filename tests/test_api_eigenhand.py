@@ -556,8 +556,8 @@ class TestVerdicts:
         await _print(api, strips=["S0001"], date="2026-08-23")
         first = await _record(api, [_accepted("S0001", "B0001", 0)])
         second = await _record(api, [_accepted("S0001", "B0001", 0)])
-        assert first.json() == {"hand": HAND, "recorded": 1, "skipped": 0}
-        assert second.json() == {"hand": HAND, "recorded": 0, "skipped": 1}
+        assert first.json() == {"hand": HAND, "recorded": 1, "skipped": 0, "flecken_filled": 0}
+        assert second.json() == {"hand": HAND, "recorded": 0, "skipped": 1, "flecken_filled": 0}
         assert (await _bestand(api))["fassungen"]["angenommen"] == 1
 
     @pytest.mark.asyncio
@@ -910,6 +910,118 @@ class TestStrips:
         assert res.status == 400
 
 
+class TestFleckenmaske:
+    """The printer's specks: stored as circles, painted out on read, never baked in."""
+
+    @staticmethod
+    async def _patch(api: Harness, circles: list[dict], strip: str = "S0001", fassung: str = "F01"):
+        return await api.client.request(
+            "PATCH",
+            f"/eigenhand/strips/{HAND}/{strip}/{fassung}/flecken",
+            json_body={"flecken": circles},
+            headers=api.admin_headers(),
+        )
+
+    @pytest.mark.asyncio
+    async def test_a_mask_is_saved_listed_and_replaced_whole(self, api: Harness):
+        await _store_strip(api)
+        saved = await self._patch(api, [{"x_mm": 30.0, "y_mm": 8.0, "r_mm": 0.6, "quelle": "hand"}])
+        assert saved.status == 200, saved.body
+        assert saved.json()["flecken"] == [{"x_mm": 30.0, "y_mm": 8.0, "r_mm": 0.6, "quelle": "hand"}]
+
+        listing = await api.client.request("GET", f"/eigenhand/strips/{HAND}", headers=api.admin_headers())
+        assert listing.json()["strips"][0]["flecken"] == saved.json()["flecken"]
+
+        # A full replace, because the brush both adds and removes: an empty
+        # list is „nothing to erase", not „leave what is there".
+        cleared = await self._patch(api, [])
+        assert cleared.status == 200 and cleared.json()["flecken"] == []
+        listing = await api.client.request("GET", f"/eigenhand/strips/{HAND}", headers=api.admin_headers())
+        assert listing.json()["strips"][0]["flecken"] == []
+
+    @pytest.mark.asyncio
+    async def test_a_fassung_nobody_judged_has_no_mask_to_hold(self, api: Harness):
+        await _print(api, strips=["S0001"], date="2026-08-23")
+        res = await self._patch(api, [{"x_mm": 1.0, "y_mm": 1.0, "r_mm": 0.3}])
+        assert res.status == 404
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "circle",
+        [
+            {"x_mm": 9000.0, "y_mm": 8.0, "r_mm": 0.6},  # off the strip
+            {"x_mm": 30.0, "y_mm": 900.0, "r_mm": 0.6},
+            {"x_mm": 30.0, "y_mm": 8.0, "r_mm": 50.0},  # far past the brush
+        ],
+    )
+    async def test_a_circle_outside_the_strip_is_refused(self, api: Harness, circle: dict):
+        await _store_strip(api)
+        res = await self._patch(api, [circle])
+        assert res.status == 422, res.body
+
+    @pytest.mark.asyncio
+    async def test_the_image_comes_masked_by_default_and_raw_on_request(self, api: Harness):
+        """The specks go without the filed bytes moving — `flecken=mit` proves it."""
+        stored = await _store_strip(api, upload=False)
+        width, height = stored["width_px"], stored["height_px"]
+        pixels = np.full((height, width), 235, dtype=np.uint8)
+        speck = (height // 2, 900)
+        pixels[speck[0] - 3 : speck[0] + 3, speck[1] - 3 : speck[1] + 3] = 10
+        buffer = io.BytesIO()
+        Image.fromarray(pixels, mode="L").save(buffer, format="PNG")
+        raw = buffer.getvalue()
+        assert (await _put_strip(api, raw, stored)).status == 201
+
+        # The mask speaks the CROP's millimetres — pixel over scale, with the
+        # page origin (`crop_origin_mm`) playing no part at all.
+        circle = {"x_mm": speck[1] / PX_PER_MM, "y_mm": speck[0] / PX_PER_MM, "r_mm": 0.6, "quelle": "auto"}
+        assert (await self._patch(api, [circle])).status == 200
+
+        masked = await api.client.request("GET", f"/eigenhand/strips/{HAND}/S0001/F01", headers=api.admin_headers())
+        assert masked.status == 200
+        with Image.open(io.BytesIO(masked.body)) as image:
+            plane = np.asarray(image, dtype=np.int32)
+        assert plane[speck[0], speck[1]] > 200  # the speck is paper now
+        assert plane.shape == (height, width)
+
+        rohe = await api.client.request(
+            "GET", f"/eigenhand/strips/{HAND}/S0001/F01", params={"flecken": "mit"}, headers=api.admin_headers()
+        )
+        assert rohe.body == raw  # the filed bytes, untouched
+
+        bad = await api.client.request(
+            "GET", f"/eigenhand/strips/{HAND}/S0001/F01", params={"flecken": "weg"}, headers=api.admin_headers()
+        )
+        assert bad.status == 400
+
+    @pytest.mark.asyncio
+    async def test_a_pushed_mask_fills_a_row_that_has_none_and_never_overwrites_one(self, api: Harness):
+        """The sync direction: up to fill, never over. The workbench is the master."""
+        await _print(api, strips=["S0001"], date="2026-08-23")
+        auto = [{"x_mm": 30.0, "y_mm": 8.0, "r_mm": 0.4, "quelle": "auto"}]
+        first = await _record(api, [{**_accepted("S0001", "B0001", 0), "flecken": auto}])
+        assert first.json() == {"hand": HAND, "recorded": 1, "skipped": 0, "flecken_filled": 0}
+        listing = await api.client.request("GET", f"/eigenhand/archive/{HAND}", headers=api.admin_headers())
+        assert listing.json()["fassungen"][0]["flecken"] == auto
+
+        by_hand = [{"x_mm": 44.0, "y_mm": 9.0, "r_mm": 0.5, "quelle": "hand"}]
+        assert (await self._patch(api, by_hand)).status == 200
+        again = await _record(api, [{**_accepted("S0001", "B0001", 0), "flecken": auto}])
+        assert again.json()["flecken_filled"] == 0
+        archive = await api.client.request("GET", f"/eigenhand/archive/{HAND}", headers=api.admin_headers())
+        assert archive.json()["fassungen"][0]["flecken"] == by_hand
+
+    @pytest.mark.asyncio
+    async def test_a_row_recorded_before_the_maske_existed_gains_one(self, api: Harness):
+        await _print(api, strips=["S0001"], date="2026-08-23")
+        assert (await _record(api, [_accepted("S0001", "B0001", 0)])).status == 200
+        auto = [{"x_mm": 30.0, "y_mm": 8.0, "r_mm": 0.4, "quelle": "auto"}]
+        again = await _record(api, [{**_accepted("S0001", "B0001", 0), "flecken": auto}])
+        assert again.json() == {"hand": HAND, "recorded": 0, "skipped": 1, "flecken_filled": 1}
+        archive = await api.client.request("GET", f"/eigenhand/archive/{HAND}", headers=api.admin_headers())
+        assert archive.json()["fassungen"][0]["flecken"] == auto
+
+
 class TestAdminGate:
     """The Bestand is the reserved dataset's inventory — reads are gated too."""
 
@@ -929,12 +1041,13 @@ class TestAdminGate:
             ("GET", f"/eigenhand/strips/{HAND}"),
             ("GET", f"/eigenhand/strips/{HAND}/S0001/F01"),
             ("PUT", f"/eigenhand/strips/{HAND}/S0001/F01"),
+            ("PATCH", f"/eigenhand/strips/{HAND}/S0001/F01/flecken"),
             ("GET", "/eigenhand/uebergangsraum"),
             ("PUT", "/eigenhand/uebergangsraum"),
         ],
     )
     async def test_every_route_needs_the_admin_header(self, api: Harness, method: str, path: str):
-        res = await api.client.request(method, path, json_body={} if method in ("POST", "PUT") else None)
+        res = await api.client.request(method, path, json_body={} if method in ("POST", "PUT", "PATCH") else None)
         assert res.status == 401, (path, res.status)
 
     @pytest.mark.asyncio

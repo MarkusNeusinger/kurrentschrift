@@ -6,8 +6,14 @@ result visible in the admin view. Three pushes, in this order:
 1. every Bogen printed locally, registered with its layout — so the server
    stops handing out an id the paper on the desk already carries;
 2. every judged row as a Fassung: strip, sheet, row index, verdict, reason, the
-   effective nib/ink/paper, the local file's SHA256. No scan, no pixels;
+   effective nib/ink/paper, the local file's SHA256, the Streifen-Befund and
+   the Fleckenmaske. No scan, no pixels;
 3. with ``--mit-streifen``, the strip images of the accepted Fassungen.
+
+The Fleckenmaske is the one field with a DIRECTION: it goes up for a new row
+and to fill a row that has none, never over an existing one. The author erases
+specks in the workbench, so once a mask is there the server's copy is the
+master — `tools.eigenhand.pull --flecken` is what brings it back down here.
 
 Idempotent throughout: a Bogen with the same layout is a no-op, a row whose
 verdict already matches is skipped, a strip whose bytes are already stored is
@@ -155,6 +161,14 @@ def _fassung_rows(kartei: dict) -> list[dict]:
             # crop. Numbers, never pixels — the suggestion and the rank are
             # derived on the server exactly as they are in the terminal.
             "befund": f.get("befund"),
+            # The Fleckenmaske, and only ever DOWNHILL of the server: the API
+            # takes it for a new row and to fill a row that has none, never
+            # over one that already carries a mask. The author's brush lives in
+            # the workbench, so once a mask exists the server's copy is the
+            # master and `pull --flecken` is the way back. `or None` so a row
+            # with nothing detected stays „nobody has looked yet" rather than
+            # claiming „looked, nothing to erase".
+            "flecken": f.get("flecken") or None,
             # The effective setup of THIS row, as the Siebung recorded it.
             **{key: (f.get("session") or {}).get(key) or None for key in ("feder", "tinte", "papier", "geraet")},
         }
@@ -342,6 +356,7 @@ def main(argv: list[str] | None = None) -> int:
     line = (
         f"{hand}: {imported} new Bögen registered ({len(kartei['sheets'])} known), "
         f"{pushed['recorded']} Fassungen recorded, {pushed['skipped']} already there"
+        + (f", {pushed['flecken_filled']} Fleckenmasken filled in" if pushed.get("flecken_filled") else "")
         + (f", {held} held back (Bogen not registered)" if held else "")
     )
     if _push_setup(base, token, hand, layers):

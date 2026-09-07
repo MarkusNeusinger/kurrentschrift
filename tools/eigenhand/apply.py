@@ -7,7 +7,9 @@ via order), and files one Fassung per judged row under
 * ``streifen.png`` — the unmodified grayscale row crop from the rectified
   scan (two-channel doctrine: no binarisation baked in)
 * ``meta.json``   — words, geometry, verdict, QC flags, Schreibsitzung,
-  scan checksum, provenance, and the **Streifen-Befund**
+  scan checksum, provenance, the **Streifen-Befund** and the
+  **Fleckenmaske** (the printer's toner specks as circles — data, never
+  painted into the filed PNG; proposal §7.4)
 
 The Befund is measured HERE because this is where the pixels are (`core
 .eigenhand.befund`, proposal §7.3): pen width, continuity of the medial axis,
@@ -112,7 +114,12 @@ def load_kringel_catalogue(style: str) -> tuple[dict | None, str | None]:
 
 
 def measure_row(
-    crop_file: Path, layout_row: dict, crop_origin_mm: list[float], catalogue: dict | None, quelle: str | None
+    crop_file: Path,
+    layout_row: dict,
+    crop_origin_mm: list[float],
+    catalogue: dict | None,
+    quelle: str | None,
+    flecken: list[dict] | None = None,
 ) -> dict | None:
     """The Streifen-Befund of one filed crop, or None with a warning.
 
@@ -120,16 +127,24 @@ def measure_row(
     nearest to paper, the same plane the import detects and QC's on — and on
     the grayscale of a grayscale one. The stored PNG is never touched; this is
     a derivation, like every other reading of these bytes.
+
+    The Fleckenmaske is painted out BEFORE the reading: a toner speck is not
+    the writer's ink, and left standing it would count as a body run, drag the
+    pen width and cost the Fassung a rank it never lost.
     """
     try:
         import numpy as np  # noqa: PLC0415 — the tool family loads without the image stack
         from PIL import Image  # noqa: PLC0415
+
+        from core.eigenhand.flecken import paint_out  # noqa: PLC0415 — same reason
 
         with Image.open(crop_file) as image:
             rgb = image.mode in ("RGB", "RGBA")
             array = np.asarray(image.convert("RGB") if rgb else image.convert("L"), dtype=np.float32) / 255.0
         plane = array[:, :, 2] if rgb else array
         scale = strip_px_per_mm(plane.shape[1], layout_row["cut_mm"])
+        if flecken:
+            plane = paint_out(plane, flecken, scale)
         return measure_strip(
             plane,
             layout_row,
@@ -234,9 +249,13 @@ def main(argv: list[str] | None = None) -> int:
         befund: dict | None = None
         accepted = judgement["verdict"] == "angenommen"
         layout_row = layout["rows"][row["row_index"]]
+        # The mask the import detected. A payload written before the
+        # Fleckenmaske existed carries none — which files as `[]`, „looked,
+        # nothing to erase", and leaves the strip exactly as it was.
+        specks = list(row.get("flecken") or [])
         if accepted:
             befund = measure_row(
-                sheet_dir / "import" / row["crop"], layout_row, row["crop_origin_mm"], catalogue, kringel_quelle
+                sheet_dir / "import" / row["crop"], layout_row, row["crop_origin_mm"], catalogue, kringel_quelle, specks
             )
             # Only accepted rows get files; the meta.json makes the strip
             # attributable on its own, sidecar-free (words, geometry, session).
@@ -269,6 +288,11 @@ def main(argv: list[str] | None = None) -> int:
                 "session": payload["session"],
                 "png_sha256": png_sha256,
                 "befund": befund,
+                # The Fleckenmaske as the import found it. It travels with the
+                # Fassung so a strip is self-describing on paper AND in the
+                # archive; a later hand edit in the workbench comes back down
+                # with `tools.eigenhand.pull --flecken`.
+                "flecken": specks,
                 "provenance": payload["layout_provenance"],
             }
             (fassung_dir / "meta.json").write_text(
@@ -293,6 +317,12 @@ def main(argv: list[str] | None = None) -> int:
                 # `sync` read the Kartei, and a Befund that lived only beside
                 # the pixels would make either of them open every Fassung.
                 "befund": befund,
+                # Same for the mask — and here it is load-bearing beyond
+                # convenience: the archive re-files `kartei.json` in FULL at
+                # every snapshot while an already-archived Fassung directory is
+                # never rewritten, so the Kartei is what carries a later hand
+                # edit into the archive and back through `sync --from`.
+                "flecken": specks,
             }
         )
         if accepted:

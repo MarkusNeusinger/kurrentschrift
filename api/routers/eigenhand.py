@@ -34,6 +34,9 @@ count what a hand already covers.
   ``tools.eigenhand.universe --push``, idempotent on a content hash.
 * ``GET|PUT /eigenhand/strips/…`` — the written strip itself, and any single
   word cut out of it.
+* ``PATCH /eigenhand/strips/{hand}/{strip}/{fassung}/flecken`` — the
+  Fleckenmaske: the printer's toner specks as circles, painted out on read and
+  never in the filed bytes (proposal §7.4).
 
 The strips are the one place where own-hand PIXELS do travel (owner, 2026-08-24)
 — so that the workbench can show a written Streifen the way it shows a chart
@@ -69,7 +72,7 @@ import unicodedata
 from datetime import date as date_cls
 from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -79,6 +82,8 @@ from api.schemas import (
     EigenhandArchiveOut,
     EigenhandBefundOut,
     EigenhandBestandOut,
+    EigenhandFleckenIn,
+    EigenhandFleckenOut,
     EigenhandHandsOut,
     EigenhandSetupIn,
     EigenhandSetupOut,
@@ -97,7 +102,7 @@ from api.schemas import (
     EigenhandUebergangsraumStoreOut,
 )
 from core.database import EigenhandRepository
-from core.eigenhand import bogen, coverage, crop, geometry
+from core.eigenhand import bogen, coverage, crop, flecken, geometry
 from core.eigenhand.befund import BEFUND_FORMAT, befund_index
 from core.eigenhand.bestand import bestand as build_bestand
 from core.eigenhand.ids import STYLE_IDS, is_fassung_id, is_hand_id, is_sheet_id, is_strip_id, style_of_hand
@@ -467,10 +472,16 @@ async def record_fassungen(body: EigenhandSyncIn, db: AsyncSession = Depends(req
     because the stored row carries no second chance. Same refusal as
     `api/routers/lesarten.py`'s fold check, and for the same reason: the SERVER
     holds the contract, not the tool that could be an old copy.
+
+    The Fleckenmaske travels along and follows one direction only: a NEW row
+    takes the local list, an existing row takes it only if it has none yet.
+    Once a mask exists the server's copy is the master — the author's brush
+    lives in the workbench, and a re-run of the local sync must never undo an
+    erased speck. `tools.eigenhand.pull --flecken` is the way back down.
     """
     hand = _checked_hand(body.hand)
     repo = EigenhandRepository(db)
-    recorded = skipped = 0
+    recorded = skipped = filled = 0
     sheets: dict[str, list[str]] = {}
     for item in body.fassungen:
         if not is_strip_id(item.strip) or not is_fassung_id(item.fassung) or not is_sheet_id(item.sheet):
@@ -518,6 +529,13 @@ async def record_fassungen(body: EigenhandSyncIn, db: AsyncSession = Depends(req
                         f"({existing.strip}/{existing.fassung}) — conflicting verdict, withdraw it explicitly"
                     ),
                 )
+            # The one thing a re-push may still add to a recorded row: its FIRST
+            # Fleckenmaske. Only when the row has none — once a mask exists the
+            # server's copy is the master, because the author's brush lives in
+            # the workbench and a re-run of the local sync must never undo it.
+            if existing.flecken is None and item.flecken:
+                existing.flecken = [circle.model_dump() for circle in item.flecken]
+                filled += 1
             skipped += 1
             continue
         await repo.record_fassung(
@@ -538,10 +556,11 @@ async def record_fassungen(body: EigenhandSyncIn, db: AsyncSession = Depends(req
             papier=item.papier,
             geraet=item.geraet,
             befund=item.befund,
+            flecken=[circle.model_dump() for circle in item.flecken] if item.flecken is not None else None,
         )
         recorded += 1
     await db.commit()
-    return EigenhandSyncOut(hand=hand, recorded=recorded, skipped=skipped)
+    return EigenhandSyncOut(hand=hand, recorded=recorded, skipped=skipped, flecken_filled=filled)
 
 
 @router.get("/archive/{hand}", response_model=EigenhandArchiveOut)
@@ -592,6 +611,7 @@ async def read_archive(hand: str, db: AsyncSession = Depends(require_db)) -> Eig
                 "papier": row.papier,
                 "geraet": row.geraet,
                 "befund": row.befund,
+                "flecken": row.flecken,
             }
             for row in await repo.fassungen_of(hand)
         ],
@@ -699,10 +719,12 @@ async def list_strips(
     repo = EigenhandRepository(db)
     rows = await repo.strips_of(hand, strip)
     style = style_of_hand(hand) or ""
-    befunde = befund_index(await repo.kartei(hand, style)) if rows else {}
+    kartei = await repo.kartei(hand, style) if rows else {}
+    befunde = befund_index(kartei) if rows else {}
+    masken = flecken.flecken_index(kartei) if rows else {}
     out = []
     for row in rows:
-        stated = _strip_out(row, plan, befunde)
+        stated = _strip_out(row, plan, befunde, masken)
         if needle is not None and not any(needle in box.word.lower() for box in stated.boxes):
             continue
         if item is not None and not any(coverage.matches_item(item, box.items) for box in stated.boxes):
@@ -711,10 +733,13 @@ async def list_strips(
     return EigenhandStripListOut(hand=hand, strips=out)
 
 
-def _strip_out(row, plan: dict | None = None, befunde: dict | None = None) -> EigenhandStripOut:
+def _strip_out(
+    row, plan: dict | None = None, befunde: dict | None = None, masken: dict | None = None
+) -> EigenhandStripOut:
     """One strip row as the API states it — metadata, words, never the bytes."""
     words = words_of(plan, row.strip) if plan and row.strip in plan["strips"] else []
     found = (befunde or {}).get(row.strip, {}).get(row.fassung)
+    maske = (masken or {}).get(row.strip, {}).get(row.fassung)
     return EigenhandStripOut(
         strip=row.strip,
         fassung=row.fassung,
@@ -732,6 +757,7 @@ def _strip_out(row, plan: dict | None = None, befunde: dict | None = None) -> Ei
             for index, word in enumerate(words)
         ],
         befund=EigenhandBefundOut(**found.as_dict()) if found else None,
+        flecken=maske,
     )
 
 
@@ -744,6 +770,7 @@ async def read_strip(
     box: int | None = None,
     pad_mm: float = 1.0,
     lineatur: str = "mit",
+    flecken_param: str = Query("ohne", alias="flecken"),
     db: AsyncSession = Depends(require_db),
 ) -> Response:
     """The stored strip as PNG — whole, or cut down to one word.
@@ -757,18 +784,39 @@ async def read_strip(
     as its blue plane with every still-cyan pixel lifted to paper
     (`crop.without_rulings`) — the printed rulings gone, the ink kept. A
     greyscale strip comes back as it is: there is no colour to separate on.
-    The stored bytes are never touched; the view is computed on request.
+
+    The Fleckenmaske is applied by DEFAULT (`flecken=ohne` — the strip without
+    its specks), because a printer speck is nobody's ink and showing it is
+    never the point. `flecken=mit` serves the raw bytes, which is what the
+    workbench's „roh" toggle asks for while the brush is out.
+
+    The stored bytes are never touched by either; both views are computed on
+    request (two-channel doctrine).
     """
     _checked_hand(hand)
     _checked_strip(strip)
     _checked_fassung(fassung)
     if lineatur not in ("mit", "ohne"):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="lineatur must be `mit` or `ohne`")
-    row = await EigenhandRepository(db).strip(hand, strip, fassung)
+    if flecken_param not in ("mit", "ohne"):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, detail="flecken must be `mit` or `ohne`")
+    repo = EigenhandRepository(db)
+    row = await repo.strip(hand, strip, fassung)
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"{hand} has no stored strip {strip}/{fassung}")
     png = row.png
     filename = f"{hand}-{strip}-{fassung}"
+    if flecken_param == "ohne":
+        judged = await repo.fassung(hand, strip, fassung)
+        circles = (judged.flecken if judged else None) or []
+        if circles:
+            # Before the cut: the circles are millimetres from the STRIP's own
+            # corner. The scale is the stored dpi — the resolution the page was
+            # rectified to, which is what the crop was taken at; deriving it
+            # from the Schnittband instead would need the sheet's layout for a
+            # view that has no other use for it, and the two agree to well
+            # under the smallest brush over a whole strip.
+            png = await run_in_threadpool(crop.without_flecken, png, circles, row.dpi / 25.4)
     if wort is not None or box is not None:
         layout_row = await _layout_row(hand, row.sheet, row.row_index, db)
         word_box = _guard(crop.find_box, layout_row, wort, box)
@@ -896,6 +944,58 @@ async def write_strip(
     )
     await db.commit()
     return {"strip": strip, "fassung": fassung, "stored": True}
+
+
+@router.patch("/strips/{hand}/{strip}/{fassung}/flecken", response_model=EigenhandFleckenOut)
+async def write_flecken(
+    hand: str, strip: str, fassung: str, body: EigenhandFleckenIn, db: AsyncSession = Depends(require_db)
+) -> EigenhandFleckenOut:
+    """Replace one Fassung's Fleckenmaske — the workbench's round brush, saved.
+
+    The one write in the capture chain that does NOT come from the local
+    terminal: erasing a printer speck is an eye judgement made on the image,
+    and the image is in the workbench. It is also the one that must never
+    reach the pixels — the strip stays the filed bytes, and this stores
+    circles that are applied on read (`crop.without_flecken`). Undoing a
+    mistake is therefore always possible: send the list without that circle.
+
+    A FULL replacement, deliberately: the brush both adds and removes, so a
+    merge would have to guess what a missing circle meant. Refused (422) when
+    a circle sits outside the strip it claims to mask or carries a radius
+    outside the brush's range — a coordinate mix-up that silently clamped
+    would erase somewhere the author never clicked.
+
+    The mask hangs off the FASSUNG, not off the stored image: a Fassung can be
+    judged (and its specks noted) before its pixels are ever pushed up, and the
+    local `meta.json` keys it the same way.
+    """
+    _checked_hand(hand)
+    _checked_strip(strip)
+    _checked_fassung(fassung)
+    repo = EigenhandRepository(db)
+    judged = await repo.fassung(hand, strip, fassung)
+    if judged is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail=f"no Fassung {strip}/{fassung} recorded for {hand} — a mask needs the row it belongs to",
+        )
+    # The bounds come from the STORED strip when there is one: its pixel size
+    # over the rectified resolution is the rectangle the author was clicking
+    # in. Without stored pixels the Fassung is judged but not uploaded, and the
+    # radius rules still apply — the geometry cannot be checked against
+    # anything, so the generous page-sized frame stands in.
+    stored = await repo.strip_meta(hand, strip, fassung)
+    width_mm = stored.width_px / (stored.dpi / 25.4) if stored else geometry.A4_WIDTH_MM
+    height_mm = stored.height_px / (stored.dpi / 25.4) if stored else geometry.A4_HEIGHT_MM
+    try:
+        circles = flecken.check_circles(
+            [circle.model_dump() for circle in body.flecken], width_mm=width_mm, height_mm=height_mm
+        )
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc
+    judged.flecken = circles
+    await db.commit()
+    return EigenhandFleckenOut(strip=strip, fassung=fassung, flecken=circles)
 
 
 def _checked_strip(strip: str) -> str:

@@ -1221,6 +1221,42 @@ class EigenhandSheetImportIn(BaseModel):
     layout_sha256: str
 
 
+class EigenhandFleckIn(BaseModel):
+    """One circle of a Fleckenmaske — millimetres from the strip crop's corner.
+
+    The mask is DATA: the filed strip is never modified, `crop.without_flecken`
+    paints local paper into these circles on read. `quelle` says who put it
+    there — `auto` the detector at import time, `hand` the workbench's brush.
+
+    The bounds here are a sanity net only. What actually binds is checked
+    against the strip the mask belongs to (`core.eigenhand.flecken
+    .check_circles`): the centre has to lie inside that strip and the radius
+    within the brush's range, which no wire type can know on its own.
+    """
+
+    x_mm: Annotated[float, Field(ge=0, le=1000)]
+    y_mm: Annotated[float, Field(ge=0, le=1000)]
+    r_mm: Annotated[float, Field(gt=0, le=100)]
+    quelle: Literal["auto", "hand"] = "hand"
+
+
+class EigenhandFleckenIn(BaseModel):
+    """A Fleckenmaske as the workbench saves it — a FULL replacement of the list.
+
+    Full replace, not a patch of single circles: the brush both adds and
+    removes, and a merge would have to guess which of the two a missing circle
+    was. The view holds the whole list anyway.
+    """
+
+    flecken: list[EigenhandFleckIn]
+
+
+class EigenhandFleckenOut(BaseModel):
+    strip: str
+    fassung: str
+    flecken: list[EigenhandFleckIn]
+
+
 class EigenhandFassungIn(BaseModel):
     """One judged row, pushed up by the local Siebung — verdict only, no pixels."""
 
@@ -1246,6 +1282,10 @@ class EigenhandFassungIn(BaseModel):
     # Numbers only — the suggestion, its reason and the rank are derived on
     # read, so nothing that can go stale is ever stored.
     befund: dict[str, Any] | None = None
+    # The Fleckenmaske as the local detector found it. Pushed only to FILL a
+    # row that has none — the server's list is the master the moment a hand
+    # edit exists, and a re-push of the automatic list must never undo it.
+    flecken: list[EigenhandFleckIn] | None = None
 
 
 class EigenhandSyncIn(BaseModel):
@@ -1257,6 +1297,10 @@ class EigenhandSyncOut(BaseModel):
     hand: str
     recorded: int
     skipped: int
+    # How many already-recorded rows got their first Fleckenmaske out of this
+    # push. Reported separately from `recorded`: nothing was judged, an
+    # existing row merely gained a reading it did not have.
+    flecken_filled: int = 0
 
 
 class EigenhandUebergangsraumIn(BaseModel):
@@ -1384,6 +1428,10 @@ class EigenhandStripOut(BaseModel):
     words: list[str] = []
     boxes: list[EigenhandStripBoxOut] = []
     befund: EigenhandBefundOut | None = None
+    # The Fleckenmaske of this Fassung, so the view can draw the circles over
+    # the image it just asked for — `null` where nobody has looked yet, which
+    # is not the same as an empty list („looked, nothing to erase").
+    flecken: list[EigenhandFleckIn] | None = None
 
 
 class EigenhandStripListOut(BaseModel):

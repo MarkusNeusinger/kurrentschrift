@@ -17,6 +17,7 @@ import type {
   ComposedWordOut,
   DiagnosticData,
   EigenhandBestand,
+  EigenhandFleck,
   EigenhandHands,
   EigenhandPrinted,
   EigenhandPrintRequest,
@@ -172,16 +173,21 @@ export const getEigenhandStrips = (
 // `ohneLineatur` asks for the DERIVED view — a colour strip with its cyan
 // rulings lifted to paper, computed on request; a greyscale strip comes back
 // unchanged.
+// `roh` asks for the filed bytes WITH the printer's specks. The Fleckenmaske
+// is applied by default, because a toner speck is nobody's ink; the raw view
+// is what the eraser needs while the brush is out.
 export const fetchEigenhandStrip = async (
   hand: string,
   strip: string,
   fassung: string,
   box?: number,
   ohneLineatur = false,
+  roh = false,
 ): Promise<Blob> => {
   const params = new URLSearchParams();
   if (box !== undefined) params.set('box', String(box));
   if (ohneLineatur) params.set('lineatur', 'ohne');
+  if (roh) params.set('flecken', 'mit');
   const query = params.toString();
   const qs = query ? `?${query}` : '';
   const res = await apiFetch(
@@ -194,6 +200,27 @@ export const fetchEigenhandStrip = async (
   }
   return res.blob();
 };
+
+// The Fleckenmaske of one Fassung — a FULL replacement of the circle list.
+// Full replace because the brush both adds and removes: a merge would have to
+// guess what a missing circle meant, and the view holds the whole list anyway.
+// The strip's own bytes are never touched by this; the mask is applied on read.
+export const patchEigenhandFlecken = (
+  hand: string,
+  strip: string,
+  fassung: string,
+  flecken: EigenhandFleck[],
+): Promise<{ strip: string; fassung: string; flecken: EigenhandFleck[] }> =>
+  apiFetch(
+    `${apiRoot()}/eigenhand/strips/${encodeURIComponent(hand)}/${encodeURIComponent(strip)}/${encodeURIComponent(
+      fassung,
+    )}/flecken`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ flecken }),
+    },
+  ).then(asJson<{ strip: string; fassung: string; flecken: EigenhandFleck[] }>);
 
 export const getSource = (sourceId: string, retry?: RetryOptions): Promise<SourceOut> =>
   apiFetch(src(sourceId, ''), {}, retry).then(asJson<SourceOut>);

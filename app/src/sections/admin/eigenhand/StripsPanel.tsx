@@ -54,11 +54,18 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 
 import { fetchEigenhandStrip, getEigenhandStrips } from '@/lib/api';
-import type { EigenhandBefund, EigenhandStrip, EigenhandStripBox, EigenhandStripFilter } from '@/lib/api';
+import type {
+  EigenhandBefund,
+  EigenhandFleck,
+  EigenhandStrip,
+  EigenhandStripBox,
+  EigenhandStripFilter,
+} from '@/lib/api';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
 import { VORSCHLAG_COLOR, byBefund } from '@/sections/admin/eigenhand/befundOrder';
+import { FleckenEditor, MIN_ERASE_ZOOM } from '@/sections/admin/eigenhand/FleckenEditor';
 import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { Panel } from '@/sections/admin/shell/Panel';
@@ -101,6 +108,10 @@ function useStripImage(
   box: number | null,
   enabled: boolean,
   ohneLineatur: boolean,
+  roh = false,
+  // Bumped after a Fleckenmaske is saved: the URL is unchanged but the served
+  // pixels are not, and a browser has no way of knowing that.
+  reload = 0,
 ) {
   const [url, setUrl] = useState<string | null>(null);
   // A tile that is asked for its pixels right away shows the spinner from the
@@ -112,7 +123,7 @@ function useStripImage(
   // state when a prop changes" (react-hooks/set-state-in-effect). The key
   // carries exactly the effect's inputs; the free-form word never enters it,
   // so no separator can be mistaken for a value.
-  const loadKey = `${hand} ${strip} ${fassung} ${box ?? ''} ${enabled} ${ohneLineatur}`;
+  const loadKey = `${hand} ${strip} ${fassung} ${box ?? ''} ${enabled} ${ohneLineatur} ${roh} ${reload}`;
   const [shownFor, setShownFor] = useState(loadKey);
   if (shownFor !== loadKey) {
     setShownFor(loadKey);
@@ -129,7 +140,7 @@ function useStripImage(
     if (!enabled) return undefined;
     let alive = true;
     let objectUrl: string | null = null;
-    fetchEigenhandStrip(hand, strip, fassung, box ?? undefined, ohneLineatur)
+    fetchEigenhandStrip(hand, strip, fassung, box ?? undefined, ohneLineatur, roh)
       .then((blob) => {
         if (!alive) return;
         objectUrl = URL.createObjectURL(blob);
@@ -142,7 +153,7 @@ function useStripImage(
       if (objectUrl) URL.revokeObjectURL(objectUrl);
       setUrl(null);
     };
-  }, [hand, strip, fassung, box, enabled, ohneLineatur]);
+  }, [hand, strip, fassung, box, enabled, ohneLineatur, roh, reload]);
 
   return { url, loading, error };
 }
@@ -273,12 +284,16 @@ function StripTile({
   zoom,
   ohneLineatur,
   onLupe,
+  onZoom,
+  onFlecken,
 }: {
   hand: string;
   row: EigenhandStrip;
   zoom: Zoom;
   ohneLineatur: boolean;
   onLupe: (target: LupeTarget) => void;
+  onZoom: (level: Zoom) => void;
+  onFlecken: (strip: string, fassung: string, circles: EigenhandFleck[]) => void;
 }) {
   const t = de.admin.eigenhand;
   // `open` says whether pixels are wanted at all; `shown` which cut. The box
@@ -287,8 +302,33 @@ function StripTile({
   // would serve the first box under every later chip and light them all.
   const [open, setOpen] = useState(false);
   const [shown, setShown] = useState<number | null>(null);
-  const { url, loading, error } = useStripImage(hand, row.strip, row.fassung, shown, open, ohneLineatur);
+  // The eraser works on the WHOLE strip: the mask's millimetres are the
+  // strip's own, and a word cut would put them against another origin.
+  const [erasing, setErasing] = useState(false);
+  const [roh, setRoh] = useState(false);
+  const [reload, setReload] = useState(0);
+  const { url, loading, error } = useStripImage(
+    hand,
+    row.strip,
+    row.fassung,
+    erasing ? null : shown,
+    open,
+    ohneLineatur,
+    roh,
+    reload,
+  );
   const title = `${row.strip} · ${row.fassung}${shown === null ? '' : ` · ${row.words[shown] ?? ''}`}`;
+  const flecken = row.flecken ?? [];
+
+  const startErasing = () => {
+    setShown(null);
+    setOpen(true);
+    // The brush has to be aimable: at ¼ the smallest one is under a display
+    // pixel across. The zoom is lifted rather than the brush grown — a brush
+    // size is a millimetre fact about the paper.
+    if (zoom < MIN_ERASE_ZOOM) onZoom(MIN_ERASE_ZOOM);
+    setErasing(true);
+  };
 
   return (
     <Box sx={{ border: 1, borderColor: 'divider', borderRadius: 1, p: 1.5, mb: 1.5 }}>
@@ -307,9 +347,21 @@ function StripTile({
         </Typography>
         {loading && <CircularProgress size={14} />}
         <BefundChips befund={row.befund} />
+        {flecken.length > 0 && !erasing && (
+          <Tooltip title={t.fleckenChipHint}>
+            <Chip size="small" variant="outlined" label={fmt(t.fleckenChip, { count: flecken.length })} />
+          </Tooltip>
+        )}
         <Box sx={{ flexGrow: 1 }} />
+        {!erasing && (
+          <Tooltip title={t.fleckenStartHint}>
+            <Button size="small" onClick={startErasing}>
+              {t.fleckenStart}
+            </Button>
+          </Tooltip>
+        )}
         {open ? (
-          <Button size="small" onClick={() => setOpen(false)}>
+          <Button size="small" onClick={() => setOpen(false)} disabled={erasing}>
             {t.stripHide}
           </Button>
         ) : (
@@ -319,7 +371,33 @@ function StripTile({
         )}
       </Stack>
 
-      {open && (
+      {open && erasing && (
+        <FleckenEditor
+          key={`${row.strip}/${row.fassung}/${flecken.length}`}
+          hand={hand}
+          strip={row.strip}
+          fassung={row.fassung}
+          url={url}
+          widthPx={row.width_px}
+          heightPx={row.height_px}
+          dpi={row.dpi}
+          zoom={zoom}
+          initial={flecken}
+          roh={roh}
+          onRoh={setRoh}
+          onClose={() => {
+            setErasing(false);
+            setRoh(false);
+          }}
+          onSaved={(circles) => {
+            onFlecken(row.strip, row.fassung, circles);
+            // The URL has not changed but the served pixels have.
+            setReload((n) => n + 1);
+          }}
+        />
+      )}
+
+      {open && !erasing && (
         <>
           {url && (
             <Box sx={{ mt: 1 }}>
@@ -530,6 +608,14 @@ export function StripsPanel({
     };
   }, [hand, version, filter.wort, filter.item]);
 
+  // A saved Fleckenmaske lands straight in the listed row: the tile is the
+  // authority on the mask it just wrote, and re-listing the whole hand to learn
+  // one number the view already has would be a round trip for nothing.
+  const applyFlecken = (strip: string, fassung: string, circles: EigenhandFleck[]) =>
+    setStrips((rows) =>
+      rows.map((row) => (row.strip === strip && row.fassung === fassung ? { ...row, flecken: circles } : row)),
+    );
+
   // The listing's order — plan order, or weakest first when the switch is on.
   // BOTH display modes read it: the tiles below and the filtered gallery, so
   // the switch means the same thing whether or not a filter is active.
@@ -674,6 +760,8 @@ export function StripsPanel({
             zoom={zoom}
             ohneLineatur={ohneLineatur}
             onLupe={setLupe}
+            onZoom={setZoom}
+            onFlecken={applyFlecken}
           />
         ))
       )}

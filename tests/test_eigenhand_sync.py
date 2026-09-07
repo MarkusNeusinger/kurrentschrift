@@ -25,6 +25,7 @@ import json
 import pytest
 from PIL import Image
 
+from tools.eigenhand import pull as pull_mod
 from tools.eigenhand import setup as setup_mod
 from tools.eigenhand import snapshot as snapshot_mod
 from tools.eigenhand import sync as sync_mod
@@ -331,6 +332,77 @@ class TestRestoreFromArchive:
         _build(dataroot)
         with pytest.raises(SystemExit, match="point --from at a snapshot directory"):
             _run(monkeypatch, _FakeApi(), "--from", str(tmp_path / "nowhere"))
+
+
+class TestFleckenmaskeDirection:
+    """The one field whose master is the SERVER — up to fill, down to keep.
+
+    The specks are found locally at import, but the author erases them with the
+    brush in the workbench, so the corrected mask only exists up there. `sync`
+    may therefore fill a row that has none and never overwrite one; `pull
+    --flecken` is what brings the hand-edited list back into the Kartei and the
+    Fassungen's meta.json, which is what puts it into the next archive
+    snapshot — and from there, through `sync --from`, back into a restored DB.
+    """
+
+    def test_a_local_mask_travels_with_its_fassung(self, dataroot, monkeypatch):
+        _build(dataroot)
+        kartei = load_kartei(HAND)
+        maske = [{"x_mm": 30.0, "y_mm": 8.0, "r_mm": 0.4, "quelle": "auto"}]
+        kartei["strips"]["S0001"]["fassungen"][0]["flecken"] = maske
+        save_kartei(HAND, kartei)
+        fake = _FakeApi()
+        assert _run(monkeypatch, fake) == 0
+        pushed = next(body for method, url, body in fake.calls if url.endswith("/fassungen"))
+        assert pushed["fassungen"][0]["flecken"] == maske
+
+    def test_a_fassung_without_specks_stays_unread_rather_than_empty(self, dataroot, monkeypatch):
+        """`null` is „nobody has looked" — the state the server may still fill."""
+        _build(dataroot)
+        fake = _FakeApi()
+        assert _run(monkeypatch, fake) == 0
+        pushed = next(body for method, url, body in fake.calls if url.endswith("/fassungen"))
+        assert pushed["fassungen"][0]["flecken"] is None
+
+    def test_pull_brings_the_hand_edited_mask_back_into_kartei_and_meta(self, dataroot, monkeypatch, capsys):
+        _build(dataroot)
+        by_hand = [{"x_mm": 44.0, "y_mm": 9.0, "r_mm": 0.5, "quelle": "hand"}]
+
+        def fake(method: str, url: str, token: str, body=None, allow_404: bool = False):
+            assert (method, url.endswith(f"/eigenhand/archive/{HAND}")) == ("GET", True)
+            return {
+                "hand": HAND,
+                "style": "suetterlin",
+                "fassungen": [{"strip": "S0001", "fassung": "F01", "flecken": by_hand}],
+            }
+
+        monkeypatch.setattr(pull_mod, "request_json", fake)
+        monkeypatch.setenv("ADMIN_TOKEN", "t")
+        assert pull_mod.main(["--hand", HAND, "--flecken", "--api", "https://example.test"]) == 0
+        assert load_kartei(HAND)["strips"]["S0001"]["fassungen"][0]["flecken"] == by_hand
+        meta = json.loads((dataroot / HAND / "fassungen" / "S0001" / "F01" / "meta.json").read_text(encoding="utf-8"))
+        assert meta["flecken"] == by_hand
+        assert "snapshot" in capsys.readouterr().out
+
+    def test_pull_leaves_a_fassung_the_server_has_no_mask_for_alone(self, dataroot, monkeypatch):
+        _build(dataroot)
+        kartei = load_kartei(HAND)
+        local = [{"x_mm": 1.0, "y_mm": 2.0, "r_mm": 0.3, "quelle": "auto"}]
+        kartei["strips"]["S0001"]["fassungen"][0]["flecken"] = local
+        save_kartei(HAND, kartei)
+        monkeypatch.setattr(
+            pull_mod,
+            "request_json",
+            lambda *a, **k: {"hand": HAND, "style": "suetterlin", "fassungen": [{"strip": "S0001", "fassung": "F01"}]},
+        )
+        monkeypatch.setenv("ADMIN_TOKEN", "t")
+        assert pull_mod.main(["--hand", HAND, "--flecken", "--api", "https://example.test"]) == 0
+        assert load_kartei(HAND)["strips"]["S0001"]["fassungen"][0]["flecken"] == local
+
+    def test_pull_wants_either_a_sheet_or_the_masks(self, monkeypatch):
+        monkeypatch.setenv("ADMIN_TOKEN", "t")
+        with pytest.raises(SystemExit):
+            pull_mod.main(["--hand", HAND])
 
 
 class TestPngSize:

@@ -978,6 +978,90 @@ Fassungen EINER Hand gegeneinander und sagt, welche neu zu schreiben ist.
 Die beiden Skript-Metriken (`core/quality.py`, `core/quality_suetterlin.py`)
 sind unberührt.
 
+### 7.4 Die Fleckenmaske — Druckerpunkte als Daten entfernt
+
+**Autor-Meldung 2026-09-07:** „Mein Laserdrucker macht leider im rechten
+Bereich unkontrolliert schwarze Punkte, Reinigen hilft nichts … vielleicht
+erkennst du sie und löscht sie raus, oder es gibt dann beim Einlesen
+vielleicht direkt im Admin-Bereich, dass ich mit einem kleinen runden
+Pinsel die Punkte löschen kann." Beide Hälften — Erkennung UND Radierer —
+sind hier EIN Mechanismus.
+
+Zwei Stellen tun weh. Ein Punkt im Schnittband einer Zeile landet IM
+abgelegten Streifen als fremde Tinte: er zählt im Befund als Körperlauf,
+zieht die Federbreite und kostet der Fassung einen Rang, den sie nie
+verloren hat. Und ein Punkt im Verdikt-Kästchen kann einen **Haken
+vortäuschen** — drei Punkte kamen vor dieser Runde über die 4 % Fläche,
+die `read_pen_mark` als Haken liest, und ein Druckerfehler hätte damit eine
+Zeile abgelegt, die der Autor nie angenommen hat.
+
+**Was gespeichert wird, ist eine MASKE, nie ein verändertes Bild.** Das ist
+die Zwei-Kanal-Doktrin (Autor 2026-08-27), an der schon
+`crop.without_rulings` hängt: abgelegt ist, was aufgenommen wurde, und jede
+Reinigung ist eine abgeleitete Ansicht beim Abruf. Der Streifen ist der
+primäre Beleg des reservierten Datensatzes — ein hineingerechnetes Papier
+wäre unumkehrbar und nie mehr prüfbar. Die Maske ist deshalb eine Liste von
+**Kreisen in den Millimetern des Streifen-Crops**
+(`[{x_mm, y_mm, r_mm, quelle}]`, `core/eigenhand/flecken.py`), und
+`crop.without_flecken` füllt sie beim Abruf mit der LOKALEN Papierfarbe —
+gelesen aus einem Ring um den Kreis, nicht mit Weiß, denn ein Scan-Papier
+ist weder weiß noch gleichmäßig und eine weiße Scheibe darauf liest sich
+als Loch. Maske löschen heißt: Rohbild zurück, Byte für Byte.
+
+Millimeter des Crops, nicht der Seite: derselbe Zahlensatz platziert den
+Kreis im abgelegten PNG, in der DB-Kopie und in der Werkbank, ohne dass
+irgendwo ein Seitenursprung mitgeführt werden muss.
+
+**Die automatische Hälfte ist bewusst schüchtern.** Ein übersehener Punkt
+kostet einen Pinselklick, ein wegradierter i-Punkt zerstört Grundwahrheit.
+Also fasst der Detektor nur an, was ALLE Regeln passiert (die Konstanten
+stehen im Modul, mit ihrer Begründung daneben):
+
+| Regel | Konstante | Warum |
+|---|---|---|
+| klein genug | `SPECK_MAX_EXTENT_MM` 0,6 · `SPECK_MAX_AREA_MM2` 0,28 | Tonerpartikel messen deutlich unter einem halben Millimeter; großzügig statt knapp, weil ein zu großer Punkt einfach dem Pinsel bleibt |
+| berührt keine Schrift | `WRITING_MIN_AREA_MM2` 1,0 | ein `e` bei 6 mm x-Höhe zieht ~6 mm² Tinte, ein i-Punkt ~0,13 mm² — ein Fleck AN einem Buchstaben ist mit ihm EINE Komponente und wird nie geteilt |
+| steht frei | `SPECK_CLEARANCE_MM` 2,5 | Komma, Punkt, i-Punkt und eigene Kleckse leben innerhalb dieses Radius |
+| ist kein Punkt über einem Buchstaben | `DOT_X_SLACK_MM` 0,8 · `DOT_MAX_RISE_MM` 5,0 | geometrisch statt metrisch, damit auch eine Hand mit hoch gesetzten i-Punkten sicher ist |
+| liegt im Schreibfenster | `writing_window` | Streifen-ID im oberen Pad und Klartext-Label unten sind Druck, nicht Tinte des Schreibers — Druck wird nie übermalt |
+
+Das Verdikt-Kästchen liest `flecken.read_mark`: isolierte punktgroße
+Komponenten fallen aus der Zählung, und was übrig bleibt, muss zusätzlich
+`MARK_MIN_STROKE_MM` weit reichen. **Ein Haken ist ein Strich, ein Fleck
+ist ein Punkt** — keine Ansammlung von Punkten wird zum Haken.
+
+**Wo sie auftaucht.** `ingest` misst sie auf dem Streifen-Rechteck und legt
+sie in die Zeile der `payload.json`, mit QC-Flag `flecken:<n>` (Warnung wie
+`leer`/`blass`, nie ein Urteil); die Siebung-Seite zeichnet die Kreise über
+den Crop; `apply` schreibt sie in `meta.json` und Kartei und **misst den
+Befund auf der maskierten Ebene**; `sync` schiebt sie hoch; die Werkbank
+zeigt sie als Chip und lässt sie mit dem runden Pinsel bearbeiten
+(`PATCH /eigenhand/strips/{hand}/{strip}/{fassung}/flecken`, Vollersatz der
+Liste, 422 bei einem Kreis außerhalb seines Streifens). Die Bildroute
+liefert **standardmäßig ohne Flecken**; `?flecken=mit` zeigt die abgelegten
+Bytes, in der Ansicht der Schalter „roh".
+
+**Eine Richtung, und nur eine.** Gefunden wird lokal, radiert wird oben —
+also ist der SERVER der Master, sobald eine Maske existiert. `sync` füllt
+eine Zeile, die keine hat (`flecken_filled` im Ergebnis), und überschreibt
+nie eine vorhandene; NULL heißt „noch niemand hat hingesehen", eine leere
+Liste „hingesehen, nichts zu tilgen". Zurück nach unten kommt sie mit
+`tools.eigenhand.pull --flecken`, das Kartei und `meta.json` nachzieht.
+Für das Archiv ist die **Kartei** der Träger: `snapshot.py` legt
+`kartei.json` bei jedem Lauf vollständig neu ab, während ein bereits
+archiviertes Fassungs-Verzeichnis nie wieder beschrieben wird (§8) — die
+`meta.json` im Archiv hält also den Stand beim Ablegen, und die
+Wiederherstellung (`sync --from`, die die Kartei liest) trägt die
+hand-korrigierte Maske.
+
+**Verworfen:** die Punkte beim Einlesen aus dem Crop herausrechnen. Das
+wäre eine unumkehrbare Änderung am primären Beleg und würde die
+Zwei-Kanal-Doktrin genau dort brechen, wo sie am meisten wert ist. Ebenso
+verworfen: den Detektor scharf stellen und den Pinsel sparen — die Fälle,
+die er sicher NICHT trennen kann (Komma, i-Punkt, eigener Klecks), sind
+genau die, in denen ein Fehler nicht auffällt und nicht rückgängig zu
+machen wäre.
+
 ## 8 Ablage und Archiv
 
 `data/samples/own-hand/` ist komplett gitignored bis auf `SOURCE.md` +
