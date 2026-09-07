@@ -151,6 +151,10 @@ def _fassung_rows(kartei: dict) -> list[dict]:
             "note": f.get("note"),
             "png_sha256": f.get("png_sha256"),
             "filed_on": f.get("filed"),
+            # The Streifen-Befund's measurement, as `apply` read it off the
+            # crop. Numbers, never pixels — the suggestion and the rank are
+            # derived on the server exactly as they are in the terminal.
+            "befund": f.get("befund"),
             # The effective setup of THIS row, as the Siebung recorded it.
             **{key: (f.get("session") or {}).get(key) or None for key in ("feder", "tinte", "papier", "geraet")},
         }

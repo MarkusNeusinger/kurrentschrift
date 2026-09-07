@@ -77,6 +77,7 @@ from api.auth import require_admin
 from api.dependencies import require_db
 from api.schemas import (
     EigenhandArchiveOut,
+    EigenhandBefundOut,
     EigenhandBestandOut,
     EigenhandHandsOut,
     EigenhandSetupIn,
@@ -97,6 +98,7 @@ from api.schemas import (
 )
 from core.database import EigenhandRepository
 from core.eigenhand import bogen, coverage, crop, geometry
+from core.eigenhand.befund import befund_index
 from core.eigenhand.bestand import bestand as build_bestand
 from core.eigenhand.ids import STYLE_IDS, is_fassung_id, is_hand_id, is_sheet_id, is_strip_id, style_of_hand
 from core.eigenhand.plan import load_plan, shaping_form_of, words_of
@@ -518,6 +520,7 @@ async def record_fassungen(body: EigenhandSyncIn, db: AsyncSession = Depends(req
             tinte=item.tinte,
             papier=item.papier,
             geraet=item.geraet,
+            befund=item.befund,
         )
         recorded += 1
     await db.commit()
@@ -571,6 +574,7 @@ async def read_archive(hand: str, db: AsyncSession = Depends(require_db)) -> Eig
                 "tinte": row.tinte,
                 "papier": row.papier,
                 "geraet": row.geraet,
+                "befund": row.befund,
             }
             for row in await repo.fassungen_of(hand)
         ],
@@ -655,6 +659,13 @@ async def list_strips(
     the view's way from a cell of the coverage grid to the written evidence.
     The match is at strip level; which boxes match is left to the caller,
     who has every box's items.
+
+    Every row also carries its Streifen-Befund, DERIVED here from the stored
+    measurements of the WHOLE hand (`core.eigenhand.befund`): the rank of a
+    Fassung is its place among the accepted Fassungen of its strip, and the
+    pen it is called thin or thick against is this hand's own median — neither
+    of which a single row can know about itself. That is also why nothing of
+    it is stored: both change the moment a new Fassung arrives.
     """
     _checked_hand(hand)
     if strip is not None and not is_strip_id(strip):
@@ -668,10 +679,13 @@ async def list_strips(
     # the server list a strip in which the view then finds no matching box.
     needle = wort.lower() if wort else None
     plan = load_plan()
-    rows = await EigenhandRepository(db).strips_of(hand, strip)
+    repo = EigenhandRepository(db)
+    rows = await repo.strips_of(hand, strip)
+    style = style_of_hand(hand) or ""
+    befunde = befund_index(await repo.kartei(hand, style)) if rows else {}
     out = []
     for row in rows:
-        stated = _strip_out(row, plan)
+        stated = _strip_out(row, plan, befunde)
         if needle is not None and not any(needle in box.word.lower() for box in stated.boxes):
             continue
         if item is not None and not any(coverage.matches_item(item, box.items) for box in stated.boxes):
@@ -680,9 +694,10 @@ async def list_strips(
     return EigenhandStripListOut(hand=hand, strips=out)
 
 
-def _strip_out(row, plan: dict | None = None) -> EigenhandStripOut:
+def _strip_out(row, plan: dict | None = None, befunde: dict | None = None) -> EigenhandStripOut:
     """One strip row as the API states it — metadata, words, never the bytes."""
     words = words_of(plan, row.strip) if plan and row.strip in plan["strips"] else []
+    found = (befunde or {}).get(row.strip, {}).get(row.fassung)
     return EigenhandStripOut(
         strip=row.strip,
         fassung=row.fassung,
@@ -699,6 +714,7 @@ def _strip_out(row, plan: dict | None = None) -> EigenhandStripOut:
             EigenhandStripBoxOut(index=index, word=word, items=coverage.word_items(shaping_form_of(plan, word)))
             for index, word in enumerate(words)
         ],
+        befund=EigenhandBefundOut(**found.as_dict()) if found else None,
     )
 
 

@@ -37,6 +37,7 @@ import numpy as np
 from PIL import Image
 from skimage import transform
 
+from core.eigenhand.befund import INK_THRESHOLD, printed_geometry_mask
 from core.extract import load_grayscale
 from tools.eigenhand.fiducial import FiducialError, check_mark_size, detect_fiducials, orient_corners
 from tools.eigenhand.store import WORK_DPI, load_setup
@@ -55,8 +56,10 @@ ROW_PAD_MM = 2.0
 # on the writing band only (printed text must not fake ink flags).
 STRIP_X0_MM = 1.0
 STRIP_LABEL_BELOW_MM = 5.0
-LINE_MASK_MM = 0.4  # printed-geometry mask half-width for the QC ink measure
-INK_THRESHOLD = 0.55  # grayscale below this counts as ink for the QC flags
+# `INK_THRESHOLD` (grayscale below this is ink) and `LINE_MASK_MM` (the
+# printed-geometry mask half width) are imported from `core.eigenhand.befund`:
+# the QC here and the Befund on the filed strip have to read the same ink, and
+# two thresholds for "this is ink" is one threshold too many.
 # The rulings are printed in pale cyan (geometry.CAPTURE_STYLES). Cyan's blue
 # component is nearly paper (0.93), so the blue channel of a COLOUR capture is
 # the plane on which the guide lines are faintest — the right plane for
@@ -162,24 +165,14 @@ def rectify(gray: np.ndarray, layout: dict) -> tuple[np.ndarray, float, dict[str
 
 
 def _printed_mask(shape: tuple[int, int], row: dict, x0_px: int, y0_px: int) -> np.ndarray:
-    """True where the crop shows PRINTED geometry (guide lines, box edges, row id)."""
-    mask = np.zeros(shape, dtype=bool)
-    band = row["band_mm"]
-    half = _px(LINE_MASK_MM)
-    # Everything above the ascender line is printed matter, not handwriting:
-    # that frame carries the strip id sheet.py prints in the Schnittband's top
-    # pad. Counting its pixels would fake ink and suppress the `leer` flag.
-    above_band = _px(band["asc_top"]) - y0_px - half
-    if above_band > 0:
-        mask[:above_band, :] = True
-    for box in row["boxes"]:
-        bx0, bx1 = _px(box["x0_mm"]) - x0_px, _px(box["x1_mm"]) - x0_px
-        for y_mm in (band["asc_top"], band["waist"], band["baseline"], band["desc_bot"]):
-            y = _px(y_mm) - y0_px
-            mask[max(0, y - half) : y + half + 1, max(0, bx0 - half) : bx1 + half + 1] = True
-        for x in (bx0, bx1):
-            mask[:, max(0, x - half) : x + half + 1] = True
-    return mask
+    """True where the crop shows PRINTED geometry (guide lines, box edges, row id).
+
+    The construction lives in `core.eigenhand.befund` so the Befund masks the
+    printed frame exactly as the QC does — everything above the ascender line
+    is printed matter (the strip id in the Schnittband's top pad), and counting
+    its pixels would fake ink on either side.
+    """
+    return printed_geometry_mask(shape, row, x0_px, y0_px, PX_PER_MM)
 
 
 def qc_flags(crop: np.ndarray, row: dict, x0_px: int, y0_px: int) -> list[str]:

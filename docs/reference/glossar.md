@@ -75,11 +75,11 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Sensor §4 · Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
-- **V** — Variante §2 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschub-Kalibrierung §2 · Vorschrift §1
+- **V** — Variante §2 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschlag (Streifen-Befund) §5 · Vorschub-Kalibrierung §2 · Vorschrift §1
 - **W** — W1–W6 §5 · Wackler §4 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Tintenlücke §2 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zeichenbreiten-Mittel (`AVG_ADVANCE_UNITS`) §7 · Zeilen-Gate (Laufform) §2 · Zeilenmarke §7 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · zonale Rückweisung (`zonal`) §3 · „Zug um Zug“ §7 · Zwei Stillen (Leerzustands-Regel) §5 · Zwei-Drittel-Gesetz §6 · Zwei-Züge-Modell §4 · Zögling (geplant) §4
@@ -3682,6 +3682,44 @@ Untergrenze 3 — es misst die Ausbau-Quote).
 `universe --push` in der DB liegen), `tools/eigenhand/pool.py::soll_model`
 über `coverage.soll_from_weights`.
 → proposals/eigenhand-erfassung.md §7
+
+**Streifen-Befund** — was EINE geschriebene Fassung über sich sagt, in
+Zahlen, plus ein **Vorschlag** und der EINE Grund, der ihn dominiert
+(Autor-Frage 2026-09-07: dürfen auch unfertige Streifen hoch? Ja — mit der
+Schleife schreiben → scannen → Befund → Haken → das Schwächste neu
+schreiben). Sechs Felder, alle an der TINTE gemessen, weil der
+Fit-Anschluss Phase 5 ist: `nib` (Median-Halbbreite auf der Mittellinie,
+gegen die Tafelfeder 0,0968 UND gegen den eigenen Median der Hand),
+`unstetigkeit` (Knick · Wackler · Bogen · Krümmungsverlust, die
+eingefrorene #558-Arithmetik je Schreibzug), `kringel` (die
+eingeschlossenen Löcher gegen die Kringel-Landmarke — ein `offen`
+zugelaufener Kringel ist ein Verlust, ein `wechselnd` nicht, ein `punkt`
+nie), `duktus` (Körper-Züge gegen die Zahl, in die die Schrift das Wort
+verbindet), `deckung` (Tinte im Band, über/unter der Lineatur, Schwärzung)
+und `lesbarkeit` (die §5-FÖRMIGE Zusammenfassung `100 · G^0,5 · N`, die
+allein die Reihenfolge macht). **Nichts verwirft automatisch** — der Haken
+auf dem Blatt bleibt das Urteil, und „ersetzt durch F0n" heißt nur, dass
+eine spätere Fassung sauberer ausfiel; aus den Trainingsdaten nimmt eine
+Fassung nur `redo --retire`. Gespeichert wird nur die MESSUNG
+(`eigenhand_fassungen.befund`, Migration `0029`); Vorschlag, Grund, Güte
+und Rang entstehen beim Lesen, wie `strip_state`. Keine Bench-Kopfzahl
+liest daraus (Prüfstein 2).
+*Technisch:* `core/eigenhand/befund.py` (`measure_strip` misst,
+`befund`/`befunde_of_strip`/`befund_index` leiten ab), gemessen in
+`tools/eigenhand/apply.py`, gedruckt von `tools/eigenhand/report.py
+--befund`, hochgeschoben von `sync.py`, gezeigt als Chips in
+`/admin/eigenhand`.
+→ proposals/eigenhand-erfassung.md §7.3
+
+**Vorschlag (Streifen-Befund)** — die dreistufige Empfehlung eines
+Streifen-Befunds: `sauber` (nichts fällt auf) · `brauchbar` (etwas fällt
+auf, taugt aber) · `neu schreiben` (einen Bogen wert). Sie folgt der
+SCHWERSTE der gefundenen Auffälligkeiten, und bei Gleichstand entscheidet
+eine feste Rangfolge der Gründe — „Strichfolge weicht ab" vor „Kringel zu"
+vor „läuft aus der Zeile" vor „Knick im Übergang" vor „wackelig" vor „zu
+blass" vor „Feder zu dünn/dick": Duktus-Treue schlägt Glätte, weil der
+Tintenfolger zuerst die richtige Topologie braucht. Ein Vorschlag ist nie
+ein `status`. → proposals/eigenhand-erfassung.md §7.3
 
 **Eigenhand-Buchführung** — die Hälfte der Streifenkartei, die in der
 GETEILTEN Datenbank liegt: welche Bögen gedruckt sind (mit ihrem Layout)

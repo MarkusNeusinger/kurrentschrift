@@ -1242,6 +1242,10 @@ class EigenhandFassungIn(BaseModel):
     tinte: str | None = None
     papier: str | None = None
     geraet: str | None = None
+    # The Streifen-Befund's MEASUREMENT, computed locally where the pixels are.
+    # Numbers only — the suggestion, its reason and the rank are derived on
+    # read, so nothing that can go stale is ever stored.
+    befund: dict[str, Any] | None = None
 
 
 class EigenhandSyncIn(BaseModel):
@@ -1340,6 +1344,30 @@ class EigenhandStripBoxOut(BaseModel):
     items: list[str]
 
 
+class EigenhandBefundOut(BaseModel):
+    """One Fassung's verdict sheet, as the workbench shows it.
+
+    A SUGGESTION and never a status: the tick on the paper and the Siebung stay
+    the verdict. Everything here is derived on read from the stored measurement
+    — including `rang` among the strip's accepted Fassungen and `abgeloest_von`,
+    the later Fassung that scores better — so a rank cannot go stale and a
+    replacement suggestion cannot become a retirement.
+    """
+
+    vorschlag: Literal["sauber", "brauchbar", "neu schreiben"]
+    grund: str
+    guete: float
+    nib: dict[str, Any] = {}
+    unstetigkeit: dict[str, Any] = {}
+    kringel: dict[str, Any] = {}
+    duktus: dict[str, Any] = {}
+    deckung: dict[str, Any] = {}
+    lesbarkeit: dict[str, Any] = {}
+    rang: int | None = None
+    von: int | None = None
+    abgeloest_von: str | None = None
+
+
 class EigenhandStripOut(BaseModel):
     """One stored strip — metadata only; the pixels come from the image route."""
 
@@ -1355,6 +1383,7 @@ class EigenhandStripOut(BaseModel):
     bytes: int
     words: list[str] = []
     boxes: list[EigenhandStripBoxOut] = []
+    befund: EigenhandBefundOut | None = None
 
 
 class EigenhandStripListOut(BaseModel):

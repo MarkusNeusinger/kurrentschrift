@@ -21,6 +21,14 @@
 // with the letter somewhere inside; cutting a word into its glyphs is the
 // Tintenfolger's job (Phase 5), not the Kartei's. Every image takes the shared
 // zoom, and a click opens it in the Lupe at any magnification.
+//
+// Since the Streifen-Befund (owner, 2026-09-07) every Fassung also carries its
+// verdict sheet: the suggestion, the ONE reason that dominates it and its rank
+// among the Fassungen of the same strip. It is a SUGGESTION — the tick on the
+// paper stays the verdict, nothing here rejects anything, and „ersetzt durch
+// F0n" says a later Fassung came out cleaner, not that this one stopped
+// counting. Sorting by it turns the panel into the rewrite list: weakest
+// first, which is the question „what do I write again" made clickable.
 
 import {
   Alert,
@@ -46,10 +54,11 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 
 import { fetchEigenhandStrip, getEigenhandStrips } from '@/lib/api';
-import type { EigenhandStrip, EigenhandStripBox, EigenhandStripFilter } from '@/lib/api';
+import type { EigenhandBefund, EigenhandStrip, EigenhandStripBox, EigenhandStripFilter } from '@/lib/api';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
+import { VORSCHLAG_COLOR, byBefund } from '@/sections/admin/eigenhand/befundOrder';
 import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { Panel } from '@/sections/admin/shell/Panel';
@@ -177,6 +186,58 @@ interface LupeTarget {
   heightPx: number;
 }
 
+function num(value: unknown, digits = 1): string {
+  return typeof value === 'number' ? value.toFixed(digits) : '–';
+}
+
+/**
+ * One Fassung's verdict sheet as chips: the suggestion, the dominant reason,
+ * the rank among its strip's Fassungen, and — where a later Fassung came out
+ * cleaner — that it has been superseded. A Fassung filed before the Befund
+ * existed says so rather than showing a blank: a missing reading is not a bad
+ * reading, and it must not look like one.
+ */
+function BefundChips({ befund }: { befund: EigenhandBefund | null | undefined }) {
+  const t = de.admin.eigenhand;
+  if (!befund) {
+    return (
+      <Tooltip title={t.befundNoneHint}>
+        <Chip size="small" variant="outlined" label={t.befundNone} />
+      </Tooltip>
+    );
+  }
+  const tooltip = fmt(t.befundTooltip, {
+    guete: num(befund.guete),
+    feder: `${Math.round(Number(befund.nib?.zur_hand ?? 1) * 100)} %`,
+    knick: num(befund.unstetigkeit?.kink_max_deg),
+    knicke: String(befund.unstetigkeit?.kink_count ?? 0),
+    wackler: num(befund.unstetigkeit?.wobble),
+    kringel: String((befund.kringel?.zu as number | undefined) ?? 0),
+  });
+  return (
+    <>
+      <Tooltip title={tooltip}>
+        <Chip size="small" color={VORSCHLAG_COLOR[befund.vorschlag]} label={befund.vorschlag} />
+      </Tooltip>
+      <Chip size="small" variant="outlined" label={befund.grund} />
+      {befund.rang !== null && befund.von !== null && befund.von > 1 && (
+        <Chip size="small" variant="outlined" label={fmt(t.befundRank, { rang: befund.rang, von: befund.von })} />
+      )}
+      {befund.abgeloest_von && (
+        <Tooltip title={t.befundReplacedHint}>
+          <Chip
+            size="small"
+            variant="outlined"
+            color="info"
+            label={fmt(t.befundReplaced, { fassung: befund.abgeloest_von })}
+          />
+        </Tooltip>
+      )}
+    </>
+  );
+}
+
+
 /** A strip or word image at the shared zoom; a click hands it to the Lupe. */
 function StripImage({
   url,
@@ -245,6 +306,7 @@ function StripTile({
           })}
         </Typography>
         {loading && <CircularProgress size={14} />}
+        <BefundChips befund={row.befund} />
         <Box sx={{ flexGrow: 1 }} />
         {open ? (
           <Button size="small" onClick={() => setOpen(false)}>
@@ -418,6 +480,10 @@ export function StripsPanel({
   const [lupe, setLupe] = useState<LupeTarget | null>(null);
   const [query, setQuery] = useState(filter.wort ?? '');
   const [shownCount, setShownCount] = useState(PAGE);
+  // Off by default: the listing's own order (strip, then Fassung) is what one
+  // reads when looking for a particular row. The Befund order answers the
+  // other question — what to write again — and is one click away.
+  const [byWeakest, setByWeakest] = useState(false);
   const filtered = Boolean(filter.wort || filter.item);
 
   // The search box debounces into the filter: every keystroke is otherwise a
@@ -468,6 +534,8 @@ export function StripsPanel({
   // strip the server listed always contributes — should the two halves of
   // the match ever disagree on a box, the whole row is shown rather than
   // nothing, because hiding evidence the server found is the worse error.
+  const listed = useMemo(() => (byWeakest ? [...strips].sort(byBefund) : strips), [strips, byWeakest]);
+
   const belege = useMemo(
     () =>
       filtered
@@ -491,6 +559,13 @@ export function StripsPanel({
       caption={caption}
       actions={
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}>
+          <Tooltip title={t.befundSortHint}>
+            <FormControlLabel
+              control={<Switch size="small" checked={byWeakest} onChange={(e) => setByWeakest(e.target.checked)} />}
+              label={<Typography variant="caption">{t.befundSort}</Typography>}
+              sx={{ mr: 0 }}
+            />
+          </Tooltip>
           <Tooltip title={t.stripNoRulingsHint}>
             <FormControlLabel
               control={
@@ -588,7 +663,7 @@ export function StripsPanel({
           )}
         </>
       ) : (
-        strips.map((row) => (
+        listed.map((row) => (
           <StripTile
             key={`${hand}/${row.strip}/${row.fassung}`}
             hand={hand}

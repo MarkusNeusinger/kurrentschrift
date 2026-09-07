@@ -505,6 +505,14 @@ Verbindungsenge — Ausfälle müssen zufällig sein, nicht selektiv.
 angenommenen Fassungen einer Hand; die Zähleinheit des Bestandsberichts.
 → [§5](glossar.md#5-werkbank-und-prozess)
 
+**Streifen-Befund** — was eine geschriebene Fassung über sich sagt: Feder,
+Unstetigkeit, Kringel, Duktus, Deckung, Lesbarkeit — plus ein **Vorschlag**
+(`sauber` · `brauchbar` · `neu schreiben`) und der eine Grund, der ihn
+dominiert. Verwirft nie etwas; der Haken auf dem Blatt bleibt das Urteil.
+Gespeichert wird nur die Messung, Vorschlag und Rang entstehen beim Lesen.
+`core/eigenhand/befund.py`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · eigenhand-erfassung.md §7.3
+
 ---
 
 ## 6 · Öffentliche Seiten
