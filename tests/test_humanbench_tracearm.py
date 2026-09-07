@@ -18,12 +18,14 @@ drifts, and the first witness is a judging session already paid for.
 
 from __future__ import annotations
 
+import argparse
 import json
+import random
 
 import numpy as np
 import pytest
 
-from tools.humanbench.build import Arm, ArmStroke, ArmWord, WordCase, _word_panel, draws_ink, load_arm
+from tools.humanbench.build import Arm, ArmStroke, ArmWord, WordCase, _word_panel, draws_ink, load_arm, run_word_round
 from tools.humanbench.tracearm import trace_words
 
 
@@ -61,6 +63,26 @@ def test_the_row_s_own_baseline_row_is_folded_into_ty():
     assert words["die-2"]["registration"] == {"xh_px": 33.0, "tx": 7.0, "ty": 6.0}
     # No baseline row of its own → the entry's, so the fold is exactly the row ty.
     assert words["auch"]["registration"] == {"xh_px": 30.0, "tx": 1.0, "ty": 0.0}
+
+
+def test_the_nested_measurements_shape_of_the_candidate_contract_is_read():
+    """`candidates.file_provider` takes `registration_px`/`xh_px` under
+    `measurements` OR at the row's top level, and both shapes are produced in
+    this repo (the ink-follower flat, `tools/inkpilot` nested). Reading only one
+    would drop every row of the other as „no xh_px" from a valid file."""
+    nested = {
+        "frame": "word_registration",
+        "rows": [
+            {
+                "specimen_id": "die-2",
+                "measurements": {"registration_px": {"tx": 7.0, "ty": 2.0, "baseline_row": 44.0}, "xh_px": 33.0},
+                "strokes": [[[0.0, 0.0], [0.5, 1.0]]],
+            }
+        ],
+    }
+    words, skipped = trace_words(nested, BASELINES)
+    assert skipped == []
+    assert words["die-2"]["registration"] == {"xh_px": 33.0, "tx": 7.0, "ty": 6.0}
 
 
 def test_a_trace_arm_carries_no_stroke_width():
@@ -118,6 +140,37 @@ def test_an_all_zero_widths_array_leaves_the_panel_as_a_centerline():
     panel = _word_panel(arm, case, (0, 0, 90, 60), 2)
     assert "strokes" in panel
     assert "widths" not in panel and "fills" not in panel
+
+
+def test_a_composed_arm_against_a_trace_arm_is_refused(tmp_path):
+    """A mixed pair fails twice over: the page fades and uncases only ONE panel,
+    so the sides are readable at a glance, and one of them is asked a question a
+    centerline cannot answer. The scope check's neighbour, and equally an abort."""
+    root = tmp_path / "suetterlin" / "suetterlin-1922"
+    root.mkdir(parents=True)
+    (root / "manifest.json").write_text(json.dumps({"words": [], "exported_at": "x"}))
+    paths = []
+    for name, width in (("ink", 0.145), ("trace", 0.0)):
+        path = tmp_path / f"{name}.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "arm": name,
+                    "words": {
+                        "unter": {
+                            "registration": {"xh_px": 20.0},
+                            "strokes": [{"points": [[0, 0], [1, 1]], "width": width}],
+                        }
+                    },
+                }
+            )
+        )
+        paths.append(path)
+    args = argparse.Namespace(
+        fixtures=tmp_path, style="suetterlin", source_id="suetterlin-1922", word_arms=paths, strata=None
+    )
+    with pytest.raises(SystemExit, match="draws ink"):
+        run_word_round(args, seed=1, rng=random.Random(1))
 
 
 @pytest.mark.parametrize(

@@ -1204,8 +1204,15 @@ Gegenstand:
   eindeutige Fehler gibt, und ein Folger-Arm handelt von genau diesen. Sie
   ist deshalb **kein Schalter**: `build.py::draws_ink` liest an den Armen
   ab, ob überhaupt Tinte gezeichnet wird, und schreibt die Frage so in
-  Umschlag UND Stempel — ein Ergebnistext kann dann nicht behaupten, eine
-  Frage beantwortet zu haben, die die Runde nie gestellt hat (§7).
+  Umschlag UND Stempel; ein `--question` beim Rendern, das dem Umschlag
+  WIDERSPRICHT, wird abgelehnt (es bleibt für Payloads von vor Format 3).
+  Ein Ergebnistext kann damit nicht behaupten, eine Frage beantwortet zu
+  haben, die die Runde nie gestellt hat (§7).
+* **Beide Arme müssen dasselbe zeichnen.** Ein komponierter Arm gegen einen
+  Bahn-Arm bricht den Bau ab, wie die Referenz-Prüfung daneben: die Seite
+  verblasst und entcast dann nur EIN Panel, die Seiten wären also auf einen
+  Blick unterscheidbar — und einer der beiden bekäme eine Frage gestellt,
+  die er nicht beantworten kann.
 * **Die Anzeige ist die Mittellinie mit Casing über der UNVERBLASSTEN
   Platte** — die Anzeige der Buchstabenrunden 01/02 (§3.5). Sie stellt sich
   von selbst ein: die Seite liest an `fills`/`widths` ab, ob ein Panel Tinte

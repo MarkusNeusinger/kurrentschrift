@@ -1608,6 +1608,18 @@ def run_word_round(args: argparse.Namespace, seed: int, rng: random.Random) -> i
         )
     if not any(arm.meta.get(field) for arm in (base, candidate) for field in ARM_SCOPE):
         print("  WARNING: neither arm declares its style/source/fixture root — nothing to check them against")
+    # One composed arm against one trace arm is not a round, and it fails in two
+    # ways at once: the question (below) would be asked of a centerline that
+    # cannot answer it, and the page draws the two panels DIFFERENTLY — one
+    # faded and uncased, one not — so the sides are readable at a glance and the
+    # blindness §8 rests on is gone. Abort rather than warn, like the scope check.
+    if draws_ink(base) != draws_ink(candidate):
+        inked, plain = (base, candidate) if draws_ink(base) else (candidate, base)
+        raise SystemExit(
+            f"arm {inked.name!r} draws ink and arm {plain.name!r} draws a centerline — the page would render "
+            "the two panels differently, which makes the sides readable and asks one of them a question it "
+            "cannot answer. Produce both arms the same way (wordarm.py or tracearm.py)."
+        )
     strata = json.loads(Path(args.strata).read_text(encoding="utf-8")) if args.strata else None
     if isinstance(strata, dict) and isinstance(strata.get("strata"), dict):
         strata = strata["strata"]
@@ -1633,10 +1645,11 @@ def run_word_round(args: argparse.Namespace, seed: int, rng: random.Random) -> i
     ]
     stamp = provenance(args, mode="word", seed=seed, counts=counts, repeats=repeats, api_used=False, arms=arms)
     # §8: the question belongs in the RECORD, not only in the plan — and it is
-    # not a flag, because it follows from what the arms are. Ink can be asked
-    # whether it looks written; a centerline cannot, so a round of trace arms
-    # asks the accuracy question and its result file is tagged VERGLEICH.
-    stamp["question"] = "authentic" if draws_ink(base) or draws_ink(candidate) else "ink"
+    # not a flag here, because it follows from what the arms are. Ink can be
+    # asked whether it looks written; a centerline cannot, so a round of trace
+    # arms asks the accuracy question and its result file is tagged VERGLEICH.
+    # The two arms agree on this by the check in `run_word_round`.
+    stamp["question"] = "authentic" if draws_ink(base) else "ink"
     stamp["fixture_root"] = str(root)
     write_round(args.out, Round(items, key, reserve, stamp), force=args.force)
 

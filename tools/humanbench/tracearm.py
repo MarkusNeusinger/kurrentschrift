@@ -71,6 +71,12 @@ def trace_words(candidate: dict, baselines: dict[str, float]) -> tuple[dict[str,
     scorable entry of this root, or when it carries no registration to translate.
     Silence would shorten the round and still look complete — the same rule the
     builder applies to a word only one arm draws.
+
+    The registration is read the way ``candidates.file_provider`` reads it —
+    ``row["measurements"]`` first, the row's top level as the fallback — because
+    both shapes are the contract, not a preference: the ink-follower writes the
+    flat one and `tools/inkpilot` the nested one. Reading only the flat one would
+    drop every inkpilot row as „no xh_px" while the file itself is valid.
     """
     words: dict[str, dict] = {}
     skipped: list[str] = []
@@ -82,8 +88,9 @@ def trace_words(candidate: dict, baselines: dict[str, float]) -> tuple[dict[str,
         if entry_id not in baselines:
             skipped.append(f"{entry_id} (not a scorable entry of this root)")
             continue
-        registration = row.get("registration_px") or {}
-        xh_px = row.get("xh_px")
+        measurements = row.get("measurements") or {}
+        registration = measurements.get("registration_px", row.get("registration_px")) or {}
+        xh_px = measurements.get("xh_px", row.get("xh_px"))
         if not xh_px:
             skipped.append(f"{entry_id} (no xh_px)")
             continue
