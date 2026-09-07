@@ -68,7 +68,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kompromisswinkel §2 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5
-- **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
+- **L** — Labs §4 · Landmarken-Auftrag §5 · Landmarken-Erkennung §5 · Landmarken-Linse §5 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5 · Mittellinien-Öffnungsweite (`D0`) §4
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Nahtverhandlung (`seam_negotiation`) §2 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nullprobe §4
 - **O** — Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
@@ -1583,9 +1583,10 @@ Ein Buchstabe hat eine feste Struktur (Kringel, Kreuzung, Schale in fester
 Reihenfolge), und was je Vorkommen und je Übergang wandert, ist deren
 **Lage** — beim Sütterlin-`d` sitzt die Tinten-Kreuzung mit
 Folgebuchstaben 0,243 xh tiefer als am Wortende.
-*Technisch:* `tools/pairlab/landmarks.py` — `landmark_crossings`
+*Technisch:* `core/landmarks.py` — `landmark_crossings`
 (`LANDMARK_MIN_ANGLE_DEG`, `LANDMARK_MIN_ARC_SEPARATION_UNITS`,
-`LANDMARK_MERGE_RADIUS_UNITS`); ausdrücklich nicht
+`LANDMARK_MERGE_RADIUS_UNITS`), von `tools/pairlab/landmarks.py`
+unverändert re-exportiert; ausdrücklich nicht
 `core.geometry.detect_crossing_passages`, das dieselbe Erscheinung für die
 **Breiten**-Kontaminationsliste vermisst und keinen Schnittpunkt liefert
 → qualitaetsmetrik.md §13a
@@ -1837,7 +1838,9 @@ Nur eine geschlossene **offen**-Schleife ist ein Defekt. Der Sensor
 Tintenfolger-Report) ist **reine Report-Spalte** wie der
 Verschmelzungs-Anzeiger.
 *Technisch:* `size_class` / `loop_state` / `loop_apertures` in
-`tools/tracebench/kringel.py`, Katalogbau
+`core/landmarks.py` (von `tools/tracebench/kringel.py` re-exportiert;
+der Katalog selbst bleibt eine Datei des Messwerkzeugs und wird
+per Pfad gelesen), Katalogbau
 `tools/tracebench/kringelcat.py`; der raster-freie Zwilling des
 Schleifenfinders ist `core/aggregate.py::loop_ranges`
 (→ **Schleifenbereich**). → messjournal.md §14 („Kringel-Landmarke
@@ -2688,7 +2691,8 @@ Selbstschnitt eines Hin-und-zurück-mit-Ablösung, keine
 Struktur-Kreuzung; für antiparallel-benachbarte Paare liegt der
 effektive Boden damit bei der Detektor-Toleranz 25°. Gezählt werden
 Kreuzungs-ORTE, nicht -Ereignisse. *Technisch:*
-`tools/tracebench/counters.py::_pierces`, Konstanten
+`core/landmarks.py::_pierces` (von `tools/tracebench/counters.py`
+re-exportiert), Konstanten
 `PIERCE_WINDOW_UNITS`/`PIERCE_MARGIN_UNITS`/`CROSS_PARTNER_NEAR_UNITS`
 → messjournal.md §14 (Struktur-Zähler v2 + Nachtrag v2.1)
 
@@ -2701,7 +2705,8 @@ Retrace und Überlagerung (Partner im anderen Strich), nie Teil eines
 Loss; auf der Duell-Seite gepunktet gezeichnet. Die v1-„erfundenen
 Retraces" der Kette waren überwiegend erfundene Berührungen — die
 Komposition schreibt Buchstaben zu eng aneinander vorbei.
-*Technisch:* `tools/tracebench/counters.py::structure_zones`,
+*Technisch:* `core/landmarks.py::structure_zones` (von
+`tools/tracebench/counters.py` re-exportiert),
 `RETRACE_MAX_PARTNER_GAP_UNITS`
 → messjournal.md §14 (Struktur-Zähler v2)
 
@@ -3130,6 +3135,48 @@ Bestimmtes markiert. Läuft dasselbe Protokoll, nur ohne Pflicht-`stage`:
 das Stufen-Vokabular benennt Stufen des Schreibwegs. →
 optimierungs-werkbank.md §5
 
+**Landmarken-Linse** — die Ebene der Buchstaben-Ansicht, die zeigt, WAS die
+Struktur-Erkennung in einem Buchstaben sieht, und zwar auf der
+geschriebenen Form statt in einer Tabelle: Kreuzung als Ring, Retrace-Zone
+als Band entlang der Bahn, Absetzen als Strich, Umkehrecke als Quadrat,
+Kringel als Kreis im Maß seiner **Öffnungsweite `D0`**, Verschmelzung als
+schraffiertes Band. Grund für die Fläche (Autor-Wunsch 2026-09-07): Die
+Landmarken tragen den Duktus-Soll, den Tintenfolger-Zähler und den
+Kringel-Katalog — und waren bis dahin nur im Messlauf sichtbar. Wer den
+Duktus autort, konnte nicht sehen, ob die Erkennung ihn richtig liest.
+Gezeichnet werden **dieselben Erkenner**, mit denen die Bench misst; der
+einzige Griff der Linse ist ⚑ (→ **Landmarken-Auftrag**), denn die
+Landmarken-Ebene ist GENERIERT und fällt damit unter „nur bemängeln“ der
+Stufen-Doktrin.
+*Technisch:* `core/landmarks.py` (die gemeinsame Heimat der Erkenner, aus
+`tools/pairlab/landmarks.py`, `tools/tracebench/counters.py` und
+`tools/tracebench/kringel.py` hierher gezogen, weil `api/` nicht `tools/`
+importieren darf), Route `GET
+/sources/{id}/templates/{glyph_key}/landmarks`, SPA
+`sections/admin/letters/LandmarkPanel.tsx` + `LandmarkOverlay.tsx`.
+→ optimierungs-werkbank.md §8
+
+**Landmarken-Auftrag** *(`work_items.kind = "landmark"`)* — die fünfte
+Korb-Ebene: eine Beschwerde über EINE erkannte Struktur eines Buchstabens
+(„hier fehlt eine Kreuzung“, „der Kringel ist falsch klassiert“, „hier ist
+keine Ecke“). Sie trägt den `glyph_key` wie ein Buchstaben-Auftrag — die
+Landmarken-Ebene ist aus genau dieser Zeile abgeleitet, eine zweite
+Schlüsselspalte wäre ein zweiter Name für dasselbe —, und WELCHE Landmarke
+mit welchen Zahlen gemeint ist, schreibt die Linse selbst in die ersten
+zwei Zeilen der Notiz: Zeile 1 die Identität (`Landmarke: Kringel #1
+(loop#1) · d · Tafel-Duktus (Variante 0)`), Zeile 2 die gemessenen Werte.
+Darunter steht, was der Autor sieht. Die **Stelle ohne Marke** ist der
+Sonderfall ohne Index: ein Klick ins Leere meldet, dass an dieser Stelle
+eine Marke FEHLT — die Beschwerde, die eine reine Marker-Fläche nicht
+annehmen könnte. → optimierungs-werkbank.md §8
+
+**Landmarken-Erkennung** *(`stage = "landmark_detector"`)* — die einzige
+Stufe des Korb-Vokabulars, die KEINEN Schritt des Schreibwegs benennt: der
+Buchstabe war richtig, der Erkenner falsch. Sie steht in der Triage-Reihe
+zuletzt vor `not_reproducible`, weil die Reihenfolge auch hier gilt — erst
+fragen, ob der autorierte Duktus stimmt, dann den Sensor verdächtigen, der
+ihn liest. → optimierungs-werkbank.md §8
+
 **Auftragskorb-Protokoll** — der Rest ist Protokoll, und die API
 **erzwingt** es (`check_transition`, 422 bei unvollständigem Abschluss):
 
@@ -3141,8 +3188,9 @@ optimierungs-werkbank.md §5
   aufgetreten? („Nachprüfen, nicht nacherzählen.“)
 - **`stage`** — die *diagnostizierte* Stufe aus einem geschlossenen
   Vokabular: `chart_ductus` · `laufform` · `join_rule` · `composition` ·
-  `pair_override` · `word_trace` · `not_reproducible`. Ein geschlossenes
-  Vokabular macht aus dem Archiv eine Abfrage statt einer Lesearbeit.
+  `pair_override` · `word_trace` · `landmark_detector` ·
+  `not_reproducible`. Ein geschlossenes Vokabular macht aus dem Archiv eine
+  Abfrage statt einer Lesearbeit.
 - **`resolution`** — Stufe, Änderung, PR, Messstand. Querverweis-Regel: die
   `resolution` nennt die PR, die PR-Beschreibung nennt `Korb #<id>`.
 

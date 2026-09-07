@@ -186,6 +186,52 @@ async def test_quality_409_without_pixel_meta_then_scores_after_trace(api: Harne
     assert out["candidate"] is not None  # raw_path present → dry-run re-derivation ran
 
 
+# -------------------------------------------------------------- landmarks lens
+
+
+async def test_landmarks_404_without_canonical_and_401_without_the_token(api: Harness):
+    _, source_id = await api.seed_style_and_source()
+    path = f"/sources/{source_id}/templates/n/landmarks"
+
+    # The gate comes BEFORE the missing row: a reserved read never leaks that a
+    # glyph does or does not exist (quellen-und-rechte.md §5).
+    assert (await api.client.request("GET", path)).status == 401
+
+    res = await api.client.request("GET", path, headers=api.admin_headers())
+    assert res.status == 404
+
+
+async def test_landmarks_returns_both_stored_rows_with_their_structures(api: Harness):
+    style_id, source_id = await api.seed_style_and_source()
+    # A lasso: the row runs out along the baseline, up and back over itself, so
+    # it crosses its own opening chord and encloses a square.
+    lasso = [[0.0, 0.0], [0.4, 0.0], [0.8, 0.0], [0.8, 0.5], [0.8, 1.0], [0.4, 1.0], [0.4, 0.5], [0.4, -0.4]]
+    await api.seed_template(style_id, source_id, "d", "d", anchors=lasso, trace_meta={"corner_anchors": [3]})
+    await api.seed_template(style_id, source_id, "d", "d", variant=100, anchors=lasso)
+
+    res = await api.client.request("GET", f"/sources/{source_id}/templates/d/landmarks", headers=api.admin_headers())
+    assert res.status == 200, res.body
+    # A gated read is never cacheable anywhere (api/http.py NO_STORE).
+    assert res.headers["cache-control"] == "private, no-store"
+    out = res.json()
+    assert out["glyph_key"] == "d"
+    # Both stored rows in ONE read — the lens toggles between them.
+    assert [row["variant"] for row in out["rows"]] == [0, 100]
+
+    chart = out["rows"][0]
+    kinds = {lm["kind"] for lm in chart["landmarks"]}
+    assert {"crossing", "loop", "corner"} <= kinds
+    crossing = next(lm for lm in chart["landmarks"] if lm["kind"] == "crossing")
+    assert crossing["numbers"]["self_crossing"] is True
+    loop = next(lm for lm in chart["landmarks"] if lm["kind"] == "loop")
+    assert loop["numbers"]["d0"] > 0.0
+    # A test style/source is not the catalogue's hand, so no verdict is
+    # claimed: the catalogue belongs to ONE hand with ONE pen, and matching on
+    # the script alone would hand a second Sütterlin chart this hand's verdicts.
+    assert out["catalogue"]["available"] is False
+    assert loop["numbers"]["state"] == "unbekannt"
+
+
 async def test_fit_404_without_canonical(api: Harness, synthetic_chart_path: str):
     _, source_id = await api.seed_style_and_source(chart_path=synthetic_chart_path)
     await api.client.request(

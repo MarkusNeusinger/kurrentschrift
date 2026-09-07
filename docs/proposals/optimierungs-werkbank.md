@@ -1,13 +1,16 @@
 # Optimierungs-Werkbank 2026-07-31 — eine Admin-Fläche, Stufen-Doktrin, Auftragskorb
 
-> **Status (2026-09-03): bindend.** W1–W5 sind umgesetzt
+> **Status (2026-09-07): bindend.** W1–W6 sind umgesetzt
 > (PR #252 · #255 · #261 · #264 · #266); §3–§5 **und §6** sind bindende
 > Doktrin, §3–§5 werden seit W4 von der API erzwungen
 > (`check_transition`) — deshalb „bindend" und nicht
 > „umgesetzt-historisch": dieses Doc bleibt Pflichtlektüre vor jeder
-> Korb-Arbeit (`/work-basket`). Jüngster Zusatz: die Sperr-Doktrin in §6
-> (Autor-Entscheid 2026-09-03) — die Sperre ist eine Warnung mit
-> Rückfrage, kein Riegel.
+> Korb-Arbeit (`/work-basket`). Jüngste Zusätze: die **Landmarken-Linse**
+> in §8 (Autor-Wunsch 2026-09-07) — die generierte Struktur-Ebene wird auf
+> der geschriebenen Form sichtbar und bekommt mit `kind = "landmark"` eine
+> fünfte Korb-Ebene und mit `landmark_detector` eine achte Stufe im
+> §5-Vokabular —, davor die Sperr-Doktrin in §6 (Autor-Entscheid
+> 2026-09-03): die Sperre ist eine Warnung mit Rückfrage, kein Riegel.
 > Das in §2/§6 angekündigte Aufgehen von `/admin/vergleich`, `/admin/paare`
 > und `/admin/belege` in der Werkbank ist mit dem Admin-Redesign
 > („aus einem Guss", 2026-08) vollzogen: der ganze Admin IST jetzt die
@@ -111,6 +114,11 @@ Wizard-/Editor-Absprung vor.
 Ziel-Schlüssel + Specimen-Bezug (wo gesehen) + freie Notiz. Status
 `open`. Mehr ist nicht gefordert.
 
+**Fünfte Ebene `landmark`:** eine Beschwerde über EINE erkannte Struktur
+eines Buchstabens. Sie trägt den `glyph_key` wie ein Buchstaben-Eintrag,
+und welche Landmarke gemeint ist, schreibt die Linse in die ersten zwei
+Zeilen der Notiz — Einzelheiten und Begründung in §8.4.
+
 **Vierte Ebene `note`:** ein Eintrag ganz ohne Ziel — eine allgemeine
 Kleinigkeit (eine Admin-UI-Falte, ein schiefes Wort in der Oberfläche,
 ein „später ansehen"), die zu keiner Glyphe gehört und für die sich ein
@@ -139,7 +147,9 @@ Wissen weggeworfen.
 
 `stage` kommt aus dem festen Vokabular der §3-Tabelle, in der
 Triage-Reihenfolge: `chart_ductus` · `laufform` · `join_rule` ·
-`composition` · `pair_override` · `word_trace` — plus
+`composition` · `pair_override` · `word_trace` — dann
+`landmark_detector` (§8.4: der Buchstabe stimmte, der Erkenner nicht; die
+einzige Stufe, die keinen Schritt des Schreibwegs benennt) — plus
 `not_reproducible`, das ehrliche Ergebnis, wenn die Beschwerde nicht
 auftrat. Ein geschlossenes Vokabular macht aus dem Archiv eine Abfrage
 („welche Stufe verursacht die meisten Aufträge?") statt einer Lesearbeit.
@@ -366,3 +376,172 @@ vom Symptom zur Änderung und zurück.
   Probe wird darum markiert, nicht stillschweigend größer geschnitten —
   ein anderes Rechteck wäre ein Re-Baseline des Wort-Benchs
   (`messjournal.md` §14) und braucht dessen Verfahren.
+
+## 8. Landmarken-Linse — die generierte Struktur wird sichtbar
+
+**Autor-Wunsch, 2026-09-07:** „Im Admin-Bereich sollte bei den Tafeln
+jeweils pro Buchstabe angezeigt werden, was für Landmarks es gibt, mit
+sichtbaren Markierungen, wo genau Kreuzung, Kringel … erkannt wurde, damit
+ich das sehe und per Korb bemängeln kann, wenn mir was auffällt."
+
+Die Lücke, die er benennt, ist eine Doktrin-Lücke. Ein Buchstabe hat eine
+feste **Struktur** — eine Schleife hier, eine Kreuzung dort, ein Stück, das
+die Feder zweimal schreibt —, und die ist eine Duktus-Tatsache und keine
+freie Variable irgendeines Fits (§3). Gemessen wurde sie längst: die
+Tintenfolger-Zähler erkennen sie auf beiden Seiten eines Duells, der
+Kringel-Katalog schreibt je Schleife fest, ob die Platte sie offen hält,
+der Duktus-Soll stellt die Erwartung daneben. **Sichtbar war sie nur im
+Messlauf.** Wer den Duktus autort, sah nie, ob die Erkennung ihn richtig
+liest — und die Ebene, die nach §3 ausschließlich bemängelt werden darf,
+war die einzige, die man nicht anschauen konnte.
+
+### 8.1 Was die Linse zeigt
+
+In der Buchstaben-Ansicht (`/admin/buchstaben?g=<key>`) steht unter „Wie es
+geschrieben wird“ ein Schalter **Landmarken**. Aufgeklappt zeichnet er die
+erkannten Strukturen **auf die geschriebene Form** — nicht daneben, nicht
+in eine Tabelle:
+
+| Marke | Darstellung | Woher |
+|---|---|---|
+| **Kreuzung** | Ring am Punkt, Mittelpunkt gefüllt | `crossing_landmarks` — die durchstoßende Selbstkreuzung (§14 v2) |
+| **Retrace-Zone** | Band entlang der Bahn | `classified_pass_points`, Klasse `retrace` |
+| **Berührung** | dasselbe Band, gepunktet | Klasse `touch` — vorbei, nicht darüber |
+| **Verschmelzung** | schraffiertes Band | Klasse `overlap` — Partner im ANDEREN Federzug |
+| **Absetzen** | Strich am Wiederaufsetz-Punkt | `trace_meta.stroke_starts` |
+| **Umkehrecke** | Quadrat auf dem Anker | `trace_meta.corner_anchors` |
+| **Kringel** | Kreis im Maß der Öffnungsweite `D0` | `loop_apertures` + Katalog-Urteil |
+
+Jede Marke trägt ihre Zahlen (Kreuzungswinkel und die beiden Züge, die sich
+trafen; Bogenlänge einer Zone; `D0`, Größenklasse, Zustand, Platten-`D0`
+und Vorkommen einer Schleife) und ist anklickbar; die Legende ist zugleich
+der Filter je Klasse. Der Schalter **Tafel-Duktus ⇄ Laufform** zeigt
+dieselbe Ebene auf der jeweils anderen gespeicherten Zeile — beide kommen
+in EINEM Read, weil zwei Round-Trips zwei verschiedene Momente desselben
+Buchstabens zeigen würden.
+
+**Drei Dinge zeigt die Linse ausdrücklich, statt sie zu verschweigen:**
+
+1. Ein Buchstabe, in dem die Erkennung nichts findet, sagt das — statt als
+   leerer Buchstabe zu erscheinen.
+2. Eine Katalog-Schleife, der keine erkannte Schleife zugeordnet werden
+   konnte, bleibt als **unzugeordnete Zeile** stehen („Im Katalog, hier
+   nicht gefunden“), mit ihrer Klasse, ihrem Zustand und dem Hinweis „kein
+   Schleifenbereich erkannt“. Das **`t`** ist der stehende Fall: die Platte
+   hält drei Binnenflächen, der raster-freie Schleifenfinder
+   (`core/aggregate.py::loop_ranges`) hat für den Buchstaben überhaupt
+   keinen Bereich, und der Katalog trägt diese Uneinigkeit seit `sep06` in
+   seinem eigenen Kopf (`ductus_loops_per_glyph`). Nichts zu zeigen hieße
+   zu behaupten, der Buchstabe habe keinen Kringel.
+3. Fehlt der Kringel-Katalog für die gewählte Vorlage, kommen die
+   Schleifen ohne Urteil („unbekannt“) statt mit einem geratenen. Der
+   Katalog gilt nur, wo **beide** Hälften seines Kopfes passen — die
+   Schrift UND die Quelle, aus der seine Fixture-Wurzel exportiert wurde
+   (`measured_on[0].name`). Die Schrift allein genügt nicht: eine zweite
+   Sütterlin-Tafel wäre eine andere HAND unter demselben Skript und bekäme
+   stillschweigend die Urteile dieser hier.
+
+### 8.2 Die Route
+
+`GET /sources/{source_id}/templates/{glyph_key}/landmarks` — admin-gegatet
+aus demselben Open-Core-Grund wie die Roh-Zeile, aus der sie abgeleitet ist
+(`quellen-und-rechte.md` §5), damit `private, no-store` und im
+Public-Surface-Test als RESERVED festgenagelt. Antwort: `glyph_key`,
+`style_id`, ein `catalogue`-Block (welcher Katalog geantwortet hat oder
+warum keiner) und `rows` — Variante 0 und, wo vorhanden, Variante 100, je
+mit `landmarks` (Art · Index · Position · `numbers` · `points` einer Zone),
+`loop_ranges` und `unmatched_catalogue`. Alle Koordinaten in
+**Template-Einheiten** (Grundlinie 0, Mittelband 1, y nach oben), also im
+Rahmen, in dem die Seite den Buchstaben zeichnet.
+
+Gerechnet wird auf der **gerenderten** Geometrie
+(`render_payload_for_template`), nicht auf den gespeicherten Ankern: der
+Gleichzug-Weg weitet Rundformen zur Renderzeit (`_fluent_widen`), und eine
+Marke, die dort sitzt, wo die Tinte NICHT ist, ist schlechter als keine.
+Eine Folge davon gehört dazu gesagt: die Schleifenbereiche werden damit auf
+der gerenderten Zeile gezählt, wo der Katalog-Kopf sie auf der rohen
+Tafelzeile gezählt hat.
+
+### 8.3 Warum die Erkenner nach `core/` gezogen sind
+
+`core/`, `api/` und `alembic/` dürfen `tools/` nicht importieren — das
+API-Image liefert es nicht aus (`tests/test_imports.py`). Die Erkenner
+lagen aber genau dort. Sie sind deshalb **unverändert** nach
+`core/landmarks.py` gezogen worden, und die drei bisherigen Heimatmodule
+re-exportieren sie unter ihren alten Namen:
+
+- `tools/pairlab/landmarks.py` — die Selbstkreuzungen (§13a-Zensus);
+- `tools/tracebench/counters.py` — Durchstoß-Test und die
+  Retrace-/Berührungs-/Verschmelzungs-Klassifikation (§14 `aug16`);
+- `tools/tracebench/kringel.py` — Öffnungsweite, Größenklasse, Zustand,
+  Katalog-Leser (§14 `sep06`).
+
+Damit lesen Linse und Messlauf **dieselbe Funktion**, nicht zwei Kopien.
+Was in den Werkzeugen bleibt, ist, was nur ein Duell oder ein ganzes Wort
+braucht: die Match-Radien und die Eins-zu-eins-Zuordnung zweier
+Populationen, die Slot-Zerlegung eines komponierten Worts, die
+Bench-Zeilenfelder. **Jede Schwelle in `core/landmarks.py` ist eingefrorene
+Mess-Provenienz** — sie zu ändern justiert keinen Admin-Overlay, sondern
+setzt Tintenfolger und Kringel-Katalog neu auf.
+
+Der Katalog selbst bleibt, wo er gebaut wurde
+(`tools/tracebench/kringel_catalogue.json`), und wird per PFAD gelesen
+statt importiert; das API-Image kopiert die eine Datei mit, wie es die
+Quiz-Saat schon mitkopiert. Fehlt sie, kostet das die Urteilsspalte, nie
+die Antwort.
+
+Eine bewusste Ausnahme von „ein Detektor, eine Stelle“:
+`core.geometry.resample_by_step` ist ein Zwilling von
+`tools/tracebench/metric.py`, weil dieses Modul eine **festgenagelte
+Reinheitsklausel** trägt (das Lineal importiert nichts aus dem Projekt, das
+es benotet). Die beiden werden per Test byte-gleich gehalten — dasselbe
+Verfahren, mit dem `frames.DIACRITIC_MIN_Y` seine wiederholte Konstante
+absichert.
+
+### 8.4 Bemängeln — die fünfte Korb-Ebene
+
+Die Landmarken-Ebene ist **generiert**. Nach §3 heißt das: nur bemängeln,
+nie von Hand patchen — und die Linse trägt genau einen Griff, ⚑. Jede
+Marke bietet ihn, und die **fehlende** Marke bekommt ihn zweimal: ein
+Klick in den leeren Bereich des Buchstabens meldet die Stelle **mit ihrer
+Position**, der Knopf „Fehlende Marke melden“ unter dem Buchstaben meldet
+dasselbe **ohne** — und der Knopf ist nicht der Notnagel für die Maus,
+sondern der Weg der Tastatur. Beides ist die Beschwerde, die eine reine
+Marker-Fläche gar nicht annehmen könnte, und sie ist die häufigere Hälfte
+des Autor-Wunsches.
+
+**Die Ortsangabe ist optional, und zwar aus Ehrlichkeit.** Eine
+unzugeordnete Katalog-Schleife hat per Definition keinen erkannten Ort,
+und eine über die Tastatur gemeldete fehlende Marke auch nicht. Eine
+Pflicht-Koordinate hätte beide gezwungen, `(0, 0)` zu erfinden — und die
+Notiz hätte den Ursprung abgelegt, als wäre er gemessen worden. Fehlt sie,
+steht sie nicht da.
+
+Ein solcher Eintrag ist `kind = "landmark"` und trägt den `glyph_key` wie
+ein Buchstaben-Auftrag. **Keine eigene Spalte, keine Migration:** die
+Landmarken-Ebene ist aus genau dieser Zeile abgeleitet, eine zweite
+Schlüsselspalte wäre ein zweiter Name für dasselbe. WELCHE Landmarke mit
+welchen Zahlen gemeint ist, schreibt die Linse selbst in die ersten zwei
+Zeilen der Notiz — Zeile 1 die Identität, Zeile 2 die Messwerte:
+
+> ```
+> Landmarke: Kringel #0 (loop#0) · t · Tafel-Duktus (Variante 0)
+> x 0.3592 · y 0.4027 · d0 0.2475 · size_class klein · state offen · d0_plate 0.3761 · occurrences 9
+>
+> Der Kringel läuft hier fast zu — die Platte hält ihn offen.
+> ```
+
+Zeile 1 ist zugleich die Überschrift der Korb-Zeile, deshalb die Teilung:
+ein Auftrag, dessen ganze Identität in einer Wand aus Zahlen steckt, liest
+sich nicht. Der Korb verlinkt die Zeile auf ihren Buchstaben, und die API
+verlangt für `landmark` einen nichtleeren Notiztext — ein Auftrag, der
+nicht sagt, WELCHE Landmarke, ist unbearbeitbar.
+
+**Neue Stufe im §5-Vokabular: `landmark_detector`.** Sie benennt als
+einzige keinen Schritt des Schreibwegs, sondern den Ausgang „der Buchstabe
+war richtig, der Erkenner falsch“. Sie steht in der Triage-Reihe zuletzt
+vor `not_reproducible`, weil die Reihenfolge auch hier gilt: erst fragen,
+ob der autorierte Duktus stimmt (`chart_ductus` — und dann ist es eine
+**Rückgabe an den Autor**, kein Fix), dann die Laufform, dann die
+Klassenregel, und erst zuletzt den Sensor verdächtigen, der das alles
+liest.

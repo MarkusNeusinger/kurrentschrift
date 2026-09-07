@@ -43,7 +43,9 @@ import { joinsUrl, lettersUrl, wordsUrl } from '@/sections/admin/shell/focus';
 
 // "Buchstabe a" / "Übergang d→a" / "Wort einen" — the level plus its target.
 // A note has no target: its first line IS the headline, so a basket of notes
-// reads as what was noticed instead of a column of the word "Notiz".
+// reads as what was noticed instead of a column of the word "Notiz". A
+// landmark's headline is likewise its own first line — the lens wrote it, and
+// it already names which marker on which letter (§8).
 function workItemLabel(item: WorkItemOut): string {
   const t = de.admin.werkbank;
   if (item.kind === 'letter') return `${t.kindLetter} ${item.glyph_key ?? '?'}`;
@@ -51,13 +53,15 @@ function workItemLabel(item: WorkItemOut): string {
   // No `?? specimen_id` here: the row already appends the specimen id after the
   // label, so a word item filed by its specimen alone printed the id twice.
   if (item.kind === 'word') return `${t.kindWord} ${item.word ?? '?'}`;
-  return item.note.split('\n')[0].trim() || t.kindNote;
+  const firstLine = item.note.split('\n')[0].trim();
+  if (item.kind === 'landmark') return firstLine || `${t.kindLandmark} ${item.glyph_key ?? '?'}`;
+  return firstLine || t.kindNote;
 }
 
 // What is left of the note once the label took its share — everything for the
-// three targeted kinds, the lines after the first for a note.
+// three targeted kinds, the lines after the first for a note or a landmark.
 function workItemBody(item: WorkItemOut): string {
-  if (item.kind !== 'note') return item.note;
+  if (item.kind !== 'note' && item.kind !== 'landmark') return item.note;
   return item.note.split('\n').slice(1).join('\n').trim();
 }
 
@@ -67,7 +71,11 @@ function workItemBody(item: WorkItemOut): string {
 // target — a word item filed by specimen id alone, or a general note, which
 // points at nothing in the workbench by definition.
 function workItemUrl(item: WorkItemOut): string | null {
-  if (item.kind === 'letter') return item.glyph_key ? lettersUrl(item.glyph_key) : null;
+  // A landmark points at its letter: the lens lives in that view, and the
+  // note's first line says which marker to open it on.
+  if (item.kind === 'letter' || item.kind === 'landmark') {
+    return item.glyph_key ? lettersUrl(item.glyph_key) : null;
+  }
   if (item.kind === 'pair') return item.left_key && item.right_key ? joinsUrl(item.left_key, item.right_key) : null;
   if (item.kind === 'word') return item.word ? wordsUrl(item.word, item.specimen_id) : null;
   return null;

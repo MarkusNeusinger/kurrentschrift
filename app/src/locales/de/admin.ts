@@ -102,6 +102,79 @@ export const admin = {
       'Schreibt die gespeicherten Aggregate dieser Hand als Laufform (Variante 100) — ab dann schreibt die Engine in fließenden Läufen den gemessenen Median statt der bisherigen Form. Der einzige Schritt im Handmodell, der das Schreiben verändert.',
     applyBlockButton: 'Laufform überschreiben …',
     applyBlockNoHand: 'Ohne Hand an den Vorkommen gibt es keine Aggregate, die übernommen werden könnten.',
+    // The Landmarken-Linse (optimierungs-werkbank.md §8): what the structure
+    // detectors see in this letter, drawn ON the written form so „hier fehlt
+    // eine Kreuzung“ can be pointed at instead of described.
+    landmarksTitle: 'Landmarken',
+    landmarksCaption:
+      'Was die Erkennung in diesem Buchstaben findet: Kreuzungen, Retrace-Zonen, Absetzer, Umkehrecken und Kringel — dieselben Erkenner, mit denen der Tintenfolger misst. Eine Marke anklicken zeigt ihre Zahlen und legt sie bei Bedarf als Auftrag in den Korb; ein Klick ins Leere meldet eine Stelle, an der eine Marke FEHLT.',
+    landmarksToggle: 'Landmarken zeigen',
+    landmarksLoading: 'Landmarken werden berechnet …',
+    landmarksError: 'Landmarken konnten nicht geladen werden.',
+    landmarksNone: 'Die Erkennung findet in diesem Buchstaben keine Struktur — weder Kreuzung noch Schleife noch Retrace-Zone.',
+    landmarksRowChart: 'Tafel-Duktus (Variante 0)',
+    landmarksRowLaufform: 'Laufform (Variante 100)',
+    landmarksCount: '{{count}} Marken',
+    landmarksLegend: 'Legende',
+    // The vocabulary the overlay draws and the Korb files against.
+    landmarkKind: {
+      crossing: 'Kreuzung',
+      retrace: 'Retrace-Zone',
+      touch: 'Berührung',
+      overlap: 'Verschmelzung',
+      lift: 'Absetzen',
+      corner: 'Umkehrecke',
+      loop: 'Kringel',
+      spot: 'Stelle ohne Marke',
+    },
+    landmarkKindHint: {
+      crossing: 'Eine Stelle, an der die Bahn eine andere wirklich DURCHSTÖSST — rein auf der einen, raus auf der anderen Seite.',
+      retrace: 'Ein Stück, das derselbe Zug zweimal schreibt (hin und zurück über dieselbe Tinte).',
+      touch: 'Zwei Durchgänge laufen nah aneinander vorbei, aber mit einem weiten Weg dazwischen — aneinander vorbei, nicht übereinander.',
+      overlap: 'Zwei VERSCHIEDENE Federzüge liegen an derselben Stelle — ein Zeichen reitet auf dem Körper.',
+      lift: 'Hier wurde die Feder abgesetzt und neu aufgesetzt.',
+      corner: 'Ein im Duktus festgehaltener Umkehrpunkt — dort bleibt der Knick beim Zeichnen erhalten.',
+      loop: 'Eine geschlossene Schleife. Der Kreis zeigt ihre gemessene Öffnungsweite D0; Klasse und Zustand kommen aus dem eingefrorenen Kringel-Katalog.',
+      spot: 'Eine Stelle, an der du eine Marke erwartest, aber keine steht.',
+    },
+    // Field labels for the numbers a marker carries.
+    landmarkNumber: {
+      angle_deg: 'Winkel',
+      arc_separation: 'Bogenabstand',
+      stroke_i: 'Zug A',
+      stroke_j: 'Zug B',
+      self_crossing: 'kreuzt sich selbst',
+      arc: 'Bogenlänge',
+      samples: 'Abtastpunkte',
+      anchor: 'Anker',
+      stroke: 'Zug',
+      d0: 'Öffnungsweite D0',
+      area: 'Fläche',
+      size_class: 'Größenklasse',
+      state: 'Zustand',
+      d0_plate: 'D0 auf der Platte',
+      occurrences: 'Vorkommen',
+      with_counter: 'davon mit Binnenfläche',
+      anchor_range: 'Schleifenbereich',
+    },
+    landmarkNoRange: 'kein Schleifenbereich erkannt',
+    // The honest half: catalogue rows no detected loop could be paired with.
+    landmarksUnmatchedTitle: 'Im Katalog, hier nicht gefunden',
+    landmarksUnmatchedBody:
+      'Die Platte hält an diesen Schleifen eine Binnenfläche, die Erkennung findet in dieser Zeile keine dazu. Das ist ein Befund, keine Lücke — beim t ist es der bekannte Fall.',
+    landmarksUnmatchedRow: 'Kringel #{{loop}} · {{size}} · {{state}}',
+    landmarksCatalogueOff:
+      'Kein Kringel-Katalog für diese Vorlage — die Schleifen kommen ohne Urteil (Klasse und Zustand bleiben „unbekannt“). Ein Katalog gilt für genau eine Hand mit einer Feder.',
+    landmarksCatalogueOn: 'Kringel-Katalog: {{style}} · {{root}}',
+    landmarkMark: 'Bemängeln',
+    landmarkSelectHint: 'Eine Marke anklicken, um ihre Zahlen zu sehen.',
+    landmarkAria: '{{kind}} Nummer {{index}} bei x {{x}}, y {{y}} — anklicken für die Zahlen',
+    // Reporting a marker that ISN'T there. Two ways in, and the button is the
+    // one that also works from the keyboard: es meldet dieselbe Sache ohne
+    // Ortsangabe, statt eine zu erfinden.
+    landmarkSpotButton: 'Fehlende Marke melden',
+    landmarkSpotHint:
+      'Ins Leere klicken meldet die Stelle mit ihrer Position; der Knopf meldet dasselbe ohne Ortsangabe — dann steht im Auftrag, was du beschreibst, keine erfundene Koordinate.',
   },
   // The deliberate promotion of learned statistics into rendering (issue #270).
   laufform: {
@@ -715,6 +788,9 @@ export const admin = {
       composition: 'Komposition',
       pair_override: 'Paar-Override',
       word_trace: 'Wort-Spur',
+      // Names no step of the writing path: der Buchstabe stimmte, der Erkenner
+      // nicht (§8).
+      landmark_detector: 'Landmarken-Erkennung',
       not_reproducible: 'nicht nachvollziehbar',
     },
     korbReject: 'missverstanden',
@@ -726,6 +802,7 @@ export const admin = {
     kindPair: 'Übergang',
     kindWord: 'Wort',
     kindNote: 'Notiz',
+    kindLandmark: 'Landmarke',
     // The filing dialog.
     dialogTitle: 'Auftrag einreichen',
     dialogTarget: 'Ziel',

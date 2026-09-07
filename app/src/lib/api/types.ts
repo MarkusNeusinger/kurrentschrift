@@ -449,13 +449,16 @@ export interface WorkItemIn {
   note?: string;
 }
 
-// The marked level. The three doctrine levels plus 'note', which has no target
-// and no writing-path stage — it closes on its resolution alone.
-export type WorkItemKind = 'letter' | 'pair' | 'word' | 'note';
+// The marked level. The three doctrine levels, plus 'note' (no target and no
+// writing-path stage — it closes on its resolution alone) and 'landmark' (one
+// DETECTED structure of a letter: it reuses glyph_key, and the note's first
+// line names which landmark, written by the Landmarken-Linse itself).
+export type WorkItemKind = 'letter' | 'pair' | 'word' | 'note' | 'landmark';
 
 // The stages of the writing path a complaint can be traced to
 // (optimierungs-werkbank.md §3), in the triage order §5 prescribes. Mirrors
-// WORK_ITEM_STAGES in api/schemas.py.
+// WORK_ITEM_STAGES in api/schemas.py. `landmark_detector` is the one entry
+// that names no writing step: the letter was right and the detector wrong.
 export type WorkItemStage =
   | 'chart_ductus'
   | 'laufform'
@@ -463,6 +466,7 @@ export type WorkItemStage =
   | 'composition'
   | 'pair_override'
   | 'word_trace'
+  | 'landmark_detector'
   | 'not_reproducible';
 
 // filed -> understood -> closed, plus the two exits: 'open' is also where a
@@ -694,6 +698,71 @@ export interface GlyphOut {
   raw_path: StrokePoint[];
   trace_meta: Record<string, unknown>;
   measurements: Record<string, unknown>;
+}
+
+// ------------------------------------------------------------------ Landmarken
+//
+// The Landmarken-Linse (optimierungs-werkbank.md §8). Mirrors LandmarkOut /
+// TemplateLandmarksOut / GlyphLandmarksOut in api/schemas.py. Every coordinate
+// is in TEMPLATE units (baseline 0, midband 1, y up) — the frame WrittenGlyph
+// draws in, so a marker lands on the ink instead of near it.
+
+// What the structure detectors distinguish. 'retrace' | 'touch' | 'overlap'
+// are the three meanings of ONE detector; 'overlap' is the merge indicator —
+// a pass whose partner runs in a DIFFERENT pen stroke.
+export type LandmarkKind = 'crossing' | 'retrace' | 'touch' | 'overlap' | 'lift' | 'corner' | 'loop';
+
+export interface LandmarkOut {
+  kind: LandmarkKind;
+  // Counts within the kind — the handle a complaint names ("Kringel #1").
+  index: number;
+  x: number;
+  y: number;
+  // The kind's own measured values: a crossing's angle and the two pen strokes
+  // that met, a loop's aperture and catalogue verdict, a zone's arc.
+  numbers: Record<string, number | string | boolean | null>;
+  // The path a zone covers; empty for a point landmark.
+  points: Array<[number, number]>;
+}
+
+// A catalogue row NO loop of this row could be paired with — the honest half.
+// The `t` is the standing case: three plate counters, no detected loop.
+export interface CatalogueLoopOut {
+  loop: number;
+  size_class: string;
+  state: string;
+  d0_plate: number | null;
+  occurrences: number | null;
+  with_counter: number | null;
+}
+
+export interface TemplateLandmarksOut {
+  variant: number;
+  strokes: number;
+  n_anchors: number;
+  landmarks: LandmarkOut[];
+  // The raster-free ductus loop finder's anchor ranges (core/aggregate.py
+  // loop_ranges). Empty where it sees no loop at all — a finding, not a gap.
+  loop_ranges: Array<[number, number]>;
+  unmatched_catalogue: CatalogueLoopOut[];
+}
+
+// Which frozen Kringel catalogue answered, or why none did: it is read off ONE
+// hand with ONE pen, so a foreign style gets no verdict rather than a guessed
+// one.
+export interface KringelCatalogueOut {
+  available: boolean;
+  style: string | null;
+  root: string | null;
+  pen_half_width_units: number | null;
+}
+
+export interface GlyphLandmarksOut {
+  glyph_key: string;
+  style_id: string;
+  catalogue: KringelCatalogueOut;
+  // The chart ductus (variant 0) and, where it exists, the derived Laufform.
+  rows: TemplateLandmarksOut[];
 }
 
 // Render subset served by the public write endpoints (GET …/write/glyphs):

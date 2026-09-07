@@ -105,9 +105,32 @@ interface Props {
   // The replay button bottom-right (default on). Off for small specimens whose
   // caller offers its own replay gesture — the button would cover the letter.
   showReplay?: boolean;
+  // Extra SVG drawn INSIDE this component's own viewBox, on top of the ink.
+  // A render prop rather than a sibling overlay because the frame is computed
+  // in here from the payload (tight framing, the widened Gleichzug anchors),
+  // so anything positioned outside it would be near the letter rather than on
+  // it. The callee gets the frame it draws in and owes the same convention the
+  // rest of this file follows: template units, y NEGATED (SVG y points down).
+  // Used by the admin's Landmarken-Linse; no public surface passes it.
+  overlay?: (frame: GlyphFrame) => React.ReactNode;
 }
 
-export function WrittenGlyph({ glyphKey, sourceId = CONFIG.sourceId, durationMs = GLYPH_WRITE_MS, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, variant = 0, onUnavailable, surfaceBg = SURFACE_BG, inkColor, animate: animateProp = true, showReplay = true }: Props) {
+// The viewBox a WrittenGlyph settled on, in template units — `minX`/`vbW`
+// horizontal, `vbY`/`vbH` in the FLIPPED (SVG) y where the baseline is 0 and
+// the ascender is negative.
+export interface GlyphFrame {
+  minX: number;
+  vbY: number;
+  vbW: number;
+  vbH: number;
+  // Rendered pixels per template unit, so an overlay can size a hit area in
+  // REAL pixels (design-system.md §9.3: 44 px on the smaller edge). A marker
+  // that only knows units cannot honour that — the same 0.09 units is 46 px on
+  // a lowercase letter and 26 px on one with an ascender.
+  pxPerUnit: number;
+}
+
+export function WrittenGlyph({ glyphKey, sourceId = CONFIG.sourceId, durationMs = GLYPH_WRITE_MS, height = 220, tight = false, maxWidth, cacheBust, data: dataProp, variant = 0, onUnavailable, surfaceBg = SURFACE_BG, inkColor, animate: animateProp = true, showReplay = true, overlay }: Props) {
   const reducedMotion = usePrefersReducedMotion();
   const uid = useId();
   // The width the frame around this glyph offers — the box is sized from it
@@ -305,7 +328,11 @@ export function WrittenGlyph({ glyphKey, sourceId = CONFIG.sourceId, durationMs 
         height={finalH}
         viewBox={`${minX} ${vbY} ${vbW} ${vbH}`}
         preserveAspectRatio="xMidYMid meet"
-        role="img"
+        // `img` collapses the subtree for assistive tech, which is right for a
+        // letter and wrong the moment an overlay puts BUTTONS inside it — the
+        // Landmarken-Linse's markers were unreachable by keyboard and invisible
+        // to the a11y tree until this switched.
+        role={overlay ? 'group' : 'img'}
         aria-label={de.common.writtenGlyph.ariaLabel}
         // maxWidth lets a wide glyph scale down to a narrow container (mobile /
         // the comparison view's uncapped width) instead of overflowing; the
@@ -342,6 +369,11 @@ export function WrittenGlyph({ glyphKey, sourceId = CONFIG.sourceId, durationMs 
             ? strokePaths.map((rings, i) => <path key={i} d={ringsToPathD(rings, true)} fillRule="evenodd" />)
             : polygons.map((poly, i) => <polygon key={i} points={poly.map(([x, y]) => `${x},${-y}`).join(' ')} />)}
         </Box>
+
+        {/* Outside the masked ink group on purpose: an overlay must not be
+            swept in by the write-in animation or aged by the iron-gall settle
+            — it is a reading aid over the letter, not part of it. */}
+        {overlay?.({ minX, vbY, vbW, vbH, pxPerUnit: vbH > 0 ? finalH / vbH : 0 })}
       </svg>
 
       {animate && showReplay && <ReplayButton onClick={replay} />}

@@ -14,12 +14,15 @@ import pytest
 from core.geometry import (
     acute_angle_between,
     arc_length,
+    concat_strokes,
     detect_crossing_passages,
     detect_retrace_pairs,
     detect_vertical_runs,
     discrete_curvature,
     fit_line_tls,
     point_line_perp_distance,
+    polyline_length,
+    resample_by_step,
     run_is_straight_residual,
     stroke_bounds,
     unit_tangents,
@@ -255,3 +258,58 @@ def test_detect_retrace_pairs_none_for_a_single_pass():
 def test_detect_retrace_pairs_guards():
     idx, partner = detect_retrace_pairs(np.array([0.0]), np.array([0.0]), None, prox_px=2.0)
     assert len(idx) == 0 and len(partner) == 0
+
+
+# ------------------------------------------------ the shared polyline helpers
+
+
+def test_polyline_length_is_the_scalar_twin_of_arc_length():
+    pts = np.array([[0.0, 0.0], [3.0, 0.0], [3.0, 4.0]])
+    assert polyline_length(pts) == pytest.approx(7.0)
+    assert polyline_length(pts) == pytest.approx(float(arc_length(pts)[-1]))
+    assert polyline_length(np.array([[1.0, 2.0]])) == 0.0
+
+
+def test_concat_strokes_records_where_each_pen_stroke_begins():
+    a = np.array([[0.0, 0.0], [1.0, 0.0]])
+    b = np.array([[5.0, 5.0], [6.0, 5.0], [7.0, 5.0]])
+    pts, starts = concat_strokes([a, np.zeros((0, 2)), b])
+    assert len(pts) == 5
+    # The empty stroke is dropped rather than starting a phantom pass.
+    assert starts == [0, 2]
+    assert concat_strokes([])[1] == []
+
+
+def test_resample_by_step_keeps_the_endpoints_and_walks_evenly():
+    pts = np.array([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0]])
+    out = resample_by_step(pts, 0.1)
+    assert out[0] == pytest.approx(pts[0], abs=0.0)
+    assert out[-1] == pytest.approx(pts[-1], abs=0.0)
+    steps = np.hypot(*np.diff(out, axis=0).T)
+    assert steps.max() - steps.min() < 1e-9
+
+
+def test_resample_by_step_survives_a_degenerate_stroke():
+    single = resample_by_step(np.array([[2.0, 3.0]]), 0.1)
+    assert single.shape == (2, 2) and np.allclose(single, [[2.0, 3.0], [2.0, 3.0]])
+    coincident = resample_by_step(np.array([[1.0, 1.0], [1.0, 1.0], [1.0, 1.0]]), 0.1)
+    assert coincident.shape == (2, 2)
+    with pytest.raises(ValueError):
+        resample_by_step(np.zeros((0, 2)), 0.1)
+
+
+def test_resample_by_step_is_byte_equal_to_the_rulers_own_twin():
+    """The one deliberate duplicate in the structure stack, pinned.
+
+    `tools/tracebench/metric.py` carries a purity clause — the ruler may import
+    numpy and scipy and nothing of the project it grades — so `core.landmarks`
+    cannot import its resampler and keeps a copy here instead. Same device as
+    `tools.tracebench.frames.DIACRITIC_MIN_Y`: the copy is legitimate only as
+    long as a test proves the two have not drifted.
+    """
+    from tools.tracebench.metric import resample_by_step as ruler_resample
+
+    rng = np.random.default_rng(20260907)
+    for step in (0.02, 0.137, 1.0):
+        pts = np.cumsum(rng.normal(size=(40, 2)), axis=0)
+        assert np.array_equal(resample_by_step(pts, step), ruler_resample(pts, step))

@@ -7,16 +7,36 @@
 // when the three views (Buchstaben · Übergänge · Wörter) all became places
 // where an element is inspected and complained about.
 
-import type { InstanceOut, WordInstanceOut, WordSampleOut, WorkItemIn } from '@/lib/api';
+import type { InstanceOut, LandmarkKind, WordInstanceOut, WordSampleOut, WorkItemIn } from '@/lib/api';
 import { de } from '@/locales/admin';
 import { paper, pigment } from '@/styles/paper';
 
-// The three levels the doctrine knows (optimierungs-werkbank.md §5): a letter,
-// a join, or the whole word. `word` is the only one without a glyph key.
+// One DETECTED structure of a letter, as the Landmarken-Linse hands it to the
+// Korb (optimierungs-werkbank.md §8). `spot` is the fifth case and the only
+// one without an index: a place where the author expects a marker and none
+// stands, which is the complaint the layer most needs to be able to receive.
+//
+// The position is OPTIONAL, and that is the honest shape rather than a
+// convenience: an unmatched catalogue Kringel has no detected location by
+// definition, and a missing marker reported from the keyboard has none either.
+// Required coordinates forced those callers to invent `(0, 0)`, which the note
+// then filed as if the origin had been measured.
+export interface LandmarkRef {
+  kind: LandmarkKind | 'spot';
+  index: number | null;
+  x?: number;
+  y?: number;
+  numbers: Record<string, number | string | boolean | null>;
+}
+
+// The levels the doctrine knows (optimierungs-werkbank.md §5): a letter, a
+// join, or the whole word — plus `landmark`, the generated structure layer of
+// ONE letter (§8). `word` is the only one without a glyph key.
 export type WerkbankTarget =
   | { kind: 'letter'; glyphKey: string }
   | { kind: 'pair'; leftKey: string; rightKey: string }
-  | { kind: 'word'; word: string };
+  | { kind: 'word'; word: string }
+  | { kind: 'landmark'; glyphKey: string; variant: number; landmark: LandmarkRef };
 
 // Where the element was SEEN — the words.json namespace, exactly the pair the
 // work-item API demands together (an id without its kind may point at nothing).
@@ -36,24 +56,85 @@ export interface Mark {
   specimen?: SpecimenRef;
 }
 
-// A lens selection is a mark whose target has a lens — the word level has none
-// (a word complaint is filed, not inspected).
-export type Selection = Mark & { target: Exclude<WerkbankTarget, { kind: 'word' }> };
+// A lens selection is a mark whose target has a lens — the word and landmark
+// levels have none (both are filed, not inspected: a word complaint is about
+// the whole picture, a landmark is already being looked at when it is marked).
+export type Selection = Mark & {
+  target: Exclude<WerkbankTarget, { kind: 'word' } | { kind: 'landmark' }>;
+};
 
 export const pairKeyOf = (leftKey: string, rightKey: string): string => `${leftKey}→${rightKey}`;
 
-// "Buchstabe a" / "Übergang d→a" / "Wort einen" — the level plus its target,
-// as the filing dialog shows it back to the admin.
+// "Buchstabe a" / "Übergang d→a" / "Wort einen" / "Landmarke Kringel #1 · d" —
+// the level plus its target, as the filing dialog shows it back to the admin.
 export function targetLabel(target: WerkbankTarget): string {
   const t = de.admin.werkbank;
   if (target.kind === 'letter') return `${t.kindLetter} ${target.glyphKey}`;
   if (target.kind === 'pair') return `${t.kindPair} ${pairKeyOf(target.leftKey, target.rightKey)}`;
+  if (target.kind === 'landmark') {
+    return `${t.kindLandmark} ${landmarkLabel(target.landmark)} · ${target.glyphKey}`;
+  }
   return `${t.kindWord} ${target.word}`;
+}
+
+// Identity of one drawn marker within its row — what the overlay keys on and
+// what „selected" compares against.
+export const landmarkKey = (landmark: { kind: string; index: number }): string =>
+  `${landmark.kind}#${landmark.index}`;
+
+// "Kringel #1" / "Stelle ohne Marke" — the marker as the overlay names it.
+export function landmarkLabel(ref: LandmarkRef): string {
+  const name = de.admin.letters.landmarkKind[ref.kind];
+  return ref.index === null ? name : `${name} #${ref.index}`;
+}
+
+// Which stored row the landmark was read on.
+export const landmarkRowLabel = (variant: number): string =>
+  variant === 0 ? de.admin.letters.landmarksRowChart : de.admin.letters.landmarksRowLaufform;
+
+// The head of a landmark work item — WRITTEN BY THE LENS, so a working session
+// can reproduce the complaint from the row alone (optimierungs-werkbank.md §8).
+// Deliberately plain text rather than a column: the landmark layer is DERIVED
+// from the glyph_key's row, so a second key column would be a second name for
+// the same thing, and a schema change for a string the human also has to read
+// is the wrong trade.
+//
+// TWO lines, and the split is what makes the Korb readable: line 1 is the
+// IDENTITY (`Landmarke:` then the German name, the machine token
+// `<kind>#<index>` in brackets, the letter, the row) and becomes the row's
+// headline; line 2 carries the measured `key value` pairs. It reads as a
+// sentence AND greps as data.
+export function landmarkNoteHead(target: Extract<WerkbankTarget, { kind: 'landmark' }>): string {
+  const { landmark: ref, variant, glyphKey } = target;
+  const token = ref.index === null ? ref.kind : `${ref.kind}#${ref.index}`;
+  const identity = [
+    `${de.admin.werkbank.kindLandmark}: ${landmarkLabel(ref)} (${token})`,
+    glyphKey,
+    landmarkRowLabel(variant),
+  ].join(' · ');
+  const position =
+    ref.x !== undefined && ref.y !== undefined ? [`x ${ref.x.toFixed(4)}`, `y ${ref.y.toFixed(4)}`] : [];
+  const numbers = [
+    ...position,
+    ...Object.entries(ref.numbers)
+      .filter(([, value]) => value !== null && value !== undefined)
+      .map(([key, value]) => `${key} ${value}`),
+  ].join(' · ');
+  // A landmark without a position and without numbers has nothing for the
+  // second line — the identity alone is then the whole head, rather than a
+  // blank line pretending something was measured.
+  return numbers ? `${identity}\n${numbers}` : identity;
 }
 
 // Identity of one mark — the filing dialog is remounted under this key so its
 // pre-sort/note state always starts fresh instead of being reset by an effect.
-export const markKey = (mark: Mark): string => `${targetLabel(mark.target)}:${mark.specimen?.id ?? '-'}`;
+// A landmark carries its position: two „Stelle ohne Marke" complaints on the
+// same letter have the same label and are not the same mark.
+export const markKey = (mark: Mark): string => {
+  const ref = mark.target.kind === 'landmark' ? mark.target.landmark : null;
+  const where = ref && ref.x !== undefined && ref.y !== undefined ? `@${ref.x},${ref.y}` : '';
+  return `${targetLabel(mark.target)}${where}:${mark.specimen?.id ?? '-'}`;
+};
 
 // Stable per-card DOM id, so a lens thumbnail can scroll its word into view.
 export const cardElementId = (specimenId: string): string => `werkbank-card-${specimenId}`;
@@ -188,6 +269,13 @@ export function workItemBodyOf(mark: Mark, note: string): WorkItemIn {
   if (mark.target.kind === 'letter') return { ...base, kind: 'letter', glyph_key: mark.target.glyphKey };
   if (mark.target.kind === 'pair') {
     return { ...base, kind: 'pair', left_key: mark.target.leftKey, right_key: mark.target.rightKey };
+  }
+  if (mark.target.kind === 'landmark') {
+    // The generated line first, the author's own words under it — the API
+    // insists on text for exactly this reason (an item that does not say WHICH
+    // landmark is unworkable).
+    const head = landmarkNoteHead(mark.target);
+    return { ...base, kind: 'landmark', glyph_key: mark.target.glyphKey, note: note ? `${head}\n\n${note}` : head };
   }
   return { ...base, kind: 'word', word: mark.target.word };
 }

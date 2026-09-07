@@ -24,6 +24,7 @@ import type {
   EigenhandStripFilter,
   EigenhandStripList,
   FitData,
+  GlyphLandmarksOut,
   GlyphOut,
   GlyphSummary,
   HandOut,
@@ -511,6 +512,14 @@ export const getTemplateQuality = (
 
 export const getDiagnostic = (sourceId: string, glyphKey: string): Promise<DiagnosticData> =>
   apiFetch(src(sourceId, `/templates/${encodeURIComponent(glyphKey)}/diagnostic`)).then(asJson<DiagnosticData>);
+
+// The structure landmarks of one letter — crossings, retrace zones, lifts,
+// corners and Kringel — for the Landmarken-Linse. BOTH stored rows come back
+// in one read (chart ductus + Laufform where it exists): the lens toggles
+// between them, and a second round trip would show two different moments of
+// the same letter. Admin-gated like the raw row it is derived from.
+export const getLandmarks = (sourceId: string, glyphKey: string): Promise<GlyphLandmarksOut> =>
+  apiFetch(src(sourceId, `/templates/${encodeURIComponent(glyphKey)}/landmarks`)).then(asJson<GlyphLandmarksOut>);
 
 // Batch render payloads for the public writer (one round trip per word/Tafel).
 // Keys are sorted so the same letter set always yields the same URL — the

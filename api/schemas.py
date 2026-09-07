@@ -614,8 +614,21 @@ class PairAggregateRebuildOut(BaseModel):
 # picks exactly one — a closed vocabulary keeps "which stage causes the most
 # complaints" a query instead of a reading task. `not_reproducible` is the
 # honest outcome when the complaint could not be observed at all.
+# `landmark_detector` is the one stage that names no step of the writing path:
+# it closes a Landmarken-Linse complaint where the LETTER turned out to be
+# right and the detector wrong (a crossing it does not see, a Kringel it
+# classifies past the plate). It sits last before `not_reproducible` because
+# the triage order still applies — ask whether the authored ductus is wrong
+# before blaming the sensor that reads it.
 WorkItemStage = Literal[
-    "chart_ductus", "laufform", "join_rule", "composition", "pair_override", "word_trace", "not_reproducible"
+    "chart_ductus",
+    "laufform",
+    "join_rule",
+    "composition",
+    "pair_override",
+    "word_trace",
+    "landmark_detector",
+    "not_reproducible",
 ]
 WORK_ITEM_STAGES: tuple[str, ...] = get_args(WorkItemStage)
 
@@ -638,9 +651,18 @@ class WorkItemIn(BaseModel):
     'note' is the fourth kind and the only one with no target at all: a general
     small thing — a UI wrinkle, a wording slip, a "look at this later" — that is
     too small for a GitHub issue and belongs to no glyph. Its whole content is
-    the `note`, which is therefore the one field it requires."""
+    the `note`, which is therefore the one field it requires.
 
-    kind: Literal["letter", "pair", "word", "note"]
+    'landmark' is the fifth: a complaint about one DETECTED structure of a
+    letter — „hier fehlt eine Kreuzung", „der Kringel ist falsch klassiert",
+    „hier ist keine Ecke". It carries the same `glyph_key` as a letter item,
+    because that is where a session goes to look; which landmark is meant, and
+    with which numbers, is the first line of the `note`, written by the lens
+    itself (`docs/proposals/optimierungs-werkbank.md` §8). No column of its own:
+    the landmark layer is DERIVED from the row the `glyph_key` names, so a
+    second key would be a second name for the same thing."""
+
+    kind: Literal["letter", "pair", "word", "note", "landmark"]
     glyph_key: str | None = Field(default=None, min_length=1, max_length=32)
     left_key: str | None = Field(default=None, min_length=1, max_length=32)
     right_key: str | None = Field(default=None, min_length=1, max_length=32)
@@ -653,8 +675,13 @@ class WorkItemIn(BaseModel):
     def model_post_init(self, __context: Any) -> None:
         # An item whose target is ambiguous is unworkable — the whole point of
         # the Auftragskorb is that a session can act on the row alone.
-        if self.kind == "letter" and not self.glyph_key:
-            raise ValueError("a letter item needs glyph_key")
+        if self.kind in ("letter", "landmark") and not self.glyph_key:
+            raise ValueError(f"a {self.kind} item needs glyph_key")
+        # The landmark's identity and its numbers ride in the note's first line
+        # (§8): an item that does not say WHICH landmark is unworkable, exactly
+        # like a target-less note.
+        if self.kind == "landmark" and not self.note.strip():
+            raise ValueError("a landmark item needs note text naming the landmark")
         if self.kind == "pair" and not (self.left_key and self.right_key):
             raise ValueError("a pair item needs left_key and right_key")
         if self.kind == "word" and not (self.word or self.specimen_id):
@@ -974,6 +1001,97 @@ class TemplateOut(BaseModel):
     raw_path: list[StrokePoint]
     trace_meta: dict[str, Any]
     measurements: dict[str, Any]
+
+
+# ------------------------------------------------------------------- Landmarken
+#
+# The Landmarken-Linse (`docs/proposals/optimierungs-werkbank.md` §8): what the
+# structure detectors see in one authored letter, so the author can look at it
+# and file a complaint instead of taking the layer on trust. Everything is in
+# TEMPLATE units (baseline 0, midband 1, y up) — the same frame the rendered
+# glyph is drawn in, so a marker lands on the ink rather than near it.
+
+# The detected structures, in the vocabulary the overlay and the Korb share.
+# `retrace`/`touch`/`overlap` are the three meanings of ONE detector
+# (`core.landmarks.structure_zones`); `overlap` is the merge indicator, a pass
+# whose partner runs in a DIFFERENT pen stroke.
+LandmarkKind = Literal["crossing", "retrace", "touch", "overlap", "lift", "corner", "loop"]
+LANDMARK_KINDS: tuple[str, ...] = get_args(LandmarkKind)
+
+
+class LandmarkOut(BaseModel):
+    """One detected structure. `index` counts within the kind and is the handle
+    a complaint names, so „Kringel #1 falsch klassiert" points at one thing.
+
+    `numbers` carries the kind's own measured values — a crossing's angle and
+    the two pen strokes that met, a loop's aperture and catalogue verdict, a
+    zone's arc — flat and JSON-safe, so a filed work item can quote them and a
+    session can reproduce what the author saw. `points` is the path a zone
+    covers and is empty for a point landmark.
+    """
+
+    kind: LandmarkKind
+    index: int
+    x: float
+    y: float
+    numbers: dict[str, float | int | str | bool | None]
+    points: list[tuple[float, float]] = []
+
+
+class CatalogueLoopOut(BaseModel):
+    """One row of the frozen Kringel catalogue that NO loop of this template
+    could be paired with — the honest half of the loop layer.
+
+    The `t` is the standing example: the plate holds three counters, the
+    detectors find no loop on the isolated row. Showing nothing there would
+    claim the letter has no Kringel, so the rows travel out unmatched instead.
+    """
+
+    loop: int
+    size_class: str
+    state: str
+    d0_plate: float | None = None
+    occurrences: int | None = None
+    with_counter: int | None = None
+
+
+class TemplateLandmarksOut(BaseModel):
+    """The landmarks of ONE stored row — the chart ductus or the Laufform."""
+
+    variant: int
+    strokes: int
+    n_anchors: int
+    landmarks: list[LandmarkOut]
+    # The raster-free ductus loop finder's anchor ranges (`core.aggregate
+    # .loop_ranges`, #552). Empty where it sees no loop at all, which is a
+    # finding rather than a gap — it has no range for the `t` or for parts of
+    # the capitals.
+    loop_ranges: list[tuple[int, int]]
+    unmatched_catalogue: list[CatalogueLoopOut]
+
+
+class KringelCatalogueOut(BaseModel):
+    """Which catalogue answered — or why none did.
+
+    A catalogue is read off ONE hand with ONE pen, so it is applied to that
+    style only (`core.landmarks`, same rule as `tools.tracebench.kringel
+    .kringel_by_word`). On a mismatch or an unreadable file the loops still come
+    back, with `state` „unbekannt" instead of a guessed verdict.
+    """
+
+    available: bool
+    style: str | None = None
+    root: str | None = None
+    pen_half_width_units: float | None = None
+
+
+class GlyphLandmarksOut(BaseModel):
+    """Response of `GET /sources/{id}/templates/{glyph_key}/landmarks`."""
+
+    glyph_key: str
+    style_id: str
+    catalogue: KringelCatalogueOut
+    rows: list[TemplateLandmarksOut]
 
 
 # ----------------------------------------------------------------------- Eigenhand

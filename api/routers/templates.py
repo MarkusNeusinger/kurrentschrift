@@ -14,11 +14,24 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import require_admin
 from api.dependencies import require_db, require_source
-from api.rendering import invalidate_pooled_style, resolve_render_context, resolve_style
-from api.schemas import LaufformUpsert, ResampleRequest, TemplateOut, TemplateQualityOut, TemplateSummary, TraceRequest
+from api.rendering import invalidate_pooled_style, render_payload_cached, resolve_render_context, resolve_style
+from api.schemas import (
+    CatalogueLoopOut,
+    GlyphLandmarksOut,
+    KringelCatalogueOut,
+    LandmarkOut,
+    LaufformUpsert,
+    ResampleRequest,
+    TemplateLandmarksOut,
+    TemplateOut,
+    TemplateQualityOut,
+    TemplateSummary,
+    TraceRequest,
+)
 from core.aggregate import LAUFFORM_MIN_OCCURRENCES
 from core.database import LAUFFORM_VARIANT, BboxRepository, Source, Template, TemplateRepository
 from core.fit import fit_glyph_to_crop
+from core.landmarks import catalogue_source, load_catalogue, row_landmarks
 from core.laufform import LAUFFORM_END_WINDOW, blend_stroke_ends, head_gate, spike_gate
 from core.pipeline import (
     DEFAULT_N_ANCHORS,
@@ -485,6 +498,130 @@ async def post_resample(
     await db.commit()
     invalidate_pooled_style(source.style_id)
     return out
+
+
+def _catalogue_for(style_id: str, source_id: str) -> tuple[dict[str, list[dict]], KringelCatalogueOut]:
+    """The Kringel catalogue, but only where it belongs — plus what to report.
+
+    A catalogue is read off ONE hand with ONE pen and every size class in it is
+    counted in THAT plate's pen width, so it is applied only where BOTH halves
+    of its header match: the `style`, and the source its fixture root was
+    exported from (`measured_on[0].name`, which carries the source id). The
+    style alone is not enough — a second Sütterlin chart would be a different
+    hand under the same script and would silently receive this hand's verdicts.
+    Same rule `tools.tracebench.kringel.kringel_by_word` enforces for the bench,
+    where the second half is the run's root name.
+
+    On a mismatch, an unreadable file or (in a lean image) a missing one, the
+    loops still travel: they simply carry no verdict, which is what „unbekannt"
+    says. A sensor never costs the answer.
+    """
+    try:
+        source_header = catalogue_source()
+        rows = load_catalogue()
+    except (OSError, ValueError):
+        return {}, KringelCatalogueOut(available=False)
+    measured = (source_header.get("measured_on") or [{}])[0]
+    info = KringelCatalogueOut(
+        available=source_header.get("style") == style_id and measured.get("name") == source_id,
+        style=source_header.get("style"),
+        root=measured.get("name"),
+        pen_half_width_units=source_header.get("pen_half_width_units"),
+    )
+    return (rows if info.available else {}), info
+
+
+def _row_landmarks_out(template: Template, ctx, catalogue: dict[str, list[dict]]) -> TemplateLandmarksOut:
+    """One stored row's landmarks, computed in the frame the page DRAWS in.
+
+    The detectors run on `render_payload_for_template`'s output — the very
+    geometry `WrittenGlyph` fills — rather than on the stored anchors, because
+    a marker that sits where the ink is NOT is worse than no marker: the
+    Gleichzug path widens round bodies at render time (`_fluent_widen`), so the
+    stored polyline and the drawn one are not the same curve. One consequence
+    is worth knowing: the ductus loop ranges are therefore counted on the
+    rendered row, where the catalogue's own `ductus_loops_per_glyph` header was
+    counted on the raw chart row.
+
+    Through the SHARED payload memo, so the lens costs nothing the page did not
+    already pay: the letter beside it is rendered from the same key. Read-only
+    — the memo hands out one dict to every caller.
+    """
+    payload = render_payload_cached(
+        {
+            "anchors": list(template.anchors),
+            "half_widths": list(template.half_widths),
+            "trace_meta": dict(template.trace_meta),
+            "glyph": template.glyph,
+            "entry": dict(template.entry) if template.entry else {},
+            "exit_pt": dict(template.exit_pt) if template.exit_pt else {},
+            "advance": template.advance,
+        },
+        template.glyph_key,
+        template.id,
+        template.updated_at,
+        ctx,
+    )
+    trace_meta = dict(template.trace_meta or {})
+    row = row_landmarks(
+        template.glyph_key,
+        variant=template.variant,
+        anchors=payload["anchors_template"],
+        half_widths=payload["half_widths_template"],
+        centerlines=payload["centerlines_template"],
+        stroke_starts=trace_meta.get("stroke_starts"),
+        corner_anchors=trace_meta.get("corner_anchors"),
+        catalogue=catalogue,
+    )
+    return TemplateLandmarksOut(
+        variant=row.variant,
+        strokes=row.strokes,
+        n_anchors=row.n_anchors,
+        landmarks=[
+            LandmarkOut(kind=lm.kind, index=lm.index, x=lm.x, y=lm.y, numbers=lm.numbers, points=list(lm.points))
+            for lm in row.landmarks
+        ],
+        loop_ranges=list(row.loop_ranges),
+        unmatched_catalogue=[
+            CatalogueLoopOut(
+                loop=entry["loop"],
+                size_class=entry["size_class"],
+                state=entry["state"],
+                d0_plate=entry.get("d0_plate"),
+                occurrences=entry.get("occurrences"),
+                with_counter=entry.get("with_counter"),
+            )
+            for entry in row.unmatched_catalogue
+        ],
+    )
+
+
+# Admin-gated for the same open-core reason as the raw row it is derived from
+# (quellen-und-rechte.md §5): these are the structures of the authored ductus
+# plus the frozen Kringel catalogue's verdicts, i.e. the learned dataset read
+# from another angle. No public surface needs them — the docstring stays short
+# because it surfaces in the public OpenAPI docs.
+@router.get("/{glyph_key}/landmarks", response_model=GlyphLandmarksOut, dependencies=[Depends(require_admin)])
+async def get_landmarks(
+    glyph_key: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+):
+    """The detected structure landmarks of one letter (admin only).
+
+    Both stored rows in one read — the chart ductus and, where it exists, the
+    derived Laufform — because the lens toggles between them and a second round
+    trip would show the author two different moments of the same letter.
+    """
+    repo = TemplateRepository(db)
+    chart = await repo.get(source.style_id, glyph_key)
+    if chart is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no canonical for {glyph_key!r}")
+    laufform = await repo.get(source.style_id, glyph_key, variant=LAUFFORM_VARIANT)
+    ctx = await resolve_render_context(source, db)
+    catalogue, info = _catalogue_for(ctx.style_id, source.id)
+    rows = await run_in_threadpool(
+        lambda: [_row_landmarks_out(t, ctx, catalogue) for t in (chart, laufform) if t is not None]
+    )
+    return GlyphLandmarksOut(glyph_key=glyph_key, style_id=ctx.style_id, catalogue=info, rows=rows)
 
 
 @router.get("/{glyph_key}/diagnostic", dependencies=[Depends(require_admin)])

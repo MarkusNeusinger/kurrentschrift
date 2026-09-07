@@ -273,6 +273,42 @@ async def test_general_note_needs_no_target_and_no_stage(api: Harness):
     assert (res.json()["status"], res.json()["stage"]) == ("done", None)
 
 
+async def test_landmark_item_names_its_glyph_and_the_landmark_in_the_note(api: Harness):
+    """The fifth kind: a complaint about one DETECTED structure of a letter.
+
+    It reuses `glyph_key` — the landmark layer is derived from that row — and
+    the lens writes WHICH landmark plus its measured numbers into the note's
+    first line, so a session can reproduce it from the row alone
+    (optimierungs-werkbank.md §8). Its own stage `landmark_detector` is for the
+    case where the letter turned out right and the detector wrong.
+    """
+    _, source_id = await api.seed_style_and_source()
+    head = "Landmarke: Kringel #1 (loop#1) · Tafel-Duktus (v0) · x 0.42 y 0.61 · d0 0.31 · state punkt"
+    item = await _file(
+        api, source_id, {"kind": "landmark", "glyph_key": "d", "note": f"{head}\n\nDer Kringel ist hier offen."}
+    )
+    assert (item["kind"], item["glyph_key"], item["status"]) == ("landmark", "d", "open")
+
+    for body in (
+        {"kind": "landmark", "note": head},  # which letter?
+        {"kind": "landmark", "glyph_key": "d", "note": "   "},  # which landmark?
+        {"kind": "landmark", "glyph_key": "zz9", "note": head},  # not a registry glyph
+    ):
+        res = await api.client.request(
+            "POST", f"/sources/{source_id}/work-items", json_body=body, headers=api.admin_headers()
+        )
+        assert res.status == 422, body
+
+    await _ack(api, item["id"], "Der Kringel des d wird als Punkt geführt, die Platte hält ihn offen.")
+    res = await _patch(
+        api,
+        item["id"],
+        {"status": "done", "stage": "landmark_detector", "resolution": "Katalogzeile d#1 neu abgelesen, PR #999."},
+    )
+    assert res.status == 200, res.body
+    assert res.json()["stage"] == "landmark_detector"
+
+
 async def test_delete_item(api: Harness):
     _, source_id = await api.seed_style_and_source()
     item = await _file(api, source_id, _letter_item())
