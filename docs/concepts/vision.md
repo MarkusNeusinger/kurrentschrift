@@ -1,15 +1,21 @@
 # Vision der Website
 
-> **Status (2026-08-27): bindend.** Ziele, Leitprinzipien und Nicht-Ziele
+> **Status (2026-09-07): bindend.** Ziele, Leitprinzipien und Nicht-Ziele
 > stehen fest; die eingebettete Open-Core-Notiz zu Ziel 7 gilt unverändert
-> (technisch verschärft mit PR #254). Am 2026-08-27 ohne neue Entscheidung
+> (technisch verschärft mit PR #254). Neu am 2026-09-07: der Abschnitt
+> [„Drei Rollen: Tafel · Platte · Eigenhand“](#drei-rollen-tafel--platte--eigenhand)
+> — der Autor-Entscheid, dass die **Eigenhand** die ausgelieferte
+> Schreibhand der Seite wird, sobald ihr Bestand Alphabet und Übergänge
+> deckt, während die Tafeln der historische Prior und die Platten-Wörter
+> der Maßstab bleiben. Am 2026-08-27 ohne neue Entscheidung
 > nachgezogen: das Schriftfamilien-Leitprinzip spiegelt jetzt den
 > Sütterlin-first-Pivot vom 2026-06-12 (`mvp-roadmap.md`), das
 > Offene-Daten-Leitprinzip trägt den Ziel-7-Vorbehalt selbst, und Ziel 6
 > nennt die Eigenhand-Erfassung als ersten realen Zubringer.
 > Der Umsetzungsstand gehört nicht hierher — Reihenfolge in
 > [`architektur.md`](architektur.md) §10, Stand in
-> [`mvp-roadmap.md`](mvp-roadmap.md).
+> [`mvp-roadmap.md`](mvp-roadmap.md), der Erfassungsweg der Eigenhand in
+> [`../proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md).
 
 Begleitdokument zu [`architektur.md`](architektur.md) und
 [`naming-und-setup.md`](naming-und-setup.md). Hält fest, *was* die
@@ -87,6 +93,172 @@ Kern (siehe `architektur.md` §1).
 
 ---
 
+## Drei Rollen: Tafel · Platte · Eigenhand
+
+**Autor-Entscheid 2026-09-07.** Das Projekt arbeitet mit drei Sorten
+Schriftmaterial, und sie haben verschiedene Aufgaben. Bis zu diesem Tag
+war das nirgends festgehalten: dieses Doc nannte die Eigenhand nur einen
+„Zubringer“ zur Statistik (Ziel 6),
+[`eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md) führte
+sie als Bestand und Datenquelle, und jede öffentliche Bildunterschrift
+sagt, die Feder schreibe „nach der Sütterlin-Ausgangsschrift von 1922“.
+Der Entscheid ordnet die drei Rollen und benennt die dritte zum ersten
+Mal — **die Eigenhand ist nicht nur Trainingsmaterial, sie wird die
+Hand, die die Seite ausliefert.**
+
+In den Worten des Autors:
+
+> „Die Tafeln sind das Historische, bieten die Basis und werden bei der
+> Schriftkunde verwendet. Die Sütterlin-Wörter sind zum ersten Optimieren
+> des Schreibens und Nachfahrens. Aber die Schrift, die dann geschrieben
+> wird — im Header, Quiz … — ist dann meine: die ist zwar nicht so sauber
+> oder historisch, aber ich will das Schreiben eh üben, und so kann ich
+> beliebig Buchstaben oder Übergänge nachliefern. Ob, wenn die drei
+> Schriften passen, doch noch historische Alltagsschriften folgen, ist
+> eine Frage für später; die sind dann auch weniger lehrbuchmäßig
+> geschrieben, was einiges schwerer macht.“
+
+**(a) Die Tafeln — die historische Formbasis und der Schriftkunde-Beleg.**
+Die gemeinfreien Lehrtafeln (Loth 1866, Petzendorfer 1889,
+Sütterlin-Ausgangsschrift 1922, Koch 1928) liefern die **Geometrie**, an
+die die kanonischen Templates gefittet werden
+([`architektur.md`](architektur.md) §2/§3), und sie sind die Belege der
+Schriftkunde. Diese Rolle ändert sich nicht: die Tafeln bleiben
+gemeinfrei, zitierbar und das Historische an diesem Projekt. Was sie
+ausdrücklich NICHT liefern, ist der **Duktus-Prior** — Strichfolge,
+Absetzpunkte und Kreuzungsauflösung sind die eigene Arbeit des Autors
+ÜBER dieser gemeinfreien Geometrie und bleiben es in jeder der drei
+Rollen (`quellen-und-rechte.md` §5; die Tafel liefert die Formen, nicht
+die Reihenfolge).
+
+**(b) Die Platten-Wörter (Sütterlin 1922) — Ground Truth und erster
+Maßstab.** Die geschriebenen Wortproben der Platte sind das Material,
+gegen das Nachfahren und Komposition optimiert werden: der eingefrorene
+Referenzsatz der Tintenfolger-Kampagne
+([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md)) und die
+Fixture-Wurzeln der Benches. Sie sind **Maßstab, nicht Auslieferung** —
+Lineale und Fixture-Wurzeln bleiben während eines Laufs eingefroren
+([`../reference/qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md)
+§2). Dass die Rolle beim Messen endet, ist keine Abwertung: eine
+Bench-Referenz muss unverändert bleiben, und genau deshalb kann sie nicht
+zugleich der Ort sein, an dem fehlende Buchstaben nachwachsen.
+
+**(c) Die Eigenhand des Autors — die ausgelieferte Schreibhand.** Sobald
+ihr Bestand Alphabet und Übergänge deckt, schreibt die Seite in der Hand
+des Autors: Hero, Federprobe, Übungsblatt-Vorschrift — und das Lese-Quiz,
+das der Autor selbst nennt, für das aber eine didaktische Unterfrage offen
+bleibt (siehe unten). Sie ist „nicht so sauber oder historisch“ wie die
+Platte — das ist bewusst in Kauf genommen, weil vier Dinge dafür sprechen:
+
+- **Bekannte Feder statt rekonstruierter.** Das **stehende Setup** einer
+  Hand (Feder, Tinte, Papier, Aufnahmegerät) ist einmal erfasst, und
+  jede Fassung trägt zusätzlich die EFFEKTIVEN Werte ihrer Sitzung
+  ([`../proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md)
+  §7.1) — ein Wechsel mitten in der Kampagne ist in den Daten sichtbar
+  statt still. Bei der Platte ist die Feder ein Druckbild, das wir
+  rekonstruieren müssen.
+- **Auflösung statt Ablese-Boden.** Die Platten-Wortproben stehen bei
+  30–35 px je x-Höhe; die Ablesung einer Binnenfläche hat dort einen
+  Boden von etwa ±0,015 xh, und die Kringel-Kette vom 2026-09-06/07 hat
+  gemessen, dass die Öffnung an einer verschmolzenen engen Schleife
+  bereits in der Tinten-Evidenz verloren geht — vor jedem Fit
+  ([`../notes/kringel-binnenflaechen-2026-09-06.md`](../notes/kringel-binnenflaechen-2026-09-06.md)).
+  Ein eigener Bogen bei ≥ 300 DPI löst nicht das physikalische Problem —
+  wo zwei Federzüge wirklich zusammenlaufen, ist auch dort nichts mehr zu
+  öffnen. Er nimmt aber beides, was daran unser eigenes ist: den
+  Ablese-Boden, und die Wahrscheinlichkeit des Zusammenlaufens selbst,
+  weil in bekannter Federbreite auf bekannter Lineatur geschrieben wird
+  statt in einem fremden Druck von 30 px.
+- **Beliebig nachlieferbar.** Fehlt ein Buchstabe, ein Übergang oder ein
+  Versal, wird er geschrieben — der strukturelle Vorteil, den der
+  Stufenplan als H5 führt
+  ([`../proposals/handmodell-stufenplan.md`](../proposals/handmodell-stufenplan.md)).
+  Eine historische Platte antwortet auf eine Lücke nicht.
+- **Eigenes Urheberrecht.** Die eigene Hand ist die einzige Quelle, deren
+  Rechte vollständig beim Autor liegen; sie trägt den Open-Core-Vorbehalt
+  ohne Fremdrechte-Frage
+  ([`../reference/quellen-und-rechte.md`](../reference/quellen-und-rechte.md)
+  §5). Die Bytes bleiben aus demselben Grund gitignored (Autor-Entscheid
+  2026-08-22).
+
+**(d) Historische Alltagsschriften — spätere Frage, ausdrücklich offen.**
+Ob nach den drei Schriftfamilien noch echte Alltagshände (Briefe,
+Kirchenbücher) als eigene Vorlagen dazukommen, ist **nicht entschieden**.
+Der Autor benennt selbst, was es schwer macht: sie sind „weniger
+lehrbuchmäßig geschrieben“ — kein Kanon je Buchstabe, keine saubere
+Lineatur, mehr Varianz je Vorkommen. Diese Frage wird gestellt, wenn die
+drei Familien stehen, nicht vorher.
+
+### Verworfen
+
+Zwei Wege, die derselbe Entscheid ausschließt — sie werden nicht neu
+verhandelt; neue Argumente gehen nach `docs/proposals/`:
+
+- **Die Platte bleibt dauerhaft die Auslieferungshand.** Sie kann es
+  nicht sein, ohne ihre andere Rolle zu verlieren: eine Bench-Referenz
+  muss eingefroren bleiben (Rolle b), also ist sie genau der Ort, an dem
+  ein fehlender Buchstabe, ein fehlender Übergang oder ein fehlender
+  Versal **nie** nachwachsen kann. Dazu kommt der gemessene Ablese-Boden
+  ihrer 30–35-px-Ausschnitte (siehe (c)). Was bleibt: die Platte bleibt
+  Maßstab und Ground Truth — das ist keine Abstufung, sondern ihre
+  Aufgabe.
+- **Die Eigenhand bleibt reines Trainingsmaterial.** Das war der Stand
+  bis zum 2026-09-07 und verschenkt den einen strukturellen Vorteil, den
+  keine historische Quelle hat: beliebiger Nachschub. Der Autor übt das
+  Schreiben ohnehin („ich will das Schreiben eh üben“), sodass der
+  Nachschub kein zusätzlicher Aufwand ist, sondern derselbe.
+
+**Nicht verworfen, nur aufgeschoben:** historische Alltagsschriften (d)
+— das ist eine offene Frage für später, kein abgelehnter Weg.
+
+### Was am Rollenwechsel hängt
+
+Der Wechsel der ausgelieferten Hand ist **noch nicht vollzogen** — er ist
+ein späterer, eigener Autor-Entscheid (Bedingungen und Betrieb:
+[`../proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md)
+§2). Was er auslöst, steht hier, damit es beim Umschalten nicht neu
+gesucht werden muss:
+
+1. **Die öffentlichen Bildunterschriften ändern sich.** Sie nennen heute
+   die Platte als das, was schreibt: `scribe.ts` (`about`,
+   `disclaimer`), `quiz.ts` (`about`, `setup.sourceNote`),
+   `schriftkunde.ts` (`specimen.suetterlinCaption`,
+   `lettersSpecimenNote`) und `vergleichen.ts` (`writtenCaption`,
+   `pairsNote`, `disclaimer`) — alle unter `app/src/locales/de/`. Sie
+   müssten dann sagen, dass eine eigene Hand schreibt, die der
+   Ausgangsschrift von 1922 folgt.
+2. **Die Herkunfts-Angaben bleiben, werden aber ergänzt.**
+   `impressum.ts` (`sources.geometry`) und `schriftkunde.ts`
+   (`sourcesRepo`) beschreiben die gemeinfreien Vorlagen, aus denen die
+   Buchstabenform stammt — das bleibt für Rolle (a) wahr und braucht den
+   Zusatz, dass die ausgelieferte Schrift eine eigene Hand darüber ist.
+   `hub.ts` nennt nur die Schrift („in Sütterlin“), nicht die Platte, und
+   bliebe unverändert.
+3. **Offene Unterfrage: das Leseziel des Quiz.** Der Entscheid nennt das
+   Quiz ausdrücklich („im Header, Quiz …“), also wechselt es nach seinem
+   Wortlaut mit. Was er nicht beantwortet, ist die didaktische Frage
+   dahinter: das Quiz zeigt eine Form nicht zum Anschauen, sondern als
+   **Leseaufgabe** — und die Verwechsler, die es lehrt (n/u, e/n, ſ/f),
+   sind an der Norm der Ausgangsschrift definiert, während echte
+   Dokumente ohnehin nie lehrbuchsauber sind. Ob das Quiz deshalb als
+   einzige Fläche bei den 1922er-Formen bleibt, **entscheidet der Autor**
+   — dieses Doc setzt dafür keinen Default gegen seinen Wortlaut. Solange
+   die Frage offen ist, wechselt das Quiz mit den übrigen Flächen.
+4. **Die Lesbarkeits-Leitregel gilt unverändert** (Autoren-Leitsatz
+   „Legibility over period authenticity“,
+   [`design-system.md`](design-system.md) §9). Eine weniger saubere Hand
+   darf die Lesbarkeit der Seite nicht senken: historische Formen bleiben
+   markierte Schriftproben auf eigener Fläche, Navigation und Fließtext
+   bleiben Antiqua.
+5. **Ein Wechsel ist eine erklärte Re-Baseline.** Die Benches messen
+   weiter gegen die Platte (Rolle b); eine Kopfzahl liest nie aus dem
+   Eigenhand-Material, solange dafür keine eigene Teilmenge eingefroren
+   und vorregistriert ist
+   ([`../proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md)
+   §4, „Trainingsdaten, kein Mess-Satz“).
+
+---
+
 ## Was die Seite leistet (Ziele)
 
 ### Schreiben
@@ -150,7 +322,10 @@ Kern (siehe `architektur.md` §1).
    zu dieser Statistik ist die interne Eigenhand-Erfassung des Autors
    (gedruckte Bögen, Streifen, Siebung —
    [`../proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md));
-   der offene Upload-Weg für Nutzende bleibt das Ziel dieses Punkts.
+   seit dem Autor-Entscheid vom 2026-09-07 ist sie zugleich die künftige
+   **ausgelieferte Schreibhand** der Seite, nicht nur ein Zubringer
+   (siehe [„Drei Rollen“](#drei-rollen-tafel--platte--eigenhand)).
+   Der offene Upload-Weg für Nutzende bleibt das Ziel dieses Punkts.
    Drei Anschluss-Pfade:
    - **Optimieren** — wo weicht die eigene Hand stark von der Norm ab?
      Wo ist sie inkonsistent? Konkretes statt allgemeines Feedback.
