@@ -364,11 +364,29 @@ WIDEST = {
 # v6-candidate paragraph shortened alongside it; `mess-runde` is NOT raised —
 # its register row fits in the headroom that budget already has. Re-measured
 # with everything in: 7 765, plus the documented 10 %.
+#
+# `mess-runde-eintrag` raised for the FIRST time on 2026-09-07, by „Laufform
+# LF16" — and the reason is the shape of that entry, not its prose. It carries
+# what the doctrine asks of an ADOPTION (what flipped, what deliberately did
+# not, the base and its acceptance) AND a full pre-registration of the judging
+# round the adoption's write waits on, because splitting them would put an
+# adoption and its own instrument in two entries that only make sense together.
+# The ceiling it met was never measured against that shape: 4 503 comes from
+# rounds that book one thing. The entry was condensed FOUR times against it
+# (4 592 → 4 548 → 4 532 → 4 514 → 4 500) and passed at exactly +0 — then the
+# PR review found a residual the fixed-point claim owes a reader (the
+# harvestability gate still composes with the rows; measured 189 verdicts, 0
+# disagreements), which is 125 tokens no later reader can do without. At that
+# point the gate had stopped separating a paragraph from a rewrite, which is
+# the state the `werkzeug-abschnitt` note above already calls out. So:
+# re-measured at 4 507 and given the documented 10 % headroom, like every other
+# path. What this does NOT license is a longer NARRATIVE — the trims above
+# stay, and an entry that books one thing has no business near this ceiling.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
     "mess-runde": 30_633,
     "mess-runde-route": 8_541,
-    "mess-runde-eintrag": 4_503,
+    "mess-runde-eintrag": 4_957,
     "glyph-optimierung": 8_504,
     "komposition": 9_680,
     "frontend": 15_018,

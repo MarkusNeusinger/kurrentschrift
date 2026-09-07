@@ -170,15 +170,22 @@ uv run python -m tools.tracebench.view --expect-root <digest>
 - **The rulers stay frozen during the round.** Edit the follower, never
   `word_metric.py`, `tracebench` or the fixture roots — that is the
   frozen-ruler rule, and breaking it silently rewrites history.
-- **A Laufform round harvests TWICE before it recommends a write** (§14
-  „Laufform LF14"/„LF15"): the harvest composes the word from the running
-  forms and seeds the chain there, so it reads the rows it is about to
-  replace, and the iteration does not settle — 0.005–0.063 xh per step,
-  with the accepted occurrence set moving with it. So a candidate card is
-  compared against a CONTROL card from the same run, never against the
-  stored rows alone, and the second harvest (`--laufform <card>`) says how
-  much of the difference belongs to the arm. The recipe is in
-  `werkzeuge.md` next to the tool.
+- **A Laufform round harvests TWICE before it recommends a write** — and
+  since A38 (§14 „Laufform LF16", `sep07`) the second run must come out
+  **byte-identical**, because the harvest seeds from the chart by default
+  (`--chain-seed chart`) and no longer reads the rows it is about to
+  replace. A difference is therefore a FINDING (something other than the
+  rows moved), not the iteration it used to be: with the old `composed`
+  seed the map drifted 0.005–0.063 xh per step and the accepted occurrence
+  set moved with it (§14 „Laufform LF14"/„LF15"). What has not changed: a
+  candidate card is compared against a CONTROL card from the same run —
+  now `--chain-seed composed` — never against the stored rows alone. The
+  recipe is in `werkzeuge.md` next to the tool.
+- **The trace bench and the follower keep their own `composed` seed.** Only
+  the HARVEST default flipped; `tracebench --chain-seed` and
+  `pairlab.follow --chain-seed` still default to `composed`, because their
+  `chain` candidate is the frozen base every measured arm is graded
+  against. A round that quotes a `chain` number has not changed base.
 - **`routeg` (Nullprobe) is never optimised** by doctrine
   (`tintenfolger.md` §7.6) — it is the control, so a "better" Nullprobe is
   a bug in the round, not a result.
