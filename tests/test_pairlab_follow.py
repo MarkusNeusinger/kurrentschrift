@@ -476,7 +476,9 @@ def test_the_word_pipeline_mirrors_the_harvest_at_rounds_zero(synthetic) -> None
     from tools.laufform.harvest import HarvestOptions, chain_word_strokes
 
     case, result, _windows, _fit = synthetic
-    harvest_strokes, _meta = chain_word_strokes(case, result, HarvestOptions(path="chain"))
+    # Both seeds are named, because the two tools no longer share a default:
+    # the harvest seeds from the chart since A38, the follower still composes.
+    harvest_strokes, _meta = chain_word_strokes(case, result, HarvestOptions(path="chain", chain_seed="composed"))
     info = follow_derived(case, result, weights=FollowWeights(rounds=0))
     assert info["status"] == "ok"
     assert info["strokes"] == harvest_strokes

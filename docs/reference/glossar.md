@@ -1984,8 +1984,12 @@ auch nicht: gemessen `sep06` wandert die Iteration in jedem Schritt um
 Befehl gibt zweimal dieselbe Karte), sondern eine Rückkopplung, und die
 praktische Folge steht in `werkzeuge.md`: eine Re-Harvest-Karte gehört
 gegen eine KONTROLLKARTE aus demselben Lauf gehalten, nie nur gegen den
-Bestand — sonst wird die Iteration als Arm-Effekt gebucht.
-→ messjournal.md §14 „Laufform LF14/LF15 `sep06`", werkzeuge.md
+Bestand — sonst wird die Iteration als Arm-Effekt gebucht. Seit A38
+(2026-09-07) ist die **Chart-Saat** der Ernte-Default, die Ernte also ein
+Fixpunkt; der Doppellauf bleibt als Selbstprüfung stehen, deren Ausgang
+jetzt vorhergesagt ist (byte-gleich) und deren Abweichung ein Befund
+wäre.
+→ messjournal.md §14 „Laufform LF14/LF15 `sep06`", „Laufform LF16 `sep07`", werkzeuge.md
 
 **Chart-Saat** *(`chain_seed="chart"`, `tools/laufform/harvest.py`)* — die
 Saat, die die Rückkopplung durchschneidet, und damit der Arm gegen den
@@ -1997,9 +2001,13 @@ Komposition OHNE Laufform-Zeilen aufsetzen — auf dem Duktus-Prior, den
 keine Ernte schreibt —, während Fit, Gates, Reparatur und Median
 unverändert gegen die Tinte laufen. Die Karte ist damit eine Funktion von
 Tinte und Prior allein und in EINEM Schritt Fixpunkt (gemessen
-byte-gleich, Vorkommen eingeschlossen). Default AUS; der Preis steht
-neben dem Gewinn im §14-Eintrag.
-→ messjournal.md §14 „Laufform LF15 `sep06`"
+byte-gleich, Vorkommen eingeschlossen). **Default der Ernte seit dem
+Autor-Entscheid A38 (2026-09-07)**; `--chain-seed composed` reproduziert
+jede Runde davor, und Trace-Bench wie Folger behalten `composed`, weil
+ihr `chain`-Kandidat die eingefrorene Basis jedes gemessenen Arms ist.
+Der Preis steht neben dem Gewinn im §14-Eintrag (`sep07`: 227 statt 234
+angenommene Vorkommen, an `connector_degenerate`, nicht an der Fitgüte).
+→ messjournal.md §14 „Laufform LF15 `sep06`", „Laufform LF16 `sep07`"
 
 **Spike-Verhältnis** *(`anchor_spike_ratio`, Gate `anchor_spike`)* — die
 Kennzahl hinter dem **Anker im leeren Papier**: größter Schritt zwischen

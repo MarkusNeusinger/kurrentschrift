@@ -365,10 +365,28 @@ WIDEST = {
 # its register row fits in the headroom that budget already has. Re-measured
 # with everything in: 7 765, plus the documented 10 %.
 #
-# …and then a THIRD time the same day, by „Komma-Ausschluss", which landed
-# beside K-E rather than after it — the two rounds ran in parallel and their
-# raises met in the merge, so this number is measured on the merged page and
-# not on either branch. That round re-baselines the word root, so
+# `mess-runde-eintrag` raised for the FIRST time on 2026-09-07, by „Laufform
+# LF16" — and the reason is the shape of that entry, not its prose. It carries
+# what the doctrine asks of an ADOPTION (what flipped, what deliberately did
+# not, the base and its acceptance) AND a full pre-registration of the judging
+# round the adoption's write waits on, because splitting them would put an
+# adoption and its own instrument in two entries that only make sense together.
+# The ceiling it met was never measured against that shape: 4 503 comes from
+# rounds that book one thing. The entry was condensed FOUR times against it
+# (4 592 → 4 548 → 4 532 → 4 514 → 4 500) and passed at exactly +0 — then the
+# PR review found a residual the fixed-point claim owes a reader (the
+# harvestability gate still composes with the rows; measured 189 verdicts, 0
+# disagreements), which is 125 tokens no later reader can do without. At that
+# point the gate had stopped separating a paragraph from a rewrite, which is
+# the state the `werkzeug-abschnitt` note above already calls out. So:
+# re-measured at 4 507 and given the documented 10 % headroom, like every other
+# path. What this does NOT license is a longer NARRATIVE — the trims above
+# stay, and an entry that books one thing has no business near this ceiling.
+#
+# `mess-runde-route` raised a THIRD time the same day, by „Komma-Ausschluss",
+# which landed beside K-E and LF16 rather than after them — the rounds ran in
+# parallel and their raises met in the merge, so this number is measured on the
+# merged page and not on any branch. That round re-baselines the word root, so
 # `verfahren-kette.md` owes two things that live nowhere else: its Stand block
 # must name the root the numbers were measured on (an old digest there is
 # exactly the failure the `--expect-root` sensor exists to prevent), and its
@@ -378,13 +396,28 @@ WIDEST = {
 # then 275, then 231) and the ledger row keeps only what a later reader must
 # be able to act on: that the route is provably unmoved, and the one measured
 # reason why the ink-evidence mask could not have removed the punctuation
-# itself. `mess-runde` is not raised again either. Re-measured on the merged
-# page: 7 995, plus the documented 10 %.
+# itself. `mess-runde-eintrag` is not raised for it — the entry sits at 2 842,
+# well under LF16's ceiling. Re-measured on the merged page: 8 163, plus the
+# documented 10 %.
+#
+# `mess-runde` raised with it, and the reason is the parallelism rather than
+# any one round: THREE §14 rounds landed on 2026-09-07 (K-E, LF16 and this
+# one), each owing the register the one row per entry that table exists for,
+# and the 213 tokens of headroom the budget had left do not stretch to three.
+# This round's share is ~500 across the whole path — a register row, a headline
+# ledger row (it moves a headline, so the ledger owes the digest of the root it
+# was measured on), two Stand rows in `verfahren.md`, and the Stand sentences
+# in `qualitaetsmetrik.md` and `tintenfolger.md` that name the new root. The
+# register row was condensed three times before this raise was written (394 →
+# 230 → 160) and the ledger row twice (224 → 180); neither can shed the digest
+# or the counter-finding without becoming an index nobody can act on, and
+# deleting a row to buy headroom is what the register forbids. Re-measured with
+# everything in: 30 920, plus the documented 10 %.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
-    "mess-runde": 30_633,
+    "mess-runde": 34_012,
     "mess-runde-route": 8_795,
-    "mess-runde-eintrag": 4_503,
+    "mess-runde-eintrag": 4_957,
     "glyph-optimierung": 8_504,
     "komposition": 9_680,
     "frontend": 15_018,
