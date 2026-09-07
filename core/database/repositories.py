@@ -900,6 +900,9 @@ class EigenhandRepository:
                     # derives the suggestion and the rank off the Kartei shape,
                     # so terminal and workbench read one dict and cannot disagree.
                     "befund": row.befund,
+                    # The Fleckenmaske rides along for the same reason
+                    # (`core.eigenhand.flecken.flecken_index`).
+                    "flecken": row.flecken,
                 }
             )
         return kartei
@@ -997,6 +1000,15 @@ class EigenhandRepository:
     # would have missed every lookup (found in review, PR #410). The hashes come
     # from `strips_of()`/`GET /eigenhand/archive/{hand}`, which carry them
     # already and are what the manifest reads.
+
+    async def fassung(self, hand: str, strip: str, fassung: str) -> EigenhandFassung | None:
+        """One judged row by its Fassung id — where the strip's Fleckenmaske lives."""
+        result = await self.session.execute(
+            select(EigenhandFassung).where(
+                EigenhandFassung.hand == hand, EigenhandFassung.strip == strip, EigenhandFassung.fassung == fassung
+            )
+        )
+        return result.scalar_one_or_none()
 
     async def fassung_for_row(self, hand: str, sheet: str, row_index: int) -> EigenhandFassung | None:
         """The verdict already recorded for one printed row, if any (idempotency)."""

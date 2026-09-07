@@ -513,6 +513,13 @@ Gespeichert wird nur die Messung, Vorschlag und Rang entstehen beim Lesen.
 `core/eigenhand/befund.py`.
 → [§5](glossar.md#5-werkbank-und-prozess) · eigenhand-erfassung.md §7.3
 
+**Fleckenmaske** — die Toner-Punkte des Druckers als Kreisliste in den
+Millimetern des Streifen-Crops, beim Abruf mit lokaler Papierfarbe gefüllt.
+Das abgelegte Bild bleibt unberührt (`?flecken=mit` zeigt es roh). Automatik
+nur weit weg von der Schrift; i-Punkte, Kommas und eigene Kleckse gehören
+dem runden Pinsel in der Werkbank. `core/eigenhand/flecken.py`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · eigenhand-erfassung.md §7.4
+
 ---
 
 ## 6 · Öffentliche Seiten

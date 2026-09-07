@@ -11,16 +11,29 @@ Vertically a word crop keeps the FULL strip height. The interesting part of a
 word is how far it reaches above the waist and below the baseline, so cropping
 to the band would throw away exactly what one wants to look at.
 
-Everything but `cut_png` and `without_rulings` is arithmetic on millimetres and
-pixels. `cut_png` re-encodes the stored pixels unchanged — grayscale or colour,
-whatever was filed (two-channel doctrine: no binarisation baked into what gets
-served). `without_rulings` is the one DERIVED view: a colour strip with its
-cyan rulings lifted to paper, computed on request and never stored.
+Everything but `cut_png`, `without_rulings` and `without_flecken` is arithmetic
+on millimetres and pixels. `cut_png` re-encodes the stored pixels unchanged —
+grayscale or colour, whatever was filed (two-channel doctrine: no binarisation
+baked into what gets served). The other two are DERIVED views, computed on
+request and never stored: `without_rulings` lifts a colour strip's cyan
+rulings to paper, `without_flecken` paints local paper into the circles of the
+Fleckenmaske (`core.eigenhand.flecken` — the printer's toner specks, removed
+as data because the filed bytes are the reserved dataset's primary evidence).
+
+`without_flecken` runs BEFORE a word is cut out and `without_rulings` after:
+the mask's circles are millimetres from the strip's own corner, while the
+ruling view only needs colour.
 """
 
 from __future__ import annotations
 
 import io
+from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:  # the image stack stays a lazy import — see `cut_png`
+    import numpy as np
 
 
 def px_per_mm(width_px: int, cut_mm: list[float] | tuple[float, ...]) -> float:
@@ -112,6 +125,25 @@ RULING_LUM_MIN = 0.45  # below this it is ink, whatever its tint
 PAPER_PERCENTILE = 90
 
 
+def working_plane(png: bytes) -> np.ndarray:
+    """A stored strip as the plane every reading runs on (0 = black, 1 = paper).
+
+    The BLUE channel of a colour strip — where the pale cyan rulings sit nearest
+    to paper, the plane the import detects and QC's on — and the grayscale of a
+    greyscale one. One function rather than one per caller: `apply` reads it off
+    the local file and the API off the stored bytes, and two spellings of „the
+    plane" would let a Befund measured locally and one measured on the server
+    disagree about the same strip.
+    """
+    import numpy as np
+    from PIL import Image
+
+    with Image.open(io.BytesIO(png)) as image:
+        colour = image.mode in ("RGB", "RGBA")
+        array = np.asarray(image.convert("RGB") if colour else image.convert("L"), dtype=np.float32) / 255.0
+    return array[:, :, 2] if colour else array
+
+
 def without_rulings(png: bytes) -> bytes:
     """A strip with its cyan rulings dropped — a DERIVED view of a colour strip.
 
@@ -137,6 +169,39 @@ def without_rulings(png: bytes) -> bytes:
     plane[ruling] = float(np.percentile(blue, PAPER_PERCENTILE))
     buffer = io.BytesIO()
     Image.fromarray((np.clip(plane, 0.0, 1.0) * 255).astype(np.uint8), mode="L").save(
+        buffer, format="PNG", optimize=True
+    )
+    return buffer.getvalue()
+
+
+def without_flecken(png: bytes, circles: "Sequence[Mapping[str, object]]", px_per_mm: float) -> bytes:
+    """A strip with its Fleckenmaske applied — the second DERIVED view.
+
+    Every circle of the mask (`core.eigenhand.flecken`) is filled with the
+    paper level read off a ring around it, in the image's own mode: a colour
+    strip stays colour, a greyscale one stays greyscale. Nothing else moves,
+    and the stored bytes are not touched — drop the mask and the raw strip is
+    back, byte for byte. `px_per_mm` is the crop's scale, the same one the mask
+    coordinates were measured in.
+
+    Applied BEFORE a word is cut out: the circles are millimetres from the
+    strip's top-left corner, so masking a cut-down image would place them
+    against the wrong origin.
+    """
+    if not circles:
+        return png
+
+    import numpy as np
+    from PIL import Image
+
+    from core.eigenhand.flecken import paint_out
+
+    with Image.open(io.BytesIO(png)) as image:
+        mode = "RGB" if image.mode in ("RGB", "RGBA") else "L"
+        array = np.asarray(image.convert(mode), dtype=np.float32) / 255.0
+    painted = paint_out(array, circles, px_per_mm)
+    buffer = io.BytesIO()
+    Image.fromarray((np.clip(painted, 0.0, 1.0) * 255).astype(np.uint8), mode=mode).save(
         buffer, format="PNG", optimize=True
     )
     return buffer.getvalue()

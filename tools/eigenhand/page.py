@@ -26,7 +26,7 @@ import html
 import json
 from pathlib import Path
 
-from tools.eigenhand.store import check_crop_name
+from tools.eigenhand.store import WORK_DPI, check_crop_name
 from tools.eigenhand.store import sheet_dir as store_sheet_dir
 
 
@@ -40,7 +40,14 @@ h1 { font-size: 18px; margin: 0 0 6px; }
 .confirm img { max-width: 480px; width: 100%; border: 1px solid #d6d4cb; background: #fff; }
 .sieb { margin: 10px 18px; padding: 10px 14px; background: #fff8e6; border: 1px solid #e5d9a8; font-size: 14px; }
 .row { margin: 14px 18px; padding: 12px; background: #fff; border: 1px solid #d6d4cb; border-radius: 4px; }
-.row img { width: 100%; image-rendering: auto; border: 1px solid #eee; background: #fff; }
+.row img { width: 100%; image-rendering: auto; border: 1px solid #eee; background: #fff; display: block; }
+/* The detected Fleckenmaske, drawn OVER the crop and never into it: the
+   circles ride on an SVG scaled to the strip's own millimetres, so what the
+   eye checks here is the same list the workbench's brush later edits. */
+.crop { position: relative; }
+.crop svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.crop circle { fill: none; stroke: #c0392b; stroke-width: 0.12; opacity: 0.85; }
+.flecken { color: #a05a00; font-size: 13px; }
 .rowhead { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 6px; }
 .rowhead b { font-size: 15px; }
 .qc { color: #a05a00; font-size: 13px; }
@@ -164,6 +171,33 @@ def _data_uri(path: Path) -> str:
     return "data:image/png;base64," + base64.b64encode(path.read_bytes()).decode()
 
 
+def _png_size_mm(path: Path) -> tuple[float, float]:
+    """The crop's size in millimetres, straight out of the IHDR chunk.
+
+    No image library: the page is a rendering step of a tool family that runs
+    without one, and the crops come out of `ingest` at exactly `WORK_DPI`.
+    """
+    header = path.read_bytes()[:24]
+    if not header.startswith(b"\x89PNG\r\n\x1a\n") or header[12:16] != b"IHDR":
+        raise SystemExit(f"{path} is not a PNG with a leading IHDR chunk")
+    scale = WORK_DPI / 25.4
+    return (int.from_bytes(header[16:20], "big") / scale, int.from_bytes(header[20:24], "big") / scale)
+
+
+def _flecken_svg(circles: list[dict], path: Path) -> str:
+    """The detected specks as an overlay — a hint for the eye, never a change to the crop."""
+    if not circles:
+        return ""
+    width_mm, height_mm = _png_size_mm(path)
+    marks = "".join(
+        f'<circle cx="{float(c["x_mm"]):.2f}" cy="{float(c["y_mm"]):.2f}" r="{float(c["r_mm"]) * 2.5:.2f}"/>'
+        for c in circles
+    )
+    return (
+        f'<svg viewBox="0 0 {width_mm:.2f} {height_mm:.2f}" preserveAspectRatio="none" aria-hidden="true">{marks}</svg>'
+    )
+
+
 def build_page(payload: dict, import_dir: Path) -> str:
     esc = html.escape  # escapes quotes too — safe for text AND attribute contexts
     fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:16]
@@ -183,10 +217,23 @@ def build_page(payload: dict, import_dir: Path) -> str:
         pen = "angenommen" if row.get("pen_mark") == "angenommen" else ""
         pen_chip = '<span class="pen">Stift auf dem Blatt: Haken</span>' if pen else ""
         reason_buttons = "".join(f'<button type="button" data-reason="{esc(r)}">{esc(r)}</button>' for r in REASONS)
+        # The detected Fleckenmaske: circled on the crop so the eye can check
+        # the finding, and named in the head so a row with specks says so. It
+        # changes nothing here — the crop is the captured one, the mask is data
+        # (proposal §7.4), and the workbench's brush is where it is corrected.
+        specks = list(row.get("flecken") or [])
+        speck_note = (
+            f'<span class="flecken">● {len(specks)} Fleck(en) erkannt — im Admin-Bereich radierbar</span>'
+            if specks
+            else ""
+        )
         rows_html.append(f"""
 <div class="row" data-uid="{esc(row["uid"])}" data-pen="{esc(pen)}">
-  <div class="rowhead"><b>{esc(row["strip"])}{attempt}</b> <span>{esc(" · ".join(row["words"]))}</span> {pen_chip} {qc}</div>
-  <img src="{_data_uri(import_dir / crop_name)}" alt="{esc(row["strip"])}">
+  <div class="rowhead"><b>{esc(row["strip"])}{attempt}</b> <span>{esc(" · ".join(row["words"]))}</span> {pen_chip} {qc} {speck_note}</div>
+  <div class="crop">
+    <img src="{_data_uri(import_dir / crop_name)}" alt="{esc(row["strip"])}">
+    {_flecken_svg(specks, import_dir / crop_name)}
+  </div>
   <div class="verdicts">
     <button type="button" data-verdict="angenommen">Annehmen</button>
     <button type="button" data-verdict="verworfen">Verwerfen</button>

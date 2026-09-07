@@ -772,6 +772,14 @@ class EigenhandFassung(Base):
     # changes the moment a better Fassung arrives. NULL where a Fassung was
     # filed before the Befund existed — "no reading", never "a bad one".
     befund: Mapped[dict | None] = mapped_column(PORTABLE_JSON, nullable=True)
+    # The Fleckenmaske (0030) — the printer's toner specks as a list of circles
+    # in the strip crop's own millimetres, each with its `quelle` (`auto` from
+    # the detector, `hand` from the workbench's brush). DATA, not pixels: the
+    # filed strip is never modified, the mask is applied on read
+    # (`core.eigenhand.crop.without_flecken`). NULL means „nobody has looked
+    # yet", an empty list „looked, nothing to erase" — the sync fills only the
+    # first of the two, so a hand edit is never overwritten by a re-push.
+    flecken: Mapped[list | None] = mapped_column(PORTABLE_JSON, nullable=True)
     # The EFFECTIVE session material, denormalised from the hand's standing
     # setup (0025). A Fassung says out of itself what it was written with — no
     # join, and no implicit "NULL means like the hand": the day the nib really

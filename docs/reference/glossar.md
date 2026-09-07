@@ -62,7 +62,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
-- **F** — Fassung (Eigenhand) §5 · Feder-Entfaltung §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
+- **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
@@ -3710,6 +3710,33 @@ liest daraus (Prüfstein 2).
 --befund`, hochgeschoben von `sync.py`, gezeigt als Chips in
 `/admin/eigenhand`.
 → proposals/eigenhand-erfassung.md §7.3
+
+**Fleckenmaske** — die Toner-Punkte des Druckers, entfernt als DATEN statt
+als Pixel (Autor-Meldung 2026-09-07: „Mein Laserdrucker macht leider im
+rechten Bereich unkontrolliert schwarze Punkte"). Eine Liste von Kreisen in
+den Millimetern des Streifen-Crops (`[{x_mm, y_mm, r_mm, quelle}]`,
+`quelle` = `auto` vom Detektor beim Einlesen oder `hand` vom runden Pinsel
+der Werkbank); beim Abruf wird dort die LOKALE Papierfarbe eingefüllt (aus
+einem Ring um den Kreis, nie Weiß — ein Scan-Papier ist weder weiß noch
+gleichmäßig). Das abgelegte Bild bleibt unberührt: Zwei-Kanal-Doktrin, wie
+bei der Lineatur-Ansicht — Maske löschen heißt Rohbild zurück, Byte für
+Byte (`?flecken=mit` zeigt es jederzeit). Die automatische Hälfte ist
+bewusst schüchtern: sie fasst nur an, was klein ist
+(`SPECK_MAX_EXTENT_MM` 0,6), keine Schrift berührt
+(`WRITING_MIN_AREA_MM2` 1,0 trennt Buchstabe von Punkt), frei steht
+(`SPECK_CLEARANCE_MM` 2,5) und nicht als Punkt über einem Buchstaben sitzt
+(`DOT_MAX_RISE_MM`) — i-Punkte, Kommas und eigene Kleckse bleiben stehen
+und sind Sache des Pinsels. Dieselbe Rechnung liest das Verdikt-Kästchen:
+punktgroße Komponenten fallen aus der Zählung, **ein Haken ist ein Strich**
+(`MARK_MIN_STROKE_MM`), damit drei Flecken keinen Haken vortäuschen. EINE
+Richtung: gefunden wird lokal, radiert wird oben — `sync` füllt nur eine
+Zeile ohne Maske, `pull --flecken` holt die hand-korrigierte zurück.
+*Technisch:* `core/eigenhand/flecken.py` (`find_flecken` · `read_mark` ·
+`paint_out` · `check_circles`), `core/eigenhand/crop.py::without_flecken`,
+`eigenhand_fassungen.flecken` (Migration `0030`),
+`PATCH /eigenhand/strips/{hand}/{strip}/{fassung}/flecken`,
+`app/src/sections/admin/eigenhand/FleckenEditor.tsx`.
+→ proposals/eigenhand-erfassung.md §7.4
 
 **Vorschlag (Streifen-Befund)** — die dreistufige Empfehlung eines
 Streifen-Befunds: `sauber` (nichts fällt auf) · `brauchbar` (etwas fällt

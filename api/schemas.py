@@ -1221,6 +1221,45 @@ class EigenhandSheetImportIn(BaseModel):
     layout_sha256: str
 
 
+class EigenhandFleck(BaseModel):
+    """One circle of a Fleckenmaske — millimetres from the strip crop's corner.
+
+    The mask is DATA: the filed strip is never modified, `crop.without_flecken`
+    paints local paper into these circles on read. `quelle` says who put it
+    there — `auto` the detector at import time, `hand` the workbench's brush.
+
+    Neither `In` nor `Out`: a circle has the same shape in both directions, and
+    naming it for one of them would make the other read like a mistake.
+
+    The bounds here are a sanity net only. What actually binds is checked
+    against the strip the mask belongs to (`core.eigenhand.flecken
+    .check_circles`): the centre has to lie inside that strip and the radius
+    within the brush's range, which no wire type can know on its own.
+    """
+
+    x_mm: Annotated[float, Field(ge=0, le=1000)]
+    y_mm: Annotated[float, Field(ge=0, le=1000)]
+    r_mm: Annotated[float, Field(gt=0, le=100)]
+    quelle: Literal["auto", "hand"] = "hand"
+
+
+class EigenhandFleckenIn(BaseModel):
+    """A Fleckenmaske as the workbench saves it — a FULL replacement of the list.
+
+    Full replace, not a patch of single circles: the brush both adds and
+    removes, and a merge would have to guess which of the two a missing circle
+    was. The view holds the whole list anyway.
+    """
+
+    flecken: list[EigenhandFleck]
+
+
+class EigenhandFleckenOut(BaseModel):
+    strip: str
+    fassung: str
+    flecken: list[EigenhandFleck]
+
+
 class EigenhandFassungIn(BaseModel):
     """One judged row, pushed up by the local Siebung — verdict only, no pixels."""
 
@@ -1246,6 +1285,16 @@ class EigenhandFassungIn(BaseModel):
     # Numbers only — the suggestion, its reason and the rank are derived on
     # read, so nothing that can go stale is ever stored.
     befund: dict[str, Any] | None = None
+    # The Fleckenmaske as the local detector found it. Pushed only to FILL a
+    # row that has none — the server's list is the master the moment a hand
+    # edit exists, and a re-push of the automatic list must never undo it.
+    # `null` is „nobody has looked yet", an EMPTY list „looked, nothing to
+    # erase"; the two are not the same and the fill rule turns on it.
+    flecken: list[EigenhandFleck] | None = None
+    # Which detector wrote that list, checked like the Befund's format: a newer
+    # tool pushed at an older API would otherwise store circles this code reads
+    # under different semantics — silently, and forever.
+    flecken_format: int | None = None
 
 
 class EigenhandSyncIn(BaseModel):
@@ -1257,6 +1306,10 @@ class EigenhandSyncOut(BaseModel):
     hand: str
     recorded: int
     skipped: int
+    # How many already-recorded rows got their first Fleckenmaske out of this
+    # push. Reported separately from `recorded`: nothing was judged, an
+    # existing row merely gained a reading it did not have.
+    flecken_filled: int = 0
 
 
 class EigenhandUebergangsraumIn(BaseModel):
@@ -1384,6 +1437,10 @@ class EigenhandStripOut(BaseModel):
     words: list[str] = []
     boxes: list[EigenhandStripBoxOut] = []
     befund: EigenhandBefundOut | None = None
+    # The Fleckenmaske of this Fassung, so the view can draw the circles over
+    # the image it just asked for — `null` where nobody has looked yet, which
+    # is not the same as an empty list („looked, nothing to erase").
+    flecken: list[EigenhandFleck] | None = None
 
 
 class EigenhandStripListOut(BaseModel):

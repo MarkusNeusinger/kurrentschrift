@@ -1056,5 +1056,28 @@ export const admin = {
       'Diese Fassung wurde abgelegt, bevor der Streifen-Befund gemessen wurde. Fehlende Messung heißt nicht schlechte Fassung.',
     befundSort: 'nach Befund sortieren',
     befundSortHint: 'Schwächste Fassung zuerst — was zuerst neu geschrieben werden sollte.',
+    // Die Fleckenmaske: die Toner-Punkte des Druckers, entfernt als DATEN.
+    // Das gespeicherte Bild bleibt unberührt — die Kreise werden beim Abruf
+    // mit Papierfarbe gefüllt, „roh" zeigt jederzeit die echten Bytes.
+    fleckenTitle: 'Flecken radieren',
+    fleckenStart: 'Flecken radieren',
+    fleckenStartHint:
+      'Runder Pinsel: Klick setzt einen Kreis, Klick auf einen vorhandenen nimmt ihn weg. Gespeichert wird die Kreisliste, nie ein verändertes Bild — der Streifen bleibt Byte für Byte, wie er eingelesen wurde.',
+    fleckenChip: '{{count}} Fleck(en) maskiert',
+    fleckenChipHint:
+      'So viele Kreise trägt dieser Streifen. Beim Abruf wird dort Papierfarbe eingefüllt; das gespeicherte Bild bleibt unverändert.',
+    fleckenBrush: 'Pinsel',
+    fleckenBrushSize: '{{mm}} mm',
+    fleckenCount: '{{count}} Kreise',
+    fleckenUndo: 'Rückgängig',
+    fleckenSave: 'Speichern',
+    fleckenSaved: 'Maske gespeichert.',
+    fleckenSaveError: 'Die Fleckenmaske konnte nicht gespeichert werden.',
+    fleckenClose: 'fertig',
+    fleckenRaw: 'roh',
+    fleckenRawHint:
+      'Zeigt die eingelesenen Bytes mit allen Flecken — zum Nachsehen, was der Drucker wirklich hinterlassen hat.',
+    fleckenHint:
+      'Grün: automatisch erkannt. Braun: von Hand gesetzt. Nah an der Schrift wird nie automatisch radiert — i-Punkte, Kommas und eigene Kleckse bleiben stehen und sind hier von Hand zu treffen.',
   },
 } as const;

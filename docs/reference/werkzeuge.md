@@ -513,7 +513,12 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   Übersprung würde gerade auf dem Wiederherstellungsweg Erfolg melden und
   Streifen weglassen. `pull --sheet B0007`
   holt einen im Admin gedruckten Bogen (Layout + PDF) auf die Platte,
-  damit `ingest` dagegen registrieren kann. Beide brauchen `ADMIN_TOKEN`;
+  damit `ingest` dagegen registrieren kann; **`pull --flecken`** holt die
+  Gegenrichtung: die im Admin von Hand korrigierten **Fleckenmasken**
+  zurück in Kartei und `meta.json`, damit der nächste Schnappschuss sie
+  trägt (§7.4 — die Maske ist das einzige Feld der Kette, dessen Master der
+  Server ist; `sync` füllt oben nur, was noch keine hat, und überschreibt
+  nie eine). Beide brauchen `ADMIN_TOKEN`;
   `--api` zeigt auf eine andere Instanz.
   **`sync --from <Archiv-Snapshot>`** ist der Wiederherstellungsweg: dieselbe
   Push-Logik, nur aus dem Archiv statt aus der Arbeitskopie — damit bringt
@@ -537,6 +542,15 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   Arbeitsebene für Passmarken, QC und Vorschau (Vorgabe: Blau), nicht mehr,
   was abgelegt wird. Die Lineatur verschwindet nicht beim Einlesen, sondern
   als abgeleitete Ansicht beim Abruf (`?lineatur=ohne`, Werkbank-Schalter).
+  Ebenso die **Fleckenmaske** (2026-09-07, §7.4): `ingest` erkennt die
+  Toner-Punkte des Druckers je Zeile, legt sie als Kreisliste in die
+  `payload.json` und flaggt `flecken:<n>`; die Siebung-Seite zeichnet sie
+  über den Crop; `apply` schreibt sie in `meta.json` und Kartei und misst
+  den Befund auf der maskierten Ebene. Gerechnet wird beim Abruf
+  (`?flecken=mit` zeigt die rohen Bytes), radiert wird in der Werkbank —
+  das abgelegte Bild bleibt Byte für Byte, wie es eingelesen wurde. Auch
+  der Haken wird so gelesen: punktgroße Komponenten fallen aus der Zählung,
+  ein Haken muss ein Strich sein.
 - **`report`** — Bestandsbericht (Erstbeleg-/Ausbau-Quote, Fehlstellen,
   Druckvorschlag) und, seit dem **Streifen-Befund** (2026-09-07), die
   Gegenrichtung: je angenommener Fassung Vorschlag (`sauber` · `brauchbar` ·

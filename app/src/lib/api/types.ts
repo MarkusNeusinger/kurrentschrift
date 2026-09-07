@@ -1072,6 +1072,20 @@ export interface EigenhandStripBox {
   items: string[];
 }
 
+// One circle of a Fleckenmaske — millimetres from the strip crop's own
+// top-left corner, never page coordinates. `quelle` says who put it there:
+// `auto` the detector at import time, `hand` the workbench's brush. The mask
+// is DATA — the filed strip keeps every byte it was captured with, and the
+// server paints local paper into these circles on read.
+export type EigenhandFleckQuelle = 'auto' | 'hand';
+
+export interface EigenhandFleck {
+  x_mm: number;
+  y_mm: number;
+  r_mm: number;
+  quelle: EigenhandFleckQuelle;
+}
+
 // One stored strip — metadata only. The pixels come from the image route,
 // which is admin-gated and uncacheable (reserved own-hand dataset).
 export interface EigenhandStrip {
@@ -1088,6 +1102,9 @@ export interface EigenhandStrip {
   words: string[];
   boxes: EigenhandStripBox[];
   befund?: EigenhandBefund | null;
+  // `null` where nobody has looked at this Fassung yet — which is NOT the same
+  // as an empty list („looked, nothing to erase").
+  flecken?: EigenhandFleck[] | null;
 }
 
 // One Fassung's Streifen-Befund — a SUGGESTION, never a status. Everything

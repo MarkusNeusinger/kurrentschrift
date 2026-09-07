@@ -7,9 +7,15 @@ the working resolution (300 DPI: a 6 mm x-height lands at ~71 px, the
 mvp-roadmap M1 floor) → cut one strip crop per row plus per-box QC flags →
 write the review payload the Siebung page renders.
 
-QC flags (``leer`` · ``beschnitten`` · ``blass``) are WARNINGS, never
-auto-verdicts — auto-rejecting would be exactly the selective drop the
-Sieb-Disziplin forbids; the human decides on the page.
+QC flags (``leer`` · ``beschnitten`` · ``blass`` · ``flecken:<n>``) are
+WARNINGS, never auto-verdicts — auto-rejecting would be exactly the selective
+drop the Sieb-Disziplin forbids; the human decides on the page.
+
+Each row also gets its **Fleckenmaske** (``core.eigenhand.flecken``, proposal
+§7.4): the printer's toner specks as circles in the strip's own millimetres,
+so the Siebung page can draw them and the workbench's brush can extend them.
+Circles, not pixels — the filed strip keeps every byte it was captured with,
+and the mask is applied on read.
 
 The crops stay unmodified — and since the author's decision of 2026-08-27
 they keep the capture's COLOUR: a colour capture files RGB strips, a
@@ -38,6 +44,7 @@ from PIL import Image
 from skimage import transform
 
 from core.eigenhand.befund import INK_THRESHOLD, printed_geometry_mask
+from core.eigenhand.flecken import find_flecken, read_mark, writing_window
 from core.extract import load_grayscale
 from tools.eigenhand.fiducial import FiducialError, check_mark_size, detect_fiducials, orient_corners
 from tools.eigenhand.store import WORK_DPI, load_setup
@@ -73,9 +80,11 @@ MIN_DPI_WARN = 250.0
 LEER_MIN_INK_PX = 40
 # Verdict box (geometry.mark_box): a tick covers a good part of the box, a
 # stray speck does not. Measured on the INNER area only, so the printed
-# outline itself can never read as a mark.
+# outline itself can never read as a mark. The thresholds and the speck
+# subtraction live in `core.eigenhand.flecken.read_mark` — the printer drops
+# toner into these boxes too, and three specks came to more than a tick's
+# share of the box before that reading existed (proposal §7.4).
 MARK_INSET_MM = 0.9
-MARK_MIN_FRACTION = 0.04
 
 
 def _mm(px_value: float) -> float:
@@ -204,6 +213,11 @@ def read_pen_mark(warped: np.ndarray, row: dict) -> str | None:
     ``verworfen`` with a reason where a defect is worth recording. A layout
     without a mark box (a sheet printed before the boxes existed) yields
     ``None`` as well.
+
+    The reading subtracts the printer's specks (``flecken.read_mark``): a tick
+    is a stroke, a speck is a dot, and a box with three specks in it must read
+    as untouched — otherwise a printer defect files a row the author never
+    accepted.
     """
     rect = row.get("mark_mm")
     if not rect:
@@ -211,8 +225,7 @@ def read_pen_mark(warped: np.ndarray, row: dict) -> str | None:
     x0, y0, x1, y1 = rect
     inset = _px(MARK_INSET_MM)
     patch = warped[_px(y0) + inset : _px(y1) - inset, _px(x0) + inset : _px(x1) - inset]
-    fraction = float((patch < INK_THRESHOLD).mean()) if patch.size else 0.0
-    return "angenommen" if fraction >= MARK_MIN_FRACTION else None
+    return "angenommen" if read_mark(patch, PX_PER_MM).tick else None
 
 
 def build_payload(
@@ -266,6 +279,19 @@ def build_payload(
         qy1_px = _px(band["desc_bot"] + ROW_PAD_MM)
         qc_crop = warped[qy0_px:qy1_px, qx0_px : _px(boxes_x1 + ROW_PAD_MM)]
         pen_mark = read_pen_mark(warped, row)
+        # The Fleckenmaske is measured on the STRIP's own rectangle, in the
+        # strip's own millimetres — the same rectangle that is filed, so the
+        # circles place themselves in the DB image and in the archive copy
+        # without a page origin anywhere. Working plane, not colour: this is a
+        # detection, and detection has run on that plane since the import
+        # existed. What the detector finds is a proposal, not a verdict — the
+        # Siebung page draws the circles and the workbench's brush is what
+        # settles them (proposal §7.4).
+        specks = find_flecken(
+            warped[y0_px:y1_px, x0_px:x1_px],
+            px_per_mm=PX_PER_MM,
+            detectable=writing_window((y1_px - y0_px, x1_px - x0_px), row, x0_px, y0_px, PX_PER_MM),
+        )
         crop_name = row_crop_name(index)
         Image.fromarray(
             (np.clip(crop, 0.0, 1.0) * 255).astype(np.uint8), mode="RGB" if colour is not None else "L"
@@ -278,8 +304,11 @@ def build_payload(
                 "attempt": row["attempt"],
                 "attempts": row["attempts"],
                 "words": [box["word"] for box in row["boxes"]],
-                "qc": qc_flags(qc_crop, row, qx0_px, qy0_px),
+                # A WARNING like the others, never a verdict: a strip with
+                # specks is still a good strip, it just needs them painted out.
+                "qc": qc_flags(qc_crop, row, qx0_px, qy0_px) + ([f"flecken:{len(specks)}"] if specks else []),
                 "pen_mark": pen_mark,
+                "flecken": specks,
                 "crop": crop_name,
                 "crop_origin_mm": [round(_mm(x0_px), 3), round(_mm(y0_px), 3)],
             }

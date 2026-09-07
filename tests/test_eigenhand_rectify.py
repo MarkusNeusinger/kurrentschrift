@@ -109,6 +109,32 @@ class TestRectify:
         assert abs(width_px / ingest.PX_PER_MM - (cut[2] - cut[0])) < 0.5
         assert abs(height_px / ingest.PX_PER_MM - (cut[3] - cut[1])) < 0.5
 
+    def test_a_printer_speck_lands_in_the_rows_fleckenmaske(self, tmp_path, monkeypatch):
+        # The mask is measured on the STRIP's own rectangle and stated in the
+        # strip's own millimetres, so the same numbers place the circle in the
+        # filed PNG, in the DB copy and in the workbench (proposal §7.4). It is
+        # a WARNING and never a verdict: the crop is filed exactly as captured.
+        monkeypatch.setenv("EIGENHAND_DATA", str(tmp_path / "own-hand"))
+        layout = _layout()
+        warped, dpi, _marks = ingest.rectify(_distorted_capture(layout), layout)
+        speck_mm = (60.0, 24.0)  # inside the first word box, clear of every ruling
+        top, left = int(mm_to_px(speck_mm[1], 300.0)), int(mm_to_px(speck_mm[0], 300.0))
+        warped[top : top + 5, left : left + 5] = 0.05
+        scan = tmp_path / "scan.png"
+        Image.fromarray(np.zeros((4, 4), dtype=np.uint8)).save(scan)
+        session = {"date": "2026-09-07", "feder": "", "tinte": "", "papier": "", "geraet": "scanner"}
+        payload = ingest.build_payload("test-suetterlin", "B0001", layout, warped, scan, session, dpi)
+
+        row = payload["rows"][0]
+        assert len(row["flecken"]) == 1, row["flecken"]
+        assert "flecken:1" in row["qc"]
+        cut = layout["rows"][0]["cut_mm"]
+        assert row["flecken"][0]["x_mm"] == pytest.approx(speck_mm[0] - cut[0], abs=0.4)
+        assert row["flecken"][0]["y_mm"] == pytest.approx(speck_mm[1] - cut[1], abs=0.4)
+        assert row["flecken"][0]["quelle"] == "auto"
+        assert payload["rows"][1]["flecken"] == []
+        assert "flecken:1" not in payload["rows"][1]["qc"]
+
     def test_a_colour_capture_files_colour_strips_on_the_planes_geometry(self, tmp_path, monkeypatch):
         # Author's decision 2026-08-27: the filed strip keeps the capture's
         # colour; the working plane only drives detection and QC. ONE
@@ -346,6 +372,18 @@ class TestPenMark:
         x0, y0, _x1, _y1 = layout["rows"][0]["mark_mm"]
         top, left = int(mm_to_px(y0 + 2.4, 300.0)), int(mm_to_px(x0 + 2.4, 300.0))
         page[top : top + 2, left : left + 2] = 0.05
+        assert ingest.read_pen_mark(page, layout["rows"][0]) is None
+
+    def test_three_printer_specks_do_not_add_up_to_a_tick(self):
+        # The author's laser drops toner into the verdict column too, and three
+        # specks came to more than a tick's share of the box before the
+        # Fleckenmaske's reading existed — a printer defect would have filed a
+        # row he never accepted. A tick is a STROKE (proposal §7.4).
+        page, layout = self._page_with_ticks(set())
+        x0, y0, _x1, _y1 = layout["rows"][0]["mark_mm"]
+        for dx, dy in ((1.6, 1.6), (2.5, 2.9), (3.4, 1.9)):
+            top, left = int(mm_to_px(y0 + dy, 300.0)), int(mm_to_px(x0 + dx, 300.0))
+            page[top : top + 5, left : left + 5] = 0.05
         assert ingest.read_pen_mark(page, layout["rows"][0]) is None
 
     def test_layout_without_a_mark_box_is_tolerated(self):
