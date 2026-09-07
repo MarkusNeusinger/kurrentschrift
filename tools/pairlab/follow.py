@@ -137,6 +137,12 @@ from tools.pairlab.chain import (
     fit_word_chain,
     respec_from_solution,
 )
+from tools.pairlab.counterevidence import (
+    COUNTER_EVIDENCE_SIZE_CLASSES,
+    COUNTER_EVIDENCE_SIZE_CLASSES_ALL,
+    CounterEvidenceOptions,
+    counter_evidence_case,
+)
 from tools.pairlab.counterfield import (
     COUNTER_SIZE_CLASSES,
     COUNTER_SIZE_CLASSES_ALL,
@@ -623,6 +629,33 @@ class FollowWeights:
     nothing else; `gross` is reachable for an arm of its own and is not part of
     this one (see `counterfield.COUNTER_SIZE_CLASSES` for the probe that
     settled it)."""
+    counter_evidence: bool = False
+    """R4 (`sep07`): the pen taken out of the EVIDENCE at a counter — off by
+    default. The ink term is the distance transform of the frozen mask's
+    SKELETON, and around a small counter that skeleton is the medial axis of two
+    fused pen capsules rather than either pen path — the pinch #551 measured as
+    a local half width of 0.0667 against 0.0968 and LF14 as an indicator of
+    0.689. R3 pushed the finished trace and lost its smoothness; R3c priced the
+    same condition in the solve and could not break a symmetric configuration,
+    because at a fused spot the ink term itself sits on the lump axis. This arm
+    corrects what both argued against: every skeleton pixel closer to an
+    in-scope counter than `counter_evidence_half_width` is pushed out to that
+    level, so the attractor MOVES instead of a force pulling against it
+    (`tools.pairlab.counterevidence`). It replaces the case's skeleton where
+    K-C's ink-evidence mask does, so seed windows, solve fields and coverage
+    targets read ONE evidence; the frozen `ref_mask`/`ref_skel` the bench grades
+    against are untouched, and every consumer outside the follower never
+    constructs the corrected case, so the harvest is byte-identical by
+    construction."""
+    counter_evidence_half_width: float = PLATE_PEN_HALF_WIDTH_UNITS
+    """WHICH pen is taken out, in x-heights: the plate's own nib as #551
+    measured it, the constant the catalogue's size classes are counted in. A
+    property of the WRITING INSTRUMENT, not a weight — lowering it until fewer
+    counters need correcting is what the Kringel diagnosis rules out."""
+    counter_evidence_size_classes: tuple[str, ...] = COUNTER_EVIDENCE_SIZE_CLASSES
+    """WHICH catalogue loops are corrected, by size class. R3's and R3c's own
+    two, so this conversion changes the CHANNEL of the statement and nothing
+    else; `gross` stays an arm of its own."""
     provisional: bool = True
 
 
@@ -2210,6 +2243,11 @@ def follow_derived(
     # grid fits, so seed windows, solve fields and coverage targets all come
     # from ONE evidence. Off → the very same case object, nothing to diff.
     case, ink_report = ink_evidence_case(case, _ink_options(weights))
+    # R4: and the ink the fit may see, with the pen taken out at every counter
+    # the catalogue holds `offen`. Deliberately at K-C's own point, for K-C's
+    # own reason — one evidence for the seed windows, the solve fields and the
+    # coverage targets. Off → the very same case object, nothing to diff.
+    case, counter_evidence_report = counter_evidence_case(case, result, _counter_evidence_options(weights))
     grids = _grid_fits(case, result)
     # R3c: ONE counter field per word, built before the first run and shared by
     # all of them. It reads the frozen mask and the composition, so it is fixed
@@ -2305,6 +2343,11 @@ def follow_derived(
         # The field itself is not serialised (it is an image); what a reader
         # needs is WHICH counters bound and what each one expects.
         **({"counter_constraint": counter.as_dict()} if counter is not None else {}),
+        # R4's per-loop verdicts — present exactly while the arm is on, a loop
+        # the correction refused included with its reason. The corrected
+        # skeleton itself is not serialised (it is an image); what a reader
+        # needs is WHICH counters moved and how many pixels each one cost.
+        **({"counter_evidence": counter_evidence_report.as_dict()} if counter_evidence_report is not None else {}),
     }
     if not word_strokes:
         return {
@@ -2337,6 +2380,16 @@ def _counter_options(weights: FollowWeights) -> CounterFieldOptions:
     """R3c's options from a configuration — the pen and the scope, nothing else."""
     return CounterFieldOptions(
         half_width_units=float(weights.counter_half_width), size_classes=tuple(weights.counter_size_classes)
+    )
+
+
+def _counter_evidence_options(weights: FollowWeights) -> CounterEvidenceOptions | None:
+    """R4's options, or None while the arm is off — the identity default path."""
+    if not weights.counter_evidence:
+        return None
+    return CounterEvidenceOptions(
+        half_width_units=float(weights.counter_evidence_half_width),
+        size_classes=tuple(weights.counter_evidence_size_classes),
     )
 
 
@@ -2442,6 +2495,7 @@ def calibrate_case(
         }
 
     case, _ink_report = ink_evidence_case(case, _ink_options(weights))  # K-C, the same evidence as `follow_derived`
+    case, _counter_report = counter_evidence_case(case, result, _counter_evidence_options(weights))  # R4, likewise
     grids = _grid_fits(case, result)
     runs: list[dict] = []
     for run in _chainable_runs(case, grids):
@@ -2889,6 +2943,29 @@ def build_parser() -> argparse.ArgumentParser:
         "an arm of its own — a `gross` counter binds hardest and buys nothing, three quarters of a "
         "large hole survives any pen)",
     )
+    parser.add_argument(
+        "--counter-evidence",
+        action="store_true",
+        help="R4 (sep07): take the pen out of the EVIDENCE at every counter the Kringel catalogue holds "
+        "`offen` — push each skeleton pixel closer to it than --counter-evidence-half-width out to that "
+        "level, so the ink term's attractor sits on the pen path instead of on the medial axis of two "
+        "fused capsules. The correction is on the evidence, not on the trace and not in the objective; "
+        "the frozen bench mask and skeleton stay as they are",
+    )
+    parser.add_argument(
+        "--counter-evidence-half-width",
+        type=float,
+        default=FollowWeights.counter_evidence_half_width,
+        help="the pen taken out of the evidence, in x-heights (default: the plate's own 0.0968 from "
+        "#551 — the constant the catalogue's size classes are counted in)",
+    )
+    parser.add_argument(
+        "--counter-evidence-size-classes",
+        default=",".join(COUNTER_EVIDENCE_SIZE_CLASSES),
+        help="comma-separated catalogue size classes whose counters are corrected (default: R3's own "
+        f"{','.join(COUNTER_EVIDENCE_SIZE_CLASSES)}; {','.join(COUNTER_EVIDENCE_SIZE_CLASSES_ALL)} is "
+        "the wider scope and an arm of its own)",
+    )
     parser.add_argument("--sweep", help="NAME=v1,v2 — one arm per value of a FollowWeights field")
     parser.add_argument("--jobs", type=int, default=1, help="worker processes, pooled over CASES")
     parser.add_argument("--json", type=Path, help="write the full report here")
@@ -2934,6 +3011,11 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         counter_weight=float(args.counter_weight),
         counter_half_width=float(args.counter_half_width),
         counter_size_classes=tuple(c.strip() for c in str(args.counter_size_classes).split(",") if c.strip()),
+        counter_evidence=bool(args.counter_evidence),
+        counter_evidence_half_width=float(args.counter_evidence_half_width),
+        counter_evidence_size_classes=tuple(
+            c.strip() for c in str(args.counter_evidence_size_classes).split(",") if c.strip()
+        ),
     )
 
 

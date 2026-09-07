@@ -226,6 +226,8 @@ die DB) — mit seiner Bedingung.
 | sep07 | Kette | [R3c Binnenflächen-Bedingung im Solve (Pre-Reg)](#kette-r3c-binnenflächen-bedingung-im-solve-sep07--vorregistrierung-dieselbe-aussage-an-der-stelle-wo-die-glatte-bahn-entsteht) | Pre-Reg | Konversion (3) der R3-Zeile, von R3b belegt statt vermutet: dieselbe Aussage als quadratischer Hinge auf dem vorzeichenbehafteten Abstandsfeld der `offen`-Binnenflächen, in JEDER Folger-Runde — normiert wie `e_geo`, über `sampling_op` auf die Anker gefaltet, `fit_word_chain` unberührt. Zwei R3-Bestandteile entfallen begründet (Blende · Abnahmeregel „Schleifen-Schluss", die der `structure_guard` schon leistet); der Geltungsbereich bleibt R3s `offen` × `klein`/`mittel` — die weitere Fassung ist nach einem Kalibrierlauf und vor der ersten Armzahl zurückgenommen, weil eine große Schleife am stärksten bindet und nichts Messbares kauft. Leiter {1, 4, 16, 64, 256}, **Auswahl auf Gate (a) allein**; R3bs Offline-Pfad unzulässig (ein Term verändert den Solve), je Sprosse ein voller 63er-Lauf. **Die Basis ist nicht die von R3:** A37 (`exit_trim`) liegt dazwischen, dev-19 frisch geritten dtw **0,045881** · p90 0,088356 · aiou 0,7660 · `cross_missing`/`cross_spurious` **11 / 9** — womit die §7.11-Zeile „die Kette ist ausgenommen" korrigiert ist: sie galt dem Soll, nicht dem Fit |
 | sep07 | Kette | [R3c gemessen](#kette-r3c-binnenflächen-bedingung-im-solve-sep07--gemessen-die-glätte-ist-umsonst-zu-haben-die-weitung-nur-dort-wo-sie-schon-da-war) | Pre-Reg + gemessen · **nicht adoptiert**, Gate (a) rot auf JEDER Sprosse · Gegenstück zu R3 | **Die Glätte ist umsonst zu haben, die Weitung nicht.** Gate (d), an dem R3 mit 1 626 und R3b mit 462 neuen Knicken fiel, ist **grün**: `kink`-Ereignisse 2 296 → **2 258**, Median 8,08° → 7,53° — es gibt keine Blende, deren Länge zu wählen wäre, weil die Anker die Glättung sind. Gate (a) trifft dafür nur **64 von 156** (gefordert 149); die Leiter {1,4,16,64,256} → 22 · 38 · 52 · **64** · 51 hat ein INNERES Maximum, bei 256 setzt der Wächter Wörter ganz auf den Kettenfit zurück. **Die Zerlegung ist der Ertrag:** bewegt werden die 124 schon offenen Schleifen (61 Treffer, Median +0,0227), die 31 zugelaufenen **gar nicht** (3 Treffer, Median +0,0000) — der Arm hilft nicht, wo der Defekt sitzt, weil der Tinten-Term dort selbst auf der Klumpenachse liegt. (b) rot (`cross_spurious` 9 → 10), (c) rot am p90 (+0,001618) bei Median −0,000365, (e) 63er-Soll **85 → 81**, (f)/(g)/(h) grün (Determinismus 63/63 strichgleich). **Zwei Korrekturen vor der ersten Armzahl:** Geltungsbereich zurück auf R3s `klein`/`mittel`, und `kringel_lost` als Kennzahl gestrichen — der Sensor liest die KOMPOSITION, kein Folger-Arm kann ihn bewegen. Zeigt auf R3s Konversion (4): die EVIDENZ korrigieren, nicht das Objektiv |
 | sep06 | Übergänge | [J4 Adoption (A37)](#übergänge-j4-sep06--adoption-auf-autor-entscheid-a37-exit_trim-wird-default-deklarierte-re-baseline) | **Adoption** (Autor-Entscheid A37) · **Re-Baseline** (Wörter + Golden) | `exit_trim` ist Default. Auf UNVERÄNDERTER Wurzel, also gepaart: Wörter 0,108444 → **0,109026**, Paare **byte-gleich**, `seam_dep_median` +7,59 → **−0,70** (absolut 12,67 → 2,30), Verdopplungen 14 = 14. Golden deklariert neu gebacken (10 der 11 Wörter, kein Draw-Item mehr oder weniger, Solo-Glyphen 0 von 23). **S2 stimmt unabhängig zu** — am selben Tag auf der UNGETRIMMTEN Komposition abgenommen: `cont_kink_total` 402 → **337**, `cont_bow_join_median` 0,0091 → **0,0042** (Report-Spalte, kein Gate). `prodconn.replay` hat seine angekündigte Nachbearbeitung bekommen; die Kette ist per Messung ausgenommen (Kompositions-Soll 0 von 126), fällig bleiben Lotse-Karte und S2-Bezug (§7.11) |
+| sep07 | Kette | [R4 Feder-Entfaltung (Diagnose + Pre-Reg)](#kette-r4-feder-entfaltung-sep07--diagnose-und-vorregistrierung-ist-der-klumpen-tinte-oder-raster) | Diagnose + Pre-Reg | Konversion (4) von R3/R3c, und zuerst die Frage, die keiner der beiden gestellt hat: **ist die Verschmelzung Tinte oder Raster?** Der eine Term der Frage ist strukturell: der Fixture-Ausschnitt ist ein unskalierter Schnitt der Platte (`freeze_entry`), x-Höhe **30–33 px**, `words-abb19.png` byte-identisch von Commons. Dass es keine feinere Aufnahme gibt, war in der ersten Fassung behauptet und ist nach einem Copilot-Fund **nachgemessen**: der zweite committete Scan derselben Platte (`suetterlin-leitfaden-1926/p060.jpg`, laut `SOURCE.md` druckstock-identisch) ist eine GANZSEITEN-Aufnahme und trägt für die Tafel Zeilenabstand **≈ 104 px gegen ≈ 110 px**, also ~5 % weniger. Gemessen wird deshalb die BINARISIERUNG: dieselbe Binnenfläche als adaptive Maske 1×, als globale 50-%-Niveaulinie 1× und als 50-%-Niveaulinie auf 4× bikubischem Grau, dazu der Mittelachsen-Anzeiger bei beiden Maßstäben. Entscheidregel vor der ersten Zahl: RASTER, wenn Median(`A_grau4 − A_Maske`) ≥ +0,016 xh **oder** Median(`I@4× − I@1×`) ≥ +0,10. Der Arm dahinter: die Feder aus der EVIDENZ herausrechnen — jedes Skelettpixel näher als `w_pen` an einer `offen`-Binnenfläche fällt weg, an seine Stelle tritt die Niveaulinie `w_pen + 0,5 px` desselben Loch-Feldes, auf die Tinte beschnitten und nur im radialen Schatten des Weggefallenen. Gates (a)–(h) sind R3cs, Wort für Wort; eine Korrektur vor der ersten Armzahl: die pixelweise Fassung ist verworfen (0 von 13 Schleifen überleben den Schub, 13 von 13 die Niveaulinie) |
+| sep07 | Kette | [R4 gemessen](#kette-r4-feder-entfaltung-sep07--gemessen-die-zugelaufenen-schleifen-bewegen-sich-zum-ersten-mal-und-gate-c-fällt-trotzdem) | Diagnose + gemessen · **nicht adoptiert**, Gate (c) rot (Kill) | **Diagnose-Verdikt: echte Verschmelzung.** Median(`A_grau4 − A_Maske`) **+0,0000** und Median(`I@4× − I@1×`) **+0,0109** — beide Schranken klar verfehlt: die globale Schwelle liest bei 1× ziffernweise dieselbe Binnenfläche wie die adaptive Maske, bei 4× liest das Grau eine **kleinere** (0,1118 gegen 0,1290, das halbe Plattenpixel je Seite), und die Einschnürung überlebt die schärfere Lesung (Anzeiger 0,807 → 0,790). **Der Arm bewegt zum ersten Mal die richtige Klasse:** von den 33 Schleifen, die die Basis zu zeichnet, gehen **8 auf** (7 zugelaufene, 1 kollabierte — `Feinde` `F`#1 0,0025 → 0,3184), wo R3c 0 bewegt hat; offen bei 0,097 **124 → 129**, referenzfreier 63er-Soll **85 → 70** (der größte Fall der R-Kette), `cross_spurious` **9 → 7** und `retrace_spurious` 10 → 9, also Gate (b) **grün**. Bezahlt wird mit drei Totalverlusten (`unter` `t`#1 · `Kugel` `K`#1 · `macht` `a`#0, je auf den Ableseboden 0,0025), Gate (a) **36 von 157** statt 149, Gate (c) rot unter BEIDEN Lesarten (gepaart p90 +0,000834, eigene Verteilung Median +0,000385) und Gate (d) +34 `kink`-Ereignisse (2 296 → 2 330; R3 +1 626, R3b +462). (f)/(g)/(h) grün, Determinismus 63/63 strichgleich |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -13493,3 +13495,470 @@ argumentieren, weil die Tinte selbst schon die richtige sagt.
 keine Laufform-Zeile ab und erzeugt keine Karte: die Ernte hat nach §3
 keinen Folger-Pfad, und LF14s Fixpunkt-Befund sperrt den Write
 ohnehin, bis der Fixpunkt-Arm gelaufen ist.
+
+### Kette R4 „Feder-Entfaltung" `sep07` — Diagnose und Vorregistrierung: ist der Klumpen Tinte oder Raster?
+
+Konversion **(4)** der §7.9-Zeilen von R3 und R3c — die, auf die beide
+Klammern zeigen: „nicht die Ausgabe und nicht das Objektiv korrigieren,
+sondern die EVIDENZ". Bevor davon eine Zeile gebaut wurde, stand eine
+Frage im Weg, die keiner der beiden Arme gestellt hat: **die kleinen
+Binnenflächen der Platte sind rund 3 px weit — ist die Verschmelzung, auf
+deren Achse der Tinten-Term liegt, überhaupt Tinte, oder ist sie ein
+Artefakt der Auflösung bzw. der Binarisierung?** Wäre sie ein Artefakt,
+wäre der ehrliche Weg eine schärfere Evidenz und kein weiterer Term.
+Deshalb steht hier die **Diagnose vor dem Arm**, mit ihrer eigenen
+Vorregistrierung und ihrer eigenen Entscheidregel.
+
+**Basis, unverändert und nicht neu exportiert.** `suetterlin-1922`
+`exported_at` 2026-09-05T21:33:12+00:00 `root_digest` **`eaa195aa7c84…`**,
+`suetterlin-1922-pairs` 2026-09-05T21:33:11+00:00 **`0fbde2d72b64…`**;
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1` und `--jobs 4` in jedem
+Aufruf. Die Basis ist die von R3c (nach der A37-Adoption), frisch
+geritten und ziffernweise dieselbe: dev-19 `dtw_xh` Median **0,045881**,
+p90 **0,088356**, schlechtestes `muß` **0,106372**, `aiou` **0,7660**,
+`cross_missing`/`cross_spurious` **11 / 9**, `kringel_lost` 12 von 43 in
+10 von 19 Wörtern. Die Kette-Öffnungsweiten je Schleife stimmen ebenfalls
+ziffernweise mit R3cs Tabelle (`a`#0 0,1925 · `o`#0 0,1581 · `r`#0 0,2354
+· `sz`#0 0,2238) — Basis und Arm sind derselbe Stack.
+
+#### Teil 0 — der zweite Term der Frage, und warum er keiner ist
+
+**Der Ausschnitt ist kein verkleinertes Bild, sondern die Platte selbst.**
+`export_fixtures.freeze_entry` schneidet `page[y0:y1, x0:x1]` heraus und
+skaliert nichts; die x-Höhe der 63 Wortproben liegt bei **30–33 px**
+(Median **31**), und das ist die Auflösung von `words-abb19.png`, das
+laut `SOURCE.md` byte-identisch von Commons übernommen ist.
+
+**Nachtrag aus der Code-Review (Copilot, PR #564), und er war fällig:**
+die erste Fassung dieses Absatzes hat daraus „es gibt im Repo keine höher
+aufgelöste Fassung dieser Platte" gefolgert, **ohne nachzusehen** — und es
+gibt sehr wohl einen zweiten committeten Scan derselben Platte:
+`data/sources/suetterlin-leitfaden-1926/p060.jpg`, laut dessen `SOURCE.md`
+**druckstock-identisch mit `words-abb19.png` (verifiziert)**. Seine
+2278 × 3040 px sind aber die **ganze Buchseite** — Fraktur-Satz, dann die
+Tafel, dann die Bildunterschrift, auf dunklem Grund. Nachgemessen an dem,
+was vergleichbar ist, nämlich dem **Zeilenabstand der zwölf
+Handschriftzeilen**: `words-abb19.png` **≈ 110 px**, `p060.jpg`
+**≈ 104 px** (Zeilen bei den Kernzeilen 823–2071 des Seitenkerns, zwölf
+Bänder). Der zweite Scan trägt für die TAFEL also **etwa 5 % WENIGER**
+Auflösung, nicht mehr; seine höhere Pixelzahl gehört der Seite, nicht der
+Platte. Der Schluss bleibt damit stehen — **kein Bild im Repo zeigt diese
+Platte feiner als die Fixtures sie schneiden** —, aber er ist jetzt
+gemessen statt behauptet, und der Beleg steht hier statt in einer
+Fußnote. Was bleibt, ist die Frage nach der
+**Binarisierung**: das Grau trägt Sub-Pixel-Information, die die binäre
+Maske wegwirft.
+
+#### Die Vorregistrierung der Diagnose (geschrieben vor der ersten Zahl)
+
+Drei Lesungen DERSELBEN Platten-Binnenfläche, damit sich die Ursachen
+trennen, alle drei in x-Höhen:
+
+* **`A_Maske`** — die eingefrorene adaptive Maske bei 1× (`ref_mask.png`,
+  was heute jeder Fit liest), Öffnungsweite wie im Katalog: `2 · max EDT`
+  im Loch.
+* **`A_grau1`** — eine **globale 50-%-Niveaulinie** desselben Graubildes
+  bei 1×. Die beiden Pegel sind die Statistik des Ausschnitts selbst
+  (Median-Grau unter der Maske bzw. daneben, dieselben zwei Größen, die
+  `ink_evidence` benutzt), also kommt keine neue Konstante hinzu. Diese
+  Spalte isoliert die **Schwelle**.
+* **`A_grau4`** — dieselbe Niveaulinie auf dem **4× bikubisch**
+  hochgetasteten Grau. Die Grenze einer antialiasten Kante IST ihre
+  50-%-Niveaulinie, das ist also die sub-pixel-treue Lesung derselben
+  Kante. Diese Spalte isoliert die **Auflösung**.
+
+Dazu der Mittelachsen-Anzeiger von #551/LF14, `I = (D0_Skelett −
+Öffnungsweite) / (2·w_pen)`, bei 1× und bei 4×: **1,0 heißt „die
+Mittelachse IST der Federweg", kleiner heißt „das Skelett ist zur
+Binnenfläche hin eingeschnürt"** — die Klumpenachse, die H0 nennt. `D0`
+des Skeletts ist die einbeschriebene Weite des Lochs, das die
+Skelettkurve umschließt, **plus ein Pixel** (die Kurve ist selbst einen
+Pixel dick), an beiden Maßstäben gleich gerechnet.
+
+**Die Entscheidregel, einseitig und vor der ersten Zahl:**
+
+* **RASTER**, wenn der Median von `A_grau4 − A_Maske` mindestens
+  **+0,016 xh** beträgt (ein halbes Plattenpixel — der Ableseboden, den
+  #551 selbst nennt) **oder** der Median von `I@4× − I@1×` mindestens
+  **+0,10** (ein Zehntel Federbreite zurückgewonnene Mittelachse).
+* **ECHTE VERSCHMELZUNG** sonst.
+
+Gemessen wird auf den vier `offen`-Schleifen, die die Kringel-Diagnose
+als Träger nennt: `a`#0 · `o`#0 · `sz`#0 · `r`#0, alle Vorkommen der 63
+Wortproben, zugeordnet mit dem Slot-Lineal von #556.
+
+#### Die Diagnose-Tabelle (41 Vorkommen)
+
+| Schleife | n | px/xh | `A_Maske` | `A_grau1` | `A_grau4` | `D0` Skelett 1× | `D0` Skelett 4× | `D0` Kette | Erwartung |
+|---|---|---|---|---|---|---|---|---|---|
+| `a`#0 | 13 | 31 | 0,0975 | 0,0975 | 0,0968 | 0,2363 | 0,2500 | 0,1925 | 0,2911 |
+| `o`#0 | 5 | 31 | 0,1290 | 0,1290 | 0,1082 | 0,2802 | 0,2784 | 0,1581 | 0,3226 |
+| `r`#0 | 19 | 31 | 0,1333 | 0,1333 | 0,1302 | 0,2903 | 0,2841 | 0,2354 | 0,3269 |
+| `sz`#0 | 4 | 31 | 0,1290 | 0,1290 | 0,1076 | 0,2506 | 0,2540 | 0,2238 | 0,3226 |
+| **alle** | **41** | 31 | **0,1290** | **0,1290** | **0,1118** | **0,2737** | **0,2706** | **0,2020** | **0,3226** |
+
+Anzeiger `I`: **1× 0,8073 · 4× 0,7903** (je Schleife `a` 0,776/0,781 ·
+`o` 0,833/0,823 · `r` 0,833/0,805 · `sz` 0,768/0,732).
+
+**Entscheidgrößen:** Median(`A_grau4 − A_Maske`) = **+0,0000** gegen die
+geforderten +0,016; Median(`I@4× − I@1×`) = **+0,0109** gegen die
+geforderten +0,10.
+
+**Und die Verteilung, nicht nur der Median** — sonst könnte ein Median
+von 0 auch eine Mischung aus großen Gewinnen und großen Verlusten
+verdecken: `A_grau4 − A_Maske` läuft von −0,035 bis +0,017 und steht
+**17× positiv, 4× null, 20× negativ**, also symmetrisch um Null herum
+und ohne Vorzugsrichtung; `I@4× − I@1×` läuft von −0,171 bis +0,248. Das
+ist Rauschen um den Wert der 1×-Lesung, kein systematisch verstecktes
+Loch.
+
+#### Das Verdikt der Diagnose: echte Verschmelzung
+
+**Beide Schranken werden klar verfehlt, und zwar in der aufschlussreichen
+Richtung.** Die Schwelle ist unschuldig — eine globale 50-%-Niveaulinie
+liest bei 1× dieselbe Binnenfläche wie die adaptive Maske, ziffernweise
+in allen vier Schleifen. Und die Auflösung ist es auch nicht: bei 4×
+liest das Grau eine **kleinere** Binnenfläche (0,1118 gegen 0,1290, also
+−0,017 xh = **0,53 px im Durchmesser** bei 31 px je x-Höhe) — die
+Größenordnung, die die deklarierte Halb-Pixel-Konvention von R3/R3c
+vorhersagt, und das Gegenteil eines Lochs, das die Binarisierung frisst.
+Der
+Mittelachsen-Anzeiger bleibt bei 4× fast unverändert bei 0,79 statt 0,81:
+**die Einschnürung überlebt die schärfere Lesung**. Sie ist Geometrie,
+kein Raster — was auch sein muss, denn eine geschlossene Schleife mit
+endlicher Federbreite verschmilzt an ihrem Schluss zwangsläufig.
+
+Damit fällt Zweig (A) („die Evidenz höher auflösen") weg, **nicht weil er
+unbequem wäre, sondern weil es nichts aufzulösen gibt** — und Zweig (B)
+ist der Arm: die Feder aus der Evidenz herausrechnen.
+
+#### Der Mechanismus in drei Sätzen
+
+Der Tinten-Term des Folgers ist die Distanztransformation des SKELETTS
+der eingefrorenen Maske (`chain._field_stack`:
+`distance_transform_edt(~skel)`), das Skelett ist also der Attraktor, auf
+den jede Stützstelle gezogen wird — und um eine kleine Binnenfläche ist
+es nicht der Federweg, sondern die Mittelachse zweier verschmolzener
+Kapseln, die das Loch enger umfährt als jeder der beiden Durchgänge (der
+Anzeiger 0,689 im ganzen Katalog, 0,807 auf diesen vier Schleifen). Eine
+Gleichzug-Feder der Halbbreite `w` malt die Minkowski-Summe ihrer Bahn
+mit der Scheibe vom Radius `w`, eine offene Binnenfläche beweist also,
+dass keine Federstelle näher als `w` an ihr stand — auf dem Raster
+gelesen: **kein Skelettpixel darf näher als `w_pen` an einer offenen
+Binnenfläche liegen.** Jedes, das es doch tut, fällt weg, und an seine
+Stelle tritt die Niveaulinie `w_pen + 0,5 px` desselben Loch-Abstandsfeldes,
+auf die Tinte beschnitten und nur so weit um das Loch herum, wie die
+weggefallenen Pixel reichten — eine Konstruktion, keine Anpassung: jeder
+Punkt dieser Niveaulinie liegt eine Federhalbbreite vom Loch entfernt,
+also trägt die korrigierte Schleife die Erwartung `Loch + 2·w_pen`
+per Bauart. **Es gibt keine Blendenlänge zu wählen, weil der SOLVER
+glättet** — genau das, was R3 nicht kaufen konnte und R3c umsonst bekam.
+
+#### Wo er eingreift, und wo ausdrücklich nicht
+
+* **An K-Cs eigenem Punkt**, und aus K-Cs eigenem Grund: die Korrektur
+  ersetzt das Skelett des Falls dort, wo die Tinten-Evidenz-Maske es tut
+  (`follow_derived`, nach `derive_word` und vor den Gitterfits), damit
+  Saatfenster, Solve-Felder und Deckungsziele EINE Evidenz lesen. Der
+  Kettenfit sieht sie damit auch — anders als bei R3c, und das ist eine
+  deklarierte Abweichung, kein Versehen: R3cs Term war eine KRAFT, die den
+  Init verschoben hätte, hier ist es die Evidenz selbst, und eine halbe
+  Evidenz wäre ein Fit, der gegen seinen eigenen Attraktor arbeitet. Jeder
+  Verbraucher der Kette AUSSERHALB des Folgers baut den korrigierten Fall
+  nie, die Ernte eingeschlossen — byte-gleich per Konstruktion.
+* **Nur Katalogschleifen** mit Zustand `offen` und Größenklasse `klein`
+  oder `mittel`, zugeordnet über das Slot-Lineal von #556
+  (`zweizuege.catalogue_targets`, keine zweite Implementierung). R3s und
+  R3cs Geltungsbereich unverändert, damit dies gegen R3c ein
+  Ein-Faktor-Schritt bleibt.
+* **Drei Verweigerungen statt Knöpfe:** keine Tinte erfinden (die
+  Niveaulinie wird auf die Maske beschnitten, und was der Schnitt
+  wegnimmt, wird gezählt); die Schleife nie verlieren (umschließt das
+  korrigierte Skelett die Binnenfläche nicht mehr, wird die Korrektur
+  DIESER Schleife zurückgenommen — R3s `REFUSAL_CLOSURE_LOST`, auf die
+  Evidenz verlegt, wo sie eine Schleife kostet und nicht eine Runde);
+  nichts weiten, was schon stimmt (hält das Skelett seinen Abstand, fällt
+  nichts weg und wird nichts gemalt — und der radiale Schatten hält das
+  je ARM einer großen Schleife wahr, nicht nur je Schleife).
+* **Ausdrücklich kein Weg:** die Feder dünner rechnen, die Klassen- oder
+  Zustandsschwellen des Katalogs nachziehen, den Geltungsbereich
+  erweitern, oder eine Blende nachrüsten, wenn Gate (d) fällt.
+
+#### Eine Korrektur am Werkzeug, nach dem Kalibrierlauf und vor der ersten Armzahl
+
+Wie bei #556, #562 und #563 steht sie hier statt in einer Fußnote. Die
+erste Fassung **schob jedes verletzende Skelettpixel einzeln** entlang
+seines eigenen Strahls nach außen — dieselbe Aussage, nur pixelweise. Sie
+scheitert am Raster: der Zielbogen ist länger als der eingeschnürte, also
+landen N Pixel mit Lücken darauf, die Schleife fällt auf, und der
+Überlebens-Wächter nimmt jede Korrektur zurück. Gemessen auf `das`,
+`Zorn`, `muß-2`, `Galoppieren` und `der`: **0 von 13 Binnenflächen
+überleben den Schub, 13 von 13 überleben die Niveaulinie.** Die
+Niveaulinie ist per Konstruktion ein zusammenhängender Bogen — bei einem
+euklidischen Abstandsfeld unterscheiden sich 4-Nachbarn um höchstens 1,
+also muss jeder Hintergrundweg aus dem Loch heraus auf dem Band
+`|φ − Ziel| ≤ ½` landen. Deshalb steht sie im Arm.
+
+#### Die Gates — R3cs, Wort für Wort, ohne eine gelockerte Schwelle
+
+| | Gate | Bestanden, wenn |
+|---|---|---|
+| (a) | **Öffnungsweite je Schleife** | \|`D0` Arm − (`Tinte` dieses Vorkommens + 2·`w_pen`)\| ≤ 0,02 xh für **≥ 95 %** der gebundenen Schleifen, und **jede** offen bei 0,097. Gelesen mit R3s Instrument (`zweizuege.loop_aperture_near` über `counterfield.loop_apertures_of_trace`) |
+| (b) | **Struktur** | `cross_missing`/`cross_spurious` nicht schlechter als die Basis (11 / 9), Retrace-Zähler nicht schlechter |
+| (c) | **Bahnmaß** | dev-19 `dtw_xh` **Median UND p90** nicht schlechter als die Basis (0,045881 · 0,088356) |
+| (d) | **Unstetigkeit** | keine Zunahme der `kink`-Ereignisse über der #558-Schwelle (11,537°) gegenüber der Basis, und der `wobble`-Median nicht schlechter |
+| (e) | **Referenzfrei** | 63er-k0 Soll-Abstand und `aiou` berichtet (kein Kriterium — Kontext) |
+| (f) | **Wort-Bench** | Headline unverändert |
+| (g) | **Golden** | `pen=None` byte-identisch, `core/` unberührt |
+| (h) | **Determinismus** | zwei Läufe desselben Arms byte-gleich, BLAS gepinnt |
+
+**Eine deklarierte Lesart, und sie kann den Arm nicht retten:** R3cs
+Gate (b) schreibt „Retrace-Zonen unverändert"; gelesen wird hier
+„Retrace-Zähler nicht SCHLECHTER", weil ein Gate, das an einer
+Verbesserung fällt, keine Aussage trägt. Der Arm verbessert sie (siehe
+unten), die Lesart entscheidet also nichts.
+
+**Kill-Kriterien**, R3cs wörtlich: (i) Gate (b) oder (c) rot →
+verworfen, unabhängig von der Öffnungsweite; (ii) Gate (a) unter der
+Hälfte der gebundenen Schleifen → das Modell erreicht sein eigenes Ziel
+nicht; (iii) jede nachträgliche Lockerung einer Schwelle ist
+ausgeschlossen.
+
+#### Die Decke der Kennzahl, vorab beziffert
+
+**Die 24 bewegt auch dieser Arm nicht**, aus R3s und R3cs Grund: die
+schließenden Wörter sind eine Eigenschaft der KOMPONIERTEN Wörter, dieser
+Arm korrigiert die Kette-Bahn, und der Weg dorthin führt über die Ernte,
+die nach §3 keinen Folger-Pfad hat. `kringel_lost` liest ebenfalls auf
+der Komposition und ist per Konstruktion unverändert. **Keine
+Schreib-Karte, keine neu abgeleitete Zeile** — LF14s Fixpunkt-Befund
+sperrt den Write ohnehin. Die Kennzahl dieses Eintrags ist Gate (a) auf
+der Bahn, und die Zerlegung, die #563 eingeführt hat.
+
+### Kette R4 „Feder-Entfaltung" `sep07` — gemessen: die zugelaufenen Schleifen bewegen sich zum ersten Mal, und Gate (c) fällt trotzdem
+
+**Verdikt: nicht adoptiert** — Gate (c) ist ein Kill-Kriterium und rot,
+Gate (a) verfehlt seine 95 % deutlich, Gate (d) steigt um 34 Ereignisse.
+Der Schalter `--counter-evidence` bleibt AUS. **Und die Runde ist kein
+leeres Negativ, sondern der erste Arm der ganzen Kringel-Kette, der die
+KLASSE bewegt, an der der Defekt sitzt**: von den 33 Schleifen, die die
+Basis zu zeichnet, gehen **8 auf**, während R3c dort 0 bewegt hat — und
+der referenzfreie Soll-Abstand fällt so weit wie in keiner Runde davor.
+
+**Nullprobe vor der ersten Armzahl.** Mit dem Code im Baum und dem
+Schalter AUS ist `das` strichgleich zu dem Lauf, der vor dem Code lief:
+größter Koordinatenunterschied **0,000e+00 xh**. Der Arm ist bei AUS
+nicht „fast", sondern bit-genau abwesend.
+
+#### Gate (a) — rot, und die Zerlegung ist der Ertrag
+
+**162 Zeilen im Geltungsbereich über 60 der 63 Wörter, 157 davon
+gebunden** — ziffernweise R3cs Geltungsbereich, wie es sein muss, denn er
+ist unverändert übernommen. Die neun Verweigerungen, jede mit Grund: **4×
+„die Platte zeigt hier kein Loch"**, **4× „die Korrektur hat die eigene
+Schleife des Skeletts aufgezogen — zurückgenommen"** (der
+Überlebens-Wächter hat also real gegriffen) und **1× „das Loch gehört
+einer anderen Schleife desselben Buchstabens"**. Die 153 korrigierten
+Schleifen kosten zusammen **5 937 weggefallene und 7 431 neue
+Skelettpixel** — und **0 beschnittene**: über alle 153 trägt die Platte
+an der Niveaulinie einer Federhalbbreite Tinte, die Sorge „die Rippe ist
+dünner als eine ganze Feder" bindet auf dem FEDERWEG also nicht, obwohl
+sie #551s H0 ist.
+
+Gate (a) fordert ≥ 95 %, also ≥ 149:
+
+| Ablesung | Basis | **R4** | (R3c bei w = 64) |
+|---|---|---|---|
+| \|Δ zur Erwartung\| ≤ 0,02 | 12 / 157 | **36 / 157** | 64 / 156 |
+| offen bei 0,097 | 124 / 157 | **129 / 157** | 127 / 156 |
+| Median Δ zur Erwartung | −0,0748 | **−0,0556** | −0,0359 |
+
+Der Nenner ist bei Basis und Arm derselbe (alle 157 gebundenen
+Schleifen); zwei davon liefern in der BASIS gar keine Ablesung, weil die
+Bahn dort keine Schleife zeichnet, und zählen als Fehltreffer statt
+weggelassen zu werden — dieselbe Konvention, mit der R3c seine 155/156
+gezählt hat.
+
+**Gate (a) ist rot** (36 von 157 = 23 %), und R3cs beste Sprosse trifft
+die Erwartung öfter. Die Zerlegung nach der Klasse der BASIS-Schleife —
+dieselbe, die #563 eingeführt hat — sagt, warum das die falsche Zahl
+zum Vergleichen ist:
+
+| Klasse der Basis-Schleife | n | Treffer ±0,02 | Median-Bewegung | offen bei 0,097 danach | R3c (Bewegung) |
+|---|---|---|---|---|---|
+| kollabiert (`D0` < 0,05) | 15 | 0 | +0,0000 | **1** | +0,0000 |
+| gezeichnet, aber zu bei 0,097 | 18 | 0 | **+0,0023** | **7** | +0,0000 |
+| schon offen bei 0,097 | 124 | 36 | +0,0198 | 121 | +0,0227 |
+
+**Acht Schleifen, die zu waren, sind offen** — sieben aus der zugelaufenen
+Klasse (`haben`/`auch-2`/`laden` `a`#0 · `Soldaten` `o`#0 · `Gewehr`
+`w`#0 · `schwer`/`Silber` `r`#0) und eine aus der kollabierten
+(`Feinde` `F`#1, **0,0025 → 0,3184** bei einer Erwartung von 0,3871). Der
+Preis ist gemessen und benennbar: **drei vorher offene Schleifen fallen
+ganz zusammen** — `unter` `t`#1 (0,2565 → 0,0025), `Kugel` `K`#1
+(0,2186 → 0,0025), `macht` `a`#0 (0,2603 → 0,0025). Alle drei landen auf
+dem Ableseboden, verlieren ihre Schleife also vollständig statt sie zu
+verengen: das ist ein Topologie-Fehlschlag, keine schlechtere Weitung,
+und damit eine eigene, scharf geschnittene Klasse für den Nachfolge-Arm.
+8 : 3 ist die Asymmetrie, die die `aug26`-Direktive meint.
+
+#### Gate (b) — grün, und zum ersten Mal in dieser Kette besser als die Basis
+
+| Zähler | Basis | R4 |
+|---|---|---|
+| `cross_missing` | 11 | **11** |
+| `cross_spurious` | 9 | **7** |
+| `retrace_missing` | 7 | **7** |
+| `retrace_spurious` | 10 | **9** |
+
+R3 hat hier 12 → 13 / 7 → 9 gebracht, R3c 9 → 10. **Der Preis steht
+daneben und wird nicht verschwiegen:** `touch_cand` 18 → 20,
+`overlap_cand` 4 → 7, `retrace_arc_ratio_median` 0,748 → 0,686 (der Gap
+zur Hand 0,252 → 0,314). Keiner dieser drei ist Teil von R3cs Gate (b),
+und sie werden hier auch nicht dazu erklärt — aber ein strengeres
+Struktur-Gate fiele an ihnen.
+
+#### Gate (c) — rot, unter BEIDEN Lesarten
+
+| Ablesung | Basis | R4 | Urteil |
+|---|---|---|---|
+| dev-19 `dtw_xh` Median-Δ (gepaart) | – | **−0,000275** (rel −0,50 %) | besser |
+| dev-19 `dtw_xh` p90-Δ (gepaart) | – | **+0,000834** | **schlechter** |
+| dev-19 `dtw_xh` Median (eigene Verteilung) | 0,045881 | **0,046266** | **schlechter** |
+| dev-19 `dtw_xh` p90 (eigene Verteilung) | 0,088356 | **0,086847** | besser |
+| dev-19 Vorzeichentest | – | 8 besser : 11 schlechter, p = 0,648 | unentschieden |
+| dev-19 `aiou` Median | 0,7660 | **0,7669** | besser |
+| Chamfer Kandidat→Referenz / Referenz→Kandidat | 0,0317 / 0,0365 | **0,0310** / 0,0368 | gemischt |
+| schlechtestes Wort | `muß` 0,106372 | `muß` **0,105841** | besser |
+
+Die Vorregistrierung nennt Median UND p90. **Gepaart gelesen fällt der
+p90, auf der eigenen Verteilung gelesen fällt der Median** — unter beiden
+Lesarten ist Gate (c) rot, es gibt hier also nichts auszuwählen. Das ist
+ausdrücklich festgehalten, weil die eine Lesart grün am p90 und die
+andere grün am Median wäre und eine Runde, die sich ihre Lesart nach der
+Zahl aussucht, genau das täte, was die Vorregistrierung verhindern soll.
+
+#### Gate (d) — rot, und der Betrag ist klein
+
+Der Unstetigkeits-Sensor (#558) über alle 63 Wörter, mit den Ausschlüssen
+von `wordbench.continuity` (Hebung · Kreuzung · Retrace · Ecke). Die
+Basiszahl reproduziert R3cs Basis ziffernweise (**2 296** Ereignisse) —
+der Beleg, dass hier dasselbe Instrument läuft:
+
+| | Basis | R4 | (R3 · R3b · R3c) |
+|---|---|---|---|
+| `kink`-Ereignisse über 11,537° | 2 296 | **2 330** (+34) | +1 626 · +462 · −38 |
+| Stützstellen über der Schwelle | 12 975 | 13 194 | – |
+| `kink` Median · p90 (Median über die Wörter) | 8,331° · 30,975° | 8,511° · 31,969° | – |
+| `wobble` (Median über die Wörter) | 4,6960 | 4,8910 | – |
+| Wörter mit MEHR · WENIGER Ereignissen | – | 30 · 22 (11 gleich) | – |
+
+**Rot, aber um Faktor 48 milder als R3 und Faktor 14 milder als R3b.**
+Die Ursache ist dieselbe Familie und diesmal nur noch ein Rest: die
+korrigierte Evidenz ist ein Band von einem Pixel Breite, also erbt der
+Attraktor das Raster der Platte — dort, wo R3 es über eine zu kurze
+Blende in die Federbahn schrieb, reicht es hier nur noch durch den
+Solver hindurch. Der `wobble`-Wert ist die RMS-Ablesung je Wort, über die
+Wörter gemediant; er ist mit R3cs 0,0616 nicht vergleichbar (andere
+Aggregation), die gepaarte Richtung ist es.
+
+#### Die übrigen Gates
+
+| Gate | Ablesung | Urteil |
+|---|---|---|
+| (e) referenzfrei | 63er-k0 Soll **85 → 70** (14 besser / 44 gleich / 5 schlechter) — der größte Fall der ganzen R-Kette (R3 80 → 79, R3c 85 → 81); `aiou` über die 58 bewegten Wörter Median **−0,0006** (min −0,1097 `Kugel`, max +0,1001 `Zügel`); strichgleich 5/63 | berichtet |
+| (f) Wort-Bench | `--set all --expect-root eaa195aa,0fbde2d7`: **0,109026 · 0,148236**, unverändert | **grün** (per Konstruktion) |
+| (g) Golden | `core/` unberührt (`git diff` gegen `origin/main` leer), 2 601 Tests grün, `ruff` sauber | **grün** |
+| (h) Determinismus | **drei** volle Läufe desselben Arms, paarweise verglichen: 63/63 strichgleich, größter Unterschied **0,000e+00 xh**, Soll-Abstand 70 in allen dreien | **grün** |
+
+**Der Wächter, wie bei R3c.** Auf dem Arm stehen 16 Wörter sauber, 2
+halbiert, 18 auf dem Kettenfit zurückgesetzt, 9 auf Runde 1
+zurückgesetzt, 18 zonal gerettet — also **27** der 63 Wörter verlieren
+ihre Folge ganz oder halb, in R3cs eigener Zählweise (dort 14 + 12 =
+26). Die Runden-Körnung des `structure_guard`
+kostet hier dasselbe wie dort, und sie steht in §7.11 schon als eigener
+Arm.
+
+#### Was das zusammen heißt
+
+**Die Diagnose hat den Ort geändert, nicht die Aussage.** R3 und R3c
+haben gegen die Evidenz argumentiert und sind daran gescheitert, dass der
+Tinten-Term an einer verschmolzenen Stelle selbst auf der Klumpenachse
+liegt. R4 räumt genau diese Klumpenachse aus dem Attraktor — und zum
+ersten Mal bewegt sich die Klasse, um die es geht: acht zugelaufene oder
+kollabierte Schleifen gehen auf, die Struktur verbessert sich statt zu
+zerfallen, der referenzfreie Soll fällt 85 → 70, und die Unstetigkeit
+kostet nur noch 34 statt 1 626 Ereignisse.
+
+Was NICHT gelingt, ist die Weite genau zu treffen (36 von 157) und drei
+schon offene Schleifen zu halten. Beides hat denselben Grund, und er ist
+sichtbar: die korrigierte Evidenz ist ein RASTERband, an dem der Solver
+eine glatte Bahn ausrichtet — sie sagt richtig, WO die Feder lief, aber
+mit der Genauigkeit eines Plattenpixels, und wo sie einen ganzen
+Schleifen-Arm ersetzt, kann der Solver ihn auch verfehlen. Der
+Nachfolge-Arm ist damit benannt statt geraten.
+
+#### Rettungswege (§7.9 in derselben Runde ergänzt)
+
+1. **Die enge Klasse — nur die 33 zu-Schleifen korrigieren.** Der Arm
+   gewinnt dort 8 und kann die drei schon offenen, die er heute verliert,
+   per Konstruktion nicht mehr anfassen; die 124 offenen bewegt er im
+   Median ohnehin nur +0,0198 in eine Weite, die sie schon hatten.
+   Asymmetrie-Regel `aug26` in Reinform, eigene Pre-Reg.
+2. **Ein glattes Feld statt eines Rasterbandes.** Das Band erbt das
+   ±0,5-px-Raster der Platte; dieselbe Niveaulinie als sub-pixel
+   ausgewertetes, mit `DIST_FIELD_SIGMA_PX` geglättetes Feld gäbe dem
+   Solver dieselbe Aussage ohne das Raster — R3cs eigene Konvention, auf
+   die Evidenz übertragen. Neuer MECHANISMUS (kein Knopf), eigene Pre-Reg;
+   er zielt auf Gate (d) und auf die Treffgenauigkeit von (a) zugleich.
+3. **Die drei Totalverluste zerlegen.** `unter` `t`#1, `Kugel` `K`#1 und
+   `macht` `a`#0 fallen von 0,22–0,26 auf den Ableseboden 0,0025, verlieren
+   also ihre Schleife ganz. Das ist ein Topologie-Fehlschlag mit einer
+   scharfen Signatur und drei Fällen — erst als Zerlegung messen (welcher
+   Wächter-Ausgang, welcher Bogen ersetzt), dann ein Arm.
+4. **Eine Abnahmeregel je SCHLEIFE** — unverändert die Vorbedingung, die
+   R3c benannt hat: 27 der 63 Wörter verlieren ihre Folge ganz oder halb an
+   einer RUNDEN-Regel, während der Verlust je Schleife entsteht.
+5. **Die Evidenz für die ERNTE**, sobald ein Folger-Pfad existiert — erst
+   dann erreicht überhaupt ein Bahn-Arm die Kennzahl der 24 schließenden
+   Wörter.
+
+**Ausdrücklich KEIN Weg:** die Feder dünner rechnen, ein Gate lockern,
+den Wächter abschalten, den Geltungsbereich auf `gross` erweitern, um die
+Trefferquote zu heben, oder die Lesart von Gate (c) nach der Zahl
+auswählen.
+
+**Selbst entschieden.**
+
+* **Die Diagnose vor den Arm zu setzen** und mit eigener Entscheidregel
+  zu versehen. Ohne sie wäre Zweig (A) eine offene Möglichkeit geblieben
+  und jedes Ergebnis dieses Arms angreifbar.
+* **„Nativ" als Spalte zu streichen** und stattdessen zu belegen, dass
+  Ausschnitt und Platte dieselbe Auflösung haben. Die Frage der Aufgabe
+  setzte eine Verkleinerung voraus, die es nicht gibt; das steht oben
+  statt in einer Fußnote.
+* **Den Eingriffspunkt bei K-C zu wählen** statt wie R3c nur in den
+  Folger-Runden — mit dem Grund und der Folge (der Kettenfit sieht die
+  korrigierte Evidenz; jeder Verbraucher außerhalb des Folgers bleibt
+  byte-gleich, weil er den Fall nie baut).
+* **Beide Lesarten von Gate (c) zu berichten**, weil die eine am Median
+  und die andere am p90 fällt und eine ausgewählte Lesart genau die
+  Nachstimmung wäre, die die Disziplin verbietet.
+* **Die pixelweise Fassung zu verwerfen, bevor eine Armzahl fiel**, und
+  ihre Ablesung (0 von 13 gegen 13 von 13 überlebende Schleifen) hier zu
+  nennen statt sie zu löschen.
+
+**Grenzen.** Der Katalog ist an EINER Hand und EINER Feder abgelesen; die
+Diagnose ebenso, und ihre 41 Vorkommen decken vier von 46 Katalogschleifen
+ab — sie beantwortet die Rasterfrage für die engen `offen`-Schleifen, nicht
+für die e-Öse oder das `t`. **Die 4×-Lesung ist eine bikubische
+Interpolation und kein zweiter Scan:** sie kann Information, die im Grau
+steht, sichtbar machen, aber keine, die die Aufnahme nicht hat — der
+Grund, warum Teil 0 die zweite Aufnahme im Repo (`p060.jpg`) MESSEN muss
+und nicht wegargumentieren darf. Was damit ausdrücklich NICHT geprüft
+ist: eine Aufnahme, die es noch gar nicht gibt. Die SUB/DNB-IIIF-Quelle,
+aus der `p060.jpg` stammt, liefert auf Anfrage größere Ableitungen; ob
+eine davon die TAFEL feiner zeigt als die 30–33 px je x-Höhe, die die
+Fixtures schneiden, ist offen. Das wäre ein neuer Quell-Commit, ein
+Re-Export und damit eine deklarierte Re-Baseline — ein Autorenschritt und
+kein Arm, aber nach dieser Runde ein benannter statt eines übersehenen.

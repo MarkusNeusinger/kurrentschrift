@@ -62,7 +62,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
-- **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
+- **F** — Fassung (Eigenhand) §5 · Feder-Entfaltung §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
@@ -1506,6 +1506,48 @@ Folger-Runden ein — `fit_word_chain` bleibt unberührt, also ist jeder
 andere Verbraucher der Kette byte-gleich.
 → messjournal.md §14 („Kette R3c Binnenflächen-Bedingung im Solve
 `sep07`“) · → Zwei-Züge-Modell
+
+**Feder-Entfaltung** *(pen deconvolution, R4)* — dieselbe Aussage über
+die Tinte ein drittes Mal, und diesmal an der EVIDENZ statt an der Bahn
+(Zwei-Züge-Modell) oder am Objektiv (Binnenflächen-Bedingung). Der
+Tinten-Term des Folgers ist die Distanztransformation des **Skeletts**
+der eingefrorenen Maske, das Skelett ist also der Attraktor jeder
+Stützstelle — und um eine kleine Binnenfläche ist es nicht der Federweg,
+sondern die Klumpenachse zweier verschmolzener Kapseln
+(→ Verschmelzungs-Anzeiger). Die Entfaltung räumt genau diese Achse aus
+dem Attraktor: **jedes Skelettpixel, das näher als `w_pen` an einer
+`offen`-Binnenfläche des Katalogs liegt, fällt weg**, und an seine Stelle
+tritt die **Niveaulinie `w_pen + 0,5 px`** desselben Loch-Abstandsfeldes,
+auf die Tinte beschnitten und nur so weit um das Loch herum, wie die
+weggefallenen Pixel reichten (der *radiale Schatten*). Das ist eine
+Konstruktion und keine Anpassung — jeder Punkt der Niveaulinie liegt eine
+Federhalbbreite vom Loch entfernt, also trägt die korrigierte Schleife die
+Erwartung `Loch + 2·w_pen` per Bauart, und es gibt **keine Blendenlänge zu
+wählen, weil der Solver glättet**.
+
+Drei Verweigerungen statt Knöpfe: **keine Tinte erfinden** (die
+Niveaulinie wird auf die Maske beschnitten, der Schnitt wird gezählt);
+**die Schleife nie verlieren** (umschließt das korrigierte Skelett die
+Binnenfläche nicht mehr, wird DIESE Schleife zurückgenommen — R3s
+Abnahmeregel, auf die Evidenz verlegt, wo sie eine Schleife kostet und
+nicht eine Runde); **nichts weiten, was schon stimmt**. Voraus ging die
+**Raster-Diagnose** (`sep07`): der Fixture-Ausschnitt ist ein
+unskalierter Schnitt der Platte (30–33 px je x-Höhe) und der zweite
+committete Scan derselben Platte trägt für sie ~5 % weniger, eine globale
+50-%-Niveaulinie liest bei 1× dieselbe Binnenfläche wie die adaptive
+Maske und bei 4× bikubischem Grau eine kleinere, und der
+Verschmelzungs-Anzeiger überlebt die schärfere Lesung — die Verschmelzung
+ist **Tinte, kein Raster**, und deshalb ist die Entfaltung der Weg und
+nicht ein schärferes Bild.
+*Technisch:* `tools/pairlab/counterevidence.py`
+(`unfold_pen_at_counter` · `counter_evidence_case`), Schalter
+`--counter-evidence` (`FollowWeights.counter_evidence`, Vorgabe AUS). Sie
+ersetzt das Skelett des Falls an derselben Stelle wie die
+Tinten-Evidenz-Maske (K-C), damit Saatfenster, Solve-Felder und
+Deckungsziele EINE Evidenz lesen; das eingefrorene `ref_mask`/`ref_skel`
+des Lineals bleibt unberührt.
+→ messjournal.md §14 („Kette R4 Feder-Entfaltung `sep07`“) ·
+→ Binnenflächen-Bedingung · → Zwei-Züge-Modell · → Verschmelzungs-Anzeiger
 
 **Kreuzungs-Landmarke** *(crossing landmark)* — eine **Selbstkreuzung** der
 Buchstaben-Ankerlinie, die als *Ortsmarke der Struktur* taugt: zwei

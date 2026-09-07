@@ -836,7 +836,12 @@ Warnung versehen. Begriff und Hausregel:
   AUS; als eigenes Modul aufgerufen (`python -m tools.pairlab.counterfield
   <kandidat> [--base <kandidat>]`) druckt es die Öffnungsweite je
   Katalogschleife und ist damit das Gate-(a)-Lineal der Runde.
-  Alle nennen ihre Wurzel im Kopf und
+  `tools.pairlab.counterevidence` ist die dritte Stelle derselben
+  Aussage — die **Feder-Entfaltung** an der EVIDENZ (§14 „Kette R4
+  `sep07`"): `--counter-evidence`, Vorgabe AUS, ersetzt an jeder
+  `offen`-Binnenfläche das eingeschnürte Skelett durch die Niveaulinie
+  einer Federhalbbreite und meldet je Schleife Korrektur oder
+  Verweigerung. Alle nennen ihre Wurzel im Kopf und
   nehmen `--expect-root` (siehe oben); die Arm- und Archäologie-Flags
   stehen im jeweiligen `--help` und je Arm in seinem §14-Eintrag.
   Invarianten: reine Messschicht (nie DB/`core/`/Rendering), der
