@@ -97,6 +97,14 @@ COPY --chown=appuser:appuser alembic/ ./alembic/
 # Seed data the quiz_words migrations (0010/0011) read at apply time — without
 # it the migrate job dies on FileNotFoundError (seen on the 0011 deploy).
 COPY --chown=appuser:appuser tools/quizgen/quiz_words.json ./tools/quizgen/quiz_words.json
+# The frozen Kringel catalogue (`core.landmarks.KRINGEL_CATALOGUE_FILE`), which
+# the admin's Landmarken-Linse reads to say whether a loop is offen, wechselnd
+# or a Punktkringel. A DATA file, not an import — `core/` may never import
+# `tools/` (tests/test_imports.py), and the catalogue stays where it was built
+# so `tools/tracebench/kringelcat.py` keeps writing the same path. Without it
+# the lens degrades to „unbekannt" per loop rather than failing, but the
+# verdict is the point of the layer, so it is shipped like the quiz seed above.
+COPY --chown=appuser:appuser tools/tracebench/kringel_catalogue.json ./tools/tracebench/kringel_catalogue.json
 # The crawler pages (app/src/lib/seo/prerender.ts renders them at the APP
 # build; the files are committed). `/seo-proxy/{route}` serves them to the
 # mapped crawler UAs the site's nginx proxies here — same relative path as in

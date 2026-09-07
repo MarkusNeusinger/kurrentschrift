@@ -29,7 +29,16 @@ This module is the SENSOR half: pure functions over the catalogue that
 `tools/tracebench/run.py` prints beside the Duktus-Soll, report-only. Nothing
 here touches a scored number, and a missing or unreadable catalogue degrades to
 a warning rather than to a failure. The catalogue itself is built by
-`tools/tracebench/kringelcat.py` from a frozen fixture root.
+`tools/tracebench/kringelcat.py` from a frozen fixture root and stays a file of
+THIS package.
+
+**The per-loop half — `loop_apertures`, `size_class`, `loop_state` and the
+catalogue reader — now lives in `core.landmarks`** and is re-exported here under
+its old names. It moved because the admin's Landmarken-Linse serves those same
+loops over HTTP and `api/` may not import `tools/` (`tests/test_imports.py`);
+the pen width, the class boundaries and the 80 % majority travelled with the
+code, unchanged. What stays here is what needs a composed WORD: which strokes
+belong to a slot, which loops a word contributes, and the bench row fields.
 
 Reserved dataset: the catalogue carries apertures, counts and classes — never
 anchors, centerlines or any other geometry payload
@@ -38,162 +47,34 @@ anchors, centerlines or any other geometry payload
 
 from __future__ import annotations
 
-import json
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Sequence
 
 import numpy as np
 
-
-CATALOGUE_FILE = Path(__file__).with_name("kringel_catalogue.json")
-
-# The plate's own pen, measured in #551 as the median skeleton half width over
-# all 63 word specimens of the `sep05` root (n = 39 155 skeleton pixels). Frozen:
-# the size classes below are counted in multiples of it, so re-estimating it
-# would silently reclassify the catalogue.
-PLATE_PEN_HALF_WIDTH_UNITS = 0.0968
-PLATE_PEN_WIDTH_UNITS = 2.0 * PLATE_PEN_HALF_WIDTH_UNITS
-
-SIZE_SMALL_MAX_UNITS = 2.0 * PLATE_PEN_WIDTH_UNITS
-SIZE_MEDIUM_MAX_UNITS = 4.0 * PLATE_PEN_WIDTH_UNITS
-
-# A loop is `offen` / `punkt` when the plate agrees in at least this share of
-# the occurrences; anything between is `wechselnd`.
-STATE_MAJORITY = 0.8
-
-# Below this a raster loop is a splinter of the rasterisation or a loop the
-# composition has COLLAPSED — either way not a Kringel, and never something a
-# plate counter may be attributed to. A twentieth of an x-height is under half
-# the plate pen's own width: no pen writes an open loop there and no reader
-# sees one.
-SPLITTER_FLOOR_UNITS = 0.05
-
-# Raster resolution of the aperture measurement, in pixels per x-height. At
-# 1200 the reading floor is 2 px = 0.0017 xh, three orders under the smallest
-# aperture the catalogue classifies.
-RASTER_PX_PER_UNIT = 1200.0
-
-# The background is labelled 4-connected so an 8-connected curve really closes a
-# hole; scipy's default structure is exactly that cross.
-_BG_STRUCT = np.array([[0, 1, 0], [1, 1, 1], [0, 1, 0]], dtype=bool)
-
-SIZE_CLASSES = ("klein", "mittel", "gross")
-STATES = ("offen", "wechselnd", "punkt")
-# The fourth mark, for a loop the plate answers in no occurrence: it gets no
-# expectation rather than a guessed class. Not a class and not a state — the
-# absence of both.
-UNATTESTED = "unbelegt"
+from core.landmarks import (
+    KRINGEL_CATALOGUE_FILE,
+    PLATE_PEN_HALF_WIDTH_UNITS,
+    PLATE_PEN_WIDTH_UNITS,
+    SIZE_CLASSES,
+    SIZE_MEDIUM_MAX_UNITS,
+    SIZE_SMALL_MAX_UNITS,
+    SPLITTER_FLOOR_UNITS,
+    STATE_MAJORITY,
+    STATES,
+    UNATTESTED,
+    LoopAperture,
+    catalogue_source,
+    load_catalogue,
+    loop_apertures,
+    loop_state,
+    size_class,
+)
 
 
-@dataclass(frozen=True)
-class LoopAperture:
-    """One enclosed loop of a polyline set, in the polylines' own units."""
-
-    d0: float  # centerline loop aperture: the inscribed diameter of the enclosed region
-    area: float
-    cx: float
-    cy: float
-
-    def ink_aperture(self, half_width: float) -> float:
-        """What the loop shows as INK once a Gleichzug pen of `half_width` runs it.
-
-        The capsule union's hole is the erosion of the centerline hole by the
-        half width, so the visible aperture is exactly `d0 - 2h`. Negative means
-        the loop has run shut.
-        """
-        return self.d0 - 2.0 * half_width
-
-
-def size_class(d0: float) -> str:
-    """`klein` · `mittel` · `gross`, counted in widths of the plate's pen."""
-    if d0 < SIZE_SMALL_MAX_UNITS:
-        return "klein"
-    if d0 < SIZE_MEDIUM_MAX_UNITS:
-        return "mittel"
-    return "gross"
-
-
-def loop_state(occurrences: int, with_counter: int) -> str:
-    """`offen` · `wechselnd` · `punkt` from how often the PLATE shows a hole.
-
-    `with_counter` counts the occurrences in which the plate's ink carries a
-    counter at this loop. The rule is the owner's own three-way split, and it
-    is deliberately blind to how WIDE the counter is: a Punktkringel is defined
-    by the plate never opening it, not by a threshold on its aperture.
-    """
-    if occurrences <= 0:
-        raise ValueError("loop_state needs at least one occurrence")
-    # The tolerance is not a third threshold: 1 - 0.8 is 0.19999999999999996 in
-    # binary, so 2 of 10 would fall out of `punkt` on a representation rather
-    # than on a reading. A boundary case must turn on the rule, not on the float.
-    share = with_counter / occurrences
-    if share >= STATE_MAJORITY - 1e-9:
-        return "offen"
-    if share <= (1.0 - STATE_MAJORITY) + 1e-9:
-        return "punkt"
-    return "wechselnd"
-
-
-def loop_apertures(
-    lines: Sequence[Sequence[Sequence[float]]],
-    *,
-    px_per_unit: float = RASTER_PX_PER_UNIT,
-    floor: float = SPLITTER_FLOOR_UNITS,
-    pad: float = 0.05,
-) -> list[LoopAperture]:
-    """Every enclosed loop of a polyline set, largest-x first, splinters dropped.
-
-    The raster-based twin of the ductus loop finder `core.aggregate.loop_ranges`
-    (#552): that one reads the SELF-CROSSINGS of the chart row and merges
-    overlapping spans, which is what a per-anchor registration needs and what a
-    per-loop aperture must not have. This one asks the complementary question —
-    which regions does the drawn curve actually enclose, and how wide is each —
-    and it sees a loop the ductus finder merges away as well as one it never had
-    a range for (the `t`, the capitals).
-
-    Ordering is by `(cx, cy)`, i.e. reading order, because that is the identity
-    the catalogue is keyed on: the caller's n-th loop of a glyph is the
-    catalogue's n-th entry for it.
-    """
-    from PIL import Image, ImageDraw  # noqa: PLC0415 — heavy import, one call site
-    from scipy.ndimage import distance_transform_edt  # noqa: PLC0415
-    from scipy.ndimage import label as cc_label  # noqa: PLC0415
-
-    arrays = [np.asarray(line, dtype=float) for line in lines]
-    arrays = [a for a in arrays if a.ndim == 2 and len(a) >= 2]
-    if not arrays:
-        return []
-    allp = np.vstack(arrays)
-    x0, y0 = allp.min(axis=0) - pad
-    x1, y1 = allp.max(axis=0) + pad
-    width = max(8, int(np.ceil((x1 - x0) * px_per_unit)) + 1)
-    height = max(8, int(np.ceil((y1 - y0) * px_per_unit)) + 1)
-    img = Image.new("L", (width, height), 0)
-    draw = ImageDraw.Draw(img)
-    for line in arrays:
-        draw.line([((x - x0) * px_per_unit, (y - y0) * px_per_unit) for x, y in line], fill=255, width=1)
-    curve = np.asarray(img) > 0
-    labels, count = cc_label(~curve, structure=_BG_STRUCT)
-    border = set(labels[0, :]) | set(labels[-1, :]) | set(labels[:, 0]) | set(labels[:, -1])
-    edt = distance_transform_edt(~curve)
-    out: list[LoopAperture] = []
-    for i in range(1, count + 1):
-        if i in border:
-            continue
-        sel = labels == i
-        dist = np.where(sel, edt, -1.0)
-        idx = int(np.argmax(dist))
-        d0 = 2.0 * float(dist.flat[idx]) / px_per_unit
-        if d0 < floor:
-            continue
-        cy, cx = np.unravel_index(idx, dist.shape)
-        out.append(
-            LoopAperture(
-                d0=d0, area=float(sel.sum()) / px_per_unit**2, cx=x0 + cx / px_per_unit, cy=y0 + cy / px_per_unit
-            )
-        )
-    return sorted(out, key=lambda lp: (lp.cx, lp.cy))
+# The catalogue's own path, under its historical name. `core.landmarks` reads
+# the same file — it is a measurement artefact of this package and stays here.
+CATALOGUE_FILE: Path = KRINGEL_CATALOGUE_FILE
 
 
 def body_items(items: Sequence[dict[str, Any]]) -> dict[int, list[int]]:
@@ -236,51 +117,6 @@ def slot_loop_lines(items: Sequence[dict[str, Any]]) -> dict[int, tuple[str | No
             take.add(hi + 1)
         key = next((items[i].get("glyph_key") for i in idxs if items[i].get("glyph_key")), None)
         out[slot] = (key, [np.asarray(items[i]["centerline"], dtype=float) for i in sorted(take)])
-    return out
-
-
-def catalogue_source(path: Path | None = None) -> dict[str, Any]:
-    """The `_source` header of a catalogue file: which root and style it was read on."""
-    payload = json.loads((path or CATALOGUE_FILE).read_text(encoding="utf-8"))
-    source = payload.get("_source")
-    if not isinstance(source, dict):
-        raise ValueError("kringel catalogue: no '_source' header")
-    return source
-
-
-def load_catalogue(path: Path | None = None) -> dict[str, list[dict[str, Any]]]:
-    """`{glyph key: [loop row, …]}` in loop order, from the frozen catalogue file.
-
-    Every failure mode here is a `ValueError` — including a row with a missing
-    or misspelled field — because the caller's contract is „a catalogue that
-    cannot be read costs the column, never the run", and a `KeyError` escaping
-    this function would abort the whole bench instead.
-    """
-    payload = json.loads((path or CATALOGUE_FILE).read_text(encoding="utf-8"))
-    rows = payload.get("loops")
-    if not isinstance(rows, list):
-        raise ValueError("kringel catalogue: no 'loops' array")
-    for i, row in enumerate(rows):
-        if not isinstance(row, dict):
-            raise ValueError(f"kringel catalogue: row {i} is not an object")
-        missing = [f for f in ("glyph", "loop", "size_class", "state") if f not in row]
-        if missing:
-            raise ValueError(f"kringel catalogue: row {i} lacks {', '.join(missing)}")
-        if not isinstance(row["glyph"], str) or not isinstance(row["loop"], int) or isinstance(row["loop"], bool):
-            raise ValueError(f"kringel catalogue: row {i} has a non-comparable glyph/loop key")
-        # The vocabulary is checked HERE rather than trusted: a word the sensor
-        # does not know silently becomes "no expectation", which reads exactly
-        # like a Punktkringel and would hide a whole class of loops.
-        if row["size_class"] not in (*SIZE_CLASSES, UNATTESTED):
-            raise ValueError(f"kringel catalogue: {row['glyph']}#{row['loop']} has size class {row['size_class']!r}")
-        if row["state"] not in (*STATES, UNATTESTED):
-            raise ValueError(f"kringel catalogue: {row['glyph']}#{row['loop']} has state {row['state']!r}")
-    out: dict[str, list[dict[str, Any]]] = {}
-    for row in sorted(rows, key=lambda r: (r["glyph"], r["loop"])):
-        out.setdefault(row["glyph"], []).append(row)
-    for glyph, loops in out.items():
-        if [row["loop"] for row in loops] != list(range(len(loops))):
-            raise ValueError(f"kringel catalogue: loop indices of {glyph!r} are not 0..n-1")
     return out
 
 

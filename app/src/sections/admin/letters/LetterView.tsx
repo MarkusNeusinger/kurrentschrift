@@ -34,6 +34,7 @@ import { cropUrl } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { ChartView } from '@/sections/admin/chart/ChartView';
 import { GlyphComparison } from '@/sections/admin/compare/GlyphComparison';
+import { LandmarkPanel } from '@/sections/admin/letters/LandmarkPanel';
 import { LaufformApplyDialog } from '@/sections/admin/letters/LaufformApplyDialog';
 import { LetterStats } from '@/sections/admin/shell/LensStats';
 import { LetterPicker } from '@/sections/admin/shell/LetterPicker';
@@ -81,6 +82,9 @@ export function LetterView() {
     target?.scrollIntoView({ behavior, block: 'start' });
   }, [chartOpen, reducedMotion]);
   const [applyOpen, setApplyOpen] = useState(false);
+  // The Landmarken-Linse is off by default: it is a diagnostic layer over the
+  // letter, and the first question on this page stays „wie sieht er aus".
+  const [landmarksOpen, setLandmarksOpen] = useState(false);
   // The Laufform face reports itself unavailable when the letter has no
   // variant-100 row — most letters do not, and that is information, not a gap.
   const [noLaufform, setNoLaufform] = useState(false);
@@ -284,6 +288,42 @@ export function LetterView() {
             </Box>
           )}
         </Panel>
+
+        {/* 2b — the generated structure layer over the written form. Full
+            width because the lens draws the letter large enough to carry its
+            own hit targets, and because the legend sits beside it. */}
+        <Box sx={{ gridColumn: { lg: '1 / -1' } }}>
+          <Panel title={t.landmarksTitle} caption={t.landmarksCaption}>
+            {!hasCanonical ? (
+              <Alert severity="info">{t.noCanonical}</Alert>
+            ) : (
+              <>
+                <Button
+                  size="small"
+                  variant={landmarksOpen ? 'contained' : 'outlined'}
+                  aria-expanded={landmarksOpen}
+                  onClick={() => setLandmarksOpen((v) => !v)}
+                  endIcon={landmarksOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                >
+                  {t.landmarksToggle}
+                </Button>
+                <Collapse in={landmarksOpen} unmountOnExit>
+                  <Box sx={{ mt: 1.5 }}>
+                    <LandmarkPanel
+                      key={glyphKey}
+                      sourceId={sourceId}
+                      glyphKey={glyphKey}
+                      cacheBust={cropCacheBust}
+                      onMark={(key, variant, landmark) =>
+                        fileMark({ target: { kind: 'landmark', glyphKey: key, variant, landmark } })
+                      }
+                    />
+                  </Box>
+                </Collapse>
+              </>
+            )}
+          </Panel>
+        </Box>
 
         {/* 3 — the raw evidence: every occurrence the harvest kept. */}
         <Panel title={fmt(t.occurrencesTitle, { count: occurrences.length })} caption={t.occurrencesCaption}>

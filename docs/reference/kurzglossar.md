@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
-> **Status (2026-09-06): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **83
+> **Status (2026-09-07): lebend.** Die Kurzfassung von
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **84
 > Begriffe**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars. Nachzieh-Anlass: ein Begriff wandert
 > hierher, sobald er die Zwei-von-drei-Schwelle unten erreicht und in
@@ -442,6 +442,14 @@ einen Auftrag ab. Mehr ist von der Mensch-Seite nicht gefordert.
 **erzwingt** es: die Beanstandung zurückformulieren und sagen, ob sie sich
 reproduzieren ließ, BEVOR gearbeitet wird; zum Schließen die diagnostizierte
 Stufe plus `resolution`. → [§5](glossar.md#5-werkbank-und-prozess)
+
+**Landmarken-Linse** — die Ebene der Buchstaben-Ansicht, die die ERKANNTE
+Struktur auf der geschriebenen Form zeigt: Kreuzung, Retrace-Zone,
+Absetzen, Umkehrecke, Kringel (Kreis im Maß von `D0`), Verschmelzung — mit
+denselben Erkennern, mit denen die Bench misst (`core/landmarks.py`).
+Generierte Ebene, also nur bemängelbar: ⚑ legt einen `landmark`-Auftrag ab,
+und ein Klick ins Leere meldet eine FEHLENDE Marke.
+→ [§5](glossar.md#5-werkbank-und-prozess) · optimierungs-werkbank.md §8
 
 **Stufen-Doktrin** — **Manuell hinzufügen nur, wo Ground Truth entsteht,
 die das System nicht selbst herleiten kann. Alles Generierte wird

@@ -28,7 +28,7 @@ import { useState } from 'react';
 import { createWorkItem } from '@/lib/api';
 import { de } from '@/locales/admin';
 
-import { targetLabel, workItemBodyOf, type Mark } from './model';
+import { landmarkNoteHead, landmarkRowLabel, targetLabel, workItemBodyOf, type Mark } from './model';
 
 // The pre-sort question points at the letter's own chart form. It is only
 // answerable where that form is visible or one click away — which it is
@@ -76,11 +76,28 @@ export function MarkDialog({ mark, sourceId, onClose, onFiled, onOpenWizard }: P
             <strong>{`${t.dialogTarget}: `}</strong>
             {targetLabel(mark.target)}
             <Typography component="span" variant="caption" color="text.secondary">
-              {mark.specimen
-                ? ` · ${t.dialogSeenIn} ${mark.specimen.word} (${mark.specimen.id})`
-                : ` · ${t.dialogNoSpecimen}`}
+              {/* A landmark is read on a STORED ROW, so „frei eingetippt" would
+                  be a lie about where it came from — it names the row instead. */}
+              {mark.target.kind === 'landmark'
+                ? ` · ${landmarkRowLabel(mark.target.variant)}`
+                : mark.specimen
+                  ? ` · ${t.dialogSeenIn} ${mark.specimen.word} (${mark.specimen.id})`
+                  : ` · ${t.dialogNoSpecimen}`}
             </Typography>
           </Typography>
+
+          {/* The measured numbers the lens will file with the item, shown
+              before it is filed — the author should see what the row will
+              carry, not trust that something useful travels. */}
+          {mark.target.kind === 'landmark' && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: 'block', whiteSpace: 'pre-line', fontVariantNumeric: 'tabular-nums' }}
+            >
+              {landmarkNoteHead(mark.target)}
+            </Typography>
+          )}
 
           {!presorted && mark.target.kind === 'letter' ? (
             <>

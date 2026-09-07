@@ -72,7 +72,8 @@ temp
 **/.env*
 
 # Not shipped by api/Dockerfile: it copies api/, core/, alembic/, data/sources/,
-# app/prerender/ and one JSON out of tools/.
+# app/prerender/ and two JSONs out of tools/ (the quiz seed and the frozen
+# Kringel catalogue the Landmarken-Linse reads).
 docs
 tests
 .github

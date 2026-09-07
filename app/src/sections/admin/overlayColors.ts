@@ -26,3 +26,22 @@ export const overlay = {
   // The neutral dark canvas behind the chart scan / wizard crop.
   canvasBg: '#111',
 } as const;
+
+// The Landmarken-Linse's own set (optimierungs-werkbank.md §8): one hue per
+// DETECTED structure, drawn over black-brown ink on a white crop. Chosen apart
+// from the palette above rather than reused from it, because these mean
+// something else — `overlay.locked` says "this glyph is finished", and a green
+// ring on a crossing would read as "this crossing is fine", which the lens
+// never claims. All seven clear WCAG AA (>= 3:1) against the white work
+// surface, and none of them is the ink's own near-black.
+export const landmarkColors = {
+  crossing: '#d81b60', // Kreuzung — a ring at the point
+  retrace: '#0277bd', // Retrace-Zone — the path shaded along itself
+  touch: '#00838f', // Berührung — the same shading, cooler: past, not over
+  overlap: '#6a1b9a', // Verschmelzung — hatched, two strokes in one place
+  lift: '#ef6c00', // Absetzen — a tick where the pen came down again
+  corner: '#2e7d32', // Umkehrecke — a square on the anchor
+  loop: '#c62828', // Kringel — a circle scaled to D0
+} as const;
+
+export type LandmarkColorKey = keyof typeof landmarkColors;

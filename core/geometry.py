@@ -81,6 +81,75 @@ def arc_length(pts: np.ndarray) -> np.ndarray:
     return np.concatenate([[0.0], np.cumsum(seg)])
 
 
+def polyline_length(points: np.ndarray) -> float:
+    """Total chord length of a polyline (0 for fewer than two points).
+
+    The scalar twin of `arc_length` above. It lives here rather than in the
+    bench because `core.landmarks` measures how much ink a retrace pass covers
+    and `tools.tracebench.frames` asks the identical question of a whole trace
+    — one answer, one implementation.
+    """
+    pts = np.asarray(points, dtype=float).reshape(-1, 2)
+    if len(pts) < 2:
+        return 0.0
+    return float(np.hypot(*np.diff(pts, axis=0).T).sum())
+
+
+def concat_strokes(strokes: Sequence[np.ndarray]) -> tuple[np.ndarray, list[int]]:
+    """`(points, stroke_starts)` of a stroke list — the pen-lift-aware packing.
+
+    Every consumer that hands a whole trace to a detector needs exactly this
+    pair, and needs it identical on both sides: the concatenated points plus the
+    indices where a new pen stroke begins, so nothing downstream bridges a lift.
+    """
+    kept = [np.asarray(s, dtype=float).reshape(-1, 2) for s in strokes]
+    kept = [s for s in kept if len(s)]
+    if not kept:
+        return np.zeros((0, 2)), []
+    starts: list[int] = []
+    at = 0
+    for s in kept:
+        starts.append(at)
+        at += len(s)
+    return np.vstack(kept), starts
+
+
+def resample_by_step(points: np.ndarray, step: float) -> np.ndarray:
+    """Arc-length-uniform resampling of a polyline, endpoints exact.
+
+    `n = max(2, round(total_arc / step) + 1)` samples, evenly spaced along the
+    path. The endpoints are reproduced exactly (they are the first and last
+    interpolation node), so resampling never shortens a stroke.
+
+    A degenerate polyline — one point, or several coincident ones — has no arc
+    to walk along and returns its two endpoints, which for a single point are
+    that point twice. Callers get a well-formed 2-point array instead of an
+    exception, because a stray zero-length stroke is a data property, not a
+    programming error.
+
+    Deliberately a TWIN of `tools.tracebench.metric.resample_by_step` rather
+    than an import of it: that module carries a pinned purity clause — the
+    ruler may import numpy and scipy and nothing of the project it grades
+    (`tests/test_tracebench_metric.py`) — so the structure detectors, which
+    live here because the API serves them, cannot reach into it. The two are
+    kept byte-equal by `tests/test_geometry.py`, the same device
+    `tools.tracebench.frames.DIACRITIC_MIN_Y` uses for its re-declared constant.
+    """
+    pts = np.asarray(points, dtype=float).reshape(-1, 2)
+    if len(pts) == 0:
+        raise ValueError("resample_by_step needs at least one point")
+    if len(pts) == 1:
+        return np.repeat(pts, 2, axis=0)
+    seg = np.hypot(*np.diff(pts, axis=0).T)
+    arc = np.concatenate([[0.0], np.cumsum(seg)])
+    total = float(arc[-1])
+    if total <= 0.0 or step <= 0.0:
+        return np.vstack([pts[0], pts[-1]])
+    n = max(2, int(round(total / float(step))) + 1)
+    t = np.linspace(0.0, total, n)
+    return np.column_stack([np.interp(t, arc, pts[:, 0]), np.interp(t, arc, pts[:, 1])])
+
+
 def discrete_curvature(pts: np.ndarray, unit_px: float) -> np.ndarray:
     """Per-point turning rate (curvature) of a polyline, normalised to x-heights.
 

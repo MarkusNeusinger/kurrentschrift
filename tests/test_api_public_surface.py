@@ -76,6 +76,7 @@ RESERVED = {
     "/sources/{source_id}/templates/{glyph_key}",
     "/sources/{source_id}/templates/{glyph_key}/diagnostic",
     "/sources/{source_id}/templates/{glyph_key}/fit",
+    "/sources/{source_id}/templates/{glyph_key}/landmarks",
     "/sources/{source_id}/templates/{glyph_key}/quality",
     "/sources/{source_id}/pairs",
     "/sources/{source_id}/pairs/{left_key}/{right_key}",

@@ -575,6 +575,13 @@ class WorkItem(Base):
     content is the `note`. It runs the same protocol minus the `stage`, which
     names a stage of the WRITING path and has nothing true to say about it.
 
+    The fifth, 'landmark', complains about one DETECTED structure of a letter —
+    a missing crossing, a misclassified Kringel, a corner that is not there. It
+    reuses `glyph_key`, because the landmark layer is DERIVED from that row and
+    a second key column would be a second name for the same thing; WHICH
+    landmark, and with which measured numbers, is the first line of the `note`,
+    written by the Landmarken-Linse itself (optimierungs-werkbank.md §8).
+
     A session may not silently close a row. Before it changes anything it
     restates the task in its own words and says whether it could reproduce the
     complaint (`understanding` + `reproduced`, status 'ack'); when it is done it
@@ -596,7 +603,8 @@ class WorkItem(Base):
         String(SOURCE_ID_MAX), ForeignKey("sources.id", ondelete="CASCADE"), nullable=False, index=True
     )
     # The marked level: 'letter' (one glyph_key) | 'pair' (left+right) | 'word'
-    # | 'note' (no target at all, the text is the task).
+    # | 'note' (no target at all, the text is the task) | 'landmark' (one
+    # detected structure of the glyph_key's row, named in the note's first line).
     kind: Mapped[str] = mapped_column(String(KIND_MAX), nullable=False)
     glyph_key: Mapped[str | None] = mapped_column(String(GLYPH_KEY_MAX), nullable=True)
     left_key: Mapped[str | None] = mapped_column(String(GLYPH_KEY_MAX), nullable=True)
