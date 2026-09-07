@@ -118,15 +118,18 @@ In den Worten des Autors:
 > eine Frage für später; die sind dann auch weniger lehrbuchmäßig
 > geschrieben, was einiges schwerer macht.“
 
-**(a) Die Tafeln — historischer Duktus-Prior und Schriftkunde-Beleg.**
+**(a) Die Tafeln — die historische Formbasis und der Schriftkunde-Beleg.**
 Die gemeinfreien Lehrtafeln (Loth 1866, Petzendorfer 1889,
-Sütterlin-Ausgangsschrift 1922, Koch 1928) liefern die Geometrie, an die
-die kanonischen Templates gefittet werden
+Sütterlin-Ausgangsschrift 1922, Koch 1928) liefern die **Geometrie**, an
+die die kanonischen Templates gefittet werden
 ([`architektur.md`](architektur.md) §2/§3), und sie sind die Belege der
 Schriftkunde. Diese Rolle ändert sich nicht: die Tafeln bleiben
-gemeinfrei, zitierbar und das Historische an diesem Projekt. Der Duktus
-darüber — Strichfolge und Schreibrichtung — bleibt die eigene Arbeit des
-Autors (`quellen-und-rechte.md` §5).
+gemeinfrei, zitierbar und das Historische an diesem Projekt. Was sie
+ausdrücklich NICHT liefern, ist der **Duktus-Prior** — Strichfolge,
+Absetzpunkte und Kreuzungsauflösung sind die eigene Arbeit des Autors
+ÜBER dieser gemeinfreien Geometrie und bleiben es in jeder der drei
+Rollen (`quellen-und-rechte.md` §5; die Tafel liefert die Formen, nicht
+die Reihenfolge).
 
 **(b) Die Platten-Wörter (Sütterlin 1922) — Ground Truth und erster
 Maßstab.** Die geschriebenen Wortproben der Platte sind das Material,
@@ -142,21 +145,30 @@ zugleich der Ort sein, an dem fehlende Buchstaben nachwachsen.
 
 **(c) Die Eigenhand des Autors — die ausgelieferte Schreibhand.** Sobald
 ihr Bestand Alphabet und Übergänge deckt, schreibt die Seite in der Hand
-des Autors: Hero, Lese-Quiz, Federprobe, Übungsblatt-Vorschrift. Sie ist
-„nicht so sauber oder historisch“ wie die Platte — das ist bewusst in
-Kauf genommen, weil vier Dinge dafür sprechen:
+des Autors: Hero, Federprobe, Übungsblatt-Vorschrift — und das Lese-Quiz,
+das der Autor selbst nennt, für das aber eine didaktische Unterfrage offen
+bleibt (siehe unten). Sie ist „nicht so sauber oder historisch“ wie die
+Platte — das ist bewusst in Kauf genommen, weil vier Dinge dafür sprechen:
 
-- **Dieselbe Feder, dieselbe Sitzung.** Ein Bogen ist mit echter Feder
-  geschrieben, mit bekanntem Federwinkel und bekannter Lineatur; die
-  Platte ist ein Druck, dessen Feder wir rekonstruieren müssen.
-- **Hochauflösend statt 30 px.** Die Platten-Wortproben stehen bei
-  30–35 px je x-Höhe — die Ablesung einer Binnenfläche hat dort einen
+- **Bekannte Feder statt rekonstruierter.** Das **stehende Setup** einer
+  Hand (Feder, Tinte, Papier, Aufnahmegerät) ist einmal erfasst, und
+  jede Fassung trägt zusätzlich die EFFEKTIVEN Werte ihrer Sitzung
+  ([`../proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md)
+  §7.1) — ein Wechsel mitten in der Kampagne ist in den Daten sichtbar
+  statt still. Bei der Platte ist die Feder ein Druckbild, das wir
+  rekonstruieren müssen.
+- **Auflösung statt Ablese-Boden.** Die Platten-Wortproben stehen bei
+  30–35 px je x-Höhe; die Ablesung einer Binnenfläche hat dort einen
   Boden von etwa ±0,015 xh, und die Kringel-Kette vom 2026-09-06/07 hat
-  gemessen, dass die Öffnung an einer verschmolzenen engen Schleife schon
-  in der Tinten-Evidenz verloren geht und aus diesen Ausschnitten nicht
-  zurückzuholen ist
+  gemessen, dass die Öffnung an einer verschmolzenen engen Schleife
+  bereits in der Tinten-Evidenz verloren geht — vor jedem Fit
   ([`../notes/kringel-binnenflaechen-2026-09-06.md`](../notes/kringel-binnenflaechen-2026-09-06.md)).
-  Ein eigener Scan bei ≥ 300 DPI hat dieses Problem nicht.
+  Ein eigener Bogen bei ≥ 300 DPI löst nicht das physikalische Problem —
+  wo zwei Federzüge wirklich zusammenlaufen, ist auch dort nichts mehr zu
+  öffnen. Er nimmt aber beides, was daran unser eigenes ist: den
+  Ablese-Boden, und die Wahrscheinlichkeit des Zusammenlaufens selbst,
+  weil in bekannter Federbreite auf bekannter Lineatur geschrieben wird
+  statt in einem fremden Druck von 30 px.
 - **Beliebig nachlieferbar.** Fehlt ein Buchstabe, ein Übergang oder ein
   Versal, wird er geschrieben — der strukturelle Vorteil, den der
   Stufenplan als H5 führt
@@ -176,6 +188,28 @@ Der Autor benennt selbst, was es schwer macht: sie sind „weniger
 lehrbuchmäßig geschrieben“ — kein Kanon je Buchstabe, keine saubere
 Lineatur, mehr Varianz je Vorkommen. Diese Frage wird gestellt, wenn die
 drei Familien stehen, nicht vorher.
+
+### Verworfen
+
+Zwei Wege, die derselbe Entscheid ausschließt — sie werden nicht neu
+verhandelt; neue Argumente gehen nach `docs/proposals/`:
+
+- **Die Platte bleibt dauerhaft die Auslieferungshand.** Sie kann es
+  nicht sein, ohne ihre andere Rolle zu verlieren: eine Bench-Referenz
+  muss eingefroren bleiben (Rolle b), also ist sie genau der Ort, an dem
+  ein fehlender Buchstabe, ein fehlender Übergang oder ein fehlender
+  Versal **nie** nachwachsen kann. Dazu kommt der gemessene Ablese-Boden
+  ihrer 30–35-px-Ausschnitte (siehe (c)). Was bleibt: die Platte bleibt
+  Maßstab und Ground Truth — das ist keine Abstufung, sondern ihre
+  Aufgabe.
+- **Die Eigenhand bleibt reines Trainingsmaterial.** Das war der Stand
+  bis zum 2026-09-07 und verschenkt den einen strukturellen Vorteil, den
+  keine historische Quelle hat: beliebiger Nachschub. Der Autor übt das
+  Schreiben ohnehin („ich will das Schreiben eh üben“), sodass der
+  Nachschub kein zusätzlicher Aufwand ist, sondern derselbe.
+
+**Nicht verworfen, nur aufgeschoben:** historische Alltagsschriften (d)
+— das ist eine offene Frage für später, kein abgelehnter Weg.
 
 ### Was am Rollenwechsel hängt
 
@@ -200,15 +234,16 @@ gesucht werden muss:
    Zusatz, dass die ausgelieferte Schrift eine eigene Hand darüber ist.
    `hub.ts` nennt nur die Schrift („in Sütterlin“), nicht die Platte, und
    bliebe unverändert.
-3. **Offene Unterfrage: das Lese-Quiz.** Der Entscheid sagt „im Header,
-   Quiz …“ — er beantwortet aber nicht, ob das Quiz seine LESE-Aufgaben
-   weiter in den Formen von 1922 stellen soll. Dafür spricht, dass das
-   Quiz Lesen lehrt und die Ausgangsschrift die Norm ist, an der die
-   Verwechsler (n/u, e/n, ſ/f) definiert sind; dagegen, dass echte
-   Dokumente ohnehin nie lehrbuchsauber sind. **Offen bis zum
-   Autor-Entscheid**; bis dahin gilt der konservative Default: das Quiz
-   behält die 1922er-Formen als Leseziel, auch wenn Hero und Federprobe
-   bereits in der Eigenhand schreiben.
+3. **Offene Unterfrage: das Leseziel des Quiz.** Der Entscheid nennt das
+   Quiz ausdrücklich („im Header, Quiz …“), also wechselt es nach seinem
+   Wortlaut mit. Was er nicht beantwortet, ist die didaktische Frage
+   dahinter: das Quiz zeigt eine Form nicht zum Anschauen, sondern als
+   **Leseaufgabe** — und die Verwechsler, die es lehrt (n/u, e/n, ſ/f),
+   sind an der Norm der Ausgangsschrift definiert, während echte
+   Dokumente ohnehin nie lehrbuchsauber sind. Ob das Quiz deshalb als
+   einzige Fläche bei den 1922er-Formen bleibt, **entscheidet der Autor**
+   — dieses Doc setzt dafür keinen Default gegen seinen Wortlaut. Solange
+   die Frage offen ist, wechselt das Quiz mit den übrigen Flächen.
 4. **Die Lesbarkeits-Leitregel gilt unverändert** (Autoren-Leitsatz
    „Legibility over period authenticity“,
    [`design-system.md`](design-system.md) §9). Eine weniger saubere Hand

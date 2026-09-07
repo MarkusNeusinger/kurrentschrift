@@ -326,15 +326,16 @@ mit ganzen, geschriebenen WÖRTERN derselben Vorlage (Sütterlin 1922,
 Abb. 19/20): Ground Truth fürs Nachfahren und der eingefrorene
 Referenzsatz, gegen den optimiert wird — Maßstab, nicht Auslieferung.
 Die **Eigenhand** ist die mit echter Feder geschriebene Hand des Autors;
-sie wird die **ausgelieferte Schreibhand** der öffentlichen Seiten
-(Hero, Lese-Quiz, Federprobe, Übungsblatt), sobald ihr Bestand Alphabet
-und Übergänge deckt — weil sie hochauflösend, mit bekannter Feder und
-**beliebig nachlieferbar** ist und vollständig dem Autor gehört. Ob
-später noch historische Alltagsschriften als vierte Sorte dazukommen,
-ist ausdrücklich offen.
+sie wird die **ausgelieferte Schreibhand** der öffentlichen Seiten (Hero,
+Federprobe, Übungsblatt; beim Lese-Quiz ist die didaktische Unterfrage
+offen), sobald ihr Bestand Alphabet und Übergänge deckt — weil sie
+hochauflösend, mit erfasstem Setup und **beliebig nachlieferbar** ist und
+vollständig dem Autor gehört. Ob später noch historische Alltagsschriften
+als vierte Sorte dazukommen, ist ausdrücklich offen.
 *Technisch:* die Rollen sind keine Schema-Größe — Tafel und Platte sind
-`sources`-Zeilen (`kind: chart` bzw. die Wortproben-Vorlage), die
-Eigenhand ist eine eigene `hands`-Zeile (Stufe H5).
+zwei Abbildungen DERSELBEN Quelle (`data/sources/suetterlin-1922/`, die
+Wortvermessung als Sidecar `words.json`), die Eigenhand wird eine eigene
+`hands`-Zeile (Stufe H5).
 → concepts/vision.md § „Drei Rollen: Tafel · Platte · Eigenhand“ ·
 proposals/eigenhand-erfassung.md §2
 

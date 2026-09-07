@@ -108,7 +108,7 @@ Maßgeblich ist der Status-Kopf des jeweiligen Docs.
 |---|---|---|
 | [optimierungs-werkbank.md](proposals/optimierungs-werkbank.md) | EINE Admin-Werkbank, die **Stufen-/Rollen-Doktrin** und das `work_items`-Protokoll (Triage-Pflicht, Regel-Fix vor Override, Rückgabe an Autor), §6 Sperr-Doktrin | bindend — **Pflichtlektüre vor jedem Korb-Auftrag** |
 | [handmodell-stufenplan.md](proposals/handmodell-stufenplan.md) | Die Statistik-Schicht in Stufen H0–H5 füllen | teil-umgesetzt (H0–H2 gebaut) |
-| [eigenhand-erfassung.md](proposals/eigenhand-erfassung.md) | Die eigene Hand als Trainingsdaten: Wortvorrat → Streifenplan → Bögen → Siebung → Streifenkartei → Bestand | teil-umgesetzt (Phasen 1–4f) |
+| [eigenhand-erfassung.md](proposals/eigenhand-erfassung.md) | Die eigene Hand erfassen — und seit 2026-09-07 als künftige **Auslieferungshand**: Wortvorrat → Streifenplan → Bögen → Siebung → Streifenkartei → Bestand | teil-umgesetzt (Phasen 1–4f) |
 | [tintenfolger.md](proposals/tintenfolger.md) | Die Wortbahn-Kampagne: Referenzsatz, Routen-Duell, Optimierungsplan §7, Rettungswege §7.9, offene Arme §7.11 | teil-umgesetzt (Duell gemessen) |
 | [planaenderungen.md](proposals/planaenderungen.md) | Staging offener Konzept-Änderungen (Bigramme, Positions-Statistik, `core/orthography.py`) | teil-umgesetzt (nur Vorschlag D offen) |
 | [uebergaenge-befund.md](proposals/uebergaenge-befund.md) | Der Paar-Befund von `pairlab`: Platzierung dominiert, Stub-Ersatz klassenweise; §5c Kettenfit Stufe A | Befund-Journal |

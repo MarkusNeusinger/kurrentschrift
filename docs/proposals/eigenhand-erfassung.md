@@ -68,19 +68,21 @@ Mess-/Autorenschicht — kein Werkzeug schreibt die Datenbank.
 beschrieben — Trainingsmaterial für H5, Zubringer zur Statistik. Der
 Entscheid vom 2026-09-07 gibt ihm ein zweites, größeres Ziel: **die
 Eigenhand wird die ausgelieferte Schreibhand der Seite** (Hero,
-Lese-Quiz, Federprobe, Übungsblatt-Vorschrift), sobald ihr Bestand
-Alphabet und Übergänge deckt. Die Tafeln bleiben der historische
-Duktus-Prior und der Schriftkunde-Beleg, die Platten-Wörter bleiben
-Ground Truth und Maßstab — die Rollenteilung samt Begründung steht in
+Federprobe, Übungsblatt-Vorschrift und — mit einer offenen didaktischen
+Unterfrage — das Lese-Quiz), sobald ihr Bestand Alphabet und Übergänge
+deckt. Die Tafeln bleiben die gemeinfreie Formbasis und der
+Schriftkunde-Beleg (der Duktus darüber war immer die eigene Arbeit des
+Autors), die Platten-Wörter bleiben Ground Truth und Maßstab — die
+Rollenteilung samt Begründung steht in
 [`../concepts/vision.md`](../concepts/vision.md) §
 „Drei Rollen: Tafel · Platte · Eigenhand“ und ist dort die bindende
 Fassung. Für dieses Proposal ändert sich dadurch **kein Werkzeug und
 kein Ablauf**; es ändert sich, wofür die Schleife läuft — und damit,
 welche Zahl ihres Berichts man liest.
 
-**Was „deckt Alphabet und Übergänge“ operativ heißt.** Der
-Bestandsbericht (§7, `report.py`) misst genau das bereits, an zwei
-Stellen und ohne neue Kennzahl:
+**Was „deckt Alphabet und Übergänge“ operativ heißt.** Beide Hälften
+liest der vorhandene Bestand ab, ohne neue Kennzahl — aber auf zwei
+verschiedenen Flächen, und das ist beim Nachlesen der Unterschied:
 
 * **Alphabet** — die **Mindestbelegung** je Glyphe. Der Plan garantiert
   ≥ 3 GEPLANTE Belege je Registerglyphe (Phase A2, §4); die
@@ -88,11 +90,16 @@ Stellen und ohne neue Kennzahl:
   ANGENOMMENE Fassungen je Glyphe, weil unterhalb davon ohnehin keine
   Laufform abgeleitet wird (`LAUFFORM_MIN_OCCURRENCES = 3`). Eine Glyphe
   darunter ist eine Lücke, die die Seite als fehlenden Buchstaben zeigen
-  müsste.
+  müsste. **Die Zahl je Glyphe steht nicht im CLI-Bericht**, sondern in
+  der Glyph-Schicht des Bestands (`core/eigenhand/bestand.py`, je
+  Schlüssel `belege`/`planned` — die Ansicht `/admin/eigenhand`, §7.1);
+  `report.py` gibt die Aggregate aus.
 * **Übergänge** — die **übergangsraum-gewichtete Erstbeleg-Quote** (§7).
   Sie ist die ehrliche Kopfzeile, weil der seltene-aber-echte Schwanz sie
   nur nach seiner Textrelevanz drückt; die ungewichtete Quote und die
-  größten gewichteten Fehlstellen stehen im selben Bericht daneben.
+  größten gewichteten Fehlstellen stehen daneben. Diese Zahl gibt
+  `report.py` direkt aus — dieselbe Definition wie die Admin-Ansicht
+  (`bestand.quoten`).
 
 **Der Schwellenwert selbst ist nicht gesetzt** — welche gewichtete Quote
 genügt, entscheidet der Autor am Bericht, nicht dieses Doc. Der Wechsel
@@ -106,8 +113,8 @@ betroffenen Locale-Schlüssel steht in
 „Was am Rollenwechsel hängt“), und er lässt die **Benches unberührt**:
 die messen weiter gegen die Platte, und keine Kopfzahl liest je aus dem
 Eigenhand-Material, solange dafür keine eigene Teilmenge eingefroren und
-vorregistriert ist (§4, „Trainingsdaten, kein Mess-Satz“). Offen und
-ausdrücklich nicht mitentschieden: ob das **Lese-Quiz** seine
+vorregistriert ist (§4, „Trainingsdaten, kein Mess-Satz“). Offen bleibt
+allein die didaktische Unterfrage, ob das **Lese-Quiz** seine
 Leseaufgaben weiter in den Formen von 1922 stellt (vision.md, dieselbe
 Liste).
 
