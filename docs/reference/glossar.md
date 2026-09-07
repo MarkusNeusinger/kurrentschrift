@@ -59,18 +59,18 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 
 - **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
 - **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
-- **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
+- **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
-- **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
+- **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
-- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5
+- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kompromisswinkel §2 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5
 - **L** — Labs §4 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5 · Mittellinien-Öffnungsweite (`D0`) §4
-- **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nullprobe §4
+- **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Nahtverhandlung (`seam_negotiation`) §2 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nullprobe §4
 - **O** — Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Passmarken §5 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
@@ -663,7 +663,7 @@ die Liste hier ist ihr Inhaltsverzeichnis (`core/compose.py`, Stand
 | Deckbogen-Eintritt | `COVER_ARCADE_ENTRY_BASES` | n · m · i · r |
 | Schleife in Rundform | `LOOP_ROUND_ENTRY_BASES` | e · a · o |
 | Restart-Klasse | `CAP_RESTART_BASES` | S · O · K · P |
-| Austritts-Trim (opt-in) | `EXIT_TRIM_EXCLUDED_BASES` *(Ausschluss)* | alle Basen AUSSER Schleifen-, Kringel- und Bar-Exit |
+| Austritts-Trim (adoptiert `sep06`) | `EXIT_TRIM_EXCLUDED_BASES` *(Ausschluss)* | alle Basen AUSSER Schleifen-, Kringel- und Bar-Exit |
 
 Dazu die Klassen ohne eigene Buchstabenmenge, weil ihre Bedingung
 geometrisch ist: Girlande · Gabel-Join · Cusp-Connector ·
@@ -767,14 +767,19 @@ Mittellinie UND Silhouette, Boden der Suche ist die **Fußwende**
 (das letzte lokale y-Minimum des Zuges; der Buchstabenkörper wird nie
 angeschnitten). Anders als Schleifen-, Kringel- und Balken-Exit greift sie
 NACH der Platzierung, damit die Spationierung als experimentelle Kontrolle
-unberührt bleibt. **Status: opt-in, Standard aus, nicht adoptiert** —
-`seam_dep` der Klasse geht von +12,52° auf −1,39° und das Wort-Lineal ist
-leicht dafür, aber `dconn` gegen die dissezierten Hand-Verbindungen fällt
-nur in 20 % (artefaktbereinigt 51 %) der Joins; Gate (b) rot
-(messjournal.md §14 „Übergänge J4/J4b").
+unberührt bleibt. **Status: ADOPTIERT, Standard AN seit 2026-09-06**
+(Autor-Entscheid A37) — der Weg dahin ging über beide Instrumente: am
+Lineal fiel der Arm (`dconn` gegen die dissezierten Hand-Verbindungen sank
+nur in 20 %, artefaktbereinigt 51 %, statt der geforderten 60 %; Gate (b)
+rot, messjournal.md §14 „Übergänge J4/J4b"), und die blinde Wortrunde 5
+entschied ihn mit 34 : 2 für den Trim (§14 „Übergänge J4 `sep06`"). Preis
+und Nutzen sind beziffert: `seam_dep` +7,59° → −0,70° (absolut 12,67 →
+2,30) gegen `word_loss` +0,000581, Paare byte-gleich. Ein Lauf mit
+`--no-exit-trim` ist seither die pre-adoption Basis, ein Arm wie jeder
+andere.
 *Technisch:* `EXIT_TRIM_WINDOW`, `EXIT_TRIM_TOL_DEG`,
 `EXIT_TRIM_MIN_KINK_DEG`, `_exit_trim_index`, `_cut_exit_stub` in
-`core/compose.py`; Bench-Schalter `--exit-trim`.
+`core/compose.py`; Bench-Schalter `--no-exit-trim`.
 
 **Fußwende** — das letzte lokale y-Minimum eines Zuges: die Stelle, an der
 die Feder ihren Abstrich beendet und in den Austritts-Stummel hochdreht.
@@ -783,6 +788,47 @@ geschnitten, sonst verlöre der Buchstabe seinen Körper statt seiner
 Tafelform.
 *Technisch:* `_foot_turn_index` in `core/compose.py` (nicht zu verwechseln
 mit `_loop_return_foot`, dem Schleifenfuß des Schleifen-Exits).
+
+**Nahtverhandlung** *(`seam_negotiation`, Übergänge J6)* — die Regel, die
+den **Naht-Winkel** nicht mehr einer Seite überlässt: an jedem Ende eines
+generierten Übergangs lesen Buchstabe und Verbinder ihre Richtung über
+dieselben 0,05 xh und drehen beide auf den **Kompromisswinkel** zu — der
+Buchstabe höchstens 8° über seine letzten bzw. ersten 0,3 xh, der Verbinder
+den REST über höchstens 45 % seines eigenen Bogens. Beide zeigen danach über
+dieses Fenster in dieselbe Richtung (beim Mittelwert, solange der Deckel die
+halbe Uneinigkeit deckt, sonst bei der gedeckelten Richtung des Buchstabens);
+gemeint ist also die Richtung auf der Augen-Skala, nicht die exakte
+Endsegment-Tangente — was auf dieser feineren Skala übrig bleibt, misst Gate
+(a1) des J6-Eintrags. Was der Deckel nicht deckt, trägt der Verbinder als
+glatte Krümmung statt als Knick. Anlass ist die Autorenregel vom
+2026-09-06 („in der letzten Kurve wird etwas weiter gedreht oder im
+Eingang, so dass sich beide Seiten auf einen Kompromiss einigen"). Gedreht
+wird als **ebener Twist um den Nahtpunkt** — Mittellinie und Silhouette
+mit demselben Feld, weil eine über die Bogenlänge gerechnete Zuordnung die
+Silhouette dort zerreißt, wo ein Zug seine eigene Tinte kreuzt (der
+Schleifenfuß des `d`). Der Nahtpunkt selbst ist der Drehpunkt: keine
+Kopplungshöhe und keine Platzierung bewegt sich, was diese Regel von den
+gescheiterten P3-Eintrittsregeln unterscheidet. Über 45° Uneinigkeit hält
+sie die Hände weg — das ist eine Kehre, die der Duktus schreibt.
+**Status: opt-in, Standard aus, nicht adoptiert** (messjournal.md §14
+„Übergänge J6").
+*Technisch:* `SEAM_NEGOTIATE_WINDOW`, `SEAM_NEGOTIATE_CAP_DEG`,
+`SEAM_NEGOTIATE_BLEND`, `SEAM_MAX_JUMP_DEG`, `SEAM_CONNECTOR_BLEND_RATIO`,
+`_negotiate_seam`, `_seam_shares`, `_twist_about_seam` in
+`core/compose.py`; Bench-Schalter `--seam-negotiation`
+(+ `--seam-negotiation-max-jump` für den engeren Arm J6b), Runden-Schalter
+gleichen Namens an `tools/humanbench/wordarm.py`.
+
+**Kompromisswinkel** — der Winkel, auf den sich die beiden Enden an einer
+Naht einigen: der zirkuläre Mittelwert der beiden Richtungen, die dort
+zusammentreffen. Kann eine Seite sich nicht bewegen (ein Zug, der kürzer
+ist als die Blendlänge, würde sonst sein anderes Ende wegschwenken; ein
+Verbinder, der zu kurz ist, um eine Drehung zu tragen), nimmt die andere
+den ganzen Betrag — gedeckelt bleibt nur der Buchstabe. Der Name ist
+wörtlich der des Autors; sein Zusatz „ob es wirklich 30, 40 oder
+vielleicht 35 Grad ist, ist nicht so wichtig" ist die Begründung dafür,
+dass der Deckel eine Schranke und keine Kalibrierung ist.
+*Technisch:* `_seam_shares` in `core/compose.py`.
 
 **Bowl-Exit-Tuck** — die klassenbewusste Clearance nach einem
 geschlossenen Rundkörper-Ausgang (b/c/d/o): die Hand rückt den
@@ -1809,6 +1855,38 @@ ein markierter Anker innerhalb eines Schleifenbereichs der CHART-Zeile
 gewollt eng — ein echter Ausflug, der zufällig in einer Binnenfläche
 landet, überlebt jetzt ins Vorkommen.
 → messjournal.md §14 „Laufform LF14 `sep06`"
+
+**Ernte-Fixpunkt** — die Frage, ob die Ernte auf ihrer eigenen Ausgabe
+stehen bleibt. Die Ernte ist eine Abbildung „Laufform-Zeilen →
+Laufform-Zeilen": `derive_word` komponiert das Wort AUS den Zeilen, der
+Kettenlöser startet auf dieser Komposition, und die gefitteten Anker
+werden zu den neuen Zeilen — **die Ernte liest also die Zeilen, die sie
+ersetzen wird.** Eine Karte heißt Fixpunkt, wenn zwischen zwei
+aufeinander folgenden Ernten KEINE Zeile um mehr als 0,002 xh wandert
+(die Zeilen sind auf 4 Nachkommastellen gerundet, ein echter Fixpunkt ist
+also byte-gleich). Mit der heutigen Saat ist sie es nicht und wird es
+auch nicht: gemessen `sep06` wandert die Iteration in jedem Schritt um
+0,005–0,063 xh weiter, und die Zahl der angenommenen Vorkommen wandert
+235 → 232 → 239 mit. Das ist keine Nichtreproduzierbarkeit (derselbe
+Befehl gibt zweimal dieselbe Karte), sondern eine Rückkopplung, und die
+praktische Folge steht in `werkzeuge.md`: eine Re-Harvest-Karte gehört
+gegen eine KONTROLLKARTE aus demselben Lauf gehalten, nie nur gegen den
+Bestand — sonst wird die Iteration als Arm-Effekt gebucht.
+→ messjournal.md §14 „Laufform LF14/LF15 `sep06`", werkzeuge.md
+
+**Chart-Saat** *(`chain_seed="chart"`, `tools/laufform/harvest.py`)* — die
+Saat, die die Rückkopplung durchschneidet, und damit der Arm gegen den
+fehlenden **Ernte-Fixpunkt**. Die Kette baut ihre Segmente ohnehin aus
+den CHART-Ankern; von den Laufform-Zeilen hängen nur Platzierung,
+Deckungsfenster und Registrierung ab, und alle drei kommen aus
+`derive_word`. Die Chart-Saat lässt den Kettenlauf deshalb auf einer
+Komposition OHNE Laufform-Zeilen aufsetzen — auf dem Duktus-Prior, den
+keine Ernte schreibt —, während Fit, Gates, Reparatur und Median
+unverändert gegen die Tinte laufen. Die Karte ist damit eine Funktion von
+Tinte und Prior allein und in EINEM Schritt Fixpunkt (gemessen
+byte-gleich, Vorkommen eingeschlossen). Default AUS; der Preis steht
+neben dem Gewinn im §14-Eintrag.
+→ messjournal.md §14 „Laufform LF15 `sep06`"
 
 **Spike-Verhältnis** *(`anchor_spike_ratio`, Gate `anchor_spike`)* — die
 Kennzahl hinter dem **Anker im leeren Papier**: größter Schritt zwischen

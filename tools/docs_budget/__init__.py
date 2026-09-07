@@ -282,29 +282,78 @@ WIDEST = {
 # register rows), rather than added up from two branches that each measured
 # without the other. The entry itself needed no raise; it was trimmed to 4 500
 # against the unchanged 4 503 ceiling, which is where a growing entry belongs.
-# `mess-runde-route` raised on 2026-09-07, the first raise this path has had.
-# Its growing piece is the LEDGER of `verfahren-kette.md` — one row per measured
-# arm of the route, and „Kette R3 Zwei-Züge-Modell" is one. The path measured
-# 6177 exactly, i.e. no room at all, so any booked Kette arm would fail this
-# gate; the row costs 138 over that, and it was condensed once before this raise
-# (the first draft was 220 over). Deleting a ledger row is the move the process
-# page forbids — it IS the route's register — and shortening a verdict until it
-# fits is how a ledger stops being readable: this row has to carry both halves
-# of an unusual result, a mechanism that meets its target and fails on execution.
-# So: re-measured at 6315 and given the documented 10 % headroom, like every
-# other path. No licence for prose — the „Aktueller Stand" block and the
-# candidate list did not move.
+#
+# And a fifth time, by the branch that adopts the J4 exit trim — for ONE row,
+# the second of the standard pair whose first (the round) main's raise above
+# already absorbed. An adoption plus a declared re-baseline is exactly the shape
+# the register exists to index: which switch flipped, on which root, what the
+# two headlines did, and what a reader must not assume unchanged. The row was
+# condensed twice before this raise (487 → ~305), the §7.11 row it needs was
+# rewritten shorter than the version it replaces, and the branch DROPPED its own
+# earlier raise to 23 567 when main's landed — a value cut against the pre-#558
+# number, so keeping it would have LOWERED the budget main had just measured.
+# Measured here after that merge, with every row of all four rounds in: 24 077,
+# plus the documented 10 %. Four raises in one day is not a licence either; it
+# is four rounds landing on one register, each measured once, after the others.
+#
+# `mess-runde-route` raised for the FIRST time, on the same day, by the third of
+# those rounds: „Laufform LF15" measures a Kette knob (`chain_seed="chart"`), so
+# it owes `verfahren-kette.md` its ledger line — and that page is the widest
+# route, with three tokens of room. A ledger line is the one thing this path
+# cannot avoid growing by: it is how a route says what was tried on it and what
+# came out, one row per arm, and the alternative is a route page that stops
+# recording. Re-measured after the merge and given the documented 10 % headroom,
+# like every other path. `mess-runde` is not raised a fifth time in the same
+# breath: the raise above already covers this round's two register rows and its
+# §7.9/§7.11 rows, which is what the headroom is for.
+#
+# NOT raised a sixth time, by „Übergänge J6" (die Nahtverhandlung) — recorded
+# because a raise that did NOT happen is the more useful precedent. That round
+# adds what the doctrine asks of an arm that closes as a negative: the standard
+# register pair, its §7.9 rescue-path row and its §7.11 open-arms row. Against
+# the pre-merge number those four wanted 616 tokens more than the room left,
+# and the branch had a raise written. Then the adoption above landed, its own
+# raise was measured with every row of four rounds in, and the merged path
+# comes out at 25 176 against 26 484 — 1 308 of room. So the raise was dropped
+# rather than stacked: a budget is measured after the merge, once, or two
+# branches each raise for the other's rows. The §7.11 side is a wash by
+# construction anyway — the J4 row's open conversion (1) is answered by this
+# arm in the same edit, so an open arm is rewritten rather than a new one
+# appended — and the round owes no route ledger line: it measures a composer
+# switch, not a Duell route.
+#
+# NOT raised again by „Kette R3 Zwei-Züge-Modell" (`sep07`), and that is the
+# second half of the precedent above. That round owes `verfahren-kette.md` a
+# ledger line — it measures a Kette knob — and against the PRE-MERGE budget the
+# line cost 138 over, so the branch had a raise to 6947 written and measured.
+# Then LF15's raise landed, which had re-measured the same page after ITS merge,
+# and the merged path comes out at 6636 against 6890: 254 of room, the ledger
+# line included. So the raise was dropped rather than stacked, exactly as J6's
+# was above. What stays from it is the discipline it followed: the row was
+# condensed once before any raise was written (the first draft cost 220), and
+# it still carries both halves of an unusual verdict — a mechanism that meets
+# its geometric target completely and fails on execution — because a ledger
+# that records only the verdict is one nobody can act on.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
-    "mess-runde": 23_894,
-    "mess-runde-route": 6_947,
+    "mess-runde": 26_484,
+    "mess-runde-route": 6_890,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,
     "komposition": 9_680,
     "frontend": 15_018,
     "werkbank": 5_166,
     "werkzeug": 713,
-    "werkzeug-abschnitt": 4_073,
+    # Raised 2026-09-07 by „Kette R3 Zwei-Züge-Modell": the path is „the one
+    # tool your change is about", and its widest section is the bench/lab
+    # inventory — the one place a NEW tool has to be named, which is that
+    # section's whole job. `tools/pairlab/zweizuege.py` is one, and on main the
+    # section stood at 4066 against 4073, i.e. seven tokens of room, so any tool
+    # added anywhere in that family would fail this gate. The entry was cut to
+    # four lines (switch, default, what it reports) before this raise, and the
+    # alternative — a tools/ directory the inventory stops listing — is the one
+    # this doc exists to prevent. Re-measured at 4134 plus the documented 10 %.
+    "werkzeug-abschnitt": 4_547,
     "doku": 7_937,
 }
 

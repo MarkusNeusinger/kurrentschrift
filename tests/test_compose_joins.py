@@ -407,9 +407,11 @@ def _compose_sawtooth(
     )
 
 
-def test_exit_trim_is_off_by_default() -> None:
-    # The switch defaults to off, and the fixture really does exercise the
-    # rule — otherwise every assertion below would pass vacuously.
+def test_exit_trim_is_on_by_default() -> None:
+    # The switch ships ON since the A37 adoption of 2026-09-06 (messjournal.md
+    # §14 „Übergänge J4 `sep06`"), so a caller that says nothing gets the trim —
+    # and the fixture really does exercise the rule, otherwise every assertion
+    # below would pass vacuously.
     assert compose_word(
         [
             GlyphSlot(key="e", text="e", position="initial", ligature=False, space=False),
@@ -417,7 +419,7 @@ def test_exit_trim_is_off_by_default() -> None:
         ],
         {"e": _payload(_SAWTOOTH_EXIT), "n": _payload(_HIGH_LEAD_IN)},
         provenance=True,
-    ) == _compose_sawtooth(exit_trim=False)
+    ) == _compose_sawtooth(exit_trim=True)
     assert _compose_sawtooth(exit_trim=True) != _compose_sawtooth(exit_trim=False)
 
 

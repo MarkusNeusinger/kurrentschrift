@@ -61,13 +61,14 @@ uv run python -m tools.wordbench.run --no-laufform
 # Same discipline as --overrides: its own number, never the headline.
 uv run python -m tools.wordbench.run --set pairs --laufform temp/laufform_draft.json
 
-# Optional: compose with the opt-in exit-side collinearity rule (the sawtooth
-# exit's chart stub is cut back until the join leaves it collinearly — see
-# core/compose.py EXIT_TRIM_WINDOW). Same discipline again: a candidate arm's
-# own number, never the headline. --exit-trim-min-kink narrows it to the joins
-# that actually kink.
-uv run python -m tools.wordbench.run --set all --exit-trim
-uv run python -m tools.wordbench.run --set all --exit-trim --exit-trim-min-kink 20
+# The exit-side collinearity rule (the sawtooth exit's chart stub is cut back
+# until the join leaves it collinearly — see core/compose.py EXIT_TRIM_WINDOW)
+# is the SHIPPED default since the A37 adoption of 2026-09-06, so a plain run
+# already measures it. What is opt-in now is turning it off, or narrowing it to
+# the joins that actually kink — same discipline as above: a candidate arm's
+# own number, never the headline. The two cannot be combined.
+uv run python -m tools.wordbench.run --set all --no-exit-trim
+uv run python -m tools.wordbench.run --set all --exit-trim-min-kink 20
 
 # Box proposal / verification sheets for annotating a new plate (no DB):
 uv run python -m tools.wordbench.propose_boxes --page words-abb19.png --expect-lines 12 --strips
@@ -194,10 +195,12 @@ entry's joins; the block lines pool every matched join:
 `seam_dep_abs_median` / `seam_arr_abs_median`. On the frozen 1922 word plate
 the composer departs `+11.87°` (|Δ| 13.10) and arrives `−3.26°` (|Δ| 11.18)
 over 206 of 214 joins — the number the "Austritts-Kollinearität" class rule
-is meant to move. It moves it: `--exit-trim` takes the departure median to
-`−1.39°` on the `sep01` roots. The arm was still rejected — `dconn` does not
-follow (messjournal.md §14 „Übergänge J4/J4b"), so the switch stays off
-by default.
+is meant to move. It moves it: the trim took the departure median to `−1.39°`
+on the `sep01` roots, and to `−0.70°` (absolute median 12.67 → 2.30) on
+`eaa195aa7c84`. The ruler rejected the arm — `dconn` does not follow
+(messjournal.md §14 „Übergänge J4/J4b") — and the blind word round of `sep06`
+adopted it anyway, 34 : 2, so the rule now SHIPS and `--no-exit-trim` is the
+pre-adoption base (§14 „Übergänge J4 `sep06`").
 
 The newest member again is the **continuity sensor** (the
 Unstetigkeits-Sensor, `continuity.py`) — `cont n=<measured>/<samples>

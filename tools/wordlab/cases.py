@@ -107,6 +107,19 @@ def _root_for(fixtures_root: Path, style: str, which: str) -> Path:
     raise KeyError(f"no {which!r} fixtures under {style_root} — run tools/wordbench/export_fixtures first")
 
 
+def fixture_root_for(
+    which: str = "words", *, style: str = "suetterlin", fixtures_root: Path = DEFAULT_FIXTURES_DIR
+) -> Path:
+    """The root `iter_fixture_word_cases` would read — public so a tool can NAME its base.
+
+    The roots are gitignored, so a re-export leaves no diff; a run that quotes a
+    number owes its base's `exported_at` + digest beside it
+    (`tools.wordbench.roots`). A tool that reads cases through this module had no
+    way to say which directory that was.
+    """
+    return _root_for(fixtures_root, style, which)
+
+
 def _laufform_rows(root: Path) -> dict[str, dict]:
     """The frozen LAUFFORM_VARIANT rows of a fixture root ({} on older exports)."""
     path = root / "templates_laufform.json"

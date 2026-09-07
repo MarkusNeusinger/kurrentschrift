@@ -256,7 +256,7 @@ def compare_joins(composed: dict, slots: Sequence[Any], measured: Iterable[dict]
 # ----------------------------------------------------------------- fixture run
 
 
-def _compose_case(case: WordCase, *, exit_trim: bool, exit_trim_min_kink_deg: float) -> dict:
+def _compose_case(case: WordCase, *, exit_trim: bool = True, exit_trim_min_kink_deg: float = 0.0) -> dict:
     """The bench's composition of one fixture entry, with the J4 switch exposed.
 
     Same inputs `tools/wordbench/run.py` composes with on a headline run
@@ -279,7 +279,7 @@ def run_set(
     *,
     style: str = "suetterlin",
     fixtures_root: Path = DEFAULT_FIXTURES_DIR,
-    exit_trim: bool = False,
+    exit_trim: bool = True,
     exit_trim_min_kink_deg: float = 0.0,
 ) -> list[dict]:
     """Every comparable join of one fixture set, with its id and word attached."""
@@ -382,7 +382,13 @@ def main() -> None:
     p.add_argument("--set", dest="which", choices=["words", "pairs"], default="words")
     p.add_argument("--style", default="suetterlin")
     p.add_argument("--fixtures", type=Path, default=DEFAULT_FIXTURES_DIR, help="fixture root (default: the frozen one)")
-    p.add_argument("--exit-trim", action="store_true", help="compose with the J4 exit trim on (candidate arm)")
+    p.add_argument(
+        "--no-exit-trim",
+        dest="exit_trim",
+        action="store_false",
+        help="compose WITHOUT the exit trim production has applied since the A37 adoption (the "
+        "pre-adoption base — a candidate arm like any other)",
+    )
     p.add_argument(
         "--exit-trim-min-kink", type=float, default=0.0, help="J4b: only trim joins whose base departure kinks by this"
     )
@@ -390,6 +396,13 @@ def main() -> None:
     p.add_argument("--base", type=Path, help="a rows JSON of the same set to compare against (the arm's own number)")
     add_expect_root_argument(p)
     args = p.parse_args()
+    # A narrowing knob that is silently ignored is the worst kind: the run would
+    # report the pre-adoption BASE under the name of the J4b arm. Same wording
+    # and same reason as `wordbench.run`.
+    if args.exit_trim_min_kink and not args.exit_trim:
+        p.error("--exit-trim-min-kink narrows the exit trim; it cannot be combined with --no-exit-trim")
+    if args.exit_trim_min_kink < 0:
+        p.error("--exit-trim-min-kink is a kink in degrees and cannot be negative")
 
     # A `--base` comparison only holds within ONE base, so the run names the
     # root before it measures and `--expect-root` makes it a precondition.

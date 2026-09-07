@@ -202,7 +202,7 @@ S1"). Report-only, kein DB-Zugriff, `core/word_metric.py` und
 
 ```bash
 uv run python -m tools.pairlab.spanmeas --set words --expect-root <digest> --json temp/base.json
-uv run python -m tools.pairlab.spanmeas --set words --expect-root <digest> --exit-trim --base temp/base.json
+uv run python -m tools.pairlab.spanmeas --set words --expect-root <digest> --no-exit-trim --base temp/base.json
 ```
 
 Um `pairlab` herum sind messende Einstiegsskripte gewachsen (keines
@@ -251,24 +251,52 @@ Schritt (→ [`../proposals/handmodell-stufenplan.md`](../proposals/handmodell-s
 Die Laufform-Zeilen wirken **sofort** auf jedes fließende `/write/word` —
 gegen Prod nur mit ausdrücklicher Freigabe.
 
-**Die Ernte ist kein Fixpunkt** (gemessen `sep06`, §14 „Laufform LF14"):
-`derive_word` komponiert das Wort AUS den Laufform-Zeilen, und
-`chain_seed="composed"` startet den Kettenlöser auf dieser Komposition —
-die Ernte liest also die Zeilen, die sie ersetzen wird. Eine frische
-Ernte der Wurzel, die ein Write erzeugt hat, leitet jede Zeile
-**0,0025–0,0283 xh** neben der gerade geschriebenen ab. Das ist keine
-Nichtreproduzierbarkeit (`--jobs 1` und `--jobs 4` sind byte-gleich),
-sondern eine Rückkopplung: wer einen Re-Harvest gegen die gespeicherten
-Zeilen misst, misst sie mit. Eine Karte gehört deshalb gegen eine
-KONTROLLKARTE aus demselben Lauf verglichen, nie nur gegen den Bestand.
+**Die Ernte ist kein Fixpunkt** (gemessen `sep06`, §14 „Laufform LF14"
+und „Laufform LF15"): `derive_word` komponiert das Wort AUS den
+Laufform-Zeilen, und `chain_seed="composed"` startet den Kettenlöser auf
+dieser Komposition — die Ernte liest also die Zeilen, die sie ersetzen
+wird. Das ist keine Nichtreproduzierbarkeit (`--jobs 1` und `--jobs 4`
+sind byte-gleich, und derselbe Befehl zweimal gibt dieselbe Karte),
+sondern eine Rückkopplung, und sie klingt nicht ab: die Iteration
+`H0 → H1 → H2 → H3` bewegt in JEDEM Schritt Zeilen um 0,005–0,063 xh,
+und die Zahl der angenommenen Vorkommen wandert 235 → 232 → 239 mit.
+Wer einen Re-Harvest gegen die gespeicherten Zeilen misst, misst sie mit.
 
-`--loop-aware-repair` ist der `sep06`-Arm (Default aus, verworfen an zwei
-Gates): die Nachreparatur gestrandeter Anker lässt die Anker in Ruhe, die
-innerhalb einer Schleife der Chart-Zeile liegen.
+**Die stehende Selbstprüfung vor jedem Laufform-Write: zweimal ernten.**
+Eine Karte gegen den Bestand allein zu halten sagt nichts; sie gehört
+gegen eine KONTROLLKARTE aus demselben Lauf verglichen, und die Iteration
+selbst gehört gemessen. Beides läuft mit den Werkzeugen dieser Datei:
+
+```bash
+uv run python -m tools.laufform.harvest --path chain --sets words --min-n 1 \
+    --jobs 4 --expect-root <digest> --occ-out temp/lf/occ-1.json
+uv run python -m tools.laufform.smoothrow --occurrences temp/lf/occ-1.json \
+    --knots 0 --floor 1 --keep-stored --out temp/lf/karte-1.json
+# …und dieselbe Ernte noch einmal, jetzt auf der eigenen Karte:
+uv run python -m tools.laufform.harvest --path chain --sets words --min-n 1 \
+    --jobs 4 --expect-root <digest> --laufform temp/lf/karte-1.json \
+    --occ-out temp/lf/occ-2.json
+```
+
+Bewegt sich zwischen Karte 1 und Karte 2 eine Zeile um mehr als 0,002 xh,
+ist die Karte kein Fixpunkt, und die Differenz gegen den Bestand gehört
+zum Teil der Iteration, nicht dem gemessenen Arm. `--laufform` nimmt
+dieselbe Datei wie `wordbench.run --laufform` (Overlay, die eingefrorene
+Wurzel bleibt unberührt), `--expect-root` nennt und prüft die Basis wie
+jeder Bench — die Ernte ist das Werkzeug, dessen Ausgabe ein Write in die
+Produktion stellt, also nennt sie ihre Wurzel.
+
+`--chain-seed chart` ist der `sep06`-Arm gegen die Rückkopplung selbst
+(Default aus, LF15): der Kettenlauf setzt auf einer Komposition OHNE
+Laufform-Zeilen auf, also auf dem Duktus-Prior, den keine Ernte schreibt.
+`--loop-aware-repair` ist der andere `sep06`-Arm (Default aus, verworfen
+an zwei Gates): die Nachreparatur gestrandeter Anker lässt die Anker in
+Ruhe, die innerhalb einer Schleife der Chart-Zeile liegen.
 
 ```bash
 uv run python -m tools.laufform.harvest [--style suetterlin] [--min-n 4]
-    [--rmse-max 2.2] [--loop-aware-repair]
+    [--rmse-max 2.2] [--loop-aware-repair] [--chain-seed composed|grid|chart]
+    [--laufform karte.json] [--expect-root <digest>]
     [--apply --base-url http://localhost:8000 --source-id <id>]
 ```
 
@@ -321,7 +349,10 @@ Kompositionen **als Tinte** — der einzige Aufbau, in dem Zickzack,
 Strichstärke und Naht-Knick überhaupt sichtbar sind. `wordarm.py` ist der
 Referenz-Erzeuger der beiden Arme (`--laufform` für eine Kandidatenkarte,
 `--nib` für einen anderen Federmodus, `--apex-handover`/`--stem-depart` für
-die beiden Übergangsregeln der Klassenregel J5, `--registration-from` zum
+die beiden Übergangsregeln der Klassenregel J5, `--no-exit-trim` für die
+pre-adoption Basis des J4-Trims, `--seam-negotiation` (J6, die
+Nahtverhandlung, mit `--seam-negotiation-max-jump` für die J6b-Verengung, die
+ein Runden-Ergebnis lizenzieren kann), `--registration-from` zum
 Pinnen der Platzierung); er komponiert per Import wie `tools/wordbench/run.py`
 und platziert mit demselben Lineal. Jede Armdatei schreibt ihre
 `join_rules` in die Einstellungen — eine Runde erbt nie stillschweigend
@@ -731,12 +762,17 @@ Warnung versehen. Begriff und Hausregel:
   eingefrorene Zeile) und `--no-laufform` komponiert chart-treu ohne
   jede Laufform. Beide liefern per Doktrin §6 eine
   OFF-HEADLINE-Kandidatenzahl, nie die Headline. Dieselbe Disziplin gilt für
-  die drei **Übergangs-Schalter**, die im Composer standardmäßig aus stehen
-  und hier einzeln zugeschaltet werden: `--exit-trim` (Arm J4, mit
-  `--exit-trim-min-kink` als J4b-Verengung), `--apex-handover` und
-  `--stem-depart` (die beiden Arme der Klassenregel J5). Jeder gesetzte
-  Schalter nennt sich im Kopf des Laufs und im `--json`-Bericht, damit eine
-  Leitersprosse sich nie unter dem Namen der Basis ablegt.
+  die **Übergangs-Schalter**. `--apex-handover`, `--stem-depart` (J5) und
+  `--seam-negotiation` (Arm J6, die **Nahtverhandlung**, mit
+  `--seam-negotiation-max-jump` als J6b-Verengung auf die Nähte, deren beide
+  Seiten sich treffen können) stehen im Composer standardmäßig aus und
+  werden hier zugeschaltet; der **Austritts-Trim ist seit dem 2026-09-06
+  Standard** (Autor-Entscheid A37), also läuft er ohne Flag mit und
+  `--no-exit-trim` misst die pre-adoption Basis — mit
+  `--exit-trim-min-kink` als J4b-Verengung, die sich mit `--no-exit-trim`
+  ausschließt. Jede Abweichung vom ausgelieferten Stand nennt sich im Kopf des
+  Laufs und im `--json`-Bericht, damit eine Leitersprosse sich nie unter dem
+  Namen der Basis ablegt.
 - **`tools/wordbench/repair_boxes.py` + `shift_registrations.py`** (`aug31`)
   — die Reparatur eines Rechtecks, das die EIGENE Tinte seiner Probe
   anschneidet (der abgeschnittene i-Strich, der halbe letzte Buchstabe).
@@ -791,12 +827,10 @@ Warnung versehen. Begriff und Hausregel:
   (baut den eingefrorenen Kringel-Katalog aus EINER Wurzel; `.kringel`
   ist der Sensor, der ihn liest — Report-Spalte `kringel_lost`, §14
   „Kringel-Landmarke `sep06`") und `.view`
-  (Duell-/Augenschein-Seite). Neben dem Folger steht
-  `tools.pairlab.zweizuege`, das **Zwei-Züge-Modell** (§14 „Kette R3
-  `sep07`"): eine loop-lokale Korrektur der fertigen Bahn an den
-  verschmolzenen Schleifen, per `--zwei-zuege` zuschaltbar und in der
-  Vorgabe AUS — sie fasst keinen Kettenlauf und keine Laufform-Zeile an
-  und meldet je Schleife, ob sie korrigiert oder verweigert hat. Alle nennen ihre Wurzel im Kopf und
+  (Duell-/Augenschein-Seite). `tools.pairlab.zweizuege` ist das
+  **Zwei-Züge-Modell** (§14 „Kette R3 `sep07`"): `--zwei-zuege`, Vorgabe
+  AUS, korrigiert die fertige Bahn an verschmolzenen Schleifen und meldet
+  je Schleife Korrektur oder Verweigerung. Alle nennen ihre Wurzel im Kopf und
   nehmen `--expect-root` (siehe oben); die Arm- und Archäologie-Flags
   stehen im jeweiligen `--help` und je Arm in seinem §14-Eintrag.
   Invarianten: reine Messschicht (nie DB/`core/`/Rendering), der
