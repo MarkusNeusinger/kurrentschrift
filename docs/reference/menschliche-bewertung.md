@@ -1,6 +1,6 @@
 # Menschliche Bewertung — der blinde Urteilsdurchgang über die Fits
 
-> **Status (2026-09-06): lebend.** Beschreibt das Instrument
+> **Status (2026-09-07): lebend.** Beschreibt das Instrument
 > ([`tools/humanbench`](../../tools/humanbench)) und das Verfahren eines
 > Bewertungsdurchgangs — **die Methode, nicht die Ergebnisse**. Zahlen und
 > Verdikte einer Runde wohnen in
@@ -10,8 +10,10 @@
 > Vorher/Nachher-Durchgang**
 > ([§8](#8-der-paarige-folgedurchgang)) und seit 2026-09-02 der
 > **Wortmodus auf der Echtheitsfrage**
-> ([§8a](#8a-der-wortmodus--die-echtheitsfrage)). Geurteilt wird **blind**
-> gegen die sechsteilige Fehler-Taxonomie
+> ([§8a](#8a-der-wortmodus--die-echtheitsfrage)), dessen Arm seit `sep07` auch
+> eine gefolgte [BAHN](#ein-arm-kann-auch-eine-bahn-sein--dann-ist-die-frage-wieder-die-genauigkeit)
+> sein darf — dann wieder Genauigkeitsfrage und Mittellinien-Anzeige.
+> Geurteilt wird **blind** gegen die sechsteilige Fehler-Taxonomie
 > ([§2](#2-die-fehler-taxonomie)); die Konstruktionsregeln des Instruments
 > stehen jeweils neben dem Fehlerfall, für den sie eingeführt wurden
 > ([§3](#3-die-konstruktionsregeln-des-instruments)), und der Auswerteplan
@@ -22,12 +24,11 @@
 > das Auge liest Stetigkeit, die Lineale lesen Abstand — der Grund, warum
 > zwei Wortrunden gegen die Zahlen ausgehen konnten.
 >
-> **Was seither passiert ist.** Die erste Wortrunde ist gefahren
-> (`sep02`, Basis gegen LF11): sie hat entschieden, wo das Wort-Lineal
-> blind war, und dem Dokument die Konstruktionsregel §3.6b eingetragen —
-> Zahlen und Verdikt in `messjournal.md` §14 („Laufform LF11 —
-> humanbench-Wortrunde“). Die Runden 5 (`sep04`, J4) und 6 (`sep05`, J5)
-> sind seither dazugekommen und haben §9a ausgelöst.
+> **Was seither passiert ist.** Die erste Wortrunde (`sep02`, Basis gegen
+> LF11) hat entschieden, wo das Wort-Lineal blind war, und dem Dokument
+> die Konstruktionsregel §3.6b eingetragen; die Runden 5 (`sep04`, J4) und
+> 6 (`sep05`, J5) haben §9a ausgelöst. Zahlen und Verdikte: `messjournal.md`
+> §14.
 >
 > **Was offen ist.** Die bekannten Grenzen des Verfahrens — was ein
 > blinder Durchgang grundsätzlich nicht entscheidet — stehen in
@@ -1180,6 +1181,46 @@ gewonnen“ zeigt auf nichts. Seit `sep04` schreibt jeder Arm zusätzlich seine
 an waren): eine Runde soll nie einen Composer-Default stillschweigend erben,
 sonst vergleichen zwei Runden aus verschiedenen Wochen Dinge, die gleich
 heißen.
+
+### Ein Arm kann auch eine BAHN sein — dann ist die Frage wieder die Genauigkeit
+
+Seit `sep07` (Runde 9, K-E) trägt der Wortmodus einen zweiten Erzeuger:
+[`tracearm.py`](../../tools/humanbench/tracearm.py) nimmt einen
+**gefolgten Kandidaten** — die `--candidate-out`-Datei des Tintenfolgers
+oder jede andere `tools.tracebench`-Kandidatendatei — und legt die Bahn in
+den Rahmen des eingefrorenen Fixture-Eintrags. Er komponiert nichts und
+misst nichts; er rechnet einen Rahmen um, aus demselben Grund, aus dem
+`wordarm` nicht misst.
+
+Das ist **kein vierter Modus**, sondern derselbe Wortmodus mit einer
+anderen Frage und einer anderen Anzeige, und beides folgt aus dem
+Gegenstand:
+
+* **Die Frage ist die Genauigkeit** („welche Linie folgt der Tinte
+  besser?", §8), nicht die Echtheit. Ein Folger-Arm verschiebt, wo die
+  Bahn über der Tinte der Platte läuft; eine komponierte Strichstärke, über
+  die zu urteilen wäre, gibt es dort gar nicht. Die Reihenfolge aus §8 ist
+  damit gewahrt und nicht umgangen: die Genauigkeitsfrage gilt, solange es
+  eindeutige Fehler gibt, und ein Folger-Arm handelt von genau diesen. Sie
+  ist deshalb **kein Schalter**: `build.py::draws_ink` liest an den Armen
+  ab, ob überhaupt Tinte gezeichnet wird, und schreibt die Frage so in
+  Umschlag UND Stempel — ein Ergebnistext kann dann nicht behaupten, eine
+  Frage beantwortet zu haben, die die Runde nie gestellt hat (§7).
+* **Die Anzeige ist die Mittellinie mit Casing über der UNVERBLASSTEN
+  Platte** — die Anzeige der Buchstabenrunden 01/02 (§3.5). Sie stellt sich
+  von selbst ein: die Seite liest an `fills`/`widths` ab, ob ein Panel Tinte
+  zeichnet, und ein Bahn-Arm hat weder das eine noch das andere. Der Grund
+  ist derselbe wie in §8a umgekehrt — ein Saum um eine gefüllte Silhouette
+  verfälscht ihr Gewicht, eine Haarlinie ohne Saum ist in fast schwarzer
+  Tinte unsichtbar.
+
+Was daraus folgt und beim Bauen bindet: **eine Bahn-Runde ist mit einer
+Kompositions-Wortrunde nicht vergleichbar** (andere Frage, andere Anzeige,
+anderer Gegenstand) — genau wie §8a das schon für die Buchstabenrunden
+festhält. Und die Kopfzeile ihres Ergebnistextes sagt es: `VERGLEICH/n`,
+nicht `ECHTHEIT/n`. Alles andere gilt unverändert: gemeinsames Bild,
+Seitenzuweisung nur im Schlüssel, gespiegelte Wiederholungen,
+Verdachtsklassen in `--strata`, verworfene und gezählte Einzelgänger.
 
 ### Eine Runde über eine schmale Klasse — der Wiederholungs-Boden und die Nullprobe
 

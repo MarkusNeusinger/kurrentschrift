@@ -28,8 +28,11 @@ The word mode composes NOTHING itself. Both arms arrive as files, exactly the
 way the paired mode takes two instance snapshots — an instrument that computed
 its own candidate could drift away from the ruler that has to confirm it later,
 and the round would then compare two things nobody else can reproduce.
-``tools/humanbench/wordarm.py`` is the reference producer; any arm (a candidate
-Laufform card, a different nib, a connector trim) writes the same file:
+``tools/humanbench/wordarm.py`` is the reference producer of a COMPOSED arm and
+``tools/humanbench/tracearm.py`` of a FOLLOWED one (a word trace over the
+plate's own ink, judged as a centerline on §8's accuracy question); any arm — a
+candidate Laufform card, a different nib, a connector trim, a follower arm —
+writes the same file:
 
     {"arm": "LF11", "style": "suetterlin", "set": "words",
      "source_id": "suetterlin-1922", "fixture_root": "suetterlin-1922",
@@ -40,7 +43,9 @@ Laufform card, a different nib, a connector trim) writes the same file:
 
 Coordinates are the composer's own WORD FRAME (x to the right in x-heights,
 y UP in x-heights from the baseline, i.e. ``composed["items"][*]["centerline"]``
-and ``["rings"]``); ``width`` is a stroke width in x-heights. ``fills`` is one
+and ``["rings"]``); ``width`` is a stroke width in x-heights, and an arm that
+omits it everywhere (a trace arm) is drawn as a cased centerline instead of as
+ink. ``fills`` is one
 entry per pen stroke and each entry is that stroke's RING LIST — the exterior
 plus the counters it encloses, exactly as ``compose_word`` groups them, because
 the grouping is the only thing that says which ring is a hole. The registration
@@ -990,11 +995,16 @@ def render_word_item(
     give the sides different pixel dimensions and a different view of the
     neighbouring ink, which is the tell §8 rules out.
 
-    Unlike the letter modes this draws the INK, not a centerline: filled
-    silhouette rings for the letter bodies, capsules of their own width for the
-    generated connectors. That is the whole reason the mode exists — a stroke
-    that is a quarter too thin is invisible on a hairline, and the authenticity
-    question is about how the writing looks, not where its middle runs.
+    A COMPOSED arm draws the INK, not a centerline: filled silhouette rings for
+    the letter bodies, capsules of their own width for the generated connectors.
+    That is the whole reason the mode exists — a stroke that is a quarter too
+    thin is invisible on a hairline, and the authenticity question is about how
+    the writing looks, not where its middle runs.
+
+    A TRACE arm (`tools.humanbench.tracearm`) has neither rings nor a stroke
+    weight, and the page then falls back to the cased centerline of the letter
+    modes over an unfaded crop — the display of §3.5, and the right one for §8's
+    accuracy question, which is what a follower arm is judged on.
     """
     drawn = [case.arms[side] for side in sides]
     everything = np.vstack([path for arm in drawn for path in arm_paths_px(arm, case.baseline_row)])
@@ -1021,15 +1031,36 @@ def _word_panel(arm: ArmWord, case: WordCase, window: tuple[int, int, int, int],
     for stroke in arm.strokes:
         path = screen_path(to_crop(stroke.points, arm, case.baseline_row), window, zoom)
         panel["strokes"].append(path)
-        # A width of 0 means „the producer had none" and falls back to the
-        # page's hairline; anything else is the composed stroke width, carried
-        # to the screen in panel pixels so a nib change is visible as one.
+        # A width of 0 means „the producer had none"; anything else is the
+        # composed stroke width, carried to the screen in panel pixels so a nib
+        # change is visible as one.
         panel["widths"].append(round(stroke.width * arm.xh * zoom, 1))
     for shape in arm.fills:
         # Grouped, so the page can draw the shape as ONE evenodd path and its
         # counters stay paper — see `_arm_shape`.
         panel["fills"].append([screen_path(to_crop(ring, arm, case.baseline_row), window, zoom) for ring in shape])
+    # An all-zero widths array is „no widths", and it has to LOOK like none: the
+    # page reads the presence of widths (or fills) as „this panel draws ink" and
+    # then fades the specimen and drops the casing. A trace arm
+    # (`tools.humanbench.tracearm`) carries neither, so passing zeros on would
+    # give it the ink display while it draws a centerline — the §3.5 casing gone
+    # from the one round that needs it.
+    if not any(panel["widths"]):
+        panel["widths"] = []
     return {key: value for key, value in panel.items() if value}
+
+
+def draws_ink(arm: Arm) -> bool:
+    """Does this arm draw INK — a silhouette or a stroke of its own weight?
+
+    The one question a word round cannot be told and has to read off its arms
+    (`menschliche-bewertung.md` §8a): a composed arm ships rings and connector
+    widths and can be asked whether it looks written; a trace arm is a bare
+    centerline, and „echter geschrieben" has nothing to hold on to there. The
+    page already picks its display this way; the STAMP has to agree with it, or
+    a result file says it answered a question the round never asked.
+    """
+    return any(word.fills or any(stroke.width for stroke in word.strokes) for word in arm.words.values())
 
 
 def clipped_words(cases: list[WordCase], pad_xh: float) -> list[str]:
@@ -1505,7 +1536,8 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
         nargs=2,
         metavar=("BASE", "CANDIDATE"),
         default=None,
-        help="two composed-word arm files — builds the WORD round on the authenticity question",
+        help="two word arm files — builds the WORD round; composed arms ask the authenticity question, "
+        "trace arms the accuracy one",
     )
     parser.add_argument(
         "--fixtures",
@@ -1600,7 +1632,11 @@ def run_word_round(args: argparse.Namespace, seed: int, rng: random.Random) -> i
         for side, arm in ((SIDE_BASE, base), (SIDE_CANDIDATE, candidate))
     ]
     stamp = provenance(args, mode="word", seed=seed, counts=counts, repeats=repeats, api_used=False, arms=arms)
-    stamp["question"] = "authentic"  # §8: the question belongs in the record, not only in the plan
+    # §8: the question belongs in the RECORD, not only in the plan — and it is
+    # not a flag, because it follows from what the arms are. Ink can be asked
+    # whether it looks written; a centerline cannot, so a round of trace arms
+    # asks the accuracy question and its result file is tagged VERGLEICH.
+    stamp["question"] = "authentic" if draws_ink(base) or draws_ink(candidate) else "ink"
     stamp["fixture_root"] = str(root)
     write_round(args.out, Round(items, key, reserve, stamp), force=args.force)
 
