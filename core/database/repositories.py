@@ -896,6 +896,10 @@ class EigenhandRepository:
                     "note": row.note,
                     "png_sha256": row.png_sha256,
                     "filed": row.filed_on,
+                    # The Befund travels with the Fassung: `core.eigenhand.befund`
+                    # derives the suggestion and the rank off the Kartei shape,
+                    # so terminal and workbench read one dict and cannot disagree.
+                    "befund": row.befund,
                 }
             )
         return kartei

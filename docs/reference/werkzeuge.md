@@ -538,7 +538,13 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   was abgelegt wird. Die Lineatur verschwindet nicht beim Einlesen, sondern
   als abgeleitete Ansicht beim Abruf (`?lineatur=ohne`, Werkbank-Schalter).
 - **`report`** — Bestandsbericht (Erstbeleg-/Ausbau-Quote, Fehlstellen,
-  Druckvorschlag); **`progression`** — die Plan-Sicht dazu: kumulierte
+  Druckvorschlag) und, seit dem **Streifen-Befund** (2026-09-07), die
+  Gegenrichtung: je angenommener Fassung Vorschlag (`sauber` · `brauchbar` ·
+  `neu schreiben`), dominierender Grund und Rang unter den Fassungen ihres
+  Streifens, dann die Liste „neu schreiben, schwächste zuerst"; `--befund`
+  zeigt nur diese. Gemessen wird beim Ablegen (`apply`), abgeleitet beim
+  Lesen — der Haken bleibt das Urteil, nichts verwirft automatisch
+  (eigenhand-erfassung.md §7.3); **`progression`** — die Plan-Sicht dazu: kumulierte
   Zählungen je Glyphe (klein · groß · Ligatur · Ziffer · Zeichen) und je
   Übergang an Checkpoints alle N Streifen, mit `--json` für Auswertungen
   („nach 10, 20, … Streifen — wie oft ist jede Glyphe dran?“), und

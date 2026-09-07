@@ -765,6 +765,13 @@ class EigenhandFassung(Base):
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
     png_sha256: Mapped[str | None] = mapped_column(String(64), nullable=True)
     filed_on: Mapped[str | None] = mapped_column(String(10), nullable=True)
+    # The Streifen-Befund's MEASUREMENT (0029) — pen width, continuity of the
+    # medial axis, counters, body runs, how the ink sits in the ruling. Only
+    # the numbers: the suggestion, its reason and the rank among a strip's
+    # Fassungen are derived on read (`core.eigenhand.befund`), because a rank
+    # changes the moment a better Fassung arrives. NULL where a Fassung was
+    # filed before the Befund existed — "no reading", never "a bad one".
+    befund: Mapped[dict | None] = mapped_column(PORTABLE_JSON, nullable=True)
     # The EFFECTIVE session material, denormalised from the hand's standing
     # setup (0025). A Fassung says out of itself what it was written with — no
     # join, and no implicit "NULL means like the hand": the day the nib really

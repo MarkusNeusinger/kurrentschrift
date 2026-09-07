@@ -7,7 +7,18 @@ via order), and files one Fassung per judged row under
 * ``streifen.png`` — the unmodified grayscale row crop from the rectified
   scan (two-channel doctrine: no binarisation baked in)
 * ``meta.json``   — words, geometry, verdict, QC flags, Schreibsitzung,
-  scan checksum, provenance
+  scan checksum, provenance, and the **Streifen-Befund**
+
+The Befund is measured HERE because this is where the pixels are (`core
+.eigenhand.befund`, proposal §7.3): pen width, continuity of the medial axis,
+the counters the ink encloses, the runs it fell into, how it sits in the
+ruling. Filed are the NUMBERS only — the suggestion `sauber` · `brauchbar` ·
+`neu schreiben`, its reason and the rank among the strip's Fassungen are
+derived on read, by the report and by the workbench alike. It changes no
+verdict and no file: a row is accepted because the tick says so, and the
+Befund's whole job is to say which accepted strip is worth writing again. A
+reading that cannot be taken (a damaged crop, a missing catalogue) costs the
+field and never the run.
 
 Only ACCEPTED rows get files — "only the relevant strips are filed"
 (owner decision 2026-08-22). A rejected row is recorded in the
@@ -32,7 +43,10 @@ import re
 import shutil
 from pathlib import Path
 
+from core.eigenhand.befund import measure_strip
 from core.eigenhand.bogen import layout_digest
+from core.eigenhand.crop import px_per_mm as strip_px_per_mm
+from core.landmarks import catalogue_source, load_catalogue
 from tools.eigenhand.kartei import load_kartei, next_fassung_id, save_kartei
 from tools.eigenhand.store import check_crop_name, hand_dir
 from tools.eigenhand.store import sheet_dir as store_sheet_dir
@@ -73,6 +87,60 @@ def parse_result(text: str, sheet: str) -> dict[str, dict]:
             )
         verdicts[uid] = {"verdict": verdict, "reason": reason, "note": parsed.group("note") or ""}
     return verdicts
+
+
+def load_kringel_catalogue(style: str) -> tuple[dict | None, str | None]:
+    """The Kringel catalogue, but only for the script it was measured on.
+
+    The catalogue registers which counter of which letter the 1922 PLATE holds
+    open (#556). Applied to another SCRIPT it would publish one tradition's
+    expectations under another's name, so it is handed over only where the
+    styles match — and it always travels with the source it came from, because
+    an expectation read off a foreign HAND (which this is: same Sütterlin,
+    another writer) must never look like this hand's own. A catalogue that
+    cannot be read costs the Kringel field and nothing else.
+    """
+    try:
+        source = catalogue_source()
+        if str(source.get("style", "")) != style:
+            return None, None
+        measured = (source.get("measured_on") or [{}])[0]
+        return load_catalogue(), f"{source.get('style')}/{measured.get('name', '?')}"
+    except (OSError, ValueError) as exc:  # noqa: BLE001 — a sensor never fails a run
+        print(f"WARNING: Kringel-Katalog nicht lesbar ({type(exc).__name__}: {exc}) — Feld entfällt")
+        return None, None
+
+
+def measure_row(
+    crop_file: Path, layout_row: dict, crop_origin_mm: list[float], catalogue: dict | None, quelle: str | None
+) -> dict | None:
+    """The Streifen-Befund of one filed crop, or None with a warning.
+
+    Read on the BLUE plane of a colour crop — where the cyan rulings sit
+    nearest to paper, the same plane the import detects and QC's on — and on
+    the grayscale of a grayscale one. The stored PNG is never touched; this is
+    a derivation, like every other reading of these bytes.
+    """
+    try:
+        import numpy as np  # noqa: PLC0415 — the tool family loads without the image stack
+        from PIL import Image  # noqa: PLC0415
+
+        with Image.open(crop_file) as image:
+            rgb = image.mode in ("RGB", "RGBA")
+            array = np.asarray(image.convert("RGB") if rgb else image.convert("L"), dtype=np.float32) / 255.0
+        plane = array[:, :, 2] if rgb else array
+        scale = strip_px_per_mm(plane.shape[1], layout_row["cut_mm"])
+        return measure_strip(
+            plane,
+            layout_row,
+            crop_origin_mm=crop_origin_mm,
+            px_per_mm=scale,
+            catalogue=catalogue,
+            catalogue_quelle=quelle,
+        )
+    except Exception as exc:  # noqa: BLE001 — a reading must never cost a filing
+        print(f"WARNING: {crop_file.name}: Befund nicht messbar ({type(exc).__name__}: {exc})")
+        return None
 
 
 def _existing_fassung(kartei: dict, strip: str, sheet: str, row_index: int) -> dict | None:
@@ -144,6 +212,7 @@ def main(argv: list[str] | None = None) -> int:
         check_crop_name(row["crop"], row["row_index"])
 
     kartei = load_kartei(args.hand, payload["style"])
+    catalogue, kringel_quelle = load_kringel_catalogue(payload["style"])
     filed = recorded = skipped = 0
     for row in payload["rows"]:
         judgement = verdicts.get(row["uid"])
@@ -162,9 +231,13 @@ def main(argv: list[str] | None = None) -> int:
 
         fassung_id = next_fassung_id(kartei, strip)
         png_sha256: str | None = None
+        befund: dict | None = None
         accepted = judgement["verdict"] == "angenommen"
         layout_row = layout["rows"][row["row_index"]]
         if accepted:
+            befund = measure_row(
+                sheet_dir / "import" / row["crop"], layout_row, row["crop_origin_mm"], catalogue, kringel_quelle
+            )
             # Only accepted rows get files; the meta.json makes the strip
             # attributable on its own, sidecar-free (words, geometry, session).
             fassung_dir = hand_dir(args.hand) / "fassungen" / strip / fassung_id
@@ -195,6 +268,7 @@ def main(argv: list[str] | None = None) -> int:
                 "scan": {**payload["scan"], "geraet": payload["session"]["geraet"]},
                 "session": payload["session"],
                 "png_sha256": png_sha256,
+                "befund": befund,
                 "provenance": payload["layout_provenance"],
             }
             (fassung_dir / "meta.json").write_text(
@@ -215,6 +289,10 @@ def main(argv: list[str] | None = None) -> int:
                 "png_sha256": png_sha256,
                 "filed": payload["session"]["date"],
                 "session": payload["session"],
+                # In the Kartei too, not only in the meta.json: the report and
+                # `sync` read the Kartei, and a Befund that lived only beside
+                # the pixels would make either of them open every Fassung.
+                "befund": befund,
             }
         )
         if accepted:

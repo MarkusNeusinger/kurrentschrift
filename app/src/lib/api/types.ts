@@ -1087,6 +1087,30 @@ export interface EigenhandStrip {
   bytes: number;
   words: string[];
   boxes: EigenhandStripBox[];
+  befund?: EigenhandBefund | null;
+}
+
+// One Fassung's Streifen-Befund — a SUGGESTION, never a status. Everything
+// here is derived server-side from the stored measurement (`core/eigenhand/
+// befund.py`): `rang` is the Fassung's place among the accepted Fassungen of
+// its strip, `abgeloest_von` the later one that scores better. The nested
+// readings stay loose records because they are numbers for a tooltip, not a
+// contract the view branches on; `vorschlag` and `grund` are what it shows.
+export type EigenhandVorschlag = 'sauber' | 'brauchbar' | 'neu schreiben';
+
+export interface EigenhandBefund {
+  vorschlag: EigenhandVorschlag;
+  grund: string;
+  guete: number;
+  nib: Record<string, number | string | null>;
+  unstetigkeit: Record<string, number | null>;
+  kringel: Record<string, unknown>;
+  duktus: Record<string, number>;
+  deckung: Record<string, number>;
+  lesbarkeit: Record<string, number>;
+  rang: number | null;
+  von: number | null;
+  abgeloest_von: string | null;
 }
 
 export interface EigenhandStripList {

@@ -11,7 +11,9 @@
 > gebaut und getestet (`tests/test_eigenhand_*.py`); die Ausbaustufen
 > 4a–4f (DB-Buchführung · Streifen in der DB · Sitzungs-Blocker ·
 > Übergangsraum-Gewichte · Beleg-Galerie · Farb-Streifen, §11) sind bis
-> 2026-08-27 nachgezogen. Die Wellen 0 bis 2
+> 2026-08-27 nachgezogen, seit 2026-09-07 dazu **4g: der Streifen-Befund**
+> (§7.3) — die Sauberkeits-Schleife, die unfertige Streifen erlaubt und
+> sichtbar macht, welche neu zu schreiben sind. Die Wellen 0 bis 2
 > des Streifenplans sind committet (Streifen 1–180: Buchstaben, Ziffern,
 > Zeichen, Mindestbelegung ≥3 je Glyphe), dazu seit 2026-09-06 die erste
 > Anheftung (`S0181` = „Kurrentschrift", §4). Gedruckt ist noch kein
@@ -56,12 +58,25 @@ Vier Anforderungen des Autors formen das System (Sitzung 2026-08-22):
                        sheet ─▶ Bogen (PDF + layout.json) ─▶ schreiben
                               │                                │
                        report ◀── Kartei ◀── apply ◀── Siebung ◀── ingest ◀── Scan/Foto
-                              │
+                              │              (misst den Befund)
                        snapshot ─▶ privates Archiv (create-only)
 
 Jedes Werkzeug ist ein eigener CLI-Einstieg unter `tools/eigenhand/`
 (humanbench-Muster); Betrieb: `data/samples/own-hand/README.md`. Alles ist
 Mess-/Autorenschicht — kein Werkzeug schreibt die Datenbank.
+
+**Und die Schleife schließt sich rückwärts** (Autor-Frage 2026-09-07, §7.3):
+auch unfertige Streifen dürfen hoch. Beim Ablegen misst `apply` je Fassung
+den **Streifen-Befund**; `report` und die Werkbank zeigen daraus je
+Streifen, welche seiner Fassungen die schwächste ist und woran es liegt —
+
+    schreiben ──▶ scannen ──▶ Befund ──▶ Haken ──▶ das Schwächste neu schreiben
+
+— und der Bestand wächst währenddessen weiter, statt auf perfekte Bögen zu
+warten. Der Haken auf dem Papier bleibt das Urteil; der Befund schlägt vor,
+verwirft nie. Mit dem Rollenentscheid unten wird diese Rückrichtung wichtiger,
+nicht unwichtiger: was die Seite später schreibt, ist das, was hier abgelegt
+wurde — also muss sichtbar sein, welche Zeile den nächsten Bogen wert ist.
 
 **Wozu der Bestand da ist: die Produktionshand** (Autor-Entscheid
 2026-09-07). Dieses Proposal hat den Bestand bis hierher als Datenquelle
@@ -124,7 +139,9 @@ Neu geprägt und im Glossar verankert (glossar.md, Abschnitt „Eigenhand“):
 **Wortvorrat** · **Streifen** · **Streifenplan** · **Fassung** ·
 **Bogen** · **Passmarken** · **Siebung** · **Streifenkartei** ·
 **Übergangsraum** · **Bestandsbericht** (mit **Erstbeleg-Quote** und
-**Ausbau-Quote**) · **Beleg**. Bewusst NICHT verwendet: „Abdeckung“
+**Ausbau-Quote**) · **Beleg** · seit 2026-09-07 **Streifen-Befund** (mit
+seinem **Vorschlag** `sauber` · `brauchbar` · `neu schreiben`, §7.3).
+Bewusst NICHT verwendet: „Abdeckung“
 (gehört der Humanbench-Abdeckungsmatrix) und „Ernte“ (gehört dem
 automatischen Messlauf).
 
@@ -840,6 +857,127 @@ Druck. Gerechnet wird beim Abruf aus dem RGB-Streifen; ein Graustufen-
 Streifen (die vor dem Entscheid eingelesenen, oder ein Graustufen-Scan)
 bleibt, wie er ist. Gespeichert und archiviert ist immer das Rohbild.
 
+### 7.3 Der Streifen-Befund — was eine Fassung über sich sagt
+
+**Autor-Frage 2026-09-07:** „Ist es gut oder schlecht, wenn ich auch nicht
+perfekte Buchstabenstreifen hochlade und wir mit unseren Tools eine
+Sauberkeits-Analyse haben, und dann nach und nach Streifen durch sauberere
+ersetzt werden?" — **Gut, mit definierter Schleife.** Ein nicht perfekter
+Streifen ist kein Schaden: eine Hand, die nur ihre besten Zeilen abgibt,
+liefert eine Hand, die es so nicht gibt, und der Bestand käme nie voran.
+Was fehlt, ist nicht Strenge beim Hochladen, sondern **Sichtbarkeit
+danach** — welche der geschriebenen Fassungen die schwächste ist und
+woran es liegt. Genau das ist der Befund:
+
+    schreiben ──▶ scannen ──▶ Befund ──▶ Haken ──▶ das Schwächste neu schreiben
+                                 │                            │
+                                 └── Rang je Streifen ────────┘
+
+Drei Regeln tragen ihn, und sie sind im Modul (`core/eigenhand/befund.py`)
+wörtlich wiederholt, damit sie nicht auseinanderlaufen:
+
+1. **Nichts verwirft automatisch. Der Haken bleibt das Urteil.** Der Befund
+   liefert einen **Vorschlag** (`sauber` · `brauchbar` · `neu schreiben`)
+   und den EINEN Grund, der ihn dominiert — kein Code hier schreibt je
+   einen `status`, und kein `status` wird je aus einer Zahl gelesen (§6,
+   Autor-Entscheid 2026-08-26). Auch „ersetzt durch F0n" nimmt nichts weg:
+   der Bestand zählt jede angenommene Fassung weiter als Beleg (§7 — die
+   Ausbau-Quote lebt von Wiederholungen), und aus den Trainingsdaten nimmt
+   eine Fassung nur der ausdrückliche `redo --retire`.
+2. **Sauberkeit wird so beurteilt, wie das Auge sie beurteilt.** Nicht als
+   Abstand zu einer Vorlage — die eigene Hand IST das Ziel —, sondern als
+   Stetigkeit zwischen den Duktus-Landmarken (die eingefrorene
+   #558-Arithmetik, jetzt `core/continuity.py`), als Frage, ob die
+   Kringel offen sind, die die Schrift offen hält, und ob die Tinte EIN
+   Zug ist, wo die Schrift verbindet.
+3. **Duktus-Treue schlägt Glätte.** Was der Tintenfolger (Phase 5) zuerst
+   braucht, ist die richtige Topologie. Ein glattes Wort mit zugelaufenem
+   `e` ist schlechteres Trainingsmaterial als ein leicht wackliges mit
+   offener Schleife — die Dominanzordnung der Gründe sagt das aus.
+
+**Woran gemessen wird.** Ein Traced-Mittelstrich existiert noch nicht (der
+Fit-Anschluss ist Phase 5, §9), also liest der Befund die **Tinte**: die
+binarisierte Schrift EINER Wortkiste, ihre Mittellinie und die Löcher, die
+die Tinte einschließt. Drei Schritte machen eine Richtung überhaupt lesbar
+und stehen mit ihrer Begründung an den Konstanten: die Maske wird auf ein
+Achtel der Strichbreite geglättet (die rohe Ausdünnung eines sauberen
+Bogens ergab 111 Graphkanten und eine Feder von 4,1 px statt 6,9 — die
+Härchen sitzen am Rand und ziehen den Median), die Sporen werden gekappt
+und die Reste durch die frei gewordenen Knoten wieder zusammengesetzt, und
+die Punkte werden **subpixelgenau auf der Graustufe nachzentriert**. Der
+letzte Schritt ist der entscheidende und ist die Zwei-Kanal-Doktrin, die
+sich auszahlt: auf Distanzfeld-Referenzen bei 300 dpi las die reine
+Glättung einen sauberen Bogen mit 15° „Knick" (zwei Falschmeldungen) und
+eine echte 53°-Ecke mit 9° — unter der Schwelle, der zuerst genannte
+Defekt wäre also durchgerutscht. Mit Nachzentrierung: 2,9° / 3,5° / 0,6°
+auf Bogen, Kreis und Gerade (keine Meldung) und 36° auf der Ecke (eine).
+
+**Die sechs Felder.**
+
+| Feld | Was gemessen wird | Grund, den es stellen kann |
+|---|---|---|
+| `nib` | Median-Halbbreite auf der Mittellinie, in x-Höhen; gegen die Tafelfeder (0,0968) UND gegen den eigenen Median der Hand | „Feder zu dünn" · „Feder zu dick" |
+| `unstetigkeit` | Knick (max, Anzahl), Wackler, Bogen, Krümmungsverlust — die #558-Definitionen je Schreibzug | „Knick im Übergang" · „wackelig" |
+| `kringel` | die eingeschlossenen Löcher gegen die Kringel-Erwartung je Buchstabe (#556): `offen` zugelaufen ist ein Verlust, `wechselnd` ist Variation, `punkt` nie | „Kringel zu" |
+| `duktus` | Körper-Züge der Tinte gegen die Zahl, in die die Schrift das Wort verbindet, plus fehlende/zusätzliche Kringel | „Strichfolge weicht ab" |
+| `deckung` | Tinte im Band, über und unter der Lineatur, mittlere Schwärzung (die `blass`-Achse des Imports) | „läuft aus der Zeile" · „zu blass" |
+| `lesbarkeit` | die §5-FÖRMIGE Zusammenfassung `100 · G^0,5 · N` — das Tor muss passen, dann ordnet die Natürlichkeit | (ordnet nur, stellt keinen Grund) |
+
+Zwei Abweichungen stehen ausdrücklich da, statt versteckt zu sein.
+**Erstens** misst `qualitaetsmetrik.md` §5 einen RENDER gegen Tinte; hier
+gibt es keinen Render, also misst der Befund die Tinte gegen die Lineatur
+und gegen sich selbst — dieselbe ROLLE (Tor, dann Natürlichkeit), andere
+Bezugsgröße. **Zweitens** fehlen Kreuzungen und Retrace-Zonen im
+`duktus`-Feld, und das ist kein Versehen: ein Retrace hinterlässt EINEN
+Strich Tinte, ein Bild kann ihn nicht zeigen, und eine Kreuzungszahl aus
+einem Scan-Skelett ist von Ausdünnungs-Artefakten beherrscht. Beides wird
+messbar, sobald der Tintenfolger einen Streifen nachfährt (Phase 5) — das
+ist der Rettungsweg des Feldes, nicht eine übertünchte Lücke.
+Die Kringel-Erwartung stammt zudem von der **1922er Tafel**, nicht von
+dieser Hand (gleiche Schrift, anderer Schreiber); sie wird nur bei
+passendem Stil angelegt und reist immer mit ihrer Quelle
+(`kringel.quelle`), damit eine fremde Erwartung nie unbeschriftet auftritt.
+
+**Schwellen, vorregistriert.** Alle aus der physischen Skala oder aus
+bereits kalibrierten Konstanten des Repos, keine an den Streifen des
+Autors angepasst — als sie geschrieben wurden, gab es keine: Knick
+**11,537°** (arcsin 0,2, eingefroren aus #558: ein Zehntel der
+Strichbreite über ein Lesefenster), ab 3 Ereignissen oder dem doppelten
+Winkel schwer; Wackler ab einem halben Knick auffällig, ab einem ganzen
+schwer; Krümmungsverlust ab einer halben Strichbreite auffällig, ab einer
+ganzen schwer; Feder ab 20 % Abweichung vom eigenen Median auffällig
+(die Hälfte der kleinsten Stufe, die die Federleiter erzeugt: 0,5 → 0,7 mm
+sind +40 %), ab 40 % schwer; ein zugelaufener `offen`-Kringel auffällig,
+zwei schwer; Tinte außerhalb des Bandes ab 15 % / 30 %; `blass` bei
+mittlerer Schwärzung 0,45 — genau der Schwellwert, an dem der Import
+seine QC-Flagge setzt, und er landet in der Zusammenfassung exakt auf dem
+Faktor 1/e.
+
+**Gemessen wird gespeichert, beurteilt wird abgeleitet.** In der
+`meta.json`, in der Kartei und in der DB (`eigenhand_fassungen.befund`,
+Migration `0029`) liegen NUR die Zahlen. Vorschlag, Grund, Güte und der
+**Rang** einer Fassung unter den Fassungen ihres Streifens entstehen beim
+Lesen (`befund`, `befunde_of_strip`, `befund_index`) — dieselbe Doktrin wie
+bei `kartei.strip_state`: ein Rang ändert sich in dem Moment, in dem eine
+bessere Fassung ankommt, ein gespeicherter wäre ab da falsch. Und die
+Feder, gegen die „zu dünn" gilt, ist der Median DIESER Hand über alle
+gemessenen Fassungen — eine Zahl, die eine einzelne Zeile über sich nicht
+wissen kann.
+
+**Wo er auftaucht.** `apply` misst beim Ablegen (dort sind die Pixel) und
+schreibt ihn in `meta.json` und Kartei; `sync` schiebt ihn mit der Fassung
+hoch; `report` druckt ihn je Fassung samt Rang und schließt mit der
+Liste „neu schreiben, schwächste zuerst" (`--befund` zeigt nur diese);
+die Werkbank zeigt je Fassung die Chips (Vorschlag · Grund · Rang ·
+„ersetzt durch F0n") und sortiert auf Wunsch nach ihnen. Eine Fassung ohne
+Messung sagt „kein Befund" — eine fehlende Messung ist keine schlechte
+Fassung und darf nicht wie eine aussehen.
+
+**Keine Bench-Zahl liest daraus** (Prüfstein 2, §12): der Befund ordnet die
+Fassungen EINER Hand gegeneinander und sagt, welche neu zu schreiben ist.
+Die beiden Skript-Metriken (`core/quality.py`, `core/quality_suetterlin.py`)
+sind unberührt.
+
 ## 8 Ablage und Archiv
 
 `data/samples/own-hand/` ist komplett gitignored bis auf `SOURCE.md` +
@@ -1004,6 +1142,7 @@ die menschliche Kopf-Bestätigung je fehleranfällig wird.
 | 4d | Übergangsraum-Gewichte in der DB (`0026` · `GET|PUT /eigenhand/uebergangsraum` · `universe --push`): Quoten und gewichtete Warteschlange auf beiden Seiten (§7.1) | umgesetzt 2026-08-26 (Autor-Entscheid 2026-08-25) |
 | 4e | Vom Bestand zum Beleg: Wortsuche, Tafel-Zellen und Übergangs-Chips als Einstieg in die Wort-Crop-Galerie, Vergrößerung + Lupe (`strips?wort=&item=`, `coverage.matches_item`) | umgesetzt 2026-08-26 (§7.2) |
 | 4f | Farb-Streifen: RGB-Ablage bei Farb-Scans (`scan.mode: rgb`), blaue Arbeitsebene für Passmarken/QC, `?lineatur=ohne` als abgeleitete Ansicht | umgesetzt 2026-08-27 (Autor-Entscheid 2026-08-27, §6/§7.2) |
+| 4g | Streifen-Befund je Fassung (`0029` · `core/eigenhand/befund.py` · `apply`/`sync`/`report --befund` · Chips und Sortierung in der Werkbank) | umgesetzt 2026-09-07 (Autor-Frage 2026-09-07, §7.3) |
 | 5 | Ernte-Anschluss, Kurrent/Offenbacher-Betrieb, optionaler Bogen-Code | aufgeschoben (§9) |
 
 Dazu je Schreibsitzung wiederkehrend: Kalibrier-Schleife der

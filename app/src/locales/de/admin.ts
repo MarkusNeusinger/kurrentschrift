@@ -1042,5 +1042,19 @@ export const admin = {
     stripNoRulingsHint:
       'Abgeleitete Ansicht: Blau-Kanal plus Cyan-Maske, berechnet beim Abruf. Wirkt nur bei farbig eingelesenen Streifen — ein Graustufen-Streifen bleibt, wie er ist. Gespeichert wird immer das Rohbild.',
     keyTooltipShow: ' · anklicken zeigt die Belege',
+    // Der Streifen-Befund: ein VORSCHLAG, nie ein Urteil. Der Haken auf dem
+    // Blatt bleibt die Entscheidung; hier steht nur, was auffällt und welche
+    // Fassung eines Streifens die schwächste ist.
+    befundRank: 'Rang {{rang}}/{{von}}',
+    befundReplaced: 'ersetzt durch {{fassung}}',
+    befundReplacedHint:
+      'Eine spätere Fassung desselben Streifens ist sauberer. Der Bestand zählt beide weiter als Beleg — aus den Trainingsdaten nimmt eine Fassung nur „redo --retire“.',
+    befundTooltip:
+      'Vorschlag aus dem Streifen-Befund, kein Urteil: Güte {{guete}} · Feder {{feder}} der Hand · Knick max {{knick}}° ({{knicke}}) · Wackler {{wackler}}° · Kringel zu {{kringel}}',
+    befundNone: 'kein Befund',
+    befundNoneHint:
+      'Diese Fassung wurde abgelegt, bevor der Streifen-Befund gemessen wurde. Fehlende Messung heißt nicht schlechte Fassung.',
+    befundSort: 'nach Befund sortieren',
+    befundSortHint: 'Schwächste Fassung zuerst — was zuerst neu geschrieben werden sollte.',
   },
 } as const;
