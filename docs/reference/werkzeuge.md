@@ -383,6 +383,18 @@ und platziert mit demselben Lineal. Jede Armdatei schreibt ihre
 `join_rules` in die Einstellungen — eine Runde erbt nie stillschweigend
 einen Default.
 
+`tracearm.py` ist der zweite Erzeuger, für Runden, deren Kandidat eine
+**gefolgte Bahn** ist statt einer Komposition (`sep07`, Runde 9 zur
+K-E-Claim-Trennung): er nimmt eine `tools.tracebench`-Kandidatendatei —
+typisch das `--candidate-out` des Tintenfolgers — und legt sie in den Rahmen
+des eingefrorenen Fixture-Eintrags; er komponiert nichts und misst nichts.
+Eine solche Runde läuft auf der GENAUIGKEITS-Frage (`--question ink`) und in
+der Mittellinien-Anzeige der Buchstabenrunden — beides stellt sich von selbst
+ein, weil ein Bahn-Arm weder Silhouetten noch Strichbreiten trägt und die
+Seite daran ihre Darstellung abliest
+([`menschliche-bewertung.md`](menschliche-bewertung.md) §8a, „Ein Arm kann
+auch eine BAHN sein“).
+
 Zwei Konstruktions-Hinweise aus der J5-Runde, damit die nächste sie nicht
 neu lernt: eine **blinde Wiederholung** braucht mehr als
 `--min-repeat-gap` + 25 Bildschirme (im Wortmodus-Default 15 also mehr als
@@ -421,6 +433,18 @@ uv run python -m tools.humanbench.build --round 5 \
 uv run python -m tools.humanbench.page --question authentic \
     --payload temp/humanbench/runde-5/payload.json \
     --out temp/humanbench/runde-5/echtheit.html --round 5
+
+# … oder zwei gefolgte BAHNEN statt zweier Kompositionen (Genauigkeitsfrage)
+uv run python -m tools.humanbench.tracearm --arm Basis \
+    --candidate temp/base-cand.json --out temp/basis-bahn.json
+uv run python -m tools.humanbench.tracearm --arm K-E2 \
+    --candidate temp/ke2-cand.json --out temp/ke2-bahn.json
+uv run python -m tools.humanbench.build --round 9 \
+    --word-arms temp/basis-bahn.json temp/ke2-bahn.json --strata temp/klassen.json
+# die Frage kommt aus den ARMEN, nicht von der Kommandozeile: VERGLEICH statt ECHTHEIT
+uv run python -m tools.humanbench.page \
+    --payload temp/humanbench/runde-9/payload.json \
+    --out temp/humanbench/runde-9/vergleich.html
 
 uv run python -m tools.humanbench.page \
     --payload temp/humanbench/runde-2/payload.json \

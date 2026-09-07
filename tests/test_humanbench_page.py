@@ -185,6 +185,18 @@ def test_an_unknown_question_is_refused_at_build_time():
         build_page(PAIRED, question="schoenheit")
 
 
+def test_the_flag_may_not_contradict_an_envelope_that_declares_its_question():
+    """The builder derives the question from the arms and writes it into the
+    envelope AND the provenance stamp. Renaming it here would put one word on
+    the page and another in the record — a round filed under a question it never
+    asked (§7)."""
+    envelope = {"round": 9, "question": "ink", "items": PAIRED}
+    with pytest.raises(ValueError, match="declares the question"):
+        build_page(envelope, question="authentic")
+    # Repeating the envelope's own answer is not a contradiction.
+    assert config_of(build_page(envelope, question="ink"), "question") == "ink"
+
+
 # ------------------------------------------------------------------ inked panels
 
 

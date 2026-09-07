@@ -586,6 +586,20 @@ def _resolve_meta(items: list[dict[str, Any]], payload_meta: dict[str, Any], ove
     question = str(overrides.get("question") or payload_meta.get("question") or "ink")
     if question not in QUESTIONS:
         raise ValueError(f"question {question!r} is not one of {sorted(QUESTIONS)}")
+    # An envelope that already states its question was written by the BUILDER,
+    # which derives it from the arms and records it in `provenance.json` too
+    # (`build.py::draws_ink`). Overriding it here would put a different word on
+    # the page and in its result header than the stamp carries, and the round
+    # would then be filed under a question it never asked — the failure §7 exists
+    # to prevent. The override stays for a payload that predates the envelope; it
+    # may not silently contradict one.
+    declared = payload_meta.get("question")
+    if declared and overrides.get("question") and str(declared) != question:
+        raise ValueError(
+            f"the payload declares the question {str(declared)!r} and --question says {question!r}. "
+            "The builder derived that from the arms and the provenance stamp records it; rebuild the round "
+            "rather than renaming its question at render time."
+        )
     if mode == "single" and question != "ink":
         raise ValueError("a category round asks the categories; the two-way questions need two panels")
     # The question, not just the panel count, decides how the page speaks and
@@ -698,7 +712,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         default="",
         choices=("", *sorted(QUESTIONS)),
         help="which paired question is asked: ink = follows the ink better, authentic = looks more "
-        "genuinely written [the payload's own, else ink]",
+        "genuinely written [the payload's own, else ink]; it may not CONTRADICT an envelope that "
+        "already declares one",
     )
     parser.add_argument("--tag", default="", help="result header tag (default BEFUND / VERGLEICH / ECHTHEIT)")
     parser.add_argument("--title", default="", help="browser tab title (default: the headline)")
