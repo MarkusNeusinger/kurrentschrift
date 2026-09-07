@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-06): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **81
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **82
 > Begriffe**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars. Nachzieh-Anlass: ein Begriff wandert
 > hierher, sobald er die Zwei-von-drei-Schwelle unten erreicht und in
@@ -180,6 +180,15 @@ Zustand (`offen` · `wechselnd` · Punktkringel, aus dem Anteil der
 Vorkommen, in denen die Platte ein Loch zeigt). Eingefroren in
 `tools/tracebench/kringel_catalogue.json`, gelesen als Report-Spalte
 `kringel_lost`. → [§4](glossar.md#4-metriken-und-benchmarks)
+
+**Zwei-Züge-Modell** — die Feder herausrechnen statt den Klumpen zu
+skelettieren: wo zwei Züge um eine kleine Binnenfläche verschmelzen, ist
+die Tinte die Union zweier Kapseln bekannter Halbbreite, also darf keine
+Stützstelle näher als `w_pen` an einer Binnenfläche stehen, die die
+Platte offen hält. Loop-lokale Korrektur der Kette-Bahn, nur auf
+Katalogschleifen `offen`/`klein`+`mittel`, C¹ ausgeblendet und mit
+Rücknahme bei zerstörtem Schleifen-Schluss; `--zwei-zuege`, Vorgabe AUS.
+→ [§4](glossar.md#4-metriken-und-benchmarks)
 
 **Schleifenbereich · Schleifen-Registrierung** — der Anker-Indexbereich,
 über den die TAFELZEILE eine Schleife schließt (`loop_ranges`), und der

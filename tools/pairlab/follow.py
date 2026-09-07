@@ -140,6 +140,9 @@ from tools.pairlab.chain import (
 from tools.pairlab.ink_evidence import INK_EVIDENCE_PAPER_FRACTION, InkEvidenceOptions, ink_evidence_case
 from tools.pairlab.landmarks import LANDMARK_MIN_ANGLE_DEG
 from tools.pairlab.trace import assemble_word_strokes, cap_word_strokes
+from tools.pairlab.zweizuege import PLATE_PEN_HALF_WIDTH_UNITS, ZweiZuegeOptions, correct_case_strokes
+from tools.pairlab.zweizuege import SMOOTH_UNITS as ZWEI_ZUEGE_SMOOTH_UNITS
+from tools.pairlab.zweizuege import TAPER_UNITS as ZWEI_ZUEGE_TAPER_UNITS
 from tools.tracebench.counters import crossing_points, structure_zones
 from tools.tracebench.soll import composition_strokes
 from tools.wordbench.roots import add_expect_root_argument, announce_roots
@@ -540,6 +543,35 @@ class FollowWeights:
     `weights` block through `asdict`, so files written from now on carry
     `connector_init` even on a default run — the JSON gains a key, the
     geometry does not move (Gate 1: stroke-identical 63/63)."""
+    zwei_zuege: bool = False
+    """R3 (`sep07`): the two-stroke model at the fused loops — a LOOP-LOCAL
+    correction of the assembled trace, off by default. Where the plate holds a
+    catalogue counter open (`tools.tracebench.kringel_catalogue.json`, state
+    `offen`, size class `klein`/`mittel`) no pen sample may sit closer to it
+    than the plate's own half width, because a capsule union at that width
+    would ink it; the samples that do are pushed out along the counter's
+    distance gradient and the displacement is blended over one nib of arc
+    (`tools.pairlab.zweizuege`). It runs AFTER the last round, so no chain
+    solve, no window, no assembly and no `core/` byte moves — and it reads the
+    PLATE and one frozen pen constant, never a Laufform row, so it cannot close
+    the harvest fixed point of §14 „Laufform LF14 `sep06`"."""
+    zwei_zuege_half_width: float = PLATE_PEN_HALF_WIDTH_UNITS
+    """WHICH pen the two-stroke model deconvolves with, in x-heights. The
+    default is the plate's own nib as #551 measured it over all 63 specimens
+    (0.0968) — the same constant the catalogue's size classes are counted in.
+    It is a property of the WRITING INSTRUMENT that wrote the reference, not a
+    weight: lowering it until fewer loops need correcting would be the pen
+    softening the Kringel diagnosis explicitly rules out."""
+    zwei_zuege_taper: float = ZWEI_ZUEGE_TAPER_UNITS
+    zwei_zuege_smooth: float = ZWEI_ZUEGE_SMOOTH_UNITS
+    """The two lengths of the correction's blend, in x-heights: the C¹ fade at
+    each end of a corrected run, and the arc-length average that keeps the
+    plate's pixel raster out of the pen path. Both are rungs of #558's frozen
+    ladder (half a nib · one nib · two nibs) and BOTH are read in x-heights
+    while the trace is sampled in points — R3 (`sep07`) measured the trap: at a
+    sample spacing of 0.0265 xh the shipped defaults span 2.7 and 1.4 samples,
+    so the fade fades over three points and the average averages one. They are
+    exposed here because that is the one length the follow-up arm moves."""
     provisional: bool = True
 
 
@@ -2144,6 +2176,22 @@ def follow_derived(
         n_params += int(followed.fit_meta.get("n_params", 0))
         word_strokes.extend(followed.strokes_units)
 
+    # R3: the loop-local correction, on the ASSEMBLED path and nowhere earlier —
+    # the last point at which the whole word's pen path exists in one frame and
+    # the first at which no solve can be disturbed by it.
+    zwei_zuege_report = None
+    if weights.zwei_zuege and word_strokes:
+        word_strokes, zwei_zuege_report = correct_case_strokes(
+            case,
+            result,
+            word_strokes,
+            options=ZweiZuegeOptions(
+                half_width_units=weights.zwei_zuege_half_width,
+                taper_units=weights.zwei_zuege_taper,
+                smooth_units=weights.zwei_zuege_smooth,
+            ),
+        )
+
     meta = {
         "fit_path": "follow",
         "weights": asdict(weights),
@@ -2164,6 +2212,11 @@ def follow_derived(
         # empty lists included (a word without a firing claim SAYS so; §14
         # "Kette K-E": a silent claim would make a negative unreadable).
         **({"mark_claims": claims_by_run} if weights.mark_claim else {}),
+        # R3's per-loop verdicts — present exactly while the measure is on, a
+        # word without a single correctable loop included, because a refusal is
+        # as much of a reading as a push and a silent one would make the arm's
+        # per-loop table unreconstructible.
+        **({"zwei_zuege": zwei_zuege_report.as_dict()} if zwei_zuege_report is not None else {}),
     }
     if not word_strokes:
         return {
@@ -2682,6 +2735,35 @@ def build_parser() -> argparse.ArgumentParser:
         "draws (production). Start point and discretisation only; no penalty term measures the "
         "fitted connector against either",
     )
+    parser.add_argument(
+        "--zwei-zuege",
+        action="store_true",
+        help="R3 (sep07): the two-stroke model — after the last round, push the trace off every counter "
+        "the Kringel catalogue holds `offen` that a pen of --zwei-zuege-half-width would ink, blended "
+        "over one nib of arc; loops the catalogue does not register in scope, and occurrences whose "
+        "plate shows no hole, are untouched and say so",
+    )
+    parser.add_argument(
+        "--zwei-zuege-half-width",
+        type=float,
+        default=FollowWeights.zwei_zuege_half_width,
+        help="the pen the two-stroke model deconvolves with, in x-heights (default: the plate's own "
+        "0.0968 from #551 — the constant the catalogue's size classes are counted in)",
+    )
+    parser.add_argument(
+        "--zwei-zuege-taper",
+        type=float,
+        default=FollowWeights.zwei_zuege_taper,
+        help="arc length of the C1 fade at each end of a corrected run, in x-heights (default half a "
+        "nib); R3b (sep07) runs it at two nibs, 0.29",
+    )
+    parser.add_argument(
+        "--zwei-zuege-smooth",
+        type=float,
+        default=FollowWeights.zwei_zuege_smooth,
+        help="arc length of the anti-raster average of the displacement, in x-heights (default half the "
+        "Knick window); R3b runs it at one nib, 0.145 — the window the continuity sensor itself reads",
+    )
     parser.add_argument("--sweep", help="NAME=v1,v2 — one arm per value of a FollowWeights field")
     parser.add_argument("--jobs", type=int, default=1, help="worker processes, pooled over CASES")
     parser.add_argument("--json", type=Path, help="write the full report here")
@@ -2719,6 +2801,10 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         mark_claim=bool(args.mark_claim),
         soll_source=str(args.soll_source),
         connector_init=str(args.connector_init),
+        zwei_zuege=bool(args.zwei_zuege),
+        zwei_zuege_half_width=float(args.zwei_zuege_half_width),
+        zwei_zuege_taper=float(args.zwei_zuege_taper),
+        zwei_zuege_smooth=float(args.zwei_zuege_smooth),
     )
 
 

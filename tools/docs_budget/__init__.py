@@ -282,10 +282,22 @@ WIDEST = {
 # register rows), rather than added up from two branches that each measured
 # without the other. The entry itself needed no raise; it was trimmed to 4 500
 # against the unchanged 4 503 ceiling, which is where a growing entry belongs.
+# `mess-runde-route` raised on 2026-09-07, the first raise this path has had.
+# Its growing piece is the LEDGER of `verfahren-kette.md` — one row per measured
+# arm of the route, and „Kette R3 Zwei-Züge-Modell" is one. The path measured
+# 6177 exactly, i.e. no room at all, so any booked Kette arm would fail this
+# gate; the row costs 138 over that, and it was condensed once before this raise
+# (the first draft was 220 over). Deleting a ledger row is the move the process
+# page forbids — it IS the route's register — and shortening a verdict until it
+# fits is how a ledger stops being readable: this row has to carry both halves
+# of an unusual result, a mechanism that meets its target and fails on execution.
+# So: re-measured at 6315 and given the documented 10 % headroom, like every
+# other path. No licence for prose — the „Aktueller Stand" block and the
+# candidate list did not move.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
     "mess-runde": 23_894,
-    "mess-runde-route": 6_177,
+    "mess-runde-route": 6_947,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,
     "komposition": 9_680,

@@ -216,6 +216,8 @@ die DB) — mit seiner Bedingung.
 | sep06 | Lineal | [Kringel-Landmarke](#kringel-landmarke-sep06--katalog-und-sensor-die-erwartung-offen-ist-eine-eigenschaft-je-buchstabe-und-je-schleife) | Pre-Reg + gemessen · **Sensor**, kein Arm · Report-Spalte | Der Autor-Entwurf „große · mittlere · kleine Kringel, bei den kleinen Punktkringel oder je nach Tinte wechselnd" wird ein eingefrorener **Katalog**: 46 Schleifen über 27 Glyphen mit Größenklasse (in Breiten der Plattenfeder `W = 0,1936`: klein < 2W, mittel < 4W, groß darüber) und Zustand (Anteil der Vorkommen mit Loch: offen ≥ 0,8, punkt ≤ 0,2, sonst wechselnd) — **klein 22 · mittel 16 · groß 8**, **offen 41 · wechselnd 4 · punkt 1**. Abnahme: sechs der neun engen Glyphen ziffernweise wie #551, `w_pen` 0,0968 und 202 Binnenflächen ebenso. **Die 26 zerlegt: auf #551s Messpfad 27 Wörter, davon 24 echte `offen`-Verluste und 3 nur `wechselnd`** (`Sprünge` `Zügel` `regieren`, die `g`-Schale) — die ehrliche Zahl ist **24**. Über ALLE Schleifen korrigiert der Katalog nach oben: 34 der 63 Wörter verlieren bei 0,097 eine `offen`-Schleife, dazu **19 Topologie-Verluste** (nie gezeichnete Binnenflächen: `w` 5 · `sz` 3 · `G` 3 …) in 14 Wörtern, zusammen 36 der 63. Zwei neue Befunde: die **e-Öse** hält nur 19 % ihrer Platten-Weite (0,07 gegen 0,38) und ist trotzdem `wechselnd`, also kein Defekt; das **`t`** ist der blinde Fleck — `loop_ranges` hat für es keinen Schleifenbereich, die Platte hält dort 9 von 9 zwei Löcher, und `t`#1 (0,0517 gegen 0,3912) ist das größte Defizit und der EINZIGE Verlust, der auch bei der ausgelieferten Feder 0,0724 bleibt. Sensor `kringel_lost` report-only: Wörter/Paare 0,108444 · 0,148236 unverändert, Tintenfolger-Report 68 bzw. 56 Zeilen identisch |
 | sep06 | Übergänge | [S2 Unstetigkeits-Sensor (Pre-Reg)](#übergänge-s2-sep06--vorregistrierung-der-unstetigkeits-sensor-der-den-knick-sieht) | Pre-Reg | Rettungsweg 2 der Runde-6-Konversionen nach dem S1-Muster (bauen, einfrieren, DANN abnehmen). Anlass ist der Leitsatz des Autors: alle eingefrorenen Lineale messen ABSTAND, keines Stetigkeit. Fenster aus der FEDER, nicht aus einer Runde — halbe Feder 0,0725 · eine Feder 0,145 · zwei Federn 0,29; θ = arcsin(0,2) = 11,537°, federunabhängig. Gates P1/P2 an Runde 5, P3 an Runde 6, N1 Identität, N2 Verrohrung |
 | sep06 | Übergänge | [S2 gemessen](#übergänge-s2-sep06--gemessen-alle-gates-bestehen-und-keine-einzelne-spalte-ist-der-richter) | Pre-Reg + gemessen · **validiert** (Lineal-Bestandteil-Kandidat, kein Lineal geändert) | **Alle fünf Gates bestehen, aber keine EINZELNE Spalte ist der Richter.** N1/N2 exakt (0,000e+00 gegen die gespeicherten Verbinder; 3 + 12 identische Wörter bewegen keine Spalte). P1 `naht-stark` (Urteil Kandidat 26 : 2): `kink_max_deg` 36,89 → **27,86**, `kink_count` 28/28 fallend, `wobble` −0,531. P2 `naht-schwach`: nur 17 statt 24 von 29 Wörtern bewegt, Wackler-Median −0,083 — Faktor 6, die Klassengrenze reproduziert. P3 `apex` (Basis 11 : 1): `bow_join` 0,0066 → **0,0034 in 12/12**, dazu (nicht vorregistriert) `kink_max_deg` +15,54°. Die Klasse `stem` (Basis 7 : 0) sieht nur `curv_loss` (8/8) und `wobble` (8/8). **Ehrliche Hälfte:** `bow_join` fällt in BEIDEN Runden, hätte Runde 6 allein also falsch entschieden — der Austritts-Trim verschiebt die Grenze Buchstabe/Verbinder und damit die Population (das Rahmen-Artefakt, für das S1 `dspan` gebaut wurde). Headline 0,108444 / 0,148236 vorher wie nachher |
+| sep07 | Kette | [R3 Zwei-Züge-Modell (Pre-Reg)](#kette-r3-zwei-züge-modell-sep07--vorregistrierung-die-verschmolzene-schleife-ist-zwei-kapseln-nicht-ein-klumpen) | Pre-Reg | Autor-Entscheid „2 ja" (2026-09-06), Rettungsweg R3 der Kringel-Diagnose und nach LF13/LF14 der einzige verbliebene. Die Feder wird HERAUSGERECHNET statt der Klumpen skelettiert: keine Stützstelle darf näher als `w_pen` an einer Binnenfläche stehen, die die Platte offen hält. Geltungsbereich nur Katalogschleifen `offen` × `klein`/`mittel` mit Loch im SELBEN Vorkommen; C¹-Blende über eine halbe Feder; Abnahmeregel „Schleifen-Schluss" (Rücknahme statt Meldung) und die kollabierte Schleife als eigene Klasse (R4), beide nach dem Kalibrierlauf benannt. Zwei Konventionen vorab deklariert (halbes Pixel, Katalog-Konvention der Erwartung). **Decke vorab beziffert: die 24 bewegt dieser Arm NICHT** — sie hängt an den Zeilen, die Ernte hat keinen Folger-Pfad, und LF14s Fixpunkt-Befund verbietet den Write ohnehin; die Kennzahl hier ist `kringel_lost` auf der Bahn (Basis dev-19 12 von 43 in 10 von 19) |
+| sep07 | Kette | [R3 gemessen](#kette-r3-zwei-züge-modell-sep07--gemessen-das-loch-geht-in-106-von-106-auf-und-die-bahn-bezahlt-es-mit-ihrer-stetigkeit) | Pre-Reg + gemessen · **nicht adoptiert** (Gate (b) + (d)) · Ursache zurechenbar · R3b vorregistriert | **Der Mechanismus trifft sein Ziel vollständig und bezahlt es mit der Stetigkeit.** Öffnungsweite: **106 von 106** korrigierten Schleifen offen bei 0,097 (vorher 101/106), Δ zur Platten-Erwartung in 85/106 innerhalb ±0,02; `a`#0 0,2046 → 0,2751, `o`#0 0,1741 → 0,2535, `sz`#0 0,2231 → 0,3063. Distanz durchweg besser: dev-19 dtw-Median −0,000701 bei Vorzeichentest **14 : 3** (p = 0,0127), aiou 0,7583 → **0,7601**, Chamfer beidseitig besser, 63er-k0-Soll **80 → 78** und aiou-Median über die 52 bewegten Wörter +0,0013. **Gate (b) rot** (`cross_missing` 12 → 13, `cross_spurious` 7 → 9) — und der ganze Betrag sitzt auf `will` und `Galoppieren`, die übrigen 17 dev-Wörter bewegen keinen Zähler. **Gate (d) rot** (1 588 neue `kink`-Ereignisse, p90-Δ +16,74°) — **Ursache gemessen:** Stützstellen-Abstand 0,0265 xh, deklarierte Glättung 0,0363 = 1,37 Stützstellen, Blende 0,0725 = 2,74; das Fenster ist kürzer als die Diskretisierung, die es glätten sollte. Nullproben exakt (11 Wörter ohne korrigierbare Schleife strichgleich, Solve bit-gleich), Gate (e)/(f) grün, Gate (g) gemessen (58 von 63 Wörtern haben denselben Zielsatz mit und ohne Zeilen; die 5 übrigen finden mit Zeile MEHR Schleifen, nie ein anderes Ziel). **Konversion R3b in derselben Runde vorregistriert und gefahren** (Blende von einer halben auf zwei Federn, abgeleitet aus dem Lesefenster des Sensors): die Vorhersage trifft in beide Richtungen — Knicke 1 588 → **465**, p90 +16,74° → **+4,81°**, `cross_spurious` wieder auf 7 und `will` sauber, dafür Gate (a) 85/106 → **62/110** und k0-Soll 78 → 82. Auch nicht adoptiert; der Rest-Strukturfehler ist EIN Zähler in EINEM Wort (`Galoppieren`), das auf jedem anderen Kanal gewinnt. **Die Formulierung ist damit ausgemessen:** Treffgenauigkeit und Glätte hängen an derselben Länge, also gehört die Bedingung in den Solve statt hinter ihn |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -11668,3 +11670,417 @@ Sensor die eingefrorenen Struktur-Detektoren des Tintenfolgers je Wort
 mitlaufen lässt statt eigene zu schreiben — bewusst bezahlt. Und beide
 Runden urteilen ein einziger Beurteiler; Runde 6 trägt mit 4 Paaren
 ohnehin keinen Adoptionsanspruch (`menschliche-bewertung.md` §9).
+
+### Kette R3 „Zwei-Züge-Modell" `sep07` — Vorregistrierung: die verschmolzene Schleife ist zwei Kapseln, nicht ein Klumpen
+
+Autor-Entscheid vom 2026-09-06 („2 ja"): nach dem Katalog ist das
+Zwei-Züge-Modell der nächste Hebel. Der Leitsatz dazu ist seiner:
+**der Tinte richtig folgen, dann bleiben die Binnenflächen offen** — die
+Schleifen der Platte SIND an der Plattenfeder offen, und eine komponierte
+Schleife, die zuläuft, hat etwas verloren, was die Hand hatte. Das ist
+Rettungsweg **R3** der Kringel-Diagnose und nach den Negativen LF13
+(`sep06`) und LF14 (`sep06`) der einzige, der die 0,10–0,20 xh ganz
+zurückholen kann.
+
+**Basis, unverändert und nicht neu exportiert.** `suetterlin-1922`
+`exported_at` 2026-09-05T21:33:12+00:00 `root_digest` **`eaa195aa7c84…`**,
+`suetterlin-1922-pairs` 2026-09-05T21:33:11+00:00 **`0fbde2d72b64…`**;
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1` in jedem Aufruf. Die
+Wort-Bench-Headline dieser Wurzel ist **0,108444 · 0,148236**; sie steht
+hier als Nachweis der Basis, nicht als Ergebnis — dieser Arm fasst
+`core/` nicht an und kann sie gar nicht bewegen.
+
+#### Der Mechanismus in drei Sätzen
+
+Wo zwei Federzüge um eine kleine Binnenfläche VERSCHMELZEN, ist der
+Tintenklumpen die Vereinigung zweier Kapseln von bekannter Federbreite,
+und die Mittelachse dieses Klumpens ist nicht mehr der Federweg — genau
+der H0-Befund von #551 (die lokale Halbbreite am Loch ist 0,0667 statt
+0,0968). Statt den Klumpen zu skelettieren wird die Feder
+HERAUSGERECHNET: eine Gleichzug-Feder der Halbbreite `w` malt die
+Minkowski-Summe ihrer Bahn mit der Scheibe vom Radius `w`, ein Punkt der
+Binnenfläche ist also genau dann eingefärbt, wenn irgendeine Stützstelle
+näher als `w` an ihm liegt — **keine Stützstelle darf näher als `w_pen`
+an einer Binnenfläche stehen, die die Platte offen hält**. Die Korrektur
+schiebt jede Stützstelle, die das verletzt, entlang des Abstandsfeldes
+der Binnenfläche genau so weit hinaus, dass die Bedingung gilt, und
+blendet die Verschiebung an beiden Enden des korrigierten Laufs über
+eine halbe Feder Bogenlänge glatt aus.
+
+Das ist die Kapsel-Union rückwärts gelesen: wo die Bahn heute der Achse
+des Klumpens folgt, trennt das Hinausschieben die beiden Durchgänge auf
+mindestens `2·w_pen` — genau den Abstand, den eine Zwei-Kapsel-Union mit
+überlebendem Loch braucht. Die Restgröße, nach der das Modell benannt
+ist, heißt `stroke_separation` = Klumpenbreite − `2·w_pen`.
+
+#### Wo er eingreifen darf, und wo ausdrücklich nicht
+
+* **Nur auf Schleifen des eingefrorenen Katalogs** (#556,
+  `tools/tracebench/kringel_catalogue.json`) mit Zustand **`offen`** und
+  Größenklasse **`klein`** oder **`mittel`** — den Klassen, in denen das
+  GERÄT entscheidet. `wechselnd` und `punkt` bleiben unberührt (die
+  Platte schließt sie selbst), `groß` ebenso: dort überlebt drei Viertel
+  des Lochs jede Feder, eine Bewegung dort wäre Bewegung ohne Gegenwert.
+* **Nur wo die Platte im SELBEN Vorkommen ein Loch zeigt.** Ohne Loch
+  gibt es kein Abstandsfeld, gegen das man entfalten könnte; gemessen
+  wird dann nur noch `stroke_separation` der Klumpenbreite, und der Arm
+  verweigert — auch wenn die Trennung positiv ist, denn ohne Loch sagt
+  nichts, auf welcher Seite des Klumpens welcher Durchgang lief, und das
+  zu wählen wäre zur Messzeit erfundener Duktus.
+* **Nur wo die Bahn die Schleife überhaupt zeichnet.** Eine Schleife
+  unter dem Splitterboden 0,05 xh ist ein **Topologie-Verlust** und
+  gehört nach #556 vor die Öffnungsweitenfrage, zum Mittelachsen-Term
+  (R4) — kein Weitungsterm holt eine nie gezeichnete Binnenfläche zurück.
+* **Ausdrücklich kein Weg:** die Feder dünner rechnen, die Klassen- oder
+  Zustandsschwellen des Katalogs nachziehen, oder einen Öffnungs-Bonus in
+  den Fit-Loss schreiben (die R4-Warnung: erst der Sensor, dann der Arm).
+
+#### Der Einsatzpunkt — der kleinste ehrliche
+
+Die Korrektur läuft in `tools/pairlab/follow.py` **nach der letzten
+Runde** auf der zusammengesetzten Federbahn, vor der Draht-Kappung; der
+Schalter ist `--zwei-zuege`, Vorgabe AUS. Das ist der kleinste Punkt, an
+dem der Eingriff überhaupt möglich ist, und er wurde aus vier Gründen
+gewählt: (i) es ändert **keinen Kettenlauf** — die Leitplanke von §3
+verbietet das, und ein Term im Solve wäre genau der Knopf, vor dem die
+R4-Skizze warnt; (ii) es bewegt **kein `core/`-Byte**, das Golden ist
+damit per Konstruktion byte-gleich; (iii) es liest die **Platte** und
+EINE eingefrorene Federkonstante, **keine Laufform-Zeile** — der
+Fixpunkt, den LF14 als Nebenbefund gefunden hat (eine frische Ernte
+leitet jede Zeile 0,0025–0,0283 xh neben der ab, aus der die Wurzel
+geschrieben wurde), kann sich hier also nicht schließen; (iv) es ist der
+erste Punkt, an dem die ganze Wortbahn in EINEM Rahmen vorliegt.
+
+#### Zwei deklarierte Konventionen, VOR der ersten Armzahl
+
+1. **Das halbe Pixel.** Eine Distanztransformation misst von
+   Pixelmitte zu Pixelmitte, die Rasterlesung eines Lochs ist also auf
+   jeder Seite ein halbes Pixel großzügig. Die Erwartung ist die des
+   Katalogs, wörtlich (`D0_Platte = Tinte + 2·w_pen` mit
+   `Tinte = 2·max EDT`); damit die erreichte Weite in DERSELBEN Konvention
+   landet, zielt der Schub auf die Niveaulinie `w_pen + 0,5 px` statt auf
+   `w_pen`. Ohne das verfehlen sich die beiden Seiten um ein Plattenpixel
+   = 0,03 xh bei 30–35 px je x-Höhe, mehr als die Toleranz des Gates.
+   Das ist der Ablese-Boden, den #551 selbst nennt (±0,5 px ≈ ±0,015 xh),
+   benannt statt in ein Ergebnis eingerechnet.
+2. **Die Messung der erreichten Weite** ist dieselbe wie im Katalog:
+   `D0`, der Durchmesser des größten Kreises im Gebiet, das die
+   geschlossene Mittellinien-Schleife umschließt — hier in einem Fenster
+   um die Binnenfläche gerastert (800 px je x-Höhe, Ableseboden
+   0,0025 xh), ohne Splitterboden, damit eine KOLLABIERTE Schleife als
+   kleine Zahl sichtbar bleibt und nicht weggefiltert wird (die Warnung,
+   die die Kringel-Diagnose an R1 hängt).
+
+#### Die Gates
+
+| | Gate | Bestanden, wenn |
+|---|---|---|
+| (a) | **Öffnungsweite je Schleife** | je korrigierter Schleife \|`D0` korrigiert − (`Tinte` dieses Vorkommens + 2·`w_pen`)\| ≤ 0,02 xh, UND jede korrigierte `offen`-Schleife ist bei Halbbreite 0,097 offen (`D0` > 0,1936). `wechselnd` und `punkt` bleiben unberührt — geprüft, nicht behauptet |
+| (b) | **Struktur** | Identitäts-Gate PASS und `cross_missing`/`cross_spurious` nicht schlechter als die Basis |
+| (c) | **Bahnmaß** | `dtw_xh` (Median und p90) gegen die gespeicherten Vorkommen nicht schlechter als die Basis |
+| (d) | **Unstetigkeit** | kein neues `kink`-Ereignis über der Schwelle (#558, 11,537°) an der Naht der Korrektur zum übrigen Zug — die Korrektur muss BLENDEN |
+| (e) | **Wort-Bench** | 0,108444 · 0,148236 unverändert (Zeilen unberührt → byte-gleich) |
+| (f) | **Golden** | `pen=None` byte-identisch |
+| (g) | **Fixpunkt** | die Korrektur hängt NICHT an den Zeilen — nachgewiesen an ihren Eingängen, nicht behauptet |
+
+#### Die Decke der Kennzahl, vorab beziffert
+
+**Die 24 bewegt dieser Arm nicht, und das ist keine Enttäuschung, sondern
+Arithmetik.** Die 24 schließenden Wörter von #556 sind eine Eigenschaft
+der KOMPONIERTEN Wörter, also der gespeicherten Laufform-Zeilen; dieser
+Arm korrigiert die Kette-BAHN. Der Weg von hier zur 24 führt über die
+Ernte (Bahn → Vorkommen → Zeile), und der bleibt in diesem PR
+ausdrücklich zu:
+
+* die Ernte hat nach der stehenden Leitplanke von §3 **keinen
+  Folger-Pfad** — ihn zu legen ist ein eigener Arm, keine Nebenwirkung;
+* **LF14s Nebenbefund verbietet den Write ohnehin vorerst**: eine frische
+  Ernte der `sep05`-Wurzel leitet jede Zeile 0,0025–0,0283 xh neben der
+  ab, aus der die Wurzel geschrieben wurde. Eine Karte auf dieser Basis
+  trüge eine nicht zurechenbare Differenz; der Fixpunkt-Arm muss zuerst.
+
+Deshalb wird hier **keine Karte erzeugt** und keine Zeile neu abgeleitet,
+und Gate (e) ist per Konstruktion grün statt per Messung knapp. Was
+dieser Arm bewegen KANN, ist die Zahl auf der Bahn-Seite: die
+`kringel_lost`-Spalte des Tintenfolgers, gemessen an denselben
+Katalogschleifen — Basis dev-19 **12 von 43 `offen`-Schleifen in 10 von
+19 Wörtern**. Das ist die Kennzahl dieses Eintrags; die 24 gehört dem
+Nachfolge-Arm.
+
+**Kill-Kriterien.** (i) Gate (b) oder (c) rot → verworfen, unabhängig
+von der Öffnungsweite: Struktur schlägt Distanz, und Distanz schlägt
+Weitung. (ii) Gate (a) unter der Hälfte der korrigierten Schleifen →
+das Modell trifft sein eigenes Ziel nicht und ist kein Mechanismus,
+sondern eine Verschiebung. (iii) Jede nachträgliche Lockerung einer
+Schwelle dieses Blocks ist ausgeschlossen; was hier steht, steht vor der
+ersten Armzahl.
+
+#### Zwei Korrekturen am Werkzeug, nach dem Kalibrierlauf und vor dem Arm
+
+Wie bei #556 stehen sie hier statt in einer Fußnote. Beide entstanden auf
+einem Kalibrierlauf, der die Korrektur OFFLINE auf die gespeicherten
+Basisbahnen legte (dieselbe reine Funktion, kein zweiter Solve), und
+beide sind Teil des Mechanismus, nicht des Lineals:
+
+1. **Die Abnahmeregel „Schleifen-Schluss".** Der Schub trennt die beiden
+   Äste einer Schleife — und kann dabei die Selbst-Kreuzung aufziehen,
+   die sie überhaupt schließt. Im Kalibrierlauf war das an `v`#1
+   (0,2380 → 0,0064), `K`#1 (0,2115 → 0,0214) und `p`#1 (0,5784 →
+   0,3140) sichtbar: eine Weitung, die ihren eigenen Gegenstand
+   zerstört. Sie wird jetzt **zurückgenommen** statt gemeldet — dieselbe
+   Bauart wie `structure_guard`, eine Abnahmeregel auf der Struktur, kein
+   weiterer Term.
+2. **Die kollabierte Schleife ist eine eigene Klasse.** Wo die Bahn unter
+   0,05 xh Weite trägt (`F`#1 mit 0,0025), zeichnet sie die Schleife
+   nicht, und ein Weitungsterm ist das falsche Werkzeug. Der Arm
+   verweigert dort mit eigenem Grund und schiebt die Klasse an R4
+   weiter, statt sie mit dem Rest zu vermischen.
+
+**Was in demselben Lauf auffiel und ausdrücklich NICHT geändert wurde:**
+17 von 128 Schleifen verweigern, weil eine Stützstelle der Kette-Bahn
+INNERHALB der Platten-Binnenfläche steht. Das ist ein Befund über die
+Kette, kein Anlass, die Regel zu lockern — eine Bahn, die durch das Loch
+läuft, hat dort ein Topologie- und kein Weitungsproblem.
+
+### Kette R3 „Zwei-Züge-Modell" `sep07` — gemessen: das Loch geht in 106 von 106 auf, und die Bahn bezahlt es mit ihrer Stetigkeit
+
+**Verdikt: nicht adoptiert.** Gate (b) und Gate (d) sind rot; (b) ist ein
+Kill-Kriterium. Der Schalter `--zwei-zuege` bleibt AUS. Und zugleich ist
+dies kein leeres Negativ: der Mechanismus trifft sein geometrisches Ziel
+vollständig, die referenzfreien Ablesungen gehen alle in die richtige
+Richtung, und der Grund für das rote Gate (d) ist **gemessen und
+zurechenbar**, nicht vermutet.
+
+**Basis und Rahmen.** Wurzeln `eaa195aa7c84…` / `0fbde2d72b64…` wie
+vorregistriert, BLAS gepinnt, dieselbe Kommandozeile für Basis und Arm bis
+auf den EINEN Schalter. Die Basis reproduziert die Kampagnen-Zahlen des
+`sep05`-Re-Baselines ziffernweise (dev-19 dtw-Median **0,045384**, p90
+**0,087826**, schlechtestes `muß` **0,107134**, aiou **0,7583**,
+`cross_missing` 12 / `cross_spurious` 7) — der Beleg, dass Basis und Arm
+derselbe Stack sind.
+
+**Nullprobe: die Korrektur bewegt NUR, was sie bewegen soll.** Der Solve
+selbst ist bit-gleich (die Anker-Bewegung je Wort steht in beiden Läufen
+auf derselben Ziffer), und von den 63 Wörtern haben **11 keine
+korrigierbare Schleife — sie sind zwischen Basis und Arm strichgleich**
+(`k0eval`: „stroke-identical rows: 11/63", und die eigene Nullprobe zählt
+dieselben 11 mit Koordinatendifferenz exakt 0). 52 Wörter tragen mindestens
+eine Korrektur, die größte Koordinatenbewegung des Satzes ist 0,1212 xh.
+
+#### Gate (a) — die Öffnungsweite: das eine Gate, das der Mechanismus voll erfüllt
+
+**106 korrigierte Schleifen über 27 Schleifen-Schlüssel. Bei der
+Plattenfeder 0,097 sind nach der Korrektur 106 von 106 offen** (vorher
+101 von 106). Der Abstand zur Platten-Erwartung liegt in **85 von 106**
+Fällen innerhalb der vorregistrierten ±0,02 xh.
+
+| Schleife | n | `D0` Platte | Kette heute | korrigiert | Δ zur Erwartung | offen bei 0,097 | größter Schub |
+|---|---|---|---|---|---|---|---|
+| `r`#0 | 16 | 0,3269 | 0,2257 | **0,3166** | −0,0080 | 16/16 | 0,0947 |
+| `l`#0 | 12 | 0,5629 | 0,4901 | **0,5425** | −0,0064 | 12/12 | 0,1061 |
+| `h`#1 | 10 | 0,4989 | 0,4617 | **0,4981** | +0,0005 | 10/10 | 0,0705 |
+| `a`#0 | 9 | 0,3148 | 0,2046 | **0,2751** | −0,0171 | 9/9 | 0,0912 |
+| `h`#0 | 9 | 0,6408 | 0,5730 | **0,6502** | −0,0025 | 9/9 | 0,1033 |
+| `d`#0 | 5 | 0,5889 | 0,5788 | **0,5927** | +0,0038 | 5/5 | 0,0788 |
+| `t`#0 | 4 | 0,3732 | 0,2731 | **0,3527** | −0,0210 | 4/4 | 0,1007 |
+| `w`#0 | 4 | 0,3053 | 0,2329 | **0,2974** | −0,0079 | 4/4 | 0,0942 |
+| `g`#1 | 4 | 0,6901 | 0,6556 | **0,6920** | −0,0019 | 4/4 | 0,0858 |
+| `sz`#0 | 4 | 0,3226 | 0,2231 | **0,3063** | −0,0013 | 4/4 | 0,0751 |
+| `o`#0 | 2 | 0,2926 | 0,1741 | **0,2535** | −0,0391 | 2/2 | 0,1018 |
+| `v`#0 | 1 | 0,3226 | 0,2380 | **0,2777** | −0,0449 | 1/1 | 0,0442 |
+| übrige 15 Schlüssel | 26 | – | – | – | −0,0126 … +0,0131 | 26/26 | ≤ 0,1077 |
+
+Die drei vom Auftrag benannten Schlüssel stehen damit so: **`a`#0
+0,2046 → 0,2751**, **`o`#0 0,1741 → 0,2535**, **`sz`#0 0,2231 → 0,3063**
+— jedes Vorkommen offen, keines mehr zugelaufen. Und die `d`-Schleife
+bleibt, was #556 über sie sagt: sie war schon offen (0,5788 gegen 0,5889
+Erwartung) und bekommt nur die fehlenden 0,014.
+
+**54 Verweigerungen, jede mit Grund** — und die Verteilung ist selbst ein
+Befund: 17 „eine Stützstelle steht IM Loch" (die Kette läuft dort durch
+die Binnenfläche), **14 „die Bahn zeichnet hier keine Schleife"** (der
+Topologie-Verlust, den #556 vor die Öffnungsweite stellt und der an R4
+geht), 9 „das nächste Loch gehört einer anderen Schleife", **8
+„Schleifen-Schluss aufgezogen — zurückgenommen"** (die Abnahmeregel hat
+also real gegriffen, achtmal) und 6 „die Platte zeigt hier kein Loch".
+
+#### Gate (c) und die referenzfreie Ablesung — beide grün, und asymmetrisch
+
+| Ablesung | Basis | Arm | Urteil |
+|---|---|---|---|
+| dev-19 `dtw_xh` Median-Δ | – | **−0,000701** (rel −0,94 %) | besser |
+| dev-19 Vorzeichentest | – | **14 besser : 3 schlechter : 2 unentschieden**, p = 0,0127 | besser |
+| dev-19 `dtw_xh` p90-Δ | – | +0,000699 | knapp schlechter |
+| dev-19 `aiou` Median | 0,7583 | **0,7601** | besser |
+| dev-19 Chamfer (beide Richtungen) | 0,0364 / 0,0317 | **0,0362 / 0,0312** | besser |
+| 63er-k0 Soll-Abstand | 80 | **78** (5 besser / 54 gleich / 4 schlechter) | besser |
+| 63er-k0 `aiou` über die 52 bewegten | – | Median **+0,0013** (min −0,0258, max +0,0274) | besser |
+
+Die drei dev-Verlierer sind `mit` (+0,0016), `mit-2` (+0,0014) und `will`
+(+0,0005); die größten Gewinne `zwei` −0,0018, `Wer` −0,0016, `und-3`
+−0,0016.
+
+#### Gate (b) — rot, und der ganze Betrag sitzt auf ZWEI Wörtern
+
+`cross_missing` 12 → **13**, `cross_spurious` 7 → **9**. Die
+Wort-für-Wort-Differenz nennt die Träger vollständig:
+
+* **`will`** — `cross_spurious` 0 → 1, `aiou` 0,8158 → 0,7900 (der
+  schlechteste aiou-Wert des ganzen Satzes);
+* **`Galoppieren`** — `cross_missing` 4 → 5, `cross_spurious` 0 → 1,
+  `touch_cand` 8 → 9 — und **zugleich `dtw` −0,0009 und `aiou`
+  +0,0132**, also auf beiden Distanzkanälen besser.
+
+Die übrigen 17 dev-Wörter bewegen keinen einzigen Strukturzähler. Das ist
+die Asymmetrie, die die `aug26`-Direktive meint: kein Grund, das Gate
+weicher zu machen (es bleibt rot und der Arm fällt), aber der Beleg, dass
+hier eine KLASSE zu zerlegen ist und keine Formulierung zu verwerfen.
+
+#### Gate (d) — rot, und die Ursache ist gemessen
+
+Der Unstetigkeits-Sensor (#558) liest, je Stützstelle und index-gleich,
+die Kette-Bahn vor und nach der Korrektur, im Umkreis einer Bogensehne um
+jede bewegte Stützstelle und ohne die Umkehrecken:
+
+| | Ablesung |
+|---|---|
+| Stützstellen an der Naht | 8 982 |
+| `kink`-Δ Median | **+0,000°** |
+| `kink`-Δ p90 | **+16,74°** |
+| `kink`-Δ Maximum | +147,34° |
+| NEUE Ereignisse über 11,537° | **1 588**, schlimmstes 124,42° (`Sprünge`) |
+
+Der Median sagt: die meisten Stützstellen bleiben unberührt. Der p90
+sagt: wo die Korrektur greift, KNICKT sie. **Und der Grund ist nicht die
+Idee, sondern eine Länge:** die Stützstellen einer Kette-Bahn stehen im
+Median **0,0265 xh** auseinander (p10 0,0211 · p90 0,0344, n = 56 688
+Segmente). Die vorregistrierte Anti-Raster-Glättung ist 0,0363 xh lang und
+umfasst damit **1,37 Stützstellen** — sie glättet nichts. Die C¹-Blende
+ist 0,0725 xh lang und umfasst **2,74 Stützstellen** — sie blendet über
+drei Punkte. Beide Fenster sind in Federbreiten gedacht und in
+Stützstellen gerechnet zu kurz, und deshalb landet das Pixelrauschen des
+Platten-Abstandsfeldes (30–35 px je x-Höhe, also ±0,5 px ≈ 0,015 xh je
+Ablesung) ungefiltert in der Federbahn.
+
+#### Die übrigen Gates
+
+| Gate | Ablesung | Urteil |
+|---|---|---|
+| (e) Wort-Bench | `--set all --expect-root eaa195aa,0fbde2d7`: **0,108444 · 0,148236**, unverändert | **grün** (per Konstruktion: keine Zeile, kein `core/`-Byte) |
+| (f) Golden `pen=None` | `core/` unberührt, `/verify-core` grün | **grün** |
+| (g) Fixpunkt | siehe unten | **grün, mit einer benannten Einschränkung** |
+
+**Gate (g), gemessen statt behauptet.** Die Frage ist zweiteilig, und die
+zwei Teile fallen verschieden aus. Der **Zielwert** der Korrektur
+(`Loch + 2·w_pen`) kommt aus der Platte und einer eingefrorenen Konstante
+— keine Zeile ist daran beteiligt. Der **Geltungsbereich** dagegen läuft
+über die komponierte Schleife, denn die Katalog-Identität ist „die n-te
+Schleife dieses Slots in Leserichtung". Gemessen: von 63 Wörtern hat
+**58 denselben Zielsatz mit und ohne Laufform-Zeilen**; die 5 übrigen
+(`regieren` · `Galoppieren` · `Silber` · `Zügel` · `Sprünge`) unterscheiden
+sich um 1–2 Ziele, und in **jedem** dieser Fälle findet die
+Zeilen-Komposition MEHR Schleifen als die Chart-Form, nie eine andere. Der
+Fixpunkt kann sich damit nicht in der gefährlichen Richtung schließen: eine
+weitere Zeile erzeugt kein weiteres Ziel, sie macht nur ein Loch sichtbar.
+
+#### Was das zusammen heißt
+
+Der Mechanismus stimmt und die Zahl, die er verspricht, liefert er: **die
+Binnenflächen gehen auf, 106 von 106, und die Distanzmaße werden dabei
+besser statt schlechter.** Was fällt, ist die AUSFÜHRUNG — eine
+punktweise Verschiebung, deren Blende kürzer ist als der Abstand der
+Stützstellen, überträgt das Raster der Platte in die Feder. Damit ist der
+Satz, den R4 vorsorglich aufgeschrieben hatte, jetzt belegt statt
+vermutet: ein Öffnungs-Term gehört nicht als Nachbearbeitung an die
+fertige Bahn, sondern dorthin, wo eine glatte Bahn entsteht.
+
+#### R3b — Vorregistrierung der EINEN Konversion, die noch in diese Runde gehört
+
+Geschrieben, bevor R3b gerechnet wurde. Der Befund oben nennt eine
+Ursache, die keine neue Idee braucht, sondern eine Länge: **die Blende
+ist kürzer als das Fenster, mit dem der Sensor liest.** Eine
+Verschiebung, die sich INNERHALB von 0,145 xh ändert, ist per Definition
+das, was `kink` misst — der Sensor liest die Wendung über eine halbe und
+eine ganze Federbreite und nennt eine Konzentration darin einen Knick.
+Also muss die Glättung mindestens dieses Lesefenster abdecken.
+
+* **Ein Faktor:** der Blenden-Maßstab `b`, mit Rampe = `b` und
+  Anti-Raster-Glättung = `b/2`, wie bisher. Heute `b` = 0,0725 (halbe
+  Feder), also Glättung 0,0363. **R3b setzt `b` = 0,29 (zwei Federn),
+  also Glättung 0,145 = eine Feder.** Der Wert ist NICHT gewählt, sondern
+  abgeleitet: er ist der kleinste, bei dem die Glättung das Lesefenster
+  des Sensors ganz überdeckt. Beide Werte sind Sprossen derselben
+  eingefrorenen Leiter von #558 (halbe Feder · eine Feder · zwei Federn);
+  keine dritte Zahl kommt hinzu.
+* **Der erwartete Preis, vorab benannt:** eine längere Glättung frisst die
+  Spitze des Schubs. Gate (a) MUSS also schlechter werden; die Frage ist,
+  ob es sein Kriterium noch hält. Das ist die vorregistrierte Vorhersage:
+  Gate (d) wird besser, Gate (a) schlechter, und der Arm ist nur dann eine
+  Konversion, wenn (a), (b), (c) und (d) GLEICHZEITIG stehen.
+* **Gates:** dieselben (a)–(g), Wort für Wort, ohne eine einzige gelockerte
+  Schwelle.
+* **Das Messmittel:** R3b wird OFFLINE auf den gespeicherten Basisbahnen
+  gerechnet — dieselbe reine Funktion, dieselben Optionen, kein zweiter
+  Solve. Zulässig ist das nur, weil die Draht-Kappung auf dieser Wurzel
+  nie greift (keine Warnung in beiden Läufen), die gespeicherten Bahnen
+  also die zusammengesetzten sind; und es wird nicht angenommen, sondern
+  **abgenommen**: der Offline-Pfad muss den Folger-Arm mit denselben
+  Optionen byte-genau reproduzieren, bevor er mit anderen gefahren wird.
+
+**Die Abnahme des Messmittels, vor der ersten R3b-Zahl.** Der Offline-Pfad
+mit den Optionen des Folger-Arms gegen dessen eigenen Kandidaten gehalten:
+**größter Koordinatenunterschied 0,000e+00 xh über alle 63 Wörter**, keine
+einzige abweichende Strichform. Damit ist er dasselbe Instrument und nicht
+nur ein ähnliches.
+
+#### R3b — gemessen: die Vorhersage stimmt in beide Richtungen, und der Arm fällt trotzdem
+
+**Verdikt: ebenfalls nicht adoptiert.** Die vorregistrierte Vorhersage
+trifft exakt — Gate (d) wird deutlich besser, Gate (a) deutlich schlechter
+—, und die Struktur-Rechnung halbiert sich, ohne grün zu werden.
+
+| Ablesung | Basis | **R3** (halbe Feder) | **R3b** (zwei Federn) |
+|---|---|---|---|
+| Schleifen offen bei 0,097 | – | **106 / 106** | 109 / 110 |
+| Gate (a) \|Δ\| ≤ 0,02 | – | **85 / 106** | 62 / 110 |
+| größter Schub (Median · max) | – | 0,0596 · 0,1077 | **0,0430 · 0,0944** |
+| `kink`-Δ p90 an der Naht | – | +16,74° | **+4,81°** |
+| neue `kink`-Ereignisse | – | 1 588 | **465** |
+| schlimmster neuer Knick | – | 124,42° | **66,59°** |
+| `cross_missing` | 12 | 13 | 13 |
+| `cross_spurious` | 7 | 9 | **7** |
+| dev-19 `dtw` Median-Δ | – | **−0,000701** | −0,000495 |
+| dev-19 Vorzeichentest | – | 14 : 3 (p = 0,0127) | 14 : 3 (p = 0,0127) |
+| dev-19 `aiou` | 0,7583 | **0,7601** | 0,7580 |
+| 63er-k0 Soll-Abstand | 80 | **78** | 82 |
+| 63er-k0 `aiou` Median | – | +0,0013 | **+0,0024** |
+| Rücknahmen „Schleifen-Schluss" | – | 8 | **4** |
+
+**Drei Sätze zu dieser Tabelle.** (i) Die längere Blende tut genau das,
+wofür sie eingesetzt wurde: die Knicke fallen um den Faktor 3,4 und ihr
+p90 um den Faktor 3,5, der `will`-Kreuzungsfehler verschwindet ganz und
+die Zahl der Selbst-Kreuzungen, die der Schub aufzieht, halbiert sich.
+(ii) Sie bezahlt das mit der Präzision: der Schub wird um ein Viertel
+kleiner, die Öffnungsweite trifft ihre Erwartung nur noch in 62 von 110
+Fällen statt in 85 von 106 — offen bleiben die Schleifen trotzdem fast
+alle (109 von 110). (iii) **Und der ganze verbliebene Strukturfehler ist
+EIN Zähler in EINEM Wort:** `Galoppieren` verliert eine Kreuzung
+(`cross_missing` 4 → 5) und gewinnt zugleich auf jedem anderen Kanal
+(`retrace_spurious` 2 → 1, `dtw` −0,0013, `aiou` +0,0056). Kein anderes
+der 19 dev-Wörter bewegt einen Strukturzähler.
+
+Der k0-Soll-Abstand dreht dabei um (80 → 82 statt 80 → 78, zwei
+schlechtere Wörter, kein besseres) — die stärkere Glättung schiebt die
+Bahn an zwei Stellen aus einer Zone, die der kürzere Schub getroffen
+hatte. Das ist der ehrliche Gegenposten zur besseren `aiou` und der
+Grund, warum aus „weniger schlecht" hier kein „gut" wird.
+
+**Was R3b damit beweist:** die Blendenlänge ist der richtige Hebel und
+nicht genug. Eine punktweise Nachbearbeitung muss zwischen Treffgenauigkeit
+und Glätte wählen, weil beides an derselben einen Länge hängt — eine
+glatte Bahn, die ihre Bedingung exakt einhält, gibt es in dieser
+Formulierung nicht. Genau das ist die Rechtfertigung für Konversion (3)
+der §7.9-Zeile: die Bedingung „nicht näher als `w_pen` an dieser
+Binnenfläche" gehört als NEBENBEDINGUNG in den Folger-Solve, wo eine
+glatte Bahn ohnehin entsteht und der Solver den Ausgleich rechnet, statt
+als Nachbearbeitung, die ihn per Konstruktion nicht rechnen kann.
