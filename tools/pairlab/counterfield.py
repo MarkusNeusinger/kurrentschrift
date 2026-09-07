@@ -88,7 +88,8 @@ from tools.pairlab.zweizuege import (
     loop_aperture_near,
     plate_counters,
 )
-from tools.tracebench.kringel import PLATE_PEN_HALF_WIDTH_UNITS, SIZE_CLASSES, catalogue_source, load_catalogue
+from tools.tracebench.kringel import PLATE_PEN_HALF_WIDTH_UNITS, SIZE_CLASSES, STATES, catalogue_source, load_catalogue
+from tools.wordbench.roots import add_expect_root_argument, announce_roots
 
 
 # The states whose counters the condition applies to. `offen` and nothing else:
@@ -138,13 +139,31 @@ REFUSAL_NO_TARGET = "no catalogue counter of this word is in scope"
 
 @dataclass(frozen=True)
 class CounterFieldOptions:
-    """One configuration of the constraint — frozen, stamped into every artefact."""
+    """One configuration of the constraint — frozen, stamped into every artefact.
+
+    The two class tuples are checked rather than trusted. `catalogue_targets`
+    filters by MEMBERSHIP, so a misspelt `mitel` silently narrows the scope and
+    an unknown list makes the whole constraint inert — while the artefact still
+    says the counter arm ran. A measurement that quietly measures nothing is
+    worse than one that fails, so an unknown or empty class fails here.
+    """
 
     half_width_units: float = PLATE_PEN_HALF_WIDTH_UNITS
     states: tuple[str, ...] = COUNTER_STATES
     size_classes: tuple[str, ...] = COUNTER_SIZE_CLASSES
     min_counter_px: int = MIN_COUNTER_PX
     sigma_px: float = COUNTER_FIELD_SIGMA_PX
+
+    def __post_init__(self) -> None:
+        for name, given, known in (
+            ("states", self.states, STATES),
+            ("size_classes", self.size_classes, COUNTER_SIZE_CLASSES_ALL),
+        ):
+            if not given:
+                raise ValueError(f"{name} must name at least one value; known: {', '.join(known)}")
+            unknown = [v for v in given if v not in known]
+            if unknown:
+                raise ValueError(f"unknown {name} {', '.join(map(repr, unknown))}; known: {', '.join(known)}")
 
 
 @dataclass
@@ -366,11 +385,17 @@ def main() -> None:
     parser.add_argument("--which", default="words", choices=["words", "pairs"])
     parser.add_argument("--fixtures", type=Path, default=Path("tools/wordbench/fixtures"))
     parser.add_argument("--json", type=Path, help="write the full per-loop rows here")
+    add_expect_root_argument(parser)
     args = parser.parse_args()
 
-    from tools.wordlab.cases import iter_fixture_word_cases  # noqa: PLC0415
+    from tools.wordlab.cases import _root_for, iter_fixture_word_cases  # noqa: PLC0415
     from tools.wordlab.derive import derive_word  # noqa: PLC0415
 
+    # This reader combines STORED candidate strokes with counters it derives
+    # from the fixtures HERE, so a re-export between the two would let it print
+    # plausible apertures across two roots. It names its base first, like every
+    # other measurement of this family.
+    announce_roots([_root_for(args.fixtures, args.style, args.which)], args.expect_root)
     arm = {row["specimen_id"]: row for row in _load_candidate(args.candidate)["rows"]}
     base = {row["specimen_id"]: row for row in _load_candidate(args.base)["rows"]} if args.base else {}
     cases = {

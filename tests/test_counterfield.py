@@ -339,3 +339,23 @@ def test_the_pen_is_the_plates_and_not_a_knob() -> None:
     """A wider pen states a stricter condition — the level set moves with it."""
     wide = _field(options=CounterFieldOptions(half_width_units=2.0 * W_PEN))
     assert wide.target_px == pytest.approx(2.0 * W_PEN * XH_PX + 0.5)
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"size_classes": ("mitel",)},  # a typo silently narrows the scope
+        {"size_classes": ()},  # an empty list makes the whole arm inert
+        {"states": ("offe",)},
+        {"states": ()},
+    ],
+)
+def test_an_unknown_class_fails_instead_of_measuring_nothing(kwargs: dict) -> None:
+    """The scope is checked, not trusted.
+
+    `catalogue_targets` filters by membership, so an unknown value costs the
+    experiment its scope while the artefact still says the counter arm ran — a
+    measurement that quietly measures nothing is worse than one that fails.
+    """
+    with pytest.raises(ValueError):
+        CounterFieldOptions(**kwargs)
