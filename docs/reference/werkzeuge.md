@@ -251,21 +251,39 @@ Schritt (→ [`../proposals/handmodell-stufenplan.md`](../proposals/handmodell-s
 Die Laufform-Zeilen wirken **sofort** auf jedes fließende `/write/word` —
 gegen Prod nur mit ausdrücklicher Freigabe.
 
-**Die Ernte ist kein Fixpunkt** (gemessen `sep06`, §14 „Laufform LF14"
-und „Laufform LF15"): `derive_word` komponiert das Wort AUS den
+**Die Ernte seedet aus dem Chart** (`--chain-seed`, Default `chart` seit
+dem Autor-Entscheid **A38** vom 2026-09-07, §14 „Laufform LF16"). Der
+Kettenlauf setzt auf einer Komposition OHNE Laufform-Zeilen auf, also auf
+dem Duktus-Prior, den keine Ernte schreibt — damit ist die Ernte eine
+Abbildung von Tinte und Prior allein, und ihr zweiter Durchlauf
+reproduziert die eigene Karte byte-gleich, Vorkommen eingeschlossen.
+`--chain-seed composed` bleibt erreichbar und ist, was jede Runde vor
+`sep06` benutzt hat.
+
+**Warum das ein eigener Default ist** (gemessen `sep06`, §14 „Laufform
+LF14" und „Laufform LF15"): `derive_word` komponiert das Wort AUS den
 Laufform-Zeilen, und `chain_seed="composed"` startet den Kettenlöser auf
 dieser Komposition — die Ernte liest also die Zeilen, die sie ersetzen
-wird. Das ist keine Nichtreproduzierbarkeit (`--jobs 1` und `--jobs 4`
+wird. Das war nie eine Nichtreproduzierbarkeit (`--jobs 1` und `--jobs 4`
 sind byte-gleich, und derselbe Befehl zweimal gibt dieselbe Karte),
-sondern eine Rückkopplung, und sie klingt nicht ab: die Iteration
-`H0 → H1 → H2 → H3` bewegt in JEDEM Schritt Zeilen um 0,005–0,063 xh,
-und die Zahl der angenommenen Vorkommen wandert 235 → 232 → 239 mit.
-Wer einen Re-Harvest gegen die gespeicherten Zeilen misst, misst sie mit.
+sondern eine Rückkopplung, und sie klang nicht ab: die Iteration
+`H0 → H1 → H2 → H3` bewegte in JEDEM Schritt Zeilen um 0,005–0,063 xh,
+und die Zahl der angenommenen Vorkommen wanderte 235 → 232 → 239 mit.
+Der Preis der Chart-Saat steht in LF15/LF16 und ist nicht null (`sep07`:
+227 statt 234 angenommene Vorkommen, an `connector_degenerate`, nicht an
+der Fitgüte).
 
-**Die stehende Selbstprüfung vor jedem Laufform-Write: zweimal ernten.**
-Eine Karte gegen den Bestand allein zu halten sagt nichts; sie gehört
-gegen eine KONTROLLKARTE aus demselben Lauf verglichen, und die Iteration
-selbst gehört gemessen. Beides läuft mit den Werkzeugen dieser Datei:
+**Der Trace-Bench und der Folger behalten `composed`** (`tracebench
+--chain-seed`, `pairlab.follow --chain-seed`): deren `chain`-Kandidat ist
+die eingefrorene Basis jedes gemessenen Arms, und eine Basis, die unter
+der Route wegrutscht, macht jedes gespeicherte Delta unlesbar. Nur die
+ERNTE hat den Default geflippt.
+
+**Die Selbstprüfung vor jedem Laufform-Write: zweimal ernten.** Sie steht
+seit LF15 und ist nicht gestrichen, sondern hat ihren Anlass verloren:
+mit der Chart-Saat MUSS der zweite Lauf byte-gleich sein, und jede
+Abweichung ist ab `sep07` ein Befund (ein Werkzeug hat sich bewegt) statt
+einer Iteration. Deshalb bleibt sie ein Schritt, und zwar derselbe:
 
 ```bash
 uv run python -m tools.laufform.harvest --path chain --sets words --min-n 1 \
@@ -278,24 +296,27 @@ uv run python -m tools.laufform.harvest --path chain --sets words --min-n 1 \
     --occ-out temp/lf/occ-2.json
 ```
 
-Bewegt sich zwischen Karte 1 und Karte 2 eine Zeile um mehr als 0,002 xh,
-ist die Karte kein Fixpunkt, und die Differenz gegen den Bestand gehört
-zum Teil der Iteration, nicht dem gemessenen Arm. `--laufform` nimmt
-dieselbe Datei wie `wordbench.run --laufform` (Overlay, die eingefrorene
-Wurzel bleibt unberührt), `--expect-root` nennt und prüft die Basis wie
-jeder Bench — die Ernte ist das Werkzeug, dessen Ausgabe ein Write in die
-Produktion stellt, also nennt sie ihre Wurzel.
+Karte 1 und Karte 2 gehören byte-gleich zu sein. Sind sie es nicht, ist
+etwas anderes gewandert als die Zeilen — bewegt sich eine Zeile um mehr
+als 0,002 xh, ist die Karte kein Fixpunkt, und die Differenz gegen den
+Bestand gehört zum Teil dieser Bewegung und nicht dem gemessenen Arm.
+`--laufform` nimmt dieselbe Datei wie `wordbench.run --laufform`
+(Overlay, die eingefrorene Wurzel bleibt unberührt), `--expect-root`
+nennt und prüft die Basis wie jeder Bench — die Ernte ist das Werkzeug,
+dessen Ausgabe ein Write in die Produktion stellt, also nennt sie ihre
+Wurzel. Die zweite stehende Vergleichsgröße bleibt die **Kontrollkarte**
+aus demselben Lauf mit `--chain-seed composed`: eine Karte gegen den
+Bestand allein zu halten sagt nicht, wie viel davon der gemessene Arm
+ist.
 
-`--chain-seed chart` ist der `sep06`-Arm gegen die Rückkopplung selbst
-(Default aus, LF15): der Kettenlauf setzt auf einer Komposition OHNE
-Laufform-Zeilen auf, also auf dem Duktus-Prior, den keine Ernte schreibt.
 `--loop-aware-repair` ist der andere `sep06`-Arm (Default aus, verworfen
 an zwei Gates): die Nachreparatur gestrandeter Anker lässt die Anker in
 Ruhe, die innerhalb einer Schleife der Chart-Zeile liegen.
 
 ```bash
 uv run python -m tools.laufform.harvest [--style suetterlin] [--min-n 4]
-    [--rmse-max 2.2] [--loop-aware-repair] [--chain-seed composed|grid|chart]
+    [--rmse-max 2.2] [--loop-aware-repair]
+    [--chain-seed chart|composed|grid]   # default chart (A38)
     [--laufform karte.json] [--expect-root <digest>]
     [--apply --base-url http://localhost:8000 --source-id <id>]
 ```

@@ -176,10 +176,12 @@ Template-Variante 100, `LAUFFORM_VARIANT = 100`, nur in fließenden Läufen.
 **Ernte-Fixpunkt · Chart-Saat** — die Ernte komponiert das Wort AUS den
 Laufform-Zeilen und startet den Kettenlöser dort, liest also die Zeilen,
 die sie ersetzen wird; die Iteration konvergiert nicht (0,005–0,063 xh je
-Schritt). Die **Chart-Saat** (`chain_seed="chart"`, Default AUS) setzt den
-Lauf auf einer Komposition OHNE Zeilen auf und macht die Karte in einem
-Schritt byte-gleich reproduzierbar. Vor jedem Laufform-Write gilt:
-zweimal ernten (`werkzeuge.md`).
+Schritt). Die **Chart-Saat** (`chain_seed="chart"`) setzt den Lauf auf
+einer Komposition OHNE Zeilen auf und macht die Karte in einem Schritt
+byte-gleich reproduzierbar; sie ist seit A38 (2026-09-07) der
+Ernte-Default, während Trace-Bench und Folger `composed` behalten. Vor
+jedem Laufform-Write gilt weiter: zweimal ernten — jetzt als
+Selbstprüfung mit erwartetem Ergebnis (`werkzeuge.md`).
 → [§4](glossar.md#4-metriken-und-benchmarks)
 
 **Kringel-Landmarke** — die Erwartung „diese Schleife muss offen bleiben"

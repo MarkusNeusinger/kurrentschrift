@@ -39,6 +39,17 @@ Two fitting paths (`--path`), and the SAME artefacts out of both:
   join geometry stays a REPORT column (`--diag-csv`), and `glyph_pairs` stays
   the sparse verbatim override.
 
+The chain solve starts on the **Chart-Saat** (`--chain-seed`, default
+`chart`): a composition built from the chart templates alone. Every other seed
+composes the seeding word FROM the running-form rows, so the harvest reads the
+rows it is about to replace and its output depends on its own last output — an
+iteration LF15 measured over three steps and found to WANDER (§14 „Laufform
+LF15 `sep06`"). With the chart seed the second pass reproduces the first map
+byte for byte, which is what makes a Laufform write repeatable; the price is
+priced in that entry. `--chain-seed composed` reproduces every round before
+`sep06`. The trace bench and the follower keep their own `composed` default —
+the `chain` baseline they grade against must not move under them.
+
 Dry run prints the per-letter stats and writes ``laufform_drafts.json`` +
 ``laufform_occurrences.json``; ``--apply`` PUTs both (requires ``--base-url``
 and the ``ADMIN_TOKEN`` env var) and is available for the DEFAULT configuration
@@ -146,6 +157,18 @@ __all__ = [
 # deviation spread over many anchors passes it untouched.
 MAX_ANCHOR_SPIKE_RATIO = 8.0
 
+# Where the chain solve starts, for a harvest run that says nothing about it.
+# „Chart-Saat" since the author's decision A38 (2026-09-07) on the LF15 arm:
+# the seed is composed from the chart templates alone, so the harvest no longer
+# reads the running-form rows it is about to replace. That feedback is what
+# LF14 found and LF15 measured — the iteration does not settle, it wanders
+# (worst row 0.0582 -> 0.0627 -> 0.0627 xh over three steps, the accepted
+# occurrence set 235 -> 232 -> 239 with it) — while the chart seed reproduces
+# its own map on the second pass, byte for byte, occurrences included.
+# The full rationale, the gates and the priced cost side: `docs/reference/
+# messjournal.md` §14 „Laufform LF15 `sep06`".
+DEFAULT_CHAIN_SEED = "chart"
+
 DIAG_FIELDS = (
     "specimen_id",
     "kind",
@@ -222,15 +245,20 @@ class HarvestOptions:
     # fit resting on its own search bound is NOT used as a seed (that placement
     # is itself suspect), so such slots keep the composed start.
     #
-    # "chart" is the LF15 arm („Chart-Saat", §14 `sep06`), default OFF: the
-    # composition the chain starts on is built WITHOUT the running-form rows.
-    # The other two seeds inherit those rows through `derive_word`, which
-    # composes the word FROM them — so the harvest reads the very rows it is
-    # about to replace, and a fresh harvest of a written root re-derives every
-    # row 0.0025-0.0283 xh beside it (LF14's Nebenbefund „die Ernte ist kein
-    # Fixpunkt"). With the chart seed the placement, the coverage windows and the
-    # registration come from the ductus prior, which no harvest writes.
-    chain_seed: str = "composed"  # "composed" | "grid" | "chart"
+    # "chart" is the LF15 arm („Chart-Saat", §14 `sep06`) and, since the
+    # author's decision A38 of 2026-09-07, the DEFAULT: the composition the
+    # chain starts on is built WITHOUT the running-form rows. The other two
+    # seeds inherit those rows through `derive_word`, which composes the word
+    # FROM them — so the harvest reads the very rows it is about to replace,
+    # and a fresh harvest of a written root re-derives every row 0.0025-0.0283
+    # xh beside it (LF14's Nebenbefund „die Ernte ist kein Fixpunkt"), an
+    # iteration LF15 then measured over three steps and found to WANDER rather
+    # than settle. With the chart seed the placement, the coverage windows and
+    # the registration come from the ductus prior, which no harvest writes, and
+    # the harvest becomes a fixed point: its second pass reproduces its own map
+    # byte for byte. "composed" is what every entry before `sep06` used and
+    # stays reachable as an explicit choice for reproducing one.
+    chain_seed: str = DEFAULT_CHAIN_SEED  # "composed" | "grid" | "chart"
     # Measure A1 (`docs/proposals/tintenfolger.md` §7.3): after the body solve,
     # refit each MARK stroke (i-dot, umlaut, u-bow) onto the ink the body did
     # not claim (`tools.pairlab.marks`). Default OFF and deliberately without a
@@ -835,10 +863,12 @@ def _seed_composition(case, result: WordDeriveResult, opts: HarvestOptions) -> t
     composition is built from the chart templates alone (the ductus prior, which
     no harvest writes), so the map the harvest produces is a function of the ink
     and the prior only. Nothing else changes — the fit, the gates, the repair
-    and the medians are the same code on the same ink.
+    and the medians are the same code on the same ink. It is the DEFAULT since
+    the author's decision A38 (2026-09-07); `"composed"` reproduces every round
+    before `sep06`.
 
-    Returns `(case, result)` unchanged for every other seed, so a run with the
-    switch off is byte-identical to one from before it existed.
+    Returns `(case, result)` unchanged for every other seed, so a run that names
+    `"composed"` is byte-identical to one from before this seed existed.
     """
     if opts.chain_seed != "chart" or not getattr(case, "laufform", None):
         return case, result
@@ -1227,8 +1257,8 @@ def harvest_case(case, opts: HarvestOptions) -> CaseHarvest:
 
     The ProcessPool unit of work: ONE `derive_word` per case whichever path
     runs, and nothing shared with its siblings. The one exception is the chart
-    seed (`chain_seed="chart"`, default off), which composes the SEED without
-    the running forms and therefore derives a second time inside
+    seed (`chain_seed="chart"`, the default since A38), which composes the SEED
+    without the running forms and therefore derives a second time inside
     `_seed_composition`; the composition it repeats is cheap next to the chain
     solve it seeds, and this one is still the composition that decides whether
     the case is harvestable at all.
@@ -1255,7 +1285,7 @@ def harvest(
     path: str = "slot",
     jobs: int = 1,
     max_cases: int = 0,
-    chain_seed: str = "composed",
+    chain_seed: str = DEFAULT_CHAIN_SEED,
     loop_aware_repair: bool = LOOP_AWARE_REPAIR,
     laufform_overlay: Path | None = None,
 ) -> tuple[dict[str, dict], list[dict], list[dict], list[dict]]:
@@ -1415,9 +1445,10 @@ def main() -> None:
     ap.add_argument(
         "--chain-seed",
         choices=["composed", "grid", "chart"],
-        default="composed",
-        help="where the chain solve starts: the composed layout, each letter's own grid placement, or "
-        "a CHART-only composition (LF15, the row-independent seed that makes the harvest a fixed point)",
+        default=None,
+        help=f"where the chain solve starts (default {DEFAULT_CHAIN_SEED!r}): a CHART-only composition "
+        "(LF15, the row-independent seed that makes the harvest a fixed point), the composed layout "
+        "(what every round before sep06 used), or each letter's own grid placement",
     )
     ap.add_argument(
         "--laufform",
@@ -1451,9 +1482,14 @@ def main() -> None:
     ap.add_argument("--hand-id", default="suetterlin-1922-norm")
     ap.add_argument("--hand-label", default="Suetterlin norm hand (Leitfaden 1922, Abb. 19/20)")
     args = ap.parse_args()
+    # `--chain-seed` defaults through a sentinel so the guard below can tell a
+    # seed the caller NAMED from the one the tool chose: the slot path ignores
+    # the seed entirely, and since the default is no longer "composed", a plain
+    # `--path slot` run would otherwise trip a check meant for a user error.
+    chain_seed = args.chain_seed or DEFAULT_CHAIN_SEED
     if args.jobs < 1:
         raise SystemExit(f"--jobs must be >= 1, got {args.jobs}")
-    if args.chain_seed != "composed" and args.path != "chain":
+    if args.chain_seed is not None and args.path != "chain":
         raise SystemExit(f"--chain-seed {args.chain_seed} only applies to --path chain")
     if args.max_cases < 0:
         raise SystemExit(f"--max-cases must be >= 0 (0 = all), got {args.max_cases}")
@@ -1466,7 +1502,12 @@ def main() -> None:
         # Stage-B measurement round says otherwise; --apply keeps writing
         # exactly what it has always written.
         raise SystemExit("--apply is available for --path slot --sets words only (report-only otherwise)")
-    if args.apply and (args.chain_seed != "composed" or args.laufform):
+    # The seed half is belt and braces and deliberately kept: today it cannot
+    # fire, because `--apply` demands `--path slot` and a NAMED seed is already
+    # refused there — but that is a property of the guard above, not of what
+    # `--apply` may write, and the day the chain path becomes writable this
+    # line is the one that has to be there.
+    if args.apply and (chain_seed != DEFAULT_CHAIN_SEED or args.laufform):
         raise SystemExit("--apply writes the DEFAULT harvest only — a seeded or overlaid run is a measurement")
 
     # WHICH BASE this run reads, stated (and checked) before a case is composed —
@@ -1482,7 +1523,7 @@ def main() -> None:
         path=args.path,
         jobs=args.jobs,
         max_cases=args.max_cases,
-        chain_seed=args.chain_seed,
+        chain_seed=chain_seed,
         loop_aware_repair=args.loop_aware_repair or LOOP_AWARE_REPAIR,
         laufform_overlay=args.laufform,
     )

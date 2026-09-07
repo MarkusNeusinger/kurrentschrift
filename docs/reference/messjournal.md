@@ -228,6 +228,7 @@ die DB) — mit seiner Bedingung.
 | sep06 | Übergänge | [J4 Adoption (A37)](#übergänge-j4-sep06--adoption-auf-autor-entscheid-a37-exit_trim-wird-default-deklarierte-re-baseline) | **Adoption** (Autor-Entscheid A37) · **Re-Baseline** (Wörter + Golden) | `exit_trim` ist Default. Auf UNVERÄNDERTER Wurzel, also gepaart: Wörter 0,108444 → **0,109026**, Paare **byte-gleich**, `seam_dep_median` +7,59 → **−0,70** (absolut 12,67 → 2,30), Verdopplungen 14 = 14. Golden deklariert neu gebacken (10 der 11 Wörter, kein Draw-Item mehr oder weniger, Solo-Glyphen 0 von 23). **S2 stimmt unabhängig zu** — am selben Tag auf der UNGETRIMMTEN Komposition abgenommen: `cont_kink_total` 402 → **337**, `cont_bow_join_median` 0,0091 → **0,0042** (Report-Spalte, kein Gate). `prodconn.replay` hat seine angekündigte Nachbearbeitung bekommen; die Kette ist per Messung ausgenommen (Kompositions-Soll 0 von 126), fällig bleiben Lotse-Karte und S2-Bezug (§7.11) |
 | sep07 | Kette | [R4 Feder-Entfaltung (Diagnose + Pre-Reg)](#kette-r4-feder-entfaltung-sep07--diagnose-und-vorregistrierung-ist-der-klumpen-tinte-oder-raster) | Diagnose + Pre-Reg | Konversion (4) von R3/R3c, und zuerst die Frage, die keiner der beiden gestellt hat: **ist die Verschmelzung Tinte oder Raster?** Der eine Term der Frage ist strukturell: der Fixture-Ausschnitt ist ein unskalierter Schnitt der Platte (`freeze_entry`), x-Höhe **30–33 px**, `words-abb19.png` byte-identisch von Commons. Dass es keine feinere Aufnahme gibt, war in der ersten Fassung behauptet und ist nach einem Copilot-Fund **nachgemessen**: der zweite committete Scan derselben Platte (`suetterlin-leitfaden-1926/p060.jpg`, laut `SOURCE.md` druckstock-identisch) ist eine GANZSEITEN-Aufnahme und trägt für die Tafel Zeilenabstand **≈ 104 px gegen ≈ 110 px**, also ~5 % weniger. Gemessen wird deshalb die BINARISIERUNG: dieselbe Binnenfläche als adaptive Maske 1×, als globale 50-%-Niveaulinie 1× und als 50-%-Niveaulinie auf 4× bikubischem Grau, dazu der Mittelachsen-Anzeiger bei beiden Maßstäben. Entscheidregel vor der ersten Zahl: RASTER, wenn Median(`A_grau4 − A_Maske`) ≥ +0,016 xh **oder** Median(`I@4× − I@1×`) ≥ +0,10. Der Arm dahinter: die Feder aus der EVIDENZ herausrechnen — jedes Skelettpixel näher als `w_pen` an einer `offen`-Binnenfläche fällt weg, an seine Stelle tritt die Niveaulinie `w_pen + 0,5 px` desselben Loch-Feldes, auf die Tinte beschnitten und nur im radialen Schatten des Weggefallenen. Gates (a)–(h) sind R3cs, Wort für Wort; eine Korrektur vor der ersten Armzahl: die pixelweise Fassung ist verworfen (0 von 13 Schleifen überleben den Schub, 13 von 13 die Niveaulinie) |
 | sep07 | Kette | [R4 gemessen](#kette-r4-feder-entfaltung-sep07--gemessen-die-zugelaufenen-schleifen-bewegen-sich-zum-ersten-mal-und-gate-c-fällt-trotzdem) | Diagnose + gemessen · **nicht adoptiert**, Gate (c) rot (Kill) | **Diagnose-Verdikt: echte Verschmelzung.** Median(`A_grau4 − A_Maske`) **+0,0000** und Median(`I@4× − I@1×`) **+0,0109** — beide Schranken klar verfehlt: die globale Schwelle liest bei 1× ziffernweise dieselbe Binnenfläche wie die adaptive Maske, bei 4× liest das Grau eine **kleinere** (0,1118 gegen 0,1290, das halbe Plattenpixel je Seite), und die Einschnürung überlebt die schärfere Lesung (Anzeiger 0,807 → 0,790). **Der Arm bewegt zum ersten Mal die richtige Klasse:** von den 33 Schleifen, die die Basis zu zeichnet, gehen **8 auf** (7 zugelaufene, 1 kollabierte — `Feinde` `F`#1 0,0025 → 0,3184), wo R3c 0 bewegt hat; offen bei 0,097 **124 → 129**, referenzfreier 63er-Soll **85 → 70** (der größte Fall der R-Kette), `cross_spurious` **9 → 7** und `retrace_spurious` 10 → 9, also Gate (b) **grün**. Bezahlt wird mit drei Totalverlusten (`unter` `t`#1 · `Kugel` `K`#1 · `macht` `a`#0, je auf den Ableseboden 0,0025), Gate (a) **36 von 157** statt 149, Gate (c) rot unter BEIDEN Lesarten (gepaart p90 +0,000834, eigene Verteilung Median +0,000385) und Gate (d) +34 `kink`-Ereignisse (2 296 → 2 330; R3 +1 626, R3b +462). (f)/(g)/(h) grün, Determinismus 63/63 strichgleich |
+| sep07 | Laufform | [LF16 Chart-Saat als Default (A38) + Runde 8 (Pre-Reg)](#laufform-lf16-sep07--adoption-der-chart-saat-als-ernte-default-a38-und-vorregistrierung-der-runde-8) | **Adoption** (Werkzeug-Default) · Pre-Reg der Runde 8 · Write bleibt Autorenschritt | **Autor-Entscheid A38 (A1: „ja"):** `chain_seed="chart"` ist der Ernte-Default, `--chain-seed composed` bleibt erreichbar; Trace-Bench und Folger behalten ihren `composed`-Default, die Kette-Route ist unberührt. **Der Fixpunkt hält auch auf dem heutigen Composer** — `K1` = `K2` = `K3` byte-gleich samt Vorkommen, `K3` aus der deutlich anderen `C1`-Karte gestartet. **Und LF15s `K1` ist über die Sitzungsgrenze reproduzierbar, sobald der Composer festgehalten wird:** mit `exit_trim=False` zurückgesetzt (A37/#559 flippte den Default um 01:29, nach LF15s Läufen) kommen `drafts-k1`/`occ-k1` **byte-identisch** heraus, 226 Vorkommen, `geo_rmse` 0,982/1,427. Heute 227 gegen 234 der Kontrollkarte, also 7 statt 9 Vorkommen Preis (`connector_degenerate` 22 → 31, `anchor_spike` 10 → 8); **`Z` steht mit n = 3 NICHT mehr unter dem Beleg-Boden**, unter ihm bleiben nur `P`/`s` wie am Bestand. Schreibliste 15 Zeilen (`Z a c d e g h l longs m n p r u w`), vier vom Sprung-/Kopf-Gate abgewiesen (`i` `o` `sz` `z`). **Das Lineal ist gegen den Kandidaten:** 0,109026 → **0,112123** (Paare 0,148119), 22 besser : 35 schlechter, ein Drittel des Verlusts in `Zaum` +0,0712 und `Zügel` +0,0462 über die `Z`-Zeile — die Kontrollkarte mit der ALTEN Saat liegt bei 0,108544 und bewegt den Bestand fast genauso weit (0,0596 gegen 0,0561 xh, 8 gegen 7 Zeilen über 0,03), der Saatwechsel ist also NICHT der Träger der Bewegung. Runde 8 gebaut, nicht geurteilt: 75 Bildschirme, 12 gespiegelte Wiederholungen, vier vorab geschnittene Klassen (`lineal-verlierer` 10 · `zeile-stark` 24 · `zeile-schwach` 23 · `nullprobe` 6) mit vorab benannter Sichtbarkeits-Behauptung |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -13962,3 +13963,275 @@ eine davon die TAFEL feiner zeigt als die 30–33 px je x-Höhe, die die
 Fixtures schneiden, ist offen. Das wäre ein neuer Quell-Commit, ein
 Re-Export und damit eine deklarierte Re-Baseline — ein Autorenschritt und
 kein Arm, aber nach dieser Runde ein benannter statt eines übersehenen.
+
+### Laufform LF16 `sep07` — Adoption der Chart-Saat als Ernte-Default (A38) und Vorregistrierung der Runde 8
+
+Geschrieben, bevor ein Mensch einen Bildschirm dieser Runde gesehen hat.
+Anlass ist der **Autor-Entscheid A38 vom 2026-09-07** auf Frage A1 der
+Sammelaufgabe („Chart-Saat als Standard für künftige Ernten (Fixpunkt),
+Re-Baseline-Write erst nach einer Urteilsrunde?" — **ja**). Damit ist
+Rettungsweg (4) der LF15-Zeile („Autorenweg") gegangen; die Zeile
+„Chart-Saat als Default" in [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md)
+§7.11 schließt in diesem PR.
+
+Zwei Hälften, bewusst getrennt: die **Adoption** betrifft ein
+Werkzeug-Default und ist mit diesem PR vollzogen; der **Write** der
+chart-gesäten Zeilen ist ein Autorenvorgang und hängt an der Runde 8,
+die hier vorregistriert und gebaut, aber nicht geurteilt wird.
+
+#### Was geflippt ist — und was ausdrücklich nicht
+
+`tools/laufform/harvest.py`: `DEFAULT_CHAIN_SEED = "chart"`. Eine Ernte
+ohne Angabe setzt den Kettenlauf ab jetzt auf einer Komposition OHNE
+Laufform-Zeilen auf; `--chain-seed composed` bleibt erreichbar und
+reproduziert jede Runde vor `sep06`. **Der Trace-Bench und der Folger
+behalten ihren eigenen `composed`-Default** (`tools/tracebench/run.py`,
+`tools/pairlab/follow.py`): deren `chain`-Kandidat ist die eingefrorene
+Basis, gegen die jeder Arm gemessen wird, und eine Basis, die unter der
+Route wegrutscht, macht jedes gespeicherte Delta unlesbar. Die
+Kette-Route ist damit unverändert — die Ledger-Zeile auf
+[`verfahren-kette.md`](verfahren-kette.md) sagt genau das.
+
+Zwei Nebenwirkungen, im selben Diff geradegezogen: der `--apply`-Wächter
+(„schreibt nur die DEFAULT-Ernte") vergleicht gegen den neuen Default
+statt gegen die Zeichenkette `"composed"`, und `--chain-seed` bekommt
+einen Sentinel-Default, damit der Wächter „diese Saat tut auf `--path
+slot` nichts" weiter eine BENANNTE Saat meldet.
+
+#### Basis und drei Abnahmen, vor der ersten Zahl
+
+**Die Wurzeln.** `eaa195aa7c84…` / `0fbde2d72b64…` (`exported_at`
+2026-09-05T21:33:12+00:00 bzw. …:11), jeder Lauf mit `--expect-root` und
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`. Sie lagen wieder nicht auf
+Platte (dort stand die `sep02`-Ausfuhr) und wurden wie in LF15
+rekonstruiert: `fetch_fixtures --set all --verify`, danach die
+`sep05`-Zeitstempel eingesetzt — der Digest trifft **exakt**. Zugleich
+der Beleg, dass seit dem LF12-Write nichts in die Templates der Quelle
+geschrieben wurde, obwohl an diesem Tag die `St`-Ligatur nachgefahren
+und die Landmarken-Linse gelandet ist.
+
+**Die Headline.** `wordbench.run --set all` auf diesen Wurzeln gibt
+**0,109026 · 0,148236**, `worst_word` `regieren` 0,233052 — ziffernweise
+der ausgelieferte Stand nach der A37-Adoption.
+
+**Die Kreuzprobe über die Sitzungsgrenze — und der Grund, warum die
+K1-Karte von LF15 heute NICHT byte-gleich herauskommt.** Eine frische
+chart-gesäte Ernte gibt heute **227** angenommene Vorkommen, LF15 nannte
+226. Die Differenz ist vollständig zurechenbar und datiert: LF15 lief am
+2026-09-07 zwischen 00:04 und 00:24 CEST, und **#559 („Adopt the exit
+trim", A37) hat den Composer-Default um 01:29 desselben Nachts geflippt**
+— die Chart-Saat ist eine Aussage über die Startlage, und die Startlage
+ist eine Komposition. Gemessen statt argumentiert: dieselbe Ernte mit
+`compose_word(exit_trim=False)` zurückgesetzt und sonst nichts geändert
+liefert LF15s `drafts-k1.json` und `occ-k1.json` **byte-identisch**, die
+Wortspuren bis auf das Feld `seconds` (Wanduhr) ebenfalls — 226
+Vorkommen, `connector_degenerate` 30 · `anchor_spike` 11 ·
+`not_converged_local` 7 · `geo_rmse` 3, `geo_rmse`-Median 0,982 / p90
+1,427. Damit ist die Ernte auch ÜBER Sitzungen reproduzierbar, sobald man
+den Composer festhält — genau die Klasse Zweifel, die LF15 an LF14s
+Kontrollkarte offenlassen musste.
+
+#### Teil 1 — der Fixpunkt hält auch auf dem heutigen Composer
+
+Iteration wie in LF15 (`harvest --path chain --sets words --min-n 1
+--jobs 4 --expect-root eaa195aa7c84` → `smoothrow --knots 0 --floor 1
+--keep-stored`), drei Karten:
+
+| Karte | Saat | Startzeilen | Ergebnis |
+|---|---|---|---|
+| `K1` | Chart | die Zeilen der Wurzel | 227 Vorkommen |
+| `K2` | Chart | `K1`s eigene Karte | **byte-gleich mit `K1`** (Karte, Drafts, Vorkommen) |
+| `K3` | Chart | die `C1`-Karte (Saat „composed", deutlich andere Zeilen) | **byte-gleich mit `K1`** |
+| `C1` | composed | die Zeilen der Wurzel | 234 Vorkommen, Karte ≠ `K1` |
+
+`K3` ist wieder die Probe, die „per Konstruktion" von „gemessen"
+trennt: drei verschiedene Zeilensätze, eine Karte.
+
+**Die Kostenseite auf dem heutigen Composer, vollständig.** Chart-Saat
+227 gegen 234 der heutigen Saat, also **7 Vorkommen** (LF15 maß 9). Die
+Gate-Verteilung: `connector_degenerate` 22 → **31**, dagegen
+`anchor_spike` 10 → **8**, `not_converged_local` 8 → **6**, `geo_rmse`
+3 → **5**; der `geo_rmse`-Median steht bei 1,015 gegen 1,006 (p90 1,532
+gegen 1,453). **Eine benannte Kostenstelle von LF15 tritt heute NICHT
+ein:** `Z` steht mit der Chart-Saat auf **n = 3** und damit auf dem
+Beleg-Boden, nicht darunter. Unter dem Boden bleiben `P` (n = 1) und `s`
+(n = 1) — genau die zwei, die auch am Bestand darunter stehen.
+
+#### Teil 2 — was ein Write heute installieren würde
+
+Der Schreibweg steht auf drei Gates (Beleg-Boden 3, Sprung-Gate,
+Kopf-Gate). Von den 21 ableitbaren Zeilen bleiben nach dem Boden 19, und
+vier davon weist eines der beiden Zeilen-Gates ab: `i` (Sprung 3,98),
+`o` (Kopf 18,9°), `sz` (Sprung 3,55), `z` (Kopf 16,2°). **Die
+Schreibliste ist damit 15 Zeilen:** `Z a c d e g h l longs m n p r u w`.
+Sie ist der Kandidat der Runde 8 — eine Runde über eine Karte, die der
+Endpunkt gar nicht annähme, könnte den Write nicht lizenzieren.
+
+**Die Bewegung gegen den Bestand (die LF15-Regel (J), heute gelesen):**
+
+| Karte | Zeilen | schlimmste Zeile | > 0,03 xh |
+|---|---|---|---|
+| Schreibliste (Chart-Saat, 15) | 15 | `Z` **0,0561** | 7 (`Z` `w` `d` `h` `g` `a` `p`) |
+| volle Chart-Karte (21) | 21 | `sz` **0,1761** | 11 |
+| **Kontrollkarte `C1` (heutige Saat, 21)** | 21 | `P` **0,0596** | 8 |
+
+**Die entscheidende Zeile ist die dritte.** Ein Re-Harvest mit der ALTEN
+Saat bewegt den Bestand fast genauso weit (0,0596 gegen 0,0561, 8 Zeilen
+über 0,03 gegen 7). Der Saatwechsel ist also nicht der Träger dieser
+Bewegung — der Träger ist, dass die gespeicherten Zeilen aus einer Ernte
+auf einem anderen Composer-Stand stammen. Regel (J) von LF15 („über
+0,03 xh ist eine deklarierte Re-Baseline, kein Beifahrer") gilt damit
+unverändert und wird hier auch nicht umgangen: der Write IST als
+deklarierte Re-Baseline vorgesehen und hat mit dieser Runde sein
+Instrument.
+
+**Das Lineal — eigene Zahlen, nie die Headline.** Overlay-Läufe auf der
+eingefrorenen Wurzel:
+
+| Overlay | Wörter | Δ Basis | Paare | `worst_word` |
+|---|---|---|---|---|
+| Basis (Bestand) | 0,109026 | — | 0,148236 | `regieren` 0,233052 |
+| Kontrollkarte `C1` (composed, 21) | **0,108544** | −0,000482 | 0,148410 | `regieren` 0,233413 |
+| volle Chart-Karte (21) | 0,111266 | +0,002240 | 0,148414 | `Zaum` 0,277463 |
+| **Schreibliste (Chart-Saat, 15)** | **0,112123** | **+0,003097** | 0,148119 | **`Zaum` 0,277463** |
+
+Das ist der ehrliche Kern dieser Vorregistrierung: **das Wort-Lineal ist
+gegen den Kandidaten.** Zerlegt (Asymmetrie-Regel `aug26`) sind es 22
+bessere gegen 35 schlechtere Wörter bei 6 unbewegten, Summe der Gewinne
+−0,1482 gegen +0,3433 der Verluste — und der Verlust ist konzentriert:
+`Zaum` **+0,0712** und `Zügel` **+0,0462** tragen zusammen ein Drittel
+davon, beide über die `Z`-Zeile, die sich mit 0,0561 xh am weitesten
+bewegt. Dahinter folgen `einen` +0,0342 und `macht` +0,0301. Die
+Kontrollkarte zeigt dasselbe Muster viel schwächer (25 : 32, Verluste
++0,1600), `Zaum` dort nur +0,0130.
+
+Warum das trotzdem kein Kill ist, steht seit `sep06` im Repo und nicht
+erst hier: dieselbe Konstellation — Lineal schlechter, Auge dafür — hat
+den Austritts-Trim getragen (Runde 5: 34 : 2 bei +0,000582 Lineal, A37).
+Und das Wort-Lineal misst Deckung/Breite/Übergang auf Chamfer-Fenstern
+gegen eine eingefrorene Referenz; eine Zeile, die anders LÄUFT, kann
+darin verlieren und trotzdem geschriebener aussehen. Genau dafür ist die
+Menschenrunde das Instrument (§8a). Was hier NICHT passiert: die Gates
+weichspülen. Die Zahl steht oben, und die Runde entscheidet gegen sie.
+
+#### Die Vorregistrierung der Runde 8
+
+Gebaut, nicht geurteilt. Ablage `temp/runden-sep07/humanbench/`
+(git-ignoriert): Seite `runde-8-chart-saat.html`, Plan
+`runde-8-plan.md`, Schlüssel und Payload unter `runde-8/`.
+
+**Ein Freiheitsgrad.** Basis `Bestand` (`sha256` `9a03f1d0d3b77c66`) =
+die Zeilen der Wurzel; Kandidat `Chart-Saat`
+(`aa235127f3265bc9`) = dieselbe Komposition mit der 15-Zeilen-
+Schreibliste als Overlay. Sonst identisch: Nib 0,07243 `constant`,
+`exit_trim` an (Produktion seit A37), `apex_handover`/`stem_depart` aus,
+**Registrierung des Kandidaten an die Basis gepinnt** (die LF11-Wortrunde
+hat das für eine Laufform-Karte genauso gehalten — beurteilt wird die
+Form der Zeile, nicht eine Verschiebung; der Stempel hält es fest).
+
+**75 Bildschirme:** 63 Wortproben + **12 gespiegelte Wiederholungen**
+(Saat 20260008, Abstand 20–47 Positionen). Damit liegt die Runde über
+`MIN_PAIRED_REPEATS` = 6 und kann einen Adoptionsanspruch TRAGEN — die
+Rechnung von §8a (`bewegte + Nullproben ≥ 6 + 15 + 25`) ist mit 63 ≥ 46
+erfüllt. Vier Wörter (`schießen` `Gaul` `Soldaten` `Säbel`) laufen über
+ihren eigenen Ausschnitt hinaus und werden hier namentlich gemeldet.
+
+**Die vier Klassen, vor den Zahlen geschnitten** (`--strata`,
+`klassen-runde-8.json`):
+
+| Klasse | n | Schnitt | Sichtbarkeit vorab |
+|---|---|---|---|
+| `lineal-verlierer` | 10 | das Wort-Lineal bestraft den Kandidaten um ≥ 0,010 auf diesem Wort | **behauptet** |
+| `zeile-stark` | 24 | übrige bewegte Wörter mit `arm_gap` ≥ 0,1972 xh (Median der bewegten außerhalb der Verlierer-Klasse) | **behauptet** |
+| `zeile-schwach` | 23 | übrige bewegte Wörter darunter | nicht behauptet |
+| `nullprobe` | 6 | beide Tafeln bit-identisch: `an` `er` `er-2` `er-3` `im` `zu` | keine, per Konstruktion |
+
+Die Nullproben sind kein Kunstgriff und kosten nichts: ein Wort mit nur
+ZWEI verbundenen Slots komponiert chart-treu (`core/compose.py`, dasselbe
+Lauflängen-Gate wie der Ascender-Lean), sieht also gar keine
+Laufform-Zeile. Sie messen, ob „kein Unterschied erkennbar" benutzt wird
+— die Größe, an der das LF11-Verdikt hing.
+
+**Warum `lineal-verlierer` als eigene Klasse deklariert ist:** weil die
+Frage dieser Runde genau dort entschieden wird. Die Klasse ist am
+LINEAL geschnitten, nicht am menschlichen Urteil, und sie steht
+committet, bevor ein Bildschirm gesehen wurde — die Bedingung, die §8a
+an eine klassenweise Lesart stellt.
+
+**Der Auswerteplan** ist der von §8a, unverändert und in bindender
+Reihenfolge: (1) Verlässlichkeit aus den Spiegelpaaren, unter 6 Paaren
+oder bei ≤ 7/12 Arm-Übereinstimmung kein Adoptionsanspruch;
+(2) Seitenbilanz berichtet; (3) Verdikt **≥ 60 % Kandidat unter den
+Entschiedenen UND ≤ 25 % unentschieden über alle**; (4) je Klasse
+dieselben drei Zahlen, unter 8 Paaren als „zu wenig"; (5) Drift, dann
+die Notizen wörtlich.
+
+**Was ein Ergebnis auslösen darf, vorab festgelegt:**
+
+* beide Schranken + Schritt 1 → der Autor kann die **15 Zeilen**
+  schreiben, als deklarierte Re-Baseline mit Neu-Export beider Wurzeln;
+* Richtung klar, Tie-Schranke nur über die Klassenmischung gerissen →
+  Autor-Entscheid mit der Klassentabelle daneben (das J4/Runde-5-Muster,
+  §8a-Nachtrag);
+* `lineal-verlierer` geht an die Basis → **Teil-Adoption prüfen: die
+  Schreibliste ohne `Z`** (14 Zeilen). Vorab benannt, weil die
+  Asymmetrie-Regel die Zerlegung VOR dem Verwerfen verlangt und `Z` der
+  benannte Träger ist;
+* Basis gewinnt über alle Klassen → kein Write. **Die Chart-Saat bleibt
+  trotzdem der Ernte-Default** — sie ist eine Aussage über die
+  Reproduzierbarkeit der Ernte, keine über die Form der Zeile, und A38
+  hat genau das entschieden.
+
+**Was diese Runde ausdrücklich NICHT tut.** Kein DB-Write, keine
+Wurzel-Neuausfuhr, keine Änderung an `core/`, an `word_metric.py` oder an
+`tracebench`, keine neuen Schlüssel, keine Absenkung des Beleg-Bodens,
+keine Adoption von `LOOP_AWARE_REPAIR` (bleibt AUS).
+
+Die stehende Regel „**zweimal ernten**" ist damit nicht gestrichen, sie
+hat ihren Anlass verloren: mit dem Chart-Default MUSS der zweite Lauf
+byte-gleich sein, eine Abweichung ist ab jetzt ein Befund und keine
+Iteration. So steht sie in [`werkzeuge.md`](werkzeuge.md), mitsamt der
+Historie, aus der sie kommt.
+
+#### Rettungswege
+
+Der Arm ist kein Negativ, aber die Runde kann eines produzieren, also
+stehen die Wege vorab:
+
+1. **Die Schreibliste ohne `Z`** — 14 Zeilen; `Zaum` und `Zügel` tragen
+   ein Drittel des Lineal-Verlusts und `Z` bewegt sich am weitesten.
+   Teil-Adoption ist ein legitimer Ausgang (Asymmetrie-Regel `aug26`).
+2. **Die Zwei-Stufen-Saat** (Rettungsweg 1 von LF15, §7.11) — Chart-Saat
+   solven, dann EINMAL auf dem eigenen Ergebnis nachsolven: bliebe
+   zeilen-unabhängig und säße näher an der Tinte, holt also einen Teil
+   der 7 Vorkommen zurück. Eigene Pre-Reg.
+3. **Die vier gate-abgewiesenen Zeilen** (`i` `o` `sz` `z`) — sie
+   scheitern am Sprung- und Kopf-Gate, nicht an der Evidenz. Der Weg ist
+   ein anderer Zeilen-Schätzer (die LF13-Familie), nicht ein weicheres
+   Gate; ausdrücklich KEIN Weg ist, die Gates zu senken.
+4. **Die Eigenhand-Ernte** für `P` und `s` (n = 1) — unverändert der
+   einzige Weg an mehr Evidenz, und er läuft bereits.
+
+**Ausdrücklich kein Weg:** den Write mit der ALTEN Saat fahren, weil das
+Lineal ihn billiger findet. Die Karte wäre kein Fixpunkt, und der
+nächste Re-Harvest stünde wieder 0,0025–0,0283 xh daneben — die Frage,
+die A38 gerade entschieden hat.
+
+**Selbst entschieden** (benannt, nicht versteckt):
+
+* **Geurteilt wird die SCHREIBLISTE, nicht die volle K1-Karte.** Eine
+  Runde über eine Karte, die der Endpunkt zu einem Fünftel mit 422
+  beantwortet, könnte den Write nicht lizenzieren; beide Zahlen stehen
+  oben nebeneinander.
+* **Die Kontrollkarte `C1` mitgefahren**, obwohl A38 die Saat schon
+  entschieden hat. Ohne sie stünde die 0,0561-Bewegung ohne Maßstab da
+  und der wichtigste Befund — dass der Saatwechsel NICHT ihr Träger ist —
+  wäre eine Vermutung.
+* **Die A37-Rekonstruktion gefahren**, statt 226/227 als
+  „Sitzungsrauschen" zu buchen: ein Ernte-Lauf für einen datierten Beleg.
+* **`lineal-verlierer` am Lineal geschnitten**, nicht am `arm_gap`: die
+  These dieser Runde ist eine Lineal-Aussage.
+
+**Grenzen.** EINE Wurzel, EIN Wortsatz (63 Proben, `--sets words`); die
+Paar-Drills sind nicht mitgeerntet. Ein Beurteiler, und er ist der Autor
+des Kandidaten (§8a). `abb22` ist eine andere Hand und bleibt draußen.

@@ -1097,13 +1097,14 @@ def _seed_spy(monkeypatch: pytest.MonkeyPatch, result, *, shift_per_row: float =
     return seen
 
 
-def test_the_chart_seed_is_off_and_leaves_every_other_seed_alone(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Default off, and `composed`/`grid` never even reach the re-derivation."""
+def test_the_chart_seed_is_the_default_and_leaves_every_other_seed_alone(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The default is the chart seed (A38), and `composed`/`grid` never even
+    reach the re-derivation — naming one reproduces a pre-`sep06` round."""
     case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
     seen = _seed_spy(monkeypatch, result, shift_per_row=0.5)
     rows = _with_rows(case, {"a": _row(0.2)})
 
-    assert HarvestOptions().chain_seed == "composed"
+    assert HarvestOptions().chain_seed == harvest_mod.DEFAULT_CHAIN_SEED == "chart"
     for seed in ("composed", "grid"):
         seeded_case, seeded_result = harvest_mod._seed_composition(rows, result, HarvestOptions(chain_seed=seed))
         assert seeded_case is rows and seeded_result is result
@@ -1149,7 +1150,7 @@ def test_two_harvest_iterations_converge_under_the_chart_seed(monkeypatch: pytes
     _seed_spy(monkeypatch, result, shift_per_row=0.5)
     first = _with_rows(case, {"a": _row(0.2)})
     second = _with_rows(case, {"a": _row(-0.2), "b": _row(0.1)})
-    opts_composed = HarvestOptions(path="chain", rmse_max=2.5)
+    opts_composed = HarvestOptions(path="chain", rmse_max=2.5, chain_seed="composed")
     opts_chart = HarvestOptions(path="chain", rmse_max=2.5, chain_seed="chart")
 
     # What `harvest_case` hands the chain today: one composition per row map.
@@ -1162,3 +1163,32 @@ def test_two_harvest_iterations_converge_under_the_chart_seed(monkeypatch: pytes
     assert chart_first == chart_second
     # …and it is the chart-only harvest itself, so the iteration has no step 2.
     assert chart_first == harvest_mod.chain_word_strokes(case, result, opts_composed)[0]
+
+
+def test_a_named_seed_on_the_slot_path_is_refused(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The guard the sentinel default exists for.
+
+    The slot path ignores the seed, so NAMING one there is a user error worth
+    a message — and it stays one now that the default is no longer the string
+    a caller would have typed. The refusal has to fire on `composed` too:
+    since A38 that is a deliberate choice and not what the tool would do.
+    """
+    for seed in ("chart", "composed", "grid"):
+        monkeypatch.setattr("sys.argv", ["harvest", "--path", "slot", "--chain-seed", seed])
+        with pytest.raises(SystemExit) as exc:
+            harvest_mod.main()
+        assert "only applies to --path chain" in str(exc.value)
+
+
+def test_apply_still_refuses_an_overlaid_run(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
+    """`--apply` writes the DEFAULT harvest — a candidate map is a measurement.
+
+    Reached before any fixture root is read, which is why it can be tested
+    without one: the guards run between `parse_args` and `announce_roots`.
+    """
+    card = tmp_path / "karte.json"
+    card.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr("sys.argv", ["harvest", "--apply", "--laufform", str(card)])
+    with pytest.raises(SystemExit) as exc:
+        harvest_mod.main()
+    assert "--apply writes the DEFAULT harvest only" in str(exc.value)
