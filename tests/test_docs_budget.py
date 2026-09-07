@@ -217,6 +217,16 @@ def test_a_live_anchor_passes(repo: Path) -> None:
     assert db.check_links(repo) == []
 
 
+def test_a_gitignored_local_folder_is_never_read(repo: Path) -> None:
+    """`temp/` and `ds-bundle/` are local scratch: a macOS resource fork there is not even UTF-8 (2026-09-07)."""
+    for folder in ("temp", "ds-bundle"):
+        nested = repo / folder / "unpacked"
+        nested.mkdir(parents=True)
+        (nested / "._README.md").write_bytes(b"\x00\x05\x16\x07\x00\x02\x00\x00Mac OS X \xb0")
+        (repo / folder / "notes.md").write_text("Siehe [nirgends](weg.md).\n", encoding="utf-8")
+    assert db.check_links(repo) == []
+
+
 def test_a_heading_inside_a_fenced_block_is_no_anchor() -> None:
     # `# comment` in a shell example is a comment; counting it would invent an
     # anchor and let a genuinely dead link pass.

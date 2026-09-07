@@ -3722,7 +3722,9 @@ gleichmäßig). Das abgelegte Bild bleibt unberührt: Zwei-Kanal-Doktrin, wie
 bei der Lineatur-Ansicht — Maske löschen heißt Rohbild zurück, Byte für
 Byte (`?flecken=mit` zeigt es jederzeit). Die automatische Hälfte ist
 bewusst schüchtern: sie fasst nur an, was klein ist
-(`SPECK_MAX_EXTENT_MM` 0,6), keine Schrift berührt
+(`SPECK_MAX_EXTENT_MM` 1,2 · `SPECK_MAX_AREA_MM2` 0,6, kalibriert am
+ersten echten Bogen B0001 zwischen den gemessenen Tonerpartikeln und den
+i-Punkten der Hand), keine Schrift berührt
 (`WRITING_MIN_AREA_MM2` 1,0 trennt Buchstabe von Punkt), frei steht
 (`SPECK_CLEARANCE_MM` 2,5) und nicht als Punkt über einem Buchstaben sitzt
 (`DOT_MAX_RISE_MM`) — i-Punkte, Kommas und eigene Kleckse bleiben stehen
