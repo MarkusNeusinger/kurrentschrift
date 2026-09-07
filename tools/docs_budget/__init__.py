@@ -351,10 +351,23 @@ WIDEST = {
 # (the register result row cost 690 in its first draft, the ledger line 460).
 # Re-measured with everything in: `mess-runde` 27 848 and `mess-runde-route`
 # 7 038, each plus the documented 10 %.
+#
+# `mess-runde-route` raised once more on 2026-09-07 by „Kette K-E" — the
+# humanbench tie-breaker the K-E family named as its first rescue path. It
+# measures `mark_claim`, a Kette knob, so it owes `verfahren-kette.md` its
+# ledger line; and the line has to carry a finding that inverts the family's
+# own record, not just a verdict: on the v5 stack the same formulation leaves
+# TWO aiou losers instead of the four it was rejected for in `aug21`. A ledger
+# that recorded „round built" and dropped that would send the next reader to
+# the `aug21` numbers as if they still held. The row was condensed three times
+# before this raise was written (610 → 380 → 300 tokens) and the standing
+# v6-candidate paragraph shortened alongside it; `mess-runde` is NOT raised —
+# its register row fits in the headroom that budget already has. Re-measured
+# with everything in: 7 765, plus the documented 10 %.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
     "mess-runde": 30_633,
-    "mess-runde-route": 7_742,
+    "mess-runde-route": 8_541,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,
     "komposition": 9_680,
