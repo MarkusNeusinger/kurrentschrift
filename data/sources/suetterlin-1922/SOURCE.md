@@ -62,8 +62,8 @@
              `tools/wordbench/export_fixtures.py`; eine reparierte Platte
              braucht Re-Export **und** einen datierten Re-Baseline-Eintrag in
              `docs/reference/qualitaetsmetrik.md`.
-- Maße:      47 160 Bytes
-- SHA256:    06b8ccd1303d99c3e94e64dff2922584a84c5a804af5003d50c79857d5e7362b
+- Maße:      48 310 Bytes
+- SHA256:    7b22b5fd9f40fe178e7efc202d028396f9a7f042b129c41362b1161bd32062c2
 - Note:      Kein Eintrag trägt `incomplete`, und das ist geprüft: eine
              Randprüfung über alle 202 Rechtecke (2026-09-06,
              Zusammenhangskomponenten über die ganze Platte statt einer
@@ -73,9 +73,14 @@
              `sep01` repariert statt markiert
              (`qualitaetsmetrik.md` §15) — die Marke ist das zweite
              Mittel, nicht das erste. Was heute noch einen Rechteckrand
-             überquert, ist das nachfolgende Komma, die Nachbarzeile bzw.
-             das Nachbarwort oder der eigene Anstrich-Haarstrich; die
-             Einträge stehen namentlich in der `note`-Kopfzeile der Datei.
+             überquert, ist die Nachbarzeile bzw. das Nachbarwort oder der
+             eigene Anstrich-Haarstrich; die Einträge stehen namentlich in
+             der `note`-Kopfzeile der Datei. Das nachfolgende KOMMA stand
+             bis `sep07` in derselben Aufzählung und ist seither per
+             `exclude` aus der Referenz genommen (Autor-Entscheid A3,
+             `docs/reference/messjournal.md` §14 „Komma-Ausschluss
+             `sep07`") — eine deklarierte Re-Baseline der Wort- und
+             der abb22-Wurzel.
 
 ## words-abb19.png — 1756 × 1783 px, 3,5 MB
 

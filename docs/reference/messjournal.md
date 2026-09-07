@@ -5,14 +5,14 @@
 > [`qualitaetsmetrik.md`](qualitaetsmetrik.md), Wort für Wort dieselbe
 > Sektion.
 >
-> **Diese Datei liest man nicht.** Sie trägt 88 datierte Abschnitte und
-> rund 143 000 Token. Der Einstieg ist das **Register** direkt unter der
+> **Diese Datei liest man nicht.** Sie trägt 120 datierte Abschnitte und
+> rund 266 000 Token. Der Einstieg ist das **Register** direkt unter der
 > nächsten Überschrift — eine Zeile je Abschnitt mit Datum, Route, Typ ·
 > Verdikt und dem Befund in einer Zeile —, und daneben der
 > **Headline-Ledger** mit der Zahlen-Historie samt Fixture-Wurzeln.
-> Beide zusammen kosten rund 10 000 Token; ein einzelner Abschnitt
-> 2 000–3 500. Wer aus dem Register springt, lädt also ein Fünfzehntel
-> statt der ganzen Datei — dafür ist sie geteilt.
+> Beide zusammen kosten rund 23 000 Token; ein einzelner Abschnitt im
+> Median 1 700, höchstens 4 500. Wer aus dem Register springt, lädt also
+> ein Zehntel statt der ganzen Datei — dafür ist sie geteilt.
 >
 > **Was gilt (Stand `sep05`).** Der Duell-Stand: Kette **v5** (`aug26`,
 > Kompositions-Soll + Ratsche + Zone 0,55 sind der Default) · Lotse
@@ -65,7 +65,7 @@ Werkzeuge: `tools/tracebench/`.
 
 ### Register der Einträge (Index, keine Zahl-Heimat)
 
-Diese Sektion trägt 88 datierte Abschnitte und ist die eine Heimat der
+Diese Sektion trägt 120 datierte Abschnitte und ist die eine Heimat der
 Kampagnen-Zahlen; die Tabelle hier ist ihr **Index** — sie wiederholt
 keine Zahl, sie zeigt, wo eine steht. Ihre Reihenfolge ist die der
 Datei, also die Reihenfolge, in der die Abschnitte angehängt wurden; die

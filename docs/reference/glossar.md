@@ -1251,7 +1251,7 @@ derselbe Fall am LINEAL statt am Fit:** ein Komma hinter dem Wort ist
 Tinte, die kein Buchstabe erzeugen kann, und wandert per `exclude` aus
 der Referenz — für `regieren` seit `aug31` (§15), für `Gewehr`,
 `Zügel`, `streiten` und `a22-dank` seit `sep07` (messjournal.md §14
-„Komma-Ausschluss `sep07`"). Nachbarwort, Oberlänge der Zeile darüber
+„Komma-Ausschluss `sep07`"). Nachbarwort, Unterlänge der Zeile darüber
 und der eigene Anstrich bleiben: messbarer Zusammenhang bzw. Tinte,
 die der Renderer ohnehin erzeugt. *Technisch:*
 `tools/pairlab/ink_evidence.py` (Fit) ·
@@ -3362,7 +3362,7 @@ dem Anker seiner Quelle.
 
 **Messjournal** *(measurement journal)* — die Datei
 [`messjournal.md`](messjournal.md), seit 2026-09-04 die Heimat von §14, dem
-Kampagnen-Journal: 88 datierte Abschnitte, je einer pro Mess-Runde, mit
+Kampagnen-Journal: 120 datierte Abschnitte, je einer pro Mess-Runde, mit
 Vorregistrierung, gemessenen Zahlen und Verdikt. Vorher stand die Sektion in
 `qualitaetsmetrik.md` und machte dort zwei Drittel der Datei aus, sodass jede
 Frage nach einer Metrik-REGEL das ganze Journal mitlud; der Umzug ist Wort für

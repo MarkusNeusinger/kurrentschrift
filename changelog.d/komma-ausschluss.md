@@ -5,7 +5,9 @@
   `Zügel`, `streiten` and, in the cross-hand abb22 set, `a22-dank` — carried
   the comma that follows them on the plate inside their reference crop, so
   the frozen ruler measured ink no letter can produce and every arm inherited
-  the penalty for exactly those words. Each comma was verified on the frozen
+  that foreign signal on exactly those words — as a penalty on three of them
+  and, on the fourth, as a fit its registration leaned on. Each comma was
+  verified on the frozen
   mask first (its own connected component, 31–94 px, 0.41–0.83 x-heights clear
   of any letter ink, fused with none) and then excluded through the mechanism
   the fixture format already has: an `exclude` rect in

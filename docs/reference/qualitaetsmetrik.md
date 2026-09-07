@@ -1,6 +1,6 @@
 # Qualitätsmetrik & Glyph-Bench
 
-> **Status (2026-09-06): lebend.** Die Messlatte und ihre **Regeln**. Das
+> **Status (2026-09-07): lebend.** Die Messlatte und ihre **Regeln**. Das
 > Journal der Läufe ist am 2026-09-04 in eine eigene Datei gezogen —
 > [`messjournal.md`](messjournal.md), dort weiterhin §14; hier §1–§13, §15.
 > **Aktuelle Headlines: Wörter 0,108153 · Paare 0,148236** (Re-Baseline
