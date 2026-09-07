@@ -58,7 +58,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
 - **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
-- **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
+- **B** — Bahn-Arm (humanbench) §4 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
@@ -3073,6 +3073,21 @@ deklarierte Fehlerklasse eines Wortes, über die die Wiederholungen ausgeteilt
 werden). *Technisch:* Vertrag im Kopf von `tools/humanbench/build.py`,
 Referenz-Erzeuger `tools/humanbench/wordarm.py`, Prüfsumme je Arm im
 Provenienz-Stempel → menschliche-bewertung.md §8a
+
+**Bahn-Arm** *(trace arm)* — eine **Arm-Datei**, deren Inhalt keine
+Komposition ist, sondern eine **gefolgte Bahn**: die Mittellinie, die der
+Tintenfolger über der Tinte der Platte gefahren ist, aus einer
+`tools.tracebench`-Kandidatendatei in den Rahmen des Fixture-Eintrags
+gerechnet (`tools/humanbench/tracearm.py`, `sep07`, Runde 9 zur
+K-E-Claim-Trennung). Er trägt weder `fills` noch Strichbreiten, und daran
+hängen zwei Folgen, die niemand einstellt: die Seite zeichnet ihn als
+**gecaste Mittellinie über der unverblassten Platte** statt als Tinte auf
+verblasstem Grund, und die Runde stellt die **Genauigkeitsfrage**
+(`VERGLEICH`) statt der Echtheitsfrage — „echter geschrieben" hat an einer
+Mittellinie nichts zu greifen. Eine Bahn-Runde ist mit einer
+Kompositions-Wortrunde deshalb nicht vergleichbar. *Technisch:*
+`build.py::draws_ink` liest die Frage an den Armen ab und schreibt sie in
+Umschlag und Stempel → menschliche-bewertung.md §8a
 
 **Ortsmarker · Ortsprüfung** — der eine Punkt, den der Beurteiler je Bild in
 den Ausschnitt klickt (die auffälligste Stelle, nicht alle), und die

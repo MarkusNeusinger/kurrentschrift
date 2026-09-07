@@ -228,6 +228,7 @@ die DB) — mit seiner Bedingung.
 | sep06 | Übergänge | [J4 Adoption (A37)](#übergänge-j4-sep06--adoption-auf-autor-entscheid-a37-exit_trim-wird-default-deklarierte-re-baseline) | **Adoption** (Autor-Entscheid A37) · **Re-Baseline** (Wörter + Golden) | `exit_trim` ist Default. Auf UNVERÄNDERTER Wurzel, also gepaart: Wörter 0,108444 → **0,109026**, Paare **byte-gleich**, `seam_dep_median` +7,59 → **−0,70** (absolut 12,67 → 2,30), Verdopplungen 14 = 14. Golden deklariert neu gebacken (10 der 11 Wörter, kein Draw-Item mehr oder weniger, Solo-Glyphen 0 von 23). **S2 stimmt unabhängig zu** — am selben Tag auf der UNGETRIMMTEN Komposition abgenommen: `cont_kink_total` 402 → **337**, `cont_bow_join_median` 0,0091 → **0,0042** (Report-Spalte, kein Gate). `prodconn.replay` hat seine angekündigte Nachbearbeitung bekommen; die Kette ist per Messung ausgenommen (Kompositions-Soll 0 von 126), fällig bleiben Lotse-Karte und S2-Bezug (§7.11) |
 | sep07 | Kette | [R4 Feder-Entfaltung (Diagnose + Pre-Reg)](#kette-r4-feder-entfaltung-sep07--diagnose-und-vorregistrierung-ist-der-klumpen-tinte-oder-raster) | Diagnose + Pre-Reg | Konversion (4) von R3/R3c, und zuerst die Frage, die keiner der beiden gestellt hat: **ist die Verschmelzung Tinte oder Raster?** Der eine Term der Frage ist strukturell: der Fixture-Ausschnitt ist ein unskalierter Schnitt der Platte (`freeze_entry`), x-Höhe **30–33 px**, `words-abb19.png` byte-identisch von Commons. Dass es keine feinere Aufnahme gibt, war in der ersten Fassung behauptet und ist nach einem Copilot-Fund **nachgemessen**: der zweite committete Scan derselben Platte (`suetterlin-leitfaden-1926/p060.jpg`, laut `SOURCE.md` druckstock-identisch) ist eine GANZSEITEN-Aufnahme und trägt für die Tafel Zeilenabstand **≈ 104 px gegen ≈ 110 px**, also ~5 % weniger. Gemessen wird deshalb die BINARISIERUNG: dieselbe Binnenfläche als adaptive Maske 1×, als globale 50-%-Niveaulinie 1× und als 50-%-Niveaulinie auf 4× bikubischem Grau, dazu der Mittelachsen-Anzeiger bei beiden Maßstäben. Entscheidregel vor der ersten Zahl: RASTER, wenn Median(`A_grau4 − A_Maske`) ≥ +0,016 xh **oder** Median(`I@4× − I@1×`) ≥ +0,10. Der Arm dahinter: die Feder aus der EVIDENZ herausrechnen — jedes Skelettpixel näher als `w_pen` an einer `offen`-Binnenfläche fällt weg, an seine Stelle tritt die Niveaulinie `w_pen + 0,5 px` desselben Loch-Feldes, auf die Tinte beschnitten und nur im radialen Schatten des Weggefallenen. Gates (a)–(h) sind R3cs, Wort für Wort; eine Korrektur vor der ersten Armzahl: die pixelweise Fassung ist verworfen (0 von 13 Schleifen überleben den Schub, 13 von 13 die Niveaulinie) |
 | sep07 | Kette | [R4 gemessen](#kette-r4-feder-entfaltung-sep07--gemessen-die-zugelaufenen-schleifen-bewegen-sich-zum-ersten-mal-und-gate-c-fällt-trotzdem) | Diagnose + gemessen · **nicht adoptiert**, Gate (c) rot (Kill) | **Diagnose-Verdikt: echte Verschmelzung.** Median(`A_grau4 − A_Maske`) **+0,0000** und Median(`I@4× − I@1×`) **+0,0109** — beide Schranken klar verfehlt: die globale Schwelle liest bei 1× ziffernweise dieselbe Binnenfläche wie die adaptive Maske, bei 4× liest das Grau eine **kleinere** (0,1118 gegen 0,1290, das halbe Plattenpixel je Seite), und die Einschnürung überlebt die schärfere Lesung (Anzeiger 0,807 → 0,790). **Der Arm bewegt zum ersten Mal die richtige Klasse:** von den 33 Schleifen, die die Basis zu zeichnet, gehen **8 auf** (7 zugelaufene, 1 kollabierte — `Feinde` `F`#1 0,0025 → 0,3184), wo R3c 0 bewegt hat; offen bei 0,097 **124 → 129**, referenzfreier 63er-Soll **85 → 70** (der größte Fall der R-Kette), `cross_spurious` **9 → 7** und `retrace_spurious` 10 → 9, also Gate (b) **grün**. Bezahlt wird mit drei Totalverlusten (`unter` `t`#1 · `Kugel` `K`#1 · `macht` `a`#0, je auf den Ableseboden 0,0025), Gate (a) **36 von 157** statt 149, Gate (c) rot unter BEIDEN Lesarten (gepaart p90 +0,000834, eigene Verteilung Median +0,000385) und Gate (d) +34 `kink`-Ereignisse (2 296 → 2 330; R3 +1 626, R3b +462). (f)/(g)/(h) grün, Determinismus 63/63 strichgleich |
+| sep07 | Kette | [K-E Runde 9 gebaut](#kette-k-e-sep07--wiedervorlage-als-menschenurteil-runde-9-gebaut-urteil-offen-und-das-lineal-hat-inzwischen-die-seite-gewechselt) | Pre-Reg + Konstruktionsmessung · **Runde 9 gebaut, Urteil offen** (Autor-Entscheid A2) | Rettungsweg (1) der K-E-Familie. **K-E1 ist nicht lauffähig** — der Breitenfeld-Split steht in keinem Commit (Squash #400 legte nur die Ein-Faktor-Form ab), der Arm ist also zwangsläufig K-E2 (`--mark-claim`). Basis = Produktions-Kette v5 ohne Flag, ziffernweise der heutige Stand (dtw 0,045881 · p90 0,088356 · aiou 0,7660 · 11/9 · 63er-Soll 85), beide Stacks in `k0eval` identisch. **Auf v5 hat das Lineal die Seite gewechselt:** 38 bewegt / 25 strich-identisch, Soll **85 → 82**, aiou-Median der bewegten **+0,0008** statt −0,0002, und nur noch **zwei** Gate-Verlierer (`regieren` −0,0180 · `muß` −0,0285) statt vier — die vier `aug21`-Verlierer sind heute Gewinner oder neutral (`auch` +0,0317 · `Einen` +0,0170 · `schießen` +0,0043 · `muß-2` −0,0007). Das Ziel heilt wieder (`die-2` Soll 5 → 4, aiou +0,0227, V-Nadel weg; `Zügel` +0,1059, `Feinde` Soll 2 → 0). Runde: 44 Bildschirme + **10** gespiegelte Wiederholungen, gefolgte BAHNEN als Mittellinie über der Platte, also Genauigkeitsfrage (`VERGLEICH/9`); Straten `ziel` 2 · `riss` 2 · `gewinn` 8 · `bewegt` 26 · `nullprobe` 6 (Unentschieden-Boden 13,6 %) |
 | sep07 | Lineal | [Komma-Ausschluss](#komma-ausschluss-sep07--die-satzzeichen-der-platte-verlassen-die-referenz-tinte) | **Re-Baseline** (Wörter + abb22) · umgesetzt (Autor-Entscheid A3) | **Vier Referenz-Ausschnitte trugen ein Komma, also Tinte, die kein Buchstabe erzeugen kann.** Nachgewiesen als eigene Komponente je Wort (94 · 47 · 42 · 31 px, 0,41–0,83 xh von jeder Buchstabentinte entfernt, mit keiner verschmolzen), per `exclude` aus der Referenz genommen — derselbe Griff, den `regieren` seit §15 (`aug31`) trägt. Der Ausschnitt-Diff ist chirurgisch: 3 von 63 bzw. 1 von 106 Einträgen bewegen `crop`/`ref_mask`/`ref_skel`, `templates*`/`*_instances`/`word.json` byte-gleich, kein Pixel HINZUgekommen. **Wörter 0,109026 → 0,108153** (`Zügel` −0,028918 · `Gewehr` −0,014439 · `streiten` −0,011649, die übrigen 60 bit-gleich), **Paare byte-gleich** (Wurzel gar nicht neu gebaut). Beide Folger sind nachweislich unberührt: 63/63 Kette-Zeilen strich-gleich und 63/63 Lotse-Zeilen byte-gleich, dev-19 ziffernweise unverändert, 63er-Soll 85 = 85. Gegenbefund `a22-dank` **+0,039863** (cross-hand, nie Headline): dort hat das Komma die Registrierung getragen (`tx` −6 → −8) — die Fremdtinte hat den Fit geschmeichelt, nicht bestraft | 
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
@@ -13964,6 +13965,185 @@ eine davon die TAFEL feiner zeigt als die 30–33 px je x-Höhe, die die
 Fixtures schneiden, ist offen. Das wäre ein neuer Quell-Commit, ein
 Re-Export und damit eine deklarierte Re-Baseline — ein Autorenschritt und
 kein Arm, aber nach dieser Runde ein benannter statt eines übersehenen.
+
+### Kette K-E `sep07` — Wiedervorlage als Menschenurteil: Runde 9 gebaut, Urteil offen (und das Lineal hat inzwischen die Seite gewechselt)
+
+**Anlass.** Autor-Entscheid vom 2026-09-07 auf die Sammelfrage A2
+(„K-E-Entscheid: Urteilsrunde als Tie-Breaker oder Distanzfeld-Claim?"):
+**ja, Urteilsrunde.** Damit wird Rettungsweg (1) der geschlossenen
+K-E-Familie gefahren
+([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.9) — der
+vorregistrierte Methodik-Fall in Reinform: am `aug21` lag der aiou-Median
+der bewegten Wörter bei **−0,0002**, das Lineal war also indifferent,
+während vier lokale aiou-Verluste (−0,013 … −0,027) gegen eine
+die-2-Heilung standen, die auf jeder Achse eintrat. Was das Lineal nicht
+entscheiden kann, entscheidet die blinde Runde — oder sie entscheidet es
+nicht, und auch das ist eine Auskunft.
+
+**Der Arm ist K-E2, und zwar zwangsläufig — ein Befund vor der ersten
+Zahl.** Die Vorgabe für diese Runde war, K-E1 und K-E2 beide zu fahren und
+die bewegten Mengen auf heutigem Stack zu bestätigen. **K-E1 ist nicht
+lauffähig:** der Breitenfeld-Split existiert in keinem Commit dieses Repos.
+Der Squash-Merge #400 („Chain K-E … measured to two honest negatives") hat
+nur die ENDFASSUNG abgelegt, und die ist die Ein-Faktor-Form; `git log -S
+"width_body" -- tools/pairlab/chain.py` und `-S "K-E1"` finden genau diesen
+einen Commit, und in ihm steht der Split nur noch als Kommentar („K-E2: the
+WIDTH fields stay unsplit … K-E1 measured its split as the suspect"). Der
+Satz im Code, K-E1 bleibe „as archaeology in the git history", ist damit
+selbst nicht mehr wahr. K-E1 zu fahren hieße also, eine gelöschte
+Formulierung NEU zu schreiben und ihre Zahlen dann gegen eine
+`aug21`-Messung zu halten, die sie nicht erzeugt hat — ein zweiter Knopf in
+einer Runde, die genau einen haben darf. Sachlich kostet das nichts: 55 der
+63 `aug21`-Kandidaten waren byte-gleich zwischen beiden Fassungen, die
+Heilungen und die Risse lagen in gleicher Höhe, und K-E2 ist die
+Formulierung, die das Repo trägt. **Der Arm der Runde ist `--mark-claim`.**
+
+**Basis, Wurzel, Offenlegung.** Basis ist die **Produktions-Kette v5 ohne
+jedes Flag**; Arm ist derselbe Lauf mit `--mark-claim`. Beide auf der
+`sep05`-Wurzel `suetterlin-1922` `exported_at` 2026-09-05T21:33:12+00:00
+`root_digest` **`eaa195aa7c84…`**, BLAS gepinnt
+(`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`), `--jobs 4`, `--expect-root
+eaa195aa` unter jedem Lauf; Laufzeiten 1651,5 s (Basis) · 1517,4 s (Arm).
+Die Wurzel lag in dieser Umgebung nicht mehr vor und wurde nach dem
+LF15-Muster (`sep06`) REKONSTRUIERT: ein frischer `fetch_fixtures --set all
+--verify` liefert beide Wurzeln byte-gleich bis auf `exported_at`, und mit
+den `sep05`-Zeitstempeln eingesetzt kehren `eaa195aa7c84…` (Wörter,
+21:33:12) und `0fbde2d72b64…` (Paare, 21:33:11) **exakt** zurück. Das ist
+zugleich der Beleg, dass seit dem LF12-Write auch am 2026-09-07 nichts in
+die DB geschrieben wurde.
+
+**Die Basis reproduziert den heutigen Kette-Stand ziffernweise** und ist
+damit als Basis abgenommen: dev-19 **dtw 0,045881 med · p90 0,088356 ·
+worst `muß` 0,106372 · aiou 0,7660 · Marken 0/0/0 · `cross_missing` 11 /
+`cross_spurious` 9**, 63er-Soll-Abstand **85** — Ziffer für Ziffer die
+Zahlen, die die R3c-Vorregistrierung desselben Tages als „Basis nach A37
+frisch geritten" nennt. `k0eval` meldet beide Stacks identisch (kein
+Stack-Warnung, die Vorbedingung der Liturgie).
+
+**Was der Arm HEUTE bewegt — und der eigentliche Befund der Messung.**
+Gegen die v4-Basis vom `aug21` bewegte der Claim 37 Wörter und riss vier
+aiou-Löcher. Auf dem v5-Stack sieht dieselbe Formulierung anders aus:
+
+* **38 der 63 Kandidaten bewegen sich, 25 sind strich-identisch** — die
+  claimfreien Wörter bleiben konstruktionsgemäß gleich.
+* **63er-Soll-Abstand 85 → 82** (4 besser · 57 gleich · 2 schlechter).
+* **aiou über die 38 bewegten: min −0,0285 · Median +0,0008 · max
+  +0,1059.** Der Median ist nicht mehr indifferent, sondern leicht
+  POSITIV.
+* **Nur noch ZWEI Wörter reißen das stehende −0,003-Gate:** `regieren`
+  −0,0180 und `muß` −0,0285.
+* **Die vier benannten `aug21`-Verlierer sind heute keine mehr:** `auch`
+  **+0,0317**, `Einen` **+0,0170**, `schießen` +0,0043, `muß-2` −0,0007.
+  Der diffuse Körper-Deckungsverlust, an dem die Familie geschlossen
+  wurde, ist unter dem Wächter-Stack v5 verschwunden — plausibel, weil
+  die zonale Rückweisung genau die Runden rettet, die die
+  Basin-Umverteilung vorher ganz verwarf: die Wächter-Ausgänge wandern
+  auf dem Arm mehrfach von `revert-init` nach `zonal`.
+* **Das benannte Ziel heilt wieder:** `die-2` Soll **5 → 4**, aiou
+  **+0,0227**, und die V-Nadel des `d` in die eigene i-Marke ist im
+  Augenschein weg. `die` +0,0819, `Feinde` Soll 2 → 0 bei +0,0826,
+  `Zügel` **+0,1059**, `unter` +0,0426.
+
+Das verschiebt die Frage der Runde, ohne sie zu ersetzen: sie ist nicht
+mehr nur ein Tie-Breaker über einem indifferenten Lineal, sondern die
+Frage, ob das Auge einen Arm bestätigt, den das Lineal heute überwiegend
+belohnt und an zwei Wörtern noch bestraft. **Das ist ausdrücklich KEINE
+Adoption per Zahl:** das `aug21`-Gate (3) („kein aiou-Verlierer") ist mit
+zwei Verlierern weiterhin gerissen, und es wird nicht aufgeweicht.
+
+**Runde 9 (gebaut, `temp/runden-sep07/humanbench/runde-9-k-e.html`).**
+44 beurteilte Bildschirme + **10 gespiegelte Wiederholungen** = 54, Saat
+20260009, Zoom 2×, `--min-repeat-gap 5`, 3,68 MB. Gezeigt wird das
+Specimen-Wort mit **beiden gefolgten BAHNEN als Mittellinie** über der
+unverblassten Platte — die Anzeige der Buchstabenrunden 01/02 —, und die
+Frage ist darum wieder die **Genauigkeitsfrage** („Welche Linie folgt der
+Tinte besser?", Kopfzeile `VERGLEICH/9`), nicht die Echtheitsfrage: ein
+Folger-Arm verschiebt eine Bahn über gemessener Tinte, eine komponierte
+Strichstärke gibt es dort nicht. Beide Arme registrieren auf allen 63
+Wörtern identisch, die Platzierung ist also keine Lesehilfe und
+`--registration-from` war nicht nötig. Arm-Prüfsummen im Stempel:
+Basis `da007a1dcaa51410` · K-E2 `f8a31021b07ae2a6`.
+
+Die Straten, deklariert aus der Konstruktionsmessung und vor jedem Label:
+
+| Klasse | n | behauptete Sichtbarkeit |
+|---|---|---|
+| `ziel` | 2 | `die`, `die-2` — die von K-Es eigener Pre-Reg benannten Ziele; Sichtbarkeit BEHAUPTET, zugunsten des Kandidaten |
+| `riss` | 2 | `regieren`, `muß` — die zwei Wörter, die das aiou-Gate heute gegen den Kandidaten stellt; Sichtbarkeit BEHAUPTET, zugunsten der Basis |
+| `gewinn` | 8 | die übrigen bewegten über +0,003 aiou (`unter`, `muß-3`, `Feinde`, `schießen`, `auch`, `Einen`, `Zügel`, `Sprünge`) |
+| `bewegt` | 26 | \|Δaiou\| ≤ 0,003 — der lineal-indifferente Rest, der Methodik-Fall selbst; KEINE Sichtbarkeit behauptet |
+| `nullprobe` | 6 | strich-identische Paare (`haben`, `Wer`, `er`, `der-3`, `er-2`, `von`) — dasselbe Bild zweimal |
+
+`ziel` und `riss` liegen unter `MIN_PAIRED_PER_CLASS` = 8 und bekommen
+darum keine Klassenquote, sondern werden namentlich berichtet; ihre
+Mitglieder standen vor der Messung fest (`ziel` seit `aug21`, `riss` aus
+der Konstruktionsmessung oben), sind also keine nachträgliche Auswahl.
+Die Trennschärfe fürs Auge ist mitgemessen: über die 38 bewegten Wörter
+liegt der Arm-Abstand bei min 0,0071 · Median 0,0283 · max 0,3221 xh, und
+**26 der 38 liegen über 0,02 xh** — der vorab genannten Augen-Schwelle
+(≈ 0,66 Crop-Pixel auf dieser Platte, bei Zoom 2 also ≈ 1,3
+Bildschirm-Pixel).
+
+**Der Auswerteplan** ist der stehende der §8a-Wortrunden, in bindender
+Reihenfolge und im Werkzeug statt im Kopf (`analyse.py::analyse_paired`):
+(1) Seiten-Verlässlichkeit aus den 10 gespiegelten Paaren — unter
+`MIN_PAIRED_REPEATS` = 6 oder auf Münzwurf-Niveau **trägt die Runde
+keinen Adoptionsanspruch**; (2) Seitenbilanz, berichtet, nie entscheidend;
+(3) das Verdikt gegen die vorher gesetzte Schwelle **≥ 60 % Kandidat unter
+den ENTSCHIEDENEN und ≤ 25 % „kein Unterschied" über alle 44**; (4) je
+Klasse dieselben drei Zahlen, unter 8 als „zu wenig"; (5) Drift, dann die
+Notizen wörtlich. **Die Nullproben-Arithmetik steht vorab:** sechs
+strukturell unentschiedene Bildschirme sind ein Boden von **13,6 %** gegen
+die 25-%-Schranke — bewusst der kleinste Block, der die zehn
+Wiederholungen noch trägt (`n − min_gap − REPEAT_JITTER` = 44 − 5 − 25 =
+14 Kandidaten), damit die Schranke erreichbar bleibt und die Runde-5-Lage
+(„die Mischung reißt das Gate") sich nicht wiederholt. Die Regel selbst
+wird nicht angefasst.
+
+**Falsifizierbare Erwartungen.** `ziel` geht 2 : 0 an den Kandidaten —
+geht auch nur eines an die Basis, ist die Heilung, die die ganze Familie
+begründet hat, für das Auge keine. `riss` geht 2 : 0 an die Basis — sonst
+bestraft das aiou-Gate dort etwas, das kein Mensch sieht. `nullprobe`
+sechsmal „kein Unterschied". `bewegt` ist offen; fällt die Klasse
+überwiegend unentschieden aus, ist das kein Fehlschlag, sondern die
+Auskunft, dass das Lineal dort nicht nur indifferent, sondern zu Recht
+indifferent war.
+
+**Was ein Ergebnis auslösen darf.** Ein bestandener Anspruch lizenziert
+**nicht** den Default: `mark_claim` als Folger-Vorgabe ändert die
+gefahrene Bahn und ist damit ein Re-Baseline-Write und Autorensache. Er
+lizenziert die Vorlage dieses Entscheids mit der Runde als Beleg. Ein Nein
+schließt die Claim-Familie endgültig und schiebt sie auf Rettungsweg (2),
+den Distanzfeld-NUR-Claim mit eigener Vorregistrierung.
+
+**Selbst entschieden (benannt, nicht versteckt).**
+
+* **K-E1 nicht nachgebaut** (Begründung oben). Die Alternative wäre neuer
+  Code unter dem Namen einer alten Messung gewesen.
+* **Die Straten aus der heutigen Konstruktionsmessung geschnitten**, nicht
+  aus den `aug21`-Klassen. Die vier `aug21`-Verlierer sind heute keine —
+  eine Klasse „riss" mit ihnen zu besetzen hätte die Runde auf eine
+  Behauptung gebaut, die die Messung schon widerlegt hat. Kein Label war
+  zu diesem Zeitpunkt gesetzt.
+* **Nur 6 der 25 Nullproben aufgenommen**, gleichmäßig über die
+  Fixture-Reihenfolge gegriffen statt ausgewählt. Alle 25 hätten einen
+  strukturellen Unentschieden-Anteil von 40 % erzeugt und das Gate
+  garantiert gerissen — eine Runde, die ihr eigenes Kriterium nicht
+  erreichen kann, beantwortet die Frage des Autors nicht.
+* **Die Frage ist kein Schalter.** Sie wird an den ARMEN abgelesen
+  (`build.py::draws_ink`) und in Umschlag UND Stempel geschrieben; sonst
+  hätte der Stempel dieser Runde „authentic" behauptet, während die Seite
+  `VERGLEICH/9` fragt.
+
+**Grenzen.** Ein Beurteiler, und er ist der Autor des Kandidaten — die
+Blindheit deckt die Seitenzuordnung, nicht die Erwartung. Die Runde ist
+mit den Kompositions-Wortrunden 5–8 **nicht vergleichbar**: andere Frage,
+andere Anzeige, anderer Gegenstand. 63 Wörter sind die ganze
+Grundgesamtheit, es gibt keine Rückhaltemenge. Und die Runde beantwortet
+die Bahn-Frage, nicht die Adoptionsfrage: was `mark_claim` als Default
+für die geernteten Zeilen bedeutet, hat noch niemand gemessen — die Ernte
+trägt den Knopf `HarvestOptions.mark_claim` declared-off, und ihre
+Adoption war schon am `aug21` als eigene Entscheidung benannt.
 
 ### Komma-Ausschluss `sep07` — die Satzzeichen der Platte verlassen die Referenz-Tinte
 

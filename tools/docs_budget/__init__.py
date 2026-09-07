@@ -352,24 +352,38 @@ WIDEST = {
 # Re-measured with everything in: `mess-runde` 27 848 and `mess-runde-route`
 # 7 038, each plus the documented 10 %.
 #
-# `mess-runde-route` raised on 2026-09-07 by „Komma-Ausschluss", and only that
-# path: `mess-runde` absorbed the same round inside its own headroom. The round
-# re-baselines the word root, so `verfahren-kette.md` owes two things that
-# cannot be written anywhere else — its Stand block must name the root the
-# numbers were measured on (an old digest there is exactly the failure the
-# `--expect-root` sensor exists to prevent), and its ledger owes the dated row
-# for the re-measurement, the same shape „Re-Baseline auf der LF12-Wurzel"
-# carries two rows above it. Together they cost 231 against 46 of room. The
-# Stand paragraph was condensed twice before this raise was written (369, then
-# 275, then 231) and the ledger row keeps only what a later reader must be able
-# to act on: that the route is provably unmoved, and the one measured reason
-# why the ink-evidence mask could not have removed the punctuation itself.
-# Re-measured with everything in: `mess-runde-route` 7 788 plus the documented
-# 10 %.
+# `mess-runde-route` raised once more on 2026-09-07 by „Kette K-E" — the
+# humanbench tie-breaker the K-E family named as its first rescue path. It
+# measures `mark_claim`, a Kette knob, so it owes `verfahren-kette.md` its
+# ledger line; and the line has to carry a finding that inverts the family's
+# own record, not just a verdict: on the v5 stack the same formulation leaves
+# TWO aiou losers instead of the four it was rejected for in `aug21`. A ledger
+# that recorded „round built" and dropped that would send the next reader to
+# the `aug21` numbers as if they still held. The row was condensed three times
+# before this raise was written (610 → 380 → 300 tokens) and the standing
+# v6-candidate paragraph shortened alongside it; `mess-runde` is NOT raised —
+# its register row fits in the headroom that budget already has. Re-measured
+# with everything in: 7 765, plus the documented 10 %.
+#
+# …and then a THIRD time the same day, by „Komma-Ausschluss", which landed
+# beside K-E rather than after it — the two rounds ran in parallel and their
+# raises met in the merge, so this number is measured on the merged page and
+# not on either branch. That round re-baselines the word root, so
+# `verfahren-kette.md` owes two things that live nowhere else: its Stand block
+# must name the root the numbers were measured on (an old digest there is
+# exactly the failure the `--expect-root` sensor exists to prevent), and its
+# ledger owes the dated row for the re-measurement, the same shape
+# „Re-Baseline auf der LF12-Wurzel" carries above it. Together they cost 231.
+# The Stand paragraph was condensed twice before this raise was written (369,
+# then 275, then 231) and the ledger row keeps only what a later reader must
+# be able to act on: that the route is provably unmoved, and the one measured
+# reason why the ink-evidence mask could not have removed the punctuation
+# itself. `mess-runde` is not raised again either. Re-measured on the merged
+# page: 7 995, plus the documented 10 %.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
     "mess-runde": 30_633,
-    "mess-runde-route": 8_567,
+    "mess-runde-route": 8_795,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,
     "komposition": 9_680,
