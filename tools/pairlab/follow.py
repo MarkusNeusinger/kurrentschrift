@@ -137,6 +137,13 @@ from tools.pairlab.chain import (
     fit_word_chain,
     respec_from_solution,
 )
+from tools.pairlab.counterfield import (
+    COUNTER_SIZE_CLASSES,
+    COUNTER_SIZE_CLASSES_ALL,
+    CounterField,
+    CounterFieldOptions,
+    counter_field_for_case,
+)
 from tools.pairlab.ink_evidence import INK_EVIDENCE_PAPER_FRACTION, InkEvidenceOptions, ink_evidence_case
 from tools.pairlab.landmarks import LANDMARK_MIN_ANGLE_DEG
 from tools.pairlab.trace import assemble_word_strokes, cap_word_strokes
@@ -386,6 +393,14 @@ FOLLOW_RETRACE_PROX_UNITS = float(os.environ.get(FOLLOW_RETRACE_PROX_UNITS_ENV) 
 # budget, at which point the round IS the previous geometry plus noise.
 STRUCTURE_GUARD_MAX_RETRIES = 2
 
+# R3c: the rungs the Binnenflächen-Bedingung's weight was pre-registered on,
+# and the one the round selected. Powers of four from the ink term's own weight
+# upwards, because the hinge is normalised over ALL samples while only a few
+# per word are hot — a factor of 20 separates the two energies before a single
+# number is measured, so a ladder that starts at 1 has to reach far.
+COUNTER_WEIGHT_LADDER = (1.0, 4.0, 16.0, 64.0, 256.0)
+COUNTER_WEIGHT_DEFAULT = 64.0
+
 # The candidate file's mandatory frame literal. Re-declared rather than
 # imported and pinned against `tools.tracebench.candidates.CANDIDATE_FRAME` by
 # a test: the ruler's SCORING side (metric, matching, summaries) stays out of
@@ -574,6 +589,40 @@ class FollowWeights:
     sample spacing of 0.0265 xh the shipped defaults span 2.7 and 1.4 samples,
     so the fade fades over three points and the average averages one. They are
     exposed here because that is the one length the follow-up arm moves."""
+    counter_constraint: bool = False
+    """R3c (`sep07`): the Binnenflächen-Bedingung IN the solve — off by default.
+    The same statement about the ink R3 pushed the finished trace with, stated
+    as a term the solver sees in EVERY round: where the plate holds a catalogue
+    counter open (state `offen`), no sample may sit closer to it than the
+    plate's own half width, priced as a quadratic hinge on the counter's signed
+    distance field (`tools.pairlab.counterfield`). R3 and R3b measured the
+    post-hoc formulation out — aim and smoothness hang on one blend length, and
+    a fade shorter than the sample spacing cannot blend — so this arm moves the
+    condition to where a smooth trace arises: a per-sample force folds onto the
+    far sparser anchors, and the solver trades it against the ink, the Tikhonov
+    pull and the connector smoothness itself. It enters the FOLLOWER's rounds
+    only — `chain.fit_word_chain` is untouched, so every other consumer of the
+    chain, the harvest included, is byte-identical by construction — and it
+    reads the PLATE, the frozen catalogue and one frozen pen constant, never a
+    Laufform row, so it cannot close the harvest fixed point of §14 „Laufform
+    LF14 `sep06`"."""
+    counter_weight: float = COUNTER_WEIGHT_DEFAULT
+    """The hinge's weight, normalised so 1.0 is the ink term's own. The rung of
+    the pre-registered ladder {1, 4, 16, 64, 256} the R3c round selected on gate
+    (a) alone — the constraint's own target — so the choice was not made on the
+    gates that judge the arm."""
+    counter_half_width: float = PLATE_PEN_HALF_WIDTH_UNITS
+    """WHICH pen the condition is stated for, in x-heights: the plate's own nib
+    as #551 measured it over all 63 specimens, the constant the catalogue's size
+    classes are counted in. A property of the WRITING INSTRUMENT, not a weight —
+    lowering it until fewer counters bind would be the pen softening the Kringel
+    diagnosis explicitly rules out."""
+    counter_size_classes: tuple[str, ...] = COUNTER_SIZE_CLASSES
+    """WHICH catalogue loops the condition binds, by size class. R3's own two by
+    default, so the conversion changes the PLACEMENT of the condition and
+    nothing else; `gross` is reachable for an arm of its own and is not part of
+    this one (see `counterfield.COUNTER_SIZE_CLASSES` for the probe that
+    settled it)."""
     provisional: bool = True
 
 
@@ -1727,11 +1776,16 @@ def _fields_of(problem: _ChainProblem) -> dict:
         # the (seg, start) keys survive `respec_from_solution` verbatim, so
         # the rebuilt problem re-derives the same sample classes. Empty = off.
         "mark_fields": problem.mark_fields,
+        # R3c: the counter field rides forward the same way. It is a property of
+        # the PLATE and the composition, so it is built once per word and never
+        # re-derived from a solved geometry — the round it enters cannot move it.
+        "counter_smooth": problem.counter_smooth,
+        "counter_target_px": problem.counter_target_px,
     }
 
 
 def build_follow_problem(
-    problem: _ChainProblem, params: np.ndarray, weights: FollowWeights
+    problem: _ChainProblem, params: np.ndarray, weights: FollowWeights, counter: CounterField | None = None
 ) -> tuple[_ChainProblem, np.ndarray]:
     """The re-linearised problem for the next round, plus its retrace mask.
 
@@ -1757,6 +1811,14 @@ def build_follow_problem(
     # `build_chain_problem`'s own plan anchor count: one plan row per anchor of
     # every spec (the seams collapse in the FREE array, not the plan one).
     k_plan = sum(len(np.asarray(s.anchors).reshape(-1, 2)) for s in specs)
+    fields = _fields_of(problem)
+    # R3c: solve 1 is `chain.fit_word_chain`'s, which knows nothing about the
+    # condition — so the field enters HERE, on round 1, and `_fields_of` carries
+    # it to every round after. Without an active field the two keys stay None/0
+    # and the term is skipped outright, not added as a zero.
+    if counter is not None and counter.active:
+        fields["counter_smooth"] = counter.field_px
+        fields["counter_target_px"] = counter.target_px
     rebuilt = build_chain_problem(
         specs,
         unit_px=problem.unit_px,
@@ -1772,7 +1834,8 @@ def build_follow_problem(
         overlap_weight=weights.overlap,
         max_anchor_delta=weights.max_delta,
         connector_max_delta=weights.connector_max_delta,
-        **_fields_of(problem),
+        counter_weight=weights.counter_weight if weights.counter_constraint else 0.0,
+        **fields,
     )
     if weights.landmark > 0.0 and weights.landmark_targets != "raw":
         apply_landmark_targets(rebuilt, landmark_targeting(rebuilt, weights.landmark_targets))
@@ -1871,6 +1934,7 @@ def follow_word_chain(
     fit: ChainWordFit | None = None,
     weights: FollowWeights | None = None,
     keep_solve: bool = False,
+    counter: CounterField | None = None,
 ) -> FollowFit | None:
     """Follow the ink for ONE run of joined slots: solve 1, then the rounds.
 
@@ -1884,6 +1948,13 @@ def follow_word_chain(
     geometry, segments and assembled trace come back unchanged. That is not a
     degenerate case but the baseline arm — it makes „the follower changed
     nothing" a testable statement instead of a claim.
+
+    `counter` is R3c's Binnenflächen-Bedingung for the whole WORD, built once by
+    the caller (`counterfield.counter_field_for_case`) and shared by every run
+    of it. Word-wide on purpose and not per run: the plate's statement is that
+    the hole is uninked, which binds every pen stroke that passes it, not only
+    the ones of the letter it belongs to. None, or a field that refused, leaves
+    the term skipped in every round.
 
     None whenever the chain itself could not be built (see `fit_word_chain`).
     """
@@ -1945,7 +2016,7 @@ def follow_word_chain(
 
     for index in range(1, int(weights.rounds) + 1):
         prev_problem, prev_params = problem, params
-        problem, mask = build_follow_problem(prev_problem, prev_params, weights)
+        problem, mask = build_follow_problem(prev_problem, prev_params, weights, counter)
         params, record = _solve_round(problem, weights, index, mask)
         if guard_budget is not None:
             # Arm ⑨ (§14 `aug16`): the acceptance rule. A violating round is
@@ -1965,7 +2036,7 @@ def follow_word_chain(
                     max_delta=round_weights.max_delta / 2.0,
                     connector_max_delta=round_weights.connector_max_delta / 2.0,
                 )
-                problem, mask = build_follow_problem(prev_problem, prev_params, round_weights)
+                problem, mask = build_follow_problem(prev_problem, prev_params, round_weights, counter)
                 params, record = _solve_round(problem, round_weights, index, mask)
                 counts = _assembled_counts(problem, params)
             zone_units = float(weights.structure_guard_zone_units or 0.0)
@@ -2004,7 +2075,7 @@ def follow_word_chain(
                         + float(registration.get("ty", 0.0))
                         - sites_units[:, 1] * xh
                     )
-                    problem_z, mask_z = build_follow_problem(prev_problem, prev_params, weights)
+                    problem_z, mask_z = build_follow_problem(prev_problem, prev_params, weights, counter)
                     ax = problem_z.x_origin_px + problem_z.anchors_free[:, 0] * problem_z.unit_px
                     ay = problem_z.baseline_y_px - problem_z.anchors_free[:, 1] * problem_z.unit_px
                     radius_px = zone_units * problem_z.unit_px
@@ -2140,6 +2211,14 @@ def follow_derived(
     # from ONE evidence. Off → the very same case object, nothing to diff.
     case, ink_report = ink_evidence_case(case, _ink_options(weights))
     grids = _grid_fits(case, result)
+    # R3c: ONE counter field per word, built before the first run and shared by
+    # all of them. It reads the frozen mask and the composition, so it is fixed
+    # for the whole word and no round can move it — and building it here rather
+    # than per run is also what makes „the same field in every solve" a property
+    # of the code instead of a claim.
+    counter = (
+        counter_field_for_case(case, result, options=_counter_options(weights)) if weights.counter_constraint else None
+    )
 
     word_strokes: list[list[list[float]]] = []
     run_slots: list[list[int]] = []
@@ -2167,7 +2246,9 @@ def follow_derived(
             continue
         if weights.mark_claim:
             claims_by_run.append(chain_fit.fit_meta.get("mark_claims", []))
-        followed = follow_word_chain(case, run, result=result, windows_px=windows, fit=chain_fit, weights=weights)
+        followed = follow_word_chain(
+            case, run, result=result, windows_px=windows, fit=chain_fit, weights=weights, counter=counter
+        )
         if followed is None:
             n_failed += 1
             continue
@@ -2219,6 +2300,11 @@ def follow_derived(
         # as much of a reading as a push and a silent one would make the arm's
         # per-loop table unreconstructible.
         **({"zwei_zuege": zwei_zuege_report.as_dict()} if zwei_zuege_report is not None else {}),
+        # R3c's scope, per loop — present exactly while the constraint is on,
+        # a word whose plate holds no in-scope counter included with its reason.
+        # The field itself is not serialised (it is an image); what a reader
+        # needs is WHICH counters bound and what each one expects.
+        **({"counter_constraint": counter.as_dict()} if counter is not None else {}),
     }
     if not word_strokes:
         return {
@@ -2245,6 +2331,13 @@ def follow_derived(
         "detail": "",
         "meta": meta,
     }
+
+
+def _counter_options(weights: FollowWeights) -> CounterFieldOptions:
+    """R3c's options from a configuration — the pen and the scope, nothing else."""
+    return CounterFieldOptions(
+        half_width_units=float(weights.counter_half_width), size_classes=tuple(weights.counter_size_classes)
+    )
 
 
 def _ink_options(weights: FollowWeights) -> InkEvidenceOptions | None:
@@ -2766,6 +2859,36 @@ def build_parser() -> argparse.ArgumentParser:
         help="arc length of the anti-raster average of the displacement, in x-heights (default half the "
         "Knick window); R3b runs it at one nib, 0.145 — the window the continuity sensor itself reads",
     )
+    parser.add_argument(
+        "--counter-constraint",
+        action="store_true",
+        help="R3c (sep07): the Binnenflaechen-Bedingung IN the solve — in every follower round, price "
+        "every sample that sits closer than --counter-half-width to a counter the Kringel catalogue "
+        "holds `offen`, as a quadratic hinge on that counter's signed distance field. Unlike R3's "
+        "post-hoc push it is the SOLVER that trades aim against smoothness; chain solve 1 is untouched",
+    )
+    parser.add_argument(
+        "--counter-weight",
+        type=float,
+        default=FollowWeights.counter_weight,
+        help="weight of that hinge, on the ink term's own scale (1.0 = e_geo); the pre-registered "
+        f"ladder is {', '.join(f'{v:g}' for v in COUNTER_WEIGHT_LADDER)}",
+    )
+    parser.add_argument(
+        "--counter-half-width",
+        type=float,
+        default=FollowWeights.counter_half_width,
+        help="the pen the condition is stated for, in x-heights (default: the plate's own 0.0968 from "
+        "#551 — the constant the catalogue's size classes are counted in)",
+    )
+    parser.add_argument(
+        "--counter-size-classes",
+        default=",".join(COUNTER_SIZE_CLASSES),
+        help="comma-separated catalogue size classes the condition binds (default: R3's own "
+        f"{','.join(COUNTER_SIZE_CLASSES)}; {','.join(COUNTER_SIZE_CLASSES_ALL)} is the wider scope, "
+        "an arm of its own — a `gross` counter binds hardest and buys nothing, three quarters of a "
+        "large hole survives any pen)",
+    )
     parser.add_argument("--sweep", help="NAME=v1,v2 — one arm per value of a FollowWeights field")
     parser.add_argument("--jobs", type=int, default=1, help="worker processes, pooled over CASES")
     parser.add_argument("--json", type=Path, help="write the full report here")
@@ -2807,6 +2930,10 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         zwei_zuege_half_width=float(args.zwei_zuege_half_width),
         zwei_zuege_taper=float(args.zwei_zuege_taper),
         zwei_zuege_smooth=float(args.zwei_zuege_smooth),
+        counter_constraint=bool(args.counter_constraint),
+        counter_weight=float(args.counter_weight),
+        counter_half_width=float(args.counter_half_width),
+        counter_size_classes=tuple(c.strip() for c in str(args.counter_size_classes).split(",") if c.strip()),
     )
 
 

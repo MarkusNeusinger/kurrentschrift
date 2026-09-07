@@ -223,6 +223,8 @@ die DB) — mit seiner Bedingung.
 | sep06 | Laufform | [LF15 Ernte-Fixpunkt (Pre-Reg)](#laufform-lf15-sep06--vorregistrierung-der-fixpunkt-der-ernte-rettungsweg-2-von-lf14) | Pre-Reg | Rettungsweg 2 von LF14, Autor-Entscheid „3 ja": der Fixpunkt VOR dem nächsten Laufform-Write. „Ernte-Fixpunkt" numerisch definiert (größte Ankerbewegung zwischen zwei Karten ab `H1` ≤ 0,002 xh, gegen die gemessene Drift 0,0025–0,0283); Iteration `H0 → H1 → H2` aus Repo-Werkzeugen (harvest → `smoothrow --knots 0 --floor 1 --keep-stored`), Schlüsselsatz über alle Runden fest. Mechanismus vorab benannt: **Chart-Saat** (`chain_seed="chart"`, Default AUS) — die vorregistrierten Kandidaten (a) und (b) fallen in eine Implementierung, (c) wird nicht gebaut. Gates (F) Fixpunkt · (G) Kette-Identität · (H) Lineal byte-gleich · (I) Golden, dazu Bericht (J) mit Entscheidregel 0,03 xh für die Frage, ob der nächste Write den Saatwechsel als EINE Re-Baseline mitnehmen darf. Definiert „Ernte-Fixpunkt" numerisch, legt die Iteration `H0 → H1 → H2` aus Repo-Werkzeugen fest (Schlüsselsatz über alle Runden fest), benennt den Mechanismus vorab (**Chart-Saat**, Default AUS; die Kandidaten (a)/(b) fallen in eine Implementierung, (c) wird nicht gebaut) und die Gates (F) Fixpunkt · (G) Kette-Identität · (H) Lineal · (I) Golden plus den Bericht (J) mit Entscheidregel für die Frage, ob ein Write den Saatwechsel mitnehmen darf. Offenlegung zur Basis: die `sep05`-Wurzeln lagen nicht mehr vor und wurden rekonstruiert |
 | sep06 | Laufform | [LF15 gemessen](#laufform-lf15-sep06--gemessen-die-iteration-läuft-weg-und-die-chart-saat-hält-sie-in-einem-schritt-an) | Pre-Reg + gemessen · alle Gates grün · **Schalter bleibt AUS** (Regel (J)) · **stehende Regel: zweimal ernten** | **Die Iteration konvergiert nicht, sie wandert:** die schlimmste Zeile bewegt sich in den drei Schritten 0,0582 → 0,0627 → 0,0627 xh, die Richtung wechselt je Zeile, der angenommene Satz wandert 235 → 232 → 239 mit — der erste Schritt ist nicht der größte, also kein Einschwingen; ein Determinismus-Doppellauf steht davor. Auch die Kringel-Ablesung wandert mit: `a` und `o` überschreiten die 0,194-Marke allein durch Weiterernten. **Die Chart-Saat** macht die Karte in EINEM Schritt zum Fixpunkt — `K1` = `K2` = `K3` byte-gleich samt Vorkommen, und `K3` startet aus einer 0,058 xh entfernten Karte, die Zeilen-Unabhängigkeit ist damit gemessen. Preis: 226 statt 235 Vorkommen (an den Gates `connector_degenerate`/`anchor_spike`, nicht an der Fitgüte), `Z` fällt unter den Beleg-Boden. Alle vier Gates grün, (G) mit einer benannten Abweichung (eine erfundene Kreuzung weniger) und einer benannten Kostenseite; Bericht (J): 8 von 21 Zeilen über 0,03 xh, der Saatwechsel geht NICHT als Beifahrer mit. **Antwort auf die Ausgangsfrage: einen Laufform-Write heute einfach zu wiederholen ist nicht sicher** |
 | sep06 | Übergänge | [J4 Runde 5 gemessen](#übergänge-j4-sep06--runde-5-gemessen-richtung-34--2-unentschieden-gate-gerissen--durch-die-klasse-die-es-reißen-sollte) | Menschenrunde · Richtung erdrückend, `adopt: false` an der Tie-Schranke · **Adoption = Autor-Entscheid** (LF11-Präzedenz), gefallen als A37 — Zeile darunter | **Kandidat 34 : Basis 2** von 36 entschiedenen (94,4 % gegen ≥ 60 %), unentschieden 42,9 % gegen ≤ 25 %. Klassenweise löst sich der Widerspruch: `naht-stark` 26 : 2 bei **9,7 %** Ties (beide Schranken ✓), `naht-schwach` 8 : 0 bei **72,4 %** Ties — die Klasse, für die die Pre-Reg Unsichtbarkeit beschrieben hat. Instrument sauber: 3/3 Kontrollwörter als „kein Unterschied" erkannt, 10/12 Wiederholungen gleicher Arm bei 4/12 gleicher Seite (12 ≥ 6 Paare). Auf der `sep05`-Wurzel neu gemessen: Wörter 0,108444 → **0,109026** (+0,000581), Paare byte-gleich, `seam_dep` +7,59 → −0,70 (absolut 12,67 → **2,30**), Verdopplungen 14 = 14. **Der ganze Lineal-Verlust sitzt in der starken Klasse** (+0,036888 gegen −0,000262), also dort, wo das Auge 26 : 2 dagegen stimmt — von den 30 bestraften Wörtern gehen 18 : 0 an den Kandidaten. Klassenregel gemessen und verworfen: `exit_trim_min_kink_deg` reichert `naht-stark` ab 10° an (71 % gegen 59 %), TRENNT die Klassen aber bei keiner Schwelle — beide haben denselben Knick, +7,90 / +7,44 —, kostet zwischen 5° und 25° MEHR als der volle Trim und gibt ab 10° die Naht-Reparatur zurück; nur 30° zahlt 0,000202 zurück, feuert dann aber in 5 von 63 Wörtern |
+| sep07 | Kette | [R3c Binnenflächen-Bedingung im Solve (Pre-Reg)](#kette-r3c-binnenflächen-bedingung-im-solve-sep07--vorregistrierung-dieselbe-aussage-an-der-stelle-wo-die-glatte-bahn-entsteht) | Pre-Reg | Konversion (3) der R3-Zeile, von R3b belegt statt vermutet: dieselbe Aussage als quadratischer Hinge auf dem vorzeichenbehafteten Abstandsfeld der `offen`-Binnenflächen, in JEDER Folger-Runde — normiert wie `e_geo`, über `sampling_op` auf die Anker gefaltet, `fit_word_chain` unberührt. Zwei R3-Bestandteile entfallen begründet (Blende · Abnahmeregel „Schleifen-Schluss", die der `structure_guard` schon leistet); der Geltungsbereich bleibt R3s `offen` × `klein`/`mittel` — die weitere Fassung ist nach einem Kalibrierlauf und vor der ersten Armzahl zurückgenommen, weil eine große Schleife am stärksten bindet und nichts Messbares kauft. Leiter {1, 4, 16, 64, 256}, **Auswahl auf Gate (a) allein**; R3bs Offline-Pfad unzulässig (ein Term verändert den Solve), je Sprosse ein voller 63er-Lauf. **Die Basis ist nicht die von R3:** A37 (`exit_trim`) liegt dazwischen, dev-19 frisch geritten dtw **0,045881** · p90 0,088356 · aiou 0,7660 · `cross_missing`/`cross_spurious` **11 / 9** — womit die §7.11-Zeile „die Kette ist ausgenommen" korrigiert ist: sie galt dem Soll, nicht dem Fit |
+| sep07 | Kette | [R3c gemessen](#kette-r3c-binnenflächen-bedingung-im-solve-sep07--gemessen-die-glätte-ist-umsonst-zu-haben-die-weitung-nur-dort-wo-sie-schon-da-war) | Pre-Reg + gemessen · **nicht adoptiert**, Gate (a) rot auf JEDER Sprosse · Gegenstück zu R3 | **Die Glätte ist umsonst zu haben, die Weitung nicht.** Gate (d), an dem R3 mit 1 626 und R3b mit 462 neuen Knicken fiel, ist **grün**: `kink`-Ereignisse 2 296 → **2 258**, Median 8,08° → 7,53° — es gibt keine Blende, deren Länge zu wählen wäre, weil die Anker die Glättung sind. Gate (a) trifft dafür nur **64 von 156** (gefordert 149); die Leiter {1,4,16,64,256} → 22 · 38 · 52 · **64** · 51 hat ein INNERES Maximum, bei 256 setzt der Wächter Wörter ganz auf den Kettenfit zurück. **Die Zerlegung ist der Ertrag:** bewegt werden die 124 schon offenen Schleifen (61 Treffer, Median +0,0227), die 31 zugelaufenen **gar nicht** (3 Treffer, Median +0,0000) — der Arm hilft nicht, wo der Defekt sitzt, weil der Tinten-Term dort selbst auf der Klumpenachse liegt. (b) rot (`cross_spurious` 9 → 10), (c) rot am p90 (+0,001618) bei Median −0,000365, (e) 63er-Soll **85 → 81**, (f)/(g)/(h) grün (Determinismus 63/63 strichgleich). **Zwei Korrekturen vor der ersten Armzahl:** Geltungsbereich zurück auf R3s `klein`/`mittel`, und `kringel_lost` als Kennzahl gestrichen — der Sensor liest die KOMPOSITION, kein Folger-Arm kann ihn bewegen. Zeigt auf R3s Konversion (4): die EVIDENZ korrigieren, nicht das Objektiv |
 | sep06 | Übergänge | [J4 Adoption (A37)](#übergänge-j4-sep06--adoption-auf-autor-entscheid-a37-exit_trim-wird-default-deklarierte-re-baseline) | **Adoption** (Autor-Entscheid A37) · **Re-Baseline** (Wörter + Golden) | `exit_trim` ist Default. Auf UNVERÄNDERTER Wurzel, also gepaart: Wörter 0,108444 → **0,109026**, Paare **byte-gleich**, `seam_dep_median` +7,59 → **−0,70** (absolut 12,67 → 2,30), Verdopplungen 14 = 14. Golden deklariert neu gebacken (10 der 11 Wörter, kein Draw-Item mehr oder weniger, Solo-Glyphen 0 von 23). **S2 stimmt unabhängig zu** — am selben Tag auf der UNGETRIMMTEN Komposition abgenommen: `cont_kink_total` 402 → **337**, `cont_bow_join_median` 0,0091 → **0,0042** (Report-Spalte, kein Gate). `prodconn.replay` hat seine angekündigte Nachbearbeitung bekommen; die Kette ist per Messung ausgenommen (Kompositions-Soll 0 von 126), fällig bleiben Lotse-Karte und S2-Bezug (§7.11) |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
@@ -13111,3 +13113,383 @@ sich; der Edge-Cache hält sie bis zu 24 h, der Wechsel wird dort also
 verzögert sichtbar (dieselbe Lage wie beim LF11-Write, wo kein Purge
 angeordnet wurde). Die DB ist unberührt — dieser Entscheid schreibt keine
 Zeile, er schaltet eine Regel.
+
+### Kette R3c „Binnenflächen-Bedingung im Solve" `sep07` — Vorregistrierung: dieselbe Aussage, an der Stelle, wo die glatte Bahn entsteht
+
+Konversion **(3)** der §7.9-Zeile von R3 — und die einzige der vier, die
+R3b nicht nur benannt, sondern **belegt** hat. R3 (`sep07`) hat die
+Aussage über die Tinte als punktweise Nachbearbeitung der fertigen Bahn
+gemessen und ist an allen vier Gates gefallen; R3b hat die eine Länge,
+an der es lag, eine Sprosse hochgezogen und die Vorhersage in BEIDE
+Richtungen bestätigt: Knicke 1 626 → 462, dafür Gate (a) 83/108 →
+62/112. Der Schlusssatz jenes Eintrags ist die Vorregistrierung dieses
+hier: **Treffgenauigkeit und Glätte hängen an derselben Länge, also
+gehört die Bedingung IN den Solve** — dorthin, wo eine glatte Bahn
+ohnehin entsteht und ein Solver den Ausgleich rechnet, statt hinter ihn,
+wo eine Blende ihn per Konstruktion nicht rechnen kann.
+
+#### Offenlegung zur Basis, VOR jeder Zahl: sie ist nicht die von R3
+
+Die Wurzeln sind dieselben (`suetterlin-1922` `exported_at`
+2026-09-05T21:33:12+00:00 **`eaa195aa7c84…`**), der Stack ist es nicht:
+zwischen R3s Messung und dieser liegt die **J4-Adoption A37** (`sep06`,
+`exit_trim` wird Default in `core/compose.py`), eine deklarierte
+Re-Baseline. Sie bewegt die Komposition, auf der JEDER Kettenfit
+initialisiert wird, also auch die gefolgte Bahn. Frisch geritten, BLAS
+gepinnt, 63/63 `ok`:
+
+| dev-19 | R3s Basis (`sep05`-Stand) | **diese Basis** (nach A37) |
+|---|---|---|
+| `dtw_xh` Median | 0,045384 | **0,045881** |
+| `dtw_xh` p90 | 0,087826 | **0,088356** |
+| schlechtestes Wort | `muß` 0,107134 | `muß` **0,106372** |
+| `aiou` Median | 0,7583 | **0,7660** |
+| `cross_missing` / `cross_spurious` | 12 / 7 | **11 / 9** |
+| `kringel_lost` | 12 von 43 in 10 Wörtern | **12 von 43 in 10 Wörtern** |
+
+**Alle Gates unten stehen auf der rechten Spalte**, nicht auf der
+linken; R3s Tabellen sind gegen diese Runde nicht gepaart lesbar. Das
+ist zugleich ein Befund über eine stehende Zeile: die A37-Adoption
+notiert „die Kette ist per Messung ausgenommen (Kompositions-Soll 0 von
+126)". Das gilt für den **Soll**, nicht für den **Fit** — der Trim
+schneidet den Austritt des Buchstabens, also bewegen sich die
+Init-Anker, und die Route ist eben doch nachzumessen. Die Zeile in
+§7.11 („Lotse-Karte nach der J4-Adoption") wird entsprechend
+korrigiert; diese Nachmessung ist sie, für die Kette.
+
+#### Der Mechanismus in drei Sätzen
+
+Die Aussage ist R3s, wörtlich: eine Gleichzug-Feder der Halbbreite `w`
+malt die Minkowski-Summe ihrer Bahn mit der Scheibe vom Radius `w`, ein
+Punkt der Binnenfläche ist also genau dann eingefärbt, wenn irgendeine
+Stützstelle näher als `w` an ihm liegt — **keine Stützstelle darf näher
+als `w_pen` = 0,0968 an einer Binnenfläche stehen, die die Platte offen
+hält**. Neu ist nur, WO sie steht: als **quadratischer Hinge auf dem
+VORZEICHENBEHAFTETEN Abstandsfeld** der Binnenfläche, den der Solver in
+JEDER Folger-Runde sieht, normiert wie `e_geo` (also ist sein Gewicht
+direkt mit der 1,0 des Tinten-Terms vergleichbar) und über
+`sampling_op` auf die viel dünner besetzten ANKER zurückgefaltet. Damit
+rechnet dieselbe Maschinerie, die die Bahn ohnehin glatt hält, den
+Ausgleich zwischen Öffnungsweite, Tinte, Tikhonov-Zug und
+Verbinder-Glätte — es gibt keine Blende, deren Länge zu wählen wäre.
+
+#### Wo er eingreift, und wo ausdrücklich nicht
+
+* **Nur in den Folger-RUNDEN.** `chain.fit_word_chain` (Solve 1) bleibt
+  unberührt, also ist jeder andere Verbraucher der Kette — die Ernte
+  eingeschlossen — per Konstruktion byte-gleich. Das Feld tritt in
+  `build_follow_problem` ein und reist über `_fields_of` in jede weitere
+  Runde.
+* **EIN Feld je WORT**, geteilt von allen Läufen des Wortes. Absichtlich
+  wortweit: die Aussage der Platte ist „dieses Loch ist ungefärbt", und
+  die bindet jeden Federzug, der daran vorbeikommt, nicht nur die des
+  Buchstabens, dem die Schleife gehört.
+* **Nur Katalogschleifen mit Zustand `offen`** und Größenklasse `klein`
+  oder `mittel` — R3s eigener Geltungsbereich (#556,
+  `tools/tracebench/kringel_catalogue.json`), zugeordnet über das
+  **Slot-Lineal** von #556 — wörtlich `zweizuege.catalogue_targets`,
+  keine zweite Implementierung, weil eine flache Nähe-Suche das Loch des
+  NACHBARN greift (#553). `wechselnd` und `punkt` bleiben draußen: die
+  erste schließt die Platte selbst, die zweite hat keine Weite zu halten.
+* **Ausdrücklich kein Weg:** die Feder dünner rechnen, die Klassen- oder
+  Zustandsschwellen des Katalogs nachziehen, den Hinge kappen, bis die
+  Zähler wieder stimmen — oder eine Blende nachrüsten, wenn Gate (d)
+  fällt. Der ganze Punkt dieses Arms ist, dass er keine hat.
+
+#### Zwei deklarierte Unterschiede zu R3, jeder mit Grund
+
+1. **Keine Blende und keine Anti-Raster-Glättung.** Beide existieren nur,
+   weil ein punktweiser Schub keine andere Möglichkeit hat, glatt zu
+   sein. Hier sind die Anker die Glättung.
+2. **Keine Abnahmeregel „Schleifen-Schluss".** R3 musste einen Schub
+   zurücknehmen, der die Selbst-Kreuzung der Schleife aufzog (10 von
+   108). Der Folger weist genau das schon zurück: `structure_guard` mit
+   Kompositions-Soll lehnt eine Runde ab, die eine Init-Kreuzung
+   VERLIERT. Eine Abnahmeregel, nicht zwei.
+
+Alles Übrige ist R3s, **einschließlich der Größenklassen** — und das ist
+die eine Korrektur an dieser Vorregistrierung, nach einem Kalibrierlauf
+und VOR der ersten Armzahl.
+
+#### Eine Korrektur nach dem Kalibrierlauf, vor der ersten Armzahl
+
+Wie bei #556 und #562 steht sie hier statt in einer Fußnote. Die erste
+Fassung nahm **jede** Größenklasse in den Geltungsbereich, mit der
+Begründung „eine erfüllte Bedingung ist inert, also gibt es nichts zu
+gewinnen, wenn man verengt". Der Kalibrierlauf auf EINEM Wort (`das`,
+Gewicht 64) hat gezeigt, dass die Prämisse nicht trägt: die GROSSEN
+Schleifen der Kette sind genauso zu eng wie die kleinen — das ist die
+Kringel-Diagnose —, also ist die Bedingung dort nicht erfüllt, sondern
+bindet am stärksten, weil das Loch am größten ist. Auf `das` verlangte
+`s`#0 (Loch 0,6121, Ziel `D0` 0,8057) allein die halbe Wortbewegung, und
+der Wächter hat die Runde vollständig zurückgewiesen (Retries 2, zonal
+8 Stellen / 108 Anker gepinnt, `cross` 2 gegen Soll 3, `retrace` 2 und
+`touch` 3 gegen Budget 0).
+
+Zwei Gründe, bei R3s `klein`/`mittel` zu bleiben, und beide sind
+Mechanismus, nicht Gate: (i) die Bewegung kauft **nichts Messbares** —
+drei Viertel eines großen Lochs überleben jede Feder, die Schleife ist
+bei 0,097 mit und ohne Bedingung offen, R3s eigener Grund; (ii) ein
+Konversions-Arm, der neben der PLATZIERUNG der Bedingung auch ihren
+GELTUNGSBEREICH ändert, ist gegen die Runde, die er konvertiert, kein
+Ein-Faktor-Schritt mehr. Der weite Geltungsbereich bleibt als eigener
+Arm erreichbar (`--counter-size-classes`) und ist ausdrücklich nicht
+Teil dieses hier. Gate (a) steht damit auf denselben Schleifen wie R3s
+Tabelle.
+
+#### Zwei deklarierte Konventionen, VOR der ersten Armzahl
+
+1. **Das halbe Pixel**, wie bei R3 und aus demselben Grund: eine
+   Distanztransformation misst von Pixelmitte zu Pixelmitte, die
+   Rasterlesung eines Lochs ist auf jeder Seite ein halbes Pixel
+   großzügig, also zielt die Bedingung auf die Niveaulinie
+   `w_pen + 0,5 px`. Außerhalb der Binnenfläche ist das Feld
+   ziffernweise dasselbe, das R3 entlanggeschoben hat; INNERHALB läuft
+   es negativ weiter, wo R3 verweigern musste (19 Schleifen ohne
+   Ausschieberichtung) — eine Stützstelle im Loch bekommt hier eine
+   wohldefinierte Kraft nach außen statt einer Verweigerung.
+2. **Das Feld wird geglättet, mit der Sigma des Tinten-Feldes**
+   (`DIST_FIELD_SIGMA_PX` = 1,0 px). Zwei Gründe: der Solver bekommt
+   eine Landschaft der Klasse, die er ohnehin absteigt, und ein Pixel
+   Unschärfe filtert genau das ±0,5-px-Rauschen, das R3s §14-Eintrag als
+   Ursache seiner 1 626 Knicke nennt. **Der Preis ist benannt und wird
+   NICHT herausgerechnet:** eine geglättete Vorzeichen-Distanz verschiebt
+   ihre Niveaulinie um etwa κσ²/2 nach innen, an den engsten Löchern also
+   ~0,15 px ≈ 0,005 xh. Er taucht in der gemessenen Weite von Gate (a)
+   auf, statt vorher weggerechnet zu werden.
+
+#### Die Leiter und die Auswahlregel — beide vor der ersten Zahl
+
+Ein Gewicht, sonst nichts: `counter_weight` ∈ **{1, 4, 16, 64, 256}**,
+Vierer-Sprossen ab dem Gewicht des Tinten-Terms. Die Leiter muss weit
+reichen, weil der Hinge über ALLE Stützstellen gemittelt wird, während
+nur wenige je Wort heiß sind — ein Faktor von rund 20 trennt die beiden
+Energien, bevor eine einzige Zahl gemessen ist.
+
+**Ausgewählt wird auf Gate (a) allein** — dem eigenen Ziel der Bedingung,
+referenzfrei und auf allen 63 Wörtern gelesen: die **kleinste** Sprosse,
+die (a) besteht, ist der Arm. Fällt keine Sprosse (a), fällt der Arm an
+(a) und die beste Sprosse wird berichtet. Damit wird die Wahl NICHT auf
+den Gates getroffen, die den Arm richten ((b)/(c)/(d)) — ein Sweep, der
+sich seine Sprosse am dev-Satz aussucht, wäre genau das Nachstimmen, das
+die Vorregistrierung verhindert.
+
+**Zum Messmittel:** R3bs Offline-Pfad ist hier NICHT zulässig und wird
+nicht benutzt. Er spielt eine reine Nachbearbeitungsfunktion auf
+gespeicherten Basisbahnen ab; ein Term im Solve verändert den Solve, also
+gibt es für ihn keine gespeicherte Bahn. Jede Sprosse ist ein voller
+Folger-Lauf über alle 63 Wörter, mit derselben Kommandozeile wie die
+Basis bis auf den EINEN Schalter.
+
+#### Die Gates
+
+| | Gate | Bestanden, wenn |
+|---|---|---|
+| (a) | **Öffnungsweite je Schleife** | je Schleife \|`D0` Arm − (`Tinte` dieses Vorkommens + 2·`w_pen`)\| ≤ 0,02 xh für **≥ 95 %** der gebundenen Schleifen, und **jede** von ihnen offen bei Halbbreite 0,097 (`D0` > 0,1936). Gelesen mit R3s eigenem Instrument (`zweizuege.loop_aperture_near`, 800 px/xh, kein Splitterboden) auf R3s eigenem Schleifensatz |
+| (b) | **Struktur** | `cross_missing`/`cross_spurious` nicht schlechter als die Basis (**11 / 9**), Retrace-Zonen unverändert |
+| (c) | **Bahnmaß** | dev-19 `dtw_xh` **Median UND p90** nicht schlechter als die Basis (0,045881 · 0,088356) |
+| (d) | **Unstetigkeit** | keine Zunahme der `kink`-Ereignisse über der #558-Schwelle (11,537°) gegenüber der Basis, und der `wobble`-Median nicht schlechter. Basiszahl wird mit der Armzahl zitiert |
+| (e) | **Referenzfrei** | 63er-k0 Soll-Abstand und `aiou` berichtet (kein Kriterium — Kontext, wie in R3) |
+| (f) | **Wort-Bench** | Headline unverändert (Zeilen unberührt → byte-gleich) |
+| (g) | **Golden** | `pen=None` byte-identisch |
+| (h) | **Determinismus** | zwei Läufe desselben Arms byte-gleich, BLAS gepinnt |
+
+#### Kill-Kriterien
+
+(i) Gate (b) oder (c) rot → verworfen, unabhängig von der Öffnungsweite:
+Struktur schlägt Distanz, Distanz schlägt Weitung (R3s Regel, wörtlich
+übernommen). (ii) Keine Sprosse besteht (a) → das Modell erreicht sein
+eigenes Ziel nicht. (iii) Jede nachträgliche Lockerung einer Schwelle
+dieses Blocks ist ausgeschlossen.
+
+#### Die Decke der Kennzahl, vorab beziffert
+
+**Die 24 bewegt auch dieser Arm nicht**, und aus demselben Grund wie R3:
+die schließenden Wörter sind eine Eigenschaft der KOMPONIERTEN Wörter,
+also der gespeicherten Laufform-Zeilen, während dieser Arm die
+Kette-BAHN korrigiert. Der Weg dorthin führt über die Ernte, und der
+bleibt zu — sie hat nach §3 keinen Folger-Pfad, und **LF14s
+Fixpunkt-Befund verbietet den Write ohnehin**, bis der Fixpunkt-Arm
+gelaufen ist. Deshalb wird hier **keine Karte erzeugt** und keine Zeile
+neu abgeleitet.
+
+**Und `kringel_lost` bewegt dieser Arm auch nicht — das ist eine
+Eigenschaft des SENSORS, hier vor der ersten Armzahl nachgelesen und
+nicht angenommen.** R3s Vorregistrierung nennt die Spalte als seine
+Kennzahl; `tools.tracebench.kringel.kringel_by_word` liest sie aber auf
+`derive_word(case).composed["items"]`, also auf der KOMPOSITION, nicht
+auf dem Kandidaten — kein Folger-Arm kann sie überhaupt erreichen (R3s
+Ergebnis-Eintrag berichtet folgerichtig auch keine bewegte). Die
+Kennzahl eines BAHN-Arms muss auf der Bahn gelesen werden, und genau das
+tut Gate (a): die Öffnungsweite, die die Kandidatenbahn um jede
+Katalog-Binnenfläche zeichnet. `kringel_lost` steht hier nur noch als
+Kontext der Basis (dev-19 **12 von 43 `offen`-Schleifen in 10 von 19
+Wörtern**) und ist per Konstruktion unverändert.
+
+### Kette R3c „Binnenflächen-Bedingung im Solve" `sep07` — gemessen: die Glätte ist umsonst zu haben, die Weitung nur dort, wo sie schon da war
+
+**Verdikt: nicht adoptiert, Gate (a) rot auf JEDER Sprosse.** Der
+Schalter `--counter-constraint` bleibt AUS. Und die Runde ist das genaue
+Gegenstück zu R3: **das Gate, an dem die Nachbearbeitung gefallen ist,
+besteht die Bedingung im Solve mühelos** — die Unstetigkeit sinkt sogar
+—, dafür erreicht sie ihr eigenes Ziel viel seltener. Beide Runden
+zusammen zerlegen das Problem, und die Zerlegung ist der Ertrag.
+
+**Basis und Rahmen.** Wurzel `eaa195aa7c84…` wie vorregistriert, BLAS
+gepinnt, `--jobs 4` für Basis und jede Sprosse, dieselbe Kommandozeile
+bis auf den EINEN Schalter. **Die Nullprobe des Terms auf echten Daten
+steht davor:** mit dem Feld im Code und dem Schalter AUS ist `das`
+strichgleich zur Basis, die vor dem Code lief — größter
+Koordinatenunterschied **0,000e+00 xh**. Der Term ist bei Gewicht 0 also
+nicht „fast", sondern bit-genau abwesend.
+
+#### Die Leiter, und warum sie ein INNERES Maximum hat
+
+157 Katalog-Binnenflächen sind über 60 der 63 Wörter gebunden (162
+Zeilen im Geltungsbereich, 5 Verweigerungen: 4× „die Platte zeigt hier
+kein Loch", 1× „das Loch gehört einer anderen Schleife desselben
+Buchstabens"). Gate (a) fordert ≥ 95 %, also **≥ 149 von 156**:
+
+| Gewicht | \|Δ\| ≤ 0,02 | offen bei 0,097 | Median Δ | Wächter: Runden · Rücknahmen |
+|---|---|---|---|---|
+| Basis | 12 / 155 | 124 / 155 | −0,0748 | 107 · 28 |
+| 1 | 22 / 156 | **129** / 156 | −0,0661 | 106 · 29 |
+| 4 | 38 / 156 | 128 / 156 | −0,0644 | 106 · 30 |
+| 16 | 52 / 156 | 128 / 156 | −0,0599 | 107 · 31 |
+| **64** | **64** / 156 | 127 / 156 | **−0,0359** | 111 · 26 |
+| 256 | 51 / 156 | 128 / 156 | −0,0625 | 106 · 28 |
+
+**Gate (a) ist auf jeder Sprosse rot**, die beste trifft 41 % statt
+95 %. Die Leiter steigt bis 64 und fällt dann wieder — kein
+Ableseartefakt: bei 256 steht die `h`#0-Schleife wieder exakt auf ihrem
+Basiswert (0,5759), das Wort ist also vom Wächter ganz auf den Kettenfit
+zurückgesetzt. Die Vorregistrierung wählt die KLEINSTE bestehende
+Sprosse; da keine besteht, wird die beste berichtet (64), und ihre
+Zahlen stehen unten.
+
+#### Gate (a), zerlegt — und die Zerlegung ist der eigentliche Befund
+
+Nach dem, was die BASIS an der Stelle schon zeichnet:
+
+| Klasse der Basis-Schleife | n | Treffer ±0,02 | Median-Bewegung |
+|---|---|---|---|
+| kollabiert (`D0` < 0,05) | 13 | 1 | **+0,0000** |
+| gezeichnet, aber zu bei 0,097 | 18 | 2 | **+0,0000** |
+| schon offen bei 0,097 | 124 | 61 | **+0,0227** |
+
+**Die Bedingung bewegt genau die Schleifen, die schon offen waren, und
+die 31, die zu sind, überhaupt nicht.** Das ist der Kern des Negativs:
+der Arm hilft nicht dort, wo der Defekt sitzt. Dasselbe je Schleifen-
+Schlüssel (Median `D0`, Basis → Gewicht 64, gegen die Platten-Erwartung):
+
+| Schleife | n | Erwartung | Basis | w = 64 | offen bei 0,097 |
+|---|---|---|---|---|---|
+| `r`#0 | 19 | 0,3269 | 0,2354 | **0,3092** | 17/19 |
+| `d`#0 | 14 | 0,6264 | 0,6222 | 0,6388 | 14/14 |
+| `a`#0 | 13 | 0,2911 | 0,1925 | 0,2000 | 7/13 |
+| `l`#0 | 12 | 0,5629 | 0,4883 | 0,5189 | 12/12 |
+| `h`#0 | 10 | 0,6498 | 0,5759 | **0,6555** | 10/10 |
+| `h`#1 | 10 | 0,4989 | 0,4625 | **0,5008** | 10/10 |
+| `t`#0 · `t`#1 | 9 + 9 | 0,3761 · 0,3912 | 0,2714 | 0,2710 | 8/9 · 6/9 |
+| `w`#0 | 6 | 0,3280 | 0,1941 | 0,1954 | 3/6 |
+| `o`#0 | 5 | 0,3226 | 0,1581 | 0,1675 | **0/5** |
+| `sz`#0 | 4 | 0,3226 | 0,2238 | 0,2286 | 4/4 |
+
+Am Einzelvorkommen ist derselbe Schnitt zu sehen: `sz`#0 in `muß-2` geht
+0,2300 → **0,3366** (Erwartung 0,3226) und `r`#0 in `Zorn` 0,2354 →
+**0,3216** (0,3269) — beide waren offen; `o`#0 in `Galoppieren` bleibt
+bei 0,1668 → 0,1687 und `a`#0 in `daß` bei 0,2000 → 0,2000. **Ein
+verschmolzener Klumpen bewegt sich nicht**, und der Grund, den der
+Nachfolge-Arm messen muss, ist benannt statt behauptet: an einer
+zugelaufenen Stelle liegt der Tinten-Term selbst auf der Klumpenachse,
+und ein Gradienten-Term kann eine symmetrische Lage nicht aufbrechen,
+die eine punktweise Trennung (R3) per Konstruktion aufbricht.
+
+#### Gate (d) — GRÜN, und das ist das Ergebnis der Runde
+
+Der Unstetigkeits-Sensor (#558) über alle 63 Wörter, dieselben
+Ausschlüsse wie `wordbench.continuity` (Hebung · Kreuzung · Retrace ·
+Ecke):
+
+| | Basis | w = 64 |
+|---|---|---|
+| `kink`-Ereignisse über 11,537° | 2 296 | **2 258** |
+| `kink` Median · p90 | 8,081° · 30,840° | **7,525° · 30,264°** |
+| `wobble` Median | 0,0616 | **0,0611** |
+| Wörter mit MEHR · WENIGER Ereignissen | – | 18 · 23 (22 gleich) |
+
+**R3 hat an dieser Stelle 1 626 neue Knicke erzeugt und R3b immer noch
+462. Die Bedingung im Solve erzeugt KEINEN**, sie senkt die Zahl. Genau
+das war die Vorhersage der Konversion, und sie kostet nichts: es gibt
+keine Blende, deren Länge zu wählen wäre, weil die Anker die Glättung
+sind.
+
+#### Die übrigen Gates
+
+| Gate | Ablesung (w = 64 gegen die Basis) | Urteil |
+|---|---|---|
+| (b) Struktur | `cross_missing` 11 → 11, **`cross_spurious` 9 → 10**; `touch_cand` 18 → 17, `retrace_arc_ratio_gap` 0,252 → 0,246 | **rot** |
+| (c) Bahnmaß | `dtw` Median-Δ **−0,000365** (rel −0,90 %), p90-Δ **+0,001618**; Vorzeichentest 7 : 10 : 2, p = 0,63; `aiou` 0,7660 → 0,7611 | **rot am p90** |
+| (e) referenzfrei | 63er-k0 Soll **85 → 81** (5 besser / 57 gleich / 1 schlechter); `aiou` über die 48 bewegten Wörter Median −0,0020 (min −0,1159 `das`, max +0,0951 `han`); strichgleich 15/63 | berichtet |
+| (f) Wort-Bench | `--set all --expect-root eaa195aa,0fbde2d7`: **0,109026 · 0,148236**, die Headline dieses Stands, unverändert | **grün** (per Konstruktion) |
+| (g) Golden | `core/` unberührt, 2 579 Tests grün | **grün** |
+| (h) Determinismus | zwei Läufe desselben Arms: **63/63 strichgleich, größter Unterschied 0,000e+00 xh** | **grün** |
+
+Auch die Sprosse 16 zeigt dieselbe Signatur (`cross_spurious` 9 → 10,
+`dtw`-Median −0,000082, p90 +0,001648) — (b) und (c) fallen also nicht
+an einem Gewicht, sondern an der Formulierung.
+
+#### Was der Wächter damit zu tun hat
+
+Der `structure_guard` ist eine RUNDEN-Regel, und das ist hier zum ersten
+Mal messbar teuer: auf dem Arm stehen **18 Wörter sauber, 14 auf dem
+Kettenfit zurückgesetzt, 12 auf Runde 1 zurückgesetzt, 19 zonal
+gerettet** — 26 von 63 Wörtern verlieren ihre Folge ganz oder halb. R3
+hatte für denselben Fall eine feinere Regel (`REFUSAL_CLOSURE_LOST`, je
+SCHLEIFE zurückgenommen, 10 von 108). Die Vorregistrierung hat auf eine
+zweite Abnahmeregel verzichtet, weil der Wächter dasselbe leistet — er
+leistet es, aber mit einer Körnung, die dem ganzen Wort die Runde
+kostet. Das ist die erste benannte Konversion unten.
+
+#### Was das zusammen heißt
+
+R3 und R3c bilden eine Klammer, und in der Mitte steht ein Satz: **die
+Bedingung ist an der richtigen Stelle, aber sie ist der falsche Kanal.**
+Hinter dem Solve trifft sie ihr Ziel (107 von 108 Schleifen offen) und
+zerstört die Glätte; IM Solve hält sie die Glätte (Knicke fallen) und
+trifft ihr Ziel nur, wo es schon getroffen war. Der gemeinsame Nenner
+beider Runden ist der Tinten-Term: er zieht die Bahn auf die
+Mittelachse des verschmolzenen Klumpens, und gegen ihn kommt weder eine
+Nachbearbeitung glatt noch ein Nebenterm weit genug. Damit zeigt diese
+Runde auf R3s Konversion **(4)**: nicht die Ausgabe und nicht das
+Objektiv korrigieren, sondern **die EVIDENZ** — die Feder aus dem
+Abstandsfeld herausrechnen, das der Tinten-Term liest (R4,
+Mittelachsen-Term). Dann muss keine Bedingung gegen die Tinte
+argumentieren, weil die Tinte selbst schon die richtige sagt.
+
+#### Rettungswege (§7.9 in derselben Runde ergänzt)
+
+1. **Eine Abnahmeregel je SCHLEIFE statt je Runde** — die zonale
+   Rückweisung (K0-Z) um die Binnenflächen-Stellen erweitern, so dass
+   eine Schleife, die ihre Kreuzung verliert, nur ihre eigenen Anker
+   pinnt und dem Wort nicht die Runde kostet. Neuer MECHANISMUS, eigene
+   Pre-Reg.
+2. **Die enge Klasse** — nur die 124 Schleifen binden, die die Basis
+   schon offen zeichnet: dort trifft der Arm 61 von 124 und bewegt im
+   Median +0,0227, während er an den übrigen 31 nachweislich nichts tut.
+   Asymmetrie-Regel `aug26`, eigene Pre-Reg.
+3. **Der weite Geltungsbereich als eigener Arm**
+   (`--counter-size-classes klein,mittel,gross`) — vor der ersten
+   Armzahl dieser Runde zurückgenommen, gebaut und messbar; erst nach (1)
+   sinnvoll.
+4. **Die Bedingung auf die EVIDENZ statt auf das Objektiv** — R3s
+   Konversion (4), von dieser Runde von „offen" auf „der aussichtsreiche
+   Weg" gehoben: mit den 156 Zahlen hier und den 106 von R3 als Eichung.
+   Ausdrücklich KEIN Weg: die Feder dünner rechnen, ein Gate lockern, den
+   Wächter abschalten, oder das Gewicht über die Leiter hinaus treiben
+   (bei 256 fällt Gate (a) bereits wieder).
+
+**Keine Schreib-Karte, und der Grund steht in LF14.** Dieser Arm leitet
+keine Laufform-Zeile ab und erzeugt keine Karte: die Ernte hat nach §3
+keinen Folger-Pfad, und LF14s Fixpunkt-Befund sperrt den Write
+ohnehin, bis der Fixpunkt-Arm gelaufen ist.
