@@ -70,10 +70,13 @@ QUELLEN = ("auto", "hand")
 # the i-dot's class, which is the wrong direction to be generous in.
 SPECK_MAX_EXTENT_MM = 1.2
 SPECK_MAX_AREA_MM2 = 0.6  # a filled disc of ~0.9 mm; the measured particles are elongated, not discs
-# What counts as WRITING rather than as a dot. A Sütterlin `e` at 6 mm
-# x-height draws some 15 mm of ink at ~0.4 mm width — about 6 mm²; an i-dot is
-# ~0.13 mm². One square millimetre sits an order of magnitude away from both,
-# so no letter is ever taken for a speck and no dot for a letter.
+# What counts as WRITING — protected, and what a speck has to stand clear of.
+# A Sütterlin `e` at 6 mm x-height draws some 15 mm of ink at ~0.4 mm width,
+# about 6 mm². The floor sits at the hand's smallest DETACHED ink instead: on
+# B0001 the M-nib i-dots measured 1.0–1.4 mm², so at 1.0 they land on the
+# writing side of the `>=` and are protected by size alone. A lighter hand's
+# dot under the floor is not lost either — it falls to the clearance and
+# position rules below, which is what they are for.
 WRITING_MIN_AREA_MM2 = 1.0
 # How far a speck has to stand clear of the writing before it may be masked.
 # Four times the widest speck, and wider than the gap an i-dot keeps from its

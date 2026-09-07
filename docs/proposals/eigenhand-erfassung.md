@@ -16,10 +16,11 @@
 > sichtbar macht, welche neu zu schreiben sind. Die Wellen 0 bis 2
 > des Streifenplans sind committet (Streifen 1–180: Buchstaben, Ziffern,
 > Zeichen, Mindestbelegung ≥3 je Glyphe), dazu seit 2026-09-06 die erste
-> Anheftung (`S0181` = „Kurrentschrift", §4). Gedruckt ist noch kein
-> Bogen. Zukunft ist Phase 5 (§9:
-> Anschluss an Fit/Ernte) sowie die ersten echten Schreibsitzungen samt
-> Kalibrier-Schleife der Kastenbreiten (§5).
+> Anheftung (`S0181` = „Kurrentschrift", §4). **Der erste echte Bogen
+> `B0001` ist gedruckt, geschrieben und eingelesen** (2026-09-07: drei
+> Fassungen mit Befund und Fleckenmaske §7.4 in der DB, erster
+> Archiv-Snapshot). Zukunft ist Phase 5 (§9: Anschluss an Fit/Ernte) sowie
+> die Kalibrier-Schleife der Kastenbreiten (§5).
 
 ## 1 Anlass
 
@@ -1019,8 +1020,8 @@ stehen im Modul, mit ihrer Begründung daneben):
 
 | Regel | Konstante | Warum |
 |---|---|---|
-| klein genug | `SPECK_MAX_EXTENT_MM` 1,2 · `SPECK_MAX_AREA_MM2` 0,6 | kalibriert am ersten echten Bogen (B0001, 07.09.2026, 600 dpi): die Tonerpartikel messen 0,25–1,0 mm und 0,02–0,41 mm², die i-Punkte und u-Bögen der Hand mit M-Feder 1,0–2,5 mm² — die Grenze liegt dazwischen, und ein Schmierer darüber (1,8 mm²) bleibt dem Pinsel, weil eine Grenze, die ihn fängt, schon in der Klasse der i-Punkte läge |
-| berührt keine Schrift | `WRITING_MIN_AREA_MM2` 1,0 | ein `e` bei 6 mm x-Höhe zieht ~6 mm² Tinte, ein i-Punkt ~0,13 mm² — ein Fleck AN einem Buchstaben ist mit ihm EINE Komponente und wird nie geteilt |
+| klein genug | `SPECK_MAX_EXTENT_MM` 1,2 · `SPECK_MAX_AREA_MM2` 0,6 | kalibriert am ersten echten Bogen (B0001, 2026-09-07, 600 dpi): die Tonerpartikel messen 0,25–1,0 mm und 0,02–0,41 mm², die i-Punkte und u-Bögen der Hand mit M-Feder 1,0–2,5 mm² — die Grenze liegt dazwischen, und ein Schmierer darüber (1,8 mm²) bleibt dem Pinsel, weil eine Grenze, die ihn fängt, schon in der Klasse der i-Punkte läge |
+| berührt keine Schrift | `WRITING_MIN_AREA_MM2` 1,0 | ein `e` bei 6 mm x-Höhe zieht ~6 mm² Tinte; die Untergrenze liegt am kleinsten abgesetzten Tintenteil der Hand — die i-Punkte der M-Feder messen auf B0001 1,0–1,4 mm² und fallen damit auf die Schrift-Seite der Regel (ein leichterer Punkt darunter bleibt an Abstand und Position hängen); ein Fleck AN einem Buchstaben ist mit ihm EINE Komponente und wird nie geteilt |
 | steht frei | `SPECK_CLEARANCE_MM` 2,5 | Komma, Punkt, i-Punkt und eigene Kleckse leben innerhalb dieses Radius |
 | ist kein Punkt über einem Buchstaben | `DOT_X_SLACK_MM` 0,8 · `DOT_MAX_RISE_MM` 5,0 | geometrisch statt metrisch, damit auch eine Hand mit hoch gesetzten i-Punkten sicher ist |
 | liegt im Schreibfenster | `writing_window` | Streifen-ID im oberen Pad und Klartext-Label unten sind Druck, nicht Tinte des Schreibers — Druck wird nie übermalt |
