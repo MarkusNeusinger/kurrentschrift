@@ -530,21 +530,24 @@ export function StripsPanel({
     };
   }, [hand, version, filter.wort, filter.item]);
 
-  // The gallery: every (strip, box) that holds the filter, in plan order. A
-  // strip the server listed always contributes — should the two halves of
-  // the match ever disagree on a box, the whole row is shown rather than
-  // nothing, because hiding evidence the server found is the worse error.
+  // The listing's order — plan order, or weakest first when the switch is on.
+  // BOTH display modes read it: the tiles below and the filtered gallery, so
+  // the switch means the same thing whether or not a filter is active.
   const listed = useMemo(() => (byWeakest ? [...strips].sort(byBefund) : strips), [strips, byWeakest]);
 
+  // The gallery: every (strip, box) that holds the filter. A strip the server
+  // listed always contributes — should the two halves of the match ever
+  // disagree on a box, the whole row is shown rather than nothing, because
+  // hiding evidence the server found is the worse error.
   const belege = useMemo(
     () =>
       filtered
-        ? strips.flatMap((row) => {
+        ? listed.flatMap((row) => {
             const matching = row.boxes.filter((box) => boxMatches(box, filter));
             return (matching.length ? matching : row.boxes).map((box) => ({ row, box }));
           })
         : [],
-    [strips, filter, filtered],
+    [listed, filter, filtered],
   );
 
   const caption = filtered

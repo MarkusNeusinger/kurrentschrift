@@ -98,7 +98,7 @@ from api.schemas import (
 )
 from core.database import EigenhandRepository
 from core.eigenhand import bogen, coverage, crop, geometry
-from core.eigenhand.befund import befund_index
+from core.eigenhand.befund import BEFUND_FORMAT, befund_index
 from core.eigenhand.bestand import bestand as build_bestand
 from core.eigenhand.ids import STYLE_IDS, is_fassung_id, is_hand_id, is_sheet_id, is_strip_id, style_of_hand
 from core.eigenhand.plan import load_plan, shaping_form_of, words_of
@@ -459,6 +459,14 @@ async def record_fassungen(body: EigenhandSyncIn, db: AsyncSession = Depends(req
     Bestand and marks a Streifen `belegt` — so a verdict for a Bogen nobody
     printed would inflate the counts out of thin air. Push the sheets first
     (`tools.eigenhand.sync` does, in that order).
+
+    A pushed Streifen-Befund must name the format THIS server derives verdicts
+    with. The measurement is computed locally and interpreted here (`core
+    .eigenhand.befund`), so a newer tool pushed at an older API would store
+    numbers this code reads under different semantics — silently, and forever,
+    because the stored row carries no second chance. Same refusal as
+    `api/routers/lesarten.py`'s fold check, and for the same reason: the SERVER
+    holds the contract, not the tool that could be an old copy.
     """
     hand = _checked_hand(body.hand)
     repo = EigenhandRepository(db)
@@ -468,6 +476,15 @@ async def record_fassungen(body: EigenhandSyncIn, db: AsyncSession = Depends(req
         if not is_strip_id(item.strip) or not is_fassung_id(item.fassung) or not is_sheet_id(item.sheet):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST, detail=f"malformed ids in {item.strip}/{item.fassung} on {item.sheet}"
+            )
+        if item.befund is not None and item.befund.get("format") != BEFUND_FORMAT:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                detail=(
+                    f"this API reads Befund format {BEFUND_FORMAT}, "
+                    f"{item.strip}/{item.fassung} says {item.befund.get('format')!r} — "
+                    "deploy the matching API before pushing, or re-measure with this one"
+                ),
             )
         if item.sheet not in sheets:
             row = await repo.sheet(hand, item.sheet)

@@ -235,6 +235,15 @@ def test_an_equally_good_rewrite_does_not_supersede() -> None:
     assert ranked["F02"].abgeloest_von is None
 
 
+def test_later_is_a_number_not_a_spelling() -> None:
+    """`F100` comes AFTER `F99` — as text it would not, and only here it matters."""
+    weak = _measure(_paint(_blank(), [(_x0() + 20, _y(42.0)), (_x0() + 110, _y(34.0)), (_x0() + 200, _y(41.0))]))
+    strong = _measure(_paint(_blank(), _arc()))
+    ranked = befunde_of_strip(_kartei_with(("F99", weak), ("F100", strong)), "S0001")
+    assert ranked["F99"].abgeloest_von == "F100"
+    assert ranked["F100"].abgeloest_von is None
+
+
 def test_the_hands_own_pen_is_the_reference_and_the_index_carries_it() -> None:
     thin = _measure(_paint(_blank(), _arc(), half=NIB_HALF_PX * 0.5))
     kartei = _kartei_with(("F01", thin), ("F02", dict(thin)))

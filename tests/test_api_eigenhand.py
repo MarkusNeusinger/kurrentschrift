@@ -28,6 +28,7 @@ from sqlalchemy import inspect
 
 from core.database import EigenhandRepository
 from core.eigenhand import bogen
+from core.eigenhand.befund import BEFUND_FORMAT
 from core.eigenhand.plan import load_plan
 from tests.api_harness import Harness
 
@@ -225,6 +226,25 @@ class TestUebergangsraum:
         after = await _bestand(api)
         assert after["quoten"]["erstbeleg"] >= 1, "an accepted row with an e moves e@medial"
         assert 0.0 < after["quoten"]["erstbeleg_weighted"] <= 1.0
+
+    @pytest.mark.asyncio
+    async def test_a_befund_from_another_format_is_refused_not_stored(self, api: Harness):
+        """The SERVER holds the contract — a tool can always be an old copy.
+
+        The measurement is computed locally and interpreted here, so a Befund
+        from a different format would be read under semantics it was never
+        measured with. Same refusal as the Lesart fold check, and the row must
+        not exist afterwards: a stored measurement carries no second chance.
+        """
+        printed = await _print(api, strips=["S0001"], date="2026-08-23")
+        sheet = printed["sheets"][0]["sheet"]
+        stale = {**_accepted("S0001", sheet, 0), "befund": {"format": BEFUND_FORMAT + 1, "woerter": []}}
+        assert (await _record(api, [stale])).status == 409
+        assert (await _bestand(api))["fassungen"]["angenommen"] == 0
+
+        current = {**_accepted("S0001", sheet, 0), "befund": {"format": BEFUND_FORMAT, "woerter": []}}
+        assert (await _record(api, [current])).status == 200
+        assert (await _bestand(api))["fassungen"]["angenommen"] == 1
 
     @pytest.mark.asyncio
     async def test_an_accepted_fassung_moves_exactly_its_own_strips_items(self, api: Harness):

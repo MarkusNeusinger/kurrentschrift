@@ -148,56 +148,57 @@ LOOP_MIN_INK_UNITS = 0.05
 # speck — generous, because the question a part count answers is "did the pen
 # lift", and a speck must never answer it.
 PART_MIN_DISC_FRACTION = 0.5
-# The medial axis is quantised to the pixel raster, and a staircase of ±½ px
-# read over the half-nib window of `core.continuity` is a heading noise of
-# several degrees — enough to fake a Knick. So a skeleton edge is resampled to
-# one point per pixel of arc and smoothed with a Gaussian of this many pixels
-# before any direction is read. The residual staircase is then ~0.14 px, i.e.
-# under 2° at the reading window, against an 11.5° threshold. The trade is
-# stated rather than hidden: a real Knick is spread over ~4 px = 0.056 xh,
-# still inside the 0.0725 xh reading window, so the sensor under-reads a sharp
-# kink slightly and over-reads nothing — the conservative direction for a
-# measurement that suggests rewriting a strip.
+# ------------------------------------- making the medial axis readable (1–4)
+# Four steps in this order, each with the failure it exists for. Together they
+# are the difference between a sensor that can be run on written ink and one
+# that cannot; the numbers below were measured on distance-field references at
+# 300 dpi, where the true answer is known.
+#
+# (1) The MASK is smoothed — a Gaussian of this fraction of the measured half
+# width, re-thresholded at ½. A pen cannot write a boundary feature finer than
+# its own width, so smoothing at an eighth of the ink width removes only what
+# no pen could have made; a Gaussian plus a ½ threshold is curvature-limited
+# and leaves a straight or gently curved edge where it was. What it buys is
+# not cosmetic: on one clean drawn arc the raw thinning gave 111 graph edges
+# and a median half width of 4.1 px against a true 6.9 (the hairs sit near the
+# boundary and drag the median down); at this scale it gives ONE edge and
+# 6.7 px. It is applied ONLY where a DIRECTION is read — loops, parts, ink
+# coverage and the empty test all run on the ink as captured, because a
+# smoothing wide enough to unhair a skeleton is also wide enough to close the
+# narrowest counter, and closing a counter is the very defect being measured.
+MASK_SMOOTH_NIBS = 0.25
+# (2) The SPURS are pruned. Thinning a wide stroke whose boundary is a scan's
+# jagged edge grows one at every bump: in that same arc two spurs read 17° and
+# 21° of "Knick" that no pen ever wrote. A boundary bump of depth d grows a
+# spur of about d, and d is at most the half width, so ONE full ink width is
+# already twice the generous bound — the unit is named in the constant so the
+# call site cannot double it again. Pruned iteratively — a spur can hide
+# behind a spur — and the branches left over are then spliced back through the
+# nodes the pruning freed, or the medial axis stays in pieces and every splice
+# point becomes a stroke end the sensor cannot measure across.
+SPUR_MAX_INK_WIDTHS = 1.0
+# (3) The remaining run is resampled to one point per pixel of arc and
+# smoothed with a Gaussian of this many pixels. The medial axis is quantised
+# to the pixel raster, and a staircase of ±½ px read over the half-nib window
+# of `core.continuity` is a heading noise of several degrees — enough to fake
+# a Knick.
 SKELETON_SMOOTH_PX = 2.0
-# …and then the samples are re-centred SUB-PIXEL on the grayscale: at each
+# (4) …and the samples are re-centred SUB-PIXEL on the grayscale: at each
 # sample the ink weight (`INK_THRESHOLD` minus the plane, clipped at zero) is
 # integrated along the normal and the point moves to that cross-section's
 # centroid, capped at one half width so a bad section cannot fling it away.
 # This is the two-channel doctrine paying off — the anti-aliased intensity
 # knows where the middle of the stroke is to a fraction of a pixel, which a
-# binary thinning by construction cannot. It is what makes the sensor usable
-# on written ink at all: on distance-field references at 300 dpi, smoothing
-# alone left a clean arc at 15° of "Knick" (two false events) while reading a
-# real 53° corner as 9° — under the threshold, so the one defect the owner
-# names first would have been missed. With re-centring the same four
-# references read 2.9° / 3.5° / 0.6° on the clean arc, circle and straight run
-# (no events) and 36° on the corner (one event). A light second pass takes the
-# noise the shift itself carries.
+# binary thinning by construction cannot, and step (3) alone does NOT suffice:
+# a sawtooth whose period is long (a near-horizontal stretch, an apex) survives
+# a 2 px Gaussian. Measured on the four references: smoothing alone left a
+# clean arc at 15° of "Knick" (two false events) while reading a real 53°
+# corner as 9° — under the threshold, so the defect the owner names first would
+# have been missed. With re-centring the same four read 2.9° / 3.5° / 0.6° on
+# the clean arc, circle and straight run (no events) and 36° on the corner
+# (one event). A light second pass takes the noise the shift itself carries.
 RECENTRE_SEARCH_NIBS = 1.5  # how far along the normal the cross-section is read
 RECENTRE_SMOOTH_PX = 1.0
-# Before that, the MASK itself is smoothed — by a Gaussian of this fraction of
-# the measured half width, re-thresholded at ½. A pen cannot write a boundary
-# feature finer than its own width, so smoothing at an eighth of the ink width
-# removes only what no pen could have made; a Gaussian plus a ½ threshold is
-# curvature-limited and leaves a straight or gently curved edge where it was.
-# What it buys is not cosmetic: on one clean drawn arc the raw thinning gave
-# 111 graph edges and a median half width of 4.1 px against a true 6.9 (the
-# hairs sit near the boundary and drag the median down); at this scale it gives
-# ONE edge and 6.7 px. It is applied ONLY where a DIRECTION is read — loops,
-# parts, ink coverage and the empty test all run on the ink as captured, because
-# a smoothing wide enough to unhair a skeleton is also wide enough to close the
-# narrowest counter, and closing a counter is the very defect being measured.
-MASK_SMOOTH_NIBS = 0.25
-# Thinning a wide stroke whose boundary is a scan's jagged edge grows a SPUR at
-# every bump: one clean drawn arc came out of `skeletonize` as 111 graph edges,
-# of which the longest held a sixth of the path and two spurs read 17° and 21°
-# of "Knick" that no pen ever wrote. A boundary bump of depth d grows a spur of
-# about d, so a branch that ends free and is shorter than one full ink width is
-# a thinning artefact and nothing else. Pruned iteratively — a spur can hide
-# behind a spur — and the branches left over are then spliced back through the
-# nodes the pruning freed, or the medial axis stays in pieces and every splice
-# point becomes a stroke end the sensor cannot measure across.
-SPUR_MAX_NIBS = 2.0
 
 # ------------------------------------------------- the pre-registered bounds
 # Every threshold below is anchored on a physical scale or on an existing,
@@ -234,9 +235,14 @@ LOOP_LOST_SEVERE = 2
 BAND_OUTSIDE_NOTED = 0.15
 BAND_OUTSIDE_SEVERE = 0.30
 # …and the darkness. `blass` is flagged by the import at a mean ink level of
-# 0.45; above `INK_THRESHOLD` there is barely ink left to measure.
+# 0.45. The severe cutoff has to sit BELOW `INK_THRESHOLD` to be reachable at
+# all: ink is by definition everything under 0.55, so a mean over ink pixels
+# can never reach 0.55 and a cutoff there would be a branch that never fires.
+# Midway between the flag and the vanishing point is where the writing is
+# nearer to invisible than to merely faint — derived, not typed, so the two
+# ends cannot drift apart.
 BLASS_NOTED = 0.45
-BLASS_SEVERE = INK_THRESHOLD
+BLASS_SEVERE = 0.5 * (BLASS_NOTED + INK_THRESHOLD)
 
 # ------------------------------------------------------------- the composite
 # The naturalness weights, in the shape of the §5 metric: the term that always
@@ -562,7 +568,9 @@ def _pen_runs(ink: np.ndarray) -> tuple[list[np.ndarray], float]:
     skel, width_map = skeleton_and_width(smoothed)
     if not skel.any():
         return [], seed_half
-    paths = _merged_paths(_pruned_edges(skel, SPUR_MAX_NIBS * 2.0 * max(seed_half, 1.0)))
+    # One ink width is two half widths — the constant names ink widths, so the
+    # conversion happens exactly once, here.
+    paths = _merged_paths(_pruned_edges(skel, SPUR_MAX_INK_WIDTHS * 2.0 * max(seed_half, 1.0)))
     on_axis = [
         width_map[int(round(y)), int(round(x))]
         for path in paths
@@ -813,6 +821,16 @@ def _weighted(values: list[tuple[float, float]]) -> float:
     return sum(weight * quality for weight, quality in values) / sum(weight for weight, _ in values)
 
 
+def _level(value: Any) -> float:
+    """An ink level, with PAPER standing in only for a genuinely absent one.
+
+    The distinction matters at one end of the scale: 0.0 is the darkest ink a
+    reading can report, and `value or 1.0` would turn it into paper white — an
+    inverted darkness and a false „zu blass" on the best-inked strip there is.
+    """
+    return 1.0 if value is None else float(value)
+
+
 def _summarise(measurement: Mapping[str, Any]) -> dict[str, Any]:
     """The per-word rows folded into one reading for the whole Fassung.
 
@@ -851,8 +869,10 @@ def _summarise(measurement: Mapping[str, Any]) -> dict[str, Any]:
         * (float((w.get("deckung") or {}).get("ueber") or 0.0) + float((w.get("deckung") or {}).get("unter") or 0.0))
         for w in words
     )
+    # `is None`, not `or` — a mean of exactly 0.0 is the darkest ink there is,
+    # and a falsy default would read it as paper and call it „zu blass".
     darkness = sum(
-        int((w.get("deckung") or {}).get("tinte_px") or 0) * float((w.get("deckung") or {}).get("tinte_mittel") or 1.0)
+        int((w.get("deckung") or {}).get("tinte_px") or 0) * _level((w.get("deckung") or {}).get("tinte_mittel"))
         for w in words
     )
     return {
@@ -1052,6 +1072,12 @@ def hand_nib_median(kartei: Mapping[str, Any]) -> float | None:
     return float(np.median(widths)) if widths else None
 
 
+def _fassung_number(fassung_id: str) -> int:
+    """`F03` → 3, so „later" is a number and not a spelling. Unreadable ids sort first."""
+    digits = fassung_id[1:]
+    return int(digits) if digits.isdigit() else -1
+
+
 def befunde_of_strip(kartei: Mapping[str, Any], strip: str, *, nib_referenz: float | None = None) -> dict[str, Befund]:
     """Every accepted Fassung of one strip, ranked best first.
 
@@ -1071,7 +1097,17 @@ def befunde_of_strip(kartei: Mapping[str, Any], strip: str, *, nib_referenz: flo
         # `ranked` runs best first, so the FIRST later id that also scores
         # higher is the best one that supersedes this Fassung. Equal scores do
         # not supersede: a rewrite that came out the same is not a replacement.
-        better_later = next((other for other, ob in ranked if other > fid and ob.guete > scored_befund.guete), None)
+        # „Later" is compared as a NUMBER — the ids are minted `F{n:02d}`, so a
+        # hundredth Fassung of one strip would sort before its ninety-ninth as
+        # text, and the one place where that matters is exactly here.
+        better_later = next(
+            (
+                other
+                for other, ob in ranked
+                if _fassung_number(other) > _fassung_number(fid) and ob.guete > scored_befund.guete
+            ),
+            None,
+        )
         out[fid] = Befund(
             **{**scored_befund.as_dict(), "rang": place, "von": len(ranked), "abgeloest_von": better_later}
         )
