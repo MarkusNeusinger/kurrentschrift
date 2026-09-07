@@ -122,13 +122,27 @@ curl -fsS -X PATCH -H "X-Admin-Token: $ADMIN_TOKEN" -H "Content-Type: applicatio
 ```
 
 `stage` is one of `chart_ductus` · `laufform` · `join_rule` ·
-`composition` · `pair_override` · `word_trace` · `not_reproducible`.
-The API returns **422 naming the missing field** if the protocol is
-incomplete — that is the reminder, not an obstacle to route around.
+`composition` · `pair_override` · `word_trace` · `landmark_detector` ·
+`not_reproducible`. The API returns **422 naming the missing field** if
+the protocol is incomplete — that is the reminder, not an obstacle to
+route around.
 
 A `note` row closes on `resolution` alone: every stage in that
 vocabulary names a stage of the WRITING path, and a UI wrinkle has none.
 Send one anyway where it genuinely applies. The ack step is unchanged.
+
+A `landmark` row is a complaint about ONE detected structure of a letter
+(`optimierungs-werkbank.md` §8). It carries the letter's `glyph_key`, and
+the note's first two lines — written by the Landmarken-Linse itself — say
+which marker on which stored row, with its measured numbers: reproduce it
+from `GET /sources/<src>/templates/<key>/landmarks`, which answers the
+same detectors. Triage it in the usual order: is the authored DUCTUS
+wrong (→ `chart_ductus`, and then it is a **Rückgabe an Autor**, not a
+fix)? the Laufform? the class rule? Only when the letter turns out right
+and the detector wrong does it close on `landmark_detector` — the one
+stage that names no step of the writing path. „Hier fehlt eine Marke"
+(`spot`) is the same triage: a missing crossing is usually a missing
+crossing in the ductus, not a blind sensor.
 
 Three things it will refuse, all on purpose: acking and closing in ONE
 call (the restatement is only worth writing if it stood there while it

@@ -15,11 +15,17 @@ import { paper, pigment } from '@/styles/paper';
 // Korb (optimierungs-werkbank.md §8). `spot` is the fifth case and the only
 // one without an index: a place where the author expects a marker and none
 // stands, which is the complaint the layer most needs to be able to receive.
+//
+// The position is OPTIONAL, and that is the honest shape rather than a
+// convenience: an unmatched catalogue Kringel has no detected location by
+// definition, and a missing marker reported from the keyboard has none either.
+// Required coordinates forced those callers to invent `(0, 0)`, which the note
+// then filed as if the origin had been measured.
 export interface LandmarkRef {
   kind: LandmarkKind | 'spot';
   index: number | null;
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
   numbers: Record<string, number | string | boolean | null>;
 }
 
@@ -106,14 +112,18 @@ export function landmarkNoteHead(target: Extract<WerkbankTarget, { kind: 'landma
     glyphKey,
     landmarkRowLabel(variant),
   ].join(' · ');
+  const position =
+    ref.x !== undefined && ref.y !== undefined ? [`x ${ref.x.toFixed(4)}`, `y ${ref.y.toFixed(4)}`] : [];
   const numbers = [
-    `x ${ref.x.toFixed(4)}`,
-    `y ${ref.y.toFixed(4)}`,
+    ...position,
     ...Object.entries(ref.numbers)
       .filter(([, value]) => value !== null && value !== undefined)
       .map(([key, value]) => `${key} ${value}`),
   ].join(' · ');
-  return `${identity}\n${numbers}`;
+  // A landmark without a position and without numbers has nothing for the
+  // second line — the identity alone is then the whole head, rather than a
+  // blank line pretending something was measured.
+  return numbers ? `${identity}\n${numbers}` : identity;
 }
 
 // Identity of one mark — the filing dialog is remounted under this key so its
@@ -121,8 +131,8 @@ export function landmarkNoteHead(target: Extract<WerkbankTarget, { kind: 'landma
 // A landmark carries its position: two „Stelle ohne Marke" complaints on the
 // same letter have the same label and are not the same mark.
 export const markKey = (mark: Mark): string => {
-  const where =
-    mark.target.kind === 'landmark' ? `@${mark.target.landmark.x},${mark.target.landmark.y}` : '';
+  const ref = mark.target.kind === 'landmark' ? mark.target.landmark : null;
+  const where = ref && ref.x !== undefined && ref.y !== undefined ? `@${ref.x},${ref.y}` : '';
   return `${targetLabel(mark.target)}${where}:${mark.specimen?.id ?? '-'}`;
 };
 

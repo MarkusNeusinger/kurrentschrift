@@ -500,13 +500,18 @@ async def post_resample(
     return out
 
 
-def _catalogue_for_style(style_id: str) -> tuple[dict[str, list[dict]], KringelCatalogueOut]:
+def _catalogue_for(style_id: str, source_id: str) -> tuple[dict[str, list[dict]], KringelCatalogueOut]:
     """The Kringel catalogue, but only where it belongs — plus what to report.
 
     A catalogue is read off ONE hand with ONE pen and every size class in it is
-    counted in THAT plate's pen width, so applying it to another style would
-    publish Sütterlin-1922 expectations under a foreign hand's name — the rule
-    `tools.tracebench.kringel.kringel_by_word` already enforces for the bench.
+    counted in THAT plate's pen width, so it is applied only where BOTH halves
+    of its header match: the `style`, and the source its fixture root was
+    exported from (`measured_on[0].name`, which carries the source id). The
+    style alone is not enough — a second Sütterlin chart would be a different
+    hand under the same script and would silently receive this hand's verdicts.
+    Same rule `tools.tracebench.kringel.kringel_by_word` enforces for the bench,
+    where the second half is the run's root name.
+
     On a mismatch, an unreadable file or (in a lean image) a missing one, the
     loops still travel: they simply carry no verdict, which is what „unbekannt"
     says. A sensor never costs the answer.
@@ -518,7 +523,7 @@ def _catalogue_for_style(style_id: str) -> tuple[dict[str, list[dict]], KringelC
         return {}, KringelCatalogueOut(available=False)
     measured = (source_header.get("measured_on") or [{}])[0]
     info = KringelCatalogueOut(
-        available=source_header.get("style") == style_id,
+        available=source_header.get("style") == style_id and measured.get("name") == source_id,
         style=source_header.get("style"),
         root=measured.get("name"),
         pen_half_width_units=source_header.get("pen_half_width_units"),
@@ -612,7 +617,7 @@ async def get_landmarks(
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"no canonical for {glyph_key!r}")
     laufform = await repo.get(source.style_id, glyph_key, variant=LAUFFORM_VARIANT)
     ctx = await resolve_render_context(source, db)
-    catalogue, info = _catalogue_for_style(ctx.style_id)
+    catalogue, info = _catalogue_for(ctx.style_id, source.id)
     rows = await run_in_threadpool(
         lambda: [_row_landmarks_out(t, ctx, catalogue) for t in (chart, laufform) if t is not None]
     )

@@ -433,9 +433,13 @@ Buchstabens zeigen würden.
    keinen Bereich, und der Katalog trägt diese Uneinigkeit seit `sep06` in
    seinem eigenen Kopf (`ductus_loops_per_glyph`). Nichts zu zeigen hieße
    zu behaupten, der Buchstabe habe keinen Kringel.
-3. Fehlt der Kringel-Katalog für die gewählte Vorlage — er ist an EINER
-   Hand mit EINER Feder abgelesen —, kommen die Schleifen ohne Urteil
-   („unbekannt“) statt mit einem geratenen.
+3. Fehlt der Kringel-Katalog für die gewählte Vorlage, kommen die
+   Schleifen ohne Urteil („unbekannt“) statt mit einem geratenen. Der
+   Katalog gilt nur, wo **beide** Hälften seines Kopfes passen — die
+   Schrift UND die Quelle, aus der seine Fixture-Wurzel exportiert wurde
+   (`measured_on[0].name`). Die Schrift allein genügt nicht: eine zweite
+   Sütterlin-Tafel wäre eine andere HAND unter demselben Skript und bekäme
+   stillschweigend die Urteile dieser hier.
 
 ### 8.2 Die Route
 
@@ -498,10 +502,20 @@ absichert.
 
 Die Landmarken-Ebene ist **generiert**. Nach §3 heißt das: nur bemängeln,
 nie von Hand patchen — und die Linse trägt genau einen Griff, ⚑. Jede
-Marke bietet ihn, und der **leere Bereich des Buchstabens** bietet ihn
-auch: ein Klick ins Leere meldet, dass an dieser Stelle eine Marke FEHLT.
-Das ist die Beschwerde, die eine reine Marker-Fläche gar nicht annehmen
-könnte, und sie ist die häufigere Hälfte des Autor-Wunsches.
+Marke bietet ihn, und die **fehlende** Marke bekommt ihn zweimal: ein
+Klick in den leeren Bereich des Buchstabens meldet die Stelle **mit ihrer
+Position**, der Knopf „Fehlende Marke melden“ unter dem Buchstaben meldet
+dasselbe **ohne** — und der Knopf ist nicht der Notnagel für die Maus,
+sondern der Weg der Tastatur. Beides ist die Beschwerde, die eine reine
+Marker-Fläche gar nicht annehmen könnte, und sie ist die häufigere Hälfte
+des Autor-Wunsches.
+
+**Die Ortsangabe ist optional, und zwar aus Ehrlichkeit.** Eine
+unzugeordnete Katalog-Schleife hat per Definition keinen erkannten Ort,
+und eine über die Tastatur gemeldete fehlende Marke auch nicht. Eine
+Pflicht-Koordinate hätte beide gezwungen, `(0, 0)` zu erfinden — und die
+Notiz hätte den Ursprung abgelegt, als wäre er gemessen worden. Fehlt sie,
+steht sie nicht da.
 
 Ein solcher Eintrag ist `kind = "landmark"` und trägt den `glyph_key` wie
 ein Buchstaben-Auftrag. **Keine eigene Spalte, keine Migration:** die

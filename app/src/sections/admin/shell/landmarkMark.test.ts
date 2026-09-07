@@ -40,6 +40,19 @@ describe('landmark marks', () => {
     expect(targetLabel(markOf(spot).target)).toBe('Landmarke Stelle ohne Marke · d');
   });
 
+  it('files a position-less report as the identity alone, never as the origin', () => {
+    // The keyboard path and an unmatched catalogue Kringel have no detected
+    // place. Inventing (0, 0) would file a measurement that never happened.
+    const spot: LandmarkRef = { kind: 'spot', index: null, numbers: {} };
+    expect(landmarkNoteHead(markOf(spot).target)).toBe(
+      'Landmarke: Stelle ohne Marke (spot) · d · Tafel-Duktus (Variante 0)',
+    );
+    const unmatched: LandmarkRef = { kind: 'loop', index: 1, numbers: { state: 'punkt' } };
+    const head = landmarkNoteHead(markOf(unmatched).target);
+    expect(head).toContain('state punkt');
+    expect(head).not.toContain('x 0.0000');
+  });
+
   it('writes identity on the first line and the measured numbers on the second', () => {
     const [identity, numbers, ...rest] = landmarkNoteHead(markOf(kringel).target).split('\n');
     expect(identity).toBe('Landmarke: Kringel #1 (loop#1) · d · Tafel-Duktus (Variante 0)');
@@ -75,5 +88,7 @@ describe('landmark marks', () => {
     const here: LandmarkRef = { kind: 'spot', index: null, x: 0.1, y: 0.2, numbers: {} };
     const there: LandmarkRef = { kind: 'spot', index: null, x: 0.9, y: 0.4, numbers: {} };
     expect(markKey(markOf(here))).not.toBe(markKey(markOf(there)));
+    // A position-less one carries no coordinate in its key either.
+    expect(markKey(markOf({ kind: 'spot', index: null, numbers: {} }))).not.toContain('@');
   });
 });

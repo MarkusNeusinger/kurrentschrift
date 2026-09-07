@@ -225,7 +225,9 @@ async def test_landmarks_returns_both_stored_rows_with_their_structures(api: Har
     assert crossing["numbers"]["self_crossing"] is True
     loop = next(lm for lm in chart["landmarks"] if lm["kind"] == "loop")
     assert loop["numbers"]["d0"] > 0.0
-    # A test style is not the catalogue's hand, so no verdict is claimed.
+    # A test style/source is not the catalogue's hand, so no verdict is
+    # claimed: the catalogue belongs to ONE hand with ONE pen, and matching on
+    # the script alone would hand a second Sütterlin chart this hand's verdicts.
     assert out["catalogue"]["available"] is False
     assert loop["numbers"]["state"] == "unbekannt"
 

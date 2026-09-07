@@ -168,9 +168,13 @@ export const admin = {
     landmarksCatalogueOn: 'Kringel-Katalog: {{style}} · {{root}}',
     landmarkMark: 'Bemängeln',
     landmarkSelectHint: 'Eine Marke anklicken, um ihre Zahlen zu sehen.',
-    landmarkSpotHint: 'Stelle bei x {{x}} · y {{y}} (x-Höhen).',
     landmarkAria: '{{kind}} Nummer {{index}} bei x {{x}}, y {{y}} — anklicken für die Zahlen',
-    landmarkSpotAria: 'Leere Stelle des Buchstabens — anklicken, um eine fehlende Marke zu melden',
+    // Reporting a marker that ISN'T there. Two ways in, and the button is the
+    // one that also works from the keyboard: es meldet dieselbe Sache ohne
+    // Ortsangabe, statt eine zu erfinden.
+    landmarkSpotButton: 'Fehlende Marke melden',
+    landmarkSpotHint:
+      'Ins Leere klicken meldet die Stelle mit ihrer Position; der Knopf meldet dasselbe ohne Ortsangabe — dann steht im Auftrag, was du beschreibst, keine erfundene Koordinate.',
   },
   // The deliberate promotion of learned statistics into rendering (issue #270).
   laufform: {

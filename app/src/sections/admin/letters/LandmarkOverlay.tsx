@@ -62,16 +62,19 @@ export function LandmarkOverlay({ row, frame, shown, selectedKey, onSelect, onSp
     <g>
       {/* The empty area, under every marker: a click that hits no marker is a
           report that one is MISSING — the complaint this layer most needs to
-          be able to receive, and the one a marker-only overlay cannot take. */}
+          be able to receive, and the one a marker-only overlay cannot take.
+          It is POINTER SUGAR and says so to assistive tech: the same complaint
+          has a real, focusable button under the letter („Fehlende Marke
+          melden"), and the only thing this adds is pinning the exact place. A
+          `role="button"` that cannot be tabbed to or activated by key would be
+          a promise the element does not keep. */}
       <rect
         x={frame.minX}
         y={frame.vbY}
         width={frame.vbW}
         height={frame.vbH}
         fill="transparent"
-        role="button"
-        tabIndex={-1}
-        aria-label={t.landmarkSpotAria}
+        aria-hidden="true"
         style={{ cursor: 'crosshair' }}
         onClick={(event) => {
           const box = event.currentTarget.getBoundingClientRect();
