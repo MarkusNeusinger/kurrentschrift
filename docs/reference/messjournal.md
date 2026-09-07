@@ -13589,6 +13589,14 @@ Anzeiger `I`: **1× 0,8073 · 4× 0,7903** (je Schleife `a` 0,776/0,781 ·
 geforderten +0,016; Median(`I@4× − I@1×`) = **+0,0109** gegen die
 geforderten +0,10.
 
+**Und die Verteilung, nicht nur der Median** — sonst könnte ein Median
+von 0 auch eine Mischung aus großen Gewinnen und großen Verlusten
+verdecken: `A_grau4 − A_Maske` läuft von −0,035 bis +0,017 und steht
+**17× positiv, 4× null, 20× negativ**, also symmetrisch um Null herum
+und ohne Vorzugsrichtung; `I@4× − I@1×` läuft von −0,171 bis +0,248. Das
+ist Rauschen um den Wert der 1×-Lesung, kein systematisch verstecktes
+Loch.
+
 #### Das Verdikt der Diagnose: echte Verschmelzung
 
 **Beide Schranken werden klar verfehlt, und zwar in der aufschlussreichen
