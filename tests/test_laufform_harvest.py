@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import replace
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -1180,7 +1181,7 @@ def test_a_named_seed_on_the_slot_path_is_refused(monkeypatch: pytest.MonkeyPatc
         assert "only applies to --path chain" in str(exc.value)
 
 
-def test_apply_still_refuses_an_overlaid_run(monkeypatch: pytest.MonkeyPatch, tmp_path) -> None:
+def test_apply_still_refuses_an_overlaid_run(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     """`--apply` writes the DEFAULT harvest — a candidate map is a measurement.
 
     Reached before any fixture root is read, which is why it can be tested

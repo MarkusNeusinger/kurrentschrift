@@ -294,12 +294,16 @@ uv run python -m tools.laufform.smoothrow --occurrences temp/lf/occ-1.json \
 uv run python -m tools.laufform.harvest --path chain --sets words --min-n 1 \
     --jobs 4 --expect-root <digest> --laufform temp/lf/karte-1.json \
     --occ-out temp/lf/occ-2.json
+uv run python -m tools.laufform.smoothrow --occurrences temp/lf/occ-2.json \
+    --knots 0 --floor 1 --keep-stored --out temp/lf/karte-2.json
+cmp temp/lf/karte-1.json temp/lf/karte-2.json && cmp temp/lf/occ-1.json temp/lf/occ-2.json
 ```
 
-Karte 1 und Karte 2 gehören byte-gleich zu sein. Sind sie es nicht, ist
-etwas anderes gewandert als die Zeilen — bewegt sich eine Zeile um mehr
-als 0,002 xh, ist die Karte kein Fixpunkt, und die Differenz gegen den
-Bestand gehört zum Teil dieser Bewegung und nicht dem gemessenen Arm.
+Beide `cmp` gehören still zu bleiben — Karte UND Vorkommensdatei. Sind sie
+es nicht, ist etwas anderes gewandert als die Zeilen; bewegt sich eine
+Zeile um mehr als 0,002 xh, ist die Karte kein Fixpunkt, und die Differenz
+gegen den Bestand gehört zum Teil dieser Bewegung und nicht dem gemessenen
+Arm.
 `--laufform` nimmt dieselbe Datei wie `wordbench.run --laufform`
 (Overlay, die eingefrorene Wurzel bleibt unberührt), `--expect-root`
 nennt und prüft die Basis wie jeder Bench — die Ernte ist das Werkzeug,

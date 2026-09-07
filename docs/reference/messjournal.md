@@ -14047,6 +14047,15 @@ Iteration wie in LF15 (`harvest --path chain --sets words --min-n 1
 `K3` ist wieder die Probe, die „per Konstruktion" von „gemessen"
 trennt: drei verschiedene Zeilensätze, eine Karte.
 
+**Eine Stelle liest die Zeilen weiterhin, und sie gehört genannt**
+(Copilot-Fund im PR): über HARVESTBARKEIT — `missing` und `report.failed`
+— entscheidet `harvest_case` an der ROW-Komposition, bevor die Chart-Saat
+greift. Nachgemessen über dieselben drei Zeilensätze: **189 Verdikte, 0
+Abweichungen**, und alle 63 Wörter sind unter jedem Satz harvestbar — das
+Gate ist gesättigt, es gibt für die Zeilen nichts zu kippen. Die Saat vor
+das Gate zu ziehen änderte, WELCHE Wörter geerntet werden, und ist damit
+ein eigener Arm mit eigener Vorregistrierung, kein Refactor.
+
 **Die Kostenseite auf dem heutigen Composer, vollständig.** Chart-Saat
 227 gegen 234 der heutigen Saat, also **7 Vorkommen** (LF15 maß 9). Die
 Gate-Verteilung: `connector_degenerate` 22 → **31**, dagegen
@@ -14105,14 +14114,13 @@ bewegt. Dahinter folgen `einen` +0,0342 und `macht` +0,0301. Die
 Kontrollkarte zeigt dasselbe Muster viel schwächer (25 : 32, Verluste
 +0,1600), `Zaum` dort nur +0,0130.
 
-Warum das trotzdem kein Kill ist, steht seit `sep06` im Repo und nicht
-erst hier: dieselbe Konstellation — Lineal schlechter, Auge dafür — hat
-den Austritts-Trim getragen (Runde 5: 34 : 2 bei +0,000582 Lineal, A37).
-Und das Wort-Lineal misst Deckung/Breite/Übergang auf Chamfer-Fenstern
-gegen eine eingefrorene Referenz; eine Zeile, die anders LÄUFT, kann
-darin verlieren und trotzdem geschriebener aussehen. Genau dafür ist die
-Menschenrunde das Instrument (§8a). Was hier NICHT passiert: die Gates
-weichspülen. Die Zahl steht oben, und die Runde entscheidet gegen sie.
+Warum das kein Kill ist, steht seit `sep06` im Repo: dieselbe
+Konstellation — Lineal schlechter, Auge dafür — hat den Austritts-Trim
+getragen (Runde 5: 34 : 2 bei +0,000582, A37), und eine Zeile, die anders
+LÄUFT, kann auf den Chamfer-Fenstern des Wort-Lineals verlieren und
+trotzdem geschriebener aussehen. Genau dafür ist die Menschenrunde das
+Instrument (§8a). Was hier NICHT passiert: die Gates weichspülen — die
+Zahl steht oben, und die Runde entscheidet gegen sie.
 
 #### Die Vorregistrierung der Runde 8
 
@@ -14121,20 +14129,20 @@ Gebaut, nicht geurteilt. Ablage `temp/runden-sep07/humanbench/`
 `runde-8-plan.md`, Schlüssel und Payload unter `runde-8/`.
 
 **Ein Freiheitsgrad.** Basis `Bestand` (`sha256` `9a03f1d0d3b77c66`) =
-die Zeilen der Wurzel; Kandidat `Chart-Saat`
-(`aa235127f3265bc9`) = dieselbe Komposition mit der 15-Zeilen-
-Schreibliste als Overlay. Sonst identisch: Nib 0,07243 `constant`,
-`exit_trim` an (Produktion seit A37), `apex_handover`/`stem_depart` aus,
-**Registrierung des Kandidaten an die Basis gepinnt** (die LF11-Wortrunde
-hat das für eine Laufform-Karte genauso gehalten — beurteilt wird die
-Form der Zeile, nicht eine Verschiebung; der Stempel hält es fest).
+die Zeilen der Wurzel; Kandidat `Chart-Saat` (`aa235127f3265bc9`) =
+dieselbe Komposition mit der 15-Zeilen-Schreibliste als Overlay. Sonst
+identisch: Nib 0,07243 `constant`, `exit_trim` an (Produktion seit A37),
+`apex_handover`/`stem_depart` aus, **Registrierung des Kandidaten an die
+Basis gepinnt** (wie die LF11-Wortrunde es für eine Laufform-Karte
+gehalten hat — beurteilt wird die Form, nicht eine Verschiebung).
 
 **75 Bildschirme:** 63 Wortproben + **12 gespiegelte Wiederholungen**
-(Saat 20260008, Abstand 20–47 Positionen). Damit liegt die Runde über
-`MIN_PAIRED_REPEATS` = 6 und kann einen Adoptionsanspruch TRAGEN — die
-Rechnung von §8a (`bewegte + Nullproben ≥ 6 + 15 + 25`) ist mit 63 ≥ 46
-erfüllt. Vier Wörter (`schießen` `Gaul` `Soldaten` `Säbel`) laufen über
-ihren eigenen Ausschnitt hinaus und werden hier namentlich gemeldet.
+(Saat 20260008, Abstand 20–47 Positionen), also über
+`MIN_PAIRED_REPEATS` = 6: die Runde kann einen Adoptionsanspruch TRAGEN,
+die Rechnung von §8a (`bewegte + Nullproben ≥ 6 + 15 + 25`) ist mit
+63 ≥ 46 erfüllt. Vier Wörter (`schießen` `Gaul` `Soldaten` `Säbel`)
+laufen über ihren eigenen Ausschnitt hinaus und werden hier namentlich
+gemeldet.
 
 **Die vier Klassen, vor den Zahlen geschnitten** (`--strata`,
 `klassen-runde-8.json`):
@@ -14146,25 +14154,22 @@ ihren eigenen Ausschnitt hinaus und werden hier namentlich gemeldet.
 | `zeile-schwach` | 23 | übrige bewegte Wörter darunter | nicht behauptet |
 | `nullprobe` | 6 | beide Tafeln bit-identisch: `an` `er` `er-2` `er-3` `im` `zu` | keine, per Konstruktion |
 
-Die Nullproben sind kein Kunstgriff und kosten nichts: ein Wort mit nur
-ZWEI verbundenen Slots komponiert chart-treu (`core/compose.py`, dasselbe
-Lauflängen-Gate wie der Ascender-Lean), sieht also gar keine
-Laufform-Zeile. Sie messen, ob „kein Unterschied erkennbar" benutzt wird
-— die Größe, an der das LF11-Verdikt hing.
+Die Nullproben kosten nichts: ein Wort mit nur ZWEI verbundenen Slots
+komponiert chart-treu (`core/compose.py`, dasselbe Lauflängen-Gate wie
+der Ascender-Lean) und sieht gar keine Laufform-Zeile. Sie messen, ob
+„kein Unterschied erkennbar" benutzt wird — die Größe, an der das
+LF11-Verdikt hing.
 
-**Warum `lineal-verlierer` als eigene Klasse deklariert ist:** weil die
-Frage dieser Runde genau dort entschieden wird. Die Klasse ist am
-LINEAL geschnitten, nicht am menschlichen Urteil, und sie steht
-committet, bevor ein Bildschirm gesehen wurde — die Bedingung, die §8a
-an eine klassenweise Lesart stellt.
+**Warum `lineal-verlierer` eine eigene Klasse ist:** dort wird die Frage
+dieser Runde entschieden. Geschnitten am LINEAL, nicht am menschlichen
+Urteil, und committet, bevor ein Bildschirm gesehen wurde — die
+Bedingung, die §8a an eine klassenweise Lesart stellt.
 
 **Der Auswerteplan** ist der von §8a, unverändert und in bindender
-Reihenfolge: (1) Verlässlichkeit aus den Spiegelpaaren, unter 6 Paaren
-oder bei ≤ 7/12 Arm-Übereinstimmung kein Adoptionsanspruch;
-(2) Seitenbilanz berichtet; (3) Verdikt **≥ 60 % Kandidat unter den
-Entschiedenen UND ≤ 25 % unentschieden über alle**; (4) je Klasse
-dieselben drei Zahlen, unter 8 Paaren als „zu wenig"; (5) Drift, dann
-die Notizen wörtlich.
+Reihenfolge, mit den beiden Schranken **≥ 60 % Kandidat unter den
+Entschiedenen UND ≤ 25 % unentschieden über alle** und der Vorbedingung
+aus Schritt 1 (unter 6 Spiegelpaaren oder bei ≤ 7/12
+Arm-Übereinstimmung kein Adoptionsanspruch).
 
 **Was ein Ergebnis auslösen darf, vorab festgelegt:**
 
@@ -14183,15 +14188,14 @@ die Notizen wörtlich.
   hat genau das entschieden.
 
 **Was diese Runde ausdrücklich NICHT tut.** Kein DB-Write, keine
-Wurzel-Neuausfuhr, keine Änderung an `core/`, an `word_metric.py` oder an
+Wurzel-Neuausfuhr, keine Änderung an `core/`, `word_metric.py` oder
 `tracebench`, keine neuen Schlüssel, keine Absenkung des Beleg-Bodens,
 keine Adoption von `LOOP_AWARE_REPAIR` (bleibt AUS).
 
-Die stehende Regel „**zweimal ernten**" ist damit nicht gestrichen, sie
-hat ihren Anlass verloren: mit dem Chart-Default MUSS der zweite Lauf
-byte-gleich sein, eine Abweichung ist ab jetzt ein Befund und keine
-Iteration. So steht sie in [`werkzeuge.md`](werkzeuge.md), mitsamt der
-Historie, aus der sie kommt.
+Die Regel „**zweimal ernten**" ist nicht gestrichen, sie hat ihren Anlass
+verloren: mit dem Chart-Default MUSS der zweite Lauf byte-gleich sein,
+eine Abweichung ist ein Befund und keine Iteration
+([`werkzeuge.md`](werkzeuge.md), mitsamt der Historie).
 
 #### Rettungswege
 
@@ -14210,12 +14214,11 @@ stehen die Wege vorab:
    ein anderer Zeilen-Schätzer (die LF13-Familie), nicht ein weicheres
    Gate; ausdrücklich KEIN Weg ist, die Gates zu senken.
 4. **Die Eigenhand-Ernte** für `P` und `s` (n = 1) — unverändert der
-   einzige Weg an mehr Evidenz, und er läuft bereits.
+   einzige Weg an mehr Evidenz, und sie läuft.
 
 **Ausdrücklich kein Weg:** den Write mit der ALTEN Saat fahren, weil das
-Lineal ihn billiger findet. Die Karte wäre kein Fixpunkt, und der
-nächste Re-Harvest stünde wieder 0,0025–0,0283 xh daneben — die Frage,
-die A38 gerade entschieden hat.
+Lineal ihn billiger findet. Die Karte wäre kein Fixpunkt, der nächste
+Re-Harvest stünde wieder daneben — die Frage, die A38 entschieden hat.
 
 **Selbst entschieden** (benannt, nicht versteckt):
 

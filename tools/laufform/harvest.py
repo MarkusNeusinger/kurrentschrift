@@ -1262,6 +1262,17 @@ def harvest_case(case, opts: HarvestOptions) -> CaseHarvest:
     `_seed_composition`; the composition it repeats is cheap next to the chain
     solve it seeds, and this one is still the composition that decides whether
     the case is harvestable at all.
+
+    **That harvestability verdict is the one place the rows still reach**, and
+    it is named rather than hidden: `missing` and `report.failed` are read off
+    the ROW-carrying composition, so a row set that stopped a word from
+    composing would change the map even under the chart seed. Measured on the
+    frozen `sep05` root over three row sets up to 0.058 xh apart (the stored
+    rows, the K1 card, the C1 card): 189 verdicts, **0 disagreements**, and all
+    63 words harvestable in every one — the gate is saturated, so there is
+    nothing for the rows to flip. Moving the seed AHEAD of the gate would
+    change which words are harvested and is therefore its own measured arm
+    with its own pre-registration, not a refactor (§14 „Laufform LF16").
     """
     if not case.scorable:
         return CaseHarvest({}, [], None, [])
