@@ -13967,6 +13967,18 @@ Fixtures schneiden, ist offen. Das wäre ein neuer Quell-Commit, ein
 Re-Export und damit eine deklarierte Re-Baseline — ein Autorenschritt und
 kein Arm, aber nach dieser Runde ein benannter statt eines übersehenen.
 
+**Nachtrag 2026-09-07 (recherchiert auf den Autor-Entscheid zur
+Sammelfrage 4).** Es gibt sie nicht: die SUB liefert höchstens
+2278 × 3040 px je Seite (Zeilenabstand 104 statt 110 px), der
+DNB-BookReader der Ausgabe 1922 bei `reduce=1` 1838 × 2486 px und
+darunter nur serverseitig Hochgerechnetes (4×-Zoom gegen die
+hochgerechnete Vollseite identisch, Restdifferenz 3 Graustufen), der
+Commons-Scan der Abb. 19 hat eine einzige Version, und HathiTrust,
+Internet Archive und Google Books führen keinen Scan. Offen bleibt
+allein ein eigener Scan eines physischen Exemplars (600–1200 dpi); die
+R4-Zeile in [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md)
+§7.9 trägt den Befund.
+
 ### Kette K-E `sep07` — Wiedervorlage als Menschenurteil: Runde 9 gebaut, Urteil offen (und das Lineal hat inzwischen die Seite gewechselt)
 
 **Anlass.** Autor-Entscheid vom 2026-09-07 auf die Sammelfrage A2
