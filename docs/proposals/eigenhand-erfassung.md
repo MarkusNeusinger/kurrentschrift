@@ -1019,7 +1019,7 @@ stehen im Modul, mit ihrer Begründung daneben):
 
 | Regel | Konstante | Warum |
 |---|---|---|
-| klein genug | `SPECK_MAX_EXTENT_MM` 0,6 · `SPECK_MAX_AREA_MM2` 0,28 | Tonerpartikel messen deutlich unter einem halben Millimeter; großzügig statt knapp, weil ein zu großer Punkt einfach dem Pinsel bleibt |
+| klein genug | `SPECK_MAX_EXTENT_MM` 1,2 · `SPECK_MAX_AREA_MM2` 0,6 | kalibriert am ersten echten Bogen (B0001, 07.09.2026, 600 dpi): die Tonerpartikel messen 0,25–1,0 mm und 0,02–0,41 mm², die i-Punkte und u-Bögen der Hand mit M-Feder 1,0–2,5 mm² — die Grenze liegt dazwischen, und ein Schmierer darüber (1,8 mm²) bleibt dem Pinsel, weil eine Grenze, die ihn fängt, schon in der Klasse der i-Punkte läge |
 | berührt keine Schrift | `WRITING_MIN_AREA_MM2` 1,0 | ein `e` bei 6 mm x-Höhe zieht ~6 mm² Tinte, ein i-Punkt ~0,13 mm² — ein Fleck AN einem Buchstaben ist mit ihm EINE Komponente und wird nie geteilt |
 | steht frei | `SPECK_CLEARANCE_MM` 2,5 | Komma, Punkt, i-Punkt und eigene Kleckse leben innerhalb dieses Radius |
 | ist kein Punkt über einem Buchstaben | `DOT_X_SLACK_MM` 0,8 · `DOT_MAX_RISE_MM` 5,0 | geometrisch statt metrisch, damit auch eine Hand mit hoch gesetzten i-Punkten sicher ist |

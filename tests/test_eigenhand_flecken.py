@@ -160,6 +160,21 @@ class TestTheDetector:
         sheet.dot(letter_x + 20.0, (band["waist"] + band["baseline"]) / 2, 1.5)
         assert sheet.find() == []
 
+    def test_a_particle_of_the_printers_measured_size_is_found(self, row: dict, band: dict, letter_x: float):
+        """B0001 (2026-09-07): the laser's largest particle was 0.6 × 1.0 mm — past the first ceiling of 0.6."""
+        sheet = Crop(row)
+        sheet.bar(letter_x, (band["waist"] + band["baseline"]) / 2, 0.4, band["baseline"] - band["waist"])
+        sheet.bar(letter_x + 30.0, band["baseline"] + 1.0, 0.5, 1.0)
+        found = sheet.find()
+        assert len(found) == 1, found
+        assert found[0]["x_mm"] == pytest.approx(letter_x + 30.0 - sheet.origin[0], abs=0.2)
+
+    def test_a_dot_the_size_of_the_hands_own_is_not_a_speck_even_alone(self, row: dict, band: dict, letter_x: float):
+        """An M-nib i-dot is ~1.0 mm² and up: the size rule keeps it before clearance or position is asked."""
+        sheet = Crop(row)
+        sheet.dot(letter_x + 20.0, (band["waist"] + band["baseline"]) / 2, 1.4)
+        assert sheet.find() == []
+
     def test_a_blank_crop_yields_nothing(self, row: dict):
         assert Crop(row).find() == []
 

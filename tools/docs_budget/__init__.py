@@ -581,7 +581,10 @@ def check_map(root: Path = REPO_ROOT) -> list[str]:
 
 # Directories that are not documentation: dependencies, build output and the
 # committed prerender snapshots (generated HTML, not prose).
-_SKIP_DIRS = {"node_modules", ".git", "dist", "coverage", ".venv", "prerender"}
+# `temp` and `ds-bundle` are gitignored local folders (round builds, scans,
+# unpacked downloads, the design-system bundle); the gate has no business
+# reading them — a macOS resource fork in `temp` is not even UTF-8 (2026-09-07).
+_SKIP_DIRS = {"node_modules", ".git", "dist", "coverage", ".venv", "prerender", "temp", "ds-bundle"}
 # `[text](target)`, with the `!` of an image excluded and an optional title.
 _MD_LINK = re.compile(r"(?<!!)\[[^\]\n]*\]\((?P<target>[^)\s]+)(?:\s+\"[^\"]*\")?\)")
 _ABSOLUTE = ("http://", "https://", "mailto:", "tel:")

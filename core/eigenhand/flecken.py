@@ -56,14 +56,20 @@ FLECKEN_FORMAT = 1
 QUELLEN = ("auto", "hand")
 
 # --------------------------------------------------------------- the physics
-# A toner speck is a single loose particle fused to the paper. On the author's
-# HP colour laser they measure well under half a millimetre across — six
-# pixels at the chain's 300 DPI working resolution. The ceiling is generous
-# rather than tight: a speck too big for it simply waits for the hand brush,
-# which is the safe direction, while a ceiling raised to catch the rare large
-# one would start eating punctuation.
-SPECK_MAX_EXTENT_MM = 0.6
-SPECK_MAX_AREA_MM2 = 0.28  # a filled disc of SPECK_MAX_EXTENT_MM diameter
+# A toner speck is a single loose particle fused to the paper. Calibrated on
+# the first real sheet (B0001, 2026-09-07, the author's HP colour laser scanned
+# at 600 DPI): the particles measure 0.25–1.0 mm across and 0.02–0.41 mm² —
+# the first ceiling of 0.6 mm, set before a real scan existed, left the two
+# largest to the brush. The hand's own detached ink is a different size class
+# altogether: with the M nib an i-dot is 1.0–1.4 mm² over 1.7–2.0 mm, a
+# u-Bogen 2.3–2.5 mm². The ceilings sit between the two, and
+# `WRITING_MIN_AREA_MM2` is the floor of the hand's class — so the size rule
+# alone keeps an i-dot out, before clearance and position are even asked.
+# What the printer drops beyond that (a smear of 1.8 mm² over 2.3 mm on the
+# same sheet) stays the brush's: a ceiling raised to catch it would sit inside
+# the i-dot's class, which is the wrong direction to be generous in.
+SPECK_MAX_EXTENT_MM = 1.2
+SPECK_MAX_AREA_MM2 = 0.6  # a filled disc of ~0.9 mm; the measured particles are elongated, not discs
 # What counts as WRITING rather than as a dot. A Sütterlin `e` at 6 mm
 # x-height draws some 15 mm of ink at ~0.4 mm width — about 6 mm²; an i-dot is
 # ~0.13 mm². One square millimetre sits an order of magnitude away from both,
