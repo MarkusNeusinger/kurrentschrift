@@ -219,7 +219,7 @@ die DB) — mit seiner Bedingung.
 | sep06 | Übergänge | [J6 gemessen](#übergänge-j6-sep06--gemessen-die-naht-schließt-sich-an-beiden-enden-und-die-rechnung-steht-auf-drei-übungswörtern) | Pre-Reg + gemessen · **ehrliches Negativ** (Gate (c) rot) · Runde 7 gebaut, Urteil offen | **Die Naht ist zu:** über alle 240 Nähte fällt der Betrags-Median des Abgangs 2,67° → **0,01°** und der Ankunft 10,80° → **0,01°**, keine der 240 verlässt das 3°-Band nach oben, und jede verhandelbare Klasse geht auf ≤ 0,36° (Arkade→Arkade 18,57 → 0,00, sonstige 17,24 → 0,03, Gabel 14,43 → 0,01). Die drei stehenden Zahlen sind die Duktus-Ereignisse, die die 45°-Schranke draußen hält. **Verworfen an Gate (c):** Verdopplungen der Paare 3 → 5, zurechenbar auf `dp`/`ds` — dort trägt der Verbinder die 32,9° bzw. 31,9°, die der 8°-Deckel dem Buchstaben verwehrt, und der Haken legt sich 0,117/0,119 xh neben die eigene Tinte des `d` (Nib 0,145). (b) rot nur am Maximum (an der Naht +0,14°, p90 +0,46°/+1,67°, Maxima an Vertices mit 14,6°/133° Eigendrehung), (a1) rot aus Prinzip (auf Segment-Skala ist der Rest die Spitzenkrümmung der Buchstaben; gerade Auslaufstücke waren vorab verboten), (d)/(f)/(g) grün, (e) +0,000421 / −0,000024 im vorhergesagten Band. Der neue Unstetigkeits-Sensor folgt NICHT: `cont_kink_total` 337 → 349 (W) und 81 → 92 (P), teils mechanisch (`cont_measured` +51/+86 — Punkte verlassen die Ecken-Ausnahme). Nebenbefund mit Adressat nach A37: **J6 löst die Austrittsseite ohne den Trim und billiger** (12,67 → 0,02 gegen 2,30, +0,000376 gegen +0,000582, ohne dessen Ankunfts-Nebenwirkung) — die beiden Regeln sind Alternativen, nicht Ergänzungen |
 | sep06 | Übergänge | [S2 gemessen](#übergänge-s2-sep06--gemessen-alle-gates-bestehen-und-keine-einzelne-spalte-ist-der-richter) | Pre-Reg + gemessen · **validiert** (Lineal-Bestandteil-Kandidat, kein Lineal geändert) | **Alle fünf Gates bestehen, aber keine EINZELNE Spalte ist der Richter.** N1/N2 exakt (0,000e+00 gegen die gespeicherten Verbinder; 3 + 12 identische Wörter bewegen keine Spalte). P1 `naht-stark` (Urteil Kandidat 26 : 2): `kink_max_deg` 36,89 → **27,86**, `kink_count` 28/28 fallend, `wobble` −0,531. P2 `naht-schwach`: nur 17 statt 24 von 29 Wörtern bewegt, Wackler-Median −0,083 — Faktor 6, die Klassengrenze reproduziert. P3 `apex` (Basis 11 : 1): `bow_join` 0,0066 → **0,0034 in 12/12**, dazu (nicht vorregistriert) `kink_max_deg` +15,54°. Die Klasse `stem` (Basis 7 : 0) sieht nur `curv_loss` (8/8) und `wobble` (8/8). **Ehrliche Hälfte:** `bow_join` fällt in BEIDEN Runden, hätte Runde 6 allein also falsch entschieden — der Austritts-Trim verschiebt die Grenze Buchstabe/Verbinder und damit die Population (das Rahmen-Artefakt, für das S1 `dspan` gebaut wurde). Headline 0,108444 / 0,148236 vorher wie nachher |
 | sep07 | Kette | [R3 Zwei-Züge-Modell (Pre-Reg)](#kette-r3-zwei-züge-modell-sep07--vorregistrierung-die-verschmolzene-schleife-ist-zwei-kapseln-nicht-ein-klumpen) | Pre-Reg | Autor-Entscheid „2 ja", Rettungsweg R3 der Kringel-Diagnose und nach LF13/LF14 der einzige verbliebene. Die Feder wird HERAUSGERECHNET statt der Klumpen skelettiert: keine Stützstelle näher als `w_pen` an einer Binnenfläche, die die Platte offen hält. Nur Katalogschleifen `offen` × `klein`/`mittel` mit Loch im SELBEN Vorkommen; C¹-Blende; Abnahmeregel „Schleifen-Schluss" und die kollabierte Schleife als eigene Klasse (R4), beide nach dem Kalibrierlauf benannt; zwei Konventionen vorab deklariert (halbes Pixel, Katalog-Konvention der Erwartung). **Decke vorab beziffert: die 24 bewegt dieser Arm NICHT** — sie hängt an den Zeilen, die Ernte hat keinen Folger-Pfad, und LF14s Fixpunkt verbietet den Write ohnehin |
-| sep07 | Kette | [R3 gemessen](#kette-r3-zwei-züge-modell-sep07--gemessen-das-loch-geht-in-106-von-106-auf-und-die-bahn-bezahlt-es-mit-ihrer-stetigkeit) | Pre-Reg + gemessen · **nicht adoptiert** (Gate (b) + (d)) · Ursache zurechenbar · R3b vorregistriert | **Der Mechanismus trifft sein Ziel vollständig und bezahlt es mit der Stetigkeit.** **106 von 106** korrigierten Schleifen offen bei 0,097 (vorher 101/106), Δ zur Platten-Erwartung in 85/106 innerhalb ±0,02; `a`#0 0,2046 → 0,2751, `o`#0 0,1741 → 0,2535, `sz`#0 0,2231 → 0,3063. Distanz durchweg besser: dev-19 dtw-Median −0,000701 bei **14 : 3** (p = 0,0127), aiou 0,7583 → **0,7601**, Chamfer beidseitig, 63er-k0-Soll **80 → 78**, k0-aiou-Median +0,0013. **Gate (b) rot** (`cross_missing` 12 → 13, `cross_spurious` 7 → 9) — und der ganze Betrag sitzt auf `will` und `Galoppieren`, die übrigen 17 dev-Wörter bewegen keinen Zähler. **Gate (d) rot** (1 588 neue `kink`-Ereignisse, p90-Δ +16,74°) — **Ursache gemessen:** Stützstellen-Abstand 0,0265 xh, deklarierte Glättung 0,0363 = 1,37 Stützstellen, Blende 0,0725 = 2,74; das Fenster ist kürzer als die Diskretisierung, die es glätten sollte. Nullproben exakt (11 Wörter ohne korrigierbare Schleife strichgleich, Solve bit-gleich), (e)/(f) grün, (g) gemessen (58 von 63 Wörtern gleicher Zielsatz mit und ohne Zeilen; die 5 übrigen finden mit Zeile MEHR Schleifen, nie ein anderes Ziel). **Konversion R3b vorregistriert und in derselben Runde gefahren** (Blende auf zwei Federn, aus dem Lesefenster des Sensors abgeleitet): die Vorhersage trifft beidseitig — Knicke 1 588 → **465**, p90 → **+4,81°**, `cross_spurious` wieder 7, dafür Gate (a) → **62/110** und k0-Soll 78 → 82. Auch nicht adoptiert; der Rest-Strukturfehler ist EIN Zähler in EINEM Wort (`Galoppieren`), das auf jedem anderen Kanal gewinnt. **Damit ist die Formulierung ausgemessen:** Treffgenauigkeit und Glätte hängen an derselben Länge, die Bedingung gehört in den Solve statt hinter ihn |
+| sep07 | Kette | [R3 gemessen](#kette-r3-zwei-züge-modell-sep07--gemessen-die-binnenflächen-gehen-auf-und-alle-vier-gates-fallen-trotzdem) | Pre-Reg + gemessen · **nicht adoptiert an ALLEN VIER Gates** ((b) + (c) sind Kills) · Ursache zurechenbar · R3b in derselben Runde gefahren | **Die Binnenflächen gehen auf und jedes Gate fällt an der AUSFÜHRUNG.** **107 von 108** korrigierten Schleifen offen bei 0,097 (vorher 102/108); `a`#0 0,2024 → 0,2746, `o`#0 0,1741 → 0,2516, `sz`#0 0,2231 → 0,3063. **(a) rot:** die Weite trifft die Erwartung nur in **83/108** — die Vorregistrierung fordert sie je Schleife. **(c) rot am p90** (+0,000699), während Median (−0,000701), Vorzeichentest (**14 : 3**, p = 0,0127), aiou (0,7583 → **0,7601**), Chamfer beidseitig und der 63er-k0-Soll (**80 → 79**) besser lesen. **(b) rot** (`cross_missing` 12 → 13, `cross_spurious` 7 → 9) — ganz auf `will` und `Galoppieren`, 17 der 19 dev-Wörter bewegen keinen Zähler. **(d) rot** (1 626 neue `kink`-Ereignisse, p90-Δ +16,70°) — **Ursache gemessen:** Stützstellen-Abstand 0,0265 xh, deklarierte Glättung 0,0363 = 1,37 Stützstellen, Blende 0,0725 = 2,74; das Fenster ist kürzer als die Diskretisierung, die es glätten sollte. Nullproben exakt (10 Wörter strichgleich, Solve bit-gleich), (e)/(f) grün, (g) gemessen (58 von 63 Wörtern gleicher Zielsatz mit und ohne Zeilen; die 5 übrigen finden mit Zeile MEHR Schleifen, nie ein anderes Ziel). **Konversion R3b** (Blende auf zwei Federn, aus dem Lesefenster des Sensors abgeleitet): Vorhersage beidseitig getroffen — Knicke 1 626 → **462**, p90 → **+4,77°**, `cross_spurious` wieder 7, dafür (a) → **62/112** und k0-Soll 79 → 81. Auch nicht adoptiert; der Rest-Strukturfehler ist EIN Zähler in EINEM Wort (`Galoppieren`), das auf jedem anderen Kanal gewinnt. **Damit ist die Formulierung ausgemessen:** Treffgenauigkeit und Glätte hängen an derselben Länge, die Bedingung gehört in den Solve statt hinter ihn |
 | sep06 | Laufform | [LF15 Ernte-Fixpunkt (Pre-Reg)](#laufform-lf15-sep06--vorregistrierung-der-fixpunkt-der-ernte-rettungsweg-2-von-lf14) | Pre-Reg | Rettungsweg 2 von LF14, Autor-Entscheid „3 ja": der Fixpunkt VOR dem nächsten Laufform-Write. „Ernte-Fixpunkt" numerisch definiert (größte Ankerbewegung zwischen zwei Karten ab `H1` ≤ 0,002 xh, gegen die gemessene Drift 0,0025–0,0283); Iteration `H0 → H1 → H2` aus Repo-Werkzeugen (harvest → `smoothrow --knots 0 --floor 1 --keep-stored`), Schlüsselsatz über alle Runden fest. Mechanismus vorab benannt: **Chart-Saat** (`chain_seed="chart"`, Default AUS) — die vorregistrierten Kandidaten (a) und (b) fallen in eine Implementierung, (c) wird nicht gebaut. Gates (F) Fixpunkt · (G) Kette-Identität · (H) Lineal byte-gleich · (I) Golden, dazu Bericht (J) mit Entscheidregel 0,03 xh für die Frage, ob der nächste Write den Saatwechsel als EINE Re-Baseline mitnehmen darf. Definiert „Ernte-Fixpunkt" numerisch, legt die Iteration `H0 → H1 → H2` aus Repo-Werkzeugen fest (Schlüsselsatz über alle Runden fest), benennt den Mechanismus vorab (**Chart-Saat**, Default AUS; die Kandidaten (a)/(b) fallen in eine Implementierung, (c) wird nicht gebaut) und die Gates (F) Fixpunkt · (G) Kette-Identität · (H) Lineal · (I) Golden plus den Bericht (J) mit Entscheidregel für die Frage, ob ein Write den Saatwechsel mitnehmen darf. Offenlegung zur Basis: die `sep05`-Wurzeln lagen nicht mehr vor und wurden rekonstruiert |
 | sep06 | Laufform | [LF15 gemessen](#laufform-lf15-sep06--gemessen-die-iteration-läuft-weg-und-die-chart-saat-hält-sie-in-einem-schritt-an) | Pre-Reg + gemessen · alle Gates grün · **Schalter bleibt AUS** (Regel (J)) · **stehende Regel: zweimal ernten** | **Die Iteration konvergiert nicht, sie wandert:** die schlimmste Zeile bewegt sich in den drei Schritten 0,0582 → 0,0627 → 0,0627 xh, die Richtung wechselt je Zeile, der angenommene Satz wandert 235 → 232 → 239 mit — der erste Schritt ist nicht der größte, also kein Einschwingen; ein Determinismus-Doppellauf steht davor. Auch die Kringel-Ablesung wandert mit: `a` und `o` überschreiten die 0,194-Marke allein durch Weiterernten. **Die Chart-Saat** macht die Karte in EINEM Schritt zum Fixpunkt — `K1` = `K2` = `K3` byte-gleich samt Vorkommen, und `K3` startet aus einer 0,058 xh entfernten Karte, die Zeilen-Unabhängigkeit ist damit gemessen. Preis: 226 statt 235 Vorkommen (an den Gates `connector_degenerate`/`anchor_spike`, nicht an der Fitgüte), `Z` fällt unter den Beleg-Boden. Alle vier Gates grün, (G) mit einer benannten Abweichung (eine erfundene Kreuzung weniger) und einer benannten Kostenseite; Bericht (J): 8 von 21 Zeilen über 0,03 xh, der Saatwechsel geht NICHT als Beifahrer mit. **Antwort auf die Ausgangsfrage: einen Laufform-Write heute einfach zu wiederholen ist nicht sicher** |
 | sep06 | Übergänge | [J4 Runde 5 gemessen](#übergänge-j4-sep06--runde-5-gemessen-richtung-34--2-unentschieden-gate-gerissen--durch-die-klasse-die-es-reißen-sollte) | Menschenrunde · Richtung erdrückend, `adopt: false` an der Tie-Schranke · **Adoption = Autor-Entscheid** (LF11-Präzedenz), gefallen als A37 — Zeile darunter | **Kandidat 34 : Basis 2** von 36 entschiedenen (94,4 % gegen ≥ 60 %), unentschieden 42,9 % gegen ≤ 25 %. Klassenweise löst sich der Widerspruch: `naht-stark` 26 : 2 bei **9,7 %** Ties (beide Schranken ✓), `naht-schwach` 8 : 0 bei **72,4 %** Ties — die Klasse, für die die Pre-Reg Unsichtbarkeit beschrieben hat. Instrument sauber: 3/3 Kontrollwörter als „kein Unterschied" erkannt, 10/12 Wiederholungen gleicher Arm bei 4/12 gleicher Seite (12 ≥ 6 Paare). Auf der `sep05`-Wurzel neu gemessen: Wörter 0,108444 → **0,109026** (+0,000581), Paare byte-gleich, `seam_dep` +7,59 → −0,70 (absolut 12,67 → **2,30**), Verdopplungen 14 = 14. **Der ganze Lineal-Verlust sitzt in der starken Klasse** (+0,036888 gegen −0,000262), also dort, wo das Auge 26 : 2 dagegen stimmt — von den 30 bestraften Wörtern gehen 18 : 0 an den Kandidaten. Klassenregel gemessen und verworfen: `exit_trim_min_kink_deg` reichert `naht-stark` ab 10° an (71 % gegen 59 %), TRENNT die Klassen aber bei keiner Schwelle — beide haben denselben Knick, +7,90 / +7,44 —, kostet zwischen 5° und 25° MEHR als der volle Trim und gibt ab 10° die Naht-Reparatur zurück; nur 30° zahlt 0,000202 zurück, feuert dann aber in 5 von 63 Wörtern |
@@ -11849,14 +11849,22 @@ INNERHALB der Platten-Binnenfläche steht. Das ist ein Befund über die
 Kette, kein Anlass, die Regel zu lockern — eine Bahn, die durch das Loch
 läuft, hat dort ein Topologie- und kein Weitungsproblem.
 
-### Kette R3 „Zwei-Züge-Modell" `sep07` — gemessen: das Loch geht in 106 von 106 auf, und die Bahn bezahlt es mit ihrer Stetigkeit
+### Kette R3 „Zwei-Züge-Modell" `sep07` — gemessen: die Binnenflächen gehen auf, und alle vier Gates fallen trotzdem
 
-**Verdikt: nicht adoptiert.** Gate (b) und Gate (d) sind rot; (b) ist ein
-Kill-Kriterium. Der Schalter `--zwei-zuege` bleibt AUS. Und zugleich ist
-dies kein leeres Negativ: der Mechanismus trifft sein geometrisches Ziel
-vollständig, die referenzfreien Ablesungen gehen alle in die richtige
-Richtung, und der Grund für das rote Gate (d) ist **gemessen und
-zurechenbar**, nicht vermutet.
+**Verdikt: nicht adoptiert, an ALLEN VIER gemessenen Gates.** (b) und (c)
+sind Kill-Kriterien. Der Schalter `--zwei-zuege` bleibt AUS. Und zugleich
+ist dies kein leeres Negativ: die Binnenflächen gehen praktisch alle auf,
+die referenzfreien Ablesungen gehen in die richtige Richtung, und der
+Grund für das rote Gate (d) ist **gemessen und zurechenbar**, nicht
+vermutet.
+
+**Zwei Gates habe ich zuerst zu großzügig gelesen, und das steht hier
+statt in einer Fußnote.** Die erste Fassung nannte (a) grün, weil alle
+korrigierten Schleifen offen sind, und (c) grün, weil der dtw-MEDIAN
+fällt. Die Vorregistrierung sagt aber „**je korrigierter Schleife**
+≤ 0,02 xh" und „(**Median und p90**) nicht schlechter" — beide sind rot.
+Ein Gate nach der Zahl weicher zu lesen ist genau das, wogegen die
+Vorregistrierung steht; die Korrektur kam aus der Code-Review.
 
 **Basis und Rahmen.** Wurzeln `eaa195aa7c84…` / `0fbde2d72b64…` wie
 vorregistriert, BLAS gepinnt, dieselbe Kommandozeile für Basis und Arm bis
@@ -11866,82 +11874,89 @@ auf den EINEN Schalter. Die Basis reproduziert die Kampagnen-Zahlen des
 `cross_missing` 12 / `cross_spurious` 7) — der Beleg, dass Basis und Arm
 derselbe Stack sind.
 
+**Die Zuordnung Loch↔Schleife ist die des Katalogs**, auch das eine
+Korrektur aus der Review: die erste Fassung suchte je Schleife das nächste
+Loch im 0,45-xh-Umkreis über das ganze Wort — genau die flache Suche, von
+der #553 gemessen hat, dass sie das Loch des NACHBARN greift. Jetzt läuft
+das **Slot-Lineal** von #556 wörtlich (ein Loch gehört dem Slot, dessen
+eigene Körper-Striche sein `x` überspannen; Zuordnung eins-zu-eins
+INNERHALB des Buchstabens), und alle Zahlen unten stehen darauf.
+
 **Nullprobe: die Korrektur bewegt NUR, was sie bewegen soll.** Der Solve
-selbst ist bit-gleich (die Anker-Bewegung je Wort steht in beiden Läufen
-auf derselben Ziffer), und von den 63 Wörtern haben **11 keine
-korrigierbare Schleife — sie sind zwischen Basis und Arm strichgleich**
-(`k0eval`: „stroke-identical rows: 11/63", und die eigene Nullprobe zählt
-dieselben 11 mit Koordinatendifferenz exakt 0). 52 Wörter tragen mindestens
-eine Korrektur, die größte Koordinatenbewegung des Satzes ist 0,1212 xh.
+ist bit-gleich (die Anker-Bewegung je Wort steht in beiden Läufen auf
+derselben Ziffer), und **10 der 63 Wörter haben keine korrigierbare
+Schleife und sind strichgleich** (`k0eval` „stroke-identical rows: 10/63",
+die eigene Nullprobe zählt dieselben 10 mit Differenz exakt 0). 53 Wörter
+tragen eine Korrektur, die größte Koordinatenbewegung 0,1212 xh.
 
-#### Gate (a) — die Öffnungsweite: das eine Gate, das der Mechanismus voll erfüllt
+#### Gate (a) — rot, und zugleich der Beleg, dass der Mechanismus greift
 
-**106 korrigierte Schleifen über 27 Schleifen-Schlüssel. Bei der
-Plattenfeder 0,097 sind nach der Korrektur 106 von 106 offen** (vorher
-101 von 106). Der Abstand zur Platten-Erwartung liegt in **85 von 106**
-Fällen innerhalb der vorregistrierten ±0,02 xh.
+**108 korrigierte Schleifen über 27 Schleifen-Schlüssel. Bei der
+Plattenfeder 0,097 sind nach der Korrektur 107 von 108 offen** (vorher
+102 von 108). Der Abstand zur Platten-Erwartung liegt aber nur in **83
+von 108** Fällen innerhalb der vorregistrierten ±0,02 xh — die
+Vorregistrierung fordert ihn JE Schleife, also ist **Gate (a) rot**. Was
+bleibt, ist die eigentliche Aussage über den Mechanismus: er macht die
+Löcher auf, er trifft ihre Weite nur in vier von fünf Fällen genau.
 
 | Schleife | n | `D0` Platte | Kette heute | korrigiert | Δ zur Erwartung | offen bei 0,097 | größter Schub |
 |---|---|---|---|---|---|---|---|
 | `r`#0 | 16 | 0,3269 | 0,2257 | **0,3166** | −0,0080 | 16/16 | 0,0947 |
-| `l`#0 | 12 | 0,5629 | 0,4901 | **0,5425** | −0,0064 | 12/12 | 0,1061 |
-| `h`#1 | 10 | 0,4989 | 0,4617 | **0,4981** | +0,0005 | 10/10 | 0,0705 |
-| `a`#0 | 9 | 0,3148 | 0,2046 | **0,2751** | −0,0171 | 9/9 | 0,0912 |
+| `l`#0 | 12 | 0,5629 | 0,4901 | **0,5425** | −0,0070 | 12/12 | 0,1061 |
+| `h`#1 | 10 | 0,4989 | 0,4616 | **0,4981** | +0,0005 | 10/10 | 0,0906 |
+| `a`#0 | 10 | 0,3167 | 0,2024 | **0,2746** | −0,0171 | 9/10 | 0,0912 |
 | `h`#0 | 9 | 0,6408 | 0,5730 | **0,6502** | −0,0025 | 9/9 | 0,1033 |
-| `d`#0 | 5 | 0,5889 | 0,5788 | **0,5927** | +0,0038 | 5/5 | 0,0788 |
+| `d`#0 | 5 | 0,5889 | 0,5788 | **0,5927** | +0,0038 | 5/5 | 0,0955 |
 | `t`#0 | 4 | 0,3732 | 0,2731 | **0,3527** | −0,0210 | 4/4 | 0,1007 |
-| `w`#0 | 4 | 0,3053 | 0,2329 | **0,2974** | −0,0079 | 4/4 | 0,0942 |
-| `g`#1 | 4 | 0,6901 | 0,6556 | **0,6920** | −0,0019 | 4/4 | 0,0858 |
 | `sz`#0 | 4 | 0,3226 | 0,2231 | **0,3063** | −0,0013 | 4/4 | 0,0751 |
-| `o`#0 | 2 | 0,2926 | 0,1741 | **0,2535** | −0,0391 | 2/2 | 0,1018 |
-| `v`#0 | 1 | 0,3226 | 0,2380 | **0,2777** | −0,0449 | 1/1 | 0,0442 |
-| übrige 15 Schlüssel | 26 | – | – | – | −0,0126 … +0,0131 | 26/26 | ≤ 0,1077 |
+| `o`#0 | 2 | 0,2926 | 0,1741 | **0,2516** | −0,0410 | 2/2 | 0,1018 |
+| übrige 18 Schlüssel | 36 | – | – | – | −0,0123 … +0,0131 | 36/36 | ≤ 0,1061 |
 
-Die drei vom Auftrag benannten Schlüssel stehen damit so: **`a`#0
-0,2046 → 0,2751**, **`o`#0 0,1741 → 0,2535**, **`sz`#0 0,2231 → 0,3063**
-— jedes Vorkommen offen, keines mehr zugelaufen. Und die `d`-Schleife
-bleibt, was #556 über sie sagt: sie war schon offen (0,5788 gegen 0,5889
-Erwartung) und bekommt nur die fehlenden 0,014.
+Die `d`-Schleife bleibt, was #556 über sie sagt: schon offen (0,5788
+gegen 0,5889 Erwartung), sie bekommt nur die fehlenden 0,014.
 
-**54 Verweigerungen, jede mit Grund** — und die Verteilung ist selbst ein
-Befund: 17 „eine Stützstelle steht IM Loch" (die Kette läuft dort durch
-die Binnenfläche), **14 „die Bahn zeichnet hier keine Schleife"** (der
+**54 Verweigerungen, jede mit Grund**, und die Verteilung ist selbst ein
+Befund: **20 „die Bahn zeichnet hier keine Schleife"** (der
 Topologie-Verlust, den #556 vor die Öffnungsweite stellt und der an R4
-geht), 9 „das nächste Loch gehört einer anderen Schleife", **8
-„Schleifen-Schluss aufgezogen — zurückgenommen"** (die Abnahmeregel hat
-also real gegriffen, achtmal) und 6 „die Platte zeigt hier kein Loch".
+geht), 19 „eine Stützstelle steht IM Loch", **10 „Schleifen-Schluss
+aufgezogen — zurückgenommen"** (die Abnahmeregel hat also real
+gegriffen), 4 „die Platte zeigt hier kein Loch" und nur noch **1** „das
+Loch gehört einer anderen Schleife desselben Buchstabens" — unter dem
+Slot-Lineal keine Verwechslung mehr, sondern echte Knappheit im
+Buchstaben.
 
-#### Gate (c) und die referenzfreie Ablesung — beide grün, und asymmetrisch
+#### Gate (c) — rot am p90, und die Ablesungen daneben gehen in die andere Richtung
 
 | Ablesung | Basis | Arm | Urteil |
 |---|---|---|---|
 | dev-19 `dtw_xh` Median-Δ | – | **−0,000701** (rel −0,94 %) | besser |
 | dev-19 Vorzeichentest | – | **14 besser : 3 schlechter : 2 unentschieden**, p = 0,0127 | besser |
-| dev-19 `dtw_xh` p90-Δ | – | +0,000699 | knapp schlechter |
+| dev-19 `dtw_xh` p90-Δ | – | **+0,000699** | **schlechter → Gate (c) rot** |
 | dev-19 `aiou` Median | 0,7583 | **0,7601** | besser |
 | dev-19 Chamfer (beide Richtungen) | 0,0364 / 0,0317 | **0,0362 / 0,0312** | besser |
-| 63er-k0 Soll-Abstand | 80 | **78** (5 besser / 54 gleich / 4 schlechter) | besser |
-| 63er-k0 `aiou` über die 52 bewegten | – | Median **+0,0013** (min −0,0258, max +0,0274) | besser |
+| 63er-k0 Soll-Abstand | 80 | **79** (5 besser / 54 gleich / 4 schlechter) | besser |
+| 63er-k0 `aiou` über die 53 bewegten | – | Median **+0,0007** (min −0,0258, max +0,0236) | besser |
 
-Die drei dev-Verlierer sind `mit` (+0,0016), `mit-2` (+0,0014) und `will`
-(+0,0005); die größten Gewinne `zwei` −0,0018, `Wer` −0,0016, `und-3`
-−0,0016.
+Die Vorregistrierung nennt Median UND p90, also entscheidet der p90: rot,
+mit fast demselben Betrag, mit dem der Median grün wäre. Die drei
+dev-Verlierer sind `mit` (+0,0016), `mit-2` (+0,0014) und `will`
+(+0,0005), die größten Gewinne `zwei` −0,0018, `Wer` und `und-3` je
+−0,0016 — viele Wörter ein wenig besser, wenige ein wenig schlechter, und
+das obere Zehntel gehört zur zweiten Gruppe.
 
 #### Gate (b) — rot, und der ganze Betrag sitzt auf ZWEI Wörtern
 
-`cross_missing` 12 → **13**, `cross_spurious` 7 → **9**. Die
-Wort-für-Wort-Differenz nennt die Träger vollständig:
-
-* **`will`** — `cross_spurious` 0 → 1, `aiou` 0,8158 → 0,7900 (der
-  schlechteste aiou-Wert des ganzen Satzes);
-* **`Galoppieren`** — `cross_missing` 4 → 5, `cross_spurious` 0 → 1,
-  `touch_cand` 8 → 9 — und **zugleich `dtw` −0,0009 und `aiou`
-  +0,0132**, also auf beiden Distanzkanälen besser.
+`cross_missing` 12 → **13**, `cross_spurious` 7 → **9**, und die
+Wort-für-Wort-Differenz nennt die Träger vollständig: **`will`**
+(`cross_spurious` 0 → 1, `aiou` 0,8158 → 0,7900, der schlechteste Wert
+des Satzes) und **`Galoppieren`** (`cross_missing` 4 → 5,
+`cross_spurious` 0 → 1, `touch_cand` 8 → 9 — und **zugleich `dtw`
+−0,0009 und `aiou` +0,0132**, auf beiden Distanzkanälen besser).
 
 Die übrigen 17 dev-Wörter bewegen keinen einzigen Strukturzähler. Das ist
 die Asymmetrie, die die `aug26`-Direktive meint: kein Grund, das Gate
-weicher zu machen (es bleibt rot und der Arm fällt), aber der Beleg, dass
-hier eine KLASSE zu zerlegen ist und keine Formulierung zu verwerfen.
+weicher zu machen, aber der Beleg, dass hier eine KLASSE zu zerlegen ist
+und keine Formulierung zu verwerfen.
 
 #### Gate (d) — rot, und die Ursache ist gemessen
 
@@ -11951,23 +11966,22 @@ jede bewegte Stützstelle und ohne die Umkehrecken:
 
 | | Ablesung |
 |---|---|
-| Stützstellen an der Naht | 8 982 |
+| Stützstellen an der Naht | 9 207 |
 | `kink`-Δ Median | **+0,000°** |
-| `kink`-Δ p90 | **+16,74°** |
+| `kink`-Δ p90 | **+16,70°** |
 | `kink`-Δ Maximum | +147,34° |
-| NEUE Ereignisse über 11,537° | **1 588**, schlimmstes 124,42° (`Sprünge`) |
+| NEUE Ereignisse über 11,537° | **1 626**, schlimmstes 124,42° (`Sprünge`) |
 
 Der Median sagt: die meisten Stützstellen bleiben unberührt. Der p90
 sagt: wo die Korrektur greift, KNICKT sie. **Und der Grund ist nicht die
 Idee, sondern eine Länge:** die Stützstellen einer Kette-Bahn stehen im
 Median **0,0265 xh** auseinander (p10 0,0211 · p90 0,0344, n = 56 688
-Segmente). Die vorregistrierte Anti-Raster-Glättung ist 0,0363 xh lang und
-umfasst damit **1,37 Stützstellen** — sie glättet nichts. Die C¹-Blende
-ist 0,0725 xh lang und umfasst **2,74 Stützstellen** — sie blendet über
-drei Punkte. Beide Fenster sind in Federbreiten gedacht und in
-Stützstellen gerechnet zu kurz, und deshalb landet das Pixelrauschen des
-Platten-Abstandsfeldes (30–35 px je x-Höhe, also ±0,5 px ≈ 0,015 xh je
-Ablesung) ungefiltert in der Federbahn.
+Segmente). Die vorregistrierte Anti-Raster-Glättung ist 0,0363 xh lang,
+umfasst also **1,37 Stützstellen** und glättet nichts; die C¹-Blende ist
+0,0725 xh lang, umfasst **2,74** und blendet über drei Punkte. Beide
+Fenster sind in Federbreiten gedacht und in Stützstellen zu kurz — also
+landet das Pixelrauschen des Platten-Abstandsfeldes (±0,5 px ≈ 0,015 xh
+je Ablesung) ungefiltert in der Federbahn.
 
 #### Die übrigen Gates
 
@@ -11977,29 +11991,31 @@ Ablesung) ungefiltert in der Federbahn.
 | (f) Golden `pen=None` | `core/` unberührt, `/verify-core` grün | **grün** |
 | (g) Fixpunkt | siehe unten | **grün, mit einer benannten Einschränkung** |
 
-**Gate (g), gemessen statt behauptet.** Die Frage ist zweiteilig, und die
-zwei Teile fallen verschieden aus. Der **Zielwert** der Korrektur
+**Gate (g), gemessen statt behauptet.** Der **Zielwert** der Korrektur
 (`Loch + 2·w_pen`) kommt aus der Platte und einer eingefrorenen Konstante
-— keine Zeile ist daran beteiligt. Der **Geltungsbereich** dagegen läuft
-über die komponierte Schleife, denn die Katalog-Identität ist „die n-te
-Schleife dieses Slots in Leserichtung". Gemessen: von 63 Wörtern hat
-**58 denselben Zielsatz mit und ohne Laufform-Zeilen**; die 5 übrigen
-(`regieren` · `Galoppieren` · `Silber` · `Zügel` · `Sprünge`) unterscheiden
-sich um 1–2 Ziele, und in **jedem** dieser Fälle findet die
-Zeilen-Komposition MEHR Schleifen als die Chart-Form, nie eine andere. Der
-Fixpunkt kann sich damit nicht in der gefährlichen Richtung schließen: eine
-weitere Zeile erzeugt kein weiteres Ziel, sie macht nur ein Loch sichtbar.
+— keine Zeile ist daran beteiligt. Der **Geltungsbereich** läuft über die
+komponierte Schleife, denn die Katalog-Identität ist „die n-te Schleife
+dieses Slots in Leserichtung". Gemessen: **58 der 63 Wörter haben
+denselben Zielsatz mit und ohne Laufform-Zeilen**; die 5 übrigen
+(`regieren` · `Galoppieren` · `Silber` · `Zügel` · `Sprünge`) weichen um
+1–2 Ziele ab, und in **jedem** Fall findet die Zeilen-Komposition MEHR
+Schleifen als die Chart-Form, nie eine andere. Der Fixpunkt kann sich
+damit nicht in der gefährlichen Richtung schließen: eine weitere Zeile
+erzeugt kein weiteres Ziel, sie macht nur ein Loch sichtbar.
 
 #### Was das zusammen heißt
 
-Der Mechanismus stimmt und die Zahl, die er verspricht, liefert er: **die
-Binnenflächen gehen auf, 106 von 106, und die Distanzmaße werden dabei
-besser statt schlechter.** Was fällt, ist die AUSFÜHRUNG — eine
-punktweise Verschiebung, deren Blende kürzer ist als der Abstand der
-Stützstellen, überträgt das Raster der Platte in die Feder. Damit ist der
-Satz, den R4 vorsorglich aufgeschrieben hatte, jetzt belegt statt
-vermutet: ein Öffnungs-Term gehört nicht als Nachbearbeitung an die
-fertige Bahn, sondern dorthin, wo eine glatte Bahn entsteht.
+Vier Gates, vier rot — und die Zerlegung ist der Ertrag der Runde. **Die
+Binnenflächen gehen auf, 107 von 108**, und die Distanz-Ablesungen
+bewegen sich fast alle zum Besseren; was fällt, ist jedes Mal die
+AUSFÜHRUNG: (a) trifft die Weite in vier von fünf Fällen statt in jedem,
+(c) kippt am oberen Zehntel, (b) an zwei Wörtern, (d) an 1 626 Knicken.
+Alle vier haben dieselbe Wurzel — eine punktweise Verschiebung, deren
+Blende kürzer ist als der Abstand der Stützstellen, überträgt das Raster
+der Platte in die Feder und trifft ihre Zielweite nur so genau, wie
+dieses Raster es zulässt. Damit ist R4s vorsorglicher Satz belegt statt
+vermutet: ein Öffnungs-Term gehört nicht hinter die fertige Bahn, sondern
+dorthin, wo eine glatte Bahn entsteht.
 
 #### R3b — Vorregistrierung der EINEN Konversion, die noch in diese Runde gehört
 
@@ -12042,45 +12058,45 @@ nur ein ähnliches.
 
 #### R3b — gemessen: die Vorhersage stimmt in beide Richtungen, und der Arm fällt trotzdem
 
-**Verdikt: ebenfalls nicht adoptiert.** Die vorregistrierte Vorhersage
-trifft exakt — Gate (d) wird deutlich besser, Gate (a) deutlich schlechter
-—, und die Struktur-Rechnung halbiert sich, ohne grün zu werden.
+**Verdikt: ebenfalls nicht adoptiert.** Die Vorhersage trifft exakt —
+(d) deutlich besser, (a) deutlich schlechter —, und die Struktur-Rechnung
+halbiert sich, ohne grün zu werden.
 
 | Ablesung | Basis | **R3** (halbe Feder) | **R3b** (zwei Federn) |
 |---|---|---|---|
-| Schleifen offen bei 0,097 | – | **106 / 106** | 109 / 110 |
-| Gate (a) \|Δ\| ≤ 0,02 | – | **85 / 106** | 62 / 110 |
-| größter Schub (Median · max) | – | 0,0596 · 0,1077 | **0,0430 · 0,0944** |
-| `kink`-Δ p90 an der Naht | – | +16,74° | **+4,81°** |
-| neue `kink`-Ereignisse | – | 1 588 | **465** |
+| Schleifen offen bei 0,097 | 102 / 108 | **107 / 108** | 110 / 112 |
+| Gate (a) \|Δ\| ≤ 0,02 | – | **83 / 108** | 62 / 112 |
+| größter Schub (Median · max) | – | 0,0583 · 0,1061 | **0,0432 · 0,0944** |
+| `kink`-Δ p90 an der Naht | – | +16,70° | **+4,77°** |
+| neue `kink`-Ereignisse | – | 1 626 | **462** |
 | schlimmster neuer Knick | – | 124,42° | **66,59°** |
 | `cross_missing` | 12 | 13 | 13 |
 | `cross_spurious` | 7 | 9 | **7** |
 | dev-19 `dtw` Median-Δ | – | **−0,000701** | −0,000495 |
+| dev-19 `dtw` p90-Δ | – | +0,000699 | **+0,000592** |
 | dev-19 Vorzeichentest | – | 14 : 3 (p = 0,0127) | 14 : 3 (p = 0,0127) |
 | dev-19 `aiou` | 0,7583 | **0,7601** | 0,7580 |
-| 63er-k0 Soll-Abstand | 80 | **78** | 82 |
-| 63er-k0 `aiou` Median | – | +0,0013 | **+0,0024** |
-| Rücknahmen „Schleifen-Schluss" | – | 8 | **4** |
+| 63er-k0 Soll-Abstand | 80 | **79** | 81 |
+| 63er-k0 `aiou` Median | – | +0,0007 | **+0,0022** |
+| Rücknahmen „Schleifen-Schluss" | – | 10 | **6** |
 
 **Drei Sätze zu dieser Tabelle.** (i) Die längere Blende tut genau das,
-wofür sie eingesetzt wurde: die Knicke fallen um den Faktor 3,4 und ihr
-p90 um den Faktor 3,5, der `will`-Kreuzungsfehler verschwindet ganz und
-die Zahl der Selbst-Kreuzungen, die der Schub aufzieht, halbiert sich.
-(ii) Sie bezahlt das mit der Präzision: der Schub wird um ein Viertel
-kleiner, die Öffnungsweite trifft ihre Erwartung nur noch in 62 von 110
-Fällen statt in 85 von 106 — offen bleiben die Schleifen trotzdem fast
-alle (109 von 110). (iii) **Und der ganze verbliebene Strukturfehler ist
-EIN Zähler in EINEM Wort:** `Galoppieren` verliert eine Kreuzung
+wofür sie eingesetzt wurde: Knicke und ihr p90 fallen um den Faktor 3,5,
+der `will`-Kreuzungsfehler verschwindet ganz, die aufgezogenen
+Selbst-Kreuzungen gehen von zehn auf sechs. (ii) Sie bezahlt das mit der
+Präzision: der Schub wird ein Viertel kleiner und trifft die Erwartung
+nur noch in 62 von 112 statt in 83 von 108 — offen bleiben die Schleifen
+trotzdem fast alle. (iii) **Der ganze verbliebene Strukturfehler ist EIN
+Zähler in EINEM Wort:** `Galoppieren` verliert eine Kreuzung
 (`cross_missing` 4 → 5) und gewinnt zugleich auf jedem anderen Kanal
-(`retrace_spurious` 2 → 1, `dtw` −0,0013, `aiou` +0,0056). Kein anderes
-der 19 dev-Wörter bewegt einen Strukturzähler.
+(`retrace_spurious` 2 → 1, `dtw` −0,0013, `aiou` +0,0056); kein anderes
+dev-Wort bewegt einen Zähler.
 
-Der k0-Soll-Abstand dreht dabei um (80 → 82 statt 80 → 78, zwei
-schlechtere Wörter, kein besseres) — die stärkere Glättung schiebt die
-Bahn an zwei Stellen aus einer Zone, die der kürzere Schub getroffen
-hatte. Das ist der ehrliche Gegenposten zur besseren `aiou` und der
-Grund, warum aus „weniger schlecht" hier kein „gut" wird.
+Gate (c) bleibt rot (p90 +0,000699 → +0,000592, aber positiv), und der
+k0-Soll dreht um (80 → 81 statt 80 → 79) — die stärkere Glättung schiebt
+die Bahn dort aus einer Zone, die der kürzere Schub traf. Das ist der
+Gegenposten zur besseren `aiou` und der Grund, warum aus „weniger
+schlecht" kein „gut" wird.
 
 **Was R3b damit beweist:** die Blendenlänge ist der richtige Hebel und
 nicht genug. Eine punktweise Nachbearbeitung muss zwischen Treffgenauigkeit

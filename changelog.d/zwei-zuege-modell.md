@@ -12,9 +12,10 @@
   Three rules keep it a mechanism rather than a knob: it acts only on catalogue
   loops the plate holds `offen` in the size classes where the instrument decides
   (`klein`, `mittel`) and only where the plate shows a hole in that very
-  occurrence; the displacement fades out C¹ over half a nib of arc so the seam
-  carries no kink; and a push that pulls the loop's own self-crossing open is
-  reverted rather than reported as a widening.
+  occurrence; the displacement fades out C¹ over half a nib of arc, an attempt
+  at a seamless join that the round then measured as too short; and a push that
+  pulls the loop's own self-crossing open is reverted rather than reported as a
+  widening.
 - **`--zwei-zuege` on the ink follower, default off.** The correction runs after
   the last follower round on the assembled pen path — the smallest insertion
   point that exists: no chain solve changes, no `core/` byte moves, and it reads

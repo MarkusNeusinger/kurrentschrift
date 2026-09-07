@@ -550,8 +550,10 @@ class FollowWeights:
     `offen`, size class `klein`/`mittel`) no pen sample may sit closer to it
     than the plate's own half width, because a capsule union at that width
     would ink it; the samples that do are pushed out along the counter's
-    distance gradient and the displacement is blended over one nib of arc
-    (`tools.pairlab.zweizuege`). It runs AFTER the last round, so no chain
+    distance gradient and the displacement is faded out over half a nib of arc
+    (`zwei_zuege_taper` below — R3 measured that this fade is too SHORT to keep
+    the raster out of the pen path, which is what its continuity gate failed
+    on). It runs AFTER the last round, so no chain
     solve, no window, no assembly and no `core/` byte moves — and it reads the
     PLATE and one frozen pen constant, never a Laufform row, so it cannot close
     the harvest fixed point of §14 „Laufform LF14 `sep06`"."""

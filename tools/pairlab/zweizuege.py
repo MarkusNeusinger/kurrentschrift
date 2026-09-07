@@ -72,6 +72,7 @@ import numpy as np
 
 from tools.tracebench.kringel import (
     PLATE_PEN_HALF_WIDTH_UNITS,
+    body_items,
     catalogue_source,
     load_catalogue,
     loop_apertures,
@@ -526,13 +527,50 @@ def catalogue_targets(
     that says WHICH side of the lump each pass ran on, and choosing would be
     ductus invented at measurement time. The reading is recorded so a later arm
     can start from it.
+
+    **Which counter belongs to which loop is the catalogue's Slot-Lineal, not a
+    proximity search** (`tools.tracebench.kringelcat`, and #556 records why it
+    replaced containment). A counter belongs to the slot whose own BODY strokes
+    span its x — deferred marks excluded, because an i-dot sits far right in the
+    item stream and directly above its letter on the page — and only inside that
+    slot are loops and counters paired one-to-one by centre distance. A flat
+    radius over the whole word is exactly what #553 measured going wrong: it
+    hands a loop the NEIGHBOUR's hole, and a word-global claim set then cascades
+    the mistake into the next letter.
     """
-    radius_px = options.match_radius_units * xh_px
-    claimed: set[int] = set()
     targets: list[tuple[PlateCounter, LoopCorrection, tuple[float, float]]] = []
     rows_out: list[LoopCorrection] = []
-    for slot, (key, lines) in sorted(slot_loop_lines(composed_items).items()):
+    grouped = sorted(slot_loop_lines(composed_items).items())
+    by_slot = body_items(composed_items)
+    bodies = {
+        slot: [np.asarray(composed_items[i]["centerline"], dtype=float) for i in by_slot.get(slot, [])]
+        for slot, _ in grouped
+    }
+    bodies = {slot: lines for slot, lines in bodies.items() if lines}
+    if not bodies:
+        return targets, rows_out
+    spans = {
+        slot: (float(np.vstack(lines)[:, 0].min()), float(np.vstack(lines)[:, 0].max()))
+        for slot, lines in bodies.items()
+    }
+    # Counters in the composition's own units, so the slot ruler compares like
+    # with like — the spans and the body strokes live there, not in crop pixels.
+    centres = {
+        counter.label: tuple(_to_units(np.array([[counter.cx, counter.cy]]), xh_px, baseline_row, tx, ty)[0])
+        for counter in counters
+    }
+    owner: dict[int, int] = {}
+    for label, (x, y) in centres.items():
+        inside = [slot for slot, (lo, hi) in spans.items() if lo <= x <= hi]
+        pool = inside or list(spans)
+        owner[label] = min(
+            pool, key=lambda slot: min(float(np.min(np.hypot(b[:, 0] - x, b[:, 1] - y))) for b in bodies[slot])
+        )
+    by_label = {counter.label: counter for counter in counters}
+
+    for slot, (key, lines) in grouped:
         rows = catalogue.get(key or "", [])
+        in_scope: dict[int, tuple[LoopCorrection, Any]] = {}
         for rank, loop in enumerate(loop_apertures(lines)):
             row = rows[rank] if rank < len(rows) else None
             if row is None or row["state"] not in options.states or row["size_class"] not in options.size_classes:
@@ -541,21 +579,43 @@ def catalogue_targets(
                 slot=int(slot), glyph=key, loop=rank, size_class=row["size_class"], state=row["state"]
             )
             rows_out.append(entry)
+            in_scope[rank] = (entry, loop)
+        if not in_scope:
+            continue
+        # One-to-one inside the letter, nearest pair first — the catalogue's own
+        # matching, so a loop can only ever take a counter its letter owns.
+        own = [label for label, s in owner.items() if s == slot]
+        pairs = sorted(
+            (float(np.hypot(loop.cx - centres[label][0], loop.cy - centres[label][1])), rank, label)
+            for rank, (_entry, loop) in in_scope.items()
+            for label in own
+        )
+        took_rank: set[int] = set()
+        took_label: set[int] = set()
+        for _distance, rank, label in pairs:
+            if rank in took_rank or label in took_label:
+                continue
+            took_rank.add(rank)
+            took_label.add(label)
+            entry, loop = in_scope[rank]
+            hit = by_label[label]
+            entry.counter_units = hit.aperture_px / xh_px
+            entry.target_d0_units = entry.counter_units + 2.0 * options.half_width_units
+            entry.separation_units = entry.target_d0_units
+            targets.append((hit, entry, (float(loop.cx), float(loop.cy))))
+        for rank, (entry, loop) in in_scope.items():
+            if rank in took_rank:
+                continue
             cx_px, cy_px = _to_px(np.array([[loop.cx, loop.cy]]), xh_px, baseline_row, tx, ty)[0]
-            near = sorted(counters, key=lambda c: (c.cx - cx_px) ** 2 + (c.cy - cy_px) ** 2)
-            hit = next((c for c in near if np.hypot(c.cx - cx_px, c.cy - cy_px) <= radius_px), None)
-            if hit is not None and hit.label in claimed:
+            radius_px = options.match_radius_units * xh_px
+            lump = lump_width_units(ink_edt, (cx_px, cy_px), xh_px=xh_px, radius_px=radius_px)
+            entry.separation_units = stroke_separation(lump, options.half_width_units)
+            # `REFUSAL_CLAIMED` is the same shortage seen from the other side:
+            # the letter HAS counters, they just went to its other loops.
+            if own and len(took_label) == len(own):
                 entry.reason = REFUSAL_CLAIMED
-            elif hit is None:
-                lump = lump_width_units(ink_edt, (cx_px, cy_px), xh_px=xh_px, radius_px=radius_px)
-                entry.separation_units = stroke_separation(lump, options.half_width_units)
-                entry.reason = REFUSAL_NO_COUNTER if entry.separation_units > 0.0 else REFUSAL_NO_SEPARATION
             else:
-                claimed.add(hit.label)
-                entry.counter_units = hit.aperture_px / xh_px
-                entry.target_d0_units = entry.counter_units + 2.0 * options.half_width_units
-                entry.separation_units = entry.target_d0_units
-                targets.append((hit, entry, (float(loop.cx), float(loop.cy))))
+                entry.reason = REFUSAL_NO_COUNTER if entry.separation_units > 0.0 else REFUSAL_NO_SEPARATION
     return targets, rows_out
 
 
@@ -587,10 +647,10 @@ def correct_word_strokes(
         return list(strokes_units), report
     ink = np.asarray(mask, dtype=bool)
     labels, counters = plate_counters(ink, min_px=opts.min_counter_px)
-    if not counters:
-        report.reason = REFUSAL_NO_COUNTER
-        return list(strokes_units), report
-
+    # A word whose plate shows no counter at all still gets its per-loop rows:
+    # `catalogue_targets` measures each in-scope lump and records why it refused,
+    # and a word-level shortcut here would make exactly the occurrences the arm
+    # cannot help the ones it cannot account for either.
     targets, report.loops = catalogue_targets(
         composed_items,
         catalogue,

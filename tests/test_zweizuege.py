@@ -135,18 +135,6 @@ def test_plate_counters_reads_the_hole_and_ignores_the_paper():
     assert counters[0].aperture_px / XH_PX == pytest.approx(2 * (0.25 - W_PEN), abs=0.02)
 
 
-def _far_counter(mask: np.ndarray) -> np.ndarray:
-    """A second, tiny hole far from the loop, so the WORD has a counter.
-
-    Without it a mask with nothing enclosed leaves early with a word-level
-    refusal, and the per-loop branch under test is never reached.
-    """
-    out = mask.copy()
-    out[340:370, 200:230] = True
-    out[350:360, 210:220] = False
-    return out
-
-
 def _disc(centre_units: tuple[float, float], radius_units: float) -> np.ndarray:
     cx, cy = _px(*centre_units)
     yy, xx = np.mgrid[0:400, 0:250]
@@ -202,12 +190,16 @@ def test_the_push_only_moves_what_would_ink_the_counter():
 
 
 def test_a_lump_without_a_counter_is_measured_and_refused():
-    """No hole means no distance field to deconvolve — and no invented ductus."""
+    """No hole means no distance field to deconvolve — and no invented ductus.
+
+    The mask carries NO counter at all, which is also the case that has to stay
+    accountable: a word-level shortcut here would leave the occurrences the arm
+    cannot help without a row saying why.
+    """
     strokes = [_looping_stroke(0.18)]
     # A solid blob where the loop is: wide enough for two passes, but the plate
     # closed it, so nothing says which side each pass ran on.
-    mask = _far_counter(_disc(CENTRE_UNITS, 0.30))
-    corrected, report = _correct(strokes, mask, _items(), _catalogue())
+    corrected, report = _correct(strokes, _disc(CENTRE_UNITS, 0.30), _items(), _catalogue())
     (loop,) = report.loops
     assert loop.reason == REFUSAL_NO_COUNTER
     assert loop.separation_units is not None
@@ -219,11 +211,31 @@ def test_a_lump_without_a_counter_is_measured_and_refused():
 def test_a_lump_thinner_than_the_pen_is_refused_as_one_stroke():
     strokes = [_looping_stroke(0.18)]
     # 0.08 xh of ink across: less than the pen is wide, so not two passes.
-    mask = _far_counter(_disc(CENTRE_UNITS, 0.04))
-    _corrected, report = _correct(strokes, mask, _items(), _catalogue())
+    _corrected, report = _correct(strokes, _disc(CENTRE_UNITS, 0.04), _items(), _catalogue())
     (loop,) = report.loops
     assert loop.reason == REFUSAL_NO_SEPARATION
     assert loop.separation_units is not None and loop.separation_units <= 0.0
+
+
+def test_a_counter_of_another_letter_is_not_this_loop_s_target():
+    """The Slot-Lineal, and the case #553 measured going wrong.
+
+    A hole 0.35 xh away — inside the old flat matching radius — belongs to a
+    stroke set of its own. It must not become this loop's target however close
+    it sits, because a word-global proximity search hands a loop the
+    NEIGHBOUR's hole and the claim then cascades.
+    """
+    neighbour = (CENTRE_UNITS[0] + 0.35, CENTRE_UNITS[1])
+    ring_cx, ring_cy = _px(*neighbour)
+    yy, xx = np.mgrid[0:400, 0:250]
+    ring = np.abs(np.hypot(xx - ring_cx, yy - ring_cy) - 0.12 * XH_PX) <= 0.04 * XH_PX
+    mask = _disc(CENTRE_UNITS, 0.30) | ring
+    items = _items() + [{"slot_index": 1, "glyph_key": "other", "centerline": _circle(0.12, centre=neighbour).tolist()}]
+    _corrected, report = _correct([_looping_stroke(0.18)], mask, items, _catalogue())
+    (loop,) = report.loops
+    assert loop.glyph == "testglyph"
+    assert loop.reason == REFUSAL_NO_COUNTER
+    assert loop.counter_units is None
 
 
 @pytest.mark.parametrize(
