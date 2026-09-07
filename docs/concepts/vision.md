@@ -145,9 +145,9 @@ zugleich der Ort sein, an dem fehlende Buchstaben nachwachsen.
 
 **(c) Die Eigenhand des Autors — die ausgelieferte Schreibhand.** Sobald
 ihr Bestand Alphabet und Übergänge deckt, schreibt die Seite in der Hand
-des Autors: Hero, Federprobe, Übungsblatt-Vorschrift — und das Lese-Quiz,
-das der Autor selbst nennt, für das aber eine didaktische Unterfrage offen
-bleibt (siehe unten). Sie ist „nicht so sauber oder historisch“ wie die
+des Autors: Hero, Federprobe, Übungsblatt-Vorschrift — nicht aber das
+Lese-Quiz, das nach dem Entscheid vom 2026-09-07 vorerst bei den
+1922er-Formen bleibt (Unterfrage 3 unten). Sie ist „nicht so sauber oder historisch“ wie die
 Platte — das ist bewusst in Kauf genommen, weil vier Dinge dafür sprechen:
 
 - **Bekannte Feder statt rekonstruierter.** Das **stehende Setup** einer
@@ -242,7 +242,7 @@ gesucht werden muss:
    sind an der Norm der Ausgangsschrift definiert, während echte
    Dokumente ohnehin nie lehrbuchsauber sind. Ob das Quiz deshalb als
    einzige Fläche bei den 1922er-Formen bleibt, **hat der Autor am
-   2026-09-07 entschieden (A5): vorerst ja.** Das Quiz bleibt bei den
+   2026-09-07 entschieden (Sammelfrage 5): vorerst ja.** Das Quiz bleibt bei den
    1922er-Formen und wird nicht umbeschriftet — „beide Schreibvarianten
    verbessern sich mit der Zeit"; der Handwechsel der übrigen Flächen
    lässt das Quiz aus. Wiedervorlage, sobald die Eigenhand Alphabet und

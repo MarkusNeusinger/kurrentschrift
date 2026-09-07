@@ -84,8 +84,8 @@ wurde — also muss sichtbar sein, welche Zeile den nächsten Bogen wert ist.
 beschrieben — Trainingsmaterial für H5, Zubringer zur Statistik. Der
 Entscheid vom 2026-09-07 gibt ihm ein zweites, größeres Ziel: **die
 Eigenhand wird die ausgelieferte Schreibhand der Seite** (Hero,
-Federprobe, Übungsblatt-Vorschrift und — mit einer offenen didaktischen
-Unterfrage — das Lese-Quiz), sobald ihr Bestand Alphabet und Übergänge
+Federprobe, Übungsblatt-Vorschrift; das Lese-Quiz bleibt nach dem
+Entscheid vom 2026-09-07 vorerst bei den Formen von 1922), sobald ihr Bestand Alphabet und Übergänge
 deckt. Die Tafeln bleiben die gemeinfreie Formbasis und der
 Schriftkunde-Beleg (der Duktus darüber war immer die eigene Arbeit des
 Autors), die Platten-Wörter bleiben Ground Truth und Maßstab — die
@@ -129,10 +129,10 @@ betroffenen Locale-Schlüssel steht in
 „Was am Rollenwechsel hängt“), und er lässt die **Benches unberührt**:
 die messen weiter gegen die Platte, und keine Kopfzahl liest je aus dem
 Eigenhand-Material, solange dafür keine eigene Teilmenge eingefroren und
-vorregistriert ist (§4, „Trainingsdaten, kein Mess-Satz“). Offen bleibt
-allein die didaktische Unterfrage, ob das **Lese-Quiz** seine
-Leseaufgaben weiter in den Formen von 1922 stellt (vision.md, dieselbe
-Liste).
+vorregistriert ist (§4, „Trainingsdaten, kein Mess-Satz“). Die
+didaktische Unterfrage zum **Lese-Quiz** ist am 2026-09-07 entschieden:
+es stellt seine Leseaufgaben vorerst weiter in den Formen von 1922
+(vision.md, dieselbe Liste).
 
 ## 3 Begriffe
 
