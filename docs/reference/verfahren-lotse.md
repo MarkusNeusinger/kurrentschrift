@@ -35,10 +35,13 @@ Kreuzungs-Detektor auf der Karte) · `UNTWIST_SOLL_MATCHING` =
 eins-zu-eins auf die Events gematcht, reservierte Events sind
 unpaarbar; adoptiert bei Zähler-Parität per vorregistrierter
 Konstruktions-Regel). Zahlen (dev-19, Marken-Kappe 1,5), **Stand
-`sep05`** auf der Wurzel `eaa195aa7c84…` (§14 „Laufform LF12
-`sep05`"): dtw-Median **0,053393** · p90 **0,116199** · worst
-`muß-2` **0,149918** · aiou **0,7493** · `cross_missing` **0** /
-`cross_spurious` **5** · `retrace_missing` 7 · Marken 0/0/0.
+`sep07`** auf der Wurzel `ccb036a5eb20…` (§14 „Komma-Ausschluss
+`sep07`", die seit A37 fällige Karten-Nachmessung): dtw-Median
+**0,053386** · p90 **0,116668** · worst
+`muß-2` **0,165083** · aiou **0,7473** · `cross_missing` **0** /
+`cross_spurious` **4** · `retrace_missing` 5 · Marken 0/0/0. Die
+`sep05`-Zahlen (0,053393 · 0,116199 · 0,149918 · 0,7493 · 0/5 · 7)
+standen vor dem Austritts-Trim-Default.
 
 **Ältere Zahlen bleiben gültig, sind aber nur untereinander
 vergleichbar** — jede Wurzel trägt ihre eigene Registrierung, und
@@ -97,6 +100,7 @@ beider Routen stehen im Stand-Block von
 | sep04 | **Absprung-Forensik** *(Autopsie, kein Arm)* | Herkunfts-Sensor je emittiertem Punkt + Tintenkörper-Abstand (`tools/inkpilot/forensics.py`), gegen `pilot_word` bit-gleich gespiegelt | **Keines der 3 350 Karten-Samples** hat eine leere Bord-Umgebung (je Sample erhoben, nicht am Ursachen-Label), Schienen-Auslauf 0 daneben; die Ritt-Doppelzone liegt in **49,5 %** ihrer Punkte außerhalb der Tinte (Fenster 8,9 %, Ritt 0,03 %). Von 39 Ereignissen 23 GEERBT (Karten-Abdrift, Überschuss über die Karte median **+0,0000** → Ursache in der Komposition), 15 von der starren Pinnung gemacht (Fenster-Versatz, **+0,0928 xh**, max +0,2146; dieselbe Pinnung zieht in 12 Fenstern −0,0165 zurück) |
 | sep04 | **Lotse-Sprung** *(Autopsie, kein Arm)* | Nachmessung der `aug20`-Artefakte + der `aug20`-Kandidatenbytes auf der heutigen Wurzel | **gegenstandslos** — 0,0545 ist `laden` (Rang 9), der Median ist Rang 10 = 0,058522; `will` beweisbar unbewegt. Zweitbefund: die `aug20`-Bytes reproduzieren heute 15 von 19 Wörtern ziffergleich, vier nicht (`das` 0,0307 → 0,2504, `und`, `Wer`, `zwei`) — die `sep01`-Rechteck-Reparatur; keine dev-19-Zahl von vor `sep01` ist mit einer danach vergleichbar |
 | sep05 | **Re-Baseline auf der LF12-Wurzel** *(kein Lotse-Arm)* | kein Knopf: der LF12-Write hat 18 Laufform-Zeilen neu abgeleitet und `S` gelöscht — die komponierte Bahn IST die Karte des Lotsen | dev-19 frisch geritten, 63/63: dtw **0,053393** med (von 0,056080) · aiou **0,7493** · `cross_spurious` **5** (von 1) — strukturell mehr Bewegung als bei der Kette, wie die Karten-Abdrift der `sep04`-Forensik es erwarten lässt; die Kette führt weiter (0,045384) | „Laufform LF12 `sep05`" |
+| sep07 | **Karten-Nachmessung nach A37 + Komma-Ausschluss** *(Re-Baseline, kein Lotse-Arm)* | zwei Wurzel-/Karten-Ereignisse in einer Messung: der Austritts-Trim ist seit A37 Default (die Karte IST die komponierte Bahn — die seit `sep06` in §7.11 offene Nachmessung), und die Wort-Wurzel wurde für den Komma-Ausschluss neu gebaut (`ccb036a5eb20…`) | dev-19 frisch geritten, 63/63: dtw **0,053386** med (von 0,053393) · p90 **0,116668** (von 0,116199) · worst `muß-2` **0,165083** (von 0,149918) · aiou **0,7473** (von 0,7493) · `cross_spurious` **4** (von 5) · `retrace_missing` **5** (von 7). **Die ganze Bewegung gehört A37**: vor und nach dem Komma-Ausschluss sind alle 63 Lotse-Zeilen byte-gleich und jede dev-19-Zahl ziffernweise dieselbe — der Lotse liest die Karte, nicht die Tinte. Die Kette führt weiter (0,045881) | „Komma-Ausschluss `sep07`" |
 
 Benannter Fehlermodus der Route: **Junction-Pinch** (Glossar) — die
 v0.7/v0.8/v0.9-Kette ist seine vollständige Abarbeitung; seit v0.11

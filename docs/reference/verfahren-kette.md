@@ -60,15 +60,16 @@ WÄCHTER-Schicht: gegen die Soll-Stack-Basis 63er-Soll **86 → 79** bei
 0 schlechter, aiou-Median der bewegten Wörter **+0,073**, null
 Verlierer — weil der rundenatomare Wächter 26 von 31 bewegten Wörtern
 in Runde 1 auf den Init zurückwarf und die Zone genau diese rettet.
-Zahlen (dev-19, Lineal Kappe 1,5 seit L-U), **Re-Baseline `sep05`
-(§14 „Laufform LF12 `sep05` — geschrieben"): dtw 0,045384 med · p90
-0,087826 · worst `muß` 0,107134 · marks 0 fehlend · aiou 0,7583**;
-Netto-Kreuzungsdefekte 12 + 7 = **19**, 63er-Soll-Abstand **80**.
+Zahlen (dev-19, Lineal Kappe 1,5 seit L-U), **Re-Baseline `sep07`
+(§14 „Komma-Ausschluss `sep07`"): dtw 0,045881 med · p90
+0,088356 · worst `muß` 0,106372 · marks 0 fehlend · aiou 0,7660**;
+Netto-Kreuzungsdefekte 11 + 9 = **20**, 63er-Soll-Abstand **85**.
 Gemessen auf der Wurzel `suetterlin-1922` `exported_at`
-2026-09-05T21:33:12+00:00 `root_digest` `eaa195aa7c84…` — die
-Formulierung ist unverändert v5, bewegt hat sich wieder nur die
-Wurzel, diesmal durch den LF12-Write (18 Laufform-Zeilen neu
-abgeleitet, die `S`-Zeile gelöscht). Die `sep04`-Zahlen (dtw 0,045830 ·
+2026-09-07T20:07:03+00:00 `root_digest` `ccb036a5eb20…` — die
+Formulierung ist unverändert v5 und die Bahn ebenso (63/63
+strich-gleich); die Zahlen sind die der A37-Nachmessung (§14 „Kette
+R3c `sep07`"). Die `sep05`-Zahlen (0,045384 · 0,087826 · 0,7583 ·
+Soll 80) standen davor, die `sep04`-Zahlen (dtw 0,045830 ·
 p90 0,094197 · worst `unter` 0,113919 · aiou 0,7694 · Soll 76, Wurzel
 `9f124f78cc9f…`) und die `aug26`-Zahlen (dtw 0,0446 · p90 0,0861 ·
 worst `muß` 0,106 · aiou 0,7608 · Soll 79) bleiben gültig und
@@ -127,6 +128,7 @@ Gewichts-Arme werden nicht rückwirkend nummeriert (Konvention Nr. 3).
 | sep07 | **R4 Feder-Entfaltung der Evidenz** (Konversion 4 von R3 und R3c) | `--counter-evidence` — nicht die Bahn und nicht das Objektiv, sondern der ATTRAKTOR: jedes Skelettpixel der eingefrorenen Maske, das näher als `w_pen` 0,0968 an einer `offen`-Binnenfläche des Katalogs liegt, fällt weg, und an seine Stelle tritt die Niveaulinie `w_pen + 0,5 px` desselben Loch-Abstandsfeldes, auf die Tinte beschnitten und nur im radialen Schatten des Weggefallenen. Ersetzt das Skelett des Falls an K-Cs eigenem Punkt, also EINE Evidenz für Saatfenster, Solve-Felder und Deckung; das eingefrorene `ref_mask`/`ref_skel` des Lineals bleibt unberührt | **Diagnose zuerst, und sie entscheidet den Zweig:** die Verschmelzung ist Tinte, kein Raster — Median(`A_grau4 − A_Maske`) **+0,0000** (die 4×-Lesung findet eine KLEINERE Binnenfläche), Anzeiger 0,807 → 0,790, und der Ausschnitt IST die Platte (30–33 px/xh, unskaliert; der zweite committete Scan `p060.jpg` trägt für die Tafel ~5 % WENIGER, nachgemessen nach einem Copilot-Fund). **Nicht adoptiert**, Gate (c) rot unter beiden Lesarten (gepaart p90 +0,000834 · eigene Verteilung Median +0,000385) und damit Kill; (a) **36 / 157** statt 149, (d) +34 `kink`-Ereignisse (2 296 → 2 330). **Und der erste Arm der Kringel-Kette, der die richtige Klasse bewegt:** 8 der 33 zu-Schleifen gehen auf (R3c: 0), offen 124 → **129**, referenzfreier Soll **85 → 70**, Gate (b) erstmals BESSER als die Basis (`cross_spurious` 9 → **7**, `retrace_spurious` 10 → 9). Preis: drei vorher offene Schleifen fallen ganz zusammen (`unter` `t`#1 · `Kugel` `K`#1 · `macht` `a`#0) | „Kette R4 Feder-Entfaltung `sep07`" |
 | sep07 | **K-E als Menschenurteil** (Rettungsweg 1, A2) | derselbe `mark_claim`, gegen v5 statt v4 | **Runde 9 gebaut, Urteil offen.** Auf v5 liest das Lineal anders: 38 bewegt / 25 identisch, Soll **85 → 82**, aiou-Median der bewegten **+0,0008** (`aug21` −0,0002), nur noch **zwei** Verlierer (`regieren` · `muß`) statt vier, Ziel weiter geheilt (`die-2` Soll 5 → 4, V-Nadel weg). Gate (3) bleibt gerissen, also entscheidet die Runde. Nebenbefund: **K-E1 ist nicht lauffähig**, der Breitenfeld-Split steht in keinem Commit | „Kette K-E `sep07`" |
 | sep07 | **Chart-Saat wird Ernte-Default** (A38) *(kein Kette-Arm)* | `DEFAULT_CHAIN_SEED = "chart"` in `tools/laufform/harvest.py`; der `chain`-Kandidat dieser Route behält `composed`, weil er die eingefrorene Basis jedes gemessenen Arms ist | **Keine Zahl dieser Seite bewegt sich**, die Route ist unberührt: nur das „Default bleibt AUS" der `sep06`-Zeile gilt ab hier ihr und nicht mehr der Ernte. Die Trennung ist gemessen — LF15s Karte kommt byte-gleich heraus, sobald `exit_trim` auf den Stand vor A37 zurückgeht | „Laufform LF16 `sep07`" |
+| sep07 | **Komma-Ausschluss** *(Lineal-Re-Baseline, kein Kette-Arm)* | kein Knopf: das Komma hinter `Gewehr`, `Zügel`, `streiten` verlässt per `exclude` die Referenz-Tinte, Wort-Wurzel `eaa195aa7c84…` → `ccb036a5eb20…` | **Route nachweislich unberührt:** 63/63 Kandidaten-Zeilen strich-gleich, dev-19 ziffernweise unverändert, 63er-Soll **85 = 85**, aiou-Median 0,7428 = 0,7428; bewegt hat sich nur das `aiou` der drei Wörter (+0,004 … +0,009). Der Kandidat SAH das Komma (Tinten-Evidenz behält es, rel 0,13–0,23) — es zog nur nichts an, 0,41–0,83 xh von jeder Buchstabentinte entfernt | „Komma-Ausschluss `sep07`" |
 
 ## Stehende v6-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
 

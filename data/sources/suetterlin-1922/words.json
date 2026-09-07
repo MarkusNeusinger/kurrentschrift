@@ -1,5 +1,5 @@
 {
- "note": "Word/pair exemplars cut from the connected-writing plates of this source. Rect + lineature in page-pixel coords of `page`; optional `exclude` rects ([x0, y0, x1, y1], page coords) are painted paper-white before binarisation (foreign ink from neighbouring lines, printed-caption bleed, punctuation overlapping a box edge, apostrophes of elided words). `id` keys the fixture (unique; repeated words carry -2/-3 suffixes), `kind: pair` marks the isolated letter-pair joins of Abb. 20 (their own bench headline). The stored `word` carries letters only: trailing punctuation stays outside the rect or in an exclude, elisions (ha'n, Spor'n) are stored as the drawn letter run. Boxes proposed by tools/wordbench/propose_boxes.py and verified visually per line; frozen into wordbench fixtures by tools/wordbench/export_fixtures.py. Lineature measured from the ink (the plates have no printed ruling). `incomplete: true` marks a specimen whose own LETTERFORM ink is clipped — a cut-off i-dot, a last letter running off the plate edge — so no one can ever trace it by hand; it stays a specimen (the intact part is still measurable), the admin only keeps it out of the manual tracing to-do list, and the entry's `note` carries the reason. Letterform is the operative word, and it decides the one case that looks like a tie: a clipped lead-in or run-out HAIRLINE does not qualify, because those connecting strokes are generated from the entry/exit tangents rather than traced (architektur.md §3) — the flag is for ink no one can put back. The flag is the SECOND remedy, not the first (author, 2026-08-31): where only the RECT clips the ink, the rect is repaired instead (tools/wordbench/repair_boxes.py, a declared word-bench re-baseline — qualitaetsmetrik.md §15), and the flag is left for ink that ends on the plate itself. After that repair (2026-09-01) no entry carries it, and a boundary sweep over all 202 rects (2026-09-06, connected components on the whole plate, so a stroke leaving a box is one object seen from both sides) found none that should: where ink still crosses a rect it is the comma after the word (Gewehr, Zügel, streiten, a22-dank), the neighbouring word or the descender of the line above (laden, a22-laden, a22-fern, a22-ein), or the word's own lead-in hairline, which the renderer generates anyway (a22-laden, a22-ihren, a22-doch, a22-roten-2) — every letterform is traceable in all of them.",
+ "note": "Word/pair exemplars cut from the connected-writing plates of this source. Rect + lineature in page-pixel coords of `page`; optional `exclude` rects ([x0, y0, x1, y1], page coords) are painted paper-white before binarisation (foreign ink from neighbouring lines, printed-caption bleed, punctuation overlapping a box edge, apostrophes of elided words). `id` keys the fixture (unique; repeated words carry -2/-3 suffixes), `kind: pair` marks the isolated letter-pair joins of Abb. 20 (their own bench headline). The stored `word` carries letters only: trailing punctuation stays outside the rect or in an exclude, elisions (ha'n, Spor'n) are stored as the drawn letter run. Boxes proposed by tools/wordbench/propose_boxes.py and verified visually per line; frozen into wordbench fixtures by tools/wordbench/export_fixtures.py. Lineature measured from the ink (the plates have no printed ruling). `incomplete: true` marks a specimen whose own LETTERFORM ink is clipped — a cut-off i-dot, a last letter running off the plate edge — so no one can ever trace it by hand; it stays a specimen (the intact part is still measurable), the admin only keeps it out of the manual tracing to-do list, and the entry's `note` carries the reason. Letterform is the operative word, and it decides the one case that looks like a tie: a clipped lead-in or run-out HAIRLINE does not qualify, because those connecting strokes are generated from the entry/exit tangents rather than traced (architektur.md §3) — the flag is for ink no one can put back. The flag is the SECOND remedy, not the first (author, 2026-08-31): where only the RECT clips the ink, the rect is repaired instead (tools/wordbench/repair_boxes.py, a declared word-bench re-baseline — qualitaetsmetrik.md §15), and the flag is left for ink that ends on the plate itself. After that repair (2026-09-01) no entry carries it, and a boundary sweep over all 202 rects (2026-09-06, connected components on the whole plate, so a stroke leaving a box is one object seen from both sides) found none that should: where ink still crosses a rect it is the comma after the word (Gewehr, Zügel, streiten, a22-dank), the neighbouring word or the descender of the line above (laden, a22-laden, a22-fern, a22-ein), or the word's own lead-in hairline, which the renderer generates anyway (a22-laden, a22-ihren, a22-doch, a22-roten-2) — every letterform is traceable in all of them. Those four commas carry an `exclude` since 2026-09-07 (author decision A3: punctuation belongs outside the reference ink), a declared re-baseline of the words and abb22 roots (messjournal.md §14, entry `Komma-Ausschluss sep07`). Punctuation is the ONLY foreign ink this remedy covers: a neighbouring word, a descender from the line above and the word's own lead-in hairline all stay, because they are either measurable context or ink the renderer generates.",
  "words": [
   {
    "word": "unter",
@@ -238,8 +238,15 @@
      293,
      1155,
      294
+    ],
+    [
+     1321,
+     244,
+     1330,
+     270
     ]
-   ]
+   ],
+   "note": "the comma after the word reaches into the rect; its ink is excluded (sep07 punctuation re-baseline)"
   },
   {
    "id": "muß-2",
@@ -597,8 +604,15 @@
      858,
      1577,
      862
+    ],
+    [
+     1570,
+     834,
+     1577,
+     842
     ]
-   ]
+   ],
+   "note": "the comma after the word reaches into the rect; its ink is excluded (sep07 punctuation re-baseline)"
   },
   {
    "id": "schießen",
@@ -952,8 +966,15 @@
      1307,
      731,
      1318
+    ],
+    [
+     904,
+     1292,
+     910,
+     1306
     ]
-   ]
+   ],
+   "note": "the comma after the word reaches into the rect; its ink is excluded (sep07 punctuation re-baseline)"
   },
   {
    "id": "zu",
@@ -1616,7 +1637,16 @@
    "x1": 638,
    "y1": 202,
    "baseline_y": 193,
-   "midband_y": 156
+   "midband_y": 156,
+   "exclude": [
+    [
+     634,
+     184,
+     638,
+     195
+    ]
+   ],
+   "note": "the comma after the word reaches into the rect; its ink is excluded (sep07 punctuation re-baseline)"
   },
   {
    "id": "a22-du",
