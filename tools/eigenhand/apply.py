@@ -45,10 +45,10 @@ import re
 import shutil
 from pathlib import Path
 
-from core.eigenhand.befund import measure_strip
+from core.eigenhand.befund import kringel_catalogue, measure_plane
 from core.eigenhand.bogen import layout_digest
 from core.eigenhand.crop import px_per_mm as strip_px_per_mm
-from core.landmarks import catalogue_source, load_catalogue
+from core.eigenhand.crop import working_plane
 from tools.eigenhand.kartei import load_kartei, next_fassung_id, save_kartei
 from tools.eigenhand.store import check_crop_name, hand_dir
 from tools.eigenhand.store import sheet_dir as store_sheet_dir
@@ -92,25 +92,13 @@ def parse_result(text: str, sheet: str) -> dict[str, dict]:
 
 
 def load_kringel_catalogue(style: str) -> tuple[dict | None, str | None]:
-    """The Kringel catalogue, but only for the script it was measured on.
+    """`core.eigenhand.befund.kringel_catalogue`, with the operator's warning line.
 
-    The catalogue registers which counter of which letter the 1922 PLATE holds
-    open (#556). Applied to another SCRIPT it would publish one tradition's
-    expectations under another's name, so it is handed over only where the
-    styles match — and it always travels with the source it came from, because
-    an expectation read off a foreign HAND (which this is: same Sütterlin,
-    another writer) must never look like this hand's own. A catalogue that
-    cannot be read costs the Kringel field and nothing else.
+    The loading itself moved into `core/` when the mask endpoint became a
+    second measuring caller: an expectation loaded two ways would let the same
+    Fassung come out differently depending on who read it.
     """
-    try:
-        source = catalogue_source()
-        if str(source.get("style", "")) != style:
-            return None, None
-        measured = (source.get("measured_on") or [{}])[0]
-        return load_catalogue(), f"{source.get('style')}/{measured.get('name', '?')}"
-    except (OSError, ValueError) as exc:  # noqa: BLE001 — a sensor never fails a run
-        print(f"WARNING: Kringel-Katalog nicht lesbar ({type(exc).__name__}: {exc}) — Feld entfällt")
-        return None, None
+    return kringel_catalogue(style, warn=lambda message: print(f"WARNING: {message}"))
 
 
 def measure_row(
@@ -125,31 +113,19 @@ def measure_row(
 
     Read on the BLUE plane of a colour crop — where the cyan rulings sit
     nearest to paper, the same plane the import detects and QC's on — and on
-    the grayscale of a grayscale one. The stored PNG is never touched; this is
-    a derivation, like every other reading of these bytes.
-
-    The Fleckenmaske is painted out BEFORE the reading: a toner speck is not
-    the writer's ink, and left standing it would count as a body run, drag the
-    pen width and cost the Fassung a rank it never lost.
+    the grayscale of a grayscale one, with the Fleckenmaske painted out first
+    (`befund.measure_plane`). The stored PNG is never touched; this is a
+    derivation, like every other reading of these bytes.
     """
     try:
-        import numpy as np  # noqa: PLC0415 — the tool family loads without the image stack
-        from PIL import Image  # noqa: PLC0415
-
-        from core.eigenhand.flecken import paint_out  # noqa: PLC0415 — same reason
-
-        with Image.open(crop_file) as image:
-            rgb = image.mode in ("RGB", "RGBA")
-            array = np.asarray(image.convert("RGB") if rgb else image.convert("L"), dtype=np.float32) / 255.0
-        plane = array[:, :, 2] if rgb else array
+        plane = working_plane(crop_file.read_bytes())
         scale = strip_px_per_mm(plane.shape[1], layout_row["cut_mm"])
-        if flecken:
-            plane = paint_out(plane, flecken, scale)
-        return measure_strip(
+        return measure_plane(
             plane,
             layout_row,
-            crop_origin_mm=crop_origin_mm,
+            crop_origin_mm,
             px_per_mm=scale,
+            flecken=flecken,
             catalogue=catalogue,
             catalogue_quelle=quelle,
         )

@@ -68,6 +68,7 @@ import binascii
 import hashlib
 import io
 import json
+import logging
 import unicodedata
 from datetime import date as date_cls
 from urllib.parse import quote
@@ -103,11 +104,14 @@ from api.schemas import (
 )
 from core.database import EigenhandRepository
 from core.eigenhand import bogen, coverage, crop, flecken, geometry
-from core.eigenhand.befund import BEFUND_FORMAT, befund_index
+from core.eigenhand.befund import BEFUND_FORMAT, befund_index, kringel_catalogue, measure_plane
 from core.eigenhand.bestand import bestand as build_bestand
+from core.eigenhand.flecken import FLECKEN_FORMAT
 from core.eigenhand.ids import STYLE_IDS, is_fassung_id, is_hand_id, is_sheet_id, is_strip_id, style_of_hand
 from core.eigenhand.plan import load_plan, shaping_form_of, words_of
 
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/eigenhand", tags=["eigenhand"], dependencies=[Depends(require_admin)])
 
@@ -497,6 +501,15 @@ async def record_fassungen(body: EigenhandSyncIn, db: AsyncSession = Depends(req
                     "deploy the matching API before pushing, or re-measure with this one"
                 ),
             )
+        if item.flecken is not None and item.flecken_format != FLECKEN_FORMAT:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                detail=(
+                    f"this API reads Fleckenmaske format {FLECKEN_FORMAT}, "
+                    f"{item.strip}/{item.fassung} says {item.flecken_format!r} — "
+                    "deploy the matching API before pushing"
+                ),
+            )
         if item.sheet not in sheets:
             row = await repo.sheet(hand, item.sheet)
             if row is None:
@@ -507,8 +520,8 @@ async def record_fassungen(body: EigenhandSyncIn, db: AsyncSession = Depends(req
                         "(PUT /eigenhand/sheets/{hand}/{sheet}), then push its verdicts"
                     ),
                 )
-            sheets[item.sheet] = list(row.strips)
-        printed = sheets[item.sheet]
+            sheets[item.sheet] = row
+        printed = list(sheets[item.sheet].strips)
         if item.row_index >= len(printed):
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
@@ -533,8 +546,11 @@ async def record_fassungen(body: EigenhandSyncIn, db: AsyncSession = Depends(req
             # Fleckenmaske. Only when the row has none — once a mask exists the
             # server's copy is the master, because the author's brush lives in
             # the workbench and a re-run of the local sync must never undo it.
-            if existing.flecken is None and item.flecken:
-                existing.flecken = [circle.model_dump() for circle in item.flecken]
+            # `is not None`, not truthiness: an EMPTY list is a reading („looked,
+            # nothing to erase"), and a restore that carries one back must not
+            # leave the row open to being re-filled with stale automatic circles.
+            if existing.flecken is None and item.flecken is not None:
+                existing.flecken = _checked_flecken(item.flecken, sheets[item.sheet].layout, item.row_index)
                 filled += 1
             skipped += 1
             continue
@@ -556,7 +572,11 @@ async def record_fassungen(body: EigenhandSyncIn, db: AsyncSession = Depends(req
             papier=item.papier,
             geraet=item.geraet,
             befund=item.befund,
-            flecken=[circle.model_dump() for circle in item.flecken] if item.flecken is not None else None,
+            flecken=(
+                _checked_flecken(item.flecken, sheets[item.sheet].layout, item.row_index)
+                if item.flecken is not None
+                else None
+            ),
         )
         recorded += 1
     await db.commit()
@@ -946,6 +966,66 @@ async def write_strip(
     return {"strip": strip, "fassung": fassung, "stored": True}
 
 
+def _cut_mm(layout: dict, row_index: int) -> list[float]:
+    """The Schnittband of one printed row — the rectangle a Fleckenmaske lives in.
+
+    Refused rather than approximated: the mask's coordinates are millimetres
+    from the strip's own corner, so without the cut there is nothing to bound
+    them against, and a page-sized stand-in would accept a circle far outside
+    the strip and store it forever (Copilot review, PR #568).
+    """
+    rows = layout.get("rows") or []
+    cut = (rows[row_index].get("cut_mm") if 0 <= row_index < len(rows) else None) or []
+    if len(cut) < 4:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail=(
+                f"row {row_index} of this Bogen has no Schnittband (`cut_mm`) — it was printed before the cut "
+                "geometry existed, so a Fleckenmaske cannot be placed in it; reprint the Bogen"
+            ),
+        )
+    return [float(value) for value in cut[:4]]
+
+
+def _checked_flecken(circles, layout: dict, row_index: int) -> list[dict]:
+    """A pushed or painted mask, validated against the strip it claims to mask.
+
+    The SAME check on both write paths — the workbench's brush and the sync's
+    push. A circle that only the editor endpoint bounded would let a malformed
+    local list walk in through the other door (Copilot review, PR #568).
+    """
+    x0, y0, x1, y1 = _cut_mm(layout, row_index)
+    try:
+        return flecken.check_circles([circle.model_dump() for circle in circles], width_mm=x1 - x0, height_mm=y1 - y0)
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc
+
+
+def _remeasured(png: bytes, layout_row: dict, crop_origin_mm: list[float], circles: list[dict], style: str) -> dict:
+    """The Streifen-Befund of a stored strip, read through a changed mask.
+
+    A hand edit changes the ink the Befund sees — adding a missed speck removes
+    a body run, taking a false circle back puts one in — so a stored reading
+    would go stale the moment the brush is used, and the workbench ranks the
+    Fassungen by exactly that reading (Copilot review, PR #568). It is the same
+    measurement `apply` makes, through the same entry point
+    (`befund.measure_plane`) on the same plane (`crop.working_plane`), so the
+    number cannot depend on who read it.
+    """
+    plane = crop.working_plane(png)
+    scale = crop.px_per_mm(plane.shape[1], layout_row.get("cut_mm") or [])
+    catalogue, quelle = kringel_catalogue(style)
+    return measure_plane(
+        plane,
+        layout_row,
+        crop_origin_mm,
+        px_per_mm=scale,
+        flecken=circles,
+        catalogue=catalogue,
+        catalogue_quelle=quelle,
+    )
+
+
 @router.patch("/strips/{hand}/{strip}/{fassung}/flecken", response_model=EigenhandFleckenOut)
 async def write_flecken(
     hand: str, strip: str, fassung: str, body: EigenhandFleckenIn, db: AsyncSession = Depends(require_db)
@@ -961,9 +1041,15 @@ async def write_flecken(
 
     A FULL replacement, deliberately: the brush both adds and removes, so a
     merge would have to guess what a missing circle meant. Refused (422) when
-    a circle sits outside the strip it claims to mask or carries a radius
-    outside the brush's range — a coordinate mix-up that silently clamped
-    would erase somewhere the author never clicked.
+    a circle sits outside the printed Schnittband it claims to mask or carries
+    a radius outside the brush's range — a coordinate mix-up that silently
+    clamped would erase somewhere the author never clicked.
+
+    The Streifen-Befund is RE-MEASURED against the new mask wherever the strip's
+    pixels are stored: the Befund reads ink, the mask changes which ink there
+    is, and the workbench ranks a strip's Fassungen by exactly that reading. A
+    reading that cannot be taken costs the field and never the write — the mask
+    is what the author came to save.
 
     The mask hangs off the FASSUNG, not off the stored image: a Fassung can be
     judged (and its specks noted) before its pixels are ever pushed up, and the
@@ -979,21 +1065,26 @@ async def write_flecken(
             status.HTTP_404_NOT_FOUND,
             detail=f"no Fassung {strip}/{fassung} recorded for {hand} — a mask needs the row it belongs to",
         )
-    # The bounds come from the STORED strip when there is one: its pixel size
-    # over the rectified resolution is the rectangle the author was clicking
-    # in. Without stored pixels the Fassung is judged but not uploaded, and the
-    # radius rules still apply — the geometry cannot be checked against
-    # anything, so the generous page-sized frame stands in.
-    stored = await repo.strip_meta(hand, strip, fassung)
-    width_mm = stored.width_px / (stored.dpi / 25.4) if stored else geometry.A4_WIDTH_MM
-    height_mm = stored.height_px / (stored.dpi / 25.4) if stored else geometry.A4_HEIGHT_MM
-    try:
-        circles = flecken.check_circles(
-            [circle.model_dump() for circle in body.flecken], width_mm=width_mm, height_mm=height_mm
-        )
-    except ValueError as exc:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc
+    # The bounds are the row's printed Schnittband, whether or not its pixels
+    # were ever uploaded: that rectangle IS the strip, and it is the one the
+    # circles are measured from.
+    layout_row = await _layout_row(hand, judged.sheet, judged.row_index, db)
+    circles = _checked_flecken(body.flecken, {"rows": [layout_row]}, 0)
     judged.flecken = circles
+
+    stored = await repo.strip(hand, strip, fassung)
+    if stored is not None:
+        try:
+            judged.befund = await run_in_threadpool(
+                _remeasured,
+                stored.png,
+                layout_row,
+                list(stored.crop_origin_mm or []),
+                circles,
+                style_of_hand(hand) or "",
+            )
+        except Exception as exc:  # noqa: BLE001 — a reading must never cost the write
+            logger.warning("Befund not re-measurable for %s %s/%s: %s", hand, strip, fassung, exc)
     await db.commit()
     return EigenhandFleckenOut(strip=strip, fassung=fassung, flecken=circles)
 

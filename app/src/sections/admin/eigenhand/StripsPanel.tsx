@@ -313,7 +313,10 @@ function StripTile({
     row.fassung,
     erasing ? null : shown,
     open,
-    ohneLineatur,
+    // „roh" promises the FILED bytes, so it has to switch the ruling view off
+    // too — a raw strip still run through `without_rulings` is a derived image
+    // like any other, and the promise would be false (Copilot review, PR #568).
+    ohneLineatur && !roh,
     roh,
     reload,
   );
@@ -373,7 +376,10 @@ function StripTile({
 
       {open && erasing && (
         <FleckenEditor
-          key={`${row.strip}/${row.fassung}/${flecken.length}`}
+          // Keyed by the Fassung alone: the editor takes the stored list when
+          // the mode opens and owns it from there, so a save must not remount
+          // it out from under its own confirmation.
+          key={`${row.strip}/${row.fassung}`}
           hand={hand}
           strip={row.strip}
           fassung={row.fassung}
@@ -562,6 +568,10 @@ export function StripsPanel({
   // reads when looking for a particular row. The Befund order answers the
   // other question — what to write again — and is one click away.
   const [byWeakest, setByWeakest] = useState(false);
+  // Bumped when a Fleckenmaske is saved: the server re-measures the Befund
+  // against it, and everything the tiles show about quality is derived from
+  // that measurement.
+  const [refresh, setRefresh] = useState(0);
   const filtered = Boolean(filter.wort || filter.item);
 
   // The search box debounces into the filter: every keystroke is otherwise a
@@ -606,15 +616,20 @@ export function StripsPanel({
     return () => {
       cancelled = true;
     };
-  }, [hand, version, filter.wort, filter.item]);
+  }, [hand, version, filter.wort, filter.item, refresh]);
 
-  // A saved Fleckenmaske lands straight in the listed row: the tile is the
-  // authority on the mask it just wrote, and re-listing the whole hand to learn
-  // one number the view already has would be a round trip for nothing.
-  const applyFlecken = (strip: string, fassung: string, circles: EigenhandFleck[]) =>
+  // A saved Fleckenmaske lands straight in the listed row — the tile is the
+  // authority on the mask it just wrote — and then the listing is fetched
+  // again: the server RE-MEASURES the Streifen-Befund against the new mask,
+  // and the suggestion, the reason and the rank are all derived from it, so
+  // keeping the old ones on screen would show a verdict about ink that is no
+  // longer there.
+  const applyFlecken = (strip: string, fassung: string, circles: EigenhandFleck[]) => {
     setStrips((rows) =>
       rows.map((row) => (row.strip === strip && row.fassung === fassung ? { ...row, flecken: circles } : row)),
     );
+    setRefresh((n) => n + 1);
+  };
 
   // The listing's order — plan order, or weakest first when the switch is on.
   // BOTH display modes read it: the tiles below and the filtered gallery, so

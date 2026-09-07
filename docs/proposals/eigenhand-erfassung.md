@@ -1041,18 +1041,40 @@ Liste, 422 bei einem Kreis außerhalb seines Streifens). Die Bildroute
 liefert **standardmäßig ohne Flecken**; `?flecken=mit` zeigt die abgelegten
 Bytes, in der Ansicht der Schalter „roh".
 
+**Der Befund wird neu gemessen, wo die Pixel liegen.** Eine Handkorrektur
+ändert die Tinte, die der Befund liest — ein nachgetragener Fleck nimmt
+einen Körperlauf weg, ein zurückgenommener Kreis bringt einen hinein —,
+und die Werkbank ordnet die Fassungen genau nach dieser Messung. Ein
+gespeicherter Befund wäre also in dem Moment falsch, in dem der Pinsel
+benutzt wird. Darum misst die Masken-Route ihn neu, sobald der Streifen
+als Bild vorliegt: dieselbe Messung wie in `apply`, durch denselben
+Eingang (`befund.measure_plane`) auf derselben Ebene
+(`crop.working_plane`), damit die Zahl nicht davon abhängt, wer sie
+gelesen hat. Eine Messung, die nicht gelingt, kostet das Feld und nie den
+Schreibvorgang — gespeichert werden wollte die Maske.
+
 **Eine Richtung, und nur eine.** Gefunden wird lokal, radiert wird oben —
 also ist der SERVER der Master, sobald eine Maske existiert. `sync` füllt
 eine Zeile, die keine hat (`flecken_filled` im Ergebnis), und überschreibt
-nie eine vorhandene; NULL heißt „noch niemand hat hingesehen", eine leere
-Liste „hingesehen, nichts zu tilgen". Zurück nach unten kommt sie mit
-`tools.eigenhand.pull --flecken`, das Kartei und `meta.json` nachzieht.
-Für das Archiv ist die **Kartei** der Träger: `snapshot.py` legt
-`kartei.json` bei jedem Lauf vollständig neu ab, während ein bereits
-archiviertes Fassungs-Verzeichnis nie wieder beschrieben wird (§8) — die
-`meta.json` im Archiv hält also den Stand beim Ablegen, und die
-Wiederherstellung (`sync --from`, die die Kartei liest) trägt die
-hand-korrigierte Maske.
+nie eine vorhandene. Die beiden leeren Zustände sind dabei **nicht
+dasselbe**: NULL heißt „noch niemand hat hingesehen" und darf gefüllt
+werden, `[]` heißt „hingesehen, nichts zu tilgen" und ist bereits eine
+Lesung — genau der Stand, den `pull --flecken` schreibt, wenn der Autor
+jeden Kreis wieder entfernt hat. Wer `[]` zu NULL einebnete, machte die
+geleerte Maske wieder überschreibbar. Die Maske trägt darum auch ihr
+Format (`FLECKEN_FORMAT`) mit hoch, wie der Befund: ein neueres Werkzeug
+gegen eine ältere API bekommt 409 statt einer stillen Umdeutung. Und
+**geprüft wird auf beiden Schreibwegen gleich** — Pinsel wie Push gehen
+durch `check_circles` gegen das gedruckte Schnittband der Zeile, sonst
+käme eine kaputte lokale Liste durch die andere Tür herein.
+
+Zurück nach unten kommt die Maske mit `tools.eigenhand.pull --flecken`,
+das Kartei und `meta.json` nachzieht. Für das Archiv ist die **Kartei**
+der Träger: `snapshot.py` legt `kartei.json` bei jedem Lauf vollständig
+neu ab, während ein bereits archiviertes Fassungs-Verzeichnis nie wieder
+beschrieben wird (§8) — die `meta.json` im Archiv hält also den Stand beim
+Ablegen, und die Wiederherstellung (`sync --from`, die die Kartei liest)
+trägt die hand-korrigierte Maske.
 
 **Verworfen:** die Punkte beim Einlesen aus dem Crop herausrechnen. Das
 wäre eine unumkehrbare Änderung am primären Beleg und würde die

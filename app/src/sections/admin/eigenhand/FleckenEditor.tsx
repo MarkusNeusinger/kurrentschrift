@@ -103,9 +103,13 @@ export function FleckenEditor({
   // The pointer in the strip's own millimetres. Measured against the surface's
   // rectangle rather than the event target, so a click on the image and a
   // click on the overlay land at the same millimetre.
+  //
+  // Nothing lands while the image is still loading (or failed to): the surface
+  // takes its full size from the strip's pixel dimensions either way, so a
+  // click on blank paper would place a circle over ink the author never saw.
   const at = (event: { clientX: number; clientY: number }): PointMm | null => {
     const rect = surface.current?.getBoundingClientRect();
-    if (!rect) return null;
+    if (!rect || !url) return null;
     const point = pointAt(event.clientX - rect.left, event.clientY - rect.top, scale);
     return insideStrip(point, widthMm, heightMm) ? point : null;
   };
@@ -199,7 +203,8 @@ export function FleckenEditor({
             position: 'relative',
             width: `${widthPx * zoom}px`,
             height: `${heightPx * zoom}px`,
-            cursor: 'crosshair',
+            cursor: url ? 'crosshair' : 'progress',
+            opacity: url ? 1 : 0.5,
             touchAction: 'none',
           }}
         >

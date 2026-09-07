@@ -29,6 +29,11 @@ from __future__ import annotations
 
 import io
 from collections.abc import Mapping, Sequence
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:  # the image stack stays a lazy import — see `cut_png`
+    import numpy as np
 
 
 def px_per_mm(width_px: int, cut_mm: list[float] | tuple[float, ...]) -> float:
@@ -118,6 +123,25 @@ def find_box(layout_row: dict, word: str | None, index: int | None) -> dict:
 RULING_CHROMA_MIN = 0.05  # B − R above this is a ruling, never paper or ink
 RULING_LUM_MIN = 0.45  # below this it is ink, whatever its tint
 PAPER_PERCENTILE = 90
+
+
+def working_plane(png: bytes) -> np.ndarray:
+    """A stored strip as the plane every reading runs on (0 = black, 1 = paper).
+
+    The BLUE channel of a colour strip — where the pale cyan rulings sit nearest
+    to paper, the plane the import detects and QC's on — and the grayscale of a
+    greyscale one. One function rather than one per caller: `apply` reads it off
+    the local file and the API off the stored bytes, and two spellings of „the
+    plane" would let a Befund measured locally and one measured on the server
+    disagree about the same strip.
+    """
+    import numpy as np
+    from PIL import Image
+
+    with Image.open(io.BytesIO(png)) as image:
+        colour = image.mode in ("RGB", "RGBA")
+        array = np.asarray(image.convert("RGB") if colour else image.convert("L"), dtype=np.float32) / 255.0
+    return array[:, :, 2] if colour else array
 
 
 def without_rulings(png: bytes) -> bytes:

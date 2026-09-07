@@ -91,7 +91,7 @@ the same functions on the same Kartei-shaped dict, so they cannot disagree.
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
@@ -99,7 +99,7 @@ import numpy as np
 
 from core.continuity import KINK_THRESHOLD_DEG, kink_events, stroke_profile
 from core.eigenhand.kartei import fassungen_of
-from core.landmarks import PLATE_PEN_HALF_WIDTH_UNITS
+from core.landmarks import PLATE_PEN_HALF_WIDTH_UNITS, catalogue_source, load_catalogue
 from core.shaping import shape_word
 from core.skeleton_graph import build_graph
 
@@ -1047,6 +1047,67 @@ def befund(measurement: Mapping[str, Any] | None, *, nib_referenz: float | None 
             "gate": round(gate, 4),
         },
         lesbarkeit={"score": round(guete, 1), "natuerlichkeit": round(naturalness, 4), "gate": round(gate, 4)},
+    )
+
+
+def kringel_catalogue(style: str, warn: Callable[[str], None] | None = None) -> tuple[dict | None, str | None]:
+    """The Kringel catalogue, but only for the script it was measured on.
+
+    The catalogue registers which counter of which letter the 1922 PLATE holds
+    open (#556). Applied to another SCRIPT it would publish one tradition's
+    expectations under another's name, so it is handed over only where the
+    styles match — and it always travels with the source it came from, because
+    an expectation read off a foreign HAND (which this is: same Sütterlin,
+    another writer) must never look like this hand's own. A catalogue that
+    cannot be read costs the Kringel field and nothing else.
+
+    Here rather than in `tools/eigenhand/apply.py` because the measurement now
+    has two callers — `apply` where the local crop is, and the mask endpoint
+    where the stored strip is — and an expectation loaded two ways would let
+    the same Fassung come out differently depending on who read it.
+    """
+    try:
+        source = catalogue_source()
+        if str(source.get("style", "")) != style:
+            return None, None
+        measured = (source.get("measured_on") or [{}])[0]
+        return load_catalogue(), f"{source.get('style')}/{measured.get('name', '?')}"
+    except (OSError, ValueError) as exc:
+        if warn is not None:
+            warn(f"Kringel-Katalog nicht lesbar ({type(exc).__name__}: {exc}) — Feld entfällt")
+        return None, None
+
+
+def measure_plane(
+    plane: np.ndarray,
+    layout_row: Mapping[str, Any],
+    crop_origin_mm: Sequence[float],
+    *,
+    px_per_mm: float,
+    flecken: Sequence[Mapping[str, Any]] | None = None,
+    catalogue: Mapping[str, Sequence[Mapping[str, Any]]] | None = None,
+    catalogue_quelle: str | None = None,
+) -> dict[str, Any]:
+    """`measure_strip` with the Fleckenmaske painted out first.
+
+    The one entry point both measuring callers take, so a Befund read where the
+    local crop is and one re-read where the stored strip is cannot drift apart
+    (proposal §7.4). A toner speck is not the writer's ink: left standing it
+    counts as a body run, drags the pen width and costs the Fassung a rank it
+    never lost — so the mask goes first, always, and the plane the numbers come
+    off is the plane the eye is shown.
+    """
+    if flecken:
+        from core.eigenhand.flecken import paint_out  # noqa: PLC0415 — one direction only, see flecken.py
+
+        plane = paint_out(plane, flecken, px_per_mm)
+    return measure_strip(
+        plane,
+        dict(layout_row),
+        crop_origin_mm=crop_origin_mm,
+        px_per_mm=px_per_mm,
+        catalogue=catalogue,
+        catalogue_quelle=catalogue_quelle,
     )
 
 

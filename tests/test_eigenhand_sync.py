@@ -25,6 +25,7 @@ import json
 import pytest
 from PIL import Image
 
+from core.eigenhand.flecken import FLECKEN_FORMAT
 from tools.eigenhand import pull as pull_mod
 from tools.eigenhand import setup as setup_mod
 from tools.eigenhand import snapshot as snapshot_mod
@@ -345,24 +346,47 @@ class TestFleckenmaskeDirection:
     snapshot — and from there, through `sync --from`, back into a restored DB.
     """
 
-    def test_a_local_mask_travels_with_its_fassung(self, dataroot, monkeypatch):
-        _build(dataroot)
+    @staticmethod
+    def _pushed_row(monkeypatch, fake: _FakeApi) -> dict:
+        assert _run(monkeypatch, fake) == 0
+        body = next(body for method, url, body in fake.calls if url.endswith("/fassungen"))
+        return body["fassungen"][0]
+
+    def _with_mask(self, maske) -> None:
         kartei = load_kartei(HAND)
-        maske = [{"x_mm": 30.0, "y_mm": 8.0, "r_mm": 0.4, "quelle": "auto"}]
         kartei["strips"]["S0001"]["fassungen"][0]["flecken"] = maske
         save_kartei(HAND, kartei)
-        fake = _FakeApi()
-        assert _run(monkeypatch, fake) == 0
-        pushed = next(body for method, url, body in fake.calls if url.endswith("/fassungen"))
-        assert pushed["fassungen"][0]["flecken"] == maske
 
-    def test_a_fassung_without_specks_stays_unread_rather_than_empty(self, dataroot, monkeypatch):
+    def test_a_local_mask_travels_with_its_fassung(self, dataroot, monkeypatch):
+        _build(dataroot)
+        maske = [{"x_mm": 30.0, "y_mm": 8.0, "r_mm": 0.4, "quelle": "auto"}]
+        self._with_mask(maske)
+        row = self._pushed_row(monkeypatch, _FakeApi())
+        assert row["flecken"] == maske
+        # The detector's format travels with it, so an older API refuses the
+        # push instead of storing circles under other semantics.
+        assert row["flecken_format"] == FLECKEN_FORMAT
+
+    def test_a_fassung_nobody_has_looked_at_pushes_no_mask_at_all(self, dataroot, monkeypatch):
         """`null` is „nobody has looked" — the state the server may still fill."""
         _build(dataroot)
-        fake = _FakeApi()
-        assert _run(monkeypatch, fake) == 0
-        pushed = next(body for method, url, body in fake.calls if url.endswith("/fassungen"))
-        assert pushed["fassungen"][0]["flecken"] is None
+        row = self._pushed_row(monkeypatch, _FakeApi())
+        assert row["flecken"] is None
+        assert row["flecken_format"] is None
+
+    def test_an_emptied_mask_travels_as_an_empty_list(self, dataroot, monkeypatch):
+        """`[]` is a READING — „looked, nothing to erase".
+
+        `pull --flecken` writes it once the author has removed every circle, and
+        `sync --from` is the restore path: collapsing it to `null` would bring
+        the cleared master back as „nobody has looked" and leave it open to
+        being re-filled with the stale automatic list.
+        """
+        _build(dataroot)
+        self._with_mask([])
+        row = self._pushed_row(monkeypatch, _FakeApi())
+        assert row["flecken"] == []
+        assert row["flecken_format"] == FLECKEN_FORMAT
 
     def test_pull_brings_the_hand_edited_mask_back_into_kartei_and_meta(self, dataroot, monkeypatch, capsys):
         _build(dataroot)

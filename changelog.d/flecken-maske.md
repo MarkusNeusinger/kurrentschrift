@@ -26,7 +26,10 @@
   letter within its x-extent, and lies inside the writing window rather than
   on the printed strip id or the clear-text label. The Befund is measured on
   the masked plane, so a speck can no longer count as a body run or drag the
-  pen width. Stored per Fassung in `meta.json`, in the Kartei and in
+  pen width — and a hand edit RE-MEASURES it, through the same entry point
+  (`befund.measure_plane`) on the same plane (`crop.working_plane`) that
+  `apply` reads, so erasing a speck cannot leave the ranking it distorted
+  standing. Stored per Fassung in `meta.json`, in the Kartei and in
   `eigenhand_fassungen.flecken` (migration `0030`, nullable and additive).
 
 ### Fixed
@@ -45,7 +48,12 @@
   workbench — so `sync` fills a row that has none (reported as
   `flecken_filled`) and never overwrites one that does, and the new
   `tools.eigenhand.pull --flecken` brings the hand-edited lists back into the
-  Kartei and the Fassungen's `meta.json`. The Kartei is what carries them into
-  the archive (it is re-filed in full at every snapshot, while an archived
-  Fassung directory is never rewritten) and back out of it through
+  Kartei and the Fassungen's `meta.json`. `null` („nobody has looked yet") and
+  `[]` („looked, nothing to erase") are kept apart all the way through, because
+  the fill rule turns on the difference: an emptied mask that came back as
+  `null` would be open to the stale automatic list again. The mask carries its
+  detector format like the Befund does, so a newer tool at an older API gets a
+  409 instead of a silent reinterpretation. The Kartei is what carries the
+  masks into the archive (it is re-filed in full at every snapshot, while an
+  archived Fassung directory is never rewritten) and back out of it through
   `sync --from`.

@@ -234,7 +234,8 @@ def _stands_over_a_letter(
     return False
 
 
-def _circle_of(window: tuple[slice, slice], px_per_mm: float, quelle: str = "auto") -> dict[str, Any]:
+def _circle_of(window: tuple[slice, slice], px_per_mm: float) -> dict[str, Any]:
+    """A found component as a circle. Always `auto` — the brush writes its own."""
     rows, cols = window
     centre_x = (cols.start + cols.stop) / 2 / px_per_mm
     centre_y = (rows.start + rows.stop) / 2 / px_per_mm
@@ -243,7 +244,7 @@ def _circle_of(window: tuple[slice, slice], px_per_mm: float, quelle: str = "aut
         "x_mm": round(centre_x, 3),
         "y_mm": round(centre_y, 3),
         "r_mm": round(max(FLECK_MIN_R_MM, half + FLECK_PAD_MM), 3),
-        "quelle": quelle,
+        "quelle": "auto",
     }
 
 

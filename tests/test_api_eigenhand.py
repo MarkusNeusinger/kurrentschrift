@@ -29,6 +29,7 @@ from sqlalchemy import inspect
 from core.database import EigenhandRepository
 from core.eigenhand import bogen
 from core.eigenhand.befund import BEFUND_FORMAT
+from core.eigenhand.flecken import FLECKEN_FORMAT
 from core.eigenhand.plan import load_plan
 from tests.api_harness import Harness
 
@@ -994,19 +995,24 @@ class TestFleckenmaske:
         )
         assert bad.status == 400
 
+    @staticmethod
+    def _pushed(circles: list[dict] | None, **overrides) -> dict:
+        """A verdict carrying a mask, with the format marker the sync sends."""
+        return {**_accepted("S0001", "B0001", 0), "flecken": circles, "flecken_format": FLECKEN_FORMAT, **overrides}
+
     @pytest.mark.asyncio
     async def test_a_pushed_mask_fills_a_row_that_has_none_and_never_overwrites_one(self, api: Harness):
         """The sync direction: up to fill, never over. The workbench is the master."""
         await _print(api, strips=["S0001"], date="2026-08-23")
         auto = [{"x_mm": 30.0, "y_mm": 8.0, "r_mm": 0.4, "quelle": "auto"}]
-        first = await _record(api, [{**_accepted("S0001", "B0001", 0), "flecken": auto}])
+        first = await _record(api, [self._pushed(auto)])
         assert first.json() == {"hand": HAND, "recorded": 1, "skipped": 0, "flecken_filled": 0}
         listing = await api.client.request("GET", f"/eigenhand/archive/{HAND}", headers=api.admin_headers())
         assert listing.json()["fassungen"][0]["flecken"] == auto
 
         by_hand = [{"x_mm": 44.0, "y_mm": 9.0, "r_mm": 0.5, "quelle": "hand"}]
         assert (await self._patch(api, by_hand)).status == 200
-        again = await _record(api, [{**_accepted("S0001", "B0001", 0), "flecken": auto}])
+        again = await _record(api, [self._pushed(auto)])
         assert again.json()["flecken_filled"] == 0
         archive = await api.client.request("GET", f"/eigenhand/archive/{HAND}", headers=api.admin_headers())
         assert archive.json()["fassungen"][0]["flecken"] == by_hand
@@ -1016,10 +1022,77 @@ class TestFleckenmaske:
         await _print(api, strips=["S0001"], date="2026-08-23")
         assert (await _record(api, [_accepted("S0001", "B0001", 0)])).status == 200
         auto = [{"x_mm": 30.0, "y_mm": 8.0, "r_mm": 0.4, "quelle": "auto"}]
-        again = await _record(api, [{**_accepted("S0001", "B0001", 0), "flecken": auto}])
+        again = await _record(api, [self._pushed(auto)])
         assert again.json() == {"hand": HAND, "recorded": 0, "skipped": 1, "flecken_filled": 1}
         archive = await api.client.request("GET", f"/eigenhand/archive/{HAND}", headers=api.admin_headers())
         assert archive.json()["fassungen"][0]["flecken"] == auto
+
+    @pytest.mark.asyncio
+    async def test_an_empty_mask_is_a_reading_and_closes_the_row_to_the_auto_list(self, api: Harness):
+        """`[]` is „looked, nothing to erase" — a restore of it must stick."""
+        await _print(api, strips=["S0001"], date="2026-08-23")
+        assert (await _record(api, [self._pushed([])])).json()["recorded"] == 1
+        archive = await api.client.request("GET", f"/eigenhand/archive/{HAND}", headers=api.admin_headers())
+        assert archive.json()["fassungen"][0]["flecken"] == []
+        stale = [{"x_mm": 30.0, "y_mm": 8.0, "r_mm": 0.4, "quelle": "auto"}]
+        assert (await _record(api, [self._pushed(stale)])).json()["flecken_filled"] == 0
+        archive = await api.client.request("GET", f"/eigenhand/archive/{HAND}", headers=api.admin_headers())
+        assert archive.json()["fassungen"][0]["flecken"] == []
+
+    @pytest.mark.asyncio
+    async def test_a_pushed_mask_is_bounded_by_the_printed_schnittband(self, api: Harness):
+        """The same check on both write paths — the brush's and the sync's."""
+        await _print(api, strips=["S0001"], date="2026-08-23")
+        far_out = [{"x_mm": 900.0, "y_mm": 8.0, "r_mm": 0.4, "quelle": "auto"}]
+        res = await _record(api, [self._pushed(far_out)])
+        assert res.status == 422, res.body
+
+    @pytest.mark.asyncio
+    async def test_a_mask_from_another_detector_format_is_refused(self, api: Harness):
+        await _print(api, strips=["S0001"], date="2026-08-23")
+        auto = [{"x_mm": 30.0, "y_mm": 8.0, "r_mm": 0.4, "quelle": "auto"}]
+        res = await _record(api, [self._pushed(auto, flecken_format=FLECKEN_FORMAT + 1)])
+        assert res.status == 409, res.body
+
+    @pytest.mark.asyncio
+    async def test_a_hand_edit_re_measures_the_befund_against_the_new_mask(self, api: Harness):
+        """A speck is not the writer's ink — erasing one must not leave a stale reading."""
+        stored = await _store_strip(api, upload=False)
+        width, height = stored["width_px"], stored["height_px"]
+        pixels = np.full((height, width), 235, dtype=np.uint8)
+        band = stored["row"]["band_mm"]
+        origin = stored["crop_origin_mm"]
+        box = stored["row"]["boxes"][0]
+
+        # A stroke in the first word box, and a speck a good way to its right.
+        def px(mm: float, axis: int) -> int:
+            return int(round((mm - origin[axis]) * PX_PER_MM))
+
+        pixels[
+            px(band["waist"], 1) : px(band["baseline"], 1), px(box["x0_mm"] + 3.0, 0) : px(box["x0_mm"] + 3.4, 0)
+        ] = 20
+        speck_x, speck_y = px(box["x0_mm"] + 20.0, 0), px((band["waist"] + band["baseline"]) / 2, 1)
+        pixels[speck_y - 3 : speck_y + 3, speck_x - 3 : speck_x + 3] = 20
+        buffer = io.BytesIO()
+        Image.fromarray(pixels, mode="L").save(buffer, format="PNG")
+        assert (await _put_strip(api, buffer.getvalue(), stored)).status == 201
+
+        async def befund() -> dict:
+            res = await api.client.request("GET", f"/eigenhand/archive/{HAND}", headers=api.admin_headers())
+            return res.json()["fassungen"][0]["befund"]
+
+        # An empty mask is still a mask: it triggers the same reading, and with
+        # the speck standing the box reads as TWO body runs.
+        assert (await self._patch(api, [])).status == 200
+        with_speck = await befund()
+        assert with_speck is not None and with_speck["format"] == BEFUND_FORMAT
+        assert with_speck["woerter"][0]["teile"]["koerper"] == 2
+
+        erased = [{"x_mm": speck_x / PX_PER_MM, "y_mm": speck_y / PX_PER_MM, "r_mm": 0.6, "quelle": "hand"}]
+        assert (await self._patch(api, erased)).status == 200
+        # Erased, the same strip is one stroke again — the reading followed the
+        # mask instead of going stale.
+        assert (await befund())["woerter"][0]["teile"]["koerper"] == 1
 
 
 class TestAdminGate:

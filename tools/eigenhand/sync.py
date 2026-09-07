@@ -56,6 +56,7 @@ import hashlib
 import json
 from pathlib import Path
 
+from core.eigenhand.flecken import FLECKEN_FORMAT
 from tools.eigenhand.apiclient import admin_token, api_base, request_json
 from tools.eigenhand.kartei import load_kartei
 from tools.eigenhand.store import WORK_DPI, check_hand_id, hand_dir, sheet_dir
@@ -165,10 +166,15 @@ def _fassung_rows(kartei: dict) -> list[dict]:
             # takes it for a new row and to fill a row that has none, never
             # over one that already carries a mask. The author's brush lives in
             # the workbench, so once a mask exists the server's copy is the
-            # master and `pull --flecken` is the way back. `or None` so a row
-            # with nothing detected stays „nobody has looked yet" rather than
-            # claiming „looked, nothing to erase".
-            "flecken": f.get("flecken") or None,
+            # master and `pull --flecken` is the way back.
+            #
+            # Passed through as it is, an EMPTY list included: `[]` means
+            # „looked, nothing to erase" — the state `pull --flecken` writes
+            # once the author has removed every circle — and collapsing it to
+            # `null` would restore it as „nobody has looked" and leave the
+            # cleared master overwritable again (Copilot review, PR #568).
+            "flecken": f.get("flecken"),
+            "flecken_format": FLECKEN_FORMAT if f.get("flecken") is not None else None,
             # The effective setup of THIS row, as the Siebung recorded it.
             **{key: (f.get("session") or {}).get(key) or None for key in ("feder", "tinte", "papier", "geraet")},
         }
