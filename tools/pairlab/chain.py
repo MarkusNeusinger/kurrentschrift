@@ -805,6 +805,18 @@ class _ChainProblem:
     """(n_s,) field class of every sample — 0 = body, k+1 = `mark_fields[k]`.
     None whenever `mark_fields` is empty, which is what keeps the hot path's
     single-field lookups untouched by default."""
+    counter_smooth: np.ndarray | None = None
+    """R3c (§14 `sep07`): the SIGNED distance to the union of the plate's
+    in-scope Binnenflächen, in crop px, positive outside and smoothed with the
+    ink field's own sigma (`tools.pairlab.counterfield`). None = the constraint
+    has no data, which is one of its two inert states."""
+    counter_target_px: float = 0.0
+    """The level set of that field no sample may cross: `w_pen · unit_px` plus
+    the declared half pixel of the raster convention."""
+    counter_weight: float = 0.0
+    """…and its weight, normalised so 1.0 is the ink term's own. 0.0 is the
+    other inert state, and the term is then SKIPPED rather than added as a
+    zero, so a solve is bit-identical to one built before it existed."""
 
     # ------------------------------------------------------------------ mapping
 
@@ -1032,6 +1044,33 @@ class _ChainProblem:
         if grad_terms is not None and "overlap" not in samples:
             samples["overlap"] = (np.zeros(n_s), np.zeros(n_s))
 
+        # --- the counter condition: no sample within `w_pen` of an open hole ---
+        # R3c (§14 `sep07`): the two-stroke model's statement about the ink,
+        # stated where the smoothness already comes from. The plate holds a
+        # counter open, so a pen of the plate's own half width cannot have
+        # passed within that distance of it — a quadratic hinge on the SIGNED
+        # distance field, normalised exactly like `e_geo` so `counter_weight`
+        # is directly comparable to the ink term's implicit 1.0. Why here and
+        # not behind the solve: R3 (`sep07`) measured a point-wise push out —
+        # its aim and its smoothness hang on one blend length, and a fade
+        # shorter than the sample spacing cannot blend. A per-sample force
+        # folds through `sampling_op` onto the far sparser anchors, so the
+        # curve stays a curve and the solver trades the condition against the
+        # ink, the Tikhonov pull and the connector smoothness itself.
+        e_counter = 0.0
+        if self.counter_weight > 0.0 and self.counter_smooth is not None:
+            phi, phi_dx, phi_dy = _bilinear_with_grad(self.counter_smooth, px, py)
+            hinge = np.maximum(self.counter_target_px - phi, 0.0)
+            e_counter = float(np.mean(hinge**2)) / unit_sq
+            g_counter_px = self.counter_weight * (-2.0) * hinge * phi_dx / (n_s * unit_sq)
+            g_counter_py = self.counter_weight * (-2.0) * hinge * phi_dy / (n_s * unit_sq)
+            g_px = g_px + g_counter_px
+            g_py = g_py + g_counter_py
+            if grad_terms is not None:
+                samples["counter"] = (g_counter_px, g_counter_py)
+        if grad_terms is not None and "counter" not in samples:
+            samples["counter"] = (np.zeros(n_s), np.zeros(n_s))
+
         # --- Tikhonov on the LETTER anchors only (binding constraint 3) ---
         e_reg = float(np.sum(self.reg_w * np.sum(deltas**2, axis=1))) / self.n_letter_anchors
 
@@ -1087,6 +1126,7 @@ class _ChainProblem:
             + self.overlap_weight * e_ovl
             + self.bind_weight * e_bind
             + self.landmark_weight * e_landmark
+            + self.counter_weight * e_counter
         )
         terms = {
             "e_geo": e_geo,
@@ -1100,6 +1140,7 @@ class _ChainProblem:
             "e_overlap": e_ovl,
             "e_bind": e_bind,
             "e_landmark": e_landmark,
+            "e_counter": e_counter,
             "f": f,
         }
         if not want_grad:
@@ -1328,6 +1369,9 @@ def build_chain_problem(
     max_anchor_delta: float | None = None,
     connector_max_delta: float | None = None,
     mark_fields: Sequence[dict] | None = None,
+    counter_smooth: np.ndarray | None = None,
+    counter_target_px: float = 0.0,
+    counter_weight: float = 0.0,
 ) -> _ChainProblem:
     """Assemble the chain optimisation problem. Pure: no I/O, no DB, no case.
 
@@ -1379,6 +1423,13 @@ def build_chain_problem(
       and stays empty. It is inert at its default weight 0 either way — the
       correspondence is built regardless so its energy can be READ at a baseline
       optimum, which is what a weight has to be calibrated against (§11c).
+    * **The counter condition** (R3c, §14 `sep07`). `counter_smooth` is the
+      signed distance to the plate's open Binnenflächen in crop px
+      (`tools.pairlab.counterfield`), `counter_target_px` the level set no
+      sample may cross, and `counter_weight` its weight on the `e_geo` scale.
+      Two inert states, both skipping the block outright rather than adding a
+      zero: no field, or weight 0 — which is what keeps a default solve
+      bit-identical to one built before the term existed.
 
     Fields arrive already prepared (smoothed with `core.fit.DIST_FIELD_SIGMA_PX`
     / `WIDTH_FIELD_SIGMA_PX`, raw kept for the report), so the problem stays
@@ -1678,6 +1729,9 @@ def build_chain_problem(
         skel=None if skel is None else np.asarray(skel),
         mark_fields=kept_mark_fields,
         field_of_sample=field_of_sample if kept_mark_fields else None,
+        counter_smooth=None if counter_smooth is None else np.asarray(counter_smooth, dtype=float),
+        counter_target_px=float(counter_target_px),
+        counter_weight=float(counter_weight),
     )
 
 
@@ -2433,7 +2487,7 @@ def fit_pair_chain(
 
 # Every weighted term of the chain objective, in the order they are applied.
 # `geo` and `crop` are the two halves of `e_geo`.
-GRADIENT_TERMS = ("geo", "crop", "width", "coverage", "overlap", "smooth", "reg", "bind", "landmark")
+GRADIENT_TERMS = ("geo", "crop", "width", "coverage", "overlap", "counter", "smooth", "reg", "bind", "landmark")
 # Relative tolerance of the sum check. The split is re-added in a different
 # order than the objective accumulates it, so bit-equality is not on offer;
 # anything above float noise means the decomposition describes a DIFFERENT

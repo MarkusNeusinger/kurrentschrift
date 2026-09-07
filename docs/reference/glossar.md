@@ -58,7 +58,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
 - **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
-- **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
+- **B** — Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
@@ -1472,6 +1472,40 @@ Gradient exakt bleibt), `CHAIN_OVERLAP_WEIGHT` (0,2, per Sweep + A/B;
 `KS_CHAIN_OVERLAP_WEIGHT` überschreibt). Paarmenge pro Evaluation per
 KD-Baum, stückweise konstant in den Parametern — dieselbe f.ü.-exakte
 Behandlung wie die Deckungszuordnung.
+
+**Binnenflächen-Bedingung** *(counter constraint, R3c)* — dasselbe
+Zwei-Züge-Modell, aber als **Term IM Solve** statt als Nachbearbeitung
+dahinter. Die Aussage ist unverändert: keine Stützstelle darf näher als
+`w_pen` an einer Binnenfläche stehen, die die Platte offen hält. Der
+Unterschied ist, wo sie steht — ein quadratischer Hinge auf dem
+**vorzeichenbehafteten** Abstandsfeld dieser Binnenflächen, den der
+Folger in jeder Runde sieht, normiert wie der Tinten-Term (`e_geo`) und
+über den Sampling-Operator auf die viel dünner besetzten **Anker**
+zurückgefaltet. Der Anlass ist gemessen: R3 und R3b haben die punktweise
+Fassung ausgemessen und gezeigt, dass ihre Treffgenauigkeit und ihre
+Glätte an EINER Blendenlänge hängen — eine Nachbearbeitung kann per
+Konstruktion nicht glatter sein als ihr Raster, ein Solver rechnet den
+Ausgleich. Zwei Bestandteile des Vorgängers entfallen deshalb
+ausdrücklich: **keine Blende** (die Anker sind die Glättung) und **keine
+Abnahmeregel „Schleifen-Schluss"** (der Topologie-Wächter weist eine
+Runde, die eine Init-Kreuzung verliert, ohnehin zurück). Der
+Geltungsbereich bleibt dagegen R3s — `offen` × `klein`/`mittel` —, und
+ein Kalibrierlauf sagt warum: eine GROSSE Schleife der Kette ist genauso
+zu eng wie eine kleine, die Bedingung bindet dort also am stärksten und
+kauft trotzdem nichts, weil drei Viertel eines großen Lochs jede Feder
+überleben. Innerhalb der Binnenfläche läuft
+das Feld negativ weiter, wo der Schub verweigern musste: eine
+Stützstelle im Loch bekommt eine wohldefinierte Kraft nach außen statt
+einer Verweigerung.
+*Technisch:* `tools/pairlab/counterfield.py` (Feld + Geltungsbereich über
+das Slot-Lineal von `zweizuege.catalogue_targets`), Term
+`counter_weight`/`counter_smooth`/`counter_target_px` in
+`tools/pairlab/chain.py`, Schalter `--counter-constraint`
+(`FollowWeights.counter_constraint`, Vorgabe AUS). Er tritt NUR in den
+Folger-Runden ein — `fit_word_chain` bleibt unberührt, also ist jeder
+andere Verbraucher der Kette byte-gleich.
+→ messjournal.md §14 („Kette R3c Binnenflächen-Bedingung im Solve
+`sep07`“) · → Zwei-Züge-Modell
 
 **Kreuzungs-Landmarke** *(crossing landmark)* — eine **Selbstkreuzung** der
 Buchstaben-Ankerlinie, die als *Ortsmarke der Struktur* taugt: zwei

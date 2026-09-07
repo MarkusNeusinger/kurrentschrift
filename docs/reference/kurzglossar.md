@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-06): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **82
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **83
 > Begriffe**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars. Nachzieh-Anlass: ein Begriff wandert
 > hierher, sobald er die Zwei-von-drei-Schwelle unten erreicht und in
@@ -198,6 +198,15 @@ Platte offen hält. Loop-lokale Korrektur der Kette-Bahn, nur auf
 Katalogschleifen `offen`/`klein`+`mittel`, C¹ ausgeblendet und mit
 Rücknahme bei zerstörtem Schleifen-Schluss; `--zwei-zuege`, Vorgabe AUS.
 → [§4](glossar.md#4-metriken-und-benchmarks)
+
+**Binnenflächen-Bedingung** — dieselbe Aussage als Term IM Folger-Solve
+statt als Nachbearbeitung dahinter: ein quadratischer Hinge auf dem
+vorzeichenbehafteten Abstandsfeld der `offen`-Binnenflächen, normiert wie
+der Tinten-Term und auf die Anker zurückgefaltet, weil R3/R3b gemessen
+haben, dass Treffgenauigkeit und Glätte einer punktweisen Korrektur an
+derselben Blendenlänge hängen. Ohne Blende und ohne eigene Abnahmeregel,
+sonst R3s Geltungsbereich; `--counter-constraint`, Vorgabe AUS.
+→ [§3](glossar.md#3-mess--und-fit-vokabular)
 
 **Schleifenbereich · Schleifen-Registrierung** — der Anker-Indexbereich,
 über den die TAFELZEILE eine Schleife schließt (`loop_ranges`), und der

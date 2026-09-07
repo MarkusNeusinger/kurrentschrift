@@ -334,10 +334,27 @@ WIDEST = {
 # it still carries both halves of an unusual verdict — a mechanism that meets
 # its geometric target completely and fails on execution — because a ledger
 # that records only the verdict is one nobody can act on.
+#
+# `mess-runde` AND `mess-runde-route` raised together on 2026-09-07 by „Kette
+# R3c Binnenflächen-Bedingung im Solve", and the accounting is the one the
+# entries above set. R3c is the conversion R3 named, so it owes exactly what
+# the doctrine asks of a booked arm: the standard register pair (a
+# pre-registration and its result), a `verfahren-kette.md` ledger line — it
+# measures a Kette knob — and its §7.11 rows. The §7.11 side is not a wash this
+# time: the round CLOSES R3's conversion (3) and files two arms that did not
+# exist before it („der Mittelachsen-Term (R4)" and „eine Abnahmeregel je
+# SCHLEIFE im Folger"), both of which the round's own numbers are the evidence
+# for, plus the correction of the „Lotse-Karte nach der J4-Adoption" row — the
+# Kette was NOT exempt from A37, and the row said it was. Every one of those is
+# a row a later reader needs; deleting one to buy headroom is the thing the
+# register forbids. Both rows were condensed once before this raise was written
+# (the register result row cost 690 in its first draft, the ledger line 460).
+# Re-measured with everything in: `mess-runde` 27 848 and `mess-runde-route`
+# 7 038, each plus the documented 10 %.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
-    "mess-runde": 26_484,
-    "mess-runde-route": 6_890,
+    "mess-runde": 30_633,
+    "mess-runde-route": 7_742,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,
     "komposition": 9_680,
