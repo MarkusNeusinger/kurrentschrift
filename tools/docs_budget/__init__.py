@@ -351,10 +351,25 @@ WIDEST = {
 # (the register result row cost 690 in its first draft, the ledger line 460).
 # Re-measured with everything in: `mess-runde` 27 848 and `mess-runde-route`
 # 7 038, each plus the documented 10 %.
+#
+# `mess-runde-route` raised on 2026-09-07 by „Komma-Ausschluss", and only that
+# path: `mess-runde` absorbed the same round inside its own headroom. The round
+# re-baselines the word root, so `verfahren-kette.md` owes two things that
+# cannot be written anywhere else — its Stand block must name the root the
+# numbers were measured on (an old digest there is exactly the failure the
+# `--expect-root` sensor exists to prevent), and its ledger owes the dated row
+# for the re-measurement, the same shape „Re-Baseline auf der LF12-Wurzel"
+# carries two rows above it. Together they cost 231 against 46 of room. The
+# Stand paragraph was condensed twice before this raise was written (369, then
+# 275, then 231) and the ledger row keeps only what a later reader must be able
+# to act on: that the route is provably unmoved, and the one measured reason
+# why the ink-evidence mask could not have removed the punctuation itself.
+# Re-measured with everything in: `mess-runde-route` 7 788 plus the documented
+# 10 %.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
     "mess-runde": 30_633,
-    "mess-runde-route": 7_742,
+    "mess-runde-route": 8_567,
     "mess-runde-eintrag": 4_503,
     "glyph-optimierung": 8_504,
     "komposition": 9_680,

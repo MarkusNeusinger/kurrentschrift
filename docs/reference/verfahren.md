@@ -50,10 +50,10 @@ Zahl hier ist ein datiertes Zitat, der Beleg wohnt im benannten
 
 ## Die Verfahren
 
-| Anzeige-Name | Seite | Stand (2026-09-05, dev-19, Lineal-Kappe 1,5 seit L-U `aug26`) | seit |
+| Anzeige-Name | Seite | Stand (2026-09-07, dev-19, Lineal-Kappe 1,5 seit L-U `aug26`) | seit |
 |---|---|---|---|
-| **Kette** | [`verfahren-kette.md`](verfahren-kette.md) | **v5** (`aug26`, K0-S-Wächter-Stack: Kompositions-Soll + Ratsche + Zone 0,55) — Zahlen re-baselined `sep05` auf der Wurzel `eaa195aa7c84…` (nach dem LF12-Write): dtw 0,045384 med · p90 0,087826 · worst `muß` 0,107134 · marks 0 · aiou 0,7583 · Netto-Kreuzungsdefekte 19 · 63er-Soll-Abstand 80 | 2026-08-26 (Zahlen 2026-09-05) |
-| **Lotse** | [`verfahren-lotse.md`](verfahren-lotse.md) | **v0.17** (`aug20`, Reservierungs-Veto) — Zahlen nachgemessen `sep05` auf derselben Wurzel wie die Kette (`eaa195aa7c84…`): dtw **0,053393** med · p90 0,116199 · aiou 0,7493 · `cross_missing` 0 / `cross_spurious` 5 · `retrace_missing` 7. Die `sep04`-Zeile nannte 0,056080 / 0,1155 / 0,7527 — dieselbe Route, eine Wurzel früher (§14 „Laufform LF12 `sep05`") | 2026-08-20 (Zahlen 2026-09-05) |
+| **Kette** | [`verfahren-kette.md`](verfahren-kette.md) | **v5** (`aug26`, K0-S-Wächter-Stack: Kompositions-Soll + Ratsche + Zone 0,55) — Zahlen re-baselined `sep07` auf der Wurzel `ccb036a5eb20…` (nach dem Komma-Ausschluss; ziffernweise wie die A37-Nachmessung auf `eaa195aa7c84…`): dtw 0,045881 med · p90 0,088356 · worst `muß` 0,106372 · marks 0 · aiou 0,7660 · Netto-Kreuzungsdefekte 20 · 63er-Soll-Abstand 85 | 2026-08-26 (Zahlen 2026-09-07) |
+| **Lotse** | [`verfahren-lotse.md`](verfahren-lotse.md) | **v0.17** (`aug20`, Reservierungs-Veto) — Zahlen nachgemessen `sep07` auf derselben Wurzel wie die Kette (`ccb036a5eb20…`), die seit A37 fällige Karten-Nachmessung: dtw **0,053386** med · p90 0,116668 · aiou 0,7473 · `cross_missing` 0 / `cross_spurious` 4 · `retrace_missing` 5. Die `sep05`-Zeile nannte 0,053393 / 0,116199 / 0,7493 — dieselbe Route, vor A37 (§14 „Komma-Ausschluss `sep07`") | 2026-08-20 (Zahlen 2026-09-07) |
 | **InkSight** | [`verfahren-inksight.md`](verfahren-inksight.md) | T0 (roh) — dtw 0,0951 med · 5/19 failed · Galoppieren-B2-Kollaps; **auf Lineal-Kappe 1,5 unvermessen**, die Zahlen sind archiviert und nicht vergleichbar | 2026-08-17 (Lineal 0,8) |
 | **Nullprobe** | [`verfahren-nullprobe.md`](verfahren-nullprobe.md) | unversioniert (Kontrolle) — dtw 0,8198 med · p90 1,0267 auf den 10 von 19 dev-Wörtern, die die gespeicherte Nullprobe abdeckt | 2026-08-26 |
 

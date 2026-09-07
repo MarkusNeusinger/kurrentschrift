@@ -1246,8 +1246,17 @@ Nicht-Haupt-Komponenten der 63 Fixtures): FLÄCHE trennt Fremdtinte nicht
 von echten Marken, DUNKELHEIT trennt vollständig (rel 0,74–0,92 gegen
 0,01–0,38). Nicht zu verwechseln mit der **eigenen Marke** als Magnet
 (die-2: der i-Punkt zieht die Körperbahn) — dunkel, echt, und vom
-Darkness-Filter bewusst behalten. *Technisch:*
-`tools/pairlab/ink_evidence.py` → messjournal.md §14 „Kette K-C"
+Darkness-Filter bewusst behalten. **Satzzeichen der Platte sind
+derselbe Fall am LINEAL statt am Fit:** ein Komma hinter dem Wort ist
+Tinte, die kein Buchstabe erzeugen kann, und wandert per `exclude` aus
+der Referenz — für `regieren` seit `aug31` (§15), für `Gewehr`,
+`Zügel`, `streiten` und `a22-dank` seit `sep07` (messjournal.md §14
+„Komma-Ausschluss `sep07`"). Nachbarwort, Oberlänge der Zeile darüber
+und der eigene Anstrich bleiben: messbarer Zusammenhang bzw. Tinte,
+die der Renderer ohnehin erzeugt. *Technisch:*
+`tools/pairlab/ink_evidence.py` (Fit) ·
+`core/word_metric.py::clear_excluded` (Lineal) → messjournal.md §14
+„Kette K-C" / „Komma-Ausschluss `sep07`"
 
 **Tinten-Evidenz-Maske** *(ink-evidence mask, Kette K-C)* — die Maßnahme
 gegen Fremdtinte: vor Seed-Fenstern und Solve wird jede Nicht-Haupt-

@@ -47,18 +47,19 @@ Verfahrensseite; geändert wird sie nie hier.
 
 > **Lineal.** `tools/tracebench` auf dem eingefrorenen dev-19-Satz
 > (append-never), Strukturzähler **v2.1** (`aug16`), Marken-Kappe
-> **1,5 xh** seit L-U (`aug26`). Wort-Lineal: Wörter **0,108444** ·
-> Paare **0,148236** (Re-Baseline `sep05` nach dem LF12-Write;
+> **1,5 xh** seit L-U (`aug26`). Wort-Lineal: Wörter **0,108153** ·
+> Paare **0,148236** (Re-Baseline `sep07`, Komma-Ausschluss;
 > Headline-Ledger im Kopf von §14).
 >
 > **Duell, dev-19, Lineal-Kappe 1,5 — beide Zahlen auf DERSELBEN
-> Wurzel** (`suetterlin-1922` `exported_at` 2026-09-05T21:33:12+00:00,
-> `root_digest` `eaa195aa7c84…`, gebaut nach dem LF12-Write). Kette
-> **v5** (`aug26`), Zahlen re-baselined `sep05` (§14 „Laufform LF12
-> `sep05` — geschrieben"): dtw **0,045384** med · p90 0,087826 · aiou
-> 0,7583 · 63er-Soll-Abstand 80 · Netto-Kreuzungsdefekte 19. Lotse
-> **v0.17** (`aug20`, Zahlen `sep05`) dtw **0,053393** · p90 0,116199 ·
-> aiou 0,7493 · `cross_spurious` 5. Die Zahlen der `sep04`-Wurzel
+> Wurzel** (`suetterlin-1922` `exported_at` 2026-09-07T20:07:03+00:00,
+> `root_digest` `ccb036a5eb20…`, gebaut nach dem Komma-Ausschluss).
+> Kette **v5** (`aug26`), Zahlen `sep07` (§14 „Komma-Ausschluss
+> `sep07`", ziffernweise wie die A37-Nachmessung): dtw **0,045881** med ·
+> p90 0,088356 · aiou 0,7660 · 63er-Soll-Abstand 85 ·
+> Netto-Kreuzungsdefekte 20. Lotse **v0.17** (`aug20`, Zahlen `sep07` —
+> die seit A37 fällige Karten-Nachmessung) dtw **0,053386** · p90
+> 0,116668 · aiou 0,7473 · `cross_spurious` 4. Die Zahlen der `sep04`-Wurzel
 > (Kette 0,045830 · Lotse 0,056080) und die der `aug26`-Wurzel
 > (Kette 0,0446 · 0,0861 · 0,7608 · Soll 79) bleiben gültig und
 > archiviert, sind aber mit diesen nicht vergleichbar — jede Wurzel
@@ -1195,7 +1196,7 @@ Registerzeile und, wenn sie ein Negativ war, mit ihrer §7.9-Zeile.
 | **LF4 — die p-Laufform** | §14 „Laufform LF3b-W `aug26`" | die 13er-Schreib-Karte ist geschrieben, p blieb an EINER Kreuzung draußen | drei benannte Sprossen: Init-Wächter gegen das Kompositions-Soll · Stamm-Freigabe am Bogen-Rücklauf (K1-Familie) · Ring-Regel-Sensor (`CROSS_PARTNER_MIN_HITS`); je eigene Pre-Reg |
 | **Die drei LF10-Konversionen** | §14 „Laufform LF10 `sep01` — gemessen", §7.9 | der Form-Abstand als Betrag ist verworfen (P liegt unter τ_form), das Auge sieht an v/E/P/k trotzdem etwas | offen: (1) Richtungs-Abstand statt Lage-Abstand · (2) Tinten-Evidenz der Zeile gegen ihre Masken · (3) humanbench-Zeilen-Runde; je eigene Pre-Reg |
 | **Die offenen J4-Konversionen** (2 von 4 sind gegangen) | §14 „Übergänge J4/J4b `sep02`", §7.9 | der Naht-Knick ist beseitigbar, aber `dconn` kann per Konstruktion nicht darüber urteilen: (2) `dspan` hat das `sep04` behoben, (3) die Wortrunde hat den Arm `sep06` mit 34 : 2 bestätigt und der Autor ihn adoptiert (A37) — die Details stehen in §7.9 | **(1) die Ankunftsseite: gemessen `sep06`** von der Nahtverhandlung (§14 „Übergänge J6"), die sie mit der Austrittsseite zusammen schließt — auf dem adoptierten Stand fällt der Betrags-Median der Ankunft von 10,80° auf **0,01°** über 240 Nähte —, an Gate (c) aber verworfen; der Arm bleibt als Schalter stehen, ein eigener Arm nur für die Ankunft ist damit nicht mehr die offene Frage, sondern J6s Rettungswege sind es (§7.9). **(4) den Flick eine Stufe tiefer gar nicht erst lernen** (Endblenden-Familie LF5/LF6) bleibt offen, unverändert ein Laufform-Arm ohne eigene Messung |
-| **Lotse-Karte nach der J4-Adoption** | §14 „Übergänge J4 `sep06` — Adoption" | die Lotse-Karte IST die komponierte Bahn, und der Trim hat sie verändert: die dev-19-Zahlen vom `sep05` stehen auf einer Komposition, die es nicht mehr gibt. Dasselbe gilt für die S2-Report-Spalten (dort nachgemessen). **Korrektur `sep07`:** „die Kette ist ausgenommen" galt dem **Soll**, nicht dem **Fit** — der Trim schneidet den Buchstaben-Austritt, also wandern die Init-Anker mit: dtw-Median 0,045384 → **0,045881**, aiou 0,7583 → **0,7660**, `cross_missing`/`cross_spurious` 12/7 → **11/9** | **Kette: erledigt `sep07`** (die Basis der R3c-Runde IST die Nachmessung, §14). Lotse: unverändert fällig vor der nächsten Lotse-Aussage — Re-Baseline, kein Arm |
+| ~~**Lotse-Karte nach der J4-Adoption**~~ | §14 „Übergänge J4 `sep06` — Adoption" | die Lotse-Karte IST die komponierte Bahn, und der Trim hat sie verändert: die dev-19-Zahlen vom `sep05` stehen auf einer Komposition, die es nicht mehr gibt. Dasselbe gilt für die S2-Report-Spalten (dort nachgemessen). **Korrektur `sep07`:** „die Kette ist ausgenommen" galt dem **Soll**, nicht dem **Fit** — der Trim schneidet den Buchstaben-Austritt, also wandern die Init-Anker mit: dtw-Median 0,045384 → **0,045881**, aiou 0,7583 → **0,7660**, `cross_missing`/`cross_spurious` 12/7 → **11/9** | **Beide erledigt `sep07`.** Kette: die Basis der R3c-Runde IST die Nachmessung (§14). Lotse: mitgemessen im Komma-Ausschluss (§14) — dtw 0,053393 → **0,053386**, p90 0,116199 → **0,116668**, worst `muß-2` 0,149918 → **0,165083**, aiou 0,7493 → **0,7473**, `cross_spurious` 5 → **4**, `retrace_missing` 7 → **5**; die Bewegung gehört A37, nicht dem Komma (die Karte ist die komponierte Bahn, und das Komma bewegt keine Lotse-Zeile: 63/63 byte-gleich) |
 | **Abstandsterm · Schleifen-Halteterm** | §14 „Kette v5 `aug26`", jetzt auch „Kette K-F `sep04`" | 13 Wörter wirft auch v5 in Runde 1 auf den Init zurück — und K-F hat denselben Mechanismus von der anderen Seite gemessen: die Annahmeschwelle ist so empfindlich, dass eine Störung von 1,8·10⁻¹⁵ neun Verdikte kippt | offen; ausdrücklich PRÄVENTIVE Terme im Abstieg, nie Annahme-Regeln. Seit `sep04` zusätzlich die **Vorbedingung** dafür, dass ein Init- oder Startpunkt-Arm überhaupt entscheidbar wird |
 | **Die zwei J5-Konversionen** | §14 „Übergänge J5 `sep05`", §7.9 | die Klasse ist richtig geschnitten, die AKTION ist falsch: die Übergabe zieht den Anstrich gerade, wo die Tafel ihn wölbt — und `stem_depart` bestand trotzdem jedes Gate, weil kein eingefrorenes Lineal die Krümmung eines Aufstrichs misst | (2) **erledigt `sep06`** (§14 „Übergänge S2"): der Unstetigkeits-Sensor ist gebaut, eingefroren und an beiden Wortrunden abgenommen — er beziffert erstmals, was das Auge liest, und trifft `apex` (`bow_join` 12/12) wie `stem` (`curv_loss` 8/8). Instrument gewonnen, Gate NICHT: keine einzelne Spalte ist über alle vier entschiedenen Klassen richtungstreu. Offen bleibt (1) Übergabe mit der gemessenen Pfeilhöhe des Zielbuchstabens statt der Sehne — jetzt mit einem Sensor, der das Ergebnis messen kann; eigene Pre-Reg |
 | **Zwei-Stufen-Saat** (holt die 9 Vorkommen der Chart-Saat zurück) | §14 „Laufform LF15 `sep06`" | die Chart-Saat ist der einzige gemessene Ernte-Fixpunkt, kostet aber 9 Vorkommen — und zwar an `connector_degenerate`/`anchor_spike`, also an der Startlage, während die Fitgüte sogar steigt (`geo_rmse` 1,002 → 0,982) | offen, frische Pre-Reg: Chart-Saat solven, dann EINMAL auf dem eigenen Ergebnis nachsolven — bleibt zeilen-unabhängig, sitzt näher an der Tinte |

@@ -228,6 +228,7 @@ die DB) — mit seiner Bedingung.
 | sep06 | Übergänge | [J4 Adoption (A37)](#übergänge-j4-sep06--adoption-auf-autor-entscheid-a37-exit_trim-wird-default-deklarierte-re-baseline) | **Adoption** (Autor-Entscheid A37) · **Re-Baseline** (Wörter + Golden) | `exit_trim` ist Default. Auf UNVERÄNDERTER Wurzel, also gepaart: Wörter 0,108444 → **0,109026**, Paare **byte-gleich**, `seam_dep_median` +7,59 → **−0,70** (absolut 12,67 → 2,30), Verdopplungen 14 = 14. Golden deklariert neu gebacken (10 der 11 Wörter, kein Draw-Item mehr oder weniger, Solo-Glyphen 0 von 23). **S2 stimmt unabhängig zu** — am selben Tag auf der UNGETRIMMTEN Komposition abgenommen: `cont_kink_total` 402 → **337**, `cont_bow_join_median` 0,0091 → **0,0042** (Report-Spalte, kein Gate). `prodconn.replay` hat seine angekündigte Nachbearbeitung bekommen; die Kette ist per Messung ausgenommen (Kompositions-Soll 0 von 126), fällig bleiben Lotse-Karte und S2-Bezug (§7.11) |
 | sep07 | Kette | [R4 Feder-Entfaltung (Diagnose + Pre-Reg)](#kette-r4-feder-entfaltung-sep07--diagnose-und-vorregistrierung-ist-der-klumpen-tinte-oder-raster) | Diagnose + Pre-Reg | Konversion (4) von R3/R3c, und zuerst die Frage, die keiner der beiden gestellt hat: **ist die Verschmelzung Tinte oder Raster?** Der eine Term der Frage ist strukturell: der Fixture-Ausschnitt ist ein unskalierter Schnitt der Platte (`freeze_entry`), x-Höhe **30–33 px**, `words-abb19.png` byte-identisch von Commons. Dass es keine feinere Aufnahme gibt, war in der ersten Fassung behauptet und ist nach einem Copilot-Fund **nachgemessen**: der zweite committete Scan derselben Platte (`suetterlin-leitfaden-1926/p060.jpg`, laut `SOURCE.md` druckstock-identisch) ist eine GANZSEITEN-Aufnahme und trägt für die Tafel Zeilenabstand **≈ 104 px gegen ≈ 110 px**, also ~5 % weniger. Gemessen wird deshalb die BINARISIERUNG: dieselbe Binnenfläche als adaptive Maske 1×, als globale 50-%-Niveaulinie 1× und als 50-%-Niveaulinie auf 4× bikubischem Grau, dazu der Mittelachsen-Anzeiger bei beiden Maßstäben. Entscheidregel vor der ersten Zahl: RASTER, wenn Median(`A_grau4 − A_Maske`) ≥ +0,016 xh **oder** Median(`I@4× − I@1×`) ≥ +0,10. Der Arm dahinter: die Feder aus der EVIDENZ herausrechnen — jedes Skelettpixel näher als `w_pen` an einer `offen`-Binnenfläche fällt weg, an seine Stelle tritt die Niveaulinie `w_pen + 0,5 px` desselben Loch-Feldes, auf die Tinte beschnitten und nur im radialen Schatten des Weggefallenen. Gates (a)–(h) sind R3cs, Wort für Wort; eine Korrektur vor der ersten Armzahl: die pixelweise Fassung ist verworfen (0 von 13 Schleifen überleben den Schub, 13 von 13 die Niveaulinie) |
 | sep07 | Kette | [R4 gemessen](#kette-r4-feder-entfaltung-sep07--gemessen-die-zugelaufenen-schleifen-bewegen-sich-zum-ersten-mal-und-gate-c-fällt-trotzdem) | Diagnose + gemessen · **nicht adoptiert**, Gate (c) rot (Kill) | **Diagnose-Verdikt: echte Verschmelzung.** Median(`A_grau4 − A_Maske`) **+0,0000** und Median(`I@4× − I@1×`) **+0,0109** — beide Schranken klar verfehlt: die globale Schwelle liest bei 1× ziffernweise dieselbe Binnenfläche wie die adaptive Maske, bei 4× liest das Grau eine **kleinere** (0,1118 gegen 0,1290, das halbe Plattenpixel je Seite), und die Einschnürung überlebt die schärfere Lesung (Anzeiger 0,807 → 0,790). **Der Arm bewegt zum ersten Mal die richtige Klasse:** von den 33 Schleifen, die die Basis zu zeichnet, gehen **8 auf** (7 zugelaufene, 1 kollabierte — `Feinde` `F`#1 0,0025 → 0,3184), wo R3c 0 bewegt hat; offen bei 0,097 **124 → 129**, referenzfreier 63er-Soll **85 → 70** (der größte Fall der R-Kette), `cross_spurious` **9 → 7** und `retrace_spurious` 10 → 9, also Gate (b) **grün**. Bezahlt wird mit drei Totalverlusten (`unter` `t`#1 · `Kugel` `K`#1 · `macht` `a`#0, je auf den Ableseboden 0,0025), Gate (a) **36 von 157** statt 149, Gate (c) rot unter BEIDEN Lesarten (gepaart p90 +0,000834, eigene Verteilung Median +0,000385) und Gate (d) +34 `kink`-Ereignisse (2 296 → 2 330; R3 +1 626, R3b +462). (f)/(g)/(h) grün, Determinismus 63/63 strichgleich |
+| sep07 | Lineal | [Komma-Ausschluss](#komma-ausschluss-sep07--die-satzzeichen-der-platte-verlassen-die-referenz-tinte) | **Re-Baseline** (Wörter + abb22) · umgesetzt (Autor-Entscheid A3) | **Vier Referenz-Ausschnitte trugen ein Komma, also Tinte, die kein Buchstabe erzeugen kann.** Nachgewiesen als eigene Komponente je Wort (94 · 47 · 42 · 31 px, 0,41–0,83 xh von jeder Buchstabentinte entfernt, mit keiner verschmolzen), per `exclude` aus der Referenz genommen — derselbe Griff, den `regieren` seit §15 (`aug31`) trägt. Der Ausschnitt-Diff ist chirurgisch: 3 von 63 bzw. 1 von 106 Einträgen bewegen `crop`/`ref_mask`/`ref_skel`, `templates*`/`*_instances`/`word.json` byte-gleich, kein Pixel HINZUgekommen. **Wörter 0,109026 → 0,108153** (`Zügel` −0,028918 · `Gewehr` −0,014439 · `streiten` −0,011649, die übrigen 60 bit-gleich), **Paare byte-gleich** (Wurzel gar nicht neu gebaut). Beide Folger sind nachweislich unberührt: 63/63 Kette-Zeilen strich-gleich und 63/63 Lotse-Zeilen byte-gleich, dev-19 ziffernweise unverändert, 63er-Soll 85 = 85. Gegenbefund `a22-dank` **+0,039863** (cross-hand, nie Headline): dort hat das Komma die Registrierung getragen (`tx` −6 → −8) — die Fremdtinte hat den Fit geschmeichelt, nicht bestraft | 
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -263,6 +264,7 @@ Vorbedingung (Glossar „Wurzel-Digest“, `tools/wordbench/README.md`).
 | sep03 | #516 | Wurzeln neu gebaut (`fetch_fixtures --set all --verify`, 12/12 bit-exakt) im Zuge der Glyph-Bench-Re-Baseline (Audit A15): `suetterlin-1922` `exported_at` 2026-09-03T21:28:30+00:00 `root_digest` `57402ae7dd41…`, `suetterlin-1922-pairs` gleicher Zeitstempel `f176e191d4bf…` — **keine** Re-Baseline der Wort-Zahlen: beide reproduzieren exakt, nur die Wurzel-Identität ist neu | 0,109218 | 0,148198 | §5 „Re-Baseline 2026-09-03“ |
 | sep05 | dieser PR | **Re-Baseline nach dem LF12-Write**: 18 Laufform-Zeilen aus den Vorkommen des heutigen Ketten-Stands neu abgeleitet, die Zeile `S` gelöscht (Autor-Entscheid A35), Wurzeln neu gebaut: `suetterlin-1922` `exported_at` 2026-09-05T21:33:12+00:00 `root_digest` `eaa195aa7c84…`, `suetterlin-1922-pairs` gleicher Lauf `0fbde2d72b64…`. Trifft die trockene LF12-Vorhersage (0,108107) auf 3·10⁻⁵, sobald man die Löschung herausrechnet | 0,108444 | 0,148236 | §14 „Laufform LF12 `sep05` — geschrieben“ |
 | sep06 | dieser PR | **Re-Baseline durch Adoption, nicht durch eine Wurzel**: `exit_trim` wird Default (Autor-Entscheid A37 nach Runde 5). Wurzeln UNVERÄNDERT `eaa195aa7c84…` / `0fbde2d72b64…`, also gepaart vergleichbar — die Zeile darüber ist dieselbe Messung ohne die Regel. Das Wort-Lineal steigt bewusst, der Naht-Abgang fällt (`seam_dep_median` +7,59 → −0,70, absolut 12,67 → 2,30), `gleichzug_doublings` 14 = 14, `worst_word` `han` → `regieren` 0,233052; Golden deklariert neu gebacken | 0,109026 | 0,148236 | §14 „Übergänge J4 `sep06`“, Nachtrag „Adoption“ |
+| sep07 | dieser PR | **Re-Baseline durch die REFERENZ**: das Komma hinter `Gewehr`, `Zügel` und `streiten` (und, in der cross-hand-Wurzel, hinter `a22-dank`) verlässt per `exclude` die Referenz-Tinte. Wort-Wurzel neu gebaut: `suetterlin-1922` `exported_at` 2026-09-07T20:07:03+00:00 `root_digest` `ccb036a5eb20…`, dazu `suetterlin-1922-abb22` `5fc7be5fc9f0…`. Die **Paar-Wurzel wurde nicht angefasst** (`0fbde2d72b64…` wie am `sep05`) — kein Paar-Drill trägt Satzzeichen, und eine unveränderte Wurzel macht die byte-gleiche Paar-Zahl beweisbar statt behauptet. Nur drei der 63 Wörter bewegen sich, alle nach unten | 0,108153 | 0,148236 | §14 „Komma-Ausschluss `sep07`“ |
 
 **Nachtrag `sep02` — die `aug30`-Wurzel ist eine undeklarierte
 Re-Baseline.** Zwischen der `aug29`-Wurzel (0,106720 / 0,146506, im
@@ -13962,3 +13964,175 @@ eine davon die TAFEL feiner zeigt als die 30–33 px je x-Höhe, die die
 Fixtures schneiden, ist offen. Das wäre ein neuer Quell-Commit, ein
 Re-Export und damit eine deklarierte Re-Baseline — ein Autorenschritt und
 kein Arm, aber nach dieser Runde ein benannter statt eines übersehenen.
+
+### Komma-Ausschluss `sep07` — die Satzzeichen der Platte verlassen die Referenz-Tinte
+
+**Verdikt: umgesetzt, als eigene deklarierte Re-Baseline.** Kein Arm und
+keine Hypothese: der Autor hat die Frage A3 der Sammelliste am 2026-09-07
+mit „ja, Satzzeichen besser extra" entschieden, und dieser Eintrag hält
+den Befund, die Ausführung und die neuen Wurzeln fest. Am Folger, am
+Composer und am Lineal (`core/word_metric.py`) ist kein Byte geändert;
+was sich bewegt, ist AUSSCHLIESSLICH die Referenz-Tinte von vier
+Wortproben.
+
+#### Der Befund, nachgemessen statt zitiert
+
+Die Randlauf-Sichtung vom `sep06` (die Notiz in `words.json`) hatte vier
+Rechtecke genannt, in die ein Komma hineinragt. Nachgemessen auf der
+eingefrorenen Maske selbst — Zusammenhangskomponenten je Ausschnitt, mit
+4er- und 8er-Nachbarschaft:
+
+| Probe | Komma im Ausschnitt | Kastenmaß | Abstand zur Wort-Tinte | verschmolzen? |
+|---|---|---|---|---|
+| `Gewehr` | 94 px | 0,30 × 0,87 xh | 15,6 px = **0,52 xh** | nein |
+| `Zügel` | 47 px | 0,20 × 0,47 xh | 15,6 px = **0,52 xh** | nein |
+| `streiten` | 42 px | 0,23 × 0,26 xh | 25,8 px = **0,83 xh** | nein |
+| `a22-dank` | 31 px | 0,11 × 0,30 xh | 15,2 px = **0,41 xh** | nein |
+
+Jedes der vier ist eine eigene Komponente, keine berührt die Buchstaben —
+die Rückfrage „ein Komma, das an der Buchstabentinte klebt, ist ein
+Befund und kein Schnitt" ist damit beantwortet und trat nicht ein. Auf
+der Platte reicht das Komma jeweils über die Rechteck-Kante hinaus; im
+Ausschnitt bleibt der Teil, den der Kasten mitschneidet.
+
+**Warum die Tinten-Evidenz das nicht löst.** Die Maßnahme, die Fremdtinte
+sonst wegnimmt (Kette v4, `ink_evidence`), trennt nach DUNKELHEIT. Die
+drei Kommas liegen auf ihrer Skala bei `rel` **0,200 · 0,226 · 0,134**,
+also mitten in der Echt-Tinte-Klasse (≤ 0,38) — sie sind Federtinte, denn
+sie sind Federtinte. Ein Darkness-Kriterium kann Satzzeichen per
+Konstruktion nicht von Buchstaben trennen; deshalb gehört der Griff in
+die Referenz-DEFINITION und nicht in den Filter. Und dort steht er schon:
+`regieren` trägt seit §15 (`aug31`) genau diesen `exclude`.
+
+#### Die Ausführung
+
+Vier `exclude`-Rechtecke in `data/sources/suetterlin-1922/words.json`, je
+das Kastenmaß der Komponente im Ausschnitt (Seitenkoordinaten, halboffen)
+— nichts Handgemaltes, nichts an den PNG-Bytes, alles aus
+`fetch_fixtures` reproduzierbar. `clear_excluded` löscht eine Komponente
+ganz, sobald die Hälfte ihrer Pixel im Rechteck liegt; hier liegen 100 %
+darin, und **null Pixel anderer Tinte**. Nachgeprüft am Ergebnis:
+
+- je Wort **genau eine** entfernte Komponente, in der gemessenen Größe,
+  und **kein einziges hinzugekommenes Pixel**;
+- die übrigen 198 Rechtecke der Datei bauen eine byte-gleiche Maske.
+
+Die Wurzeln wurden über HTTPS neu gebaut (`fetch_fixtures --verify`,
+12/12 Kompositionen bit-exakt, schlimmste Buchstabenform 0, schlimmste
+Platzierung 0 xh):
+
+| Wurzel | vorher | nachher |
+|---|---|---|
+| `suetterlin-1922` | 2026-09-05T21:33:12+00:00 `eaa195aa7c84…` | 2026-09-07T20:07:03+00:00 **`ccb036a5eb20…`** |
+| `suetterlin-1922-abb22` | 2026-09-05T21:33:11+00:00 `698c76744155…` | 2026-09-07T20:07:24+00:00 **`5fc7be5fc9f0…`** |
+| `suetterlin-1922-pairs` | 2026-09-05T21:33:11+00:00 `0fbde2d72b64…` | **unverändert, nicht neu gebaut** |
+
+Die Paar-Wurzel bleibt bewusst stehen: kein Paar-Drill trägt Satzzeichen,
+und eine Wurzel, die nicht angefasst wurde, macht die byte-gleiche
+Paar-Zahl beweisbar statt behauptet — ein `--set all` hätte sie allein
+über den Zeitstempel neu gestempelt.
+
+**Der Wurzel-Diff ist chirurgisch.** Datei für Datei gegen die
+`sep05`-Wurzel gehalten: von 257 Dateien unterscheiden sich **10** — je
+`crop.png`, `ref_mask.png`, `ref_skel.npz` der drei Wörter, dazu das
+Manifest (nur `exported_at`). In der abb22-Wurzel sind es 4 von 429.
+`templates.json`, `templates_laufform.json`, `pair_instances.json`,
+`word_instances.json` und jedes `word.json` sind byte-gleich — die
+DB-Seite der Wurzel ist nachweislich dieselbe wie am `sep05`.
+
+#### Die Zahlen (BLAS gepinnt, jeder Lauf mit `--expect-root`)
+
+| dev-19 / Headline | vorher (`eaa195aa7c84…`) | nachher (`ccb036a5eb20…`) |
+|---|---|---|
+| **Wörter** | 0,109026 | **0,108153** (−0,000873) |
+| **Paare** | 0,148236 | **0,148236** (byte-gleich) |
+| abb22 (cross-hand, nie Headline) | 0,463920 | 0,464296 (+0,000376) |
+| Kette dtw med · p90 · worst | 0,045881 · 0,088356 · `muß` 0,106372 | ziffernweise dieselben |
+| Kette aiou · `cross` · `retrace` | 0,7660 · 11/9 · 7/10 | ziffernweise dieselben |
+| Kette 63er-Soll (`k0eval`) | 85 | **85** |
+| Lotse dtw med · p90 · aiou | 0,053386 · 0,116668 · 0,7473 | ziffernweise dieselben |
+
+Je Wort, gepaart (die einzigen bewegten Zeilen — alle übrigen 60 Wörter
+und alle 33 Paare sind in JEDER Spalte bit-gleich, Report-Spalten
+eingeschlossen):
+
+| Probe | loss | `transition` | `coverage` | `width` |
+|---|---|---|---|---|
+| `Zügel` | 0,108196 → **0,079279** | 0,152987 → 0,114813 | 0,080353 → 0,073354 | 0,056143 → 0,009695 |
+| `Gewehr` | 0,125341 → **0,110902** | 0,071739 = 0,071739 | 0,127699 → 0,111389 | 0,241818 → 0,198166 |
+| `streiten` | 0,111580 → **0,099931** | 0,122799 → 0,120797 | 0,110347 → 0,104956 | 0,088497 → 0,044191 |
+| `a22-dank` | 0,277597 → **0,317461** | 0,232435 → 0,274019 | 0,225311 → 0,240171 | 0,470713 → 0,550462 |
+
+**Beide Folger sind nachweislich unberührt.** Die Kette liefert 63 von 63
+Kandidaten-Zeilen STRICH-gleich (nur `timings` unterscheiden sich), der
+Lotse 63 von 63 byte-gleich. Im referenzfreien 63er-Protokoll bewegt sich
+genau eine Spalte, und zwar die einzige, die gegen die Maske misst: das
+`aiou` der drei Wörter (`Gewehr` 0,7756 → 0,7850 · `Zügel` 0,6380 →
+0,6426 · `streiten` 0,6566 → 0,6606). Soll-Abstand, Kreuzungs- und
+Zonenzähler und der aiou-Median (0,7428) sind Ziffer für Ziffer gleich.
+Der Kandidat SAH das Komma (die Tinten-Evidenz behält es, siehe oben) —
+es zog nur nichts an, weil kein Sample eine Nachbarschaft hat, in der es
+die nächste Tinte wäre.
+
+#### Der Gegenbefund: `a22-dank` wird schlechter, und das ist die Auskunft
+
+Die cross-hand-Probe verliert **+0,039863**, in allen drei Komponenten
+zugleich, und die Registrierung wandert dabei von `tx` −6 auf −8. Das
+Komma hat dort also die Passung GETRAGEN: die beschränkte
+Translationssuche fand mit ihm ein rechtes Ziel, das ohne es nicht mehr
+da ist. Genau darum gehört Fremdtinte aus der Referenz — sie hat den Fit
+geschmeichelt, nicht bestraft, und eine Zahl, die von Tinte lebt, die
+kein Buchstabe erzeugen kann, ist keine Aussage über die Komposition. Die
+abb22-Zahl ist cross-hand und war nie Teil einer Same-Hand-Headline; sie
+steht hier vollständig, damit die Richtung sichtbar bleibt.
+
+#### Mitgemessen: die seit A37 fällige Lotse-Nachmessung
+
+§7.11 führte „Lotse-Karte nach der J4-Adoption" als offen: die
+`sep05`-Zahlen des Lotsen standen auf einer Komposition, die es seit A37
+nicht mehr gibt. Diese Runde reitet ihn ohnehin zweimal und schließt die
+Zeile damit — auf DERSELBEN Wurzel `eaa195aa7c84…` wie der
+`sep05`-Eintrag, also gepaart lesbar: dtw 0,053393 → **0,053386**, p90
+0,116199 → **0,116668**, worst `muß-2` 0,149918 → **0,165083**, aiou
+0,7493 → **0,7473**, `cross_spurious` 5 → **4**, `retrace_missing` 7 →
+**5**. **Die Bewegung gehört A37 und nicht dem Komma** — vor und nach dem
+Ausschluss sind alle 63 Lotse-Zeilen byte-gleich.
+
+#### Was nicht angefasst wurde, und warum
+
+Der **Kringel-Katalog** (`tools/tracebench/kringel_catalogue.json`) nennt
+in seinem `_source` die `sep05`-Wurzel. Nachgebaut auf beiden Wurzeln ist
+er byte-gleich — der Ausschluss bewegt ihn nicht. Er reproduziert
+allerdings die committete Fassung auch auf der `sep05`-Wurzel nicht: die
+Abweichung sitzt in `d0_composed_*` und `collapsed_loops_per_glyph`,
+also in der KOMPOSITION, und stammt aus A37. Das ist ein bestehender
+Stand der R-Runden und keine Folge dieser Re-Baseline; die Datei bleibt
+darum unverändert, und der Befund steht hier, statt still repariert zu
+werden.
+
+#### Grenzen und was offen bleibt
+
+Der Ausschluss gilt **nur Satzzeichen**. Die Sichtung vom `sep06` nennt
+drei weitere Klassen randüberschreitender Tinte, und alle drei bleiben
+stehen: das Nachbarwort und die Unterlänge der Zeile darüber (`laden`,
+`a22-laden`, `a22-fern`, `a22-ein`) sind messbarer Zusammenhang, der
+eigene Anstrich (`a22-laden`, `a22-ihren`, `a22-doch`, `a22-roten-2`) ist
+Tinte, die der Renderer ohnehin erzeugt. Ob eine dieser Klassen dieselbe
+Behandlung verdient, ist damit NICHT beantwortet — es wäre eine eigene
+Frage an den Autor und eine eigene Re-Baseline.
+
+Ungeprüft bleibt außerdem, ob die 202 Rechtecke noch weitere Satzzeichen
+enthalten, die ganz INNERHALB eines Kastens liegen und darum in einer
+Rand-Sichtung nie auffallen. Diese Runde hat die vier genannten
+verifiziert und sonst nichts durchsucht.
+
+**Kein §7.9-Eintrag fällig** — die Rettungswege-Regel gilt dem ehrlichen
+Negativ, und dies ist keines.
+
+**Selbst entschieden (Routine im Rahmen des Entscheids A3):** die Wahl
+des Rechtecks als Komponenten-Kastenmaß statt eines runden Kastens (es
+ist die kleinste Fassung, die kein fremdes Pixel berührt); die
+Paar-Wurzel NICHT neu zu bauen; die Lotse-Nachmessung mitzunehmen, weil
+die Runde ihn ohnehin zweimal reitet und die Verfahrensseite sonst eine
+Zahl von vor A37 als Stand geführt hätte; und den Kringel-Katalog
+unangetastet zu lassen.
