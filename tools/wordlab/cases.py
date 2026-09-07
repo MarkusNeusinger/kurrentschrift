@@ -63,6 +63,12 @@ class WordCase:
     crop: np.ndarray | None = None  # float [0, 1], shape (H, W) — overlay background
     skel: np.ndarray | None = None  # bool, the frozen scoring skeleton
     width_map: np.ndarray | None = None  # float, EDT half-width per skeleton pixel (same npz)
+    # The frozen binarisation the skeleton was thinned from and the bench's AIoU
+    # grades against (`ref_mask.png`). Carried because the ink's COUNTERS are
+    # evidence in their own right — the hole a fused pair of pen strokes leaves
+    # is what `tools.pairlab.zweizuege` deconvolves — and re-binarising the crop
+    # here would move goalposts the metric holds fixed.
+    mask: np.ndarray | None = None  # bool, the frozen ink mask (same frame as `crop`/`skel`)
     extra: dict = field(default_factory=dict)  # updated_at, … (informational)
 
     @property
@@ -128,6 +134,11 @@ def _case_from(root: Path, manifest: dict, templates: dict, entry: dict, lauffor
         skel = ref["skel"]
         width_map = ref["width_map"] if "width_map" in ref else None
     crop = _load_page_float(root / entry_id / "crop.png")
+    # `> 127` is the threshold `tools/wordbench/export_fixtures.py` writes the
+    # mask with and every other reader applies (`kringelcat`, `routeg`,
+    # `inksight`); an older export without the file simply has no mask.
+    mask_path = root / entry_id / "ref_mask.png"
+    mask = np.asarray(Image.open(mask_path)) > 127 if mask_path.exists() else None
     return WordCase(
         id=entry_id,
         word=word_meta["word"],
@@ -146,6 +157,7 @@ def _case_from(root: Path, manifest: dict, templates: dict, entry: dict, lauffor
         crop=crop,
         skel=skel,
         width_map=width_map,
+        mask=mask,
     )
 
 

@@ -321,6 +321,19 @@ WIDEST = {
 # arm in the same edit, so an open arm is rewritten rather than a new one
 # appended — and the round owes no route ledger line: it measures a composer
 # switch, not a Duell route.
+#
+# NOT raised again by „Kette R3 Zwei-Züge-Modell" (`sep07`), and that is the
+# second half of the precedent above. That round owes `verfahren-kette.md` a
+# ledger line — it measures a Kette knob — and against the PRE-MERGE budget the
+# line cost 138 over, so the branch had a raise to 6947 written and measured.
+# Then LF15's raise landed, which had re-measured the same page after ITS merge,
+# and the merged path comes out at 6636 against 6890: 254 of room, the ledger
+# line included. So the raise was dropped rather than stacked, exactly as J6's
+# was above. What stays from it is the discipline it followed: the row was
+# condensed once before any raise was written (the first draft cost 220), and
+# it still carries both halves of an unusual verdict — a mechanism that meets
+# its geometric target completely and fails on execution — because a ledger
+# that records only the verdict is one nobody can act on.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
     "mess-runde": 26_484,
@@ -331,7 +344,16 @@ BUDGETS: dict[str, int] = {
     "frontend": 15_018,
     "werkbank": 5_166,
     "werkzeug": 713,
-    "werkzeug-abschnitt": 4_073,
+    # Raised 2026-09-07 by „Kette R3 Zwei-Züge-Modell": the path is „the one
+    # tool your change is about", and its widest section is the bench/lab
+    # inventory — the one place a NEW tool has to be named, which is that
+    # section's whole job. `tools/pairlab/zweizuege.py` is one, and on main the
+    # section stood at 4066 against 4073, i.e. seven tokens of room, so any tool
+    # added anywhere in that family would fail this gate. The entry was cut to
+    # four lines (switch, default, what it reports) before this raise, and the
+    # alternative — a tools/ directory the inventory stops listing — is the one
+    # this doc exists to prevent. Re-measured at 4134 plus the documented 10 %.
+    "werkzeug-abschnitt": 4_547,
     "doku": 7_937,
 }
 

@@ -827,7 +827,10 @@ Warnung versehen. Begriff und Hausregel:
   (baut den eingefrorenen Kringel-Katalog aus EINER Wurzel; `.kringel`
   ist der Sensor, der ihn liest — Report-Spalte `kringel_lost`, §14
   „Kringel-Landmarke `sep06`") und `.view`
-  (Duell-/Augenschein-Seite). Alle nennen ihre Wurzel im Kopf und
+  (Duell-/Augenschein-Seite). `tools.pairlab.zweizuege` ist das
+  **Zwei-Züge-Modell** (§14 „Kette R3 `sep07`"): `--zwei-zuege`, Vorgabe
+  AUS, korrigiert die fertige Bahn an verschmolzenen Schleifen und meldet
+  je Schleife Korrektur oder Verweigerung. Alle nennen ihre Wurzel im Kopf und
   nehmen `--expect-root` (siehe oben); die Arm- und Archäologie-Flags
   stehen im jeweiligen `--help` und je Arm in seinem §14-Eintrag.
   Invarianten: reine Messschicht (nie DB/`core/`/Rendering), der
