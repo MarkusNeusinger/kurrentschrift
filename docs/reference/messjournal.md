@@ -14635,7 +14635,7 @@ Wortproben; die sechs übrigen sind die Nullprobe.
 |---|---|---|---|
 | 1 Verlässlichkeit | **10/12 Paare gleicher Arm**, 7/12 gleiche Seite (7 Paare beidseits „kein Unterschied") | ≥ 6 Paare · > 7/12 Arm | beide Schranken genommen, Band `reliable`; die Runde trägt einen Adoptionsanspruch — die schärfere Lesung steht unter der Tabelle |
 | 2 Seitenbilanz | links 9 · rechts 14 · unentschieden 40 (39,1 % der entschiedenen links) | berichtet, nie entscheidend | unter der 65-%-Meldeschwelle; keine Seitenneigung, die etwas verbreitern würde |
-| 3 Verdikt | **Basis 14 : Kandidat 9** von 23 entschiedenen → Kandidat **39,1 %**; unentschieden 40 von 63 = **63,5 %** (Kandidat über alle Bildschirme 14,3 %) | ≥ 60 % · ≤ 25 % | **beide gerissen** — die Kandidaten-Schranke um 21 Punkte nach unten, die Tie-Schranke um 38 Punkte; `adopt: false` |
+| 3 Verdikt | **Basis 14 : Kandidat 9** von 23 entschiedenen → Kandidat **39,1 %**; unentschieden 40 von 63 = **63,5 %** (Kandidat über alle Bildschirme 14,3 %) | ≥ 60 % · ≤ 25 % | **beide gerissen** — die Kandidaten-Schranke um 20,9 Punkte nach unten, die Tie-Schranke um 38,5 Punkte; `adopt: false` |
 | 5 Drift | Basis 5 · 6 · 3, Kandidat 2 · 3 · 4, Ties 14 · 12 · 14, Mediandauer 9 · 6 · 5 s | — | keine Ermüdung, kein Kippen: die Tie-Quote ist über alle drei Drittel praktisch konstant, und im letzten Drittel gewinnt der Kandidat sogar häufiger als die Basis. Die 63,5 % sind also kein Nachlassen gegen Ende |
 
 **Die Verlässlichkeit sagt mehr als ihre Zahl.** Die 7 Seiten-Übereinstimmungen
@@ -14718,15 +14718,15 @@ gibt es keine Richtung, die vorzulegen wäre.
 `sep06` an Gate (c) (Gleichzug-Verdopplungen der Paare 3 → 5, zurechenbar auf
 `dp`/`ds`) und heute am Auge. Die beiden Fehlschläge sind nicht dasselbe
 Argument, und zusammen sagen sie, wo ein Nachfolger ansetzen muss: der erste,
-dass die Dosis an drei Stellen zu GROSS ist, der zweite, dass sie überall
-sonst zu klein ist, um gesehen zu werden.
+dass die Dosis auf den Zwei-Buchstaben-Übungen `dp`/`ds` zu GROSS ist, der
+zweite, dass sie überall sonst zu klein ist, um gesehen zu werden.
 
 **Was die Runde NICHT sagt.** Nicht, dass die Naht egal ist — der Naht-Winkel
 ist gemessen, und der Arm schließt ihn beweisbar. Nicht, dass die Regel falsch
-ist — keine von 240 Nähten wird schlechter. Nicht, dass der Kandidat schadet —
-die einzige gemessene Verschlechterung sind die zwei Verdopplungen auf
-`dp`/`ds`, und die sind in dieser Runde gar nicht zu sehen (die Paar-Übungen
-sind nicht Teil der 63 Wörter). Und nichts über eine andere Hand: 63 Wörter
+ist — keine von 240 Nähten wird schlechter. Nicht, dass der Kandidat auf DIESEN
+Wörtern schadet: die gemessenen Verschlechterungen des `sep06`-Eintrags sitzen
+auf den Paar-Übungen, und die sind gar nicht Teil der 63 Wörter dieser Runde.
+Und nichts über eine andere Hand: 63 Wörter
 EINER Platte sind die ganze Grundgesamtheit, einen Bestätigungssatz kennt der
 Wortmodus nicht, `abb22` ist eine andere Hand.
 
@@ -14787,10 +14787,11 @@ Rettungsweg (4) der Runde 6, hier unverändert).
 
 In [`menschliche-bewertung.md`](menschliche-bewertung.md) §8a, als
 **Beobachtung** und ausdrücklich nicht als Schranke: eine Wortrunde hat eine
-Sichtbarkeitsschwelle, und sie ist am `arm_gap` ablesbar. Drei Runden liegen
-jetzt nebeneinander — Runde 5 mit einer starken Klasse ab 0,1186 xh und 9,7 %
-Ties, Runde 7 mit einer starken Klasse ab 0,0221 xh und 34,5 %, und in Runde 7
-über alle Klassen 0,0311 xh (entschieden) gegen 0,0146 (unentschieden). Was
+Sichtbarkeitsschwelle, und sie ist am `arm_gap` ablesbar. Zwei nach demselben
+Maß geschnittene Runden liegen jetzt nebeneinander — Runde 5 mit einer starken
+Klasse ab 0,1186 xh und 9,7 % Ties, Runde 7 mit einer starken Klasse ab
+0,0221 xh und 34,5 % —, dazu innerhalb der Runde 7 über alle Klassen
+0,0311 xh (entschieden) gegen 0,0146 (unentschieden). Was
 daraus folgt, ist eine Bau-Auflage und keine Auswerteregel: wer eine Klasse
 „sichtbar" nennt, nennt vorher den Versatz, bei dem er das behauptet.
 

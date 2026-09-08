@@ -34,8 +34,8 @@
   different instances — at the ruler on 2026-09-06 (gate (c), the Gleichzug
   doublings of the pair drills rising 3 → 5 on `dp`/`ds`) and at the eye today.
   The two failures say different things and together point a successor
-  somewhere: the dose is too large at three drill words and too small
-  everywhere else to be seen. Five rescue paths ship with the entry, the sensor
+  somewhere: the dose is too large on the `dp`/`ds` two-letter drills and too
+  small everywhere else to be seen. Five rescue paths ship with the entry, the sensor
   population first, in `messjournal.md` §14 and `tintenfolger.md` §7.9/§7.11.
 - **The word mode now records that it has a visibility floor.**
   `menschliche-bewertung.md` §8a carries it as an observation and a BUILD
