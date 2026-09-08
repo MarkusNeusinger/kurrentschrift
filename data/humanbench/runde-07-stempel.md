@@ -189,9 +189,21 @@ und beide Kompositionen), die beiden Arm-Dateien und die Klassendatei
 `strata-r7-j6.json` mit ihren `arm_gap`-Beträgen je Wort — gelernter Datensatz
 bzw. Vorkommens-Geometrie unter dem Open-Core-Vorbehalt
 ([`quellen-und-rechte.md`](../../docs/reference/quellen-und-rechte.md) §5).
-Sie bleiben unter `temp/runden-sep06/humanbench/` und sind aus Saat, Wurzel
-und diesem Stempel deterministisch wiederherstellbar; die Klassenzuordnung
-selbst steht Wort für Wort im schmalen Schlüssel (`stratum`).
+Sie bleiben unter `temp/runden-sep06/humanbench/`; die Klassenzuordnung selbst
+steht Wort für Wort im schmalen Schlüssel (`stratum`).
+
+> **Wie weit „wiederherstellbar" hier trägt — mit dem `code_dirty` daneben
+> gelesen.** Aus Saat, Wurzel und diesem Stempel lässt sich der Bau
+> reproduzieren: Auswahl, Reihenfolge, Seitenverteilung und Spiegelung hängen
+> allein an `20260007` und an den beiden Arm-Dateien, und `build.py` liest die
+> Arme als Bytes. Die ARME selbst sind es nicht in demselben Sinn: sie kommen
+> aus `wordarm.py` auf einem Baum, der beim Bau **nicht sauber** war, und §7
+> der Methodendoku sagt dazu, dass ein Commit dann ein Anhaltspunkt ist und
+> kein Nachweis. Maßgeblich sind deshalb nicht die Befehle unten, sondern die
+> beiden `sha256` oben: sie identifizieren die Bytes, die der Beurteiler
+> gesehen hat, und ein Nachbau, der sie nicht trifft, ist eine andere Runde.
+> Die Befehle sagen, WIE die Arme entstanden sind, nicht, dass sie sich heute
+> auf dasselbe Byte wiederholen lassen.
 
 **Eine Anmerkung, die nicht im Ergebnistext steht.** Die Seite hat auch in
 dieser Runde kein Notizfeld ausgegeben; der freie Satz des Beurteilers fiel

@@ -14744,23 +14744,27 @@ gegangen. Was bleibt, geordnet nach dem, was diese Runde dazugelernt hat:
    Dieselbe Rahmen-Regel, die `spanmeas` für `dconn` erzwungen hat. Eigene
    Vorregistrierung; ohne sie hat kein Nachfolger von J6 ein Lineal, das seine
    Wirkung lesen kann.
-2. **J6c — den Verbinder-Anteil über seinen GANZEN Bogen verteilen**, statt
-   über 0,45 davon (Weg (2), neuer Mechanismus). Der Haken an `dp`/`ds`
-   entsteht, weil 33° in 0,3 xh liegen; über den vollen Bogen wäre dieselbe
-   Drehung eine Krümmung. **Neu aus dieser Runde: die Vorregistrierung braucht
-   eine Sichtbarkeits-Vorbedingung.** Ein Arm, dessen Klasse „sichtbar" heißt,
-   muss die Zeichnung so weit bewegen, dass eine Wortrunde ihn entscheiden
-   KANN; der gemessene Anhalt liegt zwischen 0,0221 xh (hier, 34,5 % Ties in
-   der starken Klasse) und 0,1186 xh (Runde 5, 9,7 %). Wer den Boden nicht
-   vorab nennt, baut eine Runde, deren wahrscheinlichstes Ergebnis „kein
-   Unterschied" ist.
-3. **Der Deckel je Klasse, gemessen an den Vorkommen** (Weg (3), neuer
-   Mechanismus). Ein Schleifen-Exit darf in seiner letzten Kurve mehr drehen
-   als eine Arkade; damit sänke der Anteil, den der Verbinder tragen muss,
-   genau dort, wo er heute den Haken macht — und der Betrag, um den sich die
-   Zeichnung in der starken Klasse bewegt, stiege dort, wo die Regel ohnehin
-   am meisten zu tun hat. Der Deckel wird gemessen, nicht gesetzt. Eigene
+2. **Der Deckel je Klasse, gemessen an den Vorkommen** (Weg (3) der J6-Zeile,
+   neuer Mechanismus) — **vor J6c**, weil er als einziger beide Fehlschläge
+   zugleich adressiert. Ein Schleifen-Exit darf in seiner letzten Kurve mehr
+   drehen als eine Arkade; damit sinkt der Anteil, den der Verbinder tragen
+   muss, genau dort, wo er heute den Haken macht (der `sep06`-Fehlschlag), und
+   zugleich steigt der Betrag, um den sich die Zeichnung in der starken Klasse
+   bewegt, dort, wo die Regel ohnehin am meisten zu tun hat (der Fehlschlag
+   dieser Runde). Der Deckel wird gemessen, nicht gesetzt. Eigene
    Vorregistrierung.
+3. **J6c — den Verbinder-Anteil über seinen GANZEN Bogen verteilen**, statt
+   über 0,45 davon (Weg (2) der J6-Zeile, neuer Mechanismus). Der Haken an
+   `dp`/`ds` entsteht, weil 33° in 0,3 xh liegen; über den vollen Bogen wäre
+   dieselbe Drehung eine Krümmung. **Neu aus dieser Runde: die
+   Vorregistrierung braucht eine Sichtbarkeits-Vorbedingung.** Ein Arm, dessen
+   Klasse „sichtbar" heißt, muss die Zeichnung so weit bewegen, dass eine
+   Wortrunde ihn entscheiden KANN; der gemessene Anhalt liegt zwischen
+   0,0221 xh (hier, 34,5 % Ties in der starken Klasse) und 0,1186 xh (Runde 5,
+   9,7 %). Wer den Boden nicht vorab nennt, baut eine Runde, deren
+   wahrscheinlichstes Ergebnis „kein Unterschied" ist. Die Auflage gilt auch
+   für Weg 2 — dort steht sie nur nicht im Weg, weil der Deckel die Bewegung
+   selbst vergrößert.
 4. **J6b bleibt zu; seine Wiedervorlage ist eine eigene Vorregistrierung**
    (Weg (1)). Die post-hoc-Messung steht (`max_jump` 16°: Gate (c) grün, 3 = 3,
    Nähte 0,00/0,02, Wörter 0,109313), und ihr Preis steht daneben

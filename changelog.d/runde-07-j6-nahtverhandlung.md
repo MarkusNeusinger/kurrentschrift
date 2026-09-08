@@ -46,3 +46,5 @@
   against the two measured points (0.0221 xh → 34.5 % ties, 0.1186 xh →
   9.7 %). The alternative it names is a frame rather than a threshold: a round
   that shows the seam itself instead of hiding it inside a whole word.
+  `Sichtbarkeitsschwelle` is a coined term, so it ships with its glossary entry
+  and index line.
