@@ -1,0 +1,167 @@
+{
+ "round": 8,
+ "title": "Round 08 (Chart-Saat) — per-row decomposition and the pre-registered without-Z check",
+ "computed": "2026-09-08",
+ "source": {
+  "judgements": "data/humanbench/runde-08-urteile.txt (75 of 75), committed",
+  "narrow_key": "data/humanbench/runde-08-vorkommen.json, committed",
+  "fixture_root": "suetterlin-1922, exported_at 2026-09-05T21:33:12+00:00, root_digest eaa195aa7c84…",
+  "rows": ["Z", "a", "c", "d", "e", "g", "h", "l", "longs", "m", "n", "p", "r", "u", "w"],
+  "attribution": "a word draws a row when a slot carries that glyph_key, joins, and sits in a joined run of at least core.compose.ASCENDER_LEAN_MIN_RUN (3) — the same gate compose_word applies to a Laufform overlay",
+  "ruler": "paired per-word deltas of two stored wordbench reports of the same run and root (base bench_loss 0.109026, candidate 0.112123); negative = the candidate card is closer to the ink",
+  "repeats": "the 12 mirrored repeats are excluded from every count, exactly as tools.humanbench.analyse does (_shown_paired)",
+  "contents": "counts only — no anchors, no occurrence geometry, no arm_gap, no rank",
+  "rounding": "every share is rounded to four decimals; the counts are the datum"
+ },
+ "reproduction": {
+  "note": "This file is NOT a tool output. It was computed once, in the PR that files the round, from three private inputs that stay outside the repo under the open-core reservation. Their SHA-256 are stated so the computation can be audited against exactly the bytes it read, and so a later rerun can prove it used the same ones. Without those files the counts here cannot be recomputed — they can only be checked for internal consistency (the per-class and total counts must agree with runde-08-auswertung.json, and Z plus without_z must add up to the round).",
+  "private_inputs": {
+   "temp/runden-sep07/humanbench/runde-8/key.json": "6cb376efd99024f5ea16dfe244b1f401228d143d8140daf364bd8d6dcc3c714f",
+   "temp/runden-sep07/fixpunkt/card-K1-write.json": "cdea6e9e3193948b6cb2fadc8010a8af09003f920d6ec4c8fb9fdcc1ec9f71af",
+   "temp/runden-sep07/fixpunkt/wb-base.json": "14db5187ebeb04244824d5e7658f95818e5f1cf87fe48dcd07994585afa81cb4",
+   "temp/runden-sep07/fixpunkt/wb-K1-write.json": "58ee0f65ba47f73f91255c48836a421a6c447c2bdb145ef5d392b883c36ab081"
+  },
+  "steps": [
+   "1. Read the judgements: one `<uid>:<L|R|N>` per screen; drop every uid whose key entry has a repeat_of (leaves the 63 shown screens).",
+   "2. Per screen, resolve the arm: key[uid].order[0] for L, order[1] for R, none for N — exactly tools.humanbench.analyse.arm_of.",
+   "3. Per screen, read the fixture entry's word.json slots from the frozen root and collect the glyph_keys that are in the write card AND satisfy the attribution gate above.",
+   "4. Per card row, tally base/candidate/tie over the screens that carry it; shares are candidate/decided and ties/n.",
+   "5. Ruler columns: per-word bench loss of wb-K1-write.json minus wb-base.json, matched on the word id; better = negative delta.",
+   "6. without_z: repeat step 4's tally over the screens that do NOT carry the Z row — dropping Z from the card changes only those, so the rest is the 14-row card byte for byte."
+  ],
+  "self_check": "attribution_check below reproduces the round's construction from an independent direction: the words that draw no card row must be exactly the declared null-control class and exactly the words with arm_gap = 0."
+ },
+ "caveat": "The rows overlap: every judged word was composed with ALL 15 rows at once, so a row's column is a conditional reading over the words that carry it and not an arm of its own. It ranks the rows; it adopts none. A per-row write needs its own pre-registered arm.",
+ "attribution_check": {
+  "words_drawing_no_row": ["an", "er", "er-2", "er-3", "im", "zu"],
+  "nullprobe_class": ["an", "er", "er-2", "er-3", "im", "zu"],
+  "arm_gap_zero": ["an", "er", "er-2", "er-3", "im", "zu"],
+  "agree": true
+ },
+ "thresholds": {
+  "candidate_share": 0.6,
+  "tie_share": 0.25,
+  "min_per_class": 8
+ },
+ "rows": {
+  "d": {
+   "n": 14, "base": 2, "candidate": 10, "decided": 12, "ties": 2,
+   "candidate_share": 0.8333, "tie_share": 0.1429, "too_few": false,
+   "ruler": {"better": 5, "worse": 9, "median_delta": 0.000778, "sum_delta": 0.016644},
+   "words": ["Feinde", "Soldaten", "das", "daß", "der", "der-2", "der-3", "die", "die-2", "laden", "und", "und-2", "und-3", "und-4"]
+  },
+  "m": {
+   "n": 8, "base": 1, "candidate": 2, "decided": 3, "ties": 5,
+   "candidate_share": 0.6667, "tie_share": 0.625, "too_few": false,
+   "ruler": {"better": 4, "worse": 4, "median_delta": 0.001415, "sum_delta": 0.091004},
+   "words": ["Zaum", "macht", "mit", "mit-2", "muß", "muß-2", "muß-3", "zum"]
+  },
+  "Z": {
+   "n": 3, "base": 1, "candidate": 1, "decided": 2, "ties": 1,
+   "candidate_share": 0.5, "tie_share": 0.3333, "too_few": true,
+   "ruler": {"better": 1, "worse": 2, "median_delta": 0.046224, "sum_delta": 0.114015},
+   "words": ["Zaum", "Zorn", "Zügel"]
+  },
+  "l": {
+   "n": 11, "base": 3, "candidate": 3, "decided": 6, "ties": 5,
+   "candidate_share": 0.5, "tie_share": 0.4545, "too_few": false,
+   "ruler": {"better": 4, "worse": 7, "median_delta": 0.001929, "sum_delta": 0.048127},
+   "words": ["Galoppieren", "Gaul", "Kugel", "Pulver", "Silber", "Soldaten", "Säbel", "Zügel", "laden", "linken", "will"]
+  },
+  "e": {
+   "n": 34, "base": 9, "candidate": 8, "decided": 17, "ties": 17,
+   "candidate_share": 0.4706, "tie_share": 0.5, "too_few": false,
+   "ruler": {"better": 14, "worse": 20, "median_delta": 0.001703, "sum_delta": 0.059085},
+   "words": ["Einen", "Feinde", "Galoppieren", "Gewehr", "Kugel", "Pulver", "Seiten", "Silber", "Soldaten", "Sprünge", "Säbel", "Wer", "Zügel", "der", "der-2", "der-3", "die", "die-2", "ein", "einen", "einer", "fechten", "haben", "laden", "linken", "regieren", "scharfen", "schießen", "schwer", "streiten", "unter", "wenn", "wenn-2", "zwei"]
+  },
+  "a": {
+   "n": 14, "base": 8, "candidate": 6, "decided": 14, "ties": 0,
+   "candidate_share": 0.4286, "tie_share": 0.0, "too_few": false,
+   "ruler": {"better": 4, "worse": 10, "median_delta": 0.00319, "sum_delta": 0.117729},
+   "words": ["Galoppieren", "Gaul", "Soldaten", "Zaum", "auch", "auch-2", "das", "daß", "haben", "han", "kann", "laden", "macht", "scharfen"]
+  },
+  "u": {
+   "n": 15, "base": 5, "candidate": 3, "decided": 8, "ties": 7,
+   "candidate_share": 0.375, "tie_share": 0.4667, "too_few": false,
+   "ruler": {"better": 6, "worse": 9, "median_delta": 0.001955, "sum_delta": 0.084413},
+   "words": ["Gaul", "Kugel", "Pulver", "Zaum", "auch", "auch-2", "muß", "muß-2", "muß-3", "und", "und-2", "und-3", "und-4", "unter", "zum"]
+  },
+  "r": {
+   "n": 17, "base": 6, "candidate": 3, "decided": 9, "ties": 8,
+   "candidate_share": 0.3333, "tie_share": 0.4706, "too_few": false,
+   "ruler": {"better": 9, "worse": 8, "median_delta": -0.001868, "sum_delta": -0.021259},
+   "words": ["Galoppieren", "Gewehr", "Pulver", "Silber", "Sporn", "Sprünge", "Wer", "Zorn", "der", "der-2", "der-3", "einer", "regieren", "scharfen", "schwer", "streiten", "unter"]
+  },
+  "n": {
+   "n": 29, "base": 12, "candidate": 3, "decided": 15, "ties": 14,
+   "candidate_share": 0.2, "tie_share": 0.4828, "too_few": false,
+   "ruler": {"better": 11, "worse": 18, "median_delta": 0.001477, "sum_delta": 0.029834},
+   "words": ["Einen", "Feinde", "Galoppieren", "Seiten", "Soldaten", "Sporn", "Sprünge", "Zorn", "ein", "einen", "einer", "fechten", "haben", "han", "kann", "laden", "linken", "regieren", "scharfen", "schießen", "streiten", "und", "und-2", "und-3", "und-4", "unter", "von", "wenn", "wenn-2"]
+  },
+  "c": {
+   "n": 7, "base": 5, "candidate": 0, "decided": 5, "ties": 2,
+   "candidate_share": 0.0, "tie_share": 0.2857, "too_few": true,
+   "ruler": {"better": 3, "worse": 4, "median_delta": 0.001955, "sum_delta": 0.024361},
+   "words": ["auch", "auch-2", "fechten", "macht", "scharfen", "schießen", "schwer"]
+  },
+  "g": {
+   "n": 4, "base": 1, "candidate": 0, "decided": 1, "ties": 3,
+   "candidate_share": 0.0, "tie_share": 0.75, "too_few": true,
+   "ruler": {"better": 2, "worse": 2, "median_delta": -0.000398, "sum_delta": 0.024052},
+   "words": ["Kugel", "Sprünge", "Zügel", "regieren"]
+  },
+  "h": {
+   "n": 10, "base": 8, "candidate": 0, "decided": 8, "ties": 2,
+   "candidate_share": 0.0, "tie_share": 0.2, "too_few": false,
+   "ruler": {"better": 4, "worse": 6, "median_delta": 0.001361, "sum_delta": 0.027426},
+   "words": ["Gewehr", "auch", "auch-2", "fechten", "haben", "han", "macht", "scharfen", "schießen", "schwer"]
+  },
+  "longs": {
+   "n": 4, "base": 2, "candidate": 0, "decided": 2, "ties": 2,
+   "candidate_share": 0.0, "tie_share": 0.5, "too_few": true,
+   "ruler": {"better": 2, "worse": 2, "median_delta": -0.001837, "sum_delta": -0.013613},
+   "words": ["scharfen", "schießen", "schwer", "streiten"]
+  },
+  "p": {
+   "n": 3, "base": 2, "candidate": 0, "decided": 2, "ties": 1,
+   "candidate_share": 0.0, "tie_share": 0.3333, "too_few": true,
+   "ruler": {"better": 3, "worse": 0, "median_delta": -0.010126, "sum_delta": -0.037463},
+   "words": ["Galoppieren", "Sporn", "Sprünge"]
+  },
+  "w": {
+   "n": 6, "base": 6, "candidate": 0, "decided": 6, "ties": 0,
+   "candidate_share": 0.0, "tie_share": 0.0, "too_few": true,
+   "ruler": {"better": 4, "worse": 2, "median_delta": -0.004717, "sum_delta": -0.023569},
+   "words": ["Gewehr", "schwer", "wenn", "wenn-2", "will", "zwei"]
+  }
+ },
+ "d_row_split": {
+  "note": "The two base votes among the d-words are the und… words, where d meets u. Split by that co-row, the column separates completely.",
+  "without_u": {
+   "n": 10, "base": 0, "candidate": 10, "decided": 10, "ties": 0,
+   "candidate_share": 1.0, "tie_share": 0.0,
+   "words": ["Feinde", "Soldaten", "das", "daß", "der", "der-2", "der-3", "die", "die-2", "laden"]
+  },
+  "with_u": {
+   "n": 4, "base": 2, "candidate": 0, "decided": 2, "ties": 2,
+   "candidate_share": 0.0, "tie_share": 0.5,
+   "words": ["und", "und-2", "und-3", "und-4"]
+  }
+ },
+ "without_z": {
+  "rule": "the pre-registered fallback of §14 „Laufform LF16 sep07“ — check the partial adoption WITHOUT Z before discarding the arm",
+  "exact": "dropping Z from the card changes only the words that draw the Z row, so the remaining 60 screens ARE the 14-row card, byte for byte",
+  "excluded_words": ["Zaum", "Zorn", "Zügel"],
+  "repeat_screens_carrying_z": [],
+  "verdict": {
+   "n": 60, "base": 19, "candidate": 12, "decided": 31, "ties": 29,
+   "candidate_share": 0.3871, "tie_share": 0.4833, "meets_thresholds": false
+  },
+  "classes": {
+   "lineal-verlierer": {"n": 8, "base": 3, "candidate": 1, "decided": 4, "ties": 4, "candidate_share": 0.25, "tie_share": 0.5, "too_few": false},
+   "nullprobe": {"n": 6, "base": 0, "candidate": 0, "decided": 0, "ties": 6, "candidate_share": null, "tie_share": 1.0, "too_few": true},
+   "zeile-schwach": {"n": 23, "base": 8, "candidate": 9, "decided": 17, "ties": 6, "candidate_share": 0.5294, "tie_share": 0.2609, "too_few": false},
+   "zeile-stark": {"n": 23, "base": 8, "candidate": 2, "decided": 10, "ties": 13, "candidate_share": 0.2, "tie_share": 0.5652, "too_few": false}
+  }
+ }
+}
