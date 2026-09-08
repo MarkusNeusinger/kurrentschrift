@@ -226,6 +226,15 @@ cython_debug/
 # pre-registered thresholds, the classes, drift). No occurrence, no geometry,
 # no word: the same class of fact as the result text it summarises.
 !/data/humanbench/*-auswertung.json
+# …and, since round 08, the round's own DECOMPOSITION where one is computed.
+# `*-zeilen.json` reads a Laufform round one card row at a time — the same
+# class of fact as the evaluation above (counts and shares) plus the
+# public-domain specimen words each row draws. No anchors, no occurrence
+# geometry, no `arm_gap`, no rank, and no candidate card. It is not a tool
+# output: it is computed in the PR that files the round, so the file carries
+# its own `source` block saying how, and the round's stamp says what it
+# additionally reveals about the (already spent) blinding.
+!/data/humanbench/*-zeilen.json
 # Eigenhand-Erfassung: the own-hand strips ARE the reserved dataset (owner
 # decision 2026-08-22 — a deliberate deviation from datenablage §4's
 # "committable"; rationale in data/samples/own-hand/SOURCE.md, backup lives

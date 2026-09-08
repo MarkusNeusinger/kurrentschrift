@@ -7,7 +7,7 @@
 - Author:    Projektautor (eigene Urteile, im Alleingang gefällt)
 - Year:      2026 (Runde 01: erhoben am 2026-08-08 · Runde 02: 2026-08-09 ·
              Runde 06: 2026-09-05 · Runde 05: 2026-09-06 · Runde 07:
-             2026-09-08)
+             2026-09-08 · Runde 08: 2026-09-08)
 - License:   Eigenes Urheberrecht des Projektautors. Kein fremdes Werk und
              kein fremder Scan enthalten — die Dateien bestehen aus
              Kategoriekürzeln bzw. Seitenwahlen, einem Bildpunkt je Bildschirm,
@@ -26,8 +26,8 @@
 - Retrieved: 2026-08-08 (Runde 01) · 2026-08-09 (Runde 02) · 2026-09-05
              (Runde 06) · 2026-09-06 (Runde 05, am Tag NACH Runde 06
              geurteilt — die Nummer zählt die Runde, nicht das Datum) ·
-             2026-09-08 (Runde 07) — „retrieved" = erhoben, die Daten
-             entstehen hier statt abgerufen zu werden
+             2026-09-08 (Runden 07 und 08) — „retrieved" = erhoben, die
+             Daten entstehen hier statt abgerufen zu werden
 
 ## Worauf sich die Urteile beziehen
 
@@ -50,8 +50,16 @@ J5-Klassenregel, Runde 05 den J4-Austritts-Trim (`exit_trim`), Runde 07 die
 J6-Nahtverhandlung (`seam_negotiation`) gegen eine Basis, in der der Trim seit
 Autor-Entscheid A37 schon Produktion ist.
 
+**Runde 08 (Wortmodus, Echtheitsfrage).** Dieselbe Frage und dieselbe
+Darstellung wie 05, 06 und 07, aber ein anderer Kandidat: nicht eine Regel des
+Composers, sondern eine **Laufform-Karte** — die 15 Zeilen, die ein Write aus
+der chart-gesäten Ernte installieren würde, gegen die Zeilen, die heute in der
+Wurzel stehen. Sie ist damit die zweite Runde über eine Karte (die erste war
+Runde 03 vom `sep02`, nie hier abgelegt) und mit den dreien nur der Methode
+nach vergleichbar, nicht dem Gegenstand nach.
+
 Die Urteile gelten damit gegen **einen** Stand — des Fits (01/02) bzw. der
-Komposition (05/06/07). Welcher das war — Quelle, Bestand bzw. Fixture-Wurzel, Saat,
+Komposition (05–08). Welcher das war — Quelle, Bestand bzw. Fixture-Wurzel, Saat,
 Bau-Parameter, Arm-Prüfsummen und Code-Commit — steht je Runde im zugehörigen
 Stempel (`runde-<nn>-stempel.md`). Ohne ihn wäre eine zweite Runde keine
 Fortsetzung, sondern eine neue, unvergleichbare Messung.
@@ -317,6 +325,71 @@ wertlos, sondern zum **Vorher-Zustand**.
              data/humanbench/runde-07-urteile.txt --key <key.json> --json …`
              reproduziert sie byte-gleich (geprüft am 2026-09-08).
 
+## runde-08-urteile.txt — 75 Zeilen Urteil, 0,8 KB
+
+- Origin:    Ausgabetext derselben Echtheits-Seite, unverändert übernommen,
+             wie die Seite ihn am 2026-09-08 ausgegeben hat.
+- Processing: keine.
+- Stempel:   [`runde-08-stempel.md`](runde-08-stempel.md)
+- Format:    Kopfzeile `ECHTHEIT/8 geprueft=75 von 75`, danach je Bildschirm
+             eine Zeile `<uid>:<L|R|N>[@Sekunden]` — Bedeutung der Kürzel wie
+             oben.
+  - `N` — „kein Unterschied erkennbar". Mit 30 von 63 Bildschirmen die
+    häufigste Antwort, und anders als in Runde 05 verteilt sie sich über alle
+    bewegten Klassen; die sechs Nullproben sind nur sechs davon.
+  - `R…` — eine blinde, **gespiegelte** Wiederholung; 12 Stück, sie zählen
+    beim Verdikt nie mit (gezählt werden 63 Bildschirme, nicht 75).
+- Note:      Keine Notizzeilen — die Seite hat auch in dieser Runde kein
+             Notizfeld ausgegeben. Der freie Satz des Beurteilers fiel
+             mündlich und steht wörtlich im §14-Eintrag des Journals.
+
+## runde-08-vorkommen.json — der schmale Schlüssel, 75 Einträge
+
+- Origin:    von `tools/humanbench/build.py` selbst geschrieben (Format 3),
+             nicht rekonstruiert.
+- Inhalt:    `uid` → `entry` (Fixture-Eintrag), `text` (Worttext), `stratum`
+             (**Verdachtsklasse**: `lineal-verlierer` · `zeile-stark` ·
+             `zeile-schwach` · `nullprobe`), `repeat_of`. Sonst nichts: keine
+             Registrierung, keine Strichzüge, keine `arm_gap`, kein Rang — und
+             **keine Seitenzuordnung**.
+- Zweck:     wie bei 05/06/07 — die klassenweise Lesart gehört zum
+             vorregistrierten Auswerteplan, und der schmale Schlüssel ist
+             zugleich die einzige Aufbewahrung der `--strata`-Zuordnung.
+
+## runde-08-auswertung.json — die Auswertung des Werkzeugs, 2,5 KB
+
+- Origin:    `tools/humanbench/analyse.py --json`, gerechnet am 2026-09-08 aus
+             dem Ergebnistext und dem vollen Schlüssel.
+- Inhalt:    Verlässlichkeit (12 Paare, Arm-/Seiten-Übereinstimmung),
+             Seitenbilanz, Verdikt gegen die vorher gesetzten Schranken, die
+             vier Klassen und die Drift-Blöcke — Zählungen und Anteile. Keine
+             Geometrie, kein Vorkommen, kein Wort.
+- Warum hier: wie bei 05/06/07 — ohne sie wäre die Runde im Repo eine Messung
+             ohne Ergebnis, weil der schmale Schlüssel „Basis 20 : Kandidat
+             13" nicht hergibt.
+- Nachbau:   `uv run python -m tools.humanbench.analyse --result
+             data/humanbench/runde-08-urteile.txt --key <key.json> --json …`
+             reproduziert sie byte-gleich (geprüft am 2026-09-08).
+
+## runde-08-zeilen.json — die Zerlegung je Laufform-Zeile, 8,4 KB
+
+- Origin:    **kein Werkzeug-Ausgang**, sondern im PR zur Runde 08 gerechnet;
+             wie, steht im `source`-Block der Datei selbst. Eingang sind die
+             Urteile, der volle Schlüssel und die Slots der eingefrorenen
+             Wurzel unter demselben Gate, das `compose_word` auf ein
+             Laufform-Overlay anwendet.
+- Inhalt:    je der 15 Zeilen der Schreibliste die Wörter, die sie zeichnen,
+             und wie diese geurteilt wurden (Basis · Kandidat · unentschieden,
+             Wiederholungen ausgeschlossen), dazu zwei gespeicherte
+             Wordbench-Berichte als Lineal-Spalte, die `d`-Zeile nach ihrem
+             `u`-Nachbarn getrennt und die vorregistrierte Ohne-`Z`-Probe.
+             Zählungen und Anteile, keine Geometrie.
+- Vorbehalt: Die Zeilen ÜBERLAPPEN — jedes Wort wurde mit allen 15 zugleich
+             komponiert. Eine Spalte ordnet die Zeilen, sie adoptiert keine;
+             die Datei sagt das in ihrem `caveat`-Feld selbst. Was sie
+             gegenüber dem schmalen Schlüssel zusätzlich preisgibt, steht im
+             Stempel unter „Was `runde-08-zeilen.json` zusätzlich preisgibt".
+
 ## Warum die Nummern 03 und 04 hier fehlen
 
 Die Archivnummer zählt die **Runde**, und jede Runde heißt in Werkzeug,
@@ -326,17 +399,19 @@ hier abgelegt; Runde 04 (Platten-Nib) ist gebaut und **ungeurteilt**. Die
 Lücke ist damit eine Aussage über den Bestand, kein Ablagefehler. Dass 05 nach
 06 abgelegt wurde, ist ebenfalls keiner: **alle drei** Runden 04, 05 und 06
 wurden am 2026-09-04 gebaut, geurteilt wurden aber nur 06 (am 5.) und 05
-(am 6. September). Am Ablagetag der Runde 07 sind daneben die Runden **08**
-(Chart-Saat) und **09** (K-E, eine BAHN-Runde auf der Genauigkeitsfrage)
-gebaut und ungeurteilt; sie kommen hierher, wenn sie geurteilt sind.
+(am 6. September). Die Runden 07 (Nahtverhandlung) und 08 (Chart-Saat) sind
+beide am 2026-09-08 geurteilt und liegen hier; offen bleibt **09** (K-E, eine
+BAHN-Runde auf der Genauigkeitsfrage) — gebaut und ungeurteilt, sie kommt
+hierher, wenn sie geurteilt ist.
 
 ## Was hier nicht liegt
 
 Nicht committet, weil gelernter Datensatz bzw. Vorkommens-Statistik
 (`quellen-und-rechte.md` §5) — es bleibt unter `temp/humanbench/runde-<n>/`
 bzw. `temp/runden-sep04/humanbench/runde-5-j4-austritts-trim/`,
-`…/runde-6-j5-klassenregel/` und
-`temp/runden-sep06/humanbench/runde-7-nahtverhandlung/` und ist git-ignoriert:
+`…/runde-6-j5-klassenregel/`,
+`temp/runden-sep06/humanbench/runde-7-nahtverhandlung/` und
+`temp/runden-sep07/humanbench/runde-8/` und ist git-ignoriert:
 
 - `payload.json` — die Crops und die Vorkommens-Geometrie, die die Seite
   zeichnet; im Wortmodus zusätzlich **beide Kompositionen** je Wort.
@@ -350,6 +425,8 @@ bzw. `temp/runden-sep04/humanbench/runde-5-j4-austritts-trim/`,
   Beträgen begründet (`strata-r5-j4.json` und `strata-r7-j6.json` nennen je
   Wort den `arm_gap` in x-Höhen); die Zuordnung selbst überlebt im schmalen
   Schlüssel.
+- die Kandidaten-KARTE einer Laufform-Runde (`card-K1-write.json` der Runde
+  08) — abgeleitete Laufform-Geometrie; ihre Herkunft steht im §14-Eintrag.
 - jede daraus abgeleitete Kennzahlentabelle je Vorkommen.
 
 Alles davon ist aus Saat, Vorkommens-Schnappschuss und Stempel

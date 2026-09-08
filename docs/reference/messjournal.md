@@ -232,6 +232,7 @@ die DB) — mit seiner Bedingung.
 | sep07 | Laufform | [LF16 Chart-Saat als Default (A38) + Runde 8 (Pre-Reg)](#laufform-lf16-sep07--adoption-der-chart-saat-als-ernte-default-a38-und-vorregistrierung-der-runde-8) | **Adoption** (Werkzeug-Default) · Pre-Reg der Runde 8 · Write bleibt Autorenschritt | **Autor-Entscheid A38 (A1: „ja"):** `chain_seed="chart"` ist der Ernte-Default, `--chain-seed composed` bleibt erreichbar; Trace-Bench und Folger behalten ihren `composed`-Default, die Kette-Route ist unberührt. **Der Fixpunkt hält auch auf dem heutigen Composer** — `K1` = `K2` = `K3` byte-gleich samt Vorkommen, `K3` aus der deutlich anderen `C1`-Karte gestartet. **Und LF15s `K1` ist über die Sitzungsgrenze reproduzierbar, sobald der Composer festgehalten wird:** mit `exit_trim=False` zurückgesetzt (A37/#559 flippte den Default um 01:29, nach LF15s Läufen) kommen `drafts-k1`/`occ-k1` **byte-identisch** heraus, 226 Vorkommen, `geo_rmse` 0,982/1,427. Heute 227 gegen 234 der Kontrollkarte, also 7 statt 9 Vorkommen Preis (`connector_degenerate` 22 → 31, `anchor_spike` 10 → 8); **`Z` steht mit n = 3 NICHT mehr unter dem Beleg-Boden**, unter ihm bleiben nur `P`/`s` wie am Bestand. Schreibliste 15 Zeilen (`Z a c d e g h l longs m n p r u w`), vier vom Sprung-/Kopf-Gate abgewiesen (`i` `o` `sz` `z`). **Das Lineal ist gegen den Kandidaten:** 0,109026 → **0,112123** (Paare 0,148119), 22 besser : 35 schlechter, ein Drittel des Verlusts in `Zaum` +0,0712 und `Zügel` +0,0462 über die `Z`-Zeile — die Kontrollkarte mit der ALTEN Saat liegt bei 0,108544 und bewegt den Bestand fast genauso weit (0,0596 gegen 0,0561 xh, 8 gegen 7 Zeilen über 0,03), der Saatwechsel ist also NICHT der Träger der Bewegung. Runde 8 gebaut, nicht geurteilt: 75 Bildschirme, 12 gespiegelte Wiederholungen, vier vorab geschnittene Klassen (`lineal-verlierer` 10 · `zeile-stark` 24 · `zeile-schwach` 23 · `nullprobe` 6) mit vorab benannter Sichtbarkeits-Behauptung |
 | sep07 | Lineal | [Komma-Ausschluss](#komma-ausschluss-sep07--die-satzzeichen-der-platte-verlassen-die-referenz-tinte) | **Re-Baseline** (Wörter + abb22) · umgesetzt (Autor-Entscheid A3) | **Vier Referenz-Ausschnitte trugen ein Komma, also Tinte, die kein Buchstabe erzeugen kann** — je eine eigene Komponente, 0,41–0,83 xh von jeder Buchstabentinte entfernt und mit keiner verschmolzen, per `exclude` entfernt wie `regieren` seit §15. **Wörter 0,109026 → 0,108153**, **Paare byte-gleich**, beide Folger über 63/63 unbewegt. Gegenbefund `a22-dank` **+0,039863** (cross-hand, nie Headline): dort trug das Komma die Registrierung — Fremdtinte hat den Fit geschmeichelt, nicht bestraft |
 | sep08 | Übergänge | [J6 Runde 7 geurteilt](#übergänge-j6-sep08--runde-7-geurteilt-40-von-63-kein-unterschied-und-der-arm-fällt-zum-zweiten-mal) | Menschenrunde · **ehrliches Negativ** · nicht adoptiert, **J6b nicht geöffnet** | **Basis 14 : Kandidat 9** von 23 entschiedenen (39,1 % gegen ≥ 60 %), unentschieden **40 von 63 = 63,5 %** gegen ≤ 25 % — und klassenweise löst sich hier NICHTS auf: `naht-stark` 9 : 10 bei 34,5 % Ties (47,4 % Kandidat), `naht-schwach` 0 : 4 bei 85,7 %, `nullprobe` 6/6 richtig als „kein Unterschied". Instrument sauber: 12 Paare, 10/12 gleicher Arm, und die 7 Seiten-Übereinstimmungen SIND die 7 Doppel-Ties — kein Paar nannte zweimal dieselbe Seite, während es eine nannte; die zwei Uneinigkeiten sind nie Basis gegen Kandidat, sondern Entscheidung gegen Unentschieden. **Der Grund steht in der Runde:** der Arm bewegt die Zeichnung um ein Fünftel dessen, was Runde 5 bewegt hat (Median 0,0221 xh, Maximum 0,0681 gegen den 0,1186-Boden der starken Klasse dort); entschiedene Bildschirme tragen 0,0311 xh Versatz, unentschiedene 0,0146 — innerhalb der starken Klasse trennt das aber kaum noch (0,0382 gegen 0,0316). **Die Vorregistrierung lizenzierte J6b NUR bei ≥ 60 %**, also bleibt auch der engere Arm zu; J6 ist damit zweimal gefallen — `sep06` an Gate (c), heute am Auge. Autor wörtlich: „nicht besser nur bischen weniger wellen mal da oder dort". Fünf Rettungswege in §7.9, Sensor-Population zuerst | 
+| sep08 | Laufform | [LF16 Runde 8 geurteilt](#laufform-lf16-sep08--runde-8-geurteilt-die-karte-fällt-die-d-zeile-trägt) | Menschenrunde · **nicht adoptiert** (beide Schranken) · Zerlegung je Zeile | Basis **20** : Kandidat **13** von 33 entschiedenen (39,4 % gegen ≥ 60 %) bei **47,6 %** unentschieden (gegen ≤ 25 %) — anders als bei J4 zeigt auch die RICHTUNG zur Basis. Verlässlich (10/12 gleicher Arm, 6/12 gleiche Seite), Nullprobe 6/6 richtig als „kein Unterschied". Je Klasse `zeile-stark` 18,2 % · `zeile-schwach` 52,9 % · `lineal-verlierer` 40,0 % — die vorab BEHAUPTETE Sichtbarkeit hält nicht, die Klasse ohne Behauptung kommt einem Verdikt am nächsten. Die vorregistrierte Ohne-`Z`-Probe ist exakt lesbar (die 60 übrigen Bildschirme SIND die 14-Zeilen-Karte) und **ändert fast nichts**: 38,7 % / 48,3 % — `Z` trägt ein Drittel des Lineal-Verlusts und ist am Auge die unauffälligste Zeile. Nachgereichte Zerlegung je Zeile: **`d` 10 : 2 = 83,3 % bei 14,3 % Ties** (ohne `u`-Nachbarn sogar 10 : 0 ohne Tie) — die Zeile, die der Autor von sich aus nannte —, dagegen `h` **0 von 8** und `n` 3 von 15; `w` und `p`, die das Lineal am stärksten belohnt, lehnt das Auge glatt ab. Kein Write, Chart-Saat bleibt Ernte-Default |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -14809,3 +14810,268 @@ Versatz-Lesung entschieden gegen unentschieden samt der Gegenprobe innerhalb
 der starken Klasse, die sie relativiert. **Keine Zahl eines früheren Eintrags
 ist angefasst, kein Lauf wiederholt worden**; das Wort-Lineal ist für diese
 Frage per Vorregistrierung ohnehin nicht zuständig.
+
+---
+
+### Laufform LF16 `sep08` — Runde 8 geurteilt: die Karte fällt, die `d`-Zeile trägt
+
+**Verdikt: NICHT adoptiert.** Die 15-Zeilen-Schreibliste der chart-gesäten
+Ernte hat am 2026-09-08 ihr Menschenurteil bekommen und reißt BEIDE
+vorregistrierten Schranken. Der Write der Karte als Ganzes findet nicht
+statt. Die Chart-Saat bleibt trotzdem der Ernte-Default — A38 hat sie als
+Aussage über die REPRODUZIERBARKEIT der Ernte entschieden, nicht über die
+Form der Zeile, und genau dieser Fall stand in der Vorregistrierung.
+Diese steht Wort für Wort im Eintrag darüber („Laufform LF16 `sep07`");
+die Runde liegt unter
+[`data/humanbench/runde-08-*`](../../data/humanbench/runde-08-stempel.md).
+
+#### Der §8a-Plan, in seiner bindenden Reihenfolge
+
+**1 · Verlässlichkeit — die Runde trägt einen Anspruch.** 12 gespiegelte
+Paare, alle gelesen. **10 von 12** nennen denselben ARM, nur **6 von 12**
+dieselbe Seite, und **6 Paare sind beidseits „kein Unterschied"** — also
+genau die Fälle, in denen beides zugleich gilt. Über
+`MIN_PAIRED_REPEATS` = 6 und über der Münzwurf-Schranke:
+`carries_a_verdict: true`. Es wurde nach dem Bild geurteilt, nicht nach
+der Seite.
+
+**2 · Seitenbilanz** (berichtet, nie entscheidend): links 14 · rechts 19 ·
+unentschieden 30 von 63, Links-Anteil 42,4 %, nicht schief.
+
+**3 · Das Verdikt.** Basis **20** : Kandidat **13** von 33 entschiedenen
+Bildschirmen — **39,4 %** gegen die vorregistrierten ≥ 60 %; unentschieden
+**30 von 63 = 47,6 %** gegen ≤ 25 %. `meets_thresholds: false`,
+`adopt: false`. **Das ist ausdrücklich NICHT die J4-Konstellation**, auf
+die die Vorregistrierung gehofft hatte: dort war die Richtung erdrückend
+(34 : 2) und allein die Tie-Schranke gefallen, hier zeigt auch die
+Richtung zur Basis.
+
+**4 · Je Klasse — nie gepoolt.**
+
+| Klasse | n | Basis : Kandidat | entschieden | Kandidat-Anteil | unentschieden |
+|---|---|---|---|---|---|
+| `lineal-verlierer` | 10 | 3 : 2 | 5 | 40,0 % | 50,0 % |
+| `zeile-stark` | 24 | 9 : 2 | 11 | **18,2 %** | 54,2 % |
+| `zeile-schwach` | 23 | 8 : 9 | 17 | **52,9 %** | 26,1 % |
+| `nullprobe` | 6 | — | 0 | — | **100 %** (n < 8, beschreibend) |
+
+**Die Nullprobe ist sauber: 6 von 6 richtig als „kein Unterschied"
+erkannt.** Die Antwortoption wird also benutzt und die 47,6 % sind kein
+Instrumentdefekt — die Auskunft, die die LF11-Runde schuldig geblieben
+ist, jetzt zum zweiten Mal (Runde 6 gab 12 von 12).
+
+**Die vorab BEHAUPTETE Sichtbarkeit hält nicht.** Behauptet waren
+`lineal-verlierer` und `zeile-stark`; beide liegen mit 50,0 % und 54,2 %
+Unentschieden weit über der Schranke, während `zeile-schwach` — die
+Klasse OHNE Behauptung — mit 26,1 % Ties und 52,9 % Kandidat als einzige
+in die Nähe eines Verdikts kommt. Wie weit der `arm_gap` ein Wort bewegt,
+sagt also nicht voraus, ob ein Mensch die Bewegung sieht.
+
+**5 · Drift und die Notiz.** Basis : Kandidat über die drei Blöcke
+8 : 2 · 4 : 6 · 8 : 5 bei 11 · 11 · 8 Unentschiedenen und Medianzeiten
+7 · 4 · 4 Sekunden — keine Ermüdungs-Signatur; im Mittelblock dreht die
+Richtung sogar. Der freie Satz des Beurteilers, wörtlich:
+
+> **„also das d sieht definitiv besser aus"**
+
+#### Die vorregistrierte Ohne-`Z`-Probe — auch sie negativ
+
+Die Pre-Reg verlangt, bei einer Verlierer-Klasse an der Basis ZUERST die
+Teil-Adoption ohne `Z` zu prüfen, bevor irgendetwas verworfen wird
+(Asymmetrie-Regel `aug26`). Diese Probe ist hier exakt und nicht bloß
+näherungsweise: die `Z`-Zeile berührt genau die drei Wörter, die ein `Z`
+zeichnen (`Zaum` `Zorn` `Zügel`), die übrigen 60 Bildschirme SIND also
+byte-für-byte die 14-Zeilen-Karte.
+
+| | n | Basis : Kandidat | Kandidat-Anteil | unentschieden |
+|---|---|---|---|---|
+| ganze Runde (15 Zeilen) | 63 | 20 : 13 | 39,4 % | 47,6 % |
+| **ohne `Z` (14 Zeilen)** | 60 | 19 : 12 | **38,7 %** | **48,3 %** |
+
+Je Klasse ändert sich dabei nur `lineal-verlierer` (n 10 → 8, 3 : 1,
+25,0 % Kandidat) und `zeile-stark` (n 24 → 23, 8 : 2, 20,0 %);
+`zeile-schwach` ist unberührt. Keine der 12 Wiederholungen trug ein
+`Z`-Wort, die Verlässlichkeit steht also unverändert.
+
+**Es bewegt sich fast nichts — und das ist der Befund.** `Z` trägt ein
+Drittel des LINEAL-Verlusts (`Zaum` +0,0712, `Zügel` +0,0462, Median
++0,046224 über die drei Wörter), am Auge steht die Zeile aber 1 : 1 bei
+einem Unentschieden und ist damit die unauffälligste der ganzen Karte.
+Der vorregistrierte Rettungsweg (1) ist gegangen und schließt: die
+Ohne-`Z`-Liste rettet den Arm nicht.
+
+#### Die Zerlegung je Zeile — nachgereicht, nicht vorregistriert
+
+Die Asymmetrie-Regel verlangt, den Verlierer zu ZERLEGEN statt ihn
+wegzulegen, und die Ohne-`Z`-Probe hat nur eine von fünfzehn Zeilen
+angefasst. Also je Zeile: welche Wörter zeichnen sie überhaupt, und wie
+wurden die geurteilt? Die Zuordnung kommt aus den Slots der Wurzel unter
+demselben Gate, das `compose_word` auf ein Laufform-Overlay anwendet
+(`slot.joins` und ein verbundener Lauf ≥ `ASCENDER_LEAN_MIN_RUN` = 3);
+sie ist gegen die Runde geprüft und trifft: die sechs Wörter, die KEINE
+Zeile ziehen, sind exakt die sechs Nullproben und exakt die sechs mit
+`arm_gap` = 0. Zahlen und Wortlisten:
+[`runde-08-zeilen.json`](../../data/humanbench/runde-08-zeilen.json).
+
+| Zeile | n | B : K | entsch. | K-Anteil | Ties | Lineal bes.:schl. | Median Δ |
+|---|---|---|---|---|---|---|---|
+| **`d`** | 14 | 2 : 10 | 12 | **83,3 %** | **14,3 %** | 5 : 9 | +0,00078 |
+| `m` | 8 | 1 : 2 | 3 | 66,7 % | 62,5 % | 4 : 4 | +0,00142 |
+| `l` | 11 | 3 : 3 | 6 | 50,0 % | 45,5 % | 4 : 7 | +0,00193 |
+| `e` | 34 | 9 : 8 | 17 | 47,1 % | 50,0 % | 14 : 20 | +0,00170 |
+| `a` | 14 | 8 : 6 | 14 | 42,9 % | **0,0 %** | 4 : 10 | +0,00319 |
+| `u` | 15 | 5 : 3 | 8 | 37,5 % | 46,7 % | 6 : 9 | +0,00196 |
+| `r` | 17 | 6 : 3 | 9 | 33,3 % | 47,1 % | 9 : 8 | −0,00187 |
+| `n` | 29 | 12 : 3 | 15 | **20,0 %** | 48,3 % | 11 : 18 | +0,00148 |
+| `h` | 10 | 8 : 0 | 8 | **0,0 %** | 20,0 % | 4 : 6 | +0,00136 |
+| `Z` | 3 | 1 : 1 | 2 | 50,0 % | 33,3 % | 1 : 2 | +0,04622 |
+| `c` | 7 | 5 : 0 | 5 | 0,0 % | 28,6 % | 3 : 4 | +0,00196 |
+| `w` | 6 | 6 : 0 | 6 | 0,0 % | **0,0 %** | 4 : 2 | −0,00472 |
+| `longs` | 4 | 2 : 0 | 2 | 0,0 % | 50,0 % | 2 : 2 | −0,00184 |
+| `g` | 4 | 1 : 0 | 1 | 0,0 % | 75,0 % | 2 : 2 | −0,00040 |
+| `p` | 3 | 2 : 0 | 2 | 0,0 % | 33,3 % | 3 : 0 | −0,01013 |
+
+Die untersten sechs Zeilen (`Z` `c` `w` `longs` `g` `p`) liegen unter
+`MIN_PAIRED_PER_CLASS` = 8 und sind damit **beschreibend**, nach derselben
+Regel, die die Nullprobe beschreibend macht. Gelesen wird die Tabelle so:
+
+* **Getragen: `d`** — 10 von 12 entschiedenen Wörtern an den Kandidaten
+  bei 14,3 % Unentschieden. Als einzige Zeile über dem Klassenboden
+  räumt sie BEIDE vorregistrierten Schranken, und sie ist die, die der
+  Beurteiler von sich aus genannt hat.
+* **Verworfen: `n` und `h`** — 3 von 15 bzw. **0 von 8** an den
+  Kandidaten, beide über dem Boden. `h` ist die schärfste Ablehnung der
+  Runde, die einen Anspruch tragen darf.
+* **Unentscheidbar bei diesem n:** `e` `r` `u` `l` `a` — Anteile
+  zwischen 33 % und 50 % bei 45–50 % Ties, `a` mit 42,9 % ohne einen
+  einzigen Tie (jedes Wort sichtbar, die Richtung trotzdem knapp
+  gegen den Kandidaten). `m` steht mit 66,7 % über der Richtungs-Schranke,
+  aber auf **drei** entschiedenen Bildschirmen. Und `c` `w` `longs` `g`
+  `p` `Z` tragen zu wenig Wörter, um überhaupt gefragt zu werden — `w`
+  mit 6 : 0 und ohne einen Tie ist die auffälligste dieser Gruppe.
+
+**Die `d`-Spalte trennt sich sauber, und ihr Rest hat einen Namen.** Die
+zwei Basis-Stimmen der Zeile sitzen beide in den vier `und…`-Wörtern,
+also dort, wo `d` auf `u` trifft. Getrennt danach:
+
+| `d`-Wörter | n | B : K | entsch. | Ties |
+|---|---|---|---|---|
+| ohne `u` (`Feinde` `Soldaten` `das` `daß` `der`×3 `die`×2 `laden`) | 10 | **0 : 10** | 10 | 0 |
+| mit `u` (`und` `und-2` `und-3` `und-4`) | 4 | 2 : 0 | 2 | 2 |
+
+Zehn von zehn, ohne ein einziges Unentschieden. Das ist die schärfste
+Einzelaussage der Runde — und zugleich eine Warnung: `u` selbst steht bei
+37,5 %, `n` bei 20,0 %, und alle vier `und…`-Wörter tragen beide. Ob die
+zwei Basis-Stimmen dem `u`, dem `n` oder ihrer Kombination gehören,
+entscheidet diese Runde nicht.
+
+**Der Gegenbefund zum Lineal, Zeile für Zeile.** Die beiden Zeilen, die
+das Wort-Lineal am deutlichsten BELOHNT — `p` (3 : 0 besser, Median
+−0,01013) und `w` (4 : 2, −0,00472) —, gehören zu den sechs, auf denen
+der Kandidat keine einzige Stimme bekommt (0 von 2 bzw. 0 von 6). Und die
+Zeile, die das Auge
+mit 83,3 % trägt, bestraft das Lineal (5 : 9, +0,00078). Das ist §9a der
+`menschliche-bewertung.md` nicht mehr als Leitsatz, sondern je Zeile
+beziffert: die eingefrorenen Lineale messen Abstand, das Auge misst
+Stetigkeit, und auf dieser Karte zeigen die beiden Maße in
+entgegengesetzte Richtungen.
+
+**Was diese Tabelle NICHT ist.** Die Zeilen überlappen — jedes geurteilte
+Wort wurde mit allen 15 zugleich komponiert, `e` etwa liegt in 34 der 57
+bewegten Wörter. Eine Spalte ist deshalb eine bedingte Lesart über die
+Wörter, die sie tragen, und kein eigener Arm; sie ORDNET die Zeilen, sie
+adoptiert keine. Kein Schnitt dieser Tabelle war vorregistriert, und
+keiner verschiebt das Verdikt oben.
+
+#### Vorschlag an den Autor (kein Entscheid dieses Eintrags)
+
+**Eine Teil-Schreibliste jenseits von „ohne `Z`" ist nicht
+vorregistriert.** Sie braucht deshalb ein „ja" des Autors und ihren
+eigenen datierten Eintrag — sonst wäre sie genau das nachträgliche
+Zurechtschneiden, gegen das die Vorregistrierung steht. Vorgeschlagen
+wird, in dieser Reihenfolge:
+
+1. **Die `d`-Zeile als EIGENER Arm**, nicht als Rest einer gefallenen
+   Karte: eine frische Ernte auf der heutigen Wurzel, ein Overlay aus
+   genau dieser einen Zeile, und eine kurze Runde über die 14 Wörter, die
+   sie zeichnen. Erst das macht aus 83,3 % ein Verdikt.
+2. **Alle vierzehn übrigen Zeilen bleiben, wie sie sind.** `n` und `h`
+   sagt die Runde mit Anspruch ab; `c` `w` `longs` `g` `p` und `Z`
+   scheitern an der Wortzahl, `e` `r` `u` `l` `a` `m` an der
+   Entscheidbarkeit. In keinem der drei Fälle ist der nächste Schritt ein
+   Write — er ist mehr Evidenz oder ein engerer Zuschnitt.
+3. **`Z` bleibt zusätzlich aus dem Lineal-Grund draußen:** am Auge
+   unauffällig (1 : 1 bei einem Unentschieden), am Lineal die mit Abstand
+   teuerste Zeile der Karte. Hier sagt nur EIN Maß etwas, und das ist das
+   Lineal — der einzige Punkt dieser Runde, an dem es allein entscheidet.
+
+**Was ein solcher Arm zuerst braucht — und was hier ausdrücklich NICHT
+gelaufen ist.** Die geurteilte Karte wurde auf der eingefrorenen
+`sep05`-Wurzel `eaa195aa7c84…` geerntet; die Produktionswurzel ist seit
+dem Komma-Ausschluss `ccb036a5eb20…` (#578). Eine Zeile von dort in die
+DB zu schreiben, hieße eine Karte zu schreiben, die auf der heutigen
+Referenz nie gemessen wurde. Die Ernte auf der neuen Wurzel ist nicht
+gefahren; die Befehle stehen hier, damit der nächste Lauf sie nicht
+zusammensuchen muss:
+
+```bash
+uv run python -m tools.wordbench.fetch_fixtures --set all --verify
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run python -m tools.laufform.harvest \
+    --path chain --sets words --min-n 1 --jobs 4 --expect-root ccb036a5eb20 \
+    --occ-out <occ.json>                       # zweimal, muss byte-gleich sein
+uv run python -m tools.laufform.smoothrow --occurrences <occ.json> \
+    --knots 0 --floor 3 --out <karte.json>
+uv run python -m tools.wordbench.run --set all --laufform <karte.json> \
+    --expect-root ccb036a5eb20 --json <wb-d.json>
+```
+
+Danach erst der Arm: `wordarm --laufform` mit einer auf `d` reduzierten
+Karte, `build --round 10`, `page --question authentic`. Der Write selbst
+bleibt Autorenschritt und deklarierte Re-Baseline.
+
+#### Rettungswege
+
+1. **Die `d`-Zeile als eigener Arm** (Vorschlag 1 oben) — neuer Zuschnitt,
+   frische Pre-Reg, eigene Runde. Ohne sie bleibt die 83,3 % eine
+   bedingte Lesart.
+2. **Die Zwei-Stufen-Saat** (Rettungsweg 2 der LF16-Vorregistrierung,
+   §7.11) — sie holt einen Teil der 7 verlorenen Vorkommen zurück und
+   verändert damit die Zeilen selbst, nicht nur ihre Auswahl. Ein
+   veränderter Zeilensatz ist ein neuer Kandidat, kein weichgespültes
+   Gate.
+3. **Mehr Evidenz je Zeile** — `c` `w` `g` `longs` `p` `Z` scheitern hier
+   an der Wortzahl, nicht am Urteil. Der Weg dorthin ist die
+   Eigenhand-Ernte, die ohnehin läuft; eine zweite Platte derselben Hand
+   wäre der andere.
+4. **Ein Sensor, der die `d`-Aussage nachvollzieht** — der
+   Unstetigkeits-Sensor S2 (`sep06`) ist gebaut und eingefroren und hat
+   noch keine Laufform-Runde gesehen. Läuft er über die `d`-Wörter
+   richtungstreu mit, wäre erstmals ein Lineal für das, was der
+   Beurteiler an der Zeile sieht.
+
+**Ausdrücklich kein Weg:** die Schranken senken, die Nullproben aus der
+Tie-Quote herausrechnen (sie sind mit 6 von 63 ohnehin zu klein, um die
+47,6 % zu erklären), oder die `d`-Zeile aus DIESER Runde heraus
+schreiben.
+
+#### Grenzen und selbst Entschiedenes
+
+**Grenzen.** EINE Wurzel, EIN Wortsatz, EIN Beurteiler, und er ist der
+Autor des Kandidaten (§8a). Die Runde urteilt über die KARTE; jede
+Zeilen-Zahl darin ist bedingt. `abb22` ist eine andere Hand und war nicht
+dabei.
+
+**Selbst entschieden (benannt, nicht versteckt):** die Zerlegung je Zeile
+überhaupt zu rechnen, obwohl sie nicht vorregistriert ist — die
+Asymmetrie-Regel verlangt die Zerlegung vor dem Verwerfen, und ohne sie
+wäre die Notiz des Autors zum `d` eine Anekdote geblieben; die
+Attribution über das Kompositions-Gate statt über den Worttext (sonst
+zählten die sechs Nullproben als Träger ihrer Buchstaben mit); die
+Lineal-Spalten aus den ZWEI bereits gespeicherten Wordbench-Berichten
+derselben Wurzel zu lesen, statt irgendetwas neu zu messen; und keinen
+Write, keine Ernte und keine Wurzel anzufassen.
+
+**Keine Ledger-Zeile:** die Runde bewegt keine Headline — Wörter und
+Paare stehen unverändert bei 0,108153 · 0,148236, und die
+Kandidaten-Zahlen (0,112123) sind Overlay-Zahlen aus der
+Vorregistrierung, nie die Headline.
