@@ -6,7 +6,8 @@
              sieht echter geschrieben aus?)
 - Author:    Projektautor (eigene Urteile, im Alleingang gefällt)
 - Year:      2026 (Runde 01: erhoben am 2026-08-08 · Runde 02: 2026-08-09 ·
-             Runde 06: 2026-09-05 · Runde 05: 2026-09-06)
+             Runde 06: 2026-09-05 · Runde 05: 2026-09-06 · Runde 07:
+             2026-09-08)
 - License:   Eigenes Urheberrecht des Projektautors. Kein fremdes Werk und
              kein fremder Scan enthalten — die Dateien bestehen aus
              Kategoriekürzeln bzw. Seitenwahlen, einem Bildpunkt je Bildschirm,
@@ -24,9 +25,9 @@
              (`key.json`), und der bleibt außerhalb des Repos.
 - Retrieved: 2026-08-08 (Runde 01) · 2026-08-09 (Runde 02) · 2026-09-05
              (Runde 06) · 2026-09-06 (Runde 05, am Tag NACH Runde 06
-             geurteilt — die Nummer zählt die Runde, nicht das Datum) —
-             „retrieved" = erhoben, die Daten entstehen hier statt abgerufen
-             zu werden
+             geurteilt — die Nummer zählt die Runde, nicht das Datum) ·
+             2026-09-08 (Runde 07) — „retrieved" = erhoben, die Daten
+             entstehen hier statt abgerufen zu werden
 
 ## Worauf sich die Urteile beziehen
 
@@ -36,7 +37,7 @@ darüber gezeichneten, aus dem M4-Fit stammenden Mittellinie des Buchstabens.
 Die Frage lautet nicht „ist der Buchstabe schön", sondern „folgt die berechnete
 Linie der Tinte" — und wenn nicht, **auf welche Art** sie danebenliegt.
 
-**Runden 05 und 06 (Wortmodus, Echtheitsfrage).** Beurteilt wurde je Bildschirm
+**Runden 05, 06 und 07 (Wortmodus, Echtheitsfrage).** Beurteilt wurde je Bildschirm
 **ein Wort in zwei Kompositionen** — Basis und Kandidat, nebeneinander in EINEM
 Ausschnitt, als gefüllte Tinte statt als Mittellinie —, mit einer einzigen
 Frage: „Welche Zeile sieht echter geschrieben aus?" und drei gleichwertigen
@@ -44,11 +45,13 @@ Antworten (links · rechts · kein Unterschied erkennbar). Welche Seite welcher
 Arm war, steht ausschließlich im Schlüssel, und der bleibt draußen.
 **Eine Wortrunde ist mit den Buchstabenrunden nicht vergleichbar** — andere
 Frage, andere Darstellung, anderes Objekt (`menschliche-bewertung.md` §8a).
-Die beiden Wortrunden unterscheiden sich im Kandidaten: Runde 06 prüfte die
-J5-Klassenregel, Runde 05 den J4-Austritts-Trim (`exit_trim`).
+Die drei Wortrunden unterscheiden sich im Kandidaten: Runde 06 prüfte die
+J5-Klassenregel, Runde 05 den J4-Austritts-Trim (`exit_trim`), Runde 07 die
+J6-Nahtverhandlung (`seam_negotiation`) gegen eine Basis, in der der Trim seit
+Autor-Entscheid A37 schon Produktion ist.
 
 Die Urteile gelten damit gegen **einen** Stand — des Fits (01/02) bzw. der
-Komposition (05/06). Welcher das war — Quelle, Bestand bzw. Fixture-Wurzel, Saat,
+Komposition (05/06/07). Welcher das war — Quelle, Bestand bzw. Fixture-Wurzel, Saat,
 Bau-Parameter, Arm-Prüfsummen und Code-Commit — steht je Runde im zugehörigen
 Stempel (`runde-<nn>-stempel.md`). Ohne ihn wäre eine zweite Runde keine
 Fortsetzung, sondern eine neue, unvergleichbare Messung.
@@ -261,6 +264,59 @@ wertlos, sondern zum **Vorher-Zustand**.
              data/humanbench/runde-06-urteile.txt --key <key.json> --json …`
              reproduziert sie byte-gleich (geprüft am 2026-09-05).
 
+## runde-07-urteile.txt — 75 Zeilen Urteil, 0,8 KB
+
+- Origin:    Ausgabetext der Echtheits-Seite (`tools/humanbench/page.py`,
+             Modus `word`, `--question authentic`), unverändert übernommen,
+             wie die Seite ihn am 2026-09-08 ausgegeben hat.
+- Processing: keine.
+- Stempel:   [`runde-07-stempel.md`](runde-07-stempel.md)
+- Format:    Kopfzeile `ECHTHEIT/7 geprueft=75 von 75`, danach je Bildschirm
+             eine Zeile `<uid>:<L|R|N>[@Sekunden]` — Bedeutung der Kürzel wie
+             bei Runde 06 oben.
+  - `N` — „kein Unterschied erkennbar". In dieser Runde ist es mit 40 von 63
+    Bildschirmen die häufigste Antwort, und es ist die Aussage der Runde:
+    der Kandidat bewegt die Zeichnung im Median um 0,022 x-Höhen, ein
+    Fünftel dessen, was Runde 05 bewegt hat (§14 „Übergänge J6 `sep08`").
+  - `R…` — eine blinde, **gespiegelte** Wiederholung; 12 Stück, sie stimmen
+    beim Verdikt nie mit (gezählt werden 63 Bildschirme, nicht 75).
+- Note:      Keine Notizzeilen — die Seite hat auch in dieser Runde kein
+             Notizfeld ausgegeben. Der freie Satz des Beurteilers fiel
+             mündlich und steht wörtlich im §14-Eintrag des Journals.
+
+## runde-07-vorkommen.json — der schmale Schlüssel, 75 Einträge
+
+- Origin:    von `tools/humanbench/build.py` selbst geschrieben (Format 3),
+             nicht rekonstruiert.
+- Inhalt:    `uid` → `entry` (Fixture-Eintrag), `text` (Worttext), `stratum`
+             (**Verdachtsklasse**: `naht-stark` · `naht-schwach` ·
+             `nullprobe`), `repeat_of`. Sonst nichts: keine Registrierung,
+             keine Strichzüge, keine `arm_gap`, kein Rang — und **keine
+             Seitenzuordnung**.
+- Zweck:     wie bei den Runden 05/06 — die Klasse gehört dazu, weil die
+             klassenweise Lesart des Verdikts zum vorregistrierten
+             Auswerteplan gehört, und sie ist zugleich die einzige
+             Aufbewahrung der `--strata`-Zuordnung dieser Runde. Die
+             BEGRÜNDUNG je Wort (der `arm_gap`-Betrag in x-Höhen, an dem die
+             Klassen geschnitten wurden) bleibt draußen: sie ist
+             Vorkommens-Geometrie.
+
+## runde-07-auswertung.json — die Auswertung des Werkzeugs, 2,2 KB
+
+- Origin:    `tools/humanbench/analyse.py --json`, gerechnet am 2026-09-08 aus
+             dem Ergebnistext und dem vollen Schlüssel.
+- Inhalt:    Verlässlichkeit (12 Paare, Arm-/Seiten-Übereinstimmung),
+             Seitenbilanz, Verdikt gegen die vorher gesetzten Schranken, die
+             drei Klassen und die Drift-Blöcke — Zählungen und Anteile. Keine
+             Geometrie, kein Vorkommen, kein Wort.
+- Warum hier: wie bei den Runden 05/06 — der schmale Schlüssel nennt die
+             Seitenzuordnung nicht, rechnet also Bilanz, Ties und
+             Klassenbesetzung nach, aber nicht „Basis 14 : Kandidat 9". Ohne
+             diese Datei wäre die Runde im Repo eine Messung ohne Ergebnis.
+- Nachbau:   `uv run python -m tools.humanbench.analyse --result
+             data/humanbench/runde-07-urteile.txt --key <key.json> --json …`
+             reproduziert sie byte-gleich (geprüft am 2026-09-08).
+
 ## Warum die Nummern 03 und 04 hier fehlen
 
 Die Archivnummer zählt die **Runde**, und jede Runde heißt in Werkzeug,
@@ -270,14 +326,17 @@ hier abgelegt; Runde 04 (Platten-Nib) ist gebaut und **ungeurteilt**. Die
 Lücke ist damit eine Aussage über den Bestand, kein Ablagefehler. Dass 05 nach
 06 abgelegt wurde, ist ebenfalls keiner: **alle drei** Runden 04, 05 und 06
 wurden am 2026-09-04 gebaut, geurteilt wurden aber nur 06 (am 5.) und 05
-(am 6. September).
+(am 6. September). Am Ablagetag der Runde 07 sind daneben die Runden **08**
+(Chart-Saat) und **09** (K-E, eine BAHN-Runde auf der Genauigkeitsfrage)
+gebaut und ungeurteilt; sie kommen hierher, wenn sie geurteilt sind.
 
 ## Was hier nicht liegt
 
 Nicht committet, weil gelernter Datensatz bzw. Vorkommens-Statistik
 (`quellen-und-rechte.md` §5) — es bleibt unter `temp/humanbench/runde-<n>/`
-bzw. `temp/runden-sep04/humanbench/runde-5-j4-austritts-trim/` und
-`…/runde-6-j5-klassenregel/` und ist git-ignoriert:
+bzw. `temp/runden-sep04/humanbench/runde-5-j4-austritts-trim/`,
+`…/runde-6-j5-klassenregel/` und
+`temp/runden-sep06/humanbench/runde-7-nahtverhandlung/` und ist git-ignoriert:
 
 - `payload.json` — die Crops und die Vorkommens-Geometrie, die die Seite
   zeichnet; im Wortmodus zusätzlich **beide Kompositionen** je Wort.
@@ -288,8 +347,9 @@ bzw. `temp/runden-sep04/humanbench/runde-5-j4-austritts-trim/` und
   Bytes zeigt, die sie gezeigt hat.
 - `reserve.json` — die ungelabelte Rückhaltemenge (im Wortmodus leer).
 - die Klassendatei `--strata` einer Wortrunde, soweit sie ihre Klassen mit
-  Beträgen begründet (`strata-r5-j4.json` nennt je Wort den `arm_gap` in
-  x-Höhen); die Zuordnung selbst überlebt im schmalen Schlüssel.
+  Beträgen begründet (`strata-r5-j4.json` und `strata-r7-j6.json` nennen je
+  Wort den `arm_gap` in x-Höhen); die Zuordnung selbst überlebt im schmalen
+  Schlüssel.
 - jede daraus abgeleitete Kennzahlentabelle je Vorkommen.
 
 Alles davon ist aus Saat, Vorkommens-Schnappschuss und Stempel

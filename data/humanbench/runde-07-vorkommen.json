@@ -1,0 +1,527 @@
+[
+ {
+  "uid": "S001",
+  "entry": "regieren",
+  "text": "regieren",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S002",
+  "entry": "Pulver",
+  "text": "Pulver",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S003",
+  "entry": "einen",
+  "text": "einen",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S004",
+  "entry": "von",
+  "text": "von",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S005",
+  "entry": "Wer",
+  "text": "Wer",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S006",
+  "entry": "der-3",
+  "text": "der",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S007",
+  "entry": "haben",
+  "text": "haben",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S008",
+  "entry": "Säbel",
+  "text": "Säbel",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S009",
+  "entry": "macht",
+  "text": "macht",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S010",
+  "entry": "wenn-2",
+  "text": "wenn",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S011",
+  "entry": "schießen",
+  "text": "schießen",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S012",
+  "entry": "zum",
+  "text": "zum",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S013",
+  "entry": "mit-2",
+  "text": "mit",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S014",
+  "entry": "auch",
+  "text": "auch",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S015",
+  "entry": "an",
+  "text": "an",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S016",
+  "entry": "streiten",
+  "text": "streiten",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S017",
+  "entry": "Soldaten",
+  "text": "Soldaten",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S018",
+  "entry": "Silber",
+  "text": "Silber",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S019",
+  "entry": "und-3",
+  "text": "und",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S020",
+  "entry": "im",
+  "text": "im",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S021",
+  "entry": "zwei",
+  "text": "zwei",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S022",
+  "entry": "kann",
+  "text": "kann",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S023",
+  "entry": "Zügel",
+  "text": "Zügel",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S024",
+  "entry": "auch-2",
+  "text": "auch",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S025",
+  "entry": "wenn",
+  "text": "wenn",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S026",
+  "entry": "Feinde",
+  "text": "Feinde",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S027",
+  "entry": "Galoppieren",
+  "text": "Galoppieren",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S028",
+  "entry": "einer",
+  "text": "einer",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S029",
+  "entry": "Sprünge",
+  "text": "Sprünge",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S030",
+  "entry": "zu",
+  "text": "zu",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "R09",
+  "entry": "an",
+  "text": "an",
+  "stratum": "nullprobe",
+  "repeat_of": "S015"
+ },
+ {
+  "uid": "S031",
+  "entry": "laden",
+  "text": "laden",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S032",
+  "entry": "linken",
+  "text": "linken",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "R02",
+  "entry": "Pulver",
+  "text": "Pulver",
+  "stratum": "naht-stark",
+  "repeat_of": "S002"
+ },
+ {
+  "uid": "R10",
+  "entry": "macht",
+  "text": "macht",
+  "stratum": "naht-schwach",
+  "repeat_of": "S009"
+ },
+ {
+  "uid": "S033",
+  "entry": "Einen",
+  "text": "Einen",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S034",
+  "entry": "unter",
+  "text": "unter",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "R12",
+  "entry": "wenn-2",
+  "text": "wenn",
+  "stratum": "naht-schwach",
+  "repeat_of": "S010"
+ },
+ {
+  "uid": "S035",
+  "entry": "er-2",
+  "text": "er",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "R03",
+  "entry": "im",
+  "text": "im",
+  "stratum": "nullprobe",
+  "repeat_of": "S020"
+ },
+ {
+  "uid": "R11",
+  "entry": "zum",
+  "text": "zum",
+  "stratum": "naht-stark",
+  "repeat_of": "S012"
+ },
+ {
+  "uid": "R07",
+  "entry": "mit-2",
+  "text": "mit",
+  "stratum": "naht-schwach",
+  "repeat_of": "S013"
+ },
+ {
+  "uid": "S036",
+  "entry": "die",
+  "text": "die",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S037",
+  "entry": "Gewehr",
+  "text": "Gewehr",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "R06",
+  "entry": "Wer",
+  "text": "Wer",
+  "stratum": "nullprobe",
+  "repeat_of": "S005"
+ },
+ {
+  "uid": "S038",
+  "entry": "Kugel",
+  "text": "Kugel",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "R04",
+  "entry": "Silber",
+  "text": "Silber",
+  "stratum": "naht-schwach",
+  "repeat_of": "S018"
+ },
+ {
+  "uid": "S039",
+  "entry": "fechten",
+  "text": "fechten",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S040",
+  "entry": "er",
+  "text": "er",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "R08",
+  "entry": "Säbel",
+  "text": "Säbel",
+  "stratum": "naht-stark",
+  "repeat_of": "S008"
+ },
+ {
+  "uid": "S041",
+  "entry": "der",
+  "text": "der",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "R01",
+  "entry": "von",
+  "text": "von",
+  "stratum": "naht-schwach",
+  "repeat_of": "S004"
+ },
+ {
+  "uid": "S042",
+  "entry": "Gaul",
+  "text": "Gaul",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S043",
+  "entry": "Seiten",
+  "text": "Seiten",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S044",
+  "entry": "muß-2",
+  "text": "muß",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S045",
+  "entry": "er-3",
+  "text": "er",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S046",
+  "entry": "der-2",
+  "text": "der",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S047",
+  "entry": "daß",
+  "text": "daß",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S048",
+  "entry": "mit",
+  "text": "mit",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S049",
+  "entry": "und-2",
+  "text": "und",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S050",
+  "entry": "Sporn",
+  "text": "Sporn",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S051",
+  "entry": "die-2",
+  "text": "die",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "R05",
+  "entry": "Soldaten",
+  "text": "Soldaten",
+  "stratum": "naht-stark",
+  "repeat_of": "S017"
+ },
+ {
+  "uid": "S052",
+  "entry": "das",
+  "text": "das",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S053",
+  "entry": "will",
+  "text": "will",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S054",
+  "entry": "und",
+  "text": "und",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S055",
+  "entry": "Zorn",
+  "text": "Zorn",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S056",
+  "entry": "schwer",
+  "text": "schwer",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S057",
+  "entry": "Zaum",
+  "text": "Zaum",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S058",
+  "entry": "muß",
+  "text": "muß",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S059",
+  "entry": "muß-3",
+  "text": "muß",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S060",
+  "entry": "scharfen",
+  "text": "scharfen",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S061",
+  "entry": "han",
+  "text": "han",
+  "stratum": "naht-stark",
+  "repeat_of": null
+ },
+ {
+  "uid": "S062",
+  "entry": "ein",
+  "text": "ein",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ },
+ {
+  "uid": "S063",
+  "entry": "und-4",
+  "text": "und",
+  "stratum": "naht-schwach",
+  "repeat_of": null
+ }
+]
