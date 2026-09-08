@@ -45,10 +45,11 @@ Antworten (links · rechts · kein Unterschied erkennbar). Welche Seite welcher
 Arm war, steht ausschließlich im Schlüssel, und der bleibt draußen.
 **Eine Wortrunde ist mit den Buchstabenrunden nicht vergleichbar** — andere
 Frage, andere Darstellung, anderes Objekt (`menschliche-bewertung.md` §8a).
-Die drei Wortrunden unterscheiden sich im Kandidaten: Runde 06 prüfte die
+Diese drei Wortrunden unterscheiden sich im Kandidaten: Runde 06 prüfte die
 J5-Klassenregel, Runde 05 den J4-Austritts-Trim (`exit_trim`), Runde 07 die
 J6-Nahtverhandlung (`seam_negotiation`) gegen eine Basis, in der der Trim seit
-Autor-Entscheid A37 schon Produktion ist.
+Autor-Entscheid A37 schon Produktion ist. Eine **vierte** Wortrunde steht im
+nächsten Absatz; sie prüft keine Composer-Regel, sondern eine Laufform-Karte.
 
 **Runde 08 (Wortmodus, Echtheitsfrage).** Dieselbe Frage und dieselbe
 Darstellung wie 05, 06 und 07, aber ein anderer Kandidat: nicht eine Regel des
@@ -373,11 +374,18 @@ wertlos, sondern zum **Vorher-Zustand**.
 
 ## runde-08-zeilen.json — die Zerlegung je Laufform-Zeile, 8,4 KB
 
-- Origin:    **kein Werkzeug-Ausgang**, sondern im PR zur Runde 08 gerechnet;
-             wie, steht im `source`-Block der Datei selbst. Eingang sind die
-             Urteile, der volle Schlüssel und die Slots der eingefrorenen
-             Wurzel unter demselben Gate, das `compose_word` auf ein
-             Laufform-Overlay anwendet.
+- Origin:    **kein Werkzeug-Ausgang**, sondern im PR zur Runde 08 gerechnet.
+             Eingang sind die Urteile, der volle Schlüssel, die Kandidaten-Karte,
+             zwei gespeicherte Wordbench-Berichte und die Slots der
+             eingefrorenen Wurzel unter demselben Gate, das `compose_word` auf
+             ein Laufform-Overlay anwendet. Der `reproduction`-Block der Datei
+             nennt die sechs Rechenschritte und die **SHA-256 jedes privaten
+             Eingangs**, damit die Rechnung gegen genau die Bytes prüfbar
+             bleibt, die sie gelesen hat.
+- Grenze:    Ohne diese privaten Dateien lassen sich die Zahlen **nicht**
+             nachrechnen, nur auf Widerspruchsfreiheit prüfen: die Klassen- und
+             Gesamtzählungen müssen zu `runde-08-auswertung.json` passen, und
+             `Z` plus `without_z` muss die ganze Runde ergeben.
 - Inhalt:    je der 15 Zeilen der Schreibliste die Wörter, die sie zeichnen,
              und wie diese geurteilt wurden (Basis · Kandidat · unentschieden,
              Wiederholungen ausgeschlossen), dazu zwei gespeicherte

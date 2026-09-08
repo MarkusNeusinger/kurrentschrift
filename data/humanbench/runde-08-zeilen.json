@@ -3,17 +3,33 @@
  "title": "Round 08 (Chart-Saat) — per-row decomposition and the pre-registered without-Z check",
  "computed": "2026-09-08",
  "source": {
-  "judgements": "data/humanbench/runde-08-urteile.txt (75 of 75)",
-  "narrow_key": "data/humanbench/runde-08-vorkommen.json",
-  "full_key": "runde-8/key.json — stays outside the repo, see runde-08-stempel.md",
+  "judgements": "data/humanbench/runde-08-urteile.txt (75 of 75), committed",
+  "narrow_key": "data/humanbench/runde-08-vorkommen.json, committed",
   "fixture_root": "suetterlin-1922, exported_at 2026-09-05T21:33:12+00:00, root_digest eaa195aa7c84…",
-  "write_card": "card-K1-write.json — the 15 rows a write would install",
   "rows": ["Z", "a", "c", "d", "e", "g", "h", "l", "longs", "m", "n", "p", "r", "u", "w"],
   "attribution": "a word draws a row when a slot carries that glyph_key, joins, and sits in a joined run of at least core.compose.ASCENDER_LEAN_MIN_RUN (3) — the same gate compose_word applies to a Laufform overlay",
-  "ruler": "paired per-word deltas of the two stored wordbench reports of the same run (base 0.109026 → candidate 0.112123), same root; negative = the candidate card is closer to the ink",
-  "repeats": "the 12 mirrored repeats are excluded from every count, exactly as tools.humanbench.analyse does",
+  "ruler": "paired per-word deltas of two stored wordbench reports of the same run and root (base bench_loss 0.109026, candidate 0.112123); negative = the candidate card is closer to the ink",
+  "repeats": "the 12 mirrored repeats are excluded from every count, exactly as tools.humanbench.analyse does (_shown_paired)",
   "contents": "counts only — no anchors, no occurrence geometry, no arm_gap, no rank",
   "rounding": "every share is rounded to four decimals; the counts are the datum"
+ },
+ "reproduction": {
+  "note": "This file is NOT a tool output. It was computed once, in the PR that files the round, from three private inputs that stay outside the repo under the open-core reservation. Their SHA-256 are stated so the computation can be audited against exactly the bytes it read, and so a later rerun can prove it used the same ones. Without those files the counts here cannot be recomputed — they can only be checked for internal consistency (the per-class and total counts must agree with runde-08-auswertung.json, and Z plus without_z must add up to the round).",
+  "private_inputs": {
+   "temp/runden-sep07/humanbench/runde-8/key.json": "6cb376efd99024f5ea16dfe244b1f401228d143d8140daf364bd8d6dcc3c714f",
+   "temp/runden-sep07/fixpunkt/card-K1-write.json": "cdea6e9e3193948b6cb2fadc8010a8af09003f920d6ec4c8fb9fdcc1ec9f71af",
+   "temp/runden-sep07/fixpunkt/wb-base.json": "14db5187ebeb04244824d5e7658f95818e5f1cf87fe48dcd07994585afa81cb4",
+   "temp/runden-sep07/fixpunkt/wb-K1-write.json": "58ee0f65ba47f73f91255c48836a421a6c447c2bdb145ef5d392b883c36ab081"
+  },
+  "steps": [
+   "1. Read the judgements: one `<uid>:<L|R|N>` per screen; drop every uid whose key entry has a repeat_of (leaves the 63 shown screens).",
+   "2. Per screen, resolve the arm: key[uid].order[0] for L, order[1] for R, none for N — exactly tools.humanbench.analyse.arm_of.",
+   "3. Per screen, read the fixture entry's word.json slots from the frozen root and collect the glyph_keys that are in the write card AND satisfy the attribution gate above.",
+   "4. Per card row, tally base/candidate/tie over the screens that carry it; shares are candidate/decided and ties/n.",
+   "5. Ruler columns: per-word bench loss of wb-K1-write.json minus wb-base.json, matched on the word id; better = negative delta.",
+   "6. without_z: repeat step 4's tally over the screens that do NOT carry the Z row — dropping Z from the card changes only those, so the rest is the 14-row card byte for byte."
+  ],
+  "self_check": "attribution_check below reproduces the round's construction from an independent direction: the words that draw no card row must be exactly the declared null-control class and exactly the words with arm_gap = 0."
  },
  "caveat": "The rows overlap: every judged word was composed with ALL 15 rows at once, so a row's column is a conditional reading over the words that carry it and not an arm of its own. It ranks the rows; it adopts none. A per-row write needs its own pre-registered arm.",
  "attribution_check": {

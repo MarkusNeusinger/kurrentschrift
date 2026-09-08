@@ -156,8 +156,11 @@ Aus dem Provenienz-Stempel des Bauwerkzeugs
   trägt Zählungen und Anteile, keine Geometrie und kein Vorkommen.
 * `runde-08-zeilen.json` — die Zerlegung je Laufform-Zeile und die
   vorregistrierte Ohne-`Z`-Probe, ebenfalls nur als Zählungen. Sie ist **nicht**
-  Ausgabe eines Werkzeugs, sondern in diesem PR gerechnet; wie, steht in ihrem
-  eigenen `source`-Block.
+  Ausgabe eines Werkzeugs, sondern in diesem PR gerechnet; ihr
+  `reproduction`-Block nennt die sechs Rechenschritte und die **SHA-256 aller
+  privaten Eingänge** (voller Schlüssel, Kandidaten-Karte, die beiden
+  Wordbench-Berichte), damit die Rechnung gegen genau die Bytes prüfbar ist,
+  die sie gelesen hat.
 
 **Wie weit der committete Schlüssel trägt — nachgeprüft, nicht behauptet.**
 Mit `runde-08-vorkommen.json` rechnet `analyse.py` die Vollständigkeitsprüfung,
@@ -197,9 +200,19 @@ Kompositionen), die beiden Arm-Dateien, die Kandidatenkarte
 `card-K1-write.json` und die Klassendatei `klassen-runde-8.json` — gelernter
 Datensatz bzw. Vorkommens-Geometrie unter dem Open-Core-Vorbehalt
 ([`quellen-und-rechte.md`](../../docs/reference/quellen-und-rechte.md) §5).
-Sie bleiben unter `temp/runden-sep07/` und sind aus Saat, Wurzel und diesem
-Stempel deterministisch wiederherstellbar; die Klassenzuordnung selbst steht
-Wort für Wort im schmalen Schlüssel (`stratum`).
+Sie bleiben unter `temp/runden-sep07/`; die Klassenzuordnung selbst steht Wort
+für Wort im schmalen Schlüssel (`stratum`).
+
+> **Was daran wiederherstellbar ist — und was nicht.** Die **Geometrie** ist
+> gepinnt: die beiden Arm-Dateien tragen ihre `sha256` oben, und aus Wurzel,
+> Nib und den genannten Schaltern komponiert `wordarm` sie erneut. Die
+> **Seitenzuordnung** ist es nicht: sie entsteht aus Saat UND Bau-Code, und der
+> Bau-Commit `82c28f7` lief mit unsauberem Arbeitsbaum (`code_dirty: true`), so
+> dass die genauen Bau-Änderungen nicht festgehalten sind. Wer den vollen
+> Schlüssel nicht hat, kann also nicht rekonstruieren, welcher Arm auf welcher
+> Seite eines Bildschirms stand — die Zahlen, die davon abhängen, überleben
+> deshalb in `runde-08-auswertung.json` und `runde-08-zeilen.json`, und diese
+> beiden Dateien sind genau darum committet.
 
 **Eine Anmerkung, die nicht im Ergebnistext steht.** Die Seite hat auch in
 dieser Runde kein Notizfeld ausgegeben; der freie Satz des Beurteilers zu dem,

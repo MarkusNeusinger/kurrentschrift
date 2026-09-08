@@ -14821,7 +14821,7 @@ vorregistrierten Schranken. Der Write der Karte als Ganzes findet nicht
 statt. Die Chart-Saat bleibt trotzdem der Ernte-Default — A38 hat sie als
 Aussage über die REPRODUZIERBARKEIT der Ernte entschieden, nicht über die
 Form der Zeile, und genau dieser Fall stand in der Vorregistrierung.
-Diese steht Wort für Wort im Eintrag darüber („Laufform LF16 `sep07`");
+Diese steht Wort für Wort im Eintrag „Laufform LF16 `sep07`";
 die Runde liegt unter
 [`data/humanbench/runde-08-*`](../../data/humanbench/runde-08-stempel.md).
 
@@ -14858,7 +14858,8 @@ Richtung zur Basis.
 **Die Nullprobe ist sauber: 6 von 6 richtig als „kein Unterschied"
 erkannt.** Die Antwortoption wird also benutzt und die 47,6 % sind kein
 Instrumentdefekt — die Auskunft, die die LF11-Runde schuldig geblieben
-ist, jetzt zum zweiten Mal (Runde 6 gab 12 von 12).
+ist, jetzt zum dritten Mal (Runde 6 gab 12 von 12, Runde 7 wie hier
+6 von 6).
 
 **Die vorab BEHAUPTETE Sichtbarkeit hält nicht.** Behauptet waren
 `lineal-verlierer` und `zeile-stark`; beide liegen mit 50,0 % und 54,2 %
