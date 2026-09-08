@@ -1,6 +1,6 @@
 # Menschliche Bewertung — der blinde Urteilsdurchgang über die Fits
 
-> **Status (2026-09-07): lebend.** Beschreibt das Instrument
+> **Status (2026-09-08): lebend.** Beschreibt das Instrument
 > ([`tools/humanbench`](../../tools/humanbench)) und das Verfahren eines
 > Bewertungsdurchgangs — **die Methode, nicht die Ergebnisse**. Zahlen und
 > Verdikte einer Runde wohnen in
@@ -27,8 +27,9 @@
 > **Was seither passiert ist.** Die erste Wortrunde (`sep02`, Basis gegen
 > LF11) hat entschieden, wo das Wort-Lineal blind war, und dem Dokument
 > die Konstruktionsregel §3.6b eingetragen; die Runden 5 (`sep04`, J4) und
-> 6 (`sep05`, J5) haben §9a ausgelöst. Zahlen und Verdikte: `messjournal.md`
-> §14.
+> 6 (`sep05`, J5) haben §9a ausgelöst; Runde 7 (`sep06`, J6) hat als erste
+> die **Sichtbarkeitsschwelle** des Modus beziffert (§8a, „Der
+> Auswerteplan"). Zahlen und Verdikte: `messjournal.md` §14.
 >
 > **Was offen ist.** Die bekannten Grenzen des Verfahrens — was ein
 > blinder Durchgang grundsätzlich nicht entscheidet — stehen in
@@ -1020,7 +1021,7 @@ Kategorien-Durchgang mit den alten Fits, und die gelabelten Vorkommen paarig.
 
 ## 8a. Der Wortmodus — die Echtheitsfrage
 
-> **Stand 2026-09-06: gebaut, synthetisch abgenommen — und dreimal
+> **Stand 2026-09-08: gebaut, synthetisch abgenommen — und viermal
 > gefahren.** Die erste Runde (`sep02`, Basis gegen die LF11-Karte) hat
 > den Modus getragen und dem Instrument die Konstruktionsregel §3.6b
 > („gefüllte Ringe“) eingetragen. Ein **formales** Verdikt hat sie nicht
@@ -1040,10 +1041,17 @@ Kategorien-Durchgang mit den alten Fits, und die gelabelten Vorkommen paarig.
 > liegen in der Klasse, für die die Vorregistrierung Unsichtbarkeit
 > beschrieben hatte, während die andere bei 9,7 % steht. Was das der
 > Schranke einträgt, steht als **Vorschlag** unter „Der Auswerteplan“.
+> Die vierte Runde (`sep06`, Basis gegen die J6-Nahtverhandlung, geurteilt
+> am 2026-09-08) hat alle Vorbedingungen genommen — 12 Paare, 10/12
+> gleicher Arm, Nullprobe 6/6 richtig — und den Arm trotzdem nicht
+> entschieden: 63,5 % „kein Unterschied“ bei 39,1 % Kandidat. Sie ist
+> damit die erste, die die **Sichtbarkeitsschwelle** des Modus beziffert,
+> ebenfalls unter „Der Auswerteplan“.
 > Die Zahlen gehören nach
 > [`messjournal.md`](messjournal.md) §14 („Laufform LF11 —
-> humanbench-Wortrunde“, „Übergänge J5 `sep05`“ und „Übergänge J4
-> `sep06`“); hier steht nur, wie sie zustande kommen.
+> humanbench-Wortrunde“, „Übergänge J5 `sep05`“, „Übergänge J4
+> `sep06`“ und „Übergänge J6 `sep08`“); hier steht nur, wie sie zustande
+> kommen.
 
 ### Warum ein dritter Modus
 
@@ -1393,6 +1401,37 @@ vorab benannt). Bis dahin gilt die Schranke wie geschrieben — und eine Runde,
 die sie nur über die Mischung reißt, sagt das im Bericht und legt die
 Entscheidung dem Autor vor, statt sie sich selbst zu erteilen (so gebucht in
 `messjournal.md` §14 „Übergänge J4 `sep06`").
+
+**Beobachtung aus Runde 7 (`sep08`) — der Modus hat eine Sichtbarkeits-
+schwelle, und sie ist am `arm_gap` ablesbar. Auch das ist eine BAU-Auflage,
+keine Auswerteregel.** Runde 7 hat jede Vorbedingung genommen — 12
+Wiederholungspaare, 10/12 gleicher Arm, Nullprobe 6 von 6 richtig — und den
+Arm trotzdem nicht entschieden: 63,5 % „kein Unterschied", 39,1 % Kandidat
+unter den entschiedenen, und in der Klasse, für die die Vorregistrierung
+Sichtbarkeit BEHAUPTET hatte, 34,5 % Ties bei 47,4 % Kandidat. Der Grund
+steht in der Runde: ihr Kandidat bewegt die Zeichnung im Median um
+**0,0221 xh** und höchstens um 0,0681, während die starke Klasse der Runde 5
+bei **0,1186 xh** begann und mit 9,7 % Ties entschieden wurde; innerhalb der
+Runde tragen die entschiedenen Bildschirme 0,0311 xh Versatz und die
+unentschiedenen 0,0146. Die Gegenprobe gehört daneben und begrenzt die
+Aussage: INNERHALB der starken Klasse trennt der Versatz kaum noch (0,0382
+gegen 0,0316), der Zusammenhang ist also zwischen den Klassen deutlich und
+innerhalb einer schwach.
+
+Daraus folgt **keine** Schranke — ein Mindest-`arm_gap` als Adoptionsgate wäre
+dieselbe Nachstimmerei wie oben, nur mit einer anderen Zahl. Was folgt, ist
+eine Auflage an den BAU einer Runde, prüfbar vor den Labels: **wer eine Klasse
+„sichtbar" nennt, nennt in der Vorregistrierung den Versatz, bei dem er das
+behauptet**, und begründet ihn an den bisher gemessenen Punkten (0,0221 xh →
+34,5 % Ties · 0,1186 xh → 9,7 %). Eine Runde, die das nicht tut, kann als
+wahrscheinlichstes Ergebnis „kein Unterschied" haben, ohne dass jemand das
+vorher gesagt hätte — und verbraucht dann eine Urteilssitzung für eine Frage,
+die die Anzeige nicht tragen kann. Der andere Ausweg ist nicht die Schranke,
+sondern der Rahmen: eine Runde, die den Ort ZEIGT, an dem der Arm arbeitet
+(ein Ausschnitt je Naht statt je Wort), wäre eine Änderung an diesem Dokument
+und am Instrument — sie gehört vorher hierher, nicht hinterher, und ihre
+Zahlen wären mit denen der Wortrunden nicht vergleichbar
+(`messjournal.md` §14 „Übergänge J6 `sep08`", Rettungsweg 5).
 
 ### Was der Modus NICHT liefert
 

@@ -216,7 +216,7 @@ die DB) — mit seiner Bedingung.
 | sep06 | Lineal | [Kringel-Landmarke](#kringel-landmarke-sep06--katalog-und-sensor-die-erwartung-offen-ist-eine-eigenschaft-je-buchstabe-und-je-schleife) | Pre-Reg + gemessen · **Sensor**, kein Arm · Report-Spalte | Der Autor-Entwurf „große · mittlere · kleine Kringel, bei den kleinen Punktkringel oder je nach Tinte wechselnd" wird ein eingefrorener **Katalog**: 46 Schleifen über 27 Glyphen mit Größenklasse (in Breiten der Plattenfeder `W = 0,1936`: klein < 2W, mittel < 4W, groß darüber) und Zustand (Anteil der Vorkommen mit Loch: offen ≥ 0,8, punkt ≤ 0,2, sonst wechselnd) — **klein 22 · mittel 16 · groß 8**, **offen 41 · wechselnd 4 · punkt 1**. Abnahme: sechs der neun engen Glyphen ziffernweise wie #551, `w_pen` 0,0968 und 202 Binnenflächen ebenso. **Die 26 zerlegt: auf #551s Messpfad 27 Wörter, davon 24 echte `offen`-Verluste und 3 nur `wechselnd`** (`Sprünge` `Zügel` `regieren`, die `g`-Schale) — die ehrliche Zahl ist **24**. Über ALLE Schleifen korrigiert der Katalog nach oben: 34 der 63 Wörter verlieren bei 0,097 eine `offen`-Schleife, dazu **19 Topologie-Verluste** (nie gezeichnete Binnenflächen: `w` 5 · `sz` 3 · `G` 3 …) in 14 Wörtern, zusammen 36 der 63. Zwei neue Befunde: die **e-Öse** hält nur 19 % ihrer Platten-Weite (0,07 gegen 0,38) und ist trotzdem `wechselnd`, also kein Defekt; das **`t`** ist der blinde Fleck — `loop_ranges` hat für es keinen Schleifenbereich, die Platte hält dort 9 von 9 zwei Löcher, und `t`#1 (0,0517 gegen 0,3912) ist das größte Defizit und der EINZIGE Verlust, der auch bei der ausgelieferten Feder 0,0724 bleibt. Sensor `kringel_lost` report-only: Wörter/Paare 0,108444 · 0,148236 unverändert, Tintenfolger-Report 68 bzw. 56 Zeilen identisch |
 | sep06 | Übergänge | [S2 Unstetigkeits-Sensor (Pre-Reg)](#übergänge-s2-sep06--vorregistrierung-der-unstetigkeits-sensor-der-den-knick-sieht) | Pre-Reg | Rettungsweg 2 der Runde-6-Konversionen nach dem S1-Muster (bauen, einfrieren, DANN abnehmen). Anlass ist der Leitsatz des Autors: alle eingefrorenen Lineale messen ABSTAND, keines Stetigkeit. Fenster aus der FEDER, nicht aus einer Runde — halbe Feder 0,0725 · eine Feder 0,145 · zwei Federn 0,29; θ = arcsin(0,2) = 11,537°, federunabhängig. Gates P1/P2 an Runde 5, P3 an Runde 6, N1 Identität, N2 Verrohrung |
 | sep06 | Übergänge | [J6 Nahtverhandlung (Pre-Reg)](#übergänge-j6-sep06--vorregistrierung-die-nahtverhandlung-als-autorenregel) | Pre-Reg | Die Autorenregel vom 2026-09-06 in Geometrie: an jedem Ende eines generierten Übergangs einigen sich Buchstabe und Verbinder auf den **Kompromisswinkel** (zirkulärer Mittelwert, gelesen über 0,05 xh) und drehen beide dorthin — der Buchstabe höchstens 8° über 0,3 xh als ebener Twist um den Nahtpunkt, der Verbinder den Rest; über 45° Uneinigkeit bleibt die Regel weg, weil das eine Kehre des Duktus ist. Nahtpunkt = Drehpunkt, also bewegt sich KEINE Kopplungshöhe und keine Platzierung — der Unterschied zu P3-K1/K2/K3. Basis = Runde-5-Stand (der Austritts-Trim an, seit A37 desselben Tages die Produktion); Gates (a1) exakte G1-Residuen · (a2) Augen-Skala · (a3) keine Naht schlechter · (b) kein neuer Knick im Blend · (c) Verdopplungen · (d) Deckung · (e) Lineal nur berichtet (Runde-5-Grund) · (f) Golden · (g) Kette-Identität |
-| sep06 | Übergänge | [J6 gemessen](#übergänge-j6-sep06--gemessen-die-naht-schließt-sich-an-beiden-enden-und-die-rechnung-steht-auf-drei-übungswörtern) | Pre-Reg + gemessen · **ehrliches Negativ** (Gate (c) rot) · Runde 7 gebaut, Urteil offen | **Die Naht ist zu:** über alle 240 Nähte fällt der Betrags-Median des Abgangs 2,67° → **0,01°** und der Ankunft 10,80° → **0,01°**, keine der 240 verlässt das 3°-Band nach oben, und jede verhandelbare Klasse geht auf ≤ 0,36° (Arkade→Arkade 18,57 → 0,00, sonstige 17,24 → 0,03, Gabel 14,43 → 0,01). Die drei stehenden Zahlen sind die Duktus-Ereignisse, die die 45°-Schranke draußen hält. **Verworfen an Gate (c):** Verdopplungen der Paare 3 → 5, zurechenbar auf `dp`/`ds` — dort trägt der Verbinder die 32,9° bzw. 31,9°, die der 8°-Deckel dem Buchstaben verwehrt, und der Haken legt sich 0,117/0,119 xh neben die eigene Tinte des `d` (Nib 0,145). (b) rot nur am Maximum (an der Naht +0,14°, p90 +0,46°/+1,67°, Maxima an Vertices mit 14,6°/133° Eigendrehung), (a1) rot aus Prinzip (auf Segment-Skala ist der Rest die Spitzenkrümmung der Buchstaben; gerade Auslaufstücke waren vorab verboten), (d)/(f)/(g) grün, (e) +0,000421 / −0,000024 im vorhergesagten Band. Der neue Unstetigkeits-Sensor folgt NICHT: `cont_kink_total` 337 → 349 (W) und 81 → 92 (P), teils mechanisch (`cont_measured` +51/+86 — Punkte verlassen die Ecken-Ausnahme). Nebenbefund mit Adressat nach A37: **J6 löst die Austrittsseite ohne den Trim und billiger** (12,67 → 0,02 gegen 2,30, +0,000376 gegen +0,000582, ohne dessen Ankunfts-Nebenwirkung) — die beiden Regeln sind Alternativen, nicht Ergänzungen |
+| sep06 | Übergänge | [J6 gemessen](#übergänge-j6-sep06--gemessen-die-naht-schließt-sich-an-beiden-enden-und-die-rechnung-steht-auf-drei-übungswörtern) | Pre-Reg + gemessen · **ehrliches Negativ** (Gate (c) rot) · **Runde 7 geurteilt `sep08`**, Ergebnis im Eintrag „J6 `sep08`" unten | **Die Naht ist zu:** über alle 240 Nähte fällt der Betrags-Median des Abgangs 2,67° → **0,01°** und der Ankunft 10,80° → **0,01°**, keine der 240 verlässt das 3°-Band nach oben, und jede verhandelbare Klasse geht auf ≤ 0,36° (Arkade→Arkade 18,57 → 0,00, sonstige 17,24 → 0,03, Gabel 14,43 → 0,01). Die drei stehenden Zahlen sind die Duktus-Ereignisse, die die 45°-Schranke draußen hält. **Verworfen an Gate (c):** Verdopplungen der Paare 3 → 5, zurechenbar auf `dp`/`ds` — dort trägt der Verbinder die 32,9° bzw. 31,9°, die der 8°-Deckel dem Buchstaben verwehrt, und der Haken legt sich 0,117/0,119 xh neben die eigene Tinte des `d` (Nib 0,145). (b) rot nur am Maximum (an der Naht +0,14°, p90 +0,46°/+1,67°, Maxima an Vertices mit 14,6°/133° Eigendrehung), (a1) rot aus Prinzip (auf Segment-Skala ist der Rest die Spitzenkrümmung der Buchstaben; gerade Auslaufstücke waren vorab verboten), (d)/(f)/(g) grün, (e) +0,000421 / −0,000024 im vorhergesagten Band. Der neue Unstetigkeits-Sensor folgt NICHT: `cont_kink_total` 337 → 349 (W) und 81 → 92 (P), teils mechanisch (`cont_measured` +51/+86 — Punkte verlassen die Ecken-Ausnahme). Nebenbefund mit Adressat nach A37: **J6 löst die Austrittsseite ohne den Trim und billiger** (12,67 → 0,02 gegen 2,30, +0,000376 gegen +0,000582, ohne dessen Ankunfts-Nebenwirkung) — die beiden Regeln sind Alternativen, nicht Ergänzungen |
 | sep06 | Übergänge | [S2 gemessen](#übergänge-s2-sep06--gemessen-alle-gates-bestehen-und-keine-einzelne-spalte-ist-der-richter) | Pre-Reg + gemessen · **validiert** (Lineal-Bestandteil-Kandidat, kein Lineal geändert) | **Alle fünf Gates bestehen, aber keine EINZELNE Spalte ist der Richter.** N1/N2 exakt (0,000e+00 gegen die gespeicherten Verbinder; 3 + 12 identische Wörter bewegen keine Spalte). P1 `naht-stark` (Urteil Kandidat 26 : 2): `kink_max_deg` 36,89 → **27,86**, `kink_count` 28/28 fallend, `wobble` −0,531. P2 `naht-schwach`: nur 17 statt 24 von 29 Wörtern bewegt, Wackler-Median −0,083 — Faktor 6, die Klassengrenze reproduziert. P3 `apex` (Basis 11 : 1): `bow_join` 0,0066 → **0,0034 in 12/12**, dazu (nicht vorregistriert) `kink_max_deg` +15,54°. Die Klasse `stem` (Basis 7 : 0) sieht nur `curv_loss` (8/8) und `wobble` (8/8). **Ehrliche Hälfte:** `bow_join` fällt in BEIDEN Runden, hätte Runde 6 allein also falsch entschieden — der Austritts-Trim verschiebt die Grenze Buchstabe/Verbinder und damit die Population (das Rahmen-Artefakt, für das S1 `dspan` gebaut wurde). Headline 0,108444 / 0,148236 vorher wie nachher |
 | sep07 | Kette | [R3 Zwei-Züge-Modell (Pre-Reg)](#kette-r3-zwei-züge-modell-sep07--vorregistrierung-die-verschmolzene-schleife-ist-zwei-kapseln-nicht-ein-klumpen) | Pre-Reg | Autor-Entscheid „2 ja", Rettungsweg R3 der Kringel-Diagnose und nach LF13/LF14 der einzige verbliebene. Die Feder wird HERAUSGERECHNET statt der Klumpen skelettiert: keine Stützstelle näher als `w_pen` an einer Binnenfläche, die die Platte offen hält. Nur Katalogschleifen `offen` × `klein`/`mittel` mit Loch im SELBEN Vorkommen; C¹-Blende; Abnahmeregel „Schleifen-Schluss" und die kollabierte Schleife als eigene Klasse (R4), beide nach dem Kalibrierlauf benannt; zwei Konventionen vorab deklariert (halbes Pixel, Katalog-Konvention der Erwartung). **Decke vorab beziffert: die 24 bewegt dieser Arm NICHT** — sie hängt an den Zeilen, die Ernte hat keinen Folger-Pfad, und LF14s Fixpunkt verbietet den Write ohnehin |
 | sep07 | Kette | [R3 gemessen](#kette-r3-zwei-züge-modell-sep07--gemessen-die-binnenflächen-gehen-auf-und-alle-vier-gates-fallen-trotzdem) | Pre-Reg + gemessen · **nicht adoptiert an ALLEN VIER Gates** ((b) + (c) sind Kills) · Ursache zurechenbar · R3b in derselben Runde gefahren | **Die Binnenflächen gehen auf und jedes Gate fällt an der AUSFÜHRUNG.** **107 von 108** korrigierten Schleifen offen bei 0,097 (vorher 102/108); `a`#0 0,2024 → 0,2746, `o`#0 0,1741 → 0,2516, `sz`#0 0,2231 → 0,3063. **(a) rot:** die Weite trifft die Erwartung nur in **83/108** — die Vorregistrierung fordert sie je Schleife. **(c) rot am p90** (+0,000699), während Median (−0,000701), Vorzeichentest (**14 : 3**, p = 0,0127), aiou (0,7583 → **0,7601**), Chamfer beidseitig und der 63er-k0-Soll (**80 → 79**) besser lesen. **(b) rot** (`cross_missing` 12 → 13, `cross_spurious` 7 → 9) — ganz auf `will` und `Galoppieren`, 17 der 19 dev-Wörter bewegen keinen Zähler. **(d) rot** (1 626 neue `kink`-Ereignisse, p90-Δ +16,70°) — **Ursache gemessen:** Stützstellen-Abstand 0,0265 xh, deklarierte Glättung 0,0363 = 1,37 Stützstellen, Blende 0,0725 = 2,74; das Fenster ist kürzer als die Diskretisierung, die es glätten sollte. Nullproben exakt (10 Wörter strichgleich, Solve bit-gleich), (e)/(f) grün, (g) gemessen (58 von 63 Wörtern gleicher Zielsatz mit und ohne Zeilen; die 5 übrigen finden mit Zeile MEHR Schleifen, nie ein anderes Ziel). **Konversion R3b** (Blende auf zwei Federn, aus dem Lesefenster des Sensors abgeleitet): Vorhersage beidseitig getroffen — Knicke 1 626 → **462**, p90 → **+4,77°**, `cross_spurious` wieder 7, dafür (a) → **62/112** und k0-Soll 79 → 81. Auch nicht adoptiert; der Rest-Strukturfehler ist EIN Zähler in EINEM Wort (`Galoppieren`), das auf jedem anderen Kanal gewinnt. **Damit ist die Formulierung ausgemessen:** Treffgenauigkeit und Glätte hängen an derselben Länge, die Bedingung gehört in den Solve statt hinter ihn |
@@ -230,7 +230,8 @@ die DB) — mit seiner Bedingung.
 | sep07 | Kette | [R4 gemessen](#kette-r4-feder-entfaltung-sep07--gemessen-die-zugelaufenen-schleifen-bewegen-sich-zum-ersten-mal-und-gate-c-fällt-trotzdem) | Diagnose + gemessen · **nicht adoptiert**, Gate (c) rot (Kill) | **Diagnose-Verdikt: echte Verschmelzung.** Median(`A_grau4 − A_Maske`) **+0,0000** und Median(`I@4× − I@1×`) **+0,0109** — beide Schranken klar verfehlt: die globale Schwelle liest bei 1× ziffernweise dieselbe Binnenfläche wie die adaptive Maske, bei 4× liest das Grau eine **kleinere** (0,1118 gegen 0,1290, das halbe Plattenpixel je Seite), und die Einschnürung überlebt die schärfere Lesung (Anzeiger 0,807 → 0,790). **Der Arm bewegt zum ersten Mal die richtige Klasse:** von den 33 Schleifen, die die Basis zu zeichnet, gehen **8 auf** (7 zugelaufene, 1 kollabierte — `Feinde` `F`#1 0,0025 → 0,3184), wo R3c 0 bewegt hat; offen bei 0,097 **124 → 129**, referenzfreier 63er-Soll **85 → 70** (der größte Fall der R-Kette), `cross_spurious` **9 → 7** und `retrace_spurious` 10 → 9, also Gate (b) **grün**. Bezahlt wird mit drei Totalverlusten (`unter` `t`#1 · `Kugel` `K`#1 · `macht` `a`#0, je auf den Ableseboden 0,0025), Gate (a) **36 von 157** statt 149, Gate (c) rot unter BEIDEN Lesarten (gepaart p90 +0,000834, eigene Verteilung Median +0,000385) und Gate (d) +34 `kink`-Ereignisse (2 296 → 2 330; R3 +1 626, R3b +462). (f)/(g)/(h) grün, Determinismus 63/63 strichgleich |
 | sep07 | Kette | [K-E Runde 9 gebaut](#kette-k-e-sep07--wiedervorlage-als-menschenurteil-runde-9-gebaut-urteil-offen-und-das-lineal-hat-inzwischen-die-seite-gewechselt) | Pre-Reg + Konstruktionsmessung · **Runde 9 gebaut, Urteil offen** (Autor-Entscheid A2) | Rettungsweg (1) der K-E-Familie. **K-E1 ist nicht lauffähig** — der Breitenfeld-Split steht in keinem Commit (Squash #400 legte nur die Ein-Faktor-Form ab), der Arm ist also zwangsläufig K-E2 (`--mark-claim`). Basis = Produktions-Kette v5 ohne Flag, ziffernweise der heutige Stand (dtw 0,045881 · p90 0,088356 · aiou 0,7660 · 11/9 · 63er-Soll 85), beide Stacks in `k0eval` identisch. **Auf v5 hat das Lineal die Seite gewechselt:** 38 bewegt / 25 strich-identisch, Soll **85 → 82**, aiou-Median der bewegten **+0,0008** statt −0,0002, und nur noch **zwei** Gate-Verlierer (`regieren` −0,0180 · `muß` −0,0285) statt vier — die vier `aug21`-Verlierer sind heute Gewinner oder neutral (`auch` +0,0317 · `Einen` +0,0170 · `schießen` +0,0043 · `muß-2` −0,0007). Das Ziel heilt wieder (`die-2` Soll 5 → 4, aiou +0,0227, V-Nadel weg; `Zügel` +0,1059, `Feinde` Soll 2 → 0). Runde: 44 Bildschirme + **10** gespiegelte Wiederholungen, gefolgte BAHNEN als Mittellinie über der Platte, also Genauigkeitsfrage (`VERGLEICH/9`); Straten `ziel` 2 · `riss` 2 · `gewinn` 8 · `bewegt` 26 · `nullprobe` 6 (Unentschieden-Boden 13,6 %) |
 | sep07 | Laufform | [LF16 Chart-Saat als Default (A38) + Runde 8 (Pre-Reg)](#laufform-lf16-sep07--adoption-der-chart-saat-als-ernte-default-a38-und-vorregistrierung-der-runde-8) | **Adoption** (Werkzeug-Default) · Pre-Reg der Runde 8 · Write bleibt Autorenschritt | **Autor-Entscheid A38 (A1: „ja"):** `chain_seed="chart"` ist der Ernte-Default, `--chain-seed composed` bleibt erreichbar; Trace-Bench und Folger behalten ihren `composed`-Default, die Kette-Route ist unberührt. **Der Fixpunkt hält auch auf dem heutigen Composer** — `K1` = `K2` = `K3` byte-gleich samt Vorkommen, `K3` aus der deutlich anderen `C1`-Karte gestartet. **Und LF15s `K1` ist über die Sitzungsgrenze reproduzierbar, sobald der Composer festgehalten wird:** mit `exit_trim=False` zurückgesetzt (A37/#559 flippte den Default um 01:29, nach LF15s Läufen) kommen `drafts-k1`/`occ-k1` **byte-identisch** heraus, 226 Vorkommen, `geo_rmse` 0,982/1,427. Heute 227 gegen 234 der Kontrollkarte, also 7 statt 9 Vorkommen Preis (`connector_degenerate` 22 → 31, `anchor_spike` 10 → 8); **`Z` steht mit n = 3 NICHT mehr unter dem Beleg-Boden**, unter ihm bleiben nur `P`/`s` wie am Bestand. Schreibliste 15 Zeilen (`Z a c d e g h l longs m n p r u w`), vier vom Sprung-/Kopf-Gate abgewiesen (`i` `o` `sz` `z`). **Das Lineal ist gegen den Kandidaten:** 0,109026 → **0,112123** (Paare 0,148119), 22 besser : 35 schlechter, ein Drittel des Verlusts in `Zaum` +0,0712 und `Zügel` +0,0462 über die `Z`-Zeile — die Kontrollkarte mit der ALTEN Saat liegt bei 0,108544 und bewegt den Bestand fast genauso weit (0,0596 gegen 0,0561 xh, 8 gegen 7 Zeilen über 0,03), der Saatwechsel ist also NICHT der Träger der Bewegung. Runde 8 gebaut, nicht geurteilt: 75 Bildschirme, 12 gespiegelte Wiederholungen, vier vorab geschnittene Klassen (`lineal-verlierer` 10 · `zeile-stark` 24 · `zeile-schwach` 23 · `nullprobe` 6) mit vorab benannter Sichtbarkeits-Behauptung |
-| sep07 | Lineal | [Komma-Ausschluss](#komma-ausschluss-sep07--die-satzzeichen-der-platte-verlassen-die-referenz-tinte) | **Re-Baseline** (Wörter + abb22) · umgesetzt (Autor-Entscheid A3) | **Vier Referenz-Ausschnitte trugen ein Komma, also Tinte, die kein Buchstabe erzeugen kann** — je eine eigene Komponente, 0,41–0,83 xh von jeder Buchstabentinte entfernt und mit keiner verschmolzen, per `exclude` entfernt wie `regieren` seit §15. **Wörter 0,109026 → 0,108153**, **Paare byte-gleich**, beide Folger über 63/63 unbewegt. Gegenbefund `a22-dank` **+0,039863** (cross-hand, nie Headline): dort trug das Komma die Registrierung — Fremdtinte hat den Fit geschmeichelt, nicht bestraft | 
+| sep07 | Lineal | [Komma-Ausschluss](#komma-ausschluss-sep07--die-satzzeichen-der-platte-verlassen-die-referenz-tinte) | **Re-Baseline** (Wörter + abb22) · umgesetzt (Autor-Entscheid A3) | **Vier Referenz-Ausschnitte trugen ein Komma, also Tinte, die kein Buchstabe erzeugen kann** — je eine eigene Komponente, 0,41–0,83 xh von jeder Buchstabentinte entfernt und mit keiner verschmolzen, per `exclude` entfernt wie `regieren` seit §15. **Wörter 0,109026 → 0,108153**, **Paare byte-gleich**, beide Folger über 63/63 unbewegt. Gegenbefund `a22-dank` **+0,039863** (cross-hand, nie Headline): dort trug das Komma die Registrierung — Fremdtinte hat den Fit geschmeichelt, nicht bestraft |
+| sep08 | Übergänge | [J6 Runde 7 geurteilt](#übergänge-j6-sep08--runde-7-geurteilt-40-von-63-kein-unterschied-und-der-arm-fällt-zum-zweiten-mal) | Menschenrunde · **ehrliches Negativ** · nicht adoptiert, **J6b nicht geöffnet** | **Basis 14 : Kandidat 9** von 23 entschiedenen (39,1 % gegen ≥ 60 %), unentschieden **40 von 63 = 63,5 %** gegen ≤ 25 % — und klassenweise löst sich hier NICHTS auf: `naht-stark` 9 : 10 bei 34,5 % Ties (47,4 % Kandidat), `naht-schwach` 0 : 4 bei 85,7 %, `nullprobe` 6/6 richtig als „kein Unterschied". Instrument sauber: 12 Paare, 10/12 gleicher Arm, und die 7 Seiten-Übereinstimmungen SIND die 7 Doppel-Ties — kein Paar nannte zweimal dieselbe Seite, während es eine nannte; die zwei Uneinigkeiten sind nie Basis gegen Kandidat, sondern Entscheidung gegen Unentschieden. **Der Grund steht in der Runde:** der Arm bewegt die Zeichnung um ein Fünftel dessen, was Runde 5 bewegt hat (Median 0,0221 xh, Maximum 0,0681 gegen den 0,1186-Boden der starken Klasse dort); entschiedene Bildschirme tragen 0,0311 xh Versatz, unentschiedene 0,0146 — innerhalb der starken Klasse trennt das aber kaum noch (0,0382 gegen 0,0316). **Die Vorregistrierung lizenzierte J6b NUR bei ≥ 60 %**, also bleibt auch der engere Arm zu; J6 ist damit zweimal gefallen — `sep06` an Gate (c), heute am Auge. Autor wörtlich: „nicht besser nur bischen weniger wellen mal da oder dort". Fünf Rettungswege in §7.9, Sensor-Population zuerst | 
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -14603,3 +14604,203 @@ Paar-Wurzel NICHT neu zu bauen; die Lotse-Nachmessung mitzunehmen, weil
 die Runde ihn ohnehin zweimal reitet und die Verfahrensseite sonst eine
 Zahl von vor A37 als Stand geführt hätte; und den Kringel-Katalog
 unangetastet zu lassen.
+
+---
+
+### Übergänge J6 `sep08` — Runde 7 geurteilt: 40 von 63 „kein Unterschied", und der Arm fällt zum zweiten Mal
+
+Die Menschenrunde aus Rettungsweg (5) der Vorregistrierung „Übergänge J6
+`sep06`" ist gefahren (2026-09-08, Beurteiler = Autor, 75 Bildschirme in einem
+Zug, 544 s Urteilszeit). **Keine Zahl der beiden J6-Abschnitte oben ist
+angefasst** — dort ist der Arm an Gate (c) gescheitert, und das bleibt er;
+hier steht, was das Auge dazu sagt. Ablage der Runde:
+[`data/humanbench/runde-07-*`](../../data/humanbench/runde-07-stempel.md)
+(Urteile, schmaler Schlüssel, Auswertung, Stempel); voller Schlüssel, Payload,
+die beiden Arm-Dateien und die Klassendatei bleiben draußen
+(Open-Core-Vorbehalt).
+
+**Ein Freiheitsgrad, und er ist ein Schalter.** Basis `sha256`
+`b3dc5874f34633f9`, Kandidat `3085b95655542b3e` (`wordarm.py
+--seam-negotiation`, `seam_negotiation_max_jump_deg` 45,0), Registrierung des
+Kandidaten an die Basis gepinnt, Wurzel-Export `2026-09-05T21:33:12+00:00`
+(Digest `eaa195aa7c84…`), sonst identische Einstellungen — `laufform`
+`frozen`, Nib 0,07243 `constant`, `apex_handover`/`stem_depart` aus. Die Basis
+ist dabei kein Stand von vorgestern, sondern die **Produktion**: `exit_trim`
+ist seit A37 Default und in BEIDEN Armen an. Die Regel bewegt **57 von 63**
+Wortproben; die sechs übrigen sind die Nullprobe.
+
+#### Der Auswerteplan, Schritt für Schritt
+
+| Schritt | Zahl | Schranke | Lesung |
+|---|---|---|---|
+| 1 Verlässlichkeit | **10/12 Paare gleicher Arm**, 7/12 gleiche Seite (7 Paare beidseits „kein Unterschied") | ≥ 6 Paare · > 7/12 Arm | beide Schranken genommen, Band `reliable`; die Runde trägt einen Adoptionsanspruch — die schärfere Lesung steht unter der Tabelle |
+| 2 Seitenbilanz | links 9 · rechts 14 · unentschieden 40 (39,1 % der entschiedenen links) | berichtet, nie entscheidend | unter der 65-%-Meldeschwelle; keine Seitenneigung, die etwas verbreitern würde |
+| 3 Verdikt | **Basis 14 : Kandidat 9** von 23 entschiedenen → Kandidat **39,1 %**; unentschieden 40 von 63 = **63,5 %** (Kandidat über alle Bildschirme 14,3 %) | ≥ 60 % · ≤ 25 % | **beide gerissen** — die Kandidaten-Schranke um 21 Punkte nach unten, die Tie-Schranke um 38 Punkte; `adopt: false` |
+| 5 Drift | Basis 5 · 6 · 3, Kandidat 2 · 3 · 4, Ties 14 · 12 · 14, Mediandauer 9 · 6 · 5 s | — | keine Ermüdung, kein Kippen: die Tie-Quote ist über alle drei Drittel praktisch konstant, und im letzten Drittel gewinnt der Kandidat sogar häufiger als die Basis. Die 63,5 % sind also kein Nachlassen gegen Ende |
+
+**Die Verlässlichkeit sagt mehr als ihre Zahl.** Die 7 Seiten-Übereinstimmungen
+SIND die 7 Doppel-Ties — **kein einziges Paar hat zweimal dieselbe Seite
+genannt, während es eine Seite nannte.** Die drei entschiedenen
+Übereinstimmungen (`Pulver`, `mit-2`, `Soldaten`) nennen alle drei die Basis,
+alle drei über die Spiegelung hinweg. Und die zwei Nicht-Übereinstimmungen sind
+**nie Basis gegen Kandidat**, sondern je einmal Entscheidung gegen
+Unentschieden (`macht` N → Kandidat, `Silber` Basis → N). Geurteilt wurde nach
+dem Bild, nicht nach der Position; und die Form der Uneinigkeit ist genau die,
+die ein Arm an der Sichtbarkeitsgrenze erzeugt.
+
+#### Schritt 4 — je Verdachtsklasse (getrennt berichtet, nie gepoolt)
+
+Die Klassen sind vor der Runde deklariert und nach dem Tintenversatz
+geschnitten (`arm_gap`, symmetrisch, in x-Höhen; Schnitt am Median der
+bewegten Wörter, Δ = 0,0221 xh):
+
+| Klasse | n | entschieden | Kandidat | Basis | unentschieden | Schwellen | Lesung |
+|---|---|---|---|---|---|---|---|
+| `naht-stark` (Δ ≥ 0,0221 xh) | 29 | 19 | **9** (47,4 %) | 10 | 10 (**34,5 %**) | beide ✗ | die Klasse, für die die Vorregistrierung Sichtbarkeit behauptet hat — dort steht es Münzwurf, mit der Basis vorn |
+| `naht-schwach` (0,005 < Δ < 0,0221) | 28 | 4 | **0** (0 %) | 4 | 24 (**85,7 %**) | beide ✗ | fast unsichtbar, und was gesehen wird, geht 4 : 0 an die Basis |
+| `nullprobe` (Δ ≤ 0,005 xh) | 6 | 0 | — | — | **6 (100 %)** | unter `MIN_PAIRED_PER_CLASS` = 8 | die Kontrolle: sechsmal praktisch dasselbe Bild, sechsmal „kein Unterschied" — richtig |
+
+**Es gibt keine Klasse, aus der eine Teil-Adoption käme.** Die
+Asymmetrie-Direktive vom `aug26` verlangt, einen Verlierer erst zu zerlegen,
+bevor er verworfen wird; die Zerlegung stand vor der Runde und trägt nichts:
+47,4 % in der starken Klasse, 0 % in der schwachen. Runde 5 sah an genau
+dieser Stelle anders aus — dort nahm `naht-stark` **beide** Schranken (26 : 2
+bei 9,7 % Ties), und das trug den Autor-Entscheid A37.
+
+#### Warum so viele Unentschieden — und warum das hier keine Ausrede ist
+
+Die Kontrolle antwortet 6 von 6 richtig; die Antwortoption ist benutzbar und
+wurde benutzt. Was die 63,5 % erklärt, steht in der Runde selbst: **der Arm
+bewegt die Zeichnung um ein Fünftel dessen, was Runde 5 bewegt hat.** Der
+größte Tintenversatz eines ganzen Wortes ist hier **0,0681 xh**, der Median der
+bewegten Wörter **0,0221** — die starke Klasse der Runde 5 begann bei
+0,1186 xh und wurde mit 9,7 % Ties entschieden. Innerhalb dieser Runde ist die
+Beziehung messbar: die 23 entschiedenen Bildschirme tragen einen
+Median-Versatz von **0,0311 xh**, die 40 unentschiedenen **0,0146**.
+
+*Die ehrliche Hälfte gehört daneben:* INNERHALB der starken Klasse trennt der
+Versatz kaum noch (entschieden 0,0382 gegen unentschieden 0,0316). Der
+Zusammenhang ist zwischen den Klassen deutlich und innerhalb einer schwach —
+er ist damit eine Beobachtung über die Sichtbarkeitsschwelle des Instruments
+und keine Regel, und er wird als solche in `menschliche-bewertung.md` §8a
+notiert, nicht als Schranke.
+
+#### Was der Beurteiler gesehen hat
+
+Der freie Satz des Autors, wörtlich (die Seite gab auch in dieser Runde kein
+Notizfeld aus, der Satz fiel mündlich in derselben Sitzung):
+
+> „wenn überhaupt minimale unterschiede die wriklichen probleme sind nicht
+> besser nur bischen weniger wellen mal da oder dort..."
+
+Der Satz beschreibt die Wirkung des Arms zutreffend — an einer Naht weniger
+Welle — und sagt zugleich, dass sie an den Problemen vorbeigeht. §9a
+(„das Auge misst Stetigkeit") nennt den Grund, aus dem das kein Widerspruch
+ist: das Auge liest Unstetigkeit dort, wo der Duktus kein Ereignis hat, und
+genau diese Unstetigkeit nimmt J6 an der Naht heraus (Abgang 2,67° → 0,01°,
+Ankunft 10,80° → 0,01° über 240 Nähte). Die Runde sagt dazu nicht, dass die
+Größe falsch gewählt ist, sondern dass **dieser Betrag davon** auf dieser
+Anzeige unter der Sichtbarkeit liegt — ein Befund über die GRÖSSE des
+behobenen Fehlers, nicht über die Richtung der Regel.
+
+#### Verdikt und was die Vorregistrierung auslöst
+
+**Ehrliches Negativ. `seam_negotiation` bleibt Default AUS — und J6b wird
+NICHT geöffnet.** Der Plan verlangt für `adopt` beide Schwellen; keine ist
+genommen. Die J6-Vorregistrierung war für diesen Fall ausdrücklich zweistufig:
+„ein Ergebnis ≥ 60 % lizenziert NICHT den Default, sondern den engeren Arm
+J6b … Unter 60 % ist der Arm zu." Mit 39,1 % ist er zu, und der engere Arm ist
+damit nicht lizenziert. Das ist der Unterschied zu Runde 5, wo die Richtung
+erdrückend war und die Entscheidung deshalb dem Autor vorgelegt wurde: hier
+gibt es keine Richtung, die vorzulegen wäre.
+
+**Damit ist J6 zweimal gefallen, an zwei verschiedenen Instanzen** — am
+`sep06` an Gate (c) (Gleichzug-Verdopplungen der Paare 3 → 5, zurechenbar auf
+`dp`/`ds`) und heute am Auge. Die beiden Fehlschläge sind nicht dasselbe
+Argument, und zusammen sagen sie, wo ein Nachfolger ansetzen muss: der erste,
+dass die Dosis an drei Stellen zu GROSS ist, der zweite, dass sie überall
+sonst zu klein ist, um gesehen zu werden.
+
+**Was die Runde NICHT sagt.** Nicht, dass die Naht egal ist — der Naht-Winkel
+ist gemessen, und der Arm schließt ihn beweisbar. Nicht, dass die Regel falsch
+ist — keine von 240 Nähten wird schlechter. Nicht, dass der Kandidat schadet —
+die einzige gemessene Verschlechterung sind die zwei Verdopplungen auf
+`dp`/`ds`, und die sind in dieser Runde gar nicht zu sehen (die Paar-Übungen
+sind nicht Teil der 63 Wörter). Und nichts über eine andere Hand: 63 Wörter
+EINER Platte sind die ganze Grundgesamtheit, einen Bestätigungssatz kennt der
+Wortmodus nicht, `abb22` ist eine andere Hand.
+
+#### Rettungswege (Register: [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.9)
+
+Die J6-Zeile nennt seit dem `sep06` fünf Wege; (5) — diese Runde — ist damit
+gegangen. Was bleibt, geordnet nach dem, was diese Runde dazugelernt hat:
+
+1. **Die identische Punktmenge für den Unstetigkeits-Sensor — jetzt ZUERST.**
+   Weg (4) der J6-Zeile, unverändert im Mechanismus und neu in der
+   Dringlichkeit: nachdem das Auge den Arm bei dieser Dosis nicht entscheiden
+   kann, ist S2 das einzige Instrument, das die Größe des Autors überhaupt
+   misst — und sein `cont_kink_total` +12/+11 ist nicht zurechenbar, solange
+   `cont_measured` mitwächst und die Population vom Arm selbst definiert wird.
+   Dieselbe Rahmen-Regel, die `spanmeas` für `dconn` erzwungen hat. Eigene
+   Vorregistrierung; ohne sie hat kein Nachfolger von J6 ein Lineal, das seine
+   Wirkung lesen kann.
+2. **J6c — den Verbinder-Anteil über seinen GANZEN Bogen verteilen**, statt
+   über 0,45 davon (Weg (2), neuer Mechanismus). Der Haken an `dp`/`ds`
+   entsteht, weil 33° in 0,3 xh liegen; über den vollen Bogen wäre dieselbe
+   Drehung eine Krümmung. **Neu aus dieser Runde: die Vorregistrierung braucht
+   eine Sichtbarkeits-Vorbedingung.** Ein Arm, dessen Klasse „sichtbar" heißt,
+   muss die Zeichnung so weit bewegen, dass eine Wortrunde ihn entscheiden
+   KANN; der gemessene Anhalt liegt zwischen 0,0221 xh (hier, 34,5 % Ties in
+   der starken Klasse) und 0,1186 xh (Runde 5, 9,7 %). Wer den Boden nicht
+   vorab nennt, baut eine Runde, deren wahrscheinlichstes Ergebnis „kein
+   Unterschied" ist.
+3. **Der Deckel je Klasse, gemessen an den Vorkommen** (Weg (3), neuer
+   Mechanismus). Ein Schleifen-Exit darf in seiner letzten Kurve mehr drehen
+   als eine Arkade; damit sänke der Anteil, den der Verbinder tragen muss,
+   genau dort, wo er heute den Haken macht — und der Betrag, um den sich die
+   Zeichnung in der starken Klasse bewegt, stiege dort, wo die Regel ohnehin
+   am meisten zu tun hat. Der Deckel wird gemessen, nicht gesetzt. Eigene
+   Vorregistrierung.
+4. **J6b bleibt zu; seine Wiedervorlage ist eine eigene Vorregistrierung**
+   (Weg (1)). Die post-hoc-Messung steht (`max_jump` 16°: Gate (c) grün, 3 = 3,
+   Nähte 0,00/0,02, Wörter 0,109313), und ihr Preis steht daneben
+   (Arkade→Arkade behält seine 18,57° über 24 Wort-Joins). Diese Runde
+   lizenziert ihn ausdrücklich nicht — sie war die Bedingung dafür und ist
+   unter 60 % ausgegangen. Wiedervorlage nur als frischer Arm mit frischen
+   Gates, und dann sinnvollerweise erst hinter Weg 1.
+5. **Die Naht ZEIGEN, statt sie im Wort zu verstecken** (neues Instrument).
+   Bei Zoom 2× über ein ganzes Wort ist eine Blende von 0,3 xh wenige Pixel
+   breit; die Runde hat den Autor also nach etwas gefragt, das die Anzeige
+   kaum trägt. Ein Ausschnitt je NAHT statt je Wort — dieselben zwei Arme,
+   dieselbe Frage, ein anderer Rahmen — würde das Auge dort fragen, wo der Arm
+   arbeitet. Das ist eine Änderung am Instrument und gehört deshalb VOR der
+   Runde nach `menschliche-bewertung.md` (§8a, Nachzieh-Anlass), mit einer
+   eigenen Vorregistrierung und der ausdrücklichen Auflage, dass ihre Zahlen
+   mit denen der Wortrunden nicht vergleichbar sind.
+
+**Ausdrücklich KEIN Weg:** die Schranken senken; die Klassen nachschneiden,
+bis `naht-stark` die 60 % erreicht; oder dieselbe Runde ein zweites Mal
+vorlegen — das misst den Beurteiler, nicht die Regel (die Regel aus dem
+Rettungsweg (4) der Runde 6, hier unverändert).
+
+#### Was die Runde dem INSTRUMENT einträgt
+
+In [`menschliche-bewertung.md`](menschliche-bewertung.md) §8a, als
+**Beobachtung** und ausdrücklich nicht als Schranke: eine Wortrunde hat eine
+Sichtbarkeitsschwelle, und sie ist am `arm_gap` ablesbar. Drei Runden liegen
+jetzt nebeneinander — Runde 5 mit einer starken Klasse ab 0,1186 xh und 9,7 %
+Ties, Runde 7 mit einer starken Klasse ab 0,0221 xh und 34,5 %, und in Runde 7
+über alle Klassen 0,0311 xh (entschieden) gegen 0,0146 (unentschieden). Was
+daraus folgt, ist eine Bau-Auflage und keine Auswerteregel: wer eine Klasse
+„sichtbar" nennt, nennt vorher den Versatz, bei dem er das behauptet.
+
+**Selbst entschieden (Routine im Rahmen der Vorregistrierung):** die
+Nachrechnung der zwölf Wiederholungspaare aus dem vollen Schlüssel — welche
+Paare beidseits „kein Unterschied" sind, welchen Arm die drei entschiedenen
+Übereinstimmungen nennen und welche Form die zwei Uneinigkeiten haben; das
+Werkzeug druckt nur die Summen, und ohne die Zerlegung liest sich „7/12
+gleiche Seite" wie eine Seitenneigung, die es nicht gibt. Dazu die
+Versatz-Lesung entschieden gegen unentschieden samt der Gegenprobe innerhalb
+der starken Klasse, die sie relativiert. **Keine Zahl eines früheren Eintrags
+ist angefasst, kein Lauf wiederholt worden**; das Wort-Lineal ist für diese
+Frage per Vorregistrierung ohnehin nicht zuständig.
