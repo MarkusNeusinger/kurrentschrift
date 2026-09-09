@@ -15106,8 +15106,7 @@ installieren würde.
 **Was er nicht tut:** kein DB-Write (Autorenschritt und deklarierte
 Re-Baseline), keine Wurzel-Neuausfuhr, keine Änderung an `core/`,
 `word_metric.py` oder `tracebench`, keine Absenkung des Beleg-Bodens,
-keine Änderung am Ernte-Default (die Chart-Saat bleibt, was A38
-entschieden hat).
+keine Änderung am Ernte-Default (die Chart-Saat bleibt, was A38 sagt).
 
 #### Die falsifizierbare Erwartung
 
@@ -15120,9 +15119,9 @@ die Sichtbarkeits-Auflage unten).
 
 **Der Gegeneinwand steht vor den Zahlen, nicht hinter ihnen.** In Runde 8
 bewegte der Kandidat die `d`-Wörter im Median um 0,1953 xh — mit
-fünfzehn Zeilen zugleich. Die eine Zeile bewegt weniger; wieviel
-weniger, steht in Teil 2, gemessen vor dem Bau und vor jedem Urteil. Und
-Runde 7 hat gezeigt, dass das Auge bei 0,0221 xh nicht mehr entscheidet.
+fünfzehn Zeilen zugleich. Die eine Zeile bewegt weniger; wieviel, steht
+in Teil 2, gemessen vor dem Bau. Und Runde 7 hat gezeigt, dass das Auge
+bei 0,0221 xh nicht mehr entscheidet.
 
 #### Die Wörter und die drei Klassen (vor jeder Zahl geschnitten)
 
@@ -15198,8 +15197,7 @@ das Auge zuletzt nicht entschied. Darunter wird sie ausdrücklich NICHT
 behauptet, und die Runde geht mit dieser Ansage in die Sitzung: ihr
 wahrscheinlichstes Ergebnis wäre dann „kein Unterschied" — was die
 Write-Frage ebenfalls beantwortet, denn eine Zeile, die niemand von der
-gespeicherten unterscheidet, trägt keine deklarierte Re-Baseline. Der
-gemessene Wert steht in Teil 2.
+gespeicherten unterscheidet, trägt keine deklarierte Re-Baseline.
 
 #### Was ein Ergebnis auslösen darf, vorab festgelegt
 
@@ -15223,7 +15221,7 @@ gemessene Wert steht in Teil 2.
   kein Adoptionsanspruch; die Runde wird als Evidenz gebucht (§8a
   Schritt 1).
 * **Die Nullproben werden nicht als „kein Unterschied" erkannt** → der
-  Befund ist das Instrument, nicht der Arm; die Runde wird nicht gelesen.
+  Befund ist das Instrument; die Runde wird nicht gelesen.
 * **Die Zuordnung stimmt nicht** (`arm_gap` > 0 ohne `d`-Slot oder = 0
   mit einem) → der Overlay ist nicht der behauptete Freiheitsgrad, die
   Runde wird nicht gebaut.
@@ -15269,8 +15267,8 @@ drei Gates des Schreibwegs: Boden 3 ✓, **Sprung 2,28** (≤ 2,95), **Kopf
 **Und der Befund, der die Wurzel-Einschränkung des LF16-`sep08`-Eintrags
 auflöst: die frisch geerntete Zeile ist BYTE-IDENTISCH mit der, die
 Runde 8 geurteilt hat** — 0,000000 an jedem der 120 Anker gegen
-`card-K1-write.json` von der `eaa195aa7c84…`-Wurzel. Kein Zufall,
-sondern nachrechenbar: der Komma-Ausschluss nahm `Gewehr`, `Zügel` und
+`card-K1-write.json` von der `eaa195aa7c84…`-Wurzel. Nachrechenbar statt
+zufällig: der Komma-Ausschluss nahm `Gewehr`, `Zügel` und
 `streiten` Tinte weg, und **keines dieser Wörter zieht ein `d`**.
 Dieselbe Probe auf der anderen Seite: der `words`-Block der BASIS-Arm-
 Datei ist byte-gleich mit dem der Runde 8 (nur `built_at` und der
@@ -15321,8 +15319,9 @@ Median 0,1953 xh mit fünfzehn Zeilen zugleich, für `das` und `daß` waren
 es dort schon **genau diese 0,1030** — bei ihnen war die `d`-Zeile
 bereits die ganze sichtbare Bewegung.
 
-**Die Runde 10, wie gebaut** (`--question authentic`). 40 beurteilte
-Wörter — 10 `d-rein` · 4 `d-und` · **26 Nullproben**, gezogen mit der
+**Die Runde 10, wie gebaut** (`--question authentic`). `Bestand`
+(`sha256` `57328d5f5fe17f18`) gegen `d-Zeile` (`7a740549377ffbd5`). 40
+beurteilte Wörter — 10 `d-rein` · 4 `d-und` · **26 Nullproben**, gezogen mit der
 vorab benannten Saat 20260910 aus den 49 Wörtern ohne `d`-Zeile — plus
 **8 gespiegelte Wiederholungen** = **48 Bildschirme**, Saat 20260010,
 Abstand 17–33 Positionen, Zoom 2× (Wortmodus). Die Rechnung des Bodens,
@@ -15330,16 +15329,16 @@ offen: 40 − 5 − 25 = **10** im Wiederholungstopf, 8 genommen, also über
 `MIN_PAIRED_REPEATS` = 6; **4 der 8 Paare liegen auf bewegten Wörtern**
 (`laden` `die-2` `und` `und-3`). Tie-Boden der Mischung: **26 von 40 =
 65,0 %**. Drei Wörter (`Soldaten` `Säbel` `schießen`) laufen über ihren
-Ausschnitt hinaus und werden abgeschnitten gezeigt, auf beiden Seiten
-gleich. Registrierung des Kandidaten gepinnt, Nib 0,07243 `constant`,
+Ausschnitt hinaus und werden abgeschnitten gezeigt, beidseits gleich.
+Registrierung des Kandidaten gepinnt, Nib 0,07243 `constant`,
 `exit_trim` an, `apex_handover`/`stem_depart` aus. Ablage
 `temp/runden-sep09/humanbench/` (git-ignoriert): Seite
 `runde-10-d-zeile.html`, Plan `runde-10-plan.md`, Schlüssel und Payload
 unter `runde-10/`, daneben das Write-Skript
 `temp/runden-sep09/schreibe-d-zeile.sh` (Trockenlauf per Default,
 `--apply` fährt Snapshot → PUT der EINEN Zeile → Readback). Die Nummer 10
-war frei (`data/humanbench/` endet bei 08, Runde 9 ist die gebaute
-K-E-Runde vom `sep07`).
+war frei (`data/humanbench/` endet bei 08, Runde 9 ist die K-E-Runde vom
+`sep07`).
 
 #### Rettungswege
 
@@ -15351,13 +15350,13 @@ vorab, weil die Runde eines produzieren kann:
    richtungstreu mit, gäbe es erstmals ein Lineal für das, was der
    Beurteiler an dieser Zeile sieht. Der Weg, wenn die Runde
    unentschieden ausgeht.
-2. **Mehr Evidenz für die Zeile** — n = 11 liegt über dem Boden, aber die
-   Eigenhand-Ernte läuft ohnehin; eine zweite Platte derselben Hand wäre
-   der andere Weg.
+2. **Mehr Evidenz für die Zeile** — n = 11 liegt über dem Boden; darüber
+   hinaus die laufende Eigenhand-Ernte oder eine zweite Platte derselben
+   Hand.
 3. **`d-und` zerlegen** — die vier Wörter tragen `d`, `u` und `n`
    zugleich, und welche Zeile die zwei Basis-Stimmen der Runde 8 verdient
    hat, entscheidet keine der beiden Runden. Der Weg ist ein Wortsatz,
-   der `d`+`u` von `u`+`n` trennt, also Evidenz und kein Schnitt.
+   der `d`+`u` von `u`+`n` trennt — Evidenz, kein Schnitt.
 4. **Eine Runde, die den BUCHSTABEN zeigt statt das Wort** — eine
    Instrument-Änderung, die vorher nach
    [`menschliche-bewertung.md`](menschliche-bewertung.md) §8a gehört;
