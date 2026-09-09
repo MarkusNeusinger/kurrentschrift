@@ -15210,13 +15210,42 @@ Papier-Umkehr):
 | hoch | 0,290–0,623 | **0,239** | 9 von 16 |
 
 Dieselbe Zerlegung über die Spannweite `shift_x`: 0,047 → 0,119 →
-**0,189** je Slot. **Beide Hälften zeigen in dieselbe Richtung, aber die
-FORM-Hälfte trägt den Befund und die PLATZIERUNGS-Hälfte ist der
-schwächere Teil** — auch nach Kontrolle der Wortlänge, wo der Versatz auf
-+0,157 zusammenfällt und der Saat-Rest bei +0,592 stehen bleibt.
+**0,189** je Slot. Auf DIESEN 44 Wörtern zeigen beide Hälften in dieselbe
+Richtung, aber die FORM-Hälfte trägt den Befund und die
+PLATZIERUNGS-Hälfte ist der schwächere Teil — auch nach Kontrolle der
+Wortlänge, wo der Versatz auf +0,157 zusammenfällt und der Saat-Rest bei
++0,592 stehen bleibt.
 
-Das ist unbequem für den Arm, der jetzt folgt, und es steht deshalb VOR
-ihm.
+**Und dann sind die 44 nicht die Grundgesamtheit.** Sie sind die
+Bildschirme der Runde 9, geschnitten nach K-Es eigenen Straten — also
+eine AUSWAHL, keine Stichprobe. Über alle **63** Wörter (Papier-Umkehren
+der Basis: **49** in 21 Wörtern, dazu 742 Umkehren in der Tinte) kehrt
+sich die Rangfolge um:
+
+| Spalte | Pearson (63) | Spearman (63) | partiell \| Slots |
+|---|---|---|---|
+| Spannweite `shift_x` | **+0,510** | +0,297 | **+0,347** |
+| Saat-Rest (`rest_max`) | +0,476 | **+0,412** | **+0,358** |
+| Versatz (`shift_max`) | +0,443 | +0,286 | +0,274 |
+| Saat-Rest p90 | +0,440 | +0,390 | +0,320 |
+| Saat-Abstand (`seed_max`) | +0,334 | +0,274 | +0,150 |
+| Slot-Zahl allein | +0,408 | +0,437 | — |
+
+In Terzilen je Slot: Saat-Rest 0,027 → 0,114 → **0,319**, Spannweite
+0,074 → 0,151 → **0,252**. Die beiden schlimmsten Wörter des ganzen
+Satzes stehen dabei auf der Platzierungs-Seite und waren in Runde 9 gar
+nicht dabei: **`fechten` 8 Papier-Umkehren bei Spannweite 0,656** und
+**`kann` 5 bei 0,781**.
+
+**Das ist die ehrlichere Lesart, und sie steht vor dem Arm:** auf der
+vollen Grundgesamtheit sind die beiden Hälften ununterscheidbar stark
+(partiell +0,347 gegen +0,358), und die 44er-Auswahl hat die
+Platzierungs-Hälfte systematisch untergewichtet, weil K-Es Straten nach
+dem CLAIM geschnitten waren und nicht nach der Saat. Der Arm hat damit
+mehr zu gewinnen, als die erste Tabelle nahelegt — und die Konsequenz
+für die Vorregistrierung ist keine weichere Schranke, sondern eine
+zusätzliche Berichtspflicht: **die Bewegung des Arms wird gegen
+`shift_span_x` aufgetragen**, nicht nur gegen die Gates.
 
 #### Vorregistrierung: EIN Knopf, und er ist der Startort
 
@@ -15252,11 +15281,13 @@ Byte für Byte derselbe Stapel.
   Fixture.
 
 **Die eingestandene Schwäche der Vorregistrierung, benannt bevor die
-Zahl da ist:** die Diagnose sagt, dass die Platzierungs-Hälfte die
-schwächere von beiden ist (partiell +0,157 gegen +0,592). Der Arm kann
-also selbst dann fallen, wenn die Diagnose vollständig stimmt. Das ist
-kein Grund, ihn nicht zu fahren — es ist der Grund, das Ergebnis vorher
-zu interpretieren statt nachher.
+Zahl da ist:** auf der Auswahl der Runde 9 ist die Platzierungs-Hälfte
+die schwächere von beiden (partiell +0,157 gegen +0,592); auf der vollen
+Grundgesamtheit sind sie gleich stark (+0,347 gegen +0,358). Der Arm
+kann also selbst dann fallen, wenn die Diagnose vollständig stimmt —
+weil er nur die eine Hälfte anfasst. Das ist kein Grund, ihn nicht zu
+fahren; es ist der Grund, das Ergebnis vorher zu interpretieren statt
+nachher.
 
 **Der stehende Vorbehalt, den dieser Arm anfassen MUSS** — §7.11 führt
 „**Rausch-Boden des Folgers (sperrt jeden weiteren Init-Arm)**" als
@@ -15295,10 +15326,13 @@ bricht die Runde ab, statt die Abweichung wegzuerklären.
   Marken unverändert 0/0/0.
 * **(c) Referenzfrei.** 63er-Soll-Abstand ≤ **85**.
 * **(d) Genauigkeit.** Gepaartes dev-19-`dtw`: Median-Δ ≤ 0 UND p90-Δ ≤ 0.
-* **(e) Der benannte Defekt.** Papier-Umkehren über die 44 Wörter der
-  Runde 9 **< 26** (Basis). Dies ist der Gate, für den der Arm existiert:
-  ein Arm, der jeden Lineal-Gate hält und diesen Zähler nicht senkt, hat
-  den Defekt des Beurteilers nicht angefasst.
+* **(e) Der benannte Defekt.** Papier-Umkehren über **alle 63 Wörter**
+  **< 49** (Basis; über die 44 der Runde 9 zusätzlich berichtet, dort
+  < 26). Die 63 sind die Grundgesamtheit und der Gate; die 44 sind eine
+  Auswahl und stehen nur zur Anschlussfähigkeit an Runde 9 daneben. Dies
+  ist der Gate, für den der Arm existiert: ein Arm, der jeden
+  Lineal-Gate hält und diesen Zähler nicht senkt, hat den Defekt des
+  Beurteilers nicht angefasst.
 * **(f) Determinismus.** Ein zweiter Lauf ist strich-identisch.
 * **(g) `k0eval` meldet beide Stapel identisch.** Eine Stack-Warnung
   bricht die Runde ab (Liturgie-Vorbedingung).
