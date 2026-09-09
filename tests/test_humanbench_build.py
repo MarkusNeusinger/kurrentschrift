@@ -808,6 +808,18 @@ def test_arm_gap_site_names_the_point_where_the_two_arms_part_worst():
     assert gap == pytest.approx(arm_gap(base, moved, 4.0))
 
 
+def test_arm_gap_site_breaks_a_tie_canonically_not_by_argument_order():
+    """Two separations of the same size at different places: the excerpt centre
+    must not depend on which arm is passed first, or a mirrored repeat would be
+    framed differently from its original."""
+    left = [np.array([[0.0, 0.0], [10.0, 0.0]])]
+    right = [np.array([[10.0, 1.0], [0.0, 1.0]])]
+    gap, site = arm_gap_site(left, right, 4.0)
+    flipped_gap, flipped_site = arm_gap_site(right, left, 4.0)
+    assert (gap, site) == (flipped_gap, flipped_site)
+    assert site[1] == pytest.approx(0.5)
+
+
 def test_a_windowed_word_screen_cuts_an_excerpt_around_that_point():
     """§8a: the excerpt trades context for resolution. Both panels still share
     ONE window (blindness), both arms are still drawn in full, and the window

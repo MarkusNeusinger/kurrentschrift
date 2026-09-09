@@ -172,6 +172,11 @@ WORD_MIN_REPEAT_GAP = 15
 # Artifact ceiling (page.py::SIZE_WARN_MB). At 2× the x-height of the Sütterlin
 # plate is still ~66 screen pixels.
 WORD_ZOOM = 2
+# How close two separations count as tied when `arm_gap_site` picks the excerpt
+# centre. Well under a crop pixel, so it only ever groups pairs that are the
+# same separation in floating point — its job is to make the canonical choice
+# stable, not to widen what counts as the worst place.
+TIE_EPS_PX = 1e-6
 NO_STRATUM = "-"
 # 2 groups a pen stroke's silhouette rings into ONE shape. Format 1 listed them
 # flat, which lost the only information that says which ring is a hole, and the
@@ -897,21 +902,28 @@ def arm_gap_site(left: list[np.ndarray], right: list[np.ndarray], xh: float) -> 
 
     The gap is the word mode's severity key (see `arm_gap`); the SITE is what a
     windowed round needs — the one place on the word where the two arms have
-    the most to say. It is the MIDPOINT of the worst-separated pair, not the
+    the most to say. It is the MIDPOINT of a worst-separated pair, not the
     point on the losing arm: the midpoint puts both arms' worst place inside
-    the excerpt, and it is the same point whichever way round the two arms are
-    passed. A one-sided pick would not be — on a symmetric separation the tie
-    would be broken by the argument order, and the windowed round would then
-    show the two SIDES of the same screen a different frame.
+    the excerpt.
+
+    Ties are resolved CANONICALLY rather than by argument order, because the
+    order is not a property of the screen: a mirrored repeat passes the same
+    two arms the other way round, and a frame that moved with the order would
+    show the two sides of one comparison different pixels — the tell §8 rules
+    out. Both directions are searched, every pair within `TIE_EPS_PX` of the
+    maximum contributes its midpoint, and the lexicographically smallest of
+    those midpoints wins.
     """
     a, b = np.vstack(left), np.vstack(right)
     tree_a, tree_b = cKDTree(a), cKDTree(b)
     d_a, near_a = tree_b.query(a)
     d_b, near_b = tree_a.query(b)
-    i_a, i_b = int(d_a.argmax()), int(d_b.argmax())
-    pair = (a[i_a], b[near_a[i_a]]) if d_a[i_a] >= d_b[i_b] else (b[i_b], a[near_b[i_b]])
-    site = (pair[0] + pair[1]) / 2.0
-    return float(max(d_a[i_a], d_b[i_b]) / xh), (float(site[0]), float(site[1]))
+    gap_px = float(max(d_a.max(), d_b.max()))
+    midpoints = [(a[i] + b[near_a[i]]) / 2.0 for i in np.flatnonzero(d_a >= gap_px - TIE_EPS_PX)] + [
+        (b[i] + a[near_b[i]]) / 2.0 for i in np.flatnonzero(d_b >= gap_px - TIE_EPS_PX)
+    ]
+    site = min(midpoints, key=lambda p: (round(float(p[0]), 6), round(float(p[1]), 6)))
+    return gap_px / xh, (float(site[0]), float(site[1]))
 
 
 def arm_gap(left: list[np.ndarray], right: list[np.ndarray], xh: float) -> float:

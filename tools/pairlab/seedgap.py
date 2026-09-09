@@ -4,11 +4,17 @@ The diagnosis round 9 asked for (§14 „Kette K-E `sep09`"). The judge's questi
 was why the same letter pair reads well in one word and „richtig schlimm" in
 another, and the answer named in the aug20 K-C autopsy (finding (d)) is the
 START, not the solve: the Kette is seeded from the COMPOSED word
-(`chain_seed="composed"`, the follower's default), and where that seed lies
-farther from the hand's ink than the solver's per-anchor travel budget
-(`core.fit.MAX_ANCHOR_DELTA`, 0.75 xh) the chain cannot reach the right ink at
-all — it settles on the nearest wrong ink and leaves the zig-zag zones the
-paper-reversal sensor counts.
+(`chain_seed="composed"`, the follower's default), and a seed that starts on
+the wrong ink settles there, leaving the zig-zag zones the paper-reversal
+sensor counts.
+
+**What this sensor measured, and it corrects the premise it was built on**
+(§14 „Kette K-G Saat-Registrierung `sep09`"): „the seed lies farther away than
+the solver's per-anchor travel budget" (`core.fit.MAX_ANCHOR_DELTA`, 0.75 xh)
+is FALSE as a distance. No seed anchor of the 63 frozen words sits more than
+0.68 xh from *some* ink, so `seed_over` is empty across the set. The error is
+a CORRESPONDENCE — comfortably near the WRONG ink — which is why the two
+halves below, and not the raw distance, are what the columns report.
 
 Per letter slot this reports the seed's distance to the ink twice, because the
 two halves have different cures:
@@ -42,7 +48,6 @@ from scipy.ndimage import distance_transform_edt
 
 from core.fit import MAX_ANCHOR_DELTA
 from tools.laufform.harvest import _chainable_runs, _grid_fits
-from tools.pairlab.analyze import FIT_DX_UNITS, FIT_DY_UNITS
 from tools.pairlab.chain import _letter_spec
 from tools.pairlab.ink_evidence import InkEvidenceOptions, ink_evidence_case
 from tools.tracebench.reference import DEFAULT_FIXTURES_DIR
@@ -59,10 +64,18 @@ SEED_QUANTILE = 0.9
 
 
 def _distances_units(edt_px: np.ndarray, points_px: np.ndarray, xh: float) -> np.ndarray:
-    """Nearest-ink distance of each point, in x-heights."""
-    row = np.clip(np.round(points_px[:, 1]).astype(int), 0, edt_px.shape[0] - 1)
-    col = np.clip(np.round(points_px[:, 0]).astype(int), 0, edt_px.shape[1] - 1)
-    return edt_px[row, col] / xh
+    """Nearest-ink distance of each point, in x-heights — `analyze._edt_at`'s rule.
+
+    A seed anchor may lie OUTSIDE the crop, and reading the EDT at the clamped
+    border pixel would then report it as if it already sat on the border. The
+    clamp distance is added back, exactly as the grid search this sensor is
+    measured against does it.
+    """
+    height, width = edt_px.shape
+    cx = np.clip(points_px[:, 0], 0, width - 1)
+    cy = np.clip(points_px[:, 1], 0, height - 1)
+    base = edt_px[cy.round().astype(int), cx.round().astype(int)]
+    return (base + np.hypot(points_px[:, 0] - cx, points_px[:, 1] - cy)) / xh
 
 
 def _slot_row(
@@ -93,9 +106,13 @@ def _slot_row(
         "shift_x": float(shift_units[0]),
         "shift_y": float(shift_units[1]),
         "shift_abs": float(np.hypot(*shift_units)),
-        # The grid search wanted more than the chain's own block can give: the
-        # placement half of the gap is then not absorbable either.
-        "shift_at_block_bound": bool(abs(shift_units[0]) >= FIT_DX_UNITS or abs(shift_units[1]) >= FIT_DY_UNITS),
+        # The grid search wanted more than its own window can give — read off
+        # ITS verdict, never recomputed from the normalised shift: `_fit_letter`
+        # rounds the pixel limit (`round(FIT_DX_UNITS * xh)`), so an optimum AT
+        # the bound can normalise just below it and a recomputation would call
+        # it free. This flag decides which slots `--chain-seed grid` skips, so
+        # it has to be the follower's own answer.
+        "shift_at_block_bound": bool(grid["at_bound"]),
         "rest_med": float(np.median(rest)),
         "rest_p90": float(np.quantile(rest, SEED_QUANTILE)),
         "rest_max": float(rest.max()),

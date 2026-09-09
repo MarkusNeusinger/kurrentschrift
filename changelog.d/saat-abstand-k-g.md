@@ -12,9 +12,11 @@
   aiou** and loses all five of its paper reversals, because the base run is
   reverted to init there and the arm's is not — while damaging exactly the one
   he called good. Reference-free the Soll distance falls 85 → 74 and the paper
-  reversals 49 → 42 (45 → 32 without `regieren`, the one word whose grid search
-  ends AT the block bound, so seven of its slots start registered and one does
-  not). The whole aiou spread turns out to be the structure guard rather than
+  reversals 49 → 42 (45 → 32 without `regieren`, which starts MIXED because one
+  of its slots ends at the block bound and is therefore left unseeded — the only
+  one of four such words that gets worse, so the mixed start is a plausible
+  cause and not a proven one). The whole aiou spread turns out to be the guard
+  rather than
   the ink: 28 of 63 words change their verdict, the ones moving to `revert-init`
   lose 0.0770 median and the ones leaving it gain 0.1034, while the 35 unchanged
   move ±0.0005. No default flips, no proposal goes to the author; the two
