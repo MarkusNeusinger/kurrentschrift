@@ -15381,8 +15381,8 @@ Urteilsrunde schreiben, weil das Lineal sie diesmal fast nichts kostet.
 * **Die Byte-Vergleiche gegen Runde 8 gefahren**, statt „dieselbe
   Zeilen-Familie" zu behaupten — sonst stünde die 83,3 % als Erinnerung
   daneben statt als Messung.
-* **Die Klassen VOR dem Bau committet**, mitsamt der Regel, die die
-  Sichtbarkeits-Behauptung an eine Zahl bindet.
+* **Die Klassenschnitte als eigener Commit VOR dem ersten Lineal-Lauf**,
+  mitsamt der Regel, die die Sichtbarkeits-Behauptung bindet.
 
 **Keine Ledger-Zeile:** die Runde bewegt keine Headline. Wörter und
 Paare stehen unverändert bei 0,108153 · 0,148236; die 0,108339 ist eine
