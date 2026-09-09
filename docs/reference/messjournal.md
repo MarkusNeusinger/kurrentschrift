@@ -15119,7 +15119,8 @@ und der eingefrorene Sensor reproduziert dessen **29 : 27 nicht exakt**.
 Er liest über dieselben 44 beurteilten Wörter, aus denselben Arm-Dateien
 (`sha256` `da007a1dcaa51410` / `f8a31021b07ae2a6`, ziffernweise die
 Stempel der Runde 9) **26 : 25**. Die Signatur ist dieselbe: `Galoppieren`
-0, dieselben 14 Wörter tragen überhaupt Papier-Umkehren, dieselbe
+0, **14 der 15 dort genannten Wörter** tragen auch hier Papier-Umkehren
+(nur `will` 1 : 1 fällt auf 0 : 0), dieselbe
 Zweirichtung (`Sprünge` 3 : 0 und `die`/`die-2` 1 : 0 heilen, `regieren`
 4 : 8 und `Zügel` 2 : 4 werden schlechter), dasselbe Netto-Vorzeichen.
 Zwei Gründe stehen nebeneinander und beide bleiben unbewiesen: die
@@ -15267,9 +15268,10 @@ kippten, mit aiou −0,0298 … +0,0800 und vier Verlierern unter der
 ihm mit zwei Sätzen und einer Auflage:
 
 1. **Die Störung liegt fünfzehn Größenordnungen darüber.** K-G bewegt
-   die Saat um 0,03 … 0,615 xh (Median über die 63 Wörter: Spannweite
-   0,219). Der Rausch-Boden sperrt Arme, deren SIGNAL im Rauschen liegt;
-   dieser liegt nicht darin.
+   die Saat je Wort um **0,047 … 0,615 xh** (Median 0,164; die
+   Spannweite ÜBER die Slots eines Wortes 0,032 … 0,967, Median 0,219).
+   Der Rausch-Boden sperrt Arme, deren SIGNAL im Rauschen liegt; dieser
+   liegt nicht darin.
 2. **Für das EINZELNE Wort bleibt der Vorbehalt gültig.** Die Auflage
    dieser Runde ist deshalb: **kein Wort wird einzeln adoptiert oder
    verworfen**, und jede Zahl wird neben den Wächter-Ausgängen
@@ -15313,9 +15315,10 @@ Autorensache. Diese Runde darf ihn VORLEGEN, mehr nicht.
 
 **Falsifizierbare Erwartungen.**
 
-1. Wörter mit `shift_span_x` nahe 0 (`und` 0,032, `er-2` 0,032, `im`
-   0,067) bleiben **strich-identisch**. Bewegen sie sich, seedet der
-   Schalter etwas anderes als die Diagnose beschreibt.
+1. ~~Wörter mit `shift_span_x` nahe 0 (`und` 0,032, `er-2` 0,032, `im`
+   0,067) bleiben **strich-identisch**.~~ **Zurückgezogen VOR der ersten
+   Arm-Zahl, mit Begründung** (siehe Nachtrag unten): keine Nullprobe
+   ist zu erwarten, die Erwartung war falsch formuliert.
 2. `regieren` (Spannweite 0,967, ein Slot an der Blockschranke) ist das
    Wort mit der größten Bewegung.
 3. Die Wörter, deren Papier-Umkehren in der FORM-Hälfte sitzen
@@ -15323,9 +15326,30 @@ Autorensache. Diese Runde darf ihn VORLEGEN, mehr nicht.
    Heilen sie doch, ist meine Zerlegung falsch — und das wäre der
    interessantere Befund von beiden.
 
+**Nachtrag zur Vorregistrierung, geschrieben VOR der ersten Arm-Zahl.**
+Erwartung 1 war falsch formuliert, und der Fehler fiel beim Abzählen der
+Saat auf, nicht beim Lesen eines Ergebnisses: **`shift_span_x` ist die
+SPANNWEITE über die Slots eines Wortes, nicht der Versatz selbst.** Ein
+Wort mit Spannweite 0,032 kann trotzdem jeden seiner Slots um denselben
+Betrag verschoben bekommen — und **257 der 277 Slots des Satzes
+bekommen überhaupt einen Seed ungleich null; KEIN einziges der 63
+Wörter hat lauter Null-Verschiebungen.** Eine Nullprobe im Sinne von
+„der Schalter tut hier nichts" gibt es in dieser Runde also nicht, und
+sie war nie zu erwarten. Was von der Erwartung sachlich übrig bleibt und
+hiermit an ihre Stelle tritt: **ein Wort, dessen Slots alle um
+denselben Betrag verschoben werden, sollte sich WENIGER bewegen als
+eines mit großer Spannweite** — denn eine gleichförmige Verschiebung
+kann die globale Translation der Kette ohnehin, die Spannweite nicht.
+Geprüft wird das als Korrelation zwischen `shift_span_x` und der
+Kandidaten-Bewegung, nicht an einer Identitäts-Behauptung. Die alte
+Fassung bleibt durchgestrichen stehen, damit die Korrektur nachlesbar
+ist.
+
 **Selbst entschieden (benannt, nicht versteckt).** Den Papier-Umkehr-
 Sensor NICHT auf 29 : 27 nachzuziehen (Begründung oben); die
 Diagnose gegen die K-C-gereinigte Tinte zu messen statt gegen die rohe,
-weil der Löser genau diese sieht; und den Saat-Abstand an den
+weil der Löser genau diese sieht; den Saat-Abstand an den
 Ketten-Ankern abzulesen statt an der gerenderten Mittellinie, weil die
-Anker die Parameter sind, an denen `max_delta` hängt.
+Anker die Parameter sind, an denen `max_delta` hängt; und die falsch
+formulierte Erwartung 1 offen zurückzuziehen, statt sie hinterher als
+„so war sie gemeint" zu lesen.
