@@ -899,10 +899,8 @@ Warnung versehen. Begriff und Hausregel:
   `tools.tracebench` (dev-19-Wertung gegen die authored Wortbahnen),
   `.k0eval` (referenzfreies 63er-Protokoll), `.excursions`
   (Papier-Exkursions-Inventar, der stehende K-D-Sensor), `.reversals`
-  (**Papier-Umkehren** — der Zickzack IM PAPIER, getrennt vom Zickzack in
-  der Tinte, der Duktus ist; `--paper grey|mask`, `--words-file` schneidet
-  auf die Wörter einer Urteilsrunde, §14 „Kette K-G Saat-Registrierung
-  `sep09`"), `.kringelcat`
+  (**Papier-Umkehren** — der Zickzack IM PAPIER, getrennt von dem in der
+  Tinte, der Duktus ist; `--paper`, `--words-file`), `.kringelcat`
   (baut den eingefrorenen Kringel-Katalog aus EINER Wurzel; `.kringel`
   ist der Sensor, der ihn liest — Report-Spalte `kringel_lost`, §14
   „Kringel-Landmarke `sep06`") und `.view`

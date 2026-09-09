@@ -56,3 +56,18 @@
   the stamp carries `window_xh` either way, because a windowed round's numbers
   must never be pooled with a whole-word round's. Construction rule §3.4a in
   `docs/reference/menschliche-bewertung.md`.
+
+### Changed
+
+- **The `mess-runde` reading budget is raised, and the accounting is in
+  `tools/docs_budget`.** A round that pre-registers AND measures owes the §14
+  register two rows, because the per-entry ceiling is what forced the split in
+  the first place — as one section this entry measured 7 942 against a 4 957
+  budget. The round's whole share of the path is ~1 080 tokens: ~880 in those
+  two register rows and ~200 in the two §7.11 rows. They were condensed three
+  times first, and the Kette ledger row and the tool-inventory line were cut
+  until `mess-runde-route` and `werkzeug-abschnitt` fit their existing budgets
+  rather than being raised alongside. Main itself stood at 33 950 against
+  34 012 — 62 tokens of room — so the budget was spent by the campaign's
+  cadence before this round arrived. Re-measured at 35 098 plus the documented
+  10 %.
