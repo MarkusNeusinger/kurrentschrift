@@ -28,8 +28,8 @@
 > LF11) hat entschieden, wo das Wort-Lineal blind war, und dem Dokument
 > die Konstruktionsregel §3.6b eingetragen; die Runden 5 (`sep04`, J4) und
 > 6 (`sep05`, J5) haben §9a ausgelöst; Runde 7 (`sep06`, J6) hat die
-> **Sichtbarkeitsschwelle** beziffert, die erste BAHN-Runde 9 (`sep07`, K-E)
-> sie relativiert (beides §8a). Zahlen und Verdikte: `messjournal.md` §14.
+> **Sichtbarkeitsschwelle** beziffert, die erste BAHN-Runde 9 (K-E, geurteilt
+> `sep09`) sie relativiert (beides §8a). Zahlen: `messjournal.md` §14.
 >
 > **Was offen ist.** Die bekannten Grenzen des Verfahrens — was ein
 > blinder Durchgang grundsätzlich nicht entscheidet — stehen in
