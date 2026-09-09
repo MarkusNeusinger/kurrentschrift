@@ -33,9 +33,10 @@ Three rules, all read off the committed files:
    in `METRIC`'s status blockquote. The ledger is an index, not a second home
    for the numbers: a value that appears nowhere else is a number invented in a
    table.
-3. **Every duel-route entry reaches its process page.** A register row on Kette ·
-   Lotse · InkSight · Nullprobe needs its date in that page's ledger; a row on
-   "alle Routen" needs it on all four.
+3. **Every route entry reaches its process page.** A register row on Kette ·
+   Lotse · InkSight · Nullprobe · Übergänge needs its date in that page's
+   ledger; a row on "alle Routen" needs it on the four DUEL routes, which is
+   what the phrase has always meant.
 
 Standard library only, so CI runs it without syncing the project's extras.
 """
@@ -78,13 +79,29 @@ INDEX_HEADINGS = (
 POST_JOURNAL_SUBHEADINGS: tuple[str, ...] = ()
 
 # Route name in the register ⇒ the process page that owns its ledger.
+#
+# „Übergänge" joined on the author's decision A43 of 2026-09-09 and is the one
+# entry here that is not a duel route: it does not follow anyone's ink, it is
+# the join grammar of `core/compose.py` that all four routes compose on top of.
+# It gets a ledger anyway because its arms move adopted DEFAULTS — twenty §14
+# entries between `aug29` and `sep08` measured them with no process page to
+# land on, which is exactly the decay this module exists against. Laufform,
+# Lineal and Feder also appear in the register's route column and deliberately
+# stay out: their state lives elsewhere (verfahren.md says where).
 ROUTE_PAGES = {
     "Kette": Path("docs/reference/verfahren-kette.md"),
     "Lotse": Path("docs/reference/verfahren-lotse.md"),
     "InkSight": Path("docs/reference/verfahren-inksight.md"),
     "Nullprobe": Path("docs/reference/verfahren-nullprobe.md"),
+    "Übergänge": Path("docs/reference/verfahren-uebergaenge.md"),
 }
 ALL_ROUTES = "alle Routen"
+# What „alle Routen" means: the four routes that run in the duel, and only
+# those. The one row that uses it is the `aug17` re-baseline of the 19-word dev
+# set — a duel measurement that predates the Übergänge section entirely, so
+# expanding the phrase over every page in ROUTE_PAGES would demand a ledger row
+# for a day on which the route did not exist.
+DUEL_ROUTES = ("Kette", "Lotse", "InkSight", "Nullprobe")
 
 # `aug14`, `sep02` — the journal's own date tag, also the Datum column everywhere.
 # All twelve months, not just the ones the campaign has run through so far: the
@@ -415,7 +432,7 @@ def check_verfahren(text: str, *, root: Path = REPO_ROOT) -> list[str]:
         row_dates = set(_DATE_TAG.findall(row.cells[0]))
         route_cell = row.cells[1].strip()
         wanted = (
-            list(ROUTE_PAGES) if route_cell == ALL_ROUTES else [r for r in route_cell.split("/") if r in ROUTE_PAGES]
+            list(DUEL_ROUTES) if route_cell == ALL_ROUTES else [r for r in route_cell.split("/") if r in ROUTE_PAGES]
         )
         for route in wanted:
             if row_dates and not (row_dates & dates[route]):

@@ -1,17 +1,23 @@
 # Verfahrensseiten: die Tintenfolger-Routen und ihre Versionen
 
-> **Status (2026-09-01): lebend.** Übersicht und Versions-Konvention der
+> **Status (2026-09-09): lebend.** Übersicht und Versions-Konvention der
 > Duell-Verfahren; je stehendem Verfahren existiert eine eigene Seite
 > (unten). Nachzieh-Pflicht: Jeder §14-Eintrag, der einen Arm oder eine
 > Stufe eines Verfahrens misst (adoptiert ODER verworfen), ergänzt im
 > selben PR die Ledger-Zeile der betroffenen Verfahrensseite und — bei
-> Adoption — deren „Aktueller Stand“ sowie die Stand-Spalte unten.
-> Seit 2026-09-01 ist das ein CI-Gate: `uv run python -m
+> Adoption — deren „Aktueller Stand“ sowie den Stand in dieser Übersicht:
+> bei den vier Duell-Routen die Stand-/„seit“-Spalte der Tabelle unten,
+> bei den Übergängen der Absatz
+> [„Übergänge — keine Duell-Route, trotzdem ein Ledger“](#übergänge--keine-duell-route-trotzdem-ein-ledger)
+> daneben, denn diese Route hat bewusst keine Tabellenzeile (anderes
+> Lineal). Seit 2026-09-01 ist das ein CI-Gate: `uv run python -m
 > tools.docs_register check` verlangt für jeden §14-Eintrag einer
 > Duell-Route die Ledger-Zeile seines Datums auf der zugehörigen Seite
-> (Job „Docs-Register“). Die Spalte **seit** hält fest, wann der
-> ausgewiesene Stand adoptiert wurde — ein Blick auf die Seite genügt
-> damit für den Abgleich.
+> (Job „Docs-Register“). **Seit dem Autor-Entscheid A43 vom 2026-09-09
+> gilt dasselbe für die Route „Übergänge“**, die keine Duell-Route ist,
+> aber adoptierte Defaults bewegt. Die
+> Spalte **seit** hält fest, wann der ausgewiesene Stand adoptiert wurde
+> — ein Blick auf die Seite genügt damit für den Abgleich.
 
 Die Tintenfolger-Kampagne ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md))
 lässt mehrere Verfahren gegeneinander antreten; ihre Historie wächst als
@@ -62,3 +68,25 @@ Kandidaten und darum keine Seite — ihr Stand wohnt in der
 Duell-Namen-Tabelle (tintenfolger.md §7.8, Glossar „Duell-Namen“);
 die erste Vorregistrierung eines solchen Verfahrens legt seine Seite
 im selben PR an.
+
+### Übergänge — keine Duell-Route, trotzdem ein Ledger
+
+Die Route **Übergänge**
+([`verfahren-uebergaenge.md`](verfahren-uebergaenge.md)) tritt gegen
+niemanden an — sie ist die Join-Grammatik der Komposition, auf der alle
+vier Routen aufsetzen, und ihr Lineal ist das Wort-/Paar-Lineal des
+Wordbench statt des dev-19-Satzes. Sie bekommt trotzdem ein Ledger,
+weil ihre Arme adoptierte DEFAULTS bewegen: Stand seit dem
+Autor-Entscheid A37 vom 2026-09-06 ist der Austritts-Trim (`exit_trim`)
+als Produktions-Default (gepaart gemessen: Wörter 0,108444 →
+**0,109026**, Paare byte-gleich), während `apex_handover`/`stem_depart`
+(A36) und `seam_negotiation` (zweimal gefallen) aus bleiben. Die
+Headline steht seither auf der `sep07`-Wurzel und wohnt wie immer allein
+in [`qualitaetsmetrik.md`](qualitaetsmetrik.md).
+
+**Laufform**, **Lineal** und **Feder** kommen ebenfalls als Route in der
+§14-Registerspalte vor und haben bewusst keine Seite; ihr Stand wohnt
+anderswo (Laufform-Zeilen in der DB,
+[`qualitaetsmetrik.md`](qualitaetsmetrik.md) §2 für das Lineal,
+[`../concepts/federmodelle.md`](../concepts/federmodelle.md) für die
+Feder).
