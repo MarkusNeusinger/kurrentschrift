@@ -228,11 +228,12 @@ die DB) — mit seiner Bedingung.
 | sep06 | Übergänge | [J4 Adoption (A37)](#übergänge-j4-sep06--adoption-auf-autor-entscheid-a37-exit_trim-wird-default-deklarierte-re-baseline) | **Adoption** (Autor-Entscheid A37) · **Re-Baseline** (Wörter + Golden) | `exit_trim` ist Default. Auf UNVERÄNDERTER Wurzel, also gepaart: Wörter 0,108444 → **0,109026**, Paare **byte-gleich**, `seam_dep_median` +7,59 → **−0,70** (absolut 12,67 → 2,30), Verdopplungen 14 = 14. Golden deklariert neu gebacken (10 der 11 Wörter, kein Draw-Item mehr oder weniger, Solo-Glyphen 0 von 23). **S2 stimmt unabhängig zu** — am selben Tag auf der UNGETRIMMTEN Komposition abgenommen: `cont_kink_total` 402 → **337**, `cont_bow_join_median` 0,0091 → **0,0042** (Report-Spalte, kein Gate). `prodconn.replay` hat seine angekündigte Nachbearbeitung bekommen; die Kette ist per Messung ausgenommen (Kompositions-Soll 0 von 126), fällig bleiben Lotse-Karte und S2-Bezug (§7.11) |
 | sep07 | Kette | [R4 Feder-Entfaltung (Diagnose + Pre-Reg)](#kette-r4-feder-entfaltung-sep07--diagnose-und-vorregistrierung-ist-der-klumpen-tinte-oder-raster) | Diagnose + Pre-Reg | Konversion (4) von R3/R3c, und zuerst die Frage, die keiner der beiden gestellt hat: **ist die Verschmelzung Tinte oder Raster?** Der eine Term der Frage ist strukturell: der Fixture-Ausschnitt ist ein unskalierter Schnitt der Platte (`freeze_entry`), x-Höhe **30–33 px**, `words-abb19.png` byte-identisch von Commons. Dass es keine feinere Aufnahme gibt, war in der ersten Fassung behauptet und ist nach einem Copilot-Fund **nachgemessen**: der zweite committete Scan derselben Platte (`suetterlin-leitfaden-1926/p060.jpg`, laut `SOURCE.md` druckstock-identisch) ist eine GANZSEITEN-Aufnahme und trägt für die Tafel Zeilenabstand **≈ 104 px gegen ≈ 110 px**, also ~5 % weniger. Gemessen wird deshalb die BINARISIERUNG: dieselbe Binnenfläche als adaptive Maske 1×, als globale 50-%-Niveaulinie 1× und als 50-%-Niveaulinie auf 4× bikubischem Grau, dazu der Mittelachsen-Anzeiger bei beiden Maßstäben. Entscheidregel vor der ersten Zahl: RASTER, wenn Median(`A_grau4 − A_Maske`) ≥ +0,016 xh **oder** Median(`I@4× − I@1×`) ≥ +0,10. Der Arm dahinter: die Feder aus der EVIDENZ herausrechnen — jedes Skelettpixel näher als `w_pen` an einer `offen`-Binnenfläche fällt weg, an seine Stelle tritt die Niveaulinie `w_pen + 0,5 px` desselben Loch-Feldes, auf die Tinte beschnitten und nur im radialen Schatten des Weggefallenen. Gates (a)–(h) sind R3cs, Wort für Wort; eine Korrektur vor der ersten Armzahl: die pixelweise Fassung ist verworfen (0 von 13 Schleifen überleben den Schub, 13 von 13 die Niveaulinie) |
 | sep07 | Kette | [R4 gemessen](#kette-r4-feder-entfaltung-sep07--gemessen-die-zugelaufenen-schleifen-bewegen-sich-zum-ersten-mal-und-gate-c-fällt-trotzdem) | Diagnose + gemessen · **nicht adoptiert**, Gate (c) rot (Kill) | **Diagnose-Verdikt: echte Verschmelzung.** Median(`A_grau4 − A_Maske`) **+0,0000** und Median(`I@4× − I@1×`) **+0,0109** — beide Schranken klar verfehlt: die globale Schwelle liest bei 1× ziffernweise dieselbe Binnenfläche wie die adaptive Maske, bei 4× liest das Grau eine **kleinere** (0,1118 gegen 0,1290, das halbe Plattenpixel je Seite), und die Einschnürung überlebt die schärfere Lesung (Anzeiger 0,807 → 0,790). **Der Arm bewegt zum ersten Mal die richtige Klasse:** von den 33 Schleifen, die die Basis zu zeichnet, gehen **8 auf** (7 zugelaufene, 1 kollabierte — `Feinde` `F`#1 0,0025 → 0,3184), wo R3c 0 bewegt hat; offen bei 0,097 **124 → 129**, referenzfreier 63er-Soll **85 → 70** (der größte Fall der R-Kette), `cross_spurious` **9 → 7** und `retrace_spurious` 10 → 9, also Gate (b) **grün**. Bezahlt wird mit drei Totalverlusten (`unter` `t`#1 · `Kugel` `K`#1 · `macht` `a`#0, je auf den Ableseboden 0,0025), Gate (a) **36 von 157** statt 149, Gate (c) rot unter BEIDEN Lesarten (gepaart p90 +0,000834, eigene Verteilung Median +0,000385) und Gate (d) +34 `kink`-Ereignisse (2 296 → 2 330; R3 +1 626, R3b +462). (f)/(g)/(h) grün, Determinismus 63/63 strichgleich |
-| sep07 | Kette | [K-E Runde 9 gebaut](#kette-k-e-sep07--wiedervorlage-als-menschenurteil-runde-9-gebaut-urteil-offen-und-das-lineal-hat-inzwischen-die-seite-gewechselt) | Pre-Reg + Konstruktionsmessung · **Runde 9 gebaut, Urteil offen** (Autor-Entscheid A2) | Rettungsweg (1) der K-E-Familie. **K-E1 ist nicht lauffähig** — der Breitenfeld-Split steht in keinem Commit (Squash #400 legte nur die Ein-Faktor-Form ab), der Arm ist also zwangsläufig K-E2 (`--mark-claim`). Basis = Produktions-Kette v5 ohne Flag, ziffernweise der heutige Stand (dtw 0,045881 · p90 0,088356 · aiou 0,7660 · 11/9 · 63er-Soll 85), beide Stacks in `k0eval` identisch. **Auf v5 hat das Lineal die Seite gewechselt:** 38 bewegt / 25 strich-identisch, Soll **85 → 82**, aiou-Median der bewegten **+0,0008** statt −0,0002, und nur noch **zwei** Gate-Verlierer (`regieren` −0,0180 · `muß` −0,0285) statt vier — die vier `aug21`-Verlierer sind heute Gewinner oder neutral (`auch` +0,0317 · `Einen` +0,0170 · `schießen` +0,0043 · `muß-2` −0,0007). Das Ziel heilt wieder (`die-2` Soll 5 → 4, aiou +0,0227, V-Nadel weg; `Zügel` +0,1059, `Feinde` Soll 2 → 0). Runde: 44 Bildschirme + **10** gespiegelte Wiederholungen, gefolgte BAHNEN als Mittellinie über der Platte, also Genauigkeitsfrage (`VERGLEICH/9`); Straten `ziel` 2 · `riss` 2 · `gewinn` 8 · `bewegt` 26 · `nullprobe` 6 (Unentschieden-Boden 13,6 %) |
+| sep07 | Kette | [K-E Runde 9 gebaut](#kette-k-e-sep07--wiedervorlage-als-menschenurteil-runde-9-gebaut-urteil-offen-und-das-lineal-hat-inzwischen-die-seite-gewechselt) | Pre-Reg + Konstruktionsmessung · **Runde 9 geurteilt `sep09`**, Ergebnis im Eintrag „K-E `sep09`" unten (Autor-Entscheid A2) | Rettungsweg (1) der K-E-Familie. **K-E1 ist nicht lauffähig** — der Breitenfeld-Split steht in keinem Commit (Squash #400 legte nur die Ein-Faktor-Form ab), der Arm ist also zwangsläufig K-E2 (`--mark-claim`). Basis = Produktions-Kette v5 ohne Flag, ziffernweise der heutige Stand (dtw 0,045881 · p90 0,088356 · aiou 0,7660 · 11/9 · 63er-Soll 85), beide Stacks in `k0eval` identisch. **Auf v5 hat das Lineal die Seite gewechselt:** 38 bewegt / 25 strich-identisch, Soll **85 → 82**, aiou-Median der bewegten **+0,0008** statt −0,0002, und nur noch **zwei** Gate-Verlierer (`regieren` −0,0180 · `muß` −0,0285) statt vier — die vier `aug21`-Verlierer sind heute Gewinner oder neutral (`auch` +0,0317 · `Einen` +0,0170 · `schießen` +0,0043 · `muß-2` −0,0007). Das Ziel heilt wieder (`die-2` Soll 5 → 4, aiou +0,0227, V-Nadel weg; `Zügel` +0,1059, `Feinde` Soll 2 → 0). Runde: 44 Bildschirme + **10** gespiegelte Wiederholungen, gefolgte BAHNEN als Mittellinie über der Platte, also Genauigkeitsfrage (`VERGLEICH/9`); Straten `ziel` 2 · `riss` 2 · `gewinn` 8 · `bewegt` 26 · `nullprobe` 6 (Unentschieden-Boden 13,6 %) |
 | sep07 | Laufform | [LF16 Chart-Saat als Default (A38) + Runde 8 (Pre-Reg)](#laufform-lf16-sep07--adoption-der-chart-saat-als-ernte-default-a38-und-vorregistrierung-der-runde-8) | **Adoption** (Werkzeug-Default) · Pre-Reg der Runde 8 · Write bleibt Autorenschritt | **Autor-Entscheid A38 (A1: „ja"):** `chain_seed="chart"` ist der Ernte-Default, `--chain-seed composed` bleibt erreichbar; Trace-Bench und Folger behalten ihren `composed`-Default, die Kette-Route ist unberührt. **Der Fixpunkt hält auch auf dem heutigen Composer** — `K1` = `K2` = `K3` byte-gleich samt Vorkommen, `K3` aus der deutlich anderen `C1`-Karte gestartet. **Und LF15s `K1` ist über die Sitzungsgrenze reproduzierbar, sobald der Composer festgehalten wird:** mit `exit_trim=False` zurückgesetzt (A37/#559 flippte den Default um 01:29, nach LF15s Läufen) kommen `drafts-k1`/`occ-k1` **byte-identisch** heraus, 226 Vorkommen, `geo_rmse` 0,982/1,427. Heute 227 gegen 234 der Kontrollkarte, also 7 statt 9 Vorkommen Preis (`connector_degenerate` 22 → 31, `anchor_spike` 10 → 8); **`Z` steht mit n = 3 NICHT mehr unter dem Beleg-Boden**, unter ihm bleiben nur `P`/`s` wie am Bestand. Schreibliste 15 Zeilen (`Z a c d e g h l longs m n p r u w`), vier vom Sprung-/Kopf-Gate abgewiesen (`i` `o` `sz` `z`). **Das Lineal ist gegen den Kandidaten:** 0,109026 → **0,112123** (Paare 0,148119), 22 besser : 35 schlechter, ein Drittel des Verlusts in `Zaum` +0,0712 und `Zügel` +0,0462 über die `Z`-Zeile — die Kontrollkarte mit der ALTEN Saat liegt bei 0,108544 und bewegt den Bestand fast genauso weit (0,0596 gegen 0,0561 xh, 8 gegen 7 Zeilen über 0,03), der Saatwechsel ist also NICHT der Träger der Bewegung. Runde 8 gebaut, nicht geurteilt: 75 Bildschirme, 12 gespiegelte Wiederholungen, vier vorab geschnittene Klassen (`lineal-verlierer` 10 · `zeile-stark` 24 · `zeile-schwach` 23 · `nullprobe` 6) mit vorab benannter Sichtbarkeits-Behauptung |
 | sep07 | Lineal | [Komma-Ausschluss](#komma-ausschluss-sep07--die-satzzeichen-der-platte-verlassen-die-referenz-tinte) | **Re-Baseline** (Wörter + abb22) · umgesetzt (Autor-Entscheid A3) | **Vier Referenz-Ausschnitte trugen ein Komma, also Tinte, die kein Buchstabe erzeugen kann** — je eine eigene Komponente, 0,41–0,83 xh von jeder Buchstabentinte entfernt und mit keiner verschmolzen, per `exclude` entfernt wie `regieren` seit §15. **Wörter 0,109026 → 0,108153**, **Paare byte-gleich**, beide Folger über 63/63 unbewegt. Gegenbefund `a22-dank` **+0,039863** (cross-hand, nie Headline): dort trug das Komma die Registrierung — Fremdtinte hat den Fit geschmeichelt, nicht bestraft |
 | sep08 | Übergänge | [J6 Runde 7 geurteilt](#übergänge-j6-sep08--runde-7-geurteilt-40-von-63-kein-unterschied-und-der-arm-fällt-zum-zweiten-mal) | Menschenrunde · **ehrliches Negativ** · nicht adoptiert, **J6b nicht geöffnet** | **Basis 14 : Kandidat 9** von 23 entschiedenen (39,1 % gegen ≥ 60 %), unentschieden **40 von 63 = 63,5 %** gegen ≤ 25 % — und klassenweise löst sich hier NICHTS auf: `naht-stark` 9 : 10 bei 34,5 % Ties (47,4 % Kandidat), `naht-schwach` 0 : 4 bei 85,7 %, `nullprobe` 6/6 richtig als „kein Unterschied". Instrument sauber: 12 Paare, 10/12 gleicher Arm, und die 7 Seiten-Übereinstimmungen SIND die 7 Doppel-Ties — kein Paar nannte zweimal dieselbe Seite, während es eine nannte; die zwei Uneinigkeiten sind nie Basis gegen Kandidat, sondern Entscheidung gegen Unentschieden. **Der Grund steht in der Runde:** der Arm bewegt die Zeichnung um ein Fünftel dessen, was Runde 5 bewegt hat (Median 0,0221 xh, Maximum 0,0681 gegen den 0,1186-Boden der starken Klasse dort); entschiedene Bildschirme tragen 0,0311 xh Versatz, unentschiedene 0,0146 — innerhalb der starken Klasse trennt das aber kaum noch (0,0382 gegen 0,0316). **Die Vorregistrierung lizenzierte J6b NUR bei ≥ 60 %**, also bleibt auch der engere Arm zu; J6 ist damit zweimal gefallen — `sep06` an Gate (c), heute am Auge. Autor wörtlich: „nicht besser nur bischen weniger wellen mal da oder dort". Fünf Rettungswege in §7.9, Sensor-Population zuerst | 
 | sep08 | Laufform | [LF16 Runde 8 geurteilt](#laufform-lf16-sep08--runde-8-geurteilt-die-karte-fällt-die-d-zeile-trägt) | Menschenrunde · **nicht adoptiert** (beide Schranken) · Zerlegung je Zeile | Basis **20** : Kandidat **13** von 33 entschiedenen (39,4 % gegen ≥ 60 %) bei **47,6 %** unentschieden (gegen ≤ 25 %) — anders als bei J4 zeigt auch die RICHTUNG zur Basis. Verlässlich (10/12 gleicher Arm, 6/12 gleiche Seite), Nullprobe 6/6 richtig als „kein Unterschied". Je Klasse `zeile-stark` 18,2 % · `zeile-schwach` 52,9 % · `lineal-verlierer` 40,0 % — die vorab BEHAUPTETE Sichtbarkeit hält nicht, die Klasse ohne Behauptung kommt einem Verdikt am nächsten. Die vorregistrierte Ohne-`Z`-Probe ist exakt lesbar (die 60 übrigen Bildschirme SIND die 14-Zeilen-Karte) und **ändert fast nichts**: 38,7 % / 48,3 % — `Z` trägt ein Drittel des Lineal-Verlusts und ist am Auge die unauffälligste Zeile. Nachgereichte Zerlegung je Zeile: **`d` 10 : 2 = 83,3 % bei 14,3 % Ties** (ohne `u`-Nachbarn sogar 10 : 0 ohne Tie) — die Zeile, die der Autor von sich aus nannte —, dagegen `h` **0 von 8** und `n` 3 von 15; `w` und `p`, die das Lineal am stärksten belohnt, lehnt das Auge glatt ab. Kein Write, Chart-Saat bleibt Ernte-Default |
+| sep09 | Kette | [K-E Runde 9 geurteilt](#kette-k-e-sep09--runde-9-geurteilt-44-von-44-kein-unterschied-und-der-beurteiler-nennt-die-saat-statt-des-claims) | Menschenrunde (erste **BAHN**runde) · **ehrliches Negativ** · Claim-Familie endgültig zu | **Kein einziger entschiedener Bildschirm: 44 von 44 „kein Unterschied" (100 % gegen ≤ 25 %)**, ein Kandidaten-Anteil ist mangels Zähler nicht definiert — `adopt: false`. Verlässlichkeit 10/10 gleicher Arm, aber das ist bei konstanter Antwort arithmetisch erzwungen; Auskunft geben die **Nullproben 6/6 richtig** und die Zeiten (77 s `Wer` · 74 s `die-2` · 41 s `unter` gegen 3 s Median). Drei der vier vorregistrierten Erwartungen fallen: `ziel` 0 : 0 statt 2 : 0 — die die-2-Heilung, die die Familie begründet hat, ist für das Auge keine (der Halbsatz „V-Nadel im Augenschein weg" war eine BAU-Aussage, kein Urteil); `riss` 0 : 0 statt 2 : 0 — das −0,003-aiou-Gate bestraft an `regieren`/`muß` etwas, das kein Mensch sieht; nur die Nullprobe hält. **Die Dosis erklärt es diesmal NICHT:** fünf Wörter liegen auf oder über den 0,1186 xh, mit denen Runde 5 bei 9,7 % Ties entschieden wurde (`Zügel` 0,3221 · `Sprünge` 0,2756 · `die-2` 0,2436 · `die` 0,1881 · `Silber` 0,1720), alle fünf unentschieden. **Autopsie (ad-hoc-Zähler, kein Lineal):** beide Bahnen tragen dieselbe dominante Störung — Zickzack-Zonen im PAPIER, 29 : 27 über 44 Wörter, und der Claim bewegt sie in beide Richtungen (`Sprünge` 4 → 0, `die`/`die-2` 1 → 0 gegen `regieren` 4 → 9, `Zügel` 2 → 5). Die erste, duktus-blinde Zählung (528 : 555) wurde auf Einspruch des Autors zurückgezogen. Autor wörtlich: „schlimm zu schlimm aber bischen anders nichts besser". **Der benannte Hebel ist die SAAT-Distanz**, nicht der Claim (K-C-Autopsie `aug20` am `unter`: Saatfehler 0,81 xh gegen `max_delta` 0,75; offener Composer-Auftrag e-Breite §7.2) |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -15076,3 +15077,263 @@ Write, keine Ernte und keine Wurzel anzufassen.
 Paare stehen unverändert bei 0,108153 · 0,148236, und die
 Kandidaten-Zahlen (0,112123) sind Overlay-Zahlen aus der
 Vorregistrierung, nie die Headline.
+
+---
+
+### Kette K-E `sep09` — Runde 9 geurteilt: 44 von 44 „kein Unterschied", und der Beurteiler nennt die Saat statt des Claims
+
+Die Bahn-Runde aus Rettungsweg (1) der geschlossenen K-E-Familie ist gefahren
+(2026-09-09, Beurteiler = Autor, 54 Bildschirme in einem Zug, 420 s
+Urteilszeit). **Keine Zahl des Eintrags „Kette K-E `sep07`" ist angefasst** —
+dessen Konstruktionsmessung steht, wie sie steht; hier steht, was das Auge
+dazu sagt. Ablage der Runde:
+[`data/humanbench/runde-09-*`](../../data/humanbench/runde-09-stempel.md)
+(Urteile, schmaler Schlüssel, Auswertung, Stempel); voller Schlüssel, Payload,
+die beiden Arm-Dateien, die zwei Folger-Kandidaten und die Klassendatei
+bleiben draußen (Open-Core-Vorbehalt).
+
+**Ein Freiheitsgrad, und er ist ein Knopf.** Basis `sha256`
+`da007a1dcaa51410` (Produktions-Kette **v5**, ohne jedes Flag), Kandidat
+`f8a31021b07ae2a6` (derselbe Lauf mit `--mark-claim`); die 44 Felder der
+beiden Gewichts-Blöcke unterscheiden sich in genau einem. Wurzel-Export
+`2026-09-05T21:33:12+00:00` (Digest `eaa195aa7c84…`), beide Arme registrieren
+auf allen 63 Wörtern identisch. Gezeigt wurde die **gefolgte Bahn als
+Mittellinie** über der unverblassten Platte, gefragt wurde die
+**Genauigkeitsfrage** (`VERGLEICH/9`) — eine Bahn-Runde ist mit den
+Kompositions-Wortrunden 5–8 nicht vergleichbar.
+
+#### Der Auswerteplan, Schritt für Schritt
+
+| Schritt | Zahl | Schranke | Lesung |
+|---|---|---|---|
+| 1 Verlässlichkeit | **10/10 Paare gleicher Arm**, 10/10 gleiche Seite, alle zehn beidseits „kein Unterschied" | ≥ 6 Paare | Band `reliable`, die Runde trägt formal einen Adoptionsanspruch — es ist aber die Verlässlichkeit einer KONSTANTEN Antwort (siehe unter der Tabelle) |
+| 2 Seitenbilanz | links 0 · rechts 0 · unentschieden 44 | berichtet, nie entscheidend | keine Seite wurde je genannt |
+| 3 Verdikt | **entschieden 0**, unentschieden **44 von 44 = 100 %**; ein Kandidaten-Anteil unter den Entschiedenen ist nicht definiert | ≥ 60 % · ≤ 25 % | `adopt: false` — die Tie-Schranke um 75 Punkte gerissen, die Kandidaten-Schranke mangels Zähler gar nicht erst erreichbar |
+| 4 Klassen | siehe unten | je Klasse dieselben drei Zahlen | keine der fünf trägt einen einzigen entschiedenen Bildschirm |
+| 5 Drift | Ties 15 · 14 · 15, Mediandauer **7 · 2,5 · 3 s** | — | kein Kippen (es gibt nichts, das kippen könnte); die Dauer fällt nach dem ersten Drittel, das Urteil „gleich" fiel später schneller |
+
+**Was die perfekte Verlässlichkeit hier bedeutet — und was nicht.** 10/10
+gleicher Arm bei 10/10 gleicher Seite ist bei durchweg „kein Unterschied"
+arithmetisch erzwungen: beide Zeilen unterscheiden einen aufmerksamen
+Beurteiler nicht von einer klemmenden Taste. Auskunft geben stattdessen die
+**Nullproben** (6 von 6 richtig) und die **Zeiten**: 77 s auf `Wer` (einer
+Nullprobe), 74 s auf `die-2` (dem benannten Ziel mit dem größten Arm-Abstand
+der Runde, 0,2436 xh) und 41 s auf `unter`, gegen einen Rundenmedian von 3 s.
+Der Beurteiler hat also genau dort lange hingesehen, wo die Runde ihre
+Behauptung hat, und dann „kein Unterschied" geantwortet.
+
+#### Schritt 4 — je Verdachtsklasse (getrennt berichtet, nie gepoolt)
+
+| Klasse | n | entschieden | unentschieden | Lesung |
+|---|---|---|---|---|
+| `bewegt` (\|Δaiou\| ≤ 0,003) | 26 | 0 | **26 (100 %)** | der lineal-indifferente Rest, der Methodik-Fall selbst — das Auge ist dort ebenso indifferent |
+| `gewinn` (> +0,003 aiou) | 8 | 0 | **8 (100 %)** | die acht Wörter, die das Lineal heute dem Kandidaten gutschreibt; keines davon sieht jemand |
+| `nullprobe` | 6 | 0 | **6 (100 %)** | die Kontrolle, unter `MIN_PAIRED_PER_CLASS` = 8 und darum beschreibend: sechsmal dasselbe Bild, sechsmal richtig |
+| `riss` | 2 | 0 | 2 | namentlich, wie vorregistriert: `regieren` und `muß` — beide „kein Unterschied" |
+| `ziel` | 2 | 0 | 2 | namentlich: `die` und `die-2` — beide „kein Unterschied" |
+
+#### Die falsifizierbaren Erwartungen, eine nach der anderen
+
+Die Vorregistrierung hat vier genannt; drei sind falsifiziert, eine bestätigt.
+
+1. **`ziel` geht 2 : 0 an den Kandidaten — nicht eingetreten** (2 : 0 wäre
+   nötig gewesen, es steht 0 : 0 bei zwei Ties). Damit gilt der Satz der
+   Vorregistrierung: „geht auch nur eines an die Basis, ist die Heilung, die
+   die ganze Familie begründet hat, für das Auge keine." Sie ist es nicht
+   einmal gegen ein Unentschieden. Die Heilung selbst bleibt gemessen —
+   `die-2` Soll 5 → 4, aiou +0,0227 —, aber der Halbsatz „und die V-Nadel des
+   `d` ist im Augenschein weg" war eine **Bau-Aussage des Erbauers**, kein
+   Menschenurteil; er bleibt im `sep07`-Eintrag stehen, wie er dort steht, und
+   bekommt hier seine Einordnung.
+2. **`riss` geht 2 : 0 an die Basis — nicht eingetreten.** Das stehende
+   −0,003-aiou-Gate bestraft an `regieren` und `muß` also etwas, das kein
+   Mensch sieht. Das Gate wird deshalb nicht angefasst (es misst Deckung, nicht
+   Wahrnehmung), aber die Runde nimmt ihm das Argument „hier steht sichtbar
+   etwas auf dem Spiel".
+3. **`nullprobe` sechsmal „kein Unterschied" — eingetreten.** Die
+   Antwortgewohnheit ist damit nicht die Erklärung der 100 %: die
+   Antwortoption ist benutzbar, benutzt und an den strich-identischen Paaren
+   richtig benutzt worden.
+4. **`bewegt` war offen — und fällt ganz unentschieden aus.** Das ist nach der
+   Vorregistrierung „kein Fehlschlag, sondern die Auskunft, dass das Lineal
+   dort nicht nur indifferent, sondern zu Recht indifferent war".
+
+**Und die Dosis erklärt es diesmal nicht.** Die Beobachtung aus Runde 7 (der
+Modus hat eine Sichtbarkeitsschwelle, ablesbar am `arm_gap`) würde hier eine
+Erklärung anbieten, und sie trägt nicht: 26 der 44 Wörter liegen über
+0,02 xh, der Median der 38 bewegten liegt bei 0,028 xh — und **fünf Wörter
+liegen auf oder über den 0,1186 xh, ab denen die starke Klasse der Runde 5
+mit 9,7 % Ties entschieden wurde**: `Zügel` 0,3221 · `Sprünge` 0,2756 ·
+`die-2` 0,2436 · `die` 0,1881 · `Silber` 0,1720. Alle fünf: „kein
+Unterschied". Der Betrag allein ist also nicht die Schwelle; die Anzeige und
+die Frage gehören dazu (§8a, Nachtrag dieser Runde).
+
+#### Die Autopsie über die zwei Bahnen — warum das Auge zweimal dasselbe Bild sieht
+
+Wenn weder Dosis noch Antwortgewohnheit die 100 % erklären, muss es das Bild
+tun. Über beide Arm-Dateien wurde deshalb ein **Zickzack-Zähler** gelegt: eine
+Umkehr ist ein Paar aufeinanderfolgender Segmente (> 0,5 px) mit
+cos < −0,7 — die „Kritzel", die der Beurteiler als „richtig schlimm"
+beschreibt.
+
+**Die erste, naive Zählung wurde zurückgezogen**, und der Grund gehört
+hierher: sie zählte jede Umkehr, also auch die des DUKTUS (Arkadenköpfe,
+Schleifenkehren, alles innerhalb der Tinte), und kam auf 528 : 555 über die
+44 Wörter — mit `Galoppieren` 23 : 24 unter den Spitzenreitern. Der Autor hat
+widersprochen („bei Galoppieren sieht es aber auch gut aus"), und das Bild gibt
+ihm recht: dessen 23 Umkehren sitzen sämtlich an echten Wendepunkten INNERHALB
+der Tinte. Der korrigierte Zähler nimmt nur Umkehr-Vertices, deren Bildpunkt
+im **Papier** liegt (Grauwert oberhalb der Mitte zwischen Tinten- und
+Papierniveau des Ausschnitts) — dort, und nur dort, sieht das Auge den
+Zickzack. Das ist dieselbe Lehre wie beim Kringel-Katalog: ein Sensor, der die
+Landmarken nicht kennt, misst den Duktus statt des Defekts. **Der Zähler ist
+ad hoc und kein Lineal** — er wird hier als Autopsie zitiert, nicht als
+Kennzahl, und er ist an keine Schranke gebunden.
+
+Basis : Kandidat, Umkehren im Papier, über alle 44 beurteilten Wörter
+(29 Wörter stehen bei 0 : 0 und fehlen hier, darunter `Galoppieren`, `Wer`,
+`er`, `er-2`, `der-3`, `einer`, `muß`):
+
+`unter` 5 : 3 · `regieren` 4 : **9** · `Sprünge` 4 : **0** · `haben` 3 : 3 ·
+`Zügel` 2 : **5** · `streiten` 2 : 1 · `Seiten` 2 : 1 · `schießen` 1 : 1 ·
+`Pulver` 1 : 1 · `Gaul` 1 : 1 · `will` 1 : 1 · `die` 1 : **0** · `Feinde`
+1 : **0** · `die-2` 1 : **0** · `muß-3` 0 : 1 — **Summe 29 : 27**.
+
+Zwei Lesarten, und beide erklären das Urteil:
+
+* **Der sichtbare Defekt lebt in einer Handvoll Wörter** — `unter`,
+  `regieren`, `Sprünge`, `haben`, `Zügel`, `streiten`, `Seiten` tragen 22 der
+  29 Umkehren der Basis —, **und der Claim-Knopf bewegt ihn in BEIDE
+  Richtungen**: `Sprünge` 4 → 0 und `die`/`die-2` 1 → 0 heilen, `regieren`
+  4 → 9 und `Zügel` 2 → 5 werden schlechter. Netto 29 : 27. „Schlimm zu
+  schlimm, bisschen anders" ist damit nicht die Wahrnehmung eines müden
+  Beurteilers, sondern genau das, was der Zähler liest.
+* **`regieren` ist beides zugleich:** einer der zwei Lineal-Verlierer der
+  Klasse `riss` UND das Wort, an dem sich der Papier-Zickzack unter dem Claim
+  mehr als verdoppelt. Das aiou-Gate hat dort also auf etwas Wirkliches
+  gezeigt — und der Beurteiler hat das Wort **zweimal** gesehen (S011 nach
+  3 s, die gespiegelte Wiederholung R04 nach 4 s) und beide Male „kein
+  Unterschied" geantwortet. Beides gilt: der Defekt ist real, und er liegt bei
+  Zoom 2× über dem ganzen Wort unter der Sichtbarkeit.
+
+**Das benannte Ziel, Strich für Strich.** Bei `die-2` zieht die Basis die
+V-Nadel aus der `d`-Schleife heraus in Richtung i-Punkt — eine dünne
+Doppellinie ins Papier, deren Spitze rund 0,05 xh vor dem Punkt endet (die
+Signatur der `aug20`-Autopsie zu K-C, Befund (b)); der Kandidat hält die Bahn
+in der Schleife. Das IST die Heilung, die das Lineal gebucht hat, und das Auge
+hat sie nicht gewählt. Bei `die` verlassen **beide** Arme die Schleife, der
+Ausflug des Kandidaten ist nur kürzer. In beiden Wörtern tragen beide Arme
+dieselben kleinen Zickzacks am i-Fuß und an der Kreuzung der `d`-Schleife —
+das, was man sieht, steht auf beiden Seiten.
+
+#### Was der Beurteiler gesehen hat
+
+Der freie Satz des Autors, wörtlich (die Seite gab auch in dieser Runde kein
+Notizfeld aus, der Satz fiel in derselben Sitzung neben dem Ergebnisblock):
+
+> „also die unterschiede machen schlimm zu schlimm aber bischen anders nichts
+> besser, ich verstehe aber nicht warum es wörter gibt wie Wer wo das er gut
+> aussieht aber einige andere wörter wo das er richtig richtig schlimm
+> aussieht auch beim die oder so das di hat noch das problem das die lienien
+> zum i punkt gezogen werden werden hatten wir das nicht schon gefixed?"
+
+**Die Antwort auf seine Frage, weil sie der eigentliche Ertrag der Runde
+ist: nicht das `er` ist das Problem, sondern die SAAT-Distanz.** Wo das
+komponierte Wort innerhalb des Schrittbudgets des Solvers auf der Tinte der
+Platte liegt (`Wer`, `er`, `der` — kurze Wörter), landet die Kette sauber; wo
+die Saat um mehr als `max_delta` danebenliegt, quetscht der Kettensolver die
+Bahn auf die falsche Tinte, und daraus entstehen die Zickzack-Zonen. Genau
+das ist am `unter` schon zerlegt worden (`aug20`, K-C-Autopsie (d)): das
+komponierte `e` ist 1,32 xh breit gegen 0,65 xh der Hand, der Saatfehler am
+`e`-Austritt beträgt 0,81 xh gegen `max_delta` 0,75, der Verbinder `e`→`r`
+läuft rückwärts, und das `r` beginnt 10 px zu früh und endet 0,46 xh zu kurz —
+während in `Wer` dasselbe Paar passt, weil das `e` der Hand dort 0,81 xh
+breit ist. Der offene Auftrag dazu heißt seit `aug16`
+**„Composer-Auftrag e-Breite"** ([§7.2](../proposals/tintenfolger.md)) und ist
+kein Folger-Arm. Und die V-Nadel des `die` ist nie in Produktion repariert
+worden: K-E war der Reparaturvorschlag, `aug21` an Gate (3) verworfen, hier
+per Auge wiedervorgelegt — und nicht gewählt.
+
+#### Verdikt und was die Vorregistrierung auslöst
+
+**Ehrliches Negativ. `mark_claim` bleibt AUS, und es geht keine Vorlage an den
+Autor.** Der Plan verlangt für einen Adoptionsanspruch beide Schranken;
+gerissen ist die eine maximal, die andere hat mangels entschiedener
+Bildschirme keinen Zähler. Die Vorregistrierung war für diesen Fall
+ausdrücklich: „Ein Nein schließt die Claim-Familie endgültig und schiebt sie
+auf Rettungsweg (2), den Distanzfeld-NUR-Claim mit eigener Vorregistrierung."
+Genau das passiert. Die Familie war seit `aug21` geschlossen; diese Runde war
+ihr Rettungsweg (1), sie ist gegangen und sie hat nichts geöffnet.
+
+**Was die Runde NICHT sagt.** Nicht, dass der Claim nichts tut — er bewegt 38
+von 63 Bahnen, heilt das benannte Ziel messbar und nimmt `Sprünge` seine vier
+Papier-Umkehren. Nicht, dass das Lineal falsch liegt — an `regieren` zeigt
+sein Gate auf einen wirklichen Defekt. Nicht, dass die Bahnen gleich sind: an
+fünf Wörtern trennen sie mehr als 0,17 xh. Sie sagt, dass **keiner dieser
+Unterschiede auf dieser Anzeige die Frage beantwortet, welche Linie der Tinte
+besser folgt** — weil beide Bahnen dieselbe dominante Störung tragen. Und
+nichts über eine andere Hand: `abb22` war nicht dabei.
+
+#### Rettungswege (Register: [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.9)
+
+1. **Die Saat-Distanz als Arm — der Hebel, den der Beurteiler selbst nennt.**
+   Nicht der Claim, sondern die Startlage: ein Kette-Arm, der die SAAT
+   verändert (der Composer-Auftrag e-Breite aus §7.2, oder eine Saat, die
+   `max_delta` je Slot einhält), gemessen gegen die Papier-Umkehren als
+   Zerlegung und gegen eine Menschenrunde. Frische Vorregistrierung; der
+   Auftrag selbst ist seit `aug16` offen und hatte bis heute keinen Adressaten
+   aus einer Urteilsrunde.
+2. **Der Distanzfeld-NUR-Claim bleibt offen** (Rettungsweg (2) von `aug21`,
+   unverändert im Mechanismus: der Coverage-Topf bleibt v4-Ökonomie, nur das
+   Anziehungsfeld trennt je Klasse). **Neu ist seine Auflage:** die
+   Bau-Auflage der Runde 7 („wer eine Klasse sichtbar nennt, nennt vorher den
+   Versatz") gilt ab jetzt auch für BAHN-Runden — und dort reicht der Versatz
+   nicht, weil diese Runde bei 0,24 xh nichts entschieden hat. Wer eine
+   Sichtbarkeit behauptet, benennt zusätzlich den Rahmen, in dem sie sichtbar
+   wäre.
+3. **Den Ort ZEIGEN, statt ihn im Wort zu verstecken** (Instrument, verwandt
+   mit Rettungsweg (5) der Runde 7): ein Ausschnitt je NADEL bzw. je
+   Zickzack-Zone, gezoomt, statt des ganzen Wortes bei 2× — dieselben zwei
+   Arme, dieselbe Frage, ein anderer Rahmen. Eine 0,05-xh-Nadel ist bei Zoom 2
+   über einem ganzen Wort wenige Bildschirmpunkte groß; die Runde hat den
+   Autor also nach etwas gefragt, das die Anzeige kaum trägt. Änderung am
+   Instrument, gehört deshalb VOR der Runde nach `menschliche-bewertung.md`
+   §8a, mit eigener Vorregistrierung und der Auflage, dass ihre Zahlen mit
+   denen der Wortrunden nicht vergleichbar sind.
+
+**Ausdrücklich KEIN Weg:** die Schranken senken; die Klassen nachschneiden;
+dieselbe Runde ein zweites Mal vorlegen — das misst den Beurteiler, nicht die
+Regel.
+
+#### Was die Runde dem INSTRUMENT einträgt
+
+In [`menschliche-bewertung.md`](menschliche-bewertung.md) §8a, als
+**Beobachtung** und ausdrücklich nicht als Schranke: die Sichtbarkeitsschwelle
+aus Runde 7 ist keine Eigenschaft des Versatzes allein. Diese Runde hat fünf
+Wörter über der 0,1186-xh-Marke gezeigt, bis 0,3221 hinauf, und keines wurde
+entschieden — weil beide Arme dieselbe dominante Störung tragen und der
+Unterschied daneben liegt. Die Auflage der Runde 7 wird damit auf Bahn-Runden
+ausgedehnt und um eine zweite Hälfte ergänzt: **wer eine Klasse „sichtbar"
+nennt, nennt den Versatz UND den Rahmen, in dem er sichtbar wäre** — und eine
+Runde, deren beide Arme denselben dominanten Defekt tragen, fragt nach einem
+Unterschied, den die Anzeige neben dem Defekt gar nicht zeigen kann.
+
+#### Grenzen und selbst Entschiedenes
+
+**Grenzen.** EIN Beurteiler, und er ist der Autor des Kandidaten (§8a). EINE
+Wurzel, EIN Wortsatz, keine Rückhaltemenge. Die Runde beantwortet die
+Bahn-Frage; was `mark_claim` als Default für die geernteten ZEILEN bedeutet,
+hat weiterhin niemand gemessen.
+
+**Selbst entschieden (benannt, nicht versteckt):** die Autopsie über die zwei
+Arm-Dateien überhaupt zu rechnen — ohne sie wäre „100 % unentschieden" ein
+Ergebnis ohne Ursache; die **Rücknahme** der ersten, duktus-blinden Zählung
+auf den Einspruch des Autors hin, samt der Zahl, die sie geliefert hätte
+(528 : 555), damit die Korrektur nachvollziehbar bleibt; die Zeiten je
+Bildschirm gegen die Klassen zu lesen (das Werkzeug druckt nur Blockmediane);
+und keinen Lauf zu wiederholen, keine Wurzel und keine Zeile anzufassen.
+
+**Keine Headline-Zeile:** die Runde bewegt keine Kennzahl — Wörter und Paare
+stehen unverändert bei 0,108153 · 0,148236. Die Verfahrensseite der Route
+bekommt ihr Verdikt in der `sep07`-Zeile, die es bis heute offengehalten hat
+([`verfahren-kette.md`](verfahren-kette.md)).

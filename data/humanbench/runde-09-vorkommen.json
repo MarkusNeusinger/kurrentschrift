@@ -1,0 +1,380 @@
+[
+ {
+  "uid": "S001",
+  "entry": "unter",
+  "text": "unter",
+  "stratum": "gewinn",
+  "repeat_of": null
+ },
+ {
+  "uid": "S002",
+  "entry": "Einen",
+  "text": "Einen",
+  "stratum": "gewinn",
+  "repeat_of": null
+ },
+ {
+  "uid": "S003",
+  "entry": "und-3",
+  "text": "und",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S004",
+  "entry": "muß-2",
+  "text": "muß",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S005",
+  "entry": "von",
+  "text": "von",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S006",
+  "entry": "Zügel",
+  "text": "Zügel",
+  "stratum": "gewinn",
+  "repeat_of": null
+ },
+ {
+  "uid": "S007",
+  "entry": "Kugel",
+  "text": "Kugel",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "R09",
+  "entry": "unter",
+  "text": "unter",
+  "stratum": "gewinn",
+  "repeat_of": "S001"
+ },
+ {
+  "uid": "S008",
+  "entry": "einer",
+  "text": "einer",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S009",
+  "entry": "schießen",
+  "text": "schießen",
+  "stratum": "gewinn",
+  "repeat_of": null
+ },
+ {
+  "uid": "S010",
+  "entry": "haben",
+  "text": "haben",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S011",
+  "entry": "regieren",
+  "text": "regieren",
+  "stratum": "riss",
+  "repeat_of": null
+ },
+ {
+  "uid": "R02",
+  "entry": "Zügel",
+  "text": "Zügel",
+  "stratum": "gewinn",
+  "repeat_of": "S006"
+ },
+ {
+  "uid": "R01",
+  "entry": "muß-2",
+  "text": "muß",
+  "stratum": "bewegt",
+  "repeat_of": "S004"
+ },
+ {
+  "uid": "R03",
+  "entry": "von",
+  "text": "von",
+  "stratum": "nullprobe",
+  "repeat_of": "S005"
+ },
+ {
+  "uid": "S012",
+  "entry": "streiten",
+  "text": "streiten",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S013",
+  "entry": "Pulver",
+  "text": "Pulver",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S014",
+  "entry": "und-2",
+  "text": "und",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S015",
+  "entry": "der-3",
+  "text": "der",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S016",
+  "entry": "Silber",
+  "text": "Silber",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S017",
+  "entry": "zu",
+  "text": "zu",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S018",
+  "entry": "Gaul",
+  "text": "Gaul",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S019",
+  "entry": "einen",
+  "text": "einen",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "R05",
+  "entry": "und-3",
+  "text": "und",
+  "stratum": "bewegt",
+  "repeat_of": "S003"
+ },
+ {
+  "uid": "R08",
+  "entry": "streiten",
+  "text": "streiten",
+  "stratum": "bewegt",
+  "repeat_of": "S012"
+ },
+ {
+  "uid": "S020",
+  "entry": "er-2",
+  "text": "er",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S021",
+  "entry": "die",
+  "text": "die",
+  "stratum": "ziel",
+  "repeat_of": null
+ },
+ {
+  "uid": "S022",
+  "entry": "muß-3",
+  "text": "muß",
+  "stratum": "gewinn",
+  "repeat_of": null
+ },
+ {
+  "uid": "S023",
+  "entry": "linken",
+  "text": "linken",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S024",
+  "entry": "will",
+  "text": "will",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S025",
+  "entry": "im",
+  "text": "im",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S026",
+  "entry": "Sprünge",
+  "text": "Sprünge",
+  "stratum": "gewinn",
+  "repeat_of": null
+ },
+ {
+  "uid": "R06",
+  "entry": "Einen",
+  "text": "Einen",
+  "stratum": "gewinn",
+  "repeat_of": "S002"
+ },
+ {
+  "uid": "R04",
+  "entry": "regieren",
+  "text": "regieren",
+  "stratum": "riss",
+  "repeat_of": "S011"
+ },
+ {
+  "uid": "S027",
+  "entry": "auch",
+  "text": "auch",
+  "stratum": "gewinn",
+  "repeat_of": null
+ },
+ {
+  "uid": "S028",
+  "entry": "und",
+  "text": "und",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "R07",
+  "entry": "haben",
+  "text": "haben",
+  "stratum": "nullprobe",
+  "repeat_of": "S010"
+ },
+ {
+  "uid": "S029",
+  "entry": "und-4",
+  "text": "und",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "R10",
+  "entry": "und-2",
+  "text": "und",
+  "stratum": "bewegt",
+  "repeat_of": "S014"
+ },
+ {
+  "uid": "S030",
+  "entry": "mit",
+  "text": "mit",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S031",
+  "entry": "Seiten",
+  "text": "Seiten",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S032",
+  "entry": "auch-2",
+  "text": "auch",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S033",
+  "entry": "Säbel",
+  "text": "Säbel",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S034",
+  "entry": "zum",
+  "text": "zum",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S035",
+  "entry": "Wer",
+  "text": "Wer",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S036",
+  "entry": "Feinde",
+  "text": "Feinde",
+  "stratum": "gewinn",
+  "repeat_of": null
+ },
+ {
+  "uid": "S037",
+  "entry": "muß",
+  "text": "muß",
+  "stratum": "riss",
+  "repeat_of": null
+ },
+ {
+  "uid": "S038",
+  "entry": "Zaum",
+  "text": "Zaum",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S039",
+  "entry": "zwei",
+  "text": "zwei",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S040",
+  "entry": "er",
+  "text": "er",
+  "stratum": "nullprobe",
+  "repeat_of": null
+ },
+ {
+  "uid": "S041",
+  "entry": "die-2",
+  "text": "die",
+  "stratum": "ziel",
+  "repeat_of": null
+ },
+ {
+  "uid": "S042",
+  "entry": "Galoppieren",
+  "text": "Galoppieren",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S043",
+  "entry": "ein",
+  "text": "ein",
+  "stratum": "bewegt",
+  "repeat_of": null
+ },
+ {
+  "uid": "S044",
+  "entry": "mit-2",
+  "text": "mit",
+  "stratum": "bewegt",
+  "repeat_of": null
+ }
+]
