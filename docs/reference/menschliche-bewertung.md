@@ -27,9 +27,9 @@
 > **Was seither passiert ist.** Die erste Wortrunde (`sep02`, Basis gegen
 > LF11) hat entschieden, wo das Wort-Lineal blind war, und dem Dokument
 > die Konstruktionsregel §3.6b eingetragen; die Runden 5 (`sep04`, J4) und
-> 6 (`sep05`, J5) haben §9a ausgelöst; Runde 7 (`sep06`, J6) hat als erste
-> die **Sichtbarkeitsschwelle** des Modus beziffert (§8a, „Der
-> Auswerteplan"). Zahlen und Verdikte: `messjournal.md` §14.
+> 6 (`sep05`, J5) haben §9a ausgelöst; Runde 7 (`sep06`, J6) hat die
+> **Sichtbarkeitsschwelle** beziffert, die erste BAHN-Runde 9 (K-E, geurteilt
+> `sep09`) sie relativiert (beides §8a). Zahlen: `messjournal.md` §14.
 >
 > **Was offen ist.** Die bekannten Grenzen des Verfahrens — was ein
 > blinder Durchgang grundsätzlich nicht entscheidet — stehen in
@@ -1467,6 +1467,30 @@ sondern der Rahmen: eine Runde, die den Ort ZEIGT, an dem der Arm arbeitet
 und am Instrument — sie gehört vorher hierher, nicht hinterher, und ihre
 Zahlen wären mit denen der Wortrunden nicht vergleichbar
 (`messjournal.md` §14 „Übergänge J6 `sep08`", Rettungsweg 5).
+
+**Beobachtung aus Runde 9 (`sep09`) — die Schwelle ist keine Eigenschaft des
+VERSATZES allein, und die Auflage von oben gilt auch für BAHN-Runden.** Die
+erste Bahn-Runde (K-E, Genauigkeitsfrage, Mittellinien-Anzeige) ist mit **44
+von 44 „kein Unterschied"** ausgegangen — kein einziger entschiedener
+Bildschirm. Die Erklärung der Runde 7 greift hier nicht: fünf der beurteilten
+Wörter tragen einen Arm-Abstand auf oder über den **0,1186 xh**, mit denen
+Runde 5 bei 9,7 % Ties entschieden wurde, bis **0,3221 xh** hinauf, und alle
+fünf blieben unentschieden. Das Instrument war dabei intakt (Nullproben 6 von
+6 richtig, 77 s bzw. 74 s Betrachtungszeit auf den beiden auffälligsten
+Bildschirmen gegen 3 s im Median). Der gemessene Grund steht in der Autopsie
+des §14-Eintrags: **beide Arme trugen dieselbe dominante Störung**, und der
+Unterschied zwischen ihnen lag daneben.
+
+Daraus folgt wieder **keine** Schranke, sondern eine zweite Hälfte der
+Bau-Auflage, prüfbar vor den Labels: **wer eine Klasse „sichtbar" nennt, nennt
+den Versatz UND den Rahmen, in dem dieser Versatz sichtbar wäre.** Eine
+0,05-xh-Nadel ist bei Zoom 2× über einem ganzen Wort wenige Bildschirmpunkte
+groß; und eine Runde, deren beide Arme denselben dominanten Defekt zeigen,
+fragt nach einem Unterschied, den die Anzeige neben diesem Defekt gar nicht
+tragen kann — sie verbraucht eine Urteilssitzung, gleich wie groß der
+Arm-Abstand ist. Der Ausweg ist derselbe wie oben und heißt hier
+Ausschnitt je Nadel statt je Wort (`messjournal.md` §14 „Kette K-E `sep09`",
+Rettungsweg 3).
 
 ### Was der Modus NICHT liefert
 
