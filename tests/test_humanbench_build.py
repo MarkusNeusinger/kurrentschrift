@@ -39,6 +39,7 @@ from tools.humanbench.build import (
     Round,
     WordCase,
     arm_gap,
+    arm_gap_site,
     build_word,
     check_arm_scope,
     clipped_words,
@@ -793,6 +794,46 @@ def test_both_panels_of_a_word_screen_are_cut_from_the_SAME_window():
     assert window_a == window_b
     assert (forward["w"], forward["h"], forward["img"]) == (mirrored["w"], mirrored["h"], mirrored["img"])
     assert forward["panels"][0] == mirrored["panels"][1]  # the same arm, the other side
+
+
+def test_arm_gap_site_names_the_point_where_the_two_arms_part_worst():
+    """The centre a windowed round cuts around — symmetric, so the argument
+    order cannot decide which arm the point comes from."""
+    base = [np.array([[0.0, 0.0], [10.0, 0.0], [20.0, 0.0]])]
+    moved = [np.array([[0.0, 0.0], [10.0, 8.0], [20.0, 0.0]])]
+    gap, site = arm_gap_site(base, moved, 4.0)
+    flipped_gap, flipped_site = arm_gap_site(moved, base, 4.0)
+    assert (gap, site) == (flipped_gap, flipped_site)
+    assert site == (pytest.approx(10.0), pytest.approx(4.0))  # the midpoint of the worst pair
+    assert gap == pytest.approx(arm_gap(base, moved, 4.0))
+
+
+def test_a_windowed_word_screen_cuts_an_excerpt_around_that_point():
+    """§8a: the excerpt trades context for resolution. Both panels still share
+    ONE window (blindness), both arms are still drawn in full, and the window
+    is centred on the arm gap rather than on the word."""
+    case = word_case()
+    case.peak_site = (30.0, 20.0)
+    whole, window_whole = render_word_item("S001", case, [SIDE_BASE, SIDE_CANDIDATE], zoom=4, pad_xh=0.4)
+    cut, window_cut = render_word_item(
+        "S002", case, [SIDE_BASE, SIDE_CANDIDATE], zoom=4, pad_xh=0.4, window_xh=0.5
+    )
+    # ±0.5 xh at xh 20 is a 20 px box around (30, 20), clipped to the crop.
+    assert window_cut == (20, 10, 40, 30)
+    assert window_cut != window_whole
+    assert (cut["w"], cut["h"]) == (80, 80)
+    # Same arms, same paths — only the frame they are reported in has moved.
+    assert len(cut["panels"]) == 2
+    assert [len(p["strokes"]) for p in cut["panels"]] == [len(p["strokes"]) for p in whole["panels"]]
+
+
+def test_a_windowed_screen_stays_inside_the_crop():
+    """A gap at the very edge must not produce a negative window."""
+    case = word_case()
+    case.peak_site = (2.0, 2.0)
+    _item, window = render_word_item("S001", case, [SIDE_BASE, SIDE_CANDIDATE], zoom=2, pad_xh=0.4, window_xh=1.0)
+    assert window[0] == 0 and window[1] == 0
+    assert window[2] <= case.crop.shape[1] and window[3] <= case.crop.shape[0]
 
 
 def test_clipped_words_names_a_composition_that_runs_past_its_own_crop():

@@ -713,6 +713,27 @@ ist wortweise größer, als die Summe zeigt (`soll_cross_agree` 7/10,
   entschärfen; die Kandidaten-Konstanten (`ARM_FUSE_GAP`,
   `ALIGN_MIN_CLEARANCE`) feuern auf diesem Wortsatz nachweislich
   nicht.
+- **K5 — der Composer-Auftrag e-BREITE, seit `aug16` offen, seit
+  `sep09` beziffert.** Er stammt aus der `aug20`-Autopsie zu K-C
+  (Befund (d), `unter`: komponiertes `e` 1,32 xh gegen 0,65 xh der
+  Hand) und hatte bis zur Runde 9 keinen Adressaten aus einer
+  Urteilsrunde. **Stand nach Autor-Entscheid A39 (2026-09-09):** der
+  Auftrag ist BESTÄTIGT und bleibt ein Composer-Auftrag — der
+  Saat-Abstand-Sensor (`tools.pairlab.seedgap`, §14 „Kette K-G
+  Saat-Registrierung `sep09`") hat die beiden Hälften des Problems
+  getrennt gemessen, und die FORM-Hälfte („Saat-Rest") ist der
+  stärkere Prädiktor der sichtbaren Zickzack-Zonen (Pearson +0,691
+  gegen +0,417 für die Platzierungs-Hälfte, partiell bei kontrollierter
+  Wortlänge +0,592 gegen +0,157). Die Platzierungs-Hälfte ist
+  werkzeugseitig als Kette-Arm K-G gefahren; die Form-Hälfte ist es
+  ausdrücklich NICHT, weil sie `core/compose.py` bewegt — also
+  Produktoberfläche unter der goldenen Fixture
+  `tests/fixtures/compose_golden.json.gz` und damit eine deklarierte
+  Re-Baseline. **Sie braucht eine eigene Vorregistrierung und den
+  Autor-Entscheid, nicht einen Folger-Arm.** Was sie hätte: eine
+  Messung der Hand-Buchstabenbreite je Vorkommen gegen die komponierte
+  (die Ernte hat die Vorkommen, `laufform`-Zeilen die Breiten), und
+  eine Klassenzerlegung, bevor irgendeine Konstante bewegt wird.
 
 ### 7.3 Verfahren 2: Kettenfit + Folger (Route A) — Formulierung statt Gewichte
 

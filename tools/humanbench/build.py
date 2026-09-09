@@ -784,6 +784,9 @@ class WordCase:
     xh: float  # the specimen's measured lineature, crop pixels
     arms: dict[str, ArmWord]
     peak: float  # how far the two arms part, in x-heights — the severity key
+    # WHERE they part worst, in crop pixels — the centre a windowed round cuts
+    # its excerpt around (`--window-xh`, §8a „Ausschnitt-Anzeige").
+    peak_site: tuple[float, float] = (0.0, 0.0)
     stratum: str = NO_STRATUM
     rank: int = -1
     uid: str = ""
@@ -889,6 +892,28 @@ def arm_paths_px(arm: ArmWord, baseline_row: float) -> list[np.ndarray]:
     ]
 
 
+def arm_gap_site(left: list[np.ndarray], right: list[np.ndarray], xh: float) -> tuple[float, tuple[float, float]]:
+    """`(gap in x-heights, the crop-pixel point where the arms part worst)`.
+
+    The gap is the word mode's severity key (see `arm_gap`); the SITE is what a
+    windowed round needs — the one place on the word where the two arms have
+    the most to say. It is the MIDPOINT of the worst-separated pair, not the
+    point on the losing arm: the midpoint puts both arms' worst place inside
+    the excerpt, and it is the same point whichever way round the two arms are
+    passed. A one-sided pick would not be — on a symmetric separation the tie
+    would be broken by the argument order, and the windowed round would then
+    show the two SIDES of the same screen a different frame.
+    """
+    a, b = np.vstack(left), np.vstack(right)
+    tree_a, tree_b = cKDTree(a), cKDTree(b)
+    d_a, near_a = tree_b.query(a)
+    d_b, near_b = tree_a.query(b)
+    i_a, i_b = int(d_a.argmax()), int(d_b.argmax())
+    pair = (a[i_a], b[near_a[i_a]]) if d_a[i_a] >= d_b[i_b] else (b[i_b], a[near_b[i_b]])
+    site = (pair[0] + pair[1]) / 2.0
+    return float(max(d_a[i_a], d_b[i_b]) / xh), (float(site[0]), float(site[1]))
+
+
 def arm_gap(left: list[np.ndarray], right: list[np.ndarray], xh: float) -> float:
     """How far the two arms part on this word, in x-heights (symmetric, worst point).
 
@@ -898,9 +923,7 @@ def arm_gap(left: list[np.ndarray], right: list[np.ndarray], xh: float) -> float
     two arms are identical is exactly where a silent side preference shows up,
     and §3.1's prefix rule needs those screens reachable from the start.
     """
-    a, b = np.vstack(left), np.vstack(right)
-    tree_a, tree_b = cKDTree(a), cKDTree(b)
-    return float(max(tree_b.query(a)[0].max(), tree_a.query(b)[0].max()) / xh)
+    return arm_gap_site(left, right, xh)[0]
 
 
 def load_fixture_words(root: Path) -> list[dict]:
@@ -964,6 +987,7 @@ def word_cases(
         crop = np.asarray(Image.open(word_dir / "crop.png").convert("L"))
         baseline_row = float(meta["baseline_y"] - meta["rect"][1])
         xh = float(meta["baseline_y"] - meta["midband_y"])
+        peak, site = arm_gap_site(arm_paths_px(left, baseline_row), arm_paths_px(right, baseline_row), xh)
         cases.append(
             WordCase(
                 entry_id=entry_id,
@@ -972,7 +996,8 @@ def word_cases(
                 baseline_row=baseline_row,
                 xh=xh,
                 arms={SIDE_BASE: left, SIDE_CANDIDATE: right},
-                peak=arm_gap(arm_paths_px(left, baseline_row), arm_paths_px(right, baseline_row), xh),
+                peak=peak,
+                peak_site=site,
                 stratum=(strata or {}).get(entry_id, NO_STRATUM),
             )
         )
@@ -985,8 +1010,28 @@ def screen_path(points: np.ndarray, window: tuple[int, int, int, int], zoom: int
     return [[round(float(p[0]), 1), round(float(p[1]), 1)] for p in local]
 
 
+def window_around(
+    site: tuple[float, float], xh: float, crop_shape: tuple[int, ...], window_xh: float
+) -> tuple[int, int, int, int]:
+    """A square excerpt of ±`window_xh` x-heights around one point of the crop.
+
+    The instrument change round 9 asked for (`menschliche-bewertung.md` §8a):
+    a 0,05-xh needle beside a zig-zag zone is a few screen pixels wide when the
+    WHOLE word is shown at 2×, so the round asked the judge for something the
+    display could not carry. The excerpt trades context for resolution — which
+    is why it is a flag and not the default, and why a windowed round's numbers
+    are not comparable with a whole-word round's.
+    """
+    half = max(6.0, window_xh * xh)
+    x0 = max(0, int(round(site[0] - half)))
+    x1 = min(crop_shape[1], int(round(site[0] + half)))
+    y0 = max(0, int(round(site[1] - half)))
+    y1 = min(crop_shape[0], int(round(site[1] + half)))
+    return x0, y0, x1, y1
+
+
 def render_word_item(
-    uid: str, case: WordCase, sides: list[str], *, zoom: int, pad_xh: float
+    uid: str, case: WordCase, sides: list[str], *, zoom: int, pad_xh: float, window_xh: float | None = None
 ) -> tuple[dict, tuple[int, int, int, int]]:
     """One word screen: the specimen crop ONCE, plus one inked panel per arm.
 
@@ -994,6 +1039,12 @@ def render_word_item(
     union of both arms, never around each arm's own extent. Two windows would
     give the sides different pixel dimensions and a different view of the
     neighbouring ink, which is the tell §8 rules out.
+
+    With `window_xh` the window is an EXCERPT around the point where the two
+    arms part worst (`arm_gap_site`) instead of the whole word. Both panels
+    still share it, and both arms are still drawn in full — the panel's own
+    viewport clips what falls outside, so nothing about the two paths differs
+    except how much of them the judge is shown.
 
     A COMPOSED arm draws the INK, not a centerline: filled silhouette rings for
     the letter bodies, capsules of their own width for the generated connectors.
@@ -1008,7 +1059,11 @@ def render_word_item(
     """
     drawn = [case.arms[side] for side in sides]
     everything = np.vstack([path for arm in drawn for path in arm_paths_px(arm, case.baseline_row)])
-    window = crop_window(everything, case.xh, case.crop.shape, pad_xh)
+    window = (
+        crop_window(everything, case.xh, case.crop.shape, pad_xh)
+        if window_xh is None
+        else window_around(case.peak_site, case.xh, case.crop.shape, window_xh)
+    )
     x0, y0, x1, y1 = window
     width, height = (x1 - x0) * zoom, (y1 - y0) * zoom
 
@@ -1144,7 +1199,7 @@ def build_word(
 
     def render(uid: str, case: WordCase, extra: dict | None = None) -> dict:
         sides = (extra or {}).get("order") or order[case.uid]
-        item, _window = render_word_item(uid, case, sides, zoom=args.zoom, pad_xh=args.pad_xh)
+        item, _window = render_word_item(uid, case, sides, zoom=args.zoom, pad_xh=args.pad_xh, window_xh=args.window_xh)
         return item
 
     items = [render(case.uid, case) for case in label]
@@ -1173,6 +1228,9 @@ def _word_key_entry(case: WordCase, order: list[str] | None, *, display: bool = 
         "text": case.text,
         "stratum": case.stratum,
         "arm_gap": round(case.peak, 4),
+        # Where that gap sits, so a windowed round's excerpt can be reproduced
+        # (and audited) from the key alone.
+        "arm_gap_site": [round(case.peak_site[0], 1), round(case.peak_site[1], 1)],
         "rank": case.rank,
     }
     if not display:
@@ -1380,6 +1438,10 @@ def provenance(
         "bands": args.bands,
         "zoom": args.zoom,
         "pad_xh": args.pad_xh,
+        # None = the whole word. Stamped either way, because a windowed round
+        # and a whole-word round answer the same question on different displays
+        # and their numbers must never be pooled by accident.
+        "window_xh": args.window_xh,
         "min_repeat_gap": args.min_repeat_gap,
         "repeat_exclude": list(args.repeat_exclude),
         # The two repeat rules that are module constants rather than flags. A
@@ -1516,6 +1578,13 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
         "--zoom", type=int, default=None, help=f"pixel magnification of the crop [4, word mode {WORD_ZOOM}]"
     )
     parser.add_argument("--pad-xh", type=float, default=0.4, help="crop padding in x-heights [0.4]")
+    parser.add_argument(
+        "--window-xh",
+        type=float,
+        default=None,
+        help="WORD mode only: show an excerpt of ±N x-heights around the worst arm gap instead of the "
+        "whole word (menschliche-bewertung.md §8a) — a windowed round is not comparable with a whole-word one",
+    )
     parser.add_argument(
         "--repeat-exclude",
         nargs="*",
@@ -1657,6 +1726,11 @@ def run_word_round(args: argparse.Namespace, seed: int, rng: random.Random) -> i
     ranks = [entry["rank"] for entry in shown[:100]]
     print(f"round {args.round} · word · seed {seed} · {len(cases)} words · {base.name} vs {candidate.name}")
     print(f"  {counts['labelled']} to judge · {len(reserve)} reserved as held-out · {len(items)} screens")
+    if args.window_xh is not None:
+        print(
+            f"  EXCERPT display: ±{args.window_xh} xh around the worst arm gap, zoom {args.zoom}× — this round's "
+            "numbers are not comparable with a whole-word round's (menschliche-bewertung.md §8a)"
+        )
     if counts["dropped"]:
         print(f"  not eligible: {counts['dropped']}")
     if ranks:
@@ -1694,6 +1768,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.paired or args.instances:
             raise SystemExit("--word-arms builds a word round; --paired/--instances belong to the letter modes")
         return run_word_round(args, seed, rng)
+    if args.window_xh is not None:
+        raise SystemExit("--window-xh cuts its excerpt around the worst ARM GAP and needs --word-arms")
 
     specimens = Specimens(args.source)
     samples = {str(entry["id"]): entry for entry in load_word_samples(specimens.chart_path)}

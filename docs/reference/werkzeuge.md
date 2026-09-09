@@ -441,6 +441,12 @@ uv run python -m tools.humanbench.tracearm --arm K-E2 \
     --candidate temp/ke2-cand.json --out temp/ke2-bahn.json
 uv run python -m tools.humanbench.build --round 9 \
     --word-arms temp/basis-bahn.json temp/ke2-bahn.json --strata temp/klassen.json
+# … und wenn das ganze Wort den Unterschied nicht trägt: der AUSSCHNITT um die
+# größte Arm-Trennung, gezoomt (Konstruktionsregel §8a/§3.4a — eigene Anzeige,
+# eigene Runde, Zahlen NICHT mit einer Wortrunde vergleichbar)
+uv run python -m tools.humanbench.build --round 10 \
+    --word-arms temp/basis-bahn.json temp/kg-bahn.json --strata temp/klassen.json \
+    --window-xh 1.0 --zoom 4
 # die Frage kommt aus den ARMEN, nicht von der Kommandozeile: VERGLEICH statt ECHTHEIT
 uv run python -m tools.humanbench.page \
     --payload temp/humanbench/runde-9/payload.json \
@@ -892,7 +898,11 @@ Warnung versehen. Begriff und Hausregel:
   `tools.pairlab.follow` (Folger-Lauf → Kandidaten-JSON),
   `tools.tracebench` (dev-19-Wertung gegen die authored Wortbahnen),
   `.k0eval` (referenzfreies 63er-Protokoll), `.excursions`
-  (Papier-Exkursions-Inventar, der stehende K-D-Sensor), `.kringelcat`
+  (Papier-Exkursions-Inventar, der stehende K-D-Sensor), `.reversals`
+  (**Papier-Umkehren** — der Zickzack IM PAPIER, getrennt vom Zickzack in
+  der Tinte, der Duktus ist; `--paper grey|mask`, `--words-file` schneidet
+  auf die Wörter einer Urteilsrunde, §14 „Kette K-G Saat-Registrierung
+  `sep09`"), `.kringelcat`
   (baut den eingefrorenen Kringel-Katalog aus EINER Wurzel; `.kringel`
   ist der Sensor, der ihn liest — Report-Spalte `kringel_lost`, §14
   „Kringel-Landmarke `sep06`") und `.view`
@@ -910,7 +920,13 @@ Warnung versehen. Begriff und Hausregel:
   `sep07`"): `--counter-evidence`, Vorgabe AUS, ersetzt an jeder
   `offen`-Binnenfläche das eingeschnürte Skelett durch die Niveaulinie
   einer Federhalbbreite und meldet je Schleife Korrektur oder
-  Verweigerung. Alle nennen ihre Wurzel im Kopf und
+  Verweigerung. `tools.pairlab.seedgap` misst nicht die Bahn, sondern
+  ihren START — den **Saat-Abstand** je Buchstaben-Slot, getrennt in
+  Saat-Versatz (Platzierung, vom Slot-Block absorbierbar) und Saat-Rest
+  (Form, nur composer-seitig heilbar); kein Solve, kein Kandidat, nur
+  Wurzel und Komposition (§14 „Kette K-G Saat-Registrierung `sep09`").
+  Der Schalter dazu am Folger ist `--chain-seed grid`.
+  Alle nennen ihre Wurzel im Kopf und
   nehmen `--expect-root` (siehe oben); die Arm- und Archäologie-Flags
   stehen im jeweiligen `--help` und je Arm in seinem §14-Eintrag.
   Invarianten: reine Messschicht (nie DB/`core/`/Rendering), der

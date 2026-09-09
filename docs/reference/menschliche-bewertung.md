@@ -1,18 +1,18 @@
 # Menschliche Bewertung — der blinde Urteilsdurchgang über die Fits
 
-> **Status (2026-09-08): lebend.** Beschreibt das Instrument
+> **Status (2026-09-09): lebend.** Beschreibt das Instrument
 > ([`tools/humanbench`](../../tools/humanbench)) und das Verfahren eines
 > Bewertungsdurchgangs — **die Methode, nicht die Ergebnisse**. Zahlen und
 > Verdikte einer Runde wohnen in
 > [`messjournal.md`](messjournal.md) §14.
 >
 > **Was gilt.** Drei Modi: der Einzelbuchstaben-Durchgang, der **paarige
-> Vorher/Nachher-Durchgang**
-> ([§8](#8-der-paarige-folgedurchgang)) und seit 2026-09-02 der
-> **Wortmodus auf der Echtheitsfrage**
+> Vorher/Nachher-Durchgang** ([§8](#8-der-paarige-folgedurchgang)) und seit
+> 2026-09-02 der **Wortmodus auf der Echtheitsfrage**
 > ([§8a](#8a-der-wortmodus--die-echtheitsfrage)), dessen Arm seit `sep07` auch
 > eine gefolgte [BAHN](#ein-arm-kann-auch-eine-bahn-sein--dann-ist-die-frage-wieder-die-genauigkeit)
-> sein darf — dann wieder Genauigkeitsfrage und Mittellinien-Anzeige.
+> sein darf — dann Genauigkeitsfrage und Mittellinien-Anzeige, seit `sep09`
+> wahlweise im [AUSSCHNITT](#34a-die-ausschnitt-anzeige-den-ort-zeigen-statt-ihn-im-wort-verstecken).
 > Geurteilt wird **blind** gegen die sechsteilige Fehler-Taxonomie
 > ([§2](#2-die-fehler-taxonomie)); die Konstruktionsregeln des Instruments
 > stehen jeweils neben dem Fehlerfall, für den sie eingeführt wurden
@@ -356,6 +356,41 @@ verfehlt hat, und bekäme weder den Fehlgriff noch das Ziel zu sehen.
 Nebenwirkung, die deshalb im Kopftext der Seite steht: Bei völlig
 danebenliegenden Fits folgt der Ausschnitt dem **Fit** — der Buchstabe kann
 angeschnitten sein.
+
+### 3.4a Die Ausschnitt-Anzeige: den Ort zeigen statt ihn im Wort verstecken
+
+**Angelegt 2026-09-09 aus dem Befund der Runde 9** (`messjournal.md` §14
+„Kette K-E `sep09`", Rettungsweg 3). Eine Wortrunde zeigt das ganze Wort;
+bei Zoom 2× ist eine 0,05-xh-Nadel dort wenige Bildschirmpunkte groß. Runde 9
+hat auf dieser Anzeige **44 von 44** Bildschirmen unentschieden beantwortet,
+obwohl fünf Wörter einen Arm-Abstand über 0,17 xh trugen — die Runde hat den
+Beurteiler nach etwas gefragt, was die Anzeige kaum trägt.
+
+Die Regel, und sie ist ein **Schalter, kein neuer Default**
+(`--window-xh N`, `build.py::window_around`): auf Wunsch wird statt des
+ganzen Wortes ein quadratischer Ausschnitt von ±N x-Höhen um den Punkt
+gezeigt, an dem die beiden Arme am weitesten auseinanderlaufen
+(`arm_gap_site`, der **Mittelpunkt** des schlimmsten Paares). Vier
+Eigenschaften halten die Blindheit von §8:
+
+1. **Beide Tafeln teilen sich EINEN Ausschnitt** — wie beim ganzen Wort. Zwei
+   Fenster wären zwei Bildmaße und damit das Erkennungszeichen, das §8
+   ausschließt.
+2. **Der Mittelpunkt statt des Punktes auf dem schlechteren Arm.** Ein
+   einseitig gewählter Punkt wäre bei symmetrischer Trennung von der
+   Argument-Reihenfolge abhängig — die gespiegelte Wiederholung bekäme einen
+   anderen Rahmen als ihr Original.
+3. **Beide Arme werden vollständig gezeichnet**; was außerhalb liegt,
+   beschneidet die Tafel selbst. Es wird nichts weggelassen, nur weniger
+   gezeigt.
+4. **Der Stempel trägt `window_xh`** — auch wenn er `null` ist. Eine
+   Ausschnitt-Runde und eine Wortrunde beantworten dieselbe Frage auf
+   verschiedenen Anzeigen; **ihre Zahlen dürfen nie zusammengeworfen werden**,
+   und das muss aus der Datei ablesbar sein, nicht aus der Erinnerung.
+
+Der Preis ist benannt und nicht kleingeredet: der Ausschnitt tauscht
+**Zusammenhang gegen Auflösung**. Wer nur die Zickzack-Zone sieht, kann nicht
+mehr beurteilen, ob das Wort als Ganzes besser läuft — deshalb der Schalter.
 
 ### 3.5 Kartografisches Casing
 
