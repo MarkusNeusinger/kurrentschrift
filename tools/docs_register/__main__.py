@@ -13,7 +13,7 @@ import argparse
 import os
 import sys
 
-from tools.docs_register import RegisterError, added_entries, check_all
+from tools.docs_register import ROUTE_PAGES, RegisterError, added_entries, check_all
 
 
 def _fail(message: str) -> None:
@@ -38,7 +38,7 @@ def cmd_check(args: argparse.Namespace) -> int:
         for problem in problems:
             _fail(problem)
         return 1
-    print("§14 register, headline ledger and the four process ledgers agree")
+    print(f"§14 register, headline ledger and the {len(ROUTE_PAGES)} process ledgers agree")
     return 0
 
 

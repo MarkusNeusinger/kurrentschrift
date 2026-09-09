@@ -979,7 +979,8 @@ Warnung versehen. Begriff und Hausregel:
   CI-Job „Docs-Register“): jeder `###`-Eintrag in
   [`messjournal.md`](messjournal.md) §14 braucht seine
   Registerzeile, jede Ledger-Zeile eine Zahl, die das Journal schon
-  trägt, und jeder Eintrag einer Duell-Route die Ledger-Zeile seines
+  trägt, und jeder Eintrag einer Duell-Route — seit A43 (2026-09-09) auch
+  jeder der Route „Übergänge“ — die Ledger-Zeile seines
   Datums auf der Verfahrensseite. Standardbibliothek only, wie
   `tools/changelog`; liest nur committete Dateien und schreibt nichts.
 - **`tools/docs_budget`** — das Gate über den **Lesekosten**

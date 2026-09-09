@@ -1,6 +1,6 @@
 # Verfahrensseiten: die Tintenfolger-Routen und ihre Versionen
 
-> **Status (2026-09-01): lebend.** Übersicht und Versions-Konvention der
+> **Status (2026-09-09): lebend.** Übersicht und Versions-Konvention der
 > Duell-Verfahren; je stehendem Verfahren existiert eine eigene Seite
 > (unten). Nachzieh-Pflicht: Jeder §14-Eintrag, der einen Arm oder eine
 > Stufe eines Verfahrens misst (adoptiert ODER verworfen), ergänzt im
@@ -9,9 +9,11 @@
 > Seit 2026-09-01 ist das ein CI-Gate: `uv run python -m
 > tools.docs_register check` verlangt für jeden §14-Eintrag einer
 > Duell-Route die Ledger-Zeile seines Datums auf der zugehörigen Seite
-> (Job „Docs-Register“). Die Spalte **seit** hält fest, wann der
-> ausgewiesene Stand adoptiert wurde — ein Blick auf die Seite genügt
-> damit für den Abgleich.
+> (Job „Docs-Register“). **Seit dem Autor-Entscheid A43 vom 2026-09-09
+> gilt dasselbe für die Route „Übergänge“**, die keine Duell-Route ist,
+> aber adoptierte Defaults bewegt (Begründung unter der Tabelle). Die
+> Spalte **seit** hält fest, wann der ausgewiesene Stand adoptiert wurde
+> — ein Blick auf die Seite genügt damit für den Abgleich.
 
 Die Tintenfolger-Kampagne ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md))
 lässt mehrere Verfahren gegeneinander antreten; ihre Historie wächst als
@@ -56,6 +58,24 @@ Zahl hier ist ein datiertes Zitat, der Beleg wohnt im benannten
 | **Lotse** | [`verfahren-lotse.md`](verfahren-lotse.md) | **v0.17** (`aug20`, Reservierungs-Veto) — Zahlen nachgemessen `sep07` auf derselben Wurzel wie die Kette (`ccb036a5eb20…`), die seit A37 fällige Karten-Nachmessung: dtw **0,053386** med · p90 0,116668 · aiou 0,7473 · `cross_missing` 0 / `cross_spurious` 4 · `retrace_missing` 5. Die `sep05`-Zeile nannte 0,053393 / 0,116199 / 0,7493 — dieselbe Route, vor A37 (§14 „Komma-Ausschluss `sep07`") | 2026-08-20 (Zahlen 2026-09-07) |
 | **InkSight** | [`verfahren-inksight.md`](verfahren-inksight.md) | T0 (roh) — dtw 0,0951 med · 5/19 failed · Galoppieren-B2-Kollaps; **auf Lineal-Kappe 1,5 unvermessen**, die Zahlen sind archiviert und nicht vergleichbar | 2026-08-17 (Lineal 0,8) |
 | **Nullprobe** | [`verfahren-nullprobe.md`](verfahren-nullprobe.md) | unversioniert (Kontrolle) — dtw 0,8198 med · p90 1,0267 auf den 10 von 19 dev-Wörtern, die die gespeicherte Nullprobe abdeckt | 2026-08-26 |
+
+**Die eine Seite, die keine Duell-Route führt.** Die Route **Übergänge**
+([`verfahren-uebergaenge.md`](verfahren-uebergaenge.md)) tritt gegen
+niemanden an — sie ist die Join-Grammatik der Komposition, auf der alle
+vier Routen aufsetzen, und ihr Lineal ist das Wort-/Paar-Lineal des
+Wordbench statt des dev-19-Satzes. Sie bekommt trotzdem ein Ledger,
+weil ihre Arme adoptierte DEFAULTS bewegen: Stand seit dem
+Autor-Entscheid A37 vom 2026-09-06 ist der Austritts-Trim (`exit_trim`)
+als Produktions-Default (gepaart gemessen: Wörter 0,108444 →
+**0,109026**, Paare byte-gleich), während `apex_handover`/`stem_depart`
+(A36) und `seam_negotiation` (zweimal gefallen) aus bleiben. Die
+Headline steht seither auf der `sep07`-Wurzel und wohnt wie immer allein
+in [`qualitaetsmetrik.md`](qualitaetsmetrik.md). **Laufform**, **Lineal** und **Feder**
+kommen ebenfalls als Route in der §14-Registerspalte vor und haben
+bewusst keine Seite; ihr Stand wohnt anderswo (Laufform-Zeilen in der
+DB, [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §2 für das Lineal,
+[`../concepts/federmodelle.md`](../concepts/federmodelle.md) für die
+Feder).
 
 Geplante Verfahren (Zögling · Vier Augen · Chor) haben noch keinen
 Kandidaten und darum keine Seite — ihr Stand wohnt in der
