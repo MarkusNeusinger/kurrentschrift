@@ -1,0 +1,145 @@
+{
+ "pass": {
+  "tag": "VERGLEICH/9",
+  "judged": 54,
+  "total": 54,
+  "key_entries": 54,
+  "unjudged": []
+ },
+ "reliability": {
+  "pairs": 10,
+  "mirrored": 10,
+  "missing_repeats": [],
+  "arm_agree": 10,
+  "side_agree": 10,
+  "both_tie": 10,
+  "rate": 1.0,
+  "band": "reliable",
+  "too_few_pairs": false,
+  "carries_a_verdict": true
+ },
+ "sides": {
+  "n": 44,
+  "left": 0,
+  "right": 0,
+  "tie": 44,
+  "left_share": null,
+  "lopsided": false
+ },
+ "verdict": {
+  "arms": [
+   "candidate",
+   "base"
+  ],
+  "candidate": "candidate",
+  "n": 44,
+  "per_arm": {},
+  "decided": 0,
+  "ties": 44,
+  "candidate_share": null,
+  "tie_share": 1.0,
+  "candidate_share_all": 0.0,
+  "thresholds": {
+   "candidate_share": 0.6,
+   "tie_share": 0.25
+  },
+  "meets_thresholds": false,
+  "adopt": false
+ },
+ "classes": {
+  "bewegt": {
+   "n": 26,
+   "per_arm": {},
+   "decided": 0,
+   "ties": 26,
+   "candidate_share": null,
+   "tie_share": 1.0,
+   "candidate_share_all": 0.0,
+   "too_few": false
+  },
+  "gewinn": {
+   "n": 8,
+   "per_arm": {},
+   "decided": 0,
+   "ties": 8,
+   "candidate_share": null,
+   "tie_share": 1.0,
+   "candidate_share_all": 0.0,
+   "too_few": false
+  },
+  "nullprobe": {
+   "n": 6,
+   "per_arm": {},
+   "decided": 0,
+   "ties": 6,
+   "candidate_share": null,
+   "tie_share": 1.0,
+   "candidate_share_all": 0.0,
+   "too_few": true
+  },
+  "riss": {
+   "n": 2,
+   "per_arm": {},
+   "decided": 0,
+   "ties": 2,
+   "candidate_share": null,
+   "tie_share": 1.0,
+   "candidate_share_all": 0.0,
+   "too_few": true
+  },
+  "ziel": {
+   "n": 2,
+   "per_arm": {},
+   "decided": 0,
+   "ties": 2,
+   "candidate_share": null,
+   "tie_share": 1.0,
+   "candidate_share_all": 0.0,
+   "too_few": true
+  }
+ },
+ "drift": {
+  "blocks": [
+   {
+    "range": [
+     0,
+     15
+    ],
+    "n": 15,
+    "arms": {
+     "None": 15
+    },
+    "ties": 15,
+    "timed": 15,
+    "median_seconds": 7
+   },
+   {
+    "range": [
+     15,
+     29
+    ],
+    "n": 14,
+    "arms": {
+     "None": 14
+    },
+    "ties": 14,
+    "timed": 14,
+    "median_seconds": 2.5
+   },
+   {
+    "range": [
+     29,
+     44
+    ],
+    "n": 15,
+    "arms": {
+     "None": 15
+    },
+    "ties": 15,
+    "timed": 15,
+    "median_seconds": 3
+   }
+  ]
+ },
+ "notes": []
+}
