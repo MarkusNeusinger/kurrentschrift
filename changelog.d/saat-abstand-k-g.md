@@ -1,5 +1,27 @@
 ### Added
 
+- **The seed is measured as a chain arm for the first time, and it is an honest
+  negative worth keeping.** Author decision A39 runs rescue path (1) of round 9:
+  `--chain-seed grid` starts each letter's translation block where the bounded
+  grid search finds that letter on the ink instead of at the composed placement
+  — a start point, not a claim and not an objective, so the weights, the guard,
+  the evidence and the ruler are byte for byte the ones the production chain
+  runs. It fails: the standing aiou gate tears at `Wer` (−0.0187) and `das`
+  (−0.0074), `cross_missing` goes 11 → 13, and the dtw p90 rises. It also heals
+  exactly the word the judge called „richtig schlimm" — `unter` gains **+0.1072
+  aiou** and loses all five of its paper reversals, because the base run is
+  reverted to init there and the arm's is not — while damaging exactly the one
+  he called good. Reference-free the Soll distance falls 85 → 74 and the paper
+  reversals 49 → 42 (45 → 32 without `regieren`, the one word whose grid search
+  ends AT the block bound, so seven of its slots start registered and one does
+  not). The whole aiou spread turns out to be the structure guard rather than
+  the ink: 28 of 63 words change their verdict, the ones moving to `revert-init`
+  lose 0.0770 median and the ones leaving it gain 0.1034, while the 35 unchanged
+  move ±0.0005. No default flips, no proposal goes to the author; the two
+  conversions and the composer's e-width task are registered in
+  `tintenfolger.md` §7.9. Pre-registration, measurement and the round-11 build
+  are in `docs/reference/messjournal.md` §14 „Kette K-G Saat-Registrierung
+  `sep09`".
 - **`tools/pairlab/seedgap.py` — the seed-gap inventory, and it splits the
   defect the judge named into two halves with different cures.** Round 9 ended
   with the author asking why the same `e`→`r` pair reads well in `Wer` and
