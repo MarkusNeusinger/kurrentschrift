@@ -815,9 +815,7 @@ def test_a_windowed_word_screen_cuts_an_excerpt_around_that_point():
     case = word_case()
     case.peak_site = (30.0, 20.0)
     whole, window_whole = render_word_item("S001", case, [SIDE_BASE, SIDE_CANDIDATE], zoom=4, pad_xh=0.4)
-    cut, window_cut = render_word_item(
-        "S002", case, [SIDE_BASE, SIDE_CANDIDATE], zoom=4, pad_xh=0.4, window_xh=0.5
-    )
+    cut, window_cut = render_word_item("S002", case, [SIDE_BASE, SIDE_CANDIDATE], zoom=4, pad_xh=0.4, window_xh=0.5)
     # ±0.5 xh at xh 20 is a 20 px box around (30, 20), clipped to the crop.
     assert window_cut == (20, 10, 40, 30)
     assert window_cut != window_whole

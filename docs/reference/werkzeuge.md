@@ -444,9 +444,9 @@ uv run python -m tools.humanbench.build --round 9 \
 # … und wenn das ganze Wort den Unterschied nicht trägt: der AUSSCHNITT um die
 # größte Arm-Trennung, gezoomt (Konstruktionsregel §8a/§3.4a — eigene Anzeige,
 # eigene Runde, Zahlen NICHT mit einer Wortrunde vergleichbar)
-uv run python -m tools.humanbench.build --round 10 \
+uv run python -m tools.humanbench.build --round 11 \
     --word-arms temp/basis-bahn.json temp/kg-bahn.json --strata temp/klassen.json \
-    --window-xh 1.0 --zoom 4
+    --window-xh 1.5 --zoom 4
 # die Frage kommt aus den ARMEN, nicht von der Kommandozeile: VERGLEICH statt ECHTHEIT
 uv run python -m tools.humanbench.page \
     --payload temp/humanbench/runde-9/payload.json \
