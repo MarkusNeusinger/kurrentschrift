@@ -68,6 +68,7 @@ Policy- und Technik-Dokumente, Status je Doc.
 | [verfahren-lotse.md](reference/verfahren-lotse.md) | Lotse: Steckbrief, Stand v0.17 (Reservierungs-Veto), Versions-Ledger v0.1–v0.19, offene Blöcke | Dasselbe für den Lotsen |
 | [verfahren-inksight.md](reference/verfahren-inksight.md) | InkSight: Steckbrief, Stand T0, Ledger (T0 · B1), stehende Maßnahmen B2–B5 | Dasselbe für InkSight |
 | [verfahren-nullprobe.md](reference/verfahren-nullprobe.md) | Nullprobe: Steckbrief, die Kontroll-Doktrin (bewusst unversioniert), Mess-Ledger | Dasselbe für die prior-freie Kontrolle |
+| [verfahren-uebergaenge.md](reference/verfahren-uebergaenge.md) | Übergänge (keine Duell-Route, die Join-Grammatik darunter): Steckbrief, Stand (Austritts-Trim an), Ledger J1–J6 / S1 / S2 / Korb-Runde | Wenn ein Übergänge-Arm gemessen, adoptiert oder zitiert wird |
 | [werkzeuge.md](reference/werkzeuge.md) | Der Index über `tools/`: Labs, Benches, Ernte, Eigenhand, Snapshot, Changelog-Schnitt | Bevor man ein Werkzeug aufruft oder ein neues anlegt |
 | [write-api.md](reference/write-api.md) | Die öffentlichen Render-Endpunkte `/write/glyphs` + `/write/word`: Shaping → Komposition → Payload, Cache, `missing` | Bei jeder Änderung an einer `/write/*`-Route |
 | [frontend-stack.md](reference/frontend-stack.md) | Stack, Routenkarte, i18n-Soll, Deploy, Admin- und Origin-Gate, Crawler-Prerender | Bei Build-, Deploy-, Auth- oder Routing-Fragen |
