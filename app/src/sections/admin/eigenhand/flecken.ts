@@ -15,9 +15,12 @@ import type { EigenhandFleck } from '@/lib/api';
 
 // The brush sizes the author picks from. A toner speck is ≲ 0.5 mm across, so
 // 0.3 mm covers a single one, 0.6 mm a fat one with its halo, and 1.0 mm a
-// cluster — anything larger is no longer „a speck" and belongs to the Siebung,
-// not to the eraser.
-export const BRUSH_RADII_MM = [0.3, 0.6, 1.0] as const;
+// cluster. 1.5 mm is for the smear class the first real sheet showed (B0001,
+// S0181: several particles fused into one blot 2.3 mm across) — the automatic
+// pass leaves it to the brush by design, and one click should cover it rather
+// than a row of small ones. Anything larger is no longer „a speck" and belongs
+// to the Siebung, not to the eraser; the server's ceiling stays 3.0 mm.
+export const BRUSH_RADII_MM = [0.3, 0.6, 1.0, 1.5] as const;
 export type BrushRadiusMm = (typeof BRUSH_RADII_MM)[number];
 
 // The server's own ceiling (`core.eigenhand.flecken.FLECK_MAX_R_MM`), repeated
