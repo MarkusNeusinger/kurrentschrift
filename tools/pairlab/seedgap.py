@@ -49,7 +49,7 @@ from tools.tracebench.reference import DEFAULT_FIXTURES_DIR
 from tools.tracebench.run import find_fixture_root
 from tools.wordbench.roots import add_expect_root_argument, announce_roots
 from tools.wordlab.cases import WordCase, iter_fixture_word_cases
-from tools.wordlab.derive import derive_word
+from tools.wordlab.derive import WordDeriveResult, derive_word
 
 
 # The quantile reported beside the median and the maximum. The maximum alone is
@@ -66,7 +66,7 @@ def _distances_units(edt_px: np.ndarray, points_px: np.ndarray, xh: float) -> np
 
 
 def _slot_row(
-    case: WordCase, result, slot_index: int, grid: dict, edt_px: np.ndarray
+    case: WordCase, result: WordDeriveResult, slot_index: int, grid: dict, edt_px: np.ndarray
 ) -> dict[str, float | str | int | bool] | None:
     """One letter slot's seed gap — the chain's own seed anchors, measured."""
     made = _letter_spec(case, result, slot_index)
