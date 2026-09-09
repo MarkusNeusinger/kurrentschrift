@@ -15085,51 +15085,44 @@ Vorregistrierung, nie die Headline.
 ### Laufform LF17 `sep09` — Vorregistrierung: die `d`-Zeile als eigener Arm (A40) und die Runde 10
 
 Geschrieben, bevor ein Mensch einen Bildschirm dieser Runde gesehen hat
-— und der Plan-Teil dieses Abschnitts ist committet, bevor das Wort-
-Lineal den Kandidaten das erste Mal gesehen hat. Anlass ist der
-**Autor-Entscheid A40 vom 2026-09-09**: „Die `d`-Zeile als eigener
-Laufform-Arm: ja". Damit ist Rettungsweg (1) des Eintrags „Laufform LF16
-`sep08`" geöffnet — der Vorschlag, den jener Eintrag ausdrücklich als
-Vorschlag und nicht als Entscheid geführt hat, weil eine Teil-
-Schreibliste jenseits von „ohne `Z`" nicht vorregistriert war.
+— und der Plan-Teil ist committet, bevor das Wort-Lineal den Kandidaten
+zum ersten Mal gesehen hat. Anlass ist der **Autor-Entscheid A40 vom
+2026-09-09**: „Die `d`-Zeile als eigener Laufform-Arm: ja". Damit ist
+Rettungsweg (1) des Eintrags „Laufform LF16 `sep08`" geöffnet, den jener
+ausdrücklich als Vorschlag führte, weil eine Teil-Schreibliste jenseits
+von „ohne `Z`" nicht vorregistriert war.
 
 #### Was dieser Arm ist — und was er ausdrücklich nicht ist
 
 **Er ist EINE Zeile.** Der Kandidat komponiert mit den gespeicherten
-Laufform-Zeilen der Wurzel plus einem Overlay aus genau der frisch
-geernteten `d`-Zeile; die übrigen zwanzig gespeicherten Zeilen bleiben
-Zeichen für Zeichen stehen. Die Basis ist die Wurzel, wie sie ist. Ein
-Freiheitsgrad, und er heißt `d`.
+Zeilen der Wurzel plus einem Overlay aus genau der frisch geernteten
+`d`-Zeile; die übrigen zwanzig bleiben Zeichen für Zeichen stehen, die
+Basis ist die Wurzel, wie sie ist. **Er ist NICHT die Runde 8 noch
+einmal:** deren Kandidat bewegte fünfzehn Zeilen zugleich, weshalb die
+83,3 % der `d`-Spalte eine BEDINGTE Lesart sind und kein Arm. Genau
+diesen Freiheitsgrad isoliert dieser Eintrag — den, den ein Write
+installieren würde.
 
-**Er ist NICHT die Runde 8 noch einmal.** Deren Kandidat bewegte
-fünfzehn Zeilen zugleich; die 83,3 % der `d`-Spalte sind deshalb eine
-BEDINGTE Lesart über die Wörter, die diese Zeile ziehen, und kein Arm.
-Genau das macht dieser Eintrag rückgängig: dieselbe Frage, aber mit dem
-einen Freiheitsgrad, den ein Write installieren würde.
-
-**Was dieser Arm ausdrücklich nicht tut:** kein DB-Write (der bleibt
-Autorenschritt und deklarierte Re-Baseline), keine Wurzel-Neuausfuhr,
-keine Änderung an `core/`, `word_metric.py` oder `tracebench`, keine
-Absenkung des Beleg-Bodens, keine neuen Schlüssel, keine Änderung am
-Ernte-Default (die Chart-Saat bleibt, was A38 entschieden hat).
+**Was er nicht tut:** kein DB-Write (Autorenschritt und deklarierte
+Re-Baseline), keine Wurzel-Neuausfuhr, keine Änderung an `core/`,
+`word_metric.py` oder `tracebench`, keine Absenkung des Beleg-Bodens,
+keine Änderung am Ernte-Default (die Chart-Saat bleibt, was A38
+entschieden hat).
 
 #### Die falsifizierbare Erwartung
 
-Die Behauptung, die aus Runde 8 herüberkommt und hier geprüft wird:
-**die `d`-Zeile trägt auch allein.** Vorregistriert als Richtung und
-Schranke: in der Klasse `d-rein` — den Wörtern, die die Zeile ziehen,
-ohne die vier `und…`-Wörter — gehen **≥ 60 % der ENTSCHIEDENEN**
-Bildschirme an den Kandidaten. Widerlegt ist sie, wenn die Klasse an die
-Basis geht oder wenn sie unentscheidbar bleibt; beides ist ein
-verwertbares Ergebnis, das zweite allerdings ein anderes als das erste
-(siehe die Sichtbarkeits-Auflage unten).
+Die Behauptung, die aus Runde 8 herüberkommt: **die `d`-Zeile trägt auch
+allein.** Vorregistriert als Richtung und Schranke: in der Klasse
+`d-rein` gehen **≥ 60 % der ENTSCHIEDENEN** Bildschirme an den
+Kandidaten. Widerlegt ist sie, wenn die Klasse an die Basis geht oder
+unentscheidbar bleibt — beides verwertbar, aber nicht dasselbe (siehe
+die Sichtbarkeits-Auflage unten).
 
 **Der Gegeneinwand steht vor den Zahlen, nicht hinter ihnen.** In Runde 8
-bewegte der Kandidat die `d`-Wörter im Median um 0,1953 xh (`arm_gap`
-aus deren Schlüsseldatei) — aber mit fünfzehn Zeilen zugleich. Die eine
-Zeile bewegt weniger. Wieviel weniger, steht in Teil 2, gemessen vor dem
-Bau der Runde und vor jedem Urteil; und Runde 7 hat gezeigt, dass bei
-0,0221 xh Median das Auge nicht mehr entscheidet.
+bewegte der Kandidat die `d`-Wörter im Median um 0,1953 xh — mit
+fünfzehn Zeilen zugleich. Die eine Zeile bewegt weniger; wieviel
+weniger, steht in Teil 2, gemessen vor dem Bau und vor jedem Urteil. Und
+Runde 7 hat gezeigt, dass das Auge bei 0,0221 xh nicht mehr entscheidet.
 
 #### Die Wörter und die drei Klassen (vor jeder Zahl geschnitten)
 
@@ -15139,33 +15132,29 @@ mindestens `ASCENDER_LEAN_MIN_RUN` = 3 Slots sitzt — dasselbe Gate, das
 `compose_word` auf ein Laufform-Overlay anwendet, und dieselbe
 Zuordnung, mit der Runde 8 je Zeile zerlegt wurde
 ([`runde-08-zeilen.json`](../../data/humanbench/runde-08-zeilen.json)).
-Gegenprobe, mit der Runde gebaut: `arm_gap` > 0 für genau diese Wörter
-und für kein anderes.
+Gegenprobe vor dem Bau: `arm_gap` > 0 für genau diese Wörter.
 
 | Klasse | Schnitt | Sichtbarkeit vorab |
 |---|---|---|
-| `d-rein` | die Wörter, die die Zeile ziehen, ohne `und…` (Runde 8: `Feinde` `Soldaten` `das` `daß` `der` `der-2` `der-3` `die` `die-2` `laden`) | **behauptet, aber an eine Zahl gebunden** (Auflage unten) |
-| `d-und` | die vier Wörter, in denen `d` auf `u` trifft (`und` `und-2` `und-3` `und-4`) | nicht behauptet |
+| `d-rein` | die Wörter, die die Zeile ziehen, ohne `und…` | **behauptet, aber an eine Zahl gebunden** (Auflage unten) |
+| `d-und` | die vier Wörter, in denen `d` auf `u` trifft | nicht behauptet |
 | `nullprobe` | Wörter ohne `d`-Zeile: beide Tafeln bit-identisch | keine, per Konstruktion |
 
 **Warum `d-und` eine eigene Klasse ist und keine Fußnote:** in Runde 8
 saßen BEIDE Basis-Stimmen der `d`-Spalte dort, und ohne diese vier
-Wörter stand die Zeile bei 10 : 0 ohne einen einzigen Tie. Ob das dem
-`u`, dem `n` oder ihrer Kombination gehört, hat jene Runde nicht
-entschieden; diese hier kann es mit n = 4 auch nicht — die Klasse liegt
-unter `MIN_PAIRED_PER_CLASS` = 8 und ist **beschreibend**. Sie steht
-trotzdem getrennt, weil ein gepoolter Anteil die eine Aussage
-verwischen würde, die Runde 8 scharf gemacht hat.
+Wörter stand die Zeile bei 10 : 0. Ob das dem `u`, dem `n` oder ihrer
+Kombination gehört, hat jene Runde nicht entschieden und kann diese mit
+n = 4 auch nicht — die Klasse ist **beschreibend**. Getrennt steht sie,
+weil ein gepoolter Anteil genau die Aussage verwischen würde, die
+Runde 8 scharf gemacht hat.
 
 **Die Zahl der Nullproben ist eine Rechnung, keine Geste** (§8a): der
-Wiederholungstopf ist `n − min_gap − REPEAT_JITTER` mit `n` = alle
-beurteilten Einträge. Bei `--min-repeat-gap 5` und
-`MIN_PAIRED_REPEATS` = 6 heißt das `n` ≥ 36, bei vierzehn bewegten
-Wörtern also **mindestens 22 Nullproben**. Vorregistriert ist die
-Regel, nicht eine gefällige Zahl: gezogen wird aus den Wörtern der
-Wurzel, die keine `d`-Zeile ziehen, mit einer benannten Saat, und
-genommen wird die kleinste Menge, die die geplanten Wiederholungen
-trägt. Beides — Saat und Zahl — steht in Teil 2.
+Wiederholungstopf ist `n − min_gap − REPEAT_JITTER`, bei
+`--min-repeat-gap 5` und `MIN_PAIRED_REPEATS` = 6 also `n` ≥ 36 und bei
+vierzehn bewegten Wörtern **mindestens 22 Nullproben**. Vorregistriert
+ist die Regel, nicht eine gefällige Zahl: gezogen mit benannter Saat aus
+den Wörtern ohne `d`-Zeile, genommen die kleinste Menge, die die
+geplanten Wiederholungen trägt; Saat und Zahl stehen in Teil 2.
 
 #### Die Schranken, und die eine, die diese Runde per Konstruktion reißt
 
@@ -15176,138 +15165,125 @@ als 7/12 Arm-Übereinstimmung, `COIN_FLIP_AGREEMENT`).
 
 **Und hier steht, bevor irgendetwas gemessen ist, was diese Runde nicht
 kann:** die Tie-Schranke über ALLE Bildschirme ist per Konstruktion
-gerissen. Die Nullproben sind bit-identisch, ihre Tie-Quote ist 100 %,
+gerissen — die Nullproben sind bit-identisch, ihre Tie-Quote ist 100 %,
 und die Rechnung oben verlangt mindestens 22 von ihnen gegen 14 bewegte
-Wörter — der Boden liegt also bei ≈ 61 % Unentschiedenen, ganz gleich,
-wie der Beurteiler urteilt. **Diese Runde kann sich eine Adoption
-deshalb nicht selbst erteilen.** Sie ist der J4/Runde-5-Fall in seiner
-schärfsten Form (§8a-Nachtrag: die Gesamtquote misst hier die Mischung,
-die der Plan selbst gewählt hat) und legt ihr Ergebnis dem Autor mit der
-Klassentabelle daneben vor.
+Wörter, also einen Boden von ≈ 61 %. **Diese Runde kann sich eine
+Adoption deshalb nicht selbst erteilen.** Sie ist der J4/Runde-5-Fall in
+seiner schärfsten Form (§8a-Nachtrag: die Gesamtquote misst die
+Mischung, die der Plan selbst gewählt hat) und legt ihr Ergebnis dem
+Autor mit der Klassentabelle daneben vor.
 
-**Was daraus ausdrücklich NICHT folgt** — die drei Wege, die der Eintrag
-„Laufform LF16 `sep08`" schon als „kein Weg" benannt hat und die auch
-hier keine sind: die Schranken senken; die Nullproben aus der
-Tie-Quote herausrechnen; die Klassen nach den Zahlen anders schneiden.
-Was die Runde stattdessen trägt, ist die Lesart, die §8a für eine
-schmale Klasse selbst vorschreibt: **der Kandidatenanteil auf den
-bewegten Wörtern und die Unentschieden-Quote auf den unbewegten,
-nebeneinander gelesen** — plus dieselben drei Zahlen je Klasse aus
-Schritt 4, für die `d-rein` mit n = 10 über dem Klassenboden liegt.
+**Was daraus NICHT folgt** — dieselben drei „kein Weg" wie im Eintrag
+„Laufform LF16 `sep08`": die Schranken senken, die Nullproben aus der
+Tie-Quote herausrechnen, die Klassen nach den Zahlen neu schneiden. Was
+die Runde trägt, ist die Lesart, die §8a für eine schmale Klasse selbst
+vorschreibt — **Kandidatenanteil auf den bewegten Wörtern,
+Unentschieden-Quote auf den unbewegten, nebeneinander gelesen** — plus
+die drei Zahlen je Klasse aus Schritt 4, für die `d-rein` mit n = 10
+über dem Klassenboden liegt.
 
 #### Die Sichtbarkeits-Auflage (§8a, Nachtrag aus Runde 7)
 
 Wer eine Klasse „sichtbar" nennt, nennt vorher den Versatz, bei dem er
-das behauptet. Die gemessenen Stützpunkte: Runde 5 entschied bei
-**0,1186 xh** (9,7 % Ties in der starken Klasse), Runde 7 entschied bei
-**0,0221 xh** nicht (34,5 % Ties in der behaupteten Klasse). Runde 8
-liefert den Gegenpunkt, der die Auflage begrenzt: dort lag `zeile-stark`
-bei 0,1972 xh und trotzdem bei 54,2 % Ties — **der `arm_gap` sagt
-zwischen Runden etwas und innerhalb einer Runde fast nichts.**
+das behauptet. Die Stützpunkte: Runde 5 entschied bei **0,1186 xh**
+(9,7 % Ties), Runde 7 bei **0,0221 xh** nicht (34,5 %). Runde 8 begrenzt
+die Auflage: dort lag `zeile-stark` bei 0,1972 xh und trotzdem bei
+54,2 % Ties — **der `arm_gap` sagt zwischen Runden etwas und innerhalb
+einer Runde fast nichts.**
 
 Vorregistrierte Regel, damit die Behauptung nicht nach der Zahl gewählt
 wird: **Sichtbarkeit wird für `d-rein` nur behauptet, wenn der Median-
 `arm_gap` der Klasse ≥ 0,05 xh liegt** — oberhalb des Punktes, an dem
-das Auge zuletzt nicht entschied. Liegt er darunter, wird sie
-ausdrücklich NICHT behauptet, und die Runde geht mit dieser Ansage in
-die Sitzung: ihr wahrscheinlichstes Ergebnis ist dann „kein
-Unterschied", und auch das beantwortet die Write-Frage — eine Zeile, die
-niemand von der gespeicherten unterscheiden kann, trägt keine
-deklarierte Re-Baseline. Der gemessene Wert steht in Teil 2.
+das Auge zuletzt nicht entschied. Darunter wird sie ausdrücklich NICHT
+behauptet, und die Runde geht mit dieser Ansage in die Sitzung: ihr
+wahrscheinlichstes Ergebnis wäre dann „kein Unterschied" — was die
+Write-Frage ebenfalls beantwortet, denn eine Zeile, die niemand von der
+gespeicherten unterscheidet, trägt keine deklarierte Re-Baseline. Der
+gemessene Wert steht in Teil 2.
 
 #### Was ein Ergebnis auslösen darf, vorab festgelegt
 
 * **`d-rein` ≥ 60 % Kandidat unter den Entschiedenen, ≤ 25 % Ties INNERHALB
   der Klasse, Schritt 1 bestanden** → der Autor kann **die eine Zeile**
   schreiben, als deklarierte Re-Baseline mit Neu-Export beider Wurzeln
-  und Ledger-Zeile. Das Skript liegt vorbereitet (Teil 2), der Write
-  bleibt sein Schritt.
-* **Richtung klar, aber nur die klasseninterne Tie-Quote gerissen** →
-  Autor-Entscheid mit der Klassentabelle daneben, das J4/Runde-5-Muster.
+  und Ledger-Zeile; das Skript liegt vorbereitet (Teil 2).
+* **Richtung klar, nur die klasseninterne Tie-Quote gerissen** →
+  Autor-Entscheid mit der Klassentabelle daneben (J4/Runde-5-Muster).
 * **`d-rein` geht an die Basis** → kein Write, und die 83,3 % der Runde 8
-  schließen als das, was sie waren: eine bedingte Lesart der
-  15-Zeilen-Karte. Der Arm wird nicht in Teilklassen weitergeschnitten —
-  bei n = 10 wäre jeder weitere Schnitt Rauschen.
+  schließen als das, was sie waren. Weiter geschnitten wird nicht — bei
+  n = 10 wäre jeder Teilschnitt Rauschen.
 * **Die Klasse bleibt unentschieden** → kein Write, und der nächste
   Schritt ist keine zweite Runde derselben Dosis, sondern ein Sensor
-  (Rettungsweg 4 der LF16-`sep08`-Zeile: der Unstetigkeits-Sensor S2 hat
-  noch keine Laufform-Runde gesehen).
+  (Rettungsweg 4 der LF16-`sep08`-Zeile).
 * **`d-und` entscheidet gar nichts** — n = 4, beschreibend, so gebaut.
 
 #### Kill-Kriterien
 
-* **Weniger als 6 gespiegelte Paare platziert oder ≤ 7/12
-  Arm-Übereinstimmung** → die Runde trägt keinen Adoptionsanspruch und
-  wird als Evidenz gebucht, nicht als Verdikt (§8a Schritt 1).
-* **Die Nullproben werden nicht als „kein Unterschied" erkannt** → das
-  Instrument, nicht der Arm, ist der Befund; die Runde wird nicht
-  gelesen.
-* **Die Zuordnung stimmt nicht** — wenn `arm_gap` > 0 für ein Wort ohne
-  `d`-Slot oder = 0 für ein Wort mit einem, ist der Overlay nicht der
-  behauptete Freiheitsgrad, und die Runde wird nicht gebaut.
+* **Weniger als 6 gespiegelte Paare oder ≤ 7/12 Arm-Übereinstimmung** →
+  kein Adoptionsanspruch; die Runde wird als Evidenz gebucht (§8a
+  Schritt 1).
+* **Die Nullproben werden nicht als „kein Unterschied" erkannt** → der
+  Befund ist das Instrument, nicht der Arm; die Runde wird nicht gelesen.
+* **Die Zuordnung stimmt nicht** (`arm_gap` > 0 ohne `d`-Slot oder = 0
+  mit einem) → der Overlay ist nicht der behauptete Freiheitsgrad, die
+  Runde wird nicht gebaut.
 * **Die Ernte ist kein Fixpunkt** — zwei Läufe, die nicht byte-gleich
-  sind, sind ein Befund und keine Iteration
-  ([`werkzeuge.md`](werkzeuge.md)); dann gibt es keinen Kandidaten.
-* **Die `d`-Zeile fällt an einem der drei Write-Gates** (Beleg-Boden 3,
-  Sprung, Kopf) → sie ist kein Write-Kandidat, und eine Runde über eine
-  Zeile, die der Endpunkt nicht annähme, könnte nichts lizenzieren.
+  sind, sind ein Befund und keine Iteration; dann gibt es keinen
+  Kandidaten.
+* **Die Zeile fällt an einem der drei Write-Gates** (Boden, Sprung,
+  Kopf) → eine Runde über eine Zeile, die der Endpunkt nicht annähme,
+  kann nichts lizenzieren.
 
 #### Grenzen
 
 EINE Wurzel, EIN Wortsatz, EIN Beurteiler — und er ist der Autor des
 Kandidaten (§8a). `abb22` ist eine andere Hand und bleibt draußen. Die
-Runde urteilt über KOMPOSITIONEN ganzer Wörter, nicht über die Zeile:
-was sie misst, ist der Unterschied, den diese Zeile im Wortbild macht.
-Und sie urteilt über die `d`-Zeile allein — über `n` und `h`, die Runde 8
-mit Anspruch abgesagt hat, sagt sie nichts, und über die sechs Zeilen
-unter dem Klassenboden auch nicht.
+Runde urteilt über KOMPOSITIONEN ganzer Wörter: was sie misst, ist der
+Unterschied, den diese Zeile im Wortbild macht. Über `n` und `h`, die
+Runde 8 mit Anspruch abgesagt hat, und über die sechs Zeilen unter dem
+Klassenboden sagt sie nichts.
 
 #### Teil 2 — die Konstruktionsmessungen (nach dem Plan, vor der Runde)
 
 **Die Wurzeln.** `ccb036a5eb20…` (`exported_at`
 2026-09-07T20:07:03+00:00) und `0fbde2d72b64…` — die Produktionswurzeln
-seit dem Komma-Ausschluss (#578), lagen auf Platte und wurden nicht neu
-gebaut; jeder Lauf mit `--expect-root` und `OPENBLAS_NUM_THREADS=1
-OMP_NUM_THREADS=1`. Die Basis-Headline auf ihnen: **0,108153 ·
-0,148236**, `worst_word` `regieren` 0,233052 — ziffernweise der
-ausgelieferte Stand.
+seit dem Komma-Ausschluss (#578), unverändert von Platte gelesen; jeder
+Lauf mit `--expect-root` und `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`.
+Basis-Headline auf ihnen: **0,108153 · 0,148236**, `worst_word`
+`regieren` 0,233052 — ziffernweise der ausgelieferte Stand.
 
-**Die Ernte ist wieder ein Fixpunkt.** Zweimal gefahren, Produktions-
-Defaults (Chart-Saat seit A38), `--path chain --sets words --min-n 1
---jobs 4`: Vorkommen und Drafts **byte-identisch** (`sha256`
+**Die Ernte ist wieder ein Fixpunkt.** Zweimal gefahren mit den
+Produktions-Defaults (Chart-Saat seit A38), `--path chain --sets words
+--min-n 1 --jobs 4`: Vorkommen und Drafts **byte-identisch** (`sha256`
 `9e60cae9e1c7…` bzw. `cd33454643b5…`), die Wortspuren bis auf das Feld
 `seconds` (Wanduhr) ebenfalls. **227 von 277 Buchstaben angenommen**
 (82 %), Gates `connector_degenerate` 31 · `anchor_spike` 8 ·
 `not_converged_local` 6 · `geo_rmse` 5 — Zahl für Zahl die Kostenseite,
-die LF16 auf der Vor-Komma-Wurzel gemessen hat.
+die LF16 auf der Vor-Komma-Wurzel maß.
 
-**Die Zeile.** `d`, n = **11** Vorkommen, 120 Anker. Die drei Gates des
-Schreibwegs: Beleg-Boden 3 ✓, **Sprung 2,28** (≤ 2,95), **Kopf 2,1°**
-(≤ 15°) — die Zeile ist ein Write-Kandidat, ohne dass ein Gate angefasst
-wird. Abstand zur GESPEICHERTEN Zeile, Anker für Anker: Median
+**Die Zeile.** `d`, n = **11** Vorkommen, 120 Anker, und sie nimmt alle
+drei Gates des Schreibwegs: Boden 3 ✓, **Sprung 2,28** (≤ 2,95), **Kopf
+2,1°** (≤ 15°). Abstand zur GESPEICHERTEN Zeile, Anker für Anker: Median
 **0,00609** · p90 0,01308 · Maximum 0,04451 · rms 0,00964 xh.
 
-**Und der Befund, der die Einschränkung des LF16-`sep08`-Eintrags
+**Und der Befund, der die Wurzel-Einschränkung des LF16-`sep08`-Eintrags
 auflöst: die frisch geerntete Zeile ist BYTE-IDENTISCH mit der, die
 Runde 8 geurteilt hat** — 0,000000 an jedem der 120 Anker gegen
-`card-K1-write.json` von der `eaa195aa7c84…`-Wurzel. Der Grund ist
-nachrechenbar und nicht Zufall: der Komma-Ausschluss nahm `Gewehr`,
-`Zügel` und `streiten` (cross-hand `a22-dank`) Tinte weg, und **keines
-dieser Wörter zieht ein `d`**. Dieselbe Probe auf der anderen Seite: der
-`words`-Block der BASIS-Armdatei ist byte-gleich mit dem der Runde 8
-(nur `built_at` und der `exported_at` der Wurzel unterscheiden sich) —
-die Basis-Tafeln dieser Runde sind dieselben Bilder wie dort. Was Runde 8
-auf den `d`-Wörtern gesehen hat, ist also nicht auf eine andere Zeile
-und nicht auf eine andere Basis gemünzt gewesen; was fehlte, war der
-isolierte Freiheitsgrad.
+`card-K1-write.json` von der `eaa195aa7c84…`-Wurzel. Kein Zufall,
+sondern nachrechenbar: der Komma-Ausschluss nahm `Gewehr`, `Zügel` und
+`streiten` Tinte weg, und **keines dieser Wörter zieht ein `d`**.
+Dieselbe Probe auf der anderen Seite: der `words`-Block der BASIS-Arm-
+Datei ist byte-gleich mit dem der Runde 8 (nur `built_at` und der
+`exported_at` der Wurzel unterscheiden sich) — die Basis-Tafeln sind
+dieselben Bilder. Was Runde 8 auf den `d`-Wörtern gesehen hat, hing also
+weder an einer anderen Zeile noch an einer anderen Basis; was fehlte,
+war der isolierte Freiheitsgrad.
 
 **Die Zuordnung, dreifach geprüft.** 14 Wörter ziehen die Zeile —
 `Feinde` `Soldaten` `das` `daß` `der` `der-2` `der-3` `die` `die-2`
 `laden` `und` `und-2` `und-3` `und-4`, **exakt die Liste der Runde 8**.
-Gegenprobe (a): `arm_gap` > 0 für genau diese 14 und **exakt 0** für die
-übrigen 49. Gegenprobe (b): auch das Wort-Lineal bewegt genau diese 14
-und kein anderes. Damit ist der Overlay der behauptete Freiheitsgrad und
-nicht ein weiterer.
+Gegenprobe (a): `arm_gap` > 0 für genau diese 14, **exakt 0** für die
+übrigen 49. Gegenprobe (b): auch das Wort-Lineal bewegt genau diese 14.
 
 **Das Lineal — eigene Zahlen, nie die Headline.**
 
@@ -15316,111 +15292,97 @@ nicht ein weiterer.
 | Basis (Bestand) | 0,108153 | — | 0,148236 | `regieren` 0,233052 |
 | **die `d`-Zeile allein** | **0,108339** | **+0,000186** | 0,148236 (byte-gleich) | `regieren` 0,233052 |
 
-Die Paar-Zahl steht unbewegt, und zwar aus einem Grund, der die
-Zuordnung noch einmal bestätigt: die Abb.-20-Drills sind zu kurz für das
-Lauflängen-Gate und komponieren chart-treu, sehen also keine
-Laufform-Zeile. Zerlegt (Asymmetrie-Regel `aug26`) über die 14 Wörter:
-**5 besser : 9 schlechter**, Median **+0,000168**, Summe +0,011763 —
-dieselbe Bilanz 5 : 9, die Runde 8 für die `d`-Spalte bedingt gelesen
-hat, jetzt unbedingt. Je Klasse: `d-rein` 3 : 7 (Median +0,001459),
-`d-und` **2 : 2** (Median −0,000098). Die Extreme: `der-2` +0,007563 und
-`Feinde` +0,004178 gegen `Soldaten` −0,004612 und `laden` −0,002505.
+Die Paar-Zahl steht unbewegt, und der Grund bestätigt die Zuordnung ein
+drittes Mal: die Abb.-20-Drills sind zu kurz für das Lauflängen-Gate,
+komponieren chart-treu und sehen gar keine Laufform-Zeile. Zerlegt
+(Asymmetrie-Regel `aug26`) über die 14 Wörter: **5 besser : 9
+schlechter**, Median **+0,000168**, Summe +0,011763 — dieselbe Bilanz
+5 : 9, die Runde 8 für die `d`-Spalte bedingt las, jetzt unbedingt. Je
+Klasse `d-rein` 3 : 7 (Median +0,001459) und `d-und` **2 : 2** (Median
+−0,000098); die Extreme `der-2` +0,007563 und `Feinde` +0,004178 gegen
+`Soldaten` −0,004612 und `laden` −0,002505.
 
-**Damit steht die LF16-Konstellation noch einmal da, nur schmaler:** das
-Lineal ist gegen den Kandidaten, und das Auge war in Runde 8 für ihn.
-Dieselbe Konstellation hat `sep06` den Austritts-Trim getragen (Runde 5,
-34 : 2, A37) und `sep08` die 15-Zeilen-Karte NICHT (Runde 8, 39,4 %).
-Entschieden wird sie hier so oder so nicht vom Lineal: +0,000186 ist ein
-Sechzehntel dessen, was die ganze Karte gekostet hätte (+0,003097), und
-liegt auf der Skala, auf der `sep06` der Trim adoptiert wurde
-(+0,000582).
+**Damit steht die LF16-Konstellation noch einmal da, nur schmaler:**
+Lineal gegen den Kandidaten, Auge (Runde 8) für ihn. Dieselbe
+Konstellation trug `sep06` den Austritts-Trim (Runde 5, 34 : 2, A37) und
+`sep08` die 15-Zeilen-Karte NICHT (39,4 %). Vom Lineal entschieden wird
+sie hier ohnehin nicht: +0,000186 ist ein Sechzehntel dessen, was die
+ganze Karte gekostet hätte (+0,003097), und liegt auf der Skala, auf der
+der Trim adoptiert wurde (+0,000582).
 
 **Die Sichtbarkeits-Zahl, wie die Auflage sie verlangt.** Median-
-`arm_gap` der Klasse `d-rein`: **0,1030 xh** (Minimum 0,1017, Maximum
-0,1030; `d-und` liegt bei denselben 0,1030). Das ist **über der
-vorregistrierten Schranke von 0,05**, also wird Sichtbarkeit für
-`d-rein` behauptet. Einordnung an den gemessenen Stützpunkten: Runde 5
-entschied bei 0,1186 (9,7 % Ties), Runde 7 entschied bei 0,0221 nicht —
-diese Runde liegt mit 0,1030 dicht an der entscheidenden und beim
-**4,7-Fachen** der unentscheidbaren. Und die Dosis ist nicht dadurch
-kleiner geworden, dass nur eine Zeile läuft: in Runde 8 bewegten
-dieselben 14 Wörter im Median 0,1953 xh mit fünfzehn Zeilen zugleich,
-für `das` und `daß` waren es dort schon **genau diese 0,1030** — bei
-ihnen war die `d`-Zeile also bereits die ganze sichtbare Bewegung.
+`arm_gap` von `d-rein`: **0,1030 xh** (Minimum 0,1017; `d-und` liegt bei
+denselben 0,1030) — **über der vorregistrierten Schranke von 0,05**,
+Sichtbarkeit wird also behauptet. Sie liegt dicht am Versatz, bei dem
+Runde 5 entschied (0,1186), und beim **4,7-Fachen** dessen, bei dem
+Runde 7 es nicht tat. Die Dosis ist auch nicht dadurch kleiner geworden,
+dass nur eine Zeile läuft: in Runde 8 bewegten dieselben Wörter im
+Median 0,1953 xh mit fünfzehn Zeilen zugleich, für `das` und `daß` waren
+es dort schon **genau diese 0,1030** — bei ihnen war die `d`-Zeile
+bereits die ganze sichtbare Bewegung.
 
-**Die Runde 10, wie gebaut** (`--question authentic`, Frage „Welche
-Zeile sieht echter geschrieben aus?"). 40 beurteilte Wörter — 10
-`d-rein` · 4 `d-und` · **26 Nullproben**, gezogen mit der vorab
-benannten Saat 20260910 aus den 49 Wörtern ohne `d`-Zeile — plus **8
-gespiegelte Wiederholungen** = **48 Bildschirme**, Saat 20260010,
+**Die Runde 10, wie gebaut** (`--question authentic`). 40 beurteilte
+Wörter — 10 `d-rein` · 4 `d-und` · **26 Nullproben**, gezogen mit der
+vorab benannten Saat 20260910 aus den 49 Wörtern ohne `d`-Zeile — plus
+**8 gespiegelte Wiederholungen** = **48 Bildschirme**, Saat 20260010,
 Abstand 17–33 Positionen, Zoom 2× (Wortmodus). Die Rechnung des Bodens,
-offen: 40 − `min_gap` 5 − `REPEAT_JITTER` 25 = **10** Kandidaten im
-Wiederholungstopf, 8 genommen, also über `MIN_PAIRED_REPEATS` = 6; **4
-der 8 Paare liegen auf bewegten Wörtern** (`laden` `die-2` `und`
-`und-3`), vier auf Nullproben. Der per Konstruktion feststehende
-Tie-Boden dieser Mischung: **26 von 40 = 65,0 %**. Drei Wörter
-(`Soldaten` `Säbel` `schießen`) laufen über ihren eigenen Ausschnitt
-hinaus und werden abgeschnitten gezeigt — auf beiden Seiten gleich, also
-kein Unterschied zwischen ihnen. Kandidat-Registrierung an die Basis
-gepinnt, Nib 0,07243 `constant`, `exit_trim` an, `apex_handover`/
-`stem_depart` aus. Ablage `temp/runden-sep09/humanbench/`
-(git-ignoriert): Seite `runde-10-d-zeile.html`, Plan `runde-10-plan.md`,
-Schlüssel und Payload unter `runde-10/`; das Write-Skript liegt daneben
-als `temp/runden-sep09/schreibe-d-zeile.sh` (Trockenlauf ist der
-Default, `--apply` fährt Snapshot → PUT der EINEN Zeile → Readback).
-
-**Die Nummer 10 war frei** (`data/humanbench/` endet bei 08, Runde 9 ist
-die gebaute K-E-Runde vom `sep07`); an demselben Abend kann eine zweite
-Runde entstehen, deren Nummer dann die nächste freie ist.
+offen: 40 − 5 − 25 = **10** im Wiederholungstopf, 8 genommen, also über
+`MIN_PAIRED_REPEATS` = 6; **4 der 8 Paare liegen auf bewegten Wörtern**
+(`laden` `die-2` `und` `und-3`). Tie-Boden der Mischung: **26 von 40 =
+65,0 %**. Drei Wörter (`Soldaten` `Säbel` `schießen`) laufen über ihren
+Ausschnitt hinaus und werden abgeschnitten gezeigt, auf beiden Seiten
+gleich. Registrierung des Kandidaten gepinnt, Nib 0,07243 `constant`,
+`exit_trim` an, `apex_handover`/`stem_depart` aus. Ablage
+`temp/runden-sep09/humanbench/` (git-ignoriert): Seite
+`runde-10-d-zeile.html`, Plan `runde-10-plan.md`, Schlüssel und Payload
+unter `runde-10/`, daneben das Write-Skript
+`temp/runden-sep09/schreibe-d-zeile.sh` (Trockenlauf per Default,
+`--apply` fährt Snapshot → PUT der EINEN Zeile → Readback). Die Nummer 10
+war frei (`data/humanbench/` endet bei 08, Runde 9 ist die gebaute
+K-E-Runde vom `sep07`).
 
 #### Rettungswege
 
 Der Arm ist kein Negativ — er ist ungeurteilt. Die Wege stehen trotzdem
 vorab, weil die Runde eines produzieren kann:
 
-1. **Der Unstetigkeits-Sensor S2** (`sep06`) über die `d`-Wörter — er ist
-   gebaut, eingefroren und hat noch keine Laufform-Runde gesehen. Läuft
-   er richtungstreu mit, gäbe es erstmals ein Lineal für das, was der
-   Beurteiler an dieser Zeile sieht; das ist der Weg, wenn die Runde
+1. **Der Unstetigkeits-Sensor S2** (`sep06`) über die `d`-Wörter — gebaut,
+   eingefroren, und noch keine Laufform-Runde gesehen. Läuft er
+   richtungstreu mit, gäbe es erstmals ein Lineal für das, was der
+   Beurteiler an dieser Zeile sieht. Der Weg, wenn die Runde
    unentschieden ausgeht.
-2. **Mehr Evidenz für die Zeile** — n = 11 ist über dem Boden, aber die
-   Eigenhand-Ernte läuft ohnehin, und eine zweite Platte derselben Hand
-   wäre der andere Weg.
-3. **`d-und` zerlegen** — die vier `und…`-Wörter tragen `d`, `u` und `n`
-   zugleich; welche der drei Zeilen die zwei Basis-Stimmen der Runde 8
-   verdient hat, entscheidet weder jene noch diese Runde. Der Weg ist ein
-   Wortsatz, in dem sich `d`+`u` von `u`+`n` trennen lässt, also Evidenz,
-   kein Schnitt.
-4. **Eine Runde, die den BUCHSTABEN zeigt statt das Wort** — als
-   Instrument-Änderung gehört sie vor die Runde in
-   [`menschliche-bewertung.md`](menschliche-bewertung.md) §8a, nicht
-   hinterher, und ihre Zahlen wären mit denen der Wortrunden nicht
-   vergleichbar.
+2. **Mehr Evidenz für die Zeile** — n = 11 liegt über dem Boden, aber die
+   Eigenhand-Ernte läuft ohnehin; eine zweite Platte derselben Hand wäre
+   der andere Weg.
+3. **`d-und` zerlegen** — die vier Wörter tragen `d`, `u` und `n`
+   zugleich, und welche Zeile die zwei Basis-Stimmen der Runde 8 verdient
+   hat, entscheidet keine der beiden Runden. Der Weg ist ein Wortsatz,
+   der `d`+`u` von `u`+`n` trennt, also Evidenz und kein Schnitt.
+4. **Eine Runde, die den BUCHSTABEN zeigt statt das Wort** — eine
+   Instrument-Änderung, die vorher nach
+   [`menschliche-bewertung.md`](menschliche-bewertung.md) §8a gehört;
+   ihre Zahlen wären mit denen der Wortrunden nicht vergleichbar.
 
-**Ausdrücklich kein Weg:** die Schranken senken, die Nullproben aus der
-Tie-Quote herausrechnen, die Klassen nach den Zahlen neu schneiden, oder
-die Zeile ohne Urteilsrunde schreiben, weil das Lineal sie diesmal fast
-nichts kostet.
+**Ausdrücklich kein Weg:** die Schranken senken, die Nullproben
+herausrechnen, die Klassen neu schneiden — oder die Zeile ohne
+Urteilsrunde schreiben, weil das Lineal sie diesmal fast nichts kostet.
 
 #### Selbst entschieden (benannt, nicht versteckt)
 
-* **Drei Klassen statt vier.** Runde 8 hatte eine `lineal-verlierer`-
-  Klasse; hier wäre sie sinnlos — die Lineal-Verluste dieses Arms sind
-  eine Größenordnung kleiner und die Klasse hätte n < 3.
-* **`--min-repeat-gap 5` statt der 15 des Wortmodus.** Bei 14 bewegten
+* **Drei Klassen statt vier** — eine `lineal-verlierer`-Klasse wie in
+  Runde 8 hätte hier n < 3, weil die Lineal-Verluste dieses Arms eine
+  Größenordnung kleiner sind.
+* **`--min-repeat-gap 5` statt der 15 des Wortmodus** — bei 14 bewegten
   Wörtern trägt keine andere Einstellung sechs Wiederholungen; die
   Spiegelung, nicht der Abstand, erzwingt das neue Urteil (§8a).
-* **26 Nullproben statt der 22, die der Boden verlangt.** Vier mehr
-  kosten vier Bildschirme und geben dem Wiederholungstopf die Marge, aus
-  der die 8 Paare kommen (bei 22 wären es genau 6 gewesen, ohne
-  Ausfallreserve).
+* **26 Nullproben statt der 22 des Bodens** — vier Bildschirme mehr geben
+  dem Wiederholungstopf die Marge, aus der die 8 Paare kommen (bei 22
+  wären es genau 6 ohne Reserve).
 * **Die Byte-Vergleiche gegen Runde 8 gefahren**, statt „dieselbe
-  Zeilen-Familie" zu behaupten: eine Zeile und ein Basis-Arm, beide
-  ziffernweise verglichen. Ohne sie stünde die 83,3 % dieser Runde als
-  Erinnerung daneben statt als Messung.
-* **Die Klassen VOR dem Bau geschrieben und committet**, mitsamt der
-  Regel, die die Sichtbarkeits-Behauptung an eine Zahl bindet — die
-  Bedingung, die §8a an eine klassenweise Lesart stellt.
+  Zeilen-Familie" zu behaupten — sonst stünde die 83,3 % als Erinnerung
+  daneben statt als Messung.
+* **Die Klassen VOR dem Bau committet**, mitsamt der Regel, die die
+  Sichtbarkeits-Behauptung an eine Zahl bindet.
 
 **Keine Ledger-Zeile:** die Runde bewegt keine Headline. Wörter und
 Paare stehen unverändert bei 0,108153 · 0,148236; die 0,108339 ist eine
