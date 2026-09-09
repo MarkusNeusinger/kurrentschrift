@@ -413,9 +413,25 @@ WIDEST = {
 # or the counter-finding without becoming an index nobody can act on, and
 # deleting a row to buy headroom is what the register forbids. Re-measured with
 # everything in: 30 920, plus the documented 10 %.
+#
+# `mess-runde` raised again on 2026-09-09, and again by parallelism rather than
+# by any one round: three PRs landed on the same path that evening — round 9's
+# register row and its Kette ledger line (#585), the Übergänge process page
+# with the Stand and ledger rows that come with a fifth route (#586), and the
+# `d`-row arm's own row here — onto the 62 tokens of headroom the path had
+# left. This branch's share is 468: a register row and the two `tintenfolger.md`
+# §7.11 rows (the open arm's Stand, rewritten from "offen" to "gebaut", and the
+# author step the round now waits on). The register row was condensed twice
+# before this raise was written (540 → 296 → 226), the author-step row once,
+# and `mess-runde-eintrag` is NOT raised — the entry itself was trimmed
+# paragraph by paragraph instead, to 4 956 against its 4 957 ceiling, twice
+# to pay for a review finding it had to record. What is left cannot go
+# without making the index unusable: which round is built and unjudged, that
+# the row is byte-identical to the judged one, and that a write is waiting on a
+# human. Re-measured on the merged page: 34 418, plus the documented 10 %.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
-    "mess-runde": 34_012,
+    "mess-runde": 37_860,
     "mess-runde-route": 8_795,
     "mess-runde-eintrag": 4_957,
     "glyph-optimierung": 8_504,
