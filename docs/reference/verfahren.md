@@ -5,13 +5,17 @@
 > (unten). Nachzieh-Pflicht: Jeder §14-Eintrag, der einen Arm oder eine
 > Stufe eines Verfahrens misst (adoptiert ODER verworfen), ergänzt im
 > selben PR die Ledger-Zeile der betroffenen Verfahrensseite und — bei
-> Adoption — deren „Aktueller Stand“ sowie die Stand-Spalte unten.
-> Seit 2026-09-01 ist das ein CI-Gate: `uv run python -m
+> Adoption — deren „Aktueller Stand“ sowie den Stand in dieser Übersicht:
+> bei den vier Duell-Routen die Stand-/„seit“-Spalte der Tabelle unten,
+> bei den Übergängen der Absatz
+> [„Übergänge — keine Duell-Route, trotzdem ein Ledger“](#übergänge--keine-duell-route-trotzdem-ein-ledger)
+> daneben, denn diese Route hat bewusst keine Tabellenzeile (anderes
+> Lineal). Seit 2026-09-01 ist das ein CI-Gate: `uv run python -m
 > tools.docs_register check` verlangt für jeden §14-Eintrag einer
 > Duell-Route die Ledger-Zeile seines Datums auf der zugehörigen Seite
 > (Job „Docs-Register“). **Seit dem Autor-Entscheid A43 vom 2026-09-09
 > gilt dasselbe für die Route „Übergänge“**, die keine Duell-Route ist,
-> aber adoptierte Defaults bewegt (Begründung unter der Tabelle). Die
+> aber adoptierte Defaults bewegt. Die
 > Spalte **seit** hält fest, wann der ausgewiesene Stand adoptiert wurde
 > — ein Blick auf die Seite genügt damit für den Abgleich.
 
@@ -59,7 +63,15 @@ Zahl hier ist ein datiertes Zitat, der Beleg wohnt im benannten
 | **InkSight** | [`verfahren-inksight.md`](verfahren-inksight.md) | T0 (roh) — dtw 0,0951 med · 5/19 failed · Galoppieren-B2-Kollaps; **auf Lineal-Kappe 1,5 unvermessen**, die Zahlen sind archiviert und nicht vergleichbar | 2026-08-17 (Lineal 0,8) |
 | **Nullprobe** | [`verfahren-nullprobe.md`](verfahren-nullprobe.md) | unversioniert (Kontrolle) — dtw 0,8198 med · p90 1,0267 auf den 10 von 19 dev-Wörtern, die die gespeicherte Nullprobe abdeckt | 2026-08-26 |
 
-**Die eine Seite, die keine Duell-Route führt.** Die Route **Übergänge**
+Geplante Verfahren (Zögling · Vier Augen · Chor) haben noch keinen
+Kandidaten und darum keine Seite — ihr Stand wohnt in der
+Duell-Namen-Tabelle (tintenfolger.md §7.8, Glossar „Duell-Namen“);
+die erste Vorregistrierung eines solchen Verfahrens legt seine Seite
+im selben PR an.
+
+### Übergänge — keine Duell-Route, trotzdem ein Ledger
+
+Die Route **Übergänge**
 ([`verfahren-uebergaenge.md`](verfahren-uebergaenge.md)) tritt gegen
 niemanden an — sie ist die Join-Grammatik der Komposition, auf der alle
 vier Routen aufsetzen, und ihr Lineal ist das Wort-/Paar-Lineal des
@@ -70,15 +82,11 @@ als Produktions-Default (gepaart gemessen: Wörter 0,108444 →
 **0,109026**, Paare byte-gleich), während `apex_handover`/`stem_depart`
 (A36) und `seam_negotiation` (zweimal gefallen) aus bleiben. Die
 Headline steht seither auf der `sep07`-Wurzel und wohnt wie immer allein
-in [`qualitaetsmetrik.md`](qualitaetsmetrik.md). **Laufform**, **Lineal** und **Feder**
-kommen ebenfalls als Route in der §14-Registerspalte vor und haben
-bewusst keine Seite; ihr Stand wohnt anderswo (Laufform-Zeilen in der
-DB, [`qualitaetsmetrik.md`](qualitaetsmetrik.md) §2 für das Lineal,
+in [`qualitaetsmetrik.md`](qualitaetsmetrik.md).
+
+**Laufform**, **Lineal** und **Feder** kommen ebenfalls als Route in der
+§14-Registerspalte vor und haben bewusst keine Seite; ihr Stand wohnt
+anderswo (Laufform-Zeilen in der DB,
+[`qualitaetsmetrik.md`](qualitaetsmetrik.md) §2 für das Lineal,
 [`../concepts/federmodelle.md`](../concepts/federmodelle.md) für die
 Feder).
-
-Geplante Verfahren (Zögling · Vier Augen · Chor) haben noch keinen
-Kandidaten und darum keine Seite — ihr Stand wohnt in der
-Duell-Namen-Tabelle (tintenfolger.md §7.8, Glossar „Duell-Namen“);
-die erste Vorregistrierung eines solchen Verfahrens legt seine Seite
-im selben PR an.

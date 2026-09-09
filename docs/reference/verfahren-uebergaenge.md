@@ -7,10 +7,13 @@
 > Ablage der Runde 7 (#582) hat das als Befund benannt. Nachzieh-Pflicht:
 > Jeder §14-Eintrag der Route „Übergänge“ (adoptiert oder verworfen)
 > ergänzt hier seine Ledger-Zeile; eine Adoption aktualisiert zusätzlich
-> „Aktueller Stand“ und die Stand-Spalte in [`verfahren.md`](verfahren.md).
-> Das Gate dazu ist `tools.docs_register check` (CI-Job „Docs-Register“),
-> das diese Route seit demselben PR kennt — ein J- oder S-Eintrag ohne
-> Ledger-Zeile schifft nicht mehr.
+> „Aktueller Stand“ unten und den Absatz „Übergänge — keine Duell-Route,
+> trotzdem ein Ledger“ in [`verfahren.md`](verfahren.md) — eine Zeile in
+> dessen Duell-Tabelle hat diese Route bewusst nicht, es gibt für sie
+> also auch keine Stand-/„seit“-Spalte nachzuziehen. Das Gate dazu ist
+> `tools.docs_register check` (CI-Job „Docs-Register“), das diese Route
+> seit demselben PR kennt — ein §14-Eintrag der Route ohne Ledger-Zeile
+> lässt die CI seither nicht mehr durch.
 
 ## Steckbrief
 
