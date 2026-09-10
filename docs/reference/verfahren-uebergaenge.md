@@ -72,10 +72,10 @@ Trim, und der ganze Lineal-Verlust sitzt in genau der Klasse, in der das
 Auge 26 : 2 dagegen entscheidet. `EXIT_TRIM_MIN_KINK_DEG` bleibt 0,0
 (die Verengung wurde in derselben Runde gemessen und verworfen). Die
 Adoptions-Zahlen stehen auf den Wurzeln `eaa195aa7c84…` /
-`0fbde2d72b64…`; die aktuelle Headline ist seit der `sep07`-Re-Baseline
-der REFERENZ (Komma-Ausschluss, Wort-Wurzel `ccb036a5eb20…`, Paar-Wurzel
-unangetastet) **Wörter 0,108153 · Paare 0,148236** — dieselbe Regel,
-eine andere Referenz-Tinte (§14 Headline-Ledger; die Headline selbst
+`0fbde2d72b64…`; die aktuelle Headline ist seit der `sep10`-Re-Baseline
+(der `d`-Zeilen-Write, Autor-Entscheid A44; Wurzeln `a4eb48420ccb…` /
+`e3a5d03d0f37…`) **Wörter 0,108339 · Paare 0,148236** — dieselbe Regel,
+zwei Re-Baselines weiter (§14 Headline-Ledger; die Headline selbst
 wohnt an ihrer einen Stelle in
 [`qualitaetsmetrik.md`](qualitaetsmetrik.md)).
 

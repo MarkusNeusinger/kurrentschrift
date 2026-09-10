@@ -9,7 +9,8 @@
 - Author:    Projektautor (eigene Urteile, im Alleingang gefällt)
 - Year:      2026 (Runde 01: erhoben am 2026-08-08 · Runde 02: 2026-08-09 ·
              Runde 06: 2026-09-05 · Runde 05: 2026-09-06 · Runde 07:
-             2026-09-08 · Runde 08: 2026-09-08 · Runde 09: 2026-09-09)
+             2026-09-08 · Runde 08: 2026-09-08 · Runde 09: 2026-09-09 ·
+             Runde 10: 2026-09-10)
 - License:   Eigenes Urheberrecht des Projektautors. Kein fremdes Werk und
              kein fremder Scan enthalten — die Dateien bestehen aus
              Kategoriekürzeln bzw. Seitenwahlen, einem Bildpunkt je Bildschirm,
@@ -28,9 +29,9 @@
 - Retrieved: 2026-08-08 (Runde 01) · 2026-08-09 (Runde 02) · 2026-09-05
              (Runde 06) · 2026-09-06 (Runde 05, am Tag NACH Runde 06
              geurteilt — die Nummer zählt die Runde, nicht das Datum) ·
-             2026-09-08 (Runden 07 und 08) · 2026-09-09 (Runde 09) —
-             „retrieved" = erhoben, die Daten entstehen hier statt abgerufen
-             zu werden
+             2026-09-08 (Runden 07 und 08) · 2026-09-09 (Runde 09) ·
+             2026-09-10 (Runde 10) — „retrieved" = erhoben, die Daten
+             entstehen hier statt abgerufen zu werden
 
 ## Worauf sich die Urteile beziehen
 
@@ -74,8 +75,19 @@ Tintenfolgers, die sich in genau einem Knopf unterscheiden
 Frage, andere Anzeige, anderer Gegenstand (`menschliche-bewertung.md` §8a,
 „Ein Arm kann auch eine BAHN sein").
 
+**Runde 10 (Wortmodus, Echtheitsfrage).** Zurück zur Anzeige und zur Frage der
+Runden 05–08, und wie Runde 08 über eine **Laufform** statt über eine
+Composer-Regel — aber mit **einem** Freiheitsgrad statt fünfzehn: der Kandidat
+komponiert mit genau einer überlagerten Zeile (`d`), die übrigen zwanzig stehen
+auf beiden Seiten still. Damit misst sie exakt das, was ein Write installieren
+würde, und macht aus der bedingten Zerlegung der Runde 08 ein Verdikt. **26 der
+40 beurteilten Wörter sind Nullproben** — sie ziehen kein `d`, ihre beiden
+Tafeln sind bit-identisch, und ihre Zahl ist die Rechnung, die die acht blinden
+Wiederholungen überhaupt erst möglich macht; der daraus folgende
+Unentschieden-Boden von 65 % stand vor der Runde im Plan.
+
 Die Urteile gelten damit gegen **einen** Stand — des Fits (01/02), der
-Komposition (05–08) bzw. des Folgers (09). Welcher das war — Quelle, Bestand bzw. Fixture-Wurzel, Saat,
+Komposition (05–08, 10) bzw. des Folgers (09). Welcher das war — Quelle, Bestand bzw. Fixture-Wurzel, Saat,
 Bau-Parameter, Arm-Prüfsummen und Code-Commit — steht je Runde im zugehörigen
 Stempel (`runde-<nn>-stempel.md`). Ohne ihn wäre eine zweite Runde keine
 Fortsetzung, sondern eine neue, unvergleichbare Messung.
@@ -466,6 +478,55 @@ wertlos, sondern zum **Vorher-Zustand**.
              data/humanbench/runde-09-urteile.txt --key <key.json> --json …`
              reproduziert sie byte-gleich (geprüft am 2026-09-09).
 
+## runde-10-urteile.txt — 48 Zeilen Urteil, 0,5 KB
+
+- Origin:    Ausgabetext derselben Echtheits-Seite, unverändert übernommen,
+             wie die Seite ihn am 2026-09-10 ausgegeben hat.
+- Processing: keine.
+- Stempel:   [`runde-10-stempel.md`](runde-10-stempel.md)
+- Format:    Kopfzeile `ECHTHEIT/10 geprueft=48 von 48`, danach je Bildschirm
+             eine Zeile `<uid>:<L|R|N>[@Sekunden]` — Bedeutung der Kürzel wie
+             oben.
+  - `N` — „kein Unterschied erkennbar". Mit 26 von 40 Bildschirmen die
+    häufigste Antwort, und sie sitzt **vollständig** auf den 26 Nullproben:
+    kein einziges bewegtes Wort blieb unentschieden.
+  - `R…` — eine blinde, **gespiegelte** Wiederholung; 8 Stück, sie zählen
+    beim Verdikt nie mit (gezählt werden 40 Bildschirme, nicht 48).
+- Note:      Keine Notizzeilen, und diesmal auch kein mündlicher Satz — die
+             Runde wurde kommentarlos durchgeklickt (177 s über 48
+             Bildschirme, Median 3 s).
+
+## runde-10-vorkommen.json — der schmale Schlüssel, 48 Einträge
+
+- Origin:    von `tools/humanbench/build.py` selbst geschrieben (Format 3),
+             nicht rekonstruiert.
+- Inhalt:    `uid` → `entry` (Fixture-Eintrag), `text` (Worttext), `stratum`
+             (**Verdachtsklasse**: `d-rein` · `d-und` · `nullprobe`),
+             `repeat_of`. Sonst nichts: keine Registrierung, keine Strichzüge,
+             keine `arm_gap`, kein Rang — und **keine Seitenzuordnung**.
+- Zweck:     wie bei 05–09 — die klassenweise Lesart gehört zum
+             vorregistrierten Auswerteplan, und der schmale Schlüssel ist
+             zugleich die einzige Aufbewahrung der `--strata`-Zuordnung dieser
+             Runde. In dieser Runde trägt er zusätzlich die Trennung, um die es
+             geht: welche der vierzehn bewegten Wörter ein `d` allein und
+             welche ein `d` neben einem `u` zeichnen.
+
+## runde-10-auswertung.json — die Auswertung des Werkzeugs, 2,1 KB
+
+- Origin:    `tools/humanbench/analyse.py --json`, gerechnet am 2026-09-10 aus
+             dem Ergebnistext und dem vollen Schlüssel.
+- Inhalt:    Verlässlichkeit (8 Paare, Spiegelung, Arm-/Seiten-Über-
+             einstimmung), Seitenbilanz, Verdikt gegen die vorher gesetzten
+             Schranken, die drei Klassen und die Drift-Blöcke — Zählungen und
+             Anteile. Keine Geometrie, kein Vorkommen, kein Wort.
+- Warum hier: hier trägt sie das Verdikt selbst. Aus dem schmalen Schlüssel ist
+             ablesbar, dass `d-rein` zehnmal und `d-und` viermal entschieden
+             wurde — aber nicht, **für wen**; „`d-rein` 0 : 10 für den
+             Kandidaten, `d-und` 4 : 0 für die Basis" steht nur hier.
+- Nachbau:   `uv run python -m tools.humanbench.analyse --result
+             data/humanbench/runde-10-urteile.txt --key <key.json> --json …`
+             reproduziert sie byte-gleich (geprüft am 2026-09-10).
+
 ## Warum die Nummern 03 und 04 hier fehlen
 
 Die Archivnummer zählt die **Runde**, und jede Runde heißt in Werkzeug,
@@ -477,8 +538,8 @@ Lücke ist damit eine Aussage über den Bestand, kein Ablagefehler. Dass 05 nach
 wurden am 2026-09-04 gebaut, geurteilt wurden aber nur 06 (am 5.) und 05
 (am 6. September). Die Runden 07 (Nahtverhandlung) und 08 (Chart-Saat) sind
 beide am 2026-09-08 geurteilt, Runde 09 (K-E, die erste BAHN-Runde) am
-2026-09-09; alle drei liegen hier. Damit fehlen nur noch 03 und 04, und beide
-aus einem genannten Grund.
+2026-09-09 und Runde 10 (die `d`-Zeile allein) am 2026-09-10; alle vier liegen
+hier. Damit fehlen nur noch 03 und 04, und beide aus einem genannten Grund.
 
 ## Was hier nicht liegt
 
@@ -487,8 +548,9 @@ Nicht committet, weil gelernter Datensatz bzw. Vorkommens-Statistik
 bzw. `temp/runden-sep04/humanbench/runde-5-j4-austritts-trim/`,
 `…/runde-6-j5-klassenregel/`,
 `temp/runden-sep06/humanbench/runde-7-nahtverhandlung/`,
-`temp/runden-sep07/humanbench/runde-8/` und
-`temp/runden-sep07/humanbench/runde-9/` und ist git-ignoriert:
+`temp/runden-sep07/humanbench/runde-8/`,
+`temp/runden-sep07/humanbench/runde-9/` und
+`temp/runden-sep09/humanbench/runde-10/` und ist git-ignoriert:
 
 - `payload.json` — die Crops und die Vorkommens-Geometrie, die die Seite
   zeichnet; im Wortmodus zusätzlich **beide Kompositionen** je Wort, in einer

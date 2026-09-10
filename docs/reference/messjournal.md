@@ -234,9 +234,10 @@ die DB) — mit seiner Bedingung.
 | sep08 | Übergänge | [J6 Runde 7 geurteilt](#übergänge-j6-sep08--runde-7-geurteilt-40-von-63-kein-unterschied-und-der-arm-fällt-zum-zweiten-mal) | Menschenrunde · **ehrliches Negativ** · nicht adoptiert, **J6b nicht geöffnet** | **Basis 14 : Kandidat 9** von 23 entschiedenen (39,1 % gegen ≥ 60 %), unentschieden **40 von 63 = 63,5 %** gegen ≤ 25 % — und klassenweise löst sich hier NICHTS auf: `naht-stark` 9 : 10 bei 34,5 % Ties (47,4 % Kandidat), `naht-schwach` 0 : 4 bei 85,7 %, `nullprobe` 6/6 richtig als „kein Unterschied". Instrument sauber: 12 Paare, 10/12 gleicher Arm, und die 7 Seiten-Übereinstimmungen SIND die 7 Doppel-Ties — kein Paar nannte zweimal dieselbe Seite, während es eine nannte; die zwei Uneinigkeiten sind nie Basis gegen Kandidat, sondern Entscheidung gegen Unentschieden. **Der Grund steht in der Runde:** der Arm bewegt die Zeichnung um ein Fünftel dessen, was Runde 5 bewegt hat (Median 0,0221 xh, Maximum 0,0681 gegen den 0,1186-Boden der starken Klasse dort); entschiedene Bildschirme tragen 0,0311 xh Versatz, unentschiedene 0,0146 — innerhalb der starken Klasse trennt das aber kaum noch (0,0382 gegen 0,0316). **Die Vorregistrierung lizenzierte J6b NUR bei ≥ 60 %**, also bleibt auch der engere Arm zu; J6 ist damit zweimal gefallen — `sep06` an Gate (c), heute am Auge. Autor wörtlich: „nicht besser nur bischen weniger wellen mal da oder dort". Fünf Rettungswege in §7.9, Sensor-Population zuerst | 
 | sep08 | Laufform | [LF16 Runde 8 geurteilt](#laufform-lf16-sep08--runde-8-geurteilt-die-karte-fällt-die-d-zeile-trägt) | Menschenrunde · **nicht adoptiert** (beide Schranken) · Zerlegung je Zeile | Basis **20** : Kandidat **13** von 33 entschiedenen (39,4 % gegen ≥ 60 %) bei **47,6 %** unentschieden (gegen ≤ 25 %) — anders als bei J4 zeigt auch die RICHTUNG zur Basis. Verlässlich (10/12 gleicher Arm, 6/12 gleiche Seite), Nullprobe 6/6 richtig als „kein Unterschied". Je Klasse `zeile-stark` 18,2 % · `zeile-schwach` 52,9 % · `lineal-verlierer` 40,0 % — die vorab BEHAUPTETE Sichtbarkeit hält nicht, die Klasse ohne Behauptung kommt einem Verdikt am nächsten. Die vorregistrierte Ohne-`Z`-Probe ist exakt lesbar (die 60 übrigen Bildschirme SIND die 14-Zeilen-Karte) und **ändert fast nichts**: 38,7 % / 48,3 % — `Z` trägt ein Drittel des Lineal-Verlusts und ist am Auge die unauffälligste Zeile. Nachgereichte Zerlegung je Zeile: **`d` 10 : 2 = 83,3 % bei 14,3 % Ties** (ohne `u`-Nachbarn sogar 10 : 0 ohne Tie) — die Zeile, die der Autor von sich aus nannte —, dagegen `h` **0 von 8** und `n` 3 von 15; `w` und `p`, die das Lineal am stärksten belohnt, lehnt das Auge glatt ab. Kein Write, Chart-Saat bleibt Ernte-Default |
 | sep09 | Kette | [K-E Runde 9 geurteilt](#kette-k-e-sep09--runde-9-geurteilt-44-von-44-kein-unterschied-und-der-beurteiler-nennt-die-saat-statt-des-claims) | Menschenrunde (erste **BAHN**runde) · **ehrliches Negativ** · Claim-Familie endgültig zu | **Kein einziger entschiedener Bildschirm: 44 von 44 „kein Unterschied" (100 % gegen ≤ 25 %)**, ein Kandidaten-Anteil ist mangels Zähler nicht definiert — `adopt: false`. Verlässlichkeit 10/10 gleicher Arm, aber das ist bei konstanter Antwort arithmetisch erzwungen; Auskunft geben die **Nullproben 6/6 richtig** und die Zeiten (77 s `Wer` · 74 s `die-2` · 41 s `unter` gegen 3 s Median). Drei der vier vorregistrierten Erwartungen fallen: `ziel` 0 : 0 statt 2 : 0 — die die-2-Heilung, die die Familie begründet hat, ist für das Auge keine (der Halbsatz „V-Nadel im Augenschein weg" war eine BAU-Aussage, kein Urteil); `riss` 0 : 0 statt 2 : 0 — das −0,003-aiou-Gate bestraft an `regieren`/`muß` etwas, das kein Mensch sieht; nur die Nullprobe hält. **Die Dosis erklärt es diesmal NICHT:** fünf Wörter liegen auf oder über den 0,1186 xh, mit denen Runde 5 bei 9,7 % Ties entschieden wurde (`Zügel` 0,3221 · `Sprünge` 0,2756 · `die-2` 0,2436 · `die` 0,1881 · `Silber` 0,1720), alle fünf unentschieden. **Autopsie (ad-hoc-Zähler, kein Lineal):** beide Bahnen tragen dieselbe dominante Störung — Zickzack-Zonen im PAPIER, 29 : 27 über 44 Wörter, und der Claim bewegt sie in beide Richtungen (`Sprünge` 4 → 0, `die`/`die-2` 1 → 0 gegen `regieren` 4 → 9, `Zügel` 2 → 5). Die erste, duktus-blinde Zählung (528 : 555) wurde auf Einspruch des Autors zurückgezogen. Autor wörtlich: „schlimm zu schlimm aber bischen anders nichts besser". **Der benannte Hebel ist die SAAT-Distanz**, nicht der Claim (K-C-Autopsie `aug20` am `unter`: Saatfehler 0,81 xh gegen `max_delta` 0,75; offener Composer-Auftrag e-Breite §7.2) |
-| sep09 | Laufform | [LF17 `d`-Zeile als eigener Arm (A40) + Runde 10](#laufform-lf17-sep09--vorregistrierung-die-d-zeile-als-eigener-arm-a40-und-die-runde-10) | Pre-Reg + Konstruktionsmessung · **Runde 10 gebaut, Urteil offen** (Autor-Entscheid A40) | Rettungsweg (1) der LF16-`sep08`-Zeile mit EINEM Freiheitsgrad: gespeicherte Zeilen plus ein Overlay aus der frisch geernteten `d`-Zeile. **Zeile und Basis-Arm kommen byte-identisch mit denen der Runde 8 heraus** (kein `d`-Wort trug ein Komma), die Ernte ist wieder Fixpunkt, die Zeile nimmt alle drei Write-Gates. Das Lineal ist wieder leicht dagegen, die vorab an eine Zahl gebundene Sichtbarkeit trifft sie — und was die Runde per Konstruktion NICHT kann, steht vorab im Eintrag |
+| sep09 | Laufform | [LF17 `d`-Zeile als eigener Arm (A40) + Runde 10](#laufform-lf17-sep09--vorregistrierung-die-d-zeile-als-eigener-arm-a40-und-die-runde-10) | Pre-Reg + Konstruktionsmessung · **Runde 10 geurteilt `sep10`**, Ergebnis im Eintrag „Laufform LF17 `sep10`" unten (Autor-Entscheid A44) | Rettungsweg (1) der LF16-`sep08`-Zeile mit EINEM Freiheitsgrad: gespeicherte Zeilen plus ein Overlay aus der frisch geernteten `d`-Zeile. **Zeile und Basis-Arm kommen byte-identisch mit denen der Runde 8 heraus** (kein `d`-Wort trug ein Komma), die Ernte ist wieder Fixpunkt, die Zeile nimmt alle drei Write-Gates. Das Lineal ist wieder leicht dagegen, die vorab an eine Zahl gebundene Sichtbarkeit trifft sie — und was die Runde per Konstruktion NICHT kann, steht vorab im Eintrag |
 | sep09 | Kette | [K-G Saat-Registrierung (Diagnose + Pre-Reg)](#kette-k-g-saat-registrierung-sep09--diagnose-und-vorregistrierung-der-startort-ist-der-hebel-den-der-beurteiler-benannt-hat) | Diagnose + Pre-Reg (Autor-Entscheid A39) | **Zwei Sensoren, eingefroren.** **Papier-Umkehr** zählt den Zickzack nur im PAPIER (`Galoppieren` 24 in der Tinte, 0 im Papier); das 29 : 27 des nie committeten ad-hoc-Zählers der Runde 9 liest er als **26 : 25** und wurde NICHT nachgezogen. **Saat-Abstand** trennt **Saat-Versatz** (Platzierung, absorbierbar) von **Saat-Rest** (Form, nur composer-seitig heilbar). **„Die Saat liegt weiter weg als `max_delta`" ist als ABSTAND falsch** — kein Anker über 0,68 xh von irgendeiner Tinte, der Fehler ist eine KORRESPONDENZ. `Wer`s `e` verlangt keine Verschiebung, `regieren`s acht Slots ziehen **0,967 xh** auseinander. Auf Runde 9s 44 Wörtern trägt die Form-Hälfte (partiell +0,592 : +0,157), **auf allen 63 sind beide gleich stark** — die 44 waren K-Es Straten. Arm: `--chain-seed grid`, Gates (a)–(g), Kill bei (a)/(c) |
 | sep09 | Kette | [K-G Saat-Registrierung (gemessen)](#kette-k-g-saat-registrierung-sep09--gemessen-der-arm-heilt-das-wort-des-beurteilers-und-reißt-zwei-gates) | gemessen · **ehrliches Negativ** (Gate (a) rot) · asymmetrischer Befund, Runde 11 gebaut | **Der Arm heilt genau das Wort, das der Beurteiler „richtig schlimm" nannte, und beschädigt genau das, das er gut nennt:** `unter` aiou **+0,1072** mit Papier-Umkehren **5 → 0** (die Basis verwirft dort ihre Runde 1 ganz, der Arm nicht), dagegen `Wer` **−0,0187**. Basis ziffernweise abgenommen. Gates: (a) **ROT** (`Wer` · `das` −0,0074; über 63 sind es 15 Verlierer, min −0,1782), (b) **ROT** (`cross_missing` 11 → 13), (c) **GRÜN** 63er-Soll **85 → 74**, (d) halb rot (Median −0,000034, p90 +0,000425), (e) **GRÜN** Papier-Umkehren **49 → 42** (44er-Auswahl 26 : 26), (f)/(g) grün. **Die aiou-Enden sind Wächter-Wechsel, nicht Tinte:** 28 der 63 wechseln ihr Verdikt — zu `revert-init` Median −0,0770, davon weg +0,1034, unverändert ±0,0005 —, und die ganze Soll-Verbesserung sitzt in den 28. Umkehren 9 besser : 7 schlechter, **ohne `regieren` 45 → 32**: es startet gemischt (ein Slot AN der Blockschranke bekommt keinen Seed) und verdoppelt seinen Zickzack 4 → 10 — von den VIER gemischt startenden Wörtern aber als einziges, der gemischte Start ist also nicht hinreichend. Terzile: Saat-Rest hoch **37 → 28**, Spannweite niedrig **5 → 8** — der Schalter hilft, wo die Saat danebenliegt, und schadet, wo nicht. Zieht erstmals den K-D-Auslöser (0,427 xh). Runde 11 gebaut, ungeurteilt: 73 Bildschirme, **Ausschnitt-Anzeige** ±1,5 xh bei Zoom 4× |
+| sep10 | Laufform | [LF17 Runde 10 geurteilt, `d`-Zeile geschrieben (A44)](#laufform-lf17-sep10--runde-10-geurteilt-die-d-zeile-geschrieben-a44-und-das-wort-lineal-neu-gebaselined) | Menschenrunde · **Adoption** (Autor-Entscheid A44) · **Re-Baseline** (Wörter, Paare byte-gleich) · **geschrieben** | **`d-rein` räumt beide Schranken ohne Gegenbeleg: 0 : 10, also 100 % Kandidat bei 0 % Ties** — alle zehn Wörter, die ein `d` ohne `u`-Nachbarn zeichnen. Verlässlichkeit die stärkste bisher: 8/8 Paare gleicher Arm, und bei den VIER entschiedenen Paaren wechselte mit der Spiegelung jedes Mal die Seite und nie der Arm; Nullproben 26/26 richtig als „kein Unterschied". Die globale Zeile meldet `adopt: false` **per Konstruktion** — 26 bit-identische Nullproben sind ein Tie-Boden von exakt 65,0 %, vorab ausgerechnet. **Das Lineal-Vorzeichen trägt in `d-rein` keine Information:** die zwei am stärksten bestraften (`der-2` +0,007563, `Feinde` +0,004178) und die zwei am stärksten belohnten Wörter (`Soldaten` −0,004612, `laden` −0,002505) stehen alle vier beim Kandidaten. **Gegenbefund `d-und` 4 : 0 für die BASIS** (n = 4, beschreibend, einstimmig) — eine Naht-, keine Zeilenfrage, als Arm auf der Route Übergänge registriert. Write: Snapshots `2026-09-10T20-40-19Z`/`…20-40-47Z`, EINE Zeile (`d`, n = 11, 120 Anker) als Variante 100, Readback-Abweichung 0,000000. Neue Wurzeln `a4eb48420ccb…` / `e3a5d03d0f37…` / `7a08a94c1258…`: Wörter 0,108153 → **0,108339**, Paare **byte-gleich** 0,148236, `worst_word` bleibt `regieren` 0,233052. **Die Paar-WURZEL ist diesmal nicht byte-gleich** — jede der drei Wurzeln trägt ihre eigene Kopie der Laufform-Zeilen, und am `sep07` war die Paar-Wurzel gar nicht neu ausgeführt worden; Datei für Datei unterscheiden sich in allen drei genau `manifest.json` und der Schlüssel `d` (größte Anker-Abweichung 0,044500 xh). Die trockene Vorhersage ist **byte-gleich getroffen**, und zwar über alle 96 Einträge mit einer größten Abweichung von 0,0 |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -273,6 +274,7 @@ Vorbedingung (Glossar „Wurzel-Digest“, `tools/wordbench/README.md`).
 | sep05 | dieser PR | **Re-Baseline nach dem LF12-Write**: 18 Laufform-Zeilen aus den Vorkommen des heutigen Ketten-Stands neu abgeleitet, die Zeile `S` gelöscht (Autor-Entscheid A35), Wurzeln neu gebaut: `suetterlin-1922` `exported_at` 2026-09-05T21:33:12+00:00 `root_digest` `eaa195aa7c84…`, `suetterlin-1922-pairs` gleicher Lauf `0fbde2d72b64…`. Trifft die trockene LF12-Vorhersage (0,108107) auf 3·10⁻⁵, sobald man die Löschung herausrechnet | 0,108444 | 0,148236 | §14 „Laufform LF12 `sep05` — geschrieben“ |
 | sep06 | dieser PR | **Re-Baseline durch Adoption, nicht durch eine Wurzel**: `exit_trim` wird Default (Autor-Entscheid A37 nach Runde 5). Wurzeln UNVERÄNDERT `eaa195aa7c84…` / `0fbde2d72b64…`, also gepaart vergleichbar — die Zeile darüber ist dieselbe Messung ohne die Regel. Das Wort-Lineal steigt bewusst, der Naht-Abgang fällt (`seam_dep_median` +7,59 → −0,70, absolut 12,67 → 2,30), `gleichzug_doublings` 14 = 14, `worst_word` `han` → `regieren` 0,233052; Golden deklariert neu gebacken | 0,109026 | 0,148236 | §14 „Übergänge J4 `sep06`“, Nachtrag „Adoption“ |
 | sep07 | dieser PR | **Re-Baseline durch die REFERENZ**: das Komma hinter `Gewehr`, `Zügel`, `streiten` (cross-hand auch `a22-dank`) verlässt per `exclude` die Referenz-Tinte. Wort-Wurzel neu: `exported_at` 2026-09-07T20:07:03+00:00 `root_digest` `ccb036a5eb20…`, dazu `suetterlin-1922-abb22` `5fc7be5fc9f0…`; die **Paar-Wurzel wurde nicht angefasst** (`0fbde2d72b64…`), was die byte-gleiche Paar-Zahl beweisbar macht. Nur drei der 63 Wörter bewegen sich, alle nach unten | 0,108153 | 0,148236 | §14 „Komma-Ausschluss `sep07`“ |
+| sep10 | dieser PR | **Re-Baseline nach dem `d`-Zeilen-Write (A44)**: EINE Laufform-Zeile (`d`, n = 11, 120 Anker) auf Autor-Entscheid nach der humanbench-Runde 10 geschrieben (Snapshots `2026-09-10T20-40-19Z` / `2026-09-10T20-40-47Z`, Readback-Abweichung 0,000000), Wurzeln neu gebaut: `suetterlin-1922` `exported_at` 2026-09-10T20:44:33+00:00 `root_digest` `a4eb48420ccb…`, `suetterlin-1922-pairs` 2026-09-10T20:44:32+00:00 `e3a5d03d0f37…`, dazu `suetterlin-1922-abb22` `7a08a94c1258…`. **Die Paar-Wurzel wandert diesmal mit** (jede Wurzel trägt ihre eigene Kopie der Laufform-Zeilen), die Paar-ZAHL bleibt byte-gleich, weil die Abb.-20-Drills zu kurz für das Lauflängen-Gate sind. Trifft die trockene Overlay-Vorhersage byte-gleich, über alle 96 Einträge | 0,108339 | 0,148236 | §14 „Laufform LF17 `sep10`“ |
 
 **Nachtrag `sep02` — die `aug30`-Wurzel ist eine undeklarierte
 Re-Baseline.** Zwischen der `aug29`-Wurzel (0,106720 / 0,146506, im
@@ -16187,3 +16189,252 @@ vorschlagen, weil das Netto der Papier-Umkehren stimmt.
 
 **Keine Ledger-Zeile:** die Runde bewegt keine Headline — Wörter und
 Paare stehen unverändert bei 0,108153 · 0,148236.
+
+### Laufform LF17 `sep10` — Runde 10 geurteilt, die `d`-Zeile geschrieben (A44) und das Wort-Lineal neu gebaselined
+
+Der Abschluss des Arms, den der Eintrag „Laufform LF17 `sep09`" trocken
+gemessen, gebaut und ausdrücklich NICHT geschrieben hat. Der Autor hat
+die Runde am 2026-09-10 in einem Zug geurteilt, der vorregistrierte
+Auslöser ist gefallen, und er hat die eine Zeile noch am selben Abend
+geschrieben (**Autor-Entscheid A44**, 20:40 UTC). Dieser Eintrag hält
+das Urteil, den Write und die Re-Baseline fest, die er erzeugt hat. Der
+Write ist ein Autorenvorgang, alles darunter eine Bench-Runde — nichts
+hier fasst die DB an.
+
+#### Der §8a-Plan, Schritt für Schritt
+
+**Schritt 1 — Verlässlichkeit, und sie ist die stärkste bisher.** 8
+gespiegelte Paare (≥ 6 gefordert), **8/8 gleicher Arm**, 4/8 gleiche
+Seite, Band `reliable`. Die vier Seiten-Übereinstimmungen SIND die vier
+Nullproben-Paare (`Wer` `muß-3` `Kugel` `macht`), die zweimal „kein
+Unterschied" bekamen. Bei den **vier entschiedenen** Paaren
+(`laden` `die-2` · `und` `und-3`) hat der Beurteiler mit der Spiegelung
+also **jedes Mal die Seite gewechselt und den Arm behalten** — 4 von 4,
+das schärfste Signal, das dieses Instrument geben kann.
+
+**Schritt 2 — Seitenbilanz.** links 6 · rechts 8 · unentschieden 26 über
+die 40 gezählten Wörter; 42,9 % der entschiedenen fielen links. Kein
+Hang, berichtet und nicht entscheidend.
+
+**Schritt 3 — Verdikt über alle Bildschirme.** Kandidat **10** : Basis
+**4** von 14 entschiedenen (71,4 % gegen ≥ 60 %), unentschieden **26 von
+40 = 65,0 %** gegen ≤ 25 %. Das Werkzeug meldet darum
+`meets_thresholds: false` und `adopt: false` — **per Konstruktion**: 65,0
+% ist auf die Stelle genau der Boden, den die Vorregistrierung aus den 26
+bit-identischen Nullproben vorab ausgerechnet hat. Die globale Zeile
+misst hier die Mischung, die der Plan selbst gewählt hat, und darum liest
+der Plan das Verdikt INNERHALB von `d-rein`.
+
+**Schritt 4 — je Klasse. Hier steht das Ergebnis:**
+
+| Klasse | n | Basis | Kandidat | Kandidatenanteil | Unentschieden |
+|---|---|---|---|---|---|
+| **`d-rein`** | 10 | **0** | **10** | **100 %** (≥ 60 % gefordert) | **0 %** (≤ 25 % gefordert) |
+| `d-und` | 4 | **4** | 0 | 0 % | 0 % |
+| `nullprobe` | 26 | — | — | — | **100 %** (26/26 richtig) |
+
+**`d-rein` räumt beide Schranken ohne einen einzigen Gegenbeleg**: alle
+zehn Wörter, die ein `d` ohne `u`-Nachbarn zeichnen, gingen an den
+Kandidaten — `laden` `die-2` `der-2` `Feinde` `der-3` `die` `daß` `das`
+`Soldaten` `der` —, dazu die zwei gespiegelten Wiederholungen. Kein Tie,
+kein Wort für die Basis. Damit ist die 83,3-%-Spalte der Runde 8 als
+eigener Arm bestätigt und aus einer bedingten Lesart ein Verdikt
+geworden.
+
+**Schritt 5 — Drift.** Basis 2/1/1 · Kandidat 3/4/3 · unentschieden
+8/9/9 über die drei Blöcke, Median 6 s / 3 s / 2 s. Die Antworten werden
+schneller, sie kippen nicht: keine Ermüdung. 177 s über 48 Bildschirme
+insgesamt. **Notizen: keine** — die Runde wurde kommentarlos
+durchgeklickt, anders als 07, 08 und 09.
+
+#### Das Lineal sagt in dieser Runde nichts — und das ist beziffert
+
+Der Overlay-Lauf der Vorregistrierung hatte `d-rein` mit **3 besser : 7
+schlechter** (Median +0,001459) gemessen. Das Auge nennt trotzdem alle
+zehn. Beide Extreme belegen die Blindheit in beide Richtungen: die zwei
+Wörter, die das Lineal am stärksten bestraft (`der-2` +0,007563,
+`Feinde` +0,004178), und die zwei, die es am stärksten belohnt
+(`Soldaten` −0,004612, `laden` −0,002505), stehen alle vier auf der
+Kandidatenseite des Urteils. **Das Vorzeichen des Wort-Lineals trägt in
+dieser Klasse keine Information über das Urteil.** Es ist derselbe Fall,
+für den LF11 das Auge überhaupt gebaut hat.
+
+#### `d-und`: der Befund, den diese Zeile nicht heilt
+
+**Alle vier `und…`-Wörter gehen an die Basis** — `und` `und-2` `und-3`
+`und-4`, 4 : 0, kein Tie —, und die beiden gespiegelten Wiederholungen
+bestätigen es. Beschreibend (n = 4 unter `MIN_PAIRED_PER_CLASS` = 8),
+aber einstimmig, und es ist genau die Klasse, in der Runde 8 ihre beiden
+Basis-Stimmen der `d`-Spalte hatte. Das Lineal ist dort indifferent (2 :
+2, Median −0,000098) und sagt zur Richtung nichts.
+
+**Die Zeile ist besser, wo `d` allein steht, und schlechter, wo `d` auf
+`u` trifft.** Das ist keine Zeilenfrage, sondern eine **Nahtfrage** —
+sie gehört auf die Route Übergänge (seit A43 mit eigener Verfahrensseite,
+[`verfahren-uebergaenge.md`](verfahren-uebergaenge.md)) und nicht in die
+Laufform. Als offener Arm registriert (§7.11: „die `d`→`u`-Naht nach dem
+`d`-Write") mit eigener Vorregistrierung, gemessen an den vier
+`und…`-Wörtern plus einer Klasse von `d`→Vokal-Nähten. **Kein Knopf ist
+benannt**, und keiner wird hier benannt: das wäre die Vorregistrierung
+vorweggenommen.
+
+#### Der Write (Autor-Entscheid A44)
+
+- **Auslöser:** die vorregistrierte Regel wörtlich — „`d-rein` ≥ 60 %
+  Kandidat unter den Entschiedenen, ≤ 25 % Ties INNERHALB der Klasse,
+  Schritt 1 bestanden → der Autor kann die eine Zeile schreiben, als
+  deklarierte Re-Baseline". 100 % / 0 % / `reliable`: alle drei erfüllt.
+- **Snapshots:** davor `2026-09-10T20-40-19Z`, danach
+  `2026-09-10T20-40-47Z`. Beide angelegt, keiner angefasst. Der
+  Vorher-Snapshot lief mit `--allow-shrink`, weil `eigenhand_sheets` 4
+  Zeilen gegen 11 des letzten DB-Snapshots trägt — das ist der
+  Register-Reset vom `sep07` (elf Testbögen gelöscht, `B0001` der erste
+  echte), kein Verlust; der Nachher-Snapshot lief strikt.
+- **Eine Zeile** per PUT auf `suetterlin-1922`, Variante 100: `d`,
+  n = 11 Vorkommen, 120 Anker — genau die Karte, die die Runde geurteilt
+  hat. **Readback worst |Δ| 0,000000.** Sonst nichts angefasst: keine
+  andere Laufform-Zeile, keine `instances`, keine Wortspuren.
+- **Bestand danach** (Nachher-Snapshot): `templates` 109 · `instances`
+  245 · `pair_instances` 232 · `word_instances` 96 · `work_items` 5. Die
+  Zahl der gespeicherten Laufform-Zeilen bleibt **21** — die Zeile wurde
+  ersetzt, nicht hinzugefügt.
+
+#### Die neue Wurzel (deklarierte Re-Baseline)
+
+`fetch_fixtures --set all --verify` über HTTPS, danach jeder Lauf mit
+`--expect-root` und `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`:
+
+| Wurzel | `exported_at` | `root_digest` |
+|---|---|---|
+| `suetterlin-1922` | 2026-09-10T20:44:33+00:00 | `a4eb48420ccb…` |
+| `suetterlin-1922-pairs` | 2026-09-10T20:44:32+00:00 | `e3a5d03d0f37…` |
+| `suetterlin-1922-abb22` | 2026-09-10T20:44:32+00:00 | `7a08a94c1258…` |
+
+`--verify` ist grün: jede neu gebaute Zeile rendert identisch gegen
+`/write/glyphs`, **12 von 12 Kompositionen sind bit-exakt** gegen
+`/write/word` (schlimmste Buchstabenform 0, schlimmste Platzierung 0
+xh). Die `abb22`-Wurzel ist mitgebaut und bleibt, was sie ist:
+Cross-Hand, nie Teil einer Same-Hand-Headline.
+
+**Die Paar-Wurzel ist diesmal NICHT byte-gleich geblieben, und das
+gehört genannt.** Die Erwartung war, sie bleibe bei `0fbde2d72b64…` wie
+beim Komma-Ausschluss. Sie tut es nicht, aus zwei nachgerechneten
+Gründen. Erstens trägt **jede** der drei Wurzeln ihre eigene Kopie der
+gespeicherten Laufform-Zeilen (Wörter 21 · Paare 14 · abb22 18), und `d`
+ist in allen dreien dabei — ein Laufform-Write bewegt sie also
+zwangsläufig alle. Zweitens war die Paar-Wurzel am `sep07` gar nicht neu
+ausgeführt worden (ihr `exported_at` stand bis heute auf
+2026-09-05T21:33:11, dem LF12-Lauf); der heutige `--set all`-Lauf
+schreibt ihr Manifest neu und setzt damit zusätzlich einen frischen
+Zeitstempel. Datei für Datei nachgesehen, gegen die alten Wurzeln der
+Arbeitskopie: in **allen drei** Wurzeln unterscheiden sich exakt **zwei**
+Dateien — `manifest.json` (nur `exported_at`) und
+`templates_laufform.json` (nur der Schlüssel `d`, 120 Anker, größte
+Abweichung **0,044500** xh, ziffernweise das Maximum, das die
+Vorregistrierung für den Abstand zur gespeicherten Zeile gemessen hatte).
+Alle übrigen Dateien sind byte-gleich — 255 von 257 in der Wort-Wurzel,
+135 von 137 in der Paar-Wurzel, 427 von 429 in `abb22`. **Die Paar-ZAHL
+ist trotzdem byte-gleich**, und der Grund steht in der Vorregistrierung:
+die Abb.-20-Drills sind zu kurz für das Lauflängen-Gate, komponieren
+chart-treu und sehen gar keine Laufform-Zeile.
+
+**Was diese Runde ausdrücklich NICHT mitgemessen hat: das Duell.** Der
+LF12-Write vom `sep05` hat dev-19 im selben Zug neu gemessen, weil ein
+Laufform-Write das Kompositions-Soll bewegt, auf dem die Kette startet
+und aus dem der Lotse seine Karte baut. Hier ist das **nicht** geschehen:
+Kette und Lotse stehen weiter mit ihren `sep07`-Zahlen auf
+`ccb036a5eb20…`, einer Wurzel, die es lokal nicht mehr gibt. Die beiden
+Zahlen bleiben untereinander vergleichbar und sind nicht falsch geworden
+— aber sie sind ab heute wurzel-fremd zur Headline. Als offener Punkt
+registriert (§7.11 „Duell-Nachmessung auf der `sep10`-Wurzel"); es ist
+eine Re-Baseline und kein Arm, keine der beiden Routen bekommt dabei
+einen Knopf.
+
+#### Die Headline
+
+| | Wörter | Paare |
+|---|---|---|
+| Basis: `sep07`-Wurzel `ccb036a5eb20` / `0fbde2d72b64` | 0,108153 | 0,148236 |
+| **neue Wurzel `a4eb48420ccb` / `e3a5d03d0f37`** | **0,108339** | **0,148236** |
+| Δ | **+0,000186** | **0 (byte-gleich)** |
+
+63 von 63 Wörtern und 33 von 33 Paar-Drills gescoret, keiner
+übersprungen, keiner gefallen. `worst_word` bleibt **`regieren`
+0,233052**, `worst_pair` **`In` 0,283819**. Laufzeit 118,7 s.
+
+**Das Lineal steigt bewusst.** +0,000186 ist ein Sechzehntel dessen, was
+die ganze LF16-Karte gekostet hätte (+0,003097), und liegt auf der
+Skala, auf der `sep06` der Austritts-Trim gegen das Lineal adoptiert
+wurde (+0,000582). Der Entscheid A44 ist wie A35 und A37 gegen das
+Lineal gefallen; hier steht er beziffert.
+
+#### Die trockene Vorhersage, Ziffer für Ziffer getroffen
+
+Der Overlay-Lauf der Vorregistrierung hatte für die geschriebene Zeile
+0,108339 / 0,148236 vorhergesagt. Gemessen auf der Wurzel, die der Write
+erzeugt hat: **0,10833929600198983 / 0,14823622296960026** — gegen den
+Overlay-Bericht **byte-gleich, und nicht nur in der Headline**: alle 96
+Einträge (63 Wörter + 33 Drills) stimmen mit `max |Δ| = 0,0` überein.
+Damit ist unabhängig belegt, dass die DB-Zeile die Karte IST, die
+geurteilt wurde — dieselbe Aussage, die der Readback mit |Δ| 0,000000
+von der anderen Seite macht.
+
+Die Zerlegung über die 14 bewegten Wörter (Asymmetrie-Regel `aug26`),
+gepaart gegen die `sep07`-Basis:
+
+| Menge | n | besser : schlechter | Median | Summe |
+|---|---|---|---|---|
+| alle bewegten | 14 | 5 : 9 | +0,000168 | +0,011763 |
+| `d-rein` | 10 | 3 : 7 | +0,001459 | +0,012487 |
+| `d-und` | 4 | 2 : 2 | −0,000098 | −0,000724 |
+
+**Bewegt werden genau die 14 und kein Wort mehr** — die dritte
+unabhängige Bestätigung der Zuordnung, nach `arm_gap` > 0 und der
+Slot-Prüfung der Vorregistrierung. Extreme: `der-2` +0,007563 ·
+`Feinde` +0,004178 gegen `Soldaten` −0,004612 · `laden` −0,002505.
+
+#### Was diese Runde nicht sagt
+
+Über die anderen zwanzig Zeilen sagt sie nichts, und über die von Runde 8
+mit Anspruch abgesagten `n` (3 von 15) und `h` (**0 von 8**) erst recht
+nichts — die bleiben zu. Die sechs Zeilen unter dem Klassenboden (`c` `w`
+`g` `longs` `p` `Z`) scheitern weiter an der Wortzahl, nicht am Urteil;
+ihr Weg bleibt Rettungsweg (3) der LF16-Zeile, die Eigenhand-Ernte. EINE
+Wurzel, EIN Wortsatz, EIN Beurteiler — und er ist der Autor des
+Kandidaten (§8a). `abb22` ist eine andere Hand und bleibt draußen.
+
+#### Der nächste Arm
+
+**Kein Rettungsweg im Sinne der §7.9-Regel** — dies ist kein ehrliches
+Negativ, sondern die Adoption. Was die Runde trotzdem offen hinterlässt,
+ist der `d-und`-Befund, und er ist als eigener Arm registriert:
+
+1. **Die `d`→`u`-Naht nach dem `d`-Write** (§7.11, Route Übergänge) —
+   eigene Vorregistrierung, gemessen an den vier `und…`-Wörtern plus
+   einer vorab geschnittenen Klasse von `d`→Vokal-Nähten, mit dem
+   Naht-Sensor (`seam_deg`, `dspan`) als Anzeiger. Kein Knopf benannt.
+2. **Der Unstetigkeits-Sensor S2 über die `d`-Wörter** bleibt offen
+   (Rettungsweg 1 der Vorregistrierung): er hat nach wie vor keine
+   Laufform-Runde gesehen, und jetzt gäbe es ein Urteil, gegen das er
+   sich eichen ließe.
+
+**Ausdrücklich kein Weg:** aus „`d` trägt" auf die übrigen Zeilen
+schließen; die vier `und…`-Wörter nachträglich aus `d-rein`
+herausrechnen (sie waren nie darin); oder den `d-und`-Befund mit n = 4
+als Verdikt lesen.
+
+#### Selbst entschieden (benannt, nicht versteckt)
+
+* **Die Datei-für-Datei-Diagnose der drei Wurzeln gefahren**, statt die
+  gerissene Erwartung „Paar-Wurzel bleibt byte-gleich" als Nebensatz
+  abzutun — sie ist der Grund, warum die Ledger-Zeile drei Digests nennt
+  und nicht zwei.
+* **Die Gleichheit mit der Overlay-Vorhersage je WORT geprüft**, nicht
+  nur in der Headline: eine Headline kann sich aus zwei Fehlern
+  zusammensetzen, 96 Einträge mit `max |Δ| = 0,0` können es nicht.
+* **Keine `runde-10-zeilen.json`** wie bei Runde 8 — dort brauchte es
+  eine Zerlegung, weil fünfzehn Zeilen zugleich liefen; hier IST die
+  Zerlegung die Runde.
+* **Der Ernte-Fixpunkt nicht noch einmal gefahren** — die
+  Vorregistrierung hat ihn zweimal byte-gleich belegt, und der Write hat
+  die Zeile nicht angefasst, die er geschrieben hat.
