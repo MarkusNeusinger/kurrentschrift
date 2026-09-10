@@ -57,7 +57,7 @@ rückwirkende Umnummerierung, also bleiben sie unter diesen Namen. Der
 ihrer adoptierten Regeln — das, was ein Bench-Lauf mit committeten
 Konstanten produziert.
 
-## Aktueller Stand (2026-09-09): zwei adoptierte Regeln, drei Schalter aus
+## Aktueller Stand (2026-09-10): zwei adoptierte Regeln, drei Schalter aus
 
 **Adoptiert: der Austritts-Trim** (`exit_trim`, Autor-Entscheid **A37**
 vom 2026-09-06). Der Verbinder beginnt erst dort, wo die

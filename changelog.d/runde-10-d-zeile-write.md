@@ -56,9 +56,10 @@
   three differ in exactly two files — `manifest.json` and the `d` key of
   `templates_laufform.json`, largest anchor deviation 0.044500 xh, digit for
   digit the maximum the pre-registration had measured against the stored row.
-  Every other file (137 · 429 · 257) is identical, and the pairs NUMBER is
-  unmoved because the Abb. 20 drills are too short for the run-length gate and
-  never see a Laufform row at all.
+  Every other file is identical — 255 of 257 in the words root, 135 of 137 in
+  the pairs root, 427 of 429 in abb22 — and the pairs NUMBER is unmoved because
+  the Abb. 20 drills are too short for the run-length gate and never see a
+  Laufform row at all.
 - **What the row does not fix is filed as its own arm, on the right route.**
   All four `und…` words went to the BASE, 4 : 0 without a tie, both mirrored
   repeats confirming — descriptively, at n = 4 below the class floor, but
