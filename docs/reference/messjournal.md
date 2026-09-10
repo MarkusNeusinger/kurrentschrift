@@ -235,6 +235,8 @@ die DB) — mit seiner Bedingung.
 | sep08 | Laufform | [LF16 Runde 8 geurteilt](#laufform-lf16-sep08--runde-8-geurteilt-die-karte-fällt-die-d-zeile-trägt) | Menschenrunde · **nicht adoptiert** (beide Schranken) · Zerlegung je Zeile | Basis **20** : Kandidat **13** von 33 entschiedenen (39,4 % gegen ≥ 60 %) bei **47,6 %** unentschieden (gegen ≤ 25 %) — anders als bei J4 zeigt auch die RICHTUNG zur Basis. Verlässlich (10/12 gleicher Arm, 6/12 gleiche Seite), Nullprobe 6/6 richtig als „kein Unterschied". Je Klasse `zeile-stark` 18,2 % · `zeile-schwach` 52,9 % · `lineal-verlierer` 40,0 % — die vorab BEHAUPTETE Sichtbarkeit hält nicht, die Klasse ohne Behauptung kommt einem Verdikt am nächsten. Die vorregistrierte Ohne-`Z`-Probe ist exakt lesbar (die 60 übrigen Bildschirme SIND die 14-Zeilen-Karte) und **ändert fast nichts**: 38,7 % / 48,3 % — `Z` trägt ein Drittel des Lineal-Verlusts und ist am Auge die unauffälligste Zeile. Nachgereichte Zerlegung je Zeile: **`d` 10 : 2 = 83,3 % bei 14,3 % Ties** (ohne `u`-Nachbarn sogar 10 : 0 ohne Tie) — die Zeile, die der Autor von sich aus nannte —, dagegen `h` **0 von 8** und `n` 3 von 15; `w` und `p`, die das Lineal am stärksten belohnt, lehnt das Auge glatt ab. Kein Write, Chart-Saat bleibt Ernte-Default |
 | sep09 | Kette | [K-E Runde 9 geurteilt](#kette-k-e-sep09--runde-9-geurteilt-44-von-44-kein-unterschied-und-der-beurteiler-nennt-die-saat-statt-des-claims) | Menschenrunde (erste **BAHN**runde) · **ehrliches Negativ** · Claim-Familie endgültig zu | **Kein einziger entschiedener Bildschirm: 44 von 44 „kein Unterschied" (100 % gegen ≤ 25 %)**, ein Kandidaten-Anteil ist mangels Zähler nicht definiert — `adopt: false`. Verlässlichkeit 10/10 gleicher Arm, aber das ist bei konstanter Antwort arithmetisch erzwungen; Auskunft geben die **Nullproben 6/6 richtig** und die Zeiten (77 s `Wer` · 74 s `die-2` · 41 s `unter` gegen 3 s Median). Drei der vier vorregistrierten Erwartungen fallen: `ziel` 0 : 0 statt 2 : 0 — die die-2-Heilung, die die Familie begründet hat, ist für das Auge keine (der Halbsatz „V-Nadel im Augenschein weg" war eine BAU-Aussage, kein Urteil); `riss` 0 : 0 statt 2 : 0 — das −0,003-aiou-Gate bestraft an `regieren`/`muß` etwas, das kein Mensch sieht; nur die Nullprobe hält. **Die Dosis erklärt es diesmal NICHT:** fünf Wörter liegen auf oder über den 0,1186 xh, mit denen Runde 5 bei 9,7 % Ties entschieden wurde (`Zügel` 0,3221 · `Sprünge` 0,2756 · `die-2` 0,2436 · `die` 0,1881 · `Silber` 0,1720), alle fünf unentschieden. **Autopsie (ad-hoc-Zähler, kein Lineal):** beide Bahnen tragen dieselbe dominante Störung — Zickzack-Zonen im PAPIER, 29 : 27 über 44 Wörter, und der Claim bewegt sie in beide Richtungen (`Sprünge` 4 → 0, `die`/`die-2` 1 → 0 gegen `regieren` 4 → 9, `Zügel` 2 → 5). Die erste, duktus-blinde Zählung (528 : 555) wurde auf Einspruch des Autors zurückgezogen. Autor wörtlich: „schlimm zu schlimm aber bischen anders nichts besser". **Der benannte Hebel ist die SAAT-Distanz**, nicht der Claim (K-C-Autopsie `aug20` am `unter`: Saatfehler 0,81 xh gegen `max_delta` 0,75; offener Composer-Auftrag e-Breite §7.2) |
 | sep09 | Laufform | [LF17 `d`-Zeile als eigener Arm (A40) + Runde 10](#laufform-lf17-sep09--vorregistrierung-die-d-zeile-als-eigener-arm-a40-und-die-runde-10) | Pre-Reg + Konstruktionsmessung · **Runde 10 gebaut, Urteil offen** (Autor-Entscheid A40) | Rettungsweg (1) der LF16-`sep08`-Zeile mit EINEM Freiheitsgrad: gespeicherte Zeilen plus ein Overlay aus der frisch geernteten `d`-Zeile. **Zeile und Basis-Arm kommen byte-identisch mit denen der Runde 8 heraus** (kein `d`-Wort trug ein Komma), die Ernte ist wieder Fixpunkt, die Zeile nimmt alle drei Write-Gates. Das Lineal ist wieder leicht dagegen, die vorab an eine Zahl gebundene Sichtbarkeit trifft sie — und was die Runde per Konstruktion NICHT kann, steht vorab im Eintrag |
+| sep09 | Kette | [K-G Saat-Registrierung (Diagnose + Pre-Reg)](#kette-k-g-saat-registrierung-sep09--diagnose-und-vorregistrierung-der-startort-ist-der-hebel-den-der-beurteiler-benannt-hat) | Diagnose + Pre-Reg (Autor-Entscheid A39) | **Zwei Sensoren, eingefroren.** **Papier-Umkehr** zählt den Zickzack nur im PAPIER (`Galoppieren` 24 in der Tinte, 0 im Papier); das 29 : 27 des nie committeten ad-hoc-Zählers der Runde 9 liest er als **26 : 25** und wurde NICHT nachgezogen. **Saat-Abstand** trennt **Saat-Versatz** (Platzierung, absorbierbar) von **Saat-Rest** (Form, nur composer-seitig heilbar). **„Die Saat liegt weiter weg als `max_delta`" ist als ABSTAND falsch** — kein Anker über 0,68 xh von irgendeiner Tinte, der Fehler ist eine KORRESPONDENZ. `Wer`s `e` verlangt keine Verschiebung, `regieren`s acht Slots ziehen **0,967 xh** auseinander. Auf Runde 9s 44 Wörtern trägt die Form-Hälfte (partiell +0,592 : +0,157), **auf allen 63 sind beide gleich stark** — die 44 waren K-Es Straten. Arm: `--chain-seed grid`, Gates (a)–(g), Kill bei (a)/(c) |
+| sep09 | Kette | [K-G Saat-Registrierung (gemessen)](#kette-k-g-saat-registrierung-sep09--gemessen-der-arm-heilt-das-wort-des-beurteilers-und-reißt-zwei-gates) | gemessen · **ehrliches Negativ** (Gate (a) rot) · asymmetrischer Befund, Runde 11 gebaut | **Der Arm heilt genau das Wort, das der Beurteiler „richtig schlimm" nannte, und beschädigt genau das, das er gut nennt:** `unter` aiou **+0,1072** mit Papier-Umkehren **5 → 0** (die Basis verwirft dort ihre Runde 1 ganz, der Arm nicht), dagegen `Wer` **−0,0187**. Basis ziffernweise abgenommen. Gates: (a) **ROT** (`Wer` · `das` −0,0074; über 63 sind es 15 Verlierer, min −0,1782), (b) **ROT** (`cross_missing` 11 → 13), (c) **GRÜN** 63er-Soll **85 → 74**, (d) halb rot (Median −0,000034, p90 +0,000425), (e) **GRÜN** Papier-Umkehren **49 → 42** (44er-Auswahl 26 : 26), (f)/(g) grün. **Die aiou-Enden sind Wächter-Wechsel, nicht Tinte:** 28 der 63 wechseln ihr Verdikt — zu `revert-init` Median −0,0770, davon weg +0,1034, unverändert ±0,0005 —, und die ganze Soll-Verbesserung sitzt in den 28. Umkehren 9 besser : 7 schlechter, **ohne `regieren` 45 → 32**: es startet gemischt (ein Slot AN der Blockschranke bekommt keinen Seed) und verdoppelt seinen Zickzack 4 → 10 — von den VIER gemischt startenden Wörtern aber als einziges, der gemischte Start ist also nicht hinreichend. Terzile: Saat-Rest hoch **37 → 28**, Spannweite niedrig **5 → 8** — der Schalter hilft, wo die Saat danebenliegt, und schadet, wo nicht. Zieht erstmals den K-D-Auslöser (0,427 xh). Runde 11 gebaut, ungeurteilt: 73 Bildschirme, **Ausschnitt-Anzeige** ±1,5 xh bei Zoom 4× |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -15648,3 +15650,540 @@ Urteilsrunde schreiben, weil das Lineal sie diesmal fast nichts kostet.
 Paare stehen unverändert bei 0,108153 · 0,148236; die 0,108339 ist eine
 Overlay-Zahl dieser Vorregistrierung und wird es bleiben, bis ein Write
 sie zur Basis macht.
+### Kette K-G „Saat-Registrierung" `sep09` — Diagnose und Vorregistrierung: der Startort ist der Hebel, den der Beurteiler benannt hat
+
+**Anlass: Autor-Entscheid A39 vom 2026-09-09 („Saat-Abstand als nächster
+Kette-Arm: ja").** Runde 9 hat die Claim-Familie geschlossen und dabei
+etwas anderes benannt: „warum sieht das er in `Wer` gut aus, in
+`unter`/`regieren` richtig schlimm?" Die Antwort im Eintrag „Kette K-E
+`sep09`" war eine These — die SAAT liege dort zu weit von der Tinte —,
+gestützt auf die `aug20`-Autopsie zu K-C, Befund (d), und auf einen
+ad-hoc-Zähler. Dieser Abschnitt macht daraus zuerst eine Messung über
+alle 63 Wortproben und registriert danach EINEN Arm vor.
+
+Reihenfolge, bindend: **Diagnose zuerst, dann der Arm.** Was hier unter
+„Vorregistrierung" steht, stand vor der ersten Kandidatenzahl fest.
+
+#### Zwei Sensoren, benannt und eingefroren
+
+Beide sind **Berichte, keine Lineale**: an kein Gate gebunden, in keinem
+`bench_loss`, und beide leben in `tools/` (nichts an `core/`, nichts an
+`word_metric.py`, nichts an den Wurzeln).
+
+**(1) Papier-Umkehr** (`tools.tracebench.reversals`, Glossar). Eine
+Umkehr ist ein Vertex der Kandidaten-EIGENEN Polylinie, dessen beide
+anliegenden Segmente (nach Ausdünnen auf ≥ 0,5 Bildpunkt) `cos < −0,7`
+einschließen; sie zählt als **Papier**-Umkehr, wenn ihr Bildpunkt Papier
+ist — Grauwert oberhalb der Mitte zwischen Tinten- und Papierniveau
+DIESES Ausschnitts (`--paper mask` liest stattdessen die eingefrorene
+`ref_mask`). Nicht resampelt: das Lineal-Resampling würde genau das kurze
+Hin und Her löschen, das hier gezählt wird. Die Trennung Papier/Tinte ist
+die Lehre der Runde 9 und dieselbe wie beim Kringel-Katalog — ein Sensor
+ohne Landmarken-Bewusstsein misst den Duktus statt des Defekts:
+`Galoppieren` trägt auf beiden Armen **24 Umkehren in der Tinte und 0 im
+Papier**, und der Autor hat genau dieses Wort als gut aussehend benannt.
+
+**Offenlegung zur Abnahme, ohne Beschönigung.** Der ad-hoc-Zähler der
+Runde 9 war nie im Repo; sein Wortlaut ist damit nicht rekonstruierbar,
+und der eingefrorene Sensor reproduziert dessen **29 : 27 nicht exakt**.
+Er liest über dieselben 44 beurteilten Wörter, aus denselben Arm-Dateien
+(`sha256` `da007a1dcaa51410` / `f8a31021b07ae2a6`, ziffernweise die
+Stempel der Runde 9) **26 : 25**. Die Signatur ist dieselbe: `Galoppieren`
+0, **14 der 15 dort genannten Wörter** tragen auch hier Papier-Umkehren
+(nur `will` 1 : 1 fällt auf 0 : 0), dieselbe
+Zweirichtung (`Sprünge` 3 : 0 und `die`/`die-2` 1 : 0 heilen, `regieren`
+4 : 8 und `Zügel` 2 : 4 werden schlechter), dasselbe Netto-Vorzeichen.
+Zwei Gründe stehen nebeneinander, beide unbewiesen: die Wurzel hat
+zwischen Runde 9 und heute gewechselt (der Komma-Ausschluss `sep07`
+veränderte `crop.png` von drei Wörtern, darunter `Zügel` und `streiten`
+aus dieser Tabelle), und der ad-hoc-Zähler kann anders ausgedünnt haben.
+**Der Sensor wurde NICHT auf 29 : 27 nachgezogen**, sondern daraufhin
+geprüft, dass er nicht auf der Messerschneide steht: über `min_seg`
+0,3 … 0,5 px, über beide Papier-Definitionen und über beide
+Ausdünn-Formulierungen bleibt er bei 26 : 25 bzw. 24 : 23.
+
+**(2) Saat-Abstand** (`tools.pairlab.seedgap`, Glossar). Je
+Buchstaben-Slot der Abstand der KETTEN-SAAT (die Chart-Anker an der
+komponierten Platzierung, exakt `chain._letter_spec`) von der
+K-C-gereinigten Tinte, in xh, in zwei Hälften mit verschiedenen Heilungen:
+
+* **Saat-Versatz** — die ganze-Buchstaben-Verschiebung, die die
+  beschränkte Rastersuche des Folgers selbst findet
+  (`harvest._grid_fits`, dieselbe Funktion, die die Deckungsfenster
+  liefert). Ein reiner Platzierungsfehler; der Kettenlöser kann ihn über
+  seinen Slot-Block absorbieren, soweit dessen Schranken reichen
+  (`FIT_DX_UNITS` 0,6 / `FIT_DY_UNITS` 0,20 xh).
+* **Saat-Rest** — der Anker-Abstand, der NACH dieser besten Verschiebung
+  bleibt. Keine Platzierung nimmt ihn weg: er ist die Form des
+  komponierten Buchstabens gegen die Form der Hand (das komponierte `e`
+  1,32 xh breit gegen 0,65 xh der Hand, `aug20`).
+
+#### Die Diagnose über alle 63 Wörter
+
+Wurzel `suetterlin-1922` `exported_at` 2026-09-07T20:07:03+00:00
+`root_digest` **`ccb036a5eb20…`** (Paare `0fbde2d72b64…`, unberührt),
+jeder Lauf mit `--expect-root`, BLAS gepinnt. 63 von 63 Wörtern gemessen.
+
+**Erster Befund, und er räumt eine These ab: „die Saat liegt weiter weg
+als `max_delta`" ist als ABSTAND falsch.** Kein einziger Saat-Anker der
+63 Wörter liegt weiter als **0,68 xh** von irgendeiner Tinte, das
+Set-Maximum des Saat-Rests ist 0,648 — die 0,75-xh-Schranke wird nirgends
+gerissen. Der Satz aus der `aug20`-Autopsie („Saatfehler am `e`-Austritt
+0,81 xh gegen `max_delta` 0,75") ist kein Abstand ZUR Tinte, sondern eine
+Korrespondenz: der Austritt liegt nah an der FALSCHEN Tinte. Genau das
+ist der Mechanismus, den Runde 9 beschreibt — nicht „erreicht die Tinte
+nicht", sondern „erreicht die richtige Tinte nicht, und die falsche liegt
+bequem in Reichweite".
+
+**Zweiter Befund: die Frage des Beurteilers hat eine Zahl.** Slot für
+Slot, `e`→`r` in drei Wörtern (Verschiebung in xh, Saat-Rest Median/Max):
+
+| Wort | Papier-Umkehren (Basis) | `e`: Versatz | `e`: Saat-Rest med/max | Spannweite `shift_x` über das Wort |
+|---|---|---|---|---|
+| `Wer` | **0** | (+0,000, +0,000) | 0,031 / 0,177 | 0,375 |
+| `er` | **0** | (+0,065, −0,032) | 0,032 / 0,116 | 0,161 |
+| `unter` | **5** | (−0,161, −0,032) | 0,097 / **0,376** | 0,290 |
+| `regieren` | **4** | (+0,100 / +0,367 / −0,600) | bis 0,335 | **0,967** |
+
+In `Wer` verlangt das `e` **keine** Verschiebung; in `unter` muss es
+zurückgezogen werden und trägt den höchsten Saat-Rest des Wortes; in
+`regieren` verlangen die acht Slots Verschiebungen von −0,600 bis +0,367
+xh — die Buchstaben ziehen um **0,967 xh auseinander**, und ein Slot
+steht an der Blockschranke. Eine globale Verschiebung (die Kette hat
+genau eine) kann das per Konstruktion nicht reparieren. Das ist die
+Breiten-Geschichte der K-C-Autopsie, ohne eine Buchstaben-Segmentierung
+der Hand zu brauchen.
+
+**Dritter Befund: welche Hälfte den Defekt vorhersagt.** Über die 44
+beurteilten Wörter, Papier-Umkehren der Basis gegen die Saat-Statistiken
+(Pearson · Spearman · Partial bei kontrollierter Slot-Zahl, weil lange
+Wörter mehr Gelegenheiten haben):
+
+| Spalte | Pearson | Spearman | partiell \| Slots |
+|---|---|---|---|
+| **Saat-Rest (`rest_max`)** | **+0,691** | **+0,507** | **+0,592** |
+| Saat-Rest p90 | +0,569 | +0,360 | +0,437 |
+| Spannweite `shift_x` | +0,417 | +0,234 | +0,157 |
+| Versatz (`shift_max`) | +0,378 | +0,219 | +0,151 |
+| Saat-Abstand (`seed_max`) | +0,398 | +0,300 | +0,160 |
+| Slot-Zahl allein | +0,447 | +0,475 | — |
+
+In Terzilen, je Slot normiert (13 der 44 Wörter tragen überhaupt eine
+Papier-Umkehr):
+
+| Terzil | Saat-Rest | Papier-Umkehren je Slot | betroffene Wörter |
+|---|---|---|---|
+| niedrig | 0,116–0,236 | **0,020** | 1 von 14 |
+| mittel | 0,238–0,285 | 0,059 | 3 von 14 |
+| hoch | 0,290–0,623 | **0,239** | 9 von 16 |
+
+Dieselbe Zerlegung über die Spannweite `shift_x`: 0,047 → 0,119 →
+**0,189** je Slot. Auf DIESEN 44 Wörtern zeigen beide Hälften in dieselbe
+Richtung, aber die FORM-Hälfte trägt den Befund und die
+PLATZIERUNGS-Hälfte ist der schwächere Teil — auch nach Kontrolle der
+Wortlänge, wo der Versatz auf +0,157 zusammenfällt und der Saat-Rest bei
++0,592 stehen bleibt.
+
+**Und dann sind die 44 nicht die Grundgesamtheit.** Sie sind die
+Bildschirme der Runde 9, geschnitten nach K-Es eigenen Straten — also
+eine AUSWAHL, keine Stichprobe. Über alle **63** Wörter (Papier-Umkehren
+der Basis: **49** in 21 Wörtern, dazu 742 Umkehren in der Tinte) kehrt
+sich die Rangfolge um:
+
+| Spalte | Pearson (63) | Spearman (63) | partiell \| Slots |
+|---|---|---|---|
+| Spannweite `shift_x` | **+0,510** | +0,297 | **+0,347** |
+| Saat-Rest (`rest_max`) | +0,476 | **+0,412** | **+0,358** |
+| Versatz (`shift_max`) | +0,443 | +0,286 | +0,274 |
+| Saat-Rest p90 | +0,440 | +0,390 | +0,320 |
+| Saat-Abstand (`seed_max`) | +0,345 | +0,278 | +0,161 |
+| Slot-Zahl allein | +0,408 | +0,437 | — |
+
+In Terzilen je Slot: Saat-Rest 0,027 → 0,114 → **0,319**, Spannweite
+0,074 → 0,151 → **0,252**. Die beiden schlimmsten Wörter des ganzen
+Satzes stehen dabei auf der Platzierungs-Seite und waren in Runde 9 gar
+nicht dabei: **`fechten` 8 Papier-Umkehren bei Spannweite 0,656** und
+**`kann` 5 bei 0,781**.
+
+**Das ist die ehrlichere Lesart, und sie steht vor dem Arm:** auf der
+vollen Grundgesamtheit sind die beiden Hälften ununterscheidbar stark
+(partiell +0,347 gegen +0,358), und die 44er-Auswahl hat die
+Platzierungs-Hälfte systematisch untergewichtet, weil K-Es Straten nach
+dem CLAIM geschnitten waren und nicht nach der Saat. Der Arm hat damit
+mehr zu gewinnen, als die erste Tabelle nahelegt — und die Konsequenz
+für die Vorregistrierung ist keine weichere Schranke, sondern eine
+zusätzliche Berichtspflicht: **die Bewegung des Arms wird gegen
+`shift_span_x` aufgetragen**, nicht nur gegen die Gates.
+
+#### Vorregistrierung: EIN Knopf, und er ist der Startort
+
+**Der Arm ist `--chain-seed grid`.** Statt jeden Slot-Block bei null (der
+komponierten Platzierung) zu starten, startet er bei der Verschiebung,
+die die Rastersuche für diesen Buchstaben gefunden hat — genau der
+`slot_shift_init`-Weg, den `chain.fit_word_chain` seit der
+Runde-2-Schlichtung trägt und den `follow.py` als Schalter schon hat.
+Basis ist die **Produktions-Kette v5 ohne jedes Flag**; alles andere ist
+Byte für Byte derselbe Stapel.
+
+**Warum genau dieser und kein anderer.**
+
+* Er ändert die **SAAT**, nicht den Anspruch und nicht das Ziel: die
+  Zielfunktion, die Gewichte, der Wächter, die Evidenz und das Lineal
+  bleiben unangetastet. „Das ändert, welches Becken der Abstieg betritt,
+  nie, was gemessen wird" — der Satz steht seit der Runde-2-Schlichtung
+  im Docstring und ist hier die ganze Begründung.
+* Er ist **werkzeugseitig**: `core/` wird nicht angefasst, die goldene
+  Kompositions-Fixture bleibt unberührt, und kein `/write/*`-Vertrag
+  bewegt sich.
+* Er kann **keine Struktur erfinden**: der Seed ist eine reine
+  Translation je Buchstabe aus einer ganzzahligen Rastersuche innerhalb
+  ±0,6/±0,20 xh, und Slots, deren Rastersuche an ihrer eigenen Schranke
+  endet (`at_bound`), bekommen gar keinen Seed. Die Werte werden zudem
+  knapp INNERHALB der Blockschranken geklemmt, damit kein Seed den
+  `slot_at_bound`-Test vorab auslösen kann.
+* Er zielt auf die Hälfte, die **der Folger überhaupt heilen kann**. Die
+  andere Hälfte — der Saat-Rest, also die komponierte Buchstabenbreite —
+  ist der seit `aug16` offene **Composer-Auftrag e-Breite** (§7.2) und
+  ausdrücklich KEIN Folger-Arm; er wird hier nicht angefasst, weil er
+  `core/compose.py` bewegt, also Produktoberfläche unter der goldenen
+  Fixture.
+
+**Die eingestandene Schwäche der Vorregistrierung, benannt bevor die
+Zahl da ist:** auf der Auswahl der Runde 9 ist die Platzierungs-Hälfte
+die schwächere von beiden (partiell +0,157 gegen +0,592); auf der vollen
+Grundgesamtheit sind sie gleich stark (+0,347 gegen +0,358). Der Arm
+kann also selbst dann fallen, wenn die Diagnose vollständig stimmt —
+weil er nur die eine Hälfte anfasst. Das ist kein Grund, ihn nicht zu
+fahren; es ist der Grund, das Ergebnis vorher zu interpretieren statt
+nachher.
+
+**Der stehende Vorbehalt, den dieser Arm anfassen MUSS** — §7.11 führt
+„**Rausch-Boden des Folgers (sperrt jeden weiteren Init-Arm)**" als
+offen und ZUERST fällig: K-F (§14 `sep04`) hat unfreiwillig eine
+Nullprobe gefahren, in der 23 Wörter einen um höchstens **1,8·10⁻¹⁵**
+abweichenden Init bekamen und trotzdem **neun Wächter-Verdikte**
+kippten, mit aiou −0,0298 … +0,0800 und vier Verlierern unter der
+0,003-Schranke. Diese Runde umgeht den Vorbehalt nicht, sie stellt sich
+ihm mit zwei Sätzen und einer Auflage:
+
+1. **Die Störung liegt fünfzehn Größenordnungen darüber.** K-G bewegt
+   die Saat je Wort um **0,047 … 0,615 xh** (Median 0,164; die
+   Spannweite ÜBER die Slots eines Wortes 0,032 … 0,967, Median 0,219).
+   Der Rausch-Boden sperrt Arme, deren SIGNAL im Rauschen liegt; dieser
+   liegt nicht darin.
+2. **Für das EINZELNE Wort bleibt der Vorbehalt gültig.** Die Auflage
+   dieser Runde ist deshalb: **kein Wort wird einzeln adoptiert oder
+   verworfen**, und jede Zahl wird neben den Wächter-Ausgängen
+   (`revert-init` · `revert-r1` · `zonal` · angenommen) berichtet. Ein
+   Wort, das sich NUR über einen gekippten Wächter-Ausgang bewegt, wird
+   als solches benannt. Die Gates (a)–(e) sind Set-Aussagen, keine
+   Wortaussagen — Gate (a) bleibt trotzdem ein Veto-Gate, weil es die
+   schlimmste Einzelbewegung begrenzt und nicht ihren Grund erklärt.
+
+**Basis, ziffernweise nachzuweisen vor der ersten Arm-Zahl** (Kette v5,
+Wurzel `ccb036a5eb20…`): dev-19 **dtw 0,045881 med · p90 0,088356 · aiou
+0,7660 · Marken 0/0/0 · `cross_missing` 11 / `cross_spurious` 9**,
+63er-Soll-Abstand **85**. Weicht die frisch gefahrene Basis davon ab,
+bricht die Runde ab, statt die Abweichung wegzuerklären.
+
+**Gates.**
+
+* **(a) Deckung.** Kein dev-19-Wort verliert mehr als **0,003 aiou** —
+  das stehende Gate, unverändert und nicht aufweichbar.
+* **(b) Struktur.** `cross_missing` ≤ 11, `retrace_spurious` ≤ 10,
+  Marken unverändert 0/0/0.
+* **(c) Referenzfrei.** 63er-Soll-Abstand ≤ **85**.
+* **(d) Genauigkeit.** Gepaartes dev-19-`dtw`: Median-Δ ≤ 0 UND p90-Δ ≤ 0.
+* **(e) Der benannte Defekt.** Papier-Umkehren über **alle 63 Wörter**
+  **< 49** (Basis; über die 44 der Runde 9 zusätzlich berichtet, dort
+  < 26). Die 63 sind die Grundgesamtheit und der Gate; die 44 sind eine
+  Auswahl und stehen nur zur Anschlussfähigkeit an Runde 9 daneben. Dies
+  ist der Gate, für den der Arm existiert: ein Arm, der jeden
+  Lineal-Gate hält und diesen Zähler nicht senkt, hat den Defekt des
+  Beurteilers nicht angefasst.
+* **(f) Determinismus.** Ein zweiter Lauf ist strich-identisch.
+* **(g) `k0eval` meldet beide Stapel identisch.** Eine Stack-Warnung
+  bricht die Runde ab (Liturgie-Vorbedingung).
+
+**Kill-Kriterium:** (a) oder (c) rot = keine Adoptionsvorlage, Punkt.
+(e) rot bei sonst grünen Gates ist ein **ehrliches Negativ mit Befund**:
+dann ist die Platzierungs-Hälfte nicht der Träger, und die Rettungswege
+gehen an die Form-Hälfte.
+
+**Was ein Ergebnis ausdrücklich NICHT auslöst.** Auch ein rundum grüner
+Arm macht `--chain-seed grid` nicht zum Default: der Folger-Default
+ändert die gefahrene Bahn, ist damit ein Re-Baseline-Write und
+Autorensache. Diese Runde darf ihn VORLEGEN, mehr nicht.
+
+**Falsifizierbare Erwartungen.**
+
+1. ~~Wörter mit `shift_span_x` nahe 0 (`und` 0,032, `er-2` 0,032, `im`
+   0,067) bleiben **strich-identisch**.~~ **Zurückgezogen VOR der ersten
+   Arm-Zahl, mit Begründung** (siehe Nachtrag unten): keine Nullprobe
+   ist zu erwarten, die Erwartung war falsch formuliert.
+2. `regieren` (Spannweite 0,967, ein Slot an der Blockschranke) ist das
+   Wort mit der größten Bewegung.
+3. Die Wörter, deren Papier-Umkehren in der FORM-Hälfte sitzen
+   (`Zügel`: Spannweite 0,133 bei Saat-Rest 0,354), heilen **nicht**.
+   Heilen sie doch, ist meine Zerlegung falsch — und das wäre der
+   interessantere Befund von beiden.
+
+**Nachtrag zur Vorregistrierung, geschrieben VOR der ersten Arm-Zahl.**
+Erwartung 1 war falsch formuliert, und der Fehler fiel beim Abzählen der
+Saat auf, nicht beim Lesen eines Ergebnisses: **`shift_span_x` ist die
+SPANNWEITE über die Slots eines Wortes, nicht der Versatz selbst.** Ein
+Wort mit Spannweite 0,032 kann trotzdem jeden Slot um denselben Betrag
+verschoben bekommen — und **257 der 277 Slots bekommen einen Seed
+ungleich null; KEIN einziges der 63 Wörter hat lauter
+Null-Verschiebungen.** Eine Nullprobe im Sinne von „der Schalter tut
+hier nichts" gibt es also nicht und war nie zu erwarten. An die Stelle
+der Erwartung tritt: **ein Wort mit kleiner Spannweite sollte sich
+WENIGER bewegen als eines mit großer** — eine gleichförmige
+Verschiebung kann die globale Translation der Kette ohnehin, die
+Spannweite nicht. Geprüft als Korrelation, nicht als
+Identitäts-Behauptung. Die alte Fassung bleibt durchgestrichen stehen.
+
+**Selbst entschieden (benannt, nicht versteckt).** Den Papier-Umkehr-
+Sensor NICHT auf 29 : 27 nachzuziehen (Begründung oben); die
+Diagnose gegen die K-C-gereinigte Tinte zu messen statt gegen die rohe,
+weil der Löser genau diese sieht; den Saat-Abstand an den
+Ketten-Ankern abzulesen statt an der gerenderten Mittellinie, weil die
+Anker die Parameter sind, an denen `max_delta` hängt; und die falsch
+formulierte Erwartung 1 offen zurückzuziehen, statt sie hinterher als
+„so war sie gemeint" zu lesen.
+
+---
+
+### Kette K-G „Saat-Registrierung" `sep09` — gemessen: der Arm heilt das Wort des Beurteilers und reißt zwei Gates
+
+Der Arm der Vorregistrierung darüber (`--chain-seed grid`, Autor-Entscheid
+A39), gefahren auf derselben Wurzel und demselben Stapel.
+
+**Umgebung.** Beide Läufe auf `ccb036a5eb20…` (Paare `0fbde2d72b64…`,
+unberührt), `--all --set words --jobs 4`, BLAS gepinnt
+(`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`), `--expect-root ccb036a5`
+unter jedem einzelnen Aufruf; Laufzeiten 1169,9 s (Basis) · 1112,7 s
+(Arm). **Die Basis ist ziffernweise abgenommen:** dtw **0,045881** med ·
+p90 **0,088356** · worst `muß` **0,106372** · aiou **0,7660** · Marken
+**0/0/0** · `cross_missing` **11** / `cross_spurious` **9** — Ziffer für
+Ziffer die vorregistrierten Zahlen.
+
+**Die Gates, eine nach der anderen.**
+
+| Gate | Schranke | gemessen | |
+|---|---|---|---|
+| (a) Deckung | kein Wort < −0,003 aiou | **`Wer` −0,0187 · `das` −0,0074** (`will` −0,0030 genau auf der Kante) | **ROT** |
+| (b) Struktur | `cross_missing` ≤ 11 · `retrace_spurious` ≤ 10 · Marken 0/0/0 | `cross_missing` **11 → 13** (`laden` 1→2, `unter` 1→2), `cross_spurious` 9 → 10, `retrace_spurious` 10 → **9**, Marken **0/0/0** | **ROT** (erste Spalte) |
+| (c) Referenzfrei | 63er-Soll-Abstand ≤ 85 | **85 → 74** (11 besser · 45 gleich · 7 schlechter) | **GRÜN** |
+| (d) Genauigkeit | dtw-Median-Δ ≤ 0 UND p90-Δ ≤ 0 | Median **−0,000034**, p90 **+0,000425**; Vorzeichentest 8 : 11, p = 0,65 | **halb ROT** |
+| (e) Der benannte Defekt | Papier-Umkehren über 63 < 49 | **49 → 42** (auf den 44 der Runde 9: 26 : 26) | **GRÜN** |
+| (f) Determinismus | zweiter Lauf strich-identisch | **63/63 strich-identisch** samt Registrierung. Die DATEIEN sind nicht byte-gleich, und zwar aus genau einem Grund: `meta.timings.seconds` und das `seconds` je Runde sind Wanduhr (105 Runden-Felder, 63 Wort-Felder). Kein anderes Feld weicht ab | **GRÜN** |
+| (g) Stack | `k0eval` meldet beide Stapel gleich | `stack_mismatch: false`, alle sechs Flags identisch (`chain_seed` ist kein Stack-Flag, und das ist richtig so: der Stapel ist derselbe, nur der Startort nicht) | **GRÜN** |
+
+**Verdikt nach dem Kill-Kriterium: ehrliches Negativ.** (a) ist rot,
+also gibt es keine Adoptionsvorlage, und das wird nicht aufgeweicht.
+
+**Die 63er-aiou-Lage, vollständig statt nur auf dev-19:** über alle 63
+Wörter min **−0,1782** (`Gewehr`) · Median −0,0004 · max **+0,1118**
+(`han`), **15 Wörter unter der −0,003-Schranke**. Auf dev-19 sind es
+zwei; die dev-19-Zahl ist die vorregistrierte, die 63er die
+vollständigere, und beide stehen hier, damit niemand die kleinere
+zitieren kann.
+
+#### Und jetzt der Teil, der nicht verworfen werden darf
+
+Die Asymmetrie-Regel (`aug26`) verlangt die Zerlegung VOR dem Verwerfen,
+und hier ist sie ungewöhnlich scharf. **Der Arm heilt genau das Wort,
+das der Beurteiler benannt hat, und beschädigt genau das, das er als gut
+bezeichnet hat.**
+
+| Wort | aiou | Papier-Umkehren | Bewegung | Saat |
+|---|---|---|---|---|
+| **`unter`** („richtig schlimm") | 0,6654 → **0,7726** = **+0,1072** | **5 → 0** | 0,2231 xh | Spannweite 0,290 · Saat-Rest 0,376 |
+| **`Wer`** („sieht gut aus") | 0,7884 → 0,7697 = **−0,0187** | 0 → 0 | 0,0327 xh | Spannweite 0,375 · Saat-Rest 0,238 |
+| `regieren` („richtig schlimm") | nicht im dev-Satz | **4 → 10** | **0,5886 xh** (größte des Satzes) | Spannweite **0,967** · ein Slot AN der Blockschranke |
+
+`unter` ist der größte Einzelgewinn, den ein Kette-Arm dieser Kampagne
+auf dev-19 gebucht hat, und er ist kein Zufallstreffer: **die Basis
+verwirft dort ihre Runde 1 ganz** (`structure_rejected`, Rückfall auf
+den Init), der Arm nicht — er läuft zwei Runden mit einer zonalen
+Rückweisung und folgt die Bahn zum ersten Mal wirklich. Genau das ist
+der Mechanismus, für den `slot_shift_init` gebaut wurde: „ändert, welches
+Becken der Abstieg betritt, nie, was gemessen wird".
+
+**Die Wächter-Ausgänge, wie vorregistriert berichtet — und sie sind der
+eigentliche Ertrag.** `k0eval` klassifiziert je Wort: Basis
+`revert-init` 17 · `revert-r1` 11 · `zonal` 18 · `clean` 17; Arm
+`revert-init` 17 · `revert-r1` **5** · `zonal` **20** · `clean` 17 ·
+`halved` **4**. **28 der 63 Wörter wechseln ihr Verdikt**, und die
+aiou-Enden liegen fast vollständig in diesem Wechsel:
+
+| Klasse | n | aiou-Median | Spanne | Soll |
+|---|---|---|---|---|
+| wechselt ZU `revert-init` | 6 | **−0,0770** | −0,1782 … −0,0221 | −5 |
+| wechselt WEG von `revert-init` | 6 | **+0,1034** | +0,0104 … +0,1118 | +1 |
+| Verdikt unverändert | 35 | −0,0005 | −0,0249 … +0,0301 | ±0 |
+
+**Die ganze Soll-Verbesserung (−11) sitzt in den 28 Wörtern mit
+gewechseltem Verdikt; die 35 mit gleichem Verdikt bewegen sie um 0.**
+Das ist die K-F-Lehre in Zahlen: was der Saat-Arm auf dem Lineal tut,
+geht über den Wächter, nicht direkt über die Tinte. Die K-F-Auflage
+bleibt darum in Kraft — **kein einziges Wort wird aus dieser Runde
+einzeln adoptiert oder verworfen** —, und sie liefert nebenbei die
+erste Eichung für den offenen Arm „Wächter-Verdikt als Messgröße statt
+Etikett" (§7.11).
+
+**Die Zerlegung der Papier-Umkehren** (63 Wörter, 9 besser : 7 schlechter
+: 47 unverändert; 21 Umkehren entfernt, 14 hinzugefügt):
+
+* besser: `unter` 5→0 · `fechten` **8→4** · `kann` **5→1** · `Soldaten`
+  4→3 · `Sprünge` 3→1 · `Seiten` 2→0 · `Pulver` 1→0 · `Zorn` 1→0 ·
+  `die` 1→0
+* schlechter: `regieren` **4→10** · `streiten` 2→4 · `der-2` 1→3 ·
+  `Sporn` 1→2 · `die-2` 1→2 · `Säbel` 0→1 · `zu` 0→1
+
+**Ohne `regieren` steht der Zähler 45 → 32.** Ein einziges Wort trägt 6
+der 14 hinzugefügten Umkehren.
+
+**Nach Saat-Klasse, terzilweise** — die Zerlegung, die die
+Vorregistrierung verlangt hat:
+
+| Terzil | Papier-Umkehren Basis → Arm | besser : schlechter |
+|---|---|---|
+| Saat-Rest hoch (0,330–0,648) | **37 → 28** | 6 : 3 |
+| Saat-Rest mittel (0,252–0,319) | 10 → 13 | 2 : 4 |
+| Saat-Rest niedrig (0,116–0,246) | 2 → 1 | 1 : 0 |
+| Spannweite hoch (0,300–0,967) | 31 → 28 | 5 : 3 |
+| Spannweite mittel (0,172–0,290) | **13 → 6** | 4 : 2 |
+| Spannweite niedrig (0,032–0,167) | 5 → 8 | 0 : 2 |
+
+Die Lesart ist eindeutig und war so nicht vorhergesagt: **der Arm hilft,
+wo die Saat wirklich danebenliegt, und schadet, wo sie es nicht tut.**
+Im untersten Spannweiten-Terzil hat die Registrierung nichts zu
+reparieren, also verschiebt sie nur — 5 → 8.
+
+**Die Bewegung folgt der Diagnose** (die Ersatz-Erwartung 1, gemessen):
+Bewegung gegen Spannweite Pearson **+0,604** / Spearman +0,475, gegen
+Versatz +0,594/+0,550, gegen Saat-Rest +0,634/**+0,715**. Bewegung über
+die 63 Wörter: min 0,0063 · Median 0,0389 · p90 0,1864 · max **0,5886**
+(`regieren`), 55 von 63 über 0,02 xh. **Erwartung 2 ist eingetreten:**
+`regieren` ist mit Abstand das am stärksten bewegte Wort. **Erwartung 3
+ist NICHT eingetreten:** `Zügel` (Spannweite 0,133, Saat-Rest 0,354)
+sollte nicht heilen und heilt auch nicht (2 → 2) — aber `die-2`
+(Spannweite 0,194) wird schlechter statt neutral, und `Seiten`
+(Spannweite 0,194, Saat-Rest 0,504) heilt 2 → 0. Die Form-Hälfte
+entscheidet dort mit, was die Terzil-Tabelle oben bestätigt.
+
+#### Warum `regieren` fällt — und das ist ein Befund, keine Ausrede
+
+`regieren` ist eines von **vier** Wörtern des Satzes, deren Rastersuche
+an ihrer eigenen Schranke endet (`Soldaten`, `macht` und `schießen` sind
+die anderen). Slot 6, das dritte `e`, will **−0,600 xh** — genau
+`FIT_DX_UNITS`. Der Schalter überspringt solche Slots per Konstruktion
+(`if not grids[s]["at_bound"]`), also bekommt dieses `e` **keinen Seed**,
+während seine Nachbarn bei −0,567, +0,367 und −0,233 starten. **Das Wort
+startet gemischt: sieben Slots registriert, einer nicht.** Der
+Papier-Zickzack verdoppelt sich dort, die Papier-Exkursion steigt auf
+0,427 xh, und die Bewegung ist mit 0,5886 xh die größte des Satzes.
+
+**Und der gemischte Start allein erklärt es NICHT** — das ist eine
+Korrektur an der ersten, bequemeren Fassung dieses Absatzes, die aus
+einem fehlerhaften Sensor stammte (er rechnete die Schranken-Lage aus
+der normierten Verschiebung nach, statt `at_bound` der Rastersuche zu
+lesen; PR-Review-Befund, Zähler korrigiert und Inventar neu gefahren).
+Von den vier gemischt startenden Wörtern wird nur `regieren`
+schlechter: `Soldaten` **4 → 3**, `schießen` 1 : 1, `macht` 0 : 0. Der
+gemischte Start ist also eine notwendig aussehende, aber ersichtlich
+NICHT hinreichende Bedingung. Was `regieren` von den drei anderen
+unterscheidet, ist die Größe: sein Schranken-Slot verlangt mit −0,600 xh
+die größte Verschiebung des Satzes, und er sitzt im Wort mit der größten
+Spannweite (0,967 gegen 0,781 · 0,812 · 0,500). Der Rettungsweg unten
+bleibt derselbe, seine Begründung ist jetzt aber eine schwächere: er ist
+die naheliegende Reparatur, nicht die bewiesene.
+
+**Das löst nebenbei den stehenden K-D-Wiedervorlage-Auslöser aus** (§7.9:
+„ein künftiges Inventar zeigt eine neue Papier-Nadel-Klasse"). Das
+Exkursions-Inventar der Basis kennt kein Wort über 0,35 xh (Maximum
+`Sporn` 0,323); der Arm hat **eines**: `regieren` **0,427 xh** mit 0,16
+xh Bogenlänge über der Schwelle. Der Auslöser ist damit formal
+gezogen — von einem Arm, der nicht adoptiert wird, also ohne
+Konsequenz für die Produktions-Kette, aber er wird hier benannt statt
+übersehen.
+
+#### Verdikt
+
+**Ehrliches Negativ mit einem asymmetrischen Befund, der weiterläuft.**
+`--chain-seed grid` bleibt AUS und es geht **keine Adoptionsvorlage** an
+den Autor: Gate (a) ist mit zwei Wörtern gerissen, Gate (b) mit
+`cross_missing` 11 → 13, Gate (d) an der p90. Was die Runde dagegen
+gezeigt hat und was nicht verloren gehen darf:
+
+1. **Die Saat IST der Hebel, den der Beurteiler gemeint hat.** `unter`
+   +0,1072 aiou und 5 → 0 Papier-Umkehren, `fechten` 8 → 4, `kann`
+   5 → 1 — alles Wörter mit großer Saat-Distanz, alles ohne eine einzige
+   Änderung an Zielfunktion, Gewichten oder Wächter.
+2. **Der Schalter in seiner heutigen Form ist zu grob.** Er registriert
+   alle Slots gleich, auch die, deren Saat gar nicht daneben liegt (das
+   unterste Terzil verliert), und er lässt genau die Slots aus, die es am
+   nötigsten hätten (die an der Blockschranke).
+3. **Und die andere Hälfte bleibt unangetastet.** Der Saat-Rest — die
+   komponierte Buchstabenbreite — ist der stärkste Prädiktor auf der
+   44er-Auswahl und gleichauf auf den 63; kein Folger-Arm kann ihn
+   anfassen.
+
+#### Rettungswege (Register: [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.9)
+
+1. **Die Saat je Slot BEDINGT setzen statt pauschal.** Nur Slots seeden,
+   deren Rastersuche mehr als eine benannte Schwelle verlangt (das
+   unterste Spannweiten-Terzil verliert 5 → 8, also seedet man dort
+   nichts), und die Schwelle VOR der Messung festlegen. Frische
+   Vorregistrierung; derselbe Schalter, andere Auswahl — das ist ein
+   neuer Mechanismus, kein weicheres Gate.
+2. **Den Slot an der Blockschranke nicht auslassen, sondern klemmen.**
+   `regieren` startet heute gemischt und ist der einzige echte Verlierer
+   des Arms. Ein Seed, der an der Schranke geklemmt statt weggelassen
+   wird, macht das Wort wieder einheitlich. Eigene Pre-Reg, und die
+   Nullprobe dazu ist das Wort selbst.
+3. **Den Composer-Auftrag e-Breite endlich stellen** (§7.2 K5). Er ist
+   die andere Hälfte und der einzige Weg, den der Folger nicht gehen
+   kann; er bewegt `core/compose.py` und ist damit Autorensache, nicht
+   ein Arm.
+4. **Die Bahn-Runde mit Ausschnitt-Anzeige** — Runde 11, in diesem PR
+   gebaut. Sie beantwortet nicht die Adoptionsfrage (Gate (a) ist rot),
+   sondern die Instrument-Frage der Runde 9: sieht ein Mensch den
+   Unterschied, wenn man ihm den ORT zeigt statt des ganzen Wortes?
+
+#### Runde 11, gebaut und ungeurteilt
+
+`temp/runden-sep09/kette-k-g/humanbench/runde-11-k-g.html` (4,4 MB) mit
+`runde-11-plan.md` daneben. **73 Bildschirme** = alle **63** Wörter +
+10 gespiegelte Wiederholungen, Saat 20260011, **Zoom 4× auf einem
+Ausschnitt von ±1,5 xh** um die größte Arm-Trennung
+(`--window-xh 1.5`, die Instrument-Änderung dieses PRs,
+`menschliche-bewertung.md` §3.4a). Arm-Prüfsummen im Stempel: Basis
+`82d857515188c0f3` · K-G `93d148449403df73`; beide Arme registrieren auf
+allen 63 Wörtern identisch, `--registration-from` war nicht nötig.
+Die Frage ist wieder die Genauigkeitsfrage (`VERGLEICH/11`), weil beide
+Arme Bahnen sind.
+
+Vier Klassen, vor jedem Label geschnitten und je mit dem Versatz UND dem
+Rahmen, in dem er sichtbar wäre: `zickzack-heilt` **9** (Papier-Umkehren
+fallen; 0,0255–0,3192 xh) · `zickzack-schlimmer` **7** (steigen;
+0,0318–0,5886, unter dem Klassenboden 8, also namentlich) · `bewegt`
+**39** (gleich viele Umkehren, Bahn bewegt; keine Sichtbarkeit
+behauptet) · `kaum-bewegt` **8** (< 0,02 xh, der **Nullproben-Ersatz** —
+strich-identische Paare gibt es in dieser Runde nicht, weil kein Wort
+unbewegt bleibt). Unentschieden-Boden **12,7 %** gegen die Schranke
+≤ 25 %.
+
+**Was die Runde ausdrücklich NICHT kann:** den Arm adoptieren. Gate (a)
+ist gerissen, und ein Menschenurteil hebt kein Lineal-Gate auf. Sie
+beantwortet die INSTRUMENT-Frage der Runde 9 und die Richtungsfrage;
+ihre Zahlen sind mit denen der Wortrunden 5–9 nicht vergleichbar.
+
+**Ausdrücklich KEIN Weg:** die aiou-Schranke lockern; `Wer` und `das`
+als „nur zwei Wörter" abtun; oder `--chain-seed grid` als Default
+vorschlagen, weil das Netto der Papier-Umkehren stimmt.
+
+**Keine Ledger-Zeile:** die Runde bewegt keine Headline — Wörter und
+Paare stehen unverändert bei 0,108153 · 0,148236.

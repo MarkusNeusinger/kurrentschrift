@@ -414,6 +414,31 @@ WIDEST = {
 # deleting a row to buy headroom is what the register forbids. Re-measured with
 # everything in: 30 920, plus the documented 10 %.
 #
+# `mess-runde` raised again on 2026-09-09 by „Kette K-G Saat-Registrierung",
+# and the reason is a coupling between two of these budgets rather than prose.
+# A round that pre-registers AND measures owes the register TWO rows, because
+# `mess-runde-eintrag` is what forced the split: as one section the entry
+# measured 7 942 against a 4 957 ceiling, so it became „Diagnose +
+# Vorregistrierung" and „gemessen" the way every two-part round of this
+# campaign is written — and the register, which carries exactly one row per
+# section, then pays twice for one arm. On top of that the round leaves §7.11
+# two rows (the conditional-seed conversion, and the noise-floor row it had to
+# rewrite because K-G is the first start-point arm to clear that block). Its
+# whole share of the path is ~1 080 tokens: ~880 in the two register rows and
+# ~200 in §7.11; `verfahren.md` and the Stand blocks are untouched apart from
+# one date. The register rows were condensed THREE times before this raise was
+# written (1 562 → 1 194 → 1 118 → 1 055 characters, and 2 080 → 1 685 →
+# 1 580 → 1 501), the §7.11 rows once, and the Kette ledger row and the
+# `werkzeuge.md` tool line were cut until `mess-runde-route` and
+# `werkzeug-abschnitt` fit their existing budgets rather than being raised
+# with it. What the rows cannot shed is the finding itself — that the arm
+# heals the word the judge named and damages the one he called good — without
+# becoming an index that sends a reader into a 266 k-token file to learn what
+# a round decided. Note also that main stood at 33 950 against 34 012, i.e.
+# 62 tokens of room: the budget was already spent by the campaign's own
+# cadence, not by this round. Re-measured with everything in: 35 098, plus the
+# documented 10 %.
+#
 # `mess-runde` raised again on 2026-09-09, and again by parallelism rather than
 # by any one round: three PRs landed on the same path that evening — round 9's
 # register row and its Kette ledger line (#585), the Übergänge process page
@@ -429,9 +454,15 @@ WIDEST = {
 # without making the index unusable: which round is built and unjudged, that
 # the row is byte-identical to the judged one, and that a write is waiting on a
 # human. Re-measured on the merged page: 34 418, plus the documented 10 %.
+#
+# The two raises above were written on two branches against the same main
+# (#587 the `d` row, #588 K-G); merged together, the path carries both rounds,
+# so the ceiling is the re-measurement with BOTH in, plus the documented 10 % —
+# neither branch's own number, and not their sum. Re-measured on the merged
+# tree: 35 616.
 BUDGETS: dict[str, int] = {
     "mandatory": 60_852,
-    "mess-runde": 37_860,
+    "mess-runde": 39_178,
     "mess-runde-route": 8_795,
     "mess-runde-eintrag": 4_957,
     "glyph-optimierung": 8_504,
