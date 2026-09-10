@@ -1295,9 +1295,11 @@ class _ChainProblem:
 
         One entry per name in `GRADIENT_TERMS` — `geo` (the smoothed distance
         field), `crop` (the out-of-crop pull split off it), `width`,
-        `coverage`, `overlap`, `smooth` (connector curvature change), `reg`
-        (Tikhonov), `bind` (letter neighbour binding, inert by default) and
-        `landmark` (crossing correspondence, inert by default) — each WEIGHTED
+        `coverage`, `overlap`, `counter`, `paper` (the Tinten-Klammer) and
+        `kink` (the Unstetigkeits-Preis, both inert by default), `smooth`
+        (connector curvature change), `reg` (Tikhonov), `bind` (letter
+        neighbour binding, inert by default) and `landmark` (crossing
+        correspondence, inert by default) — each WEIGHTED
         as the objective weighs it, so the entries are comparable forces rather
         than bare energies.
 
@@ -2721,7 +2723,20 @@ def fit_pair_chain(
 
 # Every weighted term of the chain objective, in the order they are applied.
 # `geo` and `crop` are the two halves of `e_geo`.
-GRADIENT_TERMS = ("geo", "crop", "width", "coverage", "overlap", "counter", "smooth", "reg", "bind", "landmark")
+GRADIENT_TERMS = (
+    "geo",
+    "crop",
+    "width",
+    "coverage",
+    "overlap",
+    "counter",
+    "paper",
+    "kink",
+    "smooth",
+    "reg",
+    "bind",
+    "landmark",
+)
 # Relative tolerance of the sum check. The split is re-added in a different
 # order than the objective accumulates it, so bit-equality is not on offer;
 # anything above float noise means the decomposition describes a DIFFERENT

@@ -2108,21 +2108,10 @@ def follow_word_chain(
                     # that hairpin, because it „lost" a crossing the ink never
                     # had. Retrace/touch/overlap keep the composition soll: the
                     # ink cannot testify to them.
-                    cross_pts = structure_class_points(comp_strokes)["cross"]
-                    if len(cross_pts):
-                        branches = skeleton_branch_points(case.skel) if case.skel is not None else np.zeros((0, 2))
-                        if len(branches):
-                            cross_px = np.column_stack(
-                                [
-                                    cross_pts[:, 0] * xh + float(registration["tx"]),
-                                    (float(registration["baseline_row"]) + float(registration["ty"]))
-                                    - cross_pts[:, 1] * xh,
-                                ]
-                            )
-                            near = cKDTree(branches).query(cross_px)[0] <= INK_SOLL_RADIUS_UNITS * xh
-                            guard_soll["cross"] = int(near.sum())
-                        else:
-                            guard_soll["cross"] = 0
+                    branches = skeleton_branch_points(case.skel) if case.skel is not None else np.zeros((0, 2))
+                    guard_soll["cross"] = ink_cross_soll(
+                        structure_class_points(comp_strokes)["cross"], branches, xh, registration
+                    )
             else:
                 # aug19, rescue path (c): the soll is the composed INIT geometry
                 # — the trace at x0 = 0 through the very assembler and counters
@@ -2314,6 +2303,50 @@ SEED_GRID_STEP_PX = 2
 INK_SOLL_RADIUS_UNITS = 0.35
 
 
+def ink_cross_soll(
+    cross_pts: np.ndarray,
+    branches: np.ndarray,
+    xh: float,
+    registration: dict,
+    *,
+    radius_units: float = INK_SOLL_RADIUS_UNITS,
+) -> int:
+    """`--soll-source ink`: how many composition crossings the INK vouches for.
+
+    `cross_pts` are the composition's crossing points in composed units (x right,
+    y up, baseline 0), `branches` the skeleton's branch-point centroids in crop
+    px. A crossing counts when a branch point lies within `radius_units` of it,
+    read in crop px through the metric's own frame (`x·xh + tx`,
+    `baseline_row + ty − y·xh`). No crossings → 0; no branch points → 0 (the
+    ink shows no crossing anywhere, so it vouches for none).
+    """
+    pts = np.asarray(cross_pts, dtype=float).reshape(-1, 2)
+    if not len(pts) or not len(branches):
+        return 0
+    cross_px = np.column_stack(
+        [
+            pts[:, 0] * xh + float(registration["tx"]),
+            (float(registration["baseline_row"]) + float(registration["ty"])) - pts[:, 1] * xh,
+        ]
+    )
+    near = cKDTree(np.asarray(branches, dtype=float)).query(cross_px)[0] <= radius_units * xh
+    return int(near.sum())
+
+
+def scale_seed_dicts(gscale: dict[int, dict], run: list[int]) -> tuple[dict, dict, dict]:
+    """The three per-slot dicts a `grid-scale` run hands the chain: windows, shift seeds, scales.
+
+    One predicate for shift AND scale: a slot whose winning shift sits on the
+    search bound is refused as a whole — seeding its scale alone would start
+    the solve from a hybrid the search never evaluated (a Copilot finding on
+    the first cut, which scaled bound slots while refusing their shift).
+    """
+    windows = {s: gscale[s]["window"] for s in run}
+    seeds = {s: gscale[s]["shift_units"] for s in run if not gscale[s]["at_bound"]}
+    scales = {s: gscale[s]["scale"] for s in run if not gscale[s]["at_bound"]}
+    return windows, seeds, scales
+
+
 def _grid_scale_fits(
     case: WordCase, result: WordDeriveResult, grids: dict[int, dict], *, min_gain: float = 0.0
 ) -> dict[int, dict]:
@@ -2457,9 +2490,7 @@ def follow_derived(
         seeds = {s: grids[s]["shift_units"] for s in run if not grids[s]["at_bound"]} if chain_seed == "grid" else None
         scales: dict[int, float] | None = None
         if chain_seed == "grid-scale":
-            windows = {s: gscale[s]["window"] for s in run}
-            seeds = {s: gscale[s]["shift_units"] for s in run if not gscale[s]["at_bound"]}
-            scales = {s: gscale[s]["scale"] for s in run}
+            windows, seeds, scales = scale_seed_dicts(gscale, run)
         chain_fit = fit_word_chain(
             case,
             run,
@@ -2703,9 +2734,7 @@ def calibrate_case(
         seeds = {s: grids[s]["shift_units"] for s in run if not grids[s]["at_bound"]} if chain_seed == "grid" else None
         scales: dict[int, float] | None = None
         if chain_seed == "grid-scale":
-            windows = {s: gscale[s]["window"] for s in run}
-            seeds = {s: gscale[s]["shift_units"] for s in run if not gscale[s]["at_bound"]}
-            scales = {s: gscale[s]["scale"] for s in run}
+            windows, seeds, scales = scale_seed_dicts(gscale, run)
         chain_fit = fit_word_chain(
             case,
             run,

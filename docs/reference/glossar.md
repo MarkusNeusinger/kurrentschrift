@@ -2802,9 +2802,11 @@ Komposition schreibt Buchstaben zu eng aneinander vorbei.
 `RETRACE_MAX_PARTNER_GAP_UNITS`
 → messjournal.md §14 (Struktur-Zähler v2)
 
-**Papier-Strecke** *(paper length)* — die Länge der gefahrenen Bahn
-AUSSERHALB der um eine Federkante erweiterten Tintenmaske, in x-Höhen je
-Wort (`tools.tracebench.reversals`, Spalte `paper_len_xh`). Der zweite
+**Papier-Strecke** *(paper length)* — die Länge der gefahrenen Bahn über
+PAPIER-Pixeln, in x-Höhen je Wort, mit demselben Papier-Test wie die
+Papier-Umkehr (Grau-Mittelwert des Crops, oder `--paper mask` die
+eingefrorene Maske; `tools.tracebench.reversals`, Spalte `paper_len_xh`).
+Der zweite
 Sensor der Nachtschleife `sep10`, weil der erste blind ist: eine gerade
 Sehne durchs Papier kehrt nirgends um und zählt als Papier-Umkehr null,
 misst aber Strecke. Beide zusammen lesen: Umkehr = Kritzel, Strecke =
