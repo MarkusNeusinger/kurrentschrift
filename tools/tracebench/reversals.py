@@ -91,19 +91,22 @@ def reversal_vertices(points_px: np.ndarray) -> np.ndarray:
 
 def inventory(
     candidate_path: Path, reference: Reference, *, paper: str = "grey", only: list[str] | None = None
-) -> dict[str, dict[str, int]]:
-    """`{specimen_id: {"paper": n, "ink": n}}` — reversals for one candidate file."""
+) -> dict[str, dict[str, float]]:
+    """`{specimen_id: {"paper": n, "ink": n, "paper_len_xh": l}}` — reversals and Papier-Strecke per word."""
     cands = file_provider(str(candidate_path))(reference, reference.order)
     wanted = reference.order if only is None else [s for s in reference.order if s in set(only)]
-    rows: dict[str, dict[str, int]] = {}
+    rows: dict[str, dict[str, float]] = {}
     for sid in wanted:
         cand, entry = cands.get(sid), reference.entries.get(sid)
         if cand is None or not cand.ok or entry is None:
             continue
         is_paper, _ = _paper_test(entry, paper)
         n_paper = n_ink = 0
+        paper_len_px = 0.0
         for stroke in entry.frame.trace_to_bench(cand.strokes, cand.registration_px, cand.xh_px):
-            verts = reversal_vertices(entry.frame.bench_to_crop_px(np.asarray(stroke, dtype=float)))
+            crop_px = entry.frame.bench_to_crop_px(np.asarray(stroke, dtype=float))
+            paper_len_px += paper_length_px(crop_px, is_paper)
+            verts = reversal_vertices(crop_px)
             if not len(verts):
                 continue
             row = np.clip(np.round(verts[:, 1]).astype(int), 0, is_paper.shape[0] - 1)
@@ -111,8 +114,32 @@ def inventory(
             hits = int(is_paper[row, col].sum())
             n_paper += hits
             n_ink += len(verts) - hits
-        rows[sid] = {"paper": n_paper, "ink": n_ink}
+        rows[sid] = {"paper": n_paper, "ink": n_ink, "paper_len_xh": round(paper_len_px / float(cand.xh_px), 3)}
     return rows
+
+
+def paper_length_px(points_px: np.ndarray, is_paper: np.ndarray) -> float:
+    """The Papier-Strecke of one polyline: its length over paper pixels, in px.
+
+    The night loop's second sensor (`sep10`): a straight chord through the
+    paper reverses nowhere and counts zero reversals, but it has length. Each
+    segment is walked at one-pixel steps so a long chord is measured along its
+    whole run, not only at its two vertices.
+    """
+    p = np.asarray(points_px, dtype=float).reshape(-1, 2)
+    if len(p) < 2:
+        return 0.0
+    seg = np.diff(p, axis=0)
+    lengths = np.linalg.norm(seg, axis=1)
+    total = 0.0
+    h, w = is_paper.shape
+    for (x0, y0), (dx, dy), length in zip(p[:-1], seg, lengths, strict=True):
+        n = max(1, int(np.ceil(length)))
+        ts = (np.arange(n) + 0.5) / n
+        xs = np.clip(np.round(x0 + dx * ts).astype(int), 0, w - 1)
+        ys = np.clip(np.round(y0 + dy * ts).astype(int), 0, h - 1)
+        total += float(is_paper[ys, xs].sum()) * (length / n)
+    return total
 
 
 def main() -> None:
@@ -134,17 +161,21 @@ def main() -> None:
         only = sorted({str(r["entry"]) for r in rows if not r.get("repeat_of")})
         print(f"restricted to {len(only)} entries from {args.words_file.name}")
 
-    out: dict[str, dict[str, dict[str, int]]] = {}
+    out: dict[str, dict[str, dict[str, float]]] = {}
     for path in args.candidates:
         rows = inventory(path, reference, paper=args.paper, only=only)
         out[path.name] = rows
         total_paper = sum(r["paper"] for r in rows.values())
         total_ink = sum(r["ink"] for r in rows.values())
-        print(f"== {path.name} ({len(rows)} words)  paper {total_paper}  ink {total_ink}")
-        for sid, row in sorted(rows.items(), key=lambda kv: (-kv[1]["paper"], kv[0]))[: args.top]:
-            if not row["paper"]:
+        total_len = sum(float(r["paper_len_xh"]) for r in rows.values())
+        print(f"== {path.name} ({len(rows)} words)  paper {total_paper}  ink {total_ink}  paper_len_xh {total_len:.2f}")
+        ranked = sorted(rows.items(), key=lambda kv: (-kv[1]["paper"], -float(kv[1]["paper_len_xh"]), kv[0]))
+        for sid, row in ranked[: args.top]:
+            if not row["paper"] and float(row["paper_len_xh"]) < 0.05:
                 break
-            print(f"  {sid:14s} paper {row['paper']:3d}   ink {row['ink']:3d}")
+            print(
+                f"  {sid:14s} paper {row['paper']:3d}   ink {row['ink']:3d}   len {float(row['paper_len_xh']):6.3f} xh"
+            )
     if len(args.candidates) == 2:
         a, b = (out[p.name] for p in args.candidates)
         print("-- paired, paper reversals only (words at 0 : 0 omitted)")

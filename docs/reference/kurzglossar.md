@@ -286,6 +286,29 @@ Feder fitten statt als zwei Buchstaben plus zerlegten Strich. Reine
 Messschicht, ändert kein Rendering.
 → [§3](glossar.md#3-mess--und-fit-vokabular)
 
+**t-Brücke** — der Kette-Schalter `--bar-bridge`: der t-Balken wird wie
+im Composer ohne Absetzen geplant (Stamm vom Fuß zurück zum Balken), statt
+als eigener Zug. → [§3](glossar.md#3-mess--und-fit-vokabular)
+
+**Tinten-Klammer** — `--paper-weight`: steiler Preis für jede Stützstelle
+weiter als eine Federbreite vom Skelett; in der Tinte kostenlos.
+→ [§3](glossar.md#3-mess--und-fit-vokabular)
+
+**Tinten-Soll** — `--soll-source ink`: der Topologie-Wächter verlangt eine
+Kompositions-Kreuzung nur, wenn das Skelett dort einen Verzweigungspunkt
+hat (die Haarnadel-e dieser Hand hat keinen).
+→ [§3](glossar.md#3-mess--und-fit-vokabular)
+
+**Unstetigkeits-Preis** — `--kink-weight`: Richtungswechsel zwischen
+Nachbarproben ohne Duktus-Ereignis kosten; Umkehrpunkte und Absetzer sind
+ausgenommen. Die Term-Seite des Unstetigkeits-Sensors.
+→ [§3](glossar.md#3-mess--und-fit-vokabular)
+
+**Saat-Form · Saat-Rampe** — `--chain-seed grid-scale --seed-ramp`: die
+Saat-Suche je Buchstabe über Ort UND Breite, und der Verbinder folgt dem
+skalierten Austritt statt eine Sehne durchs Papier zu ziehen.
+→ [§3](glossar.md#3-mess--und-fit-vokabular)
+
 **M1 · M2 · M3 · M4** — die vier Kettenfit-Kennzahlen (Konvergenz · heute
 unmessbare Übergänge · Verbinderform · Buchstabenform gegen das Rauschen).
 Gleiche Buchstaben wie die MVP-Meilensteine und der M4-Fit, andere

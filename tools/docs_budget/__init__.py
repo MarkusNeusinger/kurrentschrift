@@ -479,7 +479,14 @@ BUDGETS: dict[str, int] = {
     # four lines (switch, default, what it reports) before this raise, and the
     # alternative — a tools/ directory the inventory stops listing — is the one
     # this doc exists to prevent. Re-measured at 4134 plus the documented 10 %.
-    "werkzeug-abschnitt": 4_547,
+    # Raised again on 2026-09-11 by the night loop (fechten · kann · unter):
+    # the follower gained SEVEN switches in one night, and the inventory has
+    # to name each one or the next reader finds a `--help` the doc does not
+    # know. The entry was cut to one sentence of switch names plus the five
+    # glossary terms before this raise (the first draft was three times as
+    # long); the section stood at 4547 exactly, so every switch name failed
+    # the gate. Re-measured at 4669 plus the documented 10 %.
+    "werkzeug-abschnitt": 5_136,
     "doku": 7_937,
 }
 
