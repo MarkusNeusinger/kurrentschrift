@@ -1377,7 +1377,19 @@ abgetastet; die Sensoren je Wort in `meta.tintenpfad`. *Technisch:*
 `decode`, `decode_with_hysteresis`, `assemble`, `TintenpfadWeights`
 (eingefroren, `asdict` im Artefakt; `--legacy-p5` = die Prototyp-Zeile)
 → werkzeuge.md; erstes Artefakt unter `temp/wellen-sep11/` (kein
-§14-Eintrag, keine Adoption)
+§14-Eintrag, keine Adoption). *Arme der Runde `sep11`* (je `--weight`,
+Vorgabe AUS, Artefakte unter `temp/tintenpfad-sep11/`): `tip_read=1` —
+die **Spitzen-Lesung**, ein freies Laufende wird den Strang entlang und
+dann auf dem EDT-Kamm weitergelesen, bis die eingefrorene Tintenmaske
+endet (kein fester Betrag, die Maske ist der Stopp); `rail=tentfit` mit
+`edt_upsample=4` — der **Normalen-Fit**, ein Kleinste-Quadrate-Zelt über
+±2 px auf einem vierfach feineren Raster derselben Distanztransformation,
+Bewegung nur entlang der Normalen, kein Tiefpass; `ink_bridge_xh=1.0` —
+die **Tinten-Brücke**, ein Dekoder-Absetzer wird nur dort zur Sehne, wo der
+Grauwert über die Lücke blasse Tinte unter Papierniveau liest. Gemessen
+und AUS geblieben: `stub_xh` (Stummel-Filter, bewegt keinen Strich) und
+`double_ink_ratio` (Doppelstrich-Evidenz am ß-Stamm, feuert auf der
+Tafel nie: Stämme lesen 1,0–1,3 Federbreiten)
 
 **Fremdtinte** *(foreign ink)* — Tinte im Wort-Crop, die das Wort nie
 geschrieben hat und die die eingefrorene Binarisierung trotzdem behält:
