@@ -42,7 +42,10 @@ Two stages, strictly separated:
   prices deviation and tangent disagreement; transitions price a ride along a
   strand per pixel advanced (monotone — never a pixel re-laid), a hairpin on
   the same strand once (`turn_cost`, a pen event), a jump to another strand
-  within `jump_radius_xh` by gap and turning, and every boarding into or out of
+  within `jump_radius_xh` by gap and turning (with `self_jump` also to a pixel
+  of the SAME strand beyond the ride cap — a loop that returns onto its own
+  stem passes one node twice on one strand, and beyond the cap a strand is
+  another strand), and every boarding into or out of
   the paper (`paper_board`, a lift-class event — without it the paper state is
   a wormhole through which a strand can be teleported along; measured on
   `das`). A seed pen lift frees every transition. Out-and-back jumps (leave a
@@ -181,6 +184,21 @@ class TintenpfadWeights:
     jump_turn_w: float = 8.0  # × (1 − cos) between leaving and entering directions
     paper_w: float = 12.0  # per sample in the paper state
     paper_board: float = 20.0  # per boarding into or out of the paper (the wormhole closer)
+    # Selbstsprung (arm E „fit-absetzer", off by default): beyond the ride cap
+    # a strand is another strand. A transition between two pixels of the SAME
+    # strand that is neither a ride nor a hairpin (|adv| > ride_cap) is priced
+    # like a jump between strands when the pixels lie within `jump_radius_xh`
+    # — a loop that returns onto its own stem (the l, the G) passes the same
+    # node twice on one strand, and without this the paper state was the only
+    # way across: 2 × paper_board + paper_w, a wormhole whose exit landed a
+    # lift or a bridge depending on 0.04 px of the rail. A backward step within
+    # the cap stays forbidden — never a pixel re-laid. `self_jump_node_px`
+    # binds the jump to the NODES the strand passes: both pixels must lie
+    # within this many strand pixels of a junction index or a strand end
+    # (0 = anywhere on the strand — measured first, and it cut across the G's
+    # counter 6 px before the node; the bound version is the delivered arm).
+    self_jump: bool = False
+    self_jump_node_px: float = 3.0
     # ---- stage 2: the re-entry hysteresis
     reentry_window: int = 12  # samples; 0 = off
     reentry_net_xh: float = 0.10  # "came straight back": exit and re-entry pixel this close
@@ -828,12 +846,65 @@ class _Board:
         return cls(xy, sid, idx, tan, n, closed, cKDTree(xy))
 
 
+def node_near(strands: Sequence[Strand], node_px: float) -> np.ndarray:
+    """Per board pixel: does it lie within `node_px` strand pixels of a node the
+    strand passes — a junction index, or an open strand's end (a ring's cut is
+    not a node)? `node_px <= 0` marks every pixel."""
+    flags = []
+    for s in strands:
+        n = len(s.points)
+        if node_px <= 0:
+            flags.append(np.ones(n, dtype=bool))
+            continue
+        nodes = list(s.junction_idx) if s.closed else [0, n - 1, *s.junction_idx]
+        idx = np.arange(n)
+        near = np.zeros(n, dtype=bool)
+        for j in nodes:
+            near |= np.abs(idx - int(j)) <= node_px
+        flags.append(near)
+    return np.concatenate(flags) if flags else np.zeros(0, dtype=bool)
+
+
+def _branches(board: _Board, order: np.ndarray, gap: int) -> dict[int, int]:
+    """Per ball pixel, which BRANCH of its strand it lies on: the strand's ball
+    pixels sorted by index, split where consecutive indices are more than
+    `gap` apart (on a ring the run across the cut is one run). A strand that
+    passes the ball twice — the loop side and the stem of the same l — is two
+    branches, each of which the kept set must reach."""
+    by_strand: dict[int, list[int]] = {}
+    for p in order:
+        by_strand.setdefault(int(board.sid[p]), []).append(int(p))
+    branch: dict[int, int] = {}
+    for pixels in by_strand.values():
+        pixels.sort(key=lambda p: int(board.idx[p]))
+        b = 0
+        prev: int | None = None
+        for p in pixels:
+            i = int(board.idx[p])
+            if prev is not None and i - prev > gap:
+                b += 1
+            branch[p] = b
+            prev = i
+        if b > 0 and board.closed[pixels[0]]:
+            n = int(board.n[pixels[0]])
+            if n - int(board.idx[pixels[-1]]) + int(board.idx[pixels[0]]) <= gap:
+                for p in pixels:
+                    if branch[p] == b:
+                        branch[p] = 0
+    return branch
+
+
 def _candidate_pixels(
-    board: _Board, point: np.ndarray, radius: float, weights: TintenpfadWeights
+    board: _Board, point: np.ndarray, radius: float, weights: TintenpfadWeights, branch_gap: int | None = None
 ) -> tuple[np.ndarray, int, int]:
     """The strand pixels one seed sample may board, how many pixels the ball
     held, and how many STRANDS the ball held (each of which the kept set
-    must still reach — the judges' effective-radius test)."""
+    must still reach — the judges' effective-radius test).
+
+    With `branch_gap` (the Selbstsprung arm: the ride cap in pixels) the
+    per-strand pick is per BRANCH of a strand — beyond the ride cap a strand
+    is another strand here too, or the far branch of a loop that returns
+    onto its own stem could never be boarded from a sample near the stem."""
     ball = board.tree.query_ball_point(point, r=radius)
     held = len(ball)
     if held == 0:
@@ -848,11 +919,12 @@ def _candidate_pixels(
     # ever unreachable because a nearer strand filled the set; then up to
     # `strand_cand` per strand, then the cap — nearest-of-strand pixels are
     # never the ones dropped.
+    branch = _branches(board, order, branch_gap) if branch_gap is not None else {}
     firsts: list[int] = []
     others: list[int] = []
-    seen: dict[int, int] = {}
+    seen: dict[tuple[int, int], int] = {}
     for p in order:
-        s = int(board.sid[p])
+        s = (int(board.sid[p]), branch.get(int(p), 0))
         c = seen.get(s, 0)
         if c == 0:
             firsts.append(int(p))
@@ -876,6 +948,8 @@ def decode(
     radius = weights.board_radius_xh * xh
     ride_cap = weights.ride_cap_xh * xh
     jump_r = weights.jump_radius_xh * xh
+    at_node = node_near(strands, weights.self_jump_node_px) if weights.self_jump else None
+    branch_gap = int(ride_cap) if weights.self_jump else None
     n = len(seed.xy)
     inf = float("inf")
     s_pix: list[np.ndarray] = []
@@ -883,7 +957,7 @@ def decode(
     s_emit: list[np.ndarray] = []
     held_counts, kept_counts, strands_held, strands_kept = [], [], [], []
     for k in range(n):
-        idx, held, n_strands = _candidate_pixels(board, seed.xy[k], radius, weights)
+        idx, held, n_strands = _candidate_pixels(board, seed.xy[k], radius, weights, branch_gap)
         held_counts.append(held)
         kept_counts.append(len(idx))
         strands_held.append(n_strands)
@@ -944,7 +1018,17 @@ def decode(
                 tb = board.tan[ib] * ddb[:, None]
                 cosj = np.einsum("ik,jk->ij", ta, tb)
                 okj = ~same & (gap <= jump_r)
-                sub = np.where(okj, weights.jump_base + weights.gap_w * gap + weights.jump_turn_w * (1.0 - cosj), sub)
+                jump_price = weights.jump_base + weights.gap_w * gap + weights.jump_turn_w * (1.0 - cosj)
+                sub = np.where(okj, jump_price, sub)
+                if at_node is not None:
+                    # Beyond the ride cap a strand is another strand: the
+                    # same-strand pairs no ride or hairpin can reach take the
+                    # jump price within the jump radius (the ride and hairpin
+                    # masks cover |adv| ≤ ride_cap, so nothing is re-priced),
+                    # from a node the strand passes to a node it passes.
+                    okself = same & (np.abs(adv) > ride_cap) & (gap <= jump_r)
+                    okself &= at_node[ia][:, None] & at_node[ib][None, :]
+                    sub = np.where(okself, jump_price, sub)
                 trans[np.ix_(ra, rb)] = sub
         tot = cost[:, None] + trans
         arg = np.argmin(tot, axis=0)
@@ -1190,6 +1274,7 @@ def assemble(
     samples: list[list[int]] = []
     n_jump = n_paper_bridges = n_hairpin = n_paper_lifts = n_ink_bridges = n_ride_back = 0
     ink_tests: list[dict[str, Any]] = []
+    self_jump_gaps: list[float] = []
     ride_cap = weights.ride_cap_xh * xh
     jump_r = weights.jump_radius_xh * xh
     ink_bridge_r = weights.ink_bridge_xh * xh
@@ -1239,6 +1324,16 @@ def assemble(
                 emit(q, k, 1)
         else:
             emit(p1, k, 1)
+
+    def advance(s: int, pi: int, i: int, pd: int) -> int:
+        """Signed index advance from `pi` to `i` along the travel direction `pd`
+        (the shortest way round on a ring) — the decoder's own `adv`."""
+        adv = (i - pi) * pd
+        if strands[s].closed:
+            n_pts = len(strands[s].points)
+            adv = adv % n_pts
+            adv = adv - n_pts if adv > n_pts / 2 else adv
+        return int(adv)
 
     def rail_between(s: int, pi: int, i: int, pd: int, d: int) -> tuple[list[int], bool]:
         """Indices to lay after `pi` up to `i` on strand `s`, and whether it is a hairpin."""
@@ -1341,7 +1436,12 @@ def assemble(
             prev = st
             continue
         ps, pi, pd = prev
-        if s == ps:
+        if s == ps and weights.self_jump and abs(advance(s, pi, i, pd)) > ride_cap:
+            # The Selbstsprung is bridged like a jump — never laid as rail over
+            # the indices between, which would draw the whole loop backwards.
+            self_jump_gaps.append(round(float(np.hypot(*(pts[i] - pts[pi]))), 2))
+            bridge_to(prev, st, k)
+        elif s == ps:
             rng, hairpin = rail_between(s, pi, i, pd, d)
             n_hairpin += int(hairpin)
             tip_pts = np.zeros((0, 2))
@@ -1387,6 +1487,9 @@ def assemble(
         counts["ink_bridge_tests"] = ink_tests
     if double_ink is not None:
         counts["ride_backs"] = n_ride_back
+    if weights.self_jump:
+        counts["self_jumps"] = len(self_jump_gaps)
+        counts["self_jump_gaps_px"] = self_jump_gaps
     return out_runs, out_labels, out_kinds, out_samples, counts
 
 
@@ -2237,7 +2340,8 @@ def _run_one(job: tuple[WordCase, TintenpfadWeights]) -> dict[str, Any]:
                 f" rail +{d['hairpin_tip']['rail_points']} walk +{d['hairpin_tip']['walk_points']}"
                 if "hairpin_tip" in d
                 else ""
-            ),
+            )
+            + (f" selfjumps {d['self_jumps']}" if "self_jumps" in d else ""),
             flush=True,
         )
     else:
@@ -2414,6 +2518,7 @@ __all__ = [
     "hermite_bridge",
     "ink_bridge_test",
     "longest_true_run",
+    "node_near",
     "read_tip",
     "read_tips",
     "reentries",

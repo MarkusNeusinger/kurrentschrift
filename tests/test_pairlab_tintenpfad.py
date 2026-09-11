@@ -623,6 +623,132 @@ def _boardings(states) -> int:
     return sum(1 for a, b in zip(states[:-1], states[1:], strict=True) if (a is None) != (b is None))
 
 
+def _draw_line(img: np.ndarray, a: tuple[float, float], b: tuple[float, float]) -> None:
+    n = int(max(abs(b[0] - a[0]), abs(b[1] - a[1])) * 2) + 2
+    for t in np.linspace(0.0, 1.0, n):
+        img[int(round(a[1] + t * (b[1] - a[1]))), int(round(a[0] + t * (b[0] - a[0])))] = True
+
+
+def _loop_on_stem() -> tuple[np.ndarray, np.ndarray]:
+    """The l: a stem (20,80)→(20,40) with a narrow loop on top — left branch up
+    to (15,10), an arc over the top, right branch back down onto the stem.
+    Returns the skeleton and the pen's path (up the stem, round the loop,
+    down the stem — the stem written twice)."""
+    img = np.zeros((90, 40), dtype=bool)
+    _draw_line(img, (20.0, 80.0), (20.0, 40.0))
+    loop = [(20.0, 40.0), (15.0, 10.0)]
+    loop += [(20.0 + 5.0 * np.cos(t), 10.0 - 5.0 * np.sin(t)) for t in np.linspace(np.pi, 0.0, 9)]
+    loop += [(25.0, 10.0), (20.0, 40.0)]
+    for a, b in zip(loop[:-1], loop[1:], strict=True):
+        _draw_line(img, a, b)
+    pen = [(20.0, 80.0), (20.0, 40.0), *loop[1:], (20.0, 80.0)]
+    return skeletonize(img), np.asarray(pen, dtype=float)
+
+
+def test_a_loop_returning_onto_its_stem_is_a_self_jump_not_a_paper_episode() -> None:
+    """The `will` / `Galoppieren` mechanism (arm E „fit-absetzer"): the loop's
+    two ends meet at the stem's node, the smoothest pairing makes loop + stem
+    ONE strand that passes that node twice, and the pen's way from the loop's
+    end (index 37, arriving) to its start (index 0, leaving) is a same-strand
+    transition beyond the ride cap. Without the switch the decoder's only
+    route is the paper state — a wormhole that lands a bridge or a lift on
+    0.04 px of rail; with it the transition is priced and laid as a jump."""
+    skel, pen = _loop_on_stem()
+    seed = _seed_along(pen)
+    closed = TintenpfadWeights(rail="raw", resample_step_xh=0.0)
+    strands, states_c, runs_c, counts_c, _ = _decode_on(skel, seed, closed)
+    assert len(strands) == 1 and len(strands[0].junction_idx) == 1
+    (node,) = strands[0].junction_idx.tolist()
+    assert float(np.hypot(*(strands[0].points[node] - strands[0].points[0]))) <= 1.5  # the node is passed twice
+    assert sum(1 for s in states_c if s is None) == 1 and counts_c["paper_bridges"] == 1
+    assert "self_jumps" not in counts_c
+    opened = weights_from_overrides(closed, ["self_jump=1"])
+    _, states_o, runs_o, counts_o, _ = _decode_on(skel, seed, opened)
+    assert sum(1 for s in states_o if s is None) == 0
+    assert counts_o["self_jumps"] == 1 and counts_o["paper_bridges"] == 0 and counts_o["paper_lifts"] == 0
+    assert counts_o["hairpins"] == 0 and counts_o["jumps"] == 0
+    (gap,) = counts_o["self_jump_gaps_px"]
+    assert gap <= 2.0  # the two indices are the same node, a pixel apart at most
+    assert len(runs_o) == 1
+    # the stem is ridden up (−1), the loop in strand order (+1), the stem down again (+1)
+    dirs = [s[2] for s in states_o]
+    assert dirs[0] == -1 and dirs[-1] == 1 and int((np.diff(dirs) != 0).sum()) == 1
+    length = float(np.hypot(*np.diff(runs_o[0], axis=0).T).sum())
+    assert abs(length - float(np.hypot(*np.diff(pen, axis=0).T).sum())) < 6.0
+
+
+def _u_strand() -> np.ndarray:
+    """One strand shaped as a U: two legs 10 px apart, 48 px long, joined by a V at the bottom."""
+    img = np.zeros((70, 40), dtype=bool)
+    _draw_line(img, (12.0, 8.0), (12.0, 56.0))
+    _draw_line(img, (22.0, 8.0), (22.0, 56.0))
+    _draw_line(img, (12.0, 56.0), (17.0, 61.0))
+    _draw_line(img, (17.0, 61.0), (22.0, 56.0))
+    return skeletonize(img)
+
+
+def test_the_self_jump_is_bound_to_the_nodes_a_strand_passes() -> None:
+    """A seed that cuts straight across a U 15 px above its bottom: unbound
+    (`self_jump_node_px=0`) the decoder takes the shortcut as a self-jump —
+    the Galoppieren counter cut, 6 px before the node; bound to the nodes
+    (the delivered 3 px) there is no node on a leg, so no self-jump: the
+    decode rides round the bottom, and the rail is never re-laid."""
+    skel = _u_strand()
+    seed = _seed_along(np.array([[12.0, 10.0], [12.0, 46.0], [22.0, 46.0], [22.0, 10.0]]))
+    unbound = TintenpfadWeights(rail="raw", resample_step_xh=0.0, self_jump=True, self_jump_node_px=0.0)
+    strands, states_u, _, counts_u, _ = _decode_on(skel, seed, unbound)
+    assert len(strands) == 1 and len(strands[0].junction_idx) == 0
+    assert counts_u["self_jumps"] == 1 and sum(1 for s in states_u if s is None) == 0
+    bound = TintenpfadWeights(rail="raw", resample_step_xh=0.0, self_jump=True)
+    _, states_b, _, counts_b, _ = _decode_on(skel, seed, bound)
+    assert counts_b["self_jumps"] == 0
+    idx = [s[1] for s in states_b if s is not None]
+    dirs = [s[2] for s in states_b if s is not None]
+    steps = zip(idx[:-1], dirs[:-1], idx[1:], dirs[1:], strict=True)
+    assert all((i1 - i0) * d0 >= 0 for i0, d0, i1, d1 in steps if d0 == d1)  # monotone in the travel direction
+
+
+def test_a_strand_that_passes_the_ball_twice_offers_both_branches() -> None:
+    """A seed sample beside the l's stem top sees the loop's start (index 0…)
+    AND the stem (index 37…) of the same strand; the delivered per-strand
+    pick keeps only the three nearest pixels of that strand — one branch —
+    so the far branch can never be boarded there. With the Selbstsprung the
+    pick is per branch (index runs more than the ride cap apart)."""
+    from tools.pairlab.tintenpfad import _Board, _candidate_pixels
+
+    skel, _ = _loop_on_stem()
+    weights = TintenpfadWeights(rail="raw", strand_cand=3)
+    strands = strands_of(skel, XH, weights, {})
+    board = _Board.of(strands)
+    point = np.array([25.0, 42.0])  # beside the node at (20, 40), 5 px to the right
+    radius, gap = weights.board_radius_xh * XH, int(weights.ride_cap_xh * XH)
+    plain, _, _ = _candidate_pixels(board, point, radius, weights)
+    branched, _, _ = _candidate_pixels(board, point, radius, weights, gap)
+
+    def clusters(idx: np.ndarray) -> int:
+        s = sorted(int(board.idx[p]) for p in idx)
+        return 1 + sum(b - a > 10 for a, b in zip(s[:-1], s[1:], strict=True))
+
+    assert len(plain) == 3 and clusters(plain) == 1
+    assert len(branched) > len(plain) and clusters(branched) >= 2
+    assert set(plain.tolist()) <= set(branched.tolist())  # nothing the plain pick offered is lost
+
+
+def test_the_self_jump_never_replaces_a_ride_a_hairpin_or_a_backward_step() -> None:
+    """Within the ride cap nothing changes: a retrace stays one priced hairpin,
+    a wobbling seed stays a monotone ride — no pixel re-laid, no self-jump."""
+    skel = _rail_skeleton()
+    opened = TintenpfadWeights(rail="raw", resample_step_xh=0.0, self_jump=True)
+    retrace = _seed_along(np.array([[8.0, 20.0], [70.0, 20.0], [8.0, 20.0]]))
+    _, states, runs, counts, _ = _decode_on(skel, retrace, opened)
+    assert counts["hairpins"] == 1 and counts["self_jumps"] == 0 and len(runs) == 1
+    wobble = np.column_stack([np.linspace(8.0, 72.0, 200), 20.0 + 2.0 * np.sin(np.linspace(0, 12 * np.pi, 200))])
+    _, states, _, counts, _ = _decode_on(skel, _seed_along(wobble), opened)
+    assert counts["hairpins"] == 0 and counts["self_jumps"] == 0
+    idx = [s[1] for s in states if s is not None]
+    assert all(b >= a for a, b in zip(idx[:-1], idx[1:], strict=True))
+
+
 def test_the_paper_wormhole_is_closed_by_the_boarding_price() -> None:
     """A seed that leaves the rail beyond every strand's reach is forced into
     the paper; each boarding into or out of it is priced as a lift-class
@@ -847,6 +973,7 @@ def test_weights_are_frozen_and_typed() -> None:
     # The Grauwert-Stopp (arm D of the „Ecken" round) is off in the default too.
     assert default.tip_grey_stop is False
     assert weights_from_overrides(default, ["tip_grey_stop=1"]).tip_grey_stop is True
+    assert default.self_jump is False and weights_from_overrides(default, ["self_jump=1"]).self_jump is True
     with pytest.raises(SystemExit):
         weights_from_overrides(TintenpfadWeights(), ["no_such=1"])
     with pytest.raises(ValueError):
