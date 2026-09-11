@@ -956,46 +956,30 @@ Warnung versehen. Begriff und Hausregel:
   `--expect-root`-Änderung erhalten.)
 - **`tools/pairlab/tintenpfad`** — der **Tintenpfad**, der
   Strang-Dekodier-Folger (Glossar §3: Strang · Strang-Dekodierung): Tinte
-  zuerst, Buchstaben danach. Stufe 1 baut aus dem eingefrorenen Skelett
-  nach der Tinten-Evidenz-Maske die **Stränge** (Skelettgraph →
-  Sporn-Ausdünnung → glatteste Fortsetzung je Knoten → Sub-Pixel-Schiene
-  per Zelt-Fit auf der EDT entlang der Normalen); Stufe 2 dekodiert die
-  Gauß-verschobene Saat per Viterbi durch die Stränge (monotone Fahrt,
-  bepreiste Haken, Sprünge und Papier-Ein-/Ausstiege, Hysterese gegen
-  Hin-und-zurück-Sprünge) und legt die Strangpixel selbst als Bahn aus —
-  Hermite-Brücken an Sprüngen, bogenlängen-gleich abgetastet. Kein Anker,
-  kein Verschiebungsfeld: die einzigen freien Größen sind diskret (welcher
-  Strang, welche Richtung, wo abgesetzt wird), jede bewegt einen ganzen
-  Strang. Aufruf wie der Folger:
+  zuerst, Buchstaben danach. Stufe 1 baut aus dem eingefrorenen Skelett die
+  **Stränge** (Sporn-Ausdünnung, glatteste Fortsetzung je Knoten,
+  Sub-Pixel-Schiene); Stufe 2 dekodiert die Gauß-verschobene Saat per
+  Viterbi durch die Stränge (monotone Fahrt, bepreiste Haken, Sprünge und
+  Papier-Ein-/Ausstiege, Hysterese) und legt die
+  Strangpixel selbst als Bahn aus, mit Hermite-Brücken an Sprüngen.
+  Keine Anker, kein Verschiebungsfeld: frei
+  sind nur Strang, Richtung und Absetzen, und jede Wahl bewegt einen
+  ganzen Strang. Aufruf:
 
   ```bash
   OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run python -m tools.pairlab.tintenpfad \
       [--all | ids…] --expect-root <digest> --jobs 2 \
-      --candidate-out <dir>/cand.json --json <dir>/report.json \
-      [--legacy-p5] [--jump-radius 1.0] [--board-radius 0.6] [--turn-cost 8] \
-      [--no-affine-seed] [--weight NAME=VALUE …]
+      --candidate-out <dir>/cand.json --json <dir>/report.json [--legacy-p5] [--weight NAME=VALUE …]
   ```
 
   Alle Konstanten stehen eingefroren in `TintenpfadWeights` und wandern
   per `asdict` in den Kandidaten; `--legacy-p5` stellt die gemessene
-  Prototyp-Konfiguration wieder her (nach Sensor gleich: Papier 0 ·
-  Tinte 74 · Papier-Strecke 0,79 xh auf den 13 Schleifen-Zeilen). Sensoren,
-  die das Werkzeug je Wort schuldet und in `meta.tintenpfad` schreibt:
-  `ink_unvisited_share` (Tinte, die keine Saat-Probe erreicht hat — über
-  0,10 ist ein erklärter Skip, kein Erfolg), `excursions_bridge` /
-  `excursions_rail` (Hin-und-zurück je Brücke bzw. Schiene),
-  `reentries_forbidden` / `reentries_left`, `cand_truncated_share` (der
-  Effektiv-Radius-Test: eine Probe, deren Kugel einen Strang hielt, den die
-  Kandidatenmenge nicht erreicht), Knick und Drehwinkelverteilung
-  (`kink_median_deg`, `turn_p90_deg`, `turn_over30_share` — roh in
-  `raw_chain` UND wie geliefert), Schritt-Statistik, `label_agreement` /
-  `span_backsteps` / `slot_boarded_share` (die Zuordnungs-Behauptung
-  gemessen) und die Verschiebungskohärenz gegen die Saat
-  (`disp_angle_p90_deg`, `disp_second_ratio_median`). Reine Messschicht:
-  liest Fixtures, schreibt Kandidat und Report; `core.skeleton_graph` und
-  `core.continuity` werden nur importiert. Das Artefakt der ersten Runde
-  liegt unter `temp/wellen-sep11/` (kein §14-Eintrag, keine Adoption — der
-  Autor entscheidet nach dem Artefakt).
+  Prototyp-Zeile wieder her. Sensoren je Wort in `meta.tintenpfad`:
+  unbesuchte Tinte (`ink_unvisited_share` über 0,10 ist ein erklärter
+  Skip), Hin-und-zurück je Brücke und Schiene, Knick- und Drehwinkel,
+  Zuordnung (`label_agreement`), Verschiebungskohärenz. Reine Messschicht,
+  `core.skeleton_graph` und `core.continuity` nur importiert. Erstes
+  Artefakt unter `temp/wellen-sep11/`, noch ohne §14-Eintrag.
 - **`tools/inksight`** — die Route-B-Pipeline des Tintenfolger-Duells
   ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §4):
   drei Stufen (Crop-Vorbereitung → Inferenz im ISOLIERTEN
