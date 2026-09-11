@@ -30,13 +30,25 @@ substitutions:
   #    finding, the absolute numbers are an upper bound.
   # Funded by dropping anyplot-app's min-instance,
   # which was 99.56 % idle on a service that boots in 0.26 s; net cost ~0.
-  # max=3, not 1: with concurrency 15 a single instance queued the 16th request
-  # against a 60 s timeout, and — the actual reason — min=1 with max=1 forces a
-  # deploy to REPLACE the only instance instead of warming the new one beside it,
-  # which is where the ~73 deploy-rollout cold starts came from. Only running
-  # instances are billed, and at 12,812 requests/month a second one rarely spawns.
+  # max=1 (was 3), concurrency 30 (was 15) — owner decision 2026-09-11: one
+  # instance per service in both projects. The scale-outs were the cold starts
+  # min=1 had left. In the ten days to 2026-09-10 every one of the 14
+  # AUTOSCALING starts was the owner's own admin page firing 10–30 calls at
+  # once while the warm instance sat at a concurrency of 2–3, and Cloud Run
+  # pinned one or two calls of each burst to a NEW instance for its full
+  # 8–14 s start (eleven such admin waits in that window; public visitors were
+  # never among them). With one instance the burst queues here for a few
+  # hundred milliseconds instead; the heavy endpoints already run in the
+  # request threadpool, so 30 in flight is 30 threads on one core, not a stall
+  # of the event loop. 30 rather than anyplot's 40 because this service has
+  # 512Mi (p99 250 MiB since min=1).
+  # The earlier line here — "min=1 with max=1 forces a deploy to REPLACE the
+  # only instance" — predates the candidate chain below: --max-instances is
+  # per REVISION (gcloud's own flag help), so the candidate warms its own
+  # instance in the smoke before promote moves traffic. If 429s ever appear,
+  # max=2 is the next step, not a bigger limit.
   _MIN_INSTANCES: "1"
-  _MAX_INSTANCES: "3"
+  _MAX_INSTANCES: "1"
   _RUNTIME_SA: "kurrentschrift-runtime@kurrentschrift.iam.gserviceaccount.com"
   # DB lives on the anyplot Cloud SQL instance; cross-project cloudsql.client
   # is granted to the runtime SA in the anyplot project.
@@ -128,7 +140,9 @@ steps:
       # ^|^ alt delimiter: ADMIN_ALLOWED_EMAILS_RAW contains @ and may contain ,
       - "--set-env-vars=^|^ENVIRONMENT=production|ADMIN_ALLOWED_EMAILS_RAW=${_ADMIN_ALLOWED_EMAILS}"
       - "--cpu-throttling"
-      - "--concurrency=15"
+      # 30, not 15: with _MAX_INSTANCES=1 this limit is the whole capacity —
+      # see the note at _MAX_INSTANCES.
+      - "--concurrency=30"
       # Longest legitimate request is a /fit or /trace at a few seconds — 60s
       # covers cold start + compute with margin; 600s only kept slow-loris
       # style connections alive.
