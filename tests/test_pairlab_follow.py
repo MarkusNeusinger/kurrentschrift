@@ -1398,6 +1398,32 @@ def test_the_wave_basis_reaches_the_initial_solve_and_every_round(synthetic) -> 
     assert cumulative["from_chain_seed"]["total"]["max_xh"] >= 0.0
 
 
+def test_the_seed_arc_keeps_one_basis_across_the_rounds(synthetic) -> None:
+    """`wave_arc = "seed"`: every rebuilt round reads its abscissa over the
+    chain seed, so its design matrix IS the chain solve's — the cumulative
+    field over the rounds is one wave over the original arc. `current` (the
+    default) lets the knots follow the moved seed."""
+    case, result, windows, _fit = synthetic
+    chain_fit = fit_word_chain(case, [0, 1], result=result, windows_px=windows, keep_solve=True, wave_spacing=0.25)
+    assert chain_fit is not None and chain_fit.problem is not None
+    assert chain_fit.problem.basis_arc_anchors is None  # the chain solve reads its own seed
+    seeded = FollowWeights(rounds=2, structure_guard=False, wave_spacing=0.25, wave_arc="seed")
+    rebuilt, _ = build_follow_problem(chain_fit.problem, chain_fit.params, seeded)
+    assert rebuilt.basis_arc_anchors is not None
+    assert np.array_equal(rebuilt.basis_arc_anchors, chain_fit.problem.anchors_free)
+    assert np.array_equal(rebuilt.basis_op, chain_fit.problem.basis_op)
+    followed = follow_word_chain(
+        case, [0, 1], result=result, windows_px=windows, fit=chain_fit, weights=seeded, keep_solve=True
+    )
+    assert followed is not None and followed.problem is not None
+    assert np.array_equal(followed.problem.basis_arc_anchors, chain_fit.problem.anchors_free)
+    assert np.array_equal(followed.problem.basis_op, chain_fit.problem.basis_op)
+    current = FollowWeights(rounds=1, structure_guard=False, wave_spacing=0.25)
+    moving, _ = build_follow_problem(chain_fit.problem, chain_fit.params, current)
+    assert moving.basis_arc_anchors is None
+    assert followed.fit_meta["weights"]["wave_arc"] == "seed"
+
+
 def test_the_wave_report_can_be_asked_for_with_the_basis_off(synthetic) -> None:
     """The free reference: the same coherence numbers over the same blocks,
     written without changing the solve."""

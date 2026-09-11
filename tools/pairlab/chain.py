@@ -874,6 +874,12 @@ class _ChainProblem:
     coefficient that moves the stub as a whole rather than free deltas)."""
     wave_spacing: float = 0.0
     """Interior knot spacing of that field in xh; 0.0 = the basis is off."""
+    basis_arc_anchors: np.ndarray | None = None
+    """`(K_free, 2)` anchors the basis' arc abscissa was read over when they
+    are NOT this problem's own seed: the chain seed carried through every
+    follower round (`wave_arc = "seed"`), so the knots never follow a chord
+    the rounds stretched and the cumulative field stays one wave over the
+    original arc. None = the abscissa is `anchors_free` (the default)."""
 
     # ------------------------------------------------------------------ mapping
 
@@ -1574,6 +1580,7 @@ def _wave_basis(
     spacing: float,
     *,
     degree: int = WAVE_DEGREE,
+    arc_anchors: np.ndarray | None = None,
 ) -> tuple[np.ndarray, list[dict]]:
     """`(B (K_free, M), blocks)`: the Wellen-Basis over the seed anchors.
 
@@ -1587,14 +1594,23 @@ def _wave_basis(
 
     Every row of B is a convex combination (non-negative, sums to 1 — asserted),
     so `|δ_i| ≤ max_j |c_j|` and a per-column box implies the per-anchor box.
+
+    `arc_anchors`, when given, is the `(K_free, 2)` array the abscissa is read
+    over instead of `anchors_free` — the chain seed carried through the
+    follower rounds, so a chord one round stretched does not become a span of
+    its own in the next (measured: a 0.064 xh connector chord in Sporn grew
+    to 1.149 xh over two rounds under the per-round abscissa).
     """
     k_free = len(anchors_free)
+    abscissa = anchors_free if arc_anchors is None else np.asarray(arc_anchors, dtype=float).reshape(-1, 2)
+    if len(abscissa) != k_free:
+        raise ValueError(f"wave basis: arc anchors have {len(abscissa)} rows, the chain {k_free} free anchors")
     cols: list[np.ndarray] = []
     blocks: list[dict] = []
     n_cols = 0
     for block in _wave_block_rows(specs, idx, plan_slices):
         rows = np.asarray(block["rows"], dtype=int)
-        pts = anchors_free[rows]
+        pts = abscissa[rows]
         chords = np.hypot(*np.diff(pts, axis=0).T) if len(rows) > 1 else np.zeros(0)
         if len(chords) and not np.all(chords > 0.0):
             where = [int(rows[i]) for i in np.flatnonzero(chords <= 0.0)]
@@ -1671,6 +1687,7 @@ def _displacement_coherence(disp: np.ndarray, anchors: np.ndarray, blocks: Seque
     disp = np.asarray(disp, dtype=float).reshape(-1, 2)
     steps: list[np.ndarray] = []
     chords: list[np.ndarray] = []
+    pairs: list[np.ndarray] = []
     d2: list[np.ndarray] = []
     for block in blocks:
         rows = np.asarray(block["rows"], dtype=int)
@@ -1680,12 +1697,14 @@ def _displacement_coherence(disp: np.ndarray, anchors: np.ndarray, blocks: Seque
         c = np.hypot(*np.diff(anchors[rows], axis=0).T)
         steps.append(np.hypot(*np.diff(d, axis=0).T))
         chords.append(c)
+        pairs.append(np.column_stack([rows[:-1], rows[1:]]))
         if len(rows) >= 3:
             d2.append(d[2:] - 2.0 * d[1:-1] + d[:-2])
     if not steps:
         return {"lipschitz_per_xh": 0.0, "max_step_xh": 0.0, "max_step_chord_xh": 0.0, "ratio_d2": 0.0}
     step = np.concatenate(steps)
     chord = np.concatenate(chords)
+    pair = np.vstack(pairs)
     slope = step / np.maximum(chord, 1e-12)
     k = int(np.argmax(step))
     j = int(np.argmax(slope))
@@ -1697,6 +1716,8 @@ def _displacement_coherence(disp: np.ndarray, anchors: np.ndarray, blocks: Seque
         "lipschitz_p99_per_xh": round(float(np.percentile(slope, 99)), 4),
         "max_step_xh": round(float(step[k]), 4),
         "max_step_chord_xh": round(float(chord[k]), 4),
+        "max_step_rows": [int(pair[k, 0]), int(pair[k, 1])],
+        "lipschitz_rows": [int(pair[j, 0]), int(pair[j, 1])],
         "rms_xh": round(rms, 5),
         "max_xh": round(float(np.hypot(*disp.T).max()), 4),
         "ratio_d2": round(rms_d2 / max(rms, 1e-9), 4),
@@ -1732,9 +1753,28 @@ def wave_report(problem: _ChainProblem, params: np.ndarray, *, seed: np.ndarray 
         "n_blocks": len(blocks),
         "n_coefficients": int(problem.basis_op.shape[1]) if problem.basis_op is not None else None,
         "blocks_rigid": sum(1 for b in blocks if b.get("kind") == "rigid"),
-        "field": _displacement_coherence(deltas, problem.anchors_free, blocks, spacing),
+        "field": _displacement_coherence(
+            deltas,
+            problem.anchors_free if problem.basis_arc_anchors is None else problem.basis_arc_anchors,
+            blocks,
+            spacing,
+        ),
         "total": _displacement_coherence(total, origin, blocks, spacing),
     }
+
+    def _where(rows: Sequence[int]) -> list[str]:
+        # Which segment each row of the worst pair sits in — a seam step and a
+        # letter-internal step are different findings.
+        out_: list[str] = []
+        for r in rows:
+            i = next((i for i, (a0, a1) in enumerate(problem.anchor_slices) if a0 <= r < a1), None)
+            out_.append("?" if i is None else f"{i}:{problem.specs[i].key or problem.specs[i].kind}")
+        return out_
+
+    for part in ("field", "total"):
+        for key in ("max_step_rows", "lipschitz_rows"):
+            if key in out[part]:
+                out[part][key.replace("_rows", "_segs")] = _where(out[part][key])
     if problem.basis_op is not None:
         head = 2 + 2 * problem.n_blocks
         coeffs = np.asarray(params[head:], dtype=float).reshape(-1, 2)
@@ -1809,6 +1849,7 @@ def build_chain_problem(
     kink_weight: float = 0.0,
     lsmooth_weight: float = 0.0,
     wave_spacing: float = 0.0,
+    wave_arc_anchors: np.ndarray | None = None,
 ) -> _ChainProblem:
     """Assemble the chain optimisation problem. Pure: no I/O, no DB, no case.
 
@@ -2155,7 +2196,9 @@ def build_chain_problem(
     basis_blocks: list[dict] = []
     if float(wave_spacing) > 0.0:
         head = 2 + 2 * len(block_col)
-        basis_op, basis_blocks = _wave_basis(specs, anchors_free, idx, plan_slices, float(wave_spacing))
+        basis_op, basis_blocks = _wave_basis(
+            specs, anchors_free, idx, plan_slices, float(wave_spacing), arc_anchors=wave_arc_anchors
+        )
         bounds = bounds[:head] + _wave_column_bounds(basis_op, bounds[head:])
         x0 = np.zeros(head + 2 * basis_op.shape[1])
 
@@ -2220,6 +2263,11 @@ def build_chain_problem(
         basis_op=basis_op,
         basis_blocks=basis_blocks,
         wave_spacing=float(wave_spacing),
+        basis_arc_anchors=(
+            None
+            if (basis_op is None or wave_arc_anchors is None)
+            else np.asarray(wave_arc_anchors, dtype=float).reshape(-1, 2).copy()
+        ),
     )
 
 

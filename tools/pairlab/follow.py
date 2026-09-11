@@ -578,6 +578,13 @@ class FollowWeights:
     simply not representable. Applies to the initial solve and every round.
     0.0 = off — geometry byte-identical (the field itself rides into every
     artefact's weights blob, as every FollowWeights field does)."""
+    wave_arc: str = "current"
+    """Which anchors the basis' arc abscissa is read over in the follower
+    rounds: `current` (each round's own seed — the knots follow the
+    deformation) or `seed` (the chain seed, carried through every round, so
+    the cumulative field over the rounds is ONE wave over the original arc and
+    a chord one round stretched cannot become a span of its own in the next).
+    Only read while `wave_spacing` > 0."""
     wave_report: bool = False
     """Write the displacement-field coherence (`chain.wave_report`: Lipschitz
     slope along the arc, largest neighbour step with its chord, second-
@@ -1939,6 +1946,13 @@ def build_follow_problem(
         kink_weight=float(weights.kink_weight),
         lsmooth_weight=float(weights.letter_smooth),
         wave_spacing=float(weights.wave_spacing),
+        # `seed`: the abscissa the previous problem read its basis over, or
+        # its own seed when it is the chain problem — carried round to round.
+        wave_arc_anchors=(
+            (problem.basis_arc_anchors if problem.basis_arc_anchors is not None else problem.anchors_free)
+            if (weights.wave_arc == "seed" and weights.wave_spacing > 0.0)
+            else None
+        ),
         **fields,
     )
     if weights.landmark > 0.0 and weights.landmark_targets != "raw":
@@ -3254,6 +3268,13 @@ def build_parser() -> argparse.ArgumentParser:
         "0 = off, geometry byte-identical",
     )
     parser.add_argument(
+        "--wave-arc",
+        choices=["current", "seed"],
+        default=FollowWeights.wave_arc,
+        help="abscissa of the Wellen-Basis in the follower rounds: each round's own seed (current) or the "
+        "chain seed carried through every round (seed) — one wave over the original arc",
+    )
+    parser.add_argument(
         "--wave-report",
         action="store_true",
         help="write the displacement-field coherence report into every solve record even with the basis off "
@@ -3428,6 +3449,7 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         seed_min_gain=float(args.seed_min_gain),
         letter_smooth=float(args.letter_smooth),
         wave_spacing=float(args.wave_spacing),
+        wave_arc=str(args.wave_arc),
         wave_report=bool(args.wave_report),
         zwei_zuege=bool(args.zwei_zuege),
         zwei_zuege_half_width=float(args.zwei_zuege_half_width),
