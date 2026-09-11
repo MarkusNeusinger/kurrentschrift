@@ -1335,3 +1335,102 @@ def test_scale_seed_dicts_refuse_a_bound_slot_as_a_whole() -> None:
     assert set(windows) == {0, 1, 2}  # the coverage window is always the winner's
     assert set(seeds) == {0, 2} and set(scales) == {0, 2}
     assert scales[0] == 0.8 and seeds[2] == (-0.2, 0.05)
+
+
+# ------------------------------------------------- the Wellen-Basis (2026-09-11)
+
+
+def test_the_wave_basis_off_is_the_follower_verbatim_and_rides_into_the_weights(synthetic) -> None:
+    """`wave_spacing = 0` changes no geometry and no record — only the weights
+    blob every artefact serialises gains its two fields (that is the whole
+    scope of the byte-identity claim: strokes, rounds and their keys)."""
+    case, result, windows, fit = synthetic
+    plain = follow_word_chain(
+        case, [0, 1], result=result, windows_px=windows, fit=fit, weights=FollowWeights(rounds=2, structure_guard=False)
+    )
+    zero = follow_word_chain(
+        case,
+        [0, 1],
+        result=result,
+        windows_px=windows,
+        fit=fit,
+        weights=FollowWeights(rounds=2, structure_guard=False, wave_spacing=0.0),
+    )
+    assert plain is not None and zero is not None
+    assert json.dumps(plain.strokes_units) == json.dumps(zero.strokes_units)
+    assert [sorted(r) for r in plain.rounds] == [sorted(r) for r in zero.rounds]
+    assert "wave" not in plain.rounds[0] and "wave_cumulative" not in plain.fit_meta
+    assert plain.fit_meta["weights"]["wave_spacing"] == 0.0 and plain.fit_meta["weights"]["wave_report"] is False
+    payload = candidate_payload([], style="suetterlin", source_id="x", which="words", weights=FollowWeights())
+    assert payload["weights"]["wave_spacing"] == 0.0
+
+
+def test_the_wave_basis_reaches_the_initial_solve_and_every_round(synthetic) -> None:
+    """A missed call site would silently drop rounds 2+ back onto free deltas
+    while still producing plausible output — so round 2's rebuilt problem must
+    carry the basis with the same block count as round 1, and the chain solve
+    must report it too."""
+    case, result, windows, _fit = synthetic
+    weights = FollowWeights(rounds=2, structure_guard=False, wave_spacing=0.25)
+    chain_fit = fit_word_chain(
+        case, [0, 1], result=result, windows_px=windows, keep_solve=True, wave_spacing=weights.wave_spacing
+    )
+    assert chain_fit is not None and chain_fit.problem is not None and chain_fit.problem.basis_op is not None
+    assert chain_fit.fit_meta["wave_basis"]["n_blocks"] == len(chain_fit.problem.basis_blocks)
+    assert (
+        chain_fit.fit_meta["n_params"] == 2 + 2 * chain_fit.problem.n_blocks + 2 * chain_fit.problem.basis_op.shape[1]
+    )
+    followed = follow_word_chain(
+        case, [0, 1], result=result, windows_px=windows, fit=chain_fit, weights=weights, keep_solve=True
+    )
+    assert followed is not None and followed.problem is not None
+    assert followed.problem.basis_op is not None and followed.problem.wave_spacing == 0.25
+    assert len(followed.rounds) >= 1
+    for record in followed.rounds:
+        # Same blocks every round; the knots follow the moved seed, so the
+        # coefficient count may differ by a span — but it is never the free
+        # anchor count again.
+        assert record["wave"]["n_blocks"] == chain_fit.fit_meta["wave_basis"]["n_blocks"]
+        assert record["wave"]["n_coefficients"] is not None
+        assert record["n_params"] < 2 + 2 * followed.problem.n_blocks + 2 * len(followed.problem.anchors_free)
+    cumulative = followed.fit_meta["wave_cumulative"]
+    assert set(cumulative) == {"from_chain_seed", "from_round1_seed"}
+    assert cumulative["from_chain_seed"]["total"]["max_xh"] >= 0.0
+
+
+def test_the_wave_report_can_be_asked_for_with_the_basis_off(synthetic) -> None:
+    """The free reference: the same coherence numbers over the same blocks,
+    written without changing the solve."""
+    case, result, windows, fit = synthetic
+    weights = FollowWeights(rounds=1, structure_guard=False, wave_report=True)
+    reported = follow_word_chain(case, [0, 1], result=result, windows_px=windows, fit=fit, weights=weights)
+    plain = follow_word_chain(
+        case, [0, 1], result=result, windows_px=windows, fit=fit, weights=FollowWeights(rounds=1, structure_guard=False)
+    )
+    assert reported is not None and plain is not None
+    assert json.dumps(reported.strokes_units) == json.dumps(plain.strokes_units)
+    assert reported.rounds[0]["wave"]["n_coefficients"] is None
+    assert reported.rounds[0]["wave"]["field"]["lipschitz_per_xh"] >= 0.0
+    assert "wave_cumulative" in reported.fit_meta
+
+
+def test_a_zonal_pin_under_the_wave_basis_pins_every_touching_coefficient(synthetic) -> None:
+    """K0-Z re-expressed through the basis on the REBUILT problem of a round:
+    the pinned anchors cannot move for any feasible coefficients."""
+    case, result, windows, _fit = synthetic
+    weights = FollowWeights(rounds=1, structure_guard=False, wave_spacing=0.25)
+    chain_fit = fit_word_chain(
+        case, [0, 1], result=result, windows_px=windows, keep_solve=True, wave_spacing=weights.wave_spacing
+    )
+    assert chain_fit is not None and chain_fit.problem is not None
+    rebuilt, _mask = build_follow_problem(chain_fit.problem, chain_fit.params, weights)
+    assert rebuilt.basis_op is not None
+    pinned = [0, 1, 2]
+    counts = follow_mod.pin_free_anchors(rebuilt, pinned)
+    head = 2 + 2 * rebuilt.n_blocks
+    zeroed = {j for j in range(rebuilt.basis_op.shape[1]) if rebuilt.bounds[head + 2 * j] == (0.0, 0.0)}
+    assert counts["coefficients"] == len(zeroed) and counts["anchors_frozen"] >= len(pinned)
+    for j in range(rebuilt.basis_op.shape[1]):
+        assert bool(rebuilt.basis_op[pinned, j].any()) == (j in zeroed)
+    caps = np.asarray([rebuilt.bounds[head + 2 * j][1] for j in range(rebuilt.basis_op.shape[1])])
+    assert np.all((rebuilt.basis_op @ np.column_stack([caps, caps]))[pinned] == 0.0)

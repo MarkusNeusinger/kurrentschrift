@@ -1950,3 +1950,236 @@ def test_paper_clamp_and_kink_price_gradients_are_exact() -> None:
         step[i] = eps
         fd = (problem.objective(params + step)[0] - problem.objective(params - step)[0]) / (2.0 * eps)
         assert abs(fd - grad[i]) / max(1.0, abs(fd)) < 1e-4, f"param {i}: fd={fd}, analytic={grad[i]}"
+
+
+# ------------------------------------------------- the Wellen-Basis (2026-09-11)
+
+
+WAVE_K = 30  # anchors per toy letter — long enough for a real cubic block at Δs 0.25
+
+
+def _wave_specs(k: int = WAVE_K, *, stroke_starts=(0,), seam_out: int | None = None, corners=()) -> list:
+    """`[letter, connector, letter]` with `k`-anchor letters; the first letter's
+    pen lifts at `stroke_starts` and exits at `seam_out` (default: its last anchor)."""
+    a, b = _toy_letter(0.2, k), _toy_letter(2.0, k)
+    out = k - 1 if seam_out is None else int(seam_out)
+    conn = _toy_connector(a[out], b[0], 7)
+    return [
+        ChainSegmentSpec(
+            kind="letter",
+            anchors=a,
+            slot_index=0,
+            key="a",
+            half_widths=np.full(k, 0.07),
+            stroke_starts=tuple(stroke_starts),
+            corner_anchors=tuple(corners),
+            seam_in=0,
+            seam_out=out,
+        ),
+        ChainSegmentSpec(kind="connector", anchors=conn, seam_in=0, seam_out=6),
+        ChainSegmentSpec(
+            kind="letter", anchors=b, slot_index=1, key="b", half_widths=np.full(k, 0.07), seam_in=0, seam_out=k - 1
+        ),
+    ]
+
+
+def _wave_problem(spacing: float, specs=None, **kwargs):
+    return build_chain_problem(
+        specs or _wave_specs(),
+        unit_px=UNIT_PX,
+        x_origin_px=4.3,
+        baseline_y_px=45.7,
+        wave_spacing=spacing,
+        **_flat_fields(),
+        **kwargs,
+    )
+
+
+def test_the_wave_basis_is_byte_identical_at_spacing_zero() -> None:
+    """The default fit must be an IDENTITY, not a re-derivation: same parameter
+    count, same box, same objective bits and same gradient bits."""
+    off, zero = (
+        _wave_problem(0.0),
+        build_chain_problem(_wave_specs(), unit_px=UNIT_PX, x_origin_px=4.3, baseline_y_px=45.7, **_flat_fields()),
+    )
+    assert off.basis_op is None and off.basis_blocks == [] and off.wave_spacing == 0.0
+    assert len(off.x0) == len(zero.x0) and off.bounds == zero.bounds
+    rng = np.random.default_rng(925)
+    params = rng.uniform(-0.05, 0.05, size=len(off.x0))
+    fa, ga = off.objective(params)
+    fb, gb = zero.objective(params)
+    assert fa == fb and np.array_equal(ga, gb)
+    assert np.array_equal(off.unpack(params)[3], zero.unpack(params)[3])
+
+
+def test_the_wave_basis_is_one_block_across_the_seams_and_cut_at_a_pen_lift() -> None:
+    """A seam is not a lift: letter tail, connector and letter head share one
+    block; a letter-internal `stroke_starts` entry cuts one."""
+    joined = _wave_problem(0.25)
+    assert len(joined.basis_blocks) == 1
+    (block,) = joined.basis_blocks
+    assert block["segs"] == [0, 1, 2] and block["kind"] == "bspline"
+    assert block["n"] == len(joined.anchors_free) and sorted(block["rows"]) == list(range(len(joined.anchors_free)))
+    # every seam pair shares a column: the field is continuous across the seam
+    cols = joined.basis_op > 0.0
+    for i in range(len(joined.specs) - 1):
+        a_end = joined.anchor_slices[i][1] - 1
+        assert (cols[a_end] & cols[a_end + 1]).any()
+
+    split = _wave_problem(0.25, _wave_specs(stroke_starts=(0, 12)))
+    assert len(split.basis_blocks) == 2
+    assert split.basis_blocks[0]["plan"] == (0, 12) and split.basis_blocks[1]["plan"][0] == 12
+    # …and no column reaches across the lift
+    first = set(split.basis_blocks[0]["rows"])
+    second = set(split.basis_blocks[1]["rows"])
+    for j in range(split.basis_op.shape[1]):
+        support = set(np.flatnonzero(split.basis_op[:, j]).tolist())
+        assert support <= first or support <= second
+
+
+def test_every_wave_row_is_a_convex_combination_owned_by_exactly_one_block() -> None:
+    """The retrace case: a letter that lifts AFTER its exit seam (the t's bar)
+    hands the connector a seam anchor whose plan row lies past the lift. That
+    free row must be claimed by the block of its FIRST occurrence only — a
+    double claim would let it move twice its cap."""
+    problem = _wave_problem(0.25, _wave_specs(stroke_starts=(0, WAVE_K - 4), seam_out=WAVE_K - 6))
+    basis = problem.basis_op
+    assert np.allclose(basis.sum(axis=1), 1.0, atol=1e-9)
+    assert np.all(basis >= 0.0)
+    owners = {}
+    for b, block in enumerate(problem.basis_blocks):
+        for r in block["rows"]:
+            assert r not in owners, f"free row {r} claimed by blocks {owners[r]} and {b}"
+            owners[r] = b
+    assert sorted(owners) == list(range(len(problem.anchors_free)))
+    seam_row = int(problem.idx[problem.plan_slices[1][0]])  # the connector's borrowed entry
+    assert owners[seam_row] == 0  # …owned by the block of its first (letter) occurrence
+    for j in range(basis.shape[1]):  # and no column's support spans two blocks
+        assert len({owners[int(r)] for r in np.flatnonzero(basis[:, j])}) == 1
+
+
+def test_the_wave_gradient_is_exact_through_the_basis() -> None:
+    """Chain rule through the change of variables at a non-stationary point in
+    the basis — with every term the night loop added switched on."""
+    problem = _wave_problem(0.25, paper_target_px=1.0, paper_weight=30.0, kink_weight=2.0, lsmooth_weight=1.5)
+    rng = np.random.default_rng(11)
+    params = rng.uniform(-0.2, 0.2, size=len(problem.x0))
+    f0, grad = problem.objective(params)
+    assert np.isfinite(f0)
+    eps = 1e-6
+    worst = 0.0
+    for i in range(len(params)):
+        step = np.zeros_like(params)
+        step[i] = eps
+        fd = (problem.objective(params + step)[0] - problem.objective(params - step)[0]) / (2.0 * eps)
+        worst = max(worst, abs(fd - grad[i]) / max(1.0, abs(fd)))
+    assert worst < 1e-6, worst
+    report = chain_mod.gradient_decomposition(problem, params)
+    assert report["residual_rel"] < 1e-9
+    assert report["per_anchor_space"] == "basis-projected"
+    assert report["per_anchor"]["total"].shape == (len(problem.anchors_free), 2)
+
+
+def test_wave_coefficients_at_the_box_never_move_an_anchor_past_its_cap() -> None:
+    """Convexity: a per-column box implies the per-anchor box, so the feasible
+    set is a subset of the free problem's. Checked at random box corners."""
+    problem = _wave_problem(0.25)
+    free = build_chain_problem(_wave_specs(), unit_px=UNIT_PX, x_origin_px=4.3, baseline_y_px=45.7, **_flat_fields())
+    head = 2 + 2 * problem.n_blocks
+    col_caps = np.asarray(problem.bounds[head:], dtype=float).reshape(-1, 2, 2)
+    assert np.array_equal(col_caps[:, :, 0], -col_caps[:, :, 1])
+    anchor_caps = np.asarray(free.bounds[head:], dtype=float).reshape(-1, 2, 2)[:, :, 1]
+    rng = np.random.default_rng(7)
+    for _ in range(20):
+        c = rng.choice([-1.0, 1.0], size=col_caps[:, :, 1].shape) * col_caps[:, :, 1]
+        deltas = problem.basis_op @ c
+        assert np.all(np.abs(deltas) <= anchor_caps + 1e-12)
+    # a column spanning the seam takes the LETTER cap (0.75), never the connector's 1.0
+    conn = problem.anchor_slices[1]
+    for j in range(problem.basis_op.shape[1]):
+        support = np.flatnonzero(problem.basis_op[:, j])
+        if support.min() < conn[0] <= support.max() or support.min() < conn[1] <= support.max():
+            assert col_caps[j, 0, 1] == pytest.approx(anchor_caps[support].min())
+
+
+def test_wave_corners_get_no_knot_multiplicity() -> None:
+    """The corner lives in the SEED; a knot stack there would re-admit the
+    one-anchor spike exactly at the corner (kann's `a`, measured)."""
+    plain = _wave_problem(0.25)
+    cornered = _wave_problem(0.25, _wave_specs(corners=(10, 20)))
+    assert np.array_equal(plain.basis_op, cornered.basis_op)
+    knots = chain_mod._clamped_uniform_knots(3.0, 0.25)
+    interior = knots[chain_mod.WAVE_DEGREE + 1 : -(chain_mod.WAVE_DEGREE + 1)]
+    assert len(np.unique(interior)) == len(interior) == 11
+
+
+def test_a_stroke_too_short_for_the_wave_moves_rigidly_and_a_zero_chord_is_refused() -> None:
+    """A stub (t-bar, i-dot) is not handed back free deltas — one coefficient
+    moves it as a whole; a repeated anchor position is an error, not mush."""
+    specs = _wave_specs()
+    last = specs[-1]
+    # the LAST letter lifts three anchors before its end: a stub with no
+    # connector after it (the first letter's stub would run on into the join)
+    specs[-1] = ChainSegmentSpec(
+        kind="letter",
+        anchors=last.anchors,
+        slot_index=1,
+        key="b",
+        half_widths=last.half_widths,
+        stroke_starts=(0, WAVE_K - 3),
+        seam_in=0,
+        seam_out=WAVE_K - 1,
+    )
+    short = _wave_problem(0.25, specs)
+    kinds = [b["kind"] for b in short.basis_blocks]
+    assert kinds == ["bspline", "rigid"]
+    stub = short.basis_blocks[1]
+    assert stub["m"] == 1 and stub["n"] == 3
+    col = short.basis_op[:, stub["col0"]]
+    assert np.array_equal(np.flatnonzero(col), np.asarray(stub["rows"]))
+    assert np.all(col[stub["rows"]] == 1.0)
+
+    # The sampler already refuses a repeated anchor upstream („strictly
+    # increasing sequence"); the basis builder refuses it on its own too, so a
+    # future sampler that tolerates one cannot hand the basis a repeated abscissa.
+    plain = _wave_problem(0.25)
+    doubled = plain.anchors_free.copy()
+    doubled[5] = doubled[4]
+    with pytest.raises(ValueError, match="zero-length chord"):
+        chain_mod._wave_basis(plain.specs, doubled, plain.idx, plain.plan_slices, 0.25)
+
+
+def test_pinning_an_anchor_through_the_wave_freezes_its_expansion() -> None:
+    """K0-Z under the basis: every coefficient with support on a pinned anchor
+    is pinned, so the anchor cannot move for ANY feasible coefficients — and
+    the counts say how far the pin reached."""
+    problem = _wave_problem(0.25)
+    pinned = [15, 16]
+    counts = chain_mod.pin_free_anchors(problem, pinned)
+    head = 2 + 2 * problem.n_blocks
+    zeroed = [j for j in range(problem.basis_op.shape[1]) if problem.bounds[head + 2 * j] == (0.0, 0.0)]
+    assert counts["coefficients"] == len(zeroed) and counts["anchors_frozen"] >= len(pinned)
+    for j in range(problem.basis_op.shape[1]):
+        if problem.basis_op[pinned, j].any():
+            assert j in zeroed
+    c = np.asarray([problem.bounds[head + 2 * j][1] for j in range(problem.basis_op.shape[1])])
+    deltas = problem.basis_op @ np.column_stack([c, -c])
+    assert np.all(deltas[pinned] == 0.0)
+    free = build_chain_problem(_wave_specs(), unit_px=UNIT_PX, x_origin_px=4.3, baseline_y_px=45.7, **_flat_fields())
+    assert chain_mod.pin_free_anchors(free, pinned) == {"anchors": 2, "coefficients": 4, "anchors_frozen": 2}
+    assert free.bounds[head + 2 * 15] == (0.0, 0.0) and free.bounds[head + 2 * 16 + 1] == (0.0, 0.0)
+
+
+def test_the_wave_report_reads_the_same_partition_with_the_basis_on_or_off() -> None:
+    """The physics numbers compare only if a free solve and a basis solve are
+    read over the same pen-stroke blocks."""
+    on, off = _wave_problem(0.25), _wave_problem(0.0)
+    rng = np.random.default_rng(3)
+    r_on = chain_mod.wave_report(on, rng.uniform(-0.1, 0.1, size=len(on.x0)))
+    r_off = chain_mod.wave_report(off, rng.uniform(-0.1, 0.1, size=len(off.x0)))
+    assert r_on["n_blocks"] == r_off["n_blocks"] == 1
+    assert r_on["n_coefficients"] == on.basis_op.shape[1] and r_off["n_coefficients"] is None
+    for key in ("lipschitz_per_xh", "max_step_xh", "max_step_chord_xh", "ratio_d2", "chords_over_spacing"):
+        assert key in r_on["field"] and key in r_on["total"]
+    assert r_off["field"]["chords_over_spacing"] is None  # no spacing, no threshold
+    assert r_on["field"]["n_pairs"] == r_off["field"]["n_pairs"] == len(on.anchors_free) - 1
