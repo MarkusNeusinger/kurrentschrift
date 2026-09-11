@@ -638,8 +638,9 @@ def refine_strands(
     """The sub-pixel reading of every strand, in place; tangents re-read afterwards.
 
     Returns the diagnostics of the reading — empty for the delivered default,
-    so its report stays byte-identical; the fine raster reports how well its
-    boundary agrees with the frozen mask's.
+    so the default's diagnostics and strokes stay identical (the weight
+    fields themselves ride into every artefact); the fine raster reports how
+    well its boundary agrees with the frozen mask's.
     """
     diag: dict[str, Any] = {}
     edt: np.ndarray | EdtField = distance_transform_edt(np.asarray(mask, dtype=bool))
@@ -1092,11 +1093,13 @@ def assemble(
         kinds[-1].append(kind)
         samples[-1].append(k)
 
-    def bridge_to(ps: tuple[int, int, int], st: tuple[int, int, int], k: int) -> None:
+    def bridge_to(ps: tuple[int, int, int], st: tuple[int, int, int], k: int, *, chord: bool = False) -> None:
         s0, i0, d0 = ps
         s1, i1, d1 = st
         p0, p1 = strands[s0].points[i0], strands[s1].points[i1]
-        if weights.bridge == "hermite":
+        # An ink bridge is emitted as the CHORD the grey test read, never as
+        # a Hermite bow that could leave the tested faint ink.
+        if weights.bridge == "hermite" and not chord:
             pts = hermite_bridge(
                 p0, strands[s0].tan[i0] * d0, p1, strands[s1].tan[i1] * d1, BRIDGE_STEP_PX, lateral_cap
             )
@@ -1160,7 +1163,7 @@ def assemble(
                     ink_tests.append(verdict)
                 if verdict is not None and verdict["bridged"]:
                     n_ink_bridges += 1
-                    bridge_to(prev, st, k)
+                    bridge_to(prev, st, k, chord=True)
                     prev = st
                     paper_run = 0
                     continue

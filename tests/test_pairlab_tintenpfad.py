@@ -136,7 +136,9 @@ def test_the_subpixel_rail_moves_a_staircase_onto_the_stroke_axis() -> None:
     assert np.abs(refined - raw).max() <= 0.75 + 1e-9
 
 
-def _slanted_stroke(angle_deg: float = 22.5, length: float = 95.0, half_width: float = 2.5):
+def _slanted_stroke(
+    angle_deg: float = 22.5, length: float = 95.0, half_width: float = 2.5
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """A capsule — a pen stroke with ROUNDED ends, so its medial axis ends on the
     axis (a flat-cut end forks toward its two corners)."""
     mask = np.zeros((60, 120), dtype=bool)
@@ -238,7 +240,9 @@ def test_spurs_at_a_strand_end_stay_with_the_switch_and_lateral_spurs_still_go()
     assert diag_lat["spurs_pruned"] == 1 and diag_lat["spurs_kept_at_ends"] == 0
 
 
-def _antialiased_stroke(angle_deg: float, half_w: float, size: tuple[int, int] = (80, 160), supersample: int = 8):
+def _antialiased_stroke(
+    angle_deg: float, half_w: float, size: tuple[int, int] = (80, 160), supersample: int = 8
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """A grey crop in [0, 1] (0 = ink) of one straight stroke with coverage
     anti-aliasing — the sub-pixel edge information a scan carries — plus the
     stroke's axis origin and unit normal."""
@@ -512,7 +516,8 @@ def test_a_decoder_lift_becomes_a_bridge_only_when_the_ink_test_passes() -> None
     """Two rail pieces 14 px apart (wider than the jump radius, within the
     ink-bridge radius) under a straight seed: the default assembly lifts;
     with a passing ink test the same states assemble into one run whose gap
-    vertices are bridge-kind; a failing test leaves the lift."""
+    is the tested chord itself, one bridge-kind vertex, never a Hermite bow
+    that could leave the faint ink; a failing test leaves the lift."""
     skel = np.zeros((41, 120), dtype=bool)
     skel[20, 4:50] = True
     skel[20, 64:116] = True
@@ -533,7 +538,8 @@ def test_a_decoder_lift_becomes_a_bridge_only_when_the_ink_test_passes() -> None
     assert counts_b["paper_lifts"] == 0 and counts_b["ink_bridges"] == 1 and len(runs_b) == 1
     assert len(tested) == 1 and 12.0 <= tested[0] <= 16.0
     assert counts_b["ink_bridge_tests"][0]["gap_xh"] == pytest.approx(tested[0] / XH, abs=1e-3)
-    assert int((kinds_b[0] == 1).sum()) >= 10  # the gap is laid as bridge vertices
+    assert int((kinds_b[0] == 1).sum()) == 1  # the gap is laid as the tested chord: one bridge vertex
+    assert len(runs_b[0]) == len(runs[0]) + len(runs[1])  # the chord's vertex is the second rail's first pixel
     runs_f, _, _, _, counts_f = assemble(
         strands, states, seed, XH, weights, lambda p0, p1: {"bridged": False, "faint_share": 0.0, "paper_samples": 12}
     )

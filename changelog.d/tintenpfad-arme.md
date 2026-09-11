@@ -20,6 +20,8 @@
   as honest negatives and stay off: a stub filter that absorbs junction
   strands under 0.25 xh changes no stroke, and a double-ink evidence for the
   ß stem never fires because the plate's stems read one to one-and-a-third
-  pen widths. Every default run stays byte-identical to the delivered
-  Tintenpfad; the numbers of the round stay on the progress page until a §14
-  entry books them.
+  pen widths. A companion switch `spur_at_ends` keeps the thinning's fork
+  spurs at strand ends and is measured inert on this plate. Every default
+  run stays stroke-identical to the delivered Tintenpfad (only the new
+  weight fields at their off values appear in the artefact); the numbers of
+  the round stay on the progress page until a §14 entry books them.
