@@ -476,8 +476,17 @@ WIDEST = {
 # block (three lines, the block ends at 39 of its 40), a Tintenpfad row in
 # `verfahren.md`, and eight §7.11 open-arm rows, which is what three rounds
 # with a candidate each leave behind. The three journal entries themselves
-# were trimmed to 4 952 · 4 764 · 4 831 against the unchanged 4 957 ceiling,
-# which is where a growing entry belongs; `mess-runde-eintrag` is NOT raised.
+# were first trimmed to 4 952 · 4 764 · 4 831 against the 4 957 ceiling.
+#
+# `mess-runde-eintrag` (4 957 → 5 584), same PR, verifier round: all three
+# entries record the author's instruction that NO §14 entry be written before
+# he accepts a sheet, and then ARE §14 entries — a later reader needs the one
+# sentence that resolves that (the entries were written on the author's
+# question of the evening of 2026-09-11; the numbers stay cited, not booked).
+# That sentence, plus the disambiguation of „das schlechteste Wort" (worst
+# delta vs worst absolute), takes the night-loop entry to 5 076; re-measured
+# plus the documented 10 %. An entry over 5 000 tokens is the signal that the
+# next round of this size splits its entry (as `Laufform LF17` did on sep09).
 #
 # `mess-runde-route` (8 795 → 10 487): `verfahren-kette.md` stood at 8 786 of
 # 8 795 — nine tokens of room — and owes two ledger lines this time, one per
@@ -494,7 +503,7 @@ BUDGETS: dict[str, int] = {
     "mandatory": 67_091,
     "mess-runde": 43_761,
     "mess-runde-route": 10_487,
-    "mess-runde-eintrag": 4_957,
+    "mess-runde-eintrag": 5_584,
     "glyph-optimierung": 8_504,
     "komposition": 9_680,
     "frontend": 15_018,

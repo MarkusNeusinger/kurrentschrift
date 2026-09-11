@@ -25,5 +25,9 @@
   journal had already rejected — with the repo's own measured numbers:
   sample step 0.0286 xh, ripple period 0.29 xh, DOF per word, kernel
   eigenspectrum), glossary entries for Wellen-Basis, Schlange and
-  Hand-Überschuss, and the Tintenpfad as a display name. No adoption, no
-  headline moved; every number cites its artefact path.
+  Hand-Überschuss, and the Tintenpfad as a display name. The route is
+  registered in `tools.docs_register` (`ROUTE_PAGES`) in the same PR, so a
+  future Tintenpfad §14 entry without its ledger line fails CI instead of
+  relying on honour. No adoption, no headline moved; every number cites
+  its artefact path, and the head-of-file counts (map rows, journal
+  tokens, entry sizes) are measured with `tools.docs_budget`, not scaled.

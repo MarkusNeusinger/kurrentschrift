@@ -6,11 +6,11 @@
 > ins Journal nachträgt. Nachzieh-Pflicht: Jeder §14-Eintrag zu einem
 > Tintenpfad-Arm (adoptiert oder verworfen) ergänzt hier seine
 > Ledger-Zeile; eine Adoption aktualisiert „Aktueller Stand“ und die
-> Zeile in `verfahren.md`. **Das Gate `tools.docs_register check` kennt
-> diese Seite noch nicht** (`ROUTE_PAGES` führt Kette · Lotse · InkSight
-> · Nullprobe · Übergänge) — die Registrierung ist ein eigener, kleiner
-> Code-Schritt außerhalb des Doku-PRs; bis dahin gilt die Pflicht auf
-> Ehre.
+> Zeile in `verfahren.md`. Seit demselben PR steht die Seite in
+> `ROUTE_PAGES` von `tools.docs_register`: das Gate `tools.docs_register
+> check` verlangt für jede Register-Zeile der Route „Tintenpfad“ ihr
+> Datum im Ledger unten, wie bei Kette · Lotse · InkSight · Nullprobe ·
+> Übergänge.
 
 ## Steckbrief
 
@@ -51,8 +51,8 @@
 Drei gemessene Stände, alle auf der `sep07`-Wurzel `suetterlin-1922`
 `exported_at` 2026-09-07T20:07:03+00:00, `root_digest` `ccb036a5eb20…`,
 BLAS gepinnt, Lineal dev-19 gepaart — und alle drei **ohne Adoption**,
-so vom Autor gesetzt („nothing is adopted, no journal entry“ in #591 und
-#592; die formale Runde wartet auf die `d`-Zeilen-Neubasis
+so vom Autor gesetzt („No §14 entry and no adoption“, wörtlich in den
+PR-Texten von #591 und #592; die formale Runde wartet auf die `d`-Zeilen-Neubasis
 `a4eb48420ccb…`). Der Default-Lauf ohne Schalter ist strichidentisch zum
 gelieferten Tintenpfad #591 (13/13 Zeilen, Registrierung und `xh_px`
 identisch); die drei Schalter der Kombination sind default AUS und

@@ -1,12 +1,12 @@
 # Verfahrensseiten: die Tintenfolger-Routen und ihre Versionen
 
-> **Status (2026-09-10): lebend.** Übersicht und Versions-Konvention der
+> **Status (2026-09-11): lebend.** Übersicht und Versions-Konvention der
 > Duell-Verfahren; je stehendem Verfahren existiert eine eigene Seite
 > (unten). Nachzieh-Pflicht: Jeder §14-Eintrag, der einen Arm oder eine
 > Stufe eines Verfahrens misst (adoptiert ODER verworfen), ergänzt im
 > selben PR die Ledger-Zeile der betroffenen Verfahrensseite und — bei
 > Adoption — deren „Aktueller Stand“ sowie den Stand in dieser Übersicht:
-> bei den vier Duell-Routen die Stand-/„seit“-Spalte der Tabelle unten,
+> bei den fünf Duell-Routen die Stand-/„seit“-Spalte der Tabelle unten,
 > bei den Übergängen der Absatz
 > [„Übergänge — keine Duell-Route, trotzdem ein Ledger“](#übergänge--keine-duell-route-trotzdem-ein-ledger)
 > daneben, denn diese Route hat bewusst keine Tabellenzeile (anderes
@@ -62,9 +62,9 @@ Zahl hier ist ein datiertes Zitat, der Beleg wohnt im benannten
 | **Lotse** | [`verfahren-lotse.md`](verfahren-lotse.md) | **v0.17** (`aug20`, Reservierungs-Veto) — Zahlen nachgemessen `sep07` auf derselben Wurzel wie die Kette (`ccb036a5eb20…`), die seit A37 fällige Karten-Nachmessung: dtw **0,053386** med · p90 0,116668 · aiou 0,7473 · `cross_missing` 0 / `cross_spurious` 4 · `retrace_missing` 5. Die `sep05`-Zeile nannte 0,053393 / 0,116199 / 0,7493 — dieselbe Route, vor A37 (§14 „Komma-Ausschluss `sep07`") | 2026-08-20 (Zahlen 2026-09-07) |
 | **InkSight** | [`verfahren-inksight.md`](verfahren-inksight.md) | T0 (roh) — dtw 0,0951 med · 5/19 failed · Galoppieren-B2-Kollaps; **auf Lineal-Kappe 1,5 unvermessen**, die Zahlen sind archiviert und nicht vergleichbar | 2026-08-17 (Lineal 0,8) |
 | **Nullprobe** | [`verfahren-nullprobe.md`](verfahren-nullprobe.md) | unversioniert (Kontrolle) — dtw 0,8198 med · p90 1,0267 auf den 10 von 19 dev-Wörtern, die die gespeicherte Nullprobe abdeckt | 2026-08-26 |
-| **Tintenpfad** | [`verfahren-tintenpfad.md`](verfahren-tintenpfad.md) | **Kandidat, nichts adoptiert** (`sep11`, §14 „Welle" + „Tintenpfad-Arme"): Strang-Dekodierung auf derselben Wurzel `ccb036a5eb20…` — #591 dtw 0,044230 · p90 0,090673 · aiou 0,7867 (7 : 12 gegen die Kette); die Kombination der drei tragenden Arme dtw **0,041356** · p90 0,091040 · aiou 0,7876, 18 : 1 gegen #591, 9 : 10 gegen die Kette; Papier-Umkehrungen 0 auf 63 Wörtern (Kette 49). Kein Default-Folger; `tools.docs_register` kennt die Seite noch nicht | — (Kandidat seit 2026-09-11) |
+| **Tintenpfad** | [`verfahren-tintenpfad.md`](verfahren-tintenpfad.md) | **Kandidat, nichts adoptiert** (`sep11`, §14 „Welle" + „Tintenpfad-Arme"): Strang-Dekodierung auf derselben Wurzel `ccb036a5eb20…` — #591 dtw 0,044230 · p90 0,090673 · aiou 0,7867 (7 : 12 gegen die Kette); die Kombination der drei tragenden Arme dtw **0,041356** · p90 0,091040 · aiou 0,7876, 18 : 1 gegen #591, 9 : 10 gegen die Kette; Papier-Umkehrungen 0 auf 63 Wörtern (Kette 49). Kein Default-Folger; die Seite steht seit `sep11` in `ROUTE_PAGES` von `tools.docs_register` | — (Kandidat seit 2026-09-11) |
 
-**Die vier dev-19-Stände stehen weiter auf der `sep07`-Wurzel**
+**Die fünf dev-19-Stände stehen weiter auf der `sep07`-Wurzel**
 (`ccb036a5eb20…`). Der `d`-Zeilen-Write vom `sep10` (Autor-Entscheid A44)
 hat sie ersetzt, ohne dass das Duell auf der neuen nachgemessen wurde —
 die Zahlen bleiben untereinander vergleichbar und sind nicht falsch
@@ -85,7 +85,8 @@ im selben PR an.
 Die Route **Übergänge**
 ([`verfahren-uebergaenge.md`](verfahren-uebergaenge.md)) tritt gegen
 niemanden an — sie ist die Join-Grammatik der Komposition, auf der alle
-vier Routen aufsetzen, und ihr Lineal ist das Wort-/Paar-Lineal des
+fünf Routen aufsetzen (der Tintenpfad nimmt aus ihr die Saat, aus der er
+nur die Reihenfolge liest), und ihr Lineal ist das Wort-/Paar-Lineal des
 Wordbench statt des dev-19-Satzes. Sie bekommt trotzdem ein Ledger,
 weil ihre Arme adoptierte DEFAULTS bewegen: Stand seit dem
 Autor-Entscheid A37 vom 2026-09-06 ist der Austritts-Trim (`exit_trim`)

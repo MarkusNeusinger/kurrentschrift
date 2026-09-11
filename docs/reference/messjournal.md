@@ -1,18 +1,22 @@
 # Messjournal — Tintenfolger-Bench (§14)
 
-> **Status (2026-09-05): lebend.** Das Journal der Mess-Kampagne. Seit
+> **Status (2026-09-11): lebend.** Das Journal der Mess-Kampagne. Seit
 > 2026-09-04 eine eigene Datei; bis dahin war es §14 von
 > [`qualitaetsmetrik.md`](qualitaetsmetrik.md), Wort für Wort dieselbe
 > Sektion.
 >
 > **Diese Datei liest man nicht.** Sie trägt 123 datierte Abschnitte und
-> rund 280 000 Token. Der Einstieg ist das **Register** direkt unter der
-> nächsten Überschrift — eine Zeile je Abschnitt mit Datum, Route, Typ ·
-> Verdikt und dem Befund in einer Zeile —, und daneben der
-> **Headline-Ledger** mit der Zahlen-Historie samt Fixture-Wurzeln.
-> Beide zusammen kosten rund 23 000 Token; ein einzelner Abschnitt im
-> Median 1 700, höchstens 4 500. Wer aus dem Register springt, lädt also
-> ein Zehntel statt der ganzen Datei — dafür ist sie geteilt.
+> rund 317 000 Token (gemessen am `sep11` mit
+> `tools.docs_budget.proxy_tokens`: 316 565). Der Einstieg ist das
+> **Register** direkt unter der nächsten Überschrift — eine Zeile je
+> Abschnitt mit Datum, Route, Typ · Verdikt und dem Befund in einer Zeile
+> —, und daneben der **Headline-Ledger** mit der Zahlen-Historie samt
+> Fixture-Wurzeln. Beide zusammen kosten rund 23 000 Token; ein einzelner
+> Abschnitt im Median rund 1 900, höchstens rund 5 000 (der größte,
+> „Laufform LF17 `sep09`", 4 956; die drei Abschnitte des `sep11` liegen
+> mit 4 952 · 4 764 · 4 831 knapp darunter). Wer aus dem Register
+> springt, lädt also weniger als ein Zehntel statt der ganzen Datei —
+> dafür ist sie geteilt.
 >
 > **Was gilt (Stand `sep05`).** Der Duell-Stand: Kette **v5** (`aug26`,
 > Kompositions-Soll + Ratsche + Zone 0,55 sind der Default) · Lotse
@@ -238,7 +242,7 @@ die DB) — mit seiner Bedingung.
 | sep09 | Kette | [K-G Saat-Registrierung (Diagnose + Pre-Reg)](#kette-k-g-saat-registrierung-sep09--diagnose-und-vorregistrierung-der-startort-ist-der-hebel-den-der-beurteiler-benannt-hat) | Diagnose + Pre-Reg (Autor-Entscheid A39) | **Zwei Sensoren, eingefroren.** **Papier-Umkehr** zählt den Zickzack nur im PAPIER (`Galoppieren` 24 in der Tinte, 0 im Papier); das 29 : 27 des nie committeten ad-hoc-Zählers der Runde 9 liest er als **26 : 25** und wurde NICHT nachgezogen. **Saat-Abstand** trennt **Saat-Versatz** (Platzierung, absorbierbar) von **Saat-Rest** (Form, nur composer-seitig heilbar). **„Die Saat liegt weiter weg als `max_delta`" ist als ABSTAND falsch** — kein Anker über 0,68 xh von irgendeiner Tinte, der Fehler ist eine KORRESPONDENZ. `Wer`s `e` verlangt keine Verschiebung, `regieren`s acht Slots ziehen **0,967 xh** auseinander. Auf Runde 9s 44 Wörtern trägt die Form-Hälfte (partiell +0,592 : +0,157), **auf allen 63 sind beide gleich stark** — die 44 waren K-Es Straten. Arm: `--chain-seed grid`, Gates (a)–(g), Kill bei (a)/(c) |
 | sep09 | Kette | [K-G Saat-Registrierung (gemessen)](#kette-k-g-saat-registrierung-sep09--gemessen-der-arm-heilt-das-wort-des-beurteilers-und-reißt-zwei-gates) | gemessen · **ehrliches Negativ** (Gate (a) rot) · asymmetrischer Befund, Runde 11 gebaut | **Der Arm heilt genau das Wort, das der Beurteiler „richtig schlimm" nannte, und beschädigt genau das, das er gut nennt:** `unter` aiou **+0,1072** mit Papier-Umkehren **5 → 0** (die Basis verwirft dort ihre Runde 1 ganz, der Arm nicht), dagegen `Wer` **−0,0187**. Basis ziffernweise abgenommen. Gates: (a) **ROT** (`Wer` · `das` −0,0074; über 63 sind es 15 Verlierer, min −0,1782), (b) **ROT** (`cross_missing` 11 → 13), (c) **GRÜN** 63er-Soll **85 → 74**, (d) halb rot (Median −0,000034, p90 +0,000425), (e) **GRÜN** Papier-Umkehren **49 → 42** (44er-Auswahl 26 : 26), (f)/(g) grün. **Die aiou-Enden sind Wächter-Wechsel, nicht Tinte:** 28 der 63 wechseln ihr Verdikt — zu `revert-init` Median −0,0770, davon weg +0,1034, unverändert ±0,0005 —, und die ganze Soll-Verbesserung sitzt in den 28. Umkehren 9 besser : 7 schlechter, **ohne `regieren` 45 → 32**: es startet gemischt (ein Slot AN der Blockschranke bekommt keinen Seed) und verdoppelt seinen Zickzack 4 → 10 — von den VIER gemischt startenden Wörtern aber als einziges, der gemischte Start ist also nicht hinreichend. Terzile: Saat-Rest hoch **37 → 28**, Spannweite niedrig **5 → 8** — der Schalter hilft, wo die Saat danebenliegt, und schadet, wo nicht. Zieht erstmals den K-D-Auslöser (0,427 xh). Runde 11 gebaut, ungeurteilt: 73 Bildschirme, **Ausschnitt-Anzeige** ±1,5 xh bei Zoom 4× |
 | sep10 | Laufform | [LF17 Runde 10 geurteilt, `d`-Zeile geschrieben (A44)](#laufform-lf17-sep10--runde-10-geurteilt-die-d-zeile-geschrieben-a44-und-das-wort-lineal-neu-gebaselined) | Menschenrunde · **Adoption** (Autor-Entscheid A44) · **Re-Baseline** (Wörter, Paare byte-gleich) · **geschrieben** | **`d-rein` räumt beide Schranken ohne Gegenbeleg: 0 : 10, also 100 % Kandidat bei 0 % Ties** — alle zehn Wörter, die ein `d` ohne `u`-Nachbarn zeichnen. Verlässlichkeit die stärkste bisher: 8/8 Paare gleicher Arm, und bei den VIER entschiedenen Paaren wechselte mit der Spiegelung jedes Mal die Seite und nie der Arm; Nullproben 26/26 richtig als „kein Unterschied". Die globale Zeile meldet `adopt: false` **per Konstruktion** — 26 bit-identische Nullproben sind ein Tie-Boden von exakt 65,0 %, vorab ausgerechnet. **Das Lineal-Vorzeichen trägt in `d-rein` keine Information:** die zwei am stärksten bestraften (`der-2` +0,007563, `Feinde` +0,004178) und die zwei am stärksten belohnten Wörter (`Soldaten` −0,004612, `laden` −0,002505) stehen alle vier beim Kandidaten. **Gegenbefund `d-und` 4 : 0 für die BASIS** (n = 4, beschreibend, einstimmig) — eine Naht-, keine Zeilenfrage, als Arm auf der Route Übergänge registriert. Write: Snapshots `2026-09-10T20-40-19Z`/`…20-40-47Z`, EINE Zeile (`d`, n = 11, 120 Anker) als Variante 100, Readback-Abweichung 0,000000. Neue Wurzeln `a4eb48420ccb…` / `e3a5d03d0f37…` / `7a08a94c1258…`: Wörter 0,108153 → **0,108339**, Paare **byte-gleich** 0,148236, `worst_word` bleibt `regieren` 0,233052. **Die Paar-WURZEL ist diesmal nicht byte-gleich** — jede der drei Wurzeln trägt ihre eigene Kopie der Laufform-Zeilen, und am `sep07` war die Paar-Wurzel gar nicht neu ausgeführt worden; Datei für Datei unterscheiden sich in allen drei genau `manifest.json` und der Schlüssel `d` (größte Anker-Abweichung 0,044500 xh). Die trockene Vorhersage ist **byte-gleich getroffen**, und zwar über alle 96 Einträge mit einer größten Abweichung von 0,0 |
-| sep10/sep11 | Kette | [Grob-richtig-Schleife (Nachtschleife, #590)](#kette-grob-richtig-schleife-sep10sep11--werkstatt-ohne-vorregistrierung-sieben-schalter-und-ein-zweiter-sensor-auf-fechten--kann--unter-it-18-als-kandidat) | Werkstatt · **ohne Vorregistrierung** · Kandidat (It. 18), **nicht adoptiert**; Papier-Strecke als Sensor adoptiert | Der Autor verweigert das Urteil über Runde 11 („die springen wild hin und her") und lässt über Nacht an `fechten` `kann` `unter` bauen. Sieben Kette-Schalter (t-Brücke · Saat-Form · Tinten-Klammer · Tinten-Soll · Unstetigkeits-Preis · Saat-Rampe · Gauß-Verschiebung; Laufform-Saat und Formglätte als Negative), der Wächter-Befund (sein Soll kam aus der Tafel statt aus der Tinte) und der zweite Sensor `paper_len_xh`. Auswahl je Wort aus dreien (It. 18) bringt die 63 Wörter von **49 auf 13** Papier-Umkehrungen und **61,7 auf 23,5 xh** Papier-Strecke bei besserem Lineal (dtw 0,045881 → 0,044128, aiou 0,7660 → 0,7821, 12 : 7) — gebucht wird nichts, bis der Autor einen Bogen abnimmt; als Folger-Schalter ändert „Wächter aus" die Doktrin. Drei Quellen-Abweichungen und ein zurückgezogener `die`-Befund stehen im Eintrag; BLAS-Pinnung für diese Nacht unbezeugt |
+| sep10/sep11 | Kette | [Grob-richtig-Schleife (Nachtschleife, #590)](#kette-grob-richtig-schleife-sep10sep11--werkstatt-ohne-vorregistrierung-sieben-schalter-und-ein-zweiter-sensor-auf-fechten--kann--unter-it-18-als-kandidat) | Werkstatt · **ohne Vorregistrierung** · Kandidat (It. 18), **nicht adoptiert**; Papier-Strecke als Spalte ausgeliefert (#590) | Der Autor verweigert das Urteil über Runde 11 („die springen wild hin und her") und lässt über Nacht an `fechten` `kann` `unter` bauen. Sieben Kette-Schalter (t-Brücke · Saat-Form · Tinten-Klammer · Tinten-Soll · Unstetigkeits-Preis · Saat-Rampe · Gauß-Verschiebung; Laufform-Saat und Formglätte als Negative), der Wächter-Befund (sein Soll kam aus der Tafel statt aus der Tinte) und der zweite Sensor `paper_len_xh`. Auswahl je Wort aus dreien (It. 18) bringt die 63 Wörter von **49 auf 13** Papier-Umkehrungen und **61,7 auf 23,5 xh** Papier-Strecke bei besserem Lineal (dtw 0,045881 → 0,044128, aiou 0,7660 → 0,7821, 12 : 7) — gebucht wird nichts, bis der Autor einen Bogen abnimmt; als Folger-Schalter ändert „Wächter aus" die Doktrin. Drei Quellen-Abweichungen und ein zurückgezogener `die`-Befund stehen im Eintrag; BLAS-Pinnung für diese Nacht unbezeugt |
 | sep11 | Kette/Tintenpfad | [Welle — drei Bauten (Tintenpfad #591, Wellen-Basis, Schlange)](#welle-sep11--drei-bauten-gegen-die-physik-bedingung-des-autors-tintenpfad-bestätigt-591-wellen-basis-und-schlange-als-ehrliche-teil-negative) | drei Bauten · **Tintenpfad bestätigt** (gemergt, nicht adoptiert) · zwei ehrliche Negative | Physik-Bedingung des Autors („die Punkte können sich nur wie eine Welle zusammenhängend verschieben") als Tor; Workflow Recherche ×4 → Karte → Entwürfe → Richter ×9 → Bau ×3 → Prüfung ×3, BLAS gepinnt, Wurzel `ccb036a5eb20…`. **Tintenpfad** (Tinte zuerst, Buchstaben danach — Stränge ohne Prior, Reihenfolge per Viterbi): 13 Zeilen **0 · 93 · 0,78 xh**, 63 Wörter 0 · 331 · 1,49, dev-19 dtw 0,044230 · aiou 0,7867, aber gepaart 7 : 12 und p90 schlechter; Papier-Sensoren für einen skelettgebundenen Pfad vakuös. **Wellen-Basis** (B-Spline-Verschiebungsbasis im Kettenlöser): Zacken −78 %, dtw 0,041403 (15 : 4 gegen Basis, 10 : 9 gegen It. 17), Tor gerissen an Tinten-Umkehrungen +23 % und `das` +0,0782. **Schlange** (elastische Kurve, Sobolev-Schritt): Zickzack 3,718 → 0,009 je xh, 0 · 78 · 4,47, Lineal verloren (0,051445, 6 : 13); β_e 64 biegt die eigene Pre-Reg. Alle drei physikalisch kohärent, nur einer nimmt das Tor |
 | sep11 | Tintenpfad | [Tintenpfad-Arme + Kombination (#592)](#tintenpfad-arme-sep11--fünf-arme-drei-tragen-zwei-ehrliche-negative-die-kombination-als-kandidat-592) | fünf Arme · **drei tragen**, zwei ehrliche Negative · Kombination **Kandidat, nicht adoptiert** | Regel des Abends: Lesung der Tinte oder Regel des Dekoders, nie Glättung, nie Erfindung. **Spitzen-Lesung** (rail + walk bis ans Maskenende; 13 : 6 gegen #591, Gate 2 fällt wie geschrieben), **Normalen-Fit** (Zelt auf 4× feinerem Grau-Raster, Knick 9,74° → 8,03°, 15 : 4 — Träger ist das Grau, Scope-Frage an den Autor), **Tinten-Brücke** (2 von 9 Lücken, neutral; über `kann`/`han`/`regieren` liegt kein Haarstrich). **Stummel-Filter** no-op, Hypothese an der Quelle widerlegt — Nebenbefund: Hand 47 gegen Kandidat 79 Tinten-Umkehrungen, der Defekt ist der Überschuss +32; **Doppelstrich-Evidenz** feuert auf 0 von 63 (ß-Stämme 1,00–1,33 × Feder), die reine Dekoder-Regel `ratio 1,0` repariert p90 0,0907 → 0,0535 (3 : 0), aber nachträglich gewählt. Kombination: 13 Zeilen 0 · 95 · 1,34, 63 Wörter 0 · 330 · 4,77, dev-19 **0,041356** · 0,091040 · 0,7876, **18 : 1** gegen #591, **9 : 10** gegen Basis, 10 : 9 gegen It. 18 (der PR-Text hat die letzten beiden vertauscht) |
 
@@ -16448,8 +16452,13 @@ Die Nachtschleife vom 10./11. September, nachgetragen am `sep11` aus
 ihren Artefakten (PR #590, squash-gemergt als `ebf5d91`;
 Fortschrittsseite als Artifact; Lauf-Ordner `temp/coarse-sep10/`,
 gitignored). **Typ · Verdikt: Werkstatt · Kandidat (It. 18), nicht
-adoptiert.** Der wichtigste Fakt zuerst: **es gibt keine formale
-Vorregistrierung** dieser Runde. Sie begann als Umleitung des Autors am
+adoptiert.** Dass dieser Abschnitt trotz des Gates „kein §14-Eintrag,
+bevor ein Bogen abgenommen ist" (Punkt 5 unten) existiert, geht auf die
+Frage des Autors vom Abend des `sep11` zurück, ob das Gelernte sauber
+genug dokumentiert sei, um aus allem das Optimale zu kombinieren — er
+ist die Antwort darauf; die Zahlen bleiben zitiert, nicht gebucht, und
+das Gate gilt weiter. Der wichtigste Fakt zuerst: **es gibt keine
+formale Vorregistrierung** dieser Runde. Sie begann als Umleitung des Autors am
 Abend des `sep10` — Runde 11 (K-G, Eintrag darüber) wird NICHT
 beurteilt: „die Buchstaben folgen nicht der Tinte, die springen wild hin
 und her — such dir 3 gute Schlecht-Kandidaten, an denen bauen wir
@@ -16541,8 +16550,10 @@ Basis 34 · 189 · 35,9 · 3,72 → It. 17 18 · 162 · 29,9 · 1,86 → It. 18
 Schleife, Basis → It. 18 (dtw · aiou): `unter` 0,0882 · 0,665 → **0,073
 · 0,77**, `Galoppieren` 0,0404 · 0,708 → 0,0364 · 0,749, `die-2` 0,0822
 · 0,678 → 0,045 · 0,762 — und zwei d-Wörter SCHLECHTER trotz null
-Papier-Ausflug: `die` 0,0803 · 0,621 → 0,0948 · 0,704 (das schlechteste
-Wort, +0,0145), `das` 0,0459 · 0,804 → 0,0509 · 0,725 (+0,0050). Der
+Papier-Ausflug: `die` 0,0803 · 0,621 → 0,0948 · 0,704 (die größte
+Verschlechterung, +0,0145; das absolut schlechteste Wort der It. 18
+bleibt `muß` mit 0,113988, `tb/best3-dev.json`), `das` 0,0459 · 0,804 →
+0,0509 · 0,725 (+0,0050). Der
 Autor hat beide am Morgen ausdrücklich in die Schleife genommen und
 klargestellt: es geht nur um den FOLGER, nicht ums Schreiben.
 
@@ -16618,8 +16629,12 @@ in [`verfahren-kette.md`](verfahren-kette.md).
 ### Welle `sep11` — drei Bauten gegen die Physik-Bedingung des Autors: Tintenpfad bestätigt (#591), Wellen-Basis und Schlange als ehrliche Teil-Negative
 
 **Typ · Verdikt: drei Bauten · Tintenpfad bestätigt (gemergt `de178b1`),
-zwei ehrliche Negative — nichts adoptiert, so vorab festgelegt.** Am
-Mittag des `sep11` hat der Autor die Bedingung gesetzt, die zum Tor der
+zwei ehrliche Negative — nichts adoptiert, so vorab festgelegt.** Die
+Runde hatte sich selbst „kein §14-Eintrag" auferlegt (Kills unten);
+dieser Abschnitt steht trotzdem, nachgetragen auf die Frage des Autors
+vom Abend des `sep11`, ob das Gelernte sauber genug dokumentiert sei —
+die Zahlen bleiben zitiert, nicht gebucht, und der Autor entscheidet
+weiter nach dem Artefakt. Am Mittag des `sep11` hat der Autor die Bedingung gesetzt, die zum Tor der
 Runde wurde, wörtlich: „Es kann nicht sein, dass bei einem Buchstaben
 aus 100 Punkten dann ein Punkt plötzlich in ganz andere Richtung zackt
 und dann der Punkt danach wieder zurückkommt. Das geht ja beim Schreiben
@@ -16632,9 +16647,12 @@ welcher Bereich der gefolgten Tinte welchem Buchstaben entspricht". Die
 Runde lief nachmittags als Workflow: Recherche ×4 → Karte (zwei
 Einhängepunkte: Hook A = Neuparametrisierung der Deltas in
 `_ChainProblem.unpack/_pack`, Hook B = eigenständiger Folger neben der
-Kette) → Entwürfe ×3 → Richter ×9 (Physik · Gewinn · Machbarkeit:
-Tintenpfad 27 · 24,5 · 25, Schlange 25 · 24 · 25, Wellen-Basis 23 · 23 ·
-27) → Bau ×3 → unabhängige Prüfung ×3. Die vier Recherchen sind
+Kette) → Entwürfe ×3 → Richter ×9 (drei Richter je Entwurf mit den
+Linsen Physik · Gewinn · Machbarkeit, jeder mit einer Summe aus 30 über
+alle drei Kriterien: Tintenpfad 27 · 24,5 · 25, Schlange 25 · 24 · 25,
+Wellen-Basis 23 · 23 · 27; die Kriterien des Tintenpfads bei den drei
+Richtern Physik 9 / 7,5 / 8, Gewinn 9 / 8 / 8, Machbarkeit 9 / 9 / 9) →
+Bau ×3 → unabhängige Prüfung ×3. Die vier Recherchen sind
 kondensiert in [`../research/wellen-recherche.md`](../research/wellen-recherche.md).
 
 **Vorregistrierung** (vor jedem Bau, Brief „Was ein Ergebnis ist"): ein
@@ -16840,8 +16858,12 @@ und ob `tip_extend` 0,25 eine Lesung oder eine Erfindung ist.
 
 **Typ · Verdikt: fünf Arme · drei tragen (Spitzen-Lesung, Normalen-Fit,
 Tinten-Brücke), zwei ehrliche Negative (Stummel-Filter, Doppelstrich-
-Evidenz) · Kombination Kandidat, nicht adoptiert.** Startschuss nach
-#591, wörtlich: „ok merge und optimieren, lass uns testen ob das das neue
+Evidenz) · Kombination Kandidat, nicht adoptiert.** PR #592 hat sich
+„No §14 entry and no adoption" in den Text geschrieben; dieser Abschnitt
+steht trotzdem, nachgetragen auf die Frage des Autors vom Abend des
+`sep11`, ob das Gelernte sauber genug dokumentiert sei — die Zahlen
+bleiben zitiert, nicht gebucht, die formale Runde wartet auf die
+`sep10`-Wurzel. Startschuss nach #591, wörtlich: „ok merge und optimieren, lass uns testen ob das das neue
 beste Verfahren wird." Regel des Abends: keine Glättung der Bahn, keine
 Erfindung von Tinte — jede Änderung ist entweder eine LESUNG der Tinte
 oder eine REGEL des Dekoders; die Physik-Bedingung der Welle bindet jeden
@@ -16912,8 +16934,15 @@ die Basis** (Δ-Median +0,000406) · **10 : 9 gegen It. 18** (Δ −0,001542).
 **Zahlendreher im PR-Text #592 (und im Brief):** dort steht „10 : 9 gegen
 Basis, 9 : 10 gegen It. 18" — aus `kombination/arm63/tb-dev.json` gegen
 `tb/base-dev.json` bzw. `best3-dev.json` nachgerechnet ist es umgekehrt;
-die Prosa desselben Absatzes („six win … ten lose") ist korrekt. Die
-Gewinner: `die-2` −0,053205 · `die` −0,052083 · `unter` −0,035920 ·
+die Fortschrittsseite (Tabelle der Tintenpfad-Arme, Zeile „Kombination
+der drei", Spalten „gegen Basis · gegen It. 18") ist der dritte Träger
+dieser Paarung und trägt in ihrem Stand vom `sep11` 23:15 die
+nachgerechnete Reihenfolge — wer zitiert, prüft gegen die JSON-Reports,
+nicht gegen PR-Text oder Seite. Die Prosa desselben PR-Absatzes ist nur
+zur Hälfte richtig: „ten lose (0.0004 … 0.0053)" stimmt exakt, „six
+win" unterzählt um drei — es sind NEUN Gewinner, die drei kleinen
+(`Galoppieren` −0,008065 · `und-4` −0,004347 · `und-3` −0,001519)
+fehlen dort. Die Gewinner: `die-2` −0,053205 · `die` −0,052083 · `unter` −0,035920 ·
 `laden` −0,031736 · `das` −0,021944 · `zwei` −0,016674 · `Galoppieren`
 −0,008065 · `und-4` −0,004347 · `und-3` −0,001519; die Verlierer 0,0004
 … 0,0053, angeführt von `muß` +0,005267 (das schlechteste Wort, 0,111639
