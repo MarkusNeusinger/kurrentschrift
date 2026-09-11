@@ -14,15 +14,20 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from scipy.ndimage import distance_transform_edt
 from skimage.morphology import skeletonize
 
+from core.extract import binarize_adaptive
 from tools.pairlab.tintenpfad import (
     LEGACY_P5,
+    SUBPIXEL_MAX_PX,
+    EdtField,
     Seed,
     TintenpfadWeights,
     assemble,
     decode,
     decode_with_hysteresis,
+    fine_edt,
     hermite_bridge,
     read_tips,
     reentries,
@@ -30,6 +35,8 @@ from tools.pairlab.tintenpfad import (
     resample_run,
     spans_of,
     strands_of,
+    subpixel_rail,
+    tentfit_rail,
     tintenpfad_payload,
     tip_tail,
     weights_from_overrides,
@@ -227,6 +234,82 @@ def test_spurs_at_a_strand_end_stay_with_the_switch_and_lateral_spurs_still_go()
     diag_lat: dict = {}
     strands_of(lateral, XH, TintenpfadWeights(rail="raw", spur_at_ends=True), diag_lat)
     assert diag_lat["spurs_pruned"] == 1 and diag_lat["spurs_kept_at_ends"] == 0
+
+
+def _antialiased_stroke(angle_deg: float, half_w: float, size: tuple[int, int] = (80, 160), supersample: int = 8):
+    """A grey crop in [0, 1] (0 = ink) of one straight stroke with coverage
+    anti-aliasing — the sub-pixel edge information a scan carries — plus the
+    stroke's axis origin and unit normal."""
+    h, w = size
+    angle = np.radians(angle_deg)
+    direction = np.array([np.cos(angle), np.sin(angle)])
+    normal = np.array([-direction[1], direction[0]])
+    origin = np.array([12.0, 20.0])
+    yy, xx = np.mgrid[0 : h * supersample, 0 : w * supersample]
+    x = (xx + 0.5) / supersample - 0.5 - origin[0]
+    y = (yy + 0.5) / supersample - 0.5 - origin[1]
+    along = x * direction[0] + y * direction[1]
+    across = x * normal[0] + y * normal[1]
+    inside = (along >= 0) & (along <= 130) & (np.abs(across) <= half_w)
+    coverage = inside.reshape(h, supersample, w, supersample).mean(axis=(1, 3))
+    return 1.0 - coverage, origin, normal
+
+
+def test_the_tent_fit_on_the_fine_edt_reads_the_axis_closer_than_the_three_point_tent() -> None:
+    """A 22.5° stroke of half-width 1.5 px: the binary boundary is a staircase
+    and the ridge of its distance transform inherits it; the same distance
+    transform on the grey's finer raster, read by the ±2 px tent fit, puts the
+    strand closer to the true axis — and never moves a pixel past the cap."""
+    gray, origin, normal = _antialiased_stroke(22.5, 1.5)
+    mask = binarize_adaptive(gray)
+    strands = strands_of(skeletonize(mask), XH, TintenpfadWeights(rail="raw"), {})
+    assert len(strands) == 1
+    raw = strands[0].points.copy()
+    tan = strands[0].tan
+    coarse = subpixel_rail(raw, tan, distance_transform_edt(mask))
+    field, agreement = fine_edt(mask, gray, 4)
+    assert isinstance(field, EdtField) and field.up == 4 and field.shape == mask.shape
+    assert agreement > 0.9  # the fine boundary is the mask's own edge, read finer
+    fit = tentfit_rail(raw, tan, field, 2.0, 0.5)
+    inner = slice(10, -10)
+    off_coarse = np.abs((coarse[inner] - origin) @ normal)
+    off_fit = np.abs((fit[inner] - origin) @ normal)
+    assert off_fit.mean() < 0.75 * off_coarse.mean()
+    assert np.abs(fit - raw).max() <= SUBPIXEL_MAX_PX + 1e-9
+    # the field reads CROP-pixel distances (not fine ones): the adaptive mask's
+    # edge sits ~1.5–2 px from the axis, a fine-pixel reading would say ~8
+    assert 1.2 < float(np.median(field.read(fit[inner]))) < 2.4
+
+
+def test_the_tent_fit_on_the_binary_edt_is_a_tent_apex_not_a_parabola() -> None:
+    """On an exact continuous tent the least-squares tent recovers the apex
+    offset itself (a parabola would read 70 % of it)."""
+    edt = np.zeros((41, 41))
+    delta = 0.3
+    yy = np.arange(41, dtype=float)
+    edt[:] = np.maximum(0.0, 4.0 - np.abs(yy - (20.0 + delta)))[:, None]
+    pts = np.column_stack([np.arange(5.0, 36.0), np.full(31, 20.0)])
+    tan = np.tile([1.0, 0.0], (31, 1))
+    fit = tentfit_rail(pts, tan, edt, 2.0, 0.5)
+    assert np.allclose(fit[:, 1], 20.0 + delta, atol=0.03)
+    assert np.allclose(fit[:, 0], pts[:, 0])  # moved along the normal only
+
+
+def test_the_default_rail_ignores_the_fit_fields() -> None:
+    """`refine_strands` at the delivered default is the three-point tent on the
+    binary EDT, whatever the fit fields say — the byte-identity of the default."""
+    gray, _origin, _normal = _antialiased_stroke(30.0, 2.0)
+    mask = binarize_adaptive(gray)
+    weights = TintenpfadWeights(fit_half_px=3.0, fit_step_px=0.25)
+    strands = strands_of(skeletonize(mask), XH, weights, {})
+    expected = subpixel_rail(strands[0].points, strands[0].tan, distance_transform_edt(mask))
+    diag = refine_strands(strands, mask, weights, crop=gray)
+    assert diag == {}
+    assert np.array_equal(strands[0].points, expected)
+    fine_weights = TintenpfadWeights(rail="tentfit", edt_upsample=4)
+    strands = strands_of(skeletonize(mask), XH, fine_weights, {})
+    diag = refine_strands(strands, mask, fine_weights, crop=gray)
+    assert diag["edt_upsample"] == 4 and 0.0 <= diag["fine_mask_band_agreement"] <= 1.0
 
 
 # ----------------------------------------------------------------- stage 2
@@ -436,6 +519,12 @@ def test_weights_are_frozen_and_typed() -> None:
         weights_from_overrides(TintenpfadWeights(), ["no_such=1"])
     with pytest.raises(ValueError):
         TintenpfadWeights(rail="smooth")
+    arm = weights_from_overrides(TintenpfadWeights(), ["rail=tentfit", "edt_upsample=4"])
+    assert arm.rail == "tentfit" and arm.edt_upsample == 4 and arm.fit_half_px == 2.0
+    with pytest.raises(ValueError):
+        TintenpfadWeights(edt_upsample=0)
+    with pytest.raises(ValueError):
+        TintenpfadWeights(fit_step_px=3.0)
     with pytest.raises(dataclasses.FrozenInstanceError):
         TintenpfadWeights().turn_cost = 1.0  # type: ignore[misc]
 

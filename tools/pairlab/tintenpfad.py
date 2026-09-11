@@ -25,7 +25,14 @@ Two stages, strictly separated:
   ink's distance transform: the EDT profile across a stroke is a TENT (it is a
   distance), so the tent's apex `(f(+1) − f(−1)) / 2` is the exact sub-pixel
   centre — a reading of the ink, not a smoothing of the path, and the place
-  where the thinning's raster staircase is removed at its source.
+  where the thinning's raster staircase is removed at its source. The
+  measured arm `rail="tentfit"` reads the same distance transform wider — a
+  least-squares tent over ±2 px along the normal — and `edt_upsample > 1`
+  reads it on a finer raster whose boundary is the crop's grey cut by the
+  mask's own adaptive threshold inside the mask's edge pixels: the binary
+  boundary is a pixel staircase, and the ridge of its distance transform
+  inherits that staircase whatever the reading; the grey knows where inside
+  the edge pixel the ink ends.
 * **Stage 2 — Strang-Dekodierung (order only).** The composed word, placed by
   the frozen registration and per slot moved by the Gauß-Verschiebung
   (`affinereg.register_letters`, the night loop's `--chain-seed affine`), is
@@ -84,8 +91,9 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from scipy.ndimage import distance_transform_edt, map_coordinates
+from scipy.ndimage import binary_dilation, binary_erosion, distance_transform_edt, map_coordinates, zoom
 from scipy.spatial import cKDTree
+from skimage.filters import threshold_local
 
 from core.continuity import kink_events, stroke_profile
 from core.skeleton_graph import build_graph
@@ -110,6 +118,19 @@ BRIDGE_STEP_PX = 1.0
 # thinning pixel sits within half a pixel of the medial axis, and a larger
 # read is the tent breaking at a stroke edge, not a centre.
 SUBPIXEL_MAX_PX = 0.75
+# The tent fit (`rail="tentfit"`): the apex offset is searched on this grid and
+# refined parabolically; a fit needs this many in-ink samples, and a slope this
+# steep — a distance transform falls at unit slope, so a much flatter profile
+# is a plateau where two strokes fuse, not a tent with a readable apex.
+TENTFIT_GRID_PX = 0.02
+TENTFIT_MIN_SAMPLES = 4
+TENTFIT_MIN_SLOPE = 0.3
+# The fine raster (`edt_upsample > 1`) cuts the bilinearly interpolated crop
+# with the SAME adaptive threshold the frozen mask came from
+# (`core.extract.binarize_adaptive` defaults, used by the fixture export), so
+# the fine boundary is the mask's own edge read at sub-pixel precision.
+FINE_MASK_BLOCK_PX = 51
+FINE_MASK_OFFSET = 0.03
 
 
 @dataclass(frozen=True)
@@ -126,7 +147,16 @@ class TintenpfadWeights:
     stop_cost: float = 1.0  # an unpaired end costs as much as a 90° turn; a pair must beat 2 × this
     min_strand_xh: float = 0.10  # strands shorter than this after pairing are dropped
     tangent_window_px: int = 3  # half window of the strand tangent, in pixels
-    rail: str = "subpixel"  # "subpixel": tent fit on the EDT along the normal · "raw": the pixel chain
+    # "subpixel": three-point tent apex on the EDT along the normal · "tentfit":
+    # least-squares tent over ±fit_half_px along the normal · "raw": the pixel chain
+    rail: str = "subpixel"
+    fit_half_px: float = 2.0  # half window of the tent fit along the normal
+    fit_step_px: float = 0.5  # sample spacing of the tent fit along the normal
+    # 1 = the binary mask's distance transform; > 1 = the same distance
+    # transform on a raster this many times finer, whose boundary is the crop's
+    # grey cut by the mask's own adaptive threshold inside the mask's edge pixels
+    # (measured as arm 3 „Normalen-Fit", not part of the delivered default).
+    edt_upsample: int = 1
     # ---- stage 2: seed
     affine_seed: bool = True  # the Gauß-Verschiebung per slot; off = the plain composition
     seed_step_xh: float = 0.03  # seed resampling (≈ the chain's sample spacing)
@@ -175,8 +205,12 @@ class TintenpfadWeights:
     spur_at_ends: bool = False
 
     def __post_init__(self) -> None:
-        if self.rail not in ("subpixel", "raw"):
-            raise ValueError(f"rail must be 'subpixel' or 'raw', not {self.rail!r}")
+        if self.rail not in ("subpixel", "tentfit", "raw"):
+            raise ValueError(f"rail must be 'subpixel', 'tentfit' or 'raw', not {self.rail!r}")
+        if self.edt_upsample < 1:
+            raise ValueError(f"edt_upsample must be >= 1, not {self.edt_upsample!r}")
+        if self.fit_half_px <= 0.0 or self.fit_step_px <= 0.0 or self.fit_step_px > self.fit_half_px:
+            raise ValueError("fit_step_px must lie in (0, fit_half_px]")
         if self.candidates not in ("strand", "distance"):
             raise ValueError(f"candidates must be 'strand' or 'distance', not {self.candidates!r}")
         if self.bridge not in ("hermite", "chord"):
@@ -312,7 +346,57 @@ def strand_tangents(points: np.ndarray, window_px: int, closed: bool = False) ->
     return t
 
 
-def subpixel_rail(points: np.ndarray, tan: np.ndarray, edt: np.ndarray) -> np.ndarray:
+@dataclass(frozen=True)
+class EdtField:
+    """A distance transform in crop px, held on a raster `up` times finer.
+
+    Reads take crop-pixel coordinates and return crop-pixel distances; with
+    `up == 1` the read is the plain bilinear `map_coordinates` call, so the
+    delivered rail's numbers are untouched to the last bit.
+    """
+
+    edt: np.ndarray
+    up: int = 1
+
+    @property
+    def shape(self) -> tuple[int, int]:
+        return self.edt.shape[0] // self.up, self.edt.shape[1] // self.up
+
+    def read(self, pts: np.ndarray) -> np.ndarray:
+        if self.up == 1:
+            return map_coordinates(self.edt, [pts[:, 1], pts[:, 0]], order=1, mode="constant", cval=0.0)
+        # A crop pixel is a cell of `up × up` fine pixels: its centre `x` sits
+        # at fine index `(x + 0.5) · up − 0.5` (scipy's `grid_mode=True`).
+        fine = (np.asarray(pts, dtype=float) + 0.5) * self.up - 0.5
+        return map_coordinates(self.edt, [fine[:, 1], fine[:, 0]], order=1, mode="constant", cval=0.0) / self.up
+
+
+def fine_edt(mask: np.ndarray, crop: np.ndarray, up: int) -> tuple[EdtField, float]:
+    """The mask's distance transform on an `up`× finer raster, plus the share of
+    the mask's boundary pixels the fine raster agrees with.
+
+    The crop's grey and the adaptive threshold the frozen mask came from are
+    both interpolated bilinearly onto the fine raster; INSIDE the mask's
+    one-pixel boundary band a fine pixel is ink where the grey falls below
+    that threshold, everywhere else the mask decides (nearest). The mask thus
+    keeps deciding WHAT is ink — a Fleck stays removed, a counter stays open —
+    and the grey only decides WHERE inside an edge pixel the edge lies.
+    """
+    mask = np.asarray(mask, dtype=bool)
+    gray = np.asarray(crop, dtype=float)
+    threshold = threshold_local(gray, block_size=FINE_MASK_BLOCK_PX, method="gaussian", offset=FINE_MASK_OFFSET)
+    gray_fine = zoom(gray, up, order=1, mode="nearest", grid_mode=True)
+    threshold_fine = zoom(threshold, up, order=1, mode="nearest", grid_mode=True)
+    cell = np.ones((up, up), dtype=bool)
+    band = binary_dilation(mask) & ~binary_erosion(mask)
+    fine = np.where(np.kron(band, cell), gray_fine < threshold_fine, np.kron(mask, cell))
+    h, w = mask.shape
+    coverage = fine.reshape(h, up, w, up).mean(axis=(1, 3))
+    agreement = float(((coverage >= 0.5) == mask)[band].mean()) if band.any() else 1.0
+    return EdtField(distance_transform_edt(fine), up), agreement
+
+
+def subpixel_rail(points: np.ndarray, tan: np.ndarray, edt: np.ndarray | EdtField) -> np.ndarray:
     """Each pixel moved along its normal onto the apex of the ink's distance tent.
 
     The EDT read at −1, 0, +1 px along the local normal is `w − |x − δ|` inside
@@ -320,18 +404,108 @@ def subpixel_rail(points: np.ndarray, tan: np.ndarray, edt: np.ndarray) -> np.nd
     parabola would halve it. Reads that fall off the ink (a stroke edge, a
     counter) leave the pixel where the thinning put it.
     """
-    h, w = edt.shape
+    field = edt if isinstance(edt, EdtField) else EdtField(edt)
+    h, w = field.shape
     out = np.asarray(points, dtype=float).copy()
     normal = np.column_stack([-tan[:, 1], tan[:, 0]])
-    plus = out + normal
-    minus = out - normal
-    f_plus = map_coordinates(edt, [plus[:, 1], plus[:, 0]], order=1, mode="constant", cval=0.0)
-    f_minus = map_coordinates(edt, [minus[:, 1], minus[:, 0]], order=1, mode="constant", cval=0.0)
+    f_plus = field.read(out + normal)
+    f_minus = field.read(out - normal)
     delta = 0.5 * (f_plus - f_minus)
     valid = (f_plus > 0.0) & (f_minus > 0.0) & (np.abs(delta) <= SUBPIXEL_MAX_PX)
     inside = (out[:, 0] >= 1) & (out[:, 0] <= w - 2) & (out[:, 1] >= 1) & (out[:, 1] <= h - 2)
     move = valid & inside
     out[move] += normal[move] * delta[move, None]
+    return out
+
+
+def tentfit_rail(
+    points: np.ndarray, tan: np.ndarray, edt: np.ndarray | EdtField, half_px: float, step_px: float
+) -> np.ndarray:
+    """Each pixel moved along its normal onto the apex of a least-squares tent
+    `a − b·|x − δ|` fitted to the EDT over ±`half_px` at `step_px` spacing.
+
+    Only the contiguous run of in-ink samples around the pixel enters the fit
+    (a counter or the paper beyond a stroke edge is not part of this stroke's
+    tent); `δ` is searched on `TENTFIT_GRID_PX` and refined parabolically. A
+    pixel whose run is too short for a tent, or whose fitted slope is too flat
+    for a distance, falls back to the apex of the outermost symmetric pair
+    `(f(+s) − f(−s)) / 2` — the three-point reading at that scale — and stays
+    where the thinning put it when no symmetric pair lies in the ink. Every
+    read is along the normal: a reading of the distance transform, never a
+    filter along the path.
+    """
+    field = edt if isinstance(edt, EdtField) else EdtField(edt)
+    h, w = field.shape
+    out = np.asarray(points, dtype=float).copy()
+    n = len(out)
+    if n == 0:
+        return out
+    normal = np.column_stack([-tan[:, 1], tan[:, 0]])
+    k_half = max(1, int(round(half_px / step_px)))
+    offs = np.arange(-k_half, k_half + 1) * step_px
+    m = len(offs)
+    c = k_half
+    f = np.stack([field.read(out + normal * o) for o in offs], axis=1)
+    positive = f > 0.0
+    sel = np.zeros_like(positive)
+    sel[:, c] = positive[:, c]
+    for j in range(c - 1, -1, -1):
+        sel[:, j] = sel[:, j + 1] & positive[:, j]
+    for j in range(c + 1, m):
+        sel[:, j] = sel[:, j - 1] & positive[:, j]
+    n_sel = sel.sum(axis=1)
+    has_both = sel[:, :c].any(axis=1) & sel[:, c + 1 :].any(axis=1)
+    selw = sel.astype(float)
+    n_grid = int(round(SUBPIXEL_MAX_PX / TENTFIT_GRID_PX))
+    deltas = np.arange(-n_grid, n_grid + 1) * TENTFIT_GRID_PX
+    res = np.full((n, len(deltas)), np.inf)
+    slope = np.zeros((n, len(deltas)))
+    s_w = np.maximum(n_sel, 1).astype(float)
+    s_y = (selw * f).sum(axis=1)
+    for k, dlt in enumerate(deltas):
+        g = -np.abs(offs - dlt)
+        s_g = selw @ g
+        s_gg = selw @ (g * g)
+        s_gy = (selw * f) @ g
+        den = s_w * s_gg - s_g * s_g
+        ok = den > 1e-9
+        b = np.where(ok, (s_w * s_gy - s_g * s_y) / np.where(ok, den, 1.0), 0.0)
+        a = (s_y - b * s_g) / s_w
+        r = selw * (f - a[:, None] - b[:, None] * g[None, :])
+        res[:, k] = np.where(ok, (r * r).sum(axis=1), np.inf)
+        slope[:, k] = b
+    best = np.argmin(res, axis=1)
+    rows = np.arange(n)
+    delta = deltas[best]
+    fit_res = res[rows, best]
+    r0 = res[rows, np.maximum(best - 1, 0)]
+    r2 = res[rows, np.minimum(best + 1, len(deltas) - 1)]
+    # A pixel with no fit at all carries `inf` residuals; it gets no refinement.
+    interior = (best > 0) & (best < len(deltas) - 1) & np.isfinite(r0) & np.isfinite(fit_res) & np.isfinite(r2)
+    r0, r1, r2 = (np.where(interior, r, 0.0) for r in (r0, fit_res, r2))
+    curv = r0 - 2.0 * r1 + r2
+    refine = np.where(interior & (curv > 1e-12), 0.5 * (r0 - r2) / np.where(curv > 1e-12, curv, 1.0), 0.0)
+    delta = delta + refine * TENTFIT_GRID_PX
+    fit_ok = (
+        (n_sel >= TENTFIT_MIN_SAMPLES)
+        & has_both
+        & np.isfinite(fit_res)
+        & (slope[rows, best] >= TENTFIT_MIN_SLOPE)
+        & (np.abs(delta) <= SUBPIXEL_MAX_PX)
+    )
+    # Fallback: the outermost symmetric pair still inside the ink.
+    pair_delta = np.zeros(n)
+    pair_ok = np.zeros(n, dtype=bool)
+    for j in range(1, c + 1):
+        both = sel[:, c - j] & sel[:, c + j]
+        pair_delta = np.where(both, 0.5 * (f[:, c + j] - f[:, c - j]), pair_delta)
+        pair_ok |= both
+    pair_ok &= np.abs(pair_delta) <= SUBPIXEL_MAX_PX
+    move_delta = np.where(fit_ok, delta, pair_delta)
+    valid = fit_ok | pair_ok
+    inside = (out[:, 0] >= 1) & (out[:, 0] <= w - 2) & (out[:, 1] >= 1) & (out[:, 1] <= h - 2)
+    move = valid & inside
+    out[move] += normal[move] * move_delta[move, None]
     return out
 
 
@@ -442,12 +616,28 @@ def strands_of(skel: np.ndarray, xh: float, weights: TintenpfadWeights, diag: di
     return strands
 
 
-def refine_strands(strands: list[Strand], mask: np.ndarray, weights: TintenpfadWeights) -> None:
-    """The sub-pixel reading of every strand, in place; tangents re-read afterwards."""
-    edt = distance_transform_edt(np.asarray(mask, dtype=bool))
+def refine_strands(
+    strands: list[Strand], mask: np.ndarray, weights: TintenpfadWeights, crop: np.ndarray | None = None
+) -> dict[str, Any]:
+    """The sub-pixel reading of every strand, in place; tangents re-read afterwards.
+
+    Returns the diagnostics of the reading — empty for the delivered default,
+    so its report stays byte-identical; the fine raster reports how well its
+    boundary agrees with the frozen mask's.
+    """
+    diag: dict[str, Any] = {}
+    edt: np.ndarray | EdtField = distance_transform_edt(np.asarray(mask, dtype=bool))
+    if weights.edt_upsample > 1 and crop is not None:
+        edt, agreement = fine_edt(mask, crop, weights.edt_upsample)
+        diag["edt_upsample"] = weights.edt_upsample
+        diag["fine_mask_band_agreement"] = round(agreement, 4)
     for s in strands:
-        s.points = subpixel_rail(s.points, s.tan, edt)
+        if weights.rail == "tentfit":
+            s.points = tentfit_rail(s.points, s.tan, edt, weights.fit_half_px, weights.fit_step_px)
+        else:
+            s.points = subpixel_rail(s.points, s.tan, edt)
         s.tan = strand_tangents(s.points, weights.tangent_window_px, s.closed)
+    return diag
 
 
 # --------------------------------------------------------------- stage 2: seed
@@ -1404,8 +1594,8 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
     case_ev, _ = ink_evidence_case(case, InkEvidenceOptions(paper_fraction=INK_EVIDENCE_PAPER_FRACTION))
     diag: dict[str, Any] = {}
     strands = strands_of(np.asarray(case_ev.skel, dtype=bool), xh, weights, diag)
-    if weights.rail == "subpixel":
-        refine_strands(strands, np.asarray(case_ev.mask, dtype=bool), weights)
+    if weights.rail in ("subpixel", "tentfit"):
+        diag.update(refine_strands(strands, np.asarray(case_ev.mask, dtype=bool), weights, crop=case_ev.crop))
     affreg = None
     if weights.affine_seed:
         affreg = register_letters(case_ev, result)
@@ -1728,6 +1918,7 @@ __all__ = [
     "LOOP_WORDS",
     "TINTENPFAD_ARTIFACT_VERSION",
     "TINTENPFAD_TOOL_NAME",
+    "EdtField",
     "Seed",
     "Strand",
     "TintenpfadWeights",
@@ -1739,6 +1930,7 @@ __all__ = [
     "excursions_of",
     "extend_tip",
     "extend_tips",
+    "fine_edt",
     "follow_case",
     "follow_word",
     "hermite_bridge",
@@ -1754,6 +1946,7 @@ __all__ = [
     "strand_tangents",
     "strands_of",
     "subpixel_rail",
+    "tentfit_rail",
     "tintenpfad_payload",
     "turn_angles_deg",
     "weights_from_overrides",
