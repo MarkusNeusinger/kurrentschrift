@@ -1,10 +1,11 @@
 """The §14 register gate: an entry without its index line does not ship.
 
-Why. `docs/reference/messjournal.md` §14 is the campaign journal — 88 dated
-sections, ~47 000 words, and the one home of the numbers. Three registers were
+Why. `docs/reference/messjournal.md` §14 is the campaign journal — 123 dated
+sections (2026-09-11), well over 100 000 words, and the one home of the numbers. Three registers were
 built on top of it so a reader can find the current state without reading all of
-it: the entry table and the headline ledger at the head of §14, and the four
-`verfahren-*.md` ledgers. Each of them carries a "same PR" duty in its own prose,
+it: the entry table and the headline ledger at the head of §14, and the
+`verfahren-*.md` ledgers (four at the time, six since the Tintenpfad page of
+2026-09-11). Each of them carries a "same PR" duty in its own prose,
 and the audit of 2026-09-02 found all three lagging — the process pages by two
 adoptions and six to twelve days, the headline history only ever in running text,
 and one headline pair whose fixture root nobody could name. A duty that only
@@ -34,9 +35,9 @@ Three rules, all read off the committed files:
    for the numbers: a value that appears nowhere else is a number invented in a
    table.
 3. **Every route entry reaches its process page.** A register row on Kette ·
-   Lotse · InkSight · Nullprobe · Übergänge needs its date in that page's
-   ledger; a row on "alle Routen" needs it on the four DUEL routes, which is
-   what the phrase has always meant.
+   Lotse · InkSight · Nullprobe · Übergänge · Tintenpfad needs its date in
+   that page's ledger; a row on "alle Routen" needs it on the four ORIGINAL
+   duel routes, which is what the phrase has always meant.
 
 Standard library only, so CI runs it without syncing the project's extras.
 """
@@ -88,19 +89,27 @@ POST_JOURNAL_SUBHEADINGS: tuple[str, ...] = ()
 # land on, which is exactly the decay this module exists against. Laufform,
 # Lineal and Feder also appear in the register's route column and deliberately
 # stay out: their state lives elsewhere (verfahren.md says where).
+#
+# „Tintenpfad" is the fifth duel route (strand decoding, "ink first, letters
+# afterwards"), a candidate since 2026-09-11 with three measured states on its
+# page. It joined here in the same PR that created the page, because a page
+# the gate does not know is exactly the honour-based duty the 2026-09-02 audit
+# found decayed.
 ROUTE_PAGES = {
     "Kette": Path("docs/reference/verfahren-kette.md"),
     "Lotse": Path("docs/reference/verfahren-lotse.md"),
     "InkSight": Path("docs/reference/verfahren-inksight.md"),
     "Nullprobe": Path("docs/reference/verfahren-nullprobe.md"),
     "Übergänge": Path("docs/reference/verfahren-uebergaenge.md"),
+    "Tintenpfad": Path("docs/reference/verfahren-tintenpfad.md"),
 }
 ALL_ROUTES = "alle Routen"
-# What „alle Routen" means: the four routes that run in the duel, and only
-# those. The one row that uses it is the `aug17` re-baseline of the 19-word dev
-# set — a duel measurement that predates the Übergänge section entirely, so
-# expanding the phrase over every page in ROUTE_PAGES would demand a ledger row
-# for a day on which the route did not exist.
+# What „alle Routen" means: the four routes that ran in the duel on the one
+# day the phrase is used, and only those. That row is the `aug17` re-baseline
+# of the 19-word dev set — a duel measurement that predates the Übergänge
+# section and the Tintenpfad (2026-09-11) entirely, so expanding the phrase
+# over every page in ROUTE_PAGES would demand a ledger row for a day on which
+# the route did not exist.
 DUEL_ROUTES = ("Kette", "Lotse", "InkSight", "Nullprobe")
 
 # `aug14`, `sep02` — the journal's own date tag, also the Datum column everywhere.

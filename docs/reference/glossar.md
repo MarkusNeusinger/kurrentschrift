@@ -64,7 +64,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — Gauß-Verschiebung §3 · G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
-- **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
+- **H** — H0–H5 §5 · Hand §2 · Hand-Überschuss §4 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kompromisswinkel §2 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5
@@ -75,12 +75,12 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
-- **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
+- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
 - **V** — Variante §2 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschlag (Streifen-Befund) §5 · Vorschub-Kalibrierung §2 · Vorschrift §1
-- **W** — W1–W6 §5 · Wackler §4 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Tintenlücke §2 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
+- **W** — W1–W6 §5 · Wackler §4 · Warp §3 · Wellen-Basis §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Tintenlücke §2 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zeichenbreiten-Mittel (`AVG_ADVANCE_UNITS`) §7 · Zeilen-Gate (Laufform) §2 · Zeilenmarke §7 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · zonale Rückweisung (`zonal`) §3 · „Zug um Zug“ §7 · Zwei Stillen (Leerzustands-Regel) §5 · Zwei-Drittel-Gesetz §6 · Zwei-Züge-Modell §4 · Zögling (geplant) §4
 
@@ -1389,7 +1389,47 @@ die **Tinten-Brücke**, ein Dekoder-Absetzer wird nur dort zur Sehne, wo der
 Grauwert über die Lücke blasse Tinte unter Papierniveau liest. Gemessen
 und AUS geblieben: `stub_xh` (Stummel-Filter, bewegt keinen Strich) und
 `double_ink_ratio` (Doppelstrich-Evidenz am ß-Stamm, feuert auf der
-Tafel nie: Stämme lesen 1,0–1,3 Federbreiten)
+Tafel nie: Stämme lesen 1,0–1,3 Federbreiten). Seit `sep11` eine eigene
+Route mit Verfahrensseite (→ Duell-Namen, verfahren-tintenpfad.md);
+Stand Kandidat, nicht adoptiert — §14 „Welle `sep11`" und
+„Tintenpfad-Arme `sep11`"
+
+**Wellen-Basis** *(wave basis, `--wave-spacing`)* — die Physik-Bedingung
+des Autors („die Punkte können sich nur wie eine Welle zusammenhängend
+verschieben", 2026-09-11) als PARAMETERRAUM statt als Preis: im
+Kettenlöser werden die freien Anker-Deltas als `deltas = B @ c` neu
+parametrisiert, B eine geklemmte kubische B-Spline-Entwurfsmatrix über die
+Bogenlänge der Saat, ein Block je Pen-Zug (stetig über Buchstaben-Nähte,
+geschnitten nur an buchstaben-internen `stroke_starts`, Knoten alle Δs
+0,25 xh, Leiter 0,16/0,35). Nur `unpack`/`_pack` ändern sich, jeder
+Energieterm und Wächter liest weiter je Anker, der Gradient ist die exakte
+Kettenregel Bᵀg — ein Ein-Anker-Zacken ist damit nicht darstellbar, kein
+Strafterm bepreist ihn. Hook A der Welle-Runde; gemessen `sep11` als
+**ehrliches Teil-Negativ**: Zacken −78 %, Papier-Strecke −54 %, aber
+Tinten-Umkehren +23 % und `das` +0,0782 — ein kohärentes Feld repariert
+eine falsche Saat nicht punktweise. *Technisch:* Zweig
+`wellen-basis-hook-a` (ungemergt), `tools/pairlab/follow.py`
+(`_ChainProblem.unpack/_pack`); der Vorfahr im Repo ist der
+Spline-Basis-Median von LF11 (`core/aggregate.py`) → messjournal.md §14
+„Welle `sep11`", research/wellen-recherche.md §2
+
+**Schlange** *(snake follower, `tools/pairlab/schlange.py`)* — der
+Folger als elastische Kurve NEBEN der Kette (Hook B der Welle-Runde): jeder
+Stift-unten-Lauf wird nach der Assembler-Regel zu EINER Kurve
+verschweißt, bei h 0,8 px abgetastet (Duktus-Ecken als Bruchknoten) und
+mit dem semi-impliziten Schritt `x += τ·(I + ℓ⁴·D2ᵀD2)⁻¹·(F_img + F_cov +
+F_home + F_bend)` über eine σ-Leiter 2 → 1 px entwickelt. Die Kohärenz
+kommt aus drei Mechanismen: dem Sobolev-/Metrik-Schritt (eine METRIK, die
+den Weg ändert, nicht die Fixpunkte — Kass–Witkin–Terzopoulos,
+Sundaramoorthi), der Bogenlängen-Reparametrisierung und der
+Biege-Energie β_e mit freier Eckenzeile. Gemessen `sep11` als **ehrliches
+Teil-Negativ**: Zickzack je xh 3,718 → 0,009 (der beste Physik-Wert der
+Runde, Ablation: die Metrik ist der Mechanismus), Papier-Umkehr 18 → 0,
+aber das Lineal verloren (dev-19 0,045881 → 0,051445, 6 : 13) an drei
+benannten Klassen (das-Becken, muß/ß, Kapitale/W); 18 gestrandete
+Diakritika. *Technisch:* Zweig `wellen-schlange` (ungemergt); erklärte
+Einstellung ℓ 7 · β_e 64 (regelkonform wäre 16) · `cov_soft_k 4` als
+Schalter → messjournal.md §14 „Welle `sep11`", research/wellen-recherche.md §3
 
 **Fremdtinte** *(foreign ink)* — Tinte im Wort-Crop, die das Wort nie
 geschrieben hat und die die eingefrorene Binarisierung trotzdem behält:
@@ -2883,6 +2923,19 @@ Komposition schreibt Buchstaben zu eng aneinander vorbei.
 `RETRACE_MAX_PARTNER_GAP_UNITS`
 → messjournal.md §14 (Struktur-Zähler v2)
 
+**Hand-Überschuss** *(excess over the hand)* — die Tinten-Umkehrungen
+eines Kandidaten MINUS die der handgespurten Referenz derselben Zeilen,
+statt der Rohzahl: die Hand schreibt auf dev-19 selbst 47
+Tinten-Umkehrungen (Sütterlin-Spitzen, Retraces), der Tintenpfad 79, der
+Defekt ist also der Überschuss +32 und nicht die 93 der Kopfzeile. Der
+Nebenbefund des Stummel-Filters (`sep11`), der die Hypothese „93 statt 74
+= Preis der kleinen Stummel" an der Quelle widerlegte; laut Prüfer der
+wertvollste Ertrag der Runde und Kandidat für den nächsten
+Umkehr-Sensor (Pre-Reg auf ≤ +20, kein Wort mehr als 1 schlechter).
+*Technisch:* Sonde `probes/stummel_hand_rev.py` unter
+`temp/tintenpfad-sep11/stummel/`, noch keine Spalte in
+`tools.tracebench.reversals` → messjournal.md §14 „Tintenpfad-Arme `sep11`"
+
 **Papier-Strecke** *(paper length)* — die Länge der gefahrenen Bahn über
 PAPIER-Pixeln, in x-Höhen je Wort, mit demselben Papier-Test wie die
 Papier-Umkehr (Grau-Mittelwert des Crops, oder `--paper mask` die
@@ -2987,7 +3040,11 @@ ohne Wirkstoff). Geplant: **Zögling** (eigenes Trajektorien-Modell auf
 Engine-Paaren, Route B2) · **Vier Augen** (Fusion beider Routen) ·
 **Feinschliff** (Natürlichkeitsfilter als zweite Stufe) · **Chor**
 (ordnungs-bewusste Auswahl unter Varianten) · **Lotse** (Arbeitstitel:
-Skelett direkt fahren, Duktus als Karte an Abzweigungen). Technische
+Skelett direkt fahren, Duktus als Karte an Abzweigungen) · seit `sep11`
+**Tintenpfad** (die Strang-Dekodierung, `tools/pairlab/tintenpfad`: Tinte
+zuerst, Buchstaben danach — Kandidat, nicht adoptiert, eigene Seite
+verfahren-tintenpfad.md; der Begriff war der Name, bevor er Anzeigename
+wurde). Technische
 Namen bleiben in Code und datierten §14-Einträgen unverändert — dieser
 Eintrag ist die Übersetzungstabelle. *Technisch:* Label-Marker in
 `tools/tracebench/view.py` (`CHAIN_MARKERS`/`CONTROL_MARKERS`)
@@ -3565,7 +3622,7 @@ dem Anker seiner Quelle.
 
 **Messjournal** *(measurement journal)* — die Datei
 [`messjournal.md`](messjournal.md), seit 2026-09-04 die Heimat von §14, dem
-Kampagnen-Journal: 120 datierte Abschnitte, je einer pro Mess-Runde, mit
+Kampagnen-Journal: 123 datierte Abschnitte, je einer pro Mess-Runde, mit
 Vorregistrierung, gemessenen Zahlen und Verdikt. Vorher stand die Sektion in
 `qualitaetsmetrik.md` und machte dort zwei Drittel der Datei aus, sodass jede
 Frage nach einer Metrik-REGEL das ganze Journal mitlud; der Umzug ist Wort für

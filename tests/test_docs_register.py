@@ -80,11 +80,12 @@ LOTSE = """# Verfahrensseite Lotse
 INKSIGHT = "# InkSight\n\n| Datum | Stufe |\n|---|---|\n| aug15 | T0 |\n"
 NULLPROBE = "# Nullprobe\n\n| Datum | Messung |\n|---|---|\n| aug14 | Kontrolllauf |\n"
 UEBERGAENGE = "# Übergänge\n\n| Datum | Arm |\n|---|---|\n| sep06 | J4 Adoption |\n"
+TINTENPFAD = "# Tintenpfad\n\n| Datum | Version/Arm |\n|---|---|\n| sep11 | Strang-Dekodierung |\n"
 
 
 @pytest.fixture()
 def repo(tmp_path: Path) -> Path:
-    """A throwaway tree with just the eight files the gate reads."""
+    """A throwaway tree with just the nine files the gate reads."""
     (tmp_path / "docs" / "reference").mkdir(parents=True)
     _write(tmp_path, dr.JOURNAL, JOURNAL)
     _write(tmp_path, dr.METRIC, METRIC)
@@ -94,6 +95,7 @@ def repo(tmp_path: Path) -> Path:
     _write(tmp_path, dr.ROUTE_PAGES["InkSight"], INKSIGHT)
     _write(tmp_path, dr.ROUTE_PAGES["Nullprobe"], NULLPROBE)
     _write(tmp_path, dr.ROUTE_PAGES["Übergänge"], UEBERGAENGE)
+    _write(tmp_path, dr.ROUTE_PAGES["Tintenpfad"], TINTENPFAD)
     return tmp_path
 
 
@@ -272,10 +274,39 @@ def test_alle_routen_needs_the_date_on_every_page(repo: Path) -> None:
     # InkSight's synthetic ledger knows aug15 only.
     assert any("verfahren-inksight.md" in p for p in problems)
     assert not any("verfahren-nullprobe.md" in p for p in problems)
-    # „alle Routen" is the four DUEL routes. The Übergänge page joined the gate
-    # on 2026-09-09 and its section did not exist on the one day the phrase is
-    # used, so a duel re-baseline must not demand a row from it.
+    # „alle Routen" is the four ORIGINAL duel routes. The Übergänge page joined
+    # the gate on 2026-09-09 and the Tintenpfad on 2026-09-11; neither existed
+    # on the one day the phrase is used, so a duel re-baseline must not demand
+    # a row from them.
     assert not any("verfahren-uebergaenge.md" in p for p in problems)
+    assert not any("verfahren-tintenpfad.md" in p for p in problems)
+
+
+def test_a_tintenpfad_entry_missing_from_its_process_page_fails(repo: Path) -> None:
+    # The fifth duel route. Its page was created on 2026-09-11 with the note
+    # that the gate did not know it yet — registering it in the same PR is what
+    # turns that honour-based duty into a checked one.
+    text = JOURNAL.replace(
+        "| aug20 | Lotse | [v0.17](#lotse-v017-aug20--das-reservierungs-veto) | gemessen · adoptiert | zähler-identisch |",
+        "| sep12 | Tintenpfad | [v0.17](#lotse-v017-aug20--das-reservierungs-veto) | gemessen | zähler-identisch |",
+    )
+    _write(repo, dr.JOURNAL, text)
+    problems = dr.check_all(root=repo)
+    assert any("has no ledger row in docs/reference/verfahren-tintenpfad.md" in p for p in problems)
+
+
+def test_a_combined_route_cell_is_checked_on_every_named_page(repo: Path) -> None:
+    # The Welle entry of `sep11` is booked as „Kette/Tintenpfad": one entry,
+    # two ledgers, and the slash means BOTH pages owe the date.
+    text = JOURNAL.replace(
+        "| aug20 | Lotse | [v0.17](#lotse-v017-aug20--das-reservierungs-veto) | gemessen · adoptiert | zähler-identisch |",
+        "| sep11 | Kette/Tintenpfad | [v0.17](#lotse-v017-aug20--das-reservierungs-veto) | gemessen | zähler-identisch |",
+    )
+    _write(repo, dr.JOURNAL, text)
+    problems = dr.check_all(root=repo)
+    # The synthetic Tintenpfad ledger knows sep11, the Kette ledger only aug14.
+    assert any("has no ledger row in docs/reference/verfahren-kette.md" in p for p in problems)
+    assert not any("verfahren-tintenpfad.md" in p for p in problems)
 
 
 def test_an_uebergaenge_entry_missing_from_its_process_page_fails(repo: Path) -> None:
