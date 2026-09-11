@@ -60,8 +60,8 @@ steps:
       - "1"
       - "--timeout"
       - "60"
-      # min=0 keeps idle cost ~zero (cold start ~1s for nginx); max=1 caps
-      # blast radius for a personal-scale project.
+      # min=0 keeps idle cost ~zero (cold start 0.21 s p50 for nginx, measured
+      # 2026-09-10); max=1 caps blast radius for a personal-scale project.
       - "--min-instances"
       - "0"
       - "--max-instances"
@@ -71,8 +71,12 @@ steps:
       - "--execution-environment"
       - "gen2"
       - "--cpu-throttling"
+      # 80, not 15: with max=1 these slots are the whole capacity, and nginx
+      # holds a proxied crawler request open for as long as the API takes to
+      # answer — 15 was a default a single bot burst could fill. The API behind
+      # it caps its own work at 30 in flight (api/cloudbuild.yaml).
       - "--concurrency"
-      - "15"
+      - "80"
       # Deploy WITHOUT routing traffic: the smoke step probes this revision on
       # its tag URL first, and only the promote step below shifts traffic — so
       # a broken nginx.conf never serves visitors or crawlers, not even between
