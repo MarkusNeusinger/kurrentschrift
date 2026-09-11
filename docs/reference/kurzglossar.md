@@ -210,6 +210,11 @@ derselben Blendenlänge hängen. Ohne Blende und ohne eigene Abnahmeregel,
 sonst R3s Geltungsbereich; `--counter-constraint`, Vorgabe AUS.
 → [§3](glossar.md#3-mess--und-fit-vokabular)
 
+**Strang · Strang-Dekodierung** — eine glatte Skelettkette ohne Prior, und
+der **Tintenpfad**-Folger, der die komponierte Reihenfolge per Viterbi durch
+die Stränge dekodiert: Tinte zuerst, Buchstaben danach.
+→ [§3](glossar.md#3-mess--und-fit-vokabular)
+
 **Schleifenbereich · Schleifen-Registrierung** — der Anker-Indexbereich,
 über den die TAFELZEILE eine Schleife schließt (`loop_ranges`), und der
 Schritt, der jedes Vorkommen dort per Ähnlichkeit auf die Median-Schleife
