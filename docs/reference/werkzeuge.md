@@ -954,6 +954,32 @@ Warnung versehen. Begriff und Hausregel:
   der Ablauf einer Runde hat genau eine Quelle. (Bis `sep05` stand er
   hier ein zweites Mal, und beide Kopien mussten dieselbe
   `--expect-root`-Änderung erhalten.)
+- **`tools/pairlab/tintenpfad`** — der **Tintenpfad**, der
+  Strang-Dekodier-Folger (Glossar §3: Strang · Strang-Dekodierung): Tinte
+  zuerst, Buchstaben danach. Stufe 1 baut aus dem eingefrorenen Skelett die
+  **Stränge** (Sporn-Ausdünnung, glatteste Fortsetzung je Knoten,
+  Sub-Pixel-Schiene); Stufe 2 dekodiert die Gauß-verschobene Saat per
+  Viterbi durch die Stränge (monotone Fahrt, bepreiste Haken, Sprünge und
+  Papier-Ein-/Ausstiege, Hysterese) und legt die
+  Strangpixel selbst als Bahn aus, mit Hermite-Brücken an Sprüngen.
+  Keine Anker, kein Verschiebungsfeld: frei
+  sind nur Strang, Richtung und Absetzen, und jede Wahl bewegt einen
+  ganzen Strang. Aufruf:
+
+  ```bash
+  OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run python -m tools.pairlab.tintenpfad \
+      [--all | ids…] --expect-root <digest> --jobs 2 \
+      --candidate-out <dir>/cand.json --json <dir>/report.json [--legacy-p5] [--weight NAME=VALUE …]
+  ```
+
+  Alle Konstanten stehen eingefroren in `TintenpfadWeights` und wandern
+  per `asdict` in den Kandidaten; `--legacy-p5` stellt die gemessene
+  Prototyp-Zeile wieder her. Sensoren je Wort in `meta.tintenpfad`:
+  unbesuchte Tinte (`ink_unvisited_share` über 0,10 ist ein erklärter
+  Skip), Hin-und-zurück je Brücke und Schiene, Knick- und Drehwinkel,
+  Zuordnung (`label_agreement`), Verschiebungskohärenz. Reine Messschicht,
+  `core.skeleton_graph` und `core.continuity` nur importiert. Erstes
+  Artefakt unter `temp/wellen-sep11/`, noch ohne §14-Eintrag.
 - **`tools/inksight`** — die Route-B-Pipeline des Tintenfolger-Duells
   ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §4):
   drei Stufen (Crop-Vorbereitung → Inferenz im ISOLIERTEN
