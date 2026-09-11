@@ -48,8 +48,14 @@ from scipy.ndimage import label as label_regions
 from scipy.optimize import minimize
 from scipy.spatial import cKDTree
 
+from core.compose import (
+    BAR_RETRACE_BULGE_UNITS,
+    BAR_RETRACE_MAX_DX_UNITS,
+    BAR_RETRACE_MIN_RISE_UNITS,
+    _endpoint_tangent,
+    _key_base,
+)
 from core.compose import CONNECT_SAMPLES as _COMPOSE_CONNECT_SAMPLES
-from core.compose import _endpoint_tangent
 from core.fit import (
     CONVERGED_COVERAGE_RMSE_UNITS,
     CONVERGED_GEO_RMSE_UNITS,
@@ -340,6 +346,8 @@ class ChainSegmentSpec:
     seam_in: int | None = None  # anchor index shared with the PREVIOUS segment's `seam_out`
     seam_out: int | None = None  # anchor index shared with the NEXT segment's `seam_in`
     cov_window_px: tuple[float, float] | None = None
+    exit_shift_x: float = 0.0  # letters: how far the x-scale/affine seed moved the exit anchor (composed units)
+    exit_shift_y: float = 0.0
     """Optional `(x_lo, x_hi)` crop-px window this segment's coverage GATE is
     read in — the letter-local window of `analyze.trace_letter_ductus`. The FIT
     is unaffected: coverage targets, objective and gradient keep seeing the whole
@@ -750,6 +758,14 @@ class _ChainProblem:
     anchor: 1 on the block's own letter, the arc-length ramp on a connector
     interior, 0 elsewhere. Linear ⇒ the ramp's gradient is exact."""
     smooth_op: np.ndarray = field(default_factory=lambda: np.zeros((0, 0)))
+    lsmooth_op: np.ndarray = field(default_factory=lambda: np.zeros((0, 0)))
+    """(m, K_plan) second-difference operator over the LETTER plan blocks, one
+    block per pen stroke (the Formglätte, night loop 2026-09-11). Unlike the
+    connector's `smooth_op` it is read against the SEED: the term prices
+    roughness ADDED to a letter, not the letter's own curvature, so a loop
+    stays a loop and the pixel-by-pixel jitter of 120 anchors on a one-pixel
+    grid is what it flattens."""
+    lsmooth_weight: float = 0.0
     """(M, K_plan) second differences of the connector blocks only."""
     bind_op: np.ndarray = field(default_factory=lambda: np.zeros((0, 0)))
     """(M, K_free) second differences of the LETTER blocks' DISPLACEMENTS.
@@ -786,6 +802,19 @@ class _ChainProblem:
     exactly as a multi-stroke glyph is, so a pen lift inside a letter (the u's
     two downstrokes) splits its samples here — which is what lets a caller read
     the fitted chain back out as pen-down polylines instead of one blob."""
+    corner_of_sample: np.ndarray = field(default_factory=lambda: np.zeros(0, dtype=bool))
+    """(n_s,) True at the surviving sample of every corner knot (`SamplePlan.
+    corner_sample_idx`) — the one place a within-stroke reversal is a ductus
+    event and not a kink."""
+    kink_cos: float = 0.3
+    kink_weight: float = 0.0
+    """The Unstetigkeits-Preis (2026-09-10, the night loop; the author's
+    Leitsatz of 2026-09-06: unnatural is a sudden change of direction where
+    the ductus has no event). Consecutive sample directions within one pen
+    stroke whose cosine falls below `kink_cos` pay a quadratic hinge, except
+    at and beside a corner sample and across a pen lift. Dimensionless, so its
+    weight is calibrated by eye and ruler, not by `e_geo`'s scale. 0.0 skips
+    the term, so a solve is bit-identical to one built before it."""
     skel: np.ndarray | None = None
     """The band-restricted skeleton the fields were built from (`_prepare_fields`),
     kept for CONSUMERS, never read by `_evaluate` — the objective sees only the
@@ -817,6 +846,17 @@ class _ChainProblem:
     """…and its weight, normalised so 1.0 is the ink term's own. 0.0 is the
     other inert state, and the term is then SKIPPED rather than added as a
     zero, so a solve is bit-identical to one built before it existed."""
+    paper_target_px: float = 0.0
+    """The Tinten-Klammer (2026-09-10, the three-word loop): how far, in crop
+    px, a sample may stand from the skeleton before the clamp bites — one pen
+    width, so a sample ON the ink's edge pays nothing."""
+    paper_weight: float = 0.0
+    """…and its weight on the `e_geo` scale. The ink term is a quadratic pull
+    everywhere; this is a second, steep quadratic that starts only past the
+    target, so an excursion into the PAPER (the e-loop's excess folded out
+    beside a hairpin `e`, the K-C needles) is priced far above the Tikhonov
+    pull that keeps it there, while a sample inside the ink feels nothing.
+    0.0 skips the term, so a solve is bit-identical to one built before it."""
 
     # ------------------------------------------------------------------ mapping
 
@@ -1071,6 +1111,57 @@ class _ChainProblem:
         if grad_terms is not None and "counter" not in samples:
             samples["counter"] = (np.zeros(n_s), np.zeros(n_s))
 
+        # --- the Tinten-Klammer: no sample past one pen width into the paper -
+        # Reads the SAME smoothed distance field as `e_geo`, so it adds no data
+        # and no new correspondence — only a price. Quadratic hinge past the
+        # target, gradient along the field's own slope; folded onto the anchors
+        # through `sampling_op` like every other sample term.
+        e_paper = 0.0
+        if self.paper_weight > 0.0:
+            excess = np.maximum(d - self.paper_target_px, 0.0)
+            e_paper = float(np.mean(excess**2)) / unit_sq
+            g_paper_px = self.paper_weight * 2.0 * excess * d_dx / (n_s * unit_sq)
+            g_paper_py = self.paper_weight * 2.0 * excess * d_dy / (n_s * unit_sq)
+            g_px = g_px + g_paper_px
+            g_py = g_py + g_paper_py
+            if grad_terms is not None:
+                samples["paper"] = (g_paper_px, g_paper_py)
+        if grad_terms is not None and "paper" not in samples:
+            samples["paper"] = (np.zeros(n_s), np.zeros(n_s))
+
+        # --- the Unstetigkeits-Preis: no kink where the ductus has no event ---
+        # cos between consecutive sample directions, hinged below `kink_cos`;
+        # the gradient is the exact derivative of that cosine through both
+        # segments, so a zig-zag is straightened by moving its three samples.
+        e_kink = 0.0
+        if self.kink_weight > 0.0 and n_s >= 3:
+            p_xy = np.column_stack([px, py])
+            v = np.diff(p_xy, axis=0)
+            length = np.linalg.norm(v, axis=1) + 1e-9
+            u = v / length[:, None]
+            cosv = (u[:-1] * u[1:]).sum(axis=1)
+            so = self.stroke_of_sample
+            valid = (so[:-2] == so[1:-1]) & (so[1:-1] == so[2:])
+            if len(self.corner_of_sample) == n_s:
+                co = self.corner_of_sample
+                valid &= ~(co[:-2] | co[1:-1] | co[2:])
+            h = np.where(valid, np.maximum(self.kink_cos - cosv, 0.0), 0.0)
+            n_v = max(1, int(valid.sum()))
+            e_kink = float(np.sum(h**2)) / n_v
+            de_dcos = self.kink_weight * (-2.0) * h / n_v  # (n_s-2,)
+            dcos_dva = (u[1:] - cosv[:, None] * u[:-1]) / length[:-1, None]
+            dcos_dvb = (u[:-1] - cosv[:, None] * u[1:]) / length[1:, None]
+            g_kink = np.zeros((n_s, 2))
+            np.add.at(g_kink, np.arange(0, n_s - 2), -de_dcos[:, None] * dcos_dva)
+            np.add.at(g_kink, np.arange(1, n_s - 1), de_dcos[:, None] * (dcos_dva - dcos_dvb))
+            np.add.at(g_kink, np.arange(2, n_s), de_dcos[:, None] * dcos_dvb)
+            g_px = g_px + g_kink[:, 0]
+            g_py = g_py + g_kink[:, 1]
+            if grad_terms is not None:
+                samples["kink"] = (g_kink[:, 0], g_kink[:, 1])
+        if grad_terms is not None and "kink" not in samples:
+            samples["kink"] = (np.zeros(n_s), np.zeros(n_s))
+
         # --- Tikhonov on the LETTER anchors only (binding constraint 3) ---
         e_reg = float(np.sum(self.reg_w * np.sum(deltas**2, axis=1))) / self.n_letter_anchors
 
@@ -1083,6 +1174,19 @@ class _ChainProblem:
             r = np.zeros((0, 2))
             m_d2 = 1
             e_smooth = 0.0
+
+        # --- letter Formglätte: roughness ADDED against the seed (inert by default) ---
+        # The same second-difference operator as the connector's, but applied to
+        # the displacement from the seed plan anchors, so the letter's own
+        # curvature costs nothing and only the jitter the solve adds is priced.
+        if self.lsmooth_weight > 0.0 and self.lsmooth_op.shape[0]:
+            r_ls = self.lsmooth_op @ (ap - self.anchors_free[self.idx])
+            m_ls = self.lsmooth_op.shape[0]
+            e_lsmooth = float(np.sum(r_ls**2)) / m_ls
+        else:
+            r_ls = np.zeros((0, 2))
+            m_ls = 1
+            e_lsmooth = 0.0
 
         # --- neighbour binding on the LETTER displacements (inert by default) ---
         # Second difference of the DELTAS within a letter's own pen-stroke: a
@@ -1127,6 +1231,9 @@ class _ChainProblem:
             + self.bind_weight * e_bind
             + self.landmark_weight * e_landmark
             + self.counter_weight * e_counter
+            + self.paper_weight * e_paper
+            + self.kink_weight * e_kink
+            + self.lsmooth_weight * e_lsmooth
         )
         terms = {
             "e_geo": e_geo,
@@ -1141,6 +1248,9 @@ class _ChainProblem:
             "e_bind": e_bind,
             "e_landmark": e_landmark,
             "e_counter": e_counter,
+            "e_paper": e_paper,
+            "e_kink": e_kink,
+            "e_lsmooth": e_lsmooth,
             "f": f,
         }
         if not want_grad:
@@ -1157,6 +1267,13 @@ class _ChainProblem:
         )
         if self.smooth_op.shape[0]:
             g_plan = g_plan + g_smooth_plan
+        g_lsmooth_plan = (
+            self.lsmooth_weight * 2.0 * (self.lsmooth_op.T @ r_ls) / m_ls
+            if (self.lsmooth_weight > 0.0 and self.lsmooth_op.shape[0])
+            else np.zeros_like(g_plan)
+        )
+        if self.lsmooth_weight > 0.0 and self.lsmooth_op.shape[0]:
+            g_plan = g_plan + g_lsmooth_plan
         # Skipped outright at weight 0 — not added as a zero array — so the
         # packed gradient is bit-identical to the term's absence.
         g_landmark_plan = (
@@ -1181,6 +1298,7 @@ class _ChainProblem:
         if grad_terms is not None:
             grad_terms["samples"] = samples
             grad_terms["smooth_plan"] = g_smooth_plan
+            grad_terms["lsmooth_plan"] = g_lsmooth_plan
             grad_terms["landmark_plan"] = np.zeros_like(g_plan) if g_landmark_plan is None else g_landmark_plan
             grad_terms["reg_delta"] = g_reg_delta
             grad_terms["bind_delta"] = np.zeros_like(g_reg_delta) if g_bind_delta is None else g_bind_delta
@@ -1209,9 +1327,11 @@ class _ChainProblem:
 
         One entry per name in `GRADIENT_TERMS` — `geo` (the smoothed distance
         field), `crop` (the out-of-crop pull split off it), `width`,
-        `coverage`, `overlap`, `smooth` (connector curvature change), `reg`
-        (Tikhonov), `bind` (letter neighbour binding, inert by default) and
-        `landmark` (crossing correspondence, inert by default) — each WEIGHTED
+        `coverage`, `overlap`, `counter`, `paper` (the Tinten-Klammer) and
+        `kink` (the Unstetigkeits-Preis, both inert by default), `smooth`
+        (connector curvature change), `reg` (Tikhonov), `bind` (letter
+        neighbour binding, inert by default) and `landmark` (crossing
+        correspondence, inert by default) — each WEIGHTED
         as the objective weighs it, so the entries are comparable forces rather
         than bare energies.
 
@@ -1233,6 +1353,7 @@ class _ChainProblem:
         for name, (g_px_t, g_py_t) in acc["samples"].items():
             out[name] = self._pack(self._fold_samples(g_px_t, g_py_t), None)
         out["smooth"] = self._pack(self._fold_plan(acc["smooth_plan"]), None)
+        out["lsmooth"] = self._pack(self._fold_plan(acc["lsmooth_plan"]), None)
         out["landmark"] = self._pack(self._fold_plan(acc["landmark_plan"]), None)
         # The Tikhonov pull is a function of the deltas alone: it reaches
         # neither the global shift nor a slot block, which is why those two
@@ -1372,6 +1493,11 @@ def build_chain_problem(
     counter_smooth: np.ndarray | None = None,
     counter_target_px: float = 0.0,
     counter_weight: float = 0.0,
+    paper_target_px: float = 0.0,
+    paper_weight: float = 0.0,
+    kink_cos: float = 0.3,
+    kink_weight: float = 0.0,
+    lsmooth_weight: float = 0.0,
 ) -> _ChainProblem:
     """Assemble the chain optimisation problem. Pure: no I/O, no DB, no case.
 
@@ -1540,6 +1666,8 @@ def build_chain_problem(
         if plan.drop_rows
         else np.asarray(stroke_of_row, dtype=int)
     )
+    corner_of_sample = np.zeros(len(stroke_of_sample), dtype=bool)
+    corner_of_sample[[int(c) for c in plan.corner_sample_idx if 0 <= int(c) < len(stroke_of_sample)]] = True
     sample_slices: list[tuple[int, int]] = []
     for i in range(len(specs)):
         where = np.flatnonzero(seg_of_sample == i)
@@ -1598,6 +1726,27 @@ def build_chain_problem(
         blocks.append(block)
     if blocks:
         smooth_rows = np.vstack(blocks)
+
+    # ---- letter Formglätte operator: one block per PEN STROKE of a letter ----
+    # A second difference across a pen lift would price the jump between two
+    # strokes as roughness, so the blocks stop at every stroke start.
+    lsmooth_rows = np.zeros((0, k_plan))
+    lblocks: list[np.ndarray] = []
+    for i, spec in enumerate(specs):
+        if spec.kind != "letter":
+            continue
+        p0, p1 = plan_slices[i]
+        starts = sorted({0, *(int(s) for s in (spec.stroke_starts or ()) if 0 < int(s) < p1 - p0)})
+        bounds = [*starts, p1 - p0]
+        for a, b in zip(bounds[:-1], bounds[1:], strict=True):
+            d2 = _second_difference_operator(anchors_plan0[p0 + a : p0 + b])
+            if not d2.shape[0]:
+                continue
+            block = np.zeros((d2.shape[0], k_plan))
+            block[:, p0 + a : p0 + b] = d2
+            lblocks.append(block)
+    if lblocks:
+        lsmooth_rows = np.vstack(lblocks)
 
     # ---- crossing landmarks: the letters' structure against the ink's ----
     landmark_op, landmark_targets, landmark_report = _landmark_correspondence(
@@ -1717,6 +1866,8 @@ def build_chain_problem(
         bounds=bounds,
         block_op=block_op,
         smooth_op=smooth_rows,
+        lsmooth_op=lsmooth_rows,
+        lsmooth_weight=float(lsmooth_weight),
         bind_op=_letter_bind_operator(specs, anchor_slices, k_free),
         landmark_op=landmark_op,
         landmark_targets=landmark_targets,
@@ -1732,6 +1883,11 @@ def build_chain_problem(
         counter_smooth=None if counter_smooth is None else np.asarray(counter_smooth, dtype=float),
         counter_target_px=float(counter_target_px),
         counter_weight=float(counter_weight),
+        paper_target_px=float(paper_target_px),
+        paper_weight=float(paper_weight),
+        corner_of_sample=corner_of_sample,
+        kink_cos=float(kink_cos),
+        kink_weight=float(kink_weight),
     )
 
 
@@ -1824,8 +1980,83 @@ def chain_runs(case: WordCase) -> list[list[int]]:
     return runs
 
 
-def _letter_spec(case: WordCase, result: WordDeriveResult, slot_index: int) -> tuple[ChainSegmentSpec, float] | None:
+def _bridge_bar_strokes(
+    key: str | None,
+    position: str | None,
+    anchors: np.ndarray,
+    stroke_starts: list[int],
+    corner_anchors: list[int],
+    half_widths: np.ndarray,
+) -> tuple[np.ndarray, list[int], list[int], np.ndarray]:
+    """The t's crossbar keeps the pen down — the chain plan gets the composer's bridge.
+
+    `core.compose` writes the t's bar WITHOUT a lift (`BAR_RETRACE_*`): the hand
+    retraces the stem from its foot up to the bar start as a slightly offset
+    pass, and the rendered word never lifts there. The chain, however, plans
+    its pen strokes from the chart row's own `stroke_starts`, where the bar IS
+    a second stroke — so every fitted trace lifted at the t's foot and
+    restarted at the bar (fechten: two pen strokes for a word the plate writes
+    in one), and that restart had to find `ten` from a start point the
+    composition never draws (author, 2026-09-10: „wieso startet beim t
+    überhaupt ein neuer Strich"). Here the composer's rule, guards verbatim,
+    inserts the retrace anchors between foot and bar start, drops that stroke
+    start, and marks both ends as corners — a cusp at the foot, a turn at the
+    bar — so the sampler treats the reversal as the ductus event it is.
+    Half-widths along the bridge interpolate foot → bar start. Letters other
+    than `t`, and a `t` whose row fails the guards, come back untouched.
+    """
+    if _key_base(key, position) != "t":
+        return anchors, stroke_starts, corner_anchors, half_widths
+    k = len(anchors)
+    starts = sorted({int(s) for s in stroke_starts if 0 < int(s) < k})
+    if not starts:
+        return anchors, stroke_starts, corner_anchors, half_widths
+    pieces: list[np.ndarray] = []
+    hw_pieces: list[np.ndarray] = []
+    new_starts: list[int] = [0]
+    corners = [int(c) for c in corner_anchors]
+    shift = 0
+    cut = 0
+    for s in starts:
+        foot, start = anchors[s - 1], anchors[s]
+        rise = float(start[1] - foot[1])
+        dx = float(start[0] - foot[0])
+        if rise < BAR_RETRACE_MIN_RISE_UNITS or abs(dx) > BAR_RETRACE_MAX_DX_UNITS:
+            new_starts.append(s + shift)
+            continue
+        n = max(3, int(np.ceil(rise / 0.05)))
+        ks = np.arange(1, n, dtype=float)  # interior points only — foot and bar start exist already
+        bridge = np.column_stack(
+            [foot[0] + dx * ks / n + BAR_RETRACE_BULGE_UNITS * np.sin(np.pi * ks / n), foot[1] + rise * ks / n]
+        )
+        pieces += [anchors[cut:s], bridge]
+        hw_pieces += [half_widths[cut:s], np.linspace(half_widths[s - 1], half_widths[s], n + 1)[1:-1]]
+        corners = [c + len(bridge) if c >= s + shift else c for c in corners]
+        corners += [s - 1 + shift, s + shift + len(bridge)]
+        shift += len(bridge)
+        cut = s
+    pieces.append(anchors[cut:])
+    hw_pieces.append(half_widths[cut:])
+    return np.vstack(pieces), new_starts, sorted(set(corners)), np.concatenate(hw_pieces)
+
+
+def _letter_spec(
+    case: WordCase,
+    result: WordDeriveResult,
+    slot_index: int,
+    *,
+    bar_bridge: bool = False,
+    x_scale: float = 1.0,
+    seed_form: str = "chart",
+    affine: tuple[np.ndarray, np.ndarray] | None = None,
+) -> tuple[ChainSegmentSpec, float] | None:
     """One letter as a chain segment, plus the chart→composed x offset.
+
+    `x_scale` (2026-09-10, the Saat-Form arm): the row's anchors are scaled in x
+    about the letter's ENTRY anchor before the solve, so a letter the chart
+    draws wider than the hand writes it (the `e`: chart 1.3 xh, the plate's
+    `unter` 0.65) starts at the hand's width instead of having to fold 120
+    anchors into half the ink. 1.0 is the historical seed, byte-identical.
 
     The chart row (variant 0) is shifted into word coordinates by the composed
     placement, recovered with `analyze.trace_letter_ductus`' EXACT four lines —
@@ -1837,6 +2068,14 @@ def _letter_spec(case: WordCase, result: WordDeriveResult, slot_index: int) -> t
     """
     slot = case.slots[slot_index]
     row = case.templates.get(slot.key) if slot.key else None
+    if seed_form == "laufform" and slot.key and case.laufform.get(slot.key):
+        # The night loop's Laufform seed (2026-09-11): where this hand's own
+        # running form exists (the harvested median, `templates_laufform`),
+        # the chain starts from it instead of the chart row — the same frame
+        # and anchor count, the shape the plates actually write. The k's deep
+        # lower loop, the r's arm and the o's bowl were where the chart seed
+        # still left the paper after every other mechanism.
+        row = case.laufform[slot.key]
     items = _body_items(result, slot_index)
     if row is None or not items:
         return None
@@ -1854,7 +2093,28 @@ def _letter_spec(case: WordCase, result: WordDeriveResult, slot_index: int) -> t
     offset = dx - float(anchors[0, 0])  # composed_x = chart_x + offset
     placed = anchors.copy()
     placed[:, 0] += offset
+    exit_shift_x = 0.0
+    exit_shift_y = 0.0
+    if x_scale != 1.0:
+        exit_before = float(placed[-1, 0])
+        placed[:, 0] = placed[0, 0] + (placed[:, 0] - placed[0, 0]) * float(x_scale)
+        exit_shift_x = float(placed[-1, 0]) - exit_before
+    if affine is not None:
+        # The Gauß-Verschiebung seed (`tools.pairlab.affinereg`, 2026-09-11):
+        # the full affine about the entry anchor — shift, x/y scale, rotation,
+        # shear — as registered against the ink image, in composed units.
+        a_mat, t_vec = np.asarray(affine[0], dtype=float), np.asarray(affine[1], dtype=float)
+        exit_before_xy = placed[-1].copy()
+        entry = placed[0].copy()
+        placed = entry + (placed - entry) @ a_mat.T + t_vec
+        exit_shift_x += float(placed[-1, 0] - exit_before_xy[0])
+        exit_shift_y += float(placed[-1, 1] - exit_before_xy[1])
     stroke_starts = [int(s) for s in (meta.get("stroke_starts") or [0])]
+    corner_anchors = [int(c) for c in (meta.get("corner_anchors") or [])]
+    if bar_bridge:
+        placed, stroke_starts, corner_anchors, half_widths = _bridge_bar_strokes(
+            slot.key, slot.position, placed, stroke_starts, corner_anchors, half_widths
+        )
     cut_in, cut_out = _letter_cut_anchors(placed, stroke_starts)
     spec = ChainSegmentSpec(
         kind="letter",
@@ -1862,10 +2122,12 @@ def _letter_spec(case: WordCase, result: WordDeriveResult, slot_index: int) -> t
         slot_index=slot_index,
         key=slot.key,
         stroke_starts=stroke_starts,
-        corner_anchors=[int(c) for c in (meta.get("corner_anchors") or [])],
+        corner_anchors=corner_anchors,
         half_widths=half_widths,
         seam_in=cut_in,
         seam_out=cut_out,
+        exit_shift_x=exit_shift_x,
+        exit_shift_y=exit_shift_y,
     )
     return spec, offset
 
@@ -2118,8 +2380,23 @@ def fit_word_chain(
     landmark_weight: float | None = None,
     mark_claim: bool = False,
     connector_init: str = CONNECTOR_INIT_MIRROR,
+    bar_bridge: bool = False,
+    slot_scale_init: dict[int, float] | None = None,
+    paper_weight: float = 0.0,
+    paper_target_units: float = 0.0,
+    kink_weight: float = 0.0,
+    kink_cos: float = 0.3,
+    connector_ramp: bool = False,
+    seed_form: str = "chart",
+    lsmooth_weight: float = 0.0,
+    slot_affine_init: dict[int, tuple[np.ndarray, np.ndarray]] | None = None,
 ) -> ChainWordFit | None:
     """Fit a run of consecutive slots as ONE chain `[L, C, L, C, …]`.
+
+    * **`bar_bridge`** (2026-09-10, off by default): plan the t's crossbar the
+      way `core.compose` draws it — pen down, stem retraced from the foot to
+      the bar start — instead of the chart row's lift (`_bridge_bar_strokes`).
+      Off, every fit is byte-identical to before.
 
     The Stage-B generalisation of `fit_pair_chain` (which is now a two-slot
     wrapper over this): every letter of the run is a segment with its own
@@ -2210,7 +2487,15 @@ def fit_word_chain(
     specs: list[ChainSegmentSpec] = []
     offsets: dict[int, float] = {}
     for n, slot_index in enumerate(run):
-        made = _letter_spec(case, result, slot_index)
+        made = _letter_spec(
+            case,
+            result,
+            slot_index,
+            bar_bridge=bar_bridge,
+            x_scale=float((slot_scale_init or {}).get(slot_index, 1.0)),
+            seed_form=seed_form,
+            affine=(slot_affine_init or {}).get(slot_index),
+        )
         if made is None:
             return None
         spec, offset = made
@@ -2225,6 +2510,26 @@ def fit_word_chain(
             conn = _connector_spec(result, run[n - 1], join_call=call)
             if conn is None:
                 return None
+            if (
+                connector_ramp
+                and specs
+                and specs[-1].kind == "letter"
+                and (specs[-1].exit_shift_x or specs[-1].exit_shift_y)
+            ):
+                # The x-scale seed moved the previous letter's exit; the
+                # composed connector still starts where the unscaled exit was,
+                # and welding the two left a straight chord through the paper
+                # (night loop 2026-09-10, iteration 7). Ramp the exit's shift
+                # over the connector's arc length down to zero at the next
+                # letter's entry, which the scale never moves.
+                k_c = len(conn.anchors)
+                if k_c >= 2:
+                    steps = np.linalg.norm(np.diff(conn.anchors, axis=0), axis=1)
+                    arc = np.concatenate([[0.0], np.cumsum(steps)])
+                    t = arc / arc[-1] if arc[-1] > 0 else np.linspace(0.0, 1.0, k_c)
+                    conn.anchors = conn.anchors.copy()
+                    conn.anchors[:, 0] += specs[-1].exit_shift_x * (1.0 - t)
+                    conn.anchors[:, 1] += specs[-1].exit_shift_y * (1.0 - t)
             specs.append(conn)
         specs.append(spec)
         offsets[slot_index] = offset
@@ -2279,6 +2584,15 @@ def fit_word_chain(
         baseline_y_px=baseline_y_px,
         bind_weight=bind_weight,
         landmark_weight=landmark_weight,
+        # The night-loop terms (2026-09-10) reach the INITIAL solve too: a
+        # follower round the guard rejects leaves this solve's geometry as
+        # the answer, and with seeded letters its connectors were straight
+        # chords through the paper. At 0.0 both are skipped, byte-identical.
+        paper_target_px=float(paper_target_units) * xh,
+        paper_weight=float(paper_weight),
+        kink_cos=float(kink_cos),
+        kink_weight=float(kink_weight),
+        lsmooth_weight=float(lsmooth_weight),
         **fields,
     )
     # Seed the translation blocks BEFORE the initial energies, so `e0` states
@@ -2396,6 +2710,8 @@ def fit_word_chain(
             # What stays identical is the GEOMETRY, and that is the claim the
             # arm's Gate 1 actually tests: stroke-identical 63/63.
             **({"connector_init": connector_init} if connector_init != CONNECTOR_INIT_MIRROR else {}),
+            **({"bar_bridge": True} if bar_bridge else {}),
+            **({"slot_scale_init": {str(k): float(v) for k, v in slot_scale_init.items()}} if slot_scale_init else {}),
             # How many crossing landmarks got an ink target and how many were
             # refused, per reason — a term with nothing assigned is inert for a
             # reason that has to be readable, not inferred from a flat energy.
@@ -2487,7 +2803,21 @@ def fit_pair_chain(
 
 # Every weighted term of the chain objective, in the order they are applied.
 # `geo` and `crop` are the two halves of `e_geo`.
-GRADIENT_TERMS = ("geo", "crop", "width", "coverage", "overlap", "counter", "smooth", "reg", "bind", "landmark")
+GRADIENT_TERMS = (
+    "geo",
+    "crop",
+    "width",
+    "coverage",
+    "overlap",
+    "counter",
+    "paper",
+    "kink",
+    "smooth",
+    "lsmooth",
+    "reg",
+    "bind",
+    "landmark",
+)
 # Relative tolerance of the sum check. The split is re-added in a different
 # order than the objective accumulates it, so bit-equality is not on offer;
 # anything above float noise means the decomposition describes a DIFFERENT

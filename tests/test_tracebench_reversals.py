@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from tools.tracebench.reversals import COS_MAX, MIN_SEGMENT_PX, reversal_vertices
+from tools.tracebench.reversals import COS_MAX, MIN_SEGMENT_PX, paper_length_px, reversal_vertices
 
 
 def test_smooth_arc_has_no_reversal() -> None:
@@ -50,3 +50,29 @@ def test_short_segments_are_thinned_before_the_angle_is_read() -> None:
 def test_a_polyline_shorter_than_three_points_cannot_reverse() -> None:
     assert len(reversal_vertices(np.array([[0.0, 0.0], [5.0, 5.0]]))) == 0
     assert len(reversal_vertices(np.empty((0, 2)))) == 0
+
+
+def _half_paper() -> np.ndarray:
+    """A 40×40 paper test: paper (True) for x ≥ 20, ink for x < 20."""
+    is_paper = np.zeros((40, 40), dtype=bool)
+    is_paper[:, 20:] = True
+    return is_paper
+
+
+def test_paper_length_is_zero_over_ink_and_the_whole_length_over_paper() -> None:
+    is_paper = _half_paper()
+    over_ink = np.array([[2.0, 10.0], [12.0, 10.0], [12.0, 20.0]])
+    assert paper_length_px(over_ink, is_paper) == 0.0
+    over_paper = np.array([[25.0, 5.0], [35.0, 5.0], [35.0, 15.0]])
+    assert paper_length_px(over_paper, is_paper) == 20.0
+
+
+def test_paper_length_of_a_crossing_segment_is_its_part_over_paper() -> None:
+    """A single long segment from ink into paper is walked at one pixel, so the
+    paper share is measured along its run, not read off its two vertices."""
+    is_paper = _half_paper()
+    chord = np.array([[10.0, 10.0], [30.0, 10.0]])  # 20 px, the second half over paper
+    assert abs(paper_length_px(chord, is_paper) - 10.0) <= 1.0
+    diagonal = np.array([[10.0, 0.0], [30.0, 20.0]])  # length 28.28, half of it over paper
+    assert abs(paper_length_px(diagonal, is_paper) - 14.14) <= 1.5
+    assert paper_length_px(np.array([[5.0, 5.0]]), is_paper) == 0.0

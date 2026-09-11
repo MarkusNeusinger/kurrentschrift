@@ -62,8 +62,8 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
-- **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
-- **G** — G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
+- **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
+- **G** — Gauß-Verschiebung §3 · G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
@@ -72,12 +72,12 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5 · Mittellinien-Öffnungsweite (`D0`) §4
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Nahtverhandlung (`seam_negotiation`) §2 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nullprobe §4
 - **O** — Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
-- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Umkehr §4 · Passmarken §5 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
+- **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Saat-Abstand §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
-- **T** — Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenlücke §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
-- **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Sensor §4 · Unvollständige Wortprobe §5
+- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
+- **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
 - **V** — Variante §2 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschlag (Streifen-Befund) §5 · Vorschub-Kalibrierung §2 · Vorschrift §1
 - **W** — W1–W6 §5 · Wackler §4 · Warp §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Tintenlücke §2 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
@@ -1227,6 +1227,86 @@ fahren kann. Berichts-Sensor, an kein Gate gebunden.
 *Technisch:* `tools/pairlab/seedgap.py`
 → messjournal.md §14 („Kette K-G Saat-Registrierung `sep09`",
 „Kette K-C `aug20`" Befund (d)) · proposals/tintenfolger.md §7.2
+
+**t-Brücke** *(bar bridge, Nachtschleife `sep10`)* — die Kette plant ihre
+Federzüge aus den Strichgrenzen der Buchstaben-Vorlage, und dort ist der
+t-Balken ein eigener Strich; der Composer schreibt ihn seit Juli OHNE
+Absetzen (`BAR_RETRACE_*`: Stamm vom Fuß zurück zum Balkenansatz). Bis zur
+Nachtschleife setzte deshalb jede gefahrene Bahn am t-Fuß ab und begann
+den Balken als neuen Zug (fechten: zwei Züge für ein Wort, das die Platte
+in einem schreibt) — der Autor sah es zuerst („wieso startet beim t
+überhaupt ein neuer Strich"). `chain._bridge_bar_strokes` fügt die
+Brückenanker des Composers in den Plan ein, streicht den Strichbeginn und
+macht Fuß und Balkenansatz zu Umkehrpunkten. Schalter `--bar-bridge`,
+Vorgabe AUS.
+
+**Saat-Form · Saat-Rampe** *(seed form, seed ramp)* — die zweite Hälfte
+der Saat-Registrierung (→ Saat-Abstand): `--chain-seed grid-scale` sucht
+je Slot nicht nur den Ort, sondern auch die x-BREITE des komponierten
+Buchstabens (0,5–1,5, um seinen Eintritt skaliert), mit symmetrischem
+Maß — Abstand der Proben zum Skelett PLUS Abstand der dem Buchstaben
+gehörenden Skelettpixel zur nächsten Probe, damit ein Buchstabe nicht
+auf einen Nachbarstamm zusammenfallen kann. Die Skalierung verschiebt
+den Austritt, der komponierte Verbinder begann aber am alten — beim
+Verschweißen entstand eine gerade **Sehne** durchs Papier, die der
+Umkehr-Sensor nicht sieht (→ Papier-Strecke). Die **Saat-Rampe**
+(`--seed-ramp`) lässt den Verbinder den Austritts-Versatz mitnehmen und
+rampt ihn bis zum Eintritt des nächsten Buchstabens auf null.
+
+**Tinten-Klammer** *(ink clamp)* — ein zweiter, steiler quadratischer
+Hinge auf demselben geglätteten Abstandsfeld wie `e_geo`, der erst jenseits
+einer Federbreite vom Skelett greift (`--paper-weight W --paper-target
+0,1`): eine Stützstelle IN der Tinte zahlt nichts, ein Ausflug ins Papier
+weit mehr, als die Tikhonov-Zugkraft hält. Kein neues Datum, keine neue
+Zuordnung, nur ein Preis. Allein wirkungslos, solange der Topologie-Wächter
+die Runde verwirft (→ Tinten-Soll).
+
+**Tinten-Soll** *(ink soll, `--soll-source ink`)* — die dritte Soll-Quelle
+des Topologie-Wächters neben `init` und `composition`: eine Kreuzung, die
+die Komposition zeichnet, zählt nur, wenn das Skelett der Tinte innerhalb
+von 0,35 xh einen Verzweigungspunkt hat. Der Befund dahinter: das Tafel-e
+bringt eine Schleife und damit eine Kreuzung mit, das e dieser Hand ist
+eine Haarnadel ohne — und der Wächter mit Kompositions-Soll wies jede
+Runde zurück, die die Bahn auf die Haarnadel legte, weil sie eine
+Kreuzung „verlor", die die Tinte nie hatte. Retrace, Berührung und
+Überlappung behalten das Kompositions-Soll; dazu kann die Tinte nichts
+sagen.
+
+**Unstetigkeits-Preis** *(kink price, `--kink-weight W --kink-cos 0,3`)*
+— der Wahrnehmungs-Leitsatz des Autors (2026-09-06: unnatürlich ist ein
+plötzlicher Richtungswechsel dort, wo der Duktus kein Ereignis hat) als
+Term im Ziel: zwei aufeinanderfolgende Proben-Richtungen innerhalb eines
+Federzuges, deren Kosinus unter `kink_cos` fällt, zahlen einen
+quadratischen Hinge; die Umkehrpunkte der Vorlage, ihre Nachbarn und die
+Absetzer sind ausgenommen. Dimensionslos, Gradient exakt durch beide
+Segmente. Nimmt das Hin-und-Her heraus, das die Klammer in die Tinte
+faltet. Die Sensor-Seite derselben Aussage ist der Unstetigkeits-Sensor
+(§4).
+
+**Formglätte** *(letter smoothness, `--letter-smooth W`)* — zweite
+Differenzen der VERSCHIEBUNG eines Buchstabens gegen seine Saat, je
+Federzug, als Term (`lsmooth`): die eigene Krümmung kostet nichts, nur das
+Zittern, das der Löser hinzufügt. Gemessen in der Nachtschleife `sep11`
+als **ehrliches Negativ**: etwas weniger Zittern in der Tinte (142 → 124
+Tinten-Umkehren über zwölf Wörter), dafür mehr Bahn im Papier (24 → 34
+Papier-Umkehren) — der Term ist ein zweiter Form-Prior, denn wer einen
+Buchstaben auf anders geformte Tinte legt, muss genau die zweiten
+Differenzen ändern, die er bestraft. Schalter bleibt AUS; Rettungsweg ist
+weniger Freiheit statt mehr Strafe (ein Affin-Block je Buchstabe).
+
+**Gauß-Verschiebung** *(affine registration seed, `--chain-seed affine`)* —
+die Saat-Registrierung als Bildregistrierung, nach dem Bild des Autors
+(2026-09-11: zwei Signale so lange übereinander schieben, bis die Differenz
+minimal wird, in 2D, weil der Gleichzug-Strich der Platte eine Breite hat).
+Je Buchstaben-Slot ist die komponierte Bahn das bewegliche Signal, die
+eingefrorene Tintenmaske das feste; beide durch eine Gauß-Glocke fallender
+Breite gelesen (4 → 2 → 1 px), und je Stufe wird eine Affinität um den
+Eintrittspunkt — Schub, Dehnung x/y, Drehung, Scherung — mit Powell
+gesucht. Symmetrisches Maß (Proben auf Tinte, Tintenpixel im Fenster nahe
+einer Probe) plus weicher Prior auf die Einheit. `tools/pairlab/affinereg.py`;
+die Kette säht dann `p' = Eintritt + A·(p − Eintritt) + t`, die Saat-Rampe
+trägt den verschobenen Austritt in den Verbinder. Die erste Saat, mit der
+fechten und unter ohne einen Papier-Ausflug auf der Tinte liegen.
 
 **Kettenfit** *(chain fit)* — die Idee, **Buchstabe → Verbinder →
 Buchstabe als EINE durchlaufende Feder** zu fitten statt als zwei
@@ -2746,6 +2826,16 @@ Komposition schreibt Buchstaben zu eng aneinander vorbei.
 `tools/tracebench/counters.py` re-exportiert),
 `RETRACE_MAX_PARTNER_GAP_UNITS`
 → messjournal.md §14 (Struktur-Zähler v2)
+
+**Papier-Strecke** *(paper length)* — die Länge der gefahrenen Bahn über
+PAPIER-Pixeln, in x-Höhen je Wort, mit demselben Papier-Test wie die
+Papier-Umkehr (Grau-Mittelwert des Crops, oder `--paper mask` die
+eingefrorene Maske; `tools.tracebench.reversals`, Spalte `paper_len_xh`).
+Der zweite
+Sensor der Nachtschleife `sep10`, weil der erste blind ist: eine gerade
+Sehne durchs Papier kehrt nirgends um und zählt als Papier-Umkehr null,
+misst aber Strecke. Beide zusammen lesen: Umkehr = Kritzel, Strecke =
+Sehne oder Ausflug.
 
 **Papier-Umkehr** *(paper reversal)* — der Zickzack, den das Auge als
 Defekt liest, getrennt vom Zickzack, der Duktus ist. Eine **Umkehr**

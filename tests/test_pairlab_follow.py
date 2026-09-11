@@ -33,6 +33,7 @@ import pytest
 from core.fit import DEFAULT_LAMBDA_REG
 from core.quality_suetterlin import MIN_RETRACE_PAIRS
 from tests.test_pairlab_chain import UNIT_PX, _flat_fields, _synthetic_word
+from tools.pairlab import follow as follow_mod
 from tools.pairlab.chain import ChainSegmentSpec, build_chain_problem, fit_word_chain, gradient_decomposition
 from tools.pairlab.follow import (
     CANDIDATE_FRAME,
@@ -1298,3 +1299,39 @@ def test_zone_violation_sites_name_inventions_and_losses() -> None:
 
     counts = structure_class_counts([a.tolist(), b.tolist()])
     assert {k: len(v) for k, v in pts.items()} == counts
+
+
+# --- the night loop of 2026-09-10/11 --------------------------------------------
+
+
+def test_ink_cross_soll_counts_only_crossings_the_skeleton_vouches_for() -> None:
+    """`--soll-source ink`: a composition crossing counts with a branch point
+    within the radius, read through the metric's own frame."""
+    xh = 30.0
+    registration = {"tx": 10.0, "ty": 2.0, "baseline_row": 100.0}
+    # two crossings in composed units: (1.0, 0.5) → px (40, 87); (3.0, 0.5) → px (100, 87)
+    cross = np.array([[1.0, 0.5], [3.0, 0.5]])
+    near_first = np.array([[43.0, 85.0]])  # 0.12 xh from the first, 2 xh from the second
+    assert follow_mod.ink_cross_soll(cross, near_first, xh, registration) == 1
+    far = np.array([[40.0, 40.0]])  # 1.57 xh below the first
+    assert follow_mod.ink_cross_soll(cross, far, xh, registration) == 0
+    both = np.array([[41.0, 88.0], [99.0, 86.0]])
+    assert follow_mod.ink_cross_soll(cross, both, xh, registration) == 2
+    # the radius is the knob: widen it and the far branch point counts
+    assert follow_mod.ink_cross_soll(cross, far, xh, registration, radius_units=2.0) == 1
+    # no crossings, or no branch points at all → the ink vouches for nothing
+    assert follow_mod.ink_cross_soll(np.empty((0, 2)), both, xh, registration) == 0
+    assert follow_mod.ink_cross_soll(cross, np.empty((0, 2)), xh, registration) == 0
+
+
+def test_scale_seed_dicts_refuse_a_bound_slot_as_a_whole() -> None:
+    """A slot whose shift sits on the search bound gets neither shift nor scale."""
+    gscale = {
+        0: {"window": (0.0, 10.0), "shift_units": (0.1, 0.0), "scale": 0.8, "at_bound": False},
+        1: {"window": (8.0, 20.0), "shift_units": (0.6, 0.0), "scale": 1.3, "at_bound": True},
+        2: {"window": (18.0, 30.0), "shift_units": (-0.2, 0.05), "scale": 1.0, "at_bound": False},
+    }
+    windows, seeds, scales = follow_mod.scale_seed_dicts(gscale, [0, 1, 2])
+    assert set(windows) == {0, 1, 2}  # the coverage window is always the winner's
+    assert set(seeds) == {0, 2} and set(scales) == {0, 2}
+    assert scales[0] == 0.8 and seeds[2] == (-0.2, 0.05)

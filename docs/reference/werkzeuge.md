@@ -923,7 +923,15 @@ Warnung versehen. Begriff und Hausregel:
   Saat-Versatz (Platzierung, vom Slot-Block absorbierbar) und Saat-Rest
   (Form, nur composer-seitig heilbar); kein Solve, kein Kandidat, nur
   Wurzel und Komposition (§14 „Kette K-G Saat-Registrierung `sep09`").
-  Der Schalter dazu am Folger ist `--chain-seed grid`.
+  Der Schalter dazu am Folger ist `--chain-seed grid`. Die Nachtschleife
+  `sep10` gab dem Folger sieben Schalter, alle standardmäßig AUS und dann
+  bytegleich:
+  `--bar-bridge`, `--chain-seed grid-scale|affine --seed-ramp`,
+  `--paper-weight`, `--soll-source ink`, `--kink-weight`, `--letter-smooth`,
+  `--seed-form laufform`, `--no-init-terms` (Glossar §3: t-Brücke ·
+  Saat-Form · Gauß-Verschiebung · Tinten-Klammer · Tinten-Soll ·
+  Unstetigkeits-Preis · Formglätte); `.reversals` druckt seither auch die
+  **Papier-Strecke** je Wort.
   Alle nennen ihre Wurzel im Kopf und
   nehmen `--expect-root` (siehe oben); die Arm- und Archäologie-Flags
   stehen im jeweiligen `--help` und je Arm in seinem §14-Eintrag.

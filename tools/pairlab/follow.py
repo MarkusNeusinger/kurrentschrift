@@ -95,8 +95,10 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from scipy.ndimage import distance_transform_edt
 from scipy.ndimage import label as label_regions
 from scipy.optimize import minimize
+from scipy.spatial import cKDTree
 
 from core.compose import CAP_RESTART_BASES, _key_base
 from core.fit import (
@@ -118,7 +120,9 @@ from core.quality_suetterlin import MIN_RETRACE_PAIRS
 # the cycle `tools.laufform.harvest` avoids is the opposite direction (it
 # imports `pairlab.chain`/`anchors`/`trace`, and none of them imports back).
 from tools.laufform.harvest import _chainable_runs, _grid_fits, _word_record
-from tools.pairlab.analyze import FIT_DX_UNITS, FIT_DY_UNITS
+from tools.pairlab.affinereg import register_letters
+from tools.pairlab.analyze import FIT_DX_UNITS, FIT_DY_UNITS, TRACE_WINDOW_MARGIN, _body_items, _edt_at
+from tools.pairlab.analyze import _to_px as _to_px_composed
 from tools.pairlab.chain import (
     _REFERENCE_ANCHOR_COUNT,
     CHAIN_CONNECTOR_MAX_DELTA,
@@ -151,7 +155,7 @@ from tools.pairlab.counterfield import (
     counter_field_for_case,
 )
 from tools.pairlab.ink_evidence import INK_EVIDENCE_PAPER_FRACTION, InkEvidenceOptions, ink_evidence_case
-from tools.pairlab.landmarks import LANDMARK_MIN_ANGLE_DEG
+from tools.pairlab.landmarks import LANDMARK_MIN_ANGLE_DEG, skeleton_branch_points
 from tools.pairlab.trace import assemble_word_strokes, cap_word_strokes
 from tools.pairlab.zweizuege import PLATE_PEN_HALF_WIDTH_UNITS, ZweiZuegeOptions, correct_case_strokes
 from tools.pairlab.zweizuege import SMOOTH_UNITS as ZWEI_ZUEGE_SMOOTH_UNITS
@@ -542,6 +546,48 @@ class FollowWeights:
     init at x0 = 0 through the assembler and counters; the K0-S ladder's
     base. Budget and round counts stay what they are; only the TARGET moves
     to the composition."""
+    paper_weight: float = 0.0
+    """The Tinten-Klammer (2026-09-10, the three-word loop): weight of the
+    quadratic hinge on samples farther than `paper_target_units` from the
+    skeleton, on the `e_geo` scale (`chain._ChainProblem.paper_weight`). 0.0 =
+    off, byte-identical."""
+    paper_target_units: float = 0.1
+    """…and where it starts biting, in xh: one pen width (the plate nib is
+    0.097 xh), so a sample on the ink's own edge pays nothing."""
+    kink_weight: float = 0.0
+    """The Unstetigkeits-Preis (night loop 2026-09-10): weight of the hinge on
+    consecutive sample directions within a pen stroke whose cosine falls
+    below `kink_cos`, corners and lifts exempt (`chain._ChainProblem.kink_weight`).
+    0.0 = off, byte-identical."""
+    kink_cos: float = 0.3
+    letter_smooth: float = 0.0
+    """The Formglätte (night loop 2026-09-11): weight of the second-difference
+    term on a letter's displacement from its seed, one block per pen stroke
+    (`chain._ChainProblem.lsmooth_weight`). Prices the jitter the solve adds,
+    never the letter's own curvature. 0.0 = off, byte-identical."""
+    seed_form: str = "chart"
+    """Which row seeds a letter: the chart row (`chart`, every Kette number so
+    far) or this hand's harvested running form where one exists
+    (`laufform`, night loop 2026-09-11; falls back to the chart row per key)."""
+    seed_min_gain: float = 0.0
+    """With `--chain-seed grid-scale`: a letter takes a scaled/shifted seed
+    only if the search cuts the composed placement's cost by this fraction
+    (the conditional seed); 0.0 = every letter takes the search's optimum."""
+    seed_ramp: bool = False
+    """With `--chain-seed grid-scale`: ramp a scaled letter's exit shift over
+    the following connector so the seed starts without a chord through the
+    paper (`chain.fit_word_chain(connector_ramp=…)`). Off = the first cut."""
+    init_terms: bool = True
+    """Whether the Tinten-Klammer and the Unstetigkeits-Preis also enter the
+    INITIAL chain solve (`fit_word_chain`), not only the follower rounds. A
+    round the guard rejects leaves the initial geometry as the answer, so
+    with seeded letters the initial solve is where straight chords through
+    the paper are born or not. Irrelevant while both weights are 0."""
+    bar_bridge: bool = False
+    """2026-09-10 (author: „wieso startet beim t überhaupt ein neuer Strich"):
+    plan the t's crossbar pen-down, stem retraced from the foot, the way
+    `core.compose` draws it — `chain._bridge_bar_strokes`. Off (default) every
+    fit is byte-identical to before; on, only words with a `t` move."""
     connector_init: str = CONNECTOR_INIT_MIRROR
     """A34 (§14 `sep04`): which generator draws the chain's connector START
     POINT. `"mirror"` (default) is `analyze._generate_connector`, the taut
@@ -1868,6 +1914,11 @@ def build_follow_problem(
         max_anchor_delta=weights.max_delta,
         connector_max_delta=weights.connector_max_delta,
         counter_weight=weights.counter_weight if weights.counter_constraint else 0.0,
+        paper_target_px=float(weights.paper_target_units) * float(problem.unit_px),
+        paper_weight=float(weights.paper_weight),
+        kink_cos=float(weights.kink_cos),
+        kink_weight=float(weights.kink_weight),
+        lsmooth_weight=float(weights.letter_smooth),
         **fields,
     )
     if weights.landmark > 0.0 and weights.landmark_targets != "raw":
@@ -1995,7 +2046,20 @@ def follow_word_chain(
     started = time.perf_counter()
     if fit is None:
         fit = fit_word_chain(
-            case, slots, result=result, windows_px=windows_px, keep_solve=True, connector_init=weights.connector_init
+            case,
+            slots,
+            result=result,
+            windows_px=windows_px,
+            keep_solve=True,
+            connector_init=weights.connector_init,
+            bar_bridge=weights.bar_bridge,
+            paper_weight=weights.paper_weight if weights.init_terms else 0.0,
+            paper_target_units=weights.paper_target_units,
+            kink_weight=weights.kink_weight if weights.init_terms else 0.0,
+            kink_cos=weights.kink_cos,
+            connector_ramp=weights.seed_ramp,
+            seed_form=weights.seed_form,
+            lsmooth_weight=weights.letter_smooth if weights.init_terms else 0.0,
         )
     if fit is None:
         return None
@@ -2033,14 +2097,29 @@ def follow_word_chain(
         )
         guard_budget = structure_class_counts(init_strokes)
         if weights.structure_guard_soll:
-            if weights.soll_source not in ("init", "composition"):
-                raise ValueError(f"unknown soll_source {weights.soll_source!r}; known: init, composition")
-            if weights.soll_source == "composition":
+            if weights.soll_source not in ("init", "composition", "ink"):
+                raise ValueError(f"unknown soll_source {weights.soll_source!r}; known: init, composition, ink")
+            if weights.soll_source in ("composition", "ink"):
                 # K0-S (§14 `aug21`): the soll from the CANONICAL composition,
                 # run-restricted, through the builder the metric's ductus_soll
                 # shares — one pipeline, so guard and ruler cannot diverge (the
                 # daß find: the init reading counted its own flattened sliver).
-                guard_soll = structure_class_counts(composition_strokes(result.composed["items"], slots=set(fit.slots)))
+                comp_strokes = composition_strokes(result.composed["items"], slots=set(fit.slots))
+                guard_soll = structure_class_counts(comp_strokes)
+                if weights.soll_source == "ink":
+                    # 2026-09-10 (the three-word loop, iteration 7): a crossing
+                    # the composition draws counts toward the soll only where
+                    # the INK has a branch point near it. The chart's `e` has a
+                    # loop and therefore a crossing; the plate's `e` in `unter`
+                    # is a hairpin without one — and with the composition soll
+                    # the guard rejected every round that laid the path onto
+                    # that hairpin, because it „lost" a crossing the ink never
+                    # had. Retrace/touch/overlap keep the composition soll: the
+                    # ink cannot testify to them.
+                    branches = skeleton_branch_points(case.skel) if case.skel is not None else np.zeros((0, 2))
+                    guard_soll["cross"] = ink_cross_soll(
+                        structure_class_points(comp_strokes)["cross"], branches, xh, registration
+                    )
             else:
                 # aug19, rescue path (c): the soll is the composed INIT geometry
                 # — the trace at x0 = 0 through the very assembler and counters
@@ -2220,6 +2299,153 @@ def follow_word_chain(
 # ------------------------------------------------------------------- one case
 
 
+# The Saat-Form seed (2026-09-10, the three-word loop on fechten · kann · unter):
+# the x-scales the per-slot seed search may give a letter, and the pixel step
+# of its translation grid. 0.5 is the plate's `e` in `unter` against the chart's
+# (0.65 vs 1.3 xh); above 1.0 covers a hand that writes wider than the chart.
+SEED_SCALES: tuple[float, ...] = tuple(round(0.5 + 0.05 * k, 2) for k in range(21))
+SEED_GRID_STEP_PX = 2
+# `--soll-source ink`: how close (xh) a skeleton branch point has to lie to a
+# composition crossing for that crossing to count toward the guard's soll.
+# Wider than the registration's own slack (0.2 xh) and narrower than a letter.
+INK_SOLL_RADIUS_UNITS = 0.35
+
+
+def ink_cross_soll(
+    cross_pts: np.ndarray,
+    branches: np.ndarray,
+    xh: float,
+    registration: dict,
+    *,
+    radius_units: float = INK_SOLL_RADIUS_UNITS,
+) -> int:
+    """`--soll-source ink`: how many composition crossings the INK vouches for.
+
+    `cross_pts` are the composition's crossing points in composed units (x right,
+    y up, baseline 0), `branches` the skeleton's branch-point centroids in crop
+    px. A crossing counts when a branch point lies within `radius_units` of it,
+    read in crop px through the metric's own frame (`x·xh + tx`,
+    `baseline_row + ty − y·xh`). No crossings → 0; no branch points → 0 (the
+    ink shows no crossing anywhere, so it vouches for none).
+    """
+    pts = np.asarray(cross_pts, dtype=float).reshape(-1, 2)
+    if not len(pts) or not len(branches):
+        return 0
+    cross_px = np.column_stack(
+        [
+            pts[:, 0] * xh + float(registration["tx"]),
+            (float(registration["baseline_row"]) + float(registration["ty"])) - pts[:, 1] * xh,
+        ]
+    )
+    near = cKDTree(np.asarray(branches, dtype=float)).query(cross_px)[0] <= radius_units * xh
+    return int(near.sum())
+
+
+def scale_seed_dicts(gscale: dict[int, dict], run: list[int]) -> tuple[dict, dict, dict]:
+    """The three per-slot dicts a `grid-scale` run hands the chain: windows, shift seeds, scales.
+
+    One predicate for shift AND scale: a slot whose winning shift sits on the
+    search bound is refused as a whole — seeding its scale alone would start
+    the solve from a hybrid the search never evaluated (a Copilot finding on
+    the first cut, which scaled bound slots while refusing their shift).
+    """
+    windows = {s: gscale[s]["window"] for s in run}
+    seeds = {s: gscale[s]["shift_units"] for s in run if not gscale[s]["at_bound"]}
+    scales = {s: gscale[s]["scale"] for s in run if not gscale[s]["at_bound"]}
+    return windows, seeds, scales
+
+
+def _grid_scale_fits(
+    case: WordCase, result: WordDeriveResult, grids: dict[int, dict], *, min_gain: float = 0.0
+) -> dict[int, dict]:
+    """Per-slot seed search over x-SCALE and translation — `--chain-seed grid-scale`.
+
+    `_grid_fits` moves a letter's composed body as a rigid block and reads the
+    mean skeleton distance of its samples. That finds WHERE a letter's ink is,
+    never how WIDE the hand wrote it — and the K-G diagnosis (§14 „Kette K-G
+    `sep09`") measured the shape half („Saat-Rest") as the stronger predictor of
+    the zig-zag the author sees. Here every candidate is the composed body
+    scaled in x about its entry point, then shifted; the cost is symmetric so a
+    letter cannot buy a low distance by collapsing onto a neighbour's stem:
+    precision (mean skeleton distance of the samples) PLUS recall (mean distance
+    from the skeleton pixels inside the composed letter's own x-window to the
+    nearest sample). Returns, per slot that `grids` knows, the winning scale,
+    the shift in xh units, whether the shift sits at the search bound, and the
+    coverage window of the winning placement — the same fields the chain reads
+    from `_grid_fits`, plus `scale`.
+    """
+    xh = float(result.xh_px)
+    tx, ty = float(result.registration["tx"]), float(result.registration["ty"])
+    baseline_row = float(result.baseline_row)
+    edt = distance_transform_edt(~case.skel)
+    skel_pts = np.argwhere(case.skel)[:, ::-1].astype(float)
+    dx_span = int(round(FIT_DX_UNITS * xh))
+    dy_span = int(round(FIT_DY_UNITS * xh))
+    bodies: dict[int, np.ndarray] = {}
+    for i in grids:
+        items = _body_items(result, i)
+        if items:
+            bodies[i] = np.vstack([_to_px_composed(it["centerline"], xh, tx, ty, baseline_row) for it in items])
+    # Every skeleton pixel belongs to the composed letter it lies nearest to,
+    # and a letter's recall is read over ITS pixels only. Read over an x-window
+    # instead (the first cut), the `e` between `n` and `r` was charged for the
+    # neighbours' ink and stayed at the chart's width — a path twice as long
+    # as the hand's hairpin, which the solve then had to fold back on itself.
+    owner = np.full(len(skel_pts), -1, dtype=int)
+    if bodies and len(skel_pts):
+        slot_ids = list(bodies)
+        dist = np.column_stack([cKDTree(bodies[s]).query(skel_pts)[0] for s in slot_ids])
+        owner = np.asarray(slot_ids, dtype=int)[dist.argmin(axis=1)]
+    out: dict[int, dict] = {}
+    for i, samples in bodies.items():
+        x0 = float(samples[0, 0])
+        targets = skel_pts[owner == i]
+        if not len(targets):
+            lo, hi = samples[:, 0].min() - TRACE_WINDOW_MARGIN * xh, samples[:, 0].max() + TRACE_WINDOW_MARGIN * xh
+            targets = skel_pts[(skel_pts[:, 0] >= lo) & (skel_pts[:, 0] <= hi)]
+        best: tuple[float, float, int, int] = (float("inf"), 1.0, 0, 0)
+        composed_cost = float("inf")
+        for scale in SEED_SCALES:
+            scaled = samples.copy()
+            scaled[:, 0] = x0 + (scaled[:, 0] - x0) * scale
+            for ddx in range(-dx_span, dx_span + 1, SEED_GRID_STEP_PX):
+                for ddy in range(-dy_span, dy_span + 1, SEED_GRID_STEP_PX):
+                    pts = scaled + np.array([ddx, ddy], dtype=float)
+                    precision = float(_edt_at(edt, pts).mean())
+                    recall = float(cKDTree(pts).query(targets)[0].mean()) if len(targets) else 0.0
+                    cost = precision + recall
+                    if scale == 1.0 and ddx == 0 and ddy == 0:
+                        composed_cost = cost
+                    if cost < best[0]:
+                        best = (cost, float(scale), ddx, ddy)
+        # The conditional seed (K-G's rescue path 1, 2026-09-11): a letter is
+        # moved or scaled only when the search buys at least `min_gain` of the
+        # composed placement's cost. Without it the search stretched the `i`
+        # of Galoppieren to 1.5 and walked its `e` 0.36 xh — a few px of
+        # skeleton distance bought with a seed the eye reads as wrong.
+        if min_gain > 0.0 and np.isfinite(composed_cost) and best[0] > (1.0 - min_gain) * composed_cost:
+            best = (composed_cost, 1.0, 0, 0)
+        _cost, scale, ddx, ddy = best
+        body = samples.copy()
+        body[:, 0] = x0 + (body[:, 0] - x0) * scale
+        body += np.array([ddx, ddy], dtype=float)
+        out[i] = {
+            "scale": scale,
+            "shift_units": (float(ddx) / xh, float(ddy) / xh),
+            # The grid reaches ±span exactly when the step divides it; a seed ON
+            # the bound is refused (the chain clips it just inside anyway), one
+            # step short of it is a legitimate seed — the first cut refused
+            # every slot with |ddy| ≥ 2 px because dy_span is only 4 px.
+            "at_bound": bool(abs(ddx) >= dx_span or abs(ddy) >= dy_span),
+            "window": (
+                float(body[:, 0].min()) - TRACE_WINDOW_MARGIN * xh,
+                float(body[:, 0].max()) + TRACE_WINDOW_MARGIN * xh,
+            ),
+            "cost": round(float(_cost) / xh, 4),
+        }
+    return out
+
+
 def follow_derived(
     case: WordCase, result: WordDeriveResult, *, weights: FollowWeights | None = None, chain_seed: str = "composed"
 ) -> dict:
@@ -2249,6 +2475,8 @@ def follow_derived(
     # coverage targets. Off → the very same case object, nothing to diff.
     case, counter_evidence_report = counter_evidence_case(case, result, _counter_evidence_options(weights))
     grids = _grid_fits(case, result)
+    gscale = _grid_scale_fits(case, result, grids, min_gain=weights.seed_min_gain) if chain_seed == "grid-scale" else {}
+    affreg = register_letters(case, result) if chain_seed == "affine" else {}
     # R3c: ONE counter field per word, built before the first run and shared by
     # all of them. It reads the frozen mask and the composition, so it is fixed
     # for the whole word and no round can move it — and building it here rather
@@ -2269,6 +2497,12 @@ def follow_derived(
         n_runs += 1
         windows = {s: grids[s]["window"] for s in run}
         seeds = {s: grids[s]["shift_units"] for s in run if not grids[s]["at_bound"]} if chain_seed == "grid" else None
+        scales: dict[int, float] | None = None
+        if chain_seed == "grid-scale":
+            windows, seeds, scales = scale_seed_dicts(gscale, run)
+        affines: dict[int, tuple[np.ndarray, np.ndarray]] | None = None
+        if chain_seed == "affine":
+            affines = {s: (affreg[s]["A"], affreg[s]["t"]) for s in run if s in affreg}
         chain_fit = fit_word_chain(
             case,
             run,
@@ -2278,6 +2512,16 @@ def follow_derived(
             keep_solve=True,
             mark_claim=weights.mark_claim,
             connector_init=weights.connector_init,
+            bar_bridge=weights.bar_bridge,
+            slot_scale_init=scales,
+            paper_weight=weights.paper_weight if weights.init_terms else 0.0,
+            paper_target_units=weights.paper_target_units,
+            kink_weight=weights.kink_weight if weights.init_terms else 0.0,
+            kink_cos=weights.kink_cos,
+            connector_ramp=weights.seed_ramp,
+            seed_form=weights.seed_form,
+            lsmooth_weight=weights.letter_smooth if weights.init_terms else 0.0,
+            slot_affine_init=affines,
         )
         if chain_fit is None:
             n_failed += 1
@@ -2497,10 +2741,18 @@ def calibrate_case(
     case, _ink_report = ink_evidence_case(case, _ink_options(weights))  # K-C, the same evidence as `follow_derived`
     case, _counter_report = counter_evidence_case(case, result, _counter_evidence_options(weights))  # R4, likewise
     grids = _grid_fits(case, result)
+    gscale = _grid_scale_fits(case, result, grids, min_gain=weights.seed_min_gain) if chain_seed == "grid-scale" else {}
+    affreg = register_letters(case, result) if chain_seed == "affine" else {}
     runs: list[dict] = []
     for run in _chainable_runs(case, grids):
         windows = {s: grids[s]["window"] for s in run}
         seeds = {s: grids[s]["shift_units"] for s in run if not grids[s]["at_bound"]} if chain_seed == "grid" else None
+        scales: dict[int, float] | None = None
+        if chain_seed == "grid-scale":
+            windows, seeds, scales = scale_seed_dicts(gscale, run)
+        affines: dict[int, tuple[np.ndarray, np.ndarray]] | None = None
+        if chain_seed == "affine":
+            affines = {s: (affreg[s]["A"], affreg[s]["t"]) for s in run if s in affreg}
         chain_fit = fit_word_chain(
             case,
             run,
@@ -2510,6 +2762,16 @@ def calibrate_case(
             keep_solve=True,
             mark_claim=weights.mark_claim,
             connector_init=weights.connector_init,
+            bar_bridge=weights.bar_bridge,
+            slot_scale_init=scales,
+            paper_weight=weights.paper_weight if weights.init_terms else 0.0,
+            paper_target_units=weights.paper_target_units,
+            kink_weight=weights.kink_weight if weights.init_terms else 0.0,
+            kink_cos=weights.kink_cos,
+            connector_ramp=weights.seed_ramp,
+            seed_form=weights.seed_form,
+            lsmooth_weight=weights.letter_smooth if weights.init_terms else 0.0,
+            slot_affine_init=affines,
         )
         if chain_fit is None:
             continue
@@ -2778,7 +3040,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--style", default="suetterlin")
     parser.add_argument("--fixtures", type=Path, default=DEFAULT_FIXTURES_DIR)
     add_expect_root_argument(parser)
-    parser.add_argument("--chain-seed", default="composed", choices=["composed", "grid"])
+    parser.add_argument("--chain-seed", default="composed", choices=["composed", "grid", "grid-scale", "affine"])
     parser.add_argument("--rounds", type=int, help=f"re-linearising rounds (default {FOLLOW_ROUNDS})")
     parser.add_argument("--prox", type=float, help=f"proximal weight (default {FOLLOW_PROX_WEIGHT})")
     parser.add_argument("--coverage", type=float, help=f"coverage weight (default {FOLLOW_COVERAGE_WEIGHT})")
@@ -2862,7 +3124,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--soll-source",
-        choices=["init", "composition"],
+        choices=["init", "composition", "ink"],
         default=FollowWeights.soll_source,
         help="K0-S (aug21): where the soll guard's target counts come from — the canonical composition "
         "through the shared ductus_soll builder (default since Kette v5; one pipeline with the metric) "
@@ -2874,6 +3136,69 @@ def build_parser() -> argparse.ArgumentParser:
         help="K-E stage 1 (aug21): a composed mark stroke claims its dark ink component within the "
         "ruler's 0.6-xh mark radius — the component leaves the body's fields and coverage pot, the "
         "mark's samples read only their component; words without a firing claim are byte-identical",
+    )
+    parser.add_argument(
+        "--paper-weight",
+        type=float,
+        default=FollowWeights.paper_weight,
+        help="2026-09-10 Tinten-Klammer: weight of the hinge on samples farther than --paper-target from the "
+        "skeleton (e_geo scale); 0 = off, byte-identical",
+    )
+    parser.add_argument(
+        "--paper-target",
+        type=float,
+        default=FollowWeights.paper_target_units,
+        help="where the Tinten-Klammer starts biting, in xh (default one pen width)",
+    )
+    parser.add_argument(
+        "--kink-weight",
+        type=float,
+        default=FollowWeights.kink_weight,
+        help="night loop 2026-09-10: weight of the Unstetigkeits-Preis on consecutive sample directions "
+        "within a stroke (corners and lifts exempt); 0 = off, byte-identical",
+    )
+    parser.add_argument(
+        "--kink-cos",
+        type=float,
+        default=FollowWeights.kink_cos,
+        help="cosine below which two consecutive sample directions count as a kink",
+    )
+    parser.add_argument(
+        "--letter-smooth",
+        type=float,
+        default=FollowWeights.letter_smooth,
+        help="night loop 2026-09-11 Formglätte: weight of the second-difference term on a letter's displacement "
+        "from its seed (per pen stroke); 0 = off, byte-identical",
+    )
+    parser.add_argument(
+        "--seed-form",
+        choices=["chart", "laufform"],
+        default=FollowWeights.seed_form,
+        help="night loop 2026-09-11: seed a letter from the chart row (default) or from this hand's Laufform row "
+        "where one exists",
+    )
+    parser.add_argument(
+        "--seed-min-gain",
+        type=float,
+        default=FollowWeights.seed_min_gain,
+        help="with --chain-seed grid-scale: take a scaled/shifted seed only if it cuts the composed placement's "
+        "cost by this fraction (conditional seed); 0 = always",
+    )
+    parser.add_argument(
+        "--seed-ramp",
+        action="store_true",
+        help="with --chain-seed grid-scale: ramp a scaled letter's exit shift over the next connector (no chord)",
+    )
+    parser.add_argument(
+        "--no-init-terms",
+        action="store_true",
+        help="keep the Tinten-Klammer and the Unstetigkeits-Preis out of the initial chain solve (rounds only)",
+    )
+    parser.add_argument(
+        "--bar-bridge",
+        action="store_true",
+        help="2026-09-10: plan the t's crossbar pen-down (stem retraced from the foot, as compose_word draws it) "
+        "instead of the chart row's lift; off, every fit is byte-identical",
     )
     parser.add_argument(
         "--connector-init",
@@ -3003,6 +3328,16 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         mark_claim=bool(args.mark_claim),
         soll_source=str(args.soll_source),
         connector_init=str(args.connector_init),
+        bar_bridge=bool(args.bar_bridge),
+        paper_weight=float(args.paper_weight),
+        paper_target_units=float(args.paper_target),
+        kink_weight=float(args.kink_weight),
+        kink_cos=float(args.kink_cos),
+        init_terms=not args.no_init_terms,
+        seed_ramp=bool(args.seed_ramp),
+        seed_form=str(args.seed_form),
+        seed_min_gain=float(args.seed_min_gain),
+        letter_smooth=float(args.letter_smooth),
         zwei_zuege=bool(args.zwei_zuege),
         zwei_zuege_half_width=float(args.zwei_zuege_half_width),
         zwei_zuege_taper=float(args.zwei_zuege_taper),
