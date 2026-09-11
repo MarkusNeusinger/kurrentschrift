@@ -7,14 +7,14 @@
 >
 > **Diese Datei liest man nicht.** Sie trägt 123 datierte Abschnitte und
 > rund 317 000 Token (gemessen am `sep11` mit
-> `tools.docs_budget.proxy_tokens`: 316 565). Der Einstieg ist das
+> `tools.docs_budget.proxy_tokens`). Der Einstieg ist das
 > **Register** direkt unter der nächsten Überschrift — eine Zeile je
 > Abschnitt mit Datum, Route, Typ · Verdikt und dem Befund in einer Zeile
 > —, und daneben der **Headline-Ledger** mit der Zahlen-Historie samt
 > Fixture-Wurzeln. Beide zusammen kosten rund 23 000 Token; ein einzelner
-> Abschnitt im Median rund 1 900, höchstens rund 5 000 (der größte,
-> „Laufform LF17 `sep09`", 4 956; die drei Abschnitte des `sep11` liegen
-> mit 4 952 · 4 764 · 4 831 knapp darunter). Wer aus dem Register
+> Abschnitt im Median rund 1 900, höchstens rund 5 100 (`sep11`: 5 076 ·
+> 4 901 · 5 057, davor „Laufform LF17 `sep09`" 4 956; gemessen mit
+> `tools.docs_budget.widest_journal_entry`). Wer aus dem Register
 > springt, lädt also weniger als ein Zehntel statt der ganzen Datei —
 > dafür ist sie geteilt.
 >

@@ -18,9 +18,10 @@
 ## Steckbrief
 
 - **Anzeige-Name:** Übergänge — und ausdrücklich **keine Duell-Route.**
-  Kette, Lotse, InkSight und Nullprobe treten gegeneinander an, um der
-  Tinte eines geschriebenen Wortes zu folgen; die Übergänge sind die
-  Schicht darunter, auf der alle vier aufsetzen: die Join-Grammatik der
+  Kette, Lotse, InkSight, Nullprobe und seit `sep11` der Tintenpfad treten
+  gegeneinander an, um der Tinte eines geschriebenen Wortes zu folgen; die
+  Übergänge sind die Schicht darunter, auf der alle fünf aufsetzen (der
+  Tintenpfad nimmt aus ihr nur die Saat): die Join-Grammatik der
   Komposition (`../proposals/tintenfolger.md` §7.2, „der Top-Hebel“). Sie
   bekommt trotzdem eine Verfahrensseite, weil ihre Arme adoptierte
   DEFAULTS bewegen und damit jede `/write/word`-Antwort.
