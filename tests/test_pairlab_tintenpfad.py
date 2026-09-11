@@ -563,7 +563,7 @@ def _assemble_ride_back(weights: TintenpfadWeights, wide_from: int | None, seed:
     evidence = None
     if weights.ride_back:
         evidence = double_ink_of(strands, _stem_mask(skel, wide_from), skel, XH, weights)
-    runs, _, kinds, _, counts = assemble(strands, states, seed, XH, weights, None, evidence)
+    runs, _, kinds, _, counts = assemble(strands, states, seed, XH, weights, None, double_ink=evidence)
     return runs, kinds, counts, evidence
 
 
