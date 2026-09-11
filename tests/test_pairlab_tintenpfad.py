@@ -28,10 +28,12 @@ from tools.pairlab.tintenpfad import (
     assemble,
     decode,
     decode_with_hysteresis,
+    double_ink_of,
     fine_edt,
     grey_levels,
     hermite_bridge,
     ink_bridge_test,
+    longest_true_run,
     read_tips,
     reentries,
     refine_strands,
@@ -450,6 +452,89 @@ def test_a_seed_retrace_over_one_rail_is_a_single_priced_hairpin() -> None:
     dirs = [s[2] for s in states if s is not None]
     flips = int((np.diff(dirs) != 0).sum())
     assert flips == 1
+
+
+def _stem_mask(skel: np.ndarray, wide_from: int | None) -> np.ndarray:
+    """Ink of half-width 2 around the rail, half-width 5 from column `wide_from` on."""
+    mask = np.zeros_like(skel)
+    ys, xs = np.nonzero(skel)
+    for y, x in zip(ys, xs, strict=True):
+        r = 5 if wide_from is not None and x >= wide_from else 2
+        mask[y - r : y + r + 1, x] = True
+    return mask
+
+
+def _stem_seed() -> Seed:
+    """Down the stem to its end, a seed pen lift, then on from the stem's middle back to the start."""
+    down = _seed_along(np.array([[8.0, 20.0], [70.0, 20.0]]), stroke=0)
+    back = _seed_along(np.array([[40.0, 20.0], [8.0, 20.0]]), stroke=1)
+    return Seed(
+        xy=np.vstack([down.xy, back.xy]),
+        tan=np.vstack([down.tan, back.tan]),
+        slot=np.concatenate([down.slot, back.slot]),
+        stroke=np.concatenate([down.stroke, back.stroke]),
+    )
+
+
+def _stem_seed_ahead() -> Seed:
+    """Down the stem to its middle, a seed pen lift, then on AHEAD of the pen to the stem's end."""
+    down = _seed_along(np.array([[8.0, 20.0], [40.0, 20.0]]), stroke=0)
+    on = _seed_along(np.array([[50.0, 20.0], [70.0, 20.0]]), stroke=1)
+    return Seed(
+        xy=np.vstack([down.xy, on.xy]),
+        tan=np.vstack([down.tan, on.tan]),
+        slot=np.concatenate([down.slot, on.slot]),
+        stroke=np.concatenate([down.stroke, on.stroke]),
+    )
+
+
+def _assemble_ride_back(weights: TintenpfadWeights, wide_from: int | None, seed: Seed | None = None):
+    skel = _rail_skeleton()
+    strands = strands_of(skel, XH, weights, {})
+    seed = seed or _stem_seed()
+    states, _, _ = decode_with_hysteresis(strands, seed, XH, weights)
+    evidence = None
+    if weights.ride_back:
+        evidence = double_ink_of(strands, _stem_mask(skel, wide_from), skel, XH, weights)
+    runs, _, kinds, _, counts = assemble(strands, states, seed, XH, weights, None, evidence)
+    return runs, kinds, counts, evidence
+
+
+def test_ride_back_rides_the_stem_back_at_a_seed_lift_behind_the_pen() -> None:
+    """Rückfahrt statt Absetzen: the seed lifts at the stem's end and starts
+    again BEHIND the pen on the same strand; the assembly rides the rail back
+    (one run, a retrace of rail pixels only) — no ink evidence asked."""
+    weights = TintenpfadWeights(rail="raw", resample_step_xh=0.0, ride_back=True)
+    runs, kinds, counts, evidence = _assemble_ride_back(weights, wide_from=None)
+    assert evidence is not None and bool(evidence.wide[0].all())
+    assert counts["ride_backs"] == 1
+    assert len(runs) == 1
+    assert int((np.asarray(kinds[0]) == 1).sum()) == 0  # rail pixels only, no bridge
+    length = float(np.hypot(*np.diff(runs[0], axis=0).T).sum())
+    assert abs(length - (62.0 + 30.0 + 32.0)) < 6.0
+
+
+def test_ride_back_never_fires_when_the_landing_lies_ahead_of_the_pen() -> None:
+    """A landing AHEAD of the pen on its own strand (a t-bar, a mark set on
+    along the stroke) is no retrace: the lift stands, two runs."""
+    weights = TintenpfadWeights(rail="raw", resample_step_xh=0.0, ride_back=True)
+    runs, _, counts, _ = _assemble_ride_back(weights, wide_from=None, seed=_stem_seed_ahead())
+    assert counts["ride_backs"] == 0 and len(runs) == 2
+
+
+def test_ride_back_is_off_by_default_and_the_ink_evidence_gates_it() -> None:
+    """Default OFF: no evidence read, no count key, the lift stands. With the
+    optional Doppelstrich evidence (1.4 × pen over ≥ 0.5 xh) the ride is
+    licensed only where the stem IS that wide."""
+    off = TintenpfadWeights(rail="raw", resample_step_xh=0.0)
+    runs_off, _, counts_off, evidence = _assemble_ride_back(off, wide_from=45)
+    assert evidence is None and "ride_backs" not in counts_off and len(runs_off) == 2
+    gated = TintenpfadWeights(rail="raw", resample_step_xh=0.0, ride_back=True, ride_back_ink_ratio=1.4)
+    runs_thin, _, counts_thin, _ = _assemble_ride_back(gated, wide_from=None)
+    assert counts_thin["ride_backs"] == 0 and len(runs_thin) == 2
+    runs_wide, _, counts_wide, evidence = _assemble_ride_back(gated, wide_from=45)
+    assert evidence is not None and longest_true_run(evidence.wide[0], evidence.arc[0]) >= 0.5 * XH
+    assert counts_wide["ride_backs"] == 1 and len(runs_wide) == 1
 
 
 def test_a_bulge_within_reach_stays_on_the_rail_and_never_re_lays_a_pixel() -> None:

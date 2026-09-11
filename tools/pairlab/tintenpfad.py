@@ -228,6 +228,22 @@ class TintenpfadWeights:
     ink_bridge_margin: float = 0.25
     ink_bridge_share: float = 0.6
     ink_bridge_band_px: float = 1.0
+    # Rückfahrt statt Absetzen (arm C of the 2026-09-11 Ecken round, off by
+    # default): a DECODER rule, not a reading. At a seed pen lift whose next
+    # boarded pixel lies on the strand the pen stands on (or within the jump
+    # radius of it), BEHIND the pen in its travel direction, the assembly
+    # rides that strand back to the landing instead of lifting — the hand
+    # wrote the stem twice (the ß stem: down, and up again into the bow).
+    # Once per strand; every laid vertex is a rail pixel.
+    ride_back: bool = False
+    # Optional ink evidence for the rule (the Doppelstrich reading, measured
+    # inert on the printed 1922 plate: 0 of 63 words at 1.4 × pen): with a
+    # ratio > 0 the ride is licensed only where the strand's ink width (2 × EDT
+    # along the rail) exceeds `ride_back_ink_ratio` × the word's pen width —
+    # the median 2 × EDT over the skeleton — over ≥ `ride_back_min_xh` of
+    # contiguous arc. 0 = no evidence required (the rule alone).
+    ride_back_ink_ratio: float = 0.0
+    ride_back_min_xh: float = 0.5
 
     def __post_init__(self) -> None:
         if self.rail not in ("subpixel", "tentfit", "raw"):
@@ -666,6 +682,60 @@ def refine_strands(
     return diag
 
 
+@dataclass
+class DoubleInk:
+    """The Doppelstrich reading per strand: which rail pixels sit in ink wider
+    than `ratio × pen`, the arc position of every pixel, and the minimum
+    contiguous wide arc (px) a ride must cover to count as evidence."""
+
+    wide: list[np.ndarray]  # per strand, bool per pixel
+    arc: list[np.ndarray]  # per strand, cumulative arc in px
+    min_run_px: float
+    pen_px: float
+
+    def qualifies(self, strand: int, lo: int, hi: int) -> bool:
+        """True when the pixels `lo..hi` (inclusive) of `strand` hold one
+        contiguous wide run of at least `min_run_px` of arc."""
+        flag = self.wide[strand][lo : hi + 1]
+        arc = self.arc[strand][lo : hi + 1]
+        return longest_true_run(flag, arc) >= self.min_run_px
+
+
+def longest_true_run(flag: np.ndarray, arc: np.ndarray) -> float:
+    """The arc length spanned by the longest contiguous True run of `flag`."""
+    best = 0.0
+    j = 0
+    n = len(flag)
+    while j < n:
+        if flag[j]:
+            k = j
+            while k + 1 < n and flag[k + 1]:
+                k += 1
+            best = max(best, float(arc[k] - arc[j]))
+            j = k + 1
+        else:
+            j += 1
+    return best
+
+
+def double_ink_of(
+    strands: Sequence[Strand], mask: np.ndarray, skel: np.ndarray, xh: float, weights: TintenpfadWeights
+) -> DoubleInk:
+    """The Doppelstrich evidence read off the ink: the width of every strand
+    pixel against the word's own pen width. With `ride_back_ink_ratio` 0 every
+    pixel counts as wide — the ride needs no evidence (the decoder rule alone)."""
+    edt = distance_transform_edt(np.asarray(mask, dtype=bool))
+    pen = float(np.median(2.0 * edt[np.asarray(skel, dtype=bool)])) if np.any(skel) else 0.0
+    ratio = weights.ride_back_ink_ratio
+    wide: list[np.ndarray] = []
+    arc: list[np.ndarray] = []
+    for s in strands:
+        w = 2.0 * map_coordinates(edt, [s.points[:, 1], s.points[:, 0]], order=1, mode="nearest")
+        wide.append(w > ratio * pen if ratio > 0.0 else np.ones(len(w), bool))
+        arc.append(np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(s.points, axis=0).T))]))
+    return DoubleInk(wide, arc, weights.ride_back_min_xh * xh, pen)
+
+
 # --------------------------------------------------------------- stage 2: seed
 
 
@@ -1077,6 +1147,7 @@ def assemble(
     weights: TintenpfadWeights,
     ink_test: Callable[[np.ndarray, np.ndarray], dict[str, Any]] | None = None,
     hairpin_tip: Callable[[int, int, int], np.ndarray] | None = None,
+    double_ink: DoubleInk | None = None,
 ) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray], list[np.ndarray], dict[str, Any]]:
     """Decoded states → pen runs of strand pixels (+ bridges), each vertex with
     its slot label, its kind (0 rail · 1 bridge · 2 tip) and the seed sample
@@ -1087,12 +1158,19 @@ def assemble(
     plate carries faint ink across it; every tested gap is recorded. With
     `hairpin_tip` (the Haken-Spitze, `HairpinTipReader`) every hairpin on one
     strand is handed its turning pixel and travel direction, and the vertices
-    it returns — the tip beyond the turn, out and back — are laid there."""
+    it returns — the tip beyond the turn, out and back — are laid there.
+
+    With `double_ink` given (Rückfahrt statt Absetzen, `ride_back`), a seed
+    pen lift whose next boarded pixel lies on the strand the pen stands on
+    (or within the jump radius of its nearest pixel), BEHIND the pen in its
+    travel direction, is ridden back over that rail instead of lifted — the
+    hand wrote the stem twice; once per strand. The `DoubleInk` carries the
+    optional ink evidence the ride must cover (none when the ratio is 0)."""
     runs: list[list[np.ndarray]] = []
     labels: list[list[int]] = []
     kinds: list[list[int]] = []
     samples: list[list[int]] = []
-    n_jump = n_paper_bridges = n_hairpin = n_paper_lifts = n_ink_bridges = 0
+    n_jump = n_paper_bridges = n_hairpin = n_paper_lifts = n_ink_bridges = n_ride_back = 0
     ink_tests: list[dict[str, Any]] = []
     ride_cap = weights.ride_cap_xh * xh
     jump_r = weights.jump_radius_xh * xh
@@ -1100,6 +1178,28 @@ def assemble(
     lateral_cap = weights.bridge_lateral_cap_xh * xh
     paper_run = 0
     prev: tuple[int, int, int] | None = None
+    # The pen state before a seed lift, kept until the new stroke boards ink.
+    pending: tuple[int, int, int] | None = None
+    ride_used: set[int] = set()
+
+    def ride_back_to(ps_state: tuple[int, int, int], st: tuple[int, int, int]) -> int | None:
+        """The pixel of the pen's strand to ride back to, or None when the rule does not apply."""
+        if double_ink is None:
+            return None
+        ps, pi, pd = ps_state
+        s, i, _d = st
+        if ps in ride_used or strands[ps].closed:
+            return None
+        if s == ps:
+            j = i
+        else:
+            dist = np.linalg.norm(strands[ps].points - strands[s].points[i], axis=1)
+            j = int(np.argmin(dist))
+            if float(dist[j]) > jump_r:
+                return None
+        if (j - pi) * pd >= 0:
+            return None
+        return j if double_ink.qualifies(ps, min(pi, j), max(pi, j)) else None
 
     def emit(pt: np.ndarray, k: int, kind: int) -> None:
         runs[-1].append(np.asarray(pt, dtype=float))
@@ -1143,6 +1243,7 @@ def assemble(
     for k, st in enumerate(states):
         lift = k > 0 and seed.stroke[k] != seed.stroke[k - 1]
         if lift:
+            pending = prev if double_ink is not None else None
             prev = None
             paper_run = 0
         if st is None:
@@ -1151,6 +1252,24 @@ def assemble(
             continue
         s, i, d = st
         pts = strands[s].points
+        if pending is not None and prev is None:
+            # The new stroke's first boarded pixel: when it lies behind the pen
+            # on the pen's own strand, ride that strand back to it instead of
+            # lifting (Rückfahrt statt Absetzen).
+            j = ride_back_to(pending, st)
+            ps, pi, pd = pending
+            pending = None
+            if j is not None:
+                step = 1 if j > pi else -1
+                for q in range(pi + step, j + step, step):
+                    emit(strands[ps].points[q], k, 0)
+                n_ride_back += 1
+                ride_used.add(ps)
+                if s != ps:
+                    bridge_to((ps, j, -pd), st, k)
+                prev = st
+                paper_run = 0
+                continue
         if prev is not None and paper_run and not lift:
             # A paper gap between two boarded pixels: the rail when it is a
             # legal forward ride (the seed merely sampled nothing there), a
@@ -1248,6 +1367,8 @@ def assemble(
         # Only with the arm on, so the default artefact keeps its bytes.
         counts["ink_bridges"] = n_ink_bridges
         counts["ink_bridge_tests"] = ink_tests
+    if double_ink is not None:
+        counts["ride_backs"] = n_ride_back
     return out_runs, out_labels, out_kinds, out_samples, counts
 
 
@@ -1871,7 +1992,19 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
     hairpin_reader = None
     if weights.hairpin_tip:
         hairpin_reader = HairpinTipReader(strands, states, mask, weights.tip_read_cap_xh * xh)
-    runs, labels, kinds, samples, counts = assemble(strands, states, seed, xh, weights, ink_test, hairpin_reader)
+    double_ink = None
+    if weights.ride_back:
+        double_ink = double_ink_of(
+            strands, np.asarray(case_ev.mask, dtype=bool), np.asarray(case_ev.skel, dtype=bool), xh, weights
+        )
+        if weights.ride_back_ink_ratio > 0.0:
+            runs_xh = [longest_true_run(w, a) / xh for w, a in zip(double_ink.wide, double_ink.arc, strict=True)]
+            diag["double_ink_pen_px"] = round(double_ink.pen_px, 2)
+            diag["double_ink_strands"] = int(sum(1 for r in runs_xh if r >= weights.ride_back_min_xh))
+            diag["double_ink_run_xh"] = round(max(runs_xh), 3) if runs_xh else 0.0
+    runs, labels, kinds, samples, counts = assemble(
+        strands, states, seed, xh, weights, ink_test, hairpin_tip=hairpin_reader, double_ink=double_ink
+    )
     diag.update(counts)
     if hairpin_reader is not None:
         diag["hairpin_tip"] = hairpin_reader.report()
@@ -2198,6 +2331,7 @@ __all__ = [
     "LOOP_WORDS",
     "TINTENPFAD_ARTIFACT_VERSION",
     "TINTENPFAD_TOOL_NAME",
+    "DoubleInk",
     "EdtField",
     "HairpinTipReader",
     "Seed",
@@ -2208,6 +2342,7 @@ __all__ = [
     "decode",
     "decode_with_hysteresis",
     "displacement_coherence",
+    "double_ink_of",
     "excursions_of",
     "extend_tip",
     "extend_tips",
@@ -2217,6 +2352,7 @@ __all__ = [
     "grey_levels",
     "hermite_bridge",
     "ink_bridge_test",
+    "longest_true_run",
     "read_tip",
     "read_tips",
     "reentries",
