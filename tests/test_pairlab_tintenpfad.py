@@ -28,7 +28,9 @@ from tools.pairlab.tintenpfad import (
     decode,
     decode_with_hysteresis,
     fine_edt,
+    grey_levels,
     hermite_bridge,
+    ink_bridge_test,
     read_tips,
     reentries,
     refine_strands,
@@ -465,6 +467,82 @@ def test_hermite_bridge_is_tangent_continuous_and_capped() -> None:
     # a tangent pointing AWAY from the target would overshoot behind p0: capped too
     pts = hermite_bridge(p0, np.array([-1.0, 0.0]), p1, t1, 1.0, 1.0)
     assert pts[:, 0].min() >= -1.0 - 1e-9 and pts[:, 0].max() <= 11.0 + 1e-9
+
+
+def _two_blobs(paper: float = 0.85, ink: float = 0.4) -> tuple[np.ndarray, np.ndarray]:
+    """A crop with two thick ink bars on row 20 and a blank gap between x 40 and 80."""
+    crop = np.full((41, 120), paper)
+    mask = np.zeros((41, 120), dtype=bool)
+    mask[18:23, 4:40] = True
+    mask[18:23, 80:116] = True
+    crop[mask] = ink
+    return crop, mask
+
+
+def test_the_ink_bridge_reads_a_faint_hairline_but_not_blank_paper() -> None:
+    """The Tinten-Brücke test: paper between two strand ends stays a lift, a
+    hairline the binarisation lost (grey below paper by the margin) bridges —
+    even one pixel beside the chord, thanks to the band — and a chord that
+    runs through continuous ink passes without a paper sample."""
+    crop, mask = _two_blobs()
+    ink_level, paper_level = grey_levels(crop, mask)
+    assert ink_level == pytest.approx(0.4) and paper_level == pytest.approx(0.85)
+    p0, p1 = np.array([39.0, 20.0]), np.array([80.0, 20.0])
+    kw = {"ink_level": ink_level, "paper_level": paper_level, "margin": 0.25, "share": 0.6, "band_px": 1.0}
+    blank = ink_bridge_test(crop, mask, p0, p1, **kw)
+    # the one sample that reads faint is the bilinear edge of the bar itself
+    assert blank["bridged"] is False and blank["faint_share"] < 0.1 and blank["paper_samples"] == 40
+    # a hairline one pixel BELOW the chord, a third of the way from paper toward ink
+    faint = crop.copy()
+    faint[21, 40:80] = paper_level - 0.35 * (paper_level - ink_level)
+    hit = ink_bridge_test(faint, mask, p0, p1, **kw)
+    assert hit["bridged"] is True and hit["faint_share"] >= 0.9
+    # without the band the chord itself reads paper: the hairline is missed
+    miss = ink_bridge_test(faint, mask, p0, p1, **{**kw, "band_px": 0.0})
+    assert miss["bridged"] is False
+    # a stricter margin than the hairline's depth reads paper again
+    strict = ink_bridge_test(faint, mask, p0, p1, **{**kw, "margin": 0.5})
+    assert strict["bridged"] is False
+    # a chord inside one bar has no paper sample and passes
+    inside = ink_bridge_test(crop, mask, np.array([10.0, 20.0]), np.array([30.0, 20.0]), **kw)
+    assert inside["bridged"] is True and inside["paper_samples"] == 0
+
+
+def test_a_decoder_lift_becomes_a_bridge_only_when_the_ink_test_passes() -> None:
+    """Two rail pieces 14 px apart (wider than the jump radius, within the
+    ink-bridge radius) under a straight seed: the default assembly lifts;
+    with a passing ink test the same states assemble into one run whose gap
+    vertices are bridge-kind; a failing test leaves the lift."""
+    skel = np.zeros((41, 120), dtype=bool)
+    skel[20, 4:50] = True
+    skel[20, 64:116] = True
+    seed = _seed_along(np.array([[8.0, 20.0], [112.0, 20.0]]))
+    weights = TintenpfadWeights(rail="raw", resample_step_xh=0.0, ink_bridge_xh=1.0)
+    strands = strands_of(skel, XH, weights, {})
+    assert len(strands) == 2
+    states, _, _ = decode_with_hysteresis(strands, seed, XH, weights)
+    runs, _, kinds, _, counts = assemble(strands, states, seed, XH, weights)
+    assert counts["paper_lifts"] == 1 and len(runs) == 2 and "ink_bridges" not in counts
+    tested: list[float] = []
+
+    def passing(p0: np.ndarray, p1: np.ndarray) -> dict:
+        tested.append(float(np.hypot(*(p1 - p0))))
+        return {"bridged": True, "faint_share": 1.0, "paper_samples": 12}
+
+    runs_b, _, kinds_b, _, counts_b = assemble(strands, states, seed, XH, weights, passing)
+    assert counts_b["paper_lifts"] == 0 and counts_b["ink_bridges"] == 1 and len(runs_b) == 1
+    assert len(tested) == 1 and 12.0 <= tested[0] <= 16.0
+    assert counts_b["ink_bridge_tests"][0]["gap_xh"] == pytest.approx(tested[0] / XH, abs=1e-3)
+    assert int((kinds_b[0] == 1).sum()) >= 10  # the gap is laid as bridge vertices
+    runs_f, _, _, _, counts_f = assemble(
+        strands, states, seed, XH, weights, lambda p0, p1: {"bridged": False, "faint_share": 0.0, "paper_samples": 12}
+    )
+    assert counts_f["paper_lifts"] == 1 and counts_f["ink_bridges"] == 0 and len(runs_f) == 2
+    # a gap beyond the ink-bridge radius is never even tested
+    narrow = weights_from_overrides(weights, ["ink_bridge_xh=0.3"])
+    tested.clear()
+    _, _, _, _, counts_n = assemble(strands, states, seed, XH, narrow, passing)
+    assert counts_n["paper_lifts"] == 1 and not tested
 
 
 def test_resample_run_is_arclength_uniform_and_carries_labels() -> None:

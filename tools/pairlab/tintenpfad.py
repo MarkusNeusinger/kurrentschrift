@@ -62,7 +62,10 @@ leaving and entering tangents, resampled at the rail's own step and capped in
 its LATERAL excursion as well as its gap (`bridge="chord"` is the prototype's
 two-vertex chord, kept as the measured control); a paper gap between two
 boarded pixels is drawn as rail when it is a legal forward ride, bridged when
-within the jump radius, and is a pen LIFT otherwise. The runs are emitted
+within the jump radius, and is a pen LIFT otherwise — unless the Tinten-Brücke
+(`ink_bridge_xh`, off by default) reads faint ink on the crop across the
+straight gap, in which case the gap is bridged like a jump: a hairline the
+binarisation lost is ink read, not ink invented. The runs are emitted
 arc-length-uniform at `resample_step_xh` (a redistribution of vertices along
 the polyline, never a move off it — declared, and the kink reading on the raw
 chain is reported beside it), converted to the word's registration frame and
@@ -84,7 +87,7 @@ from __future__ import annotations
 import argparse
 import json
 import time
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import asdict, dataclass, field, fields, replace
 from pathlib import Path
@@ -203,6 +206,19 @@ class TintenpfadWeights:
     # (an Anstrich), not a lateral artefact: with this on, a node whose non-spur
     # edges number at most one keeps its spurs instead of pruning them.
     spur_at_ends: bool = False
+    # Tinten-Brücke: a decoder lift (a paper gap wider than `jump_radius_xh`
+    # between two boarded pixels) whose straight gap is at most this long is
+    # tested for FAINT ink on the crop — grey below the paper level by
+    # `ink_bridge_margin` of the crop's paper−ink contrast on at least
+    # `ink_bridge_share` of the chord samples outside the frozen mask, each
+    # sample read as the darkest grey within ±`ink_bridge_band_px` along the
+    # chord normal — and bridged only when the test passes; a hairline the
+    # binarisation lost is a reading of the ink, a blank gap stays a lift.
+    # 0 = off (measured as arm 4 of the 2026-09-11 round, off by default).
+    ink_bridge_xh: float = 0.0
+    ink_bridge_margin: float = 0.25
+    ink_bridge_share: float = 0.6
+    ink_bridge_band_px: float = 1.0
 
     def __post_init__(self) -> None:
         if self.rail not in ("subpixel", "tentfit", "raw"):
@@ -980,22 +996,92 @@ def hermite_bridge(
     return p0 + (p1 - p0) * u[:, None]
 
 
+def grey_levels(crop: np.ndarray, mask: np.ndarray) -> tuple[float, float]:
+    """(ink, paper) grey of THIS crop — the mean inside and outside the frozen
+    mask, exactly the two levels the reversal sensor's paper test is built on."""
+    crop = np.asarray(crop, dtype=float)
+    mask = np.asarray(mask, dtype=bool)
+    ink = float(crop[mask].mean()) if mask.any() else 0.0
+    paper = float(crop[~mask].mean()) if (~mask).any() else 1.0
+    return ink, paper
+
+
+def ink_bridge_test(
+    crop: np.ndarray,
+    mask: np.ndarray,
+    p0: np.ndarray,
+    p1: np.ndarray,
+    *,
+    ink_level: float,
+    paper_level: float,
+    margin: float,
+    share: float,
+    band_px: float,
+) -> dict[str, Any]:
+    """Is the straight gap `p0 → p1` covered by faint ink the binarisation lost?
+
+    The chord is sampled at 1-px steps; a sample whose nearest pixel is inside
+    the frozen mask is the strand ends' own ink and is left out. Each remaining
+    sample reads the DARKEST bilinear grey at normal offsets −band … +band (a
+    hairline the chord misses by a pixel is still read), and counts as faint
+    ink below `paper − margin × (paper − ink)`. The test passes when at least
+    `share` of the paper-mask samples are faint ink; a chord with fewer than
+    two paper-mask samples runs through continuous ink and passes.
+    """
+    crop = np.asarray(crop, dtype=float)
+    mask = np.asarray(mask, dtype=bool)
+    h, w = crop.shape
+    p0, p1 = np.asarray(p0, dtype=float), np.asarray(p1, dtype=float)
+    gap = float(np.hypot(*(p1 - p0)))
+    n = max(2, int(np.ceil(gap)))
+    ts = (np.arange(n) + 0.5) / n
+    pts = p0 + ts[:, None] * (p1 - p0)
+    col = np.clip(np.rint(pts[:, 0]).astype(int), 0, w - 1)
+    row = np.clip(np.rint(pts[:, 1]).astype(int), 0, h - 1)
+    outside = ~mask[row, col]
+    threshold = paper_level - margin * (paper_level - ink_level)
+    if int(outside.sum()) < 2:
+        return {"gap_xh": None, "paper_samples": int(outside.sum()), "faint_share": 1.0, "bridged": True}
+    chord = (p1 - p0) / gap if gap > 0 else np.array([1.0, 0.0])
+    normal = np.array([-chord[1], chord[0]])
+    offsets = np.arange(-np.floor(band_px), np.floor(band_px) + 1.0)
+    darkest = np.full(n, np.inf)
+    for off in offsets:
+        q = pts + off * normal
+        g = map_coordinates(crop, [q[:, 1], q[:, 0]], order=1, mode="nearest")
+        darkest = np.minimum(darkest, g)
+    faint = float((darkest[outside] < threshold).mean())
+    return {
+        "gap_xh": None,
+        "paper_samples": int(outside.sum()),
+        "faint_share": round(faint, 3),
+        "bridged": faint >= share,
+    }
+
+
 def assemble(
     strands: Sequence[Strand],
     states: Sequence[tuple[int, int, int] | None],
     seed: Seed,
     xh: float,
     weights: TintenpfadWeights,
-) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray], list[np.ndarray], dict[str, int]]:
+    ink_test: Callable[[np.ndarray, np.ndarray], dict[str, Any]] | None = None,
+) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray], list[np.ndarray], dict[str, Any]]:
     """Decoded states → pen runs of strand pixels (+ bridges), each vertex with
-    its slot label, its kind (0 rail · 1 bridge) and the seed sample that laid it."""
+    its slot label, its kind (0 rail · 1 bridge) and the seed sample that laid it.
+
+    With `ink_test` (the Tinten-Brücke, `ink_bridge_xh > 0`) a would-be lift
+    whose gap is within `ink_bridge_xh` is bridged when the test says the
+    plate carries faint ink across it; every tested gap is recorded."""
     runs: list[list[np.ndarray]] = []
     labels: list[list[int]] = []
     kinds: list[list[int]] = []
     samples: list[list[int]] = []
-    n_jump = n_paper_bridges = n_hairpin = n_paper_lifts = 0
+    n_jump = n_paper_bridges = n_hairpin = n_paper_lifts = n_ink_bridges = 0
+    ink_tests: list[dict[str, Any]] = []
     ride_cap = weights.ride_cap_xh * xh
     jump_r = weights.jump_radius_xh * xh
+    ink_bridge_r = weights.ink_bridge_xh * xh
     lateral_cap = weights.bridge_lateral_cap_xh * xh
     paper_run = 0
     prev: tuple[int, int, int] | None = None
@@ -1063,6 +1149,21 @@ def assemble(
                 legal_ride = -weights.back_tol_px <= delta <= ride_cap * (paper_run + 1) and d == pd
             gap = float(np.hypot(*(pts[i] - strands[ps].points[pi])))
             if not legal_ride and gap > jump_r:
+                # The Tinten-Brücke: the lift stands unless the plate shows
+                # faint ink across the straight gap — then the chord is a
+                # reading of that ink, not an invention.
+                verdict = None
+                if ink_test is not None and gap <= ink_bridge_r:
+                    verdict = ink_test(strands[ps].points[pi], pts[i])
+                    verdict["gap_xh"] = round(gap / xh, 3)
+                    verdict["sample"] = int(k)
+                    ink_tests.append(verdict)
+                if verdict is not None and verdict["bridged"]:
+                    n_ink_bridges += 1
+                    bridge_to(prev, st, k)
+                    prev = st
+                    paper_run = 0
+                    continue
                 n_paper_lifts += 1
                 prev = None
             elif not legal_ride:
@@ -1106,7 +1207,16 @@ def assemble(
         out_labels.append(np.asarray(lab)[keep])
         out_kinds.append(np.asarray(kd)[keep])
         out_samples.append(np.asarray(sm)[keep])
-    counts = {"jumps": n_jump, "paper_bridges": n_paper_bridges, "hairpins": n_hairpin, "paper_lifts": n_paper_lifts}
+    counts: dict[str, Any] = {
+        "jumps": n_jump,
+        "paper_bridges": n_paper_bridges,
+        "hairpins": n_hairpin,
+        "paper_lifts": n_paper_lifts,
+    }
+    if ink_test is not None:
+        # Only with the arm on, so the default artefact keeps its bytes.
+        counts["ink_bridges"] = n_ink_bridges
+        counts["ink_bridge_tests"] = ink_tests
     return out_runs, out_labels, out_kinds, out_samples, counts
 
 
@@ -1614,7 +1724,27 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
         }
     states, total, ddiag = decode_with_hysteresis(strands, seed, xh, weights)
     diag.update(ddiag)
-    runs, labels, kinds, samples, counts = assemble(strands, states, seed, xh, weights)
+    ink_test = None
+    if weights.ink_bridge_xh > 0.0:
+        crop = np.asarray(case_ev.crop, dtype=float)
+        mask = np.asarray(case_ev.mask, dtype=bool)
+        ink_level, paper_level = grey_levels(crop, mask)
+        diag["grey_levels"] = {"ink": round(ink_level, 4), "paper": round(paper_level, 4)}
+
+        def ink_test(p0: np.ndarray, p1: np.ndarray) -> dict[str, Any]:
+            return ink_bridge_test(
+                crop,
+                mask,
+                p0,
+                p1,
+                ink_level=ink_level,
+                paper_level=paper_level,
+                margin=weights.ink_bridge_margin,
+                share=weights.ink_bridge_share,
+                band_px=weights.ink_bridge_band_px,
+            )
+
+    runs, labels, kinds, samples, counts = assemble(strands, states, seed, xh, weights, ink_test)
     diag.update(counts)
     if not runs:
         return {
@@ -1933,7 +2063,9 @@ __all__ = [
     "fine_edt",
     "follow_case",
     "follow_word",
+    "grey_levels",
     "hermite_bridge",
+    "ink_bridge_test",
     "read_tip",
     "read_tips",
     "reentries",
