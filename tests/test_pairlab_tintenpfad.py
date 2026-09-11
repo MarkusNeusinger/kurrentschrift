@@ -22,15 +22,19 @@ from tools.pairlab.tintenpfad import (
     LEGACY_P5,
     SUBPIXEL_MAX_PX,
     EdtField,
+    HairpinTipReader,
     Seed,
     TintenpfadWeights,
     assemble,
     decode,
     decode_with_hysteresis,
+    double_ink_of,
     fine_edt,
     grey_levels,
+    grey_paper_of,
     hermite_bridge,
     ink_bridge_test,
+    longest_true_run,
     read_tips,
     reentries,
     refine_strands,
@@ -184,6 +188,72 @@ def test_the_tip_reading_lays_the_unvisited_rail_and_walks_to_the_end_of_the_mas
     assert len(labels[0]) == len(runs[0]) == len(samples[0])
 
 
+def test_the_grey_stop_ends_the_walk_before_a_pale_halo_the_mask_still_calls_ink() -> None:
+    """The same capsule with a crop: dark ink along the stroke, but the last
+    few pixels of the END cap are a pale halo (above the ink/paper midpoint)
+    that the mask still holds. Without the grey image the walk runs to the
+    mask's end at both tips; with it the end walk stops at its first step
+    into the halo (`grey`) — the rail pixels already in the halo are the
+    skeleton's own ink, laid as before and only COUNTED — the start walk still
+    stops at the mask, no emitted walk vertex reads paper by the grey, and the
+    arm's vertices are a PREFIX of the default's: the stop removes, never moves."""
+    mask, origin, direction, _normal = _slanted_stroke()
+    yy, xx = np.mgrid[0 : mask.shape[0], 0 : mask.shape[1]]
+    along = (xx - origin[0]) * direction[0] + (yy - origin[1]) * direction[1]
+    crop = np.full(mask.shape, 0.85)
+    crop[mask] = 0.30
+    crop[mask & (along > 93.0)] = 0.70
+    grey_paper, midpoint = grey_paper_of(crop, mask)
+    ink_level, paper_level = grey_levels(crop, mask)
+    assert midpoint == pytest.approx(0.5 * (ink_level + paper_level)) and 0.30 < midpoint < 0.70
+    assert grey_paper[mask & (along > 93.0)].all() and not grey_paper[mask & (along < 92.0)].any()
+    weights = TintenpfadWeights(rail="subpixel", tip_read=True)
+    strands = strands_of(skeletonize(mask), XH, weights, {})
+    refine_strands(strands, mask, weights)
+    n = len(strands[0].points)
+    stop = n - 6
+
+    def fresh() -> tuple[list, list, list, list, list]:
+        return (
+            [strands[0].points[: stop + 1].copy()],
+            [np.zeros(stop + 1, dtype=int)],
+            [np.zeros(stop + 1, dtype=int)],
+            [np.arange(stop + 1)],
+            [(0, 0, 1), (0, stop, 1)],
+        )
+
+    runs, labels, kinds, samples, states = fresh()
+    plain = read_tips(runs, labels, kinds, samples, strands, states, mask, cap_px=XH)
+    assert plain["stops"] == {"mask": 2, "rise": 0, "cap": 0, "edge": 0}
+    assert "walk_points_grey_paper" not in plain and "rail_points_grey_paper" not in plain
+    plain_run, plain_kinds = runs[0], kinds[0]
+    runs, labels, kinds, samples, states = fresh()
+    arm = read_tips(runs, labels, kinds, samples, strands, states, mask, cap_px=XH, grey_paper=grey_paper)
+    assert arm["stops"] == {"mask": 1, "rise": 0, "cap": 0, "edge": 0, "grey": 1}
+    assert arm["walk_points_grey_paper"] == 0
+    assert 0 < arm["walk_points"] < plain["walk_points"] and arm["rail_points"] == plain["rail_points"]
+    assert arm["walk_points_in_mask"] == arm["walk_points"]
+    # The rail laid past the run's end (the head of the trailing tip block —
+    # the start walk is prepended, so the original run no longer starts at 0)
+    # is the same five skeleton pixels as before; the ones the grey would call
+    # paper are counted, not removed.
+    n_tail = int(np.argmin(plain_kinds[::-1] == 2))  # the trailing kind-2 block
+    rail = plain_run[len(plain_run) - n_tail :][: plain["rail_points"]]
+    rail_ix, rail_iy = np.rint(rail[:, 0]).astype(int), np.rint(rail[:, 1]).astype(int)
+    assert len(rail) == 5 and arm["rail_points_grey_paper"] == int(grey_paper[rail_iy, rail_ix].sum()) >= 1
+    arm_along = (runs[0] - origin) @ direction
+    plain_along = (plain_run - origin) @ direction
+    # The end walk adds nothing beyond the rail's end (its first step reads
+    # paper); the default walks on to the mask's tip; the start walk is untouched.
+    assert arm_along.max() == pytest.approx(rail_along_max := ((rail - origin) @ direction).max())
+    assert plain_along.max() > rail_along_max + 0.5
+    assert arm_along.min() == pytest.approx(plain_along.min())
+    # Prefix: every arm vertex is the default's vertex at the same place.
+    assert len(runs[0]) < len(plain_run)
+    assert np.allclose(runs[0], plain_run[: len(runs[0])])
+    assert len(labels[0]) == len(runs[0]) == len(samples[0]) == len(kinds[0])
+
+
 def test_a_junction_end_and_a_visited_tail_are_never_read() -> None:
     """A T: the stem's end at the bar is a junction end, not a tip; and a tail
     another run already laid is not laid twice."""
@@ -208,6 +278,97 @@ def test_a_junction_end_and_a_visited_tail_are_never_read() -> None:
     # The same tail with a state beyond `i` on it: already laid by another run.
     _, _, why = tip_tail(stem, i, toward_tip / np.linalg.norm(toward_tip), (0, len(stem.points) - 1))
     assert why == "visited"
+
+
+def _hairpin_on_a_capsule(hairpin_tip: bool):
+    """A seed that rides a capsule stroke out to 8 px short of its tip and
+    back — one hairpin on one strand — decoded and assembled with or without
+    the Haken-Spitze."""
+    mask, origin, direction, _ = _slanted_stroke(angle_deg=0.0)
+    weights = TintenpfadWeights(rail="subpixel", tip_read=True, hairpin_tip=hairpin_tip, resample_step_xh=0.0)
+    strands = strands_of(skeletonize(mask), XH, weights, {})
+    refine_strands(strands, mask, weights)
+    far = origin + direction * 87.0
+    seed = _seed_along(np.array([origin + direction * 20.0, far, origin + direction * 20.0]))
+    states, _, _ = decode_with_hysteresis(strands, seed, XH, weights)
+    reader = HairpinTipReader(strands, states, mask, XH) if hairpin_tip else None
+    runs, labels, kinds, samples, counts = assemble(strands, states, seed, XH, weights, None, reader)
+    return mask, origin, direction, strands, states, runs, labels, kinds, samples, counts, reader
+
+
+def test_the_hairpin_tip_reads_the_turn_to_the_end_of_the_mask_out_and_back() -> None:
+    """Without the arm the hairpin turns where the decoder's last boarded pixel
+    is; with it the turn is read on along the strand's rest and the EDT ridge
+    to within a pixel of the mask's tip and back over the same vertices —
+    every added vertex on ink, the run's ends untouched."""
+    _, origin, direction, _, _, runs_off, _, kinds_off, _, counts_off, _ = _hairpin_on_a_capsule(False)
+    mask, _, _, _, _, runs, labels, kinds, samples, counts, reader = _hairpin_on_a_capsule(True)
+    assert counts_off["hairpins"] == 1 and counts["hairpins"] == 1 and len(runs_off) == len(runs) == 1
+    assert not (kinds_off[0] == 2).any()
+    along_off = (runs_off[0] - origin) @ direction
+    along = (runs[0] - origin) @ direction
+    # The capsule's tip cap reaches along = 97.5; the decoder turned ~10 px short of it.
+    assert along_off.max() < 90.0
+    assert along.max() > 97.5 - 1.0
+    diag = reader.report()
+    assert diag["hairpins"] == 1 and diag["read"] == 1
+    assert diag["blocked"] == {"not_free": 0, "junction": 0, "visited": 0}
+    assert diag["rail_points"] > 0 and diag["rail_points_in_mask"] == diag["rail_points"]
+    assert diag["walk_points"] > 0 and diag["walk_points_in_mask"] == diag["walk_points"]
+    assert diag["stops"] == {"mask": 1, "rise": 0, "cap": 0, "edge": 0, "grey": 0}
+    tip = runs[0][kinds[0] == 2]
+    # Out and back over the SAME vertices: the tip sequence is a palindrome
+    # around its farthest point, closed by the turning pixel itself.
+    far = int(np.argmax((tip - origin) @ direction))
+    back = tip[far + 1 :]
+    assert len(back) == far + 1
+    assert np.allclose(back[:-1], tip[far - 1 :: -1][: len(back) - 1])
+    assert len(labels[0]) == len(kinds[0]) == len(samples[0]) == len(runs[0])
+    # The run's two ends are the ones the decoder laid, unchanged by the arm.
+    assert np.allclose(runs[0][0], runs_off[0][0]) and np.allclose(runs[0][-1], runs_off[0][-1])
+    # Every vertex the arm added sits on ink.
+    ix, iy = np.rint(tip[:, 0]).astype(int), np.rint(tip[:, 1]).astype(int)
+    assert mask[iy, ix].all()
+    # The rail vertices are exactly the strand's own pixels beyond the turn.
+    off_rail = np.vstack([runs_off[0]])
+    assert len(runs[0]) == len(off_rail) + len(tip)
+
+
+def test_a_claimed_strand_end_is_not_read_again_at_a_run_end() -> None:
+    """The strand end a hairpin tip reached counts as visited for the run-end
+    reading: a run stopping short of that end is not completed onto it."""
+    mask, _, _, _ = _slanted_stroke()
+    weights = TintenpfadWeights(rail="subpixel", tip_read=True)
+    strands = strands_of(skeletonize(mask), XH, weights, {})
+    refine_strands(strands, mask, weights)
+    n = len(strands[0].points)
+    stop = n - 6
+    runs = [strands[0].points[: stop + 1].copy()]
+    labels, kinds, samples = [np.zeros(stop + 1, dtype=int)], [np.zeros(stop + 1, dtype=int)], [np.arange(stop + 1)]
+    states = [(0, 0, 1), (0, stop, 1)]
+    diag = read_tips(runs, labels, kinds, samples, strands, states, mask, cap_px=XH, claimed=[(0, n - 1)])
+    assert diag["ends_read"] == 1 and diag["blocked"]["visited"] == 1
+    assert (kinds[0] == 2).sum() == diag["rail_points"] + diag["walk_points"]
+
+
+def test_a_hairpin_whose_tail_another_sample_boarded_is_left_alone() -> None:
+    """A seed that turns short, comes back, and later rides the same strand on
+    past the turning pixel: the hairpin's tail is visited, so the arm lays
+    nothing there and the reason is counted."""
+    mask, origin, direction, _ = _slanted_stroke(angle_deg=0.0)
+    weights = TintenpfadWeights(rail="subpixel", hairpin_tip=True, resample_step_xh=0.0)
+    strands = strands_of(skeletonize(mask), XH, weights, {})
+    refine_strands(strands, mask, weights)
+    stations = [origin + direction * along for along in (20.0, 70.0, 40.0, 95.0)]
+    seed = _seed_along(np.array(stations))
+    states, _, _ = decode_with_hysteresis(strands, seed, XH, weights)
+    reader = HairpinTipReader(strands, states, mask, XH)
+    runs, _, kinds, _, counts = assemble(strands, states, seed, XH, weights, None, reader)
+    assert counts["hairpins"] == 2
+    diag = reader.report()
+    assert diag["hairpins"] == 2 and diag["read"] == 0
+    assert diag["blocked"]["visited"] == 2
+    assert not np.concatenate([k == 2 for k in kinds]).any()
 
 
 def test_spurs_at_a_strand_end_stay_with_the_switch_and_lateral_spurs_still_go() -> None:
@@ -360,6 +521,89 @@ def test_a_seed_retrace_over_one_rail_is_a_single_priced_hairpin() -> None:
     assert flips == 1
 
 
+def _stem_mask(skel: np.ndarray, wide_from: int | None) -> np.ndarray:
+    """Ink of half-width 2 around the rail, half-width 5 from column `wide_from` on."""
+    mask = np.zeros_like(skel)
+    ys, xs = np.nonzero(skel)
+    for y, x in zip(ys, xs, strict=True):
+        r = 5 if wide_from is not None and x >= wide_from else 2
+        mask[y - r : y + r + 1, x] = True
+    return mask
+
+
+def _stem_seed() -> Seed:
+    """Down the stem to its end, a seed pen lift, then on from the stem's middle back to the start."""
+    down = _seed_along(np.array([[8.0, 20.0], [70.0, 20.0]]), stroke=0)
+    back = _seed_along(np.array([[40.0, 20.0], [8.0, 20.0]]), stroke=1)
+    return Seed(
+        xy=np.vstack([down.xy, back.xy]),
+        tan=np.vstack([down.tan, back.tan]),
+        slot=np.concatenate([down.slot, back.slot]),
+        stroke=np.concatenate([down.stroke, back.stroke]),
+    )
+
+
+def _stem_seed_ahead() -> Seed:
+    """Down the stem to its middle, a seed pen lift, then on AHEAD of the pen to the stem's end."""
+    down = _seed_along(np.array([[8.0, 20.0], [40.0, 20.0]]), stroke=0)
+    on = _seed_along(np.array([[50.0, 20.0], [70.0, 20.0]]), stroke=1)
+    return Seed(
+        xy=np.vstack([down.xy, on.xy]),
+        tan=np.vstack([down.tan, on.tan]),
+        slot=np.concatenate([down.slot, on.slot]),
+        stroke=np.concatenate([down.stroke, on.stroke]),
+    )
+
+
+def _assemble_ride_back(weights: TintenpfadWeights, wide_from: int | None, seed: Seed | None = None):
+    skel = _rail_skeleton()
+    strands = strands_of(skel, XH, weights, {})
+    seed = seed or _stem_seed()
+    states, _, _ = decode_with_hysteresis(strands, seed, XH, weights)
+    evidence = None
+    if weights.ride_back:
+        evidence = double_ink_of(strands, _stem_mask(skel, wide_from), skel, XH, weights)
+    runs, _, kinds, _, counts = assemble(strands, states, seed, XH, weights, None, double_ink=evidence)
+    return runs, kinds, counts, evidence
+
+
+def test_ride_back_rides_the_stem_back_at_a_seed_lift_behind_the_pen() -> None:
+    """Rückfahrt statt Absetzen: the seed lifts at the stem's end and starts
+    again BEHIND the pen on the same strand; the assembly rides the rail back
+    (one run, a retrace of rail pixels only) — no ink evidence asked."""
+    weights = TintenpfadWeights(rail="raw", resample_step_xh=0.0, ride_back=True)
+    runs, kinds, counts, evidence = _assemble_ride_back(weights, wide_from=None)
+    assert evidence is not None and bool(evidence.wide[0].all())
+    assert counts["ride_backs"] == 1
+    assert len(runs) == 1
+    assert int((np.asarray(kinds[0]) == 1).sum()) == 0  # rail pixels only, no bridge
+    length = float(np.hypot(*np.diff(runs[0], axis=0).T).sum())
+    assert abs(length - (62.0 + 30.0 + 32.0)) < 6.0
+
+
+def test_ride_back_never_fires_when_the_landing_lies_ahead_of_the_pen() -> None:
+    """A landing AHEAD of the pen on its own strand (a t-bar, a mark set on
+    along the stroke) is no retrace: the lift stands, two runs."""
+    weights = TintenpfadWeights(rail="raw", resample_step_xh=0.0, ride_back=True)
+    runs, _, counts, _ = _assemble_ride_back(weights, wide_from=None, seed=_stem_seed_ahead())
+    assert counts["ride_backs"] == 0 and len(runs) == 2
+
+
+def test_ride_back_is_off_by_default_and_the_ink_evidence_gates_it() -> None:
+    """Default OFF: no evidence read, no count key, the lift stands. With the
+    optional Doppelstrich evidence (1.4 × pen over ≥ 0.5 xh) the ride is
+    licensed only where the stem IS that wide."""
+    off = TintenpfadWeights(rail="raw", resample_step_xh=0.0)
+    runs_off, _, counts_off, evidence = _assemble_ride_back(off, wide_from=45)
+    assert evidence is None and "ride_backs" not in counts_off and len(runs_off) == 2
+    gated = TintenpfadWeights(rail="raw", resample_step_xh=0.0, ride_back=True, ride_back_ink_ratio=1.4)
+    runs_thin, _, counts_thin, _ = _assemble_ride_back(gated, wide_from=None)
+    assert counts_thin["ride_backs"] == 0 and len(runs_thin) == 2
+    runs_wide, _, counts_wide, evidence = _assemble_ride_back(gated, wide_from=45)
+    assert evidence is not None and longest_true_run(evidence.wide[0], evidence.arc[0]) >= 0.5 * XH
+    assert counts_wide["ride_backs"] == 1 and len(runs_wide) == 1
+
+
 def test_a_bulge_within_reach_stays_on_the_rail_and_never_re_lays_a_pixel() -> None:
     """A seed that bulges 12 px off the rail (inside the board radius): the
     decode dwells on the rail through the bulge — no paper state, one run,
@@ -377,6 +621,132 @@ def test_a_bulge_within_reach_stays_on_the_rail_and_never_re_lays_a_pixel() -> N
 def _boardings(states) -> int:
     """Rail→paper and paper→rail transitions of a state sequence (one stroke)."""
     return sum(1 for a, b in zip(states[:-1], states[1:], strict=True) if (a is None) != (b is None))
+
+
+def _draw_line(img: np.ndarray, a: tuple[float, float], b: tuple[float, float]) -> None:
+    n = int(max(abs(b[0] - a[0]), abs(b[1] - a[1])) * 2) + 2
+    for t in np.linspace(0.0, 1.0, n):
+        img[int(round(a[1] + t * (b[1] - a[1]))), int(round(a[0] + t * (b[0] - a[0])))] = True
+
+
+def _loop_on_stem() -> tuple[np.ndarray, np.ndarray]:
+    """The l: a stem (20,80)→(20,40) with a narrow loop on top — left branch up
+    to (15,10), an arc over the top, right branch back down onto the stem.
+    Returns the skeleton and the pen's path (up the stem, round the loop,
+    down the stem — the stem written twice)."""
+    img = np.zeros((90, 40), dtype=bool)
+    _draw_line(img, (20.0, 80.0), (20.0, 40.0))
+    loop = [(20.0, 40.0), (15.0, 10.0)]
+    loop += [(20.0 + 5.0 * np.cos(t), 10.0 - 5.0 * np.sin(t)) for t in np.linspace(np.pi, 0.0, 9)]
+    loop += [(25.0, 10.0), (20.0, 40.0)]
+    for a, b in zip(loop[:-1], loop[1:], strict=True):
+        _draw_line(img, a, b)
+    pen = [(20.0, 80.0), (20.0, 40.0), *loop[1:], (20.0, 80.0)]
+    return skeletonize(img), np.asarray(pen, dtype=float)
+
+
+def test_a_loop_returning_onto_its_stem_is_a_self_jump_not_a_paper_episode() -> None:
+    """The `will` / `Galoppieren` mechanism (arm E „fit-absetzer"): the loop's
+    two ends meet at the stem's node, the smoothest pairing makes loop + stem
+    ONE strand that passes that node twice, and the pen's way from the loop's
+    end (index 37, arriving) to its start (index 0, leaving) is a same-strand
+    transition beyond the ride cap. Without the switch the decoder's only
+    route is the paper state — a wormhole that lands a bridge or a lift on
+    0.04 px of rail; with it the transition is priced and laid as a jump."""
+    skel, pen = _loop_on_stem()
+    seed = _seed_along(pen)
+    closed = TintenpfadWeights(rail="raw", resample_step_xh=0.0)
+    strands, states_c, runs_c, counts_c, _ = _decode_on(skel, seed, closed)
+    assert len(strands) == 1 and len(strands[0].junction_idx) == 1
+    (node,) = strands[0].junction_idx.tolist()
+    assert float(np.hypot(*(strands[0].points[node] - strands[0].points[0]))) <= 1.5  # the node is passed twice
+    assert sum(1 for s in states_c if s is None) == 1 and counts_c["paper_bridges"] == 1
+    assert "self_jumps" not in counts_c
+    opened = weights_from_overrides(closed, ["self_jump=1"])
+    _, states_o, runs_o, counts_o, _ = _decode_on(skel, seed, opened)
+    assert sum(1 for s in states_o if s is None) == 0
+    assert counts_o["self_jumps"] == 1 and counts_o["paper_bridges"] == 0 and counts_o["paper_lifts"] == 0
+    assert counts_o["hairpins"] == 0 and counts_o["jumps"] == 0
+    (gap,) = counts_o["self_jump_gaps_px"]
+    assert gap <= 2.0  # the two indices are the same node, a pixel apart at most
+    assert len(runs_o) == 1
+    # the stem is ridden up (−1), the loop in strand order (+1), the stem down again (+1)
+    dirs = [s[2] for s in states_o]
+    assert dirs[0] == -1 and dirs[-1] == 1 and int((np.diff(dirs) != 0).sum()) == 1
+    length = float(np.hypot(*np.diff(runs_o[0], axis=0).T).sum())
+    assert abs(length - float(np.hypot(*np.diff(pen, axis=0).T).sum())) < 6.0
+
+
+def _u_strand() -> np.ndarray:
+    """One strand shaped as a U: two legs 10 px apart, 48 px long, joined by a V at the bottom."""
+    img = np.zeros((70, 40), dtype=bool)
+    _draw_line(img, (12.0, 8.0), (12.0, 56.0))
+    _draw_line(img, (22.0, 8.0), (22.0, 56.0))
+    _draw_line(img, (12.0, 56.0), (17.0, 61.0))
+    _draw_line(img, (17.0, 61.0), (22.0, 56.0))
+    return skeletonize(img)
+
+
+def test_the_self_jump_is_bound_to_the_nodes_a_strand_passes() -> None:
+    """A seed that cuts straight across a U 15 px above its bottom: unbound
+    (`self_jump_node_px=0`) the decoder takes the shortcut as a self-jump —
+    the Galoppieren counter cut, 6 px before the node; bound to the nodes
+    (the delivered 3 px) there is no node on a leg, so no self-jump: the
+    decode rides round the bottom, and the rail is never re-laid."""
+    skel = _u_strand()
+    seed = _seed_along(np.array([[12.0, 10.0], [12.0, 46.0], [22.0, 46.0], [22.0, 10.0]]))
+    unbound = TintenpfadWeights(rail="raw", resample_step_xh=0.0, self_jump=True, self_jump_node_px=0.0)
+    strands, states_u, _, counts_u, _ = _decode_on(skel, seed, unbound)
+    assert len(strands) == 1 and len(strands[0].junction_idx) == 0
+    assert counts_u["self_jumps"] == 1 and sum(1 for s in states_u if s is None) == 0
+    bound = TintenpfadWeights(rail="raw", resample_step_xh=0.0, self_jump=True)
+    _, states_b, _, counts_b, _ = _decode_on(skel, seed, bound)
+    assert counts_b["self_jumps"] == 0
+    idx = [s[1] for s in states_b if s is not None]
+    dirs = [s[2] for s in states_b if s is not None]
+    steps = zip(idx[:-1], dirs[:-1], idx[1:], dirs[1:], strict=True)
+    assert all((i1 - i0) * d0 >= 0 for i0, d0, i1, d1 in steps if d0 == d1)  # monotone in the travel direction
+
+
+def test_a_strand_that_passes_the_ball_twice_offers_both_branches() -> None:
+    """A seed sample beside the l's stem top sees the loop's start (index 0…)
+    AND the stem (index 37…) of the same strand; the delivered per-strand
+    pick keeps only the three nearest pixels of that strand — one branch —
+    so the far branch can never be boarded there. With the Selbstsprung the
+    pick is per branch (index runs more than the ride cap apart)."""
+    from tools.pairlab.tintenpfad import _Board, _candidate_pixels
+
+    skel, _ = _loop_on_stem()
+    weights = TintenpfadWeights(rail="raw", strand_cand=3)
+    strands = strands_of(skel, XH, weights, {})
+    board = _Board.of(strands)
+    point = np.array([25.0, 42.0])  # beside the node at (20, 40), 5 px to the right
+    radius, gap = weights.board_radius_xh * XH, int(weights.ride_cap_xh * XH)
+    plain, _, _ = _candidate_pixels(board, point, radius, weights)
+    branched, _, _ = _candidate_pixels(board, point, radius, weights, gap)
+
+    def clusters(idx: np.ndarray) -> int:
+        s = sorted(int(board.idx[p]) for p in idx)
+        return 1 + sum(b - a > 10 for a, b in zip(s[:-1], s[1:], strict=True))
+
+    assert len(plain) == 3 and clusters(plain) == 1
+    assert len(branched) > len(plain) and clusters(branched) >= 2
+    assert set(plain.tolist()) <= set(branched.tolist())  # nothing the plain pick offered is lost
+
+
+def test_the_self_jump_never_replaces_a_ride_a_hairpin_or_a_backward_step() -> None:
+    """Within the ride cap nothing changes: a retrace stays one priced hairpin,
+    a wobbling seed stays a monotone ride — no pixel re-laid, no self-jump."""
+    skel = _rail_skeleton()
+    opened = TintenpfadWeights(rail="raw", resample_step_xh=0.0, self_jump=True)
+    retrace = _seed_along(np.array([[8.0, 20.0], [70.0, 20.0], [8.0, 20.0]]))
+    _, states, runs, counts, _ = _decode_on(skel, retrace, opened)
+    assert counts["hairpins"] == 1 and counts["self_jumps"] == 0 and len(runs) == 1
+    wobble = np.column_stack([np.linspace(8.0, 72.0, 200), 20.0 + 2.0 * np.sin(np.linspace(0, 12 * np.pi, 200))])
+    _, states, _, counts, _ = _decode_on(skel, _seed_along(wobble), opened)
+    assert counts["hairpins"] == 0 and counts["self_jumps"] == 0
+    idx = [s[1] for s in states if s is not None]
+    assert all(b >= a for a, b in zip(idx[:-1], idx[1:], strict=True))
 
 
 def test_the_paper_wormhole_is_closed_by_the_boarding_price() -> None:
@@ -597,8 +967,13 @@ def test_weights_are_frozen_and_typed() -> None:
     # The Spitzen arm is off in the delivered default and switches on by --weight.
     default = TintenpfadWeights()
     assert default.tip_read is False and default.spur_at_ends is False and default.tip_extend_xh == 0.0
-    arm = weights_from_overrides(default, ["tip_read=1", "spur_at_ends=on"])
-    assert arm.tip_read is True and arm.spur_at_ends is True
+    assert default.hairpin_tip is False
+    arm = weights_from_overrides(default, ["tip_read=1", "spur_at_ends=on", "hairpin_tip=1"])
+    assert arm.tip_read is True and arm.spur_at_ends is True and arm.hairpin_tip is True
+    # The Grauwert-Stopp (arm D of the „Ecken" round) is off in the default too.
+    assert default.tip_grey_stop is False
+    assert weights_from_overrides(default, ["tip_grey_stop=1"]).tip_grey_stop is True
+    assert default.self_jump is False and weights_from_overrides(default, ["self_jump=1"]).self_jump is True
     with pytest.raises(SystemExit):
         weights_from_overrides(TintenpfadWeights(), ["no_such=1"])
     with pytest.raises(ValueError):

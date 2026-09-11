@@ -42,7 +42,10 @@ Two stages, strictly separated:
   prices deviation and tangent disagreement; transitions price a ride along a
   strand per pixel advanced (monotone — never a pixel re-laid), a hairpin on
   the same strand once (`turn_cost`, a pen event), a jump to another strand
-  within `jump_radius_xh` by gap and turning, and every boarding into or out of
+  within `jump_radius_xh` by gap and turning (with `self_jump` also to a pixel
+  of the SAME strand beyond the ride cap — a loop that returns onto its own
+  stem passes one node twice on one strand, and beyond the cap a strand is
+  another strand), and every boarding into or out of
   the paper (`paper_board`, a lift-class event — without it the paper state is
   a wormhole through which a strand can be teleported along; measured on
   `das`). A seed pen lift frees every transition. Out-and-back jumps (leave a
@@ -181,6 +184,21 @@ class TintenpfadWeights:
     jump_turn_w: float = 8.0  # × (1 − cos) between leaving and entering directions
     paper_w: float = 12.0  # per sample in the paper state
     paper_board: float = 20.0  # per boarding into or out of the paper (the wormhole closer)
+    # Selbstsprung (arm E „fit-absetzer", off by default): beyond the ride cap
+    # a strand is another strand. A transition between two pixels of the SAME
+    # strand that is neither a ride nor a hairpin (|adv| > ride_cap) is priced
+    # like a jump between strands when the pixels lie within `jump_radius_xh`
+    # — a loop that returns onto its own stem (the l, the G) passes the same
+    # node twice on one strand, and without this the paper state was the only
+    # way across: 2 × paper_board + paper_w, a wormhole whose exit landed a
+    # lift or a bridge depending on 0.04 px of the rail. A backward step within
+    # the cap stays forbidden — never a pixel re-laid. `self_jump_node_px`
+    # binds the jump to the NODES the strand passes: both pixels must lie
+    # within this many strand pixels of a junction index or a strand end
+    # (0 = anywhere on the strand — measured first, and it cut across the G's
+    # counter 6 px before the node; the bound version is the delivered arm).
+    self_jump: bool = False
+    self_jump_node_px: float = 3.0
     # ---- stage 2: the re-entry hysteresis
     reentry_window: int = 12  # samples; 0 = off
     reentry_net_xh: float = 0.10  # "came straight back": exit and re-entry pixel this close
@@ -202,6 +220,24 @@ class TintenpfadWeights:
     # `tip_read_cap_xh` is a safety cap against a runaway walk, counted when it binds.
     tip_read: bool = False
     tip_read_cap_xh: float = 1.0
+    # Haken-Spitze (arm A of the „Ecken" round, off by default): the tip
+    # reading applied at a HAIRPIN on one strand. The decoder turns at the
+    # last boarded strand pixel, and the thinning stops half a nib short of
+    # the ink's tip, so the corner is cut off and the turn comes too early.
+    # With this on, the strand's rest beyond the turning pixel and the
+    # EDT-ridge walk to the end of the mask (`read_tip`, the same rule as at a
+    # run end, capped by `tip_read_cap_xh`) are laid out AND back — a reading
+    # of the ink the pen must have covered, never a point off the mask.
+    hairpin_tip: bool = False
+    # Grauwert-Stopp (arm D of the „Ecken" round, off by default): the tip walk
+    # also stops one step before the crop's GREY reads paper — the nearest
+    # pixel's grey above the midpoint of this crop's ink and paper levels, the
+    # reversal sensor's own paper test. The frozen mask's adaptive threshold
+    # keeps a pale halo around a round cap through which the walk otherwise
+    # runs on; the darkness channel is a second reading of the ink beside the
+    # mask, never a walk of its own — it does nothing unless a tip reader
+    # (`tip_read` or `hairpin_tip`) walks the ridge.
+    tip_grey_stop: bool = False
     # Spurs at strand ENDS are the stroke's continuation the thinning broke off
     # (an Anstrich), not a lateral artefact: with this on, a node whose non-spur
     # edges number at most one keeps its spurs instead of pruning them.
@@ -219,6 +255,22 @@ class TintenpfadWeights:
     ink_bridge_margin: float = 0.25
     ink_bridge_share: float = 0.6
     ink_bridge_band_px: float = 1.0
+    # Rückfahrt statt Absetzen (arm C of the 2026-09-11 Ecken round, off by
+    # default): a DECODER rule, not a reading. At a seed pen lift whose next
+    # boarded pixel lies on the strand the pen stands on (or within the jump
+    # radius of it), BEHIND the pen in its travel direction, the assembly
+    # rides that strand back to the landing instead of lifting — the hand
+    # wrote the stem twice (the ß stem: down, and up again into the bow).
+    # Once per strand; every laid vertex is a rail pixel.
+    ride_back: bool = False
+    # Optional ink evidence for the rule (the Doppelstrich reading, measured
+    # inert on the printed 1922 plate: 0 of 63 words at 1.4 × pen): with a
+    # ratio > 0 the ride is licensed only where the strand's ink width (2 × EDT
+    # along the rail) exceeds `ride_back_ink_ratio` × the word's pen width —
+    # the median 2 × EDT over the skeleton — over ≥ `ride_back_min_xh` of
+    # contiguous arc. 0 = no evidence required (the rule alone).
+    ride_back_ink_ratio: float = 0.0
+    ride_back_min_xh: float = 0.5
 
     def __post_init__(self) -> None:
         if self.rail not in ("subpixel", "tentfit", "raw"):
@@ -657,6 +709,60 @@ def refine_strands(
     return diag
 
 
+@dataclass
+class DoubleInk:
+    """The Doppelstrich reading per strand: which rail pixels sit in ink wider
+    than `ratio × pen`, the arc position of every pixel, and the minimum
+    contiguous wide arc (px) a ride must cover to count as evidence."""
+
+    wide: list[np.ndarray]  # per strand, bool per pixel
+    arc: list[np.ndarray]  # per strand, cumulative arc in px
+    min_run_px: float
+    pen_px: float
+
+    def qualifies(self, strand: int, lo: int, hi: int) -> bool:
+        """True when the pixels `lo..hi` (inclusive) of `strand` hold one
+        contiguous wide run of at least `min_run_px` of arc."""
+        flag = self.wide[strand][lo : hi + 1]
+        arc = self.arc[strand][lo : hi + 1]
+        return longest_true_run(flag, arc) >= self.min_run_px
+
+
+def longest_true_run(flag: np.ndarray, arc: np.ndarray) -> float:
+    """The arc length spanned by the longest contiguous True run of `flag`."""
+    best = 0.0
+    j = 0
+    n = len(flag)
+    while j < n:
+        if flag[j]:
+            k = j
+            while k + 1 < n and flag[k + 1]:
+                k += 1
+            best = max(best, float(arc[k] - arc[j]))
+            j = k + 1
+        else:
+            j += 1
+    return best
+
+
+def double_ink_of(
+    strands: Sequence[Strand], mask: np.ndarray, skel: np.ndarray, xh: float, weights: TintenpfadWeights
+) -> DoubleInk:
+    """The Doppelstrich evidence read off the ink: the width of every strand
+    pixel against the word's own pen width. With `ride_back_ink_ratio` 0 every
+    pixel counts as wide — the ride needs no evidence (the decoder rule alone)."""
+    edt = distance_transform_edt(np.asarray(mask, dtype=bool))
+    pen = float(np.median(2.0 * edt[np.asarray(skel, dtype=bool)])) if np.any(skel) else 0.0
+    ratio = weights.ride_back_ink_ratio
+    wide: list[np.ndarray] = []
+    arc: list[np.ndarray] = []
+    for s in strands:
+        w = 2.0 * map_coordinates(edt, [s.points[:, 1], s.points[:, 0]], order=1, mode="nearest")
+        wide.append(w > ratio * pen if ratio > 0.0 else np.ones(len(w), bool))
+        arc.append(np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(s.points, axis=0).T))]))
+    return DoubleInk(wide, arc, weights.ride_back_min_xh * xh, pen)
+
+
 # --------------------------------------------------------------- stage 2: seed
 
 
@@ -741,12 +847,65 @@ class _Board:
         return cls(xy, sid, idx, tan, n, closed, cKDTree(xy))
 
 
+def node_near(strands: Sequence[Strand], node_px: float) -> np.ndarray:
+    """Per board pixel: does it lie within `node_px` strand pixels of a node the
+    strand passes — a junction index, or an open strand's end (a ring's cut is
+    not a node)? `node_px <= 0` marks every pixel."""
+    flags = []
+    for s in strands:
+        n = len(s.points)
+        if node_px <= 0:
+            flags.append(np.ones(n, dtype=bool))
+            continue
+        nodes = list(s.junction_idx) if s.closed else [0, n - 1, *s.junction_idx]
+        idx = np.arange(n)
+        near = np.zeros(n, dtype=bool)
+        for j in nodes:
+            near |= np.abs(idx - int(j)) <= node_px
+        flags.append(near)
+    return np.concatenate(flags) if flags else np.zeros(0, dtype=bool)
+
+
+def _branches(board: _Board, order: np.ndarray, gap: int) -> dict[int, int]:
+    """Per ball pixel, which BRANCH of its strand it lies on: the strand's ball
+    pixels sorted by index, split where consecutive indices are more than
+    `gap` apart (on a ring the run across the cut is one run). A strand that
+    passes the ball twice — the loop side and the stem of the same l — is two
+    branches, each of which the kept set must reach."""
+    by_strand: dict[int, list[int]] = {}
+    for p in order:
+        by_strand.setdefault(int(board.sid[p]), []).append(int(p))
+    branch: dict[int, int] = {}
+    for pixels in by_strand.values():
+        pixels.sort(key=lambda p: int(board.idx[p]))
+        b = 0
+        prev: int | None = None
+        for p in pixels:
+            i = int(board.idx[p])
+            if prev is not None and i - prev > gap:
+                b += 1
+            branch[p] = b
+            prev = i
+        if b > 0 and board.closed[pixels[0]]:
+            n = int(board.n[pixels[0]])
+            if n - int(board.idx[pixels[-1]]) + int(board.idx[pixels[0]]) <= gap:
+                for p in pixels:
+                    if branch[p] == b:
+                        branch[p] = 0
+    return branch
+
+
 def _candidate_pixels(
-    board: _Board, point: np.ndarray, radius: float, weights: TintenpfadWeights
+    board: _Board, point: np.ndarray, radius: float, weights: TintenpfadWeights, branch_gap: int | None = None
 ) -> tuple[np.ndarray, int, int]:
     """The strand pixels one seed sample may board, how many pixels the ball
     held, and how many STRANDS the ball held (each of which the kept set
-    must still reach — the judges' effective-radius test)."""
+    must still reach — the judges' effective-radius test).
+
+    With `branch_gap` (the Selbstsprung arm: the ride cap in pixels) the
+    per-strand pick is per BRANCH of a strand — beyond the ride cap a strand
+    is another strand here too, or the far branch of a loop that returns
+    onto its own stem could never be boarded from a sample near the stem."""
     ball = board.tree.query_ball_point(point, r=radius)
     held = len(ball)
     if held == 0:
@@ -761,11 +920,12 @@ def _candidate_pixels(
     # ever unreachable because a nearer strand filled the set; then up to
     # `strand_cand` per strand, then the cap — nearest-of-strand pixels are
     # never the ones dropped.
+    branch = _branches(board, order, branch_gap) if branch_gap is not None else {}
     firsts: list[int] = []
     others: list[int] = []
-    seen: dict[int, int] = {}
+    seen: dict[tuple[int, int], int] = {}
     for p in order:
-        s = int(board.sid[p])
+        s = (int(board.sid[p]), branch.get(int(p), 0))
         c = seen.get(s, 0)
         if c == 0:
             firsts.append(int(p))
@@ -789,6 +949,8 @@ def decode(
     radius = weights.board_radius_xh * xh
     ride_cap = weights.ride_cap_xh * xh
     jump_r = weights.jump_radius_xh * xh
+    at_node = node_near(strands, weights.self_jump_node_px) if weights.self_jump else None
+    branch_gap = int(ride_cap) if weights.self_jump else None
     n = len(seed.xy)
     inf = float("inf")
     s_pix: list[np.ndarray] = []
@@ -796,7 +958,7 @@ def decode(
     s_emit: list[np.ndarray] = []
     held_counts, kept_counts, strands_held, strands_kept = [], [], [], []
     for k in range(n):
-        idx, held, n_strands = _candidate_pixels(board, seed.xy[k], radius, weights)
+        idx, held, n_strands = _candidate_pixels(board, seed.xy[k], radius, weights, branch_gap)
         held_counts.append(held)
         kept_counts.append(len(idx))
         strands_held.append(n_strands)
@@ -857,7 +1019,17 @@ def decode(
                 tb = board.tan[ib] * ddb[:, None]
                 cosj = np.einsum("ik,jk->ij", ta, tb)
                 okj = ~same & (gap <= jump_r)
-                sub = np.where(okj, weights.jump_base + weights.gap_w * gap + weights.jump_turn_w * (1.0 - cosj), sub)
+                jump_price = weights.jump_base + weights.gap_w * gap + weights.jump_turn_w * (1.0 - cosj)
+                sub = np.where(okj, jump_price, sub)
+                if at_node is not None:
+                    # Beyond the ride cap a strand is another strand: the
+                    # same-strand pairs no ride or hairpin can reach take the
+                    # jump price within the jump radius (the ride and hairpin
+                    # masks cover |adv| ≤ ride_cap, so nothing is re-priced),
+                    # from a node the strand passes to a node it passes.
+                    okself = same & (np.abs(adv) > ride_cap) & (gap <= jump_r)
+                    okself &= at_node[ia][:, None] & at_node[ib][None, :]
+                    sub = np.where(okself, jump_price, sub)
                 trans[np.ix_(ra, rb)] = sub
         tot = cost[:, None] + trans
         arg = np.argmin(tot, axis=0)
@@ -1007,6 +1179,16 @@ def grey_levels(crop: np.ndarray, mask: np.ndarray) -> tuple[float, float]:
     return ink, paper
 
 
+def grey_paper_of(crop: np.ndarray, mask: np.ndarray) -> tuple[np.ndarray, float]:
+    """Where THIS crop's grey reads paper: above the midpoint of its ink and
+    paper levels — the reversal sensor's own paper test, so a walk the sensor
+    would book as Papier-Strecke is stopped by the same reading that books it.
+    Returns the boolean image and the midpoint."""
+    ink, paper = grey_levels(crop, mask)
+    midpoint = 0.5 * (ink + paper)
+    return np.asarray(crop, dtype=float) > midpoint, midpoint
+
+
 def ink_bridge_test(
     crop: np.ndarray,
     mask: np.ndarray,
@@ -1067,25 +1249,61 @@ def assemble(
     xh: float,
     weights: TintenpfadWeights,
     ink_test: Callable[[np.ndarray, np.ndarray], dict[str, Any]] | None = None,
+    hairpin_tip: Callable[[int, int, int], np.ndarray] | None = None,
+    double_ink: DoubleInk | None = None,
 ) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray], list[np.ndarray], dict[str, Any]]:
     """Decoded states → pen runs of strand pixels (+ bridges), each vertex with
-    its slot label, its kind (0 rail · 1 bridge) and the seed sample that laid it.
+    its slot label, its kind (0 rail · 1 bridge · 2 tip) and the seed sample
+    that laid it.
 
     With `ink_test` (the Tinten-Brücke, `ink_bridge_xh > 0`) a would-be lift
     whose gap is within `ink_bridge_xh` is bridged when the test says the
-    plate carries faint ink across it; every tested gap is recorded."""
+    plate carries faint ink across it; every tested gap is recorded. With
+    `hairpin_tip` (the Haken-Spitze, `HairpinTipReader`) every hairpin on one
+    strand is handed its turning pixel and travel direction, and the vertices
+    it returns — the tip beyond the turn, out and back — are laid there.
+
+    With `double_ink` given (Rückfahrt statt Absetzen, `ride_back`), a seed
+    pen lift whose next boarded pixel lies on the strand the pen stands on
+    (or within the jump radius of its nearest pixel), BEHIND the pen in its
+    travel direction, is ridden back over that rail instead of lifted — the
+    hand wrote the stem twice; once per strand. The `DoubleInk` carries the
+    optional ink evidence the ride must cover (none when the ratio is 0)."""
     runs: list[list[np.ndarray]] = []
     labels: list[list[int]] = []
     kinds: list[list[int]] = []
     samples: list[list[int]] = []
-    n_jump = n_paper_bridges = n_hairpin = n_paper_lifts = n_ink_bridges = 0
+    n_jump = n_paper_bridges = n_hairpin = n_paper_lifts = n_ink_bridges = n_ride_back = 0
     ink_tests: list[dict[str, Any]] = []
+    self_jump_gaps: list[float] = []
     ride_cap = weights.ride_cap_xh * xh
     jump_r = weights.jump_radius_xh * xh
     ink_bridge_r = weights.ink_bridge_xh * xh
     lateral_cap = weights.bridge_lateral_cap_xh * xh
     paper_run = 0
     prev: tuple[int, int, int] | None = None
+    # The pen state before a seed lift, kept until the new stroke boards ink.
+    pending: tuple[int, int, int] | None = None
+    ride_used: set[int] = set()
+
+    def ride_back_to(ps_state: tuple[int, int, int], st: tuple[int, int, int]) -> int | None:
+        """The pixel of the pen's strand to ride back to, or None when the rule does not apply."""
+        if double_ink is None:
+            return None
+        ps, pi, pd = ps_state
+        s, i, _d = st
+        if ps in ride_used or strands[ps].closed:
+            return None
+        if s == ps:
+            j = i
+        else:
+            dist = np.linalg.norm(strands[ps].points - strands[s].points[i], axis=1)
+            j = int(np.argmin(dist))
+            if float(dist[j]) > jump_r:
+                return None
+        if (j - pi) * pd >= 0:
+            return None
+        return j if double_ink.qualifies(ps, min(pi, j), max(pi, j)) else None
 
     def emit(pt: np.ndarray, k: int, kind: int) -> None:
         runs[-1].append(np.asarray(pt, dtype=float))
@@ -1108,6 +1326,16 @@ def assemble(
         else:
             emit(p1, k, 1)
 
+    def advance(s: int, pi: int, i: int, pd: int) -> int:
+        """Signed index advance from `pi` to `i` along the travel direction `pd`
+        (the shortest way round on a ring) — the decoder's own `adv`."""
+        adv = (i - pi) * pd
+        if strands[s].closed:
+            n_pts = len(strands[s].points)
+            adv = adv % n_pts
+            adv = adv - n_pts if adv > n_pts / 2 else adv
+        return int(adv)
+
     def rail_between(s: int, pi: int, i: int, pd: int, d: int) -> tuple[list[int], bool]:
         """Indices to lay after `pi` up to `i` on strand `s`, and whether it is a hairpin."""
         pts = strands[s].points
@@ -1129,6 +1357,7 @@ def assemble(
     for k, st in enumerate(states):
         lift = k > 0 and seed.stroke[k] != seed.stroke[k - 1]
         if lift:
+            pending = prev if double_ink is not None else None
             prev = None
             paper_run = 0
         if st is None:
@@ -1137,6 +1366,24 @@ def assemble(
             continue
         s, i, d = st
         pts = strands[s].points
+        if pending is not None and prev is None:
+            # The new stroke's first boarded pixel: when it lies behind the pen
+            # on the pen's own strand, ride that strand back to it instead of
+            # lifting (Rückfahrt statt Absetzen).
+            j = ride_back_to(pending, st)
+            ps, pi, pd = pending
+            pending = None
+            if j is not None:
+                step = 1 if j > pi else -1
+                for q in range(pi + step, j + step, step):
+                    emit(strands[ps].points[q], k, 0)
+                n_ride_back += 1
+                ride_used.add(ps)
+                if s != ps:
+                    bridge_to((ps, j, -pd), st, k)
+                prev = st
+                paper_run = 0
+                continue
         if prev is not None and paper_run and not lift:
             # A paper gap between two boarded pixels: the rail when it is a
             # legal forward ride (the seed merely sampled nothing there), a
@@ -1190,11 +1437,30 @@ def assemble(
             prev = st
             continue
         ps, pi, pd = prev
-        if s == ps:
+        if s == ps and weights.self_jump and abs(advance(s, pi, i, pd)) > ride_cap:
+            # The Selbstsprung is bridged like a jump — never laid as rail over
+            # the indices between, which would draw the whole loop backwards.
+            self_jump_gaps.append(round(float(np.hypot(*(pts[i] - pts[pi]))), 2))
+            bridge_to(prev, st, k)
+        elif s == ps:
             rng, hairpin = rail_between(s, pi, i, pd, d)
             n_hairpin += int(hairpin)
+            tip_pts = np.zeros((0, 2))
+            turn_at_i = False
+            if hairpin and hairpin_tip is not None and not strands[s].closed:
+                # The pen turns at whichever of the two boarded pixels lies
+                # further along the OLD travel direction; the tip is read
+                # beyond that pixel, and laid where the turn happens.
+                turn_at_i = (i - pi) * pd > 0
+                tip_pts = hairpin_tip(s, i if turn_at_i else pi, pd)
+            if not turn_at_i:
+                for q in tip_pts:
+                    emit(q, k, 2)
             for q in rng:
                 emit(pts[q], k, 0)
+            if turn_at_i:
+                for q in tip_pts:
+                    emit(q, k, 2)
         else:
             n_jump += 1
             bridge_to(prev, st, k)
@@ -1220,6 +1486,11 @@ def assemble(
         # Only with the arm on, so the default artefact keeps its bytes.
         counts["ink_bridges"] = n_ink_bridges
         counts["ink_bridge_tests"] = ink_tests
+    if double_ink is not None:
+        counts["ride_backs"] = n_ride_back
+    if weights.self_jump:
+        counts["self_jumps"] = len(self_jump_gaps)
+        counts["self_jump_gaps_px"] = self_jump_gaps
     return out_runs, out_labels, out_kinds, out_samples, counts
 
 
@@ -1300,6 +1571,7 @@ def read_tip(
     *,
     step_px: float = 0.5,
     rise_px: float = 0.25,
+    grey_paper: np.ndarray | None = None,
 ) -> tuple[np.ndarray, str]:
     """The ink read on from a free strand end to the end of the mask.
 
@@ -1309,8 +1581,12 @@ def read_tip(
     the walk follows the ridge of the ink rather than a straight line. It stops
     at the first step whose nearest pixel is not ink (the tip), at a step where
     the EDT RISES by more than `rise_px` (the walk entered a wider body — a
-    junction, not a tip) or at `cap_px`. Returns the points to append (in
-    walking order) and the stop reason (`mask` · `rise` · `cap` · `edge`).
+    junction, not a tip) or at `cap_px`. With `grey_paper` (a boolean image,
+    True where the crop's grey reads paper) it also stops at the first step
+    whose nearest pixel reads paper by the grey — the step is not appended, so
+    the walk ends one step before the halo the mask still calls ink. Returns
+    the points to append (in walking order) and the stop reason (`mask` ·
+    `grey` · `rise` · `cap` · `edge`).
     """
     h, w = mask.shape
     v = np.asarray(direction, dtype=float)
@@ -1333,6 +1609,8 @@ def read_tip(
             return np.asarray(out).reshape(-1, 2), "edge"
         if not mask[iy, ix]:
             return np.asarray(out).reshape(-1, 2), "mask"
+        if grey_paper is not None and grey_paper[iy, ix]:
+            return np.asarray(out).reshape(-1, 2), "grey"
         f = _edt_at(edt, q)
         if f > last + rise_px:
             return np.asarray(out).reshape(-1, 2), "rise"
@@ -1380,6 +1658,114 @@ def tip_tail(strand: Strand, i: int, travel: np.ndarray, visited: tuple[int, int
     return rng, outward, ""
 
 
+def _visited_ranges(
+    states: Sequence[tuple[int, int, int] | None], also: Sequence[tuple[int, int]] = ()
+) -> dict[int, tuple[int, int]]:
+    """Per strand the (lowest, highest) pixel index any state boarded — plus
+    the `also` pixels, which count as boarded too."""
+    visited: dict[int, tuple[int, int]] = {}
+    for st in states:
+        if st is None:
+            continue
+        lo, hi = visited.get(st[0], (st[1], st[1]))
+        visited[st[0]] = (min(lo, st[1]), max(hi, st[1]))
+    for si, pi in also:
+        lo, hi = visited.get(si, (pi, pi))
+        visited[si] = (min(lo, pi), max(hi, pi))
+    return visited
+
+
+def _in_mask_count(mask: np.ndarray, pts: np.ndarray) -> int:
+    h, w = mask.shape
+    ix = np.rint(pts[:, 0]).astype(int)
+    iy = np.rint(pts[:, 1]).astype(int)
+    ok = (ix >= 0) & (ix < w) & (iy >= 0) & (iy < h)
+    hit = np.zeros(len(pts), dtype=bool)
+    hit[ok] = mask[iy[ok], ix[ok]]
+    return int(hit.sum())
+
+
+class HairpinTipReader:
+    """The tip reading at a HAIRPIN (arm „Haken-Spitze"), called by `assemble`
+    with the strand, the turning pixel and the travel direction of every
+    same-strand hairpin.
+
+    The rule is the run end's own (`tip_tail` + `read_tip`): the strand's
+    unvisited rest beyond the turning pixel up to a FREE end, then the
+    EDT-ridge walk to the end of the mask; the vertices come back out AND
+    back — the pen went to the tip and returned over the same ink. A junction
+    end, a node on the rest or a pixel some sample boarded beyond the turn
+    blocks the reading, counted by reason. The strand ends read here are
+    `claimed`, so the run-end reading afterwards never lays them twice.
+    """
+
+    def __init__(
+        self,
+        strands: Sequence[Strand],
+        states: Sequence[tuple[int, int, int] | None],
+        mask: np.ndarray,
+        cap_px: float,
+        grey_paper: np.ndarray | None = None,
+    ) -> None:
+        self.strands = strands
+        self.mask = np.asarray(mask, dtype=bool)
+        self.edt = distance_transform_edt(self.mask)
+        self.cap_px = cap_px
+        # The Grauwert-Stopp reaches the hairpin walks too: the same second
+        # reading of the ink that stops a run end's walk stops a hairpin's.
+        self.grey_paper = grey_paper
+        self.visited = _visited_ranges(states)
+        self.claimed: list[tuple[int, int]] = []
+        self.rail_lengths: list[float] = []
+        self.walk_lengths: list[float] = []
+        self.diag: dict[str, Any] = {
+            "hairpins": 0,
+            "read": 0,
+            "blocked": {"not_free": 0, "junction": 0, "visited": 0},
+            "rail_points": 0,
+            "rail_points_in_mask": 0,
+            "walk_points": 0,
+            "walk_points_in_mask": 0,
+            "stops": {"mask": 0, "rise": 0, "cap": 0, "edge": 0, "grey": 0},
+        }
+
+    def __call__(self, s: int, i: int, travel_dir: int) -> np.ndarray:
+        """The vertices to lay at the turn: the tip beyond pixel `i` of strand
+        `s` in travel direction `travel_dir`, out and back (ending on `i`'s
+        pixel again), or none when the tail is not readable."""
+        strand = self.strands[s]
+        self.diag["hairpins"] += 1
+        rng, outward, why = tip_tail(strand, i, strand.tan[i] * travel_dir, self.visited.get(s, (i, i)))
+        if why:
+            self.diag["blocked"][why] += 1
+            return np.zeros((0, 2))
+        rail = strand.points[rng] if rng else np.zeros((0, 2))
+        tip_start = rail[-1] if len(rail) else strand.points[i]
+        walk, stop = read_tip(tip_start, outward, self.mask, self.edt, self.cap_px, grey_paper=self.grey_paper)
+        self.diag["stops"][stop] += 1
+        out = np.vstack([rail, walk])
+        if not len(out):
+            return out
+        self.diag["read"] += 1
+        self.diag["rail_points"] += len(rail)
+        self.diag["rail_points_in_mask"] += _in_mask_count(self.mask, rail) if len(rail) else 0
+        self.diag["walk_points"] += len(walk)
+        self.diag["walk_points_in_mask"] += _in_mask_count(self.mask, walk) if len(walk) else 0
+        self.rail_lengths.append(polyline_len(np.vstack([strand.points[i][None, :], rail])) if len(rail) else 0.0)
+        self.walk_lengths.append(polyline_len(np.vstack([tip_start[None, :], walk])) if len(walk) else 0.0)
+        self.claimed.append((s, rng[-1] if rng else i))
+        return np.vstack([out, out[-2::-1], strand.points[i][None, :]])
+
+    def report(self) -> dict[str, Any]:
+        return {
+            **self.diag,
+            "rail_len_px_max": round(max(self.rail_lengths), 2) if self.rail_lengths else 0.0,
+            "rail_len_px_total": round(sum(self.rail_lengths), 2),
+            "walk_len_px_max": round(max(self.walk_lengths), 2) if self.walk_lengths else 0.0,
+            "walk_len_px_total": round(sum(self.walk_lengths), 2),
+        }
+
+
 def read_tips(
     runs: list[np.ndarray],
     labels: list[np.ndarray],
@@ -1389,6 +1775,9 @@ def read_tips(
     states: Sequence[tuple[int, int, int] | None],
     mask: np.ndarray,
     cap_px: float,
+    *,
+    claimed: Sequence[tuple[int, int]] = (),
+    grey_paper: np.ndarray | None = None,
 ) -> dict[str, Any]:
     """Both ends of every run read on to the ink's tip, in place.
 
@@ -1399,33 +1788,40 @@ def read_tips(
     (`rail_points`, skeleton pixels), and from the free end the EDT-ridge walk
     of `read_tip` reads on to the end of the mask (`walk_points`). Tip vertices
     carry kind 2; every appended vertex is checked against the mask, and the
-    counts returned are the proof that nothing was invented.
+    counts returned are the proof that nothing was invented. `claimed` pixels
+    (the strand ends a `HairpinTipReader` already laid) count as visited.
+    With `grey_paper`
+    (the Grauwert-Stopp) the walk also ends where the crop's grey reads paper;
+    the rail pixels are the thinning's own ink and are never gated by it, only
+    counted (`rail_points_grey_paper`), and `walk_points_grey_paper` is the
+    proof the stop held on every emitted walk vertex.
     """
     edt = distance_transform_edt(np.asarray(mask, dtype=bool))
     pixel_of: dict[tuple[float, float], list[tuple[int, int]]] = {}
     for si, s in enumerate(strands):
         for pi, p in enumerate(s.points):
             pixel_of.setdefault(_pixel_key(p), []).append((si, pi))
-    visited: dict[int, tuple[int, int]] = {}
-    for st in states:
-        if st is None:
-            continue
-        lo, hi = visited.get(st[0], (st[1], st[1]))
-        visited[st[0]] = (min(lo, st[1]), max(hi, st[1]))
+    visited = _visited_ranges(states, claimed)
     stops = {"mask": 0, "rise": 0, "cap": 0, "edge": 0}
+    if grey_paper is not None:
+        stops["grey"] = 0
     blocked = {"not_free": 0, "junction": 0, "visited": 0, "ambiguous": 0}
     ends_read = rail_added = rail_inside = walk_added = walk_inside = 0
+    rail_grey = walk_grey = 0
     rail_lengths: list[float] = []
     walk_lengths: list[float] = []
-    h, w = mask.shape
 
-    def in_mask(pts: np.ndarray) -> int:
+    def hits(pts: np.ndarray, image: np.ndarray) -> int:
+        h, w = image.shape
         ix = np.rint(pts[:, 0]).astype(int)
         iy = np.rint(pts[:, 1]).astype(int)
         ok = (ix >= 0) & (ix < w) & (iy >= 0) & (iy < h)
         hit = np.zeros(len(pts), dtype=bool)
-        hit[ok] = mask[iy[ok], ix[ok]]
+        hit[ok] = image[iy[ok], ix[ok]]
         return int(hit.sum())
+
+    def in_mask(pts: np.ndarray) -> int:
+        return hits(pts, mask)
 
     for ri, r in enumerate(runs):
         for at_end in (False, True):
@@ -1444,7 +1840,7 @@ def read_tips(
                 continue
             rail = strand.points[rng] if rng else np.zeros((0, 2))
             tip_start = rail[-1] if len(rail) else end_pt
-            walk, stop = read_tip(tip_start, outward, mask, edt, cap_px)
+            walk, stop = read_tip(tip_start, outward, mask, edt, cap_px, grey_paper=grey_paper)
             stops[stop] += 1
             pts = np.vstack([rail, walk])
             if not len(pts):
@@ -1454,6 +1850,9 @@ def read_tips(
             rail_inside += in_mask(rail) if len(rail) else 0
             walk_added += len(walk)
             walk_inside += in_mask(walk) if len(walk) else 0
+            if grey_paper is not None:
+                rail_grey += hits(rail, grey_paper) if len(rail) else 0
+                walk_grey += hits(walk, grey_paper) if len(walk) else 0
             rail_lengths.append(polyline_len(np.vstack([end_pt[None, :], rail])) if len(rail) else 0.0)
             walk_lengths.append(polyline_len(np.vstack([tip_start[None, :], walk])) if len(walk) else 0.0)
             if at_end:
@@ -1466,7 +1865,7 @@ def read_tips(
                 labels[ri] = np.concatenate([np.full(len(pts), labels[ri][0]), labels[ri]])
                 kinds[ri] = np.concatenate([np.full(len(pts), 2, dtype=int), kinds[ri]])
                 samples[ri] = np.concatenate([np.full(len(pts), samples[ri][0]), samples[ri]])
-    return {
+    out = {
         "free_ends": int(sum(int(s.free_ends[0]) + int(s.free_ends[1]) for s in strands)),
         "run_ends": 2 * len(runs),
         "ends_read": ends_read,
@@ -1481,6 +1880,10 @@ def read_tips(
         "walk_len_px_total": round(sum(walk_lengths), 2),
         "stops": stops,
     }
+    if grey_paper is not None:
+        out["rail_points_grey_paper"] = rail_grey
+        out["walk_points_grey_paper"] = walk_grey
+    return out
 
 
 def resample_run(points: np.ndarray, step_px: float, *carried: np.ndarray) -> tuple[np.ndarray, ...]:
@@ -1747,8 +2150,31 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
                 band_px=weights.ink_bridge_band_px,
             )
 
-    runs, labels, kinds, samples, counts = assemble(strands, states, seed, xh, weights, ink_test)
+    mask = np.asarray(case_ev.mask, dtype=bool)
+    grey_paper = None
+    grey_midpoint = 0.0
+    if weights.tip_grey_stop and (weights.tip_read or weights.hairpin_tip):
+        # Either tip reader walks the ridge, so either one gets the stop.
+        grey_paper, grey_midpoint = grey_paper_of(np.asarray(case_ev.crop, dtype=float), mask)
+    hairpin_reader = None
+    if weights.hairpin_tip:
+        hairpin_reader = HairpinTipReader(strands, states, mask, weights.tip_read_cap_xh * xh, grey_paper=grey_paper)
+    double_ink = None
+    if weights.ride_back:
+        double_ink = double_ink_of(
+            strands, np.asarray(case_ev.mask, dtype=bool), np.asarray(case_ev.skel, dtype=bool), xh, weights
+        )
+        if weights.ride_back_ink_ratio > 0.0:
+            runs_xh = [longest_true_run(w, a) / xh for w, a in zip(double_ink.wide, double_ink.arc, strict=True)]
+            diag["double_ink_pen_px"] = round(double_ink.pen_px, 2)
+            diag["double_ink_strands"] = int(sum(1 for r in runs_xh if r >= weights.ride_back_min_xh))
+            diag["double_ink_run_xh"] = round(max(runs_xh), 3) if runs_xh else 0.0
+    runs, labels, kinds, samples, counts = assemble(
+        strands, states, seed, xh, weights, ink_test, hairpin_tip=hairpin_reader, double_ink=double_ink
+    )
     diag.update(counts)
+    if hairpin_reader is not None:
+        diag["hairpin_tip"] = hairpin_reader.report()
     if not runs:
         return {
             **base,
@@ -1759,9 +2185,21 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
             "detail": "nothing decoded onto the ink",
             "meta": {"tintenpfad": diag},
         }
-    mask = np.asarray(case_ev.mask, dtype=bool)
     if weights.tip_read:
-        diag["tip_read"] = read_tips(runs, labels, kinds, samples, strands, states, mask, weights.tip_read_cap_xh * xh)
+        diag["tip_read"] = read_tips(
+            runs,
+            labels,
+            kinds,
+            samples,
+            strands,
+            states,
+            mask,
+            weights.tip_read_cap_xh * xh,
+            claimed=hairpin_reader.claimed if hairpin_reader is not None else (),
+            grey_paper=grey_paper,
+        )
+        if grey_paper is not None:
+            diag["tip_read"]["grey_midpoint"] = round(grey_midpoint, 4)
     if weights.tip_extend_xh > 0.0:
         edt = distance_transform_edt(mask)
         diag["tips_extended"] = extend_tips(runs, labels, kinds, samples, edt, weights.tip_extend_xh * xh)
@@ -1788,6 +2226,16 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
         ok = (ix >= 0) & (ix < mask.shape[1]) & (iy >= 0) & (iy < mask.shape[0])
         diag["tip_read"]["resampled_total"] = int(len(tip_pts))
         diag["tip_read"]["resampled_in_mask"] = int(mask[iy[ok], ix[ok]].sum())
+        if grey_paper is not None:
+            # The raster corner: a resampled vertex sits between two walk
+            # vertices and may round to a pixel the grey calls paper.
+            diag["tip_read"]["resampled_grey_paper"] = int(grey_paper[iy[ok], ix[ok]].sum())
+    if hairpin_reader is not None:
+        # The same proof for the hairpin tips: every kind-2 vertex of the
+        # delivered runs (run ends and hairpins together) sits on ink.
+        tip_pts = np.vstack([r[np.asarray(k) == 2] for r, k in zip(runs, kinds, strict=True)] or [np.zeros((0, 2))])
+        diag["hairpin_tip"]["resampled_total"] = int(len(tip_pts))
+        diag["hairpin_tip"]["resampled_in_mask"] = _in_mask_count(mask, tip_pts)
     reg = _registration(result)
     units = [_px_to_word_units(r[:, 0], r[:, 1], xh, reg) for r in runs]
     visited = {st[0] for st in states if st is not None}
@@ -1897,7 +2345,14 @@ def _run_one(job: tuple[WordCase, TintenpfadWeights]) -> dict[str, Any]:
                 f" in-mask {d['tip_read']['walk_points_in_mask']}"
                 if "tip_read" in d
                 else ""
-            ),
+            )
+            + (
+                f" haken {d['hairpin_tip']['read']}/{d['hairpin_tip']['hairpins']}"
+                f" rail +{d['hairpin_tip']['rail_points']} walk +{d['hairpin_tip']['walk_points']}"
+                if "hairpin_tip" in d
+                else ""
+            )
+            + (f" selfjumps {d['self_jumps']}" if "self_jumps" in d else ""),
             flush=True,
         )
     else:
@@ -2051,7 +2506,9 @@ __all__ = [
     "LOOP_WORDS",
     "TINTENPFAD_ARTIFACT_VERSION",
     "TINTENPFAD_TOOL_NAME",
+    "DoubleInk",
     "EdtField",
+    "HairpinTipReader",
     "Seed",
     "Strand",
     "TintenpfadWeights",
@@ -2060,6 +2517,7 @@ __all__ = [
     "decode",
     "decode_with_hysteresis",
     "displacement_coherence",
+    "double_ink_of",
     "excursions_of",
     "extend_tip",
     "extend_tips",
@@ -2067,8 +2525,11 @@ __all__ = [
     "follow_case",
     "follow_word",
     "grey_levels",
+    "grey_paper_of",
     "hermite_bridge",
     "ink_bridge_test",
+    "longest_true_run",
+    "node_near",
     "read_tip",
     "read_tips",
     "reentries",

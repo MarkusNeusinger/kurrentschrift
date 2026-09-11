@@ -1,6 +1,6 @@
 # Verfahrensseite Tintenpfad
 
-> **Status (2026-09-11): lebend.** Register-Seite des Verfahrens
+> **Status (2026-09-12): lebend.** Register-Seite des Verfahrens
 > „Tintenpfad“ (Konvention: [`verfahren.md`](verfahren.md)), angelegt mit
 > dem Wissens-PR vom `sep11`, der die drei Runden des 10./11. September
 > ins Journal nachträgt. Nachzieh-Pflicht: Jeder §14-Eintrag zu einem
@@ -46,18 +46,20 @@
   eingefrorene Maske hält sie für Tinte (63 Wörter: 4,77 gegen 1,32 xh
   in der Kombination) — beide werden berichtet.
 
-## Aktueller Stand: Kandidat (2026-09-11), nichts adoptiert
+## Aktueller Stand: Kandidat (2026-09-12), nichts adoptiert
 
-Drei gemessene Stände, alle auf der `sep07`-Wurzel `suetterlin-1922`
+Vier gemessene Stände, alle auf der `sep07`-Wurzel `suetterlin-1922`
 `exported_at` 2026-09-07T20:07:03+00:00, `root_digest` `ccb036a5eb20…`,
 BLAS gepinnt, Lineal dev-19 gepaart — und alle drei **ohne Adoption**,
 so vom Autor gesetzt („No §14 entry and no adoption“, wörtlich in den
 PR-Texten von #591 und #592; die formale Runde wartet auf die `d`-Zeilen-Neubasis
 `a4eb48420ccb…`). Der Default-Lauf ohne Schalter ist strichidentisch zum
 gelieferten Tintenpfad #591 (13/13 Zeilen, Registrierung und `xh_px`
-identisch); die drei Schalter der Kombination sind default AUS und
+identisch); die Schalter der Kombinationen sind default AUS und
 müssen bewusst eingeschaltet werden. Ob der Tintenpfad zum
-Default-Folger wird, entscheidet der Autor.
+Default-Folger wird, entscheidet der Autor. Die Ecken-Runde vom `sep12`
+(PR #595, noch ohne §14-Eintrag) ist der erste Stand, der die Kette
+gepaart auf der Handspur schlägt.
 
 | Stand | 13 Schleifenzeilen (Papier · Tinte · Strecke xh) | 63 Wörter | dev-19 dtw · p90 · aiou | gepaart |
 |---|---|---|---|---|
@@ -65,16 +67,17 @@ Default-Folger wird, entscheidet der Autor.
 | **#591** (`de178b1`), Vorgabe | 0 · 93 · 0,78 | 0 · 331 · 1,49 | 0,044230 · 0,090673 · 0,7867 | 7 : 12 gegen Basis (Δ-Median +0,0024, p 0,36) |
 | Arme einzeln (#592): Spitzen-Lesung · Normalen-Fit · Tinten-Brücke | 0 · 91 · 1,32 · 0 · 98 · 0,74 · 0 · 93 · 0,78 | 0 · 330 · 4,50 · 0 · 332 · 1,50 · 0 · 331 · 1,49 | 0,041131 / 0,043704 / 0,044230 | 13 : 6 · 15 : 4 · 19 Unentschieden, je gegen #591 |
 | **Kombination** (#592, `1879f3d`): `tip_read=1 rail=tentfit edt_upsample=4 ink_bridge_xh=1.0` | **0 · 95 · 1,34** (Maske 0,76), Knick 8,3° | **0 · 330 · 4,77** (Maske 1,32) | **0,041356 · 0,091040 · 0,7876** | **18 : 1** gegen #591 (p 7,6·10⁻⁵) · **9 : 10** gegen Basis (Δ +0,000406) · 10 : 9 gegen It. 18 (Δ −0,001542) |
+| **Ecken-Kombination** (PR #595): dazu `hairpin_tip=1 ride_back=1 tip_grey_stop=1 self_jump=1` | **0 · 96 · 0,84** (Maske 0,76), Knick 8,5° | **3 · 339 · 2,12** (Maske 0 · 342 · 1,20) | **0,038351 · 0,048012 · 0,7929** | **16 : 3** gegen #592 (p 0,004) · **15 : 4 gegen Basis** (Δ −0,008311, p 0,019) · 13 : 6 gegen It. 18 (Δ −0,004356) |
 
-Der offene Rest gegen die Produktion ist benannt: zehn Verlierer um
-0,0004 … 0,0053, angeführt von den drei muß-Zeilen, deren ß-Stamm-Retrace
-die Komposition nicht schreibt — der vom Prüfer gemessene, aber nicht
-vorregistrierte Hebel `double_ink_ratio=1.0` bringt dort p90 0,090673 →
-0,053472 bei 3 : 0 (§14 „Tintenpfad-Arme `sep11`“). Sichtbarer Rest: die
-ENDEN (das `n` in `han` und `Sporn`, der k-Abstrich in `kann`, der
-Auslauf von `und`/`regieren`) und `kann` mit 0,096 unbesuchter Tinte
-(die Tafel-k-Unterschleife, die die Hand nicht schreibt — eine
-Kompositionsfrage).
+Der Rest gegen die Produktion nach der Ecken-Runde: vier Verlierer um
+0,0004 … 0,0026 (`Wer`, `will`, `und-2`, `mit-2`); die drei muß-Zeilen
+sind mit der Rückfahrt (`ride_back=1`) zu Gewinnern geworden (0,11 →
+0,03 … 0,05). Die Rückfahrt feuert auch an den Großbuchstaben-Stämmen von
+`Pulver` und `Einen` (ein Zug statt Absetzen) — ob die Hand von 1922 dort
+zurückschreibt, ist ein Autor-Entscheid. Sichtbarer Rest: `kann` mit
+0,096 unbesuchter Tinte (die Tafel-k-Unterschleife, die die Hand nicht
+schreibt — eine Kompositionsfrage) und drei graue Papier-Umkehrungen
+(`muß-3`, `Zügel`, `Feinde`, je 0,09–0,20 xh).
 
 ## Ledger (datierte Stände; Belege in §14)
 
@@ -85,23 +88,25 @@ Kompositionsfrage).
 | sep11 | **Stummel-Filter** (`stub_xh=0.25`) | Verzweigungs-Stummel unter 0,25 xh vom Brett des Dekoders | **ehrliches Negativ** (Prüfer `confirmed`): byte-identische Bahn 13/13 und 63/63, Hypothese an der Quelle widerlegt (keine der 91 Haarnadeln auf einem Strang < 0,5 xh). Nebenbefund: Hand 47 gegen Kandidat 79 Tinten-Umkehrungen auf dev-19 — der Defekt ist der Überschuss +32. Schalter bleibt, default AUS | „Tintenpfad-Arme `sep11`“ |
 | sep11 | **Normalen-Fit** (`rail=tentfit` + `edt_upsample=4`) | Kleinste-Quadrate-Zelt über ±2 px auf viermal feinerem Grau-Raster der Distanztransformation, Bewegung nur entlang der Normalen | **positiv, alle vier Gates** (Prüfer `confirmed`): Knick 9,74° → 8,03° auf jeder Zeile, 15 : 4 gegen #591 (p 0,019), dtw 0,043704; Debets Knick-p90 35,3° → 38,6°, aiou −0,0073, zwei falsche Absetzer (`will`, `Galoppieren`). Der wörtliche Arm (Fit auf dem BINÄREN EDT) ist ein sauberes Negativ (10,68°); `edt_upsample=4` allein ist physikalisch besser (7,84°), aber nie durchs Lineal gelaufen. Scope-Frage an den Autor: das Grau als Lesung der Tinte. In der Kombination | „Tintenpfad-Arme `sep11`“ |
 | sep11 | **Tinten-Brücke** (`ink_bridge_xh=1.0`) | Dekoder-Absetzer wird nur über schwacher Tinte zur Sehne; jede Lücke mit Verdikt im Artefakt | **neutral** (Prüfer `confirmed`): 2 von 9 Lücken gebrückt (`haben` 0,370, `schießen` 0,382 xh), Sensoren und dev-19 unbewegt, `paper_lifts` 9 → 7 auf 63; die Frage `kann`/`han`/`regieren` beantwortet als Lesung — dort liegt kein Haarstrich. In der Kombination; Vorbehalt `paper_samples < 2 → bridged` | „Tintenpfad-Arme `sep11`“ |
-| sep11 | **Doppelstrich-Evidenz** (`double_ink_ratio=1.4`) | Rückfahrt statt Absetzer, wo ein Strang ≥ 0,5 xh breiter als 1,4 × Feder ist | **ehrliches Negativ auf der Prämisse** (Prüfer `partial`): feuert auf 0 von 63 (ß-Stämme 1,00–1,33 × Feder, Grau +0,00…+0,08), byte-identisch zu AUS. Rettungsweg gemessen, nicht vorregistriert: `ratio 1,0` → 7 Rückfahrten, p90 0,090673 → 0,053472, 3 : 0, gegen Basis 9 : 10 | „Tintenpfad-Arme `sep11`“ |
+| sep11 | **Doppelstrich-Evidenz** (`double_ink_ratio=1.4`, seit `sep12` `ride_back_ink_ratio`) | Rückfahrt statt Absetzer, wo ein Strang ≥ 0,5 xh breiter als 1,4 × Feder ist | **ehrliches Negativ auf der Prämisse** (Prüfer `partial`): feuert auf 0 von 63 (ß-Stämme 1,00–1,33 × Feder, Grau +0,00…+0,08), byte-identisch zu AUS. Rettungsweg gemessen, nicht vorregistriert: `ratio 1,0` → 7 Rückfahrten, p90 0,090673 → 0,053472, 3 : 0, gegen Basis 9 : 10 | „Tintenpfad-Arme `sep11`“ |
 | sep11 | **Kombination** der drei tragenden Arme (PR #592 `1879f3d`) | `tip_read=1 rail=tentfit edt_upsample=4 ink_bridge_xh=1.0`, alle default AUS; Leave-one-out je Arm | **Kandidat, nicht adoptiert:** dev-19 0,041356 · 0,091040 · 0,7876, 18 : 1 gegen #591, 9 : 10 gegen Basis, 10 : 9 gegen It. 18 (der PR-Text hat die beiden letzten vertauscht); LOO: ohne Spitzen 0 · 96 · 0,74 (8,41°), ohne Normalen-Fit 0 · 91 · 1,32 (9,45°), ohne Brücke 0 · 95 · 1,36 (27 Läufe); Default strichidentisch; nach dem Merge auf `main` reproduziert | „Tintenpfad-Arme `sep11`“ |
+| sep12 | **Haken-Spitze** (`hairpin_tip=1`) | die Spitzen-Lesung an jedem Haken auf einem Strang: Strangrest + Kamm-Walk bis ans Maskenende, hin und zurück | **neutral allein, positiv mit Grauwert-Stopp** (Prüfer `confirmed`): 55 von 88 Haken auf den 13 Zeilen und 225 von 296 auf den 63 erreichen die Tinte; dev-19 12 : 7 gegen #592 (0,041145 · 0,089890); allein 26 graue Papier-Umkehrungen (die Umkehr landet in der blassen Kappe; Maske 0,83 gegen 0,76) — mit Grauwert-Stopp null. In der Ecken-Kombination | noch keiner (PR #595) |
+| sep12 | **Ecke statt Bogen** (`bridge=corner`, Zweig `tintenpfad-ecken-ecke-statt-bogen`, nicht ausgeliefert) | eine Ecke statt einer Hermite-Schlaufe bei gegenläufigen Tangenten (cos < −0,5) | **Kontrolle, feuert nie** (Prüfer `confirmed`): 0 von 125 Brücken auf 13 Zeilen, 0 von 459 auf 63; schärfste Übergangs-Kosinus −0,43; strichidentisch — die Schlaufen waren abgeschnittene Haken | noch keiner |
+| sep12 | **Rückfahrt statt Absetzen** (`ride_back=1`; die Doppelstrich-Evidenz bleibt als `ride_back_ink_ratio` AUS) | ein Saat-Absetzer, dessen Landung hinter der Feder auf ihrem Strang liegt, wird über dieselbe Schiene zurückgefahren | **positiv** (Prüfer `confirmed`): muß ×3 `retrace_missing` 1 → 0, dtw 0,1116 → 0,0540 · 0,0914 → 0,0293 · 0,0909 → 0,0326; dev-19 3 : 0 : 16 gegen #592, 0,039003 · 0,050979; feuert auf 7 von 63 (5 ß-Wörter, dazu die Großbuchstaben-Stämme `Pulver`, `Einen` — Autor-Entscheid). In der Ecken-Kombination | noch keiner (PR #595) |
+| sep12 | **Grauwert-Stopp** (`tip_grey_stop=1`) | jeder Spitzen-Walk (Laufenden und Haken) endet einen Schritt, bevor das Grau des Crops Papier liest | **positiv, alle Gates** (Prüfer `confirmed`): Papier-Strecke grau 1,34 → 0,72 auf 13 Zeilen, 4,77 → 1,78 auf 63; dev-19 12 : 5 gegen #592 (0,040904 · 0,090516 · 0,7920); erstes/letztes Zehntel nicht schlechter; kein Walk-Punkt außerhalb der Maske. In der Ecken-Kombination | noch keiner (PR #595) |
+| sep12 | **Selbstsprung** (`self_jump=1`) | der Dekoder darf einen Knoten passieren, den sein Strang zweimal besucht (knotengebundener Sprung + verzweigungsbewusste Kandidatenwahl) | **positiv** (Prüfer `confirmed`): `lift_delta_total` dev-19 4 → 3 (Rest: muß ×3, Rückfahrt), `Galoppieren` und `will` wieder ein Zug; 3 : 1 gegen #592 bei 15 strichidentischen Zeilen. In der Ecken-Kombination | noch keiner (PR #595) |
+| sep12 | **Ecken-Kombination** (PR #595) | die vier tragenden Arme über #592; Leave-one-out je Arm auf den 13 Zeilen | **Kandidat, nicht adoptiert — erster Stand, der die Kette gepaart schlägt:** dev-19 0,038351 · 0,048012 · 0,7929; 16 : 3 gegen #592 (p 0,004), **15 : 4 gegen Basis** (Δ −0,008311, p 0,019), 13 : 6 gegen It. 18; `retrace_missing` und `lift_delta_total` 0; 13 Zeilen 0 · 96 · 0,84 (Maske 0,76), 63 grau 3 · 339 · 2,12, Maske 0 · 342 · 1,20; LOO: ohne Grauwert-Stopp 27 · 72 · 2,46, sonst ≈ gleich; Default strichidentisch 13/13 | noch keiner (PR #595) |
 
 ## Offene Blöcke
 
-- **ß-Retrace als Dekoder-Regel** (`double_ink_ratio=1.0`): gebaut und
-  auf 63 Wörtern gemessen, ohne eigene Pre-Reg und mit vier Treffern
-  ohne Handspur (`Pulver`, `daß`, `schießen`, `Einen` — `Einen` im
-  versiegelten Satz). Schwester-Weg: die authorierte ß-Vorlage trägt den
-  Stamm hinunter UND hinauf (Autor-Glyphe, Todoist).
-- **Grauwert-Stopp der Spitzen-Lesung** an runden Strichkappen (der Gang
-  hakt über die Kappe: `linken`s n-Auslauf, `und`s d-Auslauf) — Pre-Reg
-  auf `paper_len` (grau) ≤ 1,0 UND Spitzenabstand zur Hand ≤ 0,05 xh.
-  NICHT `--paper mask`: zirkulär, die Maske ist das Stoppkriterium.
+- **Rückfahrt an Großbuchstaben-Stämmen** (`Pulver`, `Einen`): die Regel
+  `ride_back` fährt den P-/E-Stamm zurück in den Bogen — ob die Hand von
+  1922 dort zurückschreibt, entscheidet der Autor; sonst ein
+  Kleinbuchstaben-Gate als eigener Arm. Schwester-Weg für das ß bleibt die
+  authorierte Vorlage mit Rückpass (Autor-Glyphe, Todoist).
 - **`edt_upsample=4` allein durchs dev-19-Lineal** — die eine fehlende
-  Messung vor einer Adoption des Normalen-Fits; dazu die Absetz-Preise
-  für `will`/`Galoppieren`.
+  Messung vor einer Adoption des Normalen-Fits (die Absetzer in
+  `will`/`Galoppieren` nimmt seit `sep12` der Selbstsprung).
 - **Unbesuchte Stränge einfügen (R1) / Abdeckungspreis im Viterbi (R2)**
   — der Weg zu den `kann`-/`regieren`-Absetzern, die die Tinten-Brücke
   bewusst nicht brückt.
