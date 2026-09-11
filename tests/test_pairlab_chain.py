@@ -1921,24 +1921,27 @@ def test_bar_bridge_replaces_the_t_lift_with_a_stem_retrace() -> None:
 def test_night_terms_at_zero_leave_the_objective_untouched() -> None:
     """`paper_weight` and `kink_weight` at 0 skip their terms: bit-identical energy and gradient."""
     plain = _toy_problem()
-    same = _toy_problem(paper_target_px=3.0, paper_weight=0.0, kink_cos=0.3, kink_weight=0.0)
+    same = _toy_problem(paper_target_px=3.0, paper_weight=0.0, kink_cos=0.3, kink_weight=0.0, lsmooth_weight=0.0)
     rng = np.random.default_rng(11)
     params = rng.uniform(-0.3, 0.3, size=len(plain.x0))
     f_a, g_a = plain.objective(params)
     f_b, g_b = same.objective(params)
     assert f_a == f_b and np.array_equal(g_a, g_b)
     terms = same.energy_terms(params)
-    assert terms["e_paper"] == 0.0 and terms["e_kink"] == 0.0
+    assert terms["e_paper"] == 0.0 and terms["e_kink"] == 0.0 and terms["e_lsmooth"] == 0.0
 
 
 def test_paper_clamp_and_kink_price_gradients_are_exact() -> None:
     """Both night terms carry analytic gradients; central differences must agree
     away from the hinge thresholds, where the terms are only C¹."""
-    problem = _toy_problem(paper_target_px=1.0, paper_weight=30.0, kink_cos=0.3, kink_weight=2.0)
+    problem = _toy_problem(paper_target_px=1.0, paper_weight=30.0, kink_cos=0.3, kink_weight=2.0, lsmooth_weight=1.5)
     rng = np.random.default_rng(278)
     params = rng.uniform(-0.4, 0.4, size=len(problem.x0))
     terms = problem.energy_terms(params)
-    assert terms["e_paper"] > 0.0 and terms["e_kink"] > 0.0  # both terms are live at this point
+    assert terms["e_paper"] > 0.0 and terms["e_kink"] > 0.0 and terms["e_lsmooth"] > 0.0  # all three live here
+    assert problem.energy_terms(problem.x0)["e_lsmooth"] == 0.0  # the seed itself adds no roughness
+    report = chain_mod.gradient_decomposition(problem, params)  # the split knows the three terms
+    assert report["residual_rel"] < 1e-9
     f0, grad = problem.objective(params)
     assert np.isfinite(f0) and np.all(np.isfinite(grad))
     eps = 1e-6

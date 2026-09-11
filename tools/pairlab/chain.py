@@ -757,6 +757,14 @@ class _ChainProblem:
     anchor: 1 on the block's own letter, the arc-length ramp on a connector
     interior, 0 elsewhere. Linear ⇒ the ramp's gradient is exact."""
     smooth_op: np.ndarray = field(default_factory=lambda: np.zeros((0, 0)))
+    lsmooth_op: np.ndarray = field(default_factory=lambda: np.zeros((0, 0)))
+    """(m, K_plan) second-difference operator over the LETTER plan blocks, one
+    block per pen stroke (the Formglätte, night loop 2026-09-11). Unlike the
+    connector's `smooth_op` it is read against the SEED: the term prices
+    roughness ADDED to a letter, not the letter's own curvature, so a loop
+    stays a loop and the pixel-by-pixel jitter of 120 anchors on a one-pixel
+    grid is what it flattens."""
+    lsmooth_weight: float = 0.0
     """(M, K_plan) second differences of the connector blocks only."""
     bind_op: np.ndarray = field(default_factory=lambda: np.zeros((0, 0)))
     """(M, K_free) second differences of the LETTER blocks' DISPLACEMENTS.
@@ -1166,6 +1174,19 @@ class _ChainProblem:
             m_d2 = 1
             e_smooth = 0.0
 
+        # --- letter Formglätte: roughness ADDED against the seed (inert by default) ---
+        # The same second-difference operator as the connector's, but applied to
+        # the displacement from the seed plan anchors, so the letter's own
+        # curvature costs nothing and only the jitter the solve adds is priced.
+        if self.lsmooth_weight > 0.0 and self.lsmooth_op.shape[0]:
+            r_ls = self.lsmooth_op @ (ap - self.anchors_free[self.idx])
+            m_ls = self.lsmooth_op.shape[0]
+            e_lsmooth = float(np.sum(r_ls**2)) / m_ls
+        else:
+            r_ls = np.zeros((0, 2))
+            m_ls = 1
+            e_lsmooth = 0.0
+
         # --- neighbour binding on the LETTER displacements (inert by default) ---
         # Second difference of the DELTAS within a letter's own pen-stroke: a
         # translation of the stroke is free, one anchor leaving its neighbours
@@ -1211,6 +1232,7 @@ class _ChainProblem:
             + self.counter_weight * e_counter
             + self.paper_weight * e_paper
             + self.kink_weight * e_kink
+            + self.lsmooth_weight * e_lsmooth
         )
         terms = {
             "e_geo": e_geo,
@@ -1227,6 +1249,7 @@ class _ChainProblem:
             "e_counter": e_counter,
             "e_paper": e_paper,
             "e_kink": e_kink,
+            "e_lsmooth": e_lsmooth,
             "f": f,
         }
         if not want_grad:
@@ -1243,6 +1266,13 @@ class _ChainProblem:
         )
         if self.smooth_op.shape[0]:
             g_plan = g_plan + g_smooth_plan
+        g_lsmooth_plan = (
+            self.lsmooth_weight * 2.0 * (self.lsmooth_op.T @ r_ls) / m_ls
+            if (self.lsmooth_weight > 0.0 and self.lsmooth_op.shape[0])
+            else np.zeros_like(g_plan)
+        )
+        if self.lsmooth_weight > 0.0 and self.lsmooth_op.shape[0]:
+            g_plan = g_plan + g_lsmooth_plan
         # Skipped outright at weight 0 — not added as a zero array — so the
         # packed gradient is bit-identical to the term's absence.
         g_landmark_plan = (
@@ -1267,6 +1297,7 @@ class _ChainProblem:
         if grad_terms is not None:
             grad_terms["samples"] = samples
             grad_terms["smooth_plan"] = g_smooth_plan
+            grad_terms["lsmooth_plan"] = g_lsmooth_plan
             grad_terms["landmark_plan"] = np.zeros_like(g_plan) if g_landmark_plan is None else g_landmark_plan
             grad_terms["reg_delta"] = g_reg_delta
             grad_terms["bind_delta"] = np.zeros_like(g_reg_delta) if g_bind_delta is None else g_bind_delta
@@ -1321,6 +1352,7 @@ class _ChainProblem:
         for name, (g_px_t, g_py_t) in acc["samples"].items():
             out[name] = self._pack(self._fold_samples(g_px_t, g_py_t), None)
         out["smooth"] = self._pack(self._fold_plan(acc["smooth_plan"]), None)
+        out["lsmooth"] = self._pack(self._fold_plan(acc["lsmooth_plan"]), None)
         out["landmark"] = self._pack(self._fold_plan(acc["landmark_plan"]), None)
         # The Tikhonov pull is a function of the deltas alone: it reaches
         # neither the global shift nor a slot block, which is why those two
@@ -1464,6 +1496,7 @@ def build_chain_problem(
     paper_weight: float = 0.0,
     kink_cos: float = 0.3,
     kink_weight: float = 0.0,
+    lsmooth_weight: float = 0.0,
 ) -> _ChainProblem:
     """Assemble the chain optimisation problem. Pure: no I/O, no DB, no case.
 
@@ -1693,6 +1726,27 @@ def build_chain_problem(
     if blocks:
         smooth_rows = np.vstack(blocks)
 
+    # ---- letter Formglätte operator: one block per PEN STROKE of a letter ----
+    # A second difference across a pen lift would price the jump between two
+    # strokes as roughness, so the blocks stop at every stroke start.
+    lsmooth_rows = np.zeros((0, k_plan))
+    lblocks: list[np.ndarray] = []
+    for i, spec in enumerate(specs):
+        if spec.kind != "letter":
+            continue
+        p0, p1 = plan_slices[i]
+        starts = sorted({0, *(int(s) for s in (spec.stroke_starts or ()) if 0 < int(s) < p1 - p0)})
+        bounds = [*starts, p1 - p0]
+        for a, b in zip(bounds[:-1], bounds[1:], strict=True):
+            d2 = _second_difference_operator(anchors_plan0[p0 + a : p0 + b])
+            if not d2.shape[0]:
+                continue
+            block = np.zeros((d2.shape[0], k_plan))
+            block[:, p0 + a : p0 + b] = d2
+            lblocks.append(block)
+    if lblocks:
+        lsmooth_rows = np.vstack(lblocks)
+
     # ---- crossing landmarks: the letters' structure against the ink's ----
     landmark_op, landmark_targets, landmark_report = _landmark_correspondence(
         specs,
@@ -1811,6 +1865,8 @@ def build_chain_problem(
         bounds=bounds,
         block_op=block_op,
         smooth_op=smooth_rows,
+        lsmooth_op=lsmooth_rows,
+        lsmooth_weight=float(lsmooth_weight),
         bind_op=_letter_bind_operator(specs, anchor_slices, k_free),
         landmark_op=landmark_op,
         landmark_targets=landmark_targets,
@@ -2318,6 +2374,7 @@ def fit_word_chain(
     kink_cos: float = 0.3,
     connector_ramp: bool = False,
     seed_form: str = "chart",
+    lsmooth_weight: float = 0.0,
 ) -> ChainWordFit | None:
     """Fit a run of consecutive slots as ONE chain `[L, C, L, C, …]`.
 
@@ -2513,6 +2570,7 @@ def fit_word_chain(
         paper_weight=float(paper_weight),
         kink_cos=float(kink_cos),
         kink_weight=float(kink_weight),
+        lsmooth_weight=float(lsmooth_weight),
         **fields,
     )
     # Seed the translation blocks BEFORE the initial energies, so `e0` states
@@ -2733,6 +2791,7 @@ GRADIENT_TERMS = (
     "paper",
     "kink",
     "smooth",
+    "lsmooth",
     "reg",
     "bind",
     "landmark",

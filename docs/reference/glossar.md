@@ -62,7 +62,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
-- **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
+- **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
@@ -1282,6 +1282,17 @@ Absetzer sind ausgenommen. Dimensionslos, Gradient exakt durch beide
 Segmente. Nimmt das Hin-und-Her heraus, das die Klammer in die Tinte
 faltet. Die Sensor-Seite derselben Aussage ist der Unstetigkeits-Sensor
 (§4).
+
+**Formglätte** *(letter smoothness, `--letter-smooth W`)* — zweite
+Differenzen der VERSCHIEBUNG eines Buchstabens gegen seine Saat, je
+Federzug, als Term (`lsmooth`): die eigene Krümmung kostet nichts, nur das
+Zittern, das der Löser hinzufügt. Gemessen in der Nachtschleife `sep11`
+als **ehrliches Negativ**: etwas weniger Zittern in der Tinte (142 → 124
+Tinten-Umkehren über zwölf Wörter), dafür mehr Bahn im Papier (24 → 34
+Papier-Umkehren) — der Term ist ein zweiter Form-Prior, denn wer einen
+Buchstaben auf anders geformte Tinte legt, muss genau die zweiten
+Differenzen ändern, die er bestraft. Schalter bleibt AUS; Rettungsweg ist
+weniger Freiheit statt mehr Strafe (ein Affin-Block je Buchstabe).
 
 **Kettenfit** *(chain fit)* — die Idee, **Buchstabe → Verbinder →
 Buchstabe als EINE durchlaufende Feder** zu fitten statt als zwei

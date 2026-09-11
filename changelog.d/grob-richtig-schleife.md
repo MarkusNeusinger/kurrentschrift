@@ -16,9 +16,11 @@
   has a loop, this hand's `e` is a hairpin); `--kink-weight` is the
   Unstetigkeits-Preis, the author's 2026-09-06 Leitsatz as a term with an
   exact gradient (corners and lifts exempt); `--seed-form laufform`,
-  `--no-init-terms` and `--seed-min-gain` are the loop's controls. The
-  numbers of the loop stay on its progress page until a §14 entry books
-  them — the author's own condition.
+  `--no-init-terms` and `--seed-min-gain` are the loop's controls;
+  `--letter-smooth` (Formglätte, second differences of a letter's
+  displacement from its seed) is the loop's measured negative, kept as the
+  control it was. The numbers of the loop stay on its progress page until a
+  §14 entry books them — the author's own condition.
 - **`tools.tracebench.reversals` prints the Papier-Strecke beside the
   reversal count.** A straight chord through the paper reverses nowhere and
   counted zero; its length in x-heights (`paper_len_xh`, the path walked at

@@ -559,6 +559,11 @@ class FollowWeights:
     below `kink_cos`, corners and lifts exempt (`chain._ChainProblem.kink_weight`).
     0.0 = off, byte-identical."""
     kink_cos: float = 0.3
+    letter_smooth: float = 0.0
+    """The Formglätte (night loop 2026-09-11): weight of the second-difference
+    term on a letter's displacement from its seed, one block per pen stroke
+    (`chain._ChainProblem.lsmooth_weight`). Prices the jitter the solve adds,
+    never the letter's own curvature. 0.0 = off, byte-identical."""
     seed_form: str = "chart"
     """Which row seeds a letter: the chart row (`chart`, every Kette number so
     far) or this hand's harvested running form where one exists
@@ -1912,6 +1917,7 @@ def build_follow_problem(
         paper_weight=float(weights.paper_weight),
         kink_cos=float(weights.kink_cos),
         kink_weight=float(weights.kink_weight),
+        lsmooth_weight=float(weights.letter_smooth),
         **fields,
     )
     if weights.landmark > 0.0 and weights.landmark_targets != "raw":
@@ -2052,6 +2058,7 @@ def follow_word_chain(
             kink_cos=weights.kink_cos,
             connector_ramp=weights.seed_ramp,
             seed_form=weights.seed_form,
+            lsmooth_weight=weights.letter_smooth if weights.init_terms else 0.0,
         )
     if fit is None:
         return None
@@ -2508,6 +2515,7 @@ def follow_derived(
             kink_cos=weights.kink_cos,
             connector_ramp=weights.seed_ramp,
             seed_form=weights.seed_form,
+            lsmooth_weight=weights.letter_smooth if weights.init_terms else 0.0,
         )
         if chain_fit is None:
             n_failed += 1
@@ -2752,6 +2760,7 @@ def calibrate_case(
             kink_cos=weights.kink_cos,
             connector_ramp=weights.seed_ramp,
             seed_form=weights.seed_form,
+            lsmooth_weight=weights.letter_smooth if weights.init_terms else 0.0,
         )
         if chain_fit is None:
             continue
@@ -3144,6 +3153,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="cosine below which two consecutive sample directions count as a kink",
     )
     parser.add_argument(
+        "--letter-smooth",
+        type=float,
+        default=FollowWeights.letter_smooth,
+        help="night loop 2026-09-11 Formglätte: weight of the second-difference term on a letter's displacement "
+        "from its seed (per pen stroke); 0 = off, byte-identical",
+    )
+    parser.add_argument(
         "--seed-form",
         choices=["chart", "laufform"],
         default=FollowWeights.seed_form,
@@ -3310,6 +3326,7 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         seed_ramp=bool(args.seed_ramp),
         seed_form=str(args.seed_form),
         seed_min_gain=float(args.seed_min_gain),
+        letter_smooth=float(args.letter_smooth),
         zwei_zuege=bool(args.zwei_zuege),
         zwei_zuege_half_width=float(args.zwei_zuege_half_width),
         zwei_zuege_taper=float(args.zwei_zuege_taper),
