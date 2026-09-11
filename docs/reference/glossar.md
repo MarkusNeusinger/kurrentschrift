@@ -75,7 +75,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · St-Ligatur §1 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
@@ -1334,6 +1334,50 @@ nie eine Messung. *Technisch:* `tools/pairlab/follow.py`
 (`follow_word_chain`/`follow_case`, Gewichte PROVISORISCH bis zur
 §14-Arm-Kalibrierung) → proposals/tintenfolger.md ·
 bildsynthese-und-stiftbahn.md §6
+
+**Strang** *(strand)* — eine maximale glatte Kette des Skeletts, ohne
+Prior: die Kanten des Skelettgraphen (`core.skeleton_graph`) nach dem
+Ausdünnen der Sporne (Grad-1-Kanten kürzer als 0,15 xh), an jedem Knoten
+durch die **glatteste Fortsetzung** gepaart — die Paarung der Kantenenden,
+die Σ(1 + cos) über die Paare plus einen Stopp-Preis je ungepaartem Ende
+minimiert (Brute Force über ≤ 8 Enden) — und entlang der Paarungen zu
+Ketten gelaufen. Ein X, das zu zwei T's ausgedünnt ist, findet beide
+Geradeaus-Paare an ihrem eigenen T; ein Haken (cos = 1) wird nie gepaart,
+darum bleibt eine Spitze zwei Stränge, und die Bahn fährt zu ihrem Ende
+und steigt per Brücke um. Mit `rail=subpixel` sitzt jeder Strangpixel
+sub-pixel-genau auf der Strichachse: die EDT entlang der Normalen ist ein
+ZELT (sie ist ein Abstand), sein Scheitel `(f(+1) − f(−1)) / 2` — eine
+Lesung der Tinte, keine Glättung der Bahn. Gemessen (13 Schleifen-Zeilen,
+Wurzel ccb036a5eb20): 3–16 Stränge je Wort, 49 Sporne, 0 zu dichte
+Knoten. *Technisch:* `tools/pairlab/tintenpfad.py` (`strands_of`,
+`best_matching`, `subpixel_rail`); der Strangsatz der Wurzel ist in
+`tests/test_pairlab_tintenpfad.py` gepinnt
+
+**Strang-Dekodierung** *(strand decode, `python -m tools.pairlab.tintenpfad`)*
+— der **Tintenpfad**-Folger, Tinte zuerst, Buchstaben danach: die
+komponierte Saat (je Slot Gauß-verschoben) wird in Schreibreihenfolge
+abgetastet und per Viterbi durch die Stränge dekodiert. Zustände sind
+Strangpixel × Laufrichtung plus PAPIER; die Emission bepreist Abstand und
+Tangentenabweichung; die Übergänge eine monotone Fahrt je Pixel (nie ein
+Pixel doppelt gelegt), einen Haken auf demselben Strang einmal, einen
+Sprung auf einen anderen Strang innerhalb 0,35 xh nach Lücke und Drehung,
+jedes Ein- und Aussteigen ins Papier (die Wurmloch-Schließung: ohne den
+Preis lässt sich ein Strang durchs Papier teleportieren, gemessen an
+`das`). Hin-und-zurück-Sprünge (Strang verlassen und binnen 12 Proben
+ohne Nettoweg wieder betreten) werden nach jedem Durchgang verboten und
+neu dekodiert (Hysterese). Jeder emittierte Pixel erbt den Slot der
+Saat-Probe, die ihn dekodiert hat — die Buchstabenzuordnung IST die
+Ausrichtung (`meta.letter_spans`, danach gegen eine monotone DTW geprüft:
+`label_agreement`). Es gibt keine Anker und kein Verschiebungsfeld: die
+einzigen freien Größen sind diskret — welcher Strang, welche Richtung, wo
+abgesetzt wird — und jede bewegt einen ganzen Strang. Ausgabe: die
+Strangpixel als Schiene, tangentenstetige Hermite-Brücken an Sprüngen
+(seitlich UND über die Enden hinaus gekappt), bogenlängen-gleich neu
+abgetastet; die Sensoren je Wort in `meta.tintenpfad`. *Technisch:*
+`decode`, `decode_with_hysteresis`, `assemble`, `TintenpfadWeights`
+(eingefroren, `asdict` im Artefakt; `--legacy-p5` = die Prototyp-Zeile)
+→ werkzeuge.md; erstes Artefakt unter `temp/wellen-sep11/` (kein
+§14-Eintrag, keine Adoption)
 
 **Fremdtinte** *(foreign ink)* — Tinte im Wort-Crop, die das Wort nie
 geschrieben hat und die die eingefrorene Binarisierung trotzdem behält:
