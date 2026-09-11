@@ -1,13 +1,13 @@
 # Qualitätsmetrik & Glyph-Bench
 
-> **Status (2026-09-07): lebend.** Die Messlatte und ihre **Regeln**. Das
+> **Status (2026-09-10): lebend.** Die Messlatte und ihre **Regeln**. Das
 > Journal der Läufe ist am 2026-09-04 in eine eigene Datei gezogen —
 > [`messjournal.md`](messjournal.md), dort weiterhin §14; hier §1–§13, §15.
-> **Aktuelle Headlines: Wörter 0,108153 · Paare 0,148236** (Re-Baseline
-> `sep07`: das Komma hinter vier Wortproben verlässt die Referenz-Tinte —
-> Wort-Wurzel neu `ccb036a5eb20…`, Paar-Wurzel unverändert `0fbde2d72b64…`
-> und die Paar-Zahl darum byte-gleich; `messjournal.md` §14
-> „Komma-Ausschluss `sep07`“). Sie stehen an genau dieser einen Stelle;
+> **Aktuelle Headlines: Wörter 0,108339 · Paare 0,148236** (Re-Baseline
+> `sep10`: EINE Laufform-Zeile — `d` — auf Autor-Entscheid A44 nach der
+> humanbench-Runde 10 geschrieben; Wurzeln neu `a4eb48420ccb…` /
+> `e3a5d03d0f37…`, die Paar-Zahl trotzdem byte-gleich; `messjournal.md`
+> §14 „Laufform LF17 `sep10`“). Sie stehen an genau dieser einen Stelle;
 > ihre Historie samt Fixture-Wurzeln führt der Headline-Ledger im Messjournal.
 >
 > **Was gilt.** **Zwei Metriken, eine pro Schrift, nie gemittelt** — die
@@ -30,8 +30,8 @@
 > **Wo die Details stehen.** Eingefrorene Referenzen und die
 > Frozen-Reference-Regel: [§2](#2-der-bench-eingefrorene-referenzen).
 > Baseline-Historie des Glyph-Benchs: [§3](#3-baseline-historie). Ein
-> Wort-Bench-Re-Baseline im Wortlaut (das jüngste ist „Komma-Ausschluss
-> `sep07`“ im Messjournal): [§15](#15-sieben-angeschnittene-wortproben-repariert--angekündigtes-re-baseline-des-wort-benchs-aug31).
+> Wort-Bench-Re-Baseline im Wortlaut (das jüngste ist „Laufform LF17
+> `sep10`“ im Messjournal): [§15](#15-sieben-angeschnittene-wortproben-repariert--angekündigtes-re-baseline-des-wort-benchs-aug31).
 > Die Läufe selbst: [`messjournal.md`](messjournal.md), Einstieg über sein
 > Register.
 >

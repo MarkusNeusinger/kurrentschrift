@@ -1,0 +1,138 @@
+{
+ "pass": {
+  "tag": "ECHTHEIT/10",
+  "judged": 48,
+  "total": 48,
+  "key_entries": 48,
+  "unjudged": []
+ },
+ "reliability": {
+  "pairs": 8,
+  "mirrored": 8,
+  "missing_repeats": [],
+  "arm_agree": 8,
+  "side_agree": 4,
+  "both_tie": 4,
+  "rate": 1.0,
+  "band": "reliable",
+  "too_few_pairs": false,
+  "carries_a_verdict": true
+ },
+ "sides": {
+  "n": 40,
+  "left": 6,
+  "right": 8,
+  "tie": 26,
+  "left_share": 0.42857142857142855,
+  "lopsided": false
+ },
+ "verdict": {
+  "arms": [
+   "candidate",
+   "base"
+  ],
+  "candidate": "candidate",
+  "n": 40,
+  "per_arm": {
+   "base": 4,
+   "candidate": 10
+  },
+  "decided": 14,
+  "ties": 26,
+  "candidate_share": 0.7142857142857143,
+  "tie_share": 0.65,
+  "candidate_share_all": 0.25,
+  "thresholds": {
+   "candidate_share": 0.6,
+   "tie_share": 0.25
+  },
+  "meets_thresholds": false,
+  "adopt": false
+ },
+ "classes": {
+  "d-rein": {
+   "n": 10,
+   "per_arm": {
+    "candidate": 10
+   },
+   "decided": 10,
+   "ties": 0,
+   "candidate_share": 1.0,
+   "tie_share": 0.0,
+   "candidate_share_all": 1.0,
+   "too_few": false
+  },
+  "d-und": {
+   "n": 4,
+   "per_arm": {
+    "base": 4
+   },
+   "decided": 4,
+   "ties": 0,
+   "candidate_share": 0.0,
+   "tie_share": 0.0,
+   "candidate_share_all": 0.0,
+   "too_few": true
+  },
+  "nullprobe": {
+   "n": 26,
+   "per_arm": {},
+   "decided": 0,
+   "ties": 26,
+   "candidate_share": null,
+   "tie_share": 1.0,
+   "candidate_share_all": 0.0,
+   "too_few": false
+  }
+ },
+ "drift": {
+  "blocks": [
+   {
+    "range": [
+     0,
+     13
+    ],
+    "n": 13,
+    "arms": {
+     "base": 2,
+     "candidate": 3,
+     "None": 8
+    },
+    "ties": 8,
+    "timed": 13,
+    "median_seconds": 6
+   },
+   {
+    "range": [
+     13,
+     27
+    ],
+    "n": 14,
+    "arms": {
+     "None": 9,
+     "candidate": 4,
+     "base": 1
+    },
+    "ties": 9,
+    "timed": 14,
+    "median_seconds": 3.0
+   },
+   {
+    "range": [
+     27,
+     40
+    ],
+    "n": 13,
+    "arms": {
+     "None": 9,
+     "candidate": 3,
+     "base": 1
+    },
+    "ties": 9,
+    "timed": 13,
+    "median_seconds": 2
+   }
+  ]
+ },
+ "notes": []
+}

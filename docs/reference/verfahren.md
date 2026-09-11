@@ -1,6 +1,6 @@
 # Verfahrensseiten: die Tintenfolger-Routen und ihre Versionen
 
-> **Status (2026-09-09): lebend.** Übersicht und Versions-Konvention der
+> **Status (2026-09-10): lebend.** Übersicht und Versions-Konvention der
 > Duell-Verfahren; je stehendem Verfahren existiert eine eigene Seite
 > (unten). Nachzieh-Pflicht: Jeder §14-Eintrag, der einen Arm oder eine
 > Stufe eines Verfahrens misst (adoptiert ODER verworfen), ergänzt im
@@ -63,6 +63,16 @@ Zahl hier ist ein datiertes Zitat, der Beleg wohnt im benannten
 | **InkSight** | [`verfahren-inksight.md`](verfahren-inksight.md) | T0 (roh) — dtw 0,0951 med · 5/19 failed · Galoppieren-B2-Kollaps; **auf Lineal-Kappe 1,5 unvermessen**, die Zahlen sind archiviert und nicht vergleichbar | 2026-08-17 (Lineal 0,8) |
 | **Nullprobe** | [`verfahren-nullprobe.md`](verfahren-nullprobe.md) | unversioniert (Kontrolle) — dtw 0,8198 med · p90 1,0267 auf den 10 von 19 dev-Wörtern, die die gespeicherte Nullprobe abdeckt | 2026-08-26 |
 
+**Die vier dev-19-Stände stehen weiter auf der `sep07`-Wurzel**
+(`ccb036a5eb20…`). Der `d`-Zeilen-Write vom `sep10` (Autor-Entscheid A44)
+hat sie ersetzt, ohne dass das Duell auf der neuen nachgemessen wurde —
+die Zahlen bleiben untereinander vergleichbar und sind nicht falsch
+geworden, aber sie sind wurzel-fremd zur heutigen Wort-Headline. Der
+offene Punkt steht in
+[`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.11
+(„Duell-Nachmessung auf der `sep10`-Wurzel"); er ist eine Re-Baseline und
+kein Arm.
+
 Geplante Verfahren (Zögling · Vier Augen · Chor) haben noch keinen
 Kandidaten und darum keine Seite — ihr Stand wohnt in der
 Duell-Namen-Tabelle (tintenfolger.md §7.8, Glossar „Duell-Namen“);
@@ -81,7 +91,8 @@ Autor-Entscheid A37 vom 2026-09-06 ist der Austritts-Trim (`exit_trim`)
 als Produktions-Default (gepaart gemessen: Wörter 0,108444 →
 **0,109026**, Paare byte-gleich), während `apex_handover`/`stem_depart`
 (A36) und `seam_negotiation` (zweimal gefallen) aus bleiben. Die
-Headline steht seither auf der `sep07`-Wurzel und wohnt wie immer allein
+Headline steht seit dem `d`-Zeilen-Write (A44) auf der `sep10`-Wurzel
+`a4eb48420ccb…` / `e3a5d03d0f37…` und wohnt wie immer allein
 in [`qualitaetsmetrik.md`](qualitaetsmetrik.md).
 
 **Laufform**, **Lineal** und **Feder** kommen ebenfalls als Route in der
