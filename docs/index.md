@@ -2,7 +2,7 @@
 
 > **Status (2026-09-04): lebend.** Die **Karte** über `docs/`. Die
 > Invariante: **genau eine Zeile je `.md`-Datei unter `docs/`**, mit ihrer
-> Aufgabe und dem Anlass, sie aufzumachen — heute 60 Zeilen für 60
+> Aufgabe und dem Anlass, sie aufzumachen — heute 62 Zeilen für 62
 > Dateien, gegen den Dateibaum prüfbar. Mehr steht hier bewusst nicht;
 > jede Aussage über ein Doc gehört in dieses Doc, sonst veraltet sie hier
 > zuerst. Am 2026-09-04 von ~12 500 auf rund 4 100 Token gekürzt: das
@@ -60,7 +60,7 @@ Policy- und Technik-Dokumente, Status je Doc.
 | [quellen-und-rechte.md](reference/quellen-und-rechte.md) | Was ins Repo darf: PD/CC/NC-SA, §72 UrhG, §5 die Open-Core-Absicherung | Vor jedem Daten-Commit und bei jeder Frage zu Lizenzen |
 | [datenablage.md](reference/datenablage.md) | Der `/data`-Baum, drei Commit-Klassen, `SOURCE.md`-Pflichtfelder | Wenn eine Datei nach `/data` soll |
 | [qualitaetsmetrik.md](reference/qualitaetsmetrik.md) | Die **Regeln** der Messlatte: zwei Metriken (eine pro Schrift), Frozen-Reference-Regel, Baseline-Historie, Verworfen-Listen | Vor jedem Bench-Lauf und bei jeder Metrik-Frage |
-| [messjournal.md](reference/messjournal.md) | Die **Läufe**: §14, 120 datierte Abschnitte mit Vorregistrierung, Zahlen und Verdikt | Wenn eine Zahl oder ein Verdikt gesucht wird — **über das Register im Kopf**, nie die ganze Datei |
+| [messjournal.md](reference/messjournal.md) | Die **Läufe**: §14, 123 datierte Abschnitte mit Vorregistrierung, Zahlen und Verdikt | Wenn eine Zahl oder ein Verdikt gesucht wird — **über das Register im Kopf**, nie die ganze Datei |
 | [messjournal-archiv.md](reference/messjournal-archiv.md) | Abgelegte §14-Abschnitte und die Regel, wann einer hierher zieht | Wenn ein Abschnitt im Journal fehlt, oder beim Ablegen eines fertigen Arms |
 | [menschliche-bewertung.md](reference/menschliche-bewertung.md) | Die **Methode** des blinden Urteilsdurchgangs (`tools/humanbench`): Taxonomie, Instrumentregeln, Vorregistrierung | Bevor eine Bewertungsrunde gebaut oder ausgewertet wird (die Befunde stehen im Messjournal) |
 | [verfahren.md](reference/verfahren.md) | Die Übersicht der Duell-Routen samt Versions-Konvention und der Regel, dass eine Verfahrensseite Register ist und keine zweite Wahrheit | Bevor man eine der vier Routenseiten liest oder eine Ledger-Zeile schreibt |
@@ -68,6 +68,7 @@ Policy- und Technik-Dokumente, Status je Doc.
 | [verfahren-lotse.md](reference/verfahren-lotse.md) | Lotse: Steckbrief, Stand v0.17 (Reservierungs-Veto), Versions-Ledger v0.1–v0.19, offene Blöcke | Dasselbe für den Lotsen |
 | [verfahren-inksight.md](reference/verfahren-inksight.md) | InkSight: Steckbrief, Stand T0, Ledger (T0 · B1), stehende Maßnahmen B2–B5 | Dasselbe für InkSight |
 | [verfahren-nullprobe.md](reference/verfahren-nullprobe.md) | Nullprobe: Steckbrief, die Kontroll-Doktrin (bewusst unversioniert), Mess-Ledger | Dasselbe für die prior-freie Kontrolle |
+| [verfahren-tintenpfad.md](reference/verfahren-tintenpfad.md) | Tintenpfad (Tinte zuerst, Buchstaben danach): Steckbrief, Stand Kandidat, Ledger #591 · Arme · Kombination, offene Blöcke | Wenn ein Tintenpfad-Arm gemessen, adoptiert oder zitiert wird |
 | [verfahren-uebergaenge.md](reference/verfahren-uebergaenge.md) | Übergänge (keine Duell-Route, die Join-Grammatik darunter): Steckbrief, Stand (Austritts-Trim an), Ledger J1–J6 / S1 / S2 / Korb-Runde | Wenn ein Übergänge-Arm gemessen, adoptiert oder zitiert wird |
 | [werkzeuge.md](reference/werkzeuge.md) | Der Index über `tools/`: Labs, Benches, Ernte, Eigenhand, Snapshot, Changelog-Schnitt | Bevor man ein Werkzeug aufruft oder ein neues anlegt |
 | [write-api.md](reference/write-api.md) | Die öffentlichen Render-Endpunkte `/write/glyphs` + `/write/word`: Shaping → Komposition → Payload, Cache, `missing` | Bei jeder Änderung an einer `/write/*`-Route |
@@ -128,6 +129,7 @@ Nachschlagequellen, keine Pläne.
 |---|---|
 | [research/bildsynthese-und-stiftbahn.md](research/bildsynthese-und-stiftbahn.md) | Offline-HTG, Trajektorien-Rückgewinnung, Plotter-Pipeline, Daten-/Lizenzlage — abgelöst durch die Tintenfolger-Kampagne |
 | [research/graves-handschrift-synthese.md](research/graves-handschrift-synthese.md) | Literatur-Report zur Graves-2013-Mechanik, Priming/Biasing, moderne Verfahren, 54 Quellen |
+| [research/wellen-recherche.md](research/wellen-recherche.md) | Die vier Recherchen zur Physik-Bedingung der Welle (Bahn-Rückgewinnung, kohärente Verformung, Schlangen, das eigene Journal) mit den gemessenen Repo-Zahlen und den drei Bauten |
 | [research/kurrent-writer-and-recognizer.md](research/kurrent-writer-and-recognizer.md) | (EN) Generativer Writer als synthetische Datenquelle für einen billigen Recognizer |
 | [notes/audit-2026-09-02-synthese.md](notes/audit-2026-09-02-synthese.md) | Vollaudit 2026-09-01/02: 39 gereihte Befunde, Parallelplan T1–T14, Fragen F1–F11, Erledigungsstand |
 | [notes/audit-2026-09-02-rohbefunde.md](notes/audit-2026-09-02-rohbefunde.md) | Dieselbe Runde als Rohberichte der 20 Prüfer, jeder Befund mit Beleg |

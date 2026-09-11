@@ -460,10 +460,40 @@ WIDEST = {
 # so the ceiling is the re-measurement with BOTH in, plus the documented 10 % —
 # neither branch's own number, and not their sum. Re-measured on the merged
 # tree: 35 616.
+#
+# Four paths raised together on 2026-09-11 by the Wissens-PR, which books the
+# THREE rounds of 10–11 September at once — the night loop on fechten · kann ·
+# unter, the Welle (three builds) and the Tintenpfad arms plus combination —
+# because the author asked whether everything learned is documented well
+# enough to combine, and the honest answer was that code and glossary were in
+# the repo while the journal, the route page and the rescue paths were not.
+# The accounting is the one above, re-measured once on this tree with all
+# three rounds in, plus the documented 10 %:
+#
+# `mess-runde` (39 178 → 43 761): three register rows, one per round — the
+# night loop has no pre-registration entry to pair with, so it is ONE row,
+# not the standard pair —, the Kandidat paragraph in `tintenfolger.md`'s Stand
+# block (three lines, the block ends at 39 of its 40), a Tintenpfad row in
+# `verfahren.md`, and eight §7.11 open-arm rows, which is what three rounds
+# with a candidate each leave behind. The three journal entries themselves
+# were trimmed to 4 952 · 4 764 · 4 831 against the unchanged 4 957 ceiling,
+# which is where a growing entry belongs; `mess-runde-eintrag` is NOT raised.
+#
+# `mess-runde-route` (8 795 → 10 487): `verfahren-kette.md` stood at 8 786 of
+# 8 795 — nine tokens of room — and owes two ledger lines this time, one per
+# Kette round (the night loop's seven switches; the Wellen-Basis as Hook A of
+# the chain solver). A route page that stops recording is the one outcome
+# this path exists to prevent.
+#
+# `mandatory` (60 852 → 67 091) and `doku` (7 937 → 8 748): `docs/index.md` is
+# on the mandatory list and in the doku path, it carries exactly one row per
+# file, and this PR adds two files (the Tintenpfad route page and the research
+# note) — so two rows, plus the count in the map's own head. The path stood at
+# four tokens of room; the research row was shortened once before this raise.
 BUDGETS: dict[str, int] = {
-    "mandatory": 60_852,
-    "mess-runde": 39_178,
-    "mess-runde-route": 8_795,
+    "mandatory": 67_091,
+    "mess-runde": 43_761,
+    "mess-runde-route": 10_487,
     "mess-runde-eintrag": 4_957,
     "glyph-optimierung": 8_504,
     "komposition": 9_680,
@@ -487,7 +517,7 @@ BUDGETS: dict[str, int] = {
     # long); the section stood at 4547 exactly, so every switch name failed
     # the gate. Re-measured at 4669 plus the documented 10 %.
     "werkzeug-abschnitt": 5_136,
-    "doku": 7_937,
+    "doku": 8_748,
 }
 
 # --- Stand blocks ------------------------------------------------------------

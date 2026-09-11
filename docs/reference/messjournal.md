@@ -5,8 +5,8 @@
 > [`qualitaetsmetrik.md`](qualitaetsmetrik.md), Wort für Wort dieselbe
 > Sektion.
 >
-> **Diese Datei liest man nicht.** Sie trägt 120 datierte Abschnitte und
-> rund 266 000 Token. Der Einstieg ist das **Register** direkt unter der
+> **Diese Datei liest man nicht.** Sie trägt 123 datierte Abschnitte und
+> rund 280 000 Token. Der Einstieg ist das **Register** direkt unter der
 > nächsten Überschrift — eine Zeile je Abschnitt mit Datum, Route, Typ ·
 > Verdikt und dem Befund in einer Zeile —, und daneben der
 > **Headline-Ledger** mit der Zahlen-Historie samt Fixture-Wurzeln.
@@ -65,7 +65,7 @@ Werkzeuge: `tools/tracebench/`.
 
 ### Register der Einträge (Index, keine Zahl-Heimat)
 
-Diese Sektion trägt 120 datierte Abschnitte und ist die eine Heimat der
+Diese Sektion trägt 123 datierte Abschnitte und ist die eine Heimat der
 Kampagnen-Zahlen; die Tabelle hier ist ihr **Index** — sie wiederholt
 keine Zahl, sie zeigt, wo eine steht. Ihre Reihenfolge ist die der
 Datei, also die Reihenfolge, in der die Abschnitte angehängt wurden; die
@@ -238,6 +238,9 @@ die DB) — mit seiner Bedingung.
 | sep09 | Kette | [K-G Saat-Registrierung (Diagnose + Pre-Reg)](#kette-k-g-saat-registrierung-sep09--diagnose-und-vorregistrierung-der-startort-ist-der-hebel-den-der-beurteiler-benannt-hat) | Diagnose + Pre-Reg (Autor-Entscheid A39) | **Zwei Sensoren, eingefroren.** **Papier-Umkehr** zählt den Zickzack nur im PAPIER (`Galoppieren` 24 in der Tinte, 0 im Papier); das 29 : 27 des nie committeten ad-hoc-Zählers der Runde 9 liest er als **26 : 25** und wurde NICHT nachgezogen. **Saat-Abstand** trennt **Saat-Versatz** (Platzierung, absorbierbar) von **Saat-Rest** (Form, nur composer-seitig heilbar). **„Die Saat liegt weiter weg als `max_delta`" ist als ABSTAND falsch** — kein Anker über 0,68 xh von irgendeiner Tinte, der Fehler ist eine KORRESPONDENZ. `Wer`s `e` verlangt keine Verschiebung, `regieren`s acht Slots ziehen **0,967 xh** auseinander. Auf Runde 9s 44 Wörtern trägt die Form-Hälfte (partiell +0,592 : +0,157), **auf allen 63 sind beide gleich stark** — die 44 waren K-Es Straten. Arm: `--chain-seed grid`, Gates (a)–(g), Kill bei (a)/(c) |
 | sep09 | Kette | [K-G Saat-Registrierung (gemessen)](#kette-k-g-saat-registrierung-sep09--gemessen-der-arm-heilt-das-wort-des-beurteilers-und-reißt-zwei-gates) | gemessen · **ehrliches Negativ** (Gate (a) rot) · asymmetrischer Befund, Runde 11 gebaut | **Der Arm heilt genau das Wort, das der Beurteiler „richtig schlimm" nannte, und beschädigt genau das, das er gut nennt:** `unter` aiou **+0,1072** mit Papier-Umkehren **5 → 0** (die Basis verwirft dort ihre Runde 1 ganz, der Arm nicht), dagegen `Wer` **−0,0187**. Basis ziffernweise abgenommen. Gates: (a) **ROT** (`Wer` · `das` −0,0074; über 63 sind es 15 Verlierer, min −0,1782), (b) **ROT** (`cross_missing` 11 → 13), (c) **GRÜN** 63er-Soll **85 → 74**, (d) halb rot (Median −0,000034, p90 +0,000425), (e) **GRÜN** Papier-Umkehren **49 → 42** (44er-Auswahl 26 : 26), (f)/(g) grün. **Die aiou-Enden sind Wächter-Wechsel, nicht Tinte:** 28 der 63 wechseln ihr Verdikt — zu `revert-init` Median −0,0770, davon weg +0,1034, unverändert ±0,0005 —, und die ganze Soll-Verbesserung sitzt in den 28. Umkehren 9 besser : 7 schlechter, **ohne `regieren` 45 → 32**: es startet gemischt (ein Slot AN der Blockschranke bekommt keinen Seed) und verdoppelt seinen Zickzack 4 → 10 — von den VIER gemischt startenden Wörtern aber als einziges, der gemischte Start ist also nicht hinreichend. Terzile: Saat-Rest hoch **37 → 28**, Spannweite niedrig **5 → 8** — der Schalter hilft, wo die Saat danebenliegt, und schadet, wo nicht. Zieht erstmals den K-D-Auslöser (0,427 xh). Runde 11 gebaut, ungeurteilt: 73 Bildschirme, **Ausschnitt-Anzeige** ±1,5 xh bei Zoom 4× |
 | sep10 | Laufform | [LF17 Runde 10 geurteilt, `d`-Zeile geschrieben (A44)](#laufform-lf17-sep10--runde-10-geurteilt-die-d-zeile-geschrieben-a44-und-das-wort-lineal-neu-gebaselined) | Menschenrunde · **Adoption** (Autor-Entscheid A44) · **Re-Baseline** (Wörter, Paare byte-gleich) · **geschrieben** | **`d-rein` räumt beide Schranken ohne Gegenbeleg: 0 : 10, also 100 % Kandidat bei 0 % Ties** — alle zehn Wörter, die ein `d` ohne `u`-Nachbarn zeichnen. Verlässlichkeit die stärkste bisher: 8/8 Paare gleicher Arm, und bei den VIER entschiedenen Paaren wechselte mit der Spiegelung jedes Mal die Seite und nie der Arm; Nullproben 26/26 richtig als „kein Unterschied". Die globale Zeile meldet `adopt: false` **per Konstruktion** — 26 bit-identische Nullproben sind ein Tie-Boden von exakt 65,0 %, vorab ausgerechnet. **Das Lineal-Vorzeichen trägt in `d-rein` keine Information:** die zwei am stärksten bestraften (`der-2` +0,007563, `Feinde` +0,004178) und die zwei am stärksten belohnten Wörter (`Soldaten` −0,004612, `laden` −0,002505) stehen alle vier beim Kandidaten. **Gegenbefund `d-und` 4 : 0 für die BASIS** (n = 4, beschreibend, einstimmig) — eine Naht-, keine Zeilenfrage, als Arm auf der Route Übergänge registriert. Write: Snapshots `2026-09-10T20-40-19Z`/`…20-40-47Z`, EINE Zeile (`d`, n = 11, 120 Anker) als Variante 100, Readback-Abweichung 0,000000. Neue Wurzeln `a4eb48420ccb…` / `e3a5d03d0f37…` / `7a08a94c1258…`: Wörter 0,108153 → **0,108339**, Paare **byte-gleich** 0,148236, `worst_word` bleibt `regieren` 0,233052. **Die Paar-WURZEL ist diesmal nicht byte-gleich** — jede der drei Wurzeln trägt ihre eigene Kopie der Laufform-Zeilen, und am `sep07` war die Paar-Wurzel gar nicht neu ausgeführt worden; Datei für Datei unterscheiden sich in allen drei genau `manifest.json` und der Schlüssel `d` (größte Anker-Abweichung 0,044500 xh). Die trockene Vorhersage ist **byte-gleich getroffen**, und zwar über alle 96 Einträge mit einer größten Abweichung von 0,0 |
+| sep10/sep11 | Kette | [Grob-richtig-Schleife (Nachtschleife, #590)](#kette-grob-richtig-schleife-sep10sep11--werkstatt-ohne-vorregistrierung-sieben-schalter-und-ein-zweiter-sensor-auf-fechten--kann--unter-it-18-als-kandidat) | Werkstatt · **ohne Vorregistrierung** · Kandidat (It. 18), **nicht adoptiert**; Papier-Strecke als Sensor adoptiert | Der Autor verweigert das Urteil über Runde 11 („die springen wild hin und her") und lässt über Nacht an `fechten` `kann` `unter` bauen. Sieben Kette-Schalter (t-Brücke · Saat-Form · Tinten-Klammer · Tinten-Soll · Unstetigkeits-Preis · Saat-Rampe · Gauß-Verschiebung; Laufform-Saat und Formglätte als Negative), der Wächter-Befund (sein Soll kam aus der Tafel statt aus der Tinte) und der zweite Sensor `paper_len_xh`. Auswahl je Wort aus dreien (It. 18) bringt die 63 Wörter von **49 auf 13** Papier-Umkehrungen und **61,7 auf 23,5 xh** Papier-Strecke bei besserem Lineal (dtw 0,045881 → 0,044128, aiou 0,7660 → 0,7821, 12 : 7) — gebucht wird nichts, bis der Autor einen Bogen abnimmt; als Folger-Schalter ändert „Wächter aus" die Doktrin. Drei Quellen-Abweichungen und ein zurückgezogener `die`-Befund stehen im Eintrag; BLAS-Pinnung für diese Nacht unbezeugt |
+| sep11 | Kette/Tintenpfad | [Welle — drei Bauten (Tintenpfad #591, Wellen-Basis, Schlange)](#welle-sep11--drei-bauten-gegen-die-physik-bedingung-des-autors-tintenpfad-bestätigt-591-wellen-basis-und-schlange-als-ehrliche-teil-negative) | drei Bauten · **Tintenpfad bestätigt** (gemergt, nicht adoptiert) · zwei ehrliche Negative | Physik-Bedingung des Autors („die Punkte können sich nur wie eine Welle zusammenhängend verschieben") als Tor; Workflow Recherche ×4 → Karte → Entwürfe → Richter ×9 → Bau ×3 → Prüfung ×3, BLAS gepinnt, Wurzel `ccb036a5eb20…`. **Tintenpfad** (Tinte zuerst, Buchstaben danach — Stränge ohne Prior, Reihenfolge per Viterbi): 13 Zeilen **0 · 93 · 0,78 xh**, 63 Wörter 0 · 331 · 1,49, dev-19 dtw 0,044230 · aiou 0,7867, aber gepaart 7 : 12 und p90 schlechter; Papier-Sensoren für einen skelettgebundenen Pfad vakuös. **Wellen-Basis** (B-Spline-Verschiebungsbasis im Kettenlöser): Zacken −78 %, dtw 0,041403 (15 : 4 gegen Basis, 10 : 9 gegen It. 17), Tor gerissen an Tinten-Umkehrungen +23 % und `das` +0,0782. **Schlange** (elastische Kurve, Sobolev-Schritt): Zickzack 3,718 → 0,009 je xh, 0 · 78 · 4,47, Lineal verloren (0,051445, 6 : 13); β_e 64 biegt die eigene Pre-Reg. Alle drei physikalisch kohärent, nur einer nimmt das Tor |
+| sep11 | Tintenpfad | [Tintenpfad-Arme + Kombination (#592)](#tintenpfad-arme-sep11--fünf-arme-drei-tragen-zwei-ehrliche-negative-die-kombination-als-kandidat-592) | fünf Arme · **drei tragen**, zwei ehrliche Negative · Kombination **Kandidat, nicht adoptiert** | Regel des Abends: Lesung der Tinte oder Regel des Dekoders, nie Glättung, nie Erfindung. **Spitzen-Lesung** (rail + walk bis ans Maskenende; 13 : 6 gegen #591, Gate 2 fällt wie geschrieben), **Normalen-Fit** (Zelt auf 4× feinerem Grau-Raster, Knick 9,74° → 8,03°, 15 : 4 — Träger ist das Grau, Scope-Frage an den Autor), **Tinten-Brücke** (2 von 9 Lücken, neutral; über `kann`/`han`/`regieren` liegt kein Haarstrich). **Stummel-Filter** no-op, Hypothese an der Quelle widerlegt — Nebenbefund: Hand 47 gegen Kandidat 79 Tinten-Umkehrungen, der Defekt ist der Überschuss +32; **Doppelstrich-Evidenz** feuert auf 0 von 63 (ß-Stämme 1,00–1,33 × Feder), die reine Dekoder-Regel `ratio 1,0` repariert p90 0,0907 → 0,0535 (3 : 0), aber nachträglich gewählt. Kombination: 13 Zeilen 0 · 95 · 1,34, 63 Wörter 0 · 330 · 4,77, dev-19 **0,041356** · 0,091040 · 0,7876, **18 : 1** gegen #591, **9 : 10** gegen Basis, 10 : 9 gegen It. 18 (der PR-Text hat die letzten beiden vertauscht) |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -16438,3 +16441,536 @@ als Verdikt lesen.
 * **Der Ernte-Fixpunkt nicht noch einmal gefahren** — die
   Vorregistrierung hat ihn zweimal byte-gleich belegt, und der Write hat
   die Zeile nicht angefasst, die er geschrieben hat.
+
+### Kette Grob-richtig-Schleife `sep10`/`sep11` — Werkstatt ohne Vorregistrierung: sieben Schalter und ein zweiter Sensor auf fechten · kann · unter, It. 18 als Kandidat
+
+Die Nachtschleife vom 10./11. September, nachgetragen am `sep11` aus
+ihren Artefakten (PR #590, squash-gemergt als `ebf5d91`;
+Fortschrittsseite als Artifact; Lauf-Ordner `temp/coarse-sep10/`,
+gitignored). **Typ · Verdikt: Werkstatt · Kandidat (It. 18), nicht
+adoptiert.** Der wichtigste Fakt zuerst: **es gibt keine formale
+Vorregistrierung** dieser Runde. Sie begann als Umleitung des Autors am
+Abend des `sep10` — Runde 11 (K-G, Eintrag darüber) wird NICHT
+beurteilt: „die Buchstaben folgen nicht der Tinte, die springen wild hin
+und her — such dir 3 gute Schlecht-Kandidaten, an denen bauen wir
+solange rum bis die Tinte zumindest grob richtig läuft", „vorher macht
+Fine-Tuning keinen Sinn", „stoppe nicht nach 6 Iterationen, du hast die
+ganze Nacht". Was VOR den Zahlen deklariert war, damit die Runde nicht
+nachträglich zur Vorregistrierung wird:
+
+1. **Ziel** (Kopf der Fortschrittsseite): „keine Ausflüge ins Papier
+   mehr, jeder Buchstabe auf seiner eigenen Tinte. Das 63-Wörter-Lineal
+   läuft als Wächter mit, nicht als Ziel."
+2. **Wörter:** `fechten` (8 Papier-Umkehrungen in der Basis), `kann`
+   (5), `unter` (5); Kontrolle die sechs Wörter, die unter „Wächter aus"
+   zuerst zurückfielen: `streiten` `regieren` `Sporn` `haben` `han`
+   `die`. Lineal das eingefrorene dev-19; die 10 weiteren handgespurten
+   Wörter bleiben die versiegelte Bestätigungsmenge.
+3. **Sensoren:** Papier-Umkehr (`tools.tracebench.reversals`, seit #588)
+   und ab It. 7 die **Papier-Strecke** `paper_len_xh` — eingeführt, weil
+   der Umkehr-Sensor gerade Sehnen durchs Papier nicht sieht.
+4. **Vertrag der Schalter:** jeder Vorgabe AUS, jeder Standard-Fit
+   byte-identisch (`paper_weight`/`kink_weight` 0 überspringen ihre
+   Terme); nur `tools/`, kein `core/`-Byte.
+5. **Gate des Autors:** nichts wird adoptiert und kein §14-Eintrag
+   geschrieben, bevor er einen Bogen abgenommen hat („die Zahlen hier
+   sind zitiert, nicht gebucht, bis du einen Bogen abnimmst"); ein Arm,
+   der den Produktions-Folger ändert, braucht eine eigene
+   Vorregistrierung, weil „Wächter aus" die Doktrin der Kette ändert.
+
+**Umgebung.** Alle zehn dev-19-Reports (`temp/coarse-sep10/tb/*.json`)
+identisch gesetzt: `style suetterlin · set words · split dev · hand_id
+suetterlin-1922-norm · resample_step 0,02 · mark_arc_cap 1,5`, 19 Zeilen
+gewertet, 0 failed/skipped; Wurzel `suetterlin-1922` `exported_at`
+2026-09-07T20:07:03+00:00, Digest `ccb036a5eb20…` (die `sep07`-Wurzel —
+NICHT die `sep10`-Wurzel der heutigen Wort-Headline). **BLAS-Pinnung ist
+für diese Nacht in keiner Quelle bezeugt**; für die Welle-Bauten des
+`sep11` ist sie es. Die Zahlen gelten darum untereinander, ein Vergleich
+gegen eine gepinnte Messung steht auf ihrem Wort.
+
+#### Die Mechanismen, in der Reihenfolge der Nacht
+
+| It. | Mechanismus (Schalter) | Was er tut | Befund | Verdikt |
+|---|---|---|---|---|
+| 1 | **t-Brücke** (`--bar-bridge`) | die Kette plante den t-Balken als Feder-Absetzer aus den `stroke_starts` der Tafelzeile, `compose_word` überbrückt ihn; Autor-Fund „wieso startet beim t überhaupt ein neuer Strich" | `fechten` 8 → 6 Papier-Umkehrungen, ein Zug statt zwei; `unter` 4 → 4 bei 2 statt 3 Zügen | trägt, Baustein aller späteren Iterationen |
+| 2–3 | **Saat-Form** (`--chain-seed grid-scale`, `follow._grid_scale_fits`) | die Rastersuche je Slot sucht die BREITE (x-Skala 0,5–1,5 × Verschiebung), symmetrische Kosten Präzision + Recall; Hypothese: das Tafel-`e` (1,3 xh) ist doppelt so breit wie das der Hand in `unter` (0,65) | 18 → 9 Papier-Ausflüge über die drei Wörter; nach dem Schranken-Bugfix (jeder senkrechte Versatz ab 2 px las als „am Rand" und verwarf die Saat bei `t` `e` `n` `a`) `fechten` 4 · `kann` 2 · `unter` 2. Über 63 zweischneidig: `das` 0,00 → 1,32 xh Papier-Strecke, `Soldaten` schlechter; ohne Saat 78,4 statt 47,7 xh | trägt mit Einschränkung — braucht eine Annahmeregel je Wort (It. 15) |
+| 4–5 | **Tinten-Klammer** (`--paper-weight 30`) | zweites, steiles Scharnier auf demselben Distanzfeld wie `e_geo`, beißt erst jenseits EINER Federbreite | mit Wächter an: ändert nichts (der Wächter verwirft die Runde); Wächter aus: `unter` Papier 0 · Tinte 25, `fechten` 1, `kann` 3 — die Kontrolle 5b zeigt, dass den größten Schritt der abgeschaltete Wächter macht | trägt nur mit der Wächter-Frage |
+| 4 | **Struktur-Wächter · Befund** (kein Schalter) | der Wächter verwarf bei `unter`/`kann` die ganze Runde, weil Kreuzungszahlen nicht dem SOLL DER KOMPOSITION entsprachen: das Tafel-`e` hat eine Schleife, das `e` dieser Hand ist eine Haarnadel — wer auf die Tinte legt, verliert die Kreuzung | „der Wächter muss bleiben, aber sein Soll darf nicht aus der Tafel kommen, sondern aus der Tinte" | Befund — zentraler Blocker der Nacht |
+| 7 | **Tinten-Soll** (`--soll-source ink`) | eine komponierte Kreuzung zählt fürs Wächter-Soll nur, wenn das Tintenskelett binnen 0,35 xh einen Verzweigungspunkt hat | neun Wörter Papier 27 → 18, `kann` 0; über 63 (mit Brücke, Saat-Form, Klammer) Papier 49 → 39, Strecke 61,7 → 55,0, dtw 0,045881 → 0,044892, aiou 0,7660 → 0,7754, 13 : 6. ABER: gerade Sehnen durchs Papier in `kann` `streiten` `regieren`, die kein Umkehr-Sensor sieht → der zweite Sensor | trägt, auf beiden Seiten besser |
+| 7 | **Papier-Strecke** (Sensor, `paper_len_xh`) | Bahnlänge außerhalb der Tinte in xh, Pixelschritt über den Papiertest des Sensors | neun Wörter: Basis 16,2 · It. 5 9,7 · It. 7 13,3 xh — „die Sehnen kosten, was die Klammer gewonnen hat" | **adoptiert** — der einzige Teil der Nacht, der als Spalte ausgeliefert ist |
+| 8–9b | **Unstetigkeits-Preis** (`--kink-weight 2 --kink-cos 0.3`) | der Leitsatz vom `sep06` als Term: zwei Stützstellen-Richtungen eines Zuges mit Kosinus < 0,3 zahlen ein quadratisches Scharnier; Ecken, ihre Nachbarn und Absetzer ausgenommen; Gradient exakt (`check_grad` 1e-6) | neun Wörter Papier · Strecke: Basis 27 · 16,2 → It. 7 18 · 13,3 → It. 8 (Gewicht 1) 11 · 12,9 → It. 9b (2, Wächter aus) 10 · 10,9; Tinten-Umkehrungen 161 → 133. Attribution über 63: Preis ohne Rampe Papier 48 → 24 (der Preis nimmt die UMKEHRUNGEN). Ohne Preis ist „Wächter aus" unsicher (It. 5: 6 Kontrollwörter schlechter, 63er-Papier 51 gegen 49) | trägt — macht den ungewächterten Löser sicher |
+| 11 | **Saat-Rampe** (`--seed-ramp`) | die Breitensuche skaliert um den Eintritt, der Austritt wandert, der Verbinder begann am alten Austritt — gerade Sehne beim Verschweißen; die Rampe nimmt den Versatz mit und rampt ihn bis zum nächsten Eintritt auf null | Rampe ohne Preis über 63: Papier 48, Strecke 77,5 → 49,2 xh (die Rampe nimmt die STRECKE); auf den neun Wörtern mit Rampe 7–9 statt 10–14 Papier-Umkehrungen | trägt (Strecken-Hebel) |
+| 10 | **Erst-Löser-Kontrollen** (`--no-init-terms`, `--seed-min-gain`) | Klammer und Preis aus dem ERSTEN Kettenlöser halten; skalierte Saat nur ab Kostengewinn | Preis + Klammer im ersten Löser (Wächter an): `streiten` heilt auf 0,2 xh, `fechten` fällt auf 8, `kann` auf 5 zurück; bedingte Saat ändert an den Verlierern nichts | Kontrollen, kein Gewinn |
+| 12 | **Laufform-Saat** (`--seed-form laufform`) | die Laufform-Zeile statt der Tafelzeile als Saat | `kann` und `unter` schlechter, nur `streiten` besser; drei Wörter `fechten` 0 · `kann` 3 · `unter` 2 | ehrliches Negativ auf dieser Menge |
+| 16 | **Formglätte** (`--letter-smooth` 0,5 · 2) | Antwort auf die Wackler-Frage des Autors („woher kommen die Wackler"): zweite Differenzen der VERSCHIEBUNG gegen die Saat je Federzug — für Buchstaben gab es keinen Glätte-Term | zwölf Wörter: Tinten-Umkehrungen 142 → 124 · 131, aber Papier-Umkehrungen 24 → 34 · 34, Strecke 41 → 46 · 48 xh — ein zweiter FORM-Prior, er hält die Bahn bei der Saat-Form fest, ins Papier | ehrliches Negativ, als Kontrolle behalten |
+| 17 | **Gauß-Verschiebung** (`--chain-seed affine`, `affinereg.py`) | die Idee des Autors vom Morgen — zwei Signale übereinander schieben, bis die Differenz minimal wird — als 2D-Registrierung je Buchstabe: Gauß-Glocke 4 → 2 → 1 px, je Stufe eine Affinität um den Eintritt (Powell), symmetrisches Maß, weicher Prior auf die Einheit | zwölf Wörter Papier 24 → 18, Strecke 41 → 30 xh; `fechten` `unter` `Galoppieren` `die` ohne Ausflug. Über 63 die BESTE Lineal-Saat der Nacht (dtw 0,044431, aiou 0,789415, 13 : 6, Retrace-Lücke 0,25 → 0,12), aber Papier 40 und Strecke 69,5 xh: bei `scharfen` rasten `r` `e` `n` auf die Nachbar-Tinte (10 Umkehrungen, 14,4 xh, Basis 0), `Soldaten` 8,7 | trägt am Lineal, fällt an den Sensoren — Quelle für die Auswahl je Wort |
+| 15 / 18 | **Auswahl je Wort** (Skript `merge_best.py`; `--chain-seed auto` wäre der Code-Schritt) | jedes Wort mehrfach fahren und die Bahn mit der KLEINSTEN eigenen Tinten-Distanz am Ende des Folgens behalten — der Wert, den der Löser selbst minimiert, ohne Lineal | It. 15 (mit/ohne Breiten-Saat, 37 : 26): erste Einstellung ohne eine schlechtere Kopfzahl. It. 18 (Gauß 24 · Breite 21 · ohne Saat 18): Tabelle unten | **bester Stand, Kandidat** — als Folger-Schalter ändert er mit „Wächter aus" die Doktrin, also eigene Pre-Reg + Autor-Go |
+
+Der Rasterlauf (`grid.log`, 12 Einstellungen × 9 Wörter: Wächter an/aus ×
+Preis im ersten Löser an/aus × Gewicht 1/2/5, alle mit Brücke, Saat-Form,
+Klammer 30) sagt: die Rampe entscheidet, Gewicht 2 liegt richtig (1 und 5
+schlechter), die bedingte Saat ändert an den Verlierern nichts. Beste
+Nacht-Einstellung auf den neun Wörtern (`--bar-bridge --chain-seed
+grid-scale --seed-ramp --paper-weight 30 --kink-weight 2 --soll-source
+ink`): Papier-Umkehr **27 → 7**, Papier-Strecke 9,5 → 2,2 xh (16,2 → 9,1
+mit dem Renderer-Artefakt bei `die`).
+
+#### Die 63 Wörter, dev-19 gepaart gegen die Basis
+
+Papier = Papier-Umkehrungen, Strecke in xh; „b : s" = besser : schlechter
+über die 19 dev-Zeilen, aus den Reports nachgezählt (Seite in Klammern,
+wo sie abweicht — sie behandelt `will` mit |Δdtw| 4·10⁻⁵ dort als
+Gleichstand, in der It.-18-Zeile nicht).
+
+| Einstellung | Papier | Strecke | dtw-Median | p90 | aiou | b : s |
+|---|---|---|---|---|---|---|
+| Basis Kette v5 | 49 | 61,7 | 0,045881 | 0,088356 | 0,7660 | — |
+| It. 7: Brücke + Saat-Form + Klammer 30, Wächter an, Tinten-Soll | 39 | 55,0 | 0,044892 | 0,090391 | 0,7754 | 13 : 6 |
+| It. 11: + Rampe + Preis 2, Wächter an | 30 | 68,5 | 0,051920 | 0,101729 | 0,7456 | 10 : 9 |
+| Zerlegung: Rampe OHNE Preis, Wächter an | 48 | 49,2 | 0,044020 | 0,101725 | 0,7528 | 12 : 7 |
+| Zerlegung: Preis OHNE Rampe, Wächter an | 24 | 77,5 | 0,048905 | 0,106629 | 0,7583 | 7 : 12 |
+| It. 13: Brücke + Saat-Form + Rampe + Klammer 30 + Preis 2, **Wächter aus** (der Stand am Morgen, die im PR zitierte Zeile) | 25 | 47,7 | 0,043503 | 0,108504 | 0,7671 | 12 : 7 |
+| wie It. 13 ohne Breiten-Saat | 38 | 78,4 | 0,045219 | 0,115432 | 0,7626 | 10 : 9 (9 : 9) |
+| It. 15: Auswahl je Wort aus zweien (37 mit Saat : 26 ohne) | 17 | 28,3 | 0,044128 | 0,086332 | 0,7714 | 11 : 8 (10 : 8) |
+| It. 17: Gauß-Verschiebung als Saat | 40 | 69,5 | 0,044431 | 0,083965 | 0,7894 | 13 : 6 |
+| **It. 18: Auswahl je Wort aus dreien (24 Gauß · 21 Breite · 18 ohne)** | **13** | **23,5** | **0,044128** | **0,086332** | **0,7821** | **12 : 7** |
+
+Auf den 13 Schleifenzeilen (Papier · Tinte · Strecke · Zickzack je xh):
+Basis 34 · 189 · 35,9 · 3,72 → It. 17 18 · 162 · 29,9 · 1,86 → It. 18
+**7 · 170 · 17,1 · 2,46**. Handspur-Vergleich der fünf dev-Zeilen der
+Schleife, Basis → It. 18 (dtw · aiou): `unter` 0,0882 · 0,665 → **0,073
+· 0,77**, `Galoppieren` 0,0404 · 0,708 → 0,0364 · 0,749, `die-2` 0,0822
+· 0,678 → 0,045 · 0,762 — und zwei d-Wörter SCHLECHTER trotz null
+Papier-Ausflug: `die` 0,0803 · 0,621 → 0,0948 · 0,704 (das schlechteste
+Wort, +0,0145), `das` 0,0459 · 0,804 → 0,0509 · 0,725 (+0,0050). Der
+Autor hat beide am Morgen ausdrücklich in die Schleife genommen und
+klargestellt: es geht nur um den FOLGER, nicht ums Schreiben.
+
+#### Drei Abweichungen der Quellen, nicht geglättet
+
+1. **Paar-Zählung:** zwei Zeilen der Seite (9 : 9, 10 : 8) zählen aus
+   den Reports 10 : 9 und 11 : 8 — die Gleichstandsschwelle ist der
+   Grund (oben); hier stehen die nachgezählten Zahlen.
+2. **Iteration-0-Zeile** der Verlaufstabelle nennt `fechten` 8 · `kann`
+   6 · `unter` 4; Abschnitt „Iteration 0", PR-Text und `rev-it5.json`
+   nennen übereinstimmend **8 · 5 · 5** — das ist die belegte Zahl.
+3. **Zurückgezogener Befund:** `die` galt zeitweise als
+   Registrierungsfehler mit 6,9 xh Papier-Strecke — ein Fehler des
+   Scratch-Renderers, der Zeilen nach WORT-TEXT schlüsselte und die Bahn
+   von `die-2` über den Ausschnitt von `die` zeichnete. `die` ist in der
+   Basis in Ordnung (0,49 xh).
+
+#### Verdikt
+
+**Werkstatt · Kandidat (It. 18), nicht adoptiert.** Sieben Kette-Schalter
+und ein zweiter Sensor bringen die 63 Wörter von 49 auf 13
+Papier-Umkehrungen und von 61,7 auf 23,5 xh Papier-Strecke bei besserem
+Lineal (dtw 0,045881 → 0,044128, p90 0,088356 → 0,086332, aiou 0,7660 →
+0,7821, 12 : 7) — **gebucht wird nichts, bis der Autor einen Bogen
+abnimmt.** PR #590 liefert nur Werkzeuge (`tools/pairlab/chain.py` ·
+`follow.py` · `affinereg.py` · `tracebench/reversals.py`, Tests für
+Brücke, Byte-Identität bei Gewicht 0 und beide Gradienten). „ok merge
+und optimieren, lass uns testen ob das das neue beste Verfahren wird"
+(`sep11`) ist der Merge, kein Entscheid über den Folger. Die Seite endet
+mit dem Satz, der zur Welle überleitet: „was hier noch bleibt, ist nicht
+mehr die Saat, sondern die Verformung selbst" (Eintrag „Welle `sep11`").
+
+#### Rettungswege (Register: [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.9)
+
+1. **Formglätte** (It. 16): weniger Freiheit statt mehr Strafe — ein
+   Affin-Block je Buchstabe VOR der elastischen Verformung (als
+   Gauß-Verschiebung in It. 17 gebaut) · bandbegrenztes
+   Verschiebungsfeld je Federzug (die Wellen-Basis der Welle) · die
+   Anker-Dichte senken (120 freie Anker bei ~0,03 xh Abstand sind die
+   Ursache), statt den Zack zu bepreisen.
+2. **Laufform-Saat** (It. 12): als DRITTE Quelle in die Auswahl je Wort
+   statt global gegen die Tafel · je Klasse prüfen, wo die Tafelzeile zu
+   breit ist (das `e`-Argument aus It. 2).
+3. **Gauß-Verschiebung über 63** (It. 17): Auswahl je Wort — in It. 18
+   eingelöst, `scharfen` wählt dort „ohne Saat" und kommt auf 0 · das
+   Fenster je Buchstabe auf die ihm zugeordnete Tinte begrenzen · den
+   Einheits-Prior härten oder die Wanderung deckeln.
+4. **Breiten-Saat** an `das`/`Soldaten`: Annahmeregel je Wort (It. 15,
+   eingelöst) · `--chain-seed auto` als Schalter statt Skript (braucht
+   Autor-Go) · die d-Klasse gesondert (das Platten-`d` hat eine
+   Rückschleife, die Tafel- und Laufform-`d` nicht haben).
+5. **It. 11 (Rampe + Preis mit Wächter AN):** Wächter aus MIT Preis
+   (It. 13) · `--no-init-terms` · das Wächter-Soll ganz aus der Tinte
+   (It. 7 tat es nur für Kreuzungen).
+6. **It. 5 („Wächter aus" ohne Preis):** den Preis als Sicherung (It.
+   9b, 13) · die sechs Verlierer als Klassen zerlegen (`streiten` 2 →
+   9, `regieren` 4 → 7, `Sporn` 1 → 5, `die` 0 → 2).
+
+**Offen (§7.11):** `--chain-seed auto` als Folger-Schalter (Doktrin,
+Autor-Go) · die k→a-Naht in `kann` (It. 18: 1 · 3,3 xh) · ſt→r und „ei"
+in `streiten` (4 · 2,7 xh, größter Rest) · die d-Klasse (`das` `die`,
+Zittern IN der Tinte, das dtw misst) · `Soldaten` 4,2 xh am `S` und „en"
+· das feine Zittern (120 freie Anker, Welle ~0,3 xh Periode, 0,4 px
+Amplitude — die Übergabe an die Welle) · die formale Runde auf der
+AKTUELLEN Wurzel (`a4eb48420ccb…`) · die Sensor-Grenze (Umkehr blind für
+Sehnen, Strecke blind fürs Zittern in der Tinte).
+
+**Artefakte:** `temp/coarse-sep10/<n>/`, `grid/<name>/`, `grid.log`,
+`rev-*.json`, `tb/*.json`; der versiegelte Satz wurde nicht geladen.
+**Keine Ledger-Zeile:** keine Wort-Headline bewegt; Kette-Ledger-Zeile
+in [`verfahren-kette.md`](verfahren-kette.md).
+
+### Welle `sep11` — drei Bauten gegen die Physik-Bedingung des Autors: Tintenpfad bestätigt (#591), Wellen-Basis und Schlange als ehrliche Teil-Negative
+
+**Typ · Verdikt: drei Bauten · Tintenpfad bestätigt (gemergt `de178b1`),
+zwei ehrliche Negative — nichts adoptiert, so vorab festgelegt.** Am
+Mittag des `sep11` hat der Autor die Bedingung gesetzt, die zum Tor der
+Runde wurde, wörtlich: „Es kann nicht sein, dass bei einem Buchstaben
+aus 100 Punkten dann ein Punkt plötzlich in ganz andere Richtung zackt
+und dann der Punkt danach wieder zurückkommt. Das geht ja beim Schreiben
+gar nicht. Die Punkte können sich nur so, wie so eine Welle,
+zusammenhängend verschieben." Dazu: Rechenzeit ist KEIN Kriterium („eine
+Minute oder auch 10 Minuten — wenn es dafür am Ende perfekt ist"), es
+geht nur um den Folger, nicht ums Schreiben (die Komposition ist nur
+Saat), und „erst mal wirklich der Tinte folgen, erst danach überlegen,
+welcher Bereich der gefolgten Tinte welchem Buchstaben entspricht". Die
+Runde lief nachmittags als Workflow: Recherche ×4 → Karte (zwei
+Einhängepunkte: Hook A = Neuparametrisierung der Deltas in
+`_ChainProblem.unpack/_pack`, Hook B = eigenständiger Folger neben der
+Kette) → Entwürfe ×3 → Richter ×9 (Physik · Gewinn · Machbarkeit:
+Tintenpfad 27 · 24,5 · 25, Schlange 25 · 24 · 25, Wellen-Basis 23 · 23 ·
+27) → Bau ×3 → unabhängige Prüfung ×3. Die vier Recherchen sind
+kondensiert in [`../research/wellen-recherche.md`](../research/wellen-recherche.md).
+
+**Vorregistrierung** (vor jedem Bau, Brief „Was ein Ergebnis ist"): ein
+Folger zählt, wenn er auf den ZWÖLF Schleifenwörtern (`fechten` `kann`
+`unter` `streiten` `regieren` `Sporn` `haben` `han` `die` `das`
+`Soldaten` `Galoppieren`, `die-2` fährt mit = 13 Zeilen) Papier-Strecke
+UND Tinten-Umkehrungen senkt, OHNE das Lineal (dtw-Median dev-19) zu
+verschlechtern — und wenn seine Verformung physikalisch ist:
+Nachbar-Anker bewegen sich zusammenhängend. Kills: nur `tools/` und
+`tests/`, nie `core/`, nie die DB, nie die Wurzeln; jede Behauptung mit
+Zahl, jeder Kandidat als Datei unter `temp/wellen-sep11/<name>/` mit
+Bild je Wort; die 10 handgespurten Nicht-dev-Wörter nie laden, nie
+messen, nie ansehen; kein §14-Eintrag, keine Adoption aus der Runde —
+der Autor entscheidet nach dem Artefakt. Je Bau dazu eine eigene
+Vorregistrierung vor dem Lesen der Lineale (Schlange: Dämpfungsformel
+β_e·q²/(β_e·q²+k_data), β_e-Regel „größter Wert, der keine Kurve strandet
+und keine Kreuzung verliert", Je-Kurve-Tor > 1,0 px Skelettabstand,
+`hit_cap` 0, Lineal immer GEPAART; Wellen-Basis: Anspruchs-Sprosse Δs
+0,25 und Leiter 0,16/0,25/0,35; Tintenpfad: eingefrorene
+`TintenpfadWeights`, `--legacy-p5`, `tip_extend_xh` per Default AUS).
+Die Richter setzten vor dem Bau die Muss-Korrekturen (reales dev-19
+statt 5-Zeilen-Median, Byte-Identität beweisen statt behaupten,
+`corner_halo` 0, die 137:1-Preis-Zahl durch das Dämpfungsgesetz ersetzt).
+
+**Umgebung.** Alle Bauten von `origin/kette-grob-richtig` @ `979a40b`,
+Wurzel `ccb036a5eb20…`, **BLAS gepinnt** (`OPENBLAS_NUM_THREADS=1
+OMP_NUM_THREADS=1`), Referenz aller drei ist It. 17 der Nachtschleife
+(`temp/coarse-sep10/affine/a1/cand.json`: zwölf Wörter 18 · 162 · 29,87
+xh; 63 Wörter 40 · 592 · 69,47, dev-19 0,044431 · 0,083965 · 0,7894), die
+Produktionsbasis 49 · 742 · 61,73 und 0,045881 · 0,088356 · 0,7660.
+Byte-Identität bewiesen, nicht behauptet: Tintenpfad und Wellen-Basis
+über einen It.-17-Nachlauf aus dem eigenen Worktree (13/13 Zeilen
+strichgleich zu `a1/cand.json`), Schlange über leeren `git diff
+--diff-filter=M`.
+
+#### Die drei Bauten
+
+**(a) Tintenpfad — Strang-Dekodierung, Tinte zuerst, Buchstaben
+danach** (`tools/pairlab/tintenpfad.py`, Hook B ohne Stützpunkt-Feld;
+Glossar „Strang-Dekodierung"). Stufe 1 ohne Prior: `core.skeleton_graph`
+→ Sporn-Beschnitt < 0,15 xh → glatteste Fortsetzung an jeder Kreuzung →
+STRÄNGE, jeder Pixel per Zeltfit auf der Distanztransformierten auf die
+Mittelachse gesetzt. Stufe 2 nimmt aus der komponierten Saat (je Slot
+Gauß-verschoben, 0,03 xh) NUR die Reihenfolge und dekodiert sie per
+Viterbi: Zustände Strangpixel × Richtung + PAPIER, monotone Ritte,
+Haarnadel 8, Sprung ≤ 0,35 xh, Papier 12 je Probe und 20 je
+Ein-/Ausstieg, Hysterese. Es gibt keine Anker: die freien Variablen sind
+DISKRET, jede bewegt einen ganzen Strang — die Bedingung des Autors wird
+nicht erfüllt, sondern gegenstandslos. **Verdikt: bestätigt** (Prüfer
+`confirmed`, jede Kopfzahl nachgelaufen). Prüfer-Befunde: Papier-Umkehr
+und Papier-Strecke sind für einen skelettgebundenen Pfad **nahezu
+vakuöse Sensoren** (nur 14 von 9 761 Skelettpixeln bestehen den
+Grau-Test), informativ bleiben Tinten-Umkehrungen und Lineal; 13
+Absetzer auf 13 Wörtern (It. 17 8, Handspur 4 auf 6), davon 7 kurze
+wortinterne; die Umtastung auf 0,02 xh löschte 11 der 104
+Tinten-Umkehrungen; gegen den Amtsinhaber It. 17 ist das Lineal ein
+Unentschieden (Median gleichauf, p90 und aiou schlechter). Eigensensor:
+Abstand der Bahn zum eingefrorenen Skelett Median/p90/p99 **0,42 / 0,66
+/ 1,11 px**, 0,3 % über 2 px — It. 17 0,79 / 2,17 / 3,88 (12,1 %), Basis
+0,84 / 2,24 / 6,77 (12,4 %), Handspur 0,82 / 1,87 / 3,14 (8,0 %).
+Roh-Knick 9,74° gegen 6,76° (It. 17) und 7,87° (Hand). 9,4 s je Wort.
+
+**(b) Wellen-Basis — nahtstetige kubische B-Spline-Verschiebungsbasis im
+Kettenlöser** (Hook A, Zweig `wellen-basis-hook-a`, Worktree
+`.claude/worktrees/wf_2eae5d7d-569-20`, ungemergt). `deltas = B @ c`, B
+die geklemmte kubische Entwurfsmatrix über die Saat-Bogenlänge, ein Block
+je PEN-ZUG (stetig über Buchstaben-Nähte, geschnitten nur an
+buchstaben-internen `stroke_starts`, Knoten alle Δs 0,25 xh); nur
+`unpack`/`_pack` ändern sich, Gradient Bᵀg; ein Ein-Anker-Zacken ist
+nicht im Parameterraum — MECHANISMUS, kein Strafterm. `--wave-spacing
+0.25` auf dem It.-17-Stapel (`--bar-bridge --chain-seed affine
+--seed-ramp --paper-weight 30 --kink-weight 2 --no-structure-guard`);
+405–1529 freie Anker → 69–272 Koeffizienten; 16,6 s je Wort. **Verdikt:
+teilweise** (Prüfer `partial`): drei von vier Tor-Hälften bestanden
+(Papier-Strecke −54 %, dtw-Median, Physik), die vierte gerissen —
+**Tinten-Umkehrungen +23 %** (162 → 200; 63 Wörter 592 → 745), in JEDER
+Strukturklasse (mid-arc 82 → 100, in-zone 60 → 69, graze 20 → 31) und
+auf jeder Sprosse (0,16: 16 · 223 · 14,12; 0,35: 19 · 188 · 13,37;
+`--wave-arc seed` 0,25: 20 · 177 · 15,79). Pflicht-Anker `das` +0,0782
+(0,0503 → 0,1285): das kohärente Feld kann eine falsch platzierte
+Affin-Saat nicht punktweise reparieren, es legt eine Sehne durchs Papier
+statt in die a-Schale. Physik vom Prüfer mit eigenen Sensoren bestätigt:
+Aus-und-zurück-Zacken **49 → 11 (−78 %)**, zweite Differenz je Sehne
+0,1834 → 0,1313, Ecken ≥ 90° 262 → 255 (die echten Feder-Ereignisse
+überleben), Spitzen > 0,005 xh 1 826 → 993; Gegenbefund: schlimmste
+Einzelspitze 0,0474 → 0,0861 xh (wenige GRÖSSERE Sprünge an Blockenden).
+Kumulativ komponieren die Runden Dehnung (Lipschitz bis 32,2/xh, Schritt
+2,06 xh in `Sporn`); die Saat-Bogen-Variante repariert die Physik
+(32 → 8, 2,06 → 0,72), nicht die Sensoren. Bewachtes Produktionspaar
+(Wächter AN beidseitig): 27 · 193 · 24,16 gegen frei-bewacht 19 · 166 ·
+34,71 — die Umkehrungen unter dem Wächter schlechter.
+
+**(c) Schlange — elastische Kurve neben der Kette** (Hook B,
+`tools/pairlab/schlange.py`, Zweig `wellen-schlange`, Worktree
+`…-569-19`, ungemergt). Je Wort die Rohrleitung von `follow_derived`
+(derive → K-C-Evidenz → `_grid_fits` → `_chainable_runs` → affine Saat →
+`_letter_spec(bar_bridge)`/`_connector_spec` → `_prepare_fields`),
+verschweißt nach der Assembler-Regel zu stiftunten-Kurven, h 0,8 px,
+Duktus-Ecken als Bruchknoten, semi-impliziter Schritt `x += τ·(I +
+ℓ⁴·D2ᵀD2)⁻¹·(F_img + F_cov + F_home + F_bend)` über σ 2 → 1 px. Drei
+Kohärenz-Mechanismen: Sobolev-/Metrik-Schritt (ändert den Weg, nicht die
+Fixpunkte) · Bogenlängen-Reparametrisierung mit Ecken als Bruchpunkten ·
+Biege-Energie β_e mit freier Eckenzeile. Erklärte Einstellung h 0,8 ·
+σ (2,1) · cov 1,0 · ℓ 7 · β_e 64 · γ 0,02 · τ 0,5 · Plateau 2 % ·
+`corner_halo` 0; `hit_cap` 0 in 222/222 Stufen; 19,5 s je Wort.
+**Verdikt: teilweise** (Prüfer `partial`): beide Sensoren mit Abstand
+gewonnen, das Lineal verloren — nach der Brief-Regel KEIN Ergebnis, was
+der Bau selbst so schreibt. Ablation: ℓ 1 + β_e 0 → 182
+Tinten-Umkehrungen, ℓ 7 + β_e 0 → 109, β_e 4 → 113, 64 → 78, 256 → 54 —
+die METRIK ist der Mechanismus, die Biege-Energie Feinschliff. Verlierer
+in drei Klassen: `das` +0,064 (a-Bauch von der affinen Saat übersprungen,
+wie It. 17), muß-Familie +0,03–0,04 (ß als eigener Zug ab der Oberlänge),
+Kapitale/W (`Wer` +0,020, `will` +0,013); Gewinner `die` 0,080 → 0,028,
+`die-2` 0,082 → 0,029, `laden` 0,075 → 0,059. 18 von 111 Kurven im
+63er-Lauf gestrandet — ALLE Diakritika (16 u-Bögen, 2 ü-Punkte).
+Prüfer-Eigensensor bei gemeinsamem Schritt 0,032 xh: Zickzack je xh
+**Basis 3,718 · It. 17 1,863 · Schlange 0,009**. Drei Prüfer-Funde, die
+der Bau nicht sagt: der Kohärenz-QUOTIENT ist durch den Nenner
+verfälscht (Verschiebung 0,96 px gegen 0,49 px der Kette), die zitierte
+Physik-Datei ist veraltet (β_e 4), und **β_e 64 biegt die eigene
+Vorregistrierung** — es strandet eine Kurve (u-Bogen in `unter`),
+regelkonform gewänne β_e 16 mit 105 · 5,34 xh. Unbenannter Handel: Bahn
+> 2 px neben dem Skelett 10,35 % → 1,54 %, nie besuchte Referenztinte
+9,67 % → 11,11 %. Ehrlich gebucht: die Zickzack-Kontrolle hat den BESTEN
+dtw-Delta-Median der Tabelle (−0,015) — das Lineal belohnt auf diesen
+Wörtern das Zittern.
+
+#### Die Zahlen (Papier-Umkehr · Tinten-Umkehr · Papier-Strecke xh; Lineal dev-19 gepaart)
+
+| Bau | 12 Wörter / 13 Zeilen | 63 Wörter | dtw-Median | p90 | aiou | gegen Basis | gegen It. 17 |
+|---|---|---|---|---|---|---|---|
+| Basis (Produktion) | 34 · 189 · 35,9 | 49 · 742 · 61,73 | 0,045881 | 0,088356 | 0,7660 | — | — |
+| It. 17 (Amtsinhaber) | 18 · 162 · 29,87 | 40 · 592 · 69,47 | 0,044431 | 0,083965 | 0,7894 | 13 : 6 | — |
+| **Tintenpfad** | **0 · 93 · 0,78** | **0 · 331 · 1,49** | 0,044230 | 0,090673 | 0,7867 | **7 : 12** (Δ-Median +0,0024, p 0,36) | Unentschieden |
+| Tintenpfad, 5 Schleifenzeilen im dev-Split | — | — | 0,0803 → **0,0293** | — | 0,6781 → 0,7960 | 5 : 0 (p 0,0625) | — |
+| Tintenpfad `tip_extend` 0,25 (AUS) | 0 · 93 · 1,32 | — | 0,0420 | 0,0919 | 0,7888 | 10 : 9 (Δ −0,0001) | — |
+| Tintenpfad JUMP 1,0 (Sehnen statt Absetzer: Läufe 26 → 20, Lifts 13 → 7) | 0 · 95 · 4,12 | — | identisch | — | — | — | — |
+| Tintenpfad ohne affine Saat | 0 · 159 · 2,66 | — | Δdtw5 −0,0106 (4 : 1) | — | — | 52 Läufe, 42 Lifts | — |
+| **Wellen-Basis** Δs 0,25 | 14 · 200 · 13,71 | 33 · 745 · 23,23 | 0,041403 | 0,089618 | 0,7978 | **15 : 4** (p 0,019 — reine MEDIAN-Aussage) | **10 : 9** (p 1,00), Mittel +0,0021, p90 +0,0057, worst 0,1107 → 0,1285, aiou 8 : 11 |
+| Wellen-Basis `--wave-arc seed` | 20 · 177 · 15,79 | — | 0,042118 | 0,090110 | 0,7916 | 11 : 8 (aiou 7 : 12); `das` 0,0503 → 0,1366 | — |
+| **Schlange** β_e 64 | **0 · 78 · 4,47** | 0 · 272 · 13,51 | 0,051445 | 0,124488 | 0,765428 | **6 : 13** (Δ +0,0034, p 0,167) | 2 : 17 (Δ +0,0054) |
+| Schlange β_e 4 (Erst-Vorgabe), 63 | — | 0 · 469 · 14,83 | 0,0516 | 0,1248 | — | 6 : 13; 19 gestrandet | — |
+| Schlange β_e-Sweep (12): 4 / 16 / 64 / 256 | 113 · 5,54 / **105 · 5,34** / 78 · 4,47 / 54 · 4,17 Tinte · xh; gestrandet 0 / 0 / 1 / 2 | | | | | | |
+| Schlange + `cov_soft_k 4` (AUS) | 96 · 4,88 | — | 0,0366 (5-Wort-Lineal 2 : 3 → 3 : 2) | — | — | Residuum 0,0104 → 0,0068 px, gestrandet 1 → 0 | — |
+
+**Das Auge (Prüfer, je 13 PNG):** der Tintenpfad sitzt auf jedem Wort
+mittig in der Tinte, die It.-17-Defekte (Papier-Gekritzel a→n in `han`,
+das Abwandern in `kann`) sind weg; Rest sind die ENDEN (`han`/`Sporn` n,
+k-Abstrich in `kann`, Auslauf von `und`/`regieren`). Die Wellen-Basis ist
+auf `streiten` `regieren` `unter` `die-2` `Soldaten` `han` `kann` sichtbar
+sauberer, `das` klar schlechter (Sehne durchs Papier, a-Bauch nie
+betreten), `fechten` bekommt einen neuen Papier-Sporn an der t/e-Naht.
+Schlange: nirgends zackt ein Punkt weg und kommt zurück; sichtbar bleiben
+Sehnen über blankes Papier an Nähten, der übersprungene a-Bauch in `das`,
+die nur am Oval gedeckte Kapitale `S`, die 18 gestrandeten Marken.
+
+#### Verdikt
+
+**Drei Physiken, ein Tor.** Alle drei Prüfer buchen `physics_coherent`
+mit EIGENEM Sensor; trotzdem besteht nur der Tintenpfad das Tor als
+Ganzes — Kohärenz allein kauft weder das Lineal noch die
+Tinten-Umkehrungen. Der Tintenpfad ist als PR #591 gemergt (auf Zuruf,
+ohne Adoption); Wellen-Basis und Schlange stehen ungemergt in ihren
+Worktrees. Die Tintenpfad-Route bekommt ihre Verfahrensseite
+([`verfahren-tintenpfad.md`](verfahren-tintenpfad.md)); Wellen-Basis ist
+ein Kette-Arm (Ledger [`verfahren-kette.md`](verfahren-kette.md)).
+Autor-Weichen offen: Lift gegen Chord (13 Lifts kaufen 0,78 xh, JUMP 1,0
+gibt 7 Lifts bei 4,12 — das Lineal trennt beide nicht, die Bilder schon),
+und ob `tip_extend` 0,25 eine Lesung oder eine Erfindung ist.
+
+#### Rettungswege (Register: [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.9)
+
+1. **Wellen-Basis:** dieselbe Basis auf die **Tintenpfad-Saat** setzen
+   statt auf die affine (ein kohärentes Feld repariert eine falsche Saat
+   nicht punktweise) · bedingte/geklemmte Saat (K-G) für `das`/`mit-2` ·
+   `--wave-arc seed` als EIGENER Arm (repariert die Physik, nicht die
+   Sensoren) · geteilter End-Koeffizient über Lifts, Schnitt bei Sehnen
+   > 4Δs (gegen die großen Einzelspitzen an Blockenden) · ein
+   wackel-bewusster Sensor, der Knicke gegen Wackeln entscheidet (Knicke
+   −37 %, Wackel-RMS +1,1° — der Prüfer misst die Gegenrichtung).
+2. **Schlange:** Zähler-Schranke als abstoßende Kraft für den a-Bauch
+   (`counter_field_for_case`, `reason == ''` geprüft) · K-E-Markenfelder
+   für die 18 gestrandeten Diakritika · ß-/Kapital-Zugstruktur (Naht
+   u→ß, W-Fuß) · `cov_soft_k 4` mit eigener Pre-Reg über 19/63 · die
+   regelkonforme Schlagzeile β_e 16 statt der gebogenen 64. Die drei
+   Verlierer-Klassen sind ein zerlegbarer Befund (Asymmetrie-Regel).
+3. **Tintenpfad (bestätigt, mit Debet 7 : 12, p90, Roh-Knick):**
+   `tip_extend_xh` 0,25 als Arm · Stumpf-Filter (Stränge < 0,25 xh an
+   Kreuzungen) statt `turn_cost` 30 (holt 74, kauft 25 Exkursionen) ·
+   Normalen-Fit über ±2 px als LESUNG, nie ein Tiefpass · der
+   ß-Stamm-Retrace, den die Komposition nicht schreibt, und die
+   u-Bogen-Marke 0,15 xh daneben (Kompositions-/Markenarbeit) ·
+   `cross_missing` 14 gegen 11 — die Zähler, nicht die Papier-Strecke,
+   sind hier das ehrliche Maß. Die Arme dazu: Eintrag „Tintenpfad-Arme
+   `sep11`".
+
+**Keine Ledger-Zeile:** keine Wort-Headline bewegt. Berichte:
+`scratchpad/coarse/wf-*.json` (Sitzung), Artefakte `temp/wellen-sep11/`
+(`tintenpfad-strang-*/README.md`, `wellen-basis-*/messung.txt`,
+`schlange-*/messung.txt`, `pruefer-*/`).
+
+### Tintenpfad-Arme `sep11` — fünf Arme, drei tragen, zwei ehrliche Negative; die Kombination als Kandidat (#592)
+
+**Typ · Verdikt: fünf Arme · drei tragen (Spitzen-Lesung, Normalen-Fit,
+Tinten-Brücke), zwei ehrliche Negative (Stummel-Filter, Doppelstrich-
+Evidenz) · Kombination Kandidat, nicht adoptiert.** Startschuss nach
+#591, wörtlich: „ok merge und optimieren, lass uns testen ob das das neue
+beste Verfahren wird." Regel des Abends: keine Glättung der Bahn, keine
+Erfindung von Tinte — jede Änderung ist entweder eine LESUNG der Tinte
+oder eine REGEL des Dekoders; die Physik-Bedingung der Welle bindet jeden
+Arm. Rückfallebene des Autors, wörtlich: „wenn das nicht klappt muss ich
+jedes Wort von Hand nachzeichnen." Fünf Arme parallel in eigenen
+Worktrees von `origin/tintenpfad-folger` @ `b792411` (Spitzen `8f4986a` ·
+Stummel `1bf498d` · Normalen-Fit `4ef091f` · Tinten-Brücke `e598584` ·
+Doppelstrich `7fdf94a`), je eigener Prüfer-Bericht (`reproduced`,
+`invents_ink` = false, `smooths_path` = false bei allen fünf); danach die
+Kombination, gemergt als PR #592 (`1879f3d`).
+
+**Vorregistrierung** je Arm im Kopf seiner `MESSUNG.md` unter
+`temp/tintenpfad-sep11/<arm>/`, datiert `sep11`, „written before the
+first number" — mit einer Liturgie-Abweichung: die Datei der
+Tinten-Brücke ist laut Zeitstempel (17:02:42) erst nach dem ersten
+Kandidatenlauf (16:50:33) geschrieben; inhaltlich vollständig und gegen
+dieselben Gates berichtet, aber das Artefakt BEWEIST die Vorab-Registrierung
+nicht. Die Kombination hat keine eigene Vorregistrierung (Fakten im
+PR-Text). Gates und Kills stehen je Arm in der Tabelle.
+
+**Umgebung.** Wurzel `ccb036a5eb20…` (`exported_at`
+2026-09-07T20:07:03+00:00), BLAS gepinnt auf jedem Lauf, Lineal dev-19
+gepaart, Sensoren `tools.tracebench.reversals`. Bezug: Tintenpfad #591 —
+13 Zeilen **0 · 93 · 0,78 xh** (Maske 0,74; Knick-Median 9,74°, Läufe 26,
+`paper_lifts` 7), 63 Wörter **0 · 331 · 1,49** (Maske 1,24), dev-19 dtw
+0,044230 · p90 0,090673 · aiou 0,7867, gegen Basis 7 : 12. Der
+versiegelte Satz wurde in keinem Arm und keiner Prüfung geladen.
+
+#### Die fünf Arme
+
+| Arm (Schalter) | Lesung oder Regel | Gates (Pre-Reg) | gemessen | Verdikt |
+|---|---|---|---|---|
+| **Spitzen-Lesung** (`tip_read=1`, Kappe `tip_read_cap_xh` 1,0; dazu `spur_at_ends=1`) | LESUNG: an jedem Lauf-Ende auf einem freien Strangende erst die eigenen ungelesenen Skelettpixel legen (rail), dann in 0,5-px-Schritten auf dem EDT-Grat weiter, bis die eingefrorene Maske endet (walk) — kein Maß, die Maske ist der Stopp; EDT-Anstieg > 0,25 px stoppt | (1) dev-19 nicht schlechter als #591 · (2) `paper_len` ≤ 1,0 auf 13 Zeilen, Papier-Umkehr 0 · (3) keine Erfindung: jeder angehängte Vertex in der Maske · (4) die neun Spitzen-Verluste schrumpfen | 13 Zeilen 0 · 91 · **1,32** (Maske 0,76 gegen 0,74); 63: 0 · 330 · 4,50 (Maske 1,24 = 1,24); dev-19 **0,041131** · 0,091826 · 0,7886, gegen #591 **13 : 6** (Δ −0,001035, p 0,167), gegen Basis 10 : 9; 194 von 240 Lauf-Enden gelesen, rail 630/630 + walk 933/933 in der Maske; erstes Zehntel 0,0459 → 0,0384, letztes 0,0558 → 0,0383; alle neun Verluste schrumpfen. Prüfer: Bahn +2,7 % (24,2 xh rail, 15,7 walk); Hand-Spitzen nähern sich 0,1481 → 0,0492 xh (19 : 0), Kandidaten-Spitzen entfernen sich 0,0327 → 0,0893 (0 : 19) | **positiv mit zwei benannten Fehlschlägen** (Prüfer `partial`, in die Kombination): Gate 2 fällt wie geschrieben (1,32 > 1,0 im Grau), ein resampelter Vertex von 1 938 rundet auf Papier. `spur_at_ends` ist inert (3 Sporne auf 13 Zeilen, keine Zahl bewegt sich — aber NICHT strichidentisch: `unter` 2 Sporne, 22,86 → 22,91 xh). Sichtbarer Rest: an runden Strichkappen hakt der Gang über die Kappe |
+| **Stummel-Filter** (`stub_xh=0.25`) | REGEL: offene Stränge < `stub_xh`·xh mit einem Ende an einer Verzweigung vom Brett des Dekoders nehmen; ihre Tinte zählt als unbesucht | (1) Tinten-Umkehrungen ≤ 80 · (2) Brücken-Exkursionen Σ ≤ 19 · (3) dev-19 nicht schlechter · (4) `retrace_missing` ≤ 3 | Bahn **byte-identisch** zu #591 auf 13/13 und 63/63 (0,20 und 0,25); 15 absorbierte Stummel (0,15–0,23 xh, Σ 2,914 xh), kein dev-Wort; Dosis 0,35: Haarnadeln 91 → 93, `paper_len` 0,78 → 0,80. Widerlegung an der Quelle: von 91 Haarnadeln sitzt KEINE auf einem Strang < 0,5 xh (Minimum 0,69, Median 3,37); 38 sind Wenden ≤ 0,10 xh vor einem Strangende (Sütterlin-Spitzen: e 12, n 10, t 5), 53 mitten im Strang | **ehrliches Negativ** (Prüfer `confirmed`): no-op, Hypothese „93 statt 74 = Preis der Stummel" widerlegt; Code bleibt als default-aus Schalter samt Test. Wertvollster Nebenbefund: **die Hand schreibt auf dev-19 selbst 47 Tinten-Umkehrungen, der Tintenpfad 79 — der Defekt ist der ÜBERSCHUSS +32** (`unter` +7 · `das`/`laden`/`zwei` +4 · `und`/`mit-2` +3), nicht die Rohzahl 93 |
+| **Normalen-Fit** (`rail=tentfit` + `edt_upsample=4`) | LESUNG: Kleinste-Quadrate-Zelt `a − b·|x − δ|` über ±2 px entlang der Normalen, auf einem viermal feineren Raster derselben Distanztransformation (Crop-Grau bilinear, mit der eigenen adaptiven Schwelle der Maske geschnitten, nur im Randpixelband); Pixel bewegt sich nur auf seiner Normalen, Kappe 0,75 px; kein Tiefpass | (1) Knick-Median roh < 9,74° · (2) In-Masken-Anteil ≤ 0,5 Punkte schlechter · (3) dev-19 Δ-Median ≤ +0,0005, besser ≥ schlechter · (4) Zickzack sinkt. Auswahlregel deklariert: Schlagzeile ist die Primärzeile, Kontrollzeilen nie befördert | Knick **9,74° → 8,03°** (13; 63: 9,22° → 7,41°), auf jeder Zeile; Zickzack 2,578 → 2,453; In-Maske 99,80 % = 99,80 %; 0 · 98 · 0,74 (63: 0 · 332 · 1,50); dev-19 0,043704 · 0,089605 · 0,7794, gegen #591 **15 : 4** (Δ −0,0006, p 0,019). Debets: Knick-p90 35,3° → 38,6°, Wenden > 30° 5,2 → 5,9 %, aiou-Median −0,0073, `lift_delta_total` 3 → 5, zwei sichtbare falsche Absetzer (`will`, `Galoppieren`). Kontrollen: der WÖRTLICHE Arm (±2-px-Fit auf dem BINÄREN EDT) ist ein sauberes Negativ (Knick 10,68°, Zickzack 3,346 — „ein breiteres Lesen einer Treppe ist dieselbe Treppe"); `edt_upsample=4` allein ist auf jeder Physikzeile marginal besser (7,84°, Zickzack 2,222, Maske 99,828 %), aber NIE durchs Lineal gelaufen. Prüfer-Falsifikation der Glättungs-These: ein gleich getrimmter Gauß-Tiefpass senkt turnRMS 21 % und hfCurv 26 %, der Arm HEBT beide (18,53 → 18,79 / 0,3085 → 0,3141) — Neuregistrierung auf einen besser aufgelösten Grat | **positiv, alle vier Gates** (Prüfer `confirmed`, in die Kombination). Scope-Abweichung für den Autor: der Träger des Effekts ist das feinere Raster aus dem GRAU (~2 % flächengrößer als die Maske, innerhalb ihres Dilatationsbands) — ist das noch „eine Lesung der Tinte"? Und ob die schlankere Einstellung allein getragen wird (eine fehlende Lineal-Messung) |
+| **Tinten-Brücke** (`ink_bridge_xh=1.0`, margin 0,25 · share 0,6 · band 1 px) | REGEL: ein Dekoder-Absetzer wird nur zur Sehne, wenn das Crop-Grau quer über die Lücke schwache Tinte liest (Papier-/Tintenpegel wie `reversals._paper_test`); jede geprüfte Lücke mit Verdikt im Artefakt | (1) `paper_lifts` < 7, Läufe < 26 · (2) Strecke ≤ 1,5 xh, Papier-Umkehr 0 · (3) dev-19 nicht schlechter · (4) Bilder `kann` `han` `regieren` `Soldaten` · (5) Byte-Identität des Defaults. Kill (a): keine geprüfte Lücke besteht | 13 Zeilen `paper_lifts` 7 → 6, Läufe 26 → 25, 1 Brücke (`haben`); 63: 9 → 7, 120 → 118, **2 Brücken von 9 geprüften** (`haben` 0,370 xh, `schießen` 0,382, beide ganz in der Maske); Sensoren und dev-19 unbewegt (19 Unentschieden). Die sieben abgelehnten Lücken sind gemessenes Papier (`han` −0,00/+0,02, `kann` +0,04, `regieren` 1–2 +0,01/+0,00, `Silber` +0,03; `regieren` 3 +0,24 und `Sporn` +0,12 sind Tönungen) | **neutral** (Prüfer `confirmed`, in die Kombination, „nie als Lineal-Gewinn buchen"). Die Antwort auf die Frage des Briefs ist eine LESUNG: über k→a (`kann`), a→n (`han`) und die `regieren`-Lücken liegt kein Haarstrich — JUMP 1,0 hatte dort Sehnen ERFUNDEN; `kann`/`regieren` sind ein Abdeckungsproblem (k-Auslauf nie geboardet, `ink_unvisited_share` 0,096). Prüfer-Vorbehalt: `paper_samples < 2 → bridged` lässt eine Sehne ohne Grau-Lesung durch |
+| **Doppelstrich-Evidenz** (`double_ink_ratio=1.4`, `double_ink_min_xh=0.5`) | Evidenz-Erhebung ZUERST (Breite je Strang relativ zur Federbreite, Grau je Strang), dann Pre-Reg: wo ein Strang über ≥ 0,5 xh breiter als 1,4 × Feder ist, fährt die Feder an einem Saat-Absetzer auf der Schiene zurück statt abzusetzen | (1) `retrace_missing` auf `muß` ×3 sinkt (1·1·1) · (2) deren dtw sinkt · (3) die übrigen 16 Zeilen byte-identisch · (4) Default-Aus byte-identisch. Kill (a): die Evidenz feuert bei 1,4 nicht → Negativ auf der PRÄMISSE | Evidenz feuert auf **0 von 63 Wörtern**: die drei ß-Stämme lesen 1,00–1,33 × Feder in ganzen Pixelschritten (Feder 5,66 px bei xh 30, 6,00 bei 31), das Grau trägt nichts (+0,00…+0,08 des Kontrasts — die Platte ist gedruckt, der Retrace liegt exakt auf dem Abstrich); bei 1,25 feuert sie auf 6 Strängen in 6 Wörtern, fünf davon t-/Anstrich-Verschmelzungen. Bahn bei 1,4 byte-identisch zu AUS. Der 63er-Lauf des Arms wurde vom Harness abgeschnitten (bei `zum`), der Prüfer hat die Lücke geschlossen | **ehrliches Negativ auf der Prämisse** (Prüfer `partial`, NICHT in #592). Rettungsweg gebaut und vom Prüfer gemessen: die reine Dekoder-Regel `double_ink_ratio=1.0` — Tabelle unten |
+
+**`double_ink_ratio=1.0` (Prüfer-Nachmessung, 63 Wörter):** 7 Rückfahrten
+(`muß` ×3, `Pulver`, `daß`, `schießen`, `Einen`); dev-19 gegen #591 dtw
+0,044230 → **0,042994**, p90 0,090673 → **0,053472**, `muß` 0,112893 →
+0,056912, `retrace_missing` 3 → 0, `lift_delta_total` 3 → 0,
+`retrace_arc_ratio`-Median 0,8657 → 0,9769, aiou unverändert; 3 : 0
+(`muß` −0,0560, `muß-2` −0,0606, `muß-3` −0,0572), 16 Zeilen
+bit-identisch; gegen Basis 9 : 10 (Δ −0,007155); Tinten-Umkehrungen 331 →
+338. Das benannte Risiko (t-Balken in `mit`/`macht`) trat nicht ein. **Der
+einzige Hebel der Runde, der das eine Maß repariert, in dem der Tintenpfad
+schlechter als die Produktion ist** — aber NACH dem Sehen der muß-Bilder
+gewählt, also bestätigend, nicht vorregistriert; 4 der 7 Treffer ohne
+Handspur im dev-Split, `Einen` im versiegelten Satz. Eigene Pre-Reg vor
+jeder Adoption.
+
+#### Die Kombination (PR #592): `tip_read=1 rail=tentfit edt_upsample=4 ink_bridge_xh=1.0`
+
+| | Papier · Tinte · Strecke | Maske | Knick | Läufe / `paper_lifts` |
+|---|---|---|---|---|
+| 13 Zeilen | 0 · 95 · 1,34 | 0,76 | 8,3° (Median der Zeilenmediane 8,32) | 26 / 7, 1 Brücke |
+| 63 Wörter | 0 · 330 · 4,77 (Basis 49 Papier-Umkehrungen) | 1,32 | — | 119 / 8, 2 Brücken; 111,0 s |
+| LOO ohne Spitzen-Lesung (13) | 0 · 96 · 0,74 | | 8,41° | 26 / 7 |
+| LOO ohne Normalen-Fit (13) | 0 · 91 · 1,32 | | 9,45° | 25 / 6 |
+| LOO ohne Tinten-Brücke (13) | 0 · 95 · 1,36 | | 8,32° | 27 / 8 |
+
+dev-19: dtw-Median **0,041356** · p90 **0,091040** · aiou **0,7876**,
+`cross` 13/2, `retrace` 5/5, `lift_delta_total` 4, `retrace_arc_ratio`
+0,8403. Gepaart: **18 : 1 gegen #591** (p 7,6·10⁻⁵, einzige
+Verschlechterung `muß-3` +0,000552) · **9 besser : 10 schlechter gegen
+die Basis** (Δ-Median +0,000406) · **10 : 9 gegen It. 18** (Δ −0,001542).
+**Zahlendreher im PR-Text #592 (und im Brief):** dort steht „10 : 9 gegen
+Basis, 9 : 10 gegen It. 18" — aus `kombination/arm63/tb-dev.json` gegen
+`tb/base-dev.json` bzw. `best3-dev.json` nachgerechnet ist es umgekehrt;
+die Prosa desselben Absatzes („six win … ten lose") ist korrekt. Die
+Gewinner: `die-2` −0,053205 · `die` −0,052083 · `unter` −0,035920 ·
+`laden` −0,031736 · `das` −0,021944 · `zwei` −0,016674 · `Galoppieren`
+−0,008065 · `und-4` −0,004347 · `und-3` −0,001519; die Verlierer 0,0004
+… 0,0053, angeführt von `muß` +0,005267 (das schlechteste Wort, 0,111639
+— der ß-Stamm-Retrace, den die Komposition nicht schreibt), `muß-3`
++0,002963, `mit-2` +0,002649, `muß-2` +0,002531, `Wer` +0,002396. Default
+ohne Schalter strichidentisch 13/13 zu #591; Suite 2 738 bestanden; nach
+dem Merge auf `main` reproduziert (`ref-main/all63`, 22:06–22:10:
+0,041356 · 0,091040 · 0,7876 identisch).
+
+#### Verdikt
+
+**Kandidat, nicht adoptiert** — ausdrücklich ohne Adoption, die formale
+Runde wartet auf die Neubasis (`a4eb48420ccb…`). 18 : 1 gegen die erste
+Fassung, gegen die Produktions-Basis unentschieden: die zehn Verlierer
+sind eine Zerlegungsaufgabe (Asymmetrie-Regel), drei davon die
+muß-Zeilen. Die eine Zweideutigkeit der Runde ist das Paar Grau/Maske:
+der Grau-Papiertest zählt die blasse Tinte an den Strichspitzen als
+Papier, die Maske hält sie für Tinte (4,77 gegen 1,32 xh). Im
+Workflow-Ergebnis stehen VIER Arme für die Kombination (auch Doppelstrich
+bei 1,0); in #592 sind es DREI, der ß-Retrace ist benannter Folge-Arm.
+
+#### Rettungswege (Register: [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.9)
+
+1. **Stummel-Filter:** Überschuss über die Hand als Sensor (47 gegen 79,
+   +32; Pre-Reg auf ≤ +20, kein Wort mehr als 1 schlechter) ·
+   saat-bedingte Haarnadel-Regel (Haarnadel ohne Saat-Umkehr binnen ±0,3
+   xh als Absetz-Ereignis bepreisen, Duktus-Retraces unangetastet) ·
+   Spitzen-Paarung in Stufe 1 (38 von 91 Haarnadeln sind ungepaarte
+   Spitzen an Strangenden; ändert den Strangsatz) · die +32 je Wort mit
+   Bildern zerlegen, `unter` +7 zuerst.
+2. **Doppelstrich-Evidenz:** die Dekoder-Regel `ratio 1,0` mit eigener
+   Pre-Reg · die authorierte ß-Vorlage trägt den Stamm hinunter UND
+   hinauf (Autor-Glyphe, Todoist) · Unterpixel-Breite — nur lohnend,
+   wenn eine gedruckte Platte das Signal trägt (`muß` liest 1,00).
+3. **Tinten-Brücke (neutral):** R1 unbesuchte Stränge zwischen die
+   Lauf-Enden eines Absetzers einfügen (Gate `kann` 0,096 → < 0,03) · R2
+   Abdeckungspreis im Viterbi · R3 `han`/`Sporn`/`Silber` bleiben
+   Absetzer (Papier bis ±0,03 des Kontrasts — nur die Handspur könnte das
+   umstoßen, eine Duktus-Entscheidung) · R4 Grat- statt Anteils-Test ·
+   Kontiguitäts-Wächter für `paper_samples < 2`.
+4. **Spitzen-Lesung (Gate 2):** NICHT `--paper mask` (zirkulär — die
+   Maske IST das Stoppkriterium, 63 Wörter 1,24 gegen 1,24) · Grauwert-
+   Stopp einen Schritt früher (Pre-Reg `paper_len` ≤ 1,0 UND
+   Spitzenabstand zur Hand ≤ 0,05 xh) · Raster-Ecke: den Gang erst nach
+   dem Resampling ausgeben oder den Papier-Vertex schnappen ·
+   `spur_at_ends` streichen, rail unbedingt behalten.
+5. **Normalen-Fit (Debets):** feine Lesung um Verzweigung/Spitze
+   aussetzen · falls der Autor das Grau zurückweist: `edt_upsample` auf
+   der binären Maske (vorhergesagt ohne Gewinn) · `edt_upsample=4` allein
+   durchs Lineal · die Absetz-Preise neu bepreisen (`will`,
+   `Galoppieren`).
+6. **Kombination (9 : 10):** die Verlierer zerlegen statt verwerfen (drei
+   muß-Zeilen → `ratio 1,0`, p90 dort 0,0535; sieben um 0,0004…0,0027 an
+   Anstrich oder u-Bogen-Marke) · Papier-Strecke in BEIDEN Lesungen
+   berichten · die formale Runde erst nach #589.
+
+**Keine Ledger-Zeile:** keine Wort-Headline bewegt; Routen-Ledger in
+[`verfahren-tintenpfad.md`](verfahren-tintenpfad.md). Artefakte
+`temp/tintenpfad-sep11/` (je Arm `MESSUNG.md`, `kombination/`,
+`ref-main/`).
