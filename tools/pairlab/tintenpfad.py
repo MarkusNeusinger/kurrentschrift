@@ -202,6 +202,15 @@ class TintenpfadWeights:
     # `tip_read_cap_xh` is a safety cap against a runaway walk, counted when it binds.
     tip_read: bool = False
     tip_read_cap_xh: float = 1.0
+    # Haken-Spitze (arm A of the „Ecken" round, off by default): the tip
+    # reading applied at a HAIRPIN on one strand. The decoder turns at the
+    # last boarded strand pixel, and the thinning stops half a nib short of
+    # the ink's tip, so the corner is cut off and the turn comes too early.
+    # With this on, the strand's rest beyond the turning pixel and the
+    # EDT-ridge walk to the end of the mask (`read_tip`, the same rule as at a
+    # run end, capped by `tip_read_cap_xh`) are laid out AND back — a reading
+    # of the ink the pen must have covered, never a point off the mask.
+    hairpin_tip: bool = False
     # Spurs at strand ENDS are the stroke's continuation the thinning broke off
     # (an Anstrich), not a lateral artefact: with this on, a node whose non-spur
     # edges number at most one keeps its spurs instead of pruning them.
@@ -1067,13 +1076,18 @@ def assemble(
     xh: float,
     weights: TintenpfadWeights,
     ink_test: Callable[[np.ndarray, np.ndarray], dict[str, Any]] | None = None,
+    hairpin_tip: Callable[[int, int, int], np.ndarray] | None = None,
 ) -> tuple[list[np.ndarray], list[np.ndarray], list[np.ndarray], list[np.ndarray], dict[str, Any]]:
     """Decoded states → pen runs of strand pixels (+ bridges), each vertex with
-    its slot label, its kind (0 rail · 1 bridge) and the seed sample that laid it.
+    its slot label, its kind (0 rail · 1 bridge · 2 tip) and the seed sample
+    that laid it.
 
     With `ink_test` (the Tinten-Brücke, `ink_bridge_xh > 0`) a would-be lift
     whose gap is within `ink_bridge_xh` is bridged when the test says the
-    plate carries faint ink across it; every tested gap is recorded."""
+    plate carries faint ink across it; every tested gap is recorded. With
+    `hairpin_tip` (the Haken-Spitze, `HairpinTipReader`) every hairpin on one
+    strand is handed its turning pixel and travel direction, and the vertices
+    it returns — the tip beyond the turn, out and back — are laid there."""
     runs: list[list[np.ndarray]] = []
     labels: list[list[int]] = []
     kinds: list[list[int]] = []
@@ -1193,8 +1207,22 @@ def assemble(
         if s == ps:
             rng, hairpin = rail_between(s, pi, i, pd, d)
             n_hairpin += int(hairpin)
+            tip_pts = np.zeros((0, 2))
+            turn_at_i = False
+            if hairpin and hairpin_tip is not None and not strands[s].closed:
+                # The pen turns at whichever of the two boarded pixels lies
+                # further along the OLD travel direction; the tip is read
+                # beyond that pixel, and laid where the turn happens.
+                turn_at_i = (i - pi) * pd > 0
+                tip_pts = hairpin_tip(s, i if turn_at_i else pi, pd)
+            if not turn_at_i:
+                for q in tip_pts:
+                    emit(q, k, 2)
             for q in rng:
                 emit(pts[q], k, 0)
+            if turn_at_i:
+                for q in tip_pts:
+                    emit(q, k, 2)
         else:
             n_jump += 1
             bridge_to(prev, st, k)
@@ -1380,6 +1408,106 @@ def tip_tail(strand: Strand, i: int, travel: np.ndarray, visited: tuple[int, int
     return rng, outward, ""
 
 
+def _visited_ranges(
+    states: Sequence[tuple[int, int, int] | None], also: Sequence[tuple[int, int]] = ()
+) -> dict[int, tuple[int, int]]:
+    """Per strand the (lowest, highest) pixel index any state boarded — plus
+    the `also` pixels, which count as boarded too."""
+    visited: dict[int, tuple[int, int]] = {}
+    for st in states:
+        if st is None:
+            continue
+        lo, hi = visited.get(st[0], (st[1], st[1]))
+        visited[st[0]] = (min(lo, st[1]), max(hi, st[1]))
+    for si, pi in also:
+        lo, hi = visited.get(si, (pi, pi))
+        visited[si] = (min(lo, pi), max(hi, pi))
+    return visited
+
+
+def _in_mask_count(mask: np.ndarray, pts: np.ndarray) -> int:
+    h, w = mask.shape
+    ix = np.rint(pts[:, 0]).astype(int)
+    iy = np.rint(pts[:, 1]).astype(int)
+    ok = (ix >= 0) & (ix < w) & (iy >= 0) & (iy < h)
+    hit = np.zeros(len(pts), dtype=bool)
+    hit[ok] = mask[iy[ok], ix[ok]]
+    return int(hit.sum())
+
+
+class HairpinTipReader:
+    """The tip reading at a HAIRPIN (arm „Haken-Spitze"), called by `assemble`
+    with the strand, the turning pixel and the travel direction of every
+    same-strand hairpin.
+
+    The rule is the run end's own (`tip_tail` + `read_tip`): the strand's
+    unvisited rest beyond the turning pixel up to a FREE end, then the
+    EDT-ridge walk to the end of the mask; the vertices come back out AND
+    back — the pen went to the tip and returned over the same ink. A junction
+    end, a node on the rest or a pixel some sample boarded beyond the turn
+    blocks the reading, counted by reason. The strand ends read here are
+    `claimed`, so the run-end reading afterwards never lays them twice.
+    """
+
+    def __init__(
+        self, strands: Sequence[Strand], states: Sequence[tuple[int, int, int] | None], mask: np.ndarray, cap_px: float
+    ) -> None:
+        self.strands = strands
+        self.mask = np.asarray(mask, dtype=bool)
+        self.edt = distance_transform_edt(self.mask)
+        self.cap_px = cap_px
+        self.visited = _visited_ranges(states)
+        self.claimed: list[tuple[int, int]] = []
+        self.rail_lengths: list[float] = []
+        self.walk_lengths: list[float] = []
+        self.diag: dict[str, Any] = {
+            "hairpins": 0,
+            "read": 0,
+            "blocked": {"not_free": 0, "junction": 0, "visited": 0},
+            "rail_points": 0,
+            "rail_points_in_mask": 0,
+            "walk_points": 0,
+            "walk_points_in_mask": 0,
+            "stops": {"mask": 0, "rise": 0, "cap": 0, "edge": 0},
+        }
+
+    def __call__(self, s: int, i: int, travel_dir: int) -> np.ndarray:
+        """The vertices to lay at the turn: the tip beyond pixel `i` of strand
+        `s` in travel direction `travel_dir`, out and back (ending on `i`'s
+        pixel again), or none when the tail is not readable."""
+        strand = self.strands[s]
+        self.diag["hairpins"] += 1
+        rng, outward, why = tip_tail(strand, i, strand.tan[i] * travel_dir, self.visited.get(s, (i, i)))
+        if why:
+            self.diag["blocked"][why] += 1
+            return np.zeros((0, 2))
+        rail = strand.points[rng] if rng else np.zeros((0, 2))
+        tip_start = rail[-1] if len(rail) else strand.points[i]
+        walk, stop = read_tip(tip_start, outward, self.mask, self.edt, self.cap_px)
+        self.diag["stops"][stop] += 1
+        out = np.vstack([rail, walk])
+        if not len(out):
+            return out
+        self.diag["read"] += 1
+        self.diag["rail_points"] += len(rail)
+        self.diag["rail_points_in_mask"] += _in_mask_count(self.mask, rail) if len(rail) else 0
+        self.diag["walk_points"] += len(walk)
+        self.diag["walk_points_in_mask"] += _in_mask_count(self.mask, walk) if len(walk) else 0
+        self.rail_lengths.append(polyline_len(np.vstack([strand.points[i][None, :], rail])) if len(rail) else 0.0)
+        self.walk_lengths.append(polyline_len(np.vstack([tip_start[None, :], walk])) if len(walk) else 0.0)
+        self.claimed.append((s, rng[-1] if rng else i))
+        return np.vstack([out, out[-2::-1], strand.points[i][None, :]])
+
+    def report(self) -> dict[str, Any]:
+        return {
+            **self.diag,
+            "rail_len_px_max": round(max(self.rail_lengths), 2) if self.rail_lengths else 0.0,
+            "rail_len_px_total": round(sum(self.rail_lengths), 2),
+            "walk_len_px_max": round(max(self.walk_lengths), 2) if self.walk_lengths else 0.0,
+            "walk_len_px_total": round(sum(self.walk_lengths), 2),
+        }
+
+
 def read_tips(
     runs: list[np.ndarray],
     labels: list[np.ndarray],
@@ -1389,6 +1517,8 @@ def read_tips(
     states: Sequence[tuple[int, int, int] | None],
     mask: np.ndarray,
     cap_px: float,
+    *,
+    claimed: Sequence[tuple[int, int]] = (),
 ) -> dict[str, Any]:
     """Both ends of every run read on to the ink's tip, in place.
 
@@ -1399,33 +1529,23 @@ def read_tips(
     (`rail_points`, skeleton pixels), and from the free end the EDT-ridge walk
     of `read_tip` reads on to the end of the mask (`walk_points`). Tip vertices
     carry kind 2; every appended vertex is checked against the mask, and the
-    counts returned are the proof that nothing was invented.
+    counts returned are the proof that nothing was invented. `claimed` pixels
+    (the strand ends a `HairpinTipReader` already laid) count as visited.
     """
     edt = distance_transform_edt(np.asarray(mask, dtype=bool))
     pixel_of: dict[tuple[float, float], list[tuple[int, int]]] = {}
     for si, s in enumerate(strands):
         for pi, p in enumerate(s.points):
             pixel_of.setdefault(_pixel_key(p), []).append((si, pi))
-    visited: dict[int, tuple[int, int]] = {}
-    for st in states:
-        if st is None:
-            continue
-        lo, hi = visited.get(st[0], (st[1], st[1]))
-        visited[st[0]] = (min(lo, st[1]), max(hi, st[1]))
+    visited = _visited_ranges(states, claimed)
     stops = {"mask": 0, "rise": 0, "cap": 0, "edge": 0}
     blocked = {"not_free": 0, "junction": 0, "visited": 0, "ambiguous": 0}
     ends_read = rail_added = rail_inside = walk_added = walk_inside = 0
     rail_lengths: list[float] = []
     walk_lengths: list[float] = []
-    h, w = mask.shape
 
     def in_mask(pts: np.ndarray) -> int:
-        ix = np.rint(pts[:, 0]).astype(int)
-        iy = np.rint(pts[:, 1]).astype(int)
-        ok = (ix >= 0) & (ix < w) & (iy >= 0) & (iy < h)
-        hit = np.zeros(len(pts), dtype=bool)
-        hit[ok] = mask[iy[ok], ix[ok]]
-        return int(hit.sum())
+        return _in_mask_count(mask, pts)
 
     for ri, r in enumerate(runs):
         for at_end in (False, True):
@@ -1747,8 +1867,14 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
                 band_px=weights.ink_bridge_band_px,
             )
 
-    runs, labels, kinds, samples, counts = assemble(strands, states, seed, xh, weights, ink_test)
+    mask = np.asarray(case_ev.mask, dtype=bool)
+    hairpin_reader = None
+    if weights.hairpin_tip:
+        hairpin_reader = HairpinTipReader(strands, states, mask, weights.tip_read_cap_xh * xh)
+    runs, labels, kinds, samples, counts = assemble(strands, states, seed, xh, weights, ink_test, hairpin_reader)
     diag.update(counts)
+    if hairpin_reader is not None:
+        diag["hairpin_tip"] = hairpin_reader.report()
     if not runs:
         return {
             **base,
@@ -1759,9 +1885,18 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
             "detail": "nothing decoded onto the ink",
             "meta": {"tintenpfad": diag},
         }
-    mask = np.asarray(case_ev.mask, dtype=bool)
     if weights.tip_read:
-        diag["tip_read"] = read_tips(runs, labels, kinds, samples, strands, states, mask, weights.tip_read_cap_xh * xh)
+        diag["tip_read"] = read_tips(
+            runs,
+            labels,
+            kinds,
+            samples,
+            strands,
+            states,
+            mask,
+            weights.tip_read_cap_xh * xh,
+            claimed=hairpin_reader.claimed if hairpin_reader is not None else (),
+        )
     if weights.tip_extend_xh > 0.0:
         edt = distance_transform_edt(mask)
         diag["tips_extended"] = extend_tips(runs, labels, kinds, samples, edt, weights.tip_extend_xh * xh)
@@ -1788,6 +1923,12 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
         ok = (ix >= 0) & (ix < mask.shape[1]) & (iy >= 0) & (iy < mask.shape[0])
         diag["tip_read"]["resampled_total"] = int(len(tip_pts))
         diag["tip_read"]["resampled_in_mask"] = int(mask[iy[ok], ix[ok]].sum())
+    if hairpin_reader is not None:
+        # The same proof for the hairpin tips: every kind-2 vertex of the
+        # delivered runs (run ends and hairpins together) sits on ink.
+        tip_pts = np.vstack([r[np.asarray(k) == 2] for r, k in zip(runs, kinds, strict=True)] or [np.zeros((0, 2))])
+        diag["hairpin_tip"]["resampled_total"] = int(len(tip_pts))
+        diag["hairpin_tip"]["resampled_in_mask"] = _in_mask_count(mask, tip_pts)
     reg = _registration(result)
     units = [_px_to_word_units(r[:, 0], r[:, 1], xh, reg) for r in runs]
     visited = {st[0] for st in states if st is not None}
@@ -1896,6 +2037,12 @@ def _run_one(job: tuple[WordCase, TintenpfadWeights]) -> dict[str, Any]:
                 f" rail +{d['tip_read']['rail_points']} walk +{d['tip_read']['walk_points']}"
                 f" in-mask {d['tip_read']['walk_points_in_mask']}"
                 if "tip_read" in d
+                else ""
+            )
+            + (
+                f" haken {d['hairpin_tip']['read']}/{d['hairpin_tip']['hairpins']}"
+                f" rail +{d['hairpin_tip']['rail_points']} walk +{d['hairpin_tip']['walk_points']}"
+                if "hairpin_tip" in d
                 else ""
             ),
             flush=True,
@@ -2052,6 +2199,7 @@ __all__ = [
     "TINTENPFAD_ARTIFACT_VERSION",
     "TINTENPFAD_TOOL_NAME",
     "EdtField",
+    "HairpinTipReader",
     "Seed",
     "Strand",
     "TintenpfadWeights",

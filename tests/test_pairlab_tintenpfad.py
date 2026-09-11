@@ -22,6 +22,7 @@ from tools.pairlab.tintenpfad import (
     LEGACY_P5,
     SUBPIXEL_MAX_PX,
     EdtField,
+    HairpinTipReader,
     Seed,
     TintenpfadWeights,
     assemble,
@@ -208,6 +209,97 @@ def test_a_junction_end_and_a_visited_tail_are_never_read() -> None:
     # The same tail with a state beyond `i` on it: already laid by another run.
     _, _, why = tip_tail(stem, i, toward_tip / np.linalg.norm(toward_tip), (0, len(stem.points) - 1))
     assert why == "visited"
+
+
+def _hairpin_on_a_capsule(hairpin_tip: bool):
+    """A seed that rides a capsule stroke out to 8 px short of its tip and
+    back — one hairpin on one strand — decoded and assembled with or without
+    the Haken-Spitze."""
+    mask, origin, direction, _ = _slanted_stroke(angle_deg=0.0)
+    weights = TintenpfadWeights(rail="subpixel", tip_read=True, hairpin_tip=hairpin_tip, resample_step_xh=0.0)
+    strands = strands_of(skeletonize(mask), XH, weights, {})
+    refine_strands(strands, mask, weights)
+    far = origin + direction * 87.0
+    seed = _seed_along(np.array([origin + direction * 20.0, far, origin + direction * 20.0]))
+    states, _, _ = decode_with_hysteresis(strands, seed, XH, weights)
+    reader = HairpinTipReader(strands, states, mask, XH) if hairpin_tip else None
+    runs, labels, kinds, samples, counts = assemble(strands, states, seed, XH, weights, None, reader)
+    return mask, origin, direction, strands, states, runs, labels, kinds, samples, counts, reader
+
+
+def test_the_hairpin_tip_reads_the_turn_to_the_end_of_the_mask_out_and_back() -> None:
+    """Without the arm the hairpin turns where the decoder's last boarded pixel
+    is; with it the turn is read on along the strand's rest and the EDT ridge
+    to within a pixel of the mask's tip and back over the same vertices —
+    every added vertex on ink, the run's ends untouched."""
+    _, origin, direction, _, _, runs_off, _, kinds_off, _, counts_off, _ = _hairpin_on_a_capsule(False)
+    mask, _, _, _, _, runs, labels, kinds, samples, counts, reader = _hairpin_on_a_capsule(True)
+    assert counts_off["hairpins"] == 1 and counts["hairpins"] == 1 and len(runs_off) == len(runs) == 1
+    assert not (kinds_off[0] == 2).any()
+    along_off = (runs_off[0] - origin) @ direction
+    along = (runs[0] - origin) @ direction
+    # The capsule's tip cap reaches along = 97.5; the decoder turned ~10 px short of it.
+    assert along_off.max() < 90.0
+    assert along.max() > 97.5 - 1.0
+    diag = reader.report()
+    assert diag["hairpins"] == 1 and diag["read"] == 1
+    assert diag["blocked"] == {"not_free": 0, "junction": 0, "visited": 0}
+    assert diag["rail_points"] > 0 and diag["rail_points_in_mask"] == diag["rail_points"]
+    assert diag["walk_points"] > 0 and diag["walk_points_in_mask"] == diag["walk_points"]
+    assert diag["stops"] == {"mask": 1, "rise": 0, "cap": 0, "edge": 0}
+    tip = runs[0][kinds[0] == 2]
+    # Out and back over the SAME vertices: the tip sequence is a palindrome
+    # around its farthest point, closed by the turning pixel itself.
+    far = int(np.argmax((tip - origin) @ direction))
+    back = tip[far + 1 :]
+    assert len(back) == far + 1
+    assert np.allclose(back[:-1], tip[far - 1 :: -1][: len(back) - 1])
+    assert len(labels[0]) == len(kinds[0]) == len(samples[0]) == len(runs[0])
+    # The run's two ends are the ones the decoder laid, unchanged by the arm.
+    assert np.allclose(runs[0][0], runs_off[0][0]) and np.allclose(runs[0][-1], runs_off[0][-1])
+    # Every vertex the arm added sits on ink.
+    ix, iy = np.rint(tip[:, 0]).astype(int), np.rint(tip[:, 1]).astype(int)
+    assert mask[iy, ix].all()
+    # The rail vertices are exactly the strand's own pixels beyond the turn.
+    off_rail = np.vstack([runs_off[0]])
+    assert len(runs[0]) == len(off_rail) + len(tip)
+
+
+def test_a_claimed_strand_end_is_not_read_again_at_a_run_end() -> None:
+    """The strand end a hairpin tip reached counts as visited for the run-end
+    reading: a run stopping short of that end is not completed onto it."""
+    mask, _, _, _ = _slanted_stroke()
+    weights = TintenpfadWeights(rail="subpixel", tip_read=True)
+    strands = strands_of(skeletonize(mask), XH, weights, {})
+    refine_strands(strands, mask, weights)
+    n = len(strands[0].points)
+    stop = n - 6
+    runs = [strands[0].points[: stop + 1].copy()]
+    labels, kinds, samples = [np.zeros(stop + 1, dtype=int)], [np.zeros(stop + 1, dtype=int)], [np.arange(stop + 1)]
+    states = [(0, 0, 1), (0, stop, 1)]
+    diag = read_tips(runs, labels, kinds, samples, strands, states, mask, cap_px=XH, claimed=[(0, n - 1)])
+    assert diag["ends_read"] == 1 and diag["blocked"]["visited"] == 1
+    assert (kinds[0] == 2).sum() == diag["rail_points"] + diag["walk_points"]
+
+
+def test_a_hairpin_whose_tail_another_sample_boarded_is_left_alone() -> None:
+    """A seed that turns short, comes back, and later rides the same strand on
+    past the turning pixel: the hairpin's tail is visited, so the arm lays
+    nothing there and the reason is counted."""
+    mask, origin, direction, _ = _slanted_stroke(angle_deg=0.0)
+    weights = TintenpfadWeights(rail="subpixel", hairpin_tip=True, resample_step_xh=0.0)
+    strands = strands_of(skeletonize(mask), XH, weights, {})
+    refine_strands(strands, mask, weights)
+    stations = [origin + direction * along for along in (20.0, 70.0, 40.0, 95.0)]
+    seed = _seed_along(np.array(stations))
+    states, _, _ = decode_with_hysteresis(strands, seed, XH, weights)
+    reader = HairpinTipReader(strands, states, mask, XH)
+    runs, _, kinds, _, counts = assemble(strands, states, seed, XH, weights, None, reader)
+    assert counts["hairpins"] == 2
+    diag = reader.report()
+    assert diag["hairpins"] == 2 and diag["read"] == 0
+    assert diag["blocked"]["visited"] == 2
+    assert not np.concatenate([k == 2 for k in kinds]).any()
 
 
 def test_spurs_at_a_strand_end_stay_with_the_switch_and_lateral_spurs_still_go() -> None:
@@ -597,8 +689,9 @@ def test_weights_are_frozen_and_typed() -> None:
     # The Spitzen arm is off in the delivered default and switches on by --weight.
     default = TintenpfadWeights()
     assert default.tip_read is False and default.spur_at_ends is False and default.tip_extend_xh == 0.0
-    arm = weights_from_overrides(default, ["tip_read=1", "spur_at_ends=on"])
-    assert arm.tip_read is True and arm.spur_at_ends is True
+    assert default.hairpin_tip is False
+    arm = weights_from_overrides(default, ["tip_read=1", "spur_at_ends=on", "hairpin_tip=1"])
+    assert arm.tip_read is True and arm.spur_at_ends is True and arm.hairpin_tip is True
     with pytest.raises(SystemExit):
         weights_from_overrides(TintenpfadWeights(), ["no_such=1"])
     with pytest.raises(ValueError):
