@@ -211,6 +211,14 @@ class TintenpfadWeights:
     # run end, capped by `tip_read_cap_xh`) are laid out AND back — a reading
     # of the ink the pen must have covered, never a point off the mask.
     hairpin_tip: bool = False
+    # Grauwert-Stopp (arm D of the „Ecken" round, off by default): the tip walk
+    # also stops one step before the crop's GREY reads paper — the nearest
+    # pixel's grey above the midpoint of this crop's ink and paper levels, the
+    # reversal sensor's own paper test. The frozen mask's adaptive threshold
+    # keeps a pale halo around a round cap through which the walk otherwise
+    # runs on; the darkness channel is a second reading of the ink beside the
+    # mask, never a walk of its own — it does nothing unless `tip_read` is on.
+    tip_grey_stop: bool = False
     # Spurs at strand ENDS are the stroke's continuation the thinning broke off
     # (an Anstrich), not a lateral artefact: with this on, a node whose non-spur
     # edges number at most one keeps its spurs instead of pruning them.
@@ -1086,6 +1094,16 @@ def grey_levels(crop: np.ndarray, mask: np.ndarray) -> tuple[float, float]:
     return ink, paper
 
 
+def grey_paper_of(crop: np.ndarray, mask: np.ndarray) -> tuple[np.ndarray, float]:
+    """Where THIS crop's grey reads paper: above the midpoint of its ink and
+    paper levels — the reversal sensor's own paper test, so a walk the sensor
+    would book as Papier-Strecke is stopped by the same reading that books it.
+    Returns the boolean image and the midpoint."""
+    ink, paper = grey_levels(crop, mask)
+    midpoint = 0.5 * (ink + paper)
+    return np.asarray(crop, dtype=float) > midpoint, midpoint
+
+
 def ink_bridge_test(
     crop: np.ndarray,
     mask: np.ndarray,
@@ -1449,6 +1467,7 @@ def read_tip(
     *,
     step_px: float = 0.5,
     rise_px: float = 0.25,
+    grey_paper: np.ndarray | None = None,
 ) -> tuple[np.ndarray, str]:
     """The ink read on from a free strand end to the end of the mask.
 
@@ -1458,8 +1477,12 @@ def read_tip(
     the walk follows the ridge of the ink rather than a straight line. It stops
     at the first step whose nearest pixel is not ink (the tip), at a step where
     the EDT RISES by more than `rise_px` (the walk entered a wider body — a
-    junction, not a tip) or at `cap_px`. Returns the points to append (in
-    walking order) and the stop reason (`mask` · `rise` · `cap` · `edge`).
+    junction, not a tip) or at `cap_px`. With `grey_paper` (a boolean image,
+    True where the crop's grey reads paper) it also stops at the first step
+    whose nearest pixel reads paper by the grey — the step is not appended, so
+    the walk ends one step before the halo the mask still calls ink. Returns
+    the points to append (in walking order) and the stop reason (`mask` ·
+    `grey` · `rise` · `cap` · `edge`).
     """
     h, w = mask.shape
     v = np.asarray(direction, dtype=float)
@@ -1482,6 +1505,8 @@ def read_tip(
             return np.asarray(out).reshape(-1, 2), "edge"
         if not mask[iy, ix]:
             return np.asarray(out).reshape(-1, 2), "mask"
+        if grey_paper is not None and grey_paper[iy, ix]:
+            return np.asarray(out).reshape(-1, 2), "grey"
         f = _edt_at(edt, q)
         if f > last + rise_px:
             return np.asarray(out).reshape(-1, 2), "rise"
@@ -1640,6 +1665,7 @@ def read_tips(
     cap_px: float,
     *,
     claimed: Sequence[tuple[int, int]] = (),
+    grey_paper: np.ndarray | None = None,
 ) -> dict[str, Any]:
     """Both ends of every run read on to the ink's tip, in place.
 
@@ -1652,6 +1678,11 @@ def read_tips(
     carry kind 2; every appended vertex is checked against the mask, and the
     counts returned are the proof that nothing was invented. `claimed` pixels
     (the strand ends a `HairpinTipReader` already laid) count as visited.
+    With `grey_paper`
+    (the Grauwert-Stopp) the walk also ends where the crop's grey reads paper;
+    the rail pixels are the thinning's own ink and are never gated by it, only
+    counted (`rail_points_grey_paper`), and `walk_points_grey_paper` is the
+    proof the stop held on every emitted walk vertex.
     """
     edt = distance_transform_edt(np.asarray(mask, dtype=bool))
     pixel_of: dict[tuple[float, float], list[tuple[int, int]]] = {}
@@ -1660,13 +1691,25 @@ def read_tips(
             pixel_of.setdefault(_pixel_key(p), []).append((si, pi))
     visited = _visited_ranges(states, claimed)
     stops = {"mask": 0, "rise": 0, "cap": 0, "edge": 0}
+    if grey_paper is not None:
+        stops["grey"] = 0
     blocked = {"not_free": 0, "junction": 0, "visited": 0, "ambiguous": 0}
     ends_read = rail_added = rail_inside = walk_added = walk_inside = 0
+    rail_grey = walk_grey = 0
     rail_lengths: list[float] = []
     walk_lengths: list[float] = []
 
+    def hits(pts: np.ndarray, image: np.ndarray) -> int:
+        h, w = image.shape
+        ix = np.rint(pts[:, 0]).astype(int)
+        iy = np.rint(pts[:, 1]).astype(int)
+        ok = (ix >= 0) & (ix < w) & (iy >= 0) & (iy < h)
+        hit = np.zeros(len(pts), dtype=bool)
+        hit[ok] = image[iy[ok], ix[ok]]
+        return int(hit.sum())
+
     def in_mask(pts: np.ndarray) -> int:
-        return _in_mask_count(mask, pts)
+        return hits(pts, mask)
 
     for ri, r in enumerate(runs):
         for at_end in (False, True):
@@ -1685,7 +1728,7 @@ def read_tips(
                 continue
             rail = strand.points[rng] if rng else np.zeros((0, 2))
             tip_start = rail[-1] if len(rail) else end_pt
-            walk, stop = read_tip(tip_start, outward, mask, edt, cap_px)
+            walk, stop = read_tip(tip_start, outward, mask, edt, cap_px, grey_paper=grey_paper)
             stops[stop] += 1
             pts = np.vstack([rail, walk])
             if not len(pts):
@@ -1695,6 +1738,9 @@ def read_tips(
             rail_inside += in_mask(rail) if len(rail) else 0
             walk_added += len(walk)
             walk_inside += in_mask(walk) if len(walk) else 0
+            if grey_paper is not None:
+                rail_grey += hits(rail, grey_paper) if len(rail) else 0
+                walk_grey += hits(walk, grey_paper) if len(walk) else 0
             rail_lengths.append(polyline_len(np.vstack([end_pt[None, :], rail])) if len(rail) else 0.0)
             walk_lengths.append(polyline_len(np.vstack([tip_start[None, :], walk])) if len(walk) else 0.0)
             if at_end:
@@ -1707,7 +1753,7 @@ def read_tips(
                 labels[ri] = np.concatenate([np.full(len(pts), labels[ri][0]), labels[ri]])
                 kinds[ri] = np.concatenate([np.full(len(pts), 2, dtype=int), kinds[ri]])
                 samples[ri] = np.concatenate([np.full(len(pts), samples[ri][0]), samples[ri]])
-    return {
+    out = {
         "free_ends": int(sum(int(s.free_ends[0]) + int(s.free_ends[1]) for s in strands)),
         "run_ends": 2 * len(runs),
         "ends_read": ends_read,
@@ -1722,6 +1768,10 @@ def read_tips(
         "walk_len_px_total": round(sum(walk_lengths), 2),
         "stops": stops,
     }
+    if grey_paper is not None:
+        out["rail_points_grey_paper"] = rail_grey
+        out["walk_points_grey_paper"] = walk_grey
+    return out
 
 
 def resample_run(points: np.ndarray, step_px: float, *carried: np.ndarray) -> tuple[np.ndarray, ...]:
@@ -2018,6 +2068,9 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
             "detail": "nothing decoded onto the ink",
             "meta": {"tintenpfad": diag},
         }
+    grey_paper = None
+    if weights.tip_read and weights.tip_grey_stop:
+        grey_paper, grey_midpoint = grey_paper_of(np.asarray(case_ev.crop, dtype=float), mask)
     if weights.tip_read:
         diag["tip_read"] = read_tips(
             runs,
@@ -2029,7 +2082,10 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
             mask,
             weights.tip_read_cap_xh * xh,
             claimed=hairpin_reader.claimed if hairpin_reader is not None else (),
+            grey_paper=grey_paper,
         )
+        if grey_paper is not None:
+            diag["tip_read"]["grey_midpoint"] = round(grey_midpoint, 4)
     if weights.tip_extend_xh > 0.0:
         edt = distance_transform_edt(mask)
         diag["tips_extended"] = extend_tips(runs, labels, kinds, samples, edt, weights.tip_extend_xh * xh)
@@ -2056,6 +2112,10 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
         ok = (ix >= 0) & (ix < mask.shape[1]) & (iy >= 0) & (iy < mask.shape[0])
         diag["tip_read"]["resampled_total"] = int(len(tip_pts))
         diag["tip_read"]["resampled_in_mask"] = int(mask[iy[ok], ix[ok]].sum())
+        if grey_paper is not None:
+            # The raster corner: a resampled vertex sits between two walk
+            # vertices and may round to a pixel the grey calls paper.
+            diag["tip_read"]["resampled_grey_paper"] = int(grey_paper[iy[ok], ix[ok]].sum())
     if hairpin_reader is not None:
         # The same proof for the hairpin tips: every kind-2 vertex of the
         # delivered runs (run ends and hairpins together) sits on ink.
@@ -2350,6 +2410,7 @@ __all__ = [
     "follow_case",
     "follow_word",
     "grey_levels",
+    "grey_paper_of",
     "hermite_bridge",
     "ink_bridge_test",
     "longest_true_run",

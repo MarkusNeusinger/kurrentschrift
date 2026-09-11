@@ -31,6 +31,7 @@ from tools.pairlab.tintenpfad import (
     double_ink_of,
     fine_edt,
     grey_levels,
+    grey_paper_of,
     hermite_bridge,
     ink_bridge_test,
     longest_true_run,
@@ -185,6 +186,72 @@ def test_the_tip_reading_lays_the_unvisited_rail_and_walks_to_the_end_of_the_mas
     assert np.abs(across[kinds[0] == 2]).max() < 1.0
     assert (kinds[0] == 2).sum() == diag["rail_points"] + diag["walk_points"]
     assert len(labels[0]) == len(runs[0]) == len(samples[0])
+
+
+def test_the_grey_stop_ends_the_walk_before_a_pale_halo_the_mask_still_calls_ink() -> None:
+    """The same capsule with a crop: dark ink along the stroke, but the last
+    few pixels of the END cap are a pale halo (above the ink/paper midpoint)
+    that the mask still holds. Without the grey image the walk runs to the
+    mask's end at both tips; with it the end walk stops at its first step
+    into the halo (`grey`) — the rail pixels already in the halo are the
+    skeleton's own ink, laid as before and only COUNTED — the start walk still
+    stops at the mask, no emitted walk vertex reads paper by the grey, and the
+    arm's vertices are a PREFIX of the default's: the stop removes, never moves."""
+    mask, origin, direction, _normal = _slanted_stroke()
+    yy, xx = np.mgrid[0 : mask.shape[0], 0 : mask.shape[1]]
+    along = (xx - origin[0]) * direction[0] + (yy - origin[1]) * direction[1]
+    crop = np.full(mask.shape, 0.85)
+    crop[mask] = 0.30
+    crop[mask & (along > 93.0)] = 0.70
+    grey_paper, midpoint = grey_paper_of(crop, mask)
+    ink_level, paper_level = grey_levels(crop, mask)
+    assert midpoint == pytest.approx(0.5 * (ink_level + paper_level)) and 0.30 < midpoint < 0.70
+    assert grey_paper[mask & (along > 93.0)].all() and not grey_paper[mask & (along < 92.0)].any()
+    weights = TintenpfadWeights(rail="subpixel", tip_read=True)
+    strands = strands_of(skeletonize(mask), XH, weights, {})
+    refine_strands(strands, mask, weights)
+    n = len(strands[0].points)
+    stop = n - 6
+
+    def fresh() -> tuple[list, list, list, list, list]:
+        return (
+            [strands[0].points[: stop + 1].copy()],
+            [np.zeros(stop + 1, dtype=int)],
+            [np.zeros(stop + 1, dtype=int)],
+            [np.arange(stop + 1)],
+            [(0, 0, 1), (0, stop, 1)],
+        )
+
+    runs, labels, kinds, samples, states = fresh()
+    plain = read_tips(runs, labels, kinds, samples, strands, states, mask, cap_px=XH)
+    assert plain["stops"] == {"mask": 2, "rise": 0, "cap": 0, "edge": 0}
+    assert "walk_points_grey_paper" not in plain and "rail_points_grey_paper" not in plain
+    plain_run, plain_kinds = runs[0], kinds[0]
+    runs, labels, kinds, samples, states = fresh()
+    arm = read_tips(runs, labels, kinds, samples, strands, states, mask, cap_px=XH, grey_paper=grey_paper)
+    assert arm["stops"] == {"mask": 1, "rise": 0, "cap": 0, "edge": 0, "grey": 1}
+    assert arm["walk_points_grey_paper"] == 0
+    assert 0 < arm["walk_points"] < plain["walk_points"] and arm["rail_points"] == plain["rail_points"]
+    assert arm["walk_points_in_mask"] == arm["walk_points"]
+    # The rail laid past the run's end (the head of the trailing tip block —
+    # the start walk is prepended, so the original run no longer starts at 0)
+    # is the same five skeleton pixels as before; the ones the grey would call
+    # paper are counted, not removed.
+    n_tail = int(np.argmin(plain_kinds[::-1] == 2))  # the trailing kind-2 block
+    rail = plain_run[len(plain_run) - n_tail :][: plain["rail_points"]]
+    rail_ix, rail_iy = np.rint(rail[:, 0]).astype(int), np.rint(rail[:, 1]).astype(int)
+    assert len(rail) == 5 and arm["rail_points_grey_paper"] == int(grey_paper[rail_iy, rail_ix].sum()) >= 1
+    arm_along = (runs[0] - origin) @ direction
+    plain_along = (plain_run - origin) @ direction
+    # The end walk adds nothing beyond the rail's end (its first step reads
+    # paper); the default walks on to the mask's tip; the start walk is untouched.
+    assert arm_along.max() == pytest.approx(rail_along_max := ((rail - origin) @ direction).max())
+    assert plain_along.max() > rail_along_max + 0.5
+    assert arm_along.min() == pytest.approx(plain_along.min())
+    # Prefix: every arm vertex is the default's vertex at the same place.
+    assert len(runs[0]) < len(plain_run)
+    assert np.allclose(runs[0], plain_run[: len(runs[0])])
+    assert len(labels[0]) == len(runs[0]) == len(samples[0]) == len(kinds[0])
 
 
 def test_a_junction_end_and_a_visited_tail_are_never_read() -> None:
@@ -777,6 +844,9 @@ def test_weights_are_frozen_and_typed() -> None:
     assert default.hairpin_tip is False
     arm = weights_from_overrides(default, ["tip_read=1", "spur_at_ends=on", "hairpin_tip=1"])
     assert arm.tip_read is True and arm.spur_at_ends is True and arm.hairpin_tip is True
+    # The Grauwert-Stopp (arm D of the „Ecken" round) is off in the default too.
+    assert default.tip_grey_stop is False
+    assert weights_from_overrides(default, ["tip_grey_stop=1"]).tip_grey_stop is True
     with pytest.raises(SystemExit):
         weights_from_overrides(TintenpfadWeights(), ["no_such=1"])
     with pytest.raises(ValueError):
