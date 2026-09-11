@@ -926,10 +926,11 @@ Warnung versehen. Begriff und Hausregel:
   Der Schalter dazu am Folger ist `--chain-seed grid`. Die Nachtschleife
   `sep10` gab dem Folger sieben Schalter, alle standardmäßig AUS und dann
   bytegleich:
-  `--bar-bridge`, `--chain-seed grid-scale --seed-ramp`, `--paper-weight`,
-  `--soll-source ink`, `--kink-weight`, `--seed-form laufform`,
-  `--no-init-terms` (Glossar §3: t-Brücke · Saat-Form · Tinten-Klammer ·
-  Tinten-Soll · Unstetigkeits-Preis); `.reversals` druckt seither auch die
+  `--bar-bridge`, `--chain-seed grid-scale|affine --seed-ramp`,
+  `--paper-weight`, `--soll-source ink`, `--kink-weight`, `--letter-smooth`,
+  `--seed-form laufform`, `--no-init-terms` (Glossar §3: t-Brücke ·
+  Saat-Form · Gauß-Verschiebung · Tinten-Klammer · Tinten-Soll ·
+  Unstetigkeits-Preis · Formglätte); `.reversals` druckt seither auch die
   **Papier-Strecke** je Wort.
   Alle nennen ihre Wurzel im Kopf und
   nehmen `--expect-root` (siehe oben); die Arm- und Archäologie-Flags

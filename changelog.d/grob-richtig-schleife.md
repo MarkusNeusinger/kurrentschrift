@@ -19,7 +19,12 @@
   `--no-init-terms` and `--seed-min-gain` are the loop's controls;
   `--letter-smooth` (Formglätte, second differences of a letter's
   displacement from its seed) is the loop's measured negative, kept as the
-  control it was. The numbers of the loop stay on its progress page until a
+  control it was; `--chain-seed affine` is the Gauß-Verschiebung
+  (`tools/pairlab/affinereg.py`): per letter an affine map — shift, x/y
+  scale, rotation, shear — registered on the blurred ink image coarse to
+  fine, the author's own picture of two signals laid over each other until
+  their difference is minimal, and the first seed with which fechten and
+  unter follow the plate without one excursion into the paper. The numbers of the loop stay on its progress page until a
   §14 entry books them — the author's own condition.
 - **`tools.tracebench.reversals` prints the Papier-Strecke beside the
   reversal count.** A straight chord through the paper reverses nowhere and

@@ -120,6 +120,7 @@ from core.quality_suetterlin import MIN_RETRACE_PAIRS
 # the cycle `tools.laufform.harvest` avoids is the opposite direction (it
 # imports `pairlab.chain`/`anchors`/`trace`, and none of them imports back).
 from tools.laufform.harvest import _chainable_runs, _grid_fits, _word_record
+from tools.pairlab.affinereg import register_letters
 from tools.pairlab.analyze import FIT_DX_UNITS, FIT_DY_UNITS, TRACE_WINDOW_MARGIN, _body_items, _edt_at
 from tools.pairlab.analyze import _to_px as _to_px_composed
 from tools.pairlab.chain import (
@@ -2475,6 +2476,7 @@ def follow_derived(
     case, counter_evidence_report = counter_evidence_case(case, result, _counter_evidence_options(weights))
     grids = _grid_fits(case, result)
     gscale = _grid_scale_fits(case, result, grids, min_gain=weights.seed_min_gain) if chain_seed == "grid-scale" else {}
+    affreg = register_letters(case, result) if chain_seed == "affine" else {}
     # R3c: ONE counter field per word, built before the first run and shared by
     # all of them. It reads the frozen mask and the composition, so it is fixed
     # for the whole word and no round can move it — and building it here rather
@@ -2498,6 +2500,9 @@ def follow_derived(
         scales: dict[int, float] | None = None
         if chain_seed == "grid-scale":
             windows, seeds, scales = scale_seed_dicts(gscale, run)
+        affines: dict[int, tuple[np.ndarray, np.ndarray]] | None = None
+        if chain_seed == "affine":
+            affines = {s: (affreg[s]["A"], affreg[s]["t"]) for s in run if s in affreg}
         chain_fit = fit_word_chain(
             case,
             run,
@@ -2516,6 +2521,7 @@ def follow_derived(
             connector_ramp=weights.seed_ramp,
             seed_form=weights.seed_form,
             lsmooth_weight=weights.letter_smooth if weights.init_terms else 0.0,
+            slot_affine_init=affines,
         )
         if chain_fit is None:
             n_failed += 1
@@ -2736,6 +2742,7 @@ def calibrate_case(
     case, _counter_report = counter_evidence_case(case, result, _counter_evidence_options(weights))  # R4, likewise
     grids = _grid_fits(case, result)
     gscale = _grid_scale_fits(case, result, grids, min_gain=weights.seed_min_gain) if chain_seed == "grid-scale" else {}
+    affreg = register_letters(case, result) if chain_seed == "affine" else {}
     runs: list[dict] = []
     for run in _chainable_runs(case, grids):
         windows = {s: grids[s]["window"] for s in run}
@@ -2743,6 +2750,9 @@ def calibrate_case(
         scales: dict[int, float] | None = None
         if chain_seed == "grid-scale":
             windows, seeds, scales = scale_seed_dicts(gscale, run)
+        affines: dict[int, tuple[np.ndarray, np.ndarray]] | None = None
+        if chain_seed == "affine":
+            affines = {s: (affreg[s]["A"], affreg[s]["t"]) for s in run if s in affreg}
         chain_fit = fit_word_chain(
             case,
             run,
@@ -2761,6 +2771,7 @@ def calibrate_case(
             connector_ramp=weights.seed_ramp,
             seed_form=weights.seed_form,
             lsmooth_weight=weights.letter_smooth if weights.init_terms else 0.0,
+            slot_affine_init=affines,
         )
         if chain_fit is None:
             continue
@@ -3029,7 +3040,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--style", default="suetterlin")
     parser.add_argument("--fixtures", type=Path, default=DEFAULT_FIXTURES_DIR)
     add_expect_root_argument(parser)
-    parser.add_argument("--chain-seed", default="composed", choices=["composed", "grid", "grid-scale"])
+    parser.add_argument("--chain-seed", default="composed", choices=["composed", "grid", "grid-scale", "affine"])
     parser.add_argument("--rounds", type=int, help=f"re-linearising rounds (default {FOLLOW_ROUNDS})")
     parser.add_argument("--prox", type=float, help=f"proximal weight (default {FOLLOW_PROX_WEIGHT})")
     parser.add_argument("--coverage", type=float, help=f"coverage weight (default {FOLLOW_COVERAGE_WEIGHT})")

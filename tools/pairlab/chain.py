@@ -346,7 +346,8 @@ class ChainSegmentSpec:
     seam_in: int | None = None  # anchor index shared with the PREVIOUS segment's `seam_out`
     seam_out: int | None = None  # anchor index shared with the NEXT segment's `seam_in`
     cov_window_px: tuple[float, float] | None = None
-    exit_shift_x: float = 0.0  # letters: how far the x-scale seed moved the exit anchor (composed units)
+    exit_shift_x: float = 0.0  # letters: how far the x-scale/affine seed moved the exit anchor (composed units)
+    exit_shift_y: float = 0.0
     """Optional `(x_lo, x_hi)` crop-px window this segment's coverage GATE is
     read in — the letter-local window of `analyze.trace_letter_ductus`. The FIT
     is unaffected: coverage targets, objective and gradient keep seeing the whole
@@ -2047,6 +2048,7 @@ def _letter_spec(
     bar_bridge: bool = False,
     x_scale: float = 1.0,
     seed_form: str = "chart",
+    affine: tuple[np.ndarray, np.ndarray] | None = None,
 ) -> tuple[ChainSegmentSpec, float] | None:
     """One letter as a chain segment, plus the chart→composed x offset.
 
@@ -2092,10 +2094,21 @@ def _letter_spec(
     placed = anchors.copy()
     placed[:, 0] += offset
     exit_shift_x = 0.0
+    exit_shift_y = 0.0
     if x_scale != 1.0:
         exit_before = float(placed[-1, 0])
         placed[:, 0] = placed[0, 0] + (placed[:, 0] - placed[0, 0]) * float(x_scale)
         exit_shift_x = float(placed[-1, 0]) - exit_before
+    if affine is not None:
+        # The Gauß-Verschiebung seed (`tools.pairlab.affinereg`, 2026-09-11):
+        # the full affine about the entry anchor — shift, x/y scale, rotation,
+        # shear — as registered against the ink image, in composed units.
+        a_mat, t_vec = np.asarray(affine[0], dtype=float), np.asarray(affine[1], dtype=float)
+        exit_before_xy = placed[-1].copy()
+        entry = placed[0].copy()
+        placed = entry + (placed - entry) @ a_mat.T + t_vec
+        exit_shift_x += float(placed[-1, 0] - exit_before_xy[0])
+        exit_shift_y += float(placed[-1, 1] - exit_before_xy[1])
     stroke_starts = [int(s) for s in (meta.get("stroke_starts") or [0])]
     corner_anchors = [int(c) for c in (meta.get("corner_anchors") or [])]
     if bar_bridge:
@@ -2114,6 +2127,7 @@ def _letter_spec(
         seam_in=cut_in,
         seam_out=cut_out,
         exit_shift_x=exit_shift_x,
+        exit_shift_y=exit_shift_y,
     )
     return spec, offset
 
@@ -2375,6 +2389,7 @@ def fit_word_chain(
     connector_ramp: bool = False,
     seed_form: str = "chart",
     lsmooth_weight: float = 0.0,
+    slot_affine_init: dict[int, tuple[np.ndarray, np.ndarray]] | None = None,
 ) -> ChainWordFit | None:
     """Fit a run of consecutive slots as ONE chain `[L, C, L, C, …]`.
 
@@ -2479,6 +2494,7 @@ def fit_word_chain(
             bar_bridge=bar_bridge,
             x_scale=float((slot_scale_init or {}).get(slot_index, 1.0)),
             seed_form=seed_form,
+            affine=(slot_affine_init or {}).get(slot_index),
         )
         if made is None:
             return None
@@ -2494,7 +2510,12 @@ def fit_word_chain(
             conn = _connector_spec(result, run[n - 1], join_call=call)
             if conn is None:
                 return None
-            if connector_ramp and specs and specs[-1].kind == "letter" and specs[-1].exit_shift_x:
+            if (
+                connector_ramp
+                and specs
+                and specs[-1].kind == "letter"
+                and (specs[-1].exit_shift_x or specs[-1].exit_shift_y)
+            ):
                 # The x-scale seed moved the previous letter's exit; the
                 # composed connector still starts where the unscaled exit was,
                 # and welding the two left a straight chord through the paper
@@ -2508,6 +2529,7 @@ def fit_word_chain(
                     t = arc / arc[-1] if arc[-1] > 0 else np.linspace(0.0, 1.0, k_c)
                     conn.anchors = conn.anchors.copy()
                     conn.anchors[:, 0] += specs[-1].exit_shift_x * (1.0 - t)
+                    conn.anchors[:, 1] += specs[-1].exit_shift_y * (1.0 - t)
             specs.append(conn)
         specs.append(spec)
         offsets[slot_index] = offset

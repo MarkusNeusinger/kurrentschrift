@@ -63,7 +63,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
-- **G** — G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
+- **G** — Gauß-Verschiebung §3 · G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Hand §2 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
@@ -1293,6 +1293,20 @@ Papier-Umkehren) — der Term ist ein zweiter Form-Prior, denn wer einen
 Buchstaben auf anders geformte Tinte legt, muss genau die zweiten
 Differenzen ändern, die er bestraft. Schalter bleibt AUS; Rettungsweg ist
 weniger Freiheit statt mehr Strafe (ein Affin-Block je Buchstabe).
+
+**Gauß-Verschiebung** *(affine registration seed, `--chain-seed affine`)* —
+die Saat-Registrierung als Bildregistrierung, nach dem Bild des Autors
+(2026-09-11: zwei Signale so lange übereinander schieben, bis die Differenz
+minimal wird, in 2D, weil der Gleichzug-Strich der Platte eine Breite hat).
+Je Buchstaben-Slot ist die komponierte Bahn das bewegliche Signal, die
+eingefrorene Tintenmaske das feste; beide durch eine Gauß-Glocke fallender
+Breite gelesen (4 → 2 → 1 px), und je Stufe wird eine Affinität um den
+Eintrittspunkt — Schub, Dehnung x/y, Drehung, Scherung — mit Powell
+gesucht. Symmetrisches Maß (Proben auf Tinte, Tintenpixel im Fenster nahe
+einer Probe) plus weicher Prior auf die Einheit. `tools/pairlab/affinereg.py`;
+die Kette säht dann `p' = Eintritt + A·(p − Eintritt) + t`, die Saat-Rampe
+trägt den verschobenen Austritt in den Verbinder. Die erste Saat, mit der
+fechten und unter ohne einen Papier-Ausflug auf der Tinte liegen.
 
 **Kettenfit** *(chain fit)* — die Idee, **Buchstabe → Verbinder →
 Buchstabe als EINE durchlaufende Feder** zu fitten statt als zwei
