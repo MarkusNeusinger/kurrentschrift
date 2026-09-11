@@ -18,7 +18,10 @@
   (Selbstsprung) lets the decoder pass a node its strand visits twice, which
   removes the two lifts the finer rail had introduced in `will` and
   `Galoppieren`. A fifth arm, a corner instead of a Hermite bow between
-  anti-parallel tangents (`bridge=corner`), never fires on this plate and
-  stays as the measured control. Every default run stays stroke-identical
+  anti-parallel tangents, was measured on its own branch
+  (`tintenpfad-ecken-ecke-statt-bogen`) and is not shipped: it never fires
+  on this plate, the sharpest transition cosine is −0.43, so the corners
+  the author saw were cut-off hairpins, not bridges. Every default run
+  stays stroke-identical
   to the delivered Tintenpfad; the numbers of the round stay on the progress
   page and in the PR until a §14 entry books them.

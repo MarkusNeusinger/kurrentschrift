@@ -235,7 +235,8 @@ class TintenpfadWeights:
     # reversal sensor's own paper test. The frozen mask's adaptive threshold
     # keeps a pale halo around a round cap through which the walk otherwise
     # runs on; the darkness channel is a second reading of the ink beside the
-    # mask, never a walk of its own — it does nothing unless `tip_read` is on.
+    # mask, never a walk of its own — it does nothing unless a tip reader
+    # (`tip_read` or `hairpin_tip`) walks the ridge.
     tip_grey_stop: bool = False
     # Spurs at strand ENDS are the stroke's continuation the thinning broke off
     # (an Anstrich), not a lateral artefact: with this on, a node whose non-spur
@@ -2152,7 +2153,8 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
     mask = np.asarray(case_ev.mask, dtype=bool)
     grey_paper = None
     grey_midpoint = 0.0
-    if weights.tip_read and weights.tip_grey_stop:
+    if weights.tip_grey_stop and (weights.tip_read or weights.hairpin_tip):
+        # Either tip reader walks the ridge, so either one gets the stop.
         grey_paper, grey_midpoint = grey_paper_of(np.asarray(case_ev.crop, dtype=float), mask)
     hairpin_reader = None
     if weights.hairpin_tip:

@@ -1404,9 +1404,11 @@ Schritt, bevor der Grauwert des Crops Papier liest, der Papier-Test des
 Umkehr-Sensors als zweite Lesung neben der Maske; `self_jump=1` — der
 **Selbstsprung**, der Dekoder darf einen Knoten passieren, den sein Strang
 zweimal besucht (die zwei Absetzer des Normalen-Fits in `will` und
-`Galoppieren`). Gemessen und AUS geblieben: `bridge=corner` (**Ecke statt
-Bogen** bei gegenläufigen Tangenten, feuert auf der Tafel nie: die
-schärfste Übergangs-Kosinus ist −0,43). Seit `sep11` eine eigene
+`Galoppieren`). Gemessen auf eigenem Zweig (`tintenpfad-ecken-ecke-statt-bogen`)
+und NICHT ausgeliefert: **Ecke statt Bogen** (eine Ecke statt einer
+Hermite-Schlaufe bei gegenläufigen Tangenten) feuert auf der Tafel nie,
+die schärfste Übergangs-Kosinus ist −0,43 — die gesehenen Schlaufen waren
+abgeschnittene Haken. Seit `sep11` eine eigene
 Route mit Verfahrensseite (→ Duell-Namen, verfahren-tintenpfad.md);
 Stand Kandidat, nicht adoptiert — §14 „Welle `sep11`" und
 „Tintenpfad-Arme `sep11`"
