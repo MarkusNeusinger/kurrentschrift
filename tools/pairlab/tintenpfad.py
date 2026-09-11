@@ -162,6 +162,17 @@ class TintenpfadWeights:
     # the spur pruning may have taken an Anstrich with it. 0 = off (measured
     # as arm K-tips, not part of the delivered default).
     tip_extend_xh: float = 0.0
+    # The tip READING (arm „Spitzen", off by default): a run end that sits on a
+    # FREE strand end (a skeleton end with no other alive edge at its node) is
+    # walked on along the EDT ridge until the frozen ink mask ends — no fixed
+    # amount, the mask is the stop; a rising EDT is a junction and stops it too.
+    # `tip_read_cap_xh` is a safety cap against a runaway walk, counted when it binds.
+    tip_read: bool = False
+    tip_read_cap_xh: float = 1.0
+    # Spurs at strand ENDS are the stroke's continuation the thinning broke off
+    # (an Anstrich), not a lateral artefact: with this on, a node whose non-spur
+    # edges number at most one keeps its spurs instead of pruning them.
+    spur_at_ends: bool = False
 
     def __post_init__(self) -> None:
         if self.rail not in ("subpixel", "raw"):
@@ -208,6 +219,11 @@ class Strand:
     edges: list[int]
     closed: bool = False
     tan: np.ndarray = field(default=None)  # (n, 2) unit tangents along `points`
+    # Per end (points[0], points[-1]): a skeleton end with no other alive edge at
+    # its node — a stroke TIP the thinning stopped short of, never a junction end.
+    free_ends: tuple[bool, bool] = (False, False)
+    # Indices into `points` where the strand passes THROUGH a junction node.
+    junction_idx: np.ndarray = field(default_factory=lambda: np.zeros(0, dtype=int))
 
     @property
     def length(self) -> float:
@@ -328,14 +344,31 @@ def strands_of(skel: np.ndarray, xh: float, weights: TintenpfadWeights, diag: di
         incident[a].append(i)
         if b != a:
             incident[b].append(i)
-    alive = np.ones(len(edges), dtype=bool)
+    spur = np.zeros(len(edges), dtype=bool)
     for i, (a, b, pts) in enumerate(edges):
         deg_a, deg_b = len(incident[a]), len(incident[b])
         if (deg_a == 1 or deg_b == 1) and not (deg_a == 1 and deg_b == 1) and polyline_len(pts) < weights.spur_xh * xh:
-            alive[i] = False
+            spur[i] = True
+    kept_at_ends = 0
+    if weights.spur_at_ends:
+        # Judged against the ORIGINAL spur set: a node whose non-spur edges
+        # number at most one would become a strand end without its spurs, so
+        # they are the stroke's continuation and stay.
+        candidates = spur.copy()
+        for i in np.flatnonzero(candidates):
+            a, b, _ = edges[i]
+            junction = b if len(incident[a]) == 1 else a
+            others = sum(1 for j in incident[junction] if j != i and not candidates[j])
+            if others <= 1:
+                spur[i] = False
+                kept_at_ends += 1
+    alive = ~spur
     diag["spurs_pruned"] = int((~alive).sum())
+    if weights.spur_at_ends:
+        diag["spurs_kept_at_ends"] = kept_at_ends
     diag["junctions_too_dense"] = 0
     partner: dict[tuple[int, int], tuple[int, int] | None] = {}
+    alive_ends: dict[int, int] = {}
     for node in range(len(g.nodes)):
         ends: list[tuple[int, int]] = []
         dirs: list[np.ndarray] = []
@@ -347,6 +380,7 @@ def strands_of(skel: np.ndarray, xh: float, weights: TintenpfadWeights, diag: di
                 if (end == 0 and a == node) or (end == 1 and b == node):
                     ends.append((i, end))
                     dirs.append(end_direction(pts, end, weights.dir_window_xh * xh))
+        alive_ends[node] = len(ends)
         if len(ends) <= 1:
             for e in ends:
                 partner[e] = None
@@ -366,11 +400,15 @@ def strands_of(skel: np.ndarray, xh: float, weights: TintenpfadWeights, diag: di
         pts: list[np.ndarray] = []
         eds: list[int] = []
         e, end = start_end
+        node_first = edges[e][0] if end == 0 else edges[e][1]
         closed = False
+        joins: list[int] = []
         while True:
             used[e] = True
             _a, _b, p = edges[e]
             seg = p if end == 0 else p[::-1]
+            if pts:
+                joins.append(len(pts) - 1)
             pts.extend(seg[1:] if pts else seg)
             eds.append(e)
             nxt = partner.get((e, 1 - end))
@@ -380,7 +418,15 @@ def strands_of(skel: np.ndarray, xh: float, weights: TintenpfadWeights, diag: di
                 closed = nxt == start_end
                 break
             e, end = nxt
-        return Strand(np.asarray(pts, dtype=float).reshape(-1, 2), eds, closed)
+        node_last = edges[e][1] if end == 0 else edges[e][0]
+        free = (False, False) if closed else (alive_ends.get(node_first) == 1, alive_ends.get(node_last) == 1)
+        return Strand(
+            np.asarray(pts, dtype=float).reshape(-1, 2),
+            eds,
+            closed,
+            free_ends=free,
+            junction_idx=np.asarray(joins, dtype=int),
+        )
 
     for (e, end), p in partner.items():
         if p is None and not used[e]:
@@ -938,6 +984,202 @@ def extend_tips(
     return moved
 
 
+def _edt_at(edt: np.ndarray, p: np.ndarray) -> float:
+    return float(map_coordinates(edt, [[p[1]], [p[0]]], order=1, mode="constant", cval=0.0)[0])
+
+
+def read_tip(
+    origin: np.ndarray,
+    direction: np.ndarray,
+    mask: np.ndarray,
+    edt: np.ndarray,
+    cap_px: float,
+    *,
+    step_px: float = 0.5,
+    rise_px: float = 0.25,
+) -> tuple[np.ndarray, str]:
+    """The ink read on from a free strand end to the end of the mask.
+
+    From `origin` along `direction` in steps of `step_px`; every step is
+    re-centred on the apex of the EDT tent across the stroke (the sub-pixel
+    rail's own reading) and the direction is re-read from the walked points, so
+    the walk follows the ridge of the ink rather than a straight line. It stops
+    at the first step whose nearest pixel is not ink (the tip), at a step where
+    the EDT RISES by more than `rise_px` (the walk entered a wider body — a
+    junction, not a tip) or at `cap_px`. Returns the points to append (in
+    walking order) and the stop reason (`mask` · `rise` · `cap` · `edge`).
+    """
+    h, w = mask.shape
+    v = np.asarray(direction, dtype=float)
+    nv = float(np.hypot(*v))
+    if nv <= 1e-9:
+        return np.zeros((0, 2)), "edge"
+    v = v / nv
+    p = np.asarray(origin, dtype=float).copy()
+    trail = [p]
+    out: list[np.ndarray] = []
+    last = _edt_at(edt, p)
+    for _ in range(int(cap_px // step_px)):
+        q = p + v * step_px
+        normal = np.array([-v[1], v[0]])
+        f_plus, f_minus = _edt_at(edt, q + normal), _edt_at(edt, q - normal)
+        if f_plus > 0.0 and f_minus > 0.0:
+            q = q + normal * float(np.clip(0.5 * (f_plus - f_minus), -SUBPIXEL_MAX_PX, SUBPIXEL_MAX_PX))
+        ix, iy = int(round(q[0])), int(round(q[1]))
+        if not (0 <= ix < w and 0 <= iy < h):
+            return np.asarray(out).reshape(-1, 2), "edge"
+        if not mask[iy, ix]:
+            return np.asarray(out).reshape(-1, 2), "mask"
+        f = _edt_at(edt, q)
+        if f > last + rise_px:
+            return np.asarray(out).reshape(-1, 2), "rise"
+        out.append(q)
+        trail.append(q)
+        # Direction over ~2 px of walked trail: long enough that the lateral
+        # re-centring does not swing it, short enough to follow a curving tip.
+        dv = q - trail[max(0, len(trail) - 5)]
+        if float(np.hypot(*dv)) > 1e-9:
+            v = dv / float(np.hypot(*dv))
+        p, last = q, f
+    return np.asarray(out).reshape(-1, 2), "cap"
+
+
+def _pixel_key(p: np.ndarray) -> tuple[float, float]:
+    return (round(float(p[0]), 6), round(float(p[1]), 6))
+
+
+def tip_tail(strand: Strand, i: int, travel: np.ndarray, visited: tuple[int, int]) -> tuple[list[int], np.ndarray, str]:
+    """What lies beyond pixel `i` of `strand` in the direction `travel` (a unit
+    vector along the pen's motion at that end): the indices of the strand's own
+    unvisited pixels up to its end, the OUTWARD direction at that end, and why
+    the tail is not readable — `not_free` (the strand's end there is a junction
+    end), `junction` (the strand passes a node before its end), `visited`
+    (another run laid that tail already), or "" when it is."""
+    n = len(strand.points)
+    toward_last = float(travel @ strand.tan[i]) >= 0.0
+    lo, hi = visited
+    if strand.closed or not strand.free_ends[1 if toward_last else 0]:
+        return [], np.zeros(2), "not_free"
+    if toward_last:
+        if i < hi:
+            return [], np.zeros(2), "visited"
+        if np.any(strand.junction_idx > i):
+            return [], np.zeros(2), "junction"
+        rng = list(range(i + 1, n))
+    else:
+        if i > lo:
+            return [], np.zeros(2), "visited"
+        if np.any(strand.junction_idx < i):
+            return [], np.zeros(2), "junction"
+        rng = list(range(i - 1, -1, -1))
+    k = min(3, n - 1)
+    outward = strand.points[-1] - strand.points[-1 - k] if toward_last else strand.points[0] - strand.points[k]
+    return rng, outward, ""
+
+
+def read_tips(
+    runs: list[np.ndarray],
+    labels: list[np.ndarray],
+    kinds: list[np.ndarray],
+    samples: list[np.ndarray],
+    strands: Sequence[Strand],
+    states: Sequence[tuple[int, int, int] | None],
+    mask: np.ndarray,
+    cap_px: float,
+) -> dict[str, Any]:
+    """Both ends of every run read on to the ink's tip, in place.
+
+    A run ends on the pixel the seed's last sample boarded, which is short of
+    the strand's end whenever the composition is shorter than the ink. Where
+    the strand runs on in the travel direction to a FREE end — no junction
+    node before it, no other run on that tail — its remaining pixels are laid
+    (`rail_points`, skeleton pixels), and from the free end the EDT-ridge walk
+    of `read_tip` reads on to the end of the mask (`walk_points`). Tip vertices
+    carry kind 2; every appended vertex is checked against the mask, and the
+    counts returned are the proof that nothing was invented.
+    """
+    edt = distance_transform_edt(np.asarray(mask, dtype=bool))
+    pixel_of: dict[tuple[float, float], list[tuple[int, int]]] = {}
+    for si, s in enumerate(strands):
+        for pi, p in enumerate(s.points):
+            pixel_of.setdefault(_pixel_key(p), []).append((si, pi))
+    visited: dict[int, tuple[int, int]] = {}
+    for st in states:
+        if st is None:
+            continue
+        lo, hi = visited.get(st[0], (st[1], st[1]))
+        visited[st[0]] = (min(lo, st[1]), max(hi, st[1]))
+    stops = {"mask": 0, "rise": 0, "cap": 0, "edge": 0}
+    blocked = {"not_free": 0, "junction": 0, "visited": 0, "ambiguous": 0}
+    ends_read = rail_added = rail_inside = walk_added = walk_inside = 0
+    rail_lengths: list[float] = []
+    walk_lengths: list[float] = []
+    h, w = mask.shape
+
+    def in_mask(pts: np.ndarray) -> int:
+        ix = np.rint(pts[:, 0]).astype(int)
+        iy = np.rint(pts[:, 1]).astype(int)
+        ok = (ix >= 0) & (ix < w) & (iy >= 0) & (iy < h)
+        hit = np.zeros(len(pts), dtype=bool)
+        hit[ok] = mask[iy[ok], ix[ok]]
+        return int(hit.sum())
+
+    for ri, r in enumerate(runs):
+        for at_end in (False, True):
+            end_pt = r[-1] if at_end else r[0]
+            travel = (r[-1] - r[-2]) if at_end else (r[0] - r[1])
+            nt = float(np.hypot(*travel))
+            found = pixel_of.get(_pixel_key(end_pt), [])
+            if len(found) != 1 or nt <= 1e-9:
+                blocked["ambiguous"] += 1
+                continue
+            si, pi = found[0]
+            strand = strands[si]
+            rng, outward, why = tip_tail(strand, pi, travel / nt, visited.get(si, (pi, pi)))
+            if why:
+                blocked[why] += 1
+                continue
+            rail = strand.points[rng] if rng else np.zeros((0, 2))
+            tip_start = rail[-1] if len(rail) else end_pt
+            walk, stop = read_tip(tip_start, outward, mask, edt, cap_px)
+            stops[stop] += 1
+            pts = np.vstack([rail, walk])
+            if not len(pts):
+                continue
+            ends_read += 1
+            rail_added += len(rail)
+            rail_inside += in_mask(rail) if len(rail) else 0
+            walk_added += len(walk)
+            walk_inside += in_mask(walk) if len(walk) else 0
+            rail_lengths.append(polyline_len(np.vstack([end_pt[None, :], rail])) if len(rail) else 0.0)
+            walk_lengths.append(polyline_len(np.vstack([tip_start[None, :], walk])) if len(walk) else 0.0)
+            if at_end:
+                runs[ri] = np.vstack([runs[ri], pts])
+                labels[ri] = np.concatenate([labels[ri], np.full(len(pts), labels[ri][-1])])
+                kinds[ri] = np.concatenate([kinds[ri], np.full(len(pts), 2, dtype=int)])
+                samples[ri] = np.concatenate([samples[ri], np.full(len(pts), samples[ri][-1])])
+            else:
+                runs[ri] = np.vstack([pts[::-1], runs[ri]])
+                labels[ri] = np.concatenate([np.full(len(pts), labels[ri][0]), labels[ri]])
+                kinds[ri] = np.concatenate([np.full(len(pts), 2, dtype=int), kinds[ri]])
+                samples[ri] = np.concatenate([np.full(len(pts), samples[ri][0]), samples[ri]])
+    return {
+        "free_ends": int(sum(int(s.free_ends[0]) + int(s.free_ends[1]) for s in strands)),
+        "run_ends": 2 * len(runs),
+        "ends_read": ends_read,
+        "blocked": blocked,
+        "rail_points": rail_added,
+        "rail_points_in_mask": rail_inside,
+        "rail_len_px_max": round(max(rail_lengths), 2) if rail_lengths else 0.0,
+        "rail_len_px_total": round(sum(rail_lengths), 2),
+        "walk_points": walk_added,
+        "walk_points_in_mask": walk_inside,
+        "walk_len_px_max": round(max(walk_lengths), 2) if walk_lengths else 0.0,
+        "walk_len_px_total": round(sum(walk_lengths), 2),
+        "stops": stops,
+    }
+
+
 def resample_run(points: np.ndarray, step_px: float, *carried: np.ndarray) -> tuple[np.ndarray, ...]:
     """Arc-length-uniform vertices along the polyline (endpoints exact), every
     carried per-vertex array re-read at the nearest original vertex."""
@@ -1194,8 +1436,11 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
             "detail": "nothing decoded onto the ink",
             "meta": {"tintenpfad": diag},
         }
+    mask = np.asarray(case_ev.mask, dtype=bool)
+    if weights.tip_read:
+        diag["tip_read"] = read_tips(runs, labels, kinds, samples, strands, states, mask, weights.tip_read_cap_xh * xh)
     if weights.tip_extend_xh > 0.0:
-        edt = distance_transform_edt(np.asarray(case_ev.mask, dtype=bool))
+        edt = distance_transform_edt(mask)
         diag["tips_extended"] = extend_tips(runs, labels, kinds, samples, edt, weights.tip_extend_xh * xh)
     raw_units = [_px_to_word_units(r[:, 0], r[:, 1], xh, _registration(result)) for r in runs]
     diag["raw_chain"] = {
@@ -1212,6 +1457,14 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
         labels = [r[1] for r in resampled]
         kinds = [r[2] for r in resampled]
         samples = [r[3] for r in resampled]
+    if weights.tip_read:
+        # The no-invention proof repeated on the DELIVERED vertices: every
+        # resampled tip vertex must still sit on ink.
+        tip_pts = np.vstack([r[np.asarray(k) == 2] for r, k in zip(runs, kinds, strict=True)] or [np.zeros((0, 2))])
+        ix, iy = np.rint(tip_pts[:, 0]).astype(int), np.rint(tip_pts[:, 1]).astype(int)
+        ok = (ix >= 0) & (ix < mask.shape[1]) & (iy >= 0) & (iy < mask.shape[0])
+        diag["tip_read"]["resampled_total"] = int(len(tip_pts))
+        diag["tip_read"]["resampled_in_mask"] = int(mask[iy[ok], ix[ok]].sum())
     reg = _registration(result)
     units = [_px_to_word_units(r[:, 0], r[:, 1], xh, reg) for r in runs]
     visited = {st[0] for st in states if st is not None}
@@ -1314,7 +1567,14 @@ def _run_one(job: tuple[WordCase, TintenpfadWeights]) -> dict[str, Any]:
             f"  {case.id:<12} runs {d['runs']:2d} strands {d['strands']:3d} jumps {d['jumps']:3d} hairpins {d['hairpins']:2d}"
             f" plifts {d['paper_lifts']:2d} paper {d['paper_samples']:3d}/{d['seed_samples']:4d} unvisited {d['ink_unvisited_share']:.2f}"
             f" exc b/r {d['excursions_bridge']}/{d['excursions_rail']} reentry {d['reentries_forbidden']}/{d['reentries_left']}"
-            f" kink {d['kink_median_deg']:5.2f}° turn90 {d['turn_p90_deg']:5.1f}° {d['seconds']:5.1f}s",
+            f" kink {d['kink_median_deg']:5.2f}° turn90 {d['turn_p90_deg']:5.1f}° {d['seconds']:5.1f}s"
+            + (
+                f" tips {d['tip_read']['ends_read']}/{d['tip_read']['run_ends']}"
+                f" rail +{d['tip_read']['rail_points']} walk +{d['tip_read']['walk_points']}"
+                f" in-mask {d['tip_read']['walk_points_in_mask']}"
+                if "tip_read" in d
+                else ""
+            ),
             flush=True,
         )
     else:
@@ -1482,6 +1742,8 @@ __all__ = [
     "follow_case",
     "follow_word",
     "hermite_bridge",
+    "read_tip",
+    "read_tips",
     "reentries",
     "refine_strands",
     "resample_run",

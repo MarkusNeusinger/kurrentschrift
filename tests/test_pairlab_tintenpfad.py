@@ -24,12 +24,14 @@ from tools.pairlab.tintenpfad import (
     decode,
     decode_with_hysteresis,
     hermite_bridge,
+    read_tips,
     reentries,
     refine_strands,
     resample_run,
     spans_of,
     strands_of,
     tintenpfad_payload,
+    tip_tail,
     weights_from_overrides,
 )
 from tools.tracebench.candidates import wire_violation
@@ -123,6 +125,108 @@ def test_the_subpixel_rail_moves_a_staircase_onto_the_stroke_axis() -> None:
     assert off_ref.mean() < off_raw.mean()
     assert off_ref.max() < 0.35
     assert np.abs(refined - raw).max() <= 0.75 + 1e-9
+
+
+def _slanted_stroke(angle_deg: float = 22.5, length: float = 95.0, half_width: float = 2.5):
+    """A capsule — a pen stroke with ROUNDED ends, so its medial axis ends on the
+    axis (a flat-cut end forks toward its two corners)."""
+    mask = np.zeros((60, 120), dtype=bool)
+    x0, y0, angle = 10.0, 15.0, np.radians(angle_deg)
+    direction = np.array([np.cos(angle), np.sin(angle)])
+    normal = np.array([-direction[1], direction[0]])
+    yy, xx = np.mgrid[0:60, 0:120]
+    rel = np.stack([xx - x0, yy - y0], axis=-1)
+    along = np.clip(rel @ direction, 0.0, length)
+    foot = np.stack([x0 + along * direction[0], y0 + along * direction[1]], axis=-1)
+    mask[np.hypot(xx - foot[..., 0], yy - foot[..., 1]) <= half_width] = True
+    return mask, np.array([x0, y0]), direction, normal
+
+
+def test_the_tip_reading_lays_the_unvisited_rail_and_walks_to_the_end_of_the_mask() -> None:
+    """A run that stops five pixels short of the strand's free end is completed
+    along the strand, then read on along the EDT ridge until the ink ends —
+    every added vertex on ink, the last one within a pixel of the mask's tip."""
+    mask, origin, direction, normal = _slanted_stroke()
+    weights = TintenpfadWeights(rail="subpixel", tip_read=True)
+    strands = strands_of(skeletonize(mask), XH, weights, {})
+    assert len(strands) == 1 and strands[0].free_ends == (True, True)
+    refine_strands(strands, mask, weights)
+    n = len(strands[0].points)
+    stop = n - 6
+    runs = [strands[0].points[: stop + 1].copy()]
+    labels = [np.zeros(stop + 1, dtype=int)]
+    kinds = [np.zeros(stop + 1, dtype=int)]
+    samples = [np.arange(stop + 1)]
+    states = [(0, 0, 1), (0, stop, 1)]
+    diag = read_tips(runs, labels, kinds, samples, strands, states, mask, cap_px=XH)
+    assert diag["ends_read"] == 2 and diag["blocked"] == {"not_free": 0, "junction": 0, "visited": 0, "ambiguous": 0}
+    assert diag["rail_points"] == 5 and diag["rail_points_in_mask"] == 5
+    assert diag["walk_points"] > 0 and diag["walk_points_in_mask"] == diag["walk_points"]
+    assert diag["stops"] == {"mask": 2, "rise": 0, "cap": 0, "edge": 0}
+    along = (runs[0] - origin) @ direction
+    across = (runs[0] - origin) @ normal
+    # The skeleton stopped ~half a width short of both tips (the caps reach
+    # along = -2.5 and 97.5); the reading gets within a pixel of each tip, on the axis.
+    assert along.max() > 97.5 - 1.0 and along.min() < -2.5 + 1.0
+    assert np.abs(across[kinds[0] == 2]).max() < 1.0
+    assert (kinds[0] == 2).sum() == diag["rail_points"] + diag["walk_points"]
+    assert len(labels[0]) == len(runs[0]) == len(samples[0])
+
+
+def test_a_junction_end_and_a_visited_tail_are_never_read() -> None:
+    """A T: the stem's end at the bar is a junction end, not a tip; and a tail
+    another run already laid is not laid twice."""
+    skel = np.zeros((50, 80), dtype=bool)
+    skel[20, 5:76] = True
+    skel[20:41, 40] = True
+    strands = strands_of(skel, XH, TintenpfadWeights(rail="raw"), {})
+    assert len(strands) == 2
+    stem = next(s for s in strands if len(s.points) < 30)
+    bar = next(s for s in strands if len(s.points) >= 30)
+    assert bar.free_ends == (True, True)
+    assert sorted(stem.free_ends) == [False, True]
+    junction_end = 0 if stem.free_ends[1] else 1
+    i = len(stem.points) // 2
+    toward_junction = stem.points[-1 if junction_end == 1 else 0] - stem.points[i]
+    rng, _, why = tip_tail(stem, i, toward_junction / np.linalg.norm(toward_junction), (i, i))
+    assert why == "not_free" and rng == []
+    toward_tip = -toward_junction
+    rng, outward, why = tip_tail(stem, i, toward_tip / np.linalg.norm(toward_tip), (i, i))
+    assert why == "" and len(rng) == len(stem.points) - 1 - i
+    assert float(outward @ toward_tip) > 0.0
+    # The same tail with a state beyond `i` on it: already laid by another run.
+    _, _, why = tip_tail(stem, i, toward_tip / np.linalg.norm(toward_tip), (0, len(stem.points) - 1))
+    assert why == "visited"
+
+
+def test_spurs_at_a_strand_end_stay_with_the_switch_and_lateral_spurs_still_go() -> None:
+    """Two short prongs at the end of a rail (the thinning's fork at a stroke
+    tip) are pruned by default and kept with `spur_at_ends`; a short spur off
+    the SIDE of a rail is a thinning artefact and is pruned either way."""
+    fork = np.zeros((40, 40), dtype=bool)
+    fork[5:31, 20] = True
+    for k in (1, 2, 3):
+        fork[30 + k, 20 - k] = True
+        fork[30 + k, 20 + k] = True
+    diag_off: dict = {}
+    off = strands_of(fork, XH, TintenpfadWeights(rail="raw"), diag_off)
+    assert diag_off["spurs_pruned"] == 2 and "spurs_kept_at_ends" not in diag_off  # the OFF artefact is untouched
+    assert len(off) == 1 and off[0].points[:, 1].max() == 30
+    diag_on: dict = {}
+    on = strands_of(fork, XH, TintenpfadWeights(rail="raw", spur_at_ends=True), diag_on)
+    assert diag_on["spurs_pruned"] == 0 and diag_on["spurs_kept_at_ends"] == 2
+    # The rail pairs straight through into one prong; the other prong is its own
+    # short strand whose junction end is NOT free — only its tip is.
+    on.sort(key=lambda s: -len(s.points))
+    assert len(on) == 2 and on[0].points[:, 1].max() == 33 and on[1].points[:, 1].max() == 33
+    assert on[0].free_ends == (True, True) and sorted(on[1].free_ends) == [False, True]
+    lateral = np.zeros((40, 40), dtype=bool)
+    lateral[5:36, 20] = True
+    for k in (1, 2, 3):
+        lateral[20 + k, 20 + k] = True
+    diag_lat: dict = {}
+    strands_of(lateral, XH, TintenpfadWeights(rail="raw", spur_at_ends=True), diag_lat)
+    assert diag_lat["spurs_pruned"] == 1 and diag_lat["spurs_kept_at_ends"] == 0
 
 
 # ----------------------------------------------------------------- stage 2
@@ -323,6 +427,11 @@ def test_weights_are_frozen_and_typed() -> None:
         TintenpfadWeights(), ["turn_cost=30", "max_cand=12.0", "affine_seed=off", "bridge=chord"]
     )
     assert w.turn_cost == 30.0 and w.max_cand == 12 and w.affine_seed is False and w.bridge == "chord"
+    # The Spitzen arm is off in the delivered default and switches on by --weight.
+    default = TintenpfadWeights()
+    assert default.tip_read is False and default.spur_at_ends is False and default.tip_extend_xh == 0.0
+    arm = weights_from_overrides(default, ["tip_read=1", "spur_at_ends=on"])
+    assert arm.tip_read is True and arm.spur_at_ends is True
     with pytest.raises(SystemExit):
         weights_from_overrides(TintenpfadWeights(), ["no_such=1"])
     with pytest.raises(ValueError):
