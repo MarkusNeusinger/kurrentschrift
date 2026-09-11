@@ -14,22 +14,33 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from scipy.ndimage import distance_transform_edt
 from skimage.morphology import skeletonize
 
+from core.extract import binarize_adaptive
 from tools.pairlab.tintenpfad import (
     LEGACY_P5,
+    SUBPIXEL_MAX_PX,
+    EdtField,
     Seed,
     TintenpfadWeights,
     assemble,
     decode,
     decode_with_hysteresis,
+    fine_edt,
+    grey_levels,
     hermite_bridge,
+    ink_bridge_test,
+    read_tips,
     reentries,
     refine_strands,
     resample_run,
     spans_of,
     strands_of,
+    subpixel_rail,
+    tentfit_rail,
     tintenpfad_payload,
+    tip_tail,
     weights_from_overrides,
 )
 from tools.tracebench.candidates import wire_violation
@@ -123,6 +134,188 @@ def test_the_subpixel_rail_moves_a_staircase_onto_the_stroke_axis() -> None:
     assert off_ref.mean() < off_raw.mean()
     assert off_ref.max() < 0.35
     assert np.abs(refined - raw).max() <= 0.75 + 1e-9
+
+
+def _slanted_stroke(
+    angle_deg: float = 22.5, length: float = 95.0, half_width: float = 2.5
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """A capsule — a pen stroke with ROUNDED ends, so its medial axis ends on the
+    axis (a flat-cut end forks toward its two corners)."""
+    mask = np.zeros((60, 120), dtype=bool)
+    x0, y0, angle = 10.0, 15.0, np.radians(angle_deg)
+    direction = np.array([np.cos(angle), np.sin(angle)])
+    normal = np.array([-direction[1], direction[0]])
+    yy, xx = np.mgrid[0:60, 0:120]
+    rel = np.stack([xx - x0, yy - y0], axis=-1)
+    along = np.clip(rel @ direction, 0.0, length)
+    foot = np.stack([x0 + along * direction[0], y0 + along * direction[1]], axis=-1)
+    mask[np.hypot(xx - foot[..., 0], yy - foot[..., 1]) <= half_width] = True
+    return mask, np.array([x0, y0]), direction, normal
+
+
+def test_the_tip_reading_lays_the_unvisited_rail_and_walks_to_the_end_of_the_mask() -> None:
+    """A run that stops five pixels short of the strand's free end is completed
+    along the strand, then read on along the EDT ridge until the ink ends —
+    every added vertex on ink, the last one within a pixel of the mask's tip."""
+    mask, origin, direction, normal = _slanted_stroke()
+    weights = TintenpfadWeights(rail="subpixel", tip_read=True)
+    strands = strands_of(skeletonize(mask), XH, weights, {})
+    assert len(strands) == 1 and strands[0].free_ends == (True, True)
+    refine_strands(strands, mask, weights)
+    n = len(strands[0].points)
+    stop = n - 6
+    runs = [strands[0].points[: stop + 1].copy()]
+    labels = [np.zeros(stop + 1, dtype=int)]
+    kinds = [np.zeros(stop + 1, dtype=int)]
+    samples = [np.arange(stop + 1)]
+    states = [(0, 0, 1), (0, stop, 1)]
+    diag = read_tips(runs, labels, kinds, samples, strands, states, mask, cap_px=XH)
+    assert diag["ends_read"] == 2 and diag["blocked"] == {"not_free": 0, "junction": 0, "visited": 0, "ambiguous": 0}
+    assert diag["rail_points"] == 5 and diag["rail_points_in_mask"] == 5
+    assert diag["walk_points"] > 0 and diag["walk_points_in_mask"] == diag["walk_points"]
+    assert diag["stops"] == {"mask": 2, "rise": 0, "cap": 0, "edge": 0}
+    along = (runs[0] - origin) @ direction
+    across = (runs[0] - origin) @ normal
+    # The skeleton stopped ~half a width short of both tips (the caps reach
+    # along = -2.5 and 97.5); the reading gets within a pixel of each tip, on the axis.
+    assert along.max() > 97.5 - 1.0 and along.min() < -2.5 + 1.0
+    assert np.abs(across[kinds[0] == 2]).max() < 1.0
+    assert (kinds[0] == 2).sum() == diag["rail_points"] + diag["walk_points"]
+    assert len(labels[0]) == len(runs[0]) == len(samples[0])
+
+
+def test_a_junction_end_and_a_visited_tail_are_never_read() -> None:
+    """A T: the stem's end at the bar is a junction end, not a tip; and a tail
+    another run already laid is not laid twice."""
+    skel = np.zeros((50, 80), dtype=bool)
+    skel[20, 5:76] = True
+    skel[20:41, 40] = True
+    strands = strands_of(skel, XH, TintenpfadWeights(rail="raw"), {})
+    assert len(strands) == 2
+    stem = next(s for s in strands if len(s.points) < 30)
+    bar = next(s for s in strands if len(s.points) >= 30)
+    assert bar.free_ends == (True, True)
+    assert sorted(stem.free_ends) == [False, True]
+    junction_end = 0 if stem.free_ends[1] else 1
+    i = len(stem.points) // 2
+    toward_junction = stem.points[-1 if junction_end == 1 else 0] - stem.points[i]
+    rng, _, why = tip_tail(stem, i, toward_junction / np.linalg.norm(toward_junction), (i, i))
+    assert why == "not_free" and rng == []
+    toward_tip = -toward_junction
+    rng, outward, why = tip_tail(stem, i, toward_tip / np.linalg.norm(toward_tip), (i, i))
+    assert why == "" and len(rng) == len(stem.points) - 1 - i
+    assert float(outward @ toward_tip) > 0.0
+    # The same tail with a state beyond `i` on it: already laid by another run.
+    _, _, why = tip_tail(stem, i, toward_tip / np.linalg.norm(toward_tip), (0, len(stem.points) - 1))
+    assert why == "visited"
+
+
+def test_spurs_at_a_strand_end_stay_with_the_switch_and_lateral_spurs_still_go() -> None:
+    """Two short prongs at the end of a rail (the thinning's fork at a stroke
+    tip) are pruned by default and kept with `spur_at_ends`; a short spur off
+    the SIDE of a rail is a thinning artefact and is pruned either way."""
+    fork = np.zeros((40, 40), dtype=bool)
+    fork[5:31, 20] = True
+    for k in (1, 2, 3):
+        fork[30 + k, 20 - k] = True
+        fork[30 + k, 20 + k] = True
+    diag_off: dict = {}
+    off = strands_of(fork, XH, TintenpfadWeights(rail="raw"), diag_off)
+    assert diag_off["spurs_pruned"] == 2 and "spurs_kept_at_ends" not in diag_off  # the OFF artefact is untouched
+    assert len(off) == 1 and off[0].points[:, 1].max() == 30
+    diag_on: dict = {}
+    on = strands_of(fork, XH, TintenpfadWeights(rail="raw", spur_at_ends=True), diag_on)
+    assert diag_on["spurs_pruned"] == 0 and diag_on["spurs_kept_at_ends"] == 2
+    # The rail pairs straight through into one prong; the other prong is its own
+    # short strand whose junction end is NOT free — only its tip is.
+    on.sort(key=lambda s: -len(s.points))
+    assert len(on) == 2 and on[0].points[:, 1].max() == 33 and on[1].points[:, 1].max() == 33
+    assert on[0].free_ends == (True, True) and sorted(on[1].free_ends) == [False, True]
+    lateral = np.zeros((40, 40), dtype=bool)
+    lateral[5:36, 20] = True
+    for k in (1, 2, 3):
+        lateral[20 + k, 20 + k] = True
+    diag_lat: dict = {}
+    strands_of(lateral, XH, TintenpfadWeights(rail="raw", spur_at_ends=True), diag_lat)
+    assert diag_lat["spurs_pruned"] == 1 and diag_lat["spurs_kept_at_ends"] == 0
+
+
+def _antialiased_stroke(
+    angle_deg: float, half_w: float, size: tuple[int, int] = (80, 160), supersample: int = 8
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """A grey crop in [0, 1] (0 = ink) of one straight stroke with coverage
+    anti-aliasing — the sub-pixel edge information a scan carries — plus the
+    stroke's axis origin and unit normal."""
+    h, w = size
+    angle = np.radians(angle_deg)
+    direction = np.array([np.cos(angle), np.sin(angle)])
+    normal = np.array([-direction[1], direction[0]])
+    origin = np.array([12.0, 20.0])
+    yy, xx = np.mgrid[0 : h * supersample, 0 : w * supersample]
+    x = (xx + 0.5) / supersample - 0.5 - origin[0]
+    y = (yy + 0.5) / supersample - 0.5 - origin[1]
+    along = x * direction[0] + y * direction[1]
+    across = x * normal[0] + y * normal[1]
+    inside = (along >= 0) & (along <= 130) & (np.abs(across) <= half_w)
+    coverage = inside.reshape(h, supersample, w, supersample).mean(axis=(1, 3))
+    return 1.0 - coverage, origin, normal
+
+
+def test_the_tent_fit_on_the_fine_edt_reads_the_axis_closer_than_the_three_point_tent() -> None:
+    """A 22.5° stroke of half-width 1.5 px: the binary boundary is a staircase
+    and the ridge of its distance transform inherits it; the same distance
+    transform on the grey's finer raster, read by the ±2 px tent fit, puts the
+    strand closer to the true axis — and never moves a pixel past the cap."""
+    gray, origin, normal = _antialiased_stroke(22.5, 1.5)
+    mask = binarize_adaptive(gray)
+    strands = strands_of(skeletonize(mask), XH, TintenpfadWeights(rail="raw"), {})
+    assert len(strands) == 1
+    raw = strands[0].points.copy()
+    tan = strands[0].tan
+    coarse = subpixel_rail(raw, tan, distance_transform_edt(mask))
+    field, agreement = fine_edt(mask, gray, 4)
+    assert isinstance(field, EdtField) and field.up == 4 and field.shape == mask.shape
+    assert agreement > 0.9  # the fine boundary is the mask's own edge, read finer
+    fit = tentfit_rail(raw, tan, field, 2.0, 0.5)
+    inner = slice(10, -10)
+    off_coarse = np.abs((coarse[inner] - origin) @ normal)
+    off_fit = np.abs((fit[inner] - origin) @ normal)
+    assert off_fit.mean() < 0.75 * off_coarse.mean()
+    assert np.abs(fit - raw).max() <= SUBPIXEL_MAX_PX + 1e-9
+    # the field reads CROP-pixel distances (not fine ones): the adaptive mask's
+    # edge sits ~1.5–2 px from the axis, a fine-pixel reading would say ~8
+    assert 1.2 < float(np.median(field.read(fit[inner]))) < 2.4
+
+
+def test_the_tent_fit_on_the_binary_edt_is_a_tent_apex_not_a_parabola() -> None:
+    """On an exact continuous tent the least-squares tent recovers the apex
+    offset itself (a parabola would read 70 % of it)."""
+    edt = np.zeros((41, 41))
+    delta = 0.3
+    yy = np.arange(41, dtype=float)
+    edt[:] = np.maximum(0.0, 4.0 - np.abs(yy - (20.0 + delta)))[:, None]
+    pts = np.column_stack([np.arange(5.0, 36.0), np.full(31, 20.0)])
+    tan = np.tile([1.0, 0.0], (31, 1))
+    fit = tentfit_rail(pts, tan, edt, 2.0, 0.5)
+    assert np.allclose(fit[:, 1], 20.0 + delta, atol=0.03)
+    assert np.allclose(fit[:, 0], pts[:, 0])  # moved along the normal only
+
+
+def test_the_default_rail_ignores_the_fit_fields() -> None:
+    """`refine_strands` at the delivered default is the three-point tent on the
+    binary EDT, whatever the fit fields say — the byte-identity of the default."""
+    gray, _origin, _normal = _antialiased_stroke(30.0, 2.0)
+    mask = binarize_adaptive(gray)
+    weights = TintenpfadWeights(fit_half_px=3.0, fit_step_px=0.25)
+    strands = strands_of(skeletonize(mask), XH, weights, {})
+    expected = subpixel_rail(strands[0].points, strands[0].tan, distance_transform_edt(mask))
+    diag = refine_strands(strands, mask, weights, crop=gray)
+    assert diag == {}
+    assert np.array_equal(strands[0].points, expected)
+    fine_weights = TintenpfadWeights(rail="tentfit", edt_upsample=4)
+    strands = strands_of(skeletonize(mask), XH, fine_weights, {})
+    diag = refine_strands(strands, mask, fine_weights, crop=gray)
+    assert diag["edt_upsample"] == 4 and 0.0 <= diag["fine_mask_band_agreement"] <= 1.0
 
 
 # ----------------------------------------------------------------- stage 2
@@ -280,6 +473,84 @@ def test_hermite_bridge_is_tangent_continuous_and_capped() -> None:
     assert pts[:, 0].min() >= -1.0 - 1e-9 and pts[:, 0].max() <= 11.0 + 1e-9
 
 
+def _two_blobs(paper: float = 0.85, ink: float = 0.4) -> tuple[np.ndarray, np.ndarray]:
+    """A crop with two thick ink bars on row 20 and a blank gap between x 40 and 80."""
+    crop = np.full((41, 120), paper)
+    mask = np.zeros((41, 120), dtype=bool)
+    mask[18:23, 4:40] = True
+    mask[18:23, 80:116] = True
+    crop[mask] = ink
+    return crop, mask
+
+
+def test_the_ink_bridge_reads_a_faint_hairline_but_not_blank_paper() -> None:
+    """The Tinten-Brücke test: paper between two strand ends stays a lift, a
+    hairline the binarisation lost (grey below paper by the margin) bridges —
+    even one pixel beside the chord, thanks to the band — and a chord that
+    runs through continuous ink passes without a paper sample."""
+    crop, mask = _two_blobs()
+    ink_level, paper_level = grey_levels(crop, mask)
+    assert ink_level == pytest.approx(0.4) and paper_level == pytest.approx(0.85)
+    p0, p1 = np.array([39.0, 20.0]), np.array([80.0, 20.0])
+    kw = {"ink_level": ink_level, "paper_level": paper_level, "margin": 0.25, "share": 0.6, "band_px": 1.0}
+    blank = ink_bridge_test(crop, mask, p0, p1, **kw)
+    # the one sample that reads faint is the bilinear edge of the bar itself
+    assert blank["bridged"] is False and blank["faint_share"] < 0.1 and blank["paper_samples"] == 40
+    # a hairline one pixel BELOW the chord, a third of the way from paper toward ink
+    faint = crop.copy()
+    faint[21, 40:80] = paper_level - 0.35 * (paper_level - ink_level)
+    hit = ink_bridge_test(faint, mask, p0, p1, **kw)
+    assert hit["bridged"] is True and hit["faint_share"] >= 0.9
+    # without the band the chord itself reads paper: the hairline is missed
+    miss = ink_bridge_test(faint, mask, p0, p1, **{**kw, "band_px": 0.0})
+    assert miss["bridged"] is False
+    # a stricter margin than the hairline's depth reads paper again
+    strict = ink_bridge_test(faint, mask, p0, p1, **{**kw, "margin": 0.5})
+    assert strict["bridged"] is False
+    # a chord inside one bar has no paper sample and passes
+    inside = ink_bridge_test(crop, mask, np.array([10.0, 20.0]), np.array([30.0, 20.0]), **kw)
+    assert inside["bridged"] is True and inside["paper_samples"] == 0
+
+
+def test_a_decoder_lift_becomes_a_bridge_only_when_the_ink_test_passes() -> None:
+    """Two rail pieces 14 px apart (wider than the jump radius, within the
+    ink-bridge radius) under a straight seed: the default assembly lifts;
+    with a passing ink test the same states assemble into one run whose gap
+    is the tested chord itself, one bridge-kind vertex, never a Hermite bow
+    that could leave the faint ink; a failing test leaves the lift."""
+    skel = np.zeros((41, 120), dtype=bool)
+    skel[20, 4:50] = True
+    skel[20, 64:116] = True
+    seed = _seed_along(np.array([[8.0, 20.0], [112.0, 20.0]]))
+    weights = TintenpfadWeights(rail="raw", resample_step_xh=0.0, ink_bridge_xh=1.0)
+    strands = strands_of(skel, XH, weights, {})
+    assert len(strands) == 2
+    states, _, _ = decode_with_hysteresis(strands, seed, XH, weights)
+    runs, _, kinds, _, counts = assemble(strands, states, seed, XH, weights)
+    assert counts["paper_lifts"] == 1 and len(runs) == 2 and "ink_bridges" not in counts
+    tested: list[float] = []
+
+    def passing(p0: np.ndarray, p1: np.ndarray) -> dict:
+        tested.append(float(np.hypot(*(p1 - p0))))
+        return {"bridged": True, "faint_share": 1.0, "paper_samples": 12}
+
+    runs_b, _, kinds_b, _, counts_b = assemble(strands, states, seed, XH, weights, passing)
+    assert counts_b["paper_lifts"] == 0 and counts_b["ink_bridges"] == 1 and len(runs_b) == 1
+    assert len(tested) == 1 and 12.0 <= tested[0] <= 16.0
+    assert counts_b["ink_bridge_tests"][0]["gap_xh"] == pytest.approx(tested[0] / XH, abs=1e-3)
+    assert int((kinds_b[0] == 1).sum()) == 1  # the gap is laid as the tested chord: one bridge vertex
+    assert len(runs_b[0]) == len(runs[0]) + len(runs[1])  # the chord's vertex is the second rail's first pixel
+    runs_f, _, _, _, counts_f = assemble(
+        strands, states, seed, XH, weights, lambda p0, p1: {"bridged": False, "faint_share": 0.0, "paper_samples": 12}
+    )
+    assert counts_f["paper_lifts"] == 1 and counts_f["ink_bridges"] == 0 and len(runs_f) == 2
+    # a gap beyond the ink-bridge radius is never even tested
+    narrow = weights_from_overrides(weights, ["ink_bridge_xh=0.3"])
+    tested.clear()
+    _, _, _, _, counts_n = assemble(strands, states, seed, XH, narrow, passing)
+    assert counts_n["paper_lifts"] == 1 and not tested
+
+
 def test_resample_run_is_arclength_uniform_and_carries_labels() -> None:
     pts = np.array([[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [3.0, 1.0], [3.0, 4.0]])
     labels = np.array([0, 0, 1, 1, 2])
@@ -323,10 +594,21 @@ def test_weights_are_frozen_and_typed() -> None:
         TintenpfadWeights(), ["turn_cost=30", "max_cand=12.0", "affine_seed=off", "bridge=chord"]
     )
     assert w.turn_cost == 30.0 and w.max_cand == 12 and w.affine_seed is False and w.bridge == "chord"
+    # The Spitzen arm is off in the delivered default and switches on by --weight.
+    default = TintenpfadWeights()
+    assert default.tip_read is False and default.spur_at_ends is False and default.tip_extend_xh == 0.0
+    arm = weights_from_overrides(default, ["tip_read=1", "spur_at_ends=on"])
+    assert arm.tip_read is True and arm.spur_at_ends is True
     with pytest.raises(SystemExit):
         weights_from_overrides(TintenpfadWeights(), ["no_such=1"])
     with pytest.raises(ValueError):
         TintenpfadWeights(rail="smooth")
+    arm = weights_from_overrides(TintenpfadWeights(), ["rail=tentfit", "edt_upsample=4"])
+    assert arm.rail == "tentfit" and arm.edt_upsample == 4 and arm.fit_half_px == 2.0
+    with pytest.raises(ValueError):
+        TintenpfadWeights(edt_upsample=0)
+    with pytest.raises(ValueError):
+        TintenpfadWeights(fit_step_px=3.0)
     with pytest.raises(dataclasses.FrozenInstanceError):
         TintenpfadWeights().turn_cost = 1.0  # type: ignore[misc]
 
