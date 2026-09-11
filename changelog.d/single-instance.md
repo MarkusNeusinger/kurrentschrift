@@ -11,4 +11,4 @@
   heavy endpoints already run in the request threadpool. The old reasoning that
   max=1 forces a deploy to replace the only instance predates the candidate
   chain: the limit is per revision and the smoke warms the candidate before
-  traffic moves. Owner decision 2026-09-11, mirrored in anyplot.
+  traffic moves. Owner decision 2026-09-11, mirrored in anyplot. (#593)
