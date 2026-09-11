@@ -1699,12 +1699,20 @@ class HairpinTipReader:
     """
 
     def __init__(
-        self, strands: Sequence[Strand], states: Sequence[tuple[int, int, int] | None], mask: np.ndarray, cap_px: float
+        self,
+        strands: Sequence[Strand],
+        states: Sequence[tuple[int, int, int] | None],
+        mask: np.ndarray,
+        cap_px: float,
+        grey_paper: np.ndarray | None = None,
     ) -> None:
         self.strands = strands
         self.mask = np.asarray(mask, dtype=bool)
         self.edt = distance_transform_edt(self.mask)
         self.cap_px = cap_px
+        # The Grauwert-Stopp reaches the hairpin walks too: the same second
+        # reading of the ink that stops a run end's walk stops a hairpin's.
+        self.grey_paper = grey_paper
         self.visited = _visited_ranges(states)
         self.claimed: list[tuple[int, int]] = []
         self.rail_lengths: list[float] = []
@@ -1717,7 +1725,7 @@ class HairpinTipReader:
             "rail_points_in_mask": 0,
             "walk_points": 0,
             "walk_points_in_mask": 0,
-            "stops": {"mask": 0, "rise": 0, "cap": 0, "edge": 0},
+            "stops": {"mask": 0, "rise": 0, "cap": 0, "edge": 0, "grey": 0},
         }
 
     def __call__(self, s: int, i: int, travel_dir: int) -> np.ndarray:
@@ -1732,7 +1740,7 @@ class HairpinTipReader:
             return np.zeros((0, 2))
         rail = strand.points[rng] if rng else np.zeros((0, 2))
         tip_start = rail[-1] if len(rail) else strand.points[i]
-        walk, stop = read_tip(tip_start, outward, self.mask, self.edt, self.cap_px)
+        walk, stop = read_tip(tip_start, outward, self.mask, self.edt, self.cap_px, grey_paper=self.grey_paper)
         self.diag["stops"][stop] += 1
         out = np.vstack([rail, walk])
         if not len(out):
@@ -2142,9 +2150,13 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
             )
 
     mask = np.asarray(case_ev.mask, dtype=bool)
+    grey_paper = None
+    grey_midpoint = 0.0
+    if weights.tip_read and weights.tip_grey_stop:
+        grey_paper, grey_midpoint = grey_paper_of(np.asarray(case_ev.crop, dtype=float), mask)
     hairpin_reader = None
     if weights.hairpin_tip:
-        hairpin_reader = HairpinTipReader(strands, states, mask, weights.tip_read_cap_xh * xh)
+        hairpin_reader = HairpinTipReader(strands, states, mask, weights.tip_read_cap_xh * xh, grey_paper=grey_paper)
     double_ink = None
     if weights.ride_back:
         double_ink = double_ink_of(
@@ -2171,9 +2183,6 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
             "detail": "nothing decoded onto the ink",
             "meta": {"tintenpfad": diag},
         }
-    grey_paper = None
-    if weights.tip_read and weights.tip_grey_stop:
-        grey_paper, grey_midpoint = grey_paper_of(np.asarray(case_ev.crop, dtype=float), mask)
     if weights.tip_read:
         diag["tip_read"] = read_tips(
             runs,

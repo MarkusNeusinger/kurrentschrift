@@ -315,7 +315,7 @@ def test_the_hairpin_tip_reads_the_turn_to_the_end_of_the_mask_out_and_back() ->
     assert diag["blocked"] == {"not_free": 0, "junction": 0, "visited": 0}
     assert diag["rail_points"] > 0 and diag["rail_points_in_mask"] == diag["rail_points"]
     assert diag["walk_points"] > 0 and diag["walk_points_in_mask"] == diag["walk_points"]
-    assert diag["stops"] == {"mask": 1, "rise": 0, "cap": 0, "edge": 0}
+    assert diag["stops"] == {"mask": 1, "rise": 0, "cap": 0, "edge": 0, "grey": 0}
     tip = runs[0][kinds[0] == 2]
     # Out and back over the SAME vertices: the tip sequence is a palindrome
     # around its farthest point, closed by the turning pixel itself.
