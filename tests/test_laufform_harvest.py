@@ -1307,6 +1307,45 @@ def test_the_follower_switch_replaces_a_trace_and_never_creates_one(monkeypatch:
     assert _chain_harvest(monkeypatch, follower="chain").word_record is None
 
 
+def _slot_harvest(monkeypatch: pytest.MonkeyPatch, **opts) -> CaseHarvest:
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    monkeypatch.setattr(harvest_mod, "derive_word", lambda c: result)
+    return harvest_case(case, HarvestOptions(path="slot", rmse_max=3.0, **opts))
+
+
+def test_the_slot_path_takes_the_follower_switch_too(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The slot path is the one `--apply` writes from, so its branch of the
+    switch is the one production meets — and it obeys the same rule: the
+    STROKES become the Tintenpfad's, the occurrences and the gates do not move,
+    and a decode that fails leaves the slot fit's record untouched."""
+    path = [[[0.0, 0.0], [1.0, 0.5], [2.0, 0.0]]]
+    monkeypatch.setattr("tools.pairlab.tintenpfad.follow_case", _fake_follow(path))
+    slot_only = _slot_harvest(monkeypatch, follower="chain")
+    swapped = _slot_harvest(monkeypatch, follower="tintenpfad")
+
+    assert slot_only.word_record["strokes"] != path
+    assert "follower" not in slot_only.word_record["measurements"]
+    assert swapped.word_record["strokes"] == path
+    assert swapped.word_record["measurements"]["follower"] == "tintenpfad"
+    assert swapped.word_record["measurements"]["letter_spans"] == [[[0, 0, 3]]]
+    # What the harvest MEASURES is identical on both sides of the switch.
+    assert swapped.occurrences == slot_only.occurrences
+    assert swapped.fits_by_key.keys() == slot_only.fits_by_key.keys()
+    assert [r["gate"] for r in swapped.diag_rows] == [r["gate"] for r in slot_only.diag_rows]
+    for key in ("fitted_slots", "unfitted_slots", "geo_rmse_px_by_slot"):
+        assert swapped.word_record["measurements"][key] == slot_only.word_record["measurements"][key]
+
+    monkeypatch.setattr("tools.pairlab.tintenpfad.follow_case", _fake_follow([], status="failed"))
+    assert _slot_harvest(monkeypatch, follower="tintenpfad").word_record == slot_only.word_record
+
+
+def test_an_unknown_follower_is_refused_by_name() -> None:
+    """Not inferred: a typo would otherwise read as "not tintenpfad" and harvest
+    the chain's trace under a name nobody asked for."""
+    with pytest.raises(SystemExit, match="--follower must be one of"):
+        harvest_mod.harvest("suetterlin", 1, 2.2, follower="tintenfpad")
+
+
 def _empty_chain_meta() -> dict:
     """`chain_word_strokes`' meta for a word whose runs all failed."""
     return {

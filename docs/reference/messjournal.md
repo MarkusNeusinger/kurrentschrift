@@ -245,7 +245,7 @@ die DB) — mit seiner Bedingung.
 | sep10/sep11 | Kette | [Grob-richtig-Schleife (Nachtschleife, #590)](#kette-grob-richtig-schleife-sep10sep11--werkstatt-ohne-vorregistrierung-sieben-schalter-und-ein-zweiter-sensor-auf-fechten--kann--unter-it-18-als-kandidat) | Werkstatt · **ohne Vorregistrierung** · Kandidat (It. 18), **nicht adoptiert**; Papier-Strecke als Spalte ausgeliefert (#590) | Der Autor verweigert das Urteil über Runde 11 („die springen wild hin und her") und lässt über Nacht an `fechten` `kann` `unter` bauen. Sieben Kette-Schalter (t-Brücke · Saat-Form · Tinten-Klammer · Tinten-Soll · Unstetigkeits-Preis · Saat-Rampe · Gauß-Verschiebung; Laufform-Saat und Formglätte als Negative), der Wächter-Befund (sein Soll kam aus der Tafel statt aus der Tinte) und der zweite Sensor `paper_len_xh`. Auswahl je Wort aus dreien (It. 18) bringt die 63 Wörter von **49 auf 13** Papier-Umkehrungen und **61,7 auf 23,5 xh** Papier-Strecke bei besserem Lineal (dtw 0,045881 → 0,044128, aiou 0,7660 → 0,7821, 12 : 7) — gebucht wird nichts, bis der Autor einen Bogen abnimmt; als Folger-Schalter ändert „Wächter aus" die Doktrin. Drei Quellen-Abweichungen und ein zurückgezogener `die`-Befund stehen im Eintrag; BLAS-Pinnung für diese Nacht unbezeugt |
 | sep11 | Kette/Tintenpfad | [Welle — drei Bauten (Tintenpfad #591, Wellen-Basis, Schlange)](#welle-sep11--drei-bauten-gegen-die-physik-bedingung-des-autors-tintenpfad-bestätigt-591-wellen-basis-und-schlange-als-ehrliche-teil-negative) | drei Bauten · **Tintenpfad bestätigt** (gemergt, nicht adoptiert) · zwei ehrliche Negative | Physik-Bedingung des Autors („die Punkte können sich nur wie eine Welle zusammenhängend verschieben") als Tor; Workflow Recherche ×4 → Karte → Entwürfe → Richter ×9 → Bau ×3 → Prüfung ×3, BLAS gepinnt, Wurzel `ccb036a5eb20…`. **Tintenpfad** (Tinte zuerst, Buchstaben danach — Stränge ohne Prior, Reihenfolge per Viterbi): 13 Zeilen **0 · 93 · 0,78 xh**, 63 Wörter 0 · 331 · 1,49, dev-19 dtw 0,044230 · aiou 0,7867, aber gepaart 7 : 12 und p90 schlechter; Papier-Sensoren für einen skelettgebundenen Pfad vakuös. **Wellen-Basis** (B-Spline-Verschiebungsbasis im Kettenlöser): Zacken −78 %, dtw 0,041403 (15 : 4 gegen Basis, 10 : 9 gegen It. 17), Tor gerissen an Tinten-Umkehrungen +23 % und `das` +0,0782. **Schlange** (elastische Kurve, Sobolev-Schritt): Zickzack 3,718 → 0,009 je xh, 0 · 78 · 4,47, Lineal verloren (0,051445, 6 : 13); β_e 64 biegt die eigene Pre-Reg. Alle drei physikalisch kohärent, nur einer nimmt das Tor |
 | sep11 | Tintenpfad | [Tintenpfad-Arme + Kombination (#592)](#tintenpfad-arme-sep11--fünf-arme-drei-tragen-zwei-ehrliche-negative-die-kombination-als-kandidat-592) | fünf Arme · **drei tragen**, zwei ehrliche Negative · Kombination **Kandidat, nicht adoptiert** | Regel des Abends: Lesung der Tinte oder Regel des Dekoders, nie Glättung, nie Erfindung. **Spitzen-Lesung** (rail + walk bis ans Maskenende; 13 : 6 gegen #591, Gate 2 fällt wie geschrieben), **Normalen-Fit** (Zelt auf 4× feinerem Grau-Raster, Knick 9,74° → 8,03°, 15 : 4 — Träger ist das Grau, Scope-Frage an den Autor), **Tinten-Brücke** (2 von 9 Lücken, neutral; über `kann`/`han`/`regieren` liegt kein Haarstrich). **Stummel-Filter** no-op, Hypothese an der Quelle widerlegt — Nebenbefund: Hand 47 gegen Kandidat 79 Tinten-Umkehrungen, der Defekt ist der Überschuss +32; **Doppelstrich-Evidenz** feuert auf 0 von 63 (ß-Stämme 1,00–1,33 × Feder), die reine Dekoder-Regel `ratio 1,0` repariert p90 0,0907 → 0,0535 (3 : 0), aber nachträglich gewählt. Kombination: 13 Zeilen 0 · 95 · 1,34, 63 Wörter 0 · 330 · 4,77, dev-19 **0,041356** · 0,091040 · 0,7876, **18 : 1** gegen #591, **9 : 10** gegen Basis, 10 : 9 gegen It. 18 (der PR-Text hat die letzten beiden vertauscht) |
-| sep12 | Tintenpfad/Kette | [Tintenpfad-Adoption — die formale Runde auf der frischen Wurzel (A45)](#tintenpfad-adoption-sep12--die-formale-runde-auf-der-frischen-wurzel-der-tintenpfad-wird-standard-folger-a45) | Adoption · **adoptiert (A45)** · dazu eine Wurzel-Zeile ohne bewegte Headline | Ein Knopf: Folger-Wechsel Kette v5 → Tintenpfad mit den acht erklärten Schaltern, vorregistriert vor der ersten Zahl, BLAS gepinnt, Wurzel `c7f2efd9cf37…` (2026-09-12T21:33:43+00:00). Die Wurzel reproduziert die `sep10`-Headline ziffernidentisch (0,108339 / 0,148236) — neue Identität, keine Re-Baseline; der Substrat-Pin der 13 Schleifenzeilen kommt unverändert heraus. dev-19: Basis (neu gemessen) 0,045772 · 0,088356 · 0,7660 gegen Arm **0,038351 · 0,048012 · 0,7929**, gepaart **15 : 4** (Δ-Median −0,008311, p 0,019); die Vorgabe ohne die acht (`--legacy-p6`) 0,045033 · 0,090673 · 0,7867 und 7 : 12 — die Schalter SIND der Unterschied. Zähler: `cross_spurious` 10 → 3, `retrace_missing` 7 → 0, `lift_delta_total` 6 → 0, `overlap_cand` 4 → 0, Absorption 89 → 35; dagegen `cross_missing` 12 → 13. Sensoren über 63: Papier-Umkehrungen Maske 44 → **0** (grau 49 → 3), Papier-Strecke Maske 55,57 → 1,20 xh, schlimmster Ausflug 0,323 → 0,091 xh, Roh-Knick 10,24° → 8,17°. k0: Soll-Abstand 81 → 80, aiou-Median +0,0520 über 63 bewegte Wörter — die Stack-Warnung fällt, ist aber der Knopf selbst (der Tintenpfad hat keinen Struktur-Wächter), also informativ und als Sensor-Befund notiert. Nebenbei: `ink_bridge_xh=1.0` testet 7 Lücken und brückt **null** — auf dieser Wurzel inert, bleibt als Lesung |
+| sep12 | Tintenpfad/Kette | [Tintenpfad-Adoption — die formale Runde auf der frischen Wurzel (A45)](#tintenpfad-adoption-sep12--die-formale-runde-auf-der-frischen-wurzel-der-tintenpfad-wird-standard-folger-a45) | Adoption · **adoptiert (A45)** · dazu eine Wurzel-Zeile ohne bewegte Headline | Ein Knopf: Folger-Wechsel Kette v5 → Tintenpfad mit den acht erklärten Schaltern, vorregistriert vor der ersten Zahl, BLAS gepinnt, Wurzel `c7f2efd9cf37…` (2026-09-12T21:33:43+00:00). Die Wurzel reproduziert die `sep10`-Headline ziffernidentisch (0,108339 / 0,148236) — neue Identität, keine Re-Baseline; der Substrat-Pin der 13 Schleifenzeilen kommt unverändert heraus. dev-19: Basis (neu gemessen) 0,045772 · 0,088356 · 0,7660 gegen Arm **0,038351 · 0,048012 · 0,7929**, gepaart **15 : 4** (Δ-Median −0,008311, p 0,019); die Vorgabe ohne die acht (`--legacy-p6`) 0,045033 · 0,090673 · 0,7867 und 7 : 12 — die Schalter SIND der Unterschied. Zähler: `cross_spurious` 10 → 3, `retrace_missing` 7 → 0, `lift_delta_total` 6 → 0, `overlap_cand` 4 → 0, Absorption 89 → 35; dagegen `cross_missing` 12 → 13. Sensoren über 63: Papier-Umkehrungen Maske 44 → **0** (grau 49 → 3), Papier-Strecke Maske 55,57 → 1,20 xh, schlimmster Ausflug 0,323 → 0,091 xh, Roh-Knick 10,24° → 8,17°. k0: Soll-Abstand 81 → 80, aiou-Median +0,0520 über 63 bewegte Wörter, **Gate (4) aber nicht verwertbar** — die Stack-Warnung fällt, weil der Tintenpfad keinen Struktur-Wächter hat, der Sensor auf einem Folger-PAAR also konstruktionsbedingt blind ist; das Kill-Kriterium war so zu weit geschrieben, das Verdikt hängt an den Gates (1)–(3), und die strenge Lesart liegt beim Autor. Nebenbei: `ink_bridge_xh=1.0` testet 7 Lücken und brückt **null** — auf dieser Wurzel inert, bleibt als Lesung |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -17133,20 +17133,38 @@ differing flag IS the knob under test." Genau das ist hier der Fall —
 der Tintenpfad HAT keinen Struktur-Wächter, sein `meta.weights` ist
 `TintenpfadWeights`, und die sechs Flags lesen dort `None`. Der Sensor
 ist für ein Paar aus ZWEI Folgern konstruktionsbedingt blind; er war
-gegen zwei Läufe DESSELBEN Folgers gebaut (`aug25`/`aug26`). **Die
-Runde wird deshalb nicht abgebrochen**, aber die Zahl wird auch nicht
-schöner gelesen, als sie ist: das k0-Gate (4) ist hier *informativ*, und
-es fällt mit 81 → 80 auf die Seite des Arms. Der Kill, wie er
-vorregistriert steht, war gegen eine unbemerkte Stack-Verwechslung
-geschrieben, nicht gegen einen Folger-Wechsel — dass sein Wortlaut das
-nicht trennt, ist ein Befund über den Sensor und steht als offener Arm
-in §7.11 („`k0eval` soll die Folger-Identität lesen"); der Ruler bleibt
-während der Runde unangetastet.
+gegen zwei Läufe DESSELBEN Folgers gebaut (`aug25`/`aug26`).
 
-**Verdikt: adoptiert (A45).** Gate (1) 15 : 4 ✓ · Gate (2) Median
+**Das Kill-Kriterium war falsch geschrieben, und zwar von mir.** Es
+wurde aus der Liturgie übernommen, die es gegen eine unbemerkte
+Stack-VERWECHSLUNG formuliert hat; wörtlich angewandt trifft es
+zusätzlich jeden Folger-WECHSEL, weil der Sensor dort per Konstruktion
+warnt — also auch jede Tintenpfad-gegen-Kette-Zahl, die §14 seit `sep11`
+schon trägt. Das nach der Messung umzudeuten wäre genau die
+Gate-Aufweichung, gegen die die Vorregistrierung existiert. Deshalb wird
+hier NICHT umgedeutet, sondern getrennt:
+
+* **Gate (4) ist nicht verwertbar.** Es wird weder als bestanden noch
+  als gerissen gebucht: sein Auslöser ist auf diesem Paar blind. Die
+  Zahl (Soll-Abstand 81 → 80) steht als Messung da, ohne Gate-Status.
+* **Das Verdikt hängt nicht an ihm.** Die Gates (1)–(3) sind von der
+  Warnung unberührt, vorregistriert, und alle drei fallen deutlich. Ein
+  Gate weniger macht die Runde schwächer, nicht falsch.
+* **Der Autor kann sie trotzdem für gekillt erklären.** Die Adoption
+  ist sein Entscheid (A45, vor jeder Zahl getroffen); diese Runde
+  belegt ihn. Wer die Pre-Reg streng liest, verlangt eine neue mit
+  folger-bewusstem Stack-Kriterium und einen zweiten Lauf — die Zahlen
+  oben würden sich dabei nicht ändern, die Buchung schon. Die Frage
+  liegt beim Autor und ist im PR-Text benannt.
+* Der Sensor-Befund selbst steht als offener Arm in §7.11 („`k0eval`
+  soll die Folger-Identität lesen"). Der Ruler bleibt während der Runde
+  unangetastet — geändert wird er, wenn überhaupt, in einem eigenen PR.
+
+**Verdikt: adoptiert (A45), getragen von den Gates (1)–(3).** Gate (1)
+15 : 4 ✓ · Gate (2) Median
 0,038351 gegen 0,045772 ✓ · Gate (3) Papier-Umkehrungen Maske 0 gegen 44
-✓ · Gate (4) k0-Soll 80 gegen 81 ✓, mit der oben benannten Einschränkung
-des Sensors. Der Tintenpfad mit der erklärten Acht-Schalter-Konfiguration
+✓ · Gate (4) **nicht verwertbar** (Sensor blind auf diesem Paar; die Zahl
+81 → 80 ohne Gate-Status). Der Tintenpfad mit der erklärten Acht-Schalter-Konfiguration
 ist ab dieser Runde der **Standard-Folger** der Kampagne; die Kette
 bleibt Baustein und messbare Route („die anderen versuche verfahren aber
 richtig behalten"), verliert aber die Rolle der Duell-Basis.

@@ -3069,9 +3069,13 @@ seit 2026-08-16:* **Nullprobe** (→ Duell-Namen).
 Verfahrensnamen der Duell-Seite und der späteren öffentlichen
 Methoden-Seite (Owner-Entscheid 2026-08-16), je ↔ technischer Name:
 **Hand** (die eigene S-Pen-Nachfahrung, die Referenz) · **Tintenpfad**
-(seit dem Autor-Entscheid A45 vom 2026-09-12 der **Standard-Folger** der
-Kampagne, siehe unten) · **Kette** (der
-Kettenfit MIT Struktur-Wächter — seit dem Entscheid die EINZIGE Kette:
+(die Strang-Dekodierung, `tools/pairlab/tintenpfad`: Tinte zuerst,
+Buchstaben danach; der Begriff war der Name, bevor er Anzeigename wurde —
+**seit dem Autor-Entscheid A45 vom 2026-09-12 der Standard-Folger der
+Kampagne**, eigene Seite verfahren-tintenpfad.md, §14
+„Tintenpfad-Adoption `sep12`") · **Kette** (der
+Kettenfit MIT Struktur-Wächter — seit A45 Baustein und messbare Route,
+aber nicht mehr die Duell-Basis; seit dem Entscheid von 2026-08-16 die EINZIGE Kette:
 fit-erfundene Kreuzungen sind nie richtig, join-gebildete stecken im
 Soll-Budget; seit Kette v5 `aug26` ist der ganze Wächter-Stack —
 Kompositions-Soll, Ratsche, Zone 0,55 — der Default von
@@ -3084,14 +3088,10 @@ ohne Wirkstoff). Geplant: **Zögling** (eigenes Trajektorien-Modell auf
 Engine-Paaren, Route B2) · **Vier Augen** (Fusion beider Routen) ·
 **Feinschliff** (Natürlichkeitsfilter als zweite Stufe) · **Chor**
 (ordnungs-bewusste Auswahl unter Varianten) · **Lotse** (Arbeitstitel:
-Skelett direkt fahren, Duktus als Karte an Abzweigungen) · seit `sep11`
-**Tintenpfad** (die Strang-Dekodierung, `tools/pairlab/tintenpfad`: Tinte
-zuerst, Buchstaben danach; der Begriff war der Name, bevor er Anzeigename
-wurde) — **seit dem Autor-Entscheid A45 vom 2026-09-12 der Standard-Folger
-der Kampagne**: die erklärte Acht-Schalter-Konfiguration ist die Vorgabe des
-Werkzeugs, neue Arme werden gegen ihn gemessen, und die **Kette** bleibt
-Baustein und messbare Route, aber nicht mehr die Duell-Basis (eigene Seite
-verfahren-tintenpfad.md, §14 „Tintenpfad-Adoption `sep12`"). Technische
+Skelett direkt fahren, Duktus als Karte an Abzweigungen). Was der
+Tintenpfad als STANDARD-FOLGER mitbringt (A45, `sep12`): seine erklärte
+Acht-Schalter-Konfiguration ist die Vorgabe des Werkzeugs, neue Arme
+werden gegen ihn gemessen, und die Kette wird zum Baustein. Technische
 Namen bleiben in Code und datierten §14-Einträgen unverändert — dieser
 Eintrag ist die Übersetzungstabelle. *Technisch:* Label-Marker in
 `tools/tracebench/view.py` (`CHAIN_MARKERS`/`CONTROL_MARKERS`)

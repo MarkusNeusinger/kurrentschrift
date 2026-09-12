@@ -84,7 +84,8 @@ Verfahrensseite; geändert wird sie nie hier.
 > Kette **v5** (`aug26`), Zahlen `sep12` (§14 „Tintenpfad-Adoption
 > `sep12`"): dtw **0,045772** med ·
 > p90 0,088356 · aiou 0,7660 · 63er-Soll-Abstand 81 ·
-> Netto-Kreuzungsdefekte 20; auf `ccb036a5eb20…` waren es 0,045881 ·
+> `cross_missing` 12 / `cross_spurious` 10; auf `ccb036a5eb20…` waren es
+> 0,045881 ·
 > 0,088356 · 0,7660 · Soll 85 (§14 „Komma-Ausschluss `sep07`"), der
 > `d`-Zeilen-Write bewegt also den Median um −0,000109.
 > Lotse **v0.17** (`aug20`, Zahlen `sep07` —
@@ -674,7 +675,9 @@ Nachtschleife.
 neu gemessen: dev-19 **0,038351** · p90 0,048012 · aiou 0,7929 gegen
 Kette v5 0,045772 · 0,088356 · 0,7660, gepaart **15 : 4** (Δ-Median
 −0,008311, p 0,019), Papier-Umkehrungen über 63 Wörter 0 in der Maske
-(Kette 44), k0-Soll 81 → 80. Die **erklärte Acht-Schalter-Konfiguration**
+(Kette 44), k0-Soll 81 → 80 (dessen Gate ist auf einem Folger-Paar nicht
+verwertbar; das Verdikt trägt die drei anderen). Die **erklärte
+Acht-Schalter-Konfiguration**
 (`tip_read` · `rail=tentfit` · `edt_upsample=4` · `ink_bridge_xh=1.0` ·
 `hairpin_tip` · `ride_back` · `tip_grey_stop` · `self_jump`) ist seither
 die VORGABE von `TintenpfadWeights`; der Stand, gegen den die Arme

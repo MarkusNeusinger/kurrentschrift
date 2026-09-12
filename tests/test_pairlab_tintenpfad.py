@@ -22,6 +22,7 @@ from core.extract import binarize_adaptive
 from tools.pairlab.tintenpfad import (
     LEGACY_P5,
     LEGACY_P6,
+    LEGACY_P6_FIELDS,
     SUBPIXEL_MAX_PX,
     EdtField,
     HairpinTipReader,
@@ -1023,6 +1024,13 @@ def test_the_declared_configuration_is_the_default_and_the_old_default_is_legacy
         f.name for f in dataclasses.fields(TintenpfadWeights) if getattr(default, f.name) != getattr(LEGACY_P6, f.name)
     }
     assert moved == set(A45_CONFIGURATION)
+    # …and that comparison only means something because `LEGACY_P6` is pinned
+    # WHOLE. Were it built by overriding eight fields on the live dataclass, a
+    # later change to `turn_cost` would move both objects together and the
+    # assertion above would still pass while the legacy stand had silently
+    # changed. So the stand is a literal, and every field is covered by it.
+    assert set(LEGACY_P6_FIELDS) == {f.name for f in dataclasses.fields(TintenpfadWeights)}
+    assert dataclasses.asdict(LEGACY_P6) == LEGACY_P6_FIELDS
     # The prototype row: its own seven fields, and the eight switches still off.
     assert (LEGACY_P5.rail, LEGACY_P5.candidates, LEGACY_P5.max_cand) == ("raw", "distance", 12)
     assert (LEGACY_P5.back_tol_px, LEGACY_P5.reentry_window, LEGACY_P5.bridge) == (2.0, 0, "chord")

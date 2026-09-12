@@ -1395,6 +1395,10 @@ def harvest(
     previous harvest produced. That is the second step of the fixed-point
     self-check (§14 „Laufform LF15"); the frozen root is never touched.
     """
+    # Named rather than inferred: an unknown follower would otherwise read as
+    # "not tintenpfad" and quietly harvest the chain's trace under a wrong name.
+    if follower not in FOLLOWER_CHOICES:
+        raise SystemExit(f"--follower must be one of {', '.join(FOLLOWER_CHOICES)}, not {follower!r}")
     opts = HarvestOptions(
         style=style,
         rmse_max=rmse_max,
