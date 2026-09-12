@@ -1145,14 +1145,20 @@ nicht aus dieser Hand — legitim (der Tintenpfad nimmt die Saat nur als
 Vorschlag, die Bahn liegt auf der Tinte), aber es muss dastehen, sonst liest
 sich der Pfad wie eine Behauptung über den Schreiber.
 
-**Was geprüft wird**, bevor etwas abgelegt wird (`check_paths`, 422):
-Format, ein Pfad je Kasten und kein Kasten doppelt, ein Kasten, den die
-gedruckte Zeile wirklich hat, ein Wort, das mit dem gedruckten Kasten UND
-dem eingefrorenen Plan übereinstimmt, Züge in Template-Einheiten, und eine
-Registrierung, die auf DIESEM Streifen liegt. Der letzte Punkt ist der
-teuerste Fehler, den es hier gibt: eine Registrierung aus einem anderen Bild
-ist in sich vollkommen wohlgeformt und zöge eine plausible Bahn über die
-falsche Tinte — still, und für immer.
+**Was geprüft wird**, bevor etwas abgelegt wird (`check_paths`, 422): ein
+Pfad je Kasten und kein Kasten doppelt, ein Kasten, den die gedruckte Zeile
+wirklich hat, ein Wort, das mit dem gedruckten Kasten UND dem eingefrorenen
+Plan übereinstimmt, Züge in Template-Einheiten, eine x-Höhe, die die
+gedruckte Lineatur hergeben kann, und eine Registrierung, die auf DIESEM
+Streifen liegt. Das `format` gehört nicht zum Eintrag, sondern zum
+gesendeten Dokument, und wird eine Ebene höher geprüft (`write_pfade`, 409).
+Der vorletzte Punkt trägt den letzten: der Schlupf der Registrierung misst
+sich in x-Höhen des Pfades, also kaufte sich eine aufgeblasene `xh_px` jede
+Toleranz, die sie wollte — deshalb hängt die x-Höhe an der gedruckten Zeile
+(halbe bis doppelte Soll-x-Höhe; ohne Lineatur ersatzweise an der
+Streifenhöhe). Denn die Registrierung ist der teuerste Fehler, den es hier
+gibt: eine aus einem anderen Bild ist in sich vollkommen wohlgeformt und
+zöge eine plausible Bahn über die falsche Tinte — still, und für immer.
 
 **Die Konfiguration fährt mit.** Gefolgt wird mit den Armen, die die
 Kampagne für die Umkehr-Ecken festgezurrt hat (Messjournal §14, Runden

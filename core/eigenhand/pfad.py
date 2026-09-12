@@ -72,6 +72,22 @@ MAX_PFADE = 32
 # for a frame that belongs to a different image.
 REGISTRATION_SLACK_XH = 2.0
 
+# The registration slack above is measured in the path's OWN x-height, so that
+# x-height has to be bounded first or the slack is whatever the client wants it
+# to be: a declared `xh_px` of 1300 on a 343 px strip stretched the allowance to
+# ±2600 px and let `tx = 2500` — an off-strip frame — through the very check
+# that exists to refuse it. So `xh_px` is held against the PRINTED ruling of the
+# row, which `check_paths` can derive from what it already receives: half to
+# double the nominal x-height is every hand this Bogen could have been written
+# in, and nothing further.
+XH_NOMINAL_TOLERANCE = 2.0
+# Where the ruling is not knowable (a Bogen printed before the cut geometry),
+# the strip itself is the only witness left: an x-height below a few pixels
+# carries no path, and one past half the strip height cannot be a lowercase
+# body on a three-band ruling.
+XH_MIN_PX = 4.0
+XH_MAX_HEIGHT_SHARE = 0.5
+
 
 def frame_for_box(
     layout_row: Mapping[str, Any],
@@ -193,6 +209,51 @@ def _checked_date(value: Any, where: str) -> str | None:
         raise ValueError(f"{where}: `erzeugt_am` {value!r} is not an ISO date (YYYY-MM-DD)") from exc
 
 
+def nominal_xh_px(layout_row: Mapping[str, Any], width_px: int) -> float | None:
+    """The PRINTED x-height of one row in strip pixels, or None where unknowable.
+
+    The same two numbers `frame_for_box` reads, minus the crop origin — which
+    cancels in a difference, so this needs no `crop_origin_mm` and works for a
+    whole row rather than for one box. A Bogen printed before the ruling or the
+    cut geometry existed simply has no nominal scale to compare against.
+    """
+    band = layout_row.get("band_mm") or {}
+    if "baseline" not in band or "waist" not in band:
+        return None
+    try:
+        scale = px_per_mm(width_px, layout_row.get("cut_mm") or [])
+        xh = (float(band["baseline"]) - float(band["waist"])) * scale
+    except (SystemExit, TypeError, ValueError):
+        return None
+    return xh if math.isfinite(xh) and xh > 0.0 else None
+
+
+def _checked_xh(value: Any, height_px: int, nominal: float | None, where: str) -> float:
+    """The path's x-height, bounded before anything is measured in it.
+
+    It is not a free number: the registration slack is expressed in x-heights,
+    so an inflated `xh_px` would widen that allowance until an off-strip frame
+    passed (see `XH_NOMINAL_TOLERANCE`).
+    """
+    try:
+        xh = float(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{where}: `xh_px` must be the path's x-height in strip pixels") from exc
+    if not math.isfinite(xh) or xh <= 0.0:
+        raise ValueError(f"{where}: x-height {xh} px is not a scale this strip could have")
+    if nominal is None:
+        low, high = XH_MIN_PX, height_px * XH_MAX_HEIGHT_SHARE
+        against = f"the strip is {height_px} px high"
+    else:
+        low, high = nominal / XH_NOMINAL_TOLERANCE, nominal * XH_NOMINAL_TOLERANCE
+        against = f"the printed ruling is {nominal:.1f} px"
+    if not low <= xh <= high:
+        raise ValueError(
+            f"{where}: x-height {xh:.1f} px is not a scale this strip could have ({low:.1f}..{high:.1f} px — {against})"
+        )
+    return xh
+
+
 def _checked_registration(reg: Any, width_px: int, height_px: int, xh_px: float, where: str) -> dict[str, float]:
     """The path's own frame, bounded against the strip it claims to lie on.
 
@@ -206,6 +267,10 @@ def _checked_registration(reg: Any, width_px: int, height_px: int, xh_px: float,
     cut) but never by more than a couple of letters. Slack scaled to the image
     instead accepted `tx = 2500` on a 1900 px strip, which is the very import
     this check exists to refuse (Copilot review, PR #598).
+
+    That only holds while `xh_px` itself is bounded — the caller must pass one
+    that went through `_checked_xh`, or a client buys any slack it likes simply
+    by declaring a larger x-height (review of PR #598).
     """
     if not isinstance(reg, Mapping):
         raise ValueError(f"{where}: `registration_px` must be an object with tx, ty and baseline_row")
@@ -239,16 +304,23 @@ def check_paths(
     coordinate mix-up that silently fitted itself to the strip would be stored
     forever and drawn as if it had been followed there.
 
-    Checked: the declared format, one entry per box at most and no box twice,
-    a box index the printed row actually has, a word that agrees with the
-    printed box (and with the frozen plan, where `words` is given), strokes in
-    template units, and a registration that lies on THIS strip.
+    Checked: one entry per box at most and no box twice, a box index the
+    printed row actually has, a word that agrees with the printed box (and with
+    the frozen plan, where `words` is given), strokes in template units, an
+    x-height the printed ruling could have produced, and a registration that
+    lies on THIS strip.
+
+    NOT checked here: the envelope's `format` field. It belongs to the pushed
+    document rather than to an entry, so it never reaches this function —
+    `api.routers.eigenhand.write_pfade` compares it against `PFAD_FORMAT` and
+    answers 409. A caller that assembles its own envelope has to do the same.
     """
     if not isinstance(pfade, Sequence) or isinstance(pfade, (str, bytes)):
         raise ValueError("`pfade` must be a list of per-word entries")
     if len(pfade) > MAX_PFADE:
         raise ValueError(f"{len(pfade)} paths — a strip row carries at most {MAX_PFADE} words")
     boxes = layout_row.get("boxes") or []
+    nominal = nominal_xh_px(layout_row, width_px)
     seen: set[int] = set()
     out: list[dict[str, Any]] = []
     for entry in pfade:
@@ -278,13 +350,7 @@ def check_paths(
         flecken_n = entry.get("flecken_n")
         if flecken_n is not None and (not isinstance(flecken_n, int) or isinstance(flecken_n, bool) or flecken_n < 0):
             raise ValueError(f"{where}: `flecken_n` must be the size of the mask it was followed under")
-        xh_px = entry.get("xh_px")
-        try:
-            xh = float(xh_px)
-        except (TypeError, ValueError) as exc:
-            raise ValueError(f"{where}: `xh_px` must be the path's x-height in strip pixels") from exc
-        if not math.isfinite(xh) or not 0.0 < xh <= height_px * 4:
-            raise ValueError(f"{where}: x-height {xh} px is not a scale this strip could have")
+        xh = _checked_xh(entry.get("xh_px"), height_px, nominal, where)
         out.append(
             {
                 "box_index": index,

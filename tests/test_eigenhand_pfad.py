@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from core.eigenhand.pfad import MAX_UNIT, check_paths, frame_for_box, frames_of_row
+from core.eigenhand.pfad import MAX_UNIT, check_paths, frame_for_box, frames_of_row, nominal_xh_px
 
 
 # 10 px per mm, a strip 190 mm wide cut at x 10..200 and y 20..60.
@@ -180,6 +180,36 @@ class TestCheckPaths:
         assert self._check([_path(registration_px={"tx": -20.0, "ty": 0.0, "baseline_row": 240.0})])
         assert self._check([_path(registration_px={"tx": float(WIDTH_PX) + 100.0, "ty": 0.0, "baseline_row": 240.0})])
 
+    @pytest.mark.parametrize("xh", [1300.0, 240.1, 59.9, 0.5])
+    def test_an_x_height_the_printed_ruling_could_not_have_is_refused(self, xh: float):
+        # The row's printed band is 12 mm at 10 px/mm, so 120 px is the nominal
+        # x-height and half to double it is every hand this Bogen could hold.
+        with pytest.raises(ValueError, match="not a scale"):
+            self._check([_path(xh_px=xh)])
+        assert self._check([_path(xh_px=60.0)]) and self._check([_path(xh_px=240.0)])
+
+    def test_an_inflated_x_height_cannot_buy_slack_for_an_off_strip_frame(self):
+        # The registration slack is measured in the path's OWN x-height, so an
+        # unbounded `xh_px` disabled the very check it is measured with: at a
+        # declared 1300 px, `tx = 2500` on this strip passed (review of PR
+        # #598). Now the x-height is refused before it can widen anything.
+        off_strip = {"tx": WIDTH_PX + 600.0, "ty": 0.0, "baseline_row": 240.0}
+        with pytest.raises(ValueError, match="not a scale"):
+            self._check([_path(xh_px=1300.0, registration_px=off_strip)])
+        # …and the honest x-height still refuses the same frame, as before.
+        with pytest.raises(ValueError, match="outside the strip"):
+            self._check([_path(registration_px=off_strip)])
+
+    def test_without_a_printed_ruling_the_strip_itself_bounds_the_x_height(self):
+        # An old Bogen has no band to compare against; the strip's own height
+        # is then the only witness left, and it is still a bound.
+        row = {**ROW, "band_mm": {}}
+        assert nominal_xh_px(row, WIDTH_PX) is None
+        assert nominal_xh_px(ROW, WIDTH_PX) == pytest.approx(120.0)
+        assert check_paths([_path(xh_px=120.0)], row, WIDTH_PX, HEIGHT_PX)
+        with pytest.raises(ValueError, match="not a scale"):
+            check_paths([_path(xh_px=HEIGHT_PX * 3.0)], row, WIDTH_PX, HEIGHT_PX)
+
     def test_an_empty_push_is_a_reading_and_not_a_refusal(self):
         # „followed, nothing found" — the same distinction the Fleckenmaske
         # draws between an empty list and NULL.
@@ -232,6 +262,33 @@ class TestFollowerHandover:
         merged = tool._merged("https://example.invalid", "token", "u", fresh, _get=lambda *_: {"pfade": stored})
         assert [entry["box_index"] for entry in merged] == [0, 1]
         assert merged[1] is fresh[0]  # the followed box is the NEW one, not the stored copy
+
+    def test_the_dry_run_files_the_body_the_apply_path_would_send(self, tmp_path, monkeypatch):
+        # The dry run is the review surface `--apply` is decided on, so it has
+        # to file the MERGED list — filing only the followed boxes made a
+        # narrowed run look like a whole-row replacement (review of PR #598).
+        import json
+
+        from tools.eigenhand import pfad as tool
+
+        stored = [{"box_index": 0, "word": "lesen"}, {"box_index": 1, "word": "das"}]
+        fresh = [{"box_index": 1, "word": "das", "verfahren": "tintenpfad"}]
+        merged = tool._merged
+        monkeypatch.setattr(tool, "api_base", lambda _api: "https://example.invalid")
+        monkeypatch.setattr(tool, "admin_token", lambda _token: "token")
+        monkeypatch.setattr(tool, "style_of_hand", lambda _hand: "suetterlin")
+        monkeypatch.setattr(tool, "_fixture_prior", lambda _style: {})
+        monkeypatch.setattr(
+            tool, "_strip_rows", lambda *_a: [{"strip": "S0001", "fassung": "F01", "sheet": "B0001", "row_index": 0}]
+        )
+        monkeypatch.setattr(tool, "follow_row", lambda *_a: fresh)
+        monkeypatch.setattr(tool, "_merged", lambda *args: merged(*args, _get=lambda *_a: {"pfade": stored}))
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: pytest.fail("a dry run must not write"))
+
+        out = tmp_path / "pfade.json"
+        assert tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--box", "1", "--out", str(out)]) == 0
+        body = json.loads(out.read_text())
+        assert [entry["box_index"] for entry in body["pfade"]] == [0, 1]
 
     def test_the_declared_configuration_is_one_the_follower_accepts(self):
         # The arms are named in the tool and stored with every path; a renamed

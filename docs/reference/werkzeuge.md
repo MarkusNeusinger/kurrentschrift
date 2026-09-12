@@ -622,7 +622,11 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   landet das Ergebnis nur als JSON unter der lokalen Hand; `--apply` schreibt
   es über `PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade` in die
   GETEILTE DB, braucht `ADMIN_TOKEN` und gehört hinter einen
-  `tools.dbsnapshot.fetch`. `--fassung` und `--box` grenzen ein. BLAS-Fäden
+  `tools.dbsnapshot.fetch`. `--fassung` und `--box` grenzen ein; weil der
+  Schreibweg eine VOLLE Ersetzung ist, mischt ein `--box`-Lauf die gefolgten
+  Kästen über die gespeicherten — und der Trockenlauf legt genau diese
+  gemischte Liste ab, sonst prüfte man etwas anderes, als man schriebe.
+  BLAS-Fäden
   pinnt das Modul selbst (Vorgabewerte), weil die Kettenlösung sonst je nach
   Umgebung anders läuft.
 - **`report`** — Bestandsbericht (Erstbeleg-/Ausbau-Quote, Fehlstellen,

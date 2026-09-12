@@ -294,11 +294,12 @@ export const WERKBANK_COLORS = {
   selected: pigment.vermilion, // the element currently focused
   engine: '#e02030', // what the engine itself writes — overlay AND its own face
   // The Pfad layer: the SAME line, read as a movement. The ramp runs from the
-  // trace green of the first pen-down stretch to a blue for the last, so the
-  // writing ORDER is legible without a legend; the lift dashes sit between
-  // them in a neutral violet that belongs to neither end of the ramp and is
-  // still visible over both plate ink and a scanned strip.
-  pathFirst: '#00b37e',
+  // line's own colour — `traceOverInk` above, or whatever the caller passes as
+  // `color` — to `pathLast` for the final stretch, so the writing ORDER is
+  // legible without a legend and a path still looks like the trace it is. Only
+  // the far end needs a token of its own; a separate „first" token was carried
+  // here for a while, read by nothing, and agreed with the line colour by
+  // coincidence rather than by construction (review of PR #598).
   pathLast: '#2f6fd0',
   lift: '#8a5cd0',
 } as const;

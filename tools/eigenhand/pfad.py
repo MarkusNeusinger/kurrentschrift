@@ -336,14 +336,23 @@ def main(argv: list[str] | None = None) -> int:
     for row in _strip_rows(base, token, hand, args.strip, args.fassung):
         print(f"{row['strip']}/{row['fassung']} ({row['sheet']} row {row['row_index']}):", flush=True)
         entries = follow_row(base, token, hand, row, prior, args.box)
+        url = f"{base}/eigenhand/strips/{hand}/{row['strip']}/{row['fassung']}/pfade"
+        # The body is assembled BEFORE the two paths part ways: the dry run is
+        # the surface an operator reviews before deciding on `--apply`, so the
+        # file it writes has to be the list that would be stored, merge and
+        # all. Filing only the followed boxes made a narrowed run look like a
+        # whole-row replacement — the exact thing `_merged` exists to prevent
+        # (review of PR #598).
+        body = _merged(base, token, url, entries) if args.box else entries
         if not args.apply:
             out = args.out or _local_path(hand, row["strip"], row["fassung"])
             out.parent.mkdir(parents=True, exist_ok=True)
-            out.write_text(json.dumps({"format": PFAD_FORMAT, "pfade": entries}, ensure_ascii=False, indent=1) + "\n")
-            print(f"  dry run — {len(entries)} path(s) written to {out}, nothing stored", flush=True)
+            out.write_text(json.dumps({"format": PFAD_FORMAT, "pfade": body}, ensure_ascii=False, indent=1) + "\n")
+            print(
+                f"  dry run — {len(body)} path(s) ({len(entries)} followed) written to {out}, nothing stored",
+                flush=True,
+            )
             continue
-        url = f"{base}/eigenhand/strips/{hand}/{row['strip']}/{row['fassung']}/pfade"
-        body = _merged(base, token, url, entries) if args.box else entries
         stored = request_json("PUT", url, token, {"format": PFAD_FORMAT, "pfade": body}) or {}
         written += len(stored.get("pfade") or [])
         print(f"  stored {len(stored.get('pfade') or [])} path(s) at {base}", flush=True)

@@ -488,6 +488,12 @@ function StripTile({
   // A word cut needs its own frame; the box rectangle comes from the listing.
   const cut = shown === null ? null : (row.boxes[shown]?.rect_px ?? null);
   const drawn = (pfade.pfade ?? []).filter((p) => shown === null || p.box_index === shown);
+  // A word cut without a box rectangle cannot carry an overlay at all — an old
+  // Bogen has no cut geometry to place one against. That is a state of its
+  // own: without it a stored path for exactly this word would be silently
+  // suppressed and the tile would look as if the layer had not worked (review
+  // of PR #598). CropTile has always said it out loud; so does this one now.
+  const placeable = shown === null || cut !== null;
 
   const startErasing = () => {
     setShown(null);
@@ -580,7 +586,7 @@ function StripTile({
                 zoom={zoom}
                 onLupe={onLupe}
                 overlay={
-                  drawn.length > 0 && (shown === null || cut) ? (
+                  drawn.length > 0 && placeable ? (
                     <PfadLayer
                       pfade={drawn}
                       widthPx={cut ? cut[2] - cut[0] : row.width_px}
@@ -598,15 +604,23 @@ function StripTile({
           {showPfade && (
             <>
               {pfade.loading && <CircularProgress size={12} sx={{ mt: 1 }} />}
-              {drawn.length > 0 && <PfadCaption pfade={drawn} flecken={row.flecken} />}
-              {/* The two empty answers are DIFFERENT and both are said out
-                  loud: `null` is „nobody has followed this Fassung", an empty
-                  result is „followed, nothing came back" — and a row that has
-                  paths but none for the word currently shown is a third. A
-                  silent picture would make all three look alike. */}
-              {drawn.length === 0 && !pfade.loading && !pfade.error && (
+              {drawn.length > 0 && placeable && <PfadCaption pfade={drawn} flecken={row.flecken} />}
+              {/* The empty answers are DIFFERENT and each is said out loud:
+                  `null` is „nobody has followed this Fassung", an empty result
+                  is „followed, nothing came back", a row with paths but none
+                  for the word currently shown is a third — and a word cut
+                  without a box rectangle is a fourth, where even a stored path
+                  cannot be placed. A silent picture would make all four look
+                  alike. */}
+              {!pfade.loading && !pfade.error && (!placeable || drawn.length === 0) && (
                 <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: paper.inkSoft }}>
-                  {pfade.pfade === null ? t.pfadNone : pfade.pfade.length === 0 ? t.pfadEmpty : t.pfadNotInBox}
+                  {!placeable
+                    ? t.pfadNoBox
+                    : pfade.pfade === null
+                      ? t.pfadNone
+                      : pfade.pfade.length === 0
+                        ? t.pfadEmpty
+                        : t.pfadNotInBox}
                 </Typography>
               )}
               {pfade.error && (
