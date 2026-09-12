@@ -248,8 +248,14 @@ def follow_row(base: str, token: str, hand: str, row: dict, prior: dict, boxes: 
         index = box["index"]
         if boxes is not None and index not in boxes:
             continue
-        frame = frame_for_box(layout_row, row["crop_origin_mm"], row["width_px"], row["height_px"], index)
         case_id = f"{row['strip']}/{row['fassung']}#{index}"
+        try:
+            frame = frame_for_box(layout_row, row["crop_origin_mm"], row["width_px"], row["height_px"], index)
+        except ValueError as exc:
+            # A Bogen printed before the cut or ruling geometry existed has no
+            # frame to seed with. One such row must not take the whole run down.
+            print(f"  {case_id:<18} skipped   {exc}", flush=True)
+            continue
         case, missing = _case_for_box(prior, plane, frame, box["word"], shaping_form_of(plan, box["word"]), case_id)
         if missing:
             print(f"  {case_id:<18} skipped   unauthored: {' '.join(missing)}", flush=True)
