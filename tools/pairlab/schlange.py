@@ -32,9 +32,12 @@ them as such (two are a metric, one is an energy):
    that; it is not the suppression and is not quoted as such.
 
 h-dependence, stated once: `beta_e` and `beta_s = ell⁴` are in raw
-second-difference units at spacing `h_px`. The bending force scales as h⁻⁴
-and the metric length as ell·h, so `h_px` is PART of the declared setting —
-whoever changes the node spacing re-expresses both.
+second-difference units at spacing `h_px` — the unnormalised D2ᵀD2 already
+scales as h_px⁴ on a fixed smooth curve, so it is `beta_e` (and `beta_s`)
+that must scale as h_px⁻⁴, not the reverse, to hold the same PHYSICAL
+bending/metric strength; the coupling length scales as ell·h_px. `h_px` is
+PART of the declared setting — whoever changes the node spacing
+re-expresses both.
 
 BLAS: this follower is BLAS-insensitive — `solve_banded` is LAPACK gbsv, the
 rest is `scipy.ndimage` and `cKDTree`; the path was measured bit-identical
@@ -288,7 +291,11 @@ def seed_curve(curve: Sequence[dict], xh: float, tx: float, ty: float, baseline_
             px_eff = np.vstack([tail[None, :], px_eff]) if len(px_eff) else tail[None, :]
         steps = np.linalg.norm(np.diff(px_eff, axis=0), axis=1) if len(px_eff) > 1 else np.zeros(0)
         cum = total + np.concatenate([[0.0], np.cumsum(steps)])
-        off = 0 if tail is None else (1 if len(px_eff) == len(px) else 0)
+        # Shared seam (px[0] dropped, tail takes its place 1:1): px_eff has the
+        # SAME length as px, so corner index c still points at px_eff[c]. No
+        # shared seam (tail prepended in full): px_eff is one LONGER than px,
+        # so every c shifts by one.
+        off = 0 if tail is None else (0 if len(px_eff) == len(px) else 1)
         for c in p["corners"]:
             j = c + off
             if 0 <= j < len(cum):

@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import importlib
 import inspect
+from collections.abc import Sequence
 
 import numpy as np
 import pytest
@@ -51,7 +52,18 @@ TX, TY, BASELINE_ROW = 30.0, 0.0, 110.0
 REGISTRATION = {"tx": TX, "ty": TY, "baseline_row": BASELINE_ROW}
 
 
-def _piece(seg: int, stroke: int, kind: str, pts, *, corners=(), w_in=False, w_out=False, slot=None, key=None) -> dict:
+def _piece(
+    seg: int,
+    stroke: int,
+    kind: str,
+    pts: Sequence[Sequence[float]] | np.ndarray,
+    *,
+    corners: Sequence[int] = (),
+    w_in: bool = False,
+    w_out: bool = False,
+    slot: int | None = None,
+    key: str | None = None,
+) -> dict:
     return {
         "seg": seg,
         "stroke": stroke,
@@ -246,7 +258,7 @@ def test_coherence_is_zero_for_a_rigid_shift_and_reports_the_corners() -> None:
 # ----------------------------------------------------------------- evolve
 
 
-def _line_field(row: int, shape=(60, 140)) -> dict:
+def _line_field(row: int, shape: tuple[int, int] = (60, 140)) -> dict:
     skel = np.zeros(shape, dtype=bool)
     skel[row, 20:120] = True
     dist_raw = distance_transform_edt(~skel)

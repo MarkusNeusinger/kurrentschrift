@@ -16,7 +16,8 @@
   (0,045881 → 0,051445, 6 : 13) on three named classes. An honest
   partial negative, kept for the mechanism rather than the artefact: the new
   `tools/pairlab/schlange.py` is a second, stand-alone follower beside
-  `tools.pairlab.chain` — it borrows ten of the chain's and follower's
-  private helpers by name (pinned by a test) but adds no switch to either,
-  so the chain solve stays byte-identical by construction. No DB, no
-  `core/` change, no fixture change.
+  `tools.pairlab.chain` — it borrows eleven private helpers by name from
+  five modules (`tools.pairlab.chain` and `.follow` among them; a test
+  pins every signature) but adds no switch to any of them, so the chain
+  solve stays byte-identical by construction. No DB, no `core/` change, no
+  fixture change.
