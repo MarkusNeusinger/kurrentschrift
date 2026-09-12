@@ -2066,6 +2066,31 @@ def test_every_wave_row_is_a_convex_combination_owned_by_exactly_one_block() -> 
         assert len({owners[int(r)] for r in np.flatnonzero(basis[:, j])}) == 1
 
 
+def test_the_retrace_tail_gets_its_own_block_anchored_at_the_seam() -> None:
+    """The t/bar case: the exit seam (row 24) hands continuity to the
+    connector, but the letter's own bar rows (26-29) are drawn AFTER that
+    seam, in a separate pen-down. They must not be folded into the
+    connector's block — merging them would invent a chord that leaps from
+    the bar's end straight to the connector's second row, skipping the seam
+    entirely — and the connector's block must measure its own arc length
+    from the seam it inherited, not from the bar."""
+    problem = _wave_problem(0.25, _wave_specs(stroke_starts=(0, WAVE_K - 4), seam_out=WAVE_K - 6))
+    blocks = problem.basis_blocks
+    assert [b["plan"] for b in blocks] == [(0, 26), (26, 30), (30, 67)]
+    bar, tail = blocks[1], blocks[2]
+    assert bar["rows"] == [26, 27, 28, 29]  # the bar alone, cut off from the connector
+    assert "anchor_row" not in bar
+    assert tail.get("anchor_row") == 24  # the connector's block resumes from the seam
+    assert 26 not in tail["rows"] and 29 not in tail["rows"]  # the bar stays out of it
+
+    # The arc length is measured from the seam (row 24), not the bar's end —
+    # walk the true chain of points and compare against the reported total.
+    free = problem.anchors_free
+    walk = [free[24], *(free[r] for r in tail["rows"])]
+    expected_total = float(sum(np.hypot(*(b - a)) for a, b in zip(walk, walk[1:], strict=False)))
+    assert tail["arc_xh"] == pytest.approx(expected_total, abs=5e-5)  # arc_xh is rounded to 4 places
+
+
 def test_the_wave_gradient_is_exact_through_the_basis() -> None:
     """Chain rule through the change of variables at a non-stationary point in
     the basis — with every term the night loop added switched on."""
@@ -2155,6 +2180,19 @@ def test_a_stroke_too_short_for_the_wave_moves_rigidly_and_a_zero_chord_is_refus
     doubled[5] = doubled[4]
     with pytest.raises(ValueError, match="zero-length chord"):
         chain_mod._wave_basis(plain.specs, doubled, plain.idx, plain.plan_slices, 0.25)
+
+
+def test_a_degenerate_spacing_falls_back_to_rigid_without_building_the_knot_vector(monkeypatch) -> None:
+    """A tiny positive `--wave-spacing` on a multi-xh stroke would round to a
+    knot list of billions of entries; the `m <= len(rows)` fallback must reject
+    it from the SPAN COUNT alone, before `_clamped_uniform_knots` ever runs."""
+
+    def _must_not_run(*args: object, **kwargs: object) -> None:
+        raise AssertionError("the knot vector must not be materialised when it cannot fit len(rows)")
+
+    monkeypatch.setattr(chain_mod, "_clamped_uniform_knots", _must_not_run)
+    problem = _wave_problem(1e-9)  # would ask for ~total/1e-9 spans on a WAVE_K-anchor stroke
+    assert all(b["kind"] == "rigid" for b in problem.basis_blocks)
 
 
 def test_pinning_an_anchor_through_the_wave_freezes_its_expansion() -> None:

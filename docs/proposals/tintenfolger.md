@@ -1,6 +1,6 @@
 # Tintenfolger: der Prüfstand und die zwei Routen zur Wortbahn
 
-> **Status (2026-09-11): teil-umgesetzt.** Das Duell ist komplett
+> **Status (2026-09-12): teil-umgesetzt.** Das Duell ist komplett
 > gemessen und §7 in Arbeit; adoptiert sind Kette **v5** (`aug26`),
 > Lotse **v0.17** (`aug20`), die Lineal-Stände **v2.1** (`aug16`) /
 > **L-U** (`aug26`) und die Laufform **LF11** („glatte Zeile", `sep02`,
@@ -40,7 +40,7 @@
 > **Tintenpfad** (Tinte zuerst, Buchstaben danach; §4d, verfahren-tintenpfad.md,
 > §14 „Welle" + „Tintenpfad-Arme") — nicht adoptiert, Autor-Entscheid offen.
 
-## Stand der Kampagne (2026-09-11)
+## Stand der Kampagne (2026-09-12)
 
 Eine Seite, damit der aktuelle Stand nicht erst aus 6 200 Zeilen §14
 zusammengelesen werden muss. **Jede Zahl hier ist ein datiertes Zitat**

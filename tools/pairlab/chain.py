@@ -1535,11 +1535,24 @@ def _wave_pen_strokes(specs: Sequence[ChainSegmentSpec], plan_slices: Sequence[t
     hand does not stop at a letter boundary, so one block runs through a
     letter's tail, the connector and the next letter's head (the sampling
     plan's `stroke_starts_plan` breaks at every segment because the cubic
-    sampler must not bridge a seam; the displacement field must)."""
+    sampler must not bridge a seam; the displacement field must).
+
+    One extra break: a letter whose `seam_out` is NOT its last anchor (the t's
+    bar, drawn AFTER the exit seam already handed continuity to the connector)
+    ends its own block at the letter's own last plan row. Without this, the
+    tail's rows and the connector's rows fall into one contiguous span while
+    the seam anchor between them was already claimed by the EARLIER block (the
+    one ending at the seam) — the tail and the connector are not one
+    continuous pen motion, so merging them invents a chord that leaps from the
+    tail's end straight to the connector's second row, skipping the seam
+    entirely."""
     starts: set[int] = {0}
-    for spec, (p0, _) in zip(specs, plan_slices, strict=True):
-        if spec.kind == "letter":
-            starts |= {p0 + int(s) for s in spec.stroke_starts if 0 < int(s) < len(spec.anchors)}
+    for spec, (p0, p1) in zip(specs, plan_slices, strict=True):
+        if spec.kind != "letter":
+            continue
+        starts |= {p0 + int(s) for s in spec.stroke_starts if 0 < int(s) < len(spec.anchors)}
+        if spec.seam_out is not None and int(spec.seam_out) < len(spec.anchors) - 1:
+            starts.add(p1)
     return sorted(starts)
 
 
@@ -1554,13 +1567,17 @@ def _wave_block_rows(
     re-uses AFTER a pen lift (the t: the connector starts at the stem's foot
     while the bar stroke ends elsewhere) would otherwise be claimed by both
     blocks and move twice as far as its cap; here the later block reads it as
-    a fixed row it does not own.
+    a fixed row it does not own — but it is also that block's true arc-length
+    origin (`anchor_row`, read by `_wave_basis`), because the block's first
+    FREE row continues from the seam, not from wherever plan order happens to
+    place it (the tail block `_wave_pen_strokes` now cuts off separately).
     """
     starts = _wave_pen_strokes(specs, plan_slices)
     bounds = [*starts, int(len(idx))]
     owned = np.zeros(int(idx.max()) + 1 if len(idx) else 0, dtype=bool)
     blocks: list[dict] = []
     for lo, hi in zip(bounds[:-1], bounds[1:], strict=True):
+        anchor_row = int(idx[lo]) if lo < hi and owned[int(idx[lo])] else None
         rows: list[int] = []
         for r in idx[lo:hi]:
             if not owned[r]:
@@ -1569,7 +1586,10 @@ def _wave_block_rows(
         if not rows:
             continue
         segs = sorted({i for i, (p0, p1) in enumerate(plan_slices) if p0 < hi and p1 > lo})
-        blocks.append({"plan": (int(lo), int(hi)), "segs": segs, "rows": rows})
+        block = {"plan": (int(lo), int(hi)), "segs": segs, "rows": rows}
+        if anchor_row is not None:
+            block["anchor_row"] = anchor_row
+        blocks.append(block)
     return blocks
 
 
@@ -1611,18 +1631,34 @@ def _wave_basis(
     n_cols = 0
     for block in _wave_block_rows(specs, idx, plan_slices):
         rows = np.asarray(block["rows"], dtype=int)
-        pts = abscissa[rows]
-        chords = np.hypot(*np.diff(pts, axis=0).T) if len(rows) > 1 else np.zeros(0)
+        # `anchor_row` (the retrace case, e.g. the t's bar): the block's first
+        # FREE row does not continue from wherever plan order put it, but from
+        # the seam an EARLIER block already owns. Prepend that seam's own
+        # position as a fixed reference so the arc length — and therefore the
+        # knot spacing — measures real distance from the seam, not a spurious
+        # chord to whatever unrelated row plan order happened to place first.
+        anchor_row = block.get("anchor_row")
+        pts = abscissa[rows] if anchor_row is None else np.vstack([abscissa[[int(anchor_row)]], abscissa[rows]])
+        chords = np.hypot(*np.diff(pts, axis=0).T) if len(pts) > 1 else np.zeros(0)
         if len(chords) and not np.all(chords > 0.0):
-            where = [int(rows[i]) for i in np.flatnonzero(chords <= 0.0)]
+            before = [anchor_row, *rows[:-1].tolist()] if anchor_row is not None else rows[:-1].tolist()
+            where = [int(before[i]) for i in np.flatnonzero(chords <= 0.0)]
             raise ValueError(
                 f"wave basis: zero-length chord after free anchor(s) {where} in plan block {block['plan']}"
             )
-        arc = np.concatenate([[0.0], np.cumsum(chords)])
-        total = float(arc[-1]) if len(arc) else 0.0
-        knots = _clamped_uniform_knots(total, spacing, degree) if total > 0.0 else np.zeros(0)
-        m = len(knots) - degree - 1
-        if total > 0.0 and len(rows) >= degree + 2 and m <= len(rows):
+        arc_full = np.concatenate([[0.0], np.cumsum(chords)])
+        arc = arc_full[1:] if anchor_row is not None else arc_full
+        total = float(arc_full[-1]) if len(arc_full) else 0.0
+        # `m` (= spans + degree, see `_clamped_uniform_knots`) is computed from the
+        # SPAN COUNT ALONE before any knot vector is materialised: a degenerate
+        # `spacing` (e.g. 1e-9 on a multi-xh stroke) would otherwise round to
+        # billions of interior knots — an OOM — before the `m <= len(rows)` guard
+        # below ever gets to reject it in favour of the rigid fallback.
+        spans_fit = max(1, int(round(total / spacing))) if total > 0.0 else 0
+        m_fit = spans_fit + degree
+        if total > 0.0 and len(rows) >= degree + 2 and m_fit <= len(rows):
+            knots = _clamped_uniform_knots(total, spacing, degree)
+            m = len(knots) - degree - 1
             design = BSpline.design_matrix(arc, knots, degree).toarray()
             kind, spans = "bspline", int(len(np.unique(knots)) - 1)
         else:
