@@ -321,8 +321,12 @@ Ruhe, die innerhalb einer Schleife der Chart-Zeile liegen.
 dem Autor-Entscheid **A45** vom 2026-09-12, §14 „Tintenpfad-Adoption
 `sep12`"): die gespeicherte Wortspur kommt aus der Strang-Dekodierung
 (`tools/pairlab/tintenpfad`), und die Buchstabengrenzen der Dekodierung
-(`letter_spans`) stehen im Wort-Record daneben. `--follower chain` ist der
-Stand davor, byte für byte. **Der Schalter bewegt nur, was die Ernte
+(`letter_spans`) stehen im Wort-Record daneben. Der Record nennt den
+Folger, der seine Striche gelegt hat, in `measurements.follower` UND in
+`measurements.fit_path` — sonst läse ein Verbraucher, der nur das Feld
+kennt, die Bahn des Dekoders als Ketten-Fit; die VORKOMMEN behalten ihr
+eigenes `fit_path: "chain"`, sie kommen weiter von dort.
+`--follower chain` ist der Stand davor, byte für byte. **Der Schalter bewegt nur, was die Ernte
 ZEIGT:** Vorkommen, Mediane und jedes Gate werden weiter am
 Buchstabenfit abgelesen — eine Laufform-Zeile ist ein ANKERSATZ, der
 Tintenpfad dekodiert eine BAHN, und die Anker-Zuordnung dazwischen ist

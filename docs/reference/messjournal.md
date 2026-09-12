@@ -1,17 +1,17 @@
 # Messjournal — Tintenfolger-Bench (§14)
 
-> **Status (2026-09-11): lebend.** Das Journal der Mess-Kampagne. Seit
+> **Status (2026-09-13): lebend.** Das Journal der Mess-Kampagne. Seit
 > 2026-09-04 eine eigene Datei; bis dahin war es §14 von
 > [`qualitaetsmetrik.md`](qualitaetsmetrik.md), Wort für Wort dieselbe
 > Sektion.
 >
-> **Diese Datei liest man nicht.** Sie trägt 123 datierte Abschnitte und
-> rund 317 000 Token (gemessen am `sep11` mit
-> `tools.docs_budget.proxy_tokens`). Der Einstieg ist das
-> **Register** direkt unter der nächsten Überschrift — eine Zeile je
+> **Diese Datei liest man nicht.** Sie trägt 131 datierte Abschnitte und
+> rund 322 000 Token (`sep12`, gemessen mit `tools.docs_register.entries`
+> und `tools.docs_budget.proxy_tokens`). Der Einstieg ist das **Register**
+> direkt unter der nächsten Überschrift — eine Zeile je
 > Abschnitt mit Datum, Route, Typ · Verdikt und dem Befund in einer Zeile
 > —, und daneben der **Headline-Ledger** mit der Zahlen-Historie samt
-> Fixture-Wurzeln. Beide zusammen kosten rund 23 000 Token; ein einzelner
+> Fixture-Wurzeln. Beide zusammen kosten rund 28 000 Token; ein einzelner
 > Abschnitt im Median rund 1 900, höchstens rund 5 100 (`sep11`: 5 076 ·
 > 4 901 · 5 057, davor „Laufform LF17 `sep09`" 4 956; gemessen mit
 > `tools.docs_budget.widest_journal_entry`). Wer aus dem Register
@@ -69,7 +69,7 @@ Werkzeuge: `tools/tracebench/`.
 
 ### Register der Einträge (Index, keine Zahl-Heimat)
 
-Diese Sektion trägt 123 datierte Abschnitte und ist die eine Heimat der
+Diese Sektion trägt 131 datierte Abschnitte und ist die eine Heimat der
 Kampagnen-Zahlen; die Tabelle hier ist ihr **Index** — sie wiederholt
 keine Zahl, sie zeigt, wo eine steht. Ihre Reihenfolge ist die der
 Datei, also die Reihenfolge, in der die Abschnitte angehängt wurden; die
@@ -245,7 +245,7 @@ die DB) — mit seiner Bedingung.
 | sep10/sep11 | Kette | [Grob-richtig-Schleife (Nachtschleife, #590)](#kette-grob-richtig-schleife-sep10sep11--werkstatt-ohne-vorregistrierung-sieben-schalter-und-ein-zweiter-sensor-auf-fechten--kann--unter-it-18-als-kandidat) | Werkstatt · **ohne Vorregistrierung** · Kandidat (It. 18), **nicht adoptiert**; Papier-Strecke als Spalte ausgeliefert (#590) | Der Autor verweigert das Urteil über Runde 11 („die springen wild hin und her") und lässt über Nacht an `fechten` `kann` `unter` bauen. Sieben Kette-Schalter (t-Brücke · Saat-Form · Tinten-Klammer · Tinten-Soll · Unstetigkeits-Preis · Saat-Rampe · Gauß-Verschiebung; Laufform-Saat und Formglätte als Negative), der Wächter-Befund (sein Soll kam aus der Tafel statt aus der Tinte) und der zweite Sensor `paper_len_xh`. Auswahl je Wort aus dreien (It. 18) bringt die 63 Wörter von **49 auf 13** Papier-Umkehrungen und **61,7 auf 23,5 xh** Papier-Strecke bei besserem Lineal (dtw 0,045881 → 0,044128, aiou 0,7660 → 0,7821, 12 : 7) — gebucht wird nichts, bis der Autor einen Bogen abnimmt; als Folger-Schalter ändert „Wächter aus" die Doktrin. Drei Quellen-Abweichungen und ein zurückgezogener `die`-Befund stehen im Eintrag; BLAS-Pinnung für diese Nacht unbezeugt |
 | sep11 | Kette/Tintenpfad | [Welle — drei Bauten (Tintenpfad #591, Wellen-Basis, Schlange)](#welle-sep11--drei-bauten-gegen-die-physik-bedingung-des-autors-tintenpfad-bestätigt-591-wellen-basis-und-schlange-als-ehrliche-teil-negative) | drei Bauten · **Tintenpfad bestätigt** (gemergt, nicht adoptiert) · zwei ehrliche Negative | Physik-Bedingung des Autors („die Punkte können sich nur wie eine Welle zusammenhängend verschieben") als Tor; Workflow Recherche ×4 → Karte → Entwürfe → Richter ×9 → Bau ×3 → Prüfung ×3, BLAS gepinnt, Wurzel `ccb036a5eb20…`. **Tintenpfad** (Tinte zuerst, Buchstaben danach — Stränge ohne Prior, Reihenfolge per Viterbi): 13 Zeilen **0 · 93 · 0,78 xh**, 63 Wörter 0 · 331 · 1,49, dev-19 dtw 0,044230 · aiou 0,7867, aber gepaart 7 : 12 und p90 schlechter; Papier-Sensoren für einen skelettgebundenen Pfad vakuös. **Wellen-Basis** (B-Spline-Verschiebungsbasis im Kettenlöser): Zacken −78 %, dtw 0,041403 (15 : 4 gegen Basis, 10 : 9 gegen It. 17), Tor gerissen an Tinten-Umkehrungen +23 % und `das` +0,0782. **Schlange** (elastische Kurve, Sobolev-Schritt): Zickzack 3,718 → 0,009 je xh, 0 · 78 · 4,47, Lineal verloren (0,051445, 6 : 13); β_e 64 biegt die eigene Pre-Reg. Alle drei physikalisch kohärent, nur einer nimmt das Tor |
 | sep11 | Tintenpfad | [Tintenpfad-Arme + Kombination (#592)](#tintenpfad-arme-sep11--fünf-arme-drei-tragen-zwei-ehrliche-negative-die-kombination-als-kandidat-592) | fünf Arme · **drei tragen**, zwei ehrliche Negative · Kombination **Kandidat, nicht adoptiert** | Regel des Abends: Lesung der Tinte oder Regel des Dekoders, nie Glättung, nie Erfindung. **Spitzen-Lesung** (rail + walk bis ans Maskenende; 13 : 6 gegen #591, Gate 2 fällt wie geschrieben), **Normalen-Fit** (Zelt auf 4× feinerem Grau-Raster, Knick 9,74° → 8,03°, 15 : 4 — Träger ist das Grau, Scope-Frage an den Autor), **Tinten-Brücke** (2 von 9 Lücken, neutral; über `kann`/`han`/`regieren` liegt kein Haarstrich). **Stummel-Filter** no-op, Hypothese an der Quelle widerlegt — Nebenbefund: Hand 47 gegen Kandidat 79 Tinten-Umkehrungen, der Defekt ist der Überschuss +32; **Doppelstrich-Evidenz** feuert auf 0 von 63 (ß-Stämme 1,00–1,33 × Feder), die reine Dekoder-Regel `ratio 1,0` repariert p90 0,0907 → 0,0535 (3 : 0), aber nachträglich gewählt. Kombination: 13 Zeilen 0 · 95 · 1,34, 63 Wörter 0 · 330 · 4,77, dev-19 **0,041356** · 0,091040 · 0,7876, **18 : 1** gegen #591, **9 : 10** gegen Basis, 10 : 9 gegen It. 18 (der PR-Text hat die letzten beiden vertauscht) |
-| sep12 | Tintenpfad/Kette | [Tintenpfad-Adoption — die formale Runde auf der frischen Wurzel (A45)](#tintenpfad-adoption-sep12--die-formale-runde-auf-der-frischen-wurzel-der-tintenpfad-wird-standard-folger-a45) | Adoption · **adoptiert (A45)** · dazu eine Wurzel-Zeile ohne bewegte Headline | Ein Knopf: Folger-Wechsel Kette v5 → Tintenpfad mit den acht erklärten Schaltern, vorregistriert vor der ersten Zahl, BLAS gepinnt, Wurzel `c7f2efd9cf37…` (2026-09-12T21:33:43+00:00). Die Wurzel reproduziert die `sep10`-Headline ziffernidentisch (0,108339 / 0,148236) — neue Identität, keine Re-Baseline; der Substrat-Pin der 13 Schleifenzeilen kommt unverändert heraus. dev-19: Basis (neu gemessen) 0,045772 · 0,088356 · 0,7660 gegen Arm **0,038351 · 0,048012 · 0,7929**, gepaart **15 : 4** (Δ-Median −0,008311, p 0,019); die Vorgabe ohne die acht (`--legacy-p6`) 0,045033 · 0,090673 · 0,7867 und 7 : 12 — die Schalter SIND der Unterschied. Zähler: `cross_spurious` 10 → 3, `retrace_missing` 7 → 0, `lift_delta_total` 6 → 0, `overlap_cand` 4 → 0, Absorption 89 → 35; dagegen `cross_missing` 12 → 13. Sensoren über 63: Papier-Umkehrungen Maske 44 → **0** (grau 49 → 3), Papier-Strecke Maske 55,57 → 1,20 xh, schlimmster Ausflug 0,323 → 0,091 xh, Roh-Knick 10,24° → 8,17°. k0: Soll-Abstand 81 → 80, aiou-Median +0,0520 über 63 bewegte Wörter, **Gate (4) aber nicht verwertbar** — die Stack-Warnung fällt, weil der Tintenpfad keinen Struktur-Wächter hat, der Sensor auf einem Folger-PAAR also konstruktionsbedingt blind ist; das Kill-Kriterium war so zu weit geschrieben, das Verdikt hängt an den Gates (1)–(3), und die strenge Lesart liegt beim Autor. Nebenbei: `ink_bridge_xh=1.0` testet 7 Lücken und brückt **null** — auf dieser Wurzel inert, bleibt als Lesung |
+| sep12 | Tintenpfad/Kette | [Tintenpfad-Adoption — die formale Runde auf der frischen Wurzel (A45)](#tintenpfad-adoption-sep12--die-formale-runde-auf-der-frischen-wurzel-der-tintenpfad-wird-standard-folger-a45) | Adoption · **adoptiert (A45)** · dazu eine Wurzel-Zeile ohne bewegte Headline | Ein Knopf: Folger-Wechsel Kette v5 → Tintenpfad mit den acht erklärten Schaltern, vorregistriert vor der ersten Zahl, BLAS gepinnt, Wurzel `c7f2efd9cf37…` (2026-09-12T21:33:43+00:00). Die Wurzel reproduziert die `sep10`-Headline ziffernidentisch (0,108339 / 0,148236) — neue Identität, keine Re-Baseline; der Substrat-Pin der 13 Schleifenzeilen kommt unverändert heraus. dev-19: Basis (neu gemessen) 0,045772 · 0,088356 · 0,7660 gegen Arm **0,038351 · 0,048012 · 0,7929**, gepaart **15 : 4** (Δ-Median −0,008311, p 0,019); die Vorgabe ohne die acht (`--legacy-p6`) 0,045033 · 0,090673 · 0,7867 und 7 : 12 — die Schalter SIND der Unterschied. Zähler: `cross_spurious` 10 → 3, `retrace_missing` 7 → 0, `lift_delta_total` 6 → 0, `overlap_cand` 4 → 0, Absorption 89 → 35; dagegen `cross_missing` 12 → 13. Sensoren über 63, gegen die BASIS: Papier-Umkehrungen Maske 44 → **0** (grau 49 → 3), Papier-Strecke Maske 55,57 → 1,20 xh, schlimmster Ausflug 0,323 → 0,091 xh; gegen die VORGABE, weil die Kette den Zähler gar nicht führt: Roh-Knick 10,24° → 8,17°. k0: Soll-Abstand 81 → 80, aiou-Median +0,0520 über 63 bewegte Wörter, **Gate (4) aber nicht verwertbar** — die Stack-Warnung fällt, weil der Tintenpfad keinen Struktur-Wächter hat, der Sensor auf einem Folger-PAAR also konstruktionsbedingt blind ist; das Kill-Kriterium war so zu weit geschrieben, das Verdikt hängt an den Gates (1)–(3), und die strenge Lesart liegt beim Autor. Nebenbei: `ink_bridge_xh=1.0` testet 7 Lücken und brückt **null** — auf dieser Wurzel inert, bleibt als Lesung |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -17108,7 +17108,7 @@ und `tools.tracebench.excursions`):
 | Tinten-Umkehrungen | 753 | 328 | 337 |
 | Papier-Strecke, Grau (xh) | 58,27 | 1,47 | **2,12** |
 | Papier-Strecke, Maske (xh) | 55,57 | 1,22 | **1,20** |
-| schlimmster Ausflug (xh) | `Sporn` 0,323 | — | `Gaul` **0,091** |
+| schlimmster Ausflug (xh) | `Sporn` 0,323 | `Gaul` 0,091 | `Gaul` **0,091** |
 
 Der Roh-Knick über die Wörter fällt mit dem Normalen-Fit von **10,24°**
 (Vorgabe) auf **8,17°** (Arm). Die Papier-Sensoren sind für einen
@@ -17120,8 +17120,13 @@ bekannte blasse Kappe, in der Maske sind es null.
 <base-cand> <arm-cand>`): Soll-Abstand **81 → 80** (15 besser / 28
 gleich / 20 schlechter), aiou über die 63 bewegten Wörter min −0,0357,
 **Median +0,0520**, max +0,2335; 14 aiou-Verlierer unter −0,003, alle
-≤ 0,036 und alle aus der Kurzwort-Familie (`und…`, `ein…`, `er…`, `im`);
-strichidentische Zeilen 0 von 63 (erwartet — es sind zwei Folger).
+≤ 0,036 — `und-2` −0,0357, `er-3` −0,0315, `einen` −0,0243, `wenn-2`
+−0,0192, `ein` −0,0175, `und-4` −0,0124, `Einen` −0,0079, `einer`
+−0,0072, `im` −0,0071, `zum` −0,0066, `und-3` −0,0065, `und` −0,0051,
+`er` −0,0048, `will` −0,0035; elf davon aus der Kurzwort-Familie
+(`und…`, `ein…`, `er…`, `im`), dazu `zum`, `will` und `wenn-2`, die in
+keine von ihnen fallen; strichidentische Zeilen 0 von 63 (erwartet — es
+sind zwei Folger).
 
 **Die Stack-Warnung ist gefallen, und sie ist der Knopf selbst.**
 `k0eval` meldet Abweichung auf `structure_guard`,

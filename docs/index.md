@@ -27,7 +27,7 @@ H5-Erfassungsweg liest bereits echte Bögen ein.
 stehen in [`../CLAUDE.md`](../CLAUDE.md) § „Read these before substantive
 work“ — von dort führt der kürzeste Weg hierher, nicht umgekehrt.
 Fachbegriffe schlägt man in
-[`reference/kurzglossar.md`](reference/kurzglossar.md) nach (77 Begriffe,
+[`reference/kurzglossar.md`](reference/kurzglossar.md) nach (95 Einträge,
 Kurzfassung) oder im vollen [`reference/glossar.md`](reference/glossar.md).
 
 ---
@@ -55,13 +55,13 @@ Policy- und Technik-Dokumente, Status je Doc.
 
 | Doc | Wofür | Wann aufmachen |
 |---|---|---|
-| [kurzglossar.md](reference/kurzglossar.md) | 77 Begriffe, die in Code, Skills und PRs wirklich vorkommen — je ein bis zwei Sätze | Beim Einstieg in eine Sitzung; für Details führt jeder Eintrag ins volle Glossar |
+| [kurzglossar.md](reference/kurzglossar.md) | 95 Einträge, die in Code, Skills und PRs wirklich vorkommen — je ein bis zwei Sätze | Beim Einstieg in eine Sitzung; für Details führt jeder Eintrag ins volle Glossar |
 | [glossar.md](reference/glossar.md) | Das volle Vokabular in sechs Themenblöcken, mit Modul- und Konstanten-Anker; alphabetischer Schnellindex oben | Wenn ein Begriff im Kurzglossar fehlt oder der Anker gebraucht wird. **Ein PR, der einen Begriff prägt, legt hier den Eintrag an** |
 | [sprachregelung.md](reference/sprachregelung.md) | Welche Sprache welches Artefakt trägt; §4 der englische Stil-Fallback | Vor dem Schreiben von README, Docs, Commit- oder PR-Text |
 | [quellen-und-rechte.md](reference/quellen-und-rechte.md) | Was ins Repo darf: PD/CC/NC-SA, §72 UrhG, §5 die Open-Core-Absicherung | Vor jedem Daten-Commit und bei jeder Frage zu Lizenzen |
 | [datenablage.md](reference/datenablage.md) | Der `/data`-Baum, drei Commit-Klassen, `SOURCE.md`-Pflichtfelder | Wenn eine Datei nach `/data` soll |
 | [qualitaetsmetrik.md](reference/qualitaetsmetrik.md) | Die **Regeln** der Messlatte: zwei Metriken (eine pro Schrift), Frozen-Reference-Regel, Baseline-Historie, Verworfen-Listen | Vor jedem Bench-Lauf und bei jeder Metrik-Frage |
-| [messjournal.md](reference/messjournal.md) | Die **Läufe**: §14, 123 datierte Abschnitte mit Zahlen und Verdikt — fast alle mit Vorregistrierung, die Werkstatt-Runden (z. B. die Nachtschleife `sep10`/`sep11`) mit ausdrücklich vermerktem Fehlen derselben | Wenn eine Zahl oder ein Verdikt gesucht wird — **über das Register im Kopf**, nie die ganze Datei |
+| [messjournal.md](reference/messjournal.md) | Die **Läufe**: §14, 131 datierte Abschnitte mit Zahlen und Verdikt — fast alle mit Vorregistrierung, die Werkstatt-Runden (z. B. die Nachtschleife `sep10`/`sep11`) mit ausdrücklich vermerktem Fehlen derselben | Wenn eine Zahl oder ein Verdikt gesucht wird — **über das Register im Kopf**, nie die ganze Datei |
 | [messjournal-archiv.md](reference/messjournal-archiv.md) | Abgelegte §14-Abschnitte und die Regel, wann einer hierher zieht | Wenn ein Abschnitt im Journal fehlt, oder beim Ablegen eines fertigen Arms |
 | [menschliche-bewertung.md](reference/menschliche-bewertung.md) | Die **Methode** des blinden Urteilsdurchgangs (`tools/humanbench`): Taxonomie, Instrumentregeln, Vorregistrierung | Bevor eine Bewertungsrunde gebaut oder ausgewertet wird (die Befunde stehen im Messjournal) |
 | [verfahren.md](reference/verfahren.md) | Die Übersicht der Duell-Routen samt Versions-Konvention und der Regel, dass eine Verfahrensseite Register ist und keine zweite Wahrheit | Bevor man eine der fünf Routenseiten liest oder eine Ledger-Zeile schreibt |

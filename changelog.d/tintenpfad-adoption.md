@@ -16,7 +16,9 @@
   base, and still fully measurable.
 - **The Laufform harvest chooses its follower.** `--follower tintenpfad`
   (the new default) lays the stored word trace with the strand decoding and
-  carries the decode's letter spans into the word record; `--follower chain` is
+  carries the decode's letter spans into the word record, which names the
+  follower that laid its strokes in `measurements.fit_path` as well as in
+  `measurements.follower`; `--follower chain` is
   the pre-A45 path, byte for byte. The switch moves only what the harvest
   SHOWS — the occurrences, the medians and every gate are still read off the
   per-letter fit — and an `--apply` run has to name its follower rather than

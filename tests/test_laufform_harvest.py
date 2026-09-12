@@ -1271,6 +1271,10 @@ def test_the_tintenpfad_follower_replaces_the_strokes_and_nothing_else(monkeypat
     assert record is not None
     assert record["strokes"] == path
     assert record["measurements"]["follower"] == "tintenpfad"
+    # The record says who laid its strokes in BOTH fields: a consumer that
+    # reads `fit_path` alone (the tracebench candidate, the word fixtures)
+    # must not read the decoder's path as a chain fit.
+    assert record["measurements"]["fit_path"] == "tintenpfad"
     assert record["measurements"]["letter_spans"] == [[[0, 0, 3]]]
     assert record["measurements"]["registration_px"] == {"tx": 1.0, "ty": 2.0, "baseline_row": 3}
     # Only the counters an inspection view needs — never the whole diagnostic block.
@@ -1282,9 +1286,12 @@ def test_the_tintenpfad_follower_replaces_the_strokes_and_nothing_else(monkeypat
         "ink_unvisited_share": 0.04,
     }
     # What the harvest MEASURES is untouched: same occurrences, same gates.
+    # `fit_path` is deliberately NOT in this list — it belongs to the strokes,
+    # and the strokes moved.
     assert out.occurrences == chain_only.occurrences
+    assert all(o["measurements"]["fit_path"] == "chain" for o in out.occurrences)
     assert [r["gate"] for r in out.diag_rows] == [r["gate"] for r in chain_only.diag_rows]
-    for key in ("fitted_slots", "unfitted_slots", "traced_slots", "gates", "fit_path"):
+    for key in ("fitted_slots", "unfitted_slots", "traced_slots", "gates"):
         assert record["measurements"][key] == chain_only.word_record["measurements"][key]
 
 
@@ -1325,8 +1332,10 @@ def test_the_slot_path_takes_the_follower_switch_too(monkeypatch: pytest.MonkeyP
 
     assert slot_only.word_record["strokes"] != path
     assert "follower" not in slot_only.word_record["measurements"]
+    assert "fit_path" not in slot_only.word_record["measurements"]
     assert swapped.word_record["strokes"] == path
     assert swapped.word_record["measurements"]["follower"] == "tintenpfad"
+    assert swapped.word_record["measurements"]["fit_path"] == "tintenpfad"
     assert swapped.word_record["measurements"]["letter_spans"] == [[[0, 0, 3]]]
     # What the harvest MEASURES is identical on both sides of the switch.
     assert swapped.occurrences == slot_only.occurrences

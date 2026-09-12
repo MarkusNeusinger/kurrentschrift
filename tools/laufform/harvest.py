@@ -554,6 +554,16 @@ def tintenpfad_trace(case, opts: HarvestOptions) -> tuple[list[list[list[float]]
         float(info["xh_px"]),
         {
             "follower": "tintenpfad",
+            # `fit_path` names WHO LAID THE STROKES of this record — the same
+            # meaning it carries in the follower's own `meta` and in the
+            # tracebench candidate built from a stored row. It therefore has to
+            # travel with the trace: a record left at "chain" would attribute
+            # the decoder's path to the chain fit for every consumer that reads
+            # the field alone (`tools.tracebench.candidates`, the exported word
+            # fixtures), and only the `follower` key would tell the truth. The
+            # OCCURRENCES keep their own `fit_path: "chain"` — they still come
+            # from the chain fit, and that is a different record.
+            "fit_path": "tintenpfad",
             "letter_spans": meta.get("letter_spans", []),
             # The handful of decode counters an inspection view needs beside
             # the path; the full diagnostic block belongs to the bench artefact.
