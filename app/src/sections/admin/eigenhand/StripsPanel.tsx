@@ -598,12 +598,15 @@ function StripTile({
           {showPfade && (
             <>
               {pfade.loading && <CircularProgress size={12} sx={{ mt: 1 }} />}
-              {pfade.pfade !== null && drawn.length > 0 && (
-                <PfadCaption pfade={drawn} flecken={row.flecken} />
-              )}
-              {pfade.pfade === null && !pfade.loading && !pfade.error && (
+              {drawn.length > 0 && <PfadCaption pfade={drawn} flecken={row.flecken} />}
+              {/* The two empty answers are DIFFERENT and both are said out
+                  loud: `null` is „nobody has followed this Fassung", an empty
+                  result is „followed, nothing came back" — and a row that has
+                  paths but none for the word currently shown is a third. A
+                  silent picture would make all three look alike. */}
+              {drawn.length === 0 && !pfade.loading && !pfade.error && (
                 <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: paper.inkSoft }}>
-                  {t.pfadNone}
+                  {pfade.pfade === null ? t.pfadNone : pfade.pfade.length === 0 ? t.pfadEmpty : t.pfadNotInBox}
                 </Typography>
               )}
               {pfade.error && (
@@ -711,6 +714,14 @@ function CropTile({
         // the fold, and the observer above decides on the true layout instead
         // of on a row of collapsed captions.
         <Box sx={{ height: `${row.height_px * zoom}px`, minWidth: '8rem', bgcolor: paper.hi, borderRadius: 1 }} />
+      )}
+      {/* The layer is on and nothing is drawn: say WHICH of the empty answers
+          this is, rather than leaving the tile looking as if the switch had
+          not worked. */}
+      {wantPfade && drawn.length === 0 && !pfade.loading && !pfade.error && (
+        <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: paper.inkSoft }}>
+          {cut === null ? t.pfadNoBox : pfade.pfade === null ? t.pfadNoneShort : t.pfadNotInBox}
+        </Typography>
       )}
       {/* A tile in a gallery has no room for a fold-out, so the sentence stands
           alone and the raw line rides along as the tooltip — still one hover

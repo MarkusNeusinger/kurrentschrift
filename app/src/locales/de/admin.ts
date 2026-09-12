@@ -1061,6 +1061,15 @@ export const admin = {
     pfadNoDate: 'ohne Datum',
     pfadNone:
       'Für diese Fassung ist noch kein Pfad gespeichert. Lokal folgen und hochschieben: uv run python -m tools.eigenhand.pfad --hand … --strip … (Trockenlauf), dann --apply.',
+    pfadNoneShort: 'noch kein Pfad gespeichert',
+    // Die drei leeren Antworten sind NICHT dasselbe: „noch niemand gefolgt"
+    // (null), „gefolgt, nichts gefunden" (leere Liste) und „dieses Wort hat
+    // keinen". Ein stummes Bild sähe in allen drei Fällen gleich aus.
+    pfadEmpty:
+      'Dieser Fassung wurde gefolgt, es kam aber keine Bahn zurück — der Folger hat kein Wort lesen können. Erneut folgen lassen oder den Streifen neu schreiben.',
+    pfadNotInBox: 'Für dieses Wort ist kein Pfad gespeichert; andere Wörter der Fassung haben einen.',
+    pfadNoBox:
+      'Kein Kasten-Rechteck: dieser Bogen wurde gedruckt, bevor es die Schnitt-Geometrie gab — ein Pfad lässt sich im Ausschnitt nicht platzieren.',
     pfadError: 'Der Pfad konnte nicht geladen werden.',
     pfadSeed: 'Saat: Tafel-Duktus',
     pfadSeedHint:

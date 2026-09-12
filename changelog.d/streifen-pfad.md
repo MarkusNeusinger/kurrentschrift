@@ -1,31 +1,30 @@
 ### Added
 
-- **Der Streifen-Pfad: die gefolgte Federbahn eines geschriebenen Wortes, als
-  Daten neben dem Bild.** Eine Fassung trug bisher ein Bild, ein Verdikt, einen
-  Befund und eine Fleckenmaske — aber keinen Duktus; das Bild sagte, WO die
-  Tinte liegt, und nie, in welcher Reihenfolge die Feder sie gelegt hat. Neu
-  speichert `eigenhand_strips.pfade` (Migration `0031`) je Wortkasten die Züge
-  in den Einheiten des Wortes — demselben Rahmen, den `word_instances.strokes`
-  benutzt —, die Registrierung in den Pixeln des Streifens, das Verfahren, die
-  Folger-Konfiguration, das Datum und die Maskengröße, unter der gefolgt wurde.
-  Gerechnet wird außerhalb und über `PUT /eigenhand/strips/…/pfade` abgelegt:
-  das API-Abbild liefert `tools/` nicht aus, also kann der Server nie selbst
-  folgen. Die Spalte ist wie das PNG verzögert geladen, damit keine
-  Bestandsabfrage jede Bahn jeder Fassung mitschleppt.
-- **`tools.eigenhand.pfad` — folgen, ansehen, dann erst schreiben.** Holt
-  Streifenbild, Bogen-Layout und Kasten-Rechtecke über die Admin-API, schneidet
-  jedes Wort heraus und lässt den Tintenpfad mit der festgezurrten
-  Konfiguration darüber laufen (`tip_read` · `rail=tentfit` · `edt_upsample=4`
-  · `ink_bridge_xh=1.0` · `hairpin_tip` · `ride_back` · `tip_grey_stop` ·
-  `self_jump`), die mit in die Zeile wandert. **Trockenlauf ist die Vorgabe**;
-  `--apply` schreibt in die geteilte Datenbank und gehört hinter einen
-  Archiv-Schnappschuss.
-- **Ein Pfad-Overlay für beide Flächen.** In den Wörtern steht „Pfad" als
-  dritter Ebenen-Knopf neben Nachfahrung und Engine, in der Eigenhand-Ansicht
-  legt „Pfad zeigen" die Bahn über Streifen und Wort-Ausschnitte: Farbverlauf
-  in Schreibreihenfolge, Punkt am Ansatz, Pfeilspitze am Zugende und
-  **gestrichelte Verbinder für die Absetzer** — das Stück, das eine einfarbige
-  Linie vollständig verbirgt, weil ein Absetzer dort aussieht wie eine Ecke.
-  Dazu Herkunft und Datum als Bildunterschrift; `WordInstanceOut` trägt dafür
-  nun sein `updated_at`, und die Streifen-Liste je Wortkasten sein
-  Pixel-Rechteck.
+- **Der Streifen-Pfad: the followed pen path of a written word, stored as data
+  beside the image.** A Fassung carried a picture, a verdict, a Befund and a
+  Fleckenmaske — but no ductus; the image said WHERE the ink is and never in
+  which order the pen laid it down. `eigenhand_strips.pfade` (migration `0031`)
+  now holds, per written word box, the strokes in the word's own units — the
+  same frame `word_instances.strokes` uses — the registration in the strip's
+  pixels, the Verfahren, the follower configuration, the day, and the size of
+  the Fleckenmaske it was followed under. It is computed offline and stored
+  through `PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade`, because the
+  API image ships no `tools` and the server can therefore never follow a path
+  itself. The column is deferred beside the PNG, so no Bestand read drags every
+  path of every Fassung along, and a path deliberately never enters
+  `word_instances`: that table's rows are the frozen Tintenfolger reference set.
+- **`tools.eigenhand.pfad` — follow, look, and only then write.** It reads the
+  strip image, the Bogen layout and the box rectangles over the admin API, cuts
+  each word out and runs the Tintenpfad over it with the configuration the
+  campaign settled on (`tip_read` · `rail=tentfit` · `edt_upsample=4` ·
+  `ink_bridge_xh=1.0` · `hairpin_tip` · `ride_back` · `tip_grey_stop` ·
+  `self_jump`), which travels into the stored row. A dry run is the default;
+  `--apply` writes the shared database and belongs behind an archive snapshot.
+- **One path overlay, two surfaces.** „Pfad" joins the layer buttons in Wörter
+  and „Pfad zeigen" lays the same drawing over strips and word crops in
+  Eigenhand: a colour ramp in writing order, a dot where the pen touched down,
+  an arrow head at each stroke's end and **dashed connectors for the Absetzer**
+  — the part a single flat colour hides completely, because a lift looks
+  exactly like a corner. Herkunft and date stand beside it; `WordInstanceOut`
+  carries its `updated_at` for that, and the strip listing every box's pixel
+  rectangle.

@@ -127,6 +127,9 @@ class TestCheckPaths:
             ({"strokes": [[[0.0, 0.0], [MAX_UNIT + 1, 1.0]]]}, "out of range"),
             ({"verfahren": ""}, "verfahren"),
             ({"erzeugt_am": "gestern"}, "ISO date"),
+            # A length check let this one through and the workbench printed it
+            # as provenance (Copilot review, PR #598).
+            ({"erzeugt_am": "2026-99-99"}, "ISO date"),
             ({"xh_px": 0.0}, "not a scale"),
             ({"flecken_n": -1}, "flecken_n"),
         ],
@@ -136,11 +139,32 @@ class TestCheckPaths:
             self._check([_path(**overrides)])
 
     @pytest.mark.parametrize(
+        ("overrides", "message"),
+        [
+            ({"strokes": [[[0.0, 0.0], [float("nan"), 1.0]]]}, "finite"),
+            ({"strokes": [[[0.0, 0.0], [float("inf"), 1.0]]]}, "finite"),
+            ({"xh_px": float("nan")}, "not a scale"),
+            ({"registration_px": {"tx": float("nan"), "ty": 0.0, "baseline_row": 240.0}}, "finite"),
+        ],
+    )
+    def test_a_non_finite_number_is_refused_before_any_range_check(self, overrides: dict, message: str):
+        # Every comparison against NaN is False, so a range check alone lets it
+        # through — and it reaches the overlay as a NaN SVG coordinate, which
+        # draws nothing and explains nothing (Copilot review, PR #598).
+        with pytest.raises(ValueError, match=message):
+            self._check([_path(**overrides)])
+
+    @pytest.mark.parametrize(
         "registration",
         [
             {"tx": 99_000.0, "ty": 0.0, "baseline_row": 240.0},
             {"tx": 40.0, "ty": 0.0, "baseline_row": 99_000.0},
             {"tx": 40.0, "ty": 0.0},
+            # Well inside a "fraction of the image" bound and still off the
+            # strip: the allowance is x-heights, not image widths (Copilot
+            # review, PR #598). xh here is 120 px, so the bound is ±240.
+            {"tx": WIDTH_PX + 600.0, "ty": 0.0, "baseline_row": 240.0},
+            {"tx": 40.0, "ty": 0.0, "baseline_row": HEIGHT_PX + 300.0},
         ],
     )
     def test_a_registration_that_does_not_lie_on_this_strip_is_refused(self, registration: dict):
@@ -151,8 +175,10 @@ class TestCheckPaths:
 
     def test_a_word_that_starts_a_little_left_of_the_strip_is_still_accepted(self):
         # A word's own origin may sit left of the ink (the composition starts
-        # at the Anstrich), so the bound is slack, not zero.
+        # at the Anstrich) and a descender reaches past the cut, so the bound is
+        # two x-heights of slack rather than zero.
         assert self._check([_path(registration_px={"tx": -20.0, "ty": 0.0, "baseline_row": 240.0})])
+        assert self._check([_path(registration_px={"tx": float(WIDTH_PX) + 100.0, "ty": 0.0, "baseline_row": 240.0})])
 
     def test_an_empty_push_is_a_reading_and_not_a_refusal(self):
         # „followed, nothing found" — the same distinction the Fleckenmaske
@@ -184,6 +210,28 @@ class TestFollowerHandover:
         assert entry["erzeugt_am"] == "2026-09-12"
         # And what comes out of the follower has to pass the API's own gate.
         assert check_paths([entry], ROW, WIDTH_PX, HEIGHT_PX, ["lesen", "das"])
+
+    def test_a_box_the_row_does_not_have_stops_the_run_before_it_can_erase(self):
+        # `--box` narrows the follow, and the write is a FULL replacement — so
+        # a typo would follow nothing, push an empty list and wipe the
+        # Fassung's stored paths while reporting success (Copilot review,
+        # PR #598). Refused where the row's real boxes are known.
+        from tools.eigenhand.pfad import follow_row
+
+        row = {"strip": "S0001", "fassung": "F01", "boxes": [{"index": 0, "word": "lesen"}]}
+        with pytest.raises(SystemExit, match="no box 7"):
+            follow_row("https://example.invalid", "token", "mn-suetterlin", row, {}, [7])
+
+    def test_a_narrowed_run_keeps_the_paths_of_the_boxes_it_did_not_follow(self):
+        # The other half of the same finding: re-following ONE word must not
+        # drop the rest of the row.
+        from tools.eigenhand import pfad as tool
+
+        stored = [{"box_index": 0, "word": "lesen"}, {"box_index": 1, "word": "das"}]
+        fresh = [{"box_index": 1, "word": "das", "verfahren": "tintenpfad"}]
+        merged = tool._merged("https://example.invalid", "token", "u", fresh, _get=lambda *_: {"pfade": stored})
+        assert [entry["box_index"] for entry in merged] == [0, 1]
+        assert merged[1] is fresh[0]  # the followed box is the NEW one, not the stored copy
 
     def test_the_declared_configuration_is_one_the_follower_accepts(self):
         # The arms are named in the tool and stored with every path; a renamed

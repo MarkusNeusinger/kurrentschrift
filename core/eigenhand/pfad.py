@@ -44,7 +44,9 @@ material into the bench sets, against ``docs/proposals/eigenhand-erfassung.md``
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping, Sequence
+from datetime import date as date_cls
 from typing import Any
 
 from core.eigenhand.crop import px_per_mm, word_box_px
@@ -63,12 +65,12 @@ MAX_UNIT = 100.0
 # than its boxes is a client sending someone else's row.
 MAX_PFADE = 32
 
-# How far a registration may sit outside the strip before it is refused. Not
-# zero: a word's own origin can legitimately lie a little left of the ink
-# (the composition starts at the Anstrich), and a baseline sits inside the
-# strip but its descender band does not. One strip width of slack is generous
-# for the first and impossible for a frame belonging to another image.
-REGISTRATION_SLACK = 1.0
+# How far a registration may sit outside the strip before it is refused, in
+# the PATH's own x-heights. Not zero: a word's origin can lie a little left of
+# its ink (the composition starts at the Anstrich) and a baseline's descender
+# band reaches past the cut. Two x-heights covers both and is far too little
+# for a frame that belongs to a different image.
+REGISTRATION_SLACK_XH = 2.0
 
 
 def frame_for_box(
@@ -161,6 +163,12 @@ def _checked_strokes(strokes: Any, where: str) -> list[list[list[float]]]:
                 x, y = float(point[0]), float(point[1])
             except (TypeError, ValueError) as exc:
                 raise ValueError(f"{where}: stroke points must be numbers") from exc
+            # `isfinite` FIRST: `float("nan")` parses, and every comparison
+            # against it is False — so a NaN would slip through the range check
+            # below, be stored, and reach the overlay as a NaN SVG coordinate,
+            # which draws nothing and says nothing (Copilot review, PR #598).
+            if not (math.isfinite(x) and math.isfinite(y)):
+                raise ValueError(f"{where}: stroke coordinates must be finite numbers")
             if abs(x) > MAX_UNIT or abs(y) > MAX_UNIT:
                 raise ValueError(f"{where}: stroke coordinates out of range (template units, |v| ≤ {MAX_UNIT:g})")
             points.append([x, y])
@@ -168,12 +176,36 @@ def _checked_strokes(strokes: Any, where: str) -> list[list[list[float]]]:
     return out
 
 
-def _checked_registration(reg: Any, width_px: int, height_px: int, where: str) -> dict[str, float]:
+def _checked_date(value: Any, where: str) -> str | None:
+    """The day the path was followed — PARSED, not just counted.
+
+    A length check let `2026-99-99` through and the workbench would print it as
+    provenance (Copilot review, PR #598). Absent stays legitimate: a path
+    pushed by an older tool simply does not say when it was made.
+    """
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise ValueError(f"{where}: `erzeugt_am` must be an ISO date (YYYY-MM-DD) or absent")
+    try:
+        return date_cls.fromisoformat(value).isoformat()
+    except ValueError as exc:
+        raise ValueError(f"{where}: `erzeugt_am` {value!r} is not an ISO date (YYYY-MM-DD)") from exc
+
+
+def _checked_registration(reg: Any, width_px: int, height_px: int, xh_px: float, where: str) -> dict[str, float]:
     """The path's own frame, bounded against the strip it claims to lie on.
 
     A registration from another image is the one error that would draw a
     plausible-looking path over the wrong ink — silently, because every stroke
     inside it is perfectly well-formed.
+
+    The allowance is measured in the PATH's own x-height, not in a fraction of
+    the image: a word's origin can sit a little outside the strip (the
+    composition starts at the Anstrich, the descender band reaches past the
+    cut) but never by more than a couple of letters. Slack scaled to the image
+    instead accepted `tx = 2500` on a 1900 px strip, which is the very import
+    this check exists to refuse (Copilot review, PR #598).
     """
     if not isinstance(reg, Mapping):
         raise ValueError(f"{where}: `registration_px` must be an object with tx, ty and baseline_row")
@@ -181,12 +213,16 @@ def _checked_registration(reg: Any, width_px: int, height_px: int, where: str) -
         tx, ty, baseline_row = (float(reg.get("tx", 0.0)), float(reg.get("ty", 0.0)), float(reg["baseline_row"]))
     except (KeyError, TypeError, ValueError) as exc:
         raise ValueError(f"{where}: `registration_px` needs numeric tx, ty and baseline_row") from exc
-    x_slack = REGISTRATION_SLACK * width_px
-    y_slack = REGISTRATION_SLACK * height_px
-    if not -x_slack <= tx <= width_px + x_slack:
-        raise ValueError(f"{where}: tx {tx:.1f} lies outside the strip (0..{width_px} px)")
-    if not -y_slack <= baseline_row + ty <= height_px + y_slack:
-        raise ValueError(f"{where}: baseline row {baseline_row + ty:.1f} lies outside the strip (0..{height_px} px)")
+    if not all(math.isfinite(value) for value in (tx, ty, baseline_row)):
+        raise ValueError(f"{where}: `registration_px` must be finite numbers")
+    slack = REGISTRATION_SLACK_XH * xh_px
+    if not -slack <= tx <= width_px + slack:
+        raise ValueError(f"{where}: tx {tx:.1f} lies outside the strip (0..{width_px} px, ±{slack:.0f} px allowed)")
+    if not -slack <= baseline_row + ty <= height_px + slack:
+        raise ValueError(
+            f"{where}: baseline row {baseline_row + ty:.1f} lies outside the strip "
+            f"(0..{height_px} px, ±{slack:.0f} px allowed)"
+        )
     return {"tx": tx, "ty": ty, "baseline_row": baseline_row}
 
 
@@ -238,9 +274,7 @@ def check_paths(
         verfahren = entry.get("verfahren")
         if not isinstance(verfahren, str) or not 1 <= len(verfahren) <= 64:
             raise ValueError(f"{where}: `verfahren` must name how the path was made (1..64 characters)")
-        erzeugt_am = entry.get("erzeugt_am")
-        if erzeugt_am is not None and (not isinstance(erzeugt_am, str) or len(erzeugt_am) != 10):
-            raise ValueError(f"{where}: `erzeugt_am` must be an ISO date (YYYY-MM-DD) or absent")
+        erzeugt_am = _checked_date(entry.get("erzeugt_am"), where)
         flecken_n = entry.get("flecken_n")
         if flecken_n is not None and (not isinstance(flecken_n, int) or isinstance(flecken_n, bool) or flecken_n < 0):
             raise ValueError(f"{where}: `flecken_n` must be the size of the mask it was followed under")
@@ -249,14 +283,14 @@ def check_paths(
             xh = float(xh_px)
         except (TypeError, ValueError) as exc:
             raise ValueError(f"{where}: `xh_px` must be the path's x-height in strip pixels") from exc
-        if not 0.0 < xh <= height_px * 4:
-            raise ValueError(f"{where}: x-height {xh:.1f} px is not a scale this strip could have")
+        if not math.isfinite(xh) or not 0.0 < xh <= height_px * 4:
+            raise ValueError(f"{where}: x-height {xh} px is not a scale this strip could have")
         out.append(
             {
                 "box_index": index,
                 "word": word,
                 "strokes": _checked_strokes(entry.get("strokes"), where),
-                "registration_px": _checked_registration(entry.get("registration_px"), width_px, height_px, where),
+                "registration_px": _checked_registration(entry.get("registration_px"), width_px, height_px, xh, where),
                 "xh_px": xh,
                 "verfahren": verfahren,
                 "konfiguration": dict(entry.get("konfiguration") or {}),

@@ -1546,6 +1546,14 @@ class EigenhandArchiveOut(BaseModel):
     be built on. Strips appear with their sha256 and without their bytes: the
     private archive holds the images, and matching the hashes is what turns
     „repo + archive restores everything" into something mechanical.
+
+    TWO omissions, both deliberate. The strip BYTES, as above — and the
+    Streifen-Pfade, because a path is DERIVED: strip, layout and follower are
+    all in the archive already, so a restored Fassung can be followed again,
+    and carrying the paths would file a second truth beside the one that can
+    regenerate them (eigenhand-erfassung.md §7.5). A restore therefore brings
+    back every image, verdict and mask, and no path — which is what „re-run
+    `tools.eigenhand.pfad`" is for.
     """
 
     hand: str

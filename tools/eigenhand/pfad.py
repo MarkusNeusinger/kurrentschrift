@@ -232,6 +232,18 @@ def _entry(info: dict, frame: dict, flecken_n: int | None, today: str) -> dict:
 
 def follow_row(base: str, token: str, hand: str, row: dict, prior: dict, boxes: list[int] | None) -> list[dict]:
     """Follow every asked-for word of one Fassung. One bad word is not a bad row."""
+    # FIRST, before a single byte is fetched: a `--box` that names nothing
+    # would follow no word, and the write is a FULL replacement — so with
+    # `--apply` a typo would erase this Fassung's stored paths and report
+    # success (Copilot review, PR #598).
+    known = {box["index"] for box in row.get("boxes", [])}
+    unknown = sorted(set(boxes or []) - known)
+    if unknown:
+        raise SystemExit(
+            f"{row['strip']}/{row['fassung']} has boxes {sorted(known)} — no box "
+            f"{', '.join(str(i) for i in unknown)}; refusing to replace its paths with nothing"
+        )
+
     from tools.pairlab.follow import STATUS_OK
     from tools.pairlab.tintenpfad import TintenpfadWeights, follow_case
 
@@ -280,6 +292,24 @@ def _local_path(hand: str, strip: str, fassung: str) -> Path:
     return hand_dir(hand) / "pfade" / f"{strip}-{fassung}.json"
 
 
+def _merged(base: str, token: str, url: str, entries: list[dict], _get=request_json) -> list[dict]:
+    """A `--box` run's entries, over the paths the Fassung already holds.
+
+    The write is a FULL replacement — right for a whole-row follow, wrong for
+    a single re-followed word, which would otherwise drop every other box's
+    path (Copilot review, PR #598). So a narrowed run reads the stored list
+    first and replaces only the boxes it actually followed.
+
+    `_get` is the seam the test calls through; every caller uses the default.
+    """
+    stored = (_get("GET", url, token) or {}).get("pfade") or []
+    followed = {entry["box_index"] for entry in entries}
+    kept = [entry for entry in stored if entry.get("box_index") not in followed]
+    if kept:
+        print(f"  keeping {len(kept)} stored path(s) for the boxes this run did not follow", flush=True)
+    return sorted(entries + kept, key=lambda item: item["box_index"])
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     ap.add_argument("--hand", required=True, help="hand id, e.g. mn-suetterlin")
@@ -313,7 +343,8 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  dry run — {len(entries)} path(s) written to {out}, nothing stored", flush=True)
             continue
         url = f"{base}/eigenhand/strips/{hand}/{row['strip']}/{row['fassung']}/pfade"
-        stored = request_json("PUT", url, token, {"format": PFAD_FORMAT, "pfade": entries}) or {}
+        body = _merged(base, token, url, entries) if args.box else entries
+        stored = request_json("PUT", url, token, {"format": PFAD_FORMAT, "pfade": body}) or {}
         written += len(stored.get("pfade") or [])
         print(f"  stored {len(stored.get('pfade') or [])} path(s) at {base}", flush=True)
     if args.apply:
