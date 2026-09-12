@@ -862,6 +862,16 @@ class EigenhandStrip(Base):
     crop_origin_mm: Mapped[list] = mapped_column(PORTABLE_JSON, nullable=False, server_default="[]")
     sha256: Mapped[str] = mapped_column(String(64), nullable=False)
     bytes: Mapped[int] = mapped_column(Integer, nullable=False)
+    # The Streifen-Pfad (0031) — one entry per written word box, each carrying
+    # the followed pen path in the word's own units (baseline 0, midband 1, the
+    # frame `word_instances.strokes` uses) plus the registration that maps it
+    # into THIS strip's pixels, the Verfahren it was followed with and the day
+    # it was followed. DATA about the image, never a second image: the strip
+    # keeps every byte it was captured with. NULL means „nobody has followed
+    # this Fassung", an empty list „followed, nothing found". Deferred beside
+    # the PNG (`_STRIP_META_ONLY`) so no listing pulls it; the shape is
+    # `core.eigenhand.pfad.check_paths`.
+    pfade: Mapped[list | None] = mapped_column(PORTABLE_JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 

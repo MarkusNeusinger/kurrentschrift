@@ -37,6 +37,9 @@ count what a hand already covers.
 * ``PATCH /eigenhand/strips/{hand}/{strip}/{fassung}/flecken`` — the
   Fleckenmaske: the printer's toner specks as circles, painted out on read and
   never in the filed bytes (proposal §7.4).
+* ``GET|PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade`` — the
+  Streifen-Pfad: the followed pen path per written word, stored as data beside
+  the image and loaded only when the view asks for it (proposal §7.5).
 
 The strips are the one place where own-hand PIXELS do travel (owner, 2026-08-24)
 — so that the workbench can show a written Streifen the way it shows a chart
@@ -86,6 +89,8 @@ from api.schemas import (
     EigenhandFleckenIn,
     EigenhandFleckenOut,
     EigenhandHandsOut,
+    EigenhandPfadeIn,
+    EigenhandPfadeOut,
     EigenhandSetupIn,
     EigenhandSetupOut,
     EigenhandSetupsOut,
@@ -108,6 +113,7 @@ from core.eigenhand.befund import BEFUND_FORMAT, befund_index, kringel_catalogue
 from core.eigenhand.bestand import bestand as build_bestand
 from core.eigenhand.flecken import FLECKEN_FORMAT
 from core.eigenhand.ids import STYLE_IDS, is_fassung_id, is_hand_id, is_sheet_id, is_strip_id, style_of_hand
+from core.eigenhand.pfad import PFAD_FORMAT, check_paths, frames_of_row
 from core.eigenhand.plan import load_plan, shaping_form_of, words_of
 
 
@@ -717,6 +723,12 @@ async def list_strips(
     The match is at strip level; which boxes match is left to the caller,
     who has every box's items.
 
+    Every box also carries its `rect_px` — where it sits in the stored strip —
+    derived here from the printed Bogen layout with the same arithmetic the
+    word-crop route cuts with. It is what lets the view lay a Streifen-Pfad
+    over a single word crop: the stored path's registration is the STRIP's
+    frame, and a crop's frame is that minus this rectangle.
+
     Every row also carries its Streifen-Befund, DERIVED here from the stored
     measurements of the WHOLE hand (`core.eigenhand.befund`): the rank of a
     Fassung is its place among the accepted Fassungen of its strip, and the
@@ -742,9 +754,13 @@ async def list_strips(
     kartei = await repo.kartei(hand, style) if rows else {}
     befunde = befund_index(kartei) if rows else {}
     masken = flecken.flecken_index(kartei) if rows else {}
+    # ONE sheet query for the whole listing rather than one per strip: the box
+    # rectangles all come out of the printed layouts, and a hand with a few
+    # waves behind it has far more strips than Bögen.
+    layouts = {sheet.sheet: sheet.layout for sheet in await repo.sheets_of(hand)} if rows else {}
     out = []
     for row in rows:
-        stated = _strip_out(row, plan, befunde, masken)
+        stated = _strip_out(row, plan, befunde, masken, layouts)
         if needle is not None and not any(needle in box.word.lower() for box in stated.boxes):
             continue
         if item is not None and not any(coverage.matches_item(item, box.items) for box in stated.boxes):
@@ -754,12 +770,13 @@ async def list_strips(
 
 
 def _strip_out(
-    row, plan: dict | None = None, befunde: dict | None = None, masken: dict | None = None
+    row, plan: dict | None = None, befunde: dict | None = None, masken: dict | None = None, layouts: dict | None = None
 ) -> EigenhandStripOut:
     """One strip row as the API states it — metadata, words, never the bytes."""
     words = words_of(plan, row.strip) if plan and row.strip in plan["strips"] else []
     found = (befunde or {}).get(row.strip, {}).get(row.fassung)
     maske = (masken or {}).get(row.strip, {}).get(row.fassung)
+    rects = _box_rects(row, layouts)
     return EigenhandStripOut(
         strip=row.strip,
         fassung=row.fassung,
@@ -773,12 +790,34 @@ def _strip_out(
         bytes=row.bytes,
         words=words,
         boxes=[
-            EigenhandStripBoxOut(index=index, word=word, items=coverage.word_items(shaping_form_of(plan, word)))
+            EigenhandStripBoxOut(
+                index=index,
+                word=word,
+                items=coverage.word_items(shaping_form_of(plan, word)),
+                rect_px=rects[index] if rects and index < len(rects) else None,
+            )
             for index, word in enumerate(words)
         ],
         befund=EigenhandBefundOut(**found.as_dict()) if found else None,
         flecken=maske,
     )
+
+
+def _box_rects(row, layouts: dict | None) -> list[list[int]] | None:
+    """The pixel rectangle of every word box of a stored strip, or None.
+
+    None wherever the geometry is not there — a Bogen printed before the cut
+    geometry existed, a strip filed without its crop origin, or a listing that
+    was not given the layouts at all (the archive read, which states rows and
+    not pictures). A missing rectangle costs the crop overlay and nothing else,
+    which is why it is an absence rather than a refusal.
+    """
+    layout = (layouts or {}).get(row.sheet)
+    rows = (layout or {}).get("rows") or []
+    if not 0 <= row.row_index < len(rows):
+        return None
+    frames = frames_of_row(rows[row.row_index], list(row.crop_origin_mm or []), row.width_px, row.height_px)
+    return None if frames is None else [frame["rect_px"] for frame in frames]
 
 
 @router.get("/strips/{hand}/{strip}/{fassung}")
@@ -1087,6 +1126,134 @@ async def write_flecken(
             logger.warning("Befund not re-measurable for %s %s/%s: %s", hand, strip, fassung, exc)
     await db.commit()
     return EigenhandFleckenOut(strip=strip, fassung=fassung, flecken=circles)
+
+
+# ------------------------------------------------------------ Streifen-Pfade
+
+
+async def _pfad_row(hand: str, strip: str, fassung: str, db: AsyncSession):
+    """The stored strip a path belongs to — paths loaded, pixels left behind."""
+    _checked_hand(hand)
+    _checked_strip(strip)
+    _checked_fassung(fassung)
+    row = await EigenhandRepository(db).strip_pfade(hand, strip, fassung)
+    if row is None:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            detail=(
+                f"{hand} has no stored strip {strip}/{fassung} — a path is followed on the ink, so the "
+                "image has to be up here first (tools.eigenhand.sync --mit-streifen)"
+            ),
+        )
+    return row
+
+
+def _pfad_boxes(row, plan: dict, layout_row: dict) -> list[EigenhandStripBoxOut]:
+    """The row's word boxes with their rectangles — where a path may be placed."""
+    words = words_of(plan, row.strip) if row.strip in plan["strips"] else []
+    frames = frames_of_row(layout_row, list(row.crop_origin_mm or []), row.width_px, row.height_px) or []
+    return [
+        EigenhandStripBoxOut(
+            index=index,
+            word=word,
+            items=coverage.word_items(shaping_form_of(plan, word)),
+            rect_px=frames[index]["rect_px"] if index < len(frames) else None,
+        )
+        for index, word in enumerate(words)
+    ]
+
+
+@router.get("/strips/{hand}/{strip}/{fassung}/pfade", response_model=EigenhandPfadeOut)
+async def read_pfade(
+    hand: str, strip: str, fassung: str, response: Response, db: AsyncSession = Depends(require_db)
+) -> EigenhandPfadeOut:
+    """The Streifen-Pfade of one Fassung — loaded on demand, like the pixels.
+
+    Deliberately its own route rather than a field of the strip listing: a path
+    is a few thousand points per word, and the listing's question („which rows
+    does this hand hold") never needs one. The column is deferred for the same
+    reason (`EigenhandRepository._STRIP_META_ONLY`).
+
+    `pfade: null` says nobody has followed this Fassung; an empty list says it
+    was followed and nothing came back. The word boxes travel along with their
+    rectangles, so the view can place a path over a single word crop without a
+    second read.
+
+    `private, no-store` like the image itself: a path is DERIVED from the
+    reserved own-hand pixels and stays behind the same gate.
+    """
+    row = await _pfad_row(hand, strip, fassung, db)
+    layout_row = await _layout_row(hand, row.sheet, row.row_index, db)
+    response.headers["Cache-Control"] = STRIP_CACHE_CONTROL
+    return EigenhandPfadeOut(
+        hand=hand,
+        strip=strip,
+        fassung=fassung,
+        format=PFAD_FORMAT,
+        pfade=row.pfade,
+        boxes=_pfad_boxes(row, load_plan(), layout_row),
+    )
+
+
+@router.put("/strips/{hand}/{strip}/{fassung}/pfade", response_model=EigenhandPfadeOut)
+async def write_pfade(
+    hand: str,
+    strip: str,
+    fassung: str,
+    body: EigenhandPfadeIn,
+    response: Response,
+    db: AsyncSession = Depends(require_db),
+) -> EigenhandPfadeOut:
+    """Store the followed pen paths of one Fassung — a FULL replacement.
+
+    Pushed by `tools.eigenhand.pfad --apply`, which follows the ink offline
+    (`tools.pairlab.tintenpfad`) and sends the result up: the API image does not
+    ship `tools`, so the server can never compute a path itself and this is the
+    only door it comes through.
+
+    A full replace, like the Fleckenmaske: a follower run produces the whole
+    row at once, and merging would have to guess what a missing box meant.
+
+    Refused (422) when a path names a box this printed row does not have, a
+    word the printed box and the frozen plan do not carry, a stroke outside the
+    template-unit range, or a registration that does not lie on THIS strip —
+    the one error that would otherwise draw a plausible-looking path over the
+    wrong ink and keep doing it forever.
+
+    The format is declared by the client and checked here, the same way a
+    pushed Befund is: the SERVER holds the contract, and a newer tool pushed at
+    an older API would otherwise store numbers this code reads under different
+    semantics.
+    """
+    if body.format != PFAD_FORMAT:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail=(
+                f"this API reads Streifen-Pfad format {PFAD_FORMAT}, the push says {body.format} — "
+                "deploy the matching API before pushing, or re-follow with this one"
+            ),
+        )
+    row = await _pfad_row(hand, strip, fassung, db)
+    layout_row = await _layout_row(hand, row.sheet, row.row_index, db)
+    plan = load_plan()
+    words = words_of(plan, row.strip) if row.strip in plan["strips"] else None
+    try:
+        checked = check_paths(
+            [item.model_dump(mode="json") for item in body.pfade], layout_row, row.width_px, row.height_px, words
+        )
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc
+    row.pfade = checked
+    await db.commit()
+    response.headers["Cache-Control"] = STRIP_CACHE_CONTROL
+    return EigenhandPfadeOut(
+        hand=hand,
+        strip=strip,
+        fassung=fassung,
+        format=PFAD_FORMAT,
+        pfade=checked,
+        boxes=_pfad_boxes(row, plan, layout_row),
+    )
 
 
 def _checked_strip(strip: str) -> str:

@@ -634,12 +634,20 @@ export const admin = {
     // und „was macht das System daraus?" nebeneinander lesbar sind.
     faceSpecimenBase: 'Vorlage',
     faceLayerTrace: 'Nachfahrung (grün)',
+    faceLayerPath: 'Pfad (Reihenfolge grün→blau, Absetzer gestrichelt)',
     faceLayerEngine: 'Engine (rot)',
+    // Herkunft + Datum der gezeichneten Linie. Ohne beides ist ein Pfad eine
+    // undatierte Überlagerung und kein Beleg.
+    tracePedigree: 'Herkunft: {{herkunft}} · {{datum}} · {{zuege}} Züge',
+    pedigreeNoDate: 'ohne Datum',
     faceWritten: 'Vom System geschrieben',
     faceWrittenPending: 'wird geschrieben …',
     // The per-layer switches above the cards.
     layersLabel: 'Ebenen über der Vorlage',
     layerTrace: 'Nachfahrung',
+    layerPath: 'Pfad',
+    layerPathHint:
+      'Dieselbe Linie, als Bewegung gelesen: Farbverlauf in Schreibreihenfolge (erster Zug grün, letzter blau), Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt die Nachfahrung mit, weil er sie schmückt.',
     layerEngine: 'Engine',
     // The Abstandsprofil under a word card: nearest distance of the engine
     // composition per point of the stored trace. A DISPLAY measure of the
@@ -1042,6 +1050,24 @@ export const admin = {
     stripNoRulingsHint:
       'Abgeleitete Ansicht: Blau-Kanal plus Cyan-Maske, berechnet beim Abruf. Wirkt nur bei farbig eingelesenen Streifen — ein Graustufen-Streifen bleibt, wie er ist. Gespeichert wird immer das Rohbild.',
     keyTooltipShow: ' · anklicken zeigt die Belege',
+    // Der Streifen-Pfad: die nachgefolgte Federbahn je geschriebenem Wort.
+    // Gerechnet wird sie außerhalb (Tintenfolger, `tools.eigenhand.pfad`) und
+    // über den Admin-Schreibweg gespeichert — der Admin ZEIGT nur. Das Bild
+    // bleibt unberührt, der Pfad liegt als Daten daneben.
+    pfadShow: 'Pfad zeigen',
+    pfadShowHint:
+      'Legt die nachgefolgte Federbahn über den Streifen: Farbverlauf in Schreibreihenfolge (erster Zug grün, letzter blau), Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Wird je Fassung einzeln geladen und nur für sichtbare Bilder.',
+    pfadPedigree: 'Pfad: {{verfahren}} · {{datum}} · {{woerter}} Wort/Wörter',
+    pfadNoDate: 'ohne Datum',
+    pfadNone:
+      'Für diese Fassung ist noch kein Pfad gespeichert. Lokal folgen und hochschieben: uv run python -m tools.eigenhand.pfad --hand … --strip … (Trockenlauf), dann --apply.',
+    pfadError: 'Der Pfad konnte nicht geladen werden.',
+    pfadSeed: 'Saat: Tafel-Duktus',
+    pfadSeedHint:
+      'Reihenfolge und Richtung kommen aus dem Duktus der Grundvorlage, nicht aus dieser Hand — der Folger nimmt die Saat nur als Vorschlag, die Bahn selbst liegt auf der Tinte. Auch die Lineatur der Saat ist die GEDRUCKTE, nicht die gemessene.',
+    pfadStale: 'Maske geändert',
+    pfadStaleHint:
+      'Der Pfad wurde unter einer anderen Fleckenmaske gefolgt als der Streifen jetzt trägt — er ist also auf anderer Tinte gelaufen, als hier zu sehen ist. Nach dem Radieren neu folgen lassen.',
     // Der Streifen-Befund: ein VORSCHLAG, nie ein Urteil. Der Haken auf dem
     // Blatt bleibt die Entscheidung; hier steht nur, was auffällt und welche
     // Fassung eines Streifens die schwächste ist.

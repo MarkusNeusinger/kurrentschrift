@@ -27,6 +27,7 @@ import { wordSampleCropUrl } from '@/lib/api';
 import type { ComposedWordOut, InstanceOut, WordInstanceOut, WordSampleOut } from '@/lib/api';
 import { polylineToPathD, ringsToPathD } from '@/lib/svg';
 import { de, fmt } from '@/locales/admin';
+import { PathOverlay } from '@/sections/admin/shell/PathOverlay';
 import {
   WERKBANK_COLORS,
   cardElementId,
@@ -145,6 +146,10 @@ interface Props {
   // compare — ink vs. trace, ink vs. engine, trace vs. engine — changes with
   // the question being asked.
   showTrace?: boolean;
+  // Read the SAME trace as a path: the pen's order, direction and lifts drawn
+  // out. A layer on top of `showTrace`, not beside it — there is one line, and
+  // this decides how much of what is known about it is shown.
+  showPath?: boolean;
 }
 
 export function WordSpineCard({
@@ -159,6 +164,7 @@ export function WordSpineCard({
   composed,
   overlay = false,
   showTrace = true,
+  showPath = false,
 }: Props) {
   const [ref, inView] = useInView<HTMLDivElement>();
   const t = de.admin.werkbank;
@@ -274,10 +280,26 @@ export function WordSpineCard({
               {/* The caption names exactly the layers actually drawn — with
                   both switched off it says so rather than promising ink that
                   is not there. */}
-              {[t.faceSpecimenBase, showTrace && t.faceLayerTrace, overlay && composed && t.faceLayerEngine]
+              {[
+                t.faceSpecimenBase,
+                showTrace && (showPath ? t.faceLayerPath : t.faceLayerTrace),
+                overlay && composed && t.faceLayerEngine,
+              ]
                 .filter(Boolean)
                 .join(' + ')}
             </Typography>
+            {/* Herkunft + Datum of the line that is drawn: which hand made it
+                and when. A path without that is an undated overlay, not
+                evidence — and the date is exactly what the author asked for. */}
+            {showTrace && (
+              <Typography variant="caption" color="text.secondary">
+                {fmt(t.tracePedigree, {
+                  herkunft: row.provenance === 'authored' ? t.provenanceAuthored : t.provenanceTraced,
+                  datum: row.updated_at ? row.updated_at.slice(0, 10) : t.pedigreeNoDate,
+                  zuege: row.strokes.length,
+                })}
+              </Typography>
+            )}
             <svg
               width={cropW}
               height={FACE_H}
@@ -294,21 +316,14 @@ export function WordSpineCard({
                 preserveAspectRatio="none"
               />
               <g transform={matrix}>
-                {(showTrace ? row.strokes : []).map((stroke, i) => (
-                  <path
-                    key={i}
-                    d={stroke.map(([x, y], j) => `${j === 0 ? 'M' : 'L'}${x},${y}`).join(' ')}
-                    fill="none"
-                    stroke={WERKBANK_COLORS.traceOverInk}
-                    strokeOpacity={0.95}
-                    // ~2/3 of a hairline stroke's own width: thick enough to
-                    // read over black ink, thin enough that the ink it follows
-                    // still shows on both sides of it.
-                    strokeWidth={0.11}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                ))}
+                {showTrace && (
+                  // One overlay component for both surfaces that draw a stored
+                  // path (here and the own-hand strips). With `detail` off it
+                  // is the flat green line this card always drew; with it on
+                  // the same strokes are read as a MOVEMENT — order ramp,
+                  // start dot, direction arrows, dashed Absetzer.
+                  <PathOverlay strokes={row.strokes} unit={px / xh} detail={showPath} showIndex={showPath} />
+                )}
                 {probe && (
                   // The Abstandsprofil's probe: the hovered curve point, pinned
                   // onto the trace it was sampled from. Same accent as the duel

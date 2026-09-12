@@ -53,10 +53,11 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 
-import { fetchEigenhandStrip, getEigenhandStrips } from '@/lib/api';
+import { fetchEigenhandStrip, getEigenhandPfade, getEigenhandStrips } from '@/lib/api';
 import type {
   EigenhandBefund,
   EigenhandFleck,
+  EigenhandPfad,
   EigenhandStrip,
   EigenhandStripBox,
   EigenhandStripFilter,
@@ -69,6 +70,8 @@ import { FleckenEditor, MIN_ERASE_ZOOM } from '@/sections/admin/eigenhand/Flecke
 import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { Panel } from '@/sections/admin/shell/Panel';
+import { PathOverlay } from '@/sections/admin/shell/PathOverlay';
+import type { Stroke } from '@/sections/admin/shell/pathOverlay';
 import { paper } from '@/styles/paper';
 
 // CSS pixels per stored pixel. ¼ is what the old fixed tile height came to on
@@ -156,6 +159,130 @@ function useStripImage(
   }, [hand, strip, fassung, box, enabled, ohneLineatur, roh, reload]);
 
   return { url, loading, error };
+}
+
+/**
+ * The Streifen-Pfade of one Fassung, fetched at most once and only when the
+ * layer is actually switched on.
+ *
+ * Deliberately per Fassung and on demand, exactly like the pixels: the listing
+ * carries no paths (the column is deferred server-side for the same reason),
+ * and a gallery page of 24 crops must not fire 24 path requests the moment a
+ * coverage cell is clicked. `null` from the server means „nobody has followed
+ * this Fassung yet", which is not the same as „followed, nothing found".
+ */
+function useStripPfade(hand: string, strip: string, fassung: string, enabled: boolean) {
+  const [pfade, setPfade] = useState<EigenhandPfad[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<ApiErrorText | null>(null);
+
+  // Same render-time reset as the image hook — React's "adjusting state when a
+  // prop changes" (react-hooks/set-state-in-effect).
+  const loadKey = `${hand} ${strip} ${fassung} ${enabled}`;
+  const [shownFor, setShownFor] = useState(loadKey);
+  if (shownFor !== loadKey) {
+    setShownFor(loadKey);
+    setLoading(enabled);
+    setError(null);
+    setPfade(null);
+  }
+
+  useEffect(() => {
+    if (!enabled) return undefined;
+    let alive = true;
+    getEigenhandPfade(hand, strip, fassung)
+      .then((data) => alive && setPfade(data.pfade))
+      .catch((err: unknown) => alive && setError(apiErrorText(err)))
+      .finally(() => alive && setLoading(false));
+    return () => {
+      alive = false;
+    };
+  }, [hand, strip, fassung, enabled]);
+
+  return { pfade, loading, error };
+}
+
+/**
+ * The followed pen paths laid over a strip image — or over one word cut out of
+ * it. The stored registration is the STRIP's own pixel frame, so a word crop
+ * is served by subtracting that crop's rectangle: one stored frame, both views,
+ * and nothing about the crop's padding has to be remembered with the path.
+ */
+function PfadLayer({
+  pfade,
+  widthPx,
+  heightPx,
+  zoom,
+  originX = 0,
+  originY = 0,
+  showIndex = false,
+}: {
+  pfade: EigenhandPfad[];
+  widthPx: number;
+  heightPx: number;
+  zoom: Zoom;
+  originX?: number;
+  originY?: number;
+  showIndex?: boolean;
+}) {
+  return (
+    <Box
+      component="svg"
+      viewBox={`0 0 ${widthPx} ${heightPx}`}
+      width={widthPx * zoom}
+      height={heightPx * zoom}
+      // Over the image, never in its way: the strip's own click opens the Lupe.
+      sx={{ position: 'absolute', left: 0, top: 0, pointerEvents: 'none' }}
+    >
+      {pfade.map((pfad) => {
+        const xh = pfad.xh_px;
+        const tx = pfad.registration_px.tx - originX;
+        const baseline = pfad.registration_px.baseline_row + pfad.registration_px.ty - originY;
+        return (
+          <g key={pfad.box_index} transform={`matrix(${xh} 0 0 ${-xh} ${tx} ${baseline})`}>
+            <PathOverlay
+              strokes={pfad.strokes as Stroke[]}
+              // One DISPLAYED pixel in path units — the image is scaled by the
+              // shared zoom, so a hairline stays a hairline at ¼ and at 2×.
+              unit={1 / (zoom * xh)}
+              detail
+              showIndex={showIndex}
+            />
+          </g>
+        );
+      })}
+    </Box>
+  );
+}
+
+/**
+ * Herkunft, Datum and the honest caveats of a drawn path: the seed is the
+ * chart ductus of the style, not this hand, and a Fleckenmaske edited after
+ * the follow means the path read different ink than the picture now shows.
+ */
+function PfadCaption({ pfade, flecken }: { pfade: EigenhandPfad[]; flecken: EigenhandFleck[] | null | undefined }) {
+  const t = de.admin.eigenhand;
+  const first = pfade[0];
+  const stale = pfade.some((p) => typeof p.flecken_n === 'number' && flecken != null && p.flecken_n !== flecken.length);
+  return (
+    <Stack direction="row" spacing={1} sx={{ mt: 0.5, flexWrap: 'wrap', rowGap: 0.5, alignItems: 'center' }}>
+      <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+        {fmt(t.pfadPedigree, {
+          verfahren: first.verfahren,
+          datum: first.erzeugt_am ?? t.pfadNoDate,
+          woerter: pfade.length,
+        })}
+      </Typography>
+      <Tooltip title={t.pfadSeedHint}>
+        <Chip size="small" variant="outlined" label={t.pfadSeed} />
+      </Tooltip>
+      {stale && (
+        <Tooltip title={t.pfadStaleHint}>
+          <Chip size="small" color="warning" variant="outlined" label={t.pfadStale} />
+        </Tooltip>
+      )}
+    </Stack>
+  );
 }
 
 /**
@@ -249,30 +376,41 @@ function BefundChips({ befund }: { befund: EigenhandBefund | null | undefined })
 }
 
 
-/** A strip or word image at the shared zoom; a click hands it to the Lupe. */
+/**
+ * A strip or word image at the shared zoom; a click hands it to the Lupe.
+ *
+ * `overlay` is drawn ON TOP at the same scale — the Streifen-Pfad, which is
+ * positioned in the image's own pixels and therefore has to travel with it
+ * through the zoom and the horizontal scroll.
+ */
 function StripImage({
   url,
   alt,
   heightPx,
   zoom,
   onLupe,
+  overlay,
 }: {
   url: string;
   alt: string;
   heightPx: number;
   zoom: Zoom;
   onLupe: (target: LupeTarget) => void;
+  overlay?: React.ReactNode;
 }) {
   return (
     <Box sx={{ overflowX: 'auto', bgcolor: paper.hi, borderRadius: 1 }}>
-      <Box
-        component="img"
-        src={url}
-        alt={alt}
-        title={alt}
-        onClick={() => onLupe({ url, title: alt, heightPx })}
-        sx={{ display: 'block', maxWidth: 'none', height: `${heightPx * zoom}px`, cursor: 'zoom-in' }}
-      />
+      <Box sx={{ position: 'relative', display: 'inline-block', lineHeight: 0 }}>
+        <Box
+          component="img"
+          src={url}
+          alt={alt}
+          title={alt}
+          onClick={() => onLupe({ url, title: alt, heightPx })}
+          sx={{ display: 'block', maxWidth: 'none', height: `${heightPx * zoom}px`, cursor: 'zoom-in' }}
+        />
+        {overlay}
+      </Box>
     </Box>
   );
 }
@@ -283,6 +421,7 @@ function StripTile({
   row,
   zoom,
   ohneLineatur,
+  pfade: wantPfade,
   onLupe,
   onZoom,
   onFlecken,
@@ -291,6 +430,7 @@ function StripTile({
   row: EigenhandStrip;
   zoom: Zoom;
   ohneLineatur: boolean;
+  pfade: boolean;
   onLupe: (target: LupeTarget) => void;
   onZoom: (level: Zoom) => void;
   onFlecken: (strip: string, fassung: string, circles: EigenhandFleck[]) => void;
@@ -320,8 +460,16 @@ function StripTile({
     roh,
     reload,
   );
+  // The paths are asked for only while the layer is on and the tile is open —
+  // and never at all while the brush is out, where the picture is the raw
+  // strip and a path over it would only be in the way.
+  const showPfade = wantPfade && open && !erasing;
+  const pfade = useStripPfade(hand, row.strip, row.fassung, showPfade);
   const title = `${row.strip} · ${row.fassung}${shown === null ? '' : ` · ${row.words[shown] ?? ''}`}`;
   const flecken = row.flecken ?? [];
+  // A word cut needs its own frame; the box rectangle comes from the listing.
+  const cut = shown === null ? null : (row.boxes[shown]?.rect_px ?? null);
+  const drawn = (pfade.pfade ?? []).filter((p) => shown === null || p.box_index === shown);
 
   const startErasing = () => {
     setShown(null);
@@ -407,8 +555,45 @@ function StripTile({
         <>
           {url && (
             <Box sx={{ mt: 1 }}>
-              <StripImage url={url} alt={title} heightPx={row.height_px} zoom={zoom} onLupe={onLupe} />
+              <StripImage
+                url={url}
+                alt={title}
+                heightPx={row.height_px}
+                zoom={zoom}
+                onLupe={onLupe}
+                overlay={
+                  drawn.length > 0 && (shown === null || cut) ? (
+                    <PfadLayer
+                      pfade={drawn}
+                      widthPx={cut ? cut[2] - cut[0] : row.width_px}
+                      heightPx={cut ? cut[3] - cut[1] : row.height_px}
+                      zoom={zoom}
+                      originX={cut ? cut[0] : 0}
+                      originY={cut ? cut[1] : 0}
+                      showIndex={shown !== null}
+                    />
+                  ) : undefined
+                }
+              />
             </Box>
+          )}
+          {showPfade && (
+            <>
+              {pfade.loading && <CircularProgress size={12} sx={{ mt: 1 }} />}
+              {pfade.pfade !== null && drawn.length > 0 && (
+                <PfadCaption pfade={drawn} flecken={row.flecken} />
+              )}
+              {pfade.pfade === null && !pfade.loading && !pfade.error && (
+                <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: paper.inkSoft }}>
+                  {t.pfadNone}
+                </Typography>
+              )}
+              {pfade.error && (
+                <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'warning.main' }}>
+                  {t.pfadError} {pfade.error.sentence}
+                </Typography>
+              )}
+            </>
           )}
           <Stack direction="row" spacing={0.5} sx={{ mt: 1, flexWrap: 'wrap', rowGap: 0.5 }}>
             <Chip
@@ -446,6 +631,7 @@ function CropTile({
   box,
   zoom,
   ohneLineatur,
+  pfade: wantPfade,
   onLupe,
 }: {
   hand: string;
@@ -453,12 +639,18 @@ function CropTile({
   box: EigenhandStripBox;
   zoom: Zoom;
   ohneLineatur: boolean;
+  pfade: boolean;
   onLupe: (target: LupeTarget) => void;
 }) {
   const t = de.admin.eigenhand;
   const ref = useRef<HTMLDivElement | null>(null);
   const near = useNearViewport(ref);
   const { url, loading, error } = useStripImage(hand, row.strip, row.fassung, box.index, near, ohneLineatur);
+  // Gated on the SAME „near the viewport" the image is: with the layer on, a
+  // page of 24 tiles asks for exactly the paths of the tiles one can see.
+  const cut = box.rect_px ?? null;
+  const pfade = useStripPfade(hand, row.strip, row.fassung, wantPfade && near && cut !== null);
+  const drawn = (pfade.pfade ?? []).filter((p) => p.box_index === box.index);
   const title = `${row.strip} · ${row.fassung} · ${box.word}`;
   return (
     <Box
@@ -475,7 +667,26 @@ function CropTile({
         {loading && <CircularProgress size={12} />}
       </Stack>
       {url ? (
-        <StripImage url={url} alt={title} heightPx={row.height_px} zoom={zoom} onLupe={onLupe} />
+        <StripImage
+          url={url}
+          alt={title}
+          heightPx={row.height_px}
+          zoom={zoom}
+          onLupe={onLupe}
+          overlay={
+            drawn.length > 0 && cut ? (
+              <PfadLayer
+                pfade={drawn}
+                widthPx={cut[2] - cut[0]}
+                heightPx={cut[3] - cut[1]}
+                zoom={zoom}
+                originX={cut[0]}
+                originY={cut[1]}
+                showIndex
+              />
+            ) : undefined
+          }
+        />
       ) : (
         // The strip's height is known before a byte arrives, so the tile takes
         // its final height at once: tiles below the fold then really ARE below
@@ -561,6 +772,10 @@ export function StripsPanel({
   // The rulings are dropped by default — what one wants to look at is the
   // hand, not the print. The stored strip keeps them (and its colour).
   const [ohneLineatur, setOhneLineatur] = useState(true);
+  // Off by default: the first question about a strip is „ist die Zeile gut
+  // geworden", and a path over every open tile would answer a different one.
+  // It also costs a request per shown Fassung, so it stays a deliberate act.
+  const [pfade, setPfade] = useState(false);
   const [lupe, setLupe] = useState<LupeTarget | null>(null);
   const [query, setQuery] = useState(filter.wort ?? '');
   const [shownCount, setShownCount] = useState(PAGE);
@@ -670,6 +885,13 @@ export function StripsPanel({
               sx={{ mr: 0 }}
             />
           </Tooltip>
+          <Tooltip title={t.pfadShowHint}>
+            <FormControlLabel
+              control={<Switch size="small" checked={pfade} onChange={(e) => setPfade(e.target.checked)} />}
+              label={<Typography variant="caption">{t.pfadShow}</Typography>}
+              sx={{ mr: 0 }}
+            />
+          </Tooltip>
           <Tooltip title={t.stripNoRulingsHint}>
             <FormControlLabel
               control={
@@ -756,6 +978,7 @@ export function StripsPanel({
                 box={box}
                 zoom={zoom}
                 ohneLineatur={ohneLineatur}
+                pfade={pfade}
                 onLupe={setLupe}
               />
             ))}
@@ -774,6 +997,7 @@ export function StripsPanel({
             row={row}
             zoom={zoom}
             ohneLineatur={ohneLineatur}
+            pfade={pfade}
             onLupe={setLupe}
             onZoom={setZoom}
             onFlecken={applyFlecken}

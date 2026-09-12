@@ -1,6 +1,6 @@
 # Eigenhand-Erfassung: Wortvorrat, Streifen, Bögen
 
-> **Status (2026-09-07): teil-umgesetzt.** Seit dem Autor-Entscheid vom
+> **Status (2026-09-12): teil-umgesetzt.** Seit dem Autor-Entscheid vom
 > 2026-09-07 ist der Bestand nicht mehr nur Datenquelle: die Eigenhand
 > **wird die ausgelieferte Schreibhand der Seite**, sobald sie Alphabet und
 > Übergänge deckt (§2; die bindende Rollenteilung Tafel · Platte ·
@@ -13,7 +13,10 @@
 > Übergangsraum-Gewichte · Beleg-Galerie · Farb-Streifen, §11) sind bis
 > 2026-08-27 nachgezogen, seit 2026-09-07 dazu **4g: der Streifen-Befund**
 > (§7.3) — die Sauberkeits-Schleife, die unfertige Streifen erlaubt und
-> sichtbar macht, welche neu zu schreiben sind. Die Wellen 0 bis 2
+> sichtbar macht, welche neu zu schreiben sind — und seit 2026-09-12
+> **4h: der Streifen-Pfad** (§7.5), die gefolgte Federbahn je Wort als
+> Daten neben dem Bild, sichtbar in der Werkbank neben den Wort-Pfaden.
+> Die Wellen 0 bis 2
 > des Streifenplans sind committet (Streifen 1–180: Buchstaben, Ziffern,
 > Zeichen, Mindestbelegung ≥3 je Glyphe), dazu seit 2026-09-06 die erste
 > Anheftung (`S0181` = „Kurrentschrift", §4). **Der erste echte Bogen
@@ -1085,6 +1088,116 @@ die er sicher NICHT trennen kann (Komma, i-Punkt, eigener Klecks), sind
 genau die, in denen ein Fehler nicht auffällt und nicht rückgängig zu
 machen wäre.
 
+### 7.5 Der Streifen-Pfad — die gefolgte Federbahn als Daten
+
+**Autor-Wunsch 2026-09-12:** „bitte auch im admin integrieren das ich bei
+den handstreifen und den wörtern generell den pfad auch sehen kann."
+
+Zwei sehr ungleiche Hälften. Bei den **Wörtern** liegt der Pfad längst da
+(`word_instances.strokes`, eine Bahn je Federabsatz) — gezeichnet wurde er
+nur flach und einfarbig, also sagte das Bild, WO die Tinte ist, und nie, in
+welcher REIHENFOLGE die Feder sie gelegt hat. Bei den **Streifen** gab es
+gar nichts: eine Fassung trug ein Bild, ein Verdikt, einen Befund und eine
+Fleckenmaske, aber keinen Duktus.
+
+**Gerechnet wird außerhalb, gezeigt wird drinnen.** Der Server kann einen
+Pfad nie selbst folgen — das API-Abbild liefert `tools/` nicht aus, und der
+Tintenfolger lebt dort. Also folgt `tools.eigenhand.pfad` der Tinte lokal
+(über `tools.pairlab.tintenpfad`) und schiebt das Ergebnis durch den
+admin-gesicherten Schreibweg; der Admin ZEIGT nur gespeicherte Pfade. Das
+ist dieselbe Richtung wie beim Übergangsraum: eine Ableitung wird oben
+abgelegt, nicht oben erzeugt.
+
+**Wo er hängt.** Auf dem STREIFEN (`eigenhand_strips.pfade`, Migration
+`0031`), nicht auf der Fassung. Befund und Fleckenmaske hängen an der
+Fassung, weil beide entstehen können, bevor die Pixel oben sind; ein Pfad
+ist das Gegenteil — er lässt sich nur folgen, wo die Tinte liegt. Die Spalte
+ist **verzögert wie das PNG** (`_STRIP_META_ONLY`): eine Bestandsabfrage
+darf nie jeden Pfad jeder Fassung mitschleppen, und genau das ist der
+wahrscheinlichste stille Fehler an dieser Stelle.
+
+**Nicht `word_instances`.** Deren Identität ist `(source_id, kind,
+specimen_id)` — ein Streifen-Pfad könnte dort also nur die `traced`-Zeile
+der Ernte VERDRÄNGEN, und die Zeilen sind in `word_instances.json`
+eingefroren, das `tools/tracebench/reference.py` als Referenzsatz festhält.
+Er zöge außerdem reserviertes Eigenhand-Material in die Bench-Sätze, gegen
+§12.2, und bräuchte eine `sources`-Zeile mit repo-relativem `chart_path` —
+genau die offene Frage, die §9 parkt. Der Streifen-Pfad öffnet Phase 5
+deshalb **nicht**; er ist eine Ansicht auf den eigenen Bestand.
+
+**Der Rahmen.** Die `strokes` stehen in den Einheiten des Wortes
+(Grundlinie 0, Mittelband 1, x ab dem Wortursprung) — derselbe Vertrag wie
+`word_instances.strokes`, und nur deshalb zeichnet EIN Overlay beide
+Flächen. Die `registration_px` bildet sie in die Pixel des STREIFENS ab,
+nicht in die des Wort-Crops: der Streifen ist das Bild, das immer existiert,
+und der Rahmen eines Crops folgt daraus durch Abzug seines Kastens
+(`boxes[].rect_px`, seit dieser Runde in der Streifen-Liste). Andersherum
+müsste die Polsterung des Crops mit dem Pfad mitgeführt werden.
+
+**Saat, nicht Messung.** `core/eigenhand/pfad.py::frame_for_box` leitet
+Kasten und Lineatur aus dem gespeicherten Bogen-Layout ab — das ist die
+GEDRUCKTE Linie, also wo geschrieben werden SOLLTE, nicht wo die Hand
+geschrieben HAT. Als Saat für den Folger ist das richtig, als Messung wäre
+es falsch; gespeichert wird darum die Registrierung, die der Fit selbst
+ausrechnet, und die Werkbank schreibt „Saat: Tafel-Duktus" daneben. Denn
+auch Reihenfolge und Richtung kommen aus dem Duktus der Grundvorlage und
+nicht aus dieser Hand — legitim (der Tintenpfad nimmt die Saat nur als
+Vorschlag, die Bahn liegt auf der Tinte), aber es muss dastehen, sonst liest
+sich der Pfad wie eine Behauptung über den Schreiber.
+
+**Was geprüft wird**, bevor etwas abgelegt wird (`check_paths`, 422):
+Format, ein Pfad je Kasten und kein Kasten doppelt, ein Kasten, den die
+gedruckte Zeile wirklich hat, ein Wort, das mit dem gedruckten Kasten UND
+dem eingefrorenen Plan übereinstimmt, Züge in Template-Einheiten, und eine
+Registrierung, die auf DIESEM Streifen liegt. Der letzte Punkt ist der
+teuerste Fehler, den es hier gibt: eine Registrierung aus einem anderen Bild
+ist in sich vollkommen wohlgeformt und zöge eine plausible Bahn über die
+falsche Tinte — still, und für immer.
+
+**Die Konfiguration fährt mit.** Gefolgt wird mit den Armen, die die
+Kampagne für die Umkehr-Ecken festgezurrt hat (Messjournal §14, Runden
+10.–11. September): `tip_read` · `rail=tentfit` · `edt_upsample=4` ·
+`ink_bridge_xh=1.0` · `hairpin_tip` · `ride_back` · `tip_grey_stop` ·
+`self_jump`. Sie steht mit `verfahren` und `erzeugt_am` in der Zeile, damit
+ein Pfad aus sich selbst sagt, was ihn erzeugt hat.
+
+**`flecken_n` ist der Stolperdraht.** Ein Pfad, der vor einer
+Pinselkorrektur gefolgt wurde, hat andere Tinte gelesen, als das Bild jetzt
+zeigt. Die Zeile merkt sich deshalb, wie groß die Maske beim Folgen war; die
+Werkbank zeigt „Maske geändert", statt eine veraltete Bahn kommentarlos über
+korrigierte Pixel zu legen.
+
+**Was der Admin zeigt.** Eine Ebene, zwei Flächen. In den Wörtern steht
+„Pfad" als dritter Ebenen-Knopf neben „Nachfahrung" und „Engine" und bringt
+seine Linie mit (er schmückt sie ja); in der Eigenhand-Ansicht schaltet
+„Pfad zeigen" die Bahn über Streifen und Wort-Crops. Gezeichnet wird in
+beiden Fällen von `PathOverlay`: Farbverlauf in Schreibreihenfolge (erster
+Zug grün, letzter blau), gefüllter Punkt am Ansatz, Pfeilspitze an jedem
+Zugende, **gestrichelte Verbinder für die Absetzer** — das ist das Stück,
+das eine einfarbige Linie vollständig verbirgt, weil ein Absetzer dort
+aussieht wie eine Ecke. Dazu Herkunft und Datum als Bildunterschrift; bei
+den Wörtern liefert die `updated_at` der Zeile das Datum, das bisher gar
+nicht auf der Leitung lag.
+
+**Geladen wird auf Abruf**, je Fassung, und nur für sichtbare Bilder —
+dieselbe Politik wie bei den Pixeln, sonst feuerte eine Galerieseite mit 24
+Kacheln 24 Pfadabfragen. Die Antwort ist `private, no-store` und
+admin-gesichert wie das Bild: ein Pfad ist aus reservierten Pixeln
+ABGELEITET und bleibt hinter derselben Tür.
+
+**Wiederherstellung: der Pfad ist ableitbar** (Entscheidung dieser Runde).
+Weder `snapshot.py` noch `sync --from` tragen ihn, und die Prüfung aus §8.1
+verlangt ihn nicht — Streifen, Layout und Werkzeug sind da, also lässt er
+sich jederzeit neu folgen, und ein Archivfeld für eine reproduzierbare
+Ableitung wäre genau die zweite Wahrheit, die das Archiv nicht haben will.
+Was NICHT ableitbar ist, bleibt weiterhin dort: Bild, Verdikt, Maske.
+
+**Verworfen:** den Pfad serverseitig rechnen (das Abbild hat den Folger
+nicht, und `api`↛`tools` ist per Test festgehalten); ihn in
+`word_instances` schreiben (eingefrorener Referenzsatz, siehe oben); ihn in
+die Streifen-Liste einbetten (dann zahlt jede Bestandsabfrage für Bahnen,
+die niemand sehen will).
+
 ## 8 Ablage und Archiv
 
 `data/samples/own-hand/` ist komplett gitignored bis auf `SOURCE.md` +
@@ -1250,7 +1363,8 @@ die menschliche Kopf-Bestätigung je fehleranfällig wird.
 | 4e | Vom Bestand zum Beleg: Wortsuche, Tafel-Zellen und Übergangs-Chips als Einstieg in die Wort-Crop-Galerie, Vergrößerung + Lupe (`strips?wort=&item=`, `coverage.matches_item`) | umgesetzt 2026-08-26 (§7.2) |
 | 4f | Farb-Streifen: RGB-Ablage bei Farb-Scans (`scan.mode: rgb`), blaue Arbeitsebene für Passmarken/QC, `?lineatur=ohne` als abgeleitete Ansicht | umgesetzt 2026-08-27 (Autor-Entscheid 2026-08-27, §6/§7.2) |
 | 4g | Streifen-Befund je Fassung (`0029` · `core/eigenhand/befund.py` · `apply`/`sync`/`report --befund` · Chips und Sortierung in der Werkbank) | umgesetzt 2026-09-07 (Autor-Frage 2026-09-07, §7.3) |
-| 5 | Ernte-Anschluss, Kurrent/Offenbacher-Betrieb, optionaler Bogen-Code | aufgeschoben (§9) |
+| 4h | Streifen-Pfad je Fassung (`0031` · `core/eigenhand/pfad.py` · `GET|PUT /eigenhand/strips/…/pfade` · `tools.eigenhand.pfad` · `PathOverlay` in Wörter- und Eigenhand-Ansicht) | umgesetzt 2026-09-12 (Autor-Wunsch 2026-09-12, §7.5); Pfade folgen und hochschieben bleibt ein Autor-Schritt (`--apply`, Snapshot davor) |
+| 5 | Ernte-Anschluss, Kurrent/Offenbacher-Betrieb, optionaler Bogen-Code | aufgeschoben (§9) — der Streifen-Pfad (§7.5) öffnet sie NICHT: er bleibt in `eigenhand_strips`, `word_instances` bleibt unberührt |
 
 Dazu je Schreibsitzung wiederkehrend: Kalibrier-Schleife der
 advance-Tabelle, `gaps`-Kuration neuer Selten-Join-Wörter, neue Wellen.

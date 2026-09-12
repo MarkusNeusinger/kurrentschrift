@@ -606,6 +606,25 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   das abgelegte Bild bleibt Byte für Byte, wie es eingelesen wurde. Auch
   der Haken wird so gelesen: punktgroße Komponenten fallen aus der Zählung,
   ein Haken muss ein Strich sein.
+- **`pfad`** — folgt der **Federbahn** eines geschriebenen Streifens und
+  schiebt sie in die Werkbank (Proposal §7.5, Migration `0031`):
+  `uv run python -m tools.eigenhand.pfad --hand mn-suetterlin --strip S0001`.
+  Liest alles über die Admin-API (Streifen-Liste samt Kasten-Rechtecken,
+  Bogen-Layout, das Streifenbild ohne Lineatur und mit angewandter
+  Fleckenmaske), schneidet jedes Wort heraus, binarisiert und skelettiert es
+  wie der Bench (`core.extract`) und lässt `tools.pairlab.tintenpfad` mit der
+  festgezurrten Konfiguration darüber laufen (`tip_read` · `rail=tentfit` ·
+  `edt_upsample=4` · `ink_bridge_xh=1.0` · `hairpin_tip` · `ride_back` ·
+  `tip_grey_stop` · `self_jump`) — die Duktus-Saat kommt aus den
+  eingefrorenen Wort-Fixtures des Stils, also aus der Tafel und nicht aus
+  dieser Hand (das Werkzeug sagt es, wenn die gitignorten Wurzeln fehlen, und
+  nennt `fetch_fixtures`). **Trockenlauf ist die Vorgabe** — ohne `--apply`
+  landet das Ergebnis nur als JSON unter der lokalen Hand; `--apply` schreibt
+  es über `PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade` in die
+  GETEILTE DB, braucht `ADMIN_TOKEN` und gehört hinter einen
+  `tools.dbsnapshot.fetch`. `--fassung` und `--box` grenzen ein. BLAS-Fäden
+  pinnt das Modul selbst (Vorgabewerte), weil die Kettenlösung sonst je nach
+  Umgebung anders läuft.
 - **`report`** — Bestandsbericht (Erstbeleg-/Ausbau-Quote, Fehlstellen,
   Druckvorschlag) und, seit dem **Streifen-Befund** (2026-09-07), die
   Gegenrichtung: je angenommener Fassung Vorschlag (`sauber` · `brauchbar` ·

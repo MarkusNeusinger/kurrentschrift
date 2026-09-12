@@ -260,6 +260,10 @@ async def test_put_word_instances_roundtrip_and_authored_protection(api: Harness
     assert len(rows) == 1
     assert rows[0]["provenance"] == "authored"
     assert rows[0]["strokes"] == [[[0.0, 0.0], [2.0, 1.0]]]
+    # The other half of a trace's provenance: `provenance` says who drew the
+    # line, `updated_at` when — which is what lets the workbench caption a
+    # drawn path with Herkunft AND Datum instead of an undated overlay.
+    assert rows[0]["updated_at"] and rows[0]["updated_at"].startswith("20")
 
     # ?word= lists every occurrence of one word TEXT (repeated words carry
     # distinct specimen ids but share `word`).
