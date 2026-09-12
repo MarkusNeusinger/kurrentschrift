@@ -1446,9 +1446,14 @@ Teil-Negativ**: Zickzack je xh 3,718 → 0,009 (der beste Physik-Wert der
 Runde, Ablation: die Metrik ist der Mechanismus), Papier-Umkehr 18 → 0,
 aber das Lineal verloren (dev-19 0,045881 → 0,051445, 6 : 13) an drei
 benannten Klassen (das-Becken, muß/ß, Kapitale/W); 18 gestrandete
-Diakritika. *Technisch:* Zweig `wellen-schlange` (ungemergt); erklärte
-Einstellung ℓ 7 · β_e 64 (regelkonform wäre 16) · `cov_soft_k 4` als
-Schalter → messjournal.md §14 „Welle `sep11`", research/wellen-recherche.md §3
+Diakritika. *Technisch:* seit `sep12` im Repo unter `tools/pairlab/schlange.py`
+als eigenständiger Baustein (Zweig `wellen-schlange`, unadoptiert, kein
+Schalter im bestehenden Code); Aufruf `OPENBLAS_NUM_THREADS=1
+OMP_NUM_THREADS=1 uv run python -m tools.pairlab.schlange --set words --jobs 2
+--candidate-out <dir>/cand.json --json <dir>/schlange.json --expect-root
+<digest> <wort …>`; erklärte Einstellung ℓ 7 · β_e 64 (regelkonform wäre 16) ·
+`cov_soft_k 4` als Schalter → messjournal.md §14 „Welle `sep11`",
+research/wellen-recherche.md §3
 
 **Fremdtinte** *(foreign ink)* — Tinte im Wort-Crop, die das Wort nie
 geschrieben hat und die die eingefrorene Binarisierung trotzdem behält:

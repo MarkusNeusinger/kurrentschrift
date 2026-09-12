@@ -525,7 +525,14 @@ BUDGETS: dict[str, int] = {
     # glossary terms before this raise (the first draft was three times as
     # long); the section stood at 4547 exactly, so every switch name failed
     # the gate. Re-measured at 4669 plus the documented 10 %.
-    "werkzeug-abschnitt": 5_136,
+    # Raised again on 2026-09-12 by the „Schlange" building-block PR: the
+    # section stood at 5131 of 5136 — five tokens of room — before the entry
+    # for `tools/pairlab/schlange` (a second, stand-alone follower beside the
+    # chain) was added. The entry was kept to one bullet (what it is, that it
+    # carries no switch in existing code, its call line, a pointer to the
+    # glossary) rather than repeating the mechanism prose the glossary entry
+    # already carries. Re-measured at 5266 plus the documented 10 %.
+    "werkzeug-abschnitt": 5_793,
     "doku": 8_748,
 }
 

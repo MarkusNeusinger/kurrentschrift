@@ -18,6 +18,7 @@ Pinned here, each next to the failure it was added for:
 
 from __future__ import annotations
 
+import importlib
 import inspect
 
 import numpy as np
@@ -369,7 +370,17 @@ BORROWED = {
 @pytest.mark.parametrize(("module", "name"), sorted(BORROWED))
 def test_the_borrowed_private_helpers_keep_their_signatures(module: str, name: str) -> None:
     """A stand-alone module that silently breaks on a chain refactor is not
-    stand-alone: whoever moves or reshapes one of these promotes it here too."""
+    stand-alone: whoever moves or reshapes one of these promotes it here too.
+
+    ``schlange`` binds each helper once, at its own import time (``from
+    tools.pairlab.chain import _connector_spec``), so a sibling test that
+    reloads ``chain``/``follow`` in-process (``test_pairlab_chain.py``,
+    ``test_pairlab_follow.py``) leaves ``schlange``'s copy stale relative to
+    the freshly reloaded module — a full-suite-only flake unrelated to this
+    module's own correctness. Reloading ``schlange`` here re-runs its
+    ``from ... import`` lines against whatever is CURRENTLY in
+    ``sys.modules``, so the identity check compares two fresh reads instead
+    of one fresh and one collection-time read."""
     fn = getattr(__import__(module, fromlist=[name]), name)
     assert list(inspect.signature(fn).parameters) == BORROWED[(module, name)]
-    assert getattr(schlange, name) is fn
+    assert getattr(importlib.reload(schlange), name) is fn
