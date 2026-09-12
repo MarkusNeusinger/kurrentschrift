@@ -16,8 +16,8 @@
 // Everything is drawn in the PATH's own units (baseline 0, midband 1): the
 // caller supplies the SVG matrix, which is the same `traceMatrix` the word
 // cards already use, so this component knows nothing about pixels. `unit` is
-// one display pixel expressed in those units — it keeps hairlines and arrow
-// heads the same visual size across crops of very different resolutions.
+// one display pixel expressed in those units — it is the FLOOR under every
+// decoration, so that a path only a few pixels tall still shows its arrows.
 //
 // With every decoration off it draws exactly the line it replaced, which is
 // what lets the „Spur" layer stay what it was and „Pfad" be a layer on top.
