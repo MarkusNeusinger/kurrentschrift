@@ -62,7 +62,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
-- **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
+- **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Folger-Schalter der Ernte (`--follower`) §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — Gauß-Verschiebung §3 · G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grauwert-Stopp (→ Strang-Dekodierung) §3 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Haken-Spitze (→ Strang-Dekodierung) §3 · Hand §2 · Hand-Überschuss §4 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
@@ -1409,9 +1409,16 @@ und NICHT ausgeliefert: **Ecke statt Bogen** (eine Ecke statt einer
 Hermite-Schlaufe bei gegenläufigen Tangenten) feuert auf der Tafel nie,
 die schärfste Übergangs-Kosinus ist −0,43 — die gesehenen Schlaufen waren
 abgeschnittene Haken. Seit `sep11` eine eigene
-Route mit Verfahrensseite (→ Duell-Namen, verfahren-tintenpfad.md);
-Stand Kandidat, nicht adoptiert — §14 „Welle `sep11`" und
-„Tintenpfad-Arme `sep11`"
+Route mit Verfahrensseite (→ Duell-Namen, verfahren-tintenpfad.md).
+**Stand seit dem Autor-Entscheid A45 (2026-09-12): adoptiert** — die
+erklärte Acht-Schalter-Konfiguration (`tip_read` · `rail=tentfit` ·
+`edt_upsample=4` · `ink_bridge_xh=1.0` · `hairpin_tip` · `ride_back` ·
+`tip_grey_stop` · `self_jump`) ist die VORGABE von `TintenpfadWeights`
+und der Tintenpfad der Standard-Folger der Kampagne; der Stand, gegen den
+die Arme von `sep11`/`sep12` gemessen wurden, bleibt als GANZE
+Konfiguration reproduzierbar (`--legacy-p6`, die Prototyp-Zeile
+`--legacy-p5`) — §14 „Welle `sep11`", „Tintenpfad-Arme `sep11`" und
+„Tintenpfad-Adoption `sep12`"
 
 **Wellen-Basis** *(wave basis, `--wave-spacing`)* — die Physik-Bedingung
 des Autors („die Punkte können sich nur wie eine Welle zusammenhängend
@@ -2223,6 +2230,22 @@ ihr `chain`-Kandidat die eingefrorene Basis jedes gemessenen Arms ist.
 Der Preis steht neben dem Gewinn im §14-Eintrag (`sep07`: 227 statt 234
 angenommene Vorkommen, an `connector_degenerate`, nicht an der Fitgüte).
 → messjournal.md §14 „Laufform LF15 `sep06`", „Laufform LF16 `sep07`"
+
+**Folger-Schalter der Ernte** *(`--follower`, `HarvestOptions.follower`,
+`tools/laufform/harvest.py`)* — welcher Folger die GESPEICHERTE Wortbahn
+legt. `tintenpfad` ist die Vorgabe seit dem Autor-Entscheid A45
+(2026-09-12): das Wort-Record trägt die Bahn der Strang-Dekodierung und
+deren Buchstabengrenzen (`letter_spans`), `chain` ist der Stand davor und
+bleibt byte-gleich. Der Schalter bewegt, was die Ernte ZEIGT, und sonst
+nichts — die Vorkommen, die Mediane und jedes Gate werden weiter am
+Buchstabenfit abgelesen; eine Laufform-Zeile ist ein ANKERSATZ, der
+Tintenpfad dekodiert eine BAHN, und die Anker-Zuordnung dazwischen gibt es
+noch nicht (offener Arm „Vorkommen aus der Tintenpfad-Bahn",
+proposals/tintenfolger.md §7.11). Das ist dasselbe Muster wie K-A/K-B/A1:
+erst ändern, was die Bahn zeigt, dann, was die Ernte misst. Ein
+`--apply`-Lauf muss seinen Folger ausdrücklich nennen — ein bewegter
+Default darf keine geänderte Bahn in die Produktion tragen.
+→ messjournal.md §14 „Tintenpfad-Adoption `sep12`"
 
 **Spike-Verhältnis** *(`anchor_spike_ratio`, Gate `anchor_spike`)* — die
 Kennzahl hinter dem **Anker im leeren Papier**: größter Schritt zwischen
@@ -3045,7 +3068,9 @@ seit 2026-08-16:* **Nullprobe** (→ Duell-Namen).
 **Duell-Namen** *(display names of the tracing duel)* — die lesbaren
 Verfahrensnamen der Duell-Seite und der späteren öffentlichen
 Methoden-Seite (Owner-Entscheid 2026-08-16), je ↔ technischer Name:
-**Hand** (die eigene S-Pen-Nachfahrung, die Referenz) · **Kette** (der
+**Hand** (die eigene S-Pen-Nachfahrung, die Referenz) · **Tintenpfad**
+(seit dem Autor-Entscheid A45 vom 2026-09-12 der **Standard-Folger** der
+Kampagne, siehe unten) · **Kette** (der
 Kettenfit MIT Struktur-Wächter — seit dem Entscheid die EINZIGE Kette:
 fit-erfundene Kreuzungen sind nie richtig, join-gebildete stecken im
 Soll-Budget; seit Kette v5 `aug26` ist der ganze Wächter-Stack —
@@ -3061,9 +3086,12 @@ Engine-Paaren, Route B2) · **Vier Augen** (Fusion beider Routen) ·
 (ordnungs-bewusste Auswahl unter Varianten) · **Lotse** (Arbeitstitel:
 Skelett direkt fahren, Duktus als Karte an Abzweigungen) · seit `sep11`
 **Tintenpfad** (die Strang-Dekodierung, `tools/pairlab/tintenpfad`: Tinte
-zuerst, Buchstaben danach — Kandidat, nicht adoptiert, eigene Seite
-verfahren-tintenpfad.md; der Begriff war der Name, bevor er Anzeigename
-wurde). Technische
+zuerst, Buchstaben danach; der Begriff war der Name, bevor er Anzeigename
+wurde) — **seit dem Autor-Entscheid A45 vom 2026-09-12 der Standard-Folger
+der Kampagne**: die erklärte Acht-Schalter-Konfiguration ist die Vorgabe des
+Werkzeugs, neue Arme werden gegen ihn gemessen, und die **Kette** bleibt
+Baustein und messbare Route, aber nicht mehr die Duell-Basis (eigene Seite
+verfahren-tintenpfad.md, §14 „Tintenpfad-Adoption `sep12`"). Technische
 Namen bleiben in Code und datierten §14-Einträgen unverändert — dieser
 Eintrag ist die Übersetzungstabelle. *Technisch:* Label-Marker in
 `tools/tracebench/view.py` (`CHAIN_MARKERS`/`CONTROL_MARKERS`)

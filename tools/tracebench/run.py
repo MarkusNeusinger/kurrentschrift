@@ -2,7 +2,8 @@
 
 Hermetic and deterministic — no DB, no HTTP, no writes: the references, the
 crops and the ink masks all come out of the frozen wordbench fixture roots, and
-the candidate is either a stored row, a recomputed chain fit or a file.
+the candidate is either a stored row, a recomputed chain fit, a fresh Tintenpfad
+decode or a file.
 
     uv run python -m tools.tracebench.run [--style suetterlin] [--set words]
         [--split dev|confirm|all] [--words die,mit] [--candidate chain]
@@ -55,6 +56,7 @@ from tools.tracebench.candidates import (
     authored_provider,
     chain_provider,
     file_provider,
+    tintenpfad_provider,
     traced_provider,
 )
 from tools.tracebench.counters import RESAMPLE_STEP_UNITS
@@ -167,10 +169,35 @@ def build_provider(args: argparse.Namespace) -> tuple[Provider, str]:
                 f"{flag} changes how the CHAIN candidate is built and does nothing for --candidate "
                 f"{args.candidate} — a stored row and a file are read as they are"
             )
+    for flag, value in (
+        ("--tintenpfad-stand", args.tintenpfad_stand != "default"),
+        ("--tintenpfad-weight", bool(args.tintenpfad_weight)),
+    ):
+        if value and args.candidate != "tintenpfad":
+            raise SystemExit(
+                f"{flag} changes how the TINTENPFAD candidate is built and does nothing for --candidate "
+                f"{args.candidate}"
+            )
     if args.candidate == "file":
         if not args.candidate_file:
             raise SystemExit("--candidate file needs --candidate-file <path>")
         return file_provider(args.candidate_file), args.label or args.candidate_file.name
+    if args.candidate == "tintenpfad":
+        provider = tintenpfad_provider(
+            style=args.style,
+            which=args.which,
+            fixtures_root=args.fixtures,
+            stand=args.tintenpfad_stand,
+            weight_overrides=args.tintenpfad_weight,
+        )
+        # The same rule the chain keeps: a run that is not the adopted stand may
+        # not answer to the adopted stand's name. `tintenpfad` IS the standard
+        # follower since A45; every other configuration is labelled as a variant.
+        variants = [
+            *([] if args.tintenpfad_stand == "default" else [args.tintenpfad_stand]),
+            *sorted(args.tintenpfad_weight),
+        ]
+        return provider, args.label or "+".join(["tintenpfad", *variants])
     if args.candidate == "chain":
         provider = chain_provider(
             style=args.style,
@@ -309,6 +336,22 @@ def build_parser() -> argparse.ArgumentParser:
         '„Lineal L-U"). Pass 0.8 to reproduce a number recorded before aug26, when the '
         "u-Bogen was still classified as body; any other value is a ruler change and the "
         "run says so",
+    )
+    parser.add_argument(
+        "--tintenpfad-stand",
+        choices=["default", "legacy-p6", "legacy-p5"],
+        default="default",
+        help="which whole Tintenpfad configuration to decode with (--candidate tintenpfad only): the "
+        "adopted default (A45), the arm as delivered on sep11/sep12 with all eight switches off, or the "
+        "prototype's ladder row. A non-default stand labels the run `tintenpfad+<stand>`",
+    )
+    parser.add_argument(
+        "--tintenpfad-weight",
+        action="append",
+        default=[],
+        metavar="NAME=VALUE",
+        help="one TintenpfadWeights override on top of the stand (repeatable, --candidate tintenpfad only); "
+        "it labels the run, because an arm is never the adopted stand",
     )
     parser.add_argument("--label", help="name of this candidate in the rows (default: the provider's name)")
     parser.add_argument("--jobs", type=int, default=1, help="parallel scoring workers (order-preserving)")

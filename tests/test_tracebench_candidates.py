@@ -347,6 +347,74 @@ def test_a_provider_answers_for_every_id_it_was_asked_about(tmp_path: Path) -> N
         assert all(isinstance(c, Candidate) for c in out.values())
 
 
+# ------------------------------------------------------- the Tintenpfad route
+
+
+def test_the_tintenpfad_provider_reads_the_followers_own_output(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The same seam the chain keeps: the bench grades the follower that ships.
+
+    `follow_case` is the Tintenpfad's own entry point and is stubbed here only
+    to keep the test free of a fixture root — what is asserted is that its row
+    reaches the bench unchanged, letter spans included, and that a decode which
+    fails becomes a skipped ROW rather than an exception.
+    """
+    from tools.tracebench import candidates as candidates_mod  # noqa: PLC0415
+    from tools.tracebench.candidates import tintenpfad_provider  # noqa: PLC0415
+
+    reference = load_reference(write_root(tmp_path, [row("die")]))
+    monkeypatch.setattr(candidates_mod, "_chain_cases", lambda *a, **kw: {"die": object()})
+    monkeypatch.setattr(
+        candidates_mod,
+        "_tintenpfad_follow",
+        lambda case, weights: {
+            "status": "ok",
+            "detail": "",
+            "strokes": [[[0.0, 0.0], [1.0, 0.5]]],
+            "registration_px": {"tx": 3.0, "ty": 1.0, "baseline_row": 60},
+            "xh_px": 30.0,
+            "meta": {"letter_spans": [[[0, 0, 1]]], "tintenpfad": {"runs": 1}},
+        },
+    )
+    candidate = tintenpfad_provider(fixtures_root=tmp_path)(reference, ["die"])["die"]
+    assert candidate.ok, candidate.detail
+    assert candidate.strokes == [[[0.0, 0.0], [1.0, 0.5]]]
+    assert candidate.meta["fit_path"] == "tintenpfad" and candidate.meta["stand"] == "default"
+    assert candidate.meta["letter_spans"] == [[[0, 0, 1]]]
+
+    monkeypatch.setattr(
+        candidates_mod,
+        "_tintenpfad_follow",
+        lambda case, weights: {"status": "skipped", "detail": "no specimen", "strokes": [], "meta": {}},
+    )
+    skipped = tintenpfad_provider(fixtures_root=tmp_path)(reference, ["die"])["die"]
+    assert skipped.status == "skipped" and skipped.detail == "no specimen"
+
+
+def test_the_tintenpfad_provider_decodes_at_the_adopted_stand_by_default() -> None:
+    """`stand` picks a WHOLE configuration, never a half one: the default is the
+    declared A45 configuration, `legacy-p6` the arm as delivered on
+    `sep11`/`sep12`, and an unknown name is a refusal, not a silent default."""
+    from tools.pairlab.tintenpfad import LEGACY_P5, LEGACY_P6, TintenpfadWeights  # noqa: PLC0415
+    from tools.tracebench.candidates import _tintenpfad_weights  # noqa: PLC0415
+
+    assert _tintenpfad_weights("default", []) == TintenpfadWeights()
+    assert _tintenpfad_weights("legacy-p6", []) == LEGACY_P6
+    assert _tintenpfad_weights("legacy-p5", []) == LEGACY_P5
+    assert _tintenpfad_weights("default", ["turn_cost=30"]).turn_cost == 30.0
+    with pytest.raises(SystemExit, match="unknown Tintenpfad stand"):
+        _tintenpfad_weights("p7", [])
+
+
+def test_the_provider_registry_names_every_route() -> None:
+    """`--candidate` is built from this tuple, so a provider missing here is a
+    provider the CLI cannot reach."""
+    from tools.tracebench.candidates import PROVIDER_NAMES  # noqa: PLC0415
+
+    assert PROVIDER_NAMES == ("chain", "tintenpfad", "authored", "traced", "file")
+
+
 def test_a_candidate_owns_its_geometry():
     # Review finding: an aliased caller list mutated after construction must
     # not change what gets measured.

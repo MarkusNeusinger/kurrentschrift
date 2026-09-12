@@ -1,4 +1,4 @@
-"""What the bench grades: a candidate word trace, and the four ways to get one.
+"""What the bench grades: a candidate word trace, and the five ways to get one.
 
 A candidate is LITERALLY a `word_instances` row — strokes plus the registration
 they are labelled in plus the row's x-height (`docs/proposals/tintenfolger.md`
@@ -7,7 +7,7 @@ what keeps "it scored well on the bench" and "it can be stored and drawn" from
 being two different claims. Every provider hands back the same shape, so a
 follower, the chain baseline and the human reference are read by one scorer.
 
-The four providers, and why each exists:
+The five providers, and why each exists:
 
 * `authored_provider` — the reference rows themselves. Scoring them against
   their own reference is the IDENTITY GATE: dtw = 0, every counter matched, or
@@ -17,7 +17,13 @@ The four providers, and why each exists:
   manually re-traced `authored` ones. That emptiness is not a defect: it is
   precisely why the chain baseline is RECOMPUTED rather than read.
 * `chain_provider` — the Stage-B chain fit, run through the harvest's own code
-  (`tools.laufform.harvest.chain_word_strokes`), never a reimplementation.
+  (`tools.laufform.harvest.chain_word_strokes`), never a reimplementation. Since
+  A45 it is a BUILDING BLOCK rather than the duel base: the chain stays fully
+  measurable, but the standard follower is the Tintenpfad.
+* `tintenpfad_provider` — the strand decoding, run through
+  `tools.pairlab.tintenpfad`'s own `follow_case`. The campaign's standard
+  follower since the author's decision A45 (2026-09-12) and therefore the duel
+  base new arms are graded against.
 * `file_provider` — anything outside this repo's process: the ink-follower's
   output, an InkSight decode. Requires the literal `"frame":
   "word_registration"` so a file in some other frame is refused instead of
@@ -395,7 +401,83 @@ def chain_provider(
     return provide
 
 
-PROVIDER_NAMES = ("chain", "authored", "traced", "file")
+def _tintenpfad_weights(stand: str, overrides: Sequence[str]) -> Any:
+    from tools.pairlab.tintenpfad import (  # noqa: PLC0415
+        LEGACY_P5,
+        LEGACY_P6,
+        TintenpfadWeights,
+        weights_from_overrides,
+    )
+
+    bases = {"default": TintenpfadWeights(), "legacy-p6": LEGACY_P6, "legacy-p5": LEGACY_P5}
+    if stand not in bases:
+        raise SystemExit(f"unknown Tintenpfad stand {stand!r}; known: {', '.join(sorted(bases))}")
+    return weights_from_overrides(bases[stand], list(overrides))
+
+
+def _tintenpfad_follow(case: Any, weights: Any) -> dict[str, Any]:
+    from tools.pairlab.tintenpfad import follow_case  # noqa: PLC0415
+
+    return follow_case(case, weights)
+
+
+def tintenpfad_provider(
+    *,
+    style: str = "suetterlin",
+    which: str = "words",
+    fixtures_root: Path | None = None,
+    stand: str = "default",
+    weight_overrides: Sequence[str] = (),
+) -> Provider:
+    """The Tintenpfad — the campaign's STANDARD follower since the author's A45.
+
+    The same seam the `chain` provider keeps to the harvest, one layer over: the
+    strand decoding runs through `tools.pairlab.tintenpfad`'s own
+    `follow_case`, so the bench grades the follower that ships rather than a
+    second implementation of it. `stand` picks a whole configuration — the
+    adopted default, `legacy-p6` (the arm as delivered on `sep11`/`sep12`, all
+    eight switches off) or `legacy-p5` (the prototype's ladder row) — and
+    `weight_overrides` are the tool's own `NAME=VALUE` pairs on top, so a single
+    measured arm reaches the bench without a candidate file in between.
+
+    The decode carries its letter boundaries in `meta.letter_spans`; they travel
+    into the candidate's meta untouched, because the bench grades a path and the
+    spans are what a later harvest would cut the occurrences on.
+    """
+    root = Path(fixtures_root) if fixtures_root is not None else DEFAULT_FIXTURES_DIR
+
+    def provide(reference: Reference, specimen_ids: Sequence[str]) -> dict[str, Candidate]:
+        ids = list(specimen_ids)
+        weights = _tintenpfad_weights(stand, weight_overrides)
+        cases = _chain_cases(which=which, style=style, only=ids, fixtures_root=root)
+        out: dict[str, Candidate] = {}
+        for specimen_id in ids:
+            case = cases.get(specimen_id)
+            if case is None:
+                out[specimen_id] = Candidate([], {}, None, STATUS_SKIPPED, f"no {which!r} fixture case")
+                continue
+            info = _tintenpfad_follow(case, weights)
+            if info["status"] != STATUS_OK:
+                out[specimen_id] = Candidate([], {}, None, info["status"], str(info.get("detail") or ""))
+                continue
+            meta = info.get("meta") or {}
+            out[specimen_id] = candidate_from_wire(
+                info["strokes"],
+                info["registration_px"],
+                info["xh_px"],
+                meta={
+                    "fit_path": "tintenpfad",
+                    "stand": stand,
+                    **({"letter_spans": meta["letter_spans"]} if "letter_spans" in meta else {}),
+                    **({"tintenpfad": meta["tintenpfad"]} if "tintenpfad" in meta else {}),
+                },
+            )
+        return out
+
+    return provide
+
+
+PROVIDER_NAMES = ("chain", "tintenpfad", "authored", "traced", "file")
 
 
 __all__ = [
@@ -415,6 +497,7 @@ __all__ = [
     "candidate_from_wire",
     "chain_provider",
     "file_provider",
+    "tintenpfad_provider",
     "traced_provider",
     "wire_violation",
 ]

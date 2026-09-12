@@ -169,6 +169,13 @@ MAX_ANCHOR_SPIKE_RATIO = 8.0
 # messjournal.md` §14 „Laufform LF15 `sep06`".
 DEFAULT_CHAIN_SEED = "chart"
 
+# Which follower lays the stored word trace, for a run that says nothing about
+# it. „Tintenpfad" since the author's decision A45 (2026-09-12), which made the
+# strand decoding the campaign's standard follower; `HarvestOptions.follower`
+# carries what the switch does and does not move.
+DEFAULT_FOLLOWER = "tintenpfad"
+FOLLOWER_CHOICES = ("tintenpfad", "chain")
+
 DIAG_FIELDS = (
     "specimen_id",
     "kind",
@@ -236,6 +243,24 @@ class HarvestOptions:
     style: str = "suetterlin"
     rmse_max: float = 2.2
     path: str = "slot"  # "slot" (per-letter M4 fits) | "chain" (word-chain fits)
+    # WHICH FOLLOWER lays the word's stored pen path. "tintenpfad" is the
+    # DEFAULT since the author's decision A45 of 2026-09-12 (§14
+    # „Tintenpfad-Adoption `sep12`"): the strand decoding
+    # (`tools.pairlab.tintenpfad`) follows the ink first and assigns letters
+    # second, and on the `sep12` root it beats the chain paired on the hand's
+    # own trace. "chain" is the pre-A45 path and stays byte-identical to it.
+    #
+    # The switch moves the TRACE — what the harvest shows and would store as a
+    # `word_instances` row — and nothing else: the occurrences, the medians and
+    # every gate are still read off the chain's per-letter fit, because a
+    # Laufform row is an ANCHOR SET and the Tintenpfad decodes a PATH. Cutting
+    # the statistics out of the path needs an anchor correspondence that does
+    # not exist yet, and inventing one would silently redefine what a Laufform
+    # measures — the open block „Vorkommen aus der Tintenpfad-Bahn" in
+    # `docs/proposals/tintenfolger.md` §7.11, an author decision, not a default.
+    # This is the K-A/K-B/A1 pattern: change what the trace SHOWS before what
+    # the harvest MEASURES.
+    follower: str = DEFAULT_FOLLOWER  # "tintenpfad" | "chain"
     # Where the chain's translation blocks START. "composed" is the historical
     # init (blocks at zero = the composed layout); "grid" seeds each block at
     # the letter's own grid placement on its ink — the counter to the placement
@@ -500,6 +525,45 @@ def _diag_row(case, opts: HarvestOptions, slot_index: int, keyed: int | None, ke
     return row
 
 
+def tintenpfad_trace(case, opts: HarvestOptions) -> tuple[list[list[list[float]]], dict, float, dict] | None:
+    """This word's pen path from the Tintenpfad, or `None` when it laid none.
+
+    Returns `(strokes, registration, xh, meta)` in the word record's own shape.
+    The decode runs through the follower's OWN entry point
+    (`tools.pairlab.tintenpfad.follow_case`) at its adopted defaults, so the
+    trace the harvest would store is literally the candidate the trace bench
+    grades — the same rule that keeps `chain_word_strokes` shared with the
+    bench's `chain` provider. The import is deferred because the follower pulls
+    the whole pairlab stack and a `--follower chain` harvest must not need it.
+
+    `None` is a per-word verdict, never an exception: a word the Tintenpfad
+    cannot decode falls back to the path half of this module's own follower,
+    and the word record says which follower actually laid its strokes.
+    """
+    from tools.pairlab.tintenpfad import TintenpfadWeights, follow_case  # noqa: PLC0415
+
+    info = follow_case(case, TintenpfadWeights())
+    if info.get("status") != "ok" or not info.get("strokes"):
+        print(f"  tintenpfad {case.id}: {info.get('status')} — {info.get('detail')}", flush=True)
+        return None
+    meta = info.get("meta") or {}
+    diag = meta.get("tintenpfad") or {}
+    return (
+        info["strokes"],
+        info["registration_px"],
+        float(info["xh_px"]),
+        {
+            "follower": "tintenpfad",
+            "letter_spans": meta.get("letter_spans", []),
+            # The handful of decode counters an inspection view needs beside
+            # the path; the full diagnostic block belongs to the bench artefact.
+            "tintenpfad": {
+                k: diag[k] for k in ("runs", "paper_lifts", "jumps", "hairpins", "ink_unvisited_share") if k in diag
+            },
+        },
+    )
+
+
 def _word_record(case, strokes: list[list[list[float]]], registration: dict, xh: float, measurements: dict) -> dict:
     return {
         "kind": case.kind,
@@ -724,12 +788,24 @@ def _harvest_case_slots(case, result: WordDeriveResult, opts: HarvestOptions) ->
 
     word_record = None
     if word_strokes:
-        word_record = _word_record(
-            case,
-            cap_word_strokes(word_strokes, label=f"{case.id} (slot)"),
-            {"tx": tx, "ty": ty, "baseline_row": baseline_row},
-            xh,
-            {"fitted_slots": fitted_slots, "unfitted_slots": unfitted_slots, "geo_rmse_px_by_slot": rmse_by_slot},
+        # The follower switch REPLACES a trace, it never creates one: a word
+        # the fit could not lay gets no record whichever follower is asked for.
+        slot_meta = {
+            "fitted_slots": fitted_slots,
+            "unfitted_slots": unfitted_slots,
+            "geo_rmse_px_by_slot": rmse_by_slot,
+        }
+        traced = tintenpfad_trace(case, opts) if opts.follower == "tintenpfad" else None
+        word_record = (
+            _word_record(case, traced[0], traced[1], traced[2], {**slot_meta, **traced[3]})
+            if traced is not None
+            else _word_record(
+                case,
+                cap_word_strokes(word_strokes, label=f"{case.id} (slot)"),
+                {"tx": tx, "ty": ty, "baseline_row": baseline_row},
+                xh,
+                slot_meta,
+            )
         )
     print(f"fitted {case.id}", flush=True)
     return CaseHarvest(dict(per_key), occurrences, word_record, diag_rows)
@@ -1217,32 +1293,33 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
             )
 
     word_record = None
+    chain_meas = {
+        # `fitted_slots`/`unfitted_slots` keep their meaning: ACCEPTED as
+        # occurrences (gate "ok"), the same statement the slot path
+        # makes. `traced_slots` is the trace's own set — every slot whose
+        # geometry is in `strokes`, gate or no gate — so "shown" and
+        # "measured" are two readable fields instead of one overloaded
+        # one. A slot in `traced_slots` but not in `fitted_slots` is a
+        # letter the admin should see flagged, not a letter that is gone.
+        "fitted_slots": sorted(keyed[s] for s in accepted),
+        "unfitted_slots": sorted(k for s, k in keyed.items() if s not in accepted),
+        "traced_slots": sorted(keyed[s] for s in traced if s in keyed),
+        "geo_rmse_px_by_slot": rmse_by_slot,
+        "fit_path": "chain",
+        "run_slots": run_slots,
+        "cut_indices": cut_indices,
+        "converged_local": {str(keyed[s]): v for s, v in converged_by_slot.items()},
+        "gates": {str(keyed[s]): g for s, g in gate_by_slot.items() if s in keyed},
+        "n_params": n_params,
+        "seconds": seconds,
+    }
     if word_strokes:
-        word_record = _word_record(
-            case,
-            word_strokes,
-            registration,
-            xh,
-            {
-                # `fitted_slots`/`unfitted_slots` keep their meaning: ACCEPTED as
-                # occurrences (gate "ok"), the same statement the slot path
-                # makes. `traced_slots` is the trace's own set — every slot whose
-                # geometry is in `strokes`, gate or no gate — so "shown" and
-                # "measured" are two readable fields instead of one overloaded
-                # one. A slot in `traced_slots` but not in `fitted_slots` is a
-                # letter the admin should see flagged, not a letter that is gone.
-                "fitted_slots": sorted(keyed[s] for s in accepted),
-                "unfitted_slots": sorted(k for s, k in keyed.items() if s not in accepted),
-                "traced_slots": sorted(keyed[s] for s in traced if s in keyed),
-                "geo_rmse_px_by_slot": rmse_by_slot,
-                "fit_path": "chain",
-                "run_slots": run_slots,
-                "cut_indices": cut_indices,
-                "converged_local": {str(keyed[s]): v for s, v in converged_by_slot.items()},
-                "gates": {str(keyed[s]): g for s, g in gate_by_slot.items() if s in keyed},
-                "n_params": n_params,
-                "seconds": seconds,
-            },
+        # The follower switch REPLACES a trace, it never creates one.
+        tp = tintenpfad_trace(case, opts) if opts.follower == "tintenpfad" else None
+        word_record = (
+            _word_record(case, tp[0], tp[1], tp[2], {**chain_meas, **tp[3]})
+            if tp is not None
+            else _word_record(case, word_strokes, registration, xh, chain_meas)
         )
     print(
         f"chained {case.id}: {len(accepted)}/{len(keyed)} letters accepted, "
@@ -1299,6 +1376,7 @@ def harvest(
     chain_seed: str = DEFAULT_CHAIN_SEED,
     loop_aware_repair: bool = LOOP_AWARE_REPAIR,
     laufform_overlay: Path | None = None,
+    follower: str = DEFAULT_FOLLOWER,
 ) -> tuple[dict[str, dict], list[dict], list[dict], list[dict]]:
     """Per-letter median fitted anchors over the clean word occurrences, plus
     every clean fit as an occurrence record (`InstanceItem` wire shape), plus
@@ -1318,7 +1396,12 @@ def harvest(
     self-check (§14 „Laufform LF15"); the frozen root is never touched.
     """
     opts = HarvestOptions(
-        style=style, rmse_max=rmse_max, path=path, chain_seed=chain_seed, loop_aware_repair=loop_aware_repair
+        style=style,
+        rmse_max=rmse_max,
+        path=path,
+        chain_seed=chain_seed,
+        loop_aware_repair=loop_aware_repair,
+        follower=follower,
     )
     cases = [c for which in sets for c in iter_fixture_word_cases(which=which, style=style)]
     if laufform_overlay is not None:
@@ -1454,6 +1537,15 @@ def main() -> None:
     ap.add_argument("--sets", default="words", help="comma-separated fixture sets (words,pairs)")
     ap.add_argument("--path", choices=["slot", "chain"], default="slot", help="per-letter M4 fits or word chains")
     ap.add_argument(
+        "--follower",
+        choices=list(FOLLOWER_CHOICES),
+        default=None,
+        help=f"which follower lays the stored word TRACE (default {DEFAULT_FOLLOWER!r} since the author's "
+        "decision A45): the Tintenpfad's strand decoding, or this module's own chain/slot fit. It moves "
+        "the trace only — the occurrences, the medians and every gate stay the fit's. An --apply run must "
+        "name it",
+    )
+    ap.add_argument(
         "--chain-seed",
         choices=["composed", "grid", "chart"],
         default=None,
@@ -1520,6 +1612,15 @@ def main() -> None:
     # line is the one that has to be there.
     if args.apply and (chain_seed != DEFAULT_CHAIN_SEED or args.laufform):
         raise SystemExit("--apply writes the DEFAULT harvest only — a seeded or overlaid run is a measurement")
+    # The follower default FLIPPED with A45, and `--apply` writes the stored
+    # word traces: a routine re-harvest must not carry a changed trace into
+    # production because a default moved under it. So the writing run names its
+    # follower — the same sentinel pattern `--chain-seed` uses above.
+    if args.apply and args.follower is None:
+        raise SystemExit(
+            f"--apply writes the stored word traces: name --follower explicitly (--follower {DEFAULT_FOLLOWER} "
+            "is the adopted trace since A45, --follower chain the pre-A45 one), and take a dbsnapshot first"
+        )
 
     # WHICH BASE this run reads, stated (and checked) before a case is composed —
     # the harvest's output is what a Laufform write puts into production, so it
@@ -1537,6 +1638,7 @@ def main() -> None:
         chain_seed=chain_seed,
         loop_aware_repair=args.loop_aware_repair or LOOP_AWARE_REPAIR,
         laufform_overlay=args.laufform,
+        follower=args.follower or DEFAULT_FOLLOWER,
     )
     for target in (args.out, args.occ_out, args.word_out):
         target.parent.mkdir(parents=True, exist_ok=True)

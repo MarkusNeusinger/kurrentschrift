@@ -525,7 +525,17 @@ BUDGETS: dict[str, int] = {
     # glossary terms before this raise (the first draft was three times as
     # long); the section stood at 4547 exactly, so every switch name failed
     # the gate. Re-measured at 4669 plus the documented 10 %.
-    "werkzeug-abschnitt": 5_136,
+    # Raised a third time on 2026-09-12 by the Tintenpfad adoption (A45): the
+    # section stood at 5131 against 5136, i.e. FIVE tokens of room, so any
+    # sentence anywhere in the bench inventory failed. What it had to carry is
+    # read-path by construction — the tool's DEFAULTS moved (a reader who does
+    # not see the eight switches runs a different follower and does not know
+    # it) and `--legacy-p6` is the only way back to the stand every ledger row
+    # of `sep11`/`sep12` was measured against. The entry was condensed twice
+    # against the ceiling before this raise (5470 → 5377 → 5354, the second
+    # pass dropped the §14 pointers that the route page already carries).
+    # Re-measured at 5354 plus the documented 10 %.
+    "werkzeug-abschnitt": 5_889,
     "doku": 8_748,
 }
 

@@ -76,13 +76,18 @@ written through `follow.candidate_payload`.
 
     OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run python -m tools.pairlab.tintenpfad \
         [--all | ids…] [--set words] [--expect-root <digest>] [--jobs 2] \
-        [--candidate-out cand.json] [--json report.json] [--legacy-p5] [--weight NAME=VALUE …]
+        [--candidate-out cand.json] [--json report.json] [--legacy-p6 | --legacy-p5] \
+        [--weight NAME=VALUE …]
 
 Measurement layer only: reads the frozen fixtures, writes a candidate file and
 a report. No DB, no edits to `core/` — `core.skeleton_graph` and
-`core.continuity` are imported read-only. Every default of `TintenpfadWeights`
-is the arm as delivered; `--legacy-p5` restores the prototype's measured
-configuration so the ladder row it produced can be reproduced from this tool.
+`core.continuity` are imported read-only. Since the author's decision A45 of
+2026-09-12 the defaults of `TintenpfadWeights` ARE the declared configuration
+(the eight measured arms on), and the Tintenpfad is the campaign's standard
+follower. The two earlier stands stay reproducible as whole configurations:
+`--legacy-p6` is the arm as delivered on `sep11`/`sep12` (all eight off, the
+stack every ledger row of those rounds was measured against), `--legacy-p5` the
+prototype's ladder row.
 """
 
 from __future__ import annotations
@@ -143,8 +148,15 @@ FINE_MASK_OFFSET = 0.03
 class TintenpfadWeights:
     """Every constant of both stages, frozen and carried into the artefact.
 
-    All lengths in x-heights unless the name says `_px`. The defaults are the
-    arm as delivered; the prototype's ladder row p5 is `LEGACY_P5`.
+    All lengths in x-heights unless the name says `_px`. Since the author's
+    decision A45 of 2026-09-12 (§14 „Tintenpfad-Adoption `sep12`") the defaults
+    ARE the declared configuration — the eight measured arms of the `sep11` and
+    `sep12` rounds switched on: `tip_read` · `rail="tentfit"` ·
+    `edt_upsample=4` · `ink_bridge_xh=1.0` · `hairpin_tip` · `ride_back` ·
+    `tip_grey_stop` · `self_jump`. Two earlier stands stay reproducible from
+    this tool as whole configurations, so no measured row loses its stack:
+    `LEGACY_P6` is the arm as delivered on `sep11`/`sep12` (all eight off,
+    `--legacy-p6`), `LEGACY_P5` the prototype's ladder row (`--legacy-p5`).
     """
 
     # ---- stage 1: strands
@@ -155,14 +167,15 @@ class TintenpfadWeights:
     tangent_window_px: int = 3  # half window of the strand tangent, in pixels
     # "subpixel": three-point tent apex on the EDT along the normal · "tentfit":
     # least-squares tent over ±fit_half_px along the normal · "raw": the pixel chain
-    rail: str = "subpixel"
+    # ("tentfit" since A45 — arm „Normalen-Fit", `sep11`: raw kink 9.74° → 8.03°.)
+    rail: str = "tentfit"
     fit_half_px: float = 2.0  # half window of the tent fit along the normal
     fit_step_px: float = 0.5  # sample spacing of the tent fit along the normal
     # 1 = the binary mask's distance transform; > 1 = the same distance
     # transform on a raster this many times finer, whose boundary is the crop's
     # grey cut by the mask's own adaptive threshold inside the mask's edge pixels
-    # (measured as arm 3 „Normalen-Fit", not part of the delivered default).
-    edt_upsample: int = 1
+    # (arm 3 „Normalen-Fit"; 4 is the measured and, since A45, the default value).
+    edt_upsample: int = 4
     # ---- stage 2: seed
     affine_seed: bool = True  # the Gauß-Verschiebung per slot; off = the plain composition
     seed_step_xh: float = 0.03  # seed resampling (≈ the chain's sample spacing)
@@ -197,7 +210,8 @@ class TintenpfadWeights:
     # within this many strand pixels of a junction index or a strand end
     # (0 = anywhere on the strand — measured first, and it cut across the G's
     # counter 6 px before the node; the bound version is the delivered arm).
-    self_jump: bool = False
+    # On since A45 (arm „Selbstsprung", `sep12`: lift_delta_total 4 → 3).
+    self_jump: bool = True
     self_jump_node_px: float = 3.0
     # ---- stage 2: the re-entry hysteresis
     reentry_window: int = 12  # samples; 0 = off
@@ -218,7 +232,8 @@ class TintenpfadWeights:
     # walked on along the EDT ridge until the frozen ink mask ends — no fixed
     # amount, the mask is the stop; a rising EDT is a junction and stops it too.
     # `tip_read_cap_xh` is a safety cap against a runaway walk, counted when it binds.
-    tip_read: bool = False
+    # On since A45 (arm „Spitzen-Lesung", `sep11`: 13 : 6, dtw 0.044230 → 0.041131).
+    tip_read: bool = True
     tip_read_cap_xh: float = 1.0
     # Haken-Spitze (arm A of the „Ecken" round, off by default): the tip
     # reading applied at a HAIRPIN on one strand. The decoder turns at the
@@ -228,7 +243,9 @@ class TintenpfadWeights:
     # EDT-ridge walk to the end of the mask (`read_tip`, the same rule as at a
     # run end, capped by `tip_read_cap_xh`) are laid out AND back — a reading
     # of the ink the pen must have covered, never a point off the mask.
-    hairpin_tip: bool = False
+    # On since A45 (arm „Haken-Spitze", `sep12`; it needs `tip_grey_stop`
+    # beside it — alone it puts 26 reversals into the pale cap).
+    hairpin_tip: bool = True
     # Grauwert-Stopp (arm D of the „Ecken" round, off by default): the tip walk
     # also stops one step before the crop's GREY reads paper — the nearest
     # pixel's grey above the midpoint of this crop's ink and paper levels, the
@@ -237,7 +254,8 @@ class TintenpfadWeights:
     # runs on; the darkness channel is a second reading of the ink beside the
     # mask, never a walk of its own — it does nothing unless a tip reader
     # (`tip_read` or `hairpin_tip`) walks the ridge.
-    tip_grey_stop: bool = False
+    # On since A45 (arm „Grauwert-Stopp", `sep12`: paper arc 4.77 → 1.78 xh on 63).
+    tip_grey_stop: bool = True
     # Spurs at strand ENDS are the stroke's continuation the thinning broke off
     # (an Anstrich), not a lateral artefact: with this on, a node whose non-spur
     # edges number at most one keeps its spurs instead of pruning them.
@@ -250,8 +268,9 @@ class TintenpfadWeights:
     # sample read as the darkest grey within ±`ink_bridge_band_px` along the
     # chord normal — and bridged only when the test passes; a hairline the
     # binarisation lost is a reading of the ink, a blank gap stays a lift.
-    # 0 = off (measured as arm 4 of the 2026-09-11 round, off by default).
-    ink_bridge_xh: float = 0.0
+    # 0 = off; 1.0 since A45 (arm „Tinten-Brücke", `sep11`: 2 of 9 lifts bridged,
+    # `paper_lifts` 9 → 7 on 63, the ruler unmoved — a reading, not a price).
+    ink_bridge_xh: float = 1.0
     ink_bridge_margin: float = 0.25
     ink_bridge_share: float = 0.6
     ink_bridge_band_px: float = 1.0
@@ -262,7 +281,10 @@ class TintenpfadWeights:
     # rides that strand back to the landing instead of lifting — the hand
     # wrote the stem twice (the ß stem: down, and up again into the bow).
     # Once per strand; every laid vertex is a rail pixel.
-    ride_back: bool = False
+    # On since A45 (arm „Rückfahrt statt Absetzen", `sep12`: the three muß rows
+    # 0.11 → 0.03…0.05, `retrace_missing` 1 → 0; it also rides the capital stems
+    # of `Pulver`/`Einen`, which is the author's open decision on that page).
+    ride_back: bool = True
     # Optional ink evidence for the rule (the Doppelstrich reading, measured
     # inert on the printed 1922 plate: 0 of 63 words at 1.4 × pen): with a
     # ratio > 0 the ride is licensed only where the strand's ink width (2 × EDT
@@ -285,9 +307,27 @@ class TintenpfadWeights:
             raise ValueError(f"bridge must be 'hermite' or 'chord', not {self.bridge!r}")
 
 
+# The arm as DELIVERED on `sep11`/`sep12` — the default before the author's
+# decision A45 — with all eight measured switches off. Every ledger row of
+# those two rounds was produced against this stack, so it is spelled out here
+# field by field rather than inherited from the dataclass defaults: A45 moved
+# those defaults, and a legacy stand that drifts with them is no longer a stand.
+LEGACY_P6 = TintenpfadWeights(
+    rail="subpixel",
+    edt_upsample=1,
+    tip_read=False,
+    hairpin_tip=False,
+    tip_grey_stop=False,
+    self_jump=False,
+    ink_bridge_xh=0.0,
+    ride_back=False,
+)
+
 # The prototype's ladder row p5 (temp/wellen-sep11/tintenpfad/ladder.txt), so
-# the tool can reproduce it before any new measurement.
-LEGACY_P5 = TintenpfadWeights(
+# the tool can reproduce it before any new measurement. It predates every one
+# of the eight arms, so it is built ON `LEGACY_P6` rather than on the defaults.
+LEGACY_P5 = replace(
+    LEGACY_P6,
     rail="raw",
     candidates="distance",
     max_cand=12,
@@ -2415,7 +2455,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--style", default="suetterlin")
     parser.add_argument("--fixtures", type=Path, default=DEFAULT_FIXTURES_DIR)
     add_expect_root_argument(parser)
-    parser.add_argument(
+    stand = parser.add_mutually_exclusive_group()
+    stand.add_argument(
+        "--legacy-p6",
+        action="store_true",
+        help="the arm as delivered on sep11/sep12 — the pre-A45 default, all eight switches off",
+    )
+    stand.add_argument(
         "--legacy-p5", action="store_true", help="the prototype's measured configuration (ladder row p5)"
     )
     parser.add_argument(
@@ -2439,7 +2485,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def weights_from_args(args: argparse.Namespace) -> TintenpfadWeights:
-    base = LEGACY_P5 if args.legacy_p5 else TintenpfadWeights()
+    if args.legacy_p5:
+        base = LEGACY_P5
+    elif getattr(args, "legacy_p6", False):
+        base = LEGACY_P6
+    else:
+        base = TintenpfadWeights()
     kwargs: dict[str, Any] = {}
     if args.jump_radius is not None:
         kwargs["jump_radius_xh"] = args.jump_radius
@@ -2503,6 +2554,7 @@ def main() -> None:
 
 __all__ = [
     "LEGACY_P5",
+    "LEGACY_P6",
     "LOOP_WORDS",
     "TINTENPFAD_ARTIFACT_VERSION",
     "TINTENPFAD_TOOL_NAME",

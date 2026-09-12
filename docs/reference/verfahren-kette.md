@@ -1,10 +1,31 @@
 # Verfahrensseite Kette
 
-> **Status (2026-09-05): lebend.** Register-Seite des Verfahrens „Kette“
-> (Konvention: [`verfahren.md`](verfahren.md)). Nachzieh-Pflicht: Jeder
-> §14-Eintrag zu einem Kette-Arm (adoptiert oder verworfen) ergänzt hier
-> seine Ledger-Zeile; eine adoptierte Formulierungsänderung bumpt die
-> Version und aktualisiert „Aktueller Stand“. Das Gate dazu ist
+> **Status (2026-09-13): lebend.** Register-Seite des Verfahrens „Kette“
+> (Konvention: [`verfahren.md`](verfahren.md)).
+>
+> **Was gilt.** Formulierungs-Stand **v5** (`aug26`): der
+> K0-S-Wächter-Stack — Kompositions-Soll, Ratsche, Zone 0,55 — IST der
+> Default, ein `pairlab.follow`-Lauf ohne Flags ist die Kette. Zahlen
+> nachgemessen am `sep12` auf der Wurzel `c7f2efd9cf37…`: dev-19 dtw
+> **0,045772** med · p90 0,088356 · aiou 0,7660 · 63er-Soll-Abstand 81.
+> **Rolle seit dem Autor-Entscheid A45 (2026-09-12): Baustein, nicht mehr
+> Standard, weiter messbar** — der Tintenpfad hat sie gepaart geschlagen
+> (15 : 4) und ist der Standard-Folger
+> ([`verfahren-tintenpfad.md`](verfahren-tintenpfad.md)). Die Kette
+> bleibt der Mess-Fit, aus dem die Ernte Vorkommen, Mediane und Gates
+> liest, und bleibt als `--candidate chain` vollständig messbar.
+>
+> **Was offen ist.** Die offenen Kette-Arme und Rettungswege führt
+> [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.9 und
+> §7.11 — nicht diese Seite; ungemergt liegen die zwei Physik-Bauten
+> Wellen-Basis und Schlange.
+>
+> **Wo die Details wohnen.** Jede Zahl hier ist ein datiertes Zitat; ihr
+> Beleg steht im genannten §14-Eintrag in
+> [`messjournal.md`](messjournal.md). Nachzieh-Pflicht: Jeder §14-Eintrag
+> zu einem Kette-Arm (adoptiert oder verworfen) ergänzt hier seine
+> Ledger-Zeile; eine adoptierte Formulierungsänderung bumpt die Version
+> und aktualisiert „Aktueller Stand“. Das Gate dazu ist
 > `tools.docs_register check` (CI-Job „Docs-Register“).
 
 ## Steckbrief
@@ -19,8 +40,20 @@
 - **Rolle:** ein **Mess-Fit**, kein geborener Tintenfolger — seine
   Tikhonov-Regularisierung zieht absichtlich Richtung Vorlagenform,
   damit die Hand-Statistik robust bleibt (tintenfolger.md §1). Im Duell
-  ist er die prior-geführte Referenz-Route (Route A) und in der
+  war er die prior-geführte Referenz-Route (Route A) und in der
   Produktion die Quelle der `traced`-Zeilen.
+- **Rolle seit dem Autor-Entscheid A45 (2026-09-12): Baustein, nicht
+  mehr Standard, weiter messbar.** Der Tintenpfad hat die Kette auf der
+  `sep12`-Wurzel gepaart geschlagen (15 : 4) und ist seither der
+  Standard-Folger ([`verfahren-tintenpfad.md`](verfahren-tintenpfad.md),
+  §14 „Tintenpfad-Adoption `sep12`"). Die Kette verliert damit die Rolle
+  der DUELL-BASIS und sonst nichts: Der Autor hat ausdrücklich gesagt,
+  „die anderen versuche verfahren aber richtig behalten". Sie bleibt der
+  Mess-Fit, aus dem die Ernte ihre Vorkommen, Mediane und Gates liest
+  (der Ernte-Schalter `--follower` bewegt nur die gespeicherte BAHN), sie
+  bleibt als `--candidate chain` vollständig messbar, und ihre
+  Formulierung wird weiter hier versioniert. Was sie nicht mehr ist: der
+  Stand, gegen den ein neuer Arm antritt.
 
 ## Aktueller Stand: v5 (2026-08-26) — der K0-S-Wächter-Stack als Default
 
@@ -133,6 +166,7 @@ Gewichts-Arme werden nicht rückwirkend nummeriert (Konvention Nr. 3).
 | sep09 | **K-G Saat-Registrierung** (A39, Rettungsweg 1 der Runde 9) | `--chain-seed grid` — der Slot-Block startet bei der Verschiebung, die die Rastersuche für DIESEN Buchstaben findet, statt bei der komponierten Platzierung. Ein Startort, kein Anspruch und kein Objektiv | **Ehrliches Negativ, nicht adoptiert.** Gerissen: (a) aiou an `Wer` −0,0187 und `das` −0,0074 (über 63: 15 Verlierer), (b) `cross_missing` **11 → 13**, (d) dtw-p90 +0,000425. Grün: (c) 63er-Soll **85 → 74**, (e) Papier-Umkehren **49 → 42**, (f)/(g) grün. **`unter` — das Wort des Beurteilers der Runde 9 — gewinnt +0,1072 aiou und verliert alle fünf Papier-Umkehren**, weil die Basis dort ihre erste Runde verwirft und der Arm nicht; `Wer` verliert. Die aiou-Enden hängen am WÄCHTER: 28 von 63 wechseln ihr Verdikt (zu `revert-init` −0,0770 Median, davon weg +0,1034, unverändert −0,0005), und die ganze Soll-Verbesserung sitzt in den 28. Ohne `regieren` — gemischt gestartet, als einziges von vier solchen Wörtern schlechter — 45 → 32. Konversionen §7.9 | „Kette K-G Saat-Registrierung `sep09`" |
 | sep10/sep11 | **Grob-richtig-Schleife** (Nachtschleife auf `fechten` `kann` `unter`, PR #590 — Werkstatt OHNE Vorregistrierung, Autor-Umleitung nach Runde 11) | sieben Schalter, alle Vorgabe AUS und byte-identisch: `--bar-bridge` (t-Brücke) · `--chain-seed grid-scale` (Saat-Form) · `--seed-ramp` · `--paper-weight 30` (Tinten-Klammer) · `--soll-source ink` (Tinten-Soll) · `--kink-weight 2` (Unstetigkeits-Preis) · `--chain-seed affine` (Gauß-Verschiebung); Kontrollen `--seed-form laufform` · `--letter-smooth` (Formglätte) · `--no-init-terms` · `--seed-min-gain`; zweiter Sensor `paper_len_xh` | **Kandidat, nicht adoptiert (It. 18 = Auswahl je Wort aus dreien, per Skript):** 63 Wörter Papier-Umkehrungen 49 → **13**, Papier-Strecke 61,7 → **23,5 xh**, dev-19 dtw 0,045881 → 0,044128, p90 → 0,086332, aiou → 0,7821, 12 : 7 — auf der `sep07`-Wurzel, BLAS-Pinnung unbezeugt, kein Bogen vom Autor abgenommen. Wächter-Befund: sein Soll aus der Tafel verbietet, die Bahn auf die Tinte zu legen (Tafel-`e` Schleife, Hand-`e` Haarnadel). Negative: Formglätte (Papier-Umkehr 24 → 34 auf zwölf Wörtern) und Laufform-Saat; der Stand als Folger-Schalter (`--chain-seed auto`, „Wächter aus") ist eine Doktrin-Änderung und braucht eigene Pre-Reg + Autor-Go | „Kette Grob-richtig-Schleife `sep10`/`sep11`" |
 | sep11 | **Wellen-Basis** (Hook A der Welle: Neuparametrisierung der Deltas in `_ChainProblem.unpack/_pack`; Zweig `wellen-basis-hook-a`, ungemergt) | `--wave-spacing 0.25` (Leiter 0,16/0,35, `--wave-arc seed`, `--wave-report`): `deltas = B @ c`, geklemmte kubische B-Spline-Basis über die Saat-Bogenlänge, ein Block je Pen-Zug, stetig über Buchstaben-Nähte — der Ein-Anker-Zacken ist nicht im Parameterraum | **Teil-Negativ, nicht gemergt:** Physik geliefert (Zacken 49 → 11, zweite Differenz je Sehne −28 %, Ecken ≥ 90° bleiben), Papier-Strecke −54 % und dtw-Median 0,041403 (15 : 4 gegen Basis, gegen den Amtsinhaber It. 17 nur 10 : 9 bei schlechterem Mittel/p90/worst), aber das Tor reißt an den **Tinten-Umkehrungen 162 → 200 (+23 %)** in jeder Strukturklasse und auf jeder Sprosse, und `das` fällt +0,0782 (das kohärente Feld kann eine falsche Affin-Saat nicht punktweise reparieren). Rettungsweg: dieselbe Basis auf Tintenpfad-Saat (§7.9) | „Welle `sep11`" |
+| sep12 | **Kein Arm — die Rollen-Änderung** (Autor-Entscheid **A45**) und die fällige Nachmessung auf der `sep12`-Wurzel | nichts an der Formulierung: v5 bleibt v5, die Kette läuft weiter ohne Flags | **Nachgemessen und zurückgestuft.** Neu gemessen auf `c7f2efd9cf37…` (BLAS gepinnt, `--jobs 2`, 63/63 ok, 1 589,9 s): dev-19 **0,045772** med · p90 0,088356 · worst `muß` 0,106372 · aiou 0,7660 — gegen die `sep07`-Zahlen auf `ccb036a5eb20…` (0,045881 · 0,088356 · 0,106372 · 0,7660) bewegt der `d`-Zeilen-Write allein den Median um −0,000109. Die offene „Duell-Nachmessung" ist damit für die Kette erledigt. Gegen den Tintenpfad mit der erklärten Konfiguration steht sie gepaart **4 : 15** (Δ-Median +0,008311, p 0,019); Sensoren über 63: Papier-Umkehrungen 49 grau / 44 Maske, Papier-Strecke 58,27 / 55,57 xh, schlimmster Ausflug `Sporn` 0,323 xh. **Verdikt: Baustein, nicht mehr Standard, weiter messbar** — kein Knopf, keine Version | „Tintenpfad-Adoption `sep12`" |
 
 ## Stehende v6-Anwärter (Formulierungsänderungen, tintenfolger.md §7.3)
 

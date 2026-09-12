@@ -212,8 +212,16 @@ sonst R3s Geltungsbereich; `--counter-constraint`, Vorgabe AUS.
 
 **Strang · Strang-Dekodierung** — eine glatte Skelettkette ohne Prior, und
 der **Tintenpfad**-Folger, der die komponierte Reihenfolge per Viterbi durch
-die Stränge dekodiert: Tinte zuerst, Buchstaben danach.
+die Stränge dekodiert: Tinte zuerst, Buchstaben danach. Seit dem
+Autor-Entscheid A45 (2026-09-12) der **Standard-Folger** der Kampagne; die
+Kette bleibt Baustein und messbar.
 → [§3](glossar.md#3-mess--und-fit-vokabular)
+
+**Folger-Schalter der Ernte (`--follower`)** — welcher Folger die
+gespeicherte Wortbahn legt: `tintenpfad` (Vorgabe seit A45) oder `chain`
+(byte-gleich zum Stand davor). Er bewegt nur, was die Ernte ZEIGT — die
+Vorkommen und Mediane kommen weiter aus dem Buchstabenfit.
+→ [§4](glossar.md#4-metriken-und-benchmarks)
 
 **Schleifenbereich · Schleifen-Registrierung** — der Anker-Indexbereich,
 über den die TAFELZEILE eine Schleife schließt (`loop_ranges`), und der

@@ -3,13 +3,14 @@
 Everything here runs on plain numpy arrays: an X drawn as two diagonals, a
 ring, a straight rail with a seed that rides, retraces or wanders into the
 paper. No fixture root, no DB, no solve — except the one substrate test at
-the end, which skips unless the frozen words root of digest `ccb036a5eb20`
-is present, and then pins the strand set every path of the method rests on.
+the end, which skips unless one of the pinned frozen words roots is present,
+and then pins the strand set every path of the method rests on.
 """
 
 from __future__ import annotations
 
 import dataclasses
+from dataclasses import replace
 from pathlib import Path
 
 import numpy as np
@@ -20,6 +21,7 @@ from skimage.morphology import skeletonize
 from core.extract import binarize_adaptive
 from tools.pairlab.tintenpfad import (
     LEGACY_P5,
+    LEGACY_P6,
     SUBPIXEL_MAX_PX,
     EdtField,
     HairpinTipReader,
@@ -462,18 +464,21 @@ def test_the_tent_fit_on_the_binary_edt_is_a_tent_apex_not_a_parabola() -> None:
     assert np.allclose(fit[:, 0], pts[:, 0])  # moved along the normal only
 
 
-def test_the_default_rail_ignores_the_fit_fields() -> None:
-    """`refine_strands` at the delivered default is the three-point tent on the
-    binary EDT, whatever the fit fields say — the byte-identity of the default."""
+def test_the_subpixel_rail_ignores_the_fit_fields_and_the_adopted_rail_reads_the_fine_raster() -> None:
+    """`refine_strands` on the `subpixel` rail is the three-point tent on the
+    binary EDT, whatever the fit fields say — the byte-identity of the stand
+    `LEGACY_P6` was measured on. The ADOPTED default (A45) is the tent fit on
+    the fourfold raster and says so in its diagnostics."""
     gray, _origin, _normal = _antialiased_stroke(30.0, 2.0)
     mask = binarize_adaptive(gray)
-    weights = TintenpfadWeights(fit_half_px=3.0, fit_step_px=0.25)
+    weights = replace(LEGACY_P6, fit_half_px=3.0, fit_step_px=0.25)
     strands = strands_of(skeletonize(mask), XH, weights, {})
     expected = subpixel_rail(strands[0].points, strands[0].tan, distance_transform_edt(mask))
     diag = refine_strands(strands, mask, weights, crop=gray)
     assert diag == {}
     assert np.array_equal(strands[0].points, expected)
-    fine_weights = TintenpfadWeights(rail="tentfit", edt_upsample=4)
+    fine_weights = TintenpfadWeights()
+    assert fine_weights.rail == "tentfit" and fine_weights.edt_upsample == 4
     strands = strands_of(skeletonize(mask), XH, fine_weights, {})
     diag = refine_strands(strands, mask, fine_weights, crop=gray)
     assert diag["edt_upsample"] == 4 and 0.0 <= diag["fine_mask_band_agreement"] <= 1.0
@@ -589,11 +594,11 @@ def test_ride_back_never_fires_when_the_landing_lies_ahead_of_the_pen() -> None:
     assert counts["ride_backs"] == 0 and len(runs) == 2
 
 
-def test_ride_back_is_off_by_default_and_the_ink_evidence_gates_it() -> None:
-    """Default OFF: no evidence read, no count key, the lift stands. With the
-    optional Doppelstrich evidence (1.4 × pen over ≥ 0.5 xh) the ride is
-    licensed only where the stem IS that wide."""
-    off = TintenpfadWeights(rail="raw", resample_step_xh=0.0)
+def test_ride_back_can_be_switched_off_and_the_ink_evidence_gates_it() -> None:
+    """Switched OFF (the pre-A45 stand `LEGACY_P6`): no evidence read, no count
+    key, the lift stands. With the optional Doppelstrich evidence (1.4 × pen
+    over ≥ 0.5 xh) the ride is licensed only where the stem IS that wide."""
+    off = replace(LEGACY_P6, rail="raw", resample_step_xh=0.0)
     runs_off, _, counts_off, evidence = _assemble_ride_back(off, wide_from=45)
     assert evidence is None and "ride_backs" not in counts_off and len(runs_off) == 2
     gated = TintenpfadWeights(rail="raw", resample_step_xh=0.0, ride_back=True, ride_back_ink_ratio=1.4)
@@ -652,10 +657,12 @@ def test_a_loop_returning_onto_its_stem_is_a_self_jump_not_a_paper_episode() -> 
     end (index 37, arriving) to its start (index 0, leaving) is a same-strand
     transition beyond the ride cap. Without the switch the decoder's only
     route is the paper state — a wormhole that lands a bridge or a lift on
-    0.04 px of rail; with it the transition is priced and laid as a jump."""
+    0.04 px of rail; with it the transition is priced and laid as a jump.
+    The switch is ON in the adopted default since A45, so the closed side is
+    built from `LEGACY_P6`, the stand it was measured against."""
     skel, pen = _loop_on_stem()
     seed = _seed_along(pen)
-    closed = TintenpfadWeights(rail="raw", resample_step_xh=0.0)
+    closed = replace(LEGACY_P6, rail="raw", resample_step_xh=0.0)
     strands, states_c, runs_c, counts_c, _ = _decode_on(skel, seed, closed)
     assert len(strands) == 1 and len(strands[0].junction_idx) == 1
     (node,) = strands[0].junction_idx.tolist()
@@ -964,22 +971,10 @@ def test_weights_are_frozen_and_typed() -> None:
         TintenpfadWeights(), ["turn_cost=30", "max_cand=12.0", "affine_seed=off", "bridge=chord"]
     )
     assert w.turn_cost == 30.0 and w.max_cand == 12 and w.affine_seed is False and w.bridge == "chord"
-    # The Spitzen arm is off in the delivered default and switches on by --weight.
-    default = TintenpfadWeights()
-    assert default.tip_read is False and default.spur_at_ends is False and default.tip_extend_xh == 0.0
-    assert default.hairpin_tip is False
-    arm = weights_from_overrides(default, ["tip_read=1", "spur_at_ends=on", "hairpin_tip=1"])
-    assert arm.tip_read is True and arm.spur_at_ends is True and arm.hairpin_tip is True
-    # The Grauwert-Stopp (arm D of the „Ecken" round) is off in the default too.
-    assert default.tip_grey_stop is False
-    assert weights_from_overrides(default, ["tip_grey_stop=1"]).tip_grey_stop is True
-    assert default.self_jump is False and weights_from_overrides(default, ["self_jump=1"]).self_jump is True
     with pytest.raises(SystemExit):
         weights_from_overrides(TintenpfadWeights(), ["no_such=1"])
     with pytest.raises(ValueError):
         TintenpfadWeights(rail="smooth")
-    arm = weights_from_overrides(TintenpfadWeights(), ["rail=tentfit", "edt_upsample=4"])
-    assert arm.rail == "tentfit" and arm.edt_upsample == 4 and arm.fit_half_px == 2.0
     with pytest.raises(ValueError):
         TintenpfadWeights(edt_upsample=0)
     with pytest.raises(ValueError):
@@ -988,13 +983,79 @@ def test_weights_are_frozen_and_typed() -> None:
         TintenpfadWeights().turn_cost = 1.0  # type: ignore[misc]
 
 
+# The eight switches of the DECLARED configuration the author adopted as A45
+# (2026-09-12, §14 „Tintenpfad-Adoption `sep12`"): field name → adopted value.
+# Spelled out here rather than read off the dataclass, so a silent flip of any
+# one of them is a failing test and not a quietly different follower.
+A45_CONFIGURATION = {
+    "tip_read": True,
+    "rail": "tentfit",
+    "edt_upsample": 4,
+    "ink_bridge_xh": 1.0,
+    "hairpin_tip": True,
+    "ride_back": True,
+    "tip_grey_stop": True,
+    "self_jump": True,
+}
+
+
+def test_the_declared_configuration_is_the_default_and_the_old_default_is_legacy_p6() -> None:
+    """A45: the eight measured arms ARE the default now. The stand every ledger
+    row of `sep11`/`sep12` was measured against stays reproducible as
+    `LEGACY_P6` (all eight off), and the prototype's ladder row `LEGACY_P5`
+    keeps its own seven fields ON TOP of that stand — it predates all eight, so
+    it must not inherit the new defaults."""
+    default = TintenpfadWeights()
+    assert {name: getattr(default, name) for name in A45_CONFIGURATION} == A45_CONFIGURATION
+    # The pre-A45 default: the same eight fields, each back at its old value.
+    assert {name: getattr(LEGACY_P6, name) for name in A45_CONFIGURATION} == {
+        "tip_read": False,
+        "rail": "subpixel",
+        "edt_upsample": 1,
+        "ink_bridge_xh": 0.0,
+        "hairpin_tip": False,
+        "ride_back": False,
+        "tip_grey_stop": False,
+        "self_jump": False,
+    }
+    # Nothing ELSE moved with the adoption: the two stands differ in the eight.
+    moved = {
+        f.name for f in dataclasses.fields(TintenpfadWeights) if getattr(default, f.name) != getattr(LEGACY_P6, f.name)
+    }
+    assert moved == set(A45_CONFIGURATION)
+    # The prototype row: its own seven fields, and the eight switches still off.
+    assert (LEGACY_P5.rail, LEGACY_P5.candidates, LEGACY_P5.max_cand) == ("raw", "distance", 12)
+    assert (LEGACY_P5.back_tol_px, LEGACY_P5.reentry_window, LEGACY_P5.bridge) == (2.0, 0, "chord")
+    assert LEGACY_P5.resample_step_xh == 0.0
+    assert {name: getattr(LEGACY_P5, name) for name in A45_CONFIGURATION if name != "rail"} == {
+        name: value for name, value in LEGACY_P6.__dict__.items() if name in A45_CONFIGURATION and name != "rail"
+    }
+    # Every switch is still reachable in both directions from either stand.
+    arm = weights_from_overrides(LEGACY_P6, ["tip_read=1", "spur_at_ends=on", "hairpin_tip=1"])
+    assert arm.tip_read is True and arm.spur_at_ends is True and arm.hairpin_tip is True
+    back = weights_from_overrides(default, ["tip_read=off", "ride_back=0", "ink_bridge_xh=0.0"])
+    assert back.tip_read is False and back.ride_back is False and back.ink_bridge_xh == 0.0
+    # `spur_at_ends` and `tip_extend_xh` were measured and NOT adopted.
+    assert default.spur_at_ends is False and default.tip_extend_xh == 0.0
+    # `ride_back_ink_ratio` (the Doppelstrich evidence) stays off: the rule
+    # alone is what A45 adopted, the evidence was an honest negative.
+    assert default.ride_back_ink_ratio == 0.0
+
+
 # ------------------------------------------------------------ the substrate
 
-# The strand set of the 13 loop rows at the frozen words root ccb036a5eb20:
-# (strands, closed strands, spurs pruned, junction pairs, junctions too dense).
-# Every path of the method is a function of this set; a Flecken or evidence
-# change upstream would rewrite all 63 words with no other sensor firing.
-SUBSTRATE_CCB036A5EB20 = {
+# The strand set of the 13 loop rows: (strands, closed strands, spurs pruned,
+# junction pairs, junctions too dense). Every path of the method is a function
+# of this set; a Flecken or evidence change upstream would rewrite all 63 words
+# with no other sensor firing.
+#
+# Measured on `ccb036a5eb20` (`sep07`) and re-measured on `c7f2efd9cf37`
+# (`sep12`, the `d`-row re-baseline A44) without a single number moving — the
+# Laufform rows compose the SEED, not the ink, so the substrate is theirs to
+# leave alone. Both digests are therefore accepted: the pin outlives a
+# re-export that does not touch the skeleton, and still fires the moment one does.
+SUBSTRATE_DIGESTS = ("ccb036a5eb20", "c7f2efd9cf37")
+SUBSTRATE_LOOP_ROWS = {
     "unter": (10, 0, 6, 19, 0),
     "die": (3, 0, 2, 9, 0),
     "haben": (8, 0, 2, 18, 0),
@@ -1019,10 +1080,10 @@ def test_the_strand_set_of_the_frozen_root_is_stable() -> None:
     root = Path(DEFAULT_FIXTURES_DIR) / "suetterlin" / "suetterlin-1922"
     if not (root / "manifest.json").exists():
         pytest.skip("frozen words root not present")
-    if not root_digest(root).startswith("ccb036a5eb20"):
-        pytest.skip("frozen words root is not ccb036a5eb20 — the substrate pin belongs to that digest")
+    if not root_digest(root).startswith(SUBSTRATE_DIGESTS):
+        pytest.skip(f"frozen words root is none of {SUBSTRATE_DIGESTS} — the substrate pin belongs to those")
     cases = iter_fixture_word_cases(
-        which="words", style="suetterlin", only=list(SUBSTRATE_CCB036A5EB20), fixtures_root=DEFAULT_FIXTURES_DIR
+        which="words", style="suetterlin", only=list(SUBSTRATE_LOOP_ROWS), fixtures_root=DEFAULT_FIXTURES_DIR
     )
     seen = {}
     for case in cases:
@@ -1037,4 +1098,4 @@ def test_the_strand_set_of_the_frozen_root_is_stable() -> None:
             diag["junction_pairs"],
             diag["junctions_too_dense"],
         )
-    assert seen == SUBSTRATE_CCB036A5EB20
+    assert seen == SUBSTRATE_LOOP_ROWS

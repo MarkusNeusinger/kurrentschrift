@@ -245,6 +245,7 @@ die DB) — mit seiner Bedingung.
 | sep10/sep11 | Kette | [Grob-richtig-Schleife (Nachtschleife, #590)](#kette-grob-richtig-schleife-sep10sep11--werkstatt-ohne-vorregistrierung-sieben-schalter-und-ein-zweiter-sensor-auf-fechten--kann--unter-it-18-als-kandidat) | Werkstatt · **ohne Vorregistrierung** · Kandidat (It. 18), **nicht adoptiert**; Papier-Strecke als Spalte ausgeliefert (#590) | Der Autor verweigert das Urteil über Runde 11 („die springen wild hin und her") und lässt über Nacht an `fechten` `kann` `unter` bauen. Sieben Kette-Schalter (t-Brücke · Saat-Form · Tinten-Klammer · Tinten-Soll · Unstetigkeits-Preis · Saat-Rampe · Gauß-Verschiebung; Laufform-Saat und Formglätte als Negative), der Wächter-Befund (sein Soll kam aus der Tafel statt aus der Tinte) und der zweite Sensor `paper_len_xh`. Auswahl je Wort aus dreien (It. 18) bringt die 63 Wörter von **49 auf 13** Papier-Umkehrungen und **61,7 auf 23,5 xh** Papier-Strecke bei besserem Lineal (dtw 0,045881 → 0,044128, aiou 0,7660 → 0,7821, 12 : 7) — gebucht wird nichts, bis der Autor einen Bogen abnimmt; als Folger-Schalter ändert „Wächter aus" die Doktrin. Drei Quellen-Abweichungen und ein zurückgezogener `die`-Befund stehen im Eintrag; BLAS-Pinnung für diese Nacht unbezeugt |
 | sep11 | Kette/Tintenpfad | [Welle — drei Bauten (Tintenpfad #591, Wellen-Basis, Schlange)](#welle-sep11--drei-bauten-gegen-die-physik-bedingung-des-autors-tintenpfad-bestätigt-591-wellen-basis-und-schlange-als-ehrliche-teil-negative) | drei Bauten · **Tintenpfad bestätigt** (gemergt, nicht adoptiert) · zwei ehrliche Negative | Physik-Bedingung des Autors („die Punkte können sich nur wie eine Welle zusammenhängend verschieben") als Tor; Workflow Recherche ×4 → Karte → Entwürfe → Richter ×9 → Bau ×3 → Prüfung ×3, BLAS gepinnt, Wurzel `ccb036a5eb20…`. **Tintenpfad** (Tinte zuerst, Buchstaben danach — Stränge ohne Prior, Reihenfolge per Viterbi): 13 Zeilen **0 · 93 · 0,78 xh**, 63 Wörter 0 · 331 · 1,49, dev-19 dtw 0,044230 · aiou 0,7867, aber gepaart 7 : 12 und p90 schlechter; Papier-Sensoren für einen skelettgebundenen Pfad vakuös. **Wellen-Basis** (B-Spline-Verschiebungsbasis im Kettenlöser): Zacken −78 %, dtw 0,041403 (15 : 4 gegen Basis, 10 : 9 gegen It. 17), Tor gerissen an Tinten-Umkehrungen +23 % und `das` +0,0782. **Schlange** (elastische Kurve, Sobolev-Schritt): Zickzack 3,718 → 0,009 je xh, 0 · 78 · 4,47, Lineal verloren (0,051445, 6 : 13); β_e 64 biegt die eigene Pre-Reg. Alle drei physikalisch kohärent, nur einer nimmt das Tor |
 | sep11 | Tintenpfad | [Tintenpfad-Arme + Kombination (#592)](#tintenpfad-arme-sep11--fünf-arme-drei-tragen-zwei-ehrliche-negative-die-kombination-als-kandidat-592) | fünf Arme · **drei tragen**, zwei ehrliche Negative · Kombination **Kandidat, nicht adoptiert** | Regel des Abends: Lesung der Tinte oder Regel des Dekoders, nie Glättung, nie Erfindung. **Spitzen-Lesung** (rail + walk bis ans Maskenende; 13 : 6 gegen #591, Gate 2 fällt wie geschrieben), **Normalen-Fit** (Zelt auf 4× feinerem Grau-Raster, Knick 9,74° → 8,03°, 15 : 4 — Träger ist das Grau, Scope-Frage an den Autor), **Tinten-Brücke** (2 von 9 Lücken, neutral; über `kann`/`han`/`regieren` liegt kein Haarstrich). **Stummel-Filter** no-op, Hypothese an der Quelle widerlegt — Nebenbefund: Hand 47 gegen Kandidat 79 Tinten-Umkehrungen, der Defekt ist der Überschuss +32; **Doppelstrich-Evidenz** feuert auf 0 von 63 (ß-Stämme 1,00–1,33 × Feder), die reine Dekoder-Regel `ratio 1,0` repariert p90 0,0907 → 0,0535 (3 : 0), aber nachträglich gewählt. Kombination: 13 Zeilen 0 · 95 · 1,34, 63 Wörter 0 · 330 · 4,77, dev-19 **0,041356** · 0,091040 · 0,7876, **18 : 1** gegen #591, **9 : 10** gegen Basis, 10 : 9 gegen It. 18 (der PR-Text hat die letzten beiden vertauscht) |
+| sep12 | Tintenpfad/Kette | [Tintenpfad-Adoption — die formale Runde auf der frischen Wurzel (A45)](#tintenpfad-adoption-sep12--die-formale-runde-auf-der-frischen-wurzel-der-tintenpfad-wird-standard-folger-a45) | Adoption · **adoptiert (A45)** · dazu eine Wurzel-Zeile ohne bewegte Headline | Ein Knopf: Folger-Wechsel Kette v5 → Tintenpfad mit den acht erklärten Schaltern, vorregistriert vor der ersten Zahl, BLAS gepinnt, Wurzel `c7f2efd9cf37…` (2026-09-12T21:33:43+00:00). Die Wurzel reproduziert die `sep10`-Headline ziffernidentisch (0,108339 / 0,148236) — neue Identität, keine Re-Baseline; der Substrat-Pin der 13 Schleifenzeilen kommt unverändert heraus. dev-19: Basis (neu gemessen) 0,045772 · 0,088356 · 0,7660 gegen Arm **0,038351 · 0,048012 · 0,7929**, gepaart **15 : 4** (Δ-Median −0,008311, p 0,019); die Vorgabe ohne die acht (`--legacy-p6`) 0,045033 · 0,090673 · 0,7867 und 7 : 12 — die Schalter SIND der Unterschied. Zähler: `cross_spurious` 10 → 3, `retrace_missing` 7 → 0, `lift_delta_total` 6 → 0, `overlap_cand` 4 → 0, Absorption 89 → 35; dagegen `cross_missing` 12 → 13. Sensoren über 63: Papier-Umkehrungen Maske 44 → **0** (grau 49 → 3), Papier-Strecke Maske 55,57 → 1,20 xh, schlimmster Ausflug 0,323 → 0,091 xh, Roh-Knick 10,24° → 8,17°. k0: Soll-Abstand 81 → 80, aiou-Median +0,0520 über 63 bewegte Wörter — die Stack-Warnung fällt, ist aber der Knopf selbst (der Tintenpfad hat keinen Struktur-Wächter), also informativ und als Sensor-Befund notiert. Nebenbei: `ink_bridge_xh=1.0` testet 7 Lücken und brückt **null** — auf dieser Wurzel inert, bleibt als Lesung |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -282,6 +283,7 @@ Vorbedingung (Glossar „Wurzel-Digest“, `tools/wordbench/README.md`).
 | sep06 | dieser PR | **Re-Baseline durch Adoption, nicht durch eine Wurzel**: `exit_trim` wird Default (Autor-Entscheid A37 nach Runde 5). Wurzeln UNVERÄNDERT `eaa195aa7c84…` / `0fbde2d72b64…`, also gepaart vergleichbar — die Zeile darüber ist dieselbe Messung ohne die Regel. Das Wort-Lineal steigt bewusst, der Naht-Abgang fällt (`seam_dep_median` +7,59 → −0,70, absolut 12,67 → 2,30), `gleichzug_doublings` 14 = 14, `worst_word` `han` → `regieren` 0,233052; Golden deklariert neu gebacken | 0,109026 | 0,148236 | §14 „Übergänge J4 `sep06`“, Nachtrag „Adoption“ |
 | sep07 | dieser PR | **Re-Baseline durch die REFERENZ**: das Komma hinter `Gewehr`, `Zügel`, `streiten` (cross-hand auch `a22-dank`) verlässt per `exclude` die Referenz-Tinte. Wort-Wurzel neu: `exported_at` 2026-09-07T20:07:03+00:00 `root_digest` `ccb036a5eb20…`, dazu `suetterlin-1922-abb22` `5fc7be5fc9f0…`; die **Paar-Wurzel wurde nicht angefasst** (`0fbde2d72b64…`), was die byte-gleiche Paar-Zahl beweisbar macht. Nur drei der 63 Wörter bewegen sich, alle nach unten | 0,108153 | 0,148236 | §14 „Komma-Ausschluss `sep07`“ |
 | sep10 | dieser PR | **Re-Baseline nach dem `d`-Zeilen-Write (A44)**: EINE Laufform-Zeile (`d`, n = 11, 120 Anker) auf Autor-Entscheid nach der humanbench-Runde 10 geschrieben (Snapshots `2026-09-10T20-40-19Z` / `2026-09-10T20-40-47Z`, Readback-Abweichung 0,000000), Wurzeln neu gebaut: `suetterlin-1922` `exported_at` 2026-09-10T20:44:33+00:00 `root_digest` `a4eb48420ccb…`, `suetterlin-1922-pairs` 2026-09-10T20:44:32+00:00 `e3a5d03d0f37…`, dazu `suetterlin-1922-abb22` `7a08a94c1258…`. **Die Paar-Wurzel wandert diesmal mit** (jede Wurzel trägt ihre eigene Kopie der Laufform-Zeilen), die Paar-ZAHL bleibt byte-gleich, weil die Abb.-20-Drills zu kurz für das Lauflängen-Gate sind. Trifft die trockene Overlay-Vorhersage byte-gleich, über alle 96 Einträge | 0,108339 | 0,148236 | §14 „Laufform LF17 `sep10`“ |
+| sep12 | dieser PR | Wurzeln neu gebaut für die Adoptionsrunde: `suetterlin-1922` `exported_at` 2026-09-12T21:33:43+00:00 `root_digest` `c7f2efd9cf37…`, `suetterlin-1922-pairs` 2026-09-12T21:33:42+00:00 `548b11b77338…` — **keine** Re-Baseline: beide Zahlen reproduzieren die `sep10`-Zeile Ziffer für Ziffer (`worst_word` `regieren` 0,233052 ebenso), neu ist allein die Identität der Wurzel. Dieselbe Lage wie `sep03`. Die Duell-Zahlen standen bis dahin auf `ccb036a5eb20…` und wurden in derselben Runde nachgemessen (Kette-Median 0,045881 → 0,045772) | 0,108339 | 0,148236 | §14 „Tintenpfad-Adoption `sep12`“ |
 
 **Nachtrag `sep02` — die `aug30`-Wurzel ist eine undeklarierte
 Re-Baseline.** Zwischen der `aug29`-Wurzel (0,106720 / 0,146506, im
@@ -17003,3 +17005,236 @@ bei 1,0); in #592 sind es DREI, der ß-Retrace ist benannter Folge-Arm.
 [`verfahren-tintenpfad.md`](verfahren-tintenpfad.md). Artefakte
 `temp/tintenpfad-sep11/` (je Arm `MESSUNG.md`, `kombination/`,
 `ref-main/`).
+
+### Tintenpfad-Adoption `sep12` — die formale Runde auf der frischen Wurzel: der Tintenpfad wird Standard-Folger (A45)
+
+Die Runde, auf die die vier Stände des `sep11`/`sep12` gewartet haben. Der
+Autor hat den Tintenpfad am 2026-09-12 gesehen und entschieden
+(**A45**), wörtlich: „tintenpfad macht einen sehr guten ersten eindruck
+ist noch lange nicht perfekt aber hat keine total daneben momente bitte
+dokumentation nachziehen und das zum main tintenfolger machen die anderen
+versuche verfahren aber richtig behalten". Diese Runde ist die Messung,
+die dem Entscheid seine Zahlen gibt — auf der HEUTIGEN Wurzel, mit
+derselben Liturgie wie jeder Arm davor, und mit einer Vorregistrierung,
+die vor der ersten Zahl geschrieben wurde
+(`temp/adoption-sep12/PREREG.md`). Gemessen in der Nacht vom 12. auf den
+13. September, BLAS gepinnt (`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`),
+`--jobs 2`, jedes Kommando mit `--expect-root c7f2efd9cf37`.
+
+**Die Wurzel.** `suetterlin-1922` `exported_at`
+2026-09-12T21:33:43+00:00, `root_digest` `c7f2efd9cf37…`;
+`suetterlin-1922-pairs` 2026-09-12T21:33:42+00:00, `548b11b77338…`
+(Kopfzeilen jedes Laufs dieser Runde, `temp/adoption-sep12/*/run.log`).
+**Sie ist KEINE Re-Baseline der Wort-Headline:** `tools.wordbench.run
+--set all` liefert auf ihr **0,108339** Wörter · **0,148236** Paare ·
+`worst_word` `regieren` 0,233052 — Ziffer für Ziffer die Zahlen der
+`sep10`-Zeile (`a4eb48420ccb…` / `e3a5d03d0f37…`). Neu ist die
+IDENTITÄT der Wurzel, nicht ihr Inhalt; das ist die Lage der
+`sep03`-Zeile, und sie bekommt aus demselben Grund ihre eigene
+Ledger-Zeile (`temp/adoption-sep12/wordbench.log`). Die Duell-Zahlen
+standen bis heute auf `ccb036a5eb20…` (`sep07`) und waren damit
+wurzel-fremd — diese Runde misst Basis UND Arm neu, und erledigt damit
+die offene „Duell-Nachmessung" (§7.11) für die Kette gleich mit.
+
+**Nebenbefund zur Wurzel.** Der Substrat-Pin der 13 Schleifenzeilen
+(`tests/test_pairlab_tintenpfad.py`) kommt auf `c7f2efd9cf37…` mit
+**identischen Zahlen** heraus wie auf `ccb036a5eb20…` — Stränge,
+geschlossene Stränge, beschnittene Sporne, Knotenpaare, zu dichte Knoten,
+alle 13 Zeilen unverändert. Das ist erwartbar und trotzdem eine Messung
+wert: die Laufform-Zeilen komponieren die SAAT, nicht die Tinte, und die
+Stufe 1 des Tintenpfads liest nur die Tinte. Der Pin akzeptiert seither
+beide Digests, statt still zu überspringen.
+
+**Vorregistrierung (vor der ersten Zahl).** Ein Knopf: der
+FOLGER-WECHSEL, Kette v5 (Produktions-Default, `pairlab.follow` ohne
+Flags) → Tintenpfad mit der erklärten Konfiguration `tip_read=1
+rail=tentfit edt_upsample=4 ink_bridge_xh=1.0 hairpin_tip=1 ride_back=1
+tip_grey_stop=1 self_jump=1`. Gates: (1) dev-19 gepaart besser ≥
+schlechter · (2) dev-19-Median nicht schlechter · (3) Papier-Umkehrungen
+in der MASKEN-Lesung ≤ Basis · (4) k0-Soll-Abstand über 63 Wörter nicht
+schlechter, sonst Zerlegung statt Adoption. Kill: Median schlechter ODER
+`k0eval` meldet eine Stack-Warnung.
+
+**Die drei Läufe.**
+
+| Lauf | Kommando | Laufzeit | Artefakt |
+|---|---|---|---|
+| Basis: Kette v5 | `pairlab.follow --all --set words --jobs 2` (ohne Flags) | 1 589,9 s | `temp/adoption-sep12/base/` |
+| Arm: Tintenpfad, erklärte Konfiguration | `pairlab.tintenpfad --all --set words --jobs 2 --weight …` (acht) | 158,9 s | `temp/adoption-sep12/tintenpfad/` |
+| Vorgabe: Tintenpfad ohne die acht | `pairlab.tintenpfad --all --set words --jobs 2 --legacy-p6` | 128,7 s | `temp/adoption-sep12/vorgabe/` |
+
+Alle drei 63 von 63 Zeilen `ok`, 0 ausgeschlossen.
+
+**dev-19, gepaart gegen die Basis** (`tools.tracebench --split dev
+--candidate file --candidate-file <cand> --compare <base>`):
+
+| Stand | dtw med | dtw p90 | worst | aiou med | gepaart gegen Basis |
+|---|---|---|---|---|---|
+| **Basis Kette v5** (`sep12`-Wurzel) | 0,045772 | 0,088356 | `muß` 0,106372 | 0,7660 | — |
+| Tintenpfad `--legacy-p6` (Vorgabe) | 0,045033 | 0,090673 | `muß` 0,112893 | 0,7867 | 7 : 12, p 0,359 — unentschieden |
+| **Tintenpfad, erklärte Konfiguration** | **0,038351** | **0,048012** | `muß` **0,051280** | **0,7929** | **15 : 4**, Δ-Median **−0,008311**, p **0,01921** |
+
+Die Kette-Zahl der `sep07`-Wurzel war 0,045881 · 0,088356 · 0,106372 ·
+0,7660; der `d`-Zeilen-Write bewegt den Median also um **−0,000109** und
+sonst keine Kopfzahl — die Nachmessung bestätigt, dass die
+`sep07`-Zahlen nicht falsch geworden, sondern nur wurzel-fremd waren.
+Die Vorgabe reproduziert ihrerseits den #591-Stand (dort 0,044230 ·
+0,090673 · 0,7867 bei 7 : 12): p90 und aiou ziffernidentisch, der Median
+um 0,0008 verschoben — dieselbe Größenordnung, die die Wurzel auch der
+Kette antut.
+
+**Der Arm gewinnt auf jedem Strukturzähler, den er berührt:**
+`cross_spurious` 10 → **3**, `retrace_missing` 7 → **0**,
+`retrace_spurious` 9 → 4, `lift_delta_total` 6 → **0**, `overlap_cand`
+4 → **0**, `dtw_max_absorption_max` 89 → **35**, Chamfer in BEIDEN
+Richtungen besser (c>r 0,0316 → 0,0275, r>c 0,0362 → 0,0330), die
+Retrace-Bogenlücke 0,252 → 0,033. Gegen ihn steht **`cross_missing`
+12 → 13** — der einzige Zähler, der nachgibt, und der bleibt als
+benannter Rest stehen.
+
+**Die vier Verlierer** sind alle klein und alle aus derselben Familie:
+`Wer` +0,0004, `und-2` +0,0005, `will` +0,0008, `mit-2` +0,0026 — kurze
+Wörter, deren Ketten-Bahn schon nah lag. Die Gewinner sind die
+Schleifen- und ß-Zeilen: `muß-2` −0,0608, `muß` −0,0551, `muß-3`
+−0,0537, `die` −0,0471, `unter` −0,0404, `laden` −0,0349.
+
+**Sensoren, 63 Wörter** (`tools.tracebench.reversals`, beide Lesungen,
+und `tools.tracebench.excursions`):
+
+| Sensor | Basis | Vorgabe (`legacy-p6`) | **Arm** |
+|---|---|---|---|
+| Papier-Umkehrungen, Grau | 49 | 0 | **3** |
+| Papier-Umkehrungen, Maske | 44 | 0 | **0** |
+| Tinten-Umkehrungen | 753 | 328 | 337 |
+| Papier-Strecke, Grau (xh) | 58,27 | 1,47 | **2,12** |
+| Papier-Strecke, Maske (xh) | 55,57 | 1,22 | **1,20** |
+| schlimmster Ausflug (xh) | `Sporn` 0,323 | — | `Gaul` **0,091** |
+
+Der Roh-Knick über die Wörter fällt mit dem Normalen-Fit von **10,24°**
+(Vorgabe) auf **8,17°** (Arm). Die Papier-Sensoren sind für einen
+skelettgebundenen Pfad nahezu vakuös und werden weiter in BEIDEN
+Lesungen berichtet — die drei grauen Umkehrungen des Arms sind die
+bekannte blasse Kappe, in der Maske sind es null.
+
+**k0-Protokoll, 63 Wörter, referenzfrei** (`tools.tracebench.k0eval
+<base-cand> <arm-cand>`): Soll-Abstand **81 → 80** (15 besser / 28
+gleich / 20 schlechter), aiou über die 63 bewegten Wörter min −0,0357,
+**Median +0,0520**, max +0,2335; 14 aiou-Verlierer unter −0,003, alle
+≤ 0,036 und alle aus der Kurzwort-Familie (`und…`, `ein…`, `er…`, `im`);
+strichidentische Zeilen 0 von 63 (erwartet — es sind zwei Folger).
+
+**Die Stack-Warnung ist gefallen, und sie ist der Knopf selbst.**
+`k0eval` meldet Abweichung auf `structure_guard`,
+`structure_guard_soll`, `structure_guard_ratchet`,
+`structure_guard_zone_units`, `soll_source`, `ink_evidence` — den sechs
+`STACK_FLAGS`, die es aus `meta.weights` der ersten Zeile liest. Die
+Warnung sagt selbst, worauf sie zielt: „a §14 gate reads only when every
+differing flag IS the knob under test." Genau das ist hier der Fall —
+der Tintenpfad HAT keinen Struktur-Wächter, sein `meta.weights` ist
+`TintenpfadWeights`, und die sechs Flags lesen dort `None`. Der Sensor
+ist für ein Paar aus ZWEI Folgern konstruktionsbedingt blind; er war
+gegen zwei Läufe DESSELBEN Folgers gebaut (`aug25`/`aug26`). **Die
+Runde wird deshalb nicht abgebrochen**, aber die Zahl wird auch nicht
+schöner gelesen, als sie ist: das k0-Gate (4) ist hier *informativ*, und
+es fällt mit 81 → 80 auf die Seite des Arms. Der Kill, wie er
+vorregistriert steht, war gegen eine unbemerkte Stack-Verwechslung
+geschrieben, nicht gegen einen Folger-Wechsel — dass sein Wortlaut das
+nicht trennt, ist ein Befund über den Sensor und steht als offener Arm
+in §7.11 („`k0eval` soll die Folger-Identität lesen"); der Ruler bleibt
+während der Runde unangetastet.
+
+**Verdikt: adoptiert (A45).** Gate (1) 15 : 4 ✓ · Gate (2) Median
+0,038351 gegen 0,045772 ✓ · Gate (3) Papier-Umkehrungen Maske 0 gegen 44
+✓ · Gate (4) k0-Soll 80 gegen 81 ✓, mit der oben benannten Einschränkung
+des Sensors. Der Tintenpfad mit der erklärten Acht-Schalter-Konfiguration
+ist ab dieser Runde der **Standard-Folger** der Kampagne; die Kette
+bleibt Baustein und messbare Route („die anderen versuche verfahren aber
+richtig behalten"), verliert aber die Rolle der Duell-Basis.
+
+**Was die Adoption im Code bedeutet** (dieser PR):
+
+1. `TintenpfadWeights` trägt die acht als VORGABE. Der Stand, gegen den
+   jede Ledger-Zeile des `sep11`/`sep12` gemessen wurde, bleibt als
+   GANZE Konfiguration reproduzierbar: `LEGACY_P6` / `--legacy-p6`.
+   `LEGACY_P5` (die Prototyp-Zeile) ist seither ausdrücklich AUF
+   `LEGACY_P6` gebaut statt auf den Dataclass-Vorgaben — sonst wäre die
+   Prototyp-Zeile mit dieser Adoption still mitgewandert.
+2. `tools/tracebench` bekommt den Provider `tintenpfad` neben `chain`
+   (`--candidate tintenpfad`, `--tintenpfad-stand`,
+   `--tintenpfad-weight`). Er fährt `follow_case` des Folgers selbst —
+   dieselbe Naht, die `chain` zur Ernte hält. `chain` bleibt vollständig
+   messbar.
+3. `tools/laufform/harvest.py` bekommt `--follower` mit Vorgabe
+   `tintenpfad`. **Er bewegt nur die gespeicherte BAHN** (und trägt die
+   `letter_spans` der Dekodierung ins Wort-Record); Vorkommen, Mediane
+   und jedes Gate werden weiter am Buchstabenfit abgelesen. Der Grund
+   steht unten unter „Was offen bleibt". `--follower chain` ist byte-
+   gleich zum Stand davor, und ein `--apply`-Lauf muss seinen Folger
+   ausdrücklich nennen.
+4. **Kein DB-Write.** Die Neu-Ernte der Laufform-Zeilen und der
+   gespeicherten Bahnen ist ein eigener Autorenschritt mit `dbsnapshot`
+   davor (Todoist).
+
+**Drei Abnahmen, die den Code an die Zahlen binden** (alle gegen die
+frozene Wurzel gefahren, keine DB):
+
+* `tracebench --split dev --candidate tintenpfad` (also die neuen
+  VORGABEN, ohne ein einziges `--weight`) reproduziert den Arm dieser
+  Runde **ziffernidentisch** — dtw-Median, p90, aiou und alle vier
+  Strukturzähler gleich. Die adoptierte Vorgabe IST damit nachweislich
+  die gemessene Konfiguration und nicht ihre Beschreibung.
+* Eine Ernte über drei Wörter mit `--follower tintenpfad` und dieselbe
+  mit `--follower chain` liefern **identische Vorkommen** (10 von 10, Byte
+  für Byte) und verschiedene Bahnen; die Kette-Zeile trägt kein
+  `follower`-Feld, die Tintenpfad-Zeile ihre `letter_spans`. Das ist die
+  Trennung „was die Ernte zeigt / was sie misst" am laufenden Werkzeug.
+* Der Substrat-Pin läuft auf dieser Wurzel wieder (statt zu
+  überspringen) und kommt unverändert heraus.
+
+**Zwei Befunde, die die Runde nebenbei macht.**
+
+*Die Tinten-Brücke ist auf dieser Wurzel inert.* `ink_bridge_xh=1.0`
+testet 7 Lücken auf den 63 Wörtern und brückt **null** (`faint_share`
+0,00 … 0,571 gegen die Schwelle 0,6; die knappste ist 0,571 bei
+`gap_xh` 0,452). Auf `ccb036a5eb20…` hatte derselbe Arm 2 von 9
+gebrückt (`haben`, `schießen`). Die Ursache ist nicht die Wurzel allein,
+sondern die Kombination: Rückfahrt und Selbstsprung nehmen dem Dekoder
+die Absetzer, bevor die Brücke sie sieht (`paper_lifts` 7 auf 63). Der
+Schalter bleibt trotzdem in der erklärten Konfiguration — er ist eine
+LESUNG, kein Preis, und er beantwortet je Lücke eine Frage, die sonst
+niemand stellt. Dass er heute keinen Vertex bewegt, ist die ehrliche
+Auskunft dazu und keine Adoption auf Vorrat.
+
+*Die Vorgabe schlägt die Kette nicht.* `--legacy-p6` steht mit 7 : 12
+(p 0,359) gegen die Basis — derselbe Befund wie #591 auf der alten
+Wurzel. Die acht Schalter sind also nicht Beiwerk zum Folger, sie SIND
+der Unterschied zwischen „interessanter Kandidat" und „schlägt die
+Produktion".
+
+**Zähler des Arms über 63 Wörter** (aus `report.json`): 111 Läufe · 7
+Papier-Absetzer · 436 Sprünge · 298 Haken · 19 Selbstsprünge · 7
+Rückfahrten · 0 Tinten-Brücken · 28 unbesuchte Stränge; schlimmste
+unbesuchte Tinte `kann` 0,095 (die Tafel-k-Unterschleife, die die Hand
+nicht schreibt — eine Kompositionsfrage, §7.11 „Abdeckung im Dekoder").
+
+**Was offen bleibt** (Zeilen in §7.11, je eigene Vorregistrierung):
+(1) **Vorkommen aus der Tintenpfad-Bahn** — die Ernte schneidet heute
+nur die BAHN aus dem Tintenpfad; eine Laufform-Zeile ist ein Ankersatz,
+der Tintenpfad dekodiert eine Bahn, und die Anker-Zuordnung dazwischen
+gibt es nicht. Eine per Bogenlänge erfundene wäre eine stille
+Umdefinition dessen, was eine Laufform misst — Autor-Entscheid, nicht
+Vorgabe. (2) `k0eval` soll die Folger-Identität lesen, damit die
+Stack-Warnung bei einem Folger-Wechsel informativ statt vakuös ist.
+(3) **Rückfahrt an Großbuchstaben-Stämmen** (`Pulver`, `Einen`) —
+Autor-Entscheid, sonst ein Kleinbuchstaben-Gate als eigener Arm.
+(4) `edt_upsample=4` allein durchs dev-19-Lineal. (5) Die drei grauen
+Papier-Umkehrungen des Arms. (6) `cross_missing` 12 → 13, der eine
+Zähler, der nachgibt.
+
+**Ledger-Zeile:** eine — die neue Wurzel-Identität ohne bewegte
+Headline. Routen-Ledger in
+[`verfahren-tintenpfad.md`](verfahren-tintenpfad.md) (Adoption) und
+[`verfahren-kette.md`](verfahren-kette.md) (Baustein statt Standard),
+Stand-Spalte in [`verfahren.md`](verfahren.md). Artefakte
+`temp/adoption-sep12/` (`PREREG.md`, `base/`, `tintenpfad/`,
+`vorgabe/`, `wordbench.log`, `bilder/`).
