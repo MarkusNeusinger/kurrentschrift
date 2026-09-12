@@ -525,7 +525,14 @@ BUDGETS: dict[str, int] = {
     # glossary terms before this raise (the first draft was three times as
     # long); the section stood at 4547 exactly, so every switch name failed
     # the gate. Re-measured at 4669 plus the documented 10 %.
-    "werkzeug-abschnitt": 5_136,
+    # Raised again on 2026-09-12 by the Wellen-Basis building-block PR: the
+    # section stood at 5136 of 5136 — zero tokens of room — from the
+    # `mess-runde-route` cut of 2026-09-11 above, so ANY tool line failed
+    # regardless of length. The entry was cut to the switch name, the
+    # glossary pointer and „Vorgabe AUS" (three earlier drafts named
+    # `--wave-arc`/`--wave-report` too and each still failed). Re-measured
+    # at 5162 plus the documented 10 %.
+    "werkzeug-abschnitt": 5_678,
     "doku": 8_748,
 }
 

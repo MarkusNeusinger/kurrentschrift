@@ -1426,9 +1426,18 @@ Kettenregel Bᵀg — ein Ein-Anker-Zacken ist damit nicht darstellbar, kein
 Strafterm bepreist ihn. Hook A der Welle-Runde; gemessen `sep11` als
 **ehrliches Teil-Negativ**: Zacken −78 %, Papier-Strecke −54 %, aber
 Tinten-Umkehren +23 % und `das` +0,0782 — ein kohärentes Feld repariert
-eine falsche Saat nicht punktweise. *Technisch:* Zweig
-`wellen-basis-hook-a` (ungemergt), `tools/pairlab/follow.py`
-(`_ChainProblem.unpack/_pack`); der Vorfahr im Repo ist der
+eine falsche Saat nicht punktweise. Trägt auch die Bogenlängen-Variante
+`--wave-arc seed` (Anker über der Kette-Saat statt über der laufend
+gedehnten aktuellen Bahn — repariert die Rundenkomposition der Dehnung,
+nicht die Umkehrungen). *Technisch:* im Repo seit `sep12` als Baustein
+(kein Zweig mehr — der Autor will das Verfahren behalten, nicht
+adoptieren), `tools/pairlab/chain.py`
+(`_wave_basis`/`_wave_block_rows`/`_wave_column_bounds`/`wave_report`/
+`pin_free_anchors`, `build_chain_problem(wave_spacing=…,
+wave_arc_anchors=…)`), `tools/pairlab/follow.py` (`--wave-spacing`/
+`--wave-arc`/`--wave-report`, `_ChainProblem.unpack/_pack`);
+**Vorgabe AUS** (`wave_spacing=0.0`), die Kette bleibt bei
+Standardaufrufen byte-identisch. Der Vorfahr im Repo ist der
 Spline-Basis-Median von LF11 (`core/aggregate.py`) → messjournal.md §14
 „Welle `sep11`", research/wellen-recherche.md §2
 

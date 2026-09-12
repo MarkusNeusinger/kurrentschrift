@@ -931,7 +931,8 @@ Warnung versehen. Begriff und Hausregel:
   `--seed-form laufform`, `--no-init-terms` (Glossar §3: t-Brücke ·
   Saat-Form · Gauß-Verschiebung · Tinten-Klammer · Tinten-Soll ·
   Unstetigkeits-Preis · Formglätte); `.reversals` druckt seither auch die
-  **Papier-Strecke** je Wort.
+  **Papier-Strecke** je Wort. **Wellen-Basis** (Glossar §3): Baustein seit
+  `sep12`, `--wave-spacing`, Vorgabe AUS.
   Alle nennen ihre Wurzel im Kopf und
   nehmen `--expect-root` (siehe oben); die Arm- und Archäologie-Flags
   stehen im jeweiligen `--help` und je Arm in seinem §14-Eintrag.
