@@ -2348,15 +2348,26 @@ def follow_word_chain(
             },
             "slots": list(fit.slots),
             "timings": {"seconds": round(time.perf_counter() - started, 3)},
-            # The Wellen-Basis' CUMULATIVE displacement — the sum of the
-            # rounds' fields is smooth but their Lipschitz constants add, so
-            # the per-round numbers alone would flatter it. Present only while
+            # The Wellen-Basis' CUMULATIVE displacement, read over two origins
+            # (the chain seed and round 1's seed) — the sum of the rounds'
+            # STEPS is smooth but their Lipschitz constants add, so the
+            # per-round numbers alone would flatter it. Only `total` varies
+            # with the origin (`wave_report`'s `seed` argument); `field` is
+            # the LAST accepted round's own coefficients regardless of origin,
+            # so it is dropped here rather than printed twice under a
+            # "cumulative" heading it does not describe. Present only while
             # the basis is on or asked for (a default meta keeps its shape).
             **(
                 {
                     "wave_cumulative": {
-                        "from_chain_seed": wave_report(problem, params, seed=fit.problem.anchors_free),
-                        "from_round1_seed": wave_report(problem, params, seed=round1_seed),
+                        "from_chain_seed": {
+                            k: v
+                            for k, v in wave_report(problem, params, seed=fit.problem.anchors_free).items()
+                            if k != "field"
+                        },
+                        "from_round1_seed": {
+                            k: v for k, v in wave_report(problem, params, seed=round1_seed).items() if k != "field"
+                        },
                     }
                 }
                 if rounds and round1_seed is not None and (problem.basis_op is not None or weights.wave_report)

@@ -1342,8 +1342,9 @@ def test_scale_seed_dicts_refuse_a_bound_slot_as_a_whole() -> None:
 
 def test_the_wave_basis_off_is_the_follower_verbatim_and_rides_into_the_weights(synthetic) -> None:
     """`wave_spacing = 0` changes no geometry and no record — only the weights
-    blob every artefact serialises gains its two fields (that is the whole
-    scope of the byte-identity claim: strokes, rounds and their keys)."""
+    blob every artefact serialises gains its three fields (`wave_spacing`,
+    `wave_arc`, `wave_report`; that is the whole scope of the byte-identity
+    claim: strokes, rounds and their keys)."""
     case, result, windows, fit = synthetic
     plain = follow_word_chain(
         case, [0, 1], result=result, windows_px=windows, fit=fit, weights=FollowWeights(rounds=2, structure_guard=False)

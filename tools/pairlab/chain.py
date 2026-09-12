@@ -36,6 +36,7 @@ into those runs (a lone letter is a one-segment chain, not a skipped one).
 from __future__ import annotations
 
 import bisect
+import math
 import os
 import time
 from collections.abc import Sequence
@@ -2194,10 +2195,17 @@ def build_chain_problem(
 
     basis_op: np.ndarray | None = None
     basis_blocks: list[dict] = []
-    if float(wave_spacing) > 0.0:
+    wave_spacing = float(wave_spacing)
+    if not math.isfinite(wave_spacing) or wave_spacing < 0.0:
+        # NaN and a negative value both compare False against `> 0.0` and would
+        # silently fall through as "off"; `inf` would compare True and build a
+        # one-span basis over the whole chain. Neither is a spacing anyone
+        # meant — fail loudly instead of recording a run under a wrong basis.
+        raise ValueError(f"wave_spacing must be finite and non-negative, got {wave_spacing!r}")
+    if wave_spacing > 0.0:
         head = 2 + 2 * len(block_col)
         basis_op, basis_blocks = _wave_basis(
-            specs, anchors_free, idx, plan_slices, float(wave_spacing), arc_anchors=wave_arc_anchors
+            specs, anchors_free, idx, plan_slices, wave_spacing, arc_anchors=wave_arc_anchors
         )
         bounds = bounds[:head] + _wave_column_bounds(basis_op, bounds[head:])
         x0 = np.zeros(head + 2 * basis_op.shape[1])

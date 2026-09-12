@@ -2012,6 +2012,14 @@ def test_the_wave_basis_is_byte_identical_at_spacing_zero() -> None:
     assert np.array_equal(off.unpack(params)[3], zero.unpack(params)[3])
 
 
+def test_the_wave_basis_rejects_a_spacing_that_would_read_as_off_or_explode() -> None:
+    """`> 0.0` alone lets NaN and a negative value fall through as "off" and
+    `inf` build a one-span basis — none of them a spacing anyone meant."""
+    for bad in (-0.1, float("nan"), float("-inf"), float("inf")):
+        with pytest.raises(ValueError, match="wave_spacing"):
+            _wave_problem(bad)
+
+
 def test_the_wave_basis_is_one_block_across_the_seams_and_cut_at_a_pen_lift() -> None:
     """A seam is not a lift: letter tail, connector and letter head share one
     block; a letter-internal `stroke_starts` entry cuts one."""

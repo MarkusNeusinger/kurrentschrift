@@ -12,7 +12,9 @@
   has to price it. The follower carries it as `--wave-spacing` (plus
   `--wave-arc seed|current` for the abscissa and `--wave-report` for the
   field-coherence numbers alone); at `wave_spacing = 0` geometry, bounds,
-  gradient and records stay byte-identical to the follower before this PR.
+  gradient and the solve itself stay byte-identical to the follower before
+  this PR — only the serialised `weights` blob every artefact carries gains
+  the three new fields (`wave_spacing`, `wave_arc`, `wave_report`).
   Measured (§14 "Welle `sep11`", `docs/proposals/tintenfolger.md` §7.9):
   13 rows, zigzags 49 → 11 (−78 %), paper distance −54 %, dev-19 0.041403,
   15 : 4 against the base arm — but ink reversals rise 162 → 200 (+23 %)
