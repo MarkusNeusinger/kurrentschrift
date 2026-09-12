@@ -20,4 +20,12 @@
   five modules (`tools.pairlab.chain` and `.follow` among them; a test
   pins every signature) but adds no switch to any of them, so the chain
   solve stays byte-identical by construction. No DB, no `core/` change, no
-  fixture change.
+  fixture change. The numbers above were measured on the module as it stood
+  before this PR's own review round fixed a real `seed_curve` corner-index
+  off-by-one (a shared and a non-shared seam had their arc-length offsets
+  swapped, moving a corner from its true arc length 80.0/90.0 to 100.0/70.0
+  — wrong on almost every fixture word, not the untriggered edge case the
+  fix's own commit message called it); the fixed module no longer
+  reproduces them (`das` measures 600 vs. 625 stroke points pre- vs.
+  post-fix) and re-measuring it is left to whoever next picks this building
+  block up.
