@@ -776,7 +776,7 @@ def _strip_out(
     words = words_of(plan, row.strip) if plan and row.strip in plan["strips"] else []
     found = (befunde or {}).get(row.strip, {}).get(row.fassung)
     maske = (masken or {}).get(row.strip, {}).get(row.fassung)
-    rects = _box_rects(row, layouts)
+    frames = _box_frames(row, layouts)
     return EigenhandStripOut(
         strip=row.strip,
         fassung=row.fassung,
@@ -794,7 +794,7 @@ def _strip_out(
                 index=index,
                 word=word,
                 items=coverage.word_items(shaping_form_of(plan, word)),
-                rect_px=rects[index] if rects and index < len(rects) else None,
+                rect_px=_rect_of(frames, index, word),
             )
             for index, word in enumerate(words)
         ],
@@ -803,8 +803,8 @@ def _strip_out(
     )
 
 
-def _box_rects(row, layouts: dict | None) -> list[list[int]] | None:
-    """The pixel rectangle of every word box of a stored strip, or None.
+def _box_frames(row, layouts: dict | None) -> list[dict] | None:
+    """Where every word box of a stored strip sits in it, or None.
 
     None wherever the geometry is not there — a Bogen printed before the cut
     geometry existed, a strip filed without its crop origin, or a listing that
@@ -816,8 +816,21 @@ def _box_rects(row, layouts: dict | None) -> list[list[int]] | None:
     rows = (layout or {}).get("rows") or []
     if not 0 <= row.row_index < len(rows):
         return None
-    frames = frames_of_row(rows[row.row_index], list(row.crop_origin_mm or []), row.width_px, row.height_px)
-    return None if frames is None else [frame["rect_px"] for frame in frames]
+    return frames_of_row(rows[row.row_index], list(row.crop_origin_mm or []), row.width_px, row.height_px)
+
+
+def _rect_of(frames: list[dict] | None, index: int, word: str) -> list[int] | None:
+    """The box's rectangle — only where the PRINTED box carries the same word.
+
+    The words come from the frozen plan and the rectangles from the Bogen that
+    was printed from it, so the two agree by construction. Checked anyway: if
+    they ever did not, the mismatch would silently hand box n the rectangle of
+    a different word, and a path would be drawn over the wrong ink — the exact
+    failure the path validation refuses on the way in.
+    """
+    if not frames or index >= len(frames) or frames[index].get("word") != word:
+        return None
+    return frames[index]["rect_px"]
 
 
 @router.get("/strips/{hand}/{strip}/{fassung}")
