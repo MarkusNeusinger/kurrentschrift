@@ -161,6 +161,24 @@ function useStripImage(
   return { url, loading, error };
 }
 
+// One request per Fassung even when several tiles want it at once: the gallery
+// shows a tile per matching WORD BOX, so a strip whose row holds three matching
+// words would otherwise ask the same route three times in the same frame. Only
+// the in-flight promise is shared — never the resolved value — so nothing here
+// can serve a stale path after the follower has pushed a new one.
+const pfadeInFlight = new Map<string, Promise<EigenhandPfad[] | null>>();
+
+function fetchPfadeOnce(hand: string, strip: string, fassung: string): Promise<EigenhandPfad[] | null> {
+  const key = `${hand}/${strip}/${fassung}`;
+  const running = pfadeInFlight.get(key);
+  if (running) return running;
+  const pending = getEigenhandPfade(hand, strip, fassung)
+    .then((data) => data.pfade)
+    .finally(() => pfadeInFlight.delete(key));
+  pfadeInFlight.set(key, pending);
+  return pending;
+}
+
 /**
  * The Streifen-Pfade of one Fassung, fetched at most once and only when the
  * layer is actually switched on.
@@ -190,8 +208,8 @@ function useStripPfade(hand: string, strip: string, fassung: string, enabled: bo
   useEffect(() => {
     if (!enabled) return undefined;
     let alive = true;
-    getEigenhandPfade(hand, strip, fassung)
-      .then((data) => alive && setPfade(data.pfade))
+    fetchPfadeOnce(hand, strip, fassung)
+      .then((rows) => alive && setPfade(rows))
       .catch((err: unknown) => alive && setError(apiErrorText(err)))
       .finally(() => alive && setLoading(false));
     return () => {
