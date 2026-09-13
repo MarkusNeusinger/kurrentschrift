@@ -2529,29 +2529,62 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--turn-cost", type=float, help="turn_cost")
     parser.add_argument("--no-affine-seed", action="store_true", help="seed = the plain composition")
     parser.add_argument("--jobs", type=int, default=1, help="worker processes, pooled over CASES")
-    parser.add_argument("--label", default="tintenpfad")
+    parser.add_argument("--label", help="name of this candidate (default: the stand, plus every override)")
     parser.add_argument("--json", type=Path, help="write the full report here")
     parser.add_argument("--candidate-out", type=Path, help="write a tracebench file-provider candidate here")
     return parser
 
 
+def stand_of(args: argparse.Namespace) -> str:
+    """Which whole configuration this run decodes with — `""` is the adopted A45 stand."""
+    if args.legacy_p5:
+        return "legacy-p5"
+    return "legacy-p6" if args.legacy_p6 else ""
+
+
+def overrides_of(args: argparse.Namespace) -> list[str]:
+    """Every deviation from the stand as `NAME=value`, sorted — the run's own fingerprint.
+
+    The four shorthand flags are spellings of `--weight`, so they travel in the
+    same list rather than beside it: one vocabulary decides the weights AND the
+    label, `--turn-cost 30` names its configuration exactly as
+    `--weight turn_cost=30` does, and the "named twice" refusal in
+    `weights_from_overrides` catches a shorthand contradicting a `--weight`
+    instead of letting one silently win. Sorting is canonical because of that
+    same refusal — no field can appear twice, so no order is lost.
+    """
+    shorthands = [
+        (args.jump_radius, "jump_radius_xh"),
+        (args.board_radius, "board_radius_xh"),
+        (args.turn_cost, "turn_cost"),
+    ]
+    named = [f"{name}={value:g}" for value, name in shorthands if value is not None]
+    if args.no_affine_seed:
+        named.append("affine_seed=off")
+    return sorted([*named, *args.weight])
+
+
+def label_of(args: argparse.Namespace) -> str:
+    """The candidate's name: `tintenpfad` is the ADOPTED stand and nothing else.
+
+    Same rule, same spelling as the bench's own provider
+    (`tools.tracebench.run.build_provider`): a legacy stand or an override makes
+    this run a variant, and a variant may not answer to the adopted stand's
+    name — otherwise a `--legacy-p6` artefact files itself as the A45 number it
+    exists to be compared against. An explicit `--label` still wins.
+    """
+    variants = [*([s] if (s := stand_of(args)) else []), *overrides_of(args)]
+    return args.label or "+".join(["tintenpfad", *variants])
+
+
 def weights_from_args(args: argparse.Namespace) -> TintenpfadWeights:
     if args.legacy_p5:
         base = LEGACY_P5
-    elif getattr(args, "legacy_p6", False):
+    elif args.legacy_p6:
         base = LEGACY_P6
     else:
         base = TintenpfadWeights()
-    kwargs: dict[str, Any] = {}
-    if args.jump_radius is not None:
-        kwargs["jump_radius_xh"] = args.jump_radius
-    if args.board_radius is not None:
-        kwargs["board_radius_xh"] = args.board_radius
-    if args.turn_cost is not None:
-        kwargs["turn_cost"] = args.turn_cost
-    if args.no_affine_seed:
-        kwargs["affine_seed"] = False
-    return weights_from_overrides(replace(base, **kwargs), args.weight)
+    return weights_from_overrides(base, overrides_of(args))
 
 
 def main() -> None:
@@ -2569,6 +2602,7 @@ def main() -> None:
     if not cases:
         raise SystemExit(f"no case matched {ids!r} in the {args.which!r} set")
     weights = weights_from_args(args)
+    label = label_of(args)
     print(
         f"tintenpfad: {len(cases)} cases · set {args.which} · rail {weights.rail} · candidates {weights.candidates} · bridge {weights.bridge} · reentry {weights.reentry_window} · PROVISIONAL weights"
     )
@@ -2580,6 +2614,7 @@ def main() -> None:
         report = {
             "tool": TINTENPFAD_TOOL_NAME,
             "version": TINTENPFAD_ARTIFACT_VERSION,
+            "label": label,
             "style": args.style,
             "set": args.which,
             "roots": root_meta,
@@ -2595,7 +2630,7 @@ def main() -> None:
             style=args.style,
             source_id=_source_id_of(args.fixtures, args.style, args.which),
             which=args.which,
-            label=args.label,
+            label=label,
             weights=weights,
         )
         args.candidate_out.parent.mkdir(parents=True, exist_ok=True)
@@ -2632,8 +2667,10 @@ __all__ = [
     "grey_paper_of",
     "hermite_bridge",
     "ink_bridge_test",
+    "label_of",
     "longest_true_run",
     "node_near",
+    "overrides_of",
     "read_tip",
     "read_tips",
     "reentries",

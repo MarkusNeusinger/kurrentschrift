@@ -397,8 +397,14 @@ class WordInstanceItem(BaseModel):
 
     `strokes` is the pen path in the word's registration frame (template
     units, baseline = 0, midband = 1, x from the word origin): one polyline
-    per pen-down stretch. `traced` rows come from the harvest (fitted letter
-    strokes; joins live in pair_instances); `authored` rows are manual admin
+    per pen-down stretch. `traced` rows come from the harvest and carry the
+    path of whichever follower laid them — since the author's decision A45 of
+    2026-09-12 that is the Tintenpfad's whole-word path by default, so a
+    letter's strokes and its joins can sit in ONE polyline. Which follower it
+    was is never guessed: `measurements.fit_path` names it on every row and
+    `measurements.follower` accompanies it on a follower-laid one. A
+    `fit_path: "chain"` row keeps the older semantics — fitted per-letter
+    strokes, joins only in pair_instances. `authored` rows are manual admin
     traces and survive every re-harvest."""
 
     kind: Literal["word", "pair"] = "word"

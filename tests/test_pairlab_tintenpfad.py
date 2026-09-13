@@ -29,6 +29,7 @@ from tools.pairlab.tintenpfad import (
     Seed,
     TintenpfadWeights,
     assemble,
+    build_parser,
     decode,
     decode_with_hysteresis,
     double_ink_of,
@@ -37,6 +38,7 @@ from tools.pairlab.tintenpfad import (
     grey_paper_of,
     hermite_bridge,
     ink_bridge_test,
+    label_of,
     longest_true_run,
     read_tips,
     reentries,
@@ -48,6 +50,7 @@ from tools.pairlab.tintenpfad import (
     tentfit_rail,
     tintenpfad_payload,
     tip_tail,
+    weights_from_args,
     weights_from_overrides,
 )
 from tools.tracebench.candidates import wire_violation
@@ -989,6 +992,47 @@ def test_weights_are_frozen_and_typed() -> None:
         TintenpfadWeights(fit_step_px=3.0)
     with pytest.raises(dataclasses.FrozenInstanceError):
         TintenpfadWeights().turn_cost = 1.0  # type: ignore[misc]
+
+
+def test_the_run_label_names_the_stand_and_every_override() -> None:
+    """Only the ADOPTED stand is called `tintenpfad` — the A45 naming rule.
+
+    Without this a `--legacy-p6` artefact would inherit the parser's default and
+    file itself under the very name it exists to be compared against. The
+    spelling is the bench provider's (`tools.tracebench.run.build_provider`), so
+    one configuration carries one name whichever tool decoded it.
+    """
+    parser = build_parser()
+
+    def label(argv: list[str]) -> str:
+        return label_of(parser.parse_args(argv))
+
+    assert label([]) == "tintenpfad"
+    assert label(["--legacy-p6"]) == "tintenpfad+legacy-p6"
+    assert label(["--legacy-p5"]) == "tintenpfad+legacy-p5"
+    assert label(["--weight", "turn_cost=30"]) == "tintenpfad+turn_cost=30"
+    assert label(["--label", "eigen", "--legacy-p6"]) == "eigen"
+    # Overrides append to the stand, sorted, so the two argument orders below
+    # are one measurement under one name.
+    canonical = "tintenpfad+legacy-p6+bridge=chord+turn_cost=30"
+    assert label(["--legacy-p6", "--weight", "turn_cost=30", "--weight", "bridge=chord"]) == canonical
+    assert label(["--legacy-p6", "--weight", "bridge=chord", "--weight", "turn_cost=30"]) == canonical
+    # A shorthand flag is a spelling of `--weight`, not a second vocabulary: it
+    # decodes to the same weights AND to the same name.
+    assert label(["--turn-cost", "30"]) == label(["--weight", "turn_cost=30"]) == "tintenpfad+turn_cost=30"
+    assert label(["--no-affine-seed"]) == "tintenpfad+affine_seed=off"
+    assert weights_from_args(parser.parse_args(["--turn-cost", "30"])) == weights_from_args(
+        parser.parse_args(["--weight", "turn_cost=30"])
+    )
+    # And a shorthand contradicting a `--weight` is refused rather than silently
+    # resolved — one name could not tell the two apart.
+    with pytest.raises(SystemExit, match="given twice"):
+        weights_from_args(parser.parse_args(["--turn-cost", "30", "--weight", "turn_cost=8"]))
+    # The label the ARTEFACT carries is that one.
+    payload = tintenpfad_payload(
+        [], style="suetterlin", source_id="s", which="words", label=label(["--legacy-p6"]), weights=LEGACY_P6
+    )
+    assert payload["label"] == "tintenpfad+legacy-p6"
 
 
 # The eight switches of the DECLARED configuration the author adopted as A45

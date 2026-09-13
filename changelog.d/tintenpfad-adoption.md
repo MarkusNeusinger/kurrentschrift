@@ -7,7 +7,13 @@
   the hand's own trace. The stand every earlier ledger row was measured against
   stays reproducible as a whole configuration — `--legacy-p6` for the arm as
   delivered on `sep11`/`sep12`, `--legacy-p5` for the prototype's ladder row —
-  so no measured number loses the stack it was quoted against.
+  so no measured number loses the stack it was quoted against. Neither
+  inherits the adopted stand's NAME any more: an unlabelled `--legacy-p6` or
+  `--weight` run labels its artefact `tintenpfad+legacy-p6` /
+  `tintenpfad+turn_cost=30`, the bench provider's own spelling, and only the
+  adopted stand is called `tintenpfad`. `/verify-trace` — the single copy of
+  the measurement liturgy — makes that run the standard follower run and
+  keeps the Kette's recipe beside it as the building block it now is.
 - **The trace bench can decode a Tintenpfad candidate itself.**
   `tools.tracebench --candidate tintenpfad` runs the follower's own
   `follow_case` instead of taking a candidate file, with `--tintenpfad-stand`
