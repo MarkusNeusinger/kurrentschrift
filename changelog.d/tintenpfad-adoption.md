@@ -11,7 +11,11 @@
 - **The trace bench can decode a Tintenpfad candidate itself.**
   `tools.tracebench --candidate tintenpfad` runs the follower's own
   `follow_case` instead of taking a candidate file, with `--tintenpfad-stand`
-  and `--tintenpfad-weight` for a single measured arm. The `chain` provider
+  and `--tintenpfad-weight` for a single measured arm — a field named twice is
+  refused rather than silently last-won, so the run label a report carries
+  cannot stand for two different candidates, and the inspection page draws the
+  `tintenpfad` label in the follower colour with its own one-line description
+  instead of treating it as an unknown file candidate. The `chain` provider
   stays exactly what it was: since A45 a building block rather than the duel
   base, and still fully measurable.
 - **The Laufform harvest chooses its follower.** `--follower tintenpfad`

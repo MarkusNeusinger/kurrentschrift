@@ -2477,6 +2477,13 @@ def weights_from_overrides(base: TintenpfadWeights, overrides: Sequence[str]) ->
         name = name.strip()
         if name not in known:
             raise SystemExit(f"--weight {name!r} is not a TintenpfadWeights field; known: {', '.join(sorted(known))}")
+        if name in kwargs:
+            # Last-wins would be silent, and a run LABEL lists the overrides
+            # sorted — so `turn_cost=30 turn_cost=8` and its reverse would
+            # answer to one label while decoding two different candidates. A
+            # label has to identify a measurement, so a repeated field is
+            # refused rather than resolved.
+            raise SystemExit(f"--weight {name!r} given twice: name each field once, a run label cannot tell them apart")
         current = getattr(base, name)
         if isinstance(current, bool):
             kwargs[name] = raw.strip().lower() in ("1", "true", "on", "yes")

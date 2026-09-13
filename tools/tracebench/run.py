@@ -193,6 +193,10 @@ def build_provider(args: argparse.Namespace) -> tuple[Provider, str]:
         # The same rule the chain keeps: a run that is not the adopted stand may
         # not answer to the adopted stand's name. `tintenpfad` IS the standard
         # follower since A45; every other configuration is labelled as a variant.
+        # Sorting is canonical rather than lossy because `weights_from_overrides`
+        # REFUSES a field named twice — without that refusal `turn_cost=30
+        # turn_cost=8` and its reverse would share this label and decode
+        # differently.
         variants = [
             *([] if args.tintenpfad_stand == "default" else [args.tintenpfad_stand]),
             *sorted(args.tintenpfad_weight),

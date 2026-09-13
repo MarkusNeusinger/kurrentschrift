@@ -36,6 +36,7 @@ from tools.tracebench.view import (
     decimate_peaks,
     main,
     mark_flags,
+    method_explainer,
     parse_pairs,
     residual_values,
     select_ids,
@@ -181,6 +182,22 @@ def test_candidate_colors_are_stable_and_deterministic() -> None:
     assert [first["inksight-t0"], first["route-g"]] == [PALETTE[0], PALETTE[1]]
     # Order of the two pinned labels does not move them.
     assert assign_colors(["follow-v1", "chain"])["chain"] == COLOR_CHAIN
+
+
+def test_the_standard_follower_is_pinned_and_described_as_itself() -> None:
+    """`tintenpfad` is the label the bench writes since A45, so the page may not
+    treat it as an unknown file candidate: it takes the follower blue, and its
+    sentence says what it actually does — no structure guard, no deformed
+    template — instead of the guarded-fit text of the older follower routes."""
+    colors = assign_colors(["chain", "tintenpfad", "tintenpfad+legacy-p6"])
+    assert colors["tintenpfad"] == COLOR_FOLLOWER
+    assert colors["tintenpfad+legacy-p6"] == COLOR_FOLLOWER
+    assert PALETTE[0] not in colors.values()  # nothing fell through to the palette
+
+    explainer = method_explainer(["tintenpfad"], colors)
+    assert "Tintenpfad" in explainer and "Stränge" in explainer
+    assert "Kandidat aus Datei" not in explainer
+    assert "ein Wächter verbietet" not in explainer
 
 
 def test_parse_pairs_refuses_the_ambiguous_forms() -> None:

@@ -974,6 +974,13 @@ def test_weights_are_frozen_and_typed() -> None:
     assert w.turn_cost == 30.0 and w.max_cand == 12 and w.affine_seed is False and w.bridge == "chord"
     with pytest.raises(SystemExit):
         weights_from_overrides(TintenpfadWeights(), ["no_such=1"])
+    # A field named twice is refused, not silently last-won: the bench's run
+    # label sorts the overrides, so the two orders below would answer to ONE
+    # label while decoding two different candidates.
+    with pytest.raises(SystemExit, match="given twice"):
+        weights_from_overrides(TintenpfadWeights(), ["turn_cost=30", "turn_cost=8"])
+    with pytest.raises(SystemExit, match="given twice"):
+        weights_from_overrides(TintenpfadWeights(), ["turn_cost=8", "turn_cost=30"])
     with pytest.raises(ValueError):
         TintenpfadWeights(rail="smooth")
     with pytest.raises(ValueError):
