@@ -981,6 +981,15 @@ Warnung versehen. Begriff und Hausregel:
   Zuordnung (`label_agreement`), Verschiebungskohärenz. Reine Messschicht,
   `core.skeleton_graph` und `core.continuity` nur importiert. Erstes
   Artefakt unter `temp/wellen-sep11/`, noch ohne §14-Eintrag.
+- **`tools/pairlab/schlange`** — die **Schlange** (Hook B der Welle-Runde,
+  §14 „Welle `sep11`"): ein Folger als elastische Kurve NEBEN der Kette, seit
+  `sep12` im Repo als eigenständiger Baustein ohne Schalter im bestehenden
+  Code; die §14-Zahlen sind Geschichte — ein Ecken-Index-Fehler in `seed_curve`
+  wurde erst in der Review-Runde behoben, das eingecheckte Modul reproduziert
+  sie nicht mehr. Aufruf `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run
+  python -m tools.pairlab.schlange --set words --jobs 2
+  --candidate-out <dir>/cand.json --json <dir>/schlange.json --expect-root
+  <digest> <wort …>`; Details Glossar „Schlange".
 - **`tools/inksight`** — die Route-B-Pipeline des Tintenfolger-Duells
   ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §4):
   drei Stufen (Crop-Vorbereitung → Inferenz im ISOLIERTEN

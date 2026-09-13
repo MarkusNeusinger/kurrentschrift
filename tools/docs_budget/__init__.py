@@ -531,7 +531,18 @@ BUDGETS: dict[str, int] = {
     # line. The entry was cut to the switch name, the glossary pointer and
     # „Vorgabe AUS" (three earlier drafts named `--wave-arc`/`--wave-report`
     # too and each still failed). Re-measured at 5162 plus the documented 10 %.
-    "werkzeug-abschnitt": 5_678,
+    # Raised again the same day by the „Schlange" building-block PR, landing
+    # on top of the Wellen-Basis entry above: the entry for
+    # `tools/pairlab/schlange` (a second, stand-alone follower beside the
+    # chain) was kept to one bullet (what it is, that it carries no switch in
+    # existing code, its call line, a pointer to the glossary) rather than
+    # repeating the mechanism prose the glossary entry already carries.
+    # Re-measured at 5266 plus the documented 10 %; the review round then
+    # added a clause to that bullet (the §14 numbers predate the
+    # `seed_curve` corner fix, so the checked-in module no longer reproduces
+    # them) and the BLAS pin the glossary's call line already carried, which
+    # puts the section at 5326 — still inside this ceiling.
+    "werkzeug-abschnitt": 5_793,
     "doku": 8_748,
 }
 
