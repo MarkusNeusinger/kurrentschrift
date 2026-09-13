@@ -78,9 +78,10 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run python -m tools.pairlab.tintenpf
 
 **Never run a follower unpinned** — neither the one above nor the Kette
 below. The solves are not bit-reproducible across thread environments, so
-cross-run comparisons are only valid within one pinned setting — and pinning also collapses the runtime (a 63-word chain
-went 87 min → 2.7 min). That is a CLAUDE.md guardrail, and this command
-line is where it has to actually happen.
+cross-run comparisons are only valid within one pinned setting — and
+pinning also collapses the runtime (a 63-word chain went 87 min →
+2.7 min). That is a CLAUDE.md guardrail, and these command lines are where
+it has to actually happen.
 
 `--legacy-p6` is the stand BEFORE A45 — all eight switches off, the stack
 every ledger row of `sep11`/`sep12` was measured against — and
