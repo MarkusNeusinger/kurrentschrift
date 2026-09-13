@@ -19,12 +19,25 @@ an archive snapshot (``/dbsnapshot``) belongs in front of it.
 
 WHAT IT READS. Everything over the admin API, nothing off a local scan: the
 strip listing (geometry, words, box rectangles), the Bogen layout (the printed
-ruling) and the strip PNG itself — served with the Fleckenmaske applied and,
-for a colour strip, without its cyan rulings, so the follower reads the hand's
-ink and not the printer's. The ductus SEED comes from the frozen word fixtures
-of the style: the chart's stroke order and direction, which is what the
+ruling), the strip PNG itself — served with the Fleckenmaske applied and, for
+a colour strip, without its cyan rulings, so the follower reads the hand's ink
+and not the printer's — and the ductus SEED, the style's authored chart
+templates with their Laufform rows: the stroke order and direction the
 Tintenpfad needs a prior for. It is a seed and not a claim about this hand,
 and the workbench says so beside every drawn path.
+
+THE SEED IS READ LIVE, and that is the one place a strip parts ways with a
+bench specimen. A bench word is SCORED against the frozen dev-19 reference, so
+it has to compose out of the frozen word fixtures — reference and templates
+move together or the number means nothing — and that root deliberately carries
+only the 34 glyph keys its 63 bench words need. A strip is the author's own
+ink and is never scored against that ruler; refusing to follow his own
+`immediately` because the word bench has no use for `y` was a bench rule
+leaking into his hand (2026-09-13). So the templates come off the same admin
+API everything else about the strip does, and the frozen root is left with the
+style-level constants its manifest is the only written record of (`style_ratio`,
+`width_resolver`, `constant_nib_units`). The bench paths — `tools.wordlab.cases`,
+`tracebench`, `pairlab` — keep reading the frozen root, unchanged.
 
 WHAT IT WRITES. One entry per word box: the strokes in the word's own units
 (baseline 0, midband 1 — the frame ``word_instances.strokes`` uses), the
@@ -61,6 +74,7 @@ from urllib.parse import quote  # noqa: E402
 
 import numpy as np  # noqa: E402
 
+from core.database.models import LAUFFORM_VARIANT  # noqa: E402
 from core.eigenhand.ids import style_of_hand  # noqa: E402
 from core.eigenhand.pfad import PFAD_FORMAT, frame_for_box  # noqa: E402
 from core.eigenhand.plan import load_plan, shaping_form_of  # noqa: E402
@@ -113,8 +127,14 @@ def _strip_plane(base: str, token: str, hand: str, row: dict) -> np.ndarray:
     return working_plane(request_bytes("GET", url, token))
 
 
-def _fixture_prior(style: str) -> dict[str, Any]:
-    """The chart ductus the follower seeds with — off the frozen word fixtures.
+def _style_constants(style: str) -> dict[str, Any]:
+    """The style-level render constants — off the frozen word fixtures' manifest.
+
+    `style_ratio`, `width_resolver` and the source-pooled `constant_nib_units`,
+    plus the `source_id` they were pooled from. Only these: the TEMPLATES come
+    live off that source (`LiveDuctus`), because a strip is not scored against
+    the frozen reference and must not inherit the bench's glyph subset — see
+    the module docstring.
 
     The roots are gitignored, so this is the one failure an operator will
     actually hit on a fresh machine; it names the command that fixes it rather
@@ -123,7 +143,7 @@ def _fixture_prior(style: str) -> dict[str, Any]:
     from tools.wordlab.cases import fixture_root_for
 
     rebuild = (
-        "the ductus seed comes from the frozen word fixtures, and those roots are gitignored. Rebuild:\n"
+        "the style constants come from the frozen word fixtures, and those roots are gitignored. Rebuild:\n"
         "  uv sync --all-extras\n"
         "  uv run python -m tools.wordbench.fetch_fixtures --set all --verify"
     )
@@ -134,16 +154,83 @@ def _fixture_prior(style: str) -> dict[str, Any]:
         root = fixture_root_for(which="words", style=style)
     except KeyError as exc:
         raise SystemExit(f"no word fixtures for {style}: {exc} — {rebuild}") from exc
-    manifest = root / "manifest.json"
-    if not manifest.exists():
+    manifest_path = root / "manifest.json"
+    if not manifest_path.exists():
         raise SystemExit(f"no frozen word fixtures for {style} under {root} — {rebuild}")
-    laufform = root / "templates_laufform.json"
-    return {
-        "root": root,
-        "manifest": json.loads(manifest.read_text()),
-        "templates": json.loads((root / "templates.json").read_text()),
-        "laufform": json.loads(laufform.read_text()) if laufform.exists() else {},
-    }
+    manifest = json.loads(manifest_path.read_text())
+    source_id = manifest.get("source_id")
+    if not source_id:
+        raise SystemExit(f"{manifest_path} names no source_id — the live templates have no source to come from")
+    return {"manifest": manifest, "source_id": source_id}
+
+
+class LiveDuctus:
+    """The authored chart templates of one source, read over the admin API.
+
+    The inventory comes first (one public summary read): which glyph keys the
+    source has a chart row for, and which of them carry a Laufform row. That
+    set is what a ligature decays AGAINST — the same test `api.routers.write`
+    and `tools.wordlab.cases` make — and it is also the honest definition of
+    „unauthored" for a strip, where the bench's frozen subset is not.
+
+    The rows themselves are fetched per glyph on first use and cached for the
+    run: a strip needs a handful of keys, and the whole source is ~60 rows of
+    dense geometry nobody asked for. `template_row_from_payload` is borrowed
+    from the fixture fetcher so a live row is shaped exactly like a frozen one
+    and the composer cannot tell which it was handed.
+    """
+
+    def __init__(self, base: str, token: str, source_id: str, get=request_json) -> None:
+        self._base = base
+        self._token = token
+        self._source = quote(source_id, safe="")
+        self._get = get  # the seam the tests call through; every caller uses the default
+        self._chart: dict[str, dict] = {}
+        self._laufform: dict[str, dict] = {}
+        # A list, not an object — `request_json` hands back whatever the route
+        # answers with, and the summary route answers with the row list.
+        summaries: list[dict] = self._get("GET", f"{base}/sources/{self._source}/templates", token) or []
+        self.have = {row["glyph_key"] for row in summaries if row.get("variant", 0) == 0}
+        self._has_laufform = {row["glyph_key"] for row in summaries if row.get("variant") == LAUFFORM_VARIANT}
+
+    def _fetch(self, key: str, variant: int) -> dict | None:
+        """One stored template row, or None where the API will not serve THAT variant.
+
+        An API predating the `variant` parameter ignores it and answers with the
+        chart row instead — the guard `tools.wordbench.fetch_fixtures` carries.
+        Seeding a Laufform slot with a chart row would be a silent render flip,
+        so the wrong row is worse than none.
+        """
+        url = f"{self._base}/sources/{self._source}/templates/{quote(key, safe='')}?variant={variant}"
+        payload = self._get("GET", url, self._token) or {}
+        return payload if payload.get("variant") == variant else None
+
+    def rows_for(self, keys: list[str]) -> tuple[dict[str, dict], dict[str, dict]]:
+        """The chart rows and the Laufform rows for `keys`, fetching what is new.
+
+        Keys the source has no chart row for are simply absent from the result
+        — that is what the caller reports as unauthored.
+        """
+        from tools.wordbench.fetch_fixtures import template_row_from_payload
+
+        for key in keys:
+            if key in self._chart or key not in self.have:
+                continue
+            chart = self._fetch(key, 0)
+            if chart is None:
+                print(f"  no chart row for {key!r} this API will serve — its words read as unauthored", flush=True)
+                continue
+            self._chart[key] = template_row_from_payload(chart)
+            if key in self._has_laufform:
+                laufform = self._fetch(key, LAUFFORM_VARIANT)
+                if laufform is None:
+                    print(f"  no stored Laufform row for {key!r} on this API — seeding with the chart form", flush=True)
+                    continue
+                self._laufform[key] = template_row_from_payload(laufform)
+        return (
+            {key: self._chart[key] for key in keys if key in self._chart},
+            {key: self._laufform[key] for key in keys if key in self._laufform},
+        )
 
 
 def _case_for_box(prior: dict, plane: np.ndarray, frame: dict, word: str, form: str, case_id: str):
@@ -159,7 +246,7 @@ def _case_for_box(prior: dict, plane: np.ndarray, frame: dict, word: str, form: 
     actually wrote — see `core.eigenhand.pfad`.
     """
     from core.extract import binarize_adaptive, skeleton_and_width
-    from core.shaping import glyph_keys_of, shape_text
+    from core.shaping import decompose_ligature_slot, glyph_keys_of, shape_text
     from core.word_metric import despeckle
     from tools.wordlab.cases import WordCase
 
@@ -167,9 +254,26 @@ def _case_for_box(prior: dict, plane: np.ndarray, frame: dict, word: str, form: 
     crop = np.ascontiguousarray(plane[y0:y1, x0:x1], dtype=np.float64)
     mask = despeckle(binarize_adaptive(crop))
     skel, width_map = skeleton_and_width(mask)
+    seed: LiveDuctus = prior["seed"]
     slots = shape_text(form)
+    # Ligature decay, exactly as `api.routers.write` and `tools.wordlab.cases`
+    # do it: a closed-set cluster with no canonical of its own splits into its
+    # letters and composes with a generated Übergang. Without it every word
+    # holding a `ch` was refused as unauthored — the author's own
+    # `Kurrentschrift` among them — although `ch` is authored nowhere by
+    # design (the combination is a library entry only where it really differs,
+    # as in `St`). `decompose_ligature_slot` keeps ß atomic.
+    if any(sl.ligature and sl.key and sl.key not in seed.have for sl in slots):
+        slots = [
+            out
+            for sl in slots
+            for out in (
+                (decompose_ligature_slot(sl) or [sl]) if sl.ligature and sl.key and sl.key not in seed.have else [sl]
+            )
+        ]
     keys = glyph_keys_of(slots)
-    missing = [key for key in keys if key not in prior["templates"]]
+    templates, laufform = seed.rows_for(keys)
+    missing = [key for key in keys if key not in templates]
     manifest = prior["manifest"]
     return (
         WordCase(
@@ -177,12 +281,12 @@ def _case_for_box(prior: dict, plane: np.ndarray, frame: dict, word: str, form: 
             word=word,
             kind="word",
             slots=slots,
-            templates=prior["templates"],
-            laufform=prior["laufform"],
+            templates=templates,
+            laufform=laufform,
             style_ratio=manifest.get("style_ratio") or [1, 1, 1],
             width_resolver=manifest.get("width_resolver") or "pressure",
             nib_units=manifest.get("constant_nib_units"),
-            origin=f"eigenhand:{prior['root'].name}",
+            origin=f"eigenhand:live:{prior['source_id']}",
             scorable=not missing,
             rect=[x0, y0, x1, y1],
             baseline_y=int(round(frame["baseline_row"])),
@@ -334,7 +438,13 @@ def main(argv: list[str] | None = None) -> int:
     style = style_of_hand(hand) or ""
     base = api_base(args.api)
     token = admin_token(args.token)
-    prior = _fixture_prior(style)
+    constants = _style_constants(style)
+    seed = LiveDuctus(base, token, constants["source_id"])
+    prior = {**constants, "seed": seed}
+    # The seed is read LIVE, so it can move between two runs of the same strip
+    # in a way the stored row does not record. Say which inventory this run
+    # saw, so a log is enough to tell two runs apart.
+    print(f"seed: {len(seed.have)} authored glyph keys, live off {constants['source_id']}", flush=True)
 
     written = 0
     for row in _strip_rows(base, token, hand, args.strip, args.fassung):

@@ -637,10 +637,15 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   wie der Bench (`core.extract`) und lässt `tools.pairlab.tintenpfad` mit der
   festgezurrten Konfiguration darüber laufen (`tip_read` · `rail=tentfit` ·
   `edt_upsample=4` · `ink_bridge_xh=1.0` · `hairpin_tip` · `ride_back` ·
-  `tip_grey_stop` · `self_jump`) — die Duktus-Saat kommt aus den
-  eingefrorenen Wort-Fixtures des Stils, also aus der Tafel und nicht aus
-  dieser Hand (das Werkzeug sagt es, wenn die gitignorten Wurzeln fehlen, und
-  nennt `fetch_fixtures`). **Trockenlauf ist die Vorgabe** — ohne `--apply`
+  `tip_grey_stop` · `self_jump`) — die Duktus-Saat kommt aus der Tafel und
+  nicht aus dieser Hand: **die Vorlagen live über die Admin-API derselben
+  Quelle** (seit 2026-09-13; die eingefrorene Bench-Wurzel trägt nur die 34
+  Glyphen ihrer 63 Bench-Wörter, und ein Streifen wird nie gegen deren
+  Referenz gemessen), aus der Fixture-Wurzel nur noch die Stil-Konstanten des
+  Manifests (das Werkzeug sagt es, wenn die gitignorten Wurzeln fehlen, und
+  nennt `fetch_fixtures`). Eine Ligatur ohne eigene Vorlage zerfällt wie im
+  `/write`-Pfad in ihre Buchstaben — sonst fällt jedes Wort mit `ch` aus.
+  **Trockenlauf ist die Vorgabe** — ohne `--apply`
   landet das Ergebnis nur als JSON unter der lokalen Hand; `--apply` schreibt
   es über `PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade` in die
   GETEILTE DB, braucht `ADMIN_TOKEN` und gehört hinter einen
