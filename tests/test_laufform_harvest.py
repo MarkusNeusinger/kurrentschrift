@@ -1193,3 +1193,201 @@ def test_apply_still_refuses_an_overlaid_run(monkeypatch: pytest.MonkeyPatch, tm
     with pytest.raises(SystemExit) as exc:
         harvest_mod.main()
     assert "--apply writes the DEFAULT harvest only" in str(exc.value)
+
+
+# ------------------------------------------------- which follower lays the trace
+#
+# A45 (2026-09-12) made the Tintenpfad the default follower of the stored word
+# trace. These four pin what that switch may and may not do: the chain stand
+# stays byte-identical, the Tintenpfad stand replaces the STROKES and nothing
+# else, a decode that fails falls back instead of losing the word, and an
+# `--apply` run has to name its follower rather than inherit a moved default.
+
+
+def _chain_harvest(monkeypatch: pytest.MonkeyPatch, **opts) -> CaseHarvest:
+    case, result = _synthetic_word([(0.0, 0.0)] * 3)
+    monkeypatch.setattr(harvest_mod, "derive_word", lambda c: result)
+    monkeypatch.setattr(harvest_mod, "fit_word_chain", lambda c, run, **kw: _fake_chain_fit(case))
+    return harvest_case(case, HarvestOptions(path="chain", rmse_max=2.2, **opts))
+
+
+def _fake_follow(strokes: list, *, status: str = "ok", spans=((0, 0, 3),)) -> object:
+    def follow_case(case, weights):  # noqa: ANN001, ANN202 — the follower's own signature
+        if status != "ok":
+            return {"status": status, "detail": "nothing decoded", "strokes": [], "meta": {}}
+        return {
+            "status": "ok",
+            "detail": "",
+            "strokes": strokes,
+            "registration_px": {"tx": 1.0, "ty": 2.0, "baseline_row": 3},
+            "xh_px": 40.0,
+            "meta": {
+                "fit_path": "tintenpfad",
+                "letter_spans": [list(map(list, spans))],
+                "tintenpfad": {
+                    "runs": 1,
+                    "paper_lifts": 0,
+                    "jumps": 2,
+                    "hairpins": 0,
+                    "ink_unvisited_share": 0.04,
+                    "decode_cost": 12.5,
+                },
+            },
+        }
+
+    return follow_case
+
+
+def test_the_chain_follower_leaves_the_stored_trace_exactly_as_it_was(monkeypatch: pytest.MonkeyPatch) -> None:
+    """`--follower chain` is the pre-A45 harvest, byte for byte.
+
+    The switch is asserted from the outside: a chain-stand record carries no
+    trace of the Tintenpfad at all — not the follower name, not the spans —
+    and its strokes are literally what `chain_word_strokes` emitted.
+    """
+    monkeypatch.setattr("tools.pairlab.tintenpfad.follow_case", _fake_follow([[[0.0, 0.0], [1.0, 1.0]]]))
+    out = _chain_harvest(monkeypatch, follower="chain")
+    record = out.word_record
+    assert record is not None
+    assert "follower" not in record["measurements"] and "letter_spans" not in record["measurements"]
+    assert record["measurements"]["fit_path"] == "chain"
+    case, result = _synthetic_word([(0.0, 0.0)] * 3)
+    monkeypatch.setattr(harvest_mod, "fit_word_chain", lambda c, run, **kw: _fake_chain_fit(case))
+    expected, meta = harvest_mod.chain_word_strokes(case, result, HarvestOptions(path="chain", follower="chain"))
+    assert record["strokes"] == expected
+    assert record["measurements"]["registration_px"]["baseline_row"] == int(meta["registration"]["baseline_row"])
+
+
+def test_the_tintenpfad_follower_replaces_the_strokes_and_nothing_else(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The adopted default: the STROKES are the Tintenpfad's, the occurrences,
+    the gates and the per-slot verdicts are still the fit's. The letter spans of
+    the decode travel with the record — they are what a later harvest would cut
+    the occurrences on, once the author decides that question (§7.11)."""
+    path = [[[0.0, 0.0], [1.0, 0.5], [2.0, 0.0]]]
+    monkeypatch.setattr("tools.pairlab.tintenpfad.follow_case", _fake_follow(path))
+    chain_only = _chain_harvest(monkeypatch, follower="chain")
+    out = _chain_harvest(monkeypatch, follower="tintenpfad")
+    record = out.word_record
+    assert record is not None
+    assert record["strokes"] == path
+    assert record["measurements"]["follower"] == "tintenpfad"
+    # The record says who laid its strokes in BOTH fields: a consumer that
+    # reads `fit_path` alone (the tracebench candidate, the word fixtures)
+    # must not read the decoder's path as a chain fit.
+    assert record["measurements"]["fit_path"] == "tintenpfad"
+    assert record["measurements"]["letter_spans"] == [[[0, 0, 3]]]
+    assert record["measurements"]["registration_px"] == {"tx": 1.0, "ty": 2.0, "baseline_row": 3}
+    # Only the counters an inspection view needs — never the whole diagnostic block.
+    assert record["measurements"]["tintenpfad"] == {
+        "runs": 1,
+        "paper_lifts": 0,
+        "jumps": 2,
+        "hairpins": 0,
+        "ink_unvisited_share": 0.04,
+    }
+    # What the harvest MEASURES is untouched: same occurrences, same gates.
+    # `fit_path` is deliberately NOT in this list — it belongs to the strokes,
+    # and the strokes moved.
+    assert out.occurrences == chain_only.occurrences
+    assert all(o["measurements"]["fit_path"] == "chain" for o in out.occurrences)
+    assert [r["gate"] for r in out.diag_rows] == [r["gate"] for r in chain_only.diag_rows]
+    for key in ("fitted_slots", "unfitted_slots", "traced_slots", "gates"):
+        assert record["measurements"][key] == chain_only.word_record["measurements"][key]
+
+
+def test_a_word_the_tintenpfad_cannot_decode_falls_back_to_the_fit(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A per-word verdict, never a lost word: the record is then the chain's,
+    down to the byte, and says nothing about a follower that laid nothing."""
+    monkeypatch.setattr("tools.pairlab.tintenpfad.follow_case", _fake_follow([], status="skipped"))
+    fallen_back = _chain_harvest(monkeypatch, follower="tintenpfad")
+    chain_only = _chain_harvest(monkeypatch, follower="chain")
+    assert fallen_back.word_record == chain_only.word_record
+
+
+def test_the_follower_switch_replaces_a_trace_and_never_creates_one(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The other half of the same invariant: where the FIT laid no pen path
+    there is no word record, whichever follower is asked for. Otherwise a
+    moved default would start storing rows for words the fit gave up on."""
+    monkeypatch.setattr("tools.pairlab.tintenpfad.follow_case", _fake_follow([[[0.0, 0.0], [1.0, 1.0]]]))
+    monkeypatch.setattr(harvest_mod, "chain_word_strokes", lambda case, result, opts: ([], _empty_chain_meta()))
+    assert _chain_harvest(monkeypatch, follower="tintenpfad").word_record is None
+    assert _chain_harvest(monkeypatch, follower="chain").word_record is None
+
+
+def _slot_harvest(monkeypatch: pytest.MonkeyPatch, **opts) -> CaseHarvest:
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    monkeypatch.setattr(harvest_mod, "derive_word", lambda c: result)
+    return harvest_case(case, HarvestOptions(path="slot", rmse_max=3.0, **opts))
+
+
+def test_the_slot_path_takes_the_follower_switch_too(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The slot path is the one `--apply` writes from, so its branch of the
+    switch is the one production meets — and it obeys the same rule: the
+    STROKES become the Tintenpfad's, the occurrences and the gates do not move,
+    and a decode that fails leaves the slot fit's record untouched."""
+    path = [[[0.0, 0.0], [1.0, 0.5], [2.0, 0.0]]]
+    monkeypatch.setattr("tools.pairlab.tintenpfad.follow_case", _fake_follow(path))
+    slot_only = _slot_harvest(monkeypatch, follower="chain")
+    swapped = _slot_harvest(monkeypatch, follower="tintenpfad")
+
+    assert slot_only.word_record["strokes"] != path
+    assert "follower" not in slot_only.word_record["measurements"]
+    assert "fit_path" not in slot_only.word_record["measurements"]
+    assert swapped.word_record["strokes"] == path
+    assert swapped.word_record["measurements"]["follower"] == "tintenpfad"
+    assert swapped.word_record["measurements"]["fit_path"] == "tintenpfad"
+    assert swapped.word_record["measurements"]["letter_spans"] == [[[0, 0, 3]]]
+    # What the harvest MEASURES is identical on both sides of the switch.
+    assert swapped.occurrences == slot_only.occurrences
+    assert swapped.fits_by_key.keys() == slot_only.fits_by_key.keys()
+    assert [r["gate"] for r in swapped.diag_rows] == [r["gate"] for r in slot_only.diag_rows]
+    for key in ("fitted_slots", "unfitted_slots", "geo_rmse_px_by_slot"):
+        assert swapped.word_record["measurements"][key] == slot_only.word_record["measurements"][key]
+
+    monkeypatch.setattr("tools.pairlab.tintenpfad.follow_case", _fake_follow([], status="failed"))
+    assert _slot_harvest(monkeypatch, follower="tintenpfad").word_record == slot_only.word_record
+
+
+def test_an_unknown_follower_is_refused_by_name() -> None:
+    """Not inferred: a typo would otherwise read as "not tintenpfad" and harvest
+    the chain's trace under a name nobody asked for."""
+    with pytest.raises(SystemExit, match="--follower must be one of"):
+        harvest_mod.harvest("suetterlin", 1, 2.2, follower="tintenfpad")
+
+
+def _empty_chain_meta() -> dict:
+    """`chain_word_strokes`' meta for a word whose runs all failed."""
+    return {
+        "runs": [],
+        "grids": {},
+        "registration": REGISTRATION,
+        "xh": XH,
+        "traced_slots": [],
+        "run_slots": [],
+        "cut_indices": [],
+        "n_params": 0,
+        "seconds": 0.0,
+        "mark_refit": None,
+    }
+
+
+def test_an_apply_run_has_to_name_its_follower(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    """The default FLIPPED with A45 and `--apply` writes the stored traces, so
+    a routine re-harvest may not carry a changed trace into production because
+    a default moved under it.
+
+    The named side is checked against the overlay guard, which sits one line
+    ABOVE this one: naming a follower lets the run reach that refusal instead of
+    this one — and the test stops there rather than starting a real harvest.
+    """
+    monkeypatch.setattr("sys.argv", ["harvest", "--apply"])
+    with pytest.raises(SystemExit) as exc:
+        harvest_mod.main()
+    assert "name --follower explicitly" in str(exc.value)
+    card = tmp_path / "karte.json"
+    card.write_text("{}", encoding="utf-8")
+    for follower in harvest_mod.FOLLOWER_CHOICES:
+        monkeypatch.setattr("sys.argv", ["harvest", "--apply", "--follower", follower, "--laufform", str(card)])
+        with pytest.raises(SystemExit) as exc:
+            harvest_mod.main()
+        assert "--apply writes the DEFAULT harvest only" in str(exc.value)

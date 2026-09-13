@@ -1,8 +1,8 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
-> **Status (2026-09-07): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **84
-> Begriffe**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
+> **Status (2026-09-13): lebend.** Die Kurzfassung von
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **95
+> Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars. Nachzieh-Anlass: ein Begriff wandert
 > hierher, sobald er die Zwei-von-drei-Schwelle unten erreicht und in
 > keine der drei Ausschluss-Klassen fällt — und wieder heraus, sobald er
@@ -212,8 +212,16 @@ sonst R3s Geltungsbereich; `--counter-constraint`, Vorgabe AUS.
 
 **Strang · Strang-Dekodierung** — eine glatte Skelettkette ohne Prior, und
 der **Tintenpfad**-Folger, der die komponierte Reihenfolge per Viterbi durch
-die Stränge dekodiert: Tinte zuerst, Buchstaben danach.
+die Stränge dekodiert: Tinte zuerst, Buchstaben danach. Seit dem
+Autor-Entscheid A45 (2026-09-12) der **Standard-Folger** der Kampagne; die
+Kette bleibt Baustein und messbar.
 → [§3](glossar.md#3-mess--und-fit-vokabular)
+
+**Folger-Schalter der Ernte (`--follower`)** — welcher Folger die
+gespeicherte Wortbahn legt: `tintenpfad` (Vorgabe seit A45) oder `chain`
+(byte-gleich zum Stand davor). Er bewegt nur, was die Ernte ZEIGT — die
+Vorkommen und Mediane kommen weiter aus dem Buchstabenfit.
+→ [§4](glossar.md#4-metriken-und-benchmarks)
 
 **Schleifenbereich · Schleifen-Registrierung** — der Anker-Indexbereich,
 über den die TAFELZEILE eine Schleife schließt (`loop_ranges`), und der
@@ -450,8 +458,8 @@ sechsteiliger Fehler-Taxonomie und vorregistriertem Auswerteplan.
 → [§4](glossar.md#4-metriken-und-benchmarks) · menschliche-bewertung.md
 
 **Messjournal** — die Datei [`messjournal.md`](messjournal.md), seit
-2026-09-04 die Heimat von §14: 123 datierte Abschnitte, je einer pro
-Mess-Runde. Einstieg ist das **Register** im Kopf, nicht die Datei.
+2026-09-04 die Heimat von §14: 131 datierte Abschnitte (`sep13`), je einer
+pro Mess-Runde. Einstieg ist das **Register** im Kopf, nicht die Datei.
 → [§5](glossar.md#5-werkbank-und-prozess)
 
 ---

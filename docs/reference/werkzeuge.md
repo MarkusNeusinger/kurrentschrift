@@ -317,9 +317,31 @@ ist.
 an zwei Gates): die Nachreparatur gestrandeter Anker lässt die Anker in
 Ruhe, die innerhalb einer Schleife der Chart-Zeile liegen.
 
+**Welcher Folger die Bahn legt** (`--follower`, Vorgabe `tintenpfad` seit
+dem Autor-Entscheid **A45** vom 2026-09-12, §14 „Tintenpfad-Adoption
+`sep12`"): die gespeicherte Wortspur kommt aus der Strang-Dekodierung
+(`tools/pairlab/tintenpfad`), und die Buchstabengrenzen der Dekodierung
+(`letter_spans`) stehen im Wort-Record daneben. Der Record nennt den
+Folger, der seine Striche gelegt hat, in `measurements.follower` UND in
+`measurements.fit_path` — sonst läse ein Verbraucher, der nur das Feld
+kennt, die Bahn des Dekoders als Ketten-Fit; die VORKOMMEN behalten ihr
+eigenes `fit_path: "chain"`, sie kommen weiter von dort.
+`--follower chain` ist der Stand davor, byte für byte. **Der Schalter bewegt nur, was die Ernte
+ZEIGT:** Vorkommen, Mediane und jedes Gate werden weiter am
+Buchstabenfit abgelesen — eine Laufform-Zeile ist ein ANKERSATZ, der
+Tintenpfad dekodiert eine BAHN, und die Anker-Zuordnung dazwischen ist
+ein offener Arm und ein Autor-Entscheid
+([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.11).
+Dasselbe Muster wie K-A/K-B/A1. Ein Wort, das der Tintenpfad nicht
+dekodiert, fällt auf den Fit zurück — ein Urteil je Wort, kein Abbruch.
+**Ein `--apply`-Lauf muss den Folger ausdrücklich nennen** (und davor einen
+`dbsnapshot` nehmen): `--apply` schreibt die gespeicherten Bahnen, und ein
+bewegter Default darf keine geänderte Bahn in die Produktion tragen.
+
 ```bash
 uv run python -m tools.laufform.harvest [--style suetterlin] [--min-n 4]
     [--rmse-max 2.2] [--loop-aware-repair]
+    [--follower tintenpfad|chain]        # default tintenpfad (A45)
     [--chain-seed chart|composed|grid]   # default chart (A38)
     [--laufform karte.json] [--expect-root <digest>]
     [--apply --base-url http://localhost:8000 --source-id <id>]
@@ -996,17 +1018,29 @@ Warnung versehen. Begriff und Hausregel:
   ```bash
   OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run python -m tools.pairlab.tintenpfad \
       [--all | ids…] --expect-root <digest> --jobs 2 \
-      --candidate-out <dir>/cand.json --json <dir>/report.json [--legacy-p5] [--weight NAME=VALUE …]
+      --candidate-out <dir>/cand.json --json <dir>/report.json \
+      [--legacy-p6 | --legacy-p5] [--weight NAME=VALUE …]
   ```
 
   Alle Konstanten stehen eingefroren in `TintenpfadWeights` und wandern
-  per `asdict` in den Kandidaten; `--legacy-p5` stellt die gemessene
-  Prototyp-Zeile wieder her. Sensoren je Wort in `meta.tintenpfad`:
+  per `asdict` in den Kandidaten. **Seit A45 (2026-09-12) sind die
+  Vorgaben die erklärte Konfiguration** (`tip_read` · `rail=tentfit` ·
+  `edt_upsample=4` · `ink_bridge_xh=1.0` · `hairpin_tip` · `ride_back` ·
+  `tip_grey_stop` · `self_jump`): ein Lauf ohne Flags IST der
+  Standard-Folger. `--legacy-p6` ist der Stand davor (alle acht aus, die
+  Basis jeder Ledger-Zeile des `sep11`/`sep12`), `--legacy-p5` die
+  Prototyp-Zeile — ganze Konfigurationen, damit keine gemessene Zeile
+  ihren Stack verliert. Sensoren je Wort in `meta.tintenpfad`:
   unbesuchte Tinte (`ink_unvisited_share` über 0,10 ist ein erklärter
   Skip), Hin-und-zurück je Brücke und Schiene, Knick- und Drehwinkel,
-  Zuordnung (`label_agreement`), Verschiebungskohärenz. Reine Messschicht,
-  `core.skeleton_graph` und `core.continuity` nur importiert. Erstes
-  Artefakt unter `temp/wellen-sep11/`, noch ohne §14-Eintrag.
+  Zuordnung (`label_agreement`), Verschiebungskohärenz; die
+  Buchstabengrenzen stehen als `meta.letter_spans` daneben.
+  Reine Messschicht,
+  `core.skeleton_graph` und `core.continuity` nur importiert. Der
+  Tracebench fährt ihn seit A45 direkt: `--candidate tintenpfad
+  [--tintenpfad-stand default|legacy-p6|legacy-p5] [--tintenpfad-weight
+  NAME=VALUE …]`, wobei Stand und Arm den Lauf labeln. Artefakte
+  `temp/wellen-sep11/`, `temp/adoption-sep12/`.
 - **`tools/pairlab/schlange`** — die **Schlange** (Hook B der Welle-Runde,
   §14 „Welle `sep11`"): ein Folger als elastische Kurve NEBEN der Kette, seit
   `sep12` im Repo als eigenständiger Baustein ohne Schalter im bestehenden

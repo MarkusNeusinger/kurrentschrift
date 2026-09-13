@@ -542,7 +542,18 @@ BUDGETS: dict[str, int] = {
     # `seed_curve` corner fix, so the checked-in module no longer reproduces
     # them) and the BLAS pin the glossary's call line already carried, which
     # puts the section at 5326 — still inside this ceiling.
-    "werkzeug-abschnitt": 5_793,
+    # Raised a third time on 2026-09-12 by the Tintenpfad adoption (A45): the
+    # tool's DEFAULTS moved, which is read-path by construction — a reader who
+    # does not see the eight switches runs a different follower and does not
+    # know it — and `--legacy-p6` is the only way back to the stand every
+    # ledger row of `sep11`/`sep12` was measured against. The entry was
+    # condensed twice against the ceiling before that raise (5470 → 5377 →
+    # 5354, the second pass dropped the §14 pointers the route page already
+    # carries). That number and the two above it were each measured against
+    # the same PRE-MERGE section, so no one of them covers another's entry:
+    # re-measured once on the MERGED section — Wellen-Basis and Schlange
+    # beside the Tintenpfad adoption — at 5581 plus the documented 10 %.
+    "werkzeug-abschnitt": 6_139,
     "doku": 8_748,
 }
 

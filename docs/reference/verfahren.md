@@ -1,6 +1,6 @@
 # Verfahrensseiten: die Tintenfolger-Routen und ihre Versionen
 
-> **Status (2026-09-11): lebend.** Übersicht und Versions-Konvention der
+> **Status (2026-09-13): lebend.** Übersicht und Versions-Konvention der
 > Duell-Verfahren; je stehendem Verfahren existiert eine eigene Seite
 > (unten). Nachzieh-Pflicht: Jeder §14-Eintrag, der einen Arm oder eine
 > Stufe eines Verfahrens misst (adoptiert ODER verworfen), ergänzt im
@@ -56,23 +56,25 @@ Zahl hier ist ein datiertes Zitat, der Beleg wohnt im benannten
 
 ## Die Verfahren
 
-| Anzeige-Name | Seite | Stand (2026-09-07, dev-19, Lineal-Kappe 1,5 seit L-U `aug26`) | seit |
+| Anzeige-Name | Seite | Stand (dev-19, Lineal-Kappe 1,5 seit L-U `aug26`; die beiden Folger-Zeilen auf der `sep12`-Wurzel, der Rest auf `sep07`) | seit |
 |---|---|---|---|
-| **Kette** | [`verfahren-kette.md`](verfahren-kette.md) | **v5** (`aug26`, K0-S-Wächter-Stack: Kompositions-Soll + Ratsche + Zone 0,55) — Zahlen re-baselined `sep07` auf der Wurzel `ccb036a5eb20…` (nach dem Komma-Ausschluss; ziffernweise wie die A37-Nachmessung auf `eaa195aa7c84…`): dtw 0,045881 med · p90 0,088356 · worst `muß` 0,106372 · marks 0 · aiou 0,7660 · Netto-Kreuzungsdefekte 20 · 63er-Soll-Abstand 85 | 2026-08-26 (Zahlen 2026-09-07) |
+| **Tintenpfad** | [`verfahren-tintenpfad.md`](verfahren-tintenpfad.md) | **adoptiert — der Standard-Folger** (Autor-Entscheid **A45**, `sep12`, §14 „Tintenpfad-Adoption `sep12`"): die erklärte Acht-Schalter-Konfiguration ist die Vorgabe von `TintenpfadWeights`. Zahlen auf der Wurzel `c7f2efd9cf37…`: dtw **0,038351** med · p90 0,048012 · worst `muß` 0,051280 · aiou 0,7929, gepaart **15 : 4** gegen die Kette (Δ-Median −0,008311, p 0,019); Papier-Umkehrungen über 63 Wörter 3 grau / **0** in der Maske; 63er-Soll-Abstand 80 | 2026-09-12 |
+| **Kette** | [`verfahren-kette.md`](verfahren-kette.md) | **v5** (`aug26`, K0-S-Wächter-Stack: Kompositions-Soll + Ratsche + Zone 0,55) — seit A45 (`sep12`) **Baustein, nicht mehr Standard, weiter messbar**. Zahlen nachgemessen `sep12` auf `c7f2efd9cf37…`: dtw 0,045772 med · p90 0,088356 · worst `muß` 0,106372 · marks 0 · aiou 0,7660 · `cross_missing` 12 / `cross_spurious` 10 · 63er-Soll-Abstand 81. Die `sep07`-Zahlen auf `ccb036a5eb20…` lauteten 0,045881 · 0,088356 · 0,106372 · 0,7660 · Netto-Kreuzungsdefekte 20 · Soll 85 | 2026-08-26 (Zahlen 2026-09-12) |
 | **Lotse** | [`verfahren-lotse.md`](verfahren-lotse.md) | **v0.17** (`aug20`, Reservierungs-Veto) — Zahlen nachgemessen `sep07` auf derselben Wurzel wie die Kette (`ccb036a5eb20…`), die seit A37 fällige Karten-Nachmessung: dtw **0,053386** med · p90 0,116668 · aiou 0,7473 · `cross_missing` 0 / `cross_spurious` 4 · `retrace_missing` 5. Die `sep05`-Zeile nannte 0,053393 / 0,116199 / 0,7493 — dieselbe Route, vor A37 (§14 „Komma-Ausschluss `sep07`") | 2026-08-20 (Zahlen 2026-09-07) |
 | **InkSight** | [`verfahren-inksight.md`](verfahren-inksight.md) | T0 (roh) — dtw 0,0951 med · 5/19 failed · Galoppieren-B2-Kollaps; **auf Lineal-Kappe 1,5 unvermessen**, die Zahlen sind archiviert und nicht vergleichbar | 2026-08-17 (Lineal 0,8) |
 | **Nullprobe** | [`verfahren-nullprobe.md`](verfahren-nullprobe.md) | unversioniert (Kontrolle) — dtw 0,8198 med · p90 1,0267 auf den 10 von 19 dev-Wörtern, die die gespeicherte Nullprobe abdeckt | 2026-08-26 |
-| **Tintenpfad** | [`verfahren-tintenpfad.md`](verfahren-tintenpfad.md) | **Kandidat, nichts adoptiert** (`sep11`, §14 „Welle" + „Tintenpfad-Arme"): Strang-Dekodierung auf derselben Wurzel `ccb036a5eb20…` — #591 dtw 0,044230 · p90 0,090673 · aiou 0,7867 (7 : 12 gegen die Kette); die Kombination der drei tragenden Arme dtw **0,041356** · p90 0,091040 · aiou 0,7876, 18 : 1 gegen #591, 9 : 10 gegen die Kette; Papier-Umkehrungen 0 auf 63 Wörtern (Kette 49). Kein Default-Folger; die Seite steht seit `sep11` in `ROUTE_PAGES` von `tools.docs_register` | — (Kandidat seit 2026-09-11) |
 
-**Die fünf dev-19-Stände stehen weiter auf der `sep07`-Wurzel**
-(`ccb036a5eb20…`). Der `d`-Zeilen-Write vom `sep10` (Autor-Entscheid A44)
-hat sie ersetzt, ohne dass das Duell auf der neuen nachgemessen wurde —
-die Zahlen bleiben untereinander vergleichbar und sind nicht falsch
+**Zwei der fünf Stände sind nachgemessen, drei stehen weiter auf der
+`sep07`-Wurzel** (`ccb036a5eb20…`). Die Adoptionsrunde vom `sep12` (§14
+„Tintenpfad-Adoption `sep12`") hat Tintenpfad UND Kette auf der heutigen
+Wurzel `c7f2efd9cf37…` neu gemessen — die Kette bewegt sich dabei um
+−0,000109 im Median, die Wort-Headline gar nicht. Für **Lotse**,
+**InkSight** und **Nullprobe** steht die Nachmessung noch aus; ihre
+Zahlen bleiben untereinander vergleichbar und sind nicht falsch
 geworden, aber sie sind wurzel-fremd zur heutigen Wort-Headline. Der
 offene Punkt steht in
 [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.11
-(„Duell-Nachmessung auf der `sep10`-Wurzel"); er ist eine Re-Baseline und
-kein Arm.
+(„Duell-Nachmessung"); er ist eine Re-Baseline und kein Arm.
 
 Geplante Verfahren (Zögling · Vier Augen · Chor) haben noch keinen
 Kandidaten und darum keine Seite — ihr Stand wohnt in der

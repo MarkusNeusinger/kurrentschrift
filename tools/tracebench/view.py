@@ -109,7 +109,13 @@ PALETTE = ("#8e24aa", "#ef6c00", "#c2185b", "#3949ab", "#00838f", "#6d4c41")
 # Label fragments that pin a colour by MEANING rather than by call order, so the
 # chain stays red and the follower blue however the CLI arguments are ordered.
 CHAIN_MARKERS = ("chain", "kette")
-FOLLOWER_MARKERS = ("follow", "folger", "wächter", "waechter", "guard")
+FOLLOWER_MARKERS = ("follow", "folger", "wächter", "waechter", "guard", "tintenpfad")
+# The Tintenpfad is the campaign's standard follower since A45, so it takes the
+# follower blue with the rest of that family — the same way every chain variant
+# shares the chain red. What it does NOT share is the sentence: it has no
+# structure guard and deforms no template, so the explainer names it on its own
+# rather than describing it as a guarded fit.
+TINTENPFAD_MARKERS = ("tintenpfad",)
 CONTROL_MARKERS = ("kontrolle", "routeg", "control", "nullprobe")
 # The Lotse (tools/inkpilot) gets a pinned vivid pink: the order-based
 # palette handed it a hue that vanished against the sepia plate (owner
@@ -915,7 +921,13 @@ def method_explainer(labels: Sequence[str], colors: dict[str, str]) -> str:
     ]
     for label in labels:
         lowered = label.lower()
-        if any(m in lowered for m in FOLLOWER_MARKERS):
+        if any(m in lowered for m in TINTENPFAD_MARKERS):
+            text = (
+                "der Tintenpfad: liest zuerst die Tinte — er zerlegt das Wort in Stränge und entscheidet "
+                "mit dem Duktus nur noch deren Reihenfolge und Richtung; keine Vorlage wird verformt, und "
+                "einen Struktur-Wächter gibt es hier nicht (nutzt: Tinte als Gerüst, Duktus als Reihenfolge)."
+            )
+        elif any(m in lowered for m in FOLLOWER_MARKERS):
             text = (
                 "wie die Kette, zieht die Bahn danach näher an die Tinte — ein Wächter verbietet dabei, "
                 "neue Kreuzungen oder Doppelstriche zu erfinden (nutzt: Duktus-Bibliothek + Tinte)."

@@ -1,6 +1,6 @@
 ---
 name: verify-trace
-description: Run one round of the Tintenfolger word-tracing measurement — fixture acceptance, the follower run with BLAS threads pinned, dev-19 scoring against the base report, the reference-free k0 protocol, sensors — and file the results where the doctrine requires (a §14 entry, the Verfahren ledger line, and a §7.9 rescue-path row on a negative). Use when asked to run a Tintenfolger round, measure a follower arm, score a candidate against the base, run tracebench or pairlab.follow, or pre-register a tracing experiment.
+description: Run one round of the Tintenfolger word-tracing measurement — fixture acceptance, the follower run with BLAS threads pinned, dev-19 scoring against the base report, the reference-free k0 protocol, sensors — and file the results where the doctrine requires (a §14 entry, the Verfahren ledger line, and a §7.9 rescue-path row on a negative). Use when asked to run a Tintenfolger round, measure a follower arm, score a candidate against the base, run tracebench, the Tintenpfad or pairlab.follow, or pre-register a tracing experiment.
 ---
 
 # Run a Tintenfolger round (the standing measurement liturgy)
@@ -65,19 +65,44 @@ that names a headline names `exported_at` + digest beside it.
 
 ## 2 · The follower run — BLAS pinned, always
 
+Since the author's decision **A45** (`sep12`, §14 „Tintenpfad-Adoption
+`sep12`") the **Tintenpfad is the campaign's standard follower**, and the
+defaults of `TintenpfadWeights` — the eight measured switches — ARE the
+declared configuration. A run without flags IS the standard arm:
+
+```bash
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run python -m tools.pairlab.tintenpfad \
+  --all --set words --jobs 2 --expect-root <digest> \
+  --candidate-out <cand.json> --json <report.json>
+```
+
+**Never run a follower unpinned** — neither the one above nor the Kette
+below. The solves are not bit-reproducible across thread environments, so
+cross-run comparisons are only valid within one pinned setting — and
+pinning also collapses the runtime (a 63-word chain went 87 min →
+2.7 min). That is a CLAUDE.md guardrail, and these command lines are where
+it has to actually happen.
+
+`--legacy-p6` is the stand BEFORE A45 — all eight switches off, the stack
+every ledger row of `sep11`/`sep12` was measured against — and
+`--legacy-p5` the prototype's ladder row. Both are whole configurations, so
+a recorded row never loses its stack. Neither may answer to the adopted
+stand's name: an unlabelled legacy run calls itself `tintenpfad+legacy-p6`,
+and `--weight` overrides append the same way (`tintenpfad+turn_cost=30`).
+Only an explicit `--label` overrides that, and only the adopted stand is
+called `tintenpfad`.
+
+**The Kette stays a measurable route and a building block** — since A45 it
+is no longer the duel base, but it is otherwise UNCHANGED, and the
+harvest's occurrences still come from it. Its own recipe:
+
 ```bash
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run --extra viz python -m tools.pairlab.follow \
   --all --set words --jobs 4 --expect-root <digest> \
   --json <report.json> --candidate-out <cand.json>
 ```
 
-**Never run this unpinned.** The chain solve is not bit-reproducible across
-thread environments, so cross-run comparisons are only valid within one
-pinned setting — and pinning also collapses the runtime (a 63-word chain
-went 87 min → 2.7 min). That is a CLAUDE.md guardrail, and this command line
-is where it has to actually happen.
-
-Since Kette v5 (`aug26`) **the duel stack is the DEFAULT** — composition
+Since Kette v5 (`aug26`) **its duel stack is the DEFAULT** — composition
 Soll, ratchet, zone 0.55 — so a run without flags IS the chain. The
 archaeology flags reproduce older bases:
 `--no-structure-guard-ratchet --structure-guard-zone 0 --soll-source init`
@@ -181,13 +206,21 @@ uv run python -m tools.tracebench.view --expect-root <digest>
   candidate card is compared against a CONTROL card from the same run —
   now `--chain-seed composed` — never against the stored rows alone. The
   recipe is in `werkzeuge.md` next to the tool.
+- **The duel base is the `tintenpfad` provider since A45**, but
+  `tracebench --candidate` still DEFAULTS to `chain` — name
+  `--candidate tintenpfad` explicitly, or the round grades against the
+  route it left behind. `--tintenpfad-stand` / `--tintenpfad-weight` build
+  a variant and label it as one; `chain` stays fully measurable and is the
+  base every row recorded before A45 was graded against, so a pre-A45
+  number is comparable to a `chain` number and to nothing else.
 - **The trace bench and the follower keep their own `composed` seed.** Only
   the HARVEST default flipped; `tracebench --chain-seed` and
-  `pairlab.follow --chain-seed` still default to `composed`, because their
-  `chain` candidate is the frozen base every measured arm is graded
-  against. A round that quotes a `chain` number has not changed base.
+  `pairlab.follow --chain-seed` still default to `composed`, because the
+  `chain` candidate has to stay the frozen route those rows were measured
+  on. A round that quotes a `chain` number has not changed that route.
 - **`routeg` (Nullprobe) is never optimised** by doctrine
   (`tintenfolger.md` §7.6) — it is the control, so a "better" Nullprobe is
   a bug in the round, not a result.
-- Display names of the routes (Kette · Lotse · InkSight · Nullprobe) are in
-  the glossary under „Duell-Namen"; use them in write-ups.
+- Display names of the routes (Tintenpfad · Kette · Lotse · InkSight ·
+  Nullprobe) are in the glossary under „Duell-Namen"; use them in
+  write-ups.

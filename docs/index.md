@@ -27,7 +27,7 @@ H5-Erfassungsweg liest bereits echte Bögen ein.
 stehen in [`../CLAUDE.md`](../CLAUDE.md) § „Read these before substantive
 work“ — von dort führt der kürzeste Weg hierher, nicht umgekehrt.
 Fachbegriffe schlägt man in
-[`reference/kurzglossar.md`](reference/kurzglossar.md) nach (77 Begriffe,
+[`reference/kurzglossar.md`](reference/kurzglossar.md) nach (95 Einträge,
 Kurzfassung) oder im vollen [`reference/glossar.md`](reference/glossar.md).
 
 ---
@@ -55,21 +55,21 @@ Policy- und Technik-Dokumente, Status je Doc.
 
 | Doc | Wofür | Wann aufmachen |
 |---|---|---|
-| [kurzglossar.md](reference/kurzglossar.md) | 77 Begriffe, die in Code, Skills und PRs wirklich vorkommen — je ein bis zwei Sätze | Beim Einstieg in eine Sitzung; für Details führt jeder Eintrag ins volle Glossar |
+| [kurzglossar.md](reference/kurzglossar.md) | 95 Einträge, die in Code, Skills und PRs wirklich vorkommen — je ein bis zwei Sätze | Beim Einstieg in eine Sitzung; für Details führt jeder Eintrag ins volle Glossar |
 | [glossar.md](reference/glossar.md) | Das volle Vokabular in sechs Themenblöcken, mit Modul- und Konstanten-Anker; alphabetischer Schnellindex oben | Wenn ein Begriff im Kurzglossar fehlt oder der Anker gebraucht wird. **Ein PR, der einen Begriff prägt, legt hier den Eintrag an** |
 | [sprachregelung.md](reference/sprachregelung.md) | Welche Sprache welches Artefakt trägt; §4 der englische Stil-Fallback | Vor dem Schreiben von README, Docs, Commit- oder PR-Text |
 | [quellen-und-rechte.md](reference/quellen-und-rechte.md) | Was ins Repo darf: PD/CC/NC-SA, §72 UrhG, §5 die Open-Core-Absicherung | Vor jedem Daten-Commit und bei jeder Frage zu Lizenzen |
 | [datenablage.md](reference/datenablage.md) | Der `/data`-Baum, drei Commit-Klassen, `SOURCE.md`-Pflichtfelder | Wenn eine Datei nach `/data` soll |
 | [qualitaetsmetrik.md](reference/qualitaetsmetrik.md) | Die **Regeln** der Messlatte: zwei Metriken (eine pro Schrift), Frozen-Reference-Regel, Baseline-Historie, Verworfen-Listen | Vor jedem Bench-Lauf und bei jeder Metrik-Frage |
-| [messjournal.md](reference/messjournal.md) | Die **Läufe**: §14, 123 datierte Abschnitte mit Zahlen und Verdikt — fast alle mit Vorregistrierung, die Werkstatt-Runden (z. B. die Nachtschleife `sep10`/`sep11`) mit ausdrücklich vermerktem Fehlen derselben | Wenn eine Zahl oder ein Verdikt gesucht wird — **über das Register im Kopf**, nie die ganze Datei |
+| [messjournal.md](reference/messjournal.md) | Die **Läufe**: §14, 131 datierte Abschnitte mit Zahlen und Verdikt — fast alle mit Vorregistrierung, die Werkstatt-Runden (z. B. die Nachtschleife `sep10`/`sep11`) mit ausdrücklich vermerktem Fehlen derselben | Wenn eine Zahl oder ein Verdikt gesucht wird — **über das Register im Kopf**, nie die ganze Datei |
 | [messjournal-archiv.md](reference/messjournal-archiv.md) | Abgelegte §14-Abschnitte und die Regel, wann einer hierher zieht | Wenn ein Abschnitt im Journal fehlt, oder beim Ablegen eines fertigen Arms |
 | [menschliche-bewertung.md](reference/menschliche-bewertung.md) | Die **Methode** des blinden Urteilsdurchgangs (`tools/humanbench`): Taxonomie, Instrumentregeln, Vorregistrierung | Bevor eine Bewertungsrunde gebaut oder ausgewertet wird (die Befunde stehen im Messjournal) |
 | [verfahren.md](reference/verfahren.md) | Die Übersicht der Duell-Routen samt Versions-Konvention und der Regel, dass eine Verfahrensseite Register ist und keine zweite Wahrheit | Bevor man eine der fünf Routenseiten liest oder eine Ledger-Zeile schreibt |
-| [verfahren-kette.md](reference/verfahren-kette.md) | Kette: Steckbrief, Stand v5 (Wächter-Stack), Arm-Ledger ①–⑨ / K-A…K-E2 / K0-Z / K0-S / K-D | Wenn ein Kette-Arm gemessen, adoptiert oder zitiert wird |
+| [verfahren-kette.md](reference/verfahren-kette.md) | Kette: Steckbrief, Stand v5 (Wächter-Stack), seit A45 Baustein statt Standard, Arm-Ledger ①–⑨ / K-A…K-E2 / K0-Z / K0-S / K-D | Wenn ein Kette-Arm gemessen, adoptiert oder zitiert wird |
 | [verfahren-lotse.md](reference/verfahren-lotse.md) | Lotse: Steckbrief, Stand v0.17 (Reservierungs-Veto), Versions-Ledger v0.1–v0.19, offene Blöcke | Dasselbe für den Lotsen |
 | [verfahren-inksight.md](reference/verfahren-inksight.md) | InkSight: Steckbrief, Stand T0, Ledger (T0 · B1), stehende Maßnahmen B2–B5 | Dasselbe für InkSight |
 | [verfahren-nullprobe.md](reference/verfahren-nullprobe.md) | Nullprobe: Steckbrief, die Kontroll-Doktrin (bewusst unversioniert), Mess-Ledger | Dasselbe für die prior-freie Kontrolle |
-| [verfahren-tintenpfad.md](reference/verfahren-tintenpfad.md) | Tintenpfad (Tinte zuerst, Buchstaben danach): Steckbrief, Stand Kandidat, Ledger #591 · Arme · Kombination, offene Blöcke | Wenn ein Tintenpfad-Arm gemessen, adoptiert oder zitiert wird |
+| [verfahren-tintenpfad.md](reference/verfahren-tintenpfad.md) | Tintenpfad (Tinte zuerst, Buchstaben danach): Steckbrief, Stand **adoptiert — Standard-Folger** (A45, `sep12`), Ledger #591 · Arme · Kombinationen · Adoption, offene Blöcke | Wenn ein Tintenpfad-Arm gemessen, adoptiert oder zitiert wird |
 | [verfahren-uebergaenge.md](reference/verfahren-uebergaenge.md) | Übergänge (keine Duell-Route, die Join-Grammatik darunter): Steckbrief, Stand (Austritts-Trim an), Ledger J1–J6 / S1 / S2 / Korb-Runde | Wenn ein Übergänge-Arm gemessen, adoptiert oder zitiert wird |
 | [werkzeuge.md](reference/werkzeuge.md) | Der Index über `tools/`: Labs, Benches, Ernte, Eigenhand, Snapshot, Changelog-Schnitt | Bevor man ein Werkzeug aufruft oder ein neues anlegt |
 | [write-api.md](reference/write-api.md) | Die öffentlichen Render-Endpunkte `/write/glyphs` + `/write/word`: Shaping → Komposition → Payload, Cache, `missing` | Bei jeder Änderung an einer `/write/*`-Route |
