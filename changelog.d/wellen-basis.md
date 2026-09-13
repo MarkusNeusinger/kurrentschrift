@@ -26,5 +26,10 @@
   versuche verfahren aber richtig behalten vielleicht brauchen wir die mal
   noch oder nehmen uns davon noch bausteine zum optimieren des tintenpfad"
   (2026-09-12) — kept as a building block for the Tintenpfad work, not
-  adopted as a default. Glossary: Wellen-Basis (extended with the switches
-  and the repo date).
+  adopted as a default. Two review-round hardening fixes: a subnormal
+  `--wave-spacing` (e.g. `1e-320`) no longer overflows the span-count ratio
+  to `inf` and crashes on `round()`; `wave_report`'s coherence walk now
+  starts a resumed block from its `anchor_row` too, so the seam-to-connector
+  jump at a retrace letter is no longer invisible to `lipschitz_per_xh`,
+  `max_step_xh` and `n_pairs`. Glossary: Wellen-Basis (extended with the
+  switches and the repo date).

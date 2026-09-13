@@ -2195,6 +2195,16 @@ def test_a_degenerate_spacing_falls_back_to_rigid_without_building_the_knot_vect
     assert all(b["kind"] == "rigid" for b in problem.basis_blocks)
 
 
+def test_a_subnormal_spacing_falls_back_to_rigid_without_an_overflow_error() -> None:
+    """A subnormal `--wave-spacing` (finite and positive, so it passes
+    `build_chain_problem`'s validation) overflows `total / spacing` to `inf`;
+    Python's `round(inf)` itself raises `OverflowError`. The span count must
+    never round a non-finite ratio, so the stroke still falls back to `rigid`
+    instead of crashing the solve."""
+    problem = _wave_problem(1e-320)
+    assert all(b["kind"] == "rigid" for b in problem.basis_blocks)
+
+
 def test_pinning_an_anchor_through_the_wave_freezes_its_expansion() -> None:
     """K0-Z under the basis: every coefficient with support on a pinned anchor
     is pinned, so the anchor cannot move for ANY feasible coefficients — and
@@ -2229,3 +2239,25 @@ def test_the_wave_report_reads_the_same_partition_with_the_basis_on_or_off() -> 
         assert key in r_on["field"] and key in r_on["total"]
     assert r_off["field"]["chords_over_spacing"] is None  # no spacing, no threshold
     assert r_on["field"]["n_pairs"] == r_off["field"]["n_pairs"] == len(on.anchors_free) - 1
+
+
+def test_the_coherence_report_sees_the_seam_to_connector_jump() -> None:
+    """A resumed block's `anchor_row` is a fixed reference for `_wave_basis`'s
+    arc length; `_displacement_coherence` must walk from it too, or the
+    seam-to-first-connector pair — exactly the discontinuity the retrace-tail
+    fix (`test_the_retrace_tail_gets_its_own_block_anchored_at_the_seam`)
+    exists to keep continuous — is invisible to every stat this report
+    emits, including the `n_pairs` it reports and the worst step it names."""
+    problem = _wave_problem(0.25, _wave_specs(stroke_starts=(0, WAVE_K - 4), seam_out=WAVE_K - 6))
+    blocks = problem.basis_blocks
+    tail = next(b for b in blocks if b.get("anchor_row") == 24)
+    disp = np.zeros((len(problem.anchors_free), 2))
+    disp[tail["rows"], 0] = 1.0  # uniform inside the block: zero internal steps
+    report = chain_mod._displacement_coherence(disp, problem.anchors_free, blocks, 0.25)
+    # only nonzero step in the whole field: the jump from the seam (still 0)
+    # to the block that resumes from it (uniformly 1.0) — visible ONLY if the
+    # walk is anchored back to row 24 rather than starting at `tail["rows"][0]`.
+    assert report["max_step_xh"] == pytest.approx(1.0)
+    assert report["max_step_rows"] == [24, tail["rows"][0]]
+    expected_pairs = sum(max(len(b["rows"]) + (1 if b.get("anchor_row") is not None else 0) - 1, 0) for b in blocks)
+    assert report["n_pairs"] == expected_pairs

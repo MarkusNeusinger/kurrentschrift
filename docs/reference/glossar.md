@@ -1437,8 +1437,8 @@ nicht die Umkehrungen). *Technisch:* im Repo seit `sep13` als Baustein
 adoptieren), `tools/pairlab/chain.py`
 (`_wave_basis`/`_wave_block_rows`/`_wave_column_bounds`/`wave_report`/
 `pin_free_anchors`, `build_chain_problem(wave_spacing=…,
-wave_arc_anchors=…)`), `tools/pairlab/follow.py` (`--wave-spacing`/
-`--wave-arc`/`--wave-report`, `_ChainProblem.unpack/_pack`);
+wave_arc_anchors=…)`, `_ChainProblem.unpack`/`_pack`),
+`tools/pairlab/follow.py` (`--wave-spacing`/`--wave-arc`/`--wave-report`);
 **Vorgabe AUS** (`wave_spacing=0.0`), die Kette bleibt bei
 Standardaufrufen byte-identisch. Der Vorfahr im Repo ist der
 Spline-Basis-Median von LF11 (`core/aggregate.py`) → messjournal.md §14

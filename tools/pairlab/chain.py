@@ -1653,8 +1653,18 @@ def _wave_basis(
         # SPAN COUNT ALONE before any knot vector is materialised: a degenerate
         # `spacing` (e.g. 1e-9 on a multi-xh stroke) would otherwise round to
         # billions of interior knots — an OOM — before the `m <= len(rows)` guard
-        # below ever gets to reject it in favour of the rigid fallback.
-        spans_fit = max(1, int(round(total / spacing))) if total > 0.0 else 0
+        # below ever gets to reject it in favour of the rigid fallback. A
+        # SUBNORMAL `spacing` (e.g. 1e-320) overflows `total / spacing` to
+        # `inf`, on which `round()` itself raises `OverflowError` — caught
+        # here by never rounding a non-finite ratio, using a span count
+        # `len(rows) + 1` that fails the `m_fit <= len(rows)` check below no
+        # matter the degree, exactly as an astronomically large span count
+        # would.
+        if total > 0.0:
+            ratio = total / spacing
+            spans_fit = max(1, int(round(ratio))) if math.isfinite(ratio) else len(rows) + 1
+        else:
+            spans_fit = 0
         m_fit = spans_fit + degree
         if total > 0.0 and len(rows) >= degree + 2 and m_fit <= len(rows):
             knots = _clamped_uniform_knots(total, spacing, degree)
@@ -1728,14 +1738,22 @@ def _displacement_coherence(disp: np.ndarray, anchors: np.ndarray, blocks: Seque
     d2: list[np.ndarray] = []
     for block in blocks:
         rows = np.asarray(block["rows"], dtype=int)
-        if len(rows) < 2:
+        # `anchor_row` (the retrace case, e.g. the t's bar): the block's own
+        # free rows do not start the walk — the block continues from a seam
+        # an EARLIER block already owns (`_wave_basis` reads it the same way
+        # for the arc length). Without prepending it, the pair from the seam
+        # to this block's first row is absent from every stat below, hiding
+        # exactly the block-boundary jump this report exists to expose.
+        anchor_row = block.get("anchor_row")
+        walk = rows if anchor_row is None else np.concatenate([[int(anchor_row)], rows])
+        if len(walk) < 2:
             continue
-        d = disp[rows]
-        c = np.hypot(*np.diff(anchors[rows], axis=0).T)
+        d = disp[walk]
+        c = np.hypot(*np.diff(anchors[walk], axis=0).T)
         steps.append(np.hypot(*np.diff(d, axis=0).T))
         chords.append(c)
-        pairs.append(np.column_stack([rows[:-1], rows[1:]]))
-        if len(rows) >= 3:
+        pairs.append(np.column_stack([walk[:-1], walk[1:]]))
+        if len(walk) >= 3:
             d2.append(d[2:] - 2.0 * d[1:-1] + d[:-2])
     if not steps:
         return {"lipschitz_per_xh": 0.0, "max_step_xh": 0.0, "max_step_chord_xh": 0.0, "ratio_d2": 0.0}
