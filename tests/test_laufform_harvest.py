@@ -1479,3 +1479,27 @@ def test_an_uncovered_anchor_rejects_the_slot_under_its_own_name(monkeypatch: py
     assert gap["geo_rmse_px"] <= 3.0
     assert [o["measurements"]["slot"] for o in out.occurrences] == [1]
     assert list(out.fits_by_key) == ["a"] and len(out.fits_by_key["a"]) == 1
+
+
+def test_apply_refuses_the_measured_occurrence_source(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A48 is a measured ARM, so `--apply` must not write its anchors.
+
+    The third of the writing guards, beside the seeded/overlaid run and the
+    named follower: these anchors have never been judged, and `--apply` would
+    put them into every flowing render.
+
+    No `--follower` is named anywhere here on purpose. The A48 guard sits one
+    line ABOVE the follower one, so the arm trips it while the DEFAULT source
+    falls through to the follower refusal — which both keeps the default's
+    check honest (it is the SOURCE being refused, not `--apply` as such) and
+    stops every case at a guard instead of starting a real harvest.
+    """
+    for source in harvest_mod.OCCURRENCE_CHOICES:
+        monkeypatch.setattr("sys.argv", ["harvest", "--apply", "--occurrences", source])
+        with pytest.raises(SystemExit) as exc:
+            harvest_mod.main()
+        if source == harvest_mod.DEFAULT_OCCURRENCES:
+            assert "name --follower explicitly" in str(exc.value)
+        else:
+            assert f"--occurrences {source} is a measurement arm (A48)" in str(exc.value)
+            assert "it is not writable" in str(exc.value)

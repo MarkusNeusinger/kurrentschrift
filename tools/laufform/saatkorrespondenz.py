@@ -90,7 +90,6 @@ class SlotCorrespondence:
     anchors_px: np.ndarray  # (N, 2), NaN where uncovered
     covered: np.ndarray  # (N,) bool
     slice_resid: float  # worst residual of the slice proofs used
-    seed_span: float  # worst bracketing seed-sample distance, in samples
 
     @property
     def complete(self) -> bool:
@@ -261,7 +260,6 @@ def slot_correspondence(
     out = np.full((len(anchors), 2), np.nan)
     covered = np.zeros(len(anchors), dtype=bool)
     worst_resid = 0.0
-    worst_span = 0.0
 
     for m, centerline in items:
         match = identify_slice(centerline, template_strokes)
@@ -279,22 +277,22 @@ def slot_correspondence(
             t0, t1 = int(np.floor(target)), int(np.ceil(target))
             if t0 < 0 or t1 >= len(match.proven) or not (match.proven[t0] and match.proven[t1]):
                 continue
-            place = _read_at(target, pos, in_item, state_xy)
-            if place is None:
+            xy = _read_at(target, pos, in_item, state_xy)
+            if xy is None:
                 continue
-            xy, span = place
             out[j] = xy
             covered[j] = True
-            worst_span = max(worst_span, span)
-    return SlotCorrespondence(anchors_px=out, covered=covered, slice_resid=worst_resid, seed_span=worst_span)
+    return SlotCorrespondence(anchors_px=out, covered=covered, slice_resid=worst_resid)
 
 
-def _read_at(
-    target: float, pos: np.ndarray, sample_ids: np.ndarray, state_xy: np.ndarray
-) -> tuple[np.ndarray, float] | None:
+def _read_at(target: float, pos: np.ndarray, sample_ids: np.ndarray, state_xy: np.ndarray) -> np.ndarray | None:
     """The decoded place at a fractional item index, read between two ADJACENT
     seed samples — a linear read over at most one seed step (0.03 xh), never a
-    redistribution over the letter's arc."""
+    redistribution over the letter's arc.
+
+    The adjacency is a PRECONDITION, not a measurement: a non-adjacent pair is
+    refused outright below, so there is no bracketing distance left to report.
+    """
     if target < pos[0] - 1e-9 or target > pos[-1] + 1e-9:
         # Outside the seed's own range there is no bracketing pair, and
         # clamping to the nearest end would be an extrapolation wearing a
@@ -307,5 +305,10 @@ def _read_at(
     if k1 != k0 + 1 or not np.isfinite(a).all() or not np.isfinite(b).all():
         return None
     p0, p1 = pos[hi - 1], pos[hi]
+    # The ONE declared interpolation of the chain: the blend weight is taken in
+    # the composed ITEM's parameter and applied to places on the INK. Over a
+    # single seed step (~0.03 xh) that is small and bounded — but it is not
+    # nothing, and it is step 5 of the pre-registration rather than a silent
+    # arc-length redistribution over the letter's span.
     w = 0.0 if p1 <= p0 else float(np.clip((target - p0) / (p1 - p0), 0.0, 1.0))
-    return a + w * (b - a), float(abs(k1 - k0))
+    return a + w * (b - a)

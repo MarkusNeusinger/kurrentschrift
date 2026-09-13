@@ -2187,14 +2187,15 @@ def follow_word(case: WordCase, weights: TintenpfadWeights, *, correspondence: b
     """One word, both stages — the candidate-shaped row (`follow_derived`'s shape).
 
     With `correspondence` the row additionally carries a `"correspondence"` key
-    (numpy arrays, never serialised): the DECODED runs in crop px with the seed
-    sample index per vertex, plus the seed's own `slot`/`item`/`pos`
-    bookkeeping. It is the Saat-Korrespondenz the Laufform harvest reads — off
-    by default, and it adds nothing to `meta`, so every stored candidate and
-    every report stays byte-identical whether the key was asked for or not.
-    The runs handed over are the ones BEFORE the arc-length resample: the
-    resample re-reads a carried array at the nearest original vertex, so the
-    place a seed sample actually landed is only exact on the decoded chain.
+    (numpy arrays, never serialised), keyed PER SEED SAMPLE rather than per
+    vertex: `"state_xy"` is the strand pixel that sample's decoder state
+    boarded (NaN where the state is the paper one), and `"seed_slot"` /
+    `"seed_item"` / `"seed_pos"` are the seed's own bookkeeping for it. No runs
+    and no per-vertex index are handed over — the boarded state IS the place,
+    and it is a point of the delivered rail, so it needs neither. It is the
+    Saat-Korrespondenz the Laufform harvest reads — off by default, and it adds
+    nothing to `meta`, so every stored candidate and every report stays
+    byte-identical whether the key was asked for or not.
     """
     base = {"kind": case.kind, "specimen_id": case.id, "word": case.word}
     started = time.perf_counter()
