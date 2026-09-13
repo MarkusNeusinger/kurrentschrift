@@ -1145,6 +1145,20 @@ nicht aus dieser Hand — legitim (der Tintenpfad nimmt die Saat nur als
 Vorschlag, die Bahn liegt auf der Tinte), aber es muss dastehen, sonst liest
 sich der Pfad wie eine Behauptung über den Schreiber.
 
+**Die Saat kommt LIVE.** Die Vorlagen liest der Folger über die Admin-API
+derselben Quelle und nicht aus den eingefrorenen Wort-Fixtures: ein
+Bench-Wort wird gegen die eingefrorene Referenz GEMESSEN und muss deshalb
+aus demselben eingefrorenen Stand komponieren, ein Streifen wird nie gegen
+sie gemessen — er erbte bis dahin nur die Bench-Auswahl von 34 Glyphen und
+fiel an einem `y` aus, das diese Hand längst trägt (13.09.); aus der
+Fixture-Wurzel kommen weiterhin die Stil-Konstanten des Manifests
+(`style_ratio`, `width_resolver`, `constant_nib_units`), und die Bench-Pfade
+lesen die Wurzel unverändert weiter. Eine Ligatur ohne eigene Vorlage
+zerfällt dabei in ihre Buchstaben wie überall sonst im Stapel — `ch` ist
+nirgends autoriert, weil die Kombination nur dort ein Bibliothekseintrag
+ist, wo sie wirklich anders aussieht (`St`), und ohne den Zerfall wies der
+Folger das eigene Wort `Kurrentschrift` als „unautoriert" ab.
+
 **Was geprüft wird**, bevor etwas abgelegt wird (`check_paths`, 422): ein
 Pfad je Kasten und kein Kasten doppelt, ein Kasten, den die gedruckte Zeile
 wirklich hat, ein Wort, das mit dem gedruckten Kasten UND dem eingefrorenen

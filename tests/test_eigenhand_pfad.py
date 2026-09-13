@@ -1,13 +1,19 @@
 """The Streifen-Pfad's pure half: where a word box sits, and what a path may be.
 
-Two things are tested here because both are arithmetic the server and the local
+Three things are tested here. Two are arithmetic the server and the local
 follower must agree on to the pixel: the frame a word box spans inside a stored
 strip (`frame_for_box`), and the refusals that keep a pushed path from being
-stored against the wrong ink (`check_paths`).
+stored against the wrong ink (`check_paths`). The third is which words a strip
+follow can even take on — the ductus seed it composes with, and the two ways
+that seam used to refuse the author's own hand (`TestDuctusSeed`).
 """
 
 from __future__ import annotations
 
+import json
+from types import SimpleNamespace
+
+import numpy as np
 import pytest
 
 from core.eigenhand.pfad import MAX_UNIT, check_paths, frame_for_box, frames_of_row, nominal_xh_px
@@ -39,15 +45,14 @@ def _dry_run(tmp_path, monkeypatch, *, fresh: list[dict], stored: list[dict], ar
     and the follower itself — so what the assertions read is exactly the list
     the `--apply` path would have pushed, without a fixture root or a network.
     """
-    import json
-
     from tools.eigenhand import pfad as tool
 
     merged = tool._merged
     monkeypatch.setattr(tool, "api_base", lambda _api: "https://example.invalid")
     monkeypatch.setattr(tool, "admin_token", lambda _token: "token")
     monkeypatch.setattr(tool, "style_of_hand", lambda _hand: "suetterlin")
-    monkeypatch.setattr(tool, "_fixture_prior", lambda _style: {})
+    monkeypatch.setattr(tool, "_style_constants", lambda _style: {"manifest": {}, "source_id": "suetterlin-1922"})
+    monkeypatch.setattr(tool, "LiveDuctus", lambda *_a: SimpleNamespace(have=set()))
     monkeypatch.setattr(
         tool, "_strip_rows", lambda *_a: [{"strip": "S0001", "fassung": "F01", "sheet": "B0001", "row_index": 0}]
     )
@@ -335,3 +340,159 @@ class TestFollowerHandover:
         assert all(
             getattr(weights, arm) for arm in ("tip_read", "hairpin_tip", "ride_back", "tip_grey_stop", "self_jump")
         )
+
+
+class TestDuctusSeed:
+    """Which words a strip can be followed at all — the seed, not the ink.
+
+    Both defects fixed here refused the author's OWN hand: a word holding a
+    ligature nothing authors (`ch`) and a word holding a letter the word bench
+    has no use for (`y`). Everything is stubbed at the API seam, so no test
+    here needs a fixture root or the network.
+    """
+
+    # The live source's authored inventory, cut down to what these words need.
+    # `ch` is deliberately absent — it is authored nowhere, by design.
+    LIVE = {"K", "u", "r", "e", "n", "t", "longs", "c", "h", "i", "f", "m", "d", "a", "l", "y", "g", "o", "z"}
+    # What the frozen word fixtures carry: the bench's 34 keys have no `y`.
+    BENCH = LIVE - {"y", "K"}
+
+    @staticmethod
+    def _api(have: set[str], laufform: set[str] = frozenset()):
+        """A stand-in for `request_json` serving one source's template reads."""
+
+        def get(method: str, url: str, _token: str, *_args, **_kwargs):
+            assert method == "GET"
+            head, _, query = url.partition("?")
+            if head.endswith("/templates"):
+                return [{"glyph_key": key, "glyph": key, "variant": 0, "has_data": True} for key in sorted(have)] + [
+                    {"glyph_key": key, "glyph": key, "variant": 100, "has_data": True} for key in sorted(laufform)
+                ]
+            key = head.rsplit("/", 1)[-1]
+            variant = int(query.removeprefix("variant=") or 0)
+            return {
+                "glyph_key": key,
+                "glyph": key,
+                "variant": variant,
+                "advance": 1.0,
+                "entry": {},
+                "exit_pt": {},
+                "anchors": [[0.0, 0.0], [1.0, 1.0]],
+                "half_widths": [0.07, 0.07],
+                "trace_meta": {"variant": variant},
+            }
+
+        return get
+
+    def _case(self, word: str, have: set[str], laufform: set[str] = frozenset()):
+        from tools.eigenhand.pfad import LiveDuctus, _case_for_box
+
+        seed = LiveDuctus("https://example.invalid", "token", "suetterlin-1922", get=self._api(have, laufform))
+        prior = {"manifest": {"width_resolver": "constant"}, "source_id": "suetterlin-1922", "seed": seed}
+        # A plane with a little ink in it: the crop is binarised and skeletonised
+        # on the way into the case, and the seed question is orthogonal to it.
+        plane = np.ones((HEIGHT_PX, WIDTH_PX), dtype=np.float64)
+        plane[180:200, 60:340] = 0.1
+        return _case_for_box(prior, plane, _frame(0), word, word, f"S0001/F01#0-{word}")
+
+    def test_a_ligature_without_a_template_decays_into_its_letters(self):
+        # `ch` is authored nowhere — the frozen root stores `fechten` as
+        # `f e c h t e n` — so the author's own `Kurrentschrift` was refused as
+        # unauthored instead of composing c + h with a generated Übergang.
+        case, missing = self._case("Kurrentschrift", self.LIVE)
+        keys = [slot.key for slot in case.slots]
+        assert "ch" not in keys
+        assert keys[keys.index("longs") + 1 : keys.index("longs") + 3] == ["c", "h"]
+        assert missing == []
+        assert case.scorable
+        assert set(case.templates) >= {"K", "longs", "c", "h"}
+
+    def test_the_decayed_letters_bring_their_own_laufform_rows(self):
+        # The decay changes the key list, so the running forms have to be
+        # fetched for the letters — not for the cluster that never existed.
+        case, _ = self._case("Kurrentschrift", self.LIVE, laufform={"c", "h", "r", "u"})
+        assert set(case.laufform) == {"c", "h", "r", "u"}
+        assert all(row["trace_meta"]["variant"] == 100 for row in case.laufform.values())
+
+    def test_sz_stays_atomic_and_is_reported_rather_than_split(self):
+        # `decompose_ligature_slot` refuses to split ß: its historic
+        # decomposition is an allograph question, and a naive split would write
+        # ſſ mid-word. So a source without `sz` gets an honest refusal.
+        case, missing = self._case("groß", self.LIVE - {"sz"})
+        assert [slot.key for slot in case.slots] == ["g", "r", "o", "sz"]
+        assert missing == ["sz"]
+        assert not case.scorable
+
+    def test_a_letter_the_bench_lacks_but_the_hand_has_is_followable(self):
+        # The second defect: the seed used to be the frozen WORD FIXTURE root,
+        # which carries only the 34 keys its 63 bench words need. `y` is
+        # authored and has data on the live source — the author's own
+        # `immediately` was refused for a bench rule that does not bind a strip.
+        case, missing = self._case("immediately", self.LIVE)
+        assert "y" in {slot.key for slot in case.slots}
+        assert missing == []
+        assert case.scorable
+        # …and against the bench's own inventory the very same word is not.
+        assert self._case("immediately", self.BENCH)[1] == ["y"]
+
+    def test_the_case_says_the_seed_was_read_live(self):
+        # The origin label is what a reader of a filed path sees; a strip must
+        # not claim a frozen root it never read.
+        case, _ = self._case("doctor", self.LIVE)
+        assert case.origin == "eigenhand:live:suetterlin-1922"
+
+    def test_the_rows_are_fetched_once_per_glyph_and_then_cached(self):
+        from tools.eigenhand.pfad import LiveDuctus
+
+        calls: list[str] = []
+        inner = self._api(self.LIVE)
+
+        def counting(method: str, url: str, token: str, *args, **kwargs):
+            calls.append(url)
+            return inner(method, url, token, *args, **kwargs)
+
+        seed = LiveDuctus("https://example.invalid", "token", "suetterlin-1922", get=counting)
+        assert seed.rows_for(["d", "o"])[0].keys() == {"d", "o"}
+        assert seed.rows_for(["o", "c"])[0].keys() == {"o", "c"}
+        # One inventory read plus one read per distinct glyph — `o` only once.
+        assert len(calls) == 1 + 3
+
+    def test_the_style_constants_no_longer_need_the_frozen_templates(self, tmp_path, monkeypatch):
+        # The frozen root keeps exactly one job for a strip: the manifest's
+        # style-level constants. The BENCH loader still reads its templates out
+        # of the same root, unchanged — that is the point of the split, and a
+        # root holding only a manifest shows both halves at once.
+        from tools.eigenhand.pfad import _style_constants
+        from tools.wordlab import cases
+
+        root = tmp_path / "suetterlin" / "suetterlin-1922"
+        root.mkdir(parents=True)
+        (root / "manifest.json").write_text(
+            json.dumps(
+                {
+                    "set": "words",
+                    "source_id": "suetterlin-1922",
+                    "style_ratio": [1.0, 1.0, 1.0],
+                    "width_resolver": "constant",
+                    "constant_nib_units": 0.072,
+                    "words": [{"word": "lesen"}],
+                }
+            )
+        )
+        monkeypatch.setattr(cases, "fixture_root_for", lambda **_kwargs: root)
+        constants = _style_constants("suetterlin")
+        assert constants["source_id"] == "suetterlin-1922"
+        assert constants["manifest"]["constant_nib_units"] == 0.072
+        with pytest.raises(FileNotFoundError):
+            cases.iter_fixture_word_cases(style="suetterlin", fixtures_root=tmp_path)
+
+    def test_a_manifest_without_a_source_is_refused_rather_than_guessed(self, tmp_path, monkeypatch):
+        from tools.eigenhand.pfad import _style_constants
+        from tools.wordlab import cases
+
+        root = tmp_path / "suetterlin" / "suetterlin-1922"
+        root.mkdir(parents=True)
+        (root / "manifest.json").write_text(json.dumps({"set": "words", "words": []}))
+        monkeypatch.setattr(cases, "fixture_root_for", lambda **_kwargs: root)
+        with pytest.raises(SystemExit, match="names no source_id"):
+            _style_constants("suetterlin")
