@@ -572,7 +572,9 @@ class FollowWeights:
     so, wie so eine Welle, zusammenhängend verschieben"): interior knot
     spacing, in xh, of the clamped cubic B-spline displacement field the free
     per-anchor deltas are re-parametrised in — one block per pen stroke of
-    the chain, continuous across seams, no corner knots
+    the chain, continuous across a letter seam EXCEPT at a retrace letter
+    (the t's bar), whose tail ends its own block at the seam and the block
+    that resumes is anchored back to it, no corner knots
     (`chain.build_chain_problem(wave_spacing=…)`). A MECHANISM, a change of
     parameter space, not a weight: nothing is priced, a one-anchor zag is
     simply not representable. Applies to the initial solve and every round.

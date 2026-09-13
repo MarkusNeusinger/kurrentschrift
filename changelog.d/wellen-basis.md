@@ -4,8 +4,10 @@
   building block, off by default.** `build_chain_problem(wave_spacing=…)`
   re-parametrises the chain solver's free per-anchor deltas as
   `deltas = B @ c`, a clamped cubic B-spline design matrix over the seed's
-  arc length, one block per pen stroke (continuous across letter seams, cut
-  only at letter-internal stroke starts). Only `unpack`/`_pack` change, so
+  arc length, one block per pen stroke, continuous across a letter seam
+  except at a retrace letter (the t's bar), whose tail ends its own block at
+  the seam and the block that resumes is anchored back to it. Only
+  `unpack`/`_pack` change, so
   every energy term, the retrace guard, the reports and the analytic
   gradient (the exact chain rule `Bᵀg`) keep reading per anchor; a
   one-anchor zigzag simply has no representation in the basis, so no term
