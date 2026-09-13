@@ -227,6 +227,7 @@ def _word_instance_out(row: WordInstance) -> WordInstanceOut:
         provenance=row.provenance,
         hand_id=row.hand_id,
         measurements=dict(row.measurements or {}),
+        updated_at=row.updated_at.isoformat() if row.updated_at else None,
     )
 
 

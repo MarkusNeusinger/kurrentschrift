@@ -19,6 +19,7 @@ import type {
   EigenhandBestand,
   EigenhandFleck,
   EigenhandHands,
+  EigenhandPfadList,
   EigenhandPrinted,
   EigenhandPrintRequest,
   EigenhandSetup,
@@ -221,6 +222,25 @@ export const patchEigenhandFlecken = (
       body: JSON.stringify({ flecken }),
     },
   ).then(asJson<{ strip: string; fassung: string; flecken: EigenhandFleck[] }>);
+
+// The Streifen-Pfade of one Fassung — the followed pen path per written word.
+// Its own request rather than a field of the strip listing, and for the same
+// reason as the pixels: a path is a few thousand points per word, the listing's
+// question („which rows does this hand hold") never needs one, and the column
+// is deferred server-side to match. Fetched on demand, per Fassung.
+export const getEigenhandPfade = (
+  hand: string,
+  strip: string,
+  fassung: string,
+  retry?: RetryOptions,
+): Promise<EigenhandPfadList> =>
+  apiFetch(
+    `${apiRoot()}/eigenhand/strips/${encodeURIComponent(hand)}/${encodeURIComponent(strip)}/${encodeURIComponent(
+      fassung,
+    )}/pfade`,
+    {},
+    retry,
+  ).then(asJson<EigenhandPfadList>);
 
 export const getSource = (sourceId: string, retry?: RetryOptions): Promise<SourceOut> =>
   apiFetch(src(sourceId, ''), {}, retry).then(asJson<SourceOut>);

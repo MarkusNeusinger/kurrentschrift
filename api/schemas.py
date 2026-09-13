@@ -429,6 +429,14 @@ class WordInstanceBatchIn(BaseModel):
 
 
 class WordInstanceOut(BaseModel):
+    """One stored word trace, with the day it was last written.
+
+    `updated_at` is the second half of a trace's provenance: `provenance` says
+    WHO drew it (the harvest, or the author's own hand in the editor), the
+    timestamp says WHEN — which is what makes a line the workbench draws over a
+    plate readable as evidence rather than as an undated overlay. The column has
+    existed since the table did; it simply never reached the wire."""
+
     kind: str
     specimen_id: str
     word: str
@@ -437,6 +445,7 @@ class WordInstanceOut(BaseModel):
     provenance: str
     hand_id: str | None = None
     measurements: dict[str, Any]
+    updated_at: str | None = None
 
 
 class AggregateOut(BaseModel):
@@ -1395,6 +1404,14 @@ class EigenhandStripBoxOut(BaseModel):
     index: int
     word: str
     items: list[str]
+    # The box's pixel rectangle inside the stored strip — [x0, y0, x1, y1],
+    # derived from the printed Bogen layout (`core.eigenhand.pfad.frame_for_box`)
+    # exactly as the word-crop route cuts it. It is what lets the view place a
+    # Streifen-Pfad over a WORD crop: the stored registration is the strip's
+    # frame, and the crop's frame is that minus this rectangle. `null` for a
+    # Bogen printed before the cut geometry existed — then there is no crop to
+    # place anything in either.
+    rect_px: list[int] | None = None
 
 
 class EigenhandBefundOut(BaseModel):
@@ -1448,6 +1465,79 @@ class EigenhandStripListOut(BaseModel):
     strips: list[EigenhandStripOut]
 
 
+class EigenhandPfadRegistration(BaseModel):
+    """Where a path's units sit in the STRIP's pixels — not in a word crop's.
+
+    ``px = (u·xh_px + tx, baseline_row + ty − v·xh_px)``. The strip is the one
+    image that always exists, so a crop's frame follows by subtracting its box
+    rectangle; storing the crop's frame instead would make the padding part of
+    the contract.
+    """
+
+    tx: float
+    ty: float = 0.0
+    baseline_row: float
+
+
+class EigenhandPfad(BaseModel):
+    """One written word's followed pen path — the Streifen-Pfad of one box.
+
+    `strokes` is one polyline per pen-down stretch in the word's own units
+    (baseline 0, midband 1, x from the word's origin) — the SAME frame
+    `word_instances.strokes` uses, which is what lets one overlay component
+    draw the Wörter view and the Eigenhand view alike.
+
+    `verfahren` and `erzeugt_am` are the provenance the author asked to see;
+    `konfiguration` is the follower configuration it was produced with, and
+    `flecken_n` the size of the Fleckenmaske it was followed under — so a later
+    brush edit shows as a „Maske geändert" hint instead of silently putting an
+    old path over corrected pixels.
+
+    Neither `In` nor `Out`: a path has the same shape in both directions. What
+    actually binds is checked against the strip it belongs to
+    (`core.eigenhand.pfad.check_paths`) — the bounds here are a sanity net.
+    """
+
+    box_index: Annotated[int, Field(ge=0, le=63)]
+    word: str = Field(min_length=1, max_length=64)
+    strokes: list[list[list[float]]] = Field(min_length=1, max_length=128)
+    registration_px: EigenhandPfadRegistration
+    xh_px: Annotated[float, Field(gt=0, le=20000)]
+    verfahren: str = Field(min_length=1, max_length=64)
+    konfiguration: dict[str, Any] = Field(default_factory=dict)
+    meta: dict[str, Any] = Field(default_factory=dict)
+    erzeugt_am: str | None = Field(default=None, max_length=10)
+    flecken_n: int | None = Field(default=None, ge=0)
+
+
+class EigenhandPfadeIn(BaseModel):
+    """The Streifen-Pfade of one Fassung — a FULL replacement of the list.
+
+    Full replace, like the Fleckenmaske and for the same reason: a follower run
+    produces the whole row at once, and merging would have to guess what a
+    missing box meant.
+    """
+
+    pfade: list[EigenhandPfad]
+    format: int = 1
+
+
+class EigenhandPfadeOut(BaseModel):
+    """What a Fassung holds — `pfade: null` means nobody has followed it yet.
+
+    An empty list is the other answer („followed, nothing found"), the same
+    NULL/empty distinction the Fleckenmaske carries. `boxes` travels along so
+    the view can place a path over a single word crop without a second read.
+    """
+
+    hand: str
+    strip: str
+    fassung: str
+    format: int = 1
+    pfade: list[EigenhandPfad] | None = None
+    boxes: list[EigenhandStripBoxOut] = []
+
+
 class EigenhandArchiveOut(BaseModel):
     """One hand's complete bookkeeping as ROWS — what an archive run files.
 
@@ -1456,6 +1546,14 @@ class EigenhandArchiveOut(BaseModel):
     be built on. Strips appear with their sha256 and without their bytes: the
     private archive holds the images, and matching the hashes is what turns
     „repo + archive restores everything" into something mechanical.
+
+    TWO omissions, both deliberate. The strip BYTES, as above — and the
+    Streifen-Pfade, because a path is DERIVED: strip, layout and follower are
+    all in the archive already, so a restored Fassung can be followed again,
+    and carrying the paths would file a second truth beside the one that can
+    regenerate them (eigenhand-erfassung.md §7.5). A restore therefore brings
+    back every image, verdict and mask, and no path — which is what „re-run
+    `tools.eigenhand.pfad`" is for.
     """
 
     hand: str
