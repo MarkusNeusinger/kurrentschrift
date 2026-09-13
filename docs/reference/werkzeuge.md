@@ -623,9 +623,12 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   es über `PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade` in die
   GETEILTE DB, braucht `ADMIN_TOKEN` und gehört hinter einen
   `tools.dbsnapshot.fetch`. `--fassung` und `--box` grenzen ein; weil der
-  Schreibweg eine VOLLE Ersetzung ist, mischt ein `--box`-Lauf die gefolgten
-  Kästen über die gespeicherten — und der Trockenlauf legt genau diese
-  gemischte Liste ab, sonst prüfte man etwas anderes, als man schriebe.
+  Schreibweg eine VOLLE Ersetzung ist, mischt **jeder** Lauf die gefolgten
+  Kästen über die gespeicherten — auch der Zeilenlauf, denn der überspringt
+  einen Kasten ohne Rahmen, ohne autorierte Glyphen oder mit gescheitertem
+  Folger, und nur das Gefolgte zu schicken löschte deren Pfade still. Der
+  Trockenlauf legt genau diese gemischte Liste ab, sonst prüfte man etwas
+  anderes, als man schriebe.
   BLAS-Fäden
   pinnt das Modul selbst (Vorgabewerte), weil die Kettenlösung sonst je nach
   Umgebung anders läuft.

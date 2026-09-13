@@ -25,6 +25,7 @@
   Eigenhand: a colour ramp in writing order, a dot where the pen touched down,
   an arrow head at each stroke's end and **dashed connectors for the Absetzer**
   — the part a single flat colour hides completely, because a lift looks
-  exactly like a corner. Herkunft and date stand beside it; `WordInstanceOut`
-  carries its `updated_at` for that, and the strip listing every box's pixel
-  rectangle.
+  exactly like a corner. Herkunft and date stand beside it — and a Fassung
+  whose paths came out of several runs says „verschiedene Läufe" instead of
+  lending them the first word's; `WordInstanceOut` carries its `updated_at` for
+  that, and the strip listing every box's pixel rectangle.

@@ -1059,6 +1059,14 @@ export const admin = {
       'Legt die nachgefolgte Federbahn über den Streifen: Farbverlauf in Schreibreihenfolge (erster Zug grün, letzter blau), Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Wird je Fassung einzeln geladen und nur für sichtbare Bilder.',
     pfadPedigree: 'Pfad: {{verfahren}} · {{datum}} · {{woerter}} Wort/Wörter',
     pfadNoDate: 'ohne Datum',
+    // Eine Fassung trägt nicht zwangsläufig EINEN Lauf: `--box` mischt ein neu
+    // gefolgtes Wort über die übrigen, und ein Zeilenlauf lässt jedem
+    // übersprungenen Kasten seinen älteren Pfad. Dann gehört die Herkunft dem
+    // einzelnen Pfad, nicht der Liste — und das wird gesagt, statt dem ersten
+    // Wort die Herkunft aller zu leihen.
+    pfadPedigreeMixed: 'Pfad: verschiedene Läufe · {{woerter}} Wort/Wörter',
+    pfadMixedHint:
+      'Die Pfade dieser Fassung stammen aus mehreren Läufen — einzelne Wörter wurden später noch einmal gefolgt. Herkunft je Wort:',
     pfadNone:
       'Für diese Fassung ist noch kein Pfad gespeichert. Lokal folgen und hochschieben: uv run python -m tools.eigenhand.pfad --hand … --strip … (Trockenlauf), dann --apply.',
     pfadNoneShort: 'noch kein Pfad gespeichert',

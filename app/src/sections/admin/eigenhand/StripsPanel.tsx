@@ -67,6 +67,7 @@ import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
 import { VORSCHLAG_COLOR, byBefund } from '@/sections/admin/eigenhand/befundOrder';
 import { FleckenEditor, MIN_ERASE_ZOOM } from '@/sections/admin/eigenhand/FleckenEditor';
+import { pfadHerkunft } from '@/sections/admin/eigenhand/pfadHerkunft';
 import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { Panel } from '@/sections/admin/shell/Panel';
@@ -280,17 +281,34 @@ function PfadLayer({
  */
 function PfadCaption({ pfade, flecken }: { pfade: EigenhandPfad[]; flecken: EigenhandFleck[] | null | undefined }) {
   const t = de.admin.eigenhand;
-  const first = pfade[0];
+  // Herkunft belongs to the single path, not to the list: a Fassung can hold
+  // paths from several runs, so a Verfahren and a day are named only while
+  // every drawn path agrees on them — picking one word narrows `pfade` to that
+  // word, and the line becomes its own provenance. A mixed list says so and
+  // carries the per-word detail in its tooltip, instead of letting the first
+  // entry speak for the others (Copilot review, PR #598).
+  const herkunft = pfadHerkunft(pfade, t.pfadNoDate);
   const stale = pfade.some((p) => typeof p.flecken_n === 'number' && flecken != null && p.flecken_n !== flecken.length);
+  const pedigree = (
+    <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+      {herkunft.gemischt
+        ? fmt(t.pfadPedigreeMixed, { woerter: pfade.length })
+        : fmt(t.pfadPedigree, {
+            verfahren: herkunft.verfahren ?? '',
+            datum: herkunft.datum ?? '',
+            woerter: pfade.length,
+          })}
+    </Typography>
+  );
   return (
     <Stack direction="row" spacing={1} sx={{ mt: 0.5, flexWrap: 'wrap', rowGap: 0.5, alignItems: 'center' }}>
-      <Typography variant="caption" sx={{ color: paper.inkSoft }}>
-        {fmt(t.pfadPedigree, {
-          verfahren: first.verfahren,
-          datum: first.erzeugt_am ?? t.pfadNoDate,
-          woerter: pfade.length,
-        })}
-      </Typography>
+      {herkunft.gemischt ? (
+        <Tooltip title={<Box sx={{ whiteSpace: 'pre-line' }}>{[t.pfadMixedHint, ...herkunft.laeufe].join('\n')}</Box>}>
+          {pedigree}
+        </Tooltip>
+      ) : (
+        pedigree
+      )}
       <Tooltip title={t.pfadSeedHint}>
         <Chip size="small" variant="outlined" label={t.pfadSeed} />
       </Tooltip>

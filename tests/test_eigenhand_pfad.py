@@ -32,6 +32,34 @@ def _frame(index: int = 0, **overrides):
     return frame_for_box(row, ORIGIN_MM, WIDTH_PX, HEIGHT_PX, index)
 
 
+def _dry_run(tmp_path, monkeypatch, *, fresh: list[dict], stored: list[dict], argv: list[str]) -> list[dict]:
+    """Run the tool's dry path over a stubbed API and hand back the filed body.
+
+    Everything around the merge is stubbed — the fixtures, the strip listing
+    and the follower itself — so what the assertions read is exactly the list
+    the `--apply` path would have pushed, without a fixture root or a network.
+    """
+    import json
+
+    from tools.eigenhand import pfad as tool
+
+    merged = tool._merged
+    monkeypatch.setattr(tool, "api_base", lambda _api: "https://example.invalid")
+    monkeypatch.setattr(tool, "admin_token", lambda _token: "token")
+    monkeypatch.setattr(tool, "style_of_hand", lambda _hand: "suetterlin")
+    monkeypatch.setattr(tool, "_fixture_prior", lambda _style: {})
+    monkeypatch.setattr(
+        tool, "_strip_rows", lambda *_a: [{"strip": "S0001", "fassung": "F01", "sheet": "B0001", "row_index": 0}]
+    )
+    monkeypatch.setattr(tool, "follow_row", lambda *_a: fresh)
+    monkeypatch.setattr(tool, "_merged", lambda *args: merged(*args, _get=lambda *_a: {"pfade": stored}))
+    monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: pytest.fail("a dry run must not write"))
+
+    out = tmp_path / "pfade.json"
+    assert tool.main([*argv, "--out", str(out)]) == 0
+    return json.loads(out.read_text())["pfade"]
+
+
 def _path(**overrides) -> dict:
     return {
         "box_index": 0,
@@ -267,28 +295,34 @@ class TestFollowerHandover:
         # The dry run is the review surface `--apply` is decided on, so it has
         # to file the MERGED list — filing only the followed boxes made a
         # narrowed run look like a whole-row replacement (review of PR #598).
-        import json
-
-        from tools.eigenhand import pfad as tool
-
-        stored = [{"box_index": 0, "word": "lesen"}, {"box_index": 1, "word": "das"}]
-        fresh = [{"box_index": 1, "word": "das", "verfahren": "tintenpfad"}]
-        merged = tool._merged
-        monkeypatch.setattr(tool, "api_base", lambda _api: "https://example.invalid")
-        monkeypatch.setattr(tool, "admin_token", lambda _token: "token")
-        monkeypatch.setattr(tool, "style_of_hand", lambda _hand: "suetterlin")
-        monkeypatch.setattr(tool, "_fixture_prior", lambda _style: {})
-        monkeypatch.setattr(
-            tool, "_strip_rows", lambda *_a: [{"strip": "S0001", "fassung": "F01", "sheet": "B0001", "row_index": 0}]
+        body = _dry_run(
+            tmp_path,
+            monkeypatch,
+            fresh=[{"box_index": 1, "word": "das", "verfahren": "tintenpfad"}],
+            stored=[{"box_index": 0, "word": "lesen"}, {"box_index": 1, "word": "das"}],
+            argv=["--hand", "mn-suetterlin", "--strip", "S0001", "--box", "1"],
         )
-        monkeypatch.setattr(tool, "follow_row", lambda *_a: fresh)
-        monkeypatch.setattr(tool, "_merged", lambda *args: merged(*args, _get=lambda *_a: {"pfade": stored}))
-        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: pytest.fail("a dry run must not write"))
+        assert [entry["box_index"] for entry in body] == [0, 1]
 
-        out = tmp_path / "pfade.json"
-        assert tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--box", "1", "--out", str(out)]) == 0
-        body = json.loads(out.read_text())
-        assert [entry["box_index"] for entry in body["pfade"]] == [0, 1]
+    def test_a_whole_row_run_keeps_the_paths_of_the_boxes_it_could_not_follow(self, tmp_path, monkeypatch):
+        # A run over the WHOLE row drops boxes too — `follow_row` skips one
+        # whose Bogen has no frame, whose glyphs are unauthored or whose
+        # follower gives up. The write is a full replacement, so sending only
+        # what came back would delete those boxes' stored paths and report
+        # success (Copilot review, PR #598). Box 0 is the skipped one here.
+        body = _dry_run(
+            tmp_path,
+            monkeypatch,
+            fresh=[{"box_index": 1, "word": "das", "erzeugt_am": "2026-09-13"}],
+            stored=[
+                {"box_index": 0, "word": "lesen", "erzeugt_am": "2026-09-11"},
+                {"box_index": 1, "word": "das", "erzeugt_am": "2026-09-11"},
+            ],
+            argv=["--hand", "mn-suetterlin", "--strip", "S0001"],
+        )
+        assert [entry["box_index"] for entry in body] == [0, 1]
+        assert body[0]["erzeugt_am"] == "2026-09-11"  # the skipped box keeps the path it had
+        assert body[1]["erzeugt_am"] == "2026-09-13"  # the re-followed box is the fresh one
 
     def test_the_declared_configuration_is_one_the_follower_accepts(self):
         # The arms are named in the tool and stored with every path; a renamed

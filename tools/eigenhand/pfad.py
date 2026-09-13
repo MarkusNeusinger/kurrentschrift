@@ -293,12 +293,16 @@ def _local_path(hand: str, strip: str, fassung: str) -> Path:
 
 
 def _merged(base: str, token: str, url: str, entries: list[dict], _get=request_json) -> list[dict]:
-    """A `--box` run's entries, over the paths the Fassung already holds.
+    """The freshly followed entries, over the paths the Fassung already holds.
 
-    The write is a FULL replacement — right for a whole-row follow, wrong for
-    a single re-followed word, which would otherwise drop every other box's
-    path (Copilot review, PR #598). So a narrowed run reads the stored list
-    first and replaces only the boxes it actually followed.
+    The write is a FULL replacement — right for the boxes a run actually
+    followed, wrong for every other one (Copilot review, PR #598). `--box`
+    narrows the follow on purpose, but a WHOLE-ROW run drops boxes just as
+    quietly: `follow_row` skips a box whose Bogen has no frame, whose glyphs
+    are unauthored or whose follower gives up, and sending only what came back
+    would delete those boxes' stored paths while reporting success. So every
+    run reads the stored list first and replaces only what it followed — a run
+    can add to a Fassung and improve it, never silently empty it.
 
     `_get` is the seam the test calls through; every caller uses the default.
     """
@@ -340,10 +344,10 @@ def main(argv: list[str] | None = None) -> int:
         # The body is assembled BEFORE the two paths part ways: the dry run is
         # the surface an operator reviews before deciding on `--apply`, so the
         # file it writes has to be the list that would be stored, merge and
-        # all. Filing only the followed boxes made a narrowed run look like a
-        # whole-row replacement — the exact thing `_merged` exists to prevent
-        # (review of PR #598).
-        body = _merged(base, token, url, entries) if args.box else entries
+        # all. Filing only the followed boxes made a run look like a whole-row
+        # replacement — the exact thing `_merged` exists to prevent (review of
+        # PR #598).
+        body = _merged(base, token, url, entries)
         if not args.apply:
             out = args.out or _local_path(hand, row["strip"], row["fassung"])
             out.parent.mkdir(parents=True, exist_ok=True)
