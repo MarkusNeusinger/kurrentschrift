@@ -1448,7 +1448,12 @@ aber das Lineal verloren (dev-19 0,045881 → 0,051445, 6 : 13) an drei
 benannten Klassen (das-Becken, muß/ß, Kapitale/W); 18 gestrandete
 Diakritika. *Technisch:* seit `sep12` im Repo unter `tools/pairlab/schlange.py`
 als eigenständiger Baustein (Zweig `wellen-schlange`, unadoptiert, kein
-Schalter im bestehenden Code); Aufruf `OPENBLAS_NUM_THREADS=1
+Schalter im bestehenden Code) — **die Zahlen oben sind Geschichte, nicht das
+eingecheckte Modul**: die Review-Runde hat danach einen echten Ecken-Index-Fehler
+in `seed_curve` behoben (geteilte und ungeteilte Naht hatten ihre
+Bogenlängen-Versätze vertauscht), weshalb der Stand im Repo sie nicht mehr
+reproduziert (`das` 600 statt 625 Strichpunkte) und ein Nachmessen aussteht;
+Aufruf `OPENBLAS_NUM_THREADS=1
 OMP_NUM_THREADS=1 uv run python -m tools.pairlab.schlange --set words --jobs 2
 --candidate-out <dir>/cand.json --json <dir>/schlange.json --expect-root
 <digest> <wort …>`; erklärte Einstellung ℓ 7 · β_e 64 (regelkonform wäre 16) ·

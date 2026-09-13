@@ -8,6 +8,9 @@ Pinned here, each next to the failure it was added for:
   first prototype eroded every cusp and reported ink reversals 0, a false
   pass on the loop's primary sensor;
 * the weld rule reproduces the assembler's pen runs;
+* the corner offset follows the seam kind — a shared seam keeps the corner
+  index, a lifted one shifts it by one; the two branches shipped swapped once
+  and put every corner of a mixed run on the node next door;
 * cut-back + assemble round-trips an unmoved seed to the same strokes;
 * ductus order of the entries — an i-dot emitted before the body run costs
   0.06 xh of dtw on every word (prototype arm a);
@@ -193,6 +196,44 @@ def test_the_weld_joins_a_letter_stroke_holding_the_seam_out() -> None:
         _piece(4, 0, "letter", [(4, 0), (5, 1)], w_in=True, key="c", slot=2),
     ]
     assert [len(c) for c in weld_pieces(pieces)] == [5]
+
+
+# ---------------------------------------------------------------- seed curve
+
+
+def test_the_corner_offset_follows_each_seam_kind_in_one_welded_run() -> None:
+    """`seed_curve` records every ductus corner as a SEED ARC LENGTH, and the
+    index it reads that arc length at depends on the seam the piece arrives on:
+
+    * shared seam — the piece's first point IS the tail, so it is dropped and
+      the tail takes its place 1:1; `px_eff` keeps the length of `px`, corner
+      index `c` still points at `px_eff[c]`, offset 0;
+    * lifted seam — the tail is prepended in full, `px_eff` is one LONGER than
+      `px`, so every corner index shifts by one.
+
+    The two branches shipped swapped once (`1 if same length else 0`). On a
+    welded run that mixes both seam kinds that moved every corner to the node
+    next door — and the corner is the breakpoint both the arc-length
+    reparametrisation and the free bending row key off. The run below is a
+    straight rail on the baseline, so every arc length is a plain x-distance
+    in crop px: nodes at 0 · 20 · 40 · 60 · 80 · 85 · 90 · 110.
+    """
+    pieces = [
+        _piece(0, 0, "letter", [(0.0, 0), (0.5, 0), (1.0, 0)], w_out=True, key="a", slot=0),
+        # shared seam: this piece starts exactly on the letter's last point
+        _piece(1, 0, "connector", [(1.0, 0), (1.5, 0), (2.0, 0), (2.125, 0)], corners=[2], w_in=True, w_out=True),
+        # lifted seam: this piece starts 5 px past the connector's last point
+        _piece(2, 0, "letter", [(2.25, 0), (2.75, 0)], corners=[0], w_in=True, key="b", slot=1),
+    ]
+    seed = seed_curve(pieces, XH, TX, TY, BASELINE_ROW)
+
+    # the shared piece's corner at 80.0, the one right behind the lift at 90.0
+    assert seed["corner_s"] == pytest.approx([80.0, 90.0], abs=1e-9)
+    # each arc length names the corner's OWN pixel, never its neighbour's; with
+    # the branches swapped both corners collapse onto the seam node 85.0
+    corner_px = [(110.0, 110.0), (120.0, 110.0)]
+    for s, pt in zip(seed["corner_s"], corner_px, strict=True):
+        assert seed["pts"][int(np.searchsorted(seed["cum"], s))] == pytest.approx(pt, abs=1e-9)
 
 
 # ---------------------------------------------------------------- cut-back

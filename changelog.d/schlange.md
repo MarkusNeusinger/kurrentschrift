@@ -10,10 +10,13 @@
   reparametrisation with the ductus corners kept as breakpoints, a bending
   energy on the curve (free at the corner rows), the chain's own coverage
   pull capped and averaged per node, and the affine seed of iteration 17.
-  Measured on the twelve loop words: paper reversals 18 → 0, ink reversals
-  162 → 78, Papier-Strecke 29.87 → 4.47 xh against iteration 17 — the best
-  physics result of the round — but the dev-19 ruler moved the other way
-  (0,045881 → 0,051445, 6 : 13) on three named classes. An honest
+  Measured on the twelve loop words against TWO baselines, each arrow named
+  with its own left side. Physics **against iteration 17** (18 · 162 · 29.87):
+  paper reversals 18 → 0, ink reversals 162 → 78, Papier-Strecke
+  29.87 → 4.47 xh — the best physics result of the round. Ruler **against the
+  production base** (dev-19 0,045881): 0,045881 → 0,051445, 6 : 13 on three
+  named classes — and against iteration 17 the same run reads
+  0,044431 → 0,051445, 2 : 17, so the ruler is lost against either. An honest
   partial negative, kept for the mechanism rather than the artefact: the new
   `tools/pairlab/schlange.py` is a second, stand-alone follower beside
   `tools.pairlab.chain` — it borrows eleven private helpers by name from
