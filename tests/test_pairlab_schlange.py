@@ -16,6 +16,10 @@ Pinned here, each next to the failure it was added for:
   0.06 xh of dtw on every word (prototype arm a);
 * `corner_halo` 0 frees exactly the corner's own bending row;
 * a straight stroke converges into a synthetic EDT valley without the cap;
+* one bad case is a `skipped`/`failed` ROW, never an exception — an unscorable
+  fixture case, a composition missing a glyph, a crash on either side of the
+  derive; an exception here escapes `ProcessPoolExecutor.map` and takes the
+  whole `--all` sweep down;
 * the private helpers this stand-alone module borrows keep their signatures.
 """
 
@@ -31,6 +35,7 @@ from scipy.linalg import solve_banded
 from scipy.ndimage import distance_transform_edt
 
 from tools.pairlab import schlange
+from tools.pairlab.follow import STATUS_FAILED, STATUS_SKIPPED
 from tools.pairlab.schlange import (
     SnakeParams,
     bending_apply,
@@ -48,6 +53,8 @@ from tools.pairlab.schlange import (
     weld_pieces,
 )
 from tools.pairlab.trace import assemble_word_strokes
+from tools.wordlab.cases import WordCase
+from tools.wordlab.derive import WordDeriveResult
 
 
 XH = 40.0
@@ -393,6 +400,75 @@ def test_every_param_is_a_cli_flag_and_round_trips() -> None:
         4,
     )
     assert schlange.params_from_args(parser.parse_args(["han"])) == SnakeParams()
+
+
+# ------------------------------------------------------------ case isolation
+
+
+def _bare_case(case_id: str = "toy", *, scorable: bool = True) -> WordCase:
+    return WordCase(
+        id=case_id,
+        word="i",
+        kind="word",
+        slots=[],
+        templates={},
+        style_ratio=[1, 1, 1],
+        width_resolver="constant",
+        nib_units=0.07,
+        scorable=scorable,
+    )
+
+
+_DERIVED_KW = {
+    "case": _bare_case(),
+    "payloads": {},
+    "composed": {"items": [], "missing": []},
+    "report": None,
+    "segments": None,
+    "xh_px": XH,
+    "baseline_row": BASELINE_ROW,
+    "registration": {"tx": TX, "ty": TY, "xh_px": XH},
+}
+_DERIVED = WordDeriveResult(**_DERIVED_KW)
+
+
+def test_an_unscorable_case_is_a_skipped_row_and_never_derived(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The fixture sets deliberately carry `scorable=False` cases (unauthored
+    templates). They must come back as a row, and the deriver must not even be
+    asked — `tools.pairlab.follow.follow_case`'s rule."""
+    monkeypatch.setattr(schlange, "derive_word", lambda case: pytest.fail("an unscorable case must not be derived"))
+    row = schlange.follow_case(_bare_case(scorable=False))
+    assert (row["status"], row["strokes"], row["xh_px"]) == (STATUS_SKIPPED, [], None)
+    assert "unscorable" in row["detail"]
+
+
+def test_a_crashing_case_is_a_failed_row_and_does_not_take_the_sweep_down(monkeypatch: pytest.MonkeyPatch) -> None:
+    """An exception escaping `follow_case` would escape `ProcessPoolExecutor.map`
+    and abort the whole `--all` run, so it is caught into one word's row — on
+    both sides of the derive: the deriver itself and the snake behind it."""
+
+    def _boom(case: WordCase) -> WordDeriveResult:
+        raise RuntimeError("no ink")
+
+    monkeypatch.setattr(schlange, "derive_word", _boom)
+    rows = schlange.run_cases([_bare_case("a"), _bare_case("b")], SnakeParams())
+    assert [r["specimen_id"] for r in rows] == ["a", "b"]
+    assert {r["status"] for r in rows} == {STATUS_FAILED}
+    assert rows[0]["detail"] == "RuntimeError: no ink"
+
+    # the second guard: the derive succeeds, the snake behind it raises
+    monkeypatch.setattr(schlange, "derive_word", lambda case: _DERIVED)
+    monkeypatch.setattr(schlange, "_follow_derived", lambda case, result, prm, started: 1 / 0)
+    row = schlange.follow_case(_bare_case())
+    assert row["status"] == STATUS_FAILED and row["detail"].startswith("ZeroDivisionError")
+
+
+def test_a_composition_missing_a_glyph_is_a_skipped_row(monkeypatch: pytest.MonkeyPatch) -> None:
+    missing = WordDeriveResult(**{**_DERIVED_KW, "composed": {"missing": ["longs"]}})
+    monkeypatch.setattr(schlange, "derive_word", lambda case: missing)
+    monkeypatch.setattr(schlange, "_follow_derived", lambda case, result, prm, started: pytest.fail("must not run"))
+    row = schlange.follow_case(_bare_case())
+    assert row["status"] == STATUS_SKIPPED and "longs" in row["detail"]
 
 
 # --------------------------------------------------------- borrowed helpers

@@ -73,6 +73,7 @@ from tools.pairlab.follow import (
     CANDIDATE_FRAME,
     STATUS_FAILED,
     STATUS_OK,
+    STATUS_SKIPPED,
     _registration_of,
     _restart_slots,
     _source_id_of,
@@ -702,11 +703,51 @@ def ductus_order(entries: list[dict]) -> list[dict]:
 # ------------------------------------------------------------------ per word
 
 
+def _row(case: WordCase, status: str, detail: str) -> dict:
+    """An empty candidate-shaped row — the shape `follow_case` returns when the
+    word never reaches the snake."""
+    return {
+        "kind": case.kind,
+        "specimen_id": case.id,
+        "word": case.word,
+        "strokes": [],
+        "registration_px": {},
+        "xh_px": None,
+        "status": status,
+        "detail": detail,
+        "meta": {},
+    }
+
+
 def follow_case(case: WordCase, prm: SnakeParams | None = None) -> dict:
-    """The whole word — the candidate-shaped row (`follow_derived`'s shape)."""
+    """The whole word — the candidate-shaped row (`follow_derived`'s shape).
+
+    A case the fixtures froze as unscorable (an unauthored template), a
+    composition missing a glyph and any exception on the way each come back as
+    a `skipped`/`failed` ROW, never as a raised exception: one word must not
+    take a sweep down — `tools.pairlab.follow.follow_case`'s doctrine, and the
+    one `run_cases` relies on, because an exception escaping
+    `ProcessPoolExecutor.map` aborts the whole `--all` run.
+    """
     prm = prm or SnakeParams()
     started = time.perf_counter()
-    result = derive_word(case)
+    if not case.scorable:
+        return _row(case, STATUS_SKIPPED, "frozen unscorable (unauthored template)")
+    try:
+        result = derive_word(case)
+    except Exception as exc:  # noqa: BLE001 — one bad case must not end the run
+        return _row(case, STATUS_FAILED, f"{type(exc).__name__}: {exc}")
+    if result.composed.get("missing"):
+        return _row(case, STATUS_SKIPPED, f"composition missing {result.composed['missing']}")
+    try:
+        return _follow_derived(case, result, prm, started)
+    except Exception as exc:  # noqa: BLE001 — a solver crash is one word's row
+        return _row(case, STATUS_FAILED, f"{type(exc).__name__}: {exc}")
+
+
+def _follow_derived(case: WordCase, result: WordDeriveResult, prm: SnakeParams, started: float) -> dict:
+    """The snake itself, on an already-derived word (`follow_case` owns the
+    guards around it)."""
     xh = float(result.xh_px)
     registration = _registration_of(result)
     tx, ty, baseline_row = float(registration["tx"]), float(registration["ty"]), float(registration["baseline_row"])

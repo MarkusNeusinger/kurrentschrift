@@ -1452,7 +1452,8 @@ Schalter im bestehenden Code) — **die Zahlen oben sind Geschichte, nicht das
 eingecheckte Modul**: die Review-Runde hat danach einen echten Ecken-Index-Fehler
 in `seed_curve` behoben (geteilte und ungeteilte Naht hatten ihre
 Bogenlängen-Versätze vertauscht), weshalb der Stand im Repo sie nicht mehr
-reproduziert (`das` 600 statt 625 Strichpunkte) und ein Nachmessen aussteht;
+reproduziert (`das` 625 statt der gemessenen 600 Strichpunkte) und ein
+Nachmessen aussteht;
 Aufruf `OPENBLAS_NUM_THREADS=1
 OMP_NUM_THREADS=1 uv run python -m tools.pairlab.schlange --set words --jobs 2
 --candidate-out <dir>/cand.json --json <dir>/schlange.json --expect-root
