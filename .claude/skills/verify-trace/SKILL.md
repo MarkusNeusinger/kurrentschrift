@@ -76,9 +76,9 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run python -m tools.pairlab.tintenpf
   --candidate-out <cand.json> --json <report.json>
 ```
 
-**Never run this unpinned.** Neither solve is bit-reproducible across
-thread environments, so cross-run comparisons are only valid within one
-pinned setting — and pinning also collapses the runtime (a 63-word chain
+**Never run a follower unpinned** — neither the one above nor the Kette
+below. The solves are not bit-reproducible across thread environments, so
+cross-run comparisons are only valid within one pinned setting — and pinning also collapses the runtime (a 63-word chain
 went 87 min → 2.7 min). That is a CLAUDE.md guardrail, and this command
 line is where it has to actually happen.
 
