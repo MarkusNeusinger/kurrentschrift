@@ -1418,17 +1418,29 @@ des Autors („die Punkte können sich nur wie eine Welle zusammenhängend
 verschieben", 2026-09-11) als PARAMETERRAUM statt als Preis: im
 Kettenlöser werden die freien Anker-Deltas als `deltas = B @ c` neu
 parametrisiert, B eine geklemmte kubische B-Spline-Entwurfsmatrix über die
-Bogenlänge der Saat, ein Block je Pen-Zug (stetig über Buchstaben-Nähte,
-geschnitten nur an buchstaben-internen `stroke_starts`, Knoten alle Δs
-0,25 xh, Leiter 0,16/0,35). Nur `unpack`/`_pack` ändern sich, jeder
+Bogenlänge der Saat, ein Block je Pen-Zug, stetig über eine Buchstaben-Naht
+AUSSER bei einem Retrace-Buchstaben (dem t-Balken): dessen Schlusszug endet
+seinen eigenen Block an der Naht, und der Block, der danach weiterläuft,
+ist an dieselbe Naht zurückverankert; sonst geschnitten nur an
+buchstaben-internen `stroke_starts` (Knoten alle Δs 0,25 xh, Leiter
+0,16/0,35). Nur `unpack`/`_pack` ändern sich, jeder
 Energieterm und Wächter liest weiter je Anker, der Gradient ist die exakte
 Kettenregel Bᵀg — ein Ein-Anker-Zacken ist damit nicht darstellbar, kein
 Strafterm bepreist ihn. Hook A der Welle-Runde; gemessen `sep11` als
 **ehrliches Teil-Negativ**: Zacken −78 %, Papier-Strecke −54 %, aber
 Tinten-Umkehren +23 % und `das` +0,0782 — ein kohärentes Feld repariert
-eine falsche Saat nicht punktweise. *Technisch:* Zweig
-`wellen-basis-hook-a` (ungemergt), `tools/pairlab/follow.py`
-(`_ChainProblem.unpack/_pack`); der Vorfahr im Repo ist der
+eine falsche Saat nicht punktweise. Trägt auch die Bogenlängen-Variante
+`--wave-arc seed` (Anker über der Kette-Saat statt über der laufend
+gedehnten aktuellen Bahn — repariert die Rundenkomposition der Dehnung,
+nicht die Umkehrungen). *Technisch:* im Repo seit `sep13` als Baustein
+(kein Zweig mehr — der Autor will das Verfahren behalten, nicht
+adoptieren), `tools/pairlab/chain.py`
+(`_wave_basis`/`_wave_block_rows`/`_wave_column_bounds`/`wave_report`/
+`pin_free_anchors`, `build_chain_problem(wave_spacing=…,
+wave_arc_anchors=…)`, `_ChainProblem.unpack`/`_pack`),
+`tools/pairlab/follow.py` (`--wave-spacing`/`--wave-arc`/`--wave-report`);
+**Vorgabe AUS** (`wave_spacing=0.0`), die Kette bleibt bei
+Standardaufrufen byte-identisch. Der Vorfahr im Repo ist der
 Spline-Basis-Median von LF11 (`core/aggregate.py`) → messjournal.md §14
 „Welle `sep11`", research/wellen-recherche.md §2
 

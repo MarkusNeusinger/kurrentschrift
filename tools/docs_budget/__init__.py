@@ -525,17 +525,23 @@ BUDGETS: dict[str, int] = {
     # glossary terms before this raise (the first draft was three times as
     # long); the section stood at 4547 exactly, so every switch name failed
     # the gate. Re-measured at 4669 plus the documented 10 %.
-    # Raised again on 2026-09-12 by the „Schlange" building-block PR: the
-    # section stood at 5131 of 5136 — five tokens of room — before the entry
-    # for `tools/pairlab/schlange` (a second, stand-alone follower beside the
-    # chain) was added. The entry was kept to one bullet (what it is, that it
-    # carries no switch in existing code, its call line, a pointer to the
-    # glossary) rather than repeating the mechanism prose the glossary entry
-    # already carries. Re-measured at 5266 plus the documented 10 %; the
-    # review round then added a clause to that bullet (the §14 numbers predate
-    # the `seed_curve` corner fix, so the checked-in module no longer
-    # reproduces them) and the BLAS pin the glossary's call line already
-    # carried, which puts the section at 5326 — still inside this ceiling.
+    # Raised again on 2026-09-12 by the Wellen-Basis building-block PR: the
+    # section stood at 5131 of 5136 — five tokens of room — from the
+    # `mess-runde-route` cut of 2026-09-11 above, too little for any tool
+    # line. The entry was cut to the switch name, the glossary pointer and
+    # „Vorgabe AUS" (three earlier drafts named `--wave-arc`/`--wave-report`
+    # too and each still failed). Re-measured at 5162 plus the documented 10 %.
+    # Raised again the same day by the „Schlange" building-block PR, landing
+    # on top of the Wellen-Basis entry above: the entry for
+    # `tools/pairlab/schlange` (a second, stand-alone follower beside the
+    # chain) was kept to one bullet (what it is, that it carries no switch in
+    # existing code, its call line, a pointer to the glossary) rather than
+    # repeating the mechanism prose the glossary entry already carries.
+    # Re-measured at 5266 plus the documented 10 %; the review round then
+    # added a clause to that bullet (the §14 numbers predate the
+    # `seed_curve` corner fix, so the checked-in module no longer reproduces
+    # them) and the BLAS pin the glossary's call line already carried, which
+    # puts the section at 5326 — still inside this ceiling.
     "werkzeug-abschnitt": 5_793,
     "doku": 8_748,
 }

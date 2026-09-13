@@ -36,6 +36,7 @@ into those runs (a lone letter is a one-segment chain, not a skipped one).
 from __future__ import annotations
 
 import bisect
+import math
 import os
 import time
 from collections.abc import Sequence
@@ -43,6 +44,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
+from scipy.interpolate import BSpline
 from scipy.ndimage import distance_transform_edt, gaussian_filter
 from scipy.ndimage import label as label_regions
 from scipy.optimize import minimize
@@ -857,6 +859,28 @@ class _ChainProblem:
     beside a hairpin `e`, the K-C needles) is priced far above the Tikhonov
     pull that keeps it there, while a sample inside the ink feels nothing.
     0.0 skips the term, so a solve is bit-identical to one built before it."""
+    basis_op: np.ndarray | None = None
+    """The Wellen-Basis (2026-09-11, the author: „die Punkte können sich nur
+    so, wie so eine Welle, zusammenhängend verschieben"): `(K_free, M)` design
+    matrix of a clamped cubic B-spline displacement field over the SEED's arc
+    length, one block per pen stroke of the chain (`_wave_basis`). With it the
+    per-anchor deltas are no longer parameters but `deltas = basis_op @ c` for
+    `M` control points, so a one-anchor excursion is not in the parameter
+    space at all — a change of variables, not a penalty. None = the free
+    per-anchor deltas of every solve before it, bit-identical."""
+    basis_blocks: list[dict] = field(default_factory=list)
+    """One entry per block of `basis_op`: its free rows in writing order, the
+    plan range it covers, its arc, spans, coefficient columns and kind
+    (`bspline`, or `rigid` for a stroke too short for the basis — one
+    coefficient that moves the stub as a whole rather than free deltas)."""
+    wave_spacing: float = 0.0
+    """Interior knot spacing of that field in xh; 0.0 = the basis is off."""
+    basis_arc_anchors: np.ndarray | None = None
+    """`(K_free, 2)` anchors the basis' arc abscissa was read over when they
+    are NOT this problem's own seed: the chain seed carried through every
+    follower round (`wave_arc = "seed"`), so the knots never follow a chord
+    the rounds stretched and the cumulative field stays one wave over the
+    original arc. None = the abscissa is `anchors_free` (the default)."""
 
     # ------------------------------------------------------------------ mapping
 
@@ -865,10 +889,18 @@ class _ChainProblem:
         return self.block_op.shape[1]
 
     def unpack(self, params: np.ndarray) -> tuple[float, float, np.ndarray, np.ndarray]:
-        """`(tx, ty, slot blocks (n_blocks, 2), per-anchor deltas (K_free, 2))`."""
+        """`(tx, ty, slot blocks (n_blocks, 2), per-anchor deltas (K_free, 2))`.
+
+        Under the Wellen-Basis the tail of `params` holds the `(M, 2)` control
+        points and the deltas returned here are their expansion `basis_op @ c`
+        — every consumer of deltas (the energies, `free_anchors`, the retrace
+        guard's per-anchor `reg_w`, the reports) keeps reading per anchor.
+        """
         nb = self.n_blocks
         blocks = np.asarray(params[2 : 2 + 2 * nb], dtype=float).reshape(nb, 2)
         deltas = np.asarray(params[2 + 2 * nb :], dtype=float).reshape(-1, 2)
+        if self.basis_op is not None:
+            deltas = self.basis_op @ deltas
         return float(params[0]), float(params[1]), blocks, deltas
 
     def free_anchors(self, params: np.ndarray) -> np.ndarray:
@@ -903,12 +935,16 @@ class _ChainProblem:
         differently from the objective would diagnose a different problem.
         """
         nb = self.n_blocks
-        grad = np.empty(2 + 2 * nb + g_free.size)
+        g_delta = g_free if delta_extra is None else g_free + delta_extra
+        if self.basis_op is not None:
+            # Chain rule through the change of variables: d/dc = Bᵀ d/dδ.
+            g_delta = self.basis_op.T @ g_delta
+        grad = np.empty(2 + 2 * nb + g_delta.size)
         grad[0] = float(g_free[:, 0].sum())
         grad[1] = float(g_free[:, 1].sum())
         if nb:
             grad[2 : 2 + 2 * nb] = (self.block_op.T @ g_free).ravel()
-        grad[2 + 2 * nb :] = (g_free if delta_extra is None else g_free + delta_extra).ravel()
+        grad[2 + 2 * nb :] = g_delta.ravel()
         return grad
 
     def _field_lookup(self, name: str, px: np.ndarray, py: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -1464,6 +1500,375 @@ def _seam_ownership(specs: Sequence[ChainSegmentSpec]) -> dict[tuple[int, int], 
     return borrowed
 
 
+# ------------------------------------------------------------ the Wellen-Basis
+
+# Cubic: the field is C² along the pen's travel, and one control point's bump
+# covers 4 spans of the knot spacing — at Δs = 0.25 xh exactly one x-height.
+WAVE_DEGREE = 3
+# Row sums of a clamped B-spline design matrix are exactly 1 (partition of
+# unity); this is the slack `_wave_basis` allows numerics before it refuses.
+WAVE_ROWSUM_TOL = 1e-9
+
+
+def _clamped_uniform_knots(total: float, spacing: float, degree: int = WAVE_DEGREE) -> np.ndarray:
+    """Clamped knot vector over `[0, total]` with `round(total / spacing)` equal spans.
+
+    An even division rather than exact `spacing` steps from one end: the stub
+    span the latter leaves has a control point determined by the few anchors
+    inside it — an end artefact in the very device meant to remove one. The
+    Laufform estimator (`core.aggregate`) divides the same way; the rule is
+    re-stated here rather than imported, because a private core helper shared
+    with the follower would let a core change silently move the fit. No
+    corner multiplicity on purpose: the corner lives in the SEED, and a smooth
+    displacement added to a cornered curve keeps the corner — a knot stack at
+    the corner re-admits the one-anchor spike exactly there (measured on
+    kann's `a`: neighbour step 0.2626 xh with, 0.0674 without).
+    """
+    spans = max(1, int(round(float(total) / float(spacing))))
+    interior = [float(total) * i / spans for i in range(1, spans)]
+    return np.asarray([0.0] * (degree + 1) + interior + [float(total)] * (degree + 1), dtype=float)
+
+
+def _wave_pen_strokes(specs: Sequence[ChainSegmentSpec], plan_slices: Sequence[tuple[int, int]]) -> list[int]:
+    """Plan rows where the PEN goes down: the chain start and every letter-
+    internal `stroke_starts` entry. A seam is deliberately NOT a break — the
+    hand does not stop at a letter boundary, so one block runs through a
+    letter's tail, the connector and the next letter's head (the sampling
+    plan's `stroke_starts_plan` breaks at every segment because the cubic
+    sampler must not bridge a seam; the displacement field must).
+
+    One extra break: a letter whose `seam_out` is NOT its last anchor (the t's
+    bar, drawn AFTER the exit seam already handed continuity to the connector)
+    ends its own block at the letter's own last plan row. Without this, the
+    tail's rows and the connector's rows fall into one contiguous span while
+    the seam anchor between them was already claimed by the EARLIER block (the
+    one ending at the seam) — the tail and the connector are not one
+    continuous pen motion, so merging them invents a chord that leaps from the
+    tail's end straight to the connector's second row, skipping the seam
+    entirely."""
+    starts: set[int] = {0}
+    for spec, (p0, p1) in zip(specs, plan_slices, strict=True):
+        if spec.kind != "letter":
+            continue
+        starts |= {p0 + int(s) for s in spec.stroke_starts if 0 < int(s) < len(spec.anchors)}
+        if spec.seam_out is not None and int(spec.seam_out) < len(spec.anchors) - 1:
+            starts.add(p1)
+    return sorted(starts)
+
+
+def _wave_block_rows(
+    specs: Sequence[ChainSegmentSpec], idx: np.ndarray, plan_slices: Sequence[tuple[int, int]]
+) -> list[dict]:
+    """The free rows of every pen-stroke block, in writing order, each row in
+    exactly ONE block — the block of its first plan occurrence.
+
+    A seam anchor appears in two plan rows (both sides of the seam) but is one
+    free row and lies inside one block. A retrace anchor a letter's exit seam
+    re-uses AFTER a pen lift (the t: the connector starts at the stem's foot
+    while the bar stroke ends elsewhere) would otherwise be claimed by both
+    blocks and move twice as far as its cap; here the later block reads it as
+    a fixed row it does not own — but it is also that block's true arc-length
+    origin (`anchor_row`, read by `_wave_basis`), because the block's first
+    FREE row continues from the seam, not from wherever plan order happens to
+    place it (the tail block `_wave_pen_strokes` now cuts off separately).
+    """
+    starts = _wave_pen_strokes(specs, plan_slices)
+    bounds = [*starts, int(len(idx))]
+    owned = np.zeros(int(idx.max()) + 1 if len(idx) else 0, dtype=bool)
+    blocks: list[dict] = []
+    for lo, hi in zip(bounds[:-1], bounds[1:], strict=True):
+        anchor_row = int(idx[lo]) if lo < hi and owned[int(idx[lo])] else None
+        rows: list[int] = []
+        for r in idx[lo:hi]:
+            if not owned[r]:
+                owned[r] = True
+                rows.append(int(r))
+        if not rows:
+            continue
+        segs = sorted({i for i, (p0, p1) in enumerate(plan_slices) if p0 < hi and p1 > lo})
+        block = {"plan": (int(lo), int(hi)), "segs": segs, "rows": rows}
+        if anchor_row is not None:
+            block["anchor_row"] = anchor_row
+        blocks.append(block)
+    return blocks
+
+
+def _wave_basis(
+    specs: Sequence[ChainSegmentSpec],
+    anchors_free: np.ndarray,
+    idx: np.ndarray,
+    plan_slices: Sequence[tuple[int, int]],
+    spacing: float,
+    *,
+    degree: int = WAVE_DEGREE,
+    arc_anchors: np.ndarray | None = None,
+) -> tuple[np.ndarray, list[dict]]:
+    """`(B (K_free, M), blocks)`: the Wellen-Basis over the seed anchors.
+
+    Per pen stroke of the chain (`_wave_block_rows`): the cumulative chord
+    length of its free anchors is the abscissa, `_clamped_uniform_knots` at
+    `spacing` the knots, and `BSpline.design_matrix` the block's columns. A
+    stroke with fewer anchors than basis functions, or with no arc at all,
+    becomes ONE rigid column (all rows 1.0) rather than free deltas — a stub
+    too short for a wave still moves as a whole. Zero-length chords are
+    refused: a repeated abscissa would leave the solve silently mushy.
+
+    Every row of B is a convex combination (non-negative, sums to 1 — asserted),
+    so `|δ_i| ≤ max_j |c_j|` and a per-column box implies the per-anchor box.
+
+    `arc_anchors`, when given, is the `(K_free, 2)` array the abscissa is read
+    over instead of `anchors_free` — the chain seed carried through the
+    follower rounds, so a chord one round stretched does not become a span of
+    its own in the next (measured: a 0.064 xh connector chord in Sporn grew
+    to 1.149 xh over two rounds under the per-round abscissa).
+    """
+    k_free = len(anchors_free)
+    abscissa = anchors_free if arc_anchors is None else np.asarray(arc_anchors, dtype=float).reshape(-1, 2)
+    if len(abscissa) != k_free:
+        raise ValueError(f"wave basis: arc anchors have {len(abscissa)} rows, the chain {k_free} free anchors")
+    cols: list[np.ndarray] = []
+    blocks: list[dict] = []
+    n_cols = 0
+    for block in _wave_block_rows(specs, idx, plan_slices):
+        rows = np.asarray(block["rows"], dtype=int)
+        # `anchor_row` (the retrace case, e.g. the t's bar): the block's first
+        # FREE row does not continue from wherever plan order put it, but from
+        # the seam an EARLIER block already owns. Prepend that seam's own
+        # position as a fixed reference so the arc length — and therefore the
+        # knot spacing — measures real distance from the seam, not a spurious
+        # chord to whatever unrelated row plan order happened to place first.
+        anchor_row = block.get("anchor_row")
+        pts = abscissa[rows] if anchor_row is None else np.vstack([abscissa[[int(anchor_row)]], abscissa[rows]])
+        chords = np.hypot(*np.diff(pts, axis=0).T) if len(pts) > 1 else np.zeros(0)
+        if len(chords) and not np.all(chords > 0.0):
+            before = [anchor_row, *rows[:-1].tolist()] if anchor_row is not None else rows[:-1].tolist()
+            where = [int(before[i]) for i in np.flatnonzero(chords <= 0.0)]
+            raise ValueError(
+                f"wave basis: zero-length chord after free anchor(s) {where} in plan block {block['plan']}"
+            )
+        arc_full = np.concatenate([[0.0], np.cumsum(chords)])
+        arc = arc_full[1:] if anchor_row is not None else arc_full
+        total = float(arc_full[-1]) if len(arc_full) else 0.0
+        # `m` (= spans + degree, see `_clamped_uniform_knots`) is computed from the
+        # SPAN COUNT ALONE before any knot vector is materialised: a degenerate
+        # `spacing` (e.g. 1e-9 on a multi-xh stroke) would otherwise round to
+        # billions of interior knots — an OOM — before the `m <= len(rows)` guard
+        # below ever gets to reject it in favour of the rigid fallback. A
+        # SUBNORMAL `spacing` (e.g. 1e-320) overflows `total / spacing` to
+        # `inf`, on which `round()` itself raises `OverflowError` — caught
+        # here by never rounding a non-finite ratio, using a span count
+        # `len(rows) + 1` that fails the `m_fit <= len(rows)` check below no
+        # matter the degree, exactly as an astronomically large span count
+        # would.
+        if total > 0.0:
+            ratio = total / spacing
+            spans_fit = max(1, int(round(ratio))) if math.isfinite(ratio) else len(rows) + 1
+        else:
+            spans_fit = 0
+        m_fit = spans_fit + degree
+        if total > 0.0 and len(rows) >= degree + 2 and m_fit <= len(rows):
+            knots = _clamped_uniform_knots(total, spacing, degree)
+            m = len(knots) - degree - 1
+            design = BSpline.design_matrix(arc, knots, degree).toarray()
+            kind, spans = "bspline", int(len(np.unique(knots)) - 1)
+        else:
+            design, m, kind, spans = np.ones((len(rows), 1)), 1, "rigid", 0
+        col = np.zeros((k_free, m))
+        col[rows] = design
+        cols.append(col)
+        blocks.append(
+            {
+                **block,
+                "kind": kind,
+                "m": int(m),
+                "n": int(len(rows)),
+                "col0": int(n_cols),
+                "arc_xh": round(total, 4),
+                "spans": spans,
+                "chords_over_spacing": int(np.count_nonzero(chords > spacing)),
+                "chords_over_support": int(np.count_nonzero(chords > (degree + 1) * spacing)),
+                "max_chord_xh": round(float(chords.max()), 4) if len(chords) else 0.0,
+            }
+        )
+        n_cols += m
+    basis = np.hstack(cols) if cols else np.zeros((k_free, 0))
+    rowsum = basis.sum(axis=1)
+    if k_free and not np.all(np.abs(rowsum - 1.0) <= WAVE_ROWSUM_TOL):
+        bad = [int(i) for i in np.flatnonzero(np.abs(rowsum - 1.0) > WAVE_ROWSUM_TOL)]
+        raise AssertionError(f"wave basis: rows {bad[:8]} are not convex combinations (row sums {rowsum[bad[:8]]})")
+    return basis, blocks
+
+
+def _wave_column_bounds(basis: np.ndarray, tail_bounds: Sequence[tuple[float, float]]) -> list[tuple[float, float]]:
+    """Per-column boxes from the per-anchor boxes, per axis: the minimum cap
+    over the rows a column supports. Convexity of the rows then bounds every
+    anchor by its own cap. The per-anchor box is required symmetric (the way
+    `build_chain_problem` writes it) — asserted, so a future asymmetric box
+    fails here instead of mis-capping the basis."""
+    box = np.asarray(tail_bounds, dtype=float).reshape(-1, 2, 2)  # (K_free, axis, lo/hi)
+    if not np.array_equal(box[:, :, 0], -box[:, :, 1]):
+        raise ValueError("wave basis: the per-anchor delta box must be symmetric per axis")
+    cap = box[:, :, 1]
+    bounds: list[tuple[float, float]] = []
+    for j in range(basis.shape[1]):
+        support = basis[:, j] > 0.0
+        cx, cy = cap[support].min(axis=0) if support.any() else (0.0, 0.0)
+        bounds += [(-float(cx), float(cx)), (-float(cy), float(cy))]
+    return bounds
+
+
+def _displacement_coherence(disp: np.ndarray, anchors: np.ndarray, blocks: Sequence[dict], spacing: float) -> dict:
+    """The physics numbers of one displacement field over the chain's pen-stroke
+    blocks — what the basis actually bounds and what the eye reads.
+
+    * `lipschitz_per_xh`: max |Δdisp| / chord over consecutive anchors — the
+      slope of the displacement along the pen's travel (the guarantee of the
+      basis is Lipschitz in ARC, not per anchor index).
+    * `max_step_xh` with `max_step_chord_xh`: the largest neighbour step and the
+      chord it sits on, so a long-chord seam is not read as a tremor.
+    * `ratio_d2`: RMS of the second difference over RMS of the displacement
+      (0 rigid/linear, 4 alternating signs).
+    * `chords_over_spacing` / `chords_over_support`: consecutive pairs sharing
+      fewer than all / none of their basis functions.
+    """
+    disp = np.asarray(disp, dtype=float).reshape(-1, 2)
+    steps: list[np.ndarray] = []
+    chords: list[np.ndarray] = []
+    pairs: list[np.ndarray] = []
+    d2: list[np.ndarray] = []
+    for block in blocks:
+        rows = np.asarray(block["rows"], dtype=int)
+        # `anchor_row` (the retrace case, e.g. the t's bar): the block's own
+        # free rows do not start the walk — the block continues from a seam
+        # an EARLIER block already owns (`_wave_basis` reads it the same way
+        # for the arc length). Without prepending it, the pair from the seam
+        # to this block's first row is absent from every stat below, hiding
+        # exactly the block-boundary jump this report exists to expose.
+        anchor_row = block.get("anchor_row")
+        walk = rows if anchor_row is None else np.concatenate([[int(anchor_row)], rows])
+        if len(walk) < 2:
+            continue
+        d = disp[walk]
+        c = np.hypot(*np.diff(anchors[walk], axis=0).T)
+        steps.append(np.hypot(*np.diff(d, axis=0).T))
+        chords.append(c)
+        pairs.append(np.column_stack([walk[:-1], walk[1:]]))
+        if len(walk) >= 3:
+            d2.append(d[2:] - 2.0 * d[1:-1] + d[:-2])
+    if not steps:
+        return {"lipschitz_per_xh": 0.0, "max_step_xh": 0.0, "max_step_chord_xh": 0.0, "ratio_d2": 0.0}
+    step = np.concatenate(steps)
+    chord = np.concatenate(chords)
+    pair = np.vstack(pairs)
+    slope = step / np.maximum(chord, 1e-12)
+    k = int(np.argmax(step))
+    j = int(np.argmax(slope))
+    rms = float(np.sqrt(np.mean(np.sum(disp**2, axis=1))))
+    rms_d2 = float(np.sqrt(np.mean(np.sum(np.vstack(d2) ** 2, axis=1)))) if d2 else 0.0
+    return {
+        "lipschitz_per_xh": round(float(slope[j]), 4),
+        "lipschitz_chord_xh": round(float(chord[j]), 4),
+        "lipschitz_p99_per_xh": round(float(np.percentile(slope, 99)), 4),
+        "max_step_xh": round(float(step[k]), 4),
+        "max_step_chord_xh": round(float(chord[k]), 4),
+        "max_step_rows": [int(pair[k, 0]), int(pair[k, 1])],
+        "lipschitz_rows": [int(pair[j, 0]), int(pair[j, 1])],
+        "rms_xh": round(rms, 5),
+        "max_xh": round(float(np.hypot(*disp.T).max()), 4),
+        "ratio_d2": round(rms_d2 / max(rms, 1e-9), 4),
+        "mean_chord_xh": round(float(chord.mean()), 4),
+        "max_chord_xh": round(float(chord.max()), 4),
+        "chords_over_spacing": int(np.count_nonzero(chord > spacing)) if spacing > 0.0 else None,
+        "chords_over_support": int(np.count_nonzero(chord > (WAVE_DEGREE + 1) * spacing)) if spacing > 0.0 else None,
+        "n_pairs": int(len(chord)),
+    }
+
+
+def wave_report(problem: _ChainProblem, params: np.ndarray, *, seed: np.ndarray | None = None) -> dict:
+    """Coherence of the displacement at `params`, field-only AND total.
+
+    `field` is the deltas alone (`basis_op @ c`, or the free deltas); `total`
+    adds the slot blocks — constant inside a letter, a linear arc ramp inside
+    a connector — which is what the assembled trace actually moved by, and
+    which breaks C¹ at a seam outside the basis. `seed`, when given, replaces
+    the problem's own seed anchors as the origin of `total` (the cumulative
+    displacement across follower rounds: seed of round 1 → final) — and the
+    chords the slopes are read over are that origin's, so two anchors the
+    rounds pushed together do not turn a smooth cumulative field into a
+    spike. Blocks are the chain's pen strokes whether the basis is on or off,
+    so a free solve reports on the same partition a basis solve does.
+    """
+    blocks = problem.basis_blocks or _wave_block_rows(problem.specs, problem.idx, problem.plan_slices)
+    spacing = float(problem.wave_spacing)
+    _, _, _, deltas = problem.unpack(params)
+    origin = problem.anchors_free if seed is None else np.asarray(seed, dtype=float).reshape(-1, 2)
+    total = problem.free_anchors(params) - origin
+    out = {
+        "spacing_xh": spacing,
+        "n_blocks": len(blocks),
+        "n_coefficients": int(problem.basis_op.shape[1]) if problem.basis_op is not None else None,
+        "blocks_rigid": sum(1 for b in blocks if b.get("kind") == "rigid"),
+        "field": _displacement_coherence(
+            deltas,
+            problem.anchors_free if problem.basis_arc_anchors is None else problem.basis_arc_anchors,
+            blocks,
+            spacing,
+        ),
+        "total": _displacement_coherence(total, origin, blocks, spacing),
+    }
+
+    def _where(rows: Sequence[int]) -> list[str]:
+        # Which segment each row of the worst pair sits in — a seam step and a
+        # letter-internal step are different findings.
+        out_: list[str] = []
+        for r in rows:
+            i = next((i for i, (a0, a1) in enumerate(problem.anchor_slices) if a0 <= r < a1), None)
+            out_.append("?" if i is None else f"{i}:{problem.specs[i].key or problem.specs[i].kind}")
+        return out_
+
+    for part in ("field", "total"):
+        for key in ("max_step_rows", "lipschitz_rows"):
+            if key in out[part]:
+                out[part][key.replace("_rows", "_segs")] = _where(out[part][key])
+    if problem.basis_op is not None:
+        head = 2 + 2 * problem.n_blocks
+        coeffs = np.asarray(params[head:], dtype=float).reshape(-1, 2)
+        out["max_coefficient_xh"] = round(float(np.hypot(*coeffs.T).max()), 4) if len(coeffs) else 0.0
+    return out
+
+
+def _wave_blocks_summary(problem: _ChainProblem) -> list[dict]:
+    """`basis_blocks` without the row lists — what an artefact carries per block."""
+    return [{k: v for k, v in b.items() if k != "rows"} for b in problem.basis_blocks]
+
+
+def pin_free_anchors(problem: _ChainProblem, anchors: Sequence[int]) -> dict[str, int]:
+    """Collapse the delta bounds of `anchors` to (0, 0) — through the basis
+    when there is one: every coefficient whose column has support on a pinned
+    anchor is pinned, so the anchor's expansion is exactly zero. The zone
+    that freezes is then wider than the anchors named (by up to one support,
+    `(degree + 1) · Δs` per side); the returned counts say by how much.
+    """
+    pinned = sorted({int(a) for a in anchors})
+    head = 2 + 2 * problem.n_blocks
+    if problem.basis_op is None:
+        for ai in pinned:
+            problem.bounds[head + 2 * ai] = (0.0, 0.0)
+            problem.bounds[head + 2 * ai + 1] = (0.0, 0.0)
+        return {"anchors": len(pinned), "coefficients": 2 * len(pinned), "anchors_frozen": len(pinned)}
+    if not pinned:
+        return {"anchors": 0, "coefficients": 0, "anchors_frozen": 0}
+    support = problem.basis_op > 0.0
+    cols = np.flatnonzero(support[pinned].any(axis=0))
+    for j in cols:
+        problem.bounds[head + 2 * int(j)] = (0.0, 0.0)
+        problem.bounds[head + 2 * int(j) + 1] = (0.0, 0.0)
+    col_pinned = np.zeros(problem.basis_op.shape[1], dtype=bool)
+    col_pinned[cols] = True
+    frozen = np.flatnonzero(support.any(axis=1) & ~(support & ~col_pinned[None, :]).any(axis=1))
+    return {"anchors": len(pinned), "coefficients": int(len(cols)), "anchors_frozen": int(len(frozen))}
+
+
 def build_chain_problem(
     specs: Sequence[ChainSegmentSpec],
     *,
@@ -1498,8 +1903,20 @@ def build_chain_problem(
     kink_cos: float = 0.3,
     kink_weight: float = 0.0,
     lsmooth_weight: float = 0.0,
+    wave_spacing: float = 0.0,
+    wave_arc_anchors: np.ndarray | None = None,
 ) -> _ChainProblem:
     """Assemble the chain optimisation problem. Pure: no I/O, no DB, no case.
+
+    `wave_spacing` > 0 (the Wellen-Basis, 2026-09-11) re-parametrises the
+    per-anchor deltas as `basis_op @ c` — a clamped cubic B-spline field over
+    the seed's arc length per pen stroke of the chain (`_wave_basis`), with
+    interior knots every `wave_spacing` xh. The parameter tail then holds `M`
+    control points instead of `K_free` deltas, bounded per column by the
+    minimum per-anchor cap over the column's support (`_wave_column_bounds`);
+    everything else — terms, seams, sampling, slot blocks, reports — is
+    untouched because `unpack` keeps returning per-anchor deltas. 0.0 leaves
+    `x0`, `bounds`, gradient and geometry bit-identical.
 
     `specs` is a LIST in writing order — `[letter, connector, letter]` in Stage
     A, `[L0, C0, L1, C1, …]` in Stage B — and every rule below is written per
@@ -1830,6 +2247,23 @@ def build_chain_problem(
         bounds += [(-cap, cap)] * (2 * (a1 - a0))
     x0 = np.zeros(2 + 2 * len(block_col) + 2 * k_free)
 
+    basis_op: np.ndarray | None = None
+    basis_blocks: list[dict] = []
+    wave_spacing = float(wave_spacing)
+    if not math.isfinite(wave_spacing) or wave_spacing < 0.0:
+        # NaN and a negative value both compare False against `> 0.0` and would
+        # silently fall through as "off"; `inf` would compare True and build a
+        # one-span basis over the whole chain. Neither is a spacing anyone
+        # meant — fail loudly instead of recording a run under a wrong basis.
+        raise ValueError(f"wave_spacing must be finite and non-negative, got {wave_spacing!r}")
+    if wave_spacing > 0.0:
+        head = 2 + 2 * len(block_col)
+        basis_op, basis_blocks = _wave_basis(
+            specs, anchors_free, idx, plan_slices, wave_spacing, arc_anchors=wave_arc_anchors
+        )
+        bounds = bounds[:head] + _wave_column_bounds(basis_op, bounds[head:])
+        x0 = np.zeros(head + 2 * basis_op.shape[1])
+
     return _ChainProblem(
         specs=specs,
         anchors_free=anchors_free,
@@ -1888,6 +2322,14 @@ def build_chain_problem(
         corner_of_sample=corner_of_sample,
         kink_cos=float(kink_cos),
         kink_weight=float(kink_weight),
+        basis_op=basis_op,
+        basis_blocks=basis_blocks,
+        wave_spacing=float(wave_spacing),
+        basis_arc_anchors=(
+            None
+            if (basis_op is None or wave_arc_anchors is None)
+            else np.asarray(wave_arc_anchors, dtype=float).reshape(-1, 2).copy()
+        ),
     )
 
 
@@ -2390,9 +2832,16 @@ def fit_word_chain(
     seed_form: str = "chart",
     lsmooth_weight: float = 0.0,
     slot_affine_init: dict[int, tuple[np.ndarray, np.ndarray]] | None = None,
+    wave_spacing: float = 0.0,
+    report_wave: bool = False,
 ) -> ChainWordFit | None:
     """Fit a run of consecutive slots as ONE chain `[L, C, L, C, …]`.
 
+    * **`wave_spacing`** (2026-09-11, 0.0 = off): solve in the Wellen-Basis
+      (`build_chain_problem(wave_spacing=…)`); `report_wave` writes the
+      displacement-field coherence (`wave_report`) into `fit_meta["wave_basis"]`
+      even with the basis off — the reference numbers a basis run is read
+      against. Both off, the fit and its meta are byte-identical to before.
     * **`bar_bridge`** (2026-09-10, off by default): plan the t's crossbar the
       way `core.compose` draws it — pen down, stem retraced from the foot to
       the bar start — instead of the chart row's lift (`_bridge_bar_strokes`).
@@ -2593,6 +3042,7 @@ def fit_word_chain(
         kink_cos=float(kink_cos),
         kink_weight=float(kink_weight),
         lsmooth_weight=float(lsmooth_weight),
+        wave_spacing=float(wave_spacing),
         **fields,
     )
     # Seed the translation blocks BEFORE the initial energies, so `e0` states
@@ -2712,6 +3162,14 @@ def fit_word_chain(
             **({"connector_init": connector_init} if connector_init != CONNECTOR_INIT_MIRROR else {}),
             **({"bar_bridge": True} if bar_bridge else {}),
             **({"slot_scale_init": {str(k): float(v) for k, v in slot_scale_init.items()}} if slot_scale_init else {}),
+            # The Wellen-Basis' own numbers, present exactly while the basis is
+            # on or the report was asked for (the free reference) — the key's
+            # absence keeps every default artefact byte-identical.
+            **(
+                {"wave_basis": {**wave_report(problem, res.x), "blocks": _wave_blocks_summary(problem)}}
+                if (problem.basis_op is not None or report_wave)
+                else {}
+            ),
             # How many crossing landmarks got an ink target and how many were
             # refused, per reason — a term with nothing assigned is inert for a
             # reason that has to be readable, not inferred from a flat energy.
@@ -2857,10 +3315,20 @@ def gradient_decomposition(problem: _ChainProblem, params: np.ndarray) -> dict[s
             f"max|sum-total|={residual:.3e} > {limit:.3e} (|grad|max={scale:.3e})"
         )
     head = 2 + 2 * problem.n_blocks
+
+    def _per_anchor(tail: np.ndarray) -> np.ndarray:
+        # Under the Wellen-Basis the tail holds COEFFICIENT forces (Bᵀ g);
+        # their image B Bᵀ g is the per-anchor displacement direction a
+        # gradient step induces — a per-anchor view again, never coefficient
+        # rows mislabelled as anchors (`per_anchor_space` says which).
+        rows = tail.reshape(-1, 2)
+        return rows if problem.basis_op is None else problem.basis_op @ rows
+
     return {
         "terms": {name: terms[name] for name in GRADIENT_TERMS},
         "total": total,
-        "per_anchor": {name: terms[name][head:].reshape(-1, 2) for name in (*GRADIENT_TERMS, "total")},
+        "per_anchor": {name: _per_anchor(terms[name][head:]) for name in (*GRADIENT_TERMS, "total")},
+        "per_anchor_space": "delta" if problem.basis_op is None else "basis-projected",
         "residual_abs": residual,
         "residual_rel": residual / scale if scale > 0.0 else 0.0,
         "grad_max": scale,
@@ -2911,7 +3379,9 @@ __all__ = [
     "fit_pair_chain",
     "fit_word_chain",
     "gradient_decomposition",
+    "pin_free_anchors",
     "regularise_connector_anchors",
     "respec_from_solution",
     "sample_slice_of_anchor",
+    "wave_report",
 ]
