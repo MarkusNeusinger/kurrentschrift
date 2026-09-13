@@ -12,7 +12,7 @@
 > Werkbank & Prozess · **§6** Extern/Forschung · **§7** Öffentliche
 > Seiten). Für den Einstieg in eine Sitzung steht seit 2026-09-04 die
 > Kurzfassung [`kurzglossar.md`](kurzglossar.md) auf der Pflichtlektüre —
-> 95 Einträge, je ein bis zwei Sätze, jeder mit dem Sprung hierher; sie
+> 96 Einträge, je ein bis zwei Sätze, jeder mit dem Sprung hierher; sie
 > ersetzt dieses Glossar nicht, sie ersetzt nur das Am-Stück-Lesen.
 >
 > **Was ein Eintrag verspricht.** Einen allgemeinverständlichen Teil ohne

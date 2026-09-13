@@ -428,7 +428,8 @@ class Seed:
     # correspondence back into the composition (the harvest's Saat-Korrespondenz):
     # the index of the composed draw item, and the FRACTIONAL index into that
     # item's centerline polyline the sample was resampled from. Bookkeeping
-    # only — no number of the decode reads them.
+    # only: no part of the decode reads either field, so neither can move a
+    # number of it.
     item: np.ndarray = field(default=None)  # (n,) index into the composed items
     pos: np.ndarray = field(default=None)  # (n,) fractional index along that item
 

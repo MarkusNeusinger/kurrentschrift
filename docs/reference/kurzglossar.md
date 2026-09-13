@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-13): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **95
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **96
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars. Nachzieh-Anlass: ein Begriff wandert
 > hierher, sobald er die Zwei-von-drei-Schwelle unten erreicht und in

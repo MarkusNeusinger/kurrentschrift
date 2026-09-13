@@ -620,10 +620,15 @@ def tintenpfad_occurrence_anchors(case, result: WordDeriveResult, opts: HarvestO
     too; the centering that follows makes the shared origin irrelevant, but
     keeping the frame means the two paths' `shift_xh` stay comparable.
 
-    A slot appears only when EVERY anchor of its row is covered: a partial
-    anchor set is not a Laufform occurrence, it is a different measurement
-    wearing the same name. Slots the correspondence could not complete come
-    back under `"gaps"` with their covered count, so the harvest can say why.
+    Returns one entry per slot the correspondence looked at, keyed by slot
+    index: `covered` / `total` anchors and the worst `slice_resid` of the
+    proofs it rested on, plus `anchors` (template units) and `px` (crop px)
+    — but those two ONLY when every anchor of the row is covered. Their
+    absence is how a gap is signalled, and the caller rejects the slot as
+    `tintenpfad_gap` while still having the counts to say how wide the gap
+    was. A partial anchor set is deliberately never returned as one: it is
+    not a Laufform occurrence, it is a different measurement wearing the
+    same name.
     """
     from tools.laufform.saatkorrespondenz import slot_correspondence  # noqa: PLC0415 — pulls the pairlab stack
     from tools.pairlab.tintenpfad import TintenpfadWeights, follow_case, seed_items  # noqa: PLC0415
@@ -837,6 +842,7 @@ def _harvest_case_slots(case, result: WordDeriveResult, opts: HarvestOptions) ->
                     geo_rmse_px=round(geo_rmse, 3),
                     corr_covered=tp["covered"] if tp else 0,
                     corr_total=tp["total"] if tp else 0,
+                    corr_slice_resid=float(tp["slice_resid"]) if tp else "",
                     **grid,
                 )
             )
@@ -927,6 +933,18 @@ def _harvest_case_slots(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 geo_rmse_px=round(geo_rmse, 3),
                 anchor_spike_ratio=round(spike_ratio, 2),
                 n_repaired=len(repaired_indices),
+                # The three A48 columns on the ACCEPTED row too, as on the
+                # chain path: a diagnostics file where only the rejections
+                # carry the coverage cannot say how much air the kept ones had.
+                **(
+                    {
+                        "corr_covered": tp["covered"],
+                        "corr_total": tp["total"],
+                        "corr_slice_resid": float(tp["slice_resid"]),
+                    }
+                    if opts.occurrences == "tintenpfad" and tp
+                    else {}
+                ),
                 **grid,
             )
         )
