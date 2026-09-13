@@ -12,7 +12,7 @@
 > Werkbank & Prozess · **§6** Extern/Forschung · **§7** Öffentliche
 > Seiten). Für den Einstieg in eine Sitzung steht seit 2026-09-04 die
 > Kurzfassung [`kurzglossar.md`](kurzglossar.md) auf der Pflichtlektüre —
-> 77 Begriffe, je ein bis zwei Sätze, jeder mit dem Sprung hierher; sie
+> 95 Einträge, je ein bis zwei Sätze, jeder mit dem Sprung hierher; sie
 > ersetzt dieses Glossar nicht, sie ersetzt nur das Am-Stück-Lesen.
 >
 > **Was ein Eintrag verspricht.** Einen allgemeinverständlichen Teil ohne
@@ -3669,7 +3669,7 @@ dem Anker seiner Quelle.
 
 **Messjournal** *(measurement journal)* — die Datei
 [`messjournal.md`](messjournal.md), seit 2026-09-04 die Heimat von §14, dem
-Kampagnen-Journal: 123 datierte Abschnitte, je einer pro Mess-Runde, mit
+Kampagnen-Journal: 131 datierte Abschnitte (Stand `sep13`), je einer pro Mess-Runde, mit
 Vorregistrierung, gemessenen Zahlen und Verdikt. Vorher stand die Sektion in
 `qualitaetsmetrik.md` und machte dort zwei Drittel der Datei aus, sodass jede
 Frage nach einer Metrik-REGEL das ganze Journal mitlud; der Umzug ist Wort für
@@ -3685,7 +3685,7 @@ und seine Registerzeile bekommt nur den Dateinamen vor das `#`-Fragment.
 CI-Job „Docs-Register“. → messjournal.md · qualitaetsmetrik.md
 
 **Kurzglossar** *(short glossary)* — die Datei
-[`kurzglossar.md`](kurzglossar.md) (seit 2026-09-04): 77 Begriffe zu je ein
+[`kurzglossar.md`](kurzglossar.md) (seit 2026-09-04): 95 Einträge zu je ein
 bis zwei Sätzen, je mit dem Sprung in den Themenblock dieses Glossars.
 Ausgewählt in zwei nachvollziehbaren Schritten: **gezählt** — ein
 Eintragstitel wird Kandidat, wenn er mit Wortgrenzen in mindestens zwei von

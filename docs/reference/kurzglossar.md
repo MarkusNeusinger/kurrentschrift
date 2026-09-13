@@ -458,8 +458,8 @@ sechsteiliger Fehler-Taxonomie und vorregistriertem Auswerteplan.
 → [§4](glossar.md#4-metriken-und-benchmarks) · menschliche-bewertung.md
 
 **Messjournal** — die Datei [`messjournal.md`](messjournal.md), seit
-2026-09-04 die Heimat von §14: 123 datierte Abschnitte, je einer pro
-Mess-Runde. Einstieg ist das **Register** im Kopf, nicht die Datei.
+2026-09-04 die Heimat von §14: 131 datierte Abschnitte (`sep13`), je einer
+pro Mess-Runde. Einstieg ist das **Register** im Kopf, nicht die Datei.
 → [§5](glossar.md#5-werkbank-und-prozess)
 
 ---
