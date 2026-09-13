@@ -137,6 +137,7 @@ schreibt — eine Kompositionsfrage) und drei graue Papier-Umkehrungen
 | sep12 | **Selbstsprung** (`self_jump=1`) | der Dekoder darf einen Knoten passieren, den sein Strang zweimal besucht (knotengebundener Sprung + verzweigungsbewusste Kandidatenwahl) | **positiv** (Prüfer `confirmed`): `lift_delta_total` dev-19 4 → 3 (Rest: muß ×3, Rückfahrt), `Galoppieren` und `will` wieder ein Zug; 3 : 1 gegen #592 bei 15 strichidentischen Zeilen. In der Ecken-Kombination | „Tintenpfad-Adoption `sep12`“ (die formale Runde, die diese vier Arme als erklärte Konfiguration adoptiert) |
 | sep12 | **Ecken-Kombination** (PR #595) | die vier tragenden Arme über #592; Leave-one-out je Arm auf den 13 Zeilen | **Kandidat, nicht adoptiert — erster Stand, der die Kette gepaart schlägt:** dev-19 0,038351 · 0,048012 · 0,7929; 16 : 3 gegen #592 (p 0,004), **15 : 4 gegen Basis** (Δ −0,008311, p 0,019), 13 : 6 gegen It. 18; `retrace_missing` und `lift_delta_total` 0; 13 Zeilen 0 · 96 · 0,84 (Maske 0,76), 63 grau 3 · 339 · 2,12, Maske 0 · 342 · 1,20; LOO: ohne Grauwert-Stopp 27 · 72 · 2,46, sonst ≈ gleich; Default strichidentisch 13/13 | „Tintenpfad-Adoption `sep12`“ (die formale Runde, die diese vier Arme als erklärte Konfiguration adoptiert) |
 | sep12 | **Adoption der erklärten Konfiguration** (Autor-Entscheid **A45**) | EIN Knopf: der Folger-Wechsel Kette v5 → Tintenpfad mit den acht Schaltern; vorregistriert vor der ersten Zahl, vier Gates, zwei Kill-Kriterien | **adoptiert — der Tintenpfad ist der Standard-Folger:** auf der frischen Wurzel `c7f2efd9cf37…` (Headline ziffernidentisch zur `sep10`-Zeile, also neue Identität und keine Re-Baseline) dev-19 **0,038351 · 0,048012 · 0,7929** gegen eine am selben Abend neu gemessene Kette v5 (0,045772 · 0,088356 · 0,7660), gepaart **15 : 4** (Δ-Median −0,008311, p 0,019) — die Zahlen der Ecken-Kombination reproduzieren sich damit auf der neuen Wurzel. Die Vorgabe ohne die acht (`--legacy-p6`) steht bei 0,045033 · 0,090673 · 0,7867 und 7 : 12: die Schalter sind der Unterschied. Zähler `cross_spurious` 10 → 3, `retrace_missing` 7 → 0, `lift_delta_total` 6 → 0, `overlap_cand` 4 → 0, Absorption 89 → 35, dagegen `cross_missing` 12 → 13. Sensoren 63, gegen die Basis: Papier-Umkehrungen Maske 44 → 0 (grau 49 → 3), Papier-Strecke Maske 55,57 → 1,20 xh, schlimmster Ausflug 0,323 → 0,091 xh; gegen die Vorgabe, weil die Kette den Zähler nicht führt: Roh-Knick 10,24° → 8,17°. k0: 81 → 80, aiou-Median +0,0520, **Gate (4) nicht verwertbar** (der Sensor ist auf einem Folger-Paar blind; das Verdikt trägt (1)–(3)). Nebenbefund: `ink_bridge_xh=1.0` testet 7 Lücken und brückt null — auf dieser Wurzel inert, bleibt als Lesung | „Tintenpfad-Adoption `sep12`“ |
+| sep13 | **Saat-Korrespondenz als Vorkommens-Quelle** (`harvest --occurrences tintenpfad`, Autor-Entscheid **A48**, Weg 1 der §7.11-Zeile) | die Anker einer Laufform-Zeile über die SAAT des Dekoders zuordnen statt über die Bogenlänge: Zustand → Saat-Probe → Stelle im komponierten Buchstaben → Tafelanker, das eine Glied ohne Compose-Buchführung je Punkt affin BEWIESEN (lokal, weil der `d`-Anstieg stückweise ist) | **ehrliches Negativ an der Abdeckung, Mechanismus bestätigt:** die Zuordnung greift auf **277 von 277** Slots und setzt **92,5 %** aller Anker (30 736 / 33 240, Beweis-Reste Median 8,0e-15, max 1,03e-13) — als Vorkommens-Quelle fällt sie, weil die Komposition die Kopplungs-Enden wegschneidet: Median **7 von 120** Ankern ohne Stelle, 65 vollständige Slots, **58 von 277** Vorkommen gegen 227 der Fit-Kontrolle, Zeilen mit n ≥ 4 5 statt 16. Fixpunkt grün (zwei Ernten byte-gleich), `core/` unberührt. Lineal asymmetrisch: gegen die stehende Karte Wörter **0,104883** (−0,003456) bei Paaren +0,001070 (Schranke gerissen, kein Kill); gegen die schlüsselgleiche Kontrolle (0,108951 / 0,148119) Wörter −0,004068 und gepaart **31 : 21 : 44** — auf viel dünnerer Evidenz (`e` n = 3 gegen 30). Nichts adoptiert, nichts geschrieben; `--apply` verweigert den Arm | „Laufform A48 `sep13`“ |
 
 ## Offene Blöcke
 
@@ -158,11 +159,14 @@ schreibt — eine Kompositionsfrage) und drei graue Papier-Umkehrungen
 - ~~**Ernte-Schalter** `--follower tintenpfad`~~ — **gebaut mit A45**
   (`sep12`): die Ernte legt die gespeicherte Wortbahn mit dem Tintenpfad
   (Vorgabe) und trägt die `letter_spans` der Dekodierung ins Wort-Record.
-  Was BLEIBT: der Schalter bewegt nur die Bahn. **Vorkommen aus der
-  Tintenpfad-Bahn** ist der offene Arm dahinter — eine Laufform-Zeile ist
-  ein ANKERSATZ, der Tintenpfad dekodiert eine BAHN, und eine per
-  Bogenlänge erfundene Anker-Zuordnung wäre eine stille Umdefinition
-  dessen, was eine Laufform misst. Autor-Entscheid, eigene Pre-Reg.
+- **Vorkommen aus der Tintenpfad-Bahn** — Weg (1), die **Saat-Korrespondenz**,
+  ist mit A48 (`sep13`) gebaut und gemessen: sie TRÄGT als Zuordnung
+  (277/277 Slots bewiesen, 92,5 % der Anker gesetzt) und fällt als
+  Vorkommens-Quelle, weil die Komposition die Kopplungs-Enden wegschneidet
+  (Median 7 von 120 Ankern ohne Stelle, 58 statt 227 Vorkommen). Offen ist
+  jetzt Weg (2) — die geschnittenen Enden fitten statt sie auszulassen —
+  und die Autor-Frage, ob `core/compose.py` einen Abtastindex mitführen
+  soll; Rettungswege in tintenfolger.md §7.9.
 - **`k0eval` soll die Folger-Identität lesen**: die sechs `STACK_FLAGS`
   kommen aus `meta.weights`, und der Tintenpfad hat keinen
   Struktur-Wächter — bei einem Folger-Wechsel meldet der Sensor deshalb

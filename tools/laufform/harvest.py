@@ -50,6 +50,13 @@ priced in that entry. `--chain-seed composed` reproduces every round before
 `sep06`. The trace bench and the follower keep their own `composed` default —
 the `chain` baseline they grade against must not move under them.
 
+Where an OCCURRENCE's anchors come from is its own switch (``--occurrences``,
+default ``fit`` = the per-letter fit, the standing answer). ``tintenpfad``
+reads them off the decoded path through the SAAT-KORRESPONDENZ
+(``tools.laufform.saatkorrespondenz``, A48 / §7.11 way 1) — a measurement arm,
+never writable, and a letter the correspondence cannot cover completely is
+rejected as ``tintenpfad_gap`` rather than half-measured.
+
 Dry run prints the per-letter stats and writes ``laufform_drafts.json`` +
 ``laufform_occurrences.json``; ``--apply`` PUTs both (requires ``--base-url``
 and the ``ADMIN_TOKEN`` env var) and is available for the DEFAULT configuration
@@ -60,6 +67,7 @@ flowing /write/word (the occurrence rows never affect rendering).
 
     uv run python -m tools.laufform.harvest [--style suetterlin]
         [--sets words,pairs] [--path slot|chain] [--jobs 4]
+        [--occurrences fit|tintenpfad]
         [--min-n 4] [--rmse-max 2.2] [--out laufform_drafts.json]
         [--occ-out laufform_occurrences.json] [--diag-csv laufform_diag.csv]
         [--apply --base-url http://localhost:8000 --source-id <id>
@@ -175,6 +183,10 @@ DEFAULT_CHAIN_SEED = "chart"
 # carries what the switch does and does not move.
 DEFAULT_FOLLOWER = "tintenpfad"
 FOLLOWER_CHOICES = ("tintenpfad", "chain")
+# A48: where an OCCURRENCE's anchors come from. The default is the standing
+# answer and keeps the delivered harvest byte-identical.
+DEFAULT_OCCURRENCES = "fit"
+OCCURRENCE_CHOICES = ("fit", "tintenpfad")
 
 DIAG_FIELDS = (
     "specimen_id",
@@ -233,6 +245,14 @@ DIAG_FIELDS = (
     "hit_iteration_cap",
     "max_iter",
     "seconds",
+    # `--occurrences tintenpfad` only (A48): how many of the chart row's
+    # anchors the Saat-Korrespondenz could place, out of how many, and the
+    # worst residual of the slice proofs it rested on. They are the
+    # decomposition of a `tintenpfad_gap`: two missing anchors and twenty are
+    # not the same finding.
+    "corr_covered",
+    "corr_total",
+    "corr_slice_resid",
 )
 
 
@@ -344,6 +364,21 @@ class HarvestOptions:
     # repair reads it; the trace repair (K-B) works on assembled word strokes,
     # which carry no anchor ranges.
     loop_aware_repair: bool = LOOP_AWARE_REPAIR
+    # A48 (§14 „Laufform A48 `sep13`", author's decision of 2026-09-13): WHERE
+    # an occurrence's anchors come from. "fit" is the standing and default
+    # answer — the per-letter M4 fit, which is what every Laufform row measured
+    # so far. "tintenpfad" reads them off the Tintenpfad's decoded path through
+    # the SAAT-KORRESPONDENZ (`tools.laufform.saatkorrespondenz`): every path
+    # vertex knows its seed sample, every seed sample its place in the composed
+    # letter, and the composed letter is a sampling of the chart row's anchors
+    # — way 1 of the three in `docs/proposals/tintenfolger.md` §7.11, the one
+    # in which nothing is invented. The gate cascade, the centering and the
+    # medians are untouched machinery either way; only the geometry entering
+    # them moves, plus one new rejection reason (`tintenpfad_gap`) for a row
+    # the correspondence cannot cover completely. The decode runs on the
+    # `chain_seed` composition, so with the default chart seed the occurrences
+    # stay a function of ink and prior alone (A38).
+    occurrences: str = "fit"  # "fit" | "tintenpfad"
 
 
 @dataclass
@@ -574,6 +609,70 @@ def tintenpfad_trace(case, opts: HarvestOptions) -> tuple[list[list[list[float]]
     )
 
 
+def tintenpfad_occurrence_anchors(case, result: WordDeriveResult, opts: HarvestOptions) -> dict[int, dict]:
+    """Per slot: the chart row's anchors where the Tintenpfad decode put them.
+
+    The Saat-Korrespondenz of A48 (`tools.laufform.saatkorrespondenz`), run on
+    the `chain_seed` composition — with the chart seed (A38) the occurrences
+    therefore stay a function of the ink and the ductus prior alone, exactly
+    like the chain fit's. Anchors come back in the WORD's registration frame
+    (template units), which is the frame the fit path's occurrences live in
+    too; the centering that follows makes the shared origin irrelevant, but
+    keeping the frame means the two paths' `shift_xh` stay comparable.
+
+    A slot appears only when EVERY anchor of its row is covered: a partial
+    anchor set is not a Laufform occurrence, it is a different measurement
+    wearing the same name. Slots the correspondence could not complete come
+    back under `"gaps"` with their covered count, so the harvest can say why.
+    """
+    from tools.laufform.saatkorrespondenz import slot_correspondence  # noqa: PLC0415 — pulls the pairlab stack
+    from tools.pairlab.tintenpfad import TintenpfadWeights, follow_case, seed_items  # noqa: PLC0415
+
+    seed_case, seed_result = _seed_composition(case, result, opts)
+    info = follow_case(seed_case, TintenpfadWeights(), correspondence=True)
+    if info.get("status") != "ok" or "correspondence" not in info:
+        print(f"  tintenpfad occurrences {case.id}: {info.get('status')} — {info.get('detail')}", flush=True)
+        return {}
+    corr = info["correspondence"]
+    xh = float(seed_result.xh_px)
+    reg = seed_result.registration
+    tx, ty, base = float(reg["tx"]), float(reg["ty"]), float(seed_result.baseline_row)
+
+    items_by_slot: dict[int, list[tuple[int, np.ndarray]]] = defaultdict(list)
+    for m, item in enumerate(seed_items(seed_result)):
+        slot_index = item.get("slot_index")
+        if slot_index is not None:
+            items_by_slot[int(slot_index)].append((m, np.asarray(item["centerline"], dtype=float)))
+
+    out: dict[int, dict] = {}
+    for slot_index, items in items_by_slot.items():
+        row = case.templates.get(case.slots[slot_index].key) if case.slots[slot_index].key else None
+        if row is None:
+            continue
+        meta = row.get("trace_meta") or {}
+        payload = seed_result.payloads.get(case.slots[slot_index].key) or {}
+        strokes = [np.asarray(s, dtype=float) for s in (payload.get("centerlines_template") or [])]
+        if not strokes:
+            continue
+        sc = slot_correspondence(
+            anchors=np.asarray(row["anchors"], dtype=float),
+            stroke_starts=meta.get("stroke_starts") or [0],
+            corner_anchors=meta.get("corner_anchors") or [],
+            template_strokes=strokes,
+            items=items,
+            seed_pos=corr["seed_pos"],
+            seed_item=corr["seed_item"],
+            state_xy=corr["state_xy"],
+        )
+        entry = {"covered": int(sc.covered.sum()), "total": int(len(sc.covered)), "slice_resid": float(sc.slice_resid)}
+        if sc.complete:
+            px = sc.anchors_px
+            entry["anchors"] = np.column_stack([(px[:, 0] - tx) / xh, (base + ty - px[:, 1]) / xh])
+            entry["px"] = px
+        out[slot_index] = entry
+    return out
+
+
 def _word_record(case, strokes: list[list[list[float]]], registration: dict, xh: float, measurements: dict) -> dict:
     return {
         "kind": case.kind,
@@ -607,6 +706,7 @@ def _harvest_case_slots(case, result: WordDeriveResult, opts: HarvestOptions) ->
     tx, ty = result.registration["tx"], result.registration["ty"]
     baseline_row = result.baseline_row
     edt = distance_transform_edt(~case.skel)
+    tp_anchors = tintenpfad_occurrence_anchors(case, result, opts) if opts.occurrences == "tintenpfad" else {}
     word_strokes: list[list[list[float]]] = []
     fitted_slots: list[int] = []
     unfitted_slots: list[int] = []
@@ -721,6 +821,26 @@ def _harvest_case_slots(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 )
             )
             continue
+        tp = tp_anchors.get(i)
+        if opts.occurrences == "tintenpfad" and (tp is None or "anchors" not in tp):
+            unfitted_slots.append(keyed_i)
+            diag_rows.append(
+                _diag_row(
+                    case,
+                    opts,
+                    i,
+                    keyed_i,
+                    slot.key,
+                    accepted=False,
+                    gate="tintenpfad_gap",
+                    converged=True,
+                    geo_rmse_px=round(geo_rmse, 3),
+                    corr_covered=tp["covered"] if tp else 0,
+                    corr_total=tp["total"] if tp else 0,
+                    **grid,
+                )
+            )
+            continue
         # Post-gate repair (`tools.pairlab.anchors`): the gate above judged the
         # UNREPAIRED geometry, and the stored `anchor_spike_ratio` stays that
         # number — a repair is a near-rejection, never a pass. Only what an
@@ -730,8 +850,12 @@ def _harvest_case_slots(case, result: WordDeriveResult, opts: HarvestOptions) ->
         repaired, repaired_indices = repair_stranded_anchors(
             fitted_raw, stroke_starts, chart_loop_ranges(row, opts.loop_aware_repair), loop_aware=opts.loop_aware_repair
         )
-        shift = np.median(repaired - anchors, axis=0)
-        fitted = repaired - shift  # shapes, not placements
+        # A48: with the switch the statistics read the decoded path through the
+        # Saat-Korrespondenz instead of this letter's own fit (see
+        # `HarvestOptions.occurrences`); the trace below stays the fit's.
+        source = tp["anchors"] if (opts.occurrences == "tintenpfad" and tp) else repaired
+        shift = np.median(source - anchors, axis=0)
+        fitted = source - shift  # shapes, not placements
         per_key[slot.key].append(fitted)
         # The word trace (handmodell word level): this letter's UNCENTERED
         # fitted strokes in the word's shared frame, in writing order — built
@@ -752,16 +876,17 @@ def _harvest_case_slots(case, result: WordDeriveResult, opts: HarvestOptions) ->
         rx, ry = (case.rect[0], case.rect[1]) if case.rect else (0, 0)
         prev_slot = case.slots[i - 1] if i > 0 else None
         next_slot = case.slots[i + 1] if i + 1 < len(case.slots) else None
+        extent = np.asarray(tp["px"], dtype=float) if (opts.occurrences == "tintenpfad" and tp) else body
         occurrences.append(
             {
                 "glyph_key": slot.key,
                 "glyph": row.get("glyph") or slot.key,
                 "position": slot.position or "medial",
                 "variant": 0,
-                "y0": int(round(body[:, 1].min())) + ry,
-                "y1": int(round(body[:, 1].max())) + ry,
-                "x0": int(round(body[:, 0].min())) + rx,
-                "x1": int(round(body[:, 0].max())) + rx,
+                "y0": int(round(extent[:, 1].min())) + ry,
+                "y1": int(round(extent[:, 1].max())) + ry,
+                "x0": int(round(extent[:, 0].min())) + rx,
+                "x1": int(round(extent[:, 0].max())) + rx,
                 "anchors": fitted.round(4).tolist(),
                 "half_widths": [],
                 "measurements": {
@@ -774,8 +899,18 @@ def _harvest_case_slots(case, result: WordDeriveResult, opts: HarvestOptions) ->
                     "geo_rmse_px": round(geo_rmse, 3),
                     "xh_px": round(float(xh), 2),
                     # Absent when untouched: absence must mean the stored
-                    # anchors are exactly the fitted ones.
-                    **({"repaired_anchors": repaired_indices} if repaired_indices else {}),
+                    # anchors are exactly the fitted ones. The A48 path never
+                    # repairs, so the key must not travel with it.
+                    **(
+                        {"repaired_anchors": repaired_indices}
+                        if repaired_indices and not (opts.occurrences == "tintenpfad" and tp)
+                        else {}
+                    ),
+                    **(
+                        {"fit_path": "tintenpfad", "corr_slice_resid": float(tp["slice_resid"])}
+                        if opts.occurrences == "tintenpfad" and tp
+                        else {}
+                    ),
                 },
             }
         )
@@ -1125,6 +1260,7 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
     # code the trace bench's `chain` candidate runs, so a measured baseline and
     # a stored trace can never be two different things.
     word_strokes, chain_meta = chain_word_strokes(case, result, opts)
+    tp_anchors = tintenpfad_occurrence_anchors(case, result, opts) if opts.occurrences == "tintenpfad" else {}
     xh = chain_meta["xh"]
     registration = chain_meta["registration"]
     grids = chain_meta["grids"]
@@ -1195,6 +1331,12 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 spike_ratio=spike_ratio,
                 connector_reasons=adjacent,
             )
+            tp = tp_anchors.get(slot_index)
+            if gate == "ok" and opts.occurrences == "tintenpfad" and (tp is None or "anchors" not in tp):
+                # The letter's FIT passed every gate; what is missing is the
+                # correspondence, so the rejection carries its own name and
+                # never hides inside a fit verdict.
+                gate = "tintenpfad_gap"
             gate_by_slot[slot_index] = gate
             converged_by_slot[slot_index] = bool(seg.converged_local)
             # Post-gate repair (`tools.pairlab.anchors`), ACCEPTED letters only:
@@ -1248,6 +1390,18 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 ),
                 conn_reason_adjacent=",".join(r for r in adjacent if r),
                 conn_reason=conn_reasons.get(n) or "",
+                **(
+                    {
+                        "corr_covered": tp["covered"] if tp else 0,
+                        "corr_total": tp["total"] if tp else 0,
+                        # NOT rounded: a proof that holds to 1e-15 and one that
+                        # scrapes past 1e-7 are the same column at 12 decimals,
+                        # and the difference is exactly what makes it a proof.
+                        "corr_slice_resid": float(tp["slice_resid"]) if tp else "",
+                    }
+                    if opts.occurrences == "tintenpfad"
+                    else {}
+                ),
                 n_params=int(fit.fit_meta.get("n_params", 0)),
                 iterations=int(fit.fit_meta.get("iterations", 0)),
                 hit_iteration_cap=bool(fit.fit_meta.get("hit_iteration_cap", False)),
@@ -1260,11 +1414,21 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                 continue
 
             accepted.add(slot_index)
-            shift = np.median(repaired - anchors, axis=0)
-            fitted = repaired - shift  # shapes, not placements
+            # A48: with the switch the geometry entering the statistics is the
+            # decoded path read through the Saat-Korrespondenz. No stranded-
+            # anchor repair runs on it — that repair mends a DESCENT that left
+            # the ink, and every anchor here sits on a strand pixel the decoder
+            # boarded.
+            source = tp["anchors"] if (opts.occurrences == "tintenpfad" and tp) else repaired
+            shift = np.median(source - anchors, axis=0)
+            fitted = source - shift  # shapes, not placements
             per_key[slot.key].append(fitted)
             rmse_by_slot[str(keyed[slot_index])] = round(float(seg.geo_rmse_px), 3)
-            body = np.asarray(seg.polyline_px, dtype=float).reshape(-1, 2)
+            body = (
+                np.asarray(tp["px"], dtype=float)
+                if (opts.occurrences == "tintenpfad" and tp)
+                else np.asarray(seg.polyline_px, dtype=float).reshape(-1, 2)
+            )
             rx, ry = (case.rect[0], case.rect[1]) if case.rect else (0, 0)
             prev_slot = case.slots[slot_index - 1] if slot_index > 0 else None
             next_slot = case.slots[slot_index + 1] if slot_index + 1 < len(case.slots) else None
@@ -1293,11 +1457,21 @@ def _harvest_case_chain(case, result: WordDeriveResult, opts: HarvestOptions) ->
                         "geo_rmse_px": round(float(seg.geo_rmse_px), 3),
                         "cov_rmse_local_px": round(float(seg.cov_rmse_local_px), 3),
                         "xh_px": round(float(xh), 2),
-                        "fit_path": "chain",
+                        "fit_path": "tintenpfad" if (opts.occurrences == "tintenpfad" and tp) else "chain",
                         "run_slots": list(fit.slots),
                         # Absent when untouched: absence must mean the stored
-                        # anchors are exactly the fitted ones.
-                        **({"repaired_anchors": repaired_indices} if repaired_indices else {}),
+                        # anchors are exactly the fitted ones. The A48 path
+                        # never repairs, so the key must not travel with it.
+                        **(
+                            {"repaired_anchors": repaired_indices}
+                            if repaired_indices and not (opts.occurrences == "tintenpfad" and tp)
+                            else {}
+                        ),
+                        **(
+                            {"corr_slice_resid": float(tp["slice_resid"])}
+                            if opts.occurrences == "tintenpfad" and tp
+                            else {}
+                        ),
                     },
                 }
             )
@@ -1387,6 +1561,7 @@ def harvest(
     loop_aware_repair: bool = LOOP_AWARE_REPAIR,
     laufform_overlay: Path | None = None,
     follower: str = DEFAULT_FOLLOWER,
+    occurrences_from: str = "fit",
 ) -> tuple[dict[str, dict], list[dict], list[dict], list[dict]]:
     """Per-letter median fitted anchors over the clean word occurrences, plus
     every clean fit as an occurrence record (`InstanceItem` wire shape), plus
@@ -1409,6 +1584,8 @@ def harvest(
     # "not tintenpfad" and quietly harvest the chain's trace under a wrong name.
     if follower not in FOLLOWER_CHOICES:
         raise SystemExit(f"--follower must be one of {', '.join(FOLLOWER_CHOICES)}, not {follower!r}")
+    if occurrences_from not in OCCURRENCE_CHOICES:
+        raise SystemExit(f"--occurrences must be one of {', '.join(OCCURRENCE_CHOICES)}, not {occurrences_from!r}")
     opts = HarvestOptions(
         style=style,
         rmse_max=rmse_max,
@@ -1416,6 +1593,7 @@ def harvest(
         chain_seed=chain_seed,
         loop_aware_repair=loop_aware_repair,
         follower=follower,
+        occurrences=occurrences_from,
     )
     cases = [c for which in sets for c in iter_fixture_word_cases(which=which, style=style)]
     if laufform_overlay is not None:
@@ -1560,6 +1738,15 @@ def main() -> None:
         "name it",
     )
     ap.add_argument(
+        "--occurrences",
+        choices=list(OCCURRENCE_CHOICES),
+        default=DEFAULT_OCCURRENCES,
+        help=f"where an occurrence's ANCHORS come from (default {DEFAULT_OCCURRENCES!r}): the per-letter fit, "
+        "or the Tintenpfad's decoded path read through the Saat-Korrespondenz (A48). The switch moves the "
+        "statistics layer — occurrences and medians — and rejects a letter the correspondence cannot cover "
+        "completely (gate tintenpfad_gap). Measurement only: --apply refuses it",
+    )
+    ap.add_argument(
         "--chain-seed",
         choices=["composed", "grid", "chart"],
         default=None,
@@ -1626,6 +1813,13 @@ def main() -> None:
     # line is the one that has to be there.
     if args.apply and (chain_seed != DEFAULT_CHAIN_SEED or args.laufform):
         raise SystemExit("--apply writes the DEFAULT harvest only — a seeded or overlaid run is a measurement")
+    # A48 is a measured ARM, not a stand: the anchors it produces have never
+    # been judged, and `--apply` would put them into every flowing render.
+    if args.apply and args.occurrences != DEFAULT_OCCURRENCES:
+        raise SystemExit(
+            f"--occurrences {args.occurrences} is a measurement arm (A48) — it is not writable; "
+            "the author adopts it on the numbers, and only then does --apply learn it"
+        )
     # The follower default FLIPPED with A45, and `--apply` writes the stored
     # word traces: a routine re-harvest must not carry a changed trace into
     # production because a default moved under it. So the writing run names its
@@ -1653,6 +1847,7 @@ def main() -> None:
         loop_aware_repair=args.loop_aware_repair or LOOP_AWARE_REPAIR,
         laufform_overlay=args.laufform,
         follower=args.follower or DEFAULT_FOLLOWER,
+        occurrences_from=args.occurrences,
     )
     for target in (args.out, args.occ_out, args.word_out):
         target.parent.mkdir(parents=True, exist_ok=True)

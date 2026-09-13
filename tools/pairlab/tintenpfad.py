@@ -424,6 +424,13 @@ class Seed:
     tan: np.ndarray  # (n, 2) unit tangents by central difference
     slot: np.ndarray  # (n,) slot index, −1 for a connector
     stroke: np.ndarray  # (n,) stroke index, +1 at every pen lift
+    # Where each sample came from, for a consumer that has to walk the
+    # correspondence back into the composition (the harvest's Saat-Korrespondenz):
+    # the index of the composed draw item, and the FRACTIONAL index into that
+    # item's centerline polyline the sample was resampled from. Bookkeeping
+    # only — no number of the decode reads them.
+    item: np.ndarray = field(default=None)  # (n,) index into the composed items
+    pos: np.ndarray = field(default=None)  # (n,) fractional index along that item
 
 
 # ------------------------------------------------------------ stage 1: strands
@@ -850,6 +857,16 @@ def double_ink_of(
 # --------------------------------------------------------------- stage 2: seed
 
 
+def seed_items(result: WordDeriveResult) -> list[dict]:
+    """The composed draw items the seed is built from, in composition order.
+
+    One definition for the follower and for anyone who has to read
+    `Seed.item` back — a consumer that re-filtered the item list itself would
+    index a different space the day the filter changes.
+    """
+    return [it for it in result.composed["items"] if len(it.get("centerline") or []) >= 2]
+
+
 def seed_samples(
     result: WordDeriveResult, xh: float, weights: TintenpfadWeights, affreg: dict[int, dict] | None = None
 ) -> Seed:
@@ -859,7 +876,7 @@ def seed_samples(
     end offsets, everything resampled at `seed_step_xh` in writing order."""
     reg = result.registration
     tx, ty, base = float(reg.get("tx", 0.0)), float(reg.get("ty", 0.0)), float(result.baseline_row)
-    items = [it for it in result.composed["items"] if len(it.get("centerline") or []) >= 2]
+    items = seed_items(result)
     px_items = []
     for it in items:
         c = np.asarray(it["centerline"], dtype=float).reshape(-1, 2)
@@ -884,9 +901,9 @@ def seed_samples(
                 off_b = moved[k + 1][0] - px_items[k + 1][0]
                 w = np.linspace(0.0, 1.0, len(px_items[k]))[:, None]
                 moved[k] = px_items[k] + (1 - w) * off_a + w * off_b
-    xs, slots, strokes = [], [], []
+    xs, slots, strokes, item_of, pos_of = [], [], [], [], []
     stroke, prev = 0, None
-    for it, pts in zip(items, moved, strict=True):
+    for m, (it, pts) in enumerate(zip(items, moved, strict=True)):
         slot = int(it["slot_index"]) if it.get("slot_index") is not None else -1
         if it.get("lift") and prev is not None:
             stroke += 1
@@ -897,12 +914,23 @@ def seed_samples(
         xs.append(np.column_stack([np.interp(s_, arc, pts[:, 0]), np.interp(s_, arc, pts[:, 1])]))
         slots.append(np.full(n, slot))
         strokes.append(np.full(n, stroke))
+        item_of.append(np.full(n, m))
+        # The same `np.interp` on the item's own vertex index: the inverse of
+        # this resampling, exact by construction rather than re-derived later.
+        pos_of.append(np.interp(s_, arc, np.arange(len(pts), dtype=float)))
         prev = pts[-1]
     xy = np.vstack(xs)
     tan = np.gradient(xy, axis=0)
     nrm = np.linalg.norm(tan, axis=1)
     tan = tan / np.where(nrm > 0, nrm, 1.0)[:, None]
-    return Seed(xy=xy, tan=tan, slot=np.concatenate(slots), stroke=np.concatenate(strokes))
+    return Seed(
+        xy=xy,
+        tan=tan,
+        slot=np.concatenate(slots),
+        stroke=np.concatenate(strokes),
+        item=np.concatenate(item_of),
+        pos=np.concatenate(pos_of),
+    )
 
 
 # ------------------------------------------------------------- stage 2: decode
@@ -2154,8 +2182,19 @@ def span_checks(
 # ----------------------------------------------------------------- the word
 
 
-def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
-    """One word, both stages — the candidate-shaped row (`follow_derived`'s shape)."""
+def follow_word(case: WordCase, weights: TintenpfadWeights, *, correspondence: bool = False) -> dict[str, Any]:
+    """One word, both stages — the candidate-shaped row (`follow_derived`'s shape).
+
+    With `correspondence` the row additionally carries a `"correspondence"` key
+    (numpy arrays, never serialised): the DECODED runs in crop px with the seed
+    sample index per vertex, plus the seed's own `slot`/`item`/`pos`
+    bookkeeping. It is the Saat-Korrespondenz the Laufform harvest reads — off
+    by default, and it adds nothing to `meta`, so every stored candidate and
+    every report stays byte-identical whether the key was asked for or not.
+    The runs handed over are the ones BEFORE the arc-length resample: the
+    resample re-reads a carried array at the nearest original vertex, so the
+    place a seed sample actually landed is only exact on the decoded chain.
+    """
     base = {"kind": case.kind, "specimen_id": case.id, "word": case.word}
     started = time.perf_counter()
     if not case.scorable:
@@ -2287,6 +2326,23 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
     if weights.tip_extend_xh > 0.0:
         edt = distance_transform_edt(mask)
         diag["tips_extended"] = extend_tips(runs, labels, kinds, samples, edt, weights.tip_extend_xh * xh)
+    corr = (
+        {
+            # Where the decode put each seed sample: the strand pixel its state
+            # boarded, NaN on the paper state. The STATE, not an emitted
+            # vertex — two neighbouring samples often board the same pixel (the
+            # seed step and the strand's pixel pitch are both ≈ 0.03 xh), and
+            # the ride between them then emits nothing at all, which would lose
+            # half the correspondence for no reason. Every boarded pixel is on
+            # the delivered rail.
+            "state_xy": _state_positions(strands, states),
+            "seed_slot": np.asarray(seed.slot, dtype=int),
+            "seed_item": np.asarray(seed.item, dtype=int),
+            "seed_pos": np.asarray(seed.pos, dtype=float),
+        }
+        if correspondence
+        else None
+    )
     raw_units = [_px_to_word_units(r[:, 0], r[:, 1], xh, _registration(result)) for r in runs]
     diag["raw_chain"] = {
         **kink_reading(raw_units),
@@ -2351,6 +2407,7 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
     strokes = cap_word_strokes([u.tolist() for u in units], label=f"{case.id} (tintenpfad)")
     return {
         **base,
+        **({"correspondence": corr} if corr is not None else {}),
         "strokes": strokes,
         "registration_px": {
             "tx": round(float(reg["tx"]), 2),
@@ -2368,6 +2425,15 @@ def follow_word(case: WordCase, weights: TintenpfadWeights) -> dict[str, Any]:
             "timings": {"seconds": diag["seconds"]},
         },
     }
+
+
+def _state_positions(strands: Sequence[Strand], states: Sequence[tuple[int, int, int] | None]) -> np.ndarray:
+    """Per seed sample: the crop-px strand pixel its state boarded, NaN on paper."""
+    out = np.full((len(states), 2), np.nan)
+    for k, st in enumerate(states):
+        if st is not None:
+            out[k] = strands[st[0]].points[st[1]]
+    return out
 
 
 def _registration(result: WordDeriveResult) -> dict[str, float]:
@@ -2394,11 +2460,13 @@ def _step_and_turn(strokes_units: Sequence[np.ndarray]) -> dict[str, float]:
     }
 
 
-def follow_case(case: WordCase, weights: TintenpfadWeights | None = None) -> dict[str, Any]:
+def follow_case(
+    case: WordCase, weights: TintenpfadWeights | None = None, *, correspondence: bool = False
+) -> dict[str, Any]:
     """`follow_word` that never raises: one word must not take a sweep down."""
     weights = weights or TintenpfadWeights()
     try:
-        return follow_word(case, weights)
+        return follow_word(case, weights, correspondence=correspondence)
     except Exception as exc:  # noqa: BLE001 — reported per row, the doctrine of every bench tool
         return {
             "kind": case.kind,

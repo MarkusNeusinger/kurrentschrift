@@ -184,6 +184,15 @@ jedem Laufform-Write gilt weiter: zweimal ernten — jetzt als
 Selbstprüfung mit erwartetem Ergebnis (`werkzeuge.md`).
 → [§4](glossar.md#4-metriken-und-benchmarks)
 
+**Saat-Korrespondenz** — der Weg von einer dekodierten BAHN zu einem
+Laufform-ANKERSATZ, ohne über die Bogenlänge zu verteilen: Dekoder-Zustand
+→ Saat-Probe → Stelle im komponierten Buchstaben → Tafelzeilen-Anker. Das
+mittlere Glied führt `core/compose.py` nicht Buch und wird deshalb je Punkt
+als exakte affine Scheiben-Identität BEWIESEN; ein Anker ohne Beweis ist
+ungedeckt und der Slot fällt als `tintenpfad_gap` heraus. Messarm
+`harvest --occurrences tintenpfad` (A48).
+→ [§3](glossar.md#3-mess--und-fit-vokabular)
+
 **Kringel-Landmarke** — die Erwartung „diese Schleife muss offen bleiben"
 je Buchstabe und je Schleife statt als eine Schwelle: Größenklasse
 (`klein` · `mittel` · `groß`, gezählt in Breiten der Plattenfeder) plus
