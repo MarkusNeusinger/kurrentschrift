@@ -17010,8 +17010,8 @@ bei 1,0); in #592 sind es DREI, der ß-Retrace ist benannter Folge-Arm.
 von `Pulver` und `Einen` (oben als Treffer von `double_ink_ratio=1.0`
 gemessen, seit `sep12` als `ride_back=1` gebaut) ist entschieden — sie
 bleibt ohne Kleinbuchstaben-Gate. Damit ist die offene Frage der
-Ecken-Runde geschlossen; die §7.11-Zeile dazu ist zu in
-[`tintenfolger.md`](../proposals/tintenfolger.md) §7.11.
+Ecken-Runde geschlossen; die §7.11-Zeile dazu ist zu
+([`tintenfolger.md`](../proposals/tintenfolger.md) §7.11).
 
 ### Tintenpfad-Adoption `sep12` — die formale Runde auf der frischen Wurzel: der Tintenpfad wird Standard-Folger (A45)
 
