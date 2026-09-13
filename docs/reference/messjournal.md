@@ -17328,7 +17328,13 @@ Scheiben-Identifikation exakt aufgeht: über die 63 Wörter sind das **328
 von 334 Items = 98,2 %** gegen die Schranke von 80 %. Auch die strengere
 Lesart hält — **297 Items (88,9 %) sind auf JEDEM ihrer Punkte bewiesen**,
 und über alle Item-Punkte gerechnet **61 760 von 62 530 = 98,8 %** —, das
-Gate hängt also nicht an der Wahl der Lesart. Jeder bewiesene Punkt liegt
+Gate hängt also nicht an der Wahl der Lesart. Die **sechs** Items ohne
+Beweis sind vollständig erklärt und sind kein Fehlschlag: es sind genau
+die Umlaut-MARKEN von `Säbel` (17 Punkte) und `Zügel`/`Sprünge` (je 20),
+die einzigen Items der Runde unter `MIN_OVERLAP` = 24 — der Beweis
+verlangt ein Fenster, das sie nicht füllen, und schweigt deshalb über
+sie, statt zu raten. Jedes Item ab 24 Punkten beweist, die Körper dieser
+drei Buchstaben (204 · 186 · 171 Punkte) auf jedem Punkt. Jeder bewiesene Punkt liegt
 per Konstruktion unter 1e-6; beobachtet werden je Item Median **7,2e-15**,
 je Slot Median **8,0e-15**, höchstens **1,03e-13** — elf Größenordnungen
 unter der Schranke, der Beweis ist keine knappe Sache. (Die Spalte
