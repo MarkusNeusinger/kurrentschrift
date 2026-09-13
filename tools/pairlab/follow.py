@@ -139,7 +139,9 @@ from tools.pairlab.chain import (
     _stroke_polylines_px,
     build_chain_problem,
     fit_word_chain,
+    pin_free_anchors,
     respec_from_solution,
+    wave_report,
 )
 from tools.pairlab.counterevidence import (
     COUNTER_EVIDENCE_SIZE_CLASSES,
@@ -565,6 +567,32 @@ class FollowWeights:
     term on a letter's displacement from its seed, one block per pen stroke
     (`chain._ChainProblem.lsmooth_weight`). Prices the jitter the solve adds,
     never the letter's own curvature. 0.0 = off, byte-identical."""
+    wave_spacing: float = 0.0
+    """The Wellen-Basis (2026-09-11; the author: „die Punkte können sich nur
+    so, wie so eine Welle, zusammenhängend verschieben"): interior knot
+    spacing, in xh, of the clamped cubic B-spline displacement field the free
+    per-anchor deltas are re-parametrised in — one block per pen stroke of
+    the chain, continuous across a letter seam EXCEPT at a retrace letter
+    (the t's bar), whose tail ends its own block at the seam and the block
+    that resumes is anchored back to it, no corner knots
+    (`chain.build_chain_problem(wave_spacing=…)`). A MECHANISM, a change of
+    parameter space, not a weight: nothing is priced, a one-anchor zag is
+    simply not representable. Applies to the initial solve and every round.
+    0.0 = off — geometry byte-identical (the field itself rides into every
+    artefact's weights blob, as every FollowWeights field does)."""
+    wave_arc: str = "current"
+    """Which anchors the basis' arc abscissa is read over in the follower
+    rounds: `current` (each round's own seed — the knots follow the
+    deformation) or `seed` (the chain seed, carried through every round, so
+    the cumulative field over the rounds is ONE wave over the original arc and
+    a chord one round stretched cannot become a span of its own in the next).
+    Only read while `wave_spacing` > 0."""
+    wave_report: bool = False
+    """Write the displacement-field coherence (`chain.wave_report`: Lipschitz
+    slope along the arc, largest neighbour step with its chord, second-
+    difference ratio, field-only and total) into the solve records even with
+    the basis off — the free reference a basis run is read against.
+    Diagnostics only; never moves a solve."""
     seed_form: str = "chart"
     """Which row seeds a letter: the chart row (`chart`, every Kette number so
     far) or this hand's harvested running form where one exists
@@ -1919,6 +1947,14 @@ def build_follow_problem(
         kink_cos=float(weights.kink_cos),
         kink_weight=float(weights.kink_weight),
         lsmooth_weight=float(weights.letter_smooth),
+        wave_spacing=float(weights.wave_spacing),
+        # `seed`: the abscissa the previous problem read its basis over, or
+        # its own seed when it is the chain problem — carried round to round.
+        wave_arc_anchors=(
+            (problem.basis_arc_anchors if problem.basis_arc_anchors is not None else problem.anchors_free)
+            if (weights.wave_arc == "seed" and weights.wave_spacing > 0.0)
+            else None
+        ),
         **fields,
     )
     if weights.landmark > 0.0 and weights.landmark_targets != "raw":
@@ -1976,6 +2012,10 @@ def _solve_round(
         "message": str(res.message),
         "seconds": round(time.perf_counter() - started, 3),
     }
+    if problem.basis_op is not None or weights.wave_report:
+        # The Wellen-Basis' physics per round — present only while the basis
+        # is on or asked for, so a default record keeps its shape.
+        record["wave"] = wave_report(problem, res.x)
     return res.x, record
 
 
@@ -2060,6 +2100,8 @@ def follow_word_chain(
             connector_ramp=weights.seed_ramp,
             seed_form=weights.seed_form,
             lsmooth_weight=weights.letter_smooth if weights.init_terms else 0.0,
+            wave_spacing=weights.wave_spacing,
+            report_wave=weights.wave_report,
         )
     if fit is None:
         return None
@@ -2126,9 +2168,15 @@ def follow_word_chain(
                 # the budget and every round go through.
                 guard_soll = _assembled_counts(fit.problem, np.zeros_like(fit.params))
 
+    round1_seed: np.ndarray | None = None
     for index in range(1, int(weights.rounds) + 1):
         prev_problem, prev_params = problem, params
         problem, mask = build_follow_problem(prev_problem, prev_params, weights, counter)
+        if round1_seed is None:
+            # The origin of the CUMULATIVE displacement report: the rounds'
+            # first seed, i.e. the chain optimum — every rebuild after this
+            # one starts from a moved seed with new knots.
+            round1_seed = np.asarray(problem.anchors_free, dtype=float).copy()
         params, record = _solve_round(problem, weights, index, mask)
         if guard_budget is not None:
             # Arm ⑨ (§14 `aug16`): the acceptance rule. A violating round is
@@ -2178,6 +2226,7 @@ def follow_word_chain(
                     two_sided,
                 )
                 pinned: list[int] = []
+                pin_counts: dict[str, int] | None = None
                 if len(sites_units) and len(problem.anchors_free):
                     # Sites are trace units; anchors live in the problem frame —
                     # compare in crop px (the assembler's own inverse transform).
@@ -2193,10 +2242,11 @@ def follow_word_chain(
                     radius_px = zone_units * problem_z.unit_px
                     d = np.hypot(ax[:, None] - sx[None, :], ay[:, None] - sy[None, :])
                     pinned = [int(i) for i in np.flatnonzero(d.min(axis=1) <= radius_px)]
-                    off = 2 + 2 * problem_z.n_blocks
-                    for ai in pinned:
-                        problem_z.bounds[off + 2 * ai] = (0.0, 0.0)
-                        problem_z.bounds[off + 2 * ai + 1] = (0.0, 0.0)
+                    # Through the Wellen-Basis, when there is one: every
+                    # coefficient with support on a pinned anchor, so the
+                    # zone freezes exactly there and up to one support
+                    # ((degree + 1)·Δs) further out — `pin_counts` says so.
+                    pin_counts = pin_free_anchors(problem_z, pinned)
                     if pinned:
                         params_z, record_z = _solve_round(problem_z, weights, index, mask_z)
                         counts_z = _assembled_counts(problem_z, params_z)
@@ -2206,6 +2256,16 @@ def follow_word_chain(
                     "sites": int(len(sites_units)),
                     "pinned": int(len(pinned)),
                     "accepted": not _breaks_budget(counts, guard_budget, two_sided=two_sided, soll=guard_soll),
+                    # Only under the Wellen-Basis: how the pin widened through
+                    # the coefficients' support (a default record keeps its shape).
+                    **(
+                        {
+                            "pinned_coefficients": pin_counts["coefficients"],
+                            "frozen_anchors": pin_counts["anchors_frozen"],
+                        }
+                        if pin_counts is not None and problem.basis_op is not None
+                        else {}
+                    ),
                 }
             record["structure_budget"] = dict(guard_budget)
             if guard_soll is not None:
@@ -2290,6 +2350,31 @@ def follow_word_chain(
             },
             "slots": list(fit.slots),
             "timings": {"seconds": round(time.perf_counter() - started, 3)},
+            # The Wellen-Basis' CUMULATIVE displacement, read over two origins
+            # (the chain seed and round 1's seed) — the sum of the rounds'
+            # STEPS is smooth but their Lipschitz constants add, so the
+            # per-round numbers alone would flatter it. Only `total` varies
+            # with the origin (`wave_report`'s `seed` argument); `field` is
+            # the LAST accepted round's own coefficients regardless of origin,
+            # so it is dropped here rather than printed twice under a
+            # "cumulative" heading it does not describe. Present only while
+            # the basis is on or asked for (a default meta keeps its shape).
+            **(
+                {
+                    "wave_cumulative": {
+                        "from_chain_seed": {
+                            k: v
+                            for k, v in wave_report(problem, params, seed=fit.problem.anchors_free).items()
+                            if k != "field"
+                        },
+                        "from_round1_seed": {
+                            k: v for k, v in wave_report(problem, params, seed=round1_seed).items() if k != "field"
+                        },
+                    }
+                }
+                if rounds and round1_seed is not None and (problem.basis_op is not None or weights.wave_report)
+                else {}
+            ),
         },
         problem=problem if keep_solve else None,
         params=np.asarray(params, dtype=float).copy() if keep_solve else None,
@@ -2490,6 +2575,7 @@ def follow_derived(
     run_slots: list[list[int]] = []
     rounds_by_run: list[list[dict]] = []
     landmarks_by_run: list[dict] = []
+    wave_by_run: list[dict] = []
     traced: set[int] = set()
     n_runs = n_failed = n_params = 0
     claims_by_run: list[list[dict]] = []
@@ -2521,6 +2607,8 @@ def follow_derived(
             connector_ramp=weights.seed_ramp,
             seed_form=weights.seed_form,
             lsmooth_weight=weights.letter_smooth if weights.init_terms else 0.0,
+            wave_spacing=weights.wave_spacing,
+            report_wave=weights.wave_report,
             slot_affine_init=affines,
         )
         if chain_fit is None:
@@ -2537,6 +2625,14 @@ def follow_derived(
         run_slots.append(list(followed.slots))
         rounds_by_run.append(followed.rounds)
         landmarks_by_run.append(followed.fit_meta.get("landmark", {}))
+        if "wave_basis" in chain_fit.fit_meta or "wave_cumulative" in followed.fit_meta:
+            wave_by_run.append(
+                {
+                    "slots": list(followed.slots),
+                    "chain": chain_fit.fit_meta.get("wave_basis"),
+                    "cumulative": followed.fit_meta.get("wave_cumulative"),
+                }
+            )
         traced.update(int(s) for s in followed.slots)
         n_params += int(followed.fit_meta.get("n_params", 0))
         word_strokes.extend(followed.strokes_units)
@@ -2573,6 +2669,10 @@ def follow_derived(
         # Only while the measure is on: the key's absence keeps an archaeology
         # artefact (`--no-ink-evidence`) byte-identical to every pre-K-C report.
         **({"ink_evidence": ink_report.as_dict()} if ink_report is not None else {}),
+        # The Wellen-Basis' numbers per run (solve 1 and the cumulative
+        # displacement over the rounds; the per-round ones sit in `rounds`) —
+        # present exactly while the basis is on or its report was asked for.
+        **({"wave": wave_by_run} if wave_by_run else {}),
         # K-E's claim list per run — present exactly while the measure is on,
         # empty lists included (a word without a firing claim SAYS so; §14
         # "Kette K-E": a silent claim would make a negative unreadable).
@@ -2771,6 +2871,8 @@ def calibrate_case(
             connector_ramp=weights.seed_ramp,
             seed_form=weights.seed_form,
             lsmooth_weight=weights.letter_smooth if weights.init_terms else 0.0,
+            wave_spacing=weights.wave_spacing,
+            report_wave=weights.wave_report,
             slot_affine_init=affines,
         )
         if chain_fit is None:
@@ -3171,6 +3273,27 @@ def build_parser() -> argparse.ArgumentParser:
         "from its seed (per pen stroke); 0 = off, byte-identical",
     )
     parser.add_argument(
+        "--wave-spacing",
+        type=float,
+        default=FollowWeights.wave_spacing,
+        help="Wellen-Basis 2026-09-11: interior knot spacing (xh) of the clamped cubic B-spline displacement "
+        "field the per-anchor deltas are re-parametrised in, one block per pen stroke of the chain; "
+        "0 = off, geometry byte-identical",
+    )
+    parser.add_argument(
+        "--wave-arc",
+        choices=["current", "seed"],
+        default=FollowWeights.wave_arc,
+        help="abscissa of the Wellen-Basis in the follower rounds: each round's own seed (current) or the "
+        "chain seed carried through every round (seed) — one wave over the original arc",
+    )
+    parser.add_argument(
+        "--wave-report",
+        action="store_true",
+        help="write the displacement-field coherence report into every solve record even with the basis off "
+        "(the free reference); diagnostics only, never moves a solve",
+    )
+    parser.add_argument(
         "--seed-form",
         choices=["chart", "laufform"],
         default=FollowWeights.seed_form,
@@ -3338,6 +3461,9 @@ def weights_from_args(args: argparse.Namespace) -> FollowWeights:
         seed_form=str(args.seed_form),
         seed_min_gain=float(args.seed_min_gain),
         letter_smooth=float(args.letter_smooth),
+        wave_spacing=float(args.wave_spacing),
+        wave_arc=str(args.wave_arc),
+        wave_report=bool(args.wave_report),
         zwei_zuege=bool(args.zwei_zuege),
         zwei_zuege_half_width=float(args.zwei_zuege_half_width),
         zwei_zuege_taper=float(args.zwei_zuege_taper),

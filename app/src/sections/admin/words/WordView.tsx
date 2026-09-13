@@ -80,6 +80,10 @@ export function WordView() {
   // (ink↔trace, ink↔engine, trace↔engine) changes with the question.
   const [overlay, setOverlay] = useState(false);
   const [showTrace, setShowTrace] = useState(true);
+  // „Pfad" reads the SAME stored line as a movement — order, direction, lifts.
+  // Off by default: the plain line is the first look, and three inks plus
+  // arrows over one crop is a lot when the question is only „trifft der Fit".
+  const [showPath, setShowPath] = useState(false);
   const [composed, setComposed] = useState<ComposedWordOut | null>(null);
   const [missing, setMissing] = useState<string[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
@@ -262,9 +266,18 @@ export function WordView() {
             {traces.length > 0 && (
               <ToggleButtonGroup
                 size="small"
-                value={[...(showTrace ? ['trace'] : []), ...(overlay ? ['engine'] : [])]}
+                value={[
+                  ...(showTrace ? ['trace'] : []),
+                  ...(showPath ? ['path'] : []),
+                  ...(overlay ? ['engine'] : []),
+                ]}
                 onChange={(_e, next: string[]) => {
-                  setShowTrace(next.includes('trace'));
+                  // „Pfad" is a reading of the trace, so it brings its line
+                  // with it: switching it on without the layer it decorates
+                  // would leave the arrows floating over bare ink.
+                  const path = next.includes('path');
+                  setShowPath(path);
+                  setShowTrace(path || next.includes('trace'));
                   setOverlay(next.includes('engine'));
                 }}
                 aria-label={de.admin.werkbank.layersLabel}
@@ -277,6 +290,12 @@ export function WordView() {
                   <LayerDot color={WERKBANK_COLORS.traceOverInk} />
                   {de.admin.werkbank.layerTrace}
                 </ToggleButton>
+                <Tooltip title={de.admin.werkbank.layerPathHint}>
+                  <ToggleButton value="path">
+                    <LayerDot color={WERKBANK_COLORS.pathLast} />
+                    {de.admin.werkbank.layerPath}
+                  </ToggleButton>
+                </Tooltip>
                 <ToggleButton value="engine">
                   <LayerDot color={WERKBANK_COLORS.engine} />
                   {de.admin.werkbank.layerEngine}
@@ -385,6 +404,7 @@ export function WordView() {
                 composed={composed}
                 overlay={overlay}
                 showTrace={showTrace}
+                showPath={showPath}
                 onOpenLetter={(glyphKey) => navigate(lettersUrl(glyphKey))}
                 onOpenPair={(leftKey, rightKey) => navigate(joinsUrl(leftKey, rightKey))}
                 onMark={fileMark}

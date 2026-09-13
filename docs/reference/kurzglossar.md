@@ -558,6 +558,15 @@ nur weit weg von der Schrift; i-Punkte, Kommas und eigene Kleckse gehören
 dem runden Pinsel in der Werkbank. `core/eigenhand/flecken.py`.
 → [§5](glossar.md#5-werkbank-und-prozess) · eigenhand-erfassung.md §7.4
 
+**Streifen-Pfad** — die gefolgte Federbahn je geschriebenem Wort, als Daten
+neben dem Streifenbild: Züge in den Einheiten des Wortes, Registrierung in
+den Pixeln des Streifens, dazu Verfahren, Datum und die Maskengröße, unter
+der gefolgt wurde. Außerhalb gerechnet (`tools.eigenhand.pfad`, Trockenlauf
+als Vorgabe), über die Admin-API abgelegt, in der Werkbank nur gezeigt —
+Reihenfolge, Richtung und Absetzer. Die Saat ist der Tafel-Duktus, nicht
+diese Hand. `core/eigenhand/pfad.py`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · eigenhand-erfassung.md §7.5
+
 ---
 
 ## 6 · Öffentliche Seiten

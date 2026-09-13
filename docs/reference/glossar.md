@@ -75,7 +75,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
@@ -1425,17 +1425,29 @@ des Autors („die Punkte können sich nur wie eine Welle zusammenhängend
 verschieben", 2026-09-11) als PARAMETERRAUM statt als Preis: im
 Kettenlöser werden die freien Anker-Deltas als `deltas = B @ c` neu
 parametrisiert, B eine geklemmte kubische B-Spline-Entwurfsmatrix über die
-Bogenlänge der Saat, ein Block je Pen-Zug (stetig über Buchstaben-Nähte,
-geschnitten nur an buchstaben-internen `stroke_starts`, Knoten alle Δs
-0,25 xh, Leiter 0,16/0,35). Nur `unpack`/`_pack` ändern sich, jeder
+Bogenlänge der Saat, ein Block je Pen-Zug, stetig über eine Buchstaben-Naht
+AUSSER bei einem Retrace-Buchstaben (dem t-Balken): dessen Schlusszug endet
+seinen eigenen Block an der Naht, und der Block, der danach weiterläuft,
+ist an dieselbe Naht zurückverankert; sonst geschnitten nur an
+buchstaben-internen `stroke_starts` (Knoten alle Δs 0,25 xh, Leiter
+0,16/0,35). Nur `unpack`/`_pack` ändern sich, jeder
 Energieterm und Wächter liest weiter je Anker, der Gradient ist die exakte
 Kettenregel Bᵀg — ein Ein-Anker-Zacken ist damit nicht darstellbar, kein
 Strafterm bepreist ihn. Hook A der Welle-Runde; gemessen `sep11` als
 **ehrliches Teil-Negativ**: Zacken −78 %, Papier-Strecke −54 %, aber
 Tinten-Umkehren +23 % und `das` +0,0782 — ein kohärentes Feld repariert
-eine falsche Saat nicht punktweise. *Technisch:* Zweig
-`wellen-basis-hook-a` (ungemergt), `tools/pairlab/follow.py`
-(`_ChainProblem.unpack/_pack`); der Vorfahr im Repo ist der
+eine falsche Saat nicht punktweise. Trägt auch die Bogenlängen-Variante
+`--wave-arc seed` (Anker über der Kette-Saat statt über der laufend
+gedehnten aktuellen Bahn — repariert die Rundenkomposition der Dehnung,
+nicht die Umkehrungen). *Technisch:* im Repo seit `sep13` als Baustein
+(kein Zweig mehr — der Autor will das Verfahren behalten, nicht
+adoptieren), `tools/pairlab/chain.py`
+(`_wave_basis`/`_wave_block_rows`/`_wave_column_bounds`/`wave_report`/
+`pin_free_anchors`, `build_chain_problem(wave_spacing=…,
+wave_arc_anchors=…)`, `_ChainProblem.unpack`/`_pack`),
+`tools/pairlab/follow.py` (`--wave-spacing`/`--wave-arc`/`--wave-report`);
+**Vorgabe AUS** (`wave_spacing=0.0`), die Kette bleibt bei
+Standardaufrufen byte-identisch. Der Vorfahr im Repo ist der
 Spline-Basis-Median von LF11 (`core/aggregate.py`) → messjournal.md §14
 „Welle `sep11`", research/wellen-recherche.md §2
 
@@ -1453,9 +1465,20 @@ Teil-Negativ**: Zickzack je xh 3,718 → 0,009 (der beste Physik-Wert der
 Runde, Ablation: die Metrik ist der Mechanismus), Papier-Umkehr 18 → 0,
 aber das Lineal verloren (dev-19 0,045881 → 0,051445, 6 : 13) an drei
 benannten Klassen (das-Becken, muß/ß, Kapitale/W); 18 gestrandete
-Diakritika. *Technisch:* Zweig `wellen-schlange` (ungemergt); erklärte
-Einstellung ℓ 7 · β_e 64 (regelkonform wäre 16) · `cov_soft_k 4` als
-Schalter → messjournal.md §14 „Welle `sep11`", research/wellen-recherche.md §3
+Diakritika. *Technisch:* seit `sep12` im Repo unter `tools/pairlab/schlange.py`
+als eigenständiger Baustein (Zweig `wellen-schlange`, unadoptiert, kein
+Schalter im bestehenden Code) — **die Zahlen oben sind Geschichte, nicht das
+eingecheckte Modul**: die Review-Runde hat danach einen echten Ecken-Index-Fehler
+in `seed_curve` behoben (geteilte und ungeteilte Naht hatten ihre
+Bogenlängen-Versätze vertauscht), weshalb der Stand im Repo sie nicht mehr
+reproduziert (`das` 625 statt der gemessenen 600 Strichpunkte) und ein
+Nachmessen aussteht;
+Aufruf `OPENBLAS_NUM_THREADS=1
+OMP_NUM_THREADS=1 uv run python -m tools.pairlab.schlange --set words --jobs 2
+--candidate-out <dir>/cand.json --json <dir>/schlange.json --expect-root
+<digest> <wort …>`; erklärte Einstellung ℓ 7 · β_e 64 (regelkonform wäre 16) ·
+`cov_soft_k 4` als Schalter → messjournal.md §14 „Welle `sep11`",
+research/wellen-recherche.md §3
 
 **Fremdtinte** *(foreign ink)* — Tinte im Wort-Crop, die das Wort nie
 geschrieben hat und die die eingefrorene Binarisierung trotzdem behält:
@@ -4078,6 +4101,34 @@ Zeile ohne Maske, `pull --flecken` holt die hand-korrigierte zurück.
 `PATCH /eigenhand/strips/{hand}/{strip}/{fassung}/flecken`,
 `app/src/sections/admin/eigenhand/FleckenEditor.tsx`.
 → proposals/eigenhand-erfassung.md §7.4
+
+**Streifen-Pfad** — die gefolgte FEDERBAHN eines geschriebenen Wortes,
+abgelegt als Daten neben dem Streifenbild (Autor-Wunsch 2026-09-12: „bitte
+auch im admin integrieren das ich bei den handstreifen und den wörtern
+generell den pfad auch sehen kann"). Eine Liste je Wortkasten, jede mit
+ihren Zügen in den EINHEITEN DES WORTES (Grundlinie 0, Mittelband 1 —
+derselbe Vertrag wie `word_instances.strokes`, weshalb EIN Overlay Wörter-
+und Eigenhand-Ansicht bedient), der Registrierung in den Pixeln des
+STREIFENS (ein Wort-Crop folgt daraus durch Abzug seines Kastens), dem
+`verfahren`, der Folger-Konfiguration, dem Datum und `flecken_n` — der
+Größe der Fleckenmaske, unter der gefolgt wurde, damit eine spätere
+Pinselkorrektur als „Maske geändert" sichtbar wird statt still. Gerechnet
+wird AUSSERHALB (`tools.eigenhand.pfad` über den Tintenpfad, Trockenlauf
+als Vorgabe) und über die Admin-API abgelegt, weil das API-Abbild `tools/`
+nicht ausliefert; der Admin zeigt nur. Die Saat für Reihenfolge und
+Richtung ist der Tafel-Duktus, nicht diese Hand, und die Saat-Lineatur ist
+die GEDRUCKTE — beides steht in der Ansicht daneben, sonst läse sich der
+Pfad als Behauptung über den Schreiber. Er hängt am STREIFEN und nicht an
+der Fassung (nur wo Tinte liegt, lässt sich folgen), ist wie das PNG
+verzögert geladen, und er wandert bewusst NICHT nach `word_instances`:
+das wäre eine Verdrängung im eingefrorenen Referenzsatz. Als Ableitung
+gilt er als wiederherstellbar — das Archiv trägt ihn nicht.
+*Technisch:* `core/eigenhand/pfad.py` (`frame_for_box` · `check_paths` ·
+`PFAD_FORMAT`), `eigenhand_strips.pfade` (Migration `0031`),
+`GET|PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade`,
+`tools/eigenhand/pfad.py`,
+`app/src/sections/admin/shell/PathOverlay.tsx`.
+→ proposals/eigenhand-erfassung.md §7.5
 
 **Vorschlag (Streifen-Befund)** — die dreistufige Empfehlung eines
 Streifen-Befunds: `sauber` (nichts fällt auf) · `brauchbar` (etwas fällt

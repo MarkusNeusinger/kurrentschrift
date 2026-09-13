@@ -153,6 +153,12 @@ export interface WordInstanceOut {
   provenance: 'traced' | 'authored';
   hand_id: string | null;
   measurements: WordInstanceMeasurements;
+  // When the row was last written. The other half of a trace's provenance:
+  // `provenance` says WHO drew the line (harvest or the author's own hand),
+  // this says when — what lets a drawn path be captioned as evidence rather
+  // than as an undated overlay. Absent on a payload served before the field
+  // existed (the admin reads are uncached, but a tab can be older).
+  updated_at?: string | null;
 }
 
 // One item of `PUT /sources/{id}/word-instances`. Mirrors WordInstanceItem in
@@ -1070,6 +1076,54 @@ export interface EigenhandStripBox {
   index: number;
   word: string;
   items: string[];
+  // Where the box sits in the stored strip — [x0, y0, x1, y1] in strip pixels,
+  // derived server-side from the printed Bogen layout with the same arithmetic
+  // the word-crop route cuts with. It is what places a Streifen-Pfad over a
+  // WORD crop: the stored registration is the STRIP's frame, a crop's frame is
+  // that minus this rectangle. `null` for a Bogen printed before the cut
+  // geometry existed.
+  rect_px?: number[] | null;
+}
+
+// One written word's followed pen path — the Streifen-Pfad of one box. The
+// strokes live in the word's own units (baseline 0, midband 1, x from the
+// word's origin), which is the SAME frame `WordInstanceOut.strokes` uses, so
+// one overlay component draws both surfaces. `registration_px` maps them into
+// the STRIP's pixels: px = (u·xh_px + tx, baseline_row + ty − v·xh_px).
+//
+// `verfahren` + `erzeugt_am` are the provenance the card shows; `flecken_n` is
+// the size of the Fleckenmaske the path was followed under, so a later brush
+// edit reads as „Maske geändert" instead of drawing an old path over corrected
+// pixels.
+export interface EigenhandPfadRegistration {
+  tx: number;
+  ty: number;
+  baseline_row: number;
+}
+
+export interface EigenhandPfad {
+  box_index: number;
+  word: string;
+  strokes: number[][][];
+  registration_px: EigenhandPfadRegistration;
+  xh_px: number;
+  verfahren: string;
+  konfiguration: Record<string, unknown>;
+  meta: Record<string, unknown>;
+  erzeugt_am: string | null;
+  flecken_n: number | null;
+}
+
+// `pfade: null` means nobody has followed this Fassung yet — NOT the same as
+// an empty list („followed, nothing found"), the same distinction the
+// Fleckenmaske draws.
+export interface EigenhandPfadList {
+  hand: string;
+  strip: string;
+  fassung: string;
+  format: number;
+  pfade: EigenhandPfad[] | null;
+  boxes: EigenhandStripBox[];
 }
 
 // One circle of a Fleckenmaske — millimetres from the strip crop's own

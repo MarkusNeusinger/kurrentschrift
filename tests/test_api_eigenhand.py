@@ -30,6 +30,7 @@ from core.database import EigenhandRepository
 from core.eigenhand import bogen
 from core.eigenhand.befund import BEFUND_FORMAT
 from core.eigenhand.flecken import FLECKEN_FORMAT
+from core.eigenhand.pfad import PFAD_FORMAT, frame_for_box
 from core.eigenhand.plan import load_plan
 from tests.api_harness import Harness
 
@@ -634,7 +635,7 @@ class TestStrips:
         from core.eigenhand import coverage
         from core.eigenhand.plan import shaping_form_of
 
-        await _store_strip(api)
+        stored = await _store_strip(api)
         plan = load_plan()
         words = plan["strips"]["S0001"]["words"]
 
@@ -647,11 +648,18 @@ class TestStrips:
 
         listing = await api.client.request("GET", f"/eigenhand/strips/{HAND}", headers=api.admin_headers())
         boxes = listing.json()["strips"][0]["boxes"]
-        # Every box: its index (the crop's address), its word, and the SAME
-        # items the Bestand counts for it.
-        assert boxes == [
+        # Every box: its index (the crop's address), its word, the SAME items
+        # the Bestand counts for it, and where it sits in the stored strip.
+        assert [{k: v for k, v in box.items() if k != "rect_px"} for box in boxes] == [
             {"index": i, "word": w, "items": coverage.word_items(shaping_form_of(plan, w))} for i, w in enumerate(words)
         ]
+        # The rectangles are the word crop's own, in strip pixels: inside the
+        # strip, ascending, and each the full height — a word crop keeps the
+        # whole band (`core.eigenhand.crop`).
+        rects = [box["rect_px"] for box in boxes]
+        assert all(r is not None for r in rects)
+        assert [r[0] for r in rects] == sorted(r[0] for r in rects)
+        assert all(0 <= r[0] < r[2] <= stored["width_px"] and r[1] == 0 and r[3] == stored["height_px"] for r in rects)
 
         # A word: case-insensitive substring — the search box's contract.
         fragment = words[1][1:3]
@@ -1095,6 +1103,121 @@ class TestFleckenmaske:
         assert (await befund())["woerter"][0]["teile"]["koerper"] == 1
 
 
+class TestStreifenPfad:
+    """The followed pen path of a written word — stored as data beside the image."""
+
+    @staticmethod
+    def _path(stored: dict, box_index: int = 0, **overrides) -> dict:
+        """A path whose frame really is this strip's, taken off the printed row."""
+        frame = frame_for_box(
+            stored["row"], stored["crop_origin_mm"], stored["width_px"], stored["height_px"], box_index
+        )
+        return {
+            "box_index": box_index,
+            "word": frame["word"],
+            "strokes": [[[0.0, 0.0], [0.5, 1.0], [1.0, 0.0]]],
+            "registration_px": {"tx": float(frame["rect_px"][0]), "ty": 0.0, "baseline_row": frame["baseline_row"]},
+            "xh_px": frame["xh_px"],
+            "verfahren": "tintenpfad",
+            "erzeugt_am": "2026-09-12",
+            "flecken_n": 0,
+            **overrides,
+        }
+
+    @staticmethod
+    async def _put(api: Harness, pfade: list[dict], strip: str = "S0001", fassung: str = "F01", **body):
+        return await api.client.request(
+            "PUT",
+            f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade",
+            json_body={"pfade": pfade, **body},
+            headers=api.admin_headers(),
+        )
+
+    @staticmethod
+    async def _get(api: Harness, strip: str = "S0001", fassung: str = "F01"):
+        return await api.client.request(
+            "GET", f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade", headers=api.admin_headers()
+        )
+
+    @pytest.mark.asyncio
+    async def test_a_path_is_stored_read_back_and_replaced_whole(self, api: Harness):
+        stored = await _store_strip(api)
+
+        # Before the first follow the answer is NULL — „nobody has looked",
+        # which is not the same as „followed, nothing found".
+        empty = await self._get(api)
+        assert empty.status == 200, empty.body
+        assert empty.json()["pfade"] is None
+        assert empty.json()["format"] == PFAD_FORMAT
+
+        written = await self._put(api, [self._path(stored), self._path(stored, 1)])
+        assert written.status == 200, written.body
+        assert [p["box_index"] for p in written.json()["pfade"]] == [0, 1]
+
+        read = await self._get(api)
+        assert read.json()["pfade"] == written.json()["pfade"]
+        assert read.json()["pfade"][0]["verfahren"] == "tintenpfad"
+        assert read.json()["pfade"][0]["erzeugt_am"] == "2026-09-12"
+
+        # A full replacement, like the Fleckenmaske: a follower run produces
+        # the whole row at once, so an empty push is a reading of its own.
+        assert (await self._put(api, [])).status == 200
+        assert (await self._get(api)).json()["pfade"] == []
+
+    @pytest.mark.asyncio
+    async def test_the_answer_carries_the_word_boxes_with_their_rectangles(self, api: Harness):
+        # The stored registration is the STRIP's frame; placing a path over a
+        # single word crop needs that crop's rectangle, and it comes along.
+        stored = await _store_strip(api)
+        boxes = (await self._get(api)).json()["boxes"]
+        assert [box["word"] for box in boxes] == load_plan()["strips"]["S0001"]["words"]
+        assert boxes[0]["rect_px"][2] <= stored["width_px"]
+
+    @pytest.mark.asyncio
+    async def test_the_paths_are_served_uncacheable_and_never_ride_on_the_listing(self, api: Harness):
+        stored = await _store_strip(api)
+        assert (await self._put(api, [self._path(stored)])).status == 200
+
+        read = await self._get(api)
+        assert read.headers.get("cache-control") == "private, no-store"
+
+        # The listing stays the cheap question („which rows does this hand
+        # hold") — the paths are loaded only by the route that is asked for
+        # them, which is what the deferred column is for.
+        listing = await api.client.request("GET", f"/eigenhand/strips/{HAND}", headers=api.admin_headers())
+        assert "pfade" not in listing.json()["strips"][0]
+
+    @pytest.mark.asyncio
+    async def test_a_fassung_whose_pixels_are_not_here_has_no_path_to_hold(self, api: Harness):
+        # A path is followed on the ink, so the image has to be up here first.
+        stored = await _store_strip(api, upload=False)
+        assert (await self._get(api)).status == 404
+        assert (await self._put(api, [self._path(stored)])).status == 404
+
+    @pytest.mark.asyncio
+    async def test_a_path_from_another_format_is_refused_not_stored(self, api: Harness):
+        stored = await _store_strip(api)
+        res = await self._put(api, [self._path(stored)], format=PFAD_FORMAT + 1)
+        assert res.status == 409
+        assert (await self._get(api)).json()["pfade"] is None
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        "broken",
+        [
+            {"box_index": 99},
+            {"word": "irgendwas"},
+            {"registration_px": {"tx": 9_000_000.0, "ty": 0.0, "baseline_row": 10.0}},
+            {"strokes": [[[0.0, 0.0], [500.0, 1.0]]]},
+        ],
+    )
+    async def test_a_path_that_does_not_belong_to_this_strip_is_refused(self, api: Harness, broken: dict):
+        stored = await _store_strip(api)
+        res = await self._put(api, [{**self._path(stored), **broken}])
+        assert res.status == 422, res.body
+        assert (await self._get(api)).json()["pfade"] is None
+
+
 class TestAdminGate:
     """The Bestand is the reserved dataset's inventory — reads are gated too."""
 
@@ -1115,6 +1238,8 @@ class TestAdminGate:
             ("GET", f"/eigenhand/strips/{HAND}/S0001/F01"),
             ("PUT", f"/eigenhand/strips/{HAND}/S0001/F01"),
             ("PATCH", f"/eigenhand/strips/{HAND}/S0001/F01/flecken"),
+            ("GET", f"/eigenhand/strips/{HAND}/S0001/F01/pfade"),
+            ("PUT", f"/eigenhand/strips/{HAND}/S0001/F01/pfade"),
             ("GET", "/eigenhand/uebergangsraum"),
             ("PUT", "/eigenhand/uebergangsraum"),
         ],

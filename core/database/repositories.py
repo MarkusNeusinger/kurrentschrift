@@ -956,8 +956,17 @@ class EigenhandRepository:
     #
     # The PNG column is deferred everywhere except the one endpoint that serves
     # the bytes. A Bestand read must never drag ~350 KB per Fassung along.
+    #
+    # `pfade` is deferred for exactly the same reason, one size class down: a
+    # followed path is a few thousand points per word, and a hand with a few
+    # waves behind it would put every path of every Fassung on the wire for a
+    # listing that only wants to know which strips exist.
 
-    _STRIP_META_ONLY = (defer(EigenhandStrip.png),)
+    _STRIP_META_ONLY = (defer(EigenhandStrip.png), defer(EigenhandStrip.pfade))
+
+    # The path route needs the paths and never the pixels — the mirror image of
+    # `strip()`, which needs the pixels and never the paths.
+    _STRIP_WITHOUT_PNG = (defer(EigenhandStrip.png),)
 
     def _one_strip(self, hand: str, strip: str, fassung: str):
         return select(EigenhandStrip).where(
@@ -965,8 +974,22 @@ class EigenhandRepository:
         )
 
     async def strip(self, hand: str, strip: str, fassung: str) -> EigenhandStrip | None:
-        """One strip WITH its bytes — only the image endpoint calls this."""
-        result = await self.session.execute(self._one_strip(hand, strip, fassung))
+        """One strip WITH its bytes — only the image endpoint calls this.
+
+        The paths stay deferred: serving the pixels has no use for them, and
+        pulling both large columns for every image request would undo half of
+        what the deferral is for.
+        """
+        result = await self.session.execute(self._one_strip(hand, strip, fassung).options(defer(EigenhandStrip.pfade)))
+        return result.scalar_one_or_none()
+
+    async def strip_pfade(self, hand: str, strip: str, fassung: str) -> EigenhandStrip | None:
+        """One strip WITH its Streifen-Pfade and without its bytes.
+
+        The path route's read, and the row the path WRITE mutates: both want
+        the same column and neither wants ~350 KB of PNG to come with it.
+        """
+        result = await self.session.execute(self._one_strip(hand, strip, fassung).options(*self._STRIP_WITHOUT_PNG))
         return result.scalar_one_or_none()
 
     async def strip_meta(self, hand: str, strip: str, fassung: str) -> EigenhandStrip | None:

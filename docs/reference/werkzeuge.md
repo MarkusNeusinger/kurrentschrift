@@ -628,6 +628,32 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   das abgelegte Bild bleibt Byte für Byte, wie es eingelesen wurde. Auch
   der Haken wird so gelesen: punktgroße Komponenten fallen aus der Zählung,
   ein Haken muss ein Strich sein.
+- **`pfad`** — folgt der **Federbahn** eines geschriebenen Streifens und
+  schiebt sie in die Werkbank (Proposal §7.5, Migration `0031`):
+  `uv run python -m tools.eigenhand.pfad --hand mn-suetterlin --strip S0001`.
+  Liest alles über die Admin-API (Streifen-Liste samt Kasten-Rechtecken,
+  Bogen-Layout, das Streifenbild ohne Lineatur und mit angewandter
+  Fleckenmaske), schneidet jedes Wort heraus, binarisiert und skelettiert es
+  wie der Bench (`core.extract`) und lässt `tools.pairlab.tintenpfad` mit der
+  festgezurrten Konfiguration darüber laufen (`tip_read` · `rail=tentfit` ·
+  `edt_upsample=4` · `ink_bridge_xh=1.0` · `hairpin_tip` · `ride_back` ·
+  `tip_grey_stop` · `self_jump`) — die Duktus-Saat kommt aus den
+  eingefrorenen Wort-Fixtures des Stils, also aus der Tafel und nicht aus
+  dieser Hand (das Werkzeug sagt es, wenn die gitignorten Wurzeln fehlen, und
+  nennt `fetch_fixtures`). **Trockenlauf ist die Vorgabe** — ohne `--apply`
+  landet das Ergebnis nur als JSON unter der lokalen Hand; `--apply` schreibt
+  es über `PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade` in die
+  GETEILTE DB, braucht `ADMIN_TOKEN` und gehört hinter einen
+  `tools.dbsnapshot.fetch`. `--fassung` und `--box` grenzen ein; weil der
+  Schreibweg eine VOLLE Ersetzung ist, mischt **jeder** Lauf die gefolgten
+  Kästen über die gespeicherten — auch der Zeilenlauf, denn der überspringt
+  einen Kasten ohne Rahmen, ohne autorierte Glyphen oder mit gescheitertem
+  Folger, und nur das Gefolgte zu schicken löschte deren Pfade still. Der
+  Trockenlauf legt genau diese gemischte Liste ab, sonst prüfte man etwas
+  anderes, als man schriebe.
+  BLAS-Fäden
+  pinnt das Modul selbst (Vorgabewerte), weil die Kettenlösung sonst je nach
+  Umgebung anders läuft.
 - **`report`** — Bestandsbericht (Erstbeleg-/Ausbau-Quote, Fehlstellen,
   Druckvorschlag) und, seit dem **Streifen-Befund** (2026-09-07), die
   Gegenrichtung: je angenommener Fassung Vorschlag (`sauber` · `brauchbar` ·
@@ -953,7 +979,8 @@ Warnung versehen. Begriff und Hausregel:
   `--seed-form laufform`, `--no-init-terms` (Glossar §3: t-Brücke ·
   Saat-Form · Gauß-Verschiebung · Tinten-Klammer · Tinten-Soll ·
   Unstetigkeits-Preis · Formglätte); `.reversals` druckt seither auch die
-  **Papier-Strecke** je Wort.
+  **Papier-Strecke** je Wort. **Wellen-Basis** (Glossar §3): Baustein seit
+  `sep13`, `--wave-spacing`, Vorgabe AUS.
   Alle nennen ihre Wurzel im Kopf und
   nehmen `--expect-root` (siehe oben); die Arm- und Archäologie-Flags
   stehen im jeweiligen `--help` und je Arm in seinem §14-Eintrag.
@@ -1014,6 +1041,15 @@ Warnung versehen. Begriff und Hausregel:
   [--tintenpfad-stand default|legacy-p6|legacy-p5] [--tintenpfad-weight
   NAME=VALUE …]`, wobei Stand und Arm den Lauf labeln. Artefakte
   `temp/wellen-sep11/`, `temp/adoption-sep12/`.
+- **`tools/pairlab/schlange`** — die **Schlange** (Hook B der Welle-Runde,
+  §14 „Welle `sep11`"): ein Folger als elastische Kurve NEBEN der Kette, seit
+  `sep12` im Repo als eigenständiger Baustein ohne Schalter im bestehenden
+  Code; die §14-Zahlen sind Geschichte — ein Ecken-Index-Fehler in `seed_curve`
+  wurde erst in der Review-Runde behoben, das eingecheckte Modul reproduziert
+  sie nicht mehr. Aufruf `OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run
+  python -m tools.pairlab.schlange --set words --jobs 2
+  --candidate-out <dir>/cand.json --json <dir>/schlange.json --expect-root
+  <digest> <wort …>`; Details Glossar „Schlange".
 - **`tools/inksight`** — die Route-B-Pipeline des Tintenfolger-Duells
   ([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §4):
   drei Stufen (Crop-Vorbereitung → Inferenz im ISOLIERTEN
