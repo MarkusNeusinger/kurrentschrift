@@ -141,11 +141,12 @@ schreibt — eine Kompositionsfrage) und drei graue Papier-Umkehrungen
 
 ## Offene Blöcke
 
-- **Rückfahrt an Großbuchstaben-Stämmen** (`Pulver`, `Einen`): die Regel
-  `ride_back` fährt den P-/E-Stamm zurück in den Bogen — ob die Hand von
-  1922 dort zurückschreibt, entscheidet der Autor; sonst ein
-  Kleinbuchstaben-Gate als eigener Arm. Schwester-Weg für das ß bleibt die
-  authorierte Vorlage mit Rückpass (Autor-Glyphe, Todoist).
+- ~~**Rückfahrt an Großbuchstaben-Stämmen**~~ (`Pulver`, `Einen`) —
+  **entschieden 2026-09-13 (A46): so lassen, kein Kleinbuchstaben-Gate.**
+  Die Regel `ride_back` fährt den P-/E-Stamm zurück in den Bogen wie am
+  ß-Stamm; die Hand von 1922 ist damit als zurückschreibend gebucht.
+  Schwester-Weg für das ß bleibt die authorierte Vorlage mit Rückpass
+  (Autor-Glyphe, Todoist).
 - **`edt_upsample=4` allein durchs dev-19-Lineal** — die eine fehlende
   Messung vor einer Adoption des Normalen-Fits (die Absetzer in
   `will`/`Galoppieren` nimmt seit `sep12` der Selbstsprung).
@@ -159,6 +160,7 @@ schreibt — eine Kompositionsfrage) und drei graue Papier-Umkehrungen
 - ~~**Ernte-Schalter** `--follower tintenpfad`~~ — **gebaut mit A45**
   (`sep12`): die Ernte legt die gespeicherte Wortbahn mit dem Tintenpfad
   (Vorgabe) und trägt die `letter_spans` der Dekodierung ins Wort-Record.
+  Was BLEIBT: der Schalter bewegt nur die Bahn.
 - **Vorkommen aus der Tintenpfad-Bahn** — Weg (1), die **Saat-Korrespondenz**,
   ist mit A48 (`sep13`) gebaut und gemessen: sie TRÄGT als Zuordnung
   (Gate (K) über die Körper-Items 98,2 %, 277/277 Slots bewiesen; gesetzt
@@ -169,11 +171,18 @@ schreibt — eine Kompositionsfrage) und drei graue Papier-Umkehrungen
   jetzt Weg (2) — die geschnittenen Enden fitten statt sie auszulassen —
   und die Autor-Frage, ob `core/compose.py` einen Abtastindex mitführen
   soll; Rettungswege in tintenfolger.md §7.9.
-- **`k0eval` soll die Folger-Identität lesen**: die sechs `STACK_FLAGS`
+- **`k0eval` soll die Folger-Identität lesen** — **entschieden 2026-09-13
+  (A47): die Buchung von Gate (4) als „nicht lesbar" bleibt, das Verdikt
+  der Adoption ruht auf den Gates (1)–(3).** Die sechs `STACK_FLAGS`
   kommen aus `meta.weights`, und der Tintenpfad hat keinen
   Struktur-Wächter — bei einem Folger-Wechsel meldet der Sensor deshalb
-  immer Abweichung und sagt damit nichts. Kleine Tool-Änderung, aber am
-  Lineal, also NICHT während einer Runde.
+  immer Abweichung und sagt damit nichts. Der offene Arm dahinter ist
+  präzisiert: der Sensor muss erkennen, dass zwei verschiedene FOLGER
+  verglichen werden, und dann die Flags des jeweiligen Folgers lesen
+  (oder die Prüfung ausdrücklich als „nicht anwendbar" melden) statt
+  einer Warnung, die nichts bedeutet — eigene Vorregistrierung, eigener
+  PR, kleine Tool-Änderung, aber am Lineal, also NICHT während einer
+  Runde.
 - **Die Tinten-Brücke ist auf der `sep12`-Wurzel inert** (7 Lücken
   getestet, null gebrückt; knappster `faint_share` 0,571 gegen 0,6).
   Sie bleibt in der erklärten Konfiguration, weil sie eine Lesung ist —

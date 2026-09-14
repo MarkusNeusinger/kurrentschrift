@@ -17007,6 +17007,13 @@ bei 1,0); in #592 sind es DREI, der ß-Retrace ist benannter Folge-Arm.
 `temp/tintenpfad-sep11/` (je Arm `MESSUNG.md`, `kombination/`,
 `ref-main/`).
 
+**Nachtrag (2026-09-13, A46):** Die Rückfahrt an den Großbuchstaben-Stämmen
+von `Pulver` und `Einen` (oben als Treffer von `double_ink_ratio=1.0`
+gemessen, seit `sep12` als `ride_back=1` gebaut) ist entschieden — sie
+bleibt ohne Kleinbuchstaben-Gate. Damit ist die offene Frage der
+Ecken-Runde geschlossen; die §7.11-Zeile dazu ist zu
+([`tintenfolger.md`](../proposals/tintenfolger.md) §7.11).
+
 ### Tintenpfad-Adoption `sep12` — die formale Runde auf der frischen Wurzel: der Tintenpfad wird Standard-Folger (A45)
 
 Die Runde, auf die die vier Stände des `sep11`/`sep12` gewartet haben. Der
@@ -17254,6 +17261,16 @@ Autor-Entscheid, sonst ein Kleinbuchstaben-Gate als eigener Arm.
 (4) `edt_upsample=4` allein durchs dev-19-Lineal. (5) Die drei grauen
 Papier-Umkehrungen des Arms. (6) `cross_missing` 12 → 13, der eine
 Zähler, der nachgibt.
+
+**Nachtrag (2026-09-13, A47):** Gate (4) bleibt als „nicht lesbar" gebucht,
+das Verdikt der Adoption ruht weiter allein auf den Gates (1)–(3) — der
+Autor hat gegen die strenge Lesart entschieden, die eine neue Vorregistrierung
+und einen zweiten Lauf verlangt hätte. Der offene Arm dazu ist präzisiert:
+ein FOLGERBEWUSSTES Stack-Kriterium für `k0eval`, das erkennt, dass zwei
+verschiedene Folger verglichen werden, und dann deren je eigene Flags
+liest (oder die Prüfung ausdrücklich als „nicht anwendbar" meldet) statt
+einer Warnung, die nichts bedeutet — eigene Vorregistrierung, eigener PR,
+Zeile in [`tintenfolger.md`](../proposals/tintenfolger.md) §7.11.
 
 **Ledger-Zeile:** eine — die neue Wurzel-Identität ohne bewegte
 Headline. Routen-Ledger in
