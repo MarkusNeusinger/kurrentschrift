@@ -12,7 +12,7 @@
 > Werkbank & Prozess · **§6** Extern/Forschung · **§7** Öffentliche
 > Seiten). Für den Einstieg in eine Sitzung steht seit 2026-09-04 die
 > Kurzfassung [`kurzglossar.md`](kurzglossar.md) auf der Pflichtlektüre —
-> 95 Einträge, je ein bis zwei Sätze, jeder mit dem Sprung hierher; sie
+> 96 Einträge, je ein bis zwei Sätze, jeder mit dem Sprung hierher; sie
 > ersetzt dieses Glossar nicht, sie ersetzt nur das Am-Stück-Lesen.
 >
 > **Was ein Eintrag verspricht.** Einen allgemeinverständlichen Teil ohne
@@ -75,7 +75,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unvollständige Wortprobe §5
 - **Ü** — Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
@@ -1252,6 +1252,27 @@ Verschweißen entstand eine gerade **Sehne** durchs Papier, die der
 Umkehr-Sensor nicht sieht (→ Papier-Strecke). Die **Saat-Rampe**
 (`--seed-ramp`) lässt den Verbinder den Austritts-Versatz mitnehmen und
 rampt ihn bis zum Eintritt des nächsten Buchstabens auf null.
+
+**Saat-Korrespondenz** *(seed correspondence)* — die Zuordnung
+Bahn → Tafelzeilen-ANKER, die die Strang-Dekodierung (→ Strang-Dekodierung)
+ohnehin mitführt, und damit der Weg von einer dekodierten BAHN zu einem
+Laufform-Vorkommen, ohne etwas über die Bogenlänge zu verteilen. Vier
+Glieder: jeder Dekoder-Zustand kennt seine **Saat-Probe**; jede Saat-Probe
+kennt ihr komponiertes Item und ihre Bruchteil-Stelle darin (`Seed.item`,
+`Seed.pos` — die exakte Umkehr der Neuabtastung); jede Stelle im Item ist
+eine Stelle in der 240er-Abtastung der Tafelzeile; und jeder Anker hat dort
+seinen Sehnenlängen-Parameter (`core.template.SamplePlan`). Nur das dritte
+Glied führt `core/compose.py` nicht Buch — es schneidet, verlängert und
+verformt die Mittellinie — und wird deshalb nicht geschätzt, sondern je
+Punkt BEWIESEN: das Item muss in einem lokalen Fenster das exakte affine
+Bild seines Abtast-Stücks sein (`SLICE_TOL` 1e-6). Ein Anker ohne Beweis
+oder ohne Saat auf der Tinte heißt **ungedeckt**; ein Slot mit einem
+ungedeckten Anker wird als `tintenpfad_gap` verworfen statt halb gemessen.
+*Technisch:* `tools/laufform/saatkorrespondenz.py`,
+`tools.laufform.harvest --occurrences tintenpfad` (Messarm, Vorgabe `fit`,
+nicht schreibbar) → messjournal.md §14 („Laufform A48 `sep13`"),
+tintenfolger.md §7.11 (Weg 1 der Zeile „Vorkommen aus der
+Tintenpfad-Bahn").
 
 **Tinten-Klammer** *(ink clamp)* — ein zweiter, steiler quadratischer
 Hinge auf demselben geglätteten Abstandsfeld wie `e_geo`, der erst jenseits

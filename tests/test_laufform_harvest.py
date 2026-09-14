@@ -1391,3 +1391,115 @@ def test_an_apply_run_has_to_name_its_follower(monkeypatch: pytest.MonkeyPatch, 
         with pytest.raises(SystemExit) as exc:
             harvest_mod.main()
         assert "--apply writes the DEFAULT harvest only" in str(exc.value)
+
+
+# ------------------------------- the occurrence source (A48, opt-in measurement)
+#
+# The correspondence itself is pinned on synthetic geometry in
+# `tests/test_saatkorrespondenz.py`. What these tests ask is the other half:
+# does the HARVEST use it where it says it does, reject where it cannot, and
+# stay exactly itself when the switch is at its default.
+
+
+def _decoded(case, *, gap_slot: int | None = None, dx: float = 0.11) -> dict[int, dict]:
+    """A stand-in for `tintenpfad_occurrence_anchors`: every slot covered and
+    displaced by `dx`, except `gap_slot`, which comes back short of anchors."""
+    anchors = np.asarray(case.templates["a"]["anchors"], dtype=float)
+    out: dict[int, dict] = {}
+    for i in range(len(case.slots)):
+        moved = anchors + np.array([i * ADVANCE + dx, 0.0])
+        entry: dict = {"covered": len(anchors), "total": len(anchors), "slice_resid": 3.5e-15}
+        if i == gap_slot:
+            entry["covered"] = len(anchors) - 2
+        else:
+            entry["anchors"] = moved
+            entry["px"] = _to_px(moved)
+        out[i] = entry
+    return out
+
+
+@pytest.mark.parametrize("path", ["slot", "chain"])
+def test_the_default_occurrence_source_never_asks_the_decoder(monkeypatch: pytest.MonkeyPatch, path: str) -> None:
+    """`--occurrences fit` is the delivered stand: the Tintenpfad is not even
+    consulted, so the arm cannot move a number of it by existing."""
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    monkeypatch.setattr(harvest_mod, "derive_word", lambda c: result)
+
+    def refuse(*_args, **_kwargs):
+        raise AssertionError("the fit path must not call the correspondence")
+
+    monkeypatch.setattr(harvest_mod, "tintenpfad_occurrence_anchors", refuse)
+    out = harvest_case(case, HarvestOptions(path=path, rmse_max=3.0))
+    assert len(out.occurrences) == 2
+    assert all(o["measurements"].get("fit_path") in (None, "chain") for o in out.occurrences)
+    assert all("corr_covered" not in r for r in out.diag_rows)
+
+
+@pytest.mark.parametrize("path", ["slot", "chain"])
+def test_the_switch_takes_the_anchors_from_the_correspondence(monkeypatch: pytest.MonkeyPatch, path: str) -> None:
+    """With the switch on, the stored anchors are the DECODED ones — centred the
+    same way, labelled `tintenpfad`, never repaired — and the diagnostics carry
+    the coverage of the accepted row, not only of the rejected ones."""
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    monkeypatch.setattr(harvest_mod, "derive_word", lambda c: result)
+    decoded = _decoded(case)
+    monkeypatch.setattr(harvest_mod, "tintenpfad_occurrence_anchors", lambda *a, **k: decoded)
+    out = harvest_case(case, HarvestOptions(path=path, rmse_max=3.0, occurrences="tintenpfad"))
+
+    assert len(out.occurrences) == 2
+    anchors = np.asarray(case.templates["a"]["anchors"], dtype=float)
+    for slot_index, occ in enumerate(out.occurrences):
+        source = decoded[slot_index]["anchors"]
+        want = source - np.median(source - anchors, axis=0)
+        assert np.abs(np.asarray(occ["anchors"], dtype=float) - want).max() < 1e-4
+        assert occ["measurements"]["fit_path"] == "tintenpfad"
+        assert occ["measurements"]["corr_slice_resid"] == pytest.approx(3.5e-15)
+        assert "repaired_anchors" not in occ["measurements"]
+    assert [r["gate"] for r in out.diag_rows] == ["ok", "ok"]
+    assert all(r["corr_covered"] == r["corr_total"] for r in out.diag_rows)
+
+
+@pytest.mark.parametrize("path", ["slot", "chain"])
+def test_an_uncovered_anchor_rejects_the_slot_under_its_own_name(monkeypatch: pytest.MonkeyPatch, path: str) -> None:
+    """A row the correspondence cannot cover COMPLETELY is no occurrence — and
+    the rejection carries its own gate plus the counts that say how wide the
+    gap was, so two missing anchors never read like twenty."""
+    case, result = _synthetic_word([(0.06, 0.0), (-0.04, 0.03)])
+    monkeypatch.setattr(harvest_mod, "derive_word", lambda c: result)
+    decoded = _decoded(case, gap_slot=0)
+    monkeypatch.setattr(harvest_mod, "tintenpfad_occurrence_anchors", lambda *a, **k: decoded)
+    out = harvest_case(case, HarvestOptions(path=path, rmse_max=3.0, occurrences="tintenpfad"))
+
+    assert [r["gate"] for r in out.diag_rows] == ["tintenpfad_gap", "ok"]
+    gap = out.diag_rows[0]
+    assert gap["accepted"] is False
+    assert (gap["corr_covered"], gap["corr_total"]) == (len(case.templates["a"]["anchors"]) - 2, 6)
+    assert gap["corr_slice_resid"] == pytest.approx(3.5e-15)
+    # the letter's own FIT was fine: the rejection is about the correspondence
+    assert gap["geo_rmse_px"] <= 3.0
+    assert [o["measurements"]["slot"] for o in out.occurrences] == [1]
+    assert list(out.fits_by_key) == ["a"] and len(out.fits_by_key["a"]) == 1
+
+
+def test_apply_refuses_the_measured_occurrence_source(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A48 is a measured ARM, so `--apply` must not write its anchors.
+
+    The third of the writing guards, beside the seeded/overlaid run and the
+    named follower: these anchors have never been judged, and `--apply` would
+    put them into every flowing render.
+
+    No `--follower` is named anywhere here on purpose. The A48 guard sits one
+    line ABOVE the follower one, so the arm trips it while the DEFAULT source
+    falls through to the follower refusal — which both keeps the default's
+    check honest (it is the SOURCE being refused, not `--apply` as such) and
+    stops every case at a guard instead of starting a real harvest.
+    """
+    for source in harvest_mod.OCCURRENCE_CHOICES:
+        monkeypatch.setattr("sys.argv", ["harvest", "--apply", "--occurrences", source])
+        with pytest.raises(SystemExit) as exc:
+            harvest_mod.main()
+        if source == harvest_mod.DEFAULT_OCCURRENCES:
+            assert "name --follower explicitly" in str(exc.value)
+        else:
+            assert f"--occurrences {source} is a measurement arm (A48)" in str(exc.value)
+            assert "it is not writable" in str(exc.value)

@@ -328,20 +328,34 @@ kennt, die Bahn des Dekoders als Ketten-Fit; die VORKOMMEN behalten ihr
 eigenes `fit_path: "chain"`, sie kommen weiter von dort.
 `--follower chain` ist der Stand davor, byte für byte. **Der Schalter bewegt nur, was die Ernte
 ZEIGT:** Vorkommen, Mediane und jedes Gate werden weiter am
-Buchstabenfit abgelesen — eine Laufform-Zeile ist ein ANKERSATZ, der
-Tintenpfad dekodiert eine BAHN, und die Anker-Zuordnung dazwischen ist
-ein offener Arm und ein Autor-Entscheid
-([`../proposals/tintenfolger.md`](../proposals/tintenfolger.md) §7.11).
-Dasselbe Muster wie K-A/K-B/A1. Ein Wort, das der Tintenpfad nicht
-dekodiert, fällt auf den Fit zurück — ein Urteil je Wort, kein Abbruch.
+Buchstabenfit abgelesen. Dasselbe Muster wie K-A/K-B/A1. Ein Wort, das der
+Tintenpfad nicht dekodiert, fällt auf den Fit zurück — ein Urteil je Wort,
+kein Abbruch.
 **Ein `--apply`-Lauf muss den Folger ausdrücklich nennen** (und davor einen
 `dbsnapshot` nehmen): `--apply` schreibt die gespeicherten Bahnen, und ein
 bewegter Default darf keine geänderte Bahn in die Produktion tragen.
+
+**Woher die Anker eines VORKOMMENS kommen** (`--occurrences`, Vorgabe
+`fit`): `tintenpfad` liest sie über die **Saat-Korrespondenz**
+(`tools/laufform/saatkorrespondenz.py`) von der dekodierten Bahn ab —
+jeder Bahn-Zustand kennt seine Saat-Probe, jede Saat-Probe ihre Stelle im
+komponierten Buchstaben, und der komponierte Buchstabe ist eine Abtastung
+der Tafelzeilen-Anker. Nichts wird über die Bogenlänge verteilt; die
+Stelle im komponierten Buchstaben wird BEWIESEN (affine Scheiben-Identität
+je Punkt, Rest < 1e-6). Ein Anker ohne Beweis oder ohne Saat auf der Tinte
+ist ungedeckt, und ein Slot mit einem ungedeckten Anker fällt als
+`tintenpfad_gap` heraus statt halb gemessen zu werden; `corr_covered` /
+`corr_total` im `--diag-csv` zerlegen jeden solchen Ausfall. Der Dekode
+läuft auf der `--chain-seed`-Komposition, mit der Chart-Saat also
+zeilenunabhängig wie der Kettenfit. **Messarm, nicht schreibbar:**
+`--apply` verweigert ihn (A48, §14 „Laufform A48 `sep13`" — dort auch, was
+die Abdeckung kostet).
 
 ```bash
 uv run python -m tools.laufform.harvest [--style suetterlin] [--min-n 4]
     [--rmse-max 2.2] [--loop-aware-repair]
     [--follower tintenpfad|chain]        # default tintenpfad (A45)
+    [--occurrences fit|tintenpfad]       # default fit (A48-Messarm)
     [--chain-seed chart|composed|grid]   # default chart (A38)
     [--laufform karte.json] [--expect-root <digest>]
     [--apply --base-url http://localhost:8000 --source-id <id>]

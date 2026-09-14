@@ -5,8 +5,8 @@
 > [`qualitaetsmetrik.md`](qualitaetsmetrik.md), Wort für Wort dieselbe
 > Sektion.
 >
-> **Diese Datei liest man nicht.** Sie trägt 131 datierte Abschnitte und
-> rund 322 000 Token (`sep12`, gemessen mit `tools.docs_register.entries`
+> **Diese Datei liest man nicht.** Sie trägt 132 datierte Abschnitte und
+> rund 326 000 Token (`sep13`, gemessen mit `tools.docs_register.entries`
 > und `tools.docs_budget.proxy_tokens`). Der Einstieg ist das **Register**
 > direkt unter der nächsten Überschrift — eine Zeile je
 > Abschnitt mit Datum, Route, Typ · Verdikt und dem Befund in einer Zeile
@@ -69,7 +69,7 @@ Werkzeuge: `tools/tracebench/`.
 
 ### Register der Einträge (Index, keine Zahl-Heimat)
 
-Diese Sektion trägt 131 datierte Abschnitte und ist die eine Heimat der
+Diese Sektion trägt 132 datierte Abschnitte und ist die eine Heimat der
 Kampagnen-Zahlen; die Tabelle hier ist ihr **Index** — sie wiederholt
 keine Zahl, sie zeigt, wo eine steht. Ihre Reihenfolge ist die der
 Datei, also die Reihenfolge, in der die Abschnitte angehängt wurden; die
@@ -246,6 +246,7 @@ die DB) — mit seiner Bedingung.
 | sep11 | Kette/Tintenpfad | [Welle — drei Bauten (Tintenpfad #591, Wellen-Basis, Schlange)](#welle-sep11--drei-bauten-gegen-die-physik-bedingung-des-autors-tintenpfad-bestätigt-591-wellen-basis-und-schlange-als-ehrliche-teil-negative) | drei Bauten · **Tintenpfad bestätigt** (gemergt, nicht adoptiert) · zwei ehrliche Negative | Physik-Bedingung des Autors („die Punkte können sich nur wie eine Welle zusammenhängend verschieben") als Tor; Workflow Recherche ×4 → Karte → Entwürfe → Richter ×9 → Bau ×3 → Prüfung ×3, BLAS gepinnt, Wurzel `ccb036a5eb20…`. **Tintenpfad** (Tinte zuerst, Buchstaben danach — Stränge ohne Prior, Reihenfolge per Viterbi): 13 Zeilen **0 · 93 · 0,78 xh**, 63 Wörter 0 · 331 · 1,49, dev-19 dtw 0,044230 · aiou 0,7867, aber gepaart 7 : 12 und p90 schlechter; Papier-Sensoren für einen skelettgebundenen Pfad vakuös. **Wellen-Basis** (B-Spline-Verschiebungsbasis im Kettenlöser): Zacken −78 %, dtw 0,041403 (15 : 4 gegen Basis, 10 : 9 gegen It. 17), Tor gerissen an Tinten-Umkehrungen +23 % und `das` +0,0782. **Schlange** (elastische Kurve, Sobolev-Schritt): Zickzack 3,718 → 0,009 je xh, 0 · 78 · 4,47, Lineal verloren (0,051445, 6 : 13); β_e 64 biegt die eigene Pre-Reg. Alle drei physikalisch kohärent, nur einer nimmt das Tor |
 | sep11 | Tintenpfad | [Tintenpfad-Arme + Kombination (#592)](#tintenpfad-arme-sep11--fünf-arme-drei-tragen-zwei-ehrliche-negative-die-kombination-als-kandidat-592) | fünf Arme · **drei tragen**, zwei ehrliche Negative · Kombination **Kandidat, nicht adoptiert** | Regel des Abends: Lesung der Tinte oder Regel des Dekoders, nie Glättung, nie Erfindung. **Spitzen-Lesung** (rail + walk bis ans Maskenende; 13 : 6 gegen #591, Gate 2 fällt wie geschrieben), **Normalen-Fit** (Zelt auf 4× feinerem Grau-Raster, Knick 9,74° → 8,03°, 15 : 4 — Träger ist das Grau, Scope-Frage an den Autor), **Tinten-Brücke** (2 von 9 Lücken, neutral; über `kann`/`han`/`regieren` liegt kein Haarstrich). **Stummel-Filter** no-op, Hypothese an der Quelle widerlegt — Nebenbefund: Hand 47 gegen Kandidat 79 Tinten-Umkehrungen, der Defekt ist der Überschuss +32; **Doppelstrich-Evidenz** feuert auf 0 von 63 (ß-Stämme 1,00–1,33 × Feder), die reine Dekoder-Regel `ratio 1,0` repariert p90 0,0907 → 0,0535 (3 : 0), aber nachträglich gewählt. Kombination: 13 Zeilen 0 · 95 · 1,34, 63 Wörter 0 · 330 · 4,77, dev-19 **0,041356** · 0,091040 · 0,7876, **18 : 1** gegen #591, **9 : 10** gegen Basis, 10 : 9 gegen It. 18 (der PR-Text hat die letzten beiden vertauscht) |
 | sep12 | Tintenpfad/Kette | [Tintenpfad-Adoption — die formale Runde auf der frischen Wurzel (A45)](#tintenpfad-adoption-sep12--die-formale-runde-auf-der-frischen-wurzel-der-tintenpfad-wird-standard-folger-a45) | Adoption · **adoptiert (A45)** · dazu eine Wurzel-Zeile ohne bewegte Headline | Ein Knopf: Folger-Wechsel Kette v5 → Tintenpfad mit den acht erklärten Schaltern, vorregistriert vor der ersten Zahl, BLAS gepinnt, Wurzel `c7f2efd9cf37…` (2026-09-12T21:33:43+00:00). Die Wurzel reproduziert die `sep10`-Headline ziffernidentisch (0,108339 / 0,148236) — neue Identität, keine Re-Baseline; der Substrat-Pin der 13 Schleifenzeilen kommt unverändert heraus. dev-19: Basis (neu gemessen) 0,045772 · 0,088356 · 0,7660 gegen Arm **0,038351 · 0,048012 · 0,7929**, gepaart **15 : 4** (Δ-Median −0,008311, p 0,019); die Vorgabe ohne die acht (`--legacy-p6`) 0,045033 · 0,090673 · 0,7867 und 7 : 12 — die Schalter SIND der Unterschied. Zähler: `cross_spurious` 10 → 3, `retrace_missing` 7 → 0, `lift_delta_total` 6 → 0, `overlap_cand` 4 → 0, Absorption 89 → 35; dagegen `cross_missing` 12 → 13. Sensoren über 63, gegen die BASIS: Papier-Umkehrungen Maske 44 → **0** (grau 49 → 3), Papier-Strecke Maske 55,57 → 1,20 xh, schlimmster Ausflug 0,323 → 0,091 xh; gegen die VORGABE, weil die Kette den Zähler gar nicht führt: Roh-Knick 10,24° → 8,17°. k0: Soll-Abstand 81 → 80, aiou-Median +0,0520 über 63 bewegte Wörter, **Gate (4) aber nicht verwertbar** — die Stack-Warnung fällt, weil der Tintenpfad keinen Struktur-Wächter hat, der Sensor auf einem Folger-PAAR also konstruktionsbedingt blind ist; das Kill-Kriterium war so zu weit geschrieben, das Verdikt hängt an den Gates (1)–(3), und die strenge Lesart liegt beim Autor. Nebenbei: `ink_bridge_xh=1.0` testet 7 Lücken und brückt **null** — auf dieser Wurzel inert, bleibt als Lesung |
+| sep13 | Tintenpfad | [Laufform A48 — die Saat-Korrespondenz](#laufform-a48-sep13--die-saat-korrespondenz-die-zuordnung-trägt-die-zeile-nicht) | Pre-Reg + gemessen · **ehrliches Negativ** an Gate (G) · Mechanismus bestätigt, nichts adoptiert | Weg (1) der §7.11-Zeile „Vorkommen aus der Tintenpfad-Bahn" (Autor-Entscheid **A48**): die Anker über die SAAT zuordnen statt über die Bogenlänge. Ein Knopf `harvest --occurrences {fit,tintenpfad}`, Vorgabe `fit` (ausgelieferter Stand byte-gleich, Wort-Records bis auf `seconds`). **Die Zuordnung trägt:** Gate (K), wie vorregistriert über die KÖRPER-ITEMS gelesen, steht bei **328 von 334 = 98,2 %** (Schranke 80 %; durchgehend bewiesen 88,9 %, über die Item-Punkte 98,8 %, Beweis-Reste Median 8,0e-15 je Slot, max 1,03e-13) — das dritte Glied der Kette ist das einzige, über das `core/compose.py` nicht Buch führt, und es wird je Punkt BEWIESEN statt geschätzt, lokal, weil der `d`-Anstieg stückweise affin ist. Daneben, und KEINE Gate-Zahl: die Identifikation greift auf **277 von 277** Slots, gesetzt werden **92,5 %** aller Anker (30 736 / 33 240) — die Anker-Quote zählt eine andere Frage, und die 2 504 fehlenden sind nachgezählt: **85,2 %** liegen gar nicht erst im komponierten Item (weggeschnitten), 14,5 % sind beweis-bedingt, **0,3 %** scheitern an der Saat. (G) fällt damit an der Schere, nicht am Beweis und nicht an der Saat. **Die Zeile trägt nicht:** die Komposition schneidet die Kopplungs-Enden weg, es fehlen **7,5 %** aller Anker (2 504 / 33 240; Median-Slot 7 von 120, die 212 unvollständigen 9), nur 65 Slots sind vollständig, und die Ganz-oder-gar-nicht-Regel lässt **58 von 277** Vorkommen übrig (Fit-Kontrolle desselben Laufs 227), Zeilen mit n ≥ 4 **5 statt 16**. Gate (F) grün (zwei Ernten byte-gleich, Diagnose nur in `seconds` verschieden), (J) grün (`core/` unberührt, 2 903 Tests mit den lokalen Fixtures, 2 892 ohne). Gate (H): Anker-Abstand zur schlüsselgleichen Kontrollkarte Median **0,0523 xh** (p90 0,1328, max 0,2891), auf den 58 gemeinsamen Vorkommen 0,0542 / 0,1436 / 0,5235 — weit über dem Ableseboden. Gate (I) asymmetrisch: gegen die stehende Karte Wörter **0,104883** (−0,003456, grün) und Paare 0,149306 (+0,001070, **rot** bei Schranke +0,0005, kein Kill); gegen die KONTROLLE auf gleicher Schlüsselmenge (0,108951 / 0,148119) Wörter −0,004068 bei **31 : 21 : 44** gepaart — mit dem Vorbehalt, dass die Arm-Zeilen auf viel weniger Vorkommen stehen (`e` n = 3 gegen 30). Rettungswege: die geschnittenen Enden fitten (Weg 2), oder `core/compose.py` einen Abtastindex mitführen lassen (Autor-Entscheid) |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -17278,3 +17279,227 @@ Headline. Routen-Ledger in
 Stand-Spalte in [`verfahren.md`](verfahren.md). Artefakte
 `temp/adoption-sep12/` (`PREREG.md`, `base/`, `tintenpfad/`,
 `vorgabe/`, `wordbench.log`, `bilder/`).
+
+### Laufform A48 `sep13` — die Saat-Korrespondenz: die Zuordnung trägt, die Zeile nicht
+
+Der Autor hat am 2026-09-13 von den drei Wegen der §7.11-Zeile
+„Vorkommen aus der Tintenpfad-Bahn" **Weg 1** gewählt (**A48**): die
+Saat-Korrespondenz, die der Dekoder ohnehin mitführt, „weil dabei nichts
+erfunden wird". Diese Runde ist ihre Vorregistrierung, ihr Bau und ihre
+Messung. BLAS gepinnt (`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`),
+`--jobs 4`, jedes Kommando mit `--expect-root c7f2efd9cf37`; nie zwei
+Löserläufe nebeneinander. **Nichts adoptiert, nichts in die DB
+geschrieben.**
+
+**Die Wurzel.** `suetterlin-1922` `exported_at`
+2026-09-12T21:33:43+00:00, `root_digest` `c7f2efd9cf37…`;
+`suetterlin-1922-pairs` …:42, `548b11b77338…`. Das Wort-Lineal
+reproduziert auf ihr die stehenden Zahlen ziffernidentisch —
+**0,108339** Wörter · **0,148236** Paare, `worst_word` `regieren`
+0,233052. Keine Re-Baseline, keine neue Ledger-Zeile.
+
+**Die Code-Prüfung VOR dem Bau** (der Auftrag verlangte sie, und sie ist
+der erste Befund). Die Kette hat vier Glieder: Dekoder-Zustand →
+Saat-Probe → Stelle im komponierten Item → Tafelzeilen-Anker. Drei davon
+sind exakte Buchführung: die Saat-Probe kennt ihr Item und ihren
+Bruchteil-Index darin (die Umkehr der Neuabtastung in `seed_samples`),
+und jeder Anker kennt seinen Sehnenlängen-Parameter in der 240er-Abtastung
+(`core.template.SamplePlan`). **Das dritte Glied führt `core/compose.py`
+NICHT Buch:** die Mittellinie eines komponierten Buchstabens ist
+geschnitten (Kopplung), vorn verlängert (Kamm, Überlappung) und verformt
+(Anstieg, Laufform-Breite) — ohne jeden Abtastindex. Der Bau schätzt es
+deshalb nicht, er **beweist** es je Punkt: das Item muss in einem lokalen
+Fenster (±12 Punkte) das exakte affine Bild seines Abtast-Stücks sein
+(`SLICE_TOL` 1e-6). Lokal und nicht global, weil der Anstieg des `d` eine
+Scherung NUR oberhalb des Mittelbands ist — stückweise affin, also von
+keiner einzigen Affinen erklärbar; ein Modell mit dieser Regel darin wäre
+eine zweite, driftende Kopie einer Compose-Regel gewesen.
+
+**Vorregistrierung** (`temp/laufform-a48/PREREG.md`, vor der ersten
+Gate-Zahl geschrieben). Ein Knopf: `harvest --occurrences {fit,tintenpfad}`,
+Vorgabe `fit`. Konstruktion vorab festgelegt, in Stichworten: Anker über
+`SamplePlan`; Item-Stelle bewiesen; die beiden Saat-Proben, die den Anker
+einschließen, müssen im Saat-Index BENACHBART sein und beide auf der Tinte
+liegen; die Stelle einer Saat-Probe ist der Strangpixel ihres Zustands;
+zwischen den beiden wird linear im Saat-Parameter gelesen (≤ 0,03 xh).
+**Ein Vorkommen entsteht nur, wenn JEDER Anker der Zeile gedeckt ist** —
+ein halber Ankersatz ist keine Laufform, sondern eine stille Umdefinition.
+Gates: **(K)** Korrespondenz-Beweis ≥ 80 %, Kill < 50 % · **(F)** zwei
+Ernten byte-gleich · **(G)** Vorkommen ≥ 60 % von 277, Kill < 40 % ·
+**(H)** Karte gegen Kontrollkarte aus demselben Lauf · **(I)** Lineal
+höchstens +0,0005 über 0,108339 / 0,148236, Kill bei +0,005 · **(J)**
+`core/compose.py` unberührt, Golden grün. Ausdrücklich KEIN Weg:
+Bogenlängen-Verteilung, Nächster-Punkt-Suche, ein Gate nach der Zahl.
+
+**Die Läufe** (`harvest --path chain --sets words --min-n 1`):
+
+| Lauf | Schalter | Vorkommen | Karte (`smoothrow --knots 0 --floor 1 --keep-stored`) |
+|---|---|---|---|
+| Kontrolle | `--occurrences fit` | **227 / 277** (82,0 %) | 21 Zeilen, 16 mit n ≥ 4; 4 würde der Write-Pfad abweisen |
+| Arm 1 | `--occurrences tintenpfad` | **58 / 277** (20,9 %) | 12 abgeleitete Zeilen (9 Schlüssel behalten die gespeicherte), 5 mit n ≥ 4; 5 Abweisungen |
+| Arm 2 | dasselbe | byte-gleich zu Arm 1 | — |
+
+**Gate (K) — der Beweis trägt, und zwar überall.** Die vorregistrierte
+Größe ist der Anteil der **Körper-Items**, für die die
+Scheiben-Identifikation exakt aufgeht: über die 63 Wörter sind das **328
+von 334 Items = 98,2 %** gegen die Schranke von 80 %. Auch die strengere
+Lesart hält — **297 Items (88,9 %) sind auf JEDEM ihrer Punkte bewiesen**,
+und über alle Item-Punkte gerechnet **61 760 von 62 530 = 98,8 %** —, das
+Gate hängt also nicht an der Wahl der Lesart. Die **sechs** Items ohne
+Beweis sind vollständig erklärt und sind kein Fehlschlag: es sind genau
+die Umlaut-MARKEN von `Säbel` (17 Punkte) und `Zügel`/`Sprünge` (je 20),
+die einzigen Items der Runde unter `MIN_OVERLAP` = 24 — der Beweis
+verlangt ein Fenster, das sie nicht füllen, und schweigt deshalb über
+sie, statt zu raten. Jedes Item ab 24 Punkten beweist, die Körper dieser
+drei Buchstaben (204 · 186 · 171 Punkte) auf jedem Punkt. Jeder bewiesene Punkt liegt
+per Konstruktion unter 1e-6; beobachtet werden je Item Median **7,2e-15**,
+je Slot Median **8,0e-15**, höchstens **1,03e-13** — elf Größenordnungen
+unter der Schranke, der Beweis ist keine knappe Sache. (Die Spalte
+`corr_slice_resid` rundete sie anfangs auf 0,0 weg; die Rundung ist
+entfernt und beide Armläufe danach neu gefahren, die Anker byte-gleich.)
+**Bestanden.**
+
+Daneben, und ausdrücklich NICHT als Gate-Zahl: die
+Scheiben-Identifikation greift auf **277 von 277** Slots (kein Slot ohne
+einen einzigen gedeckten Anker), und gesetzt werden am Ende **30 736 von
+33 240 Ankern = 92,5 %**. Die beiden Zahlen messen verschiedene Dinge:
+(K) fragt, ob der BEWEIS an der einen ungebuchten Stelle der Kette
+aufgeht, die Anker-Quote zählt, wie viele Anker danach überhaupt eine
+Stelle im komponierten Buchstaben haben. Die 2 504 ungedeckten sind
+nachgezählt und fallen fast ganz in den zweiten Topf: **2 134 = 85,2 %**
+liegen ÜBERHAUPT NICHT im Item — die Komposition hat ihr Stück
+weggeschnitten, der Beweis kommt dort gar nicht erst zum Zug —, **363 =
+14,5 %** sind beweis-bedingt (305 im Item, aber nicht bewiesen; 58 auf
+einem Zug, für den kein Item ansprang, die Umlaut-Marken), und **7 =
+0,3 %** scheitern daran, dass eine einschließende Saat-Probe auf dem
+Papier lag. Die Saat ist also NICHT der Engpass, den man hier vermuten
+würde, und (G) fällt an der Schere, nicht am Beweis.
+
+**Gate (F) — Fixpunkt.** `laufform_drafts.json` und
+`laufform_occurrences.json` der beiden Armläufe sind **byte-gleich**; die
+Diagnose-CSV unterscheidet sich in genau einer Spalte, `seconds`, der
+Wanduhr. **Bestanden.** Dieselbe Prüfung für den AUSGELIEFERTEN Stand:
+die Vorgabe-Ernte dieses Zweigs gegen dieselbe Ernte auf `origin/main`
+(8 Wörter) — Entwürfe und Vorkommen byte-gleich, die Wort-Records
+ebenfalls bis auf `measurements.seconds`.
+
+**Gate (G) — hier fällt der Arm, und er fällt hart.** 58 von 277 = **20,9 %**
+gegen die vorregistrierte Schranke von 60 % und unter das Kill-Kriterium
+von 40 %. Die Zerlegung sagt genau, woran: **65 der 277 Slots** haben
+einen VOLLSTÄNDIGEN Ankersatz (23,5 %), und den **212 unvollständigen**
+fehlen im Median **9 von 120** Ankern (Mittel 11,8, max 42) — über ALLE
+277 Slots gerechnet, die 65 Nullen eingeschlossen, sind es Median 7 und
+Mittel 9,0. 30 Slots fehlt genau einer. **Die Lücken sitzen an den ENDEN
+jedes Federzugs**, nachgesehen auf acht Wörtern — und zwar je Vorkommen
+verschieden, weshalb sie hier einzeln stehen: `u` verliert in `unter` wie
+in `und` genau EINEN Streifen, die Anker 90–96; `m` 112–119; `i` beide
+Enden seines ERSTEN Zugs (`die` 0–15 und 84–99 · `ein` 0–9 und 99 ·
+`mit` 73–99), während sein zweiter Zug (100–119) in allen drei Vorkommen
+voll gedeckt ist; `e` zeigt beide Enden nie zusammen — `haben` und
+`laden` verlieren 0–11 plus allein den Anker 119, `unter` 0–18 plus
+108–119, `ein` nur 119, `die` gar nichts. Die Komposition schneidet den
+Kopplungs-Stumpf des Buchstabens weg, und was sie wegschneidet, hat in ihr
+keine Stelle — kein Dekodier-Fehler, ein Definitionsloch. Nach Buchstaben
+verliert `ue` 27,5 % seiner Anker, `c` 19,2 %, `o` 19,0 %, `d` 17,1 %,
+`ae` 16,7 %, `i` 14,3 %, `t` und `b` je 11,9 %, `e` 9,5 %, `h` 7,9 %,
+`n` 6,9 % — bis hierhin lückenlos, darunter folgen `u` 6,6 % und `a`
+6,3 %, jeder weitere bleibt unter 5,2 %. Der einzige INNERE Verlust ist
+die Naht
+des stückweisen Anstiegs (`d`, Anker 50–62), die kein lokales Fenster
+überspannen kann. Zeilen mit n ≥ 4 (der Evidenzboden des Write-Pfads):
+**5 statt 16**.
+
+**Gate (H) — Karte gegen Kontrollkarte.** Über die 12 Zeilen, die beide
+Karten ableiten, ist der Anker-Abstand Median **0,0523 xh**, p90 0,1328,
+max 0,2891 (je Zeile am größten `w` 0,1049 · `sz` 0,0888 · `Z` 0,0850,
+am kleinsten `h` 0,0314). Auf den 58 Slots, für die BEIDE Wege ein
+Vorkommen liefern, ist der Abstand Median **0,0542 xh**, p90 0,1436, max
+0,5235. Beides weit über dem Ableseboden 0,0025: der Arm misst wirklich
+etwas anderes, nicht dasselbe mit Rauschen. Vom Chart entfernen sich die
+Arm-Zeilen durchweg 2–4× weiter als die Fit-Zeilen (`e` 0,052 gegen
+0,015 · `r` 0,076 gegen 0,016 · `w` 0,136 gegen 0,039).
+
+**Gate (I) — und hier wird es asymmetrisch.** Die Karten laufen durch
+`wordbench.run --set all --laufform`:
+
+| Karte | Wörter | Paare |
+|---|---|---|
+| Basis (gespeicherte Zeilen) | 0,108339 | 0,148236 |
+| Kontrollkarte, alle 21 Zeilen aus dem Fit | 0,110292 | 0,148414 |
+| **Kontrollkarte auf GLEICHER Schlüsselmenge** (dieselben 12 Zeilen, aus dem Fit) | 0,108951 | **0,148119** |
+| **Arm** (dieselben 12 Zeilen, aus der Saat-Korrespondenz) | **0,104883** | 0,149306 |
+
+Gegen die stehende Karte gelesen, wie vorregistriert: Wörter **−0,003456**
+(bestanden), Paare **+0,001070** (**gerissen**, Schranke +0,0005) — kein
+Kill (+0,005). Die Kontrollkarte reißt dieselbe Wort-Schranke in die
+andere Richtung (+0,001953), was zeigt, wie viel dieser Vergleich über die
+FRISCHE Ernte und wie wenig er über den Arm sagt; deshalb steht die
+schlüsselgleiche Kontrolle daneben. Gegen SIE ist der Arm auf den Wörtern
+**−0,004068** und auf den Paaren **+0,001187**, gepaart über alle 96
+gewerteten Proben **31 besser : 21 schlechter : 44 unberührt**. Größte
+Gewinne `Sporn` −0,0697 · `regieren` −0,0682 · `Zügel` −0,0526 · `Zorn`
+−0,0480; größte Verluste `muß-2` +0,0542 · `will` +0,0464 · `ssi`
++0,0392 · `Galoppieren` +0,0359. **Vorbehalt, der dazugehört:** die
+Arm-Zeilen stehen auf viel weniger Vorkommen (`e` n = 3 gegen 30, `r`
+n = 12 gegen 19) — ein Teil dieses Vorsprungs kann Stichprobe sein, und
+nichts davon rechtfertigt eine Adoption.
+
+**Gate (J).** `core/compose.py` unberührt (leerer Diff gegen
+`origin/main` über `core/`), volles `pytest -q` grün: **2 903 bestanden,
+8 übersprungen** — gemessen auf dem Endstand des Zweigs und MIT den
+lokalen Bench-Fixtures. Ohne sie zählt dieselbe Suite 2 892 bestanden,
+19 übersprungen; die Bedingung gehört also an die Zahl.
+
+**Verdikt: ehrliches Negativ an Gate (G), mit einem bestätigten
+Mechanismus darunter.** Die Saat-Korrespondenz ist als ZUORDNUNG
+bewiesen — sie greift auf jedem Slot, setzt 92,5 % aller Anker und
+verteilt an keiner Stelle etwas über die Bogenlänge. Eine erklärte
+Interpolation bleibt allerdings darin, und sie gehört hierher: `_read_at`
+mischt linear zwischen den dekodierten Stellen zweier BENACHBARTER
+Saat-Proben, und das Mischgewicht wird im Parameterraum des komponierten
+ITEMS genommen und auf Stellen auf der TINTE angewandt. Über einen
+Saat-Schritt (~0,03 xh) ist das klein und beschränkt, es ist Schritt 5
+der Vorregistrierung — aber es ist nicht null, und „gelesen, nicht
+geschätzt" heißt genau bis hierher. Sie ist als VORKOMMENS-Quelle nicht
+brauchbar, weil eine Laufform-Zeile einen VOLLEN Ankersatz verlangt und
+die Komposition den Buchstaben an seinen Kopplungs-Enden abschneidet.
+Der Arm ist damit kein Fehlschlag der Idee, sondern ihre scharfe
+Vermessung: **7,5 % fehlende Anker** (2 504 von 33 240) kosten 79 % der
+Vorkommen — nicht zu verwechseln mit den 5,8 %, die der MEDIAN-Slot
+verliert (7 von 120): der eine Nenner sind alle Anker der Runde, der
+andere die 120 einer Zeile. Dass die verbliebenen Zeilen
+das Wort-Lineal auf gleicher Schlüsselmenge
+**besser** stellen (31 : 21), ist der Grund, den offenen Weg (2) zu
+gehen, statt die Sache abzuschreiben.
+
+**Rettungswege** (Zeile in [`../proposals/tintenfolger.md`](../proposals/tintenfolger.md)
+§7.9, §7.11 auf den gemessenen Stand umgeschrieben): (1) **die
+geschnittenen Enden FITTEN statt sie auszulassen** — Weg (2) der
+§7.11-Zeile, `core.fit` im Spann-Fenster nur für die ungedeckten
+End-Anker, die gedeckten bleiben Ablesung; er adressiert die **85,2 %**
+der Lücke, die weggeschnitten sind, und ist damit der Weg mit dem
+größten Hebel; (2) **die Komposition Buch führen lassen** — ein
+Abtastindex je
+Mittellinien-Punkt unter `provenance=True`, der das eine geschätzte Glied
+exakt macht und die **14,5 %** beweis-bedingten Lücken holt;
+**Autor-Entscheid, weil er `core/compose.py` anfasst**;
+(3) die Zeile aus den gedeckten Ankern allein — nur mit einer vorab
+erklärten Umdefinition dessen, was eine Laufform misst, also
+ausdrücklich kein stiller Ausweg.
+
+**Randbedingung für jeden Weg, der auf dieser Korrespondenz aufbaut**
+(und damit für (1) und (2)): `identify_slice` rangiert die
+Kandidaten-Verschiebungen nach lokalem Residuum und nimmt bei Gleichstand
+die erste. Bei einem Zug mit wiederholter Teilform könnten zwei
+Verschiebungen beide beweisen, und die Anker landen dann woanders —
+ausgeschlossen hat der Beweis das nicht. Auf dieser Wurzel ist es nicht
+beobachtet (Reste 1e-15, weit unter dem nächsten falschen Versatz), aber
+es ist dieselbe Fehlerklasse, für die die Vorregistrierung die
+„Nächster-Punkt-Suche" abgelehnt hat. Wer die Korrespondenz weiterträgt,
+bringt dafür einen Sensor mit — als Alarm für diese Runde ist es nichts.
+
+**Ledger-Zeile:** keine Headline bewegt, keine Wurzel neu. Routen-Ledger
+in [`verfahren-tintenpfad.md`](verfahren-tintenpfad.md) (der offene Block
+„Vorkommen aus der Tintenpfad-Bahn" auf den gemessenen Stand). Artefakte
+`temp/laufform-a48/` (`PREREG.md`, `occ-fit.json`, `occ-tp-1.json`,
+`occ-tp-2.json`, `karte-*.json`, `diag-*.csv`, `ruler-*.txt`, Logs).

@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-13): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **95
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **96
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars. Nachzieh-Anlass: ein Begriff wandert
 > hierher, sobald er die Zwei-von-drei-Schwelle unten erreicht und in
@@ -183,6 +183,15 @@ Ernte-Default, während Trace-Bench und Folger `composed` behalten. Vor
 jedem Laufform-Write gilt weiter: zweimal ernten — jetzt als
 Selbstprüfung mit erwartetem Ergebnis (`werkzeuge.md`).
 → [§4](glossar.md#4-metriken-und-benchmarks)
+
+**Saat-Korrespondenz** — der Weg von einer dekodierten BAHN zu einem
+Laufform-ANKERSATZ, ohne über die Bogenlänge zu verteilen: Dekoder-Zustand
+→ Saat-Probe → Stelle im komponierten Buchstaben → Tafelzeilen-Anker. Das
+mittlere Glied führt `core/compose.py` nicht Buch und wird deshalb je Punkt
+als exakte affine Scheiben-Identität BEWIESEN; ein Anker ohne Beweis ist
+ungedeckt und der Slot fällt als `tintenpfad_gap` heraus. Messarm
+`harvest --occurrences tintenpfad` (A48).
+→ [§3](glossar.md#3-mess--und-fit-vokabular)
 
 **Kringel-Landmarke** — die Erwartung „diese Schleife muss offen bleiben"
 je Buchstabe und je Schleife statt als eine Schwelle: Größenklasse
