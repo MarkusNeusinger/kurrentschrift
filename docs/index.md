@@ -133,6 +133,7 @@ Nachschlagequellen, keine Pläne.
 | [research/graves-handschrift-synthese.md](research/graves-handschrift-synthese.md) | Literatur-Report zur Graves-2013-Mechanik, Priming/Biasing, moderne Verfahren, 54 Quellen |
 | [research/wellen-recherche.md](research/wellen-recherche.md) | Die vier Recherchen zur Physik-Bedingung der Welle (Bahn-Rückgewinnung, kohärente Verformung, Schlangen, das eigene Journal) mit den gemessenen Repo-Zahlen und den drei Bauten |
 | [research/kurrent-writer-and-recognizer.md](research/kurrent-writer-and-recognizer.md) | (EN) Generativer Writer als synthetische Datenquelle für einen billigen Recognizer |
+| [notes/admin-redesign-kritik-2026-09-17.md](notes/admin-redesign-kritik-2026-09-17.md) | Die Widerlegungsrunde zum Admin-Redesign: alle 98 Befunde der fünf Kritiker mit Entscheid, Begründung und Änderungsort — das Protokoll hinter `proposals/admin-redesign.md` §13 |
 | [notes/audit-2026-09-02-synthese.md](notes/audit-2026-09-02-synthese.md) | Vollaudit 2026-09-01/02: 39 gereihte Befunde, Parallelplan T1–T14, Fragen F1–F11, Erledigungsstand |
 | [notes/audit-2026-09-02-rohbefunde.md](notes/audit-2026-09-02-rohbefunde.md) | Dieselbe Runde als Rohberichte der 20 Prüfer, jeder Befund mit Beleg |
 | [notes/serve-image-importgraph-2026-09-04.md](notes/serve-image-importgraph-2026-09-04.md) | Nachmessung zum Serve-only-Image: was `import api.main` lädt, was die Pakete wiegen, zwei Wege mit ihrem Preis — geändert wurde nichts (die eine offene Messung löst die Runde vom 2026-09-05 ein) |
