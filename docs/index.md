@@ -110,6 +110,7 @@ Maßgeblich ist der Status-Kopf des jeweiligen Docs.
 | Doc | Wofür | Status |
 |---|---|---|
 | [optimierungs-werkbank.md](proposals/optimierungs-werkbank.md) | EINE Admin-Werkbank, die **Stufen-/Rollen-Doktrin** und das `work_items`-Protokoll (Triage-Pflicht, Regel-Fix vor Override, Rückgabe an Autor), §6 Sperr-Doktrin | bindend — **Pflichtlektüre vor jedem Korb-Auftrag** |
+| [admin-redesign.md](proposals/admin-redesign.md) | Der Admin auf der grünen Wiese: Ist-Befund aus dem Browser, drei Optionen (Evolution · Hand-zentriert · Aufgaben-zentriert) mit Information und Knöpfen je Fläche, die Eigenhand-Statistik je Buchstabe und Übergang, Nutzungsszenarien, Rückfragen-Katalog | offen — Diskussionsgrundlage, nichts gebaut |
 | [handmodell-stufenplan.md](proposals/handmodell-stufenplan.md) | Die Statistik-Schicht in Stufen H0–H5 füllen | teil-umgesetzt (H0–H2 gebaut) |
 | [eigenhand-erfassung.md](proposals/eigenhand-erfassung.md) | Die eigene Hand erfassen — und seit 2026-09-07 als künftige **Auslieferungshand**: Wortvorrat → Streifenplan → Bögen → Siebung → Streifenkartei → Bestand, mit dem **Streifen-Befund** als Sauberkeits-Schleife (§7.3) | teil-umgesetzt (Phasen 1–4g) |
 | [tintenfolger.md](proposals/tintenfolger.md) | Die Wortbahn-Kampagne: Referenzsatz, Routen-Duell, Optimierungsplan §7, Rettungswege §7.9, offene Arme §7.11; Wellen-Basis seit `sep13` als Baustein im Repo (Vorgabe AUS, §7.9) | teil-umgesetzt (Duell gemessen) |
@@ -132,6 +133,7 @@ Nachschlagequellen, keine Pläne.
 | [research/graves-handschrift-synthese.md](research/graves-handschrift-synthese.md) | Literatur-Report zur Graves-2013-Mechanik, Priming/Biasing, moderne Verfahren, 54 Quellen |
 | [research/wellen-recherche.md](research/wellen-recherche.md) | Die vier Recherchen zur Physik-Bedingung der Welle (Bahn-Rückgewinnung, kohärente Verformung, Schlangen, das eigene Journal) mit den gemessenen Repo-Zahlen und den drei Bauten |
 | [research/kurrent-writer-and-recognizer.md](research/kurrent-writer-and-recognizer.md) | (EN) Generativer Writer als synthetische Datenquelle für einen billigen Recognizer |
+| [notes/admin-redesign-kritik-2026-09-17.md](notes/admin-redesign-kritik-2026-09-17.md) | Die Widerlegungsrunde zum Admin-Redesign: alle 98 Befunde der fünf Kritiker mit Entscheid, Begründung und Änderungsort — das Protokoll hinter `proposals/admin-redesign.md` §13 |
 | [notes/audit-2026-09-02-synthese.md](notes/audit-2026-09-02-synthese.md) | Vollaudit 2026-09-01/02: 39 gereihte Befunde, Parallelplan T1–T14, Fragen F1–F11, Erledigungsstand |
 | [notes/audit-2026-09-02-rohbefunde.md](notes/audit-2026-09-02-rohbefunde.md) | Dieselbe Runde als Rohberichte der 20 Prüfer, jeder Befund mit Beleg |
 | [notes/serve-image-importgraph-2026-09-04.md](notes/serve-image-importgraph-2026-09-04.md) | Nachmessung zum Serve-only-Image: was `import api.main` lädt, was die Pakete wiegen, zwei Wege mit ihrem Preis — geändert wurde nichts (die eine offene Messung löst die Runde vom 2026-09-05 ein) |
