@@ -7,9 +7,12 @@
 > bereits bindend feststeht (§4), drei Gestaltungs-Optionen mit Information
 > und Knöpfen je Fläche (§7–§9), die gemeinsame Spezifikation der
 > Eigenhand-Statistik (§6), die Nutzungsszenarien (§11) und den
-> Rückfragen-Katalog (§12), den der Autor zuerst beantwortet. Sobald
-> entschieden ist, bekommt das Doc einen Umsetzungs-Abschnitt und den Status
-> `teil-umgesetzt`; die Doktrin bleibt, wo sie ist
+> Rückfragen-Katalog (§12), den der Autor zuerst beantwortet. Die
+> Entscheide werden hier als datierte Autor-Entscheide nachgetragen und die
+> gewählte Option bekommt ihren Umsetzungs-Abschnitt; der Status bleibt
+> `offen`, bis die erste Umsetzung ausgeliefert ist — erst dann
+> `teil-umgesetzt` (Lifecycle nach `dokument-status.md`). Die Doktrin
+> bleibt, wo sie ist
 > ([`optimierungs-werkbank.md`](optimierungs-werkbank.md) §3–§6/§8,
 > [`eigenhand-erfassung.md`](eigenhand-erfassung.md) §2/§7/§12,
 > [`handmodell-stufenplan.md`](handmodell-stufenplan.md) §5,
@@ -180,10 +183,13 @@ Zähler (belegt · unterwegs · geplant · im Plan · angenommen · verworfen ·
 gedruckt) mit Chips der nächsten Streifen · Geschriebene Streifen (Galerie
 mit Wortsuche) · Zeichen (fünf Buckets Klein · Groß · Ligaturen · Ziffern ·
 Sonderzeichen; Zelle = Glyph + Belegzahl) · Übergänge (744 Chips `x › y`) ·
-Bogen drucken · Quoten. (K) Setup sichern · nach Befund sortieren · Pfad
-zeigen · Lineatur ausblenden · Zoom ¼ ½ 1:1 2× · nur offene zeigen · Bögen
-erzeugen — und **drei Terminal-Befehle** als Text auf der Seite
-(`setup --pull`, `sync --mit-streifen`, `universe --push`).
+Bogen drucken · Quoten (nur die gewichteten Quoten werden gerendert). (K)
+Setup sichern · nach Befund sortieren · Pfad zeigen · Lineatur ausblenden ·
+Zoom ¼ ½ 1:1 2× · nur offene zeigen · Bögen erzeugen — und **vier
+kopierbare Terminal-Befehle** (`TerminalCommand`) auf der Seite (`setup
+--pull`, `sync --mit-streifen`, `pull --sheet`, `universe --push`); `pfad
+--apply` steht nur als Fließtext, `redo` · `report` · `progression` · `gaps`
+· `snapshot` tauchen im Browser gar nicht auf.
 
 **Befund:** Die Eigenhand kennt Belegzahlen, aber keine Statistik AUS der
 Tinte: keinen Fit je Vorkommen, keinen Median je Buchstabe, keinen Median-
@@ -222,16 +228,120 @@ Nachfahren mit dem S-Pen läuft im normalen Desktop-Layout.
    die Engine es schreibt.
 4. **Statistik nur für die Platten-Hand;** für die Eigenhand fehlt die Kette
    Fit → Vorkommen → Aggregat vollständig (Phase 5).
-5. **Medienbrüche** Terminal ⇄ Browser in der Eigenhand-Schleife, dreimal auf
-   einer Seite.
+5. **Medienbrüche** Terminal ⇄ Browser in der Eigenhand-Schleife: sechs
+   Wechsel je Bogen (drucken · scannen · `pull` · `ingest` · Siebung ·
+   `apply` · `sync` · Browser · `pull --flecken` · `pfad --apply` ·
+   `snapshot`), vier davon als kopierbare Befehle auf der Seite.
 6. **Kleinigkeiten mit Wirkung:** 16-px-Overflow, rote 404-Konsolenzeilen für
    erwartete Leerzustände, generischer Tab-Titel, ein Detail ohne Spur zeigt
    keinen Beleg.
 
 ## 4 Was schon feststeht
 
-*Folgt in dieser PR aus der Bestandsaufnahme: die bindenden Regeln, das
-Verworfene und die datierten Autor-Entscheide, die jede Option einhält.*
+Jede Option in §7–§9 hält die folgenden Regeln ein; wo eine Option sie
+sichtbarer macht, sagt sie es, wo sie sie bräche, ist sie keine Option.
+Die Quelle steht je Zeile, das Zitat ist wörtlich.
+
+### 4.1 Bindende Regeln, die ein Redesign nicht anfasst
+
+| Regel | Quelle | Wörtlich |
+|---|---|---|
+| Stufen-Doktrin: manuell nur, wo Ground Truth entsteht; Generiertes (Laufform · Übergangs-Grammatik · Komposition · Landmarken) wird nur bemängelt | [`optimierungs-werkbank.md`](optimierungs-werkbank.md) §3 | „Ein Mangel schärft die Regel für alle Wörter, ein manueller Eingriff repariert genau eine Stelle." |
+| Entlastungsregel: der Mensch diagnostiziert die Stufe nicht; der ⚑-Dialog stellt genau EINE Vorsortierfrage | ebd. §4 | „Die Korb-Ebene heißt „wo gesehen", nicht „wo verursacht"" |
+| Korb-Protokoll API-erzwungen (`check_transition`); Protokollfelder reisen nur mit ihrem Statuswechsel; `ack` vor `done` | ebd. §5, `api/routers/work_items.py` | „keine Bitte, sondern die Bedingung, unter der die Zeile überhaupt geschrieben wird" |
+| Triage-Reihenfolge Tafel-Duktus → Laufform → Klassenregel → Platzierung → Override; Regel-Fix vor Override | ebd. §5.2 | „Ein Override ohne vorherige Regel-Prüfung ist ein Doktrin-Verstoß." |
+| Die Sperre ist eine Warnung; `force` setzt nur eine Fläche, die vorher ausdrücklich fragt (heute drei) | ebd. §6 (Autor 2026-09-03) | „Ein Knopf, der nebenbei schreibt, bekommt das Flag nicht." |
+| Zeilen-Gate der Laufform (n ≥ 3 oder `?min_occurrences`, Sprung-Ratio); ein Wort-Gewinn ist kein Aufnahmekriterium | ebd. §6 (Autor 2026-08-29) | „Ein Wort-Gewinn am Pixel-Lineal ist KEIN Aufnahmekriterium für eine Zeile" |
+| `rebuild` ≠ `apply`: Statistik neu rechnen ist Wartung, Laufform übernehmen ist der eine rendernde Griff — bewusst nicht in den Linsen | ebd. §7 W5 | „angeschaut und reklamiert wird hier, gerechnet und übernommen woanders" |
+| Statistik je genau EINER Hand; nie über Hände mitteln; Fremdhände nur zur Anschauung | ebd. §6; [`handmodell-stufenplan.md`](handmodell-stufenplan.md) §5; [`../reference/quellen-und-rechte.md`](../reference/quellen-und-rechte.md) §7 | „Fremdhände werden verglichen, nie verrechnet" |
+| Manuelle Beiträge (`authored`-Spuren, Overrides) gehen nie in die eingefrorenen Metrik-Referenzen | ebd. §6; [`../reference/qualitaetsmetrik.md`](../reference/qualitaetsmetrik.md) §2 | „die Messlatte bleibt die Platte" |
+| Paar-Statistik ist nur Anschauung; kein `apply` für Paare; nur `approved`-Overrides erreichen den Composer | `api/routers/aggregates.py`, `core/database/models.py` | „a median join written back into the writing path would be exactly the bigram database architektur.md §2 rejected" |
+| Landmarken: generiert, ein Griff (⚑), Ortsangabe optional, Schwellen sind Mess-Provenienz | [`optimierungs-werkbank.md`](optimierungs-werkbank.md) §8 | „Nichts zu zeigen hieße zu behaupten, der Buchstabe habe keinen Kringel." |
+| Jede Ebene nimmt frei eingetippte Ziele an; das Subjekt steht in der URL | ebd. Status-Block; [`../reference/frontend-stack.md`](../reference/frontend-stack.md) §2 | „muss trotzdem richtig aussehen und bemängelbar sein" |
+| W3/W6: ein Item ohne `replace`; Züge nie teilen oder umordnen; „unvollständig" ist Daten, nicht Klick; Rechteck-Ecken sind Bench-Fixtures | ebd. §7 | „ein anderes Rechteck wäre ein Re-Baseline des Wort-Benchs" |
+| Ehrliche Leerzustände: eine fehlende Messung wird nie als Null gezeigt | [`../reference/frontend-stack.md`](../reference/frontend-stack.md) §7 | „an absent measurement is never printed as a measured zero" |
+| Open-Core: jeder Read, der den Bestand trägt, ist admin-gegatet und `private, no-store`; die Trennlinie ist getestet | [`../reference/quellen-und-rechte.md`](../reference/quellen-und-rechte.md) §5; `tests/test_api_public_surface.py` | „Jeder API-Read, der den Bestand trägt, ist admin-gegatet" |
+| Eigenhand: Buchführung und Streifen-PNG in der DB, nie im Repo; das Archiv bleibt Master; Streifen-Pfad wird außerhalb gerechnet und öffnet Phase 5 nicht | [`eigenhand-erfassung.md`](eigenhand-erfassung.md) §7.1/§7.2/§7.5/§8 | „eine Ableitung wird oben abgelegt, nicht oben erzeugt" |
+| Befund: nichts verwirft automatisch; gemessen wird gespeichert, beurteilt wird abgeleitet; Duktus-Treue schlägt Glätte | ebd. §7.3; `core/eigenhand/befund.py` | „Der Haken bleibt das Urteil." |
+| Kein DB-Schreibpfad in `tools/`; `core`/`api`/`alembic` importieren nie `tools` | ebd. §12; `tests/test_imports.py` | „nie über eine Verbindung zur Datenbank" |
+| Drei Rollen: Tafel = Formbasis, Platte = Maßstab, Eigenhand = Auslieferung; der Wechsel ist eine erklärte Re-Baseline, kein Nebeneffekt | [`../concepts/vision.md`](../concepts/vision.md) „Drei Rollen" (2026-09-07) | „Sie sind Maßstab, nicht Auslieferung" |
+| Design-System auch im Admin: Typo-Leiter, HeaderBar, Caption ≥ 14 px, Fokusring, Trefferflächen ≥ 44 px; Arbeitsflächen weiß, Identität Papier | [`../concepts/design-system.md`](../concepts/design-system.md) | „darf beim Betreten nicht wie eine zweite Anwendung wirken" |
+| Sprache: Code Englisch, Docs Deutsch, UI Deutsch nach DIN/Süß | [`../reference/sprachregelung.md`](../reference/sprachregelung.md) §1 | „Englisch, ohne Ausnahme" |
+| Archiv-Snapshots: frei anlegen, nie zerstören; der Autor autort im PROD-Admin | `.claude/guardrails.md` (2026-08-08, 2026-07-25) | „create freely, never destroy" |
+
+### 4.2 Verworfen — nie wieder aufmachen
+
+Tablet-/S-Pen-Erfassung als Primärweg der Eigenhand (Federwinkel und Druck
+liefert nur die echte Feder, 2026-08-22). Scan-Upload über Admin oder API
+(nur die Buchführung wanderte in die DB, 2026-08-23). Streifen-Scans ins
+Repo. Flecken beim Einlesen aus dem Crop herausrechnen; den Detektor scharf
+stellen statt den Pinsel anzubieten. Den Streifen-Pfad serverseitig rechnen,
+in `word_instances` schreiben oder in die Streifen-Liste einbetten. Die
+Platte als Auslieferungshand behalten und die Eigenhand nur trainieren
+lassen. Gepooltes Mehr-Hand-Vorbild, vollständige Bigram-Datenbank, neue
+Stufen vor H0. Flächendeckendes manuelles Paar-Autoring, Freihand als
+Erstweg, globaler Slant-Offset. Deutsche Code-Identifier. Und alle
+Verworfen-Listen der Metrik bleiben geschlossen.
+
+### 4.3 Die Autor-Entscheide, die den Admin geformt haben
+
+| Datum | Entscheid | Stand |
+|---|---|---|
+| 2026-07-31 | „nicht immer Screenshot in Paint" — EINE Werkbank und der Korb als `work_items` | umgesetzt (W1–W6, Redesign „aus einem Guss") |
+| 2026-07-31 | „In meiner Hand, aber jeden Text" — Vorkommen speichern auf allen drei Ebenen | H0–H2 umgesetzt, H3–H5 offen |
+| 2026-08-02 | Issues #270 (Laufform-Apply in der SPA), #271 (veraltete Overrides), #272 (Ernte aus dem Admin), #274 (Kopplungshöhen persistieren) | #270 bis auf die Paarseite geschlossen; #271, #272, #274 offen |
+| 2026-08-03 | „`min_n` goes to 1 — better once than never" | teilweise (Apply-Boden 3 bleibt) |
+| 2026-08-07 | Manuelle Autorenschritte → Todoist | bindend |
+| 2026-08-22 bis 27 | Eigenhand: Wortvorrat, Bögen, Buchführung und Streifen in der DB, Übergangsraum als eine Zeile, Wortsuche als Einstieg, Lineatur ausblendbar | umgesetzt (Phasen 1–4f) |
+| 2026-08-29 | Kein Wort-Gewinn als Aufnahmekriterium einer Laufform-Zeile | umgesetzt (Zeilen-Gate) |
+| 2026-09-03 | „Die Sperre ist eine Warnung, kein Riegel"; Trefferflächen ≥ 44 px | umgesetzt — außer der `ChartToolbar`, die „Einrichten" bei gesperrter Glyphe noch sperrt |
+| 2026-09-07 | Landmarken-Linse; Streifen-Befund („auch nicht perfekte Streifen hochladen"); Fleckenmaske; **Drei Rollen** — die Eigenhand wird die ausgelieferte Hand | umgesetzt (#566, #567, #568); der Umschalt-Akt ist ein eigener späterer Entscheid |
+| 2026-09-12 | „auch im admin … den pfad auch sehen"; A45: der Tintenpfad ist der Standard-Folger | umgesetzt (#598, #599) |
+| 2026-09-13 | A48: Saat-Korrespondenz als Vorkommens-Quelle ehrlich negativ | Rettungswege offen |
+
+**Die wiederkehrenden Themen** dahinter, aus denen die Leitideen in §5
+folgen: (1) sehen, was generiert wurde, statt es zu glauben (Landmarken,
+Pfad, Befund, Diagnose); (2) sehen, was noch fehlt, ohne zu scrollen
+(Status-Filter, Fehlstellen, Warteschlange); (3) reklamieren statt patchen
+(Korb, Klassenregeln); (4) Unfertiges zulassen, mit definierter Schleife
+(Befund, `min_n`, Sperre als Warnung); (5) der Weg über die DB
+(Buchführung, Streifen, Übergangsraum, Wörterbuch); (6) die eigene Hand als
+Ziel — nicht Abstand zur Vorlage, sondern „in meiner Hand, aber jeden Text".
+
+### 4.4 Die Datenlage, auf der jede Option steht
+
+Drei Achsen, zwanzig Tabellen. Je **Stil**: `styles`, `templates` (Schlüssel
+`(style, glyph, variant)`; Variante 0 = Tafel, 100 = Laufform),
+`glyph_pairs`. Je **Quelle/Vorlage**: `sources`, `bboxes`, `instances`,
+`pair_instances`, `word_instances`, `work_items`. Je **Hand**: `hands`
+(entsteht nur als get-or-create beim Batch-PUT einer Vorkommensschreibung),
+`aggregates`, `pair_aggregates`. Daneben die fünf `eigenhand_*`-Tabellen,
+deren `hand` ein freier String ohne Fremdschlüssel auf `hands` ist.
+
+**Für die Eigenhand fehlt heute die ganze Statistik-Kette:** für
+`mn-suetterlin` gibt es keine `hands`-Zeile, keine `sources`-Zeile, keine
+Vorkommen, keine Aggregate, keine Laufform — weil `sources.chart_path` ein
+repo-relativer Pflichtstring ist und gitignorte Streifen das nie sein
+können ([`eigenhand-erfassung.md`](eigenhand-erfassung.md) §9/§13:
+„Entscheidung vor Phase 5"). Die Ernte (`tools/laufform/harvest.py`,
+`tools/pairlab/harvest.py`) läuft nur im Terminal gegen gitignorte Fixtures
+und schreibt über die Admin-Batch-PUTs; aus dem Admin ist sie nicht
+auslösbar (Issue #272). `/write/*` hängt an `source_id`.
+
+**Welche Zahlen „folgt der Tinte?" heute beantworten:** je Wort
+`word_instances.measurements.geo_rmse_px_by_slot`, `fit_path`
+(`tintenpfad` | `chain`), `follower` und der Tintenpfad-Block (`runs`,
+`paper_lifts`, `jumps`, `hairpins`, `ink_unvisited_share`); je Buchstabe
+`instances.measurements.geo_rmse_px`; je Paar `pair_instances.measurements`
+(`gen_chamfer`, `harvest_chamfer`, `a_resid`, `b_resid`, `fit_ok`).
+Serverseitig der Wordbench-Loss (`/word-samples/{id}/score`) — er misst die
+Komposition gegen die Platte, nie die Nachfahrung. Clientseitig das
+Abstandsprofil Spur → Engine, ausdrücklich ein Anzeige-Maß. **Nicht** in DB,
+API oder SPA: `dtw_xh`, AIoU, LDTW — sie leben nur in
+`tools/tracebench/metric.py`. Für die Eigenhand misst der Streifen-Befund
+(sechs Felder) Sauberkeit, nicht Pfad-Treue. Böden: `LAUFFORM_MIN_OCCURRENCES
+= 3`, `LAUFFORM_SPIKE_RATIO_MAX = 2.95`, Rebuild-`min_n` 4 für Glyphen, 1
+für Paare.
 
 ## 5 Leitideen, auf die sich das Panel einigt
 
@@ -274,8 +384,9 @@ Hand" — je Zahl mit dem Stand EXISTIERT / ABLEITBAR / FEHLT.*
 ## 14 Nächste Schritte
 
 1. Der Autor liest §12 und beantwortet zuerst die Weichenstellungen.
-2. Die Antworten werden als datierte Autor-Entscheide in §4 nachgetragen;
+2. Die Antworten werden als datierte Autor-Entscheide in §4.3 nachgetragen;
    die gewählte Option bekommt ihren Umsetzungs-Abschnitt, die anderen
-   wandern nach §13.
+   wandern nach §13. Der Status bleibt dabei `offen`.
 3. Erst dann: Umsetzungs-PRs, jede mit ihrem Verify-Skill und — wo Geometrie
-   berührt wird — dem Archiv-Snapshot davor.
+   berührt wird — dem Archiv-Snapshot davor. Mit der ersten ausgelieferten
+   Stufe wechselt der Status auf `teil-umgesetzt`, im selben PR wie der Code.
