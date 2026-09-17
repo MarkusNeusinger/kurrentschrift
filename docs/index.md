@@ -110,6 +110,7 @@ Maßgeblich ist der Status-Kopf des jeweiligen Docs.
 | Doc | Wofür | Status |
 |---|---|---|
 | [optimierungs-werkbank.md](proposals/optimierungs-werkbank.md) | EINE Admin-Werkbank, die **Stufen-/Rollen-Doktrin** und das `work_items`-Protokoll (Triage-Pflicht, Regel-Fix vor Override, Rückgabe an Autor), §6 Sperr-Doktrin | bindend — **Pflichtlektüre vor jedem Korb-Auftrag** |
+| [admin-redesign.md](proposals/admin-redesign.md) | Der Admin auf der grünen Wiese: Ist-Befund aus dem Browser, drei Optionen (Evolution · Hand-zentriert · Aufgaben-zentriert) mit Information und Knöpfen je Fläche, die Eigenhand-Statistik je Buchstabe und Übergang, Nutzungsszenarien, Rückfragen-Katalog | offen — Diskussionsgrundlage, nichts gebaut |
 | [handmodell-stufenplan.md](proposals/handmodell-stufenplan.md) | Die Statistik-Schicht in Stufen H0–H5 füllen | teil-umgesetzt (H0–H2 gebaut) |
 | [eigenhand-erfassung.md](proposals/eigenhand-erfassung.md) | Die eigene Hand erfassen — und seit 2026-09-07 als künftige **Auslieferungshand**: Wortvorrat → Streifenplan → Bögen → Siebung → Streifenkartei → Bestand, mit dem **Streifen-Befund** als Sauberkeits-Schleife (§7.3) | teil-umgesetzt (Phasen 1–4g) |
 | [tintenfolger.md](proposals/tintenfolger.md) | Die Wortbahn-Kampagne: Referenzsatz, Routen-Duell, Optimierungsplan §7, Rettungswege §7.9, offene Arme §7.11; Wellen-Basis seit `sep13` als Baustein im Repo (Vorgabe AUS, §7.9) | teil-umgesetzt (Duell gemessen) |
