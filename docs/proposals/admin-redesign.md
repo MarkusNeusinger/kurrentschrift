@@ -612,9 +612,14 @@ kein gewichtetes Maß. Fassungs-Ampel = schlechtester Kasten;
 Buchstaben-/Übergangs-Ampel = Anteile über die tragenden Kästen.
 
 **Startwerte** (vorregistriert, §14-Eintrag im Messjournal vor dem ersten
-Streifen): grün = unvisited ≤ 0,05 ∧ Absetzer = Soll ∧ Exkursion ≤ 0,20 xh
-∧ AIoU ≥ 0,75; gelb = unvisited ≤ 0,15 ∨ Absetzer ±1 ∨ Exkursion ≤ 0,35 xh
-∨ AIoU ≥ 0,65; rot darüber. Anker: 0,096 (`kann`, Tinten-Brücken-Runde),
+Streifen), je Sensor eine grüne und eine gelbe Grenze — grün: unvisited
+≤ 0,05 · Absetzer = Soll · Exkursion ≤ 0,20 xh · AIoU ≥ 0,75; gelb:
+unvisited ≤ 0,15 · Absetzer ±1 · Exkursion ≤ 0,35 xh · AIoU ≥ 0,65. Die
+Ampel folgt der Regel „der schlechteste Sensor entscheidet": **grün**, wenn
+ALLE Sensoren innerhalb ihrer grünen Grenze liegen; **gelb**, wenn alle
+innerhalb ihrer gelben Grenze liegen und nicht alle grün sind; **rot**,
+sobald EIN Sensor seine gelbe Grenze überschreitet — ein guter Sensor kauft
+einem schlechten nie eine Stufe. Anker: 0,096 (`kann`, Tinten-Brücken-Runde),
 0,35 xh (K-D-Schließung), 0,7929 (dev-19-AIoU-Median, `sep12`). Alle an
 der Platte (30–35 px xh) kalibriert, Streifen liegen bei 300 dpi — Etikett
 „vorläufig" bis Q10; nach Q10(b) sind sie an DIESER Hand kalibriert und für
@@ -635,7 +640,16 @@ Ampel (V21); bis dahin zwei Zähler „k grün (gemessen)" · „j von Hand
 
 **Formatwechsel** PFAD_FORMAT 2 ist ein Lockstep-Deploy: `write_pfade`
 antwortet 409 bei Formatdifferenz, der Autor pusht gegen die deployte API.
-Zwei Releases: API liest 1 und 2, dann schreibt das Tool 2.
+Zwei Releases: API liest 1 und 2, dann schreibt das Tool 2. **Die Zeile
+muss ihr Format tragen:** heute speichert `eigenhand_strips.pfade` nur die
+Liste (`core/database/models.py`), und der Read setzt `format` aus der
+Konstante `PFAD_FORMAT` (`api/routers/eigenhand.py`) — nach dem Wechsel
+läsen sich alte Zeilen als Format 2, und der graue Zustand „Format 1 —
+unvollständig gemessen" wäre nie erreichbar. Darum bekommt jede Zeile einen
+gespeicherten Marker (Spalte `pfade_format` oder `{format, eintraege}`
+statt der nackten Liste, auch für eine leere Liste), eine Daten-Migration
+stempelt den Bestand als 1, und der Read antwortet mit dem GESPEICHERTEN
+Format; erst dann ist der zweite Release erlaubt. Das Stück steht in §6.7.
 
 **Absprung:** Chip → Kasten mit Bahn-Overlay (`PathOverlay`, EXISTS);
 darunter „Tintenabdeckung entlang der Bahn" (Serverroute aus Bild + Bahn,
@@ -737,6 +751,7 @@ Platten-Laufform und keine „Skizze" aus Medianen (`vision.md`).
 | Ebenen-Tokens `paper.layer.*`, Rollen-Tokens, `mono` | `styles/paper.ts`, `design-system.md` §2/§7 | S · 0 |
 | Meta-only Read `GET /eigenhand/pfade/{hand}[?nur=offen]` — Python-Projektion, ohne `strokes`, RESERVED | API + `_STRIP_WITHOUT_PNG` | S · 2 |
 | PFAD_FORMAT 2: Sensor 4 (neu), 5, Roh-Labels/`connector_spans`, Absetzer-Soll, Skip-Einträge; Lockstep in zwei Releases | `tools/eigenhand/pfad.py`, `core/eigenhand/pfad.py` | M · 2 |
+| Gespeicherter Format-Marker je Streifen-Zeile (`pfade_format` oder `{format, eintraege}`, auch bei leerer Liste) + Daten-Migration „Bestand = 1" + Read antwortet mit dem gespeicherten Format — Voraussetzung des Lockstep-Wechsels | `core/database/models.py`, Migration + `/verify-migrations` + Snapshot, `api/routers/eigenhand.py` | S · 2, VOR dem zweiten Release |
 | `core/eigenhand/tintentreue.py` — Ampel-Regel, Konstanten je Hand + Datum; §14-Eintrag; Glossar | core + docs | S · 2 |
 | `PATCH …/pfade/{box}` + ETag/`If-Match`; `putEigenhandPfade` + `types.ts` | API + SPA | S · 2 |
 | Editor-Adapter (Props-Naht für Hand, Absetzer-Soll) | `WordTraceEditorDialog` | M · 2 (← V1 oder Props) |
@@ -1784,7 +1799,12 @@ bis zum erklärten Rollenwechsel, dann Umschaltung über `CONFIG`; (b)
 `?hand=` auf der öffentlichen Route mit gezieltem 401-Test; (c) öffentlich
 für alle Hände.
 Empfehlung: (a); `write-api.md` im selben PR.
-Ohne Entscheid: (c) durch Weglassen — ein Open-Core-Leck.
+Ohne Entscheid: (a) — der Bauplan fällt geschlossen aus: ohne Antwort gibt
+es KEINE Hand-Vorschau auf einer öffentlichen Route, nur die reservierte
+(`require_admin`, RESERVED gepinnt, `private, no-store`). Ein
+„Weglassen" des Gates wäre (c) und damit ein Open-Core-Leck; die Definition
+of Done (§5.1, Idee 14) und `quellen-und-rechte.md` §5 lassen es nicht
+durch.
 
 **Q23 — Gelten Paar-Übersteuerungen je Schrift oder je Hand?** *(blockiert:
 Phase 5)*
