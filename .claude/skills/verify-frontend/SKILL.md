@@ -176,14 +176,66 @@ scratchpad (never into the repo) and run one small `bash` script that
 sources the one and runs the other. Same shell, same exports, same
 preflight; only the shape changes.
 
+### The freshness proof, immediately before `alembic upgrade head`
+
+The URL check above proves the ENDPOINT is local. It does not prove the
+DATABASE is disposable — a Cloud SQL Auth Proxy or an SSH tunnel puts
+the shared database on `127.0.0.1:5432`, and then a loopback URL would
+wave a schema migration through. So ask the database itself what it
+holds, in the same exported shell, **before** the first DDL:
+
+```bash
+uv run python - <<'EOF'
+import asyncio, os, sys
+from urllib.parse import parse_qs, urlsplit
+import asyncpg
+
+# The reserved dataset: rows no migration ever creates. Empty (or absent)
+# is the signature of a throwaway; one row is the signature of production.
+RESERVED = ("templates", "bboxes", "eigenhand_fassungen", "word_instances")
+
+async def main():
+    parts = urlsplit(os.environ["DATABASE_URL"].replace("+asyncpg", ""))
+    query = parse_qs(parts.query)
+    conn = await asyncpg.connect(
+        user=parts.username or "postgres", password=parts.password,
+        database=(parts.path or "/postgres").lstrip("/"),
+        host=(query.get("host") or [parts.hostname])[0], port=parts.port or 5432,
+    )
+    try:
+        filled = []
+        for table in RESERVED:
+            if await conn.fetchval("SELECT to_regclass($1)", f"public.{table}") is None:
+                continue
+            count = await conn.fetchval(f"SELECT count(*) FROM {table}")
+            if count:
+                filled.append(f"{table}={count}")
+    finally:
+        await conn.close()
+    if filled:
+        sys.exit(f"refusing: this database already holds the reserved dataset ({', '.join(filled)}) — NOT a throwaway")
+    print("freshness: reserved tables absent or empty — this is a throwaway database")
+
+asyncio.run(main())
+EOF
+```
+
+Measured on three states (2026-09-18): an empty database before any
+migration passes, a database migrated to head with the reserved tables
+empty passes, and a single row in `templates` refuses. Re-running it on
+a cluster you already migrated is therefore free — it is not a one-shot
+gate but the sentence you put in front of every `alembic`, and the same
+question the seeder's hand check asks one layer up.
+
 ### Bring it up
 
 1. **Cluster** — the `pgserver` recipe of `/verify-migrations` §1, with
    your own `/var/tmp/pg-kurrent-<tag>` directory.
-2. **Schema** — `uv run alembic upgrade head` inside the exported
-   shell. This is the one place CLAUDE.md's „never `alembic upgrade
-   head` as a setup step" does not bite, *because* the preflight above
-   just proved the target.
+2. **Schema** — the freshness proof, then `uv run alembic upgrade head`
+   inside the exported shell. This is the one place CLAUDE.md's „never
+   `alembic upgrade head` as a setup step" does not bite, *because* the
+   two preflights above just proved the target: local endpoint AND
+   empty of the reserved dataset.
 3. **API** — `uv run uvicorn api.main:app --port 8000` (background) in
    that same shell. `core/database/connection.py:24` reads the URL at
    IMPORT time, so a server started in a shell without the export

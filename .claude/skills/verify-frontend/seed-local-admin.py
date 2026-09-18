@@ -32,10 +32,11 @@ A second helping on the same stack needs a Fassung of its own, because
 
     … seed-local-admin.py --reseed --fassung F02
 
-Two guards keep this away from real data: any `--api` that is not loopback is
-refused before the first request, and a hand this run did not write itself stops
-it dead — the latter is NOT reachable by `--reseed`, because a foreign hand is
-the signature of the shared database rather than of a re-run.
+Three guards keep this away from real data: any `--api` that is not loopback is
+refused before the first request; `--hand` must sit in the reserved `wegwerf-`
+namespace, so no real hand can be named; and a hand this run did not write
+itself stops it dead — the last one is NOT reachable by `--reseed`, because a
+foreign hand is the signature of the shared database rather than of a re-run.
 """
 
 from __future__ import annotations
@@ -62,7 +63,7 @@ from PIL import Image
 # stored path must not be spelled a second time here.
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
-from core.eigenhand.ids import is_fassung_id  # noqa: E402
+from core.eigenhand.ids import is_fassung_id, is_hand_id  # noqa: E402
 from core.eigenhand.pfad import PFAD_FORMAT, frame_for_box  # noqa: E402
 
 
@@ -75,6 +76,13 @@ LOOPBACK_HOSTS = frozenset({"localhost", "127.0.0.1", "::1"})
 # reached production would blank that hand's `papier`, `geraet` and `note`. A
 # `wegwerf-` id is a legal hand id (`core/eigenhand/ids.py`) that production
 # can never hold, so the collision simply does not exist.
+#
+# The prefix is ENFORCED, not just defaulted: the foreign-hand guard below
+# compares what the API reports against `--hand`, so a `--hand mn-suetterlin`
+# would re-label the author's own hand as „mine" and hand `--reseed` the
+# overwrite it is meant to refuse. Reserving a namespace closes that door
+# without needing to know which ids production holds.
+RESERVED_HAND_PREFIX = "wegwerf-"
 DEFAULT_HAND = "wegwerf-suetterlin"
 DEFAULT_STRIPS = ("S0001", "S0002", "S0003")
 DEFAULT_SHEET_DATE = "2026-01-01"
@@ -251,7 +259,11 @@ def seed(api: AdminApi, hand: str, strips: list[str], fassung: str, with_paths: 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--api", default="http://localhost:8000", help="loopback base URL of the throwaway API")
-    parser.add_argument("--hand", default=DEFAULT_HAND, help="hand id to seed (default: %(default)s)")
+    parser.add_argument(
+        "--hand",
+        default=DEFAULT_HAND,
+        help=f"hand id to seed (default: %(default)s); must start with {RESERVED_HAND_PREFIX!r}",
+    )
     parser.add_argument(
         "--strips", default=",".join(DEFAULT_STRIPS), help="comma-separated strip ids of the frozen plan"
     )
@@ -266,6 +278,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
+    if not args.hand.startswith(RESERVED_HAND_PREFIX) or not is_hand_id(args.hand):
+        raise SystemExit(
+            f"--hand {args.hand!r} is not a throwaway hand: it must start with {RESERVED_HAND_PREFIX!r} and end in a "
+            "known style, e.g. wegwerf-suetterlin. Naming a real hand would let --reseed overwrite it."
+        )
     if not is_fassung_id(args.fassung):
         raise SystemExit(f"--fassung {args.fassung!r} is not a Fassung id (F + at least two digits)")
 

@@ -2,8 +2,10 @@
 
 - **`/verify-frontend` can now drive an admin write flow without touching the
   shared database.** A new §1b brings up a throwaway Postgres and a local API
-  and SPA in one exported shell, with a preflight that refuses any
-  `DATABASE_URL` outside loopback or a `/var/tmp` throwaway socket, a positive
+  and SPA in one exported shell, with two preflights — one refusing any
+  `DATABASE_URL` outside loopback or a `/var/tmp` throwaway socket, one asking
+  the database itself whether it already holds the reserved dataset, because a
+  Cloud SQL Auth Proxy puts the shared database on `127.0.0.1` too — a positive
   discriminator (a freshly migrated database has no hand, because no migration
   seeds the reserved dataset), a teardown and the `/dbsnapshot` trap that made
   an almost-empty archive look like safety. Local dev shares one database with
@@ -35,7 +37,13 @@
   accepts its rows, stores a synthetic strip image per row and follows every
   word, with invented `meta.tintenpfad` numbers spread over a good, a middling
   and a bad word box — including the `0.0` and the `null` that a `||` reader
-  gets wrong. It seeds `wegwerf-suetterlin` rather than the author's hand, and
-  refuses to write when the API reports a hand it did not create. It is a skill
-  asset rather than a `tools/` module because `tools/` is the measurement layer
-  and writes no database, and nothing it writes may ever be measured.
+  gets wrong. Its `--hand` is confined to a reserved `wegwerf-` namespace, so no
+  real hand can be named, and it refuses to write when the API reports a hand it
+  did not create. It is a skill asset rather than a `tools/` module because
+  `tools/` is the measurement layer and writes no database, and nothing it
+  writes may ever be measured.
+- **`tests/test_seed_local_admin.py` covers the seeder's guards.** They are what
+  stands between a mistyped flag and a plain overwrite of the author's hand
+  setup, and they are pure enough to test: loopback and remote URLs, a hand
+  outside the reserved namespace, a foreign hand that `--reseed` must not talk
+  past, a malformed Fassung id, and the reruns that are meant to succeed.
