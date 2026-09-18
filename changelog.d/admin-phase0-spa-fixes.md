@@ -25,3 +25,11 @@
   matrix keyed its badges without it, and because the list arrives ordered by
   variant, a second variant of a pair would have badged the cell whose editor
   opens — and whose geometry the composer renders — from variant 0.
+
+### Changed
+
+- **The Admin-Redesign plan reads `teil-umgesetzt`.** These repairs are the
+  first delivered stage of its Phase 0, so — as the docs lifecycle asks, in
+  the same PR as the code — the plan's status header and its row in
+  `docs/index.md` move from `offen` to `teil-umgesetzt`; nothing else in the
+  plan changes here.
