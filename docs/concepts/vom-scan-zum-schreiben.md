@@ -265,7 +265,10 @@ Schicht-1-Statistik (Migration `0021`) — und `pair_aggregates` je
 `(hand_id, left_key, right_key)` — Median-Offset, bogenlängen-nachgesampelter
 Median-Connector, MAD-Hüllen, gepoolte Dissektions-QC (Migration `0023`). Die
 Endpunkte sind vollständig admin-gesichert:
-`GET/POST /hands/{hand_id}/aggregates[/rebuild]` (`min_n` 4) und
+`GET/POST /hands/{hand_id}/aggregates[/rebuild]` (`min_n` 1 seit Issue #273
+— einen Median zu SEHEN ist Messung, die Vorsicht sitzt einen Schritt
+weiter am Apply-Boden; die 4 ist nur noch der Core-Default von
+`aggregate_instances`, den keine Route benutzt) und
 `GET/POST /hands/{hand_id}/pair-aggregates[/rebuild]` (`min_n` 1, weil Paare
 dünn belegt sind). Ein Rebuild ändert **nichts** am Rendering. Der Prüfstein
 `laufform_dev_xh` meldet je Glyphe den Abstand zwischen rekonstruiertem Median
@@ -473,9 +476,12 @@ Prüfung.
   Übernahme und ohne die Paar-Schicht; eine dauerhaft abrufbare Tabelle über
   beide Schichten (Abdeckung, Streuung) fehlt weiter
   ([#270](https://github.com/MarkusNeusinger/kurrentschrift/issues/270)).
-- **`min_n` = 4 schließt die Versalien praktisch aus** — Großbuchstaben kommen
-  auf den Platten zu selten vor, um die Schwelle zu erreichen, und bekommen
-  daher keine Laufform
+- **Der Apply-Boden hält dünn belegte Versalien zurück** — der Rebuild rechnet
+  seit Issue #273 ab `min_n` = 1 (oben: einen Median zu SEHEN ist Messung), die
+  frühere Schwelle 4 schließt also niemanden mehr aus. Eine Laufform-ZEILE
+  entsteht aber erst ab `LAUFFORM_MIN_OCCURRENCES` = 3 oder mit ausdrücklichem
+  `?min_occurrences=`; Großbuchstaben, die auf den Platten seltener vorkommen,
+  bleiben darum weiter ohne Laufform, bis jemand sie bewusst übernimmt
   ([#273](https://github.com/MarkusNeusinger/kurrentschrift/issues/273)).
 - **Koppelhöhe und `tail_adapt` werden nicht persistiert** — `tools/pairlab`
   misst, wie stark die Hand den Buchstabenkörper für den Übergang umformt, aber
