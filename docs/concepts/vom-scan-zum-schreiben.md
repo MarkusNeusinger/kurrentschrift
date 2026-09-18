@@ -265,7 +265,8 @@ Schicht-1-Statistik (Migration `0021`) — und `pair_aggregates` je
 `(hand_id, left_key, right_key)` — Median-Offset, bogenlängen-nachgesampelter
 Median-Connector, MAD-Hüllen, gepoolte Dissektions-QC (Migration `0023`). Die
 Endpunkte sind vollständig admin-gesichert:
-`GET/POST /hands/{hand_id}/aggregates[/rebuild]` (`min_n` 4) und
+`GET/POST /hands/{hand_id}/aggregates[/rebuild]` (`min_n` 1, seit Issue #273 —
+den Median zu SEHEN ist Messen, gewartet wird erst am Apply) und
 `GET/POST /hands/{hand_id}/pair-aggregates[/rebuild]` (`min_n` 1, weil Paare
 dünn belegt sind). Ein Rebuild ändert **nichts** am Rendering. Der Prüfstein
 `laufform_dev_xh` meldet je Glyphe den Abstand zwischen rekonstruiertem Median
@@ -275,7 +276,14 @@ und gespeicherter Laufform-Zeile. Der eine Rückkanal ist
 — Median-Anker als Geometrie, Breiten, Strich-Topologie und
 entry/exit/advance weiter aus der Tafelzeile, über denselben Helfer
 `build_laufform_canonical`, den auch der manuelle
-`PUT …/templates/{key}/laufform` benutzt. Für Paare gibt es bewusst **kein**
+`PUT …/templates/{key}/laufform` benutzt. Davor steht die **Eigner-Regel**: weil
+`templates` am Stil hängt und keine Hand-Dimension kennt, schreibt eine Hand eine
+Laufform-Zeile nur, wenn sie die auf der Tafel des Stils registrierte Hand ist
+(`sources.hand_id`, `kind='chart'`) oder der Stempel der bestehenden Zeile
+(`trace_meta.laufform.hand_id`) sie nennt — sonst meldet die Antwort den
+Schlüssel als `foreign_hand` und nennt die Eignerin. Der Stempel schützt ohne
+jede Registrierung; eine Zeile ohne Stempel bleibt frei, bis eine Tafel ihre Hand
+nennt. Für Paare gibt es bewusst **kein**
 Apply-Gegenstück: `glyph_pairs` bleibt der sparsame verbatim-Override, der
 §4-Generator bleibt Default, die Paar-Statistik ist sein Audit.
 
