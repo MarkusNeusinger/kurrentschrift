@@ -320,12 +320,19 @@ describe('crawler prerender', () => {
       `${src}/write/glyphs?keys=a,n`,
       `${src}/write/word?text=lesen`,
       `${src}/write/word.svg?text=lesen`,
+      // The path form, for clients that drop query strings (2026-09-18).
+      `${src}/write/word/lesen.svg`,
     ]) {
       expect(html, url).toContain(escapeHtml(url));
     }
     const llms = readFileSync(join(appDir, 'public/llms.txt'), 'utf8');
     expect(llms).toContain(`${src}/write/glyphs/{glyph_key}.svg`);
     expect(llms).toContain(`${src}/bboxes/{glyph_key}/crop`);
+    // llms.txt is what an agent reads BEFORE touching the API: the path form
+    // and the meaning of a 422 on a /write route must stand there in full.
+    expect(llms).toContain(`${src}/write/word/lesen`);
+    expect(llms).toContain(`${src}/write/word/lesen.svg`);
+    expect(llms).toContain('no_query_string');
   });
 
   it('spells the full word-render URL out on the pages an assistant reads for it', () => {

@@ -12,12 +12,14 @@ import logging  # noqa: E402
 from contextlib import asynccontextmanager  # noqa: E402
 
 from fastapi import FastAPI, Request, Response  # noqa: E402
+from fastapi.exception_handlers import request_validation_exception_handler  # noqa: E402
+from fastapi.exceptions import RequestValidationError  # noqa: E402
 from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
 from fastapi.middleware.gzip import GZipMiddleware  # noqa: E402
 from fastapi.responses import JSONResponse  # noqa: E402
 
 from api.analytics import classify_asset, track_asset_fetch, track_bot_fetch  # noqa: E402
-from api.http import NO_STORE  # noqa: E402
+from api.http import NO_STORE, no_query_string_body  # noqa: E402
 from api.origin_gate import OriginSecretMiddleware  # noqa: E402
 from api.rate_limit import RateLimitMiddleware  # noqa: E402
 from api.routers import (  # noqa: E402
@@ -145,6 +147,23 @@ async def unhandled_exception(_request: Request, _exc: Exception) -> JSONRespons
         status_code=500,
         headers={**SECURITY_HEADERS_STR, "Cache-Control": NO_STORE},
     )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error(request: Request, exc: RequestValidationError) -> Response:
+    """FastAPI's 422, with ONE case reworded: the whole query string is gone.
+
+    `api.http.no_query_string_body` says why that case exists (a fetch client
+    that drops the query of an unseen URL, 2026-09-18) and what the body
+    carries; every other validation failure keeps FastAPI's default `detail`
+    list, which the SPA and the tests read. `no-store` because the answer is
+    about what one client sent, and a shared cache that kept it would hand the
+    same 422 to the next caller of the bare path.
+    """
+    body = no_query_string_body(request.url.path, exc.errors(), request.url.query)
+    if body is None:
+        return await request_validation_exception_handler(request, exc)
+    return JSONResponse(body, status_code=422, headers={"Cache-Control": NO_STORE})
 
 
 # The middleware stack, written innermost-first because `add_middleware`

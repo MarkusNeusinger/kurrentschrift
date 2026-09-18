@@ -305,6 +305,71 @@ async def test_write_glyphs_empty_keys_422(api: Harness):
     assert res.status == 422
 
 
+async def test_write_word_without_any_query_string_says_so(api: Harness):
+    """A client that dropped the whole query string (Claude's web_fetch,
+    2026-09-18) gets a 422 that names the failure and the path form to use
+    instead — not FastAPI's bare `detail` list, which such a client never
+    shows the model anyway."""
+    _, source_id = await api.seed_style_and_source()
+    for path in (f"/sources/{source_id}/write/word", f"/sources/{source_id}/write/word.svg"):
+        res = await api.client.request("GET", path)
+        assert res.status == 422, path
+        assert res.headers["cache-control"] == "private, no-store"
+        body = res.json()
+        assert body["error"] == "no_query_string"
+        assert body["missing"] == ["text"]
+        assert body["detail"] == "missing query parameter: text"
+        assert "your client dropped it" in body["hint"]
+        assert f"/sources/{source_id}/write/word/{{text}} (JSON)" in body["hint"]
+        assert f"/sources/{source_id}/write/word/{{text}}.svg (SVG image)" in body["hint"]
+
+    res = await api.client.request("GET", f"/sources/{source_id}/write/glyphs")
+    assert res.status == 422
+    assert res.json()["error"] == "no_query_string"
+    assert f"/sources/{source_id}/write/glyphs/{{glyph_key}}" in res.json()["hint"]
+
+    # A route without a path form still names the failure, hint without one.
+    res = await api.client.request("GET", "/lesarten")
+    assert res.status == 422
+    assert res.json()["error"] == "no_query_string"
+    assert res.json()["hint"].endswith("your client dropped it")
+
+
+async def test_other_validation_failures_keep_the_default_detail_list(api: Harness):
+    """The reworded body is for the missing-query case ONLY: a query that
+    arrived with a bad value keeps FastAPI's `detail` list, which the SPA's
+    ApiError and every other test read."""
+    _, source_id = await api.seed_style_and_source()
+    res = await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": "n", "variant": "x"})
+    assert res.status == 422
+    body = res.json()
+    assert "error" not in body
+    assert isinstance(body["detail"], list)
+    assert body["detail"][0]["loc"] == ["query", "variant"]
+
+
+def test_no_query_string_body_fires_only_when_every_error_is_a_missing_query_param():
+    from api.http import no_query_string_body
+
+    missing_text = [{"type": "missing", "loc": ("query", "text"), "msg": "Field required"}]
+    # A query that arrived — even an unrelated one — is not a dropped query string.
+    assert no_query_string_body("/sources/s/write/word", missing_text, "v=2") is None
+    # A body problem, or a value problem, keeps the default list.
+    assert (
+        no_query_string_body("/sources/s/write/word", [{"type": "int_parsing", "loc": ("query", "variant")}], "")
+        is None
+    )
+    assert no_query_string_body("/x", [{"type": "missing", "loc": ("body", "name")}], "") is None
+    assert no_query_string_body("/x", [], "") is None
+
+    body = no_query_string_body("/sources/s/write/word.svg", missing_text, "")
+    assert body is not None
+    assert body["error"] == "no_query_string" and body["missing"] == ["text"]
+    assert "/sources/s/write/word/{text}.svg" in body["hint"]
+    two = no_query_string_body("/x", missing_text + [{"type": "missing", "loc": ("query", "limit")}], "")
+    assert two is not None and two["detail"] == "missing query parameters: text, limit"
+
+
 async def test_write_glyphs_variant_selects_the_laufform_row(api: Harness):
     """`variant` picks WHICH stored form is rendered — the admin letter view
     shows the chart ductus (0) and the derived Laufform (100) side by side.

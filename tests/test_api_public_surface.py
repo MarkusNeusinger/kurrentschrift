@@ -57,6 +57,9 @@ PUBLIC = {
     "/sources/{source_id}/write/glyphs/{glyph_key}.svg",
     "/sources/{source_id}/write/word",
     "/sources/{source_id}/write/word.svg",
+    # The path form of the two word reads — for clients that drop query strings.
+    "/sources/{source_id}/write/word/{text}",
+    "/sources/{source_id}/write/word/{text}.svg",
     "/quiz-words",
     # The Lesart page's readings: a handful of dictionary words per query,
     # never the vocabulary (its load is the admin POST/DELETE, not a GET).
@@ -122,6 +125,7 @@ PUBLIC_WRITES: set[tuple[str, str]] = {("POST", "/csp-report")}
 _PARAMS = {
     "style_id": "teststyle",
     "glyph_key": "n",
+    "text": "n",
     "sample_id": "wenn",
     "hand_id": "test-hand",
     "item_id": "1",

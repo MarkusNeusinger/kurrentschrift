@@ -1,4 +1,9 @@
-"""Shared HTTP constants for the routers."""
+"""Shared HTTP constants for the routers, plus the one validation body this API
+phrases itself (`no_query_string_body`)."""
+
+import re
+from typing import Any
+
 
 # Public, rarely-changing render/word-bank payloads: cache hard at browser + edge.
 # Template geometry only changes on an admin re-trace and the quiz bank on a
@@ -33,3 +38,57 @@ BROWSER_ONLY_CACHE = "private, max-age=300"
 # signal that arrives after the window it describes is no signal. One row, so
 # the origin can afford the misses.
 STATUS_CACHE = "public, max-age=30"
+
+# The routes that have a PATH form beside their query form, with the hint
+# `no_query_string_body` gives for each: what to fetch instead when the query
+# string does not survive the way to this API.
+_PATH_FORM_HINTS: tuple[tuple[re.Pattern[str], str], ...] = (
+    (
+        re.compile(r"^/sources/(?P<source_id>[^/]+)/write/word(?:\.svg)?$"),
+        "use the path form instead: /sources/{source_id}/write/word/{text} (JSON) "
+        "or /sources/{source_id}/write/word/{text}.svg (SVG image)",
+    ),
+    (
+        re.compile(r"^/sources/(?P<source_id>[^/]+)/write/glyphs$"),
+        "one glyph at a time has a path form: /sources/{source_id}/write/glyphs/{glyph_key} (JSON) "
+        "or /sources/{source_id}/write/glyphs/{glyph_key}.svg (SVG image)",
+    ),
+)
+
+
+def no_query_string_body(path: str, errors: list[dict[str, Any]], query: str) -> dict[str, Any] | None:
+    """The 422 body for a request whose WHOLE query string went missing — or
+    None when the default validation body is the right answer.
+
+    A strict AI fetch client (Claude's web_fetch, 2026-09-18) normalises an
+    unseen URL to the closest one it has already seen and drops the query
+    string; cache-key normalisation and corporate proxies do the same. FastAPI
+    then answers a correct 422 whose `detail` list names the missing `text` —
+    but such a client surfaces only the status code, so the failure is silent,
+    and even a client that reads the body meets a list that does not say what
+    to do. This body does: it names the failure (`error: no_query_string`), the
+    parameters that never arrived, and — where the route has one — the path
+    form that carries the same request without a query string.
+
+    Only fires when the request reached the server with NO query at all AND
+    every reported problem is a missing query parameter: a wrong value, a
+    missing one beside others that arrived, or a body problem keeps the
+    default `detail` list, which is the right report for those.
+    """
+    if query or not errors:
+        return None
+    if not all(e.get("type") == "missing" and tuple(e.get("loc") or ())[:1] == ("query",) for e in errors):
+        return None
+    missing = [str(e["loc"][1]) for e in errors if len(e.get("loc") or ()) > 1]
+    hint = "the request reached the server without a query string — your client dropped it"
+    for pattern, path_form in _PATH_FORM_HINTS:
+        match = pattern.match(path)
+        if match:
+            hint = f"{hint}; {path_form.replace('{source_id}', match.group('source_id'))}"
+            break
+    return {
+        "detail": f"missing query parameter{'s' if len(missing) != 1 else ''}: {', '.join(missing) or '?'}",
+        "error": "no_query_string",
+        "missing": missing,
+        "hint": hint,
+    }

@@ -307,6 +307,10 @@ function letterRecipes(): string {
     row('Geometrie', `${src}/write/glyphs?keys=a,n`, 'JSON: Umriss-Ringe, Mittellinie, Anschlüsse'),
     row('Ganzes Wort', `${src}/write/word?text=lesen`, 'JSON, serverseitig komponiert; text ist frei (bis 160 Zeichen)'),
     row('Ganzes Wort als Bild', `${src}/write/word.svg?text=lesen`, 'SVG auf der Lineatur, mit den generierten Übergängen; text ist frei'),
+    // The path form beside the query form: a strict fetch client drops the
+    // query string of an unseen URL and gets a 422 it shows only as a status
+    // (2026-09-18) — the text as a path segment survives that.
+    row('Dasselbe Wort ohne Query-String (Pfad-Form)', `${src}/write/word/lesen.svg`, 'SVG; JSON unter …/write/word/lesen. Ein 422 auf einer /write-Route heißt: der Client hat den Query-String verworfen — dann die Pfad-Form nehmen'),
     `<li><strong>Beispiel:</strong> ${a(`${src}/write/glyphs/e.svg`, 'das Sütterlin-e, geschrieben')} · ${a(`${src}/bboxes/e/crop`, 'seine Vorlage')}</li>`,
     '</ul>',
     em(

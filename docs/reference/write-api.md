@@ -28,8 +28,9 @@ deshalb schnell genug für Cache-Control + gzip.
 | `GET /sources/{id}/write/glyphs/{glyph_key}.svg` | Derselbe Buchstabe als **SVG-Bild** (`image/svg+xml`, seit 2026-08-28): die Silhouetten-Ringe des Payloads als `<path fill-rule="evenodd">` auf der Lineatur der Schrift (Grundlinie durchgezogen, Mittellinie gestrichelt, Ober-/Unterlinie gepunktet), Viewbox in Template-Einheiten (Mittellänge = 1) — jeder Buchstabe einer Schrift steht damit auf derselben Lineatur im selben Maßstab. Für Clients, die die SPA nicht ausführen (ein Assistent, der zeigen soll, wie das Sütterlin-e aussieht): dieselbe Geometrie wie das JSON, derselbe Vorbehalt — aber nur Browser-Cache, kein Edge (`BROWSER_ONLY_CACHE`, siehe unten). `api/glyph_svg.py`; in der Router-Reihenfolge VOR dem JSON-Einzel-Read deklariert, weil `{glyph_key}` sonst `e.svg` als Key schluckt. 404 wie das JSON |
 | `GET /sources/{id}/write/word?text=…` | Ein ganzes Wort/eine Zeile, serverseitig komponiert |
 | `GET /sources/{id}/write/word.svg?text=…` | Dasselbe Wort als **SVG-Bild** (seit 2026-08-28): die Draw-Items der Komposition — Buchstaben-Silhouetten gefüllt (`evenodd`), generierte Übergänge als gestrichene Mittellinie mit ihrer konstanten Breite und runden Kappen, genau wie `WrittenWord` im Browser — auf der Lineatur der Schrift; `bounds`/`guides` aus der Komposition. Gleicher Eingabevertrag wie `/word` (`_normalized_text`: NFC, trim, ≤ 160 Zeichen → 422). Buchstaben ohne Canonical bleiben Lücken; ein Text, aus dem sich NICHTS schreiben lässt, antwortet **404** mit den fehlenden Keys statt eines leeren Bildes. `api/glyph_svg.py::word_svg` |
+| `GET /sources/{id}/write/word/{text}` · `…/word/{text}.svg` | Die **Pfad-Form** der beiden Wort-Reads (seit 2026-09-18): der Text als letztes Pfadsegment statt als `?text=` — gleiche Antwort, gleicher Vertrag, gleiche Cache-Header, gleicher enger Bucket. Für Clients, die den Query-String verlieren (Glossar „Query-String-Verlust“); ein Text mit Schrägstrich bleibt der Query-Form vorbehalten. `{text}.svg` VOR `{text}` deklariert, wie bei den Glyphen |
 
-Alle fünf sind **öffentliche Reads** (kein Admin-Gate). Die drei
+Alle sieben sind **öffentliche Reads** (kein Admin-Gate). Die vier
 JSON-Reads tragen den geteilten Cache-Header (`api/http.py`
 `CACHE_CONTROL`; Browser ≈ 5 min, Edge `s-maxage` = 1 Tag —
 Template-Geometrie ändert sich nur durch einen Admin-Re-Trace, dann gilt
@@ -42,6 +43,15 @@ drei von vier Assistenten-Abrufen genau solche HITs. Die SPA fragt die
 SVGs nie an, also verliert nichts Menschliches den Edge-Cache. Der Admin
 behält den ungecachten `/diagnostic`.
 
+**Der 422 ohne Query-String** (seit 2026-09-18): Kommt eine Anfrage GANZ ohne
+Query-String an und sind alle Validierungsprobleme fehlende Query-Parameter,
+antwortet `{"detail": "missing query parameter: text", "error":
+"no_query_string", "missing": ["text"], "hint": "…"}` — `private, no-store`,
+der `hint` nennt die Pfad-Form, wo die Route eine hat
+(`api/http.py::no_query_string_body`, Handler in `api/main.py`). Jeder andere
+Validierungsfehler behält FastAPIs `detail`-Liste. llms.txt trägt den Satz
+dazu, weil Agenten sie VOR der API lesen (Glossar „Query-String-Verlust“).
+
 ### Ratenbegrenzung — zwei Buckets, eng vor weit
 
 `api/rate_limit.py` hält **zwei In-Process-Token-Buckets je Client**, beide als
@@ -51,7 +61,7 @@ Token des weiten Buckets kostet.
 
 | Bucket | Gilt für | Default | Abschalten |
 |---|---|---|---|
-| **eng** | `GET /sources/{id}/write/word` + `…/word.svg` | 60/min, Burst 20 — **je Komposition von bis zu 160 Zeichen** | `WRITE_RATE_LIMIT_PER_MIN=0` |
+| **eng** | `GET /sources/{id}/write/word` + `…/word.svg`, Query- wie Pfad-Form (`composition_cost` liest den Text vom Pfad; der Pfad gewinnt gegen einen zusätzlichen `?text=`, den die Pfad-Route ignoriert) | 60/min, Burst 20 — **je Komposition von bis zu 160 Zeichen** | `WRITE_RATE_LIMIT_PER_MIN=0` |
 | **weit** | **alle übrigen Routen**, GET und HEAD eingeschlossen | 600/min, Burst 120 (je Anfrage) | `PUBLIC_RATE_LIMIT_PER_MIN=0` |
 
 Der **enge** Bucket sitzt vor dem einzigen öffentlichen Read, dessen Kosten der
