@@ -1223,9 +1223,12 @@ vom Terminal-Flag `--replace-authored` — bewusst keine vierte
 Parameter. `authored` über `authored` geht durch: das ist der Autor, der
 seine eigene Nachfahrung korrigiert, und genau das hält die spätere
 Zeichenfläche in der Werkbank offen. Die korrigierten Buchstabengrenzen
-aus Q15 bekommen denselben Schutz, sobald PFAD_FORMAT 2 ihre Herkunft je
-Kasten trägt; die Regel wartet an einer Stelle darauf (`is_authored`).
-Offen bleibt die Archiv-Hälfte von Q4: eine `authored`-Bahn ist KEINE
+aus Q15 bekommen einen eigenen Schutz, sobald PFAD_FORMAT 2 ihre Herkunft
+trägt; gelesen wird sie an derselben Stelle (`is_authored`), gelten wird
+sie aber je SPANNE und nicht je Kasten — ein gewöhnliches Neu-Folgen eines
+grenzkorrigierten Kastens muss durchgehen —, also braucht
+`displaced_authored` dann einen Vergleich je Feld statt dieser
+Kasten-Antwort. Offen bleibt die Archiv-Hälfte von Q4: eine `authored`-Bahn ist KEINE
 Ableitung — der nachfolgende Absatz gilt für die gefolgte Bahn —, sie lässt
 sich also nicht neu folgen und liegt heute nirgends gesichert. Das gehört
 in Phase 2, zusammen mit `EigenhandArchiveOut`.
