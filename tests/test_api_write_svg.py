@@ -79,6 +79,21 @@ async def test_word_path_form_shares_the_input_contract_and_the_404(api: Harness
     assert "no canonical for z" in res.json()["detail"]
 
 
+async def test_word_path_form_reads_a_trailing_svg_as_the_picture(api: Harness):
+    """The documented ambiguity of the path form: `.svg` is the shape, never
+    part of the text — `/word/n.svg` is the picture of "n", and the text
+    "n.svg" itself is only reachable through the query form."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    res = await api.client.request("GET", f"/sources/{source_id}/write/word/n.svg")
+    assert res.status == 200
+    assert res.headers["content-type"].startswith("image/svg+xml")
+    assert "<title>n — Synthetic test chart</title>" in res.body.decode()
+    by_query = await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "n.svg"})
+    assert by_query.status == 200
+    assert by_query.json()["text"] == "n.svg"
+
+
 def test_word_svg_renders_items_on_the_ruling():
     composed = {
         "items": [

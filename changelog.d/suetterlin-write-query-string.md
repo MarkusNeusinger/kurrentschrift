@@ -23,6 +23,10 @@
   [...], "hint": ...}` with the path form named where the route has one
   (`api/http.py::no_query_string_body`), `private, no-store`, instead of
   FastAPI's default `detail` list; every other validation failure keeps
-  that list. llms.txt states the rule in one line — a 422 on a `/write`
-  route means the client dropped the query string, use the path form —
-  because agents read it before they touch the API.
+  that list. The hint is conditional — the server sees only that no query
+  arrived, not who lost it — and llms.txt keys its one-line rule on the
+  `error` value, not on the status: a 422 carrying `no_query_string` means
+  the query string was lost on the way, use the path form. Agents read
+  that file before they touch the API. The bot asset telemetry
+  (`classify_asset`) counts the path form under the same `word_svg` /
+  `word_json` assets as the query form.

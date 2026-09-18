@@ -320,7 +320,10 @@ describe('crawler prerender', () => {
       `${src}/write/glyphs?keys=a,n`,
       `${src}/write/word?text=lesen`,
       `${src}/write/word.svg?text=lesen`,
-      // The path form, for clients that drop query strings (2026-09-18).
+      // The path form, for clients that drop query strings (2026-09-18) —
+      // both shapes as full URLs, because a strict fetch tool accepts only
+      // URLs it has already seen.
+      `${src}/write/word/lesen`,
       `${src}/write/word/lesen.svg`,
     ]) {
       expect(html, url).toContain(escapeHtml(url));

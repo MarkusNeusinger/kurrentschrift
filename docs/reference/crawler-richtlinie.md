@@ -203,6 +203,21 @@ die Prüfung der Werkzeuge auf die exakte URL oder auf Host+Pfad geht,
 ist offen — darum steht der Frei-Parameter-Hinweis direkt neben dem
 Beispiel.
 
+**Pfad-Form (2026-09-18):** Ein drittes Protokoll (Claudes `web_fetch`)
+hat die nächste Stufe gezeigt: Der Client normalisiert eine ungesehene URL
+auf die nächste schon gesehene und wirft dabei den **Query-String** weg —
+`write/word?text=Haus` kam als `write/word` an, die API antwortete korrekt
+422, und der Client zeigte nur den Status. Seitdem führt `llms.txt` neben
+der Query-Form die **Pfad-Form** der Wort-Renders mit Voll-URLs
+(`…/write/word/lesen` und `…/write/word/lesen.svg`, dazu `Haus.svg` und
+`wenn.svg` als fertige Beispiele, weil derselbe Client auch ungesehene
+Pfade blockt) und einen Satz, der auf den `error`-Wert der Antwort
+schlüsselt, nicht auf den Status: Ein 422 mit `"error": "no_query_string"`
+heißt, der Query-String ist unterwegs verloren gegangen — dann die
+Pfad-Form nehmen. Der Maschinen-Block von `/tafel` trägt dieselbe Zeile mit
+beiden Voll-URLs. Vertrag und Bedingung des Bodys: `write-api.md` „Der 422
+ohne Query-String“; Glossar „Pfad-Form“, „Query-String-Verlust“.
+
 Ein zweites Protokoll (Grok, ebenfalls 2026-08-28) hat die verbleibende
 Stufe gezeigt: Ein Agent, dessen User-Agent **nicht in der
 `$is_bot`-Map** steht, bekommt die leere App-Hülle („insufficient

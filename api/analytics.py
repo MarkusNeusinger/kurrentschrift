@@ -200,6 +200,11 @@ _ASSET_ROUTES: tuple[tuple[re.Pattern[str], str], ...] = (
     (re.compile(r"^/sources/([^/]+)/write/glyphs/([^/]+)$"), "glyph_json"),
     (re.compile(r"^/sources/([^/]+)/write/word\.svg$"), "word_svg"),
     (re.compile(r"^/sources/([^/]+)/write/word$"), "word_json"),
+    # The path form of the word reads (2026-09-18): the text is the last
+    # segment, and `.svg` decides the shape — same two assets, not new ones,
+    # so the dashboard counts a word whichever way an assistant asked for it.
+    (re.compile(r"^/sources/([^/]+)/write/word/([^/]+)\.svg$"), "word_svg"),
+    (re.compile(r"^/sources/([^/]+)/write/word/([^/]+)$"), "word_json"),
     (re.compile(r"^/sources/([^/]+)/bboxes/([^/]+)/crop$"), "crop"),
 )
 _KEY_MAX = 80
@@ -209,18 +214,21 @@ def classify_asset(path: str, text: str | None = None) -> tuple[str, str, str] |
     """(asset, source, key) for a public asset path, else None.
 
     `key` is the glyph_key for a letter read or the crop, and the requested
-    text for a word read — `text` is the query parameter the caller hands in
-    for the word routes, normalised the way `/word` normalises its input (NFC,
-    whitespace collapsed) so the dashboard key is the text the API actually
-    wrote, and a decomposed and a composed umlaut land in one bucket."""
+    text for a word read — the `text` query parameter in the query form, the
+    last path segment in the path form — normalised the way `/word` normalises
+    its input (NFC, whitespace collapsed) so the dashboard key is the text the
+    API actually wrote, and a decomposed and a composed umlaut land in one
+    bucket."""
     for pattern, asset in _ASSET_ROUTES:
         m = pattern.match(path)
         if m is None:
             continue
-        if m.lastindex and m.lastindex >= 2:
-            key = m.group(2)
+        captured = m.group(2) if m.lastindex and m.lastindex >= 2 else None
+        if asset.startswith("word"):
+            raw = captured if captured is not None else (text or "")
+            key = " ".join(unicodedata.normalize("NFC", raw).split())[:_KEY_MAX]
         else:
-            key = " ".join(unicodedata.normalize("NFC", text or "").split())[:_KEY_MAX]
+            key = captured or ""
         return asset, m.group(1), key
     return None
 

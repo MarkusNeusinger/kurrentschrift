@@ -319,7 +319,10 @@ async def test_write_word_without_any_query_string_says_so(api: Harness):
         assert body["error"] == "no_query_string"
         assert body["missing"] == ["text"]
         assert body["detail"] == "missing query parameter: text"
-        assert "your client dropped it" in body["hint"]
+        # Conditional: the server cannot tell a dropped query from an omitted one.
+        assert body["hint"].startswith(
+            "no query string reached the server — if you sent one, your client or a proxy dropped it"
+        )
         assert f"/sources/{source_id}/write/word/{{text}} (JSON)" in body["hint"]
         assert f"/sources/{source_id}/write/word/{{text}}.svg (SVG image)" in body["hint"]
 
@@ -332,7 +335,7 @@ async def test_write_word_without_any_query_string_says_so(api: Harness):
     res = await api.client.request("GET", "/lesarten")
     assert res.status == 422
     assert res.json()["error"] == "no_query_string"
-    assert res.json()["hint"].endswith("your client dropped it")
+    assert res.json()["hint"].endswith("your client or a proxy dropped it")
 
 
 async def test_other_validation_failures_keep_the_default_detail_list(api: Harness):

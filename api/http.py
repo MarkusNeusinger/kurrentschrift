@@ -66,9 +66,13 @@ def no_query_string_body(path: str, errors: list[dict[str, Any]], query: str) ->
     then answers a correct 422 whose `detail` list names the missing `text` —
     but such a client surfaces only the status code, so the failure is silent,
     and even a client that reads the body meets a list that does not say what
-    to do. This body does: it names the failure (`error: no_query_string`), the
+    to do. This body does: it names the finding (`error: no_query_string`), the
     parameters that never arrived, and — where the route has one — the path
-    form that carries the same request without a query string.
+    form that carries the same request without a query string. The finding is
+    what the server can see: NO query arrived. Whether the caller omitted it
+    or an intermediary dropped it is not knowable here, so the hint says so
+    conditionally and the public guidance keys on the `error` value, not on
+    the status code.
 
     Only fires when the request reached the server with NO query at all AND
     every reported problem is a missing query parameter: a wrong value, a
@@ -80,7 +84,9 @@ def no_query_string_body(path: str, errors: list[dict[str, Any]], query: str) ->
     if not all(e.get("type") == "missing" and tuple(e.get("loc") or ())[:1] == ("query",) for e in errors):
         return None
     missing = [str(e["loc"][1]) for e in errors if len(e.get("loc") or ()) > 1]
-    hint = "the request reached the server without a query string — your client dropped it"
+    # Conditional on purpose: the server sees only that no query arrived, not
+    # whether the caller never sent one or something in between dropped it.
+    hint = "no query string reached the server — if you sent one, your client or a proxy dropped it"
     for pattern, path_form in _PATH_FORM_HINTS:
         match = pattern.match(path)
         if match:

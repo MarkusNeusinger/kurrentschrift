@@ -993,8 +993,10 @@ ein zweites Mal, mit dem Text als letztem Pfadsegment statt als
 Query-Form. Sie existiert, weil Query-Strings zwischen Agent und API
 verloren gehen — → Query-String-Verlust —, und ein Pfad das übersteht.
 Gleicher Eingabevertrag, gleiche Antwort, gleicher enger Bucket
-(`WORD_PATHS` fängt sie, `composition_cost` liest den Text vom Pfad); ein
-Text mit Schrägstrich bleibt der Query-Form vorbehalten.
+(`WORD_PATHS` fängt sie, `composition_cost` liest den Text vom Pfad), und
+die Bot-Telemetrie zählt sie unter denselben Assets (`classify_asset`). Ein
+Text mit Schrägstrich oder auf `.svg` endend bleibt der Query-Form
+vorbehalten — `.svg` am Ende ist in der Pfad-Form immer die Bildform.
 → write-api.md „Endpunkte“, `api/routers/write.py`
 
 **Query-String-Verlust (`no_query_string`)** — der benannte Fehlmodus, gegen

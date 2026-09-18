@@ -283,9 +283,13 @@ async def _word_svg_response(text: str, source: Source, db: AsyncSession) -> Res
 # only as a status code, so the failure is silent. A path carries the text
 # through all of that. `/write/word/{text}.svg` is declared BEFORE the JSON
 # form for the same reason the glyph routes are: a `{text}` segment would
-# otherwise swallow `lesen.svg` as the text "lesen.svg". A text containing a
-# slash cannot travel this way (a `{text}` segment stops at `/`, and the ASGI
-# server decodes `%2F` before routing) — the query form stays for that.
+# otherwise swallow `lesen.svg` as the text "lesen.svg". The price of that
+# order is that a text ENDING in `.svg` cannot be asked for as JSON here —
+# `/word/report.svg` is the picture of "report" — and a text containing a
+# slash cannot travel this way at all (a `{text}` segment stops at `/`, and
+# the ASGI server decodes `%2F` before routing). Both stay with the query
+# form, which is the documented contract; the path form is the fallback for
+# clients that lose the query, not a second complete API.
 @router.get("/word/{text}.svg")
 async def get_write_word_svg_by_path(
     text: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)

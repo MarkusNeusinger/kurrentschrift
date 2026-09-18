@@ -282,6 +282,12 @@ async def test_middleware_ignores_machine_files_and_api_reads(api: Harness) -> N
             ("word_json", "suetterlin-1922", "lesen und schreiben"),
         ),
         ("/sources/suetterlin-1922/bboxes/e/crop", None, ("crop", "suetterlin-1922", "e")),
+        # The path form: the text off the path, normalised like the query one,
+        # and the same two assets — the dashboard does not care which way.
+        ("/sources/suetterlin-1922/write/word/lesen.svg", None, ("word_svg", "suetterlin-1922", "lesen")),
+        ("/sources/suetterlin-1922/write/word/lesen", None, ("word_json", "suetterlin-1922", "lesen")),
+        ("/sources/loth-1866/write/word/  Glück  ", None, ("word_json", "loth-1866", "Glück")),
+        ("/sources/suetterlin-1922/write/word/a/b", None, None),  # no route
         ("/sources/suetterlin-1922/write/glyphs", None, None),  # the batch read
         ("/sources/suetterlin-1922/templates", None, None),  # the inventory
         ("/sources/suetterlin-1922/bboxes/status", None, None),
@@ -353,5 +359,14 @@ async def test_middleware_reports_asset_fetches_with_key_and_status(api: Harness
         await api.client.request("GET", f"/sources/{source_id}/write/word.svg", params={"text": "nn"}, headers=ua)
         await api.client.request("GET", f"/sources/{source_id}/write/glyphs/zz", headers=ua)
         await api.client.request("GET", f"/sources/{source_id}/write/glyphs", params={"keys": "n"}, headers=ua)
+        # The path form counts like the query form — it is the feature's target.
+        await api.client.request("GET", f"/sources/{source_id}/write/word/nn.svg", headers=ua)
+        await api.client.request("GET", f"/sources/{source_id}/write/word/nn", headers=ua)
     calls = [(c.kwargs["asset"], c.kwargs["key"], c.kwargs["status"]) for c in assets.call_args_list]
-    assert calls == [("glyph_svg", "n", 200), ("word_svg", "nn", 200), ("glyph_json", "zz", 404)]
+    assert calls == [
+        ("glyph_svg", "n", 200),
+        ("word_svg", "nn", 200),
+        ("glyph_json", "zz", 404),
+        ("word_svg", "nn", 200),
+        ("word_json", "nn", 200),
+    ]
