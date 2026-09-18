@@ -476,9 +476,12 @@ Prüfung.
   Übernahme und ohne die Paar-Schicht; eine dauerhaft abrufbare Tabelle über
   beide Schichten (Abdeckung, Streuung) fehlt weiter
   ([#270](https://github.com/MarkusNeusinger/kurrentschrift/issues/270)).
-- **`min_n` = 4 schließt die Versalien praktisch aus** — Großbuchstaben kommen
-  auf den Platten zu selten vor, um die Schwelle zu erreichen, und bekommen
-  daher keine Laufform
+- **Der Apply-Boden hält dünn belegte Versalien zurück** — der Rebuild rechnet
+  seit Issue #273 ab `min_n` = 1 (oben: einen Median zu SEHEN ist Messung), die
+  frühere Schwelle 4 schließt also niemanden mehr aus. Eine Laufform-ZEILE
+  entsteht aber erst ab `LAUFFORM_MIN_OCCURRENCES` = 3 oder mit ausdrücklichem
+  `?min_occurrences=`; Großbuchstaben, die auf den Platten seltener vorkommen,
+  bleiben darum weiter ohne Laufform, bis jemand sie bewusst übernimmt
   ([#273](https://github.com/MarkusNeusinger/kurrentschrift/issues/273)).
 - **Koppelhöhe und `tail_adapt` werden nicht persistiert** — `tools/pairlab`
   misst, wie stark die Hand den Buchstabenkörper für den Übergang umformt, aber

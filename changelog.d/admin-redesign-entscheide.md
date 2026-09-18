@@ -18,10 +18,10 @@
   text follows them: a tested write flow MAY be rebuilt when its suites move
   in the same PR (Q6 b), and the English UI labels stay (Q8 without c).
   Nothing is built with this PR; the status stays `offen`. §15.2 names who
-  flips it: in the parallel Phase 0 wave a docs follow-up (row N) rather
-  than the first code PR — a declared deviation from the same-PR lifecycle
-  rule, scoped to this wave and put to the author, with the literal rule as
-  the fallback.
+  flips it, and the same-PR lifecycle rule holds as written: the first
+  merged PR that delivers a row of §5.2 carries the flip (the header line and
+  the `docs/index.md` cell, nothing else in that doc) — possible without a
+  conflict because the wave's PRs are merged one after another.
 - **The declared doctrine deltas are executed in their owning docs, each as
   a dated update.** `optimierungs-werkbank.md` §6: exactly one hand as the
   subject, a second hand only collapsed, labelled and never averaged in

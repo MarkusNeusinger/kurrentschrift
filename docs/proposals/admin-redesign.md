@@ -623,7 +623,10 @@ Wörter stehen. In der gewählten Form (§7) sind die Labels nachgezogen.
     wenn `hand.id == sources.hand_id` einer Quelle desselben Stils oder der
     Stempel `templates.trace_meta["laufform"]["hand_id"]` der bestehenden
     V100-Zeile passt; fehlt der Stempel, ist die Platten-Hand Eignerin. Er
-    greift erst mit der Zweithand (V1), kostet aber nichts. (Berichtigt
+    hat erst mit einer Zweithand etwas abzuweisen, kostet aber nichts; die
+    Stempel-Klausel wirkt dabei schon ohne V1, die Registrierung fügt die
+    Eignerschaft der ungestempelten Zeilen hinzu, und „Quelle desselben
+    Stils" heißt Tafel-Quelle (`kind='chart'`) — genau in V22. (Berichtigt
     2026-09-18: die erste Fassung nannte den Pfad
     `canonical.derived_from.hand_id` — `derived_from` ist ein String,
     `"hand-aggregate"`, und `hand_id` sein Geschwisterfeld unter
@@ -1024,7 +1027,7 @@ darin Platz finden, legt das Proposal der Freigabe-Maschine fest (Q24 i,
 | `tools.eigenhand.report --faellig` | tools | S · 1 |
 | Phase 5/1: Streifen-Quelle (Q20 a) — `sources.kind='eigenhand'`, nie Tafel. **Bauweise** (Zusage zum Entscheid): eine echte Art-Spalte mit CHECK statt eines Schein-`chart_path`, wo machbar. `sources.kind` existiert schon (`String`, Default `chart`, im Modell `chart` · `manuscript`, ohne CHECK — das Schema trägt heute keinen einzigen); der Bau ist also der neue Wert + CHECK über die erlaubten Werte + `chart_path` nullable, gebunden an die Art. `chart_path` hat rund 60 Fundstellen in `core/` und `api/`; die Tafel-Routen weisen eine Nicht-Tafel klar ab (`require_chart_source`), statt an einem leeren Pfad zu scheitern. Der Sentinel-String bleibt der Rückfall, wenn `/verify-migrations` oder die Lesestellen dagegen sprechen | Migration + `/verify-migrations` + Snapshot | M · 5 |
 | Phase 5/2: `instances`-Key `(source_id, specimen_id, slot, variant)` statt Pixel-Ort (`uq_instance_loc`) | Migration | M · 5 |
-| Phase 5/3: `tools/eigenhand/ernte.py` — die Ernte ist fixture-gebunden (`iter_fixture_word_cases`, `WordCase` mit templates, laufform, crop, rect, Lineatur) und muss alles aus `/eigenhand/strips/…?box=&lineatur=ohne`, `registration_px` und `/write/glyphs` neu zusammensetzen; authored vor tintenpfad; dann `rebuild` (`_upsert_hand` legt die `hands`-Zeile an) | tools | L (4–6 Wochen) · 5 |
+| Phase 5/3: `tools/eigenhand/ernte.py` — die Ernte ist fixture-gebunden (`iter_fixture_word_cases`, `WordCase` mit templates, laufform, crop, rect, Lineatur) und muss alles aus `/eigenhand/strips/…?box=&lineatur=ohne`, `registration_px` und `/write/glyphs` neu zusammensetzen; authored vor tintenpfad; die `hands`-Zeile entsteht beim ersten Batch-PUT der Vorkommen (`_upsert_hand` in `api/routers/instances.py`), erst DANACH `rebuild` — die Route löst `require_hand` auf und antwortet für eine unbekannte Hand 404 | tools | L (4–6 Wochen) · 5 |
 | Exporter-Filter + Test `kind='eigenhand'` nie in Fixture-Wurzeln — an `tools/dbsnapshot/fetch.py` und am Fixture-Builder | tools, tests | S · 5, VOR der ersten Ernte |
 | Laufform je Hand (Q19 a: `hands.laufform_variant`, Platte 100 · Eigenhand 200, Bandschnitt nach dem Freigabe-Maschine-Proposal) + Hand-Vorschau-Route (Q22 a), `laufform=none`, Cache-Control, `write-api.md`, Gate-Test. **Im selben PR wie das Band:** das öffentliche `/write/glyphs?variant=` lehnt jedes Band ≥ 100 ab, das nicht das der ausgelieferten Hand ist, mit Test (§6.6); die SPA-Konstante `LAUFFORM_VARIANT` (zwei Dateien) wird ein Datum der Hand | `write.py`, hands, SPA, docs | L · 5 |
 | `glyph_pairs.hand_id` (Q23 a): Pflichtspalte nach dem Backfill auf die Platten-Hand, Snapshot vor der Migration, vor der ersten Eigenhand-Laufform | Migration im Schema-PR von Phase 5 | S · 5 |
@@ -2426,6 +2429,22 @@ berührt oder sichtbar Geschmackssache ist.
   der Stempel, ist die Platten-Hand Eignerin. (Pfad berichtigt 2026-09-18 —
   die erste Fassung schrieb `canonical.derived_from.hand_id`; ohne Stempel
   sind nur die Zeilen des manuellen `PUT …/laufform`, §5.1 Idee 10.)
+  **Präzisiert beim Bau (2026-09-18):** „eine Quelle desselben Stils" heißt
+  eine TAFEL-Quelle (`sources.kind='chart'`) — mit Q20 (a) bekäme die
+  Eigenhand sonst über ihre eigene `kind='eigenhand'`-Quelle das Schreibrecht
+  auf das Band, das sie sich bis Q19 mit der Platte teilt. Die
+  STEMPEL-Klausel wirkt ohne jede Registrierung: eine von Hand A gestempelte
+  Zeile bleibt A's. Die Registrierung (V1) fügt nur die erste Klausel hinzu
+  — sie macht die Platten-Hand zur Eignerin der UNGESTEMPELTEN Zeilen und
+  lässt sie eine fremd gestempelte zurückholen. Ohne Stempel UND ohne
+  Registrierung ist niemand zu verdrängen, der Apply geht durch — der Stand
+  jedes Stils heute. Gemeldet wird je Buchstabe als Auslassung
+  `foreign_hand` mit der Eignerin, nicht als 409 der Route. **Offen:** der manuelle `PUT
+  …/templates/{key}/laufform` liegt außerhalb des Guards und baut den
+  `laufform`-Block neu, also ohne Stempel — eine gestempelte Zeile wird
+  dadurch wieder eignerlos. Das wird mit dem Varianten-Band je Hand (Q19 a)
+  gegenstandslos, weil die Eigenhand dann in ihr eigenes Band schreibt; bis
+  dahin gibt es keine Zweithand mit Aggregaten.
 - **V23 Overlay-Ebenen** als Tokens `paper.layer.*`, farbenblind-sicher, je
   Ebene eine Strichart, Legende mit Text; Deuteranopie-Simulation im
   Verify-Durchgang; `mono`-Token für Befehle. (`paper.layer.*` ist ein
@@ -2596,10 +2615,10 @@ wer eine davon wieder aufmacht, braucht einen neuen Entscheid.
 3. Erst dann: Umsetzungs-PRs, jede mit ihrem Verify-Skill und — wo Geometrie
    berührt wird — dem Archiv-Snapshot davor. Mit der ersten ausgelieferten
    Stufe wechselt der Status auf `teil-umgesetzt`, im selben PR wie der Code
-   — in der Phase-0-Welle trägt den Wechsel abweichend der Doku-Nachzug aus
-   §15.2 (Zeile N): eine erklärte, auf DIESE Welle begrenzte Abweichung, dem
-   Autor vorgelegt. **Das ist der nächste Schritt;** daneben, als nächstes DOC, das Proposal
-   der Freigabe-Maschine (§15.3).
+   — in der Phase-0-Welle ist das der erste gemergte PR, der eine Zeile aus
+   §5.2 ausliefert (§15.2: nach der Merge-Reihenfolge PR 2). **Das ist der
+   nächste Schritt;** daneben, als nächstes DOC, das Proposal der
+   Freigabe-Maschine (§15.3).
 
 ## 15 Umsetzung der gewählten Form (Stand 2026-09-18)
 
@@ -2623,32 +2642,34 @@ ist nichts. Die Aufwände sind die Vermutungen aus §6.7, keine Messungen.
 ### 15.2 Phase 0 — der PR-Schnitt
 
 Die Liste aus §5.2 schneidet sich nach der Erkundung vom 2026-09-18 in neun
-PRs (0–8), EINEN Doku-Nachzug für den Status (N) und EINEN
-Prod-Datenschritt, den der Autor vor der Ausführung einzeln bestätigt. Jeder
+PRs (0–8) und EINEN Prod-Datenschritt, den der Autor vor der Ausführung
+einzeln bestätigt. Die PRs werden der Reihe nach gemergt (Autor-Auftrag
+2026-09-18), nicht parallel — darum trifft sich am Kopf dieses Docs nie
+mehr als ein PR. Jeder
 PR ist für sich grün — keiner braucht einen späteren, um zu bauen, zu linten
 oder seine Suite zu bestehen.
 
 | # | PR | Umfang | Verify | Prod |
 |---|---|---|---|---|
 | 0 | Entscheide gebucht, Plan berichtigt, Doktrin-Deltas vollzogen — der Stand dieses Docs | `docs/` | `/write-docs` | nein |
-| 1 | Wegwerf-Verify-Stack als ausführbares Rezept | `.claude/skills/` | `/verify-core` | nein — sein Zweck ist, dass nichts danach es ist |
-| 2 | SPA-Reparaturen: Overflow · Tab-Titel · erwartete 404 | `app/` | `/verify-frontend` | nein |
+| 1 | Wegwerf-Verify-Stack als ausführbares Rezept | `.claude/skills/` + `tests/test_seed_local_admin.py` (pinnt die Schutzregeln des Seed-Skripts) | `/verify-core` | nein — sein Zweck ist, dass nichts danach es ist |
+| 2 | SPA-Reparaturen: Overflow · Tab-Titel · erwartete 404 — trägt als erste ausgelieferte Stufe den Statuswechsel `offen` → `teil-umgesetzt` (Kopfzeile dieses Docs + Status-Zelle in `docs/index.md`, sonst nichts an diesem Doc) | `app/` + zwei Doku-Zeilen | `/verify-frontend` | nein |
 | 3 | Korb-Drawer: Filter, Gruppierung bleibt nach Status | `app/` | `/verify-frontend` | nein |
 | 4 | Rohzahlen-Chip je Kasten | `app/` | `/verify-frontend` | nein |
 | 5 | Wort-Detail zeigt die Probe auch ohne `word_instance` | `app/` + `tests/` | `/verify-frontend` + `/verify-core` | nein — öffnet aber einen Schreibweg |
 | 6 | authored-Regel für Streifen-Pfade: 409 + Tool-Merge | `core/` · `api/` · `tools/` · `tests/` | `/verify-core` + `/verify-api` | nein |
-| 7 | Apply-Guard mit Eigner-Regel — wirkungslos, solange keine Quelle eine Platten-Hand registriert (`sources.hand_id` ist im Seed NULL, keine Migration setzt es) | `api/` + `app/` + `tests/` | `/verify-api` + `/verify-core` | nein |
-| — | `UPDATE sources.hand_id` (V1) — Daten, kein DDL: die Spalte gibt es seit Migration `0004` | geteilte Cloud SQL, kein PR | — | **JA** — nach PR 7, Snapshot davor, Rückfrage in der Sitzung mit exaktem Statement |
+| 7 | Apply-Guard mit Eigner-Regel (V22) — die Stempel-Klausel schützt gestempelte Zeilen sofort; die Eignerschaft der UNGESTEMPELTEN Zeilen entsteht erst, wenn eine Tafel-Quelle eine Platten-Hand registriert (`sources.hand_id` ist im Seed NULL, keine Migration setzt es). Auf den heutigen Daten ändert er nichts, weil es keine Zweithand gibt | `api/` + `app/` + `tests/` | `/verify-api` + `/verify-core` | nein |
+| — | `UPDATE sources.hand_id` (V1) — registriert die Platten-Hand an ihrer Tafel-Quelle und fügt dem Guard damit die erste Klausel hinzu; Daten, kein DDL: die Spalte gibt es seit Migration `0004` | geteilte Cloud SQL, kein PR | — | **JA** — nach PR 7, Snapshot davor, Rückfrage in der Sitzung mit exaktem Statement |
 | 8 | `mono`-Token und Ebenen-/Rollen-Tokens (der `mono`-Teil lässt sich vorab abspalten) | `app/` + `design-system.md` | `/verify-frontend` | nein |
-| N | Status-Nachzug: `offen` → `teil-umgesetzt` im Kopf dieses Docs und in der Status-Zelle von `docs/index.md` — geöffnet, sobald der ERSTE der PRs 2–8 gemergt ist, nicht erst am Ende der Welle | `docs/` | `/write-docs` | nein |
 
-**Reihenfolge:** 0 → 1 → 2 → {3, 4, 6, 7} → 5 → Prod-Schritt → 8; N
-unmittelbar nach dem ersten gemergten der PRs 2–8. PR 1
+**Reihenfolge:** 0 → 1 → 2 → {3, 4, 6, 7} → 5 → Prod-Schritt → 8. PR 1
 zuerst, weil jeder Fluss, der SCHREIBT, gegen den Wegwerf-Stack gefahren
 wird und nie gegen die geteilte DB (V17) — dafür muss das Rezept im Skill
 stehen. PR 8 zuletzt: er färbt als einziger bestehende Flächen um und träfe
-sich sonst mit 2, 4 und 5 in denselben Dateien. Der Prod-Schritt schaltet
-den Guard aus PR 7 scharf; und er berührt PR 5: der Wort-Editor speichert
+sich sonst mit 2, 4 und 5 in denselben Dateien. Der Prod-Schritt gibt dem
+Guard aus PR 7 seine erste Klausel (die Platten-Hand als Eignerin der
+ungestempelten Zeilen — die Stempel-Klausel wirkt schon vorher); und er
+berührt PR 5: der Wort-Editor speichert
 nur mit aufgelöster Hand und fällt ohne Hand an der Zeile auf
 `sources.hand_id` zurück, das im Seed NULL ist — leitet PR 5 die Hand nicht
 anders her, macht erst der Prod-Schritt seinen Editor-Einstieg
@@ -2656,23 +2677,18 @@ speicherfähig.
 
 **Regeln der Welle.**
 
-- **Dieses Doc fassen nur Doku-PRs an.** Kein Code-PR hakt hier eine Zeile
-  ab oder dreht den Status: parallele PRs träfen sich sonst alle an einer
-  Datei — dieselbe Form wie der `CHANGELOG.md`-Konflikt, aus dem
-  `changelog.d/` entstand. **Das weicht von einer bindenden Regel ab und
-  ist darum dem Autor vorgelegt, nicht von der KI entschieden** (§12.4: was
-  eine Regel bewegt, ist kein Kleinkram): `/write-docs`, Statusregel 1
-  verlangt den Wechsel `offen` → `teil-umgesetzt` „im selben PR wie der
-  Code". In DIESER Welle — und nur in ihr; die Regel selbst bleibt, wie sie
-  ist — trägt ihn Zeile N der Tabelle: ein Doku-Nachzug, geöffnet, sobald
-  der erste PR gemergt ist, der eine Zeile aus §5.2 ausliefert (PR 2–8; der
-  Verify-Stack aus PR 1 ist Werkzeug, keine Stufe des Plans). Bis dahin
-  liest das Doc `offen`, obwohl eine Reparatur schon ausgeliefert ist —
-  genau das Fenster, das die Regel schließen will. Es ist der Preis der
-  konfliktfreien Welle und soll Stunden dauern, nicht Tage. Lehnt der Autor
-  die Abweichung ab, gilt die Regel wörtlich: der erste gemergte Code-PR
-  trägt den Wechsel selbst — nur Kopfzeile und Index-Zelle, sonst nichts an
-  diesem Doc —, wie es die Erkundung für PR 2 vorsah.
+- **Dieses Doc fassen nur Doku-PRs an — mit EINER Ausnahme, dem
+  Statuswechsel.** Kein Code-PR hakt hier eine Zeile ab: PRs, die
+  nebeneinander offen sind, träfen sich sonst alle an einer Datei — dieselbe
+  Form wie der `CHANGELOG.md`-Konflikt, aus dem `changelog.d/` entstand. Die
+  Statusregel 1 aus `/write-docs` gilt dabei wörtlich: den Wechsel `offen` →
+  `teil-umgesetzt` trägt „im selben PR wie der Code" der erste gemergte PR,
+  der eine Zeile aus §5.2 ausliefert — nach der Merge-Reihenfolge PR 2 (der
+  Verify-Stack aus PR 1 ist Werkzeug, keine Stufe des Plans) —, und zwar nur
+  Kopfzeile und Index-Zelle, sonst nichts an diesem Doc. Das geht ohne
+  Konflikt, weil die PRs der Reihe nach gemergt werden und jeder folgende
+  vor seinem Merge den neuen `main` aufnimmt. Würde ein anderer PR zuerst
+  gemergt, wandert der Wechsel mit ihm.
 - **Ein PR, der einen Begriff des Glossar-Blocks „Admin-Redesign (geplant)"
   ausliefert, DREHT dessen Eintrag** (streicht „geplant", zeigt *Technisch:*
   auf das echte Modul, zieht den Schnellindex nach), statt einen zweiten
@@ -2715,9 +2731,12 @@ in dieser Reihenfolge — jeder ist die Voraussetzung des nächsten:
 4. **Ernte** `tools/eigenhand/ernte.py` — davor der Exporter-Filter mit Test
    (`kind='eigenhand'` nie in einer Fixture-Wurzel). Sie liest `pfade`,
    authored vor tintenpfad, und schreibt nur `instances`/`pair_instances`
-   über die Admin-Batch-PUTs; `word_instances` bleibt Platte (Q21 a).
-5. **Aggregate:** `rebuild` für `mn-suetterlin` (legt die `hands`-Zeile an),
-   dann der Gate-Status.
+   über die Admin-Batch-PUTs; `word_instances` bleibt Platte (Q21 a). Der
+   erste Batch-PUT legt die `hands`-Zeile für `mn-suetterlin` an
+   (`_upsert_hand`, get-or-create).
+5. **Aggregate:** `rebuild` für `mn-suetterlin` — erst nach der Ernte, denn
+   die Route löst `require_hand` auf und kennt vorher keine solche Hand (404)
+   —, dann der Gate-Status.
 6. **Laufform je Hand:** der Apply der Eigenhand in IHR Band, Snapshot davor;
    der Apply-Guard aus Phase 0 schützt die Platten-Zeilen.
 7. **Hand-Vorschau** `GET /hands/{hand_id}/write/word` — reserviert, `private,

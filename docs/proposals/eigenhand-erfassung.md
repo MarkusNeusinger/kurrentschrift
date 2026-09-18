@@ -29,7 +29,8 @@
 > Bau: §7.3 eine vorregistrierte Kalibrierung je Hand für die
 > Tintentreue-Schwellen; §7.5/§8.1 ein von Hand nachgefahrener Pfad ist
 > archivierte Wahrheit UND Trainingsmenge, der Folger ersetzt ihn nie; §9
-> berichtigt — die Ernte schreibt nie `word_instances`, und die
+> berichtigt — die EIGENHAND-Ernte (Phase 5) schreibt nie `word_instances`
+> (die Platten-Ernte tut es weiter, das ist ihr Referenzsatz), und die
 > Quellen-Frage ist entschieden (`sources.kind='eigenhand'`).
 
 ## 1 Anlass
