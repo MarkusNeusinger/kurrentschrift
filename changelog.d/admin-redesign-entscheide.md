@@ -17,7 +17,11 @@
   its reason. Two decisions go against the panel's recommendation and the
   text follows them: a tested write flow MAY be rebuilt when its suites move
   in the same PR (Q6 b), and the English UI labels stay (Q8 without c).
-  Nothing is built with this PR; the status stays `offen`.
+  Nothing is built with this PR; the status stays `offen`. §15.2 names who
+  flips it: in the parallel Phase 0 wave a docs follow-up (row N) rather
+  than the first code PR — a declared deviation from the same-PR lifecycle
+  rule, scoped to this wave and put to the author, with the literal rule as
+  the fallback.
 - **The declared doctrine deltas are executed in their owning docs, each as
   a dated update.** `optimierungs-werkbank.md` §6: exactly one hand as the
   subject, a second hand only collapsed, labelled and never averaged in

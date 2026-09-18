@@ -2596,8 +2596,9 @@ wer eine davon wieder aufmacht, braucht einen neuen Entscheid.
 3. Erst dann: Umsetzungs-PRs, jede mit ihrem Verify-Skill und — wo Geometrie
    berührt wird — dem Archiv-Snapshot davor. Mit der ersten ausgelieferten
    Stufe wechselt der Status auf `teil-umgesetzt`, im selben PR wie der Code
-   — in der parallelen Phase-0-Welle trägt den Wechsel ein Doku-PR (§15.2).
-   **Das ist der nächste Schritt;** daneben, als nächstes DOC, das Proposal
+   — in der Phase-0-Welle trägt den Wechsel abweichend der Doku-Nachzug aus
+   §15.2 (Zeile N): eine erklärte, auf DIESE Welle begrenzte Abweichung, dem
+   Autor vorgelegt. **Das ist der nächste Schritt;** daneben, als nächstes DOC, das Proposal
    der Freigabe-Maschine (§15.3).
 
 ## 15 Umsetzung der gewählten Form (Stand 2026-09-18)
@@ -2622,10 +2623,10 @@ ist nichts. Die Aufwände sind die Vermutungen aus §6.7, keine Messungen.
 ### 15.2 Phase 0 — der PR-Schnitt
 
 Die Liste aus §5.2 schneidet sich nach der Erkundung vom 2026-09-18 in neun
-PRs und EINEN Prod-Datenschritt, den der Autor vor der Ausführung einzeln
-bestätigt. Jeder PR ist für sich grün —
-keiner braucht einen späteren, um zu bauen, zu linten oder seine Suite zu
-bestehen.
+PRs (0–8), EINEN Doku-Nachzug für den Status (N) und EINEN
+Prod-Datenschritt, den der Autor vor der Ausführung einzeln bestätigt. Jeder
+PR ist für sich grün — keiner braucht einen späteren, um zu bauen, zu linten
+oder seine Suite zu bestehen.
 
 | # | PR | Umfang | Verify | Prod |
 |---|---|---|---|---|
@@ -2639,8 +2640,10 @@ bestehen.
 | 7 | Apply-Guard mit Eigner-Regel — wirkungslos, solange keine Quelle eine Platten-Hand registriert (`sources.hand_id` ist im Seed NULL, keine Migration setzt es) | `api/` + `app/` + `tests/` | `/verify-api` + `/verify-core` | nein |
 | — | `UPDATE sources.hand_id` (V1) — Daten, kein DDL: die Spalte gibt es seit Migration `0004` | geteilte Cloud SQL, kein PR | — | **JA** — nach PR 7, Snapshot davor, Rückfrage in der Sitzung mit exaktem Statement |
 | 8 | `mono`-Token und Ebenen-/Rollen-Tokens (der `mono`-Teil lässt sich vorab abspalten) | `app/` + `design-system.md` | `/verify-frontend` | nein |
+| N | Status-Nachzug: `offen` → `teil-umgesetzt` im Kopf dieses Docs und in der Status-Zelle von `docs/index.md` — geöffnet, sobald der ERSTE der PRs 2–8 gemergt ist, nicht erst am Ende der Welle | `docs/` | `/write-docs` | nein |
 
-**Reihenfolge:** 0 → 1 → 2 → {3, 4, 6, 7} → 5 → Prod-Schritt → 8. PR 1
+**Reihenfolge:** 0 → 1 → 2 → {3, 4, 6, 7} → 5 → Prod-Schritt → 8; N
+unmittelbar nach dem ersten gemergten der PRs 2–8. PR 1
 zuerst, weil jeder Fluss, der SCHREIBT, gegen den Wegwerf-Stack gefahren
 wird und nie gegen die geteilte DB (V17) — dafür muss das Rezept im Skill
 stehen. PR 8 zuletzt: er färbt als einziger bestehende Flächen um und träfe
@@ -2656,12 +2659,20 @@ speicherfähig.
 - **Dieses Doc fassen nur Doku-PRs an.** Kein Code-PR hakt hier eine Zeile
   ab oder dreht den Status: parallele PRs träfen sich sonst alle an einer
   Datei — dieselbe Form wie der `CHANGELOG.md`-Konflikt, aus dem
-  `changelog.d/` entstand. **Folge für den Lifecycle, ausdrücklich erklärt:**
-  der Wechsel `offen` → `teil-umgesetzt` (Kopf hier und Status-Zelle in
-  `docs/index.md`) kommt in einem Doku-Nachzieh-PR, sobald der erste Code-PR
-  der Welle ausgeliefert ist — eine auf parallele Wellen begrenzte Abweichung
-  von der Regel „im selben PR wie der Code" (`/write-docs`, Statusregel 1).
-  Außerhalb einer solchen Welle gilt die Regel unverändert.
+  `changelog.d/` entstand. **Das weicht von einer bindenden Regel ab und
+  ist darum dem Autor vorgelegt, nicht von der KI entschieden** (§12.4: was
+  eine Regel bewegt, ist kein Kleinkram): `/write-docs`, Statusregel 1
+  verlangt den Wechsel `offen` → `teil-umgesetzt` „im selben PR wie der
+  Code". In DIESER Welle — und nur in ihr; die Regel selbst bleibt, wie sie
+  ist — trägt ihn Zeile N der Tabelle: ein Doku-Nachzug, geöffnet, sobald
+  der erste PR gemergt ist, der eine Zeile aus §5.2 ausliefert (PR 2–8; der
+  Verify-Stack aus PR 1 ist Werkzeug, keine Stufe des Plans). Bis dahin
+  liest das Doc `offen`, obwohl eine Reparatur schon ausgeliefert ist —
+  genau das Fenster, das die Regel schließen will. Es ist der Preis der
+  konfliktfreien Welle und soll Stunden dauern, nicht Tage. Lehnt der Autor
+  die Abweichung ab, gilt die Regel wörtlich: der erste gemergte Code-PR
+  trägt den Wechsel selbst — nur Kopfzeile und Index-Zelle, sonst nichts an
+  diesem Doc —, wie es die Erkundung für PR 2 vorsah.
 - **Ein PR, der einen Begriff des Glossar-Blocks „Admin-Redesign (geplant)"
   ausliefert, DREHT dessen Eintrag** (streicht „geplant", zeigt *Technisch:*
   auf das echte Modul, zieht den Schnellindex nach), statt einen zweiten
