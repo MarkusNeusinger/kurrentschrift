@@ -265,7 +265,10 @@ Schicht-1-Statistik (Migration `0021`) — und `pair_aggregates` je
 `(hand_id, left_key, right_key)` — Median-Offset, bogenlängen-nachgesampelter
 Median-Connector, MAD-Hüllen, gepoolte Dissektions-QC (Migration `0023`). Die
 Endpunkte sind vollständig admin-gesichert:
-`GET/POST /hands/{hand_id}/aggregates[/rebuild]` (`min_n` 4) und
+`GET/POST /hands/{hand_id}/aggregates[/rebuild]` (`min_n` 1 seit Issue #273
+— einen Median zu SEHEN ist Messung, die Vorsicht sitzt einen Schritt
+weiter am Apply-Boden; die 4 ist nur noch der Core-Default von
+`aggregate_instances`, den keine Route benutzt) und
 `GET/POST /hands/{hand_id}/pair-aggregates[/rebuild]` (`min_n` 1, weil Paare
 dünn belegt sind). Ein Rebuild ändert **nichts** am Rendering. Der Prüfstein
 `laufform_dev_xh` meldet je Glyphe den Abstand zwischen rekonstruiertem Median

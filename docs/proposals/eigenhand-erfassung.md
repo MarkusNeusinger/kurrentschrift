@@ -1,6 +1,6 @@
 # Eigenhand-Erfassung: Wortvorrat, Streifen, Bögen
 
-> **Status (2026-09-12): teil-umgesetzt.** Seit dem Autor-Entscheid vom
+> **Status (2026-09-18): teil-umgesetzt.** Seit dem Autor-Entscheid vom
 > 2026-09-07 ist der Bestand nicht mehr nur Datenquelle: die Eigenhand
 > **wird die ausgelieferte Schreibhand der Seite**, sobald sie Alphabet und
 > Übergänge deckt (§2; die bindende Rollenteilung Tafel · Platte ·
@@ -23,7 +23,14 @@
 > `B0001` ist gedruckt, geschrieben und eingelesen** (2026-09-07: drei
 > Fassungen mit Befund und Fleckenmaske §7.4 in der DB, erster
 > Archiv-Snapshot). Zukunft ist Phase 5 (§9: Anschluss an Fit/Ernte) sowie
-> die Kalibrier-Schleife der Kastenbreiten (§5).
+> die Kalibrier-Schleife der Kastenbreiten (§5). **Am 2026-09-18 als
+> erklärte Updates nachgezogen** (Autor-Entscheide zum
+> [Admin-Redesign](admin-redesign.md), dort §4.5/§10.2) — Doktrin, noch kein
+> Bau: §7.3 eine vorregistrierte Kalibrierung je Hand für die
+> Tintentreue-Schwellen; §7.5/§8.1 ein von Hand nachgefahrener Pfad ist
+> archivierte Wahrheit UND Trainingsmenge, der Folger ersetzt ihn nie; §9
+> berichtigt — die Ernte schreibt nie `word_instances`, und die
+> Quellen-Frage ist entschieden (`sources.kind='eigenhand'`).
 
 ## 1 Anlass
 
@@ -957,6 +964,24 @@ mittlerer Schwärzung 0,45 — genau der Schwellwert, an dem der Import
 seine QC-Flagge setzt, und er landet in der Zusammenfassung exakt auf dem
 Faktor 1/e.
 
+**Erklärtes Update 2026-09-18 — eine Kalibrierung je Hand** (Autor-Entscheid
+Q10 b in [`admin-redesign.md`](admin-redesign.md) §12.2). Der Satz „keine an
+den Streifen des Autors angepasst" gilt für die Befund-Schwellen dieses
+Abschnitts unverändert. Für die geplante **Tintentreue** — die Ampel „folgt
+der Pfad der Tinte?" je Wortkasten (admin-redesign.md §6.3) — gilt er nicht
+mehr absolut: ihre Schwellen starten mit den Platten- und dev-19-Werten
+unter dem Etikett „vorläufig" und werden dann in EINEM vorregistrierten
+Verfahren an dieser Hand kalibriert — 30 Kästen blind beurteilt nach dem
+humanbench-Muster ([`../reference/menschliche-bewertung.md`](../reference/menschliche-bewertung.md)),
+die Schwellen einmal justiert, datiert eingefroren, mit §14-Eintrag im
+Messjournal vor der ersten Zahl; Konstanten je Hand mit Datum, für jede
+weitere Hand neu vorzuregistrieren. Der Grund: die Startwerte sind an der
+Platte bei 30–35 px x-Höhe kalibriert, die Streifen liegen bei 300 dpi —
+uneingestellt wäre die Nachfahr-Liste leer oder endlos. Was bleibt, wie es
+ist: nie ein Regler in der Oberfläche, Schwellen sind Mess-Provenienz; und
+die Kalibriermenge zählt Fassungen, nicht Wochen, weil der Schreibtakt
+schwankt.
+
 **Gemessen wird gespeichert, beurteilt wird abgeleitet.** In der
 `meta.json`, in der Kartei und in der DB (`eigenhand_fassungen.befund`,
 Migration `0029`) liegen NUR die Zahlen. Vorschlag, Grund, Güte und der
@@ -1205,7 +1230,40 @@ Kacheln 24 Pfadabfragen. Die Antwort ist `private, no-store` und
 admin-gesichert wie das Bild: ein Pfad ist aus reservierten Pixeln
 ABGELEITET und bleibt hinter derselben Tür.
 
-**Wiederherstellung: der Pfad ist ableitbar** (Entscheidung dieser Runde).
+**Ein NACHGEFAHRENER Pfad ist Wahrheit, keine Ableitung** (erklärtes Update
+2026-09-18; Autor-Entscheid Q4 a mit Unterpunkt (i) in
+[`admin-redesign.md`](admin-redesign.md) §12.1). Alles in diesem Abschnitt
+beschreibt den GEFOLGTEN Pfad (`verfahren: tintenpfad`). Fährt der Autor
+einen Kasten im Wort-Editor von Hand nach (`verfahren: authored` — geplant
+als Phase 2 des Admin-Redesigns, heute schreibt das noch keine Fläche),
+gelten vier Sätze. Er ist **nicht ableitbar** — kein Werkzeug stellt eine
+Stifthand wieder her — und wird darum **wie Bild, Verdikt und Maske
+archiviert** (`pull --pfade → snapshot → sync --from`, §8.1; heute trägt
+keines der drei Werkzeuge `pfade`, die Kette wird VOR dem ersten
+nachgefahrenen Kasten gebaut). **Der Folger ersetzt ihn nie;**
+überschrieben wird er nur mit einem ausdrücklichen Terminal-Flag, nie aus
+der Oberfläche (`force` bleibt bei drei Flächen,
+[`optimierungs-werkbank.md`](optimierungs-werkbank.md) §6). **Die Ernte
+liest ihn vor `tintenpfad`** (Phase 5, §9). Und er bleibt in
+`eigenhand_strips.pfade` — der Verwurf „in `word_instances` schreiben" unten
+gilt unverändert. Dasselbe gilt für von Hand KORRIGIERTE Buchstabengrenzen
+(Q15): das Werkzeug setzt die `letter_spans` automatisch, eine Korrektur des
+Autors trägt ihre eigene Herkunft, wird vom Werkzeug nie ersetzt und wird
+mitarchiviert.
+
+**Und er ist Trainingsmenge.** Der Autor am 2026-09-18, wörtlich: „die hand
+nachgefahrenen linien dienen auch als trainingsmenge um den folger
+nachhaltig immer besser zu machen". Nachgefahrene Bahnen — und korrigierte
+Buchstabengrenzen — sind also ZWEITENS das Material, an dem der Folger und
+der Span-Zuordner besser werden: als lokaler, gitignorter Export unter
+`tools/`, nie als Repo-Inhalt. Das ist Prüfstein 2 (§12), nicht seine
+Ausnahme: die dev-19-Kopfzahl liest diese Menge NIE, und gemessen wird auf
+ihr nur mit einer separat eingefrorenen, vorregistrierten Rückhaltemenge —
+Eintrag im Messjournal §14 vor der ersten Zahl.
+
+**Wiederherstellung: der GEFOLGTE Pfad ist ableitbar** (Entscheidung der
+Runde vom 2026-09-12; seit dem 2026-09-18 auf gefolgte Pfade begrenzt —
+siehe die beiden Absätze davor).
 Weder `snapshot.py` noch `sync --from` tragen ihn, und die Prüfung aus §8.1
 verlangt ihn nicht — Streifen, Layout und Werkzeug sind da, also lässt er
 sich jederzeit neu folgen, und ein Archivfeld für eine reproduzierbare
@@ -1270,6 +1328,19 @@ Die Arbeitsteilung dafür ist eindeutig:
   hier nicht die Quelle, sondern die PRÜFUNG: an ihm sieht man, ob DB und
   Archiv auseinandergelaufen sind, bevor der Tag kommt, an dem es zählt.
 
+**Erklärtes Update 2026-09-18 — nachgefahrene Pfade gehören ins Archiv**
+(Autor-Entscheid Q4 a, [`admin-redesign.md`](admin-redesign.md) §12.1; die
+Regel steht in §7.5). Im Archiv liegt, was sich nicht ableiten lässt: Bild,
+Verdikt, Maske. Seit diesem Entscheid zählt dazu auch jeder von Hand
+nachgefahrene Streifen-Pfad (`verfahren: authored`) samt von Hand
+korrigierten Buchstabengrenzen; der GEFOLGTE Pfad bleibt draußen, er ist
+reproduzierbar. **Noch nicht gebaut:** die Kette `pull --pfade → snapshot →
+sync --from` mit Formatversion, und die Prüfung dieses Abschnitts verlangt
+einen authored-Pfad noch nicht. Beides entsteht mit Phase 2 des
+Admin-Redesigns, VOR dem ersten nachgefahrenen Kasten. Bis dahin ist die
+Zusage „Repo + Archiv genügen" für authored-Pfade nicht eingelöst — es gibt
+allerdings auch noch keinen.
+
 Das Rezept — dasselbe `sync`, nur mit anderer Quelle, damit der
 Wiederherstellungsweg keine zweite, ungeprüfte Implementierung ist:
 
@@ -1322,12 +1393,24 @@ die Stil-Tafel (Stufenplan §5), die Streifen liefern Wort-Vorkommen.
 Der spätere Weg ist der bestehende: Fits gegen die Stil-Templates,
 automatischer Tintenfolger zuerst (`traced`), manuelles Nachfahren im
 Wort-Editor, wo er nicht reicht (`authored`, nie überschrieben) →
-`instances`/`word_instances` über die Admin-API → `hands`-Zeile
-`mn-suetterlin` → Aggregate → „meine Version“. **Offene Frage, hier nur
-benannt:** `sources.chart_path` ist repo-relativ — gitignorte Streifen
-kann die deployte API nie ausliefern; die Ernte-Integration braucht
-dafür eine eigene Entscheidung (lokale Quelle, private Ablage oder
-Selektiv-Commit einzelner Referenz-Streifen). Ebenfalls Phase 5:
+`instances`/`pair_instances` über die Admin-API → `hands`-Zeile
+`mn-suetterlin` → Aggregate → „meine Version“. **Berichtigt am 2026-09-18**
+(Autor-Entscheid Q21 a, [`admin-redesign.md`](admin-redesign.md) §12.3): bis
+dahin stand hier „`instances`/`word_instances`" — im Widerspruch zu §7.5, das
+den Streifen-Pfad in `word_instances` verwirft. Es gilt §7.5: die Ernte
+LIEST die Bahnen aus `eigenhand_strips.pfade`, `authored` vor `tintenpfad`,
+und schreibt nur `instances` und `pair_instances`; `word_instances` bleibt
+der eingefrorene Referenzsatz der Platte. **Die offene Frage dieses
+Abschnitts ist seit demselben Tag entschieden** (Q20 a): `sources.chart_path`
+ist repo-relativ — gitignorte Streifen kann die deployte API nie
+ausliefern —, darum bekommt die Ernte eine eigene Quelle
+`sources.kind='eigenhand'`, ausdrücklich KEINE Tafel (kein Chart, keine
+Templates, nie in der Vorlagen-Auswahl), gebaut mit einer echten Art-Spalte
+samt CHECK statt eines Schein-Pfads, wo machbar; die Streifen bleiben, wo
+sie sind (`eigenhand_strips`), und der Satz oben — die eigene Hand braucht
+kein eigenes Chart — gilt weiter. Lokale Quelle, private Ablage und
+Selektiv-Commit sind damit nicht gewählt. Gebaut ist davon nichts; die
+Reihenfolge steht in admin-redesign.md §15.3. Ebenfalls Phase 5:
 Offenbacher/Kurrent sind reine Preset-Konfiguration, aber
 Kurrent-Schwellzug-Haarlinien brauchen ≥600 DPI und die
 Zwei-Kanal-Behandlung; optional ein maschinenlesbarer Bogen-Code, falls
@@ -1444,8 +1527,10 @@ drei Fehler waren im synthetischen Rauchtest unsichtbar, weil dieser weder
 
 ## 13 Offene Fragen
 
-- Ausliefer-/Ablageweg der Streifen für die Ernte-Integration
-  (chart_path-Frage, §9) — Entscheidung vor Phase 5.
+- ~~Ausliefer-/Ablageweg der Streifen für die Ernte-Integration
+  (chart_path-Frage, §9) — Entscheidung vor Phase 5.~~ Entschieden am
+  2026-09-18 (Q20 a): eine eigene Quelle `sources.kind='eigenhand'`, keine
+  Tafel — §9.
 - Englisch in Sütterlin ist ahistorisch (Fremdwörter schrieb man
   lateinisch); für das Zeitungs-Ziel bewusst in Kauf genommen,
   `lang: en` bleibt filterbar, falls die Hand es später trennen soll.
