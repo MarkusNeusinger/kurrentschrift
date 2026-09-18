@@ -1,11 +1,15 @@
 # Optimierungs-Werkbank 2026-07-31 — eine Admin-Fläche, Stufen-Doktrin, Auftragskorb
 
-> **Status (2026-09-07): bindend.** W1–W6 sind umgesetzt
+> **Status (2026-09-18): bindend.** W1–W6 sind umgesetzt
 > (PR #252 · #255 · #261 · #264 · #266); §3–§5 **und §6** sind bindende
 > Doktrin, §3–§5 werden seit W4 von der API erzwungen
 > (`check_transition`) — deshalb „bindend" und nicht
 > „umgesetzt-historisch": dieses Doc bleibt Pflichtlektüre vor jeder
-> Korb-Arbeit (`/work-basket`). Jüngste Zusätze: die **Landmarken-Linse**
+> Korb-Arbeit (`/work-basket`). Jüngster Zusatz, 2026-09-18: die
+> §6-Leitplanke „genau eine Quelle/Hand" heißt nach dem Autor-Entscheid Q3 (a)
+> des Admin-Redesigns „genau eine Hand als Subjekt; eine zweite Hand nur
+> eingeklappt, beschriftet, nie verrechnet" — eine Doktrin-Änderung, noch
+> kein Bau. Davor: die **Landmarken-Linse**
 > in §8 (Autor-Wunsch 2026-09-07) — die generierte Struktur-Ebene wird auf
 > der geschriebenen Form sichtbar und bekommt mit `kind = "landmark"` eine
 > fünfte Korb-Ebene und mit `landmark_detector` eine achte Stufe im
@@ -250,8 +254,18 @@ vom Symptom zur Änderung und zurück.
 - Manuelle Beiträge (`authored`-Traces, Overrides) gehen **nie** in die
   eingefrorenen Metrik-Referenzen ein — die Messlatte bleibt die Platte
   (qualitaetsmetrik.md).
-- Statistik bleibt je Hand (quellen-und-rechte.md §7); die Werkbank
-  zeigt immer genau eine Quelle/Hand.
+- Statistik bleibt je Hand (quellen-und-rechte.md §7); die Werkbank zeigt
+  **genau eine Hand als Subjekt — eine zweite Hand nur eingeklappt,
+  beschriftet, nie verrechnet** (erklärtes Update, Autor-Entscheid
+  2026-09-18: Q3 a in [`admin-redesign.md`](admin-redesign.md) §12.1). Bis
+  zu diesem Tag stand
+  hier „die Werkbank zeigt immer genau eine Quelle/Hand"; bewegt hat den
+  Satz der Wunsch, historische und eigene Wörter NEBENEINANDER zu sehen —
+  die Eigenhand als Rollen-Spalte auf einer Vorlagen-Fläche. Was unverändert
+  gilt und jetzt ausdrücklich dasteht: jede Zahl trägt den Namen ihrer Hand;
+  Differenzzahlen gibt es nur INNERHALB einer Hand (Median ↔ eigene
+  Laufform), zwischen Händen nur Bilder mit beiden Etiketten; zwei Hände
+  sind ein Nebeneinander, nie eine Summe und nie ein Mittel.
 - Die Werkbank ersetzt die Alt-Seiten erst, wenn ihre Funktion dort
   vollständig angekommen ist — bis dahin koexistieren sie.
 - **Eine Laufform-Zeile wird nur über das Zeilen-Gate aufgenommen**
@@ -331,7 +345,8 @@ vom Symptom zur Änderung und zurück.
   Registrierung), daneben die Dissektions-QC mit `gen_chamfer` als
   Audit-Zahl, Ernte-Abstand, Fit-Rest, Ink-Lücken-Anteil und
   Herkunfts-Histogramm. Die Hand wird aus den geladenen Vorkommen
-  abgeleitet (häufigste `hand_id`, §6 „genau eine Quelle/Hand"), nie
+  abgeleitet (häufigste `hand_id`, §6 „genau eine Hand als Subjekt" —
+  bis 2026-09-18 „genau eine Quelle/Hand"), nie
   fest verdrahtet — und in jedem Block **benannt**, samt ruhiger
   Warnzeile, sobald die geladenen Vorkommen mehr als eine Hand nennen
   (die Abb.-22-Schülerhand kommt irgendwann unter eigener id dazu;
