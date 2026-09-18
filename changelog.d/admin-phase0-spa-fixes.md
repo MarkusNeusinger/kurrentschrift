@@ -20,4 +20,8 @@
   treating the 404 as „none yet" — the normal answer for nearly every pair
   and for a hand before its first session, and a red console line every time.
   Both now pick their row out of the list route the server already offers,
-  which costs no extra request and answers 200.
+  which costs no extra request and answers 200. Picking from a list made the
+  pair variant part of the identity everywhere it was not: the Übergänge
+  matrix keyed its badges without it, and because the list arrives ordered by
+  variant, a second variant of a pair would have badged the cell whose editor
+  opens — and whose geometry the composer renders — from variant 0.

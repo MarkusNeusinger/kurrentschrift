@@ -23,6 +23,7 @@ import type { GlyphPairOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { garamond } from '@/styles/paper';
 import { pairKeysOf } from '@/sections/admin/pairs/pairKeys';
+import { pairCellKey, pairRowsByKeys } from '@/sections/admin/pairs/pairRow';
 
 const CELL_H = 88; // px — big enough to judge a join, small enough for a grid
 
@@ -96,7 +97,7 @@ function CellGrid({
             key={p}
             text={p}
             sourceId={sourceId}
-            row={keys ? rowsByKeys.get(`${keys[0]}|${keys[1]}`) : undefined}
+            row={keys ? rowsByKeys.get(pairCellKey(keys[0], keys[1])) : undefined}
             onEdit={keys ? () => onEdit(p, keys[0], keys[1]) : undefined}
           />
         );
@@ -137,7 +138,7 @@ export function PairMatrix({
   const [rowsByKeys, setRowsByKeys] = useState<Map<string, GlyphPairOut>>(new Map());
   const refreshPairs = useCallback(() => {
     getPairs(sourceId, { all: true }, { retries: 1 })
-      .then((rows) => setRowsByKeys(new Map(rows.map((r) => [`${r.left_key}|${r.right_key}`, r]))))
+      .then((rows) => setRowsByKeys(pairRowsByKeys(rows)))
       .catch(() => setRowsByKeys(new Map()));
   }, [sourceId]);
   useEffect(refreshPairs, [refreshPairs, refreshKey]);
