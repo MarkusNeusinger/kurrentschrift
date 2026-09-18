@@ -61,8 +61,8 @@ git diff --name-only origin/main...
 
 | Diff touches | Run |
 |---|---|
-| `app/` | `/verify-frontend` (click through the changed flow, console, both viewports) |
-| `api/` | `/verify-api` (endpoint sweep, admin gate) |
+| `app/` | `/verify-frontend` (click through the changed flow, console, the three viewports; a flow that WRITES runs against the throwaway stack, §1b) |
+| `api/` | `/verify-api` (endpoint sweep, admin gate; a write flow goes to the throwaway stack, `/verify-frontend` §1b) |
 | `core/`, `tests/` | `/verify-core` (pytest + direct-invocation smoke) |
 | `alembic/` | `/verify-migrations` (the shared DB must never meet an unverified revision — this runs BEFORE the push, not after) |
 | `docs/`, `CLAUDE.md` | `/write-docs` checklist (index, sync duties) |
@@ -71,7 +71,10 @@ git diff --name-only origin/main...
 
 A `/verify-*` gate only counts if the **diff's own flow** was driven —
 rendering a proxy or injecting state via the API is not verification
-(see the changed-path rule in `/verify-frontend` §2).
+(see the changed-path rule in `/verify-frontend` §2). Name in the PR
+body WHICH stack each flow ran on: a write flow driven against the
+throwaway Postgres says so, and a surface that was only built and
+type-checked is called that, never „verified in the browser".
 
 **Glossary gate:** if the change COINS a new Fachbegriff, metric, named
 failure mode or repo idiom — anything a reader will meet in the PR body,

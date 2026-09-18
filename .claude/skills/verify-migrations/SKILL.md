@@ -22,6 +22,16 @@ the throwaway URL exported **in the same Bash call**. A destructive
 migration against the shared DB once took prod down; this section is why the
 skill exists.
 
+Note that `load_dotenv()` walks UP the directory tree, so a nested git
+worktree with no `.env` of its own still finds the main checkout's. „No
+`.env` here" is not safety; the export is.
+
+The same exported-URL discipline now also serves the API and the SPA
+(`/verify-frontend` §1b, for admin WRITE flows in the browser) — so the
+cluster started in §1 can stay up for a whole round instead of being torn
+down and rebuilt per skill. Give it a `<tag>` of your own if other agents
+run in parallel.
+
 ## 1 · Start a throwaway Postgres
 
 **Preferred — the `pgserver` wheel (rootless, no Docker; verified end to end
