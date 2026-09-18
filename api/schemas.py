@@ -1560,6 +1560,12 @@ class EigenhandArchiveOut(BaseModel):
     regenerate them (eigenhand-erfassung.md §7.5). A restore therefore brings
     back every image, verdict and mask, and no path — which is what „re-run
     `tools.eigenhand.pfad`" is for.
+
+    One box breaks that reasoning and is not yet answered here: a path the
+    author drew BY HAND (`verfahren: "authored"`) is not a derivation, nothing
+    can follow it again, and the protection rule only keeps it from being
+    overwritten — it does not back it up. That is Q4's archive half
+    (eigenhand-erfassung.md §7.5, Phase 2).
     """
 
     hand: str

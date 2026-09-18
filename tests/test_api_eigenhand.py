@@ -1125,10 +1125,13 @@ class TestStreifenPfad:
         }
 
     @staticmethod
-    async def _put(api: Harness, pfade: list[dict], strip: str = "S0001", fassung: str = "F01", **body):
+    async def _put(
+        api: Harness, pfade: list[dict], strip: str = "S0001", fassung: str = "F01", params: dict | None = None, **body
+    ):
         return await api.client.request(
             "PUT",
             f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade",
+            params=params,
             json_body={"pfade": pfade, **body},
             headers=api.admin_headers(),
         )
@@ -1216,6 +1219,49 @@ class TestStreifenPfad:
         res = await self._put(api, [{**self._path(stored), **broken}])
         assert res.status == 422, res.body
         assert (await self._get(api)).json()["pfade"] is None
+
+    @pytest.mark.asyncio
+    async def test_a_hand_drawn_path_is_never_replaced_by_a_followed_one(self, api: Harness):
+        # The write is a FULL replacement, so a follower run can take a path
+        # the author drew himself away in two ways — by overwriting the box and
+        # by simply leaving it out. Both are refused WHOLE, before anything is
+        # committed: this answer has no per-box `skipped` channel, so a silent
+        # skip would leave the operator believing the run was stored.
+        stored = await _store_strip(api)
+        drawn = await self._put(api, [self._path(stored, verfahren="authored")])
+        assert drawn.status == 200, drawn.body
+
+        overwritten = await self._put(api, [self._path(stored)])
+        assert overwritten.status == 409, overwritten.body
+        assert (await self._get(api)).json()["pfade"][0]["verfahren"] == "authored"
+
+        omitted = await self._put(api, [self._path(stored, 1)])
+        assert omitted.status == 409, omitted.body
+        read = (await self._get(api)).json()["pfade"]
+        assert [(p["box_index"], p["verfahren"]) for p in read] == [(0, "authored")]
+
+    @pytest.mark.asyncio
+    async def test_the_query_flag_is_the_one_way_past_a_hand_drawn_path(self, api: Harness):
+        # An explicit act at the keyboard (`tools.eigenhand.pfad
+        # --replace-authored`), deliberately not a fourth `force` button in the
+        # workbench: no browser code sends this parameter.
+        stored = await _store_strip(api)
+        assert (await self._put(api, [self._path(stored, verfahren="authored")])).status == 200
+
+        given_up = await self._put(api, [self._path(stored)], params={"replace_authored": "true"})
+        assert given_up.status == 200, given_up.body
+        assert (await self._get(api)).json()["pfade"][0]["verfahren"] == "tintenpfad"
+
+    @pytest.mark.asyncio
+    async def test_the_author_may_correct_his_own_hand_drawn_path(self, api: Harness):
+        # What keeps a hand-drawing surface possible: the rule guards against a
+        # DERIVATION replacing ground truth, not against the author himself.
+        stored = await _store_strip(api)
+        assert (await self._put(api, [self._path(stored, verfahren="authored")])).status == 200
+
+        again = await self._put(api, [self._path(stored, verfahren="authored", erzeugt_am="2026-09-18")])
+        assert again.status == 200, again.body
+        assert (await self._get(api)).json()["pfade"][0]["erzeugt_am"] == "2026-09-18"
 
 
 class TestAdminGate:

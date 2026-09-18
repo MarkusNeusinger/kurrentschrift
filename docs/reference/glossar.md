@@ -912,7 +912,12 @@ der Regel-Fix geht immer vor. Migration `0018` (Redesign R3).
 Geometrie stammt: `harvested` (vom Ernte-Werkzeug aus einer Vorlage
 gezogen) · `authored` (vom Menschen von Hand gezeichnet/nachgefahren) ·
 `traced` (von der Engine automatisch nachgefahren). Wichtige Regel: eine
-`authored`-Zeile wird von einer neuen Ernte **nie** überschrieben.
+`authored`-Zeile wird von einer neuen Ernte **nie** überschrieben. Dasselbe
+Wort trägt seit 2026-09-18 dieselbe Regel beim **Streifen-Pfad**, nur eine
+Stufe schärfer: `word_instances` überspringt die Zeile und meldet sie
+(`skipped`), der Streifen-Pfad weist den ganzen Push ab (409), weil seine
+Antwort keinen solchen Kanal hat und der Schreibweg eine volle Ersetzung
+ist.
 
 **Specimen** — eine konkrete Wort- oder Paar-Probe auf einer Vorlage, mit
 der gemessen wird. Für Sütterlin: die 63 Wörter der Abb. 19, die 33
@@ -4175,8 +4180,20 @@ der Fassung (nur wo Tinte liegt, lässt sich folgen), ist wie das PNG
 verzögert geladen, und er wandert bewusst NICHT nach `word_instances`:
 das wäre eine Verdrängung im eingefrorenen Referenzsatz. Als Ableitung
 gilt er als wiederherstellbar — das Archiv trägt ihn nicht.
+**Eine von Hand gezeichnete Bahn ersetzt der Folger nie** (Autor-Entscheid
+Q4 (i), 2026-09-18): trägt ein gespeicherter Kasten `verfahren:
+"authored"`, weist der Server einen Push, der ihn überschreibt ODER
+weglässt, als Ganzes ab (409 — die Ersetzung ist voll, also nimmt auch das
+Weglassen die Zeichnung weg), das Werkzeug mischt von sich aus um solche
+Kästen herum, und der einzige Weg daran vorbei ist
+`?replace_authored=true` hinter dem Terminal-Flag `--replace-authored`.
+`authored` über `authored` geht durch — der Autor korrigiert sich selbst.
+Der Satz von der Ableitung oben gilt dabei nur für die GEFOLGTE Bahn: eine
+`authored`-Bahn lässt sich nicht neu folgen, ist also keine Ableitung und
+heute nirgends gesichert — die Archiv-Hälfte von Q4 ist offen (Phase 2).
 *Technisch:* `core/eigenhand/pfad.py` (`frame_for_box` · `check_paths` ·
-`PFAD_FORMAT`), `eigenhand_strips.pfade` (Migration `0031`),
+`is_authored` · `displaced_authored` · `AUTHORED` · `PFAD_FORMAT`),
+`eigenhand_strips.pfade` (Migration `0031`),
 `GET|PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade`,
 `tools/eigenhand/pfad.py`,
 `app/src/sections/admin/shell/PathOverlay.tsx`.

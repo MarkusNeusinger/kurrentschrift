@@ -54,6 +54,12 @@ from core.eigenhand.crop import px_per_mm, word_box_px
 
 PFAD_FORMAT = 1
 
+# The one `verfahren` the stored list treats as untouchable: a path the AUTHOR
+# drew by hand. The twin of `word_instances.provenance == "authored"` — a
+# follower run is a DERIVATION and never replaces ground truth
+# (docs/proposals/eigenhand-erfassung.md §7.5).
+AUTHORED = "authored"
+
 # The same bounds `WordInstanceItem` puts on a stored trace, for the same
 # reason: the strokes live in template units, so anything past this is a
 # coordinate mix-up rather than an unusual word.
@@ -366,3 +372,41 @@ def check_paths(
             }
         )
     return sorted(out, key=lambda item: item["box_index"])
+
+
+def is_authored(entry: Mapping[str, Any]) -> bool:
+    """Whether this stored path is the author's own hand rather than a follow.
+
+    One predicate rather than a comparison spelled at every call site, because
+    it is the seam a second provenance source will be READ at: PFAD_FORMAT 2 is
+    to carry the letter boundaries' own provenance, and boundaries corrected by
+    hand earn protection of their own (author decision Q15, 2026-09-18). That
+    protection is per SPAN, though, not per box — an ordinary path re-follow of
+    a span-corrected box must still pass — so `displaced_authored` will need a
+    per-field comparison then rather than this box-level answer. Nothing of
+    that is built here.
+    """
+    return entry.get("verfahren") == AUTHORED
+
+
+def displaced_authored(stored: Sequence[Mapping[str, Any]] | None, pushed: Sequence[Mapping[str, Any]]) -> list[int]:
+    """The boxes a push would take a hand-drawn path away from.
+
+    A box counts as displaced when its STORED path is the author's own and the
+    push either leaves the box out — the write is a full replacement, so an
+    omitted box is a deleted one — or answers it with a path made some other
+    way. Authored over authored passes: that is the author correcting his own
+    trace, and it is what keeps a hand-drawing surface possible at all.
+
+    Deliberately not part of `check_paths`: this compares against STORED state,
+    which makes it the router's 409 rather than the entry-level 422 — the same
+    split `format` already follows. Plain Python and no JSONB operator, because
+    the HTTP suites run on SQLite.
+    """
+    kept = {entry.get("box_index") for entry in pushed if is_authored(entry)}
+    displaced: set[int] = set()
+    for entry in stored or []:
+        index = entry.get("box_index")
+        if is_authored(entry) and index is not None and index not in kept:
+            displaced.add(index)
+    return sorted(displaced)

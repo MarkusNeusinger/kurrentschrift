@@ -1205,6 +1205,31 @@ Kacheln 24 Pfadabfragen. Die Antwort ist `private, no-store` und
 admin-gesichert wie das Bild: ein Pfad ist aus reservierten Pixeln
 ABGELEITET und bleibt hinter derselben Tür.
 
+**Die nachgefahrene Bahn ist die Wahrheit** (Autor-Entscheid Q4 mit
+Unterpunkt (i), 2026-09-18). Trägt ein gespeicherter Kasten `verfahren:
+"authored"`, hat der Autor ihn selbst gezeichnet — eine Folger-Bahn ist
+eine Ableitung und ersetzt ihn nie. Weil der Schreibweg eine VOLLE
+Ersetzung ist, nimmt ein Push sie auf zwei Wegen weg (überschreiben oder
+den Kasten weglassen); beide weist der Server als GANZES ab (409,
+`core/eigenhand/pfad.py::displaced_authored` vor `check_paths`, also bevor
+irgendetwas committet ist). Ganz und nicht je Kasten, anders als beim
+Platten-Zwilling `put_word_instances`: diese Antwort hat keinen
+`skipped`-Kanal, und ein stilles Überspringen ließe den Bedienenden
+glauben, der Lauf sei als gefolgt abgelegt. `tools.eigenhand.pfad` mischt
+von sich aus um solche Kästen herum und provoziert die Abweisung gar nicht
+erst; der einzige Weg daran vorbei ist `?replace_authored=true`, gesetzt
+vom Terminal-Flag `--replace-authored` — bewusst keine vierte
+`force`-Fläche in der Werkbank, denn kein Browser-Code sendet den
+Parameter. `authored` über `authored` geht durch: das ist der Autor, der
+seine eigene Nachfahrung korrigiert, und genau das hält die spätere
+Zeichenfläche in der Werkbank offen. Die korrigierten Buchstabengrenzen
+aus Q15 bekommen denselben Schutz, sobald PFAD_FORMAT 2 ihre Herkunft je
+Kasten trägt; die Regel wartet an einer Stelle darauf (`is_authored`).
+Offen bleibt die Archiv-Hälfte von Q4: eine `authored`-Bahn ist KEINE
+Ableitung — der nachfolgende Absatz gilt für die gefolgte Bahn —, sie lässt
+sich also nicht neu folgen und liegt heute nirgends gesichert. Das gehört
+in Phase 2, zusammen mit `EigenhandArchiveOut`.
+
 **Wiederherstellung: der Pfad ist ableitbar** (Entscheidung dieser Runde).
 Weder `snapshot.py` noch `sync --from` tragen ihn, und die Prüfung aus §8.1
 verlangt ihn nicht — Streifen, Layout und Werkzeug sind da, also lässt er

@@ -669,7 +669,12 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   einen Kasten ohne Rahmen, ohne autorierte Glyphen oder mit gescheitertem
   Folger, und nur das Gefolgte zu schicken löschte deren Pfade still. Der
   Trockenlauf legt genau diese gemischte Liste ab, sonst prüfte man etwas
-  anderes, als man schriebe.
+  anderes, als man schriebe. **Eine von Hand gezeichnete Bahn** (`verfahren:
+  "authored"`) überlebt jeden Lauf: das Werkzeug mischt um ihren Kasten herum
+  und lässt das eigene Ergebnis dafür fallen, der Server weist einen Push, der
+  sie verdrängen würde, als Ganzes ab (409). `--replace-authored` gibt sie auf
+  — die einzige Fläche dafür, und bewusst kein Knopf in der Werkbank
+  (Autor-Entscheid Q4 (i), 2026-09-18).
   BLAS-Fäden
   pinnt das Modul selbst (Vorgabewerte), weil die Kettenlösung sonst je nach
   Umgebung anders läuft.
