@@ -293,6 +293,24 @@ indexiert. Regel seitdem (`app/src/locales/de/seo.ts`, gepinnt von
   einen Link-Checker eine tote Seite).
 - Der Prerender nimmt die Breadcrumb-Bezeichnung des letzten Glieds aus
   dem Nav-Label der Route, nicht mehr aus dem (jetzt langen) Titel.
+- **Admin-Routen setzen ihren Tab-Titel selbst — nicht über `usePageMeta`
+  oder `seo.ts`** (seit 2026-09-18). Vorher trug jede Admin-Seite den
+  öffentlichen Standardtitel aus `app/index.html` oder den der zuletzt
+  besuchten öffentlichen Seite; zwei offene Werkbank-Tabs waren nicht
+  auseinanderzuhalten. Seitdem schreibt `layouts/admin/AdminLayout.tsx`
+  `document.title` aus der reinen Funktion
+  `sections/admin/shell/adminTitle.ts`, Muster **`<Subjekt> · Werkbank`**:
+  „Buchstabe n · Werkbank", „Übergang e → n · Werkbank", „Wort lesen ·
+  Werkbank"; Übersichten tragen ihren Bereichsnamen („Buchstaben ·
+  Werkbank", „Eigenhand · Werkbank"), der Vorlagen-Einstieg `/admin` bloß
+  „Werkbank". Das Subjekt ist dasselbe, das die H1 der Ansicht nennt — die
+  Funktion liest es mit denselben Lesern aus der URL wie `focus.ts`.
+  Bewusst NICHT `usePageMeta`: der Hook schreibt zusätzlich Canonical,
+  `og:*` und `twitter:*`, die eine hinter Cloudflare Access liegende und
+  per `Disallow: /admin` ausgeschlossene Route nicht prägen darf — und
+  `locales/de/seo.ts` ist auf die öffentlichen Routen abgezählt
+  (`routes/seoCoverage.test.ts`), ein Admin-Eintrag dort macht die Suite
+  rot.
 
 Nicht Teil davon: `hreflang`/Englisch — kommt mit der englischen Lese-Hälfte
 (Website-Audit 8/8). Owner-Schritt daneben: Search Console und Bing
