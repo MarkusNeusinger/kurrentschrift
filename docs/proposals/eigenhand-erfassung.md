@@ -1205,7 +1205,7 @@ Kacheln 24 Pfadabfragen. Die Antwort ist `private, no-store` und
 admin-gesichert wie das Bild: ein Pfad ist aus reservierten Pixeln
 ABGELEITET und bleibt hinter derselben Tür.
 
-**Die nachgefahrene Bahn ist die Wahrheit** (Autor-Entscheid Q4 mit
+**Die von Hand gezeichnete Bahn ist die Wahrheit** (Autor-Entscheid Q4 mit
 Unterpunkt (i), 2026-09-18). Trägt ein gespeicherter Kasten `verfahren:
 "authored"`, hat der Autor ihn selbst gezeichnet — eine Folger-Bahn ist
 eine Ableitung und ersetzt ihn nie. Weil der Schreibweg eine VOLLE
