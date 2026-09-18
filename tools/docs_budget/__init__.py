@@ -499,13 +499,24 @@ WIDEST = {
 # file, and this PR adds two files (the Tintenpfad route page and the research
 # note) — so two rows, plus the count in the map's own head. The path stood at
 # four tokens of room; the research row was shortened once before this raise.
+#
+# `komposition` (9 680 → 10 756) raised 2026-09-18 by the path form of the
+# word reads: `write-api.md` is the contract every `/write/*` change updates,
+# and this one adds two routes (`/write/word/{text}` and `…/{text}.svg`) and
+# one error body (`no_query_string`) — a table row, one paragraph and the
+# narrow bucket's cell. The path stood at ~100 tokens of room. The additions
+# were cut first (the row from eleven clauses to four, the 422 section from a
+# heading with a JSON example to one paragraph, 10 168 → 9 778); the story
+# behind them — the client that drops query strings, why the path wins in the
+# limiter — moved to the glossary, which no reading path carries whole.
+# Re-measured at 9 778, plus the documented 10 %.
 BUDGETS: dict[str, int] = {
     "mandatory": 67_091,
     "mess-runde": 43_761,
     "mess-runde-route": 10_487,
     "mess-runde-eintrag": 5_584,
     "glyph-optimierung": 8_504,
-    "komposition": 9_680,
+    "komposition": 10_756,
     "frontend": 15_018,
     "werkbank": 5_166,
     "werkzeug": 713,

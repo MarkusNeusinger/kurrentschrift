@@ -347,19 +347,43 @@ async def test_the_word_path_pattern_matches_the_real_routes():
             else [(r, getattr(getattr(route, "include_context", None), "prefix", "") or "") for r in inner.routes]
         )
         for r, prefix in candidates:
-            if isinstance(r, APIRoute) and (prefix + r.path).endswith(("/write/word", "/write/word.svg")):
+            if isinstance(r, APIRoute) and "/write/word" in prefix + r.path:
                 word_routes.add(prefix + r.path)
 
-    assert word_routes == {"/sources/{source_id}/write/word", "/sources/{source_id}/write/word.svg"}
+    assert word_routes == {
+        "/sources/{source_id}/write/word",
+        "/sources/{source_id}/write/word.svg",
+        "/sources/{source_id}/write/word/{text}",
+        "/sources/{source_id}/write/word/{text}.svg",
+    }
     for path in word_routes:
-        filled = path.format(source_id="suetterlin-1922")
+        filled = path.format(source_id="suetterlin-1922", text="lesen")
         assert WORD_PATHS.match(filled), filled
         assert limiters_for(filled) == (write_limiter, public_limiter)
 
     # …and nothing else is caught by it.
-    for other in ("/sources/x/write/glyphs", "/sources/x/write/glyphs/n", "/sources/x/write/word/extra", "/styles"):
+    for other in ("/sources/x/write/glyphs", "/sources/x/write/glyphs/n", "/sources/x/write/word/a/b", "/styles"):
         assert not WORD_PATHS.match(other), other
         assert limiters_for(other) == (public_limiter,)
+
+
+def test_the_path_form_is_metered_by_its_text_like_the_query_form():
+    """`composition_cost` reads the text off the path in the path form — and
+    the path wins over a query `text`, because the path route composes the
+    path's text and ignores the query: a full-length path beside a one-letter
+    query must not buy a full composition for an eighth of a token."""
+    from starlette.requests import Request
+
+    def cost(path: str, query: bytes = b"") -> float:
+        scope = {"type": "http", "method": "GET", "path": path, "query_string": query, "headers": []}
+        return write_limiter.cost_of(Request(scope))
+
+    full = "x" * 160
+    assert cost(f"/sources/s/write/word/{full}") == pytest.approx(1.0)
+    assert cost(f"/sources/s/write/word/{full}.svg") == pytest.approx(1.0)
+    assert cost("/sources/s/write/word/lesen") == pytest.approx(0.125)  # the floor, like `?text=lesen`
+    assert cost("/sources/s/write/word", f"text={full}".encode()) == pytest.approx(1.0)
+    assert cost(f"/sources/s/write/word/{full}", b"text=n") == pytest.approx(1.0)
 
 
 async def test_a_200_is_not_touched_by_the_limiter(api: Harness):

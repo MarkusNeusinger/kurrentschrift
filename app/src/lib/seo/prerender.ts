@@ -307,6 +307,12 @@ function letterRecipes(): string {
     row('Geometrie', `${src}/write/glyphs?keys=a,n`, 'JSON: Umriss-Ringe, Mittellinie, Anschlüsse'),
     row('Ganzes Wort', `${src}/write/word?text=lesen`, 'JSON, serverseitig komponiert; text ist frei (bis 160 Zeichen)'),
     row('Ganzes Wort als Bild', `${src}/write/word.svg?text=lesen`, 'SVG auf der Lineatur, mit den generierten Übergängen; text ist frei'),
+    // The path form beside the query form: a strict fetch client drops the
+    // query string of an unseen URL and gets a 422 it shows only as a status
+    // (2026-09-18) — the text as a path segment survives that.
+    // Both full URLs as links: a strict fetch tool accepts only URLs it has
+    // already seen, so an abbreviated JSON path would stay undiscoverable.
+    `<li><strong>Dasselbe Wort ohne Query-String (Pfad-Form):</strong> ${a(`${src}/write/word/lesen`, `${src}/write/word/lesen`)} — JSON · ${a(`${src}/write/word/lesen.svg`, `${src}/write/word/lesen.svg`)} — SVG; ${e('der Text als letztes Pfadsegment. Antwortet eine /write-Route mit 422 und "error": "no_query_string", ist der Query-String unterwegs verloren gegangen — dann die Pfad-Form nehmen')}</li>`,
     `<li><strong>Beispiel:</strong> ${a(`${src}/write/glyphs/e.svg`, 'das Sütterlin-e, geschrieben')} · ${a(`${src}/bboxes/e/crop`, 'seine Vorlage')}</li>`,
     '</ul>',
     em(

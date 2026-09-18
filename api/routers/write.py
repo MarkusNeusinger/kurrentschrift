@@ -219,6 +219,11 @@ async def get_write_word(
     into its letters server-side, mirroring the old client fallback; whatever
     still has no template lands in ``missing`` and composes as a gap.
     """
+    return await _word_json(text, source, db)
+
+
+async def _word_json(text: str, source: Source, db: AsyncSession) -> Response:
+    """The `/word` answer — shared by the query form and the path form."""
     normalized = _normalized_text(text)
     composed = await compose_word_payload(normalized, source, db)
     return _geometry_response({"text": normalized, **composed})
@@ -252,6 +257,11 @@ async def get_write_word_svg(
     named in the JSON's `missing`; a text with nothing to draw at all is a 404
     that lists them, not an empty picture.
     """
+    return await _word_svg_response(text, source, db)
+
+
+async def _word_svg_response(text: str, source: Source, db: AsyncSession) -> Response:
+    """The `/word.svg` answer — shared by the query form and the path form."""
     normalized = _normalized_text(text)
     composed = await compose_word_payload(normalized, source, db)
     if not composed.get("items"):
@@ -261,6 +271,41 @@ async def get_write_word_svg(
         )
     svg = await run_in_threadpool(word_svg, composed, name=f"{normalized} — {source.title}")
     return Response(content=svg, media_type="image/svg+xml", headers={"Cache-Control": BROWSER_ONLY_CACHE})
+
+
+# The PATH form of the two word reads: the same answers as `/word?text=…` and
+# `/word.svg?text=…`, with the text as a path segment instead of a query
+# parameter. It exists because query strings get lost between an agent and
+# this API — a strict AI fetch client (Claude's web_fetch, 2026-09-18)
+# normalises an unseen URL to the closest one it has already seen and drops
+# the query; cache-key normalisation and corporate proxies do the same. The
+# server then answers a correct 422 (`text` missing) that such a client shows
+# only as a status code, so the failure is silent. A path carries the text
+# through all of that. `/write/word/{text}.svg` is declared BEFORE the JSON
+# form for the same reason the glyph routes are: a `{text}` segment would
+# otherwise swallow `lesen.svg` as the text "lesen.svg". The price of that
+# order is that a text ENDING in `.svg` cannot be asked for as JSON here —
+# `/word/report.svg` is the picture of "report" — and a text containing a
+# slash cannot travel this way at all (a `{text}` segment stops at `/`, and
+# the ASGI server decodes `%2F` before routing). Both stay with the query
+# form, which is the documented contract; the path form is the fallback for
+# clients that lose the query, not a second complete API.
+@router.get("/word/{text}.svg")
+async def get_write_word_svg_by_path(
+    text: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+):
+    """`/word.svg?text=…` with the text as the last path segment — for clients
+    that drop query strings. Same input contract, same picture, same 404."""
+    return await _word_svg_response(text, source, db)
+
+
+@router.get("/word/{text}")
+async def get_write_word_by_path(
+    text: str, source: Source = Depends(require_source), db: AsyncSession = Depends(require_db)
+):
+    """`/word?text=…` with the text as the last path segment — for clients
+    that drop query strings. Same input contract, same payload."""
+    return await _word_json(text, source, db)
 
 
 async def _single_glyph_payload(glyph_key: str, source: Source, db: AsyncSession) -> dict:

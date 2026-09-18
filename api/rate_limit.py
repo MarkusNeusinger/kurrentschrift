@@ -6,7 +6,8 @@ header alone is safe on both of this service's reachable paths. Both are
 checked by ONE middleware (`RateLimitMiddleware`), narrow first, so a request
 that the narrow bucket refuses never spends a wide token.
 
-**Narrow — `/write/word` and `/write/word.svg`** (60/min, burst 20). This is
+**Narrow — `/write/word` and `/write/word.svg`, in the query form and in the
+path form `/write/word/{text}[.svg]`** (60/min, burst 20). This is
 the one public read whose cost the CALLER sets: it shapes, composes and
 serialises a whole line server-side, a unique text is a guaranteed edge-cache
 MISS, and the audit of 2026-09-01 measured 0.80 s TTFB and 1,653,798 bytes for
@@ -92,11 +93,14 @@ from core.config import settings
 # 20k float pairs is a couple of MB against the 512Mi instance.
 MAX_TRACKED_CLIENTS = 20_000
 
-# The two compose routes of `api/routers/write.py`. Matched on the raw path
+# The compose routes of `api/routers/write.py`: `/word` and `/word.svg` in the
+# query form, and their path form `/word/{text}` and `/word/{text}.svg`, whose
+# text the `text` group captures for `composition_cost`. Matched on the path
 # because the middleware runs BEFORE routing — `tests/test_api_rate_limit.py`
 # holds this pattern against the real route table so it cannot drift away from
-# the router silently.
-WORD_PATHS = re.compile(r"^/sources/[^/]+/write/word(\.svg)?$")
+# the router silently. The ASGI server hands the path percent-DECODED, so the
+# captured text is the text the route composes.
+WORD_PATHS = re.compile(r"^/sources/[^/]+/write/word(?:\.svg|/(?P<text>[^/]+?)(?:\.svg)?)?$")
 
 # Neither bucket applies here — see the module docstring for why each is out.
 # The bare `/seo-proxy` is listed beside the prefix because it is the
@@ -129,9 +133,21 @@ def composition_cost(request: Request) -> float:
     Federprobe's large step (~9-character lines, ~7 tokens for a postcard)
     against a burst of 20.
     """
-    length = len(request.query_params.get("text", ""))
+    length = len(_composed_text(request))
     floor = WRITE_COST_UNIT_CHARS / 8
     return min(1.0, max(length, floor) / WRITE_COST_UNIT_CHARS)
+
+
+def _composed_text(request: Request) -> str:
+    """The text a compose request carries — as the last path segment in the
+    path form, else in its query (`?text=`). The path wins when both are
+    present because the path route IGNORES the query: a caller who put 160
+    characters in the path and one in the query composes the 160, and must
+    pay for them."""
+    match = WORD_PATHS.match(request.scope.get("path", ""))
+    if match and match.group("text"):
+        return match.group("text")
+    return request.query_params.get("text", "")
 
 
 class TokenBucketLimiter:

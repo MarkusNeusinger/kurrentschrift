@@ -41,6 +41,59 @@ async def test_word_svg_shares_the_word_input_contract(api: Harness):
     assert res.status == 422
 
 
+async def test_word_path_form_answers_like_the_query_form(api: Harness):
+    """`/write/word/{text}` and `/write/word/{text}.svg` — the text as a path
+    segment, for clients that drop query strings — return exactly what the
+    query form returns for the same text, and route the `.svg` suffix to the
+    picture rather than composing it as letters."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+
+    by_query = await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "nn"})
+    by_path = await api.client.request("GET", f"/sources/{source_id}/write/word/nn")
+    assert by_path.status == 200, by_path.body
+    assert by_path.headers["content-type"].startswith("application/json")
+    assert by_path.headers["cache-control"] == by_query.headers["cache-control"]
+    assert by_path.json() == by_query.json()
+    assert by_path.json()["text"] == "nn"
+
+    svg_by_query = await api.client.request("GET", f"/sources/{source_id}/write/word.svg", params={"text": "nn"})
+    svg_by_path = await api.client.request("GET", f"/sources/{source_id}/write/word/nn.svg")
+    assert svg_by_path.status == 200, svg_by_path.body
+    assert svg_by_path.headers["content-type"].startswith("image/svg+xml")
+    assert svg_by_path.headers["cache-control"] == "private, max-age=300"
+    assert svg_by_path.body == svg_by_query.body
+    assert "<title>nn — Synthetic test chart</title>" in svg_by_path.body.decode()
+
+
+async def test_word_path_form_shares_the_input_contract_and_the_404(api: Harness):
+    _, source_id = await api.seed_style_and_source()
+    # The harness hands the path percent-DECODED, as an ASGI server would.
+    res = await api.client.request("GET", f"/sources/{source_id}/write/word/  ")
+    assert res.status == 422
+    assert res.json()["detail"] == "text must contain at least one non-space character"
+    res = await api.client.request("GET", f"/sources/{source_id}/write/word/{'x' * 161}")
+    assert res.status == 422
+    res = await api.client.request("GET", f"/sources/{source_id}/write/word/zz.svg")
+    assert res.status == 404
+    assert "no canonical for z" in res.json()["detail"]
+
+
+async def test_word_path_form_reads_a_trailing_svg_as_the_picture(api: Harness):
+    """The documented ambiguity of the path form: `.svg` is the shape, never
+    part of the text — `/word/n.svg` is the picture of "n", and the text
+    "n.svg" itself is only reachable through the query form."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    res = await api.client.request("GET", f"/sources/{source_id}/write/word/n.svg")
+    assert res.status == 200
+    assert res.headers["content-type"].startswith("image/svg+xml")
+    assert "<title>n — Synthetic test chart</title>" in res.body.decode()
+    by_query = await api.client.request("GET", f"/sources/{source_id}/write/word", params={"text": "n.svg"})
+    assert by_query.status == 200
+    assert by_query.json()["text"] == "n.svg"
+
+
 def test_word_svg_renders_items_on_the_ruling():
     composed = {
         "items": [
