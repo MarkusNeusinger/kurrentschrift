@@ -19,8 +19,9 @@
 > Benches schreiben **nie** in die DB, `--live` liest nur.
 > Der [Archiv-Schnappschuss](#der-archiv-schnappschuss-toolsdbsnapshot)
 > ist create-only, der
-> [Changelog-Schnitt](#der-changelog-schnitt-toolschangelog) und die
-> [Teilen-Karte](#die-teilen-karte-toolsogcard) fassen nur den Arbeitsbaum
+> [Changelog-Schnitt](#der-changelog-schnitt-toolschangelog), die
+> [Teilen-Karte](#die-teilen-karte-toolsogcard) und die
+> [Seiten-Icons](#die-seiten-icons-toolsfavicon) fassen nur den Arbeitsbaum
 > an.
 >
 > **Zwei Invarianten, die nicht verhandelbar sind.** `core/`, `api/` und
@@ -851,6 +852,46 @@ denen es stammt.
   `app/index.html` und als `OG_IMAGE_ALT` in `app/src/lib/seo/prerender.ts`
   — danach `npm run prerender`, sonst tragen die ausgelieferten
   Prerender-Seiten weiter die alte Beschreibung.
+
+## Die Seiten-Icons (`tools/favicon`)
+
+Baut `app/public/favicon.svg`, `favicon.ico` (16/32/48) und
+`apple-touch-icon.png` (180) — das Zeichen im Browser-Tab, in der
+Google-Trefferzeile und auf dem Home-Bildschirm. Bis 2026-09-19 war das ein
+großes K in der **Schau-Schrift** GL-GermanCursive, einmalig von Hand
+gerendert: das letzte Markenbild, das eine fremde Schrift statt des Produkts
+zeigte, ohne Vektorform und ohne Weg, es neu zu bauen. Das Icon geht jetzt
+denselben Weg wie die Teilen-Karte — ein öffentlicher GET,
+`/sources/{id}/write/glyphs/K.svg` — und zeigt das geschriebene K der
+Vorlage mit dem viridianen Punkt der Wortmarke aus `HeaderBar`; die Farben
+sind aus `paper.ts` gespiegelt.
+
+Der Umriss kommt als geschlossene Polygone (`M`/`L`/`Z` unter
+`fill-rule="evenodd"`). Deshalb rastert **Pillow allein**: jede Teilfläche
+füllen, per XOR verrechnen, achtfach überabtasten, herunterskalieren — kein
+Browser, keine SVG-Bibliothek. SVG und Raster teilen sich eine eingepasste
+Geometrie, also zeigen Tab und `/favicon.ico` dasselbe Zeichen. Ein
+Kurvenbefehl oder ein gestrichener Pfad im Glyphen-SVG bricht den Bau mit
+einer Meldung ab, statt still etwas anderes zu zeichnen. Weil ein Federzug
+bei 16 px zur Haarlinie wird, verstärkt `INK_BOOST` den Umriss (im SVG als
+gleichfarbiger Strich, im Raster als Linie entlang des Polygons).
+
+Wie bei der Karte wird die Geometrie geholt und **nie committet**
+([`quellen-und-rechte.md`](quellen-und-rechte.md) §5); im Repo landet das
+veröffentlichte Icon eines Buchstabens.
+
+- **`uv run python -m tools.favicon`** — holen, einpassen, die drei Dateien
+  schreiben. `--api http://localhost:8000` gegen die lokale API,
+  `--svg <Datei>` mit einem schon vorliegenden Glyphen-SVG, `--out <Ordner>`
+  woandershin.
+- **Die Icon-Links stehen zweimal:** in `app/index.html` und als
+  `ICON_LINKS` in `app/src/lib/seo/prerender.ts` — ein Crawler bekommt die
+  SPA-Hülle nie zu sehen, ohne die Links bliebe ihm nur der
+  `/favicon.ico`-Fallback. Nach einer Änderung dort `npm run prerender`.
+- **`/favicon.ico` muss weiter antworten** (`/verify-frontend` wertet ein
+  404 darauf als Regression). Nach einem neuen Icon die Startseite in der
+  Search Console neu indexieren lassen; Google tauscht Favicons über Tage
+  bis Wochen.
 
 ## Die Wurzel-Angabe jedes Messlaufs (`--expect-root`)
 
