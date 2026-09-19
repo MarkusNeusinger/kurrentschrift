@@ -236,6 +236,24 @@ export function wordEvidenceOf(
 export const ownHandEvidence = (evidence: WordEvidence[]): WordEvidence[] =>
   evidence.filter((e) => !e.sample.sample_set);
 
+// Whether the word editor may be opened on this piece of evidence. Two kinds
+// of sample are context rather than work, and both refusals are doctrine:
+//
+// * a FOREIGN writer's sample (Abb. 22) — a Bahn drawn over it would be stored
+//   under the PLATE's hand and become ground truth for statistics and training
+//   under the wrong writer („Kontext, nie Vorbild", V4);
+// * an untraced sample whose own ink is CLIPPED — „sie lässt sich nicht von
+//   Hand nachfahren und ist darum weder Arbeit noch Versäumnis" (glossar
+//   „Unvollständige Wortprobe"): the i-dot is missing, the last letter runs off
+//   the plate, so the hand has nothing to follow.
+//
+// A clipped specimen that ALREADY carries a row keeps its entry: that row
+// exists and may be re-drawn, and `traceStatusOf` then reads the resulting hand
+// line as the truth about the specimen rather than the flag. The card says why
+// either way — the „Unvollständig" chip carries the sidecar's own reason.
+export const canTraceByHand = ({ sample, row }: WordEvidence): boolean =>
+  !sample.sample_set && !(sample.incomplete && !row);
+
 // A Wortprobe with no stored trace, in the shape the word editor already takes.
 //
 // EDITOR-ONLY, never a display row: the spine card gets `row = null` for such a

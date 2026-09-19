@@ -21,11 +21,16 @@
 //   `ownHandEvidence` is what the head counts run over;
 // * the match is on the word TEXT, case- and whitespace-insensitively, exactly
 //   as the free-text field hands it over.
+//
+// `canTraceByHand` is the second half: which of those pieces of evidence may be
+// opened in the word editor at all. Showing a sample and offering to trace it
+// are two different permissions, and the two refusals have different reasons —
+// a foreign hand would be mislabelled, a clipped one has nothing to follow.
 
 import { describe, expect, it } from 'vitest';
 
 import type { WordInstanceOut, WordSampleOut } from '@/lib/api';
-import { ownHandEvidence, wordEvidenceOf } from './model';
+import { canTraceByHand, ownHandEvidence, wordEvidenceOf } from './model';
 
 const sample = (id: string, word: string, extra: Partial<WordSampleOut> = {}): WordSampleOut =>
   ({ id, word, kind: 'word', sample_set: null, ...extra }) as unknown as WordSampleOut;
@@ -127,5 +132,33 @@ describe('wordEvidenceOf', () => {
   it('does not treat an empty set tag as another hand', () => {
     const evidence = wordEvidenceOf([sample('und-1', 'und', { sample_set: '' })], [], 'und', null);
     expect(ownHandEvidence(evidence)).toHaveLength(1);
+  });
+});
+
+describe('canTraceByHand', () => {
+  it('offers the editor on an ordinary Wortprobe, traced or not', () => {
+    expect(canTraceByHand({ sample: sample('und-1', 'und'), row: null })).toBe(true);
+    expect(canTraceByHand({ sample: sample('und-1', 'und'), row: row('und-1', 'und') })).toBe(true);
+  });
+
+  it('refuses a foreign writer’s sample even where one carries a row', () => {
+    // A Bahn drawn over it would be stored under the PLATE's hand: ground truth
+    // for statistics and training under the wrong writer (V4).
+    const foreign = sample('abb22-und-3', 'und', { sample_set: 'abb22' });
+    expect(canTraceByHand({ sample: foreign, row: null })).toBe(false);
+    expect(canTraceByHand({ sample: foreign, row: row('abb22-und-3', 'und') })).toBe(false);
+  });
+
+  it('refuses an untraced sample whose own ink is clipped', () => {
+    // „Sie lässt sich nicht von Hand nachfahren und ist darum weder Arbeit noch
+    // Versäumnis" — the i-dot is missing, the hand has nothing to follow.
+    expect(canTraceByHand({ sample: sample('und-9', 'und', { incomplete: true }), row: null })).toBe(false);
+  });
+
+  it('keeps the entry on a clipped sample that already carries a row', () => {
+    // That row exists and may be re-drawn; `traceStatusOf` then reads the hand
+    // line as the truth about the specimen rather than the flag.
+    const clipped = sample('und-9', 'und', { incomplete: true });
+    expect(canTraceByHand({ sample: clipped, row: row('und-9', 'und') })).toBe(true);
   });
 });

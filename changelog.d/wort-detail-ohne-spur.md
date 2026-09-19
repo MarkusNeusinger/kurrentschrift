@@ -24,7 +24,10 @@
   creates its row, which the server has always accepted. The hand comes from
   the source's own occurrences, with `sources.hand_id` behind it; where
   neither resolves, saving stays disabled with the reason on screen rather
-  than writing under a guessed writer.
+  than writing under a guessed writer. Two samples are context rather than
+  work and get no entry: another writer's, and an untraced one whose own ink
+  is clipped — that one „lässt sich nicht von Hand nachfahren und ist darum
+  weder Arbeit noch Versäumnis", and its chip says so beside the gap.
 - **The word detail counts „n Bahnen" beside „n Wortproben".** „Beleg" is the
   Eigenhand Bestand's counting unit and was doing double duty as the name for
   a plate trace (author decision 2026-09-18, Q8 a). The head of the detail now

@@ -41,7 +41,13 @@ import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { joinsOfText, joinsUrl, keysOfText, lettersUrl, readWordFocus, wordsUrl } from '@/sections/admin/shell/focus';
-import { ownHandEvidence, seedWordInstance, wordEvidenceOf, type TraceFilter } from '@/sections/admin/shell/model';
+import {
+  canTraceByHand,
+  ownHandEvidence,
+  seedWordInstance,
+  wordEvidenceOf,
+  type TraceFilter,
+} from '@/sections/admin/shell/model';
 import { garamond } from '@/styles/paper';
 
 import { AuthoredTraceReview } from './AuthoredTraceReview';
@@ -162,8 +168,12 @@ export function WordView() {
   // first authored trace for a specimen is the upsert the server has always
   // accepted. The memo keeps the seed's object identity stable while the dialog
   // is open.
+  // Through `canTraceByHand`, so a refetch that turns a sample into context —
+  // a re-harvest dropping a row, a sidecar marking the ink clipped — closes an
+  // open dialog instead of leaving a write path standing that the list itself
+  // no longer offers.
   const editingEvidence = useMemo(
-    () => (editing ? (evidence.find((e) => e.sample.id === editing) ?? null) : null),
+    () => (editing ? (evidence.find((e) => e.sample.id === editing && canTraceByHand(e)) ?? null) : null),
     [editing, evidence],
   );
   const editingRow = useMemo(
@@ -430,7 +440,8 @@ export function WordView() {
         ) : evidence.length === 0 ? (
           <Alert severity="info">{t.noSpecimen}</Alert>
         ) : (
-          evidence.map(({ sample, row }) => {
+          evidence.map((item) => {
+            const { sample, row } = item;
             const score = scores[sample.id];
             return (
               <WordSpineCard
@@ -465,12 +476,11 @@ export function WordView() {
                       </Button>
                     )}
                     {/* Also on a Wortprobe without a stored Bahn — that entry
-                        IS the point of this card being here. NOT on a foreign
-                        writer's sample though: a Bahn drawn over it would be
-                        stored under the plate's hand and become ground truth
-                        for statistics and training under the wrong writer.
-                        Abb. 22 is context here, never work (V4). */}
-                    {!sample.sample_set && (
+                        IS the point of this card being here. Which samples are
+                        context rather than work, and why, is `canTraceByHand`;
+                        the card carries the reason beside this gap, as the
+                        „andere Hand" and „Unvollständig" chips. */}
+                    {canTraceByHand(item) && (
                       <Button size="small" onClick={() => setEditing(sample.id)}>
                         {de.admin.belege.editOpen}
                       </Button>
