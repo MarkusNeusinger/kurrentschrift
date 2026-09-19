@@ -4583,12 +4583,17 @@ sind keine Karte, sondern Korb-Notiz an die KI-Runde; am Rechner ist
 `tools.eigenhand.report --faellig` der Zwilling der Karten — der EINE
 Modus dieses Werkzeugs, der die API liest, weil eine fällige Liste die
 Frage „was ist noch nicht oben angekommen" beantwortet und lokal immer
-erledigt aussähe. Ein Kopierknopf reicht nie einen schreibenden Befehl
-weiter: die Bahn-Karte kopiert den Trockenlauf, `--apply` steht im
-Reihenfolge-Hinweis hinter dem Schnappschuss (Q9, 2026-09-19).
+erledigt aussähe. Hochschieben ist der Zweck der Kette, eine Karte darf
+also einen schreibenden Befehl weiterreichen — aber **nie einen, der
+Vorhandenes ersetzt**: die Bahn-Karte kopiert den Trockenlauf, `--apply`
+steht im Reihenfolge-Hinweis hinter dem Schnappschuss, und `universe
+--push` (die eine Eigenhand-Schreibung, die einen vorhandenen Bau
+überschreibt, §7.1) nennt den Schnappschuss ebenso (Q9, 2026-09-19).
 *Technisch:* die Regeln stehen EINMAL und serverseitig in
 `core/eigenhand/faellig.py` (Phase 1: `setup_pull` · `universe_push` ·
-`bogen_pull` auf dem ÄLTESTEN offenen Bogen · `sync_streifen`; die
+`bogen_pull` auf dem ÄLTESTEN offenen Bogen, die weiteren namentlich
+daneben, damit ein liegengebliebener den frisch gedruckten nicht verdeckt ·
+`sync_streifen`; die
 zurückgestellten Regeln stehen mit Grund im Modul-Docstring) und reisen als
 Feld `faellig` auf dem bestehenden Bestand-Abruf
 (`EigenhandBestandOut.faellig`, keine neue Route). Die BEFEHLE kommen als

@@ -179,7 +179,7 @@ class TestFaellig:
         # Printed, nobody judged it: the oldest outstanding Bogen, by name.
         [bogen_card] = (await _bestand(api))["faellig"]
         assert bogen_card["id"] == "bogen_pull"
-        assert bogen_card["params"] == {"hand": HAND, "sheet": sheet, "offen": 2}
+        assert bogen_card["params"] == {"hand": HAND, "sheet": sheet, "offen": 2, "weitere": 0}
         assert f"--sheet {sheet}" in bogen_card["befehl"]
 
         # Judged, but the pixels are still in the private archive.

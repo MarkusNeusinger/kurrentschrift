@@ -83,6 +83,15 @@ class TestFaellig:
         assert report_mod.main(["--hand", HAND, "--faellig", "--api", BASE]) == 0
         assert "nichts fällig" in capsys.readouterr().out
 
+    def test_an_api_without_the_field_is_an_error_rather_than_an_all_clear(self, monkeypatch):
+        """During a deploy window the tool can outrun the API — and „nichts
+        fällig" would then be a confident wrong answer about a hand it could
+        not read."""
+        monkeypatch.setenv("ADMIN_TOKEN", "t0ken")
+        _faked(monkeypatch, {"hand": HAND, "queue": []})
+        with pytest.raises(SystemExit, match="due list"):
+            report_mod.main(["--hand", HAND, "--faellig", "--api", BASE])
+
     def test_the_token_is_refused_in_the_clear_and_demanded_when_missing(self, monkeypatch):
         monkeypatch.delenv("ADMIN_TOKEN", raising=False)
         _faked(monkeypatch, {"faellig": []})

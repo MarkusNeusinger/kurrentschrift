@@ -94,7 +94,11 @@ def print_faellig(hand: str, api: str | None, token: str | None) -> int:
     an answer, not a missing one.
     """
     data = request_json("GET", f"{api_base(api)}/eigenhand/bestand/{hand}", admin_token(token)) or {}
-    rows = data.get("faellig", [])
+    # An API that predates the field is not a hand with nothing due: defaulting
+    # would print „nichts fällig" at exactly the moment the answer is unknown.
+    if "faellig" not in data:
+        raise SystemExit(f"{api_base(api)} does not report a due list yet — update the deployment")
+    rows = data["faellig"]
     if not rows:
         print(f"{hand}: nichts fällig — der Server sieht keinen offenen lokalen Schritt.")
         return 0

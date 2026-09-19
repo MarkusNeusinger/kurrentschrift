@@ -1156,6 +1156,10 @@ export const admin = {
       rechnerBefehl: 'uv run python -m tools.eigenhand.report --hand {{hand}} --faellig',
       danach: 'Danach hier: {{was}}',
       reihenfolge: 'Reihenfolge: {{wie}}',
+      // Nur wenn der Server mehr als einen offenen Bogen sieht: der Befehl auf
+      // der Karte holt einen, und ein liegengebliebener Bogen darf den frisch
+      // gedruckten nicht verdecken.
+      weitereBoegen: 'Auch offen: {{weitere_boegen}} — je Bogen ein eigener Aufruf.',
       karten: {
         setup_pull: {
           titel: 'Ausrüstung auf den Schreib-Rechner holen',
@@ -1169,7 +1173,11 @@ export const admin = {
           warum:
             'Erstbeleg- und Ausbau-Quote rechnen gegen die Gewichte aus den Konsult-Korpora, und die Warteschlange ordnet danach. Die Korpus-Bytes bleiben lizenzbedingt lokal; hochgeschoben wird nur die abgeleitete Tabelle.',
           danach: 'die Quoten-Tafel füllt sich, und die nächsten Streifen stehen nach gewichtetem Soll-Gewinn.',
-          reihenfolge: 'vom Rechner mit den Konsult-Korpora.',
+          // Dieser Push ist die EINE Eigenhand-Schreibung, die einen
+          // vorhandenen Bau ersetzt (Vorschlag §7.1) — darum steht der
+          // Schnappschuss davor, wie bei --apply.
+          reihenfolge:
+            'vom Rechner mit den Konsult-Korpora, und weil dieser Push einen vorhandenen Bau ersetzt: erst ein Schnappschuss (tools.dbsnapshot), dann --push.',
         },
         bogen_pull: {
           titel: 'Bogen {{sheet}} ist unterwegs — {{offen}} Zeile/Zeilen ohne Fassung',
@@ -1204,12 +1212,14 @@ export const admin = {
     stripImagesTitle: 'Geschriebene Streifen',
     stripImagesIntro:
       'Die eingelesenen Streifen, wie sie in der Datenbank liegen — admin-geschützt, nie öffentlich, nie im Repository. Der Wort-Ausschnitt wird aus dem Bogen-Layout berechnet und braucht keinen eigenen Speicher.',
-    // Beide leeren Antworten nennen den Zustand und zeigen auf die eine Stelle,
-    // an der der Befehl dazu steht — die Karte „Am Rechner weiter" im Bestand
-    // weiß außerdem, WIE VIELE Fassungen ihr Bild noch schulden; hier war das
-    // alles oder nichts.
+    // Beide leeren Antworten nennen den ZUSTAND, nicht einen Befehl: solange
+    // keine angenommene Fassung ihr Bild schuldet, gibt es den Schritt gar
+    // nicht — dann stünde hier ein Verweis auf einen Block, den es auf dieser
+    // Hand nicht gibt. Sobald es ihn gibt, weiß die Karte „Am Rechner weiter"
+    // außerdem, WIE VIELE Fassungen betroffen sind; hier war das alles oder
+    // nichts.
     stripImagesEmpty:
-      'Noch keine Streifenbilder hochgeschoben. Der Befehl dazu steht im Bestand unter „Am Rechner weiter".',
+      'Noch keine Streifenbilder hochgeschoben. Sobald angenommene Fassungen ohne Bild vorliegen, steht der Befehl dazu im Bestand unter „Am Rechner weiter".',
     stripImagesError: 'Der Streifen konnte nicht geladen werden.',
     stripShow: 'Streifen zeigen',
     stripHide: 'einklappen',
@@ -1224,7 +1234,7 @@ export const admin = {
     stripLupeClose: 'schließen',
     stripBelegeCount: 'Belege: {{count}} in {{strips}} Streifen',
     stripBelegeEmpty:
-      'Kein gespeicherter Streifen trägt das. Die Zeichen-Tafel zählt auch Fassungen, deren Bild noch nicht hochgeschoben ist — der Befehl dazu steht im Bestand unter „Am Rechner weiter".',
+      'Kein gespeicherter Streifen trägt das. Die Zeichen-Tafel zählt auch Fassungen, deren Bild noch nicht hochgeschoben ist — steht eine davon aus, nennt der Bestand unter „Am Rechner weiter" den Befehl dazu.',
     stripBelegeIntro:
       'Gezeigt wird der Wort-Ausschnitt; das Zeichen sitzt darin. Die Zerlegung in einzelne Buchstaben ist Sache des Tintenfolgers (Phase 5), nicht der Kartei.',
     stripMore: 'weitere {{count}} laden',

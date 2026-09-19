@@ -598,7 +598,8 @@ Reihenfolge — sichtbar nur, solange der Zustand fehlt. Welche fällig ist,
 entscheidet EINMAL der Server (`core/eigenhand/faellig.py`, Feld `faellig`
 am Bestand); der Zwilling am Rechner ist `tools.eigenhand.report
 --faellig`, der einzige Modus dieses Werkzeugs, der die API liest. Ein
-Kopierknopf reicht nie einen schreibenden Befehl weiter.
+Kopierknopf reicht nie einen Befehl weiter, der Vorhandenes ersetzt:
+`--apply` und der Schnappschuss stehen im Reihenfolge-Hinweis.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §9.2
 
 **Beleg (Eigenhand)** — ein Vorkommen eines Übergangsraum-Items in den

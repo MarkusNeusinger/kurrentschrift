@@ -45,6 +45,14 @@ export function Uebergabekarte({ karte }: { karte: Uebergabe }) {
           {karte.warum}
         </Typography>
         <TerminalCommand command={karte.befehl} />
+        {/* What the one command on the card cannot say — today: the further
+            open Bögen, because `pull` takes one `--sheet` at a time and the
+            oldest one must not hide the Bogen just printed. */}
+        {karte.hinweis && (
+          <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+            {karte.hinweis}
+          </Typography>
+        )}
         <Typography variant="caption" sx={{ color: paper.inkSoft }}>
           {fmt(t.danach, { was: karte.danach })}
         </Typography>

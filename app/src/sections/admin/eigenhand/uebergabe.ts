@@ -22,6 +22,8 @@ export type Uebergabe = {
   danach: string;
   /** The order hint, where one step must not be taken before another. */
   reihenfolge: string;
+  /** What the command alone would not say — today: the further open Bögen. */
+  hinweis?: string;
 };
 
 type Copy = { titel: string; warum: string; danach: string; reihenfolge: string };
@@ -43,13 +45,20 @@ export const FAELLIG_IDS = ['setup_pull', 'universe_push', 'bogen_pull', 'sync_s
 export function uebergabeKarte(row: EigenhandFaellig): Uebergabe | null {
   const copy = KARTEN[row.id];
   if (!copy) return null;
+  const params = row.params ?? {};
+  // Every field goes through `fmt`, not just the title: which one carries a
+  // `{{…}}` is the locale's business, and a placeholder added to `warum` later
+  // would otherwise ship literally with nothing failing.
   return {
     id: row.id,
-    titel: fmt(copy.titel, row.params),
-    warum: copy.warum,
+    titel: fmt(copy.titel, params),
+    warum: fmt(copy.warum, params),
     befehl: row.befehl,
-    danach: copy.danach,
-    reihenfolge: copy.reihenfolge,
+    danach: fmt(copy.danach, params),
+    reihenfolge: fmt(copy.reihenfolge, params),
+    // Only the server can know there is more than one open Bogen; the command
+    // on the card holds exactly one.
+    hinweis: Number(params.weitere) > 0 ? fmt(de.admin.eigenhand.uebergabe.weitereBoegen, params) : undefined,
   };
 }
 

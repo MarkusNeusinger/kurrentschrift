@@ -796,20 +796,7 @@ Platte → `ingest` → Siebung → `apply` → `tools.eigenhand.sync` schiebt
 Bögen und Verdikte zurück. Wer im Terminal druckt, schiebt seine Bögen
 mit demselben `sync` hoch: beide Seiten münzen ihre IDs aus derselben
 Kartei-Sicht, und ein registrierter Bogen nimmt seine ID aus dem
-Verkehr.
-
-**Wo die Schleife die Maschine wechselt, sagt es die Werkbank.** Seit dem
-Admin-Redesign (Plan §5.1 Idee 11, §9.2) stehen die lokalen Schritte nicht
-mehr als feste Hinweise unter den Panels, sondern als **Übergabekarten** im
-Bestand: Titel, Grund, Befehl mit den echten Ids, „Danach hier" und
-Reihenfolge — und nur so lange, wie der Schritt offen ist. Fällig ist, was
-der SERVER sieht; ein Schnappschuss oder ein eingelesenes Blatt hinterlässt
-in der DB keine Spur und kann darum nie bestätigt werden. Entschieden wird
-das einmal in `core/eigenhand/faellig.py` (Phase 1: Ausrüstung holen ·
-Gewichte hochschieben · ältester offener Bogen · Bilder ohne `sync`), und
-weil die Zwischenablage nicht vom Tablet zum Rechner reicht, druckt
-`tools.eigenhand.report --faellig` dieselbe Liste dort — der einzige Modus
-dieses Werkzeugs, der die API liest. Ein bereits registriertes Layout wird nie überschrieben — ein
+Verkehr. Ein bereits registriertes Layout wird nie überschrieben — ein
 abweichendes unter derselben ID ist ein Konflikt (409), weil ein Scan
 dagegen registriert sein kann. „Abweichend" heißt: andere Geometrie,
 verglichen über die KANONISCHE Form (`bogen.layout_digest`, Schlüssel
@@ -819,6 +806,24 @@ umsortiert. Genau daran scheiterte der erste echte Durchlauf am
 2026-08-26: `pull` holte das Server-Layout, `sync` hashte es in der
 zurückgegebenen Reihenfolge, und der Server hielt denselben Bogen für
 einen anderen.
+
+**Wo die Schleife die Maschine wechselt, sagt es die Werkbank.** Seit dem
+Admin-Redesign (Plan §5.1 Idee 11, §9.2) stehen die lokalen Schritte
+nicht mehr als feste Hinweise unter den Panels, sondern als
+**Übergabekarten** im Bestand: Titel, Grund, Befehl mit den echten Ids,
+„Danach hier" und Reihenfolge — und nur so lange, wie der Schritt offen
+ist. Fällig ist, was der SERVER sieht; ein Schnappschuss oder ein
+eingelesenes Blatt hinterlässt in der DB keine Spur und kann darum nie
+bestätigt werden. Entschieden wird das einmal in
+`core/eigenhand/faellig.py` (Phase 1: Ausrüstung holen · Gewichte
+hochschieben · ältester offener Bogen, die weiteren namentlich daneben ·
+Bilder ohne `sync`), und weil die Zwischenablage nicht vom Tablet zum
+Rechner reicht, druckt `tools.eigenhand.report --faellig` dieselbe Liste
+dort — der einzige Modus dieses Werkzeugs, der die API liest. Ein
+Kopierknopf reicht keinen Befehl weiter, der einen vorhandenen Bau
+ersetzt: `universe --push` trägt den Schnappschuss im
+Reihenfolge-Hinweis, und die Bahn-Karte kopiert den Trockenlauf, nicht
+`--apply`.
 
 **Was die Schnittstelle nachrechnet, statt es zu glauben** (Copilot-Review
 zu PR #407, beides echte Lücken): Ein hochgeschobenes Layout muss DIESEN

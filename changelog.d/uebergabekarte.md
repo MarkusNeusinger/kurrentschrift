@@ -6,7 +6,9 @@
   command in monospace with its REAL parameters and a copy button, „Danach
   hier: …" and the order hint. Which cards are due is decided once and
   server-side (`core/eigenhand/faellig.py`, Phase 1: fetch the standing setup ·
-  push the Übergangsraum weights · pull the OLDEST outstanding Bogen · sync the
+  push the Übergangsraum weights · pull the OLDEST outstanding Bogen, with any
+  further open ones named beside it so an abandoned sheet cannot hide the one
+  just printed · sync the
   strip images that never came up); the list rides on the existing Bestand read
   as `faellig`, so there is no new route and no second request to keep in sync.
   The commands are built in Python beside the rules because a command is code;
@@ -36,6 +38,8 @@
   and where the step stands, so the same step is no longer stated in two
   places. The sentence that carried a command with „…" instead of the strip
   and Fassung is now a card at the Fassung itself, with the real ids — and it
-  copies the dry run: a copy button never hands over a command that writes to
-  the shared database, so `--apply` is named in the order hint behind the
-  snapshot that belongs in front of it.
+  copies the dry run: pushing what was written up is the point of the chain, so
+  a card may hand over a write, but never one that REPLACES what is there.
+  `pfad --apply` stays in the order hint behind the snapshot that belongs in
+  front of it, and `universe --push` — the one eigenhand write that overwrites
+  an existing build — names that snapshot too.

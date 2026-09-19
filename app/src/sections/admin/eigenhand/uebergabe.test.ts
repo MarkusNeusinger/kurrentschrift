@@ -19,7 +19,7 @@ function row(id: string, params: Record<string, string | number> = {}): Eigenhan
 }
 
 const PARAMS: Record<string, Record<string, string | number>> = {
-  bogen_pull: { sheet: 'B0007', offen: 2 },
+  bogen_pull: { sheet: 'B0007', offen: 2, weitere: 0 },
   sync_streifen: { ohne_bild: 4 },
 };
 
@@ -34,14 +34,38 @@ describe('uebergabeKarte', () => {
       expect(karte?.warum, id).toBeTruthy();
       expect(karte?.danach, id).toBeTruthy();
       // No placeholder survives into the copy — an unfilled {{…}} on screen is
-      // the failure this interpolation exists to avoid.
+      // the failure this interpolation exists to avoid. All four fields, not
+      // just the title: which one carries a parameter is the locale's business.
       expect(karte?.titel, id).not.toMatch(/\{\{/);
+      expect(karte?.warum, id).not.toMatch(/\{\{/);
+      expect(karte?.danach, id).not.toMatch(/\{\{/);
+      expect(karte?.reihenfolge, id).not.toMatch(/\{\{/);
     }
   });
 
   it('interpolates the server parameters into the title', () => {
     expect(uebergabeKarte(row('bogen_pull', PARAMS.bogen_pull))?.titel).toContain('B0007');
     expect(uebergabeKarte(row('sync_streifen', PARAMS.sync_streifen))?.titel).toContain('4');
+  });
+
+  it('names the further open Bögen, so an abandoned one cannot hide today’s', () => {
+    // The command on the card holds ONE sheet; only the server knows there are
+    // more, and a spoiled B0001 sits in front of them forever.
+    const karte = uebergabeKarte(row('bogen_pull', { sheet: 'B0001', offen: 3, weitere: 2, weitere_boegen: 'B0002 · B0005' }));
+    expect(karte?.hinweis).toContain('B0002 · B0005');
+    expect(karte?.hinweis).not.toMatch(/\{\{/);
+    expect(uebergabeKarte(row('bogen_pull', PARAMS.bogen_pull))?.hinweis).toBeUndefined();
+  });
+
+  it('keeps the snapshot in front of the one push that replaces a build', () => {
+    // Q9 as the code honours it: a card may hand over a write — pushing is the
+    // point of the chain — but never one that overwrites without saying so.
+    expect(uebergabeKarte(row('universe_push'))?.reihenfolge).toContain('Schnappschuss');
+  });
+
+  it('survives a payload from an API that predates the parameters', () => {
+    const served = { id: 'universe_push', befehl: 'uv run python -m tools.eigenhand.universe --push' };
+    expect(uebergabeKarte(served as EigenhandFaellig)?.titel).toBeTruthy();
   });
 
   it('takes the command from the server rather than building one', () => {

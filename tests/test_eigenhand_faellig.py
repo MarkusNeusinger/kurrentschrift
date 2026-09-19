@@ -10,11 +10,15 @@ steps are done in.
 
 from __future__ import annotations
 
+import re
+from pathlib import Path
+
 from core.eigenhand.faellig import RULE_IDS, faellig
 from core.eigenhand.kartei import empty_kartei
 
 
 HAND = "mn-suetterlin"
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _kartei() -> dict:
@@ -72,7 +76,7 @@ class TestRules:
         [card] = _due(kartei, stored={("S0001", "F01")})
         assert card["id"] == "bogen_pull"
         assert card["befehl"] == f"uv run python -m tools.eigenhand.pull --hand {HAND} --sheet B0001"
-        assert card["params"] == {"hand": HAND, "sheet": "B0001", "offen": 2}
+        assert card["params"] == {"hand": HAND, "sheet": "B0001", "offen": 2, "weitere": 0}
 
     def test_the_oldest_outstanding_bogen_is_named_not_the_newest_printed_one(self):
         # A stack leaves several Bögen out at once. `sheets.last` would point at
@@ -84,6 +88,39 @@ class TestRules:
         _judge(kartei, "S0001", "B0002", 0)
         [card] = _due(kartei, stored={("S0001", "F01")})
         assert card["params"]["sheet"] == "B0001"
+
+    def test_the_further_open_boegen_are_named_so_one_cannot_hide_the_others(self):
+        """A spoiled B0001 nobody will ever write must not swallow today's Bogen.
+
+        Nothing retires a sheet and the print queue ignores outstanding ones, so
+        the oldest can sit in front forever. One card still — `pull` takes one
+        `--sheet` and a stack may be 20 — but the rest are named on it.
+        """
+        kartei = _kartei()
+        for sheet in ("B0001", "B0002", "B0005"):
+            _print(kartei, sheet, ["S0001"])
+        [card] = _due(kartei)
+        assert card["params"]["sheet"] == "B0001"
+        assert card["params"]["weitere"] == 2
+        assert card["params"]["weitere_boegen"] == "B0002 · B0005"
+
+    def test_a_single_open_bogen_says_none_are_further_out(self):
+        # `weitere` is always there so the SPA can decide without a lookup, and
+        # the id list is absent rather than empty: „Auch offen: " with nothing
+        # behind it is worse than no line.
+        kartei = _print(_kartei(), "B0001", ["S0001"])
+        [card] = _due(kartei)
+        assert card["params"]["weitere"] == 0
+        assert "weitere_boegen" not in card["params"]
+
+    def test_a_long_stack_stops_naming_and_says_so(self):
+        kartei = _kartei()
+        for n in range(1, 11):
+            _print(kartei, f"B{n:04d}", ["S0001"])
+        [card] = _due(kartei)
+        assert card["params"]["weitere"] == 9
+        assert card["params"]["weitere_boegen"].endswith("…")
+        assert card["params"]["weitere_boegen"].count("·") == 5
 
     def test_a_fully_judged_bogen_is_no_longer_outstanding(self):
         kartei = _print(_kartei(), "B0001", ["S0001", "S0002"])
@@ -129,3 +166,27 @@ class TestOrder:
         _judge(kartei, "S0001", "B0001", 0)
         seen |= set(_ids(_due(kartei)))
         assert seen == set(RULE_IDS)
+
+
+class TestTypeScriptTwin:
+    """One rule list, two languages — the same pin `lesarten` carries.
+
+    Without this, adding a rule here and forgetting the SPA is green in every
+    suite: the server emits the id, `uebergabeKarte` finds no copy and returns
+    `null`, and the card the author is waiting for silently never appears.
+    """
+
+    def test_the_spa_knows_exactly_the_ids_this_module_emits(self):
+        src = (REPO_ROOT / "app" / "src" / "sections" / "admin" / "eigenhand" / "uebergabe.ts").read_text(
+            encoding="utf-8"
+        )
+        block = src.split("FAELLIG_IDS = [")[1].split("]")[0]
+        assert tuple(re.findall(r"'([^']+)'", block)) == RULE_IDS
+
+    def test_every_rule_has_german_copy_in_the_catalogue(self):
+        src = (REPO_ROOT / "app" / "src" / "locales" / "de" / "admin.ts").read_text(encoding="utf-8")
+        block = src.split("      karten: {")[1].split("\n      },")[0]
+        keyed = set(re.findall(r"^        (\w+): \{", block, re.M))
+        # `bahn_folgen` is the card the browser builds itself, so the catalogue
+        # holds one key more than this module emits — never one less.
+        assert set(RULE_IDS) <= keyed
