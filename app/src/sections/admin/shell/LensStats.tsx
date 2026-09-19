@@ -22,6 +22,7 @@ import { useState } from 'react';
 
 import type { AggregateOut, InstanceOut, PairAggregateOut, PairInstanceOut } from '@/lib/api';
 import { de, fmt, specimenKindLabel } from '@/locales/admin';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 import { layerAlpha, paper } from '@/styles/paper';
 
 import { AggregateSketch } from './AggregateSketch';
@@ -109,7 +110,13 @@ function StatsHeader({
           {/* A disabled button swallows the tooltip's own events — the span
               keeps the hint readable while a rebuild runs. */}
           <span>
-            <IconButton size="small" aria-label={t.statsRebuild} disabled={busy} onClick={run}>
+            <IconButton
+              size="small"
+              aria-label={t.statsRebuild}
+              disabled={busy}
+              onClick={run}
+              sx={{ width: TOUCH_TARGET, height: TOUCH_TARGET }}
+            >
               {busy ? <CircularProgress size={14} /> : <RefreshIcon fontSize="small" />}
             </IconButton>
           </span>

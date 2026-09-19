@@ -19,7 +19,7 @@
 
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Box, Button, Chip, Collapse, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Chip, Collapse, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
 
 import { de, fmt } from '@/locales/admin';
@@ -107,33 +107,40 @@ export function ListSortSwitch({
   onChange: (token: string) => void;
   label: string;
 }) {
+  // WHY a sort cannot be chosen is a reason the reader acts on („kein Score
+  // gelesen"), and a disabled button takes no focus — so in a tooltip it was
+  // reachable by mouse alone (V25). It stands under the switch as text, and the
+  // disabled button points at it with `aria-describedby` so a screen reader
+  // hears the two together.
+  const blocked = options.filter((option) => option.disabled && option.disabledHint);
+  const hintId = 'list-sort-blocked';
   return (
-    <ToggleButtonGroup
-      size="small"
-      exclusive
-      value={sort}
-      onChange={(_, value: string | null) => value && onChange(value)}
-      aria-label={label}
-    >
-      {options.map((option) =>
-        option.disabled ? (
-          // A disabled control swallows its hover events, so the tooltip needs
-          // the span wrapper — and it exists only in that state, or the enabled
-          // button would carry an empty description.
-          <Tooltip key={option.token} title={option.disabledHint ?? ''} describeChild>
-            <span>
-              <ToggleButton value={option.token} disabled sx={target}>
-                {option.label}
-              </ToggleButton>
-            </span>
-          </Tooltip>
-        ) : (
-          <ToggleButton key={option.token} value={option.token} sx={target}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start' }}>
+      <ToggleButtonGroup
+        size="small"
+        exclusive
+        value={sort}
+        onChange={(_, value: string | null) => value && onChange(value)}
+        aria-label={label}
+      >
+        {options.map((option) => (
+          <ToggleButton
+            key={option.token}
+            value={option.token}
+            disabled={option.disabled}
+            aria-describedby={option.disabled && option.disabledHint ? hintId : undefined}
+            sx={target}
+          >
             {option.label}
           </ToggleButton>
-        ),
+        ))}
+      </ToggleButtonGroup>
+      {blocked.length > 0 && (
+        <Typography id={hintId} variant="caption" color="text.secondary">
+          {blocked.map((option) => option.disabledHint).join(' · ')}
+        </Typography>
       )}
-    </ToggleButtonGroup>
+    </Box>
   );
 }
 

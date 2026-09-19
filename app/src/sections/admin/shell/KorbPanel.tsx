@@ -21,6 +21,7 @@ import {
   Alert,
   Box,
   Button,
+  ButtonBase,
   Chip,
   Collapse,
   Dialog,
@@ -82,6 +83,11 @@ const FILTER_KINDS = Object.keys(KIND_LABELS) as WorkItemKind[];
 // Every select wears the §9.3 touch floor on its closed field; the options get
 // it from the theme's `MuiMenuItem`.
 const FILTER_FIELD_SX = { '& .MuiOutlinedInput-root': { minHeight: TOUCH_TARGET } } as const;
+
+// MUI's `small` button is 30.75 px and its default 36.5 — both under the §9.3
+// floor. The drawer's buttons sit in tight rows, so they GROW rather than wear
+// an invisible overlay that would reach into the neighbour.
+const BUTTON_TARGET = { minHeight: TOUCH_TARGET } as const;
 
 // "Buchstabe a" / "Übergang d→a" / "Wort einen" — the level plus its target.
 // A note has no target: its first line IS the headline, so a basket of notes
@@ -150,30 +156,47 @@ function ItemRow({
   return (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, py: 0.5, borderTop: 1, borderColor: 'divider' }}>
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography
-          variant="body2"
-          sx={{
-            fontWeight: 600,
-            ...(onOpen && {
-              cursor: 'pointer',
-              color: 'primary.main',
-              '&:hover': { textDecoration: 'underline' },
-            }),
-          }}
-          {...(onOpen && { role: 'link', tabIndex: 0, onClick: onOpen })}
-          onKeyDown={(e) => {
-            if (!onOpen || (e.key !== 'Enter' && e.key !== ' ')) return;
-            e.preventDefault();
-            onOpen();
-          }}
-        >
-          {workItemLabel(item)}
-          {item.specimen_id && (
-            <Typography component="span" variant="caption" color="text.secondary">
-              {` · ${item.specimen_id}`}
+        {/* The one opener of a basket row. It was a `<p role="link">` with a
+            hand-rolled `tabIndex` and a hand-rolled Enter/Space handler: a tab
+            stop that showed NOTHING when reached, because `MuiTypography` has
+            no focus-visible rule and the ring lives on `ButtonBase`. A
+            `ButtonBase` is the same three lines with the ring, the native key
+            handling and the right role (§9.1, V24 „jeder Öffner"). */}
+        {onOpen ? (
+          <ButtonBase
+            onClick={onOpen}
+            sx={{
+              display: 'block',
+              width: '100%',
+              textAlign: 'left',
+              // The row is dense and the label is the whole first line, so it
+              // grows to the floor instead of wearing an overlay that would
+              // reach into the neighbouring row (§9.3).
+              minHeight: TOUCH_TARGET,
+              px: 0.5,
+              borderRadius: 1,
+              '&:hover .korb-row-label': { textDecoration: 'underline' },
+            }}
+          >
+            <Typography className="korb-row-label" variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
+              {workItemLabel(item)}
+              {item.specimen_id && (
+                <Typography component="span" variant="caption" color="text.secondary">
+                  {` · ${item.specimen_id}`}
+                </Typography>
+              )}
             </Typography>
-          )}
-        </Typography>
+          </ButtonBase>
+        ) : (
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+            {workItemLabel(item)}
+            {item.specimen_id && (
+              <Typography component="span" variant="caption" color="text.secondary">
+                {` · ${item.specimen_id}`}
+              </Typography>
+            )}
+          </Typography>
+        )}
         {workItemBody(item) && (
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', whiteSpace: 'pre-line' }}>
             {workItemBody(item)}
@@ -223,16 +246,16 @@ function ItemRow({
                 onChange={(e) => setCorrection(e.target.value)}
               />
               <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button size="small" variant="contained" onClick={() => onReject(correction.trim())}>
+                <Button size="small" variant="contained" sx={BUTTON_TARGET} onClick={() => onReject(correction.trim())}>
                   {t.korbRejectSubmit}
                 </Button>
-                <Button size="small" onClick={() => setRejecting(false)}>
+                <Button size="small" sx={BUTTON_TARGET} onClick={() => setRejecting(false)}>
                   {t.cancel}
                 </Button>
               </Box>
             </Box>
           ) : (
-            <Button size="small" sx={{ mt: 0.25, px: 0.5 }} onClick={() => setRejecting(true)}>
+            <Button size="small" sx={{ mt: 0.25, px: 0.5, minHeight: TOUCH_TARGET }} onClick={() => setRejecting(true)}>
               {t.korbReject}
             </Button>
           ))}
@@ -243,7 +266,9 @@ function ItemRow({
           </Typography>
         )}
       </Box>
-      <IconButton size="small" aria-label={t.korbDelete} onClick={onDelete}>
+      {/* Grown, not overlaid: the rows stack tightly, so an invisible 44er
+          would reach into the bin of the row above (§9.3). */}
+      <IconButton size="small" aria-label={t.korbDelete} onClick={onDelete} sx={{ width: TOUCH_TARGET, height: TOUCH_TARGET }}>
         <DeleteOutlinedIcon fontSize="small" />
       </IconButton>
     </Box>
@@ -446,6 +471,7 @@ export function KorbPanel({
           aria-label={expanded ? de.admin.shell.closeKorb : de.admin.shell.openKorb}
           aria-expanded={expanded}
           onClick={() => setExpanded((v) => !v)}
+          sx={{ width: TOUCH_TARGET, height: TOUCH_TARGET }}
         >
           {expanded ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
         </IconButton>
@@ -471,11 +497,18 @@ export function KorbPanel({
               }}
             />
             <Box sx={{ display: 'flex', gap: 1 }}>
-              <Button size="small" variant="contained" onClick={addNote} disabled={savingNote || !noteText.trim()}>
+              <Button
+                size="small"
+                variant="contained"
+                sx={BUTTON_TARGET}
+                onClick={addNote}
+                disabled={savingNote || !noteText.trim()}
+              >
                 {t.korbAddSubmit}
               </Button>
               <Button
                 size="small"
+                sx={BUTTON_TARGET}
                 onClick={() => {
                   setAdding(false);
                   setNoteText('');
@@ -486,7 +519,12 @@ export function KorbPanel({
             </Box>
           </Box>
         ) : (
-          <Button size="small" startIcon={<AddIcon fontSize="small" />} sx={{ mt: 0.5 }} onClick={() => setAdding(true)}>
+          <Button
+            size="small"
+            startIcon={<AddIcon fontSize="small" />}
+            sx={{ ...BUTTON_TARGET, mt: 0.5 }}
+            onClick={() => setAdding(true)}
+          >
             {t.korbAddNote}
           </Button>
         )}
@@ -632,8 +670,15 @@ export function KorbPanel({
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirming(null)}>{t.cancel}</Button>
-          <Button color="error" variant="contained" onClick={() => confirming && remove(confirming)}>
+          <Button sx={BUTTON_TARGET} onClick={() => setConfirming(null)}>
+            {t.cancel}
+          </Button>
+          <Button
+            color="error"
+            variant="contained"
+            sx={BUTTON_TARGET}
+            onClick={() => confirming && remove(confirming)}
+          >
             {t.korbDeleteConfirmSubmit}
           </Button>
         </DialogActions>

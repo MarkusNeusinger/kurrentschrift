@@ -62,6 +62,7 @@ import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { EIGENHAND_ANSICHTEN, eigenhandUrl, readEigenhandFocus } from '@/sections/admin/shell/focus';
 import { ViewHeader } from '@/sections/admin/shell/Panel';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 
 // `glyphOf` moved to coverageLabels.ts, where the key-to-character map is
 // DERIVED from the glyph registry instead of hand-written a second time. It had
@@ -295,7 +296,12 @@ export function EigenhandView() {
               to={eigenhandUrl(name, name === 'streifen' || name === 'bestand' ? { item, wort } : undefined)}
               aria-current={name === ansicht ? 'page' : undefined}
               aria-pressed={undefined}
-              sx={{ textTransform: 'none', px: 1.5 }}
+              // 40.5 px painted at every breakpoint — the theme lifts toggle
+              // groups only below `sm`, and this is the page's own tab row on
+              // the tablet the author re-traces on. A group's buttons touch, so
+              // the element grows rather than wearing an invisible hit area
+              // (§9.3, „wo Nachbarn dicht stehen").
+              sx={{ textTransform: 'none', px: 1.5, minHeight: TOUCH_TARGET }}
             >
               {t.ansichten[name]}
             </ToggleButton>

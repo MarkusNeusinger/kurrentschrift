@@ -25,7 +25,9 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import { InfoHint } from '@/components/InfoHint';
 import { WrittenWord } from '@/components/WrittenWord';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 import { useAdmin } from '@/context/adminState';
 import { fetchRenderWord, getWordSampleScore } from '@/lib/api';
 import type { ComposedWordOut, WordSampleScoreOut } from '@/lib/api';
@@ -286,7 +288,12 @@ export function WordView() {
         helperText={t.freeTextHint}
         sx={{ width: { xs: '100%', sm: 300 } }}
       />
-      <Button size="small" variant="contained" sx={{ mt: 0.5 }} onClick={() => focus(draft.trim() || null)}>
+      <Button
+        size="small"
+        variant="contained"
+        sx={{ mt: 0.5, minHeight: TOUCH_TARGET }}
+        onClick={() => focus(draft.trim() || null)}
+      >
         {t.freeTextSubmit}
       </Button>
     </Box>
@@ -338,13 +345,22 @@ export function WordView() {
                 folded in — a separate number under their own name is the only
                 way both statements stay true. */}
             {foreignCount > 0 && (
-              <Tooltip title={de.admin.werkbank.foreignSetHint}>
+              <>
                 <Chip
                   size="small"
                   variant="outlined"
                   label={fmt(de.admin.werkbank.foreignCount, { count: foreignCount })}
                 />
-              </Tooltip>
+                {/* „zählt in keine Statistik dieser Hand" is a decision, not a
+                    detail — so it is not allowed to live in a hover over an
+                    unfocusable chip (V25). */}
+                <InfoHint
+                  title={fmt(de.admin.werkbank.foreignCount, { count: foreignCount })}
+                  label={de.admin.werkbank.foreignSetAria}
+                >
+                  {de.admin.werkbank.foreignSetHint}
+                </InfoHint>
+              </>
             )}
             {missing.length > 0 && (
               <Chip size="small" color="warning" label={`${de.admin.compare.missingPrefix}${missing.join(', ')}`} />
@@ -508,9 +524,18 @@ export function WordView() {
                     ) : outcome === 'failed' ? (
                       <Chip size="small" color="error" variant="outlined" label={de.admin.compare.scoreFailed} />
                     ) : outcome === 'measured' ? (
-                      <Tooltip title={t.scoreHint}>
-                        <Chip size="small" variant="outlined" label={`Loss ${(score as WordSampleScoreOut).loss.toFixed(2)}`} />
-                      </Tooltip>
+                      <>
+                        <Chip
+                          size="small"
+                          variant="outlined"
+                          label={`Loss ${(score as WordSampleScoreOut).loss.toFixed(2)}`}
+                        />
+                        {/* What the ruler IS belongs to a control, not to a
+                            hover over a `div` chip (V25). */}
+                        <InfoHint title={de.admin.compare.scoreLossTitle} label={de.admin.compare.scoreLossAria}>
+                          {t.scoreHint}
+                        </InfoHint>
+                      </>
                     ) : (
                       <Button size="small" onClick={() => runScore(sample.id)}>
                         {t.scoreButton}

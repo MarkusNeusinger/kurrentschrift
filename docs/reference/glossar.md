@@ -62,7 +62,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Ebenen-Token §5 · Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
-- **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Folger-Schalter der Ernte (`--follower`) §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Freigabe-Maschine (geplant) §5 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
+- **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fokusring (`focusRing`) §5 · Fixture-Wurzel §4 · Folger-Schalter der Ernte (`--follower`) §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Freigabe-Maschine (geplant) §5 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — Gate-Status (geplant) §5 · Gauß-Verschiebung §3 · G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grauwert-Stopp (→ Strang-Dekodierung) §3 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Haken-Spitze (→ Strang-Dekodierung) §3 · Hand §2 · Hand-Stil-Kopplung §5 · Hand-Überschuss §4 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
@@ -70,7 +70,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kompromisswinkel §2 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5
 - **L** — Labs §4 · Landmarken-Auftrag §5 · Landmarken-Erkennung §5 · Landmarken-Linse §5 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Stand (geplant) §5 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5 · Mittellinien-Öffnungsweite (`D0`) §4
-- **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Nahtverhandlung (`seam_negotiation`) §2 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Normalen-Fit (→ Strang-Dekodierung) §3 · Nullprobe §4
+- **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Nahtverhandlung (`seam_negotiation`) §2 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nicht-Hover-Regel §5 · Normalen-Fit (→ Strang-Dekodierung) §3 · Nullprobe §4
 - **O** — Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfad-Form (`/write/word/{text}`) §2 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
@@ -3969,6 +3969,35 @@ Boden wurde am 02.09.2026 an 17 Stellen unterschritten — durchweg
 MUI-`size="small"`-Vorgaben und Ad-hoc-`fontSize`-Werte, keine Absicht; deshalb
 sitzt die Korrektur im Theme und die Kontrolle im Skript.
 → concepts/design-system.md §9 · `app/scripts/type-floor.mjs`
+
+**Fokusring** *(`focusRing`)* — der EINE sichtbare Tastaturfokus der Seite:
+2 px `viridian` mit 2 px Abstand, exportiert aus
+`app/src/styles/focusRing.ts` und von `theme/components.ts` in seine drei
+MUI-Regeln (`MuiButtonBase`, `MuiChip`, `MuiLink`) hineingereicht. Er war bis
+zum Nicht-Hover-Durchgang eine modul-private Konstante im Theme — was jedes
+selbstgebaute fokussierbare Element ohne Ring ließ, weil MUIs `ButtonBase`
+selbst `outline: 0` setzt und ein nacktes `<button>` mit `appearance: none`
+(die Deckungs-Zellen der Eigenhand) gar nichts zeigt. Seit dem Export nimmt so
+ein Element `focusRingSx` statt eines handgeschriebenen `outline`; ein zweites
+Literal mit denselben Zahlen ist genau die Drift, gegen die der Export
+geschrieben ist (`app/src/styles/focusRing.test.ts` prüft die IDENTITÄT der
+Objekte, nicht ihre Gleichheit). Geschwister-Token: → Trefferfläche.
+→ concepts/design-system.md §9.1 · `app/src/styles/focusRing.ts`
+
+**Nicht-Hover-Regel** — kein entscheidungstragender Zustand lebt nur im Hover
+(Vorgabe V25 des Admin-Redesigns). Ein `Tooltip` darf ein Bedienelement
+BENENNEN; ein Zustand, ein Grund, eine Zahl oder eine Anweisung gehört in
+sichtbaren Text oder hinter einen → `InfoHint`, der ein echter Knopf mit
+Fokusring und 44-px-Fläche ist und darum auf Tastatur UND Finger reagiert. Die
+Prüffrage ist mechanisch: Ist das Kind des Tooltips fokussierbar? MUI setzt
+selbst kein `tabIndex`, also ist ein Tooltip über einem nicht klickbaren `Chip`,
+einer `Typography` oder dem `<span>` um ein deaktiviertes Bedienelement reine
+Maus-Ausstattung. Der Gegenreflex ist ebenfalls verboten: ein selbstgebautes
+`tabIndex={0}` auf einem nicht-interaktiven Element erzeugt einen Tab-Stopp, der
+nichts tut und (mangels Fokus-Regel auf `Typography`) nichts zeigt — die
+Buchstaben-Arbeitsliste trug davon bis zu 72 je Listenseite. Höchstens EIN
+`InfoHint` je Zeile: die Erklärung gehört der Zeile, nicht jeder Zahl darin.
+→ concepts/design-system.md §9.4 · proposals/admin-redesign.md §12.4 (V25)
 
 **Trefferfläche** *(`hitArea`)* — die unsichtbare Vergrößerung eines
 Bedienelements auf das 44-px-Touch-Ziel, ohne seine Optik anzufassen: ein

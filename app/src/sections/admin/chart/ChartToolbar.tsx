@@ -28,8 +28,13 @@ import {
 } from '@mui/material';
 
 import { de, fmt } from '@/locales/admin';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 import { ZOOM_MAX, ZOOM_MIN, ZOOM_PRESETS } from './chartConstants';
 import type { Mode } from './chartConstants';
+
+// The toolbar's icon controls stand 8–16 px apart, so they grow to the §9.3
+// floor rather than wearing invisible hit areas that would overlap.
+const TARGET = { width: TOUCH_TARGET, height: TOUCH_TARGET } as const;
 
 interface ChartToolbarProps {
   mode: Mode;
@@ -67,6 +72,18 @@ export function ChartToolbar({
   onOpenDiagnose,
   onOpenRederiveAll,
 }: ChartToolbarProps) {
+  // The ONE sentence the toolbar owes the reader when something is greyed out.
+  // Only the first obstacle is named: a glyph without a bbox is also without a
+  // canonical, and listing both would read as two independent problems.
+  const blockedReason = !activeGlyph
+    ? null
+    : !hasActiveBbox
+      ? de.admin.toolbar.lockNeedsBbox
+      : activeLocked
+        ? fmt(de.admin.toolbar.lockedFirstUnlock, { glyph: activeGlyph })
+        : !activeHasCanonical
+          ? de.admin.toolbar.diagnoseNeedsCanonical
+          : null;
   return (
     <Paper square sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1, borderBottom: 1, borderColor: 'divider', flexWrap: 'wrap' }}>
       <ToggleButtonGroup size="small" value={mode} exclusive onChange={(_e, v: Mode | null) => v && onModeChange(v)}>
@@ -84,15 +101,12 @@ export function ChartToolbar({
         </ToggleButton>
       </ToggleButtonGroup>
 
-      <Tooltip
-        title={
-          !hasActiveBbox
-            ? de.admin.toolbar.lockNeedsBbox
-            : activeLocked
-              ? de.admin.toolbar.unlock
-              : de.admin.toolbar.lock
-        }
-      >
+      {/* The tooltip only NAMES an enabled control now. Why a control is
+          unavailable is a reason the reader acts on, and it used to exist only
+          in the hover over a `<span>` wrapper — unreachable by keyboard
+          (a disabled button takes no focus) and by finger. It stands as text in
+          the toolbar's own line below (V25, design-system.md §9.4). */}
+      <Tooltip title={!hasActiveBbox ? '' : activeLocked ? de.admin.toolbar.unlock : de.admin.toolbar.lock}>
         <span>
           <ToggleButton
             size="small"
@@ -102,6 +116,7 @@ export function ChartToolbar({
             disabled={!hasActiveBbox}
             aria-label={activeLocked ? de.admin.toolbar.unlockAria : de.admin.toolbar.lockAria}
             onChange={onToggleLock}
+            sx={TARGET}
           >
             {activeLocked ? <LockIcon fontSize="small" /> : <LockOpenIcon fontSize="small" />}
           </ToggleButton>
@@ -112,7 +127,7 @@ export function ChartToolbar({
         {/* Icon-only buttons and a bare slider: nothing here is text, so all
             three carry their own name. The wizard's identical control already
             did (WizardCanvas) — this is the same three keys. */}
-        <IconButton size="small" onClick={onZoomOut} aria-label={de.wizard.canvas.zoomOut}>
+        <IconButton size="small" onClick={onZoomOut} aria-label={de.wizard.canvas.zoomOut} sx={TARGET}>
           <RemoveIcon />
         </IconButton>
         <Slider
@@ -126,7 +141,7 @@ export function ChartToolbar({
           onChange={(_e, v) => typeof v === 'number' && onZoomChange(v)}
           aria-label={de.wizard.canvas.zoom}
         />
-        <IconButton size="small" onClick={onZoomIn} aria-label={de.wizard.canvas.zoomIn}>
+        <IconButton size="small" onClick={onZoomIn} aria-label={de.wizard.canvas.zoomIn} sx={TARGET}>
           <AddIcon />
         </IconButton>
         <Typography variant="caption" sx={{ minWidth: 50 }}>
@@ -145,12 +160,13 @@ export function ChartToolbar({
             aria-label={de.admin.toolbar.deleteBbox}
             disabled={activeLocked || !activeGlyph || !hasActiveBbox}
             onClick={onDelete}
+            sx={TARGET}
           >
             <DeleteIcon fontSize="small" />
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip title={activeLocked ? fmt(de.admin.toolbar.lockedFirstUnlock, { glyph: activeGlyph ?? '' }) : de.admin.toolbar.openWizard}>
+      <Tooltip title={activeLocked ? '' : de.admin.toolbar.openWizard}>
         <span>
           <Button
             size="small"
@@ -163,7 +179,7 @@ export function ChartToolbar({
           </Button>
         </span>
       </Tooltip>
-      <Tooltip title={activeHasCanonical ? de.admin.toolbar.diagnoseTooltip : de.admin.toolbar.diagnoseNeedsCanonical}>
+      <Tooltip title={activeHasCanonical ? de.admin.toolbar.diagnoseTooltip : ''}>
         <span>
           <Button
             size="small"
@@ -181,6 +197,17 @@ export function ChartToolbar({
           {de.admin.rederive.button}
         </Button>
       </Tooltip>
+
+      {/* Why something here cannot be used, in the toolbar itself. One line,
+          full width, in the order the reader meets the obstacles: no bbox
+          first (nothing works without one), then the lock, then the missing
+          canonical. `warning.main` is a second channel beside the wording, not
+          the carrier of it (§9). */}
+      {blockedReason && (
+        <Typography variant="caption" color="warning.main" sx={{ flexBasis: '100%' }}>
+          {blockedReason}
+        </Typography>
+      )}
     </Paper>
   );
 }

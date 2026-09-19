@@ -14,13 +14,13 @@
 // layer's occurrences, the admin context's bboxes and template rows, the
 // basket's own read. This surface adds no request of its own.
 
-import { Box, Button, Chip, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Chip, Typography } from '@mui/material';
 import { useState } from 'react';
 
 import type { AggregateOut, InstanceOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { CompareCard } from '@/sections/admin/compare/CompareCard';
-import { ScoreBreakdownInline, ScoreChip } from '@/sections/admin/quality/scoreParts';
+import { ScoreBreakdownInline, ScoreChip, ScoreHelp } from '@/sections/admin/quality/scoreParts';
 import { WorkRow } from '@/sections/admin/shell/WorkList';
 import { garamond } from '@/styles/paper';
 import { TOUCH_TARGET } from '@/styles/hitArea';
@@ -92,11 +92,17 @@ export function LetterList({
                     once it has answered is „kein Score" a claim about this
                     form rather than about the read. */}
                 {!row.scoreKnown ? null : row.score !== null ? (
-                  <ScoreChip score={row.score} title={de.admin.compare.scoreHint} />
+                  <ScoreChip score={row.score} />
                 ) : (
-                  <Tooltip title={de.admin.compare.scoreNoneHint} describeChild>
+                  // The reason a form carries no score used to hang in this
+                  // chip's tooltip — on a `div`, so neither keyboard nor finger
+                  // ever reached it. It is one of the lines of `ScoreHelp` now,
+                  // which an unscored row carries beside the chip (a scored one
+                  // gets it from the breakdown in its subline).
+                  <>
                     <Chip size="small" variant="outlined" label={de.admin.compare.scoreNone} />
-                  </Tooltip>
+                    <ScoreHelp />
+                  </>
                 )}
                 {row.locked && <Chip size="small" variant="outlined" label={t.stateLocked} />}
                 {/* Both directions are stated, because a missing chip would

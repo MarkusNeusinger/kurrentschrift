@@ -43,6 +43,7 @@ import { useFileMark } from '@/sections/admin/shell/korbState';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { FOCUS_PARAMS, joinsUrl, neighbourLetters, readLetterFocus, wordsUrl } from '@/sections/admin/shell/focus';
 import { EvidenceState, Panel, ViewHeader } from '@/sections/admin/shell/Panel';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 import { garamond } from '@/styles/paper';
 
 // The Laufform is stored as this template variant (core/database LAUFFORM_VARIANT).
@@ -179,7 +180,9 @@ export function LetterView() {
         <ViewHeader eyebrow={de.admin.shell.startEyebrow} title={t.overviewTitle} intro={t.overviewIntro}>
           <LetterPicker onPick={focus}>
             {(open) => (
-              <Button size="small" variant="outlined" onClick={open}>
+              // MUI's `small` button is 30.75 px tall; this one stands alone in
+              // the page head, so it simply grows to the §9.3 floor.
+              <Button size="small" variant="outlined" onClick={open} sx={{ minHeight: TOUCH_TARGET }}>
                 {t.pickLetter}
               </Button>
             )}
@@ -204,8 +207,20 @@ export function LetterView() {
         eyebrow={de.admin.shell.areaLetters}
         titleText={fmt(t.letterHeading, { key: letter?.glyph ?? glyphKey })}
         title={
+          // The subject stepper. All three controls GROW to the 44 px floor
+          // instead of wearing invisible hit areas: they stand 8 px apart, so
+          // three overlays would steal each other's taps (§9.3, „wo Nachbarn
+          // dicht stehen"). The chip's tooltip is the NAME of a control whose
+          // visible label is the letter itself — `aria-label` carries the same
+          // words, so nothing of it lives in the hover alone.
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-            <IconButton size="small" disabled={!prev} aria-label={t.prevLetter} onClick={() => prev && focus(prev)}>
+            <IconButton
+              size="small"
+              disabled={!prev}
+              aria-label={t.prevLetter}
+              onClick={() => prev && focus(prev)}
+              sx={{ width: TOUCH_TARGET, height: TOUCH_TARGET }}
+            >
               <ChevronLeftIcon fontSize="small" />
             </IconButton>
             <LetterPicker activeKey={glyphKey} onPick={focus}>
@@ -214,17 +229,24 @@ export function LetterView() {
                   <Chip
                     clickable
                     onClick={open}
+                    aria-label={t.pickLetter}
                     label={
                       <Typography component="span" sx={{ fontFamily: garamond, fontSize: 22, lineHeight: 1.4 }}>
                         {letter?.glyph ?? glyphKey}
                       </Typography>
                     }
-                    sx={{ height: 40, px: 0.5 }}
+                    sx={{ height: TOUCH_TARGET, minWidth: TOUCH_TARGET, px: 0.5 }}
                   />
                 </Tooltip>
               )}
             </LetterPicker>
-            <IconButton size="small" disabled={!next} aria-label={t.nextLetter} onClick={() => next && focus(next)}>
+            <IconButton
+              size="small"
+              disabled={!next}
+              aria-label={t.nextLetter}
+              onClick={() => next && focus(next)}
+              sx={{ width: TOUCH_TARGET, height: TOUCH_TARGET }}
+            >
               <ChevronRightIcon fontSize="small" />
             </IconButton>
             <Typography variant="caption" color="text.secondary">

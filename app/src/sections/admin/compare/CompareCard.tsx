@@ -19,16 +19,17 @@
 // the row is on screen when it opens, which is exactly the intent: no image
 // loads for a collapsed row.
 
-import { Box, Button, Chip, CircularProgress, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Chip, CircularProgress, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
+import { InfoHint } from '@/components/InfoHint';
 import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { useInView } from '@/hooks/useInView';
 import { ApiError, cropUrl, getDiagnostic } from '@/lib/api';
 import type { AggregateOut, DiagnosticData, InstanceOut, QualityData } from '@/lib/api';
 import { ringsToPathD } from '@/lib/svg';
 import { de, fmt } from '@/locales/admin';
-import { ScoreBreakdownInline, ScoreChip } from '@/sections/admin/quality/scoreParts';
+import { ScoreBreakdownInline, ScoreChip, ScoreHelp } from '@/sections/admin/quality/scoreParts';
 import { AggregateSketch } from '@/sections/admin/shell/AggregateSketch';
 import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
 import { isPoint, letterSketchAnchors, occurrenceChainsOf } from '@/sections/admin/shell/sketchGeometry';
@@ -74,19 +75,16 @@ function Face({
     // strips. Bottom-aligned by the row, so a label that wraps to two lines
     // does not push its own frame out of line with the others.
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, flex: '1 1 150px', minWidth: 0 }}>
-      {/* describeChild — a label tooltip would replace the visible face heading
-          in the accessibility tree instead of describing it. */}
-      {headingHint ? (
-        <Tooltip title={headingHint} describeChild>
-          <Typography variant="caption" color="text.secondary" tabIndex={0} sx={{ cursor: 'help', width: 'fit-content' }}>
-            {heading}
-          </Typography>
-        </Tooltip>
-      ) : (
+      {/* The legend of a face — four layers in one sketch — used to be a hover
+          on a `Typography` carrying a bare `tabIndex={0}`: a tab stop with no
+          focus ring, and nothing at all for a finger. `InfoHint` is a real
+          button with the shared ring and a 44 px target (V25, §9.4). */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
         <Typography variant="caption" color="text.secondary">
           {heading}
         </Typography>
-      )}
+        {headingHint && <InfoHint title={heading}>{headingHint}</InfoHint>}
+      </Box>
       <Box
         sx={{
           height: FACE_H,
@@ -311,10 +309,11 @@ export function CompareCard({
                   variant="outlined"
                   label={fmt(de.admin.letters.occurrenceCount, { count: occurrences.length })}
                 />
+                {/* What „Fit ⌀" means is a line of `ScoreHelp` now — it hung in
+                    a tooltip on a plain `div`, which is neither keyboard- nor
+                    touch-reachable (V25). */}
                 {rmse !== null && (
-                  <Tooltip title={t.fitMeanHint} describeChild>
-                    <Chip size="small" variant="outlined" label={fmt(t.fitMean, { value: rmse.toFixed(2) })} />
-                  </Tooltip>
+                  <Chip size="small" variant="outlined" label={fmt(t.fitMean, { value: rmse.toFixed(2) })} />
                 )}
               </>
             ) : (
@@ -328,11 +327,12 @@ export function CompareCard({
                 `quality === undefined` is that in-flight state, `null` the
                 answered „this row carries none". */}
             {quality === undefined ? null : quality ? (
-              <ScoreChip score={quality.score} title={t.scoreHint} />
+              <ScoreChip score={quality.score} />
             ) : (
-              <Tooltip title={t.scoreNoneHint} describeChild>
+              <>
                 <Chip size="small" variant="outlined" label={t.scoreNone} />
-              </Tooltip>
+                <ScoreHelp />
+              </>
             )}
           </Box>
           {/* The grid doubles as the Buchstaben view's overview, so a tile is the

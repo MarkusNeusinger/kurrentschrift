@@ -58,18 +58,23 @@ export function LetterGrid({ activeKey, onPick, isDisabled }: LetterGridProps) {
                 const locked = bboxesByKey[key]?.locked === true;
                 const active = activeKey === key;
                 const disabled = isDisabled?.(letter) ?? false;
+                // The cell's whole state in words. The dot is a COLOUR (green =
+                // canonical, orange = bbox only) and the tooltip was its only
+                // wording — so for a colour-blind or keyboard reader the grid
+                // said nothing. As the button's accessible name it is read out
+                // on focus and on tap, and the tooltip stays for the mouse
+                // (design-system.md §9, §9.4).
+                const status = `${letter.glyph}${letter.note ? ` · ${letter.note}` : ''}${
+                  canon ? t.statusCanonical : bbox ? t.statusBbox : t.statusEmpty
+                }${locked ? t.statusLocked : ''}`;
                 return (
-                  <Tooltip
-                    key={letter.base}
-                    title={`${letter.glyph}${letter.note ? ` · ${letter.note}` : ''}${
-                      canon ? t.statusCanonical : bbox ? t.statusBbox : t.statusEmpty
-                    }${locked ? t.statusLocked : ''}`}
-                  >
+                  <Tooltip key={letter.base} title={status}>
                     {/* A disabled ButtonBase swallows the tooltip's events — the
                         span keeps the hint readable either way. */}
                     <span>
                       <ButtonBase
                         onClick={() => onPick(key)}
+                        aria-label={status}
                         disabled={disabled}
                         sx={{
                           position: 'relative',

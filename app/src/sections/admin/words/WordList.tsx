@@ -11,7 +11,7 @@
 // existing `WordCard`, and only an open row mounts it — which is why no
 // collapsed row loads a single byte of ink (a jsdom test pins exactly that).
 
-import { Box, Button, Chip, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Chip, Typography } from '@mui/material';
 import { useState } from 'react';
 
 import { de, fmt } from '@/locales/admin';
@@ -25,7 +25,16 @@ import type { WordRow } from './wordRows';
 /** The second line of a row: which plate this Wortprobe was cut from, and
  * whose hand wrote it — empty where the id only repeats the word above it. */
 function subline(row: WordRow): string {
-  const parts = [row.sampleId === row.word ? '' : row.sampleId, row.foreignSet ?? ''].filter(Boolean);
+  const parts = [
+    row.sampleId === row.word ? '' : row.sampleId,
+    row.foreignSet ?? '',
+    // What the two flagged states MEAN, as text on the row. Both used to hang
+    // in a hover over an unfocusable chip; the clipped specimen's own note is
+    // authored free text and may never need a mouse (V25). Short forms, because
+    // a work-list row is one line — the long sentences stay in the card.
+    row.foreign ? de.admin.werkbank.foreignSetShort : '',
+    row.status === 'incomplete' ? row.sample.note || de.admin.compare.incompleteChipHint : '',
+  ].filter(Boolean);
   return parts.join(' · ');
 }
 
@@ -88,25 +97,22 @@ export function WordList({
                     label={fmt(row.traces === 1 ? t.traceCountOne : t.traceCount, { count: row.traces })}
                   />
                 )}
+                {/* All three chips carried their explanation in a hover over a
+                    plain `div` — no keyboard, no touch. The chips keep their
+                    words; the sentences move into the row's ONE `InfoHint`
+                    below, and the clipped specimen's authored note becomes the
+                    subline (V25, design-system.md §9.4). */}
                 {row.status === 'authored' ? (
-                  <Tooltip title={de.admin.belege.provenanceAuthored}>
-                    <Chip size="small" color="success" label={de.admin.compare.authoredChip} />
-                  </Tooltip>
+                  <Chip size="small" color="success" label={de.admin.compare.authoredChip} />
                 ) : row.status === 'incomplete' ? (
-                  <Tooltip title={row.sample.note || de.admin.compare.incompleteChipHint}>
-                    <Chip size="small" color="warning" variant="outlined" label={de.admin.compare.incompleteChip} />
-                  </Tooltip>
+                  <Chip size="small" color="warning" variant="outlined" label={de.admin.compare.incompleteChip} />
                 ) : (
                   <Chip size="small" variant="outlined" label={de.admin.compare.statusOpen} />
                 )}
                 {/* The foreign writer's samples are announced, not folded in —
                     a separate chip under their own name is the only way both
                     statements stay true (V4). */}
-                {row.foreign && (
-                  <Tooltip title={de.admin.werkbank.foreignSetHint}>
-                    <Chip size="small" variant="outlined" label={de.admin.compare.tabOther} />
-                  </Tooltip>
-                )}
+                {row.foreign && <Chip size="small" variant="outlined" label={de.admin.compare.tabOther} />}
                 {/* The basket read is admin-gated: `null` stays silent rather
                     than reporting a clean Wortprobe. */}
                 {row.korbOpen !== null && row.korbOpen > 0 && (

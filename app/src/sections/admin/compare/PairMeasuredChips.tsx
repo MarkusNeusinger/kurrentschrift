@@ -20,7 +20,9 @@
 // this join), never used for a read that is still running, was never rebuilt,
 // has no hand or could not be loaded at all.
 
-import { Box, Chip, Tooltip, Typography } from '@mui/material';
+import { Box, Chip, Typography } from '@mui/material';
+
+import { InfoHint } from '@/components/InfoHint';
 
 import { de, fmt, specimenKindLabel } from '@/locales/admin';
 import { pairKeyOf } from '@/sections/admin/shell/model';
@@ -120,36 +122,40 @@ export function PairMeasuredChips({
   if (uncertain) lines.push(t.measuredFitHint);
 
   return (
-    <Tooltip
-      title={
-        <Box>
-          {lines.map((line) => (
-            <Typography key={line} variant="caption" sx={{ display: 'block' }}>
-              {line}
-            </Typography>
-          ))}
-        </Box>
-      }
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
-        <Typography variant="caption" color="text.secondary">
-          {`${t.measuredLabel}:`}
+    // The whole measured sheet — Kopplungshöhe, Versatz mit MAD, Tintenanteil,
+    // welche Belegarten — used to be the tooltip of a plain `Box`: numbers a
+    // pair decision rests on, reachable by mouse and by nothing else (V25). It
+    // sits behind ONE InfoHint at the head of the row now, which is a button
+    // with the shared focus ring and a 44 px target.
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+      <Typography variant="caption" color="text.secondary">
+        {`${t.measuredLabel}:`}
+      </Typography>
+      <Chip size="small" variant="outlined" label={fmt(w.statsInstances, { count })} />
+      {meanStats.gen_chamfer && (
+        <Chip
+          size="small"
+          variant="outlined"
+          label={fmt(t.measuredGenChamfer, { value: num(meanStats.gen_chamfer.mean, 3) })}
+        />
+      )}
+      {reason && (
+        <Typography variant="caption" color="text.disabled">
+          {reason.chip}
         </Typography>
-        <Chip size="small" variant="outlined" label={fmt(w.statsInstances, { count })} />
-        {meanStats.gen_chamfer && (
-          <Chip
-            size="small"
-            variant="outlined"
-            label={fmt(t.measuredGenChamfer, { value: num(meanStats.gen_chamfer.mean, 3) })}
-          />
-        )}
-        {reason && (
-          <Typography variant="caption" color="text.disabled">
-            {reason.chip}
-          </Typography>
-        )}
-        {uncertain && <Chip size="small" color="warning" variant="outlined" label={t.measuredFitWarn} />}
-      </Box>
-    </Tooltip>
+      )}
+      {uncertain && <Chip size="small" color="warning" variant="outlined" label={t.measuredFitWarn} />}
+      {lines.length > 0 && (
+        <InfoHint title={t.measuredLabel} label={t.measuredSheetAria}>
+          <Box>
+            {lines.map((line) => (
+              <Typography key={line} variant="body2" sx={{ display: 'block' }}>
+                {line}
+              </Typography>
+            ))}
+          </Box>
+        </InfoHint>
+      )}
+    </Box>
   );
 }

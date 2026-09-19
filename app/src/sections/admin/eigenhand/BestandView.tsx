@@ -22,6 +22,8 @@ import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
 import { rechnerBefehl, uebergabeKarten } from '@/sections/admin/eigenhand/uebergabe';
 import { Uebergabekarte } from '@/sections/admin/eigenhand/Uebergabekarte';
 import { Panel } from '@/sections/admin/shell/Panel';
+import { focusRingSx } from '@/styles/focusRing';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 import { paper } from '@/styles/paper';
 
 const BUCKET_LABELS: Record<string, string> = {
@@ -58,22 +60,37 @@ function BucketGrid({
         </Typography>
       </Stack>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-        {bucket.keys.map((row) => (
-          <Tooltip
-            key={row.key}
-            describeChild
-            title={`${fmt(t.keyTooltip, { key: row.key, belege: row.belege, planned: row.planned })}${
-              row.belege ? t.keyTooltipShow : ''
-            }`}
-          >
+        {bucket.keys.map((row) => {
+          // The cell's whole content in words — the count, the plan and what a
+          // click does. As the button's accessible NAME it is read out on
+          // focus and on tap; the tooltip stays for the mouse. Before, a
+          // keyboard reader met ~90 buttons all called by their glyph alone.
+          const label = `${fmt(t.keyTooltip, { key: row.key, belege: row.belege, planned: row.planned })}${
+            row.belege ? t.keyTooltipShow : ''
+          }`;
+          return (
+          <Tooltip key={row.key} describeChild title={label}>
             {/* A written key is a real <button> (native keyboard + semantics);
-                an unwritten one has nothing to show and stays a plain cell. */}
+                an unwritten one has nothing to show and stays a plain cell.
+                A bare `<button>` with `appearance: none` shows NO focus at all
+                — MUI's reset never reaches it, because it is not a ButtonBase.
+                It wears the shared `focusRing` token instead of a hand-written
+                outline (§9.1). Both kinds of cell carry the 44 px floor: they
+                tile densely, so the element grows rather than an invisible
+                overlay reaching into its neighbour (§9.3), and a grid of two
+                different cell sizes would read as broken. */}
             <Box
               component={row.belege ? 'button' : 'div'}
               type={row.belege ? 'button' : undefined}
+              aria-label={row.belege ? label : undefined}
               onClick={row.belege ? () => onSelect(row.key) : undefined}
               sx={{
-                minWidth: '2.1rem',
+                minWidth: TOUCH_TARGET,
+                minHeight: TOUCH_TARGET,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
                 px: 0.5,
                 py: 0.25,
                 textAlign: 'center',
@@ -85,23 +102,27 @@ function BucketGrid({
                 bgcolor: row.belege ? 'action.hover' : 'transparent',
                 color: row.belege ? paper.ink : 'text.disabled',
                 cursor: row.belege ? 'pointer' : 'default',
+                ...focusRingSx,
               }}
             >
               <Typography variant="body2" sx={{ lineHeight: 1.2 }}>
                 {glyphOf(row.key)}
               </Typography>
               {/* 0.6rem = 9.6 px, under the design system's 14 px caption
-                  floor, and an ad-hoc fontSize on a variant besides. Moved
-                  here verbatim on purpose: lifting it re-flows a grid of ~90
-                  cells the author reads every day, and changing his optics is
-                  not what a page split is for. Filed for his call rather than
-                  decided here. */}
-              <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'inherit' }}>
+                  floor, and an ad-hoc fontSize on a variant besides. LEFT AS
+                  IT IS, deliberately, through the non-hover round too: lifting
+                  it re-flows a grid of ~90 cells the author reads every day,
+                  and that is his call to make, not the sweep's. The number is
+                  no longer the only way to the count — the cell's accessible
+                  name says „b: 3 von 6 geplant" in full. Open author question
+                  in the PR that touched this cell. */}
+              <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'inherit' }} aria-hidden>
                 {row.belege}
               </Typography>
             </Box>
           </Tooltip>
-        ))}
+          );
+        })}
       </Box>
     </Box>
   );

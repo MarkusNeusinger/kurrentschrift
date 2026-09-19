@@ -171,6 +171,12 @@ export const wizard = {
     breakdownHeading: 'Abzüge nach Kategorie (optimiert)',
     breakdownHint: 'Wo die optimierte Form Punkte verliert — höher = mehr Abzug, wie im Glyph-Bench.',
     breakdownNone: 'Keine nennenswerten Abzüge — die Form ist sauber.',
+    // The one InfoHint of a scored row (ScoreHelp): title, its button name, and
+    // the line the Kurrent metric earns — it stores no per-category components,
+    // and a row that simply showed nothing looked like a row still loading.
+    breakdownHelpTitle: 'Score und Abzüge',
+    breakdownHelpAria: 'Score und Abzüge erklären',
+    breakdownNoComponents: 'Keine Abzüge nach Kategorie — diese Schrift misst anders.',
     // Prefix on the one-line variant (ScoreBreakdownInline, letter overview).
     // The full breakdown carries `breakdownHint` under its bars to say which
     // way the numbers run; the short form had no room for it and so showed a

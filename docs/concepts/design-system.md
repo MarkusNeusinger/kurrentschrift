@@ -376,14 +376,15 @@ Scope-Leiste darunter — §7 `HeaderBar`.
 | `PublicLayout` | Chrome: Background + Header + `<main>` + optional Footer | `sx` für `<main>` |
 | `HeaderBar` | DIE Kopf-Chrome (sticky, `blur(6px)`, Haarlinie) + Geschwister-Exporte `Wordmark` (•kurrentschrift.ink, Viridian-Punkt, kursive TLD) und `HeaderNavLink` (Playfair-Link, Viridian-Unterstrich, `aria-current`) | `maxWidth` (Default `wide`, `'none'` = vollbreit), `zIndex`, `contentSx`, `below` (zweite Zeile INNERHALB des Sticky-Blocks, heute die Scope-Leiste); **eine** Leiste für öffentliche Seiten **und** Werkbank |
 | `PublicHeader` | sticky Markenleiste + 3-Bereiche-Nav | auf `HeaderBar` gebaut, Inhalt auf `wide`; nur noch `sx` (die `tone`-Variante hatte keinen Aufrufer und ist entfallen); 5 Taps → Admin |
-| `AdminHeader` | dieselbe Leiste für die Werkbank (`sections/admin/shell`) | **vollbreit** (`maxWidth='none'`, §4), `zIndex 1100` (unter Korb-Drawer 1200 und LetterPicker-Popover 1300); Wortmarke · Bereichs-Nav (bei `xs` eine Scroll-Snap-Zeile mit 4 px Unterrand, sonst wüchse ein Scrollbalken für die Hover-Haarlinie) · Auftragskorb-⚑ mit Badge, und im `below`-Schlitz die `ScopeBar` |
+| `AdminHeader` | dieselbe Leiste für die Werkbank (`sections/admin/shell`) | **vollbreit** (`maxWidth='none'`, §4), `zIndex 1100` (unter Korb-Drawer 1200 und LetterPicker-Popover 1300); Wortmarke · Bereichs-Nav (bei `xs` eine Scroll-Snap-Zeile mit 4 px Unterrand, sonst wüchse ein Scrollbalken für die Hover-Haarlinie) · Auftragskorb-⚑ als blankes Icon mit 44-px-`hitArea` und benanntem `aria-label`, und im `below`-Schlitz die `ScopeBar`. **Kein Badge:** MUI setzt dessen Zahl in 12 px (unter dem Boden von §9) und sagte in Farbe, was die Scope-Leiste eine Zeile tiefer in Worten sagt („⚑ 3 offen" im Vorlagen-Feld, V25) |
 | `ScopeBar` | die **Scope-Leiste**: zwei Felder „Vorlage:" und „Hand:", die den Arbeitsbereich zeigen und nie umschalten | beide Felder sind Links (Vorlagen-Auswahl · Eigenhand-Seite), das aktive trägt `aria-current` **und** eine Viridian-Leiste links (Farbe nie allein, §9); der Korb-Zähler steht sichtbar im Vorlagen-Feld, 44 px Trefferhöhe je Feld |
 | `PublicFooter` | geteilter Footer (Links, Impressum) | Breite `wide` |
 | `PageContainer` | eine Inhaltsspalte, 3 Breiten | `width='narrow'\|'text'\|'wide'\|number`, `component`, `sx` |
 | `Prose` | Lesemaß ~66 Zeichen | `align='left'\|'center'`, `measure='47rem'` |
 | `PageHeader` | einheitlicher **Seitenkopf**: Bereichs-Eyebrow + Playfair-Titel + Intro | `eyebrow?`, `title`, `children` (Intro im `Prose`-Maß); jede öffentliche Seite außer Landing-Hero |
 | `CategoryHeading` | **Abschnitts**titel mit Viridian-Kurrent-Initiale auf Haarlinie | innerhalb einer Seite (`/schriftkunde`, `/impressum`, `/tafel`, `/landing`) |
-| `InfoHint` | grünes Kurrent-„(i)" + Popover („Mehr dazu") | app-weit, Detail eine Geste entfernt |
+| `InfoHint` | grünes Kurrent-„(i)" + Popover („Mehr dazu") | app-weit, Detail eine Geste entfernt; in der Werkbank das Gegenstück zum Hover (§9.4) — **höchstens einer je Zeile**, `label` benennt ihn („Score und Abzüge erklären") |
+| `ScoreHelp` (Admin) | die EINE Erklärung einer bewerteten Zeile: was der Score ist, warum eine Form keinen trägt, was „Fit ⌀" misst, wie die Abzüge laufen und was die sechs Kategorien heißen | `quality/scoreParts.tsx`, ohne Props; steht in `ScoreBreakdown` am Kopf und in `ScoreBreakdownInline` am Zeilenanfang — ersetzt bis zu neun Hover je Zeile (§9.4) |
 | `PaperCardLink` | DIE Papier-Karte, die ein Link ist: Hover/Fokus heben sie an, Rand wird viridian | `to`, `sx`; Geschwister-Export `PaperCardCta` (Haarlinie wischt bei Karten-Hover/-Fokus ein) — genutzt von Landing, Hubs, `/schriftkunde` |
 | `HubView` | Hub-Layout (Titel + Lead + Karten-Grid) | `title`, `lead`, `cards[{title,body,cta,to}]` |
 | `HeroWritten` | einspaltiger Landing-Hero: Markenwort wird von der Engine geschrieben | Engine-first (`WrittenWord`, seit 2026-08-27); die Engine bekommt beliebig lange (Geduld-Zeile nach ~3 s, Autor-Entscheid 2026-08-27) — GLKurrent-Wort (Specimen) mit Wisch + Federspitze nur bei echtem Scheitern (Fetch-Fehler, fehlende Glyphen), Caption wechselt mit dem Modus |
@@ -513,9 +514,15 @@ ist der Mobil-Schritt von `/verify-frontend`.
 ### 9.1 Fokus (bindend)
 
 **Jedes fokussierbare Element trägt einen sichtbaren Ring:** 2 px `viridian`,
-`outline-offset` 2–3 px. Er liegt EINMAL im Theme
-(`theme/components.ts` → `MuiButtonBase` + `MuiChip` + `MuiLink`) und trifft damit
-Button, IconButton, ToggleButton, Chip, jedes eigene `ButtonBase` und jeden Link.
+`outline-offset` 2 px. Der Ring ist ein **exportiertes Token** —
+`focusRing` aus `app/src/styles/focusRing.ts`, neben `hitArea` das zweite geteilte
+Bedienbarkeits-Token —, und `theme/components.ts` importiert es für seine drei
+Regeln (`MuiButtonBase` + `MuiChip` + `MuiLink`). Damit trägt es Button,
+IconButton, ToggleButton, Chip, jedes eigene `ButtonBase` und jeden Link. Ein
+selbstgebautes fokussierbares Element — ein nacktes `<button>` mit
+`appearance: none`, wie die Deckungs-Zellen der Eigenhand — nimmt `focusRingSx`
+aus derselben Datei; **nie einen handgeschriebenen `outline`**, denn genau so
+driftet der eine Ring in zwei Farben auseinander.
 Drei Flächen haben keine MUI-Basis und tragen darum ihre eigene Regel:
 `PaperCardLink` und `HeaderNavLink` denselben Ring, die SVG-Zellen der
 Schreibtafel stattdessen eine eingefärbte Zellenfläche (`WrittenSheet.tsx`) —
@@ -640,6 +647,58 @@ Zeile über die obere und nimmt ihr die Tipps (gemessen an den Federprobe-Chips:
 28 px Chip + 12 px Lücke = 40 px Rasterhöhe, die untere Reihe gewann). Regel:
 `rowGap` so wählen, dass Elementhöhe + Lücke ≥ 44 px.
 
+**Ein Eingabefeld wird am FELD gemessen**, nicht an seinem `<input>`: MUI rendert
+ein Select als Combobox-`<div>` plus ein unsichtbares `<input>`, das es nur gibt,
+damit das Bedienelement mit einem Formular abgeschickt wird. Dieses Hemd ist 21 px
+hoch und ist niemandes Ziel — der Feldrahmen ist es, und ein Tipp in sein
+Innenmaß setzt den Fokus. Derselbe Gedanke wie beim `<label>` eine Zeile höher;
+ein Feldrahmen, der selbst unter dem Boden liegt, fällt weiterhin durch.
+
+### 9.4 Nicht-Hover (bindend — Vorgabe V25 des Admin-Redesigns)
+
+**Kein entscheidungstragender Zustand lebt nur im Hover.** Ein `Tooltip` ist ein
+NAME für ein Bedienelement, dessen sichtbare Beschriftung dasselbe sagt — nie der
+einzige Ort eines Zustands, eines Grundes, einer Zahl oder einer Anweisung. Wer
+mit Tastatur oder auf dem Tablet arbeitet (§9.3: das Gerät, auf dem der Autor
+nachfährt), hat keinen Hover.
+
+Die Prüffrage ist mechanisch, nicht ästhetisch — **ist das Kind des Tooltips
+fokussierbar?**
+
+| Kind des `Tooltip` | Erreichbar | Erlaubt |
+|---|---|---|
+| `Button`, `IconButton`, `ToggleButton`, klickbarer `Chip`, Link | Tastatur ✓, Touch ✓ | ja, solange der Inhalt das Element BENENNT |
+| nicht klickbarer `Chip`, `Typography`, `Box` | nichts | **nein** — MUI setzt dort kein `tabIndex` |
+| `<span>` um ein DEAKTIVIERTES Bedienelement | nichts (deaktiviert nimmt keinen Fokus) | **nein**, wenn es den GRUND trägt |
+| natives `title=` | nur Hover | **nein** für Fehlertexte, Rohzahlen, Notizen |
+
+Zwei Auswege, in dieser Reihenfolge:
+
+1. **Sichtbarer Text**, wo er kurz ist — der Grund in die Chip-Beschriftung, eine
+   Bildunterschrift unter die Zeile, eine Zeile in die Werkzeugleiste (so steht
+   jetzt im Chart-Kopf, WARUM „Einrichten" grau ist).
+2. **`InfoHint`**, wo die Erklärung lang ist oder einem ganzen Block gilt: ein
+   echter Knopf mit dem Fokusring aus §9.1 und der 44-px-Fläche aus §9.3, der auf
+   Klick öffnet und darum auch unter dem Finger funktioniert.
+
+**Höchstens EIN `InfoHint` je Zeile.** Die Erklärung gehört der Zeile, nicht jeder
+Zahl darin. Der Fall, für den die Regel geschrieben ist: die Abzugs-Kategorien der
+Buchstaben-Arbeitsliste waren sechs `<Typography tabIndex={0}>` je Zeile — Tab-Stopps
+ohne Ring (ein `Typography` hat keine Fokus-Regel), auf einer Listenseite bis zu 72
+Stück, und keiner davon mit dem Finger erreichbar. Gemessen am Wegwerf-Stack:
+151 → 94 Tab-Stopps auf `/admin/buchstaben`, 5 → 3 je Zeile.
+
+**Kein selbstgebauter `tabIndex` auf einem nicht-interaktiven Element.** Ein
+`tabIndex={0}`, das nur einen Tooltip per Tastatur erreichbar machen soll, ist das
+Symptom, nicht die Lösung: es erzeugt einen Stopp, der nichts tut und nichts zeigt.
+Ein Öffner ist ein `ButtonBase` (V24 „jeder Öffner"), kein `<p role="link">` und
+kein `<img onClick>`.
+
+**Farbe zählt hier mit.** Wo ein Zustand als Farbe gezeichnet wird (der Punkt im
+Buchstabenraster: grün = Canonical, orange = nur Bbox), trägt das Bedienelement
+denselben Zustand als `aria-label` — sonst sagt das Raster einem farbfehlsichtigen
+oder tastaturgeführten Leser nichts.
+
 ---
 
 ## 10. Pflege & Sync
@@ -658,13 +717,15 @@ Zeile über die obere und nimmt ihr die Tipps (gemessen an den Federprobe-Chips:
   Abbildungen dem Folger). Gegenprobe bei jeder Ebenen-/Rollenfarbe:
   `app/src/styles/paper.test.ts` — der Augenschein mit Farbfehlsicht-Simulation
   gehört in `/verify-frontend`.
-- Die drei Bedienbarkeits-Regeln aus §9 wohnen an genau einer Stelle:
-  `theme/components.ts` (Fokusring, Link-Auszeichnung, Typo-Boden der
-  MUI-`small`-Größen, `minHeight` der Umschaltgruppen unter `sm`) und
-  `styles/hitArea.ts` (Trefferfläche). Eine neue Ausnahme gehört dorthin, nicht
-  an die Aufrufstelle. Gegenprobe: `npm run type-floor` (§9) und
-  `npm run touch-targets` (§9.3) — beide gegen die laufende Seite — plus ein
-  Tastatur-Durchgang für den Fokusring (§9.1), den kein Skript ersetzt.
+- Die Bedienbarkeits-Regeln aus §9 wohnen an genau einer Stelle:
+  `styles/focusRing.ts` (der eine Ring, §9.1), `styles/hitArea.ts`
+  (Trefferfläche, §9.3) und `theme/components.ts`, das beide für seine
+  MUI-Regeln einsetzt (Link-Auszeichnung, Typo-Boden der MUI-`small`-Größen,
+  `minHeight` der Umschaltgruppen unter `sm`). Eine neue Ausnahme gehört dorthin,
+  nicht an die Aufrufstelle. Gegenprobe: `npm run type-floor` (§9) und
+  `npm run touch-targets` (§9.3) — beide gegen die laufende Seite, beide mit
+  `--routes` auch gegen die Admin-Routen — plus ein Tastatur-Durchgang für den
+  Fokusring (§9.1) und die Nicht-Hover-Regel (§9.4), den kein Skript ersetzt.
   Ein neues Bedienelement muss nirgends nachgetragen werden — der Sweep findet
   jedes von selbst; nur eine begründete Ausnahme gehört benannt in
   `app/scripts/touch-targets.mjs`.

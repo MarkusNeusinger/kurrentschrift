@@ -422,6 +422,7 @@ export const admin = {
     reviewBareToggle: 'Nur die Bahn',
     reviewOpenWord: 'Zum Wort',
     reviewDevChip: 'Entwicklungssatz',
+    reviewChipsAria: 'Was die Marken dieser Zeile bedeuten',
     reviewDevChipHint:
       'Eines der zehn eingefrorenen Lineal-Wörter des Trace-Benchs — neu speichern verändert die Referenz aller bisherigen Messungen.',
     reviewFrameStale: 'Rahmen veraltet',
@@ -586,12 +587,15 @@ export const admin = {
     scoreFailed: 'nicht bewertbar',
     scoreError: 'Einzelne Scores konnten nicht berechnet werden.',
     scoreWorstSegments: 'Größte Abweichungen:',
+    scoreLossTitle: 'Loss dieser Wortprobe',
+    scoreLossAria: 'Loss erklären',
     openPairEditor: 'Im Paar-Editor öffnen',
     // „Measured vs. composed" on the pair cards (Handmodell H2): what the
     // occurrence and the aggregate layers know about exactly this join. The
     // detailed numbers in the tooltip deliberately reuse the wording of the
     // Werkbank lens (the same statistic must not be named twice differently).
     measuredLabel: 'Gemessen',
+    measuredSheetAria: 'Gemessene Werte im Einzelnen',
     measuredGenChamfer: 'Generator-Abstand ⌀ {{value}}',
     // The four reasons a card can carry no measured median, short enough for
     // the chip row — the tooltip spells each of them out in the Werkbank's
@@ -750,6 +754,10 @@ export const admin = {
     // where the reader looks — never only in the tooltip, because „zählt nicht
     // mit" is a decision, not a detail.
     foreignSetChip: 'andere Hand · {{set}}',
+    foreignSetAria: 'Was „andere Hand" bedeutet',
+    // The one clause of `foreignSetHint` that has to be READABLE on a work-list
+    // row: the consequence. The full sentence stays in the card's InfoHint.
+    foreignSetShort: 'zählt in keine Statistik dieser Hand',
     foreignSetHint:
       'Diese Wortprobe stammt aus einem anderen Satz der Vorlage und damit von einer anderen Hand. Sie steht hier als Kontext — in keine Statistik und in keine Kopfzahl dieser Hand geht sie ein, und nachgefahren wird sie hier nicht.',
     // The head of the word detail counts the foreign samples under their own
@@ -1333,6 +1341,13 @@ export const admin = {
     stripImagesEmpty:
       'Noch keine Streifenbilder hochgeschoben. Sobald angenommene Fassungen ohne Bild vorliegen, steht der Befehl dazu im Bestand unter „Am Rechner weiter".',
     stripImagesError: 'Der Streifen konnte nicht geladen werden.',
+    stripErrorAria: 'Fehlermeldung im Wortlaut',
+    // The gallery's one opener, named: „Streifen-Bild s03/F01 · Übung groß
+    // ansehen". A tile carries several controls, so „vergrößern" alone would
+    // not say WHICH image.
+    stripLupeOpen: '{{was}} groß ansehen',
+    stripSwitchesTitle: 'Die drei Schalter',
+    stripSwitchesAria: 'Die drei Schalter erklären',
     stripShow: 'Streifen zeigen',
     stripHide: 'einklappen',
     stripWhole: 'ganzer Streifen',
@@ -1385,6 +1400,12 @@ export const admin = {
     pfadPedigreeMixed: 'Bahn: verschiedene Läufe · {{woerter}} Wort/Wörter',
     pfadMixedHint:
       'Die Bahnen dieser Fassung stammen aus mehreren Läufen — einzelne Wörter wurden später noch einmal gefolgt. Herkunft je Wort:',
+    // Names of the InfoHints that replaced the hover-only hints of this panel
+    // (V25): a Tooltip über einem nicht fokussierbaren Chip erreicht weder
+    // Tastatur noch Finger.
+    pfadPedigreeMixedTitle: 'Verschiedene Läufe',
+    pfadMixedAria: 'Herkunft je Wort anzeigen',
+    pfadSeedAria: 'Saat und Maske erklären',
     // The old sentence carried its command in the middle of running text, with
     // „…" instead of the strip and the Fassung and no copy button — exactly
     // the case the Übergabekarte exists for. It is a card at the Fassung now,
@@ -1440,6 +1461,9 @@ export const admin = {
     befundNone: 'kein Befund',
     befundNoneHint:
       'Diese Fassung wurde abgelegt, bevor der Streifen-Befund gemessen wurde. Fehlende Messung heißt nicht schlechte Fassung.',
+    befundNoneAria: 'Warum kein Befund',
+    befundSheetTitle: 'Befund dieser Fassung',
+    befundSheetAria: 'Befund dieser Fassung anzeigen',
     befundSort: 'nach Befund sortieren',
     befundSortHint: 'Schwächste Fassung zuerst — was zuerst neu geschrieben werden sollte.',
     // Die Fleckenmaske: die Toner-Punkte des Druckers, entfernt als DATEN.
@@ -1450,6 +1474,8 @@ export const admin = {
     fleckenStartHint:
       'Runder Pinsel: Klick setzt einen Kreis, Klick auf einen vorhandenen nimmt ihn weg. Gespeichert wird die Kreisliste, nie ein verändertes Bild — der Streifen bleibt Byte für Byte, wie er eingelesen wurde.',
     fleckenChip: '{{count}} Fleck(en) maskiert',
+    fleckenChipTitle: 'Maskierte Flecken',
+    fleckenChipAria: 'Maskierte Flecken erklären',
     fleckenChipHint:
       'So viele Kreise trägt dieser Streifen. Beim Abruf wird dort Papierfarbe eingefüllt; das gespeicherte Bild bleibt unverändert.',
     fleckenBrush: 'Pinsel',
@@ -1461,6 +1487,7 @@ export const admin = {
     fleckenSaveError: 'Die Fleckenmaske konnte nicht gespeichert werden.',
     fleckenClose: 'fertig',
     fleckenRaw: 'roh',
+    fleckenRawAria: 'Was „roh" zeigt',
     fleckenRawHint:
       'Zeigt die eingelesenen Bytes mit allen Flecken — zum Nachsehen, was der Drucker wirklich hinterlassen hat.',
     fleckenHint:

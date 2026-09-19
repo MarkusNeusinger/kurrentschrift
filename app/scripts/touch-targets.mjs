@@ -185,7 +185,15 @@ const SWEEP = (floor) => `(() => {
     // A control wrapped in a <label> is activated by tapping ANYWHERE on the
     // label, so the label is the honest target — this is what makes MUI's
     // transparent Switch/Checkbox input measurable at all.
-    const el = raw.closest('label') ?? raw;
+    //
+    // Same reasoning one step further for a FIELD: MUI renders a select as a
+    // combobox <div> plus a visually hidden <input> that exists only so the
+    // control submits with a form. That shim is 21px tall and is nobody's
+    // target — the field root around it is, and tapping anywhere in its padding
+    // focuses the control. So an input is measured at its field. This is not an
+    // exception to §9.3 but the same "measure where the finger lands" rule: a
+    // field root that is itself under the floor still fails.
+    const el = raw.closest('label') ?? raw.closest('.MuiInputBase-root') ?? raw;
     // A label may hold several listed controls; measure it once.
     if (seen.has(el)) continue;
     seen.add(el);
