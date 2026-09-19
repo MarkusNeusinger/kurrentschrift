@@ -41,7 +41,7 @@ import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { joinsOfText, joinsUrl, keysOfText, lettersUrl, readWordFocus, wordsUrl } from '@/sections/admin/shell/focus';
-import { seedWordInstance, wordEvidenceOf, type TraceFilter } from '@/sections/admin/shell/model';
+import { ownHandEvidence, seedWordInstance, wordEvidenceOf, type TraceFilter } from '@/sections/admin/shell/model';
 import { garamond } from '@/styles/paper';
 
 import { AuthoredTraceReview } from './AuthoredTraceReview';
@@ -148,7 +148,13 @@ export function WordView() {
     () => wordEvidenceOf(workbench.samples, workbench.wordRows, text ?? '', specimenId),
     [text, specimenId, workbench.samples, workbench.wordRows],
   );
-  const tracedCount = useMemo(() => evidence.filter((e) => e.row).length, [evidence]);
+  // What the head may count. A foreign writer's sample (Abb. 22) stands in the
+  // list as context but never in a number of THIS hand — V4 —, so the counts
+  // run over the plate's own evidence and the foreign ones get a chip of their
+  // own rather than being folded in or silently dropped.
+  const own = useMemo(() => ownHandEvidence(evidence), [evidence]);
+  const tracedCount = useMemo(() => own.filter((e) => e.row).length, [own]);
+  const foreignCount = evidence.length - own.length;
 
   // What the editor is opened on. A Wortprobe that has never been traced gets a
   // SEEDED row — the same shape the dialog already takes —, so the tested write
@@ -273,17 +279,30 @@ export function WordView() {
             {/* Two counts, because they are two things: how many Wortproben
                 the plate has of this text, and how many of them already carry
                 a stored Bahn. One number could only ever have been one of the
-                two, and the gap between them IS the remaining work. */}
+                two, and the gap between them IS the remaining work. Both count
+                THIS hand only. */}
             <Chip
               size="small"
               variant="outlined"
-              label={fmt(evidence.length === 1 ? t.sampleCountOne : t.sampleCount, { count: evidence.length })}
+              label={fmt(own.length === 1 ? t.sampleCountOne : t.sampleCount, { count: own.length })}
             />
             <Chip
               size="small"
               variant="outlined"
               label={fmt(tracedCount === 1 ? t.traceCountOne : t.traceCount, { count: tracedCount })}
             />
+            {/* The foreign writer's samples are announced, not hidden and not
+                folded in — a separate number under their own name is the only
+                way both statements stay true. */}
+            {foreignCount > 0 && (
+              <Tooltip title={de.admin.werkbank.foreignSetHint}>
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={fmt(de.admin.werkbank.foreignCount, { count: foreignCount })}
+                />
+              </Tooltip>
+            )}
             {missing.length > 0 && (
               <Chip size="small" color="warning" label={`${de.admin.compare.missingPrefix}${missing.join(', ')}`} />
             )}
@@ -446,10 +465,16 @@ export function WordView() {
                       </Button>
                     )}
                     {/* Also on a Wortprobe without a stored Bahn — that entry
-                        IS the point of this card being here. */}
-                    <Button size="small" onClick={() => setEditing(sample.id)}>
-                      {de.admin.belege.editOpen}
-                    </Button>
+                        IS the point of this card being here. NOT on a foreign
+                        writer's sample though: a Bahn drawn over it would be
+                        stored under the plate's hand and become ground truth
+                        for statistics and training under the wrong writer.
+                        Abb. 22 is context here, never work (V4). */}
+                    {!sample.sample_set && (
+                      <Button size="small" onClick={() => setEditing(sample.id)}>
+                        {de.admin.belege.editOpen}
+                      </Button>
+                    )}
                   </>
                 }
               />
@@ -471,7 +496,12 @@ export function WordView() {
           // Resolves neither — no occurrence names a hand and `sources.hand_id`
           // is unset — the dialog says so in German and keeps saving disabled,
           // which is the honest state rather than a write under a guessed hand.
-          fallbackHandId={workbench.handId ?? source?.hand_id ?? null}
+          // A foreign writer's sample never gets the plate hand: the entry is
+          // not offered for one, and if it were ever reached the dialog keeps
+          // saving disabled with its own reason rather than mislabelling a hand.
+          fallbackHandId={
+            editingEvidence.sample.sample_set ? null : (workbench.handId ?? source?.hand_id ?? null)
+          }
           onClose={() => setEditing(null)}
           // A saved authored trace replaces the row the workbench holds —
           // refetch the traces so the evidence shows the stored state, and

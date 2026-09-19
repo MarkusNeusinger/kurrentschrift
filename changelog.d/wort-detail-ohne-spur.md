@@ -8,9 +8,11 @@
   is now built from the plate's word SAMPLES, each paired with its stored
   trace where one exists, and the spine card draws the trace-only parts (pen
   path, Herkunft, fit chips, Abstandsprofil) only where there is a trace
-  instead of vanishing with it. A sample from another writer's plate says so
-  on its own chip, so it can stand as context without quietly joining this
-  hand's evidence.
+  instead of vanishing with it. A sample from another writer's plate (Abb. 22)
+  says so on its own chip and is counted under its own name, never into this
+  hand's numbers and never offered the editor — it stands as context, which is
+  all it may ever be. An Abb.-20 pair drill of the same two letters stays in
+  the Übergänge view unless it already carries a trace.
 
 ### Changed
 
@@ -26,6 +28,7 @@
 - **The word detail counts „n Bahnen" beside „n Wortproben".** „Beleg" is the
   Eigenhand Bestand's counting unit and was doing double duty as the name for
   a plate trace (author decision 2026-09-18, Q8 a). The head of the detail now
-  says how many samples the plate has of the text and how many of them already
-  carry a stored Bahn — the gap between the two is the work that is left. Only
-  this chip is renamed.
+  says how many samples this hand has of the text and how many of them already
+  carry a stored Bahn — the gap between the two is the work that is left — with
+  a foreign writer's samples on a third chip of their own. Only this chip is
+  renamed, and **Bahn** enters the glossary with it.

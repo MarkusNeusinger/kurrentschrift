@@ -189,10 +189,19 @@ export type WordEvidence = { sample: WordSampleOut; row: WordInstanceOut | null 
 
 // Every Wortprobe of one word text, worst first, each with its stored trace.
 //
-// Order, unchanged from the trace-only list it replaces: the specimen named in
-// the URL leads (so a deep link lands on it), then the worst measured fit — an
-// untraced sample has nothing measured and therefore ranks last rather than
-// pretending to a perfect fit of zero badness.
+// WHICH specimens count as a Wortprobe of the text: the plate's `word` samples,
+// plus any specimen of another kind that already carries a stored trace of it.
+// The Abb.-20 pair drills are the other kind, and they have their own home in
+// the Übergänge view — surfacing an untraced drill here as if the plate wrote
+// the two-letter text as a WORD would put drill crops under „in", „of" or „du".
+// A drill that HAS been traced stays reachable, because the drill card's „im
+// Wort ansehen" deep-links exactly here and the trace-only list it replaces
+// showed it.
+//
+// Order, unchanged from that list: the specimen named in the URL leads (so a
+// deep link lands on it), then the worst measured fit — an untraced sample has
+// nothing measured and therefore ranks last rather than pretending to a perfect
+// fit of zero badness.
 export function wordEvidenceOf(
   samples: WordSampleOut[],
   rows: WordInstanceOut[],
@@ -207,12 +216,25 @@ export function wordEvidenceOf(
   return samples
     .filter((sample) => sample.word.toLowerCase() === needle)
     .map((sample) => ({ sample, row: rowById.get(sample.id) ?? null }))
+    .filter(({ sample, row }) => sample.kind === 'word' || row !== null)
     .sort((a, b) => {
       if (a.sample.id === specimenId) return -1;
       if (b.sample.id === specimenId) return 1;
       return (b.row ? badness(b.row) : -1) - (a.row ? badness(a.row) : -1);
     });
 }
+
+// The evidence that belongs to the PLATE's own hand — everything the detail is
+// allowed to count.
+//
+// A sample carrying a `sample_set` tag comes from another writer's plate (the
+// Abb.-22 Schülerschrift). It may stand in the detail as context, but it is
+// „Kontext, nie Vorbild": excluded from this hand's statistics AND from its
+// head counts (Vorgabe V4 of the Admin-Redesign). Truthiness, not != null, so
+// an empty tag does not make a sample foreign — the same test the overview's
+// mode filter makes.
+export const ownHandEvidence = (evidence: WordEvidence[]): WordEvidence[] =>
+  evidence.filter((e) => !e.sample.sample_set);
 
 // A Wortprobe with no stored trace, in the shape the word editor already takes.
 //
