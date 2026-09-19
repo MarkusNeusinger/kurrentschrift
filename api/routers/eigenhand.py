@@ -39,7 +39,9 @@ count what a hand already covers.
   never in the filed bytes (proposal §7.4).
 * ``GET|PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade`` — the
   Streifen-Pfad: the followed pen path per written word, stored as data beside
-  the image and loaded only when the view asks for it (proposal §7.5).
+  the image and loaded only when the view asks for it (proposal §7.5). A box
+  whose stored path was drawn by HAND is never replaced by a followed one: the
+  whole push is refused with 409 unless it carries ``?replace_authored=true``.
 
 The strips are the one place where own-hand PIXELS do travel (owner, 2026-08-24)
 — so that the workbench can show a written Streifen the way it shows a chart
@@ -113,7 +115,7 @@ from core.eigenhand.befund import BEFUND_FORMAT, befund_index, kringel_catalogue
 from core.eigenhand.bestand import bestand as build_bestand
 from core.eigenhand.flecken import FLECKEN_FORMAT
 from core.eigenhand.ids import STYLE_IDS, is_fassung_id, is_hand_id, is_sheet_id, is_strip_id, style_of_hand
-from core.eigenhand.pfad import PFAD_FORMAT, check_paths, frames_of_row
+from core.eigenhand.pfad import PFAD_FORMAT, check_paths, displaced_authored, frames_of_row
 from core.eigenhand.plan import load_plan, shaping_form_of, words_of
 
 
@@ -1215,6 +1217,7 @@ async def write_pfade(
     fassung: str,
     body: EigenhandPfadeIn,
     response: Response,
+    replace_authored: bool = False,
     db: AsyncSession = Depends(require_db),
 ) -> EigenhandPfadeOut:
     """Store the followed pen paths of one Fassung — a FULL replacement.
@@ -1226,6 +1229,20 @@ async def write_pfade(
 
     A full replace, like the Fleckenmaske: a follower run produces the whole
     row at once, and merging would have to guess what a missing box meant.
+
+    And that full replace is what makes the AUTHORED rule necessary (409): a
+    box the author drew by hand is ground truth, a followed path is a
+    derivation, and a push that merely omits the box would delete the drawing
+    just as thoroughly as one that overwrites it. Refused whole rather than
+    skipped per box — unlike the plate twin (`put_word_instances`), this
+    response has no `skipped` channel, so a silent skip would leave the
+    operator believing the run was stored as followed. `tools.eigenhand.pfad`
+    merges around such a box by itself and never provokes the refusal;
+    `?replace_authored=true` is the only way past, it is set by a terminal
+    flag, and no browser code sends it — giving up hand work stays an explicit
+    act at the keyboard rather than a fourth `force` button in the workbench
+    (author decision Q4 (i), 2026-09-18). Authored over authored passes: that
+    is the author correcting his own trace.
 
     Refused (422) when a path names a box this printed row does not have, a
     word the printed box and the frozen plan do not carry, a stroke outside the
@@ -1247,13 +1264,23 @@ async def write_pfade(
             ),
         )
     row = await _pfad_row(hand, strip, fassung, db)
+    pushed = [item.model_dump(mode="json") for item in body.pfade]
+    displaced = [] if replace_authored else displaced_authored(row.pfade, pushed)
+    if displaced:
+        raise HTTPException(
+            status.HTTP_409_CONFLICT,
+            detail=(
+                f"{strip}/{fassung} carries a path drawn by hand at box "
+                f"{', '.join(str(index) for index in displaced)}, and a followed path never replaces one — push "
+                "again leaving it as it is (tools.eigenhand.pfad merges around it by itself), or, to give the "
+                "hand-drawn path up, with ?replace_authored=true"
+            ),
+        )
     layout_row = await _layout_row(hand, row.sheet, row.row_index, db)
     plan = load_plan()
     words = words_of(plan, row.strip) if row.strip in plan["strips"] else None
     try:
-        checked = check_paths(
-            [item.model_dump(mode="json") for item in body.pfade], layout_row, row.width_px, row.height_px, words
-        )
+        checked = check_paths(pushed, layout_row, row.width_px, row.height_px, words)
     except ValueError as exc:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc
     row.pfade = checked

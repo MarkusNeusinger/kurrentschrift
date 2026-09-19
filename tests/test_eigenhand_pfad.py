@@ -1,11 +1,13 @@
 """The Streifen-Pfad's pure half: where a word box sits, and what a path may be.
 
-Three things are tested here. Two are arithmetic the server and the local
+Four things are tested here. Two are arithmetic the server and the local
 follower must agree on to the pixel: the frame a word box spans inside a stored
 strip (`frame_for_box`), and the refusals that keep a pushed path from being
 stored against the wrong ink (`check_paths`). The third is which words a strip
 follow can even take on — the ductus seed it composes with, and the two ways
-that seam used to refuse the author's own hand (`TestDuctusSeed`).
+that seam used to refuse the author's own hand (`TestDuctusSeed`). The fourth
+is the rule that a hand-drawn path outranks a followed one
+(`displaced_authored`, `TestAuthoredRule`).
 """
 
 from __future__ import annotations
@@ -16,7 +18,15 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from core.eigenhand.pfad import MAX_UNIT, check_paths, frame_for_box, frames_of_row, nominal_xh_px
+from core.eigenhand.pfad import (
+    AUTHORED,
+    MAX_UNIT,
+    check_paths,
+    displaced_authored,
+    frame_for_box,
+    frames_of_row,
+    nominal_xh_px,
+)
 
 
 # 10 px per mm, a strip 190 mm wide cut at x 10..200 and y 20..60.
@@ -38,12 +48,12 @@ def _frame(index: int = 0, **overrides):
     return frame_for_box(row, ORIGIN_MM, WIDTH_PX, HEIGHT_PX, index)
 
 
-def _dry_run(tmp_path, monkeypatch, *, fresh: list[dict], stored: list[dict], argv: list[str]) -> list[dict]:
-    """Run the tool's dry path over a stubbed API and hand back the filed body.
+def _stub_run(monkeypatch, *, fresh: list[dict], stored: list[dict]) -> None:
+    """Stub everything around the merge — fixtures, listing, follower, network.
 
-    Everything around the merge is stubbed — the fixtures, the strip listing
-    and the follower itself — so what the assertions read is exactly the list
-    the `--apply` path would have pushed, without a fixture root or a network.
+    What is left running is `main` plus `_merged`, so an assertion reads
+    exactly the list the tool would have pushed, without a fixture root or a
+    network.
     """
     from tools.eigenhand import pfad as tool
 
@@ -57,12 +67,38 @@ def _dry_run(tmp_path, monkeypatch, *, fresh: list[dict], stored: list[dict], ar
         tool, "_strip_rows", lambda *_a: [{"strip": "S0001", "fassung": "F01", "sheet": "B0001", "row_index": 0}]
     )
     monkeypatch.setattr(tool, "follow_row", lambda *_a: fresh)
-    monkeypatch.setattr(tool, "_merged", lambda *args: merged(*args, _get=lambda *_a: {"pfade": stored}))
+    monkeypatch.setattr(
+        tool, "_merged", lambda *args, **kwargs: merged(*args, **kwargs, _get=lambda *_a: {"pfade": stored})
+    )
+
+
+def _dry_run(tmp_path, monkeypatch, *, fresh: list[dict], stored: list[dict], argv: list[str]) -> list[dict]:
+    """Run the tool's dry path over a stubbed API and hand back the filed body."""
+    from tools.eigenhand import pfad as tool
+
+    _stub_run(monkeypatch, fresh=fresh, stored=stored)
     monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: pytest.fail("a dry run must not write"))
 
     out = tmp_path / "pfade.json"
     assert tool.main([*argv, "--out", str(out)]) == 0
     return json.loads(out.read_text())["pfade"]
+
+
+def _apply_run(monkeypatch, *, fresh: list[dict], stored: list[dict], argv: list[str]) -> tuple[str, list[dict]]:
+    """Run the tool's `--apply` path over a stubbed API; the URL and body it PUT."""
+    from tools.eigenhand import pfad as tool
+
+    _stub_run(monkeypatch, fresh=fresh, stored=stored)
+    sent: dict = {}
+
+    def _put(method: str, url: str, token: str, payload: dict | None = None):
+        assert method == "PUT", method
+        sent["url"], sent["payload"] = url, payload
+        return payload
+
+    monkeypatch.setattr(tool, "request_json", _put)
+    assert tool.main([*argv, "--apply"]) == 0
+    return sent["url"], sent["payload"]["pfade"]
 
 
 def _path(**overrides) -> dict:
@@ -248,6 +284,47 @@ class TestCheckPaths:
         # draws between an empty list and NULL.
         assert check_paths([], ROW, WIDTH_PX, HEIGHT_PX) == []
 
+    def test_a_hand_drawn_path_is_pushed_like_any_other(self):
+        # Deliberately NOT refused here: the entry-level check never sees who
+        # is pushing, and the surface that lets the author draw one has to be
+        # able to send it. What the word „authored" buys is protection from
+        # the NEXT push, and that is stored state — `displaced_authored`.
+        assert self._check([_path(verfahren=AUTHORED)])[0]["verfahren"] == AUTHORED
+
+
+class TestAuthoredRule:
+    """A path the author drew by hand is never taken away by a followed one."""
+
+    def test_a_stored_hand_drawn_path_the_push_leaves_out_is_named(self):
+        # The write is a FULL replacement, so an omitted box is a deleted one.
+        stored = [_path(verfahren=AUTHORED)]
+        assert displaced_authored(stored, []) == [0]
+        assert displaced_authored(stored, [_path(box_index=1, word="das")]) == [0]
+
+    def test_a_stored_hand_drawn_path_answered_by_a_followed_one_is_named(self):
+        assert displaced_authored([_path(verfahren=AUTHORED)], [_path()]) == [0]
+
+    def test_the_author_may_correct_his_own_hand_drawn_path(self):
+        # Authored over authored is the author correcting his own trace — the
+        # case that keeps a hand-drawing surface possible at all.
+        assert displaced_authored([_path(verfahren=AUTHORED)], [_path(verfahren=AUTHORED)]) == []
+
+    def test_a_followed_path_is_the_runs_own_and_may_be_replaced(self):
+        assert displaced_authored([_path()], [_path()]) == []
+        assert displaced_authored([_path()], []) == []
+
+    def test_a_fassung_nobody_has_followed_has_nothing_to_protect(self):
+        # `pfade` is NULL before the first follow — the reason the helper takes
+        # the stored list as it comes off the row rather than a checked one.
+        assert displaced_authored(None, [_path()]) == []
+        assert displaced_authored([], [_path()]) == []
+
+    def test_every_displaced_box_is_named_once_and_in_order(self):
+        stored = [_path(box_index=1, word="das", verfahren=AUTHORED), _path(box_index=0, verfahren=AUTHORED)]
+        assert displaced_authored(stored, []) == [0, 1]
+        # …and one rescued box does not rescue the other.
+        assert displaced_authored(stored, [_path(box_index=0, verfahren=AUTHORED)]) == [1]
+
 
 class TestFollowerHandover:
     """The seam between the local follower and what the API stores."""
@@ -328,6 +405,48 @@ class TestFollowerHandover:
         assert [entry["box_index"] for entry in body] == [0, 1]
         assert body[0]["erzeugt_am"] == "2026-09-11"  # the skipped box keeps the path it had
         assert body[1]["erzeugt_am"] == "2026-09-13"  # the re-followed box is the fresh one
+
+    def test_a_hand_drawn_path_survives_a_run_that_followed_the_same_box(self, tmp_path, monkeypatch):
+        # The server refuses a push that would displace a hand-drawn path
+        # (409), so the tool has to merge AROUND it — otherwise re-following a
+        # whole row would fail over the one word the author drew himself.
+        body = _dry_run(
+            tmp_path,
+            monkeypatch,
+            fresh=[
+                {"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"},
+                {"box_index": 1, "word": "das", "verfahren": "tintenpfad"},
+            ],
+            stored=[{"box_index": 0, "word": "lesen", "verfahren": AUTHORED}],
+            argv=["--hand", "mn-suetterlin", "--strip", "S0001"],
+        )
+        assert [entry["verfahren"] for entry in body] == [AUTHORED, "tintenpfad"]
+
+    def test_the_terminal_flag_is_what_gives_a_hand_drawn_path_up(self, monkeypatch, capsys):
+        # The only way past — and it has to reach the SERVER, since the tool's
+        # own merge is not what the stored row is protected by.
+        url, body = _apply_run(
+            monkeypatch,
+            fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}],
+            stored=[{"box_index": 0, "word": "lesen", "verfahren": AUTHORED}],
+            argv=["--hand", "mn-suetterlin", "--strip", "S0001", "--replace-authored"],
+        )
+        assert url.endswith("?replace_authored=true")
+        assert [entry["verfahren"] for entry in body] == ["tintenpfad"]
+        # The destructive path has to be the loud one: nothing else in the run
+        # names the hand work it just handed over, and the archive cannot say
+        # what was there (Q4's archive half is still open).
+        assert "box 0" in capsys.readouterr().out
+
+    def test_an_ordinary_apply_asks_for_no_override(self, monkeypatch):
+        url, body = _apply_run(
+            monkeypatch,
+            fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}],
+            stored=[{"box_index": 0, "word": "lesen", "verfahren": AUTHORED}],
+            argv=["--hand", "mn-suetterlin", "--strip", "S0001"],
+        )
+        assert "replace_authored" not in url
+        assert [entry["verfahren"] for entry in body] == [AUTHORED]
 
     def test_the_declared_configuration_is_one_the_follower_accepts(self):
         # The arms are named in the tool and stored with every path; a renamed
