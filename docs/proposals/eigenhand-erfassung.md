@@ -1,6 +1,6 @@
 # Eigenhand-Erfassung: Wortvorrat, Streifen, Bögen
 
-> **Status (2026-09-18): teil-umgesetzt.** Seit dem Autor-Entscheid vom
+> **Status (2026-09-19): teil-umgesetzt.** Seit dem Autor-Entscheid vom
 > 2026-09-07 ist der Bestand nicht mehr nur Datenquelle: die Eigenhand
 > **wird die ausgelieferte Schreibhand der Seite**, sobald sie Alphabet und
 > Übergänge deckt (§2; die bindende Rollenteilung Tafel · Platte ·

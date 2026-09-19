@@ -608,6 +608,10 @@ _PIN_ENTRIES: list[PoolEntry] = [
     # No note and no era/lang here: every reference word is already curated in
     # an earlier layer, and `pool_entries()` keeps the first writer's gloss —
     # a second note would be silently dropped. The `pin` tag unions on top.
+    # That an earlier layer really carries each of them is a test, not a
+    # promise (`test_every_reference_word_is_curated_outside_the_pin_layer`):
+    # these rows put the words into the pool themselves, so the uncurated-word
+    # guard in `pool.pin_words` can no longer catch a gap here.
     *({"word": word} for word in REFERENCE_WORDS),
 ]
 PINNED_FIRST: list[str] = [entry["word"] for entry in _PIN_ENTRIES]

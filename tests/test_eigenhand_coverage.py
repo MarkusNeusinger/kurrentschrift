@@ -23,6 +23,16 @@ from tools.eigenhand.corpus import PINNED_FIRST, REFERENCE_WORDS, pool_entries, 
 FROZEN_PREFIX_STRIPS = 181
 FROZEN_PREFIX_SHA256 = "be4aacf5f910e372d9541d457b03b3962c53f8205f23658d695b23caf9a3971e"
 
+# The wave the reference words were pinned in, and the words the plan pins in
+# total. RECORDED, not derived: deriving the expectation from the plan makes
+# the assertion self-satisfying — un-pinning a strip would drop its word from
+# both sides and the test would still pass. `pool pin` skips a word the plan
+# already carries ("write this early", not "write this again", proposal §4),
+# so this is PINNED_FIRST minus what the earlier waves had. A later pin run
+# appends to this list on purpose; it never rewrites it.
+REFERENCE_PIN_WAVE = 4
+PINNED_WORDS = ["Kurrentschrift", "lesen", "denen", "Wer", "die", "laden", "unter", "will"]
+
 
 def _prefix_digest(plan: dict, count: int) -> str:
     ids = sorted(plan["strips"], key=lambda sid: int(sid[1:]))[:count]
@@ -151,14 +161,19 @@ class TestStripPlan:
     def test_the_committed_plan_pins_what_the_curation_pins(self):
         plan = plan_mod.load_plan()
         pinned_words = [word for sid in plan_mod.pinned_strips(plan) for word in plan["strips"][sid]["words"]]
-        elsewhere = {
-            word for sid, strip in plan["strips"].items() if sid not in set(plan["pins"]) for word in strip["words"]
-        }
-        # Not a plain `== PINNED_FIRST` since the reference words joined the
-        # list: a pin says "write this early", not "write this again", so a
-        # curated pin the plan already carries is skipped (proposal §4). What
-        # stays exact is WHICH words lead the plan, and in which order.
-        assert pinned_words == [word for word in PINNED_FIRST if word not in elsewhere]
+        # The recorded fact first: exactly these words lead the plan. It is no
+        # longer a plain `== PINNED_FIRST` because the reference words joined
+        # that list and `pool pin` skips the ones the plan already carries
+        # (proposal §4) — but the expectation stays a literal, so un-pinning a
+        # strip fails loudly instead of quietly shrinking both sides.
+        assert pinned_words == PINNED_WORDS
+        # And the link this test is named for, robust against a later wave:
+        # every pinned word comes from the curation, in curation order, and no
+        # curated pin is missing from the plan altogether — pinned or already
+        # planned, never neither.
+        assert pinned_words == [word for word in PINNED_FIRST if word in set(pinned_words)]
+        planned = {word for strip in plan["strips"].values() for word in strip["words"]}
+        assert not [word for word in PINNED_FIRST if word not in planned]
         assert plan_mod.ordered_strips(plan)[: len(plan["pins"])] == plan["pins"]
 
     def test_the_frozen_prefix_of_the_committed_plan_is_byte_identical(self):
@@ -169,8 +184,11 @@ class TestStripPlan:
     def test_the_reference_pin_wave_only_appended(self):
         # Q17 (owner, 2026-09-18): one appended strip per reference word the
         # plan did not carry yet, each leading the queue, each its own row.
+        # Selected by WAVE, not by strip number: the doc foresees further pin
+        # runs (§4), and those append beyond S0188 without saying anything
+        # about this wave.
         plan = plan_mod.load_plan()
-        appended = [sid for sid in plan["pins"] if int(sid[1:]) > FROZEN_PREFIX_STRIPS]
+        appended = [sid for sid in plan["pins"] if plan["strips"][sid]["wave"] == REFERENCE_PIN_WAVE]
         assert [plan["strips"][sid]["words"] for sid in appended] == [
             ["lesen"],
             ["denen"],
@@ -209,6 +227,17 @@ class TestStripPlan:
             "will",
             "zwei",
         ]
+
+    def test_every_reference_word_is_curated_outside_the_pin_layer(self):
+        # The pin rows carry no era/lang/note because an earlier layer already
+        # glosses every reference word — and `pool_entries()` keeps the first
+        # writer's gloss, so a second one would be dropped. That claim needs a
+        # tripwire: `_PIN_ENTRIES` injects the reference words into the pool
+        # itself, so `pool.pin_words`' uncurated-word guard can never fire for
+        # them. A re-baselined dev split would otherwise put an unglossed word
+        # straight onto a strip and freeze its shaping form.
+        tags = {entry["word"]: entry["tags"] for entry in pool_entries()}
+        assert not [word for word in REFERENCE_WORDS if tags[word] == ["pin"]]
 
     def test_the_plan_carries_every_shaping_form_it_needs(self):
         # The plan is the API's ONLY word source: a reader without the
