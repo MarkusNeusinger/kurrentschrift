@@ -36,9 +36,21 @@ export interface HeaderBarProps {
   /** Extra layout on the inner row — the admin's four slots wrap differently
    *  from the public's two. */
   contentSx?: SxProps<Theme>;
+  /** A second row INSIDE the sticky block, under the content row — the admin's
+   *  Scope-Leiste. Inside rather than beside, so header and bar stick as one
+   *  and no surface has to guess a `top` offset for the other. The public bar
+   *  passes nothing and is unchanged. */
+  below?: ReactNode;
 }
 
-export function HeaderBar({ children, maxWidth = PAGE_WIDTHS.wide, zIndex = 20, sx, contentSx }: HeaderBarProps) {
+export function HeaderBar({
+  children,
+  maxWidth = PAGE_WIDTHS.wide,
+  zIndex = 20,
+  sx,
+  contentSx,
+  below,
+}: HeaderBarProps) {
   return (
     <Box
       component="header"
@@ -72,6 +84,7 @@ export function HeaderBar({ children, maxWidth = PAGE_WIDTHS.wide, zIndex = 20, 
       >
         {children}
       </Box>
+      {below}
     </Box>
   );
 }

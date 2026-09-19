@@ -62,6 +62,13 @@ export function LetterView() {
     setActiveGlyph,
     openWizard,
     openDiagnose,
+    // `ownHand`, never `handId`: `workbench.handId` further down is the PLATE
+    // hand whose statistics this page shows. Two different hands, and the
+    // distinction the Scope-Leiste exists to make (P1-Q3 a) — so they do not
+    // share a name in one file. It rides along on every jump OUT of this view,
+    // so the scope a Korb link arrived with survives the hop to a join or a
+    // word too, not just the next letter.
+    handId: ownHand,
   } = useAdmin();
   const workbench = useWorkbench();
   const fileMark = useFileMark();
@@ -119,6 +126,11 @@ export function LetterView() {
   // carries has to survive the hop into a letter and back, or „Alle
   // Buchstaben" would drop the reader onto page 1 of an unfiltered alphabet.
   // Still a PUSH — the subject is what the back button walks.
+  //
+  // The merge is also what carries `h=` along here: the subject changes, the
+  // scope does not, so a Korb link's hand survives the first click inside the
+  // view. The two views that DO rewrite their query say the same thing with
+  // `keepHand` (focus.ts).
   const focus = (key: string | null) => {
     const next = new URLSearchParams(params);
     if (key) next.set(FOCUS_PARAMS.glyph, key);
@@ -362,7 +374,7 @@ export function LetterView() {
                     inst={inst}
                     sample={sample}
                     sourceId={sourceId}
-                    onJump={() => navigate(wordsUrl(sample.word, sample.id))}
+                    onJump={() => navigate(wordsUrl(sample.word, sample.id, ownHand))}
                   />
                 );
               })}
@@ -397,12 +409,12 @@ export function LetterView() {
                   variant="outlined"
                   clickable
                   label={`${join.leftKey}→${join.rightKey} · ${join.count}`}
-                  onClick={() => navigate(joinsUrl(join.leftKey, join.rightKey))}
+                  onClick={() => navigate(joinsUrl(join.leftKey, join.rightKey, ownHand))}
                 />
               ))
             )}
           </Box>
-          <Button size="small" variant="outlined" onClick={() => navigate(joinsUrl(glyphKey, null))}>
+          <Button size="small" variant="outlined" onClick={() => navigate(joinsUrl(glyphKey, null, ownHand))}>
             {t.allJoins}
           </Button>
         </Panel>
@@ -421,7 +433,7 @@ export function LetterView() {
                   variant="outlined"
                   clickable
                   label={w.word}
-                  onClick={() => navigate(wordsUrl(w.word, w.specimenId))}
+                  onClick={() => navigate(wordsUrl(w.word, w.specimenId, ownHand))}
                 />
               ))
             )}
