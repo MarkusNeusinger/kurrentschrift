@@ -1262,9 +1262,36 @@ Ausnahme: die dev-19-Kopfzahl liest diese Menge NIE, und gemessen wird auf
 ihr nur mit einer separat eingefrorenen, vorregistrierten Rückhaltemenge —
 Eintrag im Messjournal §14 vor der ersten Zahl.
 
+**Gebaut ist davon die Schutzregel** (Phase 0 des Admin-Redesigns,
+2026-09-18; Q4 mit Unterpunkt (i)). Trägt ein gespeicherter Kasten
+`verfahren: "authored"`, hat der Autor ihn selbst gezeichnet — eine
+Folger-Bahn ist eine Ableitung und ersetzt ihn nie. Weil der Schreibweg eine
+VOLLE Ersetzung ist, nimmt ein Push sie auf zwei Wegen weg (überschreiben
+oder den Kasten weglassen); beide weist der Server als GANZES ab (409,
+`core/eigenhand/pfad.py::displaced_authored` vor `check_paths`, also bevor
+irgendetwas committet ist). Ganz und nicht je Kasten, anders als beim
+Platten-Zwilling `put_word_instances`: diese Antwort hat keinen
+`skipped`-Kanal, und ein stilles Überspringen ließe den Bedienenden
+glauben, der Lauf sei als gefolgt abgelegt. `tools.eigenhand.pfad` mischt
+von sich aus um solche Kästen herum und provoziert die Abweisung gar nicht
+erst; der einzige Weg daran vorbei ist `?replace_authored=true`, gesetzt
+vom Terminal-Flag `--replace-authored` — bewusst keine vierte
+`force`-Fläche in der Werkbank, denn kein Browser-Code sendet den
+Parameter. `authored` über `authored` geht durch: das ist der Autor, der
+seine eigene Nachfahrung korrigiert, und genau das hält die spätere
+Zeichenfläche in der Werkbank offen. Die korrigierten Buchstabengrenzen
+aus Q15 bekommen einen eigenen Schutz, sobald PFAD_FORMAT 2 ihre Herkunft
+trägt; gelesen wird sie an derselben Stelle (`is_authored`), gelten wird
+sie aber je SPANNE und nicht je Kasten — ein gewöhnliches Neu-Folgen eines
+grenzkorrigierten Kastens muss durchgehen —, also braucht
+`displaced_authored` dann einen Vergleich je Feld statt dieser
+Kasten-Antwort. Offen bleibt die Archiv-Hälfte von Q4 (oben): eine
+`authored`-Bahn liegt heute nirgends gesichert. Das gehört in Phase 2,
+zusammen mit `EigenhandArchiveOut`.
+
 **Wiederherstellung: der GEFOLGTE Pfad ist ableitbar** (Entscheidung der
 Runde vom 2026-09-12; seit dem 2026-09-18 auf gefolgte Pfade begrenzt —
-siehe die beiden Absätze davor).
+siehe die drei Absätze davor).
 Weder `snapshot.py` noch `sync --from` tragen ihn, und die Prüfung aus §8.1
 verlangt ihn nicht — Streifen, Layout und Werkzeug sind da, also lässt er
 sich jederzeit neu folgen, und ein Archivfeld für eine reproduzierbare

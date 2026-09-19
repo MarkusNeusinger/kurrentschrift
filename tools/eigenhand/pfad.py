@@ -17,6 +17,11 @@ DRY RUN BY DEFAULT, like ``tools.wordbench.shift_registrations``: every write
 lands in the SHARED Cloud SQL database, so ``--apply`` is a deliberate act and
 an archive snapshot (``/dbsnapshot``) belongs in front of it.
 
+A path the author drew BY HAND survives every run: this tool merges around
+such a box and the server refuses a push that would displace one (409). Only
+``--replace-authored`` gives one up, and that is the whole surface — there is
+no button for it in the workbench.
+
 WHAT IT READS. Everything over the admin API, nothing off a local scan: the
 strip listing (geometry, words, box rectangles), the Bogen layout (the printed
 ruling), the strip PNG itself — served with the Fleckenmaske applied and, for
@@ -76,7 +81,7 @@ import numpy as np  # noqa: E402
 
 from core.database.models import LAUFFORM_VARIANT  # noqa: E402
 from core.eigenhand.ids import style_of_hand  # noqa: E402
-from core.eigenhand.pfad import PFAD_FORMAT, frame_for_box  # noqa: E402
+from core.eigenhand.pfad import PFAD_FORMAT, frame_for_box, is_authored  # noqa: E402
 from core.eigenhand.plan import load_plan, shaping_form_of  # noqa: E402
 from tools.eigenhand.apiclient import admin_token, api_base, request_bytes, request_json  # noqa: E402
 from tools.eigenhand.store import check_hand_id, hand_dir  # noqa: E402
@@ -396,7 +401,9 @@ def _local_path(hand: str, strip: str, fassung: str) -> Path:
     return hand_dir(hand) / "pfade" / f"{strip}-{fassung}.json"
 
 
-def _merged(base: str, token: str, url: str, entries: list[dict], _get=request_json) -> list[dict]:
+def _merged(
+    base: str, token: str, url: str, entries: list[dict], *, replace_authored: bool = False, _get=request_json
+) -> list[dict]:
     """The freshly followed entries, over the paths the Fassung already holds.
 
     The write is a FULL replacement — right for the boxes a run actually
@@ -408,9 +415,35 @@ def _merged(base: str, token: str, url: str, entries: list[dict], _get=request_j
     run reads the stored list first and replaces only what it followed — a run
     can add to a Fassung and improve it, never silently empty it.
 
+    The same read answers the other direction: a box whose stored path the
+    AUTHOR drew by hand keeps it, and this run's own result for that box is
+    dropped. The server refuses such a push outright (409), so merging around
+    the box here is what keeps a whole-row re-follow from failing over one
+    hand-drawn word — and `--replace-authored` is the one way to hand it over
+    anyway.
+
     `_get` is the seam the test calls through; every caller uses the default.
     """
     stored = (_get("GET", url, token) or {}).get("pfade") or []
+    authored_boxes = {entry.get("box_index") for entry in stored if is_authored(entry)}
+    hit = sorted(entry["box_index"] for entry in entries if entry["box_index"] in authored_boxes)
+    if hit and replace_authored:
+        # The DESTRUCTIVE path has to be the loud one. Nothing else in the run
+        # names what is being given up, the archive does not carry paths yet,
+        # and a line the operator can read back is all that stands between the
+        # flag and a quiet loss of the author's own hand.
+        print(
+            f"  --replace-authored: handing the hand-drawn path at box {', '.join(str(index) for index in hit)} "
+            "over to this run's own result",
+            flush=True,
+        )
+    elif hit:
+        print(
+            f"  keeping the hand-drawn path at box {', '.join(str(index) for index in hit)} — "
+            "this run's own result there is dropped (--replace-authored hands it over)",
+            flush=True,
+        )
+        entries = [entry for entry in entries if entry["box_index"] not in authored_boxes]
     followed = {entry["box_index"] for entry in entries}
     kept = [entry for entry in stored if entry.get("box_index") not in followed]
     if kept:
@@ -431,6 +464,11 @@ def main(argv: list[str] | None = None) -> int:
         "--apply",
         action="store_true",
         help="store the followed paths in the SHARED database (takes a dbsnapshot first — see /dbsnapshot)",
+    )
+    ap.add_argument(
+        "--replace-authored",
+        action="store_true",
+        help="also replace the paths the author drew BY HAND — the only way to, and deliberately not a button",
     )
     args = ap.parse_args(argv)
 
@@ -457,7 +495,7 @@ def main(argv: list[str] | None = None) -> int:
         # all. Filing only the followed boxes made a run look like a whole-row
         # replacement — the exact thing `_merged` exists to prevent (review of
         # PR #598).
-        body = _merged(base, token, url, entries)
+        body = _merged(base, token, url, entries, replace_authored=args.replace_authored)
         if not args.apply:
             out = args.out or _local_path(hand, row["strip"], row["fassung"])
             out.parent.mkdir(parents=True, exist_ok=True)
@@ -467,7 +505,10 @@ def main(argv: list[str] | None = None) -> int:
                 flush=True,
             )
             continue
-        stored = request_json("PUT", url, token, {"format": PFAD_FORMAT, "pfade": body}) or {}
+        # The GET above needs no override — only the write can displace
+        # anything, so the flag rides on the push and nowhere else.
+        push_url = f"{url}?replace_authored=true" if args.replace_authored else url
+        stored = request_json("PUT", push_url, token, {"format": PFAD_FORMAT, "pfade": body}) or {}
         written += len(stored.get("pfade") or [])
         print(f"  stored {len(stored.get('pfade') or [])} path(s) at {base}", flush=True)
     if args.apply:
