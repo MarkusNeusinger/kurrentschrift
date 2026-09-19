@@ -3683,7 +3683,7 @@ Ausschnitt — sie ändern also, was die Maske überhaupt sieht;
 
 **Bahn** — die gefolgte oder nachgefahrene Linie **eines Wortes**,
 beidseitig: die des Folgers wie die von Hand gezogene. Die Zähleinheit im
-Kopf des Wort-Details („n Bahnen") und bewusst **nicht** „Beleg" — der
+Kopf des Wort-Details („n Bahnen“) und bewusst **nicht** „Beleg“ — der
 zählt im Bestandsbericht der Eigenhand die angenommenen Fassungen eines
 Items, und ein Wort kann mehrere Bahnen tragen, ohne einen einzigen Beleg
 zu sein (Autor-Entscheid 2026-09-18, Q8 a; Vokabular-Tabelle
