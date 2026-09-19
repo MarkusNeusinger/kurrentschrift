@@ -144,7 +144,8 @@ const DEFAULT_ROUTES = [
 // and the sweep measures THAT.
 //
 // Measured both ways on 2026-09-19, same build, same eleven routes: with the
-// token and a seeded throwaway stack, 411 targets; without it, 11 — one
+// token and a seeded throwaway stack, ~420 targets (411 mid-round, 425 at the
+// end — the count moves with what the stack holds); without it, 11 — one
 // „Erneut versuchen" per route. Neither number is a false green in the literal
 // sense (the boot button is itself under the floor, so the tokenless run goes
 // red), but both readings are wrong about the same thing: the second run never

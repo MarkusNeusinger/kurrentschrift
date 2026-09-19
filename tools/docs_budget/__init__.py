@@ -585,15 +585,16 @@ WIDEST = {
 # room — the two Arbeitslisten raises of the same day had taken the rest — so
 # no wording of this section could have passed.
 #
-# Cut twice before this raise, by 200 tokens: the measured 411-vs-11 numbers
-# behind the `--admin` split moved to the script header that produced them
-# (`app/scripts/type-floor.mjs`), where they belong and where no reading path
-# carries them; the three prose paragraphs of §9.5 were tightened to the rules
-# themselves, with the reasoning that is not a rule dropped; and the two new
-# inventory rows were halved. What is left and could not be: §9.5 replaces
-# §9.4's „Offener Fall" (the letter grid's colour-only dot, now filled disc vs
-# hollow ring), so the section also CLOSES one. Re-measured at 20 723, plus the
-# documented 10 %.
+# Cut twice before this raise, by 200 tokens: the measured targets-with-token
+# vs targets-without numbers behind the `--admin` split moved to the script
+# header that produced them (`app/scripts/touch-targets.mjs`), where they belong
+# and where no reading path carries them; the three prose paragraphs of §9.5
+# were tightened to the rules themselves, with the reasoning that is not a rule
+# dropped; and the two new inventory rows were halved. What is left and could
+# not be: §9.5 also has to carry the ARIA half of the rule — a container that
+# owns one tab stop needs a composite role, and which of the two surfaces gets
+# one — because that is exactly the kind of omission a later reader would
+# otherwise repeat. Re-measured at 20 723, plus the documented 10 %.
 BUDGETS: dict[str, int] = {
     "mandatory": 67_091,
     "mess-runde": 43_761,
