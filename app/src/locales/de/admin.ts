@@ -33,8 +33,11 @@ export const admin = {
     areaWords: 'Wörter',
     areaEigenhand: 'Eigenhand',
     areaNavAria: 'Bereiche der Werkbank',
-    switchSource: 'Vorlage wechseln',
     noSource: 'keine Vorlage',
+    // `switchSource` („Vorlage wechseln") ist entfallen: der einzige Leser war
+    // der Tooltip des Vorlagen-Chips, und der Chip ist in die Scope-Leiste
+    // gewandert, deren Vorlagen-Feld derselbe Link ist.
+    //
     // Die Scope-Leiste unter der Kopfleiste: zwei Felder, die sagen, worum es
     // auf dieser Seite geht — und nie umschalten (admin-redesign.md §7.2). Die
     // Doppelpunkte gehören zum sichtbaren Etikett, darum stehen sie hier.
@@ -1094,8 +1097,13 @@ export const admin = {
     tabSubject: 'Eigenhand · {{ansicht}}',
     hand: 'Hand',
     // `handHelp` („Neue Hand: <schreiber>-<stil>") ist entfallen: das Feld ist
-    // jetzt immer eine Auswahl über die erfassten Hände, eine neue Hand legt
-    // das Drucken an — eine getippte Kennung war nie ein Weg dorthin.
+    // jetzt immer eine Auswahl über die erfassten Hände. Damit ist aber auch
+    // der alte Weg zur ERSTEN Hand weg — er hing an genau diesem Freitextfeld
+    // und an einer erfundenen Vorgabe `mn-<stil>`. Der Satz darf ihn deshalb
+    // nicht mehr versprechen: er nennt jetzt den Weg, den es wirklich gibt.
+    // `setup` schreibt den Server-Eintrag, damit steht die Hand über
+    // GET /eigenhand/setups in genau dieser Auswahl und der Bogendruck kann
+    // unter ihr arbeiten (tools/eigenhand/setup.py).
     //
     // Since the `?reiter=` split this sits in the SHELL, so it shows on all
     // four Unteransichten — „unten" pointed at nothing on three of them. Es
@@ -1103,7 +1111,15 @@ export const admin = {
     // Vorlage (V19), eine Kurrent-Vorlage steht also auch neben einer
     // geschriebenen Sütterlin-Hand ohne eigene da.
     noHands:
-      'Für diese Schrift ist noch keine Hand erfasst — in der Ansicht „Drucken" einen Bogen drucken, damit legt sich die erste an.',
+      'Für diese Schrift ist noch keine Hand erfasst. Eine neue entsteht mit ihrem stehenden Setup — danach steht sie hier zur Auswahl und kann Bögen drucken:',
+    // `<schreiber>` bleibt eine Lücke zum Ausfüllen; der Stil kommt aus der
+    // Vorlage, damit hier nie eine Schrift steht, die gar nicht offen ist.
+    noHandsCommand:
+      'ADMIN_TOKEN=… uv run python -m tools.eigenhand.setup --hand <schreiber>-{{style}} --feder … --tinte … --papier … --geraet scanner',
+    // Der Abruf hinter der Auswahl ist admin-gesichert; ein 401 wird nicht
+    // wiederholt. Ohne diesen Satz sähe das Ergebnis aus wie „diese Schrift
+    // hat keine Hand" — eine Aussage über Daten, die nie gelesen wurden.
+    handsError: 'Die erfassten Hände konnten nicht geladen werden.',
     loadError: 'Der Bestand konnte nicht geladen werden.',
     stripsTitle: 'Streifen',
     stripsBelegt: 'belegt',

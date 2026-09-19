@@ -34,10 +34,9 @@ export function styleOfHand(hand: string, styles: readonly string[]): string | n
  * — and states their style outright instead of leaving it to the suffix, which
  * is why a setup wins over the derived reading.
  *
- * Sorted by a plain code-point compare, not `localeCompare`: the first
- * candidate of a style is a tie-break in `resolveHand`, and a default that
- * depends on the browser's locale would make the bar name different hands on
- * two machines.
+ * Sorted by a plain code-point compare, not `localeCompare`: this order is the
+ * order the Eigenhand picker offers, and a list that depends on the browser's
+ * locale would put the same hands in a different order on two machines.
  */
 export function handCandidates(
   hands: readonly string[],
@@ -62,10 +61,12 @@ export const handStyle = (candidates: readonly HandCandidate[], hand: string): s
  * V19 in one function: the active hand always belongs to the Vorlage's script.
  *
  * Keep what is chosen while it fits; on a switch to another script fall back to
- * the hand last chosen for THAT script, then to its first candidate, then to
- * nothing. Never a hand of another script, and never an invented id — an empty
- * field is the honest answer for a script whose own hand has not been written
- * yet.
+ * the hand last CHOSEN for that script, else to nothing. Two fallbacks, not
+ * three — V19 reads „die zuletzt gewählte Hand dieses Stils oder leer", and the
+ * tempting third („else its first hand") would put a scope nobody picked under
+ * the heading and into every Korb link the basket writes. An empty field is the
+ * honest answer, both for a script whose own hand has not been written yet and
+ * for one whose hands were never looked at.
  */
 export function resolveHand(
   current: string | null,
@@ -77,6 +78,5 @@ export function resolveHand(
   const ofStyle = handsOfStyle(candidates, styleId);
   if (current && ofStyle.includes(current)) return current;
   const last = lastByStyle[styleId];
-  if (last && ofStyle.includes(last)) return last;
-  return ofStyle[0] ?? null;
+  return last && ofStyle.includes(last) ? last : null;
 }

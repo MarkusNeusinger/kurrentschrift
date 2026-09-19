@@ -112,7 +112,7 @@ function ScopeField({
 }
 
 export function ScopeBar({ openCount }: { openCount: number | null }) {
-  const { source, handId } = useAdmin();
+  const { source, handId, handsLoaded } = useAdmin();
   const { pathname } = useLocation();
   const t = de.admin.shell;
   // Eigenhand is the one hand-scoped page; everything else in the workbench is
@@ -127,12 +127,26 @@ export function ScopeBar({ openCount }: { openCount: number | null }) {
   // for. Scroll the active one into view instead; the scroll is set on the row
   // itself rather than through `scrollIntoView`, which would walk up and move
   // the page under the sticky header too.
+  //
+  // Only when the field is actually CLIPPED, and measured against the row's
+  // content box: aligning the first child to the border box would scroll the
+  // bar's own left padding away and leave the highlighted field flush against
+  // the edge of the screen, losing the side gutter the design system asks for.
   useEffect(() => {
     const bar = barRef.current;
     const field = activeRef.current;
     if (!bar || !field || bar.scrollWidth <= bar.clientWidth) return;
-    bar.scrollLeft += field.getBoundingClientRect().left - bar.getBoundingClientRect().left;
-  }, [onHand, handId, source?.id]);
+    // Measured through the rects, not `offsetLeft`: the nearest positioned
+    // ancestor is the sticky header, so an offset would be relative to that
+    // rather than to the row that scrolls.
+    const barBox = bar.getBoundingClientRect();
+    const fieldBox = field.getBoundingClientRect();
+    const pad = parseFloat(getComputedStyle(bar).paddingLeft) || 0;
+    const left = fieldBox.left - barBox.left + bar.scrollLeft - pad;
+    const right = left + fieldBox.width + 2 * pad;
+    if (left < bar.scrollLeft) bar.scrollLeft = left;
+    else if (right > bar.scrollLeft + bar.clientWidth) bar.scrollLeft = right - bar.clientWidth;
+  }, [onHand, handId, handsLoaded, openCount, source?.id]);
 
   return (
     <Box
@@ -188,8 +202,14 @@ export function ScopeBar({ openCount }: { openCount: number | null }) {
         label={t.scopeHand}
         // An em-dash, not an invented id: a script whose own hand has not been
         // written yet has none, and V19 forbids borrowing another script's.
-        value={handId ?? t.scopeHandNone}
-        gloss={t.roleEigenhandGloss}
+        //
+        // But only once the two hand reads have ANSWERED. Before that — and
+        // after a 401, which is not retried — an em-dash would be a statement
+        // about data the bar never read, exactly the label error it exists to
+        // end. Unknown shows nothing, the way the Korb badge shows no count
+        // while its own read is out.
+        value={handsLoaded ? (handId ?? t.scopeHandNone) : ''}
+        gloss={handsLoaded ? t.roleEigenhandGloss : undefined}
       />
 
       {/* The rest of the row stays deliberately empty: the „Kurztasten" switch

@@ -2,20 +2,21 @@
 
 - **Scope-Leiste: the admin says what each page is about.** A row under the
   workbench header with two fields — „Vorlage: Sütterlin · suetterlin-1922"
-  and „Hand: mn-suetterlin (Eigenhand — meine Hand)" — that SHOW both scopes
-  and never switch them; the field the open page is about carries
-  `aria-current` and a viridian rule beside it, so the highlight survives a
-  colour-vision pass. Until now the header named one scope and named it
-  everywhere: the Vorlage chip and the Vorlage's basket kept standing over
-  `/admin/eigenhand`, which belongs to a hand, while the hand was named on no
-  other page at all. That is a labelling error, so the fix is a bar that
-  states both rather than a control that changes one.
+  and „Hand: mn-suetterlin Eigenhand (meine Hand)" — that SHOW both scopes and
+  never switch them; the field the open page is about carries `aria-current`
+  and a viridian rule beside it, so the highlight survives a colour-vision
+  pass. Until now the header named one scope and named it everywhere: the
+  Vorlage chip and the Vorlage's basket kept standing over `/admin/eigenhand`,
+  which belongs to a hand, while the hand was named on no other page at all.
+  That is a labelling error, so the fix is a bar that states both rather than a
+  control that changes one.
 - **`h=` — the hand travels in every admin link.** All `focus.ts` builders
   take the hand as their last argument, so every URL without one stays
   byte-identical; the Auftragskorb's links always carry it, a subject change
-  inside a view keeps it (`keepHand`), an id that cannot be one is dropped,
-  and it never moves the tab title — the title names the subject, and the
-  hand is not one.
+  inside a view keeps it, an id that cannot be one is dropped, and it never
+  moves the tab title — the title names the subject, and the hand is not one.
+  It is carried, not yet adopted: an opened link states the hand the task was
+  filed under and does not switch the workbench to it.
 
 ### Changed
 
@@ -37,9 +38,24 @@
   in its label. Before, the scope was stated nowhere — not even in the
   tooltip.
 
+### Removed
+
+- **The Eigenhand page no longer mints the first hand from a typed id.** The
+  hand field was free text while no hand existed and seeded itself with an
+  invented default, so printing a Bogen under that id created the hand. Both
+  go with the scope: the field is now a picker over the hands the server
+  knows. Creating the first hand of a script is `tools.eigenhand.setup`, which
+  writes the server record — the page names that command where it used to
+  point at its own printer.
+
 ### Fixed
 
 - **No invented hand id any more.** The Eigenhand page defaulted to
   `` `mn-${styles[1] ?? 'suetterlin'}` `` — one writer's prefix plus a
   position in the styles array, an id no read had ever returned. A script
   without a written hand now says so.
+- **„No hand" is no longer said about hands nobody read.** The two reads
+  behind the picker are admin-gated and a 401 is not retried, so a silent
+  failure used to leave an empty field and „noch keine Hand erfasst" standing
+  as claims about data that never arrived. Until they answer, the bar's Hand
+  field stays blank; when they fail, the Eigenhand page says why.

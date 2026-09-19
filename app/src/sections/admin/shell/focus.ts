@@ -24,6 +24,13 @@ import { paths } from '@/routes/paths';
 // half of the premise to whatever the browser happened to remember
 // (admin-redesign.md Q2 a). It is optional everywhere and never part of a
 // page's title: the subject did not change because the hand did.
+//
+// In this phase it is WRITTEN and carried, not yet ADOPTED: nothing feeds a
+// URL hand back into the active scope, so a pasted link states which hand it
+// was filed under without switching the workbench to it. That is deliberate —
+// adopting it needs a rule for the case where the URL and the picker disagree,
+// and the row itself gets its own `work_items.hand_id` in Phase 3 (V7) — but
+// it is the reason nobody should read `h=` as „this page acts on that hand".
 export const FOCUS_PARAMS = { glyph: 'g', left: 'l', right: 'r', word: 'w', specimen: 's', hand: 'h' } as const;
 
 // Eigenhand is the one admin area whose URL carries a PLACE rather than a
@@ -92,11 +99,16 @@ export function readWordFocus(params: URLSearchParams): WordFocus {
   return { text: text || null, specimenId: params.get(FOCUS_PARAMS.specimen) || null };
 }
 
-// A hand id is `<schreiber>-<stil>` (core/eigenhand/ids.py `HAND_ID`). Checked
-// by SHAPE only, deliberately: which hands exist is a question for the loaded
-// candidates (handScope.ts), and this module stays pure. The shape check is
-// what keeps a typo out of every link the view then writes — nonsense is
-// dropped once, here, instead of travelling along.
+// A hand id is `<schreiber>-<stil>`. This is WEAKER than
+// `core/eigenhand/ids.py:HAND_ID`, on purpose and worth saying plainly: the
+// server's pattern pins the suffix to a known style, this one only asks for
+// hyphenated lowercase, so `h=mn-fraktur` and even a plate id like
+// `h=suetterlin-1922-norm` pass it. Pinning the suffix would mean a second
+// copy of `STYLE_IDS` in the SPA, and the module that HAS the styles — from
+// the server's own payload — is `handScope.ts`, which is also the module that
+// decides which hands exist at all. What is left here is the one job a pure
+// reader can do: keep a typo or a pasted sentence out of every link the view
+// then writes, dropped once, here, instead of travelling along.
 const HAND_ID = /^[a-z0-9]+(?:-[a-z0-9]+)+$/;
 
 export function readHandFocus(params: URLSearchParams): string | null {

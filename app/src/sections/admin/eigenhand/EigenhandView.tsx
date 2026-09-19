@@ -42,7 +42,6 @@ import {
   TextField,
   ToggleButton,
   ToggleButtonGroup,
-  Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
@@ -51,18 +50,18 @@ import { useAdmin } from '@/context/adminState';
 import { getEigenhandBestand } from '@/lib/api';
 import type { EigenhandBestand, EigenhandStripFilter } from '@/lib/api';
 import { latestRequestGate } from '@/lib/latestRequest';
-import { de } from '@/locales/admin';
+import { de, fmt } from '@/locales/admin';
 import { BestandView } from '@/sections/admin/eigenhand/BestandView';
 import { glyphOf } from '@/sections/admin/eigenhand/coverageLabels';
 import { DruckenView } from '@/sections/admin/eigenhand/DruckenView';
 import { StatistikView } from '@/sections/admin/eigenhand/StatistikView';
 import { StripsPanel } from '@/sections/admin/eigenhand/StripsPanel';
+import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { EIGENHAND_ANSICHTEN, eigenhandUrl, readEigenhandFocus } from '@/sections/admin/shell/focus';
 import { ViewHeader } from '@/sections/admin/shell/Panel';
-import { paper } from '@/styles/paper';
 
 // `glyphOf` moved to coverageLabels.ts, where the key-to-character map is
 // DERIVED from the glyph registry instead of hand-written a second time. It had
@@ -84,7 +83,7 @@ export function EigenhandView() {
   const { ansicht, item, wort } = readEigenhandFocus(params);
   // The hand and the hands on offer both come from the admin scope: which ones
   // are legal is decided by the Vorlage's script, not by this page (V19).
-  const { handId, handChoices, setHand } = useAdmin();
+  const { handId, handChoices, setHand, handsLoaded, handsError, source } = useAdmin();
   const hand = handId ?? '';
   const [bestand, setBestand] = useState<EigenhandBestand | null>(null);
   const [loadError, setLoadError] = useState<ApiErrorText | null>(null);
@@ -290,15 +289,37 @@ export function EigenhandView() {
         </ToggleButtonGroup>
 
         {loading && <CircularProgress size={16} />}
-        {/* „this Vorlage's script", not „at all": the hand always belongs to
-            the script in front of the workbench (V19), so a Kurrent Vorlage
-            beside a written Sütterlin hand still stands here with none. */}
-        {!handChoices.length && (
-          <Typography variant="caption" sx={{ color: paper.inkSoft }}>
-            {t.noHands}
-          </Typography>
-        )}
       </Stack>
+
+      {/* The two reads behind the picker are admin-gated and a 401 is not
+          retried, so their failure is permanent — and until it is named, the
+          disabled picker below looks exactly like „this script has no hand". */}
+      {handsError !== null && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          <ErrorText error={apiErrorText(handsError)} prefix={t.handsError} />
+        </Alert>
+      )}
+
+      {/* „this Vorlage's script", not „at all": the hand always belongs to the
+          script in front of the workbench (V19), so a Kurrent Vorlage beside a
+          written Sütterlin hand still stands here with none. Shown only once
+          the reads have ANSWERED — before that it would be a claim about data
+          nobody has yet.
+
+          It names the command, not the printer: a hand is minted by the first
+          thing written under its id, and the one in-app way to do that used to
+          be a free-text field seeded with an INVENTED `mn-<stil>` (gone with
+          the scope, see above). `setup` is the honest first step — it writes
+          the server record, so the hand shows up in this very picker through
+          GET /eigenhand/setups and the printer can work under it. */}
+      {handsLoaded && !handChoices.length && (
+        <Box sx={{ mb: 3 }}>
+          <TerminalCommand
+            lead={t.noHands}
+            command={fmt(t.noHandsCommand, { style: source?.style_id ?? '<stil>' })}
+          />
+        </Box>
+      )}
 
       {loadError && !bestand && (
         <Alert severity="warning" sx={{ mb: 3 }}>

@@ -83,25 +83,18 @@ describe('the active hand (V19)', () => {
     );
   });
 
-  it('falls back to the first candidate, then to nothing', () => {
-    expect(resolveHand(null, 'suetterlin', candidates, {})).toBe('mn-suetterlin');
+  it('takes nothing where nothing was chosen — „oder leer", not „the first one"', () => {
+    // V19 has exactly TWO fallbacks: the hand last CHOSEN for this script, or
+    // empty. The tempting third — „else the script's first hand" — would put a
+    // scope nobody picked under the heading and into every Korb link, which is
+    // the label error the Scope-Leiste exists to end.
+    expect(resolveHand(null, 'suetterlin', candidates, {})).toBeNull();
     // A remembered hand that no read knows any more is not a pick either.
-    expect(resolveHand(null, 'kurrent', candidates, { kurrent: 'geloescht-kurrent' })).toBe('mn-kurrent');
-    // „oder leer": a script with no written hand keeps the field empty rather
-    // than borrowing another script's.
+    expect(resolveHand(null, 'kurrent', candidates, { kurrent: 'geloescht-kurrent' })).toBeNull();
+    // A script with no written hand keeps the field empty rather than
+    // borrowing another script's.
     expect(resolveHand('mn-suetterlin', 'offenbacher', candidates, { offenbacher: 'mn-suetterlin' })).toBeNull();
     expect(resolveHand('mn-suetterlin', null, candidates, {})).toBeNull();
     expect(resolveHand(null, 'suetterlin', [], {})).toBeNull();
-  });
-
-  it('gives two Vorlagen of ONE script the same hand', () => {
-    // Q25 a: the hand belongs to the script, not to the chart. Both Kurrent
-    // Vorlagen therefore resolve to the same hand — which is why the choice
-    // may not live under the per-source remount.
-    const chosen = 'mn-kurrent';
-    const loth = resolveHand(chosen, 'kurrent', candidates, { kurrent: chosen });
-    const petzendorfer = resolveHand(chosen, 'kurrent', candidates, { kurrent: chosen });
-    expect(loth).toBe('mn-kurrent');
-    expect(petzendorfer).toBe(loth);
   });
 });

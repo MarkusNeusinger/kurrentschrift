@@ -42,7 +42,11 @@ const HAND_STORAGE_KEY = 'kurrentschrift.admin.handByStyle';
 type HandScope = {
   chosen: string | null;
   lastByStyle: Record<string, string>;
-  candidates: HandCandidate[];
+  // `null` until the two reads have answered — NOT an empty list. „No hand for
+  // this script" and „nobody has asked yet" look identical on an empty array,
+  // and both the bar and the Eigenhand page state the first one in words.
+  candidates: HandCandidate[] | null;
+  error: unknown;
   setHand: (id: string) => void;
 };
 
@@ -108,11 +112,13 @@ export function AdminProvider({
   // live under the remount.
   const [chosenHand, setChosenHand] = useState<string | null>(null);
   const [lastByStyle, setLastByStyle] = useState<Record<string, string>>(readHandByStyle);
-  const [candidates, setCandidates] = useState<HandCandidate[]>([]);
+  const [candidates, setCandidates] = useState<HandCandidate[] | null>(null);
+  const [handsError, setHandsError] = useState<unknown>(null);
 
   useEffect(() => {
     // A pinned mount is a public one (the quiz): it carries no admin token, so
-    // the two gated reads would buy nothing but a pair of 401s.
+    // the two gated reads would buy nothing but a pair of 401s. Nothing on a
+    // public page names a hand, so „never read" is the final state there.
     if (pinnedSourceId) return;
     let cancelled = false;
     // Both reads together, because neither alone knows every hand: /hands is
@@ -122,10 +128,14 @@ export function AdminProvider({
       .then(([hands, setups]) => {
         if (!cancelled) setCandidates(handCandidates(hands.hands, setups.setups, hands.styles));
       })
-      .catch(() => {
-        // Quiet, like the Korb badge: both routes are admin-gated and may 401,
-        // and the honest answer is then an empty Hand field — not an error
-        // banner over a workbench that otherwise works.
+      .catch((err: unknown) => {
+        // Kept, not swallowed. Both routes are admin-gated and a 401 is not
+        // retried (`client.ts` retries cold starts only), so a silent failure
+        // would leave the bar's em-dash and the page's „noch keine Hand
+        // erfasst" standing FOREVER as claims about data never read. The
+        // candidate list stays null, which is what those two surfaces check;
+        // the Eigenhand page says why instead.
+        if (!cancelled) setHandsError(err);
       });
     return () => {
       cancelled = true;
@@ -135,7 +145,7 @@ export function AdminProvider({
   const setHand = useCallback(
     (id: string) => {
       setChosenHand(id);
-      const style = handStyle(candidates, id);
+      const style = handStyle(candidates ?? [], id);
       // An id no read knows has no script to file it under; it stays this
       // session's pick and is simply not remembered.
       if (!style) return;
@@ -151,8 +161,8 @@ export function AdminProvider({
   );
 
   const hand = useMemo<HandScope>(
-    () => ({ chosen: chosenHand, lastByStyle, candidates, setHand }),
-    [chosenHand, lastByStyle, candidates, setHand],
+    () => ({ chosen: chosenHand, lastByStyle, candidates, error: handsError, setHand }),
+    [chosenHand, lastByStyle, candidates, handsError, setHand],
   );
 
   return (
@@ -331,10 +341,10 @@ function SourceScopedProvider({
   // and can never leave a foreign-script hand standing.
   const styleId = source?.style_id ?? null;
   const handId = useMemo(
-    () => resolveHand(hand.chosen, styleId, hand.candidates, hand.lastByStyle),
+    () => resolveHand(hand.chosen, styleId, hand.candidates ?? [], hand.lastByStyle),
     [hand.chosen, hand.candidates, hand.lastByStyle, styleId],
   );
-  const handChoices = useMemo(() => handsOfStyle(hand.candidates, styleId), [hand.candidates, styleId]);
+  const handChoices = useMemo(() => handsOfStyle(hand.candidates ?? [], styleId), [hand.candidates, styleId]);
 
   // Opening either modal also activates the glyph, so the sidebar/chart stay in
   // sync with whatever is being authored or inspected.
@@ -358,6 +368,8 @@ function SourceScopedProvider({
       handId,
       handChoices,
       setHand: hand.setHand,
+      handsLoaded: hand.candidates !== null,
+      handsError: hand.error,
       bboxesByKey,
       glyphsByKey,
       laufformKeys,
@@ -390,6 +402,8 @@ function SourceScopedProvider({
       handId,
       handChoices,
       hand.setHand,
+      hand.candidates,
+      hand.error,
       bboxesByKey,
       glyphsByKey,
       laufformKeys,

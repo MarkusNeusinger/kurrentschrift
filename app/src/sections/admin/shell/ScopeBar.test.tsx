@@ -42,8 +42,12 @@ const adminState = (over: Partial<AdminState>): AdminState =>
     handId: 'mn-suetterlin',
     handChoices: ['mn-suetterlin'],
     setHand: () => {},
+    handsLoaded: true,
+    handsError: null,
     bboxesByKey: {},
     glyphsByKey: {},
+    laufformKeys: new Set<string>(),
+    refreshGlyphs: async () => {},
     loadError: null,
     waking: false,
     activeGlyph: null,
@@ -155,6 +159,17 @@ describe('the Scope-Leiste', () => {
     expect(handLink().textContent).toContain('—');
     // Still a link: the Eigenhand page is where the first one is written.
     expect(handLink().getAttribute('href')).toBe('/admin/eigenhand');
+  });
+
+  it('says nothing at all while the hands are unknown', () => {
+    // The em-dash is a STATEMENT — „this script has none". Before the two
+    // admin-gated reads answer, and after a 401 (which is not retried), the
+    // bar has not read anything that would justify it. Same rule as the Korb
+    // count: unknown shows nothing, it does not show a zero.
+    render('/admin/buchstaben', { handId: null, handChoices: [], handsLoaded: false });
+    expect(handLink().textContent).toContain('Hand:');
+    expect(handLink().textContent).not.toContain('—');
+    expect(handLink().textContent).not.toContain('Eigenhand');
   });
 
   it('says so when no Vorlage has loaded yet', () => {

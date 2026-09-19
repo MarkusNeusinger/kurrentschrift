@@ -147,7 +147,11 @@ Post-MVP-Phasen (architektur.md §10):
 `h=<schreiber>-<stil>`, den zweiten Arbeitsbereich neben der Vorlage: die
 Korb-Links tragen ihn immer, ein Subjektwechsel nimmt ihn mit, Unsinn wird
 verworfen, den Tab-Titel bewegt er nie. Letztes Argument jedes Bauers in
-`focus.ts` — ohne ihn bleibt jede Adresse zeichengleich.
+`focus.ts` — ohne ihn bleibt jede Adresse zeichengleich. Er wird
+mitgeführt, aber noch nicht ÜBERNOMMEN: ein geöffneter Link sagt, unter
+welcher Hand die Aufgabe entstand, schaltet die aktive Hand aber nicht um
+(dafür braucht es eine Regel für den Widerspruch zur Auswahl; die Zeile
+selbst bekommt in Phase 3 ihr `work_items.hand_id`, V7).
 
 **Ausgeblendete Vorlagen.** Die Auswahl bietet nur die Quellen an, die
 `CONFIG.hiddenSourceIds` (`app/src/global-config.ts`) nicht ausblendet —

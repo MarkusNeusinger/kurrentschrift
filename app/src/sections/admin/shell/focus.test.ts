@@ -92,6 +92,17 @@ describe('the hand in the URL', () => {
     expect(readHandFocus(params('h=mn-'))).toBeNull();
   });
 
+  it('is only a shape check — it is weaker than the server pattern, and says so', () => {
+    // `core/eigenhand/ids.py:HAND_ID` pins the suffix to a known style. This
+    // reader cannot, without a second copy of STYLE_IDS in the SPA, so these
+    // two pass: an unknown script, and a PLATE id, whose ids put the script in
+    // FRONT (`suetterlin-1922-norm`). Both are rejected where hands are
+    // actually known — `handScope.ts`, which files them under no script and
+    // therefore never offers them.
+    expect(readHandFocus(params('h=mn-fraktur'))).toBe('mn-fraktur');
+    expect(readHandFocus(params('h=suetterlin-1922-norm'))).toBe('suetterlin-1922-norm');
+  });
+
   it('carries the hand through a focus change inside the view', () => {
     // The three views write the WHOLE query when the subject changes, so
     // without this an `h=` arriving on a Korb link would be gone on the first
