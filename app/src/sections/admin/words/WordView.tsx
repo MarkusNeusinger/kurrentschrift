@@ -41,7 +41,13 @@ import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { joinsOfText, joinsUrl, keysOfText, lettersUrl, readWordFocus, wordsUrl } from '@/sections/admin/shell/focus';
-import { badness, type TraceFilter } from '@/sections/admin/shell/model';
+import {
+  canTraceByHand,
+  ownHandEvidence,
+  seedWordInstance,
+  wordEvidenceOf,
+  type TraceFilter,
+} from '@/sections/admin/shell/model';
 import { garamond } from '@/styles/paper';
 
 import { AuthoredTraceReview } from './AuthoredTraceReview';
@@ -135,20 +141,45 @@ export function WordView() {
   const focus = (next: string | null, sample?: string | null) =>
     setParams(next ? { w: next, ...(sample ? { s: sample } : {}) } : {}, { replace: false });
 
-  // Every stored trace of this word — usually one, but a word can appear on
-  // several plates, and each occurrence is its own piece of evidence. The
-  // specimen named in the URL comes first so a deep link lands on it.
-  const traces = useMemo(() => {
-    if (!text) return [];
-    const needle = text.trim().toLowerCase();
-    return workbench.wordRows
-      .filter((row) => row.word.toLowerCase() === needle && workbench.sampleById.has(row.specimen_id))
-      .sort((a, b) => {
-        if (a.specimen_id === specimenId) return -1;
-        if (b.specimen_id === specimenId) return 1;
-        return badness(b) - badness(a);
-      });
-  }, [text, specimenId, workbench.wordRows, workbench.sampleById]);
+  // Every WORTPROBE of this word — usually one, but a word can appear on
+  // several plates, and each occurrence is its own piece of evidence. Each
+  // carries its stored trace where the hand has drawn one; the specimen named
+  // in the URL comes first so a deep link lands on it.
+  //
+  // The list is built from the samples, not from the stored traces: the
+  // overview already shows an untraced Wortprobe with its crop, and the detail
+  // — the one place where the tracing actually happens — used to answer the
+  // deep link into it with „gibt es nicht".
+  const evidence = useMemo(
+    () => wordEvidenceOf(workbench.samples, workbench.wordRows, text ?? '', specimenId),
+    [text, specimenId, workbench.samples, workbench.wordRows],
+  );
+  // What the head may count. A foreign writer's sample (Abb. 22) stands in the
+  // list as context but never in a number of THIS hand — V4 —, so the counts
+  // run over the plate's own evidence and the foreign ones get a chip of their
+  // own rather than being folded in or silently dropped.
+  const own = useMemo(() => ownHandEvidence(evidence), [evidence]);
+  const tracedCount = useMemo(() => own.filter((e) => e.row).length, [own]);
+  const foreignCount = evidence.length - own.length;
+
+  // What the editor is opened on. A Wortprobe that has never been traced gets a
+  // SEEDED row — the same shape the dialog already takes —, so the tested write
+  // flow is called rather than rebuilt: no new prop, no new branch, and the
+  // first authored trace for a specimen is the upsert the server has always
+  // accepted. The memo keeps the seed's object identity stable while the dialog
+  // is open.
+  // Through `canTraceByHand`, so a refetch that turns a sample into context —
+  // a re-harvest dropping a row, a sidecar marking the ink clipped — closes an
+  // open dialog instead of leaving a write path standing that the list itself
+  // no longer offers.
+  const editingEvidence = useMemo(
+    () => (editing ? (evidence.find((e) => e.sample.id === editing && canTraceByHand(e)) ?? null) : null),
+    [editing, evidence],
+  );
+  const editingRow = useMemo(
+    () => (editingEvidence ? (editingEvidence.row ?? seedWordInstance(editingEvidence.sample)) : null),
+    [editingEvidence],
+  );
 
   const letterKeys = useMemo(() => (text ? keysOfText(text) : []), [text]);
   const joinKeys = useMemo(() => (text ? joinsOfText(text) : []), [text]);
@@ -255,15 +286,37 @@ export function WordView() {
         title={<Typography sx={{ fontFamily: garamond, fontSize: 28, lineHeight: 1.2 }}>{text}</Typography>}
         chips={
           <>
+            {/* Two counts, because they are two things: how many Wortproben
+                the plate has of this text, and how many of them already carry
+                a stored Bahn. One number could only ever have been one of the
+                two, and the gap between them IS the remaining work. Both count
+                THIS hand only. */}
             <Chip
               size="small"
               variant="outlined"
-              label={fmt(traces.length === 1 ? t.traceCountOne : t.traceCount, { count: traces.length })}
+              label={fmt(own.length === 1 ? t.sampleCountOne : t.sampleCount, { count: own.length })}
             />
+            <Chip
+              size="small"
+              variant="outlined"
+              label={fmt(tracedCount === 1 ? t.traceCountOne : t.traceCount, { count: tracedCount })}
+            />
+            {/* The foreign writer's samples are announced, not hidden and not
+                folded in — a separate number under their own name is the only
+                way both statements stay true. */}
+            {foreignCount > 0 && (
+              <Tooltip title={de.admin.werkbank.foreignSetHint}>
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={fmt(de.admin.werkbank.foreignCount, { count: foreignCount })}
+                />
+              </Tooltip>
+            )}
             {missing.length > 0 && (
               <Chip size="small" color="warning" label={`${de.admin.compare.missingPrefix}${missing.join(', ')}`} />
             )}
-            {traces.length > 0 && (
+            {evidence.length > 0 && (
               <ToggleButtonGroup
                 size="small"
                 value={[
@@ -384,20 +437,19 @@ export function WordView() {
           <Box sx={{ p: 3, display: 'flex', justifyContent: 'center' }}>
             <CircularProgress size={24} />
           </Box>
-        ) : traces.length === 0 ? (
+        ) : evidence.length === 0 ? (
           <Alert severity="info">{t.noSpecimen}</Alert>
         ) : (
-          traces.map((row) => {
-            const sample = workbench.sampleById.get(row.specimen_id);
-            if (!sample) return null;
+          evidence.map((item) => {
+            const { sample, row } = item;
             const score = scores[sample.id];
             return (
               <WordSpineCard
-                key={`${row.kind}:${row.specimen_id}`}
+                key={`${sample.kind}:${sample.id}`}
                 row={row}
                 sample={sample}
                 sourceId={sourceId}
-                boxes={workbench.boxesBySpecimen.get(row.specimen_id) ?? []}
+                boxes={workbench.boxesBySpecimen.get(sample.id) ?? []}
                 // The card always gets the composition — its right-hand face
                 // IS the engine's answer. The switch only decides whether the
                 // same ink is additionally projected onto the plate pixels.
@@ -423,9 +475,16 @@ export function WordView() {
                         {t.scoreButton}
                       </Button>
                     )}
-                    <Button size="small" onClick={() => setEditing(row.specimen_id)}>
-                      {de.admin.belege.editOpen}
-                    </Button>
+                    {/* Also on a Wortprobe without a stored Bahn — that entry
+                        IS the point of this card being here. Which samples are
+                        context rather than work, and why, is `canTraceByHand`;
+                        the card carries the reason beside this gap, as the
+                        „andere Hand" and „Unvollständig" chips. */}
+                    {canTraceByHand(item) && (
+                      <Button size="small" onClick={() => setEditing(sample.id)}>
+                        {de.admin.belege.editOpen}
+                      </Button>
+                    )}
                   </>
                 }
               />
@@ -434,32 +493,36 @@ export function WordView() {
         )}
       </Box>
 
-      {editing &&
-        (() => {
-          const row = traces.find((r) => r.specimen_id === editing);
-          const sample = row ? workbench.sampleById.get(row.specimen_id) : undefined;
-          if (!row || !sample) return null;
-          return (
-            <WordTraceEditorDialog
-              open
-              row={row}
-              sample={sample}
-              sourceId={sourceId}
-              // The row's own hand wins inside the dialog; this is the fallback
-              // for traces harvested before the hands wiring existed.
-              fallbackHandId={source?.hand_id ?? null}
-              onClose={() => setEditing(null)}
-              // A saved authored trace replaces the row the workbench holds —
-              // refetch the traces so the evidence shows the stored state, and
-              // re-navigate so the URL still names the specimen.
-              onSaved={() => {
-                setEditing(null);
-                workbench.refreshWordTraces();
-                navigate(wordsUrl(text, sample.id), { replace: true });
-              }}
-            />
-          );
-        })()}
+      {editingEvidence && editingRow && (
+        <WordTraceEditorDialog
+          open
+          row={editingRow}
+          sample={editingEvidence.sample}
+          sourceId={sourceId}
+          // The row's own hand wins inside the dialog. A seeded row has none, so
+          // the fallback has to resolve one: the hand the workbench derived from
+          // this source's own occurrences (the same tally that names the hand
+          // for the statistics layers), and only then the source's registration.
+          // Resolves neither — no occurrence names a hand and `sources.hand_id`
+          // is unset — the dialog says so in German and keeps saving disabled,
+          // which is the honest state rather than a write under a guessed hand.
+          // A foreign writer's sample never gets the plate hand: the entry is
+          // not offered for one, and if it were ever reached the dialog keeps
+          // saving disabled with its own reason rather than mislabelling a hand.
+          fallbackHandId={
+            editingEvidence.sample.sample_set ? null : (workbench.handId ?? source?.hand_id ?? null)
+          }
+          onClose={() => setEditing(null)}
+          // A saved authored trace replaces the row the workbench holds —
+          // refetch the traces so the evidence shows the stored state, and
+          // re-navigate so the URL still names the specimen.
+          onSaved={() => {
+            setEditing(null);
+            workbench.refreshWordTraces();
+            navigate(wordsUrl(text, editingEvidence.sample.id), { replace: true });
+          }}
+        />
+      )}
     </Box>
   );
 }
