@@ -33,9 +33,27 @@ export const admin = {
     areaWords: 'Wörter',
     areaEigenhand: 'Eigenhand',
     areaNavAria: 'Bereiche der Werkbank',
-    switchSource: 'Vorlage wechseln',
     noSource: 'keine Vorlage',
+    // `switchSource` („Vorlage wechseln") is gone: its only reader was the
+    // Vorlagen-Chip's tooltip, and the chip moved into the Scope-Leiste, whose
+    // Vorlage field is the same link.
+    //
+    // The Scope-Leiste under the header: two fields that say what the open page
+    // is about, and never switch it (admin-redesign.md §7.2). The colons are
+    // part of the visible label, which is why they live here.
+    scopeAria: 'Arbeitsbereich',
+    scopeSource: 'Vorlage:',
+    scopeHand: 'Hand:',
+    // Not every script has an own hand — an em-dash is the honest answer, an
+    // invented id would not be (V19).
+    scopeHandNone: '—',
     openKorb: 'Auftragskorb öffnen',
+    // The badge names its scope, visibly in the Vorlage field and in the
+    // button's name — before, it stood nowhere, not even in the hover. The id
+    // rides along because one script can be taught by several charts, so the
+    // style alone does not say WHICH basket this is.
+    korbOpen: '{{n}} offen',
+    korbScoped: 'Auftragskorb der Vorlage {{style}} · {{id}} öffnen',
     closeKorb: 'Auftragskorb schließen',
     startEyebrow: 'Werkbank',
     startTitle: 'Welche Vorlage?',
@@ -1111,10 +1129,32 @@ export const admin = {
     // say what the strips are OF when a second tab is open beside it.
     tabSubject: 'Eigenhand · {{ansicht}}',
     hand: 'Hand',
-    handHelp: 'Neue Hand: <schreiber>-<stil>, z. B. mn-suetterlin',
+    // `handHelp` („Neue Hand: <schreiber>-<stil>") is gone: the field is now
+    // always a picker over the hands the server knows. That also took the old
+    // way to the FIRST hand with it — it hung on exactly this free-text field
+    // and on an invented `mn-<stil>` default. So the sentence may not promise
+    // it any more; it names the path that really exists. `setup` writes the
+    // server record, which puts the hand into this very picker through
+    // GET /eigenhand/setups and lets the sheet printer work under it
+    // (tools/eigenhand/setup.py).
+    //
     // Since the `?reiter=` split this sits in the SHELL, so it shows on all
-    // four Unteransichten — „unten" pointed at nothing on three of them.
-    noHands: 'Noch keine Hand erfasst — in der Ansicht „Drucken" einen Bogen drucken, damit legt sich die erste an.',
+    // four Unteransichten — „unten" pointed at nothing on three of them. It
+    // says „für diese Schrift": the active hand always belongs to the
+    // Vorlage's script (V19), so a Kurrent Vorlage stands here without one
+    // even beside a written Sütterlin hand.
+    noHands:
+      'Für diese Schrift ist noch keine Hand erfasst. Eine neue entsteht mit ihrem stehenden Setup — danach steht sie hier zur Auswahl und kann Bögen drucken:',
+    // The placeholder is QUOTED: `<schreiber>` unquoted is a redirection to
+    // bash, so one copy-and-run would write a file into the working directory
+    // instead of passing an argument. The style comes from the open Vorlage,
+    // so the line never names a script that is not in front of the reader.
+    noHandsCommand:
+      'ADMIN_TOKEN=… uv run python -m tools.eigenhand.setup --hand "<schreiber>-{{style}}" --feder … --tinte … --papier … --geraet scanner',
+    // The reads behind the picker are admin-gated and a 401 is not retried.
+    // Without this sentence the result would look like „this script has no
+    // hand" — a claim about data that never arrived.
+    handsError: 'Die erfassten Hände konnten nicht geladen werden.',
     loadError: 'Der Bestand konnte nicht geladen werden.',
     stripsTitle: 'Streifen',
     stripsBelegt: 'belegt',

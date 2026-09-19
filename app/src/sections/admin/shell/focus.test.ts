@@ -4,11 +4,13 @@ import {
   eigenhandUrl,
   joinsOfText,
   joinsUrl,
+  keepHand,
   keysOfText,
   lettersUrl,
   neighbourLetters,
   pairKeysOfText,
   readEigenhandFocus,
+  readHandFocus,
   readJoinFocus,
   readLetterFocus,
   readWordFocus,
@@ -75,6 +77,45 @@ describe('eigenhand sub-view', () => {
   });
 });
 
+describe('the hand in the URL', () => {
+  it('reads a hand id and rejects what is not one', () => {
+    expect(readHandFocus(params('h=mn-suetterlin'))).toBe('mn-suetterlin');
+    expect(readHandFocus(params('h=mn-zweite-suetterlin'))).toBe('mn-zweite-suetterlin');
+    expect(readHandFocus(params(''))).toBeNull();
+    expect(readHandFocus(params('h='))).toBeNull();
+    // Shape only — which hands EXIST is a question for the loaded candidates
+    // (handScope.ts) — but a value that cannot be a hand id at all is dropped
+    // here, once, instead of being carried into every link the view writes.
+    expect(readHandFocus(params('h=quatsch'))).toBeNull();
+    expect(readHandFocus(params('h=MN-Suetterlin'))).toBeNull();
+    expect(readHandFocus(params('h=mn suetterlin'))).toBeNull();
+    expect(readHandFocus(params('h=mn-'))).toBeNull();
+  });
+
+  it('is only a shape check — it is weaker than the server pattern, and says so', () => {
+    // `core/eigenhand/ids.py:HAND_ID` pins the suffix to a known style. This
+    // reader cannot, without a second copy of STYLE_IDS in the SPA, so these
+    // two pass: an unknown script, and a PLATE id, whose ids put the script in
+    // FRONT (`suetterlin-1922-norm`). Both are rejected where hands are
+    // actually known — `handScope.ts`, which files them under no script and
+    // therefore never offers them.
+    expect(readHandFocus(params('h=mn-fraktur'))).toBe('mn-fraktur');
+    expect(readHandFocus(params('h=suetterlin-1922-norm'))).toBe('suetterlin-1922-norm');
+  });
+
+  it('carries the hand through a focus change inside the view', () => {
+    // The three views write the WHOLE query when the subject changes, so
+    // without this an `h=` arriving on a Korb link would be gone on the first
+    // click in the view.
+    expect(keepHand(params('g=a&h=mn-suetterlin'), { g: 'b' })).toEqual({ g: 'b', h: 'mn-suetterlin' });
+    // Leaving the detail keeps the scope too — the overview is still about
+    // that hand.
+    expect(keepHand(params('g=a&h=mn-suetterlin'), {})).toEqual({ h: 'mn-suetterlin' });
+    expect(keepHand(params('g=a'), { g: 'b' })).toEqual({ g: 'b' });
+    expect(keepHand(params('g=a&h=quatsch'), { g: 'b' })).toEqual({ g: 'b' });
+  });
+});
+
 describe('focus links', () => {
   it('omits absent parameters entirely', () => {
     expect(lettersUrl()).toBe('/admin/buchstaben');
@@ -83,6 +124,25 @@ describe('focus links', () => {
     expect(joinsUrl('a', 'b')).toBe('/admin/uebergaenge?l=a&r=b');
     expect(wordsUrl('lesen')).toBe('/admin/woerter?w=lesen');
     expect(wordsUrl('lesen', 'abb19-3')).toBe('/admin/woerter?w=lesen&s=abb19-3');
+  });
+
+  it('appends the hand last, and changes nothing without one', () => {
+    // The hand is the LAST argument of every builder precisely so that these
+    // strings stay byte-identical — every link already pasted into a task
+    // keeps resolving to the same place.
+    expect(lettersUrl('a', 'mn-suetterlin')).toBe('/admin/buchstaben?g=a&h=mn-suetterlin');
+    expect(lettersUrl(null, 'mn-suetterlin')).toBe('/admin/buchstaben?h=mn-suetterlin');
+    expect(joinsUrl('a', 'b', 'mn-suetterlin')).toBe('/admin/uebergaenge?l=a&r=b&h=mn-suetterlin');
+    expect(wordsUrl('lesen', 'abb19-3', 'mn-suetterlin')).toBe(
+      '/admin/woerter?w=lesen&s=abb19-3&h=mn-suetterlin',
+    );
+    expect(eigenhandUrl('streifen', { hand: 'mn-suetterlin' })).toBe(
+      '/admin/eigenhand?reiter=streifen&h=mn-suetterlin',
+    );
+    // No hand — for instance while no script of this Vorlage has one.
+    expect(lettersUrl('a', null)).toBe('/admin/buchstaben?g=a');
+    expect(joinsUrl('a', 'b', null)).toBe('/admin/uebergaenge?l=a&r=b');
+    expect(wordsUrl('lesen', null, null)).toBe('/admin/woerter?w=lesen');
   });
 
   it('builds the Eigenhand sub-view link, clean when nothing is given', () => {

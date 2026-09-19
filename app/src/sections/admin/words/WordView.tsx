@@ -56,7 +56,11 @@ const WORD_H = 130; // px — the composed word, large enough to judge the rhyth
 export function WordView() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const { source, sourceId, cropCacheBust } = useAdmin();
+  // `ownHand` and not `handId`: `workbench.handId` a few lines down is the
+  // PLATE hand whose statistics this page shows. Two different hands, and the
+  // distinction the Scope-Leiste exists to make (P1-Q3 a) — so they do not
+  // share a name in one file.
+  const { source, sourceId, cropCacheBust, handId: ownHand } = useAdmin();
   const workbench = useWorkbench();
   const fileMark = useFileMark();
   const t = de.admin.words;
@@ -166,6 +170,12 @@ export function WordView() {
   // through `wordsUrl`: that builder writes a fresh query string with `w`/`s`
   // in it and nothing else, which is correct for a link INTO the view from
   // elsewhere and a silent state loss from inside it.
+  //
+  // The merge is what `keepHand` (focus.ts) was written for one PR earlier,
+  // generalised: it kept the ONE parameter the scope needs while the rest of
+  // the query was rewritten, and this keeps all of them — the Buchstaben
+  // view's pattern, which that helper's own docstring already named as the
+  // better one.
   const focus = (next: string | null, sample?: string | null, opts?: { replace?: boolean }) => {
     const out = new URLSearchParams(params);
     if (next) {
@@ -432,7 +442,7 @@ export function WordView() {
                 clickable
                 color={missing.includes(key) ? 'warning' : 'default'}
                 label={key}
-                onClick={() => navigate(lettersUrl(key))}
+                onClick={() => navigate(lettersUrl(key, ownHand))}
               />
             ))}
           </Box>
@@ -449,7 +459,7 @@ export function WordView() {
                   variant="outlined"
                   clickable
                   label={`${join.leftKey}→${join.rightKey}`}
-                  onClick={() => navigate(joinsUrl(join.leftKey, join.rightKey))}
+                  onClick={() => navigate(joinsUrl(join.leftKey, join.rightKey, ownHand))}
                 />
               ))
             )}
@@ -483,8 +493,8 @@ export function WordView() {
                 overlay={overlay}
                 showTrace={showTrace}
                 showPath={showPath}
-                onOpenLetter={(glyphKey) => navigate(lettersUrl(glyphKey))}
-                onOpenPair={(leftKey, rightKey) => navigate(joinsUrl(leftKey, rightKey))}
+                onOpenLetter={(glyphKey) => navigate(lettersUrl(glyphKey, ownHand))}
+                onOpenPair={(leftKey, rightKey) => navigate(joinsUrl(leftKey, rightKey, ownHand))}
                 onMark={fileMark}
                 actions={
                   <>

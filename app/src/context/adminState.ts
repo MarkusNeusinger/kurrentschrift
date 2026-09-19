@@ -15,6 +15,30 @@ export interface AdminState {
   // All chart sources, for the sidebar switcher.
   sources: SourceOut[];
   switchSource: (id: string) => void;
+  // The own hand the workbench is on — the second scope beside the Vorlage,
+  // named by the Scope-Leiste on every admin page. It is always a hand of the
+  // Vorlage's script (admin-redesign.md V19, resolved in shell/handScope.ts)
+  // and null while that script has none, which the bar says as an em-dash.
+  handId: string | null;
+  // The hands of THIS Vorlage's script, i.e. the only legal picks — the
+  // Eigenhand picker offers exactly these.
+  handChoices: string[];
+  setHand: (id: string) => void;
+  // Whether the two hand reads have ANSWERED. Without it `handId: null` and an
+  // empty `handChoices` are indistinguishable from „this script has no hand" —
+  // and both surfaces say that out loud (the bar's em-dash, the Eigenhand
+  // page's sentence), which would be a claim about data never read. Every
+  // surface that makes such a claim waits for this, the way the Korb badge
+  // stays blank while its own count is unknown.
+  handsLoaded: boolean;
+  // Why they did not answer, for the one page whose subject they are. Kept RAW:
+  // the German reading of an error lives in `shell/apiErrorText.ts`, which
+  // reads the admin catalog — and this module is on the public /quiz's import
+  // path, where those ~66 kB may not go (`no-restricted-imports`). The
+  // Eigenhand page does the translating. The bar stays silent either way: an
+  // error banner does not belong under the header of a workbench that
+  // otherwise works.
+  handsError: unknown;
   bboxesByKey: Record<string, BboxOut>;
   glyphsByKey: Record<string, GlyphSummary>;
   // Which letters have a stored Laufform (template variant 100). Derived from

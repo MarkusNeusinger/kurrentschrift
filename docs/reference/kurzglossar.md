@@ -601,6 +601,15 @@ Streifen, der sein `verfahren` führt, nur „automatisch" auf der Platte,
 die keines führt. `locales/de/admin.vocabulary.test.ts`.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §5.0
 
+**Scope-Leiste** — die Zeile unter der Admin-Kopfleiste mit zwei Feldern,
+„Vorlage:" und „Hand:", die den Arbeitsbereich ZEIGEN und nie umschalten;
+hervorgehoben ist das Feld, um das es auf dieser Seite geht. Das Hand-Feld
+nennt immer die Eigenhand samt Rollen-Zusatz, der Korb-Zähler sitzt
+sichtbar im Vorlagen-Feld. **Hand-Stil-Kopplung (V19):** die aktive Hand
+gehört immer zum Stil der Vorlage — sonst die zuletzt für diesen Stil
+gewählte, sonst keine. `shell/ScopeBar.tsx` · `shell/handScope.ts`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §7.2
+
 **Beleg (Eigenhand)** — ein Vorkommen eines Übergangsraum-Items in den
 angenommenen Fassungen einer Hand; die Zähleinheit des Bestandsberichts.
 Nie ein Zähler für Bahnen — ein Wort kann mehrere Bahnen tragen, ohne ein
