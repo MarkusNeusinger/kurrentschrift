@@ -44,6 +44,7 @@ import { useFileMark } from '@/sections/admin/shell/korbState';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import {
+  keepHand,
   lettersUrl,
   pairKeysOfText,
   readJoinFocus,
@@ -186,8 +187,9 @@ export function JoinView() {
   // previous join's gap in the meantime.
   const [missingFor, setMissingFor] = useState<{ text: string; keys: string[] }>({ text: '', keys: [] });
 
+  // `keepHand`: the subject changes, the scope does not (focus.ts).
   const focus = (left: string | null, right: string | null) =>
-    setParams(left && right ? { l: left, r: right } : {}, { replace: false });
+    setParams(keepHand(params, left && right ? { l: left, r: right } : {}), { replace: false });
 
   // Leaving the detail drops the row it belonged to, during render rather than
   // in the effect below (react-hooks/set-state-in-effect). Keyed on „is a join

@@ -8,15 +8,23 @@
 // the browser's back button walks the inspection history, and a reload lands
 // where the work was.
 //
-// Pure functions only — the components read them through the hooks in
-// useFocus.ts, and the unit tests cover the parsing/derivation here.
+// Pure functions only — each view reads its own focus out of `useSearchParams`
+// through the readers below, and the unit tests cover the parsing/derivation
+// here. (The comment used to point at a `useFocus.ts` that never existed.)
 
 import { LETTER_BY_KEY, LETTERS, glyphKeyFor } from '@/domain/glyphs';
 import { shapeText } from '@/domain/shaping';
 import { paths } from '@/routes/paths';
 
 // Query parameter names, deliberately short — they end up in every deep link.
-export const FOCUS_PARAMS = { glyph: 'g', left: 'l', right: 'r', word: 'w', specimen: 's' } as const;
+//
+// `h` is the own HAND, and it is the one parameter that is not a subject: it
+// says under WHICH hand the subject was looked at. A link the Korb or a task
+// carries is otherwise scope-blind — it names the letter and leaves the second
+// half of the premise to whatever the browser happened to remember
+// (admin-redesign.md Q2 a). It is optional everywhere and never part of a
+// page's title: the subject did not change because the hand did.
+export const FOCUS_PARAMS = { glyph: 'g', left: 'l', right: 'r', word: 'w', specimen: 's', hand: 'h' } as const;
 
 // Eigenhand is the one admin area whose URL carries a PLACE rather than a
 // subject: the page holds four surfaces that answer four different questions
@@ -84,6 +92,30 @@ export function readWordFocus(params: URLSearchParams): WordFocus {
   return { text: text || null, specimenId: params.get(FOCUS_PARAMS.specimen) || null };
 }
 
+// A hand id is `<schreiber>-<stil>` (core/eigenhand/ids.py `HAND_ID`). Checked
+// by SHAPE only, deliberately: which hands exist is a question for the loaded
+// candidates (handScope.ts), and this module stays pure. The shape check is
+// what keeps a typo out of every link the view then writes — nonsense is
+// dropped once, here, instead of travelling along.
+const HAND_ID = /^[a-z0-9]+(?:-[a-z0-9]+)+$/;
+
+export function readHandFocus(params: URLSearchParams): string | null {
+  const hand = params.get(FOCUS_PARAMS.hand);
+  return hand && HAND_ID.test(hand) ? hand : null;
+}
+
+/**
+ * The hand carried through a focus change inside a view.
+ *
+ * The three views write the WHOLE query when the subject changes, so an `h=`
+ * that arrived on a Korb link would evaporate on the first click in the view —
+ * the link would be scoped and the very next step would not be.
+ */
+export function keepHand(params: URLSearchParams, next: Record<string, string>): Record<string, string> {
+  const hand = readHandFocus(params);
+  return hand ? { ...next, [FOCUS_PARAMS.hand]: hand } : next;
+}
+
 const knownAnsicht = (value: string | null): value is EigenhandAnsicht =>
   Boolean(value) && (EIGENHAND_ANSICHTEN as readonly string[]).includes(value as string);
 
@@ -109,19 +141,28 @@ const withParams = (path: string, entries: Array<[string, string | null | undefi
 
 // The three link builders every cross-view button goes through, so no surface
 // hand-assembles a query string.
-export const lettersUrl = (glyphKey?: string | null): string =>
-  withParams(paths.admin.letters, [[FOCUS_PARAMS.glyph, glyphKey]]);
+//
+// `hand` is the LAST argument of each, and last for a reason: every existing
+// call site and every URL already in a task stays byte-identical without it,
+// and a surface that knows the hand only has to append it.
+export const lettersUrl = (glyphKey?: string | null, hand?: string | null): string =>
+  withParams(paths.admin.letters, [
+    [FOCUS_PARAMS.glyph, glyphKey],
+    [FOCUS_PARAMS.hand, hand],
+  ]);
 
-export const joinsUrl = (leftKey?: string | null, rightKey?: string | null): string =>
+export const joinsUrl = (leftKey?: string | null, rightKey?: string | null, hand?: string | null): string =>
   withParams(paths.admin.joins, [
     [FOCUS_PARAMS.left, leftKey],
     [FOCUS_PARAMS.right, rightKey],
+    [FOCUS_PARAMS.hand, hand],
   ]);
 
-export const wordsUrl = (text?: string | null, specimenId?: string | null): string =>
+export const wordsUrl = (text?: string | null, specimenId?: string | null, hand?: string | null): string =>
   withParams(paths.admin.words, [
     [FOCUS_PARAMS.word, text],
     [FOCUS_PARAMS.specimen, specimenId],
+    [FOCUS_PARAMS.hand, hand],
   ]);
 
 // The Eigenhand builder takes an OPTIONS object for everything past the view,
@@ -131,12 +172,13 @@ export const wordsUrl = (text?: string | null, specimenId?: string | null): stri
 // lands on the Bestand by the reader's own fallback.
 export const eigenhandUrl = (
   ansicht?: EigenhandAnsicht | null,
-  opts?: { item?: string | null; wort?: string | null },
+  opts?: { item?: string | null; wort?: string | null; hand?: string | null },
 ): string =>
   withParams(paths.admin.eigenhand, [
     [EIGENHAND_PARAMS.reiter, ansicht],
     [EIGENHAND_PARAMS.item, opts?.item],
     [EIGENHAND_PARAMS.wort, opts?.wort],
+    [FOCUS_PARAMS.hand, opts?.hand],
   ]);
 
 // The characters behind a glyph_key, for the free-text fields and the pair

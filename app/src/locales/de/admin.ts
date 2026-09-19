@@ -35,7 +35,20 @@ export const admin = {
     areaNavAria: 'Bereiche der Werkbank',
     switchSource: 'Vorlage wechseln',
     noSource: 'keine Vorlage',
+    // Die Scope-Leiste unter der Kopfleiste: zwei Felder, die sagen, worum es
+    // auf dieser Seite geht — und nie umschalten (admin-redesign.md §7.2). Die
+    // Doppelpunkte gehören zum sichtbaren Etikett, darum stehen sie hier.
+    scopeAria: 'Arbeitsbereich',
+    scopeSource: 'Vorlage:',
+    scopeHand: 'Hand:',
+    // Kein Stil hat immer eine eigene Hand — ein Gedankenstrich ist die
+    // ehrliche Antwort, eine erfundene Kennung wäre es nicht (V19).
+    scopeHandNone: '—',
     openKorb: 'Auftragskorb öffnen',
+    // Das Badge sagt seinen Geltungsbereich, sichtbar am Vorlagen-Feld und im
+    // Namen des Knopfes — vorher stand er nirgends, auch nicht im Hover.
+    korbOpen: '{{n}} offen',
+    korbScoped: 'Auftragskorb der Vorlage {{style}} öffnen',
     closeKorb: 'Auftragskorb schließen',
     startEyebrow: 'Werkbank',
     startTitle: 'Welche Vorlage?',
@@ -1036,10 +1049,17 @@ export const admin = {
     // say what the strips are OF when a second tab is open beside it.
     tabSubject: 'Eigenhand · {{ansicht}}',
     hand: 'Hand',
-    handHelp: 'Neue Hand: <schreiber>-<stil>, z. B. mn-suetterlin',
+    // `handHelp` („Neue Hand: <schreiber>-<stil>") ist entfallen: das Feld ist
+    // jetzt immer eine Auswahl über die erfassten Hände, eine neue Hand legt
+    // das Drucken an — eine getippte Kennung war nie ein Weg dorthin.
+    //
     // Since the `?reiter=` split this sits in the SHELL, so it shows on all
-    // four Unteransichten — „unten" pointed at nothing on three of them.
-    noHands: 'Noch keine Hand erfasst — in der Ansicht „Drucken" einen Bogen drucken, damit legt sich die erste an.',
+    // four Unteransichten — „unten" pointed at nothing on three of them. Es
+    // sagt „für diese Schrift": die aktive Hand gehört immer zum Stil der
+    // Vorlage (V19), eine Kurrent-Vorlage steht also auch neben einer
+    // geschriebenen Sütterlin-Hand ohne eigene da.
+    noHands:
+      'Für diese Schrift ist noch keine Hand erfasst — in der Ansicht „Drucken" einen Bogen drucken, damit legt sich die erste an.',
     loadError: 'Der Bestand konnte nicht geladen werden.',
     stripsTitle: 'Streifen',
     stripsBelegt: 'belegt',

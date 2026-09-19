@@ -39,7 +39,15 @@ import { useFileMark } from '@/sections/admin/shell/korbState';
 import { LayerDot } from '@/sections/admin/shell/LayerDot';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
-import { joinsOfText, joinsUrl, keysOfText, lettersUrl, readWordFocus, wordsUrl } from '@/sections/admin/shell/focus';
+import {
+  joinsOfText,
+  joinsUrl,
+  keepHand,
+  keysOfText,
+  lettersUrl,
+  readWordFocus,
+  wordsUrl,
+} from '@/sections/admin/shell/focus';
 import {
   canTraceByHand,
   ownHandEvidence,
@@ -137,8 +145,9 @@ export function WordView() {
     };
   }, [sourceId, text]);
 
+  // `keepHand`: the subject changes, the scope does not (focus.ts).
   const focus = (next: string | null, sample?: string | null) =>
-    setParams(next ? { w: next, ...(sample ? { s: sample } : {}) } : {}, { replace: false });
+    setParams(keepHand(params, next ? { w: next, ...(sample ? { s: sample } : {}) } : {}), { replace: false });
 
   // Every WORTPROBE of this word — usually one, but a word can appear on
   // several plates, and each occurrence is its own piece of evidence. Each

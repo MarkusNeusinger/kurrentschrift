@@ -37,6 +37,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { useAdmin } from '@/context/adminState';
 import { createWorkItem, deleteWorkItem, listWorkItems, patchWorkItem } from '@/lib/api';
 import type { WorkItemKind, WorkItemOut, WorkItemStage, WorkItemStatus } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
@@ -111,14 +112,22 @@ function workItemBody(item: WorkItemOut): string {
 // link away for exactly these keys. Null only when the row carries no usable
 // target — a word item filed by specimen id alone, or a general note, which
 // points at nothing in the workbench by definition.
-function workItemUrl(item: WorkItemOut): string | null {
+//
+// `hand` is the ACTIVE hand, appended to every link the basket offers: a task
+// names its subject and the scope is the other half of the premise (Q2 a).
+// Phase 1 has no hand ON the row — `work_items.hand_id` is Phase 3 (V7) — so
+// this is honestly „the hand this session is on", which is also the hand the
+// row was filed under in the session that filed it.
+function workItemUrl(item: WorkItemOut, hand: string | null): string | null {
   // A landmark points at its letter: the lens lives in that view, and the
   // note's first line says which marker to open it on.
   if (item.kind === 'letter' || item.kind === 'landmark') {
-    return item.glyph_key ? lettersUrl(item.glyph_key) : null;
+    return item.glyph_key ? lettersUrl(item.glyph_key, hand) : null;
   }
-  if (item.kind === 'pair') return item.left_key && item.right_key ? joinsUrl(item.left_key, item.right_key) : null;
-  if (item.kind === 'word') return item.word ? wordsUrl(item.word, item.specimen_id) : null;
+  if (item.kind === 'pair') {
+    return item.left_key && item.right_key ? joinsUrl(item.left_key, item.right_key, hand) : null;
+  }
+  if (item.kind === 'word') return item.word ? wordsUrl(item.word, item.specimen_id, hand) : null;
   return null;
 }
 
@@ -257,6 +266,7 @@ export function KorbPanel({
   onNavigate?: () => void;
 }) {
   const navigate = useNavigate();
+  const { handId } = useAdmin();
   const t = de.admin.werkbank;
   const [items, setItems] = useState<WorkItemOut[] | null>(null);
   const [error, setError] = useState(false);
@@ -555,7 +565,7 @@ export function KorbPanel({
                   </Typography>
                 )}
                 {g.rows.map((item) => {
-                  const url = workItemUrl(item);
+                  const url = workItemUrl(item, handId);
                   return (
                     <ItemRow
                       key={item.id}

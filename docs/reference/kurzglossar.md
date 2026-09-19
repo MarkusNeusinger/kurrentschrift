@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-19): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **99
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **100
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars.
 > **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
@@ -591,6 +591,15 @@ des Felds. Die Herkunft trägt ein Chip: „automatisch (Tintenpfad)" auf dem
 Streifen, der sein `verfahren` führt, nur „automatisch" auf der Platte,
 die keines führt. `locales/de/admin.vocabulary.test.ts`.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §5.0
+
+**Scope-Leiste** — die Zeile unter der Admin-Kopfleiste mit zwei Feldern,
+„Vorlage:" und „Hand:", die den Arbeitsbereich ZEIGEN und nie umschalten;
+hervorgehoben ist das Feld, um das es auf dieser Seite geht. Das Hand-Feld
+nennt immer die Eigenhand samt Rollen-Zusatz, der Korb-Zähler sitzt
+sichtbar im Vorlagen-Feld. **Hand-Stil-Kopplung (V19):** die aktive Hand
+gehört immer zum Stil der Vorlage — sonst die zuletzt für diesen Stil
+gewählte, sonst keine. `shell/ScopeBar.tsx` · `shell/handScope.ts`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §7.2
 
 **Beleg (Eigenhand)** — ein Vorkommen eines Übergangsraum-Items in den
 angenommenen Fassungen einer Hand; die Zähleinheit des Bestandsberichts.

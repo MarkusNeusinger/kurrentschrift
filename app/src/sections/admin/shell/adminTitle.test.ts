@@ -45,6 +45,19 @@ describe('admin tab titles', () => {
     expect(adminTitle('/admin/eigenhand/', '?reiter=drucken')).toBe('Eigenhand · Drucken · Werkbank');
   });
 
+  it('never lets the hand move the title', () => {
+    // `h=` is a scope, not a subject: the tab names WHAT is being looked at,
+    // and that did not change because the hand did. Two tabs on the same
+    // letter under two hands are told apart by the Scope-Leiste, not here.
+    expect(adminTitle('/admin/buchstaben', '?g=n&h=mn-suetterlin')).toBe('Buchstabe n · Werkbank');
+    expect(adminTitle('/admin/buchstaben', '?h=mn-suetterlin')).toBe('Buchstaben · Werkbank');
+    expect(adminTitle('/admin/uebergaenge', '?l=e&r=n&h=mn-suetterlin')).toBe('Übergang e → n · Werkbank');
+    expect(adminTitle('/admin/woerter', '?w=lesen&h=mn-suetterlin')).toBe('Wort lesen · Werkbank');
+    expect(adminTitle('/admin/eigenhand', '?reiter=streifen&h=mn-suetterlin')).toBe(
+      'Eigenhand · Streifen · Werkbank',
+    );
+  });
+
   it('tolerates a trailing slash and an unknown admin path', () => {
     expect(adminTitle('/admin/woerter/', '?w=das')).toBe('Wort das · Werkbank');
     // The retired URLs redirect, but the title must not be empty in the frame

@@ -9,16 +9,57 @@
 // public pages stay pinned to CONFIG.sourceId. Switching remounts the whole
 // per-source subtree via the React key below, so bboxes, glyph status,
 // visibility, viewport and open modals reset without hand-written cleanup.
+//
+// The own HAND is the second scope, and it deliberately lives one level higher
+// than all of that: the remount would wipe it on every Vorlage switch, and two
+// Vorlagen of one script are supposed to share their hands (admin-redesign.md
+// Q25 a). So the outer provider owns the choice and the candidates, and the
+// inner one only resolves them against the Vorlage's script — V19 in
+// `shell/handScope.ts`, never a branch here.
 
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { AdminCtx, type AdminState } from '@/context/adminState';
 import { CONFIG } from '@/global-config';
-import { ApiError, getBboxes, getGlyphs, getSource, getSources } from '@/lib/api';
+import { ApiError, getBboxes, getEigenhandHands, getEigenhandSetups, getGlyphs, getSource, getSources } from '@/lib/api';
 import { de } from '@/locales';
+import {
+  handCandidates,
+  handStyle,
+  handsOfStyle,
+  resolveHand,
+  type HandCandidate,
+} from '@/sections/admin/shell/handScope';
 import type { BboxOut, GlyphSummary, SourceOut } from '@/lib/api';
 
 const SOURCE_STORAGE_KEY = 'kurrentschrift.admin.sourceId';
+// Per SCRIPT, not one id: with several Vorlagen per script the last hand of
+// each is what makes a switch land where the author left off (V19).
+const HAND_STORAGE_KEY = 'kurrentschrift.admin.handByStyle';
+
+// What the outer provider knows about hands, handed to the source-scoped one
+// so it can resolve the active hand against the Vorlage it just loaded.
+type HandScope = {
+  chosen: string | null;
+  lastByStyle: Record<string, string>;
+  candidates: HandCandidate[];
+  setHand: (id: string) => void;
+};
+
+const readHandByStyle = (): Record<string, string> => {
+  try {
+    const raw = localStorage.getItem(HAND_STORAGE_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : null;
+    if (!parsed || typeof parsed !== 'object') return {};
+    // Only string→string survives. The entry is hand-editable in the dev
+    // tools, and one bad value must not throw on every resolve.
+    return Object.fromEntries(
+      Object.entries(parsed as Record<string, unknown>).filter(([, v]) => typeof v === 'string'),
+    ) as Record<string, string>;
+  } catch {
+    return {};
+  }
+};
 
 export function AdminProvider({
   children,
@@ -57,8 +98,61 @@ export function AdminProvider({
     [pinnedSourceId],
   );
 
+  // The hand this session picked. It is only a CANDIDATE for the active hand:
+  // `resolveHand` drops it again as soon as the Vorlage's script changes, and
+  // picks it back up on the way back — which is the whole reason it may not
+  // live under the remount.
+  const [chosenHand, setChosenHand] = useState<string | null>(null);
+  const [lastByStyle, setLastByStyle] = useState<Record<string, string>>(readHandByStyle);
+  const [candidates, setCandidates] = useState<HandCandidate[]>([]);
+
+  useEffect(() => {
+    // A pinned mount is a public one (the quiz): it carries no admin token, so
+    // the two gated reads would buy nothing but a pair of 401s.
+    if (pinnedSourceId) return;
+    let cancelled = false;
+    // Both reads together, because neither alone knows every hand: /hands is
+    // built from sheets ∪ Fassungen, /setups carries the ones that only have a
+    // typed setup so far (handScope.ts).
+    Promise.all([getEigenhandHands({ retries: 2 }), getEigenhandSetups({ retries: 2 })])
+      .then(([hands, setups]) => {
+        if (!cancelled) setCandidates(handCandidates(hands.hands, setups.setups, hands.styles));
+      })
+      .catch(() => {
+        // Quiet, like the Korb badge: both routes are admin-gated and may 401,
+        // and the honest answer is then an empty Hand field — not an error
+        // banner over a workbench that otherwise works.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [pinnedSourceId]);
+
+  const setHand = useCallback(
+    (id: string) => {
+      setChosenHand(id);
+      const style = handStyle(candidates, id);
+      // An id no read knows has no script to file it under; it stays this
+      // session's pick and is simply not remembered.
+      if (!style) return;
+      const next = { ...lastByStyle, [style]: id };
+      setLastByStyle(next);
+      try {
+        localStorage.setItem(HAND_STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        /* private mode — the pick still holds for this session */
+      }
+    },
+    [candidates, lastByStyle],
+  );
+
+  const hand = useMemo<HandScope>(
+    () => ({ chosen: chosenHand, lastByStyle, candidates, setHand }),
+    [chosenHand, lastByStyle, candidates, setHand],
+  );
+
   return (
-    <SourceScopedProvider key={sourceId} sourceId={sourceId} switchSource={switchSource}>
+    <SourceScopedProvider key={sourceId} sourceId={sourceId} switchSource={switchSource} hand={hand}>
       {children}
     </SourceScopedProvider>
   );
@@ -67,10 +161,12 @@ export function AdminProvider({
 function SourceScopedProvider({
   sourceId,
   switchSource,
+  hand,
   children,
 }: {
   sourceId: string;
   switchSource: (id: string) => void;
+  hand: HandScope;
   children: ReactNode;
 }) {
   const [source, setSource] = useState<SourceOut | null>(null);
@@ -187,6 +283,17 @@ function SourceScopedProvider({
 
   const refreshCrop = useCallback(() => setCropCacheBust(Date.now()), []);
 
+  // The one place the two scopes meet: the Vorlage's script decides which hand
+  // may be active at all (V19). Derived rather than stored, so a candidate list
+  // that arrives after the first paint — or a Vorlage switch — needs no effect
+  // and can never leave a foreign-script hand standing.
+  const styleId = source?.style_id ?? null;
+  const handId = useMemo(
+    () => resolveHand(hand.chosen, styleId, hand.candidates, hand.lastByStyle),
+    [hand.chosen, hand.candidates, hand.lastByStyle, styleId],
+  );
+  const handChoices = useMemo(() => handsOfStyle(hand.candidates, styleId), [hand.candidates, styleId]);
+
   // Opening either modal also activates the glyph, so the sidebar/chart stay in
   // sync with whatever is being authored or inspected.
   const openWizard = useCallback((key: string) => {
@@ -206,6 +313,9 @@ function SourceScopedProvider({
       source,
       sources,
       switchSource,
+      handId,
+      handChoices,
+      setHand: hand.setHand,
       bboxesByKey,
       glyphsByKey,
       loadError,
@@ -233,6 +343,9 @@ function SourceScopedProvider({
       source,
       sources,
       switchSource,
+      handId,
+      handChoices,
+      hand.setHand,
       bboxesByKey,
       glyphsByKey,
       loadError,

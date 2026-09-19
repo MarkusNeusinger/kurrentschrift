@@ -41,7 +41,7 @@ import { LetterPicker } from '@/sections/admin/shell/LetterPicker';
 import { OccurrenceThumb } from '@/sections/admin/shell/OccurrenceThumb';
 import { useFileMark } from '@/sections/admin/shell/korbState';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
-import { joinsUrl, neighbourLetters, readLetterFocus, wordsUrl } from '@/sections/admin/shell/focus';
+import { joinsUrl, keepHand, neighbourLetters, readLetterFocus, wordsUrl } from '@/sections/admin/shell/focus';
 import { EvidenceState, Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { garamond } from '@/styles/paper';
 
@@ -105,7 +105,10 @@ export function LetterView() {
     if (glyphKey) setActiveGlyph(glyphKey);
   }, [glyphKey, setActiveGlyph]);
 
-  const focus = (key: string | null) => setParams(key ? { g: key } : {}, { replace: false });
+  // `keepHand`: the subject changes, the scope does not. A view that wrote the
+  // bare subject would drop the `h=` a Korb link arrived with on the first
+  // click inside the view (focus.ts).
+  const focus = (key: string | null) => setParams(keepHand(params, key ? { g: key } : {}), { replace: false });
 
   // Memoised for its identity, not for the lookup: the `?? []` produced a fresh
   // empty array on every render, which invalidated the `relatedWords` memo below

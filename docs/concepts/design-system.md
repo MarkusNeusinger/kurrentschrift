@@ -363,7 +363,8 @@ Unklarheit „gehört die Tafel zu Lesen oder Schreiben?".
 Routen in `app/src/routes/paths.ts` + `routes/sections/public.tsx`. `/lehrbuch`
 leitet weiter auf `/schriftkunde` (alter Name). Der Admin liegt unverändert hinter
 `/admin/*` (5 Klicks auf die Wortmarke) und trägt **dieselbe Leiste** mit seinen
-eigenen drei Bereichen (Buchstaben · Übergänge · Wörter) — §7 `HeaderBar`.
+eigenen vier Bereichen (Buchstaben · Übergänge · Wörter · Eigenhand) und der
+Scope-Leiste darunter — §7 `HeaderBar`.
 
 ---
 
@@ -373,9 +374,10 @@ eigenen drei Bereichen (Buchstaben · Übergänge · Wörter) — §7 `HeaderBar
 |---|---|---|
 | `PaperBackground` | Papier-Identität (Grund, Korn, Vignette) | umschließt jede öffentliche Seite (via `PublicLayout`) |
 | `PublicLayout` | Chrome: Background + Header + `<main>` + optional Footer | `sx` für `<main>` |
-| `HeaderBar` | DIE Kopf-Chrome (sticky, `blur(6px)`, Haarlinie) + Geschwister-Exporte `Wordmark` (•kurrentschrift.ink, Viridian-Punkt, kursive TLD) und `HeaderNavLink` (Playfair-Link, Viridian-Unterstrich, `aria-current`) | `maxWidth` (Default `wide`, `'none'` = vollbreit), `zIndex`, `contentSx`; **eine** Leiste für öffentliche Seiten **und** Werkbank |
+| `HeaderBar` | DIE Kopf-Chrome (sticky, `blur(6px)`, Haarlinie) + Geschwister-Exporte `Wordmark` (•kurrentschrift.ink, Viridian-Punkt, kursive TLD) und `HeaderNavLink` (Playfair-Link, Viridian-Unterstrich, `aria-current`) | `maxWidth` (Default `wide`, `'none'` = vollbreit), `zIndex`, `contentSx`, `below` (zweite Zeile INNERHALB des Sticky-Blocks, heute die Scope-Leiste); **eine** Leiste für öffentliche Seiten **und** Werkbank |
 | `PublicHeader` | sticky Markenleiste + 3-Bereiche-Nav | auf `HeaderBar` gebaut, Inhalt auf `wide`; nur noch `sx` (die `tone`-Variante hatte keinen Aufrufer und ist entfallen); 5 Taps → Admin |
-| `AdminHeader` | dieselbe Leiste für die Werkbank (`sections/admin/shell`) | **vollbreit** (`maxWidth='none'`, §4), `zIndex 1100` (unter Korb-Drawer 1200 und LetterPicker-Popover 1300) + **zwei Zusatz-Slots**: Vorlagen-Chip (→ `/admin`) und Auftragskorb-⚑ mit Badge |
+| `AdminHeader` | dieselbe Leiste für die Werkbank (`sections/admin/shell`) | **vollbreit** (`maxWidth='none'`, §4), `zIndex 1100` (unter Korb-Drawer 1200 und LetterPicker-Popover 1300); Wortmarke · Bereichs-Nav (bei `xs` eine Scroll-Snap-Zeile mit 4 px Unterrand, sonst wüchse ein Scrollbalken für die Hover-Haarlinie) · Auftragskorb-⚑ mit Badge, und im `below`-Schlitz die `ScopeBar` |
+| `ScopeBar` | die **Scope-Leiste**: zwei Felder „Vorlage:" und „Hand:", die den Arbeitsbereich zeigen und nie umschalten | beide Felder sind Links (Vorlagen-Auswahl · Eigenhand-Seite), das aktive trägt `aria-current` **und** eine Viridian-Leiste links (Farbe nie allein, §9); der Korb-Zähler steht sichtbar im Vorlagen-Feld, 44 px Trefferhöhe je Feld |
 | `PublicFooter` | geteilter Footer (Links, Impressum) | Breite `wide` |
 | `PageContainer` | eine Inhaltsspalte, 3 Breiten | `width='narrow'\|'text'\|'wide'\|number`, `component`, `sx` |
 | `Prose` | Lesemaß ~66 Zeichen | `align='left'\|'center'`, `measure='47rem'` |

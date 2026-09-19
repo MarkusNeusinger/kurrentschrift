@@ -15,6 +15,15 @@ export interface AdminState {
   // All chart sources, for the sidebar switcher.
   sources: SourceOut[];
   switchSource: (id: string) => void;
+  // The own hand the workbench is on — the second scope beside the Vorlage,
+  // named by the Scope-Leiste on every admin page. It is always a hand of the
+  // Vorlage's script (admin-redesign.md V19, resolved in shell/handScope.ts)
+  // and null while that script has none, which the bar says as an em-dash.
+  handId: string | null;
+  // The hands of THIS Vorlage's script, i.e. the only legal picks — the
+  // Eigenhand picker offers exactly these.
+  handChoices: string[];
+  setHand: (id: string) => void;
   bboxesByKey: Record<string, BboxOut>;
   glyphsByKey: Record<string, GlyphSummary>;
   loadError: string | null;
