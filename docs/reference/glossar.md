@@ -4300,9 +4300,8 @@ Die Begriffe des Plans `proposals/admin-redesign.md` — jeder Eintrag trägt
 Marke Eintrag für Eintrag, ein Eintrag ohne sie ist gebaut.
 Sie stehen hier, damit der Plan und die Diskussion darüber ein Vokabular
 haben, das nicht mit dem laufenden Admin kollidiert. Seit dem 2026-09-18
-sind die Rückfragen des Plans entschieden (dort §4.5); gebaut ist damit
-weiterhin nichts, und die Begriffe, die erst diese Entscheide geprägt haben,
-stehen mit im Block.
+sind die Rückfragen des Plans entschieden (dort §4.5), und die Begriffe, die
+erst diese Entscheide geprägt haben, stehen mit im Block.
 
 **Arbeitsliste (Admin-Redesign, geplant)** — eine gefilterte, sortierte
 Übersicht mit Zähler, deren Zustand in der URL steht; im geplanten Admin
