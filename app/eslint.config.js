@@ -79,6 +79,11 @@ export default tseslint.config(
   // specifier). The `*` deliberately over-matches sibling names like a
   // hypothetical `adminHelpers`; a false positive fails loudly at lint with
   // this message, silence is the failure mode this rule exists to prevent.
+  // The `./admin*` / `./wizard*` pair closes the last shape: a SIBLING inside
+  // `src/locales/de/` reaching for `./admin`, which none of the other patterns
+  // match. The one file that legitimately does — the vocabulary guard — is a
+  // `.test.ts`, unreachable from `main.tsx` and therefore exempted by name
+  // below, so the exemption is declared rather than a hole in the patterns.
   {
     files: ['src/**/*.{ts,tsx}'],
     ignores: [
@@ -86,6 +91,7 @@ export default tseslint.config(
       'src/sections/admin/**',
       'src/layouts/admin/**',
       'src/locales/admin.ts',
+      'src/locales/de/**/*.test.{ts,tsx}',
     ],
     rules: {
       'no-restricted-imports': [
@@ -93,7 +99,14 @@ export default tseslint.config(
         {
           patterns: [
             {
-              group: ['@/locales/admin*', '**/locales/admin*', '**/de/admin*', '**/de/wizard*'],
+              group: [
+                '@/locales/admin*',
+                '**/locales/admin*',
+                '**/de/admin*',
+                '**/de/wizard*',
+                './admin*',
+                './wizard*',
+              ],
               message:
                 'Admin locale strings (~66 kB source, ~23 kB gz) must stay out of the public bundle. Import { de } from "@/locales" — or move this file under an admin directory if it is admin code.',
             },

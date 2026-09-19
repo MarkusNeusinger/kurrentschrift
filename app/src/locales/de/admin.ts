@@ -45,6 +45,18 @@ export const admin = {
     startSlant: 'Schräglage {{deg}}°',
     startNoSources: 'Keine Tafel-Vorlagen gefunden — läuft die API und ist die Datenbank eingerichtet?',
     startHint: 'Die gewählte Vorlage bleibt in diesem Browser gespeichert; die öffentlichen Seiten bleiben unberührt.',
+    // The three roles of vision.md as ONE set of labels (author decision
+    // 2026-09-18, Q8 a): Tafel is the teaching chart, Platte the historical
+    // hand's plate, Eigenhand the author's own. They live in the shell rather
+    // than in a view because a role is never a property of one surface — the
+    // Scope-Leiste, the Rollen-Spalten (Phase 3) and every future panel head
+    // name the same three. The Gloss variants are for the FIRST appearance on
+    // a surface; afterwards the bare label carries it.
+    roleTafel: 'Tafel',
+    rolePlatte: 'Platte',
+    roleEigenhand: 'Eigenhand',
+    rolePlatteGloss: 'Platte (historische Hand)',
+    roleEigenhandGloss: 'Eigenhand (meine Hand)',
     // The shared states of every occurrence-backed block.
     evidenceLoading: 'wird geladen …',
     evidenceError: 'Die gespeicherten Vorkommen konnten nicht geladen werden — neu laden oder die API prüfen.',
@@ -262,9 +274,9 @@ export const admin = {
       'Die gemessene Median-Verbindung über den Vorkommen, aus denen sie verdichtet wurde — die Prüfzahl dafür, wie weit der Generator von dieser Hand entfernt liegt.',
     // The traced drill plate of exactly this pair (the Verbindungs-Platten
     // cell), shown as the same evidence card the Wörter view uses.
-    drillTitle: 'Platten-Beleg (nachgefahren)',
+    drillTitle: 'Bahn der Platte (nachgefahren)',
     drillCaption:
-      'Die Verbindungs-Platte genau dieser Kombination — die Nachfahrung, darüber die Engine-Tinte, beide in der vermessenen Registrierung der Spur; rechts schreibt das System dieselbe Verbindung im gleichen Maßstab. Welche Linie welche ist, sagen die Schalter darüber.',
+      'Die Verbindungs-Platte genau dieser Kombination — die Bahn, darüber die Engine-Tinte, beide in derselben vermessenen Registrierung; rechts schreibt das System dieselbe Verbindung im gleichen Maßstab. Welche Linie welche ist, sagen die Schalter darüber.',
     occurrencesTitle: 'Vorkommen ({{count}})',
     occurrencesCaption:
       'Jede herausgezogene Verbindung als Ausschnitt der Platte — die Tinte selbst, mit dem Abstand Δ zum generierten Zug. Ein Klick springt in das Wort, in dem sie steht.',
@@ -289,7 +301,7 @@ export const admin = {
   words: {
     overviewTitle: 'Wörter',
     overviewIntro:
-      'Im Wort wird sichtbar, was einzeln noch stimmte. Jede Wortprobe der Vorlage steht neben demselben Wort „wie geschrieben“; „Öffnen“ führt in das einzelne Wort mit Spur, Vorkommen und Bewertung. Oben lässt sich jeder beliebige Text eintippen — auch einer, den keine Platte enthält.',
+      'Im Wort wird sichtbar, was einzeln noch stimmte. Jede Wortprobe der Vorlage steht neben demselben Wort „wie geschrieben“; „Öffnen“ führt in das einzelne Wort mit Bahn, Vorkommen und Bewertung. Oben lässt sich jeder beliebige Text eintippen — auch einer, den keine Platte enthält.',
     // Plain-text h1 behind the Garamond-set word (see letters.letterHeading).
     wordHeading: 'Wort {{text}}',
     freeTextLabel: 'Wort oder Satz',
@@ -300,8 +312,9 @@ export const admin = {
     // „Bahn" rather than „Beleg" for a stored line (author decision
     // 2026-09-18, Q8 a): in the own-hand Bestandsbericht „Beleg" counts the
     // accepted Fassungen of an item, so the same word for the line over a plate
-    // Wortprobe was two counting units under one name. Exactly this chip is
-    // renamed — no sweep across the other surfaces.
+    // Wortprobe was two counting units under one name. This chip led; Q8 (b)
+    // then made „Bahn" the ONE noun across plate and strip, which is what
+    // `admin.vocabulary.test.ts` beside this file now keeps from rotting back.
     traceCount: '{{count}} Bahnen',
     traceCountOne: '{{count}} Bahn',
     // Beside it, since the detail builds its list from the WORTPROBEN: how many
@@ -392,7 +405,6 @@ export const admin = {
     chartOverview: 'Chart-Übersicht',
     compareOverview: 'Vergleich aller Buchstaben',
     pairsOverview: 'Paar-Matrix (alle Verbindungen)',
-    belegeOverview: 'Belege (nachgefahrene Wörter)',
     werkbankOverview: 'Werkbank (Wörter · Linsen · Auftragskorb)',
     overlays: 'Overlays',
     all: 'alle',
@@ -553,27 +565,17 @@ export const admin = {
     deleteFailed: 'Löschen fehlgeschlagen.',
     editorLoadError: 'Paar-Daten konnten nicht geladen werden.',
   },
-  // The Belege strings (now the Wörter view's specimen cards): a stored
-  // word-occurrence trace over its specimen crop — the error-finding surface
-  // over the occurrence layer (handmodell H1/H2) and the entry point into the
-  // word editor (Werkbank W3: manual re-tracing → authored rows).
+  // What is left of the retired /admin/belege page: the word editor (Werkbank
+  // W3: manual re-tracing over the specimen crop → authored rows) plus the
+  // three strings the Wörter view still reads beside it (`cropAlt`,
+  // `provenanceAuthored`, `editOpen`). The namespace KEY stays `belege` — renaming
+  // it would touch four files for no reader, while the visible word „Beleg"
+  // now belongs to the Eigenhand Bestand alone (author decision 2026-09-18,
+  // Q8 a). The ten leftover keys of the dead page went with that decision,
+  // because they carried the retired vocabulary into nothing.
   belege: {
-    title: 'Belege — nachgefahrene Wörter',
-    intro:
-      'Jedes gespeicherte Wort-Vorkommen der aktiven Vorlage: der Platten-Ausschnitt, darüber der nachgefahrene Schreibpfad. Sortiert nach Fehlern (nicht gefittete Buchstaben zuerst, dann höchste Abweichung) — die Arbeitsliste fürs manuelle Nachfahren.',
-    filterLabel: 'Wort suchen',
-    empty: 'Noch keine gespeicherten Vorkommen — erst die Ernte laufen lassen (tools/laufform/harvest.py --apply).',
-    loadError: 'Belege konnten nicht geladen werden.',
     cropAlt: 'Platten-Ausschnitt',
-    // {{fitted}}/{{total}} letter slots the automatic fit handled cleanly.
-    fittedChip: '{{fitted}}/{{total}} gefittet',
-    // Followed by the space-joined letters the fit could not place.
-    unfittedPrefix: 'fehlt: ',
-    rmseChip: 'RMSE ⌀ {{value}} px',
-    provenanceTraced: 'automatisch nachgefahren',
     provenanceAuthored: 'von Hand nachgefahren',
-    // A stored trace whose specimen crop is missing from the sidecar.
-    noSample: 'Kein Platten-Ausschnitt zur specimen_id {{id}} — Sidecar prüfen.',
     // Word editor (Werkbank W3) — manual re-tracing over the specimen crop.
     editOpen: 'Nachfahren',
     editorTitle: 'nachfahren · {{specimen}}',
@@ -607,7 +609,7 @@ export const admin = {
     editorFrameReanchored:
       'Der gespeicherte Rahmen war veraltet — die Bahn liegt jetzt im aktuellen Rahmen der Wortprobe (gleiche Lage im Ausschnitt). Speichern schreibt den neuen Rahmen fest.',
     editorReset: 'Auf gespeicherten Stand zurück',
-    editorShowStored: 'Gespeicherte Spur zeigen',
+    editorShowStored: 'Gespeicherte Bahn zeigen',
     // {{strokes}} = number of strokes the save would write.
     editorStrokeCount: '{{strokes}} Züge',
     // {{slots}} = the row's slot labels, unchanged by the editor.
@@ -642,8 +644,13 @@ export const admin = {
     fittedChip: '{{fitted}}/{{total}} gefittet',
     unfittedPrefix: 'fehlt: ',
     rmseChip: 'RMSE ⌀ {{value}} px',
-    provenanceTraced: 'automatisch nachgefahren',
-    provenanceAuthored: 'von Hand nachgefahren',
+    // The Herkunfts-Chip of a plate line (§5.0, author decision 2026-09-18,
+    // Q8 b). „automatisch" WITHOUT the follower's name, unlike the strip chip:
+    // `word_instances` records no Verfahren, and rows harvested before the
+    // Tintenpfad became the standard follower (A45) may have been laid by the
+    // Kette — naming a method here would be a claim the row cannot back.
+    provenanceTraced: 'automatisch',
+    provenanceAuthored: 'von Hand',
     noSample: 'Kein Platten-Ausschnitt zur specimen_id {{id}} — Sidecar prüfen.',
     // A sample from a FOREIGN writer's plate (the Abb.-22 Schülerschrift). It
     // may stand in this hand's detail as context, but the chip has to say so
@@ -666,8 +673,10 @@ export const admin = {
     // the sentence a colour-blind reader cannot use, and it goes wrong again on
     // every palette tune. The legend carries the mapping instead — the layer
     // switches show colour AND stroke style (Strichart-Regel, design-system §2).
-    faceLayerTrace: 'Nachfahrung',
-    faceLayerPath: 'Pfad (Schreibreihenfolge, Absetzer gestrichelt)',
+    // The nouns are the one vocabulary of #621: the line is „Bahn", and the
+    // layer that reads it as a movement is „Bewegung".
+    faceLayerTrace: 'Bahn',
+    faceLayerPath: 'Bewegung (Schreibreihenfolge, Absetzer gestrichelt)',
     faceLayerEngine: 'Engine',
     // Herkunft + Datum der gezeichneten Linie. Ohne beides ist ein Pfad eine
     // undatierte Überlagerung und kein Beleg.
@@ -677,10 +686,14 @@ export const admin = {
     faceWrittenPending: 'wird geschrieben …',
     // The per-layer switches above the cards.
     layersLabel: 'Ebenen über der Vorlage',
-    layerTrace: 'Nachfahrung',
-    layerPath: 'Pfad',
+    // Both buttons show the SAME line, so they cannot both be „Bahn": the
+    // second one is named after what it ADDS — the writing movement — which is
+    // what its hint has said all along (author decision 2026-09-18, Q8 b, and
+    // the plan's Q10 (i) recommendation).
+    layerTrace: 'Bahn',
+    layerPath: 'Bewegung',
     layerPathHint:
-      'Dieselbe Linie, als Bewegung gelesen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt die Nachfahrung mit, weil er sie schmückt.',
+      'Dieselbe Bahn, als Bewegung gelesen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt die Bahn mit, denn die Bewegung schmückt sie.',
     layerEngine: 'Engine',
     // The Abstandsprofil under a word card: nearest distance of the engine
     // composition per point of the stored trace. A DISPLAY measure of the
@@ -689,8 +702,8 @@ export const admin = {
     // the curve is never read as dtw_xh.
     profileTitle: 'Abstandsprofil',
     profileCaption:
-      'Abstand der Engine-Bahn zur Nachfahrung, je Punkt der Nachfahrung (nächster Abstand, in x-Höhen; Anzeige-Maß, nicht die Bench-Zahl dtw_xh). Flach nahe 0 = deckungsgleich, Berge = daneben; gestrichelte Senkrechte = Absetzer. Maus über der Kurve zeigt die Stelle im Ausschnitt.',
-    profileAxis: 'Bogenlänge der Nachfahrung (xh) → Abstand der Engine (xh)',
+      'Abstand der Engine zur Bahn, je Punkt der Bahn (nächster Abstand, in x-Höhen; Anzeige-Maß, nicht die Bench-Zahl dtw_xh). Flach nahe 0 = deckungsgleich, Berge = daneben; gestrichelte Senkrechte = Absetzer. Maus über der Kurve zeigt die Stelle im Ausschnitt.',
+    profileAxis: 'Bogenlänge der Bahn (xh) → Abstand der Engine (xh)',
     // Interactive overlay elements (also their aria-labels).
     letterBoxAria: 'Buchstabe {{key}} in {{word}} — anklicken für die Buchstaben-Linse',
     joinDotAria: 'Übergang {{left}}→{{right}} in {{word}} — anklicken für die Paar-Linse',
@@ -847,7 +860,9 @@ export const admin = {
       join_rule: 'Übergangs-Grammatik',
       composition: 'Komposition',
       pair_override: 'Paar-Override',
-      word_trace: 'Wort-Spur',
+      // The KEY is the wire value `word_trace` and stays; only the label moves
+      // to the one noun.
+      word_trace: 'Wort-Bahn',
       // Names no step of the writing path: der Buchstabe stimmte, der Erkenner
       // nicht (§8).
       landmark_detector: 'Landmarken-Erkennung',
@@ -998,6 +1013,11 @@ export const admin = {
   // Bogendruck. Die Scans selbst bleiben lokal — hier stehen nur die Zahlen.
   eigenhand: {
     title: 'Eigenhand',
+    // The role's first appearance on its own page carries the gloss once
+    // (author decision 2026-09-18, Q8 a); the nav item and the chips after it
+    // stay the bare label. The gloss itself is NOT inlined here — `EigenhandView`
+    // prefixes `shell.roleEigenhandGloss`, so the wording of a role lives in
+    // exactly one place and the Scope-Leiste cannot drift away from this page.
     intro:
       'Die eigene Schreibprobe: welche Streifen bereits geschrieben und angenommen sind, welche Zeichen und Übergänge damit belegt sind — gemessen an dem, was der Streifenplan insgesamt hergibt. Die Scans selbst bleiben auf dem eigenen Rechner; hier stehen nur die Zahlen und der Druck.',
     hand: 'Hand',
@@ -1106,37 +1126,51 @@ export const admin = {
     // Gerechnet wird sie außerhalb (Tintenfolger, `tools.eigenhand.pfad`) und
     // über den Admin-Schreibweg gespeichert — der Admin ZEIGT nur. Das Bild
     // bleibt unberührt, der Pfad liegt als Daten daneben.
-    pfadShow: 'Pfad zeigen',
+    //
+    // „Streifen-Pfad" is the glossary name of the FIELD
+    // `eigenhand_strips.pfade`, never a UI word: on screen the line is „Bahn"
+    // (author decision 2026-09-18, Q8 b). That is why the keys below keep
+    // saying `pfad*` while their values say „Bahn" — the key points at the
+    // field, the value speaks to the reader.
+    pfadShow: 'Bahn zeigen',
     pfadShowHint:
-      'Legt die nachgefolgte Federbahn über den Streifen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt auch die Rohzahlen je Kasten mit — sie stecken in denselben Daten, also kostet das keinen zweiten Abruf. Wird je Fassung einzeln geladen und nur für sichtbare Bilder.',
-    pfadPedigree: 'Pfad: {{verfahren}} · {{datum}} · {{woerter}} Wort/Wörter',
+      'Legt die gefolgte Bahn über den Streifen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt auch die Rohzahlen je Kasten mit — sie stecken in denselben Daten, also kostet das keinen zweiten Abruf. Wird je Fassung einzeln geladen und nur für sichtbare Bilder.',
+    // Date and word count stay in the caption; the origin sits beside it as
+    // the Herkunfts-Chip below.
+    pfadPedigree: 'Bahn: {{datum}} · {{woerter}} Wort/Wörter',
     pfadNoDate: 'ohne Datum',
+    // The Herkunfts-Chip (§5.0, Q8 b). Unlike a plate line, a strip row stores
+    // its own `verfahren`, so the origin here may NAME the follower. An
+    // unknown Verfahren is shown raw instead of relabelled: the column is free
+    // text, and a silent swap would turn a foreign follower into a Tintenpfad.
+    verfahrenTintenpfad: 'automatisch (Tintenpfad)',
+    verfahrenAuthored: 'von Hand',
     // Eine Fassung trägt nicht zwangsläufig EINEN Lauf: `--box` mischt ein neu
     // gefolgtes Wort über die übrigen, und ein Zeilenlauf lässt jedem
     // übersprungenen Kasten seinen älteren Pfad. Dann gehört die Herkunft dem
     // einzelnen Pfad, nicht der Liste — und das wird gesagt, statt dem ersten
     // Wort die Herkunft aller zu leihen.
-    pfadPedigreeMixed: 'Pfad: verschiedene Läufe · {{woerter}} Wort/Wörter',
+    pfadPedigreeMixed: 'Bahn: verschiedene Läufe · {{woerter}} Wort/Wörter',
     pfadMixedHint:
-      'Die Pfade dieser Fassung stammen aus mehreren Läufen — einzelne Wörter wurden später noch einmal gefolgt. Herkunft je Wort:',
+      'Die Bahnen dieser Fassung stammen aus mehreren Läufen — einzelne Wörter wurden später noch einmal gefolgt. Herkunft je Wort:',
     pfadNone:
-      'Für diese Fassung ist noch kein Pfad gespeichert. Lokal folgen und hochschieben: uv run python -m tools.eigenhand.pfad --hand … --strip … (Trockenlauf), dann --apply.',
-    pfadNoneShort: 'noch kein Pfad gespeichert',
+      'Für diese Fassung ist noch keine Bahn gespeichert. Lokal folgen und hochschieben: uv run python -m tools.eigenhand.pfad --hand … --strip … (Trockenlauf), dann --apply.',
+    pfadNoneShort: 'noch keine Bahn gespeichert',
     // Die drei leeren Antworten sind NICHT dasselbe: „noch niemand gefolgt"
     // (null), „gefolgt, nichts gefunden" (leere Liste) und „dieses Wort hat
     // keinen". Ein stummes Bild sähe in allen drei Fällen gleich aus.
     pfadEmpty:
       'Dieser Fassung wurde gefolgt, es kam aber keine Bahn zurück — der Folger hat kein Wort lesen können. Erneut folgen lassen oder den Streifen neu schreiben.',
-    pfadNotInBox: 'Für dieses Wort ist kein Pfad gespeichert; andere Wörter der Fassung haben einen.',
+    pfadNotInBox: 'Für dieses Wort ist keine Bahn gespeichert; andere Wörter der Fassung haben eine.',
     pfadNoBox:
-      'Kein Kasten-Rechteck: dieser Bogen wurde gedruckt, bevor es die Schnitt-Geometrie gab — ein Pfad lässt sich im Ausschnitt nicht platzieren.',
-    pfadError: 'Der Pfad konnte nicht geladen werden.',
+      'Kein Kasten-Rechteck: dieser Bogen wurde gedruckt, bevor es die Schnitt-Geometrie gab — eine Bahn lässt sich im Ausschnitt nicht platzieren.',
+    pfadError: 'Die Bahn konnte nicht geladen werden.',
     pfadSeed: 'Saat: Tafel-Duktus',
     pfadSeedHint:
       'Reihenfolge und Richtung kommen aus dem Duktus der Grundvorlage, nicht aus dieser Hand — der Folger nimmt die Saat nur als Vorschlag, die Bahn selbst liegt auf der Tinte. Auch die Lineatur der Saat ist die GEDRUCKTE, nicht die gemessene.',
     pfadStale: 'Maske geändert',
     pfadStaleHint:
-      'Der Pfad wurde unter einer anderen Fleckenmaske gefolgt als der Streifen jetzt trägt — er ist also auf anderer Tinte gelaufen, als hier zu sehen ist. Nach dem Radieren neu folgen lassen.',
+      'Die Bahn wurde unter einer anderen Fleckenmaske gefolgt als der Streifen jetzt trägt — sie ist also auf anderer Tinte gelaufen, als hier zu sehen ist. Nach dem Radieren neu folgen lassen.',
     // Die Rohzahlen je Kasten: was der Folger beim Nachfolgen mitgeschrieben
     // hat, ohne Farbe und ohne Bewertung. Die Tintentreue-Ampel kommt später
     // an dieselbe Stelle — bis dahin steht hier die Zahl. Eine einzelne
