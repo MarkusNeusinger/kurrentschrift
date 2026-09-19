@@ -194,6 +194,14 @@ describe('the Kurztasten switch', () => {
   };
   /** The switch's own line — label, state word and the binding. */
   const line = (): string => box().closest('div')?.parentElement?.textContent ?? '';
+  /** The state word's OWN node: the span beside the switch's label. Read off the
+   * whole line instead, „an" would also be found inside „Gegenstand" and the
+   * assertion would hold with the word deleted. */
+  const stateWord = (): string => {
+    const span = box().closest('label')?.nextElementSibling;
+    expect(span).not.toBeNull();
+    return span!.textContent ?? '';
+  };
 
   it('is on by default and says so in words, not just in the knob', () => {
     // A switch read only by where its knob sits is a colour-only state in
@@ -201,7 +209,7 @@ describe('the Kurztasten switch', () => {
     render('/admin/buchstaben');
     expect(box().checked).toBe(true);
     expect(line()).toContain('Kurztasten');
-    expect(line()).toContain('an');
+    expect(stateWord()).toBe('an');
   });
 
   it('tells the reader the combination', () => {
@@ -220,7 +228,7 @@ describe('the Kurztasten switch', () => {
     render('/admin/buchstaben');
     act(() => box().click());
     expect(box().checked).toBe(false);
-    expect(line()).toContain('aus');
+    expect(stateWord()).toBe('aus');
     expect(store.get(SHORTCUTS_STORAGE_KEY)).toBe('aus');
     vi.unstubAllGlobals();
   });
@@ -251,7 +259,7 @@ describe('the Kurztasten switch', () => {
     expect(box().checked).toBe(true);
     act(() => box().click());
     expect(box().checked).toBe(false);
-    expect(line()).toContain('aus');
+    expect(stateWord()).toBe('aus');
     vi.unstubAllGlobals();
   });
 });

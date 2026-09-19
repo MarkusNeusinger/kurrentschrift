@@ -46,7 +46,7 @@ import { CropThumb } from '@/sections/admin/shell/OccurrenceThumb';
 import { useFileMark } from '@/sections/admin/shell/korbState';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { SubjectStepper } from '@/sections/admin/shell/SubjectStepper';
-import { neighboursInOrder, orderCaption, stepOrder, useSubjectNav } from '@/sections/admin/shell/subjectNav';
+import { neighboursInOrder, orderCaption, stepOrder, useSubjectOrder } from '@/sections/admin/shell/subjectNav';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import {
   FOCUS_PARAMS,
@@ -182,7 +182,7 @@ export function JoinView() {
   const fileMark = useFileMark();
   // The order the Übergänge matrix last showed — what ‹ › and Alt+Shift+←/→
   // step through (P1-Q12 a).
-  const { order: published } = useSubjectNav();
+  const published = useSubjectOrder('join');
   const t = de.admin.joins;
 
   const { leftKey, rightKey } = readJoinFocus(params);

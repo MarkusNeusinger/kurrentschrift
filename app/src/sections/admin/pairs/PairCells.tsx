@@ -164,7 +164,7 @@ export function PairCellGrid({
   // window, so it has no stable column count to step down through — a Down that
   // jumped six cells at 1440 px and three at 1024 px would be worse than none
   // (`lib/roving.ts`). Before this each grid was ~60 tab stops.
-  const roving = useRovingList({ orientation: 'horizontal' });
+  const roving = useRovingList({ orientation: 'horizontal', label: de.admin.pairs.cellsLabel });
   return (
     <Box {...roving.containerProps} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
       {rows.map((row) => (

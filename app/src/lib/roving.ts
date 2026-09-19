@@ -5,8 +5,9 @@
 // A roving list is a list that owns ONE tab stop: Tab enters it at the row the
 // reader last stood on, the arrows walk it, Tab leaves it. The admin needs it
 // because its overviews are long — the Buchstaben list offers three controls on
-// each of up to 63 rows, and before this a reader who wanted the toolbar under
-// the list pressed Tab ~190 times to get there.
+// each of up to 63 rows, so UNPAGINATED a reader who wanted the toolbar under
+// the list pressed Tab ~190 times to get there. Measured on the paginated page
+// as it ships: 77 stops before this, 19 after (the Paar-Matrix 142 → 44).
 //
 // The list is modelled as ROWS of CONTROLS, and that one shape serves both
 // surfaces the admin has:
@@ -101,16 +102,4 @@ export function rovingTarget(key: string, from: RovingCell, shape: RovingShape):
   // „Home" while already home is not a move, and swallowing it would take the
   // browser's own Home (scroll to top) away from a reader who is already there.
   return target === null || sameCell(target, current) ? null : target;
-}
-
-/** The position of the `index`-th control counted across the whole list — how a
- * flat „which control is focused" answer becomes a cell. `null` when the index
- * is past the end. */
-export function cellAtFlatIndex(shape: RovingShape, index: number): RovingCell | null {
-  let seen = 0;
-  for (let row = 0; row < shape.length; row += 1) {
-    if (index < seen + shape[row]) return { row, column: index - seen };
-    seen += shape[row];
-  }
-  return null;
 }

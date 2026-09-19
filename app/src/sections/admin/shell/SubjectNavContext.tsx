@@ -1,5 +1,5 @@
 // The provider behind `subjectNav.ts`: it holds the Kurztasten preference and
-// the order the last overview published, for everything under the admin shell.
+// the order each overview last published, for everything under the admin shell.
 //
 // Two pieces of state that look unrelated share one provider on purpose — they
 // are the two halves of ONE feature. The switch in the Scope-Leiste arms the
@@ -15,13 +15,18 @@
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 
 import { readShortcutsEnabled, storeShortcutsEnabled } from './shortcuts';
-import { sameSubjectKeys, SubjectNavCtx, type SubjectOrder } from './subjectNav';
+import { sameSubjectKeys, SubjectNavCtx, type SubjectOrder, type SubjectOrders } from './subjectNav';
 
 export function SubjectNavProvider({ children }: { children: ReactNode }) {
   // Read once, lazily: `localStorage` can throw on the property access itself,
   // and an initialiser keeps that out of every later render.
   const [shortcuts, setShortcutsState] = useState<boolean>(() => readShortcutsEnabled());
-  const [order, setOrder] = useState<SubjectOrder | null>(null);
+  // ONE order PER KIND, not one slot for all three. The admin's whole point is
+  // walking between the views — a letter detail links into „Alle Übergänge",
+  // whose matrix publishes a join order — and a single slot would have thrown
+  // the letter order away on the way there, so the browser Back the linking
+  // doctrine rests on would land on a stepper walking the alphabet.
+  const [orders, setOrders] = useState<SubjectOrders>({});
 
   const setShortcuts = useCallback((enabled: boolean) => {
     setShortcutsState(enabled);
@@ -32,16 +37,16 @@ export function SubjectNavProvider({ children }: { children: ReactNode }) {
     // Same order, same object: an overview republishes whenever its rows are
     // rebuilt, and a fresh object each time would re-render every consumer and
     // feed the publisher's own effect back to itself.
-    setOrder((prev) =>
-      prev !== null && prev.kind === next.kind && prev.caption === next.caption && sameSubjectKeys(prev.keys, next.keys)
-        ? prev
-        : next,
-    );
+    setOrders((prev) => {
+      const held = prev[next.kind];
+      if (held !== undefined && held.caption === next.caption && sameSubjectKeys(held.keys, next.keys)) return prev;
+      return { ...prev, [next.kind]: next };
+    });
   }, []);
 
   const value = useMemo(
-    () => ({ shortcuts, setShortcuts, order, publishOrder }),
-    [shortcuts, setShortcuts, order, publishOrder],
+    () => ({ shortcuts, setShortcuts, orders, publishOrder }),
+    [shortcuts, setShortcuts, orders, publishOrder],
   );
   return <SubjectNavCtx.Provider value={value}>{children}</SubjectNavCtx.Provider>;
 }

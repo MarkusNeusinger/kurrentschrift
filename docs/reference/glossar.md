@@ -4625,8 +4625,14 @@ Bedienelemente einer Zeile, `Home`/`End` springen an die Enden; kein Umlauf.
 Eine **umbrechende** Kachelfläche (Paar-Zellen, Streifen-Galerie) bekommt nur
 ←/→ — ein Flex-Grid hat keine feste Spaltenzahl, und ein ↓ über sechs Kacheln
 bei 1440 px und drei bei 1024 px wäre schlechter als keins. Der gemessene
-Anlass: die Buchstaben-Übersicht kostete 19 Anschläge bis zur Werkzeugleiste,
-die Paar-Matrix ~120. Der Fokus hängt am Zeilen-SCHLÜSSEL, nicht am Index —
+Anlass (1440 × 900, geblätterte Seite): die Buchstaben-Übersicht kostete **77**
+Anschläge bis zur Werkzeugleiste und kostet jetzt 19, die Paar-Matrix 142 statt
+jetzt 44; ungeblättert wären es in der Buchstabenliste ~190. Eine umbrechende
+Kachelfläche ist dabei eine `toolbar` mit Namen — ein Tab-Stopp ohne
+zusammengesetzte Rolle ließe einen Screenreader im Lesemodus, der die Pfeile
+gar nicht erst weiterreicht; die Arbeitslisten bleiben bewusst rollenlos, weil
+eine Zeile ein GEGENSTAND mit mehreren Bedienelementen ist und damit ein
+`grid`, kein flacher Satz. Der Fokus hängt am Zeilen-SCHLÜSSEL, nicht am Index —
 fällt die Zeile durch einen Filter weg, übernimmt die an ihrer Stelle, und der
 Fokus landet nie auf `<body>`. Kein Teil des → Kurztasten-Schalters: Roving ist
 Struktur, keine Kurztaste. *Technisch:* `app/src/hooks/useRovingList.ts` über

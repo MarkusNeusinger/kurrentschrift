@@ -669,6 +669,12 @@ export const admin = {
     pickLetter: 'Buchstabe',
     // 30 buttons all called „a", „b", „c" name nothing to a screen reader.
     pickLetterFor: 'Kombinationen von {{key}} zeigen',
+    // The NAMES of the two roving `toolbar`s of this view. A container that owns
+    // one tab stop needs a composite role, or a screen reader stays in
+    // Lesemodus and never hands the arrow keys on (§9.5) — and a role without a
+    // name is an unannounced „Symbolleiste".
+    anchorBarLabel: 'Ankerbuchstaben',
+    cellsLabel: 'Paar-Zellen',
     asFirst: '„{{glyph}}“ als erster Buchstabe',
     asSecond: '„{{glyph}}“ als zweiter Buchstabe',
     empty: 'Noch keine erstellten Glyphen — erst im Wizard einen Weg zeichnen.',
@@ -1416,6 +1422,9 @@ export const admin = {
       'Kein gespeicherter Streifen trägt das. Die Zeichen-Tafel zählt auch Fassungen, deren Bild noch nicht hochgeschoben ist — steht eine davon aus, nennt der Bestand unter „Am Rechner weiter" den Befehl dazu.',
     stripBelegeIntro:
       'Gezeigt wird der Wort-Ausschnitt; das Zeichen sitzt darin. Die Zerlegung in einzelne Buchstaben ist Sache des Tintenfolgers (Phase 5), nicht der Kartei.',
+    // The NAME of the roving gallery (a `toolbar`): one tab stop needs a
+    // composite role, and the role needs a name (§9.5).
+    stripGalleryLabel: 'Streifen-Belege',
     stripMore: 'weitere {{count}} laden',
     stripNoRulings: 'Lineatur ausblenden',
     stripNoRulingsHint:

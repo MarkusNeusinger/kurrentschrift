@@ -20,8 +20,10 @@
 // Consequences, both deliberate:
 //   · a deep link straight into a detail has no published order, so the stepper
 //     falls back to the registry/alphabet order — and SAYS it does;
-//   · the record is kind-tagged, so a published letter order is never mistaken
-//     for a join order by a reader who walked from one area to the other.
+//   · one order is held PER KIND. A reader walks between the three views all
+//     day („Alle Übergänge" out of a letter detail, „zum Buchstaben" back), and
+//     a single slot would mean each of those walks silently demoted the order
+//     behind it to the registry — on the Back button the admin is built on.
 
 import { createContext, useContext, useEffect } from 'react';
 
@@ -40,12 +42,16 @@ export type SubjectOrder = {
   caption: string;
 };
 
+/** The last order published for each kind — a kind is absent until its overview
+ * has rendered once in this session. */
+export type SubjectOrders = Partial<Record<SubjectKind, SubjectOrder>>;
+
 export type SubjectNavState = {
   /** Are the Kurztasten armed? The ‹ › buttons work either way. */
   shortcuts: boolean;
   setShortcuts: (enabled: boolean) => void;
-  /** What the last overview showed, or null before any has rendered. */
-  order: SubjectOrder | null;
+  /** What each overview last showed. */
+  orders: SubjectOrders;
   publishOrder: (order: SubjectOrder) => void;
 };
 
@@ -58,6 +64,11 @@ export function useSubjectNav(): SubjectNavState {
 }
 
 export const useShortcutsEnabled = (): boolean => useSubjectNav().shortcuts;
+
+/** The order published for ONE kind — what that kind's detail steps through.
+ * A letter detail never sees the join order, and walking into the joins view
+ * and back leaves the letter order standing. */
+export const useSubjectOrder = (kind: SubjectKind): SubjectOrder | null => useSubjectNav().orders[kind] ?? null;
 
 /** Two key lists, compared by value — the provider's „is this the same order?". */
 export const sameSubjectKeys = (a: readonly string[], b: readonly string[]): boolean =>

@@ -39,8 +39,9 @@
 - **Der Statuspunkt im Buchstabenraster trug seinen Zustand nur als Farbe.**
   Grün gegen Orange bei 7 px ist für einen Deuteranopen dasselbe Grau. Jetzt
   ist „canonical" eine gefüllte Scheibe und „nur Bbox" ein hohler Ring
-  gleicher Größe — Form trägt, Farbe bestätigt. Damit ist der offene Fall
-  aus design-system.md §9.4 geschlossen.
+  gleicher Größe — Form trägt, Farbe bestätigt. Der offene Fall aus
+  design-system.md §9.4 bleibt als Autorentscheid offen: das Raster liest
+  der Autor täglich, und der alte Zwei-Farben-Punkt ist ein Einzeiler weit.
 - **Vier Bedienelemente unter dem 44-px-Boden, vom ersten Admin-Lauf
   gefunden:** das „Öffnen" der Galerie-Karte (64 × 32,5, zwanzigmal je
   Seite), „Laufform überschreiben" im Buchstaben-Detail (163 × 32,5),

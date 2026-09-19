@@ -199,7 +199,7 @@ export function PairMatrix({
   // The anchor bar is ~60 buttons in one dense wrapping row — the densest
   // control row of the admin, and until now 60 tab stops on the way to the
   // grid. Horizontal roving: ←/→ walk the letters, Home/End jump.
-  const anchorRoving = useRovingList({ orientation: 'horizontal' });
+  const anchorRoving = useRovingList({ orientation: 'horizontal', label: t.anchorBarLabel });
 
   if (!source) return null;
   if (pickable.length === 0) return <Alert severity="info">{t.empty}</Alert>;

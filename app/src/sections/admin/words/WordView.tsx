@@ -37,7 +37,7 @@ import { useFileMark } from '@/sections/admin/shell/korbState';
 import { LayerDot } from '@/sections/admin/shell/LayerDot';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { SubjectStepper } from '@/sections/admin/shell/SubjectStepper';
-import { neighboursInOrder, orderCaption, stepOrder, useSubjectNav } from '@/sections/admin/shell/subjectNav';
+import { neighboursInOrder, orderCaption, stepOrder, useSubjectOrder } from '@/sections/admin/shell/subjectNav';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import {
   FOCUS_PARAMS,
@@ -100,7 +100,7 @@ export function WordView() {
   const fileMark = useFileMark();
   // The order the Wörter overview last showed — what ‹ › and Alt+Shift+←/→
   // step through (P1-Q12 a).
-  const { order: published } = useSubjectNav();
+  const published = useSubjectOrder('word');
   const t = de.admin.words;
 
   const { text, specimenId } = readWordFocus(params);

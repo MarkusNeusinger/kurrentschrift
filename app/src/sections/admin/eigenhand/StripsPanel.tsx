@@ -1072,7 +1072,7 @@ export function StripsPanel({
   const [refresh, setRefresh] = useState(0);
   const filtered = Boolean(filter.wort || filter.item);
   // The filtered gallery below is one tab stop; see the grid itself.
-  const galleryRoving = useRovingList({ orientation: 'horizontal' });
+  const galleryRoving = useRovingList({ orientation: 'horizontal', label: t.stripGalleryLabel });
 
   // The search box debounces into the filter: every keystroke is otherwise a
   // listing request, and the listing is cheap but not free.

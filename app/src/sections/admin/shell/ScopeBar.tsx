@@ -22,6 +22,7 @@
 import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
 import { Box, FormControlLabel, Link, Switch, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import { visuallyHidden } from '@mui/utils';
 import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 
@@ -284,13 +285,22 @@ function ShortcutSwitch() {
       >
         {shortcuts ? t.shortcutsOn : t.shortcutsOff}
       </Typography>
-      {/* The binding itself, so nobody has to be told about it elsewhere. Hidden
-          on a phone, where the row already scrolls and no key is pressed. */}
+      {/* The binding itself, so nobody has to be told about it elsewhere. Below
+          `md` it leaves the LAYOUT — the row already scrolls there and no key is
+          pressed on a phone — but not the accessibility tree: it is the switch's
+          `aria-describedby` target, and `display: none` would drop it from
+          there too, leaving the switch with no description at all on the one
+          viewport the verify walk ends on. */}
       <Typography
         id={hintId}
         variant="caption"
         component="span"
-        sx={{ display: { xs: 'none', md: 'inline' }, color: paper.sepia, whiteSpace: 'nowrap', ml: 1.5 }}
+        sx={(theme) => ({
+          color: paper.sepia,
+          whiteSpace: 'nowrap',
+          ml: 1.5,
+          [theme.breakpoints.down('md')]: { ...visuallyHidden, margin: '-1px' },
+        })}
       >
         {t.shortcutsHint}
       </Typography>

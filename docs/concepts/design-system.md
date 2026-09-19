@@ -6,7 +6,10 @@
 > Routenliste); am 2026-09-04 um den Tintenboden geschriebener Zeilen
 > ergänzt (§9, §7 `WrittenWord`) und um die Postkarten-Federprobe samt
 > Schriftgrößen-Leiter (§7.1); am 2026-09-19 um die Ebenen- und Rollen-Token
-> samt Strichart-Regel und das `mono`-Token (§2, §7, §10).
+> samt Strichart-Regel und das `mono`-Token (§2, §7, §10) sowie um die
+> Tastatur-Regeln (§9.5 — Roving-Liste, Subjekt-Stepper, Kurztasten-Schalter,
+> `toolbar`-Rolle), den zweiten Kanal des Rasterpunkts (§9.4), zwei
+> Inventarzeilen (§7) und den `--admin`-Lauf der Messgitter (§10).
 > **Mitziehen bei jeder Änderung an `app/src/styles/paper.ts`,
 > `theme/typography.ts`,
 > `components/PageContainer|Prose|PageHeader|HeaderBar|PublicHeader|PublicFooter`,
@@ -708,11 +711,14 @@ Beides — natives `title=` auf einer MUI-Primitive und ein rollenloses
 Zustand als Farbe gezeichnet wird, trägt das Bedienelement ihn als `aria-label`;
 das ist die Hälfte im Barrierefreiheits-Baum, die andere schuldet §2, denn ein
 sehender Farbfehlsichtiger liest keinen `aria-label`. Der Punkt im
-Buchstabenraster (`shell/LetterPicker.tsx`) war der offene Fall und ist seit
-2026-09-19 der Musterfall: **gefüllte Scheibe = Canonical, hohler Ring = nur
-Bbox**, gleiche Größe, Farben weiter aus den Token. Form trägt den Zustand, die
-Farbe bestätigt ihn nur — bei 8 px ist das der einzige zweite Kanal, der das
-Raster nicht umbaut.
+Buchstabenraster (`shell/LetterPicker.tsx`) ist der Fall, an dem die Regel
+hängt: **gefüllte Scheibe = Canonical, hohler Ring = nur Bbox**, gleiche Größe,
+Farben weiter aus den Token. Form trägt den Zustand, die Farbe bestätigt ihn nur
+— bei 8 px ist das der einzige zweite Kanal, der das Raster nicht umbaut.
+**Offener Fall, Vorschlag umgesetzt seit 2026-09-19, Autorentscheid steht
+aus:** das Raster liest der Autor täglich, und Scheibe-gegen-Ring ist eine
+sichtbare Änderung daran — ein Einzeiler in `LetterPicker.tsx` (`border`/
+`bgcolor`) führt zum alten Zwei-Farben-Punkt zurück.
 
 **Offene Ausnahme vom Typo-Boden: der Zähler der Deckungs-Zellen** (9,6 px,
 `eigenhand/BestandView.tsx`). Ihn zu heben legt ~90 Zellen neu, die der Autor
@@ -734,7 +740,23 @@ bei 1024 px wäre schlechter als keins. Enter und Leertaste bleiben unangetastet
 (es sind echte Schaltflächen), der Körper einer aufgeklappten Zeile bleibt außen
 vor (`data-roving-skip`) und behält seine eigene Tab-Folge. Der Fokus hängt am
 Zeilen-SCHLÜSSEL: fällt die Zeile durch Filter oder Seitenwechsel weg, übernimmt
-die an ihrer Stelle — nie `<body>`.
+die an ihrer Stelle — nie `<body>`, und nie zurück aus etwas, das der Leser
+inzwischen angefasst hat.
+
+**Eine Kachelfläche ist eine benannte `toolbar`, eine Arbeitsliste bleibt
+rollenlos.** Ein Tab-Stopp ohne zusammengesetzte Rolle lässt einen Screenreader
+im Lesemodus: er behält die Pfeiltasten für den eigenen Cursor, und die Zeilen,
+die das Roving aus der Tab-Folge genommen hat, wären dann über gar nichts mehr
+erreichbar. Die umbrechenden Flächen (Ankerleiste, Paar-Zellen,
+Streifen-Galerie) sind genau das, was `toolbar` beschreibt — ein flacher Satz
+Bedienelemente —, und bekommen `role="toolbar"`, `aria-orientation="horizontal"`
+und einen NAMEN (`useRovingList({ orientation: 'horizontal', label })`, im Typ
+erzwungen). Eine Arbeitsliste ist das nicht: ihre Zeile ist ein GEGENSTAND mit
+mehreren Bedienelementen, also ehrlich ein `grid` aus `row`/`gridcell` — ein
+Umbau dreier Komponenten, den die Zeilen nicht brauchen, weil jedes
+Bedienelement seinen Gegenstand schon im eigenen Namen trägt („Wortprobe *laufen*
+aufklappen"). Das ist ein Entscheid, kein Versehen; der `grid`-Umbau steht als
+Nacharbeit.
 
 **Ein Gegenstand, ein Stepper.** Jedes Detail trägt ‹ › um seinen Gegenstand
 (`shell/SubjectStepper.tsx`), mit Namen statt bloßem Pfeil, und dieselbe
@@ -752,7 +774,10 @@ das gesagt. Ein Schritt lässt Listen-Zustand und `h=` stehen.
 Bahn-Editor besitzen ihre Tasten selbst —, und `preventDefault()` nur, wenn
 wirklich geblättert wird. Der Schalter **„Kurztasten"** sitzt am Ende der
 Scope-Leiste (P1-Q11 b), Zustand als sichtbares Wort daneben, Kombination als
-Beschriftung; die Einstellung lebt in `localStorage` — der einzige Fall, denn
+Beschriftung — unter `md` verlässt dieser eine Satz das LAYOUT, aber nicht den
+Barrierefreiheits-Baum (`visuallyHidden` statt `display: none`), denn er ist das
+Ziel des `aria-describedby` des Schalters; die Einstellung lebt in
+`localStorage` — der einzige Fall, denn
 sie gehört dem LESER und darf in keinem Link reisen —, jeder Zugriff in
 `try/catch`, Voreinstellung AN. Aus ist NICHTS gebunden, die ‹ ›-Knöpfe arbeiten
 weiter. **Roving fällt nicht unter den Schalter**: Struktur, keine Kurztaste.

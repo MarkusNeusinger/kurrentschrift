@@ -53,18 +53,25 @@ type Row = { key: string; controls: HTMLElement[] };
  * so a row that disappears can hand the stop to its neighbour. */
 type Remembered = { key: string; index: number; column: number };
 
-export type RovingListOptions = {
-  /**
-   * `vertical` (the default) — each marked element is a ROW: Up/Down walk the
-   * rows, Left/Right the controls within one.
-   *
-   * `horizontal` — the marked elements are CELLS of one wrapping grid: their
-   * controls form a single row, so Left/Right walk the cells and Up/Down do
-   * nothing. A flex grid re-wraps with the window and has no stable column
-   * count (`lib/roving.ts`).
-   */
-  orientation?: 'vertical' | 'horizontal';
-};
+/**
+ * `vertical` (the default) — each marked element is a ROW: Up/Down walk the
+ * rows, Left/Right the controls within one. No composite ARIA role: a work row
+ * is a subject with several controls, which is a `grid` of `row`/`gridcell` and
+ * not a flat one — a shape three components would have to be restructured for,
+ * and one the rows do not need, because every control already carries the
+ * subject in its own accessible name (§9.5 holds the decision).
+ *
+ * `horizontal` — the marked elements are CELLS of one wrapping grid: their
+ * controls form a single row, so Left/Right walk the cells and Up/Down do
+ * nothing. A flex grid re-wraps with the window and has no stable column count
+ * (`lib/roving.ts`). This IS a flat set of controls, so it gets the `toolbar`
+ * role the roving-tabindex pattern asks for — without it a screen reader stays
+ * in Lesemodus and never forwards the arrows. The `label` names it, and is
+ * mandatory for that reason.
+ */
+export type RovingListOptions =
+  | { orientation?: 'vertical'; label?: never }
+  | { orientation: 'horizontal'; label: string };
 
 export type RovingList = {
   containerProps: {
@@ -72,6 +79,9 @@ export type RovingList = {
     onKeyDown: (event: KeyboardEvent<HTMLElement>) => void;
     onFocusCapture: (event: FocusEvent<HTMLElement>) => void;
     onBlurCapture: (event: FocusEvent<HTMLElement>) => void;
+    role?: 'toolbar';
+    'aria-orientation'?: 'horizontal';
+    'aria-label'?: string;
   };
   /** Marks one row (or, horizontally, one cell). The key identifies the SUBJECT,
    * so the tab stop survives a re-order. */
@@ -146,10 +156,21 @@ export function useRovingList(options: RovingListOptions = {}): RovingList {
     );
     if (active === null) return;
     activeRef.current = { key: rows[active.row].key, index: active.row, column: active.column };
-    // Only when the element that HAD focus was removed from the document —
-    // never when the reader simply clicked elsewhere, which would make the list
-    // steal focus back on its next render.
-    const lost = insideRef.current && focusedRef.current !== null && !focusedRef.current.isConnected;
+    // Only when the element that HAD focus was removed from the document AND
+    // nothing has taken the focus since — never when the reader simply clicked
+    // elsewhere, which would make the list steal focus back on its next render.
+    //
+    // The `activeElement` half is what makes that second test airtight: a blur
+    // onto non-focusable page chrome reports no `relatedTarget`, so the list's
+    // claim (`insideRef`) survives it, and without this the next render that
+    // dropped the remembered row would pull the focus out of wherever the
+    // reader had meanwhile gone. A removed element always leaves it on `body`.
+    const standing = container.ownerDocument.activeElement;
+    const lost =
+      insideRef.current &&
+      focusedRef.current !== null &&
+      !focusedRef.current.isConnected &&
+      (standing === null || standing === container.ownerDocument.body);
     if (lost) rows[active.row].controls[active.column].focus();
   }, [readRows, resolve]);
 
@@ -216,7 +237,15 @@ export function useRovingList(options: RovingListOptions = {}): RovingList {
   }, []);
 
   return {
-    containerProps: { ref: setContainer, onKeyDown, onFocusCapture, onBlurCapture },
+    containerProps: {
+      ref: setContainer,
+      onKeyDown,
+      onFocusCapture,
+      onBlurCapture,
+      ...(options.orientation === 'horizontal'
+        ? ({ role: 'toolbar', 'aria-orientation': 'horizontal', 'aria-label': options.label } as const)
+        : {}),
+    },
     rowProps: (key: string) => ({ [ROW_ATTR]: key }),
   };
 }

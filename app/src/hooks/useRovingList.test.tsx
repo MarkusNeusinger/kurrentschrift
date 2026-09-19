@@ -59,7 +59,7 @@ function List({ keys, body = false }: { keys: string[]; body?: boolean }) {
 }
 
 function Grid({ keys }: { keys: string[] }) {
-  const roving = useRovingList({ orientation: 'horizontal' });
+  const roving = useRovingList({ orientation: 'horizontal', label: 'Paar-Zellen' });
   return (
     <div {...roving.containerProps}>
       {keys.map((key) => (
@@ -178,6 +178,26 @@ it('leaves an expanded row’s body out of the roving, as its own tab stops', ()
   expect(stops().filter((b) => !b.textContent?.includes('im Körper'))).toHaveLength(1);
 });
 
+it('names a wrapping grid as a toolbar, so a screen reader hands the arrows on', () => {
+  // One tab stop without a composite role leaves a screen reader in Lesemodus:
+  // it keeps the arrow keys for its own cursor, and the rows this hook took out
+  // of the Tab order are then reachable by nothing at all.
+  render(<Grid keys={['ab', 'ac']} />);
+  const container = host.querySelector('[role="toolbar"]');
+  expect(container).not.toBeNull();
+  expect(container!.getAttribute('aria-orientation')).toBe('horizontal');
+  expect(container!.getAttribute('aria-label')).toBe('Paar-Zellen');
+});
+
+it('leaves a work list role-less — its rows are subjects, not a flat control set', () => {
+  // The deliberate other half of the rule above (§9.5): a `toolbar` would flatten
+  // three controls per subject into one strip, and the honest shape — a `grid` of
+  // `row`/`gridcell` — is a restructure of three components. Every control here
+  // already carries its subject in its own accessible name.
+  render(<List keys={['a', 'b']} />);
+  expect(host.querySelector('[role]')).toBeNull();
+});
+
 it('walks a wrapping grid sideways only', () => {
   render(<Grid keys={['ab', 'ac', 'ad']} />);
   expect(stops().map((b) => b.textContent)).toEqual(['ab']);
@@ -198,6 +218,24 @@ it('does not steal focus back when the reader has moved elsewhere', () => {
   render(<List keys={['a', 'b', 'c']} />);
   act(() => buttons()[0].focus());
   act(() => outside.focus());
+  render(<List keys={['b', 'c']} />);
+  expect(document.activeElement).toBe(outside);
+  outside.remove();
+});
+
+it('does not steal focus back after a blur that named no new target either', () => {
+  // The leak the direct case above does not cover: a click on plain page chrome
+  // blurs to `<body>` WITHOUT naming a `relatedTarget` — the same signature a
+  // removed element leaves behind — so the list's claim on the focus survives
+  // it. Only where the focus actually stands decides.
+  const outside = document.createElement('button');
+  outside.textContent = 'Werkzeugleiste';
+  document.body.appendChild(outside);
+  render(<List keys={['a', 'b', 'c']} />);
+  act(() => buttons()[0].focus());
+  act(() => (document.activeElement as HTMLElement).blur());
+  act(() => outside.focus());
+  // …and only NOW does a filter click take the remembered row away.
   render(<List keys={['b', 'c']} />);
   expect(document.activeElement).toBe(outside);
   outside.remove();

@@ -41,7 +41,7 @@ import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { FOCUS_PARAMS, joinsUrl, neighbourLetters, readLetterFocus, wordsUrl } from '@/sections/admin/shell/focus';
 import { EvidenceState, Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { SubjectStepper } from '@/sections/admin/shell/SubjectStepper';
-import { neighboursInOrder, orderCaption, stepOrder, useSubjectNav } from '@/sections/admin/shell/subjectNav';
+import { neighboursInOrder, orderCaption, stepOrder, useSubjectOrder } from '@/sections/admin/shell/subjectNav';
 import { TOUCH_TARGET } from '@/styles/hitArea';
 import { garamond } from '@/styles/paper';
 
@@ -77,7 +77,7 @@ export function LetterView() {
   // The order the Buchstaben overview last showed — what ‹ › and Alt+Shift+←/→
   // step through, so the stepper follows the work list rather than the alphabet
   // (P1-Q12 a).
-  const { order: published } = useSubjectNav();
+  const published = useSubjectOrder('letter');
   const t = de.admin.letters;
 
   const { glyphKey } = readLetterFocus(params);

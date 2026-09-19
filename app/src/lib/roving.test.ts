@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { cellAtFlatIndex, isRovingKey, rovingTarget } from './roving';
+import { isRovingKey, rovingTarget } from './roving';
 
 // Three shapes cover every surface the admin has: the work lists (many rows,
 // several controls each), a wrapping grid (ONE row, many controls) and the
@@ -79,14 +79,5 @@ describe('rovingTarget', () => {
     // The row was filtered away between the key press and this call: treat the
     // reader as standing at the top rather than swallowing the key.
     expect(rovingTarget('ArrowDown', { row: 7, column: 0 }, LIST)).toEqual({ row: 1, column: 0 });
-  });
-});
-
-describe('cellAtFlatIndex', () => {
-  it('counts across the rows', () => {
-    expect(cellAtFlatIndex(LIST, 0)).toEqual({ row: 0, column: 0 });
-    expect(cellAtFlatIndex(LIST, 3)).toEqual({ row: 1, column: 0 });
-    expect(cellAtFlatIndex(LIST, 7)).toEqual({ row: 2, column: 2 });
-    expect(cellAtFlatIndex(LIST, 8)).toBeNull();
   });
 });
