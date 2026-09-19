@@ -81,7 +81,7 @@ function Face({
           focus ring, and nothing at all for a finger. `InfoHint` is a real
           button with the shared ring and a 44 px target (V25, §9.4). */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {heading}
         </Typography>
         {headingHint && <InfoHint title={heading}>{headingHint}</InfoHint>}
@@ -102,7 +102,7 @@ function Face({
         }}
       >
         {hint ? (
-          <Typography variant="caption" color="text.disabled" sx={{ p: 1, textAlign: 'center' }}>
+          <Typography variant="caption" color="textDisabled" sx={{ p: 1, textAlign: 'center' }}>
             {hint}
           </Typography>
         ) : (
@@ -214,7 +214,7 @@ function OverlayFace({
 
   if (error) {
     return (
-      <Typography variant="caption" color="text.disabled" sx={{ p: 1, textAlign: 'center' }}>
+      <Typography variant="caption" color="textDisabled" sx={{ p: 1, textAlign: 'center' }}>
         {error.notFound ? de.admin.compare.noCanonical : de.admin.compare.loadError}
       </Typography>
     );
@@ -296,7 +296,7 @@ export function CompareCard({
       {header && (
         <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
           <Typography sx={{ fontFamily: garamond, fontSize: 28, lineHeight: 1 }}>{letterGlyph}</Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" color="textSecondary">
             {glyphKey}
           </Typography>
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center', flex: 1, minWidth: 0 }}>
@@ -318,7 +318,7 @@ export function CompareCard({
                 )}
               </>
             ) : (
-              <Typography variant="caption" color="text.disabled">
+              <Typography variant="caption" color="textDisabled">
                 {t.occurrencesUnknown}
               </Typography>
             )}

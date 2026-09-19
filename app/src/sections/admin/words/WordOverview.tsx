@@ -311,7 +311,7 @@ export function WordOverview({
             onChange={(token) => update({ sort: token as WordSort })}
           />
           <ListViewSwitch view={state.view} onChange={(view) => update({ view })} />
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" color="textSecondary">
             {filtered
               ? fmt(de.admin.liste.counterFiltered, {
                   shown: shown.length,
@@ -339,7 +339,7 @@ export function WordOverview({
         {/* The Fremdhand tab is view-only context, never a scoring reference —
             so it offers no sweep and explains itself instead. */}
         {tab === 'andere' ? (
-          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 720 }}>
+          <Typography variant="body2" color="textSecondary" sx={{ maxWidth: 720 }}>
             {de.admin.compare.otherIntro}
           </Typography>
         ) : (
@@ -359,7 +359,7 @@ export function WordOverview({
                 {de.admin.compare.scoreError}
               </Typography>
             )}
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="textSecondary">
               {fmt(de.admin.compare.authoredCount, { done: tally.done, total: tally.total })}
               {tally.incomplete > 0 && ` · ${fmt(de.admin.compare.incompleteCount, { count: tally.incomplete })}`}
             </Typography>

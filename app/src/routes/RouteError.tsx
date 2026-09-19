@@ -107,15 +107,15 @@ export function RouteError() {
         }}
       >
         {autoReloading ? (
-          <Typography color="text.secondary">{de.common.routeError.reloading}</Typography>
+          <Typography color="textSecondary">{de.common.routeError.reloading}</Typography>
         ) : (
           <>
             <Typography variant="h5">{de.common.routeError.title}</Typography>
-            <Typography color="text.secondary" sx={{ maxWidth: 480 }}>
+            <Typography color="textSecondary" sx={{ maxWidth: 480 }}>
               {de.common.routeError.body}
             </Typography>
             {error instanceof Error && (
-              <Typography variant="body2" color="text.disabled">
+              <Typography variant="body2" color="textDisabled">
                 {error.message}
               </Typography>
             )}

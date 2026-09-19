@@ -59,7 +59,7 @@ export function QuizPlayPanel(p: PlayProps) {
   if (!current) {
     return (
       <Stack spacing={2} sx={{ alignItems: 'flex-start' }}>
-        <Typography color="text.secondary">{de.quiz.play.emptyPool}</Typography>
+        <Typography color="textSecondary">{de.quiz.play.emptyPool}</Typography>
         <Button onClick={p.onQuit}>{de.quiz.play.back}</Button>
       </Stack>
     );

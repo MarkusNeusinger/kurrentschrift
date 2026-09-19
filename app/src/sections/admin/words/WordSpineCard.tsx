@@ -261,7 +261,7 @@ export function WordSpineCard({
     >
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap', mb: 1 }}>
         <Typography sx={{ fontFamily: garamond, fontSize: 24, lineHeight: 1 }}>{sample.word}</Typography>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {sample.id}
         </Typography>
         {/* A sample from another writer's plate (the Abb.-22 Schülerschrift)
@@ -332,7 +332,7 @@ export function WordSpineCard({
         </Box>
       </Box>
       {status === 'incomplete' && (
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+        <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 1 }}>
           {sample.note || de.admin.compare.incompleteChipHint}
         </Typography>
       )}
@@ -342,7 +342,7 @@ export function WordSpineCard({
           {/* Face 1 — the measurement: plate ink, the traced pen path over it,
               and the clickable occurrence layer. */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0, flex: '1 1 320px' }}>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="textSecondary">
               {/* The caption names exactly the layers actually drawn — with
                   both switched off it says so rather than promising ink that
                   is not there. */}
@@ -358,7 +358,7 @@ export function WordSpineCard({
                 and when. A path without that is an undated overlay, not
                 evidence — and the date is exactly what the author asked for. */}
             {showTrace && row && (
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="textSecondary">
                 {fmt(t.tracePedigree, {
                   herkunft: row.provenance === 'authored' ? t.provenanceAuthored : t.provenanceTraced,
                   datum: row.updated_at ? row.updated_at.slice(0, 10) : t.pedigreeNoDate,
@@ -483,7 +483,7 @@ export function WordSpineCard({
           </Box>
           {/* Face 2 — the engine's own answer, same scale, same baseline. */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0, flex: '1 1 320px' }}>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="textSecondary">
               {t.faceWritten}
             </Typography>
             {composed ? (
@@ -502,7 +502,7 @@ export function WordSpineCard({
                   px: 2,
                 }}
               >
-                <Typography variant="caption" color="text.disabled">
+                <Typography variant="caption" color="textDisabled">
                   {t.faceWrittenPending}
                 </Typography>
               </Box>
@@ -514,7 +514,7 @@ export function WordSpineCard({
             carries the display-measure disclaimer so nobody reads dtw_xh. */}
         {profile && profile.points.length > 1 && (
           <Box sx={{ mt: 1.5, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="textSecondary">
               {`${t.profileTitle} — ${t.profileCaption}`}
             </Typography>
             <Box sx={{ overflowX: 'auto', border: 1, borderColor: 'divider', borderRadius: 1, alignSelf: 'flex-start', maxWidth: '100%' }}>

@@ -102,7 +102,7 @@ function StatsHeader({
 
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
-      <Typography variant="caption" color="text.secondary" sx={{ flex: 1, minWidth: 0 }}>
+      <Typography variant="caption" color="textSecondary" sx={{ flex: 1, minWidth: 0 }}>
         {label}
       </Typography>
       {onRebuild && (
@@ -123,12 +123,12 @@ function StatsHeader({
         </Tooltip>
       )}
       {warning && (
-        <Typography variant="caption" color="text.secondary" sx={{ width: '100%' }}>
+        <Typography variant="caption" color="textSecondary" sx={{ width: '100%' }}>
           {warning}
         </Typography>
       )}
       {result && (
-        <Typography variant="caption" color="text.disabled" sx={{ width: '100%' }}>
+        <Typography variant="caption" color="textDisabled" sx={{ width: '100%' }}>
           {result}
         </Typography>
       )}
@@ -162,7 +162,7 @@ function statusCaption(status: StatsStatus): string | null {
 
 function QuietCaption({ text }: { text: string }) {
   return (
-    <Typography variant="caption" color="text.disabled" sx={{ display: 'block' }}>
+    <Typography variant="caption" color="textDisabled" sx={{ display: 'block' }}>
       {text}
     </Typography>
   );
@@ -242,7 +242,7 @@ export function LetterStats({
           </Box>
           {positions.length > 0 && (
             <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center' }}>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="textSecondary">
                 {`${t.statsPositionsLabel}:`}
               </Typography>
               {/* initial/medial/final are the documented termini technici of
@@ -276,7 +276,7 @@ export function LetterStats({
                   laufform={laufform}
                 />
               </Box>
-              <Typography variant="caption" color="text.disabled" sx={{ display: 'block' }}>
+              <Typography variant="caption" color="textDisabled" sx={{ display: 'block' }}>
                 {`${t.statsLetterSketch} — ${
                   occurrenceChains.length > 0 ? t.statsLetterSketchLegendWithOcc : t.statsLetterSketchLegend
                 }${laufform.length >= 2 ? ` · ${t.statsLetterSketchLegendLaufform}` : ''}`}
@@ -445,7 +445,7 @@ export function PairStats({
               <Box sx={SKETCH_FRAME}>
                 <PairConnectorSketch aggregate={aggregate} median={median} occurrences={drawable} />
               </Box>
-              <Typography variant="caption" color="text.disabled" sx={{ display: 'block' }}>
+              <Typography variant="caption" color="textDisabled" sx={{ display: 'block' }}>
                 {hidden > 0
                   ? `${t.statsPairSketchLegend} · ${fmt(t.statsPairSketchHidden, { count: hidden })}`
                   : t.statsPairSketchLegend}
@@ -454,13 +454,13 @@ export function PairStats({
           )}
           <Box sx={{ flex: 1, minWidth: 160 }}>
             {numbers.map((line) => (
-              <Typography key={line} variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              <Typography key={line} variant="caption" color="textSecondary" sx={{ display: 'block' }}>
                 {line}
               </Typography>
             ))}
             {kinds.length > 0 && (
               <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center', mt: 0.25 }}>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="textSecondary">
                   {`${t.statsKindsLabel}:`}
                 </Typography>
                 {kinds.map(([kind, count]) => (
@@ -468,7 +468,7 @@ export function PairStats({
                 ))}
               </Box>
             )}
-            <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 0.25 }}>
+            <Typography variant="caption" color="textDisabled" sx={{ display: 'block', mt: 0.25 }}>
               {t.statsPairReadOnly}
             </Typography>
           </Box>

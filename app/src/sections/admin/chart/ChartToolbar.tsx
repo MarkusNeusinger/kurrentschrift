@@ -219,10 +219,14 @@ export function ChartToolbar({
       {/* Why something here cannot be used, in the toolbar itself. One line,
           full width, in the order the reader meets the obstacles: no bbox
           first (nothing works without one), then the lock, then the missing
-          canonical. `warning.main` is a second channel beside the wording, not
-          the carrier of it (§9). */}
+          canonical.
+
+          It asked for `warning.main` as a second channel beside the wording.
+          Typography never resolved that dotted path, and Ocker would be the
+          wrong channel anyway: 3,37:1 is a colour for a graphical mark, not for
+          a line of text. The wording carries it and the line stays ink (§9). */}
       {blockedReasons.length > 0 && (
-        <Typography variant="caption" color="warning.main" sx={{ flexBasis: '100%' }}>
+        <Typography variant="caption" color="textPrimary" sx={{ flexBasis: '100%' }}>
           {blockedReasons.join(' · ')}
         </Typography>
       )}

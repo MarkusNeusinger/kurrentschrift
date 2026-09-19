@@ -258,7 +258,7 @@ export function LetterView() {
                 </LetterPicker>
               }
             />
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="textSecondary">
               {glyphKey}
               {letter?.note ? ` · ${letter.note}` : ''}
             </Typography>
@@ -438,7 +438,7 @@ export function LetterView() {
         <Panel title={t.joinsTitle} caption={t.joinsCaption}>
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
             {relatedJoins.length === 0 ? (
-              <Typography variant="caption" color="text.disabled">
+              <Typography variant="caption" color="textDisabled">
                 {t.noJoins}
               </Typography>
             ) : (
@@ -466,7 +466,7 @@ export function LetterView() {
         <Panel title={t.wordsTitle} caption={t.wordsCaption}>
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
             {relatedWords.length === 0 ? (
-              <Typography variant="caption" color="text.disabled">
+              <Typography variant="caption" color="textDisabled">
                 {t.noWords}
               </Typography>
             ) : (
@@ -510,7 +510,7 @@ export function LetterView() {
         <Typography component="h2" variant="subtitle2" sx={{ mb: 0.5 }}>
           {t.applyBlockTitle}
         </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
+        <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 1.5 }}>
           {t.applyBlockBody}
         </Typography>
         {workbench.handId ? (
@@ -529,7 +529,7 @@ export function LetterView() {
             {t.applyBlockButton}
           </Button>
         ) : (
-          <Typography variant="caption" color="text.disabled">
+          <Typography variant="caption" color="textDisabled">
             {t.applyBlockNoHand}
           </Typography>
         )}
@@ -578,7 +578,7 @@ function ChartInPanel() {
 function Face({ label, hint, children }: { label: string; hint?: string; children?: React.ReactNode }) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-      <Typography variant="caption" color="text.secondary">
+      <Typography variant="caption" color="textSecondary">
         {label}
       </Typography>
       <Box
@@ -596,7 +596,7 @@ function Face({ label, hint, children }: { label: string; hint?: string; childre
         }}
       >
         {hint ? (
-          <Typography variant="caption" color="text.disabled" sx={{ p: 1, textAlign: 'center' }}>
+          <Typography variant="caption" color="textDisabled" sx={{ p: 1, textAlign: 'center' }}>
             {hint}
           </Typography>
         ) : (

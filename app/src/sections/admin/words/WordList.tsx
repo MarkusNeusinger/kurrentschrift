@@ -141,7 +141,7 @@ export function WordList({
             // that says „unter" under „unter" reads as a rendering fault.
             subline={
               subline(row) ? (
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="textSecondary">
                   {subline(row)}
                 </Typography>
               ) : undefined

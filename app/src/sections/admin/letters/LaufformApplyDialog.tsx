@@ -147,7 +147,7 @@ export function LaufformApplyDialog({
             )}
             {result.skipped.length > 0 && (
               <Box>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 0.5 }}>
                   {t.doneSkippedLabel}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
@@ -182,11 +182,11 @@ export function LaufformApplyDialog({
             {result.excluded.length > 0 && (
               // Not a skip — these were never asked for. Named anyway, so the
               // report says what was left alone as plainly as what was written.
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="textSecondary">
                 {fmt(t.doneExcluded, { count: result.excluded.length, keys: result.excluded.join(' · ') })}
               </Typography>
             )}
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="textSecondary">
               {t.doneHint}
             </Typography>
           </Box>
@@ -195,7 +195,7 @@ export function LaufformApplyDialog({
             {/* The warning first, in the words that matter: this is the step
                 that leaves the measuring half of the system. */}
             <Alert severity="warning">{t.warning}</Alert>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="textSecondary">
               {fmt(t.intro, { hand: handId })}
             </Typography>
 
@@ -208,7 +208,7 @@ export function LaufformApplyDialog({
                     selected: selected.size,
                   })}`}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="textSecondary">
                   {fmt(t.previewSelectionHint, { count: LOW_N })}
                 </Typography>
                 {/* Both axes scroll: the list is long, and at 390px the three
@@ -263,15 +263,22 @@ export function LaufformApplyDialog({
                             {row.creates ? (
                               <Chip size="small" color="success" variant="outlined" label={t.cellNew} />
                             ) : row.dev === null ? (
-                              <Typography variant="caption" color="text.disabled">
+                              <Typography variant="caption" color="textDisabled">
                                 {t.cellIncomparable}
                               </Typography>
                             ) : row.dev === 0 ? (
-                              <Typography variant="caption" color="text.disabled">
+                              <Typography variant="caption" color="textDisabled">
                                 {t.cellUnchanged}
                               </Typography>
                             ) : (
-                              <Typography variant="caption" color="warning.main">
+                              // The one cell of the column that reports a real
+                              // change, so it is the one at full ink — its two
+                              // siblings above („unvergleichbar", „unverändert")
+                              // are the muted ones. It asked for `warning.main`
+                              // until now, which Typography never resolved; and
+                              // Ocker is 3,37:1 and therefore no colour for a
+                              // number either (design-system.md §9).
+                              <Typography variant="caption" color="textPrimary">
                                 {row.dev.toFixed(3)}
                               </Typography>
                             )}

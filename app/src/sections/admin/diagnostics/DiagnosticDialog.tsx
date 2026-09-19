@@ -41,7 +41,7 @@ function Section({ title, intro, children }: { title: string; intro: string; chi
       <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
         {title}
       </Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, maxWidth: 900 }}>
+      <Typography variant="body2" color="textSecondary" sx={{ mb: 1.5, maxWidth: 900 }}>
         {intro}
       </Typography>
       {children}

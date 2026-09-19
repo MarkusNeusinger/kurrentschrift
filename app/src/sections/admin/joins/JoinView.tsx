@@ -392,7 +392,7 @@ export function JoinView() {
           />
         )}
       </LetterPicker>
-      <Typography color="text.secondary">→</Typography>
+      <Typography color="textSecondary">→</Typography>
       <LetterPicker
         activeKey={rightKey}
         // The right side of a join is never a capital: Kurrent/Sütterlin
@@ -498,7 +498,7 @@ export function JoinView() {
               nextLabel={t.nextJoin}
               between={picker}
             />
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="textSecondary">
               {`${leftKey}→${rightKey}`}
             </Typography>
             {/* The free-text field stays reachable INSIDE the detail, like the
@@ -596,7 +596,7 @@ export function JoinView() {
               {fmt(t.toLetter, { key: rightKey })}
             </Button>
           </Box>
-          <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1.5 }}>
+          <Typography variant="caption" color="textDisabled" sx={{ display: 'block', mt: 1.5 }}>
             {t.overrideLastResort}
           </Typography>
           <Button size="small" sx={{ mt: 0.5, px: 0.5, minHeight: TOUCH_TARGET }} onClick={() => setEditorOpen(true)}>
@@ -678,11 +678,11 @@ export function JoinView() {
         {/* 3 — the raw dissections, one row per occurrence. */}
         <Panel title={fmt(t.occurrencesTitle, { count: occurrences.length })} caption={t.occurrencesCaption}>
           {workbench.loading ? (
-            <Typography variant="caption" color="text.disabled">
+            <Typography variant="caption" color="textDisabled">
               {t.loadingOccurrences}
             </Typography>
           ) : occurrences.length === 0 ? (
-            <Typography variant="caption" color="text.disabled">
+            <Typography variant="caption" color="textDisabled">
               {t.noOccurrences}
             </Typography>
           ) : (
@@ -731,7 +731,7 @@ export function JoinView() {
               {plain.length > 0 && (
                 <Box sx={{ mt: cropped.length > 0 ? 1.5 : 0 }}>
                   {cropped.length > 0 && (
-                    <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mb: 0.5 }}>
+                    <Typography variant="caption" color="textDisabled" sx={{ display: 'block', mb: 0.5 }}>
                       {fmt(t.occurrencesNoCrop, { count: plain.length })}
                     </Typography>
                   )}
@@ -748,7 +748,7 @@ export function JoinView() {
                         onClick={() => navigate(wordsUrl(sample?.word ?? '', occ.specimen_id, ownHand))}
                       />
                       {occ.measurements.gen_chamfer !== undefined && (
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" color="textSecondary">
                           {fmt(de.admin.werkbank.genChamfer, { value: occ.measurements.gen_chamfer.toFixed(3) })}
                         </Typography>
                       )}
@@ -769,7 +769,7 @@ export function JoinView() {
         <Panel title={t.wordsTitle} caption={t.wordsCaption}>
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
             {relatedWords.length === 0 ? (
-              <Typography variant="caption" color="text.disabled">
+              <Typography variant="caption" color="textDisabled">
                 {t.noWords}
               </Typography>
             ) : (

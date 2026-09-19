@@ -42,7 +42,7 @@ export function SlantStep({
           {de.wizard.slant.body2BeforeBold} <b>{de.wizard.slant.body2Bold}</b> {de.wizard.slant.body2AfterBold}
         </Typography>
       </HintHeading>
-      <Typography variant="body2" color="text.secondary">
+      <Typography variant="body2" color="textSecondary">
         {de.wizard.slant.lead}
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -60,7 +60,7 @@ export function SlantStep({
         </IconButton>
       </Box>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {de.wizard.slant.linesHeading} ({guideVals.slantXs.length})
         </Typography>
         <Button size="small" startIcon={<AddIcon />} onClick={addSlantLine}>

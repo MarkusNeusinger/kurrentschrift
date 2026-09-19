@@ -251,7 +251,7 @@ export function LetterOverview({ onPick }: { onPick: (glyphKey: string) => void 
             onChange={(token) => update({ sort: token as LetterSort })}
           />
           <ListViewSwitch view={state.view} onChange={(view) => update({ view })} />
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" color="textSecondary">
             {/* With a filter on, the page size is the wrong number: „24 von 63"
                 says nothing about how many rows the chips actually selected,
                 and the per-chip counts deliberately cannot answer it either.
@@ -287,12 +287,16 @@ export function LetterOverview({ onPick }: { onPick: (glyphKey: string) => void 
         {(handNote || mixedNote) && (
           <Box sx={{ minWidth: 0 }}>
             {handNote && (
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+              <Typography variant="caption" color="textSecondary" sx={{ display: 'block' }}>
                 {handNote}
               </Typography>
             )}
+            {/* Full ink against the muted hand line above it — that IS the
+                second channel. It asked for `warning.main` until now, which
+                Typography never resolved, and Ocker on a caption is 3,37:1
+                anyway; the warning is in the sentence (design-system.md §9). */}
             {mixedNote && (
-              <Typography variant="caption" color="warning.main" sx={{ display: 'block' }}>
+              <Typography variant="caption" color="textPrimary" sx={{ display: 'block' }}>
                 {mixedNote}
               </Typography>
             )}

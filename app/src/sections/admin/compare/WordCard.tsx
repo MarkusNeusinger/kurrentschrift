@@ -221,7 +221,7 @@ export function WordCard({
       {header && (
         <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap' }}>
           <Typography sx={{ fontFamily: garamond, fontSize: 24, lineHeight: 1 }}>{sample.word}</Typography>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" color="textSecondary">
             {sample.id}
           </Typography>
           {sample.sample_set && <Chip size="small" label={sample.sample_set} />}
@@ -275,7 +275,7 @@ export function WordCard({
           on an unfocusable chip, which is the one place authored text may never
           live (V25). */}
       {header && status === 'incomplete' && (
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {sample.note || de.admin.compare.incompleteChipHint}
         </Typography>
       )}
@@ -295,7 +295,7 @@ export function WordCard({
           </Box>
         ) : (
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="textSecondary">
               {de.admin.compare.overlayHeading}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', bgcolor: '#fff', borderRadius: 1, px: 1, overflowX: 'auto' }}>
@@ -309,7 +309,7 @@ export function WordCard({
               point, so the two faces shrink together instead of wrapping the
               written one under the crop — and below ~700px they still stack. */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0, flex: '1 1 320px' }}>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="textSecondary">
               {de.admin.compare.colCrop}
             </Typography>
             <Box sx={{ height: FACE_H, display: 'flex', alignItems: 'center', bgcolor: '#fff', borderRadius: 1, px: 1 }}>
@@ -325,7 +325,7 @@ export function WordCard({
             </Box>
           </Box>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, minWidth: 0, flex: '1 1 320px' }}>
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="textSecondary">
               {de.admin.compare.colWritten}
             </Typography>
             <Box sx={{ height: FACE_H, display: 'flex', alignItems: 'center', bgcolor: '#fff', borderRadius: 1, px: 1 }}>

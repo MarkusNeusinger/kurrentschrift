@@ -95,7 +95,7 @@ export function DonorPicker({
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="lg">
       <DialogTitle>{de.wizard.donor.title}</DialogTitle>
       <DialogContent dividers>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+        <Typography variant="body2" color="textSecondary" sx={{ mb: 1.5 }}>
           {de.wizard.donor.help}
         </Typography>
         <Box sx={{ maxHeight: '64vh', overflow: 'auto', bgcolor: overlay.canvasBg, borderRadius: 1 }}>

@@ -117,11 +117,11 @@ export function CropThumb({
           losing it to an ellipsis would hide exactly what the order means. The
           full text stays reachable as the title tooltip. */}
       <Box sx={{ display: 'flex', gap: 0.5, maxWidth: tileW, width: '100%', justifyContent: 'center' }} title={caption}>
-        <Typography variant="caption" color="text.secondary" noWrap sx={{ minWidth: 0, lineHeight: 1.2 }}>
+        <Typography variant="caption" color="textSecondary" noWrap sx={{ minWidth: 0, lineHeight: 1.2 }}>
           {label}
         </Typography>
         {detail && (
-          <Typography variant="caption" color="text.secondary" sx={{ flexShrink: 0, lineHeight: 1.2 }}>
+          <Typography variant="caption" color="textSecondary" sx={{ flexShrink: 0, lineHeight: 1.2 }}>
             {`· ${detail}`}
           </Typography>
         )}

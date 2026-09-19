@@ -146,7 +146,7 @@ export function ListSortSwitch({
         ))}
       </ToggleButtonGroup>
       {blocked.map((option) => (
-        <Typography key={option.token} id={hintId(option.token)} variant="caption" color="text.secondary">
+        <Typography key={option.token} id={hintId(option.token)} variant="caption" color="textSecondary">
           {`${option.label} — ${option.disabledHint}`}
         </Typography>
       ))}
@@ -306,7 +306,7 @@ export function ListEmpty({
   const t = de.admin.liste;
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1, py: 2 }}>
-      <Typography variant="body2" color="text.secondary">
+      <Typography variant="body2" color="textSecondary">
         {pending ? t.emptyPending : filtered ? t.emptyFiltered : emptyText}
       </Typography>
       {filtered && (

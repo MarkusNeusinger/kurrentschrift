@@ -17,6 +17,7 @@ import { cropUrl } from '@/lib/api';
 import type { TracePreviewOut } from '@/lib/api';
 import { de } from '@/locales/admin';
 import { HintHeading } from './HintHeading';
+import { scoreDeltaColor } from '@/sections/admin/quality/scoreColors';
 import { ScoreBreakdown, ScoreChip } from '@/sections/admin/quality/scoreParts';
 import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
 import { layerAlpha, mono } from '@/styles/paper';
@@ -87,7 +88,7 @@ export function WegPreview({ glyphKey, cropCacheBust, hasDraftSource, nAnchors, 
       {previewBusy && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, py: 1 }}>
           <CircularProgress size={16} />
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" color="textSecondary">
             {t.computing}
           </Typography>
         </Box>
@@ -98,7 +99,7 @@ export function WegPreview({ glyphKey, cropCacheBust, hasDraftSource, nAnchors, 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {preview.refined.quality && <ScoreChip score={preview.refined.quality.score} />}
             {delta != null && (
-              <Typography variant="caption" sx={{ fontFamily: mono }} color={delta >= 0 ? 'success.main' : 'error.main'}>
+              <Typography variant="caption" sx={{ fontFamily: mono, color: scoreDeltaColor(delta) }}>
                 {t.delta} {delta >= 0 ? '+' : ''}
                 {delta.toFixed(1)}
               </Typography>

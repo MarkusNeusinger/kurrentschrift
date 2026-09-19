@@ -149,7 +149,7 @@ export function RederiveAllDialog({ open, onClose }: Props) {
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
       <DialogTitle>{t.title}</DialogTitle>
       <DialogContent>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5 }}>
+        <Typography variant="body2" color="textSecondary" sx={{ mb: 1.5 }}>
           {t.intro}
         </Typography>
         {running && <LinearProgress variant="determinate" value={(doneCount / Math.max(1, effectiveRows.length)) * 100} sx={{ mb: 1 }} />}
@@ -185,7 +185,7 @@ export function RederiveAllDialog({ open, onClose }: Props) {
                         </Box>
                       ) : (
                         <>
-                          <Typography variant="caption" color={r.status === 'failed' ? 'error' : 'text.secondary'}>
+                          <Typography variant="caption" color={r.status === 'failed' ? 'error' : 'textSecondary'}>
                             {r.status === 'pending' ? t.statusPending : r.status === 'done' ? t.statusDone : t.statusFailed}
                           </Typography>
                           {/* WHY a glyph failed rode on a native `title=` — a

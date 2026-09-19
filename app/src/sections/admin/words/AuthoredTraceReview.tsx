@@ -58,7 +58,7 @@ function ReviewRow({
     <Box ref={ref} sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2, bgcolor: 'background.paper' }}>
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap', mb: 1 }}>
         <Typography sx={{ fontFamily: garamond, fontSize: 24, lineHeight: 1 }}>{row.word}</Typography>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {row.specimen_id}
         </Typography>
         {/* Both chips carried a CONSEQUENCE in their hover — re-saving this row
@@ -169,7 +169,7 @@ export function AuthoredTraceReview({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {fmt(rows.length === 1 ? t.reviewCountOne : t.reviewCount, { count: rows.length })}
         </Typography>
         <FormControlLabel

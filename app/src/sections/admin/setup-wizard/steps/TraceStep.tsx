@@ -186,7 +186,7 @@ export function TraceStep({
           <b>{de.wizard.trace.penLiftBold}</b> {de.wizard.trace.penLiftAfterBold} <b>u</b> {de.wizard.trace.penLiftRest}
         </Typography>
       </HintHeading>
-      <Typography variant="body2" color="text.secondary">
+      <Typography variant="body2" color="textSecondary">
         {de.wizard.trace.lead}
       </Typography>
 
@@ -272,7 +272,7 @@ export function TraceStep({
           happened. The EVENT keeps its own channel: the alert bar says „Weg
           gespeichert · n Anker" once, when it is true. */}
       {hasCanonical && strokes.length === 0 && (
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {de.wizard.trace.hasSaved}
         </Typography>
       )}
