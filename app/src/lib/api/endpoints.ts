@@ -23,6 +23,7 @@ import type {
   EigenhandPrinted,
   EigenhandPrintRequest,
   EigenhandSetup,
+  EigenhandSetupList,
   EigenhandStripFilter,
   EigenhandStripList,
   FitData,
@@ -128,6 +129,15 @@ export const fetchEigenhandStackPdf = async (hand: string, sheets: string[]): Pr
   return res.blob();
 };
 
+// Every hand's standing setup in one read. A hand without one is the normal
+// state before its first session, so the panel picks its row out of this list
+// instead of asking for the row and reading a 404 as the answer. The payload is
+// one small record per hand (two today).
+export const getEigenhandSetups = (retry?: RetryOptions): Promise<EigenhandSetupList> =>
+  apiFetch(`${apiRoot()}/eigenhand/setups`, {}, retry).then(asJson<EigenhandSetupList>);
+
+// No SPA caller since the panel reads the list above; kept because this file
+// mirrors the API surface and the route stays (the eigenhand tools read it).
 export const getEigenhandSetup = (hand: string): Promise<EigenhandSetup | null> =>
   apiFetch(`${apiRoot()}/eigenhand/setups/${encodeURIComponent(hand)}`).then(async (res) => {
     // A hand that has never had a setup typed is the normal state before the
@@ -262,6 +272,9 @@ export const cropUrl = (sourceId: string, glyphKey: string, cacheBust?: number, 
 export const getPairs = (sourceId: string, opts?: { all?: boolean }, retry?: RetryOptions): Promise<GlyphPairOut[]> =>
   apiFetch(src(sourceId, `/pairs${opts?.all ? '?all=true' : ''}`), {}, retry).then(asJson<GlyphPairOut[]>);
 
+// No SPA caller since the editor picks its row out of the list above (the 404
+// this answers for a pair without an override is the normal case); kept because
+// this file mirrors the API surface and the route stays.
 export const getPair = (sourceId: string, leftKey: string, rightKey: string): Promise<GlyphPairOut> =>
   apiFetch(src(sourceId, `/pairs/${encodeURIComponent(leftKey)}/${encodeURIComponent(rightKey)}`)).then(
     asJson<GlyphPairOut>,

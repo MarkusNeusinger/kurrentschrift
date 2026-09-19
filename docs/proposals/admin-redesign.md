@@ -1,8 +1,12 @@
 # Admin-Redesign auf der grünen Wiese 2026-09-17 — Optionen, Szenarien, Rückfragen
 
-> **Status (2026-09-18): offen.** Nichts davon ist gebaut. Entstanden als
-> Diskussionsgrundlage auf Wunsch des Autors („noch nichts implementieren …
-> ich will das erst mit dir durch diskutieren bevor wir umsetzen", §1).
+> **Status (2026-09-18): teil-umgesetzt.** Ausgeliefert wird seit dem
+> 2026-09-18 Phase 0 (§15.2), PR für PR — als erste Stufe die
+> SPA-Reparaturen (16-px-Overflow, Tab-Titel, erwartete 404 stumm); der Rest
+> von Phase 0 und die Phasen 1–5 sind ausdrücklich Zukunft (§15). Entstanden
+> als Diskussionsgrundlage auf Wunsch des Autors („noch nichts
+> implementieren … ich will das erst mit dir durch diskutieren bevor wir
+> umsetzen", §1).
 > **Der Rückfragen-Katalog ist seit dem 2026-09-18 beantwortet:** der Autor
 > hat alle 25 Fragen, die Unterpunkte zu Q4 und Q24, die Vorgaben V1–V26
 > und den Kleinkram entschieden — je Frage eine Entscheid-Zeile in §12, die
@@ -24,9 +28,9 @@
 > haben die Antworten nur, was §10.2 als erklärtes Proposal-Update führt —
 > am 2026-09-18 in den Ziel-Docs vollzogen (werkbank §6, eigenhand
 > §7.3/§7.5/§8.1/§9, [`tintenfolger.md`](tintenfolger.md) §2.5), nie als
-> stille Abweichung. Der Status bleibt `offen`, bis die erste Umsetzung
-> ausgeliefert ist — erst dann `teil-umgesetzt` (Lifecycle nach
-> `dokument-status.md`; wer den Wechsel trägt, steht in §15.2). Sonst
+> stille Abweichung. Den Wechsel von `offen` auf `teil-umgesetzt` trug die
+> erste ausgelieferte Stufe im selben PR wie ihr Code (Lifecycle nach
+> `dokument-status.md`; §15.2). Sonst
 > enthält das Doc den Ist-Befund des Admins (§3), was bindend feststeht
 > (§4), die Spezifikation der Eigenhand-Statistik (§6), drei
 > Gestaltungs-Optionen mit Information und Knöpfen je Fläche (§7–§9) und die

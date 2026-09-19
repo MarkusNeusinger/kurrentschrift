@@ -9,6 +9,7 @@
 // the pipeline and the layers are easy to confuse.
 
 import { Alert, Box, CircularProgress, Typography } from '@mui/material';
+import { visuallyHidden } from '@mui/utils';
 import type { ReactNode } from 'react';
 
 import { de } from '@/locales/admin';
@@ -98,24 +99,16 @@ export function ViewHeader({
           </Typography>
         </Box>
       )}
-      {/* The hidden h1 for a node title. `clip` rather than display:none —
+      {/* The hidden h1 for a node title. Clipped rather than display:none —
           hidden text is skipped by screen readers, and the heading is exactly
-          what has to reach them. */}
+          what has to reach them. MUI's own object, not a local one: inside
+          `sx`, `width: 1` is not one pixel but 100 % (the sizing transform
+          reads values ≤ 1 as a fraction) and `m: -1` is −8 px of theme
+          spacing, so the hand-rolled version put a full-viewport-wide box at
+          the view's padding edge and pushed every detail page 16 px (8 px on
+          phones) past the window. */}
       {typeof title !== 'string' && titleText && (
-        <Typography
-          component="h1"
-          sx={{
-            position: 'absolute',
-            width: 1,
-            height: 1,
-            p: 0,
-            m: -1,
-            overflow: 'hidden',
-            clip: 'rect(0 0 0 0)',
-            whiteSpace: 'nowrap',
-            border: 0,
-          }}
-        >
+        <Typography component="h1" sx={visuallyHidden}>
           {titleText}
         </Typography>
       )}
