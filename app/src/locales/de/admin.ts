@@ -75,6 +75,10 @@ export const admin = {
     // read as „24 von 63". The chip counts cannot answer it either — each one
     // deliberately counts on its own.
     counterFiltered: '{{shown}} von {{selected}} gewählten · {{total}} insgesamt',
+    // The same question on a surface without a pager, where „wieviel davon ist
+    // auf dem Schirm?" has only one possible answer: all of it. Two numbers
+    // rather than the three above, so the line stops repeating one of them.
+    counterSelected: '{{selected}} von {{total}} gewählt',
     pagerLabel: 'Seiten',
     pageAria: 'Seite {{n}}',
     pageAll: 'alle zeigen',

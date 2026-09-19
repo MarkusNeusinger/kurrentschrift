@@ -46,6 +46,25 @@ export const WORD_LIST_SPEC: ListSpec<never, WordSort, WordStatus, WordTab> = {
   tabs: WORD_TABS,
 };
 
+/**
+ * What the view holds per Wortprobe: a measurement, or the state of the request
+ * that is fetching one. The two sentinels are progress of the SURFACE — they
+ * belong to the button that was pressed, never to the row.
+ */
+export type ScoreEntry = WordSampleScoreOut | 'busy' | 'error';
+
+/** The measurements out of such a record, so a running or failed request can
+ * never be mistaken for a Loss by the rows. */
+export function settledScores(
+  entries: Readonly<Record<string, ScoreEntry | undefined>>,
+): Record<string, WordSampleScoreOut> {
+  const out: Record<string, WordSampleScoreOut> = {};
+  for (const [id, entry] of Object.entries(entries)) {
+    if (entry && entry !== 'busy' && entry !== 'error') out[id] = entry;
+  }
+  return out;
+}
+
 /** The URL word for a status ↔ the filter the evidence model already speaks
  * (`shell/model.ts`), so the rule itself is stated once and only translated. */
 export function traceFilterOf(status: WordStatus | null): TraceFilter {
@@ -160,6 +179,20 @@ export function sortWordRows(rows: readonly WordRow[], sort: WordSort): WordRow[
 /** Is there anything to rank by? Without one computed score „Schlechteste
  * zuerst" would silently be the sidecar order again — the toolbar says so. */
 export const wordsRankable = (rows: readonly WordRow[]): boolean => rows.some((row) => row.loss !== null);
+
+/**
+ * Whether a `sort=schlechteste` in the URL has stopped describing the list —
+ * „Neu laden" drops the measurements, a pasted link arrives without any, and
+ * the Fremdhand tab was never swept. The view then drops the axis, so the link,
+ * the toolbar and the row order agree again.
+ *
+ * `loaded` and the row count are the two silences that are NOT an answer about
+ * the rows: a read still in flight and a tab with nothing in it would otherwise
+ * eat a deep link's ranking before its data arrived.
+ */
+export function rankingIsStale(rows: readonly WordRow[], sort: WordSort, loaded: boolean): boolean {
+  return loaded && rows.length > 0 && sort === 'schlechteste' && !wordsRankable(rows);
+}
 
 /**
  * Progress of the manual reference set for this tab — counted over the tab's

@@ -14,10 +14,12 @@
 // („Wort oder Satz" → „Schreiben") is NOT one of them: it writes a subject,
 // which is `w=`.
 //
-// The specimen list, the scores and the sweep moved up here from
-// `WordComparison`, which kept them for a card wall that was also the
-// overview. Both bodies now read the same rows, so switching between list and
-// gallery keeps the scores that were just paid for.
+// The specimen list moved up here from `WordComparison`, which kept it for a
+// card wall that was also the overview. Both bodies now read the same rows, so
+// switching between list and gallery keeps the scores that were just paid for.
+// The scores themselves live one level further up, in `WordView`: this
+// component is unmounted the moment a word is opened, and a ranking that costs
+// 63 CPU-bound requests must not be lost to a click into one of its rows.
 
 import RefreshIcon from '@mui/icons-material/Refresh';
 import {
@@ -37,8 +39,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { useAdmin } from '@/context/adminState';
-import { getWordSamples, getWordSampleScore } from '@/lib/api';
-import type { WordInstanceOut, WordSampleOut, WordSampleScoreOut } from '@/lib/api';
+import { getWordSamples } from '@/lib/api';
+import type { WordInstanceOut, WordSampleOut } from '@/lib/api';
 import { invalidateRenderWord } from '@/lib/api/renderCache';
 import { de, fmt } from '@/locales/admin';
 import { WordCard } from '@/sections/admin/compare/WordCard';
@@ -53,13 +55,17 @@ import { AuthoredTraceReview } from './AuthoredTraceReview';
 import { WordList } from './WordList';
 import {
   WORD_LIST_SPEC,
+  WORD_SORTS,
   WORD_STATUSES,
   WORD_TABS,
   buildWordRows,
   matchesWordFilters,
+  rankingIsStale,
+  settledScores,
   sortWordRows,
   wordTally,
   wordsRankable,
+  type ScoreEntry,
   type WordRow,
   type WordSort,
   type WordStatus,
@@ -81,7 +87,21 @@ const TAB_LABELS: Record<WordTab, string> = {
   nachgefahren: de.admin.words.tabAuthored,
 };
 
-export function WordOverview({ onPick }: { onPick: (word: string, sampleId: string) => void }) {
+export function WordOverview({
+  onPick,
+  scores,
+  sweep,
+  sweepFailed,
+  onSweep,
+}: {
+  onPick: (word: string, sampleId: string) => void;
+  /** The measurements the view holds, sentinels of running requests included. */
+  scores: Readonly<Record<string, ScoreEntry>>;
+  /** Progress of a running sweep, `null` when none is running. */
+  sweep: { done: number; total: number } | null;
+  sweepFailed: boolean;
+  onSweep: (sampleIds: string[]) => void;
+}) {
   const [params, setParams] = useSearchParams();
   const { source, sourceId, cropCacheBust, refreshCrop } = useAdmin();
   const workbench = useWorkbench();
@@ -96,32 +116,22 @@ export function WordOverview({ onPick }: { onPick: (word: string, sampleId: stri
   // „Überlagern" is a rendering mode of the card, not work-list state — it
   // stays component state and out of the URL.
   const [overlay, setOverlay] = useState(false);
-  const [scores, setScores] = useState<Record<string, WordSampleScoreOut>>({});
-  const [scoring, setScoring] = useState<{ done: number; total: number } | null>(null);
-  const [scoreError, setScoreError] = useState(false);
-  const scoringRun = useRef(0);
 
   // Drop everything the previous source produced DURING RENDER instead of in
   // the effect below — React's "adjusting state when a prop changes"
   // (react-hooks/set-state-in-effect). The guard carries the effect's inputs, so
-  // the list never paints one frame of the old source's words and scores. The
-  // run counter stays in the effect: bumping a ref during render is its own
-  // violation (react-hooks/refs), and invalidating the sweep one commit later
-  // is early enough — the sweep only ever writes from an async continuation.
+  // the list never paints one frame of the old source's words. The scores are
+  // dropped by the same key one level up, where they live.
   const loadKey = `${sourceId} ${cropCacheBust}`;
   const [shownFor, setShownFor] = useState(loadKey);
   if (shownFor !== loadKey) {
     setShownFor(loadKey);
     setSamples(null);
     setError(false);
-    setScores({});
-    setScoring(null);
-    setScoreError(false);
   }
 
   useEffect(() => {
     let cancelled = false;
-    scoringRun.current += 1; // invalidate an in-flight score sweep of the old source
     getWordSamples(sourceId, { retries: 2 }, cropCacheBust)
       .then((rows) => {
         if (!cancelled) setSamples(rows);
@@ -168,9 +178,11 @@ export function WordOverview({ onPick }: { onPick: (word: string, sampleId: stri
 
   const korbByWord = useMemo(() => korbCountsOf(korbItems)?.byWord ?? null, [korbItems]);
 
+  // The rows see the ANSWERS only: a request still running is not a Loss.
+  const settled = useMemo(() => settledScores(scores), [scores]);
   const rows = useMemo(
-    () => buildWordRows({ samples: samples ?? [], tracesBySpecimen, tab, korbByWord, scores }),
-    [samples, tracesBySpecimen, tab, korbByWord, scores],
+    () => buildWordRows({ samples: samples ?? [], tracesBySpecimen, tab, korbByWord, scores: settled }),
+    [samples, tracesBySpecimen, tab, korbByWord, settled],
   );
   const selected = useMemo(
     () => sortWordRows(rows.filter((row) => matchesWordFilters(row, state.status, state.text)), state.sort),
@@ -190,33 +202,17 @@ export function WordOverview({ onPick }: { onPick: (word: string, sampleId: stri
     }
   }, [selected.length, page, state.page, params, setParams]);
 
-  // Sequentially score every Wortprobe of the TAB — unchanged in scope: the
-  // endpoint is CPU-bound server-side (compose + chamfer grid search), so a
-  // parallel fan-out would just queue on the single instance. What is new is
-  // that the button keeps the second half of its name in the URL: the ranking
-  // it produces is written as `sort=schlechteste` rather than applied
-  // invisibly, so the order survives opening a word and coming back.
-  const loadScores = async () => {
-    const run = ++scoringRun.current;
-    const targets = rows;
-    setScoreError(false);
-    setScoring({ done: 0, total: targets.length });
-    for (let i = 0; i < targets.length; i += 1) {
-      try {
-        const score = await getWordSampleScore(sourceId, targets[i].sampleId);
-        if (run !== scoringRun.current) return;
-        setScores((prev) => ({ ...prev, [targets[i].sampleId]: score }));
-      } catch {
-        if (run !== scoringRun.current) return;
-        setScoreError(true);
-      }
-      setScoring({ done: i + 1, total: targets.length });
+  // A ranking the rows cannot carry must not stand in the URL: „Schlechteste
+  // zuerst" would otherwise sit in the link and selected in the toolbar — next
+  // to its own „noch nichts berechnet" hint — over what is really the plate's
+  // order. The rule itself is `rankingIsStale`; the page is carried along,
+  // because dropping an axis that never changed the order must not move the
+  // reader either.
+  useEffect(() => {
+    if (rankingIsStale(rows, state.sort, samples !== null)) {
+      setParams(writeListState(params, { sort: WORD_SORTS[0], page: state.page }, WORD_LIST_SPEC), { replace: true });
     }
-    setScoring(null);
-    // Through the updater form: `params` from the closure is a snapshot from
-    // before the sweep, and the reader may well have filtered meanwhile.
-    setParams((prev) => writeListState(prev, { sort: 'schlechteste' }, WORD_LIST_SPEC), { replace: true });
-  };
+  }, [samples, rows, state.sort, state.page, params, setParams]);
 
   if (!source) return null;
 
@@ -338,16 +334,14 @@ export function WordOverview({ onPick }: { onPick: (word: string, sampleId: stri
             <Button
               size="small"
               variant="outlined"
-              onClick={loadScores}
-              disabled={scoring !== null || rows.length === 0}
+              onClick={() => onSweep(rows.map((row) => row.sampleId))}
+              disabled={sweep !== null || rows.length === 0}
               sx={{ minHeight: TOUCH_TARGET }}
             >
-              {scoring
-                ? `${de.admin.compare.scoreBusy} (${scoring.done}/${scoring.total})`
-                : de.admin.compare.scoreButton}
+              {sweep ? `${de.admin.compare.scoreBusy} (${sweep.done}/${sweep.total})` : de.admin.compare.scoreButton}
             </Button>
-            {scoring && <CircularProgress size={16} />}
-            {scoreError && (
+            {sweep && <CircularProgress size={16} />}
+            {sweepFailed && (
               <Typography variant="caption" color="error">
                 {de.admin.compare.scoreError}
               </Typography>

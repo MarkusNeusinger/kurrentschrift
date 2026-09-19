@@ -22,13 +22,13 @@ import {
   Tooltip,
   Typography,
 } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { WrittenWord } from '@/components/WrittenWord';
 import { useAdmin } from '@/context/adminState';
 import { fetchRenderWord, getWordSampleScore } from '@/lib/api';
-import type { ComposedWordOut, WordSampleScoreOut } from '@/lib/api';
+import type { ComposedWordOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { WordTraceEditorDialog } from '@/sections/admin/belege/WordTraceEditorDialog';
 import { useFileMark } from '@/sections/admin/shell/korbState';
@@ -42,20 +42,21 @@ import {
   keysOfText,
   lettersUrl,
   readWordFocus,
-  wordsUrl,
 } from '@/sections/admin/shell/focus';
+import { writeListState } from '@/sections/admin/shell/listState';
 import { canTraceByHand, ownHandEvidence, seedWordInstance, wordEvidenceOf } from '@/sections/admin/shell/model';
 import { garamond, layer, layerDash } from '@/styles/paper';
 
 import { WordOverview } from './WordOverview';
 import { WordSpineCard } from './WordSpineCard';
+import { WORD_LIST_SPEC, type ScoreEntry } from './wordRows';
 
 const WORD_H = 130; // px — the composed word, large enough to judge the rhythm
 
 export function WordView() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const { source, sourceId } = useAdmin();
+  const { source, sourceId, cropCacheBust } = useAdmin();
   const workbench = useWorkbench();
   const fileMark = useFileMark();
   const t = de.admin.words;
@@ -79,7 +80,18 @@ export function WordView() {
   const [composed, setComposed] = useState<ComposedWordOut | null>(null);
   const [missing, setMissing] = useState<string[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
-  const [scores, setScores] = useState<Record<string, WordSampleScoreOut | 'busy' | 'error'>>({});
+  // The measured Losses, and the sweep that fills them, live HERE rather than
+  // in the overview — because the overview is unmounted the moment a word is
+  // opened. A sweep costs one CPU-bound request per Wortprobe, and a ranking
+  // that evaporated on the first click into a word would have to be paid for
+  // again on the way back, while the URL and the toolbar kept claiming
+  // „Schlechteste zuerst" over what is really the plate's order. One record for
+  // both surfaces also means a Loss paid for in the detail shows up in the
+  // list.
+  const [scores, setScores] = useState<Record<string, ScoreEntry>>({});
+  const [sweep, setSweep] = useState<{ done: number; total: number } | null>(null);
+  const [sweepFailed, setSweepFailed] = useState(false);
+  const sweepRun = useRef(0);
 
   // The field mirrors the focused word: a navigation (a link, the back button)
   // re-seeds the draft and drops the previous word's missing-glyph list. Done
@@ -102,6 +114,23 @@ export function WordView() {
     setComposedFor(loadKey);
     setComposed(null);
   }
+
+  // And for the measurements: another Vorlage — or „Neu laden", which moves
+  // `cropCacheBust` — invalidates every Loss on the page. The run counter is
+  // bumped one commit later, in the effect below, because writing a ref during
+  // render is its own violation (react-hooks/refs) and that is early enough: a
+  // sweep only ever writes from an async continuation.
+  const scoreKey = `${sourceId} ${cropCacheBust}`;
+  const [scoredFor, setScoredFor] = useState(scoreKey);
+  if (scoredFor !== scoreKey) {
+    setScoredFor(scoreKey);
+    setScores({});
+    setSweep(null);
+    setSweepFailed(false);
+  }
+  useEffect(() => {
+    sweepRun.current += 1; // invalidate an in-flight sweep of the previous Vorlage
+  }, [sourceId, cropCacheBust]);
 
   // The composed payload for the evidence overlay. WrittenWord keeps its own
   // internally, so this goes through the SAME shared render cache — one
@@ -128,9 +157,16 @@ export function WordView() {
   // state (Ansicht · Filter · Sortierung · Status · Reiter · Seite) and
   // anything else the URL carries — the scope's `h=` among them — has to
   // survive the hop into a word and back, or „Alle Wortproben" would drop the
-  // reader onto page 1 of an unfiltered list in the first tab. Still a PUSH:
-  // the subject is what the back button walks.
-  const focus = (next: string | null, sample?: string | null) => {
+  // reader onto page 1 of an unfiltered list in the first tab. Normally a PUSH:
+  // the subject is what the back button walks. `replace` is for the one hop
+  // that is not a new subject — re-naming the specimen after a save, which must
+  // not leave a history step of its own.
+  //
+  // EVERY navigation that stays on /admin/woerter goes through here rather than
+  // through `wordsUrl`: that builder writes a fresh query string with `w`/`s`
+  // in it and nothing else, which is correct for a link INTO the view from
+  // elsewhere and a silent state loss from inside it.
+  const focus = (next: string | null, sample?: string | null, opts?: { replace?: boolean }) => {
     const out = new URLSearchParams(params);
     if (next) {
       out.set(FOCUS_PARAMS.word, next);
@@ -140,7 +176,7 @@ export function WordView() {
       out.delete(FOCUS_PARAMS.word);
       out.delete(FOCUS_PARAMS.specimen);
     }
-    setParams(out, { replace: false });
+    setParams(out, { replace: opts?.replace ?? false });
   };
 
   // Every WORTPROBE of this word — usually one, but a word can appear on
@@ -193,6 +229,40 @@ export function WordView() {
       .catch(() => setScores((prev) => ({ ...prev, [sampleId]: 'error' })));
   };
 
+  // „Scores berechnen & sortieren" — the overview's sweep, run from here so it
+  // survives a hop into a word. Sequential on purpose: the endpoint is
+  // CPU-bound server-side (compose + chamfer grid search), so a parallel
+  // fan-out would only queue on the single instance.
+  const runSweep = async (sampleIds: readonly string[]) => {
+    const run = ++sweepRun.current;
+    setSweepFailed(false);
+    setSweep({ done: 0, total: sampleIds.length });
+    let ranked = false;
+    for (let i = 0; i < sampleIds.length; i += 1) {
+      try {
+        const score = await getWordSampleScore(sourceId, sampleIds[i]);
+        if (run !== sweepRun.current) return;
+        if (!score.failed) ranked = true;
+        setScores((prev) => ({ ...prev, [sampleIds[i]]: score }));
+      } catch {
+        if (run !== sweepRun.current) return;
+        setSweepFailed(true);
+      }
+      setSweep({ done: i + 1, total: sampleIds.length });
+    }
+    setSweep(null);
+    // The second half of the button's name, written into the URL so the order
+    // survives opening a word and coming back — but only where it is true. A
+    // sweep in which every request failed has produced no ranking, and
+    // `sort=schlechteste` over rows without a single Loss would be a link
+    // claiming an order the list does not have. Through the updater form,
+    // because `params` from the closure is a snapshot from before the sweep and
+    // the reader may well have filtered meanwhile.
+    if (ranked) {
+      setParams((prev) => writeListState(prev, { sort: 'schlechteste' }, WORD_LIST_SPEC), { replace: true });
+    }
+  };
+
   const input = (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, flexWrap: 'wrap' }}>
       <TextField
@@ -220,7 +290,13 @@ export function WordView() {
             stays out of the list state: it names a subject (`w=`), not a
             selection over the Wortproben. */}
         <Box sx={{ mb: 2 }}>{input}</Box>
-        <WordOverview onPick={focus} />
+        <WordOverview
+          onPick={focus}
+          scores={scores}
+          sweep={sweep}
+          sweepFailed={sweepFailed}
+          onSweep={runSweep}
+        />
       </Box>
     );
   }
@@ -465,11 +541,13 @@ export function WordView() {
           onClose={() => setEditing(null)}
           // A saved authored trace replaces the row the workbench holds —
           // refetch the traces so the evidence shows the stored state, and
-          // re-navigate so the URL still names the specimen.
+          // re-name the specimen in the URL. Through `focus`, which MERGES:
+          // this hop stays on /admin/woerter, so the list state behind the
+          // detail (and the scope's `h=`) has to survive a save.
           onSaved={() => {
             setEditing(null);
             workbench.refreshWordTraces();
-            navigate(wordsUrl(text, editingEvidence.sample.id), { replace: true });
+            focus(text, editingEvidence.sample.id, { replace: true });
           }}
         />
       )}

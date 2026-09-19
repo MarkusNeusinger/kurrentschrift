@@ -251,10 +251,14 @@ export function PairMatrix({
             />
             <ListViewSwitch view={state.view} onChange={(view) => update({ view })} />
             <Typography variant="caption" color="text.secondary">
+              {/* Two numbers, not the lists' three: this grid has no pager, so
+                  „wieviel ist auf dem Schirm" and „wieviel ist gewählt" are the
+                  same number by construction and printing both read as a
+                  tautology. */}
               {pendingFilters
                 ? null
                 : state.filters.length > 0
-                  ? fmt(de.admin.liste.counterFiltered, { shown, selected: shown, total })
+                  ? fmt(de.admin.liste.counterSelected, { selected: shown, total })
                   : fmt(de.admin.liste.counter, { shown, total })}
             </Typography>
           </Box>

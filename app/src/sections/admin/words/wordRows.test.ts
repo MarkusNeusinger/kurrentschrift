@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
 import type { WordInstanceOut, WordSampleOut, WordSampleScoreOut } from '@/lib/api';
+import { writeListState } from '@/sections/admin/shell/listState';
 
 import {
+  WORD_LIST_SPEC,
+  WORD_SORTS,
   buildWordRows,
   matchesWordFilters,
+  rankingIsStale,
+  settledScores,
   sortWordRows,
   traceFilterOf,
   wordTabOf,
@@ -170,6 +175,55 @@ describe('the order of the rows', () => {
     expect(wordsRankable(buildWordRows(input({ scores: { s1: score('s1', 0.2) } })))).toBe(true);
     // A failed score is not a rank.
     expect(wordsRankable(buildWordRows(input({ scores: { s1: score('s1', 0.2, true) } })))).toBe(false);
+  });
+});
+
+describe('a ranking that no longer describes the list', () => {
+  const unscored = buildWordRows(input());
+  const scored = buildWordRows(input({ scores: { s1: score('s1', 0.2) } }));
+
+  it('is stale once the rows carry no Loss — and only then', () => {
+    // „Neu laden" cleared the measurements, or the link was pasted into a
+    // fresh session: the URL says „Schlechteste zuerst" over the plate's
+    // order, and the toolbar shows that option disabled AND selected.
+    expect(rankingIsStale(unscored, 'schlechteste', true)).toBe(true);
+    expect(rankingIsStale(scored, 'schlechteste', true)).toBe(false);
+    expect(rankingIsStale(unscored, 'reihenfolge', true)).toBe(false);
+  });
+
+  it('says nothing while the read is out or the tab is empty', () => {
+    // Neither silence is an answer about the rows — dropping the axis there
+    // would eat a deep link's ranking before its data arrived.
+    expect(rankingIsStale(unscored, 'schlechteste', false)).toBe(false);
+    expect(rankingIsStale([], 'schlechteste', true)).toBe(false);
+  });
+
+  it('leaves the rest of the list state alone when the view drops it', () => {
+    const out = writeListState(
+      new URLSearchParams('sort=schlechteste&seite=3&filter=en&reiter=andere&w=lesen'),
+      { sort: WORD_SORTS[0], page: 3 },
+      WORD_LIST_SPEC,
+    );
+    // The default sort is absent from a clean URL — which is how it is dropped.
+    expect(out.get('sort')).toBeNull();
+    // The axis never changed the order, so the reader does not move either.
+    expect(out.get('seite')).toBe('3');
+    expect(out.get('filter')).toBe('en');
+    expect(out.get('reiter')).toBe('andere');
+    expect(out.get('w')).toBe('lesen');
+  });
+});
+
+describe('the score record the view holds', () => {
+  it('hands the rows the answers and keeps the sentinels of a running request', () => {
+    const measured = score('s1', 0.4);
+    expect(settledScores({ s1: measured, s2: 'busy', s3: 'error', s4: undefined })).toEqual({ s1: measured });
+  });
+
+  it('never lets a running request read as a Loss', () => {
+    const rows = buildWordRows(input({ scores: settledScores({ s1: 'busy' }) }));
+    expect(row(rows, 's1')).toMatchObject({ loss: null, scoreFailed: false });
+    expect(wordsRankable(rows)).toBe(false);
   });
 });
 
