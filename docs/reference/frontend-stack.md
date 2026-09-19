@@ -1260,9 +1260,9 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   in `WordView`: die Übersicht wird ausgehängt, sobald ein Wort geöffnet
   wird, und eine Rangfolge, die 63 CPU-teure Abrufe gekostet hat, darf ein
   Klick in ihre eigene Zeile nicht wegwerfen. Trägt keine Zeile mehr einen
-  Loss, verlässt `sort=schlechteste` die URL (Glossar „Arbeitsliste"). Beide mounten
-  dieselbe `compare/WordCard`; in der Liste tut das nur eine aufgeklappte
-  Zeile (`unmountOnExit`), eine geschlossene lädt nichts. Was von
+  Loss, verlässt `sort=schlechteste` die URL (Glossar „Arbeitsliste").
+  Beide mounten dieselbe `compare/WordCard`; in der Liste tut das nur eine
+  aufgeklappte Zeile (`unmountOnExit`), eine geschlossene lädt nichts. Was von
   `compare/WordComparison` bleibt, ist der eine Aufrufer ohne Liste: die
   eingeklappten Verbindungs-Platten der Übergänge-Übersicht. Diese
   Karte ist wie eine Buchstaben-Kachel aus ZWEI Flächen gebaut: links die
