@@ -143,6 +143,10 @@ export const admin = {
     // it, so the page keeps a document outline (see ViewHeader `titleText`).
     letterHeading: 'Buchstabe {{key}}',
     pickLetter: 'Buchstabe wählen',
+    // The chip SHOWS the open letter, and an `aria-label` replaces what it
+    // shows — so the name says which letter is open, not only what the control
+    // is for.
+    pickLetterChosen: 'Buchstabe {{glyph}} — anderen wählen',
     prevLetter: 'Vorheriger Buchstabe',
     nextLetter: 'Nächster Buchstabe',
     toOverview: 'Alle Buchstaben',
@@ -325,6 +329,13 @@ export const admin = {
     joinHeading: 'Übergang {{left}} → {{right}}',
     pickLeft: 'links',
     pickRight: 'rechts',
+    // The chip SHOWS the chosen letter; an `aria-label` replaces what it shows,
+    // so „links" alone would leave a screen reader without the one thing the
+    // control states. Name the side AND the current value.
+    pickLeftEmpty: 'Linken Buchstaben wählen',
+    pickRightEmpty: 'Rechten Buchstaben wählen',
+    pickLeftChosen: 'Links: {{glyph}} — anderen Buchstaben wählen',
+    pickRightChosen: 'Rechts: {{glyph}} — anderen Buchstaben wählen',
     freeTextLabel: 'Kombination eintippen',
     freeTextHint: 'Zwei Zeichen, z. B. „ab“ — auch ohne Vorkommen.',
     freeTextSubmit: 'Ansehen',

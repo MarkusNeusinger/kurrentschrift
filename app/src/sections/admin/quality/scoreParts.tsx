@@ -90,10 +90,13 @@ export function ScoreHelp() {
         {/* One line per category, the name in the same monospace the bars use
             so the popover reads as the legend of what is on screen. A
             definition list with its own column looked like a second table in a
-            320 px popover. */}
-        <Box component="dl" sx={{ m: 0 }}>
+            320 px popover — and a `<dl>` of bare `<dd>`s, which is what that
+            became, is not a definition list at all. A plain list is what this
+            is, so it says so; the markers are off because the monospace name
+            already opens every line. */}
+        <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none' }}>
           {COMPONENT_KEYS.map((key) => (
-            <Typography key={key} component="dd" variant="body2" sx={{ m: 0, color: 'text.secondary' }}>
+            <Typography key={key} component="li" variant="body2" sx={{ m: 0, color: 'text.secondary' }}>
               <Box component="span" sx={{ fontFamily: mono, color: 'text.primary' }}>
                 {t.cat[key]}
               </Box>

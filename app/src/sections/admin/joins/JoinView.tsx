@@ -345,7 +345,7 @@ export function JoinView() {
           <Chip
             clickable
             onClick={open}
-            aria-label={t.pickLeft}
+            aria-label={leftKey ? fmt(t.pickLeftChosen, { glyph: textForKey(leftKey) }) : t.pickLeftEmpty}
             sx={{ height: TOUCH_TARGET, minWidth: TOUCH_TARGET }}
             label={
               <Typography component="span" sx={{ fontFamily: garamond, fontSize: 20 }}>
@@ -368,7 +368,7 @@ export function JoinView() {
           <Chip
             clickable
             onClick={open}
-            aria-label={t.pickRight}
+            aria-label={rightKey ? fmt(t.pickRightChosen, { glyph: textForKey(rightKey) }) : t.pickRightEmpty}
             sx={{ height: TOUCH_TARGET, minWidth: TOUCH_TARGET }}
             label={
               <Typography component="span" sx={{ fontFamily: garamond, fontSize: 20 }}>
@@ -585,11 +585,13 @@ export function JoinView() {
                   }}
                   aria-label={de.admin.werkbank.layersLabel}
                 >
-                  <ToggleButton value="trace">
+                  {/* The theme lifts a `small` ToggleButton only below `sm`;
+                      at desktop and tablet width it is ~39 px (§9.3). */}
+                  <ToggleButton value="trace" sx={{ minHeight: TOUCH_TARGET }}>
                     <LayerDot color={layer.trace} style={layerDash.trace} />
                     {de.admin.werkbank.layerTrace}
                   </ToggleButton>
-                  <ToggleButton value="engine">
+                  <ToggleButton value="engine" sx={{ minHeight: TOUCH_TARGET }}>
                     <LayerDot color={layer.engine} style={layerDash.engine} />
                     {de.admin.werkbank.layerEngine}
                   </ToggleButton>

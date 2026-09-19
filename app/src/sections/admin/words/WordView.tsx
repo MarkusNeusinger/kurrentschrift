@@ -22,6 +22,7 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { InfoHint } from '@/components/InfoHint';
@@ -56,6 +57,34 @@ const WORD_H = 130; // px — the composed word, large enough to judge the rhyth
 // A chip that NAVIGATES carries the touch floor; a chip that only states
 // something does not (§9.3 — the floor is for targets, not for labels).
 const NAV_CHIP = { height: TOUCH_TARGET, minWidth: TOUCH_TARGET } as const;
+const LAYER_TARGET = { minHeight: TOUCH_TARGET } as const;
+
+/**
+ * A 44 px box around an `InfoHint` for the one place it does NOT stand alone.
+ *
+ * `InfoHint` paints a 26 px mark and takes the rest of the floor from
+ * `hitArea`, which only works where nothing stands within 9 px. In this header
+ * row the chips sit 4 px apart, so the neighbour would cover 5 px of that
+ * invisible area on each side and the mark would silently fall under the floor
+ * again — the §9.3 rule „overlay only where the element stands alone", read the
+ * other way round. Reserving the space is the honest fix; the mark's optics do
+ * not change.
+ */
+function HintSlot({ children }: { children: ReactNode }) {
+  return (
+    <Box
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: TOUCH_TARGET,
+        minHeight: TOUCH_TARGET,
+      }}
+    >
+      {children}
+    </Box>
+  );
+}
 
 export function WordView() {
   const [params, setParams] = useSearchParams();
@@ -356,12 +385,14 @@ export function WordView() {
                 {/* „zählt in keine Statistik dieser Hand" is a decision, not a
                     detail — so it is not allowed to live in a hover over an
                     unfocusable chip (V25). */}
-                <InfoHint
-                  title={fmt(de.admin.werkbank.foreignCount, { count: foreignCount })}
-                  label={de.admin.werkbank.foreignSetAria}
-                >
-                  {de.admin.werkbank.foreignSetHint}
-                </InfoHint>
+                <HintSlot>
+                  <InfoHint
+                    title={fmt(de.admin.werkbank.foreignCount, { count: foreignCount })}
+                    label={de.admin.werkbank.foreignSetAria}
+                  >
+                    {de.admin.werkbank.foreignSetHint}
+                  </InfoHint>
+                </HintSlot>
               </>
             )}
             {missing.length > 0 && (
@@ -393,15 +424,19 @@ export function WordView() {
                     carries the line's STROKE STYLE too — two of the three hues
                     are one colour for a deuteranope, so the label and the dash
                     are what actually tell them apart. */}
-                <ToggleButton value="trace">
+                {/* The theme lifts a `small` ToggleButton to the floor only
+                    below `sm`; at desktop and tablet width it is ~39 px, and
+                    this group lives in an evidence state no route sweep loads
+                    by itself. Grown, because a group's buttons touch (§9.3). */}
+                <ToggleButton value="trace" sx={LAYER_TARGET}>
                   <LayerDot color={layer.trace} style={layerDash.trace} />
                   {de.admin.werkbank.layerTrace}
                 </ToggleButton>
-                <ToggleButton value="path">
+                <ToggleButton value="path" sx={LAYER_TARGET}>
                   <LayerDot color={layer.path} style={layerDash.path} />
                   {de.admin.werkbank.layerPath}
                 </ToggleButton>
-                <ToggleButton value="engine">
+                <ToggleButton value="engine" sx={LAYER_TARGET}>
                   <LayerDot color={layer.engine} style={layerDash.engine} />
                   {de.admin.werkbank.layerEngine}
                 </ToggleButton>
@@ -414,9 +449,11 @@ export function WordView() {
                 hover (V25, §9.4). One hint for the layer switch, not one per
                 button. */}
             {evidence.length > 0 && (
-              <InfoHint title={de.admin.werkbank.layersLabel} label={de.admin.werkbank.layersAria}>
-                {de.admin.werkbank.layerPathHint}
-              </InfoHint>
+              <HintSlot>
+                <InfoHint title={de.admin.werkbank.layersLabel} label={de.admin.werkbank.layersAria}>
+                  {de.admin.werkbank.layerPathHint}
+                </InfoHint>
+              </HintSlot>
             )}
           </>
         }

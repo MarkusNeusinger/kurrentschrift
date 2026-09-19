@@ -231,7 +231,7 @@ export function LetterView() {
                   <Chip
                     clickable
                     onClick={open}
-                    aria-label={t.pickLetter}
+                    aria-label={fmt(t.pickLetterChosen, { glyph: letter?.glyph ?? glyphKey })}
                     label={
                       <Typography component="span" sx={{ fontFamily: garamond, fontSize: 22, lineHeight: 1.4 }}>
                         {letter?.glyph ?? glyphKey}

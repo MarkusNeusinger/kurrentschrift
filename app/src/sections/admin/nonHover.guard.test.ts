@@ -30,25 +30,29 @@ import { describe, expect, it } from 'vitest';
 const ROOTS = ['src/sections/admin', 'src/layouts/admin'];
 
 /**
- * MUI components that pass an unknown prop straight to their DOM root, so a
- * `title` on them IS the HTML attribute. Everything else capitalised is one of
- * ours, where `title` is a prop of our own (`Panel`, `ViewHeader`, `InfoHint`,
- * `Tooltip` …). A lower-case tag is a DOM element and always renders it.
+ * MUI components for which `title` is a prop of their own rather than the HTML
+ * attribute. Everything ELSE imported from `@mui/material` spreads unknown
+ * props onto its DOM root, so a `title` on it is the native attribute — which
+ * is why the check reads each file's own `@mui/material` import list instead of
+ * carrying a list of primitives that would go stale the day someone reaches for
+ * `Alert` or `FormControlLabel`.
  */
-const RENDERS_TITLE_ATTRIBUTE = new Set([
-  'Box',
-  'Chip',
-  'Stack',
-  'Typography',
-  'Button',
-  'IconButton',
-  'ToggleButton',
-  'Paper',
-  'Link',
-  'ButtonBase',
-  'Avatar',
-  'Badge',
-]);
+const MUI_TITLE_IS_A_PROP = new Set(['Tooltip']);
+
+/** The component names a file imports from `@mui/material`. */
+function muiImports(source: string): Set<string> {
+  const names = new Set<string>();
+  // Both shapes occur: the multi-line `{ … } from '@mui/material'` block and a
+  // default import from a deep path (`@mui/material/Button`).
+  for (const match of source.matchAll(/import\s+\{([^}]*)\}\s+from\s+'@mui\/material'/g)) {
+    for (const raw of match[1].split(',')) {
+      const name = raw.trim().split(/\s+as\s+/).pop()?.trim();
+      if (name) names.add(name);
+    }
+  }
+  for (const match of source.matchAll(/import\s+(\w+)\s+from\s+'@mui\/material\/(\w+)'/g)) names.add(match[1]);
+  return names;
+}
 
 /**
  * Call sites where a native `title` is the untruncated form of a label the
@@ -99,8 +103,10 @@ describe('non-hover rule (V25)', () => {
     const offenders: string[] = [];
     for (const [path, source] of files) {
       if ([...NATIVE_TITLE_ALLOWED].some((allowed) => path.endsWith(allowed))) continue;
+      const mui = muiImports(source);
       for (const [tag, attrs] of openingTags(source)) {
-        const rendersAttribute = /^[a-z]/.test(tag) || RENDERS_TITLE_ATTRIBUTE.has(tag);
+        const rendersAttribute =
+          /^[a-z]/.test(tag) || (mui.has(tag) && !MUI_TITLE_IS_A_PROP.has(tag));
         if (!rendersAttribute) continue;
         if (/(^|\s)title=/.test(attrs)) offenders.push(`${path}: <${tag}>`);
       }
@@ -130,5 +136,10 @@ describe('non-hover rule (V25)', () => {
       'Chip',
       ' size="small" title={t.hint} /',
     ]);
+    // And the import reader, on both shapes — this is what makes the check
+    // exhaustive instead of a list of primitives someone has to remember.
+    const names = muiImports("import { Alert, Box, FormControlLabel } from '@mui/material';\nimport Button from '@mui/material/Button';");
+    expect([...names].sort()).toEqual(['Alert', 'Box', 'Button', 'FormControlLabel']);
+    expect(MUI_TITLE_IS_A_PROP.has('Alert')).toBe(false);
   });
 });
