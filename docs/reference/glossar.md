@@ -57,7 +57,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
-- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitslinie (→ Laufform-Stand) §5 · Arbeitsliste (Admin-Redesign, geplant) §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Buchstabengrenzen einer Bahn) §5
+- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitslinie (→ Laufform-Stand) §5 · Arbeitsliste §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Buchstabengrenzen einer Bahn) §5
 - **B** — Bahn §5 · Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn (geplant) §5
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
@@ -4374,19 +4374,31 @@ haben, das nicht mit dem laufenden Admin kollidiert. Seit dem 2026-09-18
 sind die Rückfragen des Plans entschieden (dort §4.5), und die Begriffe, die
 erst diese Entscheide geprägt haben, stehen mit im Block.
 
-**Arbeitsliste (Admin-Redesign, geplant)** — eine gefilterte, sortierte
-Übersicht mit Zähler, deren Zustand in der URL steht; im geplanten Admin
-der Ersatz für die Kartenwände der Übersichten. Die **Nachfahr-Liste** ist
-eine davon, der **Arbeitsvorrat** die Seite, die alle Listen bündelt (nur
-Option C). Eine Arbeitsliste verlinkt nur und löst nie einen Statuswechsel
-aus. *Technisch:* nichts gebaut; vorgesehen
-`?ansicht=liste|galerie&filter=&sort=&seite=` (V14 wie geschrieben).
-`ansicht` gehört damit der DARSTELLUNG — Liste oder Galerie derselben
-Fläche —, nicht dem Ort: der Autor-Entscheid Q1 c vom 2026-09-19 hat den
-Namen der Arbeitsliste zugesprochen, und die → Unteransicht (Eigenhand)
-nennt ihren Reiter seit demselben Entscheid `?reiter=`. Auf der
+**Arbeitsliste** — eine gefilterte, sortierte Übersicht mit Zähler, deren
+Zustand in der URL steht: der Ersatz für die Kartenwände der Übersichten.
+Eine Zeile trägt das Subjekt, seine Chips und seine Zahlen und KEIN Bild;
+Bilder laden erst in der aufgeklappten Zeile oder in der Galerie — die
+Buchstaben-Übersicht fiel damit von 10 451 px und 31 Bildern auf 3 480 px
+und keines (gemessen am Wegwerf-Stack, 31 Buchstaben, 2026-09-19). Der
+Zustand steht in der URL und nie im `localStorage`, weil ein Korb-Link auf
+einem anderen Gerät sonst wieder die Wand öffnet. Die **Nachfahr-Liste**
+ist eine davon, der **Arbeitsvorrat** die Seite, die alle Listen bündelt
+(nur Option C). Eine Arbeitsliste verlinkt nur und löst nie einen
+Statuswechsel aus. `ansicht` gehört der DARSTELLUNG — Liste oder Galerie
+derselben Fläche —, nicht dem Ort: der Autor-Entscheid Q1 c vom 2026-09-19
+hat den Namen der Arbeitsliste zugesprochen, und die → Unteransicht
+(Eigenhand) nennt ihren Reiter seit demselben Entscheid `?reiter=`. Auf der
 Streifen-Fläche stehen beide deshalb nebeneinander, ohne sich zu treffen.
-→ proposals/admin-redesign.md §5.0, §5.1 (Idee 4)
+*Technisch:* `app/src/sections/admin/shell/listState.ts` liest und schreibt
+`?ansicht=liste|galerie&filter=&sort=&seite=` (V14 wie geschrieben:
+unbekannte Werte fallen auf die Vorgabe, Vorgabewerte stehen nicht in der
+URL, fremde Parameter wie `g`/`h`/`reiter` überleben unberührt),
+`shell/WorkList.tsx` sind die Bauteile (Chip-Reihe, Umschalter, Seitenwahl,
+aufklappbare Zeile, die zwei Leerzustände), und je Fläche sagt ein eigenes
+Zeilenmodell, was die Zeile weiß — für die Buchstaben
+`letters/letterRows.ts` + `letters/LetterList.tsx`. Die Übergänge und die
+Wörter folgen. → proposals/admin-redesign.md §5.0, §5.1 (Idee 4),
+Vorgabe V14
 
 **Auslieferungs-Zeiger (geplant)** — die Antwort auf „welcher →
 Laufform-Stand schreibt öffentlich?", als Protokoll statt als Schalter: eine

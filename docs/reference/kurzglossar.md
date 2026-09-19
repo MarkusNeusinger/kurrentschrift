@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-19): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **99
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **100
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars.
 > **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
@@ -12,7 +12,9 @@
 > **Was offen ist:** Die Zählung aus Schritt 1 stammt aus EINEM Lauf über
 > die damals letzten 40 gemergten PRs und wird nicht laufend wiederholt —
 > der Bestand wächst seither je PR, die Liste ist also aktuell, ihre
-> Rangfolge nicht.
+> Rangfolge nicht. Seit dem Eintrag „Arbeitsliste" liegt die Datei über
+> 10 000 Token, ab denen sie diesen Block schuldet — der nächste Zuwachs
+> lebt davon, dass auch wieder ein Begriff unter die Schwelle fällt.
 > **Wo das Detail steht:** Nachschlage-Instanz bleibt
 > [`glossar.md`](glossar.md) samt alphabetischem Schnellindex; hier steht
 > **nichts**, was dort nicht ausführlicher stünde. Wie die Auswahl
@@ -497,6 +499,13 @@ pro Mess-Runde. Einstieg ist das **Register** im Kopf, nicht die Datei.
 darunter drei Ansichten (Buchstaben · Übergänge · Wörter), jede nach dem
 Muster Übersicht ⇄ Detail mit dem Subjekt in der URL.
 → [§5](glossar.md#5-werkbank-und-prozess) · optimierungs-werkbank.md
+
+**Arbeitsliste** — eine Übersicht als gefilterte, sortierte Liste mit
+Zähler statt als Kartenwand: eine Zeile je Subjekt mit Chips und Zahlen und
+ohne Bild, Bilder erst aufgeklappt oder in der Galerie. Ansicht, Filter,
+Sortierung und Seite stehen in der URL, nie im Browser — ein Korb-Link auf
+einem anderen Gerät muss dieselbe Ansicht öffnen.
+→ [§5](glossar.md#5-werkbank-und-prozess) · `shell/listState.ts`
 
 **Auftragskorb** *(`work_items`)* — statt Screenshots eine Tabelle: Der
 Autor markiert einen Buchstaben, ein Paar oder ein Wort und legt daraus
