@@ -41,12 +41,14 @@
   ist „canonical" eine gefüllte Scheibe und „nur Bbox" ein hohler Ring
   gleicher Größe — Form trägt, Farbe bestätigt. Damit ist der offene Fall
   aus design-system.md §9.4 geschlossen.
-- **Drei Bedienelemente unter dem 44-px-Boden, vom ersten Admin-Lauf
+- **Vier Bedienelemente unter dem 44-px-Boden, vom ersten Admin-Lauf
   gefunden:** das „Öffnen" der Galerie-Karte (64 × 32,5, zwanzigmal je
-  Seite), „Laufform überschreiben" im Buchstaben-Detail (163 × 32,5) und
-  „Erneut versuchen" auf dem Boot-Fehlerschirm (125,6 × 36,5) — letzteres in
-  beiden Schalen und bisher von keinem Lauf erreichbar, weil es eine
-  ausgefallene API braucht.
+  Seite), „Laufform überschreiben" im Buchstaben-Detail (163 × 32,5),
+  „Erneut versuchen" auf dem Boot-Fehlerschirm (125,6 × 36,5, in beiden
+  Schalen) und „Seite neu laden" auf dem Routen-Fehlerschirm (112 × 36,5).
+  Die letzten beiden sind der gleiche blinde Fleck: ein Routenlauf misst nur
+  Zustände, die eine Route von selbst erreicht, und keine Route erreicht
+  ihren eigenen Fehlerschirm — beide sind dort das EINZIGE Bedienelement.
 - **Die technische Meldung eines Fehlers stand auf 13 px**, unter dem
   Caption-Boden von 14 — sowohl die Zusammenfassung zum Aufklappen als auch
   die Rohzeile darunter.

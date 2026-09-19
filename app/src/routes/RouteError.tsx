@@ -21,6 +21,7 @@ import { isRouteErrorResponse, useRouteError } from 'react-router-dom';
 
 import { PaperBackground } from '@/components/PaperBackground';
 import { de } from '@/locales';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 // Eager, not lazy: the failure this boundary exists for IS a failing lazy
 // import — a code-split fallback could fail the same way.
 import { NotFoundPage } from '@/pages/NotFoundPage';
@@ -118,7 +119,17 @@ export function RouteError() {
                 {error.message}
               </Typography>
             )}
-            <Button variant="outlined" onClick={() => window.location.reload()}>
+            {/* 112×36.5 until 2026-09-19 — under the §9.3 floor, and the only
+                control on the screen when it appears. Same blind spot as the
+                boot screen's „Erneut versuchen": a route sweep only measures
+                states a route reaches by itself, and no route reaches its own
+                error boundary. Found while sweeping against a stack whose
+                public data was missing. */}
+            <Button
+              variant="outlined"
+              onClick={() => window.location.reload()}
+              sx={{ minHeight: TOUCH_TARGET }}
+            >
               {de.common.routeError.reload}
             </Button>
           </>
