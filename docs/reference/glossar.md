@@ -4352,13 +4352,14 @@ der Ersatz für die Kartenwände der Übersichten. Die **Nachfahr-Liste** ist
 eine davon, der **Arbeitsvorrat** die Seite, die alle Listen bündelt (nur
 Option C). Eine Arbeitsliste verlinkt nur und löst nie einen Statuswechsel
 aus. *Technisch:* nichts gebaut; vorgesehen
-`?…=liste|galerie&filter=&sort=&seite=`. Der Parametername für Liste/Galerie
-ist **nicht** `ansicht`: den gibt seit dem Eigenhand-Split die →
+`?ansicht=liste|galerie&filter=&sort=&seite=` (V14). Offener Punkt: seit dem
+Eigenhand-Split gibt denselben Parameternamen auch die →
 Unteransicht (Eigenhand) aus, und auf der Streifen-Fläche träfen beide
 Bedeutungen in einer URL aufeinander (die Galerie-Darstellung steht dort
-schon, heute an den Filter gekoppelt). Vorgesehen daher `?darstellung=`,
-Empfehlung des Plan-Aufrisses zu Q1 — eine Unteransicht ist ein anderer
-ORT, die Darstellung ein anderes Aussehen desselben Orts.
+schon, heute an den Filter gekoppelt). Die Phase-1-Aufnahme empfiehlt, für
+Liste/Galerie `?darstellung=` zu nehmen — eine Unteransicht ist ein anderer
+ORT, die Darstellung ein anderes Aussehen desselben Orts. Autor-Entscheid
+steht aus; bis dahin gilt V14 wie geschrieben.
 → proposals/admin-redesign.md §5.0, §5.1 (Idee 4)
 
 **Auslieferungs-Zeiger (geplant)** — die Antwort auf „welcher →

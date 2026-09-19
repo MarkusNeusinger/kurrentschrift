@@ -1012,7 +1012,9 @@ export const admin = {
     tabSubject: 'Eigenhand · {{ansicht}}',
     hand: 'Hand',
     handHelp: 'Neue Hand: <schreiber>-<stil>, z. B. mn-suetterlin',
-    noHands: 'Noch keine Hand erfasst — unten einen Bogen drucken, damit legt sich die erste an.',
+    // Steht seit dem `?ansicht=`-Split in der SCHALE, also auf allen vier
+    // Unteransichten — „unten" zeigte danach auf drei Flächen ins Leere.
+    noHands: 'Noch keine Hand erfasst — in der Ansicht „Drucken" einen Bogen drucken, damit legt sich die erste an.',
     loadError: 'Der Bestand konnte nicht geladen werden.',
     stripsTitle: 'Streifen',
     stripsBelegt: 'belegt',
@@ -1059,13 +1061,12 @@ export const admin = {
       'Was die Tinte dieser Hand sagt — im Unterschied zum Bestand, der sagt, wie weit die Hand gekommen ist. Gemessen wird je Fassung beim Einlesen; hier steht die Zusammenfassung über alle.',
     statistikNibTitle: 'Feder-Halbbreite',
     statistikNibCaption:
-      'Median der halben Strichbreite auf der Mittellinie, in x-Höhen — über alle Fassungen dieser Hand, an denen eine Messung liegt. Je Fassung steht dieselbe Zahl am Befund.',
+      'Median der halben Strichbreite auf der Mittellinie, in x-Höhen — über alle angenommenen Fassungen dieser Hand, an denen eine Messung liegt, unabhängig davon, ob ihr Streifenbild schon hochgeschoben ist. Dieselbe Zahl dient jeder Fassung als Vergleichsmaß am Befund.',
     statistikNibValue: '{{value}} x-Höhen',
     statistikNibFrom: 'Median aus {{count}} gemessenen Fassungen',
     statistikNibNone: 'nicht gemessen',
     statistikNibNoneHint:
-      'Keine gespeicherte Fassung dieser Hand trägt eine Federmessung — entweder ist noch kein Streifen hochgeschoben, oder die Fassungen stammen aus der Zeit vor dem Streifen-Befund. Eine fehlende Messung ist keine Null.',
-    statistikError: 'Die Streifenliste konnte nicht geladen werden.',
+      'Keine angenommene Fassung dieser Hand trägt eine Federmessung — entweder ist noch keine Siebung hochgeschoben, oder die Fassungen stammen aus der Zeit vor dem Streifen-Befund. Eine fehlende Messung ist keine Null.',
     statistikSoonTitle: 'Kommt hierher',
     statistikSoonCaption:
       'Beschriftete Leerfläche: die drei übrigen Größen aus dem Plan brauchen Rechenschichten, die es noch nicht gibt. Sie stehen hier, damit die Fläche sagt, was sie einmal trägt.',

@@ -1114,13 +1114,26 @@ def measure_plane(
 # ------------------------------------------------------------------ ordering
 
 
-def hand_nib_median(kartei: Mapping[str, Any]) -> float | None:
-    """The hand's own pen width — the median over every measured Fassung.
+@dataclass(frozen=True)
+class HandNib:
+    """A hand's own pen: the median half width, and how many readings carry it.
 
-    The consistency reference: a Fassung is compared against the campaign it
-    belongs to, not against a plate written by somebody else a century ago.
-    None while the hand has no measured Fassung yet, in which case the plate
-    stands in and the Befund says so.
+    The count travels with the figure because a median over two Fassungen and
+    a median over forty are not the same statement, and a surface that prints
+    the number alone cannot say which of the two it is holding.
+    """
+
+    units: float | None
+    readings: int
+
+
+def hand_nib(kartei: Mapping[str, Any]) -> HandNib:
+    """The hand's pen over every measured, accepted Fassung of its Kartei.
+
+    A Fassung the measurement could not read files `nib_units` as a literal
+    `0.0` (see `_summarise`), so those drop out instead of pulling the median
+    towards a hairline that nobody wrote — which is also why `readings` counts
+    what is left rather than the Fassungen.
     """
     widths = [
         summary["nib_units"]
@@ -1130,7 +1143,18 @@ def hand_nib_median(kartei: Mapping[str, Any]) -> float | None:
         and (summary := _summarise(f.get("befund") or {}))
         and summary.get("nib_units")
     ]
-    return float(np.median(widths)) if widths else None
+    return HandNib(float(np.median(widths)) if widths else None, len(widths))
+
+
+def hand_nib_median(kartei: Mapping[str, Any]) -> float | None:
+    """The hand's own pen width — the median over every measured Fassung.
+
+    The consistency reference: a Fassung is compared against the campaign it
+    belongs to, not against a plate written by somebody else a century ago.
+    None while the hand has no measured Fassung yet, in which case the plate
+    stands in and the Befund says so.
+    """
+    return hand_nib(kartei).units
 
 
 def _fassung_number(fassung_id: str) -> int:

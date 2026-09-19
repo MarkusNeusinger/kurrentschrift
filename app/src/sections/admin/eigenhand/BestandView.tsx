@@ -88,6 +88,12 @@ function BucketGrid({
               <Typography variant="body2" sx={{ lineHeight: 1.2 }}>
                 {glyphOf(row.key)}
               </Typography>
+              {/* 0.6rem = 9.6 px, under the design system's 14 px caption
+                  floor, and an ad-hoc fontSize on a variant besides. Moved
+                  here verbatim on purpose: lifting it re-flows a grid of ~90
+                  cells the author reads every day, and changing his optics is
+                  not what a page split is for. Filed for his call rather than
+                  decided here. */}
               <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'inherit' }}>
                 {row.belege}
               </Typography>

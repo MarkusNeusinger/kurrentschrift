@@ -201,9 +201,13 @@ export function EigenhandView() {
   // the split it navigates. PUSHED on purpose — back returns to the Bestand
   // with the grid where it stood, which is the whole reason the subject lives
   // in the query string.
+  // `wort` rides along: before the split the jump merged the item INTO the
+  // standing filter, so a word typed in the search survived a look at the
+  // coverage grid. Dropping it here would silently widen the gallery the
+  // author was narrowing.
   const showBelege = useCallback(
-    (selected: string) => navigate(eigenhandUrl('streifen', { item: selected })),
-    [navigate],
+    (selected: string) => navigate(eigenhandUrl('streifen', { item: selected, wort })),
+    [navigate, wort],
   );
 
   return (
@@ -235,16 +239,26 @@ export function EigenhandView() {
         {/* Links, not a handler: middle-click, „copy link" and the back button
             all keep working, and the switch is the repo's ToggleButtonGroup
             rather than Tabs (which has no precedent anywhere in app/src).
-            `aria-current` carries the state to a screen reader — an <a> is a
-            link, and the `aria-pressed` MUI puts on it is ignored there. */}
+            `aria-current` carries the state to a screen reader, and
+            `aria-pressed` has to be switched OFF: MUI writes it unconditionally
+            for a real <button>, but on `component={RouterLink}` the element is
+            an <a role=link>, where the attribute is not allowed ARIA. It spreads
+            our props after its own, so passing undefined removes it.
+            The strips filter travels only between the two views that share it:
+            the coverage grid on `bestand` produces it, the gallery on
+            `streifen` consumes it, so the round trip keeps a narrowed gallery
+            narrow. `statistik` and `drucken` read neither, and a copied
+            `?ansicht=drucken&item=a%3Eb` would carry a parameter that does
+            nothing but mislead the next reader. */}
         <ToggleButtonGroup size="small" exclusive value={ansicht} aria-label={t.ansichtAria}>
           {EIGENHAND_ANSICHTEN.map((name) => (
             <ToggleButton
               key={name}
               value={name}
               component={RouterLink}
-              to={eigenhandUrl(name, { item, wort })}
+              to={eigenhandUrl(name, name === 'streifen' || name === 'bestand' ? { item, wort } : undefined)}
               aria-current={name === ansicht ? 'page' : undefined}
+              aria-pressed={undefined}
               sx={{ textTransform: 'none', px: 1.5 }}
             >
               {t.ansichten[name]}
@@ -286,7 +300,7 @@ export function EigenhandView() {
               labelOf={itemLabel}
             />
           )}
-          {ansicht === 'statistik' && <StatistikView hand={hand} />}
+          {ansicht === 'statistik' && <StatistikView bestand={bestand} />}
           {ansicht === 'drucken' && (
             <DruckenView hand={hand} printed={printed} onPrinted={setPrinted} onReload={reloadAfterPrint} />
           )}

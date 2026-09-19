@@ -1205,6 +1205,13 @@ class EigenhandBestandOut(BaseModel):
     quoten: EigenhandQuotenOut | None = None
     queue: list[str]
     redo: list[str]
+    # The hand's own pen, measured rather than counted: the median half width
+    # over its accepted Fassungen, in x-heights. `null` while nothing of this
+    # hand has been measured — a surface has to state that, because an
+    # unmeasured pen is not a hairline. `nib_readings` says how many Fassungen
+    # the median rests on.
+    nib_median: float | None = None
+    nib_readings: int = 0
 
 
 class EigenhandSheetIn(BaseModel):

@@ -31,6 +31,7 @@ from core.eigenhand.befund import (
     befund_index,
     befunde_of_strip,
     body_runs_expected,
+    hand_nib,
     hand_nib_median,
     loop_expectation,
     measure_strip,
@@ -254,6 +255,28 @@ def test_the_hands_own_pen_is_the_reference_and_the_index_carries_it() -> None:
     index = befund_index(kartei)
     assert [b.grund for b in index["S0001"].values()] == [GRUND_NICHTS, GRUND_NICHTS]
     assert all(b.nib["zur_tafel"] < 0.7 for b in index["S0001"].values())
+
+
+def test_the_pen_says_how_many_readings_carry_it_and_never_counts_an_unmeasured_one() -> None:
+    """`nib_readings` is the honesty half of the figure the admin prints.
+
+    A Fassung whose pen could not be read files `nib_units` as `0.0`. Counting
+    it would both drag the median towards a hairline and claim more evidence
+    than exists, so it drops out of the number AND out of the count.
+    """
+    thin = _measure(_paint(_blank(), _arc(), half=NIB_HALF_PX * 0.5))
+    measured = hand_nib(_kartei_with(("F01", thin), ("F02", dict(thin)), ("F03", {})))
+    assert measured.readings == 2
+    assert measured.units == pytest.approx(thin["woerter"][0]["nib_units"], rel=1e-6)
+    # A hand with nothing readable is stated as unmeasured, not as a zero pen:
+    # the admin view turns `None` into „nicht gemessen".
+    empty = hand_nib(_kartei_with(("F01", {})))
+    assert (empty.units, empty.readings) == (None, 0)
+    # Only accepted Fassungen count — the same filter `hand_nib_median` applied
+    # before the count travelled with it.
+    rejected = _kartei_with(("F01", thin))
+    rejected["strips"]["S0001"]["fassungen"][0]["status"] = "verworfen"
+    assert (hand_nib(rejected).units, hand_nib(rejected).readings) == (None, 0)
 
 
 def test_the_rewrite_list_is_the_not_clean_ones_worst_first() -> None:

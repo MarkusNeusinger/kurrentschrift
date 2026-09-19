@@ -17,9 +17,13 @@
 ### Added
 
 - **The Eigenhand statistics view reports the hand's pen.** The new Statistik
-  sub-view derives the median nib half width per hand from the `befund.nib`
-  readings the strip listing already carries, beside labelled placeholders
-  naming the three figures that need compute still to be written. A Fassung
-  that could not be measured is dropped rather than averaged in — `befund.py`
-  files an unmeasured pen as `0.0`, and counting those would quietly report a
-  hairline hand.
+  sub-view states the median nib half width of the chosen hand, beside
+  labelled placeholders naming the three figures that need compute still to be
+  written. `GET /eigenhand/bestand/{hand}` carries it as `nib_median` plus the
+  `nib_readings` it rests on, so the view needs no read of its own and the
+  figure is the one the Befund chips already compare against: it comes from
+  `core.eigenhand.befund.hand_nib` over the hand's accepted, measured
+  Fassungen, not from the stored strip images, whose upload is opt-in. A
+  Fassung that could not be measured is dropped rather than averaged in —
+  `befund.py` files an unmeasured pen as `0.0`, and counting those would
+  quietly report a hairline hand.
