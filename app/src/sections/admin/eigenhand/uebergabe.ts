@@ -70,9 +70,12 @@ export function uebergabeKarten(rows: readonly EigenhandFaellig[]): Uebergabe[] 
 /**
  * „Follow this Fassung's Bahn" — the one card the browser builds itself.
  *
- * The command is the DRY RUN. A copy button never hands over a command that
- * writes to the shared DB; `--apply` is named in the order hint instead, behind
- * the snapshot that belongs in front of it.
+ * The command is the DRY RUN. Pushing what was written up is the point of the
+ * chain, so a card may hand over a write — what it never hands over is one that
+ * REPLACES what is there, and `pfad --apply` overwrites followed geometry.
+ * `--apply` is named in the order hint instead, behind the snapshot that
+ * belongs in front of it (Q9). The other command of that kind,
+ * `universe --push`, carries the snapshot in its own order hint.
  */
 export function bahnKarte(hand: string, strip: string, fassung: string): Uebergabe {
   const t = de.admin.eigenhand.uebergabe;

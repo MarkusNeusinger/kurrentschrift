@@ -1195,10 +1195,14 @@ class EigenhandSheetsCountOut(BaseModel):
 class EigenhandFaelligOut(BaseModel):
     """One local step the server can see is due — the Übergabekarte's data.
 
-    English on purpose, all three fields: `id` is the rule (`core.eigenhand.
-    faellig`), `befehl` the command as it has to be typed, `params` the numbers
-    the German copy interpolates. The copy itself stays in the SPA's locale
-    keyed by `id`, so a rule this server does not know renders no card.
+    `id` names the rule in `core.eigenhand.faellig`, `befehl` is the command as
+    it has to be typed, `params` are the numbers the German copy interpolates.
+    What is English on purpose is the CONTENT that is code — the rule ids and
+    the command strings (§5.0: „Terminal-BEFEHLE bleiben englisch"); the field
+    names keep this router's German domain vocabulary, beside `faellig`,
+    `quoten`, `fassungen`, `pfade` and `flecken`. The copy itself stays in the
+    SPA's locale keyed by `id`, so a rule this server does not know renders no
+    card.
     """
 
     id: str

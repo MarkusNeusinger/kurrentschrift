@@ -112,6 +112,7 @@ export function BestandView({
   bestand,
   labelOf,
   onShowBelege,
+  onSetupSaved,
 }: {
   hand: string;
   bestand: EigenhandBestand;
@@ -119,6 +120,8 @@ export function BestandView({
   labelOf: (item: string) => string;
   /** Opens the written evidence for one item, which now means: go to `streifen`. */
   onShowBelege: (item: string) => void;
+  /** A saved setup changes the due list, so the shell re-reads the Bestand. */
+  onSetupSaved?: (forHand: string) => void;
 }) {
   const t = de.admin.eigenhand;
   const [openOnly, setOpenOnly] = useState(true);
@@ -137,7 +140,7 @@ export function BestandView({
 
   return (
     <Stack spacing={3}>
-      <SetupPanel hand={hand} />
+      <SetupPanel hand={hand} onSaved={onSetupSaved} />
 
       <Panel title={t.stripsTitle} caption={t.queueTitle}>
         <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', rowGap: 2 }}>

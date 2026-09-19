@@ -1,4 +1,4 @@
-// Die Übergabekarte — ein Medienbruch, gezeigt statt versteckt.
+// The Übergabekarte — a media break, shown rather than hidden.
 //
 // Some steps of the capture chain cannot happen in a browser: the scan is on a
 // disk, the Siebung is a local page, the follower ships in `tools/`, which the

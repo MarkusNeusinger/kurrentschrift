@@ -113,6 +113,17 @@ class TestRules:
         assert card["params"]["weitere"] == 0
         assert "weitere_boegen" not in card["params"]
 
+    def test_age_survives_the_roll_past_the_fourth_digit(self):
+        # `ids.SHEET_ID` allows more than four digits, and plain lexicographic
+        # order puts B10000 in front of B9999 — which would name a NEWER sheet
+        # as the oldest one.
+        kartei = _kartei()
+        for sheet in ("B9999", "B10000"):
+            _print(kartei, sheet, ["S0001"])
+        [card] = _due(kartei)
+        assert card["params"]["sheet"] == "B9999"
+        assert card["params"]["weitere_boegen"] == "B10000"
+
     def test_a_long_stack_stops_naming_and_says_so(self):
         kartei = _kartei()
         for n in range(1, 11):

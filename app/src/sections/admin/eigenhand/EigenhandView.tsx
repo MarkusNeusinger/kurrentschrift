@@ -187,6 +187,20 @@ export function EigenhandView() {
     [hand, reload],
   );
 
+  // A saved setup is the same shape of event: the `setup_pull` Übergabekarte is
+  // derived on the SERVER from the row the panel just wrote, so without this
+  // re-read the card it promises would only turn up after a reload. No spinner
+  // for it — the panels on screen stay valid, only the due list gains a card —
+  // and the same `forHand` guard, because the selector stays enabled while the
+  // save is in flight.
+  const handleSetupSaved = useCallback(
+    (forHand: string) => {
+      if (forHand !== hand) return;
+      reload(hand);
+    },
+    [hand, reload],
+  );
+
   // What the strips gallery shows, read from the URL rather than from state:
   // the producer (a coverage cell on `bestand`) and the consumer (`streifen`)
   // stopped sharing a component when the page split, and a filter that lives
@@ -307,7 +321,13 @@ export function EigenhandView() {
       {bestand && (
         <>
           {ansicht === 'bestand' && (
-            <BestandView hand={hand} bestand={bestand} labelOf={itemLabel} onShowBelege={showBelege} />
+            <BestandView
+              hand={hand}
+              bestand={bestand}
+              labelOf={itemLabel}
+              onShowBelege={showBelege}
+              onSetupSaved={handleSetupSaved}
+            />
           )}
           {ansicht === 'streifen' && (
             /* Keyed by hand: a switch remounts the panel, so no search term,

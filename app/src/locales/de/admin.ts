@@ -1159,10 +1159,9 @@ export const admin = {
     openPdf: 'PDF öffnen',
     openStackPdf: 'Stapel als ein PDF öffnen ({{count}} Seiten)',
     pdfError: 'Das PDF konnte nicht geladen werden.',
-    // Kein Befehl mehr unter dem Druckergebnis: der `pull` des frisch
-    // gedruckten Bogens steht als Übergabekarte im Bestand und überlebt dort
-    // das Neuladen — der Hinweis hier gab es nur in der Sitzung, die gerade
-    // gedruckt hatte.
+    // No command under the print result any more: the `pull` of the Bogen just
+    // printed is an Übergabekarte on the Bestand now and survives a reload
+    // there — this hint existed only in the session that had just printed.
     printedNext: 'Der nächste Schritt am Rechner steht unter „Bestand → Am Rechner weiter" — auch nach dem Neuladen.',
     setupTitle: 'Stehendes Setup',
     setupIntro:
@@ -1183,26 +1182,25 @@ export const admin = {
     commandCopy: 'Befehl kopieren',
     commandCopied: 'kopiert',
     // ——— Übergabekarten ———
-    // Ein Medienbruch wird gezeigt, nicht versteckt: was nur am Rechner
-    // geschehen kann, steht als Karte mit Titel, Grund, Befehl und „Danach
-    // hier" — und verschwindet, sobald der Zustand da ist. Welche Karte fällig
-    // ist, entscheidet EINMAL der Server (`core/eigenhand/faellig.py`); die
-    // Befehle kommen als Code von dort, hier steht nur die deutsche Fassung,
-    // geschlüsselt nach Regel-Id. Eine Id ohne Text ergibt keine Karte —
-    // niemals eine leere.
+    // A media break shown rather than hidden: what can only happen at the
+    // machine stands as a card with a title, the reason, the command and
+    // „Danach hier" — and goes as soon as the state is there. WHICH card is
+    // due is decided once, server-side (`core/eigenhand/faellig.py`); the
+    // commands arrive as code from there and only the German copy lives here,
+    // keyed by rule id. An id without copy renders no card — never a blank one.
     uebergabe: {
       title: 'Am Rechner weiter',
       caption:
         'Schritte, die am Schreib-Rechner laufen müssen — in der Reihenfolge, in der sie dran sind. Gezeigt wird nur, was der Server sehen kann: einen Schnappschuss oder ein eingelesenes Blatt kann er nicht bestätigen.',
-      // Die Zwischenablage reicht nicht vom Tablet zum Rechner. Darum steht
-      // unter den Karten der Zwilling, der dort dieselbe Liste druckt.
+      // The clipboard does not reach from the tablet to the machine, so under
+      // the cards stands the twin that prints the same list over there.
       rechnerLead: 'Am Rechner: ',
       rechnerBefehl: 'uv run python -m tools.eigenhand.report --hand {{hand}} --faellig',
       danach: 'Danach hier: {{was}}',
       reihenfolge: 'Reihenfolge: {{wie}}',
-      // Nur wenn der Server mehr als einen offenen Bogen sieht: der Befehl auf
-      // der Karte holt einen, und ein liegengebliebener Bogen darf den frisch
-      // gedruckten nicht verdecken.
+      // Only when the server sees more than one open Bogen: the command on the
+      // card fetches ONE, and a sheet left lying around must not hide the one
+      // just printed.
       weitereBoegen: 'Auch offen: {{weitere_boegen}} — je Bogen ein eigener Aufruf.',
       karten: {
         setup_pull: {
@@ -1217,9 +1215,9 @@ export const admin = {
           warum:
             'Erstbeleg- und Ausbau-Quote rechnen gegen die Gewichte aus den Konsult-Korpora, und die Warteschlange ordnet danach. Die Korpus-Bytes bleiben lizenzbedingt lokal; hochgeschoben wird nur die abgeleitete Tabelle.',
           danach: 'die Quoten-Tafel füllt sich, und die nächsten Streifen stehen nach gewichtetem Soll-Gewinn.',
-          // Dieser Push ist die EINE Eigenhand-Schreibung, die einen
-          // vorhandenen Bau ersetzt (Vorschlag §7.1) — darum steht der
-          // Schnappschuss davor, wie bei --apply.
+          // This push is the ONE eigenhand write that replaces an existing
+          // build (proposal §7.1), so the snapshot stands in front of it, the
+          // way it does for --apply.
           reihenfolge:
             'vom Rechner mit den Konsult-Korpora, und weil dieser Push einen vorhandenen Bau ersetzt: erst ein Schnappschuss (tools.dbsnapshot), dann --push.',
         },
@@ -1237,12 +1235,12 @@ export const admin = {
           danach: 'die Streifen erscheinen unter „Geschriebene Streifen".',
           reihenfolge: 'jederzeit; das private Archiv bleibt die Urfassung.',
         },
-        // Diese eine Karte baut die Ansicht selbst: welche Fassung eine Bahn
-        // hat, kann die Streifen-Liste heute nicht sagen (die Spalte ist
-        // zurückgestellt), im geöffneten Streifen liegt die Antwort aber
-        // ohnehin. Deshalb steht sie an der Fassung und nicht in der Liste
-        // oben — und der Befehl ist der TROCKENLAUF: ein Kopierknopf reicht
-        // nie einen schreibenden Befehl weiter.
+        // This one card the view builds itself: which Fassung carries a Bahn
+        // is something the strips listing cannot say today (the column is
+        // deferred), while in the open Fassung the answer is loaded anyway.
+        // So it stands at the Fassung, not in the block above — and its
+        // command is the DRY RUN, because a copy button never hands over a
+        // command that replaces what is there.
         bahn_folgen: {
           titel: 'Für diese Fassung ist noch keine Bahn gespeichert',
           warum:
@@ -1256,12 +1254,11 @@ export const admin = {
     stripImagesTitle: 'Geschriebene Streifen',
     stripImagesIntro:
       'Die eingelesenen Streifen, wie sie in der Datenbank liegen — admin-geschützt, nie öffentlich, nie im Repository. Der Wort-Ausschnitt wird aus dem Bogen-Layout berechnet und braucht keinen eigenen Speicher.',
-    // Beide leeren Antworten nennen den ZUSTAND, nicht einen Befehl: solange
-    // keine angenommene Fassung ihr Bild schuldet, gibt es den Schritt gar
-    // nicht — dann stünde hier ein Verweis auf einen Block, den es auf dieser
-    // Hand nicht gibt. Sobald es ihn gibt, weiß die Karte „Am Rechner weiter"
-    // außerdem, WIE VIELE Fassungen betroffen sind; hier war das alles oder
-    // nichts.
+    // Both empty answers name the STATE rather than a command: while no
+    // accepted Fassung owes its image, the step does not exist at all — and a
+    // pointer to a block this hand does not have would be worse than none.
+    // Once it does exist, the card knows HOW MANY Fassungen are affected;
+    // here it was all-or-nothing.
     stripImagesEmpty:
       'Noch keine Streifenbilder hochgeschoben. Sobald angenommene Fassungen ohne Bild vorliegen, steht der Befehl dazu im Bestand unter „Am Rechner weiter".',
     stripImagesError: 'Der Streifen konnte nicht geladen werden.',
@@ -1317,11 +1314,11 @@ export const admin = {
     pfadPedigreeMixed: 'Bahn: verschiedene Läufe · {{woerter}} Wort/Wörter',
     pfadMixedHint:
       'Die Bahnen dieser Fassung stammen aus mehreren Läufen — einzelne Wörter wurden später noch einmal gefolgt. Herkunft je Wort:',
-    // Der Satz von früher trug den Befehl mitten im Fließtext, mit „…" statt
-    // Streifen und Fassung und ohne Kopierknopf — genau der Fall, für den es
-    // die Übergabekarte gibt. Er steht jetzt als Karte an der Fassung, mit den
-    // echten Ids; dieser Schlüssel bleibt für die Galerie-Kachel, die für eine
-    // Karte keinen Platz hat.
+    // The old sentence carried its command in the middle of running text, with
+    // „…" instead of the strip and the Fassung and no copy button — exactly
+    // the case the Übergabekarte exists for. It is a card at the Fassung now,
+    // with the real ids; this key stays for the gallery tile, which has no
+    // room for a card.
     pfadNoneShort: 'noch keine Bahn gespeichert',
     // Die drei leeren Antworten sind NICHT dasselbe: „noch niemand gefolgt"
     // (null), „gefolgt, nichts gefunden" (leere Liste) und „dieses Wort hat

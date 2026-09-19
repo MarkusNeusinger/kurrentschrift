@@ -88,11 +88,23 @@ def _fassungen(kartei: dict) -> list[dict]:
     return [f for record in kartei["strips"].values() for f in record.get("fassungen", [])]
 
 
+def _sheet_age(sheet: str) -> tuple[int, str]:
+    """Print order out of a sheet id — length first, then the id itself.
+
+    Ids are minted zero-padded (``B0001``) but the format allows more digits
+    (``ids.SHEET_ID`` is ``B[0-9]{4,}``), and plain lexicographic order puts
+    ``B10000`` in front of ``B9999``. A longer id is always the later print, so
+    the length carries the decision and the padding does the rest.
+    """
+    return (len(sheet), sheet)
+
+
 def _outstanding_sheets(kartei: dict) -> list[tuple[str, int]]:
     """Every Bogen with printed rows nobody has judged yet, oldest first.
 
-    Sheet ids are minted in print order (``B0001`` …), so sorting by id is
-    sorting by age. The card names the OLDEST, not ``bestand["sheets"]["last"]``
+    Sheet ids are minted in print order (``B0001`` …), so sorting by id —
+    through ``_sheet_age``, which survives the roll past ``B9999`` — is sorting
+    by age. The card names the OLDEST, not ``bestand["sheets"]["last"]``
     (the newest printed one), because a stack printed in one job leaves several
     outstanding at once and the sheet lying around longest is the one to clear.
     The REST are named too, for the case that makes the difference visible: a
@@ -108,7 +120,7 @@ def _outstanding_sheets(kartei: dict) -> list[tuple[str, int]]:
         if sheet:
             judged[sheet] = judged.get(sheet, 0) + 1
     outstanding = []
-    for sheet in sorted(kartei["sheets"]):
+    for sheet in sorted(kartei["sheets"], key=_sheet_age):
         printed = len(kartei["sheets"][sheet]["strips"])
         offen = printed - judged.get(sheet, 0)
         if offen > 0:
