@@ -11,6 +11,8 @@ import type { InstanceOut, LandmarkKind, WordInstanceOut, WordSampleOut, WorkIte
 import { de } from '@/locales/admin';
 import { paper, pigment } from '@/styles/paper';
 
+import { keysOfText } from './focus';
+
 // One DETECTED structure of a letter, as the Landmarken-Linse hands it to the
 // Korb (optimierungs-werkbank.md §8). `spot` is the fifth case and the only
 // one without an index: a place where the author expects a marker and none
@@ -173,6 +175,117 @@ export function traceStatusOf(sample: WordSampleOut, traced: WordInstanceOut | n
 
 // The overview's filter over that status — `all` plus the three states.
 export type TraceFilter = 'all' | TraceStatus;
+
+// One piece of evidence for a word text in the word DETAIL: a Wortprobe of the
+// plate, and the stored trace of it where one exists.
+//
+// The sample is the subject and the trace is an attribute of it, not the other
+// way round — that inversion is the whole point. The detail used to build its
+// list from the stored `word_instances`, so a Wortprobe that had never been
+// traced was invisible there although the overview listed it with its crop:
+// the one place where the missing work is done showed nothing exactly where
+// there was work to do.
+export type WordEvidence = { sample: WordSampleOut; row: WordInstanceOut | null };
+
+// Every Wortprobe of one word text, worst first, each with its stored trace.
+//
+// WHICH specimens count as a Wortprobe of the text: the plate's `word` samples,
+// plus any specimen of another kind that already carries a stored trace of it.
+// The Abb.-20 pair drills are the other kind, and they have their own home in
+// the Übergänge view — surfacing an untraced drill here as if the plate wrote
+// the two-letter text as a WORD would put drill crops under „in", „of" or „du".
+// A drill that HAS been traced stays reachable, because the drill card's „im
+// Wort ansehen" deep-links exactly here and the trace-only list it replaces
+// showed it.
+//
+// Order, unchanged from that list: the specimen named in the URL leads (so a
+// deep link lands on it), then the worst measured fit — an untraced sample has
+// nothing measured and therefore ranks last rather than pretending to a perfect
+// fit of zero badness.
+export function wordEvidenceOf(
+  samples: WordSampleOut[],
+  rows: WordInstanceOut[],
+  text: string,
+  specimenId: string | null,
+): WordEvidence[] {
+  const needle = text.trim().toLowerCase();
+  if (!needle) return [];
+  // Sidecar ids are unique across kinds — `sampleById` in the workbench keys on
+  // the bare id for the same reason.
+  const rowById = new Map(rows.map((row) => [row.specimen_id, row]));
+  return samples
+    .filter((sample) => sample.word.toLowerCase() === needle)
+    .map((sample) => ({ sample, row: rowById.get(sample.id) ?? null }))
+    .filter(({ sample, row }) => sample.kind === 'word' || row !== null)
+    .sort((a, b) => {
+      if (a.sample.id === specimenId) return -1;
+      if (b.sample.id === specimenId) return 1;
+      return (b.row ? badness(b.row) : -1) - (a.row ? badness(a.row) : -1);
+    });
+}
+
+// The evidence that belongs to the PLATE's own hand — everything the detail is
+// allowed to count.
+//
+// A sample carrying a `sample_set` tag comes from another writer's plate (the
+// Abb.-22 Schülerschrift). It may stand in the detail as context, but it is
+// „Kontext, nie Vorbild": excluded from this hand's statistics AND from its
+// head counts (Vorgabe V4 of the Admin-Redesign). Truthiness, not != null, so
+// an empty tag does not make a sample foreign — the same test the overview's
+// mode filter makes.
+export const ownHandEvidence = (evidence: WordEvidence[]): WordEvidence[] =>
+  evidence.filter((e) => !e.sample.sample_set);
+
+// Whether the word editor may be opened on this piece of evidence. Two kinds
+// of sample are context rather than work, and both refusals are doctrine:
+//
+// * a FOREIGN writer's sample (Abb. 22) — a Bahn drawn over it would be stored
+//   under the PLATE's hand and become ground truth for statistics and training
+//   under the wrong writer („Kontext, nie Vorbild", V4);
+// * an untraced sample whose own ink is CLIPPED — „sie lässt sich nicht von
+//   Hand nachfahren und ist darum weder Arbeit noch Versäumnis" (glossar
+//   „Unvollständige Wortprobe"): the i-dot is missing, the last letter runs off
+//   the plate, so the hand has nothing to follow.
+//
+// A clipped specimen that ALREADY carries a row keeps its entry: that row
+// exists and may be re-drawn, and `traceStatusOf` then reads the resulting hand
+// line as the truth about the specimen rather than the flag. The card says why
+// either way — the „Unvollständig" chip carries the sidecar's own reason.
+export const canTraceByHand = ({ sample, row }: WordEvidence): boolean =>
+  !sample.sample_set && !(sample.incomplete && !row);
+
+// A Wortprobe with no stored trace, in the shape the word editor already takes.
+//
+// EDITOR-ONLY, never a display row: the spine card gets `row = null` for such a
+// sample and says „Offen". The seed exists so the tested write flow is CALLED
+// rather than rebuilt — the dialog keeps its props, its save body and its
+// suites, and the first authored trace for a specimen is simply an upsert the
+// server has always accepted (`PUT …/word-instances` keys on kind + specimen).
+//
+// The registration is the sidecar's own lineature, so the editor's frame gate
+// reads it as current and opens without a spurious „Rahmen veraltet". `slots`
+// is the shaper's own list, the Python twin of which the harvest stores, so a
+// later re-harvest of the same specimen finds the labels it would have written.
+export function seedWordInstance(sample: WordSampleOut): WordInstanceOut {
+  return {
+    kind: sample.kind,
+    specimen_id: sample.id,
+    word: sample.word,
+    slots: keysOfText(sample.word),
+    strokes: [],
+    // What the save writes regardless — a seeded row can only ever become a
+    // hand trace, since the only way to store it is to draw it.
+    provenance: 'authored',
+    // No sibling row to inherit from: the dialog resolves the hand from its
+    // `fallbackHandId` and keeps saving disabled, with a reason, when none does.
+    hand_id: null,
+    measurements: {
+      registration_px: { tx: 0, ty: 0, baseline_row: sample.baseline_y },
+      xh_px: sample.baseline_y - sample.midband_y,
+    },
+    updated_at: null,
+  };
+}
 
 export const matchesTraceFilter = (filter: TraceFilter, status: TraceStatus): boolean =>
   filter === 'all' || filter === status;

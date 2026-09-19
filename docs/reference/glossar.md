@@ -58,7 +58,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
 - **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitsliste (Admin-Redesign, geplant) §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Buchstabengrenzen einer Bahn) §5
-- **B** — Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn (geplant) §5
+- **B** — Bahn §5 · Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn (geplant) §5
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
@@ -3681,11 +3681,29 @@ Ausschnitt — sie ändern also, was die Maske überhaupt sieht;
 `crop_mask_to_png_bytes` rendert daraus die binarisierte Vorschau
 („Maske zeigen“) mit farbcodierter Auto-Füllung.
 
+**Bahn** — die gefolgte oder nachgefahrene Linie **eines Wortes**,
+beidseitig: die des Folgers wie die von Hand gezogene. Die Zähleinheit im
+Kopf des Wort-Details („n Bahnen“) und bewusst **nicht** „Beleg“ — der
+zählt im Bestandsbericht der Eigenhand die angenommenen Fassungen eines
+Items, und ein Wort kann mehrere Bahnen tragen, ohne einen einzigen Beleg
+zu sein (Autor-Entscheid 2026-09-18, Q8 a; Vokabular-Tabelle
+`proposals/admin-redesign.md` §5.0). Gezählt wird nur die Platten-Hand
+selbst; die Proben der Abb.-22-Schülerhand stehen daneben unter eigenem
+Etikett (→ V4). *Technisch:* `word_instances.strokes`, Chip
+`words.traceCount` in `locales/de/admin.ts`.
+→ proposals/admin-redesign.md §5.0 · Beleg (Eigenhand) · Bahn-Deckung
+(geplant)
+
 **Wort-Editor · Paar-Editor** — die beiden manuellen Ground-Truth-Flächen:
 der Wort-Editor lässt ein misslungenes automatisches Nachfahren von Hand
 über dem Ausschnitt neu ziehen (→ `authored`, wird von keiner Neu-Ernte
 überschrieben); der Paar-Editor zeichnet einen Verbinder für genau ein Paar
-und gibt ihn frei (→ `glyph_pairs`, die sparsame Ausnahme).
+und gibt ihn frei (→ `glyph_pairs`, die sparsame Ausnahme). Seit Phase 0 des
+Admin-Redesigns öffnet der Wort-Editor auch für eine Wortprobe, die noch
+gar keine gespeicherte Bahn trägt: er bekommt dann eine geseedete
+Ausgangszeile (Identität und Rahmen aus dem Sidecar, Slot-Labels aus der
+Formung, keine Züge), damit der geprüfte Schreibweg aufgerufen und nicht
+umgebaut wird. *Technisch:* `seedWordInstance`, `shell/model.ts`.
 
 **Nachfahr-Stand** *(`traceStatusOf`, `shell/model.ts`)* — der dreiwertige
 Stand einer Wortprobe im manuellen Nachfahr-Durchgang, hinter dem

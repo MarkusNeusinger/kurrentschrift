@@ -7,9 +7,12 @@
 // server's overwrite protection keeps them safe from every re-harvest.
 //
 // The save reuses the batch endpoint with a SINGLE item and without `replace`,
-// so exactly this occurrence is written and no other row is touched. Only rows
-// that already exist can be edited: the Belege list is built from stored rows,
-// and an occurrence without one has no slot labels to preserve.
+// so exactly this occurrence is written and no other row is touched. `row` may
+// be a STORED row or a seeded starting point for a Wortprobe nobody has traced
+// yet (`seedWordInstance`, shell/model.ts — identity and registration frame off
+// the sidecar, slot labels from the shaper, no strokes). The dialog does not
+// care which: the upsert creates the row either way, so a caller never has to
+// rebuild this write flow to reach an untraced occurrence.
 
 import {
   Alert,

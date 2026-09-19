@@ -297,8 +297,19 @@ export const admin = {
     freeTextSubmit: 'Schreiben',
     filterLabel: 'Proben filtern',
     toOverview: 'Alle Wortproben',
-    traceCount: '{{count}} Belege',
-    traceCountOne: '{{count}} Beleg',
+    // „Bahn" rather than „Beleg" for a stored line (author decision
+    // 2026-09-18, Q8 a): in the own-hand Bestandsbericht „Beleg" counts the
+    // accepted Fassungen of an item, so the same word for the line over a plate
+    // Wortprobe was two counting units under one name. Exactly this chip is
+    // renamed — no sweep across the other surfaces.
+    traceCount: '{{count}} Bahnen',
+    traceCountOne: '{{count}} Bahn',
+    // Beside it, since the detail builds its list from the WORTPROBEN: how many
+    // samples the plate has of this text — the Bahnen are the subset of them
+    // that already carry a line. Both counts are this hand's own; a foreign
+    // writer's samples get `werkbank.foreignCount`.
+    sampleCount: '{{count}} Wortproben',
+    sampleCountOne: '{{count}} Wortprobe',
     writtenTitle: 'Wie es geschrieben wird',
     writtenCaption:
       'Serverseitig komponiert: Buchstaben der Bibliothek, dazwischen die erzeugten Übergänge — dieselbe Ausgabe, die die öffentlichen Seiten schreiben.',
@@ -306,8 +317,12 @@ export const admin = {
     partsCaption:
       'Die Buchstaben und die Übergänge dieses Textes. Ein Klick führt in die jeweilige Ansicht — der Weg von „hier stimmt etwas nicht“ zur Ursache.',
     noJoins: 'Keine verbundenen Übergänge in diesem Text.',
+    // „keine Wortprobe" rather than „keine nachgefahrene Wortprobe": now that
+    // the detail lists the samples themselves, an untraced one appears here
+    // with its crop and the way into the editor — so this message means the
+    // plate does not write the text at all.
     noSpecimen:
-      'Zu diesem Text gibt es keine nachgefahrene Wortprobe dieser Hand — beurteilt wird dann allein das Schriftbild oben. Bemängeln geht trotzdem: ⚑ oben.',
+      'Zu diesem Text gibt es keine Wortprobe dieser Hand — beurteilt wird dann allein das Schriftbild oben. Bemängeln geht trotzdem: ⚑ oben.',
     scoreButton: 'Bewerten',
     scoreHint: 'Der eingefrorene Wortbench-Maßstab auf genau dieser Komposition (niedriger ist besser).',
     // Nachfahr-Übersicht: the overview's third tab — every hand-authored word
@@ -630,6 +645,19 @@ export const admin = {
     provenanceTraced: 'automatisch nachgefahren',
     provenanceAuthored: 'von Hand nachgefahren',
     noSample: 'Kein Platten-Ausschnitt zur specimen_id {{id}} — Sidecar prüfen.',
+    // A sample from a FOREIGN writer's plate (the Abb.-22 Schülerschrift). It
+    // may stand in this hand's detail as context, but the chip has to say so
+    // where the reader looks — never only in the tooltip, because „zählt nicht
+    // mit" is a decision, not a detail.
+    foreignSetChip: 'andere Hand · {{set}}',
+    foreignSetHint:
+      'Diese Wortprobe stammt aus einem anderen Satz der Vorlage und damit von einer anderen Hand. Sie steht hier als Kontext — in keine Statistik und in keine Kopfzahl dieser Hand geht sie ein, und nachgefahren wird sie hier nicht.',
+    // The head of the word detail counts the foreign samples under their own
+    // name. Folding them into „n Wortproben" would put another writer into this
+    // hand's numbers; leaving them out silently would make the head disagree
+    // with the cards below it. One form for both counts — the phrase does not
+    // inflect with the number.
+    foreignCount: '{{count}} von anderer Hand',
     // The two faces of a word card: left what was MEASURED, right what the
     // engine writes from it — same scale, same Grundlinie, so „trifft der Fit?"
     // und „was macht das System daraus?" nebeneinander lesbar sind.
