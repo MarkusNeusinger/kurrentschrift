@@ -27,11 +27,12 @@ import { LIST_VIEWS, PAGE_ALL, pageCount, type ListPage, type ListView } from '@
 import { TOUCH_TARGET } from '@/styles/hitArea';
 
 /** What one filter chip offers: its token, its German label and how many rows
- * it would select ON ITS OWN. */
+ * it would select ON ITS OWN — `null` while the read behind it has not
+ * answered, so the chip carries no number rather than a „0" it cannot back. */
 export type FilterChipModel = {
   token: string;
   label: string;
-  count: number;
+  count: number | null;
   active: boolean;
 };
 
@@ -87,7 +88,7 @@ export function FilterChipRow({
           color={chip.active ? 'primary' : 'default'}
           variant={chip.active ? 'filled' : 'outlined'}
           onClick={() => onToggle(chip.token)}
-          label={`${chip.active ? '✓ ' : ''}${chip.label} · ${chip.count}`}
+          label={`${chip.active ? '✓ ' : ''}${chip.label}${chip.count === null ? '' : ` · ${chip.count}`}`}
           sx={{ ...target, borderRadius: `${TOUCH_TARGET / 2}px`, flex: '0 0 auto', scrollSnapAlign: 'start' }}
         />
       ))}
@@ -170,7 +171,7 @@ export function ListPager({
   onChange: (page: ListPage) => void;
 }) {
   const t = de.admin.liste;
-  const count = pageCount(total, 1);
+  const count = pageCount(total);
   if (count <= 1) return null;
   const pages = Array.from({ length: count }, (_, i) => i + 1);
   return (

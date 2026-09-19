@@ -14,7 +14,7 @@
 // layer's occurrences, the admin context's bboxes and template rows, the
 // basket's own read. This surface adds no request of its own.
 
-import { Box, Button, Chip, Typography } from '@mui/material';
+import { Box, Button, Chip, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 
 import type { AggregateOut, InstanceOut } from '@/lib/api';
@@ -87,12 +87,16 @@ export function LetterList({
             chips={
               <>
                 {/* The score first — it is what „Schlechteste zuerst" sorts by.
-                    `null` after the read answered means this form carries none;
-                    saying so is an answer, an empty space is not. */}
-                {row.score !== null ? (
+                    Three states, not two, exactly as the card keeps them: while
+                    the admin read is in flight the row says NOTHING, and only
+                    once it has answered is „kein Score" a claim about this
+                    form rather than about the read. */}
+                {!row.scoreKnown ? null : row.score !== null ? (
                   <ScoreChip score={row.score} title={de.admin.compare.scoreHint} />
                 ) : (
-                  <Chip size="small" variant="outlined" label={de.admin.compare.scoreNone} />
+                  <Tooltip title={de.admin.compare.scoreNoneHint} describeChild>
+                    <Chip size="small" variant="outlined" label={de.admin.compare.scoreNone} />
+                  </Tooltip>
                 )}
                 {row.locked && <Chip size="small" variant="outlined" label={t.stateLocked} />}
                 {/* Both directions are stated, because a missing chip would
@@ -138,8 +142,14 @@ export function LetterList({
             subline={row.quality ? <ScoreBreakdownInline quality={row.quality} /> : undefined}
           >
             {/* No frame and no header of its own — the row around it already
-                carries the letter, its key, its chips and the way in. */}
+                carries the letter, its key, its chips and the way in.
+
+                Keyed like the gallery's card (`GlyphComparison.tsx`): the
+                per-card „this letter has no Laufform" answer is a one-way flag,
+                so a re-derive or „Neu laden" has to throw the instance away
+                rather than leave an open row asserting the old answer. */}
             <CompareCard
+              key={`${row.glyphKey}:${cropCacheBust}:${reloadKey}`}
               glyphKey={row.glyphKey}
               letterGlyph={row.letterGlyph}
               sourceId={sourceId}

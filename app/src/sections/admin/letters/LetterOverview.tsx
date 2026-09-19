@@ -13,7 +13,7 @@
 
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { Box, Button, FormControlLabel, Switch, Typography } from '@mui/material';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { useAdmin } from '@/context/adminState';
@@ -45,6 +45,9 @@ export function LetterOverview({ onPick }: { onPick: (glyphKey: string) => void 
   const workbench = useWorkbench();
   const korbItems = useKorbItems();
   const t = de.admin.liste;
+
+  // Where a page change scrolls back to.
+  const topRef = useRef<HTMLDivElement | null>(null);
 
   const [reloadKey, setReloadKey] = useState(0);
   // „Überlagern" is a rendering mode of the tile, not work-list state — it
@@ -95,7 +98,11 @@ export function LetterOverview({ onPick }: { onPick: (glyphKey: string) => void 
     };
   }, [sourceId, cropCacheBust, reloadKey]);
 
-  const state = readListState<LetterFilter, LetterSort>(params, LETTER_LIST_SPEC);
+  // Memoised on the params object, which `useSearchParams` keeps stable per
+  // location: `readListState` builds a fresh `filters` array, and an unmemoised
+  // one would make every memo below it recompute on every render — and with
+  // them the `tiles` array the gallery's batch prefetch is keyed on.
+  const state = useMemo(() => readListState<LetterFilter, LetterSort>(params, LETTER_LIST_SPEC), [params]);
   // List state REPLACES, so the back button keeps walking the inspection
   // history `focus.ts` promises instead of a log of every filter click. The
   // subject still pushes — that is a different question and a different hop.
@@ -135,6 +142,22 @@ export function LetterOverview({ onPick }: { onPick: (glyphKey: string) => void 
   );
   const page = clampPage(state.page, selected.length);
   const shown = useMemo(() => pageSlice(selected, state.page), [selected, state.page]);
+  // Memoised because the gallery's batch prefetch lists it in its effect deps —
+  // a fresh array per render would re-run the effect on every overlay toggle.
+  const tiles = useMemo(
+    () => shown.map((row) => ({ key: row.glyphKey, letterGlyph: row.letterGlyph, quality: row.quality })),
+    [shown],
+  );
+
+  // A page the selection cannot fill is corrected at render time — and the URL
+  // is corrected with it, or a shared link would describe a page the view is
+  // not on. Only once the selection HAS rows: before the first read it is empty
+  // for everyone, and rewriting then would eat a deep link's `seite=`.
+  useEffect(() => {
+    if (selected.length > 0 && page !== state.page) {
+      setParams(writeListState(params, { page }, LETTER_LIST_SPEC), { replace: true });
+    }
+  }, [selected.length, page, state.page, params, setParams]);
 
   // The statistics layer on top of the occurrences is admin-gated and loads on
   // its own: while it is in flight, has no hand to key on or came back 401, an
@@ -188,7 +211,7 @@ export function LetterOverview({ onPick }: { onPick: (glyphKey: string) => void 
   return (
     // No own page padding/scroll container: since the redesign this block sits
     // inside the Buchstaben view, which owns both.
-    <Box>
+    <Box ref={topRef}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
         <FilterChipRow chips={filterChips} onToggle={toggleFilter} label={t.filterLabel} />
         <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
@@ -208,7 +231,12 @@ export function LetterOverview({ onPick }: { onPick: (glyphKey: string) => void 
           />
           <ListViewSwitch view={state.view} onChange={(view) => update({ view })} />
           <Typography variant="caption" color="text.secondary">
-            {fmt(t.counter, { shown: shown.length, total: rows.length })}
+            {/* With a filter on, the page size is the wrong number: „24 von 63"
+                says nothing about how many rows the chips actually selected,
+                and the per-chip counts deliberately cannot answer it either. */}
+            {state.filters.length > 0
+              ? fmt(t.counterFiltered, { shown: shown.length, selected: selected.length, total: rows.length })
+              : fmt(t.counter, { shown: shown.length, total: rows.length })}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: { sm: 'auto' } }}>
             <FormControlLabel
@@ -268,7 +296,7 @@ export function LetterOverview({ onPick }: { onPick: (glyphKey: string) => void 
         />
       ) : (
         <GlyphComparison
-          tiles={shown.map((row) => ({ key: row.glyphKey, letterGlyph: row.letterGlyph, quality: row.quality }))}
+          tiles={tiles}
           sourceId={sourceId}
           cropCacheBust={cropCacheBust}
           reloadKey={reloadKey}
@@ -284,7 +312,18 @@ export function LetterOverview({ onPick }: { onPick: (glyphKey: string) => void 
       )}
 
       <Box sx={{ mt: 2 }}>
-        <ListPager page={page} total={selected.length} onChange={(next) => update({ page: next })} />
+        {/* The pager sits under the list, so a page change has to take the
+            reader back up with it: consecutive pages are near-identical in
+            height, and `scrollTop` would survive the swap intact — page 2 would
+            open at its LAST row. */}
+        <ListPager
+          page={page}
+          total={selected.length}
+          onChange={(next) => {
+            update({ page: next });
+            topRef.current?.scrollIntoView?.({ block: 'start' });
+          }}
+        />
       </Box>
     </Box>
   );

@@ -11,10 +11,15 @@
 // (admin-redesign.md §5.1 Idee 4 writes them out):
 // `?ansicht=liste|galerie&filter=&sort=&seite=`.
 //
-// One reader, MANY vocabularies: `ansicht` also names the Eigenhand page's
-// sub-view, and each overview has its own filter and sort tokens. So the reader
-// is always handed a `ListSpec` and validates against THAT — never against a
-// global union of every token any view knows.
+// One reader, MANY vocabularies: each overview has its own filter and sort
+// tokens, and `ansicht` may yet take a third mode on a later surface. So the
+// reader is always handed a `ListSpec` and validates against THAT — never
+// against a global union of every token any view knows.
+//
+// `ansicht` is the DISPLAY MODE and nothing else (author decision Q1 c of
+// 2026-09-19). A page's sub-view is `reiter` — the Eigenhand page's four tabs,
+// the Wörter overview's — and the two words never stand for each other, which
+// is why this module owns one of them and knows nothing about the other.
 //
 // Pure functions only; the views call them from their `useSearchParams` pair.
 
@@ -128,9 +133,10 @@ export function writeListState<F extends string, S extends string>(
   return out;
 }
 
-/** How many pages `total` rows fill — at least one, so an empty list has a page. */
-export const pageCount = (total: number, page: ListPage = 1): number =>
-  page === PAGE_ALL ? 1 : Math.max(1, Math.ceil(total / PAGE_SIZE));
+/** How many pages `total` rows fill — at least one, so an empty list has a page.
+ * A count of the LIST, not of a state: „alle zeigen" is a choice among these
+ * pages, so it does not change how many there are. */
+export const pageCount = (total: number): number => Math.max(1, Math.ceil(total / PAGE_SIZE));
 
 /**
  * The page actually shown. A filter that shrinks the list must not leave the

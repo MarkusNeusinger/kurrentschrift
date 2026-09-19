@@ -46,6 +46,11 @@ export type LetterRow = {
   hasLaufform: boolean;
   // null = the occurrence layer has not answered (loading, or failed).
   occurrences: number | null;
+  // Has the admin score read answered AT ALL? False while it is in flight —
+  // without it `score: null` would mean two different things, and the row would
+  // print „kein Score" about a read that has not landed (`CompareCard` keeps
+  // the same two states apart as `undefined` vs `null`).
+  scoreKnown: boolean;
   // null = the score read answered and this row carries none, or it 401'd.
   score: number | null;
   quality: QualityData | null;
@@ -84,6 +89,7 @@ export function buildLetterRows(input: LetterRowInput): LetterRow[] {
       locked: input.bboxesByKey[glyphKey]?.locked === true,
       hasLaufform: input.laufformKeys.has(glyphKey),
       occurrences: input.occurrencesKnown ? (input.instancesByKey.get(glyphKey)?.length ?? 0) : null,
+      scoreKnown: input.quality !== null,
       score: quality?.score ?? null,
       quality,
       korbOpen: input.korbByGlyph === null ? null : (input.korbByGlyph.get(glyphKey) ?? 0),
@@ -112,10 +118,24 @@ export const matchesLetterFilters = (row: LetterRow, filters: readonly LetterFil
  * How many rows EACH chip would select on its own — the number on the chip.
  * Deliberately not „how many would remain beside the other ticked chips": a
  * count that changes with the neighbours cannot be read as „so viele gibt es".
+ *
+ * `null` where the chip's own fact is not in yet. Two of the four rest on reads
+ * that may still be in flight, and `matchesLetterFilter` answers false for an
+ * unknown — which would put a „· 0" on the chip while the rows below it say
+ * „Vorkommen werden geladen …". A missing number is the honest half of the same
+ * rule that keeps the rows from printing one.
  */
-export function letterFilterCounts(rows: LetterRow[]): Record<LetterFilter, number> {
-  const counts = {} as Record<LetterFilter, number>;
-  for (const filter of LETTER_FILTERS) counts[filter] = rows.filter((row) => matchesLetterFilter(row, filter)).length;
+export function letterFilterCounts(rows: LetterRow[]): Record<LetterFilter, number | null> {
+  const unknown: Record<LetterFilter, boolean> = {
+    gesperrt: false,
+    'ohne-laufform': false,
+    'ohne-vorkommen': rows.some((row) => row.occurrences === null),
+    'mit-korb': rows.some((row) => row.korbOpen === null),
+  };
+  const counts = {} as Record<LetterFilter, number | null>;
+  for (const filter of LETTER_FILTERS) {
+    counts[filter] = unknown[filter] ? null : rows.filter((row) => matchesLetterFilter(row, filter)).length;
+  }
   return counts;
 }
 

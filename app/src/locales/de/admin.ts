@@ -69,9 +69,13 @@ export const admin = {
     viewList: 'Liste',
     viewGallery: 'Galerie',
     filterLabel: 'Filter',
-    // Wie viel von wie viel gerade auf dem Schirm steht — die Zahl, an der eine
-    // Filterwahl abzulesen ist, bevor man die Liste durchsieht.
+    // Wie viel von wie viel gerade auf dem Schirm steht.
     counter: '{{shown}} von {{total}}',
+    // Sobald gefiltert ist, ist „wie viele passen zu dieser Auswahl?" die
+    // Frage — und die Seitenzahl beantwortet sie nicht: 30 gewählte Zeilen
+    // stünden sonst als „24 von 63" da. Die Chip-Zahlen können es auch nicht,
+    // die zählen bewusst jeder für sich.
+    counterFiltered: '{{shown}} von {{selected}} gewählten · {{total}} insgesamt',
     pagerLabel: 'Seiten',
     pageAria: 'Seite {{n}}',
     pageAll: 'alle zeigen',

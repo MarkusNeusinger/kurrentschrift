@@ -7,9 +7,12 @@
   row expands in place to the same four faces the card wall showed, and
   `?ansicht=galerie` brings that wall back as the opt-in. Measured on a
   throwaway stack with 31 letters, the page fell from 10 451 px and 31 images
-  to 3 480 px and none. Filter chips (combined with AND, each carrying its own
-  count), the sort and pages of 24 with „alle zeigen" all write into the query
-  string — `?ansicht=liste|galerie&filter=&sort=&seite=` — because the state
+  to 3 480 px and none. Nothing on the surface turns a missing read into a
+  number: a chip whose own read has not answered carries no count, and „kein
+  Score" waits for the score read rather than describing one that is still in
+  flight. Filter chips (combined with AND, each count saying how many rows that
+  chip alone would select), the sort and pages of 24 with „alle zeigen" all
+  write into the query string — `?ansicht=liste|galerie&filter=&sort=&seite=` — because the state
   of a list is what a link to it has to carry, and `localStorage` cannot
   travel to another device. A new pure module `shell/listState.ts` owns those
   four names and preserves every other parameter untouched, so the subject

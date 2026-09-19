@@ -31,6 +31,7 @@ const row = (glyphKey: string, letterGlyph: string, over: Partial<LetterRow> = {
   locked: false,
   hasLaufform: false,
   occurrences: 3,
+  scoreKnown: true,
   score: 81.4,
   quality: null,
   korbOpen: 0,
@@ -115,9 +116,16 @@ it('says both whether a Laufform is there and whether it is missing', () => {
 });
 
 it('prints no number for a read that has not answered', () => {
-  render([row('a', 'a', { occurrences: null, score: null, korbOpen: null })]);
+  render([row('a', 'a', { occurrences: null, scoreKnown: false, score: null, korbOpen: null })]);
   expect(container.textContent).toContain('Vorkommen werden geladen');
-  expect(container.textContent).toContain('kein Score');
   expect(container.textContent).not.toContain('0 Vorkommen');
   expect(container.textContent).not.toContain('im Korb');
+  // „kein Score" is a claim about the FORM, so it waits for the read that can
+  // support it — the same three states the card keeps apart.
+  expect(container.textContent).not.toContain('kein Score');
+});
+
+it('says „kein Score" only once the score read has answered', () => {
+  render([row('a', 'a', { scoreKnown: true, score: null })]);
+  expect(container.textContent).toContain('kein Score');
 });

@@ -525,6 +525,19 @@ WIDEST = {
 # paragraph and the §7 rows tightened) and lands at +1 508 proxy tokens for the
 # whole doc; the numbers themselves live in `app/src/styles/paper.test.ts`, not
 # here. Re-measured at 16 162, plus the documented 10 %.
+#
+# `werkbank` (5 166 → 5 786) raised 2026-09-19 by the Buchstaben-Arbeitsliste.
+# The path carries `frontend-stack.md` §2 „für die Admin-Routen", and §2 is the
+# route MAP: a route that gains four URL parameters and turns its overview from
+# a card wall into a work list has to change its row there, or the map stops
+# being one. The path stood at FIFTEEN tokens of room — the Eigenhand
+# `?reiter=`-Split of the same day (#622) had grown the neighbouring row — so
+# no wording of this change could have passed. The row was cut first, three
+# times: the per-parameter value lists, the „unbekannte Werte fallen zurück"
+# rule and the module names all moved to the glossary entry „Arbeitsliste",
+# which no reading path carries whole, leaving the row +338 characters for a
+# route whose behaviour changed completely. Re-measured at 5 260, plus the
+# documented 10 %.
 BUDGETS: dict[str, int] = {
     "mandatory": 67_091,
     "mess-runde": 43_761,
@@ -533,7 +546,7 @@ BUDGETS: dict[str, int] = {
     "glyph-optimierung": 8_504,
     "komposition": 10_756,
     "frontend": 17_778,
-    "werkbank": 5_166,
+    "werkbank": 5_786,
     "werkzeug": 713,
     # Raised 2026-09-07 by „Kette R3 Zwei-Züge-Modell": the path is „the one
     # tool your change is about", and its widest section is the bench/lab

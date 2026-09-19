@@ -72,6 +72,14 @@ describe('building the rows', () => {
     expect(rows[0].korbOpen).toBeNull();
   });
 
+  it('keeps „the score read has not landed" apart from „this form carries none"', () => {
+    // Both give `score: null`, and only one of them may be shown as „kein
+    // Score" — a list that said it while the admin read was still in flight
+    // would make the claim the module's own rule forbids.
+    expect(buildLetterRows(input({ quality: null }))[0].scoreKnown).toBe(false);
+    expect(buildLetterRows(input({ quality: new Map() }))[0].scoreKnown).toBe(true);
+  });
+
   it('counts an answered read, including the honest zero', () => {
     const rows = buildLetterRows(
       input({
@@ -120,8 +128,20 @@ describe('the four filters', () => {
       'ohne-vorkommen': 2,
       'mit-korb': 1,
     });
-    // Every declared chip has a count — a chip with no number would look broken.
+    // Every declared chip has an entry — a chip missing from the record would
+    // be a renamed token shipping as a chip that can never match.
     expect(Object.keys(letterFilterCounts(rows)).sort()).toEqual([...LETTER_FILTERS].sort());
+  });
+
+  it('carries no number on a chip whose own read has not answered', () => {
+    // „ohne Vorkommen · 0" beside rows that say „Vorkommen werden geladen …"
+    // is the zero the row model refuses one line lower; the two chips that rest
+    // on always-known facts keep their number.
+    const counts = letterFilterCounts(buildLetterRows(input({ occurrencesKnown: false, korbByGlyph: null })));
+    expect(counts['ohne-vorkommen']).toBeNull();
+    expect(counts['mit-korb']).toBeNull();
+    expect(counts.gesperrt).toBe(0);
+    expect(counts['ohne-laufform']).toBe(3);
   });
 
   it('never selects „ohne Vorkommen" on a read that has not answered', () => {
