@@ -11,11 +11,11 @@ import { useState } from 'react';
 
 import { fetchEigenhandSheetPdf, fetchEigenhandStackPdf, printEigenhandSheets } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
-import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { Panel } from '@/sections/admin/shell/Panel';
+import { paper } from '@/styles/paper';
 
 export function DruckenView({
   hand,
@@ -130,9 +130,14 @@ export function DruckenView({
                 </Button>
               ))}
           </Stack>
-          <Box sx={{ mt: 1.5 }}>
-            <TerminalCommand lead={t.localHint} command={fmt(t.localHintCommand, { hand, sheet: printed[0] })} />
-          </Box>
+          {/* The `pull` of the Bogen just printed used to stand here as a
+              copyable command — and only here, which meant it was gone after a
+              reload, while the Bogen itself stayed outstanding for days. The
+              step is a state now (`bogen_pull`), so it lives on the Bestand as
+              an Übergabekarte and survives the reload; this line says where. */}
+          <Typography variant="caption" sx={{ display: 'block', mt: 1.5, color: paper.inkSoft }}>
+            {t.printedNext}
+          </Typography>
         </Box>
       )}
     </Panel>

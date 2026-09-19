@@ -21,8 +21,18 @@ rewrite list, weakest first. Nothing here changes a verdict — the tick on the
 paper stays the judgement, and a Fassung leaves the training data only through
 an explicit `redo --retire`.
 
+``--faellig`` is the odd one out and deliberately so: it is the terminal twin
+of the admin's Übergabekarten, and the whole point of a due list is „what has
+not reached the server yet". Read locally it would always look done — the
+weight file is on disk, every strip image is on disk — so this ONE mode asks
+the server (``GET /eigenhand/bestand/{hand}``, through the same admin client
+`pull`/`sync`/`setup` use) and prints the commands the SERVER says are due, in
+the order ``core.eigenhand.faellig`` puts them in. One rule set, two surfaces.
+Every other mode stays fully offline and makes no HTTP call at all.
+
     uv run python -m tools.eigenhand.report --hand mn-suetterlin
     uv run python -m tools.eigenhand.report --hand mn-suetterlin --befund
+    ADMIN_TOKEN=… uv run python -m tools.eigenhand.report --hand mn-suetterlin --faellig
 """
 
 from __future__ import annotations
@@ -34,6 +44,7 @@ from core.eigenhand.bestand import ist_counts, quoten
 from core.eigenhand.bogen import select_strips
 from core.eigenhand.plan import load_plan
 from core.landmarks import PLATE_PEN_HALF_WIDTH_UNITS
+from tools.eigenhand.apiclient import admin_token, api_base, request_json
 from tools.eigenhand.kartei import accepted_fassungen, load_kartei
 from tools.eigenhand.pool import soll_model
 from tools.eigenhand.universe import load_universe
@@ -74,6 +85,29 @@ def print_befunde(kartei: dict, limit: int) -> None:
         print(f"  {strip} {fassung}: {row.grund} ({row.vorschlag}, Güte {row.guete:.1f})")
 
 
+def print_faellig(hand: str, api: str | None, token: str | None) -> int:
+    """The server's due local steps, one command per line, in chain order.
+
+    Nothing is derived here: the rules live in `core.eigenhand.faellig` and run
+    where the state is, so this print and the admin's Übergabekarten can only
+    ever say the same thing. A hand with nothing due says so — an empty list is
+    an answer, not a missing one.
+    """
+    data = request_json("GET", f"{api_base(api)}/eigenhand/bestand/{hand}", admin_token(token)) or {}
+    # An API that predates the field is not a hand with nothing due: defaulting
+    # would print „nichts fällig" at exactly the moment the answer is unknown.
+    if "faellig" not in data:
+        raise SystemExit(f"{api_base(api)} does not report a due list yet — update the deployment")
+    rows = data["faellig"]
+    if not rows:
+        print(f"{hand}: nichts fällig — der Server sieht keinen offenen lokalen Schritt.")
+        return 0
+    print(f"{hand}: {len(rows)} {'fälliger Schritt' if len(rows) == 1 else 'fällige Schritte'}, in dieser Reihenfolge:")
+    for row in rows:
+        print(f"  {row['befehl']}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     ap.add_argument("--hand", required=True)
@@ -84,7 +118,17 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="print the Streifen-Befund per Fassung and the rewrite list instead of the Soll/Ist tables",
     )
+    ap.add_argument(
+        "--faellig",
+        action="store_true",
+        help="ask the SERVER which local steps are due and print their commands in order (the only mode that reads the API)",
+    )
+    ap.add_argument("--api", help="API base URL (default: $EIGENHAND_API, else production) — with --faellig")
+    ap.add_argument("--token", help="admin token (default: $ADMIN_TOKEN) — with --faellig")
     args = ap.parse_args(argv)
+
+    if args.faellig:
+        return print_faellig(args.hand, args.api, args.token)
 
     if args.befund:
         kartei = load_kartei(args.hand)

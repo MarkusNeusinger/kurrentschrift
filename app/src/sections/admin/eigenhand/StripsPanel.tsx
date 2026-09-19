@@ -70,7 +70,8 @@ import { VORSCHLAG_COLOR, byBefund } from '@/sections/admin/eigenhand/befundOrde
 import { FleckenEditor, MIN_ERASE_ZOOM } from '@/sections/admin/eigenhand/FleckenEditor';
 import { herkunftChipLabel, pfadHerkunft } from '@/sections/admin/eigenhand/pfadHerkunft';
 import { pfadRohzahlen } from '@/sections/admin/eigenhand/pfadRohzahlen';
-import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
+import { bahnKarte } from '@/sections/admin/eigenhand/uebergabe';
+import { Uebergabekarte } from '@/sections/admin/eigenhand/Uebergabekarte';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { Panel } from '@/sections/admin/shell/Panel';
 import { PathOverlay } from '@/sections/admin/shell/PathOverlay';
@@ -757,17 +758,30 @@ function StripTile({
                   without a box rectangle is a fourth, where even a stored path
                   cannot be placed. A silent picture would make all four look
                   alike. */}
-              {!pfade.loading && !pfade.error && (!placeable || drawn.length === 0) && (
-                <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: paper.inkSoft }}>
-                  {!placeable
-                    ? t.pfadNoBox
-                    : pfade.pfade === null
-                      ? t.pfadNone
-                      : pfade.pfade.length === 0
-                        ? t.pfadEmpty
-                        : t.pfadNotInBox}
-                </Typography>
-              )}
+              {/* „Nobody has followed this Fassung" is the one of the four
+                  that has a local STEP behind it, so it is the one that gets a
+                  card instead of a sentence — with the real strip and Fassung
+                  in the command, where the old running text had „…". The card
+                  is built here rather than server-side because Phase 1 has no
+                  read that says hand-wide which Fassung carries a Bahn (the
+                  listing defers `pfade`); in the open Fassung the answer is
+                  already loaded. */}
+              {!pfade.loading &&
+                !pfade.error &&
+                (!placeable || drawn.length === 0) &&
+                (!placeable ? (
+                  <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: paper.inkSoft }}>
+                    {t.pfadNoBox}
+                  </Typography>
+                ) : pfade.pfade === null ? (
+                  <Box sx={{ mt: 0.5 }}>
+                    <Uebergabekarte karte={bahnKarte(hand, row.strip, row.fassung)} />
+                  </Box>
+                ) : (
+                  <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: paper.inkSoft }}>
+                    {pfade.pfade.length === 0 ? t.pfadEmpty : t.pfadNotInBox}
+                  </Typography>
+                ))}
               {pfade.error && (
                 <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: 'warning.main' }}>
                   {t.pfadError} {pfade.error.sentence}
@@ -1146,11 +1160,14 @@ export function StripsPanel({
         </Alert>
       )}
 
+      {/* The empty state says WHICH emptiness this is and where the step
+          stands. The command itself is no longer copied here: „no strips at
+          all" was all-or-nothing, while the Übergabekarte on the Bestand knows
+          how many Fassungen still owe their image. */}
       {!loading && !error && strips.length === 0 && (
-        <TerminalCommand
-          lead={filtered ? fmt(t.stripBelegeEmpty, { hand }) : t.stripImagesEmpty}
-          command={fmt(t.syncCommand, { hand })}
-        />
+        <Typography variant="caption" sx={{ display: 'block', color: paper.inkSoft }}>
+          {filtered ? t.stripBelegeEmpty : t.stripImagesEmpty}
+        </Typography>
       )}
 
       {filtered ? (

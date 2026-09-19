@@ -19,6 +19,8 @@ import { glyphOf } from '@/sections/admin/eigenhand/coverageLabels';
 import { SetupPanel } from '@/sections/admin/eigenhand/SetupPanel';
 import { Stat } from '@/sections/admin/eigenhand/Stat';
 import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
+import { rechnerBefehl, uebergabeKarten } from '@/sections/admin/eigenhand/uebergabe';
+import { Uebergabekarte } from '@/sections/admin/eigenhand/Uebergabekarte';
 import { Panel } from '@/sections/admin/shell/Panel';
 import { paper } from '@/styles/paper';
 
@@ -110,6 +112,7 @@ export function BestandView({
   bestand,
   labelOf,
   onShowBelege,
+  onSetupSaved,
 }: {
   hand: string;
   bestand: EigenhandBestand;
@@ -117,6 +120,8 @@ export function BestandView({
   labelOf: (item: string) => string;
   /** Opens the written evidence for one item, which now means: go to `streifen`. */
   onShowBelege: (item: string) => void;
+  /** A saved setup changes the due list, so the shell re-reads the Bestand. */
+  onSetupSaved?: (forHand: string) => void;
 }) {
   const t = de.admin.eigenhand;
   const [openOnly, setOpenOnly] = useState(true);
@@ -126,9 +131,16 @@ export function BestandView({
     [bestand, openOnly],
   );
 
+  // The due local steps, in the server's order. An empty list renders NOTHING —
+  // the panel with its headline would otherwise say „next up at the machine"
+  // over an empty box on every hand that is up to date. The `?? []` is for the
+  // deploy window, where the new bundle can be served by an API that predates
+  // the field: no block beats a crashed sub-view.
+  const karten = useMemo(() => uebergabeKarten(bestand.faellig ?? []), [bestand.faellig]);
+
   return (
     <Stack spacing={3}>
-      <SetupPanel hand={hand} />
+      <SetupPanel hand={hand} onSaved={onSetupSaved} />
 
       <Panel title={t.stripsTitle} caption={t.queueTitle}>
         <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', rowGap: 2 }}>
@@ -146,6 +158,25 @@ export function BestandView({
           ))}
         </Box>
       </Panel>
+
+      {karten.length > 0 && (
+        <Panel title={t.uebergabe.title} caption={t.uebergabe.caption}>
+          <Stack spacing={1.5}>
+            {karten.map((karte) => (
+              <Uebergabekarte key={karte.id} karte={karte} />
+            ))}
+            {/* The twin, once under the block rather than on every card: the
+                clipboard does not reach from the tablet to the machine, so the
+                one command that prints this very list there is meant to be
+                READ and typed — no copy button, and no promise that a card
+                built in the browser would appear in its output. It still goes
+                through TerminalCommand: a command to be TYPED belongs on its
+                own line in mono at body2, never inside a 14 px sentence
+                (design-system.md §3, §7). */}
+            <TerminalCommand lead={t.uebergabe.rechnerLead} command={rechnerBefehl(hand)} copy={false} />
+          </Stack>
+        </Panel>
+      )}
 
       <Panel
         title={t.coverageTitle}
@@ -204,7 +235,12 @@ export function BestandView({
             />
           </Stack>
         ) : (
-          <TerminalCommand lead={fmt(t.quotenNone, { hand })} command={t.quotenNoneCommand} />
+          /* The state, not the command: the step itself stands once, as the
+             `universe_push` card above. Saying it twice was how the same
+             sentence started drifting in two places. */
+          <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+            {t.quotenNone}
+          </Typography>
         )}
       </Panel>
     </Stack>
