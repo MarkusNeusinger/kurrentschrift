@@ -762,6 +762,24 @@ export const admin = {
     korbDelete: 'Auftrag löschen',
     korbLoadError: 'Aufträge konnten nicht geladen werden (Admin-Zugang nötig).',
     korbDeleteError: 'Löschen fehlgeschlagen — der Auftrag liegt weiter im Korb.',
+    // The three selects over the loaded rows. „Status" reuses the short words
+    // below rather than the group headings, which are sentences. Choosing
+    // „Erledigt" also reveals the archive — otherwise the filter would visibly
+    // select nothing while the switch is off.
+    korbFilterStatus: 'Status',
+    korbFilterKind: 'Ebene',
+    korbFilterStage: 'Stufe',
+    korbFilterAll: 'alle',
+    korbStatusShort: {
+      open: 'Offen',
+      ack: 'In Arbeit',
+      done: 'Erledigt',
+      returned: 'Zurückgegeben',
+    },
+    korbNoMatch: 'Kein Auftrag passt zu diesem Filter.',
+    // Only shown while the archive really is hidden: most rows that carry a
+    // Stufe are erledigt, so without this line a Stufen-Filter reads as broken.
+    korbNoMatchDone: 'Erledigte sind ausgeblendet — „erledigte anzeigen“ einschalten.',
     // Deleting is irreversible and there is no undo, so it gets a question
     // first — and an erledigter Auftrag gets a second sentence, because with it
     // the whole handling record (Verstandenes · Stufe · Auflösung) goes.
