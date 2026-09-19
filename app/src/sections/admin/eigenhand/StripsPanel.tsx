@@ -62,12 +62,14 @@ import type {
   EigenhandStripBox,
   EigenhandStripFilter,
 } from '@/lib/api';
+import { InfoHint } from '@/components/InfoHint';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
 import { VORSCHLAG_COLOR, byBefund } from '@/sections/admin/eigenhand/befundOrder';
 import { FleckenEditor, MIN_ERASE_ZOOM } from '@/sections/admin/eigenhand/FleckenEditor';
 import { pfadHerkunft } from '@/sections/admin/eigenhand/pfadHerkunft';
+import { pfadRohzahlen } from '@/sections/admin/eigenhand/pfadRohzahlen';
 import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { Panel } from '@/sections/admin/shell/Panel';
@@ -360,8 +362,110 @@ interface LupeTarget {
   heightPx: number;
 }
 
+// „No reading here" — one dash for the whole panel, so a missing measurement
+// never has to borrow a zero to have something to show.
+const NO_READING = '–';
+
 function num(value: unknown, digits = 1): string {
-  return typeof value === 'number' ? value.toFixed(digits) : '–';
+  return typeof value === 'number' ? value.toFixed(digits) : NO_READING;
+}
+
+/** A counted sensor as its chip label; a sensor that was not counted reads as the panel's dash. */
+function countLabel(value: number | null): string {
+  return value === null ? NO_READING : String(value);
+}
+
+/**
+ * The stored sensors of the drawn word boxes as plain numbers — the Etikett
+ * „Zahl, kein Urteil" is part of the block, because the Tintentreue traffic
+ * light lands in exactly this place later and the two must never be confused
+ * (admin-redesign.md V26).
+ *
+ * One line per Kasten: a Fassung's boxes are followed one by one, so the row's
+ * weakest word is precisely what these numbers are read for — an average over
+ * the row would hide it. Nothing here is coloured and nothing is judged; an
+ * unmeasured Bahn says so rather than showing four zeros.
+ *
+ * `showBox` prefixes each line with its cut. Over a WHOLE strip that prefix is
+ * the only thing that tells the lines apart, and it carries the box INDEX, not
+ * just the word: eight rows of the frozen plan hold the same word twice
+ * (`ja!`, `„wohl“`, `Übung` …), so two word-only prefixes would be identical
+ * and neither reading could be assigned. The index is the one `--box` of
+ * `tools.eigenhand.pfad` takes, so a bad reading can be re-followed straight
+ * from what the chip says.
+ */
+function PfadRohzahlenChips({ pfade, showBox }: { pfade: EigenhandPfad[]; showBox: boolean }) {
+  const t = de.admin.eigenhand;
+  return (
+    <Box sx={{ mt: 0.5 }}>
+      <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}>
+        <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+          {t.pfadRohzahlen}
+        </Typography>
+        <InfoHint title={t.pfadRohzahlen}>{t.pfadRohzahlenHint}</InfoHint>
+      </Stack>
+      {pfade.map((pfad) => {
+        const readings = pfadRohzahlen(pfad);
+        return (
+          <Stack
+            key={pfad.box_index}
+            direction="row"
+            spacing={0.5}
+            sx={{ mt: 0.5, alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}
+          >
+            {showBox && (
+              <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+                {fmt(t.pfadRohzahlenBox, { nr: pfad.box_index, wort: pfad.word })}
+              </Typography>
+            )}
+            {readings.measured ? (
+              <>
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={
+                    readings.inkUnvisitedShare === null
+                      ? t.pfadRohzahlenUnvisitedNone
+                      : // One decimal at most. The follower rounds the share to
+                        // three places, so `0.001` is a real reading — at whole
+                        // percent it would print as the „0 %" that only a Bahn
+                        // covering all the ink earns, and this whole block
+                        // exists to keep a measured zero apart from everything
+                        // that merely looks like one. A round value keeps its
+                        // clean form (21 %), German decimal comma.
+                        fmt(t.pfadRohzahlenUnvisited, {
+                          prozent: (readings.inkUnvisitedShare * 100).toLocaleString('de-DE', {
+                            maximumFractionDigits: 1,
+                          }),
+                        })
+                  }
+                />
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={fmt(t.pfadRohzahlenLifts, { zahl: countLabel(readings.paperLifts) })}
+                />
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={fmt(t.pfadRohzahlenJumps, { zahl: countLabel(readings.jumps) })}
+                />
+                <Chip
+                  size="small"
+                  variant="outlined"
+                  label={fmt(t.pfadRohzahlenHairpins, { zahl: countLabel(readings.hairpins) })}
+                />
+              </>
+            ) : (
+              <Tooltip title={t.pfadRohzahlenNoneHint}>
+                <Chip size="small" variant="outlined" label={t.pfadRohzahlenNone} />
+              </Tooltip>
+            )}
+          </Stack>
+        );
+      })}
+    </Box>
+  );
 }
 
 /**
@@ -623,6 +727,16 @@ function StripTile({
             <>
               {pfade.loading && <CircularProgress size={12} sx={{ mt: 1 }} />}
               {drawn.length > 0 && placeable && <PfadCaption pfade={drawn} flecken={row.flecken} />}
+              {/* NOT gated by `placeable`: the numbers were measured on the
+                  strip and need no cut geometry, while the overlay does. A box
+                  from a Bogen printed before the cut rectangles existed can
+                  show its reading even though its path cannot be drawn — the
+                  „kein Kasten-Rechteck" line below says why the picture is
+                  missing, and hiding the numbers with it would suppress a fact
+                  the follower did measure. Only the whole strip needs the box
+                  prefix: a selected cut is already named by the filled chip in
+                  the selector below. */}
+              {drawn.length > 0 && <PfadRohzahlenChips pfade={drawn} showBox={shown === null} />}
               {/* The empty answers are DIFFERENT and each is said out loud:
                   `null` is „nobody has followed this Fassung", an empty result
                   is „followed, nothing came back", a row with paths but none
@@ -747,6 +861,12 @@ function CropTile({
         // of on a row of collapsed captions.
         <Box sx={{ height: `${row.height_px * zoom}px`, minWidth: '8rem', bgcolor: paper.hi, borderRadius: 1 }} />
       )}
+      {/* The same numbers as in the strip view, under the one Kasten this tile
+          IS — the gallery is where a coverage cell leads, so the question „did
+          the follower get this word" is asked here just as often. The tile IS
+          the box, so the reading needs no prefix to say which one it belongs
+          to. */}
+      {drawn.length > 0 && <PfadRohzahlenChips pfade={drawn} showBox={false} />}
       {/* The layer is on and nothing is drawn: say WHICH of the empty answers
           this is, rather than leaving the tile looking as if the switch had
           not worked. */}
