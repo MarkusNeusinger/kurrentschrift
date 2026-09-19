@@ -57,11 +57,11 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
-- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Arbeitsliste (Admin-Redesign, geplant) §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Buchstabengrenzen einer Bahn) §5
+- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitsliste (Admin-Redesign, geplant) §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Buchstabengrenzen einer Bahn) §5
 - **B** — Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn (geplant) §5
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
-- **E** — Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
+- **E** — Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Folger-Schalter der Ernte (`--follower`) §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Freigabe-Maschine (geplant) §5 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — Gate-Status (geplant) §5 · Gauß-Verschiebung §3 · G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grauwert-Stopp (→ Strang-Dekodierung) §3 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Haken-Spitze (→ Strang-Dekodierung) §3 · Hand §2 · Hand-Überschuss §4 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
@@ -558,6 +558,42 @@ Bauen der Karte, und die Bestandsaufnahme flaggt ihn („unter dem Boden")
 (`anchor_spike_ratio`, `spike_gate`, `row_naturalness`), Skip-Grund
 `anchor_spike` mit `spike_ratio`/`spike_max` → messjournal.md §14
 („Laufform LF7"/„LF8"/„LF12")
+
+**Apply-Guard (Eigner-Regel)** — die Besitzfrage vor dem Zeilen-Gate:
+WER eine Laufform-Zeile schreiben darf, während das Gate fragt, OB die
+Zeile taugt. `templates` hängt am Stil und kennt keine Hand-Dimension —
+der Schlüssel ist `(style_id, glyph_key, variant)` —, also schriebe der
+Apply einer zweiten Hand die Zeilen der Platte um. Die Regel: eine Hand
+schreibt die Laufform eines Stils nur, wenn sie die auf der **Tafel**
+des Stils registrierte Hand ist (`sources.hand_id` einer Quelle mit
+`kind='chart'`) **oder** der Stempel der bestehenden Zeile
+(`trace_meta.laufform.hand_id`, den der Apply seit PR #260 setzt) sie
+nennt. Eine Zeile OHNE Stempel — jede aus dem manuellen Ernte-`PUT`,
+der nur `derived_from: "specimen-words"` schreibt — gehört der
+registrierten Platten-Hand. Die beiden Klauseln greifen unabhängig: der
+Stempel schützt OHNE jede Registrierung (eine aus Hand A abgeleitete
+Zeile bleibt Hand As, auch solange `sources.hand_id` nirgends gesetzt
+ist), die Registrierung fügt nur die Tafel-Klausel hinzu — mit der die
+Platten-Hand eine von einer Zweithand gestempelte Zeile zurückholt.
+Wirkungslos ist die Regel also für Zeilen ohne Stempel und für Zeilen
+mit dem eigenen Stempel; auf dem Datenstand von 2026-09-18 ist sie
+wirkungslos, weil es genau eine Hand gibt und sie die Stempel selbst
+gesetzt hat — nicht, weil noch nichts registriert ist. Nur Tafeln
+zählen als Registrierung, obwohl V22 „eine Quelle desselben Stils"
+sagt: die Laufform wird aus der Tafel-Zeile abgeleitet, und die eigene
+Quelle der Eigenhand (`kind='eigenhand'`, Q20) wäre sonst ihr eigener
+Freibrief für das geteilte Band. Gemeldet wird die Regel im
+Bericht-Idiom des Endpunkts — 200 mit einem Skip je Schlüssel, Grund
+`foreign_hand`, Feld `owner_hand_id` — und nicht als Routen-Absage,
+weil eine Hand einen Teil der Zeilen per Stempel besitzen kann und den
+Rest nicht. Bewusst varianten-blind: bekommt jede Hand später ihr
+eigenes Laufform-Band (`hands.laufform_variant`), schreibt sie in ihr
+eigenes Band und die Frage beantwortet sich; die Regel bleibt die des
+geteilten Bandes. *Technisch:*
+`api/routers/aggregates.py::_may_write_laufform` /
+`_laufform_stamp_hand` / `_laufform_owner`, Skip-Grund `foreign_hand`
+mit `owner_hand_id` → Zeilen-Gate (Laufform); Hand;
+proposals/handmodell-stufenplan.md H1
 
 **Schreib-Karte** — die Laufform-Kandidaten-Karte in GENAU der
 Gestalt, die ein DB-Write erzeugen würde: die zu schreibenden Zeilen
