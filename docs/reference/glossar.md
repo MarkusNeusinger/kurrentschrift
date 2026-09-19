@@ -12,7 +12,7 @@
 > Werkbank & Prozess · **§6** Extern/Forschung · **§7** Öffentliche
 > Seiten). Für den Einstieg in eine Sitzung steht seit 2026-09-04 die
 > Kurzfassung [`kurzglossar.md`](kurzglossar.md) auf der Pflichtlektüre —
-> 96 Einträge, je ein bis zwei Sätze, jeder mit dem Sprung hierher; sie
+> 98 Einträge, je ein bis zwei Sätze, jeder mit dem Sprung hierher; sie
 > ersetzt dieses Glossar nicht, sie ersetzt nur das Am-Stück-Lesen.
 >
 > **Was ein Eintrag verspricht.** Einen allgemeinverständlichen Teil ohne
@@ -61,7 +61,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **B** — Bahn §5 · Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn (geplant) §5
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
-- **E** — Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
+- **E** — Ebenen-Token §5 · Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Folger-Schalter der Ernte (`--follower`) §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Freigabe-Maschine (geplant) §5 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — Gate-Status (geplant) §5 · Gauß-Verschiebung §3 · G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grauwert-Stopp (→ Strang-Dekodierung) §3 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Haken-Spitze (→ Strang-Dekodierung) §3 · Hand §2 · Hand-Überschuss §4 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
@@ -74,8 +74,8 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **O** — Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfad-Form (`/write/word/{text}`) §2 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
-- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Referenzwörter (Eigenhand) §5 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip §5 · Rollen-Spalte (geplant) §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste (geplant) §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Span-Herkunft (→ Buchstabengrenzen einer Bahn) §5 · Span-Zuordner (→ Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Referenzwörter (Eigenhand) §5 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip §5 · Rollen-Spalte (geplant) §5 · Rollen-Token §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
+- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichart-Regel §5 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste (geplant) §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Span-Herkunft (→ Buchstabengrenzen einer Bahn) §5 · Span-Zuordner (→ Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue (geplant) §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) (geplant) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unteransicht (Eigenhand) §5 · Unvollständige Wortprobe §5
 - **Ü** — Übergabekarte (geplant) §5 · Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
@@ -4402,6 +4402,27 @@ Prüfmenge des Zuordners. *Technisch:* nichts gebaut; vorgesehen
 `tools/eigenhand/pfad.py --spans`. → Trainingsmenge (nachgefahrene Bahnen);
 proposals/admin-redesign.md §6.4
 
+**Ebenen-Token** *(`layer`, `layerDash`)* — die Farben und Stricharten der
+Lesarten, die im Admin ÜBER einem Ausschnitt, Scan oder einer Skizze liegen:
+Spur (die nachgefahrene Feder), Pfad (das ferne Ende der
+Schreibreihenfolge-Rampe) und Engine — genau die drei, die in der Legende
+stehen; der Absetzer ist keine Ebene, sondern die zweite Marke des Pfades und
+hat sein eigenes Token. Jede Ebenenfarbe erreicht **deckend gezeichnet** 3 : 1
+gegen weiß UND gegen Platten-Tinte, weil ein Overlay auf beiden Gründen liegt —
+die Farbe davor (`#00b37e`) schaffte auf weiß nur 2,71 : 1 und traf über der
+Tinte auf das Engine-Rot, ein Paar, das ein Deuteranope nicht trennen kann.
+Zwei benannte Ausnahmen stehen daneben: Ocker und Zinnober sind für einen
+Deuteranopen EINE Farbe, und der **durchscheinende Vergleichs-Overlay** über
+einem Scan unterschreitet den Boden absichtlich — Zinnober bei 0,42 Deckkraft
+ergibt zusammengerechnet 1,81 : 1 auf weiß und 1,71 : 1 auf der Tinte, denn die
+Tinte darunter soll lesbar bleiben. Beide Ausnahmen trägt Strichart + Legende,
+nicht die Farbe. *Technisch:* `app/src/styles/paper.ts` (`layer`, `layerDash`,
+`layerAlpha`); `WERKBANK_COLORS` in `sections/admin/shell/model.ts` zeigt
+darauf; `app/src/styles/paper.test.ts` prüft Gründe, Abstände und misst jede
+Deckkraft namentlich mit ihrer Zahl. *Nachzug:* höhere Deckkraft oder
+`mix-blend-mode: multiply` erst an echten Platten-Daten im Produktions-Admin
+beurteilen. → Rollen-Token; Strichart-Regel; concepts/design-system.md §2
+
 **Freigabe-Maschine (geplant)** — das Zielbild für den Rollenwechsel von
 der Platte zur Eigenhand, als WIEDERKEHRENDE Freigabe statt als einmaliger
 Schalter: versionierte Stände (create-only), ein Auslieferungs-Zeiger, der
@@ -4464,10 +4485,41 @@ Leitplanke „genau eine Quelle/Hand" bewegt: seit dem Autor-Entscheid vom
 nur eingeklappt, beschriftet, nie verrechnet" (optimierungs-werkbank.md
 §6). → proposals/admin-redesign.md §5.1 (Idee 2), §10.2
 
+**Rollen-Token** *(`role`, `roleDash`)* — Farbe und Strichart der drei Rollen
+(Tafel durchgezogen · Platte gestrichelt · Eigenhand gepunktet). Sie werden auf
+PAPIER gelesen — sie färben die MARKE eines Chips, einer Listenzeile oder einer
+Legende, nie deren laufenden Text (3 : 1 ist die Nicht-Text-Schwelle) —, nie
+über Tinte, und
+stehen darum am dunklen Ende des Perioden-Sets in drei getrennten
+Helligkeitsstufen: Helligkeit ist der eine Kanal, den jede Farbfehlsicht behält.
+**Keine Rolle trägt Viridian**, es ist Akzent, `success` und Fokusring zugleich;
+ein aktiver Zustand darf es tragen. Ausgeliefert seit dem Token-PR der Phase 0,
+Verbraucher erst ab Phase 3 (die → Rollen-Spalte). *Technisch:*
+`app/src/styles/paper.ts`. → Rollen-Spalte; Strichart-Regel;
+concepts/design-system.md §2
+
 **Scope-Leiste (geplant)** — die Zeile unter der Kopfleiste, die Vorlage UND
 Hand benennt und das aktive Feld hervorhebt; sie schaltet nicht um. Die
 Antwort auf den Scope-Bruch der heutigen Kopfleiste (Vorlagen-Chip und
 Vorlagen-Korb auf der Hand-Seite). → proposals/admin-redesign.md §3.1, §7.1
+
+**Strichart-Regel** — Farbe ist nie der einzige Kanal: erkennbar wird eine Ebene
+oder Rolle aus **Rollen-Etikett + Position + Strichart**, die Farbe kommt dazu.
+Eine Strichart ist dabei Strichmuster UND Linienende (`StrokeStyle =
+{ dash, cap }`): „gepunktet" ist ein Null-Strich unter rundem Ende, weil
+`[2, 2]` unter dem SVG-Standard `butt` Quadrate zeichnet und damit eine zweite
+Strichelung wäre — Verbraucher nehmen darum das ganze Token, nie nur das Muster.
+Daraus folgen drei Pflichten: jede Ebene und jede Rolle hat genau eine Strichart
+und die Legende (`LayerDot`) zeigt sie mit; eine FLÄCHE trägt statt der Strichart
+ihre Deckkraft; und die deutschen Texte zu Ebenen und Rollen nennen keine Farben
+— „erster Zug grün, letzter blau" ist genau der Satz, mit dem ein
+farbfehlsichtiger Leser nichts anfangen kann, und er wird bei jeder
+Palettenpflege wieder falsch (die Diagnose- und Wizard-Signalfarben sind ein
+benannter Nachzug, dort ist die Farbe teils die Handlungsanweisung).
+*Technisch:*
+`app/src/styles/paper.ts` (`layerDash`, `roleDash`),
+`sections/admin/shell/LayerDot.tsx`. → Ebenen-Token; Rollen-Token;
+concepts/design-system.md §2
 
 **Tintentreue (geplant)** — die referenzfreie Ampel je Wortkasten: folgt ·
 folgt teils · folgt nicht, plus ein grauer ungemessener Zustand mit Grund

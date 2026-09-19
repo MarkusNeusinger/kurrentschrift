@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { layer, liftConnector, strokeStyle } from '@/styles/paper';
+
 import {
   arrowPoints,
   labelPointOf,
@@ -25,6 +27,12 @@ describe('orderColors', () => {
   it('blends short hex the same as long hex', () => {
     expect(mixHex('#000', '#fff', 1)).toBe('#ffffff');
     expect(mixHex('#ff0000', '#0000ff', 0)).toBe('#ff0000');
+  });
+
+  it('ends the real ramp on the Pfad token, not on a colour of its own', () => {
+    // The ramp's two ends ARE the Spur and the Pfad layer; pinning them here
+    // means a palette tune cannot quietly leave the order ramp behind.
+    expect(orderColors(2, layer.trace, layer.path)).toEqual([layer.trace, layer.path]);
   });
 });
 
@@ -81,6 +89,13 @@ describe('liftsOf', () => {
   it('skips empty stretches instead of drawing lifts to nowhere', () => {
     expect(liftsOf([a, [], b])).toEqual([{ from: [1, 1], to: [2, 1] }]);
     expect(liftsOf([])).toEqual([]);
+  });
+
+  it('marks those lifts with the dotted style, cap included', () => {
+    // The contract this geometry is drawn under. That the RENDERED line really
+    // carries both halves is asserted in the jsdom sibling `PathOverlay.test.tsx`
+    // — a dash without its cap is only half a stroke style (PR #620 review).
+    expect(liftConnector.stroke).toEqual(strokeStyle.dotted);
   });
 });
 
