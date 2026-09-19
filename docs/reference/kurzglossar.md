@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-19): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **98
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **99
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars. Nachzieh-Anlass: ein Begriff wandert
 > hierher, sobald er die Zwei-von-drei-Schwelle unten erreicht und in
@@ -9,6 +9,11 @@
 > unter die Schwelle fällt. Das volle Glossar bleibt die
 > Nachschlage-Instanz und behält seinen alphabetischen Schnellindex; hier
 > steht **nichts**, was dort nicht ausführlicher stünde.
+> **Offen:** Die Datei sitzt seit dem Eintrag „Arbeitsliste" knapp über
+> 10 000 Token — der nächste Zuwachs verlangt, dass ein Begriff die
+> Schwelle auch wieder VERLÄSST, statt dass die Liste weiterwächst.
+> **Wo die Auswahl nachzurechnen ist:** die beiden Schritte direkt unter
+> diesem Block; die Zählquellen stehen dort samt Ausschluss-Klassen.
 
 **Warum es diese Datei gibt.** `glossar.md` trägt über 300 Einträge und
 kostet rund 56 000 Token — mehr als die Hälfte der Pflichtlektüre. Wer
@@ -489,6 +494,13 @@ pro Mess-Runde. Einstieg ist das **Register** im Kopf, nicht die Datei.
 darunter drei Ansichten (Buchstaben · Übergänge · Wörter), jede nach dem
 Muster Übersicht ⇄ Detail mit dem Subjekt in der URL.
 → [§5](glossar.md#5-werkbank-und-prozess) · optimierungs-werkbank.md
+
+**Arbeitsliste** — eine Übersicht als gefilterte, sortierte Liste mit
+Zähler statt als Kartenwand: eine Zeile je Subjekt mit Chips und Zahlen und
+ohne Bild, Bilder erst aufgeklappt oder in der Galerie. Ansicht, Filter,
+Sortierung und Seite stehen in der URL, nie im Browser — ein Korb-Link auf
+einem anderen Gerät muss dieselbe Ansicht öffnen.
+→ [§5](glossar.md#5-werkbank-und-prozess) · `shell/listState.ts`
 
 **Auftragskorb** *(`work_items`)* — statt Screenshots eine Tabelle: Der
 Autor markiert einen Buchstaben, ein Paar oder ein Wort und legt daraus

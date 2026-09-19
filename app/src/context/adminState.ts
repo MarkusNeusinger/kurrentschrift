@@ -17,6 +17,13 @@ export interface AdminState {
   switchSource: (id: string) => void;
   bboxesByKey: Record<string, BboxOut>;
   glyphsByKey: Record<string, GlyphSummary>;
+  // Which letters have a stored Laufform (template variant 100). Derived from
+  // the same read as `glyphsByKey`, but from the RAW rows — the map above is
+  // keyed by glyph_key alone and therefore cannot carry two variants of one
+  // letter. A surface without images (the Buchstaben work list) has no other
+  // way to know: the card wall discovers it by rendering variant 100 and
+  // catching the „not available" answer.
+  laufformKeys: Set<string>;
   loadError: string | null;
   // True while the boot load is retrying through a Cloud Run cold start.
   waking: boolean;

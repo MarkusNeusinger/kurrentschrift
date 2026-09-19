@@ -49,12 +49,48 @@ export const admin = {
     evidenceLoading: 'wird geladen …',
     evidenceError: 'Die gespeicherten Vorkommen konnten nicht geladen werden — neu laden oder die API prüfen.',
   },
+  // Die Arbeitslisten: die gemeinsame Bedienleiste der Übersichten (Ansicht,
+  // Filter, Sortierung, Seite) — ein Wortschatz, den alle drei Ansichten
+  // teilen, damit dieselbe Bedienung überall dieselben Wörter trägt.
+  liste: {
+    viewLabel: 'Ansicht',
+    viewList: 'Liste',
+    viewGallery: 'Galerie',
+    filterLabel: 'Filter',
+    // Wie viel von wie viel gerade auf dem Schirm steht — die Zahl, an der eine
+    // Filterwahl abzulesen ist, bevor man die Liste durchsieht.
+    counter: '{{shown}} von {{total}}',
+    pagerLabel: 'Seiten',
+    pageAria: 'Seite {{n}}',
+    pageAll: 'alle zeigen',
+    // Die zweite Stille: nicht „hier gibt es nichts", sondern „zu dieser
+    // Auswahl gibt es nichts" — mit dem Weg zurück.
+    emptyFiltered: 'Kein Eintrag passt zu dieser Auswahl.',
+    resetFilters: 'Filter zurücksetzen',
+    chipKorb: '{{count}} im Korb',
+  },
   // The Buchstaben view: one letter's whole life, from the chart cell to how it
   // is finally written, plus the ways over to its joins and its words.
   letters: {
     overviewTitle: 'Buchstaben',
     overviewIntro:
-      'Jeder erstellte Buchstabe viermal nebeneinander: der Tafel-Ausschnitt, die daraus geschriebene Tafel-Form, die Laufform für fließende Wörter und die Statistik dahinter — der Median dieser Hand über ihren gemessenen Vorkommen, die Vorkommen selbst dünn dahinter. Daneben die Kennzahlen: wie viele Vorkommen, wie gut die Einpassung sitzt, wie die Form bewertet ist. „Öffnen“ führt in den einzelnen Buchstaben mit allen Werkzeugen.',
+      'Jeder erstellte Buchstabe als Zeile: Bewertung, Abzüge und die Merkmale, an denen Arbeit hängt — gesperrt, ohne Laufform, ohne Vorkommen, offene Aufträge. Eine Zeile klappt an Ort und Stelle die vier Flächen auf (Tafel-Ausschnitt, Tafel-Form, Laufform, Median & Vorkommen); „Galerie“ zeigt sie für alle Buchstaben untereinander. „Öffnen“ führt in den einzelnen Buchstaben mit allen Werkzeugen.',
+    // Die Filter-Chips der Arbeitsliste, in der Reihenfolge, in der sie stehen
+    // (letterRows.ts trägt dieselbe Reihenfolge als Daten).
+    filters: {
+      gesperrt: 'gesperrt',
+      'ohne-laufform': 'ohne Laufform',
+      'ohne-vorkommen': 'ohne Vorkommen',
+      'mit-korb': 'mit Korb-Auftrag',
+    },
+    // Der Aufklapp-Knopf nennt seinen Buchstaben: 63 Knöpfe, alle „Aufklappen“
+    // genannt, sind für einen Screenreader eine Liste ohne Inhalt.
+    rowExpand: 'Buchstabe {{key}} aufklappen',
+    rowCollapse: 'Buchstabe {{key}} zuklappen',
+    // Beide Richtungen stehen als Chip da — ein fehlender Chip wäre von „noch
+    // nicht geladen“ nicht zu unterscheiden.
+    chipLaufform: 'Laufform',
+    chipNoLaufform: 'ohne Laufform',
     // The detail view's heading as plain text. Its visible head is the paging
     // arrows around a glyph chip, which cannot BE an h1 — this is the h1 behind
     // it, so the page keeps a document outline (see ViewHeader `titleText`).

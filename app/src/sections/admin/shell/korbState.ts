@@ -6,12 +6,19 @@
 // basket's own UI reloaded the whole workbench.
 import { createContext, useContext } from 'react';
 
+import type { WorkItemOut } from '@/lib/api';
+
 import type { Mark } from './model';
 
 export interface KorbState {
   // Open + returned items of the active source; null while unknown or when the
   // admin-gated read failed.
   openCount: number | null;
+  // The rows behind that count. They were always fetched and always thrown
+  // away; keeping them lets a work list say „dieser Buchstabe hat 2 offene
+  // Aufträge" without a second read (`korbTargets.ts`). Same quiet absence:
+  // null while unknown, never an invented empty list.
+  items: WorkItemOut[] | null;
   fileMark: (mark: Mark) => void;
   openKorb: () => void;
 }
@@ -31,3 +38,6 @@ export function useFileMark(): (mark: Mark) => void {
 }
 
 export const useOpenCount = (): number | null => useKorb().openCount;
+
+// The basket's rows for the surfaces that count them per subject.
+export const useKorbItems = (): WorkItemOut[] | null => useKorb().items;

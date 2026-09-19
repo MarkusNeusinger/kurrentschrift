@@ -33,15 +33,15 @@ import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { cropUrl } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { ChartView } from '@/sections/admin/chart/ChartView';
-import { GlyphComparison } from '@/sections/admin/compare/GlyphComparison';
 import { LandmarkPanel } from '@/sections/admin/letters/LandmarkPanel';
 import { LaufformApplyDialog } from '@/sections/admin/letters/LaufformApplyDialog';
+import { LetterOverview } from '@/sections/admin/letters/LetterOverview';
 import { LetterStats } from '@/sections/admin/shell/LensStats';
 import { LetterPicker } from '@/sections/admin/shell/LetterPicker';
 import { OccurrenceThumb } from '@/sections/admin/shell/OccurrenceThumb';
 import { useFileMark } from '@/sections/admin/shell/korbState';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
-import { joinsUrl, neighbourLetters, readLetterFocus, wordsUrl } from '@/sections/admin/shell/focus';
+import { FOCUS_PARAMS, joinsUrl, neighbourLetters, readLetterFocus, wordsUrl } from '@/sections/admin/shell/focus';
 import { EvidenceState, Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { garamond } from '@/styles/paper';
 
@@ -105,7 +105,17 @@ export function LetterView() {
     if (glyphKey) setActiveGlyph(glyphKey);
   }, [glyphKey, setActiveGlyph]);
 
-  const focus = (key: string | null) => setParams(key ? { g: key } : {}, { replace: false });
+  // A focus change MERGES instead of rewriting the query: the overview's list
+  // state (Ansicht · Filter · Sortierung · Seite) and anything else the URL
+  // carries has to survive the hop into a letter and back, or „Alle
+  // Buchstaben" would drop the reader onto page 1 of an unfiltered alphabet.
+  // Still a PUSH — the subject is what the back button walks.
+  const focus = (key: string | null) => {
+    const next = new URLSearchParams(params);
+    if (key) next.set(FOCUS_PARAMS.glyph, key);
+    else next.delete(FOCUS_PARAMS.glyph);
+    setParams(next, { replace: false });
+  };
 
   // Memoised for its identity, not for the lookup: the `?? []` produced a fresh
   // empty array on every render, which invalidated the `relatedWords` memo below
@@ -154,9 +164,9 @@ export function LetterView() {
             )}
           </LetterPicker>
         </ViewHeader>
-        {/* The comparison grid only knows AUTHORED letters — the picker above
-            is the way to a letter that has no canonical yet. */}
-        <GlyphComparison onPick={focus} />
+        {/* The work list only knows AUTHORED letters — the picker above is the
+            way to a letter that has no canonical yet. */}
+        <LetterOverview onPick={focus} />
       </Box>
     );
   }

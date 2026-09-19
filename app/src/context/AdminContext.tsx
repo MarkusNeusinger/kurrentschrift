@@ -20,6 +20,10 @@ import type { BboxOut, GlyphSummary, SourceOut } from '@/lib/api';
 
 const SOURCE_STORAGE_KEY = 'kurrentschrift.admin.sourceId';
 
+// The running form is stored as this template variant (core/database
+// LAUFFORM_VARIANT).
+const LAUFFORM_VARIANT = 100;
+
 export function AdminProvider({
   children,
   pinnedSourceId,
@@ -77,6 +81,7 @@ function SourceScopedProvider({
   const [sources, setSources] = useState<SourceOut[]>([]);
   const [bboxesByKey, setBboxesByKey] = useState<Record<string, BboxOut>>({});
   const [glyphsByKey, setGlyphsByKey] = useState<Record<string, GlyphSummary>>({});
+  const [laufformKeys, setLaufformKeys] = useState<Set<string>>(() => new Set());
   const [loadError, setLoadError] = useState<string | null>(null);
   const [waking, setWaking] = useState<boolean>(false);
   const [activeGlyph, setActiveGlyph] = useState<string | null>(null);
@@ -113,9 +118,19 @@ function SourceScopedProvider({
         const bm: Record<string, BboxOut> = {};
         for (const b of bboxes) bm[b.glyph_key] = b;
         setBboxesByKey(bm);
+        // The per-key map is LOSSY — the read returns every variant of the
+        // style ordered by (glyph_key, variant), so a letter's variant-100 row
+        // overwrites its variant-0 row here. Harmless as long as only
+        // `has_data` is read from it (every consumer today), but `.variant` and
+        // `.advance` on this map belong to whichever row happened to come last.
+        // Anything that needs a specific variant reads the ARRAY, as the
+        // Laufform set below does.
         const gm: Record<string, GlyphSummary> = {};
         for (const g of glyphs) gm[g.glyph_key] = g;
         setGlyphsByKey(gm);
+        setLaufformKeys(
+          new Set(glyphs.filter((g) => g.variant === LAUFFORM_VARIANT && g.has_data).map((g) => g.glyph_key)),
+        );
         setVisibleGlyphs(new Set(bboxes.map((b) => b.glyph_key)));
       } catch (e) {
         if (cancelled) return;
@@ -208,6 +223,7 @@ function SourceScopedProvider({
       switchSource,
       bboxesByKey,
       glyphsByKey,
+      laufformKeys,
       loadError,
       waking,
       activeGlyph,
@@ -235,6 +251,7 @@ function SourceScopedProvider({
       switchSource,
       bboxesByKey,
       glyphsByKey,
+      laufformKeys,
       loadError,
       waking,
       activeGlyph,
