@@ -15,6 +15,7 @@ import { useAdmin } from '@/context/adminState';
 import { LETTERS, glyphKeyFor } from '@/domain/glyphs';
 import type { Letter, LetterGroup } from '@/domain/glyphs';
 import { de } from '@/locales/admin';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 
 const GROUP_LABELS: Record<LetterGroup, string> = {
   lower: de.admin.sidebar.groupLower,
@@ -41,7 +42,11 @@ export function LetterGrid({ activeKey, onPick, isDisabled }: LetterGridProps) {
   const t = de.admin.sidebar;
 
   return (
-    <Box sx={{ p: 1.5, maxWidth: 360 }}>
+    // Wider on a real screen than it was: 44 px cells 6 px apart need 50 px of
+    // track each, and at the old 360 the alphabet fell to six per row and the
+    // popover grew a scrollbar. 420 keeps seven and fits every desktop and
+    // tablet; a phone keeps the narrow box, where six per row is right anyway.
+    <Box sx={{ p: 1.5, maxWidth: { xs: 320, sm: 420 } }}>
       {GROUP_ORDER.map((group) => {
         const letters = LETTERS.filter((l) => l.group === group);
         if (letters.length === 0) return null;
@@ -58,23 +63,33 @@ export function LetterGrid({ activeKey, onPick, isDisabled }: LetterGridProps) {
                 const locked = bboxesByKey[key]?.locked === true;
                 const active = activeKey === key;
                 const disabled = isDisabled?.(letter) ?? false;
+                // The cell's whole state in words. The dot is a COLOUR (green =
+                // canonical, orange = bbox only) and the tooltip was its only
+                // wording — so for a colour-blind or keyboard reader the grid
+                // said nothing. As the button's accessible name it is read out
+                // on focus and on tap, and the tooltip stays for the mouse
+                // (design-system.md §9, §9.4).
+                const status = `${letter.glyph}${letter.note ? ` · ${letter.note}` : ''}${
+                  canon ? t.statusCanonical : bbox ? t.statusBbox : t.statusEmpty
+                }${locked ? t.statusLocked : ''}`;
                 return (
-                  <Tooltip
-                    key={letter.base}
-                    title={`${letter.glyph}${letter.note ? ` · ${letter.note}` : ''}${
-                      canon ? t.statusCanonical : bbox ? t.statusBbox : t.statusEmpty
-                    }${locked ? t.statusLocked : ''}`}
-                  >
+                  <Tooltip key={letter.base} title={status}>
                     {/* A disabled ButtonBase swallows the tooltip's events — the
                         span keeps the hint readable either way. */}
                     <span>
                       <ButtonBase
                         onClick={() => onPick(key)}
+                        aria-label={status}
                         disabled={disabled}
                         sx={{
                           position: 'relative',
-                          width: 34,
-                          height: 34,
+                          // The grid's cells tile 6 px apart, so they GROW to
+                          // the floor rather than wearing overlays that would
+                          // steal each other's taps (§9.3). They escaped the
+                          // route sweep because the popover is closed while a
+                          // route is measured — found by hand, 2026-09-19.
+                          width: TOUCH_TARGET,
+                          height: TOUCH_TARGET,
                           borderRadius: 1,
                           border: '1px solid',
                           borderColor: active ? 'primary.main' : 'divider',

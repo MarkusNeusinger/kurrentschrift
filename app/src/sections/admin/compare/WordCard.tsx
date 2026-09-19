@@ -14,9 +14,10 @@
 // (`traceFrameOf`), that one wins over pinning the composition's left edge to
 // the crop's.
 
-import { Alert, Box, Button, Chip, CircularProgress, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, CircularProgress, Stack, Typography } from '@mui/material';
 import { useEffect, useState, type ReactNode } from 'react';
 
+import { InfoHint } from '@/components/InfoHint';
 import { WrittenWord } from '@/components/WrittenWord';
 import { useInView } from '@/hooks/useInView';
 import { wordSampleCropUrl } from '@/lib/api';
@@ -25,6 +26,7 @@ import { fetchRenderWord } from '@/lib/api/renderCache';
 import { polylineToPathD, ringsToPathD } from '@/lib/svg';
 import { de, fmt } from '@/locales/admin';
 import { traceFrameOf, traceMatrix, WERKBANK_COLORS, type TraceStatus } from '@/sections/admin/shell/model';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 import { layerAlpha, layerDash, garamond } from '@/styles/paper';
 
 const FACE_H = 220; // px per face — words are wide, keep cards scannable
@@ -123,10 +125,21 @@ export function ScoreChip({ score }: { score: WordSampleScoreOut }) {
     return <Chip size="small" color="error" variant="outlined" label={de.admin.compare.scoreFailed} />;
   }
   const lines = worstSegments(score);
+  // WHERE the loss came from is the number the reader acts on, and it hung in a
+  // hover over a plain `div` chip — no keyboard, no touch (V25). It sits behind
+  // the card's one `InfoHint` now, beside what the ruler is.
   return (
-    <Tooltip title={lines.length ? `${de.admin.compare.scoreWorstSegments} ${lines.join(' · ')}` : ''}>
+    <>
       <Chip size="small" color={lossColor(score.loss)} variant="outlined" label={`Loss ${score.loss.toFixed(2)}`} />
-    </Tooltip>
+      <InfoHint title={de.admin.compare.scoreLossTitle} label={de.admin.compare.scoreLossAria}>
+        <Stack spacing={0.75}>
+          <Typography variant="body2">{de.admin.words.scoreHint}</Typography>
+          {lines.length > 0 && (
+            <Typography variant="body2">{`${de.admin.compare.scoreWorstSegments} ${lines.join(' · ')}`}</Typography>
+          )}
+        </Stack>
+      </InfoHint>
+    </>
   );
 }
 
@@ -216,15 +229,15 @@ export function WordCard({
               chip, a clipped specimen the warning one — plain absence still IS
               the "still to do" state, so the list stays scannable while working
               through the hand-traced reference set. */}
-          {status === 'authored' && (
-            <Tooltip title={de.admin.belege.provenanceAuthored}>
-              <Chip size="small" color="success" label={de.admin.compare.authoredChip} />
-            </Tooltip>
-          )}
+          {/* The chip already says „von Hand ✓" — the tooltip repeated the
+              same words on a `div` that nothing can focus, so it was decoration
+              for the mouse. Gone. */}
+          {status === 'authored' && <Chip size="small" color="success" label={de.admin.compare.authoredChip} />}
+          {/* `sample.note` is AUTHORED free text — the one sentence saying what
+              is clipped about this specimen. It must not need a mouse, so it
+              stands as a caption under the chip row (below). */}
           {status === 'incomplete' && (
-            <Tooltip title={sample.note || de.admin.compare.incompleteChipHint}>
-              <Chip size="small" color="warning" variant="outlined" label={de.admin.compare.incompleteChip} />
-            </Tooltip>
+            <Chip size="small" color="warning" variant="outlined" label={de.admin.compare.incompleteChip} />
           )}
           {score && <ScoreChip score={score} />}
           {composed && composed.missing.length > 0 && (
@@ -235,23 +248,36 @@ export function WordCard({
             />
           )}
           <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
+            {/* MUI's `small` text button is 30.75 px tall; both stand in a row
+                of their own at the end of the head, so they grow to the §9.3
+                floor. */}
             {onPick && (
               <Button
                 size="small"
                 variant="text"
                 onClick={onPick}
                 aria-label={fmt(de.admin.compare.openWordFor, { word: sample.word })}
+                sx={{ minHeight: TOUCH_TARGET }}
               >
                 {de.admin.compare.openWord}
               </Button>
             )}
             {onOpenEditor && (
-              <Button size="small" variant="text" onClick={onOpenEditor}>
+              <Button size="small" variant="text" onClick={onOpenEditor} sx={{ minHeight: TOUCH_TARGET }}>
                 {de.admin.compare.openPairEditor}
               </Button>
             )}
           </Box>
         </Box>
+      )}
+
+      {/* The specimen's own note, visible. It used to be the title of a tooltip
+          on an unfocusable chip, which is the one place authored text may never
+          live (V25). */}
+      {header && status === 'incomplete' && (
+        <Typography variant="caption" color="text.secondary">
+          {sample.note || de.admin.compare.incompleteChipHint}
+        </Typography>
       )}
 
       {measured}

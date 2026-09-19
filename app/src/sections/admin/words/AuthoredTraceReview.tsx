@@ -10,9 +10,10 @@
 // on the naked line, a registration error only against the ink — one switch
 // serves both readings.
 
-import { Alert, Box, Button, Chip, CircularProgress, FormControlLabel, Switch, Tooltip, Typography } from '@mui/material';
+import { Alert, Box, Button, Chip, CircularProgress, FormControlLabel, Stack, Switch, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 
+import { InfoHint } from '@/components/InfoHint';
 import { useInView } from '@/hooks/useInView';
 import { useAdmin } from '@/context/adminState';
 import { wordSampleCropUrl } from '@/lib/api';
@@ -60,15 +61,20 @@ function ReviewRow({
         <Typography variant="caption" color="text.secondary">
           {row.specimen_id}
         </Typography>
-        {dev && (
-          <Tooltip title={t.reviewDevChipHint}>
-            <Chip size="small" color="info" variant="outlined" label={t.reviewDevChip} />
-          </Tooltip>
-        )}
-        {stale && (
-          <Tooltip title={t.reviewFrameStaleHint}>
-            <Chip size="small" color="warning" label={t.reviewFrameStale} />
-          </Tooltip>
+        {/* Both chips carried a CONSEQUENCE in their hover — re-saving this row
+            moves the bench's own ruler; a stale frame drops the Bahn out of the
+            next fixture run — on plain `div` chips that neither keyboard nor
+            finger can reach. One `InfoHint` per row carries whichever applies
+            (V25). */}
+        {dev && <Chip size="small" color="info" variant="outlined" label={t.reviewDevChip} />}
+        {stale && <Chip size="small" color="warning" label={t.reviewFrameStale} />}
+        {(dev || stale) && (
+          <InfoHint title={stale ? t.reviewFrameStale : t.reviewDevChip} label={t.reviewChipsAria}>
+            <Stack spacing={0.75}>
+              {dev && <Typography variant="body2">{t.reviewDevChipHint}</Typography>}
+              {stale && <Typography variant="body2">{t.reviewFrameStaleHint}</Typography>}
+            </Stack>
+          </InfoHint>
         )}
         {sample.sample_set && <Chip size="small" variant="outlined" label={sample.sample_set} />}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 'auto' }}>

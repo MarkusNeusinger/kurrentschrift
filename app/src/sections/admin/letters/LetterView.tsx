@@ -43,11 +43,14 @@ import { useFileMark } from '@/sections/admin/shell/korbState';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { FOCUS_PARAMS, joinsUrl, neighbourLetters, readLetterFocus, wordsUrl } from '@/sections/admin/shell/focus';
 import { EvidenceState, Panel, ViewHeader } from '@/sections/admin/shell/Panel';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 import { garamond } from '@/styles/paper';
 
 // The Laufform is stored as this template variant (core/database LAUFFORM_VARIANT).
 const LAUFFORM_VARIANT = 100;
 const FACE_H = 190; // px per face in the "wie geschrieben" row
+// A labelled button takes its width from the label and owes only the height.
+const ACTION_TARGET = { minHeight: TOUCH_TARGET } as const;
 
 export function LetterView() {
   const [params, setParams] = useSearchParams();
@@ -179,7 +182,9 @@ export function LetterView() {
         <ViewHeader eyebrow={de.admin.shell.startEyebrow} title={t.overviewTitle} intro={t.overviewIntro}>
           <LetterPicker onPick={focus}>
             {(open) => (
-              <Button size="small" variant="outlined" onClick={open}>
+              // MUI's `small` button is 30.75 px tall; this one stands alone in
+              // the page head, so it simply grows to the §9.3 floor.
+              <Button size="small" variant="outlined" onClick={open} sx={{ minHeight: TOUCH_TARGET }}>
                 {t.pickLetter}
               </Button>
             )}
@@ -204,8 +209,20 @@ export function LetterView() {
         eyebrow={de.admin.shell.areaLetters}
         titleText={fmt(t.letterHeading, { key: letter?.glyph ?? glyphKey })}
         title={
+          // The subject stepper. All three controls GROW to the 44 px floor
+          // instead of wearing invisible hit areas: they stand 8 px apart, so
+          // three overlays would steal each other's taps (§9.3, „wo Nachbarn
+          // dicht stehen"). The chip's tooltip is the NAME of a control whose
+          // visible label is the letter itself — `aria-label` carries the same
+          // words, so nothing of it lives in the hover alone.
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-            <IconButton size="small" disabled={!prev} aria-label={t.prevLetter} onClick={() => prev && focus(prev)}>
+            <IconButton
+              size="small"
+              disabled={!prev}
+              aria-label={t.prevLetter}
+              onClick={() => prev && focus(prev)}
+              sx={{ width: TOUCH_TARGET, height: TOUCH_TARGET }}
+            >
               <ChevronLeftIcon fontSize="small" />
             </IconButton>
             <LetterPicker activeKey={glyphKey} onPick={focus}>
@@ -214,17 +231,24 @@ export function LetterView() {
                   <Chip
                     clickable
                     onClick={open}
+                    aria-label={fmt(t.pickLetterChosen, { glyph: letter?.glyph ?? glyphKey })}
                     label={
                       <Typography component="span" sx={{ fontFamily: garamond, fontSize: 22, lineHeight: 1.4 }}>
                         {letter?.glyph ?? glyphKey}
                       </Typography>
                     }
-                    sx={{ height: 40, px: 0.5 }}
+                    sx={{ height: TOUCH_TARGET, minWidth: TOUCH_TARGET, px: 0.5 }}
                   />
                 </Tooltip>
               )}
             </LetterPicker>
-            <IconButton size="small" disabled={!next} aria-label={t.nextLetter} onClick={() => next && focus(next)}>
+            <IconButton
+              size="small"
+              disabled={!next}
+              aria-label={t.nextLetter}
+              onClick={() => next && focus(next)}
+              sx={{ width: TOUCH_TARGET, height: TOUCH_TARGET }}
+            >
               <ChevronRightIcon fontSize="small" />
             </IconButton>
             <Typography variant="caption" color="text.secondary">
@@ -269,14 +293,22 @@ export function LetterView() {
           ) : (
             <Alert severity="info">{t.noBbox}</Alert>
           )}
+          {/* The three ways out of this panel. MUI's `size="small"` Button is
+              ~31 px high, under the §9.3 floor, and they stand one gap apart —
+              so they grow rather than wear overlapping hit areas. */}
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1.5 }}>
-            <Button size="small" variant="contained" disabled={!hasBbox} onClick={() => openWizard(glyphKey)}>
+            <Button size="small" variant="contained" disabled={!hasBbox} onClick={() => openWizard(glyphKey)} sx={ACTION_TARGET}>
               {de.admin.toolbar.setup}
             </Button>
-            <Button size="small" variant="outlined" disabled={!hasCanonical} onClick={() => openDiagnose(glyphKey)}>
+            <Button size="small" variant="outlined" disabled={!hasCanonical} onClick={() => openDiagnose(glyphKey)} sx={ACTION_TARGET}>
               {de.admin.toolbar.diagnose}
             </Button>
-            <Button size="small" onClick={() => setChartOpen((v) => !v)} endIcon={chartOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}>
+            <Button
+              size="small"
+              onClick={() => setChartOpen((v) => !v)}
+              endIcon={chartOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              sx={ACTION_TARGET}
+            >
               {chartOpen ? t.hideChart : t.showChart}
             </Button>
           </Box>
@@ -335,6 +367,7 @@ export function LetterView() {
                   aria-expanded={landmarksOpen}
                   onClick={() => setLandmarksOpen((v) => !v)}
                   endIcon={landmarksOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                  sx={ACTION_TARGET}
                 >
                   {t.landmarksToggle}
                 </Button>
@@ -402,6 +435,9 @@ export function LetterView() {
                 {t.noJoins}
               </Typography>
             ) : (
+              // Navigation, 4 px apart: grown to the floor, not overlaid
+              // (§9.3). The standing sweep never saw these — a synthetic stack
+              // has no occurrences, so the row renders empty.
               relatedJoins.map((join) => (
                 <Chip
                   key={`${join.leftKey}→${join.rightKey}`}
@@ -410,11 +446,12 @@ export function LetterView() {
                   clickable
                   label={`${join.leftKey}→${join.rightKey} · ${join.count}`}
                   onClick={() => navigate(joinsUrl(join.leftKey, join.rightKey, ownHand))}
+                  sx={{ height: TOUCH_TARGET, minWidth: TOUCH_TARGET }}
                 />
               ))
             )}
           </Box>
-          <Button size="small" variant="outlined" onClick={() => navigate(joinsUrl(glyphKey, null, ownHand))}>
+          <Button size="small" variant="outlined" sx={ACTION_TARGET} onClick={() => navigate(joinsUrl(glyphKey, null, ownHand))}>
             {t.allJoins}
           </Button>
         </Panel>

@@ -20,13 +20,14 @@ import {
   TextField,
   ToggleButton,
   ToggleButtonGroup,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import { InfoHint } from '@/components/InfoHint';
 import { WrittenWord } from '@/components/WrittenWord';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 import { useAdmin } from '@/context/adminState';
 import { getPairs, getWordSampleScore } from '@/lib/api';
 import type { ComposedWordOut, GlyphPairOut, InstanceOut, WordInstanceOut, WordSampleOut, WordSampleScoreOut } from '@/lib/api';
@@ -145,9 +146,14 @@ function DrillSpecimenCard({
           ) : score === 'error' ? (
             <Chip size="small" color="error" variant="outlined" label={de.admin.compare.scoreFailed} />
           ) : score ? (
-            <Tooltip title={de.admin.words.scoreHint}>
+            <>
               <Chip size="small" variant="outlined" label={`Loss ${score.loss.toFixed(2)}`} />
-            </Tooltip>
+              {/* What the ruler IS belongs to a control, not to a hover over a
+                  `div` chip (V25). */}
+              <InfoHint title={de.admin.compare.scoreLossTitle} label={de.admin.compare.scoreLossAria}>
+                {de.admin.words.scoreHint}
+              </InfoHint>
+            </>
           ) : (
             <Button size="small" onClick={runScore}>
               {de.admin.words.scoreButton}
@@ -331,11 +337,16 @@ export function JoinView() {
 
   const picker = (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+      {/* Both pickers grow to the §9.3 floor: they are the subject of the whole
+          view and stood 32 px tall, and two invisible hit areas 8 px apart
+          would overlap. */}
       <LetterPicker activeKey={leftKey} onPick={(key) => focus(key, rightKey ?? key)}>
         {(open) => (
           <Chip
             clickable
             onClick={open}
+            aria-label={leftKey ? fmt(t.pickLeftChosen, { glyph: textForKey(leftKey) }) : t.pickLeftEmpty}
+            sx={{ height: TOUCH_TARGET, minWidth: TOUCH_TARGET }}
             label={
               <Typography component="span" sx={{ fontFamily: garamond, fontSize: 20 }}>
                 {leftKey ? textForKey(leftKey) : t.pickLeft}
@@ -357,6 +368,8 @@ export function JoinView() {
           <Chip
             clickable
             onClick={open}
+            aria-label={rightKey ? fmt(t.pickRightChosen, { glyph: textForKey(rightKey) }) : t.pickRightEmpty}
+            sx={{ height: TOUCH_TARGET, minWidth: TOUCH_TARGET }}
             label={
               <Typography component="span" sx={{ fontFamily: garamond, fontSize: 20 }}>
                 {rightKey ? textForKey(rightKey) : t.pickRight}
@@ -385,7 +398,7 @@ export function JoinView() {
         }}
         sx={{ width: 220 }}
       />
-      <Button size="small" variant="outlined" sx={{ mt: 0.5 }} onClick={submitFreeText}>
+      <Button size="small" variant="outlined" sx={{ mt: 0.5, minHeight: TOUCH_TARGET }} onClick={submitFreeText}>
         {t.freeTextSubmit}
       </Button>
     </Box>
@@ -410,7 +423,7 @@ export function JoinView() {
             They carry the „Gemessen" chips of the H2 layer and the editor deep
             link, which is why the whole card list is reused as-is. */}
         <Box sx={{ mt: 4 }}>
-          <Button size="small" onClick={() => setSpecimensOpen((v) => !v)}>
+          <Button size="small" sx={{ minHeight: TOUCH_TARGET }} onClick={() => setSpecimensOpen((v) => !v)}>
             {specimensOpen ? t.hideSpecimens : t.showSpecimens}
           </Button>
           <Collapse in={specimensOpen} unmountOnExit>
@@ -525,7 +538,9 @@ export function JoinView() {
               one of them is the earlier stage of the triage. The editor comes
               last and quietly (a `text` button under the doctrine line): the
               layout must not make the last resort look like the first move. */}
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1.5 }}>
+          {/* The floor on the row, not on each button: the two stand one gap
+              apart, so they grow rather than overlay (§9.3). */}
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1.5, '& > *': { minHeight: TOUCH_TARGET } }}>
             <Button size="small" variant="outlined" onClick={() => navigate(lettersUrl(leftKey, ownHand))}>
               {fmt(t.toLetter, { key: leftKey })}
             </Button>
@@ -536,7 +551,7 @@ export function JoinView() {
           <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1.5 }}>
             {t.overrideLastResort}
           </Typography>
-          <Button size="small" sx={{ mt: 0.5, px: 0.5 }} onClick={() => setEditorOpen(true)}>
+          <Button size="small" sx={{ mt: 0.5, px: 0.5, minHeight: TOUCH_TARGET }} onClick={() => setEditorOpen(true)}>
             {de.admin.werkbank.openPairEditor}
           </Button>
         </Panel>
@@ -570,11 +585,13 @@ export function JoinView() {
                   }}
                   aria-label={de.admin.werkbank.layersLabel}
                 >
-                  <ToggleButton value="trace">
+                  {/* The theme lifts a `small` ToggleButton only below `sm`;
+                      at desktop and tablet width it is ~39 px (§9.3). */}
+                  <ToggleButton value="trace" sx={{ minHeight: TOUCH_TARGET }}>
                     <LayerDot color={layer.trace} style={layerDash.trace} />
                     {de.admin.werkbank.layerTrace}
                   </ToggleButton>
-                  <ToggleButton value="engine">
+                  <ToggleButton value="engine" sx={{ minHeight: TOUCH_TARGET }}>
                     <LayerDot color={layer.engine} style={layerDash.engine} />
                     {de.admin.werkbank.layerEngine}
                   </ToggleButton>
@@ -727,7 +744,7 @@ export function JoinView() {
           how a single odd join is checked against the whole class it belongs
           to, which is the step the doctrine asks for before an override. */}
       <Box sx={{ mt: 2 }}>
-        <Button size="small" onClick={() => setMatrixOpen((v) => !v)}>
+        <Button size="small" sx={{ minHeight: TOUCH_TARGET }} onClick={() => setMatrixOpen((v) => !v)}>
           {matrixOpen ? t.hideMatrix : t.showMatrix}
         </Button>
         <Collapse in={matrixOpen} unmountOnExit>

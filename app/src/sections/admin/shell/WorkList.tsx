@@ -19,7 +19,8 @@
 
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Box, Button, Chip, Collapse, ToggleButton, ToggleButtonGroup, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Chip, Collapse, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { useId } from 'react';
 import type { ReactNode } from 'react';
 
 import { de, fmt } from '@/locales/admin';
@@ -107,33 +108,48 @@ export function ListSortSwitch({
   onChange: (token: string) => void;
   label: string;
 }) {
+  // WHY a sort cannot be chosen is a reason the reader acts on („kein Score
+  // gelesen"), and a disabled button takes no focus — so in a tooltip it was
+  // reachable by mouse alone (V25). It stands under the switch as text, and the
+  // disabled button points at ITS OWN line with `aria-describedby` so a screen
+  // reader hears the two together.
+  //
+  // One line per blocked option, each named by the option it belongs to: three
+  // overviews mount this component, a page can show more than one blocked
+  // option, and a single merged sentence („kein Score gelesen · keine Spur")
+  // leaves the reader to guess which greyed button it explains. The id prefix
+  // comes from `useId` for the same reason — a hard-coded one is a duplicate
+  // waiting for two instances to meet on one screen.
+  const blocked = options.filter((option) => option.disabled && option.disabledHint);
+  const hintBase = useId();
+  const hintId = (token: string) => `${hintBase}${token}`;
   return (
-    <ToggleButtonGroup
-      size="small"
-      exclusive
-      value={sort}
-      onChange={(_, value: string | null) => value && onChange(value)}
-      aria-label={label}
-    >
-      {options.map((option) =>
-        option.disabled ? (
-          // A disabled control swallows its hover events, so the tooltip needs
-          // the span wrapper — and it exists only in that state, or the enabled
-          // button would carry an empty description.
-          <Tooltip key={option.token} title={option.disabledHint ?? ''} describeChild>
-            <span>
-              <ToggleButton value={option.token} disabled sx={target}>
-                {option.label}
-              </ToggleButton>
-            </span>
-          </Tooltip>
-        ) : (
-          <ToggleButton key={option.token} value={option.token} sx={target}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-start' }}>
+      <ToggleButtonGroup
+        size="small"
+        exclusive
+        value={sort}
+        onChange={(_, value: string | null) => value && onChange(value)}
+        aria-label={label}
+      >
+        {options.map((option) => (
+          <ToggleButton
+            key={option.token}
+            value={option.token}
+            disabled={option.disabled}
+            aria-describedby={option.disabled && option.disabledHint ? hintId(option.token) : undefined}
+            sx={target}
+          >
             {option.label}
           </ToggleButton>
-        ),
-      )}
-    </ToggleButtonGroup>
+        ))}
+      </ToggleButtonGroup>
+      {blocked.map((option) => (
+        <Typography key={option.token} id={hintId(option.token)} variant="caption" color="text.secondary">
+          {`${option.label} — ${option.disabledHint}`}
+        </Typography>
+      ))}
+    </Box>
   );
 }
 

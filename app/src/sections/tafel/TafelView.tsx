@@ -27,6 +27,7 @@ import { PublicLayout } from '@/layouts/public/PublicLayout';
 import { chartUrl } from '@/lib/api';
 import type { SourceOut } from '@/lib/api';
 import { de } from '@/locales';
+import { focusRingSx } from '@/styles/focusRing';
 import { hitArea } from '@/styles/hitArea';
 import { garamond, paper } from '@/styles/paper';
 import { useGrundtafeln, type Grundtafel } from '@/sections/tafel/useGrundtafeln';
@@ -192,6 +193,10 @@ export function OriginalScan({ source }: { source: SourceOut }) {
           lineHeight: 0,
           // while zoomed we pan ourselves, so stop the browser from scrolling
           touchAction: zoomed ? 'none' : 'auto',
+          // A hand-built control: `role="button"` on a `Box`, so neither the
+          // `ButtonBase` nor the `MuiLink` rule reaches it and a keyboard
+          // reader saw Chrome's 1 px default. The shared token (§9.1).
+          ...focusRingSx,
         }}
       >
         <Box

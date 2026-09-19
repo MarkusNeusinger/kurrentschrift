@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-19): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **102
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **103
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars.
 > **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
@@ -651,6 +651,13 @@ als Vorgabe), über die Admin-API abgelegt, in der Werkbank nur gezeigt —
 Reihenfolge, Richtung und Absetzer. Die Saat ist der Tafel-Duktus, nicht
 diese Hand. `core/eigenhand/pfad.py`.
 → [§5](glossar.md#5-werkbank-und-prozess) · eigenhand-erfassung.md §7.5
+
+**Fokusring** *(`focusRing`)* — der eine sichtbare Tastaturfokus: 2 px
+Viridian, 2 px Abstand, exportiert aus `app/src/styles/focusRing.ts` und vom
+Theme in seine drei MUI-Regeln gereicht. Wer ein eigenes fokussierbares
+Element baut (ein nacktes `<button>`), nimmt `focusRingSx` daraus — nie einen
+handgeschriebenen `outline`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · design-system.md §9.1
 
 ---
 

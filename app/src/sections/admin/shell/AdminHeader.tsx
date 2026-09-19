@@ -9,7 +9,9 @@
 //
 // It carries everything that is true for the WHOLE workbench and nothing that
 // belongs to a single view: the four areas (Buchstaben · Übergänge · Wörter ·
-// Eigenhand) and the Auftragskorb with its open count. The letter grid that
+// Eigenhand) and the way into the Auftragskorb — the open COUNT sits one row
+// down in the Scope-Leiste, as words in the field that names the Vorlage the
+// basket belongs to. The letter grid that
 // used to sit here permanently moved into the Buchstaben view, where it belongs
 // — see LetterPicker.
 //
@@ -20,7 +22,7 @@
 // one block.
 
 import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
-import { Badge, Box, IconButton, Tooltip } from '@mui/material';
+import { Box, IconButton, Tooltip } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 
 import { HeaderBar, HeaderNavLink, Wordmark } from '@/components/HeaderBar';
@@ -28,6 +30,7 @@ import { useAdmin } from '@/context/adminState';
 import { de, fmt, styleLabel } from '@/locales/admin';
 import { paths } from '@/routes/paths';
 import { ScopeBar } from '@/sections/admin/shell/ScopeBar';
+import { hitArea } from '@/styles/hitArea';
 
 const AREAS = [
   { to: paths.admin.letters, label: de.admin.shell.areaLetters },
@@ -46,9 +49,16 @@ export function AdminHeader({ openCount, onOpenKorb }: { openCount: number | nul
   // button says it in its name, so the two never disagree — and it names the
   // same two halves the bar does, style AND id: Kurrent alone is taught by two
   // charts here, so „der Vorlage Kurrent" would be the name of two baskets.
-  const korbLabel = source
-    ? fmt(t.korbScoped, { style: styleLabel(source.style_id), id: source.id })
-    : t.openKorb;
+  //
+  // The count rides along where it is known. The removed badge had it, and the
+  // Scope-Leiste has it — but on a phone the bar scrolls its ACTIVE field into
+  // view, and on /admin/eigenhand that is the Hand field, so the Vorlage field
+  // carrying „⚑ 3 offen" can be off screen. One name, both facts.
+  const korbLabel = !source
+    ? t.openKorb
+    : openCount
+      ? fmt(t.korbScopedOpen, { style: styleLabel(source.style_id), id: source.id, n: openCount })
+      : fmt(t.korbScoped, { style: styleLabel(source.style_id), id: source.id });
 
   return (
     <HeaderBar
@@ -105,14 +115,23 @@ export function AdminHeader({ openCount, onOpenKorb }: { openCount: number | nul
 
       <Tooltip title={korbLabel}>
         {/* At xs the nav drops to its own row, so nothing pushes the Korb
-            right any more — `ml: auto` on this row does. */}
-        <IconButton size="small" aria-label={korbLabel} onClick={onOpenKorb} sx={{ ml: { xs: 'auto', sm: 0 } }}>
-          {/* No badge at all while the count is unknown (the read is
-              admin-gated and may 401) — a silent "0" would claim an empty
-              basket the header never actually read. */}
-          <Badge badgeContent={openCount ?? 0} color="warning" invisible={!openCount}>
-            <FlagOutlinedIcon fontSize="small" />
-          </Badge>
+            right any more — `ml: auto` on this row does.
+            The tooltip is a NAME for an icon-only button, not state: the same
+            words are its `aria-label`, so nothing lives in the hover alone.
+            30 × 30 painted, 44 × 44 caught — it stands alone at the end of the
+            row, which is where an invisible hit area is the right tool (§9.3).
+
+            The badge is gone. It set the count in MUI's 12 px badge type, under
+            the §9 floor, and it said in colour what the Scope-Leiste right
+            below now says in words („⚑ 3 offen" in the Vorlagen-Feld, V25).
+            One flag, one count, and the count is readable. */}
+        <IconButton
+          size="small"
+          aria-label={korbLabel}
+          onClick={onOpenKorb}
+          sx={[hitArea(), { ml: { xs: 'auto', sm: 0 } }]}
+        >
+          <FlagOutlinedIcon fontSize="small" />
         </IconButton>
       </Tooltip>
     </HeaderBar>

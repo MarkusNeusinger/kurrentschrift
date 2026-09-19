@@ -13,6 +13,7 @@ import { visuallyHidden } from '@mui/utils';
 import type { ReactNode } from 'react';
 
 import { de } from '@/locales/admin';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 import { display, garamond, letterpress, paper } from '@/styles/paper';
 
 // The three states every occurrence-backed block shares. Kept here rather than
@@ -129,7 +130,24 @@ export function ViewHeader({
           title
         )}
         {chips && <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>{chips}</Box>}
-        {children && <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', ml: { sm: 'auto' } }}>{children}</Box>}
+        {/* The actions of a view head are `size="small"` Buttons, i.e. ~32.5 px
+            — under the §9.3 floor, and invisible to the standing sweep because
+            they only exist in a DETAIL state no route loads by itself. The
+            floor sits on the container rather than on each call site: there are
+            five heads and the next one would arrive without it. */}
+        {children && (
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 1,
+              flexWrap: 'wrap',
+              ml: { sm: 'auto' },
+              '& > *': { minHeight: TOUCH_TARGET },
+            }}
+          >
+            {children}
+          </Box>
+        )}
       </Box>
       {intro && (
         <Typography variant="body2" sx={{ mt: 0.75, maxWidth: '47rem', color: paper.inkSoft }}>
@@ -163,7 +181,14 @@ export function Panel({
         <Typography component="h2" variant="subtitle2" sx={{ flex: 1, minWidth: 0, color: paper.ink }}>
           {title}
         </Typography>
-        {actions}
+        {/* Same floor as the view head above, for the same reason: a panel's
+            actions are `size="small"` and live in detail states the standing
+            sweep never loads. */}
+        {actions && (
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', '& > *': { minHeight: TOUCH_TARGET } }}>
+            {actions}
+          </Box>
+        )}
       </Box>
       {caption && (
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>

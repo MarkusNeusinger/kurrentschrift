@@ -10,6 +10,7 @@ import { Box, Typography } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material/styles';
 import { Link as RouterLink } from 'react-router-dom';
 
+import { focusRing } from '@/styles/focusRing';
 import { display, paper } from '@/styles/paper';
 
 interface PaperCardLinkProps {
@@ -42,7 +43,7 @@ export function PaperCardLink({ to, children, sx }: PaperCardLinkProps) {
             transform: 'translateY(-2px)',
             boxShadow: '0 8px 24px rgba(36,26,16,0.10)',
           },
-          '&:focus-visible': { outline: `2px solid ${paper.viridian}`, outlineOffset: 3 },
+          '&:focus-visible': focusRing,
           '&:hover .card-cta::after, &:focus-visible .card-cta::after': { width: '100%' },
         },
         ...(Array.isArray(sx) ? sx : sx ? [sx] : []),

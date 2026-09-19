@@ -34,6 +34,7 @@ import {
   Alert,
   Box,
   Button,
+  ButtonBase,
   Chip,
   CircularProgress,
   Dialog,
@@ -47,11 +48,10 @@ import {
   TextField,
   ToggleButton,
   ToggleButtonGroup,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { RefObject } from 'react';
+import type { ReactNode, RefObject } from 'react';
 
 import { fetchEigenhandStrip, getEigenhandPfade, getEigenhandStrips } from '@/lib/api';
 import type {
@@ -76,7 +76,8 @@ import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { Panel } from '@/sections/admin/shell/Panel';
 import { PathOverlay } from '@/sections/admin/shell/PathOverlay';
 import type { Stroke } from '@/sections/admin/shell/pathOverlay';
-import { paper } from '@/styles/paper';
+import { TOUCH_TARGET } from '@/styles/hitArea';
+import { mono, paper } from '@/styles/paper';
 
 // CSS pixels per stored pixel. ¼ is what the old fixed tile height came to on
 // a 300-dpi strip; 1:1 shows the scan as captured.
@@ -310,13 +311,7 @@ function PfadCaption({ pfade, flecken }: { pfade: EigenhandPfad[]; flecken: Eige
   );
   return (
     <Stack direction="row" spacing={1} sx={{ mt: 0.5, flexWrap: 'wrap', rowGap: 0.5, alignItems: 'center' }}>
-      {herkunft.gemischt ? (
-        <Tooltip title={<Box sx={{ whiteSpace: 'pre-line' }}>{[t.pfadMixedHint, ...herkunft.laeufe].join('\n')}</Box>}>
-          {pedigree}
-        </Tooltip>
-      ) : (
-        pedigree
-      )}
+      {pedigree}
       {/* The Herkunfts-Chip, beside the other markers of this row rather than
           inside the caption (author decision 2026-09-18, Q8 b). It carries NO
           status colour: „von Hand" names an origin, never a verdict — an
@@ -325,14 +320,23 @@ function PfadCaption({ pfade, flecken }: { pfade: EigenhandPfad[]; flecken: Eige
           its one honest origin, and the differing days are the caption's
           business (`herkunftChipLabel`). */}
       {chipLabel !== null && <Chip size="small" variant="outlined" label={chipLabel} />}
-      <Tooltip title={t.pfadSeedHint}>
-        <Chip size="small" variant="outlined" label={t.pfadSeed} />
-      </Tooltip>
-      {stale && (
-        <Tooltip title={t.pfadStaleHint}>
-          <Chip size="small" color="warning" variant="outlined" label={t.pfadStale} />
-        </Tooltip>
-      )}
+      {/* All three chips are plain `div`s — MUI adds no tabIndex — so what hung
+          in their hovers (which runs a mixed Fassung is made of; where the seed
+          comes from; why the Fassung is stale and what to do about it) was
+          mouse-only. The three are one subject — the provenance and state of
+          THIS Fassung — so they get ONE `InfoHint` for the row (§9.4), which is
+          also one tab stop instead of three. */}
+      <Chip size="small" variant="outlined" label={t.pfadSeed} />
+      {stale && <Chip size="small" color="warning" variant="outlined" label={t.pfadStale} />}
+      <InfoHint title={t.pfadPedigreeMixedTitle} label={t.pfadSeedAria}>
+        <Stack spacing={0.75}>
+          {herkunft.gemischt && (
+            <Box sx={{ whiteSpace: 'pre-line' }}>{[t.pfadMixedHint, ...herkunft.laeufe].join('\n')}</Box>
+          )}
+          <Typography variant="body2">{t.pfadSeedHint}</Typography>
+          {stale && <Typography variant="body2">{t.pfadStaleHint}</Typography>}
+        </Stack>
+      </InfoHint>
     </Stack>
   );
 }
@@ -471,9 +475,17 @@ function PfadRohzahlenChips({ pfade, showBox }: { pfade: EigenhandPfad[]; showBo
                 />
               </>
             ) : (
-              <Tooltip title={t.pfadRohzahlenNoneHint}>
+              // The reason an unmeasured Bahn shows no numbers belongs beside
+              // the chip, not in a hover over it: the chip is a `div`, so the
+              // sentence never reached keyboard or finger. The block's own
+              // InfoHint above says what the numbers are; this one is the
+              // per-Bahn answer „why none".
+              <>
                 <Chip size="small" variant="outlined" label={t.pfadRohzahlenNone} />
-              </Tooltip>
+                <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+                  {t.pfadRohzahlenNoneHint}
+                </Typography>
+              </>
             )}
           </Stack>
         );
@@ -488,14 +500,29 @@ function PfadRohzahlenChips({ pfade, showBox }: { pfade: EigenhandPfad[]; showBo
  * cleaner — that it has been superseded. A Fassung filed before the Befund
  * existed says so rather than showing a blank: a missing reading is not a bad
  * reading, and it must not look like one.
+ *
+ * `extra` rides in the same popover: the tile's head row explains ONE subject —
+ * this Fassung — so it carries one `InfoHint`, not one per chip group (§9.4).
  */
-function BefundChips({ befund }: { befund: EigenhandBefund | null | undefined }) {
+function BefundChips({
+  befund,
+  extra,
+}: {
+  befund: EigenhandBefund | null | undefined;
+  extra?: ReactNode;
+}) {
   const t = de.admin.eigenhand;
   if (!befund) {
     return (
-      <Tooltip title={t.befundNoneHint}>
+      <>
         <Chip size="small" variant="outlined" label={t.befundNone} />
-      </Tooltip>
+        <InfoHint title={t.befundNone} label={t.befundNoneAria}>
+          <Stack spacing={0.75}>
+            <Typography variant="body2">{t.befundNoneHint}</Typography>
+            {extra}
+          </Stack>
+        </InfoHint>
+      </>
     );
   }
   const tooltip = fmt(t.befundTooltip, {
@@ -508,23 +535,32 @@ function BefundChips({ befund }: { befund: EigenhandBefund | null | undefined })
   });
   return (
     <>
-      <Tooltip title={tooltip}>
-        <Chip size="small" color={VORSCHLAG_COLOR[befund.vorschlag]} label={befund.vorschlag} />
-      </Tooltip>
+      <Chip size="small" color={VORSCHLAG_COLOR[befund.vorschlag]} label={befund.vorschlag} />
       <Chip size="small" variant="outlined" label={befund.grund} />
       {befund.rang !== null && befund.von !== null && befund.von > 1 && (
         <Chip size="small" variant="outlined" label={fmt(t.befundRank, { rang: befund.rang, von: befund.von })} />
       )}
       {befund.abgeloest_von && (
-        <Tooltip title={t.befundReplacedHint}>
-          <Chip
-            size="small"
-            variant="outlined"
-            color="info"
-            label={fmt(t.befundReplaced, { fassung: befund.abgeloest_von })}
-          />
-        </Tooltip>
+        <Chip
+          size="small"
+          variant="outlined"
+          color="info"
+          label={fmt(t.befundReplaced, { fassung: befund.abgeloest_von })}
+        />
       )}
+      {/* The six sensor readings behind the verdict, and why a Fassung was
+          superseded — both were hovers over plain `div` chips, i.e. numbers a
+          decision rests on that neither keyboard nor tablet could reach (V25).
+          ONE InfoHint per Fassung carries the whole sheet. */}
+      <InfoHint title={t.befundSheetTitle} label={t.befundSheetAria}>
+        <Stack spacing={0.75}>
+          <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+            {tooltip}
+          </Typography>
+          {befund.abgeloest_von && <Typography variant="body2">{t.befundReplacedHint}</Typography>}
+          {extra}
+        </Stack>
+      </InfoHint>
     </>
   );
 }
@@ -555,14 +591,27 @@ function StripImage({
   return (
     <Box sx={{ overflowX: 'auto', bgcolor: paper.hi, borderRadius: 1 }}>
       <Box sx={{ position: 'relative', display: 'inline-block', lineHeight: 0 }}>
-        <Box
-          component="img"
-          src={url}
-          alt={alt}
-          title={alt}
+        {/* The one way into the Lupe. It was `<Box component="img" onClick>`:
+            no role, no tabIndex, no key handler — the gallery's only affordance
+            was unreachable by keyboard entirely, and it slipped past
+            `jsx-a11y/click-events-have-key-events` only because the JSX element
+            is `Box` rather than `img`. A `ButtonBase` makes it a real button
+            with the theme's focus ring and a name of its own (V24 „jeder
+            Öffner"); the image keeps its optics, so the tile looks unchanged.
+            `alt=""` because the button is already named — a screen reader would
+            otherwise read the same words twice. */}
+        <ButtonBase
           onClick={() => onLupe({ url, title: alt, heightPx })}
-          sx={{ display: 'block', maxWidth: 'none', height: `${heightPx * zoom}px`, cursor: 'zoom-in' }}
-        />
+          aria-label={fmt(de.admin.eigenhand.stripLupeOpen, { was: alt })}
+          sx={{ display: 'block', cursor: 'zoom-in', borderRadius: 1 }}
+        >
+          <Box
+            component="img"
+            src={url}
+            alt=""
+            sx={{ display: 'block', maxWidth: 'none', height: `${heightPx * zoom}px` }}
+          />
+        </ButtonBase>
         {overlay}
       </Box>
     </Box>
@@ -657,26 +706,39 @@ function StripTile({
           })}
         </Typography>
         {loading && <CircularProgress size={14} />}
-        <BefundChips befund={row.befund} />
+        {/* The mask count is a chip of this Fassung like the Befund's are, so
+            what it means rides in the row's ONE hint instead of opening a
+            second (§9.4) — the head row explains one subject: this Fassung. */}
         {flecken.length > 0 && !erasing && (
-          <Tooltip title={t.fleckenChipHint}>
-            <Chip size="small" variant="outlined" label={fmt(t.fleckenChip, { count: flecken.length })} />
-          </Tooltip>
+          <Chip size="small" variant="outlined" label={fmt(t.fleckenChip, { count: flecken.length })} />
         )}
+        <BefundChips
+          befund={row.befund}
+          extra={
+            flecken.length > 0 && !erasing ? (
+              <Typography variant="body2">
+                {`${t.fleckenChipTitle}: ${t.fleckenChipHint}`}
+              </Typography>
+            ) : undefined
+          }
+        />
         <Box sx={{ flexGrow: 1 }} />
+        {/* No tooltip on „Flecken radieren": its content was an INSTRUCTION for
+            the whole erasing mode (how the brush works, and that the stored
+            strip stays byte-for-byte), not a name for the button — and a MUI
+            tooltip needs a 700 ms long-press on the tablet this is operated on.
+            It stands as the mode's own caption inside `FleckenEditor` (V25). */}
         {!erasing && (
-          <Tooltip title={t.fleckenStartHint}>
-            <Button size="small" onClick={startErasing}>
-              {t.fleckenStart}
-            </Button>
-          </Tooltip>
+          <Button size="small" onClick={startErasing} sx={{ minHeight: TOUCH_TARGET }}>
+            {t.fleckenStart}
+          </Button>
         )}
         {open ? (
-          <Button size="small" onClick={() => setOpen(false)} disabled={erasing}>
+          <Button size="small" onClick={() => setOpen(false)} disabled={erasing} sx={{ minHeight: TOUCH_TARGET }}>
             {t.stripHide}
           </Button>
         ) : (
-          <Button size="small" variant="outlined" onClick={() => setOpen(true)}>
+          <Button size="small" variant="outlined" onClick={() => setOpen(true)} sx={{ minHeight: TOUCH_TARGET }}>
             {t.stripShow}
           </Button>
         )}
@@ -903,12 +965,20 @@ function CropTile({
         </Typography>
       )}
       {/* A tile in a gallery has no room for a fold-out, so the sentence stands
-          alone and the raw line rides along as the tooltip — still one hover
-          away, never lost. */}
+          alone and the raw line sits behind the tile's one InfoHint. It used to
+          ride on a native `title=`, which is a hover and nothing else — and the
+          raw line is what says WHICH request failed. */}
       {error && (
-        <Typography variant="caption" sx={{ color: 'warning.main' }} title={error.detail}>
-          {t.stripImagesError} {error.sentence}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
+          <Typography variant="caption" sx={{ color: 'warning.main' }}>
+            {t.stripImagesError} {error.sentence}
+          </Typography>
+          <InfoHint title={t.stripImagesError} label={t.stripErrorAria}>
+            <Typography variant="body2" sx={{ fontFamily: mono, wordBreak: 'break-word' }}>
+              {error.detail}
+            </Typography>
+          </InfoHint>
+        </Box>
       )}
     </Box>
   );
@@ -1086,29 +1156,33 @@ export function StripsPanel({
       caption={caption}
       actions={
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}>
-          <Tooltip title={t.befundSortHint}>
-            <FormControlLabel
-              control={<Switch size="small" checked={byWeakest} onChange={(e) => setByWeakest(e.target.checked)} />}
-              label={<Typography variant="caption">{t.befundSort}</Typography>}
-              sx={{ mr: 0 }}
-            />
-          </Tooltip>
-          <Tooltip title={t.pfadShowHint}>
-            <FormControlLabel
-              control={<Switch size="small" checked={pfade} onChange={(e) => setPfade(e.target.checked)} />}
-              label={<Typography variant="caption">{t.pfadShow}</Typography>}
-              sx={{ mr: 0 }}
-            />
-          </Tooltip>
-          <Tooltip title={t.stripNoRulingsHint}>
-            <FormControlLabel
-              control={
-                <Switch size="small" checked={ohneLineatur} onChange={(e) => setOhneLineatur(e.target.checked)} />
-              }
-              label={<Typography variant="caption">{t.stripNoRulings}</Typography>}
-              sx={{ mr: 0 }}
-            />
-          </Tooltip>
+          {/* A `Tooltip` around a `FormControlLabel` is hover-only: the label
+              is not focusable and MUI composes its `onFocus` onto the label,
+              not onto the switch inside. What each of the three switches DOES
+              therefore never reached the tablet this panel is used on — so the
+              three hints sit in ONE InfoHint at the head of the row. */}
+          <InfoHint title={t.stripSwitchesTitle} label={t.stripSwitchesAria}>
+            <Stack spacing={0.75}>
+              <Typography variant="body2">{`${t.befundSort} — ${t.befundSortHint}`}</Typography>
+              <Typography variant="body2">{`${t.pfadShow} — ${t.pfadShowHint}`}</Typography>
+              <Typography variant="body2">{`${t.stripNoRulings} — ${t.stripNoRulingsHint}`}</Typography>
+            </Stack>
+          </InfoHint>
+          <FormControlLabel
+            control={<Switch size="small" checked={byWeakest} onChange={(e) => setByWeakest(e.target.checked)} />}
+            label={<Typography variant="caption">{t.befundSort}</Typography>}
+            sx={{ mr: 0 }}
+          />
+          <FormControlLabel
+            control={<Switch size="small" checked={pfade} onChange={(e) => setPfade(e.target.checked)} />}
+            label={<Typography variant="caption">{t.pfadShow}</Typography>}
+            sx={{ mr: 0 }}
+          />
+          <FormControlLabel
+            control={<Switch size="small" checked={ohneLineatur} onChange={(e) => setOhneLineatur(e.target.checked)} />}
+            label={<Typography variant="caption">{t.stripNoRulings}</Typography>}
+            sx={{ mr: 0 }}
+          />
           <ToggleButtonGroup
             size="small"
             exclusive
@@ -1116,8 +1190,18 @@ export function StripsPanel({
             aria-label={t.stripZoom}
             onChange={(_e, value: Zoom | null) => value && setZoom(value)}
           >
+            {/* „¼ ½ 1:1 2×" measured 27–35 × 31 px — the smallest targets left
+                on the page the author works on with a finger. A group's buttons
+                touch, so they grow in BOTH edges rather than overlapping each
+                other's hit areas (§9.3). The sweep never caught them: it only
+                sees this page's shell, because no hand is resolved until one is
+                chosen and no script can operate a picker. */}
             {ZOOMS.map((level) => (
-              <ToggleButton key={level} value={level} sx={{ px: 1, py: 0.25, textTransform: 'none' }}>
+              <ToggleButton
+                key={level}
+                value={level}
+                sx={{ px: 1, py: 0.25, textTransform: 'none', minWidth: TOUCH_TARGET, minHeight: TOUCH_TARGET }}
+              >
                 {ZOOM_LABELS[level]}
               </ToggleButton>
             ))}

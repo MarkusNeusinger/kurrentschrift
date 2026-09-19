@@ -19,13 +19,15 @@ import {
   TextField,
   ToggleButton,
   ToggleButtonGroup,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
+import { InfoHint } from '@/components/InfoHint';
 import { WrittenWord } from '@/components/WrittenWord';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 import { useAdmin } from '@/context/adminState';
 import { fetchRenderWord, getWordSampleScore } from '@/lib/api';
 import type { ComposedWordOut, WordSampleScoreOut } from '@/lib/api';
@@ -52,6 +54,37 @@ import { WordSpineCard } from './WordSpineCard';
 import { WORD_LIST_SPEC, scoreOutcome, type ScoreEntry } from './wordRows';
 
 const WORD_H = 130; // px — the composed word, large enough to judge the rhythm
+// A chip that NAVIGATES carries the touch floor; a chip that only states
+// something does not (§9.3 — the floor is for targets, not for labels).
+const NAV_CHIP = { height: TOUCH_TARGET, minWidth: TOUCH_TARGET } as const;
+const LAYER_TARGET = { minHeight: TOUCH_TARGET } as const;
+
+/**
+ * A 44 px box around an `InfoHint` for the one place it does NOT stand alone.
+ *
+ * `InfoHint` paints a 26 px mark and takes the rest of the floor from
+ * `hitArea`, which only works where nothing stands within 9 px. In this header
+ * row the chips sit 4 px apart, so the neighbour would cover 5 px of that
+ * invisible area on each side and the mark would silently fall under the floor
+ * again — the §9.3 rule „overlay only where the element stands alone", read the
+ * other way round. Reserving the space is the honest fix; the mark's optics do
+ * not change.
+ */
+function HintSlot({ children }: { children: ReactNode }) {
+  return (
+    <Box
+      sx={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: TOUCH_TARGET,
+        minHeight: TOUCH_TARGET,
+      }}
+    >
+      {children}
+    </Box>
+  );
+}
 
 export function WordView() {
   const [params, setParams] = useSearchParams();
@@ -286,7 +319,12 @@ export function WordView() {
         helperText={t.freeTextHint}
         sx={{ width: { xs: '100%', sm: 300 } }}
       />
-      <Button size="small" variant="contained" sx={{ mt: 0.5 }} onClick={() => focus(draft.trim() || null)}>
+      <Button
+        size="small"
+        variant="contained"
+        sx={{ mt: 0.5, minHeight: TOUCH_TARGET }}
+        onClick={() => focus(draft.trim() || null)}
+      >
         {t.freeTextSubmit}
       </Button>
     </Box>
@@ -338,13 +376,24 @@ export function WordView() {
                 folded in — a separate number under their own name is the only
                 way both statements stay true. */}
             {foreignCount > 0 && (
-              <Tooltip title={de.admin.werkbank.foreignSetHint}>
+              <>
                 <Chip
                   size="small"
                   variant="outlined"
                   label={fmt(de.admin.werkbank.foreignCount, { count: foreignCount })}
                 />
-              </Tooltip>
+                {/* „zählt in keine Statistik dieser Hand" is a decision, not a
+                    detail — so it is not allowed to live in a hover over an
+                    unfocusable chip (V25). */}
+                <HintSlot>
+                  <InfoHint
+                    title={fmt(de.admin.werkbank.foreignCount, { count: foreignCount })}
+                    label={de.admin.werkbank.foreignSetAria}
+                  >
+                    {de.admin.werkbank.foreignSetHint}
+                  </InfoHint>
+                </HintSlot>
+              </>
             )}
             {missing.length > 0 && (
               <Chip size="small" color="warning" label={`${de.admin.compare.missingPrefix}${missing.join(', ')}`} />
@@ -375,21 +424,36 @@ export function WordView() {
                     carries the line's STROKE STYLE too — two of the three hues
                     are one colour for a deuteranope, so the label and the dash
                     are what actually tell them apart. */}
-                <ToggleButton value="trace">
+                {/* The theme lifts a `small` ToggleButton to the floor only
+                    below `sm`; at desktop and tablet width it is ~39 px, and
+                    this group lives in an evidence state no route sweep loads
+                    by itself. Grown, because a group's buttons touch (§9.3). */}
+                <ToggleButton value="trace" sx={LAYER_TARGET}>
                   <LayerDot color={layer.trace} style={layerDash.trace} />
                   {de.admin.werkbank.layerTrace}
                 </ToggleButton>
-                <Tooltip title={de.admin.werkbank.layerPathHint}>
-                  <ToggleButton value="path">
-                    <LayerDot color={layer.path} style={layerDash.path} />
-                    {de.admin.werkbank.layerPath}
-                  </ToggleButton>
-                </Tooltip>
-                <ToggleButton value="engine">
+                <ToggleButton value="path" sx={LAYER_TARGET}>
+                  <LayerDot color={layer.path} style={layerDash.path} />
+                  {de.admin.werkbank.layerPath}
+                </ToggleButton>
+                <ToggleButton value="engine" sx={LAYER_TARGET}>
                   <LayerDot color={layer.engine} style={layerDash.engine} />
                   {de.admin.werkbank.layerEngine}
                 </ToggleButton>
               </ToggleButtonGroup>
+            )}
+            {/* What „Bewegung" draws — and that switching it on brings the Bahn
+                with it — hung in a hover over the toggle. Its own label names
+                the layer; the sentence is a DESCRIPTION plus a behaviour the
+                reader would otherwise find surprising, so it moves out of the
+                hover (V25, §9.4). One hint for the layer switch, not one per
+                button. */}
+            {evidence.length > 0 && (
+              <HintSlot>
+                <InfoHint title={de.admin.werkbank.layersLabel} label={de.admin.werkbank.layersAria}>
+                  {de.admin.werkbank.layerPathHint}
+                </InfoHint>
+              </HintSlot>
             )}
           </>
         }
@@ -433,6 +497,10 @@ export function WordView() {
         {/* 2 — what it is made of: the way into the other two views, for a
             typed word exactly as for a harvested one. */}
         <Panel title={t.partsTitle} caption={t.partsCaption}>
+          {/* These chips are the way OUT of this view into the other two, i.e.
+              primary navigation — and MUI's small chip is 28 px with 4 px
+              between neighbours, so they grow to the floor rather than wear a
+              hit area that would reach into the chip next to them (§9.3). */}
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
             {letterKeys.map((key, i) => (
               <Chip
@@ -443,6 +511,7 @@ export function WordView() {
                 color={missing.includes(key) ? 'warning' : 'default'}
                 label={key}
                 onClick={() => navigate(lettersUrl(key, ownHand))}
+                sx={NAV_CHIP}
               />
             ))}
           </Box>
@@ -460,6 +529,7 @@ export function WordView() {
                   clickable
                   label={`${join.leftKey}→${join.rightKey}`}
                   onClick={() => navigate(joinsUrl(join.leftKey, join.rightKey, ownHand))}
+                  sx={NAV_CHIP}
                 />
               ))
             )}
@@ -508,9 +578,18 @@ export function WordView() {
                     ) : outcome === 'failed' ? (
                       <Chip size="small" color="error" variant="outlined" label={de.admin.compare.scoreFailed} />
                     ) : outcome === 'measured' ? (
-                      <Tooltip title={t.scoreHint}>
-                        <Chip size="small" variant="outlined" label={`Loss ${(score as WordSampleScoreOut).loss.toFixed(2)}`} />
-                      </Tooltip>
+                      <>
+                        <Chip
+                          size="small"
+                          variant="outlined"
+                          label={`Loss ${(score as WordSampleScoreOut).loss.toFixed(2)}`}
+                        />
+                        {/* What the ruler IS belongs to a control, not to a
+                            hover over a `div` chip (V25). */}
+                        <InfoHint title={de.admin.compare.scoreLossTitle} label={de.admin.compare.scoreLossAria}>
+                          {t.scoreHint}
+                        </InfoHint>
+                      </>
                     ) : (
                       <Button size="small" onClick={() => runScore(sample.id)}>
                         {t.scoreButton}

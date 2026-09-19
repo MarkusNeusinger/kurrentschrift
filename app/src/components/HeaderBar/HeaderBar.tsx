@@ -21,6 +21,7 @@ import { Link as RouterLink } from 'react-router-dom';
 
 import { PAGE_WIDTHS } from '@/components/PageContainer';
 import { de } from '@/locales';
+import { focusRing, focusRingSx } from '@/styles/focusRing';
 import { hitArea, TOUCH_TARGET } from '@/styles/hitArea';
 import { display, paper } from '@/styles/paper';
 
@@ -107,6 +108,12 @@ export function Wordmark({ to, onClick }: WordmarkProps) {
         // as drawn, so it takes the §9.3 floor from an invisible hit area. It
         // stands alone in the bar, so an overlay steals nothing.
         ...hitArea(),
+        // It is a `Box component={RouterLink}`, so neither the `MuiLink` rule
+        // nor `ButtonBase` reaches it and Chrome's 1 px default ring was all a
+        // keyboard reader got on the FIRST stop of every page (measured
+        // 2026-09-19). The shared token, like every other hand-built focusable
+        // (§9.1).
+        ...focusRingSx,
         display: 'inline-flex',
         alignItems: 'baseline',
         textDecoration: 'none',
@@ -192,8 +199,9 @@ export function HeaderNavLink({ label, to, active, exact = false, sx }: HeaderNa
           px: 0.5,
           '&:hover': { color: paper.ink },
           '&:hover .navrule::after': { width: '100%' },
-          // Visible keyboard-focus ring (2px viridian, offset).
-          '&:focus-visible': { color: paper.ink, outline: `2px solid ${paper.viridian}`, outlineOffset: 3 },
+          // Visible keyboard-focus ring — the shared token, not a second
+          // literal with its own offset (§9.1).
+          '&:focus-visible': { color: paper.ink, ...focusRing },
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}

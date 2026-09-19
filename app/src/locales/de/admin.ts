@@ -54,6 +54,11 @@ export const admin = {
     // style alone does not say WHICH basket this is.
     korbOpen: '{{n}} offen',
     korbScoped: 'Auftragskorb der Vorlage {{style}} · {{id}} öffnen',
+    // With the badge gone, the flag itself is the only carrier of the count on
+    // a phone: the Scope-Leiste scrolls its ACTIVE field into view, which on
+    // /admin/eigenhand is the Hand field, so the Vorlage field with its „⚑ 3
+    // offen" can sit off screen. The number rides in the button's name too.
+    korbScopedOpen: 'Auftragskorb der Vorlage {{style}} · {{id}} öffnen — {{n}} offen',
     closeKorb: 'Auftragskorb schließen',
     startEyebrow: 'Werkbank',
     startTitle: 'Welche Vorlage?',
@@ -138,6 +143,10 @@ export const admin = {
     // it, so the page keeps a document outline (see ViewHeader `titleText`).
     letterHeading: 'Buchstabe {{key}}',
     pickLetter: 'Buchstabe wählen',
+    // The chip SHOWS the open letter, and an `aria-label` replaces what it
+    // shows — so the name says which letter is open, not only what the control
+    // is for.
+    pickLetterChosen: 'Buchstabe {{glyph}} — anderen wählen',
     prevLetter: 'Vorheriger Buchstabe',
     nextLetter: 'Nächster Buchstabe',
     toOverview: 'Alle Buchstaben',
@@ -194,6 +203,11 @@ export const admin = {
     landmarksRowLaufform: 'Laufform (Variante 100)',
     landmarksCount: '{{count}} Marken',
     landmarksLegend: 'Legende',
+    // The legend's ONE explanation. The seven definitions below used to hang as
+    // a native `title=` on the seven filter chips — hover only, so a reader on
+    // the tablet or at the keyboard never met a single one (V25, §9.4).
+    landmarkKindsTitle: 'Was die Marken bedeuten',
+    landmarkKindsAria: 'Die Landmarken-Arten erklären',
     // The vocabulary the overlay draws and the Korb files against.
     landmarkKind: {
       crossing: 'Kreuzung',
@@ -315,6 +329,13 @@ export const admin = {
     joinHeading: 'Übergang {{left}} → {{right}}',
     pickLeft: 'links',
     pickRight: 'rechts',
+    // The chip SHOWS the chosen letter; an `aria-label` replaces what it shows,
+    // so „links" alone would leave a screen reader without the one thing the
+    // control states. Name the side AND the current value.
+    pickLeftEmpty: 'Linken Buchstaben wählen',
+    pickRightEmpty: 'Rechten Buchstaben wählen',
+    pickLeftChosen: 'Links: {{glyph}} — anderen Buchstaben wählen',
+    pickRightChosen: 'Rechts: {{glyph}} — anderen Buchstaben wählen',
     freeTextLabel: 'Kombination eintippen',
     freeTextHint: 'Zwei Zeichen, z. B. „ab“ — auch ohne Vorkommen.',
     freeTextSubmit: 'Ansehen',
@@ -422,6 +443,7 @@ export const admin = {
     reviewBareToggle: 'Nur die Bahn',
     reviewOpenWord: 'Zum Wort',
     reviewDevChip: 'Entwicklungssatz',
+    reviewChipsAria: 'Was die Marken dieser Zeile bedeuten',
     reviewDevChipHint:
       'Eines der zehn eingefrorenen Lineal-Wörter des Trace-Benchs — neu speichern verändert die Referenz aller bisherigen Messungen.',
     reviewFrameStale: 'Rahmen veraltet',
@@ -586,12 +608,15 @@ export const admin = {
     scoreFailed: 'nicht bewertbar',
     scoreError: 'Einzelne Scores konnten nicht berechnet werden.',
     scoreWorstSegments: 'Größte Abweichungen:',
+    scoreLossTitle: 'Loss dieser Wortprobe',
+    scoreLossAria: 'Loss erklären',
     openPairEditor: 'Im Paar-Editor öffnen',
     // „Measured vs. composed" on the pair cards (Handmodell H2): what the
     // occurrence and the aggregate layers know about exactly this join. The
     // detailed numbers in the tooltip deliberately reuse the wording of the
     // Werkbank lens (the same statistic must not be named twice differently).
     measuredLabel: 'Gemessen',
+    measuredSheetAria: 'Gemessene Werte im Einzelnen',
     measuredGenChamfer: 'Generator-Abstand ⌀ {{value}}',
     // The four reasons a card can carry no measured median, short enough for
     // the chip row — the tooltip spells each of them out in the Werkbank's
@@ -750,6 +775,10 @@ export const admin = {
     // where the reader looks — never only in the tooltip, because „zählt nicht
     // mit" is a decision, not a detail.
     foreignSetChip: 'andere Hand · {{set}}',
+    foreignSetAria: 'Was „andere Hand" bedeutet',
+    // The one clause of `foreignSetHint` that has to be READABLE on a work-list
+    // row: the consequence. The full sentence stays in the card's InfoHint.
+    foreignSetShort: 'zählt in keine Statistik dieser Hand',
     foreignSetHint:
       'Diese Wortprobe stammt aus einem anderen Satz der Vorlage und damit von einer anderen Hand. Sie steht hier als Kontext — in keine Statistik und in keine Kopfzahl dieser Hand geht sie ein, und nachgefahren wird sie hier nicht.',
     // The head of the word detail counts the foreign samples under their own
@@ -779,6 +808,7 @@ export const admin = {
     faceWrittenPending: 'wird geschrieben …',
     // The per-layer switches above the cards.
     layersLabel: 'Ebenen über der Vorlage',
+    layersAria: 'Die Ebenen erklären',
     // Both buttons show the SAME line, so they cannot both be „Bahn": the
     // second one is named after what it ADDS — the writing movement — which is
     // what its hint has said all along (author decision 2026-09-18, Q8 b, and
@@ -1078,8 +1108,10 @@ export const admin = {
   // Bulk re-derive of all authored glyphs (RederiveAllDialog).
   rederive: {
     button: 'Alle neu ableiten',
-    buttonTooltip:
-      'Alle erstellten Glyphen mit aktuellem Code und aktueller Ankerdichte neu berechnen und überschreiben — mit Vorher/Nachher-Tabelle pro Buchstabe',
+    // The button had a hover that described the overwrite. It said what `intro`
+    // says one click later, where every reader meets it and nothing has been
+    // written yet — so the hover was a mouse-only duplicate of a warning, and
+    // a second home for one sentence is how wording drifts (V25, §9.4).
     title: 'Alle Glyphen neu ableiten',
     intro:
       'Berechnet jede erstellte Glyphe aus ihrem Roh-Weg neu (aktueller Code, aktuelle Ankerdichte) und überschreibt die gespeicherte Vorlage — mit Score vorher/nachher pro Buchstabe. Rote Δ-Werte heißen: verschlechtert — in der Diagnose prüfen.',
@@ -1333,6 +1365,13 @@ export const admin = {
     stripImagesEmpty:
       'Noch keine Streifenbilder hochgeschoben. Sobald angenommene Fassungen ohne Bild vorliegen, steht der Befehl dazu im Bestand unter „Am Rechner weiter".',
     stripImagesError: 'Der Streifen konnte nicht geladen werden.',
+    stripErrorAria: 'Fehlermeldung im Wortlaut',
+    // The gallery's one opener, named: „Streifen-Bild s03/F01 · Übung groß
+    // ansehen". A tile carries several controls, so „vergrößern" alone would
+    // not say WHICH image.
+    stripLupeOpen: '{{was}} groß ansehen',
+    stripSwitchesTitle: 'Die drei Schalter',
+    stripSwitchesAria: 'Die drei Schalter erklären',
     stripShow: 'Streifen zeigen',
     stripHide: 'einklappen',
     stripWhole: 'ganzer Streifen',
@@ -1385,6 +1424,12 @@ export const admin = {
     pfadPedigreeMixed: 'Bahn: verschiedene Läufe · {{woerter}} Wort/Wörter',
     pfadMixedHint:
       'Die Bahnen dieser Fassung stammen aus mehreren Läufen — einzelne Wörter wurden später noch einmal gefolgt. Herkunft je Wort:',
+    // Names of the InfoHints that replaced the hover-only hints of this panel
+    // (V25): a Tooltip over a chip nothing can focus reaches neither keyboard
+    // nor finger. One hint per Fassung row carries all three subjects, so the
+    // title names the row rather than any single chip (§9.4).
+    pfadPedigreeMixedTitle: 'Diese Fassung',
+    pfadSeedAria: 'Herkunft, Saat und Maske dieser Fassung erklären',
     // The old sentence carried its command in the middle of running text, with
     // „…" instead of the strip and the Fassung and no copy button — exactly
     // the case the Übergabekarte exists for. It is a card at the Fassung now,
@@ -1440,6 +1485,9 @@ export const admin = {
     befundNone: 'kein Befund',
     befundNoneHint:
       'Diese Fassung wurde abgelegt, bevor der Streifen-Befund gemessen wurde. Fehlende Messung heißt nicht schlechte Fassung.',
+    befundNoneAria: 'Warum kein Befund',
+    befundSheetTitle: 'Befund dieser Fassung',
+    befundSheetAria: 'Befund dieser Fassung anzeigen',
     befundSort: 'nach Befund sortieren',
     befundSortHint: 'Schwächste Fassung zuerst — was zuerst neu geschrieben werden sollte.',
     // Die Fleckenmaske: die Toner-Punkte des Druckers, entfernt als DATEN.
@@ -1450,6 +1498,8 @@ export const admin = {
     fleckenStartHint:
       'Runder Pinsel: Klick setzt einen Kreis, Klick auf einen vorhandenen nimmt ihn weg. Gespeichert wird die Kreisliste, nie ein verändertes Bild — der Streifen bleibt Byte für Byte, wie er eingelesen wurde.',
     fleckenChip: '{{count}} Fleck(en) maskiert',
+    fleckenChipTitle: 'Maskierte Flecken',
+    fleckenChipAria: 'Maskierte Flecken erklären',
     fleckenChipHint:
       'So viele Kreise trägt dieser Streifen. Beim Abruf wird dort Papierfarbe eingefüllt; das gespeicherte Bild bleibt unverändert.',
     fleckenBrush: 'Pinsel',
@@ -1461,6 +1511,7 @@ export const admin = {
     fleckenSaveError: 'Die Fleckenmaske konnte nicht gespeichert werden.',
     fleckenClose: 'fertig',
     fleckenRaw: 'roh',
+    fleckenRawAria: 'Was „roh" zeigt',
     fleckenRawHint:
       'Zeigt die eingelesenen Bytes mit allen Flecken — zum Nachsehen, was der Drucker wirklich hinterlassen hat.',
     fleckenHint:

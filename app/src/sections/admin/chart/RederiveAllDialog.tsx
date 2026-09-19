@@ -184,9 +184,20 @@ export function RederiveAllDialog({ open, onClose }: Props) {
                           <Typography variant="caption">{r.status === 'scoring' ? t.statusScoring : t.statusApplying}</Typography>
                         </Box>
                       ) : (
-                        <Typography variant="caption" color={r.status === 'failed' ? 'error' : 'text.secondary'} title={r.error}>
-                          {r.status === 'pending' ? t.statusPending : r.status === 'done' ? t.statusDone : t.statusFailed}
-                        </Typography>
+                        <>
+                          <Typography variant="caption" color={r.status === 'failed' ? 'error' : 'text.secondary'}>
+                            {r.status === 'pending' ? t.statusPending : r.status === 'done' ? t.statusDone : t.statusFailed}
+                          </Typography>
+                          {/* WHY a glyph failed rode on a native `title=` — a
+                              hover and nothing else. It is the only line that
+                              says what went wrong, so it stands in the cell
+                              (V25). */}
+                          {r.error && (
+                            <Typography variant="caption" color="error" sx={{ display: 'block' }}>
+                              {r.error}
+                            </Typography>
+                          )}
+                        </>
                       )}
                     </TableCell>
                   </TableRow>

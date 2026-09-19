@@ -31,6 +31,7 @@ import {
 } from '@mui/material';
 import { useEffect, useMemo, useState } from 'react';
 
+import { InfoHint } from '@/components/InfoHint';
 import { WrittenGlyph } from '@/components/WrittenGlyph';
 import { getLandmarks } from '@/lib/api';
 import type { GlyphLandmarksOut, LandmarkOut, TemplateLandmarksOut } from '@/lib/api';
@@ -39,6 +40,7 @@ import { LandmarkOverlay } from '@/sections/admin/letters/LandmarkOverlay';
 import { landmarkColors } from '@/sections/admin/overlayColors';
 import { landmarkKey, type LandmarkRef } from '@/sections/admin/shell/model';
 import { hitArea } from '@/styles/hitArea';
+import { paper } from '@/styles/paper';
 
 // The lens draws bigger than the small faces above it: the markers carry a
 // 44 px hit area (design-system.md §9.3), and at the 190 px face height that
@@ -226,9 +228,29 @@ export function LandmarkPanel({ sourceId, glyphKey, cacheBust, onMark }: Props) 
           {/* Legend AND filter in one control: a chip names the colour, says
               how many of that kind were found, and switches the layer off. */}
           <Box>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-              {`${t.landmarksLegend} · ${fmt(t.landmarksCount, { count: row.landmarks.length })}`}
-            </Typography>
+            <Stack direction="row" spacing={0.5} sx={{ mb: 0.5, alignItems: 'center', flexWrap: 'wrap' }}>
+              <Typography variant="caption" color="text.secondary">
+                {`${t.landmarksLegend} · ${fmt(t.landmarksCount, { count: row.landmarks.length })}`}
+              </Typography>
+              {/* What the seven kinds MEAN hung as a native `title=` on each
+                  chip — hover only, so neither the keyboard nor the tablet ever
+                  saw a definition (V25, design-system.md §9.4). Seven tooltips
+                  are also seven copies of one subject: the legend explains the
+                  legend, once, from a real button (§9.4 „ein Gegenstand, eine
+                  Marke"). */}
+              <InfoHint title={t.landmarkKindsTitle} label={t.landmarkKindsAria}>
+                <Stack spacing={0.75}>
+                  {KIND_ORDER.map((kind) => (
+                    <Typography key={kind} variant="body2">
+                      <Box component="span" sx={{ color: paper.ink, fontWeight: 600 }}>
+                        {t.landmarkKind[kind]}
+                      </Box>
+                      {` — ${t.landmarkKindHint[kind]}`}
+                    </Typography>
+                  ))}
+                </Stack>
+              </InfoHint>
+            </Stack>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, rowGap: 1.5 }}>
               {KIND_ORDER.map((kind) => {
                 const count = present.get(kind) ?? 0;
@@ -241,7 +263,6 @@ export function LandmarkPanel({ sourceId, glyphKey, cacheBust, onMark }: Props) 
                     variant={off ? 'outlined' : 'filled'}
                     onClick={() => toggleKind(kind)}
                     aria-pressed={!off}
-                    title={t.landmarkKindHint[kind]}
                     label={`${t.landmarkKind[kind]} · ${count}`}
                     sx={{
                       height: 32,

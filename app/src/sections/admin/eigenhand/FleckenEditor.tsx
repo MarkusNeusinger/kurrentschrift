@@ -28,11 +28,11 @@ import {
   Switch,
   ToggleButton,
   ToggleButtonGroup,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import { useRef, useState } from 'react';
 
+import { InfoHint } from '@/components/InfoHint';
 import { patchEigenhandFlecken } from '@/lib/api';
 import type { EigenhandFleck } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
@@ -170,13 +170,18 @@ export function FleckenEditor({
         <Button size="small" onClick={undo} disabled={!dirty} sx={HIT_TARGET}>
           {t.fleckenUndo}
         </Button>
-        <Tooltip title={t.fleckenRawHint}>
-          <FormControlLabel
-            control={<Switch size="small" checked={roh} onChange={(e) => onRoh(e.target.checked)} />}
-            label={<Typography variant="caption">{t.fleckenRaw}</Typography>}
-            sx={{ mr: 0 }}
-          />
-        </Tooltip>
+        {/* A `Tooltip` around a `FormControlLabel` is hover-only — the label is
+            not focusable and MUI composes its `onFocus` onto the label, not
+            onto the switch inside — so what „roh" DOES never reached the
+            tablet this editor is used on (V25, design-system.md §9.4). */}
+        <FormControlLabel
+          control={<Switch size="small" checked={roh} onChange={(e) => onRoh(e.target.checked)} />}
+          label={<Typography variant="caption">{t.fleckenRaw}</Typography>}
+          sx={{ mr: 0 }}
+        />
+        <InfoHint title={t.fleckenRaw} label={t.fleckenRawAria}>
+          {t.fleckenRawHint}
+        </InfoHint>
         <Box sx={{ flexGrow: 1 }} />
         <Button size="small" variant="contained" onClick={save} disabled={saving || !dirty} sx={HIT_TARGET}>
           {t.fleckenSave}
@@ -186,6 +191,14 @@ export function FleckenEditor({
         </Button>
       </Stack>
 
+      {/* How the brush works, and that nothing is ever written into the strip
+          itself, used to hang in a hover over the button that ARMS this mode —
+          a mouse-only instruction for the one surface the author operates with
+          a finger (V25, §9.4). It is the mode's own caption now, visible for
+          as long as the mode is on. */}
+      <Typography variant="caption" sx={{ display: 'block', mb: 1, color: paper.inkSoft }}>
+        {t.fleckenStartHint}
+      </Typography>
       <Typography variant="caption" sx={{ display: 'block', mb: 1, color: paper.inkSoft }}>
         {t.fleckenHint}
       </Typography>

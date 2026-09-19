@@ -5,16 +5,9 @@
 
 import type { Components, Theme } from '@mui/material/styles';
 
+import { focusRing } from '@/styles/focusRing';
 import { TOUCH_TARGET } from '@/styles/hitArea';
 import { paper } from '@/styles/paper';
-
-// The one keyboard-focus ring of the site: 2px viridian, held off the element
-// so it reads on the paper ground. Matches the hand-written rules that
-// PaperCardLink and HeaderNavLink already carried — those two were, until this
-// round, the only focusable surfaces of the public site that showed focus at
-// all (audit 2026-09-02: MUI's ButtonBase sets `outline: 0`, so quiz answers,
-// chips and icon buttons were indistinguishable when tabbed to).
-const focusRing = { outline: `2px solid ${paper.viridian}`, outlineOffset: 2 } as const;
 
 export const components: Components<Theme> = {
   MuiTypography: {
@@ -66,7 +59,11 @@ export const components: Components<Theme> = {
   },
   MuiChip: {
     styleOverrides: {
-      // Chip is not a ButtonBase, so it needs the ring spelled out again.
+      // MUI 9 renders a clickable/deletable Chip as a ButtonBase and everything
+      // else as a `div` (`Chip.js`), so the rule above already covers the
+      // clickable ones — this keeps the ring for a Chip that is focusable
+      // without being one (a `div` carrying `tabIndex`), which is the only case
+      // the ButtonBase rule cannot reach.
       root: { '&.Mui-focusVisible': focusRing },
       // The small chip shipped MUI's 0.75rem (12px) label in a 24px box — the
       // Federprobe examples measured 13px on screen, under the §9 floor. The

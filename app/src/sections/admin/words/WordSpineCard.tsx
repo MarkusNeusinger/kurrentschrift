@@ -30,6 +30,7 @@
 import { Box, Chip, Tooltip, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 
+import { InfoHint } from '@/components/InfoHint';
 import { useInView } from '@/hooks/useInView';
 import { wordSampleCropUrl } from '@/lib/api';
 import type { ComposedWordOut, InstanceOut, WordInstanceOut, WordSampleOut } from '@/lib/api';
@@ -269,10 +270,17 @@ export function WordSpineCard({
             of foreign evidence that is never counted into this hand's
             statistics (Vorgabe V4 of the Admin-Redesign). The tooltip only
             elaborates what the chip already states. */}
+        {/* The chip states the role („andere Hand · Abb. 22"); WHAT follows
+            from it — no statistic, no head count, not traced here — is a
+            decision and may not live in a hover on an unfocusable chip (V25).
+            `InfoHint` is a real button with the shared ring. */}
         {sample.sample_set && (
-          <Tooltip title={t.foreignSetHint}>
+          <>
             <Chip size="small" variant="outlined" label={fmt(t.foreignSetChip, { set: sample.sample_set })} />
-          </Tooltip>
+            <InfoHint title={fmt(t.foreignSetChip, { set: sample.sample_set })} label={t.foreignSetAria}>
+              {t.foreignSetHint}
+            </InfoHint>
+          </>
         )}
         {row ? (
           <Chip
@@ -292,10 +300,10 @@ export function WordSpineCard({
             where the sidecar's reason is readable. Through `traceStatusOf`, so
             a flagged specimen that WAS traced by hand shows the same thing here
             as in the overview — the authored line, not the flag. */}
+        {/* Authored free text — the specimen's own note — stands as a caption
+            under the row rather than in a hover (V25). */}
         {status === 'incomplete' && (
-          <Tooltip title={sample.note || de.admin.compare.incompleteChipHint}>
-            <Chip size="small" color="warning" variant="outlined" label={de.admin.compare.incompleteChip} />
-          </Tooltip>
+          <Chip size="small" color="warning" variant="outlined" label={de.admin.compare.incompleteChip} />
         )}
         {fitted !== null && (
           <Chip
@@ -323,6 +331,11 @@ export function WordSpineCard({
           </Tooltip>
         </Box>
       </Box>
+      {status === 'incomplete' && (
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+          {sample.note || de.admin.compare.incompleteChipHint}
+        </Typography>
+      )}
       {inView ? (
         <>
         <Box sx={{ display: 'flex', gap: 3, flexWrap: 'wrap', alignItems: 'flex-start' }}>
