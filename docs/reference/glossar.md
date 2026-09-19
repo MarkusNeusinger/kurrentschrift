@@ -57,12 +57,12 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
-- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitsliste (Admin-Redesign, geplant) §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2
-- **B** — Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2
+- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitsliste (Admin-Redesign, geplant) §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Buchstabengrenzen einer Bahn) §5
+- **B** — Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn (geplant) §5
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
-- **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Folger-Schalter der Ernte (`--follower`) §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
+- **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Folger-Schalter der Ernte (`--follower`) §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Freigabe-Maschine (geplant) §5 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — Gate-Status (geplant) §5 · Gauß-Verschiebung §3 · G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grauwert-Stopp (→ Strang-Dekodierung) §3 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
 - **H** — H0–H5 §5 · Haken-Spitze (→ Strang-Dekodierung) §3 · Hand §2 · Hand-Überschuss §4 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
@@ -75,12 +75,12 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfad-Form (`/write/word/{text}`) §2 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip (geplant) §5 · Rollen-Spalte (geplant) §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste (geplant) §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
-- **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue (geplant) §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
+- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste (geplant) §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Span-Herkunft (→ Buchstabengrenzen einer Bahn) §5 · Span-Zuordner (→ Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue (geplant) §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) (geplant) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unvollständige Wortprobe §5
 - **Ü** — Übergabekarte (geplant) §5 · Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
-- **V** — Variante §2 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschlag (Streifen-Befund) §5 · Vorschub-Kalibrierung §2 · Vorschrift §1
-- **W** — W1–W6 §5 · Wackler §4 · Warp §3 · Wellen-Basis §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wortkasten (Admin-Redesign, geplant) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Tintenlücke §2 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
+- **V** — Variante §2 · Varianten-Band (geplant) §5 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschlag (Streifen-Befund) §5 · Vorschub-Kalibrierung §2 · Vorschrift §1
+- **W** — W1–W6 §5 · Wachstumsschleife (Eigenhand) (geplant) §5 · Wackler §4 · Warp §3 · Wellen-Basis §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wortkasten (Admin-Redesign, geplant) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Tintenlücke §2 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zeichenbreiten-Mittel (`AVG_ADVANCE_UNITS`) §7 · Zeilen-Gate (Laufform) §2 · Zeilenmarke §7 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · zonale Rückweisung (`zonal`) §3 · „Zug um Zug“ §7 · Zwei Stillen (Leerzustands-Regel) §5 · Zwei-Drittel-Gesetz §6 · Zwei-Züge-Modell §4 · Zögling (geplant) §4
 
@@ -4281,7 +4281,10 @@ beim Tafel-Crop-Endpunkt, nur in mm statt in Tafelpixeln.
 Die Begriffe des Plans `proposals/admin-redesign.md` — nichts davon ist
 gebaut; jeder Eintrag trägt „geplant", bis der erste PR ihn in Code bringt.
 Sie stehen hier, damit der Plan und die Diskussion darüber ein Vokabular
-haben, das nicht mit dem laufenden Admin kollidiert.
+haben, das nicht mit dem laufenden Admin kollidiert. Seit dem 2026-09-18
+sind die Rückfragen des Plans entschieden (dort §4.5); gebaut ist damit
+weiterhin nichts, und die Begriffe, die erst diese Entscheide geprägt haben,
+stehen mit im Block.
 
 **Arbeitsliste (Admin-Redesign, geplant)** — eine gefilterte, sortierte
 Übersicht mit Zähler, deren Zustand in der URL steht; im geplanten Admin
@@ -4304,6 +4307,31 @@ Eigenhand, weil sich nur 24 von 140 Platten-Wörtern mit dem Streifen-Plan
 überschneiden. *Technisch:* `GET /eigenhand/strips/{hand}?item=`.
 → proposals/admin-redesign.md §5.1 (Idee 3)
 
+**Buchstabengrenzen einer Bahn (geplant)** *(authored-Spans ·
+Span-Herkunft)* — wo auf einer Streifen-Bahn ein Buchstabe anfängt und
+aufhört (`letter_spans`). Auf einer gefolgten Bahn schreibt sie der Folger
+mit; auf einer von Hand nachgefahrenen setzt sie der Werkzeugschritt `pfad
+--spans` automatisch (der **Span-Zuordner**). Autor-Entscheid 2026-09-18:
+die Grenzen werden im Kasten und im Editor angezeigt und sind von Hand
+korrigierbar. Eine korrigierte Grenze trägt eine eigene Herkunft
+(**authored-Span**), wird vom Zuordner nie ersetzt — dieselbe Schutzregel
+wie für die nachgefahrene Bahn —, wird archiviert und ist Trainings- und
+Prüfmenge des Zuordners. *Technisch:* nichts gebaut; vorgesehen
+`pfade[].meta.letter_spans` mit Span-Herkunft je Kasten in PFAD_FORMAT 2,
+`tools/eigenhand/pfad.py --spans`. → Trainingsmenge (nachgefahrene Bahnen);
+proposals/admin-redesign.md §6.4
+
+**Freigabe-Maschine (geplant)** — das Zielbild für den Rollenwechsel von
+der Platte zur Eigenhand, als WIEDERKEHRENDE Freigabe statt als einmaliger
+Schalter: versionierte Stände (create-only), ein Auslieferungs-Zeiger, der
+sagt, welcher Stand die Seite schreibt, eine Regression je Hand, ein
+Änderungsprotokoll der Applies und ein Rollback. Der Grund ist der Leitsatz
+vom 2026-09-18 — die Eigenhand wächst dauerhaft, also wird immer wieder
+freigegeben. Sie steht NICHT im Admin-Plan, sondern bekommt ein eigenes
+Proposal — das nächste Doc, vor dem Schema-PR von Phase 5, weil sie das
+Varianten-Band schneidet. *Technisch:* nichts gebaut, noch kein Doc.
+→ Varianten-Band; proposals/admin-redesign.md §4.5, §15.3
+
 **Gate-Status (geplant)** — die Anzeige, ob eine Glyphe das Zeilen-Gate der
 Laufform erfüllt (n ≥ 3 · Sprung-Verhältnis · Kopfabweichung), plus „Zeile
 fehlt" / „veraltet". Keine Distanzschwelle, kein neues Kriterium — das Gate
@@ -4321,9 +4349,11 @@ Tintentreue-Ampel folgt später an derselben Stelle. *Technisch:*
 **Rollen-Spalte (geplant)** — die drei Rollen aus `vision.md` (Tafel ·
 Platte · Eigenhand) als feste Spalten einer Detailfläche; jede Zahl trägt
 den Namen ihrer Hand, zwei Hände sind ein Nebeneinander, nie eine Summe.
-Ob die zweite Hand auf einer Vorlagen-Fläche stehen darf, bewegt die
-Leitplanke „genau eine Quelle/Hand" (optimierungs-werkbank.md §6) und ist
-Rückfrage Q3. → proposals/admin-redesign.md §5.1 (Idee 2), §10.2
+Dass die zweite Hand auf einer Vorlagen-Fläche stehen darf, hat die
+Leitplanke „genau eine Quelle/Hand" bewegt: seit dem Autor-Entscheid vom
+2026-09-18 (Q3 a) heißt sie „genau eine Hand als Subjekt; eine zweite Hand
+nur eingeklappt, beschriftet, nie verrechnet" (optimierungs-werkbank.md
+§6). → proposals/admin-redesign.md §5.1 (Idee 2), §10.2
 
 **Scope-Leiste (geplant)** — die Zeile unter der Kopfleiste, die Vorlage UND
 Hand benennt und das aktive Feld hervorhebt; sie schaltet nicht um. Die
@@ -4332,12 +4362,27 @@ Vorlagen-Korb auf der Hand-Seite). → proposals/admin-redesign.md §3.1, §7.1
 
 **Tintentreue (geplant)** — die referenzfreie Ampel je Wortkasten: folgt ·
 folgt teils · folgt nicht, plus ein grauer ungemessener Zustand mit Grund
-im Text. Der schlechteste Sensor entscheidet; die Schwellen sind
-vorregistriert und „vorläufig", bis der Autor über die Kalibrierung an der
-eigenen Hand entschieden hat (Q10). Sie liest keine Bench-Zahl und speist
-keine. *Technisch:* `core/eigenhand/tintentreue.py` (geplant), Sensoren
-aus `pfade[].meta.tintenpfad`; Formatwechsel PFAD_FORMAT 2 für Exkursion
-und AIoU. → proposals/admin-redesign.md §6.3
+im Text. Der schlechteste Sensor entscheidet, gerechnet wird mit fünf
+Sensoren (Autor-Entscheid 2026-09-18, Q9 b); die Schwellen sind
+vorregistriert und „vorläufig", bis die EINE vorregistrierte Kalibrierung
+je Hand gelaufen ist — 30 Kästen blind beurteilt, datiert eingefroren, nie
+ein Regler (Q10 b; eigenhand-erfassung.md §7.3). Sie liest keine Bench-Zahl
+und speist keine. *Technisch:* `core/eigenhand/tintentreue.py` (geplant),
+Sensoren aus `pfade[].meta.tintenpfad`; Formatwechsel PFAD_FORMAT 2 für
+Exkursion und AIoU. → proposals/admin-redesign.md §6.3
+
+**Trainingsmenge (nachgefahrene Bahnen) (geplant)** — die von Hand
+nachgefahrenen Streifen-Bahnen der Eigenhand (`verfahren: authored`) und
+die von Hand korrigierten Buchstabengrenzen darauf, in ihrer ZWEITEN Rolle:
+sie sind nicht nur Wahrheit, sondern das Material, an dem der Folger
+(Tintenpfad) und der Span-Zuordner dauerhaft besser werden. Der Autor am
+2026-09-18: „die hand nachgefahrenen linien dienen auch als trainingsmenge
+um den folger nachhaltig immer besser zu machen". Trainingsdaten, kein
+Mess-Satz: die dev-19-Kopfzahl liest sie nie, und gemessen wird auf ihr nur
+mit einer vorregistrierten, eingefrorenen → Rückhaltemenge. *Technisch:*
+nichts gebaut; vorgesehen ein lokaler, gitignorter Export unter `tools/`,
+nie Repo-Inhalt. → Buchstabengrenzen einer Bahn; proposals/tintenfolger.md
+§2.5; proposals/eigenhand-erfassung.md §7.5, §12 (Prüfstein 2)
 
 **Übergabekarte (geplant)** — die zustandsgetriebene Karte im Admin für
 einen Schritt, der lokal bleiben muss (`pull`, `ingest`, `apply`, `sync`,
@@ -4347,6 +4392,27 @@ Zustand da ist. Repo-Schritte (`pool pin`) sind keine Karte, sondern
 Korb-Notiz an die KI-Runde; am Rechner ist `tools.eigenhand.report
 --faellig` der Zwilling der Karten. → proposals/admin-redesign.md §5.1
 (Idee 11), §10.3
+
+**Varianten-Band (geplant)** — der Bereich von Template-Varianten, in dem
+die Laufform EINER Hand lebt. Heute gibt es nur die eine Laufform-Variante
+100 (`LAUFFORM_VARIANT`), und sie gehört faktisch der Platten-Hand.
+Autor-Entscheid 2026-09-18 (Q19 a): das Band wird ein Datum der Hand
+(`hands.laufform_variant`: Platte 100, Eigenhand 200), „Band ≥ 100 =
+Laufform je Hand". Zwei Bedingungen hängen daran: die öffentliche Route
+`/write/glyphs?variant=` lehnt fremde Bänder ab, sonst wäre die
+Eigenhand-Laufform vor dem Rollenwechsel öffentlich lesbar; und das Band
+wird so geschnitten, dass mehrere Stände der → Freigabe-Maschine Platz
+haben. *Technisch:* nichts gebaut; `core/database/models.py::LAUFFORM_VARIANT`,
+`api/routers/write.py`. → proposals/admin-redesign.md §6.6, §15.3
+
+**Wachstumsschleife (Eigenhand) (geplant)** — die Hauptschleife des
+geplanten Admins: Bögen → Bahnen → Nachfahren / Trainingsmenge → Ernte →
+Statistik → Laufform → Vorschau. Sie folgt aus dem Leitsatz des Autors vom
+2026-09-18: das Optimierungsziel ist die Eigenhand — beliebig viele
+Beispiele, dauerhaft wachsend, „bis das system sie perfekt schreiben
+kann" —, die Platte bleibt Maßstab und „so ok". Das Cockpit der Phase 4 und
+die Arbeitslisten ordnen sich nach ihr. *Technisch:* nichts gebaut.
+→ proposals/admin-redesign.md §4.5 (Leitsatz 2), §15.1
 
 **Wortkasten (Admin-Redesign, geplant)** — der Name, den der Plan für die
 Wortkiste in der Oberfläche vorschlägt („Kasten"): die Ortsangabe eines

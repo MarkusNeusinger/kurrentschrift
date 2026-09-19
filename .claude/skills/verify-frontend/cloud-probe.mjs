@@ -17,33 +17,51 @@
 
 import { createRequire } from 'node:module';
 import { existsSync, readdirSync, mkdirSync } from 'node:fs';
+import { homedir } from 'node:os';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright-core');
 
-// Resolve the pre-installed Chromium (version-pinned dir under PLAYWRIGHT_BROWSERS_PATH).
-const root = process.env.PLAYWRIGHT_BROWSERS_PATH || '/opt/pw-browsers';
-if (!existsSync(root)) throw new Error(`browsers dir not found: ${root} — set PLAYWRIGHT_BROWSERS_PATH (cloud container only)`);
-const dir = readdirSync(root)
-  .filter((d) => /^chromium-\d+$/.test(d))
-  .sort((a, b) => Number(b.slice(9)) - Number(a.slice(9)))[0]; // newest revision, deterministically
-if (!dir) throw new Error(`no chromium-<rev> dir under ${root}`);
-const executablePath = `${root}/${dir}/chrome-linux/chrome`;
-if (!existsSync(executablePath)) throw new Error(`chromium binary missing: ${executablePath}`);
+// Resolve the pre-installed Chromium. The cloud container keeps it under
+// /opt/pw-browsers (PLAYWRIGHT_BROWSERS_PATH); a local machine that ever ran
+// `playwright install` keeps it under ~/.cache/ms-playwright instead, and the
+// maintainer's WSL box has exactly that and no /opt. Without the second root
+// the probe throws on the machine where the admin write flows are driven, so
+// "verified in the browser" silently degrades to "built and type-checked".
+const roots = [process.env.PLAYWRIGHT_BROWSERS_PATH, '/opt/pw-browsers', `${homedir()}/.cache/ms-playwright`].filter(Boolean);
+const found = roots
+  .filter((root) => existsSync(root))
+  .map((root) => {
+    const dir = readdirSync(root)
+      .filter((d) => /^chromium-\d+$/.test(d))
+      .sort((a, b) => Number(b.slice(9)) - Number(a.slice(9)))[0]; // newest revision, deterministically
+    return dir ? `${root}/${dir}/chrome-linux/chrome` : null;
+  })
+  .find((candidate) => candidate && existsSync(candidate));
+if (!found) throw new Error(`no chromium-<rev>/chrome-linux/chrome under any of: ${roots.join(', ')}`);
+const executablePath = found;
 
 const urls = process.argv.slice(2);
 if (urls.length === 0) urls.push('http://localhost:3000/');
 const shots = process.env.SHOTS || '/tmp/kurrentschrift-ui';
 mkdirSync(shots, { recursive: true });
 
-// Desktop + the mobile width the skill mandates; extras catch column overflow.
-const widths = (process.env.WIDTHS || '1440,390,360,320').split(',').map(Number);
+// The three viewports the skill mandates (§2): desktop, the tablet the author
+// re-traces on, and the phone. Narrower widths (360, 320) are a column-overflow
+// hunt, not part of the three — pass WIDTHS= for those.
+const widths = (process.env.WIDTHS || '1440,1024,390').split(',').map(Number);
+// Heights as a table beside the skill's own, so a fourth width cannot be added
+// with a silently wrong height: 1024 is a tablet in landscape, not a short
+// desktop, and 1440×900 is the desktop the workbench is built for. Anything
+// outside the three (a 360/320 column hunt via WIDTHS=) gets the phone height.
+const HEIGHTS = { 1440: 900, 1024: 768, 390: 844 };
+const heightFor = (width) => HEIGHTS[width] ?? 844;
 
 const browser = await chromium.launch({ executablePath });
 for (const url of urls) {
   const slug = url.replace(/^https?:\/\//, '').replace(/[^a-z0-9]+/gi, '-').replace(/-+$/, '');
   for (const width of widths) {
-    const ctx = await browser.newContext({ viewport: { width, height: 844 }, deviceScaleFactor: 2 });
+    const ctx = await browser.newContext({ viewport: { width, height: heightFor(width) }, deviceScaleFactor: 2 });
     const page = await ctx.newPage();
     const errors = [];   // JS errors (console text carries no URL for failed resources)
     const bad = [];      // 4xx/5xx responses, with URL — favicon noise filtered by path

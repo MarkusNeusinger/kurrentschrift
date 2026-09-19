@@ -35,6 +35,7 @@ import { de, fmt } from '@/locales/admin';
 import { WordComparison } from '@/sections/admin/compare/WordComparison';
 import { PairEditorDialog } from '@/sections/admin/pairs/PairEditorDialog';
 import { PairMatrix } from '@/sections/admin/pairs/PairMatrix';
+import { findPairRow } from '@/sections/admin/pairs/pairRow';
 import { PairStats } from '@/sections/admin/shell/LensStats';
 import { LayerDot } from '@/sections/admin/shell/LayerDot';
 import { LetterPicker } from '@/sections/admin/shell/LetterPicker';
@@ -209,7 +210,7 @@ export function JoinView() {
     getPairs(sourceId, { all: true }, { retries: 1 })
       .then((rows) => {
         if (cancelled) return;
-        setOverrideRow(rows.find((r) => r.left_key === leftKey && r.right_key === rightKey) ?? null);
+        setOverrideRow(findPairRow(rows, leftKey, rightKey));
       })
       .catch(() => {
         if (!cancelled) setOverrideRow(null);

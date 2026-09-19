@@ -11,6 +11,11 @@ to the SAME Cloud SQL DB as prod — there is no separate local DB.**
 Treat every write as touching real data. All paths relative to the
 repo root; the harness is `curl` + `python3` for JSON checks.
 
+**For a task that WRITES**, there is now a local DB: bring up the
+throwaway stack of `/verify-frontend` §1b (exported `DATABASE_URL`,
+loopback preflight, seed script, teardown) and drive the write flow
+there. This skill's own sweep stays read-only either way.
+
 ## 1 · Start the server (skip if already up)
 
 ```bash

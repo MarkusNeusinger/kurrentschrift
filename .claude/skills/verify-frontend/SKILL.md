@@ -1,34 +1,40 @@
 ---
 name: verify-frontend
-description: Run and visually verify the kurrentschrift app after frontend changes — start the dev servers, click through ONLY the flows the change touches (chrome-devtools MCP locally, or playwright-core against the pre-installed Chromium in the cloud), watch the console and network, check style fidelity and legibility at a desktop AND a mobile viewport, and record a performance trace when the change can move performance. Use when asked to run, start, screenshot, verify, test in the browser, or visually check the app or a frontend change.
+description: Run and visually verify the kurrentschrift app after frontend changes — start the dev servers (a write flow against a throwaway Postgres, never the shared DB), click through ONLY the flows the change touches (chrome-devtools MCP where it exists, otherwise playwright-core against an already-installed Chromium), watch the console and network, check style fidelity, legibility and colour-vision safety at desktop, tablet and phone viewports, and record a performance trace when the change can move performance. Use when asked to run, start, screenshot, verify, test in the browser, or visually check the app or a frontend change.
 ---
 
 # Verify the frontend in the browser
 
 React 19 + Vite SPA (`app/`, port 3000) backed by a FastAPI service
-(`api/`, port 8000) and the shared Cloud SQL Postgres (`.env`). The
-browser harness is the **chrome-devtools MCP server** — no custom
-driver script is needed. It comes from the author's user-level Claude
-config, not from this repo: verify availability via ToolSearch (§2)
-before relying on it. All paths below are relative to the repo root.
+(`api/`, port 8000) and, for a read-only run, the shared Cloud SQL
+Postgres (`.env`) — **a run that WRITES uses the throwaway stack of
+§1b instead.** The preferred browser harness is the **chrome-devtools
+MCP server**, which needs no driver script. It comes from the author's
+user-level Claude config, not from this repo: verify availability via
+ToolSearch (§2), and fall back to §2b's probe when it is absent. All
+paths below are relative to the repo root.
 
-> **Environment note:** the chrome-devtools MCP is a **local-only**
-> harness — it is not present on Claude Code on the web. If ToolSearch
-> (§2) finds no `mcp__chrome-devtools__*` tools, you are in the cloud.
-> **This is not a dead end:** the remote container ships a Chromium under
-> `/opt/pw-browsers/` (`PLAYWRIGHT_BROWSERS_PATH`), so you can still drive
-> the live app — just via `playwright-core` directly instead of the MCP.
-> See **§2b · Cloud fallback**. Only when *both* the MCP is absent *and*
-> no Chromium is found under `PLAYWRIGHT_BROWSERS_PATH` do you fall back to
-> the static gates (`npm run build`, type-check) — and then say plainly
-> that no flow was driven rather than claiming one was.
+> **Environment note:** the chrome-devtools MCP comes from the author's
+> user-level config and is **not always there** — it is absent on Claude
+> Code on the web, and it is absent in delegated/worktree sessions on the
+> local machine too (measured 2026-09-18). If ToolSearch (§2) finds no
+> `mcp__chrome-devtools__*` tools, **this is not a dead end:** drive the
+> live app through `playwright-core` against an already-installed
+> Chromium instead — `/opt/pw-browsers/` in the cloud container,
+> `~/.cache/ms-playwright/` on the local box. See **§2b · Probe
+> fallback**, which looks in both. Only when *no* Chromium is found at
+> all do you fall back to the static gates (`npm run build`,
+> type-check) — and then say plainly that no flow was driven rather than
+> claiming one was. The Playwright **MCP plugin** stays forbidden as
+> this project's harness (Troubleshooting); `playwright-core` driven
+> from a script is a different thing and is the sanctioned path.
 
 This skill is a **feedback loop**: after a frontend change, don't just
 confirm the page loads — drive it like a user and observe four channels:
 interaction (snapshots/clicks), console + network, visual style &
-legibility (screenshots at two viewports, actually looked at), and
-performance (trace). Report findings; don't silently fix design
-questions.
+legibility (screenshots at the three viewports of §2, actually looked
+at), and performance (trace). Report findings; don't silently fix
+design questions.
 
 **Scope: only what the change touches.** Derive the affected pages and
 flows from the diff (`git diff --name-only` + the component→route
@@ -71,7 +77,9 @@ returns 503.
 Admin preflight — **mandatory whenever the flow under test writes**
 (saves, traces, wizard finish). Without both tokens every save fails
 silently with 401; this has shipped "test it in the browser" advice
-that could not work:
+that could not work. On the throwaway stack the API's token comes from
+the export instead (§1b) and only the `app/.env` half of this check
+applies:
 
 ```bash
 grep -q '^ADMIN_TOKEN=.' .env && echo "OK: ADMIN_TOKEN non-empty in .env" || echo "MISSING/EMPTY: ADMIN_TOKEN in .env"
@@ -85,6 +93,227 @@ If either is missing, stop and say so. During the browser run, confirm
 one real save returned 2xx in `list_network_requests` before telling
 the user a write flow works. Public pages and read endpoints need no
 token.
+
+## 1b · Throwaway stack — mandatory for every admin WRITE flow
+
+§1 starts the servers against the SHARED Cloud SQL database. That is
+survivable for reads and not for writes: a browser run that saves a
+trace, finishes a wizard, applies a Laufform or pushes a Streifen-Pfad
+writes the author's hand-made data, and no undo exists for it. So a
+write flow is driven against a **throwaway Postgres**, and the PR body
+says which stack the flow ran on. Read-only frontend work keeps using
+§1 as before.
+
+**The nested-worktree trap, measured.** `api/main.py:9`,
+`alembic/env.py:20` and `tools/dbsnapshot/__init__.py:40` call
+`load_dotenv()`, which walks UP from the calling file's directory; a
+fourth reader, `core/config.py:28`, names `.env` through pydantic's
+`env_file`. A fresh worktree under `.claude/worktrees/…` has no `.env`
+of its own — and that walk reaches the main checkout anyway:
+
+```
+$ uv run python -c "from dotenv import find_dotenv; print(find_dotenv())"
+/home/…/projects/kurrentschrift/.env
+```
+
+„No `.env` here" is therefore not safety. What makes it safe is an
+EXPORTED `DATABASE_URL`: `load_dotenv()` defaults to `override=False`
+and pydantic-settings puts the process environment above the file, so
+the export wins over all four.
+
+### The exports — all four in the SAME bash call
+
+They do not survive between Bash invocations
+(`/verify-migrations` §0), so every command below runs in a shell that
+carries them:
+
+```bash
+export DATABASE_URL='postgresql+asyncpg://postgres@/kurrentschrift?host=/var/tmp/pg-kurrent-<tag>'
+export ADMIN_TOKEN='local-throwaway-token'
+export ENVIRONMENT='development'
+export EIGENHAND_API='http://localhost:8000'
+```
+
+- `<tag>` is yours alone — parallel agents each need their own cluster
+  directory, or they migrate and seed on top of each other.
+- `ENVIRONMENT=development` because `core/config.py` drives the CORS
+  regex and the analytics default off it.
+- `EIGENHAND_API` because `tools/eigenhand/apiclient.py:45` defaults to
+  `https://api.kurrentschrift.ink` — without it every `python -m
+  tools.eigenhand.*` call in the same session writes to PRODUCTION.
+- `ADMIN_TOKEN` is made up on the spot. Never fetch the real one from
+  Secret Manager for a local stack, and never echo a real secret.
+
+### The preflight, before anything else in that shell
+
+```bash
+uv run python - <<'EOF'
+import os, sys
+from urllib.parse import parse_qs, urlsplit
+url = os.environ.get("DATABASE_URL", "")
+if not url:
+    sys.exit("DATABASE_URL not exported — this process would fall back to .env (SHARED Cloud SQL). STOP.")
+parts = urlsplit(url)
+host = parts.hostname or (parse_qs(parts.query).get("host") or [""])[0]
+print("DATABASE_URL host:", host or "(none)")
+if host not in {"127.0.0.1", "localhost", "::1"} and not host.startswith("/var/tmp/"):
+    sys.exit(f"refusing: {host!r} is neither a loopback host nor a /var/tmp throwaway socket")
+print("target: LOCAL THROWAWAY — safe to migrate, seed and write")
+EOF
+```
+
+**Why the socket branch is narrow:** „contains no remote hostname" is
+not a test, because Cloud SQL is reached over a unix socket too
+(`host=/cloudsql/<project>:<region>:<instance>`). Only `/var/tmp/…`
+passes — the directory `/verify-migrations` §1 puts the throwaway
+cluster in. (A heredoc into `uv run python` is a *command*, not a
+repo-file edit; the Edit/Write rule is untouched.)
+
+**In a worktree-isolated session the harness may refuse a heredoc** —
+and a compound `export … && …` with it — as "too complex to verify".
+Then write these lines and the exports into two files in the session
+scratchpad (never into the repo) and run one small `bash` script that
+sources the one and runs the other. Same shell, same exports, same
+preflight; only the shape changes.
+
+### The freshness proof, immediately before `alembic upgrade head`
+
+The URL check above proves the ENDPOINT is local. It does not prove the
+DATABASE is disposable — a Cloud SQL Auth Proxy or an SSH tunnel puts
+the shared database on `127.0.0.1:5432`, and then a loopback URL would
+wave a schema migration through. So ask the database itself what it
+holds, in the same exported shell, **before** the first DDL:
+
+```bash
+uv run python - <<'EOF'
+import asyncio, os, sys
+from urllib.parse import parse_qs, urlsplit
+import asyncpg
+
+# The reserved dataset: rows no migration ever creates. Empty (or absent)
+# is the signature of a throwaway; one row is the signature of production.
+RESERVED = ("templates", "bboxes", "eigenhand_fassungen", "word_instances")
+
+async def main():
+    parts = urlsplit(os.environ["DATABASE_URL"].replace("+asyncpg", ""))
+    query = parse_qs(parts.query)
+    conn = await asyncpg.connect(
+        user=parts.username or "postgres", password=parts.password,
+        database=(parts.path or "/postgres").lstrip("/"),
+        host=(query.get("host") or [parts.hostname])[0], port=parts.port or 5432,
+    )
+    try:
+        filled = []
+        for table in RESERVED:
+            if await conn.fetchval("SELECT to_regclass($1)", f"public.{table}") is None:
+                continue
+            count = await conn.fetchval(f"SELECT count(*) FROM {table}")
+            if count:
+                filled.append(f"{table}={count}")
+    finally:
+        await conn.close()
+    if filled:
+        sys.exit(f"refusing: this database already holds the reserved dataset ({', '.join(filled)}) — NOT a throwaway")
+    print("freshness: reserved tables absent or empty — this is a throwaway database")
+
+asyncio.run(main())
+EOF
+```
+
+Measured on three states (2026-09-18): an empty database before any
+migration passes, a database migrated to head with the reserved tables
+empty passes, and a single row in `templates` refuses. Re-running it on
+a cluster you already migrated is therefore free — it is not a one-shot
+gate but the sentence you put in front of every `alembic`, and the same
+question the seeder's hand check asks one layer up.
+
+### Bring it up
+
+1. **Cluster** — the `pgserver` recipe of `/verify-migrations` §1, with
+   your own `/var/tmp/pg-kurrent-<tag>` directory.
+2. **Schema** — the freshness proof, then `uv run alembic upgrade head`
+   inside the exported shell. This is the one place CLAUDE.md's „never
+   `alembic upgrade head` as a setup step" does not bite, *because* the
+   two preflights above just proved the target: local endpoint AND
+   empty of the reserved dataset.
+3. **API** — `uv run uvicorn api.main:app --port 8000` (background) in
+   that same shell. `core/database/connection.py:24` reads the URL at
+   IMPORT time, so a server started in a shell without the export
+   silently serves the shared DB and nothing later can fix it.
+4. **SPA** — `app/.env` with `VITE_ADMIN_TOKEN=` matching
+   `ADMIN_TOKEN` (gitignored), then `cd app && npm run dev`.
+   **The API port is not free to choose:** `app/vite.config.ts:21`
+   hardcodes the proxy target `http://127.0.0.1:8000`, so a full SPA
+   stack owns port 8000 and only one can run per machine. A second,
+   API-only stack may take any port.
+
+### The positive discriminator — run it BEFORE the first write
+
+```bash
+curl -fsS localhost:8000/health
+curl -s localhost:8000/eigenhand/hands -H "X-Admin-Token: $ADMIN_TOKEN"
+```
+
+`{"hands":[],"styles":[…]}` is the proof. No migration seeds a hand —
+hands, templates, bboxes, occurrences and every Eigenhand row are the
+reserved dataset and live only in the shared DB — so an **empty** hand
+list can only be a fresh local database. A populated one means the
+process found `.env` after all: stop, fix the export, and restart the
+server rather than clicking on.
+
+### Seed something to click
+
+A migrated local database has the three styles, the four chart sources
+and the quiz words, and nothing else — the letters/joins/words views
+open empty and cannot be judged locally (say so plainly in the PR body
+when your flow needed them). The Eigenhand chain is the exception: its
+inputs are the committed strip plan and a synthetic PNG, so it can be
+seeded whole.
+
+```bash
+uv run python .claude/skills/verify-frontend/seed-local-admin.py
+```
+
+It prints one Bogen, accepts its rows, stores a flat grey stand-in
+strip per row and follows every word with a three-point polyline,
+carrying invented `meta.tintenpfad` numbers spread over a good, a
+middling and a bad WORD BOX (including a `0.0` and a `null`, the two
+values a `||` reader gets wrong); the cycle turns per box, so one strip
+already shows all three levels. The seeded hand is
+**`wegwerf-suetterlin`** — never the author's `mn-suetterlin`, because
+the first call is a `PUT /eigenhand/setups/<hand>` that the API
+documents as a plain overwrite. It refuses any non-loopback `--api`,
+and it stops dead when the API reports a hand it did not write itself —
+that check is not reachable by `--reseed`, which only re-runs over the
+seeder's own hand. A second helping on a stack that is already seeded
+needs a Fassung of its own (`uq_eigenhand_fassung` is unique on hand ·
+strip · Fassung, and a repeat on `F01` comes back as a 500):
+
+```bash
+uv run python .claude/skills/verify-frontend/seed-local-admin.py --reseed --fassung F02
+```
+
+Everything it writes is synthetic and **must never be measured** — it
+is material to click on, not data.
+
+### Teardown
+
+Stop both servers, drop the cluster with the `/verify-migrations` §3
+snippet against your own `<tag>`, and `unset DATABASE_URL ADMIN_TOKEN
+ENVIRONMENT EIGENHAND_API` (or close the shell) so no later command
+runs against a URL that no longer exists — or, worse, so you do not
+forget which database the next command means.
+
+### The `/dbsnapshot` trap
+
+`tools/dbsnapshot/__init__.py:40` calls `load_dotenv()`, and
+`load_dotenv()` does not override exports. A snapshot taken **inside**
+the throwaway shell therefore snapshots the THROWAWAY: an almost-empty
+archive that looks like safety. A prod snapshot is taken in a shell
+WITHOUT these exports, and its row counts are checked before filing.
+Conversely `tools/dbsnapshot/restore.py:171-173` refuses a target equal
+to `DATABASE_URL`, so a restore drill into the throwaway needs a second
+database name.
 
 ## 2 · Drive the app (agent path)
 
@@ -103,9 +332,19 @@ The loop, per page/flow you changed:
 1. `new_page` → `http://localhost:3000/` (first time), then
    `navigate_page` for further URLs.
 2. **Resize before judging anything.** The default window is unusually
-   wide and short. For every surface in scope check **both** sizes:
-   `resize_page` 1440×900 (desktop) and 390×844 (mobile). Surfaces the
-   diff doesn't touch don't get a viewport pass at all.
+   wide and short. **The three viewports, named once for the whole
+   skill — §1b, §2 and §2b all mean these and no others:**
+
+   | Viewport | Why this one |
+   |---|---|
+   | **1440×900** | the desktop the workbench is built for |
+   | **1024×768** | the TABLET the author re-traces words on — a real device in the loop, not a breakpoint sample |
+   | **390×844** | the phone, where clipping and the type floor show first |
+
+   `resize_page` to each for every surface in scope. Surfaces the diff
+   doesn't touch don't get a viewport pass at all. Narrower widths
+   (360, 320) are a column-overflow hunt, not part of the three — reach
+   for them with `WIDTHS=` (§2b) when a layout looks fragile.
 3. After every navigation to a lazy route: `wait_for` a text unique to
    the target page, **then** `take_snapshot`. Pick text that is *not*
    CSS-uppercased (see Gotchas).
@@ -171,19 +410,23 @@ viewport. (2) **a wizard control that drives a derived preview
 control and see the preview pixels change** — a 200 on the mask/crop
 request is not proof.
 
-## 2b · Cloud fallback — drive Chromium via Playwright (no MCP)
+## 2b · Probe fallback — drive Chromium via Playwright (no MCP)
 
-When ToolSearch finds no `mcp__chrome-devtools__*` tools you are on
-Claude Code on the web. The MCP is gone but the browser is not: the
-container ships Chromium under `PLAYWRIGHT_BROWSERS_PATH`
-(`/opt/pw-browsers/chromium-<rev>/chrome-linux/chrome`). Drive it with
-`playwright-core` and you keep the core channels — interaction, console +
-network, and screenshots (a perf trace is reachable via a CDP session but
-is rarely worth it in the cloud). This path is **verified working in
-this environment**; it does not replace §2 locally (the MCP is richer and
-interactive) — it is the cloud-only substitute.
+When ToolSearch finds no `mcp__chrome-devtools__*` tools the MCP is
+gone but the browser is not. `cloud-probe.mjs` looks for an
+already-installed Chromium in three places, in order:
+`$PLAYWRIGHT_BROWSERS_PATH`, `/opt/pw-browsers` (the cloud container)
+and `~/.cache/ms-playwright` (a local box that ever ran `playwright
+install` — the maintainer's WSL machine has exactly this and no
+`/opt`). Drive it with `playwright-core` and you keep the core
+channels — interaction, console + network, and screenshots (a perf
+trace is reachable via a CDP session but is rarely worth it here). The
+name still says „cloud" for history; the path is **verified working
+locally and in the cloud container**. It does not replace §2 where the
+MCP exists (the MCP is richer and interactive) — it is the substitute
+wherever it does not.
 
-One-time setup (per container — the scratchpad is ephemeral):
+One-time setup (per container/session — the scratchpad is ephemeral):
 
 ```bash
 # SCRATCH is not pre-provided — set it yourself, to the session scratchpad dir named in the prompt
@@ -205,8 +448,9 @@ NODE_PATH="$SCRATCH/node_modules" SHOTS=/tmp/kurrentschrift-ui \
   http://localhost:3000/ http://localhost:3000/quiz
 ```
 
-It prints, per URL × viewport (default `1440,390,360,320`; override with
-`WIDTHS=`): horizontal **overflow** + the widest offending element,
+It prints, per URL × viewport (default `1440,1024,390` — the three of
+§2; override with `WIDTHS=` for a 360/320 column hunt): horizontal
+**overflow** + the widest offending element,
 the `h1` computed font-size + family (type-voice check, §3), and a
 deduped count of JS errors / 4xx-5xx requests with their paths. Then
 **Read the screenshots** under
@@ -262,6 +506,31 @@ source for palette and type voices). What the skill prescribes is the
   ~13 px button text; faint elements (exercise-book blue guides) must
   still read against the paper.
 
+**Colour-vision-deficiency pass — whenever colour carries meaning.**
+Run it on any surface where a colour IS the information: overlay
+layers (ink · trace · Laufform · Pfad), status chips, a traffic light,
+a legend, an „erster Zug grün, letzter blau" sentence. Three questions,
+in this order:
+
+1. **Is the colour alone the message?** If the only way to tell two
+   things apart is hue, the surface fails before any simulation — add
+   the second channel (a dash pattern, a shape, a label) rather than
+   picking a nicer hue.
+2. **Contrast against its own ground.** A non-text graphical object
+   needs 3:1 (WCAG 1.4.11), and the work surfaces are WHITE, not paper
+   — `#00b37e` clears the paper and fails against `#fff` at 2.71:1.
+   Measure it, don't eyeball it: read the computed colour with
+   `evaluate_script`/`page.evaluate` and compute the ratio.
+3. **Deuteranope separation.** Simulate (any LMS deuteranopia matrix in
+   the same `evaluate` block) and check each PAIR that must stay
+   distinguishable, not each colour on its own. Red/green pairs are the
+   usual culprits, and the second pair is easy to miss because it goes
+   through tokens rather than a literal hex.
+
+Report what you measured, with the numbers. A residual collision that
+is carried by a second channel is a documented exception — name it and
+the channel that rescues it; a silent one is a finding.
+
 Style questions you find are **findings to report**, not things to
 silently "fix" — the style decisions R1–R9 are recorded in the style
 guide and must not be re-litigated.
@@ -290,9 +559,9 @@ the way this section says, not the obvious way.
 **The general rule: a numeric UI rule is verified against the MEASURED
 result in the browser, never against the planned one.** A floor, a minimum
 size, a cap, a hit-target — the verification names the rule and the number
-it measured, on every surface the rule reaches, at both viewports. PR #535
-shipped a 14 px x-height floor for written lines whose planner sized lines
-from the average advance per character; the plan met the floor and the
+it measured, on every surface the rule reaches, at all three viewports (§2).
+PR #535 shipped a 14 px x-height floor for written lines whose planner sized
+lines from the average advance per character; the plan met the floor and the
 widest real line did not, because the ink frame's own padding scales with
 the writing and was not in the budget. `/lesen/vergleichen` came out at
 **13.9 px** — a rule broken by the code that enforces it, and only the

@@ -482,6 +482,25 @@ genau darin liegt der Wert der Drills fürs RICHTIGE SCHREIBEN: 31 der
 einzige Evidenz dieser Join-Klassen; fürs Ink-Folgen sind sie
 Rückhaltematerial.
 
+**Eigenhand-Bahnen sind Trainingsmenge, kein Mess-Satz** (Autor-Entscheid
+2026-09-18, Q4 a mit Zusatz in
+[`admin-redesign.md`](admin-redesign.md) §4.5; wörtlich: „die hand
+nachgefahrenen linien dienen auch als trainingsmenge um den folger
+nachhaltig immer besser zu machen"). Die von Hand nachgefahrenen
+Streifen-Bahnen der Eigenhand (`eigenhand_strips.pfade`, `verfahren:
+authored`) und die von Hand korrigierten Buchstabengrenzen darauf bilden
+eine DRITTE Menge neben den eingefrorenen Sätzen dieses Abschnitts: das
+Material, an dem der Folger und der Span-Zuordner besser werden. Sie
+gehört zu keinem der Splits oben und bewegt keinen — **die dev-19-Kopfzahl
+liest sie NIE**, kein Bestätigungssatz nimmt sie auf, und die
+Platten-Referenz bleibt das Lineal. Gemessen wird auf ihr nur mit einer
+eigenen, VOR der ersten Zahl vorregistrierten und eingefrorenen
+Rückhaltemenge (§14-Eintrag im Messjournal), wie es
+[`eigenhand-erfassung.md`](eigenhand-erfassung.md) §12, Prüfstein 2,
+verlangt; der Export ist lokal und gitignored (`tools/`, nie Repo-Inhalt).
+Gebaut ist davon nichts — der erste nachgefahrene Kasten entsteht mit
+Phase 2 des Admin-Redesigns.
+
 ## 3 Route A: die Verfeinerungsstufe (`tools/pairlab/follow.py`)
 
 **Formulierung: re-linearisierender Restart, KEIN Snake.** Zweiter Solve
