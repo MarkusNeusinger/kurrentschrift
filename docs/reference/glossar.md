@@ -4359,10 +4359,11 @@ tragen. → proposals/admin-redesign.md §5.0, §9.2
 **Rohzahlen-Chip** — die gespeicherten Sensoren eines Wortkastens
 (`ink_unvisited_share`, `paper_lifts`, `jumps`, `hairpins`) als Zahl ohne
 Farbe, Etikett „Zahl, kein Urteil" — Phase 0 des Plans; die
-Tintentreue-Ampel folgt später an derselben Stelle. Eine fehlende Zahl
-steht als „nicht gemessen" da, nie als Null: `ink_unvisited_share: 0` ist
-die beste Lesung, die eine Bahn bekommen kann, und der Folger legt jeden
-Sensor, den er nicht ausgerechnet hat, als `null` ab. *Technisch:*
+Tintentreue-Ampel folgt später an derselben Stelle. Eine einzelne fehlende
+Zahl steht als Strich da, eine Bahn ganz ohne Sensoren als „nicht gemessen"
+— keine von beiden als Null: `ink_unvisited_share: 0` ist die beste Lesung,
+die eine Bahn bekommen kann, und der Folger legt jeden Sensor, den er nicht
+ausgerechnet hat, als `null` ab. *Technisch:*
 `app/src/sections/admin/eigenhand/pfadRohzahlen.ts` liest sie aus dem
 ungetypten `pfade[].meta.tintenpfad`, `StripsPanel` zeigt je Kasten eine
 Chip-Zeile — am Schalter „Pfad zeigen", der dieselben Daten ohnehin lädt.

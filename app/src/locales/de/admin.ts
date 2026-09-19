@@ -1088,17 +1088,23 @@ export const admin = {
       'Der Pfad wurde unter einer anderen Fleckenmaske gefolgt als der Streifen jetzt trägt — er ist also auf anderer Tinte gelaufen, als hier zu sehen ist. Nach dem Radieren neu folgen lassen.',
     // Die Rohzahlen je Kasten: was der Folger beim Nachfolgen mitgeschrieben
     // hat, ohne Farbe und ohne Bewertung. Die Tintentreue-Ampel kommt später
-    // an dieselbe Stelle — bis dahin steht hier die Zahl, und eine fehlende
-    // Zahl sagt „nicht gemessen", statt sich als Null auszugeben.
+    // an dieselbe Stelle — bis dahin steht hier die Zahl. Eine einzelne
+    // fehlende Zahl steht als Strich da, eine Bahn ganz ohne Sensoren als
+    // „nicht gemessen" — keine der beiden gibt sich als Null aus.
     pfadRohzahlen: 'Zahl, kein Urteil',
     pfadRohzahlenHint:
-      'Die gespeicherten Sensoren des Folgers, ungewichtet und unbewertet. „Tinte ohne Bahn“: der Anteil der Tinte, den die Bahn nie befährt. „Absetzer“: wie oft die Feder vom Papier genommen wurde. „Sprünge“: Wechsel auf einen anderen Strang. „Haken“: Umkehrpunkte auf demselben Strang. Ob die Bahn der Tinte folgt, sagt keine dieser Zahlen — das beurteilt später die Ampel an derselben Stelle.',
+      'Die gespeicherten Sensoren des Folgers, ungewichtet und unbewertet. „Tinte ohne Bahn“: der Anteil der Tinte, den die Bahn nie befährt. „Absetzer“: wie oft die Feder vom Papier genommen wurde. „Sprünge“: Wechsel auf einen anderen Strang. „Haken“: Umkehrpunkte auf demselben Strang. Ein Strich steht für eine Zahl, die dieser Lauf nicht ausgerechnet hat — nicht für null. Die Nummer vor dem Wort ist der Kasten des Streifens, von 0 an gezählt: dieselbe, die „--box“ beim Nachfolgen nimmt. Ob die Bahn der Tinte folgt, sagt keine dieser Zahlen — das beurteilt später die Ampel an derselben Stelle.',
     pfadRohzahlenUnvisited: 'Tinte ohne Bahn {{prozent}} %',
     pfadRohzahlenUnvisitedNone: 'Tinte ohne Bahn –',
     pfadRohzahlenLifts: 'Absetzer {{zahl}}',
     pfadRohzahlenJumps: 'Sprünge {{zahl}}',
     pfadRohzahlenHairpins: 'Haken {{zahl}}',
-    pfadRohzahlenWord: '{{wort}}:',
+    // Der Kasten-INDEX, nicht nur das Wort: acht Zeilen des Streifenplans
+    // tragen dasselbe Wort zweimal („ja!“, „„wohl““, „Übung“ …), und zwei
+    // gleiche Vorspänne ließen die Lesung keinem Kasten mehr zuordnen. Die
+    // Nummer ist die von `--box`, also lässt sich eine schlechte Lesung genau
+    // so neu nachfolgen, wie der Chip sie nennt.
+    pfadRohzahlenBox: 'Kasten {{nr}} · {{wort}}:',
     pfadRohzahlenNone: 'nicht gemessen',
     pfadRohzahlenNoneHint:
       'Diese Bahn trägt keine Sensoren — von Hand nachgefahren, oder aus einem Lauf, bevor der Folger sie mitgeschrieben hat. Keine Zahl heißt nicht null.',

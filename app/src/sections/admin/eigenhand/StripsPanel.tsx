@@ -370,7 +370,7 @@ function num(value: unknown, digits = 1): string {
   return typeof value === 'number' ? value.toFixed(digits) : NO_READING;
 }
 
-/** A counted sensor as its chip label; a sensor that was not counted stays blank. */
+/** A counted sensor as its chip label; a sensor that was not counted reads as the panel's dash. */
 function countLabel(value: number | null): string {
   return value === null ? NO_READING : String(value);
 }
@@ -385,10 +385,17 @@ function countLabel(value: number | null): string {
  * weakest word is precisely what these numbers are read for — an average over
  * the row would hide it. Nothing here is coloured and nothing is judged; an
  * unmeasured Bahn says so rather than showing four zeros.
+ *
+ * `showBox` prefixes each line with its cut. Over a WHOLE strip that prefix is
+ * the only thing that tells the lines apart, and it carries the box INDEX, not
+ * just the word: eight rows of the frozen plan hold the same word twice
+ * (`ja!`, `„wohl“`, `Übung` …), so two word-only prefixes would be identical
+ * and neither reading could be assigned. The index is the one `--box` of
+ * `tools.eigenhand.pfad` takes, so a bad reading can be re-followed straight
+ * from what the chip says.
  */
-function PfadRohzahlenChips({ pfade }: { pfade: EigenhandPfad[] }) {
+function PfadRohzahlenChips({ pfade, showBox }: { pfade: EigenhandPfad[]; showBox: boolean }) {
   const t = de.admin.eigenhand;
-  const several = pfade.length > 1;
   return (
     <Box sx={{ mt: 0.5 }}>
       <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}>
@@ -406,9 +413,9 @@ function PfadRohzahlenChips({ pfade }: { pfade: EigenhandPfad[] }) {
             spacing={0.5}
             sx={{ mt: 0.5, alignItems: 'center', flexWrap: 'wrap', rowGap: 0.5 }}
           >
-            {several && (
+            {showBox && (
               <Typography variant="caption" sx={{ color: paper.inkSoft }}>
-                {fmt(t.pfadRohzahlenWord, { wort: pfad.word })}
+                {fmt(t.pfadRohzahlenBox, { nr: pfad.box_index, wort: pfad.word })}
               </Typography>
             )}
             {readings.measured ? (
@@ -713,7 +720,9 @@ function StripTile({
               {drawn.length > 0 && placeable && (
                 <>
                   <PfadCaption pfade={drawn} flecken={row.flecken} />
-                  <PfadRohzahlenChips pfade={drawn} />
+                  {/* Only the whole strip needs the prefix: a selected cut is
+                      already named by the filled chip in the selector below. */}
+                  <PfadRohzahlenChips pfade={drawn} showBox={shown === null} />
                 </>
               )}
               {/* The empty answers are DIFFERENT and each is said out loud:
@@ -842,8 +851,10 @@ function CropTile({
       )}
       {/* The same numbers as in the strip view, under the one Kasten this tile
           IS — the gallery is where a coverage cell leads, so the question „did
-          the follower get this word" is asked here just as often. */}
-      {drawn.length > 0 && <PfadRohzahlenChips pfade={drawn} />}
+          the follower get this word" is asked here just as often. The tile IS
+          the box, so the reading needs no prefix to say which one it belongs
+          to. */}
+      {drawn.length > 0 && <PfadRohzahlenChips pfade={drawn} showBox={false} />}
       {/* The layer is on and nothing is drawn: say WHICH of the empty answers
           this is, rather than leaving the tile looking as if the switch had
           not worked. */}
