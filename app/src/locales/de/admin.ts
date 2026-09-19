@@ -61,12 +61,56 @@ export const admin = {
     evidenceLoading: 'wird geladen …',
     evidenceError: 'Die gespeicherten Vorkommen konnten nicht geladen werden — neu laden oder die API prüfen.',
   },
+  // The Arbeitslisten: the toolbar vocabulary every overview shares (view,
+  // filter, sort, page), so the same control carries the same word everywhere.
+  liste: {
+    viewLabel: 'Ansicht',
+    viewList: 'Liste',
+    viewGallery: 'Galerie',
+    filterLabel: 'Filter',
+    // How much of how much is on screen.
+    counter: '{{shown}} von {{total}}',
+    // Once a filter is on, „how many match this selection?" is the question,
+    // and the page size does not answer it: 30 selected rows would otherwise
+    // read as „24 von 63". The chip counts cannot answer it either — each one
+    // deliberately counts on its own.
+    counterFiltered: '{{shown}} von {{selected}} gewählten · {{total}} insgesamt',
+    pagerLabel: 'Seiten',
+    pageAria: 'Seite {{n}}',
+    pageAll: 'alle zeigen',
+    // The second silence: not „there is nothing here" but „there is nothing
+    // matching this selection" — with the way back.
+    emptyFiltered: 'Kein Eintrag passt zu dieser Auswahl.',
+    // The THIRD silence, and the one that is not an answer at all: a ticked
+    // chip whose evidence has not arrived selects no row, and reporting that
+    // as „nothing matches" would be a claim about the data made on a read that
+    // never landed.
+    emptyPending: 'Diese Auswahl braucht eine Angabe, die noch geladen wird.',
+    resetFilters: 'Filter zurücksetzen',
+    chipKorb: '{{count}} im Korb',
+  },
   // The Buchstaben view: one letter's whole life, from the chart cell to how it
   // is finally written, plus the ways over to its joins and its words.
   letters: {
     overviewTitle: 'Buchstaben',
     overviewIntro:
-      'Jeder erstellte Buchstabe viermal nebeneinander: der Tafel-Ausschnitt, die daraus geschriebene Tafel-Form, die Laufform für fließende Wörter und die Statistik dahinter — der Median dieser Hand über ihren gemessenen Vorkommen, die Vorkommen selbst dünn dahinter. Daneben die Kennzahlen: wie viele Vorkommen, wie gut die Einpassung sitzt, wie die Form bewertet ist. „Öffnen“ führt in den einzelnen Buchstaben mit allen Werkzeugen.',
+      'Jeder erstellte Buchstabe als Zeile: Bewertung, Abzüge und die Merkmale, an denen Arbeit hängt — gesperrt, ohne Laufform, ohne Vorkommen, offene Aufträge. Eine Zeile klappt an Ort und Stelle die vier Flächen auf (Tafel-Ausschnitt, Tafel-Form, Laufform, Median & Vorkommen); „Galerie“ zeigt sie für alle Buchstaben untereinander. „Öffnen“ führt in den einzelnen Buchstaben mit allen Werkzeugen.',
+    // The work list's filter chips, in the order they stand in (letterRows.ts
+    // carries the same order as data).
+    filters: {
+      gesperrt: 'gesperrt',
+      'ohne-laufform': 'ohne Laufform',
+      'ohne-vorkommen': 'ohne Vorkommen',
+      'mit-korb': 'mit Korb-Auftrag',
+    },
+    // The expander names its letter: 63 buttons all called „Aufklappen" are a
+    // list without content to a screen reader.
+    rowExpand: 'Buchstabe {{key}} aufklappen',
+    rowCollapse: 'Buchstabe {{key}} zuklappen',
+    // Both directions get a chip — a missing one would be indistinguishable
+    // from „not loaded yet".
+    chipLaufform: 'Laufform',
+    chipNoLaufform: 'ohne Laufform',
     // The detail view's heading as plain text. Its visible head is the paging
     // arrows around a glyph chip, which cannot BE an h1 — this is the h1 behind
     // it, so the page keeps a document outline (see ViewHeader `titleText`).

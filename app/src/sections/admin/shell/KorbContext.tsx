@@ -17,6 +17,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { useAdmin } from '@/context/adminState';
 import { listWorkItems } from '@/lib/api';
+import type { WorkItemOut } from '@/lib/api';
 import { de } from '@/locales/admin';
 
 import { KorbCtx, type KorbState } from './korbState';
@@ -28,7 +29,10 @@ export function KorbProvider({ children }: { children: ReactNode }) {
   const { sourceId, openWizard } = useAdmin();
   const [mark, setMark] = useState<Mark | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [openCount, setOpenCount] = useState<number | null>(null);
+  // The rows themselves, not just their number: the badge counts them, and the
+  // work lists count them per subject (`korbTargets.ts`). One read, two
+  // readers — `null` is „not answered", never an empty basket.
+  const [items, setItems] = useState<WorkItemOut[] | null>(null);
   // Bumped after a filing or a basket mutation so both the count and the panel
   // refetch — the panel keeps its own optimistic state, this only re-syncs.
   const [tick, setTick] = useState(0);
@@ -41,17 +45,17 @@ export function KorbProvider({ children }: { children: ReactNode }) {
   const [shownFor, setShownFor] = useState(loadKey);
   if (shownFor !== loadKey) {
     setShownFor(loadKey);
-    setOpenCount(null);
+    setItems(null);
   }
 
   useEffect(() => {
     let cancelled = false;
     listWorkItems(sourceId, undefined, { retries: 1 })
       .then((rows) => {
-        if (!cancelled) setOpenCount(rows.filter((i) => i.status === 'open' || i.status === 'returned').length);
+        if (!cancelled) setItems(rows);
       })
       .catch(() => {
-        if (!cancelled) setOpenCount(null);
+        if (!cancelled) setItems(null);
       });
     return () => {
       cancelled = true;
@@ -60,11 +64,12 @@ export function KorbProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<KorbState>(
     () => ({
-      openCount,
+      openCount: items === null ? null : items.filter((i) => i.status === 'open' || i.status === 'returned').length,
+      items,
       fileMark: (next: Mark) => setMark(next),
       openKorb: () => setDrawerOpen(true),
     }),
-    [openCount],
+    [items],
   );
 
   return (

@@ -20,6 +20,10 @@ import type { BboxOut, GlyphSummary, SourceOut } from '@/lib/api';
 
 const SOURCE_STORAGE_KEY = 'kurrentschrift.admin.sourceId';
 
+// The running form is stored as this template variant (core/database
+// LAUFFORM_VARIANT).
+const LAUFFORM_VARIANT = 100;
+
 export function AdminProvider({
   children,
   pinnedSourceId,
@@ -77,6 +81,7 @@ function SourceScopedProvider({
   const [sources, setSources] = useState<SourceOut[]>([]);
   const [bboxesByKey, setBboxesByKey] = useState<Record<string, BboxOut>>({});
   const [glyphsByKey, setGlyphsByKey] = useState<Record<string, GlyphSummary>>({});
+  const [laufformKeys, setLaufformKeys] = useState<Set<string>>(() => new Set());
   const [loadError, setLoadError] = useState<string | null>(null);
   const [waking, setWaking] = useState<boolean>(false);
   const [activeGlyph, setActiveGlyph] = useState<string | null>(null);
@@ -84,6 +89,38 @@ function SourceScopedProvider({
   const [cropCacheBust, setCropCacheBust] = useState<number>(0);
   const [wizardGlyph, setWizardGlyph] = useState<string | null>(null);
   const [diagnoseGlyph, setDiagnoseGlyph] = useState<string | null>(null);
+
+  // Both derivations of ONE template read, kept together so they can never
+  // describe different moments.
+  const applyGlyphRows = useCallback((glyphs: GlyphSummary[]) => {
+    // The per-key map is LOSSY — the read returns every variant of the style
+    // ordered by (glyph_key, variant), so a letter's variant-100 row overwrites
+    // its variant-0 row here. Harmless as long as only `has_data` is read from
+    // it (every consumer today), but `.variant` and `.advance` on this map
+    // belong to whichever row happened to come last. Anything that needs a
+    // specific variant reads the ARRAY, as the Laufform set below does.
+    const gm: Record<string, GlyphSummary> = {};
+    for (const g of glyphs) gm[g.glyph_key] = g;
+    setGlyphsByKey(gm);
+    setLaufformKeys(
+      new Set(glyphs.filter((g) => g.variant === LAUFFORM_VARIANT && g.has_data).map((g) => g.glyph_key)),
+    );
+  }, []);
+
+  // `laufformKeys` is a SNAPSHOT of the boot read, and an apply writes exactly
+  // the rows it is derived from — so the one action that can invalidate it has
+  // to re-read it. Without this the work list keeps the „ohne Laufform" chip
+  // and keeps the letter in that filter until the source is remounted, which
+  // is the old card wall's behaviour inverted: it probed per render and could
+  // not go stale, a list reads a set and can.
+  const refreshGlyphs = useCallback(async () => {
+    try {
+      applyGlyphRows(await getGlyphs(sourceId, { retries: 1 }));
+    } catch {
+      // A failed refresh leaves the previous answer standing: it is one read
+      // behind, which is better than an empty alphabet.
+    }
+  }, [sourceId, applyGlyphRows]);
 
   useEffect(() => {
     let cancelled = false;
@@ -113,9 +150,14 @@ function SourceScopedProvider({
         const bm: Record<string, BboxOut> = {};
         for (const b of bboxes) bm[b.glyph_key] = b;
         setBboxesByKey(bm);
-        const gm: Record<string, GlyphSummary> = {};
-        for (const g of glyphs) gm[g.glyph_key] = g;
-        setGlyphsByKey(gm);
+        // The per-key map is LOSSY — the read returns every variant of the
+        // style ordered by (glyph_key, variant), so a letter's variant-100 row
+        // overwrites its variant-0 row here. Harmless as long as only
+        // `has_data` is read from it (every consumer today), but `.variant` and
+        // `.advance` on this map belong to whichever row happened to come last.
+        // Anything that needs a specific variant reads the ARRAY, as the
+        // Laufform set below does.
+        applyGlyphRows(glyphs);
         setVisibleGlyphs(new Set(bboxes.map((b) => b.glyph_key)));
       } catch (e) {
         if (cancelled) return;
@@ -135,7 +177,7 @@ function SourceScopedProvider({
     return () => {
       cancelled = true;
     };
-  }, [sourceId, switchSource]);
+  }, [sourceId, switchSource, applyGlyphRows]);
 
   const toggleVisible = useCallback((key: string) => {
     setVisibleGlyphs((prev) => {
@@ -208,6 +250,8 @@ function SourceScopedProvider({
       switchSource,
       bboxesByKey,
       glyphsByKey,
+      laufformKeys,
+      refreshGlyphs,
       loadError,
       waking,
       activeGlyph,
@@ -235,6 +279,8 @@ function SourceScopedProvider({
       switchSource,
       bboxesByKey,
       glyphsByKey,
+      laufformKeys,
+      refreshGlyphs,
       loadError,
       waking,
       activeGlyph,
