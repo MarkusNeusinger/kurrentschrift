@@ -224,6 +224,7 @@ export const admin = {
       below_min_occurrences: 'zu wenige Vorkommen',
       anchor_spike: 'Ankersprung (Anker im leeren Papier)',
       head_deviation: 'Kopf dreht ab (Landerichtung gegen die Tafel)',
+      foreign_hand: 'gehört einer anderen Hand',
     },
   },
   // The Übergänge view: the generated join first, the measurement beside it,
