@@ -98,10 +98,15 @@ function walk(dir: string): string[] {
 }
 
 /**
- * Every JSX opening tag as `[tagName, attributeText]` — the same forward scan
- * `sections/admin/nonHover.guard.test.ts` uses, and enough here for the same
- * reason: an attribute value is either a string or a braced expression, and the
- * depth counter is what keeps a `>` inside a braced ternary from ending the tag.
+ * Every JSX opening tag as `[tagName, attributeText]` — the forward scan
+ * `sections/admin/nonHover.guard.test.ts` uses, plus a quote state this guard
+ * needs and that one does not.
+ *
+ * Two things can hide the `>` that ends a tag, and both have to be tracked or
+ * the scan cuts the tag short and everything after the cut goes unchecked: a
+ * braced expression (`color={a > b ? … }`) and a quoted attribute value
+ * (`title="a > b"`). Depth alone handles the first; the quote state handles
+ * the second.
  */
 function openingTags(source: string): [string, string][] {
   const tags: [string, string][] = [];
@@ -109,10 +114,14 @@ function openingTags(source: string): [string, string][] {
   let match: RegExpExecArray | null;
   while ((match = start.exec(source)) !== null) {
     let depth = 0;
+    let quote: string | null = null;
     let index = start.lastIndex;
     while (index < source.length) {
       const char = source[index];
-      if (char === '{') depth += 1;
+      if (quote !== null) {
+        if (char === quote) quote = null;
+      } else if (char === '"' || char === "'" || char === '`') quote = char;
+      else if (char === '{') depth += 1;
       else if (char === '}') depth -= 1;
       else if (char === '>' && depth === 0) break;
       index += 1;
@@ -199,6 +208,16 @@ describe('palette paths on the `color` prop', () => {
     for (const snippet of bad) {
       expect(flags(openingTags(snippet)[0][1]), snippet).toBe(true);
     }
+
+    // A `>` inside a quoted attribute value must not end the tag early — the
+    // scan would stop before `color=` and wave the offence through.
+    const quoted = openingTags('<Typography title="a > b" color="text.secondary">x</Typography>');
+    expect(quoted[0][1]).toContain('color=');
+    expect(flags(quoted[0][1])).toBe(true);
+
+    // Same for a `>` inside a braced expression.
+    const braced = openingTags("<Typography sx={{ mt: a > b ? 1 : 2 }} color='error.main'>x</Typography>");
+    expect(flags(braced[0][1])).toBe(true);
   });
 
   it('leaves `sx`, the simple keys and the other system props alone', () => {
