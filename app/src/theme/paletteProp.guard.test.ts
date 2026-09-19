@@ -13,8 +13,10 @@
 // Nothing catches it anywhere else: the prop's TS type ends in `| (string & {})`
 // (Typography.d.ts), so the compiler accepts any string, and its runtime
 // propTypes are an `oneOfType([oneOf([…]), string])` — no console warning
-// either. 153 captions across `app/src` therefore rendered at full ink instead
-// of the theme's soft ink until this guard landed.
+// either. 164 call sites across `app/src` therefore rendered at full ink
+// instead of the theme's soft ink until this guard landed — 156 asking for
+// `text.*` and 8 for a semantic tone, three of them computed and so invisible
+// to the grep in the issue.
 //
 // What stays legal on purpose:
 //   * `sx={{ color: 'text.secondary' }}` — `sx` DOES resolve palette paths, and
