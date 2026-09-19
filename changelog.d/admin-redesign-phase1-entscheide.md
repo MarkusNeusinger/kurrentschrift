@@ -45,4 +45,8 @@
   name `paper.layer.*` is retired: the token PR shipped seven sibling exports
   (`layer`, `layerDash`, `role`, `roleDash`, `mono`, `strokeStyle`,
   `layerAlpha`), with the 3:1 floor holding for opaque marks and two named
-  exceptions carrying their measured numbers.
+  exceptions carrying their measured numbers. The translucent exception also
+  records which second channel each surface actually renders: two of the six
+  draw a dashed line, the other four draw the engine as a fill whose channel
+  is opacity and silhouette, per the Strichart-Regel's own clause for
+  surfaces.

@@ -1,51 +1,44 @@
 # Admin-Redesign auf der grünen Wiese 2026-09-17 — Optionen, Szenarien, Rückfragen
 
-> **Status (2026-09-19): teil-umgesetzt.** **Phase 0 ist im Code
-> ausgeliefert** — alle neun PRs des Schnitts aus §15.2 sind gemergt
-> (#613, #612, #611, #619, #616, #618, #609, #610, #620). Offen ist davon
-> genau ein Schritt: der Prod-Datenschritt V1 (`UPDATE sources.hand_id`).
-> Er wartet auf die Einzel-Rückfrage in der Sitzung; eine Admin-Route
-> dafür gibt es nicht, es ist also SQL auf der geteilten Cloud SQL,
-> Snapshot davor. **Phase 1 hat begonnen** (Schnitt in §15.4): PR 1
-> Vokabular (#621) und PR 2 Eigenhand-Reiter (#622) sind offen. Die
-> Phasen 2–5 sind ausdrücklich Zukunft (§15). Entstanden als
-> Diskussionsgrundlage auf Wunsch des Autors („noch nichts
-> implementieren … ich will das erst mit dir durch diskutieren bevor wir
-> umsetzen", §1).
-> **Drei weitere Autor-Entscheide vom 2026-09-19** (§4.6) formen Phase 1
-> und bewegen drei Vorgaben: die Eigenhand-Unteransichten stehen unter
-> `?reiter=` statt `?ansicht=` (P1-Q1 c — V2, V7), die Scope-Leiste nennt
-> immer die Eigenhand (P1-Q3 a), und der Subjekt-Stepper liegt auf
-> Alt+Shift+←/→ statt Alt+←/→ (P1-Q11 b — V24).
+> **Status (2026-09-19): teil-umgesetzt.** **Phase 0 ist ausgeliefert** —
+> alle neun PRs aus §15.2 sind gemergt (#613, #612, #611, #619, #616, #618,
+> #609, #610, #620). Offen ist davon genau ein Schritt: der Prod-Datenschritt
+> V1 (`UPDATE sources.hand_id`) — er wartet auf die Einzel-Rückfrage in der
+> Sitzung, hat keine Admin-Route und ist darum SQL auf der geteilten Cloud
+> SQL, Snapshot davor. **Phase 1 hat begonnen** (Schnitt §15.4): PR 1
+> Vokabular (#621), PR 2 Eigenhand-Reiter (#622). Die Phasen 2–5 sind
+> ausdrücklich Zukunft (§15). **Drei Autor-Entscheide vom 2026-09-19** (§4.6)
+> formen Phase 1 und bewegen V2, V7 und V24: `?reiter=` statt `?ansicht=` für
+> die Eigenhand-Unteransichten, das Hand-Feld nennt immer die Eigenhand, der
+> Subjekt-Stepper liegt auf Alt+Shift+←/→. Auf Wunsch des Autors entstanden
+> („noch nichts implementieren … ich will das erst mit dir durch diskutieren
+> bevor wir umsetzen", §1).
 > **Der Rückfragen-Katalog ist seit dem 2026-09-18 beantwortet:** der Autor
 > hat alle 25 Fragen, die Unterpunkte zu Q4 und Q24, die Vorgaben V1–V26
 > und den Kleinkram entschieden — je Frage eine Entscheid-Zeile in §12, die
 > Gesamttabelle in §4.5. Gewählte Form: **A zuerst, die C-Bausteine als
 > Phase 4 darauf, B punktuell, Phase 5 parallel ab Phase 1** (Q1 a, Q5 a);
 > der Umsetzungs-Abschnitt ist §15, die nicht gewählten Formen und Optionen
-> stehen mit Grund in §13. Zwei Entscheide weichen von der Panel-Empfehlung
-> ab — Q6 (b): ein getesteter Schreibfluss DARF umgebaut werden, wenn seine
-> Suiten im selben PR mitziehen; Q8 ohne (c): die englischen Labels
-> bleiben —, und drei tragen wörtliche Autor-Zusätze (Q4, Q10, Q15), aus
-> denen zwei Leitsätze folgen (§4.5): von Hand nachgefahrene Bahnen und
-> korrigierte Buchstabengrenzen sind AUCH die Trainingsmenge, die Folger und
-> Span-Zuordner besser macht; und die Eigenhand ist das Optimierungsziel,
-> die Platte bleibt Maßstab und „so ok". Die Doktrin bleibt, wo sie ist
-> ([`optimierungs-werkbank.md`](optimierungs-werkbank.md) §3–§6/§8,
-> [`eigenhand-erfassung.md`](eigenhand-erfassung.md) §2/§7/§12,
-> [`handmodell-stufenplan.md`](handmodell-stufenplan.md) §5,
-> [`../concepts/vision.md`](../concepts/vision.md) „Drei Rollen"); bewegt
-> haben die Antworten nur, was §10.2 als erklärtes Proposal-Update führt —
-> am 2026-09-18 in den Ziel-Docs vollzogen (werkbank §6, eigenhand
-> §7.3/§7.5/§8.1/§9, [`tintenfolger.md`](tintenfolger.md) §2.5), nie als
-> stille Abweichung. Den Wechsel von `offen` auf `teil-umgesetzt` trug die
-> erste ausgelieferte Stufe im selben PR wie ihr Code (Lifecycle nach
-> `dokument-status.md`; §15.2). Sonst
-> enthält das Doc den Ist-Befund des Admins (§3), was bindend feststeht
-> (§4), die Spezifikation der Eigenhand-Statistik (§6), drei
-> Gestaltungs-Optionen mit Information und Knöpfen je Fläche (§7–§9) und die
-> Nutzungsszenarien (§11). Das Kritik-Protokoll der Runde vor den
-> Entscheiden liegt als datierte Momentaufnahme in
+> stehen mit Grund in §13. Zwei Entscheide weichen von der Empfehlung ab —
+> Q6 (b): getestete Schreibflüsse DÜRFEN umgebaut werden, wenn die Suiten im
+> selben PR mitziehen; Q8 ohne (c): die englischen Labels bleiben —, und drei
+> tragen wörtliche Autor-Zusätze (Q4, Q10, Q15), aus denen zwei Leitsätze
+> folgen (§4.5): von Hand nachgefahrene Bahnen und korrigierte
+> Buchstabengrenzen sind AUCH die Trainingsmenge, die Folger und Span-Zuordner
+> besser macht; und die Eigenhand ist das Optimierungsziel, die Platte bleibt
+> Maßstab und „so ok". Die Doktrin bleibt, wo sie ist
+> ([werkbank](optimierungs-werkbank.md) §3–§6/§8,
+> [eigenhand](eigenhand-erfassung.md) §2/§7/§12,
+> [handmodell](handmodell-stufenplan.md) §5, [vision](../concepts/vision.md)
+> „Drei Rollen"); bewegt haben die Antworten nur, was §10.2 als erklärtes
+> Proposal-Update führt — am 2026-09-18 in den Ziel-Docs vollzogen (werkbank
+> §6, eigenhand §7.3/§7.5/§8.1/§9, [tintenfolger](tintenfolger.md) §2.5), nie
+> als stille Abweichung. Den Wechsel `offen` → `teil-umgesetzt` trug die erste
+> ausgelieferte Stufe im selben PR wie ihr Code (`dokument-status.md`; §15.2).
+> Sonst enthält das Doc den Ist-Befund (§3), was bindend feststeht (§4), die
+> Eigenhand-Statistik (§6), drei Gestaltungs-Optionen (§7–§9) und die
+> Szenarien (§11); das Kritik-Protokoll der Runde davor liegt als datierte
+> Momentaufnahme in
 > [`../notes/admin-redesign-kritik-2026-09-17.md`](../notes/admin-redesign-kritik-2026-09-17.md).
 
 ## 1 Anlass
@@ -521,12 +514,23 @@ schon den Tabs der Wörter-Übersicht gibt
 aussehen" — zwei Vokabulare, die sich auf einer Seite treffen dürfen, ohne
 dass eines das andere überschreibt.
 
-**Zur Begründung von P1-Q11:** die WCAG-Stelle, die §5.1 Idee 18 für den
-Abschalter anführt (SC 2.1.4), trägt nicht — sie gilt für Kurztasten aus
-Buchstaben, Ziffern und Satzzeichen, und eine Modifier-Bindung ist
-ausdrücklich ausgenommen. Der Abschalter bleibt trotzdem richtig, aber
-aus dem obigen Grund: eine Tastenkombination, die der Browser schon
-belegt, darf man abschalten können.
+**Zur Begründung von P1-Q11** sind zwei Dinge auseinanderzuhalten, die die
+erste Fassung des Plans vermengt hat.
+
+*Die Browser-Kollision begründet die WAHL, nicht den Abschalter.* Sie ist
+der Grund, `Alt+←/→` zu VERLASSEN — und gerade kein Grund, das GEWÄHLTE
+Kürzel abschalten zu können, denn Alt+Shift+←/→ kollidiert mit
+Zurück/Vorwärts nicht.
+
+*Den Abschalter trägt weder die Kollision noch die WCAG-Stelle.* SC 2.1.4
+gilt für Kurztasten aus Buchstaben, Satzzeichen, Ziffern ODER
+Symbolzeichen und nimmt Modifier-Bindungen ausdrücklich aus; sie verlangt
+hier also nichts. Abschaltbar bleiben die Kurztasten, weil V24 es von
+Anfang an verlangt („nur fokus-gebunden und abschaltbar") — der Autor hat
+das bestätigt und dem Schalter mit P1-Q11 (b) seinen Ort gegeben —, und
+weil keine Modifier-Kombination über alle Betriebssysteme, Hilfstechniken
+und Browser-Erweiterungen hinweg nachweislich frei ist. Das ist der
+ehrliche Grund: eine Vorsichtsmaßnahme, keine Normerfüllung.
 
 ## 5 Leitideen, auf die sich das Panel einigt
 
@@ -752,12 +756,17 @@ Phase-5-Format, nicht Vokabular.
     ist ein `ButtonBase` mit Fokusring. Einzelbuchstaben-Kurztasten (`n/p`,
     `j/k`) sind keine Spezifikation mehr. **Berichtigt am 2026-09-19**
     (Autor-Entscheid P1-Q11 b, §4.6): die erste Fassung schrieb `Alt+←/→`
-    und begründete den Abschalter mit WCAG 2.1.4. Beides war falsch —
-    SC 2.1.4 gilt nur für Kurztasten aus Buchstaben, Ziffern und
-    Satzzeichen und nimmt Modifier-Bindungen aus, und `Alt+←/→` ist in
-    Chrome, Edge und Firefox auf Windows und Linux Zurück/Vorwärts. Der
-    echte Grund für den Abschalter ist genau diese Kollision: die
-    Verlinkungs-Doktrin des Admins lebt vom Zurück-Knopf.
+    und begründete den Abschalter mit WCAG 2.1.4. Beides war falsch.
+    `Alt+←/→` ist in Chrome, Edge und Firefox auf Windows und Linux
+    Zurück/Vorwärts, und die Verlinkungs-Doktrin des Admins lebt vom
+    Zurück-Knopf — das begründet die WAHL von Alt+Shift+←/→, nicht den
+    Abschalter, denn die gewählte Kombination kollidiert nicht. Und
+    SC 2.1.4 gilt für Kurztasten aus Buchstaben, Satzzeichen, Ziffern ODER
+    Symbolzeichen und nimmt Modifier-Bindungen aus, trägt den Abschalter
+    also ebenso wenig. Abschaltbar bleiben die Kurztasten, weil V24 es
+    verlangt und keine Modifier-Kombination über alle Betriebssysteme,
+    Hilfstechniken und Browser-Erweiterungen hinweg nachweislich frei ist
+    (§4.6).
 19. **Farbe und Fläche.** Keine Rolle bekommt Viridian — es ist Akzent,
     `success` und Fokusring zugleich. Rollen-Linien trennt die
     **Strichart** (Tafel durchgezogen · Platte gestrichelt · Eigenhand
@@ -785,8 +794,10 @@ Phase-5-Format, nicht Vokabular.
     entscheidungstragender Zustand lebt nur im Hover — Text oder `InfoHint`
     statt `Tooltip`. `type-floor` und `touch-targets` laufen auch gegen
     Admin-Routen.
+
     **Ausgeliefert am 2026-09-19 als #620** (Phase 0, PR 8). Was daraus
     geworden ist, gegen den Plan gelesen:
+
     - **Exportform:** sieben Geschwister-Exporte in `app/src/styles/paper.ts`
       — `layer`, `layerDash`, `role`, `roleDash`, `mono`, `strokeStyle`,
       `layerAlpha` —, nicht `paper.layer.*`. Der Arbeitsname ist damit
@@ -799,13 +810,23 @@ Phase-5-Format, nicht Vokabular.
       solo gezeichnete Engine-Gesicht, ein Chip, ein deckender Strich.
     - **Ausnahme 1: das durchscheinende Vergleichs-Overlay.** Komponiert
       erreicht `#e34234` bei 0.42 nur **1,81 : 1 auf Weiß und 1,71 : 1 auf
-      `paper.ink`** (0.40 → 1,76/1,66; 0.45 → 1,90/1,80). Sechs Flächen
-      (`WordSpineCard`, `WordComparison`, `GlyphComparison`,
+      `paper.ink`** (0.40 → 1,76/1,66; 0.45 → 1,90/1,80 — die drei Werte
+      sind `layerAlpha.engineOverlay`, `engineFit`, `engineWizard`). Sechs
+      Flächen (`WordSpineCard`, `WordComparison`, `GlyphComparison`,
       `OverviewVerify`, `FitView`, `WegPreview`) reißen den Boden damit als
       gerendert. Das ist Absicht und ÄLTER als der PR — dieselben Werte
       standen mit dem alten `#e02030` auf `main` —: die Tinte darunter muss
-      lesbar bleiben, sonst zeigt der Vergleich nichts. Unterschieden wird
-      dort über Strichart + Legende.
+      lesbar bleiben, sonst zeigt der Vergleich nichts. **Der zweite Kanal
+      ist dort nicht überall die Strichart** (berichtigt 2026-09-19, am Code
+      nachgelesen): nur `WordSpineCard` (als Overlay) und `WordComparison`
+      zeichnen daneben eine gestrichelte LINIE aus `layerDash.engine`;
+      `GlyphComparison`, `OverviewVerify`, `FitView` und `WegPreview`
+      zeichnen die Engine als reine FLÄCHE mit `fillOpacity`, ohne Muster.
+      Für sie gilt Klausel (2) der Strichart-Regel
+      ([`../concepts/design-system.md`](../concepts/design-system.md) §2) —
+      „eine FLÄCHE trägt statt der Strichart ihre Deckkraft" —, der zweite
+      Kanal ist also Silhouette + Deckkraft + Legende. Eine gestrichelte
+      Füllung hieße nichts.
     - **Ausnahme 2: Ocker gegen Zinnober.** Für eine Deuteranopie sind die
       beiden EINE Farbe (ΔE ≈ 11 simuliert). Sie bleiben, getragen von zwei
       anderen Kanälen: die Engine ist gestrichelt, wo der Pfad durchgezogen
@@ -2908,8 +2929,10 @@ in dieser Reihenfolge — jeder ist die Voraussetzung des nächsten:
    Platten-Hände) und **blockieren den Bau der Phase 5** — FM1 schneidet,
    was ein Stand überhaupt bindet, und FM3 ist VOR Schritt 4 zu beantworten,
    sonst misst die Regression auf der Trainingsmenge.
+
    **Zwei Befunde nimmt der Schema-PR (Schritt 3) aus dem Doc mit; beide am
    2026-09-19 im Code nachgeprüft:**
+
    - **Ein zweites öffentliches Leck neben `/write/glyphs?variant=`.**
      `GET /sources/{id}/templates` ist PUBLIC (so gepinnt in
      `tests/test_api_public_surface.py`) und listet JEDE Variante der
@@ -2999,7 +3022,7 @@ auch nicht lesend (V17); ein PR, der einen Begriff des Glossar-Blocks
 zweiten anzulegen; Kleinkram entscheidet der PR und nennt ihn in seinem
 Text (§12.4).
 
-**Was Phase 1 NICHT blockiert:** der offene Prod-Schritt V1 (§15.2) liegt
+**Was Phase 1 NICHT aufhält:** der offene Prod-Schritt V1 (§15.2) liegt
 auf keinem dieser acht Wege — nichts in Phase 1 berührt Prod: keine
 Migration, kein DDL, kein Secret Manager, kein Cloudflare, kein Aufruf der
 deployten API, keine neue öffentliche Fläche.
