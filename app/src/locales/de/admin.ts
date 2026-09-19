@@ -296,8 +296,18 @@ export const admin = {
     freeTextSubmit: 'Schreiben',
     filterLabel: 'Proben filtern',
     toOverview: 'Alle Wortproben',
-    traceCount: '{{count}} Belege',
-    traceCountOne: '{{count}} Beleg',
+    // „Bahn" statt „Beleg" für die gespeicherte Linie (Autor-Entscheid
+    // 2026-09-18, Q8 a): „Beleg" zählt im Bestandsbericht der Eigenhand die
+    // angenommenen Fassungen eines Items — dasselbe Wort für die Linie einer
+    // Platten-Wortprobe war zwei Zähleinheiten unter einem Namen. Umbenannt ist
+    // genau dieser Chip, kein Durchmarsch durch die übrigen Flächen.
+    traceCount: '{{count}} Bahnen',
+    traceCountOne: '{{count}} Bahn',
+    // Daneben, seit das Detail seine Liste aus den WORTPROBEN baut: wie viele
+    // Proben die Platte von diesem Text hat — die Bahnen sind die Teilmenge
+    // davon, die schon eine Linie trägt.
+    sampleCount: '{{count}} Wortproben',
+    sampleCountOne: '{{count}} Wortprobe',
     writtenTitle: 'Wie es geschrieben wird',
     writtenCaption:
       'Serverseitig komponiert: Buchstaben der Bibliothek, dazwischen die erzeugten Übergänge — dieselbe Ausgabe, die die öffentlichen Seiten schreiben.',
@@ -305,8 +315,12 @@ export const admin = {
     partsCaption:
       'Die Buchstaben und die Übergänge dieses Textes. Ein Klick führt in die jeweilige Ansicht — der Weg von „hier stimmt etwas nicht“ zur Ursache.',
     noJoins: 'Keine verbundenen Übergänge in diesem Text.',
+    // „keine Wortprobe", nicht mehr „keine nachgefahrene Wortprobe": seit das
+    // Detail die Proben selbst listet, erscheint eine ungefahrene Probe hier
+    // mit Ausschnitt und Editor-Einstieg — diese Meldung heißt jetzt, dass die
+    // Vorlage den Text überhaupt nicht schreibt.
     noSpecimen:
-      'Zu diesem Text gibt es keine nachgefahrene Wortprobe dieser Hand — beurteilt wird dann allein das Schriftbild oben. Bemängeln geht trotzdem: ⚑ oben.',
+      'Zu diesem Text gibt es keine Wortprobe dieser Hand — beurteilt wird dann allein das Schriftbild oben. Bemängeln geht trotzdem: ⚑ oben.',
     scoreButton: 'Bewerten',
     scoreHint: 'Der eingefrorene Wortbench-Maßstab auf genau dieser Komposition (niedriger ist besser).',
     // Nachfahr-Übersicht: the overview's third tab — every hand-authored word
@@ -629,6 +643,13 @@ export const admin = {
     provenanceTraced: 'automatisch nachgefahren',
     provenanceAuthored: 'von Hand nachgefahren',
     noSample: 'Kein Platten-Ausschnitt zur specimen_id {{id}} — Sidecar prüfen.',
+    // A sample from a FOREIGN writer's plate (the Abb.-22 Schülerschrift). It
+    // may stand in this hand's detail as context, but the chip has to say so
+    // where the reader looks — never only in the tooltip, because „zählt nicht
+    // mit" is a decision, not a detail.
+    foreignSetChip: 'andere Hand · {{set}}',
+    foreignSetHint:
+      'Diese Wortprobe stammt aus einem anderen Satz der Vorlage und damit von einer anderen Hand. Sie steht hier als Kontext — in keine Statistik und in keine Kopfzahl dieser Hand geht sie ein.',
     // The two faces of a word card: left what was MEASURED, right what the
     // engine writes from it — same scale, same Grundlinie, so „trifft der Fit?"
     // und „was macht das System daraus?" nebeneinander lesbar sind.

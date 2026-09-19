@@ -3649,7 +3649,12 @@ Ausschnitt — sie ändern also, was die Maske überhaupt sieht;
 der Wort-Editor lässt ein misslungenes automatisches Nachfahren von Hand
 über dem Ausschnitt neu ziehen (→ `authored`, wird von keiner Neu-Ernte
 überschrieben); der Paar-Editor zeichnet einen Verbinder für genau ein Paar
-und gibt ihn frei (→ `glyph_pairs`, die sparsame Ausnahme).
+und gibt ihn frei (→ `glyph_pairs`, die sparsame Ausnahme). Seit Phase 0 des
+Admin-Redesigns öffnet der Wort-Editor auch für eine Wortprobe, die noch
+gar keine gespeicherte Bahn trägt: er bekommt dann eine geseedete
+Ausgangszeile (Identität und Rahmen aus dem Sidecar, Slot-Labels aus der
+Formung, keine Züge), damit der geprüfte Schreibweg aufgerufen und nicht
+umgebaut wird. *Technisch:* `seedWordInstance`, `shell/model.ts`.
 
 **Nachfahr-Stand** *(`traceStatusOf`, `shell/model.ts`)* — der dreiwertige
 Stand einer Wortprobe im manuellen Nachfahr-Durchgang, hinter dem

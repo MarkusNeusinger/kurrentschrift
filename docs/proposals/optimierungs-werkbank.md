@@ -322,6 +322,16 @@ vom Symptom zur Änderung und zurück.
   Entwicklungssatz-Kennzeichnung, „Rahmen veraltet"-Badge (die
   Frame-Gate-Toleranzen des Fixture-Exports, client-seitig gerechnet)
   und direktem Absprung in den Editor.
+  Seit Phase 0 des Admin-Redesigns (2026-09-19) öffnet der Editor auch für
+  eine Wortprobe OHNE gespeicherte Bahn: das Wort-Detail baut seine Liste
+  aus den Wortproben der Vorlage statt aus den gespeicherten Zeilen, und
+  eine noch nicht gefahrene Probe bekommt eine geseedete Ausgangszeile
+  (Identität und Registrierungs-Rahmen aus dem Sidecar, Slot-Labels aus
+  der Formung, keine Züge) — der Schreibweg bleibt unverändert, ein Item
+  ohne `replace`, und die erste `authored`-Bahn eines Vorkommens legt ihre
+  Zeile schlicht an. Die Hand dafür löst die Werkbank aus den Vorkommen
+  der Quelle auf, ersatzweise `sources.hand_id`; löst keine von beiden
+  auf, bleibt Speichern mit sichtbarer Begründung gesperrt.
 - **W4 — Protokoll** (umgesetzt): §5 als erzwungener Ablauf statt
   Doku-Appell. Migration `0022` ergänzt `understanding` · `reproduced` ·
   `stage` · `acked_at` · `closed_at`; die API weist ein Abschließen ohne

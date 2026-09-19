@@ -345,6 +345,57 @@ async def test_word_editor_single_item_write_keeps_the_other_rows(api: Harness):
     assert rows["zu"]["provenance"] == "traced"
 
 
+async def test_word_editor_first_trace_for_an_untraced_specimen_stores_a_row(api: Harness):
+    """A Wortprobe the harvest never traced can be traced by hand from the word
+    detail (Admin-Redesign Phase 0): the editor is handed a SEEDED row and sends
+    the same single-item body, so the first `authored` trace for a specimen has
+    to CREATE its row rather than needing one to exist. Nothing else may move —
+    the traced row of the neighbouring specimen stays as it is."""
+    _, source_id = await api.seed_style_and_source()
+    await api.client.request(
+        "PUT", f"/sources/{source_id}/word-instances", json_body=_batch([_word_item()]), headers=api.admin_headers()
+    )
+
+    # The seed's shape: identity + slots off the sidecar sample, the strokes the
+    # hand just drew, and the sample's own lineature as the registration.
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/word-instances",
+        json_body=_batch(
+            [
+                _word_item(
+                    specimen_id="unter",
+                    word="unter",
+                    slots=["u", "n", "t", "e", "r"],
+                    strokes=[[[0.0, 0.0], [0.6, 1.0], [1.2, 0.0]]],
+                    provenance="authored",
+                    measurements={"registration_px": {"tx": 0.0, "ty": 0.0, "baseline_row": 68.0}, "xh_px": 30.0},
+                )
+            ]
+        ),
+        headers=api.admin_headers(),
+    )
+    assert res.json() == {"hand_id": "test-hand", "stored": 1, "deleted": 0, "skipped": 0}
+
+    res = await api.client.request("GET", f"/sources/{source_id}/word-instances", headers=api.admin_headers())
+    rows = {r["specimen_id"]: r for r in res.json()}
+    assert set(rows) == {"wenn", "unter"}
+    assert rows["unter"]["provenance"] == "authored"
+    assert rows["unter"]["slots"] == ["u", "n", "t", "e", "r"]
+    assert rows["unter"]["strokes"] == [[[0.0, 0.0], [0.6, 1.0], [1.2, 0.0]]]
+    assert rows["unter"]["hand_id"] == "test-hand"
+    assert rows["wenn"]["provenance"] == "traced"
+
+    # And it is protected from the next harvest like any other authored row.
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/word-instances",
+        json_body=_batch([_word_item(specimen_id="unter", word="unter", slots=["u", "n", "t", "e", "r"])]),
+        headers=api.admin_headers(),
+    )
+    assert res.json()["skipped"] == 1
+
+
 async def test_put_word_instances_gate_and_validation(api: Harness):
     _, source_id = await api.seed_style_and_source()
     res = await api.client.request("PUT", f"/sources/{source_id}/word-instances", json_body=_batch([_word_item()]))

@@ -1,8 +1,16 @@
-// One traced word over its specimen crop, with the INTERACTIVE occurrence layer
+// One word sample over its specimen crop, with the INTERACTIVE occurrence layer
 // on top — a dashed box per fitted letter, a dot per join between two adjacent
 // letters. Errors become visible in words, so this card is where the walk into
 // the other two views starts: a box opens the letter, a dot the join, ⚑ (or
 // shift-click) files the element as an Auftrag.
+//
+// The stored trace is OPTIONAL (`row: … | null`). The card's identity — word,
+// specimen id, DOM anchor, mark target — comes from the SAMPLE, which carries
+// all three anyway (the row is looked up BY the sample id), so a Wortprobe that
+// nobody has traced yet still shows its crop, its occurrence boxes, its score
+// and the way into the editor. Everything the trace alone knows — the pen path,
+// its Herkunft and date, the fit chips, the Abstandsprofil — is drawn only where
+// there IS a trace, rather than the whole card disappearing with it.
 //
 // TWO faces, like a letter tile: left the MEASUREMENT (specimen ink + the
 // traced pen path over it — „trifft der Fit das Wort?"), right what the engine
@@ -123,7 +131,9 @@ function EngineFace({
 }
 
 interface Props {
-  row: WordInstanceOut;
+  // The stored trace of this sample, or null where the hand has not drawn one
+  // yet — the card is about the Wortprobe, and a trace is something it may have.
+  row: WordInstanceOut | null;
   sample: WordSampleOut;
   sourceId: string;
   // This specimen's letter occurrences, ascending by composer slot.
@@ -177,28 +187,31 @@ export function WordSpineCard({
   // Computed only for a visible card: the brute-force nearest-segment scan is
   // fine for one word, not for a whole stack of offscreen ones.
   const profile = useMemo(() => {
-    if (!inView || !composed || row.strokes.length === 0) return null;
+    if (!inView || !composed || !row || row.strokes.length === 0) return null;
     return distanceProfile(
       row.strokes,
       composed.items.map((it) => it.centerline),
     );
-  }, [inView, composed, row.strokes]);
+  }, [inView, composed, row]);
 
-  const m = row.measurements;
+  const m = row?.measurements;
   // ONE frame for both inks — the trace and the engine ride the same matrix.
+  // Without a trace it is the sidecar's own lineature (traceFrameOf's documented
+  // fallback), which is what the engine face needs anyway.
   const frame = traceFrameOf(row, sample);
   const { xh, baselineRow } = frame;
   const matrix = traceMatrix(frame);
 
-  const fitted = m.fitted_slots?.length ?? null;
-  const unfitted = (m.unfitted_slots ?? []).map((i) => row.slots[i] ?? String(i));
-  const meanRmse = rmseMean(row);
+  const status = traceStatusOf(sample, row);
+  const fitted = m?.fitted_slots?.length ?? null;
+  const unfitted = (m?.unfitted_slots ?? []).map((i) => row?.slots[i] ?? String(i));
+  const meanRmse = row ? rmseMean(row) : null;
   const cropW = (FACE_H / sample.height) * sample.width;
   // One display pixel in viewBox units — keeps hairlines and hit targets the
   // same visual size across crops of very different resolutions.
   const px = sample.height / FACE_H;
 
-  const specimen: SpecimenRef = { id: row.specimen_id, kind: row.kind, word: row.word };
+  const specimen: SpecimenRef = { id: sample.id, kind: sample.kind, word: sample.word };
   const selectLetter = (inst: InstanceOut) => onOpenLetter(inst.glyph_key);
   const selectPair = (left: InstanceOut, right: InstanceOut) => onOpenPair(left.glyph_key, right.glyph_key);
 
@@ -220,26 +233,44 @@ export function WordSpineCard({
   return (
     <Box
       ref={ref}
-      id={cardElementId(row.specimen_id)}
+      id={cardElementId(sample.id)}
       sx={{ border: 1, borderColor: 'divider', borderRadius: 2, p: 2, bgcolor: 'background.paper' }}
     >
       <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, flexWrap: 'wrap', mb: 1 }}>
-        <Typography sx={{ fontFamily: garamond, fontSize: 24, lineHeight: 1 }}>{row.word}</Typography>
+        <Typography sx={{ fontFamily: garamond, fontSize: 24, lineHeight: 1 }}>{sample.word}</Typography>
         <Typography variant="caption" color="text.secondary">
-          {row.specimen_id}
+          {sample.id}
         </Typography>
-        <Chip
-          size="small"
-          variant="outlined"
-          color={row.provenance === 'authored' ? 'success' : 'default'}
-          label={row.provenance === 'authored' ? t.provenanceAuthored : t.provenanceTraced}
-        />
+        {/* A sample from another writer's plate (the Abb.-22 Schülerschrift)
+            may stand in this hand's detail as context, but it must SAY so where
+            the reader looks — never only in a tooltip: it is exactly the kind
+            of foreign evidence that is never counted into this hand's
+            statistics (Vorgabe V4 of the Admin-Redesign). The tooltip only
+            elaborates what the chip already states. */}
+        {sample.sample_set && (
+          <Tooltip title={t.foreignSetHint}>
+            <Chip size="small" variant="outlined" label={fmt(t.foreignSetChip, { set: sample.sample_set })} />
+          </Tooltip>
+        )}
+        {row ? (
+          <Chip
+            size="small"
+            variant="outlined"
+            color={row.provenance === 'authored' ? 'success' : 'default'}
+            label={row.provenance === 'authored' ? t.provenanceAuthored : t.provenanceTraced}
+          />
+        ) : (
+          // Nothing stored at all. In the OVERVIEW plain absence is the „still
+          // to do" state, because a card there is one of many; a detail card
+          // stands alone, so the state gets said out loud.
+          status === 'open' && <Chip size="small" variant="outlined" label={de.admin.compare.statusOpen} />
+        )}
         {/* The clipped-ink flag travels into the detail as well: it answers
             why this specimen is still not traced by hand, and it is the place
             where the sidecar's reason is readable. Through `traceStatusOf`, so
             a flagged specimen that WAS traced by hand shows the same thing here
             as in the overview — the authored line, not the flag. */}
-        {traceStatusOf(sample, row) === 'incomplete' && (
+        {status === 'incomplete' && (
           <Tooltip title={sample.note || de.admin.compare.incompleteChipHint}>
             <Chip size="small" color="warning" variant="outlined" label={de.admin.compare.incompleteChip} />
           </Tooltip>
@@ -265,7 +296,7 @@ export function WordSpineCard({
               variant="outlined"
               clickable
               label={`⚑ ${t.kindWord}`}
-              onClick={() => onMark({ target: { kind: 'word', word: row.word }, specimen })}
+              onClick={() => onMark({ target: { kind: 'word', word: sample.word }, specimen })}
             />
           </Tooltip>
         </Box>
@@ -282,7 +313,7 @@ export function WordSpineCard({
                   is not there. */}
               {[
                 t.faceSpecimenBase,
-                showTrace && (showPath ? t.faceLayerPath : t.faceLayerTrace),
+                showTrace && row && (showPath ? t.faceLayerPath : t.faceLayerTrace),
                 overlay && composed && t.faceLayerEngine,
               ]
                 .filter(Boolean)
@@ -291,7 +322,7 @@ export function WordSpineCard({
             {/* Herkunft + Datum of the line that is drawn: which hand made it
                 and when. A path without that is an undated overlay, not
                 evidence — and the date is exactly what the author asked for. */}
-            {showTrace && (
+            {showTrace && row && (
               <Typography variant="caption" color="text.secondary">
                 {fmt(t.tracePedigree, {
                   herkunft: row.provenance === 'authored' ? t.provenanceAuthored : t.provenanceTraced,
@@ -305,7 +336,7 @@ export function WordSpineCard({
               height={FACE_H}
               viewBox={`0 0 ${sample.width} ${sample.height}`}
               style={{ display: 'block', background: '#fff', maxWidth: '100%', height: 'auto' }}
-              aria-label={`${t.cropAlt} ${row.word}`}
+              aria-label={`${t.cropAlt} ${sample.word}`}
             >
               <image
                 href={wordSampleCropUrl(sourceId, sample.id)}
@@ -316,7 +347,7 @@ export function WordSpineCard({
                 preserveAspectRatio="none"
               />
               <g transform={matrix}>
-                {showTrace && (
+                {showTrace && row && (
                   // One overlay component for both surfaces that draw a stored
                   // path (here and the own-hand strips). With `detail` off it
                   // is the flat green line this card always drew; with it on
@@ -346,7 +377,7 @@ export function WordSpineCard({
                     key={`${inst.glyph_key}:${inst.measurements.slot}`}
                     role="button"
                     tabIndex={0}
-                    aria-label={fmt(t.letterBoxAria, { key: inst.glyph_key, word: row.word })}
+                    aria-label={fmt(t.letterBoxAria, { key: inst.glyph_key, word: sample.word })}
                     style={{ cursor: 'pointer' }}
                     onClick={(e) => activate(e, () => selectLetter(inst), mark)}
                     onKeyDown={(e) => {
@@ -386,7 +417,11 @@ export function WordSpineCard({
                     key={`${left.measurements.slot}-join`}
                     role="button"
                     tabIndex={0}
-                    aria-label={fmt(t.joinDotAria, { left: left.glyph_key, right: right.glyph_key, word: row.word })}
+                    aria-label={fmt(t.joinDotAria, {
+                      left: left.glyph_key,
+                      right: right.glyph_key,
+                      word: sample.word,
+                    })}
                     style={{ cursor: 'pointer' }}
                     onClick={(e) => activate(e, () => selectPair(left, right), mark)}
                     onKeyDown={(e) => {
