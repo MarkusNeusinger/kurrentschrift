@@ -579,7 +579,16 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   als eigene Streifen an und stellt sie über den Planblock `pins` an die
   Spitze der Reihenfolge — der Weg, ein Wort in einen bereits
   eingefrorenen Plan zu bekommen (Proposal §4; `--word` für einen
-  einmaligen Pin);
+  einmaligen Pin). In `PINNED_FIRST` stehen neben den eigens dafür
+  kuratierten Wörtern die **Referenzwörter** (`corpus.REFERENCE_WORDS`:
+  die drei §9-Wörter `lesen` · `das` · `denen` + die Worttexte des
+  Entwicklungssatzes dev-19), die aus
+  anderen Kurationsschichten stammen; ein Wort, das der Plan schon
+  trägt, wird gemeldet und übersprungen, nicht ein zweites Mal
+  eingeplant. Der Lauf ist rein lokal — Kuration lesen, `streifen.json`
+  schreiben, kein Netz und keine DB —, aber er ändert eine committete
+  Datei: er gehört in einen PR, nicht in eine Sitzung, und „Bögen
+  erzeugen" kennt die neuen Wörter erst nach dem Deploy;
   **`gaps`** listet unerreichbare Übergänge samt echter
   Trägerwort-Kandidaten für die nächste Kurationsrunde in `corpus.py`.
 - **`sheet`** — druckt einen Bogen (PDF + `layout.json`-Sidecar) aus der

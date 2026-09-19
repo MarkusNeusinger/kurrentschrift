@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+from pathlib import Path
 
 import pytest
 
@@ -10,7 +12,35 @@ from core.eigenhand import coverage
 from core.eigenhand import plan as plan_mod
 from core.eigenhand.plan import STREIFEN_JSON
 from tools.eigenhand import pool, progression, universe
-from tools.eigenhand.corpus import PINNED_FIRST, pool_entries, shaping_form
+from tools.eigenhand.corpus import PINNED_FIRST, REFERENCE_WORDS, pool_entries, shaping_form
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
+# The committed plan as it stood BEFORE the reference-word pin wave of
+# 2026-09-19: strips S0001–S0181, i.e. waves 0–2 plus the `Kurrentschrift`
+# pin. Append-never makes this digest permanent — every later wave appends
+# beyond it and leaves it alone. A failure here means a frozen strip was
+# rewritten; re-recording the constant would hide the very accident it exists
+# to catch (proposal §12 Prüfstein 4).
+FROZEN_PREFIX_STRIPS = 181
+FROZEN_PREFIX_SHA256 = "be4aacf5f910e372d9541d457b03b3962c53f8205f23658d695b23caf9a3971e"
+
+# The wave the reference words were pinned in, and the words the plan pins in
+# total. RECORDED, not derived: deriving the expectation from the plan makes
+# the assertion self-satisfying — un-pinning a strip would drop its word from
+# both sides and the test would still pass. `pool pin` skips a word the plan
+# already carries ("write this early", not "write this again", proposal §4),
+# so this is PINNED_FIRST minus what the earlier waves had. A later pin run
+# appends to this list on purpose; it never rewrites it.
+REFERENCE_PIN_WAVE = 4
+PINNED_WORDS = ["Kurrentschrift", "lesen", "denen", "Wer", "die", "laden", "unter", "will"]
+
+
+def _prefix_digest(plan: dict, count: int) -> str:
+    ids = sorted(plan["strips"], key=lambda sid: int(sid[1:]))[:count]
+    payload = json.dumps({sid: plan["strips"][sid] for sid in ids}, ensure_ascii=False, sort_keys=True)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 class TestShapedJoins:
@@ -134,8 +164,93 @@ class TestStripPlan:
     def test_the_committed_plan_pins_what_the_curation_pins(self):
         plan = plan_mod.load_plan()
         pinned_words = [word for sid in plan_mod.pinned_strips(plan) for word in plan["strips"][sid]["words"]]
-        assert pinned_words == PINNED_FIRST
+        # The recorded fact first: exactly these words lead the plan. It is no
+        # longer a plain `== PINNED_FIRST` because the reference words joined
+        # that list and `pool pin` skips the ones the plan already carries
+        # (proposal §4) — but the expectation stays a literal, so un-pinning a
+        # strip fails loudly instead of quietly shrinking both sides.
+        assert pinned_words == PINNED_WORDS
+        # And the link this test is named for, robust against a later wave:
+        # every pinned word comes from the curation, in curation order, and no
+        # curated pin is missing from the plan altogether — pinned or already
+        # planned, never neither.
+        assert pinned_words == [word for word in PINNED_FIRST if word in set(pinned_words)]
+        planned = {word for strip in plan["strips"].values() for word in strip["words"]}
+        assert not [word for word in PINNED_FIRST if word not in planned]
         assert plan_mod.ordered_strips(plan)[: len(plan["pins"])] == plan["pins"]
+
+    def test_the_frozen_prefix_of_the_committed_plan_is_byte_identical(self):
+        plan = plan_mod.load_plan()
+        assert len(plan["strips"]) >= FROZEN_PREFIX_STRIPS
+        assert _prefix_digest(plan, FROZEN_PREFIX_STRIPS) == FROZEN_PREFIX_SHA256
+
+    def test_the_reference_pin_wave_only_appended(self):
+        # Q17 (owner, 2026-09-18): one appended strip per reference word the
+        # plan did not carry yet, each leading the queue, each its own row.
+        # Selected by WAVE, not by strip number: the doc foresees further pin
+        # runs (§4), and those append beyond S0188 without saying anything
+        # about this wave.
+        plan = plan_mod.load_plan()
+        appended = [sid for sid in plan["pins"] if plan["strips"][sid]["wave"] == REFERENCE_PIN_WAVE]
+        assert [plan["strips"][sid]["words"] for sid in appended] == [
+            ["lesen"],
+            ["denen"],
+            ["Wer"],
+            ["die"],
+            ["laden"],
+            ["unter"],
+            ["will"],
+        ]
+
+    def test_every_reference_word_is_on_a_strip(self):
+        # The point of the pin: every reference word gets an own-hand strip.
+        # Either the pin wave put it on one or an earlier wave already had it
+        # — never neither. (Only the dev-split words have a plate sample on
+        # top of that; `lesen` and `denen` are not on the 1922 plate.)
+        plan = plan_mod.load_plan()
+        planned = {word for strip in plan["strips"].values() for word in strip["words"]}
+        assert not [word for word in REFERENCE_WORDS if word not in planned]
+
+    def test_the_reference_words_are_the_section_9_words_plus_the_dev_split(self):
+        # Pinned literally, because the derivation strips the occurrence
+        # suffix of a repeated specimen (`und-3` → `und`) and a silent change
+        # there would quietly re-cut what gets written.
+        assert REFERENCE_WORDS == [
+            "lesen",
+            "das",
+            "denen",
+            "Galoppieren",
+            "Wer",
+            "die",
+            "laden",
+            "linken",
+            "mit",
+            "muß",
+            "und",
+            "unter",
+            "will",
+            "zwei",
+        ]
+
+    def test_only_the_dev_split_words_have_a_plate_sample(self):
+        # The docs promise the three-way comparison (Platte · Eigenhand ·
+        # rendering) for the dev-split words and a two-way one for `lesen` and
+        # `denen`, which the 1922 plate does not write. Pinned against the
+        # committed sidecar so that sentence cannot drift away from the data.
+        sidecar = json.loads((REPO_ROOT / "data/sources/suetterlin-1922/words.json").read_text(encoding="utf-8"))
+        on_plate = {row["word"] for row in sidecar["words"]}
+        assert [word for word in REFERENCE_WORDS if word not in on_plate] == ["lesen", "denen"]
+
+    def test_every_reference_word_is_curated_outside_the_pin_layer(self):
+        # The pin rows carry no era/lang/note because an earlier layer already
+        # glosses every reference word — and `pool_entries()` keeps the first
+        # writer's gloss, so a second one would be dropped. That claim needs a
+        # tripwire: `_PIN_ENTRIES` injects the reference words into the pool
+        # itself, so `pool.pin_words`' uncurated-word guard can never fire for
+        # them. A re-baselined dev split would otherwise put an unglossed word
+        # straight onto a strip and freeze its shaping form.
+        tags = {entry["word"]: entry["tags"] for entry in pool_entries()}
+        assert not [word for word in REFERENCE_WORDS if tags[word] == ["pin"]]
 
     def test_the_plan_carries_every_shaping_form_it_needs(self):
         # The plan is the API's ONLY word source: a reader without the
