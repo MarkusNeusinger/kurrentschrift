@@ -11,7 +11,10 @@
   Zeilenschlüssel statt am Index, überlebt also Filter und Seitenwechsel und
   landet nie auf `<body>`. Eine umbrechende Kachelfläche bekommt nur ←/→:
   ein Flex-Grid hat keine feste Spaltenzahl, und ein ↓ über sechs Kacheln
-  bei 1440 px und drei bei 1024 px wäre schlechter als keins. **Nicht dabei:**
+  bei 1440 px und drei bei 1024 px wäre schlechter als keins — und sie
+  heißt gegenüber einem Screenreader eine benannte Symbolleiste, sonst
+  bliebe der im Lesemodus und reichte die Pfeile gar nicht erst weiter.
+  **Nicht dabei:**
   die Kartenwand hinter „Galerie" (154 → 156 Stopps — die zwei kommen vom
   Schalter und vom Stepper) und die Nachfahr-Übersicht; beide sind
   Kartenlisten derselben Form und die nächste Anwendung des Hooks.
