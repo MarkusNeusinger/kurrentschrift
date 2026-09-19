@@ -14,6 +14,7 @@
 import { Box } from '@mui/material';
 
 import { de } from '@/locales/admin';
+import { mono } from '@/styles/paper';
 import type { ApiErrorText } from './apiErrorText';
 
 export function ErrorText({ error, prefix }: { error: ApiErrorText; prefix?: string }) {
@@ -27,7 +28,7 @@ export function ErrorText({ error, prefix }: { error: ApiErrorText; prefix?: str
         </Box>
         <Box
           component="code"
-          sx={{ display: 'block', mt: 0.5, fontFamily: 'monospace', wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
+          sx={{ display: 'block', mt: 0.5, fontFamily: mono, wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
         >
           {error.detail}
         </Box>

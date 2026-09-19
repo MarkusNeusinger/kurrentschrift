@@ -9,7 +9,7 @@
 
 import type { InstanceOut, LandmarkKind, WordInstanceOut, WordSampleOut, WorkItemIn } from '@/lib/api';
 import { de } from '@/locales/admin';
-import { paper, pigment } from '@/styles/paper';
+import { absetzer, layer, paper, pigment } from '@/styles/paper';
 
 import { keysOfText } from './focus';
 
@@ -393,26 +393,37 @@ export function workItemBodyOf(mark: Mark, note: string): WorkItemIn {
   return { ...base, kind: 'word', word: mark.target.word };
 }
 
-// Overlay palette — the mockup's paper/ink set mapped onto the repo tokens.
-// The trace green matches the word cards so every surface reads alike.
+// Overlay palette — what each mark on a work surface MEANS, resolved onto the
+// palette's own Ebenen-Token (`styles/paper.ts`). The hues used to live here as
+// literals, which is how the trace green reached 2.71:1 on the white sketches
+// and how it ended up meeting the engine red in a pair no reader with a
+// red-green deficiency can separate; the token file carries the contrast and
+// colour-vision rules now, and this map only names the jobs.
 export const WERKBANK_COLORS = {
-  trace: '#1c6b57', // pen paths on WHITE — the aggregate/pair sketches
-  // The same pen path drawn ON TOP of plate ink, where the dark green all but
-  // vanished exactly where it matters: over the stroke it is meant to follow.
-  // A separate token rather than a brightened `trace`, because the sketches
-  // need the dark one to stay readable on their white ground.
-  traceOverInk: '#00b37e',
+  // ONE pen-path colour for both grounds. There used to be a second, brighter
+  // token for the line drawn ON TOP of plate ink, because the dark green
+  // vanished exactly where it mattered — `layer.trace` clears both (4.62:1 on
+  // white, 3.70:1 on the ink), so the two collapse back into one.
+  trace: layer.trace,
   box: paper.line, // dashed letter box, recessive
   accent: paper.sepia, // joins + hover
-  selected: pigment.vermilion, // the element currently focused
-  engine: '#e02030', // what the engine itself writes — overlay AND its own face
+  // An ACTIVE state, not a role and not a reading: viridian is the app's one
+  // accent for exactly that (design-system §2). It ships ahead of its consumer
+  // — the Werkbank's selection highlight is a Phase-1 surface — so that the
+  // Zinnober it used to hold is free for the engine layer.
+  selected: paper.viridian,
+  // What is written TODAY, against a median that would replace it: the warning
+  // family's own hue, dashed. It shares the Pfad layer's hex, and can, because
+  // no surface draws a Pfad and a Laufform reference at once.
+  current: pigment.ochre,
+  engine: layer.engine, // what the engine itself writes — overlay AND its own face
   // The Pfad layer: the SAME line, read as a movement. The ramp runs from the
-  // line's own colour — `traceOverInk` above, or whatever the caller passes as
+  // line's own colour — `trace` above, or whatever the caller passes as
   // `color` — to `pathLast` for the final stretch, so the writing ORDER is
   // legible without a legend and a path still looks like the trace it is. Only
   // the far end needs a token of its own; a separate „first" token was carried
   // here for a while, read by nothing, and agreed with the line colour by
   // coincidence rather than by construction (review of PR #598).
-  pathLast: '#2f6fd0',
-  lift: '#8a5cd0',
+  pathLast: layer.path,
+  lift: absetzer.color,
 } as const;

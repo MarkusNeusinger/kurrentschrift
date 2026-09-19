@@ -33,6 +33,7 @@ import {
   tipOf,
   type Stroke,
 } from '@/sections/admin/shell/pathOverlay';
+import { absetzer } from '@/styles/paper';
 
 // ~2/3 of a hairline stroke's own width: thick enough to read over black ink,
 // thin enough that the ink it follows still shows on both sides of it. In PATH
@@ -50,7 +51,10 @@ const ARROW_LEN = 2.4 * LINE_WIDTH; // length of the direction triangle
 const ARROW_SPREAD = 0.8; // its base width, as a fraction of the length
 const START_DOT_R = 1.3 * LINE_WIDTH;
 const LIFT_WIDTH = 0.5 * LINE_WIDTH;
-const LIFT_DASH = 2 * LINE_WIDTH;
+// The Absetzer's colour and stroke style live with each other in the token file
+// (`absetzer`), so a tune cannot move one without the other. Both dash entries
+// are equal for a dotted line — the `on` one is what the floor below measures.
+const LIFT_DASH = absetzer.dash[0] * LINE_WIDTH;
 // The floor is the other half: where the whole path is only a few pixels tall
 // (a strip at ¼ zoom) the proportional size would fall under one pixel.
 const ARROW_MIN_PX = 6;
@@ -78,7 +82,7 @@ export function PathOverlay({
   strokes,
   unit,
   detail = false,
-  color = WERKBANK_COLORS.traceOverInk,
+  color = WERKBANK_COLORS.trace,
   opacity = 0.95,
   showIndex = false,
 }: Props) {

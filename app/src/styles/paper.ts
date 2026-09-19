@@ -93,6 +93,85 @@ export const pigment = {
   oldGold: '#c9a227', // Altgold — Bronzedruck on charts and diplomas (approx)
 } as const;
 
+// ——— Overlay layers over a work surface (Ebenen-Token) ———
+// A layer is one reading drawn ON TOP of a crop, scan or sketch. Every overlay
+// ground is white or plate ink (§5 surface rule), so a layer hue has to clear
+// 3:1 against BOTH (WCAG 1.4.11, non-text graphical object) — which is what the
+// set this replaces did not: `#00b37e` sat at 2.71:1 on white, and it met the
+// engine's red at a deuteranope separation no reader with a red-green
+// deficiency can use. The hues below sit on the blue↔yellow axis, the one that
+// survives every dichromacy, and NONE of them is the only channel: each layer
+// also carries a stroke style (`layerDash`) and a named legend entry.
+export const layer = {
+  // Spur — the human-traced pen path, the one line drawn on both grounds.
+  // Preußischblau lifted in its own hue until it clears both (4.62:1 on #fff,
+  // 3.70:1 on paper.ink). Derived for contrast, not a period hex.
+  trace: '#1b7abb',
+  // Pfad — the far end of the writing-order ramp, which starts at the Spur's
+  // own colour. Blue → Ocker is the one diverging ramp that keeps its direction
+  // under every dichromacy, so the writing ORDER stays legible.
+  path: pigment.ochre,
+  // Engine — what the composer writes over the ink. Always DASHED where it lies
+  // over a crop: Ocker and Zinnober collapse onto one another for a deuteranope
+  // and the ramp's far end can meet the engine line on the same word card.
+  engine: pigment.vermilion,
+} as const;
+
+// One stroke style per layer — the redundant channel, so colour is never the
+// only carrier. `strokeDasharray` FACTORS, multiplied by the caller's own line
+// width, so they hold at every x-height; `null` is a solid line. Spur and Pfad
+// share the solid line on purpose: they are the same drawn line, and the Pfad
+// adds its own channels (order ramp, start dot, arrow heads) rather than a
+// second stroke style.
+export const layerDash = {
+  trace: null,
+  path: null,
+  engine: [4, 3],
+} as const;
+
+// The Absetzer — the connector between two pen-down stretches. NOT a layer: it
+// is the Pfad layer's second mark, it carries no reading of its own and it has
+// no entry in the legend, so the pairwise colour-vision rule (which is about
+// telling two readings apart) does not apply to it. What does apply is the
+// ground rule — it is drawn on white and over ink like everything else.
+//
+// The violet is load-bearing twice over. It is a hue the Spur→Pfad ramp never
+// passes through, which a neutral grey is not: that ramp runs blue → Ocker and
+// goes through `#74796f` in the middle, so a graphite lift and the middle
+// stretch of a three-part path came out the same colour (measured in the
+// browser, 2026-09-19). And a lift can never be READ as a stretch anyway: half
+// the line's width, dotted, drawn UNDER the strokes, and geometrically joining
+// the end of one stretch to the start of the next.
+export const absetzer = { color: '#8a5cd0', dash: [2, 2] } as const;
+
+// ——— Die drei Rollen (Rollen-Token) ———
+// Tafel · Platte · Eigenhand as colour + stroke + label. No role carries
+// Viridian: it is accent, `success` and focus ring at once. Roles are read on
+// PAPER grounds (chips, list rows, dots), never over ink, so they are the dark
+// end of the period set in three separated lightness steps — lightness is the
+// one channel every dichromacy keeps. The label is mandatory beside them
+// (Strichart-Regel, design-system.md §2).
+export const role = {
+  tafel: pigment.prussianBlue, // 11.02:1 on paper.hi
+  platte: pigment.oxblood, // 8.41:1 on paper.hi
+  // Ocker lifted for contrast (3.99:1 on paper.hi; the raw pigment reaches
+  // 2.77). Derived for contrast, not a period hex — deliberately the same
+  // lifted Ocker as `imprint.ochreDark` in theme/palette.ts, so the app has one
+  // dark Ocker rather than two that drift apart.
+  eigenhand: '#a85f17',
+} as const;
+
+export const roleDash = { tafel: null, platte: [4, 3], eigenhand: [2, 2] } as const;
+
+// The one place the identity serif is the wrong tool: `--`, `-m`, `_` and `.`
+// are exactly the characters that slip while typing in a proportional antiqua
+// (audit 2026-09-02, finding 29). A SYSTEM stack, not a shipped face — §2's
+// font delivery ships one woff2 per cut under app/public/fonts/, and a mono
+// webfont would be a new file, a new @font-face, a new preload and a new OFL
+// notice for a handful of admin surfaces. Size comes from the variant
+// (`body2` = 17 px), never from an ad-hoc fontSize (§3).
+export const mono = "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace";
+
 export const garamond = "'EB Garamond', Georgia, 'Times New Roman', serif";
 export const script = "'GLKurrent', cursive"; // showpiece only
 // Sütterlin show-script (Zinken HJZ 1911) — a genuine upright-ish Sütterlin

@@ -105,10 +105,10 @@ function ReviewRow({
                   key={i}
                   d={stroke.map(([x, y], j) => `${j === 0 ? 'M' : 'L'}${x},${y}`).join(' ')}
                   fill="none"
-                  // On the naked white ground the dark sketch green reads best;
-                  // over plate ink only the bright token survives (the same
-                  // split the colour tokens exist for).
-                  stroke={bare ? WERKBANK_COLORS.trace : WERKBANK_COLORS.traceOverInk}
+                  // One colour for both grounds: the Spur token clears 3:1 on
+                  // the naked white AND on the plate ink, which is what the
+                  // two greens it replaced could only do one at a time.
+                  stroke={WERKBANK_COLORS.trace}
                   strokeOpacity={0.95}
                   // Thinner than the compare cards' 0.11: this view exists to
                   // judge the line AGAINST the ink, so the ink must stay

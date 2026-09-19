@@ -264,7 +264,7 @@ export const admin = {
     // cell), shown as the same evidence card the Wörter view uses.
     drillTitle: 'Platten-Beleg (nachgefahren)',
     drillCaption:
-      'Die Verbindungs-Platte genau dieser Kombination — grün die Nachfahrung, rot darüber die Engine-Tinte, beide in der vermessenen Registrierung der Spur; rechts schreibt das System dieselbe Verbindung im gleichen Maßstab.',
+      'Die Verbindungs-Platte genau dieser Kombination — die Nachfahrung, darüber die Engine-Tinte, beide in der vermessenen Registrierung der Spur; rechts schreibt das System dieselbe Verbindung im gleichen Maßstab. Welche Linie welche ist, sagen die Schalter darüber.',
     occurrencesTitle: 'Vorkommen ({{count}})',
     occurrencesCaption:
       'Jede herausgezogene Verbindung als Ausschnitt der Platte — die Tinte selbst, mit dem Abstand Δ zum generierten Zug. Ein Klick springt in das Wort, in dem sie steht.',
@@ -443,7 +443,7 @@ export const admin = {
     sortWorst: 'Schlechteste zuerst',
     sortWorstUnavailable: 'Kein gespeicherter Score gelesen — ohne Bewertung gäbe das wieder die alphabetische Reihenfolge.',
     overlayToggle: 'Überlagern',
-    overlayHeading: 'Überlagert (Original + Geschrieben in Rot)',
+    overlayHeading: 'Überlagert (Original + Engine darüber)',
     // The two grids double as the overviews of the Buchstaben/Wörter views, so
     // every card carries the way into its own detail.
     openLetter: 'Öffnen',
@@ -662,9 +662,13 @@ export const admin = {
     // engine writes from it — same scale, same Grundlinie, so „trifft der Fit?"
     // und „was macht das System daraus?" nebeneinander lesbar sind.
     faceSpecimenBase: 'Vorlage',
-    faceLayerTrace: 'Nachfahrung (grün)',
-    faceLayerPath: 'Pfad (Reihenfolge grün→blau, Absetzer gestrichelt)',
-    faceLayerEngine: 'Engine (rot)',
+    // Keine Farbnamen in der Bildunterschrift: „erster Zug grün, letzter blau"
+    // ist genau der Satz, mit dem ein farbfehlsichtiger Leser nichts anfangen
+    // kann, und er wird bei jeder Palettenpflege wieder falsch. Die Legende
+    // (Ebenen-Schalter mit Farbe UND Strichart) trägt die Zuordnung.
+    faceLayerTrace: 'Nachfahrung',
+    faceLayerPath: 'Pfad (Schreibreihenfolge, Absetzer gestrichelt)',
+    faceLayerEngine: 'Engine',
     // Herkunft + Datum der gezeichneten Linie. Ohne beides ist ein Pfad eine
     // undatierte Überlagerung und kein Beleg.
     tracePedigree: 'Herkunft: {{herkunft}} · {{datum}} · {{zuege}} Züge',
@@ -676,7 +680,7 @@ export const admin = {
     layerTrace: 'Nachfahrung',
     layerPath: 'Pfad',
     layerPathHint:
-      'Dieselbe Linie, als Bewegung gelesen: Farbverlauf in Schreibreihenfolge (erster Zug grün, letzter blau), Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt die Nachfahrung mit, weil er sie schmückt.',
+      'Dieselbe Linie, als Bewegung gelesen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt die Nachfahrung mit, weil er sie schmückt.',
     layerEngine: 'Engine',
     // The Abstandsprofil under a word card: nearest distance of the engine
     // composition per point of the stored trace. A DISPLAY measure of the
@@ -1103,7 +1107,7 @@ export const admin = {
     // bleibt unberührt, der Pfad liegt als Daten daneben.
     pfadShow: 'Pfad zeigen',
     pfadShowHint:
-      'Legt die nachgefolgte Federbahn über den Streifen: Farbverlauf in Schreibreihenfolge (erster Zug grün, letzter blau), Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt auch die Rohzahlen je Kasten mit — sie stecken in denselben Daten, also kostet das keinen zweiten Abruf. Wird je Fassung einzeln geladen und nur für sichtbare Bilder.',
+      'Legt die nachgefolgte Federbahn über den Streifen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt auch die Rohzahlen je Kasten mit — sie stecken in denselben Daten, also kostet das keinen zweiten Abruf. Wird je Fassung einzeln geladen und nur für sichtbare Bilder.',
     pfadPedigree: 'Pfad: {{verfahren}} · {{datum}} · {{woerter}} Wort/Wörter',
     pfadNoDate: 'ohne Datum',
     // Eine Fassung trägt nicht zwangsläufig EINEN Lauf: `--box` mischt ein neu

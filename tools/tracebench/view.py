@@ -90,14 +90,24 @@ PEN_LIFT_PAUSE_MS = 120
 # Playback rates the toolbar offers; 1.0 must be among them.
 SPEED_CHOICES = (0.5, 1.0, 2.0)
 
-# The hand re-tracing is GREEN — `WERKBANK_COLORS.traceOverInk` of
-# `app/src/sections/admin/shell/model.ts`, i.e. the exact colour the word editor
-# draws a stored trace over plate ink in. The same ink means the same thing on
-# both surfaces.
-COLOR_REFERENCE = "#00b37e"
+# These mirror `app/src/styles/paper.ts` by hand: a matplotlib tool cannot
+# import a SPA token, and `tools/` may not be imported the other way round
+# either — so when a token there moves, these literals move with it, or the
+# figures in `messjournal.md` and the admin start telling different stories
+# about the same ink.
+#
+# The hand re-tracing stays GREEN here even though the admin's Spur is now blue
+# (`layer.trace`): in THIS figure family blue already belongs to the follower,
+# and the reference and the follower are drawn on one crop. What the two
+# surfaces do share is the engine, which is the line a reader actually compares
+# between them. The green is lifted off the old `#00b37e` for the same reason
+# the token set was rebuilt — that hex reached only 2.71:1 on white, and a
+# figure is read on white.
+COLOR_REFERENCE = "#12855f"
 # The chain baseline is the engine's own answer, so it takes the Werkbank's
-# engine red; the follower takes fitview's marker blue.
-COLOR_CHAIN = "#e02030"
+# engine red exactly (`layer.engine`, Zinnober); the follower takes fitview's
+# marker blue.
+COLOR_CHAIN = "#e34234"
 COLOR_FOLLOWER = "#1565c0"
 # The prior-free control gets a pinned high-chroma cyan: the palette's
 # order-based hand-out gave it the brown, which disappears against the

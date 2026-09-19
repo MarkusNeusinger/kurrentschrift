@@ -53,6 +53,7 @@ import { ringsToPathD } from '@/lib/svg';
 import { de, fmt } from '@/locales/admin';
 import { ScoreBreakdownInline, ScoreChip } from '@/sections/admin/quality/scoreParts';
 import { AggregateSketch } from '@/sections/admin/shell/AggregateSketch';
+import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
 import { isPoint, letterSketchAnchors, occurrenceChainsOf } from '@/sections/admin/shell/sketchGeometry';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { garamond } from '@/styles/paper';
@@ -197,7 +198,7 @@ function CropWrittenOverlay({
       {canMap && (
         <g transform={matrix}>
           {(data.outline_paths ?? []).map((rings, i) => (
-            <path key={i} d={ringsToPathD(rings)} fill="#e02030" fillOpacity={0.42} fillRule="evenodd" />
+            <path key={i} d={ringsToPathD(rings)} fill={WERKBANK_COLORS.engine} fillOpacity={0.42} fillRule="evenodd" />
           ))}
         </g>
       )}

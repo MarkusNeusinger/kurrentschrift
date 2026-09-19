@@ -18,6 +18,8 @@ import type { TracePreviewOut } from '@/lib/api';
 import { de } from '@/locales/admin';
 import { HintHeading } from './HintHeading';
 import { ScoreBreakdown, ScoreChip } from '@/sections/admin/quality/scoreParts';
+import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
+import { mono } from '@/styles/paper';
 
 import { SilhouetteSvg } from './previewParts';
 
@@ -156,7 +158,7 @@ export function OverviewVerify({
                   style={{ display: 'block', position: 'absolute', inset: 0, objectFit: 'fill' }}
                 />
                 <Box sx={{ position: 'absolute', inset: 0 }}>
-                  <SilhouetteSvg data={refined} w={cellW} h={CELL_H} fill="#e02030" fillOpacity={0.42} />
+                  <SilhouetteSvg data={refined} w={cellW} h={CELL_H} fill={WERKBANK_COLORS.engine} fillOpacity={0.42} />
                 </Box>
               </Box>
             </Cell>
@@ -165,7 +167,7 @@ export function OverviewVerify({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             {refined.quality && <ScoreChip score={refined.quality.score} />}
             {delta != null && (
-              <Typography variant="caption" sx={{ fontFamily: 'monospace' }} color={delta >= 0 ? 'success.main' : 'error.main'}>
+              <Typography variant="caption" sx={{ fontFamily: mono }} color={delta >= 0 ? 'success.main' : 'error.main'}>
                 {de.wizard.optimize.delta} {delta >= 0 ? '+' : ''}
                 {delta.toFixed(1)}
               </Typography>

@@ -47,7 +47,7 @@ import {
   type Mark,
   type SpecimenRef,
 } from '@/sections/admin/shell/model';
-import { garamond, paper } from '@/styles/paper';
+import { garamond, layerDash, paper } from '@/styles/paper';
 
 import { DistanceProfileChart, PROBE_COLOR } from './DistanceProfileChart';
 import { distanceProfile, type ProfilePoint } from './distanceProfile';
@@ -57,7 +57,22 @@ const FACE_PAD = 6; // crop px of air around the engine face's own ink
 
 // The engine's ink, in one place: overlay (translucent, over the specimen) and
 // its own face (opaque, on white) draw the identical item list.
-function EngineInk({ composed, opacity }: { composed: ComposedWordOut; opacity: number }) {
+//
+// `overlay` is the difference between the two, and it is more than opacity: as
+// an OVERLAY the engine is one layer among three and takes the engine layer's
+// stroke style, because its red and the Pfad's Ocker are one colour for a
+// reader with a red-green deficiency (styles/paper.ts, Ebenen-Token). As its
+// own FACE it is not a layer over anything, and a dashed word would be a lie
+// about what the engine writes.
+function EngineInk({
+  composed,
+  opacity,
+  overlay = false,
+}: {
+  composed: ComposedWordOut;
+  opacity: number;
+  overlay?: boolean;
+}) {
   return (
     <>
       {composed.items.map((it, i) =>
@@ -80,6 +95,11 @@ function EngineInk({ composed, opacity }: { composed: ComposedWordOut; opacity: 
             stroke={WERKBANK_COLORS.engine}
             strokeOpacity={opacity}
             strokeWidth={it.stroke_width ?? it.mask_width}
+            strokeDasharray={
+              overlay
+                ? layerDash.engine.map((d) => d * (it.stroke_width ?? it.mask_width)).join(' ')
+                : undefined
+            }
             strokeLinecap="round"
           />
         ),
@@ -364,7 +384,7 @@ export function WordSpineCard({
               </g>
               {overlay && composed && (
                 <g transform={matrix}>
-                  <EngineInk composed={composed} opacity={0.42} />
+                  <EngineInk composed={composed} opacity={0.42} overlay />
                 </g>
               )}
               {boxes.map((inst) => {

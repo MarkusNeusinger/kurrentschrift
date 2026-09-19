@@ -10,6 +10,7 @@ import { Box, Button, Chip, IconButton, Stack, TextField, Typography } from '@mu
 import { useState } from 'react';
 
 import { de } from '@/locales/admin';
+import { mono } from '@/styles/paper';
 import type { GuideConfig } from '@/lib/api';
 import { SLANT_COLOR } from '../wizardTypes';
 import type { GuideValues } from '../wizardTypes';
@@ -50,7 +51,7 @@ export function SlantStep({
             setAngleDraft(raw);
             const v = Number(raw);
             if (raw !== '' && Number.isFinite(v)) void updateGuides({ slant_deg: v });
-          }} onBlur={() => setAngleDraft(null)} slotProps={{ input: { sx: { color: SLANT_COLOR, fontFamily: 'monospace' }, endAdornment: '°' } }} sx={{ flex: 1 }} />
+          }} onBlur={() => setAngleDraft(null)} slotProps={{ input: { sx: { color: SLANT_COLOR, fontFamily: mono }, endAdornment: '°' } }} sx={{ flex: 1 }} />
         <IconButton size="small" onClick={() => updateGuides({ slant_deg: Math.round(guideVals.slantDeg) + 1 })} sx={{ color: SLANT_COLOR }}>
           <ArrowUpwardIcon fontSize="small" />
         </IconButton>

@@ -1,11 +1,12 @@
 # Design-System — kurrentschrift.ink
 
-> **Status (2026-09-04): lebend.** Beschreibt den Ist-Zustand des
+> **Status (2026-09-19): lebend.** Beschreibt den Ist-Zustand des
 > Frontends und ist am 2026-08-03 gegen den Code geprüft
 > (Tokens, 19-px-Leiter samt Gewichten, Breiten 760/1152/1280, Kopfleiste,
 > Routenliste); am 2026-09-04 um den Tintenboden geschriebener Zeilen
 > ergänzt (§9, §7 `WrittenWord`) und um die Postkarten-Federprobe samt
-> Schriftgrößen-Leiter (§7.1).
+> Schriftgrößen-Leiter (§7.1); am 2026-09-19 um die Ebenen- und Rollen-Token
+> samt Strichart-Regel und das `mono`-Token (§2, §7, §10).
 > **Mitziehen bei jeder Änderung an `app/src/styles/paper.ts`,
 > `theme/typography.ts`,
 > `components/PageContainer|Prose|PageHeader|HeaderBar|PublicHeader|PublicFooter`,
@@ -70,10 +71,54 @@ bleibt für Display-Größen, Initialen, Rahmen, Füllungen und Fokus-Ringe.
 Niemals als Fläche, nie zwei konkurrierende Akzentfarben. Semantik (Erfolg/Fehler im
 Quiz) nutzt Periodenpigmente — siehe [Style-Guide §2](style-guide.md).
 
+### Ebenen- und Rollen-Token (seit 2026-09-19)
+
+Geschwister-Exporte neben `paper` (wie `pigment`), denn `paper` ist das flache
+IDENTITÄTS-Objekt und Arbeitsflächen steigen bewusst aus ihm aus (§5). Eine
+**Ebene** liegt über Ausschnitt, Scan oder Skizze und muss darum gegen weiß UND
+gegen Platten-Tinte 3 : 1 erreichen (WCAG 1.4.11); eine **Rolle** wird auf Papier
+gelesen und misst sich an `paper.hi`/`paper.bg`. Die Zahlen und die
+Deuteranopie-Abstände prüft `app/src/styles/paper.test.ts`.
+
+| Token | Hex | Bedeutung | Strichart |
+|---|---|---|---|
+| `layer.trace` | `#1b7abb` | Spur — die nachgefahrene Feder (angehobenes Preußischblau, kein Periodenton) | durchgezogen |
+| `layer.path` | `#cc7722` | Pfad — das ferne Ende der Schreibreihenfolge-Rampe (Ocker) | durchgezogen |
+| `layer.engine` | `#e34234` | Engine — was der Setzer schreibt (Zinnober) | **gestrichelt** |
+| `role.tafel` | `#003153` | Tafel (Preußischblau) | durchgezogen |
+| `role.platte` | `#6b2e2a` | Platte (Ochsenblut) | **gestrichelt** |
+| `role.eigenhand` | `#a85f17` | Eigenhand (angehobener Ocker, kein Periodenton) | **gepunktet** |
+
+Spur und Pfad teilen die durchgezogene Linie: es ist dieselbe gezeichnete Linie,
+und der Pfad bringt eigene Kanäle mit (Rampe, Ansatzpunkt, Pfeilspitzen). Ocker
+und Zinnober sind für einen Deuteranopen **eine** Farbe — die eine benannte
+Ausnahme, getragen von Strichart und Legende. **Keine Rolle trägt Viridian**: es
+ist Akzent, `success` und Fokusring zugleich. Ein aktiver ZUSTAND darf es tragen.
+
+Der **Absetzer** (`absetzer`, Violett `#8a5cd0`, gepunktet) ist KEINE Ebene,
+sondern die zweite Marke der Pfad-Ebene: halbe Strichbreite, unter den Zügen,
+er verbindet Zugende und nächsten Ansatz. Darum gilt für ihn die Paar-Regel
+nicht, wohl aber die Grund-Regel — und eine dritte: seine Farbe darf **keine
+sein, durch die die Spur→Pfad-Rampe läuft**. Die läuft durch ein Grau, ein
+grauer Absetzer sah also aus wie der mittlere Zug eines dreiteiligen Pfades
+(im Browser gemessen, 2026-09-19).
+
+**Strichart-Regel (bindend).** Farbe ist nie der einzige Kanal: erkennbar wird
+eine Ebene oder Rolle aus **Rollen-Etikett + Position + Strichart**, die Farbe
+kommt dazu. Daraus folgt (1) jede Ebene und jede Rolle hat genau eine Strichart,
+und die Legende (`LayerDot`, §7) zeigt sie mit; (2) eine FLÄCHE trägt statt der
+Strichart ihre Deckkraft; (3) **die Texte nennen keine Farben** — „erster Zug
+grün, letzter blau" ist der Satz, mit dem ein farbfehlsichtiger Leser nichts
+anfangen kann. Die Texte nennen die Bedeutung, die Legende trägt die Farbe.
+
 Font-Tokens (ebenfalls `styles/paper.ts`): `garamond` (EB Garamond, Body/UI &
 Theme-Default), `display` (Playfair Display, Display-Überschriften), `script`
 (GL-GermanCursive/„GLKurrent", Kurrent-Specimen), `suetterlin` (HJZ-Sütterlin-Font,
-Specimen-Fallback), `letterpress` (ein `textShadow`-String für Tiefdruck-Anmutung).
+Specimen-Fallback), `mono` (Befehle, Zahlenkolonnen, Fehlertexte — ein
+System-Stack und **bewusst keine ausgelieferte Datei**: ein Mono-Webfont wäre
+eine neue Datei, eine `@font-face`-Regel, ein Preload-Posten und eine OFL-Notiz
+für eine Handvoll Admin-Flächen), `letterpress` (ein `textShadow`-String für
+Tiefdruck-Anmutung).
 
 **Schrift-Auslieferung (seit 2026-08-27):** Alle `@font-face`-Regeln stehen früh
 in `app/index.html` gegen selbst gehostete Dateien unter `app/public/fonts/`
@@ -309,6 +354,8 @@ eigenen drei Bereichen (Buchstaben · Übergänge · Wörter) — §7 `HeaderBar
 | `SpecimenStrip` | Buchstaben „wie geschrieben" als **markiertes Specimen** (§9): eigene Haarlinien-Fläche in `paper.hi`, Antiqua-Beschriftung darunter, Klick schreibt neu | `specimens[{key,label}]`, `payloads` (EIN Batch je Seite über `useSpecimenPayloads`), `height`; montiert erst in Sichtweite, zieht sich zurück, wenn nichts schreibbar ist — Schriftkunde-Besonderheiten, Lesart-Verwechsler |
 | `WrittenWord` | ganzes Wort/Zeile aus Per-Glyph-Diagnostik + Übergängen | Engine-Pfad; Font-Specimen ist Fallback. Größe und Zeilenzahl kommen aus der **gemessenen** Rahmenbreite, nie aus der Aufrufer-Konstante `maxWidth` (die bleibt Obergrenze): Unterschreitet der Text den **Tintenboden von 14 px x-Höhe** (§9, `lib/lineWrap.ts`), bricht er an Wortgrenzen um — **jede Zeile eine eigene Komposition und ein eigener durchgehender Federzug**, alle Zeilen in einer x-Höhe und links bündig (Autor-Entscheid 2026-09-04; verworfen: Maßstab-Boden mit Scrollfläche, viewportgekoppelte Zeichengrenze). Ein einzelnes zu breites Wort wird nicht getrennt und bleibt unter dem Boden. Seit 2026-09-04 bricht der Text auch an **getippten** Umbrüchen (`planParagraphs`), und die Federprobe gibt über `targetXHeightPx` eine gewünschte x-Höhe vor (§7.1) |
 | `BootStatus` | Vollseiten-Boot-/Cold-Start-Zustand | Quiz, Admin |
+| `LayerDot` (Admin) | Legenden-Marke einer Ebene: **Farbe UND Strichart** der Linie, die sie beschriftet — der Schalter ist die Legende | `color`, `dash` (Faktoren aus `layerDash`); ein kurzer Strich, kein Punkt, damit „durchgezogen" ein sichtbarer Zustand ist (§2) |
+| `TerminalCommand` (Admin) | ein Shell-Befehl, der wirklich getippt oder genommen werden kann | `command`, `lead?`; `mono` + `variant="body2"` (§3, nie ein eigenes `fontSize`), `user-select: all`, Kopierknopf |
 | `BackToTop` | schwebende Rückkehr an den Seitenanfang, erscheint ab zwei Bildschirmen Scrollweg | nur auf den langen Inhaltsseiten (`/schriftkunde` ≈ 20 Handy-Bildschirme, `/impressum`, `/lesen/vergleichen`); 44 × 44, Papierfläche mit Haarlinie (§5), `prefers-reduced-motion` springt statt zu gleiten |
 
 ### 7.1 Federprobe — Postkarte und Schriftgrößen-Leiter
@@ -563,6 +610,16 @@ Zeile über die obere und nimmt ihr die Tipps (gemessen an den Federprobe-Chips:
   `components/PageContainer`, `components/Prose`, `components/PageHeader` (Seitenkopf),
   `components/HeaderBar` (die eine Kopfleiste, §7) bzw.
   `components/PublicFooter` (Footer-`mt` = der eine Abstand, §4) nachziehen (und umgekehrt).
+- **Farben stehen in drei Dateien, nicht in einer** — wer ein Token bewegt, sieht
+  alle drei an: `styles/paper.ts` (die Quelle), `sections/admin/shell/model.ts`
+  (`WERKBANK_COLORS` — welche Ebene welche Aufgabe hat),
+  `sections/admin/overlayColors.ts` (Chart-/Wizard-Signalfarben, bewusst außerhalb
+  der Papier-Identität). Dazu `tools/tracebench/view.py`, das Hexe spiegeln MUSS,
+  weil ein matplotlib-Werkzeug kein SPA-Token importieren kann: die Engine-Farbe
+  ist dort dieselbe, die Referenzfarbe absichtlich nicht (Blau gehört in diesen
+  Abbildungen dem Folger). Gegenprobe bei jeder Ebenen-/Rollenfarbe:
+  `app/src/styles/paper.test.ts` — der Augenschein mit Farbfehlsicht-Simulation
+  gehört in `/verify-frontend`.
 - Die drei Bedienbarkeits-Regeln aus §9 wohnen an genau einer Stelle:
   `theme/components.ts` (Fokusring, Link-Auszeichnung, Typo-Boden der
   MUI-`small`-Größen, `minHeight` der Umschaltgruppen unter `sm`) und

@@ -518,7 +518,8 @@ in this order:
    picking a nicer hue.
 2. **Contrast against its own ground.** A non-text graphical object
    needs 3:1 (WCAG 1.4.11), and the work surfaces are WHITE, not paper
-   — `#00b37e` clears the paper and fails against `#fff` at 2.71:1.
+   — the old overlay green `#00b37e` cleared the paper and failed
+   against `#fff` at 2.71:1, which is what retired it on 2026-09-19.
    Measure it, don't eyeball it: read the computed colour with
    `evaluate_script`/`page.evaluate` and compute the ratio.
 3. **Deuteranope separation.** Simulate (any LMS deuteranopia matrix in

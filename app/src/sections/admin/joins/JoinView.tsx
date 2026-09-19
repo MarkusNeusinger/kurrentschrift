@@ -51,9 +51,9 @@ import {
   textForPair,
   wordsUrl,
 } from '@/sections/admin/shell/focus';
-import { WERKBANK_COLORS, joinCropBoxOf, pairKeyOf, type CropBox, type Mark } from '@/sections/admin/shell/model';
+import { joinCropBoxOf, pairKeyOf, type CropBox, type Mark } from '@/sections/admin/shell/model';
 import { WordSpineCard } from '@/sections/admin/words/WordSpineCard';
-import { garamond } from '@/styles/paper';
+import { garamond, layer, layerDash } from '@/styles/paper';
 
 const PREVIEW_H = 150; // px — a join needs room, but stays scannable
 
@@ -536,11 +536,11 @@ export function JoinView() {
                   aria-label={de.admin.werkbank.layersLabel}
                 >
                   <ToggleButton value="trace">
-                    <LayerDot color={WERKBANK_COLORS.traceOverInk} />
+                    <LayerDot color={layer.trace} dash={layerDash.trace} />
                     {de.admin.werkbank.layerTrace}
                   </ToggleButton>
                   <ToggleButton value="engine">
-                    <LayerDot color={WERKBANK_COLORS.engine} />
+                    <LayerDot color={layer.engine} dash={layerDash.engine} />
                     {de.admin.werkbank.layerEngine}
                   </ToggleButton>
                 </ToggleButtonGroup>
@@ -608,8 +608,12 @@ export function JoinView() {
                           })
                     }
                     note={
+                      // A doubtful fit is an error statement in TEXT, so it takes the theme's
+                      // error red (Ochsenblut, 8.41:1 on the card) rather than the raw Zinnober
+                      // it used to borrow from the overlay map, which reached 3.38:1 and is now
+                      // the engine layer's own colour.
                       occ.measurements.fit_ok === false ? (
-                        <Typography variant="caption" sx={{ color: WERKBANK_COLORS.selected, lineHeight: 1.2 }}>
+                        <Typography variant="caption" sx={{ color: 'error.main', lineHeight: 1.2 }}>
                           {de.admin.werkbank.fitDoubtful}
                         </Typography>
                       ) : undefined
@@ -649,7 +653,7 @@ export function JoinView() {
                         </Typography>
                       )}
                       {occ.measurements.fit_ok === false && (
-                        <Typography variant="caption" sx={{ color: WERKBANK_COLORS.selected }}>
+                        <Typography variant="caption" sx={{ color: 'error.main' }}>
                           {de.admin.werkbank.fitDoubtful}
                         </Typography>
                       )}

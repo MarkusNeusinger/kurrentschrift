@@ -94,12 +94,15 @@ export function AggregateSketch({
         ),
       )}
       {/* What is written TODAY, dashed and in the warning tone — under the
-          median so the median stays the figure and this stays the reference. */}
+          median so the median stays the figure and this stays the reference.
+          It used to borrow `selected`, which is a state and not a reading, and
+          which put a vermilion line against a dark-green median: a red/green
+          pair on one sketch. Its own name now, and the median is blue. */}
       {laufform.length >= 2 && (
         <path
           d={pathOf(laufform)}
           fill="none"
-          stroke={WERKBANK_COLORS.selected}
+          stroke={WERKBANK_COLORS.current}
           strokeOpacity={0.75}
           strokeWidth={1.4 * u}
           strokeDasharray={`${4 * u} ${3 * u}`}

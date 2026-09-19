@@ -18,6 +18,8 @@ import type { TracePreviewOut } from '@/lib/api';
 import { de } from '@/locales/admin';
 import { HintHeading } from './HintHeading';
 import { ScoreBreakdown, ScoreChip } from '@/sections/admin/quality/scoreParts';
+import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
+import { mono } from '@/styles/paper';
 
 import { SilhouetteSvg } from './previewParts';
 
@@ -96,7 +98,7 @@ export function WegPreview({ glyphKey, cropCacheBust, hasDraftSource, nAnchors, 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {preview.refined.quality && <ScoreChip score={preview.refined.quality.score} />}
             {delta != null && (
-              <Typography variant="caption" sx={{ fontFamily: 'monospace' }} color={delta >= 0 ? 'success.main' : 'error.main'}>
+              <Typography variant="caption" sx={{ fontFamily: mono }} color={delta >= 0 ? 'success.main' : 'error.main'}>
                 {t.delta} {delta >= 0 ? '+' : ''}
                 {delta.toFixed(1)}
               </Typography>
@@ -111,7 +113,13 @@ export function WegPreview({ glyphKey, cropCacheBust, hasDraftSource, nAnchors, 
               style={{ display: 'block', position: 'absolute', inset: 0, objectFit: 'fill' }}
             />
             <Box sx={{ position: 'absolute', inset: 0 }}>
-              <SilhouetteSvg data={preview.refined} w={PANEL_W} h={panelH} fill="#e02030" fillOpacity={0.45} />
+              <SilhouetteSvg
+                data={preview.refined}
+                w={PANEL_W}
+                h={panelH}
+                fill={WERKBANK_COLORS.engine}
+                fillOpacity={0.45}
+              />
             </Box>
           </Box>
           {preview.refined.quality && <ScoreBreakdown quality={preview.refined.quality} />}

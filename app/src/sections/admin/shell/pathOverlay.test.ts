@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { layer } from '@/styles/paper';
+
 import {
   arrowPoints,
   labelPointOf,
@@ -25,6 +27,12 @@ describe('orderColors', () => {
   it('blends short hex the same as long hex', () => {
     expect(mixHex('#000', '#fff', 1)).toBe('#ffffff');
     expect(mixHex('#ff0000', '#0000ff', 0)).toBe('#ff0000');
+  });
+
+  it('ends the real ramp on the Pfad token, not on a colour of its own', () => {
+    // The ramp's two ends ARE the Spur and the Pfad layer; pinning them here
+    // means a palette tune cannot quietly leave the order ramp behind.
+    expect(orderColors(2, layer.trace, layer.path)).toEqual([layer.trace, layer.path]);
   });
 });
 
