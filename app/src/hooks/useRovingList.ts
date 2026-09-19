@@ -94,6 +94,17 @@ export type RovingList = {
   rowProps: (key: string) => { [ROW_ATTR]: string };
 };
 
+/** What the tab stop's position is remembered AS — the row's key, its index,
+ * the column, and the cell's own key where the controls have one. Pure, and
+ * outside the hook for that reason: it closes over nothing and is therefore no
+ * dependency of the callbacks that use it. */
+const remember = (rows: Row[], cell: RovingCell): Remembered => ({
+  key: rows[cell.row].key,
+  index: cell.row,
+  column: cell.column,
+  columnKey: rows[cell.row].cellKeys[cell.column] ?? null,
+});
+
 const visible = (element: HTMLElement): boolean =>
   !element.hasAttribute('disabled') &&
   element.getAttribute('aria-hidden') !== 'true' &&
@@ -162,15 +173,6 @@ export function useRovingList(options: RovingListOptions = {}): RovingList {
     if (byKey >= 0) return { row, column: byKey };
     return { row, column: Math.min(remembered?.column ?? 0, rows[row].controls.length - 1) };
   }, []);
-
-  /** What the tab stop's position is remembered AS — the row's key, its index,
-   * the column, and the cell's own key where the controls have one. */
-  const remember = (rows: Row[], cell: RovingCell): Remembered => ({
-    key: rows[cell.row].key,
-    index: cell.row,
-    column: cell.column,
-    columnKey: rows[cell.row].cellKeys[cell.column] ?? null,
-  });
 
   /** Re-apply the one tab stop, and put focus back if the list just lost it. */
   const apply = useCallback(() => {
