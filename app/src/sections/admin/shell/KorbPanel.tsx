@@ -29,6 +29,7 @@ import {
   DialogTitle,
   FormControlLabel,
   IconButton,
+  MenuItem,
   Switch,
   TextField,
   Typography,
@@ -37,9 +38,49 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { createWorkItem, deleteWorkItem, listWorkItems, patchWorkItem } from '@/lib/api';
-import type { WorkItemOut } from '@/lib/api';
+import type { WorkItemKind, WorkItemOut, WorkItemStage, WorkItemStatus } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { joinsUrl, lettersUrl, wordsUrl } from '@/sections/admin/shell/focus';
+import {
+  groupKorb,
+  isKorbFilterAll,
+  korbArchiveHides,
+  korbArchiveVisible,
+  KORB_FILTER_ALL,
+  KORB_FILTER_STAGES,
+  KORB_GROUP_ORDER,
+  type KorbFilter,
+} from '@/sections/admin/shell/korbFilter';
+import { TOUCH_TARGET } from '@/styles/hitArea';
+
+// The heading above each status group — `open` is the unmarked queue and
+// carries none. These are sentences („Zurückgegeben — braucht deine Hand"),
+// which is why the filter menu has its own short words instead.
+const GROUP_HEADINGS: Record<WorkItemStatus, string | null> = {
+  returned: de.admin.werkbank.korbReturned,
+  open: null,
+  ack: de.admin.werkbank.korbInProgress,
+  done: de.admin.werkbank.korbDoneHeading,
+};
+
+const STATUS_LABELS: Record<WorkItemStatus, string> = de.admin.werkbank.korbStatusShort;
+const STAGE_LABELS: Record<WorkItemStage, string> = de.admin.werkbank.korbStage;
+const KIND_LABELS: Record<WorkItemKind, string> = {
+  letter: de.admin.werkbank.kindLetter,
+  pair: de.admin.werkbank.kindPair,
+  word: de.admin.werkbank.kindWord,
+  landmark: de.admin.werkbank.kindLandmark,
+  note: de.admin.werkbank.kindNote,
+};
+// Safe as `Object.keys`: the map above is a fresh object literal, so TypeScript
+// checks it for excess members too. The Stufen come from `KORB_FILTER_STAGES`
+// instead — that record is the LOCALE's, which excess-property checking does
+// not reach.
+const FILTER_KINDS = Object.keys(KIND_LABELS) as WorkItemKind[];
+
+// Every select wears the §9.3 touch floor on its closed field; the options get
+// it from the theme's `MuiMenuItem`.
+const FILTER_FIELD_SX = { '& .MuiOutlinedInput-root': { minHeight: TOUCH_TARGET } } as const;
 
 // "Buchstabe a" / "Übergang d→a" / "Wort einen" — the level plus its target.
 // A note has no target: its first line IS the headline, so a basket of notes
@@ -222,6 +263,11 @@ export function KorbPanel({
   const [writeError, setWriteError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(true);
   const [showDone, setShowDone] = useState(false);
+  // Triage filter over the rows already loaded — see `korbFilter.ts` for why it
+  // is client-side. Component state only: the drawer is not a route, and a
+  // filter kept in the URL or in localStorage would silently narrow a basket
+  // the author opens days later.
+  const [filter, setFilter] = useState<KorbFilter>(KORB_FILTER_ALL);
   // The row whose deletion is being confirmed (see `remove`).
   const [confirming, setConfirming] = useState<WorkItemOut | null>(null);
   // The target-less quick note (see `addNote`).
@@ -261,15 +307,28 @@ export function KorbPanel({
   const rows = items ?? [];
   // Handed back first (those wait on the author), then the queue, then what a
   // session is currently working on; the archive only on request.
-  const groups: { key: string; heading: string | null; rows: WorkItemOut[] }[] = [
-    { key: 'returned', heading: t.korbReturned, rows: rows.filter((i) => i.status === 'returned') },
-    { key: 'open', heading: null, rows: rows.filter((i) => i.status === 'open') },
-    { key: 'ack', heading: t.korbInProgress, rows: rows.filter((i) => i.status === 'ack') },
-    { key: 'done', heading: t.korbDoneHeading, rows: showDone ? rows.filter((i) => i.status === 'done') : [] },
-  ];
+  const groups = groupKorb(rows, filter, showDone);
+  // These two read the UNFILTERED rows on purpose: the title's „n offen" and —
+  // through `onChanged` — the shell's header badge count the BASKET, never the
+  // current view. A filter that changed the badge would make the workbench
+  // claim work was finished by hiding it.
   const openCount = rows.filter((i) => i.status === 'open' || i.status === 'returned').length;
   const doneCount = rows.filter((i) => i.status === 'done').length;
   const visibleCount = groups.reduce((n, g) => n + g.rows.length, 0);
+  // Three distinct silences, so an empty list never lies about why it is empty:
+  // an untouched basket, a filter that matches nothing, and rows that are only
+  // hidden behind the „erledigte anzeigen" switch. The last sentence is EARNED,
+  // not assumed — `korbArchiveHides` asks whether turning the switch on would
+  // actually bring a row back, because the bare existence of a `done` row says
+  // nothing under a filter that excludes the archive anyway.
+  const emptyText =
+    rows.length === 0
+      ? t.korbEmpty
+      : isKorbFilterAll(filter)
+        ? t.korbNoMatchDone
+        : korbArchiveHides(rows, filter, showDone)
+          ? `${t.korbNoMatch} ${t.korbNoMatchDone}`
+          : t.korbNoMatch;
 
   // Undo ONE row's optimistic change — restoring a whole snapshot would revive
   // rows a concurrent delete already removed, or discard a reject that landed
@@ -426,52 +485,113 @@ export function KorbPanel({
             {writeError}
           </Alert>
         )}
+        {/* Only once there is something to narrow — an untouched basket stays
+            the single sentence it is today. „Stufe" sits on its own row: its
+            words are the longest and a truncated diagnosis is unreadable. */}
+        {rows.length > 0 && (
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, mt: 1 }}>
+            <TextField
+              select
+              size="small"
+              label={t.korbFilterStatus}
+              value={filter.status}
+              onChange={(e) => setFilter((f) => ({ ...f, status: e.target.value as KorbFilter['status'] }))}
+              sx={FILTER_FIELD_SX}
+            >
+              <MenuItem value="all">{t.korbFilterAll}</MenuItem>
+              {KORB_GROUP_ORDER.map((status) => (
+                <MenuItem key={status} value={status}>
+                  {STATUS_LABELS[status]}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              size="small"
+              label={t.korbFilterKind}
+              value={filter.kind}
+              onChange={(e) => setFilter((f) => ({ ...f, kind: e.target.value as KorbFilter['kind'] }))}
+              sx={FILTER_FIELD_SX}
+            >
+              <MenuItem value="all">{t.korbFilterAll}</MenuItem>
+              {FILTER_KINDS.map((kind) => (
+                <MenuItem key={kind} value={kind}>
+                  {KIND_LABELS[kind]}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              size="small"
+              label={t.korbFilterStage}
+              value={filter.stage}
+              onChange={(e) => setFilter((f) => ({ ...f, stage: e.target.value as KorbFilter['stage'] }))}
+              sx={{ ...FILTER_FIELD_SX, gridColumn: '1 / -1' }}
+            >
+              <MenuItem value="all">{t.korbFilterAll}</MenuItem>
+              {KORB_FILTER_STAGES.map((stage) => (
+                <MenuItem key={stage} value={stage}>
+                  {STAGE_LABELS[stage]}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Box>
+        )}
         {error ? (
           <Alert severity="warning" sx={{ mt: 1 }}>
             {t.korbLoadError}
           </Alert>
         ) : visibleCount === 0 ? (
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-            {t.korbEmpty}
+            {emptyText}
           </Typography>
         ) : (
           <Box sx={{ mt: 1 }}>
-            {groups
-              .filter((g) => g.rows.length > 0)
-              .map((g) => (
-                <Box key={g.key}>
-                  {g.heading && (
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                      {g.heading}
-                    </Typography>
-                  )}
-                  {g.rows.map((item) => {
-                    const url = workItemUrl(item);
-                    return (
-                      <ItemRow
-                        key={item.id}
-                        item={item}
-                        onDelete={() => setConfirming(item)}
-                        onReject={(correction) => reject(item, correction)}
-                        onOpen={
-                          url
-                            ? () => {
-                                onNavigate?.();
-                                navigate(url);
-                              }
-                            : undefined
-                        }
-                      />
-                    );
-                  })}
-                </Box>
-              ))}
+            {groups.map((g) => (
+              <Box key={g.key}>
+                {GROUP_HEADINGS[g.key] && (
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                    {GROUP_HEADINGS[g.key]}
+                  </Typography>
+                )}
+                {g.rows.map((item) => {
+                  const url = workItemUrl(item);
+                  return (
+                    <ItemRow
+                      key={item.id}
+                      item={item}
+                      onDelete={() => setConfirming(item)}
+                      onReject={(correction) => reject(item, correction)}
+                      onOpen={
+                        url
+                          ? () => {
+                              onNavigate?.();
+                              navigate(url);
+                            }
+                          : undefined
+                      }
+                    />
+                  );
+                })}
+              </Box>
+            ))}
           </Box>
         )}
         {doneCount > 0 && (
           <FormControlLabel
             sx={{ mt: 0.5 }}
-            control={<Switch size="small" checked={showDone} onChange={(e) => setShowDone(e.target.checked)} />}
+            control={
+              <Switch
+                size="small"
+                // Picking status „Erledigt" already asked for the archive, so
+                // the switch reports it as on instead of contradicting the
+                // list below it, and stops being a second answer to the same
+                // question until the filter lets go again.
+                checked={korbArchiveVisible(filter, showDone)}
+                disabled={filter.status === 'done'}
+                onChange={(e) => setShowDone(e.target.checked)}
+              />
+            }
             label={<Typography variant="caption">{t.korbShowDone}</Typography>}
           />
         )}

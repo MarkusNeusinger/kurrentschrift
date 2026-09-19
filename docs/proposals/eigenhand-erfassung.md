@@ -1265,7 +1265,13 @@ Zugende, **gestrichelte Verbinder für die Absetzer** — das ist das Stück,
 das eine einfarbige Linie vollständig verbirgt, weil ein Absetzer dort
 aussieht wie eine Ecke. Dazu Herkunft und Datum als Bildunterschrift; bei
 den Wörtern liefert die `updated_at` der Zeile das Datum, das bisher gar
-nicht auf der Leitung lag.
+nicht auf der Leitung lag. Seit Phase 0 des Admin-Redesigns steht in der
+Eigenhand-Ansicht unter der Bildunterschrift je Kasten der
+**Rohzahlen-Chip** — Tinte ohne Bahn, Absetzer, Sprünge, Haken aus
+`meta.tintenpfad`, farblos und mit dem Etikett „Zahl, kein Urteil", eine
+einzelne fehlende Zahl als Strich und eine Bahn ohne Sensoren als „nicht
+gemessen", nie als Null; die Tintentreue-Ampel kommt später an dieselbe
+Stelle (§7.3).
 
 **Geladen wird auf Abruf**, je Fassung, und nur für sichtbare Bilder —
 dieselbe Politik wie bei den Pixeln, sonst feuerte eine Galerieseite mit 24
