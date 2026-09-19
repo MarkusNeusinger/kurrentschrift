@@ -579,7 +579,9 @@ in zwei Zeilen, deren Textmitten 28 px auseinanderliegen — zwei unsichtbare
 Haarlinie sitzt seither an einem inneren `span`, damit sie weiter am Wort klebt
 statt am Polster. Die Leiste wächst dadurch auf schmalen Geräten von 82 auf
 121 px, auf `sm+` bleibt sie unverändert. Faustregel: Überlagerung nur dort, wo
-das Element allein steht.
+das Element allein steht — ein Nachbar NIMMT sie wieder weg. Ein `InfoHint`
+(26 px gemalt) verliert neben einem Schalter 4 px daneben 5 px je Seite und
+liegt still wieder unter dem Boden; dort wird der Platz reserviert.
 
 **Benannte Ausnahme: die schmalen Zellen der Schreibtafel** (Entscheid des
 Autors, 2026-09-03 — Audit-Befund 21). Die geschriebene Tafel (`WrittenSheet`)
@@ -651,17 +653,17 @@ Zeile über die obere und nimmt ihr die Tipps (gemessen an den Federprobe-Chips:
 
 **Ein Eingabefeld wird am FELD gemessen**, nicht an seinem `<input>`: MUI rendert
 ein Select als Combobox-`<div>` plus ein unsichtbares 21-px-`<input>`, das es nur
-gibt, damit das Bedienelement mit einem Formular abgeschickt wird. Niemandes Ziel
-— der Feldrahmen ist es. Derselbe Gedanke wie beim `<label>` eine Zeile höher;
-ein Feldrahmen unter dem Boden fällt weiterhin durch.
+fürs Absenden gibt. Derselbe Gedanke wie beim `<label>` eine Zeile höher; ein
+Feldrahmen unter dem Boden fällt weiterhin durch.
 
 ### 9.4 Nicht-Hover (bindend — Vorgabe V25 des Admin-Redesigns)
 
 **Kein entscheidungstragender Zustand lebt nur im Hover.** Ein `Tooltip` ist ein
 NAME für ein Bedienelement, dessen sichtbare Beschriftung dasselbe sagt — nie der
 einzige Ort eines Zustands, eines Grundes, einer Zahl oder einer Anweisung. Wer
-mit Tastatur oder auf dem Tablet arbeitet (§9.3: das Gerät, auf dem der Autor
-nachfährt), hat keinen Hover.
+mit Tastatur oder auf dem Tablet arbeitet, hat keinen Hover. Umgekehrt gilt für
+den `aria-label`: er ERSETZT, was ein Element zeigt, also nennt er dessen
+aktuellen Wert mit („Buchstabe a — anderen wählen").
 
 Die Prüffrage ist mechanisch, nicht ästhetisch — **ist das Kind des Tooltips
 fokussierbar?**
@@ -687,8 +689,8 @@ Alterung, Maske und Befund aus einer, die Legende alle sieben Landmarken-Arten
 aus einer; zeigt eine Zeile wirklich zwei Gegenstände, trägt sie zwei. Der Fall,
 für den die Regel geschrieben ist: die Abzugs-Kategorien der
 Buchstaben-Arbeitsliste waren sechs `<Typography tabIndex={0}>` je Zeile —
-Tab-Stopps ohne Ring, bis zu 72 je Listenseite, keiner mit dem Finger erreichbar.
-Gemessen: 151 → 94 Tab-Stopps auf `/admin/buchstaben`, 5 → 3 je Zeile.
+Tab-Stopps ohne Ring, bis zu 72 je Listenseite, keiner mit dem Finger
+erreichbar. Heute: kein einziger tabbarer `span` auf `/admin/buchstaben`.
 
 **Kein selbstgebauter `tabIndex` auf einem nicht-interaktiven Element.** Ein
 `tabIndex={0}`, das nur einen Tooltip per Tastatur erreichbar machen soll, ist das
@@ -699,21 +701,18 @@ Beides — natives `title=` auf einer MUI-Primitive und ein rollenloses
 
 **Farbe zählt hier mit — und der `aria-label` ist erst die halbe Miete.** Wo ein
 Zustand als Farbe gezeichnet wird (der Punkt im Buchstabenraster: grün =
-Canonical, orange = nur Bbox), trägt das Bedienelement denselben Zustand als
-`aria-label`. Das ist die Hälfte im Barrierefreiheits-Baum; die andere schuldet
-§2 weiterhin, denn ein sehender Farbfehlsichtiger liest keinen `aria-label` und
-sieht Grün und Orange als einen Zustand. **Offener Fall:** das Buchstabenraster
-(`LetterPicker`) hat den Wortlaut im Namen, aber noch keinen zweiten SICHTBAREN
-Kanal (gefüllter vs. hohler Punkt, eine Ecke) — Autorfrage, weil jede Lösung das
-Raster umbaut, um das die Seite gebaut ist.
+Canonical, orange = nur Bbox), trägt das Bedienelement ihn als `aria-label`. Das
+ist die Hälfte im Barrierefreiheits-Baum; die andere schuldet §2 weiterhin, denn
+ein sehender Farbfehlsichtiger liest keinen `aria-label`. **Offener Fall:** das
+Buchstabenraster hat den Wortlaut im Namen, aber keinen zweiten SICHTBAREN Kanal
+— Autorfrage, weil jede Lösung das Raster umbaut.
 
-**Offene Ausnahme vom Typo-Boden: der Zähler der Deckungs-Zellen**
-(`eigenhand/BestandView.tsx`, 9,6 px). Er bleibt vorerst stehen — ihn zu heben
-legt ~90 Zellen neu, die der Autor täglich liest. Erreichbar ist die Zahl
-trotzdem: der Zähler ist `aria-hidden`, der volle Satz („b: 0 geschrieben, 6 im
-Plan") ist der NAME jeder Zelle. `type-floor.mjs` kennt die Ausnahme NICHT und
-meldet sie — absichtlich, denn die eingebaute Ausnahme wäre die Entscheidung,
-die noch aussteht.
+**Offene Ausnahme vom Typo-Boden: der Zähler der Deckungs-Zellen** (9,6 px,
+`eigenhand/BestandView.tsx`). Ihn zu heben legt ~90 Zellen neu, die der Autor
+täglich liest. Erreichbar ist die Zahl trotzdem: der Zähler ist `aria-hidden`,
+der volle Satz ist der NAME jeder Zelle. `type-floor.mjs` kennt die Ausnahme
+NICHT und meldet sie — absichtlich, denn sie wäre die Entscheidung, die noch
+aussteht.
 
 ---
 
