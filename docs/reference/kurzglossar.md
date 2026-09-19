@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
-> **Status (2026-09-13): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **96
+> **Status (2026-09-19): lebend.** Die Kurzfassung von
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **98
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars. Nachzieh-Anlass: ein Begriff wandert
 > hierher, sobald er die Zwei-von-drei-Schwelle unten erreicht und in
@@ -541,6 +541,22 @@ umgesetzt-historisch · offen · Befund-Journal · statisch. Ab rund 10 000
 Token wird der Kopf zum **Stand-Block** (bis zu 40 datierte Zeilen).
 → [§5](glossar.md#5-werkbank-und-prozess) ·
 [dokument-status.md](../dokument-status.md)
+
+**Ebenen-Token · Rollen-Token** *(`layer`/`layerDash`, `role`/`roleDash` in
+`app/src/styles/paper.ts`)* — Farbe UND Strichart der Admin-Overlays (Spur ·
+Pfad · Engine) und der drei Rollen. **Deckend** erreicht jede
+Ebenenfarbe 3 : 1 gegen weiß und gegen Platten-Tinte, keine Rolle
+trägt Viridian; die zwei Ausnahmen (Ocker/Zinnober für Deuteranope; der
+durchscheinende Overlay, 0,42 → 1,81 : 1) trägt die Strichart, und
+`paper.test.ts` misst sie namentlich.
+→ [§5](glossar.md#5-werkbank-und-prozess) · concepts/design-system.md §2
+
+**Strichart-Regel** — Farbe ist nie der einzige Kanal: **Rollen-Etikett +
+Position + Strichart**. Eine Strichart ist Muster UND Linienende
+(`{ dash, cap }`; gepunktet = Null-Strich, rundes Ende), genau eine je
+Ebene/Rolle, und die Legende `LayerDot` zeigt sie mit; Flächen tragen Deckkraft
+statt Strichart; **keine Farbnamen in Ebenen-/Rollen-Texten**.
+→ [§5](glossar.md#5-werkbank-und-prozess)
 
 **Changelog-Fragment** *(`changelog.d/<slug>.md`)* — der
 Changelog-Beitrag einer PR als eigene Datei statt als Bullet unter

@@ -303,7 +303,7 @@ von den Inspektionsflächen abhebt, statt sich unter sie zu mischen. In
 `/admin/buchstaben` sagt ein Chip je Buchstabe, ob die geschriebene Laufform
 noch der gespeicherten Statistik entspricht („Laufform aktuell" ·
 „Laufform veraltet · Abstand 0,05" · „noch keine Laufform"), und die
-Median-Skizze zeichnet die **aktuell geschriebene** Laufform gestrichelt rot
+Median-Skizze zeichnet die **aktuell geschriebene** Laufform gepunktet
 gegen den Median, der sie ersetzen würde — der Unterschied ist damit
 anzusehen, bevor irgendetwas passiert. Die Zahl dahinter kommt neuerdings aus
 einem gewöhnlichen Read: `GET /hands/{id}/aggregates` liefert je Zeile

@@ -51,14 +51,14 @@ import {
   textForPair,
   wordsUrl,
 } from '@/sections/admin/shell/focus';
-import { WERKBANK_COLORS, joinCropBoxOf, pairKeyOf, type CropBox, type Mark } from '@/sections/admin/shell/model';
+import { joinCropBoxOf, pairKeyOf, type CropBox, type Mark } from '@/sections/admin/shell/model';
 import { WordSpineCard } from '@/sections/admin/words/WordSpineCard';
-import { garamond } from '@/styles/paper';
+import { garamond, layer, layerDash } from '@/styles/paper';
 
 const PREVIEW_H = 150; // px — a join needs room, but stays scannable
 
 // The traced drill plate of THIS pair, shown exactly like a word's evidence
-// card in the Wörter view: the green trace and the engine's ink share the
+// card in the Wörter view: the traced Spur and the engine's ink share the
 // row's measured registration, the engine's own face sits beside at the same
 // scale. Fetches its own composition — the drill's word is normally the pair
 // text, so the shared render cache makes this one request per join.
@@ -518,7 +518,7 @@ export function JoinView() {
         </Panel>
 
         {/* 2b — the drill plate of exactly this pair, wherever one was traced:
-            the same evidence card the Wörter view shows, so the green trace
+            the same evidence card the Wörter view shows, so the traced Spur
             and the engine's ink meet the specimen HERE, not two clicks away. */}
         {drillRows.length > 0 && (
           <Box sx={{ gridColumn: '1 / -1' }}>
@@ -536,11 +536,11 @@ export function JoinView() {
                   aria-label={de.admin.werkbank.layersLabel}
                 >
                   <ToggleButton value="trace">
-                    <LayerDot color={WERKBANK_COLORS.traceOverInk} />
+                    <LayerDot color={layer.trace} style={layerDash.trace} />
                     {de.admin.werkbank.layerTrace}
                   </ToggleButton>
                   <ToggleButton value="engine">
-                    <LayerDot color={WERKBANK_COLORS.engine} />
+                    <LayerDot color={layer.engine} style={layerDash.engine} />
                     {de.admin.werkbank.layerEngine}
                   </ToggleButton>
                 </ToggleButtonGroup>
@@ -608,8 +608,12 @@ export function JoinView() {
                           })
                     }
                     note={
+                      // A doubtful fit is an error statement in TEXT, so it takes the theme's
+                      // error red (Ochsenblut, 8.41:1 on the card) rather than the raw Zinnober
+                      // it used to borrow from the overlay map, which reached 3.38:1 and is now
+                      // the engine layer's own colour.
                       occ.measurements.fit_ok === false ? (
-                        <Typography variant="caption" sx={{ color: WERKBANK_COLORS.selected, lineHeight: 1.2 }}>
+                        <Typography variant="caption" sx={{ color: 'error.main', lineHeight: 1.2 }}>
                           {de.admin.werkbank.fitDoubtful}
                         </Typography>
                       ) : undefined
@@ -649,7 +653,7 @@ export function JoinView() {
                         </Typography>
                       )}
                       {occ.measurements.fit_ok === false && (
-                        <Typography variant="caption" sx={{ color: WERKBANK_COLORS.selected }}>
+                        <Typography variant="caption" sx={{ color: 'error.main' }}>
                           {de.admin.werkbank.fitDoubtful}
                         </Typography>
                       )}

@@ -7,6 +7,11 @@
 // and where taking the command means selecting it out of the middle of a
 // sentence by hand (audit 2026-09-02, finding 29). Monospace, its own line,
 // `user-select: all` for one click, and a copy button beside it.
+//
+// The face is the `mono` token (a system stack — styles/paper.ts) and the size
+// comes from `variant="body2"` = 17 px, not from an ad-hoc `fontSize`
+// (design-system.md §3). The 14 px it carried until now was below the caption
+// floor for a string that is meant to be TYPED.
 
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DoneIcon from '@mui/icons-material/Done';
@@ -14,7 +19,7 @@ import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 
 import { de } from '@/locales/admin';
-import { paper } from '@/styles/paper';
+import { mono, paper } from '@/styles/paper';
 
 export function TerminalCommand({ command, lead }: { command: string; lead?: string }) {
   const t = de.admin.eigenhand;
@@ -48,11 +53,11 @@ export function TerminalCommand({ command, lead }: { command: string; lead?: str
         </Typography>
       )}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.25 }}>
-        <Box
+        <Typography
           component="code"
+          variant="body2"
           sx={{
-            fontFamily: 'monospace',
-            fontSize: 14,
+            fontFamily: mono,
             bgcolor: paper.hi,
             borderRadius: 1,
             px: 1,
@@ -63,7 +68,7 @@ export function TerminalCommand({ command, lead }: { command: string; lead?: str
           }}
         >
           {command}
-        </Box>
+        </Typography>
         <Tooltip title={copied ? t.commandCopied : t.commandCopy}>
           <IconButton size="small" onClick={copy} aria-label={t.commandCopy}>
             {copied ? <DoneIcon fontSize="small" color="success" /> : <ContentCopyIcon fontSize="small" />}

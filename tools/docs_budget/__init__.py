@@ -510,6 +510,21 @@ WIDEST = {
 # behind them — the client that drops query strings, why the path wins in the
 # limiter — moved to the glossary, which no reading path carries whole.
 # Re-measured at 9 778, plus the documented 10 %.
+#
+# `frontend` (15 018 → 17 778) raised 2026-09-19 by the Ebenen-/Rollen-Token.
+# design-system.md is the BINDING build spec and carries a table per token
+# group; this adds the group that says which colour an overlay layer and a role
+# may wear, on which ground, and with which stroke — plus the Strichart-Regel
+# („Rollen-Etikett + Position + Strichart", and the texts name no colours). It
+# is read-path by construction and by evidence: the seven files that carried
+# overlay hexes and the nine German strings that named colours in prose (counted
+# in this branch's own diff of `app/src/locales/de/admin.ts`) were all written
+# by readers of this doc who found no rule here. The path stood at 364
+# tokens of room. The addition was cut first (two tables merged into one, the
+# per-token contrast columns dropped to the test that enforces them, the mono
+# paragraph and the §7 rows tightened) and lands at +1 508 proxy tokens for the
+# whole doc; the numbers themselves live in `app/src/styles/paper.test.ts`, not
+# here. Re-measured at 16 162, plus the documented 10 %.
 BUDGETS: dict[str, int] = {
     "mandatory": 67_091,
     "mess-runde": 43_761,
@@ -517,7 +532,7 @@ BUDGETS: dict[str, int] = {
     "mess-runde-eintrag": 5_584,
     "glyph-optimierung": 8_504,
     "komposition": 10_756,
-    "frontend": 15_018,
+    "frontend": 17_778,
     "werkbank": 5_166,
     "werkzeug": 713,
     # Raised 2026-09-07 by „Kette R3 Zwei-Züge-Modell": the path is „the one

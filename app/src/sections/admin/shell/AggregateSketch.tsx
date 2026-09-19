@@ -17,9 +17,9 @@
 // being handed a different `height` without any other change.
 
 import { de, fmt } from '@/locales/admin';
-import { paper } from '@/styles/paper';
+import { layerAlpha, paper } from '@/styles/paper';
 
-import { WERKBANK_COLORS } from './model';
+import { WERKBANK_COLORS, WERKBANK_DASH } from './model';
 import { boundsOf, pathOf, type SketchAnchor } from './sketchGeometry';
 
 // The letter sketch gets this much room by default since it also carries the
@@ -28,6 +28,10 @@ import { boundsOf, pathOf, type SketchAnchor } from './sketchGeometry';
 // legible when it does — the alternative, clipping the outlier, would hide
 // exactly the thing the layer is there to reveal.
 export const SKETCH_H_LETTER = 150;
+
+// The Laufform reference's line width, in display pixels — its own dash factors
+// are multiples of it.
+const REF_WIDTH = 1.4;
 
 export function AggregateSketch({
   anchors,
@@ -39,7 +43,7 @@ export function AggregateSketch({
   anchors: SketchAnchor[];
   glyphKey: string;
   occurrences: number[][][];
-  // The RENDERED running form (template variant 100), drawn dashed against the
+  // The RENDERED running form (template variant 100), drawn dotted against the
   // median that would replace it. This is the whole "see the difference before
   // you overwrite it" view: two chains in one frame, no registration needed
   // because both live in the chart row's coordinates.
@@ -93,17 +97,27 @@ export function AggregateSketch({
           <circle key={`mad-${i}`} cx={a.x} cy={-a.y} r={a.mad} fill={paper.line} fillOpacity={0.35} />
         ),
       )}
-      {/* What is written TODAY, dashed and in the warning tone — under the
-          median so the median stays the figure and this stays the reference. */}
+      {/* What is written TODAY, dotted and in the warning tone — under the
+          median so the median stays the figure and this stays the reference.
+          It used to borrow `selected`, which is a state and not a reading, and
+          which put a vermilion line against a dark-green median: a red/green
+          pair on one sketch. Its own name now, and the median is blue.
+          DOTTED, not the engine's 4:3 dash: that signature is what §2 teaches a
+          reader to read as „Engine", and spending it here on a line in the
+          Pfad's own hue would spend the redundant channel twice. Style and cap
+          both come from the token — a dot is a zero-length dash under a round
+          cap, and the dash alone would draw squares. */}
       {laufform.length >= 2 && (
         <path
           d={pathOf(laufform)}
           fill="none"
-          stroke={WERKBANK_COLORS.selected}
-          strokeOpacity={0.75}
-          strokeWidth={1.4 * u}
-          strokeDasharray={`${4 * u} ${3 * u}`}
-          strokeLinecap="round"
+          stroke={WERKBANK_COLORS.current}
+          strokeOpacity={layerAlpha.current}
+          strokeWidth={REF_WIDTH * u}
+          // Factors of the line's own width, so the dots stay round at every
+          // sketch size.
+          strokeDasharray={WERKBANK_DASH.current.dash.map((d) => d * REF_WIDTH * u).join(' ')}
+          strokeLinecap={WERKBANK_DASH.current.cap}
           strokeLinejoin="round"
         />
       )}

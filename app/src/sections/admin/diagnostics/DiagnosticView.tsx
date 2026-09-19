@@ -17,6 +17,7 @@ import { ringsToPathD } from '@/lib/svg';
 import { de, fmt } from '@/locales/admin';
 import { useColumnWidth } from '@/sections/admin/diagnostics/useColumnWidth';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
+import { mono } from '@/styles/paper';
 
 interface Props {
   glyphKey: string;
@@ -265,7 +266,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
         <Typography variant="caption" color="text.disabled">
           {de.admin.diagnostics.canonicalCaption}
         </Typography>
-        <Typography variant="caption" color="text.disabled" sx={{ fontFamily: 'monospace' }}>
+        <Typography variant="caption" color="text.disabled" sx={{ fontFamily: mono }}>
           {fmt(de.admin.diagnostics.guidesReadout, { ascender: tpl.ascender.toFixed(2), descender: tpl.descender.toFixed(2) })}
         </Typography>
       </Box>

@@ -20,6 +20,7 @@ import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de } from '@/locales/admin';
 import { ScoreBreakdown, ScoreChip } from '@/sections/admin/quality/scoreParts';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
+import { mono } from '@/styles/paper';
 
 interface Props {
   glyphKey: string;
@@ -29,7 +30,7 @@ interface Props {
 
 function MetricRow({ label, value }: { label: string; value: string }) {
   return (
-    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: mono }}>
       {label} {value}
     </Typography>
   );
@@ -192,7 +193,7 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
             <MetricCard title={t.candidate} q={data.candidate} />
             <Stack spacing={1} sx={{ minWidth: 220 }}>
               {delta != null && (
-                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: mono }}>
                   {t.delta} {delta >= 0 ? '+' : ''}
                   {delta.toFixed(1)}
                 </Typography>

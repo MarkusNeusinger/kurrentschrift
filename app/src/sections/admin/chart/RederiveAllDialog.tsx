@@ -32,6 +32,7 @@ import { knownGlyph } from '@/domain/glyphs';
 import { getQuality, postResample } from '@/lib/api';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
+import { mono } from '@/styles/paper';
 
 interface Props {
   open: boolean;
@@ -170,7 +171,7 @@ export function RederiveAllDialog({ open, onClose }: Props) {
                 const delta = r.before != null && r.after != null ? r.after - r.before : null;
                 return (
                   <TableRow key={r.key}>
-                    <TableCell sx={{ fontFamily: 'monospace' }}>{r.label}</TableCell>
+                    <TableCell sx={{ fontFamily: mono }}>{r.label}</TableCell>
                     <TableCell align="right">{r.before?.toFixed(1) ?? '–'}</TableCell>
                     <TableCell align="right">{r.after?.toFixed(1) ?? '–'}</TableCell>
                     <TableCell align="right" sx={{ color: delta != null ? deltaColor(delta) : 'text.disabled', fontWeight: 600 }}>
