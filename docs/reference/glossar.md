@@ -57,8 +57,8 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
-- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitsliste (Admin-Redesign, geplant) §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Buchstabengrenzen einer Bahn) §5
-- **B** — Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn (geplant) §5
+- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitsliste (Admin-Redesign, geplant) §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Buchstabengrenzen einer Bahn) §5
+- **B** — Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn (geplant) §5
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
@@ -68,18 +68,18 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kompromisswinkel §2 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5
-- **L** — Labs §4 · Landmarken-Auftrag §5 · Landmarken-Erkennung §5 · Landmarken-Linse §5 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
+- **L** — Labs §4 · Landmarken-Auftrag §5 · Landmarken-Erkennung §5 · Landmarken-Linse §5 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Stand (geplant) §5 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5 · Mittellinien-Öffnungsweite (`D0`) §4
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Nahtverhandlung (`seam_negotiation`) §2 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Normalen-Fit (→ Strang-Dekodierung) §3 · Nullprobe §4
 - **O** — Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfad-Form (`/write/word/{text}`) §2 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip (geplant) §5 · Rollen-Spalte (geplant) §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste (geplant) §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Span-Herkunft (→ Buchstabengrenzen einer Bahn) §5 · Span-Zuordner (→ Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste (geplant) §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Span-Herkunft (→ Buchstabengrenzen einer Bahn) §5 · Span-Zuordner (→ Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue (geplant) §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) (geplant) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unvollständige Wortprobe §5
 - **Ü** — Übergabekarte (geplant) §5 · Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
-- **V** — Variante §2 · Varianten-Band (geplant) §5 · Verbinder-Mitschnitt §4 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschlag (Streifen-Befund) §5 · Vorschub-Kalibrierung §2 · Vorschrift §1
+- **V** — Variante §2 · Varianten-Band (geplant) §5 · Verbinder-Mitschnitt §4 · Vergleichsstreifen (geplant) §5 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschlag (Streifen-Befund) §5 · Vorschub-Kalibrierung §2 · Vorschrift §1
 - **W** — W1–W6 §5 · Wachstumsschleife (Eigenhand) (geplant) §5 · Wackler §4 · Warp §3 · Wellen-Basis §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wortkasten (Admin-Redesign, geplant) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Tintenlücke §2 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
 - **Z** — Zeichenbreiten-Mittel (`AVG_ADVANCE_UNITS`) §7 · Zeilen-Gate (Laufform) §2 · Zeilenmarke §7 · Zelle einsetzen §5 · zirkuläres Kriterium §4 · zonale Rückweisung (`zonal`) §3 · „Zug um Zug“ §7 · Zwei Stillen (Leerzustands-Regel) §5 · Zwei-Drittel-Gesetz §6 · Zwei-Züge-Modell §4 · Zögling (geplant) §4
@@ -4312,6 +4312,19 @@ aus. *Technisch:* nichts gebaut; vorgesehen
 `?ansicht=liste|galerie&filter=&sort=&seite=`.
 → proposals/admin-redesign.md §5.0, §5.1 (Idee 4)
 
+**Auslieferungs-Zeiger (geplant)** — die Antwort auf „welcher →
+Laufform-Stand schreibt öffentlich?", als Protokoll statt als Schalter: eine
+nur anhängende Tabelle, in der ausliefern und zurücknehmen (Rollback)
+dasselbe sind — eine neue Zeile mit Pflicht-Grund; der ausgelieferte Stand
+einer Hand ist ihre jüngste Zeile. Aufgelöst wird über die Quelle in der
+öffentlichen URL: Quelle → `sources.hand_id` → Hand → Stand. Darum können
+nach dem Rollenwechsel zwei Hände EINER Schrift zugleich ausliefern — das
+Quiz bleibt bei der Platte, die Schreib-Flächen wechseln zur Eigenhand. Die
+laufende Nummer der Zeile ist die **Auslieferungs-Nummer**, der Stempel für
+den Randcache. *Technisch:* nichts gebaut; Arbeitsname `hand_deliveries`,
+`POST /hands/{hand_id}/deliveries`. → Freigabe-Maschine;
+proposals/freigabe-maschine.md §5
+
 **Bahn-Deckung (geplant)** — Items (Glyphen, Übergänge), bei denen weniger
 als drei Wortkästen eine grüne oder nachgefahrene Bahn tragen; der
 Sortierschlüssel der Nachfahr-Liste. Bewusst kein zweiter Belegzähler: die
@@ -4344,10 +4357,13 @@ Schalter: versionierte Stände (create-only), ein Auslieferungs-Zeiger, der
 sagt, welcher Stand die Seite schreibt, eine Regression je Hand, ein
 Änderungsprotokoll der Applies und ein Rollback. Der Grund ist der Leitsatz
 vom 2026-09-18 — die Eigenhand wächst dauerhaft, also wird immer wieder
-freigegeben. Sie steht NICHT im Admin-Plan, sondern bekommt ein eigenes
-Proposal — das nächste Doc, vor dem Schema-PR von Phase 5, weil sie das
-Varianten-Band schneidet. *Technisch:* nichts gebaut, noch kein Doc.
-→ Varianten-Band; proposals/admin-redesign.md §4.5, §15.3
+freigegeben. Sie steht NICHT im Admin-Plan, sondern hat seit dem 2026-09-19
+ihr eigenes Proposal — geschrieben vor dem Schema-PR von Phase 5, weil sie
+das Varianten-Band schneidet. „Freigabe" heißt dort der ganze Zyklus; der
+einzelne Akt heißt **Auslieferung**, weil „Freigabe" im Code schon das
+`approved`-Häkchen einer Paar-Übersteuerung ist. *Technisch:* nichts gebaut.
+→ Laufform-Stand; Auslieferungs-Zeiger; Varianten-Band;
+proposals/freigabe-maschine.md; proposals/admin-redesign.md §4.5, §15.3
 
 **Gate-Status (geplant)** — die Anzeige, ob eine Glyphe das Zeilen-Gate der
 Laufform erfüllt (n ≥ 3 · Sprung-Verhältnis · Kopfabweichung), plus „Zeile
@@ -4355,6 +4371,21 @@ fehlt" / „veraltet". Keine Distanzschwelle, kein neues Kriterium — das Gate
 wird gezeigt, nicht verändert. *Technisch:*
 `core/laufform.py::spike_gate/head_gate`; `AggregateOut` müsste die Werte
 tragen. → proposals/admin-redesign.md §5.0, §9.2
+
+**Laufform-Stand (geplant)** *(kurz: Stand)* — ein vollständiger,
+nummerierter, nie wieder veränderter Satz der Laufform EINER Hand: die
+Zeilen unter einer Varianten-Nummer im → Varianten-Band der Hand und ein
+Kopf, der festhält, woraus der Stand wurde; ob er auch die
+Paar-Übersteuerungen und die Feder der Hand bindet, sind zwei offene
+Rückfragen des Proposals. Heute überschreibt jeder Apply die Zeilen, mit
+denen die Seite schreibt; künftig legt er einen neuen Stand an
+(kopieren-dann-einfügen) und berührt nichts Öffentliches. Der Kopf IST das
+**Änderungsprotokoll der Applies**: er trägt den Bericht des Applies
+wörtlich — heute lebt der nur in der HTTP-Antwort. Nicht zu verwechseln mit
+dem → Stand-Block eines Docs.
+*Technisch:* nichts gebaut; Arbeitsname `laufform_stands`, Zeilen in
+`templates` unter `variant ≥ 100`. → Auslieferungs-Zeiger;
+proposals/freigabe-maschine.md §4
 
 **Rohzahlen-Chip (geplant)** — die gespeicherten Sensoren eines Wortkastens
 (`ink_unvisited_share`, `paper_lifts`, `jumps`, `hairpins`) als Zahl ohne
@@ -4419,8 +4450,23 @@ Laufform je Hand". Zwei Bedingungen hängen daran: die öffentliche Route
 `/write/glyphs?variant=` lehnt fremde Bänder ab, sonst wäre die
 Eigenhand-Laufform vor dem Rollenwechsel öffentlich lesbar; und das Band
 wird so geschnitten, dass mehrere Stände der → Freigabe-Maschine Platz
-haben. *Technisch:* nichts gebaut; `core/database/models.py::LAUFFORM_VARIANT`,
-`api/routers/write.py`. → proposals/admin-redesign.md §6.6, §15.3
+haben. Der vorgeschlagene Schnitt (2026-09-19): `laufform_variant` ist die
+Band-BASIS, das Band reicht von Basis bis Basis + 99, eine Stand-Nummer ist
+Basis + laufender Index und wird nie wiederverwendet; öffentlich ist nicht
+das Band, sondern genau der ausgelieferte Stand. Die Eigner-Regel des →
+Apply-Guards wird damit zur **Band-Regel**: ein Apply schreibt nur in das
+Band SEINER Hand. *Technisch:* nichts gebaut;
+`core/database/models.py::LAUFFORM_VARIANT`, `api/routers/write.py`.
+→ Laufform-Stand; proposals/freigabe-maschine.md §4.2, §4.3, §5.2;
+proposals/admin-redesign.md §6.6, §15.3
+
+**Vergleichsstreifen (geplant)** — die Fläche im Admin, auf der ein neuer →
+Laufform-Stand fürs Auge neben dem ausgelieferten steht: die Referenztexte
+(`lesen`, `das`, `denen`, der Entwicklungssatz) dreimal nebeneinander —
+als Tinte des Streifens, im ausgelieferten Stand, im Kandidaten. Bilder mit
+Etikett, bewusst keine Zahl: Lineale bleiben im Terminal. *Technisch:*
+nichts gebaut; vorgesehen über die reservierte Hand-Vorschau mit `?stand=`.
+→ proposals/freigabe-maschine.md §8
 
 **Wachstumsschleife (Eigenhand) (geplant)** — die Hauptschleife des
 geplanten Admins: Bögen → Bahnen → Nachfahren / Trainingsmenge → Ernte →
