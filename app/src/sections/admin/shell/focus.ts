@@ -18,6 +18,36 @@ import { paths } from '@/routes/paths';
 // Query parameter names, deliberately short — they end up in every deep link.
 export const FOCUS_PARAMS = { glyph: 'g', left: 'l', right: 'r', word: 'w', specimen: 's' } as const;
 
+// Eigenhand is the one admin area whose URL carries a PLACE rather than a
+// subject: the page holds four surfaces that answer four different questions
+// about one hand, and they are too big to stand under each other. The names
+// are spelled out because they are read by a human in the address bar, where
+// a one-letter parameter would only save the author typing he never does.
+//
+// The parameter is `reiter`, not `ansicht`: `ansicht` belongs to the
+// list/gallery display mode of the overviews (`?ansicht=liste|galerie`, plan
+// V14, author decision Q1 c of 2026-09-19), while `reiter` means „which tab
+// of this page" everywhere in the admin — the same word the Wörter overview's
+// tabs take. The German-domain identifiers below keep saying Ansicht, because
+// a sub-view IS an Unteransicht; only the spelled URL word is `reiter`.
+//
+// `item`/`wort` are the strips filter. They are here and not inside the
+// gallery because the split tore producer and consumer apart: a coverage cell
+// sits on `bestand`, the strips it selects on `streifen`.
+export const EIGENHAND_PARAMS = { reiter: 'reiter', item: 'item', wort: 'wort' } as const;
+
+// The first entry is the default: a bare /admin/eigenhand — and any nonsense
+// a hand-typed URL carries — lands on the Bestand.
+export const EIGENHAND_ANSICHTEN = ['bestand', 'streifen', 'statistik', 'drucken'] as const;
+
+export type EigenhandAnsicht = (typeof EIGENHAND_ANSICHTEN)[number];
+
+export type EigenhandFocus = {
+  ansicht: EigenhandAnsicht;
+  item: string | null;
+  wort: string | null;
+};
+
 export interface LetterFocus {
   glyphKey: string | null;
 }
@@ -54,6 +84,22 @@ export function readWordFocus(params: URLSearchParams): WordFocus {
   return { text: text || null, specimenId: params.get(FOCUS_PARAMS.specimen) || null };
 }
 
+const knownAnsicht = (value: string | null): value is EigenhandAnsicht =>
+  Boolean(value) && (EIGENHAND_ANSICHTEN as readonly string[]).includes(value as string);
+
+export function readEigenhandFocus(params: URLSearchParams): EigenhandFocus {
+  const ansicht = params.get(EIGENHAND_PARAMS.reiter);
+  return {
+    ansicht: knownAnsicht(ansicht) ? ansicht : EIGENHAND_ANSICHTEN[0],
+    // Deliberately NOT run through `knownKey`: a coverage item is `a>b` or
+    // `a@medial` or a bare key, and the strip search is free text. Neither is
+    // a glyph registry key, so validating them here would silently drop every
+    // join filter a bucket cell files.
+    item: params.get(EIGENHAND_PARAMS.item) || null,
+    wort: params.get(EIGENHAND_PARAMS.wort) || null,
+  };
+}
+
 const withParams = (path: string, entries: Array<[string, string | null | undefined]>): string => {
   const params = new URLSearchParams();
   for (const [key, value] of entries) if (value) params.set(key, value);
@@ -76,6 +122,21 @@ export const wordsUrl = (text?: string | null, specimenId?: string | null): stri
   withParams(paths.admin.words, [
     [FOCUS_PARAMS.word, text],
     [FOCUS_PARAMS.specimen, specimenId],
+  ]);
+
+// The Eigenhand builder takes an OPTIONS object for everything past the view,
+// so the parameters still to come — `h=` (the shared hand) and the Phase-3
+// strip deep link `strip`/`fassung`/`box` — slot in without breaking a single
+// call site. Called with nothing it yields the clean `/admin/eigenhand`, which
+// lands on the Bestand by the reader's own fallback.
+export const eigenhandUrl = (
+  ansicht?: EigenhandAnsicht | null,
+  opts?: { item?: string | null; wort?: string | null },
+): string =>
+  withParams(paths.admin.eigenhand, [
+    [EIGENHAND_PARAMS.reiter, ansicht],
+    [EIGENHAND_PARAMS.item, opts?.item],
+    [EIGENHAND_PARAMS.wort, opts?.wort],
   ]);
 
 // The characters behind a glyph_key, for the free-text fields and the pair

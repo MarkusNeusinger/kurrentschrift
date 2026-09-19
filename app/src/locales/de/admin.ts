@@ -1056,9 +1056,26 @@ export const admin = {
     // exactly one place and the Scope-Leiste cannot drift away from this page.
     intro:
       'Die eigene Schreibprobe: welche Streifen bereits geschrieben und angenommen sind, welche Zeichen und Übergänge damit belegt sind — gemessen an dem, was der Streifenplan insgesamt hergibt. Die Scans selbst bleiben auf dem eigenen Rechner; hier stehen nur die Zahlen und der Druck.',
+    // The four Unteransichten behind `?reiter=` (shell/focus.ts). The name is
+    // spelled out in the address bar, so it is the button's label here too — a
+    // switch whose caption cannot be found again in the URL would give half the
+    // linkability back.
+    ansichten: {
+      bestand: 'Bestand',
+      streifen: 'Streifen',
+      statistik: 'Statistik',
+      drucken: 'Drucken',
+    },
+    ansichtAria: 'Unteransicht der Eigenhand',
+    // The tab title carries three segments: hand area · Unteransicht ·
+    // Werkbank („Eigenhand · Streifen · Werkbank"). „Streifen" alone does not
+    // say what the strips are OF when a second tab is open beside it.
+    tabSubject: 'Eigenhand · {{ansicht}}',
     hand: 'Hand',
     handHelp: 'Neue Hand: <schreiber>-<stil>, z. B. mn-suetterlin',
-    noHands: 'Noch keine Hand erfasst — unten einen Bogen drucken, damit legt sich die erste an.',
+    // Since the `?reiter=` split this sits in the SHELL, so it shows on all
+    // four Unteransichten — „unten" pointed at nothing on three of them.
+    noHands: 'Noch keine Hand erfasst — in der Ansicht „Drucken" einen Bogen drucken, damit legt sich die erste an.',
     loadError: 'Der Bestand konnte nicht geladen werden.',
     stripsTitle: 'Streifen',
     stripsBelegt: 'belegt',
@@ -1096,6 +1113,30 @@ export const admin = {
     quotenNone:
       'Erstbeleg- und Ausbau-Quote brauchen die Übergangsraum-Gewichte; die liegen noch nicht in der Datenbank. Vom Rechner mit den Konsult-Korpora:',
     quotenNoneCommand: 'uv run python -m tools.eigenhand.universe --push',
+    // The statistik Unteransicht. Today it carries exactly one figure: the pen
+    // half width, the only one of the four §7.2 promises that can be derived
+    // from today's Bestand. The other three stand as a labelled Leerfläche —
+    // saying what will land here is more honest than a surface that looks as
+    // though there is nothing to be had.
+    statistikIntro:
+      'Was die Tinte dieser Hand sagt — im Unterschied zum Bestand, der sagt, wie weit die Hand gekommen ist. Gemessen wird je Fassung beim Einlesen; hier steht die Zusammenfassung über alle.',
+    statistikNibTitle: 'Feder-Halbbreite',
+    statistikNibCaption:
+      'Median der halben Strichbreite auf der Mittellinie, in x-Höhen — über alle angenommenen Fassungen dieser Hand, an denen eine Messung liegt, unabhängig davon, ob ihr Streifenbild schon hochgeschoben ist. Dieselbe Zahl dient jeder Fassung als Vergleichsmaß am Befund.',
+    statistikNibValue: '{{value}} x-Höhen',
+    statistikNibFrom: 'Median aus {{count}} gemessenen Fassungen',
+    statistikNibNone: 'nicht gemessen',
+    statistikNibNoneHint:
+      'Keine angenommene Fassung dieser Hand trägt eine Federmessung — entweder ist noch keine Siebung hochgeschoben, oder die Fassungen stammen aus der Zeit vor dem Streifen-Befund. Eine fehlende Messung ist keine Null.',
+    statistikSoonTitle: 'Kommt hierher',
+    statistikSoonCaption:
+      'Beschriftete Leerfläche: die drei übrigen Größen aus dem Plan brauchen Rechenschichten, die es noch nicht gibt. Sie stehen hier, damit die Fläche sagt, was sie einmal trägt.',
+    statistikSoonTintentreue:
+      'Tintentreue-Verteilung — wie viele Wortkästen der Hand die Bahn treffen, teils treffen, nicht treffen. Braucht die referenzfreie Ampel (Phase 2).',
+    statistikSoonBelege:
+      'Belegzahlen im Verlauf — wie die Abdeckung über die Sitzungen gewachsen ist. Braucht einen datierten Bestandsverlauf (Phase 3).',
+    statistikSoonStapel:
+      'Ausschnitt-Stapel — dieselbe Stelle aus allen Fassungen übereinander, als Bild. Braucht die Fassungs-Auswahl aus der Streifen-Ansicht (Phase 3).',
     queueTitle: 'Nächste Streifen',
     printTitle: 'Bogen drucken',
     printIntro:

@@ -111,7 +111,7 @@ from api.schemas import (
 )
 from core.database import EigenhandRepository
 from core.eigenhand import bogen, coverage, crop, flecken, geometry
-from core.eigenhand.befund import BEFUND_FORMAT, befund_index, kringel_catalogue, measure_plane
+from core.eigenhand.befund import BEFUND_FORMAT, befund_index, hand_nib, kringel_catalogue, measure_plane
 from core.eigenhand.bestand import bestand as build_bestand
 from core.eigenhand.flecken import FLECKEN_FORMAT
 from core.eigenhand.ids import STYLE_IDS, is_fassung_id, is_hand_id, is_sheet_id, is_strip_id, style_of_hand
@@ -174,12 +174,22 @@ async def list_hands(db: AsyncSession = Depends(require_db)) -> EigenhandHandsOu
 
 @router.get("/bestand/{hand}", response_model=EigenhandBestandOut)
 async def read_bestand(hand: str, queue: int = 9, db: AsyncSession = Depends(require_db)) -> EigenhandBestandOut:
-    """Everything the hand holds — Ist against what the strip plan can produce."""
+    """Everything the hand holds — Ist against what the strip plan can produce.
+
+    The pen is derived here rather than inside `bestand()`, the same way the
+    strip listing derives its Befunde: it is a MEASUREMENT over the Fassungen,
+    not a count against the plan. It has to come off the Kartei for a second
+    reason — the stored strip IMAGES are an opt-in upload (`tools.eigenhand.sync
+    --mit-streifen`), so a figure read from those would call a fully measured
+    hand unmeasured for as long as its pixels stay in the private archive.
+    """
     _checked_hand(hand)
     repo = EigenhandRepository(db)
     kartei = await repo.kartei(hand, style_of_hand(hand) or "")
     soll = await _stored_soll(repo)
-    return EigenhandBestandOut.model_validate(_guard(build_bestand, load_plan(), kartei, max(1, min(queue, 50)), soll))
+    nib = hand_nib(kartei)
+    data = _guard(build_bestand, load_plan(), kartei, max(1, min(queue, 50)), soll)
+    return EigenhandBestandOut.model_validate({**data, "nib_median": nib.units, "nib_readings": nib.readings})
 
 
 async def _stored_soll(repo: EigenhandRepository) -> tuple[dict[str, float], dict[str, int]] | None:

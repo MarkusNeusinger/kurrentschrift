@@ -17,50 +17,44 @@
 // the workbench can show a written Streifen the way it shows a chart crop.
 // They stay the reserved own-hand dataset — admin-gated, uncacheable, never in
 // the repository, and loaded only when asked for (StripsPanel).
+//
+// Since the `?reiter=` split this file is the SHELL: it owns the hand, the one
+// Bestand read behind all four Unteransichten, the last print job's sheet ids,
+// and the switch between them (admin-redesign.md V2). Everything that used to
+// stand under each other on one very long page now lives in BestandView,
+// StripsPanel, StatistikView and DruckenView. Four surfaces, one read — a per
+// view load would fire four requests for the same payload and lose the
+// `angenommen` counter the strips gallery uses as its cache buster.
 
 import {
   Alert,
   Box,
-  Button,
-  Chip,
   CircularProgress,
-  FormControlLabel,
   MenuItem,
   Stack,
-  Switch,
   TextField,
-  Tooltip,
+  ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 
-import {
-  fetchEigenhandSheetPdf,
-  fetchEigenhandStackPdf,
-  getEigenhandBestand,
-  getEigenhandHands,
-  printEigenhandSheets,
-} from '@/lib/api';
-import type { EigenhandBestand, EigenhandBucket, EigenhandStripFilter } from '@/lib/api';
+import { getEigenhandBestand, getEigenhandHands } from '@/lib/api';
+import type { EigenhandBestand, EigenhandStripFilter } from '@/lib/api';
 import { latestRequestGate } from '@/lib/latestRequest';
+import { de } from '@/locales/admin';
+import { BestandView } from '@/sections/admin/eigenhand/BestandView';
+import { glyphOf } from '@/sections/admin/eigenhand/coverageLabels';
+import { DruckenView } from '@/sections/admin/eigenhand/DruckenView';
+import { StatistikView } from '@/sections/admin/eigenhand/StatistikView';
+import { StripsPanel } from '@/sections/admin/eigenhand/StripsPanel';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
-import { de, fmt } from '@/locales/admin';
-import { glyphOf } from '@/sections/admin/eigenhand/coverageLabels';
-import { SetupPanel } from '@/sections/admin/eigenhand/SetupPanel';
-import { StripsPanel } from '@/sections/admin/eigenhand/StripsPanel';
-import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
-import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
+import { EIGENHAND_ANSICHTEN, eigenhandUrl, readEigenhandFocus } from '@/sections/admin/shell/focus';
+import { ViewHeader } from '@/sections/admin/shell/Panel';
 import { paper } from '@/styles/paper';
-
-const BUCKET_LABELS: Record<string, string> = {
-  klein: de.admin.eigenhand.bucketKlein,
-  gross: de.admin.eigenhand.bucketGross,
-  ligatur: de.admin.eigenhand.bucketLigatur,
-  ziffer: de.admin.eigenhand.bucketZiffer,
-  zeichen: de.admin.eigenhand.bucketZeichen,
-};
 
 // `glyphOf` moved to coverageLabels.ts, where the key-to-character map is
 // DERIVED from the glyph registry instead of hand-written a second time. It had
@@ -70,122 +64,26 @@ const BUCKET_LABELS: Record<string, string> = {
 // A coverage item as the view names it: `a>b` → „a › b", `a@medial` → „a
 // (medial)", a bare key → its glyph.
 const itemLabel = (item: string): string => {
-  if (item.includes('>')) return item.split('>').map(glyphOf).join(' › ');
+  if (item.includes('>')) return item.split('>').map(glyphOf).join(' › ');
   const [key, position] = item.split('@');
   return position ? `${glyphOf(key)} (${position})` : glyphOf(key);
 };
 
-function Stat({ value, label }: { value: number | string; label: string }) {
-  return (
-    <Box sx={{ minWidth: '5.5rem' }}>
-      <Typography variant="h5" sx={{ color: paper.ink, lineHeight: 1.1 }}>
-        {value}
-      </Typography>
-      <Typography variant="caption" sx={{ color: paper.inkSoft }}>
-        {label}
-      </Typography>
-    </Box>
-  );
-}
-
-/**
- * One glyph class as a grid of its keys — written ones inked, open ones pale.
- * A written key is a button: it brings up the words that hold the glyph.
- */
-function BucketGrid({
-  name,
-  bucket,
-  onSelect,
-}: {
-  name: string;
-  bucket: EigenhandBucket;
-  onSelect: (key: string) => void;
-}) {
-  const t = de.admin.eigenhand;
-  return (
-    <Box sx={{ mb: 2 }}>
-      <Stack direction="row" spacing={1} sx={{ mb: 0.5, flexWrap: 'wrap', alignItems: 'baseline' }}>
-        <Typography variant="subtitle2" sx={{ color: paper.ink }}>
-          {BUCKET_LABELS[name] ?? name}
-        </Typography>
-        <Typography variant="caption" sx={{ color: paper.inkSoft }}>
-          {fmt(t.coverageOf, { covered: bucket.covered, possible: bucket.possible })} ·{' '}
-          {fmt(t.coverageBelege, { belege: bucket.belege })}
-        </Typography>
-      </Stack>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-        {bucket.keys.map((row) => (
-          <Tooltip
-            key={row.key}
-            describeChild
-            title={`${fmt(t.keyTooltip, { key: row.key, belege: row.belege, planned: row.planned })}${
-              row.belege ? t.keyTooltipShow : ''
-            }`}
-          >
-            {/* A written key is a real <button> (native keyboard + semantics);
-                an unwritten one has nothing to show and stays a plain cell. */}
-            <Box
-              component={row.belege ? 'button' : 'div'}
-              type={row.belege ? 'button' : undefined}
-              onClick={row.belege ? () => onSelect(row.key) : undefined}
-              sx={{
-                minWidth: '2.1rem',
-                px: 0.5,
-                py: 0.25,
-                textAlign: 'center',
-                font: 'inherit',
-                appearance: 'none',
-                border: 1,
-                borderRadius: 1,
-                borderColor: row.belege ? paper.sepia : 'divider',
-                bgcolor: row.belege ? 'action.hover' : 'transparent',
-                color: row.belege ? paper.ink : 'text.disabled',
-                cursor: row.belege ? 'pointer' : 'default',
-              }}
-            >
-              <Typography variant="body2" sx={{ lineHeight: 1.2 }}>
-                {glyphOf(row.key)}
-              </Typography>
-              <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'inherit' }}>
-                {row.belege}
-              </Typography>
-            </Box>
-          </Tooltip>
-        ))}
-      </Box>
-    </Box>
-  );
-}
-
 export function EigenhandView() {
   const t = de.admin.eigenhand;
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
+  const { ansicht, item, wort } = readEigenhandFocus(params);
   const [hands, setHands] = useState<string[]>([]);
   const [hand, setHand] = useState('');
   const [bestand, setBestand] = useState<EigenhandBestand | null>(null);
   const [loadError, setLoadError] = useState<ApiErrorText | null>(null);
   const [loading, setLoading] = useState(false);
-  const [sheets, setSheets] = useState(1);
-  const [repeat, setRepeat] = useState(1);
-  const [printing, setPrinting] = useState(false);
+  // Hoisted out of the print block: the sheet ids of the last job drive the
+  // „Stapel als PDF" and per-Bogen buttons, and a hop to the Bestand and back
+  // would otherwise leave the printed sheets on the server with nothing on
+  // screen that can name them.
   const [printed, setPrinted] = useState<string[]>([]);
-  // The print block reports two different failures — the Bogen could not be
-  // generated, or its PDF could not be fetched — so the lead sentence travels
-  // WITH the error instead of being fixed at the render site. Before this both
-  // arrived under „Der Bogen konnte nicht erzeugt werden.", the PDF case with
-  // its own lead pasted in front of the raw line on top of that.
-  const [printError, setPrintError] = useState<{ prefix: string; error: ApiErrorText } | null>(null);
-  const [openOnly, setOpenOnly] = useState(true);
-  // What the strips panel shows: a word, an item, or everything. A cell of
-  // the coverage grid sets the item and brings the panel into view.
-  const [stripFilter, setStripFilter] = useState<EigenhandStripFilter>({});
-  const stripsRef = useRef<HTMLDivElement | null>(null);
-  const showBelege = useCallback((item: string) => {
-    setStripFilter((current) => ({ ...current, item }));
-    // An instant jump, not a smooth scroll: the grid sits below the panel, so
-    // a smooth scroll would sweep the viewport across the whole gallery on its
-    // way up and every crop tile would count as seen — and load at once.
-    stripsRef.current?.scrollIntoView({ block: 'start' });
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -217,6 +115,11 @@ export function EigenhandView() {
     // the previous hand's Streifen, Fassungen and open joins — numbers that
     // look authoritative and are simply someone else's.
     setBestand(null);
+    // Same reasoning for the printed sheets, and hoisting them made it
+    // visible: a sheet id belongs to ONE hand, so keeping the last job across
+    // a switch would offer „Stapel als PDF" buttons that ask the new hand for
+    // the old hand's Bögen.
+    setPrinted([]);
     // Guarded like `reload` itself: no hand means no request, so nothing to
     // wait for either.
     if (hand) {
@@ -262,52 +165,63 @@ export function EigenhandView() {
     reload(hand);
   }, [hand, reload]);
 
-  const openJoins = useMemo(
-    () => (bestand ? bestand.joins.rows.filter((row) => !openOnly || row.belege === 0) : []),
-    [bestand, openOnly],
+  // A printed Bogen moves strips into „unterwegs", so the counters are stale
+  // the moment the job returns. The hand has not changed in the usual case, so
+  // the render guard above says nothing — an event continuation sets its own
+  // flags.
+  //
+  // `forHand` is the guard for the unusual case: the selector stays enabled
+  // while a job runs, so a print started for one hand can land after the shell
+  // moved to another. Its sheet ids belong to the hand that was printed for,
+  // and reloading its Bestand would be a legitimately NEWER request for the
+  // wrong subject — which is exactly what `beginBestand` cannot catch, and how
+  // one hand's numbers end up under another's name.
+  const handlePrinted = useCallback(
+    (forHand: string, sheets: string[]) => {
+      if (forHand !== hand) return;
+      setPrinted(sheets);
+      setLoading(true);
+      setLoadError(null);
+      reload(hand);
+    },
+    [hand, reload],
   );
 
-  const print = () => {
-    setPrinting(true);
-    setPrintError(null);
-    printEigenhandSheets({ hand, sheets, repeat })
-      .then((res) => {
-        setPrinted(res.sheets.map((s) => s.sheet));
-        // The hand has not changed, so the render guard above says nothing —
-        // a refresh sets its own flags, which an event continuation may.
-        setLoading(true);
-        setLoadError(null);
-        reload(hand);
-      })
-      .catch((err: unknown) => setPrintError({ prefix: t.printError, error: apiErrorText(err) }))
-      .finally(() => setPrinting(false));
-  };
+  // What the strips gallery shows, read from the URL rather than from state:
+  // the producer (a coverage cell on `bestand`) and the consumer (`streifen`)
+  // stopped sharing a component when the page split, and a filter that lives
+  // in the address bar is also a link the Korb can file.
+  //
+  // Memoised on the two strings: StripsPanel's search debounce has `filter` in
+  // its effect deps, and a fresh object every render would re-arm the timer on
+  // every keystroke instead of settling after 300 ms.
+  const stripFilter = useMemo<EigenhandStripFilter>(
+    () => ({ item: item ?? undefined, wort: wort ?? undefined }),
+    [item, wort],
+  );
 
-  const showPdf = (blob: Blob) => {
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank', 'noopener');
-    // The tab keeps its own reference; releasing ours right away would race
-    // the open in some browsers, so give it a beat.
-    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
-  };
+  // A filter change REPLACES: the search box writes one entry per settled
+  // keystroke, and the back button is supposed to walk the inspection history
+  // (focus.ts), not a typing log.
+  const setStripFilter = useCallback(
+    (next: EigenhandStripFilter) => {
+      navigate(eigenhandUrl(ansicht, { item: next.item, wort: next.wort }), { replace: true });
+    },
+    [ansicht, navigate],
+  );
 
-  const openPdf = async (sheet: string) => {
-    try {
-      showPdf(await fetchEigenhandSheetPdf(hand, sheet));
-    } catch (err: unknown) {
-      setPrintError({ prefix: t.pdfError, error: apiErrorText(err) });
-    }
-  };
-
-  // The whole job as ONE document — what goes to the printer. The per-Bogen
-  // buttons stay for reprinting a single page.
-  const openStackPdf = async () => {
-    try {
-      showPdf(await fetchEigenhandStackPdf(hand, printed));
-    } catch (err: unknown) {
-      setPrintError({ prefix: t.pdfError, error: apiErrorText(err) });
-    }
-  };
+  // A coverage cell used to scroll to the gallery further down the page; with
+  // the split it navigates. PUSHED on purpose — back returns to the Bestand
+  // with the grid where it stood, which is the whole reason the subject lives
+  // in the query string.
+  // `wort` rides along: before the split the jump merged the item INTO the
+  // standing filter, so a word typed in the search survived a look at the
+  // coverage grid. Dropping it here would silently widen the gallery the
+  // author was narrowing.
+  const showBelege = useCallback(
+    (selected: string) => navigate(eigenhandUrl('streifen', { item: selected, wort })),
+    [navigate, wort],
+  );
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
@@ -321,7 +235,7 @@ export function EigenhandView() {
         intro={`${de.admin.shell.roleEigenhandGloss} — ${t.intro}`}
       />
 
-      <Stack direction="row" spacing={2} sx={{ mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
+      <Stack direction="row" spacing={2} sx={{ mb: 3, flexWrap: 'wrap', rowGap: 2, alignItems: 'center' }}>
         <TextField
           select={hands.length > 0}
           size="small"
@@ -330,7 +244,9 @@ export function EigenhandView() {
           helperText={hands.length ? undefined : t.handHelp}
           onChange={(e) => {
             setHand(e.target.value);
-            setStripFilter({});
+            // The filter belongs to the hand just left: an item another hand
+            // never wrote would show an empty gallery under a live chip.
+            navigate(eigenhandUrl(ansicht), { replace: true });
           }}
           sx={{ minWidth: '14rem' }}
         >
@@ -340,6 +256,37 @@ export function EigenhandView() {
             </MenuItem>
           ))}
         </TextField>
+
+        {/* Links, not a handler: middle-click, „copy link" and the back button
+            all keep working, and the switch is the repo's ToggleButtonGroup
+            rather than Tabs (which has no precedent anywhere in app/src).
+            `aria-current` carries the state to a screen reader, and
+            `aria-pressed` has to be switched OFF: MUI writes it unconditionally
+            for a real <button>, but on `component={RouterLink}` the element is
+            an <a role=link>, where the attribute is not allowed ARIA. It spreads
+            our props after its own, so passing undefined removes it.
+            The strips filter travels only between the two views that share it:
+            the coverage grid on `bestand` produces it, the gallery on
+            `streifen` consumes it, so the round trip keeps a narrowed gallery
+            narrow. `statistik` and `drucken` read neither, and a copied
+            `?reiter=drucken&item=a%3Eb` would carry a parameter that does
+            nothing but mislead the next reader. */}
+        <ToggleButtonGroup size="small" exclusive value={ansicht} aria-label={t.ansichtAria}>
+          {EIGENHAND_ANSICHTEN.map((name) => (
+            <ToggleButton
+              key={name}
+              value={name}
+              component={RouterLink}
+              to={eigenhandUrl(name, name === 'streifen' || name === 'bestand' ? { item, wort } : undefined)}
+              aria-current={name === ansicht ? 'page' : undefined}
+              aria-pressed={undefined}
+              sx={{ textTransform: 'none', px: 1.5 }}
+            >
+              {t.ansichten[name]}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+
         {loading && <CircularProgress size={16} />}
         {!hands.length && (
           <Typography variant="caption" sx={{ color: paper.inkSoft }}>
@@ -354,30 +301,17 @@ export function EigenhandView() {
         </Alert>
       )}
 
+      {/* ONE gate for all four Unteransichten, as before the split: a hand
+          whose Bestand failed to load has no numbers to show anywhere, and
+          four spinners would only say the same thing four times. */}
       {bestand && (
-        <Stack spacing={3}>
-          <SetupPanel hand={hand} />
-
-          <Panel title={t.stripsTitle} caption={t.queueTitle}>
-            <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', rowGap: 2 }}>
-              <Stat value={bestand.strips.belegt} label={t.stripsBelegt} />
-              <Stat value={bestand.strips.unterwegs} label={t.stripsUnterwegs} />
-              <Stat value={bestand.strips.geplant} label={t.stripsGeplant} />
-              <Stat value={bestand.strips.total} label={t.stripsTotal} />
-              <Stat value={bestand.fassungen.angenommen} label={t.fassungenAngenommen} />
-              <Stat value={bestand.fassungen.verworfen} label={t.fassungenVerworfen} />
-              <Stat value={bestand.sheets.printed} label={t.sheetsPrinted} />
-            </Stack>
-            <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mt: 2 }}>
-              {bestand.queue.map((sid) => (
-                <Chip key={sid} size="small" variant="outlined" label={sid} />
-              ))}
-            </Box>
-          </Panel>
-
-          <Box ref={stripsRef}>
-            {/* Keyed by hand: a switch remounts the panel, so no search term,
-                page count or loaded pixels of the previous hand survive. */}
+        <>
+          {ansicht === 'bestand' && (
+            <BestandView hand={hand} bestand={bestand} labelOf={itemLabel} onShowBelege={showBelege} />
+          )}
+          {ansicht === 'streifen' && (
+            /* Keyed by hand: a switch remounts the panel, so no search term,
+               page count or loaded pixels of the previous hand survive. */
             <StripsPanel
               key={hand}
               hand={hand}
@@ -386,124 +320,10 @@ export function EigenhandView() {
               onFilter={setStripFilter}
               labelOf={itemLabel}
             />
-          </Box>
-
-          <Panel
-            title={t.coverageTitle}
-            caption={fmt(t.coverageOf, {
-              covered: Object.values(bestand.glyphs).reduce((sum, b) => sum + b.covered, 0),
-              possible: Object.values(bestand.glyphs).reduce((sum, b) => sum + b.possible, 0),
-            })}
-          >
-            {Object.entries(bestand.glyphs).map(([name, bucket]) => (
-              <BucketGrid key={name} name={name} bucket={bucket} onSelect={showBelege} />
-            ))}
-          </Panel>
-
-          <Panel
-            title={t.coverageJoins}
-            caption={`${fmt(t.coverageOf, {
-              covered: bestand.joins.covered,
-              possible: bestand.joins.possible,
-            })} — ${t.joinsIntro}`}
-            actions={
-              <FormControlLabel
-                control={<Switch size="small" checked={openOnly} onChange={(e) => setOpenOnly(e.target.checked)} />}
-                label={<Typography variant="caption">{t.joinsShowOpen}</Typography>}
-              />
-            }
-          >
-            {openJoins.length === 0 ? (
-              <Typography variant="caption" sx={{ color: paper.inkSoft }}>
-                {t.joinsEmpty}
-              </Typography>
-            ) : (
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, maxHeight: '20rem', overflowY: 'auto' }}>
-                {openJoins.map((row) => (
-                  <Chip
-                    key={row.item}
-                    size="small"
-                    variant={row.belege ? 'filled' : 'outlined'}
-                    label={`${itemLabel(row.item)}${row.belege ? ` · ${row.belege}` : ''}`}
-                    onClick={row.belege ? () => showBelege(row.item) : undefined}
-                  />
-                ))}
-              </Box>
-            )}
-          </Panel>
-
-          <Panel title={t.printTitle} caption={t.printIntro}>
-            <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap', rowGap: 2, alignItems: 'center' }}>
-              <TextField
-                type="number"
-                size="small"
-                label={t.printSheets}
-                value={sheets}
-                onChange={(e) => setSheets(Math.max(1, Math.min(20, Number(e.target.value) || 1)))}
-                sx={{ width: '8rem' }}
-              />
-              <TextField
-                type="number"
-                size="small"
-                label={t.printRepeat}
-                value={repeat}
-                onChange={(e) => setRepeat(Math.max(1, Math.min(8, Number(e.target.value) || 1)))}
-                sx={{ width: '11rem' }}
-              />
-              <Button variant="contained" onClick={print} disabled={printing || !hand}>
-                {printing ? t.printing : t.printAction}
-              </Button>
-            </Stack>
-
-            {printError && (
-              <Alert severity="warning" sx={{ mt: 2 }}>
-                <ErrorText error={printError.error} prefix={printError.prefix} />
-              </Alert>
-            )}
-
-            {printed.length > 0 && (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="body2" sx={{ mb: 1 }}>
-                  {fmt(t.printed, { count: printed.length, sheets: printed.join(', ') })}
-                </Typography>
-                <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', rowGap: 1, alignItems: 'center' }}>
-                  <Button size="small" variant="contained" onClick={openStackPdf}>
-                    {fmt(t.openStackPdf, { count: printed.length })}
-                  </Button>
-                  {printed.length > 1 &&
-                    printed.map((sheet) => (
-                      <Button key={sheet} size="small" variant="outlined" onClick={() => openPdf(sheet)}>
-                        {sheet} · {t.openPdf}
-                      </Button>
-                    ))}
-                </Stack>
-                <Box sx={{ mt: 1.5 }}>
-                  <TerminalCommand
-                    lead={t.localHint}
-                    command={fmt(t.localHintCommand, { hand, sheet: printed[0] })}
-                  />
-                </Box>
-              </Box>
-            )}
-          </Panel>
-
-          <Panel title={t.quotenTitle} caption={t.quotenCaption}>
-            {bestand.quoten ? (
-              <Stack direction="row" spacing={3} sx={{ flexWrap: 'wrap', rowGap: 2 }}>
-                <Stat
-                  value={`${(bestand.quoten.erstbeleg_weighted * 100).toFixed(1)} %`}
-                  label={`Erstbeleg (gewichtet) · ${bestand.quoten.erstbeleg}/${bestand.quoten.items}`}
-                />
-                <Stat
-                  value={`${(bestand.quoten.ausbau_weighted * 100).toFixed(1)} %`}
-                  label={`Ausbau (gewichtet) · ${bestand.quoten.ausbau}/${bestand.quoten.soll_belege}`}
-                />
-              </Stack>
-            ) : (
-              <TerminalCommand lead={fmt(t.quotenNone, { hand })} command={t.quotenNoneCommand} />
-            )}
-          </Panel>
-        </Stack>
+          )}
+          {ansicht === 'statistik' && <StatistikView bestand={bestand} />}
+          {ansicht === 'drucken' && <DruckenView hand={hand} printed={printed} onPrinted={handlePrinted} />}
+        </>
       )}
     </Box>
   );
