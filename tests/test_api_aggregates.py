@@ -11,9 +11,9 @@ and the admin gate.
 from __future__ import annotations
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import select, update
 
-from core.database import LAUFFORM_VARIANT, Hand, Template
+from core.database import LAUFFORM_VARIANT, Hand, Source, Template
 from tests.api_harness import Harness
 
 
@@ -396,6 +396,7 @@ async def test_apply_laufform_skips_and_reports_underivable_keys(api: Harness):
             "spike_max": None,
             "head_deviation": None,
             "head_max": None,
+            "owner_hand_id": None,
         },
         {
             "glyph_key": "m",
@@ -406,6 +407,7 @@ async def test_apply_laufform_skips_and_reports_underivable_keys(api: Harness):
             "spike_max": None,
             "head_deviation": None,
             "head_max": None,
+            "owner_hand_id": None,
         },
         {
             "glyph_key": "n",
@@ -416,6 +418,7 @@ async def test_apply_laufform_skips_and_reports_underivable_keys(api: Harness):
             "spike_max": None,
             "head_deviation": None,
             "head_max": None,
+            "owner_hand_id": None,
         },
         {
             "glyph_key": "n",
@@ -426,6 +429,7 @@ async def test_apply_laufform_skips_and_reports_underivable_keys(api: Harness):
             "spike_max": None,
             "head_deviation": None,
             "head_max": None,
+            "owner_hand_id": None,
         },
     ]
     assert [r["glyph_key"] for r in await _stored_laufform(api, style_id)] == ["n"]
@@ -505,6 +509,7 @@ async def test_apply_laufform_refuses_a_median_too_thin_to_outvote_an_outlier(ap
             "spike_max": None,
             "head_deviation": None,
             "head_max": None,
+            "owner_hand_id": None,
         }
     ]
     assert out["excluded"] == []
@@ -569,6 +574,7 @@ async def test_apply_laufform_floor_never_relabels_an_underivable_key(api: Harne
             "spike_max": None,
             "head_deviation": None,
             "head_max": None,
+            "owner_hand_id": None,
         },
         {
             "glyph_key": "m",
@@ -579,6 +585,7 @@ async def test_apply_laufform_floor_never_relabels_an_underivable_key(api: Harne
             "spike_max": None,
             "head_deviation": None,
             "head_max": None,
+            "owner_hand_id": None,
         },
         {
             "glyph_key": "n",
@@ -589,6 +596,7 @@ async def test_apply_laufform_floor_never_relabels_an_underivable_key(api: Harne
             "spike_max": None,
             "head_deviation": None,
             "head_max": None,
+            "owner_hand_id": None,
         },
         {
             "glyph_key": "n",
@@ -599,6 +607,7 @@ async def test_apply_laufform_floor_never_relabels_an_underivable_key(api: Harne
             "spike_max": None,
             "head_deviation": None,
             "head_max": None,
+            "owner_hand_id": None,
         },
     ]
 
@@ -671,6 +680,7 @@ async def test_apply_laufform_selection_precedes_the_variant_triage(api: Harness
             "spike_max": None,
             "head_deviation": None,
             "head_max": None,
+            "owner_hand_id": None,
         }
     ]
     assert out["excluded"] == ["m"]
@@ -696,6 +706,184 @@ async def test_apply_laufform_without_aggregates_or_style_writes_nothing(api: Ha
         "POST", "/hands/styleless-hand/aggregates/apply-laufform", headers=api.admin_headers()
     )
     assert res.status == 409
+
+
+async def _register_plate_hand(api: Harness, style_id: str, source_id: str, hand_id: str) -> None:
+    """Register whose plate a teaching chart is — pure data, because no route
+    writes `sources.hand_id`. This is the Eigner-Regel's FIRST clause; the stamp
+    clause needs no registration and holds without one."""
+    async with api.session_maker() as session:
+        session.add(Hand(id=hand_id, style_id=style_id, label="Plattenhand"))
+        await session.execute(update(Source).where(Source.id == source_id).values(hand_id=hand_id))
+        await session.commit()
+
+
+async def _seed_occurrences_for_hand(
+    api: Harness, source_id: str, hand_id: str, anchor_shifts: list[float], x_base: int
+) -> None:
+    """A second writer's occurrences on the same plate, at their own crop x —
+    `uq_instance_loc` makes the location the occurrence's identity, so two hands
+    may not share one."""
+    items = [
+        _instance_item(anchors=_shifted(dx), x0=x_base + 10 * n, x1=x_base + 30 + 10 * n)
+        for n, dx in enumerate(anchor_shifts)
+    ]
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/instances",
+        json_body=_batch(items, hand={"id": hand_id, "label": hand_id, "era": "1922"}),
+        headers=api.admin_headers(),
+    )
+    assert res.status == 200, res.body
+
+
+async def _seed_eigenhand_source(api: Harness, style_id: str, hand_id: str) -> None:
+    """Q20's own-hand source: the same style, explicitly NOT a teaching chart."""
+    async with api.session_maker() as session:
+        session.add(
+            Source(
+                id=f"own-hand-{hand_id}",
+                style_id=style_id,
+                hand_id=hand_id,
+                kind="eigenhand",
+                title="Eigenhand",
+                license="own",
+                chart_path="data/does-not-exist/none.png",
+                chart_size={"w": 800, "h": 800},
+            )
+        )
+        await session.commit()
+
+
+async def test_apply_laufform_refuses_a_hand_that_does_not_own_the_row(api: Harness):
+    """The Eigner-Regel: templates are keyed per STYLE, so a second hand's apply
+    would write over the plate's running forms. An unstamped row — every row the
+    manual harvest PUT ever wrote — belongs to the registered plate hand."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    await _seed_occurrences(api, source_id, [0.0, 0.02, 0.06, 0.08])
+
+    # The Altzeile: written through the manual harvest PUT, which stamps
+    # `derived_from: "specimen-words"` and names no hand at all.
+    drifted = _shifted(0.04)
+    drifted[4] = [drifted[4][0] + 0.6, drifted[4][1]]
+    res = await api.client.request(
+        "PUT",
+        f"/sources/{source_id}/templates/n/laufform",
+        json_body={"anchors": drifted, "n_occurrences": 4},
+        headers=api.admin_headers(),
+    )
+    assert res.status == 200, res.body
+
+    await _register_plate_hand(api, style_id, source_id, "plate-hand")
+    await api.client.request("POST", "/hands/test-hand/aggregates/rebuild", headers=api.admin_headers())
+
+    res = await api.client.request("POST", "/hands/test-hand/aggregates/apply-laufform", headers=api.admin_headers())
+    assert res.status == 200, res.body
+    out = res.json()
+    # A per-key report, not a route-level refusal: a hand can own some of a
+    # style's rows and not others, and the skip names who the row belongs to.
+    assert out["applied"] == []
+    assert out["skipped"] == [
+        {
+            "glyph_key": "n",
+            "variant": 0,
+            "reason": "foreign_hand",
+            "n_instances": None,
+            "spike_ratio": None,
+            "spike_max": None,
+            "head_deviation": None,
+            "head_max": None,
+            "owner_hand_id": "plate-hand",
+        }
+    ]
+    # Nothing was written: the plate's running form still carries its drift.
+    rows = await _stored_laufform(api, style_id)
+    assert len(rows) == 1 and rows[0]["anchors"] == drifted
+
+
+async def test_apply_laufform_lets_the_stamped_hand_rewrite_its_own_row(api: Harness):
+    """The rule's second clause: a row derived from THIS hand stays this hand's
+    to rewrite, however the style's plate is registered afterwards."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+    await _seed_occurrences(api, source_id, [0.0, 0.02, 0.06, 0.08])
+    await api.client.request("POST", "/hands/test-hand/aggregates/rebuild", headers=api.admin_headers())
+
+    # No chart registers a hand and no row exists yet, so there is nobody to
+    # displace — and the write stamps this hand onto the row it creates.
+    res = await api.client.request("POST", "/hands/test-hand/aggregates/apply-laufform", headers=api.admin_headers())
+    assert res.json()["applied"] == [
+        {"glyph_key": "n", "variant": 0, "n_instances": 4, "laufform_dev_xh": None, "created": True}
+    ]
+    rows = await _stored_laufform(api, style_id)
+    assert rows[0]["trace_meta"]["laufform"]["hand_id"] == "test-hand"
+
+    await _register_plate_hand(api, style_id, source_id, "plate-hand")
+
+    res = await api.client.request("POST", "/hands/test-hand/aggregates/apply-laufform", headers=api.admin_headers())
+    assert res.status == 200, res.body
+    out = res.json()
+    assert out["skipped"] == []
+    assert out["applied"] == [
+        {"glyph_key": "n", "variant": 0, "n_instances": 4, "laufform_dev_xh": 0.0, "created": False}
+    ]
+
+
+async def test_apply_laufform_protects_a_stamped_row_without_any_registration(api: Harness):
+    """The stamp clause stands on its own. Every row an apply has ever written
+    carries `trace_meta.laufform.hand_id`, so a second hand meets a stamped row
+    long before `sources.hand_id` is set anywhere — the rule is inert on today's
+    data because there is exactly one hand, not because nobody is registered."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+
+    await _seed_occurrences_for_hand(api, source_id, "hand-a", [0.0, 0.02, 0.06, 0.08], 100)
+    await api.client.request("POST", "/hands/hand-a/aggregates/rebuild", headers=api.admin_headers())
+    res = await api.client.request("POST", "/hands/hand-a/aggregates/apply-laufform", headers=api.admin_headers())
+    assert res.json()["applied"], res.body
+    stamped_anchors = (await _stored_laufform(api, style_id))[0]["anchors"]
+
+    await _seed_occurrences_for_hand(api, source_id, "hand-b", [0.2, 0.22, 0.26, 0.28], 400)
+    await api.client.request("POST", "/hands/hand-b/aggregates/rebuild", headers=api.admin_headers())
+
+    res = await api.client.request("POST", "/hands/hand-b/aggregates/apply-laufform", headers=api.admin_headers())
+    assert res.status == 200, res.body
+    out = res.json()
+    assert out["applied"] == []
+    assert [(s["glyph_key"], s["reason"], s["owner_hand_id"]) for s in out["skipped"]] == [
+        ("n", "foreign_hand", "hand-a")
+    ]
+    assert (await _stored_laufform(api, style_id))[0]["anchors"] == stamped_anchors
+
+
+async def test_apply_laufform_reads_only_the_charts_as_a_registration(api: Harness):
+    """Q20 gives the own hand a `sources` row of the SAME style
+    (`kind='eigenhand'`). Reading every source as a registration would make that
+    row the hand's own permission slip for the band it shares with the plate —
+    the overwrite the rule exists to stop — so only teaching charts register an
+    owner."""
+    style_id, source_id = await api.seed_style_and_source()
+    await api.seed_template(style_id, source_id, "n", "n")
+
+    await _seed_occurrences_for_hand(api, source_id, "hand-a", [0.0, 0.02, 0.06, 0.08], 100)
+    await api.client.request("POST", "/hands/hand-a/aggregates/rebuild", headers=api.admin_headers())
+    res = await api.client.request("POST", "/hands/hand-a/aggregates/apply-laufform", headers=api.admin_headers())
+    assert res.json()["applied"], res.body
+    stamped_anchors = (await _stored_laufform(api, style_id))[0]["anchors"]
+
+    await _seed_occurrences_for_hand(api, source_id, "hand-b", [0.2, 0.22, 0.26, 0.28], 400)
+    await _seed_eigenhand_source(api, style_id, "hand-b")
+    await api.client.request("POST", "/hands/hand-b/aggregates/rebuild", headers=api.admin_headers())
+
+    res = await api.client.request("POST", "/hands/hand-b/aggregates/apply-laufform", headers=api.admin_headers())
+    assert res.status == 200, res.body
+    out = res.json()
+    assert out["applied"] == []
+    assert [(s["glyph_key"], s["reason"], s["owner_hand_id"]) for s in out["skipped"]] == [
+        ("n", "foreign_hand", "hand-a")
+    ]
+    assert (await _stored_laufform(api, style_id))[0]["anchors"] == stamped_anchors
 
 
 async def test_aggregate_endpoints_are_admin_gated_and_404_unknown_hand(api: Harness):
