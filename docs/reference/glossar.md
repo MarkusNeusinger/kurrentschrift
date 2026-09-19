@@ -57,7 +57,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§4** Metriken & Benchmarks · **§5** Werkbank & Prozess ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
-- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitsliste (Admin-Redesign, geplant) §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Buchstabengrenzen einer Bahn) §5
+- **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitslinie (→ Laufform-Stand) §5 · Arbeitsliste (Admin-Redesign, geplant) §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Buchstabengrenzen einer Bahn) §5
 - **B** — Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn (geplant) §5
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
@@ -4379,7 +4379,11 @@ Kopf, der festhält, woraus der Stand wurde; ob er auch die
 Paar-Übersteuerungen und die Feder der Hand bindet, sind zwei offene
 Rückfragen des Proposals. Heute überschreibt jeder Apply die Zeilen, mit
 denen die Seite schreibt; künftig legt er einen neuen Stand an
-(kopieren-dann-einfügen) und berührt nichts Öffentliches. Der Kopf IST das
+(kopieren-dann-einfügen) und berührt nichts Öffentliches. Kopiert wird von
+der **Arbeitslinie** der Hand — ihrem jüngsten Stand seit der letzten
+Zeiger-Bewegung, sonst dem ausgelieferten —, damit sich Teil-Applies wie
+heute sammeln und nach einem Rollback nichts vom zurückgenommenen Stand
+weiterlebt. Der Kopf IST das
 **Änderungsprotokoll der Applies**: er trägt den Bericht des Applies
 wörtlich — heute lebt der nur in der HTTP-Antwort. Nicht zu verwechseln mit
 dem → Stand-Block eines Docs.
@@ -4451,9 +4455,11 @@ Laufform je Hand". Zwei Bedingungen hängen daran: die öffentliche Route
 Eigenhand-Laufform vor dem Rollenwechsel öffentlich lesbar; und das Band
 wird so geschnitten, dass mehrere Stände der → Freigabe-Maschine Platz
 haben. Der vorgeschlagene Schnitt (2026-09-19): `laufform_variant` ist die
-Band-BASIS, das Band reicht von Basis bis Basis + 99, eine Stand-Nummer ist
-Basis + laufender Index und wird nie wiederverwendet; öffentlich ist nicht
-das Band, sondern genau der ausgelieferte Stand. Die Eigner-Regel des →
+Band-BASIS — ein Datum je HAND, das nächste freie Hundert ihrer Schrift
+(eine Schrift mit zwei Platten-Händen trägt also 100 und 200, ihre
+Eigenhand 300) —, das Band reicht von Basis bis Basis + 99, eine
+Stand-Nummer ist Basis + laufender Index und wird nie wiederverwendet;
+öffentlich ist nicht das Band, sondern genau der ausgelieferte Stand. Die Eigner-Regel des →
 Apply-Guards wird damit zur **Band-Regel**: ein Apply schreibt nur in das
 Band SEINER Hand. *Technisch:* nichts gebaut;
 `core/database/models.py::LAUFFORM_VARIANT`, `api/routers/write.py`.

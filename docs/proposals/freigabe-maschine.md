@@ -26,10 +26,10 @@
 > Rollback (§7). Der Admin zeigt Zahlen, Stände und Protokoll — keine Marke,
 > kein Schalter; ausliefern bleibt Terminal- und Autor-Akt (§8).
 >
-> **Was offen ist.** Fünf Rückfragen an den Autor (§10): FM1 Paare im
+> **Was offen ist.** Sechs Rückfragen an den Autor (§10): FM1 Paare im
 > Stand · FM2 Feder · FM3 Rückhaltemenge — VOR der ersten Ernte · FM4
-> blinder Durchgang · FM5 Randcache. Bau-Reihenfolge und die zwei harten
-> Zwänge: §11. Jede Aussage über den heutigen Code ist am 2026-09-19 an
+> blinder Durchgang · FM5 Randcache · FM6 zwei Platten-Hände in einer
+> Schrift. Bau-Reihenfolge und die zwei harten Zwänge: §11. Jede Aussage über den heutigen Code ist am 2026-09-19 an
 > `origin/main` gelesen (§3).
 
 ## 1 Anlass
@@ -141,11 +141,21 @@ eines stillen Überschreibens.
 **Der Bandschnitt** (der Auftrag aus Q19 a, „so, dass mehrere Stände Platz
 haben"):
 
-- `hands.laufform_variant` ist die **Band-Basis** `B` der Hand: Platte 100,
-  Eigenhand 200 — wie entschieden. Eindeutig je Schrift
+- `hands.laufform_variant` ist die **Band-Basis** `B` der Hand — ein Datum
+  JE HAND, nicht je Rolle: bei der Registrierung bekommt eine Hand das
+  nächste freie Hundert ihrer Schrift. Für Sütterlin ist das genau der
+  Entscheid: Platte 100, Eigenhand 200. Eindeutig je Schrift
   (`UNIQUE (style_id, laufform_variant)`), denn Varianten-Nummern gelten je
   Schrift: die Platten-Hände von Sütterlin und Kurrent dürfen beide bei 100
   liegen.
+- **Eine Schrift mit mehreren Platten-Händen** ist die Randbedingung aus
+  Q25 (a) und bei Kurrent schon angelegt: `loth-1866` und
+  `petzendorfer-1889` sind zwei Tafel-Quellen EINER Schrift, nach Migration
+  `0012` ausdrücklich zwei Hände. Jede Platten-Hand bekommt ihr eigenes
+  Hundert (100, 200), eine Eigenhand das nächste (300). Die 100 trägt die
+  Hand, der die heutigen Variante-100-Zeilen gehören — sie lassen sich nicht
+  umnummerieren (§5.4). Die Rolle sagt das geplante `hands.kind`, nie die
+  Nummer.
 - Das Band einer Hand ist `[B, B + 99]`. **Stand-Nummer = B + Index**, der
   Index zählt die Stände dieser Hand in der Reihenfolge ihres Entstehens:
   100, 101, 102 … für die Platte; 200, 201 … für die Eigenhand.
@@ -178,11 +188,12 @@ ist nicht mehr rekonstruierbar.
 Ein Apply wird **kopieren-dann-einfügen**, in EINER Transaktion:
 
 1. nächste Nummer = Band-Basis + (höchster Index + 1);
-2. der **Vorgänger** ist der AUSGELIEFERTE Stand der Hand — die bekannt
-   gute Linie, damit eine verworfene Zwischenfassung ihre schlechte Zeile
-   nicht über einen übersprungenen Key weitervererbt; hat die Hand noch
-   keine Auslieferung, ihr jüngster Stand; hat sie keinen, beginnt der
-   Stand LEER. Ein ausdrückliches `?parent=` übersteuert das;
+2. der **Vorgänger** ist die laufende **Arbeitslinie** der Hand: ihr jüngster
+   Stand, sofern er NACH der letzten Zeiger-Bewegung der Hand entstanden ist
+   (oder die Hand noch nie ausgeliefert hat); sonst der AUSGELIEFERTE Stand;
+   hat die Hand keinen Stand, beginnt der neue LEER. Ein ausdrückliches
+   `?parent=` übersteuert das; Apply-Antwort und Kopf nennen den Vorgänger
+   immer;
 3. die Zeilen des Vorgängers werden per `INSERT … SELECT` unter die neue
    Nummer kopiert — außer den Keys, die dieser Apply gleich schreibt;
 4. die angewandten Keys werden eingefügt (dieselbe Ableitung wie heute,
@@ -190,7 +201,17 @@ Ein Apply wird **kopieren-dann-einfügen**, in EINER Transaktion:
 5. die Kopf-Zeile (§4.4). Commit.
 
 Das entspricht der heutigen Semantik — ein übersprungener Key behält, was
-er hatte —, nur ohne dass dabei etwas verloren geht.
+er hatte, und ein zweiter Teil-Apply lässt den ersten stehen —, nur ohne
+dass dabei etwas verloren geht. Die Teil-Applies zählen: `apply-laufform`
+nimmt eine Auswahl (`glyph_keys`), Buchstaben-Stapel nacheinander sind ein
+vorgesehener Arbeitsfluss. Nach einem Rollback erbt trotzdem nichts vom
+zurückgenommenen Stand — er entstand VOR der Zeiger-Bewegung. Eine
+verworfene Zwischenfassung, die nie ausgeliefert war, verlässt man
+ausdrücklich mit `?parent=<ausgelieferter Stand>`; vergisst man es, steht
+ihr vererbter Key im Vergleich als BEWEGT gegen den ausgelieferten Stand
+(§6.2, Teil 3) — sichtbar. Die umgekehrte Regel (immer vom ausgelieferten
+Stand kopieren) verlöre dagegen den ersten Stapel STILL: ein Key, der sich
+nicht bewegt hat, fällt in keinem Vergleich auf.
 
 - **Der erste Stand der Eigenhand beginnt leer, nie als Kopie der
   Platte.** Eine in das Eigenhand-Band kopierte Platten-Zeile wäre die
@@ -205,8 +226,9 @@ er hatte —, nur ohne dass dabei etwas verloren geht.
   gezielte Rückfall EINES Buchstabens auf die Tafel). Beide bekommen damit
   zum ersten Mal ein Protokoll.
 - **Nichts schreibt je wieder in eine vergebene Nummer.**
-  `TemplateRepository.upsert` verweigert Varianten ≥ 100; der Stand-Schreiber
-  benutzt INSERT. In Python ausdrückbar, wie die Phase-0-Regel es verlangt
+  `TemplateRepository.upsert` BEKOMMT eine Sperre für Varianten ≥ 100 —
+  heute hat es keine, und beide Schreiber (der Apply und `PUT …/laufform`)
+  schreiben dort per Upsert; der Stand-Schreiber benutzt INSERT. In Python ausdrückbar, wie die Phase-0-Regel es verlangt
   (die HTTP-Suiten laufen auf SQLite).
 - **Die Eigner-Regel wird zur Band-Regel.** Ein Apply schreibt nur in das
   Band SEINER Hand, und der Vorgänger gehört derselben Hand. Der Guard aus
@@ -257,7 +279,14 @@ passen beide am schlechten Tag nicht mehr zusammen. Die Empfehlung ist
 darum die eingefrorene Kopie: beim Anlegen des Stands werden die
 freigegebenen Übersteuerungen der Hand unter `variant = Stand-Nummer`
 kopiert (die Spalte gibt es; die Render-Strecke liest heute nur 0), und
-`/write/word` liest die Paare des ausgelieferten Stands. Der Preis: eine
+`/write/word` liest die Paare des ausgelieferten Stands. Das gilt auch für
+den GESÄTEN Stand 100, der nicht über den Kopier-Pfad entsteht (§4.2): der
+PR, der (a) einführt, kopiert die freigegebenen Übersteuerungen der
+Platten-Hand einmalig nach `variant = 100` — ein INSERT, kein UPDATE; die
+Zeilen unter `variant = 0` bleiben der Arbeitssatz des Paar-Editors. Ohne
+diese Kopie fände die Render-Strecke für Stand 100 keine Paare
+(`approved_for_pairs` liest heute `variant=0`), und jede freigegebene
+Übersteuerung verschwände still aus dem öffentlichen Wortbild. Der Preis: eine
 Freigabe im Paar-Editor wirkt nicht mehr sofort öffentlich, sondern mit der
 nächsten Auslieferung. Das ist eine Änderung im Arbeitsalltag des Autors —
 darum FM1.
@@ -301,7 +330,10 @@ Die öffentlichen Routen sind quellen-gebunden
 
 Eine Quelle ohne registrierte Hand, oder deren Hand nichts ausgeliefert
 hat, schreibt nur mit der Tafel — das ist genau das heutige Verhalten
-einer Schrift ohne Variante-100-Zeilen.
+einer Schrift ohne Variante-100-Zeilen. In einer Schrift mit zwei
+Platten-Händen (§4.2) löst jede Tafel-Quelle auf IHRE Hand auf: eine
+Platte, deren Hand nichts ausgeliefert hat, schreibt mit der Tafel allein,
+nie mit der Laufform der anderen Platte. Was das für die Saat heißt: §5.4.
 
 **Warum nicht EIN Zeiger je Schrift** (so stand es in zwei der drei
 Skizzen):
@@ -393,12 +425,26 @@ deren Band-Basis und hängt die erste Zeiger-Zeile an. Danach liest
 `compose_word_payload` den Zeiger statt der Konstanten. **Beweis der
 Byte-Gleichheit:** die Golden-Parity-Fixture bleibt unberührt (`compose.py`
 kennt die Nummer nicht), und ein `/write/word`-Payload-Test pinnt die
-Antwort vor und nach der Umstellung. Voraussetzung ist der Prod-Schritt V1
-— ohne registrierte Platten-Hand findet die Kette keinen Stand. Die
-Migration bricht darum mit klarer Meldung AB, wenn eine Schrift
-Variante-100-Zeilen hat und keine ihrer Tafel-Quellen eine Hand nennt,
-statt die Laufform still zu verlieren; `/verify-migrations` fährt beide
-Fälle.
+Antwort vor und nach der Umstellung — auch für ein Wort mit freigegebener
+Paar-Übersteuerung (§4.5). Voraussetzung ist der Prod-Schritt V1 — ohne
+registrierte Platten-Hand findet die Kette keinen Stand.
+
+**Wem der Bestand gehört,** liest die Saat je Schrift aus den Zeilen
+selbst: aus dem Stempel `trace_meta.laufform.hand_id`, sonst aus der Hand
+der Tafel-Quelle in `provenance_source_id`. Bytegleich ist Nr. 0 nur, wenn
+JEDE Tafel-Quelle der Schrift auf diese eine Hand auflöst: heute schreibt
+jede Quelle einer Schrift mit denselben Variante-100-Zeilen
+(`compose_word_payload` liest je `style_id`), nach M1b nur noch die
+Quellen der Eigner-Hand. Die Migration bricht darum mit klarer Meldung AB,
+statt die Laufform still zu verlieren, wenn in einer Schrift mit
+Variante-100-Zeilen (a) die Zeilen auf keine oder auf mehr als eine Hand
+auflösen, oder (b) eine Tafel-Quelle keine oder eine ANDERE Hand nennt als
+den Eigner — der Fall zweier Platten-Hände (FM6). Quellen anderer Art, die
+nicht auf den Eigner auflösen (die Handschrift einer fremden Hand), zählt
+die Meldung auf, ohne abzubrechen: sie schreiben nach M1b mit der Tafel
+allein, und das ist gewollt — die Laufform, mit der sie heute schreiben,
+gehört nicht ihrer Hand. `/verify-migrations` fährt den guten Fall und
+jeden Abbruch-Fall.
 
 **Nr. 1 — der erklärte Rollenwechsel.** Er ist der erste echte Zug der
 Maschine und bleibt ein eigener Autor-Entscheid (`vision.md`,
@@ -515,7 +561,9 @@ Beleg). **S10 neu gespielt:**
    Minute (§5.3).
 4. Stand 203 bleibt liegen und trägt in der Liste „zurückgenommen am …"
    (abgeleitet aus dem Protokoll, kein eigenes Feld). Der nächste Apply
-   kopiert vom AUSGELIEFERTEN Stand (§4.3) und erbt nichts von 203.
+   kopiert vom ausgelieferten Stand 202 und erbt nichts von 203: der
+   entstand VOR der Zeiger-Bewegung und ist darum nicht mehr die
+   Arbeitslinie (§4.3).
 5. Keine Re-Baseline der Platte — ihre Zahlen haben sich nie bewegt.
 
 **Archiv-Snapshots: create freely, never destroy — unverändert.** Die
@@ -557,7 +605,8 @@ kein Schalter.**
   Ziel — eine Zahl nennt der Autor nach dem ersten vollen Bogen-Satz;
 - **„Ausgeliefert" je Hand:** Stand-Nummer, seit wann, mit welchem Grund —
   als Text;
-- **die Stände-Liste je Hand**, jüngster zuerst: Datum, Notiz, angewandt /
+- **die Stände-Liste je Hand**, jüngster zuerst: Datum, Notiz, Vorgänger,
+  angewandt /
   übersprungen, dünnste und mittlere Belegzahl, bewegte Keys gegen den
   ausgelieferten Stand, dazu als beschriftete Chips „ausgeliefert",
   „zurückgenommen am …", „Tafel seitdem geändert: a, n". Kein Zustand lebt
@@ -701,8 +750,8 @@ Empfehlung: (i) a — (c) ist mit der Maschine nicht vertretbar; (ii) a,
 sobald die Zahl aus Stufe 1 (Q11 b) vorliegt, bis dahin (b) mit Etikett.
 Ohne Entscheid: (i) b, (ii) b.
 
-**FM3 — Die Rückhaltemenge der Eigenhand** *(blockiert: Schritt 4 aus
-§15.3, die Ernte — sie muss VORHER geschnitten sein)*
+**FM3 — Die Rückhaltemenge der Eigenhand** *(zu beantworten VOR Schritt 4
+aus §15.3, der Ernte; ein ausdrückliches (c) ist eine gültige Antwort)*
 Kontext: die einzige Zahl über Eigenhand-Tinte braucht Streifen, die nie
 geerntet werden (§6.2, Teil 4). Leitsatz 1 verlangt für den Folger
 dieselbe Art Teilmenge.
@@ -713,7 +762,10 @@ es über die Eigenhand nie eine Tinten-Zahl, und eine Auslieferung stützt
 sich auf Deckung, Beleglage, Formbewegung und das Auge.
 Empfehlung: (a); die Größe schlägt die Vorregistrierung vor, der Autor
 bestätigt sie.
-Ohne Entscheid: (c) — und die Ernte darf starten.
+Ohne Entscheid: die Ernte WARTET — die Frage wird vor Schritt 4 gestellt,
+und ein ausdrückliches (c) gibt sie frei. Still zu starten hieße (c) wählen,
+ohne es zu sagen: jeder Stand aus einer Ernte MIT dem späteren
+Rückhalte-Material bliebe unmessbar.
 
 **FM4 — Wie oft der blinde Durchgang?** *(blockiert: M5)*
 Optionen: (a) bei jeder Auslieferung; (b) verpflichtend bei der ERSTEN
@@ -732,6 +784,27 @@ Manager, die API räumt selbst; (c) nichts — ein Tag Verzug wird hingenommen.
 Empfehlung: (a).
 Ohne Entscheid: (a) ohne den Purge-Schritt.
 
+**FM6 — Eine Schrift mit zwei Platten-Händen** *(blockiert: M1 — aber nur,
+wenn der Lese-Sweep den Fall zeigt; heute käme allein Kurrent in Frage)*
+Kontext: Kurrent hat zwei Tafel-Quellen zweier Hände, aber EINEN
+Template-Satz — Buchstaben von der einen Tafel, Ziffern von der anderen.
+Heute schreiben beide Quellen mit denselben Variante-100-Zeilen; mit dem
+Zeiger je Hand schriebe die Quelle, deren Hand Stand 100 NICHT gehört, ab
+M1b nur noch mit der Tafel (§5.4). Ob Kurrent überhaupt
+Variante-100-Zeilen trägt, ist nicht gelesen (§12).
+Optionen: (a) zwei Hände, zwei Bänder; die zweite Platten-Quelle schreibt
+ab Nr. 0 mit der Tafel allein — eine ERKLÄRTE Änderung ihres öffentlichen
+Bilds, mit Vorher/Nachher im PR-Text; (b) beide Tafel-Quellen nennen
+vorerst EINE Platten-Hand „der Schrift" — bytegleich, aber die
+Registrierung sagt dann, was Migration `0012` ausdrücklich verneint („another
+hand"); (c) die Schrift bleibt ungesät und liest weiter die Konstante, bis
+sie gebaut wird — ein zweiter Lesepfad.
+Empfehlung: (a) — dieselbe Ehrlichkeit der Beschriftung, die §5.1 für die
+Eigenhand verlangt.
+Ohne Entscheid: die Saat bricht ab, statt zu raten (§5.4). Zeigt der Sweep
+den Fall nicht, ist die Frage gegenstandslos, bis eine zweite Tafel-Quelle
+einer Schrift eine Hand bekommt.
+
 ### 10.1 Vorgaben, die ohne Rückfrage gelten
 
 Engineering-Defaults; der Autor kippt jede mit einem Wort.
@@ -741,8 +814,11 @@ Engineering-Defaults; der Autor kippt jede mit einem Wort.
 - **FV2** Es gibt keinen Löschpfad für Stände und keinen UPDATE-Pfad für
   Kopf und Protokoll. Dieselbe Regel wie fürs Archiv; wer sie ändern will,
   braucht einen neuen Entscheid.
-- **FV3** Der Vorgänger eines neuen Stands ist der ausgelieferte Stand; der
-  erste Stand einer Hand beginnt leer (§4.3).
+- **FV3** Der Vorgänger eines neuen Stands ist die laufende Arbeitslinie
+  der Hand — ihr jüngster Stand seit der letzten Zeiger-Bewegung, sonst der
+  ausgelieferte; Teil-Applies sammeln sich wie heute, nach einem Rollback
+  erbt nichts vom zurückgenommenen Stand. Der erste Stand einer Hand beginnt
+  leer (§4.3).
 - **FV4** Der Zeiger hängt an der Hand, aufgelöst über `sources.hand_id`
   (§5.1).
 - **FV5** Eine abgelehnte Variante antwortet wie eine leere (§5.2).
@@ -769,14 +845,17 @@ Engineering-Defaults; der Autor kippt jede mit einem Wort.
 
 Zwei Reihenfolge-Zwänge sind hart: **M2 vor Schritt 6** (sonst überschreibt
 der erste Eigenhand-Apply noch an Ort und Stelle, nur eben in Band 200),
-und **FM3 vor Schritt 4** (sonst ist die Rückhaltemenge schon geerntet).
+und **FM3 ist VOR Schritt 4 beantwortet** — auch ein ausdrückliches (c)
+zählt als Antwort; eine Ernte ohne jede Antwort hätte das Material der
+Rückhaltemenge schon in den Aggregaten.
 
 ## 12 Risiken
 
 - **Die Saat hängt an Prod-Daten, die dieses Doc nicht kennt.** Ob Kurrent
-  oder Offenbacher Variante-100-Zeilen tragen und ob ihre Tafel-Quellen eine
-  Hand nennen, zeigt erst ein Lese-Sweep vor M1 (über die Admin-API, mit
-  Rückfrage). Die Migration bricht ab, statt zu raten.
+  oder Offenbacher Variante-100-Zeilen tragen, wessen Stempel sie tragen und
+  ob ihre Tafel-Quellen eine Hand nennen — oder ZWEI (Kurrent: zwei Tafeln
+  zweier Hände, FM6) —, zeigt erst ein Lese-Sweep vor M1 (über die
+  Admin-API, mit Rückfrage). Die Migration bricht ab, statt zu raten (§5.4).
 - **Das Fenster zwischen M1 und M2.** Solange der alte Apply lebt, schreibt
   er weiter an Ort und Stelle in Variante 100 — in den Stand, den die Saat
   gerade benannt hat. Eingefroren ist Stand 100 darum erst AB M2; bis dahin

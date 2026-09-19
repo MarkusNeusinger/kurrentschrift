@@ -2721,7 +2721,7 @@ in dieser Reihenfolge — jeder ist die Voraussetzung des nächsten:
    aus Q19 so, dass mehrere Stände Platz haben — darum steht es VOR dem
    Schema-PR (Q24 i). **Geschrieben am 2026-09-19:**
    [`freigabe-maschine.md`](freigabe-maschine.md) — Bandschnitt dort §4.2,
-   was die Schritte 3, 6 und 7 davon aufnehmen §11, fünf Rückfragen §10
+   was die Schritte 3, 6 und 7 davon aufnehmen §11, sechs Rückfragen §10
    (eine davon, die Rückhaltemenge, VOR Schritt 4).
 2. **Pin-PR** (Q17 a): die MVP-Anker `lesen`, `das`, `denen` und der
    Entwicklungssatz als Pins, EINE neue Welle am committeten Streifenplan

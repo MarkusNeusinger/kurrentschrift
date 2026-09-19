@@ -13,11 +13,16 @@
   create-only set of ONE hand's running-form rows under ONE variant number
   in that hand's band, plus a header that keeps the apply report the HTTP
   response throws away today), how the band is cut (`hands.laufform_variant`
-  is the band BASE, a Stand number is base + running index, 100 per hand,
-  never reused, zero DDL on `templates`), and how a Stand comes to be
-  (copy-then-insert, because `/write/word` reads a missing row as a chart
-  fallback; the manual `PUT`/`DELETE …/laufform` become Stand operations;
-  the first own-hand Stand starts empty, never as a relabelled plate form).
+  is the band BASE — a datum per HAND, the next free hundred of its script,
+  so a script with two plate hands such as Kurrent fits — a Stand number is
+  base + running index, 100 per hand, never reused, zero DDL on
+  `templates`), and how a Stand comes to be (copy-then-insert, because
+  `/write/word` reads a missing row as a chart fallback; copied from the
+  hand's working line — its newest Stand since the last pointer movement,
+  otherwise the delivered one — so that partial applies accumulate as they
+  do today while a rolled-back Stand passes nothing on; the manual
+  `PUT`/`DELETE …/laufform` become Stand operations; the first own-hand
+  Stand starts empty, never as a relabelled plate form).
   The delivery pointer is an append-only log resolved as source → hand →
   newest row, NOT one pointer per style: the reading quiz stays with the
   1922 forms after the role change (author, 2026-09-07), so two hands of one
@@ -31,8 +36,8 @@
   holdout and the blind human pass — and an own-hand delivery must leave the
   plate's fixture rows and headline untouched. Archive snapshots stay
   create-only and stop being the rollback. It also names what the three
-  design sketches proposed and the doc rejects, five questions only the
-  author can answer (FM1–FM5), and a build order that slots into
+  design sketches proposed and the doc rejects, six questions only the
+  author can answer (FM1–FM6), and a build order that slots into
   `admin-redesign.md` §15.3.
 - **Reading the code for that proposal turned up four things the plan had
   not seen, recorded in its §3.** The public `GET /sources/{id}/templates`
