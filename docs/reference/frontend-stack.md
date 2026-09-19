@@ -145,7 +145,8 @@ Post-MVP-Phasen (architektur.md §10):
 
 **`h=` — die Hand, überall optional.** Jede Admin-Route nimmt zusätzlich
 `h=<schreiber>-<stil>`, den zweiten Arbeitsbereich neben der Vorlage: die
-Korb-Links tragen ihn immer, ein Subjektwechsel nimmt ihn mit, Unsinn wird
+Korb-Links tragen ihn immer, jeder Sprung der Werkbank nimmt ihn mit —
+Subjektwechsel wie Absprung in eine andere Ansicht —, Unsinn wird
 verworfen, den Tab-Titel bewegt er nie. Letztes Argument jedes Bauers in
 `focus.ts` — ohne ihn bleibt jede Adresse zeichengleich. Er wird
 mitgeführt, aber noch nicht ÜBERNOMMEN: ein geöffneter Link sagt, unter

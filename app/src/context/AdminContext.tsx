@@ -124,21 +124,35 @@ export function AdminProvider({
     // Both reads together, because neither alone knows every hand: /hands is
     // built from sheets ∪ Fassungen, /setups carries the ones that only have a
     // typed setup so far (handScope.ts).
-    Promise.all([getEigenhandHands({ retries: 2 }), getEigenhandSetups({ retries: 2 })])
-      .then(([hands, setups]) => {
-        if (!cancelled) setCandidates(handCandidates(hands.hands, setups.setups, hands.styles));
-      })
-      .catch((err: unknown) => {
-        // Kept, not swallowed. Both routes are admin-gated and a 401 is not
-        // retried (`client.ts` retries cold starts only), so a silent failure
-        // would leave the bar's em-dash and the page's „noch keine Hand
-        // erfasst" standing FOREVER as claims about data never read. The
-        // candidate list stays null, which is what those two surfaces check;
-        // the Eigenhand page says why instead.
-        if (!cancelled) setHandsError(err);
-      });
+    const load = () => {
+      Promise.all([getEigenhandHands({ retries: 2 }), getEigenhandSetups({ retries: 2 })])
+        .then(([hands, setups]) => {
+          if (cancelled) return;
+          setHandsError(null);
+          setCandidates(handCandidates(hands.hands, setups.setups, hands.styles));
+        })
+        .catch((err: unknown) => {
+          // Kept, not swallowed. Both routes are admin-gated and a 401 is not
+          // retried (`client.ts` retries cold starts only), so a silent failure
+          // would leave the bar's em-dash and the page's „noch keine Hand
+          // erfasst" standing FOREVER as claims about data never read. The
+          // candidate list stays null, which is what those two surfaces check;
+          // the Eigenhand page says why instead.
+          if (!cancelled) setHandsError(err);
+        });
+    };
+    load();
+    // Read again when the window comes back. The one way to create a hand is a
+    // terminal command the Eigenhand page prints (`tools.eigenhand.setup`), and
+    // it is run in ANOTHER window — so without this the freshly created hand
+    // would sit in the database while the picker it was created for stayed
+    // disabled until a reload nothing told the author to do. Same for a hand
+    // minted by a print in a second tab. Cheap: two small admin reads, and only
+    // when the workbench is actually looked at again.
+    window.addEventListener('focus', load);
     return () => {
       cancelled = true;
+      window.removeEventListener('focus', load);
     };
   }, [pinnedSourceId]);
 

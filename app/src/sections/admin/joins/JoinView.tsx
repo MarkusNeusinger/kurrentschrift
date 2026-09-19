@@ -165,7 +165,9 @@ function DrillSpecimenCard({
 export function JoinView() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const { sourceId } = useAdmin();
+  // `ownHand`, never `handId`: the workbench's `handId` is the PLATE hand of
+  // the statistics below — a different hand (P1-Q3 a).
+  const { sourceId, handId: ownHand } = useAdmin();
   const workbench = useWorkbench();
   const fileMark = useFileMark();
   const t = de.admin.joins;
@@ -493,10 +495,10 @@ export function JoinView() {
               last and quietly (a `text` button under the doctrine line): the
               layout must not make the last resort look like the first move. */}
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1.5 }}>
-            <Button size="small" variant="outlined" onClick={() => navigate(lettersUrl(leftKey))}>
+            <Button size="small" variant="outlined" onClick={() => navigate(lettersUrl(leftKey, ownHand))}>
               {fmt(t.toLetter, { key: leftKey })}
             </Button>
-            <Button size="small" variant="outlined" onClick={() => navigate(lettersUrl(rightKey))}>
+            <Button size="small" variant="outlined" onClick={() => navigate(lettersUrl(rightKey, ownHand))}>
               {fmt(t.toLetter, { key: rightKey })}
             </Button>
           </Box>
@@ -565,10 +567,10 @@ export function JoinView() {
                       overlay={drillEngine}
                       showTrace={drillTrace}
                       boxes={workbench.boxesBySpecimen.get(row.specimen_id) ?? []}
-                      onOpenLetter={(key) => navigate(lettersUrl(key))}
+                      onOpenLetter={(key) => navigate(lettersUrl(key, ownHand))}
                       onOpenPair={focus}
                       onMark={fileMark}
-                      onOpenWord={() => navigate(wordsUrl(row.word, row.specimen_id))}
+                      onOpenWord={() => navigate(wordsUrl(row.word, row.specimen_id, ownHand))}
                     />
                   );
                 })}
@@ -600,7 +602,7 @@ export function JoinView() {
                     box={box}
                     sample={sample}
                     sourceId={sourceId}
-                    onJump={() => navigate(wordsUrl(sample.word, occ.specimen_id))}
+                    onJump={() => navigate(wordsUrl(sample.word, occ.specimen_id, ownHand))}
                     label={occ.specimen_id}
                     detail={
                       occ.measurements.gen_chamfer === undefined
@@ -647,7 +649,7 @@ export function JoinView() {
                         variant="outlined"
                         clickable
                         label={occ.specimen_id}
-                        onClick={() => navigate(wordsUrl(sample?.word ?? '', occ.specimen_id))}
+                        onClick={() => navigate(wordsUrl(sample?.word ?? '', occ.specimen_id, ownHand))}
                       />
                       {occ.measurements.gen_chamfer !== undefined && (
                         <Typography variant="caption" color="text.secondary">
@@ -682,7 +684,7 @@ export function JoinView() {
                   variant="outlined"
                   clickable
                   label={w.word}
-                  onClick={() => navigate(wordsUrl(w.word, w.specimenId))}
+                  onClick={() => navigate(wordsUrl(w.word, w.specimenId, ownHand))}
                 />
               ))
             )}

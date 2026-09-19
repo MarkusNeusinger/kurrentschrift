@@ -43,8 +43,12 @@ export function AdminHeader({ openCount, onOpenKorb }: { openCount: number | nul
   const { pathname } = useLocation();
   const t = de.admin.shell;
   // The basket belongs to the VORLAGE. The bar says so visibly; the icon
-  // button says it in its name, so the two never disagree.
-  const korbLabel = source ? fmt(t.korbScoped, { style: styleLabel(source.style_id) }) : t.openKorb;
+  // button says it in its name, so the two never disagree — and it names the
+  // same two halves the bar does, style AND id: Kurrent alone is taught by two
+  // charts here, so „der Vorlage Kurrent" would be the name of two baskets.
+  const korbLabel = source
+    ? fmt(t.korbScoped, { style: styleLabel(source.style_id), id: source.id })
+    : t.openKorb;
 
   return (
     <HeaderBar

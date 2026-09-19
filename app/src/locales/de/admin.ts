@@ -34,24 +34,26 @@ export const admin = {
     areaEigenhand: 'Eigenhand',
     areaNavAria: 'Bereiche der Werkbank',
     noSource: 'keine Vorlage',
-    // `switchSource` („Vorlage wechseln") ist entfallen: der einzige Leser war
-    // der Tooltip des Vorlagen-Chips, und der Chip ist in die Scope-Leiste
-    // gewandert, deren Vorlagen-Feld derselbe Link ist.
+    // `switchSource` („Vorlage wechseln") is gone: its only reader was the
+    // Vorlagen-Chip's tooltip, and the chip moved into the Scope-Leiste, whose
+    // Vorlage field is the same link.
     //
-    // Die Scope-Leiste unter der Kopfleiste: zwei Felder, die sagen, worum es
-    // auf dieser Seite geht — und nie umschalten (admin-redesign.md §7.2). Die
-    // Doppelpunkte gehören zum sichtbaren Etikett, darum stehen sie hier.
+    // The Scope-Leiste under the header: two fields that say what the open page
+    // is about, and never switch it (admin-redesign.md §7.2). The colons are
+    // part of the visible label, which is why they live here.
     scopeAria: 'Arbeitsbereich',
     scopeSource: 'Vorlage:',
     scopeHand: 'Hand:',
-    // Kein Stil hat immer eine eigene Hand — ein Gedankenstrich ist die
-    // ehrliche Antwort, eine erfundene Kennung wäre es nicht (V19).
+    // Not every script has an own hand — an em-dash is the honest answer, an
+    // invented id would not be (V19).
     scopeHandNone: '—',
     openKorb: 'Auftragskorb öffnen',
-    // Das Badge sagt seinen Geltungsbereich, sichtbar am Vorlagen-Feld und im
-    // Namen des Knopfes — vorher stand er nirgends, auch nicht im Hover.
+    // The badge names its scope, visibly in the Vorlage field and in the
+    // button's name — before, it stood nowhere, not even in the hover. The id
+    // rides along because one script can be taught by several charts, so the
+    // style alone does not say WHICH basket this is.
     korbOpen: '{{n}} offen',
-    korbScoped: 'Auftragskorb der Vorlage {{style}} öffnen',
+    korbScoped: 'Auftragskorb der Vorlage {{style}} · {{id}} öffnen',
     closeKorb: 'Auftragskorb schließen',
     startEyebrow: 'Werkbank',
     startTitle: 'Welche Vorlage?',
@@ -1096,29 +1098,31 @@ export const admin = {
     // say what the strips are OF when a second tab is open beside it.
     tabSubject: 'Eigenhand · {{ansicht}}',
     hand: 'Hand',
-    // `handHelp` („Neue Hand: <schreiber>-<stil>") ist entfallen: das Feld ist
-    // jetzt immer eine Auswahl über die erfassten Hände. Damit ist aber auch
-    // der alte Weg zur ERSTEN Hand weg — er hing an genau diesem Freitextfeld
-    // und an einer erfundenen Vorgabe `mn-<stil>`. Der Satz darf ihn deshalb
-    // nicht mehr versprechen: er nennt jetzt den Weg, den es wirklich gibt.
-    // `setup` schreibt den Server-Eintrag, damit steht die Hand über
-    // GET /eigenhand/setups in genau dieser Auswahl und der Bogendruck kann
-    // unter ihr arbeiten (tools/eigenhand/setup.py).
+    // `handHelp` („Neue Hand: <schreiber>-<stil>") is gone: the field is now
+    // always a picker over the hands the server knows. That also took the old
+    // way to the FIRST hand with it — it hung on exactly this free-text field
+    // and on an invented `mn-<stil>` default. So the sentence may not promise
+    // it any more; it names the path that really exists. `setup` writes the
+    // server record, which puts the hand into this very picker through
+    // GET /eigenhand/setups and lets the sheet printer work under it
+    // (tools/eigenhand/setup.py).
     //
     // Since the `?reiter=` split this sits in the SHELL, so it shows on all
-    // four Unteransichten — „unten" pointed at nothing on three of them. Es
-    // sagt „für diese Schrift": die aktive Hand gehört immer zum Stil der
-    // Vorlage (V19), eine Kurrent-Vorlage steht also auch neben einer
-    // geschriebenen Sütterlin-Hand ohne eigene da.
+    // four Unteransichten — „unten" pointed at nothing on three of them. It
+    // says „für diese Schrift": the active hand always belongs to the
+    // Vorlage's script (V19), so a Kurrent Vorlage stands here without one
+    // even beside a written Sütterlin hand.
     noHands:
       'Für diese Schrift ist noch keine Hand erfasst. Eine neue entsteht mit ihrem stehenden Setup — danach steht sie hier zur Auswahl und kann Bögen drucken:',
-    // `<schreiber>` bleibt eine Lücke zum Ausfüllen; der Stil kommt aus der
-    // Vorlage, damit hier nie eine Schrift steht, die gar nicht offen ist.
+    // The placeholder is QUOTED: `<schreiber>` unquoted is a redirection to
+    // bash, so one copy-and-run would write a file into the working directory
+    // instead of passing an argument. The style comes from the open Vorlage,
+    // so the line never names a script that is not in front of the reader.
     noHandsCommand:
-      'ADMIN_TOKEN=… uv run python -m tools.eigenhand.setup --hand <schreiber>-{{style}} --feder … --tinte … --papier … --geraet scanner',
-    // Der Abruf hinter der Auswahl ist admin-gesichert; ein 401 wird nicht
-    // wiederholt. Ohne diesen Satz sähe das Ergebnis aus wie „diese Schrift
-    // hat keine Hand" — eine Aussage über Daten, die nie gelesen wurden.
+      'ADMIN_TOKEN=… uv run python -m tools.eigenhand.setup --hand "<schreiber>-{{style}}" --feder … --tinte … --papier … --geraet scanner',
+    // The reads behind the picker are admin-gated and a 401 is not retried.
+    // Without this sentence the result would look like „this script has no
+    // hand" — a claim about data that never arrived.
     handsError: 'Die erfassten Hände konnten nicht geladen werden.',
     loadError: 'Der Bestand konnte nicht geladen werden.',
     stripsTitle: 'Streifen',

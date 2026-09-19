@@ -164,6 +164,18 @@ export function ScopeBar({ openCount }: { openCount: number | null }) {
         // the sticky block stays two rows tall (V15).
         overflowX: 'auto',
         scrollSnapType: 'x proximity',
+        // Snap to the CONTENT box, not the scrollport edge. Without this the
+        // browser aligns the first field's start with x=0 as soon as the row
+        // overflows — measured at 390 px: `scrollLeft` jumped to 20 by itself
+        // and the highlighted field sat flush against the edge of the screen,
+        // with none of the side gutter the design system asks for. The same
+        // inset the scroll-into-view effect above subtracts.
+        //
+        // In PIXELS, not in spacing units: `scrollPaddingLeft` is not one of
+        // MUI's spacing-aware properties, so `2.5` would ship as `2.5px` — and
+        // it did, leaving 2 px of gutter where 20 was meant (measured at
+        // 390 px). These three are `px` below × 8.
+        scrollPaddingLeft: { xs: '20px', sm: '32px', md: '48px' },
       }}
     >
       <ScopeField

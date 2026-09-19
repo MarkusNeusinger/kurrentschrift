@@ -12,11 +12,13 @@
   control that changes one.
 - **`h=` — the hand travels in every admin link.** All `focus.ts` builders
   take the hand as their last argument, so every URL without one stays
-  byte-identical; the Auftragskorb's links always carry it, a subject change
-  inside a view keeps it, an id that cannot be one is dropped, and it never
-  moves the tab title — the title names the subject, and the hand is not one.
-  It is carried, not yet adopted: an opened link states the hand the task was
-  filed under and does not switch the workbench to it.
+  byte-identical; the Auftragskorb's links always carry it, and so does every
+  jump the workbench writes — a subject change inside a view and an Absprung
+  into another view alike, so a scope holds for a whole walk. An id that
+  cannot be one is dropped, and it never moves the tab title: the title names
+  the subject, and the hand is not one. It is carried, not yet adopted — an
+  opened link states the hand the task was filed under and does not switch the
+  workbench to it.
 
 ### Changed
 

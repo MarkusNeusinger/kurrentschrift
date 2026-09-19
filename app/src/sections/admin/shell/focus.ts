@@ -119,9 +119,13 @@ export function readHandFocus(params: URLSearchParams): string | null {
 /**
  * The hand carried through a focus change inside a view.
  *
- * The three views write the WHOLE query when the subject changes, so an `h=`
- * that arrived on a Korb link would evaporate on the first click in the view —
- * the link would be scoped and the very next step would not be.
+ * Two of the three views write the WHOLE query when the subject changes, so an
+ * `h=` that arrived on a Korb link would evaporate on the first click in the
+ * view — the link would be scoped and the very next step would not be. (The
+ * Buchstaben view merges its query instead, to keep the work list's state, and
+ * carries the hand for free that way.) The jumps BETWEEN views pass the hand
+ * explicitly, from the admin scope — so a scope holds for a whole walk, not
+ * just for the next click.
  */
 export function keepHand(params: URLSearchParams, next: Record<string, string>): Record<string, string> {
   const hand = readHandFocus(params);
