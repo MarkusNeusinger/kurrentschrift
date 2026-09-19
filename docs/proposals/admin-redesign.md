@@ -1,44 +1,44 @@
 # Admin-Redesign auf der grünen Wiese 2026-09-17 — Optionen, Szenarien, Rückfragen
 
-> **Status (2026-09-19): teil-umgesetzt.** **Phase 0 ist ausgeliefert** —
-> alle neun PRs aus §15.2 sind gemergt (#613, #612, #611, #619, #616, #618,
-> #609, #610, #620). Offen ist davon genau ein Schritt: der Prod-Datenschritt
-> V1 (`UPDATE sources.hand_id`) — er wartet auf die Einzel-Rückfrage in der
-> Sitzung, hat keine Admin-Route und ist darum SQL auf der geteilten Cloud
-> SQL, Snapshot davor. **Phase 1 hat begonnen** (Schnitt §15.4): PR 1
-> Vokabular (#621), PR 2 Eigenhand-Reiter (#622). Die Phasen 2–5 sind
-> ausdrücklich Zukunft (§15). **Drei Autor-Entscheide vom 2026-09-19** (§4.6)
-> formen Phase 1 und bewegen V2, V7 und V24: `?reiter=` statt `?ansicht=` für
-> die Eigenhand-Unteransichten, das Hand-Feld nennt immer die Eigenhand, der
-> Subjekt-Stepper liegt auf Alt+Shift+←/→. Auf Wunsch des Autors entstanden
-> („noch nichts implementieren … ich will das erst mit dir durch diskutieren
-> bevor wir umsetzen", §1).
-> **Der Rückfragen-Katalog ist seit dem 2026-09-18 beantwortet:** der Autor
-> hat alle 25 Fragen, die Unterpunkte zu Q4 und Q24, die Vorgaben V1–V26
-> und den Kleinkram entschieden — je Frage eine Entscheid-Zeile in §12, die
-> Gesamttabelle in §4.5. Gewählte Form: **A zuerst, die C-Bausteine als
-> Phase 4 darauf, B punktuell, Phase 5 parallel ab Phase 1** (Q1 a, Q5 a);
-> der Umsetzungs-Abschnitt ist §15, die nicht gewählten Formen und Optionen
-> stehen mit Grund in §13. Zwei Entscheide weichen von der Empfehlung ab —
-> Q6 (b): getestete Schreibflüsse DÜRFEN umgebaut werden, wenn die Suiten im
-> selben PR mitziehen; Q8 ohne (c): die englischen Labels bleiben —, und drei
-> tragen wörtliche Autor-Zusätze (Q4, Q10, Q15), aus denen zwei Leitsätze
-> folgen (§4.5): von Hand nachgefahrene Bahnen und korrigierte
-> Buchstabengrenzen sind AUCH die Trainingsmenge, die Folger und Span-Zuordner
-> besser macht; und die Eigenhand ist das Optimierungsziel, die Platte bleibt
-> Maßstab und „so ok". Die Doktrin bleibt, wo sie ist
-> ([werkbank](optimierungs-werkbank.md) §3–§6/§8,
-> [eigenhand](eigenhand-erfassung.md) §2/§7/§12,
-> [handmodell](handmodell-stufenplan.md) §5, [vision](../concepts/vision.md)
-> „Drei Rollen"); bewegt haben die Antworten nur, was §10.2 als erklärtes
-> Proposal-Update führt — am 2026-09-18 in den Ziel-Docs vollzogen (werkbank
-> §6, eigenhand §7.3/§7.5/§8.1/§9, [tintenfolger](tintenfolger.md) §2.5), nie
-> als stille Abweichung. Den Wechsel `offen` → `teil-umgesetzt` trug die erste
-> ausgelieferte Stufe im selben PR wie ihr Code (`dokument-status.md`; §15.2).
-> Sonst enthält das Doc den Ist-Befund (§3), was bindend feststeht (§4), die
-> Eigenhand-Statistik (§6), drei Gestaltungs-Optionen (§7–§9) und die
-> Szenarien (§11); das Kritik-Protokoll der Runde davor liegt als datierte
-> Momentaufnahme in
+> **Status (2026-09-20): teil-umgesetzt.** **Die Phasen 0 und 1 sind im Code
+> ausgeliefert.** Phase 0: die neun PRs aus §15.2 (#613, #612, #611, #619, #616,
+> #618, #609, #610, #620) — offen davon genau ein Schritt, der Prod-Datenschritt
+> V1 (`UPDATE sources.hand_id`): keine Admin-Route, darum SQL auf der geteilten
+> Cloud SQL, Snapshot davor, Rückfrage in der Sitzung. Phase 1: alle acht PRs
+> aus §15.4 (#621, #622, #626, #625, #624, #627, #629, #631); die drei
+> Autor-Entscheide vom 2026-09-19 (§4.6) bewegten V2, V7 und V24 und sind mit
+> #623 gebucht. **Jede Browser-Prüfung der Phase 1 lief auf dem Wegwerf-Stack
+> mit SYNTHETISCHEN Daten** (die reservierte Menge ist nicht seedbar): die
+> GEFÜLLTEN Buchstaben-, Übergangs- und Wörter-Flächen hat vor dem Blick des
+> Autors im Prod-Admin niemand mit echten Daten gesehen (§15.4). Ein Nachzug
+> schließt die Phase: **#628**, `Typography color="text.secondary"` ist unter
+> MUI 9 wirkungslos (153 Fundstellen), Fix unterwegs. **Als Nächstes Phase 2**
+> (Tintentreue + Nachfahren, §15.1 Zeile 2), die mit einer NUR-LESENDEN
+> Erkundung beginnt. **Phase 5 wartet auf den Autor:** FM1–FM6 aus
+> [`freigabe-maschine.md`](freigabe-maschine.md) §10, der Lese-Sweep über die
+> Admin-API vor M1 (dort §12, mit Rückfrage) und V1 (§15.3). Die Phasen 3 und 4
+> sind unberührt; die offenen Geschmacksfragen aus Phase 0/1 — jede mit der
+> Empfehlung gebaut, jede mit einem Wort kippbar — sammelt §15.5. Auf Wunsch des
+> Autors entstanden („noch nichts implementieren … ich will das erst mit dir
+> durch diskutieren bevor wir umsetzen", §1).
+> **Der Rückfragen-Katalog ist seit dem 2026-09-18 beantwortet:** alle 25
+> Fragen, die Unterpunkte zu Q4 und Q24, die Vorgaben V1–V26 und der
+> Kleinkram — Entscheid-Zeile je Frage in §12, Gesamttabelle in §4.5.
+> Gewählte Form: **A zuerst, die C-Bausteine als Phase 4 darauf, B punktuell,
+> Phase 5 parallel ab Phase 1** (Q1 a, Q5 a); Umsetzung §15, das
+> Nicht-Gewählte mit Grund §13. Zwei Entscheide weichen von der Empfehlung ab
+> (Q6 b: getestete Schreibflüsse DÜRFEN umgebaut werden, wenn die Suiten im
+> selben PR mitziehen; Q8 ohne c: die englischen Labels bleiben), drei tragen
+> wörtliche Autor-Zusätze (Q4, Q10, Q15), und daraus folgen zwei Leitsätze
+> (§4.5): von Hand nachgefahrene Bahnen und korrigierte Buchstabengrenzen
+> sind AUCH die Trainingsmenge, die Folger und Span-Zuordner besser macht;
+> und die Eigenhand ist das Optimierungsziel, die Platte bleibt Maßstab und
+> „so ok". Die Doktrin bleibt, wo sie ist (werkbank §3–§6/§8, eigenhand
+> §2/§7/§12, handmodell §5, vision „Drei Rollen" — alle vier in §4.1 verlinkt);
+> bewegt haben die Antworten nur, was §10.2 als erklärtes
+> Proposal-Update führt — am 2026-09-18 in den Ziel-Docs vollzogen, nie als
+> stille Abweichung. Sonst: Ist-Befund §3, Bindendes §4, Eigenhand-Statistik §6,
+> Gestaltungs-Optionen §7–§9, Szenarien §11; Kritik-Protokoll der Runde davor:
 > [`../notes/admin-redesign-kritik-2026-09-17.md`](../notes/admin-redesign-kritik-2026-09-17.md).
 
 ## 1 Anlass
@@ -2796,9 +2796,33 @@ wer eine davon wieder aufmacht, braucht einen neuen Entscheid.
    Reihe nach (§15.4) — und, sobald der Autor es in einer Sitzung bestätigt,
    der Prod-Datenschritt V1 mit exaktem Statement und Snapshot davor
    (§15.2). Vor dem Bau der Phase 5 sind die sechs Rückfragen FM1–FM6 aus
-   [`freigabe-maschine.md`](freigabe-maschine.md) §10 zu beantworten.
+   [`freigabe-maschine.md`](freigabe-maschine.md) §10 zu beantworten. —
+   **Erledigt 2026-09-20:** alle acht Phase-1-PRs sind gemergt (#621, #622,
+   #626, #625, #624, #627, #629, #631), der Stand dazu steht in §15.4. V1
+   und FM1–FM6 sind unverändert offen.
+5. **Der nächste Schritt (Stand 2026-09-20): Phase 2 — Tintentreue +
+   Nachfahren** (§15.1, Zeile 2; Spezifikation §6.3, §6.4, §6.7). Sie
+   beginnt mit einer **nur lesenden Erkundung**: erst steht im Code und in
+   den Daten, was heute wirklich in `pfade` liegt — Format, Sensoren,
+   Span-Herkunft, wie oft die Grenzen danebenliegen —, dann wird der
+   PR-Schnitt geschrieben. Kein Schreibpfad, keine Migration, keine
+   Schwelle und keine Messung, bevor diese Erkundung steht; die
+   Kalibrierung je Hand ist ausdrücklich EINE vorregistrierte Runde
+   (Q10 b, [`eigenhand-erfassung.md`](eigenhand-erfassung.md) §7.3).
+6. **Was weiter beim Autor liegt.** Der Prod-Datenschritt V1 (§15.2) — ein
+   `UPDATE` auf der geteilten Cloud SQL, mit Snapshot davor und Rückfrage in
+   der Sitzung. Und für Phase 5 (§15.3) die sechs Rückfragen FM1–FM6 aus
+   [`freigabe-maschine.md`](freigabe-maschine.md) §10 sowie der Lese-Sweep
+   über die Admin-API vor M1 (dort §12), der ebenfalls eine Rückfrage
+   braucht. Ohne diese drei Dinge bleibt Phase 5 angehalten; Phase 2
+   hängt an keinem von ihnen.
+7. **Der eine Nachzug, der Phase 1 schließt:** Issue #628 —
+   `<Typography color="text.secondary">` ist unter `@mui/material` 9.3.1
+   wirkungslos, 153 Fundstellen rendern in voller Tinte statt in der weichen
+   (§15.4). Der Fix ist unterwegs und landet bewusst NACH den Phase-1-PRs,
+   die dieselben Dateien angefasst haben.
 
-## 15 Umsetzung der gewählten Form (Stand 2026-09-19)
+## 15 Umsetzung der gewählten Form (Stand 2026-09-20)
 
 Gewählt ist **A zuerst, die C-Bausteine als Phase 4 darauf, B punktuell,
 Phase 5 parallel ab Phase 1** (Q5 a, Q1 a). Dieser Abschnitt ist der
@@ -2806,14 +2830,17 @@ Bauplan dazu; die Spezifikation der Flächen bleibt, wo sie steht (§5–§7,
 für Phase 4 §9), hier stehen Reihenfolge, Schnitt und Bedingungen. Die
 Aufwände sind die Vermutungen aus §6.7, keine Messungen.
 
-**Stand 2026-09-19.** **Phase 0 ist gebaut** — die neun PRs aus §15.2 sind
-gemergt; offen ist allein der Prod-Datenschritt V1, der auf die Rückfrage
-in der Sitzung wartet. **Phase 1 läuft** — der Schnitt steht in §15.4, PRs
-1 und 2 sind offen. Phase 5 hat ihr erstes Doc (§15.3, Schritt 1) und ihren
-Pin-PR (Schritt 2); gebaut ist von ihr nichts, und sechs Rückfragen halten
-den Bau an. Die Phasen 2–4 sind unberührt. Die Reihenfolge der Sätze in
-§15.2–§15.4 ist die Chronologie, nicht die Nummerierung: §15.4 ist
-angehängt, weil § Nummern nie umgeschrieben werden.
+**Stand 2026-09-20** (er ersetzt den Stand 2026-09-19, der Phase 1 noch bei
+PR 2 stehen sah). **Die Phasen 0 und 1 sind gebaut** — die neun PRs aus
+§15.2 und die acht aus §15.4 sind gemergt; offen ist allein der
+Prod-Datenschritt V1, der auf die Rückfrage in der Sitzung wartet, dazu der
+eine Nachzug #628 (§15.4). **Als Nächstes Phase 2** (§15.1, Zeile 2), die
+mit einer nur lesenden Erkundung beginnt (§14, Schritt 5). Phase 5 hat ihr
+erstes Doc (§15.3, Schritt 1) und ihren Pin-PR (Schritt 2); gebaut ist von
+ihr nichts, und sechs Rückfragen plus der Lese-Sweep halten den Bau an. Die
+Phasen 3 und 4 sind unberührt. Die Reihenfolge der Sätze in §15.2–§15.5 ist
+die Chronologie, nicht die Nummerierung: §15.4 und §15.5 sind angehängt,
+weil § Nummern nie umgeschrieben werden.
 
 ### 15.1 Die Phasen 0–5
 
@@ -3002,12 +3029,12 @@ warum dieser Schnitt ohne Konfliktauflösung auskommt.
 |---|---|---|---|
 | 1 | **Vokabular** (#621) | EIN Substantiv „Bahn", Rollen-Etiketten, Herkunfts-Chip (Q8 a + b; §5.0) | das billigste Stück, und es setzt das Substantiv, das jeder spätere neue String benutzt |
 | 2 | **Eigenhand-Reiter** (#622) | der `?reiter=`-Split der Eigenhand-Seite (V2, P1-Q1 c) | er schafft den URL-Bauer mit Options-Objekt, den PR 3 um `h=` erweitert, und schrumpft `EigenhandView.tsx`, bevor PRs 3 und 4 darin arbeiten |
-| 3 | **Scope-Leiste + `h=`** | zwei Felder, die nicht schalten; `h=` optional in den `focus.ts`-Buildern (Q2 a, Q25 a; V15, V19, P1-Q3 a) | braucht den Bauer aus PR 2 und die Rollen-Konstanten aus PR 1 |
-| 4 | **Übergabekarte + `report --faellig`** | das zustandsgetriebene Kartenbauteil und sein Terminal-Zwilling (§5.1 Idee 11) | der einzige PR der Phase, der `core/` + `api/` + `tools/` + Wire-Types kreuzt — bleibt von den reinen SPA-PRs getrennt |
-| 5 | **Arbeitslisten I** | Listen-Zustand in der URL + die Buchstaben-Übersicht (V14, Teil 1) | legt `listState.ts` an, auf dem PR 6 aufsetzt |
-| 6 | **Arbeitslisten II** | Übergänge + Wörter (V14, Teil 2); die Wörter-Tabs unter `reiter=woerter\|andere\|nachgefahren` | dieselbe Locale-Datei wie PR 5 — zwei Schnitte schlagen einen großen |
-| 7 | **Nicht-Hover-Durchgang** | V25: sichtbarer Text oder `InfoHint` statt Tooltip; ein fokussierbarer Galerie-Öffner | unabhängig von beiden offenen Tastatur-Fragen; PR 8 braucht die Öffner |
-| 8 | **Tastatur** | Roving-Tabindex, Subjekt-Stepper, Kurztasten-Schalter (V24, P1-Q11 b) | verdrahtet auf den Zeilen der PRs 5–6 und den Öffnern aus PR 7; der Schalter wohnt in der Leiste aus PR 3 |
+| 3 | **Scope-Leiste + `h=`** (#626) | zwei Felder, die nicht schalten; `h=` optional in den `focus.ts`-Buildern (Q2 a, Q25 a; V15, V19, P1-Q3 a) | braucht den Bauer aus PR 2 und die Rollen-Konstanten aus PR 1 |
+| 4 | **Übergabekarte + `report --faellig`** (#625) | das zustandsgetriebene Kartenbauteil und sein Terminal-Zwilling (§5.1 Idee 11) | der einzige PR der Phase, der `core/` + `api/` + `tools/` + Wire-Types kreuzt — bleibt von den reinen SPA-PRs getrennt |
+| 5 | **Arbeitslisten I** (#624) | Listen-Zustand in der URL + die Buchstaben-Übersicht (V14, Teil 1) | legt `listState.ts` an, auf dem PR 6 aufsetzt |
+| 6 | **Arbeitslisten II** (#627) | Übergänge + Wörter (V14, Teil 2); die Wörter-Tabs unter `reiter=woerter\|andere\|nachgefahren` | dieselbe Locale-Datei wie PR 5 — zwei Schnitte schlagen einen großen |
+| 7 | **Nicht-Hover-Durchgang** (#629) | V25: sichtbarer Text oder `InfoHint` statt Tooltip; ein fokussierbarer Galerie-Öffner | unabhängig von beiden offenen Tastatur-Fragen; PR 8 braucht die Öffner |
+| 8 | **Tastatur** (#631) | Roving-Tabindex, Subjekt-Stepper, Kurztasten-Schalter (V24, P1-Q11 b) | verdrahtet auf den Zeilen der PRs 5–6 und den Öffnern aus PR 7; der Schalter wohnt in der Leiste aus PR 3 |
 
 **Regeln der Welle** — dieselben wie in §15.2, mit einem Zusatz: **dieses
 Doc fassen nur Doku-PRs an.** Die eine Ausnahme, der Statuswechsel, war
@@ -3026,3 +3053,223 @@ Text (§12.4).
 auf keinem dieser acht Wege — nichts in Phase 1 berührt Prod: keine
 Migration, kein DDL, kein Secret Manager, kein Cloudflare, kein Aufruf der
 deployten API, keine neue öffentliche Fläche.
+
+**Stand 2026-09-20 — Phase 1 ist ausgeliefert.** Alle acht PRs sind gemergt,
+in der geplanten Reihenfolge und ohne Konfliktauflösung; die drei Entscheide
+der Phase (§4.6) und der Phase-0-Abschluss stehen mit **#623** im Doc, dem
+Doku-PR der Welle. Die Wellenregeln haben gehalten:
+`tests/test_api_public_surface.py` ist über alle acht PRs unverändert, keine
+Migration, keine neue Route, und kein PR hat mit der geteilten DB oder der
+deployten API gesprochen (V17). Was jeder PR wirklich geliefert hat:
+
+1. **Vokabular — #621.** EIN Substantiv „Bahn" über sechs Locale-Namensräume
+   (25 geänderte Werte, 7 neue Schlüssel, 11 gelöscht), die Herkunft als
+   echter Chip auf dem Streifen („automatisch (Tintenpfad)" / „von Hand", ein
+   unbekanntes Verfahren roh durchgereicht) und nur „automatisch" auf der
+   Platte, die drei Rollen-Etiketten samt Glossen — dazu ein Vitest, der jedes
+   zurückgezogene Substantiv wieder rot macht (Q8 a + b, ohne c).
+2. **Eigenhand-Reiter — #622.** `/admin/eigenhand` ist EINE Route mit vier
+   Unteransichten hinter `?reiter=bestand|streifen|statistik|drucken`;
+   `EigenhandView.tsx` schrumpft von 502 auf rund 300 Zeilen, `eigenhandUrl()`
+   bekommt das Options-Objekt, das PR 3 um `h=` erweitert; die Feder der Hand
+   kommt als `nib_median` + `nib_readings` vom Server, gerechnet über die
+   Kartei statt über die hochgeschobenen Streifenbilder (V2, P1-Q1 c).
+3. **Scope-Leiste + `h=` — #626.** Eine Leiste unter dem Kopf mit zwei
+   Feldern, die nichts schalten (`Vorlage:` · `Hand:`); der Vorlagen-Chip
+   verlässt den Kopf, `handScope.ts` gießt V19 („Hand-Stil-Kopplung") in eine
+   Funktion, die Hand lebt im äußeren Provider über dem
+   `key={sourceId}`-Remount, und `h=` reist als letztes Argument durch alle
+   `focus.ts`-Bauer und jeden Korb-Link mit (Q2 a, Q25 a, P1-Q3 a; V15, V19).
+4. **Übergabekarte + `report --faellig` — #625.** `core/eigenhand/faellig.py`
+   entscheidet EINMAL, was „fällig" heißt (`setup_pull` · `universe_push` ·
+   `bogen_pull` · `sync_streifen`); die Liste reitet als Feld `faellig` auf
+   dem bestehenden reservierten Bestand-Read statt auf einer neuen Route, die
+   SPA zeigt sie als Kartenblock, und `tools.eigenhand.report --faellig`
+   druckt die Befehle des SERVERS in dessen Reihenfolge. Die vier kopierbaren
+   Hinweise sind damit ersetzt (§5.1 Idee 11, §9.2, §10.3).
+5. **Arbeitslisten I — #624.** `shell/listState.ts` (`ansicht` · `filter` ·
+   `sort` · `seite`; fremde Parameter bleiben per Ausschluss stehen, also auch
+   `h=` und `reiter=`), `shell/WorkList.tsx` und `korbTargets.ts`; die
+   Buchstaben-Übersicht ist eine kompakte Liste. Gemessen am Wegwerf-Stack mit
+   31 Buchstaben: Kartenwand 10 451 px mit 31 Bildern → Liste 3 480 px ohne
+   Bild, Standardseite 2 817 px. Kein neuer Request (V14, Teil 1).
+6. **Arbeitslisten II — #627.** Übergänge und Wörter auf demselben Modul, das
+   dafür drei OPTIONALE Achsen bekommt (`freeText` · `statuses` · `tabs`).
+   Eine Matrixzelle sagt jetzt Wort und Zahl, statt ihren Zustand in der
+   Randfarbe zu tragen — das war der eine entscheidungstragende Zustand der
+   Seite, den ein rot-grün-schwacher Leser nicht lesen konnte. 63 Wortproben:
+   20 303 px Kartenwand → 7 150 px Liste ohne Bild. Der Ankerbuchstabe zieht
+   nach `l=`, womit „Alle Kombinationen ansehen" nicht mehr beim
+   erstbesten Buchstaben aufmacht (V14, Teil 2; P1-Q5 a).
+7. **Nicht-Hover-Durchgang — #629.** Jeder Tooltip und jedes `title=` im
+   Admin ist nach EINER Frage klassifiziert — ist das Kind fokussierbar UND
+   benennt der Inhalt das Bedienelement? —, und Klasse 2 wurde sichtbarer Text
+   oder `InfoHint`. Dazu ein Fokusring-Token, ein fokussierbarer Galerie-
+   Öffner und ein Quell-Guard gegen den Rückfall. Gemessen über sieben
+   Admin-Zustände: 313 Ziele / 87 unter dem 44-px-Maß → 293 / 0; Typgröße 4
+   unter 14 px → 0 (V25, §5.1 Ideen 18–19).
+8. **Tastatur — #631.** `lib/roving.ts` plus `useRovingList.ts` machen jede
+   Liste zu EINEM Tabstopp (Buchstaben 77 → 19, Übergänge 142 → 44, Wörter
+   67 → 21 Tabstopps), der Subjekt-Stepper ‹ › liegt auf
+   **Alt+Shift+←/→** — nie auf `Alt+←/→`, das ist Zurück/Vor —, der
+   „Kurztasten"-Schalter wohnt am Ende der Scope-Leiste, und beide Messgitter
+   kennen die Werkbank mit `--admin` (mit Token 425 Ziele, ohne Token 11: die
+   tokenlose Messung war ein falsches Grün). Roving liegt bewusst NICHT unter
+   dem Schalter — es ist Struktur, keine Kurztaste (V24, P1-Q11 b).
+
+**Was an Phase 1 NICHT mit echten Daten gesehen wurde — einmal gesagt, für
+alle acht PRs.** Jede Browser-Prüfung der Welle lief auf einem Wegwerf-Postgres
+mit SYNTHETISCHEN Daten: erfundene Duktus-Pfade und Bboxen, erfundene
+Paar-Übersteuerungen, ein `wegwerf-*`-Eigenhand-Strang, dazu der committete
+gemeinfreie Wortproben-Sidecar. Die reservierte Menge — authored Templates,
+Vorkommen, Laufformen, Scores, echte Streifen — lebt allein in der geteilten
+Cloud SQL, und kein PR der Welle hat sie angefasst, auch nicht lesend (V17);
+seedbar ist sie nicht. Daraus folgt ehrlich: **die GEFÜLLTEN Flächen** — die
+Buchstabenliste mit echten Scores, die Übergangs-Matrix mit echten Vorkommen,
+die Wörterliste mit echten Bahnen und Nachfahr-Ständen — **hat vor dem Blick
+des Autors im Prod-Admin niemand mit echten Daten gesehen.** Gemessen sind
+Verhältnisse und Mechanik (Seitenhöhen, Bildzahlen, Tabstopps, Trefferflächen),
+nie Produktzahlen; die Loss-Werte, die ein Score-Durchgang über erfundene
+Geometrie erzeugt, sind nirgends als Messung zitiert. Zweitens unerreichbar
+blieb alles, was an Belegen hängt: die Ebenen-Umschalter des Wort- und
+Übergangs-Details, die Drill-Tafel und die „chip count is null"-Zwischenzustände
+sind typgeprüft und unit-getestet, nicht angesehen.
+
+**Der eine Nachzug, der die Phase schließt:** **#628** —
+`<Typography color="text.secondary">` ist unter `@mui/material` 9.3.1
+wirkungslos, weil `Typography` seinen `color`-Prop nur noch über Varianten
+auflöst (`textSecondary`, nicht `text.secondary`); 153 Fundstellen in
+`app/src` rendern darum in voller Tinte statt in der weichen, 38 davon unter
+`sections/admin`. Die Lesbarkeit leidet nicht — verloren geht die Hierarchie
+zwischen Wert und Bildunterschrift. Der Fix ist mechanisch und unterwegs; er
+landet bewusst NACH den Phase-1-PRs, die dieselben Dateien angefasst haben.
+
+### 15.5 Offene Geschmacksfragen aus Phase 0/1 — gebaut mit der Empfehlung, mit einem Wort kippbar
+
+Jeder PR der Welle trägt einen Abschnitt „Open author questions": gebaut wurde
+jeweils die Empfehlung, und jede Stelle ist ein Ein-Zeilen-Kippschalter
+geblieben. Hier stehen sie gesammelt, damit sie nicht in neun PR-Texten
+verstreut bleiben. **Das ist eine Liste, kein Entscheid** — nichts davon ist
+hier beantwortet, und ohne ein Wort des Autors bleibt alles, wie es gebaut
+ist. Die Nummern sind nur Adressen für die Antwort.
+
+**Aus Phase 0 (#620, Ebenen- und Rollen-Token)**
+
+1. **Die durchscheinende Engine-Überlagerung bleibt durchscheinend.** Opak
+   gemessen hält jede Ebene 3:1; komponiert liegt `#e34234` bei 0.42 auf
+   1.81:1 (Weiß) und 1.71:1 (Tinte), weil die Tinte darunter lesbar bleiben
+   muss. Kipp: eine höhere Deckkraft in `layerAlpha` oder
+   `mix-blend-mode: multiply` — beurteilbar erst an echten Plattendaten.
+2. **Ocker und Zinnober bleiben beide**, obwohl sie für einen Deuteranopen
+   EINE Farbe sind (ΔE ≈ 11 simuliert); getragen wird das Paar von der
+   Strichart (gestrichelt vs. durchgezogen) und der Legende. Ein vierter
+   Farbton ginge nur, wenn die 3:1-Forderung auf Weiß UND Tinte fiele — der
+   PR nennt das ausdrücklich eine sichtbare Geschmacksfrage.
+3. **Der Absetzer-Verbinder bleibt violett gepunktet.** Ein neutrales Graphit
+   wurde probiert und verschwand in der Blau→Ocker-Rampe. Kipp: `liftConnector`
+   in `app/src/styles/paper.ts`.
+
+**Aus Phase 1**
+
+4. **Der zweite Ebenen-Knopf heißt „Bewegung" neben „Bahn"** (#621, Q10 i) —
+   beide zeigen dieselbe Linie, also kann der zweite nicht auch „Bahn" heißen.
+   Kipp: `werkbank.layerPath` (plus `faceLayerPath`).
+5. **Der Platten-Herkunfts-Chip sagt nur „automatisch"** (#621, Q10 ii), weil
+   `word_instances` keinen Folger speichert und Zeilen älter als A45 sein
+   können. Kipp: `werkbank.provenanceTraced` — eine ehrliche Methodenangabe
+   bräuchte eine neue Spalte und wäre Phase-5-Größe.
+6. **`joins.drillTitle` heißt „Bahn der Platte (nachgefahren)"** (#621,
+   Q10 iii) statt des Kompositums „Platten-Bahn". Kipp: ein String.
+7. **Das URL-Wort der Eigenhand-Unteransicht ist `reiter`** (#622) — die eine
+   Ingenieursentscheidung innerhalb von P1-Q1 (c), gewählt, weil der Plan
+   dieses Wort schon den Wörter-Reitern gibt. Kipp: `EIGENHAND_PARAMS` in
+   `focus.ts`.
+8. **Der Tab-Titel der Unteransichten ist dreigliedrig** („Eigenhand ·
+   Streifen · Werkbank", #622, Q7 b). Kipp:
+   `de.admin.eigenhand.tabSubject` plus die Zusicherungen in
+   `adminTitle.test.ts`.
+9. **Der 9,6-px-Zähler in den Deckungszellen ist unangetastet** (#622,
+   Befund 9; #629, Frage 3) — so angewiesen. Der Vorschlag, jetzt wo die
+   Zellen auf 44 px gewachsen sind: auf die 14-px-Untergrenze heben und das
+   ad-hoc `fontSize` streichen. Bis zur Entscheidung meldet `type-floor.mjs`
+   ihn weiter, statt eine eingebaute Ausnahme zu tragen.
+10. **Standardsortierung „Alphabet", Seiten zu 24** mit „alle zeigen" als
+    letztem Pager-Eintrag (#624, Q6). Kipp: `LETTER_LIST_SPEC.defaultSort`
+    und `PAGE_SIZE` — je eine Konstante.
+11. **Die Übergabekarten ERSETZEN die vier kopierbaren Hinweise** (#625,
+    P1-Q8) — SetupPanel, Drucken, Quoten, Streifen, dazu der `pfadNone`-Satz.
+    Kipp: fünf `<TerminalCommand>` zurück an ihre Aufrufstellen; ihre alten
+    Locale-Schlüssel sind weg, der Text steht jetzt in den Karten.
+12. **Der Kopierknopf der Bahn-Karte gibt den Trockenlauf heraus** (#625,
+    P1-Q9), `--apply` steht nur im Reihenfolge-Hinweis. Kipp:
+    `eigenhand.uebergabe.bahnBefehl`.
+13. **`Hand: —` auf einer Vorlage, deren Schrift keine Hand hat** (#626) — und
+    im frischen Browser bis zur ersten Wahl, auch wo die Schrift eine Hand
+    HAT. Das ist V19 wörtlich genommen und das Erste, was ins Auge fällt.
+    Kipp: eine dritte Rückfallstufe in `resolveHand` — dann trägt aber jeder
+    Korb-Link einen Scope, den niemand gewählt hat.
+14. **`h=` ist Metadatum** (#626): es wird geschrieben und weitergereicht,
+    beim Ankommen aber nicht übernommen. Eine Übernahme braucht zuerst eine
+    Regel für den Fall, dass URL und Picker sich widersprechen.
+15. **Die Korb-Zahl steht als sichtbarer Text im Vorlage-Feld der Leiste**
+    (#626, P1-Q4 a). Die Alternative — ein Textlabel neben der Kopf-Flagge —
+    kostet rund 150 px in einem Kopf, den V15 auf zwei Zeilen haben will.
+16. **Bei 390 px ist die klebende Chrome 160 px hoch** (#626): zwei
+    Kopfzeilen plus 45 px Leiste. V15s Zwei-Zeilen-Kopf ist erfüllt, aber das
+    Handy trägt jetzt ein drittes Band — einen Blick wert.
+17. **Die Übergänge-Übersicht hat eine Sortierung „Meiste Vorkommen"
+    bekommen** (#627), die der Auftrag nicht verlangt hat; sie ist da, damit
+    sich die drei Übersichten wie ein System anfühlen. Kipp: eine Konstante in
+    `pairs/pairRows.ts` und zwei Locale-Strings.
+18. **Der Score-Durchgang misst weiter den GANZEN Reiter** (#627) — 63
+    sequenzielle, CPU-gebundene Anfragen —, nicht die Seite zu 24. Der
+    Phase-1-Plan selbst hält „diese Seite" für das ehrlichere Verhalten, mit
+    dem Reiter-Durchgang daneben.
+19. **Der Ankerbuchstabe der Matrix ERSETZT den History-Eintrag**, statt ihn
+    zu schieben (#627): 30 Ankerklicks sollen keine 30 Zurück-Schritte werden.
+    Kipp: ein Flag in `PairMatrix.tsx`s `pickAnchor`.
+20. **Die Wörter-URL hat sechs deutsche Achsen** (#627, P1-Q5 a). Jedes Token
+    ist eine Zeile in `words/wordRows.ts` — aber ein späterer Wechsel macht
+    jeden schon geteilten Link ungültig.
+21. **Das Korb-Badge im Kopf ist weg** (#629, Frage 1): die Flagge ist ein
+    nacktes Symbol, die Zahl steht sichtbar in der Scope-Leiste und im
+    `aria-label`. Das erfüllt Q4 (a) ganz und nimmt die letzte 12-px-Type aus
+    dem Admin, verändert aber ein täglich benutztes Bedienelement. Kipp: ein
+    `<Badge>` in `AdminHeader.tsx`.
+22. **Die Deckungszellen sind von rund 33 auf 44 × 44 px gewachsen** (#629,
+    Frage 2). Das Raster liest sich weiter gut, ist aber breiter. Kipp: die
+    Untergrenze an den `sm`-Breakpoint hängen — eine Zeile in
+    `BestandView.tsx`.
+23. **`ScoreHelp` steht je ZEILE** (#629, Frage 5), eine 24er-Seite trägt also
+    24 (i)-Marken. Die Alternative ist EINE Hilfe in der Werkzeugleiste: ein
+    Stopp statt 24, aber die Erklärung wandert von den Zahlen weg. Kipp: ein
+    Komponentenaufruf wandert aus `LetterList`s Zeile in die Werkzeugleiste.
+24. **Die Buchstaben-Navigationschips im Wort-Detail sind auf 44 px
+    gewachsen** (#629, Frage 6) und wirken klobiger als die 28-px-Chips
+    daneben. Kipp: der Ausnahmepfad aus `design-system.md` §9.3 statt der
+    gewachsenen Fläche.
+25. **Der Statuspunkt des Buchstaben-Pickers trägt seinen Zustand jetzt auch
+    in der FORM** (#631, Frage 1): gefüllte Scheibe = Canonical, hohler Ring =
+    nur Bbox, gleiche 8-px-Fläche, Farben weiter aus den Token. Im
+    Design-System steht er als „Vorschlag umgesetzt, Autorentscheid steht
+    aus". Kipp: `border`/`bgcolor` in `shell/LetterPicker.tsx`.
+26. **Roving-Listen liegen NICHT unter dem „Kurztasten"-Schalter** (#631,
+    Frage 2) — Roving ist Struktur, keine Kurztaste; abgeschaltet wäre eine
+    Liste entweder wieder 190 Tabstopps oder nicht durchlaufbar. Kipp: eine
+    Bedingung in `useRovingList`.
+27. **Die Kartenwand hinter „Galerie" (156 Stopps) und die Nachfahr-Übersicht
+    haben KEIN Roving bekommen** (#631, Frage 4) — sie lagen außerhalb der
+    vier Flächen des Auftrags und sind die nächste offensichtliche Nutzung
+    desselben Hooks.
+28. **Die veröffentlichte Subjekt-Reihenfolge lebt nur im Speicher** (#631,
+    Frage 3): ein Reload oder ein geteilter Deep-Link fällt auf die
+    Registerfolge zurück — und sagt das in der Bildunterschrift. Kipp: das
+    Detail leitet die Reihenfolge einmal selbst her, sobald die
+    Werkbank-Daten stehen, mit der veröffentlichten als schnellem Pfad.
+
+Zwei Dinge aus derselben Sammlung sind KEINE Geschmacksfragen und stehen
+darum nur als Notiz hier: die Arbeitslisten bleiben ohne zusammengesetzte
+ARIA-Rolle — die ehrliche Form wäre `grid`/`row`/`gridcell` und ein Umbau
+dreier Komponenten, festgehalten als Folgearbeit in `design-system.md` §9.5
+— und `keepHand` in `focus.ts` hat seit #627 keine Aufrufstelle mehr, weil
+alle Ansichten ihre Query mergen statt sie zu überschreiben.
