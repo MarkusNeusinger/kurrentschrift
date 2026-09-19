@@ -4319,9 +4319,12 @@ dasselbe sind — eine neue Zeile mit Pflicht-Grund; der ausgelieferte Stand
 einer Hand ist ihre jüngste Zeile. Aufgelöst wird über die Quelle in der
 öffentlichen URL: Quelle → `sources.hand_id` → Hand → Stand. Darum können
 nach dem Rollenwechsel zwei Hände EINER Schrift zugleich ausliefern — das
-Quiz bleibt bei der Platte, die Schreib-Flächen wechseln zur Eigenhand. Die
-laufende Nummer der Zeile ist die **Auslieferungs-Nummer**, der Stempel für
-den Randcache. *Technisch:* nichts gebaut; Arbeitsname `hand_deliveries`,
+Quiz bleibt bei der Platte, die Schreib-Flächen wechseln zur Eigenhand. Jede
+Zeile trägt eine **Auslieferungs-Nummer** — je Hand fortlaufend, nie
+wiederverwendet, eine eigene Spalte statt des generierten Schlüssels, damit
+sie einen Archiv-Restore unverändert übersteht. Sie ist der Stempel für den
+Randcache (`&v=`), und der Server prüft sie: eine fremde Nummer wird nie
+gecacht. *Technisch:* nichts gebaut; Arbeitsname `hand_deliveries`,
 `POST /hands/{hand_id}/deliveries`. → Freigabe-Maschine;
 proposals/freigabe-maschine.md §5
 

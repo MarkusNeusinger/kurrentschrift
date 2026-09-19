@@ -19,8 +19,8 @@
 > Quelle → Hand → jüngste Zeile — nicht je Schrift, weil das Quiz bei 1922
 > bleibt (§5.1). Öffentlich ist genau der ausgelieferte Stand, sonst nichts
 > ≥ 100; dazu ein zweites, bisher ungenanntes Leck in der öffentlichen
-> Template-Liste (§3 Zeile 6, §5.2). Randcache: die Nummer der
-> Zeiger-Zeile als URL-Stempel (§5.3). Regression je Hand: die Platte am
+> Template-Liste (§3 Zeile 6, §5.2). Randcache: die Auslieferungs-Nummer
+> als vom Server geprüfter URL-Stempel (§5.3). Regression je Hand: die Platte am
 > eingefrorenen Lineal, die Eigenhand OHNE Kopfzahl (§6). Rollback = eine
 > angehängte Zeile; das Archiv bleibt create-only und ist nicht mehr der
 > Rollback (§7). Der Admin zeigt Zahlen, Stände und Protokoll — keine Marke,
@@ -185,7 +185,13 @@ ist nicht mehr rekonstruierbar.
 
 ### 4.3 Wie ein Stand entsteht
 
-Ein Apply wird **kopieren-dann-einfügen**, in EINER Transaktion:
+Ein Apply wird **kopieren-dann-einfügen**, in EINER Transaktion, und je
+Hand SERIALISIERT: die Transaktion sperrt zuerst die Zeile der Hand
+(`SELECT … FOR UPDATE`; auf SQLite, wo die HTTP-Suiten laufen, ein
+No-op — dort schreibt ohnehin nur einer). „Höchster Index + 1" ist sonst
+ein Wettlauf: zwei gleichzeitige Applies läsen dasselbe Maximum. Die
+Eindeutigkeit des Kopfs (§4.4) bleibt die zweite Sicherung — der Verlierer
+bekommt ein sauberes 409 und nie einen halb geschriebenen Stand.
 
 1. nächste Nummer = Band-Basis + (höchster Index + 1);
 2. der **Vorgänger** ist die laufende **Arbeitslinie** der Hand: ihr jüngster
@@ -261,6 +267,17 @@ Schema-PR), eine Zeile je Stand, ohne UPDATE-Pfad:
 Das ist keine neue Rechnung — jede dieser Zahlen wird heute schon
 berechnet und mit der HTTP-Antwort weggeworfen.
 
+**Die Zugehörigkeit ist strukturell, nicht nur eine Routen-Prüfung** — wie
+`uq_template_style_key_variant` es für die Templates hält: der Kopf ist
+eindeutig über `(style_id, variant)` UND über `(hand_id, style_id,
+variant)`; auf den zweiten Schlüssel zeigen zusammengesetzte Fremdschlüssel
+— `(hand_id, style_id, parent_variant)` im Kopf selbst und `(hand_id,
+style_id, stand_variant)` sowie `… previous_variant` im Zeiger (§5.1). Ein
+Vorgänger oder eine Auslieferung, die auf einen fehlenden Stand oder auf
+den einer ANDEREN Hand zeigt, ist damit ein Constraint-Fehler — auch für
+eine Migration, einen Restore oder einen späteren Repository-Aufrufer, die
+an der Route vorbeischreiben.
+
 ### 4.5 Was am Stand hängt: Paar-Übersteuerungen und Feder
 
 **Paar-Übersteuerungen (Q23 a).** Zwei Dinge sind zu sagen.
@@ -316,12 +333,19 @@ zurück (FM2, Unterpunkt ii).
 ### 5.1 Die Kette: Quelle → Hand → ausgelieferter Stand
 
 Eine Tabelle `hand_deliveries` (Arbeitsname), **nur anhängend**:
-`hand_id · style_id · stand_variant · previous_variant · kind`
-(`auslieferung` | `rollback`) `· reason` (Pflicht) `· evidence` (Verweise:
-§14-Anker, humanbench-Runde, Snapshot-Stempel) `· delivered_at`. **Der
-ausgelieferte Stand einer Hand ist die jüngste Zeile dieser Hand.** Die
-laufende `id` der Zeile ist zugleich die **Auslieferungs-Nummer** — der
-Stempel für den Randcache (§5.3).
+`hand_id · style_id · delivery_no · stand_variant · previous_variant ·
+kind` (`auslieferung` | `rollback`) `· reason` (Pflicht) `· evidence`
+(Verweise: §14-Anker, humanbench-Runde, Snapshot-Stempel) `·
+delivered_at`. **Der ausgelieferte Stand einer Hand ist die jüngste Zeile
+dieser Hand**; dass er existiert und ihr gehört, hält der zusammengesetzte
+Fremdschlüssel aus §4.4. `delivery_no` ist die **Auslieferungs-Nummer** —
+der Stempel für den Randcache (§5.3): je Hand fortlaufend, eindeutig, nie
+wiederverwendet, vergeben unter derselben Hand-Sperre wie eine
+Stand-Nummer (§4.3). Bewusst eine EIGENE Spalte und nicht der generierte
+Primärschlüssel: der Restore des Archivs verwirft generierte
+Integer-Schlüssel (`tools/dbsnapshot/restore.py::rows_for`), und eine
+Nummer, die der Randcache kennt, darf nach einem Restore nicht neu vergeben
+werden (§7).
 
 Die öffentlichen Routen sind quellen-gebunden
 (`/sources/{source_id}/write/*`). Die Auflösung ist darum:
@@ -405,11 +429,19 @@ eine Akt ist, der sofort wirken muss. Vorschlag (FM5):
   neuer Cache-Schlüssel je Zeiger-Bewegung. Die SPA holt sie einmal je
   Seitenaufruf von der Stempel-Route (30 s). Eine Auslieferung und ein
   Rollback sind damit nach etwa einer Minute überall sichtbar.
-- **Die Nummer der ZEILE, nicht die des Stands.** Ein Rollback auf 202
-  bekäme sonst den alten Schlüssel `v=202` zurück, und ein veralteter
+- **Die Nummer der AUSLIEFERUNG, nicht die des Stands.** Ein Rollback auf
+  202 bekäme sonst den alten Schlüssel `v=202` zurück, und ein veralteter
   Client könnte einen Schlüssel mit dem Inhalt eines anderen Stands füllen.
-  Eine Zeilen-Nummer kommt nie wieder; der Server muss `v` nicht einmal
-  prüfen (unbekannte Query-Parameter ignoriert er heute schon, siehe `&t=`).
+  Eine Auslieferungs-Nummer kommt nie wieder.
+- **Der Server PRÜFT `v`.** Die Nummern sind vorhersagbar: wer heute
+  `&v=<nächste Nummer>` fragt, legte sonst den HEUTIGEN Stand unter dem
+  künftigen Schlüssel in den Rand, und die nächste Auslieferung bekäme für
+  diese URL einen Tag lang das alte Bild. Darum: stimmt ein mitgeschicktes
+  `v` nicht mit der aktuellen Auslieferungs-Nummer der Hand überein,
+  antwortet die Route mit dem aktuellen Inhalt, aber `no-store` — ein
+  fremder Schlüssel wird nie gefüllt. Der Zeiger ist je Anfrage ohnehin
+  gelesen, die Prüfung kostet nichts; ein Test pinnt beide Richtungen
+  (künftige und veraltete Nummer). Ohne `v` bleibt alles wie heute.
 - Kein Cloudflare-Zugang im API-Image. Für die URLs OHNE Stempel —
   Assistenten, fremde Clients — bleibt der Rand bis zu einem Tag alt; nach
   einem Rollback wegen eines sichtbar falschen Schriftbilds ist ein
@@ -576,14 +608,27 @@ Konkret:
   Die Leitplanke „vor allem, was Geometrie überschreiben kann" bleibt
   wörtlich stehen; ein create-only Apply überschreibt nichts mehr, aber die
   Regel wird nicht gelockert, bevor die Bauart sich bewährt hat;
-- `tools/dbsnapshot/fetch.py` lernt die zwei Tabellen und liest die Stände
-  über das reservierte Inventar — die öffentliche Liste versteckt sie
-  künftig (§5.2). Beides VOR dem ersten Stand jenseits von 100, sonst
-  sichert der Snapshot weniger, als existiert;
+- `tools/dbsnapshot/fetch.py` lernt die zwei Tabellen — mit M1b, denn ab
+  dort trägt der Zeiger die Seite — und liest die Stände über das
+  reservierte Inventar, weil die öffentliche Liste sie künftig versteckt
+  (§5.2): das VOR dem ersten Stand jenseits von 100 (M2), sonst sichert der
+  Snapshot weniger, als existiert;
 - weil nie ein Stand gelöscht wird, schlägt der Schrumpf-Alarm
   (`check_plausible`) durch die Maschine nie an;
+- **`restore.py` zieht mit den zwei Tabellen mit (M1b).** Heute lädt es nur
+  `bboxes` und
+  `templates` zurück und verwirft generierte Integer-Schlüssel (`rows_for`)
+  — alles Übrige gilt dort als wieder ableitbar. Kopf und Zeiger sind es
+  NICHT: ein Restore ohne sie brächte die Stand-Zeilen zurück, aber keine
+  Auslieferung, und die Seite schriebe still nur noch mit der Tafel. Beide
+  Tabellen werden darum Teil des Restores (die Eltern zuerst: Hand, Kopf,
+  dann Zeiger) — unter FM1 (a) auch `glyph_pairs`, die er heute gar nicht
+  zurücklädt —, `delivery_no` kommt als Datum unverändert mit (§5.1), und
+  ein Rundlauf-Test gegen das Wegwerf-Postgres beweist es: Snapshot →
+  Restore → derselbe ausgelieferte Stand, dieselbe Auslieferungs-Nummer,
+  bytegleiche `/write/word`-Antwort;
 - der Restore bleibt Ganz-Tabellen-Werkzeug, Prod-berührend, mit
-  Rückfrage — und kein Teil der Maschine.
+  Rückfrage — und kein Teil des ROLLBACKS.
 
 **Kosten.** Ein Snapshot liest je Template-Zeile einmal; 100 Stände × rund
 60 Zeilen sind einige tausend Anfragen. Das sind Minuten, nicht Stunden, und
@@ -696,7 +741,8 @@ Rollback-Knopf, eine Snapshot-Checkbox (das verworfene Schein-Gate).
   Autors): Wiederverwendung ist Überschreiben mit Umweg.
 - **Der Stand-Stempel `?v=<Stand-Nummer>`** (Tag des Autors): die Idee ist
   übernommen, der Schlüssel nicht — ein Rollback brächte eine alte Nummer
-  zurück (§5.3); gestempelt wird die Nummer der Zeiger-Zeile.
+  zurück (§5.3); gestempelt wird die Auslieferungs-Nummer, und der Server
+  prüft sie.
 - **„Sechs Hände erschöpfen die 0..999"** (Datenmodell): Varianten-Nummern
   gelten je Schrift, nicht global (§4.2).
 - **Ein Purge-Token in der API** (als Frage in Freigabe-Sicherheit): kein
@@ -786,9 +832,10 @@ Ohne Entscheid: (a) ohne den Purge-Schritt.
 
 **FM6 — Eine Schrift mit zwei Platten-Händen** *(blockiert: M1 — aber nur,
 wenn der Lese-Sweep den Fall zeigt; heute käme allein Kurrent in Frage)*
-Kontext: Kurrent hat zwei Tafel-Quellen zweier Hände, aber EINEN
-Template-Satz — Buchstaben von der einen Tafel, Ziffern von der anderen.
-Heute schreiben beide Quellen mit denselben Variante-100-Zeilen; mit dem
+Kontext: Kurrent hat zwei Tafel-Quellen zweier Hände, aber — wie jede
+Schrift — EINEN Template-Satz: die Buchstaben von der einen Tafel, die
+Ziffern nach Migration `0012` von der anderen (ob sie schon autorisiert
+sind, ist nicht gelesen). Heute schreiben beide Quellen mit denselben Variante-100-Zeilen; mit dem
 Zeiger je Hand schriebe die Quelle, deren Hand Stand 100 NICHT gehört, ab
 M1b nur noch mit der Tafel (§5.4). Ob Kurrent überhaupt
 Variante-100-Zeilen trägt, ist nicht gelesen (§12).
@@ -835,8 +882,8 @@ Engineering-Defaults; der Autor kippt jede mit einem Wort.
 |---|---|---|---|
 | **M0** | dieses Doc | Schritt 1 | `/write-docs` · nein |
 | **M1** Schema + Saat | im gebündelten Schema-PR: `hands.laufform_variant` als Band-BASIS mit `UNIQUE (style_id, laufform_variant)`; `laufform_stands`, `hand_deliveries`; die Saat „Bestand = Stand 100" + erste Zeiger-Zeile, mit Abbruch statt stillem Verlust (§5.4); `glyph_pairs.hand_id` MIT erweitertem Eindeutigkeits-Schlüssel (§4.5); der Satz in `architektur.md` §3. Der Lesepfad liest noch die Konstante | Schritt 3 — setzt den Prod-Schritt V1 voraus | `/verify-migrations`, Snapshot davor · ja (Migrations-Job) |
-| **M1b** Zeiger lesen, Lecks schließen | `compose_word_payload` liest den Zeiger und die Paare der Hand der Quelle; die zwei öffentlichen Regeln aus §5.2 mit ihren Tests; `write-api.md`. Beweis: bytegleiche Antwort (§5.4) | direkt nach Schritt 3, vor Schritt 6 | `/verify-api`, `/verify-core` · nein |
-| **M2** Apply schreibt Stände | kopieren-dann-einfügen, Kopf-Zeile, kein Stand ohne Änderung; PUT/DELETE als Stand-Operationen; Band-Regel; reservierte Reads `stands` · `deliveries`; `dbsnapshot` lernt Inventar und die zwei Tabellen; der Feder-Pool nach FM2 (i). Umbau getesteter Flüsse, Suiten ziehen mit (Q6 b) | VOR Schritt 6 — damit schon der erste Eigenhand-Apply Stand 200 anlegt | `/verify-api`, `/verify-core`; bei FM2 (i) a Vorher-/Nachher-Zahlen · nein |
+| **M1b** Zeiger lesen, Lecks schließen | `compose_word_payload` liest den Zeiger und die Paare der Hand der Quelle; die zwei öffentlichen Regeln aus §5.2 mit ihren Tests; `write-api.md`. Beweis: bytegleiche Antwort (§5.4). Im selben PR lernt `dbsnapshot` die zwei Tabellen — `fetch.py` UND `restore.py`, mit Rundlauf-Test (§7): ab hier trägt der Zeiger die Seite | direkt nach Schritt 3, vor Schritt 6 | `/verify-api`, `/verify-core` · nein |
+| **M2** Apply schreibt Stände | kopieren-dann-einfügen unter der Hand-Sperre, Kopf-Zeile, kein Stand ohne Änderung; PUT/DELETE als Stand-Operationen; Band-Regel; reservierte Reads `stands` · `deliveries`; `dbsnapshot` liest die Stände über das reservierte Inventar (§7); der Feder-Pool nach FM2 (i). Umbau getesteter Flüsse, Suiten ziehen mit (Q6 b) | VOR Schritt 6 — damit schon der erste Eigenhand-Apply Stand 200 anlegt | `/verify-api`, `/verify-core`; bei FM2 (i) a Vorher-/Nachher-Zahlen · nein |
 | **M3** Vorschau mit `?stand=` | die reservierte Hand-Vorschau für Wort und Glyphen; die drei Admin-Flächen ziehen von der öffentlichen Route um; die SPA-Konstante `LAUFFORM_VARIANT` wird ein Datum | = Schritt 7, um `stand` erweitert | `/verify-api`, `/verify-frontend` gegen den Wegwerf-Stack · nein |
 | **M4** Auslieferung | `POST …/deliveries`; die Stempel-Route und `&v=` in der SPA (FM5); `tools/freigabe` (`status` · `vergleich` · `deliver` · `rollback`); Runbook als Skill. Die Werkzeug-Leser aus §3, Zeile 12 folgen dem Zeiger statt der Konstanten — VOR der ersten Auslieferung eines Stands ≠ 100, sonst finden sie nach ihr keine Laufform mehr | nach Schritt 7 | `/verify-api`, `/verify-frontend` · der erste echte Aufruf ja |
 | **M5** Regression je Hand | Fixture-Export `--stand`; die Gegenprobe an der Platte (§6.3); der Bericht Deckung · Beleglage · Formbewegung; nach FM3 die Rückhalte-Messung mit §14-Vorregistrierung; die blinde Runde für Nr. 1 (FM4) | die Rückhaltemenge VOR Schritt 4, das Übrige nach Schritt 6 | `/verify-trace`-Disziplin · nein |
@@ -863,9 +910,12 @@ Rückhaltemenge schon in den Aggregaten.
   keinem Protokoll (wie heute). M1b und M2 gehören kurz hintereinander,
   und M2 kommt nie vor M1b: ein zweiter Stand, den der Lesepfad nicht
   kennt, wäre eine zweite Wahrheit.
-- **Der Snapshot hinkt hinterher**, wenn M2 ohne die `dbsnapshot`-Änderung
-  ausgeliefert wird: Stände jenseits des ausgelieferten wären nicht
-  gesichert. Beides ist EIN PR.
+- **Der Snapshot hinkt hinterher** — zweimal möglich. Liest M1b den Zeiger,
+  bevor `fetch.py` und `restore.py` Kopf und Zeiger kennen, brächte ein
+  Restore die Stand-Zeilen ohne Auslieferung zurück, und die Seite schriebe
+  nur noch mit der Tafel. Und legt M2 Stände an, bevor der Snapshot das
+  reservierte Inventar liest, wären Stände jenseits des ausgelieferten nicht
+  gesichert. Beide Male gilt: EIN PR (§7, §11).
 - **Die Tafel bewegt sich unter einem Stand weg.** Ein Wizard-Re-Trace
   ändert Variante 0 sofort; die Laufform-Zeile hält die ALTEN Breiten und
   Anschlüsse ihrer Tafel-Zeile. Das ist heute schon so und wird mit der
