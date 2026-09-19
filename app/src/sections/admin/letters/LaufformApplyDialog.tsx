@@ -277,7 +277,7 @@ export function LaufformApplyDialog({
                               // are the muted ones. It asked for `warning.main`
                               // until now, which Typography never resolved; and
                               // Ocker is 3,37:1 and therefore no colour for a
-                              // number either (design-system.md §9).
+                              // number either (design-system.md §2).
                               <Typography variant="caption" color="textPrimary">
                                 {row.dev.toFixed(3)}
                               </Typography>

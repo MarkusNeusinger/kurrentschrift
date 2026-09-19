@@ -224,7 +224,7 @@ export function ChartToolbar({
           It asked for `warning.main` as a second channel beside the wording.
           Typography never resolved that dotted path, and Ocker would be the
           wrong channel anyway: 3,37:1 is a colour for a graphical mark, not for
-          a line of text. The wording carries it and the line stays ink (§9). */}
+          a line of text. The wording carries it and the line stays ink (§2). */}
       {blockedReasons.length > 0 && (
         <Typography variant="caption" color="textPrimary" sx={{ flexBasis: '100%' }}>
           {blockedReasons.join(' · ')}

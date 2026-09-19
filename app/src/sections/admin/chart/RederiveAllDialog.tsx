@@ -30,6 +30,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useAdmin } from '@/context/adminState';
 import { knownGlyph } from '@/domain/glyphs';
 import { getQuality, postResample } from '@/lib/api';
+import { scoreDeltaColor } from '@/sections/admin/quality/scoreColors';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
 import { mono } from '@/styles/paper';
@@ -54,10 +55,13 @@ interface RederiveRow {
 // not a meaningful improvement/regression.
 const DELTA_EPSILON = 0.5;
 
+// Outside the epsilon band the sign decides, and which TONE a signed score
+// delta wears is `scoreColors.ts`'s call — raw `success.main` (Viridian
+// `#40826d`) is 3,72:1 on this dialog's card ground, below AA for a 17 px
+// number, so the improvement takes the viridian text shade there.
 function deltaColor(delta: number): string {
-  if (delta > DELTA_EPSILON) return 'success.main';
-  if (delta < -DELTA_EPSILON) return 'error.main';
-  return 'text.secondary';
+  if (Math.abs(delta) <= DELTA_EPSILON) return 'text.secondary';
+  return scoreDeltaColor(delta);
 }
 
 export function RederiveAllDialog({ open, onClose }: Props) {

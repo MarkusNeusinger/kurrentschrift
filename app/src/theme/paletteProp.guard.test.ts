@@ -80,8 +80,12 @@ const VARIANT_COLOR_COMPONENTS = new Set([
   'Typography',
 ]);
 
-/** A dotted palette path in a `color=` attribute value, quoted or in braces. */
-const DOTTED_COLOR = /(?:^|\s)color=\{?[^}]*['"][a-zA-Z]+\.[a-zA-Z]+['"]/;
+/**
+ * A dotted palette path, in any of the three spellings the tree has carried:
+ * a quoted literal (`'text.secondary'`), the same inside a ternary, and the
+ * interpolated head the score breakdown used (`` `${tier}.main` ``).
+ */
+const DOTTED_PALETTE = /['"`][a-zA-Z]+\.[a-zA-Z]+|\$\{[^}]*\}\.[a-zA-Z]+/;
 
 function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
@@ -116,6 +120,42 @@ function openingTags(source: string): [string, string][] {
   return tags;
 }
 
+/**
+ * The value of every `color=` attribute in one tag's attribute text, and
+ * nothing of its neighbours — the quoted string (quotes kept) or the braced
+ * expression (braces dropped, nesting respected).
+ *
+ * Slicing the value out first is what keeps the check honest. Reading the rest
+ * of the tag along with it would trip on the very `sx={{ color: 'text.…' }}`
+ * this guard promises to leave alone, and stopping at the first `}` would let
+ * an expression with a nested object escape.
+ */
+function colorValues(attrs: string): string[] {
+  const values: string[] = [];
+  const attribute = /(?:^|\s)color=/g;
+  while (attribute.exec(attrs) !== null) {
+    const start = attribute.lastIndex;
+    const opener = attrs[start];
+    if (opener === '"' || opener === "'") {
+      const end = attrs.indexOf(opener, start + 1);
+      values.push(attrs.slice(start, end === -1 ? attrs.length : end + 1));
+    } else if (opener === '{') {
+      let depth = 0;
+      let index = start;
+      while (index < attrs.length) {
+        if (attrs[index] === '{') depth += 1;
+        else if (attrs[index] === '}' && (depth -= 1) === 0) break;
+        index += 1;
+      }
+      values.push(attrs.slice(start + 1, index));
+    }
+  }
+  return values;
+}
+
+/** Does one tag's attribute text carry a dotted palette path on `color`? */
+const flags = (attrs: string): boolean => colorValues(attrs).some((value) => DOTTED_PALETTE.test(value));
+
 /** Does this tag resolve `color` through the variant lookup? */
 const usesVariantColor = (tag: string): boolean =>
   VARIANT_COLOR_COMPONENTS.has(tag) || (tag.endsWith('Icon') && /^[A-Z]/.test(tag));
@@ -128,7 +168,9 @@ describe('palette paths on the `color` prop', () => {
     for (const [path, source] of files) {
       for (const [tag, attrs] of openingTags(source)) {
         if (!usesVariantColor(tag)) continue;
-        if (DOTTED_COLOR.test(attrs)) offenders.push(`${path}: <${tag}>`);
+        for (const value of colorValues(attrs)) {
+          if (DOTTED_PALETTE.test(value)) offenders.push(`${path}: <${tag} color=${value}>`);
+        }
       }
     }
     expect(offenders).toEqual([]);
@@ -142,24 +184,36 @@ describe('palette paths on the `color` prop', () => {
 
     const offending = openingTags('<Typography variant="caption" color="text.secondary">x</Typography>');
     expect(offending[0][0]).toBe('Typography');
-    expect(DOTTED_COLOR.test(offending[0][1])).toBe(true);
+    expect(flags(offending[0][1])).toBe(true);
 
-    // And the computed form the score breakdown used to carry.
-    const computed = openingTags("<Typography color={bad ? 'error.main' : 'textSecondary'}>x</Typography>");
-    expect(DOTTED_COLOR.test(computed[0][1])).toBe(true);
+    // Every spelling the tree actually carried before the fix: the computed
+    // form of the score breakdown, its interpolated twin, and one with a
+    // nested object in the expression — which a `[^}]*` scan would miss.
+    const bad = [
+      "<Typography color={bad ? 'error.main' : 'textSecondary'}>x</Typography>",
+      '<Typography color={`${tier}.main`}>x</Typography>',
+      "<Typography color={pick({ a: 1 }) ? 'textPrimary' : 'error.main'}>x</Typography>",
+    ];
+    for (const snippet of bad) {
+      expect(flags(openingTags(snippet)[0][1]), snippet).toBe(true);
+    }
   });
 
   it('leaves `sx`, the simple keys and the other system props alone', () => {
     const legal = [
       '<Typography variant="caption" sx={{ color: \'text.secondary\' }}>x</Typography>',
       '<Typography variant="caption" color="textSecondary">x</Typography>',
+      // A palette path on a NEIGHBOURING attribute of the same tag: legal, and
+      // the shape a value-blind scan reports as an offence.
+      '<Typography color="textSecondary" sx={{ bgcolor: \'background.paper\' }}>x</Typography>',
+      '<Typography color="textDisabled" title="a.b">x</Typography>',
       '<Chip size="small" color="warning" />',
       '<LinearProgress color={color} />',
       '<Box sx={{ bgcolor: \'background.paper\' }} borderColor="divider" />',
     ];
     for (const snippet of legal) {
       for (const [, attrs] of openingTags(snippet)) {
-        expect(DOTTED_COLOR.test(attrs), snippet).toBe(false);
+        expect(flags(attrs), snippet).toBe(false);
       }
     }
   });

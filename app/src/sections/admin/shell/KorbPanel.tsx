@@ -242,7 +242,7 @@ function ItemRow({
             // 3,37:1, Viridian 3,72:1). The returned line is carried by full
             // ink plus its own group heading („Zurückgegeben"); the resolved
             // one takes the viridian TEXT shade, which clears AA
-            // (design-system.md §9).
+            // (design-system.md §2).
             sx={{
               display: 'block',
               mt: 0.25,

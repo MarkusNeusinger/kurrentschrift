@@ -294,7 +294,7 @@ export function LetterOverview({ onPick }: { onPick: (glyphKey: string) => void 
             {/* Full ink against the muted hand line above it — that IS the
                 second channel. It asked for `warning.main` until now, which
                 Typography never resolved, and Ocker on a caption is 3,37:1
-                anyway; the warning is in the sentence (design-system.md §9). */}
+                anyway; the warning is in the sentence (design-system.md §2). */}
             {mixedNote && (
               <Typography variant="caption" color="textPrimary" sx={{ display: 'block' }}>
                 {mixedNote}
