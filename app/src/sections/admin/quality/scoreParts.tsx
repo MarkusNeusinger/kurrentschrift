@@ -14,6 +14,7 @@ import { Box, Chip, LinearProgress, Stack, Tooltip, Typography } from '@mui/mate
 
 import type { QualityData } from '@/lib/api';
 import { de } from '@/locales/admin';
+import { mono } from '@/styles/paper';
 import { labelColumnChars } from './labelColumn';
 
 // Module-private on purpose: a score reaches the screen through ScoreChip, so
@@ -114,7 +115,7 @@ export function ScoreBreakdown({
                 <Typography
                   variant="caption"
                   tabIndex={0}
-                  sx={{ width: LABEL_COL_WIDTH, flexShrink: 0, fontFamily: 'monospace', cursor: 'help' }}
+                  sx={{ width: LABEL_COL_WIDTH, flexShrink: 0, fontFamily: mono, cursor: 'help' }}
                 >
                   {t.cat[r.key]}
                 </Typography>
@@ -127,7 +128,7 @@ export function ScoreBreakdown({
               />
               <Typography
                 variant="caption"
-                sx={{ width: 36, textAlign: 'right', fontFamily: 'monospace' }}
+                sx={{ width: 36, textAlign: 'right', fontFamily: mono }}
                 color={color === 'primary' ? 'text.secondary' : `${color}.main`}
               >
                 {r.val.toFixed(2)}
@@ -174,7 +175,7 @@ export function ScoreBreakdownInline({ quality }: { quality: QualityData }) {
               {t.cat[r.key]}{' '}
               <Box
                 component="span"
-                sx={{ fontFamily: 'monospace', color: color === 'primary' ? 'text.secondary' : `${color}.main` }}
+                sx={{ fontFamily: mono, color: color === 'primary' ? 'text.secondary' : `${color}.main` }}
               >
                 {r.val.toFixed(2)}
               </Box>

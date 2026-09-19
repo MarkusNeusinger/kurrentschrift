@@ -276,7 +276,7 @@ export const admin = {
     // cell), shown as the same evidence card the Wörter view uses.
     drillTitle: 'Bahn der Platte (nachgefahren)',
     drillCaption:
-      'Die Verbindungs-Platte genau dieser Kombination — grün die Bahn, rot darüber die Engine-Tinte, beide in derselben vermessenen Registrierung; rechts schreibt das System dieselbe Verbindung im gleichen Maßstab.',
+      'Die Verbindungs-Platte genau dieser Kombination — die Bahn, darüber die Engine-Tinte, beide in derselben vermessenen Registrierung; rechts schreibt das System dieselbe Verbindung im gleichen Maßstab. Welche Linie welche ist, sagen die Schalter darüber.',
     occurrencesTitle: 'Vorkommen ({{count}})',
     occurrencesCaption:
       'Jede herausgezogene Verbindung als Ausschnitt der Platte — die Tinte selbst, mit dem Abstand Δ zum generierten Zug. Ein Klick springt in das Wort, in dem sie steht.',
@@ -432,7 +432,7 @@ export const admin = {
     colLaufform: 'Laufform',
     colSketch: 'Median & Vorkommen',
     colSketchHint:
-      'Kräftig: der Median je Anker über den Vorkommen dieser Hand · dünn: die einzelnen Vorkommen · Kreise: MAD-Streuung · gestrichelt rot: die aktuell geschriebene Laufform · Linien: Grund- und Mittellinie.',
+      'Kräftig: der Median je Anker über den Vorkommen dieser Hand · dünn: die einzelnen Vorkommen · Kreise: MAD-Streuung · gepunktet: die aktuell geschriebene Laufform · Linien: Grund- und Mittellinie.',
     noLaufformShort: 'noch keine Laufform',
     // Two different answers, deliberately not one: below the rebuild's minimum
     // vs. never rebuilt at all for this hand.
@@ -455,7 +455,7 @@ export const admin = {
     sortWorst: 'Schlechteste zuerst',
     sortWorstUnavailable: 'Kein gespeicherter Score gelesen — ohne Bewertung gäbe das wieder die alphabetische Reihenfolge.',
     overlayToggle: 'Überlagern',
-    overlayHeading: 'Überlagert (Original + Geschrieben in Rot)',
+    overlayHeading: 'Überlagert (Original + Engine darüber)',
     // The two grids double as the overviews of the Buchstaben/Wörter views, so
     // every card carries the way into its own detail.
     openLetter: 'Öffnen',
@@ -669,9 +669,15 @@ export const admin = {
     // engine writes from it — same scale, same Grundlinie, so „trifft der Fit?"
     // und „was macht das System daraus?" nebeneinander lesbar sind.
     faceSpecimenBase: 'Vorlage',
-    faceLayerTrace: 'Bahn (grün)',
-    faceLayerPath: 'Bewegung (Reihenfolge grün→blau, Absetzer gestrichelt)',
-    faceLayerEngine: 'Engine (rot)',
+    // No colour names in a caption: „erster Zug grün, letzter blau" is exactly
+    // the sentence a colour-blind reader cannot use, and it goes wrong again on
+    // every palette tune. The legend carries the mapping instead — the layer
+    // switches show colour AND stroke style (Strichart-Regel, design-system §2).
+    // The nouns are the one vocabulary of #621: the line is „Bahn", and the
+    // layer that reads it as a movement is „Bewegung".
+    faceLayerTrace: 'Bahn',
+    faceLayerPath: 'Bewegung (Schreibreihenfolge, Absetzer gestrichelt)',
+    faceLayerEngine: 'Engine',
     // Herkunft + Datum der gezeichneten Linie. Ohne beides ist ein Pfad eine
     // undatierte Überlagerung und kein Beleg.
     tracePedigree: 'Herkunft: {{herkunft}} · {{datum}} · {{zuege}} Züge',
@@ -687,7 +693,7 @@ export const admin = {
     layerTrace: 'Bahn',
     layerPath: 'Bewegung',
     layerPathHint:
-      'Dieselbe Bahn, als Bewegung gelesen: Farbverlauf in Schreibreihenfolge (erster Zug grün, letzter blau), Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt die Bahn mit, denn die Bewegung schmückt sie.',
+      'Dieselbe Bahn, als Bewegung gelesen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt die Bahn mit, denn die Bewegung schmückt sie.',
     layerEngine: 'Engine',
     // The Abstandsprofil under a word card: nearest distance of the engine
     // composition per point of the stored trace. A DISPLAY measure of the
@@ -765,9 +771,10 @@ export const admin = {
     // answer „sind sich die Vorkommen ähnlich?" the same way.
     statsLetterSketchLegendWithOcc:
       'dünn: die einzelnen Vorkommen · kräftig: Median-Anker · Kreise: MAD-Streuung · Linien: Grund- und Mittellinie',
-    // The dashed chain: what the engine writes TODAY, against the median that
+    // The dotted chain: what the engine writes TODAY, against the median that
     // would replace it — the „see the difference" view before the overwrite.
-    statsLetterSketchLegendLaufform: 'gestrichelt rot: die aktuell geschriebene Laufform',
+    // Names the stroke style, never the hue (Strichart-Regel, design-system §2).
+    statsLetterSketchLegendLaufform: 'gepunktet: die aktuell geschriebene Laufform',
     // Freshness of the rendered running form, read straight off the row.
     laufformCurrent: 'Laufform aktuell',
     laufformStale: 'Laufform veraltet · Abstand {{value}}',
@@ -1127,7 +1134,7 @@ export const admin = {
     // field, the value speaks to the reader.
     pfadShow: 'Bahn zeigen',
     pfadShowHint:
-      'Legt die gefolgte Bahn über den Streifen: Farbverlauf in Schreibreihenfolge (erster Zug grün, letzter blau), Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt auch die Rohzahlen je Kasten mit — sie stecken in denselben Daten, also kostet das keinen zweiten Abruf. Wird je Fassung einzeln geladen und nur für sichtbare Bilder.',
+      'Legt die gefolgte Bahn über den Streifen: Farbverlauf in Schreibreihenfolge vom ersten zum letzten Zug, Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt auch die Rohzahlen je Kasten mit — sie stecken in denselben Daten, also kostet das keinen zweiten Abruf. Wird je Fassung einzeln geladen und nur für sichtbare Bilder.',
     // Date and word count stay in the caption; the origin sits beside it as
     // the Herkunfts-Chip below.
     pfadPedigree: 'Bahn: {{datum}} · {{woerter}} Wort/Wörter',

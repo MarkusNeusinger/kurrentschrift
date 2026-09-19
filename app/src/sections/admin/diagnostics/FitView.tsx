@@ -20,6 +20,8 @@ import { ringsToPathD } from '@/lib/svg';
 import { de } from '@/locales/admin';
 import { useColumnWidth } from '@/sections/admin/diagnostics/useColumnWidth';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
+import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
+import { layerAlpha, mono } from '@/styles/paper';
 
 interface Props {
   glyphKey: string;
@@ -157,15 +159,30 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
                   Schwellzug, semi-transparent so the original ink shows
                   through: coverage is judged directly, not via a hairline */}
               {data.fitted_outline_px?.map((rings, i) => (
-                <path key={`sil-${i}`} d={ringsToPathD(rings)} fill="#e02030" fillOpacity={0.4} fillRule="evenodd" />
+                <path
+                  key={`sil-${i}`}
+                  d={ringsToPathD(rings)}
+                  fill={WERKBANK_COLORS.engine}
+                  fillOpacity={layerAlpha.engineFit}
+                  fillRule="evenodd"
+                />
               ))}
               {/* canonical placement (pre-fit) — one polyline per pen-stroke */}
               {polylineSegments(data.canonical_polyline_px, data.polyline_stroke_starts).map((seg, i) => (
                 <polyline key={`canon-${i}`} fill="none" stroke="#888" strokeWidth={1.4} strokeDasharray="4 3" points={polylinePoints(seg)} />
               ))}
-              {/* fitted centerline — one polyline per pen-stroke */}
+              {/* fitted centerline — one polyline per pen-stroke. Solid, and
+                  deliberately NOT the engine layer's dash: on this surface the
+                  dash already separates the canonical placement from the fitted
+                  one, and a second dashed line would take that apart. */}
               {polylineSegments(data.fitted_polyline_px, data.polyline_stroke_starts).map((seg, i) => (
-                <polyline key={`fit-${i}`} fill="none" stroke="#e02030" strokeWidth={1} points={polylinePoints(seg)} />
+                <polyline
+                  key={`fit-${i}`}
+                  fill="none"
+                  stroke={WERKBANK_COLORS.engine}
+                  strokeWidth={1}
+                  points={polylinePoints(seg)}
+                />
               ))}
             </svg>
           </Box>
@@ -184,18 +201,18 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
             />
             <Chip size="small" variant="outlined" label={`${m.iterations} ${de.admin.fit.iterations}`} />
           </Box>
-          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: mono }}>
             {de.admin.fit.geoRmse} {m.geo_rmse_px_initial} → <strong>{m.geo_rmse_px}</strong> px
           </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: mono }}>
             {de.admin.fit.widthRmse} {m.width_rmse_px} px
           </Typography>
           {m.coverage_rmse_px != null && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: mono }}>
               {de.admin.fit.coverageRmse} {m.coverage_rmse_px} px
             </Typography>
           )}
-          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: mono }}>
             {de.admin.fit.maxAnchorDelta} {m.max_anchor_delta} · λ={m.lambda_reg}
           </Typography>
           <Typography variant="caption" color="text.disabled">

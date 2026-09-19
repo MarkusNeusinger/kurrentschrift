@@ -2,7 +2,7 @@
 // both surfaces that have one: the traced words over a plate crop (Wörter) and
 // the Streifen-Pfad over an own-hand strip (Eigenhand).
 //
-// The flat green line the word cards drew until now says only where the ink
+// The flat Spur line the word cards drew until now says only where the ink
 // is. What the author asked to see is the path: which stretch came first,
 // which way the pen ran, and where it left the paper. So the same stroke list
 // is drawn with
@@ -33,6 +33,7 @@ import {
   tipOf,
   type Stroke,
 } from '@/sections/admin/shell/pathOverlay';
+import { layerAlpha, liftConnector } from '@/styles/paper';
 
 // ~2/3 of a hairline stroke's own width: thick enough to read over black ink,
 // thin enough that the ink it follows still shows on both sides of it. In PATH
@@ -50,7 +51,13 @@ const ARROW_LEN = 2.4 * LINE_WIDTH; // length of the direction triangle
 const ARROW_SPREAD = 0.8; // its base width, as a fraction of the length
 const START_DOT_R = 1.3 * LINE_WIDTH;
 const LIFT_WIDTH = 0.5 * LINE_WIDTH;
-const LIFT_DASH = 2 * LINE_WIDTH;
+// The lift's colour AND stroke style live with each other in the token file
+// (`liftConnector`), so a tune cannot move one without the other. The dash
+// entries are factors of the line's OWN width — the lift line's, not the
+// stroke's, which is what makes a dot round rather than oval — and the dotted
+// style's first entry is 0: a zero-length dash under the token's round cap is
+// how SVG draws a circle on a path.
+const LIFT_DASH = liftConnector.stroke.dash.map((d) => d * LIFT_WIDTH);
 // The floor is the other half: where the whole path is only a few pixels tall
 // (a strip at ¼ zoom) the proportional size would fall under one pixel.
 const ARROW_MIN_PX = 6;
@@ -78,8 +85,8 @@ export function PathOverlay({
   strokes,
   unit,
   detail = false,
-  color = WERKBANK_COLORS.traceOverInk,
-  opacity = 0.95,
+  color = WERKBANK_COLORS.trace,
+  opacity = layerAlpha.trace,
   showIndex = false,
 }: Props) {
   const drawn = strokes.filter((stroke) => stroke.length > 1);
@@ -89,7 +96,9 @@ export function PathOverlay({
   const width = LINE_WIDTH;
   const arrow = Math.max(ARROW_LEN, ARROW_MIN_PX * unit);
   const dotR = Math.max(START_DOT_R, DOT_MIN_PX * unit);
-  const dash = Math.max(LIFT_DASH, DASH_MIN_PX * unit);
+  // Only the GAP takes the pixel floor: a dot's own size is the line width, and
+  // shrinking the gap is what would fuse the dots into a solid line.
+  const liftDash = [LIFT_DASH[0], Math.max(LIFT_DASH[1], DASH_MIN_PX * unit)].join(' ');
 
   return (
     <>
@@ -103,10 +112,10 @@ export function PathOverlay({
           x2={lift.to[0]}
           y2={lift.to[1]}
           stroke={WERKBANK_COLORS.lift}
-          strokeOpacity={0.75}
+          strokeOpacity={layerAlpha.lift}
           strokeWidth={LIFT_WIDTH}
-          strokeDasharray={`${dash} ${dash}`}
-          strokeLinecap="butt"
+          strokeDasharray={liftDash}
+          strokeLinecap={liftConnector.stroke.cap}
         />
       ))}
       {drawn.map((stroke, i) => {

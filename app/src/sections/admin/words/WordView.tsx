@@ -37,7 +37,6 @@ import { WordComparison, type WordCompareMode } from '@/sections/admin/compare/W
 import { WordTraceEditorDialog } from '@/sections/admin/belege/WordTraceEditorDialog';
 import { useFileMark } from '@/sections/admin/shell/korbState';
 import { LayerDot } from '@/sections/admin/shell/LayerDot';
-import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { joinsOfText, joinsUrl, keysOfText, lettersUrl, readWordFocus, wordsUrl } from '@/sections/admin/shell/focus';
@@ -48,7 +47,7 @@ import {
   wordEvidenceOf,
   type TraceFilter,
 } from '@/sections/admin/shell/model';
-import { garamond } from '@/styles/paper';
+import { garamond, layer, layerDash } from '@/styles/paper';
 
 import { AuthoredTraceReview } from './AuthoredTraceReview';
 import { WordSpineCard } from './WordSpineCard';
@@ -335,22 +334,25 @@ export function WordView() {
                 }}
                 aria-label={de.admin.werkbank.layersLabel}
               >
-                {/* A colour dot rather than coloured text: the swatch is the
-                    legend for the line in the crop and stays readable in both
-                    states, where a tinted label made an unselected button look
-                    active. MUI keeps the selected background as the state. */}
+                {/* A swatch rather than coloured text: it is the legend for
+                    the line in the crop and stays readable in both states,
+                    where a tinted label made an unselected button look active.
+                    MUI keeps the selected background as the state. The swatch
+                    carries the line's STROKE STYLE too — two of the three hues
+                    are one colour for a deuteranope, so the label and the dash
+                    are what actually tell them apart. */}
                 <ToggleButton value="trace">
-                  <LayerDot color={WERKBANK_COLORS.traceOverInk} />
+                  <LayerDot color={layer.trace} style={layerDash.trace} />
                   {de.admin.werkbank.layerTrace}
                 </ToggleButton>
                 <Tooltip title={de.admin.werkbank.layerPathHint}>
                   <ToggleButton value="path">
-                    <LayerDot color={WERKBANK_COLORS.pathLast} />
+                    <LayerDot color={layer.path} style={layerDash.path} />
                     {de.admin.werkbank.layerPath}
                   </ToggleButton>
                 </Tooltip>
                 <ToggleButton value="engine">
-                  <LayerDot color={WERKBANK_COLORS.engine} />
+                  <LayerDot color={layer.engine} style={layerDash.engine} />
                   {de.admin.werkbank.layerEngine}
                 </ToggleButton>
               </ToggleButtonGroup>

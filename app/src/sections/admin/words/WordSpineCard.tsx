@@ -18,7 +18,7 @@
 // Both faces are drawn at the SAME px-per-unit and share one baseline row, so
 // width, slant and rhythm compare by eye without any mental rescaling.
 //
-// Registration: BOTH the green trace and the red engine ink use the row's own
+// Registration: BOTH the traced Spur and the engine's ink use the row's own
 // measured registration (`registration_px` + `xh_px`) — the trace and the
 // composition live in the same frame (baseline = 0, 1 unit = x-height), so
 // there is nothing to align by hand. The overlay used to pin the engine to the
@@ -47,7 +47,7 @@ import {
   type Mark,
   type SpecimenRef,
 } from '@/sections/admin/shell/model';
-import { garamond, paper } from '@/styles/paper';
+import { garamond, layerAlpha, layerDash, paper } from '@/styles/paper';
 
 import { DistanceProfileChart, PROBE_COLOR } from './DistanceProfileChart';
 import { distanceProfile, type ProfilePoint } from './distanceProfile';
@@ -57,7 +57,22 @@ const FACE_PAD = 6; // crop px of air around the engine face's own ink
 
 // The engine's ink, in one place: overlay (translucent, over the specimen) and
 // its own face (opaque, on white) draw the identical item list.
-function EngineInk({ composed, opacity }: { composed: ComposedWordOut; opacity: number }) {
+//
+// `overlay` is the difference between the two, and it is more than opacity: as
+// an OVERLAY the engine is one layer among three and takes the engine layer's
+// stroke style, because its red and the Pfad's Ocker are one colour for a
+// reader with a red-green deficiency (styles/paper.ts, Ebenen-Token). As its
+// own FACE it is not a layer over anything, and a dashed word would be a lie
+// about what the engine writes.
+function EngineInk({
+  composed,
+  opacity,
+  overlay = false,
+}: {
+  composed: ComposedWordOut;
+  opacity: number;
+  overlay?: boolean;
+}) {
   return (
     <>
       {composed.items.map((it, i) =>
@@ -80,7 +95,14 @@ function EngineInk({ composed, opacity }: { composed: ComposedWordOut; opacity: 
             stroke={WERKBANK_COLORS.engine}
             strokeOpacity={opacity}
             strokeWidth={it.stroke_width ?? it.mask_width}
-            strokeLinecap="round"
+            strokeDasharray={
+              overlay
+                ? layerDash.engine.dash.map((d) => d * (it.stroke_width ?? it.mask_width)).join(' ')
+                : undefined
+            }
+            // As an overlay the cap belongs to the token too; the solo face is
+            // a written word and keeps the round cap a pen leaves.
+            strokeLinecap={overlay ? layerDash.engine.cap : 'round'}
           />
         ),
       )}
@@ -124,7 +146,7 @@ function EngineFace({
         <line key={i} x1={0} x2={width} y1={y} y2={y} stroke={paper.line} strokeWidth={px} />
       ))}
       <g transform={`matrix(${xh} 0 0 ${-xh} ${FACE_PAD - minX * xh} ${baselineRow})`}>
-        <EngineInk composed={composed} opacity={0.85} />
+        <EngineInk composed={composed} opacity={layerAlpha.engineFace} />
       </g>
     </svg>
   );
@@ -350,7 +372,8 @@ export function WordSpineCard({
                 {showTrace && row && (
                   // One overlay component for both surfaces that draw a stored
                   // path (here and the own-hand strips). With `detail` off it
-                  // is the flat green line this card always drew; with it on
+                  // is the flat Spur line this card always drew — the blue of
+                  // the traced layer since the Ebenen-Token; with it on
                   // the same strokes are read as a MOVEMENT — order ramp,
                   // start dot, direction arrows, dashed Absetzer.
                   <PathOverlay strokes={row.strokes} unit={px / xh} detail={showPath} showIndex={showPath} />
@@ -364,7 +387,7 @@ export function WordSpineCard({
               </g>
               {overlay && composed && (
                 <g transform={matrix}>
-                  <EngineInk composed={composed} opacity={0.42} />
+                  <EngineInk composed={composed} opacity={layerAlpha.engineOverlay} overlay />
                 </g>
               )}
               {boxes.map((inst) => {

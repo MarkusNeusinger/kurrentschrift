@@ -22,7 +22,7 @@ import { useState } from 'react';
 
 import type { AggregateOut, InstanceOut, PairAggregateOut, PairInstanceOut } from '@/lib/api';
 import { de, fmt, specimenKindLabel } from '@/locales/admin';
-import { paper } from '@/styles/paper';
+import { layerAlpha, paper } from '@/styles/paper';
 
 import { AggregateSketch } from './AggregateSketch';
 import { WERKBANK_COLORS } from './model';
@@ -348,7 +348,7 @@ function PairConnectorSketch({
         strokeLinejoin="round"
       />
       {hasOffset && isPoint(offsetMad) && (
-        <g stroke={WERKBANK_COLORS.trace} strokeWidth={u} strokeOpacity={0.6}>
+        <g stroke={WERKBANK_COLORS.trace} strokeWidth={u} strokeOpacity={layerAlpha.traceSpread}>
           <line x1={offset[0] - offsetMad[0]} x2={offset[0] + offsetMad[0]} y1={-offset[1]} y2={-offset[1]} />
           <line x1={offset[0]} x2={offset[0]} y1={-(offset[1] - offsetMad[1])} y2={-(offset[1] + offsetMad[1])} />
         </g>

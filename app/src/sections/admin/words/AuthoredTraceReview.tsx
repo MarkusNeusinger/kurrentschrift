@@ -23,7 +23,7 @@ import { WordTraceEditorDialog } from '@/sections/admin/belege/WordTraceEditorDi
 import { isDevSetSpecimen } from '@/sections/admin/belege/tracebenchDevSet';
 import { WERKBANK_COLORS, traceFrameOf, traceMatrix } from '@/sections/admin/shell/model';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
-import { garamond } from '@/styles/paper';
+import { garamond, layerAlpha } from '@/styles/paper';
 
 // Taller than the compare cards' 220 px: judging one's own line needs room —
 // this face carries no second engine face beside it competing for width.
@@ -105,11 +105,11 @@ function ReviewRow({
                   key={i}
                   d={stroke.map(([x, y], j) => `${j === 0 ? 'M' : 'L'}${x},${y}`).join(' ')}
                   fill="none"
-                  // On the naked white ground the dark sketch green reads best;
-                  // over plate ink only the bright token survives (the same
-                  // split the colour tokens exist for).
-                  stroke={bare ? WERKBANK_COLORS.trace : WERKBANK_COLORS.traceOverInk}
-                  strokeOpacity={0.95}
+                  // One colour for both grounds: the Spur token clears 3:1 on
+                  // the naked white AND on the plate ink, which is what the
+                  // two greens it replaced could only do one at a time.
+                  stroke={WERKBANK_COLORS.trace}
+                  strokeOpacity={layerAlpha.trace}
                   // Thinner than the compare cards' 0.11: this view exists to
                   // judge the line AGAINST the ink, so the ink must stay
                   // visible on both sides of it even on a small crop.
