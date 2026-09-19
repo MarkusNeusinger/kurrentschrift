@@ -44,8 +44,10 @@ import { joinsUrl, lettersUrl, wordsUrl } from '@/sections/admin/shell/focus';
 import {
   groupKorb,
   isKorbFilterAll,
+  korbArchiveHides,
   korbArchiveVisible,
   KORB_FILTER_ALL,
+  KORB_FILTER_STAGES,
   KORB_GROUP_ORDER,
   type KorbFilter,
 } from '@/sections/admin/shell/korbFilter';
@@ -70,9 +72,15 @@ const KIND_LABELS: Record<WorkItemKind, string> = {
   landmark: de.admin.werkbank.kindLandmark,
   note: de.admin.werkbank.kindNote,
 };
-// The doctrine's triage order, as the locale lists it (§3).
-const FILTER_STAGES = Object.keys(STAGE_LABELS) as WorkItemStage[];
+// Safe as `Object.keys`: the map above is a fresh object literal, so TypeScript
+// checks it for excess members too. The Stufen come from `KORB_FILTER_STAGES`
+// instead — that record is the LOCALE's, which excess-property checking does
+// not reach.
 const FILTER_KINDS = Object.keys(KIND_LABELS) as WorkItemKind[];
+
+// Every select wears the §9.3 touch floor on its closed field; the options get
+// it from the theme's `MuiMenuItem`.
+const FILTER_FIELD_SX = { '& .MuiOutlinedInput-root': { minHeight: TOUCH_TARGET } } as const;
 
 // "Buchstabe a" / "Übergang d→a" / "Wort einen" — the level plus its target.
 // A note has no target: its first line IS the headline, so a basket of notes
@@ -309,13 +317,16 @@ export function KorbPanel({
   const visibleCount = groups.reduce((n, g) => n + g.rows.length, 0);
   // Three distinct silences, so an empty list never lies about why it is empty:
   // an untouched basket, a filter that matches nothing, and rows that are only
-  // hidden behind the „erledigte anzeigen" switch.
+  // hidden behind the „erledigte anzeigen" switch. The last sentence is EARNED,
+  // not assumed — `korbArchiveHides` asks whether turning the switch on would
+  // actually bring a row back, because the bare existence of a `done` row says
+  // nothing under a filter that excludes the archive anyway.
   const emptyText =
     rows.length === 0
       ? t.korbEmpty
       : isKorbFilterAll(filter)
         ? t.korbNoMatchDone
-        : doneCount > 0 && !korbArchiveVisible(filter, showDone)
+        : korbArchiveHides(rows, filter, showDone)
           ? `${t.korbNoMatch} ${t.korbNoMatchDone}`
           : t.korbNoMatch;
 
@@ -485,7 +496,7 @@ export function KorbPanel({
               label={t.korbFilterStatus}
               value={filter.status}
               onChange={(e) => setFilter((f) => ({ ...f, status: e.target.value as KorbFilter['status'] }))}
-              sx={{ '& .MuiOutlinedInput-root': { minHeight: TOUCH_TARGET } }}
+              sx={FILTER_FIELD_SX}
             >
               <MenuItem value="all">{t.korbFilterAll}</MenuItem>
               {KORB_GROUP_ORDER.map((status) => (
@@ -500,7 +511,7 @@ export function KorbPanel({
               label={t.korbFilterKind}
               value={filter.kind}
               onChange={(e) => setFilter((f) => ({ ...f, kind: e.target.value as KorbFilter['kind'] }))}
-              sx={{ '& .MuiOutlinedInput-root': { minHeight: TOUCH_TARGET } }}
+              sx={FILTER_FIELD_SX}
             >
               <MenuItem value="all">{t.korbFilterAll}</MenuItem>
               {FILTER_KINDS.map((kind) => (
@@ -515,10 +526,10 @@ export function KorbPanel({
               label={t.korbFilterStage}
               value={filter.stage}
               onChange={(e) => setFilter((f) => ({ ...f, stage: e.target.value as KorbFilter['stage'] }))}
-              sx={{ gridColumn: '1 / -1', '& .MuiOutlinedInput-root': { minHeight: TOUCH_TARGET } }}
+              sx={{ ...FILTER_FIELD_SX, gridColumn: '1 / -1' }}
             >
               <MenuItem value="all">{t.korbFilterAll}</MenuItem>
-              {FILTER_STAGES.map((stage) => (
+              {KORB_FILTER_STAGES.map((stage) => (
                 <MenuItem key={stage} value={stage}>
                   {STAGE_LABELS[stage]}
                 </MenuItem>

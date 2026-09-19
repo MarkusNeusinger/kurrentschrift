@@ -3913,7 +3913,11 @@ genau das stand vor 2026-09 auf jeder Karte einer frisch geseedeten
 Vorlage. Dieselbe Regel gilt eine Ebene höher schon für die Aggregate
 („kein Neuaufbau" vs. „unter der Mindest-Vorkommenszahl").
 *Technisch:* `StatsStatus` in `LensStats.tsx`, abgeleitet in
-`WorkbenchData.tsx::statsContextOf` und `pairMeasurement.ts::aggregateLayerState`.
+`WorkbenchData.tsx::statsContextOf` und `pairMeasurement.ts::aggregateLayerState`;
+im Auftragskorb-Schubfach `KorbPanel.tsx::emptyText` über
+`korbFilter.ts::korbArchiveHides` — dort sind es drei Stillen (unberührter Korb ·
+kein Treffer · Archiv hinter dem Schalter), und der Hinweis auf den Schalter
+erscheint nur, wenn das Umlegen wirklich eine Zeile zurückholt.
 
 **Typo-Boden** — die bindende Untergrenze der Schriftgrößen des öffentlichen
 Auftritts: Fließtext ≥ 19 px, Caption ≥ 14 px, ohne Ad-hoc-Größen (design-system.md
