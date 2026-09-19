@@ -1,14 +1,22 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-19): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **98
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **99
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
-> Themenblock des vollen Glossars. Nachzieh-Anlass: ein Begriff wandert
+> Themenblock des vollen Glossars.
+> **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
 > hierher, sobald er die Zwei-von-drei-Schwelle unten erreicht und in
-> keine der drei Ausschluss-Klassen fällt — und wieder heraus, sobald er
-> unter die Schwelle fällt. Das volle Glossar bleibt die
-> Nachschlage-Instanz und behält seinen alphabetischen Schnellindex; hier
-> steht **nichts**, was dort nicht ausführlicher stünde.
+> keine der drei Ausschluss-Klassen fällt, und wieder heraus, sobald er
+> unter die Schwelle fällt; eine PR, die einen Begriff in Code oder
+> Agenten-Datei bringt, nimmt ihn im selben Zug mit auf.
+> **Was offen ist:** Die Zählung aus Schritt 1 stammt aus EINEM Lauf über
+> die damals letzten 40 gemergten PRs und wird nicht laufend wiederholt —
+> der Bestand wächst seither je PR, die Liste ist also aktuell, ihre
+> Rangfolge nicht.
+> **Wo das Detail steht:** Nachschlage-Instanz bleibt
+> [`glossar.md`](glossar.md) samt alphabetischem Schnellindex; hier steht
+> **nichts**, was dort nicht ausführlicher stünde. Wie die Auswahl
+> entstand, sagen die beiden Schritte unter dieser Zeile.
 
 **Warum es diese Datei gibt.** `glossar.md` trägt über 300 Einträge und
 kostet rund 56 000 Token — mehr als die Hälfte der Pflichtlektüre. Wer
@@ -574,8 +582,20 @@ Disziplin:** verworfen wird nur nach Schreibqualität, nie wegen
 Verbindungsenge — Ausfälle müssen zufällig sein, nicht selektiv.
 → [§5](glossar.md#5-werkbank-und-prozess)
 
+**Bahn** — die gefolgte oder nachgefahrene Linie eines Wortes, beidseitig:
+die des Folgers wie die von Hand gezogene. Seit dem Autor-Entscheid
+2026-09-18 (Q8 b) das EINE Substantiv dafür in jeder deutschen
+Admin-Zeichenkette, auf der Platte wie auf dem Streifen — „Pfad", „Spur"
+und „Nachfahrung" sind abgelöst, „Streifen-Pfad" bleibt der Glossar-Name
+des Felds. Die Herkunft trägt ein Chip: „automatisch (Tintenpfad)" auf dem
+Streifen, der sein `verfahren` führt, nur „automatisch" auf der Platte,
+die keines führt. `locales/de/admin.vocabulary.test.ts`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §5.0
+
 **Beleg (Eigenhand)** — ein Vorkommen eines Übergangsraum-Items in den
 angenommenen Fassungen einer Hand; die Zähleinheit des Bestandsberichts.
+Nie ein Zähler für Bahnen — ein Wort kann mehrere Bahnen tragen, ohne ein
+Beleg zu sein.
 → [§5](glossar.md#5-werkbank-und-prozess)
 
 **Streifen-Befund** — was eine geschriebene Fassung über sich sagt: Feder,
@@ -596,7 +616,9 @@ dem runden Pinsel in der Werkbank. `core/eigenhand/flecken.py`.
 **Streifen-Pfad** — die gefolgte Federbahn je geschriebenem Wort, als Daten
 neben dem Streifenbild: Züge in den Einheiten des Wortes, Registrierung in
 den Pixeln des Streifens, dazu Verfahren, Datum und die Maskengröße, unter
-der gefolgt wurde. Außerhalb gerechnet (`tools.eigenhand.pfad`, Trockenlauf
+der gefolgt wurde. Der Name gehört dem FELD (`eigenhand_strips.pfade`) und
+ist nie ein UI-Wort — in der Oberfläche heißt die Linie **Bahn**.
+Außerhalb gerechnet (`tools.eigenhand.pfad`, Trockenlauf
 als Vorgabe), über die Admin-API abgelegt, in der Werkbank nur gezeigt —
 Reihenfolge, Richtung und Absetzer. Die Saat ist der Tafel-Duktus, nicht
 diese Hand. `core/eigenhand/pfad.py`.

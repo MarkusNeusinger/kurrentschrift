@@ -14,8 +14,32 @@
 
 import type { EigenhandPfad } from '@/lib/api';
 
+/**
+ * The two Verfahren the strip store actually writes, as the Herkunfts-Chip
+ * says them (author decision 2026-09-18, Q8 b): `tools.eigenhand.pfad` stamps
+ * `tintenpfad`, an own-hand drawing `authored`. Passed in so this module keeps
+ * carrying no German.
+ */
+export type VerfahrenLabels = {
+  tintenpfad: string;
+  authored: string;
+};
+
+/**
+ * How a stored path came to be, as a reader should see it.
+ *
+ * Anything else is handed back RAW: `verfahren` is a free 64-character column,
+ * so a run from another follower must stay readable under its own name rather
+ * than be relabelled into one of the two the UI happens to know.
+ */
+export function verfahrenLabel(verfahren: string, labels: VerfahrenLabels): string {
+  if (verfahren === 'tintenpfad') return labels.tintenpfad;
+  if (verfahren === 'authored') return labels.authored;
+  return verfahren;
+}
+
 export type PfadHerkunft = {
-  /** The one Verfahren behind every path — `null` as soon as they differ. */
+  /** The one Verfahren behind every path, RAW — `null` as soon as they differ. */
   verfahren: string | null;
   /** The one day they were followed on — `null` as soon as they differ. */
   datum: string | null;
@@ -34,10 +58,19 @@ function einheitlich(values: readonly string[]): string | null {
 /**
  * Read the provenance of the paths currently drawn.
  *
- * `ohneDatum` is the label for a path stored without a day (older rows), so the
- * wording stays in the locale file and this module stays pure.
+ * `ohneDatum` is the label for a path stored without a day (older rows) and
+ * `labels` names the two known Verfahren, so all wording stays in the locale
+ * file and this module stays pure.
+ *
+ * The agreement is decided on the RAW `verfahren` and only then labelled: two
+ * followers that happened to share a label would otherwise collapse into one
+ * named run, which is exactly the false claim the mixed case exists to avoid.
  */
-export function pfadHerkunft(pfade: readonly EigenhandPfad[], ohneDatum: string): PfadHerkunft {
+export function pfadHerkunft(
+  pfade: readonly EigenhandPfad[],
+  ohneDatum: string,
+  labels: VerfahrenLabels,
+): PfadHerkunft {
   const verfahren = einheitlich(pfade.map((pfad) => pfad.verfahren));
   const datum = einheitlich(pfade.map((pfad) => pfad.erzeugt_am ?? ohneDatum));
   return {
@@ -46,6 +79,22 @@ export function pfadHerkunft(pfade: readonly EigenhandPfad[], ohneDatum: string)
     // An EMPTY list is not a mixed one — it has nothing to disagree about, and
     // the caller says „no path stored" there rather than naming a run.
     gemischt: pfade.length > 0 && (verfahren === null || datum === null),
-    laeufe: pfade.map((pfad) => `${pfad.word}: ${pfad.verfahren} · ${pfad.erzeugt_am ?? ohneDatum}`),
+    laeufe: pfade.map(
+      (pfad) => `${pfad.word}: ${verfahrenLabel(pfad.verfahren, labels)} · ${pfad.erzeugt_am ?? ohneDatum}`,
+    ),
   };
+}
+
+/**
+ * The Herkunfts-Chip's label, or `null` when there is no ONE origin to name.
+ *
+ * Read off `verfahren` alone, never off `gemischt`: a Fassung counts as mixed
+ * as soon as the DAYS differ, and a word followed again on another day says
+ * nothing about HOW any of them were followed. Gating the chip on `gemischt`
+ * therefore hid an accurate „automatisch (Tintenpfad)" after every partial
+ * re-follow (Copilot review, PR #621). The differing days stay visible — they
+ * are the caption's business, and its tooltip carries the per-word list.
+ */
+export function herkunftChipLabel(herkunft: PfadHerkunft, labels: VerfahrenLabels): string | null {
+  return herkunft.verfahren === null ? null : verfahrenLabel(herkunft.verfahren, labels);
 }
