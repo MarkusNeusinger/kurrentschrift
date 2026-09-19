@@ -52,8 +52,17 @@ const FACE_H = 190; // px per face in the "wie geschrieben" row
 export function LetterView() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const { sourceId, bboxesByKey, glyphsByKey, cropCacheBust, refreshCrop, setActiveGlyph, openWizard, openDiagnose } =
-    useAdmin();
+  const {
+    sourceId,
+    bboxesByKey,
+    glyphsByKey,
+    cropCacheBust,
+    refreshCrop,
+    refreshGlyphs,
+    setActiveGlyph,
+    openWizard,
+    openDiagnose,
+  } = useAdmin();
   const workbench = useWorkbench();
   const fileMark = useFileMark();
   const t = de.admin.letters;
@@ -465,11 +474,15 @@ export function LetterView() {
           aggregates={workbench.allAggregates}
           onClose={() => setApplyOpen(false)}
           // The written rows are both statistics and rendering now: refetch the
-          // aggregate layer (its freshness numbers just changed) and bust the
-          // render cache so the Laufform face shows what was just written.
+          // aggregate layer (its freshness numbers just changed), bust the
+          // render cache so the Laufform face shows what was just written, and
+          // re-read the template rows — an apply CREATES variant-100 rows, and
+          // the work list reads „hat eine Laufform" from that set instead of
+          // probing a render.
           onApplied={() => {
             workbench.refreshLetterStats();
             refreshCrop();
+            void refreshGlyphs();
           }}
         />
       )}

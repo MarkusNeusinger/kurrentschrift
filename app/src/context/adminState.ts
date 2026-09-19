@@ -24,6 +24,11 @@ export interface AdminState {
   // way to know: the card wall discovers it by rendering variant 100 and
   // catching the „not available" answer.
   laufformKeys: Set<string>;
+  // Re-reads the template rows behind `glyphsByKey` and `laufformKeys`. The two
+  // are a snapshot of the boot read, and a Laufform apply writes exactly the
+  // rows they are derived from — so the apply calls this, or the work list
+  // keeps saying „ohne Laufform" about a letter that now has one.
+  refreshGlyphs: () => Promise<void>;
   loadError: string | null;
   // True while the boot load is retrying through a Cloud Run cold start.
   waking: boolean;

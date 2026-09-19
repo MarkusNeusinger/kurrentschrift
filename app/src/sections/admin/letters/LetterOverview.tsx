@@ -88,10 +88,13 @@ export function LetterOverview({ onPick }: { onPick: (glyphKey: string) => void 
         if (cancelled) return;
         setQuality(new Map(rows.filter((r) => r.variant === 0).map((r) => [r.glyph_key, r.quality])));
       })
-      // Admin-gated: a 401 (or a source without scores) simply means no score
-      // chips — the overview itself keeps working.
+      // Admin-gated, so this can 401 — and a read that did not land is not the
+      // answer „diese Formen tragen keinen Score". It stays UNKNOWN: no chip,
+      // no „kein Score", and „Schlechteste zuerst" disabled with its reason.
+      // An empty Map here would put „kein Score" on all 63 rows on the strength
+      // of a failed request. The overview itself keeps working either way.
       .catch(() => {
-        if (!cancelled) setQuality(new Map());
+        if (!cancelled) setQuality(null);
       });
     return () => {
       cancelled = true;
@@ -136,6 +139,10 @@ export function LetterOverview({ onPick }: { onPick: (glyphKey: string) => void 
   );
 
   const counts = useMemo(() => letterFilterCounts(rows), [rows]);
+  // A ticked chip whose own read has not answered selects NO row — and an empty
+  // result from an unanswered read is not „kein Eintrag passt", it is „not yet
+  // known". The same `null` that keeps the number off the chip says so here.
+  const pendingFilters = state.filters.some((token) => counts[token] === null);
   const selected = useMemo(
     () => sortLetterRows(rows.filter((row) => matchesLetterFilters(row, state.filters)), state.sort),
     [rows, state.filters, state.sort],
@@ -233,10 +240,16 @@ export function LetterOverview({ onPick }: { onPick: (glyphKey: string) => void 
           <Typography variant="caption" color="text.secondary">
             {/* With a filter on, the page size is the wrong number: „24 von 63"
                 says nothing about how many rows the chips actually selected,
-                and the per-chip counts deliberately cannot answer it either. */}
-            {state.filters.length > 0
-              ? fmt(t.counterFiltered, { shown: shown.length, selected: selected.length, total: rows.length })
-              : fmt(t.counter, { shown: shown.length, total: rows.length })}
+                and the per-chip counts deliberately cannot answer it either.
+                While a ticked chip's evidence is missing there is no honest
+                number at all — „0 von 0 gewählten" would be the unanswered
+                read reported as a result — so the counter steps aside and the
+                empty state does the talking. */}
+            {pendingFilters
+              ? null
+              : state.filters.length > 0
+                ? fmt(t.counterFiltered, { shown: shown.length, selected: selected.length, total: rows.length })
+                : fmt(t.counter, { shown: shown.length, total: rows.length })}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: { sm: 'auto' } }}>
             <FormControlLabel
@@ -273,11 +286,13 @@ export function LetterOverview({ onPick }: { onPick: (glyphKey: string) => void 
         )}
       </Box>
 
-      {shown.length === 0 ? (
-        // Two different silences: a source with no authored letter at all, and
-        // a filter that happens to match none of them.
+      {pendingFilters || shown.length === 0 ? (
+        // Three different silences: a source with no authored letter at all, a
+        // filter that happens to match none of them, and a filter that cannot
+        // be answered yet at all.
         <ListEmpty
           filtered={rows.length > 0}
+          pending={pendingFilters}
           emptyText={de.admin.compare.empty}
           onReset={() => update({ filters: [] })}
         />

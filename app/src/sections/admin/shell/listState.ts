@@ -1,6 +1,6 @@
 // How an overview's LIST state travels — the twin of `focus.ts`, one layer out.
 //
-// `focus.ts` carries the subject (which letter, which join, which word).; this
+// `focus.ts` carries the subject (which letter, which join, which word); this
 // module carries how the overview around it is being looked at: list or
 // gallery, which filters are on, how it is sorted, which page. Both live in the
 // query string for the same reason (focus.ts:6-9) and for one more: a link out
@@ -12,9 +12,11 @@
 // `?ansicht=liste|galerie&filter=&sort=&seite=`.
 //
 // One reader, MANY vocabularies: each overview has its own filter and sort
-// tokens, and `ansicht` may yet take a third mode on a later surface. So the
-// reader is always handed a `ListSpec` and validates against THAT — never
-// against a global union of every token any view knows.
+// tokens, so the reader is handed a `ListSpec` and validates against THAT,
+// never against a global union of every token any view knows. `ansicht` is the
+// exception and deliberately NOT in the spec: „Liste oder Galerie" is the same
+// pair on every overview, and a third mode is not a thing any surface wants
+// today — when one does, it moves into the spec beside the others.
 //
 // `ansicht` is the DISPLAY MODE and nothing else (author decision Q1 c of
 // 2026-09-19). A page's sub-view is `reiter` — the Eigenhand page's four tabs,

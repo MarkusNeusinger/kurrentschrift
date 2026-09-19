@@ -133,6 +133,16 @@ describe('the four filters', () => {
     expect(Object.keys(letterFilterCounts(rows)).sort()).toEqual([...LETTER_FILTERS].sort());
   });
 
+  it('marks the chip a view must not answer with at all', () => {
+    // The `null` count is what `LetterOverview` reads to show „wartet auf eine
+    // Angabe" instead of „Kein Eintrag passt zu dieser Auswahl": a ticked chip
+    // whose evidence is missing selects nothing, and reporting THAT as a match
+    // failure is the same unsupported claim one layer up.
+    const counts = letterFilterCounts(buildLetterRows(input({ korbByGlyph: null })));
+    expect(counts['mit-korb']).toBeNull();
+    expect(counts['ohne-vorkommen']).toBe(3);
+  });
+
   it('carries no number on a chip whose own read has not answered', () => {
     // „ohne Vorkommen · 0" beside rows that say „Vorkommen werden geladen …"
     // is the zero the row model refuses one line lower; the two chips that rest

@@ -61,27 +61,31 @@ export const admin = {
     evidenceLoading: 'wird geladen …',
     evidenceError: 'Die gespeicherten Vorkommen konnten nicht geladen werden — neu laden oder die API prüfen.',
   },
-  // Die Arbeitslisten: die gemeinsame Bedienleiste der Übersichten (Ansicht,
-  // Filter, Sortierung, Seite) — ein Wortschatz, den alle drei Ansichten
-  // teilen, damit dieselbe Bedienung überall dieselben Wörter trägt.
+  // The Arbeitslisten: the toolbar vocabulary every overview shares (view,
+  // filter, sort, page), so the same control carries the same word everywhere.
   liste: {
     viewLabel: 'Ansicht',
     viewList: 'Liste',
     viewGallery: 'Galerie',
     filterLabel: 'Filter',
-    // Wie viel von wie viel gerade auf dem Schirm steht.
+    // How much of how much is on screen.
     counter: '{{shown}} von {{total}}',
-    // Sobald gefiltert ist, ist „wie viele passen zu dieser Auswahl?" die
-    // Frage — und die Seitenzahl beantwortet sie nicht: 30 gewählte Zeilen
-    // stünden sonst als „24 von 63" da. Die Chip-Zahlen können es auch nicht,
-    // die zählen bewusst jeder für sich.
+    // Once a filter is on, „how many match this selection?" is the question,
+    // and the page size does not answer it: 30 selected rows would otherwise
+    // read as „24 von 63". The chip counts cannot answer it either — each one
+    // deliberately counts on its own.
     counterFiltered: '{{shown}} von {{selected}} gewählten · {{total}} insgesamt',
     pagerLabel: 'Seiten',
     pageAria: 'Seite {{n}}',
     pageAll: 'alle zeigen',
-    // Die zweite Stille: nicht „hier gibt es nichts", sondern „zu dieser
-    // Auswahl gibt es nichts" — mit dem Weg zurück.
+    // The second silence: not „there is nothing here" but „there is nothing
+    // matching this selection" — with the way back.
     emptyFiltered: 'Kein Eintrag passt zu dieser Auswahl.',
+    // The THIRD silence, and the one that is not an answer at all: a ticked
+    // chip whose evidence has not arrived selects no row, and reporting that
+    // as „nothing matches" would be a claim about the data made on a read that
+    // never landed.
+    emptyPending: 'Diese Auswahl braucht eine Angabe, die noch geladen wird.',
     resetFilters: 'Filter zurücksetzen',
     chipKorb: '{{count}} im Korb',
   },
@@ -91,20 +95,20 @@ export const admin = {
     overviewTitle: 'Buchstaben',
     overviewIntro:
       'Jeder erstellte Buchstabe als Zeile: Bewertung, Abzüge und die Merkmale, an denen Arbeit hängt — gesperrt, ohne Laufform, ohne Vorkommen, offene Aufträge. Eine Zeile klappt an Ort und Stelle die vier Flächen auf (Tafel-Ausschnitt, Tafel-Form, Laufform, Median & Vorkommen); „Galerie“ zeigt sie für alle Buchstaben untereinander. „Öffnen“ führt in den einzelnen Buchstaben mit allen Werkzeugen.',
-    // Die Filter-Chips der Arbeitsliste, in der Reihenfolge, in der sie stehen
-    // (letterRows.ts trägt dieselbe Reihenfolge als Daten).
+    // The work list's filter chips, in the order they stand in (letterRows.ts
+    // carries the same order as data).
     filters: {
       gesperrt: 'gesperrt',
       'ohne-laufform': 'ohne Laufform',
       'ohne-vorkommen': 'ohne Vorkommen',
       'mit-korb': 'mit Korb-Auftrag',
     },
-    // Der Aufklapp-Knopf nennt seinen Buchstaben: 63 Knöpfe, alle „Aufklappen“
-    // genannt, sind für einen Screenreader eine Liste ohne Inhalt.
+    // The expander names its letter: 63 buttons all called „Aufklappen" are a
+    // list without content to a screen reader.
     rowExpand: 'Buchstabe {{key}} aufklappen',
     rowCollapse: 'Buchstabe {{key}} zuklappen',
-    // Beide Richtungen stehen als Chip da — ein fehlender Chip wäre von „noch
-    // nicht geladen“ nicht zu unterscheiden.
+    // Both directions get a chip — a missing one would be indistinguishable
+    // from „not loaded yet".
     chipLaufform: 'Laufform',
     chipNoLaufform: 'ohne Laufform',
     // The detail view's heading as plain text. Its visible head is the paging

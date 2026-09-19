@@ -29,4 +29,5 @@
   failed render.** The card wall discovered a missing running form by drawing
   variant 100 and catching the „not available" answer, which a list without
   images cannot do; the admin context now derives the set of letters that have
-  one from the template read it already made.
+  one from the template read it already made — and the Laufform apply re-reads
+  it, because a set can go stale where a per-render probe could not.

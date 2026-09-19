@@ -259,16 +259,21 @@ export function WorkRow({
 }
 
 /**
- * „Nichts gefunden" with its CAUSE — the two silences kept apart: a source that
- * holds no rows at all is a different answer from a filter that matches none,
- * and only the second one can be undone with a button.
+ * „Nichts gefunden" with its CAUSE — three silences kept apart. A source that
+ * holds no rows at all is a different answer from a filter that matches none;
+ * and a ticked chip whose evidence has not arrived is not an answer at all, so
+ * it may not borrow the second one's wording. Only the last two can be undone
+ * with a button.
  */
 export function ListEmpty({
   filtered,
+  pending,
   emptyText,
   onReset,
 }: {
   filtered: boolean;
+  /** A ticked filter's underlying read has not answered — nothing is claimed. */
+  pending?: boolean;
   emptyText: string;
   onReset: () => void;
 }) {
@@ -276,7 +281,7 @@ export function ListEmpty({
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 1, py: 2 }}>
       <Typography variant="body2" color="text.secondary">
-        {filtered ? t.emptyFiltered : emptyText}
+        {pending ? t.emptyPending : filtered ? t.emptyFiltered : emptyText}
       </Typography>
       {filtered && (
         <Button size="small" variant="outlined" onClick={onReset} sx={target}>
