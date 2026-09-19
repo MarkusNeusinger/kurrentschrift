@@ -3698,12 +3698,16 @@ er hinzufügt. Ihre Herkunft trägt ein Chip: „automatisch (Tintenpfad)" oder
 „von Hand" auf dem Streifen, wo die Zeile ihr `verfahren` selbst führt, und
 nur „automatisch" auf der Platte, wo `word_instances` keinen Folger notiert
 — ein Verfahren dort zu nennen wäre eine Behauptung, die die Zeile nicht
-deckt. Ein unbekanntes `verfahren` wird roh gezeigt, nie umbenannt.
+deckt. Ein unbekanntes `verfahren` wird roh gezeigt, nie umbenannt. Eine
+Fassung aus mehreren Läufen bekommt gar keinen Chip — kein einzelnes
+Verfahren gilt für sie, und die Herkunft je Wort steht im Tooltip.
 *Technisch:* `word_instances.strokes` und `eigenhand_strips.pfade[]`, Chip
-`words.traceCount`, Schalter `eigenhand.pfadShow` („Bahn zeigen") und die
-reine `sections/admin/eigenhand/pfadHerkunft.ts::verfahrenLabel` in
-`locales/de/admin.ts`; `locales/de/admin.vocabulary.test.ts` hält die Regel
-gegen das Zurückrutschen.
+`words.traceCount` und Schalter `eigenhand.pfadShow` („Bahn zeigen") in
+`locales/de/admin.ts`; beschriftet wird die Herkunft von der reinen
+`sections/admin/eigenhand/pfadHerkunft.ts::verfahrenLabel`, die ihre Wörter
+als Argument bekommt und selbst kein Deutsch trägt;
+`locales/de/admin.vocabulary.test.ts` hält die Regel gegen das
+Zurückrutschen.
 → proposals/admin-redesign.md §5.0 · Beleg (Eigenhand) · Bahn-Deckung
 (geplant) · Streifen-Pfad
 

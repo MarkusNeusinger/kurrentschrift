@@ -14,14 +14,16 @@
   the split from rotting back, with terminal commands and the follower's own
   name „Tintenpfad" exempt.
 - **Where a line came from, as a chip that says it plainly.** A strip's path
-  row carries its own `verfahren`, so its caption now reads „automatisch
-  (Tintenpfad)" or „von Hand" instead of the raw column value; a Verfahren the
-  UI does not know is handed back unchanged rather than relabelled, because
-  the column is free text and a silent swap would turn a foreign follower into
-  a Tintenpfad. A plate line says only „automatisch": `word_instances` records
-  no follower, and rows harvested before the Tintenpfad became the standard
-  one may have been laid by the Kette — naming a method there would be a claim
-  the row cannot back.
+  row carries its own `verfahren`, so the origin leaves the caption and stands
+  beside the „Saat"-Chip as one of its own, reading „automatisch (Tintenpfad)"
+  or „von Hand" instead of the raw column value — a Fassung stitched from
+  several runs gets no chip at all, because no single Verfahren is true of it.
+  A Verfahren the UI does not know is handed back unchanged rather than
+  relabelled, because the column is free text and a silent swap would turn a
+  foreign follower into a Tintenpfad. A plate line says only „automatisch":
+  `word_instances` records no follower, and rows harvested before the
+  Tintenpfad became the standard one may have been laid by the Kette — naming
+  a method there would be a claim the row cannot back.
 - **The three roles get their labels, and „Beleg" gets its one meaning back.**
   Tafel · Platte · Eigenhand now live as shared `shell.role*` strings with
   their first-appearance glosses („Platte (historische Hand)", „Eigenhand

@@ -672,8 +672,8 @@ export const admin = {
     faceLayerTrace: 'Bahn (grün)',
     faceLayerPath: 'Bewegung (Reihenfolge grün→blau, Absetzer gestrichelt)',
     faceLayerEngine: 'Engine (rot)',
-    // Herkunft + Datum der gezeichneten Linie. Ohne beides ist eine Bahn eine
-    // undatierte Überlagerung und keine Evidenz.
+    // Herkunft + Datum der gezeichneten Linie. Ohne beides ist ein Pfad eine
+    // undatierte Überlagerung und kein Beleg.
     tracePedigree: 'Herkunft: {{herkunft}} · {{datum}} · {{zuege}} Züge',
     pedigreeNoDate: 'ohne Datum',
     faceWritten: 'Vom System geschrieben',
@@ -1008,9 +1008,11 @@ export const admin = {
     title: 'Eigenhand',
     // The role's first appearance on its own page carries the gloss once
     // (author decision 2026-09-18, Q8 a); the nav item and the chips after it
-    // stay the bare label.
+    // stay the bare label. The gloss itself is NOT inlined here — `EigenhandView`
+    // prefixes `shell.roleEigenhandGloss`, so the wording of a role lives in
+    // exactly one place and the Scope-Leiste cannot drift away from this page.
     intro:
-      'Eigenhand (meine Hand) — die eigene Schreibprobe: welche Streifen bereits geschrieben und angenommen sind, welche Zeichen und Übergänge damit belegt sind — gemessen an dem, was der Streifenplan insgesamt hergibt. Die Scans selbst bleiben auf dem eigenen Rechner; hier stehen nur die Zahlen und der Druck.',
+      'Die eigene Schreibprobe: welche Streifen bereits geschrieben und angenommen sind, welche Zeichen und Übergänge damit belegt sind — gemessen an dem, was der Streifenplan insgesamt hergibt. Die Scans selbst bleiben auf dem eigenen Rechner; hier stehen nur die Zahlen und der Druck.',
     hand: 'Hand',
     handHelp: 'Neue Hand: <schreiber>-<stil>, z. B. mn-suetterlin',
     noHands: 'Noch keine Hand erfasst — unten einen Bogen drucken, damit legt sich die erste an.',
@@ -1113,29 +1115,33 @@ export const admin = {
     stripNoRulingsHint:
       'Abgeleitete Ansicht: Blau-Kanal plus Cyan-Maske, berechnet beim Abruf. Wirkt nur bei farbig eingelesenen Streifen — ein Graustufen-Streifen bleibt, wie er ist. Gespeichert wird immer das Rohbild.',
     keyTooltipShow: ' · anklicken zeigt die Belege',
-    // Der Streifen-Pfad: die gefolgte Federbahn je geschriebenem Wort.
+    // Der Streifen-Pfad: die nachgefolgte Federbahn je geschriebenem Wort.
     // Gerechnet wird sie außerhalb (Tintenfolger, `tools.eigenhand.pfad`) und
     // über den Admin-Schreibweg gespeichert — der Admin ZEIGT nur. Das Bild
-    // bleibt unberührt, die Bahn liegt als Daten daneben. „Streifen-Pfad" ist
-    // der Glossar-Name des FELDS `eigenhand_strips.pfade` und nie ein UI-Wort;
-    // in der Oberfläche heißt die Linie „Bahn" (Autor-Entscheid 2026-09-18,
-    // Q8 b). Die Schlüssel bleiben `pfad*` — sie zeigen auf das Feld.
+    // bleibt unberührt, der Pfad liegt als Daten daneben.
+    //
+    // „Streifen-Pfad" is the glossary name of the FIELD
+    // `eigenhand_strips.pfade`, never a UI word: on screen the line is „Bahn"
+    // (author decision 2026-09-18, Q8 b). That is why the keys below keep
+    // saying `pfad*` while their values say „Bahn" — the key points at the
+    // field, the value speaks to the reader.
     pfadShow: 'Bahn zeigen',
     pfadShowHint:
       'Legt die gefolgte Bahn über den Streifen: Farbverlauf in Schreibreihenfolge (erster Zug grün, letzter blau), Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt auch die Rohzahlen je Kasten mit — sie stecken in denselben Daten, also kostet das keinen zweiten Abruf. Wird je Fassung einzeln geladen und nur für sichtbare Bilder.',
-    pfadPedigree: 'Bahn: {{herkunft}} · {{datum}} · {{woerter}} Wort/Wörter',
+    // Date and word count stay in the caption; the origin sits beside it as
+    // the Herkunfts-Chip below.
+    pfadPedigree: 'Bahn: {{datum}} · {{woerter}} Wort/Wörter',
     pfadNoDate: 'ohne Datum',
-    // Der Herkunfts-Chip (§5.0, Q8 b). Anders als auf der Platte trägt die
-    // Streifen-Zeile ihr `verfahren` selbst, also darf die Herkunft hier das
-    // Verfahren MITNENNEN. Ein unbekanntes Verfahren wird nicht umbenannt,
-    // sondern roh gezeigt — die Spalte ist ein freier Text, und ein stiller
-    // Ersatz machte aus einem fremden Folger einen Tintenpfad.
+    // The Herkunfts-Chip (§5.0, Q8 b). Unlike a plate line, a strip row stores
+    // its own `verfahren`, so the origin here may NAME the follower. An
+    // unknown Verfahren is shown raw instead of relabelled: the column is free
+    // text, and a silent swap would turn a foreign follower into a Tintenpfad.
     verfahrenTintenpfad: 'automatisch (Tintenpfad)',
     verfahrenAuthored: 'von Hand',
     // Eine Fassung trägt nicht zwangsläufig EINEN Lauf: `--box` mischt ein neu
     // gefolgtes Wort über die übrigen, und ein Zeilenlauf lässt jedem
-    // übersprungenen Kasten seine ältere Bahn. Dann gehört die Herkunft der
-    // einzelnen Bahn, nicht der Liste — und das wird gesagt, statt dem ersten
+    // übersprungenen Kasten seinen älteren Pfad. Dann gehört die Herkunft dem
+    // einzelnen Pfad, nicht der Liste — und das wird gesagt, statt dem ersten
     // Wort die Herkunft aller zu leihen.
     pfadPedigreeMixed: 'Bahn: verschiedene Läufe · {{woerter}} Wort/Wörter',
     pfadMixedHint:

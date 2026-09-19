@@ -33,9 +33,12 @@ const RETIRED = /nachfahrung|spur|pfad/i;
 // `tools/laufform/harvest.py`) and the follower's proper name.
 const CODE = /\btools[./][\w./-]+|Tintenpfad/g;
 
-// The five namespaces that talk about a drawn line. The rest of the catalog
-// (chart editor, wizard, errors) never names one.
-const NAMESPACES = ['werkbank', 'words', 'belege', 'joins', 'eigenhand'] as const;
+// The six namespaces that talk about a drawn line. The rest of the catalog
+// (chart editor, wizard, errors) never names one. `compare` carries no retired
+// noun today and is listed anyway: it draws the same line over the same crops
+// and reaches into `belege` for its tooltip, so leaving it out would keep one
+// door unguarded for the sake of one array element.
+const NAMESPACES = ['werkbank', 'words', 'belege', 'joins', 'eigenhand', 'compare'] as const;
 
 /** Every string in the tree, each with the dotted path that leads to it. */
 function strings(value: unknown, path: string): [string, string][] {

@@ -303,11 +303,7 @@ function PfadCaption({ pfade, flecken }: { pfade: EigenhandPfad[]; flecken: Eige
     <Typography variant="caption" sx={{ color: paper.inkSoft }}>
       {herkunft.gemischt
         ? fmt(t.pfadPedigreeMixed, { woerter: pfade.length })
-        : fmt(t.pfadPedigree, {
-            herkunft: verfahrenLabel(herkunft.verfahren ?? '', VERFAHREN_LABELS),
-            datum: herkunft.datum ?? '',
-            woerter: pfade.length,
-          })}
+        : fmt(t.pfadPedigree, { datum: herkunft.datum ?? '', woerter: pfade.length })}
     </Typography>
   );
   return (
@@ -318,6 +314,15 @@ function PfadCaption({ pfade, flecken }: { pfade: EigenhandPfad[]; flecken: Eige
         </Tooltip>
       ) : (
         pedigree
+      )}
+      {/* The Herkunfts-Chip, beside the other markers of this row rather than
+          inside the caption (author decision 2026-09-18, Q8 b). It carries NO
+          status colour: „von Hand" names an origin, never a verdict — an
+          authored Bahn is simply not measured yet (§6.3). A mixed Fassung gets
+          no chip at all, because no single Verfahren is true of it; its
+          per-word origins stay in the caption's tooltip. */}
+      {!herkunft.gemischt && herkunft.verfahren !== null && (
+        <Chip size="small" variant="outlined" label={verfahrenLabel(herkunft.verfahren, VERFAHREN_LABELS)} />
       )}
       <Tooltip title={t.pfadSeedHint}>
         <Chip size="small" variant="outlined" label={t.pfadSeed} />
