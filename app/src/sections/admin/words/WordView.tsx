@@ -39,7 +39,15 @@ import { useFileMark } from '@/sections/admin/shell/korbState';
 import { LayerDot } from '@/sections/admin/shell/LayerDot';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
-import { joinsOfText, joinsUrl, keysOfText, lettersUrl, readWordFocus, wordsUrl } from '@/sections/admin/shell/focus';
+import {
+  joinsOfText,
+  joinsUrl,
+  keepHand,
+  keysOfText,
+  lettersUrl,
+  readWordFocus,
+  wordsUrl,
+} from '@/sections/admin/shell/focus';
 import {
   canTraceByHand,
   ownHandEvidence,
@@ -57,7 +65,11 @@ const WORD_H = 130; // px — the composed word, large enough to judge the rhyth
 export function WordView() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const { source, sourceId } = useAdmin();
+  // `ownHand` and not `handId`: `workbench.handId` a few lines down is the
+  // PLATE hand whose statistics this page shows. Two different hands, and the
+  // distinction the Scope-Leiste exists to make (P1-Q3 a) — so they do not
+  // share a name in one file.
+  const { source, sourceId, handId: ownHand } = useAdmin();
   const workbench = useWorkbench();
   const fileMark = useFileMark();
   const t = de.admin.words;
@@ -137,8 +149,9 @@ export function WordView() {
     };
   }, [sourceId, text]);
 
+  // `keepHand`: the subject changes, the scope does not (focus.ts).
   const focus = (next: string | null, sample?: string | null) =>
-    setParams(next ? { w: next, ...(sample ? { s: sample } : {}) } : {}, { replace: false });
+    setParams(keepHand(params, next ? { w: next, ...(sample ? { s: sample } : {}) } : {}), { replace: false });
 
   // Every WORTPROBE of this word — usually one, but a word can appear on
   // several plates, and each occurrence is its own piece of evidence. Each
@@ -408,7 +421,7 @@ export function WordView() {
                 clickable
                 color={missing.includes(key) ? 'warning' : 'default'}
                 label={key}
-                onClick={() => navigate(lettersUrl(key))}
+                onClick={() => navigate(lettersUrl(key, ownHand))}
               />
             ))}
           </Box>
@@ -425,7 +438,7 @@ export function WordView() {
                   variant="outlined"
                   clickable
                   label={`${join.leftKey}→${join.rightKey}`}
-                  onClick={() => navigate(joinsUrl(join.leftKey, join.rightKey))}
+                  onClick={() => navigate(joinsUrl(join.leftKey, join.rightKey, ownHand))}
                 />
               ))
             )}
@@ -459,8 +472,8 @@ export function WordView() {
                 overlay={overlay}
                 showTrace={showTrace}
                 showPath={showPath}
-                onOpenLetter={(glyphKey) => navigate(lettersUrl(glyphKey))}
-                onOpenPair={(leftKey, rightKey) => navigate(joinsUrl(leftKey, rightKey))}
+                onOpenLetter={(glyphKey) => navigate(lettersUrl(glyphKey, ownHand))}
+                onOpenPair={(leftKey, rightKey) => navigate(joinsUrl(leftKey, rightKey, ownHand))}
                 onMark={fileMark}
                 actions={
                   <>
@@ -521,7 +534,7 @@ export function WordView() {
           onSaved={() => {
             setEditing(null);
             workbench.refreshWordTraces();
-            navigate(wordsUrl(text, editingEvidence.sample.id), { replace: true });
+            navigate(wordsUrl(text, editingEvidence.sample.id, ownHand), { replace: true });
           }}
         />
       )}

@@ -18,13 +18,20 @@
 // They stay the reserved own-hand dataset — admin-gated, uncacheable, never in
 // the repository, and loaded only when asked for (StripsPanel).
 //
-// Since the `?reiter=` split this file is the SHELL: it owns the hand, the one
-// Bestand read behind all four Unteransichten, the last print job's sheet ids,
-// and the switch between them (admin-redesign.md V2). Everything that used to
-// stand under each other on one very long page now lives in BestandView,
-// StripsPanel, StatistikView and DruckenView. Four surfaces, one read — a per
-// view load would fire four requests for the same payload and lose the
-// `angenommen` counter the strips gallery uses as its cache buster.
+// Since the `?reiter=` split this file is the SHELL: it owns the one Bestand
+// read behind all four Unteransichten, the last print job's sheet ids, and the
+// switch between them (admin-redesign.md V2). Everything that used to stand
+// under each other on one very long page now lives in BestandView, StripsPanel,
+// StatistikView and DruckenView. Four surfaces, one read — a per view load
+// would fire four requests for the same payload and lose the `angenommen`
+// counter the strips gallery uses as its cache buster.
+//
+// What it no longer owns is the HAND. It is a scope, not a setting of this
+// page: the Scope-Leiste names it everywhere, the Korb links carry it, and two
+// Vorlagen of one script share it — none of which survives in a component that
+// unmounts (admin-redesign.md V19, Q25 a; `context/AdminContext.tsx` +
+// `shell/handScope.ts`). This page keeps the one thing that IS its own: the
+// picker, the only place the hand is chosen.
 
 import {
   Alert,
@@ -35,26 +42,26 @@ import {
   TextField,
   ToggleButton,
   ToggleButtonGroup,
-  Typography,
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 
-import { getEigenhandBestand, getEigenhandHands } from '@/lib/api';
+import { useAdmin } from '@/context/adminState';
+import { getEigenhandBestand } from '@/lib/api';
 import type { EigenhandBestand, EigenhandStripFilter } from '@/lib/api';
 import { latestRequestGate } from '@/lib/latestRequest';
-import { de } from '@/locales/admin';
+import { de, fmt } from '@/locales/admin';
 import { BestandView } from '@/sections/admin/eigenhand/BestandView';
 import { glyphOf } from '@/sections/admin/eigenhand/coverageLabels';
 import { DruckenView } from '@/sections/admin/eigenhand/DruckenView';
 import { StatistikView } from '@/sections/admin/eigenhand/StatistikView';
 import { StripsPanel } from '@/sections/admin/eigenhand/StripsPanel';
+import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { EIGENHAND_ANSICHTEN, eigenhandUrl, readEigenhandFocus } from '@/sections/admin/shell/focus';
 import { ViewHeader } from '@/sections/admin/shell/Panel';
-import { paper } from '@/styles/paper';
 
 // `glyphOf` moved to coverageLabels.ts, where the key-to-character map is
 // DERIVED from the glyph registry instead of hand-written a second time. It had
@@ -74,8 +81,10 @@ export function EigenhandView() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const { ansicht, item, wort } = readEigenhandFocus(params);
-  const [hands, setHands] = useState<string[]>([]);
-  const [hand, setHand] = useState('');
+  // The hand and the hands on offer both come from the admin scope: which ones
+  // are legal is decided by the Vorlage's script, not by this page (V19).
+  const { handId, handChoices, setHand, handsLoaded, handsError, source } = useAdmin();
+  const hand = handId ?? '';
   const [bestand, setBestand] = useState<EigenhandBestand | null>(null);
   const [loadError, setLoadError] = useState<ApiErrorText | null>(null);
   const [loading, setLoading] = useState(false);
@@ -85,22 +94,11 @@ export function EigenhandView() {
   // screen that can name them.
   const [printed, setPrinted] = useState<string[]>([]);
 
-  useEffect(() => {
-    let cancelled = false;
-    getEigenhandHands({ retries: 2 })
-      .then((data) => {
-        if (cancelled) return;
-        setHands(data.hands);
-        // A first-run admin has no hand yet; the styles tell us what a legal
-        // one looks like, so the field starts on a usable default instead of
-        // empty.
-        setHand((current) => current || data.hands[0] || `mn-${data.styles[1] ?? 'suetterlin'}`);
-      })
-      .catch((err: unknown) => !cancelled && setLoadError(apiErrorText(err)));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  // The hands themselves are read once by the admin provider, for the whole
+  // workbench. What used to stand here — a default of `mn-${styles[1]}` —
+  // is gone with it: it hard-wired one writer's prefix AND a position in the
+  // styles array, and it invented an id no read had ever returned (Q25 a). A
+  // script without a written hand now says so instead (`noHands`).
 
   // Which hand the Bestand on screen belongs to. Arming the spinner and
   // clearing the error happens DURING RENDER on a switch — React's "adjusting
@@ -251,11 +249,14 @@ export function EigenhandView() {
 
       <Stack direction="row" spacing={2} sx={{ mb: 3, flexWrap: 'wrap', rowGap: 2, alignItems: 'center' }}>
         <TextField
-          select={hands.length > 0}
+          select
           size="small"
           label={t.hand}
           value={hand}
-          helperText={hands.length ? undefined : t.handHelp}
+          // No free-text fallback any more: a hand is created by writing and
+          // printing, never by typing an id into this field, and the list is
+          // now the authoritative set of legal picks for this Vorlage.
+          disabled={!handChoices.length}
           onChange={(e) => {
             setHand(e.target.value);
             // The filter belongs to the hand just left: an item another hand
@@ -264,7 +265,7 @@ export function EigenhandView() {
           }}
           sx={{ minWidth: '14rem' }}
         >
-          {hands.map((id) => (
+          {handChoices.map((id) => (
             <MenuItem key={id} value={id}>
               {id}
             </MenuItem>
@@ -302,12 +303,37 @@ export function EigenhandView() {
         </ToggleButtonGroup>
 
         {loading && <CircularProgress size={16} />}
-        {!hands.length && (
-          <Typography variant="caption" sx={{ color: paper.inkSoft }}>
-            {t.noHands}
-          </Typography>
-        )}
       </Stack>
+
+      {/* The two reads behind the picker are admin-gated and a 401 is not
+          retried, so their failure is permanent — and until it is named, the
+          disabled picker below looks exactly like „this script has no hand". */}
+      {handsError !== null && (
+        <Alert severity="warning" sx={{ mb: 3 }}>
+          <ErrorText error={apiErrorText(handsError)} prefix={t.handsError} />
+        </Alert>
+      )}
+
+      {/* „this Vorlage's script", not „at all": the hand always belongs to the
+          script in front of the workbench (V19), so a Kurrent Vorlage beside a
+          written Sütterlin hand still stands here with none. Shown only once
+          the reads have ANSWERED — before that it would be a claim about data
+          nobody has yet.
+
+          It names the command, not the printer: a hand is minted by the first
+          thing written under its id, and the one in-app way to do that used to
+          be a free-text field seeded with an INVENTED `mn-<stil>` (gone with
+          the scope, see above). `setup` is the honest first step — it writes
+          the server record, so the hand shows up in this very picker through
+          GET /eigenhand/setups and the printer can work under it. */}
+      {handsLoaded && !handChoices.length && (
+        <Box sx={{ mb: 3 }}>
+          <TerminalCommand
+            lead={t.noHands}
+            command={fmt(t.noHandsCommand, { style: source?.style_id ?? '<stil>' })}
+          />
+        </Box>
+      )}
 
       {loadError && !bestand && (
         <Alert severity="warning" sx={{ mb: 3 }}>

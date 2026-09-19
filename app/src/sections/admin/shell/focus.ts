@@ -8,15 +8,30 @@
 // the browser's back button walks the inspection history, and a reload lands
 // where the work was.
 //
-// Pure functions only — the components read them through the hooks in
-// useFocus.ts, and the unit tests cover the parsing/derivation here.
+// Pure functions only — each view reads its own focus out of `useSearchParams`
+// through the readers below, and the unit tests cover the parsing/derivation
+// here. (The comment used to point at a `useFocus.ts` that never existed.)
 
 import { LETTER_BY_KEY, LETTERS, glyphKeyFor } from '@/domain/glyphs';
 import { shapeText } from '@/domain/shaping';
 import { paths } from '@/routes/paths';
 
 // Query parameter names, deliberately short — they end up in every deep link.
-export const FOCUS_PARAMS = { glyph: 'g', left: 'l', right: 'r', word: 'w', specimen: 's' } as const;
+//
+// `h` is the own HAND, and it is the one parameter that is not a subject: it
+// says under WHICH hand the subject was looked at. A link the Korb or a task
+// carries is otherwise scope-blind — it names the letter and leaves the second
+// half of the premise to whatever the browser happened to remember
+// (admin-redesign.md Q2 a). It is optional everywhere and never part of a
+// page's title: the subject did not change because the hand did.
+//
+// In this phase it is WRITTEN and carried, not yet ADOPTED: nothing feeds a
+// URL hand back into the active scope, so a pasted link states which hand it
+// was filed under without switching the workbench to it. That is deliberate —
+// adopting it needs a rule for the case where the URL and the picker disagree,
+// and the row itself gets its own `work_items.hand_id` in Phase 3 (V7) — but
+// it is the reason nobody should read `h=` as „this page acts on that hand".
+export const FOCUS_PARAMS = { glyph: 'g', left: 'l', right: 'r', word: 'w', specimen: 's', hand: 'h' } as const;
 
 // Eigenhand is the one admin area whose URL carries a PLACE rather than a
 // subject: the page holds four surfaces that answer four different questions
@@ -84,6 +99,39 @@ export function readWordFocus(params: URLSearchParams): WordFocus {
   return { text: text || null, specimenId: params.get(FOCUS_PARAMS.specimen) || null };
 }
 
+// A hand id is `<schreiber>-<stil>`. This is WEAKER than
+// `core/eigenhand/ids.py:HAND_ID`, on purpose and worth saying plainly: the
+// server's pattern pins the suffix to a known style, this one only asks for
+// hyphenated lowercase, so `h=mn-fraktur` and even a plate id like
+// `h=suetterlin-1922-norm` pass it. Pinning the suffix would mean a second
+// copy of `STYLE_IDS` in the SPA, and the module that HAS the styles — from
+// the server's own payload — is `handScope.ts`, which is also the module that
+// decides which hands exist at all. What is left here is the one job a pure
+// reader can do: keep a typo or a pasted sentence out of every link the view
+// then writes, dropped once, here, instead of travelling along.
+const HAND_ID = /^[a-z0-9]+(?:-[a-z0-9]+)+$/;
+
+export function readHandFocus(params: URLSearchParams): string | null {
+  const hand = params.get(FOCUS_PARAMS.hand);
+  return hand && HAND_ID.test(hand) ? hand : null;
+}
+
+/**
+ * The hand carried through a focus change inside a view.
+ *
+ * Two of the three views write the WHOLE query when the subject changes, so an
+ * `h=` that arrived on a Korb link would evaporate on the first click in the
+ * view — the link would be scoped and the very next step would not be. (The
+ * Buchstaben view merges its query instead, to keep the work list's state, and
+ * carries the hand for free that way.) The jumps BETWEEN views pass the hand
+ * explicitly, from the admin scope — so a scope holds for a whole walk, not
+ * just for the next click.
+ */
+export function keepHand(params: URLSearchParams, next: Record<string, string>): Record<string, string> {
+  const hand = readHandFocus(params);
+  return hand ? { ...next, [FOCUS_PARAMS.hand]: hand } : next;
+}
+
 const knownAnsicht = (value: string | null): value is EigenhandAnsicht =>
   Boolean(value) && (EIGENHAND_ANSICHTEN as readonly string[]).includes(value as string);
 
@@ -109,19 +157,28 @@ const withParams = (path: string, entries: Array<[string, string | null | undefi
 
 // The three link builders every cross-view button goes through, so no surface
 // hand-assembles a query string.
-export const lettersUrl = (glyphKey?: string | null): string =>
-  withParams(paths.admin.letters, [[FOCUS_PARAMS.glyph, glyphKey]]);
+//
+// `hand` is the LAST argument of each, and last for a reason: every existing
+// call site and every URL already in a task stays byte-identical without it,
+// and a surface that knows the hand only has to append it.
+export const lettersUrl = (glyphKey?: string | null, hand?: string | null): string =>
+  withParams(paths.admin.letters, [
+    [FOCUS_PARAMS.glyph, glyphKey],
+    [FOCUS_PARAMS.hand, hand],
+  ]);
 
-export const joinsUrl = (leftKey?: string | null, rightKey?: string | null): string =>
+export const joinsUrl = (leftKey?: string | null, rightKey?: string | null, hand?: string | null): string =>
   withParams(paths.admin.joins, [
     [FOCUS_PARAMS.left, leftKey],
     [FOCUS_PARAMS.right, rightKey],
+    [FOCUS_PARAMS.hand, hand],
   ]);
 
-export const wordsUrl = (text?: string | null, specimenId?: string | null): string =>
+export const wordsUrl = (text?: string | null, specimenId?: string | null, hand?: string | null): string =>
   withParams(paths.admin.words, [
     [FOCUS_PARAMS.word, text],
     [FOCUS_PARAMS.specimen, specimenId],
+    [FOCUS_PARAMS.hand, hand],
   ]);
 
 // The Eigenhand builder takes an OPTIONS object for everything past the view,
@@ -131,12 +188,13 @@ export const wordsUrl = (text?: string | null, specimenId?: string | null): stri
 // lands on the Bestand by the reader's own fallback.
 export const eigenhandUrl = (
   ansicht?: EigenhandAnsicht | null,
-  opts?: { item?: string | null; wort?: string | null },
+  opts?: { item?: string | null; wort?: string | null; hand?: string | null },
 ): string =>
   withParams(paths.admin.eigenhand, [
     [EIGENHAND_PARAMS.reiter, ansicht],
     [EIGENHAND_PARAMS.item, opts?.item],
     [EIGENHAND_PARAMS.wort, opts?.wort],
+    [FOCUS_PARAMS.hand, opts?.hand],
   ]);
 
 // The characters behind a glyph_key, for the free-text fields and the pair

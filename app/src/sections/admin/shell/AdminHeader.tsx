@@ -8,20 +8,26 @@
 // the width for chart crops, letter grids and pair matrices.
 //
 // It carries everything that is true for the WHOLE workbench and nothing that
-// belongs to a single view: the three areas (Buchstaben · Übergänge · Wörter),
-// which Vorlage is being worked on (click = back to the picker) and the
-// Auftragskorb with its open count. The letter grid that used to sit here
-// permanently moved into the Buchstaben view, where it belongs — see
-// LetterPicker.
+// belongs to a single view: the four areas (Buchstaben · Übergänge · Wörter ·
+// Eigenhand) and the Auftragskorb with its open count. The letter grid that
+// used to sit here permanently moved into the Buchstaben view, where it belongs
+// — see LetterPicker.
+//
+// WHICH Vorlage is being worked on moved one row down, into the Scope-Leiste:
+// the chip and the bar's Vorlage field were the same link to the same picker,
+// and saying it twice kept the phone header at three rows where V15 wants two.
+// The bar rides in the header's own `below` slot, so header and scope stick as
+// one block.
 
 import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
-import { Badge, Box, Chip, IconButton, Tooltip } from '@mui/material';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Badge, Box, IconButton, Tooltip } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 
 import { HeaderBar, HeaderNavLink, Wordmark } from '@/components/HeaderBar';
 import { useAdmin } from '@/context/adminState';
-import { de, styleLabel } from '@/locales/admin';
+import { de, fmt, styleLabel } from '@/locales/admin';
 import { paths } from '@/routes/paths';
+import { ScopeBar } from '@/sections/admin/shell/ScopeBar';
 
 const AREAS = [
   { to: paths.admin.letters, label: de.admin.shell.areaLetters },
@@ -36,6 +42,13 @@ export function AdminHeader({ openCount, onOpenKorb }: { openCount: number | nul
   const { source } = useAdmin();
   const { pathname } = useLocation();
   const t = de.admin.shell;
+  // The basket belongs to the VORLAGE. The bar says so visibly; the icon
+  // button says it in its name, so the two never disagree — and it names the
+  // same two halves the bar does, style AND id: Kurrent alone is taught by two
+  // charts here, so „der Vorlage Kurrent" would be the name of two baskets.
+  const korbLabel = source
+    ? fmt(t.korbScoped, { style: styleLabel(source.style_id), id: source.id })
+    : t.openKorb;
 
   return (
     <HeaderBar
@@ -44,34 +57,12 @@ export function AdminHeader({ openCount, onOpenKorb }: { openCount: number | nul
       // and the LetterPicker popover (1300), which are meant to cover it.
       zIndex={1100}
       contentSx={{ flexWrap: 'wrap', justifyContent: 'flex-start' }}
+      below={<ScopeBar openCount={openCount} />}
     >
-      {/* The wordmark leaves the workbench (→ the public landing); the Vorlage
-          chip beside it is the way back to the picker. */}
+      {/* The wordmark leaves the workbench (→ the public landing). */}
       <Wordmark to={paths.home} />
 
-      {/* The Vorlage is the workbench's premise, not a setting buried in a
-          sidebar: it is named in the header and one click goes back to the
-          picker to change it. */}
-      {/* `describeChild`: without it MUI puts the hint on the child as an
-          aria-label, which REPLACES the chip's visible „Sütterlin ·
-          suetterlin-1922" in the accessibility tree (WCAG 2.5.3 Label in
-          Name). As a description it is announced beside the name instead. */}
-      <Tooltip title={t.switchSource} describeChild>
-        <Chip
-          size="small"
-          variant="outlined"
-          clickable
-          component={RouterLink}
-          to={paths.admin.root}
-          // Style label AND source id: the Kurrent style can pool from several
-          // chart sources (different hands of the same script), so the style
-          // alone does not say which one is loaded.
-          label={source ? `${styleLabel(source.style_id)} · ${source.id}` : t.noSource}
-          sx={{ maxWidth: 280 }}
-        />
-      </Tooltip>
-
-      {/* The three views. `order` puts them on their own full-width row on
+      {/* The four views. `order` puts them on their own full-width row on
           phones, under the wordmark instead of squeezed beside it. */}
       <Box
         component="nav"
@@ -83,11 +74,20 @@ export function AdminHeader({ openCount, onOpenKorb }: { openCount: number | nul
           flex: { xs: '1 0 100%', sm: 1 },
           order: { xs: 3, sm: 0 },
           justifyContent: { xs: 'flex-start', sm: 'flex-end' },
-          // No overflow container here: the links' hover hairline sits 4px
-          // BELOW them, so an `overflow: auto` nav grows a scrollbar for those
-          // four pixels. The row wraps instead — that is what `flex: 1 0 100%`
-          // at xs is for.
-          flexWrap: 'wrap',
+          // At xs the four links scroll instead of wrapping, so the header
+          // stays TWO rows on a phone (V15) — with the Scope-Leiste under it
+          // a third row would push the work off the screen.
+          //
+          // The 4px of `pb` are load-bearing, and they are why this row had no
+          // overflow container before: the links' hover hairline sits 4px BELOW
+          // the text, so an `overflow: auto` without that padding grows a
+          // vertical scrollbar for exactly those four pixels — and
+          // `overflowY: hidden` would clip the active link's underline instead.
+          flexWrap: { xs: 'nowrap', sm: 'wrap' },
+          overflowX: { xs: 'auto', sm: 'visible' },
+          pb: { xs: '4px', sm: 0 },
+          scrollSnapType: { xs: 'x proximity', sm: 'none' },
+          '& > a': { scrollSnapAlign: { xs: 'start', sm: 'none' } },
           minWidth: 0,
           ml: { sm: 'auto' },
         }}
@@ -103,10 +103,10 @@ export function AdminHeader({ openCount, onOpenKorb }: { openCount: number | nul
         ))}
       </Box>
 
-      <Tooltip title={t.openKorb}>
+      <Tooltip title={korbLabel}>
         {/* At xs the nav drops to its own row, so nothing pushes the Korb
             right any more — `ml: auto` on this row does. */}
-        <IconButton size="small" aria-label={t.openKorb} onClick={onOpenKorb} sx={{ ml: { xs: 'auto', sm: 0 } }}>
+        <IconButton size="small" aria-label={korbLabel} onClick={onOpenKorb} sx={{ ml: { xs: 'auto', sm: 0 } }}>
           {/* No badge at all while the count is unknown (the read is
               admin-gated and may 401) — a silent "0" would claim an empty
               basket the header never actually read. */}

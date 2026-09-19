@@ -178,6 +178,21 @@ class TestOrder:
         seen |= set(_ids(_due(kartei)))
         assert seen == set(RULE_IDS)
 
+    def test_no_emitted_command_carries_an_unquoted_shell_redirection(self):
+        """Every card has a COPY button, so a placeholder written the way a doc
+        writes it (`<hand>`) would be a redirection the moment it is pasted. The
+        SPA's vocabulary guard holds the browser-built commands to this; the
+        step commands moved here, so the rule moved with them."""
+        empty = _kartei()
+        kartei = _print(_kartei(), "B0001", ["S0001", "S0002"])
+        _judge(kartei, "S0001", "B0001", 0)
+        rows = _due(empty, setup=True) + _due(empty, soll=False) + _due(kartei)
+        assert {row["id"] for row in rows} == set(RULE_IDS)
+        for row in rows:
+            bare = re.sub(r"\"[^\"]*\"|'[^']*'", "", row["befehl"])
+            assert not re.search(r"[<>]", bare), row["id"]
+            assert row["befehl"].startswith("uv run python -m tools.eigenhand."), row["id"]
+
 
 class TestTypeScriptTwin:
     """One rule list, two languages — the same pin `lesarten` carries.

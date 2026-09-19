@@ -64,7 +64,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **E** — Ebenen-Token §5 · Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
 - **F** — Fassung (Eigenhand) §5 · Fleckenmaske §5 · Feder-Entfaltung §3 · Formglätte §3 · Federprobe §7 · Federtypen §1 · Federwinkel §1 · Fehler-Taxonomie §4 · Fehlerschicht (`apiErrorText`) §5 · Feinschliff (geplant) §4 · Fenster-Versatz §4 · FID §6 · Fixture-Wurzel §4 · Folger-Schalter der Ernte (`--follower`) §4 · Form-Abstand (Laufform) §2 · Frame-Gate (`frame_stale`) §4 · Freigabe-Maschine (geplant) §5 · Fremdtinte §3 · Frozen-Reference-Regel §4 · Fuge §1 · Fußwende §2
 - **G** — Gate-Status (geplant) §5 · Gauß-Verschiebung §3 · G1-/G2-Stetigkeit §6 · gefüllte Ringe §4 · gen_chamfer §4 · grid_step_crop_px §4 · Gewackel §4 · Girlande §2 · Glätte-Sensor §2 · Gleichzug §1 · Gleichzug-Audit §4 · glyph_key §2 · Gradientenzerlegung §4 · Grauwert-Stopp (→ Strang-Dekodierung) §3 · Grundstrich/Haarstrich §1 · Grundtafel §7 · gut (`G`) §4 · Gute-Fortsetzung §4
-- **H** — H0–H5 §5 · Haken-Spitze (→ Strang-Dekodierung) §3 · Hand §2 · Hand-Überschuss §4 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
+- **H** — H0–H5 §5 · Haken-Spitze (→ Strang-Dekodierung) §3 · Hand §2 · Hand-Stil-Kopplung §5 · Hand-Überschuss §4 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
 - **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kompromisswinkel §2 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5
@@ -75,7 +75,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfad-Form (`/write/word/{text}`) §2 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Referenzwörter (Eigenhand) §5 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip §5 · Rollen-Spalte (geplant) §5 · Rollen-Token §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichart-Regel §5 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste (geplant) §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Span-Herkunft (→ Buchstabengrenzen einer Bahn) §5 · Span-Zuordner (→ Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichart-Regel §5 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Span-Herkunft (→ Buchstabengrenzen einer Bahn) §5 · Span-Zuordner (→ Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue (geplant) §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) (geplant) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unteransicht (Eigenhand) §5 · Unvollständige Wortprobe §5
 - **Ü** — Übergabekarte §5 · Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
@@ -4484,6 +4484,23 @@ wird gezeigt, nicht verändert. *Technisch:*
 `core/laufform.py::spike_gate/head_gate`; `AggregateOut` müsste die Werte
 tragen. → proposals/admin-redesign.md §5.0, §9.2
 
+**Hand-Stil-Kopplung** *(Vorgabe V19)* — die aktive Eigenhand gehört immer
+zum Stil der geladenen Vorlage. Bei einem Stilwechsel fällt sie auf die
+zuletzt für DIESEN Stil GEWÄHLTE Hand zurück, sonst auf leer — zwei
+Rückfälle, kein dritter: „sonst auf deren erste" würde einen
+Arbeitsbereich unter die Überschrift und in jeden Korb-Link schreiben, den
+niemand gewählt hat. Nie eine Hand eines anderen Stils, nie eine erfundene
+Kennung; ein Gedankenstrich in der → Scope-Leiste ist die ehrliche Antwort
+für einen Stil ohne eigene Hand, und solange die beiden Abrufe nicht
+geantwortet haben, steht dort gar nichts. Daraus folgt umgekehrt: zwei
+Vorlagen desselben Stils teilen ihre Hand, weshalb die Wahl über der
+Vorlagen-Schale liegt. Die Kandidaten sind die VEREINIGUNG von
+`GET /eigenhand/hands` und `GET /eigenhand/setups` — die erste Liste kennt
+nur Hände mit Bogen oder Fassung —, der Stil kommt aus dem Setup, sonst aus
+dem Kennungs-Suffix `<schreiber>-<stil>`. *Technisch:*
+`app/src/sections/admin/shell/handScope.ts::resolveHand`, gehalten im
+äußeren `AdminProvider`. → Scope-Leiste; proposals/admin-redesign.md §7.2
+
 **Laufform-Stand (geplant)** *(kurz: Stand)* — ein vollständiger,
 nummerierter, nie wieder veränderter Satz der Laufform EINER Hand: die
 Zeilen unter einer Varianten-Nummer im → Varianten-Band der Hand und ein
@@ -4538,10 +4555,19 @@ Verbraucher erst ab Phase 3 (die → Rollen-Spalte). *Technisch:*
 `app/src/styles/paper.ts`. → Rollen-Spalte; Strichart-Regel;
 concepts/design-system.md §2
 
-**Scope-Leiste (geplant)** — die Zeile unter der Kopfleiste, die Vorlage UND
-Hand benennt und das aktive Feld hervorhebt; sie schaltet nicht um. Die
-Antwort auf den Scope-Bruch der heutigen Kopfleiste (Vorlagen-Chip und
-Vorlagen-Korb auf der Hand-Seite). → proposals/admin-redesign.md §3.1, §7.1
+**Scope-Leiste** — die Zeile unter der Kopfleiste, die Vorlage UND Hand
+benennt und das aktive Feld hervorhebt; sie schaltet nicht um. Die Antwort
+auf den Scope-Bruch der alten Kopfleiste (Vorlagen-Chip und Vorlagen-Korb
+standen auch auf der Hand-Seite). Beide Felder sind Links — die Vorlage
+zurück zur Auswahl, die Hand auf die Eigenhand-Seite —, das Hand-Feld nennt
+IMMER die Eigenhand samt Rollen-Zusatz „Eigenhand (meine Hand)" (Entscheid
+P1-Q3 a), und der Korb-Zähler sitzt sichtbar im Vorlagen-Feld, weil er den
+Korb DIESER Vorlage zählt. Der Vorlagen-Chip der Kopfleiste ist dafür
+entfallen: er war derselbe Link zur selben Auswahl. *Technisch:*
+`app/src/sections/admin/shell/ScopeBar.tsx` im `below`-Schlitz von
+`components/HeaderBar`, die aktive Hand aus
+`sections/admin/shell/handScope.ts` (→ Hand-Stil-Kopplung).
+→ proposals/admin-redesign.md §3.1, §7.1; Hand-Stil-Kopplung
 
 **Strichart-Regel** — Farbe ist nie der einzige Kanal: erkennbar wird eine Ebene
 oder Rolle aus **Rollen-Etikett + Position + Strichart**, die Farbe kommt dazu.
