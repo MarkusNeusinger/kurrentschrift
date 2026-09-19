@@ -107,6 +107,16 @@ const SEPARATION_FLOOR = 35;
 // hue instead is understandable and does not work: a layer must clear 3:1 on
 // white AND on the ink, which pins it to one narrow lightness band, and the
 // only hues left in that band are a red and an orange.
+// The Absetzer's clearance from the ramp is a SIGHTED reader's question, not a
+// colour-vision one: the failure it guards against is "the lift and the middle
+// stretch of a three-part path came out the same colour", which happens on a
+// full-colour screen. So it is plain CIE76 on the hexes as drawn, and it gets
+// its own number rather than borrowing the floor above — under a deuteranope
+// simulation the nearest ramp sample sits at ΔE 33.7, which is fine for a mark
+// that also carries half width, a dotted stroke and its position under the
+// strokes, but would read as a promise this test does not make.
+const RAMP_CLEARANCE = 35;
+
 const NAMED_EXCEPTIONS: ReadonlyArray<readonly [string, string]> = [['path', 'engine']];
 
 const pairsOf = <T extends Record<string, string>>(group: T): [string, string][] => {
@@ -156,7 +166,7 @@ describe('the Absetzer mark', () => {
   it('is not a colour the writing-order ramp passes through', () => {
     // The ramp's own blend function, so this cannot drift from what is drawn.
     for (const t of [0.25, 0.5, 0.75]) {
-      expect(distance(absetzer.color, mixHex(layer.trace, layer.path, t))).toBeGreaterThanOrEqual(SEPARATION_FLOOR);
+      expect(distance(absetzer.color, mixHex(layer.trace, layer.path, t))).toBeGreaterThanOrEqual(RAMP_CLEARANCE);
     }
   });
 });
@@ -189,8 +199,32 @@ describe('the accent stays the accent', () => {
 });
 
 describe('mono', () => {
+  // Every face the platforms already have, plus the generic fallback. A stack
+  // that reaches past this list needs a file under app/public/fonts/, an
+  // @font-face rule, a preload and an OFL notice — which is exactly the cost
+  // §2 says the token exists to avoid. Checking the NAMES is the only way to
+  // see that from here: a font-family value never carries the `url()` that
+  // ships a face, so a "no @font-face" pattern match tests nothing.
+  const SYSTEM_FACES = [
+    'ui-monospace',
+    'sfmono-regular',
+    'sf mono',
+    'menlo',
+    'monaco',
+    'consolas',
+    'dejavu sans mono',
+    'liberation mono',
+    'courier new',
+    'monospace',
+  ];
+
   it('is a system stack, so no new webfont is shipped', () => {
-    expect(mono).toContain('monospace');
-    expect(mono).not.toMatch(/url\(|@font-face/);
+    const families = mono.split(',').map((f) => f.trim().replace(/^['"]|['"]$/g, '').toLowerCase());
+    expect(families.length).toBeGreaterThan(1);
+    for (const family of families) expect(SYSTEM_FACES).toContain(family);
+  });
+
+  it('ends in the generic family, so an unknown platform still gets a mono', () => {
+    expect(mono.trim().endsWith('monospace')).toBe(true);
   });
 });

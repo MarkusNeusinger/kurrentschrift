@@ -18,7 +18,7 @@
 // Both faces are drawn at the SAME px-per-unit and share one baseline row, so
 // width, slant and rhythm compare by eye without any mental rescaling.
 //
-// Registration: BOTH the green trace and the red engine ink use the row's own
+// Registration: BOTH the traced Spur and the engine's ink use the row's own
 // measured registration (`registration_px` + `xh_px`) — the trace and the
 // composition live in the same frame (baseline = 0, 1 unit = x-height), so
 // there is nothing to align by hand. The overlay used to pin the engine to the

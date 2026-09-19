@@ -95,21 +95,34 @@ und Zinnober sind für einen Deuteranopen **eine** Farbe — die eine benannte
 Ausnahme, getragen von Strichart und Legende. **Keine Rolle trägt Viridian**: es
 ist Akzent, `success` und Fokusring zugleich. Ein aktiver ZUSTAND darf es tragen.
 
+Ein Rollen-Token färbt die **Marke** (Punkt, Rahmen, Strich), nie laufenden Text
+— das Etikett daneben bleibt `text.primary`: `role.eigenhand` steht bei 3,99 : 1
+auf `paper.hi`, über der Nicht-Text-Schwelle, unter den 4,5 : 1 für Fließtext.
+Eine farbige Beschriftung bräuchte erst ein abgeleitetes `roleText`, wie
+`paper.viridianText` neben Viridian.
+
 Der **Absetzer** (`absetzer`, Violett `#8a5cd0`, gepunktet) ist KEINE Ebene,
 sondern die zweite Marke der Pfad-Ebene: halbe Strichbreite, unter den Zügen,
 er verbindet Zugende und nächsten Ansatz. Darum gilt für ihn die Paar-Regel
 nicht, wohl aber die Grund-Regel — und eine dritte: seine Farbe darf **keine
 sein, durch die die Spur→Pfad-Rampe läuft**. Die läuft durch ein Grau, ein
 grauer Absetzer sah also aus wie der mittlere Zug eines dreiteiligen Pfades
-(im Browser gemessen, 2026-09-19).
+(im Browser gemessen, 2026-09-19). Ebenso ist `WERKBANK_COLORS.current`, die
+**Laufform-Referenz** auf der Buchstaben-Skizze, keine Ebene: Ocker wie der Pfad,
+aber **gepunktet** — die 4:3-Strichelung ist die Signatur der Engine-Ebene und
+bleibt ihr. Eine Nicht-Ebene nimmt die freie Strichart, nie eine gelehrte.
 
 **Strichart-Regel (bindend).** Farbe ist nie der einzige Kanal: erkennbar wird
 eine Ebene oder Rolle aus **Rollen-Etikett + Position + Strichart**, die Farbe
 kommt dazu. Daraus folgt (1) jede Ebene und jede Rolle hat genau eine Strichart,
 und die Legende (`LayerDot`, §7) zeigt sie mit; (2) eine FLÄCHE trägt statt der
-Strichart ihre Deckkraft; (3) **die Texte nennen keine Farben** — „erster Zug
-grün, letzter blau" ist der Satz, mit dem ein farbfehlsichtiger Leser nichts
-anfangen kann. Die Texte nennen die Bedeutung, die Legende trägt die Farbe.
+Strichart ihre Deckkraft; (3) **die Texte zu Ebenen und Rollen nennen keine
+Farben** — „erster Zug grün, letzter blau" ist der Satz, mit dem ein
+farbfehlsichtiger Leser nichts anfangen kann. Die Texte nennen die Bedeutung
+oder die Strichart, die Legende trägt die Farbe. Ausgenommen sind vorerst die
+Diagnose- und Wizard-Signalfarben (`overlayColors.ts`, Landmark-Farben,
+Wizard-Griffe), wo die Farbe teils die Handlungsanweisung ist („den grünen Punkt
+ziehen") — ein benannter Nachzug, kein Freibrief für neue Sätze.
 
 Font-Tokens (ebenfalls `styles/paper.ts`): `garamond` (EB Garamond, Body/UI &
 Theme-Default), `display` (Playfair Display, Display-Überschriften), `script`

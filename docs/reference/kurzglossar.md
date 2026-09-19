@@ -553,8 +553,8 @@ beides samt der einen benannten Deuteranopie-Ausnahme (Ocker/Zinnober).
 **Strichart-Regel** — Farbe ist nie der einzige Kanal: **Rollen-Etikett +
 Position + Strichart**, die Farbe kommt dazu. Also genau eine Strichart je
 Ebene/Rolle (die Legende `LayerDot` zeigt sie), Deckkraft statt Strichart bei
-Flächen, und **keine Farbnamen in den Texten** — „erster Zug grün, letzter blau"
-ist der Satz, mit dem ein farbfehlsichtiger Leser nichts anfangen kann.
+Flächen, und **keine Farbnamen in Ebenen-/Rollen-Texten** — „erster Zug grün,
+letzter blau" nützt einem farbfehlsichtigen Leser nichts.
 → [§5](glossar.md#5-werkbank-und-prozess)
 
 **Changelog-Fragment** *(`changelog.d/<slug>.md`)* — der

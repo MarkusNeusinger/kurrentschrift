@@ -39,7 +39,7 @@ export function AggregateSketch({
   anchors: SketchAnchor[];
   glyphKey: string;
   occurrences: number[][][];
-  // The RENDERED running form (template variant 100), drawn dashed against the
+  // The RENDERED running form (template variant 100), drawn dotted against the
   // median that would replace it. This is the whole "see the difference before
   // you overwrite it" view: two chains in one frame, no registration needed
   // because both live in the chart row's coordinates.
@@ -93,11 +93,14 @@ export function AggregateSketch({
           <circle key={`mad-${i}`} cx={a.x} cy={-a.y} r={a.mad} fill={paper.line} fillOpacity={0.35} />
         ),
       )}
-      {/* What is written TODAY, dashed and in the warning tone — under the
+      {/* What is written TODAY, dotted and in the warning tone — under the
           median so the median stays the figure and this stays the reference.
           It used to borrow `selected`, which is a state and not a reading, and
           which put a vermilion line against a dark-green median: a red/green
-          pair on one sketch. Its own name now, and the median is blue. */}
+          pair on one sketch. Its own name now, and the median is blue.
+          DOTTED, not the engine's 4:3 dash: that signature is what §2 teaches a
+          reader to read as „Engine", and spending it here on a line in the
+          Pfad's own hue would spend the redundant channel twice. */}
       {laufform.length >= 2 && (
         <path
           d={pathOf(laufform)}
@@ -105,7 +108,7 @@ export function AggregateSketch({
           stroke={WERKBANK_COLORS.current}
           strokeOpacity={0.75}
           strokeWidth={1.4 * u}
-          strokeDasharray={`${4 * u} ${3 * u}`}
+          strokeDasharray={`${2 * u} ${2 * u}`}
           strokeLinecap="round"
           strokeLinejoin="round"
         />

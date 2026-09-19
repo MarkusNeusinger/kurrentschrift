@@ -19,10 +19,15 @@
   ink it met the engine's red in a pair no reader with a red-green deficiency can
   separate; a second such pair sat inside the token map, where the aggregate
   sketch drew vermilion against dark green. Both are gone: the traced line is one
-  blue on both grounds, the engine keeps the red and is dashed where it lies over
-  a crop, and the Laufform reference has a name of its own instead of borrowing
-  the selection colour. Seven files had the hexes hard-wired, including the
-  tracebench figures, which now agree with the admin on the engine.
+  blue on both grounds, and the engine keeps the red and is dashed where it lies
+  over a crop. Visibly recoloured: the letter sketches, the lens statistics, the
+  letter and word comparisons and the join view — the traced median turns from
+  dark green to blue, and on the letter sketches the Laufform reference moves
+  from red to Ocker and from a dashed to a dotted stroke, because it has a name
+  of its own now (`current`) instead of borrowing the selection colour, and
+  because the 4:3 dash is the engine layer's signature. Seven files had the hexes
+  hard-wired, including the tracebench figures, which now agree with the admin on
+  the engine.
 
 ### Changed
 

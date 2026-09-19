@@ -4476,7 +4476,9 @@ nur eingeklappt, beschriftet, nie verrechnet" (optimierungs-werkbank.md
 
 **Rollen-Token** *(`role`, `roleDash`)* — Farbe und Strichart der drei Rollen
 (Tafel durchgezogen · Platte gestrichelt · Eigenhand gepunktet). Sie werden auf
-PAPIER gelesen — Chips, Listenzeilen, Legendenmarken —, nie über Tinte, und
+PAPIER gelesen — sie färben die MARKE eines Chips, einer Listenzeile oder einer
+Legende, nie deren laufenden Text (3 : 1 ist die Nicht-Text-Schwelle) —, nie
+über Tinte, und
 stehen darum am dunklen Ende des Perioden-Sets in drei getrennten
 Helligkeitsstufen: Helligkeit ist der eine Kanal, den jede Farbfehlsicht behält.
 **Keine Rolle trägt Viridian**, es ist Akzent, `success` und Fokusring zugleich;
@@ -4494,9 +4496,12 @@ Vorlagen-Korb auf der Hand-Seite). → proposals/admin-redesign.md §3.1, §7.1
 oder Rolle aus **Rollen-Etikett + Position + Strichart**, die Farbe kommt dazu.
 Daraus folgen drei Pflichten: jede Ebene und jede Rolle hat genau eine Strichart
 und die Legende (`LayerDot`) zeigt sie mit; eine FLÄCHE trägt statt der Strichart
-ihre Deckkraft; und die deutschen Texte nennen keine Farben — „erster Zug grün,
-letzter blau" ist genau der Satz, mit dem ein farbfehlsichtiger Leser nichts
-anfangen kann, und er wird bei jeder Palettenpflege wieder falsch. *Technisch:*
+ihre Deckkraft; und die deutschen Texte zu Ebenen und Rollen nennen keine Farben
+— „erster Zug grün, letzter blau" ist genau der Satz, mit dem ein
+farbfehlsichtiger Leser nichts anfangen kann, und er wird bei jeder
+Palettenpflege wieder falsch (die Diagnose- und Wizard-Signalfarben sind ein
+benannter Nachzug, dort ist die Farbe teils die Handlungsanweisung).
+*Technisch:*
 `app/src/styles/paper.ts` (`layerDash`, `roleDash`),
 `sections/admin/shell/LayerDot.tsx`. → Ebenen-Token; Rollen-Token;
 concepts/design-system.md §2

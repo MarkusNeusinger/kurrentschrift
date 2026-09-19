@@ -151,6 +151,12 @@ export const absetzer = { color: '#8a5cd0', dash: [2, 2] } as const;
 // end of the period set in three separated lightness steps — lightness is the
 // one channel every dichromacy keeps. The label is mandatory beside them
 // (Strichart-Regel, design-system.md §2).
+//
+// A role colours the MARK — dot, border, dash — and never running text: the
+// floor asserted below is WCAG 1.4.11's 3:1 for a non-text graphical object,
+// and `eigenhand` sits at 3.99:1 on paper.hi, short of the 4.5:1 a body-size
+// label needs. A coloured label wants a derived `roleText` sibling first, the
+// way `paper.viridianText` sits beside viridian.
 export const role = {
   tafel: pigment.prussianBlue, // 11.02:1 on paper.hi
   platte: pigment.oxblood, // 8.41:1 on paper.hi

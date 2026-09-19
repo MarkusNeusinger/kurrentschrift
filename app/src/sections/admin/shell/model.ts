@@ -413,8 +413,11 @@ export const WERKBANK_COLORS = {
   // Zinnober it used to hold is free for the engine layer.
   selected: paper.viridian,
   // What is written TODAY, against a median that would replace it: the warning
-  // family's own hue, dashed. It shares the Pfad layer's hex, and can, because
-  // no surface draws a Pfad and a Laufform reference at once.
+  // family's own hue, DOTTED. It shares the Pfad layer's hex, and can, because
+  // no surface draws a Pfad and a Laufform reference at once — but it must not
+  // also borrow the Engine's 4:3 dash, which §2 teaches as that layer's own
+  // signature. Like the Absetzer it is a non-layer mark: no legend entry of its
+  // own, so it takes the free stroke style rather than a taught one.
   current: pigment.ochre,
   engine: layer.engine, // what the engine itself writes — overlay AND its own face
   // The Pfad layer: the SAME line, read as a movement. The ramp runs from the

@@ -420,7 +420,7 @@ export const admin = {
     colLaufform: 'Laufform',
     colSketch: 'Median & Vorkommen',
     colSketchHint:
-      'Kräftig: der Median je Anker über den Vorkommen dieser Hand · dünn: die einzelnen Vorkommen · Kreise: MAD-Streuung · gestrichelt rot: die aktuell geschriebene Laufform · Linien: Grund- und Mittellinie.',
+      'Kräftig: der Median je Anker über den Vorkommen dieser Hand · dünn: die einzelnen Vorkommen · Kreise: MAD-Streuung · gepunktet: die aktuell geschriebene Laufform · Linien: Grund- und Mittellinie.',
     noLaufformShort: 'noch keine Laufform',
     // Two different answers, deliberately not one: below the rebuild's minimum
     // vs. never rebuilt at all for this hand.
@@ -758,9 +758,10 @@ export const admin = {
     // answer „sind sich die Vorkommen ähnlich?" the same way.
     statsLetterSketchLegendWithOcc:
       'dünn: die einzelnen Vorkommen · kräftig: Median-Anker · Kreise: MAD-Streuung · Linien: Grund- und Mittellinie',
-    // The dashed chain: what the engine writes TODAY, against the median that
+    // The dotted chain: what the engine writes TODAY, against the median that
     // would replace it — the „see the difference" view before the overwrite.
-    statsLetterSketchLegendLaufform: 'gestrichelt rot: die aktuell geschriebene Laufform',
+    // Names the stroke style, never the hue (Strichart-Regel, design-system §2).
+    statsLetterSketchLegendLaufform: 'gepunktet: die aktuell geschriebene Laufform',
     // Freshness of the rendered running form, read straight off the row.
     laufformCurrent: 'Laufform aktuell',
     laufformStale: 'Laufform veraltet · Abstand {{value}}',
