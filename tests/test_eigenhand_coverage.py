@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 
 import pytest
@@ -10,7 +11,23 @@ from core.eigenhand import coverage
 from core.eigenhand import plan as plan_mod
 from core.eigenhand.plan import STREIFEN_JSON
 from tools.eigenhand import pool, progression, universe
-from tools.eigenhand.corpus import PINNED_FIRST, pool_entries, shaping_form
+from tools.eigenhand.corpus import PINNED_FIRST, REFERENCE_WORDS, pool_entries, shaping_form
+
+
+# The committed plan as it stood BEFORE the reference-word pin wave of
+# 2026-09-19: strips S0001–S0181, i.e. waves 0–2 plus the `Kurrentschrift`
+# pin. Append-never makes this digest permanent — every later wave appends
+# beyond it and leaves it alone. A failure here means a frozen strip was
+# rewritten; re-recording the constant would hide the very accident it exists
+# to catch (proposal §12 Prüfstein 4).
+FROZEN_PREFIX_STRIPS = 181
+FROZEN_PREFIX_SHA256 = "be4aacf5f910e372d9541d457b03b3962c53f8205f23658d695b23caf9a3971e"
+
+
+def _prefix_digest(plan: dict, count: int) -> str:
+    ids = sorted(plan["strips"], key=lambda sid: int(sid[1:]))[:count]
+    payload = json.dumps({sid: plan["strips"][sid] for sid in ids}, ensure_ascii=False, sort_keys=True)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 class TestShapedJoins:
@@ -134,8 +151,64 @@ class TestStripPlan:
     def test_the_committed_plan_pins_what_the_curation_pins(self):
         plan = plan_mod.load_plan()
         pinned_words = [word for sid in plan_mod.pinned_strips(plan) for word in plan["strips"][sid]["words"]]
-        assert pinned_words == PINNED_FIRST
+        elsewhere = {
+            word for sid, strip in plan["strips"].items() if sid not in set(plan["pins"]) for word in strip["words"]
+        }
+        # Not a plain `== PINNED_FIRST` since the reference words joined the
+        # list: a pin says "write this early", not "write this again", so a
+        # curated pin the plan already carries is skipped (proposal §4). What
+        # stays exact is WHICH words lead the plan, and in which order.
+        assert pinned_words == [word for word in PINNED_FIRST if word not in elsewhere]
         assert plan_mod.ordered_strips(plan)[: len(plan["pins"])] == plan["pins"]
+
+    def test_the_frozen_prefix_of_the_committed_plan_is_byte_identical(self):
+        plan = plan_mod.load_plan()
+        assert len(plan["strips"]) >= FROZEN_PREFIX_STRIPS
+        assert _prefix_digest(plan, FROZEN_PREFIX_STRIPS) == FROZEN_PREFIX_SHA256
+
+    def test_the_reference_pin_wave_only_appended(self):
+        # Q17 (owner, 2026-09-18): one appended strip per reference word the
+        # plan did not carry yet, each leading the queue, each its own row.
+        plan = plan_mod.load_plan()
+        appended = [sid for sid in plan["pins"] if int(sid[1:]) > FROZEN_PREFIX_STRIPS]
+        assert [plan["strips"][sid]["words"] for sid in appended] == [
+            ["lesen"],
+            ["denen"],
+            ["Wer"],
+            ["die"],
+            ["laden"],
+            ["unter"],
+            ["will"],
+        ]
+
+    def test_every_reference_word_is_on_a_strip(self):
+        # The point of the pin: the same word exists as plate sample, as the
+        # author's own strip and as a system rendering. Either the pin wave
+        # put it on a strip or an earlier wave already had it — never neither.
+        plan = plan_mod.load_plan()
+        planned = {word for strip in plan["strips"].values() for word in strip["words"]}
+        assert not [word for word in REFERENCE_WORDS if word not in planned]
+
+    def test_the_reference_words_are_the_anchors_plus_the_dev_split(self):
+        # Pinned literally, because the derivation strips the occurrence
+        # suffix of a repeated specimen (`und-3` → `und`) and a silent change
+        # there would quietly re-cut what gets written.
+        assert REFERENCE_WORDS == [
+            "lesen",
+            "das",
+            "denen",
+            "Galoppieren",
+            "Wer",
+            "die",
+            "laden",
+            "linken",
+            "mit",
+            "muß",
+            "und",
+            "unter",
+            "will",
+            "zwei",
+        ]
 
     def test_the_plan_carries_every_shaping_form_it_needs(self):
         # The plan is the API's ONLY word source: a reader without the

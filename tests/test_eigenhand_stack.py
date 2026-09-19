@@ -58,12 +58,15 @@ class TestQueue:
         The pinned words are written first because the author wants them
         first (proposal §4), not because the coverage argues for them — so the
         proof is the printed sheet, and the rest of the queue must be the plan
-        as it always was.
+        as it always was. Since the reference-word wave there are more pins
+        than a sheet has rows, so the first sheet is filled with pins and the
+        remainder leads the next one — the order is what is asserted, not that
+        one sheet swallows every pin.
         """
         plan = load_plan()
         pinned = pinned_strips(plan)
         rows = compose_sheet(plan=plan, kartei=_kartei(), hand=HAND, style=STYLE, date=DATE)["layout"]["rows"]
-        assert [row["strip"] for row in rows[: len(pinned)]] == pinned
+        assert [row["strip"] for row in rows[: len(pinned)]] == pinned[: len(rows)]
         assert "Kurrentschrift" in [box["word"] for row in rows for box in row["boxes"]]
         assert [row["strip"] for row in rows] == ordered_strips(plan)[: len(rows)]
 
