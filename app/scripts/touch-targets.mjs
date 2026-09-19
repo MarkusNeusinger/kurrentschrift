@@ -31,9 +31,13 @@
 //
 //   node scripts/touch-targets.mjs                        # localhost:3000, 390px
 //   node scripts/touch-targets.mjs --base https://kurrentschrift.ink
+//   node scripts/touch-targets.mjs --admin                # the workbench routes
 //
 // Needs a reachable API: half these controls only exist once the engine has
 // written something. Like `type-floor.mjs` this is a local check, not a CI gate.
+//
+// `--admin` swaps the public route list for the workbench one. It is a separate
+// run on purpose — see ADMIN_ROUTES below for the false green that made it one.
 
 import { setTimeout as sleep } from 'node:timers/promises';
 
@@ -131,6 +135,53 @@ const DEFAULT_ROUTES = [
   '/federprobe',
   '/impressum',
   '/gibt-es-nicht-404',
+];
+
+// The workbench, as a SEPARATE set behind `--admin` rather than as part of the
+// default run — because an admin route measures the workbench only when the dev
+// server carries `VITE_ADMIN_TOKEN` and the API behind it holds data. Without
+// the token every admin read 401s, `AdminLayout` shows its boot-error screen,
+// and the sweep measures THAT.
+//
+// Measured both ways on 2026-09-19, same build, same eleven routes: with the
+// token and a seeded throwaway stack, ~420 targets (411 mid-round, 425 at the
+// end — the count moves with what the stack holds); without it, 11 — one
+// „Erneut versuchen" per route. Neither number is a false green in the literal
+// sense (the boot button is itself under the floor, so the tokenless run goes
+// red), but both readings are wrong about the same thing: the second run never
+// saw a single control of the workbench while reporting eleven routes as
+// measured. That is the failure this file exists to prevent, and the default
+// run has no way to tell which of the two states it is in. So it does not
+// guess. `/verify-frontend` runs `--admin` against its own seeded throwaway
+// stack, where the premise holds and the run says so.
+//
+// The overviews carry both display modes, because they are different control
+// sets: the list has an expander and an „Öffnen" per row, the gallery has the
+// cards. The detail states are reached by `?g=`/`?l=`/`?r=`/`?w=`.
+const ADMIN_ROUTES = [
+  '/admin',
+  '/admin/buchstaben',
+  '/admin/buchstaben?ansicht=galerie',
+  '/admin/buchstaben?g=a',
+  '/admin/uebergaenge?l=a',
+  '/admin/uebergaenge?l=a&r=b',
+  '/admin/woerter',
+  '/admin/woerter?w=lesen',
+  '/admin/eigenhand',
+  '/admin/eigenhand?reiter=streifen',
+  // WITH a filter: the strips surface only draws its Kachel-Galerie — the
+  // Roving-Liste of that page — once something selects, and the unfiltered
+  // route above shows the whole-strip tiles instead.
+  //
+  // Named limitation, measured 2026-09-19: the Eigenhand page needs a HAND, and
+  // a hand is a deliberate pick kept in `localStorage`. These scripts launch
+  // Chrome on a fresh profile every run, so neither Eigenhand route ever
+  // reaches its tiles here — the two rows above measure the page's chrome (the
+  // tabs, the filter field, the hand picker) and nothing below it. The tiles
+  // and the gallery are walked by hand in `/verify-frontend`, which drives a
+  // persistent profile. Left in the list because the chrome is worth measuring
+  // and because a route that silently vanished would be worse.
+  '/admin/eigenhand?reiter=streifen&wort=e',
 ];
 
 // The one KNOWN shortfall, named rather than silently skipped: the Schreibtafel
@@ -243,6 +294,11 @@ function parseArgs(argv) {
         break;
       case '--routes':
         opts.routes = value.split(',');
+        break;
+      case '--admin':
+        // A flag, not a value — put the argument back if one followed.
+        opts.routes = ADMIN_ROUTES;
+        if (inline === undefined) i -= 1;
         break;
       default:
         throw new Error(`unknown argument: ${flag}`);

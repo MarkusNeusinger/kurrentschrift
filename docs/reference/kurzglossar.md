@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-19): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **103
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **106
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars.
 > **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
@@ -619,6 +619,28 @@ sichtbar im Vorlagen-Feld. **Hand-Stil-Kopplung (V19):** die aktive Hand
 gehört immer zum Stil der Vorlage — sonst die zuletzt für diesen Stil
 gewählte, sonst keine. `shell/ScopeBar.tsx` · `shell/handScope.ts`.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §7.2
+
+**Roving-Liste** — eine Übersicht, die als Ganzes EIN Tab-Stopp ist: Tab
+hinein auf die zuletzt besuchte Zeile, ↑/↓ zwischen Zeilen, ←/→ zwischen den
+Bedienelementen einer Zeile, `Home`/`End` an die Enden, Tab hinaus; kein
+Umlauf, und in einer umbrechenden Kachelfläche nur ←/→. Der Fokus hängt am
+Zeilenschlüssel, nicht am Index, und landet nie auf `<body>`.
+`hooks/useRovingList.ts` · `lib/roving.ts`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · design-system.md §9.5
+
+**Subjekt-Stepper** — die ‹ ›-Knöpfe um den Gegenstand eines Detailkopfs
+plus Alt+Umschalt+←/→. Er folgt der Reihenfolge der Übersicht, aus der der
+Leser kam (Filter und Sortierung eingeschlossen), und der Kopf nennt sie
+sichtbar; ohne veröffentlichte Reihenfolge gilt die Registerfolge.
+`shell/SubjectStepper.tsx` · `shell/subjectNav.ts`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · design-system.md §9.5
+
+**Kurztasten-Schalter** — der Schalter am Ende der Scope-Leiste, der den
+Subjekt-Stepper abschaltet; Voreinstellung AN, Zustand als sichtbares Wort.
+Der einzige Admin-Zustand in `localStorage`, weil er dem Leser gehört und
+nicht dem Gegenstand. Aus ist nichts gebunden, die ‹ ›-Knöpfe bleiben, die
+Roving-Listen auch. `shell/shortcuts.ts`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · design-system.md §9.5
 
 **Beleg (Eigenhand)** — ein Vorkommen eines Übergangsraum-Items in den
 angenommenen Fassungen einer Hand; die Zähleinheit des Bestandsberichts.

@@ -67,15 +67,15 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **H** — H0–H5 §5 · Haken-Spitze (→ Strang-Dekodierung) §3 · Hand §2 · Hand-Stil-Kopplung §5 · Hand-Überschuss §4 · HTG §6 · HTR §6 · Huber-Kappung §3 · humanbench §4 · HWD §6
 - **I** — IndexNow §2 · Ink gap §3 · Instance §2 · Isochronie §6 · Iterationsdeckel §3
 - **J** — Junction-Pinch §4 · Junction-Verschiebung §3
-- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kompromisswinkel §2 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5
+- **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kompromisswinkel §2 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5 · Kurztasten-Schalter §5
 - **L** — Labs §4 · Landmarken-Auftrag §5 · Landmarken-Erkennung §5 · Landmarken-Linse §5 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Stand (geplant) §5 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5 · Mittellinien-Öffnungsweite (`D0`) §4
 - **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Nahtverhandlung (`seam_negotiation`) §2 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nicht-Hover-Regel §5 · Normalen-Fit (→ Strang-Dekodierung) §3 · Nullprobe §4
 - **O** — Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfad-Form (`/write/word/{text}`) §2 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
-- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Referenzwörter (Eigenhand) §5 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip §5 · Rollen-Spalte (geplant) §5 · Rollen-Token §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
-- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichart-Regel §5 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Span-Herkunft (→ Buchstabengrenzen einer Bahn) §5 · Span-Zuordner (→ Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
+- **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Referenzwörter (Eigenhand) §5 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip §5 · Rollen-Spalte (geplant) §5 · Rollen-Token §5 · Route G §4 · Roving-Liste §5 · Rückgabe an Autor §5 · Rückhaltemenge §4
+- **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichart-Regel §5 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Span-Herkunft (→ Buchstabengrenzen einer Bahn) §5 · Span-Zuordner (→ Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Subjekt-Stepper §5 · Sütterlin §1
 - **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue (geplant) §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) (geplant) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unteransicht (Eigenhand) §5 · Unvollständige Wortprobe §5
 - **Ü** — Übergabekarte §5 · Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
@@ -4617,6 +4617,53 @@ entfallen: er war derselbe Link zur selben Auswahl. *Technisch:*
 `components/HeaderBar`, die aktive Hand aus
 `sections/admin/shell/handScope.ts` (→ Hand-Stil-Kopplung).
 → proposals/admin-redesign.md §3.1, §7.1; Hand-Stil-Kopplung
+
+**Roving-Liste** — eine Übersicht, die als GANZES einen einzigen Tab-Stopp
+hat: Tab führt hinein (auf die zuletzt besuchte Zeile, sonst die erste), die
+Pfeile gehen darin weiter, Tab führt hinaus. ↑/↓ wechseln die Zeile, ←/→ die
+Bedienelemente einer Zeile, `Home`/`End` springen an die Enden; kein Umlauf.
+Eine **umbrechende** Kachelfläche (Paar-Zellen, Streifen-Galerie) bekommt nur
+←/→ — ein Flex-Grid hat keine feste Spaltenzahl, und ein ↓ über sechs Kacheln
+bei 1440 px und drei bei 1024 px wäre schlechter als keins. Der gemessene
+Anlass (1440 × 900, geblätterte Seite): die Buchstaben-Übersicht kostete **77**
+Anschläge bis zur Werkzeugleiste und kostet jetzt 19, die Paar-Matrix 142 statt
+jetzt 44; ungeblättert wären es in der Buchstabenliste ~190. Eine umbrechende
+Kachelfläche ist dabei eine `toolbar` mit Namen — ein Tab-Stopp ohne
+zusammengesetzte Rolle ließe einen Screenreader im Lesemodus, der die Pfeile
+gar nicht erst weiterreicht; die Arbeitslisten bleiben bewusst rollenlos, weil
+eine Zeile ein GEGENSTAND mit mehreren Bedienelementen ist und damit ein
+`grid`, kein flacher Satz. Der Fokus hängt am Zeilen-SCHLÜSSEL, nicht am Index —
+fällt die Zeile durch einen Filter weg, übernimmt die an ihrer Stelle, und der
+Fokus landet nie auf `<body>`. Kein Teil des → Kurztasten-Schalters: Roving ist
+Struktur, keine Kurztaste. *Technisch:* `app/src/hooks/useRovingList.ts` über
+`app/src/lib/roving.ts` (die reine Arithmetik). → Subjekt-Stepper;
+concepts/design-system.md §9.5
+
+**Subjekt-Stepper** — die ‹ ›-Knöpfe um den Gegenstand eines Detailkopfs, mit
+derselben Bewegung auf **Alt + Umschalt + ← / →**. Er folgt der Reihenfolge der
+ÜBERSICHT, aus der der Leser kam — Filter und Sortierung eingeschlossen
+(Entscheid P1-Q12 a) —, weshalb der Kopf die Reihenfolge in einer sichtbaren
+Zeile nennt („Reihenfolge: Schlechteste zuerst · gefiltert"); ohne
+veröffentlichte Reihenfolge gilt die Registerfolge. Die Übersicht *veröffentlicht*
+ihre Reihenfolge beim Verlassen, statt sie im Detail neu herzuleiten: die
+Herleitung hinge an den Lesungen, für die sie schon bezahlt wurde (ein
+Score-Read je Vorlage, eine CPU-Anfrage je Wortprobe). Nicht `Alt+←/→`, weil das
+Zurück/Vorwärts des Browsers ist. *Technisch:*
+`app/src/sections/admin/shell/SubjectStepper.tsx` + `subjectNav.ts`.
+→ Kurztasten-Schalter; Roving-Liste; concepts/design-system.md §9.5
+
+**Kurztasten-Schalter** — der Schalter „Kurztasten" am Ende der →
+Scope-Leiste, der die eine Tastenbindung des Admins (→ Subjekt-Stepper)
+abschaltet; Voreinstellung AN, Zustand als sichtbares Wort daneben und die
+Kombination als Beschriftung. Er ist der einzige Zustand des Admins in
+`localStorage` — er gehört dem LESER und nicht dem Gegenstand, darf also nie in
+einem Link reisen (die Regel, auf der `listState.ts` steht) —, jeder Zugriff in
+`try/catch`. Aus geschaltet ist NICHTS gebunden; die ‹ ›-Knöpfe arbeiten weiter,
+und die → Roving-Listen bleiben, weil sie Struktur sind. Nicht wegen WCAG SC
+2.1.4 (die gilt für Kurztasten aus Buchstaben, Ziffern, Satz- und
+Sonderzeichen — eine Kombination mit Zusatztasten fällt nicht darunter),
+sondern weil V24 es verlangt. *Technisch:*
+`app/src/sections/admin/shell/shortcuts.ts`. → Subjekt-Stepper; Scope-Leiste
 
 **Strichart-Regel** — Farbe ist nie der einzige Kanal: erkennbar wird eine Ebene
 oder Rolle aus **Rollen-Etikett + Position + Strichart**, die Farbe kommt dazu.

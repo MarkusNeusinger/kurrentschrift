@@ -36,6 +36,7 @@ import { FilterChipRow, ListEmpty, ListPager, ListSortSwitch, ListViewSwitch } f
 import { useKorbItems } from '@/sections/admin/shell/korbState';
 import { korbCountsOf } from '@/sections/admin/shell/korbTargets';
 import { clampPage, pageSlice, readListState, writeListState, type ListState } from '@/sections/admin/shell/listState';
+import { orderCaption, usePublishSubjectOrder } from '@/sections/admin/shell/subjectNav';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { TOUCH_TARGET } from '@/styles/hitArea';
 
@@ -154,6 +155,19 @@ export function LetterOverview({ onPick }: { onPick: (glyphKey: string) => void 
   const tiles = useMemo(
     () => shown.map((row) => ({ key: row.glyphKey, letterGlyph: row.letterGlyph, quality: row.quality })),
     [shown],
+  );
+
+  // What ‹ › in the letter detail will walk. The SELECTION, not the page: the
+  // reader who ranked the alphabet worst-first and opened the worst letter
+  // expects › to be the second-worst, and stopping at a page boundary would
+  // turn the stepper into a pager (P1-Q12 a).
+  usePublishSubjectOrder(
+    'letter',
+    useMemo(() => selected.map((row) => row.glyphKey), [selected]),
+    orderCaption(
+      state.sort === 'alphabet' ? de.admin.compare.sortAlpha : de.admin.compare.sortWorst,
+      state.filters.length > 0,
+    ),
   );
 
   // A page the selection cannot fill is corrected at render time — and the URL

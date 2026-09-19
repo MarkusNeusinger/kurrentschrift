@@ -33,6 +33,7 @@ import { ScoreBreakdownInline, ScoreChip, ScoreHelp } from '@/sections/admin/qua
 import { AggregateSketch } from '@/sections/admin/shell/AggregateSketch';
 import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
 import { isPoint, letterSketchAnchors, occurrenceChainsOf } from '@/sections/admin/shell/sketchGeometry';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 import { garamond, layerAlpha } from '@/styles/paper';
 
 // px — four faces have to fit beside each other on a laptop, so each is about
@@ -339,7 +340,16 @@ export function CompareCard({
               way INTO that letter — as an explicit button, not a click target on
               the whole card (which also carries the faces). */}
           {onPick && (
-            <Button size="small" onClick={() => onPick(glyphKey)} aria-label={fmt(t.openLetterFor, { key: glyphKey })}>
+            // 64×32.5 until the first sweep of the ADMIN routes (2026-09-19):
+            // the list's own „Öffnen" grew to the §9.3 floor when the work list
+            // was built, and the gallery's twin — twenty of them on one page —
+            // was never measured, because no route list reached this view.
+            <Button
+              size="small"
+              onClick={() => onPick(glyphKey)}
+              aria-label={fmt(t.openLetterFor, { key: glyphKey })}
+              sx={{ minHeight: TOUCH_TARGET }}
+            >
               {t.openLetter}
             </Button>
           )}

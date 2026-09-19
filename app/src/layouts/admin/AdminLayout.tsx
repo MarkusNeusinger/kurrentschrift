@@ -18,6 +18,7 @@ import { AdminHeader } from '@/sections/admin/shell/AdminHeader';
 import { adminTitle } from '@/sections/admin/shell/adminTitle';
 import { KorbProvider } from '@/sections/admin/shell/KorbContext';
 import { useKorb } from '@/sections/admin/shell/korbState';
+import { SubjectNavProvider } from '@/sections/admin/shell/SubjectNavContext';
 import { WorkbenchDataProvider } from '@/sections/admin/shell/WorkbenchData';
 
 // Split out so it can call useKorb() — the provider has to sit above it.
@@ -77,14 +78,19 @@ export function AdminLayout() {
 
   return (
     <PaperBackground minHeight="100dvh">
-      {/* Both providers sit ABOVE the outlet, so walking between the three
-          views keeps the loaded occurrences and the basket state — the whole
-          point of one workbench instead of five pages. */}
-      <WorkbenchDataProvider>
-        <KorbProvider>
-          <AdminShell />
-        </KorbProvider>
-      </WorkbenchDataProvider>
+      {/* All three providers sit ABOVE the outlet, so walking between the three
+          views keeps the loaded occurrences, the basket state and the order the
+          ‹ › stepper walks — the whole point of one workbench instead of five
+          pages. `SubjectNavProvider` is outermost because the Scope-Leiste in
+          the header reads it too (the Kurztasten switch), and the header is a
+          sibling of the outlet rather than a child of it. */}
+      <SubjectNavProvider>
+        <WorkbenchDataProvider>
+          <KorbProvider>
+            <AdminShell />
+          </KorbProvider>
+        </WorkbenchDataProvider>
+      </SubjectNavProvider>
     </PaperBackground>
   );
 }

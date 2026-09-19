@@ -36,6 +36,8 @@ import { WordTraceEditorDialog } from '@/sections/admin/belege/WordTraceEditorDi
 import { useFileMark } from '@/sections/admin/shell/korbState';
 import { LayerDot } from '@/sections/admin/shell/LayerDot';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
+import { SubjectStepper } from '@/sections/admin/shell/SubjectStepper';
+import { neighboursInOrder, orderCaption, stepOrder, useSubjectOrder } from '@/sections/admin/shell/subjectNav';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import {
   FOCUS_PARAMS,
@@ -51,7 +53,7 @@ import { garamond, layer, layerDash } from '@/styles/paper';
 
 import { WordOverview } from './WordOverview';
 import { WordSpineCard } from './WordSpineCard';
-import { WORD_LIST_SPEC, scoreOutcome, type ScoreEntry } from './wordRows';
+import { WORD_LIST_SPEC, scoreOutcome, wordTabOf, type ScoreEntry } from './wordRows';
 
 const WORD_H = 130; // px — the composed word, large enough to judge the rhythm
 // A chip that NAVIGATES carries the touch floor; a chip that only states
@@ -96,6 +98,9 @@ export function WordView() {
   const { source, sourceId, cropCacheBust, handId: ownHand } = useAdmin();
   const workbench = useWorkbench();
   const fileMark = useFileMark();
+  // The order the Wörter overview last showed — what ‹ › and Alt+Shift+←/→
+  // step through (P1-Q12 a).
+  const published = useSubjectOrder('word');
   const t = de.admin.words;
 
   const { text, specimenId } = readWordFocus(params);
@@ -265,6 +270,41 @@ export function WordView() {
   const letterKeys = useMemo(() => (text ? keysOfText(text) : []), [text]);
   const joinKeys = useMemo(() => (text ? joinsOfText(text) : []), [text]);
 
+  // What ‹ › walks. The stepper's unit is the WORTPROBE, not the word: two
+  // plates can carry the same text, and the detail already lands on the
+  // specimen the URL names. Where no specimen is named — a freely typed text —
+  // the head's first piece of evidence stands in, and a text that no plate
+  // holds at all simply has no neighbours.
+  //
+  // Fallback order: the plate's own sequence of Wortproben, which is the
+  // overview's default sort („Reihenfolge der Vorlage") and therefore the same
+  // walk a reader who never touched the toolbar would have got.
+  //
+  // …restricted to the TAB the current Wortprobe belongs to. The sidecar also
+  // holds the cross-hand Abb.-22 set (tab „andere") and the pair drills
+  // (`wordTabOf` → null, listed in no word tab at all), and a fallback over all
+  // of them would have walked into subjects the claimed „Registerfolge" never
+  // showed — reachable on a deep link, where nothing published overrides it.
+  const currentSample = specimenId ?? evidence[0]?.sample.id ?? '';
+  const registryWords = useMemo(() => {
+    const current = workbench.sampleById.get(currentSample);
+    const tab = current ? wordTabOf(current) : null;
+    if (tab === null) return [];
+    return workbench.samples.filter((sample) => wordTabOf(sample) === tab).map((sample) => sample.id);
+  }, [workbench.samples, workbench.sampleById, currentSample]);
+  const order = stepOrder(published, 'word', currentSample, {
+    keys: registryWords,
+    caption: orderCaption(de.admin.liste.orderRegistry, false),
+  });
+  const { prev, next } = neighboursInOrder(order.keys, currentSample);
+  // A step names both halves of the subject: the specimen AND its text, or the
+  // view would land on a word it cannot compose. `focus` merges, so the list
+  // state and the scope's `h=` ride along.
+  const stepWord = (sampleId: string) => {
+    const sample = workbench.sampleById.get(sampleId);
+    if (sample) focus(sample.word, sample.id);
+  };
+
   const runScore = (sampleId: string) => {
     setScores((prev) => ({ ...prev, [sampleId]: 'busy' }));
     getWordSampleScore(sourceId, sampleId)
@@ -354,7 +394,21 @@ export function WordView() {
       <ViewHeader
         eyebrow={de.admin.shell.areaWords}
         titleText={fmt(t.wordHeading, { text })}
-        title={<Typography sx={{ fontFamily: garamond, fontSize: 28, lineHeight: 1.2 }}>{text}</Typography>}
+        note={order.caption}
+        title={
+          // New in the keyboard round: this head had no stepper at all, so the
+          // next Wortprobe meant going back to the list and finding it.
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <SubjectStepper
+              prev={prev}
+              next={next}
+              onStep={stepWord}
+              prevLabel={t.prevWord}
+              nextLabel={t.nextWord}
+              between={<Typography sx={{ fontFamily: garamond, fontSize: 28, lineHeight: 1.2 }}>{text}</Typography>}
+            />
+          </Box>
+        }
         chips={
           <>
             {/* Two counts, because they are two things: how many Wortproben

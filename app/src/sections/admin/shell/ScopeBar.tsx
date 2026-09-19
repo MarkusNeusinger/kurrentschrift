@@ -20,15 +20,17 @@
 // actually belong to it.
 
 import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
-import { Box, Link, Typography } from '@mui/material';
+import { Box, FormControlLabel, Link, Switch, Typography } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
+import { visuallyHidden } from '@mui/utils';
+import { useEffect, useId, useRef, type ReactNode, type RefObject } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router-dom';
 
 import { useAdmin } from '@/context/adminState';
 import { de, fmt, styleLabel } from '@/locales/admin';
 import { paths } from '@/routes/paths';
 import { eigenhandUrl } from '@/sections/admin/shell/focus';
+import { useSubjectNav } from '@/sections/admin/shell/subjectNav';
 import { focusRingSx } from '@/styles/focusRing';
 import { TOUCH_TARGET } from '@/styles/hitArea';
 import { paper } from '@/styles/paper';
@@ -225,11 +227,83 @@ export function ScopeBar({ openCount }: { openCount: number | null }) {
         gloss={handsLoaded ? t.roleEigenhandGloss : undefined}
       />
 
-      {/* The rest of the row stays deliberately empty: the „Kurztasten" switch
-          belongs here (author decision P1-Q11 b) and is built by the keyboard
-          PR of this phase. It is an operability control, not a third scope —
-          which is why it may sit in a bar that never switches a scope. */}
+      {/* The switch sits at the END of the row, past the flexible gap: it is an
+          operability control, not a third scope — which is why it may live in a
+          bar that never switches a scope (author decision P1-Q11 b), and why it
+          is visually separated from the two fields rather than beside them. */}
       <Box sx={{ flex: '1 1 auto', minWidth: 16 }} aria-hidden />
+      <ShortcutSwitch />
+    </Box>
+  );
+}
+
+/**
+ * „Kurztasten an/aus" — the one switch of V24.
+ *
+ * Three things it does NOT do, each for a rule:
+ * · it does not carry its state in the knob's position alone. „an"/„aus" stands
+ *   beside it as text, and the binding under it as a caption — a switch read
+ *   only by where its knob sits is a colour-only state in another shape (§9.5).
+ * · it does not turn the ROVING lists off. Those are structure, not a shortcut:
+ *   without them a work list is 190 tab stops again, which is not a preference
+ *   anybody would set. Only the ‹ › key binding is switchable.
+ * · it does not disable the ‹ › BUTTONS. They are controls and keep working.
+ */
+function ShortcutSwitch() {
+  const { shortcuts, setShortcuts } = useSubjectNav();
+  const t = de.admin.shell;
+  const hintId = useId();
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', flex: '0 0 auto', scrollSnapAlign: 'end', pl: 1 }}>
+      <FormControlLabel
+        // The label sits BEFORE the switch so the row reads „Kurztasten [—o] an"
+        // left to right, the way the two scope fields read.
+        labelPlacement="start"
+        sx={{ ml: 0, mr: 0, minHeight: TOUCH_TARGET }}
+        control={
+          <Switch
+            size="small"
+            checked={shortcuts}
+            onChange={(event) => setShortcuts(event.target.checked)}
+            slotProps={{ input: { 'aria-describedby': hintId } }}
+          />
+        }
+        label={
+          <Typography variant="caption" component="span" sx={{ color: paper.sepia, whiteSpace: 'nowrap' }}>
+            {t.shortcutsLabel}
+          </Typography>
+        }
+      />
+      <Typography
+        variant="caption"
+        component="span"
+        // The state as a WORD. `aria-hidden`, because the switch already
+        // announces checked/unchecked — read out, the two would contradict each
+        // other in wording while agreeing in fact.
+        aria-hidden
+        sx={{ color: shortcuts ? paper.ink : paper.sepia, whiteSpace: 'nowrap', ml: 0.5 }}
+      >
+        {shortcuts ? t.shortcutsOn : t.shortcutsOff}
+      </Typography>
+      {/* The binding itself, so nobody has to be told about it elsewhere. Below
+          `md` it leaves the LAYOUT — the row already scrolls there and no key is
+          pressed on a phone — but not the accessibility tree: it is the switch's
+          `aria-describedby` target, and `display: none` would drop it from
+          there too, leaving the switch with no description at all on the one
+          viewport the verify walk ends on. */}
+      <Typography
+        id={hintId}
+        variant="caption"
+        component="span"
+        sx={(theme) => ({
+          color: paper.sepia,
+          whiteSpace: 'nowrap',
+          ml: 1.5,
+          [theme.breakpoints.down('md')]: { ...visuallyHidden, margin: '-1px' },
+        })}
+      >
+        {t.shortcutsHint}
+      </Typography>
     </Box>
   );
 }

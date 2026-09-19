@@ -48,6 +48,7 @@ import { ListEmpty, ListPager, ListSortSwitch, ListViewSwitch } from '@/sections
 import { useKorbItems } from '@/sections/admin/shell/korbState';
 import { korbCountsOf } from '@/sections/admin/shell/korbTargets';
 import { clampPage, pageSlice, readListState, writeListState, type ListState } from '@/sections/admin/shell/listState';
+import { orderCaption, usePublishSubjectOrder } from '@/sections/admin/shell/subjectNav';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { TOUCH_TARGET } from '@/styles/hitArea';
 
@@ -191,6 +192,19 @@ export function WordOverview({
   const page = clampPage(state.page, selected.length);
   const shown = useMemo(() => pageSlice(selected, state.page), [selected, state.page]);
   const tally = useMemo(() => wordTally(rows), [rows]);
+  // Above the early return below, because the order published from here needs
+  // it: „gefiltert" is part of the caption ‹ › prints.
+  const filtered = state.text.trim() !== '' || (state.status !== null && state.status !== WORD_STATUSES[0]);
+
+  // What ‹ › in the word detail will walk: the whole selection across pages, in
+  // the order and under the search and status on screen (P1-Q12 a). Keyed by
+  // SPECIMEN id — two plates can carry the same text, and each is its own piece
+  // of evidence, so the step has to name which one.
+  usePublishSubjectOrder(
+    'word',
+    useMemo(() => selected.map((row) => row.sampleId), [selected]),
+    orderCaption(state.sort === 'reihenfolge' ? t.sortOrder : de.admin.compare.sortWorst, filtered),
+  );
 
   // A page the selection cannot fill is corrected at render time — and the URL
   // with it, or a shared link would describe a page the view is not on. Only
@@ -216,7 +230,6 @@ export function WordOverview({
 
   if (!source) return null;
 
-  const filtered = state.text.trim() !== '' || (state.status !== null && state.status !== WORD_STATUSES[0]);
   const resetFilters = () => update({ text: '', status: WORD_STATUSES[0] });
 
   const searchField = (

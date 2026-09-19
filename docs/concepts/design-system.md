@@ -6,7 +6,10 @@
 > Routenliste); am 2026-09-04 um den Tintenboden geschriebener Zeilen
 > ergänzt (§9, §7 `WrittenWord`) und um die Postkarten-Federprobe samt
 > Schriftgrößen-Leiter (§7.1); am 2026-09-19 um die Ebenen- und Rollen-Token
-> samt Strichart-Regel und das `mono`-Token (§2, §7, §10).
+> samt Strichart-Regel und das `mono`-Token (§2, §7, §10) sowie um die
+> Tastatur-Regeln (§9.5 — Roving-Liste, Subjekt-Stepper, Kurztasten-Schalter,
+> `toolbar`-Rolle), den zweiten Kanal des Rasterpunkts (§9.4), zwei
+> Inventarzeilen (§7) und den `--admin`-Lauf der Messgitter (§10).
 > **Mitziehen bei jeder Änderung an `app/src/styles/paper.ts`,
 > `theme/typography.ts`,
 > `components/PageContainer|Prose|PageHeader|HeaderBar|PublicHeader|PublicFooter`,
@@ -385,6 +388,8 @@ Scope-Leiste darunter — §7 `HeaderBar`.
 | `CategoryHeading` | **Abschnitts**titel mit Viridian-Kurrent-Initiale auf Haarlinie | innerhalb einer Seite (`/schriftkunde`, `/impressum`, `/tafel`, `/landing`) |
 | `InfoHint` | grünes Kurrent-„(i)" + Popover („Mehr dazu") | app-weit, Detail eine Geste entfernt; in der Werkbank das Gegenstück zum Hover (§9.4) — **höchstens einer je Zeile und Gegenstand**, `label` benennt ihn („Score und Abzüge erklären") |
 | `ScoreHelp` (Admin) | die EINE Erklärung einer bewerteten Zeile: Score, „kein Score", „Fit ⌀", Abzugsrichtung, die sechs Kategorien | `quality/scoreParts.tsx`, ohne Props; am Kopf von `ScoreBreakdown` und am Anfang von `ScoreBreakdownInline` — ersetzt bis zu neun Hover je Zeile (§9.4) |
+| `useRovingList` (Hook) | macht eine Liste zu EINEM Tab-Stopp (§9.5) | `hooks/useRovingList.ts`, `orientation: 'vertical' \| 'horizontal'` (horizontal verlangt ein `label` — die Fläche wird `role="toolbar"`); markiert werden nur Behälter und Zeile (`rowProps(key)`), die Bedienelemente findet der Hook — `ROVING_SKIP` nimmt einen Zeilenkörper aus |
+| `SubjectStepper` (Admin) | ‹ Gegenstand › im Detailkopf, plus Alt+Umschalt+←/→ (§9.5) | `shell/SubjectStepper.tsx`: `prev`/`next`/`onStep`/`between`; die Reihenfolge kommt aus `shell/subjectNav.ts`, ihr Name als `note` des `ViewHeader` |
 | `PaperCardLink` | DIE Papier-Karte, die ein Link ist: Hover/Fokus heben sie an, Rand wird viridian | `to`, `sx`; Geschwister-Export `PaperCardCta` (Haarlinie wischt bei Karten-Hover/-Fokus ein) — genutzt von Landing, Hubs, `/schriftkunde` |
 | `HubView` | Hub-Layout (Titel + Lead + Karten-Grid) | `title`, `lead`, `cards[{title,body,cta,to}]` |
 | `HeroWritten` | einspaltiger Landing-Hero: Markenwort wird von der Engine geschrieben | Engine-first (`WrittenWord`, seit 2026-08-27); die Engine bekommt beliebig lange (Geduld-Zeile nach ~3 s, Autor-Entscheid 2026-08-27) — GLKurrent-Wort (Specimen) mit Wisch + Federspitze nur bei echtem Scheitern (Fetch-Fehler, fehlende Glyphen), Caption wechselt mit dem Modus |
@@ -508,8 +513,11 @@ Er ist zugleich der Anker der Schriftgrößen-Leiter (§7.1).
 `node app/scripts/type-floor.mjs` fährt alle öffentlichen Routen in einem echten
 Browser an, liest die *berechnete* Schriftgröße jedes Elements mit eigenem Text
 und schlägt unter 14 px fehl (der 13-px-`overline` ist als Teil der Leiter aus
-§3 ausgenommen). Nach jeder Typo- oder Theme-Änderung laufen lassen; das Skript
-ist der Mobil-Schritt von `/verify-frontend`.
+§3 ausgenommen). `--admin` fährt stattdessen die Werkbank-Routen an — ein
+eigener Lauf, weil ohne `VITE_ADMIN_TOKEN` jede Admin-Route der Boot-Fehler ist
+und ein Lauf darüber grün meldet, ohne ein Bedienelement gesehen zu haben (die
+Messung steht im Skriptkopf). Nach jeder Typo- oder Theme-Änderung laufen
+lassen; das Skript ist der Mobil-Schritt von `/verify-frontend`.
 
 ### 9.1 Fokus (bindend)
 
@@ -700,12 +708,17 @@ Beides — natives `title=` auf einer MUI-Primitive und ein rollenloses
 `tabIndex={0}` — hält `sections/admin/nonHover.guard.test.ts` fest.
 
 **Farbe zählt hier mit — und der `aria-label` ist erst die halbe Miete.** Wo ein
-Zustand als Farbe gezeichnet wird (der Punkt im Buchstabenraster: grün =
-Canonical, orange = nur Bbox), trägt das Bedienelement ihn als `aria-label`. Das
-ist die Hälfte im Barrierefreiheits-Baum; die andere schuldet §2 weiterhin, denn
-ein sehender Farbfehlsichtiger liest keinen `aria-label`. **Offener Fall:** das
-Buchstabenraster hat den Wortlaut im Namen, aber keinen zweiten SICHTBAREN Kanal
-— Autorfrage, weil jede Lösung das Raster umbaut.
+Zustand als Farbe gezeichnet wird, trägt das Bedienelement ihn als `aria-label`;
+das ist die Hälfte im Barrierefreiheits-Baum, die andere schuldet §2, denn ein
+sehender Farbfehlsichtiger liest keinen `aria-label`. Der Punkt im
+Buchstabenraster (`shell/LetterPicker.tsx`) ist der Fall, an dem die Regel
+hängt: **gefüllte Scheibe = Canonical, hohler Ring = nur Bbox**, gleiche Größe,
+Farben weiter aus den Token. Form trägt den Zustand, die Farbe bestätigt ihn nur
+— bei 8 px ist das der einzige zweite Kanal, der das Raster nicht umbaut.
+**Offener Fall, Vorschlag umgesetzt seit 2026-09-19, Autorentscheid steht
+aus:** das Raster liest der Autor täglich, und Scheibe-gegen-Ring ist eine
+sichtbare Änderung daran — ein Einzeiler in `LetterPicker.tsx` (`border`/
+`bgcolor`) führt zum alten Zwei-Farben-Punkt zurück.
 
 **Offene Ausnahme vom Typo-Boden: der Zähler der Deckungs-Zellen** (9,6 px,
 `eigenhand/BestandView.tsx`). Ihn zu heben legt ~90 Zellen neu, die der Autor
@@ -713,6 +726,65 @@ täglich liest. Erreichbar ist die Zahl trotzdem: der Zähler ist `aria-hidden`,
 der volle Satz ist der NAME jeder Zelle. `type-floor.mjs` kennt die Ausnahme
 NICHT und meldet sie — absichtlich, denn sie wäre die Entscheidung, die noch
 aussteht.
+
+### 9.5 Tastatur (bindend — Vorgabe V24 des Admin-Redesigns)
+
+**Eine lange Liste ist EIN Tab-Stopp** — sonst kostet eine Übersicht mit 63
+Zeilen à drei Bedienelementen ~190 Anschläge bis zur Werkzeugleiste darunter.
+Sie ist eine **Roving-Liste** (`hooks/useRovingList.ts`): Tab hinein auf die
+zuletzt besuchte Zeile (sonst die erste), ↑/↓ zwischen Zeilen, ←/→ zwischen den
+Bedienelementen EINER Zeile, `Home`/`End` an die Enden, Tab hinaus. Kein Umlauf.
+In einer **umbrechenden** Kachelfläche nur ←/→ und `Home`/`End`: ein Flex-Grid
+hat keine feste Spaltenzahl, und ein ↓ über sechs Kacheln bei 1440 px und drei
+bei 1024 px wäre schlechter als keins. Enter und Leertaste bleiben unangetastet
+(es sind echte Schaltflächen), der Körper einer aufgeklappten Zeile bleibt außen
+vor (`data-roving-skip`) und behält seine eigene Tab-Folge. Der Fokus hängt am
+Zeilen-SCHLÜSSEL: fällt die Zeile durch Filter oder Seitenwechsel weg, übernimmt
+die an ihrer Stelle — nie `<body>`, und nie zurück aus etwas, das der Leser
+inzwischen angefasst hat.
+
+**Eine Kachelfläche ist eine benannte `toolbar`, eine Arbeitsliste bleibt
+rollenlos.** Ein Tab-Stopp ohne zusammengesetzte Rolle lässt einen Screenreader
+im Lesemodus: er behält die Pfeiltasten für den eigenen Cursor, und die Zeilen,
+die das Roving aus der Tab-Folge genommen hat, wären dann über gar nichts mehr
+erreichbar. Die umbrechenden Flächen (Ankerleiste, Paar-Zellen,
+Streifen-Galerie) sind genau das, was `toolbar` beschreibt — ein flacher Satz
+Bedienelemente —, und bekommen `role="toolbar"`, `aria-orientation="horizontal"`
+und einen NAMEN (`useRovingList({ orientation: 'horizontal', label })`, im Typ
+erzwungen). Eine Arbeitsliste ist das nicht: ihre Zeile ist ein GEGENSTAND mit
+mehreren Bedienelementen, also ehrlich ein `grid` aus `row`/`gridcell` — ein
+Umbau dreier Komponenten, den die Zeilen nicht brauchen, weil jedes
+Bedienelement seinen Gegenstand schon im eigenen Namen trägt („Wortprobe *laufen*
+aufklappen"). Das ist ein Entscheid, kein Versehen; der `grid`-Umbau steht als
+Nacharbeit.
+
+**Ein Gegenstand, ein Stepper.** Jedes Detail trägt ‹ › um seinen Gegenstand
+(`shell/SubjectStepper.tsx`), mit Namen statt bloßem Pfeil, und dieselbe
+Bewegung auf **Alt + Umschalt + ← / →**. Nicht `Alt+←/→`: das IST
+Zurück/Vorwärts auf Windows und Linux, und die Verlinkungs-Doktrin des Admins
+lebt vom Zurück-Knopf (P1-Q11 b). Der Stepper folgt der **Reihenfolge der
+Übersicht, aus der der Leser kam**, Filter und Sortierung eingeschlossen
+(P1-Q12 a); weil dieselben Pfeile damit nach einem Filterklick etwas anderes
+bedeuten, nennt der Kopf die Reihenfolge sichtbar („Reihenfolge: Schlechteste
+zuerst · gefiltert") — ohne veröffentlichte Reihenfolge die Registerfolge, auch
+das gesagt. Ein Schritt lässt Listen-Zustand und `h=` stehen.
+
+**Kurztasten feuern nur, wo sie dürfen, und sind abschaltbar.** Nie in `input`,
+`textarea`, `select`, `contenteditable` oder einem offenen Dialog — Wizard und
+Bahn-Editor besitzen ihre Tasten selbst —, und `preventDefault()` nur, wenn
+wirklich geblättert wird. Der Schalter **„Kurztasten"** sitzt am Ende der
+Scope-Leiste (P1-Q11 b), Zustand als sichtbares Wort daneben, Kombination als
+Beschriftung — unter `md` verlässt dieser eine Satz das LAYOUT, aber nicht den
+Barrierefreiheits-Baum (`visuallyHidden` statt `display: none`), denn er ist das
+Ziel des `aria-describedby` des Schalters; die Einstellung lebt in
+`localStorage` — der einzige Fall, denn
+sie gehört dem LESER und darf in keinem Link reisen —, jeder Zugriff in
+`try/catch`, Voreinstellung AN. Aus ist NICHTS gebunden, die ‹ ›-Knöpfe arbeiten
+weiter. **Roving fällt nicht unter den Schalter**: Struktur, keine Kurztaste.
+**Einzelbuchstaben-Kurztasten (`n`/`p`, `j`/`k`) gibt es nicht.**
+
+Nachweis ist ein Durchgang mit **echten** Tastenanschlägen, kein Skript: ein
+`element.focus()` löst `:focus-visible` nicht aus (§9.1).
 
 ---
 
@@ -739,8 +811,9 @@ aussteht.
   `minHeight` der Umschaltgruppen unter `sm`). Eine neue Ausnahme gehört dorthin,
   nicht an die Aufrufstelle. Gegenprobe: `npm run type-floor` (§9) und
   `npm run touch-targets` (§9.3) — beide gegen die laufende Seite, beide mit
-  `--routes` auch gegen die Admin-Routen — plus ein Tastatur-Durchgang für den
-  Fokusring (§9.1) und die Nicht-Hover-Regel (§9.4), den kein Skript ersetzt.
+  `--admin` zusätzlich gegen die elf Werkbank-Routen — plus ein
+  Tastatur-Durchgang für den Fokusring (§9.1), die Nicht-Hover-Regel (§9.4) und
+  die Roving-Listen (§9.5), den kein Skript ersetzt.
   Ein neues Bedienelement muss nirgends nachgetragen werden — der Sweep findet
   jedes von selbst; nur eine begründete Ausnahme gehört benannt in
   `app/scripts/touch-targets.mjs`.

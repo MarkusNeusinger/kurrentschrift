@@ -16,6 +16,7 @@ import { Box, ButtonBase, Typography } from '@mui/material';
 
 import { WrittenWord } from '@/components/WrittenWord';
 import { useInView } from '@/hooks/useInView';
+import { useRovingList } from '@/hooks/useRovingList';
 import { de, fmt } from '@/locales/admin';
 import type { PairRow } from '@/sections/admin/pairs/pairRows';
 import type { ListView } from '@/sections/admin/shell/listState';
@@ -99,16 +100,19 @@ function PairCell({
   sourceId,
   view,
   onPick,
+  rowProps,
 }: {
   row: PairRow;
   sourceId: string;
   view: ListView;
   onPick?: () => void;
+  rowProps: Record<string, string>;
 }) {
   const [ref, inView] = useInView<HTMLDivElement>();
   return (
     <Box
       ref={ref}
+      {...rowProps}
       component={onPick ? ButtonBase : Box}
       onClick={onPick}
       aria-label={onPick ? cellLabel(row) : undefined}
@@ -155,14 +159,21 @@ export function PairCellGrid({
   view: ListView;
   onPick: (leftKey: string, rightKey: string) => void;
 }) {
+  // A WRAPPING grid, so the roving is horizontal: ←/→ walk the cells, Home/End
+  // jump to the ends, and ↑/↓ do nothing at all. A flex grid re-wraps with the
+  // window, so it has no stable column count to step down through — a Down that
+  // jumped six cells at 1440 px and three at 1024 px would be worse than none
+  // (`lib/roving.ts`). Before this each grid was ~60 tab stops.
+  const roving = useRovingList({ orientation: 'horizontal', label: de.admin.pairs.cellsLabel });
   return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+    <Box {...roving.containerProps} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
       {rows.map((row) => (
         <PairCell
           // The page/view is part of the key because `useInView` is one-shot:
           // a cell swapped in under an old key would keep the previous one's
           // „already seen" flag and never fetch its own render.
           key={`${row.text}:${view}`}
+          rowProps={roving.rowProps(row.text)}
           row={row}
           sourceId={sourceId}
           view={view}

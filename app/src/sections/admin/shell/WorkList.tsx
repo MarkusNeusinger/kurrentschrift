@@ -23,6 +23,7 @@ import { Box, Button, Chip, Collapse, ToggleButton, ToggleButtonGroup, Typograph
 import { useId } from 'react';
 import type { ReactNode } from 'react';
 
+import { ROVING_SKIP } from '@/hooks/useRovingList';
 import { de, fmt } from '@/locales/admin';
 import { LIST_VIEWS, PAGE_ALL, pageCount, type ListPage, type ListView } from '@/sections/admin/shell/listState';
 import { TOUCH_TARGET } from '@/styles/hitArea';
@@ -215,6 +216,11 @@ export function ListPager({
  * One row of a work list: the subject, its chips and numbers, and the existing
  * card as the body it expands INTO. The card is mounted only while the row is
  * open (`unmountOnExit`), which is what keeps a collapsed list free of images.
+ *
+ * The row is also one stop of the Roving-Liste: `rowProps` marks it, and the
+ * hook then manages every control in its HEAD. The expanded body is explicitly
+ * excluded (`ROVING_SKIP`) — a card the reader just opened must keep its own
+ * tab order, or opening a row would bury its controls behind the arrow keys.
  */
 export function WorkRow({
   expanded,
@@ -224,6 +230,7 @@ export function WorkRow({
   chips,
   actions,
   subline,
+  rowProps,
   children,
 }: {
   expanded: boolean;
@@ -237,10 +244,13 @@ export function WorkRow({
   // The second line of a collapsed row — the numbers behind the chips (for a
   // letter: where its score went). Text only; an image belongs in the body.
   subline?: ReactNode;
+  /** `useRovingList().rowProps(key)` — absent where a list has no roving. */
+  rowProps?: Record<string, string>;
   children: ReactNode;
 }) {
   return (
     <Box
+      {...rowProps}
       sx={{
         border: 1,
         borderColor: 'divider',
@@ -267,7 +277,7 @@ export function WorkRow({
         {actions}
       </Box>
       {subline && <Box sx={{ pl: 1, pb: 0.5 }}>{subline}</Box>}
-      <Collapse in={expanded} unmountOnExit>
+      <Collapse in={expanded} unmountOnExit {...ROVING_SKIP}>
         {children}
       </Collapse>
     </Box>

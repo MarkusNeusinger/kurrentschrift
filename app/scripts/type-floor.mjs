@@ -13,6 +13,7 @@
 //   node scripts/type-floor.mjs                        # localhost:3000, 390px
 //   node scripts/type-floor.mjs --base https://kurrentschrift.ink
 //   node scripts/type-floor.mjs --width 1280 --floor 14
+//   node scripts/type-floor.mjs --admin                # the workbench routes
 //
 // No new dependency: it drives Chrome over the DevTools Protocol using Node 22's
 // built-in WebSocket (`browser.mjs`, shared with `touch-targets.mjs`).
@@ -38,6 +39,38 @@ const DEFAULT_ROUTES = [
   '/gibt-es-nicht-404',
 ];
 
+// The workbench, as a SEPARATE set behind `--admin` rather than as part of the
+// default run — the same decision, for the same measured reason, as
+// `touch-targets.mjs`: without `VITE_ADMIN_TOKEN` in the dev server's env every
+// admin read 401s and `AdminLayout` shows its boot-error screen, so the check
+// measures a screen with one button on it and reports eleven routes as done.
+// Here that really is a false GREEN — a boot screen has no text under the
+// floor. The default run cannot tell the two states apart, so it does not try;
+// `/verify-frontend` runs `--admin` against its seeded throwaway stack.
+//
+// One known finding lives on these routes and is NOT an exception here: the
+// Deckungs-Zähler of `eigenhand/BestandView.tsx` at 9.6px (design-system.md
+// §9.4, „Offene Ausnahme"). It is reported on purpose — the decision to raise
+// or keep it is the author's and still open.
+const ADMIN_ROUTES = [
+  '/admin',
+  '/admin/buchstaben',
+  '/admin/buchstaben?ansicht=galerie',
+  '/admin/buchstaben?g=a',
+  '/admin/uebergaenge?l=a',
+  '/admin/uebergaenge?l=a&r=b',
+  '/admin/woerter',
+  '/admin/woerter?w=lesen',
+  '/admin/eigenhand',
+  '/admin/eigenhand?reiter=streifen',
+  // WITH a filter: the strips surface only draws its Kachel-Galerie once
+  // something selects, and the unfiltered route above shows whole-strip tiles.
+  // Same named limitation as in `touch-targets.mjs`: a fresh Chrome profile has
+  // no HAND chosen, so these two rows measure the page's chrome and not its
+  // tiles. `/verify-frontend` walks the tiles on a persistent profile.
+  '/admin/eigenhand?reiter=streifen&wort=e',
+];
+
 // ── arguments ───────────────────────────────────────────────────────────────
 
 function parseArgs(argv) {
@@ -60,6 +93,11 @@ function parseArgs(argv) {
         break;
       case '--routes':
         opts.routes = value.split(',');
+        break;
+      case '--admin':
+        // A flag, not a value — put the argument back if one followed.
+        opts.routes = ADMIN_ROUTES;
+        if (inline === undefined) i -= 1;
         break;
       default:
         throw new Error(`unknown argument: ${flag}`);
