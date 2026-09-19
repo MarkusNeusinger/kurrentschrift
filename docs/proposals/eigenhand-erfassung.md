@@ -1,6 +1,6 @@
 # Eigenhand-Erfassung: Wortvorrat, Streifen, Bögen
 
-> **Status (2026-09-18): teil-umgesetzt.** Seit dem Autor-Entscheid vom
+> **Status (2026-09-19): teil-umgesetzt.** Seit dem Autor-Entscheid vom
 > 2026-09-07 ist der Bestand nicht mehr nur Datenquelle: die Eigenhand
 > **wird die ausgelieferte Schreibhand der Seite**, sobald sie Alphabet und
 > Übergänge deckt (§2; die bindende Rollenteilung Tafel · Platte ·
@@ -19,7 +19,10 @@
 > Die Wellen 0 bis 2
 > des Streifenplans sind committet (Streifen 1–180: Buchstaben, Ziffern,
 > Zeichen, Mindestbelegung ≥3 je Glyphe), dazu seit 2026-09-06 die erste
-> Anheftung (`S0181` = „Kurrentschrift", §4). **Der erste echte Bogen
+> Anheftung (`S0181` = „Kurrentschrift", §4) und seit 2026-09-19 die
+> Referenzwörter (`S0182`–`S0188`: §9-Wörter + Entwicklungssatz dev-19,
+> Autor-Entscheid Q17; 188 Streifen, 560 distinkte Wörter).
+> **Der erste echte Bogen
 > `B0001` ist gedruckt, geschrieben und eingelesen** (2026-09-07: drei
 > Fassungen mit Befund und Fleckenmaske §7.4 in der DB, erster
 > Archiv-Snapshot). Zukunft ist Phase 5 (§9: Anschluss an Fit/Ernte) sowie
@@ -281,6 +284,45 @@ nächsten. Stand 2026-09-06: `S0181` = „Kurrentschrift", geschrieben
 `Kurrentſchrift` (die Standardregeln geben das lange ſ am Anfang des
 zweiten Morphems von selbst, also keine Fugen-Form und ein Label ohne
 Hinweiszeichen).
+
+**Die Referenzwörter** (Autor-Entscheid Q17 zum
+[Admin-Redesign](admin-redesign.md), 2026-09-18). Die zweite Anheftung
+ist kein Einzelfall, sondern eine Brücke: die Wörter, an denen sich das
+Vorhaben misst, bekommen früh einen eigenen Streifen. Angeheftet werden
+die WÖRTER des eingefrorenen Entwicklungssatzes dev-19
+(`tools/tracebench/sets.py::TRACEBENCH_DEV_IDS`; dessen Kennungen tragen
+die Vorkommensnummer eines wiederholten Belegs — `und-3` ist kein
+eigenes Wort —, die 12 distinkten Worttexte werden daraus abgeleitet,
+nicht abgeschrieben) und die drei §9-Wörter aus
+[`architektur.md`](../concepts/architektur.md): das Pflicht-Anker-Paar
+`lesen` + `das` und, davon getrennt, das Generalisierungs-Wort `denen`
+(kein Anker). Für die zwölf dev-Wörter — `das` gehört dazu — ist die
+Brücke DREIFACH: Platten-Beleg, eigener Streifen, Systemrendering; erst
+damit KANN eine Ansicht bei ein und demselben Wort Tafel · Platte ·
+Eigenhand nebeneinander legen, statt die drei nur über Items zu
+verbinden. `lesen` und `denen` schreibt die Platte von 1922 nicht (der
+Sidecar `data/sources/suetterlin-1922/words.json` führt keines von
+beiden; im Test festgehalten) — sie bekommen den Streifen neben ihrem
+Systemrendering, also eine zweifache Brücke. Zusammen 14 Referenzwörter; kuratiert sind sie
+längst (Schichten `mvp9` und `bench-abb19`), die Anheftung verschiebt
+sie nur an die Spitze. Die Abhängigkeit läuft in EINE Richtung: die
+Kuration liest den eingefrorenen Satz, nie umgekehrt (§12 Prüfstein 2).
+
+Sieben davon stehen schon im Plan und werden nach der Regel „ein bereits
+geplantes Wort wird nicht angeheftet" übersprungen (`das`,
+`Galoppieren`, `linken`, `mit`, `muß`, `und`, `zwei`) — ebenso
+`Kurrentschrift`, das seinen Streifen seit `S0181` hat. Die anderen
+sieben bekommen je einen eigenen Streifen in einer angehängten Welle
+(`wave: 4`): `S0182` `lesen` · `S0183` `denen` · `S0184` `Wer` · `S0185`
+`die` · `S0186` `laden` · `S0187` `unter` · `S0188` `will`. Der Plan
+wächst damit von 181 auf 188 Streifen und von 553 auf 560 distinkte
+Wörter; `S0001`–`S0181` bleiben Byte für Byte, was sie waren (als
+Prüfsumme im Test festgehalten, nicht als Zusicherung in Prosa).
+`laden` wird angeheftet, obwohl `Laden` im Plan steht: Groß- und
+Kleinschreibung sind im Wortvorrat absichtlich verschiedene Wörter, weil
+der Großbuchstabe anders formt. Und weil es jetzt mehr Pins gibt, als
+ein Bogen Zeilen hat, füllen sie den ersten Bogen und laufen auf dem
+nächsten weiter — zugesagt ist die Reihenfolge, nicht ein Bogen.
 
 **Trainingsdaten, kein Mess-Satz.** Der Wortvorrat und der Streifenplan
 wachsen; KEINE Bench-Kopfzahl liest je aus ihnen. Sollte je eine Messung

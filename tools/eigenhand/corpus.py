@@ -26,7 +26,10 @@ docs/proposals/eigenhand-erfassung.md). Four curation layers, merged by
                     glyph-position Soll but no joins
 * ``pin``         — words the author wants written FIRST for their own sake,
                     not for their coverage (``PINNED_FIRST``); they skip the
-                    quota-driven fill via ``tools.eigenhand.pool pin``
+                    quota-driven fill via ``tools.eigenhand.pool pin``. Most of
+                    them reach the pool through another layer already — the
+                    tag then says "also wanted early", and the earlier layer
+                    keeps the gloss
 
 Frequency LISTS are never committed (quiz-wortbank.md §4 — protectable
 databases, often NC); this pool is an own, merely *informed* curation and
@@ -39,9 +42,11 @@ bench headline ever reads from it (frozen-reference doctrine untouched).
 
 from __future__ import annotations
 
+import re
 from typing import TypedDict
 
 from tools.quizgen.corpus import ENTRIES as _QUIZ_ENTRIES
+from tools.tracebench.sets import TRACEBENCH_DEV_IDS
 
 
 class PoolEntry(TypedDict, total=False):
@@ -553,6 +558,44 @@ _ZEICHEN_ENTRIES: list[PoolEntry] = [
 ]
 
 
+# --- the project's reference words ------------------------------------------
+# Architecture §9's three named words: the Pflicht-Anker pair `lesen` + `das`
+# and, separately, the generalisation word `denen`. Two roles, so the list is
+# named for what the three share — they are the §9 references — not "anchors".
+_MVP_REFERENCE_WORDS = ["lesen", "das", "denen"]
+
+_OCCURRENCE_SUFFIX = re.compile(r"-\d+$")
+
+
+def _dev_split_words() -> list[str]:
+    """The distinct word texts behind the frozen dev-19 specimen ids.
+
+    The ids carry the occurrence number of a repeated word (`und-3`), which is
+    a sample identity, not a word — three occurrences of `und` are one word to
+    write. Derived rather than copied so the pin list cannot drift away from
+    the split it names.
+    """
+    return sorted({_OCCURRENCE_SUFFIX.sub("", sample_id) for sample_id in TRACEBENCH_DEV_IDS})
+
+
+# The project's reference words get an own-hand strip early (owner decision
+# Q17, 2026-09-18). For the twelve dev-split words — `das` among them — that
+# closes a three-way bridge: each exists as a 1922 plate sample and as a system
+# rendering already, and the strip is what the pin adds, so a Tafel · Platte ·
+# Eigenhand comparison has the same word on all three sides. `lesen` and
+# `denen` are NOT on the plate (the sidecar `data/sources/suetterlin-1922/
+# words.json` has neither); they gain the strip beside their rendering, a
+# two-way comparison. Both halves are already curated above (`mvp9`,
+# `bench-abb19`) — pinning only moves them to the head of the print queue.
+#
+# The dependency runs ONE way: the curation reads the frozen split, and no
+# bench number ever reads the strip plan (proposal §12 Prüfstein 2). A
+# reference word the plan already carries is NOT pinned — a pin says "write
+# this early", not "write this again" (proposal §4), and `pool.pin_words`
+# skips it.
+REFERENCE_WORDS: list[str] = list(dict.fromkeys(_MVP_REFERENCE_WORDS + _dev_split_words()))
+
+
 # --- pinned words: written FIRST, because the author wants them early -------
 # Not a coverage argument and not pretending to be one — these words earn their
 # place by what they are, so they bypass the quota-driven fill instead of
@@ -564,7 +607,15 @@ _PIN_ENTRIES: list[PoolEntry] = [
     # Shapes as `Kurrentſchrift`: the default rules already give the long ſ at
     # the start of the second morpheme (`-schrift`), so no fugen marker is
     # needed and the label prints plainly.
-    {"word": "Kurrentschrift", "note": "Name des Vorhabens; steht im Hero der Seite"}
+    {"word": "Kurrentschrift", "note": "Name des Vorhabens; steht im Hero der Seite"},
+    # No note and no era/lang here: every reference word is already curated in
+    # an earlier layer, and `pool_entries()` keeps the first writer's gloss —
+    # a second note would be silently dropped. The `pin` tag unions on top.
+    # That an earlier layer really carries each of them is a test, not a
+    # promise (`test_every_reference_word_is_curated_outside_the_pin_layer`):
+    # these rows put the words into the pool themselves, so the uncurated-word
+    # guard in `pool.pin_words` can no longer catch a gap here.
+    *({"word": word} for word in REFERENCE_WORDS),
 ]
 PINNED_FIRST: list[str] = [entry["word"] for entry in _PIN_ENTRIES]
 
