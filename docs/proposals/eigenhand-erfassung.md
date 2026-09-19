@@ -796,7 +796,20 @@ Platte → `ingest` → Siebung → `apply` → `tools.eigenhand.sync` schiebt
 Bögen und Verdikte zurück. Wer im Terminal druckt, schiebt seine Bögen
 mit demselben `sync` hoch: beide Seiten münzen ihre IDs aus derselben
 Kartei-Sicht, und ein registrierter Bogen nimmt seine ID aus dem
-Verkehr. Ein bereits registriertes Layout wird nie überschrieben — ein
+Verkehr.
+
+**Wo die Schleife die Maschine wechselt, sagt es die Werkbank.** Seit dem
+Admin-Redesign (Plan §5.1 Idee 11, §9.2) stehen die lokalen Schritte nicht
+mehr als feste Hinweise unter den Panels, sondern als **Übergabekarten** im
+Bestand: Titel, Grund, Befehl mit den echten Ids, „Danach hier" und
+Reihenfolge — und nur so lange, wie der Schritt offen ist. Fällig ist, was
+der SERVER sieht; ein Schnappschuss oder ein eingelesenes Blatt hinterlässt
+in der DB keine Spur und kann darum nie bestätigt werden. Entschieden wird
+das einmal in `core/eigenhand/faellig.py` (Phase 1: Ausrüstung holen ·
+Gewichte hochschieben · ältester offener Bogen · Bilder ohne `sync`), und
+weil die Zwischenablage nicht vom Tablet zum Rechner reicht, druckt
+`tools.eigenhand.report --faellig` dieselbe Liste dort — der einzige Modus
+dieses Werkzeugs, der die API liest. Ein bereits registriertes Layout wird nie überschrieben — ein
 abweichendes unter derselben ID ist ein Konflikt (409), weil ein Scan
 dagegen registriert sein kann. „Abweichend" heißt: andere Geometrie,
 verglichen über die KANONISCHE Form (`bogen.layout_digest`, Schlüssel

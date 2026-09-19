@@ -78,7 +78,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichart-Regel §5 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste (geplant) §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Span-Herkunft (→ Buchstabengrenzen einer Bahn) §5 · Span-Zuordner (→ Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue (geplant) §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) (geplant) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unteransicht (Eigenhand) §5 · Unvollständige Wortprobe §5
-- **Ü** — Übergabekarte (geplant) §5 · Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
+- **Ü** — Übergabekarte §5 · Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
 - **V** — Variante §2 · Varianten-Band (geplant) §5 · Verbinder-Mitschnitt §4 · Vergleichsstreifen (geplant) §5 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschlag (Streifen-Befund) §5 · Vorschub-Kalibrierung §2 · Vorschrift §1
 - **W** — W1–W6 §5 · Wachstumsschleife (Eigenhand) (geplant) §5 · Wackler §4 · Warp §3 · Wellen-Basis §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wortkasten (Admin-Redesign, geplant) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Tintenlücke §2 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
 - **X** — x-Höhe (`xh`) §1
@@ -4573,14 +4573,34 @@ nichts gebaut; vorgesehen ein lokaler, gitignorter Export unter `tools/`,
 nie Repo-Inhalt. → Buchstabengrenzen einer Bahn; proposals/tintenfolger.md
 §2.5; proposals/eigenhand-erfassung.md §7.5, §12 (Prüfstein 2)
 
-**Übergabekarte (geplant)** — die zustandsgetriebene Karte im Admin für
-einen Schritt, der lokal bleiben muss (`pull`, `ingest`, `apply`, `sync`,
-`pfad`, `snapshot`, `redo`): Titel, Warum mit Doktrin-Grund, Befehl mit
-Parametern, „Danach hier", Reihenfolge — sie verschwindet, sobald der
-Zustand da ist. Repo-Schritte (`pool pin`) sind keine Karte, sondern
-Korb-Notiz an die KI-Runde; am Rechner ist `tools.eigenhand.report
---faellig` der Zwilling der Karten. → proposals/admin-redesign.md §5.1
-(Idee 11), §10.3
+**Übergabekarte** — die zustandsgetriebene Karte im Admin für einen Schritt,
+der lokal bleiben muss (`pull`, `ingest`, `apply`, `sync`, `pfad`,
+`snapshot`, `redo`): Titel, Warum mit Doktrin-Grund, Befehl mit Parametern,
+„Danach hier", Reihenfolge — sie verschwindet, sobald der Zustand da ist.
+Sie zeigt nur, was der SERVER sieht; einen Schnappschuss oder ein lokal
+eingelesenes Blatt kann sie nicht bestätigen. Repo-Schritte (`pool pin`)
+sind keine Karte, sondern Korb-Notiz an die KI-Runde; am Rechner ist
+`tools.eigenhand.report --faellig` der Zwilling der Karten — der EINE
+Modus dieses Werkzeugs, der die API liest, weil eine fällige Liste die
+Frage „was ist noch nicht oben angekommen" beantwortet und lokal immer
+erledigt aussähe. Ein Kopierknopf reicht nie einen schreibenden Befehl
+weiter: die Bahn-Karte kopiert den Trockenlauf, `--apply` steht im
+Reihenfolge-Hinweis hinter dem Schnappschuss (Q9, 2026-09-19).
+*Technisch:* die Regeln stehen EINMAL und serverseitig in
+`core/eigenhand/faellig.py` (Phase 1: `setup_pull` · `universe_push` ·
+`bogen_pull` auf dem ÄLTESTEN offenen Bogen · `sync_streifen`; die
+zurückgestellten Regeln stehen mit Grund im Modul-Docstring) und reisen als
+Feld `faellig` auf dem bestehenden Bestand-Abruf
+(`EigenhandBestandOut.faellig`, keine neue Route). Die BEFEHLE kommen als
+Code von dort, die deutsche Fassung liegt nach Regel-Id im Katalog
+(`locales/de/admin.ts`, `eigenhand.uebergabe`); eine unbekannte Id ergibt
+keine Karte, nie eine leere
+(`app/src/sections/admin/eigenhand/uebergabe.ts`, Bauteil
+`Uebergabekarte.tsx`, Block „Am Rechner weiter" in `BestandView`). Die
+Karte „Bahn folgen" baut die Ansicht selbst, weil es vor der schlanken
+Streifen-Leseschicht (Phase 2) keinen handweiten Read gibt, der sagt,
+welche Fassung eine Bahn hat. → proposals/admin-redesign.md §5.1
+(Idee 11), §9.2, §10.3
 
 **Unteransicht (Eigenhand)** — eine der vier Flächen, die sich die eine Route
 `/admin/eigenhand` teilen: *bestand* (wie weit ist die Hand gekommen),

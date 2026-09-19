@@ -18,9 +18,10 @@ import { de, fmt } from '@/locales/admin';
 import { glyphOf } from '@/sections/admin/eigenhand/coverageLabels';
 import { SetupPanel } from '@/sections/admin/eigenhand/SetupPanel';
 import { Stat } from '@/sections/admin/eigenhand/Stat';
-import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
+import { rechnerBefehl, uebergabeKarten } from '@/sections/admin/eigenhand/uebergabe';
+import { Uebergabekarte } from '@/sections/admin/eigenhand/Uebergabekarte';
 import { Panel } from '@/sections/admin/shell/Panel';
-import { paper } from '@/styles/paper';
+import { mono, paper } from '@/styles/paper';
 
 const BUCKET_LABELS: Record<string, string> = {
   klein: de.admin.eigenhand.bucketKlein,
@@ -126,6 +127,11 @@ export function BestandView({
     [bestand, openOnly],
   );
 
+  // The due local steps, in the server's order. An empty list renders NOTHING —
+  // the panel with its headline would otherwise say „next up at the machine"
+  // over an empty box on every hand that is up to date.
+  const karten = useMemo(() => uebergabeKarten(bestand.faellig), [bestand.faellig]);
+
   return (
     <Stack spacing={3}>
       <SetupPanel hand={hand} />
@@ -146,6 +152,27 @@ export function BestandView({
           ))}
         </Box>
       </Panel>
+
+      {karten.length > 0 && (
+        <Panel title={t.uebergabe.title} caption={t.uebergabe.caption}>
+          <Stack spacing={1.5}>
+            {karten.map((karte) => (
+              <Uebergabekarte key={karte.id} karte={karte} />
+            ))}
+            {/* The twin, once under the block rather than on every card: the
+                clipboard does not reach from the tablet to the machine, so the
+                one command that prints this very list there is meant to be
+                READ and typed — no copy button, and no promise that a card
+                built in the browser would appear in its output. */}
+            <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+              {t.uebergabe.rechnerLead}
+              <Box component="code" sx={{ fontFamily: mono, userSelect: 'all' }}>
+                {rechnerBefehl(hand)}
+              </Box>
+            </Typography>
+          </Stack>
+        </Panel>
+      )}
 
       <Panel
         title={t.coverageTitle}
@@ -204,7 +231,12 @@ export function BestandView({
             />
           </Stack>
         ) : (
-          <TerminalCommand lead={fmt(t.quotenNone, { hand })} command={t.quotenNoneCommand} />
+          /* The state, not the command: the step itself stands once, as the
+             `universe_push` card above. Saying it twice was how the same
+             sentence started drifting in two places. */
+          <Typography variant="caption" sx={{ color: paper.inkSoft }}>
+            {t.quotenNone}
+          </Typography>
         )}
       </Panel>
     </Stack>

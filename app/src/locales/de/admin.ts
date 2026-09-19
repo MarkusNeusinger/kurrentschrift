@@ -1072,11 +1072,12 @@ export const admin = {
     // have: one line saying what the block shows.
     quotenCaption:
       'Wie viel des Übergangsraums die Hand schon belegt und wie tief — gewichtet nach Häufigkeit im Korpus.',
-    // Sentence and command are two keys, not one: the command is set in
-    // monospace on its own line with a copy button (TerminalCommand).
+    // The panel says WHAT is missing; the command that fixes it stands once, in
+    // „Am Rechner weiter" (`uebergabe.karten.universe_push`). Before the
+    // Übergabekarten this sentence carried its own copyable command, and the
+    // same step was then stated in two places at once.
     quotenNone:
-      'Erstbeleg- und Ausbau-Quote brauchen die Übergangsraum-Gewichte; die liegen noch nicht in der Datenbank. Vom Rechner mit den Konsult-Korpora:',
-    quotenNoneCommand: 'uv run python -m tools.eigenhand.universe --push',
+      'Erstbeleg- und Ausbau-Quote brauchen die Übergangsraum-Gewichte; die liegen noch nicht in der Datenbank. Der Befehl dazu steht auf dieser Seite unter „Am Rechner weiter".',
     // The statistik Unteransicht. Today it carries exactly one figure: the pen
     // half width, the only one of the four §7.2 promises that can be derived
     // from today's Bestand. The other three stand as a labelled Leerfläche —
@@ -1114,8 +1115,11 @@ export const admin = {
     openPdf: 'PDF öffnen',
     openStackPdf: 'Stapel als ein PDF öffnen ({{count}} Seiten)',
     pdfError: 'Das PDF konnte nicht geladen werden.',
-    localHint: 'Nach dem Schreiben lokal weiter — holt Layout und PDF, danach ingest → Siebung → apply → sync:',
-    localHintCommand: 'uv run python -m tools.eigenhand.pull --hand {{hand}} --sheet {{sheet}}',
+    // Kein Befehl mehr unter dem Druckergebnis: der `pull` des frisch
+    // gedruckten Bogens steht als Übergabekarte im Bestand und überlebt dort
+    // das Neuladen — der Hinweis hier gab es nur in der Sitzung, die gerade
+    // gedruckt hatte.
+    printedNext: 'Der nächste Schritt am Rechner steht unter „Bestand → Am Rechner weiter" — auch nach dem Neuladen.',
     setupTitle: 'Stehendes Setup',
     setupIntro:
       'Feder, Tinte und Papier sind Parameter der ganzen Kampagne, nicht Angaben eines einzelnen Imports — einmal hier eintragen, dann liest ingest sie als Vorgabe. Was eine Sitzung wirklich benutzt hat, steht zusätzlich an jeder Fassung.',
@@ -1131,16 +1135,81 @@ export const admin = {
     setupNone:
       'Für diese Hand ist noch kein Setup hinterlegt. Vor der ersten Sitzung eintragen — Fassungen, die davor eingelesen werden, tragen keine Feder-, Tinten- und Papierangabe.',
     setupError: 'Das Setup konnte nicht gesichert werden.',
-    setupLocal: 'Auf dem Schreib-Rechner einmal holen:',
-    setupLocalCommand: 'uv run python -m tools.eigenhand.setup --hand {{hand}} --pull',
     // Label + confirmation of the copy button beside every command.
     commandCopy: 'Befehl kopieren',
     commandCopied: 'kopiert',
+    // ——— Übergabekarten ———
+    // Ein Medienbruch wird gezeigt, nicht versteckt: was nur am Rechner
+    // geschehen kann, steht als Karte mit Titel, Grund, Befehl und „Danach
+    // hier" — und verschwindet, sobald der Zustand da ist. Welche Karte fällig
+    // ist, entscheidet EINMAL der Server (`core/eigenhand/faellig.py`); die
+    // Befehle kommen als Code von dort, hier steht nur die deutsche Fassung,
+    // geschlüsselt nach Regel-Id. Eine Id ohne Text ergibt keine Karte —
+    // niemals eine leere.
+    uebergabe: {
+      title: 'Am Rechner weiter',
+      caption:
+        'Schritte, die am Schreib-Rechner laufen müssen — in der Reihenfolge, in der sie dran sind. Gezeigt wird nur, was der Server sehen kann: einen Schnappschuss oder ein eingelesenes Blatt kann er nicht bestätigen.',
+      // Die Zwischenablage reicht nicht vom Tablet zum Rechner. Darum steht
+      // unter den Karten der Zwilling, der dort dieselbe Liste druckt.
+      rechnerLead: 'Am Rechner: ',
+      rechnerBefehl: 'uv run python -m tools.eigenhand.report --hand {{hand}} --faellig',
+      danach: 'Danach hier: {{was}}',
+      reihenfolge: 'Reihenfolge: {{wie}}',
+      karten: {
+        setup_pull: {
+          titel: 'Ausrüstung auf den Schreib-Rechner holen',
+          warum:
+            'Feder, Tinte und Papier stehen in der Datenbank, gelesen werden sie beim Einlesen aber lokal. Was auf dem Schreib-Rechner liegt, sieht der Server nie.',
+          danach: 'nichts — die Karte geht, sobald die erste Fassung dieser Hand ankommt.',
+          reihenfolge: 'einmal je Rechner, vor der ersten Sitzung.',
+        },
+        universe_push: {
+          titel: 'Übergangsraum-Gewichte fehlen',
+          warum:
+            'Erstbeleg- und Ausbau-Quote rechnen gegen die Gewichte aus den Konsult-Korpora, und die Warteschlange ordnet danach. Die Korpus-Bytes bleiben lizenzbedingt lokal; hochgeschoben wird nur die abgeleitete Tabelle.',
+          danach: 'die Quoten-Tafel füllt sich, und die nächsten Streifen stehen nach gewichtetem Soll-Gewinn.',
+          reihenfolge: 'vom Rechner mit den Konsult-Korpora.',
+        },
+        bogen_pull: {
+          titel: 'Bogen {{sheet}} ist unterwegs — {{offen}} Zeile/Zeilen ohne Fassung',
+          warum:
+            'Gedruckt ist er, verbucht noch nicht. Layout und PDF holt sich der Schreib-Rechner selbst; der Scan bleibt lokal, ihn kann der Server nicht sehen.',
+          danach: 'die Zeilen zählen als Fassungen, sobald sie hochgeschoben sind.',
+          reihenfolge: 'danach einlesen → Siebung → ablegen → hochschieben.',
+        },
+        sync_streifen: {
+          titel: '{{ohne_bild}} Fassung/Fassungen ohne Streifenbild',
+          warum:
+            'Die Zählung ist oben, das Bild liegt noch auf dem Rechner: Streifenbilder reisen nur auf ausdrückliches Verlangen mit, weil sie zum reservierten Datensatz gehören.',
+          danach: 'die Streifen erscheinen unter „Geschriebene Streifen".',
+          reihenfolge: 'jederzeit; das private Archiv bleibt die Urfassung.',
+        },
+        // Diese eine Karte baut die Ansicht selbst: welche Fassung eine Bahn
+        // hat, kann die Streifen-Liste heute nicht sagen (die Spalte ist
+        // zurückgestellt), im geöffneten Streifen liegt die Antwort aber
+        // ohnehin. Deshalb steht sie an der Fassung und nicht in der Liste
+        // oben — und der Befehl ist der TROCKENLAUF: ein Kopierknopf reicht
+        // nie einen schreibenden Befehl weiter.
+        bahn_folgen: {
+          titel: 'Für diese Fassung ist noch keine Bahn gespeichert',
+          warum:
+            'Der Folger liegt im Werkzeug-Teil des Repositoriums, den das API-Abbild nicht mitbringt — er läuft am Rechner und schiebt sein Ergebnis über den Admin-Schreibweg hoch.',
+          danach: 'die Bahn liegt über dem Streifen, sobald der Lauf hochgeschoben ist.',
+          reihenfolge: 'erst ein Schnappschuss, dann derselbe Befehl mit --apply.',
+        },
+      },
+      bahnBefehl: 'uv run python -m tools.eigenhand.pfad --hand {{hand}} --strip {{strip}} --fassung {{fassung}}',
+    },
     stripImagesTitle: 'Geschriebene Streifen',
     stripImagesIntro:
       'Die eingelesenen Streifen, wie sie in der Datenbank liegen — admin-geschützt, nie öffentlich, nie im Repository. Der Wort-Ausschnitt wird aus dem Bogen-Layout berechnet und braucht keinen eigenen Speicher.',
-    stripImagesEmpty: 'Noch keine Streifenbilder hochgeschoben. Lokal:',
-    syncCommand: 'uv run python -m tools.eigenhand.sync --hand {{hand}} --mit-streifen',
+    // Beide leeren Antworten nennen den Zustand und zeigen auf die eine Stelle,
+    // an der der Befehl dazu steht — die Karte „Am Rechner weiter" im Bestand
+    // weiß außerdem, WIE VIELE Fassungen ihr Bild noch schulden; hier war das
+    // alles oder nichts.
+    stripImagesEmpty:
+      'Noch keine Streifenbilder hochgeschoben. Der Befehl dazu steht im Bestand unter „Am Rechner weiter".',
     stripImagesError: 'Der Streifen konnte nicht geladen werden.',
     stripShow: 'Streifen zeigen',
     stripHide: 'einklappen',
@@ -1155,7 +1224,7 @@ export const admin = {
     stripLupeClose: 'schließen',
     stripBelegeCount: 'Belege: {{count}} in {{strips}} Streifen',
     stripBelegeEmpty:
-      'Kein gespeicherter Streifen trägt das. Die Zeichen-Tafel zählt auch Fassungen, deren Bild noch nicht hochgeschoben ist — lokal:',
+      'Kein gespeicherter Streifen trägt das. Die Zeichen-Tafel zählt auch Fassungen, deren Bild noch nicht hochgeschoben ist — der Befehl dazu steht im Bestand unter „Am Rechner weiter".',
     stripBelegeIntro:
       'Gezeigt wird der Wort-Ausschnitt; das Zeichen sitzt darin. Die Zerlegung in einzelne Buchstaben ist Sache des Tintenfolgers (Phase 5), nicht der Kartei.',
     stripMore: 'weitere {{count}} laden',
@@ -1194,8 +1263,11 @@ export const admin = {
     pfadPedigreeMixed: 'Bahn: verschiedene Läufe · {{woerter}} Wort/Wörter',
     pfadMixedHint:
       'Die Bahnen dieser Fassung stammen aus mehreren Läufen — einzelne Wörter wurden später noch einmal gefolgt. Herkunft je Wort:',
-    pfadNone:
-      'Für diese Fassung ist noch keine Bahn gespeichert. Lokal folgen und hochschieben: uv run python -m tools.eigenhand.pfad --hand … --strip … (Trockenlauf), dann --apply.',
+    // Der Satz von früher trug den Befehl mitten im Fließtext, mit „…" statt
+    // Streifen und Fassung und ohne Kopierknopf — genau der Fall, für den es
+    // die Übergabekarte gibt. Er steht jetzt als Karte an der Fassung, mit den
+    // echten Ids; dieser Schlüssel bleibt für die Galerie-Kachel, die für eine
+    // Karte keinen Platz hat.
     pfadNoneShort: 'noch keine Bahn gespeichert',
     // Die drei leeren Antworten sind NICHT dasselbe: „noch niemand gefolgt"
     // (null), „gefolgt, nichts gefunden" (leere Liste) und „dieses Wort hat

@@ -9,8 +9,14 @@
 //
 // This is deliberately a plain overwrite, not a new cohort row: the panel
 // answers „what do I reach for now".
+//
+// The `setup --pull` command used to stand at the foot of this panel
+// unconditionally — on every hand, whether a row had ever been saved or not.
+// It is a state now (`setup_pull`, `core/eigenhand/faellig.py`): it appears as
+// an Übergabekarte once a setup is saved for a hand that has not written yet,
+// and goes when the first Fassung arrives.
 
-import { Alert, Box, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 import { getEigenhandSetups, putEigenhandSetup } from '@/lib/api';
@@ -18,7 +24,6 @@ import type { EigenhandSetup } from '@/lib/api';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
-import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { Panel } from '@/sections/admin/shell/Panel';
 import { paper } from '@/styles/paper';
@@ -153,9 +158,6 @@ export function SetupPanel({ hand }: { hand: string }) {
           {fmt(t.setupSaved, { stand: setup.updated_at.slice(0, 16).replace('T', ' ') })}
         </Typography>
       )}
-      <Box sx={{ mt: 0.5 }}>
-        <TerminalCommand lead={t.setupLocal} command={fmt(t.setupLocalCommand, { hand })} />
-      </Box>
     </Panel>
   );
 }

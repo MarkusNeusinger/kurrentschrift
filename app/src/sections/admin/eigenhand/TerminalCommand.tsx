@@ -1,8 +1,11 @@
 // A shell command the author is meant to run, set so it can actually be typed
 // or taken.
 //
-// The Eigenhand panels hand out five of them, and they used to sit INSIDE a
-// running sentence in EB Garamond at 14px — a proportional antiqua, in which
+// Every command line of an Übergabekarte is one of these — since the cards
+// took over, that is the component's only caller, and the four standing hints
+// it used to serve (setup · pull · universe · sync) are states now. Before it
+// existed, a command sat INSIDE a running sentence in EB Garamond at 14px — a
+// proportional antiqua, in which
 // `--`, `-m`, `_` and `.` are exactly the characters that slip while typing,
 // and where taking the command means selecting it out of the middle of a
 // sentence by hand (audit 2026-09-02, finding 29). Monospace, its own line,
@@ -19,6 +22,7 @@ import { Box, IconButton, Tooltip, Typography } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 
 import { de } from '@/locales/admin';
+import { hitArea } from '@/styles/hitArea';
 import { mono, paper } from '@/styles/paper';
 
 export function TerminalCommand({ command, lead }: { command: string; lead?: string }) {
@@ -70,7 +74,12 @@ export function TerminalCommand({ command, lead }: { command: string; lead?: str
           {command}
         </Typography>
         <Tooltip title={copied ? t.commandCopied : t.commandCopy}>
-          <IconButton size="small" onClick={copy} aria-label={t.commandCopy}>
+          {/* Drawn small on purpose — it sits beside a line of code, not over
+              it — so it grows the invisible 44 px area instead of a bigger
+              mark (design-system.md §9.3). Measured at 30 × 30 before this,
+              and the button now appears on every Übergabekarte rather than
+              four times on one page. */}
+          <IconButton size="small" onClick={copy} aria-label={t.commandCopy} sx={hitArea()}>
             {copied ? <DoneIcon fontSize="small" color="success" /> : <ContentCopyIcon fontSize="small" />}
           </IconButton>
         </Tooltip>

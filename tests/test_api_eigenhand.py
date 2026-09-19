@@ -151,6 +151,87 @@ class TestBestand:
         assert data["quoten"] is None
 
 
+class TestFaellig:
+    """The due local steps ride on the Bestand — the Übergabekarten's data.
+
+    A field on the read that is already made for every one of the four
+    Unteransichten, rather than a route of its own: the subject is the same and
+    a second request would have to be kept in sync with every reload of this
+    one. What is pinned here is that the rules fire through HTTP the way
+    `tests/test_eigenhand_faellig.py` pins them in the pure layer, and that the
+    two extra reads it costs stay cheap.
+    """
+
+    @pytest.mark.asyncio
+    async def test_an_untouched_hand_is_only_asked_for_the_weight_table(self, api: Harness):
+        # Nothing printed, nothing written, no setup row: the one thing the
+        # server can see missing is the Übergangsraum.
+        due = (await _bestand(api))["faellig"]
+        assert [row["id"] for row in due] == ["universe_push"]
+        assert due[0]["befehl"] == "uv run python -m tools.eigenhand.universe --push"
+
+    @pytest.mark.asyncio
+    async def test_a_printed_bogen_and_a_missing_image_become_cards_and_clear_again(self, api: Harness):
+        await _put_universe(api, _universe())
+        printed = await _print(api, strips=["S0001", "S0002"], date="2026-09-19")
+        sheet = printed["sheets"][0]["sheet"]
+
+        # Printed, nobody judged it: the oldest outstanding Bogen, by name.
+        [bogen_card] = (await _bestand(api))["faellig"]
+        assert bogen_card["id"] == "bogen_pull"
+        assert bogen_card["params"] == {"hand": HAND, "sheet": sheet, "offen": 2}
+        assert f"--sheet {sheet}" in bogen_card["befehl"]
+
+        # Judged, but the pixels are still in the private archive.
+        await _record(api, [_accepted(sid, sheet, index) for index, sid in enumerate(printed["sheets"][0]["strips"])])
+        [strip_card] = (await _bestand(api))["faellig"]
+        assert strip_card["id"] == "sync_streifen" and strip_card["params"]["ohne_bild"] == 2
+
+    @pytest.mark.asyncio
+    async def test_a_stored_image_takes_its_fassung_out_of_the_due_list(self, api: Harness):
+        await _put_universe(api, _universe())
+        await _store_strip(api)
+        # Printed, judged, image up — one strip of a one-strip sheet, so
+        # nothing about this hand is waiting at the machine any more.
+        assert (await _bestand(api))["faellig"] == []
+
+    @pytest.mark.asyncio
+    async def test_a_saved_setup_is_due_until_the_hand_has_written_something(self, api: Harness):
+        await _put_universe(api, _universe())
+        assert (await _put_setup(api, feder="Brause 361", tinte="Carbon Black")).status == 200
+        [card] = (await _bestand(api))["faellig"]
+        assert card["id"] == "setup_pull" and card["befehl"].endswith(f"--hand {HAND} --pull")
+
+        await _store_strip(api)
+        assert [row["id"] for row in (await _bestand(api))["faellig"]] == []
+
+    @pytest.mark.asyncio
+    async def test_the_extra_reads_load_neither_the_pixels_nor_the_paths(self, api: Harness, monkeypatch):
+        """The busiest admin read must not start dragging blobs along.
+
+        The due list needs to know WHICH strips are stored, never what is in
+        them: `strips_of` defers the PNG and the `pfade` column, and the two
+        methods that do load them are made to fail here — if the Bestand read
+        ever reaches for one, this test is what says so.
+        """
+        await _put_universe(api, _universe())
+        await _store_strip(api)
+
+        async def refuse(*args, **kwargs):
+            raise AssertionError("the Bestand read pulled a strip blob")
+
+        monkeypatch.setattr(EigenhandRepository, "strip", refuse)
+        monkeypatch.setattr(EigenhandRepository, "strip_pfade", refuse)
+        assert (await _bestand(api))["faellig"] == []
+
+        async with api.session_maker() as session:
+            rows = await EigenhandRepository(session).strips_of(HAND)
+            assert rows, "the stored strip should be listed"
+            for row in rows:
+                loaded = inspect(row).dict
+                assert "png" not in loaded and "pfade" not in loaded
+
+
 def _universe(items: dict[str, float] | None = None, **overrides) -> dict:
     """A tiny Soll universe in the shape `tools.eigenhand.universe --push` sends."""
     return {

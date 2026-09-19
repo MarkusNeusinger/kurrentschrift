@@ -592,6 +592,15 @@ Streifen, der sein `verfahren` führt, nur „automatisch" auf der Platte,
 die keines führt. `locales/de/admin.vocabulary.test.ts`.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §5.0
 
+**Übergabekarte** — die Karte im Admin für einen Schritt, der am Rechner
+laufen muss: Titel, Warum, Befehl mit echten Parametern, „Danach hier",
+Reihenfolge — sichtbar nur, solange der Zustand fehlt. Welche fällig ist,
+entscheidet EINMAL der Server (`core/eigenhand/faellig.py`, Feld `faellig`
+am Bestand); der Zwilling am Rechner ist `tools.eigenhand.report
+--faellig`, der einzige Modus dieses Werkzeugs, der die API liest. Ein
+Kopierknopf reicht nie einen schreibenden Befehl weiter.
+→ [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §9.2
+
 **Beleg (Eigenhand)** — ein Vorkommen eines Übergangsraum-Items in den
 angenommenen Fassungen einer Hand; die Zähleinheit des Bestandsberichts.
 Nie ein Zähler für Bahnen — ein Wort kann mehrere Bahnen tragen, ohne ein

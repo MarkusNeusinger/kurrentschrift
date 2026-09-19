@@ -1192,6 +1192,20 @@ class EigenhandSheetsCountOut(BaseModel):
     last: str | None = None
 
 
+class EigenhandFaelligOut(BaseModel):
+    """One local step the server can see is due — the Übergabekarte's data.
+
+    English on purpose, all three fields: `id` is the rule (`core.eigenhand.
+    faellig`), `befehl` the command as it has to be typed, `params` the numbers
+    the German copy interpolates. The copy itself stays in the SPA's locale
+    keyed by `id`, so a rule this server does not know renders no card.
+    """
+
+    id: str
+    befehl: str
+    params: dict[str, str | int] = {}
+
+
 class EigenhandBestandOut(BaseModel):
     """Everything one hand holds — Ist against what the strip plan can produce."""
 
@@ -1205,6 +1219,10 @@ class EigenhandBestandOut(BaseModel):
     quoten: EigenhandQuotenOut | None = None
     queue: list[str]
     redo: list[str]
+    # The local steps that are due for this hand, in the order they run. Empty
+    # is the normal answer, and it is the whole point: the cards are invisible
+    # while nothing waits at the machine.
+    faellig: list[EigenhandFaelligOut] = []
     # The hand's own pen, measured rather than counted: the median half width
     # over its accepted Fassungen, in x-heights. `null` while nothing of this
     # hand has been measured — a surface has to state that, because an
