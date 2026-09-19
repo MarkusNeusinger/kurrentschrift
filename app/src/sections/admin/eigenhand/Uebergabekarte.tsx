@@ -20,7 +20,8 @@
 //
 // Surface: `paper.hi` with a hairline (design-system.md §5 — a card is paper,
 // white stays reserved for scans and crops), the command through
-// `TerminalCommand`, so the mono token has exactly one call site.
+// `TerminalCommand` — which keeps the mono token to that one component, cards
+// and the block's twin line alike.
 
 import { Box, Stack, Typography } from '@mui/material';
 
