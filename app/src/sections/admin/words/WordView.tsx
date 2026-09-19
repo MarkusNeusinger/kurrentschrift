@@ -19,7 +19,6 @@ import {
   TextField,
   ToggleButton,
   ToggleButtonGroup,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -54,6 +53,9 @@ import { WordSpineCard } from './WordSpineCard';
 import { WORD_LIST_SPEC, scoreOutcome, type ScoreEntry } from './wordRows';
 
 const WORD_H = 130; // px — the composed word, large enough to judge the rhythm
+// A chip that NAVIGATES carries the touch floor; a chip that only states
+// something does not (§9.3 — the floor is for targets, not for labels).
+const NAV_CHIP = { height: TOUCH_TARGET, minWidth: TOUCH_TARGET } as const;
 
 export function WordView() {
   const [params, setParams] = useSearchParams();
@@ -395,17 +397,26 @@ export function WordView() {
                   <LayerDot color={layer.trace} style={layerDash.trace} />
                   {de.admin.werkbank.layerTrace}
                 </ToggleButton>
-                <Tooltip title={de.admin.werkbank.layerPathHint}>
-                  <ToggleButton value="path">
-                    <LayerDot color={layer.path} style={layerDash.path} />
-                    {de.admin.werkbank.layerPath}
-                  </ToggleButton>
-                </Tooltip>
+                <ToggleButton value="path">
+                  <LayerDot color={layer.path} style={layerDash.path} />
+                  {de.admin.werkbank.layerPath}
+                </ToggleButton>
                 <ToggleButton value="engine">
                   <LayerDot color={layer.engine} style={layerDash.engine} />
                   {de.admin.werkbank.layerEngine}
                 </ToggleButton>
               </ToggleButtonGroup>
+            )}
+            {/* What „Bewegung" draws — and that switching it on brings the Bahn
+                with it — hung in a hover over the toggle. Its own label names
+                the layer; the sentence is a DESCRIPTION plus a behaviour the
+                reader would otherwise find surprising, so it moves out of the
+                hover (V25, §9.4). One hint for the layer switch, not one per
+                button. */}
+            {evidence.length > 0 && (
+              <InfoHint title={de.admin.werkbank.layersLabel} label={de.admin.werkbank.layersAria}>
+                {de.admin.werkbank.layerPathHint}
+              </InfoHint>
             )}
           </>
         }
@@ -449,6 +460,10 @@ export function WordView() {
         {/* 2 — what it is made of: the way into the other two views, for a
             typed word exactly as for a harvested one. */}
         <Panel title={t.partsTitle} caption={t.partsCaption}>
+          {/* These chips are the way OUT of this view into the other two, i.e.
+              primary navigation — and MUI's small chip is 28 px with 4 px
+              between neighbours, so they grow to the floor rather than wear a
+              hit area that would reach into the chip next to them (§9.3). */}
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
             {letterKeys.map((key, i) => (
               <Chip
@@ -459,6 +474,7 @@ export function WordView() {
                 color={missing.includes(key) ? 'warning' : 'default'}
                 label={key}
                 onClick={() => navigate(lettersUrl(key, ownHand))}
+                sx={NAV_CHIP}
               />
             ))}
           </Box>
@@ -476,6 +492,7 @@ export function WordView() {
                   clickable
                   label={`${join.leftKey}→${join.rightKey}`}
                   onClick={() => navigate(joinsUrl(join.leftKey, join.rightKey, ownHand))}
+                  sx={NAV_CHIP}
                 />
               ))
             )}

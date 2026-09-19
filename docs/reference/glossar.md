@@ -3996,7 +3996,9 @@ Maus-Ausstattung. Der Gegenreflex ist ebenfalls verboten: ein selbstgebautes
 `tabIndex={0}` auf einem nicht-interaktiven Element erzeugt einen Tab-Stopp, der
 nichts tut und (mangels Fokus-Regel auf `Typography`) nichts zeigt — die
 Buchstaben-Arbeitsliste trug davon bis zu 72 je Listenseite. Höchstens EIN
-`InfoHint` je Zeile: die Erklärung gehört der Zeile, nicht jeder Zahl darin.
+`InfoHint` je Zeile UND Gegenstand: die Erklärung gehört dem Gegenstand, nicht
+jeder Zahl darin — verboten ist der eine Gegenstand in N Marken, nicht die
+zweite Erklärung einer Zeile, die wirklich zwei Dinge zeigt.
 → concepts/design-system.md §9.4 · proposals/admin-redesign.md §12.4 (V25)
 
 **Trefferfläche** *(`hitArea`)* — die unsichtbare Vergrößerung eines

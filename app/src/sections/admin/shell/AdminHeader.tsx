@@ -49,9 +49,16 @@ export function AdminHeader({ openCount, onOpenKorb }: { openCount: number | nul
   // button says it in its name, so the two never disagree — and it names the
   // same two halves the bar does, style AND id: Kurrent alone is taught by two
   // charts here, so „der Vorlage Kurrent" would be the name of two baskets.
-  const korbLabel = source
-    ? fmt(t.korbScoped, { style: styleLabel(source.style_id), id: source.id })
-    : t.openKorb;
+  //
+  // The count rides along where it is known. The removed badge had it, and the
+  // Scope-Leiste has it — but on a phone the bar scrolls its ACTIVE field into
+  // view, and on /admin/eigenhand that is the Hand field, so the Vorlage field
+  // carrying „⚑ 3 offen" can be off screen. One name, both facts.
+  const korbLabel = !source
+    ? t.openKorb
+    : openCount
+      ? fmt(t.korbScopedOpen, { style: styleLabel(source.style_id), id: source.id, n: openCount })
+      : fmt(t.korbScoped, { style: styleLabel(source.style_id), id: source.id });
 
   return (
     <HeaderBar

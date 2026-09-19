@@ -48,11 +48,10 @@ import {
   TextField,
   ToggleButton,
   ToggleButtonGroup,
-  Tooltip,
   Typography,
 } from '@mui/material';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { RefObject } from 'react';
+import type { ReactNode, RefObject } from 'react';
 
 import { fetchEigenhandStrip, getEigenhandPfade, getEigenhandStrips } from '@/lib/api';
 import type {
@@ -313,15 +312,6 @@ function PfadCaption({ pfade, flecken }: { pfade: EigenhandPfad[]; flecken: Eige
   return (
     <Stack direction="row" spacing={1} sx={{ mt: 0.5, flexWrap: 'wrap', rowGap: 0.5, alignItems: 'center' }}>
       {pedigree}
-      {/* WHICH runs a mixed Fassung is made of used to hang in a hover over a
-          `Typography` — no focus, no touch, and it is the list that decides
-          whether the Fassung can be read as one origin at all. `InfoHint` is a
-          button with the shared ring (V25). */}
-      {herkunft.gemischt && (
-        <InfoHint title={t.pfadPedigreeMixedTitle} label={t.pfadMixedAria}>
-          <Box sx={{ whiteSpace: 'pre-line' }}>{[t.pfadMixedHint, ...herkunft.laeufe].join('\n')}</Box>
-        </InfoHint>
-      )}
       {/* The Herkunfts-Chip, beside the other markers of this row rather than
           inside the caption (author decision 2026-09-18, Q8 b). It carries NO
           status colour: „von Hand" names an origin, never a verdict — an
@@ -330,14 +320,19 @@ function PfadCaption({ pfade, flecken }: { pfade: EigenhandPfad[]; flecken: Eige
           its one honest origin, and the differing days are the caption's
           business (`herkunftChipLabel`). */}
       {chipLabel !== null && <Chip size="small" variant="outlined" label={chipLabel} />}
-      {/* Both chips are plain `div`s — MUI adds no tabIndex — so what hung in
-          their hovers (where the seed comes from; why the Fassung is stale and
-          what to do about it) was mouse-only. One `InfoHint` per Fassung row
-          carries both, which is also one stop instead of two. */}
+      {/* All three chips are plain `div`s — MUI adds no tabIndex — so what hung
+          in their hovers (which runs a mixed Fassung is made of; where the seed
+          comes from; why the Fassung is stale and what to do about it) was
+          mouse-only. The three are one subject — the provenance and state of
+          THIS Fassung — so they get ONE `InfoHint` for the row (§9.4), which is
+          also one tab stop instead of three. */}
       <Chip size="small" variant="outlined" label={t.pfadSeed} />
       {stale && <Chip size="small" color="warning" variant="outlined" label={t.pfadStale} />}
-      <InfoHint title={t.pfadSeed} label={t.pfadSeedAria}>
+      <InfoHint title={t.pfadPedigreeMixedTitle} label={t.pfadSeedAria}>
         <Stack spacing={0.75}>
+          {herkunft.gemischt && (
+            <Box sx={{ whiteSpace: 'pre-line' }}>{[t.pfadMixedHint, ...herkunft.laeufe].join('\n')}</Box>
+          )}
           <Typography variant="body2">{t.pfadSeedHint}</Typography>
           {stale && <Typography variant="body2">{t.pfadStaleHint}</Typography>}
         </Stack>
@@ -505,15 +500,27 @@ function PfadRohzahlenChips({ pfade, showBox }: { pfade: EigenhandPfad[]; showBo
  * cleaner — that it has been superseded. A Fassung filed before the Befund
  * existed says so rather than showing a blank: a missing reading is not a bad
  * reading, and it must not look like one.
+ *
+ * `extra` rides in the same popover: the tile's head row explains ONE subject —
+ * this Fassung — so it carries one `InfoHint`, not one per chip group (§9.4).
  */
-function BefundChips({ befund }: { befund: EigenhandBefund | null | undefined }) {
+function BefundChips({
+  befund,
+  extra,
+}: {
+  befund: EigenhandBefund | null | undefined;
+  extra?: ReactNode;
+}) {
   const t = de.admin.eigenhand;
   if (!befund) {
     return (
       <>
         <Chip size="small" variant="outlined" label={t.befundNone} />
         <InfoHint title={t.befundNone} label={t.befundNoneAria}>
-          {t.befundNoneHint}
+          <Stack spacing={0.75}>
+            <Typography variant="body2">{t.befundNoneHint}</Typography>
+            {extra}
+          </Stack>
         </InfoHint>
       </>
     );
@@ -551,6 +558,7 @@ function BefundChips({ befund }: { befund: EigenhandBefund | null | undefined })
             {tooltip}
           </Typography>
           {befund.abgeloest_von && <Typography variant="body2">{t.befundReplacedHint}</Typography>}
+          {extra}
         </Stack>
       </InfoHint>
     </>
@@ -698,25 +706,32 @@ function StripTile({
           })}
         </Typography>
         {loading && <CircularProgress size={14} />}
-        <BefundChips befund={row.befund} />
+        {/* The mask count is a chip of this Fassung like the Befund's are, so
+            what it means rides in the row's ONE hint instead of opening a
+            second (§9.4) — the head row explains one subject: this Fassung. */}
         {flecken.length > 0 && !erasing && (
-          <>
-            <Chip size="small" variant="outlined" label={fmt(t.fleckenChip, { count: flecken.length })} />
-            <InfoHint title={t.fleckenChipTitle} label={t.fleckenChipAria}>
-              {t.fleckenChipHint}
-            </InfoHint>
-          </>
+          <Chip size="small" variant="outlined" label={fmt(t.fleckenChip, { count: flecken.length })} />
         )}
+        <BefundChips
+          befund={row.befund}
+          extra={
+            flecken.length > 0 && !erasing ? (
+              <Typography variant="body2">
+                {`${t.fleckenChipTitle}: ${t.fleckenChipHint}`}
+              </Typography>
+            ) : undefined
+          }
+        />
         <Box sx={{ flexGrow: 1 }} />
-        {/* The tooltip stays: its child is a real `Button`, so it is reachable
-            by keyboard, and what it says NAMES what the button does rather
-            than carrying a state of its own. */}
+        {/* No tooltip on „Flecken radieren": its content was an INSTRUCTION for
+            the whole erasing mode (how the brush works, and that the stored
+            strip stays byte-for-byte), not a name for the button — and a MUI
+            tooltip needs a 700 ms long-press on the tablet this is operated on.
+            It stands as the mode's own caption inside `FleckenEditor` (V25). */}
         {!erasing && (
-          <Tooltip title={t.fleckenStartHint}>
-            <Button size="small" onClick={startErasing} sx={{ minHeight: TOUCH_TARGET }}>
-              {t.fleckenStart}
-            </Button>
-          </Tooltip>
+          <Button size="small" onClick={startErasing} sx={{ minHeight: TOUCH_TARGET }}>
+            {t.fleckenStart}
+          </Button>
         )}
         {open ? (
           <Button size="small" onClick={() => setOpen(false)} disabled={erasing} sx={{ minHeight: TOUCH_TARGET }}>
@@ -1175,8 +1190,18 @@ export function StripsPanel({
             aria-label={t.stripZoom}
             onChange={(_e, value: Zoom | null) => value && setZoom(value)}
           >
+            {/* „¼ ½ 1:1 2×" measured 27–35 × 31 px — the smallest targets left
+                on the page the author works on with a finger. A group's buttons
+                touch, so they grow in BOTH edges rather than overlapping each
+                other's hit areas (§9.3). The sweep never caught them: it only
+                sees this page's shell, because no hand is resolved until one is
+                chosen and no script can operate a picker. */}
             {ZOOMS.map((level) => (
-              <ToggleButton key={level} value={level} sx={{ px: 1, py: 0.25, textTransform: 'none' }}>
+              <ToggleButton
+                key={level}
+                value={level}
+                sx={{ px: 1, py: 0.25, textTransform: 'none', minWidth: TOUCH_TARGET, minHeight: TOUCH_TARGET }}
+              >
                 {ZOOM_LABELS[level]}
               </ToggleButton>
             ))}

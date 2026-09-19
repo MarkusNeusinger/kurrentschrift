@@ -49,6 +49,8 @@ import { garamond } from '@/styles/paper';
 // The Laufform is stored as this template variant (core/database LAUFFORM_VARIANT).
 const LAUFFORM_VARIANT = 100;
 const FACE_H = 190; // px per face in the "wie geschrieben" row
+// A labelled button takes its width from the label and owes only the height.
+const ACTION_TARGET = { minHeight: TOUCH_TARGET } as const;
 
 export function LetterView() {
   const [params, setParams] = useSearchParams();
@@ -291,14 +293,22 @@ export function LetterView() {
           ) : (
             <Alert severity="info">{t.noBbox}</Alert>
           )}
+          {/* The three ways out of this panel. MUI's `size="small"` Button is
+              ~31 px high, under the §9.3 floor, and they stand one gap apart —
+              so they grow rather than wear overlapping hit areas. */}
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1.5 }}>
-            <Button size="small" variant="contained" disabled={!hasBbox} onClick={() => openWizard(glyphKey)}>
+            <Button size="small" variant="contained" disabled={!hasBbox} onClick={() => openWizard(glyphKey)} sx={ACTION_TARGET}>
               {de.admin.toolbar.setup}
             </Button>
-            <Button size="small" variant="outlined" disabled={!hasCanonical} onClick={() => openDiagnose(glyphKey)}>
+            <Button size="small" variant="outlined" disabled={!hasCanonical} onClick={() => openDiagnose(glyphKey)} sx={ACTION_TARGET}>
               {de.admin.toolbar.diagnose}
             </Button>
-            <Button size="small" onClick={() => setChartOpen((v) => !v)} endIcon={chartOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}>
+            <Button
+              size="small"
+              onClick={() => setChartOpen((v) => !v)}
+              endIcon={chartOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              sx={ACTION_TARGET}
+            >
               {chartOpen ? t.hideChart : t.showChart}
             </Button>
           </Box>
@@ -357,6 +367,7 @@ export function LetterView() {
                   aria-expanded={landmarksOpen}
                   onClick={() => setLandmarksOpen((v) => !v)}
                   endIcon={landmarksOpen ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                  sx={ACTION_TARGET}
                 >
                   {t.landmarksToggle}
                 </Button>
@@ -424,6 +435,9 @@ export function LetterView() {
                 {t.noJoins}
               </Typography>
             ) : (
+              // Navigation, 4 px apart: grown to the floor, not overlaid
+              // (§9.3). The standing sweep never saw these — a synthetic stack
+              // has no occurrences, so the row renders empty.
               relatedJoins.map((join) => (
                 <Chip
                   key={`${join.leftKey}→${join.rightKey}`}
@@ -432,11 +446,12 @@ export function LetterView() {
                   clickable
                   label={`${join.leftKey}→${join.rightKey} · ${join.count}`}
                   onClick={() => navigate(joinsUrl(join.leftKey, join.rightKey, ownHand))}
+                  sx={{ height: TOUCH_TARGET, minWidth: TOUCH_TARGET }}
                 />
               ))
             )}
           </Box>
-          <Button size="small" variant="outlined" onClick={() => navigate(joinsUrl(glyphKey, null, ownHand))}>
+          <Button size="small" variant="outlined" sx={ACTION_TARGET} onClick={() => navigate(joinsUrl(glyphKey, null, ownHand))}>
             {t.allJoins}
           </Button>
         </Panel>

@@ -27,6 +27,7 @@ import { useElementSize } from '@/hooks/useElementSize';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { de } from '@/locales';
 import { paths } from '@/routes/paths';
+import { focusRingSx } from '@/styles/focusRing';
 import { hitArea } from '@/styles/hitArea';
 import { display, garamond, letterpress, paper, script } from '@/styles/paper';
 
@@ -397,6 +398,11 @@ export function HeroWritten() {
             boxShadow: '0 2px 0 rgba(0,0,0,.18)',
             transition: 'transform .2s, box-shadow .3s, filter .3s',
             '&:hover': { filter: 'brightness(1.06)', transform: 'translateY(-2px)', boxShadow: '0 10px 24px rgba(64,130,109,.34)' },
+            // A `Box component={RouterLink}` is neither a `MuiLink` nor a
+            // `ButtonBase`, so the theme's ring never reached the landing
+            // page's two CTAs — Chrome's 1 px default was all a keyboard
+            // reader saw (measured 2026-09-19). The shared token (§9.1).
+            ...focusRingSx,
           }}
         >
           {t.ctaRead}
@@ -420,6 +426,7 @@ export function HeroWritten() {
             '& .arrow': { color: paper.viridian, transition: 'transform .25s' },
             '&:hover': { color: paper.ink },
             '&:hover .arrow': { transform: 'translateX(5px)' },
+            ...focusRingSx,
           }}
         >
           {t.ctaWrite}{' '}

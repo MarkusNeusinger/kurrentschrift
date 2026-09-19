@@ -178,7 +178,15 @@ function ItemRow({
               '&:hover .korb-row-label': { textDecoration: 'underline' },
             }}
           >
-            <Typography className="korb-row-label" variant="body2" sx={{ fontWeight: 600, color: 'primary.main' }}>
+            {/* `component="span"`: `body2` maps to `<p>`, and a `<button>` takes
+                phrasing content only — React does not warn, but the markup is
+                invalid and the nested caption below is already a `span`. */}
+            <Typography
+              className="korb-row-label"
+              variant="body2"
+              component="span"
+              sx={{ display: 'block', fontWeight: 600, color: 'primary.main' }}
+            >
               {workItemLabel(item)}
               {item.specimen_id && (
                 <Typography component="span" variant="caption" color="text.secondary">

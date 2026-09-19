@@ -61,28 +61,33 @@ function BucketGrid({
       </Stack>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
         {bucket.keys.map((row) => {
-          // The cell's whole content in words — the count, the plan and what a
-          // click does. As the button's accessible NAME it is read out on
-          // focus and on tap; the tooltip stays for the mouse. Before, a
-          // keyboard reader met ~90 buttons all called by their glyph alone.
+          // The cell's whole content in words — the count, the plan and, on a
+          // written key, what a click does. As the cell's accessible NAME it is
+          // read out on focus and on tap. Before, a keyboard reader met ~90
+          // buttons all called by their glyph alone, and the count existed only
+          // as 9.6 px type.
           const label = `${fmt(t.keyTooltip, { key: row.key, belege: row.belege, planned: row.planned })}${
             row.belege ? t.keyTooltipShow : ''
           }`;
-          return (
-          <Tooltip key={row.key} describeChild title={label}>
-            {/* A written key is a real <button> (native keyboard + semantics);
-                an unwritten one has nothing to show and stays a plain cell.
+          const cell = (
+            /* A written key is a real <button> (native keyboard + semantics);
+                an unwritten one has nothing to show and stays a plain cell —
+                but it carries the same NAME, as `role="img"`, because the count
+                and the plan are the point of the grid and must not be readable
+                only as 9.6 px type.
                 A bare `<button>` with `appearance: none` shows NO focus at all
                 — MUI's reset never reaches it, because it is not a ButtonBase.
                 It wears the shared `focusRing` token instead of a hand-written
                 outline (§9.1). Both kinds of cell carry the 44 px floor: they
                 tile densely, so the element grows rather than an invisible
                 overlay reaching into its neighbour (§9.3), and a grid of two
-                different cell sizes would read as broken. */}
+                different cell sizes would read as broken. */
             <Box
+              key={row.key}
               component={row.belege ? 'button' : 'div'}
               type={row.belege ? 'button' : undefined}
-              aria-label={row.belege ? label : undefined}
+              role={row.belege ? undefined : 'img'}
+              aria-label={label}
               onClick={row.belege ? () => onSelect(row.key) : undefined}
               sx={{
                 minWidth: TOUCH_TARGET,
@@ -112,15 +117,26 @@ function BucketGrid({
                   floor, and an ad-hoc fontSize on a variant besides. LEFT AS
                   IT IS, deliberately, through the non-hover round too: lifting
                   it re-flows a grid of ~90 cells the author reads every day,
-                  and that is his call to make, not the sweep's. The number is
-                  no longer the only way to the count — the cell's accessible
-                  name says „b: 3 von 6 geplant" in full. Open author question
-                  in the PR that touched this cell. */}
+                  and that is his call to make, not the sweep's. It is named as
+                  an open exception in design-system.md §9.4. The number is no
+                  longer the only way to the count — the cell's accessible name
+                  says „b: 0 geschrieben, 6 im Plan" in full, which is why the
+                  glyph inside it may be `aria-hidden` and the cell read as one
+                  sentence instead of two fragments. */}
               <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'inherit' }} aria-hidden>
                 {row.belege}
               </Typography>
             </Box>
-          </Tooltip>
+          );
+          // The tooltip is the mouse's shortcut to the same sentence, and it
+          // only goes where something can hold it: on the unwritten `div` it
+          // would be the ONLY carrier, and nothing there takes focus (§9.4).
+          return row.belege ? (
+            <Tooltip key={row.key} describeChild title={label}>
+              {cell}
+            </Tooltip>
+          ) : (
+            cell
           );
         })}
       </Box>

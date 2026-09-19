@@ -29,6 +29,7 @@ import { useAdmin } from '@/context/adminState';
 import { de, fmt, styleLabel } from '@/locales/admin';
 import { paths } from '@/routes/paths';
 import { eigenhandUrl } from '@/sections/admin/shell/focus';
+import { focusRingSx } from '@/styles/focusRing';
 import { TOUCH_TARGET } from '@/styles/hitArea';
 import { paper } from '@/styles/paper';
 
@@ -91,7 +92,7 @@ function ScopeField({
           color: active ? paper.ink : paper.inkSoft,
           transition: 'color .25s',
           '&:hover': { color: paper.ink, textDecoration: 'underline' },
-          '&:focus-visible': { outline: `2px solid ${paper.viridian}`, outlineOffset: 3 },
+          ...focusRingSx,
         }}
       >
         <Typography variant="caption" component="span" sx={{ color: paper.sepia }}>

@@ -93,6 +93,15 @@ it('leaves an unwritten cell a plain cell — nothing to open, so no control', (
   expect(container.querySelectorAll('button[aria-label]')).toHaveLength(1);
 });
 
+it('still NAMES the unwritten cell — the count is the point of the grid', () => {
+  render();
+  // The cell cannot be focused, so a tooltip would be its only carrier and
+  // reach nobody. `role="img"` + `aria-label` puts the same sentence in the
+  // accessibility tree without inventing a control that does nothing.
+  const unwritten = container.querySelector('[role="img"]');
+  expect(unwritten?.getAttribute('aria-label')).toBe('b: 0 geschrieben, 6 im Plan');
+});
+
 it('opens the key it names', () => {
   const opened: string[] = [];
   render((item) => opened.push(item));

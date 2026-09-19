@@ -77,6 +77,12 @@ it('names only the FIRST obstacle — a glyph without a bbox has no canonical ei
   expect(container.textContent).not.toContain('Noch kein Canonical');
 });
 
+it('names BOTH where they gate different buttons — the lock does not block Diagnose', () => {
+  render({ activeLocked: true, activeHasCanonical: false });
+  expect(container.textContent).toContain('a ist gesperrt — erst entsperren');
+  expect(container.textContent).toContain('Noch kein Canonical');
+});
+
 it('claims nothing while no glyph is active at all', () => {
   render({ activeGlyph: null, hasActiveBbox: false, activeHasCanonical: false });
   expect(container.textContent).toContain('kein aktiver Glyph');

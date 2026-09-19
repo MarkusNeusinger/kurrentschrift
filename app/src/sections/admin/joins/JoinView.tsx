@@ -538,7 +538,9 @@ export function JoinView() {
               one of them is the earlier stage of the triage. The editor comes
               last and quietly (a `text` button under the doctrine line): the
               layout must not make the last resort look like the first move. */}
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1.5 }}>
+          {/* The floor on the row, not on each button: the two stand one gap
+              apart, so they grow rather than overlay (§9.3). */}
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1.5, '& > *': { minHeight: TOUCH_TARGET } }}>
             <Button size="small" variant="outlined" onClick={() => navigate(lettersUrl(leftKey, ownHand))}>
               {fmt(t.toLetter, { key: leftKey })}
             </Button>
@@ -549,7 +551,7 @@ export function JoinView() {
           <Typography variant="caption" color="text.disabled" sx={{ display: 'block', mt: 1.5 }}>
             {t.overrideLastResort}
           </Typography>
-          <Button size="small" sx={{ mt: 0.5, px: 0.5 }} onClick={() => setEditorOpen(true)}>
+          <Button size="small" sx={{ mt: 0.5, px: 0.5, minHeight: TOUCH_TARGET }} onClick={() => setEditorOpen(true)}>
             {de.admin.werkbank.openPairEditor}
           </Button>
         </Panel>
@@ -740,7 +742,7 @@ export function JoinView() {
           how a single odd join is checked against the whole class it belongs
           to, which is the step the doctrine asks for before an override. */}
       <Box sx={{ mt: 2 }}>
-        <Button size="small" onClick={() => setMatrixOpen((v) => !v)}>
+        <Button size="small" sx={{ minHeight: TOUCH_TARGET }} onClick={() => setMatrixOpen((v) => !v)}>
           {matrixOpen ? t.hideMatrix : t.showMatrix}
         </Button>
         <Collapse in={matrixOpen} unmountOnExit>

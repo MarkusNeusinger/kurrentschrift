@@ -191,6 +191,14 @@ export function FleckenEditor({
         </Button>
       </Stack>
 
+      {/* How the brush works, and that nothing is ever written into the strip
+          itself, used to hang in a hover over the button that ARMS this mode —
+          a mouse-only instruction for the one surface the author operates with
+          a finger (V25, §9.4). It is the mode's own caption now, visible for
+          as long as the mode is on. */}
+      <Typography variant="caption" sx={{ display: 'block', mb: 1, color: paper.inkSoft }}>
+        {t.fleckenStartHint}
+      </Typography>
       <Typography variant="caption" sx={{ display: 'block', mb: 1, color: paper.inkSoft }}>
         {t.fleckenHint}
       </Typography>

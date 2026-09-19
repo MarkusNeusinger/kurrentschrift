@@ -1,67 +1,79 @@
 ### Changed
 
-- **Kein Zustand der Werkbank lebt mehr nur im Hover.** Jeder `Tooltip` und
-  jedes `title=` unter `/admin` ist durchgegangen und nach einer mechanischen
-  Frage sortiert worden — ist das Kind des Tooltips überhaupt fokussierbar?
-  Was einen Zustand, einen Grund, eine Zahl oder eine Anweisung trug und an
-  einem nicht klickbaren Chip, einer `Typography` oder dem `<span>` um eine
-  deaktivierte Schaltfläche hing, ist jetzt sichtbarer Text oder steht hinter
-  einem `InfoHint` — einem echten Knopf mit Fokusring und 44-px-Fläche, der auf
-  Klick öffnet und darum auch unter dem Finger funktioniert. Betroffen sind
-  unter anderem: warum „Einrichten" und „Diagnose" grau sind (steht als Zeile
-  im Chart-Kopf), warum eine Sortierung nicht wählbar ist, die sechs
-  Sensorwerte hinter einem Streifen-Befund, die Rohzahlen eines Paares, die
-  Notiz einer angeschnittenen Wortprobe und der Wortlaut eines Ladefehlers.
-  Neu in `design-system.md` als **§9.4 (bindend)**, mit der Regel „höchstens
-  EIN `InfoHint` je Zeile".
+- **No state of the workbench lives in a hover any more.** Every `Tooltip` and
+  every native `title=` under `/admin` was classified by one mechanical
+  question — is the tooltip's child focusable at all? Whatever carried a state,
+  a reason, a number or an instruction while hanging on a non-clickable chip, a
+  `Typography`, a `Box` or the `<span>` around a disabled control is visible
+  text now, or sits behind an `InfoHint` — a real button with the focus ring and
+  a 44 px target that opens on click and therefore works under a finger too. A
+  tooltip that merely DESCRIBED its own button went the same way: what it said
+  was not a name, and naming is the one job a tooltip keeps. Among them: why
+  „Einrichten" and „Diagnose" are grey (a line in the chart toolbar), why a sort
+  option cannot be picked, the six sensor readings behind a strip's Befund, a
+  pair's raw numbers, the note on a clipped word specimen, the wording of a load
+  error, the seven definitions of the Landmarken legend, and how the
+  Fleckenmaske's brush works. New in `design-system.md` as **§9.4 (binding)**,
+  with the rule „one `InfoHint` per row and subject", and pinned by a source
+  guard so the next native `title=` on a chip fails a test instead of a review.
 
-- **Die Abzüge einer Buchstaben-Zeile haben eine ehrliche Erklärung statt sechs
-  winziger.** Jede Kategorie war eine 22 px hohe `Typography` mit eigenem
-  `tabIndex` — ein Tab-Stopp ohne Fokusring, auf einer Listenseite bis zu 72
-  Stück, und keiner davon mit dem Finger erreichbar. Die Zahlen bleiben alle
-  sichtbar; erklärt werden sie von `ScoreHelp`, dem einen `InfoHint` der Zeile,
-  der auch sagt, was der Score ist, warum eine Form keinen trägt und was
-  „Fit ⌀" misst. Gemessen am Wegwerf-Stack: 151 → 94 Tab-Stopps auf
-  `/admin/buchstaben`, 5 → 3 je Zeile.
+- **A letter row's deductions have one honest explanation instead of six tiny
+  ones.** Each category was a 22 px `Typography` with its own `tabIndex` — a tab
+  stop with no focus ring, up to 72 of them on a list page, and none of them
+  reachable by finger. Every number stays visible; what explains them is
+  `ScoreHelp`, the one `InfoHint` of the row, which also says what the score is,
+  why a form carries none and what „Fit ⌀" measures. Measured on the throwaway
+  stack: not one tabbable `span` left on `/admin/buchstaben`, and every one of
+  its 79 stops wears the viridian ring.
 
-- **Der Auftragskorb-⚑ der Kopfleiste trägt kein Zahlen-Badge mehr.** MUI setzt
-  dessen Ziffer in 12 px, unter dem Typo-Boden, und sagte in Farbe, was die
-  Scope-Leiste eine Zeile tiefer in Worten sagt („⚑ 3 offen" im Vorlagen-Feld).
-  Das Icon behält seinen benannten `aria-label` und bekommt die 44-px-Fläche.
+- **The header's Auftragskorb ⚑ no longer carries a count badge.** MUI sets that
+  digit in 12 px, under the type floor, and it said in colour what the
+  Scope-Leiste says in words one row down. The icon keeps a named `aria-label` —
+  which now carries the count itself, because on a phone the bar scrolls its
+  active field into view and the Vorlage field can sit off screen — and gains
+  the 44 px target.
 
 ### Added
 
-- **Der Fokusring ist ein geteiltes Token.** `focusRing` wohnt in
-  `app/src/styles/focusRing.ts`, neben `hitArea`, und das Theme importiert es
-  für seine drei MUI-Regeln. Vorher war es eine modul-private Konstante — womit
-  jedes selbstgebaute fokussierbare Element ohne Ring blieb, allen voran die
-  Deckungs-Zellen der Eigenhand: nackte `<button>` mit `appearance: none`, die
-  bei Fokus gar nichts zeigten. Ein Unit-Test prüft die IDENTITÄT des Objekts in
-  den Theme-Regeln, nicht seine Gleichheit — ein zweites Literal mit denselben
-  Zahlen ist genau die Drift, gegen die der Export geschrieben ist.
+- **The focus ring is a shared token.** `focusRing` lives in
+  `app/src/styles/focusRing.ts`, beside `hitArea`, and the theme imports it for
+  its three MUI rules. It used to be a module-private constant, which left every
+  hand-built focusable without it: three surfaces carried their own `2px solid`
+  at a different offset, and four — the wordmark, the two landing CTAs and the
+  Lesetafel's zoom area — showed nothing but Chrome's 1 px default, the wordmark
+  being the FIRST tab stop of every page on the site. The Eigenhand coverage
+  cells, bare `<button>` elements with `appearance: none`, showed nothing at
+  all. A keyboard walk over twelve routes now finds one ring and no other:
+  2 px viridian at 2 px offset, with only MUI's text fields keeping their
+  documented border-based focus. A unit test pins the IDENTITY of the object in
+  the theme rules, not its equality — a second literal with the same numbers is
+  exactly the drift the export is written against.
 
 ### Fixed
 
-- **Die Lupe der Eigenhand-Galerie war per Tastatur nicht erreichbar.** Der
-  Öffner war ein `<img onClick>` ohne Rolle, ohne `tabIndex` und ohne
-  Tastenbehandlung; er entkam der ESLint-Regel nur, weil das JSX-Element `Box`
-  heißt. Jetzt ein `ButtonBase` mit eigenem Namen („S0001 · F01 groß ansehen"),
-  der auf Enter öffnet. Dasselbe für die Zeile des Auftragskorbs, die ein
-  `<p role="link">` mit handgebautem Enter/Leertaste-Handler war.
+- **The Eigenhand gallery's Lupe could not be reached by keyboard.** The opener
+  was an `<img onClick>` with no role, no `tabIndex` and no key handling; it
+  escaped the ESLint rule only because the JSX element is called `Box`. It is a
+  `ButtonBase` with its own name now („S0001 · F01 groß ansehen") that opens on
+  Enter — driven and confirmed in the browser. The same for the Auftragskorb
+  row, which was a `<p role="link">` with a hand-rolled Enter/Space handler.
 
-- **Trefferflächen unter dem 44-px-Boden in der Werkbank.** „Buchstabe wählen"
-  (32,5 px), der ‹ ›-Schritt und der Buchstaben-Chip des Kopfes, die vier
-  `?reiter=`-Schalter der Eigenhand (40,5 px), die Deckungs-Zellen (33 px), die
-  Knöpfe des Korb-Schubfachs, die Werkzeugleiste des Charts und die
-  Paar-Auswahl der Übergänge wachsen auf den Boden — gewachsen, nicht
-  überlagert, weil sie dicht beieinanderstehen. Gemessen mit
-  `npm run touch-targets --routes /admin/…`: 97 → 0 Verstöße über die vier
-  Admin-Routen; `npm run type-floor` dort ebenfalls von 4 auf 0.
+- **Touch targets under the 44 px floor in the workbench.** „Buchstabe wählen",
+  the ‹ › step and the letter chip in the header, the four `?reiter=` switches
+  and the strip zoom group of the Eigenhand page, the ~90 coverage cells, the
+  buttons of the basket drawer, the chart toolbar, the actions of every view and
+  panel head, and the chips that navigate from a word to its letters and joins
+  all grow to the floor — grown, not overlaid, because they stand close
+  together. Measured with one instrument over seven admin states (the four
+  routes plus the three detail views), on synthetic material: 87 shortfalls
+  before, none after, identical at 1440, 1024 and 390 px wide. `type-floor` over
+  the same routes goes from four to none.
 
-- **`touch-targets` maß das falsche Element an einem Eingabefeld.** MUI rendert
-  ein Select als Combobox-`div` plus ein unsichtbares `<input>`, das nur für das
-  Absenden eines Formulars existiert; das Skript maß dieses 21 px hohe Hemd
-  statt des 44 px hohen Feldrahmens. Ein Eingabefeld wird jetzt am FELD
-  gemessen — derselbe Gedanke, mit dem ein in ein `<label>` gewickeltes
-  Bedienelement schon am Label gemessen wurde. Ein Feldrahmen unter dem Boden
-  fällt weiterhin durch.
+- **`touch-targets` measured the wrong element on an input field.** MUI renders
+  a select as a combobox `div` plus an invisible `<input>` that exists only so
+  the control submits with a form; the script measured that 21 px shim instead
+  of the 44 px field root. A field is measured at the FIELD now — the same
+  thought that already measured a control wrapped in a `<label>` at its label. A
+  field root under the floor still fails. The change accounts for exactly two of
+  the shortfalls above, which is why the before number was re-taken with the
+  corrected script rather than quoted from the old one.

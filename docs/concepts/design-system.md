@@ -376,15 +376,15 @@ Scope-Leiste darunter — §7 `HeaderBar`.
 | `PublicLayout` | Chrome: Background + Header + `<main>` + optional Footer | `sx` für `<main>` |
 | `HeaderBar` | DIE Kopf-Chrome (sticky, `blur(6px)`, Haarlinie) + Geschwister-Exporte `Wordmark` (•kurrentschrift.ink, Viridian-Punkt, kursive TLD) und `HeaderNavLink` (Playfair-Link, Viridian-Unterstrich, `aria-current`) | `maxWidth` (Default `wide`, `'none'` = vollbreit), `zIndex`, `contentSx`, `below` (zweite Zeile INNERHALB des Sticky-Blocks, heute die Scope-Leiste); **eine** Leiste für öffentliche Seiten **und** Werkbank |
 | `PublicHeader` | sticky Markenleiste + 3-Bereiche-Nav | auf `HeaderBar` gebaut, Inhalt auf `wide`; nur noch `sx` (die `tone`-Variante hatte keinen Aufrufer und ist entfallen); 5 Taps → Admin |
-| `AdminHeader` | dieselbe Leiste für die Werkbank (`sections/admin/shell`) | **vollbreit** (`maxWidth='none'`, §4), `zIndex 1100` (unter Korb-Drawer 1200 und LetterPicker-Popover 1300); Wortmarke · Bereichs-Nav (bei `xs` eine Scroll-Snap-Zeile mit 4 px Unterrand, sonst wüchse ein Scrollbalken für die Hover-Haarlinie) · Auftragskorb-⚑ als blankes Icon mit 44-px-`hitArea` und benanntem `aria-label`, und im `below`-Schlitz die `ScopeBar`. **Kein Badge:** MUI setzt dessen Zahl in 12 px (unter dem Boden von §9) und sagte in Farbe, was die Scope-Leiste eine Zeile tiefer in Worten sagt („⚑ 3 offen" im Vorlagen-Feld, V25) |
+| `AdminHeader` | dieselbe Leiste für die Werkbank (`sections/admin/shell`) | **vollbreit** (`maxWidth='none'`, §4), `zIndex 1100` (unter Korb-Drawer 1200 und LetterPicker-Popover 1300); Wortmarke · Bereichs-Nav (bei `xs` eine Scroll-Snap-Zeile mit 4 px Unterrand, sonst wüchse ein Scrollbalken für die Hover-Haarlinie) · Auftragskorb-⚑ als blankes Icon mit 44-px-`hitArea` und benanntem `aria-label` (der die Zahl mitführt), und im `below`-Schlitz die `ScopeBar`. **Kein Badge:** MUI setzt dessen Zahl in 12 px, unter dem Boden von §9 (V25) |
 | `ScopeBar` | die **Scope-Leiste**: zwei Felder „Vorlage:" und „Hand:", die den Arbeitsbereich zeigen und nie umschalten | beide Felder sind Links (Vorlagen-Auswahl · Eigenhand-Seite), das aktive trägt `aria-current` **und** eine Viridian-Leiste links (Farbe nie allein, §9); der Korb-Zähler steht sichtbar im Vorlagen-Feld, 44 px Trefferhöhe je Feld |
 | `PublicFooter` | geteilter Footer (Links, Impressum) | Breite `wide` |
 | `PageContainer` | eine Inhaltsspalte, 3 Breiten | `width='narrow'\|'text'\|'wide'\|number`, `component`, `sx` |
 | `Prose` | Lesemaß ~66 Zeichen | `align='left'\|'center'`, `measure='47rem'` |
 | `PageHeader` | einheitlicher **Seitenkopf**: Bereichs-Eyebrow + Playfair-Titel + Intro | `eyebrow?`, `title`, `children` (Intro im `Prose`-Maß); jede öffentliche Seite außer Landing-Hero |
 | `CategoryHeading` | **Abschnitts**titel mit Viridian-Kurrent-Initiale auf Haarlinie | innerhalb einer Seite (`/schriftkunde`, `/impressum`, `/tafel`, `/landing`) |
-| `InfoHint` | grünes Kurrent-„(i)" + Popover („Mehr dazu") | app-weit, Detail eine Geste entfernt; in der Werkbank das Gegenstück zum Hover (§9.4) — **höchstens einer je Zeile**, `label` benennt ihn („Score und Abzüge erklären") |
-| `ScoreHelp` (Admin) | die EINE Erklärung einer bewerteten Zeile: was der Score ist, warum eine Form keinen trägt, was „Fit ⌀" misst, wie die Abzüge laufen und was die sechs Kategorien heißen | `quality/scoreParts.tsx`, ohne Props; steht in `ScoreBreakdown` am Kopf und in `ScoreBreakdownInline` am Zeilenanfang — ersetzt bis zu neun Hover je Zeile (§9.4) |
+| `InfoHint` | grünes Kurrent-„(i)" + Popover („Mehr dazu") | app-weit, Detail eine Geste entfernt; in der Werkbank das Gegenstück zum Hover (§9.4) — **höchstens einer je Zeile und Gegenstand**, `label` benennt ihn („Score und Abzüge erklären") |
+| `ScoreHelp` (Admin) | die EINE Erklärung einer bewerteten Zeile: Score, „kein Score", „Fit ⌀", Abzugsrichtung, die sechs Kategorien | `quality/scoreParts.tsx`, ohne Props; am Kopf von `ScoreBreakdown` und am Anfang von `ScoreBreakdownInline` — ersetzt bis zu neun Hover je Zeile (§9.4) |
 | `PaperCardLink` | DIE Papier-Karte, die ein Link ist: Hover/Fokus heben sie an, Rand wird viridian | `to`, `sx`; Geschwister-Export `PaperCardCta` (Haarlinie wischt bei Karten-Hover/-Fokus ein) — genutzt von Landing, Hubs, `/schriftkunde` |
 | `HubView` | Hub-Layout (Titel + Lead + Karten-Grid) | `title`, `lead`, `cards[{title,body,cta,to}]` |
 | `HeroWritten` | einspaltiger Landing-Hero: Markenwort wird von der Engine geschrieben | Engine-first (`WrittenWord`, seit 2026-08-27); die Engine bekommt beliebig lange (Geduld-Zeile nach ~3 s, Autor-Entscheid 2026-08-27) — GLKurrent-Wort (Specimen) mit Wisch + Federspitze nur bei echtem Scheitern (Fetch-Fehler, fehlende Glyphen), Caption wechselt mit dem Modus |
@@ -514,25 +514,27 @@ ist der Mobil-Schritt von `/verify-frontend`.
 ### 9.1 Fokus (bindend)
 
 **Jedes fokussierbare Element trägt einen sichtbaren Ring:** 2 px `viridian`,
-`outline-offset` 2 px. Der Ring ist ein **exportiertes Token** —
-`focusRing` aus `app/src/styles/focusRing.ts`, neben `hitArea` das zweite geteilte
-Bedienbarkeits-Token —, und `theme/components.ts` importiert es für seine drei
-Regeln (`MuiButtonBase` + `MuiChip` + `MuiLink`). Damit trägt es Button,
-IconButton, ToggleButton, Chip, jedes eigene `ButtonBase` und jeden Link. Ein
-selbstgebautes fokussierbares Element — ein nacktes `<button>` mit
+`outline-offset` 2 px. Der Ring ist ein **exportiertes Token** — `focusRing` aus
+`app/src/styles/focusRing.ts`, neben `hitArea` das zweite geteilte
+Bedienbarkeits-Token —, das `theme/components.ts` in seine drei Regeln
+(`MuiButtonBase` + `MuiChip` + `MuiLink`) hineinreicht und damit Button,
+IconButton, ToggleButton, Chip, jedes eigene `ButtonBase` und jeden Link trägt.
+Ein selbstgebautes fokussierbares Element — ein nacktes `<button>` mit
 `appearance: none`, wie die Deckungs-Zellen der Eigenhand — nimmt `focusRingSx`
 aus derselben Datei; **nie einen handgeschriebenen `outline`**, denn genau so
-driftet der eine Ring in zwei Farben auseinander.
-Drei Flächen haben keine MUI-Basis und tragen darum ihre eigene Regel:
-`PaperCardLink` und `HeaderNavLink` denselben Ring, die SVG-Zellen der
-Schreibtafel stattdessen eine eingefärbte Zellenfläche (`WrittenSheet.tsx`) —
-ein Ring um ein SVG-`<g>` säße dort falsch. Auch MUI-Textfelder bleiben
+driftet der eine Ring auseinander. Alles, was ein `Box component={RouterLink}`
+oder ein `role="button"` auf einem `Box` ist, hat keine MUI-Basis und setzt den
+Ring selbst — aus demselben Token: `PaperCardLink`, `HeaderNavLink`, die Felder
+der Scope-Leiste, die Wortmarke, die zwei Landing-CTAs, die Zoom-Fläche der
+Lesetafel (Durchgang 2026-09-19: drei mit eigenem `outline-offset: 3`, vier ganz
+ohne Ring). Die SVG-Zellen der Schreibtafel bekommen stattdessen eine
+eingefärbte Zellenfläche (`WrittenSheet.tsx`). MUI-Textfelder bleiben
 ausgenommen: sie zeigen Fokus über ihren eigenen Rahmen (2 px `viridian`).
 Hintergrund: MUIs `ButtonBase` setzt selbst `outline: 0` — ohne die Theme-Regel
 ist eine fokussierte Schaltfläche von ihren Nachbarn nicht zu unterscheiden (das
 Quiz war so per Tastatur unbedienbar, Audit 2026-09-02). Lighthouse sieht diesen
 Fehler nicht (`focusable-controls` ist dort *manual*): Der Nachweis ist ein
-Tastatur-Durchgang, kein Score.
+Tastatur-Durchgang mit echten Tab-Anschlägen, kein Score.
 
 ### 9.2 Links (bindend)
 
@@ -648,11 +650,10 @@ Zeile über die obere und nimmt ihr die Tipps (gemessen an den Federprobe-Chips:
 `rowGap` so wählen, dass Elementhöhe + Lücke ≥ 44 px.
 
 **Ein Eingabefeld wird am FELD gemessen**, nicht an seinem `<input>`: MUI rendert
-ein Select als Combobox-`<div>` plus ein unsichtbares `<input>`, das es nur gibt,
-damit das Bedienelement mit einem Formular abgeschickt wird. Dieses Hemd ist 21 px
-hoch und ist niemandes Ziel — der Feldrahmen ist es, und ein Tipp in sein
-Innenmaß setzt den Fokus. Derselbe Gedanke wie beim `<label>` eine Zeile höher;
-ein Feldrahmen, der selbst unter dem Boden liegt, fällt weiterhin durch.
+ein Select als Combobox-`<div>` plus ein unsichtbares 21-px-`<input>`, das es nur
+gibt, damit das Bedienelement mit einem Formular abgeschickt wird. Niemandes Ziel
+— der Feldrahmen ist es. Derselbe Gedanke wie beim `<label>` eine Zeile höher;
+ein Feldrahmen unter dem Boden fällt weiterhin durch.
 
 ### 9.4 Nicht-Hover (bindend — Vorgabe V25 des Admin-Redesigns)
 
@@ -677,27 +678,42 @@ Zwei Auswege, in dieser Reihenfolge:
 1. **Sichtbarer Text**, wo er kurz ist — der Grund in die Chip-Beschriftung, eine
    Bildunterschrift unter die Zeile, eine Zeile in die Werkzeugleiste (so steht
    jetzt im Chart-Kopf, WARUM „Einrichten" grau ist).
-2. **`InfoHint`**, wo die Erklärung lang ist oder einem ganzen Block gilt: ein
-   echter Knopf mit dem Fokusring aus §9.1 und der 44-px-Fläche aus §9.3, der auf
-   Klick öffnet und darum auch unter dem Finger funktioniert.
+2. **`InfoHint`**, wo die Erklärung lang ist oder einem Block gilt: ein echter
+   Knopf mit Fokusring (§9.1) und 44-px-Fläche (§9.3), der auf Klick öffnet.
 
-**Höchstens EIN `InfoHint` je Zeile.** Die Erklärung gehört der Zeile, nicht jeder
-Zahl darin. Der Fall, für den die Regel geschrieben ist: die Abzugs-Kategorien der
-Buchstaben-Arbeitsliste waren sechs `<Typography tabIndex={0}>` je Zeile — Tab-Stopps
-ohne Ring (ein `Typography` hat keine Fokus-Regel), auf einer Listenseite bis zu 72
-Stück, und keiner davon mit dem Finger erreichbar. Gemessen am Wegwerf-Stack:
-151 → 94 Tab-Stopps auf `/admin/buchstaben`, 5 → 3 je Zeile.
+**Höchstens EIN `InfoHint` je Zeile und Gegenstand.** Verboten ist der EINE
+Gegenstand in N Marken — die Kopfzeile einer Fassung erklärt Herkunft, Saat,
+Alterung, Maske und Befund aus einer, die Legende alle sieben Landmarken-Arten
+aus einer; zeigt eine Zeile wirklich zwei Gegenstände, trägt sie zwei. Der Fall,
+für den die Regel geschrieben ist: die Abzugs-Kategorien der
+Buchstaben-Arbeitsliste waren sechs `<Typography tabIndex={0}>` je Zeile —
+Tab-Stopps ohne Ring, bis zu 72 je Listenseite, keiner mit dem Finger erreichbar.
+Gemessen: 151 → 94 Tab-Stopps auf `/admin/buchstaben`, 5 → 3 je Zeile.
 
 **Kein selbstgebauter `tabIndex` auf einem nicht-interaktiven Element.** Ein
 `tabIndex={0}`, das nur einen Tooltip per Tastatur erreichbar machen soll, ist das
-Symptom, nicht die Lösung: es erzeugt einen Stopp, der nichts tut und nichts zeigt.
-Ein Öffner ist ein `ButtonBase` (V24 „jeder Öffner"), kein `<p role="link">` und
-kein `<img onClick>`.
+Symptom, nicht die Lösung: ein Stopp, der nichts tut und nichts zeigt. Ein Öffner
+ist ein `ButtonBase` (V24), kein `<p role="link">` und kein `<img onClick>`.
+Beides — natives `title=` auf einer MUI-Primitive und ein rollenloses
+`tabIndex={0}` — hält `sections/admin/nonHover.guard.test.ts` fest.
 
-**Farbe zählt hier mit.** Wo ein Zustand als Farbe gezeichnet wird (der Punkt im
-Buchstabenraster: grün = Canonical, orange = nur Bbox), trägt das Bedienelement
-denselben Zustand als `aria-label` — sonst sagt das Raster einem farbfehlsichtigen
-oder tastaturgeführten Leser nichts.
+**Farbe zählt hier mit — und der `aria-label` ist erst die halbe Miete.** Wo ein
+Zustand als Farbe gezeichnet wird (der Punkt im Buchstabenraster: grün =
+Canonical, orange = nur Bbox), trägt das Bedienelement denselben Zustand als
+`aria-label`. Das ist die Hälfte im Barrierefreiheits-Baum; die andere schuldet
+§2 weiterhin, denn ein sehender Farbfehlsichtiger liest keinen `aria-label` und
+sieht Grün und Orange als einen Zustand. **Offener Fall:** das Buchstabenraster
+(`LetterPicker`) hat den Wortlaut im Namen, aber noch keinen zweiten SICHTBAREN
+Kanal (gefüllter vs. hohler Punkt, eine Ecke) — Autorfrage, weil jede Lösung das
+Raster umbaut, um das die Seite gebaut ist.
+
+**Offene Ausnahme vom Typo-Boden: der Zähler der Deckungs-Zellen**
+(`eigenhand/BestandView.tsx`, 9,6 px). Er bleibt vorerst stehen — ihn zu heben
+legt ~90 Zellen neu, die der Autor täglich liest. Erreichbar ist die Zahl
+trotzdem: der Zähler ist `aria-hidden`, der volle Satz („b: 0 geschrieben, 6 im
+Plan") ist der NAME jeder Zelle. `type-floor.mjs` kennt die Ausnahme NICHT und
+meldet sie — absichtlich, denn die eingebaute Ausnahme wäre die Entscheidung,
+die noch aussteht.
 
 ---
 

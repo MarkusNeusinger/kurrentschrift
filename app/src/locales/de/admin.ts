@@ -54,6 +54,11 @@ export const admin = {
     // style alone does not say WHICH basket this is.
     korbOpen: '{{n}} offen',
     korbScoped: 'Auftragskorb der Vorlage {{style}} · {{id}} öffnen',
+    // With the badge gone, the flag itself is the only carrier of the count on
+    // a phone: the Scope-Leiste scrolls its ACTIVE field into view, which on
+    // /admin/eigenhand is the Hand field, so the Vorlage field with its „⚑ 3
+    // offen" can sit off screen. The number rides in the button's name too.
+    korbScopedOpen: 'Auftragskorb der Vorlage {{style}} · {{id}} öffnen — {{n}} offen',
     closeKorb: 'Auftragskorb schließen',
     startEyebrow: 'Werkbank',
     startTitle: 'Welche Vorlage?',
@@ -194,6 +199,11 @@ export const admin = {
     landmarksRowLaufform: 'Laufform (Variante 100)',
     landmarksCount: '{{count}} Marken',
     landmarksLegend: 'Legende',
+    // The legend's ONE explanation. The seven definitions below used to hang as
+    // a native `title=` on the seven filter chips — hover only, so a reader on
+    // the tablet or at the keyboard never met a single one (V25, §9.4).
+    landmarkKindsTitle: 'Was die Marken bedeuten',
+    landmarkKindsAria: 'Die Landmarken-Arten erklären',
     // The vocabulary the overlay draws and the Korb files against.
     landmarkKind: {
       crossing: 'Kreuzung',
@@ -787,6 +797,7 @@ export const admin = {
     faceWrittenPending: 'wird geschrieben …',
     // The per-layer switches above the cards.
     layersLabel: 'Ebenen über der Vorlage',
+    layersAria: 'Die Ebenen erklären',
     // Both buttons show the SAME line, so they cannot both be „Bahn": the
     // second one is named after what it ADDS — the writing movement — which is
     // what its hint has said all along (author decision 2026-09-18, Q8 b, and
@@ -1086,8 +1097,10 @@ export const admin = {
   // Bulk re-derive of all authored glyphs (RederiveAllDialog).
   rederive: {
     button: 'Alle neu ableiten',
-    buttonTooltip:
-      'Alle erstellten Glyphen mit aktuellem Code und aktueller Ankerdichte neu berechnen und überschreiben — mit Vorher/Nachher-Tabelle pro Buchstabe',
+    // The button had a hover that described the overwrite. It said what `intro`
+    // says one click later, where every reader meets it and nothing has been
+    // written yet — so the hover was a mouse-only duplicate of a warning, and
+    // a second home for one sentence is how wording drifts (V25, §9.4).
     title: 'Alle Glyphen neu ableiten',
     intro:
       'Berechnet jede erstellte Glyphe aus ihrem Roh-Weg neu (aktueller Code, aktuelle Ankerdichte) und überschreibt die gespeicherte Vorlage — mit Score vorher/nachher pro Buchstabe. Rote Δ-Werte heißen: verschlechtert — in der Diagnose prüfen.',
@@ -1401,11 +1414,11 @@ export const admin = {
     pfadMixedHint:
       'Die Bahnen dieser Fassung stammen aus mehreren Läufen — einzelne Wörter wurden später noch einmal gefolgt. Herkunft je Wort:',
     // Names of the InfoHints that replaced the hover-only hints of this panel
-    // (V25): a Tooltip über einem nicht fokussierbaren Chip erreicht weder
-    // Tastatur noch Finger.
-    pfadPedigreeMixedTitle: 'Verschiedene Läufe',
-    pfadMixedAria: 'Herkunft je Wort anzeigen',
-    pfadSeedAria: 'Saat und Maske erklären',
+    // (V25): a Tooltip over a chip nothing can focus reaches neither keyboard
+    // nor finger. One hint per Fassung row carries all three subjects, so the
+    // title names the row rather than any single chip (§9.4).
+    pfadPedigreeMixedTitle: 'Diese Fassung',
+    pfadSeedAria: 'Herkunft, Saat und Maske dieser Fassung erklären',
     // The old sentence carried its command in the middle of running text, with
     // „…" instead of the strip and the Fassung and no copy button — exactly
     // the case the Übergabekarte exists for. It is a card at the Fassung now,

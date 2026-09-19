@@ -35,6 +35,11 @@ import type { Mode } from './chartConstants';
 // The toolbar's icon controls stand 8–16 px apart, so they grow to the §9.3
 // floor rather than wearing invisible hit areas that would overlap.
 const TARGET = { width: TOUCH_TARGET, height: TOUCH_TARGET } as const;
+// A labelled button sets its own width from the label and owes only the height.
+// MUI's `size="small"` Button comes out at ~31 px and its ToggleButton at ~39 —
+// under the floor on the tablet, and the sweep never caught them because the
+// chart lives behind a collapsed panel no route loads by itself.
+const TARGET_H = { minHeight: TOUCH_TARGET } as const;
 
 interface ChartToolbarProps {
   mode: Mode;
@@ -72,30 +77,32 @@ export function ChartToolbar({
   onOpenDiagnose,
   onOpenRederiveAll,
 }: ChartToolbarProps) {
-  // The ONE sentence the toolbar owes the reader when something is greyed out.
-  // Only the first obstacle is named: a glyph without a bbox is also without a
-  // canonical, and listing both would read as two independent problems.
-  const blockedReason = !activeGlyph
-    ? null
+  // What the toolbar owes the reader when something is greyed out. A glyph
+  // without a bbox is also without a canonical, so that one obstacle speaks
+  // alone — listing its consequences would read as independent problems. The
+  // lock and the missing canonical are NOT of that kind: they gate DIFFERENT
+  // buttons (the lock does not touch „Diagnose"), so where both hold, both are
+  // named, in the order the reader meets them.
+  const blockedReasons = !activeGlyph
+    ? []
     : !hasActiveBbox
-      ? de.admin.toolbar.lockNeedsBbox
-      : activeLocked
-        ? fmt(de.admin.toolbar.lockedFirstUnlock, { glyph: activeGlyph })
-        : !activeHasCanonical
-          ? de.admin.toolbar.diagnoseNeedsCanonical
-          : null;
+      ? [de.admin.toolbar.lockNeedsBbox]
+      : [
+          activeLocked ? fmt(de.admin.toolbar.lockedFirstUnlock, { glyph: activeGlyph }) : null,
+          !activeHasCanonical ? de.admin.toolbar.diagnoseNeedsCanonical : null,
+        ].filter((reason): reason is string => reason !== null);
   return (
     <Paper square sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1, borderBottom: 1, borderColor: 'divider', flexWrap: 'wrap' }}>
       <ToggleButtonGroup size="small" value={mode} exclusive onChange={(_e, v: Mode | null) => v && onModeChange(v)}>
-        <ToggleButton value="pan">
+        <ToggleButton value="pan" sx={TARGET_H}>
           <OpenWithIcon fontSize="small" />
           &nbsp;{de.admin.toolbar.pan}
         </ToggleButton>
-        <ToggleButton value="bbox">
+        <ToggleButton value="bbox" sx={TARGET_H}>
           <AddBoxIcon fontSize="small" />
           &nbsp;{de.admin.toolbar.bbox}
         </ToggleButton>
-        <ToggleButton value="edit">
+        <ToggleButton value="edit" sx={TARGET_H}>
           <ControlCameraIcon fontSize="small" />
           &nbsp;{de.admin.toolbar.edit}
         </ToggleButton>
@@ -174,6 +181,7 @@ export function ChartToolbar({
             startIcon={<AutoFixHighIcon />}
             disabled={activeLocked || !activeGlyph || !hasActiveBbox}
             onClick={onOpenWizard}
+            sx={TARGET_H}
           >
             {de.admin.toolbar.setup}
           </Button>
@@ -187,25 +195,35 @@ export function ChartToolbar({
             startIcon={<VisibilityIcon />}
             disabled={!activeGlyph || !activeHasCanonical}
             onClick={onOpenDiagnose}
+            sx={TARGET_H}
           >
             {de.admin.toolbar.diagnose}
           </Button>
         </span>
       </Tooltip>
-      <Tooltip title={de.admin.rederive.buttonTooltip}>
-        <Button size="small" variant="outlined" startIcon={<RestartAltIcon />} onClick={onOpenRederiveAll}>
-          {de.admin.rederive.button}
-        </Button>
-      </Tooltip>
+      {/* No tooltip on „Alle neu ableiten": what hung there DESCRIBED a
+          destructive overwrite („…neu berechnen und überschreiben — mit
+          Vorher/Nachher-Tabelle"), which is not a name for the button — and it
+          is the same sentence the dialog opens with, where every reader meets
+          it and nothing has been written yet (V25, §9.4). */}
+      <Button
+        size="small"
+        variant="outlined"
+        startIcon={<RestartAltIcon />}
+        onClick={onOpenRederiveAll}
+        sx={TARGET_H}
+      >
+        {de.admin.rederive.button}
+      </Button>
 
       {/* Why something here cannot be used, in the toolbar itself. One line,
           full width, in the order the reader meets the obstacles: no bbox
           first (nothing works without one), then the lock, then the missing
           canonical. `warning.main` is a second channel beside the wording, not
           the carrier of it (§9). */}
-      {blockedReason && (
+      {blockedReasons.length > 0 && (
         <Typography variant="caption" color="warning.main" sx={{ flexBasis: '100%' }}>
-          {blockedReason}
+          {blockedReasons.join(' · ')}
         </Typography>
       )}
     </Paper>
