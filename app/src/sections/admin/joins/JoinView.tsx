@@ -44,7 +44,7 @@ import { useFileMark } from '@/sections/admin/shell/korbState';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import {
-  keepHand,
+  FOCUS_PARAMS,
   lettersUrl,
   pairKeysOfText,
   readJoinFocus,
@@ -189,9 +189,37 @@ export function JoinView() {
   // previous join's gap in the meantime.
   const [missingFor, setMissingFor] = useState<{ text: string; keys: string[] }>({ text: '', keys: [] });
 
-  // `keepHand`: the subject changes, the scope does not (focus.ts).
-  const focus = (left: string | null, right: string | null) =>
-    setParams(keepHand(params, left && right ? { l: left, r: right } : {}), { replace: false });
+  // A focus change MERGES instead of rewriting the query: the overview's list
+  // state (Ansicht · Filter · Sortierung) and anything else the URL carries —
+  // the scope's `h=` among them — has to survive the hop into a join and back.
+  // Still a PUSH: the subject is what the back button walks.
+  //
+  // The merge is what `keepHand` (focus.ts) was written for one PR earlier,
+  // generalised: it kept the ONE parameter the scope needs while the rest of
+  // the query was rewritten, and this keeps all of them — the Buchstaben
+  // view's pattern, which that helper's own docstring already named as the
+  // better one.
+  const focus = (left: string | null, right: string | null) => {
+    const next = new URLSearchParams(params);
+    if (left && right) {
+      next.set(FOCUS_PARAMS.left, left);
+      next.set(FOCUS_PARAMS.right, right);
+    } else {
+      next.delete(FOCUS_PARAMS.left);
+      next.delete(FOCUS_PARAMS.right);
+    }
+    setParams(next, { replace: false });
+  };
+
+  // „Alle Kombinationen" goes back to the matrix ANCHORED ON THE LEFT LETTER:
+  // dropping `l=` with `r=` would land the reader on whichever letter happens
+  // to come first, which is exactly the bug „Alle Kombinationen ansehen" had
+  // coming the other way.
+  const toOverview = () => {
+    const next = new URLSearchParams(params);
+    next.delete(FOCUS_PARAMS.right);
+    setParams(next, { replace: false });
+  };
 
   // Leaving the detail drops the row it belonged to, during render rather than
   // in the effect below (react-hooks/set-state-in-effect). Keyed on „is a join
@@ -371,7 +399,11 @@ export function JoinView() {
           {picker}
           {freeInput}
         </Box>
-        <PairMatrix onPickPair={focus} refreshKey={pairTick} />
+        {/* The anchor letter comes from the RAW `l=`, not from `readJoinFocus`:
+            that reader nulls a half-given pair (which is right — half a pair is
+            no join), and passing its result here is what made „Alle
+            Kombinationen ansehen" open on whatever letter came first. */}
+        <PairMatrix activeGlyphKey={params.get(FOCUS_PARAMS.left)} onPickPair={focus} refreshKey={pairTick} />
 
         {/* The Abb.-20 letter-pair plates: the only specimens that are pure
             JOINS, so they belong under Übergänge rather than with the words.
@@ -384,7 +416,6 @@ export function JoinView() {
           <Collapse in={specimensOpen} unmountOnExit>
             <Box sx={{ mt: 2 }}>
               <WordComparison
-                mode="pairs"
                 overlay={false}
                 onPick={(sample) => {
                   const keys = pairKeysOfText(sample.word);
@@ -433,7 +464,7 @@ export function JoinView() {
           </>
         }
       >
-        <Button size="small" onClick={() => focus(null, null)}>
+        <Button size="small" onClick={toOverview}>
           {t.toOverview}
         </Button>
         <Button
@@ -702,7 +733,11 @@ export function JoinView() {
         <Collapse in={matrixOpen} unmountOnExit>
           <Box sx={{ mt: 2 }}>
             <Box sx={{ mb: 1 }}>{freeInput}</Box>
-            <PairMatrix activeGlyphKey={leftKey} onPickPair={focus} refreshKey={pairTick} />
+            {/* `embedded`: this is a sub-block of the DETAIL, so it keeps the
+                composed cells, picks its anchor in its own state and leaves the
+                URL alone — inheriting the overview's chips would silently hide
+                cells from a cross-check that was opened to see all of them. */}
+            <PairMatrix activeGlyphKey={leftKey} onPickPair={focus} refreshKey={pairTick} embedded />
           </Box>
         </Collapse>
       </Box>

@@ -117,15 +117,18 @@ export function readHandFocus(params: URLSearchParams): string | null {
 }
 
 /**
- * The hand carried through a focus change inside a view.
+ * The hand carried through a focus change in a view that writes a FRESH query.
  *
- * Two of the three views write the WHOLE query when the subject changes, so an
- * `h=` that arrived on a Korb link would evaporate on the first click in the
- * view — the link would be scoped and the very next step would not be. (The
- * Buchstaben view merges its query instead, to keep the work list's state, and
- * carries the hand for free that way.) The jumps BETWEEN views pass the hand
- * explicitly, from the admin scope — so a scope holds for a whole walk, not
- * just for the next click.
+ * It was written for the two views that still rewrote their whole query when
+ * the subject changed: an `h=` off a Korb link evaporated on the first click,
+ * so the link was scoped and the very next step was not. Since all three
+ * overviews became work lists they all MERGE their query instead — the
+ * Buchstaben view's pattern, named in this docstring before it was the rule —
+ * and that carries the hand for free along with the list state, so no view
+ * calls this today. It stays as the answer for a surface that has no list
+ * state to keep and therefore has no reason to merge. The jumps BETWEEN views
+ * pass the hand explicitly to the url builders, from the admin scope — so a
+ * scope holds for a whole walk, not just for the next click.
  */
 export function keepHand(params: URLSearchParams, next: Record<string, string>): Record<string, string> {
   const hand = readHandFocus(params);

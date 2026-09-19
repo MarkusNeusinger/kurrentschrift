@@ -554,6 +554,25 @@ WIDEST = {
 # itself is one clause the reader cannot do without: `h=` is carried, not
 # adopted — a Korb link states the hand it was filed under and does not switch
 # the workbench to it. Re-measured at 5 579, plus the documented 10 %.
+#
+# `frontend` (17 778 → 19 689) raised 2026-09-19 by the Arbeitslisten of the
+# Übergänge and the Wörter — the last two of the three overviews, and the
+# fourth Phase-1 PR to touch the same route table. Both rows describe routes
+# whose behaviour changed completely: a card wall became a work list, the
+# matrix cell stopped drawing a picture and started stating its counters in
+# words, and the two routes gained four and six URL axes. A route map that
+# does not say that has stopped being one — the same argument the `werkbank`
+# raise of this morning made for the Buchstaben row. The path stood at 267
+# tokens of DEBT, not room, because the Ebenen-/Rollen-Token raise and the
+# Scope-Leiste had both landed on it the same day. The rows were cut first,
+# by 146 tokens: the per-parameter value lists (sort, status, reiter, the
+# three chip tokens) and the „`reiter` heißt überall …" rule moved to the
+# glossary („Arbeitsliste"), which no reading path carries whole, and the
+# rule was in any case already stated once in the Eigenhand row above. What
+# survived the cut is the route MAP's own job: which parameters each route
+# takes, that a cell carries counters and no image, and that `l=` alone is
+# the anchor letter rather than half a pair. Re-measured at 17 899, plus the
+# documented 10 %.
 BUDGETS: dict[str, int] = {
     "mandatory": 67_091,
     "mess-runde": 43_761,
@@ -561,7 +580,7 @@ BUDGETS: dict[str, int] = {
     "mess-runde-eintrag": 5_584,
     "glyph-optimierung": 8_504,
     "komposition": 10_756,
-    "frontend": 17_778,
+    "frontend": 19_689,
     "werkbank": 6_137,
     "werkzeug": 713,
     # Raised 2026-09-07 by „Kette R3 Zwei-Züge-Modell": the path is „the one

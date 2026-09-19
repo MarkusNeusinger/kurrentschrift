@@ -93,6 +93,10 @@ export const admin = {
     // read as „24 von 63". The chip counts cannot answer it either — each one
     // deliberately counts on its own.
     counterFiltered: '{{shown}} von {{selected}} gewählten · {{total}} insgesamt',
+    // The same question on a surface without a pager, where „wieviel davon ist
+    // auf dem Schirm?" has only one possible answer: all of it. Two numbers
+    // rather than the three above, so the line stops repeating one of them.
+    counterSelected: '{{selected}} von {{total}} gewählt',
     pagerLabel: 'Seiten',
     pageAria: 'Seite {{n}}',
     pageAll: 'alle zeigen',
@@ -306,7 +310,7 @@ export const admin = {
   joins: {
     overviewTitle: 'Übergänge',
     overviewIntro:
-      'Der Übergang ist das, was die Engine zwischen zwei Buchstaben erzeugt. Hier steht jede Zweierkombination — auch solche, die keine Platte je geschrieben hat: tippe sie einfach ein. Ein Klick auf eine Zelle öffnet die Verbindung mit Messung, Statistik und (als letztes Mittel) dem Paar-Editor.',
+      'Der Übergang ist das, was die Engine zwischen zwei Buchstaben erzeugt. Hier steht jede Zweierkombination eines Buchstabens — auch solche, die keine Platte je geschrieben hat: tippe sie einfach ein. Jede Zelle sagt in Worten, was zu ihr vorliegt: wie oft die Platten sie schreiben, ob eine Übersteuerung gespeichert ist und was im Korb liegt; „Galerie“ komponiert dieselben Zellen zusätzlich. Ein Klick öffnet die Verbindung mit Messung, Statistik und (als letztes Mittel) dem Paar-Editor.',
     // Plain-text h1 behind the two-picker head (see letters.letterHeading).
     joinHeading: 'Übergang {{left}} → {{right}}',
     pickLeft: 'links',
@@ -363,7 +367,7 @@ export const admin = {
   words: {
     overviewTitle: 'Wörter',
     overviewIntro:
-      'Im Wort wird sichtbar, was einzeln noch stimmte. Jede Wortprobe der Vorlage steht neben demselben Wort „wie geschrieben“; „Öffnen“ führt in das einzelne Wort mit Bahn, Vorkommen und Bewertung. Oben lässt sich jeder beliebige Text eintippen — auch einer, den keine Platte enthält.',
+      'Im Wort wird sichtbar, was einzeln noch stimmte. Jede Wortprobe der Vorlage als Zeile: das Wort, gespeicherte Bahnen, Stand im Nachfahren, offene Aufträge und — sobald berechnet — der Loss. Eine Zeile klappt an Ort und Stelle Original und „wie geschrieben“ auf; „Galerie“ zeigt beide Flächen für alle Proben untereinander, „Öffnen“ führt in das einzelne Wort mit Bahn, Vorkommen und Bewertung. Oben lässt sich jeder beliebige Text eintippen — auch einer, den keine Platte enthält.',
     // Plain-text h1 behind the Garamond-set word (see letters.letterHeading).
     wordHeading: 'Wort {{text}}',
     freeTextLabel: 'Wort oder Satz',
@@ -371,6 +375,14 @@ export const admin = {
     freeTextSubmit: 'Schreiben',
     filterLabel: 'Proben filtern',
     toOverview: 'Alle Wortproben',
+    // The work list (V14). The expander names its Wortprobe: a list of rows
+    // all called „Aufklappen" is a list without content to a screen reader.
+    rowExpand: 'Wortprobe {{word}} aufklappen',
+    rowCollapse: 'Wortprobe {{word}} zuklappen',
+    tabsLabel: 'Reiter',
+    sortOrder: 'Reihenfolge der Vorlage',
+    sortWorstUnavailable:
+      'Noch kein Score berechnet — „Scores berechnen & sortieren“ oben holt sie und ordnet danach.',
     // „Bahn" rather than „Beleg" for a stored line (author decision
     // 2026-09-18, Q8 a): in the own-hand Bestandsbericht „Beleg" counts the
     // accepted Fassungen of an item, so the same word for the line over a plate
@@ -602,11 +614,30 @@ export const admin = {
     intro:
       'Alle Zweier-Verbindungen eines Buchstabens, aus den Einzelformen plus generiertem Übergang komponiert (Versalien nur links). So fällt eine unnatürliche Verbindung sofort auf, ohne sie in einem Wort suchen zu müssen. Klick auf eine Zelle öffnet den Paar-Editor.',
     pickLetter: 'Buchstabe',
+    // 30 buttons all called „a", „b", „c" name nothing to a screen reader.
+    pickLetterFor: 'Kombinationen von {{key}} zeigen',
     asFirst: '„{{glyph}}“ als erster Buchstabe',
     asSecond: '„{{glyph}}“ als zweiter Buchstabe',
     empty: 'Noch keine erstellten Glyphen — erst im Wizard einen Weg zeichnen.',
     badgeApproved: 'Override',
     badgeDraft: 'Entwurf',
+    // The matrix as a work list (V14): the filter chips, in the order
+    // `pairRows.ts` carries them as data.
+    filters: {
+      'mit-uebersteuerung': 'mit Übersteuerung',
+      'mit-korb': 'mit Korb-Auftrag',
+      'ohne-vorkommen': 'ohne Vorkommen',
+    },
+    sortOccurrences: 'Meiste Vorkommen',
+    sortOccurrencesUnavailable:
+      'Keine gemessenen Vorkommen gelesen — ohne Zahlen gäbe das wieder die alphabetische Reihenfolge.',
+    // A cell whose zwei Zeichen fold into ONE glyph: no join to inspect, to
+    // override or to complain about, so it carries no counters and opens nichts.
+    ligature: 'eine Glyphe',
+    // The counters rest on an admin-gated read, so its absence is said out
+    // loud rather than shown as „generiert" in every cell.
+    overridesUnknown: 'Gespeicherte Übersteuerungen nicht gelesen (Admin-Zugang nötig).',
+    openPair: 'Verbindung {{pair}} öffnen',
     // Pair editor (the review/approval surface over glyph_pairs).
     editorTitle: 'Paar-Editor · {{pair}}',
     editorIntro:

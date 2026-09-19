@@ -16,16 +16,13 @@ import {
   Button,
   Chip,
   CircularProgress,
-  FormControlLabel,
-  MenuItem,
-  Switch,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip,
   Typography,
 } from '@mui/material';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { WrittenWord } from '@/components/WrittenWord';
@@ -33,32 +30,26 @@ import { useAdmin } from '@/context/adminState';
 import { fetchRenderWord, getWordSampleScore } from '@/lib/api';
 import type { ComposedWordOut, WordSampleScoreOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
-import { WordComparison, type WordCompareMode } from '@/sections/admin/compare/WordComparison';
 import { WordTraceEditorDialog } from '@/sections/admin/belege/WordTraceEditorDialog';
 import { useFileMark } from '@/sections/admin/shell/korbState';
 import { LayerDot } from '@/sections/admin/shell/LayerDot';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import {
+  FOCUS_PARAMS,
   joinsOfText,
   joinsUrl,
-  keepHand,
   keysOfText,
   lettersUrl,
   readWordFocus,
-  wordsUrl,
 } from '@/sections/admin/shell/focus';
-import {
-  canTraceByHand,
-  ownHandEvidence,
-  seedWordInstance,
-  wordEvidenceOf,
-  type TraceFilter,
-} from '@/sections/admin/shell/model';
+import { writeListState } from '@/sections/admin/shell/listState';
+import { canTraceByHand, ownHandEvidence, seedWordInstance, wordEvidenceOf } from '@/sections/admin/shell/model';
 import { garamond, layer, layerDash } from '@/styles/paper';
 
-import { AuthoredTraceReview } from './AuthoredTraceReview';
+import { WordOverview } from './WordOverview';
 import { WordSpineCard } from './WordSpineCard';
+import { WORD_LIST_SPEC, scoreOutcome, type ScoreEntry } from './wordRows';
 
 const WORD_H = 130; // px — the composed word, large enough to judge the rhythm
 
@@ -69,7 +60,7 @@ export function WordView() {
   // PLATE hand whose statistics this page shows. Two different hands, and the
   // distinction the Scope-Leiste exists to make (P1-Q3 a) — so they do not
   // share a name in one file.
-  const { source, sourceId, handId: ownHand } = useAdmin();
+  const { source, sourceId, cropCacheBust, handId: ownHand } = useAdmin();
   const workbench = useWorkbench();
   const fileMark = useFileMark();
   const t = de.admin.words;
@@ -78,17 +69,6 @@ export function WordView() {
   // The input is free until submitted — typing must not re-compose on every
   // keystroke (each distinct text is a server composition).
   const [draft, setDraft] = useState(text ?? '');
-  // The overview's third tab is not a compare mode: it stacks the hand-authored
-  // traces alone, as a quality pass over one's own pen work.
-  const [mode, setMode] = useState<WordCompareMode | 'authored'>('words');
-  const [filter, setFilter] = useState('');
-  // Which specimens of the tab to list, by their standing in the manual
-  // tracing pass. „Offen" is the whole point: without it the still-to-trace
-  // rows are only findable by scrolling the full list looking for a missing
-  // chip — and the ones that can NEVER be traced (clipped ink) sit in there
-  // indistinguishably. Default stays „Alle": the overview is first of all an
-  // overview.
-  const [traceFilter, setTraceFilter] = useState<TraceFilter>('all');
   // What is drawn OVER the specimen crop. The overview defaults to the plain
   // side-by-side (crop | wie geschrieben) — the same first look the letters
   // grid gives — and the overlay is one switch away for when the exact
@@ -104,7 +84,18 @@ export function WordView() {
   const [composed, setComposed] = useState<ComposedWordOut | null>(null);
   const [missing, setMissing] = useState<string[]>([]);
   const [editing, setEditing] = useState<string | null>(null);
-  const [scores, setScores] = useState<Record<string, WordSampleScoreOut | 'busy' | 'error'>>({});
+  // The measured Losses, and the sweep that fills them, live HERE rather than
+  // in the overview — because the overview is unmounted the moment a word is
+  // opened. A sweep costs one CPU-bound request per Wortprobe, and a ranking
+  // that evaporated on the first click into a word would have to be paid for
+  // again on the way back, while the URL and the toolbar kept claiming
+  // „Schlechteste zuerst" over what is really the plate's order. One record for
+  // both surfaces also means a Loss paid for in the detail shows up in the
+  // list.
+  const [scores, setScores] = useState<Record<string, ScoreEntry>>({});
+  const [sweep, setSweep] = useState<{ done: number; total: number } | null>(null);
+  const [sweepFailed, setSweepFailed] = useState(false);
+  const sweepRun = useRef(0);
 
   // The field mirrors the focused word: a navigation (a link, the back button)
   // re-seeds the draft and drops the previous word's missing-glyph list. Done
@@ -128,6 +119,23 @@ export function WordView() {
     setComposed(null);
   }
 
+  // And for the measurements: another Vorlage — or „Neu laden", which moves
+  // `cropCacheBust` — invalidates every Loss on the page. The run counter is
+  // bumped one commit later, in the effect below, because writing a ref during
+  // render is its own violation (react-hooks/refs) and that is early enough: a
+  // sweep only ever writes from an async continuation.
+  const scoreKey = `${sourceId} ${cropCacheBust}`;
+  const [scoredFor, setScoredFor] = useState(scoreKey);
+  if (scoredFor !== scoreKey) {
+    setScoredFor(scoreKey);
+    setScores({});
+    setSweep(null);
+    setSweepFailed(false);
+  }
+  useEffect(() => {
+    sweepRun.current += 1; // invalidate an in-flight sweep of the previous Vorlage
+  }, [sourceId, cropCacheBust]);
+
   // The composed payload for the evidence overlay. WrittenWord keeps its own
   // internally, so this goes through the SAME shared render cache — one
   // request per text for the panel above and the overlay below.
@@ -149,9 +157,37 @@ export function WordView() {
     };
   }, [sourceId, text]);
 
-  // `keepHand`: the subject changes, the scope does not (focus.ts).
-  const focus = (next: string | null, sample?: string | null) =>
-    setParams(keepHand(params, next ? { w: next, ...(sample ? { s: sample } : {}) } : {}), { replace: false });
+  // A focus change MERGES instead of rewriting the query: the overview's list
+  // state (Ansicht · Filter · Sortierung · Status · Reiter · Seite) and
+  // anything else the URL carries — the scope's `h=` among them — has to
+  // survive the hop into a word and back, or „Alle Wortproben" would drop the
+  // reader onto page 1 of an unfiltered list in the first tab. Normally a PUSH:
+  // the subject is what the back button walks. `replace` is for the one hop
+  // that is not a new subject — re-naming the specimen after a save, which must
+  // not leave a history step of its own.
+  //
+  // EVERY navigation that stays on /admin/woerter goes through here rather than
+  // through `wordsUrl`: that builder writes a fresh query string with `w`/`s`
+  // in it and nothing else, which is correct for a link INTO the view from
+  // elsewhere and a silent state loss from inside it.
+  //
+  // The merge is what `keepHand` (focus.ts) was written for one PR earlier,
+  // generalised: it kept the ONE parameter the scope needs while the rest of
+  // the query was rewritten, and this keeps all of them — the Buchstaben
+  // view's pattern, which that helper's own docstring already named as the
+  // better one.
+  const focus = (next: string | null, sample?: string | null, opts?: { replace?: boolean }) => {
+    const out = new URLSearchParams(params);
+    if (next) {
+      out.set(FOCUS_PARAMS.word, next);
+      if (sample) out.set(FOCUS_PARAMS.specimen, sample);
+      else out.delete(FOCUS_PARAMS.specimen);
+    } else {
+      out.delete(FOCUS_PARAMS.word);
+      out.delete(FOCUS_PARAMS.specimen);
+    }
+    setParams(out, { replace: opts?.replace ?? false });
+  };
 
   // Every WORTPROBE of this word — usually one, but a word can appear on
   // several plates, and each occurrence is its own piece of evidence. Each
@@ -203,6 +239,40 @@ export function WordView() {
       .catch(() => setScores((prev) => ({ ...prev, [sampleId]: 'error' })));
   };
 
+  // „Scores berechnen & sortieren" — the overview's sweep, run from here so it
+  // survives a hop into a word. Sequential on purpose: the endpoint is
+  // CPU-bound server-side (compose + chamfer grid search), so a parallel
+  // fan-out would only queue on the single instance.
+  const runSweep = async (sampleIds: readonly string[]) => {
+    const run = ++sweepRun.current;
+    setSweepFailed(false);
+    setSweep({ done: 0, total: sampleIds.length });
+    let ranked = false;
+    for (let i = 0; i < sampleIds.length; i += 1) {
+      try {
+        const score = await getWordSampleScore(sourceId, sampleIds[i]);
+        if (run !== sweepRun.current) return;
+        if (!score.failed) ranked = true;
+        setScores((prev) => ({ ...prev, [sampleIds[i]]: score }));
+      } catch {
+        if (run !== sweepRun.current) return;
+        setSweepFailed(true);
+      }
+      setSweep({ done: i + 1, total: sampleIds.length });
+    }
+    setSweep(null);
+    // The second half of the button's name, written into the URL so the order
+    // survives opening a word and coming back — but only where it is true. A
+    // sweep in which every request failed has produced no ranking, and
+    // `sort=schlechteste` over rows without a single Loss would be a link
+    // claiming an order the list does not have. Through the updater form,
+    // because `params` from the closure is a snapshot from before the sweep and
+    // the reader may well have filtered meanwhile.
+    if (ranked) {
+      setParams((prev) => writeListState(prev, { sort: 'schlechteste' }, WORD_LIST_SPEC), { replace: true });
+    }
+  };
+
   const input = (
     <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, flexWrap: 'wrap' }}>
       <TextField
@@ -226,66 +296,17 @@ export function WordView() {
     return (
       <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
         <ViewHeader eyebrow={de.admin.shell.startEyebrow} title={t.overviewTitle} intro={t.overviewIntro} />
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-start', mb: 2 }}>
-          {input}
-          <TextField
-            size="small"
-            label={t.filterLabel}
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            sx={{ width: 200 }}
-          />
-          {/* The Nachfahr-Übersicht is the authored rows BY DEFINITION — a
-              status filter over it would only ever have one non-empty entry. */}
-          {mode !== 'authored' && (
-            <TextField
-              select
-              size="small"
-              label={de.admin.compare.statusLabel}
-              value={traceFilter}
-              onChange={(e) => setTraceFilter(e.target.value as TraceFilter)}
-              sx={{ width: 190 }}
-            >
-              <MenuItem value="all">{de.admin.compare.statusAll}</MenuItem>
-              <MenuItem value="open">{de.admin.compare.statusOpen}</MenuItem>
-              <MenuItem value="authored">{de.admin.compare.statusAuthored}</MenuItem>
-              <MenuItem value="incomplete">{de.admin.compare.statusIncomplete}</MenuItem>
-            </TextField>
-          )}
-          <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={mode}
-            onChange={(_e, next: WordCompareMode | 'authored' | null) => next && setMode(next)}
-            sx={{ mt: 0.25 }}
-          >
-            <ToggleButton value="words">{de.admin.compare.tabWords}</ToggleButton>
-            <ToggleButton value="other">{de.admin.compare.tabOther}</ToggleButton>
-            <ToggleButton value="authored">{t.tabAuthored}</ToggleButton>
-          </ToggleButtonGroup>
-          {/* The registered overlay is the sharpest error-finding view the
-              project has — engine ink projected onto the specimen pixels — so
-              it stays one switch away and ON by default, as it was before.
-              The authored review has no engine layer, so the switch hides. */}
-          {mode !== 'authored' && (
-            <FormControlLabel
-              sx={{ mt: 0.25 }}
-              control={<Switch size="small" checked={overlay} onChange={(e) => setOverlay(e.target.checked)} />}
-              label={<Typography variant="caption">{de.admin.compare.overlayToggle}</Typography>}
-            />
-          )}
-        </Box>
-        {mode === 'authored' ? (
-          <AuthoredTraceReview filterText={filter} onPickWord={(word, sampleId) => focus(word, sampleId)} />
-        ) : (
-          <WordComparison
-            mode={mode}
-            overlay={overlay}
-            filterText={filter}
-            traceFilter={traceFilter}
-            onPick={(sample) => focus(sample.word, sample.id)}
-          />
-        )}
+        {/* The field that WRITES a text stays the first thing on the page and
+            stays out of the list state: it names a subject (`w=`), not a
+            selection over the Wortproben. */}
+        <Box sx={{ mb: 2 }}>{input}</Box>
+        <WordOverview
+          onPick={focus}
+          scores={scores}
+          sweep={sweep}
+          sweepFailed={sweepFailed}
+          onSweep={runSweep}
+        />
       </Box>
     );
   }
@@ -458,6 +479,7 @@ export function WordView() {
           evidence.map((item) => {
             const { sample, row } = item;
             const score = scores[sample.id];
+            const outcome = scoreOutcome(score);
             return (
               <WordSpineCard
                 key={`${sample.kind}:${sample.id}`}
@@ -477,13 +499,17 @@ export function WordView() {
                 onMark={fileMark}
                 actions={
                   <>
-                    {score === 'busy' ? (
+                    {/* Through `scoreOutcome`, so „nicht bewertbar" reads the
+                        same here as in the list's chip: a failed score carries
+                        a `loss` field too, and printing it would invent an
+                        excellent mark for a word the engine could not write. */}
+                    {outcome === 'busy' ? (
                       <CircularProgress size={16} />
-                    ) : score === 'error' ? (
+                    ) : outcome === 'failed' ? (
                       <Chip size="small" color="error" variant="outlined" label={de.admin.compare.scoreFailed} />
-                    ) : score ? (
+                    ) : outcome === 'measured' ? (
                       <Tooltip title={t.scoreHint}>
-                        <Chip size="small" variant="outlined" label={`Loss ${score.loss.toFixed(2)}`} />
+                        <Chip size="small" variant="outlined" label={`Loss ${(score as WordSampleScoreOut).loss.toFixed(2)}`} />
                       </Tooltip>
                     ) : (
                       <Button size="small" onClick={() => runScore(sample.id)}>
@@ -530,11 +556,13 @@ export function WordView() {
           onClose={() => setEditing(null)}
           // A saved authored trace replaces the row the workbench holds —
           // refetch the traces so the evidence shows the stored state, and
-          // re-navigate so the URL still names the specimen.
+          // re-name the specimen in the URL. Through `focus`, which MERGES:
+          // this hop stays on /admin/woerter, so the list state behind the
+          // detail (and the scope's `h=`) has to survive a save.
           onSaved={() => {
             setEditing(null);
             workbench.refreshWordTraces();
-            navigate(wordsUrl(text, editingEvidence.sample.id, ownHand), { replace: true });
+            focus(text, editingEvidence.sample.id, { replace: true });
           }}
         />
       )}
