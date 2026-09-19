@@ -21,7 +21,7 @@ import { de } from '@/locales/admin';
 import { useColumnWidth } from '@/sections/admin/diagnostics/useColumnWidth';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
-import { mono } from '@/styles/paper';
+import { layerAlpha, mono } from '@/styles/paper';
 
 interface Props {
   glyphKey: string;
@@ -163,7 +163,7 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
                   key={`sil-${i}`}
                   d={ringsToPathD(rings)}
                   fill={WERKBANK_COLORS.engine}
-                  fillOpacity={0.4}
+                  fillOpacity={layerAlpha.engineFit}
                   fillRule="evenodd"
                 />
               ))}

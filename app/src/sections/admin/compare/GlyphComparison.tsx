@@ -56,7 +56,7 @@ import { AggregateSketch } from '@/sections/admin/shell/AggregateSketch';
 import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
 import { isPoint, letterSketchAnchors, occurrenceChainsOf } from '@/sections/admin/shell/sketchGeometry';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
-import { garamond } from '@/styles/paper';
+import { garamond, layerAlpha } from '@/styles/paper';
 
 // px — four faces have to fit beside each other on a laptop, so each is about
 // half the height the two-face row used. Still large enough to judge a ductus:
@@ -198,7 +198,13 @@ function CropWrittenOverlay({
       {canMap && (
         <g transform={matrix}>
           {(data.outline_paths ?? []).map((rings, i) => (
-            <path key={i} d={ringsToPathD(rings)} fill={WERKBANK_COLORS.engine} fillOpacity={0.42} fillRule="evenodd" />
+            <path
+              key={i}
+              d={ringsToPathD(rings)}
+              fill={WERKBANK_COLORS.engine}
+              fillOpacity={layerAlpha.engineOverlay}
+              fillRule="evenodd"
+            />
           ))}
         </g>
       )}

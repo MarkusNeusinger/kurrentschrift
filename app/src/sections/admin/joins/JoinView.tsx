@@ -536,11 +536,11 @@ export function JoinView() {
                   aria-label={de.admin.werkbank.layersLabel}
                 >
                   <ToggleButton value="trace">
-                    <LayerDot color={layer.trace} dash={layerDash.trace} />
+                    <LayerDot color={layer.trace} style={layerDash.trace} />
                     {de.admin.werkbank.layerTrace}
                   </ToggleButton>
                   <ToggleButton value="engine">
-                    <LayerDot color={layer.engine} dash={layerDash.engine} />
+                    <LayerDot color={layer.engine} style={layerDash.engine} />
                     {de.admin.werkbank.layerEngine}
                   </ToggleButton>
                 </ToggleButtonGroup>

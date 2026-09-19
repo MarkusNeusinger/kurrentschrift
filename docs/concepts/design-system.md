@@ -80,6 +80,21 @@ gegen Platten-Tinte 3 : 1 erreichen (WCAG 1.4.11); eine **Rolle** wird auf Papie
 gelesen und misst sich an `paper.hi`/`paper.bg`. Die Zahlen und die
 Deuteranopie-Abstände prüft `app/src/styles/paper.test.ts`.
 
+Der Boden gilt für die **deckend gezeichnete Marke** — Legendenstrich, eigene
+Fläche, Chip, deckender Zug. Er gilt **nicht** für den durchscheinenden
+Vergleichs-Overlay über einem Scan, und das ist die zweite benannte Ausnahme,
+kein Versehen: die Engine-Silhouette liegt bei 0,40–0,45 Deckkraft, damit die
+Tinte darunter lesbar bleibt — genau dafür ist sie da. Zusammengerechnet ergibt
+Zinnober bei 0,42 noch **1,81 : 1 auf weiß und 1,71 : 1 auf der Tinte**
+(0,40 → 1,76/1,66; 0,45 → 1,90/1,80). Die Unterscheidung trägt dort **Strichart
+plus Legende**, nicht der Kontrastwert. Jede dieser Deckkräfte steht als
+benanntes Token in `layerAlpha`, und `paper.test.ts` rechnet die Farbe jeder
+einzelnen über weiß und über der Tinte zusammen und prüft sie **namentlich mit
+ihrer Zahl** — eine geänderte Deckkraft oder ein geänderter Farbton bewegt also
+eine Zusage. *Nachzug:* ob eine höhere Deckkraft oder `mix-blend-mode: multiply`
+besser trägt, lässt sich erst an echten Platten-Daten im Produktions-Admin
+beurteilen; blind umgestellt wird hier nichts.
+
 | Token | Hex | Bedeutung | Strichart |
 |---|---|---|---|
 | `layer.trace` | `#1b7abb` | Spur — die nachgefahrene Feder (angehobenes Preußischblau, kein Periodenton) | durchgezogen |
@@ -111,6 +126,12 @@ grauer Absetzer sah also aus wie der mittlere Zug eines dreiteiligen Pfades
 **Laufform-Referenz** auf der Buchstaben-Skizze, keine Ebene: Ocker wie der Pfad,
 aber **gepunktet** — die 4:3-Strichelung ist die Signatur der Engine-Ebene und
 bleibt ihr. Eine Nicht-Ebene nimmt die freie Strichart, nie eine gelehrte.
+
+Eine Strichart ist Strichmuster **und** Linienende (`StrokeStyle =
+{ dash, cap }`, `strokeStyle.solid|dashed|dotted`): „gepunktet" ist ein
+Null-Strich unter rundem Ende, denn `[2, 2]` unter dem SVG-Standard `butt`
+zeichnet Quadrate — also eine zweite Strichelung statt Punkten. Verbraucher
+nehmen darum immer das ganze Token, nie nur das Muster.
 
 **Strichart-Regel (bindend).** Farbe ist nie der einzige Kanal: erkennbar wird
 eine Ebene oder Rolle aus **Rollen-Etikett + Position + Strichart**, die Farbe
@@ -367,7 +388,7 @@ eigenen drei Bereichen (Buchstaben · Übergänge · Wörter) — §7 `HeaderBar
 | `SpecimenStrip` | Buchstaben „wie geschrieben" als **markiertes Specimen** (§9): eigene Haarlinien-Fläche in `paper.hi`, Antiqua-Beschriftung darunter, Klick schreibt neu | `specimens[{key,label}]`, `payloads` (EIN Batch je Seite über `useSpecimenPayloads`), `height`; montiert erst in Sichtweite, zieht sich zurück, wenn nichts schreibbar ist — Schriftkunde-Besonderheiten, Lesart-Verwechsler |
 | `WrittenWord` | ganzes Wort/Zeile aus Per-Glyph-Diagnostik + Übergängen | Engine-Pfad; Font-Specimen ist Fallback. Größe und Zeilenzahl kommen aus der **gemessenen** Rahmenbreite, nie aus der Aufrufer-Konstante `maxWidth` (die bleibt Obergrenze): Unterschreitet der Text den **Tintenboden von 14 px x-Höhe** (§9, `lib/lineWrap.ts`), bricht er an Wortgrenzen um — **jede Zeile eine eigene Komposition und ein eigener durchgehender Federzug**, alle Zeilen in einer x-Höhe und links bündig (Autor-Entscheid 2026-09-04; verworfen: Maßstab-Boden mit Scrollfläche, viewportgekoppelte Zeichengrenze). Ein einzelnes zu breites Wort wird nicht getrennt und bleibt unter dem Boden. Seit 2026-09-04 bricht der Text auch an **getippten** Umbrüchen (`planParagraphs`), und die Federprobe gibt über `targetXHeightPx` eine gewünschte x-Höhe vor (§7.1) |
 | `BootStatus` | Vollseiten-Boot-/Cold-Start-Zustand | Quiz, Admin |
-| `LayerDot` (Admin) | Legenden-Marke einer Ebene: **Farbe UND Strichart** der Linie, die sie beschriftet — der Schalter ist die Legende | `color`, `dash` (Faktoren aus `layerDash`); ein kurzer Strich, kein Punkt, damit „durchgezogen" ein sichtbarer Zustand ist (§2) |
+| `LayerDot` (Admin) | Legenden-Marke einer Ebene: **Farbe UND Strichart** der Linie, die sie beschriftet — der Schalter ist die Legende | `color`, `style` (ein ganzes `StrokeStyle` aus `layerDash`/`roleDash` — Muster UND Linienende); ein kurzer Strich, kein Punkt, damit „durchgezogen" ein sichtbarer Zustand ist (§2) |
 | `TerminalCommand` (Admin) | ein Shell-Befehl, der wirklich getippt oder genommen werden kann | `command`, `lead?`; `mono` + `variant="body2"` (§3, nie ein eigenes `fontSize`), `user-select: all`, Kopierknopf |
 | `BackToTop` | schwebende Rückkehr an den Seitenanfang, erscheint ab zwei Bildschirmen Scrollweg | nur auf den langen Inhaltsseiten (`/schriftkunde` ≈ 20 Handy-Bildschirme, `/impressum`, `/lesen/vergleichen`); 44 × 44, Papierfläche mit Haarlinie (§5), `prefers-reduced-motion` springt statt zu gleiten |
 

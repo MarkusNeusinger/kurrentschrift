@@ -544,17 +544,18 @@ Token wird der Kopf zum **Stand-Block** (bis zu 40 datierte Zeilen).
 
 **Ebenen-Token · Rollen-Token** *(`layer`/`layerDash`, `role`/`roleDash` in
 `app/src/styles/paper.ts`)* — Farbe UND Strichart der Admin-Overlays (Spur ·
-Pfad · Engine) und der drei Rollen (Tafel durchgezogen · Platte gestrichelt ·
-Eigenhand gepunktet). Eine Ebenenfarbe erreicht 3 : 1 gegen weiß
-und gegen Platten-Tinte, keine Rolle trägt Viridian, und `paper.test.ts` prüft
-beides samt der einen benannten Deuteranopie-Ausnahme (Ocker/Zinnober).
+Pfad · Engine) und der drei Rollen. **Deckend** erreicht jede
+Ebenenfarbe 3 : 1 gegen weiß und gegen Platten-Tinte, keine Rolle
+trägt Viridian; die zwei Ausnahmen (Ocker/Zinnober für Deuteranope; der
+durchscheinende Overlay, 0,42 → 1,81 : 1) trägt die Strichart, und
+`paper.test.ts` misst sie namentlich.
 → [§5](glossar.md#5-werkbank-und-prozess) · concepts/design-system.md §2
 
 **Strichart-Regel** — Farbe ist nie der einzige Kanal: **Rollen-Etikett +
-Position + Strichart**, die Farbe kommt dazu. Also genau eine Strichart je
-Ebene/Rolle (die Legende `LayerDot` zeigt sie), Deckkraft statt Strichart bei
-Flächen, und **keine Farbnamen in Ebenen-/Rollen-Texten** — „erster Zug grün,
-letzter blau" nützt einem farbfehlsichtigen Leser nichts.
+Position + Strichart**. Eine Strichart ist Muster UND Linienende
+(`{ dash, cap }`; gepunktet = Null-Strich, rundes Ende), genau eine je
+Ebene/Rolle, und die Legende `LayerDot` zeigt sie mit; Flächen tragen Deckkraft
+statt Strichart; **keine Farbnamen in Ebenen-/Rollen-Texten**.
 → [§5](glossar.md#5-werkbank-und-prozess)
 
 **Changelog-Fragment** *(`changelog.d/<slug>.md`)* — der

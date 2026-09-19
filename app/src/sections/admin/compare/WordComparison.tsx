@@ -31,7 +31,7 @@ import {
   type TraceStatus,
 } from '@/sections/admin/shell/model';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
-import { garamond, layerDash } from '@/styles/paper';
+import { garamond, layerAlpha, layerDash } from '@/styles/paper';
 
 import { PairMeasuredChips } from './PairMeasuredChips';
 import { usePairMeasurements } from './pairMeasurement';
@@ -87,7 +87,13 @@ function SpecimenOverlay({
       <g transform={matrix}>
         {composed.items.map((it, i) =>
           it.rings ? (
-            <path key={i} d={ringsToPathD(it.rings)} fill={WERKBANK_COLORS.engine} fillOpacity={0.42} fillRule="evenodd" />
+            <path
+              key={i}
+              d={ringsToPathD(it.rings)}
+              fill={WERKBANK_COLORS.engine}
+              fillOpacity={layerAlpha.engineOverlay}
+              fillRule="evenodd"
+            />
           ) : (
             <path
               key={i}
@@ -97,12 +103,14 @@ function SpecimenOverlay({
               d={polylineToPathD(it.centerline, 0, false)}
               fill="none"
               stroke={WERKBANK_COLORS.engine}
-              strokeOpacity={0.42}
+              strokeOpacity={layerAlpha.engineOverlay}
               strokeWidth={it.stroke_width ?? it.mask_width}
               // The engine layer's own stroke style, so a reader who cannot
-              // separate its red from the Pfad's Ocker still can (paper.ts).
-              strokeDasharray={layerDash.engine.map((d) => d * (it.stroke_width ?? it.mask_width)).join(' ')}
-              strokeLinecap="round"
+              // separate its red from the Pfad's Ocker still can (paper.ts) —
+              // the cap comes with it, since the dash alone is only half a
+              // stroke style.
+              strokeDasharray={layerDash.engine.dash.map((d) => d * (it.stroke_width ?? it.mask_width)).join(' ')}
+              strokeLinecap={layerDash.engine.cap}
             />
           ),
         )}

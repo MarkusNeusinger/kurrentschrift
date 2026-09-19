@@ -19,7 +19,7 @@ import { de } from '@/locales/admin';
 import { HintHeading } from './HintHeading';
 import { ScoreBreakdown, ScoreChip } from '@/sections/admin/quality/scoreParts';
 import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
-import { mono } from '@/styles/paper';
+import { layerAlpha, mono } from '@/styles/paper';
 
 import { SilhouetteSvg } from './previewParts';
 
@@ -158,7 +158,13 @@ export function OverviewVerify({
                   style={{ display: 'block', position: 'absolute', inset: 0, objectFit: 'fill' }}
                 />
                 <Box sx={{ position: 'absolute', inset: 0 }}>
-                  <SilhouetteSvg data={refined} w={cellW} h={CELL_H} fill={WERKBANK_COLORS.engine} fillOpacity={0.42} />
+                  <SilhouetteSvg
+                    data={refined}
+                    w={cellW}
+                    h={CELL_H}
+                    fill={WERKBANK_COLORS.engine}
+                    fillOpacity={layerAlpha.engineOverlay}
+                  />
                 </Box>
               </Box>
             </Cell>

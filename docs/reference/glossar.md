@@ -4402,15 +4402,21 @@ Lesarten, die im Admin ÜBER einem Ausschnitt, Scan oder einer Skizze liegen:
 Spur (die nachgefahrene Feder), Pfad (das ferne Ende der
 Schreibreihenfolge-Rampe) und Engine — genau die drei, die in der Legende
 stehen; der Absetzer ist keine Ebene, sondern die zweite Marke des Pfades und
-hat sein eigenes Token. Jede Ebenenfarbe erreicht 3 : 1
+hat sein eigenes Token. Jede Ebenenfarbe erreicht **deckend gezeichnet** 3 : 1
 gegen weiß UND gegen Platten-Tinte, weil ein Overlay auf beiden Gründen liegt —
 die Farbe davor (`#00b37e`) schaffte auf weiß nur 2,71 : 1 und traf über der
 Tinte auf das Engine-Rot, ein Paar, das ein Deuteranope nicht trennen kann.
-Ocker und Zinnober bleiben als EINE benannte Ausnahme stehen, getragen von
-Strichart und Legende. *Technisch:* `app/src/styles/paper.ts`;
-`WERKBANK_COLORS` in `sections/admin/shell/model.ts` zeigt darauf;
-`app/src/styles/paper.test.ts` prüft Gründe, Abstände und Ausnahmen.
-→ Rollen-Token; Strichart-Regel; concepts/design-system.md §2
+Zwei benannte Ausnahmen stehen daneben: Ocker und Zinnober sind für einen
+Deuteranopen EINE Farbe, und der **durchscheinende Vergleichs-Overlay** über
+einem Scan unterschreitet den Boden absichtlich — Zinnober bei 0,42 Deckkraft
+ergibt zusammengerechnet 1,81 : 1 auf weiß und 1,71 : 1 auf der Tinte, denn die
+Tinte darunter soll lesbar bleiben. Beide Ausnahmen trägt Strichart + Legende,
+nicht die Farbe. *Technisch:* `app/src/styles/paper.ts` (`layer`, `layerDash`,
+`layerAlpha`); `WERKBANK_COLORS` in `sections/admin/shell/model.ts` zeigt
+darauf; `app/src/styles/paper.test.ts` prüft Gründe, Abstände und misst jede
+Deckkraft namentlich mit ihrer Zahl. *Nachzug:* höhere Deckkraft oder
+`mix-blend-mode: multiply` erst an echten Platten-Daten im Produktions-Admin
+beurteilen. → Rollen-Token; Strichart-Regel; concepts/design-system.md §2
 
 **Freigabe-Maschine (geplant)** — das Zielbild für den Rollenwechsel von
 der Platte zur Eigenhand, als WIEDERKEHRENDE Freigabe statt als einmaliger
@@ -4494,6 +4500,10 @@ Vorlagen-Korb auf der Hand-Seite). → proposals/admin-redesign.md §3.1, §7.1
 
 **Strichart-Regel** — Farbe ist nie der einzige Kanal: erkennbar wird eine Ebene
 oder Rolle aus **Rollen-Etikett + Position + Strichart**, die Farbe kommt dazu.
+Eine Strichart ist dabei Strichmuster UND Linienende (`StrokeStyle =
+{ dash, cap }`): „gepunktet" ist ein Null-Strich unter rundem Ende, weil
+`[2, 2]` unter dem SVG-Standard `butt` Quadrate zeichnet und damit eine zweite
+Strichelung wäre — Verbraucher nehmen darum das ganze Token, nie nur das Muster.
 Daraus folgen drei Pflichten: jede Ebene und jede Rolle hat genau eine Strichart
 und die Legende (`LayerDot`) zeigt sie mit; eine FLÄCHE trägt statt der Strichart
 ihre Deckkraft; und die deutschen Texte zu Ebenen und Rollen nennen keine Farben

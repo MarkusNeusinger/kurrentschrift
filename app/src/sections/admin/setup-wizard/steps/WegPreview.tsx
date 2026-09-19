@@ -19,7 +19,7 @@ import { de } from '@/locales/admin';
 import { HintHeading } from './HintHeading';
 import { ScoreBreakdown, ScoreChip } from '@/sections/admin/quality/scoreParts';
 import { WERKBANK_COLORS } from '@/sections/admin/shell/model';
-import { mono } from '@/styles/paper';
+import { layerAlpha, mono } from '@/styles/paper';
 
 import { SilhouetteSvg } from './previewParts';
 
@@ -118,7 +118,7 @@ export function WegPreview({ glyphKey, cropCacheBust, hasDraftSource, nAnchors, 
                 w={PANEL_W}
                 h={panelH}
                 fill={WERKBANK_COLORS.engine}
-                fillOpacity={0.45}
+                fillOpacity={layerAlpha.engineWizard}
               />
             </Box>
           </Box>

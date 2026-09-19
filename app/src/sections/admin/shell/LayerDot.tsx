@@ -10,10 +10,15 @@
 
 import { Box } from '@mui/material';
 
+import type { StrokeStyle } from '@/styles/paper';
+
 const SWATCH = 18; // px of line — two dash cycles at the factors the tokens use
 const WEIGHT = 2.5; // px; the dash factors are multiples of the line's own width
 
-export const LayerDot = ({ color, dash }: { color: string; dash?: readonly number[] | null }) => (
+// The whole stroke style, never a bare dash: the cap is half of what makes a
+// dotted mark dotted, and a swatch that drew the token's dash under its own cap
+// would show a different line from the one it labels.
+export const LayerDot = ({ color, style }: { color: string; style: StrokeStyle }) => (
   <Box
     component="svg"
     aria-hidden
@@ -27,8 +32,8 @@ export const LayerDot = ({ color, dash }: { color: string; dash?: readonly numbe
       y2={WEIGHT / 2}
       stroke={color}
       strokeWidth={WEIGHT}
-      strokeDasharray={dash ? dash.map((d) => d * WEIGHT).join(' ') : undefined}
-      strokeLinecap="butt"
+      strokeDasharray={style.dash ? style.dash.map((d) => d * WEIGHT).join(' ') : undefined}
+      strokeLinecap={style.cap}
     />
   </Box>
 );

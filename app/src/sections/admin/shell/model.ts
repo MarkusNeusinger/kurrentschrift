@@ -9,7 +9,7 @@
 
 import type { InstanceOut, LandmarkKind, WordInstanceOut, WordSampleOut, WorkItemIn } from '@/lib/api';
 import { de } from '@/locales/admin';
-import { absetzer, layer, paper, pigment } from '@/styles/paper';
+import { layer, liftConnector, paper, pigment, strokeStyle } from '@/styles/paper';
 
 import { keysOfText } from './focus';
 
@@ -428,5 +428,14 @@ export const WERKBANK_COLORS = {
   // here for a while, read by nothing, and agreed with the line colour by
   // coincidence rather than by construction (review of PR #598).
   pathLast: layer.path,
-  lift: absetzer.color,
+  lift: liftConnector.color,
+} as const;
+
+// The stroke style of the two marks that are NOT layers, so colour and stroke
+// travel together for them the way `layer`/`layerDash` does for a layer. Both
+// are dotted: the taught 4:3 dash belongs to the engine layer and a mark
+// without a legend entry may not borrow a signature a legend teaches.
+export const WERKBANK_DASH = {
+  current: strokeStyle.dotted,
+  lift: liftConnector.stroke,
 } as const;

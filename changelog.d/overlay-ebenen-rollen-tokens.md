@@ -4,13 +4,19 @@
   gains `layer`/`layerDash` (Spur · Pfad · Engine), `role`/`roleDash`
   (Tafel · Platte · Eigenhand) and a system monospace stack, and the design
   system carries them as a binding rule: a layer or a role is recognised from
-  **Rollen-Etikett + Position + Strichart**, never from colour alone. A new
-  `paper.test.ts` enforces it — every layer clears 3:1 against white AND against
-  the plate ink, every role against both paper grounds, no token wears viridian,
-  and each pair's deuteranope separation is asserted with the one collision the
-  period palette cannot resolve (Ocker vs Zinnober) named so it can never widen
-  unnoticed. The role tokens ship ahead of their consumer, which arrives with the
-  Rollen-Spalte.
+  **Rollen-Etikett + Position + Strichart**, never from colour alone — and a
+  stroke style is the dash pattern AND the line cap, because `[2, 2]` under SVG's
+  default cap draws square dashes rather than the documented dots. A new
+  `paper.test.ts` enforces it. Drawn OPAQUE, every layer clears 3:1 against white
+  and against the plate ink and every role against both paper grounds; no token
+  wears viridian; each pair's deuteranope separation is asserted, with the one
+  collision the period palette cannot resolve (Ocker vs Zinnober) named so it can
+  never widen unnoticed. Where a layer is drawn TRANSLUCENT over a scan the floor
+  is deliberately not met — the ink underneath has to stay readable, so the engine
+  silhouette at 0.42 composites to 1.81:1 on white and 1.71:1 on the ink — and
+  every such opacity is a named token (`layerAlpha`) whose composited contrast the
+  test measures by name, so no tune moves it silently. The role tokens ship ahead
+  of their consumer, which arrives with the Rollen-Spalte.
 
 ### Fixed
 

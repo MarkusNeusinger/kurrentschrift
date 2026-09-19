@@ -342,17 +342,17 @@ export function WordView() {
                     are one colour for a deuteranope, so the label and the dash
                     are what actually tell them apart. */}
                 <ToggleButton value="trace">
-                  <LayerDot color={layer.trace} dash={layerDash.trace} />
+                  <LayerDot color={layer.trace} style={layerDash.trace} />
                   {de.admin.werkbank.layerTrace}
                 </ToggleButton>
                 <Tooltip title={de.admin.werkbank.layerPathHint}>
                   <ToggleButton value="path">
-                    <LayerDot color={layer.path} dash={layerDash.path} />
+                    <LayerDot color={layer.path} style={layerDash.path} />
                     {de.admin.werkbank.layerPath}
                   </ToggleButton>
                 </Tooltip>
                 <ToggleButton value="engine">
-                  <LayerDot color={layer.engine} dash={layerDash.engine} />
+                  <LayerDot color={layer.engine} style={layerDash.engine} />
                   {de.admin.werkbank.layerEngine}
                 </ToggleButton>
               </ToggleButtonGroup>

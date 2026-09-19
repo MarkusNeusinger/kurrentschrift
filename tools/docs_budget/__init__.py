@@ -517,8 +517,9 @@ WIDEST = {
 # may wear, on which ground, and with which stroke — plus the Strichart-Regel
 # („Rollen-Etikett + Position + Strichart", and the texts name no colours). It
 # is read-path by construction and by evidence: the seven files that carried
-# overlay hexes and the six German strings that named colours in prose were all
-# written by readers of this doc who found no rule here. The path stood at 364
+# overlay hexes and the nine German strings that named colours in prose (counted
+# in this branch's own diff of `app/src/locales/de/admin.ts`) were all written
+# by readers of this doc who found no rule here. The path stood at 364
 # tokens of room. The addition was cut first (two tables merged into one, the
 # per-token contrast columns dropped to the test that enforces them, the mono
 # paragraph and the §7 rows tightened) and lands at +1 508 proxy tokens for the

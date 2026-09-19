@@ -47,7 +47,7 @@ import {
   type Mark,
   type SpecimenRef,
 } from '@/sections/admin/shell/model';
-import { garamond, layerDash, paper } from '@/styles/paper';
+import { garamond, layerAlpha, layerDash, paper } from '@/styles/paper';
 
 import { DistanceProfileChart, PROBE_COLOR } from './DistanceProfileChart';
 import { distanceProfile, type ProfilePoint } from './distanceProfile';
@@ -97,10 +97,12 @@ function EngineInk({
             strokeWidth={it.stroke_width ?? it.mask_width}
             strokeDasharray={
               overlay
-                ? layerDash.engine.map((d) => d * (it.stroke_width ?? it.mask_width)).join(' ')
+                ? layerDash.engine.dash.map((d) => d * (it.stroke_width ?? it.mask_width)).join(' ')
                 : undefined
             }
-            strokeLinecap="round"
+            // As an overlay the cap belongs to the token too; the solo face is
+            // a written word and keeps the round cap a pen leaves.
+            strokeLinecap={overlay ? layerDash.engine.cap : 'round'}
           />
         ),
       )}
@@ -144,7 +146,7 @@ function EngineFace({
         <line key={i} x1={0} x2={width} y1={y} y2={y} stroke={paper.line} strokeWidth={px} />
       ))}
       <g transform={`matrix(${xh} 0 0 ${-xh} ${FACE_PAD - minX * xh} ${baselineRow})`}>
-        <EngineInk composed={composed} opacity={0.85} />
+        <EngineInk composed={composed} opacity={layerAlpha.engineFace} />
       </g>
     </svg>
   );
@@ -370,7 +372,8 @@ export function WordSpineCard({
                 {showTrace && row && (
                   // One overlay component for both surfaces that draw a stored
                   // path (here and the own-hand strips). With `detail` off it
-                  // is the flat green line this card always drew; with it on
+                  // is the flat Spur line this card always drew — the blue of
+                  // the traced layer since the Ebenen-Token; with it on
                   // the same strokes are read as a MOVEMENT — order ramp,
                   // start dot, direction arrows, dashed Absetzer.
                   <PathOverlay strokes={row.strokes} unit={px / xh} detail={showPath} showIndex={showPath} />
@@ -384,7 +387,7 @@ export function WordSpineCard({
               </g>
               {overlay && composed && (
                 <g transform={matrix}>
-                  <EngineInk composed={composed} opacity={0.42} overlay />
+                  <EngineInk composed={composed} opacity={layerAlpha.engineOverlay} overlay />
                 </g>
               )}
               {boxes.map((inst) => {

@@ -51,19 +51,21 @@ const render = (laufform: number[][]) => {
   return Array.from(container.querySelectorAll('path'));
 };
 
-/** The dash factors a path was drawn with, normalised by its own first value. */
-const ratioOf = (el: Element): number => {
-  const dash = (el.getAttribute('stroke-dasharray') ?? '').split(' ').map(Number);
-  return dash[0] / dash[1];
-};
+const dashOf = (el: Element): number[] => (el.getAttribute('stroke-dasharray') ?? '').split(' ').map(Number);
 
-it('draws the Laufform reference dotted, not in the engine layer dash', () => {
+it('draws the Laufform reference dotted — zero-length dashes under a round cap', () => {
   const dashed = render(LAUFFORM).filter((p) => p.getAttribute('stroke-dasharray'));
   const reference = dashed.find((p) => p.getAttribute('stroke') === WERKBANK_COLORS.current);
   if (!reference) throw new Error('the sketch drew no Laufform reference');
 
-  expect(ratioOf(reference)).toBeCloseTo(1, 5); // 2:2 — dotted
-  expect(ratioOf(reference)).not.toBeCloseTo(layerDash.engine[0] / layerDash.engine[1], 5);
+  // BOTH halves, because either alone is a lie about the channel: `[2, 2]` with
+  // the default `butt` cap renders square dashes, and a zero-length dash under
+  // that cap renders nothing at all (PR #620 review).
+  const dash = dashOf(reference);
+  expect(dash[0]).toBe(0);
+  expect(dash[1]).toBeGreaterThan(0);
+  expect(reference.getAttribute('stroke-linecap')).toBe('round');
+  expect(dash[0] / dash[1]).not.toBeCloseTo(layerDash.engine.dash[0] / layerDash.engine.dash[1], 5);
 });
 
 it('leaves the median solid, so the figure stays the figure', () => {

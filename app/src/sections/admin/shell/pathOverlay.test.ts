@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { layer } from '@/styles/paper';
+import { layer, liftConnector, strokeStyle } from '@/styles/paper';
 
 import {
   arrowPoints,
@@ -89,6 +89,13 @@ describe('liftsOf', () => {
   it('skips empty stretches instead of drawing lifts to nowhere', () => {
     expect(liftsOf([a, [], b])).toEqual([{ from: [1, 1], to: [2, 1] }]);
     expect(liftsOf([])).toEqual([]);
+  });
+
+  it('marks those lifts with the dotted style, cap included', () => {
+    // The contract this geometry is drawn under. That the RENDERED line really
+    // carries both halves is asserted in the jsdom sibling `PathOverlay.test.tsx`
+    // — a dash without its cap is only half a stroke style (PR #620 review).
+    expect(liftConnector.stroke).toEqual(strokeStyle.dotted);
   });
 });
 

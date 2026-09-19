@@ -662,10 +662,10 @@ export const admin = {
     // engine writes from it — same scale, same Grundlinie, so „trifft der Fit?"
     // und „was macht das System daraus?" nebeneinander lesbar sind.
     faceSpecimenBase: 'Vorlage',
-    // Keine Farbnamen in der Bildunterschrift: „erster Zug grün, letzter blau"
-    // ist genau der Satz, mit dem ein farbfehlsichtiger Leser nichts anfangen
-    // kann, und er wird bei jeder Palettenpflege wieder falsch. Die Legende
-    // (Ebenen-Schalter mit Farbe UND Strichart) trägt die Zuordnung.
+    // No colour names in a caption: „erster Zug grün, letzter blau" is exactly
+    // the sentence a colour-blind reader cannot use, and it goes wrong again on
+    // every palette tune. The legend carries the mapping instead — the layer
+    // switches show colour AND stroke style (Strichart-Regel, design-system §2).
     faceLayerTrace: 'Nachfahrung',
     faceLayerPath: 'Pfad (Schreibreihenfolge, Absetzer gestrichelt)',
     faceLayerEngine: 'Engine',
