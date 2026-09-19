@@ -581,7 +581,8 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   eingefrorenen Plan zu bekommen (Proposal §4; `--word` für einen
   einmaligen Pin). In `PINNED_FIRST` stehen neben den eigens dafür
   kuratierten Wörtern die **Referenzwörter** (`corpus.REFERENCE_WORDS`:
-  MVP-Anker + die Worttexte des Entwicklungssatzes dev-19), die aus
+  die drei §9-Wörter `lesen` · `das` · `denen` + die Worttexte des
+  Entwicklungssatzes dev-19), die aus
   anderen Kurationsschichten stammen; ein Wort, das der Plan schon
   trägt, wird gemeldet und übersprungen, nicht ein zweites Mal
   eingeplant. Der Lauf ist rein lokal — Kuration lesen, `streifen.json`

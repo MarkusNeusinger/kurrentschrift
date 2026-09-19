@@ -3994,12 +3994,16 @@ Plan, gelesen von `core/eigenhand/plan.py::ordered_strips`.
 → proposals/eigenhand-erfassung.md §4
 
 **Referenzwörter (Eigenhand)** — die 14 Wörter, an denen sich das
-Vorhaben misst und die deshalb dreifach vorliegen sollen: als
-Platten-Beleg, als eigener Streifen der Eigenhand und als
-Systemrendering. Es sind die MVP-Anker aus architektur.md §9 (`lesen`,
-`das`, `denen`) plus die WORTTEXTE des eingefrorenen Entwicklungssatzes
-dev-19 — dessen Kennungen tragen die Vorkommensnummer eines
-wiederholten Belegs (`und-3`), die kein eigenes Wort ist. Nicht zu
+Vorhaben misst und die deshalb früh einen eigenen Streifen der Eigenhand
+bekommen. Zwölf davon sind die WORTTEXTE des eingefrorenen
+Entwicklungssatzes dev-19 (dessen Kennungen tragen die Vorkommensnummer
+eines wiederholten Belegs, `und-3`, die kein eigenes Wort ist) — sie
+liegen damit DREIFACH vor: als Platten-Beleg, als eigener Streifen und
+als Systemrendering. Die zwei übrigen sind §9-Wörter aus architektur.md,
+die die Platte von 1922 nicht schreibt: `lesen` (mit `das`, das selbst
+zum Entwicklungssatz gehört, das Pflicht-Anker-Paar) und `denen` (das
+Generalisierungs-Wort, kein Anker) — sie liegen zweifach vor, als
+Streifen und als Systemrendering. Nicht zu
 verwechseln mit dem **Referenzsatz (nachgefahren)**, dem Maßstab der
 Folger-Messung: die Referenzwörter sind Trainingsmenge, keine
 Bench-Kopfzahl liest aus dem Streifenplan. Die Abhängigkeit läuft in

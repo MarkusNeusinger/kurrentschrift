@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from pathlib import Path
 
 import pytest
 
@@ -13,6 +14,8 @@ from core.eigenhand.plan import STREIFEN_JSON
 from tools.eigenhand import pool, progression, universe
 from tools.eigenhand.corpus import PINNED_FIRST, REFERENCE_WORDS, pool_entries, shaping_form
 
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 # The committed plan as it stood BEFORE the reference-word pin wave of
 # 2026-09-19: strips S0001–S0181, i.e. waves 0–2 plus the `Kurrentschrift`
@@ -200,14 +203,15 @@ class TestStripPlan:
         ]
 
     def test_every_reference_word_is_on_a_strip(self):
-        # The point of the pin: the same word exists as plate sample, as the
-        # author's own strip and as a system rendering. Either the pin wave
-        # put it on a strip or an earlier wave already had it — never neither.
+        # The point of the pin: every reference word gets an own-hand strip.
+        # Either the pin wave put it on one or an earlier wave already had it
+        # — never neither. (Only the dev-split words have a plate sample on
+        # top of that; `lesen` and `denen` are not on the 1922 plate.)
         plan = plan_mod.load_plan()
         planned = {word for strip in plan["strips"].values() for word in strip["words"]}
         assert not [word for word in REFERENCE_WORDS if word not in planned]
 
-    def test_the_reference_words_are_the_anchors_plus_the_dev_split(self):
+    def test_the_reference_words_are_the_section_9_words_plus_the_dev_split(self):
         # Pinned literally, because the derivation strips the occurrence
         # suffix of a repeated specimen (`und-3` → `und`) and a silent change
         # there would quietly re-cut what gets written.
@@ -227,6 +231,15 @@ class TestStripPlan:
             "will",
             "zwei",
         ]
+
+    def test_only_the_dev_split_words_have_a_plate_sample(self):
+        # The docs promise the three-way comparison (Platte · Eigenhand ·
+        # rendering) for the dev-split words and a two-way one for `lesen` and
+        # `denen`, which the 1922 plate does not write. Pinned against the
+        # committed sidecar so that sentence cannot drift away from the data.
+        sidecar = json.loads((REPO_ROOT / "data/sources/suetterlin-1922/words.json").read_text(encoding="utf-8"))
+        on_plate = {row["word"] for row in sidecar["words"]}
+        assert [word for word in REFERENCE_WORDS if word not in on_plate] == ["lesen", "denen"]
 
     def test_every_reference_word_is_curated_outside_the_pin_layer(self):
         # The pin rows carry no era/lang/note because an earlier layer already

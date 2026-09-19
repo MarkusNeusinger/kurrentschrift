@@ -20,7 +20,7 @@
 > des Streifenplans sind committet (Streifen 1–180: Buchstaben, Ziffern,
 > Zeichen, Mindestbelegung ≥3 je Glyphe), dazu seit 2026-09-06 die erste
 > Anheftung (`S0181` = „Kurrentschrift", §4) und seit 2026-09-19 die
-> Referenzwörter (`S0182`–`S0188`: MVP-Anker + Entwicklungssatz dev-19,
+> Referenzwörter (`S0182`–`S0188`: §9-Wörter + Entwicklungssatz dev-19,
 > Autor-Entscheid Q17; 188 Streifen, 560 distinkte Wörter).
 > **Der erste echte Bogen
 > `B0001` ist gedruckt, geschrieben und eingelesen** (2026-09-07: drei
@@ -288,17 +288,22 @@ Hinweiszeichen).
 **Die Referenzwörter** (Autor-Entscheid Q17 zum
 [Admin-Redesign](admin-redesign.md), 2026-09-18). Die zweite Anheftung
 ist kein Einzelfall, sondern eine Brücke: die Wörter, an denen sich das
-Vorhaben misst, sollen dreifach vorliegen — als Platten-Beleg, als
-eigener Streifen und als Systemrendering. Erst dann KANN eine Ansicht
-bei ein und demselben Wort Tafel · Platte · Eigenhand nebeneinander
-legen, statt die drei nur über Items zu verbinden. Angeheftet werden
-die MVP-Anker aus
-[`architektur.md`](../concepts/architektur.md) §9 (`lesen`, `das`,
-`denen`) und die WÖRTER des eingefrorenen Entwicklungssatzes dev-19
+Vorhaben misst, bekommen früh einen eigenen Streifen. Angeheftet werden
+die WÖRTER des eingefrorenen Entwicklungssatzes dev-19
 (`tools/tracebench/sets.py::TRACEBENCH_DEV_IDS`; dessen Kennungen tragen
 die Vorkommensnummer eines wiederholten Belegs — `und-3` ist kein
 eigenes Wort —, die 12 distinkten Worttexte werden daraus abgeleitet,
-nicht abgeschrieben). Zusammen 14 Referenzwörter; kuratiert sind sie
+nicht abgeschrieben) und die drei §9-Wörter aus
+[`architektur.md`](../concepts/architektur.md): das Pflicht-Anker-Paar
+`lesen` + `das` und, davon getrennt, das Generalisierungs-Wort `denen`
+(kein Anker). Für die zwölf dev-Wörter — `das` gehört dazu — ist die
+Brücke DREIFACH: Platten-Beleg, eigener Streifen, Systemrendering; erst
+damit KANN eine Ansicht bei ein und demselben Wort Tafel · Platte ·
+Eigenhand nebeneinander legen, statt die drei nur über Items zu
+verbinden. `lesen` und `denen` schreibt die Platte von 1922 nicht (der
+Sidecar `data/sources/suetterlin-1922/words.json` führt keines von
+beiden; im Test festgehalten) — sie bekommen den Streifen neben ihrem
+Systemrendering, also eine zweifache Brücke. Zusammen 14 Referenzwörter; kuratiert sind sie
 längst (Schichten `mvp9` und `bench-abb19`), die Anheftung verschiebt
 sie nur an die Spitze. Die Abhängigkeit läuft in EINE Richtung: die
 Kuration liest den eingefrorenen Satz, nie umgekehrt (§12 Prüfstein 2).

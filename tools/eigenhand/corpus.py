@@ -559,9 +559,10 @@ _ZEICHEN_ENTRIES: list[PoolEntry] = [
 
 
 # --- the project's reference words ------------------------------------------
-# The §9 Pflicht-Anker pair plus the generalisation word — the three of
-# ``_MVP9_WORDS`` the architecture names as the gate for word rendering.
-_MVP_ANCHOR_WORDS = ["lesen", "das", "denen"]
+# Architecture §9's three named words: the Pflicht-Anker pair `lesen` + `das`
+# and, separately, the generalisation word `denen`. Two roles, so the list is
+# named for what the three share — they are the §9 references — not "anchors".
+_MVP_REFERENCE_WORDS = ["lesen", "das", "denen"]
 
 _OCCURRENCE_SUFFIX = re.compile(r"-\d+$")
 
@@ -577,20 +578,22 @@ def _dev_split_words() -> list[str]:
     return sorted({_OCCURRENCE_SUFFIX.sub("", sample_id) for sample_id in TRACEBENCH_DEV_IDS})
 
 
-# The project's reference words: the words the project measures itself on
-# should exist three times over — as the 1922 plate sample, as the author's own
-# strip, and as a system rendering (owner decision Q17, 2026-09-18). Plate and
-# rendering are there; the strip is what the pin adds, so a Tafel · Platte ·
-# Eigenhand comparison has the same word on all three sides. Both halves are
-# already curated above (`mvp9`, `bench-abb19`) — pinning only moves them to
-# the head of the print queue.
+# The project's reference words get an own-hand strip early (owner decision
+# Q17, 2026-09-18). For the twelve dev-split words — `das` among them — that
+# closes a three-way bridge: each exists as a 1922 plate sample and as a system
+# rendering already, and the strip is what the pin adds, so a Tafel · Platte ·
+# Eigenhand comparison has the same word on all three sides. `lesen` and
+# `denen` are NOT on the plate (the sidecar `data/sources/suetterlin-1922/
+# words.json` has neither); they gain the strip beside their rendering, a
+# two-way comparison. Both halves are already curated above (`mvp9`,
+# `bench-abb19`) — pinning only moves them to the head of the print queue.
 #
 # The dependency runs ONE way: the curation reads the frozen split, and no
 # bench number ever reads the strip plan (proposal §12 Prüfstein 2). A
 # reference word the plan already carries is NOT pinned — a pin says "write
 # this early", not "write this again" (proposal §4), and `pool.pin_words`
 # skips it.
-REFERENCE_WORDS: list[str] = list(dict.fromkeys(_MVP_ANCHOR_WORDS + _dev_split_words()))
+REFERENCE_WORDS: list[str] = list(dict.fromkeys(_MVP_REFERENCE_WORDS + _dev_split_words()))
 
 
 # --- pinned words: written FIRST, because the author wants them early -------
