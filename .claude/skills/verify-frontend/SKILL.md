@@ -521,7 +521,14 @@ in this order:
    — the old overlay green `#00b37e` cleared the paper and failed
    against `#fff` at 2.71:1, which is what retired it on 2026-09-19.
    Measure it, don't eyeball it: read the computed colour with
-   `evaluate_script`/`page.evaluate` and compute the ratio.
+   `evaluate_script`/`page.evaluate` and compute the ratio — and where
+   the mark is TRANSLUCENT (`fill-opacity`, `stroke-opacity`),
+   alpha-composite it over its ground first. The declared hex is not
+   what the eye gets: the engine overlay's Zinnober clears 3:1 opaque
+   and composites to 1.81:1 at its drawn 0.42. A translucent
+   comparison overlay over a scan is a documented exception (§2 of
+   `design-system.md`), so report the composited number rather than
+   the token's.
 3. **Deuteranope separation.** Simulate (any LMS deuteranopia matrix in
    the same `evaluate` block) and check each PAIR that must stay
    distinguishable, not each colour on its own. Red/green pairs are the

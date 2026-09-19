@@ -75,8 +75,9 @@ Quiz) nutzt Periodenpigmente — siehe [Style-Guide §2](style-guide.md).
 
 Geschwister-Exporte neben `paper` (wie `pigment`), denn `paper` ist das flache
 IDENTITÄTS-Objekt und Arbeitsflächen steigen bewusst aus ihm aus (§5). Eine
-**Ebene** liegt über Ausschnitt, Scan oder Skizze und muss darum gegen weiß UND
-gegen Platten-Tinte 3 : 1 erreichen (WCAG 1.4.11); eine **Rolle** wird auf Papier
+**Ebene** liegt über Ausschnitt, Scan oder Skizze und muss darum deckend
+gezeichnet gegen weiß UND gegen Platten-Tinte 3 : 1 erreichen (WCAG 1.4.11;
+durchscheinend gezeichnet siehe den Absatz danach); eine **Rolle** wird auf Papier
 gelesen und misst sich an `paper.hi`/`paper.bg`. Die Zahlen und die
 Deuteranopie-Abstände prüft `app/src/styles/paper.test.ts`.
 
