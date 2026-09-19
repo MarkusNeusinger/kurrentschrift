@@ -18,7 +18,7 @@
 // They stay the reserved own-hand dataset — admin-gated, uncacheable, never in
 // the repository, and loaded only when asked for (StripsPanel).
 //
-// Since the `?ansicht=` split this file is the SHELL: it owns the hand, the one
+// Since the `?reiter=` split this file is the SHELL: it owns the hand, the one
 // Bestand read behind all four Unteransichten, the last print job's sheet ids,
 // and the switch between them (admin-redesign.md V2). Everything that used to
 // stand under each other on one very long page now lives in BestandView,
@@ -261,7 +261,7 @@ export function EigenhandView() {
             the coverage grid on `bestand` produces it, the gallery on
             `streifen` consumes it, so the round trip keeps a narrowed gallery
             narrow. `statistik` and `drucken` read neither, and a copied
-            `?ansicht=drucken&item=a%3Eb` would carry a parameter that does
+            `?reiter=drucken&item=a%3Eb` would carry a parameter that does
             nothing but mislead the next reader. */}
         <ToggleButtonGroup size="small" exclusive value={ansicht} aria-label={t.ansichtAria}>
           {EIGENHAND_ANSICHTEN.map((name) => (

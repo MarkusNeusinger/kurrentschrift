@@ -27,20 +27,22 @@ describe('admin tab titles', () => {
   });
 
   it('names the hand-scoped view and the Vorlage picker', () => {
-    // Three segments since the `?ansicht=` split: a bare /admin/eigenhand IS
+    // Three segments since the `?reiter=` split: a bare /admin/eigenhand IS
     // the Bestand, so the tab says so rather than naming the area twice.
     expect(adminTitle('/admin/eigenhand', '')).toBe('Eigenhand · Bestand · Werkbank');
     expect(adminTitle('/admin', '')).toBe('Werkbank');
   });
 
   it('names the Eigenhand sub-view, and falls back like focus.ts does', () => {
-    expect(adminTitle('/admin/eigenhand', '?ansicht=streifen')).toBe('Eigenhand · Streifen · Werkbank');
-    expect(adminTitle('/admin/eigenhand', '?ansicht=statistik')).toBe('Eigenhand · Statistik · Werkbank');
-    expect(adminTitle('/admin/eigenhand', '?ansicht=drucken')).toBe('Eigenhand · Drucken · Werkbank');
-    expect(adminTitle('/admin/eigenhand', '?ansicht=quatsch')).toBe('Eigenhand · Bestand · Werkbank');
+    expect(adminTitle('/admin/eigenhand', '?reiter=streifen')).toBe('Eigenhand · Streifen · Werkbank');
+    expect(adminTitle('/admin/eigenhand', '?reiter=statistik')).toBe('Eigenhand · Statistik · Werkbank');
+    expect(adminTitle('/admin/eigenhand', '?reiter=drucken')).toBe('Eigenhand · Drucken · Werkbank');
+    expect(adminTitle('/admin/eigenhand', '?reiter=quatsch')).toBe('Eigenhand · Bestand · Werkbank');
+    // The display mode of a later overview must not be read as a sub-view.
+    expect(adminTitle('/admin/eigenhand', '?ansicht=streifen')).toBe('Eigenhand · Bestand · Werkbank');
     // The strips filter is not the subject — it must not reach the tab.
-    expect(adminTitle('/admin/eigenhand', '?ansicht=streifen&item=a%3Eb')).toBe('Eigenhand · Streifen · Werkbank');
-    expect(adminTitle('/admin/eigenhand/', '?ansicht=drucken')).toBe('Eigenhand · Drucken · Werkbank');
+    expect(adminTitle('/admin/eigenhand', '?reiter=streifen&item=a%3Eb')).toBe('Eigenhand · Streifen · Werkbank');
+    expect(adminTitle('/admin/eigenhand/', '?reiter=drucken')).toBe('Eigenhand · Drucken · Werkbank');
   });
 
   it('tolerates a trailing slash and an unknown admin path', () => {

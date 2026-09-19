@@ -8,7 +8,7 @@
 //
 // The panels are the ones EigenhandView carried before the split, moved
 // unchanged; the filter a coverage cell files now travels through the URL
-// (`?ansicht=streifen&item=…`) instead of through a scroll into a panel below.
+// (`?reiter=streifen&item=…`) instead of through a scroll into a panel below.
 
 import { Box, Chip, FormControlLabel, Stack, Switch, Tooltip, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';

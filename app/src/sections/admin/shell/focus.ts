@@ -24,10 +24,17 @@ export const FOCUS_PARAMS = { glyph: 'g', left: 'l', right: 'r', word: 'w', spec
 // are spelled out because they are read by a human in the address bar, where
 // a one-letter parameter would only save the author typing he never does.
 //
+// The parameter is `reiter`, not `ansicht`: `ansicht` belongs to the
+// list/gallery display mode of the overviews (`?ansicht=liste|galerie`, plan
+// V14, author decision Q1 c of 2026-09-19), while `reiter` means „which tab
+// of this page" everywhere in the admin — the same word the Wörter overview's
+// tabs take. The German-domain identifiers below keep saying Ansicht, because
+// a sub-view IS an Unteransicht; only the spelled URL word is `reiter`.
+//
 // `item`/`wort` are the strips filter. They are here and not inside the
 // gallery because the split tore producer and consumer apart: a coverage cell
 // sits on `bestand`, the strips it selects on `streifen`.
-export const EIGENHAND_PARAMS = { ansicht: 'ansicht', item: 'item', wort: 'wort' } as const;
+export const EIGENHAND_PARAMS = { reiter: 'reiter', item: 'item', wort: 'wort' } as const;
 
 // The first entry is the default: a bare /admin/eigenhand — and any nonsense
 // a hand-typed URL carries — lands on the Bestand.
@@ -81,7 +88,7 @@ const knownAnsicht = (value: string | null): value is EigenhandAnsicht =>
   Boolean(value) && (EIGENHAND_ANSICHTEN as readonly string[]).includes(value as string);
 
 export function readEigenhandFocus(params: URLSearchParams): EigenhandFocus {
-  const ansicht = params.get(EIGENHAND_PARAMS.ansicht);
+  const ansicht = params.get(EIGENHAND_PARAMS.reiter);
   return {
     ansicht: knownAnsicht(ansicht) ? ansicht : EIGENHAND_ANSICHTEN[0],
     // Deliberately NOT run through `knownKey`: a coverage item is `a>b` or
@@ -127,7 +134,7 @@ export const eigenhandUrl = (
   opts?: { item?: string | null; wort?: string | null },
 ): string =>
   withParams(paths.admin.eigenhand, [
-    [EIGENHAND_PARAMS.ansicht, ansicht],
+    [EIGENHAND_PARAMS.reiter, ansicht],
     [EIGENHAND_PARAMS.item, opts?.item],
     [EIGENHAND_PARAMS.wort, opts?.wort],
   ]);

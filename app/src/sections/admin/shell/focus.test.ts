@@ -40,10 +40,20 @@ describe('focus parsing', () => {
 describe('eigenhand sub-view', () => {
   it('sends an absent or unknown view to the Bestand', () => {
     expect(readEigenhandFocus(params('')).ansicht).toBe('bestand');
-    expect(readEigenhandFocus(params('ansicht=streifen')).ansicht).toBe('streifen');
-    expect(readEigenhandFocus(params('ansicht=statistik')).ansicht).toBe('statistik');
-    expect(readEigenhandFocus(params('ansicht=drucken')).ansicht).toBe('drucken');
-    expect(readEigenhandFocus(params('ansicht=quatsch')).ansicht).toBe('bestand');
+    expect(readEigenhandFocus(params('reiter=streifen')).ansicht).toBe('streifen');
+    expect(readEigenhandFocus(params('reiter=statistik')).ansicht).toBe('statistik');
+    expect(readEigenhandFocus(params('reiter=drucken')).ansicht).toBe('drucken');
+    expect(readEigenhandFocus(params('reiter=quatsch')).ansicht).toBe('bestand');
+  });
+
+  it('never reads the display mode as a sub-view', () => {
+    // `ansicht` is spoken for: it carries the list/gallery display mode of the
+    // overviews (V14, author decision Q1 c of 2026-09-19). A `?ansicht=liste`
+    // that a later PR puts on another page must therefore mean NOTHING here —
+    // not even when its value happens to spell one of our four views.
+    expect(readEigenhandFocus(params('ansicht=streifen')).ansicht).toBe('bestand');
+    expect(readEigenhandFocus(params('ansicht=liste')).ansicht).toBe('bestand');
+    expect(readEigenhandFocus(params('ansicht=liste&reiter=streifen')).ansicht).toBe('streifen');
   });
 
   it('passes the strips filter through un-validated', () => {
@@ -51,13 +61,13 @@ describe('eigenhand sub-view', () => {
     // the search is free text — none of them is a glyph registry key, so the
     // reader must not gate them the way it gates `g`/`l`/`r`.
     expect(readEigenhandFocus(params('item=a%3Eb'))).toEqual({ ansicht: 'bestand', item: 'a>b', wort: null });
-    expect(readEigenhandFocus(params('ansicht=streifen&item=a@medial')).item).toBe('a@medial');
+    expect(readEigenhandFocus(params('reiter=streifen&item=a@medial')).item).toBe('a@medial');
     expect(readEigenhandFocus(params('wort=lesen')).wort).toBe('lesen');
     expect(readEigenhandFocus(params('item=&wort='))).toEqual({ ansicht: 'bestand', item: null, wort: null });
   });
 
   it('keeps an unknown view out of the way of the rest', () => {
-    expect(readEigenhandFocus(params('ansicht=quatsch&item=a%3Eb'))).toEqual({
+    expect(readEigenhandFocus(params('reiter=quatsch&item=a%3Eb'))).toEqual({
       ansicht: 'bestand',
       item: 'a>b',
       wort: null,
@@ -77,10 +87,10 @@ describe('focus links', () => {
 
   it('builds the Eigenhand sub-view link, clean when nothing is given', () => {
     expect(eigenhandUrl()).toBe('/admin/eigenhand');
-    expect(eigenhandUrl('bestand')).toBe('/admin/eigenhand?ansicht=bestand');
-    expect(eigenhandUrl('streifen')).toBe('/admin/eigenhand?ansicht=streifen');
-    expect(eigenhandUrl('streifen', { item: 'a>b' })).toBe('/admin/eigenhand?ansicht=streifen&item=a%3Eb');
-    expect(eigenhandUrl('streifen', { wort: 'lesen' })).toBe('/admin/eigenhand?ansicht=streifen&wort=lesen');
+    expect(eigenhandUrl('bestand')).toBe('/admin/eigenhand?reiter=bestand');
+    expect(eigenhandUrl('streifen')).toBe('/admin/eigenhand?reiter=streifen');
+    expect(eigenhandUrl('streifen', { item: 'a>b' })).toBe('/admin/eigenhand?reiter=streifen&item=a%3Eb');
+    expect(eigenhandUrl('streifen', { wort: 'lesen' })).toBe('/admin/eigenhand?reiter=streifen&wort=lesen');
     // An options object with nothing in it adds nothing — the builder keeps
     // its promise that an absent value never reaches the query string.
     expect(eigenhandUrl(null, { item: undefined, wort: null })).toBe('/admin/eigenhand');

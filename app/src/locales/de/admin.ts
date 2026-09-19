@@ -995,7 +995,7 @@ export const admin = {
     title: 'Eigenhand',
     intro:
       'Die eigene Schreibprobe: welche Streifen bereits geschrieben und angenommen sind, welche Zeichen und Übergänge damit belegt sind — gemessen an dem, was der Streifenplan insgesamt hergibt. Die Scans selbst bleiben auf dem eigenen Rechner; hier stehen nur die Zahlen und der Druck.',
-    // The four Unteransichten behind `?ansicht=` (shell/focus.ts). The name is
+    // The four Unteransichten behind `?reiter=` (shell/focus.ts). The name is
     // spelled out in the address bar, so it is the button's label here too — a
     // switch whose caption cannot be found again in the URL would give half the
     // linkability back.
@@ -1012,7 +1012,7 @@ export const admin = {
     tabSubject: 'Eigenhand · {{ansicht}}',
     hand: 'Hand',
     handHelp: 'Neue Hand: <schreiber>-<stil>, z. B. mn-suetterlin',
-    // Since the `?ansicht=` split this sits in the SHELL, so it shows on all
+    // Since the `?reiter=` split this sits in the SHELL, so it shows on all
     // four Unteransichten — „unten" pointed at nothing on three of them.
     noHands: 'Noch keine Hand erfasst — in der Ansicht „Drucken" einen Bogen drucken, damit legt sich die erste an.',
     loadError: 'Der Bestand konnte nicht geladen werden.',

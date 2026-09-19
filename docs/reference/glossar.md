@@ -4352,14 +4352,12 @@ der Ersatz für die Kartenwände der Übersichten. Die **Nachfahr-Liste** ist
 eine davon, der **Arbeitsvorrat** die Seite, die alle Listen bündelt (nur
 Option C). Eine Arbeitsliste verlinkt nur und löst nie einen Statuswechsel
 aus. *Technisch:* nichts gebaut; vorgesehen
-`?ansicht=liste|galerie&filter=&sort=&seite=` (V14). Offener Punkt: seit dem
-Eigenhand-Split gibt denselben Parameternamen auch die →
-Unteransicht (Eigenhand) aus, und auf der Streifen-Fläche träfen beide
-Bedeutungen in einer URL aufeinander (die Galerie-Darstellung steht dort
-schon, heute an den Filter gekoppelt). Die Phase-1-Aufnahme empfiehlt, für
-Liste/Galerie `?darstellung=` zu nehmen — eine Unteransicht ist ein anderer
-ORT, die Darstellung ein anderes Aussehen desselben Orts. Autor-Entscheid
-steht aus; bis dahin gilt V14 wie geschrieben.
+`?ansicht=liste|galerie&filter=&sort=&seite=` (V14 wie geschrieben).
+`ansicht` gehört damit der DARSTELLUNG — Liste oder Galerie derselben
+Fläche —, nicht dem Ort: der Autor-Entscheid Q1 c vom 2026-09-19 hat den
+Namen der Arbeitsliste zugesprochen, und die → Unteransicht (Eigenhand)
+nennt ihren Reiter seit demselben Entscheid `?reiter=`. Auf der
+Streifen-Fläche stehen beide deshalb nebeneinander, ohne sich zu treffen.
 → proposals/admin-redesign.md §5.0, §5.1 (Idee 4)
 
 **Auslieferungs-Zeiger (geplant)** — die Antwort auf „welcher →
@@ -4508,16 +4506,24 @@ Korb-Notiz an die KI-Runde; am Rechner ist `tools.eigenhand.report
 `/admin/eigenhand` teilen: *bestand* (wie weit ist die Hand gekommen),
 *streifen* (die geschriebenen Fassungen), *statistik* (was die Tinte sagt)
 und *drucken* (die nächsten Bögen). Der Name steht ausgeschrieben in der
-Query (`?ansicht=…`), nicht in einer Unterroute — die kommt erst, wenn die
+Query (`?reiter=…`), nicht in einer Unterroute — die kommt erst, wenn die
 Nachfahr-Liste eine eigene Fläche wird (Phase 4) —, und ein unbekannter Wert
 landet auf *bestand*, nach derselben Regel, mit der `focus.ts` ein
-unbekanntes Subjekt auf die Übersicht schickt. Der Bestand wird EINMAL für
-alle vier gelesen; Hand und zuletzt gedruckte Bogen-Ids hält die Schale, der
-Streifen-Filter (`item`/`wort`) liegt in der URL, weil Erzeuger (Zeichen-Zelle
-auf *bestand*) und Verbraucher (*streifen*) sich seit der Teilung keine
-Komponente mehr teilen. Nicht zu verwechseln mit der Darstellungsart einer
-→ Arbeitsliste (Liste/Galerie): das ist ein Rendering derselben Fläche, die
-Unteransicht ein anderer Ort. *Technisch:* `EIGENHAND_ANSICHTEN`,
+unbekanntes Subjekt auf die Übersicht schickt. Der Parameter heißt `reiter`,
+weil er im ganzen Admin „welcher Reiter dieser Seite" heißt (so auch bei den
+Reitern der Wörter-Übersicht); `ansicht` gehört der Liste/Galerie-Umschaltung
+der → Arbeitsliste (Autor-Entscheid Q1 c vom 2026-09-19), und ein `?ansicht=`
+wird auf `/admin/eigenhand` deshalb nie als Unteransicht gelesen — auch dann
+nicht, wenn sein Wert zufällig eine der vier Flächen buchstabiert. Der
+Bestand wird EINMAL für alle vier gelesen; Hand und zuletzt gedruckte
+Bogen-Ids hält die Schale, der Streifen-Filter (`item`/`wort`) liegt in der
+URL, weil Erzeuger (Zeichen-Zelle auf *bestand*) und Verbraucher (*streifen*)
+sich seit der Teilung keine Komponente mehr teilen. Nicht zu verwechseln mit
+der Darstellungsart einer → Arbeitsliste (Liste/Galerie): das ist ein
+Rendering derselben Fläche, die Unteransicht ein anderer Ort. Ein Korb-Eintrag,
+der auf einen Wort-Ausschnitt zeigt, löst sich entsprechend zu
+`?reiter=streifen&strip=&fassung=&box=` auf (V7, Phase 3).
+*Technisch:* `EIGENHAND_ANSICHTEN`,
 `readEigenhandFocus`, `eigenhandUrl` in
 `app/src/sections/admin/shell/focus.ts`; Schale
 `sections/admin/eigenhand/EigenhandView.tsx`, Flächen `BestandView` ·
