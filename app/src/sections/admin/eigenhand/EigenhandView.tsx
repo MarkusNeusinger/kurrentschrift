@@ -166,13 +166,26 @@ export function EigenhandView() {
   }, [hand, reload]);
 
   // A printed Bogen moves strips into „unterwegs", so the counters are stale
-  // the moment the job returns. The hand has not changed, so the render guard
-  // above says nothing — an event continuation sets its own flags.
-  const reloadAfterPrint = useCallback(() => {
-    setLoading(true);
-    setLoadError(null);
-    reload(hand);
-  }, [hand, reload]);
+  // the moment the job returns. The hand has not changed in the usual case, so
+  // the render guard above says nothing — an event continuation sets its own
+  // flags.
+  //
+  // `forHand` is the guard for the unusual case: the selector stays enabled
+  // while a job runs, so a print started for one hand can land after the shell
+  // moved to another. Its sheet ids belong to the hand that was printed for,
+  // and reloading its Bestand would be a legitimately NEWER request for the
+  // wrong subject — which is exactly what `beginBestand` cannot catch, and how
+  // one hand's numbers end up under another's name.
+  const handlePrinted = useCallback(
+    (forHand: string, sheets: string[]) => {
+      if (forHand !== hand) return;
+      setPrinted(sheets);
+      setLoading(true);
+      setLoadError(null);
+      reload(hand);
+    },
+    [hand, reload],
+  );
 
   // What the strips gallery shows, read from the URL rather than from state:
   // the producer (a coverage cell on `bestand`) and the consumer (`streifen`)
@@ -301,9 +314,7 @@ export function EigenhandView() {
             />
           )}
           {ansicht === 'statistik' && <StatistikView bestand={bestand} />}
-          {ansicht === 'drucken' && (
-            <DruckenView hand={hand} printed={printed} onPrinted={setPrinted} onReload={reloadAfterPrint} />
-          )}
+          {ansicht === 'drucken' && <DruckenView hand={hand} printed={printed} onPrinted={handlePrinted} />}
         </>
       )}
     </Box>

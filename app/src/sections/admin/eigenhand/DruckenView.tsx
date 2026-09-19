@@ -21,14 +21,16 @@ export function DruckenView({
   hand,
   printed,
   onPrinted,
-  onReload,
 }: {
   hand: string;
   /** The last job's sheet ids, held by the shell so a view switch keeps them. */
   printed: string[];
-  onPrinted: (sheets: string[]) => void;
-  /** Re-reads the Bestand — a printed Bogen moves strips into „unterwegs". */
-  onReload: () => void;
+  /**
+   * A finished job: its sheet ids, and the hand they were printed for. The
+   * shell files them and re-reads the Bestand — a printed Bogen moves strips
+   * into „unterwegs" — but only while that hand is still the chosen one.
+   */
+  onPrinted: (forHand: string, sheets: string[]) => void;
 }) {
   const t = de.admin.eigenhand;
   const [sheets, setSheets] = useState(1);
@@ -42,13 +44,16 @@ export function DruckenView({
   const [printError, setPrintError] = useState<{ prefix: string; error: ApiErrorText } | null>(null);
 
   const print = () => {
+    // Read at CALL time, not in the continuation: the hand selector stays
+    // enabled while a job runs, so by the time the sheets come back the shell
+    // may be showing someone else. The id goes back with the result and the
+    // shell decides whether it is still the right subject (Copilot review,
+    // PR #622 — the same race the pre-split handler had).
+    const forHand = hand;
     setPrinting(true);
     setPrintError(null);
-    printEigenhandSheets({ hand, sheets, repeat })
-      .then((res) => {
-        onPrinted(res.sheets.map((s) => s.sheet));
-        onReload();
-      })
+    printEigenhandSheets({ hand: forHand, sheets, repeat })
+      .then((res) => onPrinted(forHand, res.sheets.map((s) => s.sheet)))
       .catch((err: unknown) => setPrintError({ prefix: t.printError, error: apiErrorText(err) }))
       .finally(() => setPrinting(false));
   };

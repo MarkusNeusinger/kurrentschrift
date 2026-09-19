@@ -995,10 +995,10 @@ export const admin = {
     title: 'Eigenhand',
     intro:
       'Die eigene Schreibprobe: welche Streifen bereits geschrieben und angenommen sind, welche Zeichen und Übergänge damit belegt sind — gemessen an dem, was der Streifenplan insgesamt hergibt. Die Scans selbst bleiben auf dem eigenen Rechner; hier stehen nur die Zahlen und der Druck.',
-    // Die vier Unteransichten hinter `?ansicht=` (shell/focus.ts). Der Name
-    // steht ausgeschrieben in der Adresszeile, also ist er hier auch der
-    // Knopf-Text — ein Umschalter, dessen Beschriftung nicht in der URL
-    // wiederzufinden ist, wäre die Hälfte der Verlinkbarkeit wieder weg.
+    // The four Unteransichten behind `?ansicht=` (shell/focus.ts). The name is
+    // spelled out in the address bar, so it is the button's label here too — a
+    // switch whose caption cannot be found again in the URL would give half the
+    // linkability back.
     ansichten: {
       bestand: 'Bestand',
       streifen: 'Streifen',
@@ -1006,14 +1006,14 @@ export const admin = {
       drucken: 'Drucken',
     },
     ansichtAria: 'Unteransicht der Eigenhand',
-    // Der Tab-Titel trägt drei Abschnitte: Hand-Bereich · Unteransicht ·
-    // Werkbank („Eigenhand · Streifen · Werkbank"). „Streifen" allein sagt in
-    // einem zweiten offenen Tab nicht, worüber es Streifen sind.
+    // The tab title carries three segments: hand area · Unteransicht ·
+    // Werkbank („Eigenhand · Streifen · Werkbank"). „Streifen" alone does not
+    // say what the strips are OF when a second tab is open beside it.
     tabSubject: 'Eigenhand · {{ansicht}}',
     hand: 'Hand',
     handHelp: 'Neue Hand: <schreiber>-<stil>, z. B. mn-suetterlin',
-    // Steht seit dem `?ansicht=`-Split in der SCHALE, also auf allen vier
-    // Unteransichten — „unten" zeigte danach auf drei Flächen ins Leere.
+    // Since the `?ansicht=` split this sits in the SHELL, so it shows on all
+    // four Unteransichten — „unten" pointed at nothing on three of them.
     noHands: 'Noch keine Hand erfasst — in der Ansicht „Drucken" einen Bogen drucken, damit legt sich die erste an.',
     loadError: 'Der Bestand konnte nicht geladen werden.',
     stripsTitle: 'Streifen',
@@ -1052,11 +1052,11 @@ export const admin = {
     quotenNone:
       'Erstbeleg- und Ausbau-Quote brauchen die Übergangsraum-Gewichte; die liegen noch nicht in der Datenbank. Vom Rechner mit den Konsult-Korpora:',
     quotenNoneCommand: 'uv run python -m tools.eigenhand.universe --push',
-    // Die Statistik-Unteransicht. Heute trägt sie genau eine Zahl: die
-    // Feder-Halbbreite, die einzige der vier in §7.2 versprochenen Größen, die
-    // sich aus dem heutigen Bestand schon ableiten lässt. Die drei anderen
-    // stehen als beschriftete Leerfläche da — sagen, was hier landen wird, ist
-    // ehrlicher als eine Fläche, die aussieht, als sei nichts zu holen.
+    // The statistik Unteransicht. Today it carries exactly one figure: the pen
+    // half width, the only one of the four §7.2 promises that can be derived
+    // from today's Bestand. The other three stand as a labelled Leerfläche —
+    // saying what will land here is more honest than a surface that looks as
+    // though there is nothing to be had.
     statistikIntro:
       'Was die Tinte dieser Hand sagt — im Unterschied zum Bestand, der sagt, wie weit die Hand gekommen ist. Gemessen wird je Fassung beim Einlesen; hier steht die Zusammenfassung über alle.',
     statistikNibTitle: 'Feder-Halbbreite',

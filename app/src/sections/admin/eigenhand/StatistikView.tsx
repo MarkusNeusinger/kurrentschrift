@@ -35,7 +35,12 @@ export function StatistikView({ bestand }: { bestand: EigenhandBestand }) {
       </Typography>
 
       <Panel title={t.statistikNibTitle} caption={t.statistikNibCaption}>
-        {bestand.nib_median === null ? (
+        {/* `typeof`, not `=== null`: app and API ship through separate build
+            triggers (frontend-stack.md §8), so for the length of a rollout a
+            new bundle can be served an old payload that has no `nib_median`
+            at all. `undefined === null` is false, and the next line would
+            call `.toFixed` on it. */}
+        {typeof bestand.nib_median !== 'number' ? (
           <Stack spacing={0.5}>
             {/* A missing measurement is stated, never rendered as 0.0 — the
                 Rohzahlen rule, and here it would read as a hairline. */}
@@ -49,7 +54,7 @@ export function StatistikView({ bestand }: { bestand: EigenhandBestand }) {
         ) : (
           <Stat
             value={fmt(t.statistikNibValue, { value: bestand.nib_median.toFixed(3) })}
-            label={fmt(t.statistikNibFrom, { count: bestand.nib_readings })}
+            label={fmt(t.statistikNibFrom, { count: bestand.nib_readings ?? 0 })}
           />
         )}
       </Panel>
