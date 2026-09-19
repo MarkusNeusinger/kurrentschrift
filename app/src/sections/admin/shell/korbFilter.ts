@@ -11,13 +11,13 @@
 // Why the grouping stays by STATUS and the Stufe is only a filter: `stage` is
 // the DIAGNOSIS, and the API demands it at a transition rather than at filing
 // (`_REQUIRED_FIELDS` in `api/routers/work_items.py` — `done` and `returned`;
-// a target-less `note` closes on its resolution alone). So the rows a session
-// picks up — the `open` queue — carry `stage === null`, while a handed-back
-// row names one, and an `open` row that was rejected after a diagnosed round
-// keeps the stage it was sent back over. Grouping by stage would therefore
-// drop the whole waiting queue into one nameless bucket AND could no longer
-// keep the handed-back rows on top. The honest consequence, pinned by the
-// tests: a chosen Stufe skips every row that has not been diagnosed yet.
+// a target-less `note` closes on its resolution alone). A freshly filed row
+// therefore carries `stage === null` — that is the bulk of the queue — while a
+// handed-back row names one and an `open` row rejected after a diagnosed round
+// keeps the stage it was sent back over. Grouping by stage would drop all those
+// undiagnosed rows into one nameless bucket AND could no longer keep the
+// handed-back ones on top. The honest consequence, pinned by the tests: a
+// chosen Stufe skips every row that has not been diagnosed yet.
 
 import type { WorkItemKind, WorkItemOut, WorkItemStage, WorkItemStatus } from '@/lib/api';
 
@@ -25,7 +25,8 @@ export type KorbFilter = {
   status: WorkItemStatus | 'all';
   // The Korb-Ebene — „wo gesehen", the level the ⚑ was raised on.
   kind: WorkItemKind | 'all';
-  // The diagnosed stage of the writing path; only closed rows carry one.
+  // The diagnosed stage of the writing path; only a row some transition has
+  // already diagnosed carries one (see the header).
   stage: WorkItemStage | 'all';
 };
 
