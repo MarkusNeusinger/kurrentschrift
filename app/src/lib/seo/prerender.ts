@@ -51,6 +51,14 @@ const OG_IMAGE = `${ORIGIN}/og.png`;
 // hero caption keeps (HeroWritten: never claim a live synthesis over a font).
 const OG_IMAGE_ALT =
   'Das Wort „Kurrentſchrift“, von der Synthese-Engine in Sütterlin geschrieben, über dem Satz „Alte Briefe wieder lesen — und selbst zur Feder greifen“';
+// The icon links of index.html, restated absolute: a crawler never receives
+// the SPA shell, so without them its only icon candidate is the /favicon.ico
+// fallback — and absolute, because /seo-proxy is also reachable on the API host.
+const ICON_LINKS = [
+  `<link rel="icon" href="${ORIGIN}/favicon.ico" sizes="48x48">`,
+  `<link rel="icon" href="${ORIGIN}/favicon.svg" type="image/svg+xml">`,
+  `<link rel="apple-touch-icon" href="${ORIGIN}/apple-touch-icon.png">`,
+];
 // First line of every prerendered file. The daily bot-serving check
 // (.github/workflows/bot-serving-check.yml) looks for exactly this string to
 // tell a prerendered page from the SPA shell — keep it stable.
@@ -832,6 +840,7 @@ export function renderPage(spec: PageSpec, { stand }: { stand: string }): string
   const head = [
     '<meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    ...ICON_LINKS,
     `<title>${e(spec.title)}</title>`,
     `<meta name="description" content="${e(spec.description)}">`,
     // The 404 must not become an indexable soft-404; every other page asks
