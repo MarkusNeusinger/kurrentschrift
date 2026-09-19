@@ -1040,6 +1040,10 @@ export interface EigenhandBestand {
   } | null;
   queue: string[];
   redo: string[];
+  /** The hand's own pen — median half width in x-heights, `null` while nothing is measured. */
+  nib_median: number | null;
+  /** How many measured Fassungen that median rests on. */
+  nib_readings: number;
 }
 
 export interface EigenhandPrintRequest {
