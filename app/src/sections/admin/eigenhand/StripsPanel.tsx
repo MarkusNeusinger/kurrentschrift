@@ -63,6 +63,7 @@ import type {
   EigenhandStripFilter,
 } from '@/lib/api';
 import { InfoHint } from '@/components/InfoHint';
+import { useRovingList } from '@/hooks/useRovingList';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
@@ -889,6 +890,7 @@ function CropTile({
   ohneLineatur,
   pfade: wantPfade,
   onLupe,
+  rowProps,
 }: {
   hand: string;
   row: EigenhandStrip;
@@ -897,6 +899,8 @@ function CropTile({
   ohneLineatur: boolean;
   pfade: boolean;
   onLupe: (target: LupeTarget) => void;
+  /** This tile's place in the gallery's Roving-Liste. */
+  rowProps: Record<string, string>;
 }) {
   const t = de.admin.eigenhand;
   const ref = useRef<HTMLDivElement | null>(null);
@@ -911,6 +915,7 @@ function CropTile({
   return (
     <Box
       ref={ref}
+      {...rowProps}
       sx={{ border: 1, borderColor: 'divider', borderRadius: 1, p: 1, maxWidth: '100%', minHeight: '4rem' }}
     >
       <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 0.5 }}>
@@ -1066,6 +1071,8 @@ export function StripsPanel({
   // that measurement.
   const [refresh, setRefresh] = useState(0);
   const filtered = Boolean(filter.wort || filter.item);
+  // The filtered gallery below is one tab stop; see the grid itself.
+  const galleryRoving = useRovingList({ orientation: 'horizontal' });
 
   // The search box debounces into the filter: every keystroke is otherwise a
   // listing request, and the listing is cheap but not free.
@@ -1261,13 +1268,17 @@ export function StripsPanel({
               {t.stripBelegeIntro}
             </Typography>
           )}
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+          {/* A wrapping gallery of up to 24 tiles, each with a Lupe opener and,
+              on a failed read, its own Erklärmarke — ~24–48 tab stops before
+              this. Horizontal roving: ←/→ walk the tiles, Home/End jump. */}
+          <Box {...galleryRoving.containerProps} sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
             {/* The hand belongs in every key: strip ids come from the frozen,
                 hand-independent plan, and a tile reused across a hand switch
                 would keep the previous hand's pixels on screen. */}
             {belege.slice(0, shownCount).map(({ row, box }) => (
               <CropTile
                 key={`${hand}/${row.strip}/${row.fassung}/${box.index}`}
+                rowProps={galleryRoving.rowProps(`${hand}/${row.strip}/${row.fassung}/${box.index}`)}
                 hand={hand}
                 row={row}
                 box={box}

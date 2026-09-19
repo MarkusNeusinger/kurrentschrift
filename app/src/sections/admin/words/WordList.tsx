@@ -14,6 +14,7 @@
 import { Box, Button, Chip, Typography } from '@mui/material';
 import { useState } from 'react';
 
+import { useRovingList } from '@/hooks/useRovingList';
 import { de, fmt } from '@/locales/admin';
 import { ScoreChip, WordCard } from '@/sections/admin/compare/WordCard';
 import { WorkRow } from '@/sections/admin/shell/WorkList';
@@ -63,14 +64,18 @@ export function WordList({
       if (!next.delete(sampleId)) next.add(sampleId);
       return next;
     });
+  // One tab stop for the whole list — the specimen id keys the stop, so a
+  // search that shrinks the list does not drop the reader on `<body>`.
+  const roving = useRovingList();
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, maxWidth: 1400 }}>
+    <Box {...roving.containerProps} sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, maxWidth: 1400 }}>
       {rows.map((row) => {
         const open = expanded.has(row.sampleId);
         return (
           <WorkRow
             key={row.sampleId}
+            rowProps={roving.rowProps(row.sampleId)}
             expanded={open}
             onToggle={() => toggle(row.sampleId)}
             expandLabel={fmt(open ? t.rowCollapse : t.rowExpand, { word: row.word })}

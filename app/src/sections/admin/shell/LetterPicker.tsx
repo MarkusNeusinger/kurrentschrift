@@ -104,15 +104,26 @@ export function LetterGrid({ activeKey, onPick, isDisabled }: LetterGridProps) {
                       >
                         {letter.glyph}
                         {(canon || bbox) && (
+                          // Two states, two CHANNELS. The dot used to differ in
+                          // hue alone — green = canonical, orange = nur Bbox —
+                          // which a deuteranope cannot separate at 7 px, and it
+                          // was §9.4's one open case. Now the canonical dot is
+                          // FILLED and the bbox-only one a hollow ring of the
+                          // same size, so shape carries the state and the
+                          // colour only reinforces it. Grown to 8 px: a 1.5 px
+                          // ring inside 7 px left a hole of 4 px.
                           <Box
                             sx={{
                               position: 'absolute',
                               top: 2,
                               right: 2,
-                              width: 7,
-                              height: 7,
+                              width: 8,
+                              height: 8,
                               borderRadius: '50%',
-                              bgcolor: canon ? 'success.main' : 'warning.main',
+                              boxSizing: 'border-box',
+                              border: canon ? 'none' : '1.5px solid',
+                              borderColor: 'warning.main',
+                              bgcolor: canon ? 'success.main' : 'transparent',
                             }}
                           />
                         )}

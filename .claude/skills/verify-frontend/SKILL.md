@@ -599,6 +599,44 @@ below the floor.
   checked in as `app/scripts/type-floor.mjs` (added by PR #485) — use it
   rather than re-deriving the selector logic per session.
 
+### The two grids, and the `--admin` run
+
+```bash
+cd app
+node scripts/type-floor.mjs    --base http://localhost:<vite>            # public
+node scripts/touch-targets.mjs --base http://localhost:<vite>
+node scripts/type-floor.mjs    --admin --base http://localhost:<vite>    # workbench
+node scripts/touch-targets.mjs --admin --base http://localhost:<vite>
+```
+
+`--admin` is a SEPARATE run and not part of the default list, for a reason
+worth knowing before you trust either number: without `VITE_ADMIN_TOKEN` in
+the dev server's env every admin read 401s, `AdminLayout` shows its
+boot-error screen, and the sweep measures THAT. Measured 2026-09-19 on one
+build: **411 targets with the token, 11 without** — one „Erneut versuchen"
+per route —, and the type-floor run over those eleven boot screens reported
+*„All routes clear"*. A literal false green. So run `--admin` only against
+the seeded throwaway stack of §1b, and say in the PR body which stack the
+numbers come from.
+
+**Two things the scripts cannot reach, and you do by hand:**
+
+- **The Eigenhand tiles.** A hand is a deliberate pick kept in
+  `localStorage`, and both scripts launch Chrome on a fresh profile. The two
+  `/admin/eigenhand` rows therefore measure the page's chrome only. Drive
+  that surface with a **persistent** Playwright profile
+  (`chromium.launchPersistentContext`), pick the hand once, and walk it.
+- **The keyboard.** No script replaces a Tab walk with real key events
+  (see the `:focus-visible` gotcha above). Per list: Tab in, ↑/↓, ←/→,
+  `Home`/`End`, Tab out, reading `document.activeElement` and its computed
+  `outline` after every press. Per detail: `Alt+Shift+←/→` steps the
+  subject, the caption names the order, the list state and `h=` survive it.
+  Then the three guards — in a text field nothing fires, with the
+  „Kurztasten" switch off nothing fires and the ‹ › buttons still work by
+  click, and `Alt+←` is never `preventDefault`ed (dispatch it and read
+  `defaultPrevented`; driving the browser's own Back from a page script is
+  not something Playwright can do, so that is the honest test).
+
 ## 4 · Performance trace
 
 Only when the change can plausibly move performance (data loading,

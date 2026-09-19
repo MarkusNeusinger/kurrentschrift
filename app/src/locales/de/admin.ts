@@ -80,6 +80,15 @@ export const admin = {
     roleEigenhand: 'Eigenhand',
     rolePlatteGloss: 'Platte (historische Hand)',
     roleEigenhandGloss: 'Eigenhand (meine Hand)',
+    // The Kurztasten switch at the end of the Scope-Leiste (author decision
+    // P1-Q11 b). The state is VISIBLE TEXT beside the switch, not the knob's
+    // position alone — a switch read by its position is a colour-only state in
+    // another shape (§9.5). The hint names the binding, because a key nobody is
+    // told about is a key nobody presses.
+    shortcutsLabel: 'Kurztasten',
+    shortcutsOn: 'an',
+    shortcutsOff: 'aus',
+    shortcutsHint: 'Alt + Umschalt + ← / → blättert zum vorigen oder nächsten Gegenstand.',
     // The shared states of every occurrence-backed block.
     evidenceLoading: 'wird geladen …',
     evidenceError: 'Die gespeicherten Vorkommen konnten nicht geladen werden — neu laden oder die API prüfen.',
@@ -115,6 +124,16 @@ export const admin = {
     emptyPending: 'Diese Auswahl braucht eine Angabe, die noch geladen wird.',
     resetFilters: 'Filter zurücksetzen',
     chipKorb: '{{count}} im Korb',
+    // What ‹ › walks, said in the detail head. The stepper follows the order of
+    // the overview the reader came from — filter and Sortierung included —, so
+    // the same two buttons mean something different after a filter click and
+    // have to say which (P1-Q12 a; design-system.md §9.5).
+    orderPrefix: 'Reihenfolge: ',
+    orderFiltered: 'gefiltert',
+    // The fallback: nobody published an order, so the stepper walks the
+    // register — a deep link straight into a detail, or a subject the filtered
+    // overview does not list.
+    orderRegistry: 'Registerfolge',
   },
   // The Buchstaben view: one letter's whole life, from the chart cell to how it
   // is finally written, plus the ways over to its joins and its words.
@@ -341,6 +360,11 @@ export const admin = {
     freeTextSubmit: 'Ansehen',
     freeTextInvalid: 'Das ergibt keine Verbindung — zwei Buchstaben eingeben (ch, ck, tz, ſt, qu, ß sind je EINE Glyphe).',
     toOverview: 'Alle Kombinationen',
+    // The Subjekt-Stepper of this view. It names the SUBJECT, not the
+    // direction: three details step, and „Vorheriger" alone would leave a
+    // screen reader to guess through what.
+    prevJoin: 'Vorheriger Übergang',
+    nextJoin: 'Nächster Übergang',
     generated: 'generiert',
     occurrenceCount: '{{count}} Vorkommen',
     writtenTitle: 'Wie es geschrieben wird',
@@ -396,6 +420,10 @@ export const admin = {
     freeTextSubmit: 'Schreiben',
     filterLabel: 'Proben filtern',
     toOverview: 'Alle Wortproben',
+    // The Subjekt-Stepper of this view; it walks WORTPROBEN, not words — two
+    // plates can carry the same text, and each is its own piece of evidence.
+    prevWord: 'Vorherige Wortprobe',
+    nextWord: 'Nächste Wortprobe',
     // The work list (V14). The expander names its Wortprobe: a list of rows
     // all called „Aufklappen" is a list without content to a screen reader.
     rowExpand: 'Wortprobe {{word}} aufklappen',

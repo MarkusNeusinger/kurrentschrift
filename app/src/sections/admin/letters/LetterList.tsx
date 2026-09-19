@@ -17,6 +17,7 @@
 import { Box, Button, Chip, Typography } from '@mui/material';
 import { useState } from 'react';
 
+import { useRovingList } from '@/hooks/useRovingList';
 import type { AggregateOut, InstanceOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { CompareCard } from '@/sections/admin/compare/CompareCard';
@@ -63,14 +64,19 @@ export function LetterList({
       if (!next.delete(glyphKey)) next.add(glyphKey);
       return next;
     });
+  // One tab stop for the whole list; ↑/↓ walk the letters, ←/→ the controls of
+  // the row you stand on. Keyed on the glyph key, so a filter or a page change
+  // hands the stop to the row that takes the place of the one that left.
+  const roving = useRovingList();
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, maxWidth: 1400 }}>
+    <Box {...roving.containerProps} sx={{ display: 'flex', flexDirection: 'column', gap: 0.75, maxWidth: 1400 }}>
       {rows.map((row) => {
         const open = expanded.has(row.glyphKey);
         return (
           <WorkRow
             key={row.glyphKey}
+            rowProps={roving.rowProps(row.glyphKey)}
             expanded={open}
             onToggle={() => toggle(row.glyphKey)}
             expandLabel={fmt(open ? t.rowCollapse : t.rowExpand, { key: row.glyphKey })}

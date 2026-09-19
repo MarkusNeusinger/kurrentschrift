@@ -6,16 +6,22 @@
 // field that names the Vorlage (V25 forbids it living in a tooltip only), and
 // what an empty hand looks like. All three are label correctness, which is the
 // whole reason the bar exists, so they are pinned rather than eyeballed.
+//
+// Since the keyboard round the bar also carries the „Kurztasten" switch (author
+// decision P1-Q11 b), and that is label correctness of the same kind: its state
+// has to be READABLE, not just switchable.
 
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AdminCtx, type AdminState } from '@/context/adminState';
 import type { SourceOut } from '@/lib/api';
 import { ScopeBar } from './ScopeBar';
+import { SHORTCUTS_STORAGE_KEY } from './shortcuts';
+import { SubjectNavProvider } from './SubjectNavContext';
 
 const SOURCE = {
   id: 'suetterlin-1922',
@@ -88,9 +94,11 @@ function render(path: string, state: Partial<AdminState> = {}, openCount: number
   act(() => {
     root.render(
       <MemoryRouter initialEntries={[path]}>
-        <AdminCtx.Provider value={adminState(state)}>
-          <ScopeBar openCount={openCount} />
-        </AdminCtx.Provider>
+        <SubjectNavProvider>
+          <AdminCtx.Provider value={adminState(state)}>
+            <ScopeBar openCount={openCount} />
+          </AdminCtx.Provider>
+        </SubjectNavProvider>
       </MemoryRouter>,
     );
   });
@@ -175,5 +183,75 @@ describe('the Scope-Leiste', () => {
   it('says so when no Vorlage has loaded yet', () => {
     render('/admin/buchstaben', { source: null });
     expect(sourceLink().textContent).toContain('keine Vorlage');
+  });
+});
+
+describe('the Kurztasten switch', () => {
+  const box = (): HTMLInputElement => {
+    const input = container.querySelector<HTMLInputElement>('input[type="checkbox"]');
+    expect(input).not.toBeNull();
+    return input!;
+  };
+  /** The switch's own line — label, state word and the binding. */
+  const line = (): string => box().closest('div')?.parentElement?.textContent ?? '';
+
+  it('is on by default and says so in words, not just in the knob', () => {
+    // A switch read only by where its knob sits is a colour-only state in
+    // another shape (§9.5) — so „an"/„aus" stands beside it as text.
+    render('/admin/buchstaben');
+    expect(box().checked).toBe(true);
+    expect(line()).toContain('Kurztasten');
+    expect(line()).toContain('an');
+  });
+
+  it('tells the reader the combination', () => {
+    render('/admin/buchstaben');
+    // The one sentence that keeps the binding from being a secret. Alt+SHIFT,
+    // because Alt+← alone is the browser's Back (P1-Q11 b).
+    expect(line()).toContain('Alt + Umschalt + ← / →');
+  });
+
+  it('flips, says „aus", and remembers the choice', () => {
+    const store = new Map<string, string>();
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => store.get(key) ?? null,
+      setItem: (key: string, value: string) => void store.set(key, value),
+    });
+    render('/admin/buchstaben');
+    act(() => box().click());
+    expect(box().checked).toBe(false);
+    expect(line()).toContain('aus');
+    expect(store.get(SHORTCUTS_STORAGE_KEY)).toBe('aus');
+    vi.unstubAllGlobals();
+  });
+
+  it('reads a remembered „aus" back on the next mount', () => {
+    vi.stubGlobal('localStorage', {
+      getItem: () => 'aus',
+      setItem: () => {},
+    });
+    render('/admin/buchstaben');
+    expect(box().checked).toBe(false);
+    vi.unstubAllGlobals();
+  });
+
+  it('still switches when the browser refuses to store anything', () => {
+    // A private window throws on the property access itself. The switch works
+    // for this session; it just does not outlive it — and nothing is reported
+    // to the reader, because nothing they did failed.
+    vi.stubGlobal('localStorage', {
+      getItem() {
+        throw new DOMException('denied', 'SecurityError');
+      },
+      setItem() {
+        throw new DOMException('denied', 'SecurityError');
+      },
+    });
+    render('/admin/buchstaben');
+    expect(box().checked).toBe(true);
+    act(() => box().click());
+    expect(box().checked).toBe(false);
+    expect(line()).toContain('aus');
+    vi.unstubAllGlobals();
   });
 });

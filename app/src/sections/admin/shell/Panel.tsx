@@ -65,6 +65,7 @@ export function ViewHeader({
   title,
   titleText,
   intro,
+  note,
   chips,
   children,
 }: {
@@ -81,6 +82,12 @@ export function ViewHeader({
   // designed head.
   titleText?: string;
   intro?: string;
+  // One short line UNDER the head that qualifies a control in it — today the
+  // Subjekt-Stepper's „Reihenfolge: …". Its own slot rather than `intro`,
+  // because the two answer different questions („was ist das hier" on an
+  // overview vs. „was tun diese Pfeile" on a detail) and would never appear
+  // together; caption size, since it is a gloss and not prose.
+  note?: string;
   // Status of the subject (authored? locked? how many occurrences?).
   chips?: ReactNode;
   // Actions — rendered right-aligned on wide screens, wrapping below on phones.
@@ -149,6 +156,11 @@ export function ViewHeader({
           </Box>
         )}
       </Box>
+      {note && (
+        <Typography variant="caption" sx={{ display: 'block', mt: 0.5, color: paper.sepia }}>
+          {note}
+        </Typography>
+      )}
       {intro && (
         <Typography variant="body2" sx={{ mt: 0.75, maxWidth: '47rem', color: paper.inkSoft }}>
           {intro}

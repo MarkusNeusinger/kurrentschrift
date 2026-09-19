@@ -10,6 +10,13 @@
 //
 // No <Alert> of its own — the call sites already own their severity and their
 // box, and a nested Alert would read as two errors.
+//
+// The fold used to be set at `0.8125rem` = 13px, under the §9 caption floor of
+// 14 — in BOTH halves, the summary a reader clicks and the raw line they then
+// have to read. It stood for as long as it did because a type-floor sweep only
+// sees the states a route actually reaches, and no route reaches an error by
+// itself; the first admin-route run caught it on a 429 the run had provoked.
+// `0.875rem` is 14px, the floor exactly, and the same step `caption` takes.
 
 import { Box } from '@mui/material';
 
@@ -22,7 +29,7 @@ export function ErrorText({ error, prefix }: { error: ApiErrorText; prefix?: str
     <>
       {prefix ? `${prefix} ` : null}
       {error.sentence}
-      <Box component="details" sx={{ mt: 0.5, fontSize: '0.8125rem' }}>
+      <Box component="details" sx={{ mt: 0.5, fontSize: '0.875rem' }}>
         <Box component="summary" sx={{ cursor: 'pointer', opacity: 0.8 }}>
           {de.admin.errors.detailSummary}
         </Box>

@@ -10,11 +10,18 @@
 // atmosphere, the <main> landmark, header and footer), so the navigation stays
 // usable during a cold-start boot or an error instead of vanishing with the
 // page chrome.
+//
+// „Erneut versuchen" measured 125.6×36.5 until 2026-09-19 — under the §9.3
+// floor in BOTH shells, and it is the only control on the screen when it
+// appears. No route sweep had ever reached it: a boot error needs a failing
+// API, which is precisely the state no standing check runs in. Found by
+// sweeping the admin routes against a deliberately tokenless dev server.
 
 import { Box, Button, CircularProgress, Typography } from '@mui/material';
 import type { ReactNode } from 'react';
 
 import { PaperBackground } from '@/components/PaperBackground';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 
 interface BootStatusProps {
   variant: 'loading' | 'error';
@@ -43,7 +50,7 @@ export function BootStatus({ variant, title, message, detail, onRetry, retryLabe
             <Typography color="text.secondary">{message}</Typography>
             {detail != null && <Typography sx={{ mt: 2 }}>{detail}</Typography>}
             {onRetry && (
-              <Button variant="outlined" sx={{ mt: 2 }} onClick={onRetry}>
+              <Button variant="outlined" sx={{ mt: 2, minHeight: TOUCH_TARGET }} onClick={onRetry}>
                 {retryLabel}
               </Button>
             )}
@@ -84,7 +91,7 @@ export function BootStatus({ variant, title, message, detail, onRetry, retryLabe
             {message}
           </Typography>
           {onRetry && (
-            <Button variant="outlined" onClick={onRetry}>
+            <Button variant="outlined" onClick={onRetry} sx={{ minHeight: TOUCH_TARGET }}>
               {retryLabel}
             </Button>
           )}

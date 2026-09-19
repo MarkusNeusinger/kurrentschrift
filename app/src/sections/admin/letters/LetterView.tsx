@@ -9,8 +9,6 @@
 // letter, chart crop vs. written); picking one focuses it. That is the same
 // pattern in all three views: overview ⇄ detail, one subject at a time.
 
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
@@ -19,7 +17,6 @@ import {
   Button,
   Chip,
   Collapse,
-  IconButton,
   Tooltip,
   Typography,
 } from '@mui/material';
@@ -43,6 +40,8 @@ import { useFileMark } from '@/sections/admin/shell/korbState';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { FOCUS_PARAMS, joinsUrl, neighbourLetters, readLetterFocus, wordsUrl } from '@/sections/admin/shell/focus';
 import { EvidenceState, Panel, ViewHeader } from '@/sections/admin/shell/Panel';
+import { SubjectStepper } from '@/sections/admin/shell/SubjectStepper';
+import { neighboursInOrder, orderCaption, stepOrder, useSubjectNav } from '@/sections/admin/shell/subjectNav';
 import { TOUCH_TARGET } from '@/styles/hitArea';
 import { garamond } from '@/styles/paper';
 
@@ -75,6 +74,10 @@ export function LetterView() {
   } = useAdmin();
   const workbench = useWorkbench();
   const fileMark = useFileMark();
+  // The order the Buchstaben overview last showed — what ‹ › and Alt+Shift+←/→
+  // step through, so the stepper follows the work list rather than the alphabet
+  // (P1-Q12 a).
+  const { order: published } = useSubjectNav();
   const t = de.admin.letters;
 
   const { glyphKey } = readLetterFocus(params);
@@ -201,13 +204,22 @@ export function LetterView() {
   const hasBbox = glyphKey in bboxesByKey;
   const hasCanonical = glyphsByKey[glyphKey]?.has_data === true;
   const locked = bboxesByKey[glyphKey]?.locked === true;
-  const { prev, next } = neighbourLetters(glyphKey);
+  // What ‹ › walks: the order the overview published, or — for a deep link, or
+  // for a letter the filtered overview does not list — the registry neighbours
+  // this view has always used (`neighbourLetters`, group-bounded).
+  const registry = neighbourLetters(glyphKey);
+  const order = stepOrder(published, 'letter', glyphKey, {
+    keys: [registry.prev, glyphKey, registry.next].filter((key): key is string => key !== null),
+    caption: orderCaption(de.admin.liste.orderRegistry, false),
+  });
+  const { prev, next } = neighboursInOrder(order.keys, glyphKey);
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }} ref={headRef}>
       <ViewHeader
         eyebrow={de.admin.shell.areaLetters}
         titleText={fmt(t.letterHeading, { key: letter?.glyph ?? glyphKey })}
+        note={order.caption}
         title={
           // The subject stepper. All three controls GROW to the 44 px floor
           // instead of wearing invisible hit areas: they stand 8 px apart, so
@@ -215,42 +227,37 @@ export function LetterView() {
           // dicht stehen"). The chip's tooltip is the NAME of a control whose
           // visible label is the letter itself — `aria-label` carries the same
           // words, so nothing of it lives in the hover alone.
+          //
+          // The two arrows are the shared `SubjectStepper` since the keyboard
+          // round: it also binds Alt+Shift+←/→, and the ORDER it walks is no
+          // longer the alphabet by definition — hence the caption above.
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-            <IconButton
-              size="small"
-              disabled={!prev}
-              aria-label={t.prevLetter}
-              onClick={() => prev && focus(prev)}
-              sx={{ width: TOUCH_TARGET, height: TOUCH_TARGET }}
-            >
-              <ChevronLeftIcon fontSize="small" />
-            </IconButton>
-            <LetterPicker activeKey={glyphKey} onPick={focus}>
-              {(open) => (
-                <Tooltip title={t.pickLetter}>
-                  <Chip
-                    clickable
-                    onClick={open}
-                    aria-label={fmt(t.pickLetterChosen, { glyph: letter?.glyph ?? glyphKey })}
-                    label={
-                      <Typography component="span" sx={{ fontFamily: garamond, fontSize: 22, lineHeight: 1.4 }}>
-                        {letter?.glyph ?? glyphKey}
-                      </Typography>
-                    }
-                    sx={{ height: TOUCH_TARGET, minWidth: TOUCH_TARGET, px: 0.5 }}
-                  />
-                </Tooltip>
-              )}
-            </LetterPicker>
-            <IconButton
-              size="small"
-              disabled={!next}
-              aria-label={t.nextLetter}
-              onClick={() => next && focus(next)}
-              sx={{ width: TOUCH_TARGET, height: TOUCH_TARGET }}
-            >
-              <ChevronRightIcon fontSize="small" />
-            </IconButton>
+            <SubjectStepper
+              prev={prev}
+              next={next}
+              onStep={focus}
+              prevLabel={t.prevLetter}
+              nextLabel={t.nextLetter}
+              between={
+                <LetterPicker activeKey={glyphKey} onPick={focus}>
+                  {(open) => (
+                    <Tooltip title={t.pickLetter}>
+                      <Chip
+                        clickable
+                        onClick={open}
+                        aria-label={fmt(t.pickLetterChosen, { glyph: letter?.glyph ?? glyphKey })}
+                        label={
+                          <Typography component="span" sx={{ fontFamily: garamond, fontSize: 22, lineHeight: 1.4 }}>
+                            {letter?.glyph ?? glyphKey}
+                          </Typography>
+                        }
+                        sx={{ height: TOUCH_TARGET, minWidth: TOUCH_TARGET, px: 0.5 }}
+                      />
+                    </Tooltip>
+                  )}
+                </LetterPicker>
+              }
+            />
             <Typography variant="caption" color="text.secondary">
               {glyphKey}
               {letter?.note ? ` · ${letter.note}` : ''}
@@ -507,7 +514,18 @@ export function LetterView() {
           {t.applyBlockBody}
         </Typography>
         {workbench.handId ? (
-          <Button size="small" variant="outlined" color="warning" onClick={() => setApplyOpen(true)}>
+          // 163×32.5 until the first sweep of the ADMIN routes (2026-09-19).
+          // It is the one button on this page that CHANGES the rendering, and
+          // it sat under the floor because it lives in a block of its own
+          // rather than in a `ViewHeader`/`Panel` head, both of which impose
+          // the floor on their actions for the whole workbench.
+          <Button
+            size="small"
+            variant="outlined"
+            color="warning"
+            onClick={() => setApplyOpen(true)}
+            sx={ACTION_TARGET}
+          >
             {t.applyBlockButton}
           </Button>
         ) : (

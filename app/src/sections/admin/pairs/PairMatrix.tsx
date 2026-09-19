@@ -23,6 +23,7 @@ import { useSearchParams } from 'react-router-dom';
 
 import { useAdmin } from '@/context/adminState';
 import { glyphKeyFor, LETTERS } from '@/domain/glyphs';
+import { useRovingList } from '@/hooks/useRovingList';
 import { getPairs } from '@/lib/api';
 import type { GlyphPairOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
@@ -45,6 +46,7 @@ import { FOCUS_PARAMS } from '@/sections/admin/shell/focus';
 import { useKorbItems } from '@/sections/admin/shell/korbState';
 import { korbCountsOf } from '@/sections/admin/shell/korbTargets';
 import { readListState, writeListState, type ListState } from '@/sections/admin/shell/listState';
+import { orderCaption, usePublishSubjectOrder } from '@/sections/admin/shell/subjectNav';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import { TOUCH_TARGET } from '@/styles/hitArea';
 import { garamond } from '@/styles/paper';
@@ -176,6 +178,29 @@ export function PairMatrix({
   const shown = asFirst.length + asSecond.length;
   const total = rows.asFirst.length + rows.asSecond.length;
 
+  // What ‹ › in the join detail will walk: the two grids read as one sequence,
+  // in the order and the selection on screen. Ligature cells are left out —
+  // they fold into ONE glyph and there is no join to step to.
+  const orderKeys = useMemo(
+    () =>
+      embedded
+        ? null
+        : [...asFirst, ...asSecond]
+            .filter((row) => row.leftKey !== null && row.rightKey !== null)
+            .map((row) => `${row.leftKey}→${row.rightKey}`),
+    [embedded, asFirst, asSecond],
+  );
+  usePublishSubjectOrder(
+    'join',
+    orderKeys,
+    orderCaption(state.sort === 'alphabet' ? de.admin.compare.sortAlpha : t.sortOccurrences, state.filters.length > 0),
+  );
+
+  // The anchor bar is ~60 buttons in one dense wrapping row — the densest
+  // control row of the admin, and until now 60 tab stops on the way to the
+  // grid. Horizontal roving: ←/→ walk the letters, Home/End jump.
+  const anchorRoving = useRovingList({ orientation: 'horizontal' });
+
   if (!source) return null;
   if (pickable.length === 0) return <Alert severity="info">{t.empty}</Alert>;
 
@@ -197,7 +222,10 @@ export function PairMatrix({
   return (
     // A block inside the Übergänge view: that view owns padding and scrolling.
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+      <Box
+        {...anchorRoving.containerProps}
+        sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 0.5, mb: 2 }}
+      >
         <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
           {t.pickLetter}
         </Typography>
@@ -207,6 +235,7 @@ export function PairMatrix({
           return (
             <ButtonBase
               key={key}
+              {...anchorRoving.rowProps(key)}
               onClick={() => pickAnchor(key)}
               aria-pressed={active}
               aria-label={fmt(t.pickLetterFor, { key })}

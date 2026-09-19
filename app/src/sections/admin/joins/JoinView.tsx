@@ -29,6 +29,7 @@ import { InfoHint } from '@/components/InfoHint';
 import { WrittenWord } from '@/components/WrittenWord';
 import { TOUCH_TARGET } from '@/styles/hitArea';
 import { useAdmin } from '@/context/adminState';
+import { glyphKeyFor, LETTERS } from '@/domain/glyphs';
 import { getPairs, getWordSampleScore } from '@/lib/api';
 import type { ComposedWordOut, GlyphPairOut, InstanceOut, WordInstanceOut, WordSampleOut, WordSampleScoreOut } from '@/lib/api';
 import { fetchRenderWord } from '@/lib/api/renderCache';
@@ -37,12 +38,15 @@ import { WordComparison } from '@/sections/admin/compare/WordComparison';
 import { PairEditorDialog } from '@/sections/admin/pairs/PairEditorDialog';
 import { PairMatrix } from '@/sections/admin/pairs/PairMatrix';
 import { findPairRow } from '@/sections/admin/pairs/pairRow';
+import { authoredLetters } from '@/sections/admin/pairs/pairRows';
 import { PairStats } from '@/sections/admin/shell/LensStats';
 import { LayerDot } from '@/sections/admin/shell/LayerDot';
 import { LetterPicker } from '@/sections/admin/shell/LetterPicker';
 import { CropThumb } from '@/sections/admin/shell/OccurrenceThumb';
 import { useFileMark } from '@/sections/admin/shell/korbState';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
+import { SubjectStepper } from '@/sections/admin/shell/SubjectStepper';
+import { neighboursInOrder, orderCaption, stepOrder, useSubjectNav } from '@/sections/admin/shell/subjectNav';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
 import {
   FOCUS_PARAMS,
@@ -173,9 +177,12 @@ export function JoinView() {
   const navigate = useNavigate();
   // `ownHand`, never `handId`: the workbench's `handId` is the PLATE hand of
   // the statistics below — a different hand (P1-Q3 a).
-  const { sourceId, handId: ownHand } = useAdmin();
+  const { sourceId, handId: ownHand, glyphsByKey } = useAdmin();
   const workbench = useWorkbench();
   const fileMark = useFileMark();
+  // The order the Übergänge matrix last showed — what ‹ › and Alt+Shift+←/→
+  // step through (P1-Q12 a).
+  const { order: published } = useSubjectNav();
   const t = de.admin.joins;
 
   const { leftKey, rightKey } = readJoinFocus(params);
@@ -335,6 +342,28 @@ export function JoinView() {
     return [...out.values()];
   }, [occurrences, workbench.sampleById]);
 
+  // What ‹ › walks. The published order is the matrix as the reader last saw it
+  // — both grids, its filter, its sort. The fallback is the registry one: the
+  // anchor letter joined to every authored lowercase letter, which is exactly
+  // the „{anchor} als erster Buchstabe" grid in alphabet order.
+  const joinKey = leftKey && rightKey ? `${leftKey}→${rightKey}` : '';
+  const registryJoins = useMemo(() => {
+    if (!leftKey) return [];
+    const authored = authoredLetters(LETTERS, (key) => glyphsByKey[key]?.has_data === true);
+    return authored.lower.map((letter) => `${leftKey}→${glyphKeyFor(letter)}`);
+  }, [leftKey, glyphsByKey]);
+  const order = stepOrder(published, 'join', joinKey, {
+    keys: registryJoins,
+    caption: orderCaption(de.admin.liste.orderRegistry, false),
+  });
+  const { prev, next } = neighboursInOrder(order.keys, joinKey);
+  // A step is a pair, and `focus` merges the query — so the list state and the
+  // scope's `h=` survive it, exactly as a click on the matrix does.
+  const stepJoin = (key: string) => {
+    const [left, right] = key.split('→');
+    if (left && right) focus(left, right);
+  };
+
   const picker = (
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
       {/* Both pickers grow to the §9.3 floor: they are the subject of the whole
@@ -447,9 +476,20 @@ export function JoinView() {
       <ViewHeader
         eyebrow={de.admin.shell.areaJoins}
         titleText={fmt(t.joinHeading, { left: leftKey, right: rightKey })}
+        note={order.caption}
         title={
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-            {picker}
+            {/* New in the keyboard round: this head had no stepper at all, so
+                „die nächste Verbindung" meant going back to the matrix and
+                finding the next cell by eye. */}
+            <SubjectStepper
+              prev={prev}
+              next={next}
+              onStep={stepJoin}
+              prevLabel={t.prevJoin}
+              nextLabel={t.nextJoin}
+              between={picker}
+            />
             <Typography variant="caption" color="text.secondary">
               {`${leftKey}→${rightKey}`}
             </Typography>
