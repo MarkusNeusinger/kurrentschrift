@@ -22,15 +22,28 @@ let host: HTMLDivElement;
 let root: Root;
 const steps: string[] = [];
 
-function Detail({ prev = 'a', next = 'c' }: { prev?: string | null; next?: string | null }) {
+function Detail({
+  prev = 'a',
+  next = 'c',
+  dialog = false,
+}: {
+  prev?: string | null;
+  next?: string | null;
+  /** The wizard or the Bahn-Editor standing open over this view. Opt-in,
+   * because „a dialog is up" now blocks the binding wherever the key came
+   * from — including `<body>`, which the listener otherwise answers. */
+  dialog?: boolean;
+}) {
   useSubjectStepper({ prev, next, onStep: (key) => steps.push(key) });
   return (
     <div>
       <button type="button">öffnen</button>
       <input aria-label="Proben filtern" />
-      <div role="dialog">
-        <button type="button">weiter</button>
-      </div>
+      {dialog && (
+        <div role="dialog">
+          <button type="button">weiter</button>
+        </div>
+      )}
     </div>
   );
 }
@@ -84,8 +97,18 @@ it('stays silent while the reader is typing', () => {
 });
 
 it('stays silent inside an open dialog — the wizard and the editor own their keys', () => {
-  render(<Detail />);
+  render(<Detail dialog />);
   expect(press(inDialog(), { key: 'ArrowRight' })).toBe(false);
+  expect(steps).toEqual([]);
+});
+
+it('stays silent while a dialog is up even when the key comes from <body>', () => {
+  // The listener answers `<body>` on purpose, so „did this come from inside a
+  // dialog" is not the whole guard: with an editor open, focus that has slipped
+  // to the body must not step to another subject BEHIND it.
+  render(<Detail dialog />);
+  expect(press(document.body, { key: 'ArrowRight' })).toBe(false);
+  expect(press(control(), { key: 'ArrowRight' })).toBe(false);
   expect(steps).toEqual([]);
 });
 

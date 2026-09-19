@@ -17,7 +17,7 @@
 
 import { useEffect, useRef } from 'react';
 
-import { isInDialog, isTypingTarget, subjectStep } from './shortcuts';
+import { isDialogOpen, isInDialog, isTypingTarget, subjectStep } from './shortcuts';
 import { useShortcutsEnabled } from './subjectNav';
 
 export type SubjectStep = {
@@ -44,7 +44,12 @@ export function useSubjectStepper({ prev, next, onStep }: SubjectStep): void {
     const onKeyDown = (event: KeyboardEvent) => {
       const step = subjectStep(event);
       if (step === null) return;
-      if (isTypingTarget(event.target) || isInDialog(event.target)) return;
+      // Three questions, not two: „is the reader typing", „did this come from
+      // inside a dialog" and — because this listener answers events from
+      // `<body>` on purpose — „is a dialog up at all". Without the third, a key
+      // pressed while focus had slipped to the body stepped to another subject
+      // BEHIND the open editor.
+      if (isTypingTarget(event.target) || isInDialog(event.target) || isDialogOpen(document)) return;
       const { prev: back, next: forward, onStep: go } = latest.current;
       const target = step === -1 ? back : forward;
       if (target === null) return;

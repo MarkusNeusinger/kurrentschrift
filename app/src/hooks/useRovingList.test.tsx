@@ -198,6 +198,19 @@ it('leaves a work list role-less — its rows are subjects, not a flat control s
   expect(host.querySelector('[role]')).toBeNull();
 });
 
+it('keeps the stop on the same TILE when a filter reorders a wrapping grid', () => {
+  // The grid's cells are flattened into one row, so the column index is not an
+  // identity — the tile's own key is. Without that, a filter that moved „ac"
+  // would leave the stop on whatever now stands in the second position.
+  render(<Grid keys={['ab', 'ac', 'ad']} />);
+  act(() => buttons()[0].focus());
+  press('ArrowRight');
+  expect(active()).toBe('ac');
+  // „ab" drops out, so „ac" moves from the second position to the first.
+  render(<Grid keys={['ac', 'ad']} />);
+  expect(stops().map((b) => b.textContent)).toEqual(['ac']);
+});
+
 it('walks a wrapping grid sideways only', () => {
   render(<Grid keys={['ab', 'ac', 'ad']} />);
   expect(stops().map((b) => b.textContent)).toEqual(['ab']);

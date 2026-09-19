@@ -350,7 +350,15 @@ export function JoinView() {
   const registryJoins = useMemo(() => {
     if (!leftKey) return [];
     const authored = authoredLetters(LETTERS, (key) => glyphsByKey[key]?.has_data === true);
-    return authored.lower.map((letter) => `${leftKey}→${glyphKeyFor(letter)}`);
+    return authored.lower
+      .map((letter) => glyphKeyFor(letter))
+      // The same test the matrix applies to its cells: two characters that fold
+      // into a closed-set ligature (c + h → „ch") are ONE glyph and have no
+      // join detail to step into. Without this the fallback offered subjects
+      // that do not exist — reachable on a deep link, where there is no
+      // published order to override it.
+      .filter((rightGlyph) => pairKeysOfText(textForPair(leftKey, rightGlyph)) !== null)
+      .map((rightGlyph) => `${leftKey}→${rightGlyph}`);
   }, [leftKey, glyphsByKey]);
   const order = stepOrder(published, 'join', joinKey, {
     keys: registryJoins,

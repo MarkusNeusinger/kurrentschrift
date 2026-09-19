@@ -75,10 +75,27 @@ export function isTypingTarget(target: EventTarget | null): boolean {
 }
 
 /** An open dialog — the wizard, the Bahn-Editor, a confirm — owns every key
- * while it is up. MUI traps focus inside it, so asking the focused element is
- * enough and no global „is a modal mounted" probe is needed. */
+ * while it is up, and this asks whether the EVENT came from inside one. */
 export function isInDialog(target: EventTarget | null): boolean {
   return target instanceof Element && target.closest('[role="dialog"], [role="alertdialog"]') !== null;
+}
+
+/**
+ * Is any dialog up at all, wherever the focus happens to sit?
+ *
+ * `isInDialog` alone is not enough for a listener bound to `window`, and that
+ * listener handles events from `<body>` ON PURPOSE (it is where focus sits
+ * right after a navigation). MUI's focus trap makes focus-on-body with a modal
+ * open unusual, not impossible — a transition frame, a nested dialog, a
+ * `disableEnforceFocus` — and the cost of being wrong is the reader stepping to
+ * another subject BEHIND the editor they are working in.
+ *
+ * A plain document probe is safe here because no `Dialog` in this app is
+ * `keepMounted`: a closed one is unmounted and takes its `role` with it.
+ */
+export function isDialogOpen(doc: Document | null | undefined): boolean {
+  if (!doc) return false;
+  return doc.querySelector('[role="dialog"], [role="alertdialog"]') !== null;
 }
 
 /** −1 for „previous subject", +1 for „next", `null` for every other key.

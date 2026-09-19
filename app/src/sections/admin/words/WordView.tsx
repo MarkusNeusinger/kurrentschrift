@@ -53,7 +53,7 @@ import { garamond, layer, layerDash } from '@/styles/paper';
 
 import { WordOverview } from './WordOverview';
 import { WordSpineCard } from './WordSpineCard';
-import { WORD_LIST_SPEC, scoreOutcome, type ScoreEntry } from './wordRows';
+import { WORD_LIST_SPEC, scoreOutcome, wordTabOf, type ScoreEntry } from './wordRows';
 
 const WORD_H = 130; // px — the composed word, large enough to judge the rhythm
 // A chip that NAVIGATES carries the touch floor; a chip that only states
@@ -279,8 +279,19 @@ export function WordView() {
   // Fallback order: the plate's own sequence of Wortproben, which is the
   // overview's default sort („Reihenfolge der Vorlage") and therefore the same
   // walk a reader who never touched the toolbar would have got.
+  //
+  // …restricted to the TAB the current Wortprobe belongs to. The sidecar also
+  // holds the cross-hand Abb.-22 set (tab „andere") and the pair drills
+  // (`wordTabOf` → null, listed in no word tab at all), and a fallback over all
+  // of them would have walked into subjects the claimed „Registerfolge" never
+  // showed — reachable on a deep link, where nothing published overrides it.
   const currentSample = specimenId ?? evidence[0]?.sample.id ?? '';
-  const registryWords = useMemo(() => workbench.samples.map((sample) => sample.id), [workbench.samples]);
+  const registryWords = useMemo(() => {
+    const current = workbench.sampleById.get(currentSample);
+    const tab = current ? wordTabOf(current) : null;
+    if (tab === null) return [];
+    return workbench.samples.filter((sample) => wordTabOf(sample) === tab).map((sample) => sample.id);
+  }, [workbench.samples, workbench.sampleById, currentSample]);
   const order = stepOrder(published, 'word', currentSample, {
     keys: registryWords,
     caption: orderCaption(de.admin.liste.orderRegistry, false),

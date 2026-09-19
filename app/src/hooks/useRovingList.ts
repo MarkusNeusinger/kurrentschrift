@@ -47,11 +47,17 @@ const ROW_ATTR = 'data-roving-row';
 /** A subtree this list does not manage — an expanded row's body. */
 const SKIP_ATTR = 'data-roving-skip';
 
-type Row = { key: string; controls: HTMLElement[] };
+/** `cellKeys` is per CONTROL and only filled horizontally, where the cells of
+ * one wrapping grid are flattened into a single row: there the column index is
+ * not an identity, and the cell's own key is. Vertically it stays empty —
+ * a row's controls are aufklappen/öffnen/Erklärmarke and have no keys of their
+ * own, so the column IS the identity there. */
+type Row = { key: string; controls: HTMLElement[]; cellKeys: readonly string[] };
 
 /** Where the tab stop stands, remembered across renders. The INDEX rides along
- * so a row that disappears can hand the stop to its neighbour. */
-type Remembered = { key: string; index: number; column: number };
+ * so a row that disappears can hand the stop to its neighbour, and `columnKey`
+ * does the same job for a flattened grid's cell. */
+type Remembered = { key: string; index: number; column: number; columnKey: string | null };
 
 /**
  * `vertical` (the default) — each marked element is a ROW: Up/Down walk the
@@ -121,9 +127,17 @@ export function useRovingList(options: RovingListOptions = {}): RovingList {
     }));
     // One row of everything: a wrapping grid is walked left to right, and its
     // cells are the columns. The key of the whole row is the first cell's, so a
-    // grid that loses its first cell still hands the stop on by index.
-    if (!horizontal) return cells;
-    return [{ key: cells[0]?.key ?? '', controls: cells.flatMap((cell) => cell.controls) }];
+    // grid that loses its first cell still hands the stop on by index — and
+    // each control carries the key of the CELL it came from, so the stop can
+    // follow a tile that a filter moved instead of following its old column.
+    if (!horizontal) return cells.map((cell) => ({ ...cell, cellKeys: [] as readonly string[] }));
+    return [
+      {
+        key: cells[0]?.key ?? '',
+        controls: cells.flatMap((cell) => cell.controls),
+        cellKeys: cells.flatMap((cell) => cell.controls.map(() => cell.key)),
+      },
+    ];
   }, [horizontal]);
 
   /** Which cell of `rows` the tab stop should stand on. */
@@ -140,8 +154,23 @@ export function useRovingList(options: RovingListOptions = {}): RovingList {
     // goes to whatever now stands where it stood, never back to the top.
     if (row === null || row < 0) row = seek(Math.min(remembered?.index ?? 0, Math.max(rows.length - 1, 0)));
     if (row === null) return null;
+    // Where a control carries its own key (a flattened grid), the stop follows
+    // the CELL: a filter that reorders the tiles must not leave the reader on
+    // whatever now occupies the old column, which is the index behaviour
+    // `rowProps(key)` promises to avoid everywhere else.
+    const byKey = remembered?.columnKey == null ? -1 : rows[row].cellKeys.indexOf(remembered.columnKey);
+    if (byKey >= 0) return { row, column: byKey };
     return { row, column: Math.min(remembered?.column ?? 0, rows[row].controls.length - 1) };
   }, []);
+
+  /** What the tab stop's position is remembered AS — the row's key, its index,
+   * the column, and the cell's own key where the controls have one. */
+  const remember = (rows: Row[], cell: RovingCell): Remembered => ({
+    key: rows[cell.row].key,
+    index: cell.row,
+    column: cell.column,
+    columnKey: rows[cell.row].cellKeys[cell.column] ?? null,
+  });
 
   /** Re-apply the one tab stop, and put focus back if the list just lost it. */
   const apply = useCallback(() => {
@@ -155,7 +184,7 @@ export function useRovingList(options: RovingListOptions = {}): RovingList {
       }),
     );
     if (active === null) return;
-    activeRef.current = { key: rows[active.row].key, index: active.row, column: active.column };
+    activeRef.current = remember(rows, active);
     // Only when the element that HAD focus was removed from the document AND
     // nothing has taken the focus since — never when the reader simply clicked
     // elsewhere, which would make the list steal focus back on its next render.
@@ -199,7 +228,7 @@ export function useRovingList(options: RovingListOptions = {}): RovingList {
       const target = rovingTarget(event.key, from, rows.map((row) => row.controls.length));
       if (target === null) return;
       event.preventDefault();
-      activeRef.current = { key: rows[target.row].key, index: target.row, column: target.column };
+      activeRef.current = remember(rows, target);
       rows[target.row].controls[target.column].focus();
     },
     [readRows],
@@ -215,7 +244,7 @@ export function useRovingList(options: RovingListOptions = {}): RovingList {
         focusedRef.current = rows[row].controls[column];
         // Tab or a click landed on a different control than the one holding the
         // stop — the stop follows, so leaving and re-entering comes back here.
-        activeRef.current = { key: rows[row].key, index: row, column };
+        activeRef.current = remember(rows, { row, column });
         apply();
         return;
       }
