@@ -6,7 +6,8 @@
 // layout serves both breakpoints and the mobile case stops being a special one.
 
 import { Box } from '@mui/material';
-import { Outlet } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 
 import { BootStatus } from '@/components/BootStatus';
 import { PaperBackground } from '@/components/PaperBackground';
@@ -14,6 +15,7 @@ import { useAdmin } from '@/context/adminState';
 import { AdminModals } from '@/layouts/admin/AdminModals';
 import { de } from '@/locales/admin';
 import { AdminHeader } from '@/sections/admin/shell/AdminHeader';
+import { adminTitle } from '@/sections/admin/shell/adminTitle';
 import { KorbProvider } from '@/sections/admin/shell/KorbContext';
 import { useKorb } from '@/sections/admin/shell/korbState';
 import { WorkbenchDataProvider } from '@/sections/admin/shell/WorkbenchData';
@@ -34,6 +36,15 @@ function AdminShell() {
 
 export function AdminLayout() {
   const { source, loadError, waking } = useAdmin();
+  const { pathname, search } = useLocation();
+
+  // Above the two early returns, so the boot and error screens carry the title
+  // too — a tab that is still waking is exactly when its name is read. The
+  // public pages set their own title on mount (usePageMeta), so there is
+  // nothing to restore on the way out.
+  useEffect(() => {
+    document.title = adminTitle(pathname, search);
+  }, [pathname, search]);
 
   if (loadError) {
     return (

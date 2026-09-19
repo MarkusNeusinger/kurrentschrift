@@ -1069,6 +1069,12 @@ export interface EigenhandSetup {
   updated_at: string | null;
 }
 
+// Every hand's standing setup at once (GET /eigenhand/setups). Mirrors
+// EigenhandSetupsOut in api/schemas.py.
+export interface EigenhandSetupList {
+  setups: EigenhandSetup[];
+}
+
 // One word box of a strip with the coverage items its word carries — what
 // lets the view walk from a glyph or join cell to the written words holding
 // it. `index` is the box's position in the row, the address of a word crop.

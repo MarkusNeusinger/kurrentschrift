@@ -21,11 +21,12 @@ import {
 } from '@mui/material';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { ApiError, deletePair, getPair, getWriteWord, putPair, wordSampleCropUrl } from '@/lib/api';
+import { deletePair, getPairs, getWriteWord, putPair, wordSampleCropUrl } from '@/lib/api';
 import type { ComposedWordOut, GlyphPairOut, GlyphRenderData, WordSampleOut } from '@/lib/api';
 import { fetchRenderGlyphs } from '@/lib/api/renderCache';
 import { polylineToPathD, ringsToPathD } from '@/lib/svg';
 import { de, fmt } from '@/locales/admin';
+import { findPairRow } from '@/sections/admin/pairs/pairRow';
 
 type Pt = [number, number];
 
@@ -144,10 +145,14 @@ export function PairEditorDialog({ open, onClose, pairText, leftKey, rightKey, s
     let cancelled = false;
     Promise.all([
       fetchRenderGlyphs(sourceId, [leftKey, rightKey]),
-      getPair(sourceId, leftKey, rightKey).catch((e) => {
-        if (e instanceof ApiError && e.status === 404) return null;
-        throw e;
-      }),
+      // The LIST, not the single row: „this pair has no override yet" is the
+      // normal state of nearly every pair, and asking for the row made the
+      // browser log a 404 on every open of the editor. The list carries the
+      // geometry, so it is a complete answer. The Übergänge mount opens over an
+      // overview that has loaded the same list already; the comparison mount
+      // (compare/WordComparison.tsx) has not, and pays one list read instead of
+      // one row read — still one request, and the override set is sparse.
+      getPairs(sourceId, { all: true }).then((rows) => findPairRow(rows, leftKey, rightKey)),
     ])
       .then(([glyphs, pair]) => {
         if (cancelled) return;

@@ -13,7 +13,7 @@
 import { Alert, Box, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-import { getEigenhandSetup, putEigenhandSetup } from '@/lib/api';
+import { getEigenhandSetups, putEigenhandSetup } from '@/lib/api';
 import type { EigenhandSetup } from '@/lib/api';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
@@ -67,9 +67,14 @@ export function SetupPanel({ hand }: { hand: string }) {
 
   useEffect(() => {
     let cancelled = false;
-    getEigenhandSetup(hand)
-      .then((data) => {
+    // The LIST, not this hand's row: a hand that has never had a setup typed is
+    // the normal state before the first session, and asking for the row made
+    // the browser log a 404 every time the panel mounted. One small record per
+    // hand comes back, so the list is cheaper than the round trip it replaces.
+    getEigenhandSetups()
+      .then(({ setups }) => {
         if (cancelled) return;
+        const data = setups.find((s) => s.hand === hand) ?? null;
         setSetup(data);
         setDraft(toDraft(data));
         setLoaded(hand);
