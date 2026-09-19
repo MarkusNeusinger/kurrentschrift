@@ -1192,6 +1192,24 @@ class EigenhandSheetsCountOut(BaseModel):
     last: str | None = None
 
 
+class EigenhandFaelligOut(BaseModel):
+    """One local step the server can see is due — the Übergabekarte's data.
+
+    `id` names the rule in `core.eigenhand.faellig`, `befehl` is the command as
+    it has to be typed, `params` are the numbers the German copy interpolates.
+    What is English on purpose is the CONTENT that is code — the rule ids and
+    the command strings (§5.0: „Terminal-BEFEHLE bleiben englisch"); the field
+    names keep this router's German domain vocabulary, beside `faellig`,
+    `quoten`, `fassungen`, `pfade` and `flecken`. The copy itself stays in the
+    SPA's locale keyed by `id`, so a rule this server does not know renders no
+    card.
+    """
+
+    id: str
+    befehl: str
+    params: dict[str, str | int] = {}
+
+
 class EigenhandBestandOut(BaseModel):
     """Everything one hand holds — Ist against what the strip plan can produce."""
 
@@ -1205,6 +1223,10 @@ class EigenhandBestandOut(BaseModel):
     quoten: EigenhandQuotenOut | None = None
     queue: list[str]
     redo: list[str]
+    # The local steps that are due for this hand, in the order they run. Empty
+    # is the normal answer, and it is the whole point: the cards are invisible
+    # while nothing waits at the machine.
+    faellig: list[EigenhandFaelligOut] = []
     # The hand's own pen, measured rather than counted: the median half width
     # over its accepted Fassungen, in x-heights. `null` while nothing of this
     # hand has been measured — a surface has to state that, because an

@@ -694,7 +694,17 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   Streifens, dann die Liste „neu schreiben, schwächste zuerst"; `--befund`
   zeigt nur diese. Gemessen wird beim Ablegen (`apply`), abgeleitet beim
   Lesen — der Haken bleibt das Urteil, nichts verwirft automatisch
-  (eigenhand-erfassung.md §7.3); **`progression`** — die Plan-Sicht dazu: kumulierte
+  (eigenhand-erfassung.md §7.3). **`--faellig` ist der EINE Modus dieses
+  Werkzeugs, der die API liest** (`--api`/`--token` wie bei `pull`/`sync`
+  über `apiclient`, nie die Datenbank): er druckt die fälligen lokalen
+  Schritte, die der SERVER sieht, in Reihenfolge — der Zwilling der
+  Übergabekarten im Admin, weil die Zwischenablage nicht vom Tablet zum
+  Rechner reicht. Lokal gerechnet sähe eine fällige Liste immer erledigt
+  aus (die Gewichtsdatei liegt hier, jedes Streifenbild liegt hier), darum
+  entscheidet die Regeln einmal `core/eigenhand/faellig.py` und dieser
+  Modus druckt nur. Jeder andere Modus bleibt vollständig offline und macht
+  keinen einzigen HTTP-Aufruf (`tests/test_eigenhand_report.py`);
+  **`progression`** — die Plan-Sicht dazu: kumulierte
   Zählungen je Glyphe (klein · groß · Ligatur · Ziffer · Zeichen) und je
   Übergang an Checkpoints alle N Streifen, mit `--json` für Auswertungen
   („nach 10, 20, … Streifen — wie oft ist jede Glyphe dran?“), und

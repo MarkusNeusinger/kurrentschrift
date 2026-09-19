@@ -9,8 +9,17 @@
 //
 // This is deliberately a plain overwrite, not a new cohort row: the panel
 // answers „what do I reach for now".
+//
+// The `setup --pull` command used to stand at the foot of this panel
+// unconditionally — on every hand, whether a row had ever been saved or not.
+// It is a state now (`setup_pull`, `core/eigenhand/faellig.py`): it appears as
+// an Übergabekarte once a setup is saved for a hand that has not written yet,
+// and goes when the first Fassung arrives. Which is why a successful save
+// reports back (`onSaved`): the card is computed on the server from the row
+// this panel just wrote, so without a re-read the promised card would appear
+// only after a reload — the same reason the print flow reports its sheets.
 
-import { Alert, Box, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
+import { Alert, Button, MenuItem, Stack, TextField, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 import { getEigenhandSetups, putEigenhandSetup } from '@/lib/api';
@@ -18,7 +27,6 @@ import type { EigenhandSetup } from '@/lib/api';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
-import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
 import { Panel } from '@/sections/admin/shell/Panel';
 import { paper } from '@/styles/paper';
@@ -39,7 +47,7 @@ const toDraft = (setup: EigenhandSetup | null): Draft =>
       }
     : EMPTY;
 
-export function SetupPanel({ hand }: { hand: string }) {
+export function SetupPanel({ hand, onSaved }: { hand: string; onSaved?: (forHand: string) => void }) {
   const t = de.admin.eigenhand;
   const [setup, setSetup] = useState<EigenhandSetup | null>(null);
   const [draft, setDraft] = useState<Draft>(EMPTY);
@@ -88,6 +96,10 @@ export function SetupPanel({ hand }: { hand: string }) {
   const save = () => {
     setSaving(true);
     setError(null);
+    // Read at CALL time, like the print flow: the hand selector stays enabled
+    // while a save runs, so the answer may land under another hand's name and
+    // the shell has to decide whether it is still the right subject.
+    const forHand = hand;
     // Every field travels on every save: the API replaces the record, so
     // sending only what changed would blank the rest.
     putEigenhandSetup(hand, {
@@ -98,7 +110,10 @@ export function SetupPanel({ hand }: { hand: string }) {
       geraet: draft.geraet || null,
       note: draft.note || null,
     })
-      .then((data) => setSetup(data))
+      .then((data) => {
+        setSetup(data);
+        onSaved?.(forHand);
+      })
       .catch((err: unknown) => setError(apiErrorText(err)))
       .finally(() => setSaving(false));
   };
@@ -153,9 +168,6 @@ export function SetupPanel({ hand }: { hand: string }) {
           {fmt(t.setupSaved, { stand: setup.updated_at.slice(0, 16).replace('T', ' ') })}
         </Typography>
       )}
-      <Box sx={{ mt: 0.5 }}>
-        <TerminalCommand lead={t.setupLocal} command={fmt(t.setupLocalCommand, { hand })} />
-      </Box>
     </Panel>
   );
 }

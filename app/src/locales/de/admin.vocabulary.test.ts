@@ -79,9 +79,16 @@ describe('admin vocabulary', () => {
   // redirection the moment it is pasted, and one click would create a file
   // named after the rest of the argument instead of running anything. Angle
   // brackets stay allowed, quoted; unquoted they are the bug.
+  //
+  // The floor is three, not more: since the Übergabekarte the STEP commands
+  // (setup --pull, universe --push, pull --sheet, sync --mit-streifen) are
+  // emitted by the server (`core/eigenhand/faellig.py`), where
+  // `tests/test_eigenhand_faellig.py` holds them to the same rule. What is left
+  // here are the commands the browser builds itself. The floor only proves the
+  // filter still finds them — a regex that matches nothing would pass silently.
   it('leaves no unquoted shell redirection in a command a reader can copy', () => {
     const commands = walked.filter(([, value]) => /(^|\s)(uv run|python -m|ADMIN_TOKEN=)/.test(value));
-    expect(commands.length).toBeGreaterThan(3);
+    expect(commands.length).toBeGreaterThanOrEqual(3);
     for (const [key, value] of commands) {
       const bare = value.replace(/"[^"]*"|'[^']*'/g, '');
       expect(bare, key).not.toMatch(/[<>]/);

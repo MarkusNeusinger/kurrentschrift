@@ -113,6 +113,7 @@ from core.database import EigenhandRepository
 from core.eigenhand import bogen, coverage, crop, flecken, geometry
 from core.eigenhand.befund import BEFUND_FORMAT, befund_index, hand_nib, kringel_catalogue, measure_plane
 from core.eigenhand.bestand import bestand as build_bestand
+from core.eigenhand.faellig import faellig
 from core.eigenhand.flecken import FLECKEN_FORMAT
 from core.eigenhand.ids import STYLE_IDS, is_fassung_id, is_hand_id, is_sheet_id, is_strip_id, style_of_hand
 from core.eigenhand.pfad import PFAD_FORMAT, check_paths, displaced_authored, frames_of_row
@@ -182,14 +183,25 @@ async def read_bestand(hand: str, queue: int = 9, db: AsyncSession = Depends(req
     reason — the stored strip IMAGES are an opt-in upload (`tools.eigenhand.sync
     --mit-streifen`), so a figure read from those would call a fully measured
     hand unmeasured for as long as its pixels stay in the private archive.
+
+    The due list (`faellig`) rides along for the opposite reason: it is the same
+    subject, read at the same moment, and a route of its own would be a second
+    request to keep in sync with every reload of this one. Both extra reads are
+    deliberately the deferred ones — `hand_setup` is one small row, `strips_of`
+    carries neither the PNG nor the `pfade` column.
     """
     _checked_hand(hand)
     repo = EigenhandRepository(db)
     kartei = await repo.kartei(hand, style_of_hand(hand) or "")
     soll = await _stored_soll(repo)
     nib = hand_nib(kartei)
+    setup = await repo.hand_setup(hand)
+    stored = {(row.strip, row.fassung) for row in await repo.strips_of(hand)}
     data = _guard(build_bestand, load_plan(), kartei, max(1, min(queue, 50)), soll)
-    return EigenhandBestandOut.model_validate({**data, "nib_median": nib.units, "nib_readings": nib.readings})
+    due = faellig(kartei, setup=setup is not None, stored=stored, soll=soll is not None)
+    return EigenhandBestandOut.model_validate(
+        {**data, "faellig": due, "nib_median": nib.units, "nib_readings": nib.readings}
+    )
 
 
 async def _stored_soll(repo: EigenhandRepository) -> tuple[dict[str, float], dict[str, int]] | None:

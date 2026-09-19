@@ -1020,6 +1020,24 @@ export interface EigenhandJoin {
   planned: number;
 }
 
+/**
+ * One local step the server can see is due — the Übergabekarte's data.
+ *
+ * `id` names the rule in `core/eigenhand/faellig.py`, `befehl` is the command
+ * as it has to be typed, `params` are the numbers the German copy
+ * interpolates. What is English is the CONTENT that is code — the rule ids and
+ * the command strings; the field names stay the ones the eigenhand payloads
+ * use (`faellig`, `quoten`, `pfade`), because this file is hand-synced with
+ * `api/schemas.py`. The copy lives in the locale keyed by `id`
+ * (`sections/admin/eigenhand/uebergabe.ts`), so a rule this bundle does not
+ * know renders no card rather than a blank one.
+ */
+export interface EigenhandFaellig {
+  id: string;
+  befehl: string;
+  params: Record<string, string | number>;
+}
+
 export interface EigenhandBestand {
   hand: string;
   style: string;
@@ -1040,6 +1058,8 @@ export interface EigenhandBestand {
   } | null;
   queue: string[];
   redo: string[];
+  /** The local steps that are due for this hand, in the order they run. */
+  faellig: EigenhandFaellig[];
   /** The hand's own pen — median half width in x-heights, `null` while nothing is measured. */
   nib_median: number | null;
   /** How many measured Fassungen that median rests on. */

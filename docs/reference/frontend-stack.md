@@ -1299,7 +1299,17 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   der puren `eigenhand/pfadHerkunft.ts` (`verfahrenLabel` zeigt ein
   unbekanntes `verfahren` roh, `herkunftChipLabel` schweigt nur, wenn die
   VERFAHREN einer Fassung auseinandergehen — verschiedene Tage sind Sache
-  der Bildunterschrift). Der Streifen-Filter liegt seit dem Split in der
+  der Bildunterschrift). Was nur am Rechner laufen kann, steht als
+  **Übergabekarte** (`Uebergabekarte.tsx` + die reine `uebergabe.ts`): auf
+  *bestand* ein Block „Am Rechner weiter" in Server-Reihenfolge, an der
+  Fassung die Karte „Bahn folgen". Fällig ist, was der Server sagt — das
+  Feld `faellig` reist auf demselben Bestand-Abruf, die BEFEHLE kommen als
+  Code von dort, die deutsche Fassung steht nach Regel-Id im Katalog, und
+  eine unbekannte Id ergibt keine Karte statt einer leeren. Deshalb tragen
+  Setup-Panel, Druck-Ergebnis, Quoten-Tafel und leere Streifen-Liste keinen
+  eigenen Befehl mehr: derselbe Schritt stand sonst an zwei Stellen, und
+  der `pull`-Hinweis unter dem Druck überlebte nicht einmal ein Neuladen.
+  Der Streifen-Filter liegt seit dem Split in der
   URL (`item`/`wort`), weil Erzeuger (Zeichen-Zelle auf `bestand`) und
   Verbraucher (`streifen`) sich keine Komponente mehr teilen; die reinen
   Helfer (`befundOrder` · `coverageLabels` · `flecken` · `pfadHerkunft` ·
