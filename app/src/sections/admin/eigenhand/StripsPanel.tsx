@@ -68,7 +68,7 @@ import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
 import { VORSCHLAG_COLOR, byBefund } from '@/sections/admin/eigenhand/befundOrder';
 import { FleckenEditor, MIN_ERASE_ZOOM } from '@/sections/admin/eigenhand/FleckenEditor';
-import { pfadHerkunft } from '@/sections/admin/eigenhand/pfadHerkunft';
+import { pfadHerkunft, verfahrenLabel } from '@/sections/admin/eigenhand/pfadHerkunft';
 import { pfadRohzahlen } from '@/sections/admin/eigenhand/pfadRohzahlen';
 import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
@@ -84,6 +84,14 @@ type Zoom = (typeof ZOOMS)[number];
 const ZOOM_LABELS: Record<Zoom, string> = { 0.25: '¼', 0.5: '½', 1: '1:1', 2: '2×' };
 const LUPE_ZOOMS = { min: 0.5, max: 4, step: 0.25 };
 const PAGE = 24;
+
+// The Herkunfts-Chip wording, bound once: the strip row stores its own
+// `verfahren`, so it may name the follower — unlike the plate, where nothing
+// records one (author decision 2026-09-18, Q8 b).
+const VERFAHREN_LABELS = {
+  tintenpfad: de.admin.eigenhand.verfahrenTintenpfad,
+  authored: de.admin.eigenhand.verfahrenAuthored,
+};
 
 /**
  * Does one box hold the filter — the client half of the server's strip-level
@@ -289,14 +297,14 @@ function PfadCaption({ pfade, flecken }: { pfade: EigenhandPfad[]; flecken: Eige
   // word, and the line becomes its own provenance. A mixed list says so and
   // carries the per-word detail in its tooltip, instead of letting the first
   // entry speak for the others (Copilot review, PR #598).
-  const herkunft = pfadHerkunft(pfade, t.pfadNoDate);
+  const herkunft = pfadHerkunft(pfade, t.pfadNoDate, VERFAHREN_LABELS);
   const stale = pfade.some((p) => typeof p.flecken_n === 'number' && flecken != null && p.flecken_n !== flecken.length);
   const pedigree = (
     <Typography variant="caption" sx={{ color: paper.inkSoft }}>
       {herkunft.gemischt
         ? fmt(t.pfadPedigreeMixed, { woerter: pfade.length })
         : fmt(t.pfadPedigree, {
-            verfahren: herkunft.verfahren ?? '',
+            herkunft: verfahrenLabel(herkunft.verfahren ?? '', VERFAHREN_LABELS),
             datum: herkunft.datum ?? '',
             woerter: pfade.length,
           })}

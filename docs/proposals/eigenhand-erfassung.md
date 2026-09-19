@@ -1256,9 +1256,13 @@ Werkbank zeigt „Maske geändert", statt eine veraltete Bahn kommentarlos über
 korrigierte Pixel zu legen.
 
 **Was der Admin zeigt.** Eine Ebene, zwei Flächen. In den Wörtern steht
-„Pfad" als dritter Ebenen-Knopf neben „Nachfahrung" und „Engine" und bringt
-seine Linie mit (er schmückt sie ja); in der Eigenhand-Ansicht schaltet
-„Pfad zeigen" die Bahn über Streifen und Wort-Crops. Gezeichnet wird in
+„Bewegung" als dritter Ebenen-Knopf neben „Bahn" und „Engine" und bringt
+die Bahn mit (die Bewegung schmückt sie ja); in der Eigenhand-Ansicht
+schaltet „Bahn zeigen" die Bahn über Streifen und Wort-Crops. Beide Knöpfe
+zeigen dieselbe Linie, deshalb heißt der zweite nach dem, was er hinzufügt
+— seit dem Autor-Entscheid 2026-09-18 (Q8 b) trägt die Linie in jeder
+deutschen Admin-Zeichenkette den einen Namen „Bahn", während
+„Streifen-Pfad" der Glossar-Name des Felds bleibt. Gezeichnet wird in
 beiden Fällen von `PathOverlay`: Farbverlauf in Schreibreihenfolge (erster
 Zug grün, letzter blau), gefüllter Punkt am Ansatz, Pfeilspitze an jedem
 Zugende, **gestrichelte Verbinder für die Absetzer** — das ist das Stück,

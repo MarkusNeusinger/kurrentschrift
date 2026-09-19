@@ -558,8 +558,20 @@ Disziplin:** verworfen wird nur nach Schreibqualität, nie wegen
 Verbindungsenge — Ausfälle müssen zufällig sein, nicht selektiv.
 → [§5](glossar.md#5-werkbank-und-prozess)
 
+**Bahn** — die gefolgte oder nachgefahrene Linie eines Wortes, beidseitig:
+die des Folgers wie die von Hand gezogene. Seit dem Autor-Entscheid
+2026-09-18 (Q8 b) das EINE Substantiv dafür in jeder deutschen
+Admin-Zeichenkette, auf der Platte wie auf dem Streifen — „Pfad", „Spur"
+und „Nachfahrung" sind abgelöst, „Streifen-Pfad" bleibt der Glossar-Name
+des Felds. Die Herkunft trägt ein Chip: „automatisch (Tintenpfad)" auf dem
+Streifen, der sein `verfahren` führt, nur „automatisch" auf der Platte,
+die keines führt. `locales/de/admin.vocabulary.test.ts`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §5.0
+
 **Beleg (Eigenhand)** — ein Vorkommen eines Übergangsraum-Items in den
 angenommenen Fassungen einer Hand; die Zähleinheit des Bestandsberichts.
+Nie ein Zähler für Bahnen — ein Wort kann mehrere Bahnen tragen, ohne ein
+Beleg zu sein.
 → [§5](glossar.md#5-werkbank-und-prozess)
 
 **Streifen-Befund** — was eine geschriebene Fassung über sich sagt: Feder,
@@ -580,7 +592,9 @@ dem runden Pinsel in der Werkbank. `core/eigenhand/flecken.py`.
 **Streifen-Pfad** — die gefolgte Federbahn je geschriebenem Wort, als Daten
 neben dem Streifenbild: Züge in den Einheiten des Wortes, Registrierung in
 den Pixeln des Streifens, dazu Verfahren, Datum und die Maskengröße, unter
-der gefolgt wurde. Außerhalb gerechnet (`tools.eigenhand.pfad`, Trockenlauf
+der gefolgt wurde. Der Name gehört dem FELD (`eigenhand_strips.pfade`) und
+ist nie ein UI-Wort — in der Oberfläche heißt die Linie **Bahn**.
+Außerhalb gerechnet (`tools.eigenhand.pfad`, Trockenlauf
 als Vorgabe), über die Admin-API abgelegt, in der Werkbank nur gezeigt —
 Reihenfolge, Richtung und Absetzer. Die Saat ist der Tafel-Duktus, nicht
 diese Hand. `core/eigenhand/pfad.py`.
