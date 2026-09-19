@@ -1093,7 +1093,7 @@ export const admin = {
     // „nicht gemessen" — keine der beiden gibt sich als Null aus.
     pfadRohzahlen: 'Zahl, kein Urteil',
     pfadRohzahlenHint:
-      'Die gespeicherten Sensoren des Folgers, ungewichtet und unbewertet. „Tinte ohne Bahn“: der Anteil der Tinte, den die Bahn nie befährt. „Absetzer“: wie oft die Feder vom Papier genommen wurde. „Sprünge“: Wechsel auf einen anderen Strang. „Haken“: Umkehrpunkte auf demselben Strang. Ein Strich steht für eine Zahl, die dieser Lauf nicht ausgerechnet hat — nicht für null. Die Nummer vor dem Wort ist der Kasten des Streifens, von 0 an gezählt: dieselbe, die „--box“ beim Nachfolgen nimmt. Ob die Bahn der Tinte folgt, sagt keine dieser Zahlen — das beurteilt später die Ampel an derselben Stelle.',
+      'Die gespeicherten Sensoren des Folgers, ungewichtet und unbewertet. „Tinte ohne Bahn“: der Anteil der Tinte, den die Bahn nie befährt. „Absetzer“: wie oft die Feder vom Papier genommen wurde. „Sprünge“: Wechsel auf einen anderen Strang. „Haken“: Umkehrpunkte auf demselben Strang. Ein Strich steht für eine Zahl, die dieser Lauf nicht ausgerechnet hat — nicht für null. Über dem ganzen Streifen trägt jede Zeile ihre Kastennummer, von 0 an gezählt: dieselbe, die „--box“ beim Nachfolgen nimmt. Im Wort-Ausschnitt und bei ausgewähltem Wort steht sie nicht dabei — dort gilt die eine Zeile dem Kasten, der gerade gezeigt wird. Ob die Bahn der Tinte folgt, sagt keine dieser Zahlen — das beurteilt später die Ampel an derselben Stelle.',
     pfadRohzahlenUnvisited: 'Tinte ohne Bahn {{prozent}} %',
     pfadRohzahlenUnvisitedNone: 'Tinte ohne Bahn –',
     pfadRohzahlenLifts: 'Absetzer {{zahl}}',

@@ -426,9 +426,18 @@ function PfadRohzahlenChips({ pfade, showBox }: { pfade: EigenhandPfad[]; showBo
                   label={
                     readings.inkUnvisitedShare === null
                       ? t.pfadRohzahlenUnvisitedNone
-                      : // Whole percent: the stored share is a reading, not a
-                        // threshold — the thresholds arrive with the Ampel.
-                        fmt(t.pfadRohzahlenUnvisited, { prozent: Math.round(readings.inkUnvisitedShare * 100) })
+                      : // One decimal at most. The follower rounds the share to
+                        // three places, so `0.001` is a real reading — at whole
+                        // percent it would print as the „0 %" that only a Bahn
+                        // covering all the ink earns, and this whole block
+                        // exists to keep a measured zero apart from everything
+                        // that merely looks like one. A round value keeps its
+                        // clean form (21 %), German decimal comma.
+                        fmt(t.pfadRohzahlenUnvisited, {
+                          prozent: (readings.inkUnvisitedShare * 100).toLocaleString('de-DE', {
+                            maximumFractionDigits: 1,
+                          }),
+                        })
                   }
                 />
                 <Chip
@@ -717,14 +726,17 @@ function StripTile({
           {showPfade && (
             <>
               {pfade.loading && <CircularProgress size={12} sx={{ mt: 1 }} />}
-              {drawn.length > 0 && placeable && (
-                <>
-                  <PfadCaption pfade={drawn} flecken={row.flecken} />
-                  {/* Only the whole strip needs the prefix: a selected cut is
-                      already named by the filled chip in the selector below. */}
-                  <PfadRohzahlenChips pfade={drawn} showBox={shown === null} />
-                </>
-              )}
+              {drawn.length > 0 && placeable && <PfadCaption pfade={drawn} flecken={row.flecken} />}
+              {/* NOT gated by `placeable`: the numbers were measured on the
+                  strip and need no cut geometry, while the overlay does. A box
+                  from a Bogen printed before the cut rectangles existed can
+                  show its reading even though its path cannot be drawn — the
+                  „kein Kasten-Rechteck" line below says why the picture is
+                  missing, and hiding the numbers with it would suppress a fact
+                  the follower did measure. Only the whole strip needs the box
+                  prefix: a selected cut is already named by the filled chip in
+                  the selector below. */}
+              {drawn.length > 0 && <PfadRohzahlenChips pfade={drawn} showBox={shown === null} />}
               {/* The empty answers are DIFFERENT and each is said out loud:
                   `null` is „nobody has followed this Fassung", an empty result
                   is „followed, nothing came back", a row with paths but none
