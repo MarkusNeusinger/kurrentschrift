@@ -526,19 +526,32 @@ WIDEST = {
 # whole doc; the numbers themselves live in `app/src/styles/paper.test.ts`, not
 # here. Re-measured at 16 162, plus the documented 10 %.
 #
-# `werkbank` (5 166 → 5 936) raised 2026-09-19 by the Scope-Leiste. The path
-# carries `frontend-stack.md` §2 for the admin routes, and this adds the one
-# thing that route table did not say: `h=`, the hand, optional on EVERY admin
-# route — which is the Werkbank reader's own business, because the Korb links
-# he follows now carry it and a subject change inside a view keeps it. Beside
-# it, two rewritten rows: the Vorlage is named in the Scope-Leiste rather than
-# in a header chip, and the hand left `EigenhandView` for the admin scope
-# (always the Vorlage's script, V19). The path stood at FIFTEEN tokens of
-# room, so every one of those sentences failed the gate. All three were cut
-# before this raise — `h=` from eight clauses to four, the Eigenhand row from
-# four sentences to two, and the storage key, the candidate union and the
-# fallback order moved to the glossary („Hand-Stil-Kopplung"), which no
-# reading path carries whole. Re-measured at 5 396, plus the documented 10 %.
+# `werkbank` (5 166 → 5 786) raised 2026-09-19 by the Buchstaben-Arbeitsliste.
+# The path carries `frontend-stack.md` §2 „für die Admin-Routen", and §2 is the
+# route MAP: a route that gains four URL parameters and turns its overview from
+# a card wall into a work list has to change its row there, or the map stops
+# being one. The path stood at FIFTEEN tokens of room — the Eigenhand
+# `?reiter=`-Split of the same day (#622) had grown the neighbouring row — so
+# no wording of this change could have passed. The row was cut first, three
+# times: the per-parameter value lists, the „unbekannte Werte fallen zurück"
+# rule and the module names all moved to the glossary entry „Arbeitsliste",
+# which no reading path carries whole, leaving the row +338 characters for a
+# route whose behaviour changed completely. Re-measured at 5 260, plus the
+# documented 10 %.
+#
+# `werkbank` (5 786 → 6 080) raised again the SAME DAY by the Scope-Leiste —
+# the third Phase-1 PR to touch the same route table. It adds the one thing
+# that table did not say: `h=`, the hand, optional on EVERY admin route, which
+# is the Werkbank reader's own business because the Korb links he follows now
+# carry it. Beside it, two rewritten rows: the Vorlage is named in the
+# Scope-Leiste rather than in a header chip, and the hand left `EigenhandView`
+# for the admin scope (always the Vorlage's script, V19). The raise above had
+# left twelve tokens of room, so every one of those sentences failed the gate.
+# All three were cut before this raise — `h=` from eight clauses to four, the
+# Eigenhand row from four sentences to two, and the storage key, the candidate
+# union and the fallback order moved to the glossary („Hand-Stil-Kopplung"),
+# which no reading path carries whole. Re-measured at 5 528, plus the
+# documented 10 %.
 BUDGETS: dict[str, int] = {
     "mandatory": 67_091,
     "mess-runde": 43_761,
@@ -547,7 +560,7 @@ BUDGETS: dict[str, int] = {
     "glyph-optimierung": 8_504,
     "komposition": 10_756,
     "frontend": 17_778,
-    "werkbank": 5_936,
+    "werkbank": 6_080,
     "werkzeug": 713,
     # Raised 2026-09-07 by „Kette R3 Zwei-Züge-Modell": the path is „the one
     # tool your change is about", and its widest section is the bench/lab

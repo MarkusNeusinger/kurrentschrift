@@ -33,15 +33,15 @@ import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 import { cropUrl } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { ChartView } from '@/sections/admin/chart/ChartView';
-import { GlyphComparison } from '@/sections/admin/compare/GlyphComparison';
 import { LandmarkPanel } from '@/sections/admin/letters/LandmarkPanel';
 import { LaufformApplyDialog } from '@/sections/admin/letters/LaufformApplyDialog';
+import { LetterOverview } from '@/sections/admin/letters/LetterOverview';
 import { LetterStats } from '@/sections/admin/shell/LensStats';
 import { LetterPicker } from '@/sections/admin/shell/LetterPicker';
 import { OccurrenceThumb } from '@/sections/admin/shell/OccurrenceThumb';
 import { useFileMark } from '@/sections/admin/shell/korbState';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
-import { joinsUrl, keepHand, neighbourLetters, readLetterFocus, wordsUrl } from '@/sections/admin/shell/focus';
+import { FOCUS_PARAMS, joinsUrl, neighbourLetters, readLetterFocus, wordsUrl } from '@/sections/admin/shell/focus';
 import { EvidenceState, Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { garamond } from '@/styles/paper';
 
@@ -52,8 +52,17 @@ const FACE_H = 190; // px per face in the "wie geschrieben" row
 export function LetterView() {
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
-  const { sourceId, bboxesByKey, glyphsByKey, cropCacheBust, refreshCrop, setActiveGlyph, openWizard, openDiagnose } =
-    useAdmin();
+  const {
+    sourceId,
+    bboxesByKey,
+    glyphsByKey,
+    cropCacheBust,
+    refreshCrop,
+    refreshGlyphs,
+    setActiveGlyph,
+    openWizard,
+    openDiagnose,
+  } = useAdmin();
   const workbench = useWorkbench();
   const fileMark = useFileMark();
   const t = de.admin.letters;
@@ -105,10 +114,22 @@ export function LetterView() {
     if (glyphKey) setActiveGlyph(glyphKey);
   }, [glyphKey, setActiveGlyph]);
 
-  // `keepHand`: the subject changes, the scope does not. A view that wrote the
-  // bare subject would drop the `h=` a Korb link arrived with on the first
-  // click inside the view (focus.ts).
-  const focus = (key: string | null) => setParams(keepHand(params, key ? { g: key } : {}), { replace: false });
+  // A focus change MERGES instead of rewriting the query: the overview's list
+  // state (Ansicht · Filter · Sortierung · Seite) and anything else the URL
+  // carries has to survive the hop into a letter and back, or „Alle
+  // Buchstaben" would drop the reader onto page 1 of an unfiltered alphabet.
+  // Still a PUSH — the subject is what the back button walks.
+  //
+  // The merge is also what carries `h=` along here: the subject changes, the
+  // scope does not, so a Korb link's hand survives the first click inside the
+  // view. The two views that DO rewrite their query say the same thing with
+  // `keepHand` (focus.ts).
+  const focus = (key: string | null) => {
+    const next = new URLSearchParams(params);
+    if (key) next.set(FOCUS_PARAMS.glyph, key);
+    else next.delete(FOCUS_PARAMS.glyph);
+    setParams(next, { replace: false });
+  };
 
   // Memoised for its identity, not for the lookup: the `?? []` produced a fresh
   // empty array on every render, which invalidated the `relatedWords` memo below
@@ -157,9 +178,9 @@ export function LetterView() {
             )}
           </LetterPicker>
         </ViewHeader>
-        {/* The comparison grid only knows AUTHORED letters — the picker above
-            is the way to a letter that has no canonical yet. */}
-        <GlyphComparison onPick={focus} />
+        {/* The work list only knows AUTHORED letters — the picker above is the
+            way to a letter that has no canonical yet. */}
+        <LetterOverview onPick={focus} />
       </Box>
     );
   }
@@ -458,11 +479,15 @@ export function LetterView() {
           aggregates={workbench.allAggregates}
           onClose={() => setApplyOpen(false)}
           // The written rows are both statistics and rendering now: refetch the
-          // aggregate layer (its freshness numbers just changed) and bust the
-          // render cache so the Laufform face shows what was just written.
+          // aggregate layer (its freshness numbers just changed), bust the
+          // render cache so the Laufform face shows what was just written, and
+          // re-read the template rows — an apply CREATES variant-100 rows, and
+          // the work list reads „hat eine Laufform" from that set instead of
+          // probing a render.
           onApplied={() => {
             workbench.refreshLetterStats();
             refreshCrop();
+            void refreshGlyphs();
           }}
         />
       )}
