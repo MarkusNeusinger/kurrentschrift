@@ -311,7 +311,15 @@ export function EigenhandView() {
 
   return (
     <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
-      <ViewHeader eyebrow={de.admin.shell.startEyebrow} title={t.title} intro={t.intro} />
+      {/* The role's gloss on its first appearance (Q8 a), composed from the
+          shared `shell.role*` constant rather than written into `intro`: the
+          Scope-Leiste will name the same role, and one wording cannot drift
+          into two. */}
+      <ViewHeader
+        eyebrow={de.admin.shell.startEyebrow}
+        title={t.title}
+        intro={`${de.admin.shell.roleEigenhandGloss} — ${t.intro}`}
+      />
 
       <Stack direction="row" spacing={2} sx={{ mb: 3, flexWrap: 'wrap', alignItems: 'center' }}>
         <TextField

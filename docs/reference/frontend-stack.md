@@ -138,7 +138,7 @@ Post-MVP-Phasen (architektur.md §10):
 | `/admin` | **Einstieg: die Vorlagen-Auswahl.** Alles darunter gehört zu genau einer Quelle und ihrer Hand, also steht die Wahl am Anfang statt in einem Menü; die aktive Vorlage steht danach im Header und führt mit einem Klick hierher zurück (`sections/admin/shell/StartView.tsx`). Die Wahl merkt sich der Browser in `localStorage`; Vorgabe ist `CONFIG.sourceId` (`app/src/global-config.ts`) — dieselbe Konstante hat Doppeldienst: Sie ist die Quelle, aus der die ÖFFENTLICHEN Seiten rendern (heute die Sütterlin-Ausgangsschrift 1922), UND die Vorauswahl des Admins | existiert |
 | `/admin/buchstaben[?g=<key>][&ansicht=liste\|galerie&filter=&sort=&seite=]` | **Buchstaben.** Ohne `g` die Alphabet-Übersicht (ehemals `/admin/vergleich`-Tab) als **Arbeitsliste**: je Buchstabe EINE Zeile — Glyph, Schlüssel, Score-Chip, Abzüge und die Chips gesperrt · Laufform · n Vorkommen · n im Korb, **kein Bild**; die Zeile klappt an Ort und Stelle die VIER Flächen auf (Original (Chart-Crop) · Tafel-Form (Variante 0) · Laufform (Variante 100) · „Median & Vorkommen", die H1-Aggregat-Skizze), und `ansicht=galerie` zeigt dieselben Karten wieder untereinander (Vorgabe V14). Ihr Zustand steht in der URL, nie im `localStorage` — ein Korb-Link auf einem anderen Gerät öffnet sonst wieder die Kartenwand: `ansicht` (`liste` Vorgabe · `galerie`), `filter` (kommagetrennt und UND-verknüpft: `gesperrt`, `ohne-laufform`, `ohne-vorkommen`, `mit-korb`), `sort` (`alphabet` Vorgabe · `schlechteste`) und `seite` (24er-Seiten, `alle` für alles auf einmal). Unbekannte Werte fallen auf die Vorgabe zurück, Vorgabewerte stehen nicht in der URL, und ein Wechsel der Liste lässt `g` (und jeden anderen fremden Parameter) unberührt — Details §7, Module `sections/admin/shell/listState.ts` + `WorkList.tsx` und `sections/admin/letters/letterRows.ts`. Mit `g` der einzelne Buchstabe mit allen Werkzeugen: Tafel-Ausschnitt + Einrichtungs-Wizard + Diagnose + aufklappbarem Chart-Editor (ehemals `/admin/chart`), Tafel-Form neben Laufform, die Vorkommen aus den Wörtern, die H1-Statistik samt Frische-Chip und Differenz-Skizze, die Absprünge zu Übergängen/Wörtern — und am Fuß, bewusst abgesetzt, der **Laufform-Übernahme-Block** mit Bestätigungsdialog (`sections/admin/letters/`, Issue #270) | existiert |
 | `/admin/uebergaenge[?l=<key>&r=<key>]` | **Übergänge.** Ohne Paar die Matrix aller Zweierkombinationen (ehemals `/admin/paare`) plus ein Freitextfeld für JEDE Kombination, mit Paar die komponierte Verbindung, die H2-Statistik „gemessen vs. komponiert", die dissezierten Vorkommen und — als letztes Mittel — der Paar-Editor (`sections/admin/joins/`) | existiert |
-| `/admin/woerter[?w=<text>&s=<specimen>]` | **Wörter.** Ohne `w` die Wortproben-Liste mit Scores (ehemals `/admin/vergleich`-Tabs Wörter/Andere Hand), mit `w` ein beliebiger Text: wie die Engine ihn schreibt, woraus er besteht (Buchstaben + Übergänge als Absprünge) und — wo eine Platte ihn enthält — die nachgefahrene Spur mit Vorkommens-Overlay, Score und Wort-Editor (ehemals `/admin/belege` + `/admin/werkbank`-Rückgrat; `sections/admin/words/`) | existiert |
+| `/admin/woerter[?w=<text>&s=<specimen>]` | **Wörter.** Ohne `w` die Wortproben-Liste mit Scores (ehemals `/admin/vergleich`-Tabs Wörter/Andere Hand), mit `w` ein beliebiger Text: wie die Engine ihn schreibt, woraus er besteht (Buchstaben + Übergänge als Absprünge) und — wo eine Platte ihn enthält — die nachgefahrene Bahn mit Vorkommens-Overlay, Score und Wort-Editor (ehemals `/admin/belege` + `/admin/werkbank`-Rückgrat; `sections/admin/words/`) | existiert |
 | `/admin/eigenhand` | **Eigenhand.** Die einzige Admin-Ansicht, die zu einer HAND gehört statt zu einer Vorlage: Bestand der eigenen Schreibprobe (Streifen belegt/unterwegs/geplant, Fassungen, Bögen; welche Zeichen und Übergänge belegt sind — gemessen an dem, was der Streifenplan hergibt, Groß-/Kleinbuchstaben, Ligaturen, Ziffern und Sonderzeichen getrennt) und der Bogendruck (Stapel erzeugen, PDF öffnen). Dazu das stehende Setup der Hand (Feder · Tinte · Papier · Gerät) und die GESCHRIEBENEN Streifen: jede gespeicherte Fassung auf Klick, samt Ausschnitt je Wort — admin-gesichert, `private, no-store`, nie im Repository. Die Scans bleiben lokal; hochgeladen wird hier nichts (`sections/admin/eigenhand/`, [`../proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md) §7.1–§7.2) | existiert |
 | `/admin/sources` | Source-Verwaltung | post-MVP |
 | `/admin/jobs` | HTR-Job-Monitor (Quote-Übersicht) | post-MVP |
@@ -1171,10 +1171,10 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   `OccurrenceThumb`, `Panel`/`ViewHeader` (die geteilten Layout-Bausteine)
   und die puren, getesteten `focus.ts` (Subjekt ⇄ URL) + `model.ts`.
 - **Registrierungs-Regel für jede „gemessen gegen komponiert"-Zeichnung der
-  Werkbank:** SOWOHL die gespeicherte Spur ALS AUCH die Engine-Tinte reiten
+  Werkbank:** SOWOHL die gespeicherte Bahn ALS AUCH die Engine-Tinte reiten
   auf der eigenen gemessenen Registrierung der Zeile
   (`measurements.registration_px` + `xh_px`), und zwar über die geteilten,
-  unit-getesteten `shell/model.ts::traceFrameOf`/`traceMatrix` — Spur und
+  unit-getesteten `shell/model.ts::traceFrameOf`/`traceMatrix` — Bahn und
   Komposition liegen im identischen Rahmen (Grundlinie = 0, 1 Einheit =
   x-Höhe), es wird also nichts nach Augenmaß ausgerichtet. Die Komposition
   stattdessen an die LINKE CROP-KANTE zu heften setzte sie über die 63
@@ -1233,9 +1233,9 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   Freitext-Kombination, komponierte Verbindung, H2-Statistik, Vorkommen,
   Paar-Editor.
 - `sections/admin/words/` — `WordView` (`/admin/woerter`): Freitext-Wort,
-  „woraus es besteht", Belege je Specimen über `WordSpineCard`. Diese Karte
-  ist wie eine Buchstaben-Kachel aus ZWEI Flächen gebaut: links die
-  MESSUNG (Platten-Crop + die gespeicherte Spur in Grün + je gefittetem
+  „woraus es besteht", die Bahnen je Specimen über `WordSpineCard`. Diese
+  Karte ist wie eine Buchstaben-Kachel aus ZWEI Flächen gebaut: links die
+  MESSUNG (Platten-Crop + die gespeicherte Bahn in Grün + je gefittetem
   Buchstaben ein gestricheltes Kästchen und je Übergang ein Punkt, alles
   anklickbar — der Weg in die beiden anderen Ansichten; die Engine-Tinte
   legt sich durchscheinend dazu, wenn der „Überlagern"-Schalter an ist),
@@ -1253,7 +1253,15 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   Hand) und `StripsPanel` (die geschriebenen Streifen): dessen Bilder werden
   aus demselben Grund als Blob geholt und zusätzlich erst auf Klick, weil
   ein Streifen ~350 KB wiegt und zum reservierten Datensatz gehört; die
-  Object-URLs werden von Hand wieder freigegeben.
+  Object-URLs werden von Hand wieder freigegeben. Die Herkunft einer Bahn
+  steht dort als eigener Chip und darf den Folger NENNEN — „automatisch
+  (Tintenpfad)" oder „von Hand" —, weil die Streifenzeile ihr `verfahren`
+  selbst führt; die Platte bekommt in `werkbank.provenanceTraced` nur
+  „automatisch", weil `word_instances` keinen Folger notiert. Beschriftet
+  wird die Herkunft von der puren `eigenhand/pfadHerkunft.ts`
+  (`verfahrenLabel` zeigt ein unbekanntes `verfahren` roh,
+  `herkunftChipLabel` schweigt nur, wenn die VERFAHREN einer Fassung
+  auseinandergehen — verschiedene Tage sind Sache der Bildunterschrift).
 - `sections/admin/chart/`, `setup-wizard/`, `diagnostics/`, `compare/`,
   `pairs/`, `belege/`, `quality/` bleiben die WERKZEUGE, die diese drei
   Ansichten einsetzen (Chart-Editor, Wizard, Diagnose, Vergleichsraster,

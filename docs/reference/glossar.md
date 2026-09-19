@@ -3689,10 +3689,32 @@ Items, und ein Wort kann mehrere Bahnen tragen, ohne einen einzigen Beleg
 zu sein (Autor-Entscheid 2026-09-18, Q8 a; Vokabular-Tabelle
 `proposals/admin-redesign.md` §5.0). Gezählt wird nur die Platten-Hand
 selbst; die Proben der Abb.-22-Schülerhand stehen daneben unter eigenem
-Etikett (→ V4). *Technisch:* `word_instances.strokes`, Chip
-`words.traceCount` in `locales/de/admin.ts`.
+Etikett (→ V4). Seit Q8 (b) ist „Bahn" das EINE Substantiv der Linie in
+jeder deutschen Admin-Zeichenkette, auf der Platte wie auf dem Streifen —
+vorher hieß dieselbe Linie je nach Fläche „Pfad", „Spur", „Nachfahrung"
+oder „Bahn". Die beiden Ebenen-Knöpfe des Wort-Details heißen darum „Bahn"
+und „Bewegung": sie zeigen dieselbe Linie, der zweite benannt nach dem, was
+er hinzufügt. Ihre Herkunft trägt ein Chip: „automatisch (Tintenpfad)" oder
+„von Hand" auf dem Streifen, wo die Zeile ihr `verfahren` selbst führt, und
+nur „automatisch" auf der Platte, wo `word_instances` keinen Folger notiert
+— ein Verfahren dort zu nennen wäre eine Behauptung, die die Zeile nicht
+deckt. Ein unbekanntes `verfahren` wird roh gezeigt, nie umbenannt. Der
+Chip verschwindet erst, wenn die VERFAHREN selbst auseinandergehen:
+verschiedene Tage allein tun es nicht — ein Wort, dem später noch einmal
+gefolgt wurde, sagt nichts darüber, WIE die Bahnen entstanden sind, also
+behält die Fassung ihre eine ehrliche Herkunft, und die verschiedenen Läufe
+stehen in der Bildunterschrift samt Herkunft je Wort im Tooltip.
+*Technisch:* `word_instances.strokes` und `eigenhand_strips.pfade[]`, Chip
+`words.traceCount` und Schalter `eigenhand.pfadShow` („Bahn zeigen") in
+`locales/de/admin.ts`; beschriftet wird die Herkunft von der reinen
+`sections/admin/eigenhand/pfadHerkunft.ts::verfahrenLabel`, die ihre Wörter
+als Argument bekommt und selbst kein Deutsch trägt, und ob überhaupt eine zu
+nennen ist, entscheidet `herkunftChipLabel` daneben — am `verfahren`, nie am
+Datum;
+`locales/de/admin.vocabulary.test.ts` hält die Regel gegen das
+Zurückrutschen.
 → proposals/admin-redesign.md §5.0 · Beleg (Eigenhand) · Bahn-Deckung
-(geplant)
+(geplant) · Streifen-Pfad
 
 **Wort-Editor · Paar-Editor** — die beiden manuellen Ground-Truth-Flächen:
 der Wort-Editor lässt ein misslungenes automatisches Nachfahren von Hand
@@ -4241,7 +4263,13 @@ Zeile ohne Maske, `pull --flecken` holt die hand-korrigierte zurück.
 **Streifen-Pfad** — die gefolgte FEDERBAHN eines geschriebenen Wortes,
 abgelegt als Daten neben dem Streifenbild (Autor-Wunsch 2026-09-12: „bitte
 auch im admin integrieren das ich bei den handstreifen und den wörtern
-generell den pfad auch sehen kann"). Eine Liste je Wortkasten, jede mit
+generell den pfad auch sehen kann"). **Der Name ist ein Glossar-Name des
+Felds und nie ein UI-Wort** (Autor-Entscheid 2026-09-18, Q8 b;
+`proposals/admin-redesign.md` §5.0): in der Oberfläche heißt die Linie
+„Bahn", hier heißt das Feld `eigenhand_strips.pfade`. Die
+Locale-SCHLÜSSEL (`eigenhand.pfad*`) tragen den Feldnamen weiter, ihre
+Werte sagen „Bahn" — und `locales/de/admin.vocabulary.test.ts` prüft genau
+diese Trennung. Eine Liste je Wortkasten, jede mit
 ihren Zügen in den EINHEITEN DES WORTES (Grundlinie 0, Mittelband 1 —
 derselbe Vertrag wie `word_instances.strokes`, weshalb EIN Overlay Wörter-
 und Eigenhand-Ansicht bedient), der Registrierung in den Pixeln des
@@ -4480,7 +4508,7 @@ die eine Bahn bekommen kann, und der Folger legt jeden Sensor, den er nicht
 ausgerechnet hat, als `null` ab. *Technisch:*
 `app/src/sections/admin/eigenhand/pfadRohzahlen.ts` liest sie aus dem
 ungetypten `pfade[].meta.tintenpfad`, `StripsPanel` zeigt je Kasten eine
-Chip-Zeile — am Schalter „Pfad zeigen", der dieselben Daten ohnehin lädt.
+Chip-Zeile — am Schalter „Bahn zeigen", der dieselben Daten ohnehin lädt.
 → proposals/admin-redesign.md §5.1 (Idee 5)
 
 **Rollen-Spalte (geplant)** — die drei Rollen aus `vision.md` (Tafel ·
