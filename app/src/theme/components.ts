@@ -104,6 +104,27 @@ export const components: Components<Theme> = {
       root: { backgroundImage: 'none' },
     },
   },
+  // A menu option is a target like any other, and MUI's own 48px floor stops
+  // at the `sm` breakpoint (`minHeight: 'auto'` above it). With this theme's
+  // 19px body that leaves 6+30.4+6 ≈ 42.4px — fine for a mouse, not for the
+  // finger on the TABLET the author re-traces on, which sits well above `sm`.
+  // Like the Typo-Boden the correction belongs in the theme: the admin's
+  // selects (Auftragskorb, Wort, Eigenhand) inherit it instead of repeating a
+  // `MenuProps` each. Below `sm` nothing is added — MUI's 48 is the better
+  // number there and a flat 44 would have LOWERED the phone.
+  MuiMenuItem: {
+    styleOverrides: {
+      // Doubling the class is load-bearing, not a flourish: MUI applies a
+      // component's own `variants` AFTER the theme's styleOverrides, so a plain
+      // rule is overwritten by the `minHeight: 'auto'` again and loses (measured
+      // 42.39px at 1440 and 1024 with the plain form, 44 with this one).
+      // `&.MuiMenuItem-root` carries one class more than the generated one and
+      // therefore wins on specificity rather than on order.
+      root: ({ theme }) => ({
+        [theme.breakpoints.up('sm')]: { '&.MuiMenuItem-root': { minHeight: TOUCH_TARGET } },
+      }),
+    },
+  },
   MuiToggleButton: {
     styleOverrides: {
       // MUI's default unselected toggle text is neutral action.active alpha-black
