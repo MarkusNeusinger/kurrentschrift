@@ -48,3 +48,15 @@
   „generiert".** The matrix answered an admin-gated 401 with an empty list of
   stored overrides, which every cell then stated as a fact about the library.
   It stays unknown instead, and the grid says so once above itself.
+- **Saving a Bahn keeps the list you came from.** The save re-named the
+  specimen in the URL through the clean link builder, which writes `w` and `s`
+  and nothing else — so the filter, the status, the tab, the page and the
+  scope's `h=` were dropped by the one navigation that had not been converted
+  to a merge. „Alle Wortproben" lands on the list as it was left again.
+- **„Schlechteste zuerst" now means it, or leaves.** The ranking a score sweep
+  pays for survives opening a word and coming back, because the measurements
+  live above the overview that is unmounted on the way in. Where there is
+  nothing to rank by — after „Neu laden", in a tab that was never swept, on a
+  pasted link, after a sweep in which every request failed — the sort leaves
+  the URL instead of standing there next to a disabled button and a list in
+  the plate's own order.

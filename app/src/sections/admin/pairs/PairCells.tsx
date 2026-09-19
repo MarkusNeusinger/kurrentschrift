@@ -66,6 +66,34 @@ function Counters({ row }: { row: PairRow }) {
   );
 }
 
+/**
+ * What a screen reader hears instead of the cell. An `aria-label` REPLACES the
+ * content as the accessible name, so it has to carry the counters too — they
+ * are the whole point of „Zähler statt Farbe", and a label that said only
+ * „Verbindung ab öffnen" would hand a screen-reader user exactly the cell that
+ * states nothing, which is what this change set out to remove. Without the ⚑:
+ * the flag is a second visual channel for the basket count and reads as
+ * „schwarze Flagge" out loud.
+ */
+function cellLabel(row: PairRow): string {
+  const t = de.admin.pairs;
+  const parts = [fmt(t.openPair, { pair: row.text })];
+  if (row.leftKey === null) {
+    parts.push(t.ligature);
+  } else {
+    if (row.plate !== null) parts.push(fmt(de.admin.joins.occurrenceCount, { count: row.plate }));
+    if (row.override !== null) {
+      parts.push(
+        row.override === 'approved' ? t.badgeApproved : row.override === 'draft' ? t.badgeDraft : de.admin.joins.generated,
+      );
+    }
+    if (row.korbOpen !== null && row.korbOpen > 0) {
+      parts.push(fmt(de.admin.liste.chipKorb, { count: row.korbOpen }));
+    }
+  }
+  return parts.join(' · ');
+}
+
 function PairCell({
   row,
   sourceId,
@@ -83,7 +111,7 @@ function PairCell({
       ref={ref}
       component={onPick ? ButtonBase : Box}
       onClick={onPick}
-      aria-label={onPick ? fmt(de.admin.pairs.openPair, { pair: row.text }) : undefined}
+      aria-label={onPick ? cellLabel(row) : undefined}
       sx={{
         border: 1,
         // The border no longer carries the override state — it is a box, not a

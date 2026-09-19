@@ -28,7 +28,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { WrittenWord } from '@/components/WrittenWord';
 import { useAdmin } from '@/context/adminState';
 import { fetchRenderWord, getWordSampleScore } from '@/lib/api';
-import type { ComposedWordOut } from '@/lib/api';
+import type { ComposedWordOut, WordSampleScoreOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
 import { WordTraceEditorDialog } from '@/sections/admin/belege/WordTraceEditorDialog';
 import { useFileMark } from '@/sections/admin/shell/korbState';
@@ -49,7 +49,7 @@ import { garamond, layer, layerDash } from '@/styles/paper';
 
 import { WordOverview } from './WordOverview';
 import { WordSpineCard } from './WordSpineCard';
-import { WORD_LIST_SPEC, type ScoreEntry } from './wordRows';
+import { WORD_LIST_SPEC, scoreOutcome, type ScoreEntry } from './wordRows';
 
 const WORD_H = 130; // px — the composed word, large enough to judge the rhythm
 
@@ -479,6 +479,7 @@ export function WordView() {
           evidence.map((item) => {
             const { sample, row } = item;
             const score = scores[sample.id];
+            const outcome = scoreOutcome(score);
             return (
               <WordSpineCard
                 key={`${sample.kind}:${sample.id}`}
@@ -498,13 +499,17 @@ export function WordView() {
                 onMark={fileMark}
                 actions={
                   <>
-                    {score === 'busy' ? (
+                    {/* Through `scoreOutcome`, so „nicht bewertbar" reads the
+                        same here as in the list's chip: a failed score carries
+                        a `loss` field too, and printing it would invent an
+                        excellent mark for a word the engine could not write. */}
+                    {outcome === 'busy' ? (
                       <CircularProgress size={16} />
-                    ) : score === 'error' ? (
+                    ) : outcome === 'failed' ? (
                       <Chip size="small" color="error" variant="outlined" label={de.admin.compare.scoreFailed} />
-                    ) : score ? (
+                    ) : outcome === 'measured' ? (
                       <Tooltip title={t.scoreHint}>
-                        <Chip size="small" variant="outlined" label={`Loss ${score.loss.toFixed(2)}`} />
+                        <Chip size="small" variant="outlined" label={`Loss ${(score as WordSampleScoreOut).loss.toFixed(2)}`} />
                       </Tooltip>
                     ) : (
                       <Button size="small" onClick={() => runScore(sample.id)}>

@@ -53,6 +53,21 @@ export const WORD_LIST_SPEC: ListSpec<never, WordSort, WordStatus, WordTab> = {
  */
 export type ScoreEntry = WordSampleScoreOut | 'busy' | 'error';
 
+/**
+ * What one entry of that record may be SHOWN as. Two different failures end in
+ * the same word: the request did not answer (`'error'`), or it answered „nicht
+ * bewertbar" (`failed`) for a Wortprobe whose templates are missing. The second
+ * carries a `loss` field all the same, so a surface that only checks for an
+ * object prints an excellent mark for a word the engine could not even write.
+ * Stated here once, for the list's chip and the detail's alike.
+ */
+export function scoreOutcome(entry: ScoreEntry | undefined): 'none' | 'busy' | 'failed' | 'measured' {
+  if (entry === undefined) return 'none';
+  if (entry === 'busy') return 'busy';
+  if (entry === 'error' || entry.failed) return 'failed';
+  return 'measured';
+}
+
 /** The measurements out of such a record, so a running or failed request can
  * never be mistaken for a Loss by the rows. */
 export function settledScores(

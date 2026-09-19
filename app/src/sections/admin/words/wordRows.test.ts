@@ -9,6 +9,7 @@ import {
   buildWordRows,
   matchesWordFilters,
   rankingIsStale,
+  scoreOutcome,
   settledScores,
   sortWordRows,
   traceFilterOf,
@@ -218,6 +219,18 @@ describe('the score record the view holds', () => {
   it('hands the rows the answers and keeps the sentinels of a running request', () => {
     const measured = score('s1', 0.4);
     expect(settledScores({ s1: measured, s2: 'busy', s3: 'error', s4: undefined })).toEqual({ s1: measured });
+  });
+
+  it('calls a failed ANSWER a failure, not a Loss', () => {
+    // The two failures end in the same word — the request did not answer, or
+    // it answered „nicht bewertbar". The second carries a `loss` field all the
+    // same, and a surface that only checks for an object prints an excellent
+    // mark for a word the engine could not even write.
+    expect(scoreOutcome(undefined)).toBe('none');
+    expect(scoreOutcome('busy')).toBe('busy');
+    expect(scoreOutcome('error')).toBe('failed');
+    expect(scoreOutcome(score('s1', 1.0, true))).toBe('failed');
+    expect(scoreOutcome(score('s1', 0.4))).toBe('measured');
   });
 
   it('never lets a running request read as a Loss', () => {

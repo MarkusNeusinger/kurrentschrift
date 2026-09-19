@@ -1252,11 +1252,15 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   Unterblock des Details und nicht die Fläche, die die URL beschreibt.
 - `sections/admin/words/` — `WordView` (`/admin/woerter`): Freitext-Wort,
   „woraus es besteht", die Bahnen je Specimen über `WordSpineCard`. Die
-  Übersicht liegt in `words/WordOverview`, das die sechs URL-Achsen, den
-  Wortproben-Abruf, die Scores und den Bewertungslauf hält und darunter
-  entweder die **Arbeitsliste** (`words/WordList` über `words/wordRows.ts`)
-  oder die **Galerie** zeigt — beide aus DENSELBEN Zeilen, damit ein
-  Umschalten die eben bezahlten Scores nicht verwirft. Beide mounten
+  Übersicht liegt in `words/WordOverview`, das die sechs URL-Achsen und den
+  Wortproben-Abruf hält und darunter entweder die **Arbeitsliste**
+  (`words/WordList` über `words/wordRows.ts`) oder die **Galerie** zeigt —
+  beide aus DENSELBEN Zeilen, damit ein Umschalten die eben bezahlten Scores
+  nicht verwirft. Die Scores und der Bewertungslauf liegen eine Ebene höher,
+  in `WordView`: die Übersicht wird ausgehängt, sobald ein Wort geöffnet
+  wird, und eine Rangfolge, die 63 CPU-teure Abrufe gekostet hat, darf ein
+  Klick in ihre eigene Zeile nicht wegwerfen. Trägt keine Zeile mehr einen
+  Loss, verlässt `sort=schlechteste` die URL (Glossar „Arbeitsliste"). Beide mounten
   dieselbe `compare/WordCard`; in der Liste tut das nur eine aufgeklappte
   Zeile (`unmountOnExit`), eine geschlossene lädt nichts. Was von
   `compare/WordComparison` bleibt, ist der eine Aufrufer ohne Liste: die

@@ -87,10 +87,26 @@ it('keeps „kein Override" apart from „nicht gelesen"', () => {
   expect(container.textContent).not.toContain('Vorkommen');
 });
 
-it('names the combination in the cell that opens it', () => {
-  render([row('ab')]);
-  const button = container.querySelector('button');
-  expect(button?.getAttribute('aria-label')).toBe('Verbindung ab öffnen');
+it('names the combination AND its counters in the cell that opens it', () => {
+  // An `aria-label` REPLACES the content as the accessible name, so it has to
+  // carry the counters too — they are the whole point of „Zähler statt Farbe",
+  // and a label that said only „Verbindung ab öffnen" would hand a
+  // screen-reader user exactly the empty cell this change removed.
+  render([row('ab', { plate: 3, override: 'approved', korbOpen: 2 })]);
+  const label = container.querySelector('button')?.getAttribute('aria-label') ?? '';
+  expect(label).toContain('Verbindung ab öffnen');
+  expect(label).toContain('3 Vorkommen');
+  expect(label).toContain('Override');
+  expect(label).toContain('2 im Korb');
+  // Without the ⚑: the flag is a second VISUAL channel and reads as „schwarze
+  // Flagge" out loud.
+  expect(label).not.toContain('⚑');
+});
+
+it('leaves an unanswered read out of the accessible name too', () => {
+  render([row('ab', { plate: null, override: null, korbOpen: null })]);
+  const label = container.querySelector('button')?.getAttribute('aria-label') ?? '';
+  expect(label).toBe('Verbindung ab öffnen');
 });
 
 it('leaves a ligature cell closed and says why', () => {
