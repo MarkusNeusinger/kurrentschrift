@@ -77,7 +77,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Referenzwörter (Eigenhand) §5 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip §5 · Rollen-Spalte (geplant) §5 · Route G §4 · Rückgabe an Autor §5 · Rückhaltemenge §4
 - **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste (geplant) §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Slant-Spalte §4 · Slot §2 · Span-Herkunft (→ Buchstabengrenzen einer Bahn) §5 · Span-Zuordner (→ Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Sütterlin §1
 - **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue (geplant) §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) (geplant) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
-- **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unvollständige Wortprobe §5
+- **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unteransicht (Eigenhand) §5 · Unvollständige Wortprobe §5
 - **Ü** — Übergabekarte (geplant) §5 · Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
 - **V** — Variante §2 · Varianten-Band (geplant) §5 · Verbinder-Mitschnitt §4 · Vergleichsstreifen (geplant) §5 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschlag (Streifen-Befund) §5 · Vorschub-Kalibrierung §2 · Vorschrift §1
 - **W** — W1–W6 §5 · Wachstumsschleife (Eigenhand) (geplant) §5 · Wackler §4 · Warp §3 · Wellen-Basis §3 · Werkbank §5 · wordbench/glyphbench/pairlab/chainbench §4 · work_items §5 · Wort-Ausschnitt (Eigenhand) §5 · Wortkasten (Admin-Redesign, geplant) §5 · Wort-Editor §5 · Wortrunde (humanbench) §4 · Wort-Tintenlücke §2 · Wort-Trace §2 · Wortvorrat §5 · Wurzel-Digest (`root_digest`) §4
@@ -4352,7 +4352,13 @@ der Ersatz für die Kartenwände der Übersichten. Die **Nachfahr-Liste** ist
 eine davon, der **Arbeitsvorrat** die Seite, die alle Listen bündelt (nur
 Option C). Eine Arbeitsliste verlinkt nur und löst nie einen Statuswechsel
 aus. *Technisch:* nichts gebaut; vorgesehen
-`?ansicht=liste|galerie&filter=&sort=&seite=`.
+`?…=liste|galerie&filter=&sort=&seite=`. Der Parametername für Liste/Galerie
+ist **nicht** `ansicht`: den gibt seit dem Eigenhand-Split die →
+Unteransicht (Eigenhand) aus, und auf der Streifen-Fläche träfen beide
+Bedeutungen in einer URL aufeinander (die Galerie-Darstellung steht dort
+schon, heute an den Filter gekoppelt). Vorgesehen daher `?darstellung=`,
+Empfehlung des Plan-Aufrisses zu Q1 — eine Unteransicht ist ein anderer
+ORT, die Darstellung ein anderes Aussehen desselben Orts.
 → proposals/admin-redesign.md §5.0, §5.1 (Idee 4)
 
 **Auslieferungs-Zeiger (geplant)** — die Antwort auf „welcher →
@@ -4496,6 +4502,26 @@ Zustand da ist. Repo-Schritte (`pool pin`) sind keine Karte, sondern
 Korb-Notiz an die KI-Runde; am Rechner ist `tools.eigenhand.report
 --faellig` der Zwilling der Karten. → proposals/admin-redesign.md §5.1
 (Idee 11), §10.3
+
+**Unteransicht (Eigenhand)** — eine der vier Flächen, die sich die eine Route
+`/admin/eigenhand` teilen: *bestand* (wie weit ist die Hand gekommen),
+*streifen* (die geschriebenen Fassungen), *statistik* (was die Tinte sagt)
+und *drucken* (die nächsten Bögen). Der Name steht ausgeschrieben in der
+Query (`?ansicht=…`), nicht in einer Unterroute — die kommt erst, wenn die
+Nachfahr-Liste eine eigene Fläche wird (Phase 4) —, und ein unbekannter Wert
+landet auf *bestand*, nach derselben Regel, mit der `focus.ts` ein
+unbekanntes Subjekt auf die Übersicht schickt. Der Bestand wird EINMAL für
+alle vier gelesen; Hand und zuletzt gedruckte Bogen-Ids hält die Schale, der
+Streifen-Filter (`item`/`wort`) liegt in der URL, weil Erzeuger (Zeichen-Zelle
+auf *bestand*) und Verbraucher (*streifen*) sich seit der Teilung keine
+Komponente mehr teilen. Nicht zu verwechseln mit der Darstellungsart einer
+→ Arbeitsliste (Liste/Galerie): das ist ein Rendering derselben Fläche, die
+Unteransicht ein anderer Ort. *Technisch:* `EIGENHAND_ANSICHTEN`,
+`readEigenhandFocus`, `eigenhandUrl` in
+`app/src/sections/admin/shell/focus.ts`; Schale
+`sections/admin/eigenhand/EigenhandView.tsx`, Flächen `BestandView` ·
+`StripsPanel` · `StatistikView` · `DruckenView`. →
+proposals/admin-redesign.md §7.1–§7.2, V2
 
 **Varianten-Band (geplant)** — der Bereich von Template-Varianten, in dem
 die Laufform EINER Hand lebt. Heute gibt es nur die eine Laufform-Variante

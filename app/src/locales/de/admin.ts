@@ -995,6 +995,21 @@ export const admin = {
     title: 'Eigenhand',
     intro:
       'Die eigene Schreibprobe: welche Streifen bereits geschrieben und angenommen sind, welche Zeichen und Übergänge damit belegt sind — gemessen an dem, was der Streifenplan insgesamt hergibt. Die Scans selbst bleiben auf dem eigenen Rechner; hier stehen nur die Zahlen und der Druck.',
+    // Die vier Unteransichten hinter `?ansicht=` (shell/focus.ts). Der Name
+    // steht ausgeschrieben in der Adresszeile, also ist er hier auch der
+    // Knopf-Text — ein Umschalter, dessen Beschriftung nicht in der URL
+    // wiederzufinden ist, wäre die Hälfte der Verlinkbarkeit wieder weg.
+    ansichten: {
+      bestand: 'Bestand',
+      streifen: 'Streifen',
+      statistik: 'Statistik',
+      drucken: 'Drucken',
+    },
+    ansichtAria: 'Unteransicht der Eigenhand',
+    // Der Tab-Titel trägt drei Abschnitte: Hand-Bereich · Unteransicht ·
+    // Werkbank („Eigenhand · Streifen · Werkbank"). „Streifen" allein sagt in
+    // einem zweiten offenen Tab nicht, worüber es Streifen sind.
+    tabSubject: 'Eigenhand · {{ansicht}}',
     hand: 'Hand',
     handHelp: 'Neue Hand: <schreiber>-<stil>, z. B. mn-suetterlin',
     noHands: 'Noch keine Hand erfasst — unten einen Bogen drucken, damit legt sich die erste an.',
@@ -1035,6 +1050,31 @@ export const admin = {
     quotenNone:
       'Erstbeleg- und Ausbau-Quote brauchen die Übergangsraum-Gewichte; die liegen noch nicht in der Datenbank. Vom Rechner mit den Konsult-Korpora:',
     quotenNoneCommand: 'uv run python -m tools.eigenhand.universe --push',
+    // Die Statistik-Unteransicht. Heute trägt sie genau eine Zahl: die
+    // Feder-Halbbreite, die einzige der vier in §7.2 versprochenen Größen, die
+    // sich aus dem heutigen Bestand schon ableiten lässt. Die drei anderen
+    // stehen als beschriftete Leerfläche da — sagen, was hier landen wird, ist
+    // ehrlicher als eine Fläche, die aussieht, als sei nichts zu holen.
+    statistikIntro:
+      'Was die Tinte dieser Hand sagt — im Unterschied zum Bestand, der sagt, wie weit die Hand gekommen ist. Gemessen wird je Fassung beim Einlesen; hier steht die Zusammenfassung über alle.',
+    statistikNibTitle: 'Feder-Halbbreite',
+    statistikNibCaption:
+      'Median der halben Strichbreite auf der Mittellinie, in x-Höhen — über alle Fassungen dieser Hand, an denen eine Messung liegt. Je Fassung steht dieselbe Zahl am Befund.',
+    statistikNibValue: '{{value}} x-Höhen',
+    statistikNibFrom: 'Median aus {{count}} gemessenen Fassungen',
+    statistikNibNone: 'nicht gemessen',
+    statistikNibNoneHint:
+      'Keine gespeicherte Fassung dieser Hand trägt eine Federmessung — entweder ist noch kein Streifen hochgeschoben, oder die Fassungen stammen aus der Zeit vor dem Streifen-Befund. Eine fehlende Messung ist keine Null.',
+    statistikError: 'Die Streifenliste konnte nicht geladen werden.',
+    statistikSoonTitle: 'Kommt hierher',
+    statistikSoonCaption:
+      'Beschriftete Leerfläche: die drei übrigen Größen aus dem Plan brauchen Rechenschichten, die es noch nicht gibt. Sie stehen hier, damit die Fläche sagt, was sie einmal trägt.',
+    statistikSoonTintentreue:
+      'Tintentreue-Verteilung — wie viele Wortkästen der Hand die Bahn treffen, teils treffen, nicht treffen. Braucht die referenzfreie Ampel (Phase 2).',
+    statistikSoonBelege:
+      'Belegzahlen im Verlauf — wie die Abdeckung über die Sitzungen gewachsen ist. Braucht einen datierten Bestandsverlauf (Phase 3).',
+    statistikSoonStapel:
+      'Ausschnitt-Stapel — dieselbe Stelle aus allen Fassungen übereinander, als Bild. Braucht die Fassungs-Auswahl aus der Streifen-Ansicht (Phase 3).',
     queueTitle: 'Nächste Streifen',
     printTitle: 'Bogen drucken',
     printIntro:

@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  eigenhandUrl,
   joinsOfText,
   joinsUrl,
   keysOfText,
   lettersUrl,
   neighbourLetters,
   pairKeysOfText,
+  readEigenhandFocus,
   readJoinFocus,
   readLetterFocus,
   readWordFocus,
@@ -35,6 +37,34 @@ describe('focus parsing', () => {
   });
 });
 
+describe('eigenhand sub-view', () => {
+  it('sends an absent or unknown view to the Bestand', () => {
+    expect(readEigenhandFocus(params('')).ansicht).toBe('bestand');
+    expect(readEigenhandFocus(params('ansicht=streifen')).ansicht).toBe('streifen');
+    expect(readEigenhandFocus(params('ansicht=statistik')).ansicht).toBe('statistik');
+    expect(readEigenhandFocus(params('ansicht=drucken')).ansicht).toBe('drucken');
+    expect(readEigenhandFocus(params('ansicht=quatsch')).ansicht).toBe('bestand');
+  });
+
+  it('passes the strips filter through un-validated', () => {
+    // A coverage item is a join (`a>b`) or a positioned key (`a@medial`), and
+    // the search is free text — none of them is a glyph registry key, so the
+    // reader must not gate them the way it gates `g`/`l`/`r`.
+    expect(readEigenhandFocus(params('item=a%3Eb'))).toEqual({ ansicht: 'bestand', item: 'a>b', wort: null });
+    expect(readEigenhandFocus(params('ansicht=streifen&item=a@medial')).item).toBe('a@medial');
+    expect(readEigenhandFocus(params('wort=lesen')).wort).toBe('lesen');
+    expect(readEigenhandFocus(params('item=&wort='))).toEqual({ ansicht: 'bestand', item: null, wort: null });
+  });
+
+  it('keeps an unknown view out of the way of the rest', () => {
+    expect(readEigenhandFocus(params('ansicht=quatsch&item=a%3Eb'))).toEqual({
+      ansicht: 'bestand',
+      item: 'a>b',
+      wort: null,
+    });
+  });
+});
+
 describe('focus links', () => {
   it('omits absent parameters entirely', () => {
     expect(lettersUrl()).toBe('/admin/buchstaben');
@@ -43,6 +73,17 @@ describe('focus links', () => {
     expect(joinsUrl('a', 'b')).toBe('/admin/uebergaenge?l=a&r=b');
     expect(wordsUrl('lesen')).toBe('/admin/woerter?w=lesen');
     expect(wordsUrl('lesen', 'abb19-3')).toBe('/admin/woerter?w=lesen&s=abb19-3');
+  });
+
+  it('builds the Eigenhand sub-view link, clean when nothing is given', () => {
+    expect(eigenhandUrl()).toBe('/admin/eigenhand');
+    expect(eigenhandUrl('bestand')).toBe('/admin/eigenhand?ansicht=bestand');
+    expect(eigenhandUrl('streifen')).toBe('/admin/eigenhand?ansicht=streifen');
+    expect(eigenhandUrl('streifen', { item: 'a>b' })).toBe('/admin/eigenhand?ansicht=streifen&item=a%3Eb');
+    expect(eigenhandUrl('streifen', { wort: 'lesen' })).toBe('/admin/eigenhand?ansicht=streifen&wort=lesen');
+    // An options object with nothing in it adds nothing — the builder keeps
+    // its promise that an absent value never reaches the query string.
+    expect(eigenhandUrl(null, { item: undefined, wort: null })).toBe('/admin/eigenhand');
   });
 });
 

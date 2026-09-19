@@ -26,6 +26,11 @@ export const paths = {
   // (sections/admin/shell/focus.ts), so every link between them is a plain URL.
   // Eigenhand sits beside them rather than inside: it belongs to a HAND, not
   // to a Vorlage — the own-hand capture chain's Bestand and its Bogen printer.
+  // It is ONE route with four Unteransichten in the query,
+  // `?ansicht=bestand|streifen|statistik|drucken` (plus the strips filter
+  // `item`/`wort`), built by `eigenhandUrl` beside the other three builders;
+  // an unknown value lands on `bestand`. Sub-routes wait until the
+  // Nachfahr-Liste becomes a surface of its own (admin-redesign.md V2).
   admin: {
     root: '/admin',
     letters: '/admin/buchstaben',

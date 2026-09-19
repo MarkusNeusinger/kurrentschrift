@@ -17,7 +17,7 @@
 import { de, fmt } from '@/locales/admin';
 import { paths } from '@/routes/paths';
 
-import { readJoinFocus, readLetterFocus, readWordFocus, textForKey } from './focus';
+import { readEigenhandFocus, readJoinFocus, readLetterFocus, readWordFocus, textForKey } from './focus';
 
 // The area word every admin title ends in — the same one the view headers wear
 // as their eyebrow, so tab and page name the place identically.
@@ -47,7 +47,13 @@ function subjectOf(pathname: string, search: string): string | null {
     if (!text) return de.admin.words.overviewTitle;
     return fmt(de.admin.words.wordHeading, { text });
   }
-  if (path === paths.admin.eigenhand) return de.admin.eigenhand.title;
+  if (path === paths.admin.eigenhand) {
+    // Three segments rather than two: the Unteransicht alone („Streifen") is
+    // ambiguous across the admin, and the hand's own area word is what makes
+    // two open Eigenhand tabs tellable apart.
+    const { ansicht } = readEigenhandFocus(params);
+    return fmt(de.admin.eigenhand.tabSubject, { ansicht: de.admin.eigenhand.ansichten[ansicht] });
+  }
   return null;
 }
 
