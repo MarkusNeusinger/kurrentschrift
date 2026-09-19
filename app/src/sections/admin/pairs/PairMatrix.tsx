@@ -1,220 +1,308 @@
-// Pair matrix (redesign R1) — every two-letter combination of one chosen
-// letter, server-composed via /write/word (single glyphs + generated Übergang),
-// capitals only on the left. A read-only QA surface: an unnatural join shows up
-// here directly instead of hiding inside a longer word. Cells fetch lazily
-// (IntersectionObserver) through WrittenWord's shared render cache, so a full
-// row of ~60 combinations doesn't fire at once on mount.
+// The Übergänge overview — every two-letter combination of one chosen letter,
+// as an Arbeitsliste (V14). Since this PR the default cell is a COUNTER rather
+// than a mini render: how often the plates wrote the combination, what the
+// library stores for it, how many basket items point at it. `ansicht=galerie`
+// brings the composed cells back, and the join detail keeps them as its
+// collapsed cross-check.
 //
-// Since the admin redesign this is the OVERVIEW of the Übergänge view rather
-// than a page: a cell click focuses that join (where the editor, the measured
-// occurrences and the statistics live), instead of opening the editor straight
-// from the grid.
+// Two things moved in with the list. The anchor letter now lives in the URL
+// (`l=`) instead of in component state, which fixes „Alle Kombinationen
+// ansehen": that button navigated to `/admin/uebergaenge?l=a`, the half pair
+// was read as no focus at all, and the matrix opened on whatever letter came
+// first — the letter the reader had asked for was dropped between two lines of
+// code. And the override list may now say „I do not know": it used to answer a
+// failed admin read with an empty Map, which every cell then reported as
+// „generiert".
+//
+// A read-only QA surface throughout: a cell click focuses the join, where the
+// measurements, the statistics and — last — the pair editor live.
 
-import { Alert, Box, ButtonBase, Chip, Typography } from '@mui/material';
+import { Alert, Box, ButtonBase, Typography } from '@mui/material';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
-import { WrittenWord } from '@/components/WrittenWord';
 import { useAdmin } from '@/context/adminState';
 import { glyphKeyFor, LETTERS } from '@/domain/glyphs';
-import type { Letter } from '@/domain/glyphs';
-import { useInView } from '@/hooks/useInView';
 import { getPairs } from '@/lib/api';
 import type { GlyphPairOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
+import { PairCellGrid } from '@/sections/admin/pairs/PairCells';
+import { pairRowsByKeys } from '@/sections/admin/pairs/pairRow';
+import {
+  PAIR_LIST_SPEC,
+  authoredLetters,
+  buildPairRows,
+  matchesPairFilters,
+  pairFilterCounts,
+  pairsRankable,
+  sortPairRows,
+  type PairFilter,
+  type PairRow,
+  type PairSort,
+} from '@/sections/admin/pairs/pairRows';
+import { FilterChipRow, ListEmpty, ListSortSwitch, ListViewSwitch } from '@/sections/admin/shell/WorkList';
+import { FOCUS_PARAMS } from '@/sections/admin/shell/focus';
+import { useKorbItems } from '@/sections/admin/shell/korbState';
+import { korbCountsOf } from '@/sections/admin/shell/korbTargets';
+import { readListState, writeListState, type ListState } from '@/sections/admin/shell/listState';
+import { useWorkbench } from '@/sections/admin/shell/workbenchState';
+import { TOUCH_TARGET } from '@/styles/hitArea';
 import { garamond } from '@/styles/paper';
-import { pairKeysOf } from '@/sections/admin/pairs/pairKeys';
-import { pairCellKey, pairRowsByKeys } from '@/sections/admin/pairs/pairRow';
-
-const CELL_H = 88; // px — big enough to judge a join, small enough for a grid
-
-function PairCell({
-  text,
-  sourceId,
-  row,
-  onEdit,
-}: {
-  text: string;
-  sourceId: string;
-  row?: GlyphPairOut;
-  onEdit?: () => void;
-}) {
-  const [ref, inView] = useInView<HTMLDivElement>();
-  return (
-    <Box
-      ref={ref}
-      component={onEdit ? ButtonBase : Box}
-      onClick={onEdit}
-      sx={{
-        position: 'relative',
-        border: 1,
-        borderColor: row ? (row.approved ? 'success.main' : 'warning.main') : 'divider',
-        borderRadius: 1,
-        bgcolor: '#fff',
-        p: 0.5,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 0.25,
-        minWidth: 96,
-        cursor: onEdit ? 'pointer' : 'default',
-      }}
-    >
-      <Typography variant="caption" color="text.secondary" sx={{ fontFamily: garamond }}>
-        {text}
-      </Typography>
-      {row && (
-        <Chip
-          size="small"
-          color={row.approved ? 'success' : 'warning'}
-          label={row.approved ? de.admin.pairs.badgeApproved : de.admin.pairs.badgeDraft}
-          sx={{ position: 'absolute', top: 2, right: 2, height: 18, fontSize: 10 }}
-        />
-      )}
-      <Box sx={{ height: CELL_H, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        {inView && <WrittenWord text={text} sourceId={sourceId} height={CELL_H} animate={false} showLineature />}
-      </Box>
-    </Box>
-  );
-}
-
-function CellGrid({
-  pairs,
-  sourceId,
-  rowsByKeys,
-  onEdit,
-}: {
-  pairs: string[];
-  sourceId: string;
-  rowsByKeys: Map<string, GlyphPairOut>;
-  onEdit: (text: string, left: string, right: string) => void;
-}) {
-  return (
-    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-      {pairs.map((p) => {
-        const keys = pairKeysOf(p);
-        return (
-          <PairCell
-            key={p}
-            text={p}
-            sourceId={sourceId}
-            row={keys ? rowsByKeys.get(pairCellKey(keys[0], keys[1])) : undefined}
-            onEdit={keys ? () => onEdit(p, keys[0], keys[1]) : undefined}
-          />
-        );
-      })}
-    </Box>
-  );
-}
 
 export function PairMatrix({
-  // The letter the grid opens on — the Übergänge view passes whichever letter
-  // the admin came in with, so arriving from `a` shows a's combinations.
+  // The letter the grid opens on. In the overview this is the URL's `l=`, in
+  // the detail the focused join's left key.
   activeGlyphKey,
   onPickPair,
-  // Bumped by the caller after a save in the pair editor, so the badges
-  // (approved / draft) refresh without a reload.
+  // Bumped by the caller after a save in the pair editor, so the stored state
+  // per cell refreshes without a reload.
   refreshKey = 0,
+  // The collapsed copy under a focused join: its own anchor, the composed
+  // cells, no toolbar — and nothing of it in the URL, because it is a
+  // sub-block of another view's detail rather than an overview of its own.
+  embedded = false,
 }: {
   activeGlyphKey?: string | null;
   onPickPair: (leftKey: string, rightKey: string) => void;
   refreshKey?: number;
+  embedded?: boolean;
 }) {
+  const [params, setParams] = useSearchParams();
   const { source, sourceId, glyphsByKey } = useAdmin();
-  const authored = useMemo(() => {
-    const hasCanon = (letter: Letter) => glyphsByKey[glyphKeyFor(letter)]?.has_data === true;
-    return {
-      lower: LETTERS.filter((l) => l.group === 'lower' && hasCanon(l)),
-      upper: LETTERS.filter((l) => l.group === 'upper' && hasCanon(l)),
-    };
-  }, [glyphsByKey]);
-  const pickable = useMemo(() => [...authored.lower, ...authored.upper], [authored]);
-  const [picked, setPicked] = useState<string | null>(null);
-  // The caller's letter wins until the admin picks another one here.
-  const fromProp = activeGlyphKey ? pickable.find((l) => glyphKeyFor(l) === activeGlyphKey) : undefined;
-  const letter = pickable.find((l) => l.glyph === picked) ?? fromProp ?? pickable[0];
+  const workbench = useWorkbench();
+  const korbItems = useKorbItems();
+  const t = de.admin.pairs;
 
-  // Existing overrides (incl. unapproved drafts — the admin fetch carries the
-  // auth headers) for the badges + the editor's starting state.
-  const [rowsByKeys, setRowsByKeys] = useState<Map<string, GlyphPairOut>>(new Map());
-  const refreshPairs = useCallback(() => {
+  const authored = useMemo(
+    () => authoredLetters(LETTERS, (glyphKey) => glyphsByKey[glyphKey]?.has_data === true),
+    [glyphsByKey],
+  );
+  const pickable = useMemo(() => [...authored.lower, ...authored.upper], [authored]);
+
+  // The embedded copy keeps its own anchor; the overview's is the URL's.
+  const [picked, setPicked] = useState<string | null>(null);
+  const anchorKey = embedded ? (picked ?? activeGlyphKey ?? null) : (activeGlyphKey ?? null);
+  const anchor = pickable.find((letter) => glyphKeyFor(letter) === anchorKey) ?? pickable[0];
+
+  // Stored overrides incl. unapproved drafts (the admin fetch carries the auth
+  // header). `null` until the read answers — and after a failed one: „kein
+  // Override" is a claim about the library, and this read is admin-gated.
+  const [overrideRows, setOverrideRows] = useState<Map<string, GlyphPairOut> | null>(null);
+  // Retire the previous answer DURING RENDER rather than in the effect below —
+  // React's "adjusting state when a prop changes"
+  // (react-hooks/set-state-in-effect). The guard carries the effect's inputs,
+  // so no cell reports the pre-save state for one frame after an override was
+  // written, and none reports the previous source's at all.
+  const overrideKey = `${sourceId} ${refreshKey}`;
+  const [overridesFor, setOverridesFor] = useState(overrideKey);
+  if (overridesFor !== overrideKey) {
+    setOverridesFor(overrideKey);
+    setOverrideRows(null);
+  }
+  useEffect(() => {
+    let cancelled = false;
     getPairs(sourceId, { all: true }, { retries: 1 })
-      .then((rows) => setRowsByKeys(pairRowsByKeys(rows)))
-      .catch(() => setRowsByKeys(new Map()));
-  }, [sourceId]);
-  useEffect(refreshPairs, [refreshPairs, refreshKey]);
+      .then((rows) => {
+        if (!cancelled) setOverrideRows(pairRowsByKeys(rows));
+      })
+      .catch(() => {
+        if (!cancelled) setOverrideRows(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [sourceId, refreshKey]);
+
+  // Same quiet absence on the public layer: while the occurrence bundle is in
+  // flight or has failed, no cell claims „keine Vorkommen".
+  const occurrencesKnown = !workbench.loading && !workbench.error;
+  const korbByPair = useMemo(() => korbCountsOf(korbItems)?.byPair ?? null, [korbItems]);
+
+  const rows = useMemo(
+    () =>
+      anchor
+        ? buildPairRows({
+            anchor,
+            lower: authored.lower,
+            upper: authored.upper,
+            pairsByKey: occurrencesKnown ? workbench.pairsByKey : null,
+            overrideRows,
+            korbByPair,
+          })
+        : { asFirst: [], asSecond: [] },
+    [anchor, authored, occurrencesKnown, workbench.pairsByKey, overrideRows, korbByPair],
+  );
+
+  const urlState = useMemo(() => readListState<PairFilter, PairSort>(params, PAIR_LIST_SPEC), [params]);
+  // The collapsed copy reads none of it — it is not the surface the URL
+  // describes, and inheriting the overview's chips would silently hide cells
+  // from a cross-check the reader opened to see everything.
+  const state: ListState<PairFilter, PairSort> = embedded
+    ? { view: 'galerie', filters: [], text: '', sort: 'alphabet', status: null, tab: null, page: 1 }
+    : urlState;
+
+  // No pager here (decided in this PR): the anchor letter already cuts the
+  // matrix to ~60 cells, and a grid broken at 24 is harder to read, not
+  // easier. So every write pins page 1 rather than carrying a `seite=` that
+  // nothing on this surface can act on.
+  const update = (next: Partial<ListState<PairFilter, PairSort>>) =>
+    setParams(writeListState(params, { ...next, page: 1 }, PAIR_LIST_SPEC), { replace: true });
+
+  // The anchor REPLACES too. It selects which slice of the grid is on screen,
+  // which is list state in everything but its parameter name — pushing it
+  // would make the back button walk 30 letters instead of the inspection
+  // history `focus.ts` promises.
+  const pickAnchor = (glyphKey: string) => {
+    if (embedded) {
+      setPicked(glyphKey);
+      return;
+    }
+    const next = new URLSearchParams(params);
+    next.set(FOCUS_PARAMS.left, glyphKey);
+    // A new anchor is not a new join — the right half would otherwise pair the
+    // fresh letter with the previous one's partner.
+    next.delete(FOCUS_PARAMS.right);
+    setParams(next, { replace: true });
+  };
+
+  const counts = useMemo(() => pairFilterCounts([...rows.asFirst, ...rows.asSecond]), [rows]);
+  const pendingFilters = state.filters.some((token) => counts[token] === null);
+  const select = useCallback(
+    (list: PairRow[]) => sortPairRows(list.filter((row) => matchesPairFilters(row, state.filters)), state.sort),
+    [state.filters, state.sort],
+  );
+  const asFirst = useMemo(() => select(rows.asFirst), [select, rows.asFirst]);
+  const asSecond = useMemo(() => select(rows.asSecond), [select, rows.asSecond]);
+  const shown = asFirst.length + asSecond.length;
+  const total = rows.asFirst.length + rows.asSecond.length;
 
   if (!source) return null;
+  if (pickable.length === 0) return <Alert severity="info">{t.empty}</Alert>;
 
-  // Right side of a pair is always lowercase; the left side may also be a
-  // capital — so a lowercase letter gets both directions, a capital only the
-  // "as first letter" row.
-  const asFirst = letter ? authored.lower.map((r) => letter.glyph + r.glyph) : [];
-  const asSecond =
-    letter && letter.group === 'lower'
-      ? [...authored.lower, ...authored.upper].filter((l) => l.glyph !== letter.glyph).map((l) => l.glyph + letter.glyph)
-      : [];
+  const filterChips = PAIR_LIST_SPEC.filters.map((token) => ({
+    token,
+    label: t.filters[token],
+    count: counts[token],
+    active: state.filters.includes(token),
+  }));
+  const toggleFilter = (token: string) => {
+    const filter = token as PairFilter;
+    update({
+      filters: state.filters.includes(filter)
+        ? state.filters.filter((f) => f !== filter)
+        : [...state.filters, filter],
+    });
+  };
 
   return (
     // A block inside the Übergänge view: that view owns padding and scrolling.
     <Box>
-      {pickable.length === 0 ? (
-        <Alert severity="info">{de.admin.pairs.empty}</Alert>
-      ) : (
-        <>
-          <Box sx={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-            <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
-              {de.admin.pairs.pickLetter}
-            </Typography>
-            {pickable.map((l) => (
-              <ButtonBase
-                key={l.glyph}
-                onClick={() => setPicked(l.glyph)}
-                sx={{
-                  fontFamily: garamond,
-                  fontSize: 20,
-                  lineHeight: 1,
-                  px: 1,
-                  py: 0.5,
-                  borderRadius: 1,
-                  border: 1,
-                  borderColor: letter?.glyph === l.glyph ? 'primary.main' : 'divider',
-                  bgcolor: letter?.glyph === l.glyph ? 'action.selected' : 'transparent',
-                }}
-              >
-                {l.glyph}
-              </ButtonBase>
-            ))}
-          </Box>
+      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+        <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
+          {t.pickLetter}
+        </Typography>
+        {pickable.map((letter) => {
+          const key = glyphKeyFor(letter);
+          const active = anchor ? glyphKeyFor(anchor) === key : false;
+          return (
+            <ButtonBase
+              key={key}
+              onClick={() => pickAnchor(key)}
+              aria-pressed={active}
+              aria-label={fmt(t.pickLetterFor, { key })}
+              sx={{
+                fontFamily: garamond,
+                fontSize: 20,
+                lineHeight: 1,
+                // §9.3: the letter bar is the densest control row of the admin,
+                // and a neighbour would win an invisible hit area's pixels.
+                minWidth: TOUCH_TARGET,
+                minHeight: TOUCH_TARGET,
+                px: 1,
+                borderRadius: 1,
+                border: 1,
+                borderColor: active ? 'primary.main' : 'divider',
+                bgcolor: active ? 'action.selected' : 'transparent',
+              }}
+            >
+              {letter.glyph}
+            </ButtonBase>
+          );
+        })}
+      </Box>
 
-          {letter && (
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <Box>
-                <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                  {fmt(de.admin.pairs.asFirst, { glyph: letter.glyph })}
-                </Typography>
-                <CellGrid
-                  pairs={asFirst}
-                  sourceId={sourceId}
-                  rowsByKeys={rowsByKeys}
-                  onEdit={(_text, left, right) => onPickPair(left, right)}
-                />
-              </Box>
+      {!embedded && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 2 }}>
+          <FilterChipRow chips={filterChips} onToggle={toggleFilter} label={de.admin.liste.filterLabel} />
+          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+            <ListSortSwitch
+              sort={state.sort}
+              label={de.admin.compare.sortLabel}
+              options={[
+                { token: 'alphabet', label: de.admin.compare.sortAlpha },
+                {
+                  token: 'vorkommen',
+                  label: t.sortOccurrences,
+                  disabled: !pairsRankable([...rows.asFirst, ...rows.asSecond]),
+                  disabledHint: t.sortOccurrencesUnavailable,
+                },
+              ]}
+              onChange={(token) => update({ sort: token as PairSort })}
+            />
+            <ListViewSwitch view={state.view} onChange={(view) => update({ view })} />
+            <Typography variant="caption" color="text.secondary">
+              {pendingFilters
+                ? null
+                : state.filters.length > 0
+                  ? fmt(de.admin.liste.counterFiltered, { shown, selected: shown, total })
+                  : fmt(de.admin.liste.counter, { shown, total })}
+            </Typography>
+          </Box>
+          {/* Said ONCE for the whole grid rather than in every cell: which
+              counter is missing is the same answer 60 times over. */}
+          {!occurrencesKnown && (
+            <Typography variant="caption" color="text.disabled">
+              {de.admin.compare.occurrencesUnknown}
+            </Typography>
+          )}
+          {overrideRows === null && (
+            <Typography variant="caption" color="text.disabled">
+              {t.overridesUnknown}
+            </Typography>
+          )}
+        </Box>
+      )}
+
+      {anchor && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {pendingFilters || shown === 0 ? (
+            <ListEmpty
+              filtered={total > 0}
+              pending={pendingFilters}
+              emptyText={t.empty}
+              onReset={() => update({ filters: [] })}
+            />
+          ) : (
+            <>
+              {asFirst.length > 0 && (
+                <Box>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    {fmt(t.asFirst, { glyph: anchor.glyph })}
+                  </Typography>
+                  <PairCellGrid rows={asFirst} sourceId={sourceId} view={state.view} onPick={onPickPair} />
+                </Box>
+              )}
               {asSecond.length > 0 && (
                 <Box>
                   <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                    {fmt(de.admin.pairs.asSecond, { glyph: letter.glyph })}
+                    {fmt(t.asSecond, { glyph: anchor.glyph })}
                   </Typography>
-                  <CellGrid
-                    pairs={asSecond}
-                    sourceId={sourceId}
-                    rowsByKeys={rowsByKeys}
-                    onEdit={(_text, left, right) => onPickPair(left, right)}
-                  />
+                  <PairCellGrid rows={asSecond} sourceId={sourceId} view={state.view} onPick={onPickPair} />
                 </Box>
               )}
-            </Box>
+            </>
           )}
-        </>
+        </Box>
       )}
     </Box>
   );

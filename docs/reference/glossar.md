@@ -4392,12 +4392,20 @@ Streifen-Fläche stehen beide deshalb nebeneinander, ohne sich zu treffen.
 *Technisch:* `app/src/sections/admin/shell/listState.ts` liest und schreibt
 `?ansicht=liste|galerie&filter=&sort=&seite=` (V14 wie geschrieben:
 unbekannte Werte fallen auf die Vorgabe, Vorgabewerte stehen nicht in der
-URL, fremde Parameter wie `g`/`h`/`reiter` überleben unberührt),
+URL, fremde Parameter wie `g`/`h` überleben unberührt),
 `shell/WorkList.tsx` sind die Bauteile (Chip-Reihe, Umschalter, Seitenwahl,
-aufklappbare Zeile, die zwei Leerzustände), und je Fläche sagt ein eigenes
-Zeilenmodell, was die Zeile weiß — für die Buchstaben
-`letters/letterRows.ts` + `letters/LetterList.tsx`. Die Übergänge und die
-Wörter folgen. → proposals/admin-redesign.md §5.0, §5.1 (Idee 4),
+aufklappbare Zeile, die drei Leerzustände), und je Fläche sagt ein eigenes
+Zeilenmodell, was die Zeile weiß: `letters/letterRows.ts` +
+`letters/LetterList.tsx` für die Buchstaben, `pairs/pairRows.ts` +
+`pairs/PairCells.tsx` für die Übergänge (dort ist die Zeile eine ZELLE der
+Matrix und trägt ihre Zähler in Worten statt in einer Randfarbe),
+`words/wordRows.ts` + `words/WordList.tsx` für die Wörter. Eine Fläche darf
+mehr als die vier Achsen haben: die `ListSpec` erklärt zusätzlich `freeText`
+(`filter=` trägt dann einen Suchtext statt Chip-Marken), `statuses`
+(`status=`) und `tabs` (`reiter=`) — die Wörter-Übersicht nutzt alle drei
+(Autor-Entscheid Q5 a vom 2026-09-19). Was eine Fläche NICHT erklärt,
+gehört ihr auch nicht: ein `reiter=` überlebt unberührt in einer Übersicht
+ohne Reiter. → proposals/admin-redesign.md §5.0, §5.1 (Idee 4),
 Vorgabe V14
 
 **Auslieferungs-Zeiger (geplant)** — die Antwort auf „welcher →

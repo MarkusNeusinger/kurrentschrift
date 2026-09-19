@@ -16,9 +16,6 @@ import {
   Button,
   Chip,
   CircularProgress,
-  FormControlLabel,
-  MenuItem,
-  Switch,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
@@ -33,23 +30,24 @@ import { useAdmin } from '@/context/adminState';
 import { fetchRenderWord, getWordSampleScore } from '@/lib/api';
 import type { ComposedWordOut, WordSampleScoreOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
-import { WordComparison, type WordCompareMode } from '@/sections/admin/compare/WordComparison';
 import { WordTraceEditorDialog } from '@/sections/admin/belege/WordTraceEditorDialog';
 import { useFileMark } from '@/sections/admin/shell/korbState';
 import { LayerDot } from '@/sections/admin/shell/LayerDot';
 import { Panel, ViewHeader } from '@/sections/admin/shell/Panel';
 import { useWorkbench } from '@/sections/admin/shell/workbenchState';
-import { joinsOfText, joinsUrl, keysOfText, lettersUrl, readWordFocus, wordsUrl } from '@/sections/admin/shell/focus';
 import {
-  canTraceByHand,
-  ownHandEvidence,
-  seedWordInstance,
-  wordEvidenceOf,
-  type TraceFilter,
-} from '@/sections/admin/shell/model';
+  FOCUS_PARAMS,
+  joinsOfText,
+  joinsUrl,
+  keysOfText,
+  lettersUrl,
+  readWordFocus,
+  wordsUrl,
+} from '@/sections/admin/shell/focus';
+import { canTraceByHand, ownHandEvidence, seedWordInstance, wordEvidenceOf } from '@/sections/admin/shell/model';
 import { garamond, layer, layerDash } from '@/styles/paper';
 
-import { AuthoredTraceReview } from './AuthoredTraceReview';
+import { WordOverview } from './WordOverview';
 import { WordSpineCard } from './WordSpineCard';
 
 const WORD_H = 130; // px — the composed word, large enough to judge the rhythm
@@ -66,17 +64,6 @@ export function WordView() {
   // The input is free until submitted — typing must not re-compose on every
   // keystroke (each distinct text is a server composition).
   const [draft, setDraft] = useState(text ?? '');
-  // The overview's third tab is not a compare mode: it stacks the hand-authored
-  // traces alone, as a quality pass over one's own pen work.
-  const [mode, setMode] = useState<WordCompareMode | 'authored'>('words');
-  const [filter, setFilter] = useState('');
-  // Which specimens of the tab to list, by their standing in the manual
-  // tracing pass. „Offen" is the whole point: without it the still-to-trace
-  // rows are only findable by scrolling the full list looking for a missing
-  // chip — and the ones that can NEVER be traced (clipped ink) sit in there
-  // indistinguishably. Default stays „Alle": the overview is first of all an
-  // overview.
-  const [traceFilter, setTraceFilter] = useState<TraceFilter>('all');
   // What is drawn OVER the specimen crop. The overview defaults to the plain
   // side-by-side (crop | wie geschrieben) — the same first look the letters
   // grid gives — and the overlay is one switch away for when the exact
@@ -137,8 +124,24 @@ export function WordView() {
     };
   }, [sourceId, text]);
 
-  const focus = (next: string | null, sample?: string | null) =>
-    setParams(next ? { w: next, ...(sample ? { s: sample } : {}) } : {}, { replace: false });
+  // A focus change MERGES instead of rewriting the query: the overview's list
+  // state (Ansicht · Filter · Sortierung · Status · Reiter · Seite) and
+  // anything else the URL carries — the scope's `h=` among them — has to
+  // survive the hop into a word and back, or „Alle Wortproben" would drop the
+  // reader onto page 1 of an unfiltered list in the first tab. Still a PUSH:
+  // the subject is what the back button walks.
+  const focus = (next: string | null, sample?: string | null) => {
+    const out = new URLSearchParams(params);
+    if (next) {
+      out.set(FOCUS_PARAMS.word, next);
+      if (sample) out.set(FOCUS_PARAMS.specimen, sample);
+      else out.delete(FOCUS_PARAMS.specimen);
+    } else {
+      out.delete(FOCUS_PARAMS.word);
+      out.delete(FOCUS_PARAMS.specimen);
+    }
+    setParams(out, { replace: false });
+  };
 
   // Every WORTPROBE of this word — usually one, but a word can appear on
   // several plates, and each occurrence is its own piece of evidence. Each
@@ -213,66 +216,11 @@ export function WordView() {
     return (
       <Box sx={{ p: { xs: 2, md: 3 }, overflowY: 'auto' }}>
         <ViewHeader eyebrow={de.admin.shell.startEyebrow} title={t.overviewTitle} intro={t.overviewIntro} />
-        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-start', mb: 2 }}>
-          {input}
-          <TextField
-            size="small"
-            label={t.filterLabel}
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            sx={{ width: 200 }}
-          />
-          {/* The Nachfahr-Übersicht is the authored rows BY DEFINITION — a
-              status filter over it would only ever have one non-empty entry. */}
-          {mode !== 'authored' && (
-            <TextField
-              select
-              size="small"
-              label={de.admin.compare.statusLabel}
-              value={traceFilter}
-              onChange={(e) => setTraceFilter(e.target.value as TraceFilter)}
-              sx={{ width: 190 }}
-            >
-              <MenuItem value="all">{de.admin.compare.statusAll}</MenuItem>
-              <MenuItem value="open">{de.admin.compare.statusOpen}</MenuItem>
-              <MenuItem value="authored">{de.admin.compare.statusAuthored}</MenuItem>
-              <MenuItem value="incomplete">{de.admin.compare.statusIncomplete}</MenuItem>
-            </TextField>
-          )}
-          <ToggleButtonGroup
-            size="small"
-            exclusive
-            value={mode}
-            onChange={(_e, next: WordCompareMode | 'authored' | null) => next && setMode(next)}
-            sx={{ mt: 0.25 }}
-          >
-            <ToggleButton value="words">{de.admin.compare.tabWords}</ToggleButton>
-            <ToggleButton value="other">{de.admin.compare.tabOther}</ToggleButton>
-            <ToggleButton value="authored">{t.tabAuthored}</ToggleButton>
-          </ToggleButtonGroup>
-          {/* The registered overlay is the sharpest error-finding view the
-              project has — engine ink projected onto the specimen pixels — so
-              it stays one switch away and ON by default, as it was before.
-              The authored review has no engine layer, so the switch hides. */}
-          {mode !== 'authored' && (
-            <FormControlLabel
-              sx={{ mt: 0.25 }}
-              control={<Switch size="small" checked={overlay} onChange={(e) => setOverlay(e.target.checked)} />}
-              label={<Typography variant="caption">{de.admin.compare.overlayToggle}</Typography>}
-            />
-          )}
-        </Box>
-        {mode === 'authored' ? (
-          <AuthoredTraceReview filterText={filter} onPickWord={(word, sampleId) => focus(word, sampleId)} />
-        ) : (
-          <WordComparison
-            mode={mode}
-            overlay={overlay}
-            filterText={filter}
-            traceFilter={traceFilter}
-            onPick={(sample) => focus(sample.word, sample.id)}
-          />
-        )}
+        {/* The field that WRITES a text stays the first thing on the page and
+            stays out of the list state: it names a subject (`w=`), not a
+            selection over the Wortproben. */}
+        <Box sx={{ mb: 2 }}>{input}</Box>
+        <WordOverview onPick={focus} />
       </Box>
     );
   }
