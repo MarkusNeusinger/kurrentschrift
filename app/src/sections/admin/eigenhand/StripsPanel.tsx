@@ -68,7 +68,7 @@ import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { de, fmt } from '@/locales/admin';
 import { VORSCHLAG_COLOR, byBefund } from '@/sections/admin/eigenhand/befundOrder';
 import { FleckenEditor, MIN_ERASE_ZOOM } from '@/sections/admin/eigenhand/FleckenEditor';
-import { pfadHerkunft, verfahrenLabel } from '@/sections/admin/eigenhand/pfadHerkunft';
+import { herkunftChipLabel, pfadHerkunft } from '@/sections/admin/eigenhand/pfadHerkunft';
 import { pfadRohzahlen } from '@/sections/admin/eigenhand/pfadRohzahlen';
 import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
@@ -298,6 +298,7 @@ function PfadCaption({ pfade, flecken }: { pfade: EigenhandPfad[]; flecken: Eige
   // carries the per-word detail in its tooltip, instead of letting the first
   // entry speak for the others (Copilot review, PR #598).
   const herkunft = pfadHerkunft(pfade, t.pfadNoDate, VERFAHREN_LABELS);
+  const chipLabel = herkunftChipLabel(herkunft, VERFAHREN_LABELS);
   const stale = pfade.some((p) => typeof p.flecken_n === 'number' && flecken != null && p.flecken_n !== flecken.length);
   const pedigree = (
     <Typography variant="caption" sx={{ color: paper.inkSoft }}>
@@ -318,12 +319,11 @@ function PfadCaption({ pfade, flecken }: { pfade: EigenhandPfad[]; flecken: Eige
       {/* The Herkunfts-Chip, beside the other markers of this row rather than
           inside the caption (author decision 2026-09-18, Q8 b). It carries NO
           status colour: „von Hand" names an origin, never a verdict — an
-          authored Bahn is simply not measured yet (§6.3). A mixed Fassung gets
-          no chip at all, because no single Verfahren is true of it; its
-          per-word origins stay in the caption's tooltip. */}
-      {!herkunft.gemischt && herkunft.verfahren !== null && (
-        <Chip size="small" variant="outlined" label={verfahrenLabel(herkunft.verfahren, VERFAHREN_LABELS)} />
-      )}
+          authored Bahn is simply not measured yet (§6.3). It disappears only
+          where the VERFAHREN disagree; a Fassung followed on two days keeps
+          its one honest origin, and the differing days are the caption's
+          business (`herkunftChipLabel`). */}
+      {chipLabel !== null && <Chip size="small" variant="outlined" label={chipLabel} />}
       <Tooltip title={t.pfadSeedHint}>
         <Chip size="small" variant="outlined" label={t.pfadSeed} />
       </Tooltip>

@@ -1,14 +1,22 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-19): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **98
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **99
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
-> Themenblock des vollen Glossars. Nachzieh-Anlass: ein Begriff wandert
+> Themenblock des vollen Glossars.
+> **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
 > hierher, sobald er die Zwei-von-drei-Schwelle unten erreicht und in
-> keine der drei Ausschluss-Klassen fällt — und wieder heraus, sobald er
-> unter die Schwelle fällt. Das volle Glossar bleibt die
-> Nachschlage-Instanz und behält seinen alphabetischen Schnellindex; hier
-> steht **nichts**, was dort nicht ausführlicher stünde.
+> keine der drei Ausschluss-Klassen fällt, und wieder heraus, sobald er
+> unter die Schwelle fällt; eine PR, die einen Begriff in Code oder
+> Agenten-Datei bringt, nimmt ihn im selben Zug mit auf.
+> **Was offen ist:** Die Zählung aus Schritt 1 stammt aus EINEM Lauf über
+> die damals letzten 40 gemergten PRs und wird nicht laufend wiederholt —
+> der Bestand wächst seither je PR, die Liste ist also aktuell, ihre
+> Rangfolge nicht.
+> **Wo das Detail steht:** Nachschlage-Instanz bleibt
+> [`glossar.md`](glossar.md) samt alphabetischem Schnellindex; hier steht
+> **nichts**, was dort nicht ausführlicher stünde. Wie die Auswahl
+> entstand, sagen die beiden Schritte unter dieser Zeile.
 
 **Warum es diese Datei gibt.** `glossar.md` trägt über 300 Einträge und
 kostet rund 56 000 Token — mehr als die Hälfte der Pflichtlektüre. Wer

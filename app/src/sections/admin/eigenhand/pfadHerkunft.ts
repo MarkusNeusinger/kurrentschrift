@@ -84,3 +84,17 @@ export function pfadHerkunft(
     ),
   };
 }
+
+/**
+ * The Herkunfts-Chip's label, or `null` when there is no ONE origin to name.
+ *
+ * Read off `verfahren` alone, never off `gemischt`: a Fassung counts as mixed
+ * as soon as the DAYS differ, and a word followed again on another day says
+ * nothing about HOW any of them were followed. Gating the chip on `gemischt`
+ * therefore hid an accurate „automatisch (Tintenpfad)" after every partial
+ * re-follow (Copilot review, PR #621). The differing days stay visible — they
+ * are the caption's business, and its tooltip carries the per-word list.
+ */
+export function herkunftChipLabel(herkunft: PfadHerkunft, labels: VerfahrenLabels): string | null {
+  return herkunft.verfahren === null ? null : verfahrenLabel(herkunft.verfahren, labels);
+}

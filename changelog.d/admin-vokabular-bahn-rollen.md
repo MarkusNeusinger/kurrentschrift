@@ -10,14 +10,17 @@
   „Bahn" + „Bewegung", which is what its hint has said all along. The locale
   KEYS, the module names and the `belege/` directory keep pointing at the data
   field `eigenhand_strips.pfade`, whose glossary name „Streifen-Pfad" stays a
-  field name and never a UI word — a new vitest over the five namespaces keeps
-  the split from rotting back, with terminal commands and the follower's own
-  name „Tintenpfad" exempt.
+  field name and never a UI word — a new vitest over the six namespaces that
+  talk about a drawn line (`werkbank`, `words`, `belege`, `joins`, `eigenhand`,
+  `compare`) keeps the split from rotting back, with terminal commands and the
+  follower's own name „Tintenpfad" exempt.
 - **Where a line came from, as a chip that says it plainly.** A strip's path
   row carries its own `verfahren`, so the origin leaves the caption and stands
   beside the „Saat"-Chip as one of its own, reading „automatisch (Tintenpfad)"
-  or „von Hand" instead of the raw column value — a Fassung stitched from
-  several runs gets no chip at all, because no single Verfahren is true of it.
+  or „von Hand" instead of the raw column value — only where the Verfahren
+  themselves disagree does the chip stay away, because then no single one is
+  true of the Fassung; a word followed again on another day changes the
+  caption, never the origin.
   A Verfahren the UI does not know is handed back unchanged rather than
   relabelled, because the column is free text and a silent swap would turn a
   foreign follower into a Tintenpfad. A plate line says only „automatisch":

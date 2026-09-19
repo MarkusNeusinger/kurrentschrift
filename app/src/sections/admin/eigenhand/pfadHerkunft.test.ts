@@ -10,7 +10,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { EigenhandPfad } from '@/lib/api';
-import { pfadHerkunft, verfahrenLabel } from './pfadHerkunft';
+import { herkunftChipLabel, pfadHerkunft, verfahrenLabel } from './pfadHerkunft';
 
 // Stand-ins for the two locale strings, so a wording change never turns this
 // suite red and the assertions stay about the MAPPING.
@@ -93,6 +93,39 @@ describe('pfadHerkunft', () => {
       sameWording,
     );
     expect(herkunft).toMatchObject({ verfahren: null, gemischt: true });
+  });
+});
+
+describe('herkunftChipLabel', () => {
+  it('keeps naming the one Verfahren when only the days differ', () => {
+    // The Copilot finding of PR #621: a word followed again on another day
+    // makes the Fassung mixed, but says nothing about HOW any of them were
+    // followed — so the chip must not vanish with the date.
+    const herkunft = pfadHerkunft(
+      [pfad('lesen', 'tintenpfad', '2026-09-11'), pfad('das', 'tintenpfad', '2026-09-13')],
+      'ohne Datum',
+      LABELS,
+    );
+    expect(herkunft.gemischt).toBe(true);
+    expect(herkunftChipLabel(herkunft, LABELS)).toBe('automatisch (Tintenpfad)');
+  });
+
+  it('names nothing when the Verfahren themselves differ', () => {
+    const herkunft = pfadHerkunft(
+      [pfad('lesen', 'tintenpfad', '2026-09-12'), pfad('das', 'authored', '2026-09-12')],
+      'ohne Datum',
+      LABELS,
+    );
+    expect(herkunftChipLabel(herkunft, LABELS)).toBeNull();
+  });
+
+  it('names nothing for a Fassung without a single stored path', () => {
+    expect(herkunftChipLabel(pfadHerkunft([], 'ohne Datum', LABELS), LABELS)).toBeNull();
+  });
+
+  it('hands an unknown Verfahren to the chip raw', () => {
+    const herkunft = pfadHerkunft([pfad('lesen', 'lotse-2027', '2026-09-12')], 'ohne Datum', LABELS);
+    expect(herkunftChipLabel(herkunft, LABELS)).toBe('lotse-2027');
   });
 });
 

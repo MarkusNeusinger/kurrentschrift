@@ -1244,7 +1244,15 @@ Wire-Typen handsynchron zu `api/schemas.py`) · `domain/glyphs.ts`
   Hand) und `StripsPanel` (die geschriebenen Streifen): dessen Bilder werden
   aus demselben Grund als Blob geholt und zusätzlich erst auf Klick, weil
   ein Streifen ~350 KB wiegt und zum reservierten Datensatz gehört; die
-  Object-URLs werden von Hand wieder freigegeben.
+  Object-URLs werden von Hand wieder freigegeben. Die Herkunft einer Bahn
+  steht dort als eigener Chip und darf den Folger NENNEN — „automatisch
+  (Tintenpfad)" oder „von Hand" —, weil die Streifenzeile ihr `verfahren`
+  selbst führt; die Platte bekommt in `werkbank.provenanceTraced` nur
+  „automatisch", weil `word_instances` keinen Folger notiert. Beschriftet
+  wird die Herkunft von der puren `eigenhand/pfadHerkunft.ts`
+  (`verfahrenLabel` zeigt ein unbekanntes `verfahren` roh,
+  `herkunftChipLabel` schweigt nur, wenn die VERFAHREN einer Fassung
+  auseinandergehen — verschiedene Tage sind Sache der Bildunterschrift).
 - `sections/admin/chart/`, `setup-wizard/`, `diagnostics/`, `compare/`,
   `pairs/`, `belege/`, `quality/` bleiben die WERKZEUGE, die diese drei
   Ansichten einsetzen (Chart-Editor, Wizard, Diagnose, Vergleichsraster,

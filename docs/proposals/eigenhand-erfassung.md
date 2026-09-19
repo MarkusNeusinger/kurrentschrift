@@ -1267,9 +1267,18 @@ beiden Fällen von `PathOverlay`: Farbverlauf in Schreibreihenfolge (erster
 Zug grün, letzter blau), gefüllter Punkt am Ansatz, Pfeilspitze an jedem
 Zugende, **gestrichelte Verbinder für die Absetzer** — das ist das Stück,
 das eine einfarbige Linie vollständig verbirgt, weil ein Absetzer dort
-aussieht wie eine Ecke. Dazu Herkunft und Datum als Bildunterschrift; bei
+aussieht wie eine Ecke. Dazu Datum und Wortzahl als Bildunterschrift; bei
 den Wörtern liefert die `updated_at` der Zeile das Datum, das bisher gar
-nicht auf der Leitung lag. Seit Phase 0 des Admin-Redesigns steht in der
+nicht auf der Leitung lag. Die HERKUNFT steht daneben als eigener Chip,
+und nur auf dem Streifen darf sie den Folger nennen — „automatisch
+(Tintenpfad)" oder „von Hand" —, weil die Pfadzeile ihr `verfahren` selbst
+führt; auf der Platte bleibt es bei „automatisch", denn `word_instances`
+notiert keinen Folger, und vor A45 geerntete Zeilen können von der Kette
+stammen. Ein unbekanntes `verfahren` wird roh gezeigt statt umbenannt, und
+der Chip entfällt allein dann, wenn die VERFAHREN einer Fassung
+auseinandergehen: verschiedene Tage machen die Fassung gemischt, sagen
+aber nichts darüber, WIE gefolgt wurde, und stehen darum in der
+Bildunterschrift. Seit Phase 0 des Admin-Redesigns steht in der
 Eigenhand-Ansicht unter der Bildunterschrift je Kasten der
 **Rohzahlen-Chip** — Tinte ohne Bahn, Absetzer, Sprünge, Haken aus
 `meta.tintenpfad`, farblos und mit dem Etikett „Zahl, kein Urteil", eine
