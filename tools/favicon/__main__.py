@@ -18,7 +18,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-from tools.favicon import PUBLIC_DIR, build_svg, fit, glyph_svg_url, ico_bytes, outline_subpaths, touch_icon
+from tools.favicon import PUBLIC_DIR, build_svg, fit, glyph_svg_url, ico_bytes, outline_strokes, touch_icon
 
 
 def fetch_glyph_svg(url: str, timeout: int = 60) -> str:
@@ -47,7 +47,7 @@ def main(argv: list[str] | None = None) -> int:
         origin = glyph_svg_url(args.api) if args.api else glyph_svg_url()
         raw = fetch_glyph_svg(origin)
 
-    fitted = fit(outline_subpaths(raw))
+    fitted = fit(outline_strokes(raw))
 
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "favicon.svg").write_text(build_svg(fitted), encoding="utf-8")

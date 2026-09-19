@@ -65,6 +65,7 @@ TOUCH_SIZE = 180
 SUPERSAMPLE = 8
 
 Point = tuple[float, float]
+Stroke = list[list[Point]]  # the closed subpaths of ONE source <path>, even-odd among themselves
 
 _INK_GROUP = re.compile(r'<g class="ink">(.*?)</g>', re.S)
 _PATH = re.compile(r"<path\b[^>]*>")
@@ -78,8 +79,12 @@ def glyph_svg_url(api: str = PUBLIC_API, source_id: str = PUBLIC_SOURCE_ID, glyp
     return f"{api.rstrip('/')}/sources/{source_id}/write/glyphs/{quote(glyph_key)}.svg"
 
 
-def outline_subpaths(glyph_svg: str) -> list[list[Point]]:
-    """The filled outline of a `/write/glyphs/{key}.svg` response as closed polygons.
+def outline_strokes(glyph_svg: str) -> list[Stroke]:
+    """The filled outline of a `/write/glyphs/{key}.svg` response, one entry per pen stroke.
+
+    The renderer emits one even-odd `<path>` per stroke (`api/glyph_svg.py`), and
+    the grouping is kept: even-odd holds only WITHIN a stroke, so where two
+    separately lifted strokes overlap the ink is ink, not a hole.
 
     Only the polygon form is accepted: a curve command or a stroked centreline
     would need a real SVG rasteriser, and silently flattening one would ship an
@@ -88,7 +93,7 @@ def outline_subpaths(glyph_svg: str) -> list[list[Point]]:
     ink = _INK_GROUP.search(glyph_svg)
     if ink is None:
         raise ValueError('no <g class="ink"> in the glyph SVG')
-    subpaths: list[list[Point]] = []
+    strokes: list[Stroke] = []
     for tag in _PATH.findall(ink.group(1)):
         if 'fill="none"' in tag:
             raise ValueError("the glyph SVG carries a stroked path; only filled outlines are supported")
@@ -97,55 +102,67 @@ def outline_subpaths(glyph_svg: str) -> list[list[Point]]:
             continue
         if unsupported := set(re.findall(r"[A-Za-z]", d.group(1))) - set("MLZ"):
             raise ValueError(f"unsupported path commands {sorted(unsupported)}; expected M/L/Z polygons")
-        for body in _SUBPATH.findall(d.group(1)):
-            points = [(float(x), float(y)) for x, y in _PAIR.findall(body)]
-            if len(points) >= 3:
-                subpaths.append(points)
-    if not subpaths:
+        subpaths = [
+            points
+            for body in _SUBPATH.findall(d.group(1))
+            if len(points := [(float(x), float(y)) for x, y in _PAIR.findall(body)]) >= 3
+        ]
+        if subpaths:
+            strokes.append(subpaths)
+    if not strokes:
         raise ValueError("the glyph SVG has no filled outline")
-    return subpaths
+    return strokes
 
 
-def fit(subpaths: list[list[Point]], box: tuple[float, float, float, float] = GLYPH_BOX) -> list[list[Point]]:
-    """Scale the outline uniformly into `box` and centre it there."""
-    xs = [x for sub in subpaths for x, _ in sub]
-    ys = [y for sub in subpaths for _, y in sub]
+def fit(strokes: list[Stroke], box: tuple[float, float, float, float] = GLYPH_BOX) -> list[Stroke]:
+    """Scale the whole outline uniformly into `box` and centre it there."""
+    xs = [x for stroke in strokes for sub in stroke for x, _ in sub]
+    ys = [y for stroke in strokes for sub in stroke for _, y in sub]
     x0, x1, y0, y1 = min(xs), max(xs), min(ys), max(ys)
     bx, by, bw, bh = box
     k = min(bw / (x1 - x0), bh / (y1 - y0))
     tx = bx + (bw - (x1 - x0) * k) / 2 - x0 * k
     ty = by + (bh - (y1 - y0) * k) / 2 - y0 * k
-    return [[(x * k + tx, y * k + ty) for x, y in sub] for sub in subpaths]
+    return [[[(x * k + tx, y * k + ty) for x, y in sub] for sub in stroke] for stroke in strokes]
 
 
-def build_svg(fitted: list[list[Point]], corner_radius: float = CORNER_RADIUS) -> str:
-    d = " ".join("M" + " L".join(f"{x:.2f},{y:.2f}" for x, y in sub) + " Z" for sub in fitted)
+def build_svg(fitted: list[Stroke], corner_radius: float = CORNER_RADIUS) -> str:
+    paths = "".join(
+        f'  <path fill="{INK}" fill-rule="evenodd" stroke="{INK}" stroke-width="{INK_BOOST}" '
+        f'stroke-linejoin="round" d="'
+        + " ".join("M" + " L".join(f"{x:.2f},{y:.2f}" for x, y in sub) + " Z" for sub in stroke)
+        + '"/>\n'
+        for stroke in fitted
+    )
     cx, cy, r = DOT
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {ICON} {ICON}">\n'
         f'  <rect width="{ICON}" height="{ICON}" rx="{corner_radius}" fill="{PAPER}"/>\n'
-        f'  <path fill="{INK}" fill-rule="evenodd" stroke="{INK}" stroke-width="{INK_BOOST}" '
-        f'stroke-linejoin="round" d="{d}"/>\n'
+        f"{paths}"
         f'  <circle cx="{cx}" cy="{cy}" r="{r}" fill="{VIRIDIAN}"/>\n'
         "</svg>\n"
     )
 
 
-def render(fitted: list[list[Point]], size: int, corner_radius: float = CORNER_RADIUS) -> Image.Image:
+def render(fitted: list[Stroke], size: int, corner_radius: float = CORNER_RADIUS) -> Image.Image:
     """Rasterise the icon at `size` px — the SVG's geometry, drawn by Pillow."""
     big = size * SUPERSAMPLE
     s = big / ICON
 
     ink = Image.new("1", (big, big), 0)
-    for sub in fitted:
-        layer = Image.new("1", (big, big), 0)
-        ImageDraw.Draw(layer).polygon([(x * s, y * s) for x, y in sub], fill=1)
-        ink = ImageChops.logical_xor(ink, layer)  # fill-rule="evenodd"
+    for stroke in fitted:
+        mask = Image.new("1", (big, big), 0)
+        for sub in stroke:
+            layer = Image.new("1", (big, big), 0)
+            ImageDraw.Draw(layer).polygon([(x * s, y * s) for x, y in sub], fill=1)
+            mask = ImageChops.logical_xor(mask, layer)  # fill-rule="evenodd", per stroke
+        ink = ImageChops.logical_or(ink, mask)
     boost = ImageDraw.Draw(ink)
     width = max(1, round(INK_BOOST * s))
-    for sub in fitted:
-        closed = [(x * s, y * s) for x, y in [*sub, sub[0]]]
-        boost.line(closed, fill=1, width=width, joint="curve")
+    for stroke in fitted:
+        for sub in stroke:
+            closed = [(x * s, y * s) for x, y in [*sub, sub[0]]]
+            boost.line(closed, fill=1, width=width, joint="curve")
 
     icon = Image.new("RGBA", (big, big), (0, 0, 0, 0))
     draw = ImageDraw.Draw(icon)
@@ -156,7 +173,7 @@ def render(fitted: list[list[Point]], size: int, corner_radius: float = CORNER_R
     return icon.resize((size, size), Image.LANCZOS)
 
 
-def ico_bytes(fitted: list[list[Point]]) -> bytes:
+def ico_bytes(fitted: list[Stroke]) -> bytes:
     """A multi-size ICO; every entry is drawn at its own size, not scaled from one bitmap."""
     frames = [render(fitted, size) for size in ICO_SIZES]
     out = BytesIO()
@@ -164,7 +181,7 @@ def ico_bytes(fitted: list[list[Point]]) -> bytes:
     return out.getvalue()
 
 
-def touch_icon(fitted: list[list[Point]]) -> Image.Image:
+def touch_icon(fitted: list[Stroke]) -> Image.Image:
     # Full-bleed and opaque: iOS applies its own mask, and transparent corners
     # come out black on a home screen.
     return render(fitted, TOUCH_SIZE, corner_radius=0).convert("RGB")

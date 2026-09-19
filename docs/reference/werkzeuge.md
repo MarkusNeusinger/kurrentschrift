@@ -867,8 +867,10 @@ Vorlage mit dem viridianen Punkt der Wortmarke aus `HeaderBar`; die Farben
 sind aus `paper.ts` gespiegelt.
 
 Der Umriss kommt als geschlossene Polygone (`M`/`L`/`Z` unter
-`fill-rule="evenodd"`). Deshalb rastert **Pillow allein**: jede Teilfläche
-füllen, per XOR verrechnen, achtfach überabtasten, herunterskalieren — kein
+`fill-rule="evenodd"`), ein `<path>` je Federzug. Deshalb rastert **Pillow
+allein**: jede Teilfläche füllen, **innerhalb eines Zuges** per XOR
+verrechnen, die Züge per ODER vereinen (wo zwei Züge sich kreuzen, bleibt
+Tinte und entsteht kein Loch), achtfach überabtasten, herunterskalieren — kein
 Browser, keine SVG-Bibliothek. SVG und Raster teilen sich eine eingepasste
 Geometrie, also zeigen Tab und `/favicon.ico` dasselbe Zeichen. Ein
 Kurvenbefehl oder ein gestrichener Pfad im Glyphen-SVG bricht den Bau mit
