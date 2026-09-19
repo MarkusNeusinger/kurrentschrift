@@ -278,7 +278,14 @@ und gespeicherter Laufform-Zeile. Der eine Rückkanal ist
 — Median-Anker als Geometrie, Breiten, Strich-Topologie und
 entry/exit/advance weiter aus der Tafelzeile, über denselben Helfer
 `build_laufform_canonical`, den auch der manuelle
-`PUT …/templates/{key}/laufform` benutzt. Für Paare gibt es bewusst **kein**
+`PUT …/templates/{key}/laufform` benutzt. Davor steht die **Eigner-Regel**: weil
+`templates` am Stil hängt und keine Hand-Dimension kennt, schreibt eine Hand eine
+Laufform-Zeile nur, wenn sie die auf der Tafel des Stils registrierte Hand ist
+(`sources.hand_id`, `kind='chart'`) oder der Stempel der bestehenden Zeile
+(`trace_meta.laufform.hand_id`) sie nennt — sonst meldet die Antwort den
+Schlüssel als `foreign_hand` und nennt die Eignerin. Der Stempel schützt ohne
+jede Registrierung; eine Zeile ohne Stempel bleibt frei, bis eine Tafel ihre Hand
+nennt. Für Paare gibt es bewusst **kein**
 Apply-Gegenstück: `glyph_pairs` bleibt der sparsame verbatim-Override, der
 §4-Generator bleibt Default, die Paar-Statistik ist sein Audit.
 

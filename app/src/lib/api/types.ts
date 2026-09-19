@@ -348,9 +348,10 @@ export interface AggregateApplyKeySummary {
 
 // One aggregate the apply left alone. Reasons: 'laufform_variant' /
 // 'non_base_variant' (only base-variant aggregates may feed the derived row —
-// never itself), 'no_base_template' (the chart ductus prior is missing) and
+// never itself), 'no_base_template' (the chart ductus prior is missing),
 // 'anchor_count' (aggregate and chart row disagree, so the topology would not
-// carry over).
+// carry over) and 'foreign_hand' (the Eigner-Regel: this style's running form
+// belongs to another hand).
 export interface AggregateApplySkip {
   glyph_key: string;
   variant: number;
@@ -368,6 +369,10 @@ export interface AggregateApplySkip {
   // the gate it exceeded.
   head_deviation?: number | null;
   head_max?: number | null;
+  // Filled for `foreign_hand`: the hand the running-form row belongs to — its
+  // own stamp, else the hand this style's plate is registered to. Null when
+  // the registration names no single owner.
+  owner_hand_id?: string | null;
 }
 
 // Result of POST /hands/{hand_id}/aggregates/apply-laufform — the ONE step that

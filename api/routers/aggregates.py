@@ -53,6 +53,7 @@ from core.database import (
     PairAggregate,
     PairAggregateRepository,
     PairInstanceRepository,
+    SourceRepository,
     Template,
     TemplateRepository,
 )
@@ -76,6 +77,75 @@ def _written_anchors(base: Template | None, median: list[list[float]]) -> list[l
     if base is None or len(base.anchors) != len(median):
         return median
     return build_laufform_canonical(base, median, {})["anchors"]
+
+
+def _laufform_stamp_hand(stored: Template | None) -> str | None:
+    """The hand a stored running-form row was derived FROM, when it says so.
+
+    `apply-laufform` stamps `trace_meta.laufform.hand_id`; the manual harvest
+    `PUT …/templates/{key}/laufform` writes the same block without it
+    (`derived_from: "specimen-words"`), so a row from that path names no hand —
+    and because that PUT REBUILDS the block, it also drops a stamp an earlier
+    apply had written, which returns an owned row to the unowned state. That
+    hole is the PUT's to close, not this reader's (open follow-up).
+    Read in Python rather than through a JSON operator — the HTTP suites run on
+    SQLite, where a JSONB path expression has no twin.
+    """
+    if stored is None:
+        return None
+    laufform = (stored.trace_meta or {}).get("laufform")
+    return laufform.get("hand_id") if isinstance(laufform, dict) else None
+
+
+def _laufform_owner(stored: Template | None, plate_hand_ids: set[str]) -> str | None:
+    """Whom the skip report names as the row's owner: its own stamp, else the
+    hand this style's teaching chart is registered to.
+
+    None when the registration is silent or names several hands — then the
+    report carries the reason without inventing a name.
+    """
+    stamped = _laufform_stamp_hand(stored)
+    if stamped is not None:
+        return stamped
+    return next(iter(plate_hand_ids)) if len(plate_hand_ids) == 1 else None
+
+
+def _may_write_laufform(hand_id: str, stored: Template | None, plate_hand_ids: set[str]) -> bool:
+    """The Eigner-Regel: a hand writes a style's running form only if the style
+    is ITS plate's, or the row it would replace was derived from this very hand.
+
+    Templates carry no hand dimension — they are keyed per style — so every hand
+    of a style writes into the same rows, and a second hand's apply would
+    silently overwrite the plate's running forms (handmodell-stufenplan.md H1).
+    The rule keeps the row with whoever it belongs to and lets the apply report
+    the rest per key.
+
+    A row without a stamp belongs to the plate hand; while no chart of the style
+    registers one there is nobody to displace, so the answer is yes — which is
+    the state every style is in today. The STAMP clause needs no registration at
+    all: a row derived from another hand stays that hand's either way.
+    Registering a plate only adds the first clause, which is also how a plate
+    hand takes a row back that a second hand stamped.
+
+    `plate_hand_ids` deliberately comes from the style's teaching charts alone,
+    although V22 words it as "a source of the same style". The running form is
+    derived from the chart's variant-0 row, so the chart's hand is the band's
+    owner — and once the own hand has a source of its own for the same style
+    (`kind='eigenhand'`, Q20), the wider reading would register it as co-owner
+    of the band they SHARE, i.e. permit the very overwrite this rule exists to
+    stop.
+
+    Deliberately variant-agnostic — the caller names the row. Once every hand
+    gets its own running-form band (`hands.laufform_variant`), a hand writes
+    into its own band and the question answers itself; this stays the rule for
+    the band hands share.
+    """
+    if hand_id in plate_hand_ids:
+        return True
+    stamped = _laufform_stamp_hand(stored)
+    if stamped is not None:
+        return stamped == hand_id
+    return not plate_hand_ids
 
 
 pair_router = APIRouter(
@@ -271,6 +341,14 @@ async def apply_laufform(
     `excluded`, so the response says what was NOT written just as plainly as
     what was.
 
+    Ownership comes FIRST in the per-key triage: every other reason says what
+    to fix about the row, `foreign_hand` says the row is not this hand's to
+    write at all (the Eigner-Regel, `_may_write_laufform`), and then nothing
+    else about the key matters. It is reported per key like the rest rather than
+    refused at the route, because a hand can own some of a style's rows by stamp
+    and not others — a partial apply is the honest outcome, and the skip names
+    the owner.
+
     `min_occurrences` is the floor UNDER that selection, and it is the endpoint's
     own judgement rather than the request's: an aggregate thinner than
     `core.aggregate.LAUFFORM_MIN_OCCURRENCES` is reported as
@@ -323,8 +401,26 @@ async def apply_laufform(
     laufform_by_key = {
         t.glyph_key: t for t in await repo.get_many(hand.style_id, keys, variant=LAUFFORM_VARIANT, render_only=True)
     }
+    # Whom this style's plates belong to. One small SELECT over `sources`,
+    # narrowed to the teaching charts (see `_may_write_laufform`); the stamp
+    # side costs nothing, because `render_only` defers only `raw_path` and
+    # `measurements` — `trace_meta` rode along with the rows above.
+    plate_hand_ids = {
+        s.hand_id for s in await SourceRepository(db).list(style_id=hand.style_id) if s.hand_id and s.kind == "chart"
+    }
 
     for row in usable:
+        stored_laufform = laufform_by_key.get(row.glyph_key)
+        if not _may_write_laufform(hand.id, stored_laufform, plate_hand_ids):
+            skipped.append(
+                AggregateApplySkip(
+                    glyph_key=row.glyph_key,
+                    variant=row.variant,
+                    reason="foreign_hand",
+                    owner_hand_id=_laufform_owner(stored_laufform, plate_hand_ids),
+                )
+            )
+            continue
         base = base_by_key.get(row.glyph_key)
         if base is None:
             skipped.append(AggregateApplySkip(glyph_key=row.glyph_key, variant=row.variant, reason="no_base_template"))
@@ -387,7 +483,6 @@ async def apply_laufform(
         # Snapshot the PRE-write anchors: the upsert re-selects with
         # `populate_existing`, which overwrites this very row object with what
         # was just written — reading it afterwards would always measure 0.
-        stored_laufform = laufform_by_key.get(row.glyph_key)
         prev_anchors = [list(a) for a in stored_laufform.anchors] if stored_laufform is not None else None
         canonical = build_laufform_canonical(
             base, median, {"derived_from": "hand-aggregate", "hand_id": hand.id, "n_occurrences": row.n_instances}

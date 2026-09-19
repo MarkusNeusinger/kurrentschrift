@@ -537,12 +537,17 @@ class AggregateApplySkip(BaseModel):
     reason code — over `core.laufform.LAUFFORM_SPIKE_RATIO_MAX`) and
     `head_deviation` (the head gate, §14 LF9: the median's first stroke lands
     more than `core.laufform.LAUFFORM_HEAD_DEVIATION_MAX` degrees away from the
-    chart's landing direction).
+    chart's landing direction) and `foreign_hand` (the Eigner-Regel: the running
+    form of this style is not this hand's to write — the row is stamped with
+    another hand, or the style's plate is registered to one).
 
     `n_instances` is filled for `below_min_occurrences`, where the count IS the
     reason, `spike_ratio` / `spike_max` for `anchor_spike`, `head_deviation` /
-    `head_max` for the `head_deviation` reason; the other reasons leave them
-    null rather than repeating a number that played no part in the decision."""
+    `head_max` for the `head_deviation` reason, `owner_hand_id` for
+    `foreign_hand` (null when the registration names no single owner, so the
+    report says the reason without inventing a name); the other reasons leave
+    them null rather than repeating a number that played no part in the
+    decision."""
 
     glyph_key: str
     variant: int
@@ -552,6 +557,7 @@ class AggregateApplySkip(BaseModel):
     spike_max: float | None = None
     head_deviation: float | None = None
     head_max: float | None = None
+    owner_hand_id: str | None = None
 
 
 class AggregateApplyOut(BaseModel):

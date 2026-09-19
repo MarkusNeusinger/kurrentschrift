@@ -173,6 +173,16 @@ Buchstabens (breiter, geneigter als die Tafelform). Liegt als
 Template-Variante 100, `LAUFFORM_VARIANT = 100`, nur in fließenden Läufen.
 → [§2](glossar.md#2-architektur-und-datenmodell)
 
+**Apply-Guard (Eigner-Regel)** — `templates` hängt am Stil, nicht an der
+Hand, also darf eine Hand eine Laufform-Zeile nur schreiben, wenn sie die
+auf der Tafel des Stils registrierte Hand ist (`sources.hand_id`,
+`kind='chart'`) oder der Stempel der Zeile
+(`trace_meta.laufform.hand_id`) sie nennt; sonst meldet `apply-laufform`
+den Schlüssel als `foreign_hand` mit `owner_hand_id`. Der Stempel
+schützt ohne jede Registrierung; frei bleibt nur eine Zeile ohne Stempel,
+solange keine Tafel ihre Hand nennt.
+→ [§2](glossar.md#2-architektur-und-datenmodell)
+
 **Ernte-Fixpunkt · Chart-Saat** — die Ernte komponiert das Wort AUS den
 Laufform-Zeilen und startet den Kettenlöser dort, liest also die Zeilen,
 die sie ersetzen wird; die Iteration konvergiert nicht (0,005–0,063 xh je
