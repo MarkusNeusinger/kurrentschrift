@@ -50,7 +50,32 @@ Laufform-Zeile ist Render-Zustand. Nur Basis-Varianten speisen sie
 ableiten); Schlüssel ohne Tafel-Zeile oder mit abweichender Ankerzahl
 werden mit Grund gemeldet statt geraten, und die Antwort nennt je
 Glyphe den Abstand *vor* dem Schreiben. Ein anschließender Rebuild
-meldet den Prüfstein als 0. **Auch der Aggregations-Schritt aus H2 ist
+meldet den Prüfstein als 0. **Vor all dem steht seit 2026-09-18 die
+Eigner-Regel** (Apply-Guard, `api/routers/aggregates.py`): `templates`
+hat keine Hand-Dimension — die Zeilen hängen am Stil —, also schriebe
+der Apply einer ZWEITEN Hand die Laufformen der Platte um. Eine Hand
+darf eine Laufform-Zeile darum nur schreiben, wenn sie die auf der
+**Tafel** des Stils registrierte Hand ist (`sources.hand_id` einer
+Quelle mit `kind='chart'`) oder der Stempel der bestehenden Zeile
+(`trace_meta.laufform.hand_id`) sie nennt; eine Zeile ohne Stempel —
+jede aus dem manuellen Ernte-`PUT` — gehört der registrierten
+Platten-Hand. Die beiden Klauseln greifen unabhängig voneinander: der
+**Stempel schützt ohne jede Registrierung** — eine Zeile, die aus Hand A
+abgeleitet wurde, bleibt Hand As, auch solange `sources.hand_id`
+nirgends gesetzt ist —, und die Registrierung fügt nur die
+Tafel-Klausel hinzu (mit der die Platten-Hand eine von einer Zweithand
+gestempelte Zeile zurückholt). Wirkungslos ist die Regel damit für
+Zeilen ohne Stempel und für Zeilen mit dem eigenen Stempel; auf dem
+Datenstand von 2026-09-18 heißt das: wirkungslos, weil es genau eine
+Hand gibt und sie die Stempel selbst gesetzt hat. Praktische Folge für
+Phase 5: die Eigenhand trifft die gestempelten Platten-Zeilen auch VOR
+dem `UPDATE sources.hand_id` — sie braucht ihr eigenes Band (Q19),
+nicht die Reihenfolge des Prod-Schritts. Bewusst nur die Tafeln zählen
+als Registrierung: die eigene Quelle der Eigenhand (`kind='eigenhand'`,
+Q20) wäre sonst ihr eigener Freibrief für das geteilte Band. Gemeldet
+wird die Regel wie jeder andere Grund je Schlüssel (`foreign_hand`, mit
+`owner_hand_id`), nicht als Routen-Absage — eine Hand kann einen Teil
+der Zeilen per Stempel besitzen und den Rest nicht. **Auch der Aggregations-Schritt aus H2 ist
 umgesetzt:** die ebenfalls admin-gesicherten Endpunkte `GET/POST
 /hands/{hand_id}/pair-aggregates[/rebuild]` verdichten die
 `pair_instances` einer Hand über alle Quellen hinweg je

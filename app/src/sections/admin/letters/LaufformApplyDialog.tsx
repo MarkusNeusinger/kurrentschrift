@@ -160,8 +160,9 @@ export function LaufformApplyDialog({
                       // `below_min_occurrences` skip, so it rides along; an
                       // `anchor_spike` skip carries its spike ratio against
                       // the gate (§14 LF8), a `head_deviation` skip its angle
-                      // against the head gate (§14 LF9); the other reasons
-                      // carry no number and print none.
+                      // against the head gate (§14 LF9), a `foreign_hand` skip
+                      // the hand the row belongs to; the other reasons carry
+                      // no number and print none.
                       label={`${skip.glyph_key} · ${
                         t.skipReason[skip.reason as keyof typeof t.skipReason] ?? skip.reason
                       }${skip.n_instances == null ? '' : ` (${skip.n_instances})`}${
@@ -172,7 +173,7 @@ export function LaufformApplyDialog({
                         skip.head_deviation == null
                           ? ''
                           : ` (${skip.head_deviation.toFixed(1)}° > ${(skip.head_max ?? 0).toFixed(0)}°)`
-                      }`}
+                      }${skip.owner_hand_id == null ? '' : ` (${skip.owner_hand_id})`}`}
                     />
                   ))}
                 </Box>
