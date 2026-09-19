@@ -1075,7 +1075,7 @@ export const admin = {
     // bleibt unberührt, der Pfad liegt als Daten daneben.
     pfadShow: 'Pfad zeigen',
     pfadShowHint:
-      'Legt die nachgefolgte Federbahn über den Streifen: Farbverlauf in Schreibreihenfolge (erster Zug grün, letzter blau), Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Wird je Fassung einzeln geladen und nur für sichtbare Bilder.',
+      'Legt die nachgefolgte Federbahn über den Streifen: Farbverlauf in Schreibreihenfolge (erster Zug grün, letzter blau), Punkt am Ansatz, Pfeilspitze am Zugende, gestrichelt die Absetzer. Bringt auch die Rohzahlen je Kasten mit — sie stecken in denselben Daten, also kostet das keinen zweiten Abruf. Wird je Fassung einzeln geladen und nur für sichtbare Bilder.',
     pfadPedigree: 'Pfad: {{verfahren}} · {{datum}} · {{woerter}} Wort/Wörter',
     pfadNoDate: 'ohne Datum',
     // Eine Fassung trägt nicht zwangsläufig EINEN Lauf: `--box` mischt ein neu
@@ -1104,6 +1104,28 @@ export const admin = {
     pfadStale: 'Maske geändert',
     pfadStaleHint:
       'Der Pfad wurde unter einer anderen Fleckenmaske gefolgt als der Streifen jetzt trägt — er ist also auf anderer Tinte gelaufen, als hier zu sehen ist. Nach dem Radieren neu folgen lassen.',
+    // Die Rohzahlen je Kasten: was der Folger beim Nachfolgen mitgeschrieben
+    // hat, ohne Farbe und ohne Bewertung. Die Tintentreue-Ampel kommt später
+    // an dieselbe Stelle — bis dahin steht hier die Zahl. Eine einzelne
+    // fehlende Zahl steht als Strich da, eine Bahn ganz ohne Sensoren als
+    // „nicht gemessen" — keine der beiden gibt sich als Null aus.
+    pfadRohzahlen: 'Zahl, kein Urteil',
+    pfadRohzahlenHint:
+      'Die gespeicherten Sensoren des Folgers, ungewichtet und unbewertet. „Tinte ohne Bahn“: der Anteil der Tinte, den die Bahn nie befährt. „Absetzer“: wie oft die Feder vom Papier genommen wurde. „Sprünge“: Wechsel auf einen anderen Strang. „Haken“: Umkehrpunkte auf demselben Strang. Ein Strich steht für eine Zahl, die dieser Lauf nicht ausgerechnet hat — nicht für null. Über dem ganzen Streifen trägt jede Zeile ihre Kastennummer, von 0 an gezählt: dieselbe, die „--box“ beim Nachfolgen nimmt. Im Wort-Ausschnitt und bei ausgewähltem Wort steht sie nicht dabei — dort gilt die eine Zeile dem Kasten, der gerade gezeigt wird. Ob die Bahn der Tinte folgt, sagt keine dieser Zahlen — das beurteilt später die Ampel an derselben Stelle.',
+    pfadRohzahlenUnvisited: 'Tinte ohne Bahn {{prozent}} %',
+    pfadRohzahlenUnvisitedNone: 'Tinte ohne Bahn –',
+    pfadRohzahlenLifts: 'Absetzer {{zahl}}',
+    pfadRohzahlenJumps: 'Sprünge {{zahl}}',
+    pfadRohzahlenHairpins: 'Haken {{zahl}}',
+    // Der Kasten-INDEX, nicht nur das Wort: acht Zeilen des Streifenplans
+    // tragen dasselbe Wort zweimal („ja!“, „„wohl““, „Übung“ …), und zwei
+    // gleiche Vorspänne ließen die Lesung keinem Kasten mehr zuordnen. Die
+    // Nummer ist die von `--box`, also lässt sich eine schlechte Lesung genau
+    // so neu nachfolgen, wie der Chip sie nennt.
+    pfadRohzahlenBox: 'Kasten {{nr}} · {{wort}}:',
+    pfadRohzahlenNone: 'nicht gemessen',
+    pfadRohzahlenNoneHint:
+      'Diese Bahn trägt keine Sensoren — von Hand nachgefahren, oder aus einem Lauf, bevor der Folger sie mitgeschrieben hat. Keine Zahl heißt nicht null.',
     // Der Streifen-Befund: ein VORSCHLAG, nie ein Urteil. Der Haken auf dem
     // Blatt bleibt die Entscheidung; hier steht nur, was auffällt und welche
     // Fassung eines Streifens die schwächste ist.
