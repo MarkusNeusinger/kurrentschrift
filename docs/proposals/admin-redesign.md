@@ -547,10 +547,13 @@ in §15.6. Gemergt ist von Phase 2 noch nichts.
 | **C** — Wie sieht ein „übersprungen"-Eintrag aus? Heute sehen vier verschiedene Gründe in der DB identisch aus: kein Eintrag | **(a)** Ein **eigener Eintragstyp in derselben Liste**: `status` + `grund` Pflicht, keine Züge, Registrierung und x-Höhe optional | Ein Kasten hat genau einen Zustand; zwei Listen wären zwei Orte, an denen derselbe Kasten vorkommt, und irgendwann widersprechen sie sich. Gebaut wird das in PR 3 der Welle, nicht im ersten — hier steht es, damit nichts gegen eine andere Annahme gebaut wird |
 
 **Was Entscheid A für den Bauplan heißt.** Die Archiv-Kette der §6.7-Zeile
-(„`pull --pfade → snapshot → sync --from`") bleibt eine Kette aus drei
-Werkzeugen, aber `snapshot.py` wird **nicht** angefasst: die Bahn reist in
-der Kartei mit, und die Kartei kopiert der Lauf ohnehin jedes Mal ganz. Das
-ist der Unterschied zwischen einem Ziehweg und einem Umbau am Archiv.
+bleibt als ABLAUF, was sie ist — `pull --pfade → snapshot → sync --from` —,
+aber `snapshot.py` wird **nicht** umgebaut: die Bahn reist in der Kartei mit,
+und die Kartei kopiert der Lauf ohnehin jedes Mal ganz. Das ist der
+Unterschied zwischen einem Ziehweg und einem Umbau am Archiv. Angefasst
+werden trotzdem vier Dateien statt der drei, die die §6.7-Zeile nannte: die
+vierte ist `tools/dbsnapshot/fetch.py`, dessen `known_gaps` heute über genau
+diese Lücke schweigt.
 
 ## 5 Leitideen, auf die sich das Panel einigt
 
