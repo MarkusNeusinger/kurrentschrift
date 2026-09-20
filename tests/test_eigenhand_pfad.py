@@ -34,6 +34,7 @@ from core.eigenhand.pfad import (
     frame_for_box,
     frames_of_row,
     nominal_xh_px,
+    push_body,
 )
 
 
@@ -118,7 +119,7 @@ def _apply_run(
 
     The whole envelope, not just its entries: the declared `format` is part of
     what a push is, and a merged body carrying entries this run did not produce
-    has to be declared for what it IS (review, PR #638).
+    has to be declared for what it IS (review, PR #639).
 
     `archived` is what this machine's Kartei holds — the condition
     `--replace-authored` is held against since author decision B.
@@ -376,7 +377,7 @@ class TestFormatTwo:
         # The whole design rests on this, and the next bump moves the WRITE
         # constant in a different place from the read tuple. A mismatch would
         # make the image push a number its own 409 refuses, on every run
-        # (found in review, PR #638).
+        # (found in review, PR #639).
         assert PFAD_FORMAT in SUPPORTED_FORMATS
         assert SKIP_AND_SPAN_FORMAT in SUPPORTED_FORMATS
         assert max(SUPPORTED_FORMATS) == SKIP_AND_SPAN_FORMAT
@@ -416,6 +417,15 @@ class TestFormatTwo:
         with pytest.raises(ValueError, match="SKIPPED"):
             self._check([_path(grund="gave_up")])
 
+    def test_a_skip_may_not_claim_the_provenance_of_a_drawing(self):
+        # `is_authored` reads `verfahren` alone, and everything downstream
+        # assumes a drawing: the 409 locks the box, `pull --pfade` archives it,
+        # `--replace-authored` demands it be archived first. An authored SKIP
+        # would be a phantom drawing — and on an empty row `displaced_authored`
+        # has nothing stored to catch it with (found in review, PR #639).
+        with pytest.raises(ValueError, match="cannot claim `verfahren"):
+            self._check([_skip(verfahren=AUTHORED)])
+
     def test_a_skip_that_does_bring_its_frame_is_still_held_to_it(self):
         # Optional is not unchecked: a registration that names another image
         # would draw the same wrong overlay whether a path hangs off it or not.
@@ -454,7 +464,7 @@ class TestFormatTwo:
         # Held against each other, not only against their stroke: one sample
         # belongs to one letter, and two boundaries over the same samples are
         # well-formed in every number they carry — they would reach the
-        # Span-Zuordner's training set as ground truth (review, PR #638).
+        # Span-Zuordner's training set as ground truth (review, PR #639).
         with pytest.raises(ValueError, match="both claim sample"):
             self._check([_path(letter_spans=[_span(), _span()])])
         with pytest.raises(ValueError, match="both claim sample\\(s\\) 1..1 of stroke 0"):
@@ -473,7 +483,7 @@ class TestFormatTwo:
         # The one bound with nothing in the entry to hold it: `stroke`, `first`
         # and `last` are bounded by the stroke they index, `slot` is not — and
         # the wire capped it while core did not, so the two layers refused
-        # different things (review, PR #638).
+        # different things (review, PR #639).
         with pytest.raises(ValueError, match=f"at most {MAX_SLOT}"):
             self._check([_path(letter_spans=[_span(slot=MAX_SLOT + 1)])])
 
@@ -490,7 +500,7 @@ class TestFormatTwo:
         # Both writers push entries they did not produce — the merge keeps the
         # boxes a run did not follow and carries the author's boundaries onto
         # its own result — so a declaration read off `PFAD_FORMAT` would be
-        # refused by the content rule above (review, PR #638).
+        # refused by the content rule above (review, PR #639).
         assert format_of_entries([]) == PFAD_FORMAT
         assert format_of_entries([_path()]) == PFAD_FORMAT
         assert format_of_entries([_path(), _skip(box_index=1, word="das")]) == SKIP_AND_SPAN_FORMAT
@@ -499,6 +509,29 @@ class TestFormatTwo:
         # accepts under format 2 comes out carrying a `status`, so the next
         # push of that same list declares 2 again.
         assert format_of_entries(self._check([_path()])) == SKIP_AND_SPAN_FORMAT
+
+    def test_a_promoted_body_gives_up_the_free_meta_boundaries_it_still_carries(self):
+        # The two formats disagree about WHERE boundaries live, and a follower
+        # run still writes its own into the free `meta`. A body promoted to
+        # format 2 because it carries a skip would then be refused over the
+        # entries the run produced itself (found in review, PR #639) — so the
+        # meta copy goes, the caller is told which boxes lost one, and the rest
+        # of `meta` travels on untouched.
+        run = _path(meta={"letter_spans": [[[0, 0, 2]]], "tintenpfad": {"runs": 2}})
+        body, pfad_format, dropped = push_body([run, _skip(box_index=1, word="das")])
+        assert (pfad_format, dropped) == (SKIP_AND_SPAN_FORMAT, [0])
+        assert body[0]["meta"] == {"tintenpfad": {"runs": 2}}
+        # …and the promoted body is one the server really accepts, which is the
+        # cross-check the whole promotion exists for.
+        assert self._check(body)
+
+    def test_a_format_1_body_keeps_its_meta_boundaries_exactly_as_they_are(self):
+        # Nothing is given up on the push this image makes on its own — under
+        # format 1 the free-meta copy IS where the boundaries belong.
+        run = _path(meta={"letter_spans": [[[0, 0, 2]]]})
+        body, pfad_format, dropped = push_body([run])
+        assert (pfad_format, dropped) == (PFAD_FORMAT, [])
+        assert body[0]["meta"] == {"letter_spans": [[[0, 0, 2]]]}
 
     def test_the_boundaries_may_not_also_hide_in_the_free_meta(self):
         # Two sets of boundaries on one box would contradict each other the
@@ -574,7 +607,7 @@ class TestAuthoredRule:
         # are drawn on a Bahn and do not outlive it. Guarding them against the
         # author's own re-draw left him no move at all — dropping them was a
         # 409 and bringing them back a 422, because they index samples the new
-        # Bahn no longer has (found in review, PR #638).
+        # Bahn no longer has (found in review, PR #639).
         stored = [_path(verfahren=AUTHORED, letter_spans=[_span(herkunft=AUTHORED)])]
         redrawn = _path(verfahren=AUTHORED, strokes=[[[0.0, 0.0], [0.4, 0.2]]])
         assert displaced_authored(stored, [redrawn]) == []
@@ -592,7 +625,7 @@ class TestAuthoredRule:
         # A Skip-Eintrag says there is no path in this box. Letting it through
         # on its `verfahren` alone would delete a drawing with neither a 409
         # nor the archive check that hangs off `--replace-authored` — a hole
-        # opened by the very entry type this format adds (review, PR #638).
+        # opened by the very entry type this format adds (review, PR #639).
         stored = [_path(verfahren=AUTHORED)]
         assert displaced_authored(stored, [_skip(verfahren=AUTHORED)]) == [(0, FIELD_PATH)]
         assert displaced_authored(stored, [_skip()]) == [(0, FIELD_PATH)]
@@ -753,7 +786,7 @@ class TestFollowerHandover:
         assert body[0][FIELD_SPANS] == [corrected]
         # And the push says what it IS: the carried boundaries are a format-2
         # field, so declaring this image's own `PFAD_FORMAT` over them would be
-        # refused by the server's content rule (review, PR #638).
+        # refused by the server's content rule (review, PR #639).
         assert sent["format"] == SKIP_AND_SPAN_FORMAT
 
     def test_the_push_declares_the_format_the_merged_body_is_actually_in(self, monkeypatch):
@@ -761,7 +794,7 @@ class TestFollowerHandover:
         # the run's own result is format 1, the boundaries it carries are a
         # format-2 field, and the server refuses every format-2 field under a
         # format-1 declaration. So the tool would have built a body its own
-        # push could not store (review, PR #638). Held here against the gate
+        # push could not store (review, PR #639). Held here against the gate
         # the API runs on it, which is the cross-check that was missing.
         corrected = _span(herkunft=AUTHORED)
         _, sent = _apply_run(
@@ -772,6 +805,38 @@ class TestFollowerHandover:
         )
         assert sent["format"] == SKIP_AND_SPAN_FORMAT
         assert check_paths(sent["pfade"], ROW, WIDTH_PX, HEIGHT_PX, pfad_format=sent["format"])
+
+    def test_a_hand_corrected_stroke_keeps_its_WHOLE_stored_boundary_set(self, monkeypatch):
+        # A stroke usually carries one corrected boundary among several the
+        # follower assigned. Carrying only the corrected one would leave the
+        # letters beside it unlabelled and call that a rescue (review, PR #639)
+        # — so every stored boundary of that stroke travels with it.
+        corrected = _span(slot=1, first=1, last=1, herkunft=AUTHORED)
+        neighbours = [_span(slot=0, first=0, last=0), _span(slot=2, first=2, last=2)]
+        _, sent = _apply_run(
+            monkeypatch,
+            fresh=[_path(letter_spans=[_span(slot=0, first=0, last=2)])],
+            stored=[_path(letter_spans=[neighbours[0], corrected, neighbours[1]])],
+            argv=["--hand", "mn-suetterlin", "--strip", "S0001"],
+        )
+        assert sent["pfade"][0][FIELD_SPANS] == [neighbours[0], corrected, neighbours[1]]
+        assert check_paths(sent["pfade"], ROW, WIDTH_PX, HEIGHT_PX, pfad_format=sent["format"])
+
+    def test_the_run_gives_up_its_own_meta_boundaries_when_the_push_is_promoted(self, monkeypatch, capsys):
+        # The follower writes its boundaries into the free `meta`, and format 2
+        # refuses exactly that. A merge promoted for carrying a skip would
+        # otherwise build a body its own push could not store (review,
+        # PR #639). Given up, and said out loud.
+        _, sent = _apply_run(
+            monkeypatch,
+            fresh=[_path(meta={"letter_spans": [[[0, 0, 2]]], "tintenpfad": {"runs": 2}})],
+            stored=[_path(), _skip(box_index=1, word="das")],
+            argv=["--hand", "mn-suetterlin", "--strip", "S0001", "--box", "0"],
+        )
+        assert sent["format"] == SKIP_AND_SPAN_FORMAT
+        assert sent["pfade"][0]["meta"] == {"tintenpfad": {"runs": 2}}
+        assert check_paths(sent["pfade"], ROW, WIDTH_PX, HEIGHT_PX, pfad_format=sent["format"])
+        assert "letter boundaries at box 0" in capsys.readouterr().out
 
     def test_a_stored_skip_travels_back_up_under_a_number_that_knows_it(self, monkeypatch):
         # The other half: `_merged` keeps every box this run did not follow, so

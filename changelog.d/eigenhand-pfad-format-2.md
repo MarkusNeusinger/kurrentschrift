@@ -54,8 +54,17 @@
   its own result, `tools.eigenhand.sync` restores what an archive holds — so a
   declaration taken from `PFAD_FORMAT` would have been refused by the very
   content rule above, and the carry-over could never have reached the one kind
-  of box it exists for. `core.eigenhand.pfad.format_of_entries` answers it from
-  the content, and only ever upward.
+  of box it exists for. `core.eigenhand.pfad.push_body` answers it from the
+  content, and only ever upward. A body promoted that way also gives up the
+  follower's own copy of the boundaries in the free `meta`, because format 2
+  refuses it — they are an `auto` derivation the next run makes again, and the
+  run names the boxes rather than dropping them quietly.
+- **A skipped box may not claim `verfahren: "authored"`.** That provenance
+  means a path the author DREW, and everything downstream of `is_authored`
+  assumes one: the 409 locks the box, `pull --pfade` archives it,
+  `--replace-authored` demands it be archived first. An authored skip was a
+  phantom drawing that nothing could ever be lost from — and on an empty row
+  the displacement guard had nothing stored to catch it with.
 - **`pull --pfade` carries hand-corrected letter boundaries into the archive
   too.** The one Ziehweg filtered on the Bahn's `verfahren` alone, so a
   followed path whose boundaries the author had corrected was never pulled,

@@ -67,7 +67,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 from core.eigenhand.flecken import FLECKEN_FORMAT
-from core.eigenhand.pfad import format_of_entries
+from core.eigenhand.pfad import push_body
 from tools.eigenhand.apiclient import admin_token, api_base, request_json
 from tools.eigenhand.kartei import load_kartei, pfad_wire_format, pfade_of
 from tools.eigenhand.store import WORK_DPI, check_hand_id, hand_dir, sheet_dir
@@ -309,6 +309,26 @@ class _Restore(NamedTuple):
     left: list[str]
 
 
+def _came_back(landed: dict | None, sent: dict) -> bool:
+    """Whether the server answered with the Bahn it was handed.
+
+    Not dict equality: a format-1 entry restored into a row that has to be
+    declared format 2 comes back NORMALISED — `check_paths` fills in `status`,
+    `grund`, `detail` and `letter_spans`, which is the format doing its job and
+    not a changed Bahn. Equality read that as „stored changed, or not at all"
+    and ended an otherwise perfect restore with a loud failure (found in
+    review, PR #639).
+
+    So every field that was SENT has to come back carrying the same value, and
+    fields the server added beside them are allowed. A changed stroke, a
+    dropped registration or a missing box still fails, which is the whole
+    question this closing count answers.
+    """
+    if landed is None:
+        return False
+    return all(landed.get(key) == value for key, value in sent.items())
+
+
 def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
     """Put the archived hand-drawn Bahnen back into the boxes that have none.
 
@@ -335,7 +355,7 @@ def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
     archive's: a live box written under a newer format travels up in that same
     push, and declaring the archive's older number over it would be refused
     outright (422) — the restore would die on a row it was not even asked to
-    change (found in review, PR #638). So the push declares whichever of the
+    change (found in review, PR #639). So the push declares whichever of the
     two the CONTENT needs. It can only ever go up: a format-1 entry is a valid
     format-2 one, and `check_paths` normalises it, whereas the reverse would be
     the mislabelling the stored marker exists to prevent.
@@ -381,12 +401,11 @@ def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
             [*fresh, *(entry for entry in stored if entry.get("box_index") not in mine)],
             key=lambda item: item["box_index"],
         )
-        echo = (
-            request_json("PUT", url, token, {"format": max(wire_format, format_of_entries(body)), "pfade": body}) or {}
-        )
+        body, content_format, _dropped = push_body(body)
+        echo = request_json("PUT", url, token, {"format": max(wire_format, content_format), "pfade": body}) or {}
         landed = {entry.get("box_index"): entry for entry in (echo.get("pfade") or [])}
         for entry in fresh:
-            if landed.get(entry["box_index"]) == entry:
+            if _came_back(landed.get(entry["box_index"]), entry):
                 restored += 1
             else:
                 stuck += 1

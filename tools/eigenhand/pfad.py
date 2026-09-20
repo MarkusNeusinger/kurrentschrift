@@ -98,9 +98,9 @@ from core.eigenhand.pfad import (  # noqa: E402
     FIELD_SPANS,
     STATUS_SKIPPED,
     authored_spans,
-    format_of_entries,
     frame_for_box,
     is_authored,
+    push_body,
 )
 from core.eigenhand.plan import load_plan, shaping_form_of  # noqa: E402
 from tools.eigenhand.apiclient import admin_token, api_base, request_bytes, request_json  # noqa: E402
@@ -444,21 +444,29 @@ def _carry_spans(fresh: dict, stored: dict | None) -> dict | None:
     stroke step aside rather than being interleaved with them, because a letter
     boundary is only meaningful next to the ones beside it.
 
+    „Whole" means the stroke's whole STORED set, not the corrected boundaries
+    alone. A stroke usually carries one hand-corrected boundary among several
+    the follower assigned; keeping only the corrected one would leave the
+    letters beside it unlabelled and call that a rescue (found in review,
+    PR #639). So every stored boundary of a stroke an authored one sits on
+    travels together, and this run's own boundaries there step aside.
+
     Where the fresh Bahn cannot hold them at all — fewer strokes, or a stroke
     too short for the samples they name — `None` says so, and the caller keeps
     the STORED entry instead. Carrying them onto a Bahn they no longer fit would
     be refused as a desynchronised span (`check_paths`), and re-indexing them is
     the Span-Zuordner's job, not a silent repair inside a merge.
     """
-    kept = authored_spans(stored or {})
-    if not kept:
+    corrected = authored_spans(stored or {})
+    if not corrected:
         return fresh
+    owned = {span["stroke"] for span in corrected}
+    held = [span for span in ((stored or {}).get(FIELD_SPANS) or []) if span.get("stroke") in owned]
     strokes = fresh.get("strokes") or []
-    if not _spans_fit(kept, strokes):
+    if not _spans_fit(held, strokes):
         return None
-    owned = {span["stroke"] for span in kept}
     mine = [span for span in (fresh.get(FIELD_SPANS) or []) if span.get("stroke") not in owned]
-    return {**fresh, FIELD_SPANS: sorted(mine + kept, key=lambda span: (span.get("stroke", 0), span.get("first", 0)))}
+    return {**fresh, FIELD_SPANS: sorted(mine + held, key=lambda span: (span.get("stroke", 0), span.get("first", 0)))}
 
 
 def _merged(
@@ -656,8 +664,19 @@ def main(argv: list[str] | None = None) -> int:
         # The declared format follows the BODY, not this image's own constant:
         # the merge carries stored entries and hand-corrected boundaries this
         # run did not produce, and declaring format 1 over them would be refused
-        # by the content rule (`core.eigenhand.pfad.format_of_entries`).
-        wire_format = format_of_entries(body)
+        # by the content rule (`core.eigenhand.pfad.push_body`).
+        body, wire_format, without_spans = push_body(body)
+        if without_spans:
+            # Named, never silent: this run DID assign those boundaries, and the
+            # push simply has no place for them until this image writes the
+            # checked field itself. They come back with the next run.
+            print(
+                f"  Streifen-Pfad format {wire_format}: dropping this run's own letter boundaries at box "
+                f"{', '.join(str(index) for index in without_spans)} — under this format they belong in the "
+                "entry's own `letter_spans`, which this version does not write yet (they are re-assigned "
+                "on every run; hand-corrected ones are never touched)",
+                flush=True,
+            )
         if not args.apply:
             out = args.out or _local_path(hand, row["strip"], row["fassung"])
             out.parent.mkdir(parents=True, exist_ok=True)
@@ -676,7 +695,7 @@ def main(argv: list[str] | None = None) -> int:
         stored = request_json("PUT", push_url, token, {"format": wire_format, "pfade": body}) or {}
         # A skip is an entry, not a path. Counting the two together would put
         # the four states back into one number — which is the whole reason the
-        # Skip-Eintrag exists (found in review, PR #638).
+        # Skip-Eintrag exists (found in review, PR #639).
         entries = stored.get("pfade") or []
         paths = [entry for entry in entries if entry.get("status") != STATUS_SKIPPED]
         skipped = len(entries) - len(paths)

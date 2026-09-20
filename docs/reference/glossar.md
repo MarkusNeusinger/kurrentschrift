@@ -4384,7 +4384,12 @@ verschmölze die vier binnen eines Monats wieder —, und der Eintragstyp
 steht in DERSELBEN Liste statt in einer zweiten daneben, weil ein Kasten
 genau einen Zustand hat und zwei Listen sich irgendwann widersprechen.
 Geschrieben wird er vom Werkzeug, das heute an diesen vier Stellen bloß
-`continue` sagt. *Technisch:* `core/eigenhand/pfad.py` (`STATUS_VALUES` ·
+`continue` sagt. Ein Skip darf NIE `verfahren: "authored"` behaupten: diese
+Herkunft heißt „eine Bahn, die der Autor GEZEICHNET hat", und alles
+dahinter setzt eine voraus — der 409 sperrt den Kasten, `pull --pfade`
+archiviert ihn, `--replace-authored` verlangt ihn zuvor archiviert. Ein
+authored Skip wäre eine Phantom-Zeichnung, aus der nie etwas verloren
+gehen kann. *Technisch:* `core/eigenhand/pfad.py` (`STATUS_VALUES` ·
 `SKIP_REASONS` · `MAX_DETAIL`), `api/schemas.py` (`PfadStatus` ·
 `PfadGrund`). → Streifen-Pfad; Nachfahr-Triage;
 proposals/admin-redesign.md §6.3, §6.4

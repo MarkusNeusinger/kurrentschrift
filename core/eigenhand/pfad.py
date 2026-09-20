@@ -401,7 +401,7 @@ def _checked_spans(spans: Any, strokes: Sequence[Sequence[Any]], where: str) -> 
     one sample belongs to one letter, so two boundaries claiming the same ink
     of the same stroke is the same class of nonsense as one that leaves it —
     well-formed in every number it carries, and it would reach the
-    Span-Zuordner's training set as ground truth (found in review, PR #638).
+    Span-Zuordner's training set as ground truth (found in review, PR #639).
     Two spans on DIFFERENT strokes may share a slot: a letter whose mark is its
     own stroke (the i-dot, an umlaut) is one slot written in two pen-downs.
     """
@@ -448,7 +448,7 @@ def _checked_spans(spans: Any, strokes: Sequence[Sequence[Any]], where: str) -> 
     return out
 
 
-def _refuse_overlaps(spans: Sequence[Mapping[str, int]], where: str) -> None:
+def _refuse_overlaps(spans: Sequence[Mapping[str, Any]], where: str) -> None:
     """No two boundaries of one stroke may claim the same sample."""
     for stroke in sorted({span["stroke"] for span in spans}):
         ordered = sorted(
@@ -588,6 +588,18 @@ def check_paths(
         skipped = status == STATUS_SKIPPED
         if skipped and entry.get("strokes"):
             raise ValueError(f"{where}: a skipped box carries no strokes — it says why there is no path, not one")
+        # `is_authored` reads `verfahren` alone, and everything downstream of it
+        # assumes a DRAWING: the 409 locks the box, `pull --pfade` archives it,
+        # `--replace-authored` demands it be archived first. A skip carries no
+        # drawing at all, so an authored one would be a phantom — 409-protected
+        # ground truth that nothing can ever be lost from, and it would sail
+        # past `displaced_authored` on an empty row, where there is nothing
+        # stored for the guard to compare against (found in review, PR #639).
+        if skipped and entry.get("verfahren") == AUTHORED:
+            raise ValueError(
+                f"{where}: a skipped box cannot claim `verfahren: {AUTHORED!r}` — that provenance means a path the "
+                "author DREW, and a skip is the statement that there is none"
+            )
         if not skipped and entry.get("grund") is not None:
             raise ValueError(f"{where}: `grund` says why a box was SKIPPED — a path that was followed has none")
         # Optional on a skip, required on a path (author decision C): a skipped
@@ -625,7 +637,7 @@ def format_of_entries(entries: Sequence[Mapping[str, Any]]) -> int:
     fresh Bahn. `tools.eigenhand.sync` restores entries an archive holds. Both
     therefore put entries on the wire this image would never write itself, and
     a push that declared `PFAD_FORMAT` would be refused by the very content
-    rule that keeps a row's stamp honest (found in review, PR #638).
+    rule that keeps a row's stamp honest (found in review, PR #639).
 
     So the declaration follows the CONTENT rather than the constant: format 2
     where any entry carries a format-2 field, what this image writes otherwise.
@@ -641,6 +653,45 @@ def format_of_entries(entries: Sequence[Mapping[str, Any]]) -> int:
         if any(entry.get(field) is not None for field in FORMAT_2_FIELDS):
             return max(PFAD_FORMAT, SKIP_AND_SPAN_FORMAT)
     return PFAD_FORMAT
+
+
+def push_body(entries: Sequence[Mapping[str, Any]]) -> tuple[list[dict[str, Any]], int, list[int]]:
+    """One merged list as it can go on the wire: the entries, the format, what was given up.
+
+    `format_of_entries` alone is not enough, because the two formats disagree
+    about where letter boundaries live. A follower run still puts its own
+    boundaries in the free `meta` (`tools.pairlab.tintenpfad` writes
+    `meta.letter_spans`, the nested-by-stroke shape `spans_of` emits), and
+    format 2 refuses exactly that — one box, one set of boundaries. So a body
+    that has to be declared 2, because it CARRIES a skip or a corrected
+    boundary from the stored row, would be refused over the entries the run
+    produced itself (found in review, PR #639).
+
+    They are dropped rather than converted, and the caller says so out loud.
+    Converting would mean this image starts writing the checked field, which is
+    the next release's job — and it would newly VALIDATE indices that are known
+    to predate `cap_word_strokes`, so a run that succeeds today could start
+    failing on a boundary nobody has looked at. An `auto` boundary is a
+    derivation the next run makes again; that is what makes dropping it
+    acceptable and a corrected one unthinkable.
+
+    The third element is the boxes whose free-meta boundaries were given up, so
+    the run can name them. Empty whenever the body stays format 1, which is
+    every push this image makes on its own.
+    """
+    pfad_format = format_of_entries(entries)
+    if pfad_format < SKIP_AND_SPAN_FORMAT:
+        return [dict(entry) for entry in entries], pfad_format, []
+    body: list[dict[str, Any]] = []
+    dropped: list[int] = []
+    for entry in entries:
+        meta = entry.get("meta")
+        if not isinstance(meta, Mapping) or meta.get(FIELD_SPANS) is None:
+            body.append(dict(entry))
+            continue
+        dropped.append(entry.get("box_index"))
+        body.append({**entry, "meta": {key: value for key, value in meta.items() if key != FIELD_SPANS}})
+    return body, pfad_format, sorted(index for index in dropped if index is not None)
 
 
 def is_authored(entry: Mapping[str, Any]) -> bool:
@@ -699,7 +750,7 @@ def displaced_authored(
     `tools.eigenhand.pfad` applies to a box handed over. Without it the author
     could not re-draw a box he had corrected at all: dropping the boundaries
     would be this refusal, and bringing them back would be a 422, because they
-    index samples the new Bahn no longer has (found in review, PR #638).
+    index samples the new Bahn no longer has (found in review, PR #639).
 
     A Skip-Eintrag is NOT an answer by hand, whatever `verfahren` it claims: it
     says there is no path in this box, so letting it pass as „the author

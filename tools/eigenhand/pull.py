@@ -213,7 +213,7 @@ def pull_pfade(hand: str, base: str, token: str) -> int:
         # boundaries ON a followed Bahn, and those are ground truth the server
         # refuses to lose — so the only Ziehweg has to carry them, or the
         # phase's own ordering („the archive chain stands before anything can
-        # create hand work") would hold for one of the two only (PR #638).
+        # create hand work") would hold for one of the two only (PR #639).
         authored = [entry for entry in (answer.get("pfade") or []) if is_authored(entry) or authored_spans(entry)]
         record = fassung_record(kartei, strip, fassung)
         if not authored:
@@ -249,14 +249,18 @@ def pull_pfade(hand: str, base: str, token: str) -> int:
             unchanged += len(merged)
             continue
         record["pfade"] = pfad_record(merged, declared, today)
+        # Counted independently, not as two halves of one split: a box can hold
+        # BOTH — a Bahn the author drew and boundaries he then corrected on it —
+        # and counting the boundaries only where the Bahn is a follow
+        # underreported them (found in review, PR #639).
         bahnen += sum(1 for entry in authored if is_authored(entry))
-        grenzen += sum(1 for entry in authored if not is_authored(entry))
+        grenzen += sum(1 for entry in authored if authored_spans(entry))
         fassungen += 1
 
     if fassungen:
         save_kartei(hand, kartei)
     print(
-        f"{hand}: {bahnen} hand-drawn Bahn(en) and {grenzen} hand-corrected boundary set(s) "
+        f"{hand}: {bahnen} hand-drawn Bahn(en) and {grenzen} box(es) with hand-corrected letter boundaries "
         f"in {fassungen} Fassung(en) pulled into the Kartei, {unchanged} already there"
     )
     if retained_boxes:

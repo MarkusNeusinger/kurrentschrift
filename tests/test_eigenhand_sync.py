@@ -446,6 +446,20 @@ def _bahn(box: int = 0, word: str = "lesen", **overrides) -> dict:
     }
 
 
+def _as_stored(entry: dict, pfad_format: int) -> dict:
+    """What the real API answers a push with — NORMALISED, like `check_paths`.
+
+    A format-1 entry accepted under format 2 comes back carrying the four keys
+    of that format, filled in. The fake echoed the request verbatim instead, so
+    the restore's „did the Bahn come back" check compared against something the
+    real server never sends and the miscount it caused was invisible here
+    (found in review, PR #639).
+    """
+    if pfad_format < 2:
+        return entry
+    return {"status": "ok", "grund": None, "detail": None, "letter_spans": None, **entry}
+
+
 class _FakePfadApi:
     """The two reads the Bahn chain makes, and every write it attempts.
 
@@ -472,7 +486,7 @@ class _FakePfadApi:
         if plain.endswith("/pfade"):
             strip, fassung = plain.split("/")[-3:-1]
             if method == "PUT":
-                echo = [] if self.swallow else body["pfade"]
+                echo = [] if self.swallow else [_as_stored(entry, body["format"]) for entry in body["pfade"]]
                 self.pfade[(strip, fassung)] = echo
                 return {"format": body["format"], "pfade": echo}
             if (strip, fassung) not in self.pfade:
@@ -547,7 +561,7 @@ class TestHandDrawnBahnChain:
         # format adds: a corrected letter boundary cannot be followed again
         # either, the server protects it as its own field, and the only
         # Ziehweg filtered on the BAHN's `verfahren` alone — so it would have
-        # had no way into the archive at all (review, PR #638).
+        # had no way into the archive at all (review, PR #639).
         _build(dataroot)
         corrected = _bahn(
             verfahren="tintenpfad",
@@ -685,7 +699,7 @@ class TestHandDrawnBahnChain:
         # Because the body is a MERGE, a box the archive knows nothing about
         # travels up with it — and declaring the ARCHIVE's older number over a
         # format-2 entry is a 422 that kills the restore on a box it was not
-        # even asked to change (review, PR #638). The declaration follows the
+        # even asked to change (review, PR #639). The declaration follows the
         # content, and only ever upward: a format-1 entry is a valid format-2
         # one, while the reverse is the mislabelling the marker exists to stop.
         snapshot = self._archived(dataroot, tmp_path, monkeypatch, [_bahn()])
@@ -702,6 +716,28 @@ class TestHandDrawnBahnChain:
         pushed = fake.pushed()[0]
         assert pushed["format"] == 2
         assert [entry["box_index"] for entry in pushed["pfade"]] == [0, 1]
+
+    def test_a_normalised_answer_still_counts_as_restored(self, dataroot, tmp_path, monkeypatch, capsys):
+        # The server fills in the format-2 keys on a format-1 entry it accepts,
+        # which is the format doing its job. Exact dict equality read that as
+        # „stored changed, or not at all" and ended an otherwise perfect
+        # restore with a loud failure (review, PR #639).
+        snapshot = self._archived(dataroot, tmp_path, monkeypatch, [_bahn()])
+        skipped = {
+            "box_index": 1,
+            "word": "das",
+            "status": "skipped",
+            "grund": "gave_up",
+            "strokes": [],
+            "verfahren": "tintenpfad",
+        }
+        fake = _FakePfadApi({("S0001", "F01"): [skipped]}, declared=2)
+        assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot)) == 0
+        assert "1 restored, 0 already there, 0 NOT restored" in capsys.readouterr().out
+        # …and a Bahn the server really did change is still caught.
+        changed = _FakePfadApi({("S0001", "F01"): []}, declared=1, swallow=True)
+        with pytest.raises(SystemExit, match="NOT restored"):
+            _run(monkeypatch, changed, "--mit-streifen", "--from", str(snapshot))
 
     def test_a_drawing_whose_strip_is_not_up_there_ends_the_restore_loudly(self, dataroot, tmp_path, monkeypatch):
         # THE failure this PR exists to prevent: a restore that reports success

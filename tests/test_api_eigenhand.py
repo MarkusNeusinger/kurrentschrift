@@ -1413,7 +1413,7 @@ class TestStreifenPfad:
         # skip claiming `verfahren: authored` passed as „the author correcting
         # his own trace" and replaced the drawing with an empty entry — no 409,
         # and so none of the archive guards that hang off `--replace-authored`
-        # (review, PR #638). A skip says there is no path here; that is never
+        # (review, PR #639). A skip says there is no path here; that is never
         # an answer BY HAND.
         stored = await _store_strip(api)
         drawing = {**self._path(stored), "verfahren": "authored"}
@@ -1432,9 +1432,19 @@ class TestStreifenPfad:
         assert "hand-drawn Bahn" in refused.json()["detail"]
         assert (await self._get(api)).json()["pfade"][0]["strokes"] == drawing["strokes"]
 
-        # …and the terminal's own door still opens, as it does for every other
-        # way of giving a drawing up.
-        given_up = await self._put(api, [skip], format=2, params={"replace_authored": "true"})
+        # And the door the terminal opens does not let it through either: past
+        # the displacement guard the CONTENT rule refuses the claim itself, so
+        # an authored skip cannot be stored even where nothing is displaced —
+        # on an empty row, for instance (review, PR #639).
+        overridden = await self._put(api, [skip], format=2, params={"replace_authored": "true"})
+        assert overridden.status == 422, overridden.body
+        assert "cannot claim" in overridden.json()["detail"]
+
+        # …while giving the drawing up for a FOLLOWED skip still works, which
+        # is the one way a box that was drawn goes back to having no path.
+        given_up = await self._put(
+            api, [{**skip, "verfahren": "tintenpfad"}], format=2, params={"replace_authored": "true"}
+        )
         assert given_up.status == 200, given_up.body
         assert (await self._get(api)).json()["pfade"][0]["status"] == "skipped"
 
