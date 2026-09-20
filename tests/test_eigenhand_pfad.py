@@ -7,7 +7,9 @@ stored against the wrong ink (`check_paths`). The third is which words a strip
 follow can even take on — the ductus seed it composes with, and the two ways
 that seam used to refuse the author's own hand (`TestDuctusSeed`). The fourth
 is the rule that a hand-drawn path outranks a followed one
-(`displaced_authored`, `TestAuthoredRule`).
+(`displaced_authored`, `TestAuthoredRule`). Since the per-box write there is a
+fifth: the content token the two write doors are held against (`pfad_etag`,
+`TestPfadEtag`).
 """
 
 from __future__ import annotations
@@ -36,9 +38,15 @@ from core.eigenhand.pfad import (
     frame_for_box,
     frames_of_row,
     nominal_xh_px,
+    pfad_etag,
     push_body,
 )
 
+
+# The token a stubbed read hands out. Opaque on purpose — the tool has to pass
+# it through untouched, and a value that looked computable would invite a test
+# that recomputes it instead of checking that it travelled.
+STUB_TAG = '"the-list-this-run-read"'
 
 # 10 px per mm, a strip 190 mm wide cut at x 10..200 and y 20..60.
 SCALE = 10.0
@@ -78,8 +86,11 @@ def _stub_run(monkeypatch, *, fresh: list[dict], stored: list[dict]) -> None:
         tool, "_strip_rows", lambda *_a: [{"strip": "S0001", "fassung": "F01", "sheet": "B0001", "row_index": 0}]
     )
     monkeypatch.setattr(tool, "follow_row", lambda *_a: fresh)
+    # The read hands its `ETag` back beside the body, the way the real client
+    # does: the push is guarded by the token of THIS read, so a stub that
+    # answered a body alone would make the tool's push untestable.
     monkeypatch.setattr(
-        tool, "_merged", lambda *args, **kwargs: merged(*args, **kwargs, _get=lambda *_a: {"pfade": stored})
+        tool, "_merged", lambda *args, **kwargs: merged(*args, **kwargs, _get=lambda *_a: ({"pfade": stored}, STUB_TAG))
     )
 
 
@@ -132,14 +143,19 @@ def _apply_run(
     monkeypatch.setattr(tool, "load_kartei", lambda _hand: _kartei_with(archived or []))
     sent: dict = {}
 
-    def _put(method: str, url: str, token: str, payload: dict | None = None):
+    def _put(method: str, url: str, token: str, payload: dict | None = None, *, if_match=None):
         assert method == "PUT", method
-        sent["url"], sent["payload"] = url, payload
+        sent["url"], sent["payload"], sent["if_match"] = url, payload, if_match
         return payload
 
     monkeypatch.setattr(tool, "request_json", _put)
     assert tool.main([*argv, "--apply"]) == 0
     assert sent["payload"]["format"] in SUPPORTED_FORMATS
+    # Every push names the list its merge was made on. The server demands it,
+    # and a merge assembled from one read and pushed against another is the
+    # lost update the token exists to refuse — so this is checked on every run
+    # here rather than in one test of its own.
+    assert sent["if_match"] == STUB_TAG
     return sent["url"], sent["payload"]
 
 
@@ -663,6 +679,45 @@ class TestAuthoredRule:
         ]
 
 
+class TestPfadEtag:
+    """The token that keeps two write doors from overwriting each other."""
+
+    def test_the_same_stored_list_gives_the_same_token(self):
+        # Two readings of one cell have to agree, or the lock refuses every
+        # write instead of the racing ones.
+        assert pfad_etag([_path()], PFAD_FORMAT) == pfad_etag([_path()], PFAD_FORMAT)
+
+    def test_a_token_is_an_http_entity_tag(self):
+        # Quoted, so a caller echoes the header value it was handed rather than
+        # reassembling one (RFC 9110).
+        token = pfad_etag(None, 1)
+        assert token.startswith('"') and token.endswith('"')
+        assert len(token) == 66
+
+    def test_anything_the_cell_says_moves_the_token(self):
+        base = pfad_etag([_path()], PFAD_FORMAT)
+        assert pfad_etag([_path(erzeugt_am="2026-09-20")], PFAD_FORMAT) != base
+        assert pfad_etag([_path(), _path(box_index=1, word="das")], PFAD_FORMAT) != base
+        assert pfad_etag([], PFAD_FORMAT) != base
+        # The format marker is half the statement — a list and the semantics
+        # its entries obey are one thing, so a token over only the entries
+        # would start lying the first time the two can move apart.
+        assert pfad_etag([_path()], PFAD_FORMAT + 1) != base
+
+    def test_a_fassung_nobody_has_followed_still_has_a_token(self):
+        # The per-box write starts on an empty row — that is the normal case
+        # for a box the author draws first — so NULL needs a token too, and one
+        # that is not the empty list's („nobody looked" is not „nothing found").
+        assert pfad_etag(None, 1) != pfad_etag([], 1)
+
+    def test_the_key_order_of_a_stored_entry_does_not_matter(self):
+        # JSONB hands the keys back in its own order; a token that followed it
+        # would refuse a write nobody raced.
+        entry = _path()
+        shuffled = dict(reversed(list(entry.items())))
+        assert pfad_etag([shuffled], PFAD_FORMAT) == pfad_etag([entry], PFAD_FORMAT)
+
+
 class TestFollowerHandover:
     """The seam between the local follower and what the API stores."""
 
@@ -738,9 +793,10 @@ class TestFollowerHandover:
 
         stored = [{"box_index": 0, "word": "lesen"}, {"box_index": 1, "word": "das"}]
         fresh = [{"box_index": 1, "word": "das", "verfahren": "tintenpfad"}]
-        merged, handed_over = tool._merged(
-            "https://example.invalid", "token", "u", fresh, _get=lambda *_: {"pfade": stored}
+        merged, handed_over, etag = tool._merged(
+            "https://example.invalid", "token", "u", fresh, _get=lambda *_: ({"pfade": stored}, STUB_TAG)
         )
+        assert etag == STUB_TAG  # the push is guarded by the token of THIS read
         assert [entry["box_index"] for entry in merged] == [0, 1]
         assert merged[1] is fresh[0]  # the followed box is the NEW one, not the stored copy
         assert handed_over is False
@@ -1145,8 +1201,8 @@ class TestSkipEntries:
         # to record that this run did not reproduce it.
         from tools.eigenhand import pfad as tool
 
-        merged, handed_over = tool._merged(
-            "https://example.invalid", "t", "u", [_skip(grund="gave_up")], _get=lambda *_: {"pfade": [_path()]}
+        merged, handed_over, _etag = tool._merged(
+            "https://example.invalid", "t", "u", [_skip(grund="gave_up")], _get=lambda *_: ({"pfade": [_path()]}, None)
         )
         assert merged == [_path()] and handed_over is False
         assert "keeping the stored path at box 0" in capsys.readouterr().out
@@ -1154,8 +1210,8 @@ class TestSkipEntries:
     def test_a_skip_does_land_in_a_box_that_holds_nothing(self, monkeypatch):
         from tools.eigenhand import pfad as tool
 
-        merged, _handed = tool._merged(
-            "https://example.invalid", "t", "u", [_skip(grund="gave_up")], _get=lambda *_: {"pfade": []}
+        merged, _handed, _etag = tool._merged(
+            "https://example.invalid", "t", "u", [_skip(grund="gave_up")], _get=lambda *_: ({"pfade": []}, None)
         )
         assert [entry["status"] for entry in merged] == ["skipped"]
 

@@ -127,7 +127,13 @@ from core.eigenhand.pfad import (  # noqa: E402
 )
 from core.eigenhand.plan import load_plan, shaping_form_of  # noqa: E402
 from core.eigenhand.tintentreue import KEY_AIOU, KEY_EXKURSION  # noqa: E402
-from tools.eigenhand.apiclient import admin_token, api_base, request_bytes, request_json  # noqa: E402
+from tools.eigenhand.apiclient import (  # noqa: E402
+    admin_token,
+    api_base,
+    request_bytes,
+    request_json,
+    request_json_with_etag,
+)
 from tools.eigenhand.kartei import archived_pfade, load_kartei  # noqa: E402
 from tools.eigenhand.store import check_hand_id, hand_dir  # noqa: E402
 
@@ -654,9 +660,9 @@ def _merged(
     archived: dict[int, dict] | None = None,
     replace_authored: bool = False,
     apply: bool = True,
-    _get=request_json,
-) -> tuple[list[dict], bool]:
-    """The freshly followed entries over the paths the Fassung holds, and whether one was given up.
+    _get=request_json_with_etag,
+) -> tuple[list[dict], bool, str | None]:
+    """The freshly followed entries over the paths the Fassung holds, whether one was given up, and the read's token.
 
     The write is a FULL replacement — right for the boxes a run actually
     followed, wrong for every other one (Copilot review, PR #598). `--box`
@@ -701,9 +707,18 @@ def _merged(
     this run did not reproduce it. The skip is dropped and the run says so; a
     box that holds nothing keeps the skip, which is where it is worth something.
 
+    The third return value is the TOKEN of this very read (`ETag`). The push
+    is guarded by it: between this read and the write the author can have drawn
+    a box in the workbench, and a merge assembled from the older list would put
+    that drawing back to what it was. The server refuses a push whose token no
+    longer matches (412), so the merge is either made on the current list or
+    not stored at all — which is why the token has to travel from the read that
+    produced the merge rather than from a second one.
+
     `_get` is the seam the test calls through; every caller uses the default.
     """
-    stored = (_get("GET", url, token) or {}).get("pfade") or []
+    answer, etag = _get("GET", url, token)
+    stored = (answer or {}).get("pfade") or []
     by_stored_box = {entry.get("box_index"): entry for entry in stored}
     over_a_path = sorted(
         entry["box_index"]
@@ -790,7 +805,7 @@ def _merged(
     kept = [entry for entry in stored if entry.get("box_index") not in followed]
     if kept:
         print(f"  keeping {len(kept)} stored path(s) for the boxes this run did not follow", flush=True)
-    return sorted(entries + kept, key=lambda item: item["box_index"]), bool(hit and replace_authored)
+    return sorted(entries + kept, key=lambda item: item["box_index"]), bool(hit and replace_authored), etag
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -844,7 +859,7 @@ def main(argv: list[str] | None = None) -> int:
         # all. Filing only the followed boxes made a run look like a whole-row
         # replacement — the exact thing `_merged` exists to prevent (review of
         # PR #598).
-        body, handed_over = _merged(
+        body, handed_over, etag = _merged(
             base,
             token,
             url,
@@ -896,7 +911,12 @@ def main(argv: list[str] | None = None) -> int:
         # covers every stored Fassung of the strip, and the server's 409 is the
         # one check that does not run on this machine.
         push_url = f"{url}?replace_authored=true" if handed_over else url
-        stored = request_json("PUT", push_url, token, {"format": wire_format, "pfade": body}) or {}
+        # The token of the read this merge was made on. The server demands it
+        # and refuses (412) when the stored list has moved since — a box the
+        # author drew in the workbench while this run was following is exactly
+        # that case, and the merge above cannot know about it. Re-run, and the
+        # fresh read carries the drawing.
+        stored = request_json("PUT", push_url, token, {"format": wire_format, "pfade": body}, if_match=etag) or {}
         # A skip is an entry, not a path. Counting the two together would put
         # the four states back into one number — which is the whole reason the
         # Skip-Eintrag exists (found in review, PR #639).

@@ -113,28 +113,55 @@ def _archive_snapshot(tmp_path: Path, stamp: str = "0001") -> Path:
 
 
 def _bridge(api: Harness, loop: asyncio.AbstractEventLoop):
-    """Route the sync client's calls into the in-process app from a worker thread."""
+    """Route the sync client's calls into the in-process app from a worker thread.
+
+    Both halves of the client, because the path write is guarded: the read
+    hands its `ETag` back and the push has to echo it, so a bridge that carried
+    only bodies would turn the real server's 428 into a test failure nobody
+    could read.
+    """
     # Loopback, not the harness's `testserver`: the client refuses a plaintext
     # scheme to anywhere else, and this test drives the REAL client.
     base = "http://127.0.0.1"
 
-    def request_json(method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False):
+    def answer(method: str, url: str, body: dict | None = None, if_match: str | None = None):
         path = url[len(base) :] if url.startswith(base) else url
+        headers = {**api.admin_headers(), **({} if if_match is None else {"If-Match": if_match})}
         future = asyncio.run_coroutine_threadsafe(
-            api.client.request(method, path, json_body=body, headers=api.admin_headers()), loop
+            api.client.request(method, path, json_body=body, headers=headers), loop
         )
-        res = future.result(timeout=60)
+        return path, future.result(timeout=60)
+
+    def request_json(method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False, **kwargs):
+        path, res = answer(method, url, body, kwargs.get("if_match"))
         if res.status == 404 and allow_404:
             return None
         if res.status >= 400:
             raise SystemExit(f"{method} {path} → {res.status}: {res.body[:400]!r}")
         return res.json()
 
-    return request_json
+    def request_json_with_etag(
+        method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False, **kwargs
+    ):
+        path, res = answer(method, url, body, kwargs.get("if_match"))
+        if res.status == 404 and allow_404:
+            return None, None
+        if res.status >= 400:
+            raise SystemExit(f"{method} {path} → {res.status}: {res.body[:400]!r}")
+        return res.json(), res.headers.get("etag")
+
+    return request_json, request_json_with_etag
+
+
+def _install_bridge(module, api: Harness, loop: asyncio.AbstractEventLoop, monkeypatch) -> None:
+    plain, with_etag = _bridge(api, loop)
+    monkeypatch.setattr(module, "request_json", plain)
+    if hasattr(module, "request_json_with_etag"):
+        monkeypatch.setattr(module, "request_json_with_etag", with_etag)
 
 
 async def _restore(api: Harness, snapshot: Path, monkeypatch) -> None:
-    monkeypatch.setattr(sync_mod, "request_json", _bridge(api, asyncio.get_running_loop()))
+    _install_bridge(sync_mod, api, asyncio.get_running_loop(), monkeypatch)
     monkeypatch.setenv("ADMIN_TOKEN", "irrelevant — the bridge carries the harness header")
     await asyncio.to_thread(
         sync_mod.main, ["--hand", HAND, "--api", "http://127.0.0.1", "--from", str(snapshot), "--mit-streifen"]
@@ -149,7 +176,7 @@ async def _restored(api: Harness) -> dict:
 
 async def _in_thread(api: Harness, module, argv: list[str], monkeypatch) -> None:
     """Run one of the local CLIs against the in-process app, as an operator would."""
-    monkeypatch.setattr(module, "request_json", _bridge(api, asyncio.get_running_loop()))
+    _install_bridge(module, api, asyncio.get_running_loop(), monkeypatch)
     monkeypatch.setenv("ADMIN_TOKEN", "irrelevant — the bridge carries the harness header")
     await asyncio.to_thread(module.main, ["--hand", HAND, "--api", "http://127.0.0.1", *argv])
 
@@ -160,6 +187,26 @@ async def _pfade(api: Harness, strip: str, fassung: str) -> dict:
     )
     assert res.status == 200, res.body
     return res.json()
+
+
+async def _give_up(api: Harness, strip: str, fassung: str, pfad_format: int = PFAD_FORMAT) -> None:
+    """The one door truth can disappear through: the terminal hands a drawing over.
+
+    Read then replace, with the token of that read — the same two steps the
+    tool makes, and the window the token closes. Spelled as a helper because
+    every link-3 test needs the box empty before the archive may fill it.
+    """
+    url = f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade"
+    read = await api.client.request("GET", url, headers=api.admin_headers())
+    assert read.status == 200, read.body
+    res = await api.client.request(
+        "PUT",
+        url,
+        params={"replace_authored": "true"},
+        json_body={"format": pfad_format, "pfade": []},
+        headers={**api.admin_headers(), "If-Match": read.headers["etag"]},
+    )
+    assert res.status == 200, res.body
 
 
 async def _draw_by_hand(api: Harness, layout: dict, pfad_format: int = PFAD_FORMAT, **extra) -> tuple[str, str, dict]:
@@ -191,11 +238,16 @@ async def _draw_by_hand(api: Harness, layout: dict, pfad_format: int = PFAD_FORM
         "flecken_n": None,
         **extra,
     }
+    url = f"/eigenhand/strips/{HAND}/{row['strip']}/{row['fassung']}/pfade"
+    # Read first, then push against the list that read returned: the write is
+    # guarded, and this stands in for the workbench save the drawing comes from.
+    read = await api.client.request("GET", url, headers=api.admin_headers())
+    assert read.status == 200, read.body
     res = await api.client.request(
         "PUT",
-        f"/eigenhand/strips/{HAND}/{row['strip']}/{row['fassung']}/pfade",
+        url,
         json_body={"format": pfad_format, "pfade": [entry]},
-        headers=api.admin_headers(),
+        headers={**api.admin_headers(), "If-Match": read.headers["etag"]},
     )
     assert res.status == 200, res.body
     return row["strip"], row["fassung"], res.json()["pfade"][0]
@@ -302,14 +354,7 @@ class TestHandDrawnBahn:
         # is EMPTY afterwards, which is what makes the restore below fill it —
         # a box that carries another path is left exactly as it is instead
         # (`tests/test_eigenhand_sync.py`, the same review's finding).
-        given_up = await api.client.request(
-            "PUT",
-            f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade",
-            params={"replace_authored": "true"},
-            json_body={"format": PFAD_FORMAT, "pfade": []},
-            headers=api.admin_headers(),
-        )
-        assert given_up.status == 200, given_up.body
+        await _give_up(api, strip, fassung)
         assert (await _pfade(api, strip, fassung))["pfade"] == []
 
         # Link 3: the archive puts it back, and the real `check_paths` has to
@@ -338,14 +383,7 @@ class TestHandDrawnBahn:
         record = json.loads((snapshot / "kartei.json").read_text(encoding="utf-8"))
         assert record["strips"][strip]["fassungen"][0]["pfade"]["pfad_format"] == 2
 
-        given_up = await api.client.request(
-            "PUT",
-            f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade",
-            params={"replace_authored": "true"},
-            json_body={"format": PFAD_FORMAT, "pfade": []},
-            headers=api.admin_headers(),
-        )
-        assert given_up.status == 200, given_up.body
+        await _give_up(api, strip, fassung)
         assert (await _pfade(api, strip, fassung))["format"] == PFAD_FORMAT
 
         shutil.rmtree(dataroot)

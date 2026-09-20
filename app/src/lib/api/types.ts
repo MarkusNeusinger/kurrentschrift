@@ -1193,6 +1193,18 @@ export interface EigenhandPfadList {
   boxes: EigenhandStripBox[];
 }
 
+// A Bahn list together with the `ETag` the same answer carried — the token a
+// per-box write echoes in `If-Match`. Paired in one value rather than left to
+// the caller to keep side by side, because a token belonging to another
+// reading is worse than none: it turns every save into a 412 or, if it happens
+// to be the newer one, writes over a list nobody looked at. `etag` is null only
+// where an intermediary dropped the header; a save then has nothing to send and
+// the caller re-reads rather than writing blind.
+export interface EigenhandPfadListWithEtag {
+  list: EigenhandPfadList;
+  etag: string | null;
+}
+
 // Die Tintentreue — „folgt der Bahn die Tinte?" per word box, DERIVED on read
 // from the sensors the follower stored (`core/eigenhand/tintentreue.py`).
 // Three measured steps and ONE grey state: grey is the absence of a

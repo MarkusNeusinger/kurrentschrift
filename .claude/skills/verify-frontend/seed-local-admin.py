@@ -148,23 +148,39 @@ class AdminApi:
         self.base = checked_base(base)
         self.token = token
 
-    def request(self, method: str, path: str, body: dict[str, Any] | None = None) -> Any:
+    def request(
+        self, method: str, path: str, body: dict[str, Any] | None = None, *, if_match: str | None = None
+    ) -> Any:
+        return self.answer(method, path, body, if_match=if_match)[0]
+
+    def answer(
+        self, method: str, path: str, body: dict[str, Any] | None = None, *, if_match: str | None = None
+    ) -> tuple[Any, str | None]:
+        """The parsed body and the answer's `ETag` — a guarded write needs both.
+
+        The Streifen-Pfad routes refuse a write that cannot say which stored
+        list it was made on (428) and one that names an older list (412), so a
+        seeder that only ever saw bodies could not push a path at all.
+        """
         payload = None if body is None else json.dumps(body).encode()
         request = urllib.request.Request(f"{self.base}{path}", data=payload, method=method)
         request.add_header("X-Admin-Token", self.token)
         if payload is not None:
             request.add_header("Content-Type", "application/json")
+        if if_match is not None:
+            request.add_header("If-Match", if_match)
         try:
             # The URL was checked to be loopback in `checked_base`; nothing here
             # can be pointed at a remote host by a flag.
             with urllib.request.urlopen(request) as response:
                 raw = response.read()
+                etag = response.headers.get("ETag")
         except urllib.error.HTTPError as error:
             detail = error.read().decode(errors="replace")[:400]
             raise SystemExit(f"{method} {path} → {error.code}: {detail}") from error
         except urllib.error.URLError as error:
             raise SystemExit(f"{method} {path} → no answer from {self.base}: {error.reason}") from error
-        return json.loads(raw) if raw else None
+        return (json.loads(raw) if raw else None), etag
 
 
 def checked_base(base: str) -> str:
@@ -280,10 +296,15 @@ def seed(api: AdminApi, hand: str, strips: list[str], fassung: str, with_paths: 
         )
         if not with_paths:
             continue
+        # Read first, then push against the list that read returned: the path
+        # write demands the token of the list it was made on (428 without one,
+        # 412 when the stored list has moved since). The seeded row is empty
+        # here, but the seeder pushes the way the tools do rather than the way
+        # that happens to work on a fresh database.
+        pfade_path = f"/eigenhand/strips/{hand}/{row['strip']}/{fassung}/pfade"
+        _stored, token = api.answer("GET", pfade_path)
         api.request(
-            "PUT",
-            f"/eigenhand/strips/{hand}/{row['strip']}/{fassung}/pfade",
-            {"format": PFAD_FORMAT, "pfade": pfad_entries(row, geometry, index)},
+            "PUT", pfade_path, {"format": PFAD_FORMAT, "pfade": pfad_entries(row, geometry, index)}, if_match=token
         )
         print(
             f"seeded {row['strip']}/{fassung}: {geometry['width_px']}×{geometry['height_px']} px, {len(row['boxes'])} boxes"
