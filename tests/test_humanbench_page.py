@@ -12,6 +12,7 @@ stays out of this repo (``docs/reference/quellen-und-rechte.md`` §5).
 from __future__ import annotations
 
 import copy
+import json
 import re
 
 import pytest
@@ -62,6 +63,13 @@ def config_of(html: str, field: str) -> str:
     match = re.search(rf'"{field}":"([^"]*)"', html)
     assert match, f"no {field} in the emitted CONFIG"
     return match.group(1)
+
+
+def config_object(html: str) -> dict:
+    """The whole inlined CONFIG — for the fields that are lists rather than text."""
+    match = re.search(r"^const CONFIG = (.*);$", html, re.MULTILINE)
+    assert match, "no CONFIG in the emitted page"
+    return json.loads(match.group(1))
 
 
 # ----------------------------------------------------- the result-file contract
@@ -176,8 +184,40 @@ def test_the_authenticity_page_asks_about_writing_and_not_about_accuracy():
 
 
 def test_a_category_round_cannot_be_given_a_two_way_question():
-    with pytest.raises(ValueError, match="need two panels"):
+    with pytest.raises(ValueError, match="needs two panels"):
         build_page(SINGLE, question="authentic")
+
+
+def test_a_paired_round_cannot_be_given_the_strip_question():
+    with pytest.raises(ValueError, match="one panel at a time"):
+        build_page(PAIRED, question="tintentreue")
+
+
+def test_the_strip_question_swaps_the_whole_category_set():
+    """Three steps and four marks instead of six fit categories, and the result
+    order swaps with them: a verdict string joined in the other set's order
+    would be unreadable for the round that emitted it."""
+    html = build_page(SINGLE, round_label="1", question="tintentreue")
+    config = config_object(html)
+    assert config["tag"] == "TINTENTREUE/1"
+    assert "Folgt die Bahn der Tinte?" in html
+    codes = [category["code"] for category in config["categories"]]
+    assert codes == ["F", "T", "N", "X", "O", "P", "A", "H", "U"]
+    assert config["order"] == codes
+    # None of the fit taxonomy leaks onto the page.
+    assert "Gewackel" not in html and "Knick nur am Rand" not in html
+
+
+def test_a_strip_mark_combines_with_its_step_instead_of_clearing_it():
+    """The fit taxonomy's finding clears „Gut" because a fit cannot be both.
+    A strip mark must NOT clear its step: the step is the verdict, and the mark
+    only says which sensor should have caught it. Pinned on the KIND, which is
+    what the page's toggle branches on."""
+    html = build_page(SINGLE, question="tintentreue")
+    kinds = {c["code"]: c["kind"] for c in config_object(html)["categories"]}
+    assert kinds["F"] == "solo" and kinds["O"] == "detail" and kinds["U"] == "modifier"
+    assert "c.kind === 'modifier' || c.kind === 'detail'" in html
+    assert 'data-kind="detail"' in html
 
 
 def test_an_unknown_question_is_refused_at_build_time():

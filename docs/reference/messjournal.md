@@ -249,6 +249,7 @@ die DB) — mit seiner Bedingung.
 | sep13 | Tintenpfad | [Laufform A48 — die Saat-Korrespondenz](#laufform-a48-sep13--die-saat-korrespondenz-die-zuordnung-trägt-die-zeile-nicht) | Pre-Reg + gemessen · **ehrliches Negativ** an Gate (G) · Mechanismus bestätigt, nichts adoptiert | Weg (1) der §7.11-Zeile „Vorkommen aus der Tintenpfad-Bahn" (Autor-Entscheid **A48**): die Anker über die SAAT zuordnen statt über die Bogenlänge. Ein Knopf `harvest --occurrences {fit,tintenpfad}`, Vorgabe `fit` (ausgelieferter Stand byte-gleich, Wort-Records bis auf `seconds`). **Die Zuordnung trägt:** Gate (K), wie vorregistriert über die KÖRPER-ITEMS gelesen, steht bei **328 von 334 = 98,2 %** (Schranke 80 %; durchgehend bewiesen 88,9 %, über die Item-Punkte 98,8 %, Beweis-Reste Median 8,0e-15 je Slot, max 1,03e-13) — das dritte Glied der Kette ist das einzige, über das `core/compose.py` nicht Buch führt, und es wird je Punkt BEWIESEN statt geschätzt, lokal, weil der `d`-Anstieg stückweise affin ist. Daneben, und KEINE Gate-Zahl: die Identifikation greift auf **277 von 277** Slots, gesetzt werden **92,5 %** aller Anker (30 736 / 33 240) — die Anker-Quote zählt eine andere Frage, und die 2 504 fehlenden sind nachgezählt: **85,2 %** liegen gar nicht erst im komponierten Item (weggeschnitten), 14,5 % sind beweis-bedingt, **0,3 %** scheitern an der Saat. (G) fällt damit an der Schere, nicht am Beweis und nicht an der Saat. **Die Zeile trägt nicht:** die Komposition schneidet die Kopplungs-Enden weg, es fehlen **7,5 %** aller Anker (2 504 / 33 240; Median-Slot 7 von 120, die 212 unvollständigen 9), nur 65 Slots sind vollständig, und die Ganz-oder-gar-nicht-Regel lässt **58 von 277** Vorkommen übrig (Fit-Kontrolle desselben Laufs 227), Zeilen mit n ≥ 4 **5 statt 16**. Gate (F) grün (zwei Ernten byte-gleich, Diagnose nur in `seconds` verschieden), (J) grün (`core/` unberührt, 2 903 Tests mit den lokalen Fixtures, 2 892 ohne). Gate (H): Anker-Abstand zur schlüsselgleichen Kontrollkarte Median **0,0523 xh** (p90 0,1328, max 0,2891), auf den 58 gemeinsamen Vorkommen 0,0542 / 0,1436 / 0,5235 — weit über dem Ableseboden. Gate (I) asymmetrisch: gegen die stehende Karte Wörter **0,104883** (−0,003456, grün) und Paare 0,149306 (+0,001070, **rot** bei Schranke +0,0005, kein Kill); gegen die KONTROLLE auf gleicher Schlüsselmenge (0,108951 / 0,148119) Wörter −0,004068 bei **31 : 21 : 44** gepaart — mit dem Vorbehalt, dass die Arm-Zeilen auf viel weniger Vorkommen stehen (`e` n = 3 gegen 30). Rettungswege: die geschnittenen Enden fitten (Weg 2), oder `core/compose.py` einen Abtastindex mitführen lassen (Autor-Entscheid) |
 | sep20 | Eigenhand | [Tintentreue — vorläufige Schwellen](#tintentreue-sep20--vorregistrierung-der-vorläufigen-schwellen-je-kasten) | Pre-Reg · **nichts adoptiert** | Die Ampel je Wortkasten (`core/eigenhand/tintentreue.py`): drei gemessene Stufen, ein grauer Zustand mit Grund, der schlechteste Sensor entscheidet (`severity = max` + `SENSOR_ORDER`, nicht `_summarise`). Acht Startwerte samt Herkunft, alle an der PLATTE bzw. dev-19 geborgt und als „vorläufig" etikettiert, bis die EINE blinde Kalibrierung je Hand läuft (Q10 b); Format-1-Zeilen bleiben grau, `jumps`/`hairpins` bewerten mangels Anker nicht. Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile; kein Lineal bewegt, keine Wurzel angefasst |
 | sep20 | Eigenhand | [Trainingssatz — zwei Rückhaltemengen](#trainingssatz-sep20--vorregistrierung-der-zwei-rückhaltemengen) | Pre-Reg · **nichts gezogen, nichts gemessen** | Die Ziehung, nach der `tools/eigenhand/training_set.py` die von Hand nachgefahrenen Bahnen teilt: `practice` + ZWEI getrennte Rückhaltemengen (`holdout-follower`, `holdout-release`) — Autor-Entscheid vom 2026-09-20 gegen die Plan-Empfehlung, und damit zugleich FM3 (b). Einheit ist der STREIFEN (Fassungen sind Wiederholungen, Kästen einer Zeile ein Zug); die Zugehörigkeit ist eine reine Funktion aus Schlüssel, Hand und Streifen-ID, gezogen über den EINGEFRORENEN Plan — ohne Netz, ohne eine einzige Bahn, ein zweites Ziehen verweigert, ein später angehängter Streifen wird mit Datum nachgetragen. Fünf Gates für den Tag der ersten Zahl (eigene Vorregistrierung · einmaliger Verbrauch · die beiden Mengen sehen einander nicht · keine Bench-Berührung · kein Byte im Repo). Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile |
+| sep20 | Eigenhand | [Tintentreue-Kalibrierung — die blinde Runde](#tintentreue-kalibrierung-sep20--vorregistrierung-der-blinden-runde-je-hand) | Pre-Reg · **nichts beurteilt, nichts adoptiert** | Die Runde, die die acht geborgten Schwellen ersetzt (Q10 b, gebaut als letzter Posten der Phase 2 — Frage F): 30 Kästen einer Hand, blind in **drei Stufen plus vier Merkmale** beurteilt, Abbildung nicht interpretativ (die gesetzte Stufe IST die Stufe, je Merkmal genau ein Sensor). Nachbau statt Konfiguration — `humanbench` liest eingefrorene Fixture-Crops und hat sechs Fit-Kategorien —, geteilt wird nur die SEITE (`STRIP_CATEGORIES`), der Bauer wohnt bei den Pixeln (`tools/eigenhand/tintentreue_calibration.py`); Verfahren in [`menschliche-bewertung.md`](menschliche-bewertung.md) §8b, vor dem Code geschrieben. Ziehung nach der VORLÄUFIGEN Stufe geschichtet (Prävalenz damit keine Aussage über die Hand), Auswerteplan mit Verlässlichkeits-Schranke, Mindestbesetzung, Quantil-Schnitt und Rundung in die strengere Richtung. Gates (F)–(H) neben den Adoptions-Gates (A)–(E) von „Tintentreue `sep20`"; `VORLAEUFIG` unberührt, das Etikett bleibt stehen. Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -17787,3 +17788,135 @@ Streifens, der Statusfilter und die Trennung von den Bench-Wurzeln — gegen
 `tests/test_eigenhand_training_set.py`. Der echte Export ist lokal nicht
 lauffähig: er zieht reservierte Pixel aus der geteilten Datenbank, und es
 gibt noch keine einzige Bahn, die er ziehen könnte.
+
+### Tintentreue-Kalibrierung `sep20` — Vorregistrierung der blinden Runde je Hand
+
+Vorregistrierung VOR der Runde (die §11b-Praxis). Gegenstand ist die EINE
+blinde Kalibrierung je Hand, die die acht geborgten Schwellen des Eintrags
+„Tintentreue `sep20`" oben durch gemessene ersetzt. **Nichts beurteilt,
+nichts adoptiert, keine Konstante bewegt** — gebaut ist das INSTRUMENT, die
+Runde selbst ist ein Handgriff des Autors: sie braucht 30 echte Wortkästen,
+die nur in der geteilten Datenbank und im gitignorierten lokalen Speicher
+liegen, und einen blinden Durchgang. Das Etikett „vorläufig" in
+`core/eigenhand/tintentreue.py` bleibt bis dahin stehen, und `VORLAEUFIG` ist
+unverändert.
+
+**Keine Duell-Route, keine Verfahrensseite, keine Ledger-Zeile.** Dieselbe
+Buchführung wie bei den beiden Einträgen darüber und aus demselben Grund:
+hier bewegt sich kein Arm einer Folger-Route, die Route-Spalte trägt darum
+„Eigenhand", bewusst außerhalb von `ROUTE_PAGES`
+(`tools/docs_register/__init__.py`), und der Headline-Ledger bleibt unberührt.
+
+**Die Autor-Entscheide, die sie trägt.** **Q10 (b)** (2026-09-18): Start mit
+geborgten Werten unter dem Etikett „vorläufig", danach EINE vorregistrierte
+Kalibrierung je Hand — 30 Kästen blind beurteilt „nach dem humanbench-Muster",
+Schwellen einmal justiert, datiert eingefroren, nie ein Regler. **Frage F**
+(2026-09-20): das Kalibrier-Instrument steht im Bauplan der Phase 2 und wird
+als LETZTER Posten gebaut.
+
+**Das Instrument, und warum es ein Nachbau ist.** `tools/humanbench` liest
+eingefrorene Fixture-Crops und bricht bei abweichender Wurzel ab, und seine
+Taxonomie hat sechs Fit-Kategorien gegen drei Ampelstufen. Geteilt wird
+deshalb nur die SEITE (`tools/humanbench/page.py`, vierter Kategoriensatz
+`STRIP_CATEGORIES` neben den bestehenden — Casing, Zeitnahme, Wiederaufnahme,
+Ergebnisformat); der Bauer ist ein Geschwister bei den Pixeln, die er liest:
+`tools/eigenhand/tintentreue_calibration.py` (`build` · `analyse`). Das
+Verfahren — Frage, Kategorien, Abbildung, Konstruktionsregeln, Auswerteplan —
+steht vollständig in
+[`menschliche-bewertung.md`](menschliche-bewertung.md) §8b und wurde **vor**
+dem Code geschrieben, wie es der Nachzieh-Anlass jener Datei verlangt.
+
+**Die Frage und die Kategorien.** „Folgt die gezeichnete Bahn der Tinte
+dieses Kastens?" — eine Genauigkeitsfrage über die BAHN, nie ein Urteil über
+die Schrift (das ist der Befund und eine andere Frage über dasselbe Bild).
+Ein Kasten bekommt **genau eine Stufe** (`F` folgt · `T` folgt teils · `N`
+folgt nicht · `X` nicht beurteilbar = Ausschluss) und beliebig viele
+**Merkmale**, die die Stufe nicht löschen (`O` Tinte ohne Bahn · `P` Bahn auf
+leerem Papier · `A` Absetzer falsch · `H` Sprünge und Haken), dazu `U`
+unsicher als Modifikator.
+
+**Die Abbildung auf die drei Stufen.** Sie ist nicht interpretativ: die
+gesetzte Stufe IST die Stufe, gegen die die Ampel gehalten wird; die vier
+Merkmale zeigen je auf genau einen Sensor (`O` → Tinte ohne Bahn, `P` →
+Papier-Exkursion, `A` → Absetzer (Bahn), `H` → Sprünge und Haken). Zwei
+Lücken sind benannt statt gefüllt: **AIoU hat kein Merkmal** (das
+Flächenmittel sieht `O` und `P` noch einmal und unschärfer; eine eigene Frage
+zählte dieselbe Beobachtung zweimal), seine Grenze hängt allein an der Stufe
+und ist damit die schwächste Ableitung der Runde; und **`H` hat ein Merkmal,
+aber heute keine Grenze** — genau der Anker, der dem Sensor fehlt.
+
+**Die Ziehung.** Grundgesamtheit sind die Wortkästen einer Hand, die eine
+GEMESSENE Ampel tragen (`GET /eigenhand/pfade/{hand}`, meta-only); jeder graue
+Zustand und jeder Skip-Eintrag fällt heraus, weil an ihm nichts zu
+kalibrieren ist. Geschichtet wird nach der VORLÄUFIGEN Stufe, reihum
+ausgeteilt, innerhalb der Schicht gesät gemischt — sonst besteht eine Runde
+über eine eingespielte Hand fast nur aus grünen Kästen, und die gesuchte
+Grenze liegt dort, wo keine Fälle sind. Der Preis steht dabei: **die
+Prävalenz dieser Runde ist keine Aussage über die Hand.** Der Rest ist
+Rückhaltemenge und wird mit `--only` bestätigt, nie neu gewürfelt. Die acht
+geborgten Schwellen, unter denen geschichtet wurde, stehen im
+Provenienz-Stempel — ohne sie ist die Ziehung nicht mehr rekonstruierbar,
+sobald die Zahlen ersetzt sind.
+
+**Der Auswerteplan, in bindender Reihenfolge** (Code, damit er nicht
+umgestellt werden kann): (1) **Verlässlichkeit zuerst** über die blinden
+Wiederholungen, nach STUFE geschichtet statt nach Häufigkeit; (2)
+**Besetzung** je Stufe; (3) Abbildung anwenden, `X` ausschließen, `U`
+zweimal rechnen; (4) **Ampel gegen Mensch** — Übereinstimmung, Monotonie,
+Falsch-Grün-Rate gegen die vorläufigen Zahlen; (5) **die Grenzen je Sensor**;
+(6) **Sprünge und Haken** als benanntes offenes Stück; (7) **ein Satz, ein
+Datum**.
+
+**Die Zahlen des Plans, vorab und ohne freien Parameter.**
+
+| Größe | Wert | warum |
+|---|---|---|
+| Kästen je Runde | **30** | Q10 (b), wörtlich |
+| Wiederholungen | 8, mindestens **6** vollständige Paare | unter 6 trägt die Runde keinen Adoptionsanspruch (dieselbe Schranke wie `MIN_PAIRED_REPEATS`) |
+| Verlässlichkeit | exakte Stufen-Übereinstimmung ≥ **2/3**, höchstens **1** Paar zwei Stufen auseinander | ein Urteil, das sich selbst um zwei Stufen widerspricht, kann keine Grenze tragen |
+| Mindestbesetzung | **5** Kästen je Stufe | darunter „zu wenig Daten", die betroffene Grenze bleibt geborgt |
+| grüne Grenze | **90-%-Quantil** der Lesungen über die `F`-Kästen | die Grenze soll die grünen Fälle einschließen, nicht ihren Median treffen |
+| gelbe Grenze | dasselbe über `F` ∪ `T` | |
+| AIoU | dieselben Quantile von unten (**10 %**), weil größer besser ist | |
+| Rundung | zwei Nachkommastellen, in die **strengere** Richtung | ein falsches Grün ist die einzige Fehlersorte, die Arbeit am falschen Ort erzeugt |
+| Absetzer | gelbe Grenze fällt von ±1 auf 0, wenn ≥ **5** Kästen genau eine Abweichung tragen und die Mehrheit davon `N` heißt | Regel, kein Quantil — der Sensor ist ganzzahlig |
+| Sprünge/Haken | Grenze nur VORGESCHLAGEN bei ≥ **5** `H`-Kästen und überlappungsfreien Lesungen | sonst bleibt der Sensor ungewertet |
+
+Eine grüne Grenze, die nach der Rundung nicht mehr strenger ist als ihre
+gelbe, wird **verworfen** statt geglättet — **Gleichstand eingeschlossen**,
+denn ein gelbes Band der Breite null ist keine dreistufige Ampel mehr; der
+geborgte Wert bleibt stehen und wird als geborgt berichtet. **Das Etikett
+„vorläufig" fällt nur mit dem vollständigen Satz:** bleibt auch nur eine
+Grenze geborgt, bleibt es stehen, und der gedruckte Block trägt
+`vorlaeufig=True` samt Zeilenkommentar an jeder ungemessenen Zahl.
+
+**Die Gates, mit Kill-Kriterien.** Die Adoptions-Gates **(A)–(E)** stehen im
+Eintrag „Tintentreue `sep20`" und gelten unverändert (Trennschärfe · kein
+toter Zweig · keine falsche Freigabe · ein Satz, ein Datum · keine
+Bench-Berührung). Diese Vorregistrierung fügt die Gates der RUNDE hinzu:
+**(F) Verlässlichkeit vor jeder Zahl** — liegt sie unter der Schranke oben,
+wird keine Schwelle gesetzt, auch keine einzelne. *Kill:* eine Grenze, die
+aus einer Runde unter der Schranke übernommen wird. **(G) Besetzung** — eine
+Stufe unter 5 Kästen trägt keine Grenze; die betroffenen Sensoren bleiben
+geborgt und heißen im Bericht so. *Kill:* eine Zahl, die aus weniger
+abgeleitet wird. **(H) Die Seite bleibt lokal** — sie trägt die reservierten
+eigenen Pixel, wird nie veröffentlicht und nie committet (`quellen-und-rechte.md`
+§5). *Kill:* ein Byte der Runde im Repo.
+
+**Welche eingefrorenen Lineale sich nicht bewegen — und es hier auch nicht
+getan haben.** Kein Edit an `core/quality.py`, `core/quality_suetterlin.py`
+oder `core/word_metric.py`; keine Fixture-Wurzel angefasst; keine Zahl dieser
+Runde in einem Bench-Report. `core/eigenhand/tintentreue.py` ist **unberührt**
+— dieser PR baut das Messgerät, nicht das Ergebnis.
+
+**Was diese Vorregistrierung nicht beantwortet, und heute nicht beantworten
+kann.** Ob die 30 Kästen reichen, ob die vier Merkmale die Sensoren wirklich
+treffen und ob `H` seinen Anker bekommt. Lokal ist davon nichts prüfbar: die
+Streifen-Pixel liegen ausschließlich in der geteilten Datenbank und im
+gitignorierten Speicher, und der einzige zulässige Weg dorthin ist das LESEN
+über die admin-gegatete API bzw. den lokalen Speicher — ein direkter
+SQLAlchemy-Zugriff aus einem Kalibrierskript träfe von hier aus die
+PRODUKTIONS-Datenbank und ist verboten. Geprüft ist allein die REGEL — Ziehung,
+Schichtung, Blindstellung, Bildmaß gegen Kasten-Rechteck, Parser,
+Quantil-Schnitt, Rundungsrichtung und die Verweigerung einer Grenze unter der
+Schranke — gegen `tests/test_eigenhand_tintentreue_calibration.py`.

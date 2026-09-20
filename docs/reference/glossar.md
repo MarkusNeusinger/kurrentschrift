@@ -76,7 +76,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
 - **R** — R1–R5 §5 · Radierer §5 · Rastersuchlauf §3 · Ratsche (Ratschen-Budget) §3 · Re-Baseline §4 · Rechteck-Reparatur §5 · Referenzsatz (nachgefahren) §4 · Referenzwörter (Eigenhand) §5 · Registrierung §2 · Regel-Fix vor Override §5 · Render-Kontext §2 · Report-Only-Woche §2 · Report-Spalte §4 · reproduced §5 · Reservierungs-Veto §4 (→ Lineal-Soll-Budget) · Residualprofil §4 · Rückfahrt statt Absetzen (→ Strang-Dekodierung) §3 · resolution §5 · Restart-Klasse (`CAP_RESTART_BASES`) §2 · Retrace §1 · Retrace-Guard §3 · Retrace-Segment §4 · Rettungsweg §5 · Rohzahlen-Chip §5 · Rollen-Spalte (geplant) §5 · Rollen-Token §5 · Route G §4 · Roving-Liste §5 · Rückgabe an Autor §5 · Rückhaltemenge §4 · Rückhaltemenge (Eigenhand) §5
 - **S** — Saat-Abstand §3 · Saat-Form §3 · Saat-Korrespondenz §3 · Saat-Rampe (→ Saat-Form) §3 · Saat-Rest (→ Saat-Abstand) §3 · Saat-Überschuss (→ Saat-Abstand) §3 · Saat-Versatz (→ Saat-Abstand) §3 · Same-Hand-Disziplin §4 · Säulenabgang (`stem_depart`) §2 · Schienen-Auslauf §3 · Schlange (Folger) §3 · Schräglage §1 · Schreib-Karte §2 · Schreibtafel §7 · Schriftgrößen-Leiter §7 · Schriftkunde (Seite) §7 · Schleifenbereich §2 · Schleifen-Registrierung §2 · Schleifen-Schluss (→ Zwei-Züge-Modell) §4 · Schleifen-Sehne §4 · Strichart-Regel §5 · Strichtrennung (`stroke_separation`, → Zwei-Züge-Modell) §4 · Schnittband §5 · Schnittmarken §5 · Schwellzug §1 · Scope-Leiste §5 · Score §4 · Segment-Attribution §4 · Sehnen-Schwelle §3 · Sektion §2 · Selbstsprung (→ Strang-Dekodierung) §3 · Shaping §2 · Sichtbarkeitsschwelle §4 · Sieb-Disziplin (→ Siebung) §5 · Siebung §5 · Sigma-Lognormal §6 · Skelett §3 · Skip-Eintrag §5 · Slant-Spalte §4 · Slot §2 · Span-Herkunft §5 · Span-Zuordner (geplant, → Buchstabengrenzen einer Bahn) §5 · Specimen §2 · Spike-Verhältnis §4 · Spitzfeder §1 · Spitzen-Lesung (→ Strang-Dekodierung) §3 · Spline-Basis-Median §2 · Sprung-Gate (Laufform) §2 · `stage` (work_items) §5 · Stamm-Rückpass §2 · Stand (Laufform, → Laufform-Stand) §5 · Stand-Block §5 · Status-Vokabular §5 · Stehendes Setup §5 · Streifen (Eigenhand) §5 · Streifen-Editor §5 · Streifenkartei §5 · Streifenplan §5 · Stiftmarke §5 · Streifen-Befund §5 · Streifen-Pfad §5 · St-Ligatur §1 · Strang §3 · Strang-Dekodierung §3 · Stub §3 · Stummel-Filter (→ Strang-Dekodierung) §3 · Stufen-Doktrin §5 · Style §2 · Subjekt-Stepper §5 · Sütterlin §1
-- **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) §5 · Trainingssatz (Eigenhand) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
+- **T** — t-Brücke §3 · Tafel §2 · tail_adapt/head_adapt §3 · tail_stub_delta §3 · Template §2 · Tikhonov-Regularisierung §3 · Tintenabstand §4 · Tintenboden §7 · Tinten-Brücke (→ Strang-Dekodierung) §3 · Tinten-Evidenz-Maske §3 · Tintenfolger §3 · Tintenpfad (→ Strang-Dekodierung · Duell-Namen) §3 · Tintentreue §5 · Tintentreue-Kalibrierung §5 · Tinten-Klammer §3 · Tintenlücke §3 · Tinten-Soll §3 · Tinten-Zuweisung per Strecke §3 · Topologie-Reparatur §3 · Topologie-Verlust (Kringel) §4 · Topologie-Wächter §3 · tracebench §4 · Trainingsmenge (nachgefahrene Bahnen) §5 · Trainingssatz (Eigenhand) §5 · Trajektorien-Recovery §6 · Trefferfläche (`hitArea`) §5 · Triage-Pflicht §5 · Typo-Boden §5
 - **U** — Umbruch der Federprobe §7 · Unantastbare Lineatur §7 · Unstetigkeits-Preis §3 · Unstetigkeits-Sensor §4 · Unteransicht (Eigenhand) §5 · Unvollständige Wortprobe §5
 - **Ü** — Übergabekarte §5 · Übergang §2 · Übergangs-Generator §2 · Übergangsraum §5 · Überlappungsterm §3 · Übungsblatt §7 · understanding §5
 - **V** — Variante §2 · Varianten-Band (geplant) §5 · Verbinder-Mitschnitt §4 · Vergleichsstreifen (geplant) §5 · Vereinfachungs-Gate §5 · Verfahrensseite §4 · Vier Augen (geplant) §4 · Vereinigungsfenster §3 · Verlässlichkeitsschranke §4 · Verschmelzungs-Anzeiger §4 · Verworfen §5 · Vorkommensschranke §2 · Vorlage §2 · Vorregistrierung §4 · Vorschlag (Streifen-Befund) §5 · Vorschub-Kalibrierung §2 · Vorschrift §1
@@ -4898,6 +4898,35 @@ PFAD_FORMAT 1 bleiben grau, weil Exkursion und AIoU auf ihnen nie
 gerechnet wurden. → Rohzahlen-Chip; Offen (Streifen-Kasten);
 messjournal.md §14 „Tintentreue `sep20`";
 proposals/admin-redesign.md §6.3
+
+**Tintentreue-Kalibrierung** *(der Streifen-Modus des Urteils-Durchgangs)* —
+die EINE blinde Runde je Hand, die die acht geborgten Schwellen der →
+Tintentreue durch gemessene ersetzt (Autor-Entscheid Q10 b): 30 Wortkästen,
+jeder mit genau EINER Stufe (`F` folgt · `T` folgt teils · `N` folgt nicht ·
+`X` nicht beurteilbar = Ausschluss wie `K` in der Fit-Taxonomie) und beliebig
+vielen **Merkmalen**, die die Stufe NICHT löschen (`O` Tinte ohne Bahn · `P`
+Bahn auf leerem Papier · `A` Absetzer falsch · `H` Sprünge und Haken). Die
+Abbildung ist nicht interpretativ — die gesetzte Stufe IST die Stufe, je
+Merkmal genau ein Sensor —, und zwei Lücken sind benannt statt gefüllt: AIoU
+hat kein Merkmal (es sähe `O` und `P` ein zweites Mal und unschärfer), seine
+Grenze hängt allein an der Stufe; Sprünge/Haken haben eins, aber bis heute
+keine Grenze, und genau die soll das Merkmal ihnen geben. Gezogen wird nach
+der VORLÄUFIGEN Stufe geschichtet — die Prävalenz der Runde ist darum eine
+Eigenschaft der Ziehung und keine Aussage über die Hand —, Wiederholungen
+laufen über die Stufen statt über die Häufigkeit, geschnitten wird am
+90-%-Quantil (nächstrangig, nie interpoliert) und in die strengere Richtung
+gerundet; eine Grenze, die dabei nicht strenger bleibt als ihre gelbe, wird
+verworfen statt geglättet und der geborgte Wert bleibt stehen. **Ein Nachbau,
+kein Modus von `humanbench`:** dessen Crops kommen aus eingefrorenen
+Fixture-Wurzeln, seine Taxonomie hat sechs Fit-Kategorien, und seine Seite
+wird veröffentlicht — diese nie, denn ihre Ausschnitte sind die reservierten
+Eigenhand-Pixel. Geteilt wird nur die Seite selbst. *Technisch:*
+`tools/eigenhand/tintentreue_calibration.py` (`build` · `analyse`),
+Kategoriensatz `tools/humanbench/page.py::STRIP_CATEGORIES`; die Übernahme
+der Zahlen ist ein datierter Commit des Autors, nie ein Schreibvorgang des
+Werkzeugs. → Tintentreue; Vorregistrierung; Verlässlichkeitsschranke;
+Rückhaltemenge; menschliche-bewertung.md §8b; messjournal.md §14
+„Tintentreue-Kalibrierung `sep20`"
 
 **Offen (Streifen-Kasten)** — ob ein Wortkasten eines Streifens noch
 Nachfahr-Arbeit ist, serverseitig aus der → Tintentreue abgeleitet und
