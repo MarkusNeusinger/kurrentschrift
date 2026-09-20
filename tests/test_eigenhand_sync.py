@@ -542,13 +542,16 @@ class TestHandDrawnBahnChain:
         _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): [_bahn(verfahren="tintenpfad")]}))
         assert "pfade" not in _record()
 
-    def test_a_fassung_the_server_holds_no_drawing_for_keeps_its_copy(self, dataroot, monkeypatch):
+    def test_a_fassung_the_server_holds_no_drawing_for_keeps_its_copy(self, dataroot, monkeypatch, capsys):
         # Never deletes: after `--replace-authored` the local copy IS the only
         # remaining one, and that is precisely the copy this chain exists for.
         _build(dataroot)
         _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): [_bahn()]}))
+        capsys.readouterr()
         _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): []}))
         assert _record()["pfade"]["entries"] == [_bahn()]
+        # And it is named here too, not only when SOME box is still answered.
+        assert "S0001/F01 box 0" in capsys.readouterr().out
 
     def test_one_given_up_box_does_not_take_its_neighbour_with_it(self, dataroot, monkeypatch, capsys):
         """„Never deletes" has to hold per BOX, not per Fassung.

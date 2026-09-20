@@ -197,9 +197,14 @@ def pull_pfade(hand: str, base: str, token: str) -> int:
         url = f"{base}/eigenhand/strips/{quote(hand)}/{quote(strip)}/{quote(fassung)}/pfade"
         answer = request_json("GET", url, token) or {}
         authored = [entry for entry in (answer.get("pfade") or []) if is_authored(entry)]
-        if not authored:
-            continue
         record = fassung_record(kartei, strip, fassung)
+        if not authored:
+            # The server answers with no drawing here — it never had one, or
+            # every box has been given up. Either way the Kartei keeps what it
+            # has, and when it has something it is now the last copy anywhere.
+            # Said out loud in this shape too, not only in the partial one.
+            retained_boxes += [f"{where} box {entry['box_index']}" for entry in (pfade_of(record) if record else [])]
+            continue
         if record is None:
             # Loud, not skipped: a Bahn whose Fassung this machine does not know
             # cannot be filed anywhere, and a silent skip is the exact failure
