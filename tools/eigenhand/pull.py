@@ -22,8 +22,31 @@ into the next archive snapshot — and from there back into a restored DB, since
 
     ADMIN_TOKEN=… uv run python -m tools.eigenhand.pull --hand mn-suetterlin --flecken
 
+**The hand-drawn Bahnen** (``--pfade``): the one datum of the whole capture
+chain that is born UP THERE. Scan, verdict and mask are made at this desk and
+pushed; a Bahn the author traces in the workbench exists only in
+``eigenhand_strips.pfade``, nothing can follow it again, and neither the
+own-hand archive nor the DB snapshot carries it (`api/schemas.py`,
+``EigenhandArchiveOut``, says so itself). So it has to be pulled before an
+archive run can see it — this is the first link of the chain
+``pull --pfade → snapshot → sync --from`` (proposal §7.5/§8.1).
+
+    ADMIN_TOKEN=… uv run python -m tools.eigenhand.pull --hand mn-suetterlin --pfade
+
+Only ``verfahren: "authored"`` entries come down. A FOLLOWED path is a
+derivation — strip, layout and follower are all in the archive, so it can be
+made again — and filing it would put a second truth beside the one that
+regenerates it.
+
+They land as a record in the central ``kartei.json`` and NOWHERE else (author
+decision A, 2026-09-20): the Kartei is copied in full by every archive run,
+while a filed Fassung directory is an immutable copy unit the run skips by
+relative path — a file written into one would never reach the archive and the
+run would still report success (`tools/eigenhand/snapshot.py`).
+
 Nothing else of a Fassung is touched: the verdict, the Befund and the pixels
-are local facts, and only the mask ever changes after filing.
+are local facts, and only the mask and the hand-drawn Bahn ever change after
+filing.
 """
 
 from __future__ import annotations
@@ -31,10 +54,13 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+from datetime import date as date_cls
+from urllib.parse import quote
 
 from core.eigenhand.bogen import layout_text
+from core.eigenhand.pfad import is_authored
 from tools.eigenhand.apiclient import admin_token, api_base, request_bytes, request_json
-from tools.eigenhand.kartei import load_kartei, save_kartei
+from tools.eigenhand.kartei import fassung_record, load_kartei, pfad_record, pfade_of, save_kartei
 from tools.eigenhand.store import check_hand_id, check_sheet_id, hand_dir, sheet_dir
 
 
@@ -117,6 +143,85 @@ def pull_flecken(hand: str, base: str, token: str) -> int:
     return 0
 
 
+def _declared_format(answer: dict, where: str) -> int:
+    """The Streifen-Pfad format the API answered under — never guessed.
+
+    An artefact whose semantics this run cannot name is worse than no artefact:
+    a restore would push it back declaring a format nobody checked it against.
+    """
+    declared = answer.get("format")
+    if not isinstance(declared, int) or isinstance(declared, bool):
+        raise SystemExit(
+            f"{where}: the API declared no Streifen-Pfad format — refusing to file a Bahn whose semantics "
+            "this run cannot name; update the API before pulling"
+        )
+    return declared
+
+
+def pull_pfade(hand: str, base: str, token: str) -> int:
+    """Bring the hand-drawn Bahnen down into the Kartei — the one datum born up there.
+
+    One read per stored Fassung, which is a handful: the path list is loaded on
+    demand up there (it is a few thousand points per word) and the strip listing
+    deliberately does not carry it.
+
+    NEVER deletes. A Fassung the server holds no authored Bahn for keeps
+    whatever this machine has — after `--replace-authored` the local copy IS the
+    only remaining one, and that is exactly the copy this chain exists for.
+    """
+    listing = request_json("GET", f"{base}/eigenhand/strips/{quote(hand)}", token) or {}
+    rows = listing.get("strips", [])
+    if not rows:
+        print(f"{hand}: the server holds no strip yet — nothing to pull")
+        return 0
+
+    kartei = load_kartei(hand)
+    today = date_cls.today().isoformat()
+    bahnen = fassungen = unchanged = 0
+    homeless: list[str] = []
+    for row in sorted(rows, key=lambda item: (item["strip"], item["fassung"])):
+        strip, fassung = row["strip"], row["fassung"]
+        where = f"{strip}/{fassung}"
+        url = f"{base}/eigenhand/strips/{quote(hand)}/{quote(strip)}/{quote(fassung)}/pfade"
+        answer = request_json("GET", url, token) or {}
+        authored = [entry for entry in (answer.get("pfade") or []) if is_authored(entry)]
+        if not authored:
+            continue
+        record = fassung_record(kartei, strip, fassung)
+        if record is None:
+            # Loud, not skipped: a Bahn whose Fassung this machine does not know
+            # cannot be filed anywhere, and a silent skip is the exact failure
+            # this chain exists to prevent.
+            homeless.append(where)
+            continue
+        declared = _declared_format(answer, where)
+        if pfade_of(record) == authored and (record.get("pfade") or {}).get("pfad_format") == declared:
+            unchanged += len(authored)
+            continue
+        record["pfade"] = pfad_record(authored, declared, today)
+        bahnen += len(authored)
+        fassungen += 1
+
+    if fassungen:
+        save_kartei(hand, kartei)
+    print(
+        f"{hand}: {bahnen} hand-drawn Bahn(en) in {fassungen} Fassung(en) pulled into the Kartei, "
+        f"{unchanged} already there"
+    )
+    if fassungen:
+        print(
+            f"reminder: snapshot so the archive carries them — uv run python -m tools.eigenhand.snapshot --hand {hand}"
+        )
+    if homeless:
+        raise SystemExit(
+            f"{len(homeless)} Fassung(en) carry a hand-drawn Bahn this machine does not know: "
+            f"{', '.join(homeless)}\nEverything else was written; these Bahnen are NOT archived. Their Kartei "
+            "rows are missing here — restore this hand's data root first (`sync --from <snapshot>` is the "
+            "other direction) or run this on the machine that holds it."
+        )
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     ap.add_argument("--hand", required=True)
@@ -126,18 +231,26 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="fetch the hand-edited Fleckenmasken back into the Kartei and the Fassungen's meta.json",
     )
+    ap.add_argument(
+        "--pfade",
+        action="store_true",
+        help="fetch the hand-drawn Bahnen (`verfahren: authored`) into the Kartei, so a snapshot carries them",
+    )
     ap.add_argument("--api", default=None, help="API base URL (default: $EIGENHAND_API or production)")
     ap.add_argument("--token", default=None, help="admin token (default: $ADMIN_TOKEN)")
     args = ap.parse_args(argv)
 
-    if bool(args.sheet) == bool(args.flecken):
-        ap.error("give either --sheet <B…> or --flecken")
+    chosen = [bool(args.sheet), args.flecken, args.pfade]
+    if sum(chosen) != 1:
+        ap.error("give exactly one of --sheet <B…>, --flecken or --pfade")
 
     hand = check_hand_id(args.hand)
     token = admin_token(args.token)
     base = api_base(args.api)
     if args.flecken:
         return pull_flecken(hand, base, token)
+    if args.pfade:
+        return pull_pfade(hand, base, token)
     return pull_sheet(hand, check_sheet_id(args.sheet), base, token)
 
 

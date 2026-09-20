@@ -1,6 +1,6 @@
 # Eigenhand-Erfassung: Wortvorrat, Streifen, Bögen
 
-> **Status (2026-09-19): teil-umgesetzt.** Seit dem Autor-Entscheid vom
+> **Status (2026-09-20): teil-umgesetzt.** Seit dem Autor-Entscheid vom
 > 2026-09-07 ist der Bestand nicht mehr nur Datenquelle: die Eigenhand
 > **wird die ausgelieferte Schreibhand der Seite**, sobald sie Alphabet und
 > Übergänge deckt (§2; die bindende Rollenteilung Tafel · Platte ·
@@ -35,6 +35,12 @@
 > berichtigt — die EIGENHAND-Ernte (Phase 5) schreibt nie `word_instances`
 > (die Platten-Ernte tut es weiter, das ist ihr Referenzsatz), und die
 > Quellen-Frage ist entschieden (`sources.kind='eigenhand'`).
+> **Am 2026-09-20 gebaut** (erster PR der Phase 2, Autor-Entscheide A und B):
+> die **Bahn-Archivkette** `pull --pfade → snapshot → sync --from` für
+> nachgefahrene Bahnen samt Formatversion des Artefakts und lautem
+> Abbruch bei unvollständigem Restore (§7.5/§8.1) — die Zusage „Repo +
+> Archiv genügen" gilt damit auch für sie, und der erste nachgefahrene
+> Kasten darf entstehen.
 
 ## 1 Anlass
 
@@ -1317,10 +1323,15 @@ beschreibt den GEFOLGTEN Pfad (`verfahren: tintenpfad`). Fährt der Autor
 einen Kasten im Wort-Editor von Hand nach (`verfahren: authored` — geplant
 als Phase 2 des Admin-Redesigns, heute schreibt das noch keine Fläche),
 gelten vier Sätze. Er ist **nicht ableitbar** — kein Werkzeug stellt eine
-Stifthand wieder her — und wird darum **wie Bild, Verdikt und Maske
-archiviert** (`pull --pfade → snapshot → sync --from`, §8.1; heute trägt
-keines der drei Werkzeuge `pfade`, die Kette wird VOR dem ersten
-nachgefahrenen Kasten gebaut). **Der Folger ersetzt ihn nie;**
+Stifthand wieder her — und wird darum **archiviert wie Bild, Verdikt und
+Maske, aber auf dem umgekehrten Weg** (`pull --pfade → snapshot →
+sync --from`, §8.1; gebaut 2026-09-20 als erster PR der Phase 2, VOR dem
+ersten nachgefahrenen Kasten). Der Unterschied ist kein Detail: Scan,
+Verdikt und Maske entstehen am Rechner des Autors und werden
+hochgeschoben, das Archiv greift also einfach die Arbeitskopie ab. Eine
+nachgefahrene Bahn entsteht im Browser und lebt ausschließlich in der
+Datenbank — sie muss erst HERUNTERgeholt werden, ehe ein Archivlauf sie
+überhaupt sehen kann. **Der Folger ersetzt ihn nie;**
 überschrieben wird er nur mit einem ausdrücklichen Terminal-Flag, nie aus
 der Oberfläche (`force` bleibt bei drei Flächen,
 [`optimierungs-werkbank.md`](optimierungs-werkbank.md) §6). **Die Ernte
@@ -1364,9 +1375,52 @@ trägt; gelesen wird sie an derselben Stelle (`is_authored`), gelten wird
 sie aber je SPANNE und nicht je Kasten — ein gewöhnliches Neu-Folgen eines
 grenzkorrigierten Kastens muss durchgehen —, also braucht
 `displaced_authored` dann einen Vergleich je Feld statt dieser
-Kasten-Antwort. Offen bleibt die Archiv-Hälfte von Q4 (oben): eine
-`authored`-Bahn liegt heute nirgends gesichert. Das gehört in Phase 2,
-zusammen mit `EigenhandArchiveOut`.
+Kasten-Antwort.
+
+**Gebaut ist seit dem 2026-09-20 auch die Archiv-Hälfte von Q4** — die
+Kette, ohne die kein nachgefahrener Kasten entstehen darf. Drei Glieder:
+
+1. **`pull --pfade` zieht** die `authored`-Einträge einer Hand aus der DB
+   in den lokalen Streifen-Speicher (ein Lesen je gespeicherter Fassung).
+   Nur `authored`: ein GEFOLGTER Pfad ist eine Ableitung und würde als
+   Archivfeld eine zweite Wahrheit neben die stellen, die ihn erzeugt.
+2. **`snapshot` trägt sie mit** — ohne eine einzige Änderung am Archivlauf.
+   Sie liegen als Satz in der zentralen `kartei.json`
+   (**Autor-Entscheid A vom 2026-09-20**), und die Kartei wird bei jedem
+   Lauf VOLL kopiert, während ein abgelegtes Fassungs-Verzeichnis eine
+   unveränderliche Kopiereinheit ist, die der Lauf am relativen Pfad
+   überspringt. Eine Datei, die man nachträglich dort hineinlegte, käme nie
+   ins Archiv — und der Lauf meldete trotzdem Erfolg. Die Fleckenmaske geht
+   denselben Weg aus demselben Grund; der Test
+   `tests/test_eigenhand_sync.py::TestHandDrawnBahnChain` nagelt genau das
+   an einer BEREITS archivierten Fassung fest.
+3. **`sync --from` stellt sie wieder her**, und zwar nur dort: ein
+   gewöhnlicher `sync` schiebt keine Bahn hoch, sonst stünde eine bewusst
+   aufgegebene Zeichnung beim nächsten Lauf wieder da. Der Push mischt je
+   Fassung um die Kästen herum, die der Server schon trägt (die Schreibung
+   ist eine VOLLE Ersetzung), und der Lauf endet **laut**: er nennt, wie
+   viele nachgefahrene Bahnen NICHT wiederhergestellt sind, und bricht
+   dann ab. Ein stiller Teil-Restore ist der Fehler, gegen den diese Kette
+   gebaut ist.
+
+Das abgelegte Artefakt trägt **zwei** Versionen: `format`
+(`PFAD_ARCHIVE_FORMAT`, die Form der Kartei-Zeile) und `pfad_format` (das
+`PFAD_FORMAT`, unter dem die API geantwortet hat) — die erste sagt, wie die
+Datei zu LESEN ist, die zweite, was die Einträge darin bedeuten, und nur
+mit der zweiten kann ein Restore sie korrekt deklarieren. Ein Satz in einer
+unbekannten Form wird verweigert, nie als „keine Bahn" gelesen.
+`EigenhandArchiveOut` bleibt unverändert ohne Pfade: Master ist der
+own-hand-Baum, nicht die Archiv-Antwort. Der DB-Snapshot führt die Lücke
+seit demselben Tag ausdrücklich in seinen `known_gaps` und nennt dort, wo
+der Master liegt.
+
+**Und `--replace-authored` verweigert, solange der Kasten nicht archiviert
+ist** (**Autor-Entscheid B vom 2026-09-20**). Es ist die einzige Tür, durch
+die eine Zeichnung verschwinden kann; bis dahin warnte das Werkzeug nur.
+Geprüft wird nicht „gibt es einen Satz", sondern „ist es DIESE Zeichnung":
+eine vor der letzten Korrektur gezogene Kopie zählt nicht. Die Verweigerung
+nennt den einen Befehl, der sie auflöst (`pull --pfade`) — ein zweites
+„ich weiß, was ich tue"-Flag gibt es bewusst nicht.
 
 **Wiederherstellung: der GEFOLGTE Pfad ist ableitbar** (Entscheidung der
 Runde vom 2026-09-12; seit dem 2026-09-18 auf gefolgte Pfade begrenzt —
@@ -1375,7 +1429,8 @@ Weder `snapshot.py` noch `sync --from` tragen ihn, und die Prüfung aus §8.1
 verlangt ihn nicht — Streifen, Layout und Werkzeug sind da, also lässt er
 sich jederzeit neu folgen, und ein Archivfeld für eine reproduzierbare
 Ableitung wäre genau die zweite Wahrheit, die das Archiv nicht haben will.
-Was NICHT ableitbar ist, bleibt weiterhin dort: Bild, Verdikt, Maske.
+Was NICHT ableitbar ist, bleibt weiterhin dort: Bild, Verdikt, Maske — und
+seit dem 2026-09-20 die nachgefahrene Bahn.
 
 **Verworfen:** den Pfad serverseitig rechnen (das Abbild hat den Folger
 nicht, und `api`↛`tools` ist per Test festgehalten); ihn in
@@ -1404,7 +1459,10 @@ Duplikate), verifiziert vorher jede Prüfsumme gegen die Kartei und
 verweigert schrumpfende Läufe. Damit liegen DB-Snapshots (inkl. der
 authored Wort-Traces) und Eigenhand-Streifen im SELBEN Reservat — der
 gesamte gelernte Datensatz an einem Ort. Regel: **Snapshot nach jeder
-Import-Sitzung** (bis dahin sind die Streifen die einzige Kopie).
+Import-Sitzung** (bis dahin sind die Streifen die einzige Kopie) — und
+**`pull --pfade` VOR dem Schnappschuss**, sobald in der Werkbank eine Bahn
+nachgefahren wurde, denn bis dahin ist die geteilte DB deren einzige Kopie
+(§7.5).
 
 ### 8.1 Wiederherstellung: Repo + Archiv genügen
 
@@ -1417,7 +1475,8 @@ Die Arbeitsteilung dafür ist eindeutig:
 
 - Das **Archiv ist der Master** — und zwar der Archiv-BAUM, nicht ein
   einzelner Schnappschuss. `own-hand/<hand>/<stempel>/` enthält
-  `kartei.json` (Bögen, Fassungen, Verdikte, Sitzungen), `setup.json`
+  `kartei.json` (Bögen, Fassungen, Verdikte, Sitzungen, die Fleckenmasken
+  und — seit dem 2026-09-20 — die nachgefahrenen Bahnen), `setup.json`
   (das stehende Setup, `eigenhand_hands`), je Bogen `layout.json` (den
   Geometrie-Vertrag) und je Fassung `streifen.png` + `meta.json`.
   Zusammen ist das alles, was die vier `eigenhand_*`-Tabellen ausmachen.
@@ -1441,12 +1500,28 @@ Regel steht in §7.5). Im Archiv liegt, was sich nicht ableiten lässt: Bild,
 Verdikt, Maske. Seit diesem Entscheid zählt dazu auch jeder von Hand
 nachgefahrene Streifen-Pfad (`verfahren: authored`) samt von Hand
 korrigierten Buchstabengrenzen; der GEFOLGTE Pfad bleibt draußen, er ist
-reproduzierbar. **Noch nicht gebaut:** die Kette `pull --pfade → snapshot →
-sync --from` mit Formatversion, und die Prüfung dieses Abschnitts verlangt
-einen authored-Pfad noch nicht. Beides entsteht mit Phase 2 des
-Admin-Redesigns, VOR dem ersten nachgefahrenen Kasten. Bis dahin ist die
-Zusage „Repo + Archiv genügen" für authored-Pfade nicht eingelöst — es gibt
-allerdings auch noch keinen.
+reproduzierbar. **Gebaut am 2026-09-20** als erster PR der Phase 2, VOR dem
+ersten nachgefahrenen Kasten: die Kette `pull --pfade → snapshot →
+sync --from` samt Formatversion des Artefakts (§7.5 beschreibt die drei
+Glieder und die beiden Versionen), und die Prüfung dieses Abschnitts
+verlangt seither auch einen authored-Pfad — `tests/
+test_eigenhand_restore.py::TestHandDrawnBahn` fährt die ganze Kette gegen
+die echte API, inklusive ihrer Abweisungen. Die Zusage „Repo + Archiv
+genügen" gilt damit auch für nachgefahrene Bahnen.
+
+Drei Sätze, die dabei bindend sind:
+
+- **Der Restore ist die einzige Richtung.** Ein gewöhnlicher `sync` schiebt
+  keine Bahn hoch; sonst stünde eine mit `--replace-authored` bewusst
+  aufgegebene Zeichnung beim nächsten Lauf wieder da.
+- **Er endet laut oder gar nicht.** Fehlt zu einer archivierten Bahn das
+  Streifenbild oben (also ohne `--mit-streifen`), nennt der Lauf die Zahl
+  der NICHT wiederhergestellten Bahnen und bricht ab — genau wie bei einem
+  fehlenden Bogen-Layout. Nichts kann eine Zeichnung neu folgen, also
+  schließt sich diese Lücke nicht von selbst.
+- **Der DB-Snapshot bleibt die Prüfung, nicht die Quelle.** Er trägt die
+  Spalte `eigenhand_strips.pfade` nach wie vor nicht und sagt das seit dem
+  2026-09-20 in seinen `known_gaps`, mitsamt dem Ort des Masters.
 
 Das Rezept — dasselbe `sync`, nur mit anderer Quelle, damit der
 Wiederherstellungsweg keine zweite, ungeprüfte Implementierung ist:

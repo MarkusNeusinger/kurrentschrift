@@ -544,7 +544,13 @@ Die `eigenhand_*`-Tabellen fahren OHNE die PNG-Spalte mit, dazu ein
 `own-hand/`-Baum desselben Archivs, und die Hashes sind, woran ein
 Restore sie prüft — und woran auffällt, wenn DB und Archiv
 auseinandergelaufen sind, bevor der Tag kommt, an dem es zählt
-(Wiederherstellungsweg: proposals/eigenhand-erfassung.md §8.1).
+(Wiederherstellungsweg: proposals/eigenhand-erfassung.md §8.1). Die Spalte
+`eigenhand_strips.pfade` trägt er ebenfalls nicht — seit dem 2026-09-20
+steht das ausdrücklich in den `known_gaps` des Manifests, samt Ort des
+Masters: ein GEFOLGTER Pfad wird durch einen neuen `pfad`-Lauf gemacht,
+eine von Hand nachgefahrene Bahn liegt im `own-hand/`-Baum in der
+`kartei.json` (`pull --pfade` → `sync --from`). Ein Leser des Manifests
+soll den Schnappschuss nicht für vollständiger halten, als er ist.
 `restore.py` ist für Drills gegen eine Wegwerf-Postgres gebaut: verlangt
 die Ziel-URL explizit (`--database-url`, absichtlich nie aus der
 Umgebung), verweigert ein Ziel gleich `DATABASE_URL`, verweigert ein
@@ -619,8 +625,20 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   zurück in Kartei und `meta.json`, damit der nächste Schnappschuss sie
   trägt (§7.4 — die Maske ist das einzige Feld der Kette, dessen Master der
   Server ist; `sync` füllt oben nur, was noch keine hat, und überschreibt
-  nie eine). Beide brauchen `ADMIN_TOKEN`;
-  `--api` zeigt auf eine andere Instanz.
+  nie eine). **`pull --pfade`** holt das einzige Datum, das GANZ oben
+  entsteht: die in der Werkbank von Hand **nachgefahrenen Bahnen**
+  (`verfahren: authored`) einer Hand — ein Lesen je gespeicherter Fassung,
+  abgelegt als Satz in der zentralen `kartei.json` und nirgends sonst
+  (Autor-Entscheid A vom 2026-09-20: die Kartei fährt in jedem
+  Schnappschuss VOLL mit, ein abgelegtes Fassungs-Verzeichnis ist eine
+  unveränderliche Kopiereinheit und würde eine nachträglich hineingelegte
+  Datei still überspringen). Gefolgte Pfade bleiben oben — sie sind
+  ableitbar. Der Satz trägt ZWEI Versionen: `format` (die Form der
+  Kartei-Zeile) und `pfad_format` (das `PFAD_FORMAT`, unter dem die API
+  geantwortet hat); ein Satz in unbekannter Form wird verweigert, nie als
+  „keine Bahn" gelesen. Eine Fassung, die dieser Rechner nicht kennt,
+  beendet den Lauf laut, statt still übersprungen zu werden. Alle drei
+  brauchen `ADMIN_TOKEN`; `--api` zeigt auf eine andere Instanz.
   **`sync --from <Archiv-Snapshot>`** ist der Wiederherstellungsweg: dieselbe
   Push-Logik, nur aus dem Archiv statt aus der Arbeitskopie — damit bringt
   Repo + Archiv die vier hand-gebundenen `eigenhand_*`-Tabellen samt Bildern
@@ -631,6 +649,17 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   Schnappschuss vollständig ist. Das stehende Setup wird dabei nur gesetzt,
   wenn der Server keines hat, und der Lauf bricht mit Namen ab, wenn eine
   angenommene Fassung oder ein Bogen-Layout im Archiv fehlt.
+  **Nur `--from` stellt auch die nachgefahrenen Bahnen wieder her** (seit
+  2026-09-20): der gewöhnliche `sync` schiebt keine hoch, sonst stünde eine
+  bewusst aufgegebene Zeichnung beim nächsten Lauf wieder da. Der Push
+  mischt je Fassung um die Kästen herum, die der Server schon trägt, und
+  der Lauf schließt mit der Zeile „`k` restored, `m` already there, `n` NOT
+  restored" — ist `n` > 0 (typisch: ohne `--mit-streifen` gibt es oben
+  keine Streifenzeile, an der eine Bahn hängen könnte), bricht er ab. Eine
+  Zeichnung lässt sich nicht neu folgen, also schließt sich die Lücke nicht
+  von selbst. Trägt das Archiv gar keine Bahn, sagt der Lauf auch das —
+  „keine im Archiv" und „diese Hand hatte nie eine" sehen von hier
+  identisch aus, und nur eines davon ist in Ordnung.
 - **`ingest` → `apply --haken`** (Normalfall) bzw. **`ingest` → `page` →
   `apply <Ergebnis>`** — Scan/Foto entzerren (Passmarken, scikit-image,
   300 DPI Arbeitsauflösung) und die Haken vom Blatt lesen; `apply --haken`
@@ -684,7 +713,12 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   und lässt das eigene Ergebnis dafür fallen, der Server weist einen Push, der
   sie verdrängen würde, als Ganzes ab (409). `--replace-authored` gibt sie auf
   — die einzige Fläche dafür, und bewusst kein Knopf in der Werkbank
-  (Autor-Entscheid Q4 (i), 2026-09-18).
+  (Autor-Entscheid Q4 (i), 2026-09-18). Seit dem 2026-09-20 **verweigert das
+  Flag, solange der Kasten nicht archiviert ist** (Autor-Entscheid B):
+  geprüft wird nicht „gibt es einen Satz in der Kartei", sondern „ist es
+  DIESE Zeichnung" — eine vor der letzten Korrektur gezogene Kopie zählt
+  nicht. Die Verweigerung nennt den einen Befehl, der sie auflöst
+  (`pull --pfade`); ein zweites „ich weiß, was ich tue"-Flag gibt es nicht.
   BLAS-Fäden
   pinnt das Modul selbst (Vorgabewerte), weil die Kettenlösung sonst je nach
   Umgebung anders läuft.
@@ -717,7 +751,12 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   Schrumpf-Verweigerung). Kartei, Streifenplan und das stehende Setup
   fahren in jedem Schnappschuss vollständig mit; Fassungen und Bögen nur
   als Zuwachs — wer aus dem Archiv liest, muss die Schnappschüsse deshalb
-  als einen geschichteten Baum lesen, so wie `sync --from` es tut.
+  als einen geschichteten Baum lesen, so wie `sync --from` es tut. Die
+  volle Kartei-Kopie ist dabei tragend und keine Bequemlichkeit: sie ist
+  der Weg, auf dem Fleckenmasken und nachgefahrene Bahnen von LÄNGST
+  abgelegten Fassungen ins Archiv kommen — beide entstehen erst, nachdem
+  das Fassungs-Verzeichnis archiviert ist, und das überspringt der Lauf am
+  relativen Pfad.
 
 Invarianten wie überall: kein DB-Schreibpfad — `sync` spricht die
 Admin-API, nie die Datenbank —, eingefrorene Mess-Sätze

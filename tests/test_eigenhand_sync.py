@@ -429,6 +429,223 @@ class TestFleckenmaskeDirection:
             pull_mod.main(["--hand", HAND])
 
 
+def _bahn(box: int = 0, word: str = "lesen", **overrides) -> dict:
+    """One hand-drawn Bahn as the API answers with it."""
+    return {
+        "box_index": box,
+        "word": word,
+        "strokes": [[[0.0, 0.0], [1.0, 1.0]]],
+        "registration_px": {"tx": 40.0, "ty": 0.0, "baseline_row": 240.0},
+        "xh_px": 120.0,
+        "verfahren": "authored",
+        "konfiguration": {},
+        "meta": {},
+        "erzeugt_am": "2026-09-20",
+        "flecken_n": None,
+        **overrides,
+    }
+
+
+class _FakePfadApi:
+    """The two reads the Bahn chain makes, and every write it attempts.
+
+    Answers `GET /eigenhand/strips/{hand}` with the stored Fassungen and
+    `GET|PUT …/{strip}/{fassung}/pfade` with what it holds for that box — a
+    Fassung it does not hold is a 404, which is what an unrestored strip
+    image looks like from the client's side.
+    """
+
+    def __init__(self, pfade: dict[tuple[str, str], list[dict]], *, declared: int | None = 1, rows=None):
+        self.pfade = dict(pfade)
+        self.declared = declared
+        self.rows = list(rows) if rows is not None else sorted(pfade)
+        self.calls: list[tuple[str, str, dict | None]] = []
+
+    def __call__(self, method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False):
+        self.calls.append((method, url, body))
+        plain = url.split("?")[0]
+        if plain.endswith("/pfade"):
+            strip, fassung = plain.split("/")[-3:-1]
+            if method == "PUT":
+                self.pfade[(strip, fassung)] = body["pfade"]
+                return {"format": body["format"], "pfade": body["pfade"]}
+            if (strip, fassung) not in self.pfade:
+                if allow_404:
+                    return None
+                raise SystemExit(f"GET {url} → 404")
+            answer: dict = {"pfade": self.pfade[(strip, fassung)]}
+            if self.declared is not None:
+                answer["format"] = self.declared
+            return answer
+        if method == "GET" and "/strips/" in url:
+            # `sha256: ""` — no bytes are stored up here, so `_push_strips`
+            # uploads rather than skipping, which is what a restore does.
+            return {"hand": HAND, "strips": [{"strip": s, "fassung": f, "sha256": ""} for s, f in self.rows]}
+        if method == "PUT" and "/sheets/" in url:
+            return {"sheet": url.rsplit("/", 1)[-1], "imported": True}
+        if method == "POST" and url.endswith("/fassungen"):
+            return {"hand": HAND, "recorded": len(body["fassungen"]), "skipped": 0}
+        return {}
+
+    def pushed(self) -> list[dict]:
+        return [body for method, url, body in self.calls if method == "PUT" and url.split("?")[0].endswith("/pfade")]
+
+
+def _pull_pfade(monkeypatch, fake: _FakePfadApi) -> int:
+    monkeypatch.setattr(pull_mod, "request_json", fake)
+    monkeypatch.setenv("ADMIN_TOKEN", "t")
+    return pull_mod.main(["--hand", HAND, "--pfade", "--api", "https://example.test"])
+
+
+def _record(strip: str = "S0001", fassung: str = "F01") -> dict | None:
+    from tools.eigenhand.kartei import fassung_record
+
+    return fassung_record(load_kartei(HAND), strip, fassung)
+
+
+class TestHandDrawnBahnChain:
+    """`pull --pfade → snapshot → sync --from` — the one datum that runs upward.
+
+    Scan, verdict and Fleckenmaske are made at this desk and pushed, so an
+    archive run simply picks up the working copy. A Bahn the author traces in
+    the workbench is the opposite: it is born in the shared database, nothing
+    can follow it again, and neither the own-hand archive nor the DB snapshot
+    carried it. These tests pin the chain that closes that gap — and, above
+    all, that it closes LOUDLY when it does not.
+    """
+
+    def test_the_drawing_lands_in_the_kartei_with_both_its_formats(self, dataroot, monkeypatch, capsys):
+        from tools.eigenhand.kartei import PFAD_ARCHIVE_FORMAT
+
+        _build(dataroot)
+        assert _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): [_bahn()]})) == 0
+        stored = _record()["pfade"]
+        assert stored["entries"] == [_bahn()]
+        # Two versions, on purpose: the envelope says how to READ this file,
+        # `pfad_format` says what the entries inside it mean — and a restore
+        # has to declare the second one back to the API.
+        assert stored["format"] == PFAD_ARCHIVE_FORMAT
+        assert stored["pfad_format"] == 1
+        assert "snapshot" in capsys.readouterr().out
+
+    def test_a_followed_path_is_a_derivation_and_is_left_up_there(self, dataroot, monkeypatch):
+        # Strip, layout and follower are all in the archive, so a followed path
+        # is re-made rather than restored; filing it would put a second truth
+        # beside the one that regenerates it.
+        _build(dataroot)
+        _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): [_bahn(verfahren="tintenpfad")]}))
+        assert "pfade" not in _record()
+
+    def test_a_fassung_the_server_holds_no_drawing_for_keeps_its_copy(self, dataroot, monkeypatch):
+        # Never deletes: after `--replace-authored` the local copy IS the only
+        # remaining one, and that is precisely the copy this chain exists for.
+        _build(dataroot)
+        _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): [_bahn()]}))
+        _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): []}))
+        assert _record()["pfade"]["entries"] == [_bahn()]
+
+    def test_a_drawing_whose_fassung_this_machine_does_not_know_ends_the_run_loudly(self, dataroot, monkeypatch):
+        _build(dataroot)
+        fake = _FakePfadApi({("S0001", "F01"): [_bahn()], ("S0002", "F01"): [_bahn(word="das")]})
+        with pytest.raises(SystemExit, match="S0002/F01"):
+            _pull_pfade(monkeypatch, fake)
+        # Everything that COULD be filed was filed before the run failed.
+        assert _record()["pfade"]["entries"] == [_bahn()]
+
+    def test_an_answer_that_declares_no_format_is_refused(self, dataroot, monkeypatch):
+        _build(dataroot)
+        with pytest.raises(SystemExit, match="declared no Streifen-Pfad format"):
+            _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): [_bahn()]}, declared=None))
+
+    def test_the_drawing_rides_in_the_next_snapshot_of_an_ALREADY_archived_fassung(
+        self, dataroot, tmp_path, monkeypatch
+    ):
+        """Why the Kartei is the landing place (author decision A, 2026-09-20).
+
+        `snapshot.py` treats a filed Fassung directory as one immutable copy
+        unit and skips it by relative path, so a file written into an
+        already-archived Fassung would never reach the archive while the run
+        still reported success. The Kartei escapes that because it is copied in
+        FULL every time — this test is the proof, not the assumption.
+        """
+        archive = tmp_path / "archive"
+        archive.mkdir()
+        _build(dataroot)
+        snapshot_mod.main(["--hand", HAND, "--archive", str(archive), "--stamp", "0001"])
+
+        _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): [_bahn()]}))
+        snapshot_mod.main(["--hand", HAND, "--archive", str(archive), "--stamp", "0002"])
+
+        second = archive / "own-hand" / HAND / "0002"
+        # The Fassung directory really was skipped as an immutable unit …
+        assert not (second / "fassungen" / "S0001").exists()
+        # … and the drawing still made it into the archive, through the Kartei.
+        kartei = json.loads((second / "kartei.json").read_text(encoding="utf-8"))
+        assert kartei["strips"]["S0001"]["fassungen"][0]["pfade"]["entries"] == [_bahn()]
+
+    def _archived(self, dataroot, tmp_path, monkeypatch, bahnen: list[dict] | None = None):
+        """A hand with one filed Fassung whose drawing has been pulled and archived."""
+        archive = tmp_path / "archive"
+        archive.mkdir()
+        _build(dataroot)
+        if bahnen is not None:
+            _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): bahnen}))
+        snapshot_mod.main(["--hand", HAND, "--archive", str(archive), "--stamp", "0001"])
+        return archive / "own-hand" / HAND / "0001"
+
+    def test_an_ordinary_sync_pushes_no_drawing(self, dataroot, tmp_path, monkeypatch):
+        # A Bahn is not bookkeeping this machine owns. Pushing the pulled copy
+        # on every sync would quietly resurrect a drawing the author gave up on
+        # purpose with `--replace-authored`.
+        self._archived(dataroot, tmp_path, monkeypatch, [_bahn()])
+        fake = _FakePfadApi({("S0001", "F01"): []})
+        assert _run(monkeypatch, fake) == 0
+        assert fake.pushed() == []
+
+    def test_the_restore_puts_the_drawing_back_under_its_own_format(self, dataroot, tmp_path, monkeypatch, capsys):
+        snapshot = self._archived(dataroot, tmp_path, monkeypatch, [_bahn()])
+        _wipe(dataroot / HAND / "fassungen")
+        fake = _FakePfadApi({("S0001", "F01"): []})
+        assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot)) == 0
+        assert fake.pushed() == [{"format": 1, "pfade": [_bahn()]}]
+        assert "1 restored, 0 already there, 0 NOT restored" in capsys.readouterr().out
+
+    def test_the_restore_keeps_the_boxes_the_server_already_holds(self, dataroot, tmp_path, monkeypatch):
+        # The write is a FULL replacement per Fassung, so the archived box goes
+        # up BESIDE whatever else is stored — otherwise restoring one drawing
+        # would delete the followed paths of the rest of the row.
+        snapshot = self._archived(dataroot, tmp_path, monkeypatch, [_bahn()])
+        followed = _bahn(box=1, word="das", verfahren="tintenpfad")
+        fake = _FakePfadApi({("S0001", "F01"): [followed]})
+        assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot)) == 0
+        assert [entry["box_index"] for entry in fake.pushed()[0]["pfade"]] == [0, 1]
+
+    def test_a_drawing_whose_strip_is_not_up_there_ends_the_restore_loudly(self, dataroot, tmp_path, monkeypatch):
+        # THE failure this PR exists to prevent: a restore that reports success
+        # while a drawing nothing can follow again stays missing.
+        snapshot = self._archived(dataroot, tmp_path, monkeypatch, [_bahn()])
+        fake = _FakePfadApi({}, rows=[])
+        with pytest.raises(SystemExit, match="1 hand-drawn Bahn\\(en\\) are NOT restored"):
+            _run(monkeypatch, fake, "--from", str(snapshot))
+
+    def test_a_second_restore_recognises_the_drawing_it_already_put_back(self, dataroot, tmp_path, monkeypatch, capsys):
+        snapshot = self._archived(dataroot, tmp_path, monkeypatch, [_bahn()])
+        fake = _FakePfadApi({("S0001", "F01"): []})
+        _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot))
+        capsys.readouterr()
+        assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot)) == 0
+        assert "0 restored, 1 already there, 0 NOT restored" in capsys.readouterr().out
+        assert len(fake.pushed()) == 1
+
+    def test_an_archive_without_a_drawing_says_so_rather_than_nothing(self, dataroot, tmp_path, monkeypatch, capsys):
+        # „The archive carries none" and „this hand never had one" look
+        # identical from here, and only one of them is fine.
+        snapshot = self._archived(dataroot, tmp_path, monkeypatch)
+        fake = _FakePfadApi({("S0001", "F01"): []})
+        assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot)) == 0
+        assert "none in this archive" in capsys.readouterr().out
+
+
 class TestPngSize:
     def test_the_size_comes_out_of_the_ihdr(self):
         assert sync_mod._png_size(_png()) == (2185, 343)

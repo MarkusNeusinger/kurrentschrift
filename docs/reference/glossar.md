@@ -58,7 +58,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 **§6** Extern/Forschung · **§7** Öffentliche Seiten.
 
 - **A** — `add_header`-Vererbungsfalle §2 · Anker · Sample · Schritt §4 · Abdeckungsmatrix §4 · abgeschnittener Anstrich §4 · Absetzen §1 · Absprung (Lotse) §4 · Arm-Datei (humanbench) §4 · Abstandsprofil (Werkbank) §5 · Aggregat §2 · AIoU §6 · Allograph §1 · Analysis-by-Synthesis §2 · Änderungsprotokoll der Applies (→ Laufform-Stand) §5 · Anker §2 · Anker im leeren Papier §4 · Anheftung (Eigenhand) §5 · Anstrich/Auslauf §1 · Apex-Übergabe (`apex_handover`) §2 · Apply-Guard (Eigner-Regel) §2 · Arbeitslinie (→ Laufform-Stand) §5 · Arbeitsliste §5 · Auftragskorb §5 · Auftragskorb-Protokoll §5 · Ausbau-Quote (→ Bestandsbericht) §5 · Ausgangsschrift §1 · Auslieferung (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Nummer (→ Auslieferungs-Zeiger) §5 · Auslieferungs-Zeiger (geplant) §5 · Ausreißer §4 · Austritts-Trim (`exit_trim`) §2 · authored-Span (→ Buchstabengrenzen einer Bahn) §5
-- **B** — Bahn §5 · Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn (geplant) §5
+- **B** — Bahn §5 · Bahn-Archivkette §5 · Bahn-Arm (humanbench) §4 · Bahn-Deckung (geplant) §5 · Band-Basis (→ Varianten-Band) §5 · Band-Regel (→ Varianten-Band) §5 · Bandzugfeder §1 · Bbox §2 · Beleg (Eigenhand) §5 · Belegleiste (geplant) §5 · bench_loss §4 · Bereich daneben §4 · Berührung (Struktur-Zähler) §4 · Bestandsbericht §5 · Bestätigung A/B (→ Referenzsatz) §4 · Bewertungsdurchgang §4 · Bézier-Handle-Floor §3 · Biasing §6 · Bibliothekseinheit §2 · bindend §5 · Binnenflächen-Bedingung §3 · blinde Wiederholung §4 · Bogen (Eigenhand) §5 · Bogen-Kappe §4 · bogengleich §3 · Bot-Site (`bot_fetch`) §2 · Bowl-Exit-Tuck §2 · Buchstabengrenzen einer Bahn (geplant) §5
 - **C** — CER §6 · Chamfer-Distanz §4 · Changelog-Fragment §5 · Chart §2 · Chart-Saat §4 · Chor (geplant) §4 · Chronik (tracebench) §4 · Cusp-Connector §3
 - **D** — dconn §4 · Deckung §3 · Deckungslücke §3 · Doppel-X-Duplikat §4 · Doppelstrich-Evidenz (→ Strang-Dekodierung) §3 · Drei Rollen (Tafel · Platte · Eigenhand) §2 · Duell-Ansicht §4 · Duell-Namen §4 · degenerierte Solves §3 · Degeneriewächter §3 · d_end (verworfen) §4 · Dice §4 · Dissektion §2 · doff §4 · dspan §4 · DTW §6 · dtw_xh §4 · Duktus §1 · Duktus-Prior §1 · Durchstoß-Kriterium §4
 - **E** — Ebenen-Token §5 · Echtheitsfrage §4 · Ecke statt Bogen (→ Strang-Dekodierung) §3 · EDT §3 · Eigenhand-Buchführung §5 · Eigenhand-Erfassung §5 · Eigner-Regel (→ Apply-Guard) §2 · Einrichtungs-Wizard §5 · Endblende (Laufform) §2 · Entdrillung §4 · Entwurfsnetz des Wizards §5 · Ernte §2 · Ernte-Fixpunkt §4 · Erstbeleg-Quote (→ Bestandsbericht) §5 · extrapoliertes Landmark-Ziel §3
@@ -4328,14 +4328,47 @@ Kästen herum, und der einzige Weg daran vorbei ist
 `authored` über `authored` geht durch — der Autor korrigiert sich selbst.
 Der Satz von der Ableitung oben gilt dabei nur für die GEFOLGTE Bahn: eine
 `authored`-Bahn lässt sich nicht neu folgen, ist also keine Ableitung und
-heute nirgends gesichert — die Archiv-Hälfte von Q4 ist offen (Phase 2).
+wird seit dem 2026-09-20 von der → Bahn-Archivkette gesichert.
 *Technisch:* `core/eigenhand/pfad.py` (`frame_for_box` · `check_paths` ·
 `is_authored` · `displaced_authored` · `AUTHORED` · `PFAD_FORMAT`),
 `eigenhand_strips.pfade` (Migration `0031`),
 `GET|PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade`,
 `tools/eigenhand/pfad.py`,
 `app/src/sections/admin/shell/PathOverlay.tsx`.
-→ proposals/eigenhand-erfassung.md §7.5
+→ Bahn-Archivkette; proposals/eigenhand-erfassung.md §7.5
+
+**Bahn-Archivkette** — die drei Glieder, die eine von Hand nachgefahrene →
+Bahn aus der geteilten Datenbank ins private Archiv und zurück bringen:
+`pull --pfade` zieht die `authored`-Einträge einer Hand herunter,
+`snapshot` trägt sie mit, `sync --from` stellt sie wieder her (gebaut
+2026-09-20 als erster PR der Phase 2, Autor-Entscheide A und B). Sie ist
+nötig, weil eine nachgefahrene Bahn das EINZIGE Eigenhand-Datum ist, das
+oben entsteht: Scan, Verdikt und → Fleckenmaske werden am Rechner des
+Autors gemacht und hochgeschoben, der Archivlauf greift dort einfach die
+Arbeitskopie ab — eine Bahn entsteht im Browser und muss erst
+heruntergeholt werden. Gezogen wird nur `authored`; ein GEFOLGTER →
+Streifen-Pfad ist eine Ableitung und wird neu gefolgt statt archiviert. Die
+Bahn landet als Satz in der zentralen `kartei.json` und nirgends sonst
+(Entscheid A): die Kartei wird bei jedem Archivlauf VOLL kopiert, ein
+abgelegtes Fassungs-Verzeichnis ist dagegen eine unveränderliche
+Kopiereinheit, die der Lauf am relativen Pfad überspringt — eine
+nachträglich dort abgelegte Datei käme nie ins Archiv, und der Lauf meldete
+Erfolg. Der Satz trägt ZWEI Versionen: `format` (die Form der Kartei-Zeile)
+und `pfad_format` (das `PFAD_FORMAT`, unter dem die API geantwortet hat);
+ein Satz in unbekannter Form wird verweigert, nie als „keine Bahn" gelesen.
+Der Restore ist die einzige Richtung — ein gewöhnlicher `sync` schöbe eine
+bewusst aufgegebene Zeichnung wieder hoch — und er endet LAUT: er nennt die
+Zahl der NICHT wiederhergestellten Bahnen und bricht ab, weil ein stiller
+Teil-Restore der Fehler ist, gegen den die Kette gebaut ist. Und
+`--replace-authored` verweigert, solange genau DIESE Zeichnung nicht
+archiviert ist (Entscheid B); die Verweigerung nennt den einen Befehl, der
+sie auflöst. *Technisch:* `tools/eigenhand/pull.py::pull_pfade`,
+`tools/eigenhand/kartei.py` (`PFAD_ARCHIVE_FORMAT` · `pfad_record` ·
+`pfade_of` · `pfad_wire_format` · `archived_pfade`),
+`tools/eigenhand/sync.py::_push_pfade`, `tools/eigenhand/snapshot.py`
+(unverändert — die volle Kartei-Kopie ist der Träger),
+`tools/dbsnapshot/fetch.py` (`known_gaps`).
+→ Streifen-Pfad; Bahn; proposals/eigenhand-erfassung.md §7.5, §8.1
 
 **Vorschlag (Streifen-Befund)** — die dreistufige Empfehlung eines
 Streifen-Befunds: `sauber` (nichts fällt auf) · `brauchbar` (etwas fällt

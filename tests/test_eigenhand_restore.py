@@ -16,6 +16,12 @@ Proves: every Bogen, verdict and strip comes back; the strips come back
 byte-identical (sha256 against the archived files); a word crop can be cut out
 of a RESTORED strip, which is the check that the geometry survived too; and the
 restore is idempotent — running it a second time changes nothing.
+
+Since the Bahn chain (proposal §7.5/§8.1) the same promise covers the one datum
+that runs the other way: a path the author drew BY HAND lives only in the
+database, nothing can follow it again, and `pull --pfade → snapshot →
+sync --from` is what gets it into the archive and back. That link is driven
+here too, against the real API and its real validation.
 """
 
 from __future__ import annotations
@@ -30,9 +36,11 @@ from pathlib import Path
 import pytest
 from PIL import Image, ImageDraw
 
+from core.eigenhand.pfad import PFAD_FORMAT, frame_for_box
 from tests.api_harness import Harness
 from tools.eigenhand import apply as apply_mod
 from tools.eigenhand import ingest as ingest_mod
+from tools.eigenhand import pull as pull_mod
 from tools.eigenhand import sheet as sheet_mod
 from tools.eigenhand import snapshot as snapshot_mod
 from tools.eigenhand import sync as sync_mod
@@ -97,11 +105,11 @@ def _capture(dataroot: Path) -> dict:
     return layout
 
 
-def _archive_snapshot(tmp_path: Path) -> Path:
+def _archive_snapshot(tmp_path: Path, stamp: str = "0001") -> Path:
     archive = tmp_path / "archive"
     archive.mkdir(exist_ok=True)
-    snapshot_mod.main(["--hand", HAND, "--archive", str(archive), "--stamp", "0001"])
-    return archive / "own-hand" / HAND / "0001"
+    snapshot_mod.main(["--hand", HAND, "--archive", str(archive), "--stamp", stamp])
+    return archive / "own-hand" / HAND / stamp
 
 
 def _bridge(api: Harness, loop: asyncio.AbstractEventLoop):
@@ -137,6 +145,55 @@ async def _restored(api: Harness) -> dict:
     res = await api.client.request("GET", f"/eigenhand/archive/{HAND}", headers=api.admin_headers())
     assert res.status == 200, res.body
     return res.json()
+
+
+async def _in_thread(api: Harness, module, argv: list[str], monkeypatch) -> None:
+    """Run one of the local CLIs against the in-process app, as an operator would."""
+    monkeypatch.setattr(module, "request_json", _bridge(api, asyncio.get_running_loop()))
+    monkeypatch.setenv("ADMIN_TOKEN", "irrelevant — the bridge carries the harness header")
+    await asyncio.to_thread(module.main, ["--hand", HAND, "--api", "http://127.0.0.1", *argv])
+
+
+async def _pfade(api: Harness, strip: str, fassung: str) -> dict:
+    res = await api.client.request(
+        "GET", f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade", headers=api.admin_headers()
+    )
+    assert res.status == 200, res.body
+    return res.json()
+
+
+async def _draw_by_hand(api: Harness, layout: dict) -> tuple[str, str, dict]:
+    """Store one `authored` Bahn the way the workbench will — through the real API.
+
+    The frame comes out of `frame_for_box`, so the registration and the x-height
+    are ones `check_paths` accepts; what is being tested is the archive chain,
+    not the arithmetic (`tests/test_eigenhand_pfad.py` owns that).
+    """
+    listing = await api.client.request("GET", f"/eigenhand/strips/{HAND}", headers=api.admin_headers())
+    assert listing.status == 200, listing.body
+    row = listing.json()["strips"][0]
+    layout_row = layout["rows"][row["row_index"]]
+    frame = frame_for_box(layout_row, row["crop_origin_mm"], row["width_px"], row["height_px"], 0)
+    entry = {
+        "box_index": 0,
+        "word": frame["word"],
+        "strokes": [[[0.0, 0.0], [0.5, 1.0], [1.0, 0.0]]],
+        "registration_px": {"tx": float(frame["rect_px"][0]), "ty": 0.0, "baseline_row": frame["baseline_row"]},
+        "xh_px": frame["xh_px"],
+        "verfahren": "authored",
+        "konfiguration": {},
+        "meta": {},
+        "erzeugt_am": "2026-09-20",
+        "flecken_n": None,
+    }
+    res = await api.client.request(
+        "PUT",
+        f"/eigenhand/strips/{HAND}/{row['strip']}/{row['fassung']}/pfade",
+        json_body={"format": PFAD_FORMAT, "pfade": [entry]},
+        headers=api.admin_headers(),
+    )
+    assert res.status == 200, res.body
+    return row["strip"], row["fassung"], res.json()["pfade"][0]
 
 
 class TestRestoreFromArchive:
@@ -204,3 +261,68 @@ class TestRestoreFromArchive:
         first = await _restored(api)
         await _restore(api, snapshot, monkeypatch)
         assert await _restored(api) == first
+
+
+class TestHandDrawnBahn:
+    """The archive chain for a Bahn the author drew himself.
+
+    Everything else of the capture chain is made here and pushed, so an archive
+    run picks up the working copy. A hand-drawn Bahn is born in the shared
+    database — and nothing can follow it again, so until this chain existed it
+    had no second copy anywhere (`api/schemas.py`, `EigenhandArchiveOut`, says
+    so itself). Driven here against the real API, including its refusals.
+    """
+
+    @pytest.mark.asyncio
+    async def test_pull_snapshot_and_restore_bring_a_hand_drawn_bahn_back(
+        self, api: Harness, dataroot: Path, tmp_path: Path, monkeypatch
+    ):
+        layout = _capture(dataroot)
+        await _in_thread(api, sync_mod, ["--mit-streifen"], monkeypatch)
+        strip, fassung, drawn = await _draw_by_hand(api, layout)
+
+        # Link 1: down into the Kartei. Link 2: into the archive — and the
+        # Fassung directory is already filed at this point, which is exactly why
+        # the Kartei is the landing place (author decision A, 2026-09-20).
+        first = _archive_snapshot(tmp_path, "0001")
+        await _in_thread(api, pull_mod, ["--pfade"], monkeypatch)
+        second = _archive_snapshot(tmp_path, "0002")
+        assert not (second / "fassungen").exists(), "the filed Fassung is an immutable copy unit and was skipped"
+        archived = json.loads((second / "kartei.json").read_text(encoding="utf-8"))
+        assert archived["strips"][strip]["fassungen"][0]["pfade"]["entries"] == [drawn]
+        assert first.exists()  # create-only: the earlier snapshot is untouched
+
+        # The one door truth can disappear through: the terminal hands the
+        # drawing over (`--replace-authored`). Everything else survives.
+        given_up = await api.client.request(
+            "PUT",
+            f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade",
+            params={"replace_authored": "true"},
+            json_body={"format": PFAD_FORMAT, "pfade": []},
+            headers=api.admin_headers(),
+        )
+        assert given_up.status == 200, given_up.body
+        assert (await _pfade(api, strip, fassung))["pfade"] == []
+
+        # Link 3: the archive puts it back, and the real `check_paths` has to
+        # accept it on the way in.
+        shutil.rmtree(dataroot)
+        await _restore(api, second, monkeypatch)
+        assert (await _pfade(api, strip, fassung))["pfade"] == [drawn]
+
+    @pytest.mark.asyncio
+    async def test_a_second_restore_of_the_same_drawing_changes_nothing(
+        self, api: Harness, dataroot: Path, tmp_path: Path, monkeypatch
+    ):
+        layout = _capture(dataroot)
+        await _in_thread(api, sync_mod, ["--mit-streifen"], monkeypatch)
+        strip, fassung, drawn = await _draw_by_hand(api, layout)
+        await _in_thread(api, pull_mod, ["--pfade"], monkeypatch)
+        snapshot = _archive_snapshot(tmp_path)
+
+        shutil.rmtree(dataroot)
+        await _restore(api, snapshot, monkeypatch)
+        await _restore(api, snapshot, monkeypatch)
+        # `authored` over `authored` passes the protection rule, so a repeat is
+        # a no-op rather than a refusal — the restore has to stay re-runnable.
+        assert (await _pfade(api, strip, fassung))["pfade"] == [drawn]

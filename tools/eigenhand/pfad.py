@@ -20,7 +20,14 @@ an archive snapshot (``/dbsnapshot``) belongs in front of it.
 A path the author drew BY HAND survives every run: this tool merges around
 such a box and the server refuses a push that would displace one (409). Only
 ``--replace-authored`` gives one up, and that is the whole surface — there is
-no button for it in the workbench.
+no button for it in the workbench. Since the archive chain exists, that flag
+also REFUSES while the box is not archived (author decision B, 2026-09-20):
+a drawing cannot be followed again, so handing it over while the only copy
+sits in the shared database would make it none. One command fixes it —
+
+    ADMIN_TOKEN=… uv run python -m tools.eigenhand.pull --hand mn-suetterlin --pfade
+
+— and there is deliberately no second „I know what I am doing" flag beside it.
 
 WHAT IT READS. Everything over the admin API, nothing off a local scan: the
 strip listing (geometry, words, box rectangles), the Bogen layout (the printed
@@ -84,6 +91,7 @@ from core.eigenhand.ids import style_of_hand  # noqa: E402
 from core.eigenhand.pfad import PFAD_FORMAT, frame_for_box, is_authored  # noqa: E402
 from core.eigenhand.plan import load_plan, shaping_form_of  # noqa: E402
 from tools.eigenhand.apiclient import admin_token, api_base, request_bytes, request_json  # noqa: E402
+from tools.eigenhand.kartei import archived_pfade, load_kartei  # noqa: E402
 from tools.eigenhand.store import check_hand_id, hand_dir  # noqa: E402
 
 
@@ -402,7 +410,16 @@ def _local_path(hand: str, strip: str, fassung: str) -> Path:
 
 
 def _merged(
-    base: str, token: str, url: str, entries: list[dict], *, replace_authored: bool = False, _get=request_json
+    base: str,
+    token: str,
+    url: str,
+    entries: list[dict],
+    *,
+    hand: str = "",
+    where: str = "",
+    archived: dict[int, dict] | None = None,
+    replace_authored: bool = False,
+    _get=request_json,
 ) -> list[dict]:
     """The freshly followed entries, over the paths the Fassung already holds.
 
@@ -422,19 +439,38 @@ def _merged(
     hand-drawn word — and `--replace-authored` is the one way to hand it over
     anyway.
 
+    That flag now REFUSES while the drawing is not archived (author decision B,
+    2026-09-20). `archived` is what `tools.eigenhand.pull --pfade` has brought
+    into this machine's Kartei, box by box; a drawing that exists only in the
+    shared database has no second copy anywhere, and the terminal is not
+    allowed to make it none. One command fixes it, and the refusal names it.
+
     `_get` is the seam the test calls through; every caller uses the default.
     """
     stored = (_get("GET", url, token) or {}).get("pfade") or []
     authored_boxes = {entry.get("box_index") for entry in stored if is_authored(entry)}
     hit = sorted(entry["box_index"] for entry in entries if entry["box_index"] in authored_boxes)
     if hit and replace_authored:
+        by_box = {entry.get("box_index"): entry for entry in stored}
+        # Not „is there a record" but „is THIS drawing the one on disk": a copy
+        # pulled before the author corrected his own trace would archive a
+        # different Bahn than the one being given up here.
+        unarchived = [index for index in hit if (archived or {}).get(index) != by_box.get(index)]
+        if unarchived:
+            raise SystemExit(
+                f"  --replace-authored: box {', '.join(str(index) for index in unarchived)} of {where or url} "
+                "carries a hand-drawn Bahn this machine has not archived (or archived in an older shape). "
+                "Nothing can follow a drawing again, so it would exist nowhere afterwards. Pull it first:\n"
+                f"    ADMIN_TOKEN=… uv run python -m tools.eigenhand.pull --hand {hand or '<hand>'} --pfade\n"
+                "  (`snapshot` is what carries the Kartei into the private archive after that.)"
+            )
         # The DESTRUCTIVE path has to be the loud one. Nothing else in the run
-        # names what is being given up, the archive does not carry paths yet,
-        # and a line the operator can read back is all that stands between the
-        # flag and a quiet loss of the author's own hand.
+        # names what is being given up, and a line the operator can read back
+        # is all that stands between the flag and a quiet loss of the author's
+        # own hand — the archived copy is a backup, not an undo.
         print(
             f"  --replace-authored: handing the hand-drawn path at box {', '.join(str(index) for index in hit)} "
-            "over to this run's own result",
+            "over to this run's own result (the archived copy stays in the Kartei)",
             flush=True,
         )
     elif hit:
@@ -468,7 +504,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument(
         "--replace-authored",
         action="store_true",
-        help="also replace the paths the author drew BY HAND — the only way to, and deliberately not a button",
+        help=(
+            "also replace the paths the author drew BY HAND — the only way to, deliberately not a button, "
+            "and refused while the box is not archived (`pull --pfade`)"
+        ),
     )
     args = ap.parse_args(argv)
 
@@ -484,6 +523,10 @@ def main(argv: list[str] | None = None) -> int:
     # saw, so a log is enough to tell two runs apart.
     print(f"seed: {len(seed.have)} authored glyph keys, live off {constants['source_id']}", flush=True)
 
+    # Read once, and only where it can matter: the Kartei is what the archive
+    # chain files, so it is also what `--replace-authored` is held against.
+    kartei = load_kartei(hand) if args.replace_authored else {}
+
     written = 0
     for row in _strip_rows(base, token, hand, args.strip, args.fassung):
         print(f"{row['strip']}/{row['fassung']} ({row['sheet']} row {row['row_index']}):", flush=True)
@@ -495,7 +538,16 @@ def main(argv: list[str] | None = None) -> int:
         # all. Filing only the followed boxes made a run look like a whole-row
         # replacement — the exact thing `_merged` exists to prevent (review of
         # PR #598).
-        body = _merged(base, token, url, entries, replace_authored=args.replace_authored)
+        body = _merged(
+            base,
+            token,
+            url,
+            entries,
+            hand=hand,
+            where=f"{row['strip']}/{row['fassung']}",
+            archived=archived_pfade(kartei, row["strip"], row["fassung"]) if args.replace_authored else {},
+            replace_authored=args.replace_authored,
+        )
         if not args.apply:
             out = args.out or _local_path(hand, row["strip"], row["fassung"])
             out.parent.mkdir(parents=True, exist_ok=True)

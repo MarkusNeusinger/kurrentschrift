@@ -46,6 +46,13 @@ its siblings, newest first. It has to be — `snapshot.py` files incrementally, 
 only the first snapshot is ever self-contained while every later one carries a
 complete Kartei beside just its increment. Reading one directory would restore
 one increment and call it done.
+
+The restore is also the only path that pushes the HAND-DRAWN Bahnen back
+(`verfahren: authored`, pulled into the Kartei by `pull --pfade`). A followed
+path stays out — strip, layout and follower are all here, so it is made again
+rather than restored. A drawing is not: nothing can follow it a second time, so
+the run ends LOUDLY naming how many are still missing whenever the chain did
+not close (proposal §7.5/§8.1).
 """
 
 from __future__ import annotations
@@ -58,7 +65,7 @@ from pathlib import Path
 
 from core.eigenhand.flecken import FLECKEN_FORMAT
 from tools.eigenhand.apiclient import admin_token, api_base, request_json
-from tools.eigenhand.kartei import load_kartei
+from tools.eigenhand.kartei import load_kartei, pfad_wire_format, pfade_of
 from tools.eigenhand.store import WORK_DPI, check_hand_id, hand_dir, sheet_dir
 
 
@@ -262,6 +269,62 @@ def _push_strips(
     return sent, skipped
 
 
+def _pfad_rows(kartei: dict) -> list[tuple[str, str, int, list[dict]]]:
+    """Every (strip, Fassung, wire format, Bahnen) the Kartei carries a drawing for."""
+    rows: list[tuple[str, str, int, list[dict]]] = []
+    for strip, record in sorted(kartei.get("strips", {}).items()):
+        for fassung in record.get("fassungen", []):
+            entries = pfade_of(fassung)
+            if entries:
+                rows.append((strip, fassung["id"], pfad_wire_format(fassung), entries))
+    return rows
+
+
+def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> tuple[int, int, int, list[str]]:
+    """Put the archived hand-drawn Bahnen back. Returns (restored, already, stuck, why).
+
+    The RESTORE path only (`--from`). A hand-drawn Bahn is not bookkeeping this
+    machine owns: it is made in the workbench, `pull --pfade` brings a copy
+    down, and pushing that copy on every ordinary sync would quietly resurrect
+    a drawing the author gave up on purpose with `--replace-authored`. On a
+    restore there is nothing up there to resurrect over.
+
+    Merged, not replaced: the write is a FULL replacement per Fassung, so the
+    archived boxes go up beside whatever the server already holds for the other
+    boxes. That also means the push can never trip the 409 — every stored
+    `authored` box is either answered by the archived drawing or kept as it is.
+
+    A Fassung whose strip is not up there yet cannot take a path at all (the
+    route answers 404). Those are COUNTED and named rather than skipped: a
+    drawing nothing can follow again is the one loss this whole chain exists to
+    make impossible, so a partial restore has to end loudly.
+    """
+    restored = already = stuck = 0
+    why: list[str] = []
+    for strip, fassung, wire_format, entries in _pfad_rows(kartei):
+        url = f"{base}/eigenhand/strips/{hand}/{strip}/{fassung}/pfade"
+        answer = request_json("GET", url, token, allow_404=True)
+        if answer is None:
+            stuck += len(entries)
+            why.append(f"{strip}/{fassung}: the strip image is not up there (push it with --mit-streifen)")
+            continue
+        stored = answer.get("pfade") or []
+        by_box = {entry.get("box_index"): entry for entry in stored}
+        fresh = [entry for entry in entries if by_box.get(entry["box_index"]) != entry]
+        if not fresh:
+            already += len(entries)
+            continue
+        mine = {entry["box_index"] for entry in entries}
+        body = sorted(
+            [*entries, *(entry for entry in stored if entry.get("box_index") not in mine)],
+            key=lambda item: item["box_index"],
+        )
+        request_json("PUT", url, token, {"format": wire_format, "pfade": body})
+        restored += len(fresh)
+        already += len(entries) - len(fresh)
+    return restored, already, stuck, why
+
+
 def _push_setup(base: str, token: str, hand: str, layers: _Layers) -> bool:
     """Restore the hand's standing setup when the server has none.
 
@@ -319,9 +382,11 @@ def main(argv: list[str] | None = None) -> int:
     fassungen = _fassung_rows(kartei)
 
     if args.dry_run:
+        bahnen = sum(len(entries) for *_head, entries in _pfad_rows(kartei)) if args.snapshot else 0
         print(
             f"would push {len(kartei['sheets'])} Bögen and {len(fassungen)} Fassungen for {hand} to {base}"
             + (" (with strip images)" if args.with_strips else "")
+            + (f", {bahnen} hand-drawn Bahn(en)" if bahnen else "")
             + (f" from {layers}" if args.snapshot else "")
         )
         return 0
@@ -371,18 +436,40 @@ def main(argv: list[str] | None = None) -> int:
         sent, skipped = _push_strips(base, token, hand, layers, kartei, known)
         line += f", {sent} strips uploaded, {skipped} already stored"
     print(line)
+
+    incomplete: list[str] = []
     if args.snapshot and missing_layouts:
         # On the restore path the archive is supposed to be complete, so a
         # Bogen the Kartei lists but the archive cannot describe means the run
         # did NOT bring the hand back whole — and the verdicts of those sheets
         # were held back above. Locally the same gap is only a warning: a sheet
         # can legitimately be waiting for its `pull`.
-        raise SystemExit(
+        incomplete.append(
             f"{len(missing_layouts)} Bogen(s) in the Kartei have no layout.json in the archive: "
             f"{', '.join(missing_layouts)}\nTheir verdicts and strips were held back — the restore is "
             "INCOMPLETE. Check that --from points into the hand's archive tree and that the snapshots "
             "around it are present."
         )
+    if args.snapshot:
+        restored, already, stuck, why = _push_pfade(base, token, hand, kartei)
+        if restored or already or stuck:
+            print(f"hand-drawn Bahnen: {restored} restored, {already} already there, {stuck} NOT restored")
+        else:
+            # Said out loud rather than left as silence: the archive carrying
+            # no drawing and the hand never having had one look identical from
+            # here, and only one of them is fine.
+            print(
+                "hand-drawn Bahnen: none in this archive — if this hand has one, `pull --pfade` "
+                "never ran before the last snapshot"
+            )
+        if stuck:
+            incomplete.append(
+                f"{stuck} hand-drawn Bahn(en) are NOT restored: {'; '.join(why)}\n"
+                "Nothing can follow a hand-drawn Bahn again, so this is not a gap that closes itself — "
+                "push the strip images too (--mit-streifen) and run this again."
+            )
+    if incomplete:
+        raise SystemExit("\n\n".join(incomplete))
     return 0
 
 
