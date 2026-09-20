@@ -1,44 +1,43 @@
 # Admin-Redesign auf der grünen Wiese 2026-09-17 — Optionen, Szenarien, Rückfragen
 
-> **Status (2026-09-20): teil-umgesetzt.** **Die Phasen 0 und 1 sind im Code
-> ausgeliefert.** Phase 0: die neun PRs aus §15.2 (#613, #612, #611, #619, #616,
-> #618, #609, #610, #620) — offen davon genau ein Schritt, der Prod-Datenschritt
-> V1 (`UPDATE sources.hand_id`): keine Admin-Route, darum SQL auf der geteilten
-> Cloud SQL, Snapshot davor, Rückfrage in der Sitzung. Phase 1: alle acht PRs
-> aus §15.4 (#621, #622, #626, #625, #624, #627, #629, #631); die drei
-> Autor-Entscheide vom 2026-09-19 (§4.6) bewegten V2, V7 und V24 und sind mit
-> #623 gebucht. **Jede Browser-Prüfung der Phase 1 lief auf dem Wegwerf-Stack
-> mit SYNTHETISCHEN Daten** (die reservierte Menge ist nicht seedbar): die
-> GEFÜLLTEN Buchstaben-, Übergangs- und Wörter-Flächen hat vor dem Blick des
-> Autors im Prod-Admin niemand mit echten Daten gesehen (§15.4). Ein Nachzug
-> schloss die Phase: **#628**, `Typography color="text.secondary"` ist unter
-> MUI 9 wirkungslos (161 Stellen) — behoben mit **#633**. **Als Nächstes Phase 2**
-> (Tintentreue + Nachfahren, §15.1 Zeile 2), die mit einer NUR-LESENDEN
-> Erkundung beginnt. **Phase 5 wartet auf den Autor:** FM1–FM6 aus
-> [`freigabe-maschine.md`](freigabe-maschine.md) §10, der Lese-Sweep über die
-> Admin-API vor M1 (dort §12, mit Rückfrage) und V1 (§15.3). Die Phasen 3 und 4
-> sind unberührt; die offenen Geschmacksfragen aus Phase 0/1 — jede mit der
-> Empfehlung gebaut, jede mit einem Wort kippbar — sammelt §15.5. Auf Wunsch des
-> Autors entstanden („noch nichts implementieren … ich will das erst mit dir
-> durch diskutieren bevor wir umsetzen", §1).
-> **Der Rückfragen-Katalog ist seit dem 2026-09-18 beantwortet:** alle 25
-> Fragen, die Unterpunkte zu Q4 und Q24, die Vorgaben V1–V26 und der
-> Kleinkram — Entscheid-Zeile je Frage in §12, Gesamttabelle in §4.5.
-> Gewählte Form: **A zuerst, die C-Bausteine als Phase 4 darauf, B punktuell,
-> Phase 5 parallel ab Phase 1** (Q1 a, Q5 a); Umsetzung §15, das
-> Nicht-Gewählte mit Grund §13. Zwei Entscheide weichen von der Empfehlung ab
-> (Q6 b: getestete Schreibflüsse DÜRFEN umgebaut werden, wenn die Suiten im
-> selben PR mitziehen; Q8 ohne c: die englischen Labels bleiben), drei tragen
-> wörtliche Autor-Zusätze (Q4, Q10, Q15), und daraus folgen zwei Leitsätze
-> (§4.5): von Hand nachgefahrene Bahnen und korrigierte Buchstabengrenzen
-> sind AUCH die Trainingsmenge, die Folger und Span-Zuordner besser macht;
-> und die Eigenhand ist das Optimierungsziel, die Platte bleibt Maßstab und
-> „so ok". Die Doktrin bleibt, wo sie ist (werkbank §3–§6/§8, eigenhand
-> §2/§7/§12, handmodell §5, vision „Drei Rollen" — alle vier in §4.1 verlinkt);
-> bewegt haben die Antworten nur, was §10.2 als erklärtes
-> Proposal-Update führt — am 2026-09-18 in den Ziel-Docs vollzogen, nie als
-> stille Abweichung. Sonst: Ist-Befund §3, Bindendes §4, Eigenhand-Statistik §6,
-> Gestaltungs-Optionen §7–§9, Szenarien §11; Kritik-Protokoll der Runde davor:
+> **Status (2026-09-20): teil-umgesetzt.** **Die Phasen 0 und 1 sind im Code ausgeliefert**
+> — die neun PRs aus §15.2 und die acht aus §15.4 (#621, #622, #626, #625, #624, #627,
+> #629, #631) plus der Nachzug #628, behoben mit #633; die drei Autor-Entscheide vom
+> 2026-09-19 (§4.6) sind mit #623 gebucht. Offen aus Phase 0 ist genau ein Schritt, der
+> Prod-Datenschritt V1 (`UPDATE sources.hand_id`): keine Admin-Route, darum SQL auf der
+> geteilten Cloud SQL, Snapshot davor, Rückfrage in der Sitzung. **Jede Browser-Prüfung
+> der Phase 1 lief auf dem Wegwerf-Stack mit SYNTHETISCHEN Daten** (die reservierte Menge
+> ist nicht seedbar): die GEFÜLLTEN Buchstaben-, Übergangs- und Wörter-Flächen hat vor dem
+> Blick des Autors im Prod-Admin niemand mit echten Daten gesehen (§15.4).
+> **Phase 2 (Tintentreue + Nachfahren) hat begonnen:** ihre nur lesende Erkundung ist
+> gelaufen und hat 22 Stellen DIESES Docs als falsch belegt — 21 davon hier in §6.2,
+> §6.3, §6.4, §6.7, §7.2 und §12.4 mit ihrem `datei:zeile`-Beleg in place berichtigt,
+> die 22. (der §15-Stand-Block) war schon mit #632 nachgezogen —, Runde 1 ihrer
+> Fragen ist am 2026-09-20 entschieden (§4.7: A, B, C, alle wie empfohlen), die Runden 2
+> und 3 (D–I) sind offen, und der Schnitt in dreizehn PRs steht in §15.6; gemergt ist von
+> Phase 2 nichts, der erste PR ist die Archiv-Kette. **Phase 5 wartet auf den Autor:**
+> FM1–FM6 aus [`freigabe-maschine.md`](freigabe-maschine.md) §10, der Lese-Sweep über die
+> Admin-API vor M1 (dort §12, mit Rückfrage) und V1 (§15.3). Die Phasen 3 und 4 sind
+> unberührt; die offenen Geschmacksfragen aus Phase 0/1 — jede mit der Empfehlung gebaut,
+> jede mit einem Wort kippbar — sammelt §15.5. Auf Wunsch des Autors entstanden („noch
+> nichts implementieren … ich will das erst mit dir durch diskutieren bevor wir
+> umsetzen", §1).
+> **Der Rückfragen-Katalog ist seit dem 2026-09-18 beantwortet:** alle 25 Fragen, die
+> Unterpunkte zu Q4 und Q24, die Vorgaben V1–V26 und der Kleinkram — Entscheid-Zeile je
+> Frage in §12, Gesamttabelle in §4.5. Gewählte Form: **A zuerst, die C-Bausteine als
+> Phase 4 darauf, B punktuell, Phase 5 parallel ab Phase 1** (Q1 a, Q5 a); Umsetzung §15,
+> das Nicht-Gewählte mit Grund §13. Zwei Entscheide weichen von der Empfehlung ab (Q6 b:
+> getestete Schreibflüsse DÜRFEN umgebaut werden, wenn die Suiten im selben PR mitziehen;
+> Q8 ohne c: die englischen Labels bleiben), drei tragen wörtliche Autor-Zusätze (Q4,
+> Q10, Q15), und daraus folgen zwei Leitsätze (§4.5): von Hand nachgefahrene Bahnen und
+> korrigierte Buchstabengrenzen sind AUCH die Trainingsmenge, die Folger und
+> Span-Zuordner besser macht; und die Eigenhand ist das Optimierungsziel, die Platte
+> bleibt Maßstab und „so ok". Die Doktrin bleibt, wo sie ist (werkbank §3–§6/§8,
+> eigenhand §2/§7/§12, handmodell §5, vision „Drei Rollen" — alle vier in §4.1
+> verlinkt); bewegt haben die Antworten nur, was §10.2 als erklärtes Proposal-Update
+> führt — am 2026-09-18 in den Ziel-Docs vollzogen, nie als stille Abweichung. Sonst:
+> Ist-Befund §3, Bindendes §4, Eigenhand-Statistik §6, Gestaltungs-Optionen §7–§9,
+> Szenarien §11; Kritik-Protokoll der Runde davor:
 > [`../notes/admin-redesign-kritik-2026-09-17.md`](../notes/admin-redesign-kritik-2026-09-17.md).
 
 ## 1 Anlass
@@ -532,6 +531,38 @@ weil keine Modifier-Kombination über alle Betriebssysteme, Hilfstechniken
 und Browser-Erweiterungen hinweg nachweislich frei ist. Das ist der
 ehrliche Grund: eine Vorsichtsmaßnahme, keine Normerfüllung.
 
+### 4.7 Die Autor-Entscheide vom 2026-09-20 — Runde 1 der Phase 2
+
+Die nur lesende Erkundung der Phase 2 (§14, Schritt 5) ist am 2026-09-19
+gelaufen und hat neun Fragen an den Autor hinterlassen, in drei Runden
+geschnitten. **Runde 1 — die drei Fragen, die den ersten PR blockieren —
+hat der Autor am 2026-09-20 entschieden, alle drei wie empfohlen.** Die
+Runden 2 und 3 (Fragen D–I) sind offen; welcher PR auf welche wartet, steht
+in §15.6. Gemergt ist von Phase 2 noch nichts.
+
+| Frage | Entscheid (Autor, 2026-09-20) | Der eine Grund |
+|---|---|---|
+| **A** — Wo landet eine heruntergezogene handgezeichnete Bahn auf dem Rechner des Autors? Sie ist das erste Eigenhand-Datum, das vom Browser NACH UNTEN läuft, und der Archivlauf sieht nur, was lokal liegt | **(a)** Als **Zeile in der zentralen `kartei.json`** — genau der Weg, den die Fleckenmaske schon geht | Die Kartei wird bei jedem Archivlauf VOLL kopiert (`tools/eigenhand/snapshot.py:164`), also **bleibt die Unveränderlichkeits-Annahme von `snapshot.py` unangetastet** (`:57-76`, `:92-100`) — genau deshalb war (a) die Empfehlung. Eine eigene Datei je Fassung hätte sie aufbrechen müssen, sonst käme eine später hineingelegte Datei nie ins Archiv und der Lauf meldete trotzdem Erfolg |
+| **B** — Soll `--replace-authored` sich weigern, eine handgezeichnete Bahn wegzuwerfen, solange sie nicht archiviert ist? | **(a)** **Verweigern**, solange der Kasten nicht archiviert ist; der Autor lässt vorher einmal `pull --pfade` laufen. **Kein zweites Override-Flag** | Der Preis ist ein Befehl, der Gewinn ist, dass Wahrheit nicht auf Zuruf verschwindet — heute warnt das Werkzeug nur (`tools/eigenhand/pfad.py:430-443`), und danach existiert die aufgegebene Bahn nirgends mehr |
+| **C** — Wie sieht ein „übersprungen"-Eintrag aus? Heute sehen vier verschiedene Gründe in der DB identisch aus: kein Eintrag | **(a)** Ein **eigener Eintragstyp in derselben Liste**: `status` + `grund` Pflicht, keine Züge, Registrierung und x-Höhe optional | Ein Kasten hat genau einen Zustand; zwei Listen wären zwei Orte, an denen derselbe Kasten vorkommt, und irgendwann widersprechen sie sich. Gebaut wird das in PR 3 der Welle, nicht im ersten — hier steht es, damit nichts gegen eine andere Annahme gebaut wird |
+
+**Was Entscheid A für den Bauplan heißt.** Die Archiv-Kette der §6.7-Zeile
+bleibt als ABLAUF, was sie ist — `pull --pfade → snapshot → sync --from` —,
+aber `snapshot.py` wird **nicht** umgebaut: die Bahn reist in der Kartei mit,
+und die Kartei kopiert der Lauf ohnehin jedes Mal ganz. Das ist der
+Unterschied zwischen einem Ziehweg und einem Umbau am Archiv. Angefasst
+werden trotzdem vier Dateien statt der drei, die die §6.7-Zeile nannte: die
+vierte ist `tools/dbsnapshot/fetch.py`, dessen `known_gaps` heute über genau
+diese Lücke schweigt.
+
+**Eine Last bürdet der Entscheid der Kette dennoch auf, und sie steht in
+§15.6 bei PR 1:** die Kartei ist das EINZIGE Archiv-Artefakt, das
+`sync --from` nicht über die Geschwister-Snapshots schichtet
+(`tools/eigenhand/sync.py:88-94` gegen `:97-119`). Solange sie nur
+Buchhaltung trug, war das folgenlos; als Träger der authored-Bahnen wird
+daraus die Bedingung, dass der Restore die NEUESTE Kartei liest und nicht
+die des genannten Stempels.
+
 ## 5 Leitideen, auf die sich das Panel einigt
 
 Was alle sechs Linsen unabhängig voneinander vorschlagen, ist mit hoher
@@ -902,7 +933,7 @@ die Zeile `core/eigenhand/statistik.py` + Read in §6.7 (§13.1).
 |---|---|---|
 | Belege / geplant je Item `x›y`, gewichtetes Soll, Erstbeleg-/Ausbau-Quote | `bestand.joins.rows`, `bestand.quoten` | EXISTS |
 | „in einem Zug": Anteil Kästen ohne `paper_lift` zwischen den Spans | Zug-Grenzen der `strokes` | DERIVABLE |
-| Verbinderstück je Kasten: Länge, Winkel, Koppelhöhe | **`letter_spans` enthalten keine Verbinder-Abschnitte** — `spans_of` gibt jedem Verbinder-Sample das Label des nächsten Buchstabens (`tools/pairlab/tintenpfad.py`), also `span[l].last + 1 == span[r].first` | **MISSING** — braucht PFAD_FORMAT 2 mit Roh-Labels oder `connector_spans` je Zug; die ganze Übergangs-Stufe-1 hängt hinter dem Formatwechsel (Phase 3 ← Phase 2). Q11 (b) (2026-09-18) nimmt die Stufe 1 aus Bahnen aus dem Bauplan — also auch diese Übergangs-Stufe-1: vor Phase 5 zeigt der Admin keine Verbinder-Maße, der Abnehmer der Verbinder-Abschnitte ist erst die Ernte (§6.7) |
+| Verbinderstück je Kasten: Länge, Winkel, Koppelhöhe | **`letter_spans` enthalten keine Verbinder-Abschnitte** — **berichtigt 2026-09-20:** `spans_of` gibt einem Verbinder-Sample NICHT das Label des nächsten Buchstabens, sondern das des **indexnächsten beschrifteten Samples**, bei Gleichstand das des VORIGEN (`tools/pairlab/tintenpfad.py:2018-2033`, Zuweisung `:2026` `lab[i] = lab[idx[np.argmin(np.abs(idx - i))]]`). Ein Verbinder wird also in der MITTE geteilt und auf beide Nachbarn verteilt. Die Folgerung `span[l].last + 1 == span[r].first` stimmt weiter, die Begründung stimmte nicht | **MISSING** — und teurer als hier stand: weil die Spans auf beide Nachbarn verteilt sind, lässt sich ein `connector_span` **nicht aus `letter_spans` herausschneiden**; er müsste aus den ROH-Labels gebaut werden, die der Folger heute verwirft. Darum fahren `connector_spans` in PFAD_FORMAT 2 NICHT mit (§15.6, PR 3); der gespeicherte Marker macht ein späteres Format 3 gerade billig. Die ganze Übergangs-Stufe-1 hängt hinter dem Formatwechsel (Phase 3 ← Phase 2). Q11 (b) (2026-09-18) nimmt die Stufe 1 aus Bahnen aus dem Bauplan — also auch diese Übergangs-Stufe-1: vor Phase 5 zeigt der Admin keine Verbinder-Maße, der Abnehmer der Verbinder-Abschnitte ist erst die Ernte (§6.7) |
 | Tintentreue der tragenden Kästen | wie §6.1 | DERIVABLE |
 | Stufe 5: Median-Connector + MAD, `offset_center`, `gen_chamfer`/`doff`/`dconn` | `GET /hands/{hand}/pair-aggregates` (Route EXISTS), `pair_instances` der Hand fehlen | MISSING |
 | Übersteuerung vorhanden — und für welche Hand | `GET /sources/{id}/pairs` (Liste, EXISTS); `glyph_pairs` ist je `(style_id, left, right, variant)` gekeyt, ohne Hand | EXISTS / Hand-Bezug MISSING — Q23 (a) entschieden 2026-09-18: `glyph_pairs.hand_id`, Backfill auf die Platten-Hand, im Schema-PR von Phase 5 (§15.3) |
@@ -924,24 +955,48 @@ Ampel lesen).
 | # | Sensor | Herkunft | Status |
 |---|---|---|---|
 | 1 | `ink_unvisited_share` — Anteil des Tintenskeletts, den die Bahn nie befährt | `meta.tintenpfad` | EXISTS |
-| 2 | Absetzer gegen Soll: `paper_lifts` + 1 gegen `body_runs_expected(word)` (`core/eigenhand/befund.py`) plus Markenzüge der Tafel-Zeile | Zähler EXISTS, Soll aus core | DERIVABLE |
+| 2 | Absetzer gegen Soll: `paper_lifts` + 1 gegen `body_runs_expected(word)` (`core/eigenhand/befund.py:653-671`) — **berichtigt 2026-09-20: OHNE Markenzüge.** `body_runs_expected` zählt ausschließlich verbundene KÖRPERläufe über `shape_word`; i-Punkt und Umlaut kommen darin nicht vor. Das Soll wird darum „Absetzer (Körper)" beschriftet | Zähler EXISTS, Körper-Soll aus core DERIVABLE | DERIVABLE — der Marken-Soll ist ein eigener kleiner Posten an der Tafel-Zeile, nicht an `befund.py` |
 | 3 | `jumps`, `hairpins` | `meta.tintenpfad` | EXISTS |
-| 4 | Papier-Exkursion: max Abstand Bahn → eigene Tintenmaske in xh | **neu im Tool** — `tools/tracebench/excursions.py` misst gegen die Referenz und ist für Streifen ungeeignet | MISSING (eigene Vorregistrierung; 0,35 xh nur Startwert) |
+| 4 | Papier-Exkursion: max Abstand Bahn → eigene Tintenmaske in xh | **berichtigt 2026-09-20:** `tools/tracebench/excursions.py` misst NICHT gegen die Referenz, sondern den Abstand zur K-C-gereinigten Evidenz-TINTE des Specimens selbst — also referenzfrei gegen die eigene Maske, genau die gewünschte Größe (Docstring `:14-16`, Kernel `:86-95`). Ungeeignet ist allein die Fixture-Verkabelung (`:38-40`, `:51-53`), und die Streifen-Tintenmaske baut `tools/eigenhand/pfad.py:255-261` beim Folgen ohnehin | **Umverdrahtung von sechs Zeilen**, keine Neuentwicklung. Die Vorregistrierung bleibt Pflicht, ihr Gegenstand ist aber die SCHWELLE bei 300 dpi, nicht „ein neuer Sensor"; 0,35 xh ist ein von der Platte geborgter Startwert |
 | 5 | AIoU der gerasterten Bahn gegen die Tintenmaske | `tools/tracebench/metric.py::aiou` (null Projekt-Importe), im Tool ins meta | DERIVABLE; Absolutschwellen neu (`k0eval` kennt nur das Delta-Gate) |
 | 6 | Struktur-Soll-Abstand | `ductus_soll` liest Fixture-Fälle, für Streifen nicht anwendbar | später — Q9 (c), nicht in der ersten Ampel |
 
 **Entschieden 2026-09-18 (Q9 b):** die Ampel rechnet mit den FÜNF Sensoren
 1–5; Sensor 4 und 5 kommen mit PFAD_FORMAT 2 im Lockstep (unten), Sensor 6
 folgt später, wenn ein Soll-Rechner ohne Fixtures entsteht.
+**Berichtigt 2026-09-20 — der Lockstep bleibt richtig, aber aus einem
+anderen Grund.** Die beiden Sensoren BRAUCHEN den Formatwechsel nicht:
+`meta` ist ein freier, serverseitig ungeprüfter Dict
+(`core/eigenhand/pfad.py:365,369` reicht ihn durch, `api/schemas.py:1549`
+prüft ihn nicht), zwei zusätzliche Zahlen darin sind additiv und
+formatneutral und liefen heute schon durch. Der Marker wird gebraucht für
+die UNTERSCHEIDBARKEIT „mit drei gemessen" gegen „mit fünf gemessen" — und
+für die ECHTEN Schema-Änderungen des Formats 2: Skip-Einträge und
+Span-Herkunft.
 
 Sensor 2 und das Befund-Feld `duktus` messen dasselbe — Körper-Züge gegen
 Soll —, einmal auf der Tinte, einmal auf der Bahn. Beschriftung: „Absetzer
 (Tinte)" im Befund, „Absetzer (Bahn)" in der Tintentreue; nie zwei Namen für
 einen Defekt.
 
-**Regel:** der schlechteste Sensor entscheidet (wie `_summarise` im Befund),
-kein gewichtetes Maß. Fassungs-Ampel = schlechtester Kasten;
-Buchstaben-/Übergangs-Ampel = Anteile über die tragenden Kästen.
+**Regel:** der schlechteste Sensor entscheidet, kein gewichtetes Maß.
+**Berichtigt 2026-09-20 — der Verweis auf `_summarise` war der falsche
+Block.** `_summarise` faltet WÖRTER (das schlechteste Wort entscheidet über
+die Fassung, `core/eigenhand/befund.py:834-840`); INNERHALB eines Wortes
+verrechnet der Befund sehr wohl gewichtet und multiplikativ (`:848-856`,
+`:954-969`). Gemeint ist der Block zwei weiter: **`severity = max(…)` über
+die Einzelbefunde plus ein Namens-Tiebreak über eine feste Reihenfolge**
+(`:1012-1017`, `GRUND_ORDER` `:282`) — ein Gleichstand der Schwere wird nie
+danach gebrochen, welche Zahl gerade größer war. Die Tintentreue baut den
+Zwilling: `severity = max` plus ein `SENSOR_ORDER`, dessen Reihenfolge der
+Modul-PR setzt und in seinem Text nennt. Buchstaben-/Übergangs-Ampel =
+Anteile über die tragenden Kästen. **Ob eine ganze FASSUNG eine Ampelfarbe
+bekommt, ist offen** (Frage E, Runde 2, §15.6): sie trüge dann ein zweites
+Urteil mit eigenem Wortschatz neben `befund.vorschlag`
+(`core/eigenhand/befund.py:269`) über derselben Fassung, und der häufigste
+Fall ist der widersprüchliche — sauber geschrieben, schlecht gefolgt. Bis
+zum Entscheid gilt die Empfehlung: Ampel je KASTEN, die Fassung bekommt nur
+einen Zähler („3 von 4 folgen"), keine Farbe.
 
 **Startwerte** (vorregistriert, §14-Eintrag im Messjournal vor dem ersten
 Streifen), je Sensor eine grüne und eine gelbe Grenze — grün: unvisited
@@ -966,12 +1021,31 @@ bleibt tolerant gegen Pausen.
 
 **Zustände:** genau drei GEMESSENE Stufen (folgt · folgt teils · folgt
 nicht; Theme `success`/`warning`/`error`, Text als zweiter Träger) und EIN
-ungemessener grauer Zustand mit Grund im Text: „noch nicht gefolgt"
-(`pfade: null`) · „Folger fand nichts" (`pfade: []`, steht in der
-Nachfahr-Liste) · „Maske geändert" (`flecken_n` ≠ Maske) · „übersprungen:
-unautoriert <keys> / aufgegeben" (heute KEIN Eintrag — `pfad.py` schreibt
-`continue` → PFAD_FORMAT 2 mit Skip-Einträgen) · „Format 1 — unvollständig
-gemessen". „von Hand" ist ein **Herkunfts-Chip**, nie eine Ampelfarbe:
+ungemessener grauer Zustand mit Grund im Text: „noch nicht gefolgt" ·
+„Folger fand nichts" · „Maske geändert" (`flecken_n` ≠ Maske) ·
+„übersprungen: unautoriert <keys> / aufgegeben" · „Format 1 —
+unvollständig gemessen".
+
+**Berichtigt 2026-09-20 — zwei dieser Gründe sind gar keine
+Kasten-Eigenschaften.** `pfade: null` („noch nicht gefolgt") und `pfade: []`
+(„Folger fand nichts") sind Eigenschaften der ganzen **Fassungs-ZEILE**, nicht
+eines Kastens: die Spalte hängt an der Zeile
+(`core/database/models.py:870-871`), und `pfade: []` entsteht überhaupt nur,
+wenn nichts gefolgt wurde UND nichts gespeichert war — sonst schriebe der
+Merge die alten Einträge zurück (`tools/eigenhand/pfad.py:427-451`). JE
+KASTEN sind heute vier Fälle derselbe Zustand „kein Eintrag": `--box` nicht
+gewählt · keine Bogen-Geometrie · unautorierte Glyphen · der Folger gibt auf
+(alle vier `continue`, `tools/eigenhand/pfad.py:370-371,375-379,381-383,385-387`;
+der Aufgeber `tools/pairlab/tintenpfad.py:2303-2312`). **Die Skip-Einträge
+sind darum keine Kosmetik, sondern das, was diese vier Zustände überhaupt
+erst unterscheidbar macht** (Entscheid C, §4.7). Bis sie geschrieben werden,
+darf die Ampel je Kasten nur EINEN grauen Zustand kennen; die beiden
+Zeilen-Zustände gehören an die Fassung, nicht an den Kasten. Den grauen
+Zustand „Maske geändert" rechnet die Oberfläche schon heute
+(`StripsPanel.tsx:305`, Warn-Chip `:331`) — die Ampel ÜBERNIMMT ihn und der
+freistehende Chip verschwindet, statt daneben eine zweite Aussage zu machen.
+
+„von Hand" ist ein **Herkunfts-Chip**, nie eine Ampelfarbe:
 nachgefahrene Bahnen misst das Werkzeug beim nächsten Lauf nach (`pfad
 --messen`, Sensoren 1/3/4/5 sind referenzfrei) und sie tragen dann dieselbe
 Ampel (V21); bis dahin zwei Zähler „k grün (gemessen)" · „j von Hand
@@ -981,14 +1055,29 @@ Ampel (V21); bis dahin zwei Zähler „k grün (gemessen)" · „j von Hand
 antwortet 409 bei Formatdifferenz, der Autor pusht gegen die deployte API.
 Zwei Releases: API liest 1 und 2, dann schreibt das Tool 2. **Die Zeile
 muss ihr Format tragen:** heute speichert `eigenhand_strips.pfade` nur die
-Liste (`core/database/models.py`), und der Read setzt `format` aus der
-Konstante `PFAD_FORMAT` (`api/routers/eigenhand.py`) — nach dem Wechsel
-läsen sich alte Zeilen als Format 2, und der graue Zustand „Format 1 —
-unvollständig gemessen" wäre nie erreichbar. Darum bekommt jede Zeile einen
-gespeicherten Marker (Spalte `pfade_format` oder `{format, eintraege}`
-statt der nackten Liste, auch für eine leere Liste), eine Daten-Migration
-stempelt den Bestand als 1, und der Read antwortet mit dem GESPEICHERTEN
-Format; erst dann ist der zweite Release erlaubt. Das Stück steht in §6.7.
+Liste (`core/database/models.py:874`), und der Read setzt `format` aus der
+Konstante `PFAD_FORMAT` (`api/routers/eigenhand.py:1229,1315`) — nach dem
+Wechsel läsen sich alte Zeilen als Format 2, und der graue Zustand
+„Format 1 — unvollständig gemessen" wäre nie erreichbar. Darum bekommt jede
+Zeile einen gespeicherten Marker (Spalte `pfade_format` oder
+`{format, eintraege}` statt der nackten Liste, auch für eine leere Liste),
+eine Daten-Migration stempelt den Bestand als 1, und der Read antwortet mit
+dem GESPEICHERTEN Format; erst dann ist der zweite Release erlaubt. Das
+Stück steht in §6.7.
+
+**Berichtigt 2026-09-20 — wo die Konstante wohnt und wie viele sie
+schreiben.** `PFAD_FORMAT` liegt nicht im Router, sondern in `core`:
+`core/eigenhand/pfad.py:55`, importiert vom Router
+(`api/routers/eigenhand.py:119`). Und der Lockstep hat mehr Stellen, als
+die §6.7-Zeile nennt — **fünf, nicht drei**: die Konstante selbst, die
+harten Pydantic-Defaults `format: int = 1` (`api/schemas.py:1563` und
+`:1577`, die an die Konstante gebunden werden müssen), der Tool-Umschlag
+(`tools/eigenhand/pfad.py:502,511`), das Verify-Seed-Skript
+(`.claude/skills/verify-frontend/seed-local-admin.py:249`) und — ab dem
+Kasten-Schreibweg — der Editor. **Das Seed-Skript ist der dritte Schreiber
+und muss im selben Release mitziehen**, sonst fällt nach dem zweiten Release
+der lokale Wegwerf-Stack auf 409 — und zwar genau in dem Skill, mit dem die
+Frontend-PRs verifiziert werden.
 
 **Absprung:** Chip → Kasten mit Bahn-Overlay (`PathOverlay`, EXISTS);
 darunter „Tintenabdeckung entlang der Bahn" (Serverroute aus Bild + Bahn,
@@ -1040,8 +1129,8 @@ Umschalter.
 nach dem Zusatz des Autors (wörtlich in §4.5) werden sie im Kasten und im
 Editor ANGEZEIGT und sind dort MANUELL KORRIGIERBAR. Eine korrigierte
 Grenze trägt eine eigene Herkunft (authored-Spans), wird von `pfad --spans`
-nie ersetzt — dieselbe Schutzregel wie für die authored-Bahn —, wird wie
-sie archiviert und ist Trainings- und Prüfmenge des Span-Zuordners, mit
+nie ersetzt, wird wie die Bahn archiviert und ist Trainings- und Prüfmenge
+des Span-Zuordners, mit
 vorregistrierter Rückhaltemenge (`eigenhand-erfassung.md` §12, Prüfstein
 2). Der Zuordner bekommt einen eigenen kleinen §14-Nachweis: grüne
 Auto-Bahnen mit bekannten `letter_spans` „wie von Hand" behandeln und das
@@ -1049,6 +1138,21 @@ Ergebnis vergleichen. Hinweis aus A48 (Messjournal §14, `sep13`): die
 Saat-Zuordnung trägt nur auf DEKODIERTEN Bahnen — für authored-Bahnen ist
 die Zuordnung neue Arbeit, kein Aufruf von Vorhandenem. PFAD_FORMAT 2 trägt
 darum die Span-Herkunft je Kasten (§6.7).
+
+**Berichtigt 2026-09-20 — „dieselbe Schutzregel wie für die authored-Bahn"
+gibt es nicht; sie muss gebaut werden.** Die bestehende Regel ist
+**kastenweit** und hängt allein an `verfahren`: `displaced_authored`
+vergleicht `verfahren` und `box_index` und reicht `meta` ungeprüft durch
+(`core/eigenhand/pfad.py:406-412`, Durchreichung `:369`), ein
+authored-über-authored-Push ersetzt das ganze `meta` eines Kastens also
+unbeanstandet. Der Code notiert die Lücke selbst
+(`core/eigenhand/pfad.py:380-388`: „That protection is per SPAN, though, not
+per box"). Nötig ist ein **Feld-Vergleich**, der eine authored Spanne
+schützt UND ein gewöhnliches Neu-Folgen desselben Kastens durchlässt — ein
+REGEL-Umbau, kein Format-Umbau, und derselbe Umbau trifft zusätzlich den
+Tool-Merge (`tools/eigenhand/pfad.py:428-446`). Es sind drei Stellen, keine
+Wiederverwendung; der Schnitt gibt ihnen eigenen Platz und eigene Tests
+(§15.6, PR 3).
 
 **Editor:** `WordTraceEditorDialog`, heute an `row: WordInstanceOut`,
 `sample`, `sourceId` gebunden UND an `getHand()` gegen `/hands/{id}` —
@@ -1068,16 +1172,72 @@ im selben PR mit. Geräteteilung: Tablet = lesen · nachfahren · ⚑, Rechner =
 Wizard · Terminal · Apply. Der Tablet-Test am Gerät ist eine
 Todoist-Aufgabe des Autors.
 
+**Berichtigt 2026-09-20 — der Dialog-Umbau misst teils Vorhandenes, die
+Naht dagegen ist größer.** Vollbild und Werkzeuge oben SIND gebaut, seit
+Längerem: `WordTraceEditorDialog.tsx:346` setzt `fullScreen`, die Begründung
+steht als Kommentar `:332-335`, die Werkzeugleiste `:354-398`,
+`touchAction:'none'` `:532`. Neu an Q14 (a) sind allein „Speichern & weiter",
+das Absetzer-Soll und die Buchstabengrenzen. Zu klein beschrieben ist
+dagegen der Adapter: der Dialog hängt an der Platte nicht nur über die
+Hand, sondern über sein **Speicherziel** (`putWordInstances(sourceId, …)`,
+`:293-319` → `api/routers/instances.py:249`), seine **Identität**
+(`WordSampleOut` treibt viewBox, Zeiger-Abbildung und Lineatur, `:182,517,
+545,553,562`) und seine **Unterlage** — ein nacktes `<image href>` auf eine
+ÖFFENTLICHE Crop-Route (`:541-542`), während die Streifen-Route
+admin-gegatet und `private, no-store` ist (`api/routers/eigenhand.py:125,938`).
+Die Unterlage muss darum eine **Blob-URL** werden, wie `StripsPanel.tsx:4-7,
+121-176` es bereits macht. **Ob ein Dialog mit zwei Zielen oder ein zweiter,
+schlanker Streifen-Editor gebaut wird, ist offen** (Frage G, Runde 3,
+§15.6); die Blob-Unterlage gilt in beiden Fällen.
+
 **Speichern:** `PATCH …/pfade/{box}` je Kasten. `eigenhand_strips` hat kein
 `updated_at` (nur `created_at`, `erzeugt_am` ist ein Datum) → Content-ETag
 (sha256 über `pfade`) im GET, `If-Match` im PATCH, 412 bei Konflikt — ohne
-Migration (V20). Der Vollersatz `PUT …/pfade` bleibt dem Tool. Tool-Push
-über einen `authored`-Kasten → 409, Überschreiben nur mit ausdrücklichem
+Migration (V20). Der Vollersatz `PUT …/pfade` bleibt dem Tool, **verlangt
+aber dasselbe `If-Match` und antwortet ebenfalls 412** — ein ETag bloß auf
+der ANTWORT schützt nichts, erst die Bedingung auf dem Schreibweg tut es;
+das Werkzeug reicht dafür den ETag seines eigenen GET durch. Sonst bliebe es
+das unbewachte Loch: Werkzeug liest, Browser schreibt per PATCH eine neue
+authored-Bahn, und der spätere Voll-Push überschriebe sie unbemerkt.
+Tool-Push über
+einen `authored`-Kasten → 409, Überschreiben nur mit ausdrücklichem
 Terminal-Flag; keine vierte force-Fläche (Q4 — entschieden 2026-09-18:
-Unterpunkt (i)). Archiv: Q4 (a), Phase 2 — eine nachgefahrene Bahn ist nicht
-ableitbar und wird wie Bild, Verdikt und Maske archiviert
-(`eigenhand-erfassung.md` §7.5/§8.1); dasselbe gilt für korrigierte
-Buchstabengrenzen.
+Unterpunkt (i)).
+
+**Berichtigt 2026-09-20 — die 409-Zeile ist in drei Punkten zu eng.**
+(a) Der REGULÄRE Tool-Push löst den 409 nie aus: `_merged` mischt von sich
+aus um einen authored-Kasten herum (`tools/eigenhand/pfad.py:428-446`).
+(b) Der 409 fällt nicht nur beim Überschreiben, sondern auch, wenn der Push
+den Kasten bloß WEGLÄSST — der Schreibweg ist eine volle Ersetzung, ein
+fehlender Kasten ist ein gelöschter (`core/eigenhand/pfad.py:396-397`,
+`tests/test_eigenhand_pfad.py:301`). (c) Er trifft den GANZEN Push, nicht
+den Kasten (`api/routers/eigenhand.py:1291-1300`) — es gibt keinen
+`skipped`-Kanal. Wer die kurze Zeile als Spezifikation liest, baut die Regel
+enger, als sie ist; der Bezugstext ist die ausführliche Fassung in
+[`eigenhand-erfassung.md`](eigenhand-erfassung.md) §7.5.
+
+**Archiv: Q4 (a), Phase 2 — und berichtigt 2026-09-20, weil die Analogie die
+Richtung umdreht.** Bild, Verdikt und Maske entstehen LOKAL und werden
+hochgeschoben; der Archivlauf greift einfach die Arbeitskopie ab
+(`tools/eigenhand/snapshot.py:139-176`). Eine nachgefahrene Bahn läuft
+umgekehrt: sie entsteht im Browser, lebt ausschließlich in der geteilten DB
+(`core/database/models.py:874`), existiert lokal gar nicht und muss erst
+HERUNTERgeholt werden. Auch der vorgesehene Wächter `/dbsnapshot` trägt sie
+nicht, und der Code protokolliert die Lücke selbst
+(`api/schemas.py:1591-1603`). „Wird wie Bild, Verdikt und Maske archiviert"
+verdeckt also genau den Bruch, den Phase 2 schließen soll: gebaut wird ein
+**ZIEHWEG** (`pull --pfade`), nicht die Erweiterung eines Schiebewegs. Wohin
+die gezogene Bahn lokal fällt, ist seit dem 2026-09-20 entschieden — als
+Zeile in der zentralen `kartei.json` (Entscheid A, §4.7). Dasselbe gilt für
+korrigierte Buchstabengrenzen. **Nachzuziehen im ersten PR der Welle:**
+[`eigenhand-erfassung.md`](eigenhand-erfassung.md) §7.5 trägt dieselbe
+Analogie in derselben Richtung und wird dort berichtigt — dieser Doku-PR
+fasst nach der Wellenregel (§15.4) nur dieses Doc an. Dieselbe Pflicht trifft
+[`glossar.md`](../reference/glossar.md): der Eintrag „Tintentreue (geplant)"
+schreibt „Formatwechsel PFAD_FORMAT 2 für Exkursion und AIoU" und gibt damit
+die Kopplung wieder, die §6.3 oben gerade widerlegt hat — die Klammer
+„(geplant)" fällt ohnehin erst mit dem Modul-PR (PR 5), und der dreht den
+Satz im selben Zug.
 
 ### 6.5 Ableitungen — „Drei Rollen"
 
@@ -1143,14 +1303,16 @@ darin Platz finden, legt das Proposal der Freigabe-Maschine fest (Q24 i,
 | authored-Regel Server (409) + Tool-Merge um `authored` + Test | `write_pfade`, `pfad.py::_merged`, `tests/test_api_eigenhand.py` | S · 0 |
 | Rohzahlen-Chip aus geladenem `pfade[].meta` | `StripsPanel` | S · 0 |
 | Ebenen-Tokens `paper.layer.*`, Rollen-Tokens, `mono` (Arbeitsnamen, §5.1 Idee 19) | `styles/paper.ts`, `design-system.md` §2/§7 — dazu, ergänzt 2026-09-18: `shell/model.ts` (hält die Hexe), die fünf Aufrufstellen mit `#e02030`, `TerminalCommand.tsx` und die Locale-Sätze, die Farben beim Namen nennen; bleibt S, rund elf Dateien | S · 0 |
-| Meta-only Read `GET /eigenhand/pfade/{hand}[?nur=offen]` — Python-Projektion, ohne `strokes`, RESERVED | API + `_STRIP_WITHOUT_PNG` | S · 2 |
-| PFAD_FORMAT 2: Sensor 4 (neu), 5, Roh-Labels/`connector_spans`, Absetzer-Soll, Skip-Einträge, **Span-Herkunft je Kasten** (Q15: automatisch aus `pfad --spans` oder von Hand korrigiert — authored-Spans ersetzt der Zuordner nie, das Archiv führt sie); Lockstep in zwei Releases. `connector_spans` hat seit Q11 (b) vor Phase 5 keinen Abnehmer im Admin — ob sie im EINEN Formatwechsel mitfahren (ein zweiter Lockstep wäre teurer), entscheidet der Format-PR | `tools/eigenhand/pfad.py`, `core/eigenhand/pfad.py` | M · 2 |
+| Meta-only Read `GET /eigenhand/pfade/{hand}[?nur=offen]` — Python-Projektion, ohne `strokes`, RESERVED. **Ergänzt 2026-09-20:** ausdrücklich `private, no-store` wie `read_pfade` (`api/routers/eigenhand.py:1224`) — in diesem Router setzt sonst KEINE JSON-Listenroute einen Cache-Header (gesetzt wird er nur `:373,464,938,1224,1310`), und eine Bahn-Projektion ist aus reservierten Pixeln abgeleitet; Route in `tests/test_api_public_surface.py` gepinnt | API + `_STRIP_WITHOUT_PNG` | S · 2 |
+| PFAD_FORMAT 2 — **berichtigt 2026-09-20:** die Sensoren 4/5 gehören NICHT dazu (`meta` ist ein freier, ungeprüfter Dict, zwei Zahlen darin sind additiv und formatneutral, P3 oben); das Format trägt die drei ECHTEN Schema-Änderungen: **Skip-Einträge** (Entscheid C, §4.7), **Span-Herkunft je Kasten** (Q15, `auto` \| `authored`) und der **Feld-Schutz** — `displaced_authored` wird vom kastenweiten `verfahren`-Vergleich auf einen Feld-Vergleich umgebaut, derselbe Umbau trifft den Tool-Merge (`tools/eigenhand/pfad.py:428-446`). Lockstep in zwei Releases, FÜNF Schreiber, nicht drei (§6.3). `connector_spans` fahren NICHT mit: seit Q11 (b) haben sie vor Phase 5 keinen Abnehmer, und sie müssten nach P1 (§6.2) aus den verworfenen ROH-Labels gebaut werden — der gespeicherte Marker macht ein späteres Format 3 gerade billig | `core/eigenhand/pfad.py`, `api/schemas.py`, `api/routers/eigenhand.py`, `tools/eigenhand/pfad.py` | M · 2 |
+| Der zweite Lockstep-Release: das Werkzeug rechnet und schreibt Sensor 4 + 5 und die Skip-Einträge, der Push deklariert Format 2; Sensor 4 ist eine **Umverdrahtung** des vorhandenen Kernels (`tools/tracebench/excursions.py:86-95`) auf die Maske, die `tools/eigenhand/pfad.py:255-261` schon baut. Die feste Sechs-Schlüssel-Projektion (`:330-336`) muss mitwachsen, sonst landet ein neuer Sensor stillschweigend nicht in der DB; das Verify-Seed-Skript zieht im selben PR mit | `tools/pairlab/tintenpfad.py`, `tools/eigenhand/pfad.py`, `seed-local-admin.py` | M · 2 (neu benannt 2026-09-20) |
 | Gespeicherter Format-Marker je Streifen-Zeile (`pfade_format` oder `{format, eintraege}`, auch bei leerer Liste) + Daten-Migration „Bestand = 1" + Read antwortet mit dem gespeicherten Format — Voraussetzung des Lockstep-Wechsels | `core/database/models.py`, Migration + `/verify-migrations` + Snapshot, `api/routers/eigenhand.py` | S · 2, VOR dem zweiten Release |
-| `core/eigenhand/tintentreue.py` — Ampel-Regel, Konstanten je Hand + Datum; §14-Eintrag; Glossar | core + docs | S · 2 |
-| `PATCH …/pfade/{box}` + ETag/`If-Match`; `putEigenhandPfade` + `types.ts` | API + SPA | S · 2 |
-| Editor-Adapter (Props-Naht für Hand) und — Q14 a — der Umbau des Dialogs: Tablet-Vollbild, Werkzeuge oben, „Speichern & weiter", Absetzer-Soll, Anzeige und Korrektur der Buchstabengrenzen (Q15); die Suiten ziehen im selben PR mit (Q6 b) | `WordTraceEditorDialog` | M · 2 (← V1 oder Props) |
-| `pfad --spans`: Buchstabengrenzen über eine nachgefahrene Bahn legen, ohne authored-Spans zu ersetzen; eigener §14-Nachweis (grüne Auto-Bahnen „wie von Hand"); die Saat-Zuordnung aus A48 trägt nur auf dekodierten Bahnen — neue Arbeit | `tools/eigenhand/pfad.py`, Messjournal §14 | M · 2–3 (Q15) |
-| Archiv-Regel für authored-Pfade UND authored-Spans: `pull --pfade → snapshot → sync --from`, Formatversion, Prüfung nach `eigenhand-erfassung.md` §8.1 — VOR dem ersten nachgefahrenen Kasten | drei Werkzeuge | M · 2 (Q4 a entschieden) |
+| `core/eigenhand/tintentreue.py` — Ampel-Regel (`severity = max` + `SENSOR_ORDER`, nicht `_summarise`, §6.3), Konstanten je Hand + Datum; §14-Vorregistrierung; Glossar. **Berichtigt 2026-09-20:** vier §14-Vorgänge, nicht einer — Tintentreue-Schwellen, Sensor-4-Schwelle bei 300 dpi, die Kalibrierrunde und der Span-Zuordner; eine gemeinsame Fixture `tests/fixtures/tintentreue_cases.json` klammert den Python- an den TS-Zwilling `pfadRohzahlen.ts`, wie `shaping_cases.json` es tut | core + docs | S · 2 |
+| **Das Kalibrier-Instrument — fehlte in dieser Tabelle, ergänzt 2026-09-20.** Q10 (b) verlangt 30 blind beurteilte Streifenkästen „nach dem humanbench-Muster"; `humanbench` liest aber eingefrorene Fixture-Crops (`tools/humanbench/build.py:80-82,998-999`) und bricht bei abweichender Wurzel ab (`:1266-1298`), und seine Taxonomie hat sechs Fit-Kategorien (`page.py:122-135`), die Ampel drei Stufen. Das ist ein Nachbau: Streifen-Modus, eigene Frage, eigenes Kategorienset, Abbildung auf drei Stufen — davor geht `menschliche-bewertung.md` nach (dort `:39-43` der ausdrückliche Nachzieh-Anlass) | `tools/humanbench/*` oder neu, docs | M · 2, zuletzt |
+| `PATCH …/pfade/{box}` + ETag/`If-Match` — **`If-Match` wird auch auf dem vollen `PUT` VERLANGT** (mit 412), nicht nur der ETag mitgeschickt, sonst schützt es nichts; `patchEigenhandPfad` + `types.ts`. Es gibt im Repo keinen ETag-Präzedenzfall, der PR schreibt ihn samt Test, dass `private, no-store` und ETag nebeneinander stehen bleiben | API + SPA | S · 2 |
+| Editor-Adapter und — Q14 a — „Speichern & weiter", Absetzer-Soll, Anzeige und Korrektur der Buchstabengrenzen (Q15); die Suiten ziehen im selben PR mit (Q6 b). **Berichtigt 2026-09-20:** Tablet-Vollbild und Werkzeuge oben SIND gebaut (`WordTraceEditorDialog.tsx:346`, `:332-335`), dafür ist die Naht größer als „Props für die Hand" — Speicherziel, Identität und Unterlage hängen an der Platte (§6.4). Erster Komponententest dieser Fläche, es referenziert heute keine `*.test.tsx` den Dialog | `WordTraceEditorDialog` oder ein zweiter, schlanker Streifen-Editor (Frage G) | L · 2 |
+| `pfad --spans`: Buchstabengrenzen über eine nachgefahrene Bahn legen, ohne authored-Spans zu ersetzen (der Feld-Schutz kommt aus dem Format-PR, nicht aus dieser Zeile); eigener §14-Nachweis (grüne Auto-Bahnen „wie von Hand"); die Saat-Zuordnung aus A48 trägt nur auf dekodierten Bahnen — neue Arbeit | `tools/eigenhand/pfad.py`, Messjournal §14 | M · 2–3 (Q15) |
+| Archiv-Regel für authored-Pfade UND authored-Spans: `pull --pfade → snapshot → sync --from`, Formatversion, Prüfung nach `eigenhand-erfassung.md` §8.1 — VOR dem ersten nachgefahrenen Kasten. **Berichtigt 2026-09-20 — „drei Werkzeuge" verliert die Daten still, so wie es hier stand.** `snapshot.py` behandelt ein Fassungs-Verzeichnis als EINE unveränderliche Kopiereinheit am relativen Pfad und überspringt alles, was in irgendeinem früheren Snapshot liegt (`tools/eigenhand/snapshot.py:57-76,92-100`): eine später in eine schon abgelegte Fassung gelegte Datei käme nie ins Archiv, und der Lauf meldete Erfolg. Entscheid A (§4.7) umgeht das — die Bahn reist als Zeile in der `kartei.json`, die jeder Lauf VOLL kopiert (`:164`). Dazu: die `known_gaps` des DB-Snapshot-Manifests (`tools/dbsnapshot/fetch.py:400-413`, heute schweigt es über genau diese Lücke) und die laute Schlusszeile des Restores. Entscheid B (§4.7): `--replace-authored` verweigert, solange der Kasten nicht archiviert ist | vier Werkzeuge: `pull.py`, `snapshot.py`, `sync.py`, `dbsnapshot/fetch.py` | M · 2 (Q4 a; Entscheide A + B) |
 | Lokaler, gitignorter Export der authored-Bahnen (und authored-Spans) als Trainings- und Entwicklungssatz des Folgers; die dev-19-Kopfzahl liest ihn nie, gemessen wird nur mit vorregistrierter, eingefrorener Rückhaltemenge (§4.5, Leitsatz 1) | `tools/`, nie Repo-Inhalt | S · 2, nach den ersten Nachfahrungen |
 | Router-Zeilen: `EigenhandBefundOut.woerter`, `AggregateOut.spike_ratio/head_deviation/gate_ok`, Ausrüstungswerte in `EigenhandStripOut` (Join über die Kartei) | `api/routers/*`, `api/schemas.py` | S · 3 |
 | `tools.eigenhand.report --faellig` | tools | S · 1 |
@@ -1164,7 +1326,11 @@ darin Platz finden, legt das Proposal der Freigabe-Maschine fest (Q24 i,
 
 **Aufwand mit Kette** (Vermutung, nicht Messung): Phase 0 ≈ 2 Wochen · 1
 ≈ 2–3 (Split von `EigenhandView` 502 + `StripsPanel` 1073 Zeilen, drei
-Übersichten mit URL-Zustand) · 2 ≈ 4–5 (Lockstep-Release, §14, Read,
+Übersichten mit URL-Zustand — **berichtigt 2026-09-20:** Phase 1 hat nur
+`EigenhandView` entlastet, 502 → **382** Zeilen, und die Streifenfläche
+dabei wachsen lassen, 1073 → **1318** Zeilen. Phase 2 startet also auf 1318
+Zeilen und schickt einen reinen Vorab-Split voraus, §15.6 PR 7) · 2 ≈ 4–5
+(Lockstep-Release, §14, Read,
 Adapter, PATCH) · 3 ≈ 2–3 (Übergänge ← Roh-Labels aus 2) · 5 ≈ 8–12 (Q19/Q20
 → Migrationen → `ernte.py` → Aggregate → Vorschau). Gegenprobe: Phasen 1–4
 der Eigenhand-Erfassung dauerten drei Wochen (2026-08-22 → 09-12); Phase 5
@@ -1328,6 +1494,16 @@ Crop + Overlay + Rohzahlen-Chip/Ampel · Herkunft · „Saat: Tafel-Duktus" ·
 Tintentreue-Verteilung, Ausschnitt-Stapel (Bilder), Feder-Halbbreite — keine
 Stufe-1-Tabellen aus Streifen-Bahnen. *drucken*: Warteschlange, Bögen
 erzeugen, PDF, gedruckte Bögen mit Stand.
+
+**Berichtigt 2026-09-20 — „Filter ‚Nachfahren'" ist kein Filter.** Es gibt
+keine Eigenhand-Arbeitsliste, die man filtern könnte: Phase 1 hat den
+Listen-Zustand ausdrücklich nur in den DREI Übersichten eingeführt
+(Konsumenten von `shell/listState.ts` sind `letters/`, `pairs/`, `words/`,
+`shell/` — kein `eigenhand/`), und `StripsPanel` ordnet je FASSUNG nach
+Streifen-Befund (`:1068,1137,1293`, `befundOrder.ts:31`). Der Posten ist der
+Zubau einer ganzen Listenfläche mit eigenem Zeilenmodell — **eine Zeile je
+KASTEN** — auf `?reiter=streifen` mit einer `status=`-Achse (keine eigene
+Unterroute, V2). Er ist damit M, nicht S (§15.6, PR 8).
 
 Quellen: `/eigenhand/*` — alles EXISTS, `zurueckgezogen`, `redo`,
 `sheets.last` heute ungezeigt; Sensoren je Kasten in der Liste MISSING
@@ -2544,7 +2720,12 @@ berührt oder sichtbar Geschmackssache ist.
   `workItemUrl` löst das Muster in `?reiter=streifen&strip=&fassung=&box=`
   auf (Parametername berichtigt am 2026-09-19, P1-Q1 (c) — §4.6);
   `work_items.hand_id` als Migration in Phase 3. Nie `note` — das
-  umginge das `stage`-Pflichtfeld.
+  umginge das `stage`-Pflichtfeld. **Berichtigt 2026-09-20:** „jetzt" ist
+  noch nicht eingelöst — `api/schemas.py:692` kennt bis heute nur
+  `Literal["word", "pair"]`. Und §15.1 verortet die Korb-ARBEIT in Phase 3,
+  was mit „jetzt" zu kollidieren SCHEINT; es kollidiert nicht: V7 ist das
+  Literal, Phase 3 ist die Fläche. Der Ein-Zeilen-Flip fährt darum in Phase 2
+  mit, damit ein roter Kasten in den Korb kann (§15.6, PR 8).
 - **V8 Korb-Drawer** mit Status-/Ebenen-/Stufen-Filter und Gruppierung ab
   Phase 0; `returned` oben.
 - **V9 „übersprungen: unautoriert"** ist eine Ground-Truth-Lücke: Absprung
@@ -2800,15 +2981,19 @@ wer eine davon wieder aufmacht, braucht einen neuen Entscheid.
    **Erledigt 2026-09-20:** alle acht Phase-1-PRs sind gemergt (#621, #622,
    #626, #625, #624, #627, #629, #631), der Stand dazu steht in §15.4. V1
    und FM1–FM6 sind unverändert offen.
-5. **Der nächste Schritt (Stand 2026-09-20): Phase 2 — Tintentreue +
-   Nachfahren** (§15.1, Zeile 2; Spezifikation §6.3, §6.4, §6.7). Sie
-   beginnt mit einer **nur lesenden Erkundung**: erst steht im Code und in
-   den Daten, was heute wirklich in `pfade` liegt — Format, Sensoren,
-   Span-Herkunft, wie oft die Grenzen danebenliegen —, dann wird der
-   PR-Schnitt geschrieben. Kein Schreibpfad, keine Migration, keine
-   Schwelle und keine Messung, bevor diese Erkundung steht; die
+5. **Phase 2 — Tintentreue + Nachfahren** (§15.1, Zeile 2; Spezifikation
+   §6.3, §6.4, §6.7). Sie beginnt mit einer **nur lesenden Erkundung**:
+   erst steht im Code und in den Daten, was heute wirklich in `pfade` liegt
+   — Format, Sensoren, Span-Herkunft, wie oft die Grenzen danebenliegen —,
+   dann wird der PR-Schnitt geschrieben. Kein Schreibpfad, keine Migration,
+   keine Schwelle und keine Messung, bevor diese Erkundung steht; die
    Kalibrierung je Hand ist ausdrücklich EINE vorregistrierte Runde
-   (Q10 b, [`eigenhand-erfassung.md`](eigenhand-erfassung.md) §7.3).
+   (Q10 b, [`eigenhand-erfassung.md`](eigenhand-erfassung.md) §7.3). —
+   **Erledigt 2026-09-19/20:** die Erkundung ist gelaufen, hat **22 Stellen
+   dieses Docs als falsch belegt** — 21 davon hier im Text berichtigt, jede
+   mit ihrem `datei:zeile`-Beleg, die 22. (der §15-Stand-Block, der Phase 1
+   noch als laufend führte) war schon mit #632 nachgezogen — und den Schnitt
+   in **dreizehn PRs** ergeben (§15.6).
 6. **Was weiter beim Autor liegt.** Der Prod-Datenschritt V1 (§15.2) — ein
    `UPDATE` auf der geteilten Cloud SQL, mit Snapshot davor und Rückfrage in
    der Sitzung. Und für Phase 5 (§15.3) die sechs Rückfragen FM1–FM6 aus
@@ -2821,6 +3006,18 @@ wer eine davon wieder aufmacht, braucht einen neuen Entscheid.
    `@mui/material` 9 wirkungslos, 161 Stellen renderten in voller Tinte statt
    in der weichen (§15.4). Der Fix landete bewusst NACH den Phase-1-PRs, die
    dieselben Dateien angefasst haben.
+8. **Der nächste Schritt (Stand 2026-09-20): Phase 2 baut, beginnend mit der
+   Archiv-Kette.** Der erste PR der Welle ist PR 1 aus §15.6 — der Ziehweg
+   `pull --pfade → snapshot → sync --from`, weil nichts einen nachgefahrenen
+   Kasten schreiben darf, bevor er wiederherstellbar ist. **Runde 1 der
+   Phase-2-Fragen ist am 2026-09-20 entschieden** (A, B, C — §4.7, alle drei
+   wie empfohlen), damit ist PR 1 baubar. **Offen sind die Runden 2 und 3:**
+   Frage D (wo die zwei neuen Messzahlen entstehen), E (ob eine ganze Fassung
+   eine Ampelfarbe bekommt), F (ob das Kalibrier-Instrument in den Bauplan
+   geht), G (ein Editor mit zwei Zielen oder ein zweiter, schlanker), H
+   (Rückhaltemenge) und I (ob der Bestand nachgemessen wird). Welcher PR auf
+   welche wartet, steht in §15.6; keine davon hält PR 1 auf, und für jede ist
+   der Weg ohne Entscheid dort benannt.
 
 ## 15 Umsetzung der gewählten Form (Stand 2026-09-20)
 
@@ -2830,16 +3027,22 @@ Bauplan dazu; die Spezifikation der Flächen bleibt, wo sie steht (§5–§7,
 für Phase 4 §9), hier stehen Reihenfolge, Schnitt und Bedingungen. Die
 Aufwände sind die Vermutungen aus §6.7, keine Messungen.
 
-**Stand 2026-09-20** (er ersetzt den Stand 2026-09-19, der Phase 1 noch bei
-PR 2 stehen sah). **Die Phasen 0 und 1 sind gebaut** — die neun PRs aus
-§15.2 und die acht aus §15.4 sind gemergt, der eine Nachzug #628 mit **#633**
-(§15.4); offen ist allein der Prod-Datenschritt V1, der auf die Rückfrage in
-der Sitzung wartet. **Als Nächstes Phase 2** (§15.1, Zeile 2), die
-mit einer nur lesenden Erkundung beginnt (§14, Schritt 5). Phase 5 hat ihr
+**Stand 2026-09-20, zweite Fassung des Tages** (sie ersetzt die erste, die
+Phase 2 noch vor ihrer Erkundung stehen sah). **Die Phasen 0 und 1 sind
+gebaut** — die neun PRs aus §15.2 und die acht aus §15.4 sind gemergt, der
+eine Nachzug #628 mit **#633** (§15.4); offen ist allein der
+Prod-Datenschritt V1, der auf die Rückfrage in der Sitzung wartet.
+**Phase 2 hat begonnen** (§15.1, Zeile 2): die nur lesende Erkundung ist
+gelaufen, sie hat 22 Stellen dieses Docs als falsch belegt — 21 davon in
+§6.2, §6.3, §6.4, §6.7, §7.2 und §12.4 in place berichtigt, jede mit ihrem
+`datei:zeile`-Beleg, die 22. schon mit #632 —, Runde 1 ihrer Fragen ist am
+2026-09-20 entschieden
+(§4.7) und der Schnitt in dreizehn PRs steht in **§15.6**; gemergt ist von
+Phase 2 nichts, der erste PR ist die Archiv-Kette. Phase 5 hat ihr
 erstes Doc (§15.3, Schritt 1) und ihren Pin-PR (Schritt 2); gebaut ist von
 ihr nichts, und sechs Rückfragen plus der Lese-Sweep halten den Bau an. Die
-Phasen 3 und 4 sind unberührt. Die Reihenfolge der Sätze in §15.2–§15.5 ist
-die Chronologie, nicht die Nummerierung: §15.4 und §15.5 sind angehängt,
+Phasen 3 und 4 sind unberührt. Die Reihenfolge der Sätze in §15.2–§15.6 ist
+die Chronologie, nicht die Nummerierung: §15.4 bis §15.6 sind angehängt,
 weil § Nummern nie umgeschrieben werden.
 
 ### 15.1 Die Phasen 0–5
@@ -2848,7 +3051,7 @@ weil § Nummern nie umgeschrieben werden.
 |---|---|---|---|
 | **0** Reparaturen + Regeln | die eine Liste aus §5.2: Overflow · Tab-Titel · erwartete 404 stumm · Wort-Detail ohne `word_instance` · Korb-Drawer mit Filtern · Rohzahlen-Chip · Apply-Guard · authored-Regel · Ebenen-, Rollen- und `mono`-Token — dazu der Wegwerf-Verify-Stack als ausführbares Rezept | V1, V8, V17, V22, V23, V26; Kleinkram | §5.2, §6.7; Schnitt in §15.2 |
 | **1** Scope + Arbeitslisten | Scope-Leiste mit zwei Feldern, die nicht schaltet; `h=` optional in den `focus.ts`-Buildern, Korb- und Todoist-Links tragen es immer; kompakte Liste als Vorgabe mit URL-Zustand in den drei Übersichten; `?reiter=`-Split der Eigenhand-Seite; Übergabekarten-Bauteil + `report --faellig`; Tastatur-Regel; Rollen-Etiketten und „Bahn" statt „Pfad" in der Oberfläche. Der Picker bleibt Einstieg; ein „Heute" vor Phase 4 läge unter `/admin/heute` | Q2 a, Q7 b, Q8 a + b (nicht c), Q25 a, **P1-Q1 c, P1-Q3 a, P1-Q11 b** (§4.6); V2, V14, V15, V19, V24 | §5.1 Ideen 1, 4, 11, 18; §7.1–§7.2; PR-Schnitt §15.4 |
-| **2** Tintentreue + Nachfahren | der gespeicherte Format-Marker, dann PFAD_FORMAT 2 im Lockstep (fünf Sensoren, Skip-Einträge, Span-Herkunft je Kasten); `tintentreue.py` mit „vorläufigen" Schwellen und §14-Vorregistrierung, dann die EINE Kalibrierung je Hand; meta-only Read; Filter „Nachfahren" in der Ordnung Schwere → Streifen; Editor-Adapter und Dialog-Umbau (Tablet-Vollbild, „Speichern & weiter", Absetzer-Soll, Grenzen anzeigen und korrigieren); `PATCH …/pfade/{box}` + ETag; `pfad --spans`; die Archiv-Regel für authored-Bahnen und authored-Spans VOR dem ersten nachgefahrenen Kasten; der lokale Trainings-Export | Q4 a + (i), Q6 b, Q9 b, Q10 b, Q12 b, Q13 (Phase 2: b), Q14 a, Q15 b mit Korrektur, Q18; V5, V20, V21 | §6.3, §6.4, §6.7 |
+| **2** Tintentreue + Nachfahren | **Zeile neu geschrieben 2026-09-20 nach der Erkundung** — sie führte sonst den alten und den berichtigten Plan nebeneinander. Was gebaut wird: die Archiv-Kette für authored-Bahnen und authored-Spans VOR dem ersten nachgefahrenen Kasten; der gespeicherte Format-Marker; dann PFAD_FORMAT 2 im Lockstep mit seinen DREI echten Schema-Änderungen — Skip-Einträge, Span-Herkunft je Kasten, Feld-Schutz (die Sensoren 4/5 sind additiv und gehören nicht zum Format, §6.3); das Werkzeug schreibt im zweiten Release die fünf Sensoren; `tintentreue.py` mit „vorläufigen" Schwellen und §14-Vorregistrierung, zuletzt die EINE Kalibrierung je Hand samt dem Instrument, das es dafür noch nicht gibt; meta-only Read; der Vorab-Split von `StripsPanel`; eine ganze Nachfahr-Listenfläche mit einer Zeile je KASTEN (kein „Filter", §7.2) in der Ordnung Schwere → Streifen; `PATCH …/pfade/{box}` + ETag; der Streifen-Editor mit „Speichern & weiter", Absetzer-Soll und den Buchstabengrenzen (Vollbild und Werkzeuge oben sind schon gebaut, §6.4); `pfad --spans`; der lokale Trainings-Export | Q4 a + (i), Q6 b, Q9 b, Q10 b, Q12 b, Q13 (Phase 2: b), Q14 a, Q15 b mit Korrektur, Q18; V5, V7, V20, V21; **Entscheide A, B, C** (§4.7) | §6.3, §6.4, §6.7; PR-Schnitt **§15.6** |
 | **3** Rollen-Spalten + Stufe 1 | Router-Zeilen; Rollen-Spalten in Buchstabe · Übergang · Wort mit der zweiten Hand eingeklappt, beschriftet, nie verrechnet; Belegleiste; beschriftete Leerflächen für Phase 5; `hands.kind` + `work_items.hand_id` als EIN Schema-PR; Stufe 1 = Belegzahlen, Tintentreue-Verteilung, Ausschnitt-Stapel, Feder-Halbbreite — keine Pipeline aus Bahnen; Kohorten-Filter + Warn-Chip „gemischte Federn" | Q3 a, Q11 b, Q16 a; V1, V4, V7, V16 | §5.1 Ideen 2, 3, 9; §6.1, §6.2, §6.5 |
 | **4** C-Bausteine auf A | „Heute" wird `/admin`, mit Bestandskopf (nur Zahlen, keine Marke) und nach der Wachstumsschleife der Eigenhand geordnet; der Picker wandert in den Vorlagen-Chip; `?liste=` + ‹ ›; Arbeitsvorrat; Nachfahr-Liste nach Schwere → Bahn-Deckung → Gewicht → Streifen, die Streifenfolge als Umschalter; „Speichern & weiter" entlang der Liste; Korb-Seite `/admin/korb` | Q5 a, Q7 a, Q13 (ab Phase 4: a + c), Q24 a; Leitsatz 2 | §9.1–§9.2 mit dem Vokabular aus §5.0 |
 | **5** Produktionshand | läuft PARALLEL ab Phase 1 — eigenes Gleis, §15.3 | Q1 a, Q17, Q19–Q24 | §6.6, §6.7 |
@@ -3295,3 +3498,105 @@ ARIA-Rolle — die ehrliche Form wäre `grid`/`row`/`gridcell` und ein Umbau
 dreier Komponenten, festgehalten als Folgearbeit in `design-system.md` §9.5
 — und `keepHand` in `focus.ts` hat seit #627 keine Aufrufstelle mehr, weil
 alle Ansichten ihre Query mergen statt sie zu überschreiben.
+
+### 15.6 Phase 2 — der PR-Schnitt
+
+Der Abschnitt steht nach §15.5, weil angehängt wird statt umnummeriert; er
+gehört der Sache nach hinter §15.4. Der Inhalt der Phase 2 steht in §15.1,
+Zeile 2; hier der Schnitt aus der nur lesenden Erkundung vom 2026-09-19
+(§14, Schritt 5), deren 22 Befunde oben in §6.2, §6.3, §6.4, §6.7, §7.2 und
+§12.4 in place berichtigt sind — bis auf den einen, der schon mit #632
+nachgezogen war. Es sind **dreizehn PRs**, die der Reihe nach gemergt
+werden. Gemergt ist noch keiner.
+
+| # | PR | Was er liefert | Aufwand | Abhängigkeit | Entscheid, der ihn trägt |
+|---|---|---|---|---|---|
+| 1 | **Archiv-Kette** (tools + docs) | den ZIEHWEG, den es nicht gibt: `pull --pfade` holt die `authored`-Einträge einer Hand in die lokale `kartei.json`, `snapshot` trägt sie mit der Kartei ins Archiv, `sync --from` stellt sie her; dazu eine Formatversion des Artefakts, die `known_gaps` des DB-Snapshot-Manifests und die laute Schlusszeile des Restores. Plus die Sperre aus Entscheid B. **Und die eine Stelle, die Entscheid A tragend macht** (gefunden in der Copilot-Durchsicht dieses PRs): `sync --from` schichtet die Geschwister-Snapshots als EINEN Baum übereinander, neueste zuerst (`tools/eigenhand/sync.py:97-119`) — die **`kartei.json` aber nicht**, sie wird allein aus dem GENANNTEN Snapshot gelesen (`:88-94`). Solange die Kartei nur Buchhaltung trug, war das folgenlos; sobald sie die authored-Bahnen trägt, ließe ein `--from` auf einen ÄLTEREN Stempel sie still weg, und der Vertrag „zeig auf irgendeinen Snapshot, das Archiv als Ganzes ist der Master" (Docstring `:80-83`) gälte dann für Dateien, aber nicht mehr für die Wahrheit. PR 1 löst das ausdrücklich: entweder die neueste gültige Kartei unter den Geschwistern wählen, oder den neuesten Snapshot verlangen und das prüfen | M | keine — erster PR der Phase | Q4 (a); **Entscheide A + B** (§4.7) |
+| 2 | **Gespeicherter Format-Marker** (MIGRATION) | Spalte `eigenhand_strips.pfade_format` (NOT NULL, `server_default "1"`), Daten-Migration „Bestand = 1", der Read antwortet mit dem GESPEICHERTEN Format, die Pydantic-Defaults werden an die Konstante gebunden statt hart auf 1. Geschrieben wird weiter nur Format 1 | S | PR 1 | §6.3 „Die Zeile muss ihr Format tragen"; der EINZIGE Migrations-PR der Phase — `/verify-migrations` und ein `/dbsnapshot` davor |
+| 3 | **PFAD_FORMAT 2: Schema, Skip-Einträge, Span-Herkunft, Feld-Schutz** | die API liest und akzeptiert 1 UND 2, schreibt aber weiter, was gepusht wird; Skip-Einträge, `letter_spans` als geprüftes Feld mit `herkunft`, `displaced_authored` vom Kasten- auf den Feld-Vergleich — samt Tool-Merge. `connector_spans` fahren nicht mit (§6.2) | M | PR 2 | Q9 (b), Q15 (b) mit Korrektur; **Entscheid C** (§4.7) |
+| 4 | **Der zweite Lockstep-Release: das Werkzeug schreibt 2** | Sensor 4 (Umverdrahtung von `excursions.py` auf die eigene Maske) und Sensor 5 (AIoU) werden beim Folgen gerechnet und gespeichert, Skip-Einträge geschrieben statt `continue`, der Push deklariert Format 2; das Verify-Seed-Skript zieht mit | M | PR 3 — das IST der Lockstep | Q9 (b), V21. **Frage D kann ihn halbieren** |
+| 5 | **`core/eigenhand/tintentreue.py` + die §14-Vorregistrierungen** | die Ampel als reine Funktion beim LESEN, drei gemessene Stufen, graue Zustände mit Grund, `severity = max` + `SENSOR_ORDER`, datierte Konstanten je Hand im Code, `TINTENTREUE_FORMAT = 1`; eine gemeinsame Fixture klammert den TS- an den Python-Zwilling | S–M | PR 2 (liest den Marker); fachlich sinnvoll nach PR 4 | Q9 (b), Q10 (b), Q12 (b). **Frage E entscheidet die Fassungsebene** |
+| 6 | **Meta-only Read `GET /eigenhand/pfade/{hand}[?nur=offen]`** | je Kasten Zustand, Format, Tintentreue-Stufe, benennender Sensor, Rohwerte, Absetzer-Soll (serverseitig) und Stale-Zustand — ohne `strokes`; `private, no-store`, RESERVED gepinnt | S | PR 5 | V5, Q13 (Phase 2: b) |
+| 7 | **Vorab-Split von `StripsPanel`** (reine Verschiebung) | 1318 Zeilen werden in Bausteine zerlegt — Blob-Lader, Fleckenpinsel, Lupe, Bahn-Overlay, Galerie-Kachel, Pager — ohne jede Verhaltensänderung | M | keine fachliche; VOR PR 8, sonst stehen beide in denselben Zeilen | keiner — selbst entschieden als Routine-Engineering (Kleinkram-Regel, §12.4), im PR-Text benannt |
+| 8 | **Die Nachfahr-Liste: eine Zeile je KASTEN** (+ V7) | das Zeilenmodell an `shell/listState.ts`/`WorkList.tsx`, URL-Zustand auf `?reiter=streifen`, Ordnung Schwere → Streifen, die Umleitungen aus §6.4 als Chips; der freistehende Warn-Chip „Maske geändert" geht in der Ampel auf; `specimen_kind='strip'` als Ein-Zeilen-Flip | M | PR 6 (der Read) + PR 7 (der Platz) | Q13 (Phase 2: b), V2, V7, V14 |
+| 9 | **`PATCH …/pfade/{box}` + Content-ETag** | der Schreibweg je Kasten: `ETag` auf dem GET, **`If-Match` PFLICHT auf PATCH UND auf dem vollen `PUT`** (beide 412 bei Konflikt — ein ETag, der nur mitgeschickt und nicht verlangt wird, verhindert keinen veralteten Voll-Push; das Werkzeug reicht den ETag seines GET durch), `verfahren` serverseitig auf `authored`, Format gegen `SUPPORTED_FORMATS` geprüft; `displaced_authored` gilt auf diesem Weg ausdrücklich nicht, der Feld-Schutz aus PR 3 sehr wohl | M | PR 1 (Archiv steht) + PR 3 + PR 6 | V20, Q4 (i) |
+| 10 | **Der Streifen-Editor** | die Fläche zum Nachfahren: Unterlage als Blob-URL, Rahmen aus `registration_px` − `rect_px`, Saat = die gespeicherte Bahn; neu „Speichern & weiter", das Absetzer-Soll (Prüfstein 7) und Anzeige + Korrektur der Buchstabengrenzen. Erster Komponententest dieser Fläche | L | PR 8 (Einstieg) + PR 9 (Schreibweg) | Q14 (a), Q6 (b), Q15 (b). **Frage G entscheidet die Bauform** |
+| 11 | **Lokaler, gitignorter Trainings-Export** | die authored-Bahnen und -Spans als Trainings- und Entwicklungssatz des Folgers, eigene Wurzel AUSSERHALB von `tools/*/fixtures`, `.gitignore` und ein Test, der die Trennung pinnt; Statusfilter gegen den Archiv-Read, damit zurückgezogene Fassungen draußen bleiben. **Er zieht KEINE Rückhaltemenge** | S–M | PR 10 (es muss authored-Kästen geben) | Q4 (a) mit Autor-Zusatz, Leitsatz 1 (§4.5). **Frage H** |
+| 12 | **`pfad --spans`** | der automatische Grenzen-Zuordner über eine nachgefahrene Bahn, der authored-Spans nie ersetzt; eigener kleiner §14-Nachweis (grüne Auto-Bahnen „wie von Hand") | M | PR 3 + PR 10 | Q15 (b) mit Korrektur, V21. **Der einzige PR der Welle, der sie VERLASSEN darf** — siehe die Notiz unter der Tabelle |
+| 13 | **Das Kalibrier-Instrument und die EINE Kalibrierung je Hand** | der Posten, den §6.7 nicht führte: ein Streifen-Modus für `humanbench` (oder ein Geschwister-Bauer), eigene Frage, eigenes Kategorienset, Abbildung auf drei Stufen; davor der Nachzug in `menschliche-bewertung.md`, danach der §14-Adoptionseintrag, der die acht Zahlen datiert einfriert und „vorläufig" streicht | M + die Runde | PR 5 + genügend Fassungen (die Menge zählt FASSUNGEN, nicht Wochen — Q18) | Q10 (b) mit Autor-Zusatz. **Fragen F und I** |
+
+**Die Reihenfolge gilt für alle dreizehn — mit genau einer benannten
+Ausnahme.** PR 12 (`pfad --spans`) darf nach Phase 3 rutschen; §6.7 gibt ihm
+selbst „M · 2–3". Rutschen heißt dabei **aus der Welle ausscheiden**, nicht
+umsortieren: er wandert als Ganzes hinter Phase 2 und die zwölf übrigen
+merzen unverändert der Reihe nach. Phase 2 gilt als abgeschlossen, wenn
+PR 1–11 und PR 13 stehen; PR 12 ist dann ein Nachzügler mit eigenem Datum.
+Er ist der einzige PR, für den das gilt — jeder andere ist
+Abschlussbedingung der Phase.
+
+**Die harte Ordnung — vier Punkte, und warum sie keine Ordentlichkeit ist.**
+
+1. **Die Archiv-Kette steht vor allem, was einen nachgefahrenen Kasten
+   schreiben kann** (PR 1 vor PR 9/10) — und zusätzlich vor jeder Migration,
+   die die `pfade`-Spalte anfasst. Eine authored-Bahn ist das erste
+   Eigenhand-Datum, das ausschließlich in der geteilten DB lebt
+   (`core/database/models.py:874`), und der vorgeschriebene Wächter
+   `/dbsnapshot` deckt genau diese Spalte nicht (`api/schemas.py:1591-1603`).
+   Wer die Reihenfolge dreht, kann eine Stifthand verlieren, die kein
+   Werkzeug wiederherstellt.
+2. **Der gespeicherte Format-Marker steht vor allem, was ein Format liest
+   oder zwei Formate unterscheidet** (PR 2 vor PR 3/4/5). Kommt er nach dem
+   zweiten Release, lesen sich ALLE Bestandszeilen als Format 2
+   (`api/routers/eigenhand.py:1229,1315`), der graue Zustand „Format 1 —
+   unvollständig gemessen" wird unerreichbar, und die Ampel behauptet Rot
+   oder Gelb für Kästen, an denen die Sensoren 4 und 5 nie gerechnet wurden
+   — das erzeugt falsche Nachfahr-Arbeit.
+3. **Der Feld-Schutz für authored-Spans steht, bevor eine Fläche eine Spanne
+   von Hand korrigieren kann** (PR 3 vor PR 10). Die heutige Regel ist
+   kastenweit und hängt allein an `verfahren`; `meta` reicht sie ungeprüft
+   durch (`core/eigenhand/pfad.py:406-412`, `:369`). Ohne den Umbau ersetzt
+   ein authored-über-authored-Push die korrigierten Grenzen unbeanstandet.
+4. **Der Kasten-Schreibweg kommt zuletzt von diesen vieren** (PR 9 nach
+   1–3): er ist der erste Punkt, an dem aus dem Browser überhaupt eine
+   authored-Bahn entsteht. Vorher gibt es nichts zu verlieren, nachher
+   hängt alles davon ab, dass 1–3 stehen.
+
+**Was auf wen wartet.** Runde 1 (A, B, C) ist am 2026-09-20 entschieden
+(§4.7) — PR 1 und PR 3 sind damit frei. Offen sind, mit dem PR, den sie
+berühren: **Frage D** (Messzahlen im Werkzeug oder auf dem Server) → Umfang
+von PR 3/4, nicht ihr Start · **Frage E** (Ampelfarbe für eine ganze
+Fassung) → PR 5 · **Frage F** (Kalibrier-Instrument in den Bauplan) → PR 13
+· **Frage G** (ein Editor mit zwei Zielen oder ein zweiter, schlanker) →
+PR 10 · **Frage H** (eine Rückhaltemenge oder zwei) → PR 11 · **Frage I**
+(Bestand nachmessen) → berührt keinen PR, aber Prod. Für jede ist der Weg
+ohne Entscheid festgelegt, damit nichts wartet, was nicht warten muss:
+D → (a) wie geplant · E → die Ampel bleibt je Kasten, die Fassung bekommt
+einen Zähler · F → die Ampel bleibt dauerhaft „vorläufig" · G → zwei
+Editoren mit gemeinsamen Bauteilen · H → keine Ziehung, nur die
+Grundgesamtheit · I → der Bestand bleibt grau.
+
+**Regeln der Welle** — dieselben wie in §15.2 und §15.4: jeder PR ist für
+sich grün und braucht keinen späteren zum Bauen oder Linten; gemergt wird
+der Reihe nach; jeder PR trägt ein Changelog-Fragment und, wo er einen
+Begriff ausliefert, den gedrehten Glossar-Eintrag; jede Server-Regel ist in
+Python ausdrückbar, weil die HTTP-Suiten auf SQLite laufen; kein PR spricht
+mit der geteilten DB oder der deployten API, auch nicht lesend (V17).
+**Dieses Doc fasst nur ein Doku-PR der Welle an** — dieser hier; jeder
+andere Phase-2-PR sagt seine Wirkung auf den Plan in seinem eigenen Text.
+Zwei Ausnahmen von „keine Migration" und „keine neue Route" gegenüber
+Phase 1 sind ausdrücklich Teil dieses Schnitts: PR 2 IST die eine
+Migration, PR 6 und PR 9 sind die neuen Routen — beide bewegen
+`tests/test_api_public_surface.py` und pinnen sich dort als RESERVED.
+
+**Zur Verifikationslage, vorweg und ehrlich.** Der reservierte Datensatz ist
+lokal nicht säbar: `data/samples/own-hand/**` ist gitignored, die
+Streifen-Pixel liegen allein in der geteilten Cloud SQL und im privaten
+Archiv. Lokal prüfbar sind `/verify-core` und `/verify-api` auf SQLite und
+`/verify-frontend` gegen den Wegwerf-Postgres mit SYNTHETISCHEN Streifen.
+**Nicht lokal prüfbar** sind ein echter Folgerlauf, die Sensor-Zahlen auf
+echten 300-dpi-Streifen, die Kalibrierrunde, ein echter
+`pull --pfade`/`sync --from`-Durchlauf und jede Zahl aus reservierten
+Pixeln; diese Teile werden gegen Fixtures und einen Fake-API-Client
+unit-getestet, und der Ende-zu-Ende-Lauf ist eine Handlung des Autors am
+Terminal — mit Snapshot davor und als Todoist-Aufgabe in seinem Projekt
+**kurrentschrift**.
