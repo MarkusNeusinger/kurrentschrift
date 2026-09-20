@@ -11,12 +11,13 @@
 > **Benches** messen gegen eingefrorene Referenzen:
 > [Benches und Generator](#benches-und-generator-verweise) — glyphbench
 > (Buchstabe) · wordbench (komponiertes Wort/Paar) · tracebench
-> (Wortbahn). **Schreibende** Werkzeuge gibt es genau drei Gattungen:
+> (Wortbahn). **Schreibende** gibt es genau drei:
 > die [Ernte-Werkzeuge](#die-zwei-ernte-werkzeuge-vorlage--db-über-die-admin-api)
 > (über die Admin-API), das
 > [Lesart-Wörterbuch](#das-lesart-wörterbuch-toolslesarten) und die
-> [Eigenhand-Erfassung](#die-eigenhand-erfassung-toolseigenhand); Labs und
-> Benches schreiben **nie** in die DB, `--live` liest nur.
+> Eigenhand ([Erfassung](#die-eigenhand-erfassung-toolseigenhand) ·
+> [Bahnen](#die-eigenhand-bahnen-toolseigenhand)); Labs und Benches
+> schreiben **nie** in die DB, `--live` liest nur.
 > Der [Archiv-Schnappschuss](#der-archiv-schnappschuss-toolsdbsnapshot)
 > ist create-only, der
 > [Changelog-Schnitt](#der-changelog-schnitt-toolschangelog), die
@@ -720,6 +721,19 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   das abgelegte Bild bleibt Byte für Byte, wie es eingelesen wurde. Auch
   der Haken wird so gelesen: punktgroße Komponenten fallen aus der Zählung,
   ein Haken muss ein Strich sein.
+
+Was auf dem abgelegten Streifen aufsetzt — Bahn, Buchstabengrenzen,
+Trainingssatz, Bericht und Archiv — steht im nächsten Abschnitt.
+
+## Die Eigenhand-Bahnen (`tools/eigenhand`)
+
+Dieselbe Werkzeugkette, zweite Hälfte: sie setzt auf einem Streifen auf, der
+schon abgelegt IST. Hierher gehört, wer die Federbahn sucht, ihre
+Buchstabengrenzen setzt, daraus einen Trainingssatz zieht oder den Bestand
+berichtet und archiviert. Die Erfassung davor — Plan, Bogen, Scan, Siebung,
+Ablage — steht im Abschnitt darüber, die Doktrin in
+[`proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md).
+
 - **`pfad`** — folgt der **Federbahn** eines geschriebenen Streifens und
   schiebt sie in die Werkbank (Proposal §7.5, Migration `0031`):
   `uv run python -m tools.eigenhand.pfad --hand mn-suetterlin --strip S0001`.
@@ -764,11 +778,28 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   bleibt dagegen eine Lücke statt ein Skip: ein Eintrag mit diesem Index
   brächte den Push der ganzen Fassung zu Fall, und in Frage steht nur der
   eine Kasten.
-  Die vom Folger selbst zugeordneten Buchstabengrenzen wandern damit nicht
-  mehr ins freie `meta`: unter Format 2 sind sie ein geprüftes Feld des
-  Eintrags, und dieses Abbild schreibt es noch nicht — es kommt mit
-  `pfad --spans`. Von Hand korrigierte Grenzen sind davon unberührt und
-  reisen weiter mit.
+  Die vom Folger zugeordneten Buchstabengrenzen wandern damit nicht mehr ins
+  freie `meta`, sondern ins **geprüfte Feld** (`letter_spans`, Herkunft
+  `auto`): sie fallen bei der Dekodierung ohnehin an, und ohne sie erreichte
+  eine gefolgte Bahn den Streifen-Editor ohne eine Naht zum Ziehen. Wo die
+  AUSGELIEFERTEN Züge sie nicht mehr tragen (`cap_word_strokes` dünnt jenseits
+  von 128 Zügen aus und unterabtastet jenseits von 4096 Punkten), fallen sie
+  weg statt auf fremde Tinte zu zeigen — jeder Index wäre danach noch
+  wohlgeformt, und genau das sieht die Server-Prüfung nicht. Von Hand
+  korrigierte Grenzen bleiben unberührt und reisen weiter mit.
+  **`--spans` ist der zweite Modus** und folgt NICHTS: er liest die
+  gespeicherte Liste, ordnet den Bahnen darin Grenzen zu (→ `spans` unten) und
+  legt jeden Pfad unverändert zurück — er kann keine Koordinate einer Bahn
+  bewegen, und das ist die Eigenschaft, die ihn auf Handarbeit richten lässt.
+  Er bearbeitet die Kästen ohne Grenzen; einen Kasten, dessen Grenzen der Autor
+  korrigiert hat, lässt er GANZ in Ruhe und nennt ihn (eine Grenze ist nur
+  neben den benachbarten sinnvoll). `--replace-authored` ist neben diesem Modus
+  verweigert — hier gibt es nichts aufzugeben. Gespeichert wird nur, wenn
+  wirklich eine Grenze entstanden ist: eine Fassung ohne Bahn bleibt auf
+  `pfade: null` (das heißt „noch niemand gefolgt", nicht „gefolgt, nichts
+  zurück"), und ein Lauf ohne neue Grenze schickt gar keinen Push — eine
+  Voll-Ersetzung ist nie folgenlos, sie hebt die Inhaltsmarke und stempelt
+  eine Format-1-Zeile auf 2.
   **Trockenlauf ist die Vorgabe** — ohne `--apply`
   landet das Ergebnis nur als JSON unter der lokalen Hand; `--apply` schreibt
   es über `PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade` in die
@@ -799,6 +830,22 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   BLAS-Fäden
   pinnt das Modul selbst (Vorgabewerte), weil die Kettenlösung sonst je nach
   Umgebung anders läuft.
+- **`spans`** — der **Span-Zuordner**, die Rechenhälfte hinter `pfad --spans`.
+  Er baut dieselbe Saat, gegen die der Folger dekodiert (`derive_word` +
+  `register_letters` + `seed_samples`, auf der Tinte des Wortkastens
+  registriert), ordnet jedem Stützpunkt der Bahn einen Saat-Punkt zu und gibt
+  ihm dessen Slot. Zwei Regeln: **`dtw`** (Vorgabe) hält die Zuordnung je Zug
+  monoton — der Saat-Index darf beliebig weit vor, nie zurück —, **`nearest`**
+  ist die ordnungslose Basis, gegen die sie gemessen wurde. Züge werden
+  EINZELN zugeordnet, sonst schöbe ein nachgetragener i-Punkt auf den falschen
+  Buchstaben. BLAS-Fäden pinnt das Modul selbst, die Wurzel nennt es vor der
+  ersten Messung und `--expect-root` macht sie zur Vorbedingung. `--check` ist
+  die §14-Runde (`… spans --check --expect-root <präfix> --json <bericht>`,
+  gepinnt): die eingefrorenen Wörter gefolgt, die Bahn „wie von Hand
+  gezeichnet" neu zugeordnet, verglichen — plus ein **Wackel-Arm**
+  (`--wobble`), weil der saubere Vergleich zirkulär ist. Zahlen, Schranken und
+  diese Grenze: §14 „Span-Zuordner `sep20`" in
+  [`messjournal.md`](messjournal.md).
 - **`training_set`** — der lokale, gitignorte **Trainingssatz** der von Hand
   nachgefahrenen Bahnen (Autor-Zusatz zu Q4: „die hand nachgefahrenen linien
   dienen auch als trainingsmenge um den folger nachhaltig immer besser zu
@@ -1069,8 +1116,8 @@ dieselbe Grundlage gesehen haben. Eine Umsetzung für alle:
 der eine Wurzel liest — `tools.wordbench.run`, `tools.tracebench.run` ·
 `.k0eval` · `.view` · `.excursions`, `tools.pairlab` selbst sowie
 `.follow` · `.spanmeas` · `.chainbench` · `.bindab` · `.gradlab` ·
-`.peaklab` · `.landmarklab` · `.harvest`; volle Digests im `--json` unter
-`roots`. Der Kopf nagelt den **Lauf** fest; den **Vergleich** nageln
+`.peaklab` · `.landmarklab` · `.harvest` sowie `tools.eigenhand.spans
+--check`; volle Digests im `--json` unter `roots`. Der Kopf nagelt den **Lauf** fest; den **Vergleich** nageln
 `--compare` (Wordbench, Tracebench), `--rows` (Duell-Seite) und `--base`
 (spanmeas) fest: sie lesen den `roots`-Block der gespeicherten Datei und
 verweigern eine Basis aus einem anderen Export, bevor gemessen wird — eine
