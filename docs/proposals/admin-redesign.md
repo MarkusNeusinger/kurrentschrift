@@ -1034,13 +1034,15 @@ die Einzelbefunde plus ein Namens-Tiebreak über eine feste Reihenfolge**
 danach gebrochen, welche Zahl gerade größer war. Die Tintentreue baut den
 Zwilling: `severity = max` plus ein `SENSOR_ORDER`, dessen Reihenfolge der
 Modul-PR setzt und in seinem Text nennt. Buchstaben-/Übergangs-Ampel =
-Anteile über die tragenden Kästen. **Ob eine ganze FASSUNG eine Ampelfarbe
-bekommt, ist offen** (Frage E, Runde 2, §15.6): sie trüge dann ein zweites
-Urteil mit eigenem Wortschatz neben `befund.vorschlag`
+Anteile über die tragenden Kästen. **Eine ganze FASSUNG bekommt KEINE
+Ampelfarbe** — entschieden am 2026-09-20 als Frage E (§4.7), geliefert mit
+#638/#640; bis dahin stand hier „ist offen", und die Zeile darunter war die
+Empfehlung. Der Grund ist unverändert: sie trüge sonst ein zweites Urteil
+mit eigenem Wortschatz neben `befund.vorschlag`
 (`core/eigenhand/befund.py:269`) über derselben Fassung, und der häufigste
-Fall ist der widersprüchliche — sauber geschrieben, schlecht gefolgt. Bis
-zum Entscheid gilt die Empfehlung: Ampel je KASTEN, die Fassung bekommt nur
-einen Zähler („3 von 4 folgen"), keine Farbe.
+Fall ist der widersprüchliche — sauber geschrieben, schlecht gefolgt. Also:
+Ampel je KASTEN, die Fassung bekommt nur einen Zähler („3 von 4 folgen"),
+keine Farbe.
 
 **Startwerte** (vorregistriert, §14-Eintrag im Messjournal vor dem ersten
 Streifen), je Sensor eine grüne und eine gelbe Grenze — grün: unvisited
@@ -1230,9 +1232,9 @@ Hand, sondern über sein **Speicherziel** (`putWordInstances(sourceId, …)`,
 ÖFFENTLICHE Crop-Route (`:541-542`), während die Streifen-Route
 admin-gegatet und `private, no-store` ist (`api/routers/eigenhand.py:125,938`).
 Die Unterlage muss darum eine **Blob-URL** werden, wie `StripsPanel.tsx:4-7,
-121-176` es bereits macht. **Ob ein Dialog mit zwei Zielen oder ein zweiter,
-schlanker Streifen-Editor gebaut wird, ist offen** (Frage G, Runde 3,
-§15.6); die Blob-Unterlage gilt in beiden Fällen.
+121-176` es bereits macht. **Gebaut wird ein zweiter, schlanker
+Streifen-Editor** — entschieden am 2026-09-20 als Frage G (§4.7); bis dahin
+stand hier, das sei offen. Die Blob-Unterlage gilt ohnehin in beiden Fällen.
 
 **Gebaut 2026-09-20 als ein ZWEITER, schlanker Editor** (Entscheid G,
 §4.7; #644): `StripTraceEditor.tsx` neben dem Platten-Dialog, und die
@@ -3683,6 +3685,12 @@ nachgezogen war. Es sind **dreizehn PRs**, die der Reihe nach gemergt
 werden. **Stand 2026-09-20: elf sind gemergt, PR 12 und PR 13 sind offen**
 — die Nummern und die Abweichungen stehen in der zweiten Tabelle unten.
 
+**Die erste Tabelle ist der PLAN, wie er am 2026-09-19 geschrieben wurde,
+und bleibt es.** Wo ihre Zellen noch „Frage D/E/G/H" als offen führen, sind
+das die Fragen, die der PR jeweils TRUG — alle sechs sind seit dem
+2026-09-20 entschieden (§4.7). Was wirklich ankam, steht in der zweiten
+Tabelle; wo beide auseinandergehen, gilt die zweite.
+
 | # | PR | Was er liefert | Aufwand | Abhängigkeit | Entscheid, der ihn trägt |
 |---|---|---|---|---|---|
 | 1 | **Archiv-Kette** (tools + docs) | den ZIEHWEG, den es nicht gibt: `pull --pfade` holt die `authored`-Einträge einer Hand in die lokale `kartei.json`, `snapshot` trägt sie mit der Kartei ins Archiv, `sync --from` stellt sie her; dazu eine Formatversion des Artefakts, die `known_gaps` des DB-Snapshot-Manifests und die laute Schlusszeile des Restores. Plus die Sperre aus Entscheid B. **Und die eine Stelle, die Entscheid A tragend macht** (gefunden in der Copilot-Durchsicht dieses PRs): `sync --from` schichtet die Geschwister-Snapshots als EINEN Baum übereinander, neueste zuerst (`tools/eigenhand/sync.py:97-119`) — die **`kartei.json` aber nicht**, sie wird allein aus dem GENANNTEN Snapshot gelesen (`:88-94`). Solange die Kartei nur Buchhaltung trug, war das folgenlos; sobald sie die authored-Bahnen trägt, ließe ein `--from` auf einen ÄLTEREN Stempel sie still weg, und der Vertrag „zeig auf irgendeinen Snapshot, das Archiv als Ganzes ist der Master" (Docstring `:80-83`) gälte dann für Dateien, aber nicht mehr für die Wahrheit. PR 1 löst das ausdrücklich: entweder die neueste gültige Kartei unter den Geschwistern wählen, oder den neuesten Snapshot verlangen und das prüfen | M | keine — erster PR der Phase | Q4 (a); **Entscheide A + B** (§4.7) |
@@ -3824,15 +3832,27 @@ alles, wie es gebaut ist. Die Nummern sind nur Adressen für die Antwort.
     `useEigenhandPfadBoxes` plus die `ampel`-Eigenschaft von `CropTile`.
 
 **Drei Schritte, die nur der Autor tun kann** — keiner davon ist lokal
-prüfbar, und die ersten beiden stehen VOR der ersten gezeichneten Bahn:
+prüfbar:
 
-31. **Die Archiv-Kette einmal ganz durchlaufen** — `pull --pfade → snapshot
-    → sync --from`, mit einem Archiv-Snapshot davor. Sie ist gegen einen
-    Fake-API-Client und die In-Process-Suite geprüft, aber noch nie über
-    echte Daten gelaufen, und sie ist der Grund, warum PR 1 der erste PR
-    war. **Vor dem ersten nachgefahrenen Kasten**, sonst schützt sie
-    nichts.
-32. **Die zwei Rückhaltemengen ziehen** (`--draw <key>`, Entscheid H). Die
+31. **Die Archiv-Kette über echte Daten laufen lassen.** Sie ist gegen
+    einen Fake-API-Client und die In-Process-Suite geprüft, aber noch nie
+    über den echten Bestand gelaufen, und sie ist der Grund, warum PR 1 der
+    erste PR der Welle war. Das zerfällt in **zwei Schritte, und nur der
+    erste geht vor der ersten Bahn:**
+    - **Vorher:** ein `/dbsnapshot`-Archivschnappschuss und ein
+      `pull --pfade → snapshot`-Durchlauf, der beweist, dass Werkzeug,
+      Zugang und Datenwurzel stimmen. Eine Zeichnung findet er dabei noch
+      nicht — `pull --pfade` zieht nur `authored`-Einträge, und die gibt es
+      nicht; `sync --from` sagt dazu ausdrücklich „none in this archive"
+      (`tools/eigenhand/sync.py:627`). Das ist die richtige Antwort und
+      eben KEIN Nachweis, dass der Rückweg trägt.
+    - **Danach, an der ersten Bahn:** der eigentliche Restore-Nachweis —
+      eine bewusst als Probe gezeichnete Bahn ziehen, archivieren,
+      herstellen und vergleichen. Er muss laufen, **bevor irgendetwas diese
+      Bahn überschreiben oder neu folgen kann**, denn bis dahin ist die
+      Kette geprüft, aber nicht bewiesen.
+32. **Die zwei Rückhaltemengen ziehen** (`--draw <key>`, Entscheid H) —
+    dieser Schritt steht ganz VOR der ersten Bahn. Die
     Ziehung braucht kein Netz, keinen Admin-Token und keine einzige Bahn;
     sie läuft über die Streifen des eingefrorenen Plans. Genau deshalb
     gehört sie **vor die erste Bahn** — danach zöge man, nachdem man das
