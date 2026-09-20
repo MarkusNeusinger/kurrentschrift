@@ -12,11 +12,23 @@ GitHub. Nothing to launch; this skill is the editing contract.
 ## Language (strict, from `docs/reference/sprachregelung.md`)
 
 - Docs under `docs/`: **German** (deliberate — the domain is German).
-- Code samples inside docs: English identifiers, like all code.
+- Code samples inside docs: identifiers as the rule below has them —
+  English by default, German only for the few terms §5 admits.
 - README + GitHub-facing text: English.
 - German technical terms keep their German name in prose (Schwellzug,
-  Lineatur, Ductus); in code they get an English identifier plus one
-  explanatory comment.
+  Lineatur, Ductus). In code, `sprachregelung.md` §5 (author decision
+  2026-09-20) settles the identifier with one question: *is there an
+  established English term a reader of this domain would recognise?*
+  **Yes** → English identifier plus one explanatory comment
+  (`width_profile  # Schwellzug: …`, `slant_deg`, `apiErrorText`).
+  **No** → the German word may be the identifier; today that is Befund,
+  Tintentreue and Laufform, and nothing else. Docstrings and comments
+  stay English either way, without exception.
+- That exception is **per term, never per module**, and the other German
+  names in those same modules (`deckung` = coverage, `kringel` = loop,
+  `rang` = rank …) are legacy that the forward-only rule simply never
+  swept (§5.3) — do not cite them as precedent when documenting a new
+  name.
 - Glyphs are data, not code: schema keys English, values the actual
   characters (`ſt`, `a-medial`).
 
