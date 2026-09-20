@@ -838,8 +838,9 @@ Ablage — steht im Abschnitt darüber, die Doktrin in
   monoton — der Saat-Index darf beliebig weit vor, nie zurück —, **`nearest`**
   ist die ordnungslose Basis, gegen die sie gemessen wurde. Züge werden
   EINZELN zugeordnet, sonst schöbe ein nachgetragener i-Punkt auf den falschen
-  Buchstaben. BLAS-Fäden pinnt das Modul selbst. `--check` ist die §14-Runde
-  (`uv run python -m tools.eigenhand.spans --check --json <bericht.json>`,
+  Buchstaben. BLAS-Fäden pinnt das Modul selbst, die Wurzel nennt es vor der
+  ersten Messung und `--expect-root` macht sie zur Vorbedingung. `--check` ist
+  die §14-Runde (`… spans --check --expect-root <präfix> --json <bericht>`,
   gepinnt): die eingefrorenen Wörter gefolgt, die Bahn „wie von Hand
   gezeichnet" neu zugeordnet, verglichen — plus ein **Wackel-Arm**
   (`--wobble`), weil der saubere Vergleich zirkulär ist. Zahlen, Schranken und
@@ -1115,8 +1116,8 @@ dieselbe Grundlage gesehen haben. Eine Umsetzung für alle:
 der eine Wurzel liest — `tools.wordbench.run`, `tools.tracebench.run` ·
 `.k0eval` · `.view` · `.excursions`, `tools.pairlab` selbst sowie
 `.follow` · `.spanmeas` · `.chainbench` · `.bindab` · `.gradlab` ·
-`.peaklab` · `.landmarklab` · `.harvest`; volle Digests im `--json` unter
-`roots`. Der Kopf nagelt den **Lauf** fest; den **Vergleich** nageln
+`.peaklab` · `.landmarklab` · `.harvest` sowie `tools.eigenhand.spans
+--check`; volle Digests im `--json` unter `roots`. Der Kopf nagelt den **Lauf** fest; den **Vergleich** nageln
 `--compare` (Wordbench, Tracebench), `--rows` (Duell-Seite) und `--base`
 (spanmeas) fest: sie lesen den `roots`-Block der gespeicherten Datei und
 verweigern eine Basis aus einem anderen Export, bevor gemessen wird — eine

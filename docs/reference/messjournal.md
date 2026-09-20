@@ -17894,5 +17894,5 @@ reproduzierbar:
 
 ```bash
 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run python -m tools.eigenhand.spans \
-  --check --json <bericht.json>
+  --check --expect-root 5d4556b87573 --json <bericht.json>
 ```

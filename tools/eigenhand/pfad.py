@@ -1140,7 +1140,16 @@ def main(argv: list[str] | None = None) -> int:
             # in between is exactly what a blanket override would give up
             # again, so getting it back has to be a fresh decision on a fresh
             # read.
-            narrowed = "".join(f" --box {index}" for index in args.box or []) + (" --spans" if args.spans else "")
+            # Every switch that CHOSE what this run would have stored, not just
+            # the ones that narrowed it: a `--spans-method nearest` dropped here
+            # would hand the operator a line that quietly re-runs the default
+            # rule and stores a different assignment than the one they asked for
+            # (Copilot review, this PR).
+            narrowed = (
+                "".join(f" --box {index}" for index in args.box or [])
+                + (" --spans" if args.spans else "")
+                + (f" --spans-method {args.spans_method}" if args.spans and args.spans_method != DEFAULT_METHOD else "")
+            )
             unreached = [other["fassung"] for other in rows[position + 1 :]]
             raise SystemExit(
                 f"{exc}\n"

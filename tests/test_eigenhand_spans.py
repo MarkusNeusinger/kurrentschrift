@@ -220,6 +220,30 @@ class TestAssignReasons:
         assert self._reason(monkeypatch, np.zeros((2, 2)), [0, 1], [[]]) == "the Bahn carries no samples"
 
 
+class TestCheckCli:
+    def test_the_round_carries_the_house_root_precondition(self, monkeypatch):
+        # Every entry point that reads a frozen root takes `--expect-root` and
+        # enforces it BEFORE the first measurement. The roots are gitignored, so
+        # a re-export leaves no diff: without the precondition the command
+        # quoted in a §14 entry would quietly answer with a different set of
+        # numbers instead of aborting (`werkzeuge.md`, „Die Wurzel-Angabe jedes
+        # Messlaufs"; Copilot review, this PR).
+        import tools.eigenhand.spans as module
+
+        seen: dict = {}
+        monkeypatch.setattr(module, "check", lambda *_a, **kwargs: seen.update(kwargs) or {"arms": {}})
+        assert module.main(["--check", "--expect-root", "5d4556b87573"]) == 0
+        assert seen["expect_root"] == "5d4556b87573"
+
+    def test_measuring_is_the_only_thing_this_module_does_from_the_command_line(self):
+        # The assigner itself runs from `pfad --spans`; a bare invocation here
+        # must not look like it assigned anything.
+        with pytest.raises(SystemExit):
+            from tools.eigenhand.spans import main
+
+            main([])
+
+
 class TestWobble:
     def test_it_is_deterministic_in_the_word(self):
         stroke = [np.column_stack([np.linspace(0.0, 60.0, 40), np.zeros(40)])]

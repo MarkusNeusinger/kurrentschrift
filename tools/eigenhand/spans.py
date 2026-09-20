@@ -457,6 +457,7 @@ def check(
     only: list[str] | None,
     methods: Sequence[str],
     wobble_xh: float = 0.0,
+    expect_root: str | None = None,
 ) -> dict[str, Any]:
     """The §14 round: follow the frozen words, then assign „as if drawn by hand".
 
@@ -472,16 +473,25 @@ def check(
     the one knob — and, with `wobble_xh`, the same knob over a Bahn pushed off
     the seed (`wobbled`), because the clean reading is an upper bound by
     construction.
+
+    `expect_root` is the house precondition every entry point that reads a
+    frozen root carries: the base is named before the first measurement and the
+    run aborts on a mismatch. Anyone carrying a number out of a session passes
+    it — the roots are gitignored, so a re-export is otherwise invisible.
     """
     from tools.eigenhand.pfad import KONFIGURATION
     from tools.pairlab.tintenpfad import TintenpfadWeights, follow_case
-    from tools.wordbench.roots import root_digest
+    from tools.wordbench.roots import announce_roots
     from tools.wordlab.cases import fixture_root_for, iter_fixture_word_cases
 
     root = fixture_root_for(which=which, style=style, fixtures_root=fixtures_root)
-    digest = root_digest(root)
-    manifest = json.loads((root / "manifest.json").read_text())
-    print(f"root: {root}\n  exported_at={manifest.get('exported_at')} digest={digest[:12]}", flush=True)
+    # The house sensor, not a private print: it names the base BEFORE the first
+    # measurement and then makes `--expect-root` a precondition. The roots are
+    # gitignored, so a re-export leaves no diff — without the precondition the
+    # command quoted in a §14 entry would silently answer with a different set
+    # of numbers instead of aborting (`werkzeuge.md` „Die Wurzel-Angabe jedes
+    # Messlaufs", Copilot review of this PR).
+    root_meta = announce_roots([root], expect_root)
     weights = TintenpfadWeights(**KONFIGURATION)
     cases = iter_fixture_word_cases(which=which, style=style, only=only, fixtures_root=fixtures_root)
 
@@ -518,22 +528,22 @@ def check(
         seed_xy, seed_slot, _ = built
         followed += 1
         line = [f"  {case.id:<14}"]
-        bahnen = {"clean": drawn, "wobble": wobbled(drawn, xh_px, wobble_xh, case.id)}
+        by_variant = {"clean": drawn, "wobble": wobbled(drawn, xh_px, wobble_xh, case.id)}
         total = int(sum(len(theirs) for theirs in reference))
         for variant in variants:
-            bahn = bahnen[variant]
+            path = by_variant[variant]
             for method in methods:
-                matched = [match_seed(stroke, seed_xy, method=method) for stroke in bahn]
+                matched = [match_seed(stroke, seed_xy, method=method) for stroke in path]
                 filled = _labels_from_nested(runs_of([seed_slot[picked] for picked in matched]), info["strokes"])
                 hits = int(sum(int((mine == theirs).sum()) for mine, theirs in zip(filled, reference, strict=True)))
                 bucket = per_arm[f"{method}/{variant}"]
                 bucket["hits"].append(hits)
                 bucket["samples"].append(total)
                 bucket["agreement"].append(hits / total if total else 0.0)
-                bucket["seams"].extend(_seam_displacement_xh(filled, reference, bahn, xh_px))
+                bucket["seams"].extend(_seam_displacement_xh(filled, reference, path, xh_px))
                 bucket["seed"].extend(
                     float(value)
-                    for stroke, picked in zip(bahn, matched, strict=True)
+                    for stroke, picked in zip(path, matched, strict=True)
                     if len(stroke)
                     for value in seed_distance_xh(stroke, seed_xy, picked, xh_px)
                 )
@@ -541,9 +551,12 @@ def check(
         print(" · ".join(line), flush=True)
 
     result: dict[str, Any] = {
+        # The FULL digest, in the house block name: a stored report has to be
+        # enough to re-check its own base without the run that wrote it.
+        "roots": root_meta,
         "root": str(root),
-        "root_digest": digest,
-        "exported_at": manifest.get("exported_at"),
+        "root_digest": root_meta[0]["digest"],
+        "exported_at": root_meta[0]["exported_at"],
         "words_measured": followed,
         "words_skipped": skipped,
         "konfiguration": dict(KONFIGURATION),
@@ -563,6 +576,7 @@ def check(
 
 
 def main(argv: list[str] | None = None) -> int:
+    from tools.wordbench.roots import add_expect_root_argument
     from tools.wordlab.cases import DEFAULT_FIXTURES_DIR
 
     ap = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
@@ -579,6 +593,7 @@ def main(argv: list[str] | None = None) -> int:
         help="amplitude of the drift that pushes the Bahn off the seed, in x-heights (0 = the clean arm only)",
     )
     ap.add_argument("--json", type=Path, default=None, help="where the round's numbers are filed")
+    add_expect_root_argument(ap)
     args = ap.parse_args(argv)
 
     if not args.check:
@@ -590,6 +605,7 @@ def main(argv: list[str] | None = None) -> int:
         only=args.word,
         methods=args.method or list(METHODS),
         wobble_xh=args.wobble,
+        expect_root=args.expect_root,
     )
     print(json.dumps(result["arms"], indent=1, ensure_ascii=False), flush=True)
     if args.json:

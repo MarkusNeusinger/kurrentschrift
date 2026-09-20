@@ -28,7 +28,11 @@
   Bahn was produced by decoding against this very seed, which makes the
   agreement an upper bound, and the measurement that breaks that circle runs
   on the author's own drawn Bahnen and owes its own pre-registration
-  (`messjournal.md` §14 „Span-Zuordner `sep20`").
+  (`messjournal.md` §14 „Span-Zuordner `sep20`"). The round's entry point
+  carries the house root precondition like every other one that reads a frozen
+  root: it names the base before the first measurement and `--expect-root`
+  aborts on a mismatch, so the command quoted in the entry cannot quietly
+  answer with a different set of numbers after a re-export.
 
 ### Changed
 
