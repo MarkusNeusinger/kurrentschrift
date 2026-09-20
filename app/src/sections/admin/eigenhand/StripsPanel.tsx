@@ -51,7 +51,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { getEigenhandStrips } from '@/lib/api';
-import type { EigenhandFleck, EigenhandStrip, EigenhandStripFilter } from '@/lib/api';
+import type { EigenhandFleck, EigenhandPfadBox, EigenhandStrip, EigenhandStripFilter } from '@/lib/api';
 import { InfoHint } from '@/components/InfoHint';
 import { useRovingList } from '@/hooks/useRovingList';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
@@ -63,6 +63,8 @@ import type { LupeTarget } from '@/sections/admin/eigenhand/Lupe';
 import { NachfahrListe } from '@/sections/admin/eigenhand/NachfahrListe';
 import { STRIP_BOX_LIST_SPEC } from '@/sections/admin/eigenhand/stripBoxRows';
 import { boxMatches } from '@/sections/admin/eigenhand/stripFilter';
+import { useEigenhandPfadBoxes } from '@/sections/admin/eigenhand/useEigenhandPfadBoxes';
+import { stripBoxSpecimen } from '@/sections/admin/shell/focus';
 import { GALLERY_PAGE, StripGallery } from '@/sections/admin/eigenhand/StripGallery';
 import type { Beleg } from '@/sections/admin/eigenhand/StripGallery';
 import { StripTile } from '@/sections/admin/eigenhand/StripTile';
@@ -191,6 +193,30 @@ export function StripsPanel({
     );
     setRefresh((n) => n + 1);
   };
+
+  // The Ampel per box, for the GALLERY's tiles: the same hand-wide read the
+  // list runs on, because a crop tile has said nothing about the state of the
+  // box it shows since the free-standing „Maske geändert" chip gave way to the
+  // Tintentreue (§7.2 wants the verdict on both surfaces, and the gallery is
+  // where a coverage cell lands). Only while the pictures are on screen — the
+  // list mounts its own reader.
+  //
+  // On the SAME `refresh` as the listing: a saved Fleckenmaske changes `stale`
+  // and with it the Tintentreue the Ampel shows, so leaving this read out of
+  // it would have the tiles keep the pre-save verdict until the view is
+  // remounted, beside a listing that already carries the new one (Copilot
+  // review).
+  const ampeln = useEigenhandPfadBoxes(hand, view === 'galerie', refresh);
+  const ampelByBox = useMemo(() => {
+    if (ampeln.fassungen === null) return null;
+    const out = new Map<string, EigenhandPfadBox>();
+    for (const fassung of ampeln.fassungen) {
+      for (const box of fassung.kaesten) {
+        out.set(stripBoxSpecimen(fassung.strip, fassung.fassung, box.box_index), box);
+      }
+    }
+    return out;
+  }, [ampeln.fassungen]);
 
   // The listing's order — plan order, or weakest first when the switch is on.
   // BOTH display modes read it: the tiles below and the filtered gallery, so
@@ -359,6 +385,7 @@ export function StripsPanel({
           zoom={zoom}
           ohneLineatur={ohneLineatur}
           pfade={pfade}
+          ampelByBox={ampelByBox}
           onLupe={setLupe}
           roving={galleryRoving}
         />

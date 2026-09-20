@@ -28,32 +28,22 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { InfoHint } from '@/components/InfoHint';
 import { getHand, putWordInstances, wordSampleCropUrl } from '@/lib/api';
 import type { HandOut, WordInstanceOut, WordSampleOut } from '@/lib/api';
 import { de, fmt } from '@/locales/admin';
-import { overlay } from '@/sections/admin/overlayColors';
 import {
-  cropToTrace,
   frameStale,
   reanchorStrokes,
-  registrationMatrix,
   sanitizeStrokes,
-  strokePathD,
   traceRegistration,
-  warpTraceStrokes,
   type TracePoint,
 } from '@/sections/admin/belege/registration';
 import { isDevSetSpecimen } from '@/sections/admin/belege/tracebenchDevSet';
-import { holdsGrip, releaseGrip, takeGrip, type Grip } from '@/sections/admin/setup-wizard/gestureUtils';
+import { TraceCanvas } from '@/sections/admin/shell/TraceCanvas';
 import { garamond } from '@/styles/paper';
-
-// Minimum pointer travel between two stored samples (x-height units) — dense
-// enough for a faithful ductus, sparse enough to stay far below the schema's
-// per-stroke point cap on a slow, deliberate trace.
-const MIN_STEP_XH = 0.015;
 
 // Anpassen falloff radius (x-height units): the default covers a typical
 // wobble without reaching the neighbouring letter; the slider range keeps it
@@ -121,30 +111,7 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
   // Editing one of the ten frozen dev-split words re-baselines the trace
   // bench; the save asks once instead of silently rewriting the ruler.
   const [confirmDev, setConfirmDev] = useState(false);
-  // Falloff ring under the pointer in adjust mode (crop px), so the writer
-  // sees what a drag would move before touching down.
-  const [hoverPt, setHoverPt] = useState<TracePoint | null>(null);
 
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const gripRef = useRef<Grip>({ current: null });
-  // The adjust drag warps a SNAPSHOT frozen at pen-down: every move re-warps
-  // the same base geometry, so the deformation follows the pointer instead of
-  // compounding sample by sample (the wizard's nudge pattern).
-  const nudgeRef = useRef<{ grab: TracePoint; snapshot: TracePoint[][] } | null>(null);
-  // True only while a DRAW gesture this handler started is in flight. The move
-  // handler appends solely under this flag — never merely because the grip is
-  // held — so a mid-drag mode flip (a stray toolbar graze; the reason every
-  // control sits above the canvas) can never weld pen samples onto a stored
-  // stroke it did not open.
-  const drawingRef = useRef(false);
-  // Manual panning (only ever active in pan MODE): the canvas carries
-  // touch-action: none, because Chromium treats the PEN as a pannable pointer
-  // too — with `pan-x pan-y` a short pen stroke was recognised as a scroll
-  // gesture, the browser fired pointercancel and the drawn line broke off.
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const panRef = useRef<{ id: number; x: number; y: number; left: number; top: number } | null>(null);
-
-  const matrix = useMemo(() => registrationMatrix(reg), [reg]);
   const handId = row.hand_id ?? fallbackHandId;
 
   // No reset effect: the caller mounts the dialog per occurrence (keyed by the
@@ -173,107 +140,6 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
       cancelled = true;
     };
   }, [open, handId]);
-
-  const toCropPx = (clientX: number, clientY: number): TracePoint | null => {
-    const svg = svgRef.current;
-    if (!svg) return null;
-    const box = svg.getBoundingClientRect();
-    if (box.width === 0 || box.height === 0) return null;
-    return [((clientX - box.left) / box.width) * sample.width, ((clientY - box.top) / box.height) * sample.height];
-  };
-
-  const toTrace = (clientX: number, clientY: number): TracePoint | null => {
-    const px = toCropPx(clientX, clientY);
-    return px ? cropToTrace(reg, px) : null;
-  };
-
-  const onPointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
-    // Pan is an explicit MODE, never a gesture: in draw and adjust mode touch
-    // input is completely inert (the writing hand rests on the display), in
-    // pan mode any pointer — pen, mouse or finger — drags the view.
-    if (mode === 'pan') {
-      if (panRef.current === null && scrollRef.current) {
-        panRef.current = {
-          id: e.pointerId,
-          x: e.clientX,
-          y: e.clientY,
-          left: scrollRef.current.scrollLeft,
-          top: scrollRef.current.scrollTop,
-        };
-        e.currentTarget.setPointerCapture(e.pointerId);
-      }
-      return;
-    }
-    if (e.pointerType === 'touch') return;
-    const p = toTrace(e.clientX, e.clientY);
-    if (!p) return;
-    // One pointer at a time: a second pen contact must not hijack the stroke
-    // the pen is drawing (same rule as the wizard canvas).
-    if (!takeGrip(gripRef.current, e.pointerId)) return;
-    e.currentTarget.setPointerCapture(e.pointerId);
-    if (mode === 'adjust') {
-      // Freeze the base geometry; the drag warps this snapshot per move.
-      nudgeRef.current = { grab: p, snapshot: strokes };
-      return;
-    }
-    drawingRef.current = true;
-    setStrokes((prev) => [...prev, [p]]);
-    setDirty(true);
-  };
-
-  const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
-    const pan = panRef.current;
-    if (pan && e.pointerId === pan.id) {
-      if (scrollRef.current) {
-        scrollRef.current.scrollLeft = pan.left - (e.clientX - pan.x);
-        scrollRef.current.scrollTop = pan.top - (e.clientY - pan.y);
-      }
-      return;
-    }
-    // The falloff ring follows the pointer in adjust mode — also on a pure
-    // hover (pen in the air, mouse without button), so the reach is visible
-    // before anything moves.
-    if (mode === 'adjust' && e.pointerType !== 'touch') {
-      setHoverPt(toCropPx(e.clientX, e.clientY));
-    }
-    if (!holdsGrip(gripRef.current, e.pointerId)) return;
-    const p = toTrace(e.clientX, e.clientY);
-    if (!p) return;
-    // Branch on the GESTURE state, never on `mode`: a toolbar graze can flip
-    // the mode mid-drag, and the fall-through must not reinterpret the pen.
-    const nudge = nudgeRef.current;
-    if (nudge) {
-      setStrokes(warpTraceStrokes(nudge.snapshot, nudge.grab, p[0] - nudge.grab[0], p[1] - nudge.grab[1], nudgeRadius));
-      setDirty(true);
-      return;
-    }
-    if (!drawingRef.current) return;
-    setStrokes((prev) => {
-      if (prev.length === 0) return prev;
-      const current = prev[prev.length - 1];
-      const last = current[current.length - 1];
-      if (last && Math.hypot(p[0] - last[0], p[1] - last[1]) < MIN_STEP_XH) return prev;
-      return [...prev.slice(0, -1), [...current, p]];
-    });
-  };
-
-  // Pen up = Absetzen: the stroke ends here and the next pen-down starts a new
-  // one. A pen-down that never moved is a stray tap, not a stroke — drop it so
-  // undo and the save gate count real strokes only.
-  const onPointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
-    if (panRef.current?.id === e.pointerId) {
-      panRef.current = null;
-      return;
-    }
-    if (!releaseGrip(gripRef.current, e.pointerId)) return;
-    if (nudgeRef.current) {
-      nudgeRef.current = null;
-      return;
-    }
-    if (!drawingRef.current) return;
-    drawingRef.current = false;
-    setStrokes((prev) => (prev.length && prev[prev.length - 1].length < 2 ? prev.slice(0, -1) : prev));
-  };
 
   const savable = useMemo(() => sanitizeStrokes(strokes), [strokes]);
   const canSave = open && dirty && savable.length > 0 && !saving && hand !== null;
@@ -326,8 +192,6 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
       setSaving(false);
     }
   };
-
-  const midbandRow = reg.baselineRow - reg.xh;
 
   // Full screen with every control ABOVE the drawing surface: while writing
   // with the pen, the hand rests exactly where footer controls would sit and
@@ -382,15 +246,7 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
             exclusive
             aria-label={t.editorModeGroup}
             value={mode}
-            onChange={(_, v: 'draw' | 'adjust' | 'pan' | null) => {
-              if (v === null) return;
-              setMode(v);
-              if (v !== 'adjust') setHoverPt(null);
-              // A mode change ends any in-flight gesture: the next samples of
-              // a still-held pointer must not be reinterpreted in the new mode.
-              nudgeRef.current = null;
-              drawingRef.current = false;
-            }}
+            onChange={(_, v: 'draw' | 'adjust' | 'pan' | null) => v !== null && setMode(v)}
           >
             <ToggleButton value="draw">{t.editorModeDraw}</ToggleButton>
             <ToggleButton value="adjust">{t.editorModeAdjust}</ToggleButton>
@@ -505,122 +361,34 @@ export function WordTraceEditorDialog({ open, onClose, row, sample, sourceId, fa
             {fmt(t.editorHandUnresolved, { id: handId })}
           </Alert>
         )}
-        {/* display:flex + margin:auto on the svg centres a small (shrunk) word
-            in BOTH axes of the free canvas area — the writing zone moves to
-            the middle of the screen, away from the header controls a resting
-            pen hand kept grazing; an enlarged word overflows and scrolls
-            exactly as before (margin:auto is the clip-safe centring pattern
-            inside a scroll container). */}
-        <Box ref={scrollRef} sx={{ flex: 1, minHeight: 0, overflow: 'auto', borderRadius: '6px', display: 'flex' }}>
-        <svg
-          ref={svgRef}
-          viewBox={`0 0 ${sample.width} ${sample.height}`}
-          style={{
-            display: 'block',
-            width: `${zoom * 100}%`,
-            // Centred in both axes of the canvas area (see the flex container
-            // above) — a shrunk word floats mid-screen instead of hugging the
-            // top edge right under the controls.
-            margin: 'auto',
-            flexShrink: 0,
-            background: '#fff',
-            borderRadius: 6,
-            // NO browser gestures on the canvas: Chromium treats the pen as a
-            // pannable pointer, so `pan-x pan-y` let the browser cancel a pen
-            // stroke after a short distance and scroll instead. Fingers still
-            // pan — via the manual handler on panRef, not the browser.
-            touchAction: 'none',
-            cursor: mode === 'pan' ? 'grab' : mode === 'adjust' ? 'default' : 'crosshair',
-          }}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-          onPointerLeave={() => setHoverPt(null)}
-        >
-          <image
-            href={wordSampleCropUrl(sourceId, sample.id)}
-            x={0}
-            y={0}
-            width={sample.width}
-            height={sample.height}
-            preserveAspectRatio="none"
-          />
-          {/* Grundlinie + Mittellinie of the registration frame the trace is
-              stored in — the writer sees which line their v = 0/1 sits on. */}
-          <line
-            x1={0}
-            x2={sample.width}
-            y1={reg.baselineRow}
-            y2={reg.baselineRow}
-            stroke={overlay.idle}
-            strokeWidth={0.6}
-            strokeOpacity={0.7}
-          />
-          <line
-            x1={0}
-            x2={sample.width}
-            y1={midbandRow}
-            y2={midbandRow}
-            stroke={overlay.idle}
-            strokeWidth={0.6}
-            strokeOpacity={0.5}
-            strokeDasharray="3 3"
-          />
-          <g transform={matrix}>
-            {showStored &&
-              dirty &&
-              baseStrokes.map((stroke, i) => (
-                <path
-                  key={`stored-${i}`}
-                  d={strokePathD(stroke.map(([x, y]) => [x, y] as TracePoint))}
-                  fill="none"
-                  stroke="#8b9a95"
-                  strokeOpacity={0.6}
-                  strokeWidth={1.5}
-                  vectorEffect="non-scaling-stroke"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              ))}
-            {strokes.map((stroke, i) => (
-              <path
-                key={i}
-                d={strokePathD(stroke)}
-                fill="none"
-                stroke={overlay.draft}
-                strokeOpacity={0.9}
-                // Fixed 2 CSS pixels via non-scaling-stroke: the previous
-                // zoom-compensated width was constant relative to the CONTAINER,
-                // which on a fullscreen tablet made the line far fatter than the
-                // shrunk ink it was supposed to trace.
-                strokeWidth={2}
-                vectorEffect="non-scaling-stroke"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            ))}
-          </g>
-          {/* Falloff ring under the pointer (adjust mode): everything inside
-              follows a drag, weighted toward the centre. Crop-px frame, so the
-              radius scales with the crop exactly like the warp itself. */}
-          {mode === 'adjust' && hoverPt && (
-            <circle
-              cx={hoverPt[0]}
-              cy={hoverPt[1]}
-              r={nudgeRadius * reg.xh}
-              fill={overlay.draft}
-              fillOpacity={0.06}
-              stroke={overlay.draft}
-              strokeOpacity={0.55}
-              strokeWidth={1}
-              vectorEffect="non-scaling-stroke"
-              strokeDasharray="4 3"
-              pointerEvents="none"
+        {/* The drawing surface itself is shared with the Eigenhand's strip
+            editor (`shell/TraceCanvas`): same viewBox, same pen rules, same
+            registration matrix. Only the picture underneath differs — the
+            specimen crop route is deliberately PUBLIC so a bare `<image href>`
+            can load it without the admin header (`api/routers/word_samples.py`),
+            which is exactly what the strip crop cannot do. */}
+        <TraceCanvas
+          width={sample.width}
+          height={sample.height}
+          reg={reg}
+          strokes={strokes}
+          onStrokes={setStrokes}
+          onDirty={() => setDirty(true)}
+          mode={mode}
+          zoom={zoom}
+          nudgeRadius={nudgeRadius}
+          ghost={showStored && dirty ? baseStrokes : null}
+          underlay={
+            <image
+              href={wordSampleCropUrl(sourceId, sample.id)}
+              x={0}
+              y={0}
+              width={sample.width}
+              height={sample.height}
+              preserveAspectRatio="none"
             />
-          )}
-        </svg>
-        </Box>
+          }
+        />
       </DialogContent>
     </Dialog>
   );

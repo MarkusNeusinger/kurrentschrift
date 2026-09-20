@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
 > **Status (2026-09-20): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **111
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **112
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars.
 > **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
@@ -717,6 +717,17 @@ geändert" verlangt erst `pfad --apply`, und auf einem von Hand gezogenen
 Kasten wird nie zum Neu-Folgen eingeladen. Ordnung in Phase 2: Schwere →
 Streifen; sie steht auf `?reiter=streifen` neben der Galerie, gewählt mit
 `?ansicht=liste|galerie`. `app/src/sections/admin/eigenhand/stripBoxRows.ts`.
+→ [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.4
+
+**Streifen-Editor** — die Vollbildfläche, auf der der Autor einen Wortkasten mit
+dem Stift nachfährt, aus einer Nachfahr-Zeile geöffnet. Ein zweiter, schlanker
+Editor neben dem Platten-Editor (Autor-Entscheid G), der dieselbe
+Zeichenfläche (`shell/TraceCanvas`) und dasselbe Registrierungsmodul benutzt.
+Unterlage ist ein Blob (die Streifen-Route ist admin-gegatet), Rahmen ist die
+Registrierung der Bahn minus Kastenrechteck, „Speichern & weiter" geht auf der
+zurückgegebenen ETag-Marke zum nächsten Kasten. Daneben stehen Absetzer-Soll
+und die verschiebbaren Buchstabengrenzen.
+`app/src/sections/admin/eigenhand/StripTraceEditor.tsx`.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.4
 
 **Fokusring** *(`focusRing`)* — der eine sichtbare Tastaturfokus: 2 px

@@ -1460,6 +1460,19 @@ class EigenhandStripBoxOut(BaseModel):
     # Bogen printed before the cut geometry existed — then there is no crop to
     # place anything in either.
     rect_px: list[int] | None = None
+    # The PRINTED ruling of this box, in the same strip pixels: the row of the
+    # Grundlinie and the x-height between Grundlinie and Mittellinie. Nominal —
+    # where the writer was ASKED to write, never where the hand actually wrote
+    # (`core.eigenhand.pfad`, „NOMINAL, NOT MEASURED"), which is why the names
+    # say so and the editor labels it „Saat".
+    #
+    # It travels because a box with no stored Bahn has no frame at all, and
+    # that is exactly the box the author draws by hand: the follower gave up
+    # there, and its Skip-Eintrag carries neither registration nor scale. The
+    # alternative was for the SPA to re-derive it from `band_mm` and `cut_mm`,
+    # which would put the crop arithmetic in a second language.
+    nominal_baseline_row: float | None = None
+    nominal_xh_px: float | None = None
 
 
 class EigenhandBefundOut(BaseModel):
