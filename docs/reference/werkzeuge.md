@@ -720,6 +720,18 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   das abgelegte Bild bleibt Byte für Byte, wie es eingelesen wurde. Auch
   der Haken wird so gelesen: punktgroße Komponenten fallen aus der Zählung,
   ein Haken muss ein Strich sein.
+Was auf dem abgelegten Streifen aufsetzt — Bahn, Buchstabengrenzen,
+Trainingssatz, Bericht und Archiv — steht im nächsten Abschnitt.
+
+## Die Eigenhand-Bahnen (`tools/eigenhand`)
+
+Dieselbe Werkzeugkette, zweite Hälfte: sie setzt auf einem Streifen auf, der
+schon abgelegt IST. Hierher gehört, wer die Federbahn sucht, ihre
+Buchstabengrenzen setzt, daraus einen Trainingssatz zieht oder den Bestand
+berichtet und archiviert. Die Erfassung davor — Plan, Bogen, Scan, Siebung,
+Ablage — steht im Abschnitt darüber, die Doktrin in
+[`proposals/eigenhand-erfassung.md`](../proposals/eigenhand-erfassung.md).
+
 - **`pfad`** — folgt der **Federbahn** eines geschriebenen Streifens und
   schiebt sie in die Werkbank (Proposal §7.5, Migration `0031`):
   `uv run python -m tools.eigenhand.pfad --hand mn-suetterlin --strip S0001`.
@@ -764,11 +776,23 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   bleibt dagegen eine Lücke statt ein Skip: ein Eintrag mit diesem Index
   brächte den Push der ganzen Fassung zu Fall, und in Frage steht nur der
   eine Kasten.
-  Die vom Folger selbst zugeordneten Buchstabengrenzen wandern damit nicht
-  mehr ins freie `meta`: unter Format 2 sind sie ein geprüftes Feld des
-  Eintrags, und dieses Abbild schreibt es noch nicht — es kommt mit
-  `pfad --spans`. Von Hand korrigierte Grenzen sind davon unberührt und
-  reisen weiter mit.
+  Die vom Folger zugeordneten Buchstabengrenzen wandern damit nicht mehr ins
+  freie `meta`, sondern ins **geprüfte Feld** (`letter_spans`, Herkunft
+  `auto`): sie fallen bei der Dekodierung ohnehin an, und ohne sie erreichte
+  eine gefolgte Bahn den Streifen-Editor ohne eine Naht zum Ziehen. Wo die
+  AUSGELIEFERTEN Züge sie nicht mehr tragen (`cap_word_strokes` dünnt jenseits
+  von 128 Zügen aus und unterabtastet jenseits von 4096 Punkten), fallen sie
+  weg statt auf fremde Tinte zu zeigen — jeder Index wäre danach noch
+  wohlgeformt, und genau das sieht die Server-Prüfung nicht. Von Hand
+  korrigierte Grenzen bleiben unberührt und reisen weiter mit.
+  **`--spans` ist der zweite Modus** und folgt NICHTS: er liest die
+  gespeicherte Liste, ordnet den Bahnen darin Grenzen zu (→ `spans` unten) und
+  legt jeden Pfad unverändert zurück — er kann keine Koordinate einer Bahn
+  bewegen, und das ist die Eigenschaft, die ihn auf Handarbeit richten lässt.
+  Er bearbeitet die Kästen ohne Grenzen; einen Kasten, dessen Grenzen der Autor
+  korrigiert hat, lässt er GANZ in Ruhe und nennt ihn (eine Grenze ist nur
+  neben den benachbarten sinnvoll). `--replace-authored` ist neben diesem Modus
+  verweigert — hier gibt es nichts aufzugeben.
   **Trockenlauf ist die Vorgabe** — ohne `--apply`
   landet das Ergebnis nur als JSON unter der lokalen Hand; `--apply` schreibt
   es über `PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade` in die
@@ -799,6 +823,21 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   BLAS-Fäden
   pinnt das Modul selbst (Vorgabewerte), weil die Kettenlösung sonst je nach
   Umgebung anders läuft.
+- **`spans`** — der **Span-Zuordner**, die Rechenhälfte hinter `pfad --spans`.
+  Er baut dieselbe Saat, gegen die der Folger dekodiert (`derive_word` +
+  `register_letters` + `seed_samples`, auf der Tinte des Wortkastens
+  registriert), ordnet jedem Stützpunkt der Bahn einen Saat-Punkt zu und gibt
+  ihm dessen Slot. Zwei Regeln: **`dtw`** (Vorgabe) hält die Zuordnung je Zug
+  monoton — der Saat-Index darf beliebig weit vor, nie zurück —, **`nearest`**
+  ist die ordnungslose Basis, gegen die sie gemessen wurde. Züge werden
+  EINZELN zugeordnet, sonst schöbe ein nachgetragener i-Punkt auf den falschen
+  Buchstaben. BLAS-Fäden pinnt das Modul selbst. `--check` ist die §14-Runde
+  (`uv run python -m tools.eigenhand.spans --check --json <bericht.json>`,
+  gepinnt): die eingefrorenen Wörter gefolgt, die Bahn „wie von Hand
+  gezeichnet" neu zugeordnet, verglichen — plus ein **Wackel-Arm**
+  (`--wobble`), weil der saubere Vergleich zirkulär ist. Zahlen, Schranken und
+  diese Grenze: §14 „Span-Zuordner `sep20`" in
+  [`messjournal.md`](messjournal.md).
 - **`training_set`** — der lokale, gitignorte **Trainingssatz** der von Hand
   nachgefahrenen Bahnen (Autor-Zusatz zu Q4: „die hand nachgefahrenen linien
   dienen auch als trainingsmenge um den folger nachhaltig immer besser zu

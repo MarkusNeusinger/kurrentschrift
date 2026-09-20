@@ -249,6 +249,7 @@ die DB) — mit seiner Bedingung.
 | sep13 | Tintenpfad | [Laufform A48 — die Saat-Korrespondenz](#laufform-a48-sep13--die-saat-korrespondenz-die-zuordnung-trägt-die-zeile-nicht) | Pre-Reg + gemessen · **ehrliches Negativ** an Gate (G) · Mechanismus bestätigt, nichts adoptiert | Weg (1) der §7.11-Zeile „Vorkommen aus der Tintenpfad-Bahn" (Autor-Entscheid **A48**): die Anker über die SAAT zuordnen statt über die Bogenlänge. Ein Knopf `harvest --occurrences {fit,tintenpfad}`, Vorgabe `fit` (ausgelieferter Stand byte-gleich, Wort-Records bis auf `seconds`). **Die Zuordnung trägt:** Gate (K), wie vorregistriert über die KÖRPER-ITEMS gelesen, steht bei **328 von 334 = 98,2 %** (Schranke 80 %; durchgehend bewiesen 88,9 %, über die Item-Punkte 98,8 %, Beweis-Reste Median 8,0e-15 je Slot, max 1,03e-13) — das dritte Glied der Kette ist das einzige, über das `core/compose.py` nicht Buch führt, und es wird je Punkt BEWIESEN statt geschätzt, lokal, weil der `d`-Anstieg stückweise affin ist. Daneben, und KEINE Gate-Zahl: die Identifikation greift auf **277 von 277** Slots, gesetzt werden **92,5 %** aller Anker (30 736 / 33 240) — die Anker-Quote zählt eine andere Frage, und die 2 504 fehlenden sind nachgezählt: **85,2 %** liegen gar nicht erst im komponierten Item (weggeschnitten), 14,5 % sind beweis-bedingt, **0,3 %** scheitern an der Saat. (G) fällt damit an der Schere, nicht am Beweis und nicht an der Saat. **Die Zeile trägt nicht:** die Komposition schneidet die Kopplungs-Enden weg, es fehlen **7,5 %** aller Anker (2 504 / 33 240; Median-Slot 7 von 120, die 212 unvollständigen 9), nur 65 Slots sind vollständig, und die Ganz-oder-gar-nicht-Regel lässt **58 von 277** Vorkommen übrig (Fit-Kontrolle desselben Laufs 227), Zeilen mit n ≥ 4 **5 statt 16**. Gate (F) grün (zwei Ernten byte-gleich, Diagnose nur in `seconds` verschieden), (J) grün (`core/` unberührt, 2 903 Tests mit den lokalen Fixtures, 2 892 ohne). Gate (H): Anker-Abstand zur schlüsselgleichen Kontrollkarte Median **0,0523 xh** (p90 0,1328, max 0,2891), auf den 58 gemeinsamen Vorkommen 0,0542 / 0,1436 / 0,5235 — weit über dem Ableseboden. Gate (I) asymmetrisch: gegen die stehende Karte Wörter **0,104883** (−0,003456, grün) und Paare 0,149306 (+0,001070, **rot** bei Schranke +0,0005, kein Kill); gegen die KONTROLLE auf gleicher Schlüsselmenge (0,108951 / 0,148119) Wörter −0,004068 bei **31 : 21 : 44** gepaart — mit dem Vorbehalt, dass die Arm-Zeilen auf viel weniger Vorkommen stehen (`e` n = 3 gegen 30). Rettungswege: die geschnittenen Enden fitten (Weg 2), oder `core/compose.py` einen Abtastindex mitführen lassen (Autor-Entscheid) |
 | sep20 | Eigenhand | [Tintentreue — vorläufige Schwellen](#tintentreue-sep20--vorregistrierung-der-vorläufigen-schwellen-je-kasten) | Pre-Reg · **nichts adoptiert** | Die Ampel je Wortkasten (`core/eigenhand/tintentreue.py`): drei gemessene Stufen, ein grauer Zustand mit Grund, der schlechteste Sensor entscheidet (`severity = max` + `SENSOR_ORDER`, nicht `_summarise`). Acht Startwerte samt Herkunft, alle an der PLATTE bzw. dev-19 geborgt und als „vorläufig" etikettiert, bis die EINE blinde Kalibrierung je Hand läuft (Q10 b); Format-1-Zeilen bleiben grau, `jumps`/`hairpins` bewerten mangels Anker nicht. Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile; kein Lineal bewegt, keine Wurzel angefasst |
 | sep20 | Eigenhand | [Trainingssatz — zwei Rückhaltemengen](#trainingssatz-sep20--vorregistrierung-der-zwei-rückhaltemengen) | Pre-Reg · **nichts gezogen, nichts gemessen** | Die Ziehung, nach der `tools/eigenhand/training_set.py` die von Hand nachgefahrenen Bahnen teilt: `practice` + ZWEI getrennte Rückhaltemengen (`holdout-follower`, `holdout-release`) — Autor-Entscheid vom 2026-09-20 gegen die Plan-Empfehlung, und damit zugleich FM3 (b). Einheit ist der STREIFEN (Fassungen sind Wiederholungen, Kästen einer Zeile ein Zug); die Zugehörigkeit ist eine reine Funktion aus Schlüssel, Hand und Streifen-ID, gezogen über den EINGEFRORENEN Plan — ohne Netz, ohne eine einzige Bahn, ein zweites Ziehen verweigert, ein später angehängter Streifen wird mit Datum nachgetragen. Fünf Gates für den Tag der ersten Zahl (eigene Vorregistrierung · einmaliger Verbrauch · die beiden Mengen sehen einander nicht · keine Bench-Berührung · kein Byte im Repo). Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile |
+| sep20 | Eigenhand | [Span-Zuordner — Grenzen ohne Dekodierung](#span-zuordner-sep20--die-zuordnung-über-eine-nachgefahrene-bahn-gegen-die-dekodierung-gemessen) | Pre-Reg (geschwächt) + gemessen · **adoptiert: `dtw`** | Die Buchstabengrenzen einer Bahn, hinter der keine Dekodierung steht (A48: für authored-Bahnen ist die Zuordnung neue Arbeit). Ein Knopf, zwei Arme — monotone Ausrichtung gegen ordnungslos-nächster Saat-Punkt —, gemessen gegen die Zuordnung des Folgers auf 63 Wörtern der eingefrorenen Wurzel `5d4556b87573`, BLAS gepinnt. Beide Arme halten beide Schranken; die Entscheidung fällt am Maximum: die ordnungslose Basis legt ihre schlechteste Naht 2,16 xh daneben (ein ganzer Buchstabe), die monotone 0,34 xh. Ausdrücklich benannte Grenze: die Referenzbahn wurde gegen genau diese Saat dekodiert, die Zahl ist eine obere Schranke — die Messung, die das bricht, läuft auf den nachgefahrenen Bahnen des Autors und bekommt ihre eigene Vorregistrierung. Keine Duell-Route, also keine Verfahrensseite und keine Ledger-Zeile |
 
 ### Headline-Ledger (die Wordbench-Zahlen und ihre Wurzeln)
 
@@ -17787,3 +17788,111 @@ Streifens, der Statusfilter und die Trennung von den Bench-Wurzeln — gegen
 `tests/test_eigenhand_training_set.py`. Der echte Export ist lokal nicht
 lauffähig: er zieht reservierte Pixel aus der geteilten Datenbank, und es
 gibt noch keine einzige Bahn, die er ziehen könnte.
+
+### Span-Zuordner `sep20` — die Zuordnung über eine nachgefahrene Bahn, gegen die Dekodierung gemessen
+
+Gegenstand ist der **Span-Zuordner** (`tools/eigenhand/spans.py`, Modus
+`pfad --spans`): die Buchstabengrenzen einer Bahn, hinter der **keine
+Dekodierung** steht. Eine gefolgte Bahn bringt ihre Grenzen mit — jeder
+ausgelieferte Stützpunkt erbt den Slot des Saat-Punktes, der ihn gesetzt hat,
+die Zuordnung IST die Ausrichtung. Eine von Hand gezeichnete Bahn hat davon
+nichts, und genau das hält **A48** vom 2026-09-13 fest: die Saat-Zuordnung
+trägt nur auf dekodierten Bahnen, für authored-Bahnen ist sie **neue Arbeit**.
+Ohne sie erreichte jede nachgefahrene Bahn den Streifen-Editor ohne eine
+einzige Naht zum Ziehen.
+
+**Keine Duell-Route, keine Verfahrensseite, keine Ledger-Zeile** — dieselbe
+Buchführung wie bei „Tintentreue `sep20`" und „Trainingssatz `sep20`": hier
+bewegt sich kein Arm einer Folger-Route, die Route-Spalte trägt „Eigenhand",
+und der Headline-Ledger bleibt unberührt.
+
+**Wie ehrlich die Vorregistrierung ist — der Satz gehört nach vorn.** Die
+Schranken standen fest, **nachdem** ein Funktionslauf über drei Wörter rund
+0,99 gezeigt hatte; das ist die §11b-Praxis geschwächt, und es wird hier
+gesagt statt beschönigt. Zwei Dinge halten sie trotzdem: die Primärschranke
+wurde bewusst weit darunter gesetzt (0,90 gegen ein gesehenes 0,99), sie prüft
+also die REGEL und ratifiziert keine Zahl; und der Teil, der wirklich
+entscheidet — ob die monotone Regel sich gegenüber der einfachen verdient —
+war mit seinem Kill-Kriterium vor dem vollen Lauf schriftlich fixiert. Der
+Wackel-Arm ist zusätzlich **explorativ und nicht vorregistriert**: er wurde
+angehängt, nachdem der saubere Arm zurückkam und als zirkulär erkannt war.
+
+**Die Ersatz-Material-Erklärung.** Der Plan verlangt grüne Auto-Bahnen aus
+Streifen. Die liegen ausschließlich in der geteilten Produktionsdatenbank und
+im gitignorierten lokalen Streifenspeicher, und eine Messung darf in keines
+von beiden greifen. Also steht das stehende lokale Material ein — die
+eingefrorene Sütterlin-Wortwurzel —, und es trägt denselben Gegenstand: eine
+Bahn, die der Tintenpfad geliefert hat, mit dem Slot, den die Dekodierung
+jedem ihrer Stützpunkte gegeben hat. Wurzel: `exported_at
+2026-08-29T07:05:01+00:00`, `root_digest` **5d4556b87573**; 63 Wörter, keines
+übersprungen.
+
+**Der eine Knopf** ist die Zuordnungsregel zwischen Bahn- und Saat-Punkten:
+
+- **`dtw`** (Arm) — eine monotone Ausrichtung: über einen Zug darf der
+  zugeordnete Saat-Index nur vorwärts, beliebig weit, nie zurück;
+- **`nearest`** (Basis) — jeder Punkt für sich zum nächstgelegenen
+  Saat-Punkt, ohne jede Ordnung.
+
+Alles andere ist derselbe Stapel: dieselben acht festgezurrten
+Tintenpfad-Schalter (`tools.eigenhand.pfad.KONFIGURATION`), dieselbe Saat aus
+`derive_word` + `register_letters` + `seed_samples`, dieselbe Wurzel,
+BLAS gepinnt (`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1`). Züge werden
+**einzeln** zugeordnet: ein nachgetragenes Zeichen (i-Punkt, Umlaut) ist ein
+späterer Absetzer über einem früheren Buchstaben, und eine über Züge hinweg
+erzwungene Ordnung schöbe genau die auf den falschen Buchstaben.
+
+**Die Maße.** Primär die **gepoolte Punkt-Übereinstimmung** (Anteil der
+Stützpunkte, deren Slot dem des Folgers gleicht). Sekundär die
+**Naht-Verschiebung**: je Grenze des Folgers der Bogenabstand zur nächsten
+Grenze des Zuordners auf demselben Zug, in x-Höhen. Daneben als
+Plausibilitätslesung der **Saat-Abstand** der Bahn.
+
+| Arm | gepoolt | Wort-Median | Naht-Median | Naht-p90 | Naht-max |
+|---|---|---|---|---|---|
+| `dtw` sauber | **0,9953** | 0,9961 | **0,0201 xh** | 0,060 | 0,339 |
+| `nearest` sauber | 0,9775 | 0,9939 | 0,0399 xh | 0,175 | **2,158** |
+| `dtw` Wackel | 0,9855 | 0,9876 | 0,0975 xh | 0,221 | 0,410 |
+| `nearest` Wackel | 0,9682 | 0,9813 | 0,1026 xh | 0,279 | **2,069** |
+
+Saat-Abstand im Arm `dtw` sauber: Median 0,022 xh, p90 0,070, max 1,044.
+
+**Das Verdikt: adoptiert, mit `dtw` als Regel.** Beide Schranken sind in allen
+vier Armen gehalten (primär ≥ 0,90; Naht-Median ≤ 0,25 xh, p90 ≤ 0,75 xh). Die
+Entscheidung fällt nicht am Median, sondern am **Maximum**: die ordnungslose
+Basis legt ihre schlechteste Grenze **2,16 x-Höhen** daneben — das ist ein
+ganzer Buchstabe, und im Editor eine Naht, die der Autor nicht korrigiert,
+sondern neu setzt. Die monotone Regel bleibt bei 0,34 xh und verdient sich
+damit; ihr Kill-Kriterium („wenn `nearest` nicht schlechter ist, gewinnt die
+einfachere Regel") greift nicht. Der Wackel-Arm sagt dazu das Erwartbare: eine
+Bahn, die um 0,15 xh von der Saat weggedrückt wird, kostet beide Regeln rund
+einen Prozentpunkt, und der Abstand zwischen ihnen bleibt.
+
+**Was die Zahl NICHT beweist, und das ist die Hauptgrenze dieser Runde.** Die
+Referenzbahn wurde erzeugt, indem gegen genau diese Saat dekodiert wurde. Die
+gepoolte Übereinstimmung ist damit eine **obere Schranke**: gemessen ist, ob
+die Zuordnungsregel eine Zuordnung wiederfindet, die die Dekodierung bereits
+impliziert hat — nicht, ob sie auf einer Bahn trägt, die die Saat nie erzeugt
+hat. Der Wackel-Arm mildert das und hebt es nicht auf. Und die Dekodierung ist
+hier Referenz, weil sie die einzige ist, nicht weil sie Wahrheit wäre: Wahrheit
+sind die vom Autor korrigierten Grenzen, und am Tag dieses Eintrags gibt es
+davon keine einzige.
+
+**Was als Nächstes fällig ist** (kein Rettungsweg — die Runde schließt
+positiv, aber sie lässt eine Frage offen, und die bekommt ihre eigene
+Vorregistrierung): dieselben zwei Maße auf den **von Hand nachgefahrenen
+Bahnen** des Autors, sobald `holdout-follower` gezogen ist und genug
+Zeichnungen trägt. Das ist die Messung, die die Zirkularität wirklich bricht,
+und sie ist zugleich der Grund, warum die korrigierten Grenzen Ground Truth
+sind und vom Zuordner **nie** ersetzt werden.
+
+**Welche eingefrorenen Lineale sich nicht bewegt haben.** Kein Edit an
+`core/quality.py`, `core/quality_suetterlin.py` oder `core/word_metric.py`;
+keine Fixture-Wurzel geschrieben, nur gelesen; keine Zahl dieses Instruments in
+einem Bench-Report; `tools/pairlab/tintenpfad.py` unverändert. Der Lauf ist
+reproduzierbar:
+
+```bash
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 uv run python -m tools.eigenhand.spans \
+  --check --json <bericht.json>
+```

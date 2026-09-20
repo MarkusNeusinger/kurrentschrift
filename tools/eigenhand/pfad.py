@@ -35,6 +35,21 @@ so a re-follow of such a box carries them onto its own result instead of
 dropping them. Where the fresh Bahn cannot hold them, the stored entry is kept
 whole and the run says so.
 
+A SECOND MODE, ``--spans``, assigns the boundaries themselves —
+
+    ADMIN_TOKEN=… uv run python -m tools.eigenhand.pfad --hand mn-suetterlin --strip S0001 --spans
+
+— and it follows nothing. A Bahn this tool laid brings its boundaries with it,
+because the decode assigned them on the way; a Bahn the AUTHOR drew has no
+decode behind it and would otherwise reach the editor with no seam to drag at
+all. So the mode reads the stored list, labels the Bahnen it holds against the
+same composed seed the follower decodes against (``tools.eigenhand.spans``) and
+puts every path back exactly as it found it — a ``--spans`` run cannot move one
+coordinate of anyone's Bahn, which is what makes it safe to point at hand-drawn
+work. A box whose boundaries the author corrected is left alone WHOLE, and the
+run names it; ``--replace-authored`` is refused beside this mode, because there
+is nothing here to give up.
+
 WHAT IT READS. Everything over the admin API, nothing off a local scan: the
 strip listing (geometry, words, box rectangles), the Bogen layout (the printed
 ruling), the strip PNG itself — served with the Fleckenmaske applied and, for
@@ -137,6 +152,7 @@ from tools.eigenhand.apiclient import (  # noqa: E402
     request_json_with_etag,
 )
 from tools.eigenhand.kartei import archived_pfade, load_kartei  # noqa: E402
+from tools.eigenhand.spans import DEFAULT_METHOD, METHODS, assign, flat_spans  # noqa: E402
 from tools.eigenhand.store import check_hand_id, hand_dir  # noqa: E402
 
 
@@ -442,25 +458,34 @@ def _entry(info: dict, frame: dict, flecken_n: int | None, today: str, sensors: 
     serves both views — the whole strip and any word cut out of it — and the
     crop's padding never has to be remembered along with the path.
 
-    `meta.letter_spans` is NOT written any more. Under format 2 a box's letter
-    boundaries are a checked field of the entry, and the free-meta copy is
-    refused outright (`core.eigenhand.pfad.check_paths`) — so writing it would
-    only mean `push_body` stripping it off again on every single box of every
-    single run. This image does not write the checked field yet; the follower's
-    own assignment is a derivation the next run makes again, and the field
-    arrives with the Span-Zuordner (`pfad --spans`). What the author corrected
-    BY HAND is a different matter and is carried through untouched by
-    `_carry_spans`.
+    `meta.letter_spans` is NOT written. Under format 2 a box's letter boundaries
+    are a checked field of the entry, and the free-meta copy is refused outright
+    (`core.eigenhand.pfad.check_paths`) — one box, one set of boundaries. The
+    follower's own assignment goes into the CHECKED field instead: it comes out
+    of the decode for free (every emitted sample inherits the slot of the seed
+    sample that put it there), and without it a followed Bahn reaches the editor
+    with no seam to drag and the author would have to place every boundary by
+    hand on a box the machine had already labelled.
+
+    It is dropped where the delivered strokes can no longer carry it
+    (`tools.eigenhand.spans.flat_spans`): the follower labels the path it
+    decoded and stores the CAPPED one, so a Bahn past `cap_word_strokes`' bounds
+    has boundaries pointing at ink that was re-cut underneath them. An `auto`
+    boundary is a derivation the next run makes again — that is what makes
+    dropping it acceptable, and what the author corrected BY HAND unthinkable
+    (carried through untouched by `_carry_spans`).
     """
     reg = info["registration_px"]
     x0, y0 = frame["rect_px"][0], frame["rect_px"][1]
     diagnosis = info.get("meta", {}).get("tintenpfad", {})
     readings = {**{key: diagnosis.get(key) for key in FOLLOWER_SENSORS}, **sensors}
+    spans = flat_spans(info.get("meta", {}).get(FIELD_SPANS) or [], info["strokes"])
     return {
         "box_index": frame["index"],
         "word": frame["word"],
         "status": STATUS_OK,
         "strokes": info["strokes"],
+        FIELD_SPANS: spans,
         "registration_px": {
             "tx": round(float(reg["tx"]) + x0, 2),
             "ty": round(float(reg.get("ty", 0.0)), 2),
@@ -507,6 +532,18 @@ def _skip(index: int, word: str, grund: str, detail: str, flecken_n: int | None,
     }
 
 
+def _row_context(base: str, token: str, hand: str, row: dict) -> tuple[dict, np.ndarray]:
+    """The printed row and the strip plane — what any reading of one Fassung stands on.
+
+    Held in one place because the two passes over a Fassung need exactly the
+    same two things: the follow, and the boundary assignment over the Bahnen it
+    already holds. A second copy would be a second chance to read the layout row
+    off a different index.
+    """
+    layout = request_json("GET", f"{base}/eigenhand/sheets/{hand}/{row['sheet']}/layout", token) or {}
+    return (layout.get("rows") or [])[row["row_index"]], _strip_plane(base, token, hand, row)
+
+
 def follow_row(base: str, token: str, hand: str, row: dict, prior: dict, boxes: list[int] | None) -> list[dict]:
     """Follow every asked-for word of one Fassung. One bad word is not a bad row.
 
@@ -540,9 +577,7 @@ def follow_row(base: str, token: str, hand: str, row: dict, prior: dict, boxes: 
     from tools.pairlab.tintenpfad import TintenpfadWeights, follow_case
 
     plan = load_plan()
-    layout = request_json("GET", f"{base}/eigenhand/sheets/{hand}/{row['sheet']}/layout", token) or {}
-    layout_row = (layout.get("rows") or [])[row["row_index"]]
-    plane = _strip_plane(base, token, hand, row)
+    layout_row, plane = _row_context(base, token, hand, row)
     weights = TintenpfadWeights(**KONFIGURATION)
     flecken_n = len(row["flecken"]) if row.get("flecken") is not None else None
     today = date_cls.today().isoformat()
@@ -597,6 +632,110 @@ def follow_row(base: str, token: str, hand: str, row: dict, prior: dict, boxes: 
         )
         entries.append(entry)
     return entries
+
+
+def _wants_spans(entry: Mapping[str, Any]) -> bool:
+    """Whether the assigner has anything to do on this stored box.
+
+    Three „no"s, and only the first is about the assigner at all. A box the
+    author has corrected is left whole — not „the corrected boundaries are
+    kept", which the field guard would do anyway, but untouched: a boundary is
+    only meaningful next to the ones beside it, so re-deriving its neighbours
+    under a correction would move the seams the author placed. A box that
+    already carries boundaries needs none (an `auto` set is a derivation, and
+    re-deriving it would only churn the row), and a box with no Bahn has
+    nothing to label.
+    """
+    return (
+        entry.get("status", STATUS_OK) == STATUS_OK
+        and bool(entry.get("strokes"))
+        and not entry.get(FIELD_SPANS)
+        and not authored_spans(entry)
+    )
+
+
+def assign_row_spans(
+    base: str,
+    token: str,
+    hand: str,
+    row: dict,
+    prior: dict,
+    stored: list[dict],
+    boxes: list[int] | None,
+    *,
+    method: str = DEFAULT_METHOD,
+) -> list[dict]:
+    """Letter boundaries over the Bahnen one Fassung already holds — and never a Bahn.
+
+    This is the Span-Zuordner's own pass, and it is deliberately NOT part of a
+    follow. A followed Bahn brings its boundaries with it, because the decode
+    assigned them on the way; a Bahn the AUTHOR drew has no decode behind it and
+    would otherwise reach the editor with no seam to drag at all. So the pass
+    reads what is stored, labels it, and puts the Bahn back exactly as it found
+    it — a `--spans` run cannot change a single coordinate of anyone's path,
+    which is the property that makes it safe to point at hand-drawn work.
+
+    A box whose boundaries the author corrected is skipped whole and named. The
+    server would refuse a push that displaced one anyway (`displaced_authored`),
+    but the tool does not get as far as trying: see `_wants_spans`.
+    """
+    from tools.pairlab.tintenpfad import TintenpfadWeights
+
+    protected = sorted(entry["box_index"] for entry in stored if authored_spans(entry))
+    if protected:
+        print(
+            f"  leaving box {', '.join(str(index) for index in protected)} alone — the author corrected the letter "
+            "boundaries there, and a boundary is only meaningful next to the ones beside it",
+            flush=True,
+        )
+    wanted = [entry for entry in stored if _wants_spans(entry) and (boxes is None or entry["box_index"] in boxes)]
+    if not wanted:
+        print("  no box of this Fassung is waiting for letter boundaries", flush=True)
+        return list(stored)
+
+    plan = load_plan()
+    layout_row, plane = _row_context(base, token, hand, row)
+    weights = TintenpfadWeights(**KONFIGURATION)
+    by_box = {entry["box_index"]: entry for entry in wanted}
+    out: list[dict] = []
+    for entry in stored:
+        index = entry["box_index"]
+        if index not in by_box:
+            out.append(entry)
+            continue
+        case_id = f"{row['strip']}/{row['fassung']}#{index}"
+        try:
+            frame = frame_for_box(layout_row, row["crop_origin_mm"], row["width_px"], row["height_px"], index)
+        except ValueError as exc:
+            print(f"  {case_id:<18} no frame    {exc}", flush=True)
+            out.append(entry)
+            continue
+        case, missing = _case_for_box(prior, plane, frame, frame["word"], shaping_form_of(plan, frame["word"]), case_id)
+        if missing:
+            print(f"  {case_id:<18} unauthored  {' '.join(missing)} — no seed to assign against", flush=True)
+            out.append(entry)
+            continue
+        # The stored frame is the STRIP's; the seed is built in the crop the
+        # composition was registered on. The inverse of what `_entry` adds.
+        stored_reg = entry["registration_px"]
+        reg = {
+            "tx": float(stored_reg["tx"]) - frame["rect_px"][0],
+            "ty": float(stored_reg.get("ty", 0.0)),
+            "baseline_row": float(stored_reg["baseline_row"]) - frame["rect_px"][1],
+        }
+        spans, diag = assign(case, entry["strokes"], reg, float(entry["xh_px"]), weights, method=method)
+        if spans is None:
+            print(f"  {case_id:<18} none        {diag['reason']}", flush=True)
+            out.append(entry)
+            continue
+        print(
+            f"  {case_id:<18} ok          {frame['word']:<14} {diag['spans']:2d} Grenzen · "
+            f"Saat-Abstand {_reading(diag['seed_distance_median_xh'])} xh med · "
+            f"{_reading(diag['seed_distance_p90_xh'])} xh p90 · {diag['method']}",
+            flush=True,
+        )
+        out.append({**entry, FIELD_SPANS: spans})
+    return out
 
 
 def _local_path(hand: str, strip: str, fassung: str) -> Path:
@@ -832,7 +971,29 @@ def main(argv: list[str] | None = None) -> int:
             "and refused while the box is not archived (`pull --pfade`)"
         ),
     )
+    ap.add_argument(
+        "--spans",
+        action="store_true",
+        help=(
+            "assign the letter boundaries of the Bahnen this strip already holds instead of following — "
+            "the mode for a Bahn the author DREW, and it never touches a path"
+        ),
+    )
+    ap.add_argument(
+        "--spans-method",
+        default=DEFAULT_METHOD,
+        choices=list(METHODS),
+        help="the matching rule of --spans; the default is the one the §14 round of 2026-09-20 measured",
+    )
     args = ap.parse_args(argv)
+
+    if args.spans and args.replace_authored:
+        # Not a compatibility detail: `--spans` is the mode that cannot lose a
+        # path, and a flag whose entire purpose is to give one up must not be
+        # able to ride along on it.
+        raise SystemExit(
+            "--spans never touches a path, so --replace-authored has nothing to give up — drop one of them"
+        )
 
     hand = check_hand_id(args.hand)
     style = style_of_hand(hand) or ""
@@ -860,43 +1021,59 @@ def main(argv: list[str] | None = None) -> int:
     written = 0
     for position, row in enumerate(rows):
         print(f"{row['strip']}/{row['fassung']} ({row['sheet']} row {row['row_index']}):", flush=True)
-        entries = follow_row(base, token, hand, row, prior, args.box)
         url = f"{base}/eigenhand/strips/{hand}/{row['strip']}/{row['fassung']}/pfade"
-        # The body is assembled BEFORE the two paths part ways: the dry run is
-        # the surface an operator reviews before deciding on `--apply`, so the
-        # file it writes has to be the list that would be stored, merge and
-        # all. Filing only the followed boxes made a run look like a whole-row
-        # replacement — the exact thing `_merged` exists to prevent (review of
-        # PR #598).
-        body, handed_over, etag = _merged(
-            base,
-            token,
-            url,
-            entries,
-            hand=hand,
-            where=f"{row['strip']}/{row['fassung']}",
-            archived=archived_pfade(kartei, row["strip"], row["fassung"]) if args.replace_authored else {},
-            replace_authored=args.replace_authored,
-            apply=args.apply,
-        )
+        if args.spans:
+            # The read is the whole body here. A `--spans` run replaces the
+            # stored list with the same list plus boundaries, so there is
+            # nothing to merge around and nothing that can go missing — but the
+            # push is still a full replacement, so it is still made on the token
+            # of the read it was assembled from.
+            answer, etag = request_json_with_etag("GET", url, token)
+            stored = (answer or {}).get("pfade") or []
+            if not stored:
+                print("  no stored path in this Fassung — a boundary needs a Bahn to sit on", flush=True)
+            body, handed_over = (
+                assign_row_spans(base, token, hand, row, prior, stored, args.box, method=args.spans_method),
+                False,
+            )
+        else:
+            entries = follow_row(base, token, hand, row, prior, args.box)
+            # The body is assembled BEFORE the two paths part ways: the dry run
+            # is the surface an operator reviews before deciding on `--apply`,
+            # so the file it writes has to be the list that would be stored,
+            # merge and all. Filing only the followed boxes made a run look like
+            # a whole-row replacement — the exact thing `_merged` exists to
+            # prevent (review of PR #598).
+            body, handed_over, etag = _merged(
+                base,
+                token,
+                url,
+                entries,
+                hand=hand,
+                where=f"{row['strip']}/{row['fassung']}",
+                archived=archived_pfade(kartei, row["strip"], row["fassung"]) if args.replace_authored else {},
+                replace_authored=args.replace_authored,
+                apply=args.apply,
+            )
         # The declared format follows the BODY, not this image's own constant:
         # the merge carries stored entries and hand-corrected boundaries this
         # run did not produce, and declaring format 1 over them would be refused
         # by the content rule (`core.eigenhand.pfad.push_body`).
         body, wire_format, without_spans = push_body(body)
         if without_spans:
-            # Named, never silent. Since `_entry` stopped writing the free-meta
-            # copy, every boundary left to strip here is one an OLDER run stored
-            # and the merge carried along — so nothing re-assigns it on this
-            # run, and the box keeps its Bahn but loses those boundaries until
-            # the Span-Zuordner writes the checked field.
+            # Named, never silent. `_entry` writes the CHECKED field, so every
+            # boundary left to strip here is one an older run put in the free
+            # `meta` and the merge carried along. The box keeps its Bahn; the
+            # boundaries come back on a `--spans` run, which is exactly what a
+            # box carrying none is waiting for.
             print(
                 f"  Streifen-Pfad format {wire_format}: dropping the free-meta letter boundaries a stored entry "
                 f"carries at box {', '.join(str(index) for index in without_spans)} — under this format they "
-                "belong in the entry's own checked `letter_spans`, which this version does not write yet "
+                "belong in the entry's own checked `letter_spans`, and a `--spans` run assigns them there "
                 "(hand-corrected boundaries are never touched)",
                 flush=True,
             )
+        with_spans = sum(1 for entry in body if entry.get(FIELD_SPANS))
         if not args.apply:
             out = args.out or _local_path(hand, row["strip"], row["fassung"])
             out.parent.mkdir(parents=True, exist_ok=True)
@@ -906,11 +1083,15 @@ def main(argv: list[str] | None = None) -> int:
             # states back together on the very surface an operator reads before
             # deciding to store (found in review, this PR).
             paths = [entry for entry in body if entry.get("status") != STATUS_SKIPPED]
-            followed = sum(1 for entry in entries if entry.get("status") != STATUS_SKIPPED)
             skipped = len(body) - len(paths)
+            here = (
+                f"{with_spans} with letter boundaries"
+                if args.spans
+                else f"{sum(1 for entry in entries if entry.get('status') != STATUS_SKIPPED)} followed here"
+            )
             print(
                 f"  dry run — {len(paths)} path(s){f' and {skipped} skipped box(es)' if skipped else ''} "
-                f"({followed} followed here) written to {out}, nothing stored",
+                f"({here}) written to {out}, nothing stored",
                 flush=True,
             )
             continue
@@ -934,13 +1115,13 @@ def main(argv: list[str] | None = None) -> int:
             # in between is exactly what a blanket override would give up
             # again, so getting it back has to be a fresh decision on a fresh
             # read.
-            narrowed = "".join(f" --box {index}" for index in args.box or [])
+            narrowed = "".join(f" --box {index}" for index in args.box or []) + (" --spans" if args.spans else "")
             unreached = [other["fassung"] for other in rows[position + 1 :]]
             raise SystemExit(
                 f"{exc}\n"
-                f"  Nothing of {row['strip']}/{row['fassung']} was stored. The merge above was made on a list "
-                "that has moved since — a box drawn in the workbench, or another run. Follow again; the fresh "
-                "read carries what landed in between:\n"
+                f"  Nothing of {row['strip']}/{row['fassung']} was stored. The list above was read before it "
+                "moved — a box drawn in the workbench, or another run. Run it again; the fresh read carries "
+                "what landed in between:\n"
                 # The RESOLVED base, named explicitly rather than left to
                 # `--api`'s fallback chain: without it the line re-runs against
                 # `$EIGENHAND_API` or, failing that, production — so a drill
@@ -965,12 +1146,18 @@ def main(argv: list[str] | None = None) -> int:
         entries = stored.get("pfade") or []
         paths = [entry for entry in entries if entry.get("status") != STATUS_SKIPPED]
         skipped = len(entries) - len(paths)
-        written += len(paths)
+        written += with_spans if args.spans else len(paths)
         print(
-            f"  stored {len(paths)} path(s){f' and {skipped} skipped box(es)' if skipped else ''} at {base}", flush=True
+            f"  stored {len(paths)} path(s){f' and {skipped} skipped box(es)' if skipped else ''} at {base}"
+            + (f", {with_spans} of them with letter boundaries" if args.spans else ""),
+            flush=True,
         )
     if args.apply:
-        print(f'{written} path(s) in the shared database — the workbench shows them under "Pfad zeigen"')
+        print(
+            f"{written} box(es) with letter boundaries in the shared database — the workbench shows them in the editor"
+            if args.spans
+            else f'{written} path(s) in the shared database — the workbench shows them under "Pfad zeigen"'
+        )
     return 0
 
 

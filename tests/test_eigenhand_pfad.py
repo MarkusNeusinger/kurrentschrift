@@ -1343,6 +1343,151 @@ class TestPaperSensors:
         }
 
 
+class TestSpanAssignment:
+    """The `--spans` mode: boundaries over the Bahnen a Fassung already holds.
+
+    The property that carries the whole mode is that it cannot lose anything —
+    it follows nothing, it rewrites no coordinate, and a box the author has
+    corrected is left alone WHOLE rather than merged around. So that is what is
+    asserted here, on top of the one thing a follow now does bring along: the
+    decode's own boundaries as the checked field.
+    """
+
+    LAYOUT_ROW = {
+        "strip": "S0001",
+        "fassung": "F01",
+        "sheet": "B0001",
+        "row_index": 0,
+        "crop_origin_mm": ORIGIN_MM,
+        "width_px": WIDTH_PX,
+        "height_px": HEIGHT_PX,
+    }
+
+    def _assign(self, monkeypatch, stored: list[dict], *, spans=None, boxes=None) -> list[dict]:
+        """`assign_row_spans` with the ink, the network and the seed stubbed out."""
+        from tools.eigenhand import pfad as tool
+
+        monkeypatch.setattr(tool, "_row_context", lambda *_a: (ROW, np.zeros((HEIGHT_PX, WIDTH_PX))))
+        monkeypatch.setattr(tool, "load_plan", lambda: {})
+        monkeypatch.setattr(tool, "shaping_form_of", lambda *_a: "lesen")
+        monkeypatch.setattr(tool, "_case_for_box", lambda *_a: (SimpleNamespace(), []))
+        diag = {
+            "reason": "stubbed",
+            "spans": len(spans or []),
+            "method": "dtw",
+            "seed_distance_median_xh": 0.02,
+            "seed_distance_p90_xh": 0.07,
+        }
+        monkeypatch.setattr(tool, "assign", lambda *_a, **_k: (spans, diag))
+        return tool.assign_row_spans(
+            "https://example.invalid", "token", "mn-suetterlin", self.LAYOUT_ROW, {}, stored, boxes
+        )
+
+    def test_a_box_without_boundaries_gets_them(self, monkeypatch):
+        assigned = [_span(last=1), _span(slot=1, first=2, last=2)]
+        out = self._assign(monkeypatch, [_path()], spans=assigned)
+        assert out[0][FIELD_SPANS] == assigned
+        # And the Bahn itself is byte-identical: this mode never follows.
+        assert out[0]["strokes"] == _path()["strokes"]
+
+    def test_a_box_the_author_corrected_is_left_alone_whole(self, monkeypatch, capsys):
+        # Not „the corrected boundaries are kept" — untouched. A boundary is
+        # only meaningful next to the ones beside it, so re-deriving its
+        # neighbours under a correction would move the seams the author placed.
+        corrected = [_span(last=1, herkunft=AUTHORED), _span(slot=1, first=2, last=2)]
+        out = self._assign(monkeypatch, [_path(letter_spans=corrected)], spans=[_span()])
+        assert out[0][FIELD_SPANS] == corrected
+        assert "the author corrected the letter boundaries there" in capsys.readouterr().out
+
+    def test_a_box_that_already_carries_boundaries_is_not_re_derived(self, monkeypatch):
+        stored = [_path(letter_spans=[_span()])]
+        assert self._assign(monkeypatch, stored, spans=[_span(slot=4)]) == stored
+
+    def test_a_skipped_box_has_nothing_to_label(self, monkeypatch):
+        assert self._assign(monkeypatch, [_skip()], spans=[_span()]) == [_skip()]
+
+    def test_a_refusal_leaves_the_entry_exactly_as_it_was(self, monkeypatch):
+        # `assign` answers None with a reason — the composition failed, the
+        # plate is missing a glyph, the labels do not cover the strokes. None of
+        # those is a reason to touch the stored row.
+        assert self._assign(monkeypatch, [_path()], spans=None) == [_path()]
+
+    def test_the_narrowing_flag_narrows_it(self, monkeypatch):
+        stored = [_path(), _path(box_index=1, word="das")]
+        out = self._assign(monkeypatch, stored, spans=[_span()], boxes=[1])
+        assert out[0].get(FIELD_SPANS) is None
+        assert out[1][FIELD_SPANS] == [_span()]
+
+    def test_the_stored_strip_frame_is_read_back_into_the_crops_own(self, monkeypatch):
+        # The inverse of what `_entry` adds on the way in. Getting it wrong
+        # would place every boundary against the wrong ink while every number
+        # in the result stayed well-formed.
+        from tools.eigenhand import pfad as tool
+
+        seen: dict = {}
+        monkeypatch.setattr(tool, "_row_context", lambda *_a: (ROW, np.zeros((HEIGHT_PX, WIDTH_PX))))
+        monkeypatch.setattr(tool, "load_plan", lambda: {})
+        monkeypatch.setattr(tool, "shaping_form_of", lambda *_a: "lesen")
+        monkeypatch.setattr(tool, "_case_for_box", lambda *_a: (SimpleNamespace(), []))
+
+        def _assign(_case, _strokes, registration, _xh, _weights, **_kwargs):
+            seen["reg"] = registration
+            return None, {"reason": "looked only"}
+
+        monkeypatch.setattr(tool, "assign", _assign)
+        tool.assign_row_spans("https://example.invalid", "token", "mn-suetterlin", self.LAYOUT_ROW, {}, [_path()], None)
+        frame = _frame(0)
+        assert seen["reg"] == {"tx": 40.0 - frame["rect_px"][0], "ty": 0.0, "baseline_row": 240.0 - frame["rect_px"][1]}
+
+    def test_the_mode_refuses_the_flag_that_gives_a_drawing_up(self, monkeypatch):
+        # `--spans` is the mode that cannot lose a path; a flag whose whole
+        # purpose is to give one up must not be able to ride along on it.
+        from tools.eigenhand import pfad as tool
+
+        _stub_run(monkeypatch, fresh=[], stored=[])
+        with pytest.raises(SystemExit, match="nothing to give up"):
+            tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--spans", "--replace-authored"])
+
+    def test_a_dry_spans_run_files_the_whole_stored_list(self, tmp_path, monkeypatch):
+        # The push is a full replacement here too, so the body has to be the
+        # list as it would be stored — every box, not only the ones that gained
+        # a boundary.
+        from tools.eigenhand import pfad as tool
+
+        stored = [_path(), _path(box_index=1, word="das")]
+        _stub_run(monkeypatch, fresh=[], stored=stored)
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: pytest.fail("a dry run must not write"))
+        monkeypatch.setattr(tool, "request_json_with_etag", lambda *_a: ({"pfade": stored}, STUB_TAG))
+        monkeypatch.setattr(
+            tool, "assign_row_spans", lambda *_a, **_k: [{**stored[0], FIELD_SPANS: [_span()]}, stored[1]]
+        )
+        out = tmp_path / "pfade.json"
+        assert tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--spans", "--out", str(out)]) == 0
+        body = json.loads(out.read_text())
+        assert body["format"] == SKIP_AND_SPAN_FORMAT
+        assert [entry["box_index"] for entry in body["pfade"]] == [0, 1]
+        assert body["pfade"][0][FIELD_SPANS] == [_span()]
+
+    def test_the_follower_own_boundaries_reach_the_checked_field(self, monkeypatch):
+        # Without them a followed Bahn reaches the editor with no seam to drag,
+        # and the author would have to place every boundary by hand on a box
+        # the machine had already labelled.
+        from tools.eigenhand.pfad import _entry
+
+        entry = _entry(_INFO, _frame(1), flecken_n=None, today="2026-09-20", sensors={})
+        assert entry[FIELD_SPANS] == [{"stroke": 0, "slot": 0, "first": 0, "last": 1, "herkunft": "auto"}]
+        assert "letter_spans" not in entry["meta"]
+
+    def test_they_are_dropped_where_the_delivered_strokes_cannot_carry_them(self, monkeypatch):
+        # The follower labels the path it decoded and stores the CAPPED one, so
+        # a Bahn past `cap_word_strokes`' bounds has boundaries pointing at ink
+        # that was re-cut underneath them — every index still well-formed.
+        from tools.eigenhand.pfad import _entry
+
+        capped = {**_INFO, "strokes": [[[0.0, 0.0], [0.5, 0.5], [1.0, 1.0]]]}
+        assert _entry(capped, _frame(1), flecken_n=None, today="2026-09-20", sensors={})[FIELD_SPANS] is None
+
+
 class TestDuctusSeed:
     """Which words a strip can be followed at all — the seed, not the ink.
 
