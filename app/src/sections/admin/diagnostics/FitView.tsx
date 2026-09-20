@@ -99,7 +99,7 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2 }}>
         <CircularProgress size={16} />
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {de.admin.fit.computing}
         </Typography>
       </Box>
@@ -134,7 +134,7 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'flex-start' }}>
         {/* Overlay: crop + skeleton + canonical (grey) + fit (red) */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" color="textSecondary">
             {de.admin.fit.overlayHeading}
           </Typography>
           <Box sx={{ position: 'relative', width: displayW, height: displayH, bgcolor: '#fff' }}>
@@ -186,7 +186,7 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
               ))}
             </svg>
           </Box>
-          <Typography variant="caption" color="text.disabled" sx={{ maxWidth: displayW }}>
+          <Typography variant="caption" color="textDisabled" sx={{ maxWidth: displayW }}>
             {de.admin.fit.overlayCaption}
           </Typography>
         </Box>
@@ -201,21 +201,21 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
             />
             <Chip size="small" variant="outlined" label={`${m.iterations} ${de.admin.fit.iterations}`} />
           </Box>
-          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: mono }}>
+          <Typography variant="caption" color="textSecondary" sx={{ fontFamily: mono }}>
             {de.admin.fit.geoRmse} {m.geo_rmse_px_initial} → <strong>{m.geo_rmse_px}</strong> px
           </Typography>
-          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: mono }}>
+          <Typography variant="caption" color="textSecondary" sx={{ fontFamily: mono }}>
             {de.admin.fit.widthRmse} {m.width_rmse_px} px
           </Typography>
           {m.coverage_rmse_px != null && (
-            <Typography variant="caption" color="text.secondary" sx={{ fontFamily: mono }}>
+            <Typography variant="caption" color="textSecondary" sx={{ fontFamily: mono }}>
               {de.admin.fit.coverageRmse} {m.coverage_rmse_px} px
             </Typography>
           )}
-          <Typography variant="caption" color="text.secondary" sx={{ fontFamily: mono }}>
+          <Typography variant="caption" color="textSecondary" sx={{ fontFamily: mono }}>
             {de.admin.fit.maxAnchorDelta} {m.max_anchor_delta} · λ={m.lambda_reg}
           </Typography>
-          <Typography variant="caption" color="text.disabled">
+          <Typography variant="caption" color="textDisabled">
             {de.admin.fit.lambdaHint}
           </Typography>
         </Stack>
@@ -223,7 +223,7 @@ export function FitView({ glyphKey, cropCacheBust, colWidth, colHeight }: Props)
 
       {/* lambda_reg slider */}
       <Box sx={{ px: 1 }}>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {de.admin.fit.regularization} {lambda.toFixed(2)}
         </Typography>
         <Slider

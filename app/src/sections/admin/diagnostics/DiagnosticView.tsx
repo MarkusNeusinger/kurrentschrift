@@ -93,7 +93,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2 }}>
         <CircularProgress size={16} />
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {de.admin.diagnostics.computing}
         </Typography>
       </Box>
@@ -139,7 +139,7 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
     <Box ref={colContainer} sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
       {/* Column 1 — Crop pur */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxWidth: Math.max(cropDisplayW, 180) }}>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {de.admin.diagnostics.cropHeading}
         </Typography>
         <Box sx={{ width: cropDisplayW, height: cropDisplayH, bgcolor: '#fff' }}>
@@ -151,14 +151,14 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
             style={{ display: 'block' }}
           />
         </Box>
-        <Typography variant="caption" color="text.disabled">
+        <Typography variant="caption" color="textDisabled">
           {de.admin.diagnostics.cropCaption}
         </Typography>
       </Box>
 
       {/* Column 2 — Crop + skeleton + anchors */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxWidth: Math.max(cropDisplayW, 180) }}>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {de.admin.diagnostics.skeletonHeading} ({data.anchors_px.length})
         </Typography>
         <Box sx={{ position: 'relative', width: cropDisplayW, height: cropDisplayH, bgcolor: '#fff' }}>
@@ -202,14 +202,14 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
             })}
           </svg>
         </Box>
-        <Typography variant="caption" color="text.disabled">
+        <Typography variant="caption" color="textDisabled">
           {de.admin.diagnostics.skeletonCaption}
         </Typography>
       </Box>
 
       {/* Column 3 — Canonical template */}
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, maxWidth: Math.max(COL_W, 180) }}>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {de.admin.diagnostics.canonicalHeading} {data.slant_deg}°)
         </Typography>
         <Box sx={{ width: COL_W, height: COL_H_PX, bgcolor: '#fff' }}>
@@ -263,10 +263,10 @@ export function DiagnosticView({ glyphKey, cropCacheBust, colWidth, colHeight, o
             </g>
           </svg>
         </Box>
-        <Typography variant="caption" color="text.disabled">
+        <Typography variant="caption" color="textDisabled">
           {de.admin.diagnostics.canonicalCaption}
         </Typography>
-        <Typography variant="caption" color="text.disabled" sx={{ fontFamily: mono }}>
+        <Typography variant="caption" color="textDisabled" sx={{ fontFamily: mono }}>
           {fmt(de.admin.diagnostics.guidesReadout, { ascender: tpl.ascender.toFixed(2), descender: tpl.descender.toFixed(2) })}
         </Typography>
       </Box>

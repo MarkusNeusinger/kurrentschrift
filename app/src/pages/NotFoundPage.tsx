@@ -53,7 +53,7 @@ export function NotFoundPage({ source = 'catch_all' }: { source?: NotFoundSource
         <Typography variant="h4" component="h1">
           {de.common.notFound.title}
         </Typography>
-        <Typography color="text.secondary" sx={{ maxWidth: 480 }}>
+        <Typography color="textSecondary" sx={{ maxWidth: 480 }}>
           {de.common.notFound.body}
         </Typography>
         <Button component={RouterLink} to={paths.home} variant="outlined" sx={[hitArea(), { mt: 1 }]}>

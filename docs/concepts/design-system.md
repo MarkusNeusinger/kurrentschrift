@@ -74,6 +74,26 @@ bleibt für Display-Größen, Initialen, Rahmen, Füllungen und Fokus-Ringe.
 Niemals als Fläche, nie zwei konkurrierende Akzentfarben. Semantik (Erfolg/Fehler im
 Quiz) nutzt Periodenpigmente — siehe [Style-Guide §2](style-guide.md).
 
+**Wie eine Farbe übergeben wird (bindend, seit Issue #628).** Ein
+Paletten-PFAD gehört in `sx` (`sx={{ color: 'text.secondary' }}`), niemals in
+eine `color`-Prop. Diese löst unter MUI 9 nur feste Schlüssel auf, und zwar je
+Komponente verschiedene: `Typography` (und `Link`) nehmen die einfachen
+Semantik-Schlüssel `primary` · `error` · `warning` · … **plus** die
+Camel-Case-Textschlüssel `textPrimary` · `textSecondary` · `textDisabled`;
+`Chip`, `Button`, `SvgIcon` und die übrigen nehmen nur die Semantik-Schlüssel —
+ein Textton gehört dort in `sx`. `color="text.secondary"` trifft keine
+Variante, wird still verschluckt und erbt die Farbe des Elternelements — ohne
+Typfehler und ohne Konsolen-Warnung. (`Link` hat als einzige Komponente noch
+eine v6-Rückfallklappe, die einen Pfad doch auflöst; im Repo gilt trotzdem die
+eine Schreibweise, damit nicht zwei Formen desselben Vorhabens nebeneinander
+stehen.) Gegen den Rückfall steht `app/src/theme/paletteProp.guard.test.ts`.
+
+**Ocker ist eine Markenfarbe, keine Textfarbe:** `warning.main` (`#cc7722`)
+erreicht 3,37 : 1 auf weiß und noch weniger auf `paper.hi` — genug für Punkt,
+Rahmen oder Balken (WCAG 1.4.11), zu wenig für eine Caption. Eine Warnung, die
+gelesen werden muss, bleibt Tinte und trägt ihre Bedeutung in Worten; dieselbe
+Regel wie für die Rollen-Token unten.
+
 ### Ebenen- und Rollen-Token (seit 2026-09-19)
 
 Geschwister-Exporte neben `paper` (wie `pigment`), denn `paper` ist das flache

@@ -15,8 +15,9 @@ import { Box, Chip, LinearProgress, Stack, Typography } from '@mui/material';
 import { InfoHint } from '@/components/InfoHint';
 import type { QualityData } from '@/lib/api';
 import { de } from '@/locales/admin';
-import { mono } from '@/styles/paper';
+import { mono, paper } from '@/styles/paper';
 import { labelColumnChars } from './labelColumn';
+import { PENALTY_TEXT_COLOR, type PenaltyTier } from './scoreColors';
 
 // Module-private on purpose: a score reaches the screen through ScoreChip, so
 // there is exactly one place where a threshold can be changed.
@@ -109,7 +110,10 @@ export function ScoreHelp() {
   );
 }
 
-function penaltyColor(val: number): 'error' | 'warning' | 'primary' {
+// The BAR's colour — a graphical mark, so the palette's own `warning` is fine
+// here. What the NUMBER beside it may wear is a different question and lives in
+// `scoreColors.ts`.
+function penaltyColor(val: number): PenaltyTier {
   if (val >= 0.25) return 'error';
   if (val >= NOTABLE_PENALTY) return 'warning';
   return 'primary';
@@ -146,13 +150,17 @@ export function ScoreBreakdown({
           The one help of the block sits ON the heading — the category labels
           below are plain text again, not six tab stops carrying six hovers. */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {heading ?? t.breakdownHeading}
         </Typography>
         <ScoreHelp />
       </Box>
       {rows.length === 0 ? (
-        <Typography variant="caption" color="success.main">
+        // The all-clear line. `success.main` is raw Viridian (3,72:1 on the card
+        // ground) and it rode on the `color` prop, where a dotted path resolves
+        // to nothing anyway — `paper.viridianText` is the shade the tokens keep
+        // for viridian as running text (5,85:1).
+        <Typography variant="caption" sx={{ color: paper.viridianText }}>
           {t.breakdownNone}
         </Typography>
       ) : (
@@ -171,8 +179,7 @@ export function ScoreBreakdown({
               />
               <Typography
                 variant="caption"
-                sx={{ width: 36, textAlign: 'right', fontFamily: mono }}
-                color={color === 'primary' ? 'text.secondary' : `${color}.main`}
+                sx={{ width: 36, textAlign: 'right', fontFamily: mono, color: PENALTY_TEXT_COLOR[color] }}
               >
                 {r.val.toFixed(2)}
               </Typography>
@@ -180,7 +187,7 @@ export function ScoreBreakdown({
           );
         })
       )}
-      <Typography variant="caption" color="text.disabled">
+      <Typography variant="caption" color="textDisabled">
         {hint ?? t.breakdownHint}
       </Typography>
     </Stack>
@@ -205,11 +212,11 @@ export function ScoreBreakdownInline({ quality }: { quality: QualityData }) {
       {/* The direction, which the bar-chart variant states under its bars and
           this one had nowhere to put: without it a bare „0.99" beside a
           category name reads as a score, not as the deduction it is. */}
-      <Typography variant="caption" color="text.disabled">
+      <Typography variant="caption" color="textDisabled">
         {quality.components ? t.breakdownInlinePrefix : t.breakdownNoComponents}
       </Typography>
       {quality.components && rows.length === 0 && (
-        <Typography variant="caption" color="success.main">
+        <Typography variant="caption" sx={{ color: paper.viridianText }}>
           {t.breakdownNone}
         </Typography>
       )}
@@ -218,10 +225,7 @@ export function ScoreBreakdownInline({ quality }: { quality: QualityData }) {
         return (
           <Typography key={r.key} variant="caption" sx={{ color: 'text.secondary' }}>
             {t.cat[r.key]}{' '}
-            <Box
-              component="span"
-              sx={{ fontFamily: mono, color: color === 'primary' ? 'text.secondary' : `${color}.main` }}
-            >
+            <Box component="span" sx={{ fontFamily: mono, color: PENALTY_TEXT_COLOR[color] }}>
               {r.val.toFixed(2)}
             </Box>
           </Typography>

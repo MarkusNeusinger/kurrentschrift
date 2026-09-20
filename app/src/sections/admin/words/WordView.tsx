@@ -571,7 +571,7 @@ export function WordView() {
           </Box>
           <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
             {joinKeys.length === 0 ? (
-              <Typography variant="caption" color="text.disabled">
+              <Typography variant="caption" color="textDisabled">
                 {t.noJoins}
               </Typography>
             ) : (

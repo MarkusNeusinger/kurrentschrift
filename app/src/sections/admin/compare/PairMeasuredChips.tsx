@@ -128,7 +128,7 @@ export function PairMeasuredChips({
     // sits behind ONE InfoHint at the head of the row now, which is a button
     // with the shared focus ring and a 44 px target.
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, flexWrap: 'wrap' }}>
-      <Typography variant="caption" color="text.secondary">
+      <Typography variant="caption" color="textSecondary">
         {`${t.measuredLabel}:`}
       </Typography>
       <Chip size="small" variant="outlined" label={fmt(w.statsInstances, { count })} />
@@ -140,7 +140,7 @@ export function PairMeasuredChips({
         />
       )}
       {reason && (
-        <Typography variant="caption" color="text.disabled">
+        <Typography variant="caption" color="textDisabled">
           {reason.chip}
         </Typography>
       )}

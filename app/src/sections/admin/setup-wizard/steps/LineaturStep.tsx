@@ -39,7 +39,7 @@ export function LineaturStep({
           </Typography>
           <Typography variant="body2">{de.wizard.lineatur.body2}</Typography>
         </HintHeading>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" color="textSecondary">
           <b style={{ color: '#ff5060' }}>{LINEATUR_LABELS.baseline}</b> {de.wizard.lineatur.bodyAnd}{' '}
           <b style={{ color: '#c060ff' }}>{LINEATUR_LABELS.midband}</b> {de.wizard.lineatur.leadAction}
         </Typography>
@@ -55,7 +55,7 @@ export function LineaturStep({
             slotProps={{ typography: { variant: 'caption' } }}
           />
         </Stack>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {fmt(de.wizard.lineatur.readout, { baseline: bbox.baseline_y, midband: bbox.midband_y, xHeight: xHeightPx })}
         </Typography>
       </Stack>

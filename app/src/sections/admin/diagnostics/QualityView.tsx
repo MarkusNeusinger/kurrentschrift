@@ -30,7 +30,7 @@ interface Props {
 
 function MetricRow({ label, value }: { label: string; value: string }) {
   return (
-    <Typography variant="caption" color="text.secondary" sx={{ fontFamily: mono }}>
+    <Typography variant="caption" color="textSecondary" sx={{ fontFamily: mono }}>
       {label} {value}
     </Typography>
   );
@@ -44,7 +44,7 @@ function MetricCard({ title, q }: { title: string; q: QualityData }) {
   return (
     <Stack spacing={0.5} sx={{ minWidth: 200 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {title}
         </Typography>
         <ScoreChip score={q.score} />
@@ -152,7 +152,7 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 2 }}>
         <CircularProgress size={16} />
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {t.computing}
         </Typography>
       </Box>
@@ -193,7 +193,7 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
             <MetricCard title={t.candidate} q={data.candidate} />
             <Stack spacing={1} sx={{ minWidth: 220 }}>
               {delta != null && (
-                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: mono }}>
+                <Typography variant="caption" color="textSecondary" sx={{ fontFamily: mono }}>
                   {t.delta} {delta >= 0 ? '+' : ''}
                   {delta.toFixed(1)}
                 </Typography>
@@ -207,13 +207,13 @@ export function QualityView({ glyphKey, cropCacheBust }: Props) {
               >
                 {t.apply}
               </Button>
-              <Typography variant="caption" color="text.disabled" sx={{ maxWidth: 260 }}>
+              <Typography variant="caption" color="textDisabled" sx={{ maxWidth: 260 }}>
                 {t.applyHint}
               </Typography>
             </Stack>
           </>
         ) : (
-          <Typography variant="caption" color="text.disabled">
+          <Typography variant="caption" color="textDisabled">
             {t.noCandidate}
           </Typography>
         )}

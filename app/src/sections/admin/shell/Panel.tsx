@@ -44,7 +44,7 @@ export function EvidenceState({
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <CircularProgress size={14} />
-        <Typography variant="caption" color="text.disabled">
+        <Typography variant="caption" color="textDisabled">
           {de.admin.shell.evidenceLoading}
         </Typography>
       </Box>
@@ -52,7 +52,7 @@ export function EvidenceState({
   }
   if (empty) {
     return (
-      <Typography variant="caption" color="text.disabled">
+      <Typography variant="caption" color="textDisabled">
         {emptyText}
       </Typography>
     );
@@ -203,7 +203,7 @@ export function Panel({
         )}
       </Box>
       {caption && (
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+        <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mb: 1 }}>
           {caption}
         </Typography>
       )}

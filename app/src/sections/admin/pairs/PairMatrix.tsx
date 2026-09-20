@@ -226,7 +226,7 @@ export function PairMatrix({
         {...anchorRoving.containerProps}
         sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 0.5, mb: 2 }}
       >
-        <Typography variant="caption" color="text.secondary" sx={{ mr: 1 }}>
+        <Typography variant="caption" color="textSecondary" sx={{ mr: 1 }}>
           {t.pickLetter}
         </Typography>
         {pickable.map((letter) => {
@@ -279,7 +279,7 @@ export function PairMatrix({
               onChange={(token) => update({ sort: token as PairSort })}
             />
             <ListViewSwitch view={state.view} onChange={(view) => update({ view })} />
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="textSecondary">
               {/* Two numbers, not the lists' three: this grid has no pager, so
                   „wieviel ist auf dem Schirm" and „wieviel ist gewählt" are the
                   same number by construction and printing both read as a
@@ -294,12 +294,12 @@ export function PairMatrix({
           {/* Said ONCE for the whole grid rather than in every cell: which
               counter is missing is the same answer 60 times over. */}
           {!occurrencesKnown && (
-            <Typography variant="caption" color="text.disabled">
+            <Typography variant="caption" color="textDisabled">
               {de.admin.compare.occurrencesUnknown}
             </Typography>
           )}
           {overrideRows === null && (
-            <Typography variant="caption" color="text.disabled">
+            <Typography variant="caption" color="textDisabled">
               {t.overridesUnknown}
             </Typography>
           )}

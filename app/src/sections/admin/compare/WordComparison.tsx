@@ -171,7 +171,7 @@ export function WordComparison({ overlay, onPick }: { overlay: boolean; onPick?:
             {de.admin.compare.scoreError}
           </Typography>
         )}
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {fmt(de.admin.compare.authoredCount, { done: authoredTally.done, total: authoredTally.total })}
           {authoredTally.incomplete > 0 &&
             ` · ${fmt(de.admin.compare.incompleteCount, { count: authoredTally.incomplete })}`}
@@ -184,7 +184,7 @@ export function WordComparison({ overlay, onPick }: { overlay: boolean; onPick?:
           is secondary context — a failed read degrades the cards, it does not
           break them. */}
       {(measurements.status === 'error' || measurements.aggregates.status === 'unavailable') && (
-        <Typography variant="caption" color="text.secondary">
+        <Typography variant="caption" color="textSecondary">
           {measurements.status === 'error' ? de.admin.compare.measuredLoadError : de.admin.compare.measuredUnavailable}
         </Typography>
       )}

@@ -47,7 +47,7 @@ export function BootStatus({ variant, title, message, detail, onRetry, retryLabe
             <Typography variant="h5" gutterBottom>
               {title}
             </Typography>
-            <Typography color="text.secondary">{message}</Typography>
+            <Typography color="textSecondary">{message}</Typography>
             {detail != null && <Typography sx={{ mt: 2 }}>{detail}</Typography>}
             {onRetry && (
               <Button variant="outlined" sx={{ mt: 2, minHeight: TOUCH_TARGET }} onClick={onRetry}>
@@ -62,7 +62,7 @@ export function BootStatus({ variant, title, message, detail, onRetry, retryLabe
       <PaperBackground minHeight="100dvh">
         <Box sx={{ height: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
           <CircularProgress />
-          <Typography color="text.secondary">{message}</Typography>
+          <Typography color="textSecondary">{message}</Typography>
         </Box>
       </PaperBackground>
     );
@@ -87,7 +87,7 @@ export function BootStatus({ variant, title, message, detail, onRetry, retryLabe
           <Typography variant="h6" gutterBottom>
             {title}
           </Typography>
-          <Typography color="text.secondary" sx={{ mb: 2 }}>
+          <Typography color="textSecondary" sx={{ mb: 2 }}>
             {message}
           </Typography>
           {onRetry && (
@@ -99,7 +99,7 @@ export function BootStatus({ variant, title, message, detail, onRetry, retryLabe
       ) : (
         <>
           <CircularProgress />
-          <Typography color="text.secondary" sx={{ mt: 2 }}>
+          <Typography color="textSecondary" sx={{ mt: 2 }}>
             {message}
           </Typography>
         </>
