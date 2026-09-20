@@ -1212,7 +1212,14 @@ class TestStreifenPfad:
 
     @staticmethod
     async def _put(
-        api: Harness, pfade: list[dict], strip: str = "S0001", fassung: str = "F01", params: dict | None = None, **body
+        api: Harness,
+        pfade: list[dict],
+        strip: str = "S0001",
+        fassung: str = "F01",
+        params: dict | None = None,
+        headers: dict[str, str] | None = None,
+        blind: bool = False,
+        **body,
     ):
         """A push under the format this image writes — `format` is REQUIRED now.
 
@@ -1220,13 +1227,21 @@ class TestStreifenPfad:
         more than one format, a push that names none would claim whichever this
         image happens to write, and the row would be stamped with it. `**body`
         still wins, so a test can declare any format it likes.
+
+        `If-Match` is required too, so the helper READS first and echoes the
+        token — which is what the tools do (`tools/eigenhand/apiclient.py`) and
+        the only honest way to spell „the list this push was made on". A test
+        that wants to exercise the guard itself passes its own header, or
+        `blind=True` for the write that does not say which list it was made on.
         """
+        url = f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade"
+        sent = {**api.admin_headers(), **(headers or {})}
+        if not blind and "If-Match" not in sent:
+            read = await api.client.request("GET", url, headers=api.admin_headers())
+            if read.status == 200 and read.headers.get("etag"):
+                sent["If-Match"] = read.headers["etag"]
         return await api.client.request(
-            "PUT",
-            f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade",
-            params=params,
-            json_body={"format": PFAD_FORMAT, "pfade": pfade, **body},
-            headers=api.admin_headers(),
+            "PUT", url, params=params, json_body={"format": PFAD_FORMAT, "pfade": pfade, **body}, headers=sent
         )
 
     @staticmethod
@@ -1277,11 +1292,67 @@ class TestStreifenPfad:
         read = await self._get(api)
         assert read.headers.get("cache-control") == "private, no-store"
 
+        # The two stand SIDE BY SIDE, and the pairing is the point: the ETag
+        # here is an application lock over the stored cell, not a cache
+        # validator, so `no-store` does not make it meaningless and it does not
+        # make `no-store` any weaker. Nothing downstream is entitled to keep a
+        # copy of these pixels' derivations — the token exists so a per-box
+        # write can say which list it was drawn on.
+        assert read.headers.get("etag")
+
         # The listing stays the cheap question („which rows does this hand
         # hold") — the paths are loaded only by the route that is asked for
         # them, which is what the deferred column is for.
         listing = await api.client.request("GET", f"/eigenhand/strips/{HAND}", headers=api.admin_headers())
         assert "pfade" not in listing.json()["strips"][0]
+
+    @pytest.mark.asyncio
+    async def test_the_token_follows_the_stored_list_and_not_the_request(self, api: Harness):
+        # What makes it usable as a lock: two reads of an unchanged cell give
+        # the same token, a write moves it, and the answer to the write already
+        # carries the new one — so the editor can save twice in a row without a
+        # re-read between the saves.
+        stored = await _store_strip(api)
+        first = (await self._get(api)).headers["etag"]
+        assert (await self._get(api)).headers["etag"] == first
+
+        written = await self._put(api, [self._path(stored)])
+        assert written.status == 200, written.body
+        after = written.headers["etag"]
+        assert after != first
+        assert (await self._get(api)).headers["etag"] == after
+
+    @pytest.mark.asyncio
+    async def test_the_full_push_demands_the_token_of_the_list_it_replaces(self, api: Harness):
+        # The terminal door, and the OLDER of the two windows: `sync --from`
+        # reads a Fassung, merges the archived boxes into what is up there and
+        # pushes the whole list back — everything that landed in between is
+        # inside that gap. A token on the answer alone would protect nothing
+        # (V20, §6.4 „Speichern"), so the condition sits on the write.
+        stored = await _store_strip(api)
+        token = (await self._get(api)).headers["etag"]
+
+        unsaid = await self._put(api, [self._path(stored)], blind=True)
+        assert unsaid.status == 428, unsaid.body
+        assert (await self._get(api)).json()["pfade"] is None
+
+        stale = await self._put(api, [self._path(stored)], headers={"If-Match": '"not-the-stored-list"'})
+        assert stale.status == 412, stale.body
+        assert (await self._get(api)).json()["pfade"] is None
+
+        matched = await self._put(api, [self._path(stored)], headers={"If-Match": token})
+        assert matched.status == 200, matched.body
+
+        # A weakened validator of the SAME digest is accepted: Cloudflare turns
+        # a strong entity tag into a weak one whenever it re-encodes a
+        # response, and these answers are gzipped at the origin and leave
+        # through that zone. The value is a content digest and this is an
+        # application lock, so `W/"…"` says exactly as much — this caller read
+        # THIS list. A weak tag of another digest is still a 412.
+        after = matched.headers["etag"]
+        assert (await self._put(api, [self._path(stored, 1)], headers={"If-Match": f"W/{after}"})).status == 200
+        weak_other = await self._put(api, [self._path(stored)], headers={"If-Match": 'W/"not-the-stored-list"'})
+        assert weak_other.status == 412, weak_other.body
 
     @pytest.mark.asyncio
     async def test_a_fassung_whose_pixels_are_not_here_has_no_path_to_hold(self, api: Harness):
@@ -1552,6 +1623,257 @@ class TestStreifenPfad:
         assert (await self._get(api)).json()["pfade"][0]["erzeugt_am"] == "2026-09-18"
 
 
+class TestStreifenPfadKasten:
+    """The per-box write — the first door a Bahn can come through from a browser.
+
+    Everything the earlier rounds built stands behind it: the archive chain so
+    a drawing can be filed before anything may overwrite it, the stored format
+    marker so an entry is read under the semantics it was written in, the
+    field-level authored rule so a re-follow cannot take the author's letter
+    boundaries away. What this route adds is the token that keeps a one-box
+    write from landing on a list somebody else has meanwhile replaced.
+    """
+
+    @staticmethod
+    async def _patch(
+        api: Harness,
+        pfad: dict,
+        token: str | None,
+        box: int | None = None,
+        strip: str = "S0001",
+        fassung: str = "F01",
+        **body,
+    ):
+        index = pfad["box_index"] if box is None else box
+        return await api.client.request(
+            "PATCH",
+            f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade/{index}",
+            json_body={"format": PFAD_FORMAT, "pfad": pfad, **body},
+            headers={**api.admin_headers(), **({} if token is None else {"If-Match": token})},
+        )
+
+    @staticmethod
+    async def _read(api: Harness, strip: str = "S0001", fassung: str = "F01"):
+        res = await api.client.request(
+            "GET", f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade", headers=api.admin_headers()
+        )
+        assert res.status == 200, res.body
+        return res
+
+    @staticmethod
+    def _drawn(stored: dict, box_index: int = 0, **overrides) -> dict:
+        """A box as the editor hands it over — `verfahren` is the route's job."""
+        return TestStreifenPfad._path(stored, box_index, verfahren="authored", **overrides)
+
+    @pytest.mark.asyncio
+    async def test_a_box_drawn_by_hand_is_stored_and_the_row_keeps_its_neighbours(self, api: Harness):
+        # The whole reason this is a PATCH: the editor knows ONE box. A full
+        # push would have to restate the rest of the row from a list the
+        # browser read minutes ago, and any follower run that landed in between
+        # would go with it.
+        stored = await _store_strip(api)
+        followed = TestStreifenPfad._path(stored, 1)
+        assert (await TestStreifenPfad._put(api, [followed])).status == 200
+
+        read = await self._read(api)
+        written = await self._patch(api, self._drawn(stored, 0, erzeugt_am="2026-09-20"), read.headers["etag"])
+        assert written.status == 200, written.body
+        assert written.headers.get("cache-control") == "private, no-store"
+
+        answer = written.json()["pfade"]
+        assert [(entry["box_index"], entry["verfahren"]) for entry in answer] == [(0, "authored"), (1, "tintenpfad")]
+        assert answer[1] == (await self._read(api)).json()["pfade"][1]
+        assert (await self._read(api)).json()["pfade"] == answer
+
+    @pytest.mark.asyncio
+    async def test_the_same_box_drawn_again_replaces_its_own_entry(self, api: Harness):
+        # „Speichern" twice on the same box is the normal case, and the second
+        # save is the author correcting his own trace — the one thing the
+        # authored rule has always let through.
+        stored = await _store_strip(api)
+        first = await self._patch(api, self._drawn(stored), (await self._read(api)).headers["etag"])
+        assert first.status == 200, first.body
+
+        second = await self._patch(api, self._drawn(stored, 0, erzeugt_am="2026-09-21"), first.headers["etag"])
+        assert second.status == 200, second.body
+        answer = (await self._read(api)).json()["pfade"]
+        assert len(answer) == 1
+        assert answer[0]["erzeugt_am"] == "2026-09-21"
+
+    @pytest.mark.asyncio
+    async def test_the_letter_boundaries_belong_to_the_bahn_they_were_drawn_on(self, api: Harness):
+        # A loss, and an intended one. The save replaces the box's entry whole,
+        # so a body without `letter_spans` gives up the ones the author
+        # corrected there — the same rule the full push applies to an answer by
+        # hand, and right for the same reason: a corrected boundary describes
+        # THESE strokes. `displaced_authored` does not stand in the way of it
+        # either (`by_hand` short-circuits both fields), so nothing refuses
+        # this and nothing should. The duty it puts on the editor: resend the
+        # stored spans whenever the strokes are unchanged.
+        stored = await _store_strip(api)
+        corrected = [{"stroke": 0, "slot": 0, "first": 0, "last": 2, "herkunft": "authored"}]
+        first = await self._patch(
+            api, self._drawn(stored, letter_spans=corrected), (await self._read(api)).headers["etag"], format=2
+        )
+        assert first.status == 200, first.body
+        assert (await self._read(api)).json()["pfade"][0]["letter_spans"] == corrected
+
+        again = await self._patch(api, self._drawn(stored), first.headers["etag"], format=2)
+        assert again.status == 200, again.body
+        assert (await self._read(api)).json()["pfade"][0]["letter_spans"] is None
+
+    @pytest.mark.asyncio
+    async def test_a_write_that_does_not_say_which_list_it_was_drawn_on_is_refused(self, api: Harness):
+        # 428 rather than a write that looks safe: without the token this route
+        # is a lost update by construction, and a client that may leave the
+        # header out has no guard at all.
+        stored = await _store_strip(api)
+        res = await self._patch(api, self._drawn(stored), None)
+        assert res.status == 428, res.body
+        assert (await self._read(api)).json()["pfade"] is None
+
+        # …and the refusal does not hand the token over. It would be the
+        # obvious courtesy and it would give the guard away: write blind,
+        # collect the token from the 428, resend — and the unseen overwrite is
+        # back. The token is earned by reading the list.
+        assert (await self._read(api)).headers["etag"] not in res.json()["detail"]
+
+    @pytest.mark.asyncio
+    async def test_a_write_onto_a_list_that_has_moved_on_is_refused(self, api: Harness):
+        # The window this closes: the editor reads the Fassung, a follower run
+        # replaces the row, and the editor writes its box back onto the list it
+        # read — taking the run with it. With the token the second write is a
+        # 412 and the author redraws on what is actually there.
+        stored = await _store_strip(api)
+        token = (await self._read(api)).headers["etag"]
+        assert (await TestStreifenPfad._put(api, [TestStreifenPfad._path(stored, 1)])).status == 200
+
+        res = await self._patch(api, self._drawn(stored), token)
+        assert res.status == 412, res.body
+        assert [entry["box_index"] for entry in (await self._read(api)).json()["pfade"]] == [1]
+        # Same rule as the 428: the refusal names what the client sent, never
+        # what is stored — otherwise a stale save just retries with the token
+        # the refusal handed it, on a list nobody looked at.
+        assert (await self._read(api)).headers["etag"] not in res.json()["detail"]
+
+        # …and the read that follows the refusal hands out the token that works.
+        again = await self._patch(api, self._drawn(stored), (await self._read(api)).headers["etag"])
+        assert again.status == 200, again.body
+
+    @pytest.mark.asyncio
+    async def test_a_write_that_claims_any_stored_list_is_refused(self, api: Harness):
+        # `If-Match: *` is HTTP for „whatever is there", which is exactly the
+        # „I did not look" this guard exists to catch.
+        stored = await _store_strip(api)
+        res = await self._patch(api, self._drawn(stored), "*")
+        assert res.status == 412, res.body
+        assert (await self._read(api)).json()["pfade"] is None
+
+    @pytest.mark.asyncio
+    async def test_a_token_an_intermediary_weakened_still_names_the_same_list(self, api: Harness):
+        # The save the author actually makes goes through Cloudflare, which
+        # turns a strong entity tag into a weak one whenever it re-encodes a
+        # response — and these answers are gzipped at the origin. A browser
+        # echoes what it was handed, so a strict-strong comparison would 412
+        # every save on the one deployment path the workbench has, for a reason
+        # invisible from here.
+        stored = await _store_strip(api)
+        res = await self._patch(api, self._drawn(stored), f"W/{(await self._read(api)).headers['etag']}")
+        assert res.status == 200, res.body
+        assert (await self._read(api)).json()["pfade"][0]["verfahren"] == "authored"
+
+    @pytest.mark.asyncio
+    async def test_the_address_and_the_body_have_to_name_the_same_box(self, api: Harness):
+        stored = await _store_strip(api)
+        res = await self._patch(api, self._drawn(stored, 1), (await self._read(api)).headers["etag"], box=0)
+        assert res.status == 422, res.body
+        assert "box 1" in res.json()["detail"] and "box 0" in res.json()["detail"]
+        assert (await self._read(api)).json()["pfade"] is None
+
+    @pytest.mark.asyncio
+    async def test_nothing_derived_comes_through_this_door(self, api: Harness):
+        # The route stamps `authored`, and a body claiming another provenance
+        # is refused rather than re-labelled: a followed path stored as the
+        # author's own hand would be ground truth nothing could ever tell apart
+        # from a drawing — the one mistake the whole authored rule exists to
+        # prevent, and the reason the full push is a separate door.
+        stored = await _store_strip(api)
+        res = await self._patch(api, TestStreifenPfad._path(stored), (await self._read(api)).headers["etag"])
+        assert res.status == 422, res.body
+        assert "tintenpfad" in res.json()["detail"]
+        assert (await self._read(api)).json()["pfade"] is None
+
+    @pytest.mark.asyncio
+    async def test_a_hand_drawn_box_cannot_be_a_skip(self, api: Harness):
+        # `check_paths` refuses an authored skip outright, and that refusal is
+        # what stands in for the displacement guard here: an empty entry cannot
+        # take a drawing's place through this door.
+        stored = await _store_strip(api)
+        drawn = self._drawn(stored)
+        assert (await self._patch(api, drawn, (await self._read(api)).headers["etag"])).status == 200
+
+        skip = {
+            "box_index": 0,
+            "word": drawn["word"],
+            "status": "skipped",
+            "grund": "gave_up",
+            "strokes": [],
+            "verfahren": "authored",
+        }
+        res = await self._patch(api, skip, (await self._read(api)).headers["etag"])
+        assert res.status == 422, res.body
+        assert "cannot claim" in res.json()["detail"]
+        assert (await self._read(api)).json()["pfade"][0]["strokes"] == drawn["strokes"]
+
+    @pytest.mark.asyncio
+    async def test_a_box_that_does_not_belong_to_this_strip_is_refused_by_the_same_rules(self, api: Harness):
+        # 422 over `check_paths` on the one-element list, so the box rules live
+        # in one place and this route cannot refuse by a second, drifting copy.
+        stored = await _store_strip(api)
+        token = (await self._read(api)).headers["etag"]
+        broken = self._drawn(stored, 0, registration_px={"tx": 9_000_000.0, "ty": 0.0, "baseline_row": 10.0})
+        res = await self._patch(api, broken, token)
+        assert res.status == 422, res.body
+        assert (await self._read(api)).json()["pfade"] is None
+
+    @pytest.mark.asyncio
+    async def test_one_box_may_not_relabel_the_ones_beside_it(self, api: Harness):
+        # The stamp is a statement about every entry in the cell, so a per-box
+        # write declaring another format would re-label its neighbours — the
+        # mislabelling the stored marker exists to prevent, one layer down.
+        stored = await _store_strip(api)
+        assert (await TestStreifenPfad._put(api, [TestStreifenPfad._path(stored, 1)], format=1)).status == 200
+        token = (await self._read(api)).headers["etag"]
+
+        res = await self._patch(api, self._drawn(stored), token, format=2)
+        assert res.status == 409, res.body
+        assert "format 1" in res.json()["detail"]
+        assert (await self._read(api)).json()["format"] == 1
+
+        # Under the row's own format the same box goes in.
+        assert (await self._patch(api, self._drawn(stored), token, format=1)).status == 200
+
+    @pytest.mark.asyncio
+    async def test_the_first_box_of_an_unfollowed_row_sets_its_format(self, api: Harness):
+        # A row nobody has followed carries the migration's number and no
+        # entries, so there is nothing to re-label: the first entry decides
+        # what the list is.
+        stored = await _store_strip(api)
+        assert (await self._read(api)).json()["format"] == UNFOLLOWED_FORMAT
+        written = await self._patch(api, self._drawn(stored), (await self._read(api)).headers["etag"], format=2)
+        assert written.status == 200, written.body
+        assert (await self._read(api)).json()["format"] == 2
+
+    @pytest.mark.asyncio
+    async def test_a_format_this_image_cannot_read_is_refused_here_too(self, api: Harness):
+        stored = await _store_strip(api)
+        res = await self._patch(
+            api, self._drawn(stored), (await self._read(api)).headers["etag"], format=max(SUPPORTED_FORMATS) + 1
+        )
+        assert res.status == 409, res.body
+        assert (await self._read(api)).json()["pfade"] is None
+
+
 class TestPfadBoxes:
     """The meta-only read: which word boxes of a hand are in which state.
 
@@ -1776,6 +2098,7 @@ class TestAdminGate:
             ("PATCH", f"/eigenhand/strips/{HAND}/S0001/F01/flecken"),
             ("GET", f"/eigenhand/strips/{HAND}/S0001/F01/pfade"),
             ("PUT", f"/eigenhand/strips/{HAND}/S0001/F01/pfade"),
+            ("PATCH", f"/eigenhand/strips/{HAND}/S0001/F01/pfade/0"),
             ("GET", f"/eigenhand/pfade/{HAND}"),
             ("GET", "/eigenhand/uebergangsraum"),
             ("PUT", "/eigenhand/uebergangsraum"),

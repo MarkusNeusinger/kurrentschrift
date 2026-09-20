@@ -995,13 +995,26 @@ class EigenhandRepository:
         result = await self.session.execute(self._one_strip(hand, strip, fassung).options(defer(EigenhandStrip.pfade)))
         return result.scalar_one_or_none()
 
-    async def strip_pfade(self, hand: str, strip: str, fassung: str) -> EigenhandStrip | None:
+    async def strip_pfade(
+        self, hand: str, strip: str, fassung: str, *, for_update: bool = False
+    ) -> EigenhandStrip | None:
         """One strip WITH its Streifen-Pfade and without its bytes.
 
         The path route's read, and the row the path WRITE mutates: both want
         the same column and neither wants ~350 KB of PNG to come with it.
+
+        `for_update` is the writers' half. The path list is read, merged and
+        written back in one request, and under READ COMMITTED two such requests
+        read the same list and both write — so the second silently drops the
+        first, however carefully each of them checked a token beforehand. The
+        lock serialises the pair on the row for the length of the transaction.
+        SQLite renders no `FOR UPDATE` clause at all, which is why the HTTP
+        suites do not notice it.
         """
-        result = await self.session.execute(self._one_strip(hand, strip, fassung).options(*self._STRIP_WITHOUT_PNG))
+        statement = self._one_strip(hand, strip, fassung).options(*self._STRIP_WITHOUT_PNG)
+        if for_update:
+            statement = statement.with_for_update()
+        result = await self.session.execute(statement)
         return result.scalar_one_or_none()
 
     async def strip_meta(self, hand: str, strip: str, fassung: str) -> EigenhandStrip | None:

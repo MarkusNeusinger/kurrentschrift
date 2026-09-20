@@ -26,7 +26,7 @@ import pytest
 from PIL import Image
 
 from core.eigenhand.flecken import FLECKEN_FORMAT
-from core.eigenhand.pfad import PFAD_FORMAT
+from core.eigenhand.pfad import PFAD_FORMAT, pfad_etag
 from tools.eigenhand import pull as pull_mod
 from tools.eigenhand import setup as setup_mod
 from tools.eigenhand import snapshot as snapshot_mod
@@ -110,7 +110,9 @@ class _FakeApi:
         self.stored = stored or {}
         self.setup = setup
 
-    def __call__(self, method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False):
+    def __call__(
+        self, method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False, *, if_match=None
+    ):
         self.calls.append((method, url, body))
         if method == "GET" and "/setups/" in url:
             return self.setup
@@ -129,8 +131,28 @@ class _FakeApi:
         return [body for method, url, body in self.calls if method == "PUT" and f"/{kind}/" in url]
 
 
+def _with_etag(fake):
+    """The read half of a guarded write, over a fake that answers bodies only.
+
+    The real client hands the answer and the `ETag` it came with back together
+    (`tools.eigenhand.apiclient.request_json_with_etag`). Here the token is
+    derived from the same content the server hashes, so „the push echoed the
+    token of its own read" is an assertion about the tool and not about a
+    string the fake invented.
+    """
+
+    def read(method: str, url: str, token: str, body=None, allow_404: bool = False, *, if_match=None):
+        answer = fake(method, url, token, body, allow_404, if_match=if_match)
+        if answer is None:
+            return None, None
+        return answer, pfad_etag(answer.get("pfade"), answer.get("format", 1))
+
+    return read
+
+
 def _run(monkeypatch, fake: _FakeApi, *argv: str) -> int:
     monkeypatch.setattr(sync_mod, "request_json", fake)
+    monkeypatch.setattr(sync_mod, "request_json_with_etag", _with_etag(fake))
     monkeypatch.setenv("ADMIN_TOKEN", "t")
     return sync_mod.main(["--hand", HAND, "--api", "https://example.test", *argv])
 
@@ -480,13 +502,20 @@ class _FakePfadApi:
         # shape a restore counted off the REQUEST would have called a success.
         self.swallow = swallow
         self.calls: list[tuple[str, str, dict | None]] = []
+        # What each write said about the list it was made on. The server
+        # refuses a push that names the wrong one (412), so „did the token
+        # travel" is part of what a restore has to get right.
+        self.conditions: list[str | None] = []
 
-    def __call__(self, method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False):
+    def __call__(
+        self, method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False, *, if_match=None
+    ):
         self.calls.append((method, url, body))
         plain = url.split("?")[0]
         if plain.endswith("/pfade"):
             strip, fassung = plain.split("/")[-3:-1]
             if method == "PUT":
+                self.conditions.append(if_match)
                 echo = [] if self.swallow else [_as_stored(entry, body["format"]) for entry in body["pfade"]]
                 self.pfade[(strip, fassung)] = echo
                 return {"format": body["format"], "pfade": echo}
@@ -689,6 +718,19 @@ class TestHandDrawnBahnChain:
         assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot)) == 0
         assert fake.pushed() == [{"format": PFAD_FORMAT, "pfade": [_bahn()]}]
         assert "1 restored, 0 already there, 0 NOT restored" in capsys.readouterr().out
+
+    def test_the_restore_names_the_list_its_merge_was_made_on(self, dataroot, tmp_path, monkeypatch):
+        # Read, merge, replace — and the middle step is a window: a box the
+        # author draws in the workbench while the restore walks the Kartei
+        # would be put back to the archive's state, silently, by a run that
+        # then reports success. The push therefore echoes the `ETag` of ITS OWN
+        # read, and the server refuses it (412) when the list has moved since.
+        snapshot = self._archived(dataroot, tmp_path, monkeypatch, [_bahn()])
+        _wipe(dataroot / HAND / "fassungen")
+        followed = _bahn(box=1, word="das", verfahren="tintenpfad")
+        fake = _FakePfadApi({("S0001", "F01"): [followed]})
+        assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot)) == 0
+        assert fake.conditions == [pfad_etag([followed], 1)]
 
     def test_the_restore_keeps_the_boxes_the_server_already_holds(self, dataroot, tmp_path, monkeypatch):
         # The write is a FULL replacement per Fassung, so the archived box goes

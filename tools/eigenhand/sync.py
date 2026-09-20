@@ -68,7 +68,7 @@ from typing import NamedTuple
 
 from core.eigenhand.flecken import FLECKEN_FORMAT
 from core.eigenhand.pfad import push_body
-from tools.eigenhand.apiclient import admin_token, api_base, request_json
+from tools.eigenhand.apiclient import admin_token, api_base, request_json, request_json_with_etag
 from tools.eigenhand.kartei import load_kartei, pfad_wire_format, pfade_of
 from tools.eigenhand.store import WORK_DPI, check_hand_id, hand_dir, sheet_dir
 
@@ -361,6 +361,13 @@ def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
     and `check_paths` normalises it, whereas the reverse would be the
     mislabelling the stored marker exists to prevent.
 
+    Read, merge, replace — and that middle step is a window: the author draws
+    a box in the workbench while the restore is walking the Kartei, and the
+    push puts the box back to the archive's state without either side noticing.
+    So the push echoes the `ETag` of the read the merge was made on, and the
+    server refuses it (412) when the stored list has moved since. The restore
+    then ends loudly and a re-run reads the drawing.
+
     A Fassung whose strip row is not up there cannot take a path at all (the
     route answers 404). Those are COUNTED and named rather than skipped: a
     drawing nothing can follow again is the one loss this whole chain exists to
@@ -375,7 +382,12 @@ def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
     left: list[str] = []
     for strip, fassung, wire_format, entries in _pfad_rows(kartei):
         url = f"{base}/eigenhand/strips/{hand}/{strip}/{fassung}/pfade"
-        answer = request_json("GET", url, token, allow_404=True)
+        # The token of THIS read travels to the push below. Read, merge,
+        # replace is the window the archive hand-off named as open: a box the
+        # author draws in the workbench between the two would be put back to
+        # whatever the archive holds, silently, by a restore that reports
+        # success. The server refuses the stale push (412) instead.
+        answer, etag = request_json_with_etag("GET", url, token, allow_404=True)
         if answer is None:
             stuck += len(entries)
             why.append(
@@ -410,7 +422,10 @@ def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
             key=lambda item: item["box_index"],
         )
         body, content_format, _dropped = push_body(body)
-        echo = request_json("PUT", url, token, {"format": max(wire_format, content_format), "pfade": body}) or {}
+        echo = (
+            request_json("PUT", url, token, {"format": max(wire_format, content_format), "pfade": body}, if_match=etag)
+            or {}
+        )
         landed = {entry.get("box_index"): entry for entry in (echo.get("pfade") or [])}
         for entry in fresh:
             if _came_back(landed.get(entry["box_index"]), entry):

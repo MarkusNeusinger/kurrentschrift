@@ -19,8 +19,10 @@ import type {
   EigenhandBestand,
   EigenhandFleck,
   EigenhandHands,
+  EigenhandPfad,
   EigenhandPfadBoxes,
   EigenhandPfadList,
+  EigenhandPfadListWithEtag,
   EigenhandPrinted,
   EigenhandPrintRequest,
   EigenhandSetup,
@@ -252,6 +254,64 @@ export const getEigenhandPfade = (
     {},
     retry,
   ).then(asJson<EigenhandPfadList>);
+
+// The same read, plus the `ETag` it answered with — what the editor asks for,
+// because whoever draws a box has to be able to say which list they drew it on.
+// A second function rather than a second return value on the read above: the
+// overlay callers read to DRAW and never write, and a concurrency token they
+// have no use for is one more thing that can be stored somewhere stale.
+export const getEigenhandPfadeWithEtag = async (
+  hand: string,
+  strip: string,
+  fassung: string,
+  retry?: RetryOptions,
+): Promise<EigenhandPfadListWithEtag> => {
+  const res = await apiFetch(
+    `${apiRoot()}/eigenhand/strips/${encodeURIComponent(hand)}/${encodeURIComponent(strip)}/${encodeURIComponent(
+      fassung,
+    )}/pfade`,
+    {},
+    retry,
+  );
+  // The header is read BEFORE the body, because `asJson` throws on a refusal
+  // and would take the token with it — and a 4xx still carries the state the
+  // caller has to re-read against.
+  const etag = res.headers.get('ETag');
+  return { list: await asJson<EigenhandPfadList>(res), etag };
+};
+
+// ONE word box's Bahn, drawn by hand — the write door of the strip editor.
+// A PATCH because the editor knows one box: a full push would have to restate
+// the rest of the row from a list this tab read minutes ago, and any follower
+// run that landed in between would be overwritten by it. `etag` is the token of
+// the list the box was drawn on, and the server refuses (412) when the stored
+// list has moved on since — read again and redraw rather than write blind.
+// `verfahren` is deliberately not a parameter: the route stamps `authored`,
+// and a derivation goes through the full push, which is where the rules for one
+// live. The answer is the whole list again, with the token the NEXT save needs —
+// so „Speichern & weiter" never has to re-read between two boxes.
+export const patchEigenhandPfad = async (
+  hand: string,
+  strip: string,
+  fassung: string,
+  box: number,
+  pfad: Omit<EigenhandPfad, 'verfahren'>,
+  etag: string,
+  format: number,
+): Promise<EigenhandPfadListWithEtag> => {
+  const res = await apiFetch(
+    `${apiRoot()}/eigenhand/strips/${encodeURIComponent(hand)}/${encodeURIComponent(strip)}/${encodeURIComponent(
+      fassung,
+    )}/pfade/${encodeURIComponent(String(box))}`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'If-Match': etag },
+      body: JSON.stringify({ format, pfad: { ...pfad, verfahren: 'authored' } }),
+    },
+  );
+  const next = res.headers.get('ETag');
+  return { list: await asJson<EigenhandPfadList>(res), etag: next };
+};
 
 // The same paths as STATE, hand-wide: which word boxes carry which Bahn, what
 // the Tintentreue says about each and which of them are still work. One

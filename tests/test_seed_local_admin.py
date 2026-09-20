@@ -170,6 +170,56 @@ def test_a_missing_token_stops_the_run(run_main) -> None:
     assert api.calls == []
 
 
+class _PfadApi:
+    """Answers the whole seed chain, and hands out a token on the path read.
+
+    Only the path route is interesting: it refuses a write that cannot say
+    which stored list it was made on, so the seeder's GET → PUT round trip is
+    the thing to pin. Everything else is answered just richly enough to get
+    there.
+    """
+
+    TOKEN = '"the-list-the-seeder-read"'
+
+    def __init__(self) -> None:
+        self.pushed: list[tuple[str, str | None]] = []
+
+    def request(self, method: str, path: str, body: dict[str, Any] | None = None, *, if_match: str | None = None):
+        return self.answer(method, path, body, if_match=if_match)[0]
+
+    def answer(self, method: str, path: str, body: dict[str, Any] | None = None, *, if_match: str | None = None):
+        if method == "POST" and path == "/eigenhand/sheets":
+            return {"sheets": [{"sheet": "B0001"}]}, None
+        if method == "GET" and path.endswith("/layout"):
+            return {
+                "rows": [
+                    {
+                        "strip": "S0001",
+                        "cut_mm": [10.0, 20.0, 200.0, 60.0],
+                        "band_mm": {"asc_top": 24.0, "waist": 32.0, "baseline": 44.0, "desc_bot": 56.0},
+                        "boxes": [{"word": "lesen", "x0_mm": 15.0, "x1_mm": 45.0}],
+                    }
+                ]
+            }, None
+        if path.endswith("/pfade"):
+            if method == "GET":
+                return {"pfade": None, "format": 1}, self.TOKEN
+            self.pushed.append((path, if_match))
+            return {"pfade": body["pfade"]}, '"after-the-push"'
+        if method == "GET" and "/bestand/" in path:
+            return {"strips": {"belegt": 1}, "fassungen": 1}, None
+        return {}, None
+
+
+def test_the_seeder_pushes_a_path_onto_the_list_it_just_read() -> None:
+    # The path write demands the token of the list it was made on, so a seeder
+    # that pushed blind would 428 before it ever filled a row — and every
+    # `/verify-frontend` run against the throwaway stack would stop there.
+    api = _PfadApi()
+    seeder.seed(api, "mn-suetterlin", ["S0001"], "F01", with_paths=True)
+    assert [token for _path, token in api.pushed] == [_PfadApi.TOKEN]
+
+
 def test_the_sensor_spread_carries_the_two_values_a_pipe_reader_gets_wrong() -> None:
     # The whole point of the invented numbers: a reader that writes `x || "—"`
     # turns the best box into „not measured" and a missing sensor into 0.

@@ -39,6 +39,7 @@ import json
 import os
 import urllib.error
 import urllib.request
+from typing import NamedTuple
 from urllib.parse import urlsplit
 
 
@@ -90,23 +91,46 @@ def admin_token(value: str | None = None) -> str:
     return token
 
 
-def request_bytes(method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False) -> bytes | None:
+class Answer(NamedTuple):
+    """One admin answer: the bytes, and the entity tag they came with.
+
+    The tag exists because a guarded write has to say which stored state it was
+    made on: the Streifen-Pfad routes answer a read with an `ETag` and refuse a
+    write that does not echo it in `If-Match` (412/428). Carried beside the
+    body rather than parsed out of it — it is a property of the ANSWER, and a
+    token reassembled from the payload would be this machine's opinion of what
+    is stored rather than the server's.
+    """
+
+    body: bytes
+    etag: str | None
+
+
+def request_answer(
+    method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False, *, if_match: str | None = None
+) -> Answer | None:
     """One admin call. Raises SystemExit with the server's own words on 4xx/5xx.
 
     `allow_404` turns „not there" into ``None`` for the callers where absence
     is an answer rather than a failure — a hand that has no standing setup yet
     is the normal state before the first one is typed.
+
+    `if_match` is passed through verbatim, quotes and all: it is an opaque
+    token the server handed out, and a client that reformats one is a client
+    that can no longer say which list it read.
     """
     data = json.dumps(body).encode() if body is not None else None
     headers = {"X-Admin-Token": token, "User-Agent": USER_AGENT}
     if data is not None:
         headers["Content-Type"] = "application/json"
+    if if_match is not None:
+        headers["If-Match"] = if_match
     req = urllib.request.Request(url, data=data, method=method, headers=headers)  # noqa: S310 — scheme checked above
     try:
         # `_OPENER` refuses redirects, so the admin header can never be resent
         # to a host other than the one it was addressed to.
         with _OPENER.open(req, timeout=TIMEOUT_S) as res:
-            return res.read()
+            return Answer(res.read(), res.headers.get("ETag"))
     except urllib.error.HTTPError as exc:
         if allow_404 and exc.code == 404:
             return None
@@ -115,6 +139,32 @@ def request_bytes(method: str, url: str, token: str, body: dict | None = None, a
         raise SystemExit(f"{method} {url} → {exc.code}: {exc.read().decode()[:400]}") from exc
 
 
-def request_json(method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False) -> dict | None:
-    raw = request_bytes(method, url, token, body, allow_404)
+def request_bytes(
+    method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False, *, if_match: str | None = None
+) -> bytes | None:
+    answer = request_answer(method, url, token, body, allow_404, if_match=if_match)
+    return None if answer is None else answer.body
+
+
+def request_json(
+    method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False, *, if_match: str | None = None
+) -> dict | None:
+    raw = request_bytes(method, url, token, body, allow_404, if_match=if_match)
     return None if raw is None else json.loads(raw.decode() or "{}")
+
+
+def request_json_with_etag(
+    method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False, *, if_match: str | None = None
+) -> tuple[dict | None, str | None]:
+    """The parsed answer and its entity tag — the read before a guarded write.
+
+    Two returns rather than one, because the caller needs both and neither is
+    derivable from the other: the payload is what it merges into, the tag is
+    what it has to echo to be allowed to write the merge back. A `None` tag
+    means the answer carried none — the write will then be refused by the
+    server, which is the loud failure and the right one.
+    """
+    answer = request_answer(method, url, token, body, allow_404, if_match=if_match)
+    if answer is None:
+        return None, None
+    return json.loads(answer.body.decode() or "{}"), answer.etag

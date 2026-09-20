@@ -22,6 +22,12 @@ image WRITES, and the distance between the two is the lockstep. Since the
 second release (2026-09-20) that distance is zero again — the tool writes what
 the API already accepted — and the rows written under 1 keep saying so.
 
+TWO DOORS, ONE TOKEN. Since 2026-09-20 a list is written from two places: the
+terminal replaces the whole row, the editor answers ONE box
+(``PATCH …/pfade/{box}``). ``pfad_etag`` is what keeps the second from writing
+its box back onto a list the first has meanwhile replaced — a content token
+over the stored cell, echoed in ``If-Match``.
+
 THE FRAME. A path's ``strokes`` use the same contract as
 ``word_instances.strokes`` — baseline 0, midband 1, x growing from the word's
 own origin — so one overlay component serves the Wörter view and the Eigenhand
@@ -54,6 +60,8 @@ material into the bench sets, against ``docs/proposals/eigenhand-erfassung.md``
 
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 from collections.abc import Mapping, Sequence
 from datetime import date as date_cls
@@ -706,6 +714,37 @@ def push_body(entries: Sequence[Mapping[str, Any]]) -> tuple[list[dict[str, Any]
         dropped.append(entry.get("box_index"))
         body.append({**entry, "meta": {key: value for key, value in meta.items() if key != FIELD_SPANS}})
     return body, pfad_format, sorted(index for index in dropped if index is not None)
+
+
+def pfad_etag(pfade: Sequence[Mapping[str, Any]] | None, pfad_format: int) -> str:
+    """The stored list's content token — what a per-box write has to echo back.
+
+    A Bahn list is written from two doors: the terminal replaces the whole row
+    (`tools.eigenhand.pfad --apply`), the editor answers ONE box. Without a
+    token between them the second door is a lost update — the editor reads the
+    list, the follower replaces it, the editor writes its box back onto the
+    list it read and the run is gone. That window was named as open in the
+    archive hand-off and is what this closes.
+
+    Over the STORED state and nothing else: the entries as they lie in the cell
+    plus the row's format marker, because the two are one statement — a list
+    and the semantics its entries obey. The stamp cannot move without the
+    entries moving today, but a token that covered only half of the pair would
+    start lying the first time it can.
+
+    Canonical JSON — sorted keys, no spaces — so two readings of the same cell
+    give the same token whichever order Postgres hands the keys back in. It is
+    an application lock, not an HTTP cache validator: the responses that carry
+    it are `private, no-store`, so nothing downstream is entitled to a cached
+    representation and the token never has to survive a content coding.
+
+    The quotes are part of it (RFC 9110 entity-tag), so a caller echoes the
+    header value it was given rather than reassembling one.
+    """
+    document = json.dumps(
+        {"format": pfad_format, "pfade": pfade}, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    )
+    return f'"{hashlib.sha256(document.encode("utf-8")).hexdigest()}"'
 
 
 def is_authored(entry: Mapping[str, Any]) -> bool:

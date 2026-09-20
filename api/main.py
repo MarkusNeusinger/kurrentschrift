@@ -244,6 +244,14 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    # `ETag` is not one of the headers a browser hands to JavaScript by itself,
+    # and the per-box Bahn write is the first route whose answer a caller has to
+    # READ a header off (`If-Match`, api/routers/eigenhand.py). The admin is
+    # same-origin today — the apex behind Cloudflare Access, the Vite proxy in
+    # dev — so this changes nothing there; it is here so the token does not go
+    # missing the day the workbench is served from anywhere else, which would
+    # look like „saving is broken" and nowhere like a CORS setting.
+    expose_headers=["ETag"],
 )
 
 
