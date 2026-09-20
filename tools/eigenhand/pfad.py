@@ -102,6 +102,7 @@ for _var in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
 
 import argparse  # noqa: E402
 import json  # noqa: E402
+import shlex  # noqa: E402
 from collections.abc import Mapping  # noqa: E402
 from datetime import date as date_cls  # noqa: E402
 from pathlib import Path  # noqa: E402
@@ -128,6 +129,7 @@ from core.eigenhand.pfad import (  # noqa: E402
 from core.eigenhand.plan import load_plan, shaping_form_of  # noqa: E402
 from core.eigenhand.tintentreue import KEY_AIOU, KEY_EXKURSION  # noqa: E402
 from tools.eigenhand.apiclient import (  # noqa: E402
+    StaleRead,
     admin_token,
     api_base,
     request_bytes,
@@ -848,8 +850,15 @@ def main(argv: list[str] | None = None) -> int:
     # chain files, so it is also what `--replace-authored` is held against.
     kartei = load_kartei(hand) if args.replace_authored else {}
 
+    # Held rather than walked straight, because a run without `--fassung`
+    # covers every stored Fassung of the strip: when one of them stops the run,
+    # the ones behind it were never attempted, and an operator who is told
+    # nothing about them would read the abort as „the strip is done except this
+    # one" (found in review, this PR).
+    rows = _strip_rows(base, token, hand, args.strip, args.fassung)
+
     written = 0
-    for row in _strip_rows(base, token, hand, args.strip, args.fassung):
+    for position, row in enumerate(rows):
         print(f"{row['strip']}/{row['fassung']} ({row['sheet']} row {row['row_index']}):", flush=True)
         entries = follow_row(base, token, hand, row, prior, args.box)
         url = f"{base}/eigenhand/strips/{hand}/{row['strip']}/{row['fassung']}/pfade"
@@ -916,7 +925,40 @@ def main(argv: list[str] | None = None) -> int:
         # author drew in the workbench while this run was following is exactly
         # that case, and the merge above cannot know about it. Re-run, and the
         # fresh read carries the drawing.
-        stored = request_json("PUT", push_url, token, {"format": wire_format, "pfade": body}, if_match=etag) or {}
+        try:
+            stored = request_json("PUT", push_url, token, {"format": wire_format, "pfade": body}, if_match=etag) or {}
+        except StaleRead as exc:
+            # The server's refusal says what happened; this says what to do
+            # about it, which is the sentence only the terminal can write. The
+            # re-run deliberately drops `--replace-authored`: whatever landed
+            # in between is exactly what a blanket override would give up
+            # again, so getting it back has to be a fresh decision on a fresh
+            # read.
+            narrowed = "".join(f" --box {index}" for index in args.box or [])
+            unreached = [other["fassung"] for other in rows[position + 1 :]]
+            raise SystemExit(
+                f"{exc}\n"
+                f"  Nothing of {row['strip']}/{row['fassung']} was stored. The merge above was made on a list "
+                "that has moved since — a box drawn in the workbench, or another run. Follow again; the fresh "
+                "read carries what landed in between:\n"
+                # The RESOLVED base, named explicitly rather than left to
+                # `--api`'s fallback chain: without it the line re-runs against
+                # `$EIGENHAND_API` or, failing that, production — so a drill
+                # against a throwaway stack would hand the operator a command
+                # that writes to the real database (found in review, this PR).
+                f"    ADMIN_TOKEN=… uv run python -m tools.eigenhand.pfad --api {shlex.quote(base)} "
+                f"--hand {hand} --strip {row['strip']} --fassung {row['fassung']}{narrowed} --apply"
+                + (
+                    # The line above is per Fassung, and this run was stopped
+                    # part way through the strip. Naming the rest is the
+                    # difference between „one Fassung to redo" and a silent
+                    # gap the operator only finds in the workbench later.
+                    f"\n  This run stopped there: {', '.join(unreached)} of {row['strip']} were not attempted. "
+                    "Run them after the line above, or repeat the whole strip without --fassung."
+                    if unreached
+                    else ""
+                )
+            ) from exc
         # A skip is an entry, not a path. Counting the two together would put
         # the four states back into one number — which is the whole reason the
         # Skip-Eintrag exists (found in review, PR #639).

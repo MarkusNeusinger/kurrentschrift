@@ -55,6 +55,11 @@ TIMEOUT_S = 120
 
 _LOOPBACK = ("localhost", "127.0.0.1", "::1")
 
+# The one status this layer reads rather than relays: it says the write was
+# made on a list that has moved, which is a situation the OPERATOR can answer
+# (see `StaleRead`). Every other 4xx is the server's own words, unread.
+_PRECONDITION_FAILED = 412
+
 
 class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
     """Turn every 3xx into an HTTPError instead of following it."""
@@ -89,6 +94,23 @@ def admin_token(value: str | None = None) -> str:
     if not token:
         raise SystemExit("no admin token — set ADMIN_TOKEN or pass --token")
     return token
+
+
+class StaleRead(SystemExit):
+    """A guarded write was refused: the list it was made on has moved since (412).
+
+    A `SystemExit` like every other refusal in here, so a caller that has never
+    heard of this type still ends loudly and non-zero rather than carrying on.
+    It exists so the two callers that CAN answer it — the follower push and the
+    restore — may add the one sentence only they can write, which command to
+    run again, without matching on the server's prose. An error message is not
+    a contract, and a tool that branched on one would break the day the wording
+    improves.
+
+    Never a retry. Re-sending the same merge against the list that is there now
+    would store exactly the state the token refused, which is the lost update
+    with an extra step (`docs/proposals/eigenhand-erfassung.md` §8.1).
+    """
 
 
 class Answer(NamedTuple):
@@ -136,7 +158,10 @@ def request_answer(
             return None
         # The API's `detail` is written for exactly this reader — it says what
         # to fix and in which order. Truncated, never swallowed.
-        raise SystemExit(f"{method} {url} → {exc.code}: {exc.read().decode()[:400]}") from exc
+        refusal = f"{method} {url} → {exc.code}: {exc.read().decode()[:400]}"
+        if exc.code == _PRECONDITION_FAILED:
+            raise StaleRead(refusal) from exc
+        raise SystemExit(refusal) from exc
 
 
 def request_bytes(
