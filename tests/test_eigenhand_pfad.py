@@ -22,11 +22,15 @@ from core.eigenhand.pfad import (
     AUTHORED,
     FIELD_PATH,
     FIELD_SPANS,
+    MAX_SLOT,
     MAX_UNIT,
+    PFAD_FORMAT,
     SKIP_AND_SPAN_FORMAT,
     SKIP_REASONS,
+    SUPPORTED_FORMATS,
     check_paths,
     displaced_authored,
+    format_of_entries,
     frame_for_box,
     frames_of_row,
     nominal_xh_px,
@@ -109,8 +113,12 @@ def _kartei_with(entries: list[dict]) -> dict:
 
 def _apply_run(
     monkeypatch, *, fresh: list[dict], stored: list[dict], argv: list[str], archived: list[dict] | None = None
-) -> tuple[str, list[dict]]:
-    """Run the tool's `--apply` path over a stubbed API; the URL and body it PUT.
+) -> tuple[str, dict]:
+    """Run the tool's `--apply` path over a stubbed API; the URL and DOCUMENT it PUT.
+
+    The whole envelope, not just its entries: the declared `format` is part of
+    what a push is, and a merged body carrying entries this run did not produce
+    has to be declared for what it IS (review, PR #638).
 
     `archived` is what this machine's Kartei holds — the condition
     `--replace-authored` is held against since author decision B.
@@ -128,7 +136,8 @@ def _apply_run(
 
     monkeypatch.setattr(tool, "request_json", _put)
     assert tool.main([*argv, "--apply"]) == 0
-    return sent["url"], sent["payload"]["pfade"]
+    assert sent["payload"]["format"] in SUPPORTED_FORMATS
+    return sent["url"], sent["payload"]
 
 
 def _path(**overrides) -> dict:
@@ -363,6 +372,15 @@ class TestFormatTwo:
     def _check(paths, pfad_format: int = SKIP_AND_SPAN_FORMAT, **kwargs):
         return check_paths(paths, ROW, WIDTH_PX, HEIGHT_PX, pfad_format=pfad_format, **kwargs)
 
+    def test_what_this_image_writes_is_a_subset_of_what_it_reads(self):
+        # The whole design rests on this, and the next bump moves the WRITE
+        # constant in a different place from the read tuple. A mismatch would
+        # make the image push a number its own 409 refuses, on every run
+        # (found in review, PR #638).
+        assert PFAD_FORMAT in SUPPORTED_FORMATS
+        assert SKIP_AND_SPAN_FORMAT in SUPPORTED_FORMATS
+        assert max(SUPPORTED_FORMATS) == SKIP_AND_SPAN_FORMAT
+
     def test_a_skipped_box_carries_its_reason_instead_of_a_path(self):
         # The entry type author decision C asked for: no strokes, a mandatory
         # reason, registration and x-height optional — a box refused before
@@ -406,7 +424,7 @@ class TestFormatTwo:
             self._check([_skip(registration_px={"tx": 99_000.0, "ty": 0.0, "baseline_row": 240.0}, xh_px=120.0)])
 
     def test_the_letter_boundaries_carry_their_own_provenance(self):
-        stored = self._check([_path(letter_spans=[_span(), _span(first=2, herkunft=AUTHORED)])])[0]
+        stored = self._check([_path(letter_spans=[_span(last=1), _span(slot=1, first=2, herkunft=AUTHORED)])])[0]
         assert [span["herkunft"] for span in stored["letter_spans"]] == ["auto", AUTHORED]
 
     @pytest.mark.parametrize(
@@ -432,6 +450,33 @@ class TestFormatTwo:
         with pytest.raises(ValueError, match="0 stroke"):
             self._check([_skip(letter_spans=[_span()])])
 
+    def test_two_boundaries_may_not_claim_the_same_ink(self):
+        # Held against each other, not only against their stroke: one sample
+        # belongs to one letter, and two boundaries over the same samples are
+        # well-formed in every number they carry — they would reach the
+        # Span-Zuordner's training set as ground truth (review, PR #638).
+        with pytest.raises(ValueError, match="both claim sample"):
+            self._check([_path(letter_spans=[_span(), _span()])])
+        with pytest.raises(ValueError, match="both claim sample\\(s\\) 1..1 of stroke 0"):
+            self._check([_path(letter_spans=[_span(slot=0, first=0, last=1), _span(slot=1, first=1, last=2)])])
+        # …touching is not overlapping: `spans_of` hands back gapless spans.
+        assert self._check([_path(letter_spans=[_span(slot=0, first=0, last=1), _span(slot=1, first=2, last=2)])])
+
+    def test_one_slot_may_be_written_in_two_strokes(self):
+        # The i-dot and the umlaut: one letter, two pen-downs. Refusing a
+        # repeated slot outright would refuse every marked letter there is.
+        two_strokes = [[[0.0, 0.0], [0.5, 0.5], [1.0, 0.0]], [[0.4, 1.4], [0.5, 1.5]]]
+        stored = self._check([_path(strokes=two_strokes, letter_spans=[_span(), _span(stroke=1, first=0, last=1)])])[0]
+        assert [span["stroke"] for span in stored["letter_spans"]] == [0, 1]
+
+    def test_a_slot_number_no_word_could_have_is_refused(self):
+        # The one bound with nothing in the entry to hold it: `stroke`, `first`
+        # and `last` are bounded by the stroke they index, `slot` is not — and
+        # the wire capped it while core did not, so the two layers refused
+        # different things (review, PR #638).
+        with pytest.raises(ValueError, match=f"at most {MAX_SLOT}"):
+            self._check([_path(letter_spans=[_span(slot=MAX_SLOT + 1)])])
+
     @pytest.mark.parametrize("field", ["status", "grund", "detail", "letter_spans"])
     def test_a_format_2_field_pushed_under_format_1_is_refused(self, field: str):
         # A row is stamped with what it was pushed under, so a cell carrying
@@ -440,6 +485,20 @@ class TestFormatTwo:
         entry = _path(**{field: {"status": "ok", "grund": "other", "detail": "x", "letter_spans": [_span()]}[field]})
         with pytest.raises(ValueError, match=f"`{field}`"):
             self._check([entry], pfad_format=1)
+
+    def test_a_push_is_declared_by_what_it_carries_not_by_a_constant(self):
+        # Both writers push entries they did not produce — the merge keeps the
+        # boxes a run did not follow and carries the author's boundaries onto
+        # its own result — so a declaration read off `PFAD_FORMAT` would be
+        # refused by the content rule above (review, PR #638).
+        assert format_of_entries([]) == PFAD_FORMAT
+        assert format_of_entries([_path()]) == PFAD_FORMAT
+        assert format_of_entries([_path(), _skip(box_index=1, word="das")]) == SKIP_AND_SPAN_FORMAT
+        assert format_of_entries([_path(letter_spans=[_span()])]) == SKIP_AND_SPAN_FORMAT
+        # And a row cannot quietly slide back down: everything `check_paths`
+        # accepts under format 2 comes out carrying a `status`, so the next
+        # push of that same list declares 2 again.
+        assert format_of_entries(self._check([_path()])) == SKIP_AND_SPAN_FORMAT
 
     def test_the_boundaries_may_not_also_hide_in_the_free_meta(self):
         # Two sets of boundaries on one box would contradict each other the
@@ -509,8 +568,38 @@ class TestAuthoredRule:
         # twice would only make the refusal longer.
         stored = [_path(verfahren=AUTHORED, letter_spans=[_span(herkunft=AUTHORED)])]
         assert displaced_authored(stored, [_path()]) == [(0, FIELD_PATH)]
-        # …and the author correcting his own trace still has to keep them.
-        assert displaced_authored(stored, [_path(verfahren=AUTHORED)]) == [(0, FIELD_SPANS)]
+
+    def test_the_author_may_redraw_a_box_whose_boundaries_he_had_corrected(self):
+        # Both fields pass for an answer BY HAND, and they have to: boundaries
+        # are drawn on a Bahn and do not outlive it. Guarding them against the
+        # author's own re-draw left him no move at all — dropping them was a
+        # 409 and bringing them back a 422, because they index samples the new
+        # Bahn no longer has (found in review, PR #638).
+        stored = [_path(verfahren=AUTHORED, letter_spans=[_span(herkunft=AUTHORED)])]
+        redrawn = _path(verfahren=AUTHORED, strokes=[[[0.0, 0.0], [0.4, 0.2]]])
+        assert displaced_authored(stored, [redrawn]) == []
+        # …and the fresh Bahn really is one the old boundaries could not fit.
+        with pytest.raises(ValueError, match="which has 2 point"):
+            check_paths(
+                [{**redrawn, "letter_spans": [_span(herkunft=AUTHORED)]}],
+                ROW,
+                WIDTH_PX,
+                HEIGHT_PX,
+                pfad_format=SKIP_AND_SPAN_FORMAT,
+            )
+
+    def test_a_skip_never_passes_as_the_author_correcting_his_own_trace(self):
+        # A Skip-Eintrag says there is no path in this box. Letting it through
+        # on its `verfahren` alone would delete a drawing with neither a 409
+        # nor the archive check that hangs off `--replace-authored` — a hole
+        # opened by the very entry type this format adds (review, PR #638).
+        stored = [_path(verfahren=AUTHORED)]
+        assert displaced_authored(stored, [_skip(verfahren=AUTHORED)]) == [(0, FIELD_PATH)]
+        assert displaced_authored(stored, [_skip()]) == [(0, FIELD_PATH)]
+        # …and the boundaries of a followed box are not its to drop either.
+        assert displaced_authored([_path(letter_spans=[_span(herkunft=AUTHORED)])], [_skip(verfahren=AUTHORED)]) == [
+            (0, FIELD_SPANS)
+        ]
 
 
 class TestFollowerHandover:
@@ -652,21 +741,69 @@ class TestFollowerHandover:
         # is all that stands between a re-follow and a silent loss.
         drawing = {"box_index": 1, "word": "das", "verfahren": AUTHORED}
         corrected = _span(herkunft=AUTHORED)
-        _, body = _apply_run(
+        _, sent = _apply_run(
             monkeypatch,
             fresh=[_path(), {"box_index": 1, "word": "das", "verfahren": "tintenpfad"}],
             stored=[_path(letter_spans=[corrected]), drawing],
             archived=[drawing],
             argv=["--hand", "mn-suetterlin", "--strip", "S0001", "--replace-authored"],
         )
+        body = sent["pfade"]
         assert [entry["verfahren"] for entry in body] == ["tintenpfad", "tintenpfad"]
         assert body[0][FIELD_SPANS] == [corrected]
+        # And the push says what it IS: the carried boundaries are a format-2
+        # field, so declaring this image's own `PFAD_FORMAT` over them would be
+        # refused by the server's content rule (review, PR #638).
+        assert sent["format"] == SKIP_AND_SPAN_FORMAT
+
+    def test_the_push_declares_the_format_the_merged_body_is_actually_in(self, monkeypatch):
+        # The carry-over could not land on the one kind of box it exists for:
+        # the run's own result is format 1, the boundaries it carries are a
+        # format-2 field, and the server refuses every format-2 field under a
+        # format-1 declaration. So the tool would have built a body its own
+        # push could not store (review, PR #638). Held here against the gate
+        # the API runs on it, which is the cross-check that was missing.
+        corrected = _span(herkunft=AUTHORED)
+        _, sent = _apply_run(
+            monkeypatch,
+            fresh=[_path()],
+            stored=[_path(letter_spans=[corrected])],
+            argv=["--hand", "mn-suetterlin", "--strip", "S0001"],
+        )
+        assert sent["format"] == SKIP_AND_SPAN_FORMAT
+        assert check_paths(sent["pfade"], ROW, WIDTH_PX, HEIGHT_PX, pfad_format=sent["format"])
+
+    def test_a_stored_skip_travels_back_up_under_a_number_that_knows_it(self, monkeypatch):
+        # The other half: `_merged` keeps every box this run did not follow, so
+        # once a row holds format-2 entries the tool pushes them back — and a
+        # format-1 declaration over them would lock this follower out of that
+        # row for good.
+        _, sent = _apply_run(
+            monkeypatch,
+            fresh=[_path()],
+            stored=[_path(), _skip(box_index=1, word="das")],
+            argv=["--hand", "mn-suetterlin", "--strip", "S0001", "--box", "0"],
+        )
+        assert sent["format"] == SKIP_AND_SPAN_FORMAT
+        assert [entry.get("status") for entry in sent["pfade"]] == [None, "skipped"]
+        assert check_paths(sent["pfade"], ROW, WIDTH_PX, HEIGHT_PX, pfad_format=sent["format"])
+
+    def test_the_dry_run_files_the_format_the_apply_path_would_declare(self, tmp_path, monkeypatch):
+        # The dry run is the surface `--apply` is decided on, so the file has
+        # to be the DOCUMENT that would be sent, envelope and all.
+        from tools.eigenhand import pfad as tool
+
+        _stub_run(monkeypatch, fresh=[_path()], stored=[_path(letter_spans=[_span(herkunft=AUTHORED)])])
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: pytest.fail("a dry run must not write"))
+        out = tmp_path / "pfade.json"
+        assert tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--out", str(out)]) == 0
+        assert json.loads(out.read_text())["format"] == SKIP_AND_SPAN_FORMAT
 
     def test_the_terminal_flag_is_what_gives_an_archived_hand_drawn_path_up(self, monkeypatch, capsys):
         # The only way past — and it has to reach the SERVER, since the tool's
         # own merge is not what the stored row is protected by.
         drawing = {"box_index": 0, "word": "lesen", "verfahren": AUTHORED}
-        url, body = _apply_run(
+        url, sent = _apply_run(
             monkeypatch,
             fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}],
             stored=[drawing],
@@ -674,7 +811,7 @@ class TestFollowerHandover:
             argv=["--hand", "mn-suetterlin", "--strip", "S0001", "--replace-authored"],
         )
         assert url.endswith("?replace_authored=true")
-        assert [entry["verfahren"] for entry in body] == ["tintenpfad"]
+        assert [entry["verfahren"] for entry in sent["pfade"]] == ["tintenpfad"]
         # The destructive path has to be the loud one: nothing else in the run
         # names the hand work it just handed over — and what the check proved
         # is only that the copy is in this machine's Kartei, on one disk, so
@@ -710,14 +847,17 @@ class TestFollowerHandover:
             )
 
     def test_an_ordinary_apply_asks_for_no_override(self, monkeypatch):
-        url, body = _apply_run(
+        url, sent = _apply_run(
             monkeypatch,
             fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}],
             stored=[{"box_index": 0, "word": "lesen", "verfahren": AUTHORED}],
             argv=["--hand", "mn-suetterlin", "--strip", "S0001"],
         )
         assert "replace_authored" not in url
-        assert [entry["verfahren"] for entry in body] == [AUTHORED]
+        assert [entry["verfahren"] for entry in sent["pfade"]] == [AUTHORED]
+        # Nothing format-2 in this body, so the push says what this image
+        # writes — the declaration follows the content, and never up for free.
+        assert sent["format"] == PFAD_FORMAT
 
     def test_a_dry_run_says_it_WOULD_hand_the_drawing_over(self, tmp_path, monkeypatch, capsys):
         # Nothing is given up until the PUT, and the merge runs before the two
@@ -740,7 +880,7 @@ class TestFollowerHandover:
         # hand-drawn path at all must still go up WITHOUT it — otherwise the
         # server's 409, the one check that does not run on this machine, is
         # switched off for boxes the local guard never looked at.
-        url, _body = _apply_run(
+        url, _sent = _apply_run(
             monkeypatch,
             fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}],
             stored=[{"box_index": 1, "word": "das", "verfahren": "tintenpfad"}],

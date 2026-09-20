@@ -20,7 +20,11 @@ function pfad(word: string, verfahren: string, erzeugtAm: string | null): Eigenh
   return {
     box_index: 0,
     word,
+    status: null,
+    grund: null,
+    detail: null,
     strokes: [],
+    letter_spans: null,
     registration_px: { tx: 0, ty: 0, baseline_row: 0 },
     xh_px: 100,
     verfahren,

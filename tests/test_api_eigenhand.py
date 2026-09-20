@@ -1408,6 +1408,37 @@ class TestStreifenPfad:
         assert answer["letter_spans"] == [span]
 
     @pytest.mark.asyncio
+    async def test_a_skip_cannot_quietly_take_the_place_of_a_hand_drawn_bahn(self, api: Harness):
+        # The new entry type opened a hole in the very rule this PR rebuilds: a
+        # skip claiming `verfahren: authored` passed as „the author correcting
+        # his own trace" and replaced the drawing with an empty entry — no 409,
+        # and so none of the archive guards that hang off `--replace-authored`
+        # (review, PR #638). A skip says there is no path here; that is never
+        # an answer BY HAND.
+        stored = await _store_strip(api)
+        drawing = {**self._path(stored), "verfahren": "authored"}
+        assert (await self._put(api, [drawing], format=2)).status == 200
+
+        skip = {
+            "box_index": 0,
+            "word": drawing["word"],
+            "status": "skipped",
+            "grund": "gave_up",
+            "strokes": [],
+            "verfahren": "authored",
+        }
+        refused = await self._put(api, [skip], format=2)
+        assert refused.status == 409, refused.body
+        assert "hand-drawn Bahn" in refused.json()["detail"]
+        assert (await self._get(api)).json()["pfade"][0]["strokes"] == drawing["strokes"]
+
+        # …and the terminal's own door still opens, as it does for every other
+        # way of giving a drawing up.
+        given_up = await self._put(api, [skip], format=2, params={"replace_authored": "true"})
+        assert given_up.status == 200, given_up.body
+        assert (await self._get(api)).json()["pfade"][0]["status"] == "skipped"
+
+    @pytest.mark.asyncio
     async def test_the_answer_carries_the_rows_own_format_not_this_images_constant(self, api: Harness):
         """A stored path keeps the format it was written under.
 

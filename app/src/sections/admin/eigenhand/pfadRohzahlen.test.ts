@@ -15,7 +15,13 @@ function pfad(meta: Record<string, unknown>): EigenhandPfad {
   return {
     box_index: 0,
     word: 'lesen',
+    // What a row written under format 1 answers with — the four format-2 keys
+    // are there and empty, which is the shape every reader has to survive.
+    status: null,
+    grund: null,
+    detail: null,
     strokes: [],
+    letter_spans: null,
     registration_px: { tx: 0, ty: 0, baseline_row: 0 },
     xh_px: 100,
     verfahren: 'tintenpfad',

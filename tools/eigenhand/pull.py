@@ -33,10 +33,13 @@ archive run can see it — this is the first link of the chain
 
     ADMIN_TOKEN=… uv run python -m tools.eigenhand.pull --hand mn-suetterlin --pfade
 
-Only ``verfahren: "authored"`` entries come down. A FOLLOWED path is a
-derivation — strip, layout and follower are all in the archive, so it can be
-made again — and filing it would put a second truth beside the one that
-regenerates it.
+Only entries carrying the author's OWN hand come down: a drawn Bahn
+(``verfahren: "authored"``) and, since Streifen-Pfad format 2, a followed Bahn
+whose letter boundaries he corrected (``letter_spans[].herkunft ==
+"authored"``). A purely followed path is a derivation — strip, layout and
+follower are all in the archive, so it can be made again — and filing it would
+put a second truth beside the one that regenerates it. A corrected boundary
+cannot be made again, so it travels with the Bahn it sits on.
 
 They land as a record in the central ``kartei.json`` and NOWHERE else (author
 decision A, 2026-09-20): the Kartei is copied in full by every archive run,
@@ -58,7 +61,7 @@ from datetime import date as date_cls
 from urllib.parse import quote
 
 from core.eigenhand.bogen import layout_text
-from core.eigenhand.pfad import is_authored
+from core.eigenhand.pfad import authored_spans, is_authored
 from tools.eigenhand.apiclient import admin_token, api_base, request_bytes, request_json
 from tools.eigenhand.kartei import fassung_record, load_kartei, pfad_record, pfade_of, save_kartei
 from tools.eigenhand.store import check_hand_id, check_sheet_id, hand_dir, sheet_dir
@@ -159,14 +162,20 @@ def _declared_format(answer: dict, where: str) -> int:
 
 
 def pull_pfade(hand: str, base: str, token: str) -> int:
-    """Bring the hand-drawn Bahnen down into the Kartei — the one datum born up there.
+    """Bring the hand-made Streifen-Pfade down into the Kartei — born up there.
+
+    Two kinds of entry, one Ziehweg: a Bahn the author DREW (`verfahren:
+    authored`) and a followed Bahn whose letter boundaries he CORRECTED
+    (`letter_spans[].herkunft == "authored"`, Streifen-Pfad format 2). Both are
+    ground truth that exists nowhere else, and both are protected by the
+    server's field rule, so both have to be archivable.
 
     One read per stored Fassung, which is a handful: the path list is loaded on
     demand up there (it is a few thousand points per word) and the strip listing
     deliberately does not carry it.
 
     NEVER deletes, and per BOX, not per Fassung (Copilot review, PR #635). A
-    Fassung the server holds no authored Bahn for keeps whatever this machine
+    Fassung the server holds no hand work for keeps whatever this machine
     has — but so does a single box of one: if the author hands box 0 to a
     follower and keeps drawing box 1, the server answers with box 1 alone, and
     writing that answer as the record would drop the only remaining copy of
@@ -190,7 +199,7 @@ def pull_pfade(hand: str, base: str, token: str) -> int:
 
     kartei = load_kartei(hand)
     today = date_cls.today().isoformat()
-    bahnen = fassungen = unchanged = 0
+    bahnen = grenzen = fassungen = unchanged = 0
     homeless: list[str] = []
     clashes: list[str] = []
     retained_boxes: list[str] = []
@@ -199,7 +208,13 @@ def pull_pfade(hand: str, base: str, token: str) -> int:
         where = f"{strip}/{fassung}"
         url = f"{base}/eigenhand/strips/{quote(hand)}/{quote(strip)}/{quote(fassung)}/pfade"
         answer = request_json("GET", url, token) or {}
-        authored = [entry for entry in (answer.get("pfade") or []) if is_authored(entry)]
+        # Both pieces of hand work a box can hold, not only the drawing: since
+        # Streifen-Pfad format 2 the author can also correct the letter
+        # boundaries ON a followed Bahn, and those are ground truth the server
+        # refuses to lose — so the only Ziehweg has to carry them, or the
+        # phase's own ordering („the archive chain stands before anything can
+        # create hand work") would hold for one of the two only (PR #638).
+        authored = [entry for entry in (answer.get("pfade") or []) if is_authored(entry) or authored_spans(entry)]
         record = fassung_record(kartei, strip, fassung)
         if not authored:
             # The server answers with no drawing here — it never had one, or
@@ -234,14 +249,15 @@ def pull_pfade(hand: str, base: str, token: str) -> int:
             unchanged += len(merged)
             continue
         record["pfade"] = pfad_record(merged, declared, today)
-        bahnen += len(authored)
+        bahnen += sum(1 for entry in authored if is_authored(entry))
+        grenzen += sum(1 for entry in authored if not is_authored(entry))
         fassungen += 1
 
     if fassungen:
         save_kartei(hand, kartei)
     print(
-        f"{hand}: {bahnen} hand-drawn Bahn(en) in {fassungen} Fassung(en) pulled into the Kartei, "
-        f"{unchanged} already there"
+        f"{hand}: {bahnen} hand-drawn Bahn(en) and {grenzen} hand-corrected boundary set(s) "
+        f"in {fassungen} Fassung(en) pulled into the Kartei, {unchanged} already there"
     )
     if retained_boxes:
         # The give-up signal: the server no longer answers with a drawing this
@@ -286,7 +302,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument(
         "--pfade",
         action="store_true",
-        help="fetch the hand-drawn Bahnen (`verfahren: authored`) into the Kartei, so a snapshot carries them",
+        help=(
+            "fetch the hand-made Streifen-Pfade — a drawn Bahn (`verfahren: authored`) and a followed one "
+            "whose letter boundaries were corrected — into the Kartei, so a snapshot carries them"
+        ),
     )
     ap.add_argument("--api", default=None, help="API base URL (default: $EIGENHAND_API or production)")
     ap.add_argument("--token", default=None, help="admin token (default: $ADMIN_TOKEN)")

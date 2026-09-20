@@ -94,7 +94,14 @@ import numpy as np  # noqa: E402
 
 from core.database.models import LAUFFORM_VARIANT  # noqa: E402
 from core.eigenhand.ids import style_of_hand  # noqa: E402
-from core.eigenhand.pfad import FIELD_SPANS, PFAD_FORMAT, authored_spans, frame_for_box, is_authored  # noqa: E402
+from core.eigenhand.pfad import (  # noqa: E402
+    FIELD_SPANS,
+    STATUS_SKIPPED,
+    authored_spans,
+    format_of_entries,
+    frame_for_box,
+    is_authored,
+)
 from core.eigenhand.plan import load_plan, shaping_form_of  # noqa: E402
 from tools.eigenhand.apiclient import admin_token, api_base, request_bytes, request_json  # noqa: E402
 from tools.eigenhand.kartei import archived_pfade, load_kartei  # noqa: E402
@@ -646,10 +653,15 @@ def main(argv: list[str] | None = None) -> int:
             replace_authored=args.replace_authored,
             apply=args.apply,
         )
+        # The declared format follows the BODY, not this image's own constant:
+        # the merge carries stored entries and hand-corrected boundaries this
+        # run did not produce, and declaring format 1 over them would be refused
+        # by the content rule (`core.eigenhand.pfad.format_of_entries`).
+        wire_format = format_of_entries(body)
         if not args.apply:
             out = args.out or _local_path(hand, row["strip"], row["fassung"])
             out.parent.mkdir(parents=True, exist_ok=True)
-            out.write_text(json.dumps({"format": PFAD_FORMAT, "pfade": body}, ensure_ascii=False, indent=1) + "\n")
+            out.write_text(json.dumps({"format": wire_format, "pfade": body}, ensure_ascii=False, indent=1) + "\n")
             print(
                 f"  dry run — {len(body)} path(s) ({len(entries)} followed) written to {out}, nothing stored",
                 flush=True,
@@ -661,9 +673,17 @@ def main(argv: list[str] | None = None) -> int:
         # covers every stored Fassung of the strip, and the server's 409 is the
         # one check that does not run on this machine.
         push_url = f"{url}?replace_authored=true" if handed_over else url
-        stored = request_json("PUT", push_url, token, {"format": PFAD_FORMAT, "pfade": body}) or {}
-        written += len(stored.get("pfade") or [])
-        print(f"  stored {len(stored.get('pfade') or [])} path(s) at {base}", flush=True)
+        stored = request_json("PUT", push_url, token, {"format": wire_format, "pfade": body}) or {}
+        # A skip is an entry, not a path. Counting the two together would put
+        # the four states back into one number — which is the whole reason the
+        # Skip-Eintrag exists (found in review, PR #638).
+        entries = stored.get("pfade") or []
+        paths = [entry for entry in entries if entry.get("status") != STATUS_SKIPPED]
+        skipped = len(entries) - len(paths)
+        written += len(paths)
+        print(
+            f"  stored {len(paths)} path(s){f' and {skipped} skipped box(es)' if skipped else ''} at {base}", flush=True
+        )
     if args.apply:
         print(f'{written} path(s) in the shared database — the workbench shows them under "Pfad zeigen"')
     return 0

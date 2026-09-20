@@ -542,6 +542,31 @@ class TestHandDrawnBahnChain:
         _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): [_bahn(verfahren="tintenpfad")]}))
         assert "pfade" not in _record()
 
+    def test_a_followed_path_whose_boundaries_were_corrected_by_hand_comes_down(self, dataroot, monkeypatch):
+        # The second piece of hand work a box can hold, and the one this
+        # format adds: a corrected letter boundary cannot be followed again
+        # either, the server protects it as its own field, and the only
+        # Ziehweg filtered on the BAHN's `verfahren` alone — so it would have
+        # had no way into the archive at all (review, PR #638).
+        _build(dataroot)
+        corrected = _bahn(
+            verfahren="tintenpfad",
+            letter_spans=[{"stroke": 0, "slot": 0, "first": 0, "last": 2, "herkunft": "authored"}],
+        )
+        _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): [corrected]}, declared=2))
+        assert _record()["pfade"]["entries"] == [corrected]
+        assert _record()["pfade"]["pfad_format"] == 2
+
+    def test_a_boundary_the_follower_assigned_is_still_a_derivation(self, dataroot, monkeypatch):
+        # `auto` is the run's own work, like the Bahn under it. Pulling those
+        # too would file every followed path in the Kartei.
+        _build(dataroot)
+        auto = _bahn(
+            verfahren="tintenpfad", letter_spans=[{"stroke": 0, "slot": 0, "first": 0, "last": 2, "herkunft": "auto"}]
+        )
+        _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): [auto]}, declared=2))
+        assert "pfade" not in _record()
+
     def test_a_fassung_the_server_holds_no_drawing_for_keeps_its_copy(self, dataroot, monkeypatch, capsys):
         # Never deletes: after `--replace-authored` the local copy IS the only
         # remaining one, and that is precisely the copy this chain exists for.
@@ -655,6 +680,28 @@ class TestHandDrawnBahnChain:
         fake = _FakePfadApi({("S0001", "F01"): [followed]})
         assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot)) == 0
         assert [entry["box_index"] for entry in fake.pushed()[0]["pfade"]] == [0, 1]
+
+    def test_a_live_box_written_under_a_newer_format_rides_up_declared_as_such(self, dataroot, tmp_path, monkeypatch):
+        # Because the body is a MERGE, a box the archive knows nothing about
+        # travels up with it — and declaring the ARCHIVE's older number over a
+        # format-2 entry is a 422 that kills the restore on a box it was not
+        # even asked to change (review, PR #638). The declaration follows the
+        # content, and only ever upward: a format-1 entry is a valid format-2
+        # one, while the reverse is the mislabelling the marker exists to stop.
+        snapshot = self._archived(dataroot, tmp_path, monkeypatch, [_bahn()])
+        skipped = {
+            "box_index": 1,
+            "word": "das",
+            "status": "skipped",
+            "grund": "gave_up",
+            "strokes": [],
+            "verfahren": "tintenpfad",
+        }
+        fake = _FakePfadApi({("S0001", "F01"): [skipped]}, declared=2)
+        assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot)) == 0
+        pushed = fake.pushed()[0]
+        assert pushed["format"] == 2
+        assert [entry["box_index"] for entry in pushed["pfade"]] == [0, 1]
 
     def test_a_drawing_whose_strip_is_not_up_there_ends_the_restore_loudly(self, dataroot, tmp_path, monkeypatch):
         # THE failure this PR exists to prevent: a restore that reports success

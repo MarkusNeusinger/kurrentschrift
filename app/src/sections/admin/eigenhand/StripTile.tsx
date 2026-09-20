@@ -9,6 +9,7 @@ import { de, fmt } from '@/locales/admin';
 import { BefundChips } from '@/sections/admin/eigenhand/BefundChips';
 import { FleckenEditor, MIN_ERASE_ZOOM } from '@/sections/admin/eigenhand/FleckenEditor';
 import type { LupeTarget } from '@/sections/admin/eigenhand/Lupe';
+import { bahnenOf } from '@/sections/admin/eigenhand/pfadBahnen';
 import { PfadCaption } from '@/sections/admin/eigenhand/PfadCaption';
 import { PfadLayer } from '@/sections/admin/eigenhand/PfadLayer';
 import { PfadRohzahlenChips } from '@/sections/admin/eigenhand/PfadRohzahlenChips';
@@ -76,7 +77,7 @@ export function StripTile({
   const flecken = row.flecken ?? [];
   // A word cut needs its own frame; the box rectangle comes from the listing.
   const cut = shown === null ? null : (row.boxes[shown]?.rect_px ?? null);
-  const drawn = (pfade.pfade ?? []).filter((p) => shown === null || p.box_index === shown);
+  const drawn = bahnenOf(pfade.pfade).filter((p) => shown === null || p.box_index === shown);
   // A word cut without a box rectangle cannot carry an overlay at all — an old
   // Bogen has no cut geometry to place one against. That is a state of its
   // own: without it a stored path for exactly this word would be silently

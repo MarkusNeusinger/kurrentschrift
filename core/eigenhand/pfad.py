@@ -124,6 +124,13 @@ SPAN_HERKUNFT = (SPAN_AUTO, AUTHORED)
 # client sending a sample-level labelling rather than spans.
 MAX_SPANS = 256
 
+# The highest shaped slot a boundary may name. Bounded here and not only on the
+# wire (`api.schemas.EigenhandPfadSpan`, which imports this number): the two
+# layers refusing different things is how a 422 ends up naming the wrong rule,
+# and `stroke`/`first`/`last` are bounded by the strokes they index while `slot`
+# has nothing to be held against. A word of 256 slots is not a word.
+MAX_SLOT = 255
+
 # The two fields of one box a followed push may not take away. Named rather
 # than implied, because the refusal has to say WHICH piece of hand work a push
 # would lose — the Bahn and the boundaries on it are given up separately.
@@ -389,6 +396,14 @@ def _checked_spans(spans: Any, strokes: Sequence[Sequence[Any]], where: str) -> 
     letter number minus one in every consumer. Refused rather than dropped —
     the caller decides what to do with an unlabelled stretch, and silently
     swallowing entries is how a list starts disagreeing with its own length.
+
+    The spans are also held against EACH OTHER, not only against their stroke:
+    one sample belongs to one letter, so two boundaries claiming the same ink
+    of the same stroke is the same class of nonsense as one that leaves it —
+    well-formed in every number it carries, and it would reach the
+    Span-Zuordner's training set as ground truth (found in review, PR #638).
+    Two spans on DIFFERENT strokes may share a slot: a letter whose mark is its
+    own stroke (the i-dot, an umlaut) is one slot written in two pen-downs.
     """
     if spans is None:
         return None
@@ -406,6 +421,8 @@ def _checked_spans(spans: Any, strokes: Sequence[Sequence[Any]], where: str) -> 
             if not isinstance(value, int) or isinstance(value, bool) or value < 0:
                 raise ValueError(f"{where}: letter span {position} needs a non-negative integer `{key}`, got {value!r}")
             values[key] = value
+        if values["slot"] > MAX_SLOT:
+            raise ValueError(f"{where}: letter span {position} names slot {values['slot']} — at most {MAX_SLOT}")
         herkunft = span.get("herkunft")
         if herkunft not in SPAN_HERKUNFT:
             raise ValueError(
@@ -427,7 +444,23 @@ def _checked_spans(spans: Any, strokes: Sequence[Sequence[Any]], where: str) -> 
                 f"which has {length} point(s)"
             )
         out.append({**values, "herkunft": herkunft})
+    _refuse_overlaps(out, where)
     return out
+
+
+def _refuse_overlaps(spans: Sequence[Mapping[str, int]], where: str) -> None:
+    """No two boundaries of one stroke may claim the same sample."""
+    for stroke in sorted({span["stroke"] for span in spans}):
+        ordered = sorted(
+            ((span["first"], span["last"], position) for position, span in enumerate(spans) if span["stroke"] == stroke)
+        )
+        for (first, last, position), (next_first, next_last, next_position) in zip(ordered, ordered[1:], strict=False):
+            if next_first <= last:
+                raise ValueError(
+                    f"{where}: letter spans {position} and {next_position} both claim sample(s) "
+                    f"{max(first, next_first)}..{min(last, next_last)} of stroke {stroke} — "
+                    "one sample belongs to one letter"
+                )
 
 
 def _checked_grund(value: Any, where: str) -> str:
@@ -583,6 +616,33 @@ def check_paths(
     return sorted(out, key=lambda item: item["box_index"])
 
 
+def format_of_entries(entries: Sequence[Mapping[str, Any]]) -> int:
+    """The Streifen-Pfad format a push of exactly these entries has to declare.
+
+    A writer does not only push what it produced. `tools.eigenhand.pfad` reads
+    the stored list first and pushes the MERGE: the boxes it followed, the ones
+    it did not touch, and the author's letter boundaries carried onto its own
+    fresh Bahn. `tools.eigenhand.sync` restores entries an archive holds. Both
+    therefore put entries on the wire this image would never write itself, and
+    a push that declared `PFAD_FORMAT` would be refused by the very content
+    rule that keeps a row's stamp honest (found in review, PR #638).
+
+    So the declaration follows the CONTENT rather than the constant: format 2
+    where any entry carries a format-2 field, what this image writes otherwise.
+    It never over-declares — a cell of plain format-1 entries obeys format 1 —
+    and it cannot quietly downgrade a row either: `check_paths` stamps every
+    entry it accepts under format 2 with a `status`, and that field is what
+    brings the number back on the next push.
+
+    It says nothing about whether the SERVER knows that format. That is the
+    envelope's question and stays with `SUPPORTED_FORMATS` and the 409.
+    """
+    for entry in entries:
+        if any(entry.get(field) is not None for field in FORMAT_2_FIELDS):
+            return max(PFAD_FORMAT, SKIP_AND_SPAN_FORMAT)
+    return PFAD_FORMAT
+
+
 def is_authored(entry: Mapping[str, Any]) -> bool:
     """Whether this stored path is the author's own hand rather than a follow.
 
@@ -633,6 +693,19 @@ def displaced_authored(
       of a span-corrected box passes here as long as it brings the boundaries
       along — which `tools.eigenhand.pfad` does by itself.
 
+    An answer BY HAND passes for both fields, and it has to: boundaries are
+    drawn on a Bahn and do not outlive it, so a box the author re-draws gives up
+    the boundaries that belonged to the old drawing — the same rule
+    `tools.eigenhand.pfad` applies to a box handed over. Without it the author
+    could not re-draw a box he had corrected at all: dropping the boundaries
+    would be this refusal, and bringing them back would be a 422, because they
+    index samples the new Bahn no longer has (found in review, PR #638).
+
+    A Skip-Eintrag is NOT an answer by hand, whatever `verfahren` it claims: it
+    says there is no path in this box, so letting it pass as „the author
+    correcting his own trace" would let an empty entry delete a drawing with
+    neither a 409 nor the archive check that hangs off `--replace-authored`.
+
     Only the LOSS is reported, and only once per box: where the Bahn itself is
     displaced, its boundaries go with it and saying so twice would just make the
     refusal longer.
@@ -649,8 +722,11 @@ def displaced_authored(
         if index is None:
             continue
         answer = answers.get(index)
-        if is_authored(entry) and not (answer is not None and is_authored(answer)):
+        by_hand = answer is not None and is_authored(answer) and answer.get("status") != STATUS_SKIPPED
+        if is_authored(entry) and not by_hand:
             displaced.append((index, FIELD_PATH))
+            continue
+        if by_hand:
             continue
         kept = authored_spans(entry)
         if not kept:

@@ -4406,7 +4406,13 @@ es die Grenzen mitbringt — das Werkzeug trägt sie von sich aus hinüber, und
 ein hand-korrigierter ZUG behält seine Grenzen ganz, statt mit den frisch
 gefolgten verschränkt zu werden. Passt die frische Bahn nicht mehr zu
 ihnen, bleibt der gespeicherte Eintrag stehen: Umindizieren ist Arbeit des
-Span-Zuordners, keine stille Reparatur im Merge. *Technisch:*
+Span-Zuordners, keine stille Reparatur im Merge. Eine Antwort VON HAND geht
+dagegen für beide Felder durch: Grenzen liegen auf einer Bahn und überleben
+sie nicht, also gibt ein Kasten, den der Autor neu zeichnet, die Grenzen der
+alten Zeichnung mit ihr auf — sonst könnte er einen selbst korrigierten
+Kasten gar nicht mehr nachzeichnen (die Grenzen fallen zu lassen wäre der
+409, sie mitzubringen der 422). Ein → Skip-Eintrag zählt dabei NIE als
+Antwort von Hand, was immer sein `verfahren` behauptet. *Technisch:*
 `core/eigenhand/pfad.py` (`SPAN_HERKUNFT` · `_checked_spans` ·
 `authored_spans` · `displaced_authored` · `FIELD_PATH`/`FIELD_SPANS`),
 `api/schemas.py::EigenhandPfadSpan`, `tools/eigenhand/pfad.py::_carry_spans`.
@@ -4422,8 +4428,12 @@ nötig, weil eine nachgefahrene Bahn das EINZIGE Eigenhand-Datum ist, das
 oben entsteht: Scan, Verdikt und → Fleckenmaske werden am Rechner des
 Autors gemacht und hochgeschoben, der Archivlauf greift dort einfach die
 Arbeitskopie ab — eine Bahn entsteht im Browser und muss erst
-heruntergeholt werden. Gezogen wird nur `authored`; ein GEFOLGTER →
-Streifen-Pfad ist eine Ableitung und wird neu gefolgt statt archiviert. Die
+heruntergeholt werden. Gezogen wird nur, was die Hand des Autors trägt: eine
+`authored`-Bahn und, seit PFAD_FORMAT 2, auch ein GEFOLGTER Eintrag, dessen
+Buchstabengrenzen von Hand korrigiert sind (→ Span-Herkunft) — auch die
+lassen sich nicht neu folgen, und die Kette hielte sonst nur für eines der
+beiden Stücke Handarbeit. Ein rein gefolgter →
+Streifen-Pfad bleibt eine Ableitung und wird neu gefolgt statt archiviert. Die
 Bahn landet als Satz in der zentralen `kartei.json` und nirgends sonst
 (Entscheid A): die Kartei wird bei jedem Archivlauf VOLL kopiert, ein
 abgelegtes Fassungs-Verzeichnis ist dagegen eine unveränderliche

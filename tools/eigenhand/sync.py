@@ -67,6 +67,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 from core.eigenhand.flecken import FLECKEN_FORMAT
+from core.eigenhand.pfad import format_of_entries
 from tools.eigenhand.apiclient import admin_token, api_base, request_json
 from tools.eigenhand.kartei import load_kartei, pfad_wire_format, pfade_of
 from tools.eigenhand.store import WORK_DPI, check_hand_id, hand_dir, sheet_dir
@@ -330,6 +331,15 @@ def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
     holds. That also means the push can never trip the 409 — a stored
     `authored` box is never one of the boxes this writes.
 
+    And because the body is a MERGE, the declaration cannot simply be the
+    archive's: a live box written under a newer format travels up in that same
+    push, and declaring the archive's older number over it would be refused
+    outright (422) — the restore would die on a row it was not even asked to
+    change (found in review, PR #638). So the push declares whichever of the
+    two the CONTENT needs. It can only ever go up: a format-1 entry is a valid
+    format-2 one, and `check_paths` normalises it, whereas the reverse would be
+    the mislabelling the stored marker exists to prevent.
+
     A Fassung whose strip row is not up there cannot take a path at all (the
     route answers 404). Those are COUNTED and named rather than skipped: a
     drawing nothing can follow again is the one loss this whole chain exists to
@@ -371,7 +381,9 @@ def _push_pfade(base: str, token: str, hand: str, kartei: dict) -> _Restore:
             [*fresh, *(entry for entry in stored if entry.get("box_index") not in mine)],
             key=lambda item: item["box_index"],
         )
-        echo = request_json("PUT", url, token, {"format": wire_format, "pfade": body}) or {}
+        echo = (
+            request_json("PUT", url, token, {"format": max(wire_format, format_of_entries(body)), "pfade": body}) or {}
+        )
         landed = {entry.get("box_index"): entry for entry in (echo.get("pfade") or [])}
         for entry in fresh:
             if landed.get(entry["box_index"]) == entry:

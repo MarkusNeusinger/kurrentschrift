@@ -5,7 +5,7 @@ from typing import Annotated, Any, Literal, get_args
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from core.eigenhand.pfad import PFAD_FORMAT
+from core.eigenhand.pfad import MAX_SLOT, PFAD_FORMAT
 
 
 # Anchor-count bound, shared by BboxIn / TraceRequest / ResampleRequest: below 4
@@ -1547,7 +1547,10 @@ class EigenhandPfadSpan(BaseModel):
     """
 
     stroke: Annotated[int, Field(ge=0, le=127)]
-    slot: Annotated[int, Field(ge=0, le=255)]
+    # The one bound that has nothing in the entry to be held against — so it is
+    # the core constant itself here, and the two layers cannot refuse different
+    # slots (`stroke`, `first` and `last` are bounded by the stroke they index).
+    slot: Annotated[int, Field(ge=0, le=MAX_SLOT)]
     first: Annotated[int, Field(ge=0, le=4095)]
     last: Annotated[int, Field(ge=0, le=4095)]
     herkunft: PfadSpanHerkunft
