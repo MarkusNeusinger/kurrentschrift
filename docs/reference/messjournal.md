@@ -17574,9 +17574,10 @@ neben `befund.guete` und würde binnen eines Monats mit ihr verrechnet.
 | Papier-Exkursion | ≤ 0,20 xh | ≤ 0,35 xh | **0,35** ist die vorregistrierte Inventar-Schwelle der K-D-Runde (`tools/tracebench/excursions.py::EXCURSION_THRESHOLDS`, §14 „Kette K-D `aug21`“). **0,20** hat keinen eigenen Anker; es ist die Ablesung des Kommentars daneben („ordinary on-ink riding stays well under 0.35") und damit die schwächste der acht Zahlen |
 | AIoU | ≥ 0,75 | ≥ 0,65 | Der dev-19-Median des Tintenpfads ist **0,7929** ([`verfahren.md`](verfahren.md), Stand `sep12`). Grün liegt knapp darunter: „so gut, wie der Folger auf der PLATTE üblicherweise ist" |
 
-**Das Etikett „vorläufig" und warum es dort steht.** Drei der vier Anker
-sind an der 1922er PLATTE bei 30–35 px x-Höhe kalibriert, der vierte am
-dev-19-Satz derselben Platte. Ein Streifen liegt bei 300 dpi und ist die
+**Das Etikett „vorläufig" und warum es dort steht.** Zwei der vier bewerteten
+Sensoren hängen an Zahlen der 1922er PLATTE bei 30–35 px x-Höhe, einer am
+dev-19-Satz derselben Platte, und der vierte (Absetzer) an gar keiner
+Messung, sondern an einer Regel. Ein Streifen liegt bei 300 dpi und ist die
 Schrift einer ANDEREN Hand. Keine der acht Zahlen ist also an dem gemessen,
 worüber sie urteilt; sie sind geborgt, nicht erhoben. `Schwellen.vorlaeufig`
 trägt das bis in die Antwort, damit keine Fläche eine Kalibrierung

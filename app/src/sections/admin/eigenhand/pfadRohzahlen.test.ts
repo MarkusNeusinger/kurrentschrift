@@ -128,7 +128,7 @@ describe('pfadRohzahlen', () => {
 // The fixture carries no NaN/Infinity by construction: `json.loads` takes them
 // and `JSON.parse` does not, so those two stay in each language's own cases
 // above.
-interface TintentreueCase {
+type TintentreueCase = {
   name: string;
   pfad: EigenhandPfad | null;
   rohzahlen: {
@@ -138,7 +138,7 @@ interface TintentreueCase {
     hairpins: number | null;
     gemessen: boolean;
   } | null;
-}
+};
 
 // Read via node fs rather than an import so the fixture can live at the repo
 // root, shared with the Python test.

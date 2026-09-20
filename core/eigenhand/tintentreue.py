@@ -164,9 +164,10 @@ class Schwellen:
 
 # The start values of `admin-redesign.md` §6.3, pre-registered in
 # `messjournal.md` §14 „Tintentreue `sep20`" before the first computed light.
-# NONE of them is measured on the author's hand — three are read off the
-# PLATE at 30–35 px x-height and one off the dev-19 set, while a strip is
-# scanned at 300 dpi, so every one of them is provisional by construction:
+# NONE of them is measured on the author's hand: two are read off the PLATE at
+# 30–35 px x-height, one off the dev-19 set of that same plate, and one is a
+# rule with no measurement behind it at all. A strip is scanned at 300 dpi and
+# is another hand's writing, so every bound here is provisional by construction:
 #
 #   unbesucht 0,05 / 0,15  around the worst measured share the repo holds for
 #                          this sensor, 0,096 at `kann` (`messjournal.md` §14
