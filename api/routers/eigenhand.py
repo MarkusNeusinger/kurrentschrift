@@ -1218,6 +1218,11 @@ async def read_pfade(
 
     `private, no-store` like the image itself: a path is DERIVED from the
     reserved own-hand pixels and stays behind the same gate.
+
+    `format` is the ROW's own marker (`pfade_format`, 0032), never this image's
+    `PFAD_FORMAT`: a read that answered from the constant would relabel every
+    stored path the day the constant moves, and a reader would then apply the
+    new format's semantics to entries written under the old one.
     """
     row = await _pfad_row(hand, strip, fassung, db)
     layout_row = await _layout_row(hand, row.sheet, row.row_index, db)
@@ -1226,7 +1231,7 @@ async def read_pfade(
         hand=hand,
         strip=strip,
         fassung=fassung,
-        format=PFAD_FORMAT,
+        format=row.pfade_format,
         pfade=row.pfade,
         boxes=_pfad_boxes(row, load_plan(), layout_row),
     )
@@ -1275,7 +1280,12 @@ async def write_pfade(
     The format is declared by the client and checked here, the same way a
     pushed Befund is: the SERVER holds the contract, and a newer tool pushed at
     an older API would otherwise store numbers this code reads under different
-    semantics.
+    semantics. What passed the check is then STAMPED onto the row
+    (`pfade_format`, 0032) instead of being forgotten — the row, not the
+    deployed constant, is what a later read answers with. Today the check above
+    admits exactly `PFAD_FORMAT`, so the stamp is always 1 and this write moves
+    nothing; it is the half that has to be in place before a second format may
+    be admitted at all.
     """
     if body.format != PFAD_FORMAT:
         raise HTTPException(
@@ -1306,13 +1316,14 @@ async def write_pfade(
     except ValueError as exc:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc)) from exc
     row.pfade = checked
+    row.pfade_format = body.format
     await db.commit()
     response.headers["Cache-Control"] = STRIP_CACHE_CONTROL
     return EigenhandPfadeOut(
         hand=hand,
         strip=strip,
         fassung=fassung,
-        format=PFAD_FORMAT,
+        format=row.pfade_format,
         pfade=checked,
         boxes=_pfad_boxes(row, plan, layout_row),
     )

@@ -172,10 +172,13 @@ def pull_pfade(hand: str, base: str, token: str) -> int:
     writing that answer as the record would drop the only remaining copy of
     box 0. The pulled entries are merged over the held ones by `box_index`.
 
-    That merge needs one format policy. The entries carry the API's own
-    `PFAD_FORMAT`, one declaration for the whole record, so entries written
-    under an older one cannot be carried under a newer declaration without
-    mislabelling them. Where that happens AND boxes would have to be retained,
+    That merge needs one format policy. The entries carry the Streifen-Pfad
+    format the ROW was answered under (`eigenhand_strips.pfade_format`,
+    migration 0032), one declaration for the whole record — read per Fassung,
+    not once per run, because the API answers from the row and two Fassungen of
+    one hand may legitimately differ. Entries written under an older format
+    cannot be carried under a newer declaration without mislabelling them.
+    Where that happens AND boxes would have to be retained,
     the Fassung is left untouched and named at the end — a decision for the
     operator, not for this loop.
     """

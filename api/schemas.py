@@ -5,6 +5,8 @@ from typing import Annotated, Any, Literal, get_args
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from core.eigenhand.pfad import PFAD_FORMAT
+
 
 # Anchor-count bound, shared by BboxIn / TraceRequest / ResampleRequest: below 4
 # the resampler breaks (single-sample linspace / negative counts), far above it
@@ -1557,10 +1559,24 @@ class EigenhandPfadeIn(BaseModel):
     Full replace, like the Fleckenmaske and for the same reason: a follower run
     produces the whole row at once, and merging would have to guess what a
     missing box meant.
+
+    A push that names no format means „the format this API reads" — bound to
+    the constant rather than written out as 1, so the number lives in one place
+    (the redesign books both wire defaults that way, §15.6).
+
+    The catch, and the duty of the PR that bumps the constant: while the write
+    admits exactly ONE format, this default cannot lie, because the only value
+    it can take is the only value the 409 lockstep guard lets through. The
+    moment that guard admits 1 AND 2, a push that names no format would claim
+    the NEWER one and `write_pfade` would stamp the row with it — the same
+    mislabelling the stored marker exists to prevent, moved from the read to
+    the write. Before `PFAD_FORMAT` moves, `format` has to become REQUIRED
+    here. Every writer in the repo already names it (`tools/eigenhand/pfad.py`,
+    `tools/eigenhand/sync.py`, the local seed); only the test helper omits it.
     """
 
     pfade: list[EigenhandPfad]
-    format: int = 1
+    format: int = PFAD_FORMAT
 
 
 class EigenhandPfadeOut(BaseModel):
@@ -1569,12 +1585,17 @@ class EigenhandPfadeOut(BaseModel):
     An empty list is the other answer („followed, nothing found"), the same
     NULL/empty distinction the Fleckenmaske carries. `boxes` travels along so
     the view can place a path over a single word crop without a second read.
+
+    `format` is filled from the ROW (`eigenhand_strips.pfade_format`); the
+    default here is only what an instance built without one falls back to, and
+    it follows the constant so no code path can silently claim format 1 after
+    the constant has moved.
     """
 
     hand: str
     strip: str
     fassung: str
-    format: int = 1
+    format: int = PFAD_FORMAT
     pfade: list[EigenhandPfad] | None = None
     boxes: list[EigenhandStripBoxOut] = []
 

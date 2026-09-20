@@ -634,8 +634,11 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   unveränderliche Kopiereinheit und würde eine nachträglich hineingelegte
   Datei still überspringen). Gefolgte Pfade bleiben oben — sie sind
   ableitbar. Der Satz trägt ZWEI Versionen: `format` (die Form der
-  Kartei-Zeile) und `pfad_format` (das `PFAD_FORMAT`, unter dem die API
-  geantwortet hat); ein Satz in unbekannter Form wird verweigert, nie als
+  Kartei-Zeile) und `pfad_format` (das Streifen-Pfad-Format, unter dem die
+  ZEILE geantwortet wurde — `eigenhand_strips.pfade_format`, Migration
+  `0032`, nicht die Konstante des laufenden Abbilds, zwei Fassungen einer
+  Hand dürfen also verschieden sein); ein Satz in unbekannter Form wird
+  verweigert, nie als
   „keine Bahn" gelesen — unbekannt heißt NEUER, nie älter, denn eine
   archivierte Kartei wird nie umgeschrieben. Eine Fassung, die dieser Rechner nicht kennt,
   beendet den Lauf laut, statt still übersprungen zu werden. Alle drei

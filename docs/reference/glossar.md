@@ -4329,9 +4329,21 @@ Kästen herum, und der einzige Weg daran vorbei ist
 Der Satz von der Ableitung oben gilt dabei nur für die GEFOLGTE Bahn: eine
 `authored`-Bahn lässt sich nicht neu folgen, ist also keine Ableitung und
 wird seit dem 2026-09-20 von der → Bahn-Archivkette gesichert.
+**Welches Format eine Zeile trägt, sagt seit dem 2026-09-20 die Zeile
+selbst** (`eigenhand_strips.pfade_format`, Migration `0032`, NOT NULL,
+Bestand = 1): der Read antwortete vorher mit der Konstante `PFAD_FORMAT`,
+also mit dem, was das laufende Abbild glaubt — sobald die Konstante auf 2
+steht, läse sich jede unter 1 gefolgte Bahn als 2, und eine Ampel färbte
+Sensoren, die auf ihr nie gerechnet wurden. Format 1 und 2 koexistieren
+erst, seit die Marke je Zeile steht; geschrieben wird weiterhin nur
+Format 1, der Schreibweg stempelt die Marke bloß. Eine Spalte statt eines
+Umschlags in der JSON-Zelle, damit die verzögerte Zelle unangetastet
+bleibt — und nicht verzögert geladen, weil „welche Fassungen stehen noch
+auf dem alten Format" eine Listenfrage ist.
 *Technisch:* `core/eigenhand/pfad.py` (`frame_for_box` · `check_paths` ·
 `is_authored` · `displaced_authored` · `AUTHORED` · `PFAD_FORMAT`),
-`eigenhand_strips.pfade` (Migration `0031`),
+`eigenhand_strips.pfade` (Migration `0031`) + `…pfade_format`
+(Migration `0032`),
 `GET|PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade`,
 `tools/eigenhand/pfad.py`,
 `app/src/sections/admin/shell/PathOverlay.tsx`.
@@ -4354,7 +4366,9 @@ abgelegtes Fassungs-Verzeichnis ist dagegen eine unveränderliche
 Kopiereinheit, die der Lauf am relativen Pfad überspringt — eine
 nachträglich dort abgelegte Datei käme nie ins Archiv, und der Lauf meldete
 Erfolg. Der Satz trägt ZWEI Versionen: `format` (die Form der Kartei-Zeile)
-und `pfad_format` (das `PFAD_FORMAT`, unter dem die API geantwortet hat);
+und `pfad_format` (das Streifen-Pfad-Format, unter dem die ZEILE geantwortet
+wurde — `eigenhand_strips.pfade_format`, nicht die Konstante des laufenden
+Abbilds, zwei Fassungen einer Hand dürfen also verschieden sein);
 ein Satz in unbekannter Form wird verweigert, nie als „keine Bahn" gelesen
 (unbekannt heißt NEUER, nie älter — eine archivierte Kartei wird nie
 umgeschrieben, eine Verweigerung machte jeden früheren Schnappschuss

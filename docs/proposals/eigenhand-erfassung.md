@@ -39,7 +39,11 @@
 > der Phasen dieses Docs; Autor-Entscheide A und B): die **Bahn-Archivkette**
 > `pull --pfade → snapshot → sync --from` mit Formatversion und lautem Abbruch
 > (§7.5/§8.1). „Repo + Archiv genügen" gilt damit auch für nachgefahrene
-> Bahnen, und der erste Kasten darf entstehen.
+> Bahnen, und der erste Kasten darf entstehen. Im zweiten PR derselben Phase
+> trägt jede Streifen-Zeile ihre **Format-Marke** selbst
+> (`eigenhand_strips.pfade_format`, Migration `0032`, §7.5): erst damit
+> können `PFAD_FORMAT` 1 und 2 nebeneinander liegen; geschrieben wird
+> weiterhin nur Format 1.
 
 ## 1 Anlass
 
@@ -1257,6 +1261,17 @@ Plan übereinstimmt, Züge in Template-Einheiten, eine x-Höhe, die die
 gedruckte Lineatur hergeben kann, und eine Registrierung, die auf DIESEM
 Streifen liegt. Das `format` gehört nicht zum Eintrag, sondern zum
 gesendeten Dokument, und wird eine Ebene höher geprüft (`write_pfade`, 409).
+Seit dem 2026-09-20 trägt die ZEILE es zusätzlich selbst
+(`eigenhand_strips.pfade_format`, Migration `0032`, NOT NULL, Bestand = 1),
+und der Read antwortet damit statt mit der Konstante: `PFAD_FORMAT` ist eine
+bewegliche Zahl, also läse sich mit ihrem Sprung auf 2 jede unter 1 gefolgte
+Bahn als 2, und Format 1 und 2 könnten nie nebeneinander liegen. Eine Spalte
+statt eines Umschlags in der JSON-Zelle — so bleibt die verzögerte Zelle
+unangetastet und jeder heutige Leser unverändert — und anders als `pfade`
+selbst ist sie NICHT verzögert: sie ist eine kleine Zahl, und „welche
+Fassungen stehen noch auf dem alten Format" ist eine Listenfrage.
+Geschrieben wird weiterhin nur Format 1; der Schreibweg stempelt die Marke
+bloß.
 Der vorletzte Punkt trägt den letzten: der Schlupf der Registrierung misst
 sich in x-Höhen des Pfades, also kaufte sich eine aufgeblasene `xh_px` jede
 Toleranz, die sie wollte — deshalb hängt die x-Höhe an der gedruckten Zeile
@@ -1404,7 +1419,10 @@ Kette, ohne die kein nachgefahrener Kasten entstehen darf. Drei Glieder:
 
 Das abgelegte Artefakt trägt **zwei** Versionen: `format`
 (`PFAD_ARCHIVE_FORMAT`, die Form der Kartei-Zeile) und `pfad_format` (das
-`PFAD_FORMAT`, unter dem die API geantwortet hat) — die erste sagt, wie die
+Streifen-Pfad-Format, unter dem die ZEILE geantwortet wurde —
+`eigenhand_strips.pfade_format` seit `0032`, nicht die Konstante des
+laufenden Abbilds, zwei Fassungen einer Hand dürfen also verschieden
+sein) — die erste sagt, wie die
 Datei zu LESEN ist, die zweite, was die Einträge darin bedeuten, und nur
 mit der zweiten kann ein Restore sie korrekt deklarieren. Ein Satz in einer
 unbekannten Form wird verweigert, nie als „keine Bahn" gelesen — unbekannt
