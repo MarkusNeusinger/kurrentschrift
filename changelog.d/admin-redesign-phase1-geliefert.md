@@ -22,9 +22,9 @@
   letters, joins and words surfaces have not been seen with real data before
   the author's own look in the production admin. What is measured are ratios
   and mechanics (page heights, image counts, tab stops, hit targets), never
-  product numbers. The one follow-up that closes the phase is named with it:
+  product numbers. The one follow-up that closed the phase is named with it:
   issue #628, the inert `Typography color="text.secondary"` prop under MUI 9,
-  fix in flight.
+  fixed by #633 on the same day.
 
 ### Added
 
@@ -39,5 +39,8 @@
   switch, the two surfaces left without roving, the translucent engine
   overlay and the dotted lift connector, and the vocabulary PR's three Q10
   labels. Each says what was built (always the recommendation) and where the
-  one-line flip sits. It decides nothing: it exists so the author does not
-  have to reconstruct nine PR bodies to find the knobs.
+  reversal sits — for most items a single constant, flag or default, and for
+  the three that are not (restoring five `TerminalCommand` call sites with
+  their deleted locale keys, and wiring the roving hook into two more
+  surfaces) the entry says so. It decides nothing: it exists so the author
+  does not have to reconstruct nine PR bodies to find the knobs.

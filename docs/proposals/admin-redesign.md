@@ -11,8 +11,8 @@
 > mit SYNTHETISCHEN Daten** (die reservierte Menge ist nicht seedbar): die
 > GEFÜLLTEN Buchstaben-, Übergangs- und Wörter-Flächen hat vor dem Blick des
 > Autors im Prod-Admin niemand mit echten Daten gesehen (§15.4). Ein Nachzug
-> schließt die Phase: **#628**, `Typography color="text.secondary"` ist unter
-> MUI 9 wirkungslos (153 Fundstellen), Fix unterwegs. **Als Nächstes Phase 2**
+> schloss die Phase: **#628**, `Typography color="text.secondary"` ist unter
+> MUI 9 wirkungslos (161 Stellen) — behoben mit **#633**. **Als Nächstes Phase 2**
 > (Tintentreue + Nachfahren, §15.1 Zeile 2), die mit einer NUR-LESENDEN
 > Erkundung beginnt. **Phase 5 wartet auf den Autor:** FM1–FM6 aus
 > [`freigabe-maschine.md`](freigabe-maschine.md) §10, der Lese-Sweep über die
@@ -2816,11 +2816,11 @@ wer eine davon wieder aufmacht, braucht einen neuen Entscheid.
    über die Admin-API vor M1 (dort §12), der ebenfalls eine Rückfrage
    braucht. Ohne diese drei Dinge bleibt Phase 5 angehalten; Phase 2
    hängt an keinem von ihnen.
-7. **Der eine Nachzug, der Phase 1 schließt:** Issue #628 —
-   `<Typography color="text.secondary">` ist unter `@mui/material` 9.3.1
-   wirkungslos, 153 Fundstellen rendern in voller Tinte statt in der weichen
-   (§15.4). Der Fix ist unterwegs und landet bewusst NACH den Phase-1-PRs,
-   die dieselben Dateien angefasst haben.
+7. **Der eine Nachzug, der Phase 1 schließt: erledigt 2026-09-20 mit #633.**
+   Issue #628 — `<Typography color="text.secondary">` ist unter
+   `@mui/material` 9 wirkungslos, 161 Stellen renderten in voller Tinte statt
+   in der weichen (§15.4). Der Fix landete bewusst NACH den Phase-1-PRs, die
+   dieselben Dateien angefasst haben.
 
 ## 15 Umsetzung der gewählten Form (Stand 2026-09-20)
 
@@ -2832,9 +2832,9 @@ Aufwände sind die Vermutungen aus §6.7, keine Messungen.
 
 **Stand 2026-09-20** (er ersetzt den Stand 2026-09-19, der Phase 1 noch bei
 PR 2 stehen sah). **Die Phasen 0 und 1 sind gebaut** — die neun PRs aus
-§15.2 und die acht aus §15.4 sind gemergt; offen ist allein der
-Prod-Datenschritt V1, der auf die Rückfrage in der Sitzung wartet, dazu der
-eine Nachzug #628 (§15.4). **Als Nächstes Phase 2** (§15.1, Zeile 2), die
+§15.2 und die acht aus §15.4 sind gemergt, der eine Nachzug #628 mit **#633**
+(§15.4); offen ist allein der Prod-Datenschritt V1, der auf die Rückfrage in
+der Sitzung wartet. **Als Nächstes Phase 2** (§15.1, Zeile 2), die
 mit einer nur lesenden Erkundung beginnt (§14, Schritt 5). Phase 5 hat ihr
 erstes Doc (§15.3, Schritt 1) und ihren Pin-PR (Schritt 2); gebaut ist von
 ihr nichts, und sechs Rückfragen plus der Lese-Sweep halten den Bau an. Die
@@ -3055,7 +3055,15 @@ Migration, kein DDL, kein Secret Manager, kein Cloudflare, kein Aufruf der
 deployten API, keine neue öffentliche Fläche.
 
 **Stand 2026-09-20 — Phase 1 ist ausgeliefert.** Alle acht PRs sind gemergt,
-in der geplanten Reihenfolge und ohne Konfliktauflösung; die drei Entscheide
+in der Reihenfolge #621 → #622 → #624 → #626 → #625 → #627 → #629 → #631 —
+also nicht ganz wie geschnitten: die Buchstaben-Liste (#624) wurde vor der
+Scope-Leiste (#626) und der Übergabekarte (#625) fertig und ging deshalb
+zuerst. Konfliktfrei war die Welle nicht: #624 löste beim Aufnehmen von
+#622/#623 einen Glossar-Konflikt auf, und beim Merge-up von #625 stolperte
+der Kopierknopf-Wächter aus #626, weil #625 die Schritt-Befehle nach
+`core/eigenhand/faellig.py` verlegt hatte — die Schwelle wurde begründet auf
+≥ 3 gesenkt und mit einem Zwillingstest in
+`tests/test_eigenhand_faellig.py` festgenagelt. Die drei Entscheide
 der Phase (§4.6) und der Phase-0-Abschluss stehen mit **#623** im Doc, dem
 Doku-PR der Welle. Die Wellenregeln haben gehalten:
 `tests/test_api_public_surface.py` ist über alle acht PRs unverändert, keine
@@ -3132,23 +3140,35 @@ Verhältnisse und Mechanik (Seitenhöhen, Bildzahlen, Tabstopps, Trefferflächen
 nie Produktzahlen; die Loss-Werte, die ein Score-Durchgang über erfundene
 Geometrie erzeugt, sind nirgends als Messung zitiert. Zweitens unerreichbar
 blieb alles, was an Belegen hängt: die Ebenen-Umschalter des Wort- und
-Übergangs-Details, die Drill-Tafel und die „chip count is null"-Zwischenzustände
-sind typgeprüft und unit-getestet, nicht angesehen.
+Übergangs-Details, die Drill-Tafel und die Zwischenzustände „noch keine
+Chip-Zahl da" sind typgeprüft und unit-getestet, nicht angesehen.
 
-**Der eine Nachzug, der die Phase schließt:** **#628** —
-`<Typography color="text.secondary">` ist unter `@mui/material` 9.3.1
-wirkungslos, weil `Typography` seinen `color`-Prop nur noch über Varianten
-auflöst (`textSecondary`, nicht `text.secondary`); 153 Fundstellen in
-`app/src` rendern darum in voller Tinte statt in der weichen, 38 davon unter
-`sections/admin`. Die Lesbarkeit leidet nicht — verloren geht die Hierarchie
-zwischen Wert und Bildunterschrift. Der Fix ist mechanisch und unterwegs; er
-landet bewusst NACH den Phase-1-PRs, die dieselben Dateien angefasst haben.
+**Der eine Nachzug, der die Phase schließt — erledigt am 2026-09-20 mit
+#633.** Issue **#628**: `<Typography color="text.secondary">` ist unter
+`@mui/material` 9 wirkungslos, weil `Typography` seinen `color`-Prop nur noch
+über Varianten auflöst (`textSecondary`, nicht `text.secondary`). Es waren
+161 Stellen, nicht die 153 des Tickets — zwei davon findet dessen `grep`
+nicht, weil sie in geschweiften Klammern mit einfachen Anführungszeichen
+stehen. Die Lesbarkeit litt nicht; verloren war die Hierarchie zwischen Wert
+und Bildunterschrift. Gemessen auf dem Wegwerf-Stack: die Bildunterschriften
+gingen von `rgb(36, 26, 16)` auf `rgb(71, 52, 32)` zurück, und die
+Glyphenschlüssel der Buchstabenliste hatten sogar das Viridian ihres
+Ausklapp-Knopfes geerbt. Ein echter Kontrastfehler kam nebenbei mit heraus:
+die Abzugszahl in `ScoreBreakdownInline` lief über `sx`, ihr Ocker rendert
+also — 2,77:1 auf dem Kartengrund, jetzt Tinte. Ein Wächtertest hält den
+Prop-Fehler fest. Der Fix landete bewusst NACH den Phase-1-PRs, die
+dieselben Dateien angefasst haben.
 
 ### 15.5 Offene Geschmacksfragen aus Phase 0/1 — gebaut mit der Empfehlung, mit einem Wort kippbar
 
 Jeder PR der Welle trägt einen Abschnitt „Open author questions": gebaut wurde
-jeweils die Empfehlung, und jede Stelle ist ein Ein-Zeilen-Kippschalter
-geblieben. Hier stehen sie gesammelt, damit sie nicht in neun PR-Texten
+jeweils die Empfehlung, und jede Stelle ist bewusst an EINEM Ort geblieben.
+Die meisten sind ein Ein-Zeilen-Kippschalter — eine Konstante, ein Flag, ein
+Vorgabewert. Drei sind es nicht, und die Zeile sagt es dort jeweils selbst:
+Nr. 11 (Rollen-Etiketten zurück) berührt fünf Aufrufstellen und gelöschte
+Locale-Schlüssel, Nr. 27 und 28 (Roving für Kachelwand und
+Nachfahr-Übersicht) brauchen je einen Hook-Anschluss. Hier stehen sie
+gesammelt, damit sie nicht in neun PR-Texten
 verstreut bleiben. **Das ist eine Liste, kein Entscheid** — nichts davon ist
 hier beantwortet, und ohne ein Wort des Autors bleibt alles, wie es gebaut
 ist. Die Nummern sind nur Adressen für die Antwort.
@@ -3228,9 +3248,11 @@ ist. Die Nummern sind nur Adressen für die Antwort.
 19. **Der Ankerbuchstabe der Matrix ERSETZT den History-Eintrag**, statt ihn
     zu schieben (#627): 30 Ankerklicks sollen keine 30 Zurück-Schritte werden.
     Kipp: ein Flag in `PairMatrix.tsx`s `pickAnchor`.
-20. **Die Wörter-URL hat sechs deutsche Achsen** (#627, P1-Q5 a). Jedes Token
-    ist eine Zeile in `words/wordRows.ts` — aber ein späterer Wechsel macht
-    jeden schon geteilten Link ungültig.
+20. **Die Wörter-URL hat sechs deutsche Achsen** (#627, P1-Q5 a). Die
+    Parameter-NAMEN stehen gesammelt in `shell/listState.ts` (`LIST_PARAMS`),
+    die WERTE der Wörter-Seite — Sortierung, Status, Reiter — in
+    `words/wordRows.ts`; ein Wechsel ist je nach Achse also das eine oder das
+    andere Modul, und er macht jeden schon geteilten Link ungültig.
 21. **Das Korb-Badge im Kopf ist weg** (#629, Frage 1): die Flagge ist ein
     nacktes Symbol, die Zahl steht sichtbar in der Scope-Leiste und im
     `aria-label`. Das erfüllt Q4 (a) ganz und nimmt die letzte 12-px-Type aus
