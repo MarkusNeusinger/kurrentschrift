@@ -187,6 +187,13 @@ MIRRORED_RULES = {
     "never commit on main": ["never commit on `main`"],
     "changelog fragment per PR": ["changelog.d/", "changelog (fragment)"],
     "new terms go in the glossary": ["glossar.md"],
+    # Two keywords, because the rule has two halves that rot separately.
+    # The first is the carve-out itself; the second is the boundary that
+    # keeps it narrow — and it has to be this exact phrase, not "schema
+    # keys stay english", which both guides ALSO carry in the unrelated
+    # "characters are data, not code" rule and would therefore stay green
+    # with the whole carve-out deleted.
+    "German Fachbegriff may be an identifier": ["no established english term", "carve-out is for identifiers only"],
     "closing keyword for issues": ["fixes #n"],
     "sibling-repo transfer": ["anyplot", "same round"],
     "use asymmetric findings": ["asymmetric finding"],

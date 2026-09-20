@@ -3920,11 +3920,12 @@ Diagnose weggeworfen, die es gibt. **Der Satz antwortet, das Detail
 beweist.** Der Rückgabewert trägt zusätzlich den `status`, damit
 Aufrufer einen Sonderfall (404 = „noch nicht angelegt", kein Fehler) am
 Typ erkennen statt die Meldung nach „404" zu durchsuchen.
-Der **Name** ist englisch, die **Ausgabe** deutsch — sprachregelung.md §1
-verlangt englische Bezeichner, und §3 verwirft deutsche Identifier
-ausdrücklich auch für deutsche Fachbegriffe („Begriff gehört in den
-Kommentar, nicht in den Bezeichner"). Der Begriff steht also hier im
-Glossar, nicht im Code.
+Der **Name** ist englisch, die **Ausgabe** deutsch — und das bleibt so,
+auch seit sprachregelung.md §5 (2026-09-20) deutsche Fachbegriffe **ohne**
+etablierte englische Entsprechung als Bezeichner zulässt: „error text" ist
+genau so eine etablierte Entsprechung, also greift der Ja-Fall aus §5.1
+und der Bezeichner bleibt englisch. Der Begriff „Fehlerschicht" steht
+darum hier im Glossar, nicht im Code.
 *Technisch:* `app/src/sections/admin/shell/apiErrorText.ts` +
 `ErrorText.tsx`; die Sätze in `app/src/locales/de/admin.ts` (`admin.errors`).
 Liegt bewusst unter `sections/admin/` und nicht bei `lib/api/`: der
@@ -5399,4 +5400,5 @@ heißt die schreibende Instanz „die Feder“; „Synthese“ bzw.
 - [`optimierungs-werkbank.md`](../proposals/optimierungs-werkbank.md) —
   Werkbank, Auftragskorb, Stufen-Doktrin
 - [`sprachregelung.md`](sprachregelung.md) — warum die Docs deutsch und
-  die Bezeichner englisch sind
+  die Bezeichner englisch sind, und wann ein deutscher Fachbegriff doch
+  der Bezeichner sein darf (§5)
