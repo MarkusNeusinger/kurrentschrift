@@ -811,9 +811,16 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   Funktion aus Schlüssel, Hand und Streifen-ID, ein später angehängter Streifen
   fällt deshalb dorthin, wo derselbe Schlüssel ihn immer hingelegt hätte, und
   wird beim nächsten Lauf mit Datum nachgetragen und genannt. Ein zweites
-  Ziehen wird verweigert, ohne Override. Der Satz liegt in der `kartei.json`
+  Ziehen wird verweigert, ohne Override. Die Ziehung liegt in der
+  `kartei.json`
   (Entscheid A — volle Kopie in jedem Schnappschuss) und ist das Einzige hier,
-  was nicht neu herstellbar ist. **Der Export** schneidet jeden Kasten mit
+  was nicht neu herstellbar ist; der Lauf sagt darum hinterher, dass jetzt ein
+  Schnappschuss fällig ist. Weil `sync --from` eine archivierte Kartei nach
+  OBEN schiebt und die lokale nie zurückschreibt, sähe ein verlorener
+  Datenbestand aus wie „nie gezogen" — vor einer Ziehung und vor einem Export
+  wird darum auch das Archiv gelesen (`$KURRENTSCHRIFT_ARCHIVE` bzw.
+  `--archive`, nur lesend): liegt dort eine Ziehung, bricht der Lauf ab und
+  nennt den Schnappschuss, aus dem die Kartei zurückzuholen ist. **Der Export** schneidet jeden Kasten mit
   Handarbeit — gezeichnete Bahn ODER von Hand korrigierte Grenzen — genau so
   heraus, wie der Folger ihn liest (`bahn.json` + `kasten.png` + `tinte.png`);
   der Statusfilter kommt aus dem Archiv-Read (nur `angenommen`, die

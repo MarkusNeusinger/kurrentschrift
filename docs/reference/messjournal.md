@@ -5,7 +5,7 @@
 > [`qualitaetsmetrik.md`](qualitaetsmetrik.md), Wort für Wort dieselbe
 > Sektion.
 >
-> **Diese Datei liest man nicht.** Sie trägt 132 datierte Abschnitte und
+> **Diese Datei liest man nicht.** Sie trägt 134 datierte Abschnitte und
 > rund 326 000 Token (`sep13`, gemessen mit `tools.docs_register.entries`
 > und `tools.docs_budget.proxy_tokens`). Der Einstieg ist das **Register**
 > direkt unter der nächsten Überschrift — eine Zeile je
@@ -69,7 +69,7 @@ Werkzeuge: `tools/tracebench/`.
 
 ### Register der Einträge (Index, keine Zahl-Heimat)
 
-Diese Sektion trägt 132 datierte Abschnitte und ist die eine Heimat der
+Diese Sektion trägt 134 datierte Abschnitte und ist die eine Heimat der
 Kampagnen-Zahlen; die Tabelle hier ist ihr **Index** — sie wiederholt
 keine Zahl, sie zeigt, wo eine steht. Ihre Reihenfolge ist die der
 Datei, also die Reihenfolge, in der die Abschnitte angehängt wurden; die
@@ -17733,7 +17733,7 @@ Ein später angehängter Streifen (eine neue `pool`-Welle) fällt dorthin, wo
 derselbe Schlüssel ihn immer hingelegt hätte, wird beim nächsten Lauf mit
 seinem Beitrittsdatum nachgetragen und genannt; eine gespeicherte
 Zugehörigkeit, die der Lauf nicht mehr reproduziert, bricht ab statt still
-umzuhängen — der Satz ist die Instanz, nicht die Regel.
+umzuhängen — maßgeblich ist die Aufzeichnung, nicht die Regel.
 
 **Warum die Ziehung vor die Daten gehört.** Wer mit Trainingsmaterial misst,
 muss einen Teil davon zurückhalten, sonst prüft er den Schüler mit den

@@ -906,10 +906,12 @@ Engineering-Defaults; der Autor kippt jede mit einem Wort.
 Ein Reihenfolge-Zwang ist hart: **M2 vor Schritt 6** (sonst überschreibt
 der erste Eigenhand-Apply noch an Ort und Stelle, nur eben in Band 200).
 Der zweite — **FM3 vor Schritt 4** — ist seit dem Entscheid vom 2026-09-20
-erfüllt und kein Zwang mehr: die Ziehung läuft über den eingefrorenen Plan
-statt über die Ernte, hängt also an keinem Schritt (§10 FM3). Was der Zwang
-verhindern sollte, verhindert jetzt die Ziehung selbst — sie ist gemacht,
-bevor die erste Fassung geschrieben ist, nicht erst bevor geerntet wird.
+beantwortet und damit kein Reihenfolge-Zwang mehr: die Ziehung läuft über den
+eingefrorenen Plan statt über die Ernte, hängt also an keinem Schritt (§10
+FM3). An seine Stelle tritt eine engere Bedingung: **gezogen wird, bevor die
+erste von Hand nachgefahrene Bahn existiert** — nicht erst vor der Ernte.
+Gezogen ist bis heute nichts; das Werkzeug steht bereit, der Schlüssel und
+der Tag sind Autor-Sache.
 
 ## 12 Risiken
 

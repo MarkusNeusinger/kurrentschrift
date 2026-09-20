@@ -25,8 +25,11 @@
   falls where that key would always have put it, joins the record with its
   date and is named by the run. The record lives in the Kartei, which every
   archive snapshot copies in full, and it is the one thing here that is not
-  regenerable. Pre-registration: `messjournal.md` §14 „Trainingssatz
-  `sep20`".
+  regenerable — so the draw prints the snapshot command, and both commands
+  read the archive before concluding that a hand was never drawn: `sync
+  --from` pushes an archived Kartei up to the API and never writes the local
+  one, so a lost data root would otherwise look exactly like a fresh hand.
+  Pre-registration: `messjournal.md` §14 „Trainingssatz `sep20`".
 - **The export tree is pinned apart from the benches.** Its root is outside
   every `tools/*/fixtures` root and carries no `fixtures` in its name, its
   manifest is deliberately not called `manifest.json` — which is what the lab

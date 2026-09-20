@@ -72,6 +72,18 @@ STRIP_ROW = {
 }
 
 
+@pytest.fixture(autouse=True)
+def _no_real_archive(monkeypatch):
+    """No test here may fall through to the operator's private archive.
+
+    `archived_rueckhalt` reads `$KURRENTSCHRIFT_ARCHIVE` when no path is
+    passed, and on the author's machine that variable points at the real
+    clone — which would make these results depend on whose machine runs them.
+    The two tests that need an archive build one under `tmp_path`.
+    """
+    monkeypatch.delenv("KURRENTSCHRIFT_ARCHIVE", raising=False)
+
+
 def _kartei(tmp_path: Path, monkeypatch) -> dict:
     """An empty Kartei under a throwaway data root."""
     monkeypatch.setenv("EIGENHAND_DATA", str(tmp_path / "own-hand"))
@@ -95,8 +107,8 @@ class TestBenchSeparation:
 
     @pytest.fixture(autouse=True)
     def _default_root(self, monkeypatch):
-        # These four pin the SHIPPED default, not whatever an operator happens
-        # to have exported in their shell.
+        # These pin the SHIPPED default, not whatever an operator happens to
+        # have exported in their shell.
         monkeypatch.delenv("EIGENHAND_TRAININGSSATZ", raising=False)
 
     def test_the_export_root_is_outside_every_bench_fixture_root(self):
@@ -260,6 +272,49 @@ class TestRueckhaltRecord:
         # date they joined on — a later run never re-dates a membership.
         assert record["strips"]["S0001"]["since"] == TODAY
         assert extend(HAND, record, "2026-11-03") == []
+
+    def test_a_draw_filed_in_the_archive_blocks_a_second_one_after_a_lost_data_root(self, tmp_path, monkeypatch):
+        # `sync --from` pushes an archived Kartei UP to the API and never
+        # writes the local one, so a lost data root would otherwise let
+        # `--ziehen` draw a second time over a hand the archive already knows.
+        from tools.eigenhand.snapshot import ARCHIVE_SUBDIR
+
+        drawn = _drawn(tmp_path, monkeypatch)
+        archive = tmp_path / "archive"
+        filed = archive / ARCHIVE_SUBDIR / HAND / "2026-09-20-1200"
+        filed.mkdir(parents=True)
+        (filed / "kartei.json").write_text(json.dumps(drawn, ensure_ascii=False), encoding="utf-8")
+
+        found = tool.archived_rueckhalt(HAND, str(archive))
+        assert found is not None and found[0]["key"] == "key-a" and found[1] == filed
+        # A hand the archive does not know reads as „no draw filed", not as an error.
+        assert tool.archived_rueckhalt("xy-kurrent", str(archive)) is None
+        assert tool.archived_rueckhalt(HAND, None) is None
+
+        with pytest.raises(SystemExit) as exc:
+            tool._refuse_if_archived(HAND, str(archive))
+        assert "key-a" in str(exc.value) and "sync --from" in str(exc.value)
+        # The newest stamp wins, the same rule `sync._source` follows.
+        newer = archive / ARCHIVE_SUBDIR / HAND / "2026-11-02-0900"
+        newer.mkdir(parents=True)
+        (newer / "kartei.json").write_text(json.dumps(drawn, ensure_ascii=False), encoding="utf-8")
+        assert tool.archived_rueckhalt(HAND, str(archive))[1] == newer
+
+    def test_an_export_without_a_local_draw_names_the_archived_one_instead_of_ziehen(self, tmp_path, monkeypatch):
+        from tools.eigenhand.snapshot import ARCHIVE_SUBDIR
+
+        drawn = _drawn(tmp_path, monkeypatch)
+        archive = tmp_path / "archive"
+        filed = archive / ARCHIVE_SUBDIR / HAND / "2026-09-20-1200"
+        filed.mkdir(parents=True)
+        (filed / "kartei.json").write_text(json.dumps(drawn, ensure_ascii=False), encoding="utf-8")
+        # The local Kartei is gone — a fresh data root, as after a machine loss.
+        monkeypatch.setenv("EIGENHAND_DATA", str(tmp_path / "lost"))
+
+        with pytest.raises(SystemExit) as exc:
+            tool.export(HAND, "https://example.invalid", "token", tmp_path / "out", TODAY, archive=str(archive))
+        assert "--ziehen" not in str(exc.value)
+        assert "ARCHIVE does" in str(exc.value)
 
     def test_a_recorded_membership_the_rule_no_longer_reproduces_stops_the_run(self, tmp_path, monkeypatch):
         kartei = _drawn(tmp_path, monkeypatch)

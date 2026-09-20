@@ -5024,16 +5024,16 @@ der STREIFEN (jede Fassung ist eine Wiederholung derselben Wörter, die
 Kästen einer Zeile sind ein Zug — innerhalb zu teilen legte nahezu gleiche
 Schrift auf beide Seiten der Linie), die Zugehörigkeit ist eine reine
 Funktion aus Schlüssel, Hand-ID und Streifen-ID, und gezogen wird über den
-EINGEFROREN Plan: ohne Netz, ohne eine einzige Bahn, am besten vor der
+EINGEFRORENEN Plan: ohne Netz, ohne eine einzige Bahn, am besten vor der
 ersten — eine Linie, die feststeht, ehe jemand weiß, welcher Streifen eine
 schöne Bahn tragen wird. Ein zweites Ziehen wird verweigert (ohne Override),
 ein später angehängter Streifen fällt dorthin, wo derselbe Schlüssel ihn
 immer hingelegt hätte, und wird mit Beitrittsdatum nachgetragen; eine
 gespeicherte Zugehörigkeit, die der Lauf nicht mehr reproduziert, bricht ab
-— der Satz ist die Instanz, nicht die Regel. Der Satz wohnt in der
-`kartei.json` (Entscheid A: sie ist das Einzige, was jeder Schnappschuss
-voll kopiert) und ist das einzige Stück dieses Werkzeugs, das nicht neu
-herstellbar ist. *Technisch:*
+— maßgeblich ist die Aufzeichnung, nicht die Regel. Diese Aufzeichnung
+wohnt in der `kartei.json` (Entscheid A: sie ist das Einzige, was jeder
+Schnappschuss voll kopiert) und ist das einzige Stück dieses Werkzeugs, das
+nicht neu herstellbar ist. *Technisch:*
 `tools/eigenhand/trainingssatz.py` (`draw` · `satz_of_strip` · `extend` ·
 `rueckhalt_of`, Kartei-Schlüssel `rueckhalt`). → Rückhaltemenge;
 Trainingssatz (Eigenhand); reference/messjournal.md §14 „Trainingssatz

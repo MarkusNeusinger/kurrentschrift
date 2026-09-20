@@ -43,7 +43,15 @@
 > trägt jede Streifen-Zeile ihre **Format-Marke** selbst
 > (`eigenhand_strips.pfade_format`, Migration `0032`, §7.5): erst damit
 > können `PFAD_FORMAT` 1 und 2 nebeneinander liegen; geschrieben wird
-> weiterhin nur Format 1.
+> weiterhin nur Format 1. Am Ende derselben Phase steht der **Trainingssatz**
+> (§7.5): die von Hand nachgefahrenen Bahnen als lokaler, gitignorter Export
+> (`tools/eigenhand/trainingssatz.py`), geteilt in `uebung` und ZWEI getrennte
+> Rückhaltemengen — Autor-Entscheid vom 2026-09-20, der zugleich FM3 der
+> [Freigabe-Maschine](freigabe-maschine.md) beantwortet. Die Ziehung ist ein
+> eigener, einmaliger Akt über den eingefrorenen Streifenplan; vorregistriert
+> in [`../reference/messjournal.md`](../reference/messjournal.md) §14
+> „Trainingssatz `sep20`". **Gezogen ist noch nichts** — es gibt bis heute
+> keine einzige von Hand nachgefahrene Bahn.
 
 ## 1 Anlass
 

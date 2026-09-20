@@ -115,6 +115,7 @@ from tools.eigenhand.kartei import load_kartei, save_kartei
 # is the follower's own, and a second spelling of it would drift the day either
 # side changes. `tools/eigenhand/pfad.py` is not edited from here.
 from tools.eigenhand.pfad import LiveDuctus, _case_for_box, _strip_plane, _style_constants
+from tools.eigenhand.snapshot import ARCHIVE_SUBDIR
 from tools.eigenhand.store import check_hand_id, style_of_hand
 
 
@@ -276,6 +277,63 @@ def rueckhalt_of(kartei: Mapping[str, Any]) -> dict[str, Any] | None:
         if not isinstance(row, dict) or row.get("set") not in SAETZE:
             raise SystemExit(f"Kartei: strip {strip} of the Rückhalt draw names no known set — refusing to read it")
     return record
+
+
+def archived_rueckhalt(hand: str, archive: str | None = None) -> tuple[dict, Path] | None:
+    """The newest archived draw of this hand, or None where the archive holds none.
+
+    The refusal of a second draw reads the LOCAL Kartei, and that is not enough
+    on its own: `sync --from <snapshot>` — the restore path — reads an archived
+    Kartei and pushes it to the API without ever writing the local one
+    (`tools/eigenhand/sync.py`). A lost data root therefore leaves the
+    authoritative draw sitting in the archive while `load_kartei` hands back an
+    empty structure, and the create-once guarantee would fall to a fresh draw
+    over a hand that already has one (found in review, PR #647).
+
+    Every snapshot carries a COMPLETE Kartei by construction, and stamps sort
+    chronologically, so the newest one that names this hand is the authority —
+    the same rule `sync._source` follows. Where no archive is configured this
+    answers None and the caller says that it could not look.
+    """
+    value = archive or os.environ.get("KURRENTSCHRIFT_ARCHIVE")
+    if not value:
+        return None
+    hand_archive = Path(value).expanduser() / ARCHIVE_SUBDIR / hand
+    if not hand_archive.is_dir():
+        return None
+    for snapshot in sorted(hand_archive.iterdir(), key=lambda entry: entry.name, reverse=True):
+        kartei_file = snapshot / "kartei.json"
+        if not kartei_file.is_file():
+            continue
+        try:
+            filed = json.loads(kartei_file.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            # A half-written or unreadable snapshot is not evidence of absence;
+            # keep looking rather than concluding „no draw", which is the one
+            # answer that must never be given wrongly.
+            continue
+        if filed.get("hand") != hand:
+            continue
+        record = rueckhalt_of(filed)
+        if record is not None:
+            return record, snapshot
+    return None
+
+
+def _refuse_if_archived(hand: str, archive: str | None) -> None:
+    """Stop where the archive holds a draw this data root has lost."""
+    filed = archived_rueckhalt(hand, archive)
+    if filed is None:
+        return
+    record, snapshot = filed
+    counts = _counts(record)
+    raise SystemExit(
+        f"this data root holds no draw for {hand}, but the ARCHIVE does: key {record.get('key')!r}, drawn on "
+        f"{record.get('drawn_on')} ({', '.join(f'{satz} {counts[satz]}' for satz in SAETZE)}), in {snapshot}.\n"
+        f"That draw is the authority and it is not regenerable. Restore this hand's Kartei from that snapshot "
+        f"before drawing or exporting — `sync --from` pushes an archived Kartei UP to the API and does not "
+        f"write the local one, so it is not the restore that matters here."
+    )
 
 
 def draw(hand: str, kartei: dict, key: str, anteile: Mapping[str, float], today: str) -> dict:
@@ -515,13 +573,18 @@ def _case_payload(
     }
 
 
-def export(hand: str, base: str, token: str, out: Path, today: str) -> int:
+def export(hand: str, base: str, token: str, out: Path, today: str, archive: str | None = None) -> int:
     """Cut every hand-drawn box of one hand into its set. Returns the case count."""
     checked_out(out)
     _check_target(out, hand)
     kartei = load_kartei(hand)
     record = rueckhalt_of(kartei)
     if record is None:
+        # Before telling anyone to draw, make sure this is a hand that never
+        # was drawn rather than one whose Kartei is simply gone: sending the
+        # operator to `--ziehen` in the second case is how a second draw
+        # happens.
+        _refuse_if_archived(hand, archive)
         raise SystemExit(
             f"{hand} has no Rückhalt draw — a training export without a hold-out set is homework handed in "
             f"as an exam. Draw it once (no network, no Bahn needed):\n"
@@ -683,6 +746,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--api", default=None, help="API base URL (default: $EIGENHAND_API or production)")
     ap.add_argument("--token", default=None, help="admin token (default: $ADMIN_TOKEN)")
     ap.add_argument(
+        "--archive",
+        default=None,
+        help="archive clone root (default: $KURRENTSCHRIFT_ARCHIVE) — read only, to see a draw this data root lost",
+    )
+    ap.add_argument(
         "--date", "--datum", dest="date", default=None, help="ISO date (default: today; explicit for tests)"
     )
     args = ap.parse_args(argv)
@@ -691,6 +759,8 @@ def main(argv: list[str] | None = None) -> int:
     today = args.date or date_cls.today().isoformat()
     if args.ziehen:
         kartei = load_kartei(hand)
+        if rueckhalt_of(kartei) is None:
+            _refuse_if_archived(hand, args.archive)
         anteile = {SATZ_RUECKHALT_FOLGER: args.anteil_folger, SATZ_RUECKHALT_FREIGABE: args.anteil_freigabe}
         record = draw(hand, kartei, args.ziehen, anteile, today)
         save_kartei(hand, kartei)
@@ -703,9 +773,25 @@ def main(argv: list[str] | None = None) -> int:
             "recorded in the Kartei, which every archive snapshot copies in full. It is drawn once and "
             "never again — pre-registration: messjournal.md §14 „Trainingssatz `sep20`"
         )
+        # The draw is the one artefact of this tool nothing can make again, and
+        # until it is filed it exists on exactly one machine. `pull --pfade`
+        # prints the same line for the same reason.
+        print(
+            f"reminder: snapshot NOW so the archive carries it — "
+            f"uv run python -m tools.eigenhand.snapshot --hand {hand}"
+        )
+        if not (args.archive or os.environ.get("KURRENTSCHRIFT_ARCHIVE")):
+            print("(no archive configured, so this run could not check whether one was already filed elsewhere)")
         return 0
 
-    export(hand, api_base(args.api), admin_token(args.token), args.out or hand_export_dir(hand), today)
+    export(
+        hand,
+        api_base(args.api),
+        admin_token(args.token),
+        args.out or hand_export_dir(hand),
+        today,
+        archive=args.archive,
+    )
     return 0
 
 
