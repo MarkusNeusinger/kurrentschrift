@@ -11,12 +11,13 @@
 > **Benches** messen gegen eingefrorene Referenzen:
 > [Benches und Generator](#benches-und-generator-verweise) — glyphbench
 > (Buchstabe) · wordbench (komponiertes Wort/Paar) · tracebench
-> (Wortbahn). **Schreibende** Werkzeuge gibt es genau drei Gattungen:
+> (Wortbahn). **Schreibende** gibt es genau drei:
 > die [Ernte-Werkzeuge](#die-zwei-ernte-werkzeuge-vorlage--db-über-die-admin-api)
 > (über die Admin-API), das
 > [Lesart-Wörterbuch](#das-lesart-wörterbuch-toolslesarten) und die
-> [Eigenhand-Erfassung](#die-eigenhand-erfassung-toolseigenhand); Labs und
-> Benches schreiben **nie** in die DB, `--live` liest nur.
+> Eigenhand ([Erfassung](#die-eigenhand-erfassung-toolseigenhand) ·
+> [Bahnen](#die-eigenhand-bahnen-toolseigenhand)); Labs und Benches
+> schreiben **nie** in die DB, `--live` liest nur.
 > Der [Archiv-Schnappschuss](#der-archiv-schnappschuss-toolsdbsnapshot)
 > ist create-only, der
 > [Changelog-Schnitt](#der-changelog-schnitt-toolschangelog), die
@@ -720,6 +721,7 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   das abgelegte Bild bleibt Byte für Byte, wie es eingelesen wurde. Auch
   der Haken wird so gelesen: punktgroße Komponenten fallen aus der Zählung,
   ein Haken muss ein Strich sein.
+
 Was auf dem abgelegten Streifen aufsetzt — Bahn, Buchstabengrenzen,
 Trainingssatz, Bericht und Archiv — steht im nächsten Abschnitt.
 
@@ -792,7 +794,12 @@ Ablage — steht im Abschnitt darüber, die Doktrin in
   Er bearbeitet die Kästen ohne Grenzen; einen Kasten, dessen Grenzen der Autor
   korrigiert hat, lässt er GANZ in Ruhe und nennt ihn (eine Grenze ist nur
   neben den benachbarten sinnvoll). `--replace-authored` ist neben diesem Modus
-  verweigert — hier gibt es nichts aufzugeben.
+  verweigert — hier gibt es nichts aufzugeben. Gespeichert wird nur, wenn
+  wirklich eine Grenze entstanden ist: eine Fassung ohne Bahn bleibt auf
+  `pfade: null` (das heißt „noch niemand gefolgt", nicht „gefolgt, nichts
+  zurück"), und ein Lauf ohne neue Grenze schickt gar keinen Push — eine
+  Voll-Ersetzung ist nie folgenlos, sie hebt die Inhaltsmarke und stempelt
+  eine Format-1-Zeile auf 2.
   **Trockenlauf ist die Vorgabe** — ohne `--apply`
   landet das Ergebnis nur als JSON unter der lokalen Hand; `--apply` schreibt
   es über `PUT /eigenhand/strips/{hand}/{strip}/{fassung}/pfade` in die

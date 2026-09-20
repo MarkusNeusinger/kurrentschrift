@@ -14,7 +14,10 @@
   drawing. A box whose boundaries the author corrected is left alone WHOLE and
   named, because a boundary is only meaningful next to the ones beside it;
   `--replace-authored` is refused beside the mode, since there is nothing here
-  to give up.
+  to give up. It stores only where a boundary was actually derived: a Fassung
+  nobody has followed keeps its `pfade: null` — which says something an empty
+  list does not — and a run that assigned nothing sends no push at all, because
+  a full replacement is never free of consequence.
 - **Measured before it was trusted, and the limit of the measurement is in the
   entry.** Over the 63 frozen Sütterlin words, with the follower's own
   assignment as the reference and BLAS pinned: the monotone rule agrees on

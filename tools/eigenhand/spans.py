@@ -201,21 +201,49 @@ def runs_of(labels: Sequence[np.ndarray]) -> list[list[list[int]]]:
     return out
 
 
+def covers_strokes(nested: Sequence[Sequence[Sequence[int]]], strokes: Sequence[Sequence[Any]]) -> bool:
+    """Whether these boundaries describe THESE strokes, sample for sample.
+
+    Deliberately stricter than „every index is in range". Both producers cover
+    a stroke sample for sample — the follower's `spans_of` and `runs_of` above
+    —, so anything short of full, gapless coverage means the strokes were
+    re-cut underneath the labels: `tools.pairlab.trace.cap_word_strokes` thins a
+    Bahn past 128 runs and downsamples past 4096 points, and after a downsample
+    every index is still well-formed and points at the wrong ink. That is the
+    silent failure `core.eigenhand.pfad._checked_spans` would never catch,
+    because it can only ask whether an index exists.
+
+    Asked as its own question so that a refusal can say which of the two things
+    went wrong: the labels no longer fit the ink, or they fit it and named no
+    letter (`assign`).
+    """
+    if len(nested) != len(strokes):
+        return False
+    for spans, stroke in zip(nested, strokes, strict=True):
+        cursor = 0
+        for _slot, first, last in spans:
+            if first != cursor or last < first:
+                return False
+            cursor = last + 1
+        if cursor != len(stroke):
+            return False
+    return True
+
+
 def flat_spans(
-    nested: Sequence[Sequence[Sequence[int]]], strokes: Sequence[Sequence[Any]], *, herkunft: str = SPAN_AUTO
+    nested: Sequence[Sequence[Sequence[int]]], strokes: Sequence[Sequence[Any]]
 ) -> list[dict[str, Any]] | None:
     """The nested per-stroke shape as the checked `letter_spans` field, or None.
 
-    `None` where the boundaries do not describe THESE strokes any more, and the
-    check is deliberately stricter than „every index is in range". Both
-    producers cover a stroke sample for sample — the follower's `spans_of` and
-    `runs_of` above —, so anything short of full, gapless coverage means the
-    strokes were re-cut underneath the labels: `tools.pairlab.trace.
-    cap_word_strokes` thins a Bahn past 128 runs and downsamples past 4096
-    points, and after a downsample every index is still well-formed and points
-    at the wrong ink. That is the silent failure `core.eigenhand.pfad.
-    _checked_spans` would never catch, because it can only ask whether an index
-    exists.
+    `None` where the boundaries do not describe these strokes any more
+    (`covers_strokes`), where nothing was labelled at all, or where there are
+    more of them than the stored field holds.
+
+    Every boundary this module mints is `auto`, and there is no knob that says
+    otherwise. An `authored` one would pass the field check and then be
+    protected forever by `displaced_authored` — a guess frozen as ground truth,
+    and handed straight back to this very assigner as training material, which
+    is precisely what `app/src/.../letterSpans.ts` was written to prevent.
 
     A span whose slot is −1 is dropped rather than written: it means the seed
     had no letter at all anywhere on that stroke, which is „no letter here" and
@@ -226,27 +254,14 @@ def flat_spans(
     the whole Fassung's push down with a 422 over boundaries nobody looked at —
     a derivation the next run makes again is not worth that.
     """
-    if len(nested) != len(strokes):
+    if not covers_strokes(nested, strokes):
         return None
-    out: list[dict[str, Any]] = []
-    for stroke_index, (spans, stroke) in enumerate(zip(nested, strokes, strict=True)):
-        cursor = 0
-        for slot, first, last in spans:
-            if first != cursor or last < first:
-                return None
-            cursor = last + 1
-            if slot >= 0:
-                out.append(
-                    {
-                        "stroke": stroke_index,
-                        "slot": int(slot),
-                        "first": int(first),
-                        "last": int(last),
-                        "herkunft": herkunft,
-                    }
-                )
-        if cursor != len(stroke):
-            return None
+    out: list[dict[str, Any]] = [
+        {"stroke": stroke_index, "slot": int(slot), "first": int(first), "last": int(last), "herkunft": SPAN_AUTO}
+        for stroke_index, spans in enumerate(nested)
+        for slot, first, last in spans
+        if slot >= 0
+    ]
     return None if len(out) > MAX_SPANS else (out or None)
 
 
@@ -317,12 +332,17 @@ def assign(
     runs = runs_of([seed_slot[picked] for picked in matched])
     spans = flat_spans(runs, strokes)
     if spans is None:
-        boundaries = sum(len(stroke_runs) for stroke_runs in runs)
+        # Two findings, and naming the wrong one sends the reader to the wrong
+        # place. Coverage cannot be one of them HERE — `runs_of` labels the very
+        # samples it was handed, so it always covers them — which is why a
+        # seed that named no letter on this Bahn used to be reported as re-cut
+        # ink, a follower question it is not (found in review, this PR).
+        boundaries = sum(1 for stroke_runs in runs for slot, _, _ in stroke_runs if slot >= 0)
         return None, {
             "reason": (
                 f"{boundaries} boundaries — at most {MAX_SPANS} are stored per box"
                 if boundaries > MAX_SPANS
-                else "the assignment does not cover these strokes sample for sample"
+                else "the seed labelled no letter anywhere on this Bahn"
             )
         }
     distances = np.concatenate(

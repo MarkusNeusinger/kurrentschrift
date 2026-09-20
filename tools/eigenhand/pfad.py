@@ -544,6 +544,25 @@ def _row_context(base: str, token: str, hand: str, row: dict) -> tuple[dict, np.
     return (layout.get("rows") or [])[row["row_index"]], _strip_plane(base, token, hand, row)
 
 
+def _refuse_unknown_boxes(row: dict, boxes: list[int] | None) -> None:
+    """Refuse a `--box` this Fassung does not have, before the pass does any work.
+
+    A `--box` that names nothing would work on no word at all. In a follow the
+    write is a FULL replacement, so with `--apply` a typo would erase this
+    Fassung's stored paths and report success (Copilot review, PR #598); a
+    `--spans` run cannot lose a path, but a typo there would still report a row
+    done that was never looked at (found in review, this PR). So both passes
+    ask the same question first, out of one place.
+    """
+    known = {box["index"] for box in row.get("boxes", [])}
+    unknown = sorted(set(boxes or []) - known)
+    if unknown:
+        raise SystemExit(
+            f"{row['strip']}/{row['fassung']} has boxes {sorted(known)} — no box "
+            f"{', '.join(str(i) for i in unknown)}; refusing to work on nothing and call it done"
+        )
+
+
 def follow_row(base: str, token: str, hand: str, row: dict, prior: dict, boxes: list[int] | None) -> list[dict]:
     """Follow every asked-for word of one Fassung. One bad word is not a bad row.
 
@@ -558,17 +577,7 @@ def follow_row(base: str, token: str, hand: str, row: dict, prior: dict, boxes: 
     the rest of the row with „not selected". A box nothing has ever followed
     carries no entry, which is the same statement without the damage.
     """
-    # FIRST, before a single byte is fetched: a `--box` that names nothing
-    # would follow no word, and the write is a FULL replacement — so with
-    # `--apply` a typo would erase this Fassung's stored paths and report
-    # success (Copilot review, PR #598).
-    known = {box["index"] for box in row.get("boxes", [])}
-    unknown = sorted(set(boxes or []) - known)
-    if unknown:
-        raise SystemExit(
-            f"{row['strip']}/{row['fassung']} has boxes {sorted(known)} — no box "
-            f"{', '.join(str(i) for i in unknown)}; refusing to replace its paths with nothing"
-        )
+    _refuse_unknown_boxes(row, boxes)
 
     # Aliased: `STATUS_OK` at module level is the stored ENTRY's status, this
     # one is the FOLLOWER's verdict on a word, and the two answer different
@@ -678,9 +687,13 @@ def assign_row_spans(
     A box whose boundaries the author corrected is skipped whole and named. The
     server would refuse a push that displaced one anyway (`displaced_authored`),
     but the tool does not get as far as trying: see `_wants_spans`.
+
+    The list comes back UNCHANGED where nothing was assigned, and the caller
+    reads that as „nothing to store" rather than pushing it — see `main`.
     """
     from tools.pairlab.tintenpfad import TintenpfadWeights
 
+    _refuse_unknown_boxes(row, boxes)
     protected = sorted(entry["box_index"] for entry in stored if authored_spans(entry))
     if protected:
         print(
@@ -1031,11 +1044,23 @@ def main(argv: list[str] | None = None) -> int:
             answer, etag = request_json_with_etag("GET", url, token)
             stored = (answer or {}).get("pfade") or []
             if not stored:
+                # On to the next Fassung, NOT through to the push. `pfade: null`
+                # says nobody has followed this one and an empty list says the
+                # follower came back with nothing — a distinction the workbench
+                # puts in front of the author (`gefolgt`) — and storing `[]`
+                # over the first would destroy it, from the one mode that
+                # advertises touching nothing (found in review, this PR).
                 print("  no stored path in this Fassung — a boundary needs a Bahn to sit on", flush=True)
-            body, handed_over = (
-                assign_row_spans(base, token, hand, row, prior, stored, args.box, method=args.spans_method),
-                False,
-            )
+                continue
+            assigned = assign_row_spans(base, token, hand, row, prior, stored, args.box, method=args.spans_method)
+            if assigned == stored:
+                # Nothing derived, so nothing to file and nothing to store. The
+                # push would not be a harmless no-op: a full replacement bumps
+                # the content ETag and re-stamps a format-1 row as format 2 over
+                # boundaries nobody looked at.
+                print("  no letter boundary was assigned — nothing to store", flush=True)
+                continue
+            body, handed_over = assigned, False
         else:
             entries = follow_row(base, token, hand, row, prior, args.box)
             # The body is assembled BEFORE the two paths part ways: the dry run

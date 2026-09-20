@@ -17,6 +17,8 @@ the three rules worth pinning can be tested on geometry a reader can see:
 
 from __future__ import annotations
 
+import inspect
+
 import numpy as np
 import pytest
 
@@ -138,9 +140,15 @@ class TestFlatSpans:
         }
         assert check_paths([entry], row, 1900, 400, ["lesen"], 2)[0]["letter_spans"] == spans
 
-    def test_the_provenance_can_be_asked_for(self):
-        spans = flat_spans([[[0, 0, 0]]], [[[0.0, 0.0]]], herkunft=AUTHORED)
-        assert spans and spans[0]["herkunft"] == AUTHORED
+    def test_auto_is_not_a_default_here_but_the_only_value_on_offer(self):
+        # An `authored` boundary minted by the assigner would pass the field
+        # check and then be protected forever by `displaced_authored` — a guess
+        # frozen as ground truth, and handed straight back to this very
+        # assigner as training material. So there is no knob, and the signature
+        # is asserted rather than described (found in review, this PR).
+        spans = flat_spans([[[0, 0, 1]]], [[[0.0, 0.0], [1.0, 1.0]]])
+        assert spans and [span["herkunft"] for span in spans] == [SPAN_AUTO] != [AUTHORED]
+        assert list(inspect.signature(flat_spans).parameters) == ["nested", "strokes"]
 
     def test_a_stretch_the_seed_never_labelled_is_dropped_not_written_as_minus_one(self):
         # Slot −1 means „no letter here"; stored, it would read as letter
@@ -174,6 +182,42 @@ class TestFlatSpans:
 
         alternating = [[[slot % 2, slot, slot] for slot in range(MAX_SPANS + 1)]]
         assert flat_spans(alternating, [[[0.0, 0.0]] * (MAX_SPANS + 1)]) is None
+
+
+class TestAssignReasons:
+    """What a REFUSAL says. A reason is read instead of opening the strip.
+
+    So naming the wrong one sends the operator to the wrong place: the stored
+    bound is a bookkeeping limit, a seed that named no letter is a composition
+    question, and neither of them is re-cut ink.
+    """
+
+    def _reason(self, monkeypatch, seed_xy, seed_slot, strokes) -> str:
+        import tools.eigenhand.spans as module
+
+        monkeypatch.setattr(module, "seed_for_case", lambda *_a: (seed_xy, np.asarray(seed_slot), 1.0))
+        spans, diag = module.assign(None, strokes, {"tx": 0.0, "ty": 0.0, "baseline_row": 0.0}, 1.0, None)
+        assert spans is None
+        return diag["reason"]
+
+    def test_a_seed_that_labelled_nothing_here_is_not_reported_as_re_cut_ink(self, monkeypatch):
+        # The seed HAS letters — just none of them anywhere near this Bahn, so
+        # every sample took a connector. Coverage was perfect; saying it was not
+        # would point at `cap_word_strokes`, which had nothing to do with it.
+        seed = np.array([[0.0, 0.0], [1.0, 0.0], [2.0, 0.0], [90.0, 90.0]])
+        reason = self._reason(monkeypatch, seed, [-1, -1, -1, 0], [[[0.0, 0.0], [1.0, 0.0], [2.0, 0.0]]])
+        assert reason == "the seed labelled no letter anywhere on this Bahn"
+
+    def test_a_box_over_the_stored_bound_says_so_by_the_number(self, monkeypatch):
+        from core.eigenhand.pfad import MAX_SPANS
+
+        walk = [[float(step), 0.0] for step in range(MAX_SPANS + 1)]
+        seed = np.asarray(walk)
+        reason = self._reason(monkeypatch, seed, [step % 2 for step in range(MAX_SPANS + 1)], [walk])
+        assert reason == f"{MAX_SPANS + 1} boundaries — at most {MAX_SPANS} are stored per box"
+
+    def test_a_bahn_without_a_sample_is_its_own_finding(self, monkeypatch):
+        assert self._reason(monkeypatch, np.zeros((2, 2)), [0, 1], [[]]) == "the Bahn carries no samples"
 
 
 class TestWobble:

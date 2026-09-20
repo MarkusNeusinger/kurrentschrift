@@ -1361,6 +1361,7 @@ class TestSpanAssignment:
         "crop_origin_mm": ORIGIN_MM,
         "width_px": WIDTH_PX,
         "height_px": HEIGHT_PX,
+        "boxes": [{"index": 0, "word": "lesen"}, {"index": 1, "word": "das"}],
     }
 
     def _assign(self, monkeypatch, stored: list[dict], *, spans=None, boxes=None) -> list[dict]:
@@ -1418,6 +1419,13 @@ class TestSpanAssignment:
         assert out[0].get(FIELD_SPANS) is None
         assert out[1][FIELD_SPANS] == [_span()]
 
+    def test_a_box_this_fassung_does_not_have_is_refused_here_too(self, monkeypatch):
+        # A typo in `--box` cannot lose a path in this mode, but it would report
+        # a Fassung done that the run never looked at — so both passes ask the
+        # same question, out of one place (found in review, this PR).
+        with pytest.raises(SystemExit, match="no box 7"):
+            self._assign(monkeypatch, [_path()], spans=[_span()], boxes=[7])
+
     def test_the_stored_strip_frame_is_read_back_into_the_crops_own(self, monkeypatch):
         # The inverse of what `_entry` adds on the way in. Getting it wrong
         # would place every boundary against the wrong ink while every number
@@ -1467,6 +1475,34 @@ class TestSpanAssignment:
         assert body["format"] == SKIP_AND_SPAN_FORMAT
         assert [entry["box_index"] for entry in body["pfade"]] == [0, 1]
         assert body["pfade"][0][FIELD_SPANS] == [_span()]
+
+    def test_an_unfollowed_fassung_is_left_at_null_rather_than_stored_as_empty(self, monkeypatch, capsys):
+        # `pfade: null` says nobody has followed this Fassung, an empty list
+        # says the follower came back with nothing, and the workbench puts that
+        # difference in front of the author. Falling through to the push would
+        # destroy it — from the one mode that advertises touching nothing
+        # (found in review, this PR).
+        from tools.eigenhand import pfad as tool
+
+        _stub_run(monkeypatch, fresh=[], stored=[])
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: pytest.fail("this run had nothing to store"))
+        monkeypatch.setattr(tool, "request_json_with_etag", lambda *_a: ({"pfade": None}, STUB_TAG))
+        assert tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--spans", "--apply"]) == 0
+        assert "a boundary needs a Bahn to sit on" in capsys.readouterr().out
+
+    def test_a_run_that_assigned_nothing_pushes_nothing(self, monkeypatch, capsys):
+        # A full-replacement PUT is never a harmless no-op: it bumps the content
+        # ETag and re-stamps a format-1 row as format 2 — over boundaries nobody
+        # looked at (found in review, this PR).
+        from tools.eigenhand import pfad as tool
+
+        stored = [_path()]
+        _stub_run(monkeypatch, fresh=[], stored=stored)
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: pytest.fail("this run had nothing to store"))
+        monkeypatch.setattr(tool, "request_json_with_etag", lambda *_a: ({"pfade": stored}, STUB_TAG))
+        monkeypatch.setattr(tool, "assign_row_spans", lambda *_a, **_k: list(stored))
+        assert tool.main(["--hand", "mn-suetterlin", "--strip", "S0001", "--spans", "--apply"]) == 0
+        assert "nothing to store" in capsys.readouterr().out
 
     def test_the_follower_own_boundaries_reach_the_checked_field(self, monkeypatch):
         # Without them a followed Bahn reaches the editor with no seam to drag,
