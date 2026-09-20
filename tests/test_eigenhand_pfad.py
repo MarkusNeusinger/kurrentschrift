@@ -18,10 +18,12 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
+from core.eigenhand import tintentreue
 from core.eigenhand.pfad import (
     AUTHORED,
     FIELD_PATH,
     FIELD_SPANS,
+    MAX_DETAIL,
     MAX_SLOT,
     MAX_UNIT,
     PFAD_FORMAT,
@@ -169,6 +171,28 @@ def _skip(**overrides) -> dict:
         "verfahren": "tintenpfad",
         **overrides,
     }
+
+
+# One followed word as `tools.pairlab.tintenpfad.follow_case` hands it back —
+# registered against the CROP, with the diagnosis block the projection reads.
+# `letter_spans` sits in the free `meta` because that is where the follower
+# still puts it; what the tool does with it is the assertion, not this shape.
+_INFO = {
+    "strokes": [[[0.0, 0.0], [1.0, 1.0]]],
+    "registration_px": {"tx": 3.0, "ty": -1.0, "baseline_row": 240.0},
+    "xh_px": 118.0,
+    "meta": {
+        "letter_spans": [[[0, 0, 1]]],
+        "tintenpfad": {
+            "runs": 2,
+            "strands": 1,
+            "jumps": 0,
+            "hairpins": 0,
+            "paper_lifts": 1,
+            "ink_unvisited_share": 0.02,
+        },
+    },
+}
 
 
 class TestFrameForBox:
@@ -350,9 +374,10 @@ class TestCheckPaths:
         assert self._check([_path(verfahren=AUTHORED)])[0]["verfahren"] == AUTHORED
 
     def test_a_format_1_entry_keeps_exactly_the_shape_migration_0031_stored(self):
-        # The default is the format this image writes, and nothing about it
-        # moved: a row stamped 1 must not come back carrying format-2 keys.
-        assert set(self._check([_path()])[0]) == {
+        # Stamped 1 EXPLICITLY, because the default moved with the second
+        # release: what a format-1 row stores is frozen by the rows already in
+        # the database and must not come back carrying format-2 keys.
+        assert set(self._check([_path()], pfad_format=1)[0]) == {
             "box_index",
             "word",
             "strokes",
@@ -525,13 +550,16 @@ class TestFormatTwo:
         # cross-check the whole promotion exists for.
         assert self._check(body)
 
-    def test_a_format_1_body_keeps_its_meta_boundaries_exactly_as_they_are(self):
-        # Nothing is given up on the push this image makes on its own — under
-        # format 1 the free-meta copy IS where the boundaries belong.
-        run = _path(meta={"letter_spans": [[[0, 0, 2]]]})
+    def test_the_second_release_declares_format_2_for_the_body_it_makes_itself(self):
+        # Since 2026-09-20 this image WRITES 2, so an ordinary run's body is
+        # declared 2 even when every entry in it is plain. Nothing is given up
+        # on that push: the tool stopped putting its own boundaries in the free
+        # `meta` in the same release, so there is nothing there to strip.
+        assert PFAD_FORMAT == SKIP_AND_SPAN_FORMAT
+        run = _path(meta={"tintenpfad": {"runs": 2}})
         body, pfad_format, dropped = push_body([run])
-        assert (pfad_format, dropped) == (PFAD_FORMAT, [])
-        assert body[0]["meta"] == {"letter_spans": [[[0, 0, 2]]]}
+        assert (pfad_format, dropped) == (SKIP_AND_SPAN_FORMAT, [])
+        assert body[0]["meta"] == {"tintenpfad": {"runs": 2}}
 
     def test_the_boundaries_may_not_also_hide_in_the_free_meta(self):
         # Two sets of boundaries on one box would contradict each other the
@@ -645,20 +673,52 @@ class TestFollowerHandover:
         from tools.eigenhand.pfad import _entry
 
         frame = _frame(1)
-        info = {
-            "strokes": [[[0.0, 0.0], [1.0, 1.0]]],
-            "registration_px": {"tx": 3.0, "ty": -1.0, "baseline_row": 240.0},
-            "xh_px": 118.0,
-            "meta": {"letter_spans": [], "tintenpfad": {"runs": 2}},
-        }
-        entry = _entry(info, frame, flecken_n=2, today="2026-09-12")
+        entry = _entry(_INFO, frame, flecken_n=2, today="2026-09-12", sensors={})
         assert entry["box_index"] == 1
         assert entry["word"] == "das"
         assert entry["registration_px"] == {"tx": 3.0 + frame["rect_px"][0], "ty": -1.0, "baseline_row": 240.0}
         assert entry["flecken_n"] == 2
         assert entry["erzeugt_am"] == "2026-09-12"
         # And what comes out of the follower has to pass the API's own gate.
-        assert check_paths([entry], ROW, WIDTH_PX, HEIGHT_PX, ["lesen", "das"])
+        assert check_paths([entry], ROW, WIDTH_PX, HEIGHT_PX, ["lesen", "das"], PFAD_FORMAT)
+
+    def test_every_sensor_the_traffic_light_reads_is_in_the_stored_projection(self):
+        # The projection is a fixed tuple, so a sensor missing from it is
+        # computed, printed and then never reaches the database — afterwards
+        # indistinguishable from „measured 0". This is the one assertion that
+        # notices, so the keys are DERIVED from the module that grades them
+        # rather than listed here: a list would go stale on the seventh sensor,
+        # which is the exact drift this pin exists for.
+        from tools.eigenhand.pfad import STORED_SENSORS
+
+        graded = {value for name, value in vars(tintentreue).items() if name.startswith("KEY_")}
+        assert len(graded) >= 6
+        assert graded <= set(STORED_SENSORS)
+
+    def test_the_stored_sensor_block_is_exactly_the_projection(self):
+        # Neither more nor less: the follower's diagnosis carries dozens of
+        # decoder internals a shared row is not a dumping ground for, and a
+        # sensor the light reads must be present even when nothing measured it
+        # (as an explicit null, never as a missing key).
+        from tools.eigenhand.pfad import STORED_SENSORS, _entry
+
+        entry = _entry(_INFO, _frame(1), flecken_n=None, today="2026-09-20", sensors={})
+        assert set(entry["meta"]["tintenpfad"]) == set(STORED_SENSORS)
+        assert entry["meta"]["tintenpfad"]["runs"] == 2
+        assert entry["meta"]["tintenpfad"][tintentreue.KEY_AIOU] is None
+        # And the follower's own free-meta boundaries do not travel: format 2
+        # keeps them in a checked field, and `check_paths` refuses the copy.
+        assert "letter_spans" not in entry["meta"]
+
+    def test_the_measured_sensors_land_in_the_row_the_light_reads(self):
+        from tools.eigenhand.pfad import _entry
+
+        sensors = {tintentreue.KEY_EXKURSION: 0.11, tintentreue.KEY_AIOU: 0.83}
+        entry = _entry(_INFO, _frame(1), flecken_n=None, today="2026-09-20", sensors=sensors)
+        stored = check_paths([entry], ROW, WIDTH_PX, HEIGHT_PX, ["lesen", "das"], PFAD_FORMAT)[0]
+        urteil = tintentreue.tintentreue(stored, hand="mn-suetterlin", pfade_format=PFAD_FORMAT, maske_n=None)
+        assert urteil.gemessen
+        assert {wert.name: wert.wert for wert in urteil.sensoren}[tintentreue.SENSOR_AIOU] == 0.83
 
     def test_a_box_the_row_does_not_have_stops_the_run_before_it_can_erase(self):
         # `--box` narrows the follow, and the write is a FULL replacement — so
@@ -822,21 +882,22 @@ class TestFollowerHandover:
         assert sent["pfade"][0][FIELD_SPANS] == [neighbours[0], corrected, neighbours[1]]
         assert check_paths(sent["pfade"], ROW, WIDTH_PX, HEIGHT_PX, pfad_format=sent["format"])
 
-    def test_the_run_gives_up_its_own_meta_boundaries_when_the_push_is_promoted(self, monkeypatch, capsys):
-        # The follower writes its boundaries into the free `meta`, and format 2
-        # refuses exactly that. A merge promoted for carrying a skip would
-        # otherwise build a body its own push could not store (review,
-        # PR #639). Given up, and said out loud.
+    def test_a_stored_meta_boundary_is_given_up_when_the_push_is_promoted(self, monkeypatch, capsys):
+        # Format 2 refuses letter boundaries in the free `meta`, and a row
+        # written before it carries exactly those. A merge promoted for
+        # carrying a skip would otherwise build a body its own push could not
+        # store (review, PR #639). Given up, and said out loud — and it is the
+        # STORED entry that loses them, since `_entry` stopped writing the copy.
         _, sent = _apply_run(
             monkeypatch,
-            fresh=[_path(meta={"letter_spans": [[[0, 0, 2]]], "tintenpfad": {"runs": 2}})],
-            stored=[_path(), _skip(box_index=1, word="das")],
+            fresh=[_skip(grund="gave_up")],
+            stored=[_path(box_index=1, word="das", meta={"letter_spans": [[[0, 0, 2]]], "tintenpfad": {"runs": 2}})],
             argv=["--hand", "mn-suetterlin", "--strip", "S0001", "--box", "0"],
         )
         assert sent["format"] == SKIP_AND_SPAN_FORMAT
-        assert sent["pfade"][0]["meta"] == {"tintenpfad": {"runs": 2}}
+        assert sent["pfade"][1]["meta"] == {"tintenpfad": {"runs": 2}}
         assert check_paths(sent["pfade"], ROW, WIDTH_PX, HEIGHT_PX, pfad_format=sent["format"])
-        assert "letter boundaries at box 0" in capsys.readouterr().out
+        assert "letter boundaries a stored entry carries at box 1" in capsys.readouterr().out
 
     def test_a_stored_skip_travels_back_up_under_a_number_that_knows_it(self, monkeypatch):
         # The other half: `_merged` keeps every box this run did not follow, so
@@ -965,6 +1026,203 @@ class TestFollowerHandover:
         assert all(
             getattr(weights, arm) for arm in ("tip_read", "hairpin_tip", "ride_back", "tip_grey_stop", "self_jump")
         )
+
+
+class TestSkipEntries:
+    """Every way a box loses its path, and the reason it is stored under.
+
+    Getting this mapping wrong is worse than writing no skip at all: the
+    Nachfahr-Liste routes the author's work by `grund` — „unauthored" is a jump
+    to the plate, „no_geometry" a Bogen to re-measure, and only „gave_up" is
+    follower work.
+    """
+
+    ROW_IN = {
+        "strip": "S0001",
+        "fassung": "F01",
+        "sheet": "B0001",
+        "row_index": 0,
+        "crop_origin_mm": ORIGIN_MM,
+        "width_px": WIDTH_PX,
+        "height_px": HEIGHT_PX,
+        "flecken": [],
+        "boxes": [{"index": 0, "word": "lesen"}],
+    }
+
+    def _follow(self, monkeypatch, *, no_geometry=False, missing=(), info=None) -> list[dict]:
+        """`follow_row` with the ink, the network and the follower stubbed out."""
+        import tools.pairlab.tintenpfad as follower
+        from tools.eigenhand import pfad as tool
+
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: {"rows": [ROW]})
+        monkeypatch.setattr(tool, "_strip_plane", lambda *_a: np.zeros((HEIGHT_PX, WIDTH_PX)))
+        monkeypatch.setattr(tool, "_paper_sensors", lambda *_a: {})
+        case = SimpleNamespace(mask=np.zeros((10, 10), dtype=bool))
+        monkeypatch.setattr(tool, "_case_for_box", lambda *_a: (case, list(missing)))
+        monkeypatch.setattr(follower, "follow_case", lambda *_a: info)
+        if no_geometry:
+            monkeypatch.setattr(
+                tool, "frame_for_box", lambda *_a: (_ for _ in ()).throw(ValueError("no printed `band_mm.waist`"))
+            )
+        return tool.follow_row("https://example.invalid", "t", "mn-suetterlin", dict(self.ROW_IN), {}, None)
+
+    def _stored(self, entries: list[dict]) -> dict:
+        """What the API makes of them — the shape check every skip has to pass."""
+        return check_paths(entries, ROW, WIDTH_PX, HEIGHT_PX, ["lesen", "das"], PFAD_FORMAT)[0]
+
+    def test_a_bogen_without_cut_geometry_is_a_no_geometry_skip(self, monkeypatch):
+        entry = self._follow(monkeypatch, no_geometry=True)[0]
+        assert (entry["grund"], entry["status"]) == ("no_geometry", "skipped")
+        assert "band_mm" in entry["detail"]
+        # No frame existed, so the entry claims no registration and no x-height
+        # rather than the printed ruling: that would be a nominal number in a
+        # measured field.
+        stored = self._stored([entry])
+        assert stored["registration_px"] is None and stored["xh_px"] is None and stored["strokes"] == []
+        # The arms had no bearing on the outcome — the follower never ran.
+        assert stored["konfiguration"] == {}
+
+    def test_a_no_geometry_skip_takes_its_word_from_the_printed_layout(self, monkeypatch):
+        # `check_paths` holds every entry's word against the LAYOUT's box, the
+        # same source `_entry` takes it from. A skip built from the strip
+        # listing instead would be refused wherever the two disagree.
+        from tools.eigenhand import pfad as tool
+
+        row = {**self.ROW_IN, "boxes": [{"index": 0, "word": "Lesen"}]}
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: {"rows": [ROW]})
+        monkeypatch.setattr(tool, "_strip_plane", lambda *_a: np.zeros((HEIGHT_PX, WIDTH_PX)))
+        monkeypatch.setattr(
+            tool, "frame_for_box", lambda *_a: (_ for _ in ()).throw(ValueError("no printed `band_mm.waist`"))
+        )
+        entry = tool.follow_row("https://example.invalid", "t", "mn-suetterlin", row, {}, None)[0]
+        assert entry["word"] == "lesen"
+        assert self._stored([entry])["word"] == "lesen"
+
+    def test_a_box_the_printed_row_does_not_have_stays_a_gap(self, monkeypatch):
+        # The other way `frame_for_box` refuses: a strip listing box the layout
+        # row has no entry for. A skip carrying that index is refused by
+        # `check_paths` — and takes the whole Fassung's push with it, where the
+        # box alone is in doubt. So it costs that box, never the row.
+        from tools.eigenhand import pfad as tool
+
+        row = {**self.ROW_IN, "boxes": [{"index": 0, "word": "lesen"}, {"index": 2, "word": "sonne"}]}
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: {"rows": [ROW]})
+        monkeypatch.setattr(tool, "_strip_plane", lambda *_a: np.zeros((HEIGHT_PX, WIDTH_PX)))
+        monkeypatch.setattr(tool, "_case_for_box", lambda *_a: (SimpleNamespace(mask=None), ["y"]))
+        entries = tool.follow_row("https://example.invalid", "t", "mn-suetterlin", row, {}, None)
+        assert [entry["box_index"] for entry in entries] == [0]
+
+    def test_a_word_the_plate_cannot_compose_is_an_unauthored_skip(self, monkeypatch):
+        entry = self._follow(monkeypatch, missing=["y", "q"])[0]
+        assert (entry["grund"], entry["detail"]) == ("unauthored", "y q")
+        assert self._stored([entry])["konfiguration"] == {}
+
+    def test_a_follower_that_gives_up_says_so_under_its_own_configuration(self, monkeypatch):
+        entry = self._follow(monkeypatch, info={"status": "unvisited", "detail": "0.42 of the ink is unvisited"})[0]
+        assert entry["grund"] == "gave_up"
+        assert entry["detail"] == "unvisited: 0.42 of the ink is unvisited"
+        # This one DID read ink, so the arms it read it with travel into the row.
+        assert self._stored([entry])["konfiguration"]["rail"] == "tentfit"
+
+    def test_a_narrowed_run_says_nothing_about_the_boxes_it_did_not_look_at(self, monkeypatch):
+        # `not_selected` is in the vocabulary and is deliberately never written
+        # here: `--box` narrows THIS run, the write is a full replacement, and
+        # declaring the other boxes skipped would overwrite the rest of the row.
+        from tools.eigenhand import pfad as tool
+
+        row = {**self.ROW_IN, "boxes": [{"index": 0, "word": "lesen"}, {"index": 1, "word": "das"}]}
+        monkeypatch.setattr(tool, "request_json", lambda *_a, **_k: {"rows": [ROW]})
+        monkeypatch.setattr(tool, "_strip_plane", lambda *_a: np.zeros((HEIGHT_PX, WIDTH_PX)))
+        monkeypatch.setattr(tool, "_case_for_box", lambda *_a: (SimpleNamespace(mask=None), ["y"]))
+        entries = tool.follow_row("https://example.invalid", "t", "mn-suetterlin", row, {}, [1])
+        assert [entry["box_index"] for entry in entries] == [1]
+        assert all(entry["grund"] != "not_selected" for entry in entries)
+
+    def test_a_skip_never_gives_up_a_stored_path(self, monkeypatch, capsys):
+        # „Unauthored" depends on which glyphs the plate carries TODAY and
+        # „gave up" on the arms of this run, so a box followed cleanly last week
+        # can produce a skip this week. Storing it would throw a good Bahn away
+        # to record that this run did not reproduce it.
+        from tools.eigenhand import pfad as tool
+
+        merged, handed_over = tool._merged(
+            "https://example.invalid", "t", "u", [_skip(grund="gave_up")], _get=lambda *_: {"pfade": [_path()]}
+        )
+        assert merged == [_path()] and handed_over is False
+        assert "keeping the stored path at box 0" in capsys.readouterr().out
+
+    def test_a_skip_does_land_in_a_box_that_holds_nothing(self, monkeypatch):
+        from tools.eigenhand import pfad as tool
+
+        merged, _handed = tool._merged(
+            "https://example.invalid", "t", "u", [_skip(grund="gave_up")], _get=lambda *_: {"pfade": []}
+        )
+        assert [entry["status"] for entry in merged] == ["skipped"]
+
+    def test_the_reason_is_one_the_schema_knows(self):
+        # A free string would merge the four states back into one within a
+        # month — the tool must only ever write reasons out of the closed list.
+        from tools.eigenhand.pfad import _skip as skip_entry
+
+        entry = skip_entry(0, "lesen", "gave_up", "x" * 400, None, "2026-09-20", ran=True)
+        assert entry["grund"] in SKIP_REASONS
+        # And a follower message longer than the bound is cut rather than
+        # costing the whole run a 422.
+        assert len(self._stored([entry])["detail"]) == MAX_DETAIL
+
+
+class TestPaperSensors:
+    """The two sensors this tool measures itself, against the strip's own ink."""
+
+    MASK = np.zeros((60, 140), dtype=bool)
+    MASK[30, 10:110] = True
+
+    @staticmethod
+    def _info(v: float) -> dict:
+        """A one-stroke Bahn along `v`, registered so `v = 0` lies on the ink.
+
+        4.5 x-heights long, which is 90 px inside the 100 px ink line: an
+        excursion reads the distance to the nearest ink pixel, so a Bahn
+        running past the END of the ink would measure its own overshoot.
+        """
+        return {
+            "strokes": [[[0.0, v], [4.5, v]]],
+            "registration_px": {"tx": 10.0, "ty": 0.0, "baseline_row": 30.0},
+            "xh_px": 20.0,
+        }
+
+    def test_a_bahn_on_the_ink_reads_as_no_excursion_and_a_high_aiou(self):
+        from tools.eigenhand.pfad import _paper_sensors
+
+        sensors = _paper_sensors(self.MASK, self._info(0.0))
+        assert sensors[tintentreue.KEY_EXKURSION] == 0.0
+        assert sensors[tintentreue.KEY_AIOU] > 0.9
+
+    def test_a_bahn_beside_the_ink_reads_as_a_full_x_height_away(self):
+        from tools.eigenhand.pfad import _paper_sensors
+
+        # One x-height above the ink line: 20 px at xh = 20 px.
+        sensors = _paper_sensors(self.MASK, self._info(1.0))
+        assert sensors[tintentreue.KEY_EXKURSION] == pytest.approx(1.0, abs=0.05)
+        assert sensors[tintentreue.KEY_AIOU] < 0.1
+
+    def test_a_reading_the_traffic_light_can_grade_comes_out(self):
+        # The point of the pair: they are measured so the light does not have
+        # to compute, and the light has to find them under its own key names.
+        from tools.eigenhand.pfad import MEASURED_SENSORS, _paper_sensors
+
+        assert set(_paper_sensors(self.MASK, self._info(0.0))) == set(MEASURED_SENSORS)
+
+    def test_a_bahn_without_a_single_point_is_not_measured_as_zero(self):
+        # 0.0 is the BEST reading an excursion can get and the WORST an AIoU
+        # can; „nothing to measure" is neither, and a null is how the row says
+        # so (`core.eigenhand.tintentreue.Rohzahlen`).
+        from tools.eigenhand.pfad import _paper_sensors
+
+        assert _paper_sensors(self.MASK, {**self._info(0.0), "strokes": []}) == {
+            tintentreue.KEY_EXKURSION: None,
+            tintentreue.KEY_AIOU: None,
+        }
 
 
 class TestDuctusSeed:

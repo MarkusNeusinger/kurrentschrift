@@ -14,6 +14,14 @@ Reported per word: the maximum excursion in x-heights and the arc length of
 samples beyond each threshold. Reads only fixtures and a candidate file —
 no DB, no network, no solve.
 
+THE MEASUREMENT IS REFERENCE-FREE, and only the plumbing around it is not:
+the distance is read against the specimen's OWN ink, never against a reference
+trace. That is why `ink_distance_px` and `excursion_readings` sit apart from
+the fixture wiring — an own-hand strip has no reference by doctrine
+(`docs/proposals/eigenhand-erfassung.md` §12) and no bench frame either, but it
+has a binarised ink mask and a followed Bahn, which is all the kernel needs
+(`tools.eigenhand.pfad`, the Tintentreue sensor „Papier-Exkursion").
+
     uv run python -m tools.tracebench.excursions temp/candidate.json
     uv run python -m tools.tracebench.excursions a.json b.json --top 12
         [--expect-root <digest-prefix>]
@@ -27,6 +35,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Callable, Sequence
 from pathlib import Path
 
 import numpy as np
@@ -48,6 +57,48 @@ EXCURSION_THRESHOLDS = (0.35, 0.5)
 INVENTORY_STEP_UNITS = RESAMPLE_STEP_UNITS
 
 
+def ink_distance_px(ink: np.ndarray) -> np.ndarray:
+    """Per image pixel: the distance to the nearest ink pixel, in that image's px.
+
+    The one place the transform is spelled, so a caller outside the bench reads
+    the same field this inventory reads. What counts as ink is the CALLER's
+    question — the bench hands in the K-C-cleaned evidence, a strip its own
+    binarised mask — and that is the whole difference between the two.
+    """
+    return distance_transform_edt(~np.asarray(ink, dtype=bool))
+
+
+def excursion_readings(
+    strokes_units: Sequence[Sequence[Sequence[float]]],
+    to_image_px: Callable[[np.ndarray], np.ndarray],
+    dist_px: np.ndarray,
+    xh_px: float,
+) -> dict[str, float] | None:
+    """How far one path strays from the ink under it — the kernel, without fixtures.
+
+    `strokes_units` are pen runs in x-height units, `to_image_px` maps such
+    points onto the grid `dist_px` was built on, and `xh_px` is that grid's
+    x-height. `None` where the path has nothing to measure.
+
+    The resampling happens in UNIT space at the ruler's own step, so every
+    sample stands for the same arc length and `arc_<t>` is a length rather than
+    a pixel count. Keeping it in here is the point of the function: a second
+    caller that resampled in pixels would report arc lengths in another unit
+    and nobody would see it in the number.
+    """
+    parts = [stroke for stroke in resampled_strokes(strokes_units, INVENTORY_STEP_UNITS) if len(stroke)]
+    if not parts:
+        return None
+    px = to_image_px(np.vstack(parts))
+    r = np.clip(np.round(px[:, 1]).astype(int), 0, dist_px.shape[0] - 1)
+    c = np.clip(np.round(px[:, 0]).astype(int), 0, dist_px.shape[1] - 1)
+    d_units = dist_px[r, c] / xh_px
+    return {
+        "max": float(d_units.max()),
+        **{f"arc_{t}": float((d_units > t).sum() * INVENTORY_STEP_UNITS) for t in EXCURSION_THRESHOLDS},
+    }
+
+
 def _cleaned_ink_distance_px(specimen_id: str, reference: Reference) -> np.ndarray | None:
     """EDT (crop px) of the K-C-cleaned evidence ink for one specimen."""
     from tools.pairlab.ink_evidence import InkEvidenceOptions, ink_evidence_case  # noqa: PLC0415
@@ -57,7 +108,7 @@ def _cleaned_ink_distance_px(specimen_id: str, reference: Reference) -> np.ndarr
     if case is None or case.width_map is None:
         return None
     clean, _report = ink_evidence_case(case, InkEvidenceOptions())
-    return distance_transform_edt(~np.asarray(clean.width_map > 0))
+    return ink_distance_px(clean.width_map > 0)
 
 
 def inventory(
@@ -82,17 +133,10 @@ def inventory(
         if dist_px is None:
             continue
         strokes = entry.frame.trace_to_bench(cand.strokes, cand.registration_px, cand.xh_px)
-        parts = [s for s in resampled_strokes(strokes, INVENTORY_STEP_UNITS) if len(s)]
-        if not parts:
+        row = excursion_readings(strokes, entry.frame.bench_to_crop_px, dist_px, entry.frame.xh)
+        if row is None:
             continue
-        px = entry.frame.bench_to_crop_px(np.vstack(parts))
-        r = np.clip(np.round(px[:, 1]).astype(int), 0, dist_px.shape[0] - 1)
-        c = np.clip(np.round(px[:, 0]).astype(int), 0, dist_px.shape[1] - 1)
-        d_units = dist_px[r, c] / entry.frame.xh
-        rows[sid] = {
-            "max": float(d_units.max()),
-            **{f"arc_{t}": float((d_units > t).sum() * INVENTORY_STEP_UNITS) for t in EXCURSION_THRESHOLDS},
-        }
+        rows[sid] = row
     return rows
 
 

@@ -37,6 +37,11 @@ from tests.api_harness import Harness
 
 HAND = "mn-suetterlin"
 PX_PER_MM = 300.0 / 25.4
+# What `eigenhand_strips.pfade_format` says about a Fassung nobody has followed:
+# the column's server default (migration 0032). Deliberately NOT `PFAD_FORMAT` —
+# that number moves with every release of the lockstep, and the rows already in
+# the database do not move with it. The two were the same until 2026-09-20.
+UNFOLLOWED_FORMAT = 1
 
 
 async def _print(api: Harness, **body) -> dict:
@@ -1239,7 +1244,7 @@ class TestStreifenPfad:
         empty = await self._get(api)
         assert empty.status == 200, empty.body
         assert empty.json()["pfade"] is None
-        assert empty.json()["format"] == PFAD_FORMAT
+        assert empty.json()["format"] == UNFOLLOWED_FORMAT
 
         written = await self._put(api, [self._path(stored), self._path(stored, 1)])
         assert written.status == 200, written.body
@@ -1296,7 +1301,7 @@ class TestStreifenPfad:
         assert (await self._get(api)).json()["pfade"] is None
         # Refused means nothing moved — not even the marker of a row that was
         # never followed.
-        assert (await self._get(api)).json()["format"] == PFAD_FORMAT
+        assert (await self._get(api)).json()["format"] == UNFOLLOWED_FORMAT
 
     @pytest.mark.asyncio
     async def test_a_push_that_names_no_format_is_not_a_push(self, api: Harness):
@@ -1461,8 +1466,10 @@ class TestStreifenPfad:
         """
         stored = await _store_strip(api)
         # A Fassung nobody has followed already carries the marker — the column
-        # is NOT NULL, so there is no „unknown format" state to handle.
-        assert (await self._get(api)).json()["format"] == PFAD_FORMAT
+        # is NOT NULL, so there is no „unknown format" state to handle. And it
+        # carries the MIGRATION's number, not the running image's: the two came
+        # apart the day the second release moved `PFAD_FORMAT`.
+        assert (await self._get(api)).json()["format"] == UNFOLLOWED_FORMAT
         assert (await self._put(api, [self._path(stored)])).status == 200
         assert (await self._get(api)).json()["format"] == PFAD_FORMAT
 

@@ -63,6 +63,23 @@ registration in the STRIP's pixels, the Verfahren, the configuration and the
 day. The strip's own bytes are never touched; the path is data beside them
 (``core.eigenhand.pfad``, proposal §7.5).
 
+AND ONE ENTRY PER BOX IT COULD NOT FOLLOW. Since Streifen-Pfad format 2 a box
+without a path says so in the same list (the Skip-Eintrag: ``status`` +
+``grund``) instead of simply being absent, so the three situations this tool
+can run into — the Bogen has no cut geometry, the word needs glyphs the plate
+does not carry yet, the follower gave up — stop being one indistinguishable
+„no entry". They are not the same work: one needs a Bogen re-measured, one is
+a jump to the plate, and only the third is follower work at all.
+
+WHAT IT MEASURES BESIDE THE PATH. Four sensors come out of the follower's own
+diagnosis; two are measured HERE, against the strip's own ink mask — how far
+the Bahn strays from the ink (``tools.tracebench.excursions``) and how well it
+covers it (AIoU, ``tools.tracebench.metric``). Both are read afterwards by the
+Tintentreue traffic light (``core.eigenhand.tintentreue``), which derives a
+verdict and computes nothing: „Gemessen wird gespeichert, beurteilt wird
+abgeleitet" (author decision D, 2026-09-20). Neither sensor touches the
+followed geometry — they read the Bahn the follower delivered.
+
 THE CONFIGURATION is the one the campaign settled on for the reversal corners
 (messjournal §14, rounds of 10–11 September): ``tip_read`` · ``rail=tentfit``
 · ``edt_upsample=4`` · ``ink_bridge_xh=1.0`` · ``hairpin_tip`` · ``ride_back``
@@ -85,6 +102,7 @@ for _var in ("OPENBLAS_NUM_THREADS", "OMP_NUM_THREADS", "MKL_NUM_THREADS"):
 
 import argparse  # noqa: E402
 import json  # noqa: E402
+from collections.abc import Mapping  # noqa: E402
 from datetime import date as date_cls  # noqa: E402
 from pathlib import Path  # noqa: E402
 from typing import Any  # noqa: E402
@@ -96,6 +114,11 @@ from core.database.models import LAUFFORM_VARIANT  # noqa: E402
 from core.eigenhand.ids import style_of_hand  # noqa: E402
 from core.eigenhand.pfad import (  # noqa: E402
     FIELD_SPANS,
+    MAX_DETAIL,
+    SKIP_GAVE_UP,
+    SKIP_NO_GEOMETRY,
+    SKIP_UNAUTHORED,
+    STATUS_OK,
     STATUS_SKIPPED,
     authored_spans,
     frame_for_box,
@@ -103,6 +126,7 @@ from core.eigenhand.pfad import (  # noqa: E402
     push_body,
 )
 from core.eigenhand.plan import load_plan, shaping_form_of  # noqa: E402
+from core.eigenhand.tintentreue import KEY_AIOU, KEY_EXKURSION  # noqa: E402
 from tools.eigenhand.apiclient import admin_token, api_base, request_bytes, request_json  # noqa: E402
 from tools.eigenhand.kartei import archived_pfade, load_kartei  # noqa: E402
 from tools.eigenhand.store import check_hand_id, hand_dir  # noqa: E402
@@ -125,6 +149,20 @@ KONFIGURATION: dict[str, Any] = {
 }
 
 VERFAHREN = "tintenpfad"
+
+# The follower's own diagnosis, projected rather than stored whole: `diag` holds
+# dozens of keys, most of them decoder internals nobody reads twice, and a row
+# of the shared database is not a dumping ground for them.
+FOLLOWER_SENSORS = ("runs", "strands", "jumps", "hairpins", "paper_lifts", "ink_unvisited_share")
+# The two this tool measures itself, named off the module that GRADES them so
+# the two sides cannot drift: a sensor stored under another key reads as „never
+# measured" and the box stays grey forever (`core.eigenhand.tintentreue`).
+MEASURED_SENSORS = (KEY_EXKURSION, KEY_AIOU)
+# The projection is a FIXED list, and that is why it is spelled here: a sensor
+# missing from it is computed, printed, and then silently never reaches the
+# database — indistinguishable afterwards from „measured 0". Pinned by
+# `tests/test_eigenhand_pfad.py` against every key the traffic light reads.
+STORED_SENSORS = (*FOLLOWER_SENSORS, *MEASURED_SENSORS)
 
 
 def _strip_rows(base: str, token: str, hand: str, strip: str, fassung: str | None) -> list[dict]:
@@ -326,19 +364,94 @@ def _case_for_box(prior: dict, plane: np.ndarray, frame: dict, word: str, form: 
     )
 
 
-def _entry(info: dict, frame: dict, flecken_n: int | None, today: str) -> dict:
+def _crop_px(points: Any, reg: Mapping[str, Any], xh_px: float) -> np.ndarray:
+    """Word units → the CROP's own pixels — the inverse of the follower's mapping.
+
+    `tools.pairlab.trace._px_to_word_units` read the other way, and deliberately
+    spelled out rather than imported from there: this is the one arithmetic both
+    sensors below stand on, and a private function of the follower is not a
+    contract. The CROP's frame, not the strip's — `_entry` adds the crop origin
+    back for storage, the mask these are measured against is the crop's own.
+    """
+    pts = np.asarray(points, dtype=float).reshape(-1, 2)
+    tx, ty, baseline_row = float(reg["tx"]), float(reg.get("ty", 0.0)), float(reg["baseline_row"])
+    return np.column_stack([pts[:, 0] * xh_px + tx, baseline_row + ty - pts[:, 1] * xh_px])
+
+
+def _reading(value: float | None, digits: int = 3) -> str:
+    """One sensor as the run prints it — „—" where it was not measured.
+
+    Never a 0 in that place: „the Bahn left no ink unvisited" is the best
+    reading this row can carry and „nothing computed it" is no reading at all,
+    and the two must not look alike at the terminal either.
+    """
+    return "—" if value is None else f"{float(value):.{digits}f}"
+
+
+def _paper_sensors(mask: np.ndarray, info: dict) -> dict[str, float | None]:
+    """The two sensors measured HERE: paper excursion and AIoU, against this strip's ink.
+
+    Both grade the Bahn against the word box's OWN binarised mask — the one
+    `_case_for_box` already cut for the follower — because a written strip has
+    no reference trace by doctrine (`docs/proposals/eigenhand-erfassung.md` §12,
+    Prüfstein 2). `dtw_xh` and Chamfer are reference-bound and deliberately not
+    here.
+
+    Neither is a new metric. The excursion kernel is the bench's standing K-D
+    sensor with its fixture wiring left behind (`tools.tracebench.excursions`),
+    and the AIoU is the ruler's own, which takes an ink mask and no reference at
+    all. Measured on the DELIVERED strokes — the capped ones that are actually
+    stored — so the number describes the Bahn a reader will see rather than one
+    that existed only inside the follower.
+
+    The two are imported inside the function like the follower itself: a dry run
+    should fail on a missing fixture root before the heavy stack is pulled in.
+    """
+    from tools.tracebench.excursions import excursion_readings, ink_distance_px
+    from tools.tracebench.metric import aiou
+
+    strokes, xh_px = info["strokes"], float(info["xh_px"])
+    reg = info["registration_px"]
+    if not strokes or not any(len(stroke) for stroke in strokes):
+        return dict.fromkeys(MEASURED_SENSORS)
+    ink = np.asarray(mask, dtype=bool)
+    reading = excursion_readings(strokes, lambda points: _crop_px(points, reg, xh_px), ink_distance_px(ink), xh_px)
+    value = aiou([_crop_px(stroke, reg, xh_px) for stroke in strokes], ink)
+    return {
+        # Rounded like the follower's own excursion reading, and for the same
+        # reason: three decimals of an x-height is a thousandth of a letter,
+        # and the digits past it are the EDT's grid, not the hand's.
+        KEY_EXKURSION: None if reading is None else round(reading["max"], 3),
+        KEY_AIOU: round(float(value.value), 4),
+    }
+
+
+def _entry(info: dict, frame: dict, flecken_n: int | None, today: str, sensors: Mapping[str, float | None]) -> dict:
     """One followed word as the row the API stores.
 
     The follower registers against the CROP it was handed; the stored frame is
     the STRIP's, so the crop's own origin is added back. One stored frame
     serves both views — the whole strip and any word cut out of it — and the
     crop's padding never has to be remembered along with the path.
+
+    `meta.letter_spans` is NOT written any more. Under format 2 a box's letter
+    boundaries are a checked field of the entry, and the free-meta copy is
+    refused outright (`core.eigenhand.pfad.check_paths`) — so writing it would
+    only mean `push_body` stripping it off again on every single box of every
+    single run. This image does not write the checked field yet; the follower's
+    own assignment is a derivation the next run makes again, and the field
+    arrives with the Span-Zuordner (`pfad --spans`). What the author corrected
+    BY HAND is a different matter and is carried through untouched by
+    `_carry_spans`.
     """
     reg = info["registration_px"]
     x0, y0 = frame["rect_px"][0], frame["rect_px"][1]
+    diagnosis = info.get("meta", {}).get("tintenpfad", {})
+    readings = {**{key: diagnosis.get(key) for key in FOLLOWER_SENSORS}, **sensors}
     return {
         "box_index": frame["index"],
         "word": frame["word"],
+        "status": STATUS_OK,
         "strokes": info["strokes"],
         "registration_px": {
             "tx": round(float(reg["tx"]) + x0, 2),
@@ -348,20 +461,58 @@ def _entry(info: dict, frame: dict, flecken_n: int | None, today: str) -> dict:
         "xh_px": float(info["xh_px"]),
         "verfahren": VERFAHREN,
         "konfiguration": dict(KONFIGURATION),
-        "meta": {
-            "letter_spans": info.get("meta", {}).get("letter_spans"),
-            "tintenpfad": {
-                key: info.get("meta", {}).get("tintenpfad", {}).get(key)
-                for key in ("runs", "strands", "jumps", "hairpins", "paper_lifts", "ink_unvisited_share")
-            },
-        },
+        "meta": {"tintenpfad": {key: readings.get(key) for key in STORED_SENSORS}},
+        "erzeugt_am": today,
+        "flecken_n": flecken_n,
+    }
+
+
+def _skip(index: int, word: str, grund: str, detail: str, flecken_n: int | None, today: str, *, ran: bool) -> dict:
+    """One box this run could not follow, as the entry that says why.
+
+    A Skip-Eintrag, not an absence: the same list, one state per box (author
+    decision C, 2026-09-20). It carries no registration and no x-height even
+    where a nominal frame existed — those are the FOLLOWER's output, and the
+    printed ruling put in their place would be a measurement of where the hand
+    was asked to write (`core.eigenhand.pfad`, „NOMINAL, NOT MEASURED").
+
+    `ran` says whether the follower actually got as far as reading ink. Only
+    then does the configuration travel into the row: on an unauthored word or a
+    Bogen without geometry the arms had no bearing on the outcome, and storing
+    them would suggest they did.
+    """
+    return {
+        "box_index": index,
+        "word": word,
+        "status": STATUS_SKIPPED,
+        "grund": grund,
+        # Cut rather than refused: the reason is what the triage runs on, the
+        # detail is only what a human reads afterwards, and a follower message
+        # longer than the bound must not cost the whole run a 422.
+        "detail": detail[:MAX_DETAIL] or None,
+        "strokes": [],
+        "verfahren": VERFAHREN,
+        "konfiguration": dict(KONFIGURATION) if ran else {},
+        "meta": {},
         "erzeugt_am": today,
         "flecken_n": flecken_n,
     }
 
 
 def follow_row(base: str, token: str, hand: str, row: dict, prior: dict, boxes: list[int] | None) -> list[dict]:
-    """Follow every asked-for word of one Fassung. One bad word is not a bad row."""
+    """Follow every asked-for word of one Fassung. One bad word is not a bad row.
+
+    A box that could not be followed comes back as a Skip-Eintrag naming its
+    reason, so the Nachfahr-Liste can route the work: `unauthored` is a jump to
+    the plate, `no_geometry` needs the Bogen re-measured, `gave_up` is the only
+    one that is follower work at all.
+
+    `not_selected` is deliberately NOT written here. `--box` is a narrowing of
+    THIS run, not a finding about the other boxes, and the write is a full
+    replacement: declaring them skipped would make a one-word re-follow overwrite
+    the rest of the row with „not selected". A box nothing has ever followed
+    carries no entry, which is the same statement without the damage.
+    """
     # FIRST, before a single byte is fetched: a `--box` that names nothing
     # would follow no word, and the write is a FULL replacement — so with
     # `--apply` a typo would erase this Fassung's stored paths and report
@@ -374,7 +525,10 @@ def follow_row(base: str, token: str, hand: str, row: dict, prior: dict, boxes: 
             f"{', '.join(str(i) for i in unknown)}; refusing to replace its paths with nothing"
         )
 
-    from tools.pairlab.follow import STATUS_OK
+    # Aliased: `STATUS_OK` at module level is the stored ENTRY's status, this
+    # one is the FOLLOWER's verdict on a word, and the two answer different
+    # questions on adjacent lines.
+    from tools.pairlab.follow import STATUS_OK as FOLLOWER_OK
     from tools.pairlab.tintenpfad import TintenpfadWeights, follow_case
 
     plan = load_plan()
@@ -397,20 +551,40 @@ def follow_row(base: str, token: str, hand: str, row: dict, prior: dict, boxes: 
             # A Bogen printed before the cut or ruling geometry existed has no
             # frame to seed with. One such row must not take the whole run down.
             print(f"  {case_id:<18} skipped   {exc}", flush=True)
+            printed = layout_row.get("boxes") or []
+            if not 0 <= index < len(printed):
+                # The OTHER way that call refuses: the strip listing (built from
+                # the frozen plan) names a box the layout row does not have. An
+                # entry for it would be refused by `check_paths` — and take the
+                # whole Fassung's push down with it, where the box alone is what
+                # is in doubt. So that disagreement stays a gap in the list
+                # (found in review, this PR).
+                continue
+            # The word comes from the LAYOUT, like `_entry`'s: `check_paths`
+            # holds the entry against the printed box, so an entry built from
+            # the other source could be refused for disagreeing with it.
+            entries.append(
+                _skip(index, printed[index].get("word", ""), SKIP_NO_GEOMETRY, str(exc), flecken_n, today, ran=False)
+            )
             continue
         case, missing = _case_for_box(prior, plane, frame, box["word"], shaping_form_of(plan, box["word"]), case_id)
         if missing:
             print(f"  {case_id:<18} skipped   unauthored: {' '.join(missing)}", flush=True)
+            entries.append(_skip(index, frame["word"], SKIP_UNAUTHORED, " ".join(missing), flecken_n, today, ran=False))
             continue
         info = follow_case(case, weights)
-        if info["status"] != STATUS_OK:
+        if info["status"] != FOLLOWER_OK:
             print(f"  {case_id:<18} {info['status']:<9} {info['detail']}", flush=True)
+            detail = f"{info['status']}: {info['detail']}" if info.get("detail") else str(info["status"])
+            entries.append(_skip(index, frame["word"], SKIP_GAVE_UP, detail, flecken_n, today, ran=True))
             continue
-        entry = _entry(info, frame, flecken_n, today)
-        diag = info.get("meta", {}).get("tintenpfad", {})
+        entry = _entry(info, frame, flecken_n, today, _paper_sensors(case.mask, info))
+        readings = entry["meta"]["tintenpfad"]
         print(
             f"  {case_id:<18} ok        {box['word']:<14} {len(entry['strokes']):2d} Züge · "
-            f"{diag.get('paper_lifts', 0)} Absetzer · unvisited {diag.get('ink_unvisited_share', 0):.2f}",
+            f"{_reading(readings['paper_lifts'], 0)} Absetzer · "
+            f"unvisited {_reading(readings['ink_unvisited_share'], 2)} · "
+            f"Exkursion {_reading(readings[KEY_EXKURSION])} xh · AIoU {_reading(readings[KEY_AIOU])}",
             flush=True,
         )
         entries.append(entry)
@@ -519,10 +693,30 @@ def _merged(
     refusal is switched off, so this merge is the only thing left between a
     re-follow and a silent loss.
 
+    A SKIP never displaces a stored path, and that guard lives here for the same
+    reason as all the others: the write is a full replacement. „Unauthored"
+    depends on which glyphs the plate carries TODAY and „gave up" on the arms
+    this run used, so a box that was followed cleanly last week can produce a
+    skip this week — and storing it would throw a good Bahn away to record that
+    this run did not reproduce it. The skip is dropped and the run says so; a
+    box that holds nothing keeps the skip, which is where it is worth something.
+
     `_get` is the seam the test calls through; every caller uses the default.
     """
     stored = (_get("GET", url, token) or {}).get("pfade") or []
     by_stored_box = {entry.get("box_index"): entry for entry in stored}
+    over_a_path = sorted(
+        entry["box_index"]
+        for entry in entries
+        if entry.get("status") == STATUS_SKIPPED and (by_stored_box.get(entry["box_index"]) or {}).get("strokes")
+    )
+    if over_a_path:
+        print(
+            f"  keeping the stored path at box {', '.join(str(index) for index in over_a_path)} — this run could "
+            "not follow it, and a skip is a finding about the run, not a reason to give up a path",
+            flush=True,
+        )
+        entries = [entry for entry in entries if entry["box_index"] not in set(over_a_path)]
     authored_boxes = {entry.get("box_index") for entry in stored if is_authored(entry)}
     hit = sorted(entry["box_index"] for entry in entries if entry["box_index"] in authored_boxes)
     if hit and replace_authored:
@@ -667,22 +861,32 @@ def main(argv: list[str] | None = None) -> int:
         # by the content rule (`core.eigenhand.pfad.push_body`).
         body, wire_format, without_spans = push_body(body)
         if without_spans:
-            # Named, never silent: this run DID assign those boundaries, and the
-            # push simply has no place for them until this image writes the
-            # checked field itself. They come back with the next run.
+            # Named, never silent. Since `_entry` stopped writing the free-meta
+            # copy, every boundary left to strip here is one an OLDER run stored
+            # and the merge carried along — so nothing re-assigns it on this
+            # run, and the box keeps its Bahn but loses those boundaries until
+            # the Span-Zuordner writes the checked field.
             print(
-                f"  Streifen-Pfad format {wire_format}: dropping this run's own letter boundaries at box "
-                f"{', '.join(str(index) for index in without_spans)} — under this format they belong in the "
-                "entry's own `letter_spans`, which this version does not write yet (they are re-assigned "
-                "on every run; hand-corrected ones are never touched)",
+                f"  Streifen-Pfad format {wire_format}: dropping the free-meta letter boundaries a stored entry "
+                f"carries at box {', '.join(str(index) for index in without_spans)} — under this format they "
+                "belong in the entry's own checked `letter_spans`, which this version does not write yet "
+                "(hand-corrected boundaries are never touched)",
                 flush=True,
             )
         if not args.apply:
             out = args.out or _local_path(hand, row["strip"], row["fassung"])
             out.parent.mkdir(parents=True, exist_ok=True)
             out.write_text(json.dumps({"format": wire_format, "pfade": body}, ensure_ascii=False, indent=1) + "\n")
+            # The same split the `--apply` branch makes below: a Skip-Eintrag is
+            # an entry, not a path, and one number over both would put the four
+            # states back together on the very surface an operator reads before
+            # deciding to store (found in review, this PR).
+            paths = [entry for entry in body if entry.get("status") != STATUS_SKIPPED]
+            followed = sum(1 for entry in entries if entry.get("status") != STATUS_SKIPPED)
+            skipped = len(body) - len(paths)
             print(
-                f"  dry run — {len(body)} path(s) ({len(entries)} followed) written to {out}, nothing stored",
+                f"  dry run — {len(paths)} path(s){f' and {skipped} skipped box(es)' if skipped else ''} "
+                f"({followed} followed here) written to {out}, nothing stored",
                 flush=True,
             )
             continue

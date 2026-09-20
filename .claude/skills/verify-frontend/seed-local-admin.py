@@ -96,10 +96,44 @@ DEFAULT_FASSUNG = "F01"
 # reader that treats them with `||` turns the best row into „not measured" and
 # a missing sensor into a zero, which is the bug a Rohzahlen reader is most
 # likely to ship.
+#
+# All EIGHT sensors since Streifen-Pfad format 2, and the spread is aimed at the
+# traffic light's provisional bounds (`core.eigenhand.tintentreue.VORLAEUFIG`):
+# the rows read „folgt" · „folgt teils" · „folgt nicht", so the throwaway stack
+# shows the three steps rather than three shades of grey. Whoever re-calibrates
+# those bounds moves these numbers with them — they are a fixture of the light,
+# not measurements of anything.
 TINTENPFAD_SPREAD: tuple[dict[str, Any], ...] = (
-    {"runs": 3, "strands": 1, "jumps": 0, "hairpins": 0, "paper_lifts": 2, "ink_unvisited_share": 0.0},
-    {"runs": 5, "strands": 2, "jumps": 1, "hairpins": None, "paper_lifts": 4, "ink_unvisited_share": 0.07},
-    {"runs": 9, "strands": 5, "jumps": 4, "hairpins": 3, "paper_lifts": 8, "ink_unvisited_share": 0.31},
+    {
+        "runs": 3,
+        "strands": 1,
+        "jumps": 0,
+        "hairpins": 0,
+        "paper_lifts": 2,
+        "ink_unvisited_share": 0.0,
+        "paper_excursion_xh": 0.08,
+        "aiou": 0.86,
+    },
+    {
+        "runs": 5,
+        "strands": 2,
+        "jumps": 1,
+        "hairpins": None,
+        "paper_lifts": 4,
+        "ink_unvisited_share": 0.07,
+        "paper_excursion_xh": 0.28,
+        "aiou": 0.71,
+    },
+    {
+        "runs": 9,
+        "strands": 5,
+        "jumps": 4,
+        "hairpins": 3,
+        "paper_lifts": 8,
+        "ink_unvisited_share": 0.31,
+        "paper_excursion_xh": 0.62,
+        "aiou": 0.41,
+    },
 )
 
 # One pen-down stretch in template units — baseline 0, midband 1, x from the
@@ -192,8 +226,11 @@ def pfad_entries(layout_row: dict[str, Any], geometry: dict[str, Any], spread_of
                 "xh_px": float(frame["xh_px"]),
                 "verfahren": "tintenpfad",
                 "konfiguration": {"source": "seed-local-admin", "synthetic": True},
-                # `letter_spans` stays null: the follower emits the key even when
-                # it found no boundaries, and a reader has to survive that.
+                # A null `letter_spans` in the free `meta` on purpose: format 2
+                # keeps the boundaries in a checked field of the entry and
+                # refuses a copy here, but a NULL is legitimate and is what a
+                # row written by the pre-format-2 tool carries. A reader has to
+                # survive it rather than read it as an empty boundary list.
                 "meta": {"letter_spans": None, "tintenpfad": dict(tintenpfad)},
                 "erzeugt_am": DEFAULT_SHEET_DATE,
                 "flecken_n": 0,

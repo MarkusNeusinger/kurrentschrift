@@ -18,7 +18,9 @@ letter boundaries of its own path as a checked field with their provenance
 (``letter_spans[].herkunft``). Both are format 2 and both are refused under
 format 1 — what a row is stamped with has to be what its cell obeys. The API
 reads and accepts ``SUPPORTED_FORMATS``; ``PFAD_FORMAT`` is only what this
-image WRITES, and the distance between the two is the lockstep.
+image WRITES, and the distance between the two is the lockstep. Since the
+second release (2026-09-20) that distance is zero again — the tool writes what
+the API already accepted — and the rows written under 1 keep saying so.
 
 THE FRAME. A path's ``strokes`` use the same contract as
 ``word_instances.strokes`` — baseline 0, midband 1, x growing from the word's
@@ -64,7 +66,14 @@ from core.eigenhand.crop import px_per_mm, word_box_px
 # what every writer in the repo puts on the wire. It is a MOVING number, which
 # is why a row stores the one it was written under rather than trusting it
 # (`eigenhand_strips.pfade_format`, migration 0032).
-PFAD_FORMAT = 1
+#
+# 1 → 2 on 2026-09-20, the SECOND release of the lockstep: `tools.eigenhand.pfad`
+# now writes the Skip-Einträge and measures the two sensors the Tintentreue was
+# missing, so a push has something to declare. The API has read and accepted 2
+# since the first release, which is what makes moving this a one-sided change —
+# and the stored marker is what keeps the rows written under 1 readable as what
+# they are, rather than as boxes whose sensors somebody forgot.
+PFAD_FORMAT = 2
 
 # Every format this image READS and ACCEPTS on a push, oldest first — wider than
 # `PFAD_FORMAT` on purpose. That gap IS the lockstep (docs/proposals/
@@ -641,8 +650,11 @@ def format_of_entries(entries: Sequence[Mapping[str, Any]]) -> int:
 
     So the declaration follows the CONTENT rather than the constant: format 2
     where any entry carries a format-2 field, what this image writes otherwise.
-    It never over-declares — a cell of plain format-1 entries obeys format 1 —
-    and it cannot quietly downgrade a row either: `check_paths` stamps every
+    Since the second release moved `PFAD_FORMAT` to 2 both branches answer 2,
+    so the distinction is currently invisible — it is kept because the floor is
+    what this image WRITES, and the day a third format arrives the two part
+    again. What the function cannot do is quietly downgrade a row:
+    `check_paths` stamps every
     entry it accepts under format 2 with a `status`, and that field is what
     brings the number back on the next push.
 
@@ -676,8 +688,10 @@ def push_body(entries: Sequence[Mapping[str, Any]]) -> tuple[list[dict[str, Any]
     acceptable and a corrected one unthinkable.
 
     The third element is the boxes whose free-meta boundaries were given up, so
-    the run can name them. Empty whenever the body stays format 1, which is
-    every push this image makes on its own.
+    the run can name them. Since the second release every body declares 2, so
+    the strip branch is the only one left and the list is empty only when no
+    entry carried a free-meta copy — which is what a run of this image produces
+    once it has followed the box itself.
     """
     pfad_format = format_of_entries(entries)
     if pfad_format < SKIP_AND_SPAN_FORMAT:
