@@ -692,6 +692,14 @@ Hand korrigierte Grenze ist FELDWEISE geschützt — ein gewöhnliches
 Neu-Folgen desselben Kastens geht durch, solange es sie mitbringt.
 → [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.3
 
+**Span-Zuordner** — setzt die Buchstabengrenzen einer Bahn, hinter der keine
+Dekodierung steht (A48: für von Hand nachgefahrene Bahnen ist die Zuordnung
+neue Arbeit). Ordnet jeden Stützpunkt der Bahn einem Punkt derselben Saat zu,
+gegen die der Folger dekodiert — monoton je Zug, Züge einzeln. Ersetzt nie
+einen authored-Span und bewegt keine Koordinate einer Bahn
+(`tools/eigenhand/spans.py`, Modus `pfad --spans`).
+→ [§5](glossar.md#5-werkbank-und-prozess) · messjournal.md §14 „Span-Zuordner `sep20`"
+
 **Tintentreue** — die referenzfreie Ampel je Wortkasten über einer Bahn:
 `folgt` · `folgt teils` · `folgt nicht`, dazu ein grauer Zustand mit Grund
 im Text. Der schlechteste Sensor entscheidet, eine feste Sensor-Ordnung
