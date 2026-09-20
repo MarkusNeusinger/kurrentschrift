@@ -16,15 +16,25 @@
 //     assignment as the author's (`herkunft: 'authored'` survives every later
 //     re-follow — claiming it for a boundary nobody touched would freeze a
 //     guess as truth and feed it to the Span-Zuordner's training set).
-//  2. The boundaries belong to the BAHN. They index samples, so a redrawn
-//     stroke invalidates every span on it; `spansStillFit` is what the editor
-//     asks before it resends them. What that question is NOT is „did the
-//     drawing change at all": appending a run — the very thing the Absetzer
-//     warning asks for when a mark stroke is missing — leaves every existing
-//     index valid, and dropping the author's own corrected seams over it would
-//     destroy ground truth on the one surface built to create it.
+//  2. The boundaries belong to the RUN they sit on. They index samples of one
+//     stroke, so a redrawn stroke invalidates every span on it; `spansStillFit`
+//     is what the editor asks before it resends them. What that question is NOT
+//     is „did the drawing change at all": appending a run — the very thing the
+//     Absetzer warning asks for when a mark stroke is missing — leaves every
+//     existing index valid, and dropping the author's own corrected seams over
+//     it would destroy ground truth on the one surface built to create it.
+//
+// Which run is which is therefore tracked rather than guessed. Counting samples
+// answered the wrong question: undo a spanned run, draw a replacement with as
+// many samples, and a count comparison says „unchanged" while the boundaries
+// now point into a line nobody measured them on (Copilot review). `Drawing`
+// carries one id per stroke instead — kept where a stroke's POINTS move
+// (Anpassen warps every coordinate and no run becomes another run by it, and
+// the pen extends the run it is drawing), handed out fresh where a stroke
+// appears at an index the drawing did not have.
 
 import type { EigenhandPfadSpan } from '@/lib/api';
+import { savableStrokeIndices, type TracePoint } from '@/sections/admin/belege/registration';
 
 /** The provenance a corrected boundary carries (`core.eigenhand.pfad.AUTHORED`). */
 export const SPAN_AUTHORED = 'authored';
@@ -151,31 +161,87 @@ export function seamAt(
 }
 
 /**
- * Whether the stored boundaries still describe the drawing in hand.
+ * The drawing on the canvas, with one identity per stroke.
  *
- * A span indexes positions, so what it needs is not equality of coordinates —
+ * The ids exist for the span guard alone: a boundary names a stroke by its
+ * INDEX, and an index says nothing about whether the run under it is still the
+ * run the boundary was measured on.
+ */
+export type Drawing = {
+  strokes: TracePoint[][];
+  /** One id per stroke, in the strokes' own order. */
+  ids: readonly number[];
+  /** The next free id — carried in the value so an update is pure, and two
+   * invocations of the same one (React's double-render) agree. */
+  nextId: number;
+};
+
+/** The ids a seeded Bahn's runs carry: 0…n−1, in the order it was stored. */
+export const seedStrokeIds = (count: number): number[] => Array.from({ length: count }, (_, index) => index);
+
+/** The drawing a session starts from — the stored Bahn, run for run. */
+export const seedDrawing = (strokes: TracePoint[][]): Drawing => ({
+  strokes,
+  ids: seedStrokeIds(strokes.length),
+  nextId: strokes.length,
+});
+
+/**
+ * The same drawing after one edit, with the ids carried across.
+ *
+ * A stroke at an index the drawing already had keeps its id: that covers the
+ * Anpassen warp (every coordinate moves, no run becomes another run) and the
+ * pen extending the run it is currently drawing. An index the drawing did NOT
+ * have is a new run — including the one that appears where an undone run
+ * stood, which is exactly the replacement a boundary must not survive.
+ */
+export function advanceDrawing(previous: Drawing, strokes: TracePoint[][]): Drawing {
+  if (strokes === previous.strokes) return previous;
+  const ids: number[] = [];
+  let nextId = previous.nextId;
+  for (let i = 0; i < strokes.length; i += 1) {
+    if (i < previous.ids.length) ids.push(previous.ids[i]);
+    else {
+      ids.push(nextId);
+      nextId += 1;
+    }
+  }
+  return { strokes, ids, nextId };
+}
+
+/** The ids of the runs a save would actually send, in the order it sends them —
+ * `sanitizeStrokes` drops stray taps, and dropping one renumbers the rest. */
+export const savableStrokeIds = (drawing: Drawing): number[] =>
+  savableStrokeIndices(drawing.strokes).map((index) => drawing.ids[index]);
+
+/**
+ * Whether the stored boundaries still describe the drawing that is about to be
+ * sent — asked of the RUNS' identities, not of their coordinates.
+ *
  * Anpassen moves points and never their count, and an ironed-out wobble keeps
- * its letters — but that the samples it names are still the same samples. Only
- * the strokes a span actually REACHES are asked: strokes are appended to and
- * truncated from the end, so a run drawn beside the ones the boundaries sit on
- * shifts no index and invalidates nothing. Anything below that reach is
- * compared in full, because a stroke dropped there would renumber the rest.
+ * its letters, so a moved run still carries the samples its boundaries name.
+ * A REPLACED run does not, however many samples it happens to have: undoing a
+ * spanned run and drawing another one is a different line, and equal counts
+ * would have called it unchanged.
  *
- * The narrower question matters: the Absetzer-Soll invites exactly this edit
- * („a mark stroke is missing"), and the wide answer would silently give up
- * every `authored` seam the author corrected in an earlier session — which the
- * per-box write, replacing the entry whole, then deletes for good.
+ * Only the runs a span actually REACHES are asked: runs are appended at the
+ * end, so one drawn beside the ones the boundaries sit on shifts no index and
+ * invalidates nothing. That narrower question matters — the Absetzer-Soll
+ * invites exactly this edit („a mark stroke is missing"), and the wide answer
+ * would silently give up every `authored` seam the author corrected in an
+ * earlier session, which the per-box write, replacing the entry whole, then
+ * deletes for good.
  */
 export function spansStillFit(
-  seeded: readonly (readonly unknown[])[],
-  current: readonly (readonly unknown[])[],
+  seeded: readonly number[],
+  current: readonly number[],
   spans: readonly EigenhandPfadSpan[] | null | undefined,
 ): boolean {
   if (!spans) return false;
   const reach = spans.reduce((max, span) => Math.max(max, span.stroke), -1) + 1;
   if (reach > seeded.length || reach > current.length) return false;
   for (let i = 0; i < reach; i += 1) {
-    if (seeded[i].length !== current[i].length) return false;
+    if (seeded[i] !== current[i]) return false;
   }
   return true;
 }

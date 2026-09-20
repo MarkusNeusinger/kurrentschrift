@@ -5,7 +5,7 @@
 // along: no `*.test.tsx` in the repository referenced the plate editor either,
 // so the suite this PR owes is the one below.
 //
-// Five promises, each of which fails silently if it breaks — the editor would
+// Eight promises, each of which fails silently if it breaks — the editor would
 // still look like it works:
 //
 //  1. THE ROUND TRIP. What is drawn on the crop is stored in the STRIP's frame,
@@ -22,6 +22,16 @@
 //     exists to prevent (Prüfstein 7).
 //  5. A 412 REACHES THE AUTHOR as something to act on, with his drawing still
 //     on the canvas. A silent loss there is the whole reason the token exists.
+//  6. THERE IS NO CANVAS WITHOUT THIS BOX'S PICTURE under it — not while the
+//     protected crop is in flight, not after it failed, and never the previous
+//     box's. A Bahn drawn over a blank or a stranger's crop looks exactly like
+//     one drawn over the right ink.
+//  7. A STRAY TAP IS NOT A CHANGE. The canvas drops a pen-down that never
+//     moved; if the „geändert" survived it, a save would rewrite an untouched
+//     follower Bahn as the author's own and drop its sensors.
+//  8. THE BOUNDARIES BELONG TO THE RUN THEY SIT ON — given up when that run is
+//     redrawn, however many samples the replacement happens to have, and kept
+//     across an Anpassen drag, which moves points and no run.
 
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -128,8 +138,9 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-/** Mount the editor and let its first read land. */
-async function open(
+/** Mount the editor and let its two reads land — without asking for a canvas,
+ * because whether there IS one is a question some of the cases below ask. */
+async function mount(
   targets = TARGETS,
   startKey = TARGETS[0].key,
   onClose: () => void = () => {},
@@ -146,21 +157,36 @@ async function open(
       />,
     );
   });
+}
+
+/** Mount the editor and let its first read land. */
+async function open(
+  targets = TARGETS,
+  startKey = TARGETS[0].key,
+  onClose: () => void = () => {},
+): Promise<void> {
+  await mount(targets, startKey, onClose);
   // The dialog renders into a portal, so everything below reads document.body.
-  const svg = canvas();
-  // jsdom has no layout: without a box the pointer maths cannot map a client
-  // coordinate into the crop at all, and no pen sample would ever be taken.
+  canvas();
+}
+
+// jsdom has no layout: without a box the pointer maths cannot map a client
+// coordinate into the crop at all, and no pen sample would ever be taken. Armed
+// on every lookup rather than once at mount, because the surface is REMOUNTED
+// whenever it waits for the next box's picture.
+const canvas = (): SVGSVGElement => {
+  const found = document.body.querySelector('[data-trace-canvas] svg');
+  if (!found) throw new Error('no drawing surface');
+  const svg = found as SVGSVGElement;
   svg.getBoundingClientRect = () =>
     ({ left: 0, top: 0, right: CROP_W, bottom: CROP_H, width: CROP_W, height: CROP_H, x: 0, y: 0 }) as DOMRect;
   svg.setPointerCapture = () => {};
   svg.releasePointerCapture = () => {};
-}
-
-const canvas = (): SVGSVGElement => {
-  const svg = document.body.querySelector('[data-trace-canvas] svg');
-  if (!svg) throw new Error('no drawing surface');
-  return svg as SVGSVGElement;
+  return svg;
 };
+
+/** Whether there is a surface to draw on at all. */
+const drawable = (): boolean => document.body.querySelector('[data-trace-canvas]') !== null;
 
 const text = (): string => document.body.textContent ?? '';
 
@@ -187,6 +213,16 @@ function drawStroke(): void {
   pen('pointermove', 60, 100);
   pen('pointermove', 90, 120);
   pen('pointerup', 90, 120);
+}
+
+/** A run of exactly `points` samples — 10 crop px apart, far above the pen's
+ * own minimum step, so every one of them is kept. */
+function drawRun(points: number): void {
+  const x = (i: number): number => 20 + i * 10;
+  const y = (i: number): number => (i % 2 === 0 ? 120 : 100);
+  pen('pointerdown', x(0), y(0));
+  for (let i = 1; i < points; i += 1) pen('pointermove', x(i), y(i));
+  pen('pointerup', x(points - 1), y(points - 1));
 }
 
 /** The path the editor handed to the write door. */
@@ -352,6 +388,99 @@ it('keeps corrected boundaries when a run is drawn beside the ones they sit on',
   expect(spans?.[2].herkunft).toBe('authored');
   // The two runs go out together; only the boundaries' own stroke matters.
   expect(sentPfad().strokes).toHaveLength(2);
+});
+
+it('keeps the drawing surface closed while this box’s picture is not under it', async () => {
+  // The crop is a SECOND read, admin-gated and slow enough to matter. A canvas
+  // over a blank is not „almost right": the Bahn would be stored against ink
+  // the author never saw, and nothing on screen would say so (Copilot review).
+  fetchStrip.mockRejectedValue(new ApiError(503, '503: strip image unavailable'));
+  await mount();
+
+  expect(drawable()).toBe(false);
+  expect(text()).toContain('Solange er fehlt, wird hier nicht gezeichnet');
+});
+
+it('never leaves the canvas standing over the PREVIOUS box’s picture', async () => {
+  let release: (blob: Blob) => void = () => {};
+  fetchStrip.mockImplementationOnce(() => Promise.resolve(new Blob(['png'], { type: 'image/png' })));
+  fetchStrip.mockImplementationOnce(
+    () =>
+      new Promise<Blob>((resolve) => {
+        release = resolve;
+      }),
+  );
+  await open();
+  drawStroke();
+
+  await act(async () => button('Speichern & weiter').click());
+
+  // „das" is on the title, its Bahnen are in hand — and its picture is not.
+  // Drawing here would land on „lesen", which is the worse of the two losses.
+  expect(text()).toContain('das');
+  expect(drawable()).toBe(false);
+
+  await act(async () => {
+    release(new Blob(['png'], { type: 'image/png' }));
+  });
+  expect(drawable()).toBe(true);
+});
+
+it('does not call a stray tap a change — an untouched Bahn stays unsaveable', async () => {
+  await open();
+  expect(button('Speichern').disabled).toBe(true);
+
+  // A pen-down that never moves is a lift, and the canvas drops the stroke
+  // again on it. What must not survive it is the „geändert": saving here would
+  // rewrite the follower's own line as `authored` and drop the sensors
+  // measured on it — a measurement turned into hand work by a tap.
+  pen('pointerdown', 40, 84);
+  pen('pointerup', 40, 84);
+
+  expect(text()).toContain('1 Züge');
+  expect(button('Speichern').disabled).toBe(true);
+});
+
+it('gives the boundaries up when the run they sit on is REDRAWN with as many samples', async () => {
+  readPfade.mockResolvedValue({ list: list({ pfade: [pfad({ letter_spans: SPANS })] }), etag: '"first"' });
+  await open();
+
+  // Undo the seeded run and draw another one with the same seven samples. A
+  // count comparison calls that „unchanged" — and then the stored boundaries,
+  // one of which may be the author's own, name samples of a line nobody
+  // measured them on (Copilot review).
+  act(() => button('Letzten Zug zurück').click());
+  drawRun(LINE.length);
+
+  // Said before it is done: the boundaries are given up, and the notice is now
+  // true where it used to be a lie about a count.
+  expect(text()).toContain('Die Züge sind neu gezeichnet');
+
+  await act(async () => button('Speichern').click());
+
+  const sent = sentPfad();
+  expect(sent.strokes).toHaveLength(1);
+  expect(sent.strokes[0]).toHaveLength(LINE.length);
+  expect(sent.strokes[0]).not.toEqual(LINE);
+  expect(sent.letter_spans).toBeNull();
+});
+
+it('keeps the boundaries across an Anpassen drag, which moves points and no run', async () => {
+  readPfade.mockResolvedValue({ list: list({ pfade: [pfad({ letter_spans: SPANS })] }), etag: '"first"' });
+  await open();
+
+  act(() => button('Anpassen').click());
+  pen('pointerdown', 40, 84);
+  pen('pointermove', 44, 88);
+  pen('pointerup', 44, 88);
+
+  await act(async () => button('Speichern').click());
+
+  // The run is the same run, so its boundaries still describe it — and an
+  // `authored` one given up here is deleted by the write, which replaces the
+  // entry whole.
+  expect(sentPfad().letter_spans).toHaveLength(SPANS.length);
+  expect(sentPfad().strokes[0]).not.toEqual(LINE);
 });
 
 it('asks before an unsaved drawing is thrown away, and closes when told to', async () => {

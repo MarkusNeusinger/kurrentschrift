@@ -47,6 +47,27 @@
   drawn. A hand-drawn Bahn exists nowhere else until it is stored — no follower
   run recreates it — which is the whole reason this surface exists.
 
+### Fixed
+
+- **Five ways a hand-drawn Bahn could have been lost or falsified, each with
+  the test that catches it.** The editor's canvas now appears only once THIS
+  box's protected crop is under it — never while the blob is in flight, never
+  after it failed, and never over the previous box's picture, because a Bahn
+  drawn on the wrong ink looks exactly like one drawn on the right ink. A
+  failed background re-read of the hand's boxes no longer clears them: it used
+  to take the Nachfahr-Liste's error branch, which unmounted the open editor
+  past its own discard guard and deleted whatever was drawn on it. A pen-down
+  that never moves no longer marks the surface changed — the canvas drops that
+  tap again, and saving one would have rewritten an untouched follower Bahn as
+  the author's own and dropped the sensors measured on it. The letter
+  boundaries are kept or given up by the IDENTITY of the run they sit on
+  instead of its sample count, so undoing a run and drawing a replacement with
+  as many samples no longer resends the old — possibly hand-corrected —
+  boundaries against unrelated geometry, while an Anpassen drag still keeps
+  them. And the gallery's Ampel re-reads on the same token as the strip
+  listing, so a saved Fleckenmaske no longer leaves the tiles showing the
+  pre-save Tintentreue.
+
 ### Changed
 
 - **A word box states its printed ruling.** `GET` of a strip listing and of a

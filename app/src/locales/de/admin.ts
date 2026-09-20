@@ -1579,6 +1579,10 @@ export const admin = {
         'Die Ampel liest die Sensoren, die der Folger beim Nachfolgen mitschreibt. Fassungen aus einem Lauf vor dem Formatwechsel tragen zwei davon nicht und bleiben grau, bis sie einmal neu gefolgt werden.',
       empty: 'Für diese Hand ist noch kein Streifen abgelegt.',
       loadError: 'Die Kastenliste konnte nicht geladen werden.',
+      // Nach jedem gespeicherten Kasten wird die Liste neu gelesen. Scheitert
+      // das, bleibt die Liste stehen — ein offener Editor darf darüber nicht
+      // verschwinden — und sagt nur, dass der gezeigte Stand älter ist.
+      refreshError: 'Der Stand der Kästen konnte nicht neu gelesen werden — die Liste zeigt den vorherigen.',
       // Der Zeichen-Filter der Galerie hat in der Liste keinen Gegenstand: der
       // Kasten-Read trägt das Wort, aber nicht die Items, die es belegt.
       itemFilterNote:
@@ -1701,7 +1705,11 @@ export const admin = {
       saat: 'In diesem Kasten steht noch keine Bahn: gezeichnet wird auf der GEDRUCKTEN Lineatur des Bogens (Saat), nicht auf einer Messung. Die gespeicherte Bahn bringt danach ihren eigenen Rahmen mit.',
       loading: 'Die Bahnen dieser Fassung werden geladen …',
       loadError: 'Die Bahnen dieser Fassung konnten nicht geladen werden.',
-      imageError: 'Der Ausschnitt dieses Kastens konnte nicht geladen werden.',
+      imageLoading: 'Der Ausschnitt dieses Kastens wird geladen …',
+      // Ohne das Bild wird nicht gezeichnet: eine Bahn über einer leeren oder
+      // fremden Unterlage sieht auf dem Schirm aus wie jede andere.
+      imageError:
+        'Der Ausschnitt dieses Kastens konnte nicht geladen werden. Solange er fehlt, wird hier nicht gezeichnet — sonst entstünde eine Bahn über einem leeren oder fremden Bild.',
       saveError: 'Die Bahn konnte nicht gespeichert werden.',
       // 412: zwischen Lesen und Schreiben hat jemand — oder ein Folger-Lauf —
       // dieselbe Fassung ersetzt. Die Zeichnung bleibt stehen; neu eingelesen

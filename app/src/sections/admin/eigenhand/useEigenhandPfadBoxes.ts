@@ -19,7 +19,15 @@ import type { EigenhandPfadFassung } from '@/lib/api';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 
-export function useEigenhandPfadBoxes(hand: string, enabled = true) {
+export function useEigenhandPfadBoxes(
+  hand: string,
+  enabled = true,
+  // Bumped by the CALLER where something outside this read changed what it
+  // answers — a saved Fleckenmaske re-measures the Befund, and every Ampel of
+  // that Fassung is derived from the measurement. Not part of the reset key
+  // below: the boxes on screen stay until the fresh ones arrive.
+  refresh = 0,
+) {
   const [fassungen, setFassungen] = useState<EigenhandPfadFassung[] | null>(null);
   const [error, setError] = useState<ApiErrorText | null>(null);
   // Bumped after a box was written by hand: the Ampel of that box is derived
@@ -41,16 +49,26 @@ export function useEigenhandPfadBoxes(hand: string, enabled = true) {
     if (!enabled) return undefined;
     let cancelled = false;
     getEigenhandPfadBoxes(hand, undefined, { retries: 2 })
-      .then((data) => !cancelled && setFassungen(data.fassungen))
+      .then((data) => {
+        if (cancelled) return;
+        setFassungen(data.fassungen);
+        setError(null);
+      })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setFassungen(null);
+        // The boxes in hand STAY. A failed re-read says nothing about them,
+        // and this read is asked again while an editor is open on one of these
+        // boxes: dropping them to null takes the list's error branch, which
+        // unmounts the editor — with the drawing on it, past its own discard
+        // guard, and a hand-drawn Bahn is the one artefact no run recreates
+        // (Copilot review). The first read has nothing to keep, so the caller
+        // sees exactly the same „nothing yet plus an error" as before.
         setError(apiErrorText(err));
       });
     return () => {
       cancelled = true;
     };
-  }, [hand, enabled, token]);
+  }, [hand, enabled, token, refresh]);
 
   return { fassungen, error, reload: () => setToken((n) => n + 1) };
 }

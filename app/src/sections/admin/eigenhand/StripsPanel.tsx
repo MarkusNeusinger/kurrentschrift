@@ -200,7 +200,13 @@ export function StripsPanel({
   // Tintentreue (§7.2 wants the verdict on both surfaces, and the gallery is
   // where a coverage cell lands). Only while the pictures are on screen — the
   // list mounts its own reader.
-  const ampeln = useEigenhandPfadBoxes(hand, view === 'galerie');
+  //
+  // On the SAME `refresh` as the listing: a saved Fleckenmaske changes `stale`
+  // and with it the Tintentreue the Ampel shows, so leaving this read out of
+  // it would have the tiles keep the pre-save verdict until the view is
+  // remounted, beside a listing that already carries the new one (Copilot
+  // review).
+  const ampeln = useEigenhandPfadBoxes(hand, view === 'galerie', refresh);
   const ampelByBox = useMemo(() => {
     if (ampeln.fassungen === null) return null;
     const out = new Map<string, EigenhandPfadBox>();

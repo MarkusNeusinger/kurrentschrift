@@ -141,7 +141,12 @@ export function NachfahrListe({
       return next;
     });
 
-  if (error) {
+  // The error REPLACES the list only while there is no list: with boxes in
+  // hand it is a banner over them. The read is asked again after every saved
+  // box, and returning here on a failed re-read would unmount the open editor
+  // — the drawing on it gone, past its own discard guard, and a hand-drawn
+  // Bahn is the one artefact no run recreates (Copilot review).
+  if (error && fassungen === null) {
     return (
       <Typography variant="caption" sx={{ display: 'block', color: 'warning.main' }}>
         <ErrorText error={error} prefix={t.loadError} />
@@ -153,6 +158,11 @@ export function NachfahrListe({
   return (
     <Box>
       <Stack spacing={1.5} sx={{ mb: 2 }}>
+        {error && (
+          <Typography variant="caption" sx={{ display: 'block', color: 'warning.main' }}>
+            <ErrorText error={error} prefix={t.refreshError} />
+          </Typography>
+        )}
         <FilterChipRow
           chips={BOX_FILTERS.map((token) => ({
             token,

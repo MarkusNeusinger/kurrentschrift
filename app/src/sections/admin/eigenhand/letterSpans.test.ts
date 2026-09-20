@@ -7,17 +7,28 @@
 // nothing has to change nothing: `herkunft: 'authored'` survives every later
 // re-follow, so claiming it for an assignment nobody looked at would freeze a
 // guess as truth and feed it to the Span-Zuordner's training set.
+//
+// And the same rule from the other side: a boundary may only be RESENT while
+// the run it names is still that run. Counting samples answered a different
+// question — undo a spanned run, draw another one with as many samples, and
+// the count says „unchanged" while the boundaries now describe a line nobody
+// measured them on. The ids `advanceDrawing` carries are what that costs.
 
 import { describe, expect, it } from 'vitest';
 
 import type { EigenhandPfadSpan } from '@/lib/api';
 
+import type { TracePoint } from '@/sections/admin/belege/registration';
+
 import {
+  advanceDrawing,
   authoredSpanCount,
   moveBoundary,
   nearestSample,
+  savableStrokeIds,
   seamAt,
   seamsOf,
+  seedDrawing,
   spansStillFit,
 } from './letterSpans';
 
@@ -115,42 +126,103 @@ describe('nearestSample and seamAt', () => {
   });
 });
 
+/** Two runs, the way the editor holds them. */
+const RUN = (x: number): TracePoint[] => [
+  [x, 0],
+  [x + 1, 1],
+];
+
+describe('advanceDrawing', () => {
+  it('keeps a run’s id while its POINTS move — that is what Anpassen does', () => {
+    const seeded = seedDrawing([RUN(0), RUN(4)]);
+    const warped = advanceDrawing(seeded, [
+      [
+        [0.5, 0.4],
+        [1, 1],
+      ],
+      RUN(4),
+    ]);
+    expect(warped.ids).toEqual(seeded.ids);
+    expect(warped.strokes[0]).not.toBe(seeded.strokes[0]);
+  });
+
+  it('hands out a FRESH id where a run appears at an index the drawing did not have', () => {
+    const seeded = seedDrawing([RUN(0)]);
+    const appended = advanceDrawing(seeded, [RUN(0), RUN(4)]);
+    // Drawn beside the seeded one: it keeps its own id, the new run gets one.
+    expect(appended.ids).toEqual([0, 1]);
+
+    // …and the same index, vacated and filled again, is a DIFFERENT run: this
+    // is the undo-and-redraw a count comparison called „unchanged".
+    const undone = advanceDrawing(seeded, []);
+    const redrawn = advanceDrawing(undone, [RUN(9)]);
+    expect(redrawn.ids).toEqual([1]);
+  });
+
+  it('returns the drawing by identity where nothing was replaced', () => {
+    const seeded = seedDrawing([RUN(0)]);
+    expect(advanceDrawing(seeded, seeded.strokes)).toBe(seeded);
+  });
+});
+
+describe('savableStrokeIds', () => {
+  it('follows the renumbering a save does — a stray tap is dropped with its id', () => {
+    // A pen-down without a move never reaches the API; the run behind it moves
+    // up one index, and a boundary that did not follow would name it.
+    const drawing = advanceDrawing(seedDrawing([RUN(0), RUN(4)]), [RUN(0), [[9, 9]], RUN(4)]);
+    expect(drawing.ids).toEqual([0, 1, 2]);
+    expect(savableStrokeIds(drawing)).toEqual([0, 2]);
+  });
+});
+
 describe('spansStillFit', () => {
   const ONE: EigenhandPfadSpan[] = [
     { stroke: 0, slot: 0, first: 0, last: 0, herkunft: 'auto' },
     { stroke: 0, slot: 1, first: 1, last: 1, herkunft: 'authored' },
   ];
 
-  it('asks about the SHAPE, not the coordinates', () => {
-    // Anpassen moves points and never their count, so the spans still index
-    // the samples they were drawn on.
-    expect(spansStillFit([[[0, 0], [1, 1]]], [[[0.5, 0.4], [1, 1]]], ONE)).toBe(true);
-    // A redrawn stroke is a different list of samples entirely.
-    expect(spansStillFit([[[0, 0], [1, 1]]], [[[0, 0], [0.5, 0.5], [1, 1]]], ONE)).toBe(false);
-    expect(spansStillFit([[[0, 0], [1, 1]]], [], ONE)).toBe(false);
+  it('asks WHICH RUN, not how many samples it has', () => {
+    const seeded = seedDrawing([RUN(0)]);
+    // Anpassen moves points and never their count, and the run stays the run.
+    expect(spansStillFit(seeded.ids, advanceDrawing(seeded, [RUN(2)]).ids, ONE)).toBe(true);
+    // A replacement with exactly as many samples is still another line — the
+    // case equal counts used to wave through (Copilot review).
+    const redrawn = advanceDrawing(advanceDrawing(seeded, []), [RUN(7)]);
+    expect(redrawn.strokes[0]).toHaveLength(seeded.strokes[0].length);
+    expect(spansStillFit(seeded.ids, redrawn.ids, ONE)).toBe(false);
+    expect(spansStillFit(seeded.ids, [], ONE)).toBe(false);
   });
 
   it('keeps the boundaries when a run is drawn BESIDE the ones they sit on', () => {
     // The Absetzer warning asks for exactly this — a missing mark stroke. It
     // shifts no index, so giving up an `authored` seam over it would destroy
     // ground truth the per-box write then deletes for good.
-    const seeded = [[[0, 0], [1, 1]]];
-    const grown = [[[0, 0], [1, 1]], [[2, 2], [3, 3]]];
-    expect(spansStillFit(seeded, grown, ONE)).toBe(true);
-    // …but a change to the stroke a span DOES sit on still gives them up.
-    expect(spansStillFit(seeded, [[[0, 0], [0.5, 0.5], [1, 1]], [[2, 2], [3, 3]]], ONE)).toBe(false);
+    const seeded = seedDrawing([RUN(0)]);
+    const grown = advanceDrawing(seeded, [RUN(0), RUN(4)]);
+    expect(spansStillFit(seeded.ids, grown.ids, ONE)).toBe(true);
+    // Undoing the run BESIDE them changes nothing about them either — the run
+    // they sit on is untouched.
+    expect(spansStillFit(seeded.ids, advanceDrawing(grown, [RUN(0)]).ids, ONE)).toBe(true);
+    // …but redrawing the run they DO sit on still gives them up, whatever is
+    // standing beside it.
+    const cleared = advanceDrawing(grown, []);
+    expect(spansStillFit(seeded.ids, advanceDrawing(cleared, [RUN(4), RUN(8)]).ids, ONE)).toBe(false);
   });
 
-  it('gives them up where the stroke a span names is gone', () => {
+  it('gives them up where the run a span names is gone', () => {
     const onSecond: EigenhandPfadSpan[] = [{ stroke: 1, slot: 0, first: 0, last: 1, herkunft: 'auto' }];
-    expect(spansStillFit([[[0, 0]], [[1, 1], [2, 2]]], [[[0, 0]]], onSecond)).toBe(false);
-    // A stroke BELOW the reach that changed length renumbers nothing here, but
-    // a dropped one would — so everything up to the reach is compared.
-    expect(spansStillFit([[[0, 0]], [[1, 1], [2, 2]]], [[[0, 0], [9, 9]], [[1, 1], [2, 2]]], onSecond)).toBe(false);
+    const seeded = seedDrawing([RUN(0), RUN(4)]);
+    expect(spansStillFit(seeded.ids, advanceDrawing(seeded, [RUN(0)]).ids, onSecond)).toBe(false);
+    // A run BELOW the reach that was replaced renumbers nothing here, but the
+    // one it pushed down is a different run — so everything up to the reach is
+    // compared.
+    const firstRedrawn = advanceDrawing(advanceDrawing(seeded, []), [RUN(1), RUN(5)]);
+    expect(spansStillFit(seeded.ids, firstRedrawn.ids, onSecond)).toBe(false);
   });
 
   it('has nothing to give up where there are no spans', () => {
-    expect(spansStillFit([[[0, 0]]], [[[0, 0]], [[1, 1]]], [])).toBe(true);
-    expect(spansStillFit([[[0, 0]]], [[[0, 0]]], null)).toBe(false);
+    const seeded = seedDrawing([RUN(0)]);
+    expect(spansStillFit(seeded.ids, advanceDrawing(seeded, [RUN(0), RUN(4)]).ids, [])).toBe(true);
+    expect(spansStillFit(seeded.ids, seeded.ids, null)).toBe(false);
   });
 });

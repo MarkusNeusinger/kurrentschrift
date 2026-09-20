@@ -12,7 +12,9 @@
 //     `private, no-store`, so a bare `<image href>` — which is what the plate
 //     editor can use, because the specimen crop route is deliberately public —
 //     cannot load it. The strip surface already fetches its pixels as blobs
-//     (`useStripImage`), and this reuses exactly that loader.
+//     (`useStripImage`), and this reuses exactly that loader. A blob is also a
+//     second read that can be SLOW or fail, so the picture gates the surface:
+//     no canvas until this box's crop is under it.
 //  2. THE FRAME IS THE BAHN'S, MINUS THE BOX. A Streifen-Pfad's registration is
 //     the STRIP's frame; the editor works on the word crop, so the box
 //     rectangle comes off (`stripTraceFrame`). A box with no Bahn at all falls
@@ -49,7 +51,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 
 import { InfoHint } from '@/components/InfoHint';
 import { getEigenhandPfadeWithEtag, patchEigenhandPfad } from '@/lib/api';
@@ -59,12 +61,17 @@ import { de, fmt } from '@/locales/admin';
 import { cropToTrace, sanitizeStrokes, type TracePoint } from '@/sections/admin/belege/registration';
 import { LetterSpanLayer } from '@/sections/admin/eigenhand/LetterSpanLayer';
 import {
+  advanceDrawing,
   moveBoundary,
   nearestSample,
+  savableStrokeIds,
+  seedDrawing,
+  seedStrokeIds,
   spansStillFit,
   seamAt,
   seamsOf,
   authoredSpanCount,
+  type Drawing,
   type SpanSeam,
 } from '@/sections/admin/eigenhand/letterSpans';
 import { stripRegistration, stripTraceSeed, type StripTraceSeed } from '@/sections/admin/eigenhand/stripTraceFrame';
@@ -149,7 +156,17 @@ export function StripTraceEditor({
   // started from (see `onPoint`).
   const grabRef = useRef<{ seam: SpanSeam; snapshot: readonly EigenhandPfadSpan[] } | null>(null);
 
-  const [strokes, setStrokes] = useState<TracePoint[][]>([]);
+  // The drawing carries one id per run beside the coordinates: a letter
+  // boundary names a run by its INDEX, and an index alone cannot tell an
+  // Anpassen-warped run from one that was undone and drawn again.
+  const [drawing, setDrawing] = useState<Drawing>(() => seedDrawing([]));
+  const strokes = drawing.strokes;
+  // The canvas knows nothing of the ids — it hands back coordinates, and the
+  // lineage is carried across here, in ONE state so the update stays pure.
+  const setStrokes: Dispatch<SetStateAction<TracePoint[][]>> = (action) =>
+    setDrawing((prev) =>
+      advanceDrawing(prev, typeof action === 'function' ? action(prev.strokes) : action),
+    );
   const [spans, setSpans] = useState<readonly EigenhandPfadSpan[] | null>(null);
   const [dirty, setDirty] = useState(false);
   const [mode, setMode] = useState<TraceMode>('draw');
@@ -216,7 +233,7 @@ export function StripTraceEditor({
   if (seedKey !== seededFor) {
     setSeededFor(seedKey);
     setSeed(fresh);
-    setStrokes(fresh ? fresh.strokes : []);
+    setDrawing(seedDrawing(fresh ? fresh.strokes : []));
     setSpans(fresh ? fresh.spans : null);
     setDirty(false);
     setSaveError(null);
@@ -224,7 +241,11 @@ export function StripTraceEditor({
     setGrabbed(null);
   }
 
-  const { url, error: imageError } = useStripImage(
+  const {
+    url,
+    loading: imageLoading,
+    error: imageError,
+  } = useStripImage(
     hand,
     target?.strip ?? '',
     target?.fassung ?? '',
@@ -232,18 +253,29 @@ export function StripTraceEditor({
     open && seed !== null,
     OHNE_LINEATUR,
   );
+  // The picture is a CONDITION of the surface, not decoration on it. `url`
+  // alone would not do: the hook clears the previous box's object URL in its
+  // effect cleanup, which runs AFTER the render that walked to the next box —
+  // so for one frame a ready-looking canvas would carry the neighbour's
+  // picture. `loading` is set during that very render, and a fetch that fails
+  // never leaves it. Drawing over a blank or a stranger's crop is worse than
+  // no editor: the Bahn would be stored against ink it was never drawn on.
+  const underlayReady = url !== null && !imageLoading;
 
   const savable = useMemo(() => sanitizeStrokes(strokes), [strokes]);
   const slotText = useMemo(() => {
     const slots = target ? shapeText(target.word) : [];
     return (slot: number): string => slots[slot]?.text ?? '';
   }, [target]);
-  // The boundaries describe the samples they were drawn on, so a REDRAWN run
-  // gives up the boundaries that sat on it — but only those: a run drawn BESIDE
-  // them (what the Absetzer warning asks for when a mark stroke is missing)
-  // shifts no index, and giving the author's own corrected seams up over it
-  // would delete ground truth. `spansStillFit` carries that rule.
-  const spansHold = spans !== null && seed !== null && spansStillFit(seed.strokes, savable, spans);
+  // The boundaries describe the samples of the run they sit on, so a REDRAWN
+  // run gives up the boundaries that sat on it — but only those: a run drawn
+  // BESIDE them (what the Absetzer warning asks for when a mark stroke is
+  // missing) shifts no index, and giving the author's own corrected seams up
+  // over it would delete ground truth. Asked of the ids of the runs a save
+  // would SEND, because dropping a stray tap renumbers the rest.
+  const seedIds = useMemo(() => seedStrokeIds(seed?.strokes.length ?? 0), [seed]);
+  const sendIds = useMemo(() => savableStrokeIds(drawing), [drawing]);
+  const spansHold = spans !== null && seed !== null && spansStillFit(seedIds, sendIds, spans);
   const seams = useMemo(() => (spansHold ? seamsOf(spans) : []), [spans, spansHold]);
   const effectiveMode: TraceMode = mode === 'point' && seams.length === 0 ? 'draw' : mode;
   const absetzerOk = target !== null && savable.length === target.absetzerSoll;
@@ -530,7 +562,10 @@ export function StripTraceEditor({
             sx={{ minHeight: TOUCH_TARGET }}
             onClick={() => {
               if (!seed) return;
-              setStrokes(seed.strokes);
+              // The seeded LINEAGE, not just the seeded coordinates: routed
+              // through the tracker, a run restored where an undone one stood
+              // would come back as a new one and take the boundaries with it.
+              setDrawing(seedDrawing(seed.strokes));
               setSpans(seed.spans);
               setDirty(false);
             }}
@@ -617,7 +652,10 @@ export function StripTraceEditor({
             {t.noGeometry}
           </Alert>
         )}
-        {seed && (
+        {/* No canvas until THIS box's picture is under it — see `underlayReady`.
+            The spinner says which of the two reads is still out. */}
+        {seed && !underlayReady && !imageError && <CircularProgress size={20} aria-label={t.imageLoading} />}
+        {seed && underlayReady && (
           <TraceCanvas
             width={seed.width}
             height={seed.height}
@@ -631,9 +669,7 @@ export function StripTraceEditor({
             ghost={showStored && dirty ? seed.strokes : null}
             onPoint={onPoint}
             underlay={
-              url ? (
-                <image href={url} x={0} y={0} width={seed.width} height={seed.height} preserveAspectRatio="none" />
-              ) : null
+              <image href={url} x={0} y={0} width={seed.width} height={seed.height} preserveAspectRatio="none" />
             }
             overlayNode={
               spansHold && spans !== null && spans.length > 0 ? (

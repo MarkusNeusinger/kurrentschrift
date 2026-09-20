@@ -159,14 +159,29 @@ function decimate(stroke: TracePoint[]): TracePoint[] {
 }
 
 /**
+ * Which strokes of a drawing `sanitizeStrokes` keeps, by their index in it.
+ *
+ * Exported because sanitising RENUMBERS: a caller that carries per-stroke
+ * bookkeeping — which run a letter boundary sits on — has to follow the same
+ * renumbering, and re-deriving the two rules beside this one is how the two
+ * copies drift until a boundary names the wrong run.
+ */
+export function savableStrokeIndices(strokes: readonly { length: number }[]): number[] {
+  const kept: number[] = [];
+  for (let i = 0; i < strokes.length && kept.length < MAX_STROKES; i += 1) {
+    if (strokes[i].length >= MIN_STROKE_POINTS) kept.push(i);
+  }
+  return kept;
+}
+
+/**
  * The captured strokes as the API accepts them: stray taps (a pen-down without
  * movement, which is a lift, not a stroke) dropped, coordinates rounded and
  * clamped, stroke/point counts capped. Returns [] when nothing savable is
  * left — the editor gates its save button on that.
  */
 export function sanitizeStrokes(strokes: TracePoint[][]): TracePoint[][] {
-  return strokes
-    .filter((s) => s.length >= MIN_STROKE_POINTS)
-    .slice(0, MAX_STROKES)
-    .map((s) => decimate(s).map(([x, y]) => [round(clamp(x)), round(clamp(y))] as TracePoint));
+  return savableStrokeIndices(strokes).map((i) =>
+    decimate(strokes[i]).map(([x, y]) => [round(clamp(x)), round(clamp(y))] as TracePoint),
+  );
 }

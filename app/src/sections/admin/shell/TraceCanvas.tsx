@@ -54,7 +54,9 @@ interface Props {
   reg: TraceRegistration;
   strokes: TracePoint[][];
   onStrokes: Dispatch<SetStateAction<TracePoint[][]>>;
-  /** Called for every change a save would have to store. */
+  /** Called for every change a save would have to store — a drawn stroke only
+   * once it has a second sample, because a pen-down that never moves is
+   * discarded again on the lift and changes nothing. */
   onDirty: () => void;
   mode: TraceMode;
   /** Canvas width as a fraction of the available area (1 = full width). */
@@ -96,12 +98,12 @@ export function TraceCanvas({
   // the same base geometry, so the deformation follows the pointer instead of
   // compounding sample by sample (the wizard's nudge pattern).
   const nudgeRef = useRef<{ grab: TracePoint; snapshot: TracePoint[][] } | null>(null);
-  // True only while a DRAW gesture this handler started is in flight. The move
-  // handler appends solely under this flag — never merely because the grip is
-  // held — so a mid-drag mode flip (a stray toolbar graze; the reason every
-  // control sits above the canvas) can never weld pen samples onto a stored
-  // stroke it did not open.
-  const drawingRef = useRef(false);
+  // The last sample KEPT of a draw gesture this handler started — and by its
+  // presence, that one is in flight at all. The move handler appends solely
+  // under it, never merely because the grip is held, so a mid-drag mode flip (a
+  // stray toolbar graze; the reason every control sits above the canvas) can
+  // never weld pen samples onto a stored stroke it did not open.
+  const drawingRef = useRef<TracePoint | null>(null);
   // The same rule for the neutral `point` mode: what the caller receives is a
   // gesture this canvas opened, never a stray move.
   const pointingRef = useRef(false);
@@ -128,7 +130,7 @@ export function TraceCanvas({
   // open. That is exactly the graze the plate editor cleared inline.
   useLayoutEffect(() => {
     nudgeRef.current = null;
-    drawingRef.current = false;
+    drawingRef.current = null;
     pointingRef.current = false;
   }, [mode]);
 
@@ -190,9 +192,13 @@ export function TraceCanvas({
       nudgeRef.current = { grab: p, snapshot: strokes };
       return;
     }
-    drawingRef.current = true;
+    drawingRef.current = p;
+    // NOT dirty yet, and that is the point: this stroke exists only as a
+    // pen-down, and a pen-down that never moves is dropped again on the lift
+    // (see `onPointerUp`). Reporting it would leave a seeded Bahn „geändert"
+    // after a stray tap — and saving an untouched follower line rewrites it as
+    // the author's own and drops the sensors measured on it.
     onStrokes((prev) => [...prev, [p]]);
-    onDirty();
   };
 
   const onPointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
@@ -226,14 +232,22 @@ export function TraceCanvas({
       onDirty();
       return;
     }
-    if (!drawingRef.current) return;
+    // The last kept sample comes out of the ref rather than out of the state:
+    // the decision whether this sample is kept has to be made HERE, so that
+    // „the gesture has produced a stroke the lift will keep" can be reported
+    // once it is true. The ref mirrors what the updater below appends.
+    const last = drawingRef.current;
+    if (!last) return;
+    if (Math.hypot(p[0] - last[0], p[1] - last[1]) < MIN_STEP_XH) return;
+    drawingRef.current = p;
     onStrokes((prev) => {
       if (prev.length === 0) return prev;
       const current = prev[prev.length - 1];
-      const last = current[current.length - 1];
-      if (last && Math.hypot(p[0] - last[0], p[1] - last[1]) < MIN_STEP_XH) return prev;
       return [...prev.slice(0, -1), [...current, p]];
     });
+    // Now it is a stroke: two samples survive the lift, so there is unsaved
+    // work. Repeated calls are free — the callers set a flag.
+    onDirty();
   };
 
   // Pen up = Absetzen: the stroke ends here and the next pen-down starts a new
@@ -256,7 +270,7 @@ export function TraceCanvas({
       return;
     }
     if (!drawingRef.current) return;
-    drawingRef.current = false;
+    drawingRef.current = null;
     onStrokes((prev) => (prev.length && prev[prev.length - 1].length < 2 ? prev.slice(0, -1) : prev));
   };
 
