@@ -20,7 +20,11 @@ import pytest
 
 from core.eigenhand.pfad import (
     AUTHORED,
+    FIELD_PATH,
+    FIELD_SPANS,
     MAX_UNIT,
+    SKIP_AND_SPAN_FORMAT,
+    SKIP_REASONS,
     check_paths,
     displaced_authored,
     frame_for_box,
@@ -134,6 +138,24 @@ def _path(**overrides) -> dict:
         "strokes": [[[0.0, 0.0], [0.5, 1.0], [1.0, 0.0]]],
         "registration_px": {"tx": 40.0, "ty": 0.0, "baseline_row": 240.0},
         "xh_px": 120.0,
+        "verfahren": "tintenpfad",
+        **overrides,
+    }
+
+
+def _span(**overrides) -> dict:
+    """One letter boundary of `_path`'s three-point stroke."""
+    return {"stroke": 0, "slot": 0, "first": 0, "last": 2, "herkunft": "auto", **overrides}
+
+
+def _skip(**overrides) -> dict:
+    """A box that carries no path, and says why (format 2)."""
+    return {
+        "box_index": 0,
+        "word": "lesen",
+        "status": "skipped",
+        "grund": "unauthored",
+        "strokes": [],
         "verfahren": "tintenpfad",
         **overrides,
     }
@@ -317,18 +339,128 @@ class TestCheckPaths:
         # the NEXT push, and that is stored state — `displaced_authored`.
         assert self._check([_path(verfahren=AUTHORED)])[0]["verfahren"] == AUTHORED
 
+    def test_a_format_1_entry_keeps_exactly_the_shape_migration_0031_stored(self):
+        # The default is the format this image writes, and nothing about it
+        # moved: a row stamped 1 must not come back carrying format-2 keys.
+        assert set(self._check([_path()])[0]) == {
+            "box_index",
+            "word",
+            "strokes",
+            "registration_px",
+            "xh_px",
+            "verfahren",
+            "konfiguration",
+            "meta",
+            "erzeugt_am",
+            "flecken_n",
+        }
+
+
+class TestFormatTwo:
+    """What format 2 adds — the Skip-Eintrag and the checked Buchstabengrenzen."""
+
+    @staticmethod
+    def _check(paths, pfad_format: int = SKIP_AND_SPAN_FORMAT, **kwargs):
+        return check_paths(paths, ROW, WIDTH_PX, HEIGHT_PX, pfad_format=pfad_format, **kwargs)
+
+    def test_a_skipped_box_carries_its_reason_instead_of_a_path(self):
+        # The entry type author decision C asked for: no strokes, a mandatory
+        # reason, registration and x-height optional — a box refused before
+        # anything was registered has neither.
+        stored = self._check([_skip(detail="unauthored: y")])[0]
+        assert (stored["status"], stored["grund"], stored["detail"]) == ("skipped", "unauthored", "unauthored: y")
+        assert stored["strokes"] == [] and stored["registration_px"] is None and stored["xh_px"] is None
+
+    def test_a_followed_entry_says_so_rather_than_leaving_it_to_be_guessed(self):
+        stored = self._check([_path()])[0]
+        assert (stored["status"], stored["grund"], stored["letter_spans"]) == ("ok", None, None)
+
+    @pytest.mark.parametrize(
+        ("overrides", "message"),
+        [
+            ({"grund": None}, "grund"),
+            ({"grund": "keine-lust"}, "grund"),
+            ({"grund": "unauthored", "strokes": [[[0.0, 0.0], [1.0, 1.0]]]}, "carries no strokes"),
+            ({"status": "vielleicht"}, "status"),
+            ({"detail": "x" * 201}, "detail"),
+        ],
+    )
+    def test_a_malformed_skip_is_refused_rather_than_repaired(self, overrides: dict, message: str):
+        with pytest.raises(ValueError, match=message):
+            self._check([_skip(**overrides)])
+
+    def test_every_reason_of_the_closed_list_is_accepted(self):
+        # Closed on purpose: the four cases triage differently, and a free
+        # string would merge them again. `other` is where a fifth one goes.
+        assert [self._check([_skip(grund=grund)])[0]["grund"] for grund in SKIP_REASONS] == list(SKIP_REASONS)
+
+    def test_a_reason_on_a_followed_path_is_refused(self):
+        with pytest.raises(ValueError, match="SKIPPED"):
+            self._check([_path(grund="gave_up")])
+
+    def test_a_skip_that_does_bring_its_frame_is_still_held_to_it(self):
+        # Optional is not unchecked: a registration that names another image
+        # would draw the same wrong overlay whether a path hangs off it or not.
+        assert self._check([_skip(registration_px={"tx": 40.0, "ty": 0.0, "baseline_row": 240.0}, xh_px=120.0)])
+        with pytest.raises(ValueError, match="outside the strip"):
+            self._check([_skip(registration_px={"tx": 99_000.0, "ty": 0.0, "baseline_row": 240.0}, xh_px=120.0)])
+
+    def test_the_letter_boundaries_carry_their_own_provenance(self):
+        stored = self._check([_path(letter_spans=[_span(), _span(first=2, herkunft=AUTHORED)])])[0]
+        assert [span["herkunft"] for span in stored["letter_spans"]] == ["auto", AUTHORED]
+
+    @pytest.mark.parametrize(
+        ("span", "message"),
+        [
+            ({"last": 3}, "which has 3 point"),
+            ({"stroke": 1}, "this path has 1 stroke"),
+            ({"first": 2, "last": 1}, "starts at sample 2"),
+            ({"herkunft": "geraten"}, "herkunft"),
+            ({"slot": -1}, "non-negative integer `slot`"),
+        ],
+    )
+    def test_a_boundary_that_does_not_fit_its_stroke_is_refused(self, span: dict, message: str):
+        # The spans index the samples the FOLLOWER decoded; the entry stores the
+        # CAPPED strokes (`tools.pairlab.trace.cap_word_strokes` downsamples
+        # past 4096 points and thins past 128 runs). Nothing checked the two
+        # against each other, and a desynchronised span is well-formed in every
+        # number it carries.
+        with pytest.raises(ValueError, match=message):
+            self._check([_path(letter_spans=[_span(**span)])])
+
+    def test_a_skipped_box_has_no_samples_to_index(self):
+        with pytest.raises(ValueError, match="0 stroke"):
+            self._check([_skip(letter_spans=[_span()])])
+
+    @pytest.mark.parametrize("field", ["status", "grund", "detail", "letter_spans"])
+    def test_a_format_2_field_pushed_under_format_1_is_refused(self, field: str):
+        # A row is stamped with what it was pushed under, so a cell carrying
+        # fields its number does not know is the mislabelling the stored marker
+        # exists to prevent — one layer further down.
+        entry = _path(**{field: {"status": "ok", "grund": "other", "detail": "x", "letter_spans": [_span()]}[field]})
+        with pytest.raises(ValueError, match=f"`{field}`"):
+            self._check([entry], pfad_format=1)
+
+    def test_the_boundaries_may_not_also_hide_in_the_free_meta(self):
+        # Two sets of boundaries on one box would contradict each other the
+        # first time one of them is corrected.
+        with pytest.raises(ValueError, match="free `meta`"):
+            self._check([_path(meta={"letter_spans": [[[0, 0, 2]]]})])
+        # …the rest of `meta` travels on untouched, as it always did.
+        assert self._check([_path(meta={"tintenpfad": {"runs": 2}})])[0]["meta"] == {"tintenpfad": {"runs": 2}}
+
 
 class TestAuthoredRule:
-    """A path the author drew by hand is never taken away by a followed one."""
+    """Hand work is never taken away by a followed push — per box AND per field."""
 
     def test_a_stored_hand_drawn_path_the_push_leaves_out_is_named(self):
         # The write is a FULL replacement, so an omitted box is a deleted one.
         stored = [_path(verfahren=AUTHORED)]
-        assert displaced_authored(stored, []) == [0]
-        assert displaced_authored(stored, [_path(box_index=1, word="das")]) == [0]
+        assert displaced_authored(stored, []) == [(0, FIELD_PATH)]
+        assert displaced_authored(stored, [_path(box_index=1, word="das")]) == [(0, FIELD_PATH)]
 
     def test_a_stored_hand_drawn_path_answered_by_a_followed_one_is_named(self):
-        assert displaced_authored([_path(verfahren=AUTHORED)], [_path()]) == [0]
+        assert displaced_authored([_path(verfahren=AUTHORED)], [_path()]) == [(0, FIELD_PATH)]
 
     def test_the_author_may_correct_his_own_hand_drawn_path(self):
         # Authored over authored is the author correcting his own trace — the
@@ -347,9 +479,38 @@ class TestAuthoredRule:
 
     def test_every_displaced_box_is_named_once_and_in_order(self):
         stored = [_path(box_index=1, word="das", verfahren=AUTHORED), _path(box_index=0, verfahren=AUTHORED)]
-        assert displaced_authored(stored, []) == [0, 1]
+        assert displaced_authored(stored, []) == [(0, FIELD_PATH), (1, FIELD_PATH)]
         # …and one rescued box does not rescue the other.
-        assert displaced_authored(stored, [_path(box_index=0, verfahren=AUTHORED)]) == [1]
+        assert displaced_authored(stored, [_path(box_index=0, verfahren=AUTHORED)]) == [(1, FIELD_PATH)]
+
+    def test_a_hand_corrected_boundary_survives_an_ordinary_re_follow(self):
+        # The box-level rule got this wrong in both directions: it would have
+        # locked a box that only carries corrected boundaries, and it waved a
+        # push through that kept the `verfahren` and dropped them.
+        stored = [_path(letter_spans=[_span(herkunft=AUTHORED)])]
+        assert displaced_authored(stored, [_path(letter_spans=[_span(herkunft=AUTHORED)])]) == []
+        assert displaced_authored(stored, [_path()]) == [(0, FIELD_SPANS)]
+        assert displaced_authored(stored, []) == [(0, FIELD_SPANS)]
+
+    def test_a_boundary_the_follower_assigned_is_the_runs_own(self):
+        # `auto` is a derivation like the Bahn it sits on; only a corrected
+        # boundary is ground truth.
+        stored = [_path(letter_spans=[_span()])]
+        assert displaced_authored(stored, [_path()]) == []
+
+    def test_a_corrected_boundary_may_not_be_turned_back_into_an_assigned_one(self):
+        # Same numbers, other provenance — that IS the loss, and comparing the
+        # spans without their `herkunft` would have missed it.
+        stored = [_path(letter_spans=[_span(herkunft=AUTHORED)])]
+        assert displaced_authored(stored, [_path(letter_spans=[_span()])]) == [(0, FIELD_SPANS)]
+
+    def test_a_box_names_the_one_piece_of_hand_work_it_loses(self):
+        # Where the Bahn itself goes, its boundaries go with it; saying so
+        # twice would only make the refusal longer.
+        stored = [_path(verfahren=AUTHORED, letter_spans=[_span(herkunft=AUTHORED)])]
+        assert displaced_authored(stored, [_path()]) == [(0, FIELD_PATH)]
+        # …and the author correcting his own trace still has to keep them.
+        assert displaced_authored(stored, [_path(verfahren=AUTHORED)]) == [(0, FIELD_SPANS)]
 
 
 class TestFollowerHandover:
@@ -450,6 +611,56 @@ class TestFollowerHandover:
             argv=["--hand", "mn-suetterlin", "--strip", "S0001"],
         )
         assert [entry["verfahren"] for entry in body] == [AUTHORED, "tintenpfad"]
+
+    def test_a_hand_corrected_boundary_rides_along_onto_the_fresh_bahn(self, tmp_path, monkeypatch):
+        # The field rule's local half: the box may be followed again, but the
+        # boundaries on it are the author's own — the server refuses a push
+        # that drops them, so the tool carries them over. The run's own spans
+        # on a hand-corrected STROKE step aside: a boundary is only meaningful
+        # beside the ones next to it.
+        corrected = _span(herkunft=AUTHORED)
+        body = _dry_run(
+            tmp_path,
+            monkeypatch,
+            fresh=[_path(erzeugt_am="2026-09-20", letter_spans=[_span(first=1)])],
+            stored=[_path(erzeugt_am="2026-09-11", letter_spans=[corrected])],
+            argv=["--hand", "mn-suetterlin", "--strip", "S0001"],
+        )
+        assert body[0]["erzeugt_am"] == "2026-09-20"  # the Bahn IS the fresh one
+        assert body[0][FIELD_SPANS] == [corrected]
+        assert displaced_authored([_path(letter_spans=[corrected])], body) == []
+
+    def test_a_fresh_bahn_that_cannot_hold_the_boundaries_keeps_the_stored_one(self, tmp_path, monkeypatch):
+        # Re-indexing a hand-corrected boundary onto a different Bahn is the
+        # Span-Zuordner's work, not a silent repair inside a merge — and the
+        # push would be refused as a desynchronised span anyway. So the run's
+        # own result for that box is dropped, loudly.
+        body = _dry_run(
+            tmp_path,
+            monkeypatch,
+            fresh=[_path(erzeugt_am="2026-09-20", strokes=[[[0.0, 0.0], [1.0, 1.0]]])],
+            stored=[_path(erzeugt_am="2026-09-11", letter_spans=[_span(herkunft=AUTHORED)])],
+            argv=["--hand", "mn-suetterlin", "--strip", "S0001"],
+        )
+        assert body[0]["erzeugt_am"] == "2026-09-11"
+        assert body[0][FIELD_SPANS] == [_span(herkunft=AUTHORED)]
+
+    def test_the_boundaries_are_not_what_replace_authored_hands_over(self, monkeypatch):
+        # `--replace-authored` gives up a BAHN. On a box whose stored Bahn is a
+        # follow, the corrected boundaries ride along as always — with the
+        # override set the server's own refusal is switched off, so this merge
+        # is all that stands between a re-follow and a silent loss.
+        drawing = {"box_index": 1, "word": "das", "verfahren": AUTHORED}
+        corrected = _span(herkunft=AUTHORED)
+        _, body = _apply_run(
+            monkeypatch,
+            fresh=[_path(), {"box_index": 1, "word": "das", "verfahren": "tintenpfad"}],
+            stored=[_path(letter_spans=[corrected]), drawing],
+            archived=[drawing],
+            argv=["--hand", "mn-suetterlin", "--strip", "S0001", "--replace-authored"],
+        )
+        assert [entry["verfahren"] for entry in body] == ["tintenpfad", "tintenpfad"]
+        assert body[0][FIELD_SPANS] == [corrected]
 
     def test_the_terminal_flag_is_what_gives_an_archived_hand_drawn_path_up(self, monkeypatch, capsys):
         # The only way past — and it has to reach the SERVER, since the tool's

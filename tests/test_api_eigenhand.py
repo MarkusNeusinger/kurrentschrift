@@ -30,7 +30,7 @@ from core.database import EigenhandRepository, EigenhandStrip
 from core.eigenhand import bogen
 from core.eigenhand.befund import BEFUND_FORMAT
 from core.eigenhand.flecken import FLECKEN_FORMAT
-from core.eigenhand.pfad import PFAD_FORMAT, frame_for_box
+from core.eigenhand.pfad import PFAD_FORMAT, SUPPORTED_FORMATS, frame_for_box
 from core.eigenhand.plan import load_plan
 from tests.api_harness import Harness
 
@@ -1209,11 +1209,18 @@ class TestStreifenPfad:
     async def _put(
         api: Harness, pfade: list[dict], strip: str = "S0001", fassung: str = "F01", params: dict | None = None, **body
     ):
+        """A push under the format this image writes — `format` is REQUIRED now.
+
+        Spelled here rather than left to a wire default: once the API accepts
+        more than one format, a push that names none would claim whichever this
+        image happens to write, and the row would be stamped with it. `**body`
+        still wins, so a test can declare any format it likes.
+        """
         return await api.client.request(
             "PUT",
             f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade",
             params=params,
-            json_body={"pfade": pfade, **body},
+            json_body={"format": PFAD_FORMAT, "pfade": pfade, **body},
             headers=api.admin_headers(),
         )
 
@@ -1279,14 +1286,126 @@ class TestStreifenPfad:
         assert (await self._put(api, [self._path(stored)])).status == 404
 
     @pytest.mark.asyncio
-    async def test_a_path_from_another_format_is_refused_not_stored(self, api: Harness):
+    async def test_a_path_from_an_unsupported_format_is_refused_not_stored(self, api: Harness):
+        # The 409 fires on a format this image does not KNOW — not on every
+        # format it does not write. That difference is the lockstep: the API
+        # admits the newer shape one release before a writer produces it.
         stored = await _store_strip(api)
-        res = await self._put(api, [self._path(stored)], format=PFAD_FORMAT + 1)
+        res = await self._put(api, [self._path(stored)], format=max(SUPPORTED_FORMATS) + 1)
         assert res.status == 409
         assert (await self._get(api)).json()["pfade"] is None
         # Refused means nothing moved — not even the marker of a row that was
         # never followed.
         assert (await self._get(api)).json()["format"] == PFAD_FORMAT
+
+    @pytest.mark.asyncio
+    async def test_a_push_that_names_no_format_is_not_a_push(self, api: Harness):
+        # The field is REQUIRED since the guard admits more than one number: a
+        # default bound to the moving constant would let a formatless push claim
+        # whatever this image writes, and the row would be stamped with it —
+        # the mislabelling the stored marker exists to prevent, moved from the
+        # read to the write.
+        stored = await _store_strip(api)
+        res = await api.client.request(
+            "PUT",
+            f"/eigenhand/strips/{HAND}/S0001/F01/pfade",
+            json_body={"pfade": [self._path(stored)]},
+            headers=api.admin_headers(),
+        )
+        assert res.status == 422, res.body
+        assert (await self._get(api)).json()["pfade"] is None
+
+    @pytest.mark.asyncio
+    async def test_a_skipped_box_says_why_it_carries_no_path(self, api: Harness):
+        # Four situations were one state („no entry") until format 2: the box
+        # was not chosen, the Bogen has no geometry, the word needs glyphs the
+        # plate has none for, the follower gave up. Only the third is a jump to
+        # the plate rather than tracing work, so the Nachfahr-Liste has to be
+        # able to tell them apart (author decision C, 2026-09-20).
+        stored = await _store_strip(api)
+        skip = {
+            "box_index": 1,
+            "word": self._path(stored, 1)["word"],
+            "status": "skipped",
+            "grund": "unauthored",
+            "detail": "unauthored: y",
+            "strokes": [],
+            "verfahren": "tintenpfad",
+        }
+        written = await self._put(api, [self._path(stored), skip], format=2)
+        assert written.status == 200, written.body
+        answer = (await self._get(api)).json()
+        assert answer["format"] == 2
+        assert [(p["box_index"], p["status"], p["grund"]) for p in answer["pfade"]] == [
+            (0, "ok", None),
+            (1, "skipped", "unauthored"),
+        ]
+        assert answer["pfade"][1]["strokes"] == [] and answer["pfade"][1]["registration_px"] is None
+
+        # …and the same entry under format 1 is refused rather than stored: a
+        # row stamped 1 whose cell carries format-2 fields is exactly the
+        # mislabelling the stored marker exists to prevent.
+        refused = await self._put(api, [skip], format=1)
+        assert refused.status == 422, refused.body
+        assert (await self._get(api)).json()["format"] == 2
+
+    def test_the_wire_vocabulary_is_the_one_the_core_refuses_by(self):
+        # Pydantic can only type a literal, `check_paths` refuses by the tuple
+        # in core — two lists that drift would refuse different things at the
+        # two layers, and the 422 would name the wrong vocabulary.
+        from typing import get_args
+
+        from api.schemas import PfadGrund, PfadSpanHerkunft, PfadStatus
+        from core.eigenhand.pfad import SKIP_REASONS, SPAN_HERKUNFT, STATUS_VALUES
+
+        assert get_args(PfadStatus) == STATUS_VALUES
+        assert get_args(PfadGrund) == SKIP_REASONS
+        assert get_args(PfadSpanHerkunft) == SPAN_HERKUNFT
+
+    @pytest.mark.asyncio
+    async def test_a_letter_boundary_that_leaves_its_stroke_is_refused(self, api: Harness):
+        # The spans index SAMPLES of a stroke, and nothing held them against it
+        # until format 2 — a desynchronised span is well-formed in every number
+        # it carries, so only the stroke it names can refuse it.
+        stored = await _store_strip(api)
+        path = self._path(stored)
+        assert len(path["strokes"][0]) == 3
+        good = await self._put(
+            api,
+            [{**path, "letter_spans": [{"stroke": 0, "slot": 0, "first": 0, "last": 2, "herkunft": "auto"}]}],
+            format=2,
+        )
+        assert good.status == 200, good.body
+        assert (await self._get(api)).json()["pfade"][0]["letter_spans"][0]["herkunft"] == "auto"
+
+        bad = await self._put(
+            api,
+            [{**path, "letter_spans": [{"stroke": 0, "slot": 0, "first": 0, "last": 9, "herkunft": "auto"}]}],
+            format=2,
+        )
+        assert bad.status == 422, bad.body
+        assert "stroke 0" in bad.json()["detail"] and "3 point(s)" in bad.json()["detail"]
+
+    @pytest.mark.asyncio
+    async def test_a_hand_corrected_boundary_survives_a_re_follow_but_is_not_dropped(self, api: Harness):
+        # The field rule in both directions: the box may be followed again —
+        # its Bahn is a derivation — but the boundaries on it are the author's
+        # own and have to come back with the push.
+        stored = await _store_strip(api)
+        path = self._path(stored)
+        span = {"stroke": 0, "slot": 0, "first": 0, "last": 1, "herkunft": "authored"}
+        assert (await self._put(api, [{**path, "letter_spans": [span]}], format=2)).status == 200
+
+        dropped = await self._put(api, [{**path, "erzeugt_am": "2026-09-19"}], format=2)
+        assert dropped.status == 409, dropped.body
+        assert "letter boundaries" in dropped.json()["detail"]
+        assert (await self._get(api)).json()["pfade"][0]["erzeugt_am"] == "2026-09-12"
+
+        again = await self._put(api, [{**path, "erzeugt_am": "2026-09-19", "letter_spans": [span]}], format=2)
+        assert again.status == 200, again.body
+        answer = (await self._get(api)).json()["pfade"][0]
+        assert answer["erzeugt_am"] == "2026-09-19"
+        assert answer["letter_spans"] == [span]
 
     @pytest.mark.asyncio
     async def test_the_answer_carries_the_rows_own_format_not_this_images_constant(self, api: Harness):

@@ -12,6 +12,14 @@ lives in this module is the pure half both sides need and neither may spell
 twice: where a word box sits in a stored strip (``frame_for_box``) and what a
 stored path has to look like (``check_paths``).
 
+TWO FORMATS, ONE LIST. Since 2026-09-20 an entry can also say that a box has
+NO path and why (the Skip-Eintrag: ``status`` + ``grund``), and it carries the
+letter boundaries of its own path as a checked field with their provenance
+(``letter_spans[].herkunft``). Both are format 2 and both are refused under
+format 1 — what a row is stamped with has to be what its cell obeys. The API
+reads and accepts ``SUPPORTED_FORMATS``; ``PFAD_FORMAT`` is only what this
+image WRITES, and the distance between the two is the lockstep.
+
 THE FRAME. A path's ``strokes`` use the same contract as
 ``word_instances.strokes`` — baseline 0, midband 1, x growing from the word's
 own origin — so one overlay component serves the Wörter view and the Eigenhand
@@ -52,13 +60,79 @@ from typing import Any
 from core.eigenhand.crop import px_per_mm, word_box_px
 
 
+# The format this image WRITES: what a push declares when it names none, and
+# what every writer in the repo puts on the wire. It is a MOVING number, which
+# is why a row stores the one it was written under rather than trusting it
+# (`eigenhand_strips.pfade_format`, migration 0032).
 PFAD_FORMAT = 1
+
+# Every format this image READS and ACCEPTS on a push, oldest first — wider than
+# `PFAD_FORMAT` on purpose. That gap IS the lockstep (docs/proposals/
+# admin-redesign.md §6.3): the API admits the newer shape one release before any
+# writer produces it, so a tool and an API never have to land in the same
+# minute, and the two shapes then coexist per ROW rather than per deployment.
+SUPPORTED_FORMATS = (1, 2)
+
+# The format that admits a Skip-Eintrag and checked `letter_spans`. Below it an
+# entry has exactly the shape migration 0031 introduced, and both fields are
+# REFUSED rather than stored under a number whose readers do not know them: a
+# row stamped 1 whose cell carries format-2 fields is the mislabelling the
+# stored marker exists to prevent, moved one layer down.
+SKIP_AND_SPAN_FORMAT = 2
 
 # The one `verfahren` the stored list treats as untouchable: a path the AUTHOR
 # drew by hand. The twin of `word_instances.provenance == "authored"` — a
 # follower run is a DERIVATION and never replaces ground truth
 # (docs/proposals/eigenhand-erfassung.md §7.5).
 AUTHORED = "authored"
+
+# An entry's own answer to „is there a path in this box". A Skip-Eintrag is an
+# entry of the SAME list rather than a second list beside it (author decision C,
+# 2026-09-20): a box has exactly one state, and two lists would be two places
+# the same box appears in until they contradict each other.
+STATUS_OK = "ok"
+STATUS_SKIPPED = "skipped"
+STATUS_VALUES = (STATUS_OK, STATUS_SKIPPED)
+
+# Why a box carries no path — CLOSED, and that is the whole point. Until format
+# 2 these four situations were ONE indistinguishable state („no entry"), and
+# they are not the same work at all: `unauthored` is a jump to the plate rather
+# than tracing, `no_geometry` needs a Bogen re-measured, `gave_up` is the only
+# one that is genuinely follower work, and `not_selected` is no finding at all.
+# A free string would merge them again within a month, so an unknown reason is
+# refused instead of stored (`other` is the honest place for a new one).
+SKIP_NOT_SELECTED = "not_selected"
+SKIP_NO_GEOMETRY = "no_geometry"
+SKIP_UNAUTHORED = "unauthored"
+SKIP_GAVE_UP = "gave_up"
+SKIP_OTHER = "other"
+SKIP_REASONS = (SKIP_NOT_SELECTED, SKIP_NO_GEOMETRY, SKIP_UNAUTHORED, SKIP_GAVE_UP, SKIP_OTHER)
+
+# What a skip may add in its own words — the follower's `detail`, the missing
+# glyph keys, the refused geometry. Short: the triage runs on `grund`, this is
+# only what a human reads afterwards.
+MAX_DETAIL = 200
+
+# Where one letter boundary came from. `auto` is the follower's own assignment,
+# `AUTHORED` one the author corrected by hand — the second provenance source
+# `is_authored` was written to make room for, protected per FIELD rather than
+# per box so an ordinary re-follow of a span-corrected box still passes.
+SPAN_AUTO = "auto"
+SPAN_HERKUNFT = (SPAN_AUTO, AUTHORED)
+
+# A word box holds a couple of dozen letter boundaries; anything past this is a
+# client sending a sample-level labelling rather than spans.
+MAX_SPANS = 256
+
+# The two fields of one box a followed push may not take away. Named rather
+# than implied, because the refusal has to say WHICH piece of hand work a push
+# would lose — the Bahn and the boundaries on it are given up separately.
+FIELD_PATH = "strokes"
+FIELD_SPANS = "letter_spans"
+
+# The format-2 fields, listed once: an older push must not carry them, and the
+# refusal names the field it found rather than „your entry is wrong".
+FORMAT_2_FIELDS = ("status", "grund", "detail", FIELD_SPANS)
 
 # The same bounds `WordInstanceItem` puts on a stored trace, for the same
 # reason: the strokes live in template units, so anything past this is a
@@ -297,12 +371,89 @@ def _checked_registration(reg: Any, width_px: int, height_px: int, xh_px: float,
     return {"tx": tx, "ty": ty, "baseline_row": baseline_row}
 
 
+def _checked_spans(spans: Any, strokes: Sequence[Sequence[Any]], where: str) -> list[dict[str, Any]] | None:
+    """The letter boundaries of one path, held against the strokes they index.
+
+    They index SAMPLES of a stroke, and until format 2 nothing checked that the
+    stroke still has them: the follower assigns spans on the path it decoded and
+    stores the CAPPED strokes, which `tools.pairlab.trace.cap_word_strokes`
+    downsamples past 4096 points and thins past 128 runs. A word that crossed
+    either bound would have stored spans pointing into samples that no longer
+    exist — silently, because every number in them is well-formed. So the
+    refusal names the span AND the stroke: those two disagreeing is the whole
+    finding, and a reader cannot see it from either side alone.
+
+    `slot` is the shaped slot the boundary belongs to, and it has to be a real
+    one: a span the follower could not label at all comes out of `spans_of` as
+    `slot = -1`, which is not a boundary but „no letter here" and would read as
+    letter number minus one in every consumer. Refused rather than dropped —
+    the caller decides what to do with an unlabelled stretch, and silently
+    swallowing entries is how a list starts disagreeing with its own length.
+    """
+    if spans is None:
+        return None
+    if not isinstance(spans, Sequence) or isinstance(spans, (str, bytes)):
+        raise ValueError(f"{where}: `letter_spans` must be a list of letter boundaries")
+    if len(spans) > MAX_SPANS:
+        raise ValueError(f"{where}: {len(spans)} letter spans — at most {MAX_SPANS}")
+    out: list[dict[str, Any]] = []
+    for position, span in enumerate(spans):
+        if not isinstance(span, Mapping):
+            raise ValueError(f"{where}: letter span {position} must be an object")
+        values: dict[str, int] = {}
+        for key in ("stroke", "slot", "first", "last"):
+            value = span.get(key)
+            if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+                raise ValueError(f"{where}: letter span {position} needs a non-negative integer `{key}`, got {value!r}")
+            values[key] = value
+        herkunft = span.get("herkunft")
+        if herkunft not in SPAN_HERKUNFT:
+            raise ValueError(
+                f"{where}: letter span {position} claims herkunft {herkunft!r} — one of {', '.join(SPAN_HERKUNFT)}"
+            )
+        if values["stroke"] >= len(strokes):
+            raise ValueError(
+                f"{where}: letter span {position} indexes stroke {values['stroke']}, "
+                f"but this path has {len(strokes)} stroke(s)"
+            )
+        length = len(strokes[values["stroke"]])
+        if values["first"] > values["last"]:
+            raise ValueError(
+                f"{where}: letter span {position} starts at sample {values['first']} and ends at {values['last']}"
+            )
+        if values["last"] >= length:
+            raise ValueError(
+                f"{where}: letter span {position} ends at sample {values['last']} of stroke {values['stroke']}, "
+                f"which has {length} point(s)"
+            )
+        out.append({**values, "herkunft": herkunft})
+    return out
+
+
+def _checked_grund(value: Any, where: str) -> str:
+    if value not in SKIP_REASONS:
+        raise ValueError(
+            f"{where}: a skipped box needs a `grund` out of {', '.join(SKIP_REASONS)} — got {value!r}. "
+            "A reason this list has no word for is `other` with a `detail`, never a new string"
+        )
+    return str(value)
+
+
+def _checked_detail(value: Any, where: str) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or len(value) > MAX_DETAIL:
+        raise ValueError(f"{where}: `detail` must be a short line (at most {MAX_DETAIL} characters) or absent")
+    return value
+
+
 def check_paths(
     pfade: Sequence[Mapping[str, Any]],
     layout_row: Mapping[str, Any],
     width_px: int,
     height_px: int,
     words: Sequence[str] | None = None,
+    pfad_format: int = PFAD_FORMAT,
 ) -> list[dict[str, Any]]:
     """Validate a pushed path list against the strip it claims to describe.
 
@@ -316,10 +467,18 @@ def check_paths(
     x-height the printed ruling could have produced, and a registration that
     lies on THIS strip.
 
-    NOT checked here: the envelope's `format` field. It belongs to the pushed
-    document rather than to an entry, so it never reaches this function —
-    `api.routers.eigenhand.write_pfade` compares it against `PFAD_FORMAT` and
-    answers 409. A caller that assembles its own envelope has to do the same.
+    `pfad_format` says which shape the push declared, and it is a CONTENT rule
+    rather than a version stamp: under format 1 an entry that carries a
+    Skip-Eintrag or checked `letter_spans` is refused, under format 2 one that
+    hides `letter_spans` in the free `meta` is — either way a row would end up
+    stamped with a number its cell does not obey, which is exactly what the
+    stored marker exists to prevent.
+
+    NOT checked here: whether that format is one this image supports at all. It
+    belongs to the pushed document rather than to an entry, so the envelope's
+    own field never reaches this function — `api.routers.eigenhand.write_pfade`
+    holds it against `SUPPORTED_FORMATS` and answers 409. A caller that
+    assembles its own envelope has to do the same.
     """
     if not isinstance(pfade, Sequence) or isinstance(pfade, (str, bytes)):
         raise ValueError("`pfade` must be a list of per-word entries")
@@ -356,19 +515,69 @@ def check_paths(
         flecken_n = entry.get("flecken_n")
         if flecken_n is not None and (not isinstance(flecken_n, int) or isinstance(flecken_n, bool) or flecken_n < 0):
             raise ValueError(f"{where}: `flecken_n` must be the size of the mask it was followed under")
-        xh = _checked_xh(entry.get("xh_px"), height_px, nominal, where)
+        common = {
+            "box_index": index,
+            "word": word,
+            "verfahren": verfahren,
+            "konfiguration": dict(entry.get("konfiguration") or {}),
+            "meta": dict(entry.get("meta") or {}),
+            "erzeugt_am": erzeugt_am,
+            "flecken_n": flecken_n,
+        }
+        if pfad_format < SKIP_AND_SPAN_FORMAT:
+            for field in FORMAT_2_FIELDS:
+                if entry.get(field) is not None:
+                    raise ValueError(
+                        f"{where}: `{field}` is a Streifen-Pfad format {SKIP_AND_SPAN_FORMAT} field and this push "
+                        f"declares format {pfad_format} — push it as {SKIP_AND_SPAN_FORMAT} or leave the field out"
+                    )
+            xh = _checked_xh(entry.get("xh_px"), height_px, nominal, where)
+            out.append(
+                {
+                    **common,
+                    "strokes": _checked_strokes(entry.get("strokes"), where),
+                    "registration_px": _checked_registration(
+                        entry.get("registration_px"), width_px, height_px, xh, where
+                    ),
+                    "xh_px": xh,
+                }
+            )
+            continue
+        meta = entry.get("meta")
+        if isinstance(meta, Mapping) and meta.get(FIELD_SPANS) is not None:
+            raise ValueError(
+                f"{where}: format {SKIP_AND_SPAN_FORMAT} carries `{FIELD_SPANS}` as a checked field of the entry — "
+                "remove the copy in the free `meta`, so a box has one set of boundaries and not two"
+            )
+        status = entry.get("status") or STATUS_OK
+        if status not in STATUS_VALUES:
+            raise ValueError(f"{where}: `status` must be one of {', '.join(STATUS_VALUES)} — got {status!r}")
+        skipped = status == STATUS_SKIPPED
+        if skipped and entry.get("strokes"):
+            raise ValueError(f"{where}: a skipped box carries no strokes — it says why there is no path, not one")
+        if not skipped and entry.get("grund") is not None:
+            raise ValueError(f"{where}: `grund` says why a box was SKIPPED — a path that was followed has none")
+        # Optional on a skip, required on a path (author decision C): a skipped
+        # box may have been refused before anything was registered at all.
+        registration = entry.get("registration_px")
+        xh_value = entry.get("xh_px")
+        if skipped and registration is None and xh_value is None:
+            xh, frame = None, None
+        else:
+            xh = _checked_xh(xh_value, height_px, nominal, where)
+            frame = _checked_registration(registration, width_px, height_px, xh, where)
+        strokes = [] if skipped else _checked_strokes(entry.get("strokes"), where)
+        spans = _checked_spans(entry.get(FIELD_SPANS), strokes, where)
         out.append(
             {
-                "box_index": index,
-                "word": word,
-                "strokes": _checked_strokes(entry.get("strokes"), where),
-                "registration_px": _checked_registration(entry.get("registration_px"), width_px, height_px, xh, where),
+                **common,
+                "status": status,
+                "grund": _checked_grund(entry.get("grund"), where) if skipped else None,
+                "detail": _checked_detail(entry.get("detail"), where),
+                "strokes": strokes,
+                FIELD_SPANS: spans,
+                "registration_px": frame,
                 "xh_px": xh,
-                "verfahren": verfahren,
-                "konfiguration": dict(entry.get("konfiguration") or {}),
-                "meta": dict(entry.get("meta") or {}),
-                "erzeugt_am": erzeugt_am,
-                "flecken_n": flecken_n,
             }
         )
     return sorted(out, key=lambda item: item["box_index"])
@@ -377,36 +586,76 @@ def check_paths(
 def is_authored(entry: Mapping[str, Any]) -> bool:
     """Whether this stored path is the author's own hand rather than a follow.
 
-    One predicate rather than a comparison spelled at every call site, because
-    it is the seam a second provenance source will be READ at: PFAD_FORMAT 2 is
-    to carry the letter boundaries' own provenance, and boundaries corrected by
-    hand earn protection of their own (author decision Q15, 2026-09-18). That
-    protection is per SPAN, though, not per box — an ordinary path re-follow of
-    a span-corrected box must still pass — so `displaced_authored` will need a
-    per-field comparison then rather than this box-level answer. Nothing of
-    that is built here.
+    One predicate rather than a comparison spelled at every call site, and the
+    BAHN's half of the answer only: since format 2 a second provenance sits
+    inside the entry (`letter_spans[].herkunft`, author decision Q15,
+    2026-09-18), and it is read by `authored_spans` beside this.
     """
     return entry.get("verfahren") == AUTHORED
 
 
-def displaced_authored(stored: Sequence[Mapping[str, Any]] | None, pushed: Sequence[Mapping[str, Any]]) -> list[int]:
-    """The boxes a push would take a hand-drawn path away from.
+def authored_spans(entry: Mapping[str, Any]) -> list[dict[str, Any]]:
+    """The letter boundaries of one entry that the author corrected by hand.
 
-    A box counts as displaced when its STORED path is the author's own and the
-    push either leaves the box out — the write is a full replacement, so an
-    omitted box is a deleted one — or answers it with a path made some other
-    way. Authored over authored passes: that is the author correcting his own
-    trace, and it is what keeps a hand-drawing surface possible at all.
+    Defensive about the shape rather than validating it: this reads what is
+    already STORED, including rows written under format 1, where the field does
+    not exist at all. `check_paths` is where a pushed shape is held to account.
+    """
+    spans = entry.get(FIELD_SPANS)
+    if not isinstance(spans, Sequence) or isinstance(spans, (str, bytes)):
+        return []
+    return [dict(span) for span in spans if isinstance(span, Mapping) and span.get("herkunft") == AUTHORED]
+
+
+def _span_key(span: Mapping[str, Any]) -> tuple[Any, ...]:
+    return tuple(span.get(key) for key in ("stroke", "slot", "first", "last"))
+
+
+def displaced_authored(
+    stored: Sequence[Mapping[str, Any]] | None, pushed: Sequence[Mapping[str, Any]]
+) -> list[tuple[int, str]]:
+    """The hand work a push would take away, per box and per FIELD.
+
+    Two pieces of the author's own hand can sit in one box, and they are given
+    up separately, so the comparison is per field rather than per box:
+
+    * `FIELD_PATH` — the stored Bahn is the author's own (`verfahren:
+      "authored"`) and the push either leaves the box out (the write is a full
+      replacement, so an omitted box is a deleted one) or answers it with a path
+      made some other way. Authored over authored passes: that is the author
+      correcting his own trace, and it is what keeps a hand-drawing surface
+      possible at all.
+    * `FIELD_SPANS` — the stored entry carries letter boundaries the author
+      corrected, and the push does not carry them back. This is the case the
+      box-level rule got WRONG in both directions: it locked a whole box that
+      only had corrected boundaries, and it waved through a push that kept the
+      `verfahren` and dropped the boundaries inside it. An ordinary re-follow
+      of a span-corrected box passes here as long as it brings the boundaries
+      along — which `tools.eigenhand.pfad` does by itself.
+
+    Only the LOSS is reported, and only once per box: where the Bahn itself is
+    displaced, its boundaries go with it and saying so twice would just make the
+    refusal longer.
 
     Deliberately not part of `check_paths`: this compares against STORED state,
     which makes it the router's 409 rather than the entry-level 422 — the same
     split `format` already follows. Plain Python and no JSONB operator, because
     the HTTP suites run on SQLite.
     """
-    kept = {entry.get("box_index") for entry in pushed if is_authored(entry)}
-    displaced: set[int] = set()
+    answers = {entry.get("box_index"): entry for entry in pushed}
+    displaced: list[tuple[int, str]] = []
     for entry in stored or []:
         index = entry.get("box_index")
-        if is_authored(entry) and index is not None and index not in kept:
-            displaced.add(index)
+        if index is None:
+            continue
+        answer = answers.get(index)
+        if is_authored(entry) and not (answer is not None and is_authored(answer)):
+            displaced.append((index, FIELD_PATH))
+            continue
+        kept = authored_spans(entry)
+        if not kept:
+            continue
+        brought = {_span_key(span) for span in authored_spans(answer)} if answer is not None else set()
+        if any(_span_key(span) not in brought for span in kept):
+            displaced.append((index, FIELD_SPANS))
     return sorted(displaced)

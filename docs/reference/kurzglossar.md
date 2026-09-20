@@ -1,7 +1,7 @@
 # Kurzglossar — die Begriffe, die im Code stehen
 
-> **Status (2026-09-19): lebend.** Die Kurzfassung von
-> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **106
+> **Status (2026-09-20): lebend.** Die Kurzfassung von
+> [`glossar.md`](glossar.md) für den Einstieg in eine Sitzung: **108
 > Einträge**, je ein bis zwei Sätze, jeder mit dem Sprung in seinen
 > Themenblock des vollen Glossars.
 > **Was gilt:** Nachzieh-Anlass ist der Begriff selbst — er wandert
@@ -673,6 +673,21 @@ als Vorgabe), über die Admin-API abgelegt, in der Werkbank nur gezeigt —
 Reihenfolge, Richtung und Absetzer. Die Saat ist der Tafel-Duktus, nicht
 diese Hand. `core/eigenhand/pfad.py`.
 → [§5](glossar.md#5-werkbank-und-prozess) · eigenhand-erfassung.md §7.5
+
+**Skip-Eintrag** — ein Eintrag der Pfad-Liste OHNE Züge, der sagt, warum ein
+Wortkasten keine Bahn hat: `status: "skipped"` plus ein `grund` aus einer
+geschlossenen Liste (`not_selected` · `no_geometry` · `unauthored` ·
+`gave_up` · `other`). Vorher waren diese vier Lagen ein einziger Zustand
+„kein Eintrag" — und „übersprungen: unautoriert" ist ein Absprung zur Tafel,
+keine Nachfahr-Arbeit. Ab PFAD_FORMAT 2 (Autor-Entscheid C, 2026-09-20).
+→ [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.3
+
+**Span-Herkunft** — `auto` oder `authored` je Buchstabengrenze einer Bahn
+(`letter_spans`, ab PFAD_FORMAT 2 ein geprüftes Feld statt einer Zeile im
+freien `meta`): die Indizes werden gegen die Zuglängen geprüft, und eine von
+Hand korrigierte Grenze ist FELDWEISE geschützt — ein gewöhnliches
+Neu-Folgen desselben Kastens geht durch, solange es sie mitbringt.
+→ [§5](glossar.md#5-werkbank-und-prozess) · admin-redesign.md §6.3
 
 **Fokusring** *(`focusRing`)* — der eine sichtbare Tastaturfokus: 2 px
 Viridian, 2 px Abstand, exportiert aus `app/src/styles/focusRing.ts` und vom

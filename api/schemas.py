@@ -1522,6 +1522,37 @@ class EigenhandPfadRegistration(BaseModel):
     baseline_row: float
 
 
+# The three closed vocabularies of a Streifen-Pfad entry, spelled here as
+# literals because that is the only thing Pydantic can type with — and pinned
+# against `core.eigenhand.pfad`, which is where a push is actually refused by
+# them (`tests/test_api_eigenhand.py`). Two lists that drift would refuse
+# different things at the two layers, and the 422 would name the wrong one.
+PfadStatus = Literal["ok", "skipped"]
+PfadGrund = Literal["not_selected", "no_geometry", "unauthored", "gave_up", "other"]
+PfadSpanHerkunft = Literal["auto", "authored"]
+
+
+class EigenhandPfadSpan(BaseModel):
+    """Where one letter starts and ends ON a path — a Span with its Herkunft.
+
+    Sample indices INTO one stroke of the same entry (`stroke`, then `first`
+    and `last` within it), plus the shaped `slot` they belong to. `herkunft`
+    says who drew the boundary: `auto` the follower, `authored` the author by
+    hand — and an authored one is protected per field, so an ordinary re-follow
+    of the box passes without taking it away
+    (`core.eigenhand.pfad.displaced_authored`).
+
+    A format 2 field. Until then the boundaries rode in the free, unchecked
+    `meta`, where nothing held them against the strokes they index.
+    """
+
+    stroke: Annotated[int, Field(ge=0, le=127)]
+    slot: Annotated[int, Field(ge=0, le=255)]
+    first: Annotated[int, Field(ge=0, le=4095)]
+    last: Annotated[int, Field(ge=0, le=4095)]
+    herkunft: PfadSpanHerkunft
+
+
 class EigenhandPfad(BaseModel):
     """One written word's followed pen path — the Streifen-Pfad of one box.
 
@@ -1536,16 +1567,26 @@ class EigenhandPfad(BaseModel):
     brush edit shows as a „Maske geändert" hint instead of silently putting an
     old path over corrected pixels.
 
-    Neither `In` nor `Out`: a path has the same shape in both directions. What
-    actually binds is checked against the strip it belongs to
-    (`core.eigenhand.pfad.check_paths`) — the bounds here are a sanity net.
+    Since format 2 an entry may also be a SKIP: `status: "skipped"` with a
+    `grund` out of the closed list and no strokes at all, which is how the four
+    reasons a box carries no path stopped being one indistinguishable state
+    (author decision C, 2026-09-20). That is why `strokes`, `registration_px`
+    and `xh_px` are nullable here — the bounds in this class are a sanity net,
+    and which of them a given entry must actually fill is decided against the
+    strip and the declared format by `core.eigenhand.pfad.check_paths`.
+
+    Neither `In` nor `Out`: a path has the same shape in both directions.
     """
 
     box_index: Annotated[int, Field(ge=0, le=63)]
     word: str = Field(min_length=1, max_length=64)
-    strokes: list[list[list[float]]] = Field(min_length=1, max_length=128)
-    registration_px: EigenhandPfadRegistration
-    xh_px: Annotated[float, Field(gt=0, le=20000)]
+    status: PfadStatus | None = None
+    grund: PfadGrund | None = None
+    detail: str | None = Field(default=None, max_length=200)
+    strokes: list[list[list[float]]] = Field(default_factory=list, max_length=128)
+    letter_spans: list[EigenhandPfadSpan] | None = Field(default=None, max_length=256)
+    registration_px: EigenhandPfadRegistration | None = None
+    xh_px: Annotated[float, Field(gt=0, le=20000)] | None = None
     verfahren: str = Field(min_length=1, max_length=64)
     konfiguration: dict[str, Any] = Field(default_factory=dict)
     meta: dict[str, Any] = Field(default_factory=dict)
@@ -1560,23 +1601,20 @@ class EigenhandPfadeIn(BaseModel):
     produces the whole row at once, and merging would have to guess what a
     missing box meant.
 
-    A push that names no format means „the format this API reads" — bound to
-    the constant rather than written out as 1, so the number lives in one place
-    (the redesign books both wire defaults that way, §15.6).
-
-    The catch, and the duty of the PR that bumps the constant: while the write
-    admits exactly ONE format, this default cannot lie, because the only value
-    it can take is the only value the 409 lockstep guard lets through. The
-    moment that guard admits 1 AND 2, a push that names no format would claim
-    the NEWER one and `write_pfade` would stamp the row with it — the same
-    mislabelling the stored marker exists to prevent, moved from the read to
-    the write. Before `PFAD_FORMAT` moves, `format` has to become REQUIRED
-    here. Every writer in the repo already names it (`tools/eigenhand/pfad.py`,
-    `tools/eigenhand/sync.py`, the local seed); only the test helper omits it.
+    `format` is REQUIRED, and that is the duty this field carried from the day
+    the stored marker landed: while the write admitted exactly ONE format, a
+    default bound to `PFAD_FORMAT` could not lie, because the only value it
+    could take was the only value the 409 guard let through. Now that the guard
+    admits every `SUPPORTED_FORMATS`, a push naming no format would claim
+    whatever this image happens to write, and `write_pfade` would stamp the row
+    with it — the same mislabelling the stored marker exists to prevent, moved
+    from the read to the write. So a push says which shape it is in, or it is
+    not a push. Every writer in the repo names it (`tools/eigenhand/pfad.py`,
+    `tools/eigenhand/sync.py`, the local seed of `/verify-frontend`).
     """
 
     pfade: list[EigenhandPfad]
-    format: int = PFAD_FORMAT
+    format: int
 
 
 class EigenhandPfadeOut(BaseModel):

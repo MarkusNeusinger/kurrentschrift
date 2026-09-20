@@ -162,12 +162,16 @@ async def _pfade(api: Harness, strip: str, fassung: str) -> dict:
     return res.json()
 
 
-async def _draw_by_hand(api: Harness, layout: dict) -> tuple[str, str, dict]:
+async def _draw_by_hand(api: Harness, layout: dict, pfad_format: int = PFAD_FORMAT, **extra) -> tuple[str, str, dict]:
     """Store one `authored` Bahn the way the workbench will — through the real API.
 
     The frame comes out of `frame_for_box`, so the registration and the x-height
     are ones `check_paths` accepts; what is being tested is the archive chain,
     not the arithmetic (`tests/test_eigenhand_pfad.py` owns that).
+
+    `pfad_format` is the format the push DECLARES, and the row is stamped with
+    it — which is how a Fassung comes to carry a number this image does not
+    write, and why the chain reads it off the row rather than off a constant.
     """
     listing = await api.client.request("GET", f"/eigenhand/strips/{HAND}", headers=api.admin_headers())
     assert listing.status == 200, listing.body
@@ -185,11 +189,12 @@ async def _draw_by_hand(api: Harness, layout: dict) -> tuple[str, str, dict]:
         "meta": {},
         "erzeugt_am": "2026-09-20",
         "flecken_n": None,
+        **extra,
     }
     res = await api.client.request(
         "PUT",
         f"/eigenhand/strips/{HAND}/{row['strip']}/{row['fassung']}/pfade",
-        json_body={"format": PFAD_FORMAT, "pfade": [entry]},
+        json_body={"format": pfad_format, "pfade": [entry]},
         headers=api.admin_headers(),
     )
     assert res.status == 200, res.body
@@ -312,6 +317,42 @@ class TestHandDrawnBahn:
         shutil.rmtree(dataroot)
         await _restore(api, second, monkeypatch)
         assert (await _pfade(api, strip, fassung))["pfade"] == [drawn]
+
+    @pytest.mark.asyncio
+    async def test_a_drawing_written_under_format_2_is_restored_under_format_2(
+        self, api: Harness, dataroot: Path, tmp_path: Path, monkeypatch
+    ):
+        # The restore is the ONE writer that legitimately declares a format this
+        # image does not write: it pushes what the ROW answered under, read out
+        # of the Kartei. That only works because the API accepts 1 AND 2 — with
+        # a single admitted format the chain would refuse its own archive the
+        # day the number moves, or worse, relabel a Bahn on the way back in.
+        layout = _capture(dataroot)
+        await _in_thread(api, sync_mod, ["--mit-streifen"], monkeypatch)
+        span = {"stroke": 0, "slot": 0, "first": 0, "last": 2, "herkunft": "authored"}
+        strip, fassung, drawn = await _draw_by_hand(api, layout, pfad_format=2, letter_spans=[span])
+        assert drawn["letter_spans"] == [span]
+
+        await _in_thread(api, pull_mod, ["--pfade"], monkeypatch)
+        snapshot = _archive_snapshot(tmp_path)
+        record = json.loads((snapshot / "kartei.json").read_text(encoding="utf-8"))
+        assert record["strips"][strip]["fassungen"][0]["pfade"]["pfad_format"] == 2
+
+        given_up = await api.client.request(
+            "PUT",
+            f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade",
+            params={"replace_authored": "true"},
+            json_body={"format": PFAD_FORMAT, "pfade": []},
+            headers=api.admin_headers(),
+        )
+        assert given_up.status == 200, given_up.body
+        assert (await _pfade(api, strip, fassung))["format"] == PFAD_FORMAT
+
+        shutil.rmtree(dataroot)
+        await _restore(api, snapshot, monkeypatch)
+        answer = await _pfade(api, strip, fassung)
+        assert answer["pfade"] == [drawn]
+        assert answer["format"] == 2, "the row is stamped with what the restore declared, not with this image's number"
 
     @pytest.mark.asyncio
     async def test_a_second_restore_of_the_same_drawing_changes_nothing(
