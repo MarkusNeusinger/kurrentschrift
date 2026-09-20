@@ -1408,7 +1408,11 @@ Das abgelegte Artefakt trägt **zwei** Versionen: `format`
 `PFAD_FORMAT`, unter dem die API geantwortet hat) — die erste sagt, wie die
 Datei zu LESEN ist, die zweite, was die Einträge darin bedeuten, und nur
 mit der zweiten kann ein Restore sie korrekt deklarieren. Ein Satz in einer
-unbekannten Form wird verweigert, nie als „keine Bahn" gelesen.
+unbekannten Form wird verweigert, nie als „keine Bahn" gelesen — unbekannt
+heißt dabei NEUER, nie älter: eine archivierte Kartei wird nie umgeschrieben
+(`snapshot.py` legt nur an), also gibt es keinen Ort, an dem ein alter Satz
+nachgezogen werden könnte, und eine Verweigerung machte jeden früheren
+Schnappschuss unlesbar.
 `EigenhandArchiveOut` bleibt unverändert ohne Pfade: Master ist der
 own-hand-Baum, nicht die Archiv-Antwort. Der DB-Snapshot führt die Lücke
 seit demselben Tag ausdrücklich in seinen `known_gaps` und nennt dort, wo
@@ -1514,11 +1518,19 @@ Drei Sätze, die dabei bindend sind:
 - **Der Restore ist die einzige Richtung.** Ein gewöhnlicher `sync` schiebt
   keine Bahn hoch; sonst stünde eine mit `--replace-authored` bewusst
   aufgegebene Zeichnung beim nächsten Lauf wieder da.
+- **Er füllt nur Leeres.** Ein Kasten, für den der Server schon einen Pfad
+  hat, bleibt unangetastet, auch wenn dieser ein anderer ist; gezählt und
+  benannt wird er trotzdem. Das Archiv ist Herr über das Fehlende, nie über
+  das Lebende — dieselbe Regel, nach der das stehende Setup nur gesetzt wird,
+  wenn der Server keines hat. Sonst drehte jeder spätere Restore eine in der
+  Werkbank korrigierte Zeichnung oder einen bewusst übergebenen Kasten still
+  zurück. Die Kartei löscht nie, also lebt die alte Kopie dort weiter.
 - **Er endet laut oder gar nicht.** Fehlt zu einer archivierten Bahn das
   Streifenbild oben (also ohne `--mit-streifen`), nennt der Lauf die Zahl
   der NICHT wiederhergestellten Bahnen und bricht ab — genau wie bei einem
-  fehlenden Bogen-Layout. Nichts kann eine Zeichnung neu folgen, also
-  schließt sich diese Lücke nicht von selbst.
+  fehlenden Bogen-Layout. Gezählt wird, was die ANTWORT des Servers
+  zurückgibt, nicht was der Lauf geschickt hat. Nichts kann eine Zeichnung
+  neu folgen, also schließt sich diese Lücke nicht von selbst.
 - **Der DB-Snapshot bleibt die Prüfung, nicht die Quelle.** Er trägt die
   Spalte `eigenhand_strips.pfade` nach wie vor nicht und sagt das seit dem
   2026-09-20 in seinen `known_gaps`, mitsamt dem Ort des Masters.
@@ -1541,7 +1553,11 @@ holen, `tools.eigenhand.universe --push` — der DB-Snapshot trägt sie als
 
 `--from` nimmt IRGENDEINEN Schnappschuss der Hand: die Geschwister im
 selben Archivverzeichnis kommen automatisch dazu (neuester gewinnt), damit
-die Inkrementalität oben keine Lücke reißt. Gelesen werden Kartei, Setup,
+die Inkrementalität oben keine Lücke reißt. Die **Kartei** kommt dabei immer
+aus dem neuesten Schnappschuss der Hand, gleich welcher genannt wurde, und
+der Lauf sagt, aus welchem — jeder Schnappschuss trägt eine vollständige
+Kartei, ein älterer also einen vollständigen FRÜHEREN Stand, und eine Bahn
+wohnt seit Entscheid A nur noch dort. Gelesen werden Kartei, Setup,
 Layouts und Fassungen daraus statt aus der Arbeitskopie; alles danach ist
 der normale Push (Bögen zuerst, dann Verdikte, dann das Setup, dann die
 Bilder). Die Wiederholung ist gefahrlos: gleiche Layouts, gleiche Verdikte

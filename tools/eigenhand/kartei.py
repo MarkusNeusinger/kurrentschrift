@@ -127,16 +127,31 @@ def pfade_of(fassung: dict) -> list[dict]:
     A record in an unknown shape is REFUSED rather than read as empty: the
     whole point of the version is that a reader knows what it is holding, and
     „no Bahn here" is the one answer a restore must not be given wrongly.
+
+    Unknown means NEWER, never older. An archived Kartei is written once and
+    never rewritten (`snapshot.py` is create-only, and „never destroy" is an
+    author directive), so there is no place a shape-1 record inside a filed
+    snapshot could ever be migrated: refusing it on the first bump of
+    `PFAD_ARCHIVE_FORMAT` would make every snapshot taken before that bump
+    unrestorable (found in review, PR #634). Every shape up to the current one
+    therefore stays readable here — the day a second one exists, this is where
+    the read branches per version.
     """
     record = fassung.get("pfade")
     if record is None:
         return []
     if not isinstance(record, dict):
         raise SystemExit(f"Kartei: `pfade` of Fassung {fassung.get('id')!r} is not a record — refusing to read it")
-    if record.get("format") != PFAD_ARCHIVE_FORMAT:
+    version = record.get("format")
+    if not isinstance(version, int) or isinstance(version, bool) or version < 1:
         raise SystemExit(
-            f"Kartei: Fassung {fassung.get('id')!r} carries Bahnen in archive format "
-            f"{record.get('format')!r}, this tool reads {PFAD_ARCHIVE_FORMAT} — update the tools before reading it"
+            f"Kartei: Fassung {fassung.get('id')!r} carries Bahnen under no archive format ({version!r}) — "
+            "refusing to read a record whose shape it does not declare"
+        )
+    if version > PFAD_ARCHIVE_FORMAT:
+        raise SystemExit(
+            f"Kartei: Fassung {fassung.get('id')!r} carries Bahnen in archive format {version}, this tool "
+            f"reads up to {PFAD_ARCHIVE_FORMAT} — that Kartei was written by a NEWER tool; update this one"
         )
     entries = record.get("entries")
     if not isinstance(entries, list):

@@ -293,7 +293,10 @@ class TestHandDrawnBahn:
         assert first.exists()  # create-only: the earlier snapshot is untouched
 
         # The one door truth can disappear through: the terminal hands the
-        # drawing over (`--replace-authored`). Everything else survives.
+        # drawing over (`--replace-authored`). Everything else survives. The box
+        # is EMPTY afterwards, which is what makes the restore below fill it —
+        # a box that carries another path is left exactly as it is instead
+        # (`tests/test_eigenhand_sync.py`, the same review's finding).
         given_up = await api.client.request(
             "PUT",
             f"/eigenhand/strips/{HAND}/{strip}/{fassung}/pfade",

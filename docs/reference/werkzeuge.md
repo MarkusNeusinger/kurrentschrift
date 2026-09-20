@@ -636,7 +636,8 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   ableitbar. Der Satz trägt ZWEI Versionen: `format` (die Form der
   Kartei-Zeile) und `pfad_format` (das `PFAD_FORMAT`, unter dem die API
   geantwortet hat); ein Satz in unbekannter Form wird verweigert, nie als
-  „keine Bahn" gelesen. Eine Fassung, die dieser Rechner nicht kennt,
+  „keine Bahn" gelesen — unbekannt heißt NEUER, nie älter, denn eine
+  archivierte Kartei wird nie umgeschrieben. Eine Fassung, die dieser Rechner nicht kennt,
   beendet den Lauf laut, statt still übersprungen zu werden. Alle drei
   brauchen `ADMIN_TOKEN`; `--api` zeigt auf eine andere Instanz.
   **`sync --from <Archiv-Snapshot>`** ist der Wiederherstellungsweg: dieselbe
@@ -646,15 +647,27 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   kommt aus ihrer eigenen Quelle (`universe --push`). Genannt wird IRGENDEIN Schnappschuss der Hand;
   seine Geschwister im selben Verzeichnis kommen automatisch dazu (neuester
   gewinnt), weil `snapshot.py` inkrementell ablegt und nur der erste
-  Schnappschuss vollständig ist. Das stehende Setup wird dabei nur gesetzt,
+  Schnappschuss vollständig ist. Die **Kartei** kommt dabei immer aus dem
+  NEUESTEN Schnappschuss der Hand, gleich welcher genannt wurde, und der Lauf
+  sagt, aus welchem: jeder Schnappschuss trägt eine vollständige Kartei, ein
+  älterer also einen vollständigen FRÜHEREN Stand — und eine Bahn, die seit
+  dem Entscheid A nur noch dort wohnt, wäre sonst still weg. Das stehende Setup wird dabei nur gesetzt,
   wenn der Server keines hat, und der Lauf bricht mit Namen ab, wenn eine
   angenommene Fassung oder ein Bogen-Layout im Archiv fehlt.
   **Nur `--from` stellt auch die nachgefahrenen Bahnen wieder her** (seit
   2026-09-20): der gewöhnliche `sync` schiebt keine hoch, sonst stünde eine
-  bewusst aufgegebene Zeichnung beim nächsten Lauf wieder da. Der Push
+  bewusst aufgegebene Zeichnung beim nächsten Lauf wieder da. Gefüllt werden
+  nur Kästen, für die der Server KEINEN Pfad hat; ein Kasten, der schon einen
+  trägt, bleibt unangetastet und wird benannt — das Archiv ist Herr über das
+  Fehlende, nie über das Lebende (dieselbe Regel wie beim stehenden Setup:
+  eine seither in der Werkbank korrigierte Zeichnung oder ein bewusst
+  übergebener Kasten würde sonst still zurückgedreht). Der Push
   mischt je Fassung um die Kästen herum, die der Server schon trägt, und
   der Lauf schließt mit der Zeile „`k` restored, `m` already there, `n` NOT
-  restored" — ist `n` > 0 (typisch: ohne `--mit-streifen` gibt es oben
+  restored" (dazwischen „`j` left as the server has them", wenn es solche
+  Kästen gab). Gezählt wird, was die ANTWORT des Servers zurückgibt, nicht was
+  der Lauf geschickt hat — es ist die eine Zahl, an der diese Kette gemessen
+  wird. Ist `n` > 0 (typisch: ohne `--mit-streifen` gibt es oben
   keine Streifenzeile, an der eine Bahn hängen könnte), bricht er ab. Eine
   Zeichnung lässt sich nicht neu folgen, also schließt sich die Lücke nicht
   von selbst. Trägt das Archiv gar keine Bahn, sagt der Lauf auch das —
@@ -719,6 +732,12 @@ CLI-Einstieg (`uv run python -m tools.eigenhand.<modul>`), Humanbench-Stil:
   DIESE Zeichnung" — eine vor der letzten Korrektur gezogene Kopie zählt
   nicht. Die Verweigerung nennt den einen Befehl, der sie auflöst
   (`pull --pfade`); ein zweites „ich weiß, was ich tue"-Flag gibt es nicht.
+  Die Erfolgsmeldung nennt dafür den nächsten Schritt: geprüft ist nur, dass
+  die Kopie in der `kartei.json` dieses Rechners liegt, also auf EINER
+  Platte — `snapshot` trägt sie ins private Archiv. Und der Server-Override
+  `?replace_authored=true` reitet nur auf der Zeile mit, die wirklich eine
+  Zeichnung übergibt: das Flag gilt für den ganzen Streifen, der 409 ist aber
+  die einzige Prüfung, die nicht auf diesem Rechner läuft.
   BLAS-Fäden
   pinnt das Modul selbst (Vorgabewerte), weil die Kettenlösung sonst je nach
   Umgebung anders läuft.

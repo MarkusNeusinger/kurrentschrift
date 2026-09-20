@@ -18,11 +18,21 @@
 
 - **A restore that leaves a hand-drawn Bahn behind now ends loudly.**
   `sync --from` closes with how many were restored, how many were already
-  there and how many are NOT, and fails on the last count — typically a run
-  without `--mit-streifen`, where no strip row exists up there for a path to
-  hang off. A silent partial restore is the failure this chain exists to
-  prevent. An archive that holds no drawing at all says so too, since that
-  looks identical to a hand that never had one.
+  there and how many are NOT, counted off the server's own answer, and fails
+  on the last count — typically a run without `--mit-streifen`, where no strip
+  row exists up there for a path to hang off. A silent partial restore is the
+  failure this chain exists to prevent. An archive that holds no drawing at
+  all says so too, since that looks identical to a hand that never had one.
+  The restore fills only the boxes the server has no path for; one that
+  already carries another path is left as it is and named, so a drawing
+  corrected in the workbench or a box deliberately handed to a follower is
+  never silently reverted.
+- **`sync --from` reads the Kartei from the newest snapshot of the hand.**
+  The files around it were already layered newest-first, but the Kartei came
+  from the directory that was named — and since a hand-drawn Bahn rides in the
+  Kartei and nowhere else, naming a stamp one too far back would have restored
+  an older set of drawings and reported a clean run. The run says which
+  snapshot the Kartei came from.
 - **`--replace-authored` refuses while the drawing is not archived.**
   `tools.eigenhand.pfad` used to only warn before handing a hand-drawn path
   over to a follower run, and afterwards the drawing existed nowhere. It now

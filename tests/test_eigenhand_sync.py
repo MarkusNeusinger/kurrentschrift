@@ -455,10 +455,15 @@ class _FakePfadApi:
     image looks like from the client's side.
     """
 
-    def __init__(self, pfade: dict[tuple[str, str], list[dict]], *, declared: int | None = 1, rows=None):
+    def __init__(
+        self, pfade: dict[tuple[str, str], list[dict]], *, declared: int | None = 1, rows=None, swallow: bool = False
+    ):
         self.pfade = dict(pfade)
         self.declared = declared
         self.rows = list(rows) if rows is not None else sorted(pfade)
+        # A server that answers a PUT with less than it was handed — the one
+        # shape a restore counted off the REQUEST would have called a success.
+        self.swallow = swallow
         self.calls: list[tuple[str, str, dict | None]] = []
 
     def __call__(self, method: str, url: str, token: str, body: dict | None = None, allow_404: bool = False):
@@ -467,8 +472,9 @@ class _FakePfadApi:
         if plain.endswith("/pfade"):
             strip, fassung = plain.split("/")[-3:-1]
             if method == "PUT":
-                self.pfade[(strip, fassung)] = body["pfade"]
-                return {"format": body["format"], "pfade": body["pfade"]}
+                echo = [] if self.swallow else body["pfade"]
+                self.pfade[(strip, fassung)] = echo
+                return {"format": body["format"], "pfade": echo}
             if (strip, fassung) not in self.pfade:
                 if allow_404:
                     return None
@@ -644,6 +650,82 @@ class TestHandDrawnBahnChain:
         fake = _FakePfadApi({("S0001", "F01"): []})
         assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot)) == 0
         assert "none in this archive" in capsys.readouterr().out
+
+    def test_an_older_stamp_still_restores_the_drawing_pulled_into_a_newer_one(
+        self, dataroot, tmp_path, monkeypatch, capsys
+    ):
+        """The Kartei comes from the NEWEST snapshot, whichever one is named.
+
+        Every snapshot carries a complete Kartei, so an older one is a complete
+        record of an EARLIER state. Reading the named directory would restore
+        that earlier state — and since a Bahn now rides in the Kartei and
+        nowhere else, a `--from` pointed one stamp too far back would report a
+        clean run with the drawing still missing (found in review, PR #634).
+        """
+        archive = tmp_path / "archive"
+        archive.mkdir()
+        _build(dataroot)
+        snapshot_mod.main(["--hand", HAND, "--archive", str(archive), "--stamp", "0001"])
+        _pull_pfade(monkeypatch, _FakePfadApi({("S0001", "F01"): [_bahn()]}))
+        snapshot_mod.main(["--hand", HAND, "--archive", str(archive), "--stamp", "0002"])
+        capsys.readouterr()
+
+        older = archive / "own-hand" / HAND / "0001"
+        fake = _FakePfadApi({("S0001", "F01"): []})
+        assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(older)) == 0
+        assert fake.pushed() == [{"format": 1, "pfade": [_bahn()]}]
+        out = capsys.readouterr().out
+        assert "1 restored, 0 already there, 0 NOT restored" in out
+        assert "Kartei read from 0002" in out  # and it says which one it read
+
+    def test_a_box_the_server_answers_differently_is_left_alone(self, dataroot, tmp_path, monkeypatch, capsys):
+        """A given-up box is not resurrected by the next restore.
+
+        `--replace-authored` is how the author hands a drawing over to a
+        follower, deliberately. The Kartei keeps the last copy (it never
+        deletes), so without this rule every later `sync --from` would push the
+        drawing back over the followed path and revert that decision silently —
+        and re-arm the 409 on a box that now carries a follow (review, PR #634).
+        The same rule protects a drawing he CORRECTED in the workbench after the
+        last pull.
+        """
+        snapshot = self._archived(dataroot, tmp_path, monkeypatch, [_bahn()])
+        given_up = _bahn(verfahren="tintenpfad")
+        fake = _FakePfadApi({("S0001", "F01"): [given_up]})
+        assert _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot)) == 0
+        assert fake.pushed() == []
+        out = capsys.readouterr().out
+        assert "0 restored, 0 already there, 1 left as the server has them, 0 NOT restored" in out
+        assert "S0001/F01 box 0" in out
+
+    def test_a_restore_the_server_answers_short_of_counts_as_not_restored(
+        self, dataroot, tmp_path, monkeypatch
+    ) -> None:
+        # The closing line is the one number this chain is judged by, so it is
+        # read off the ANSWER rather than off the request (review, PR #634).
+        snapshot = self._archived(dataroot, tmp_path, monkeypatch, [_bahn()])
+        fake = _FakePfadApi({("S0001", "F01"): []}, swallow=True)
+        with pytest.raises(SystemExit, match="1 hand-drawn Bahn\\(en\\) are NOT restored"):
+            _run(monkeypatch, fake, "--mit-streifen", "--from", str(snapshot))
+
+    def test_a_kartei_from_an_older_shape_stays_readable(self, monkeypatch):
+        """An archived Kartei is never rewritten, so old shapes stay readable.
+
+        `snapshot.py` is create-only and „never destroy" is an author
+        directive, so there is no place a shape-1 record inside a filed
+        snapshot could be migrated. Refusing it on the first bump of
+        `PFAD_ARCHIVE_FORMAT` would orphan every snapshot taken before that
+        bump (review, PR #634); only a NEWER shape is refused.
+        """
+        from tools.eigenhand import kartei as kartei_mod
+
+        old = {"id": "F01", "pfade": kartei_mod.pfad_record([_bahn()], 1, "2026-09-20")}
+        monkeypatch.setattr(kartei_mod, "PFAD_ARCHIVE_FORMAT", 2)
+        assert kartei_mod.pfade_of(old) == [_bahn()]
+
+        newer = {"id": "F01", "pfade": {**old["pfade"], "format": 3}}
+        with pytest.raises(SystemExit, match="written by a NEWER tool"):
+            kartei_mod.pfade_of(newer)
 
 
 class TestPngSize:

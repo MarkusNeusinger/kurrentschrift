@@ -395,9 +395,12 @@ class TestFollowerHandover:
 
         stored = [{"box_index": 0, "word": "lesen"}, {"box_index": 1, "word": "das"}]
         fresh = [{"box_index": 1, "word": "das", "verfahren": "tintenpfad"}]
-        merged = tool._merged("https://example.invalid", "token", "u", fresh, _get=lambda *_: {"pfade": stored})
+        merged, handed_over = tool._merged(
+            "https://example.invalid", "token", "u", fresh, _get=lambda *_: {"pfade": stored}
+        )
         assert [entry["box_index"] for entry in merged] == [0, 1]
         assert merged[1] is fresh[0]  # the followed box is the NEW one, not the stored copy
+        assert handed_over is False
 
     def test_the_dry_run_files_the_body_the_apply_path_would_send(self, tmp_path, monkeypatch):
         # The dry run is the review surface `--apply` is decided on, so it has
@@ -462,8 +465,12 @@ class TestFollowerHandover:
         assert url.endswith("?replace_authored=true")
         assert [entry["verfahren"] for entry in body] == ["tintenpfad"]
         # The destructive path has to be the loud one: nothing else in the run
-        # names the hand work it just handed over.
-        assert "box 0" in capsys.readouterr().out
+        # names the hand work it just handed over — and what the check proved
+        # is only that the copy is in this machine's Kartei, on one disk, so
+        # the line has to name the archive step too.
+        out = capsys.readouterr().out
+        assert "box 0" in out
+        assert "snapshot --hand mn-suetterlin" in out
 
     def test_the_flag_refuses_while_the_drawing_is_not_archived(self, monkeypatch):
         # Author decision B, 2026-09-20: nothing can follow a drawing again, so
@@ -500,6 +507,20 @@ class TestFollowerHandover:
         )
         assert "replace_authored" not in url
         assert [entry["verfahren"] for entry in body] == [AUTHORED]
+
+    def test_the_override_rides_only_on_a_row_that_gives_a_drawing_up(self, monkeypatch):
+        # The flag is set once for a whole strip. A row that carries no
+        # hand-drawn path at all must still go up WITHOUT it — otherwise the
+        # server's 409, the one check that does not run on this machine, is
+        # switched off for boxes the local guard never looked at.
+        url, _body = _apply_run(
+            monkeypatch,
+            fresh=[{"box_index": 0, "word": "lesen", "verfahren": "tintenpfad"}],
+            stored=[{"box_index": 1, "word": "das", "verfahren": "tintenpfad"}],
+            archived=[],
+            argv=["--hand", "mn-suetterlin", "--strip", "S0001", "--replace-authored"],
+        )
+        assert "replace_authored" not in url
 
     def test_the_declared_configuration_is_one_the_follower_accepts(self):
         # The arms are named in the tool and stored with every path; a renamed

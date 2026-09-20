@@ -420,8 +420,8 @@ def _merged(
     archived: dict[int, dict] | None = None,
     replace_authored: bool = False,
     _get=request_json,
-) -> list[dict]:
-    """The freshly followed entries, over the paths the Fassung already holds.
+) -> tuple[list[dict], bool]:
+    """The freshly followed entries over the paths the Fassung holds, and whether one was given up.
 
     The write is a FULL replacement — right for the boxes a run actually
     followed, wrong for every other one (Copilot review, PR #598). `--box`
@@ -444,6 +444,12 @@ def _merged(
     into this machine's Kartei, box by box; a drawing that exists only in the
     shared database has no second copy anywhere, and the terminal is not
     allowed to make it none. One command fixes it, and the refusal names it.
+
+    The second half of the answer is whether this row actually handed a drawing
+    over. Only then does the push need `?replace_authored=true`: the flag is
+    set once for a whole strip, and putting the override on rows that carry no
+    hand-drawn path at all would switch the server's 409 off for boxes the
+    local guard never even looked at (found in review, PR #634).
 
     `_get` is the seam the test calls through; every caller uses the default.
     """
@@ -468,9 +474,14 @@ def _merged(
         # names what is being given up, and a line the operator can read back
         # is all that stands between the flag and a quiet loss of the author's
         # own hand — the archived copy is a backup, not an undo.
+        #
+        # And it names the follow-up, the way the refusal above does: what the
+        # check proves is that the drawing is in this machine's `kartei.json`,
+        # on one disk, which is not yet archived (found in review, PR #634).
         print(
             f"  --replace-authored: handing the hand-drawn path at box {', '.join(str(index) for index in hit)} "
-            "over to this run's own result (the archived copy stays in the Kartei)",
+            "over to this run's own result. The only copy left is this machine's kartei.json — file it:\n"
+            f"    uv run python -m tools.eigenhand.snapshot --hand {hand or '<hand>'}",
             flush=True,
         )
     elif hit:
@@ -484,7 +495,7 @@ def _merged(
     kept = [entry for entry in stored if entry.get("box_index") not in followed]
     if kept:
         print(f"  keeping {len(kept)} stored path(s) for the boxes this run did not follow", flush=True)
-    return sorted(entries + kept, key=lambda item: item["box_index"])
+    return sorted(entries + kept, key=lambda item: item["box_index"]), bool(hit and replace_authored)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -538,7 +549,7 @@ def main(argv: list[str] | None = None) -> int:
         # all. Filing only the followed boxes made a run look like a whole-row
         # replacement — the exact thing `_merged` exists to prevent (review of
         # PR #598).
-        body = _merged(
+        body, handed_over = _merged(
             base,
             token,
             url,
@@ -558,8 +569,11 @@ def main(argv: list[str] | None = None) -> int:
             )
             continue
         # The GET above needs no override — only the write can displace
-        # anything, so the flag rides on the push and nowhere else.
-        push_url = f"{url}?replace_authored=true" if args.replace_authored else url
+        # anything, so the flag rides on the push and nowhere else. And only on
+        # the rows that actually hand a drawing over: `--replace-authored`
+        # covers every stored Fassung of the strip, and the server's 409 is the
+        # one check that does not run on this machine.
+        push_url = f"{url}?replace_authored=true" if handed_over else url
         stored = request_json("PUT", push_url, token, {"format": PFAD_FORMAT, "pfade": body}) or {}
         written += len(stored.get("pfade") or [])
         print(f"  stored {len(stored.get('pfade') or [])} path(s) at {base}", flush=True)
