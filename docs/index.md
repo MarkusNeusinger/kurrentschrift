@@ -57,7 +57,7 @@ Policy- und Technik-Dokumente, Status je Doc.
 |---|---|---|
 | [kurzglossar.md](reference/kurzglossar.md) | 95 Einträge, die in Code, Skills und PRs wirklich vorkommen — je ein bis zwei Sätze | Beim Einstieg in eine Sitzung; für Details führt jeder Eintrag ins volle Glossar |
 | [glossar.md](reference/glossar.md) | Das volle Vokabular in sechs Themenblöcken, mit Modul- und Konstanten-Anker; alphabetischer Schnellindex oben | Wenn ein Begriff im Kurzglossar fehlt oder der Anker gebraucht wird. **Ein PR, der einen Begriff prägt, legt hier den Eintrag an** |
-| [sprachregelung.md](reference/sprachregelung.md) | Welche Sprache welches Artefakt trägt; §4 der englische Stil-Fallback | Vor dem Schreiben von README, Docs, Commit- oder PR-Text |
+| [sprachregelung.md](reference/sprachregelung.md) | Welche Sprache welches Artefakt trägt; §4 der englische Stil-Fallback, §5 wann ein deutscher Fachbegriff Bezeichner sein darf | Vor dem Schreiben von README, Docs, Commit- oder PR-Text — und vor dem Benennen eines Fachbegriffs im Code |
 | [quellen-und-rechte.md](reference/quellen-und-rechte.md) | Was ins Repo darf: PD/CC/NC-SA, §72 UrhG, §5 die Open-Core-Absicherung | Vor jedem Daten-Commit und bei jeder Frage zu Lizenzen |
 | [datenablage.md](reference/datenablage.md) | Der `/data`-Baum, drei Commit-Klassen, `SOURCE.md`-Pflichtfelder | Wenn eine Datei nach `/data` soll |
 | [qualitaetsmetrik.md](reference/qualitaetsmetrik.md) | Die **Regeln** der Messlatte: zwei Metriken (eine pro Schrift), Frozen-Reference-Regel, Baseline-Historie, Verworfen-Listen | Vor jedem Bench-Lauf und bei jeder Metrik-Frage |

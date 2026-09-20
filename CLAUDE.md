@@ -224,13 +224,13 @@ Mirrored with `.github/copilot-instructions.md` § "Code Standards", which carri
 
 From `docs/reference/sprachregelung.md`:
 
-- **Code (identifiers, docstrings, comments): English, no exceptions.** Including commit messages and PR descriptions.
+- **Code — docstrings and comments: English, no exceptions.** Including commit messages and PR descriptions. **Identifiers are English too, with ONE carve-out: a German Fachbegriff that has no established English term MAY be the identifier** (`sprachregelung.md` §5, author decision 2026-09-20) — `class Befund`, `class Tintentreue`, `core/laufform.py`.
 - **README + GitHub description: English** (audience includes English-speaking genealogy).
 - **Internal docs under `docs/`: German.** This is deliberate — the domain is German.
 - **Website v1: German;** English follows (Vision Leitprinzip „Zweisprachig").
 - **English artifacts follow the Google developer documentation style guide as a FALLBACK** (`sprachregelung.md` §4, owner decision 2026-08-18): it answers style questions the repo has no rule for; named house rules win (ISO dates, spaced dashes, narrative rationale style, untranslated German domain terms). Forward-only — never restyle-sweep existing text.
 
-German technical terms without an established English translation get an English identifier and one explanatory comment, e.g. `width_profile  # Schwellzug: pressure-driven stroke-width modulation`.
+The test is one question (`sprachregelung.md` §5): *is there an established English term a reader of this domain would recognise?* If yes, the identifier is English and the German term goes in one explanatory comment — `width_profile  # Schwellzug: pressure-driven stroke-width modulation`, and likewise `slant_deg` for Schräglage. If no, the German word stays: `verdict` is a worse translation of „Befund" than the word itself, and the terms are already the glossary's and three settled docs'. The carve-out is for identifiers only — schema keys stay English, and it is forward-only, never a renaming sweep in either direction.
 
 Characters themselves are *data, not code* — schema keys stay English, but values are the actual glyphs: `{"glyph": "ſt", "variant": 0}`.
 

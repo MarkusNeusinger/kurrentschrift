@@ -1,10 +1,14 @@
 # Sprachregelung (Docs / Code / README)
 
-> **Status (2026-08-18): bindend.** Festgelegte Sprachregeln mit eigener
+> **Status (2026-09-20): bindend.** Festgelegte Sprachregeln mit eigener
 > Verworfen-Liste (§3) — Änderung nur über eine neue Entscheidung, kein
-> Code-Tracking. Neu per Owner-Entscheid 2026-08-18: §4 macht den Google
+> Code-Tracking. Per Owner-Entscheid 2026-08-18: §4 macht den Google
 > developer documentation style guide zum Referenz-Fallback für die
-> englischen Artefakte, mit benannten Haus-Abweichungen.
+> englischen Artefakte, mit benannten Haus-Abweichungen. Neu per
+> Autor-Entscheid 2026-09-20: §5 erlaubt deutsche Fachbegriffe **ohne
+> etablierte englische Entsprechung** als Bezeichner und löst damit den
+> dritten Verworfen-Punkt in §3 ab; Kommentare und docstrings bleiben
+> englisch, ausnahmslos.
 
 Begleitdokument zu [`architektur.md`](../concepts/architektur.md) und
 [`naming-und-setup.md`](../concepts/naming-und-setup.md). Hält fest, *welche* Sprache wo gilt
@@ -34,7 +38,8 @@ auf Deutsch. Das ist kein Bruch zur anyplot-Linie, sondern dieselbe Regel
 | **README** | **Englisch** (zuerst), ggf. zweisprachig | Pitch, kein internes Doku — Hauptzielgruppe schließt englischsprachige Genealogie ein |
 | **GitHub-Description** | Englisch | Internationale/SEO-Zielgruppe, Abgrenzung vom `kurrent-io`-Namespace |
 | **Website (v1)** | Deutsch | Erste Zielgruppe deutschsprachig; spätere i18n nicht ausgeschlossen |
-| **Code** (Variablen, Funktionen, docstrings, Kommentare) | **Englisch, ohne Ausnahme** | Konsistent mit Schema (§3 Referenz); fachliche Eigennamen sind ohnehin international |
+| **Code — docstrings und Kommentare** | **Englisch, ohne Ausnahme** | Sie erklären, sie benennen nicht; die Erklärung muss für jeden Leser funktionieren |
+| **Code — Bezeichner** (Variablen, Funktionen, Klassen, Konstanten, Module) | Englisch, **außer** bei deutschen Fachbegriffen ohne etablierte englische Entsprechung (**§5**) | Konsistent mit Schema (§3 Referenz); fachliche Eigennamen sind ohnehin international — und wo es keinen etablierten Begriff gibt, ist eine erfundene Übersetzung schlechter als das Wort selbst |
 | **Commit-Messages** | Englisch | Teil des Codes, öffentlich lesbar |
 
 ---
@@ -48,10 +53,14 @@ auf Deutsch. Das ist kein Bruch zur anyplot-Linie, sondern dieselbe Regel
     (lateinisch/englisch, paläographischer Fachterminus), aber im
     **deutschen Fließtext** (Docs, UI) gilt die Duden-Schreibung
     **Duktus** ([duden.de/rechtschreibung/Duktus](https://www.duden.de/rechtschreibung/Duktus)).
-- Deutsche Fachbegriffe ohne etablierte Übersetzung → **englischer
-  Identifier, Begriff einmal im Kommentar erklären**:
+- Deutscher Fachbegriff, für den es einen **etablierten englischen
+  Begriff gibt** → **englischer Identifier, Begriff einmal im Kommentar
+  erklären**:
   - `Schwellzug` → `width_profile` / `stroke_width`
     (`# Schwellzug: pressure-driven stroke-width modulation`)
+- Deutscher Fachbegriff **ohne** etablierte englische Entsprechung → der
+  deutsche Begriff darf der Bezeichner sein (**§5**, Autor-Entscheid
+  2026-09-20). Der Test und die Beispiele beider Seiten stehen dort.
 - **Schriftzeichen sind Daten, nicht Code.** Die Werte der Ligatur- und
   Allograph-Einheiten bleiben das Zeichen selbst; nur die Schlüssel sind
   englisch:
@@ -75,9 +84,14 @@ auf Deutsch. Das ist kein Bruch zur anyplot-Linie, sondern dieselbe Regel
 - **„Alles Englisch wie bei anyplot"** — ignoriert, dass Domäne und
   v1-Website deutsch sind; interne Argumentation über eine deutsche
   Schrift in Englisch zu führen ist Reibung ohne Gegenwert.
-- **Deutsche Code-Identifier für deutsche Fachbegriffe** — bricht die
+- ~~**Deutsche Code-Identifier für deutsche Fachbegriffe** — bricht die
   Schema-Linie aus §3 der Referenz; Begriff gehört in den Kommentar,
-  nicht in den Bezeichner.
+  nicht in den Bezeichner.~~ **Abgelöst durch den Autor-Entscheid
+  2026-09-20 (§5)**, und zwar nur für Fachbegriffe **ohne** etablierte
+  englische Entsprechung. Wo es einen etablierten Begriff gibt, gilt der
+  Verworfen-Punkt unverändert weiter. Er bleibt als Historie stehen: die
+  ursprüngliche Begründung ist der Grund, warum §5 die Ausnahme so eng
+  zuschneidet.
 
 ---
 
@@ -144,6 +158,82 @@ die tragende Doku-Kultur; (b) ungespacte Em-Dashes; (c) Umbau der
 narrativen READMEs auf Task-Orientierung; (d) Anwendung auf die
 Website — der Entscheid betrifft ausschließlich das Repository, die
 öffentliche Seite folgt `design-system.md` und bleibt deutsch (§1).
+
+---
+
+## 5. Deutsche Fachbegriffe als Bezeichner (Stand 2026-09-20)
+
+**Autor-Entscheid 2026-09-20.** Ein deutscher Fachbegriff **ohne
+etablierte englische Entsprechung DARF ein Bezeichner sein** — Klasse,
+Funktion, Feld, Konstante, Modul. **Kommentare und docstrings bleiben
+englisch, ausnahmslos**, ebenso Commit-Messages und PR-Prosa (§1).
+
+**Der Test ist eine Frage:** *Gibt es einen etablierten englischen
+Begriff, den ein Leser dieser Domäne wiedererkennt?*
+
+- **Ja → englischer Bezeichner.** Der deutsche Begriff gehört dann in
+  den Kommentar, nicht in den Namen.
+- **Nein → der deutsche Begriff darf stehen bleiben.** Eine für den
+  Anlass erfundene Übersetzung ist schlechter als das Wort selbst, und
+  sie zwingt Code und Docs dazu, dieselbe Sache verschieden zu benennen.
+
+### 5.1 Ja — es gibt einen etablierten Begriff
+
+| Fachbegriff | Bezeichner | Anker |
+|---|---|---|
+| Schwellzug | `stroke_width`, `width_profile_tv` | `core/compose.py`, `core/quality.py` |
+| Schräglage | `slant_deg` | `core/database/models.py` |
+| Fehlerschicht | `apiErrorText` | `app/src/sections/admin/shell/apiErrorText.ts` |
+
+Hier gilt die frühere Form **unverändert** weiter: englischer Identifier
+plus **ein** erklärender Kommentar —
+`width_profile  # Schwellzug: pressure-driven stroke-width modulation`.
+„Stroke width“, „slant“ und „error text“ sind die etablierten Begriffe;
+sie wegzuwerfen wäre Verlust, kein Gewinn.
+
+### 5.2 Nein — es gibt keinen
+
+| Fachbegriff | Bezeichner | Anker |
+|---|---|---|
+| Befund | `class Befund`, `def befund`, die Felder `vorschlag`/`grund`/`guete`/`unstetigkeit`/`kringel`/`duktus`/`deckung`/`lesbarkeit`/`rang`/`abgeloest_von`, `VORSCHLAEGE`, `GRUND_*` | `core/eigenhand/befund.py` |
+| Tintentreue | `class Tintentreue`, `class Schwellen`, `sensoren_of`, `class Kastenzaehler`, `STUFEN`, `SENSOR_*`, `GRUND_*` | `core/eigenhand/tintentreue.py` |
+| Laufform | das Modul selbst, `LAUFFORM_END_WINDOW` | `core/laufform.py` |
+
+**Befund** ist der Fall, an dem der Entscheid hängt: `verdict` ist die
+schlechtere Übersetzung als das Wort selbst. Ein Befund ist das gemessene
+Blatt samt dem EINEN Grund und dem Vorschlag — kein Urteil, denn der Haken
+auf dem Papier und die Siebung bleiben der Status.
+
+### 5.3 Was das ersetzt, und was bleibt
+
+Dieser Abschnitt **ersetzt** die frühere Lesart „englischer Identifier +
+erklärender Kommentar“ für deutsche Fachbegriffe **mit Glossar-Eintrag**
+und ohne etablierte Entsprechung. Für deutsche Wörter, die eine normale
+englische Entsprechung HABEN, bleibt sie die Regel (§5.1, §2). Der dritte
+Verworfen-Punkt in §3 ist damit abgelöst und bleibt als Historie stehen.
+
+**Warum jetzt.** Die Regel stand als „ohne Ausnahme“, während gemergter
+Code seit `core/laufform.py` (#443) und `core/eigenhand/befund.py` das
+Gegenteil praktizierte — ein stehender Widerspruch, kein Einzelfall.
+Copilot hat ihn auf #638 als Finding gemeldet („The repository rule is
+explicit that identifiers and docstrings are English without exceptions“),
+und jedes weitere Modul der Eigenhand-Kette hätte dasselbe Finding erzeugt.
+Die Begriffe stehen zudem bereits im Glossar und in entschiedenen Docs
+(`admin-redesign.md` §6.3, `messjournal.md` §14, `glossar.md`) — ein
+englischer Bezeichner ließe Code und Docs dieselbe Sache verschieden
+benennen.
+
+**Die Grenze.** Der Entscheid betrifft **Bezeichner**, sonst nichts:
+
+- Schema-**Schlüssel** in gespeicherten Payloads bleiben englisch (§2).
+- Die **Werte** der `GRUND_*`-Konstanten sind deutsche Anzeigetexte
+  (`GRUND_NICHTS = "nichts fällt auf"`) — das ist der Datenfall aus §2,
+  kein Bezeichner.
+- Ein deutscher Bezeichner ohne Glossar-Eintrag ist keiner: wer einen
+  Begriff so benennt, trägt ihn im selben PR in
+  [`glossar.md`](glossar.md) nach.
+- Eine **Umbenennung in beide Richtungen** ist kein Aufräum-Sweep. Der
+  Entscheid wirkt vorwärts (§4); bestehende Namen bleiben, wie sie sind.
 
 ---
 

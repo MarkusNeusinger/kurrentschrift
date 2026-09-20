@@ -26,8 +26,15 @@ names rots with every PR, a pointer does not.
 
 - **Language conventions (strict)** — from
   `docs/reference/sprachregelung.md`:
-  - **Code (identifiers, docstrings, comments): English, no exceptions.**
+  - **Code — docstrings and comments: English, no exceptions.**
     Including commit messages and PR descriptions.
+  - **Code — identifiers: English, with ONE carve-out.** A German
+    Fachbegriff that has **no established English term** MAY be the
+    identifier (`sprachregelung.md` §5, author decision 2026-09-20):
+    `class Befund`, `class Tintentreue`, `core/laufform.py`. The long
+    form, with the test and examples on both sides, is under "Code
+    Standards → Naming and language" below. **Do not report a German
+    identifier of that kind as a violation.**
   - **README + GitHub description: English** (audience includes English-
     speaking genealogy).
   - **Internal docs under `docs/`: German.** Deliberate — the domain is
@@ -40,7 +47,7 @@ names rots with every PR, a pointer does not.
     named house rules win (ISO dates, spaced dashes, narrative
     rationale style, untranslated German domain terms). Forward-only —
     never restyle-sweep existing text.
-  - German technical terms without an established English translation get
+  - German technical terms that DO have an established English term get
     an English identifier and one explanatory comment, e.g.
     `width_profile  # Schwellzug: pressure-driven stroke-width modulation`.
   - Characters themselves are **data, not code** — schema keys stay
@@ -439,6 +446,51 @@ Mittellänge · Unterlänge).
 ---
 
 ## Code Standards
+
+### Naming and language
+
+**Author decision, 2026-09-20** (`docs/reference/sprachregelung.md` §5).
+Docstrings and comments are English, always — no exception, in any module.
+Identifiers are English too, with one carve-out: **a German Fachbegriff
+that has no established English term may be the identifier** — class,
+function, field, constant or module.
+
+The test is one question: *is there an established English term a reader
+of this domain would recognise?*
+
+**Yes → the identifier is English**, and the German term goes into one
+explanatory comment. This is unchanged:
+
+| Fachbegriff | Identifier | Where |
+|---|---|---|
+| Schwellzug | `stroke_width`, `width_profile_tv` | `core/compose.py`, `core/quality.py` |
+| Schräglage | `slant_deg` | `core/database/models.py` |
+| Fehlerschicht | `apiErrorText` | `app/src/sections/admin/shell/apiErrorText.ts` |
+
+**No → the German word stays.** A translation invented for the occasion is
+worse than the word itself, and it would make the code and the docs name
+the same thing differently — these terms are already in
+`docs/reference/glossar.md` and in settled design docs:
+
+| Fachbegriff | Identifier | Where |
+|---|---|---|
+| Befund | `class Befund`, `def befund`, fields `vorschlag`/`grund`/`guete`/`unstetigkeit`/`kringel`/`duktus`/`deckung`/`lesbarkeit`/`rang`/`abgeloest_von`, `VORSCHLAEGE`, `GRUND_*` | `core/eigenhand/befund.py` |
+| Tintentreue | `class Tintentreue`, `class Schwellen`, `sensoren_of`, `class Kastenzaehler`, `STUFEN`, `SENSOR_*` | `core/eigenhand/tintentreue.py` |
+| Laufform | the module itself, `LAUFFORM_END_WINDOW` | `core/laufform.py` |
+
+`verdict` is a worse translation of „Befund" than the word itself: a
+Befund is the measured sheet plus the ONE reason and the suggestion, not a
+verdict — the tick on the paper stays the status.
+
+This **replaces** the older reading "English identifier + explanatory
+comment" for domain terms of that kind, which is why the modules above
+look the way they do. Do not report them, or a new module that follows
+them, as a language violation. Limits: schema **keys** in stored payloads
+stay English; the **values** of the `GRUND_*` constants are German display
+strings (`GRUND_NICHTS = "nichts fällt auf"`), which is the data case, not
+an identifier; a German identifier without a glossary entry is not covered
+— that term gets its entry in the same PR; and the decision is
+forward-only, never a renaming sweep in either direction.
 
 ### Python Style
 
