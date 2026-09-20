@@ -70,7 +70,7 @@ Die Ziffer nennt den Themenblock unten: **§1** Schrift & Paläografie ·
 - **K** — k0-Protokoll §4 · Karten-Abdrift §4 · Karten-Soll-Vollständigkeit §4 · Kettenfit §3 · Kill-Kriterium §3 · klassenbewusste Korrespondenz §3 · Klassenregel §2 · Knick §4 · Knick am Rand §4 · komplett daneben §4 · Komposition §2 · Komposition voller Länge §2 · Konnektor §2 · Kopf-Gate (Laufform) §2 · Kopplungshöhe §1 · Kopplungs-Stub §3 · Korb-Notiz §5 · Korrespondenz-Kappe §3 · Kreuzungs-Landmarke §3 · Kompromisswinkel §2 · Kringel-Exit §2 · Kringel-Landmarke §4 · Kurzglossar §5 · Kurztasten-Schalter §5
 - **L** — Labs §4 · Landmarken-Auftrag §5 · Landmarken-Erkennung §5 · Landmarken-Linse §5 · Landmarken-Term §3 · Laufform §2 · Laufform-Lücke §2 · Laufform-Stand (geplant) §5 · Laufform-Topologie-Wächter §3 · Lineal-Soll-Budget §4 · Lotse (Arbeitstitel) §4 · laufform_dev_xh §4 · L-BFGS-B §6 · LDTW §6 · lebend §5 · Lese-Budget §5 · like-for-like Gate §3 · Lesart §1 · Lesart prüfen §7 · Lesart-Schlüsselversion §1 · Lese-Quiz §7 · Lesefalle §1 · Lesetafel §7 · Ligatur §1 · Lineatur §1 · loss §4
 - **M** — M1–M4 (Kettenfit-Kennzahlen) §3 · M0–M7 (MVP-Meilensteine) §5 · M4-Fit §3 · MAD §4 · Marke §4 · Marken-Claim-Trennung §3 · Marken-endständige Assembly §4 · matched arc §3 · MDN §6 · meas §4 · Messboden §4 · Messjournal §5 · Mindestbelegung (Eigenhand) §5 · Mittellinien-Öffnungsweite (`D0`) §4
-- **N** — Nachbarbindung §4 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Nahtverhandlung (`seam_negotiation`) §2 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nicht-Hover-Regel §5 · Normalen-Fit (→ Strang-Dekodierung) §3 · Nullprobe §4
+- **N** — Nachbarbindung §4 · Nachfahr-Liste §5 · Nachfahr-Stand §5 · Naht §3 · Naht-Anteil §3 · Nahtverhandlung (`seam_negotiation`) §2 · Naht-Winkel (`seam_deg`) §4 · Natürlichkeitsmetrik §4 · Nib-gekoppelte Clearance §2 · Nicht-Hover-Regel §5 · Normalen-Fit (→ Strang-Dekodierung) §3 · Nullprobe §4
 - **O** — Offen (Streifen-Kasten) §5 · Offenbacher §1 · Öffnungsweite (→ Mittellinien-Öffnungsweite) §4 · Open-Core-Moat §2 · Origin-Geheimnis §2 · Ortsmarker §4 · Ortsprüfung §4 · Override §2
 - **P** — Paar-Aggregat §2 · Paar-Editor §5 · paariger Blindvergleich §4 · pair_loss §4 · Papier-Strecke §4 · Papier-Umkehr §4 · Passmarken §5 · Pfad-Form (`/write/word/{text}`) §2 · Pfeilhöhe (Sagitta) §3 · Plateau-Anker §4 · Platte (→ Drei Rollen) §2 · Platzierungsschranke §3 · Postkarte (Federprobe) §7 · Prerender-Pfad (Crawler) §2 · Prior-Landerichtung §2 · Priming §6 · Produktions-Init (`connector_init`) §4 · Provenance §2 · Provenienz-Stempel §4 · Prüfstein §4
 - **Q** — Quelle §2 · Query-String-Verlust (`no_query_string`) §2
@@ -4893,6 +4893,39 @@ Tafel und hängt an `authored`-Bahn vs. angeschnitten, nicht an einer
 Ampel. *Technisch:* `_offen`, `api/routers/eigenhand.py`; Filter
 `GET /eigenhand/pfade/{hand}?nur=offen`. → Tintentreue; Skip-Eintrag;
 proposals/admin-redesign.md §6.4
+
+**Nachfahr-Liste** — die → Arbeitsliste der Eigenhand, und die einzige, deren
+Subjekt kein Vorlagen-Gegenstand ist: EINE ZEILE JE WORTKASTEN. Sie sagt je
+Kasten, was die → Tintentreue findet, welcher Sensor die Stufe benennt, woher
+die Bahn kommt, wie viele Absetzer die Schrift für das Wort vorsieht — und
+welcher EINE Schritt als Nächstes dran ist. Genau dafür gibt es sie: die
+Umleitungen (proposals/admin-redesign.md §6.4). „übersprungen: unautoriert"
+ist keine Folger-Arbeit, sondern eine Ground-Truth-Lücke und springt zur
+Tafel (`/admin/buchstaben?g=<key>`, die Schlüssel stehen im `detail` des
+→ Skip-Eintrags) — und bekommt dort KEINEN Korb-Knopf, weil die Lücke nicht in
+den Auftragskorb gehört (V9); „Maske geändert" verlangt erst `pfad --apply`; ein Kasten
+ohne `rect_px` („keine Bogen-Geometrie") bekommt einen Satz und gar keinen
+Befehl, weil er „nie machbar" ist; und auf einem von Hand gezogenen Kasten
+wird NIE zum Neu-Folgen eingeladen — das ist die eigene Linie des Autors, und
+der Folger darf sie nicht ersetzen. Ordnung in Phase 2: **Schwere → Streifen**
+(Q13, gestuft), wobei die Schwere eine Leiter ist und keine Zahl — rot ·
+Folger fand nichts · grau · gelb · von Hand · grün, innerhalb einer Stufe die
+Streifenfolge. „Folger fand nichts" ist genau der `gave_up`-→ Skip-Eintrag:
+ein Kasten ohne Eintrag sagt nichts darüber, warum keiner da ist (`--box`
+verengt einen LAUF, nicht den Befund), und steht deshalb auf „grau". Ohne eine
+einzige Messung sagt die Fläche das (sonst wäre „Schwere zuerst"
+stillschweigend die Streifenfolge).
+Sie steht auf `?reiter=streifen` neben der Streifen-Galerie und wird mit
+demselben `?ansicht=liste|galerie`-Umschalter gewählt wie jede Übersicht (V2 —
+keine eigene Unterroute vor Phase 4); die Wortsuche gilt beiden Flächen, der
+ZEICHEN-Filter nur der Galerie, weil eine Kasten-Zeile ihr Wort kennt, aber
+nicht dessen Items. Ein roter Kasten geht als Korb-Eintrag `kind=word` +
+`specimen_kind='strip'` + `specimen_id='S0041/F02#2'` in den Auftragskorb (V7)
+— gezählt wird er auf dem KASTEN, nie auf der gleichnamigen Wortprobe der
+Platte. *Technisch:* `app/src/sections/admin/eigenhand/stripBoxRows.ts` (das
+Zeilenmodell), `NachfahrListe.tsx` + `NachfahrRow.tsx`, gespeist aus dem
+meta-only Read `GET /eigenhand/pfade/{hand}`. → Arbeitsliste; Tintentreue;
+Offen (Streifen-Kasten); Skip-Eintrag; proposals/admin-redesign.md §6.4, §7.2
 
 **Trainingsmenge (nachgefahrene Bahnen) (geplant)** — die von Hand
 nachgefahrenen Streifen-Bahnen der Eigenhand (`verfahren: authored`) und

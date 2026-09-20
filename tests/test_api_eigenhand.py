@@ -2067,6 +2067,21 @@ class TestPfadBoxes:
 
         assert get_args(TintentreueStufe) == (*STUFEN, STUFE_UNGEMESSEN)
 
+    def test_the_one_grey_reason_the_spa_compares_is_the_one_core_writes(self):
+        # `grund` is a free `str` on the wire, so the ONE place the SPA compares
+        # it needs a pin of its own: the Nachfahr-Zeile suppresses its „Maske
+        # geändert" chip where the verdict already carries that sentence, and a
+        # rename in core would silently print it twice. The severity ladder
+        # deliberately reads typed fields instead and is not affected.
+        from pathlib import Path
+
+        from core.eigenhand.tintentreue import GRUND_MASKE
+
+        src = (Path(__file__).resolve().parents[1] / "app/src/sections/admin/eigenhand/stripBoxRows.ts").read_text(
+            encoding="utf-8"
+        )
+        assert f"maske: '{GRUND_MASKE}'" in src
+
     @pytest.mark.asyncio
     async def test_a_hand_with_nothing_written_answers_a_list_and_a_bad_filter_is_refused(self, api: Harness):
         empty = await self._stand(api)

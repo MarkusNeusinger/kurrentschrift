@@ -15,6 +15,7 @@
 import { LETTER_BY_KEY, LETTERS, glyphKeyFor } from '@/domain/glyphs';
 import { shapeText } from '@/domain/shaping';
 import { paths } from '@/routes/paths';
+import { DEFAULT_LIST_VIEW, LIST_PARAMS, type ListView } from '@/sections/admin/shell/listState';
 
 // Query parameter names, deliberately short — they end up in every deep link.
 //
@@ -49,7 +50,21 @@ export const FOCUS_PARAMS = { glyph: 'g', left: 'l', right: 'r', word: 'w', spec
 // `item`/`wort` are the strips filter. They are here and not inside the
 // gallery because the split tore producer and consumer apart: a coverage cell
 // sits on `bestand`, the strips it selects on `streifen`.
-export const EIGENHAND_PARAMS = { reiter: 'reiter', item: 'item', wort: 'wort' } as const;
+//
+// `strip`/`fassung`/`box` are the address of ONE written word box (V7). They
+// are WRITTEN and not yet read: a Korb row filed on a box resolves to the strip
+// surface with them, so the link is complete the day the surface opens on a
+// single box — which is Phase 4 („Unterrouten erst, wenn die Nachfahr-Liste
+// eine eigene Fläche wird", V2). Until then they name where the reader has to
+// look rather than taking them there, which is a better link than none.
+export const EIGENHAND_PARAMS = {
+  reiter: 'reiter',
+  item: 'item',
+  wort: 'wort',
+  strip: 'strip',
+  fassung: 'fassung',
+  box: 'box',
+} as const;
 
 // The first entry is the default: a bare /admin/eigenhand — and any nonsense
 // a hand-typed URL carries — lands on the Bestand.
@@ -185,20 +200,55 @@ export const wordsUrl = (text?: string | null, specimenId?: string | null, hand?
   ]);
 
 // The Eigenhand builder takes an OPTIONS object for everything past the view,
-// so the parameters still to come — `h=` (the shared hand) and the Phase-3
-// strip deep link `strip`/`fassung`/`box` — slot in without breaking a single
+// so the parameters that came later — `h=` (the shared hand), the box address
+// `strip`/`fassung`/`box`, the display mode — slot in without breaking a single
 // call site. Called with nothing it yields the clean `/admin/eigenhand`, which
 // lands on the Bestand by the reader's own fallback.
+//
+// `modus` is the LIST/GALLERY display mode (`?ansicht=`, `shell/listState.ts`),
+// not the Unteransicht — the first argument is that, and the two words are kept
+// apart everywhere (author decision Q1 c). A jump passes it where it wants one
+// of the two surfaces in particular; the default is left out, as everywhere.
 export const eigenhandUrl = (
   ansicht?: EigenhandAnsicht | null,
-  opts?: { item?: string | null; wort?: string | null; hand?: string | null },
+  opts?: {
+    item?: string | null;
+    wort?: string | null;
+    hand?: string | null;
+    strip?: string | null;
+    fassung?: string | null;
+    box?: number | null;
+    modus?: ListView | null;
+  },
 ): string =>
   withParams(paths.admin.eigenhand, [
     [EIGENHAND_PARAMS.reiter, ansicht],
     [EIGENHAND_PARAMS.item, opts?.item],
     [EIGENHAND_PARAMS.wort, opts?.wort],
+    [EIGENHAND_PARAMS.strip, opts?.strip],
+    [EIGENHAND_PARAMS.fassung, opts?.fassung],
+    // Box 0 is a real box — `withParams` drops falsy values, so the index goes
+    // in as its own string rather than as a number that vanishes at zero.
+    [EIGENHAND_PARAMS.box, opts?.box === null || opts?.box === undefined ? null : String(opts.box)],
     [FOCUS_PARAMS.hand, opts?.hand],
+    [LIST_PARAMS.view, opts?.modus === DEFAULT_LIST_VIEW ? null : opts?.modus],
   ]);
+
+// The address of ONE written word box, as `work_items.specimen_id` carries it:
+// `S0041/F02#2` — strip, Fassung, box index (V7). The box INDEX and not the
+// word, for the reason the Rohzahlen chips give: a row can hold the same word
+// twice, and a reference by text would point at two places.
+export const stripBoxSpecimen = (strip: string, fassung: string, boxIndex: number): string =>
+  `${strip}/${fassung}#${boxIndex}`;
+
+const STRIP_BOX_SPECIMEN = /^([^/]+)\/([^/#]+)#(\d+)$/;
+
+/** That address read back, or `null` for anything that is not one — a filed id
+ * is free text in the column, so the link builder has to be able to refuse. */
+export function readStripBoxSpecimen(id: string | null): { strip: string; fassung: string; box: number } | null {
+  const match = id === null ? null : STRIP_BOX_SPECIMEN.exec(id);
+  return match ? { strip: match[1], fassung: match[2], box: Number(match[3]) } : null;
+}
 
 // The characters behind a glyph_key, for the free-text fields and the pair
 // preview: the composer is driven by TEXT (it shapes it itself), so a view that

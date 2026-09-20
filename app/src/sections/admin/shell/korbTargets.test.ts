@@ -62,6 +62,18 @@ describe('korb counts per subject', () => {
     expect(counts?.byWord.get('lesen')).toBe(1);
   });
 
+  it('counts a written word box on the BOX, never on the plate’s word of the same text', () => {
+    // A box row is an Eigenhand task (V7); counting it on `byWord` would put it
+    // on the Vorlage's Wortprobe „kann" in the Wörter overview.
+    const counts = korbCountsOf([
+      item('word', 'open', { word: 'kann', specimen_kind: 'strip', specimen_id: 'S0041/F02#2' }),
+      item('word', 'returned', { word: 'kann', specimen_kind: 'strip', specimen_id: 'S0041/F02#2' }),
+      item('word', 'open', { word: 'kann', specimen_kind: 'word', specimen_id: 'kann' }),
+    ]);
+    expect(counts?.byStripBox.get('S0041/F02#2')).toBe(2);
+    expect(counts?.byWord.get('kann')).toBe(1);
+  });
+
   it('skips a row whose target is only half given', () => {
     const counts = korbCountsOf([
       item('pair', 'open', { left_key: 'a' }),

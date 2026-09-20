@@ -13,7 +13,9 @@ import {
   readHandFocus,
   readJoinFocus,
   readLetterFocus,
+  readStripBoxSpecimen,
   readWordFocus,
+  stripBoxSpecimen,
   textForPair,
   wordsUrl,
 } from './focus';
@@ -154,6 +156,31 @@ describe('focus links', () => {
     // An options object with nothing in it adds nothing — the builder keeps
     // its promise that an absent value never reaches the query string.
     expect(eigenhandUrl(null, { item: undefined, wort: null })).toBe('/admin/eigenhand');
+  });
+
+  it('carries a box address and the display mode, and leaves the default mode out', () => {
+    expect(eigenhandUrl('streifen', { strip: 'S0041', fassung: 'F02', box: 2 })).toBe(
+      '/admin/eigenhand?reiter=streifen&strip=S0041&fassung=F02&box=2',
+    );
+    // Box 0 is a real box: a falsy index must not vanish from the link.
+    expect(eigenhandUrl('streifen', { strip: 'S0041', fassung: 'F02', box: 0 })).toBe(
+      '/admin/eigenhand?reiter=streifen&strip=S0041&fassung=F02&box=0',
+    );
+    expect(eigenhandUrl('streifen', { item: 'a>b', modus: 'galerie' })).toBe(
+      '/admin/eigenhand?reiter=streifen&item=a%3Eb&ansicht=galerie',
+    );
+    // The default display mode is absent from every URL, like every default.
+    expect(eigenhandUrl('streifen', { modus: 'liste' })).toBe('/admin/eigenhand?reiter=streifen');
+  });
+
+  it('reads a box address back, and refuses anything that is not one', () => {
+    expect(readStripBoxSpecimen('S0041/F02#2')).toEqual({ strip: 'S0041', fassung: 'F02', box: 2 });
+    expect(stripBoxSpecimen('S0041', 'F02', 0)).toBe('S0041/F02#0');
+    // A plate specimen id, a half-written address and nothing at all — the
+    // column is free text, so the reader has to be able to say no.
+    expect(readStripBoxSpecimen('abb19-3')).toBeNull();
+    expect(readStripBoxSpecimen('S0041/F02')).toBeNull();
+    expect(readStripBoxSpecimen(null)).toBeNull();
   });
 });
 

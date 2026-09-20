@@ -55,12 +55,19 @@ import { BestandView } from '@/sections/admin/eigenhand/BestandView';
 import { glyphOf } from '@/sections/admin/eigenhand/coverageLabels';
 import { DruckenView } from '@/sections/admin/eigenhand/DruckenView';
 import { StatistikView } from '@/sections/admin/eigenhand/StatistikView';
+import { STRIP_BOX_LIST_SPEC } from '@/sections/admin/eigenhand/stripBoxRows';
 import { StripsPanel } from '@/sections/admin/eigenhand/StripsPanel';
 import { TerminalCommand } from '@/sections/admin/eigenhand/TerminalCommand';
 import { apiErrorText } from '@/sections/admin/shell/apiErrorText';
 import type { ApiErrorText } from '@/sections/admin/shell/apiErrorText';
 import { ErrorText } from '@/sections/admin/shell/ErrorText';
-import { EIGENHAND_ANSICHTEN, eigenhandUrl, readEigenhandFocus } from '@/sections/admin/shell/focus';
+import { readListState } from '@/sections/admin/shell/listState';
+import {
+  EIGENHAND_ANSICHTEN,
+  EIGENHAND_PARAMS,
+  eigenhandUrl,
+  readEigenhandFocus,
+} from '@/sections/admin/shell/focus';
 import { ViewHeader } from '@/sections/admin/shell/Panel';
 import { TOUCH_TARGET } from '@/styles/hitArea';
 
@@ -79,7 +86,7 @@ const itemLabel = (item: string): string => {
 
 export function EigenhandView() {
   const t = de.admin.eigenhand;
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const { ansicht, item, wort } = readEigenhandFocus(params);
   // The hand and the hands on offer both come from the admin scope: which ones
@@ -216,11 +223,25 @@ export function EigenhandView() {
   // A filter change REPLACES: the search box writes one entry per settled
   // keystroke, and the back button is supposed to walk the inspection history
   // (focus.ts), not a typing log.
+  //
+  // It MERGES rather than rebuilding the query, which is the same move the
+  // three overviews made when they became work lists: the Streifen surface now
+  // carries list state of its own (`ansicht`/`filter`/`sort`/`status`/`seite`),
+  // and a rebuilt query would throw the reader's sort and page away on every
+  // settled keystroke. `h=` rides along for free, where the rebuild dropped it.
   const setStripFilter = useCallback(
     (next: EigenhandStripFilter) => {
-      navigate(eigenhandUrl(ansicht, { item: next.item, wort: next.wort }), { replace: true });
+      const merged = new URLSearchParams(params);
+      for (const [key, value] of [
+        [EIGENHAND_PARAMS.item, next.item],
+        [EIGENHAND_PARAMS.wort, next.wort],
+      ] as const) {
+        if (value) merged.set(key, value);
+        else merged.delete(key);
+      }
+      setParams(merged, { replace: true });
     },
-    [ansicht, navigate],
+    [params, setParams],
   );
 
   // A coverage cell used to scroll to the gallery further down the page; with
@@ -231,8 +252,14 @@ export function EigenhandView() {
   // standing filter, so a word typed in the search survived a look at the
   // coverage grid. Dropping it here would silently widen the gallery the
   // author was narrowing.
+  //
+  // And it asks for the GALLERY explicitly: „zeig mir die geschriebenen Wörter,
+  // die dieses Zeichen tragen" is a question about pictures, and the
+  // Nachfahr-Liste — the surface `?reiter=streifen` opens on by default — has no
+  // way to answer an item filter at all (its rows know their word, not the
+  // items it covers).
   const showBelege = useCallback(
-    (selected: string) => navigate(eigenhandUrl('streifen', { item: selected, wort })),
+    (selected: string) => navigate(eigenhandUrl('streifen', { item: selected, wort, modus: 'galerie' })),
     [navigate, wort],
   );
 
@@ -261,8 +288,14 @@ export function EigenhandView() {
           onChange={(e) => {
             setHand(e.target.value);
             // The filter belongs to the hand just left: an item another hand
-            // never wrote would show an empty gallery under a live chip.
-            navigate(eigenhandUrl(ansicht), { replace: true });
+            // never wrote would show an empty gallery under a live chip. The
+            // same holds for the list's filters, its status and its page — they
+            // are about rows that are gone. The DISPLAY MODE is not: „ich
+            // arbeite gerade an den Bildern" is a preference of the reader, not
+            // a statement about the hand, so it travels.
+            navigate(eigenhandUrl(ansicht, { modus: readListState(params, STRIP_BOX_LIST_SPEC).view }), {
+              replace: true,
+            });
           }}
           sx={{ minWidth: '14rem' }}
         >

@@ -613,7 +613,11 @@ class WorkItem(Base):
     # word the bad letter or join was spotted in).
     word: Mapped[str | None] = mapped_column(String(64), nullable=True)
     # Where it was seen: the words.json sample, its id namespace in
-    # `specimen_kind` ('word' | 'pair') exactly like the occurrence rows.
+    # `specimen_kind` ('word' | 'pair') exactly like the occurrence rows — plus
+    # 'strip', which is not a plate at all but a written word BOX of the
+    # author's own hand, addressed `S0041/F02#2` (V7). No CHECK holds this
+    # column, so `api.schemas` is the only guard and the place the three are
+    # spelled out.
     specimen_kind: Mapped[str | None] = mapped_column(String(KIND_MAX), nullable=True)
     specimen_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
 

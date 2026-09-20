@@ -1485,9 +1485,10 @@ export const admin = {
     pfadSeed: 'Saat: Tafel-Duktus',
     pfadSeedHint:
       'Reihenfolge und Richtung kommen aus dem Duktus der Grundvorlage, nicht aus dieser Hand — der Folger nimmt die Saat nur als Vorschlag, die Bahn selbst liegt auf der Tinte. Auch die Lineatur der Saat ist die GEDRUCKTE, nicht die gemessene.',
+    // Nur noch das Chip-Wort der Nachfahr-Zeile: der frei stehende Hinweis im
+    // Streifen-Untertitel ist weg (die Ampel sagt dasselbe), und seinen Text
+    // trägt jetzt `nachfahren.maskeHint` neben dem Befehl, der ihn behebt.
     pfadStale: 'Maske geändert',
-    pfadStaleHint:
-      'Die Bahn wurde unter einer anderen Fleckenmaske gefolgt als der Streifen jetzt trägt — sie ist also auf anderer Tinte gelaufen, als hier zu sehen ist. Nach dem Radieren neu folgen lassen.',
     // Die Rohzahlen je Kasten: was der Folger beim Nachfolgen mitgeschrieben
     // hat, ohne Farbe und ohne Bewertung. Die Tintentreue-Ampel kommt später
     // an dieselbe Stelle — bis dahin steht hier die Zahl. Eine einzelne
@@ -1527,6 +1528,119 @@ export const admin = {
     befundSheetAria: 'Befund dieser Fassung anzeigen',
     befundSort: 'nach Befund sortieren',
     befundSortHint: 'Schwächste Fassung zuerst — was zuerst neu geschrieben werden sollte.',
+    // Die Nachfahr-Liste: eine Zeile je geschriebenem WORTKASTEN — die
+    // Arbeitsliste der Eigenhand (§6.4). Sie steht auf derselben Fläche wie
+    // die Streifen-Galerie und wird mit demselben Umschalter gewählt, den die
+    // drei Übersichten haben: `?reiter=streifen&ansicht=liste|galerie`. Die
+    // Ampel, ihr Grund und der benennende Sensor kommen als FERTIGE deutsche
+    // Sätze vom Server (`core/eigenhand/tintentreue.py`); hier steht nur, was
+    // die Liste selbst sagt.
+    nachfahren: {
+      title: 'Nachfahren',
+      caption:
+        'Eine Zeile je geschriebenem Wortkasten: ob die Bahn der Tinte folgt, woher sie kommt und was als Nächstes dran ist. Ohne Bilder — die stehen in der Galerie daneben.',
+      // Der Umschalter trägt die Wörter der Übersichten („Liste"/„Galerie");
+      // was die beiden hier BEDEUTEN, sagt diese eine Zeile.
+      viewHint:
+        'Liste: eine Zeile je Wortkasten mit Ampel und nächstem Schritt. Galerie: die Streifenbilder mit Befund, Fleckenpinsel und Bahn-Ebene.',
+      filters: {
+        'maske-geaendert': 'Maske geändert',
+        'tafel-fehlt': 'Tafel fehlt',
+        uebersprungen: 'übersprungen',
+        'von-hand': 'von Hand',
+      },
+      statusLabel: 'Nachfahren',
+      statuses: {
+        alle: 'Alle',
+        noetig: 'Nötig',
+        erledigt: 'Erledigt',
+        'ohne-bahn': 'Ohne Bahn',
+      },
+      // „Erledigt" sind genau zwei Zustände, und der zweite ist der
+      // überraschende: eine von Hand gezeichnete Bahn ist Wahrheit, kein
+      // Mangel — sie ist nur noch nicht gemessen.
+      statusHint:
+        'Nötig: alles, was noch Nachfahr-Arbeit ist. Erledigt: die Bahn folgt der Tinte — oder du hast sie selbst gezogen. Ohne Bahn: der Kasten trägt gar keinen Eintrag oder einen, der sagt, warum keiner da ist.',
+      rowExpand: '{{wort}} aufklappen',
+      rowCollapse: '{{wort}} zuklappen',
+      rowPlace: '{{strip}} · {{fassung}} · Kasten {{nr}}',
+      // Der Zähler der ganzen Liste, nie der gefilterten Auswahl: eine Zahl,
+      // die mit jedem Chip wandert, beantwortet bei jedem Klick eine andere
+      // Frage (Autor-Entscheid E).
+      // „(ungemessen)" ist kein Beiwerk: der Chip „von Hand" oben zählt die
+      // HERKUNFT, dieser Zähler die von Hand gezogenen Bahnen, die noch nichts
+      // gemessen hat (V21). Sobald das Werkzeug über eine davon gelaufen ist,
+      // stehen die beiden Zahlen auseinander — mit dem Zusatz sagen sie warum.
+      tally: '{{kaesten}} Kästen · {{folgt}} folgen · {{vonHand}} von Hand (ungemessen) · {{offen}} offen',
+      // Ohne eine einzige Messung ist „Schwere zuerst" stillschweigend die
+      // Streifenfolge. Das wird gesagt, statt eine Rangfolge zu behaupten.
+      notRanked: 'Noch ist kein Kasten gemessen — die Reihenfolge ist die des Streifenplans.',
+      notRankedHint:
+        'Die Ampel liest die Sensoren, die der Folger beim Nachfolgen mitschreibt. Fassungen aus einem Lauf vor dem Formatwechsel tragen zwei davon nicht und bleiben grau, bis sie einmal neu gefolgt werden.',
+      empty: 'Für diese Hand ist noch kein Streifen abgelegt.',
+      loadError: 'Die Kastenliste konnte nicht geladen werden.',
+      // Der Zeichen-Filter der Galerie hat in der Liste keinen Gegenstand: der
+      // Kasten-Read trägt das Wort, aber nicht die Items, die es belegt.
+      itemFilterNote:
+        'Der Zeichen-Filter gilt nur in der Galerie — eine Kasten-Zeile weiß nicht, welche Zeichen ihr Wort belegt.',
+      itemFilterAction: 'zur Galerie',
+      // Die Ampel selbst. Stufe und Grund kommen im Klartext vom Server; der
+      // Chip färbt nur ein. „vorläufig" steht dabei, solange die Schwellen die
+      // geliehenen sind — eine Kalibrierung, die es nicht gab, darf keine
+      // Oberfläche behaupten (Q10 b).
+      ampelAria: 'Ampel, Sensoren und Schwellen dieses Kastens',
+      ampelTitle: 'Tintentreue dieses Kastens',
+      ampelVorlaeufig: 'Schwellen vorläufig (Stand {{stand}})',
+      ampelVorlaeufigHint:
+        'Die acht Schwellen sind von der Platte und aus dem dev-19-Satz geliehen, nicht an dieser Hand gemessen. Sie werden EINMAL je Hand in einer blinden Runde ersetzt; bis dahin ist die Stufe ein Hinweis, kein Maß.',
+      ampelFormat: 'Format {{format}}',
+      sensorHeader: 'Sensoren dieses Kastens',
+      sensorValue: '{{name}}: {{wert}}',
+      sensorNone: '{{name}}: –',
+      sensorBounds: 'grün ab {{gruen}} · gelb ab {{gelb}}',
+      sensorSoll: 'Soll {{soll}}',
+      absetzerSoll: 'Absetzer-Soll {{zahl}}',
+      absetzerSollHint:
+        'So viele verbundene Körperläufe schreibt die Schrift dieses Wort — ohne Markenzüge (i-Punkt, Umlaut), die zählt diese Zahl nicht mit. Sie ist das Soll, gegen das der Absetzer-Sensor misst.',
+      herkunft: 'Bahn: {{verfahren}} · {{datum}}',
+      // Ein Skip-Eintrag trägt dasselbe `verfahren` wie jeder andere Eintrag —
+      // nur eben keine Bahn. „Bahn: Tintenpfad" wäre dort das Gegenteil dessen,
+      // was Ampel und Status sagen; dies nennt dieselben zwei Angaben als das,
+      // was sie waren: ein Versuch.
+      herkunftVersuch: 'Keine Bahn · Versuch: {{verfahren}} · {{datum}}',
+      herkunftNone: 'kein Eintrag',
+      skipDetail: 'Grund laut Folger: {{detail}}',
+      // Die drei Umleitungen aus §6.4. Jede sagt, WO die Arbeit liegt — die
+      // Liste löst nichts aus, sie verlinkt (Arbeitslisten-Regel).
+      tafelFehlt: 'Tafel fehlt: {{keys}}',
+      tafelFehltHint:
+        'Dieses Wort enthält Zeichen, die auf der Tafel noch nicht eingerichtet sind — der Folger hat deshalb gar nicht erst angefangen. Das ist Ground Truth und gehört an die Tafel, nicht in den Korb.',
+      tafelFehltAction: '{{key}} einrichten',
+      // Die dritte Umleitung aus §6.4, und die einzige, die nirgendwohin
+      // führt: „nie machbar". Der Kasten hat kein Rechteck, der Folger bricht
+      // genau deshalb ab — ein Befehl darunter würde denselben Übersprung noch
+      // einmal erzeugen und so tun, als wäre das Arbeit.
+      bogenOhneGeometrie:
+        'Dieser Kasten stammt von einem Bogen, der vor der Schnitt-Geometrie gedruckt wurde — er lässt sich nicht nachfahren. Erst ein neu gedruckter und geschriebener Bogen trägt dieses Wort wieder.',
+      maskeAction: 'erst neu folgen lassen',
+      maskeHint:
+        'Diese Bahn wurde unter einer anderen Fleckenmaske gefolgt als der Streifen jetzt trägt — sie lief also auf anderer Tinte, als hier zu sehen ist. Der Befehl unten folgt ihr mit der heutigen Maske noch einmal.',
+      neuFolgen: 'neu folgen',
+      // Wie die Übergabekarte reicht auch diese Zeile den TROCKENLAUF weiter:
+      // `--apply` überschreibt gespeicherte Geometrie und gehört hinter einen
+      // Schnappschuss, nicht hinter einen Kopierknopf.
+      neuFolgenHint:
+        'Der Trockenlauf für genau diesen Kasten — „--box" zählt von 0, wie die Kastennummer oben. Gespeichert wird erst mit „--apply", und davor gehört ein Schnappschuss.',
+      befehl:
+        'uv run python -m tools.eigenhand.pfad --hand {{hand}} --strip {{strip}} --fassung {{fassung}} --box {{box}}',
+      // Auf einem von Hand gezogenen Kasten wird NICHT zum Neu-Folgen
+      // eingeladen: das ist die eigene Linie des Autors, und der Folger darf
+      // sie nicht ersetzen. Wer es doch will, tut es am Terminal mit
+      // `--replace-authored` — und sieht dort die Warnung.
+      authoredKeinNeuFolgen:
+        'Von Hand gezogen — diese Bahn ist deine eigene Linie. Der Folger ersetzt sie nicht; das ginge nur am Terminal mit „--replace-authored".',
+      korbMark: 'Kasten markieren',
+    },
     // Die Fleckenmaske: die Toner-Punkte des Druckers, entfernt als DATEN.
     // Das gespeicherte Bild bleibt unberührt — die Kreise werden beim Abruf
     // mit Papierfarbe gefüllt, „roh" zeigt jederzeit die echten Bytes.

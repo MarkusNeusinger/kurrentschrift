@@ -271,7 +271,16 @@ export function WorkRow({
         >
           {title}
         </Button>
-        <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center', flex: 1, minWidth: 0 }}>
+        {/* The chips take the free space, but not less than about twelve
+            characters: as `flex: 1` with a zero basis they were the one item
+            that gave way when the title and the actions grew, and on a phone
+            row with two buttons the box measured 11 px — the chips inside it
+            ellipsised to „folgt …", which is the word that carries the verdict.
+            With a real basis the box wraps onto its own line instead, and at
+            desktop width nothing moves. */}
+        <Box
+          sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', alignItems: 'center', flex: '1 1 12rem', minWidth: 0 }}
+        >
           {chips}
         </Box>
         {actions}
