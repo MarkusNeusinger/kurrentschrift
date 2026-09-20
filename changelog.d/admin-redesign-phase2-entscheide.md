@@ -1,17 +1,21 @@
 ### Changed
 
 - **The Admin-Redesign plan books Phase 2 and its first round of author
-  decisions.** `docs/proposals/admin-redesign.md` gains §4.7 for the three
-  decisions of 2026-09-20 and §15.6 for the thirteen-PR slice of the phase.
-  A hand-drawn path is pulled down as a ROW IN THE CENTRAL `kartei.json`, the
-  way the Fleckenmaske already travels — the archive run copies the Kartei in
-  full every time, so `snapshot.py`'s immutability assumption stays intact and
-  needs no change, which is why that option was recommended.
-  `--replace-authored` now refuses while the box is not archived, with no
-  second override flag: the price is one `pull --pfade`, the gain is that
-  truth cannot disappear on request. And "skipped" becomes its own entry type
-  in the same list — `status` + `grund` mandatory, no strokes — because a box
-  has exactly one state and two lists would eventually contradict each other.
+  decisions.** Plan only — this change ships no code, and none of the three
+  decisions below is implemented yet. `docs/proposals/admin-redesign.md`
+  gains §4.7 for the three decisions of 2026-09-20 and §15.6 for the
+  thirteen-PR slice of the phase. A hand-drawn path is **to be** pulled down
+  as a ROW IN THE CENTRAL `kartei.json`, the way the Fleckenmaske already
+  travels — the archive run copies the Kartei in full every time, so
+  `snapshot.py`'s immutability assumption stays intact and needs no change,
+  which is why that option was recommended. `--replace-authored` **is to
+  refuse** while the box is not archived, with no second override flag (today
+  it still only warns): the price is one `pull --pfade`, the gain is that
+  truth cannot disappear on request. And "skipped" **is to become** its own
+  entry type in the same list — `status` + `grund` mandatory, no strokes —
+  because a box has exactly one state and two lists would eventually
+  contradict each other; today all four skip paths still `continue` without
+  an entry.
 
 - **Phase 2's hard ordering is stated, with the reason for each step.** §15.6
   fixes four points that are not tidiness: the archive chain stands before
